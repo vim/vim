@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-10 19:45+0200\n"
+"PO-Revision-Date: 2022-05-11 19:57+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -10002,308 +10002,293 @@ msgstr "E1116: El quinto argumento \"assert_fails()\" debe ser una cadena"
 
 # if Vim opened a window: Executing a shell may cause crashes
 #: ../errors.h:2873
-#, fuzzy
 msgid "E1117: Cannot use ! with nested :def"
-msgstr "E804: No se puede usar '%' con \"Float\""
+msgstr "E1117: No se puede usar \"!\" con :def anidado"
 
 #: ../errors.h:2875
-#, fuzzy
 msgid "E1118: Cannot change locked list"
-msgstr "E742: No se pudo cambiar el valor de %s"
+msgstr "E1118: No se puede cambiar la lista bloqueada"
 
 #: ../errors.h:2877
-#, fuzzy
 msgid "E1119: Cannot change locked list item"
-msgstr "E165: No se pudo ir más allá del último archivo"
+msgstr "E1119: No se puede cambiar el elemento de la lista bloqueada"
 
 #: ../errors.h:2879
-#, fuzzy
 msgid "E1120: Cannot change dict"
-msgstr "E530: No se pudo cambiar \"term\" en la interfaz gráfica"
+msgstr "E1120: No se puede cambiar el diccionario"
 
 #: ../errors.h:2881
-#, fuzzy
 msgid "E1121: Cannot change dict item"
-msgstr "E530: No se pudo cambiar \"term\" en la interfaz gráfica"
+msgstr "E1121: No se puede cambiar el elemento del diccionario"
 
 #: ../errors.h:2883
-#, fuzzy, c-format
+#, c-format
 msgid "E1122: Variable is locked: %s"
-msgstr "E741: El valor está bloqueado: %s"
+msgstr "E1122: Variable bloqueada: %s"
 
 #: ../errors.h:2885
-#, fuzzy, c-format
+#, c-format
 msgid "E1123: Missing comma before argument: %s"
-msgstr "E417: Falta el argumento: %s"
+msgstr "E1123: Falta una coma antes del argumento: %s"
 
 #: ../errors.h:2887
 #, c-format
 msgid "E1124: \"%s\" cannot be used in legacy Vim script"
-msgstr ""
+msgstr "E1124: \"%s\" no se puede usar en el script de Vim heredado"
 
 #: ../errors.h:2889
-#, fuzzy
 msgid "E1125: Final requires a value"
-msgstr "E709: [:] requiere un valor de la lista"
+msgstr "E1125: Final requiere un valor"
 
 #: ../errors.h:2891
 msgid "E1126: Cannot use :let in Vim9 script"
-msgstr ""
+msgstr "E1126: No se puede usar :let en el script de Vim9"
 
 #: ../errors.h:2893
-#, fuzzy
 msgid "E1127: Missing name after dot"
-msgstr "E526: Falta el número después de <%s>"
+msgstr "E1127: Falta el nombre después del punto"
 
 #: ../errors.h:2895
-#, fuzzy
 msgid "E1128: } without {"
-msgstr "E581: ¡\":else\" sin un \":if\"!"
+msgstr "E1128: \"}\" sin \"{\""
 
 #: ../errors.h:2897
-#, fuzzy
 msgid "E1129: Throw with empty string"
-msgstr "E529: No se pudo definir \"term\" como una cadena de caracteres vacía"
+msgstr "E1129: Lanzamiento con una cadena vacía"
 
 #: ../errors.h:2899
-#, fuzzy
 msgid "E1130: Cannot add to null list"
-msgstr "E306: No se pudo abrir %s"
+msgstr "E1130: No se puede agregar a la lista nula"
 
 #: ../errors.h:2901
 msgid "E1131: Cannot add to null blob"
-msgstr ""
+msgstr "E1131: No se puede agregar a un \"blob\" nulo"
 
 #: ../errors.h:2903
-#, fuzzy
 msgid "E1132: Missing function argument"
-msgstr "E126: Falta un \":endfunction\""
+msgstr "E1132: Argumento de función faltante"
 
 #: ../errors.h:2905
-#, fuzzy
 msgid "E1133: Cannot extend a null dict"
-msgstr "E79: No se pudo expandir los comodines"
+msgstr "E1133: No se puede extender un diccionario nulo"
 
 #: ../errors.h:2907
 msgid "E1134: Cannot extend a null list"
-msgstr ""
+msgstr "E1134: No se puede extender una lista nula"
 
 #: ../errors.h:2909
 #, c-format
 msgid "E1135: Using a String as a Bool: \"%s\""
-msgstr ""
+msgstr "E1135: Uso de una cadena como un \"Bool\": \"%s\""
 
 #: ../errors.h:2912
 msgid "E1136: <Cmd> mapping must end with <CR> before second <Cmd>"
 msgstr ""
+"E1136: la asignación de <Cmd> debe terminar con <CR> antes del segundo <Cmd>"
 
 #: ../errors.h:2914
 #, c-format
 msgid "E1137: <Cmd> mapping must not include %s key"
-msgstr ""
+msgstr "E1137: La asignación de <Cmd> no debe incluir la tecla %s"
 
 #: ../errors.h:2917
-#, fuzzy
 msgid "E1138: Using a Bool as a Number"
-msgstr "E805: Usando \"Float\" como un \"Number\""
+msgstr "E1138: Usando un \"Bool\" como un \"Number\""
 
 #: ../errors.h:2919
 msgid "E1139: Missing matching bracket after dict key"
 msgstr ""
+"E1139: Falta el corchete coincidente después de la clave del diccionario"
 
 #: ../errors.h:2921
 msgid "E1140: :for argument must be a sequence of lists"
-msgstr ""
+msgstr "E1140: El argumento \":for\" debe ser una secuencia de listas"
 
 #: ../errors.h:2923
-#, fuzzy
 msgid "E1141: Indexable type required"
-msgstr "E714: Se requiere una lista"
+msgstr "E1141: Se requiere un tipo indexable"
 
 #: ../errors.h:2925
 msgid "E1142: Calling test_garbagecollect_now() while v:testing is not set"
 msgstr ""
+"E1142: Llamada a test_garbagecollect_now() mientras v:testing no está"
+" configurado"
 
 #: ../errors.h:2927
-#, fuzzy, c-format
+#, c-format
 msgid "E1143: Empty expression: \"%s\""
-msgstr "E15: La expresión no es válida: %s"
+msgstr "E1143: Expresión vacía: \"%s\""
 
 #: ../errors.h:2929
 #, c-format
 msgid "E1144: Command \"%s\" is not followed by white space: %s"
-msgstr ""
+msgstr "E1144: El comando \"%s\" no va seguido de un espacio en blanco: %s"
 
 #: ../errors.h:2931
-#, fuzzy, c-format
+#, c-format
 msgid "E1145: Missing heredoc end marker: %s"
-msgstr "E114: Faltan las comillas: %s"
+msgstr "E1145: Falta el marcador final heredoc: %s"
 
 #: ../errors.h:2933
-#, fuzzy, c-format
+#, c-format
 msgid "E1146: Command not recognized: %s"
-msgstr "E421: Nombre o número de color desconocido: %s"
+msgstr "E1146: Comando no reconocido: %s"
 
 #: ../errors.h:2935
-#, fuzzy
 msgid "E1147: List not set"
-msgstr "E114: Faltan las comillas: %s"
+msgstr "E1147: Lista no configurada"
 
 #: ../errors.h:2937
-#, fuzzy, c-format
+#, c-format
 msgid "E1148: Cannot index a %s"
-msgstr "E695: No se puede crear un índice de un \"Funcref\""
+msgstr "E1148: No se puede indexar un %s"
 
 #: ../errors.h:2939
 #, c-format
 msgid "E1149: Script variable is invalid after reload in function %s"
 msgstr ""
+"E1149: La variable del script no es válida después de recargar en la función "
+"%s"
 
 #: ../errors.h:2941
 msgid "E1150: Script variable type changed"
-msgstr ""
+msgstr "E1150: Tipo de variable de script cambiado"
 
 #: ../errors.h:2943
-#, fuzzy
 msgid "E1151: Mismatched endfunction"
-msgstr "E126: Falta un \":endfunction\""
+msgstr "E1151: Falta un \"endfunction\""
 
 #: ../errors.h:2945
-#, fuzzy
 msgid "E1152: Mismatched enddef"
-msgstr "E52: \\z( sin complemento"
+msgstr "E1152: Falta un \"enddef\""
 
 #: ../errors.h:2947
-#, fuzzy, c-format
+#, c-format
 msgid "E1153: Invalid operation for %s"
-msgstr "E692: Operación inválida para lista"
+msgstr "E1153: Operación no válida para %s"
 
 #: ../errors.h:2949
 msgid "E1154: Divide by zero"
-msgstr ""
+msgstr "E1154: Dividir por cero"
 
 #: ../errors.h:2952
-#, fuzzy
 msgid "E1155: Cannot define autocommands for ALL events"
-msgstr "E217: No se pueden ejecutar las auto-órdenes para TODOS los eventos"
+msgstr ""
+"E1155: No se pueden definir comandos automáticos para TODOS los eventos"
 
 #: ../errors.h:2954
-#, fuzzy
 msgid "E1156: Cannot change the argument list recursively"
-msgstr "E659: No se pudo invocar a Python recursivamente"
+msgstr "E1156: No se puede cambiar la lista de argumentos recursivamente"
 
 #: ../errors.h:2957
-#, fuzzy
 msgid "E1157: Missing return type"
-msgstr "E115: Faltan las comillas: %s"
+msgstr "E1157: Falta el tipo de devolución"
 
 #: ../errors.h:2959
 msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
 msgstr ""
+"E1158: No se puede usar flatten() en el script de Vim9, use flattennew()"
 
 #: ../errors.h:2962
-#, fuzzy
 msgid "E1159: Cannot split a window when closing the buffer"
-msgstr "E90: No se pudo descargar el último búfer"
+msgstr "E1159: No se puede dividir una ventana al cerrar el búfer"
 
 #: ../errors.h:2965
-#, fuzzy
 msgid "E1160: Cannot use a default for variable arguments"
-msgstr "E795: No se pudo borrar la variable %s"
+msgstr ""
+"E1160: No se puede usar un valor predeterminado para argumentos variables"
 
 #: ../errors.h:2967
-#, fuzzy, c-format
+#, c-format
 msgid "E1161: Cannot json encode a %s"
-msgstr "E306: No se pudo abrir %s"
+msgstr "E1161: %s no se pudo codificar json"
 
 #: ../errors.h:2969
 #, c-format
 msgid "E1162: Register name must be one character: %s"
-msgstr ""
+msgstr "E1162: El nombre del registro debe tener un carácter: %s"
 
 #: ../errors.h:2971
-#, fuzzy, c-format
+#, c-format
 msgid "E1163: Variable %d: type mismatch, expected %s but got %s"
-msgstr "E706: Tipo de variable no concuerda con : %s"
+msgstr ""
+"E1163: Variable %d: tipo no coincidente, se esperaba %s pero se obtuvo %s"
 
 #: ../errors.h:2973
-#, fuzzy, c-format
+#, c-format
 msgid "E1163: Variable %d: type mismatch, expected %s but got %s in %s"
-msgstr "E706: Tipo de variable no concuerda con : %s"
+msgstr ""
+"E1163: Variable %d: tipo no coincidente, se esperaba %s pero se obtuvo %s en "
+"%s"
 
 #: ../errors.h:2976
 msgid "E1164: vim9cmd must be followed by a command"
-msgstr ""
+msgstr "E1164: \"vim9cmd\" debe ir seguido de un comando"
 
 #: ../errors.h:2979
 #, c-format
 msgid "E1165: Cannot use a range with an assignment: %s"
-msgstr ""
+msgstr "E1165: No se puede usar un rango con una asignación: %s"
 
 # if Vim opened a window: Executing a shell may cause crashes
 #: ../errors.h:2981
-#, fuzzy
 msgid "E1166: Cannot use a range with a dictionary"
-msgstr "E719: No puede usar [:] con un diccionario"
+msgstr "E1166: No se puede usar un rango con un diccionario"
 
 #: ../errors.h:2983
-#, fuzzy, c-format
+#, c-format
 msgid "E1167: Argument name shadows existing variable: %s"
-msgstr "E707: El nombre de la función entran en conflicto con la variable: %s"
+msgstr "E1167: El nombre del argumento sombrea la variable existente: %s"
 
 #: ../errors.h:2985
 #, c-format
 msgid "E1168: Argument already declared in the script: %s"
-msgstr ""
+msgstr "E1168: Argumento ya declarado en el script: %s"
 
 #: ../errors.h:2987
-#, fuzzy, c-format
+#, c-format
 msgid "E1169: Expression too recursive: %s"
-msgstr "E169: Orden demasiado recursiva"
+msgstr "E1169: Expresión demasiado recursiva: %s"
 
 #: ../errors.h:2989
 msgid "E1170: Cannot use #{ to start a comment"
-msgstr ""
+msgstr "E1170: No se puede usar \"#{\" para iniciar un comentario"
 
 #: ../errors.h:2991
-#, fuzzy
 msgid "E1171: Missing } after inline function"
-msgstr "E126: Falta un \":endfunction\""
+msgstr "E1171: Falta \"}\" después de la función en línea"
 
 #: ../errors.h:2993
-#, fuzzy
 msgid "E1172: Cannot use default values in a lambda"
-msgstr "E284: No se pudo fijar los valores IC"
+msgstr "E1172: No se pueden usar valores predeterminados en una lambda"
 
 #: ../errors.h:2995
-#, fuzzy, c-format
+#, c-format
 msgid "E1173: Text found after %s: %s"
-msgstr "E753: No se encontró: %s"
+msgstr "E1173: Texto encontrado después de %s: %s"
 
 #: ../errors.h:2997
-#, fuzzy, c-format
+#, c-format
 msgid "E1174: String required for argument %d"
-msgstr "E466: \":winpos\" requiere de dos argumentos numéricos"
+msgstr "E1174: Cadena requerida para el argumento %d"
 
 #: ../errors.h:2999
-#, fuzzy, c-format
+#, c-format
 msgid "E1175: Non-empty string required for argument %d"
-msgstr ""
-"E467: Las finalizaciones definidas por el usuario requieren de un argumento "
-"de función"
+msgstr "E1175: Se requiere una cadena no vacía para el argumento %d"
 
 #: ../errors.h:3001
 msgid "E1176: Misplaced command modifier"
-msgstr ""
+msgstr "E1176: Modificador de comando fuera de lugar"
 
 #: ../errors.h:3003
-#, fuzzy, c-format
+#, c-format
 msgid "E1177: For loop on %s not supported"
-msgstr "E519: Opción no admitida"
+msgstr "E1177: No se admite el bucle For en %s"
 
 #: ../errors.h:3005
 msgid "E1178: Cannot lock or unlock a local variable"
-msgstr ""
+msgstr "E1178: No se puede bloquear o desbloquear una variable local"
 
 #: ../errors.h:3009
 #, c-format
@@ -10311,477 +10296,474 @@ msgid ""
 "E1179: Failed to extract PWD from %s, check your shell's config related to "
 "OSC 7"
 msgstr ""
+"E1179: No se pudo extraer PWD de %s, verifique la configuración de su shell"
+" relacionada "
+"con OSC 7"
 
 #: ../errors.h:3013
-#, fuzzy, c-format
+#, c-format
 msgid "E1180: Variable arguments type must be a list: %s"
-msgstr "E686: El argumento de %s debe ser una lista"
+msgstr "E1180: El tipo de argumentos variables debe ser una lista: %s"
 
 #: ../errors.h:3015
-#, fuzzy
 msgid "E1181: Cannot use an underscore here"
-msgstr "E185: No se pudo encontrar el esquema de colores %s"
+msgstr "E1181: No se puede usar un guión bajo aquí"
 
 #: ../errors.h:3017
-#, fuzzy, c-format
+#, c-format
 msgid "E1182: Cannot define a dict function in Vim9 script: %s"
-msgstr "E127: No se puede redefinir la función %s: Está en uso"
+msgstr "E1182: No se puede definir una función dict en el script de Vim9: %s"
 
 #: ../errors.h:3019
 #, c-format
 msgid "E1183: Cannot use a range with an assignment operator: %s"
-msgstr ""
+msgstr "E1183: No se puede usar un rango con un operador de asignación: %s"
 
 #: ../errors.h:3023
-#, fuzzy
 msgid "E1184: Blob not set"
-msgstr "E20: No se ha colocado una marca"
+msgstr "E1184: \"Blob\" no establecido"
 
 #: ../errors.h:3025
-#, fuzzy
 msgid "E1185: Missing :redir END"
-msgstr "E171: Falta \":endif\""
+msgstr "E1185: Falta :redir FIN"
 
 #: ../errors.h:3027
 #, c-format
 msgid "E1186: Expression does not result in a value: %s"
-msgstr ""
+msgstr "E1186: La expresión no da como resultado un valor: %s"
 
 #: ../errors.h:3030
 msgid "E1187: Failed to source defaults.vim"
-msgstr ""
+msgstr "E1187: Error al generar defaults.vim"
 
 #: ../errors.h:3033
 msgid "E1188: Cannot open a terminal from the command line window"
 msgstr ""
+"E1188: No se puede abrir una terminal desde la ventana de la línea de comandos"
 
 # if Vim opened a window: Executing a shell may cause crashes
 #: ../errors.h:3037
-#, fuzzy, c-format
+#, c-format
 msgid "E1189: Cannot use :legacy with this command: %s"
-msgstr "E719: No puede usar [:] con un diccionario"
+msgstr "E1189: No se puede usar :legacy con este comando: %s"
 
 #: ../errors.h:3039
-#, fuzzy
 msgid "E1190: One argument too few"
-msgstr "E144: Argumento no numérico para \":z\""
+msgstr "E1190: Un argumento de menos"
 
 #: ../errors.h:3041
-#, fuzzy, c-format
+#, c-format
 msgid "E1190: %d arguments too few"
-msgstr "E116: Argumentos inválidos para la función: %s"
+msgstr "E1190: %d argumentos de menos"
 
 #: ../errors.h:3043
-#, fuzzy, c-format
+#, c-format
 msgid "E1191: Call to function that failed to compile: %s"
-msgstr "E725: Llamando una función \"dict\" sin un diccionario: %s"
+msgstr "E1191: Llamada a función que no pudo compilar: %s"
 
 #: ../errors.h:3045
-#, fuzzy
 msgid "E1192: Empty function name"
-msgstr "E792: Nombre de menú vacío"
+msgstr "E1192: Nombre de función vacío"
 
 #: ../errors.h:3051
 msgid "E1193: cryptmethod xchacha20 not built into this Vim"
-msgstr ""
+msgstr "E1193: cryptmethod xchacha20 no integrado en este Vim"
 
 #: ../errors.h:3055
 msgid "E1194: Cannot encrypt header, not enough space"
-msgstr ""
+msgstr "E1194: No se puede cifrar el encabezado, no hay suficiente espacio"
 
 #: ../errors.h:3057
 msgid "E1195: Cannot encrypt buffer, not enough space"
-msgstr ""
+msgstr "E1195: No se puede cifrar el búfer, no hay suficiente espacio"
 
 #: ../errors.h:3059
 msgid "E1196: Cannot decrypt header, not enough space"
-msgstr ""
+msgstr "E1196: No se puede descifrar el encabezado, no hay suficiente espacio"
 
 #: ../errors.h:3062
-#, fuzzy
 msgid "E1197: Cannot allocate_buffer for encryption"
-msgstr "E82: No se pudo asignar memoria para ningún búfer, saliendo..."
+msgstr "E1197: No se puede \"allocate_buffer\" para el cifrado"
 
 #: ../errors.h:3064
 msgid "E1198: Decryption failed: Header incomplete!"
-msgstr ""
+msgstr "E1198: Error al descifrar: ¡Encabezado incompleto!"
 
 #: ../errors.h:3067
 msgid "E1199: Cannot decrypt buffer, not enough space"
-msgstr ""
+msgstr "E1199: No se puede descifrar el búfer, no hay suficiente espacio"
 
 #: ../errors.h:3070
-#, fuzzy
 msgid "E1200: Decryption failed!"
-msgstr "E237: Falló la selección de impresora"
+msgstr "E1200: ¡Error al descifrar!"
 
 #: ../errors.h:3072
 msgid "E1201: Decryption failed: pre-mature end of file!"
-msgstr ""
+msgstr "E1201: Falló el descifrado: ¡finalización prematura del archivo!"
 
 #: ../errors.h:3077
 #, c-format
 msgid "E1202: No white space allowed after '%s': %s"
-msgstr ""
+msgstr "E1202: No se permiten espacios en blanco después de '%s': %s"
 
 #: ../errors.h:3079
-#, fuzzy, c-format
+#, c-format
 msgid "E1203: Dot can only be used on a dictionary: %s"
-msgstr "E716: No se encuentra la llave en el diccionario. %s"
+msgstr "E1203: El punto solo se puede usar en un diccionario: %s"
 
 #: ../errors.h:3082
 #, c-format
 msgid "E1204: No Number allowed after .: '\\%%%c'"
-msgstr ""
+msgstr "E1204: No se permite ningún número después de .: '\\%%%c'"
 
 #: ../errors.h:3084
 msgid "E1205: No white space allowed between option and"
-msgstr ""
+msgstr "E1205: No se permiten espacios en blanco entre opción y"
 
 #: ../errors.h:3087
-#, fuzzy, c-format
+#, c-format
 msgid "E1206: Dictionary required for argument %d"
-msgstr "E715: Se requiere de un diccionario"
+msgstr "E1206: Se requiere un diccionario para el argumento %d"
 
 #: ../errors.h:3089
 #, c-format
 msgid "E1207: Expression without an effect: %s"
-msgstr ""
+msgstr "E1207: Expresión sin efecto: %s"
 
 #: ../errors.h:3092
 msgid "E1208: -complete used without allowing arguments"
-msgstr ""
+msgstr "E1208: \"-complete\" usado sin permitir argumentos"
 
 #: ../errors.h:3095
-#, fuzzy, c-format
+#, c-format
 msgid "E1209: Invalid value for a line number: \"%s\""
-msgstr "El valor para \"FLAG\" no es válido en la %s línea %d: %s"
+msgstr "E1209: Valor no válido para un número de línea: \"%s\""
 
 #: ../errors.h:3097
-#, fuzzy, c-format
+#, c-format
 msgid "E1210: Number required for argument %d"
-msgstr "E521: Debe introducir un número después de \"=\""
+msgstr "E1210: Número requerido para el argumento %d"
 
 #: ../errors.h:3099
-#, fuzzy, c-format
+#, c-format
 msgid "E1211: List required for argument %d"
-msgstr "E466: \":winpos\" requiere de dos argumentos numéricos"
+msgstr "E1211: Lista requerida para el argumento %d"
 
 #: ../errors.h:3101
-#, fuzzy, c-format
+#, c-format
 msgid "E1212: Bool required for argument %d"
-msgstr "E466: \":winpos\" requiere de dos argumentos numéricos"
+msgstr "E1212: \"Bool\" requerido para el argumento %d"
 
 #: ../errors.h:3103
 #, c-format
 msgid "E1213: Redefining imported item \"%s\""
-msgstr ""
+msgstr "E1213: Redefiniendo el artículo importado \"%s\""
 
 #: ../errors.h:3107
 #, c-format
 msgid "E1214: Digraph must be just two characters: %s"
-msgstr ""
+msgstr "E1214: El dígrafo debe tener solo dos caracteres: %s"
 
 #: ../errors.h:3109
 #, c-format
 msgid "E1215: Digraph must be one character: %s"
-msgstr ""
+msgstr "E1215: El dígrafo debe tener un carácter: %s"
 
 #: ../errors.h:3111
 msgid ""
 "E1216: digraph_setlist() argument must be a list of lists with two items"
 msgstr ""
+"E1216: el argumento digraph_setlist() debe ser una lista de listas con dos"
+" elementos"
 
 #: ../errors.h:3116
 #, c-format
 msgid "E1217: Channel or Job required for argument %d"
-msgstr ""
+msgstr "E1217: Se requiere \"Channel\" o \"Job\" para el argumento %d"
 
 #: ../errors.h:3118
-#, fuzzy, c-format
+#, c-format
 msgid "E1218: Job required for argument %d"
-msgstr "E466: \":winpos\" requiere de dos argumentos numéricos"
+msgstr "E1218: \"Job\" requerido para el argumento %d"
 
 #: ../errors.h:3121
-#, fuzzy, c-format
+#, c-format
 msgid "E1219: Float or Number required for argument %d"
-msgstr "E179: se necesita un argumento para \"-complete\""
+msgstr "E1219: \"Float\" o \"Number\" requerido para el argumento %d"
 
 #: ../errors.h:3123
-#, fuzzy, c-format
+#, c-format
 msgid "E1220: String or Number required for argument %d"
-msgstr "E179: se necesita un argumento para \"-complete\""
+msgstr "E1220: \"String\" o \"Number\" requerido para el argumento %d"
 
 #: ../errors.h:3126
 #, c-format
 msgid "E1221: String or Blob required for argument %d"
-msgstr ""
+msgstr "E1221: \"String\" o \"Blob\" requerido para el argumento %d"
 
 #: ../errors.h:3129
-#, fuzzy, c-format
+#, c-format
 msgid "E1222: String or List required for argument %d"
-msgstr "E466: \":winpos\" requiere de dos argumentos numéricos"
+msgstr "E1222: \"String\" o \"List\" requerido para el argumento %d"
 
 #: ../errors.h:3131
 #, c-format
 msgid "E1223: String or Dictionary required for argument %d"
-msgstr ""
+msgstr "E1223: \"String\" o \"Dictionary\" requerido para el argumento %d"
 
 #: ../errors.h:3133
 #, c-format
 msgid "E1224: String, Number or List required for argument %d"
 msgstr ""
+"E1224: \"String\", \"Number\"  o \"List\" requeridos para el argumento %d"
 
 #: ../errors.h:3135
 #, c-format
 msgid "E1225: String, List or Dictionary required for argument %d"
 msgstr ""
+"E1225: \"String\", \"Number\"  o \"Dictionary\" requeridos para el argumento "
+"%d"
 
 #: ../errors.h:3137
-#, fuzzy, c-format
+#, c-format
 msgid "E1226: List or Blob required for argument %d"
-msgstr ""
-"E467: Las finalizaciones definidas por el usuario requieren de un argumento "
-"de función"
+msgstr "E1226: \"List\"  o \"Blob\" requerido para el argumento %d"
 
 #: ../errors.h:3139
-#, fuzzy, c-format
+#, c-format
 msgid "E1227: List or Dictionary required for argument %d"
-msgstr ""
-"E467: Las finalizaciones definidas por el usuario requieren de un argumento "
-"de función"
+msgstr "E1227: \"List\"  o \"Dictionary\" requerido para el argumento %d"
 
 #: ../errors.h:3141
 #, c-format
 msgid "E1228: List, Dictionary or Blob required for argument %d"
 msgstr ""
+"E1228: \"List\", \"Dictionary\" o \"Blob\" requeridos para el argumento %d"
 
 #: ../errors.h:3143
 #, c-format
 msgid "E1229: Expected dictionary for using key \"%s\", but got %s"
-msgstr ""
+msgstr "E1229: Diccionario esperado para usar la tecla \"%s\", pero obtuvo %s"
 
 #: ../errors.h:3147
 msgid "E1230: Encryption: sodium_mlock() failed"
-msgstr ""
+msgstr "E1230: Cifrado: sodium_mlock() falló"
 
 #: ../errors.h:3150
 #, c-format
 msgid "E1231: Cannot use a bar to separate commands here: %s"
-msgstr ""
+msgstr "E1231: No se puede usar una barra para separar comandos aquí: %s"
 
 #: ../errors.h:3153
-#, fuzzy
 msgid "E1232: Argument of exists_compiled() must be a literal string"
-msgstr "E712: El argumento de %s debe ser una lista o un diccionario"
+msgstr "E1232: El argumento de exist_compiled() debe ser una cadena literal"
 
 #: ../errors.h:3155
-#, fuzzy
 msgid "E1233: exists_compiled() can only be used in a :def function"
-msgstr "E785: complete() solo se puede usar en modo \"Insert\""
+msgstr "E1233: exist_compiled() solo se puede usar en una función :def"
 
 #: ../errors.h:3158
 msgid "E1234: legacy must be followed by a command"
-msgstr ""
+msgstr "E1234: \"legacy\" debe ir seguido de un comando"
 
 #: ../errors.h:3162
 #, c-format
 msgid "E1236: Cannot use %s itself, it is imported"
-msgstr ""
+msgstr "E1236: No se puede usar %s en sí mismo, es importado"
 
 #: ../errors.h:3165
-#, fuzzy, c-format
+#, c-format
 msgid "E1237: No such user-defined command in current buffer: %s"
-msgstr "E184: No existe esa orden definida por el usuario: %s"
+msgstr ""
+"E1237: No existe tal comando definido por el usuario en el búfer actual: %s"
 
 #: ../errors.h:3168
-#, fuzzy, c-format
+#, c-format
 msgid "E1238: Blob required for argument %d"
-msgstr "E466: \":winpos\" requiere de dos argumentos numéricos"
+msgstr "E1238: \"Blob\" requerido para el argumento %d"
 
 #: ../errors.h:3170
-#, fuzzy, c-format
+#, c-format
 msgid "E1239: Invalid value for blob: %d"
-msgstr "E178: El valor predeterminado para el recuento no es válido"
+msgstr "E1239: Valor no válido para \"blob\": %d"
 
 #: ../errors.h:3173
-#, fuzzy
 msgid "E1240: Resulting text too long"
-msgstr "E340: La línea se está haciendo demasiado larga"
+msgstr "E1240: Texto resultante demasiado largo"
 
 #: ../errors.h:3176
-#, fuzzy, c-format
+#, c-format
 msgid "E1241: Separator not supported: %s"
-msgstr "E519: Opción no admitida"
+msgstr "E1241: Separador no admitido: %s"
 
 #: ../errors.h:3178
 #, c-format
 msgid "E1242: No white space allowed before separator: %s"
-msgstr ""
+msgstr "E1242: No se permiten espacios en blanco antes del separador: %s"
 
 #: ../errors.h:3182
 msgid "E1243: ASCII code not in 32-127 range"
-msgstr ""
+msgstr "E1243: el código ASCII no está en el rango 32-127"
 
 #: ../errors.h:3187
-#, fuzzy, c-format
+#, c-format
 msgid "E1244: Bad color string: %s"
-msgstr "E383: La cadena de búsqueda no es válida: %s"
+msgstr "E1244: Cadena de color incorrecta: %s"
 
 #: ../errors.h:3190
 msgid "E1245: Cannot expand <sfile> in a Vim9 function"
-msgstr ""
+msgstr "E1245: No se puede expandir <sfile> en una función de Vim9"
 
 #: ../errors.h:3192
-#, fuzzy, c-format
+#, c-format
 msgid "E1246: Cannot find variable to (un)lock: %s"
-msgstr "E794: No se puede definir la variable en el \"sandbox\": \"%s\""
+msgstr "E1246: No se puede encontrar la variable para (des)bloquear: %s"
 
 #: ../errors.h:3195
-#, fuzzy
 msgid "E1247: Line number out of range"
-msgstr "El número de la línea está fuera del rango"
+msgstr "E1247: Número de línea fuera de rango"
 
 #: ../errors.h:3198
 msgid "E1248: Closure called from invalid context"
-msgstr ""
+msgstr "E1248: Cierre llamado desde un contexto no válido"
 
 #: ../errors.h:3201
-#, fuzzy
 msgid "E1249: Highlight group name too long"
-msgstr "E411: grupo de resaltado no encontrado: %s"
+msgstr "E1249: Nombre del grupo de resaltado demasiado largo"
 
 #: ../errors.h:3204
-#, fuzzy, c-format
+#, c-format
 msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
-msgstr "E712: El argumento de %s debe ser una lista o un diccionario"
+msgstr ""
+"E1250: El argumento de %s debe ser \"List\", \"String\", \"Dictionary\" o"
+" \"Blob\""
 
 #: ../errors.h:3206
 #, c-format
 msgid "E1251: List, Dictionary, Blob or String required for argument %d"
 msgstr ""
+"E1251: \"List\", \"Dictionary\", \"Blob\" o \"String\" requeridos para el"
+" argumento %d"
 
 #: ../errors.h:3208
 #, c-format
 msgid "E1252: String, List or Blob required for argument %d"
-msgstr ""
+msgstr "E1252: \"String\", \"List\" o \"Blob\" requeridos para el argumento %d"
 
 #: ../errors.h:3210
 #, c-format
 msgid "E1253: String expected for argument %d"
-msgstr ""
+msgstr "E1253: Cadena esperada para el argumento %d"
 
 #: ../errors.h:3212
-#, fuzzy
 msgid "E1254: Cannot use script variable in for loop"
-msgstr "E794: No se puede definir la variable en el \"sandbox\": \"%s\""
+msgstr "E1254: No se puede usar la variable de script en el bucle for"
 
 #: ../errors.h:3215
 msgid "E1255: <Cmd> mapping must end with <CR>"
-msgstr ""
+msgstr "E1255: La asignación <Cmd> debe terminar con <CR>"
 
 #: ../errors.h:3218
-#, fuzzy, c-format
+#, c-format
 msgid "E1256: String or function required for argument %d"
-msgstr ""
-"E467: Las finalizaciones definidas por el usuario requieren de un argumento "
-"de función"
+msgstr "E1256: \"String\" o función requerida para el argumento %d"
 
 #: ../errors.h:3220
 #, c-format
 msgid "E1257: Imported script must use \"as\" or end in .vim: %s"
-msgstr ""
+msgstr "E1257: El script importado debe usar \"as\" o terminar en .vim: %s"
 
 #: ../errors.h:3222
-#, fuzzy, c-format
+#, c-format
 msgid "E1258: No '.' after imported name: %s"
-msgstr "E252: Nombre del conjunto de tipos de letra: %s"
+msgstr "E1258: Sin '.' después del nombre importado: %s"
 
 #: ../errors.h:3224
-#, fuzzy, c-format
+#, c-format
 msgid "E1259: Missing name after imported name: %s"
-msgstr "E526: Falta el número después de <%s>"
+msgstr "E1259: Falta el nombre después del nombre importado: %s"
 
 #: ../errors.h:3226
-#, fuzzy, c-format
+#, c-format
 msgid "E1260: Cannot unlet an imported item: %s"
-msgstr "E810: No se puede leer o escribir en archivos temporales"
+msgstr "E1260: No se puede realizar \"unlet\" en un elemento importado: %s"
 
 #: ../errors.h:3228
 msgid "E1261: Cannot import .vim without using \"as\""
-msgstr ""
+msgstr "E1261: No se puede importar .vim sin usar \"as\""
 
 #: ../errors.h:3230
 #, c-format
 msgid "E1262: Cannot import the same script twice: %s"
-msgstr ""
+msgstr "E1262: No se puede importar el mismo script dos veces: %s"
 
 #: ../errors.h:3232
 msgid "E1263: cannot use name with # in Vim9 script, use export instead"
 msgstr ""
+"E1263: No se puede usar el nombre con \"#\" en el script de Vim9, use"
+" exportar en su lugar"
 
 #: ../errors.h:3234
 #, c-format
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
 msgstr ""
+"E1264: La importación \"Autoload\" no puede usar la ruta absoluta o relativa:"
+" %s"
 
 #: ../errors.h:3236
-#, fuzzy
 msgid "E1265: Cannot use a partial here"
-msgstr "E165: No se pudo ir más allá del último archivo"
+msgstr "E1265: No se puede usar un parcial aquí"
 
 #: ../errors.h:3240
 msgid ""
 "E1266: Critical error in python3 initialization, check your python3 "
 "installation"
 msgstr ""
+"E1266: error crítico en la inicialización de python3, verifique su "
+"instalación de python3"
 
 #: ../errors.h:3244
-#, fuzzy, c-format
+#, c-format
 msgid "E1267: Function name must start with a capital: %s"
-msgstr ""
-"E704: El nombre de una variable de Función de referencia debe empezar con "
-"mayúscula: %s"
+msgstr "E1267: El nombre de la función debe comenzar con mayúscula: %s"
 
 #: ../errors.h:3246
 #, c-format
 msgid "E1268: Cannot use s: in Vim9 script: %s"
-msgstr ""
+msgstr "E1268: No se puede usar \"s:\" en el script de Vim9: %s"
 
 #: ../errors.h:3248
-#, fuzzy, c-format
+#, c-format
 msgid "E1269: Cannot create a Vim9 script variable in a function: %s"
-msgstr "E794: No se puede definir la variable en el \"sandbox\": \"%s\""
+msgstr ""
+"E1269: No se puede crear una variable de script de Vim9 en una función: %s"
 
 #: ../errors.h:3251
 msgid "E1270: Cannot use :s\\/sub/ in Vim9 script"
-msgstr ""
+msgstr "E1270: No se puede usar :s\\/sub/ en el script de Vim9"
 
 #: ../errors.h:3254
 #, c-format
 msgid "E1271: compiling closure without context: %s"
-msgstr ""
+msgstr "E1271: Compilando cierre sin contexto: %s"
 
 #: ../errors.h:3256
-#, fuzzy, c-format
+#, c-format
 msgid "E1272: Using type not in a script context: %s"
-msgstr "E120: Usando <SID> en un contexto que no es de \"script\": %s"
+msgstr "E1272: Uso de tipo no en un script de contexto: %s"
 
 #: ../errors.h:3259
 #, c-format
 msgid "E1273: (NFA regexp) missing value in '\\%%%c'"
-msgstr ""
+msgstr "E1273: (NFA regexp) valor faltante en '\\%%%c'"
 
 #: ../errors.h:3261
-#, fuzzy
 msgid "E1274: No script file name to substitute for \"<script>\""
-msgstr ""
-"E498: No hay un nombre de archivo \":source\" que sustituya a \"<sfile>\""
+msgstr "E1274: No hay nombre de archivo de script para sustituir \"<script>\""
 
 #: ../errors.h:3264
-#, fuzzy
 msgid "E1275: String or function required for ->(expr)"
-msgstr "E179: se necesita un argumento para \"-complete\""
+msgstr "E1275: Cadena o función requerida para ->(expr)"
 
 #: ../globals.h:1403
 msgid "--No lines in buffer--"
@@ -10799,320 +10781,317 @@ msgid "search hit BOTTOM, continuing at TOP"
 msgstr "La búsqueda ha llegado al FINAL, continuando desde el PRINCIPIO"
 
 #: ../globals.h:1610
-#, fuzzy
 msgid " line "
-msgstr "1 línea, "
+msgstr " línea "
 
 #: ../globals.h:1614
-#, fuzzy, c-format
+#, c-format
 msgid "Need encryption key for \"%s\""
-msgstr "Introduzca la clave de cifrado: "
+msgstr "Necesita clave de cifrado para \"%s\""
 
 #: ../if_py_both.h:38
-#, fuzzy
 msgid "empty keys are not allowed"
-msgstr "E786: El rango no está permitido"
+msgstr "no se permiten claves vacías"
 
 #: ../if_py_both.h:39
-#, fuzzy
 msgid "dictionary is locked"
-msgstr "La opción 'dictionary' está vacía"
+msgstr "el diccionario esta bloqueado"
 
 #: ../if_py_both.h:40
 msgid "list is locked"
-msgstr ""
+msgstr "la lista está bloqueada"
 
 #: ../if_py_both.h:46
 #, c-format
 msgid "failed to add key '%s' to dictionary"
-msgstr ""
+msgstr "no se pudo agregar la clave '%s' al diccionario"
 
 #: ../if_py_both.h:48
 #, c-format
 msgid "index must be int or slice, not %s"
-msgstr ""
+msgstr "el índice debe ser \"int\" o \"slice\", no %s"
 
 #: ../if_py_both.h:148 ../if_py_both.h:4261
 #, c-format
 msgid "expected str() or unicode() instance, but got %s"
-msgstr ""
+msgstr "se esperaba una instancia de str() o unicode(), pero se obtuvo %s"
 
 #: ../if_py_both.h:152 ../if_py_both.h:4265
 #, c-format
 msgid "expected bytes() or str() instance, but got %s"
-msgstr ""
+msgstr "se esperaba Instancia de bytes() o str(), pero se obtuvo %s"
 
 #: ../if_py_both.h:202
 #, c-format
 msgid ""
 "expected int(), long() or something supporting coercing to long(), but got %s"
 msgstr ""
+"se esperaba int(), long() o algo que admita la coacción a long(), pero obtuvo"
+" %s"
 
 #: ../if_py_both.h:207
 #, c-format
 msgid "expected int() or something supporting coercing to int(), but got %s"
 msgstr ""
+"se esperaba int() o algo que admitiera la coacción a int(), pero obtuvo %s"
 
 #: ../if_py_both.h:219
 msgid "value is too large to fit into C int type"
-msgstr ""
+msgstr "el valor es demasiado grande para caber en el tipo C \"int\""
 
 #: ../if_py_both.h:225
 msgid "value is too small to fit into C int type"
-msgstr ""
+msgstr "el valor es demasiado pequeño para caber en el tipo C \"int\""
 
 #: ../if_py_both.h:235
 msgid "number must be greater than zero"
-msgstr ""
+msgstr "el número debe ser más grande que cero"
 
 #: ../if_py_both.h:244
 msgid "number must be greater or equal to zero"
-msgstr ""
+msgstr "el número debe ser más grande o igual a cero"
 
 #: ../if_py_both.h:337
 msgid "can't delete OutputObject attributes"
-msgstr "No se pueden borrar los atributos de \"OutputObject\""
+msgstr "no se pueden borrar los atributos de \"OutputObject\""
 
 #: ../if_py_both.h:348
-#, fuzzy, c-format
+#, c-format
 msgid "invalid attribute: %s"
-msgstr "Atributo no válido"
+msgstr "atributo no válido: %s"
 
 #: ../if_py_both.h:1032
-#, fuzzy
 msgid "failed to change directory"
-msgstr "es un directorio"
+msgstr "no se pudo cambiar el directorio"
 
 #: ../if_py_both.h:1249
 #, c-format
 msgid "expected 3-tuple as imp.find_module() result, but got %s"
-msgstr ""
+msgstr "esperaba 3 tuplas como resultado de imp.find_module(), pero obtuvo %s"
 
 #: ../if_py_both.h:1256
 #, c-format
 msgid "expected 3-tuple as imp.find_module() result, but got tuple of size %d"
 msgstr ""
+"se esperaba una tupla de 3 como resultado de imp.find_module(), pero obtuvo"
+" una tupla de tamaño %d"
 
 #: ../if_py_both.h:1267
 msgid "internal error: imp.find_module returned tuple with NULL"
-msgstr ""
+msgstr "error interno: imp.find_module devolvió una tupla con NULL"
 
 #: ../if_py_both.h:1659
-#, fuzzy
 msgid "cannot delete vim.Dictionary attributes"
-msgstr "No se pueden borrar los atributos de \"OutputObject\""
+msgstr "no se pueden eliminar los atributos de vim.Dictionary"
 
 #: ../if_py_both.h:1668
-#, fuzzy
 msgid "cannot modify fixed dictionary"
-msgstr "Buscando en el diccionario: %s"
+msgstr "no se puede modificar el diccionario fijo"
 
 # ???
 #: ../if_py_both.h:1685 ../if_py_both.h:2901
-#, fuzzy, c-format
+#, c-format
 msgid "cannot set attribute %s"
-msgstr "No se puede(n) definir la/s línea/s"
+msgstr "no se puede establecer el atributo %s"
 
 #: ../if_py_both.h:1821
 msgid "hashtab changed during iteration"
-msgstr ""
+msgstr "\"hashtab\" cambió durante la iteración"
 
 #: ../if_py_both.h:2096
 #, c-format
 msgid "expected sequence element of size 2, but got sequence of size %d"
 msgstr ""
+"elemento de secuencia esperado de tamaño 2, pero se obtuvo una "
+"secuencia de tamaño %d"
 
 #: ../if_py_both.h:2342
 msgid "list constructor does not accept keyword arguments"
-msgstr ""
+msgstr "constructor de listas no acepta argumentos de palabras clave"
 
 #: ../if_py_both.h:2397 ../if_py_both.h:2700
-#, fuzzy
 msgid "list index out of range"
-msgstr "El número de la línea está fuera del rango"
+msgstr "índice de lista fuera de rango"
 
 #. No more suitable format specifications in python-2.3
 #: ../if_py_both.h:2404 ../if_py_both.h:2709 ../if_py_both.h:2736
 #, c-format
 msgid "internal error: failed to get Vim list item %d"
-msgstr ""
+msgstr "error interno: no se pudo obtener el elemento de la lista de Vim %d"
 
 #: ../if_py_both.h:2420 ../if_py_both.h:2524
 msgid "slice step cannot be zero"
-msgstr ""
+msgstr "el paso de corte no puede ser cero"
 
 #: ../if_py_both.h:2542 ../if_py_both.h:2647
 #, c-format
 msgid "attempt to assign sequence of size greater than %d to extended slice"
 msgstr ""
+"intente asignar una secuencia de tamaño mayor que %d a un segmento extendido"
 
 #: ../if_py_both.h:2566
 #, c-format
 msgid "internal error: no Vim list item %d"
-msgstr ""
+msgstr "error interno: ningún elemento de la lista de Vim %d"
 
 #: ../if_py_both.h:2591
 msgid "internal error: not enough list items"
-msgstr ""
+msgstr "error interno: no hay suficientes elementos de lista"
 
 #: ../if_py_both.h:2623
 msgid "internal error: failed to add item to list"
-msgstr ""
+msgstr "error interno: no se pudo agregar el elemento a la lista"
 
 #: ../if_py_both.h:2660
 #, c-format
 msgid "attempt to assign sequence of size %d to extended slice of size %d"
 msgstr ""
+"intente asignar una secuencia de tamaño %d a una porción extendida de tamaño "
+"%d"
 
 #: ../if_py_both.h:2727
 msgid "failed to add item to list"
-msgstr ""
+msgstr "no se pudo agregar el elemento a la lista"
 
 #: ../if_py_both.h:2876
-#, fuzzy
 msgid "cannot delete vim.List attributes"
-msgstr "No se pueden borrar los atributos de \"OutputObject\""
+msgstr "no se pueden eliminar los atributos de vim.List"
 
 #: ../if_py_both.h:2884
 msgid "cannot modify fixed list"
-msgstr ""
+msgstr "no se puede modificar la lista fija"
 
 #: ../if_py_both.h:2962
-#, fuzzy, c-format
+#, c-format
 msgid "unnamed function %s does not exist"
-msgstr "No existe el archivo \"%s\""
+msgstr "la función sin nombre %s no existe"
 
 #: ../if_py_both.h:2975
-#, fuzzy, c-format
+#, c-format
 msgid "function %s does not exist"
-msgstr "No existe el archivo \"%s\""
+msgstr "la funcion %s no existe"
 
 #: ../if_py_both.h:3244
-#, fuzzy, c-format
+#, c-format
 msgid "failed to run function %s"
-msgstr "E123: Función indefinida: %s"
+msgstr "no se pudo ejecutar la función %s"
 
 #: ../if_py_both.h:3434
-#, fuzzy
 msgid "unable to get option value"
-msgstr "Basura después de la opción"
+msgstr "no se puede obtener el valor de la opción"
 
 #: ../if_py_both.h:3440
 msgid "internal error: unknown option type"
-msgstr ""
+msgstr "error interno: tipo de opción desconocido"
 
 #: ../if_py_both.h:3546
 msgid "problem while switching windows"
-msgstr ""
+msgstr "problema al cambiar de ventanas"
 
 #: ../if_py_both.h:3603
 #, c-format
 msgid "unable to unset global option %s"
-msgstr ""
+msgstr "no se puede desactivar la opción global %s"
 
 #: ../if_py_both.h:3610
 #, c-format
 msgid "unable to unset option %s which does not have global value"
-msgstr ""
+msgstr "no se puede desactivar la opción %s que no tiene un valor global"
 
 #: ../if_py_both.h:3704
-#, fuzzy
 msgid "attempt to refer to deleted tab page"
-msgstr "Intento de referirse a un búfer suprimido"
+msgstr "intentó hacer referencia a la pestaña eliminada"
 
 #: ../if_py_both.h:3847
-#, fuzzy
 msgid "no such tab page"
-msgstr "No existe tal búfer"
+msgstr "No existe tal pestaña"
 
 #: ../if_py_both.h:3869
 msgid "attempt to refer to deleted window"
 msgstr "Intento de referirse a una ventana suprimida"
 
 #: ../if_py_both.h:4042
-#, fuzzy
 msgid "readonly attribute: buffer"
-msgstr "Atributo de solo lectura"
+msgstr "atributo de solo lectura: búfer"
 
 #: ../if_py_both.h:4055
 msgid "cursor position outside buffer"
-msgstr "Posición del cursor fuera del búfer"
+msgstr "posición del cursor fuera del búfer"
 
 #: ../if_py_both.h:4215
 msgid "no such window"
-msgstr "No existe tal ventana"
+msgstr "no existe tal ventana"
 
 #: ../if_py_both.h:4850
 msgid "attempt to refer to deleted buffer"
-msgstr "Intento de referirse a un búfer suprimido"
+msgstr "intento de referirse a un búfer suprimido"
 
 #: ../if_py_both.h:5294
-#, fuzzy
 msgid "failed to rename buffer"
-msgstr "E222: Añadir al búfer de lectura"
+msgstr "no se pudo cambiar el nombre del búfer"
 
 #: ../if_py_both.h:5330
 msgid "mark name must be a single character"
-msgstr ""
+msgstr "el nombre de la marca debe ser un solo carácter"
 
 #: ../if_py_both.h:5573
 #, c-format
 msgid "expected vim.Buffer object, but got %s"
-msgstr ""
+msgstr "se esperaba el objeto vim.Buffer, pero se obtuvo %s"
 
 #: ../if_py_both.h:5587
 #, c-format
 msgid "failed to switch to buffer %d"
-msgstr ""
+msgstr "no se pudo cambiar al búfer %d"
 
 #: ../if_py_both.h:5600
 #, c-format
 msgid "expected vim.Window object, but got %s"
-msgstr ""
+msgstr "se esperaba el objeto vim.Window, pero se obtuvo %s"
 
 #: ../if_py_both.h:5612
 msgid "failed to find window in the current tab page"
-msgstr ""
+msgstr "no se pudo encontrar la ventana en la página de la pestaña actual"
 
 #: ../if_py_both.h:5623
 msgid "did not switch to the specified window"
-msgstr ""
+msgstr "no cambió a la ventana especificada"
 
 #: ../if_py_both.h:5634
 #, c-format
 msgid "expected vim.TabPage object, but got %s"
-msgstr ""
+msgstr "se esperaba el objeto vim.TabPage, pero se obtuvo %s"
 
 #: ../if_py_both.h:5649
 msgid "did not switch to the specified tab page"
-msgstr ""
+msgstr "no cambió a la página de pestaña especificada"
 
 #: ../if_py_both.h:5753
 msgid "failed to run the code"
-msgstr ""
+msgstr "no se pudo ejecutar el código"
 
 #: ../if_py_both.h:6190
 #, c-format
 msgid "unable to convert %s to a Vim dictionary"
-msgstr ""
+msgstr "no se puede convertir %s a un diccionario Vim"
 
 #: ../if_py_both.h:6219
-#, fuzzy, c-format
+#, c-format
 msgid "unable to convert %s to a Vim list"
-msgstr "E620: No se pudo convertir a la codificación de impresión \"%s\""
+msgstr "no se puede convertir %s a una lista de Vim"
 
 #: ../if_py_both.h:6364
 #, c-format
 msgid "unable to convert %s to a Vim structure"
-msgstr ""
+msgstr "no se puede convertir %s a una estructura Vim"
 
 #: ../if_py_both.h:6378
 msgid "internal error: NULL reference passed"
-msgstr ""
+msgstr "error interno: se pasó la referencia NULL"
 
 #: ../if_py_both.h:6437
 msgid "internal error: invalid value type"
-msgstr ""
+msgstr "error interno: tipo de valor no válido"
 
 #: ../if_py_both.h:6749
 msgid ""
@@ -11121,22 +11100,30 @@ msgid ""
 "- append vim.path_hook to sys.path_hooks\n"
 "- append vim.VIM_SPECIAL_PATH to sys.path\n"
 msgstr ""
+"No se pudo establecer el \"hook\" de ruta: sys.path_hooks no es una lista\n"
+"Ahora debe hacer lo siguiente:\n"
+"- agregar vim.path_hook a sys.path_hooks\n"
+"- agregar vim.VIM_SPECIAL_PATH a sys.path\n"
 
 #: ../if_py_both.h:6779
 msgid ""
 "Failed to set path: sys.path is not a list\n"
 "You should now append vim.VIM_SPECIAL_PATH to sys.path"
 msgstr ""
+"No se pudo establecer la ruta: sys.path no es una lista\n"
+"Ahora debe agregar vim.VIM_SPECIAL_PATH a sys.path"
 
 #: ../vim.h:2301
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*.*)\t*.*\n"
 msgstr ""
+"Archivos de macros Vim (*.vim)\t*.vim\n"
+"Todos los archivos (*.*)\t*.*\n"
 
 #: ../vim.h:2302
 msgid "All Files (*.*)\t*.*\n"
-msgstr ""
+msgstr "Todos los archivos (*.*)\t*.*\n"
 
 #: ../vim.h:2304
 msgid ""
@@ -11146,16 +11133,23 @@ msgid ""
 "VB code (*.bas, *.frm)\t*.bas;*.frm\n"
 "Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 msgstr ""
+"Todos los archivos (*.*)\t*.*\n"
+"Fuente C (*.c, *.h)\t*.c;*.h\n"
+"Fuente C++ (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"Código VB (*.bas, *.frm)\t*.bas;*.frm\n"
+"Archivos Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
 #: ../vim.h:2307
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*)\t*\n"
 msgstr ""
+"Archivos de macros Vim (*.vim)\t*.vim\n"
+"Todos los archivos (*)\t*\n"
 
 #: ../vim.h:2308
 msgid "All Files (*)\t*\n"
-msgstr ""
+msgstr "Todos los archivos (*)\t*\n"
 
 #: ../vim.h:2310
 msgid ""
@@ -11164,539 +11158,564 @@ msgid ""
 "C++ source (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 msgstr ""
+"Todos los archivos (*)\t*\n"
+"Fuente C (*.c, *.h)\t*.c;*.h\n"
+"Fuente C++ (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
+"Archivos Vim (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
 #. Translators: This is the Application Name used in the GVim desktop file
 #: gvim.desktop.in:6
 msgid "GVim"
-msgstr ""
+msgstr "GVim"
 
 #. Translators: This is the Generic Application Name used in the Vim desktop file
 #: gvim.desktop.in:8 vim.desktop.in:8
 msgid "Text Editor"
-msgstr ""
+msgstr "Editor de texto"
 
 #. Translators: This is the comment used in the Vim desktop file
 #: gvim.desktop.in:10 vim.desktop.in:10
-#, fuzzy
 msgid "Edit text files"
-msgstr "Editar archivo"
+msgstr "Editar archivos de texto"
 
 #. Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
 #: gvim.desktop.in:79 vim.desktop.in:79
 msgid "Text;editor;"
-msgstr ""
+msgstr "Texto;editor;"
 
 #. Translators: This is the Application Name used in the Vim desktop file
 #: vim.desktop.in:6
 msgid "Vim"
-msgstr ""
+msgstr "Vim"
 
 #: ../../runtime/optwin.vim:72
-#, fuzzy
 msgid "(local to window)"
-msgstr "Solo hay una ventana"
+msgstr "(local a ventana)"
 
 #: ../../runtime/optwin.vim:73
 msgid "(local to buffer)"
-msgstr ""
+msgstr "(local a búfer)"
 
 #: ../../runtime/optwin.vim:74
 msgid "(global or local to buffer)"
-msgstr ""
+msgstr "(global o local a búfer)"
 
 #: ../../runtime/optwin.vim:153
 msgid ""
 "\" Each \"set\" line shows the current value of an option (on the left)."
 msgstr ""
+"\" Cada línea \"set\" muestra el valor actual de una opción (a la izquierda)."
 
 #: ../../runtime/optwin.vim:154
 msgid "\" Hit <Enter> on a \"set\" line to execute it."
-msgstr ""
+msgstr "\" Pulse <Intro> en una línea \"set\" para ejecutarla."
 
 #: ../../runtime/optwin.vim:155
 msgid "\"            A boolean option will be toggled."
-msgstr ""
+msgstr "\"            Se alternará una opción booleana."
 
 #: ../../runtime/optwin.vim:156
 msgid ""
 "\"            For other options you can edit the value before hitting "
 "<Enter>."
 msgstr ""
+"\"            Para otras opciones, puede editar el valor antes de pulsar "
+"<Intro>."
 
 #: ../../runtime/optwin.vim:157
 msgid "\" Hit <Enter> on a help line to open a help window on this option."
 msgstr ""
+"\" Pulse <Intro>  en una línea de ayuda para abrir una ventana de ayuda de"
+" esta opción."
 
 #: ../../runtime/optwin.vim:158
 msgid "\" Hit <Enter> on an index line to jump there."
-msgstr ""
+msgstr "\" Pulse <Intro> en una línea del índice para saltar allí."
 
 #: ../../runtime/optwin.vim:159
 msgid "\" Hit <Space> on a \"set\" line to refresh it."
-msgstr ""
+msgstr "\" Pulse <Espacio> en una línea \"set\" para actualizarla."
 
 #: ../../runtime/optwin.vim:228
 msgid "important"
-msgstr ""
+msgstr "importante"
 
 #: ../../runtime/optwin.vim:229
 msgid "behave very Vi compatible (not advisable)"
-msgstr ""
+msgstr "comportarse muy compatible con Vi (no aconsejable)"
 
 #: ../../runtime/optwin.vim:231
 msgid "list of flags to specify Vi compatibility"
-msgstr ""
+msgstr "lista de indicadores para especificar la compatibilidad con Vi"
 
 #: ../../runtime/optwin.vim:233
 msgid "use Insert mode as the default mode"
-msgstr ""
+msgstr "usar el modo Insertar como el modo predeterminado"
 
 #: ../../runtime/optwin.vim:235
 msgid "paste mode, insert typed text literally"
-msgstr ""
+msgstr "modo pegar, inserta el texto escrito literalmente"
 
 #: ../../runtime/optwin.vim:237
 msgid "key sequence to toggle paste mode"
-msgstr ""
+msgstr "secuencia de teclas para alternar el modo de pegado"
 
 #: ../../runtime/optwin.vim:243
 msgid "list of directories used for runtime files and plugins"
 msgstr ""
+"lista de directorios utilizados para archivos \"runtime\" y complementos"
 
 #: ../../runtime/optwin.vim:245
 msgid "list of directories used for plugin packages"
-msgstr ""
+msgstr "lista de directorios utilizados para paquetes de complementos"
 
 #: ../../runtime/optwin.vim:247
 msgid "name of the main help file"
-msgstr ""
+msgstr "nombre del archivo de ayuda principal"
 
 #: ../../runtime/optwin.vim:251
 msgid "moving around, searching and patterns"
-msgstr ""
+msgstr "moverse, buscar y patrones"
 
 #: ../../runtime/optwin.vim:252
 msgid "list of flags specifying which commands wrap to another line"
 msgstr ""
+"lista de indicadores que especifican qué comandos se ajustan a otra línea"
 
 #: ../../runtime/optwin.vim:254
 msgid ""
 "many jump commands move the cursor to the first non-blank\n"
 "character of a line"
 msgstr ""
+"muchos comandos de salto mueven el cursor al primer caracter de una línea\n"
+"que no sea un caracter en blanco"
 
 #: ../../runtime/optwin.vim:256
 msgid "nroff macro names that separate paragraphs"
-msgstr ""
+msgstr "nroff nombres de macros que separan párrafos"
 
 #: ../../runtime/optwin.vim:258
 msgid "nroff macro names that separate sections"
-msgstr ""
+msgstr "nroff nombres de macros que separan secciones"
 
 #: ../../runtime/optwin.vim:260
 msgid "list of directory names used for file searching"
-msgstr ""
+msgstr "lista de nombres de directorio utilizados para la búsqueda de archivos"
 
 #: ../../runtime/optwin.vim:263
 msgid ":cd without argument goes to the home directory"
-msgstr ""
+msgstr ":cd sin argumento va al directorio \"home\""
 
 #: ../../runtime/optwin.vim:265
 msgid "list of directory names used for :cd"
-msgstr ""
+msgstr "lista de nombres de directorio usados ​​para :cd"
 
 #: ../../runtime/optwin.vim:268
 msgid "change to directory of file in buffer"
-msgstr ""
+msgstr "cambiar al directorio del archivo en el búfer"
 
 #: ../../runtime/optwin.vim:271
 msgid "change to pwd of shell in terminal buffer"
-msgstr ""
+msgstr "cambiar a \"pwd\" de \"Shell\" en el búfer de terminal"
 
 #: ../../runtime/optwin.vim:273
 msgid "search commands wrap around the end of the buffer"
-msgstr ""
+msgstr "los comandos de búsqueda se ajustan al final del búfer"
 
 #: ../../runtime/optwin.vim:275
 msgid "show match for partly typed search command"
-msgstr ""
+msgstr "mostrar coincidencias para el comando de búsqueda escrito parcialmente"
 
 #: ../../runtime/optwin.vim:277
 msgid "change the way backslashes are used in search patterns"
 msgstr ""
+"cambiar la forma en que se usan las barras invertidas en los patrones de"
+" búsqueda"
 
 #: ../../runtime/optwin.vim:279
 msgid "select the default regexp engine used"
-msgstr ""
+msgstr "seleccionar el motor \"regexp\" predeterminado utilizado"
 
 #: ../../runtime/optwin.vim:281
 msgid "ignore case when using a search pattern"
-msgstr ""
+msgstr "ignorar mayúsculas y minúsculas cuando se usa un patrón de búsqueda"
 
 #: ../../runtime/optwin.vim:283
 msgid "override 'ignorecase' when pattern has upper case characters"
-msgstr ""
+msgstr "anular 'ignorecase' cuando el patrón tiene caracteres en mayúsculas"
 
 #: ../../runtime/optwin.vim:285
 msgid "what method to use for changing case of letters"
-msgstr ""
+msgstr "qué método usar para cambiar mayúsculas y minúsculas"
 
 #: ../../runtime/optwin.vim:287
 msgid "maximum amount of memory in Kbyte used for pattern matching"
 msgstr ""
+"cantidad máxima de memoria en Kbyte utilizada para la coincidencia de patrones"
 
 #: ../../runtime/optwin.vim:289
 msgid "pattern for a macro definition line"
-msgstr ""
+msgstr "patrón para una línea de definición de macro"
 
 #: ../../runtime/optwin.vim:293
-#, fuzzy
 msgid "pattern for an include-file line"
-msgstr "Patrón encontrado en cada línea: %s"
+msgstr "patrón para una línea de \"include-file\""
 
 #: ../../runtime/optwin.vim:296
 msgid "expression used to transform an include line to a file name"
 msgstr ""
+"expresión utilizada para transformar una línea de inclusión en un nombre de"
+" archivo"
 
 #: ../../runtime/optwin.vim:302
 msgid "tags"
-msgstr ""
+msgstr "etiquetas"
 
 #: ../../runtime/optwin.vim:303
-#, fuzzy
 msgid "use binary searching in tags files"
-msgstr "Buscando el archivo de etiquetas %s"
+msgstr "usar búsqueda binaria en archivos de etiquetas"
 
 #: ../../runtime/optwin.vim:305
 msgid "number of significant characters in a tag name or zero"
-msgstr ""
+msgstr "número de caracteres significativos en un nombre de etiqueta o cero"
 
 #: ../../runtime/optwin.vim:307
 msgid "list of file names to search for tags"
-msgstr ""
+msgstr "lista de nombres de archivo para buscar etiquetas"
 
 #: ../../runtime/optwin.vim:310
 msgid ""
 "how to handle case when searching in tags files:\n"
 "\"followic\" to follow 'ignorecase', \"ignore\" or \"match\""
 msgstr ""
+"cómo manejar mayúsculas y minúsculas al buscar en archivos de etiquetas:\n"
+"\"followic\" para seguir 'ignorecase', \"ignore\" o \"match\""
 
 #: ../../runtime/optwin.vim:313
 msgid "file names in a tags file are relative to the tags file"
 msgstr ""
+"los nombres de archivo en un archivo de etiquetas son relativos al archivo de"
+" etiquetas"
 
 #: ../../runtime/optwin.vim:315
 msgid "a :tag command will use the tagstack"
-msgstr ""
+msgstr "un comando :tag usará la pila de etiquetas (tagstack)"
 
 #: ../../runtime/optwin.vim:317
 msgid "when completing tags in Insert mode show more info"
-msgstr ""
+msgstr "al completar etiquetas en el modo Insertar mostrar más información"
 
 #: ../../runtime/optwin.vim:320
 msgid "a function to be used to perform tag searches"
-msgstr ""
+msgstr "una función que se utilizará para realizar búsquedas de etiquetas"
 
 #: ../../runtime/optwin.vim:325
 msgid "command for executing cscope"
-msgstr ""
+msgstr "comando para ejecutar \"cscope\""
 
 #: ../../runtime/optwin.vim:327
-#, fuzzy
 msgid "use cscope for tag commands"
-msgstr "órdenes de \"cscope\":\n"
+msgstr "use \"cscope\" para comandos de etiquetas"
 
 #: ../../runtime/optwin.vim:329
 msgid "0 or 1; the order in which \":cstag\" performs a search"
-msgstr ""
+msgstr "0 o 1; el orden en que \":cstag\" realiza una búsqueda"
 
 #: ../../runtime/optwin.vim:331
 msgid "give messages when adding a cscope database"
-msgstr ""
+msgstr "dar mensajes al agregar una base de datos \"cscope\""
 
 #: ../../runtime/optwin.vim:333
 msgid "how many components of the path to show"
-msgstr ""
+msgstr "cuántos componentes de la ruta mostrar"
 
 #: ../../runtime/optwin.vim:335
 msgid "when to open a quickfix window for cscope"
-msgstr ""
+msgstr "cuándo abrir una ventana \"quickfix\" para \"cscope\""
 
 #: ../../runtime/optwin.vim:337
 msgid "file names in a cscope file are relative to that file"
 msgstr ""
+"los nombres de archivo en un archivo \"cscope\" son relativos a ese archivo"
 
 #: ../../runtime/optwin.vim:342
 msgid "displaying text"
-msgstr ""
+msgstr "mostrando texto"
 
 #: ../../runtime/optwin.vim:343
 msgid "number of lines to scroll for CTRL-U and CTRL-D"
-msgstr ""
+msgstr "número de líneas para desplazarse para CTRL-U y CTRL-D"
 
 #: ../../runtime/optwin.vim:346
 msgid "number of screen lines to show around the cursor"
-msgstr ""
+msgstr "número de líneas de pantalla para mostrar alrededor del cursor"
 
 #: ../../runtime/optwin.vim:348
-#, fuzzy
 msgid "long lines wrap"
-msgstr "[se han dividido las líneas largas]"
+msgstr "se han dividido las líneas largas"
 
 #: ../../runtime/optwin.vim:351
 msgid "wrap long lines at a character in 'breakat'"
-msgstr ""
+msgstr "divididas las líneas largas en un carater en 'breakat'"
 
 #: ../../runtime/optwin.vim:354
 msgid "preserve indentation in wrapped text"
-msgstr ""
+msgstr "preservar el sangrad en el texto dividido"
 
 #: ../../runtime/optwin.vim:357
 msgid "adjust breakindent behaviour"
-msgstr ""
+msgstr "ajustar el comportamiento \"breakindent\""
 
 #: ../../runtime/optwin.vim:360
 msgid "which characters might cause a line break"
-msgstr ""
+msgstr "qué caracteres pueden causar un salto de línea"
 
 #: ../../runtime/optwin.vim:362
 msgid "string to put before wrapped screen lines"
-msgstr ""
+msgstr "cadena para poner antes de las líneas de pantalla divididas"
 
 #: ../../runtime/optwin.vim:364
 msgid "minimal number of columns to scroll horizontally"
-msgstr ""
+msgstr "número mínimo de columnas para desplazarse horizontalmente"
 
 #: ../../runtime/optwin.vim:366
 msgid "minimal number of columns to keep left and right of the cursor"
 msgstr ""
+"número mínimo de columnas para mantener la izquierda y la derecha del cursor"
 
 #: ../../runtime/optwin.vim:368
 msgid ""
 "include \"lastline\" to show the last line even if it doesn't fit\n"
 "include \"uhex\" to show unprintable characters as a hex number"
 msgstr ""
+"incluya \"lastline\" para mostrar la última línea incluso si no encaja\n"
+"incluya \"uhex\" para mostrar caracteres no imprimibles como un número"
+" hexadecimal"
 
 #: ../../runtime/optwin.vim:370
 msgid "characters to use for the status line, folds and filler lines"
 msgstr ""
+"caracteres a utilizar para la línea de estado, los pliegues y las líneas de"
+" relleno"
 
 #: ../../runtime/optwin.vim:372
 msgid "number of lines used for the command-line"
-msgstr ""
+msgstr "número de líneas utilizadas para la línea de comandos"
 
 #: ../../runtime/optwin.vim:374
-#, fuzzy
 msgid "width of the display"
-msgstr "No hay una ventana"
+msgstr "ancho de la pantalla"
 
 #: ../../runtime/optwin.vim:376
 msgid "number of lines in the display"
-msgstr ""
+msgstr "número de líneas en la pantalla"
 
 #: ../../runtime/optwin.vim:378
 msgid "number of lines to scroll for CTRL-F and CTRL-B"
-msgstr ""
+msgstr "número de líneas para desplazarse para CTRL-F y CTRL-B"
 
 #: ../../runtime/optwin.vim:380
 msgid "don't redraw while executing macros"
-msgstr ""
+msgstr "no redibujar mientras se ejecutan macros"
 
 #: ../../runtime/optwin.vim:383
 msgid "timeout for 'hlsearch' and :match highlighting in msec"
-msgstr ""
+msgstr "tiempo de espera para el resaltado 'hlsearch' y :match en mseg"
 
 #: ../../runtime/optwin.vim:386
 msgid ""
 "delay in msec for each char written to the display\n"
 "(for debugging)"
 msgstr ""
+"retraso en ms por cada carácter escrito en la pantalla\n"
+"(para la depuración)"
 
 #: ../../runtime/optwin.vim:388
 msgid "show <Tab> as ^I and end-of-line as $"
-msgstr ""
+msgstr "mostrar <Tab> como ^I y fin de línea como $"
 
 #: ../../runtime/optwin.vim:391
 msgid "list of strings used for list mode"
-msgstr ""
+msgstr "lista de cadenas utilizadas para el modo de lista"
 
 #: ../../runtime/optwin.vim:393
-#, fuzzy
 msgid "show the line number for each line"
-msgstr " líneas antes de la línea superior"
+msgstr "mostrar el número de línea para cada línea"
 
 #: ../../runtime/optwin.vim:396
 msgid "show the relative line number for each line"
-msgstr ""
+msgstr "mostrar el número de línea relativo para cada línea"
 
 #: ../../runtime/optwin.vim:400
 msgid "number of columns to use for the line number"
-msgstr ""
+msgstr "número de columnas a usar para el número de línea"
 
 #: ../../runtime/optwin.vim:405
 msgid "controls whether concealable text is hidden"
-msgstr ""
+msgstr "controla si el texto ocultable está oculto"
 
 #: ../../runtime/optwin.vim:408
 msgid "modes in which text in the cursor line can be concealed"
-msgstr ""
+msgstr "modos en los que se puede ocultar el texto en la línea del cursor"
 
 #: ../../runtime/optwin.vim:414
 msgid "syntax, highlighting and spelling"
-msgstr ""
+msgstr "sintaxis, resaltado y ortografía"
 
 #: ../../runtime/optwin.vim:415
 msgid "\"dark\" or \"light\"; the background color brightness"
-msgstr ""
+msgstr "\"dark\" o \"light\"; el brillo del color de fondo"
 
 #: ../../runtime/optwin.vim:417
 msgid "type of file; triggers the FileType event when set"
-msgstr ""
+msgstr "tipo de archivo; desencadena el evento FileType cuando se establece"
 
 #: ../../runtime/optwin.vim:421
 msgid "name of syntax highlighting used"
-msgstr ""
+msgstr "nombre del resaltado de sintaxis utilizado"
 
 #: ../../runtime/optwin.vim:424
 msgid "maximum column to look for syntax items"
-msgstr ""
+msgstr "columna máxima para buscar elementos de sintaxis"
 
 #: ../../runtime/optwin.vim:428
 msgid "which highlighting to use for various occasions"
-msgstr ""
+msgstr "qué resaltado usar para varias ocasiones"
 
 #: ../../runtime/optwin.vim:430
 msgid "highlight all matches for the last used search pattern"
 msgstr ""
+"resaltar todas las coincidencias para el último patrón de búsqueda utilizado"
 
 #: ../../runtime/optwin.vim:432
-#, fuzzy
 msgid "highlight group to use for the window"
-msgstr "E411: grupo de resaltado no encontrado: %s"
+msgstr "grupo de resaltado a usar para la ventana"
 
 #: ../../runtime/optwin.vim:436
 msgid "use GUI colors for the terminal"
-msgstr ""
+msgstr "usar colores de la interfaz gráfica (GUI) para la terminal"
 
 #: ../../runtime/optwin.vim:440
 msgid "highlight the screen column of the cursor"
-msgstr ""
+msgstr "resaltar la columna de la pantalla del cursor"
 
 #: ../../runtime/optwin.vim:443
 msgid "highlight the screen line of the cursor"
-msgstr ""
+msgstr "resaltar la línea de pantalla del cursor"
 
 #: ../../runtime/optwin.vim:446
 msgid "specifies which area 'cursorline' highlights"
-msgstr ""
+msgstr "especifica qué área resalta 'cursorline'"
 
 #: ../../runtime/optwin.vim:449
 msgid "columns to highlight"
-msgstr ""
+msgstr "columnas para resaltar"
 
 #: ../../runtime/optwin.vim:452
 msgid "highlight spelling mistakes"
-msgstr ""
+msgstr "resaltar errores ortográficos"
 
 #: ../../runtime/optwin.vim:455
 msgid "list of accepted languages"
-msgstr ""
+msgstr "lista de idiomas aceptados"
 
 #: ../../runtime/optwin.vim:458
 msgid "file that \"zg\" adds good words to"
-msgstr ""
+msgstr "archivo al que \"zg\" añade las palabras correctas"
 
 #: ../../runtime/optwin.vim:461
 msgid "pattern to locate the end of a sentence"
-msgstr ""
+msgstr "patrón para ubicar el final de una frase"
 
 #: ../../runtime/optwin.vim:464
 msgid "flags to change how spell checking works"
-msgstr ""
+msgstr "opciones para cambiar cómo funciona la revisión ortográfica"
 
 #: ../../runtime/optwin.vim:467
 msgid "methods used to suggest corrections"
-msgstr ""
+msgstr "métodos utilizados para sugerir correcciones"
 
 #: ../../runtime/optwin.vim:469
 msgid "amount of memory used by :mkspell before compressing"
-msgstr ""
+msgstr "cantidad de memoria usada por :mkspell antes de comprimir"
 
 #: ../../runtime/optwin.vim:474
 msgid "multiple windows"
-msgstr ""
+msgstr "ventanas múltiples"
 
 #: ../../runtime/optwin.vim:475
 msgid "0, 1 or 2; when to use a status line for the last window"
-msgstr ""
+msgstr "0, 1 o 2; cuándo usar una línea de estado para la última ventana"
 
 #: ../../runtime/optwin.vim:478
 msgid "alternate format to be used for a status line"
-msgstr ""
+msgstr "formato alternativo que se utilizará para una línea de estado"
 
 #: ../../runtime/optwin.vim:481
 msgid "make all windows the same size when adding/removing windows"
 msgstr ""
+"hace que todas las ventanas tengan el mismo tamaño al agregar/eliminar"
+" ventanas"
 
 #: ../../runtime/optwin.vim:483
 msgid "in which direction 'equalalways' works: \"ver\", \"hor\" or \"both\""
-msgstr ""
+msgstr "en qué dirección funciona 'equalalways': \"ver\", \"hor\" o \"both\""
 
 #: ../../runtime/optwin.vim:485
 msgid "minimal number of lines used for the current window"
-msgstr ""
+msgstr "número mínimo de líneas utilizadas para la ventana actual"
 
 #: ../../runtime/optwin.vim:487
 msgid "minimal number of lines used for any window"
-msgstr ""
+msgstr "número mínimo de líneas utilizadas para cualquier ventana"
 
 #: ../../runtime/optwin.vim:489
 msgid "keep the height of the window"
-msgstr ""
+msgstr "mantener la altura de la ventana"
 
 #: ../../runtime/optwin.vim:492
 msgid "keep the width of the window"
-msgstr ""
+msgstr "mantener el ancho de la ventana"
 
 #: ../../runtime/optwin.vim:495
 msgid "minimal number of columns used for the current window"
-msgstr ""
+msgstr "número mínimo de columnas utilizadas para la ventana actual"
 
 #: ../../runtime/optwin.vim:497
 msgid "minimal number of columns used for any window"
-msgstr ""
+msgstr "número mínimo de columnas utilizadas para cualquier ventana"
 
 #: ../../runtime/optwin.vim:499
 msgid "initial height of the help window"
-msgstr ""
+msgstr "altura inicial de la ventana de ayuda"
 
 #: ../../runtime/optwin.vim:502
 msgid "use a popup window for preview"
-msgstr ""
+msgstr "usar una ventana emergente para la vista previa"
 
 #: ../../runtime/optwin.vim:504
-#, fuzzy
 msgid "default height for the preview window"
-msgstr "E441: No hay una ventana de vista previa"
+msgstr "altura predeterminada para la ventana de vista previa"
 
 #: ../../runtime/optwin.vim:506
-#, fuzzy
 msgid "identifies the preview window"
-msgstr "E441: No hay una ventana de vista previa"
+msgstr "identifica la ventana de vista previa"
 
 #: ../../runtime/optwin.vim:510
 msgid "don't unload a buffer when no longer shown in a window"
-msgstr ""
+msgstr "no descargue un búfer cuando ya no se muestra en una ventana"
 
 #: ../../runtime/optwin.vim:512
 msgid ""
 "\"useopen\" and/or \"split\"; which window to use when jumping\n"
 "to a buffer"
 msgstr ""
+"\"useopen\" y/o \"dividir\"; qué ventana usar al saltar\n"
+"a un búfer"
 
 #: ../../runtime/optwin.vim:514
 msgid "a new window is put below the current one"
-msgstr ""
+msgstr "una nueva ventana se pone debajo de la actual"
 
 #: ../../runtime/optwin.vim:516
 msgid "a new window is put right of the current one"
