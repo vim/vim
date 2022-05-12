@@ -4862,7 +4862,8 @@ msgstr "E254: Ní féidir dath %s a dháileadh"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: Níorbh fhéidir na sonraí comhartha a léamh"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: clib gan aimsiú"
 
 msgid "E258: Unable to send to client"
@@ -5079,12 +5080,12 @@ msgstr "E314: Theip ar chaomhnú"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: lnum neamhbhailí: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: ní féidir líne %ld i maolán %d %s a aimsiú"
 
 # TODO: Capitalise first word of message?
@@ -5402,7 +5403,8 @@ msgstr "E401: Teormharcóir patrúin gan aimsiú: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Dramhaíl i ndiaidh patrúin: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: comhréir sionc: tugadh patrún leanúint líne faoi dhó"
 
 #, c-format
@@ -5539,7 +5541,8 @@ msgstr "E436: Níl aon iontráil \"%s\" sa termcap"
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: tá gá leis an gcumas teirminéil \"cm\""
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: líne-uimhreacha míchearta"
 
 # TODO: Capitalise first word of message?
@@ -6243,11 +6246,13 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: ní féidir eolas a fháil faoin bhunachar sonraí cscope"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): scríobh gan ceangal a bheith ann"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): theip ar scríobh"
 
 #, c-format
@@ -6901,7 +6906,7 @@ msgstr ""
 "E837: Ní féidir leis an leagan seo de Vim :py3 a rith tar éis :python a úsáid"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: Ní thacaítear le netbeans sa GUI seo"
 
 msgid "E840: Completion function deleted text"

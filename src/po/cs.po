@@ -1685,7 +1685,8 @@ msgstr "Tento cscope pøíkaz nepodporuje rozdìlení okna.\n"
 msgid "Usage: cstag <ident>"
 msgstr "Pou¾ití: cstag <odsazení>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: tag nenalezen"
 
 #, c-format
@@ -2744,12 +2745,12 @@ msgstr "E314: Uchování se nezdaøilo"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: chybné èíslo øádku: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld"
+msgid "E316: ml_get: Cannot find line %ld"
 msgstr "E316: ml_get: nelze nalézt øádek %ld"
 
 # TODO: Capitalise first word of message?
@@ -3872,7 +3873,8 @@ msgstr "E401: Oddìlovaè vzorku %s nenalezen"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Chyba za vzorkem %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: synchronizace syntaxe: vzorek pokraèování øádkù zadán dvakrát"
 
 #, c-format
@@ -4099,7 +4101,8 @@ msgstr "Vim: chyba pøi ètení vstupu, konèím...\n"
 msgid "No undo possible; continue anyway"
 msgstr "odstranìní zmìn není mo¾né; chcete pøesto pokraèovat"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: èísla øádkù jsou chybná"
 
 msgid "1 change"

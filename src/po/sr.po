@@ -4771,7 +4771,8 @@ msgstr "E254: Боја %s не може да се алоцира"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: Подаци за знак нису могли да се учитају"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: ознака није пронађена"
 
 msgid "E258: Unable to send to client"
@@ -4984,12 +4985,12 @@ msgstr "E314: Очување није успело"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: неисправан lnum: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: линија %ld у баферу %d не може да се пронађе %s"
 
 # TODO: Capitalise first word of message?
@@ -5305,7 +5306,8 @@ msgstr "E401: Није пронађен граничник шаблона: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Смеће након шаблона: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: синтаксна синхро: шаблон настављања линије је наведен двапут"
 
 #, c-format
@@ -5441,7 +5443,8 @@ msgstr "E436: Нема \"%s\" ставке у termcap"
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: потребна је могућност терминала \"cm\""
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: погрешни бројеви линије"
 
 # TODO: Capitalise first word of message?
@@ -6129,11 +6132,13 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: Информације о cscope бази података не могу да се добију"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): упис док није успостављена веза"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): упис није успео"
 
 #, c-format
@@ -6782,7 +6787,7 @@ msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Овај Vim не може да изврши :py3 након коришћења :python"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: овај ГКИ не подржава netbeans"
 
 msgid "E840: Completion function deleted text"

@@ -4825,7 +4825,8 @@ msgstr "E254: Kann die Farbe %s nicht zuweisen"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: Sign-Daten konnten nicht gelesen werden"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: Tag nicht gefunden"
 
 msgid "E258: Unable to send to client"
@@ -5038,12 +5039,12 @@ msgstr "E314: Absicherung fehlgeschlagen"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: unzulässige Zeilennummer: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: kann Zeile %ld in Buffer %d %s nicht finden"
 
 # TODO: Capitalise first word of message?
@@ -5365,7 +5366,8 @@ msgstr "E401: Muster-Begrenzer nicht gefunden: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Schrott nach Muster: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: Syntax sync: Zeilen-Fortsetzungsmuster zweifach angegeben"
 
 #, c-format
@@ -5502,7 +5504,8 @@ msgstr "E436: Kein \"%s\" Eintrag in der Termcap-Datei"
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: Terminalfähigkeit \"cm\" wird benötigt"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: Zeilennummer falsch"
 
 # TODO: Capitalise first word of message?
@@ -6201,11 +6204,13 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: Kann cscope Datenbank-Informationen nicht bekommen"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): geschrieben ohne eine Verbindung hergestellt zu haben"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): Schreiben fehlgeschlagen"
 
 #, c-format
@@ -6864,7 +6869,7 @@ msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Dieser Vim kann :py3 nicht nach :python ausführen"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: netbeans wird nicht unterstützt mit dieser GUI"
 
 msgid "E840: Completion function deleted text"

@@ -484,11 +484,13 @@ msgid "E906: Not an open channel"
 msgstr "E906: pas un canal ouvert"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s() : écriture sans être connecté"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s() : erreur d'écriture"
 
 #, c-format
@@ -2315,7 +2317,8 @@ msgstr "Cette commande cscope ne supporte pas le partage de la fenêtre.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Utilisation : cstag <ident>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag : marqueur introuvable"
 
 #, c-format
@@ -3744,12 +3747,12 @@ msgstr "E314: Échec de la préservation"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get : numéro de ligne invalide : %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get : impossible de trouver la ligne %ld dans le tampon %d %s"
 
 # TODO: Capitalise first word of message?
@@ -4101,7 +4104,7 @@ msgid "E658: NetBeans connection lost for buffer %d"
 msgstr "E658: Connexion NetBeans perdue pour le tampon %d"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: netbeans n'est pas supporté avec cette interface graphique"
 
 # TODO: Capitalise first word of message?
@@ -5727,7 +5730,8 @@ msgstr "E401: Délimiteur de motif introuvable : %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: caractères en trop après le motif : %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr ""
 "E403: synchro syntax : motif de continuation de ligne présent deux fois"
 
@@ -6181,7 +6185,8 @@ msgstr "Déjà à la modification la plus récente"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Annulation n° %ld introuvable"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo : numéros de ligne erronés"
 
 msgid "more line"

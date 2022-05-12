@@ -4670,7 +4670,8 @@ msgstr "E254: %s rengi ayrılamıyor"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: İşaret verisinde okunamadı"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: Etiket bulunamadı"
 
 msgid "E258: Unable to send to client"
@@ -4881,12 +4882,12 @@ msgstr "E314: Koruma başarısız oldu"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: geçersiz satır numarası: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: %ld. satır %d %s arabelleğinde bulunamıyor"
 
 # TODO: Capitalise first word of message?
@@ -5202,7 +5203,8 @@ msgstr "E401: Dizgi sınırlandırıcısı bulunamadı: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Dizgiden sonra anlamsız veri: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: Sözdizim eşitlemesi: Satır devamları dizgisi iki kez tanımlanmış"
 
 #, c-format
@@ -5338,7 +5340,8 @@ msgstr "E436: termcap içinde \"%s\" girdisi yok"
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: \"cm\" uçbirim yeteneği gerekiyor"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: Satır numaraları yanlış"
 
 # TODO: Capitalise first word of message?
@@ -6022,11 +6025,13 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: cscope veritabanı bilgisi alınamıyor"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): Bağlantı yokken yazım"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): Yazma başarısız"
 
 #, c-format
@@ -6674,7 +6679,7 @@ msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Bu Vim :python komutundan sonra :py3 komutunu çalıştıramaz"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: NetBeans bu grafik arabirimde desteklenmiyor"
 
 msgid "E840: Completion function deleted text"

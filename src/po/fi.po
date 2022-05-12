@@ -4760,7 +4760,8 @@ msgstr "E254: Väriä %s ei voi määritellä"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: Merkkidatan luku ei onnistu"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: tägia ei löydy"
 
 msgid "E258: Unable to send to client"
@@ -4966,12 +4967,12 @@ msgstr "E314: Säilyttäminen epäonnistui"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: virheellinen lnum: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: riviä %ld ei löydy puskurist %d %s"
 
 # TODO: Capitalise first word of message?
@@ -5287,7 +5288,8 @@ msgstr "E401: Kuvoin erotin puuttuu: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Roskia kuvion jäljessä: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: syntax sync: rivinjatkamiskuvio määritelty kahdesti"
 
 #, c-format
@@ -5423,7 +5425,8 @@ msgstr "E436: %s ei löytynyt termcapista"
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: terminaalilla pitää olla cm kyvyissään"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: väärät rivinumerot"
 
 # TODO: Capitalise first word of message?
@@ -6112,11 +6115,13 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: ei voi hakea cscope-tietokannan tietoja"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): ei voi kirjoittaa ilman yhteyttä"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): kirjoitus epäonnistui"
 
 #, c-format
@@ -6762,7 +6767,7 @@ msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Python: Ei voi käyttää komentoja :py ja :py3 samassa istunnossa"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: netbeans ei toimi tässä käyttöliittymässä"
 
 msgid "E840: Completion function deleted text"

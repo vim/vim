@@ -483,11 +483,13 @@ msgid "E906: Not an open channel"
 msgstr "E906: ne estas malfermita kanalo"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): konservo dum nekonektita"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): Konservo malsukcesis"
 
 #, c-format
@@ -2209,7 +2211,8 @@ msgstr "Tiu ĉi komando de cscope ne subtenas dividon de fenestro.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Uzo: cstag <ident>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: etikedo netrovita"
 
 #, c-format
@@ -3591,12 +3594,12 @@ msgstr "E314: Konservo malsukcesis"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: nevalida lnum: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: ne eblas trovi linion %ld en bufro %d %s"
 
 # TODO: Capitalise first word of message?
@@ -3914,7 +3917,7 @@ msgid "E658: NetBeans connection lost for buffer %d"
 msgstr "E658: Konekto de NetBeans perdita por bufro %d"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: netbeans ne estas subtenata kun tiu grafika interfaco"
 
 # TODO: Capitalise first word of message?
@@ -5505,7 +5508,8 @@ msgstr "E401: Disigilo de ŝablono netrovita: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Forĵetindaĵo post ŝablono: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: sintaksa sinkronigo: ŝablono de linia daŭrigo specifita dufoje"
 
 #, c-format
@@ -5945,7 +5949,8 @@ msgstr "Jam al la plej nova ŝanĝo"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Malfara numero %ld netrovita"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: nevalidaj numeroj de linioj"
 
 msgid "more line"

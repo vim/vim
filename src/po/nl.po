@@ -2385,7 +2385,8 @@ msgstr "Deze cscope-opdracht ondersteunt niet het splitsen van het venster.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Gebruik: cstag <ident>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: tag is gevonden"
 
 #, c-format
@@ -5073,7 +5074,8 @@ msgstr "Reeds de nieuwste wijziging"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Ongedaan-nummer %ld niet gevonden"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: regelnummers onjuist"
 
 msgid "more line"

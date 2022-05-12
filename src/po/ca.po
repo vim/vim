@@ -4829,7 +4829,8 @@ msgstr "E254: No s'ha pogut assignar memòria per al color %s"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: Error en llegir les dades de senyals"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: No s'ha trobat l'etiqueta"
 
 msgid "E258: Unable to send to client"
@@ -5036,12 +5037,12 @@ msgstr "E314: La preservació ha fallat"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: lnum no vàlid: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: no s'ha trobat la línia %ld en el buffer %d %s"
 
 # TODO: Capitalise first word of message?
@@ -5361,7 +5362,8 @@ msgstr "E401: No s'ha trobat el delimitador: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Caràcters sobrants després del patró: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: syntax sync: patró de continuació de línia repetit"
 
 #, c-format
@@ -5497,7 +5499,8 @@ msgstr "E436: No hi ha cap entrada \"%s\" al termcap"
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: es necessita la capacitat \"cm\" per part del terminal"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: els números de línia no són correctes"
 
 # TODO: Capitalise first word of message?
@@ -6190,11 +6193,13 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: no s'ha pogut obtenir informació de la base de dades cscope"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): s'ha escrit sense estar connectat"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): error d'escriptura"
 
 #, c-format
@@ -6849,7 +6854,7 @@ msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Aquest Vim no pot executar :py3 després de :python"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: aquesta interfície gràfica no suporta NetBeans"
 
 msgid "E840: Completion function deleted text"

@@ -247,11 +247,13 @@ msgid "E905: Received unknown command: %s"
 msgstr "E905: modtog ukendt kommando: %s"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): skrivning mens der ikke er forbindelse"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): skrivning mislykkedes"
 
 #, c-format
@@ -2553,7 +2555,8 @@ msgstr "Denne cscope-kommando understøtter ikke opdeling af vinduet.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Anvendelse: cstag <ident>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: tag ikke fundet"
 
 #, c-format
@@ -3752,12 +3755,12 @@ msgstr "E314: Bevaring mislykkedes"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: ugyldig lnum: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld"
+msgid "E316: ml_get: Cannot find line %ld"
 msgstr "E316: ml_get: kan ikke finde linje %ld"
 
 # TODO: Capitalise first word of message?
@@ -4145,7 +4148,7 @@ msgid "E658: NetBeans connection lost for buffer %ld"
 msgstr "E658: NetBeans-forbindelse mistet for buffer %ld"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: netbeans understøttes ikke med denne GUI"
 
 # TODO: Capitalise first word of message?
@@ -5606,7 +5609,8 @@ msgstr "E401: Mønsterafgrænser ikke fundet: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Affald efter mønster: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr ""
 "E403: syntaks synkronisering: linjefortsættelsesmønster angivet to gange"
 
@@ -5954,7 +5958,8 @@ msgstr "Allerede ved nyeste ændring"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Fortrydelsesnummer %ld ikke fundet"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: linjenumre forkerte"
 
 msgid "more line"

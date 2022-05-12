@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 May 06
+*eval.txt*	For Vim version 8.2.  Last change: 2022 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1534,14 +1534,22 @@ allowing the inclusion of Vim script expressions (see |expr1|).  Any
 expression returning a value can be enclosed between curly braces.  The value
 is converted to a string.  All the text and results of the expressions
 are concatenated to make a new string.
-
+								*E1278*
 To include an opening brace '{' or closing brace '}' in the string content
-double it.
+double it.  For double quoted strings using a backslash also works.  A single
+closing brace '}' will result in an error.
 
 Examples: >
 	let your_name = input("What's your name? ")
+<	What's your name?  Peter ~
+>
+	echo
 	echo $"Hello, {your_name}!"
-	echo $"The square root of 9 is {sqrt(9)}"
+<	Hello, Peter! ~
+>
+	echo $"The square root of {{9}} is {sqrt(9)}"
+<	The square root of {9} is 3.0 ~
+
 
 option						*expr-option* *E112* *E113*
 ------
@@ -3538,8 +3546,8 @@ text...
 :for {var} in {object}					*:for* *E690* *E732*
 :endfo[r]						*:endfo* *:endfor*
 			Repeat the commands between `:for` and `:endfor` for
-			each item in {object}.  {object} can be a |List| or
-			a |Blob|. *E1177*
+			each item in {object}.  {object} can be a |List|,
+			a |Blob| or a |String|. *E1177*
 
 			Variable {var} is set to the value of each item.
 			In |Vim9| script the loop variable must not have been

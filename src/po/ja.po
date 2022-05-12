@@ -4677,7 +4677,8 @@ msgstr "E254: %s の色を割り当てられません"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: sign のデータを読込めませんでした"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: タグが見つかりません"
 
 msgid "E258: Unable to send to client"
@@ -4891,12 +4892,12 @@ msgstr "E314: 維持に失敗しました"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: 無効なlnumです: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: 行 %ld をバッファ %d %s 内に見つけられません"
 
 # TODO: Capitalise first word of message?
@@ -5212,7 +5213,8 @@ msgstr "E401: パターン区切りが見つかりません: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: パターンのあとにゴミがあります: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: 構文同期: 連続行パターンが2度指定されました"
 
 #, c-format
@@ -5348,7 +5350,8 @@ msgstr "E436: termcapに \"%s\" のエントリがありません"
 msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: 端末に \"cm\" 機能が必要です"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: 行番号が間違っています"
 
 # TODO: Capitalise first word of message?
@@ -6039,11 +6042,13 @@ msgid "E626: Cannot get cscope database information"
 msgstr "E626: cscopeデータベースの情報を取得できません"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): 非接続状態で書込みました"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): 書込みに失敗しました"
 
 #, c-format
@@ -6693,7 +6698,7 @@ msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: このVimでは :python を使った後に :py3 を使えません"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: NetBeansはこのGUIには対応していません"
 
 msgid "E840: Completion function deleted text"

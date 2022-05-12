@@ -3,6 +3,9 @@
 # 2005 - Platon Group, http://platon.sk/
 # $Revision: 1.4 $
 # $LastChangedDate: 2005-10-08 12:00:24 +0200 (Sat, 08 Oct 2005) $
+#
+# Generated from sk.po, DO NOT EDIT.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: vim\n"
@@ -2137,7 +2140,8 @@ msgstr "Tento cscope príkaz nepodporuje rozde¾ovanie okna.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Pouitie: cstag <odsadenie>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: tag nenájdenı"
 
 msgid "E563: stat(%s) error: %d"
@@ -3294,12 +3298,12 @@ msgstr "E314: Uchovanie sa nepodarilo"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: chybné èíslo riadku: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld"
+msgid "E316: ml_get: Cannot find line %ld"
 msgstr "E316: ml_get: nedá sa nájs riadok %ld"
 
 # TODO: Capitalise first word of message?
@@ -4877,7 +4881,8 @@ msgstr "E401: Odde¾ovaè vzoru %s nenájdenı"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Chyba za vzorom: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: synchronizácia syntaxe: vzor pokraèovania riadkov zadanı dvakrát"
 
 #, c-format
@@ -5101,7 +5106,8 @@ msgstr "Vim: Chyba pri èítaní vstupu, konèím...\n"
 msgid "No undo possible; continue anyway"
 msgstr "Odstránenie zmien nie je moné; chcete napriek tomu pokraèova"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: èísla riadkov sú chybné"
 
 msgid "1 change"

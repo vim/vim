@@ -1907,7 +1907,8 @@ msgstr "這個 cscope 命令不支援分割螢幕\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: 用法: cstag <識別字ident>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: 找不到 tag"
 
 #, c-format
@@ -3001,12 +3002,12 @@ msgstr "E314: 保留失敗"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: 錯誤的 lnum: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld"
+msgid "E316: ml_get: Cannot find line %ld"
 msgstr "E316: ml_get: 找不到第 %ld 行 "
 
 # TODO: Capitalise first word of message?
@@ -4283,7 +4284,8 @@ msgstr "E401: 找不到分隔符號: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: '%s' 後面的東西無法辨識"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: 語法同步: 連接行符號被指定了兩次"
 
 #, c-format
@@ -4513,7 +4515,8 @@ msgstr "Vim: 讀取輸入錯誤，離開中...\n"
 msgid "No undo possible; continue anyway"
 msgstr "無法還原；請繼續努力"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: 行號錯誤"
 
 msgid "1 change"

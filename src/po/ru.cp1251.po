@@ -5,6 +5,8 @@
 # vassily "vr" ragosin <vrr@users.sourceforge.net>, 2004
 # Sergey Alyoshin <alyoshin.s@gmail.com>, 2013-2014, 2016, 2018-2019
 #
+# Generated from ru.po, DO NOT EDIT.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: vim_ru\n"
@@ -460,11 +462,13 @@ msgid "E906: Not an open channel"
 msgstr "E906: Не открытый канал"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): запись без соединения"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: Ошибка записи в %s()"
 
 #, c-format
@@ -2395,7 +2399,8 @@ msgstr "Эта команда cscope не поддерживает разделение окна.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Использование: cstag <имя>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: метка не найдена"
 
 #, c-format
@@ -3777,12 +3782,12 @@ msgstr "E314: Неудачная попытка обновления своп-файла"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: неправильное значение lnum: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld in buffer %d %s"
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: невозможно найти строку %ld в буфере %d %s"
 
 # TODO: Capitalise first word of message?
@@ -4138,7 +4143,7 @@ msgid "E658: NetBeans connection lost for buffer %d"
 msgstr "E658: Потеряно соединение с NetBeans для буфера %d"
 
 # TODO: Capitalise first word of message?
-msgid "E838: Netbeans is not supported with this GUI"
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: NetBeans не поддерживается с этим графическим интерфейсом"
 
 # TODO: Capitalise first word of message?
@@ -5722,7 +5727,8 @@ msgstr "E401: Не найден разделитель шаблонов: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Мусор после шаблона: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr ""
 "E403: Синхронизация синтаксиса: шаблон продолжений строки указан дважды"
 
@@ -6054,7 +6060,8 @@ msgstr "Уже на самом последнем изменении"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Не найдена отмена номер %ld"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: неправильные номера строк"
 
 msgid "more line"

@@ -1896,7 +1896,8 @@ msgstr "Câu lệnh cscope này không hỗ trợ việc chia (split) cửa sổ
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Sử dụng: cstag <tên>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: không tìm thấy thẻ ghi"
 
 #, c-format
@@ -3016,12 +3017,12 @@ msgstr "E314: Cập nhật không thành công"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E315: Ml_get: invalid lnum: %ld"
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: giá trị lnum không đúng: %ld"
 
 #, c-format
 # TODO: Capitalise first word of message?
-msgid "E316: Ml_get: cannot find line %ld"
+msgid "E316: ml_get: Cannot find line %ld"
 msgstr "E316: ml_get: không tìm được dòng %ld"
 
 # TODO: Capitalise first word of message?
@@ -4304,7 +4305,8 @@ msgstr "E401: Không tìm thấy ký tự phân chia mẫu (pattern): %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Rác ở sau mẫu (pattern): %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: đồng bộ hóa cú pháp: mẫu tiếp tục của dòng chỉ ra hai lần"
 
 #, c-format
@@ -4534,7 +4536,8 @@ msgstr "Vim: Lỗi đọc dữ liệu nhập, thoát...\n"
 msgid "No undo possible; continue anyway"
 msgstr "Không thể hủy thao tác; tiếp tục thực hiện"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: số thứ tự dòng không đúng"
 
 msgid "1 change"

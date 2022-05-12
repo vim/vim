@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 May 09
+*todo.txt*      For Vim version 8.2.  Last change: 2022 May 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,9 +38,6 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-String interpolation: Handle backslash and quotes in the expression normally,
-do not require escaping.
-
 Once Vim9 is stable:
 - Use Vim9 for more runtime files.
 - Check code coverage, add more tests if needed.
@@ -48,6 +45,7 @@ Once Vim9 is stable:
 	vim9instr.c
 	vim9script.c
 	vim9type.c
+- Inlude new set of colors: #9795
 - Adjust intro message to say "help version9".
 
 Further Vim9 improvements, possibly after launch:
@@ -65,8 +63,6 @@ Further Vim9 improvements, possibly after launch:
   evaluation.
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
-- Implement "import lazy" - like autoload but with a relative or absolute
-  path. #9595
 - implement :type
 - implement :enum
 - implement :class and :interface: See |vim9-classes|
@@ -127,14 +123,12 @@ Text properties:
   where property fits in.
   Or Should we let the textprop highlight overrule other (e.g. diff) highlight
   if the priority is above a certain value?  (#7392)
-- Popup attached to text property stays visible when text is deleted with
-  "cc". (#7737)  "C" works OK.  "dd" also files in a buffer with a single
+- "C" works OK.  "dd" fails to delete text property in a buffer with a single
   line.
 - Add text property that shifts text to make room for annotation (e.g.
   variable type).  Like the opposite of conceal.  Requires fixing the cursor
   positioning and mouse clicks as with conceal mode.
 - Auto-indenting may cause highlighting to shift. (#7719)
-- "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Combining text property with 'cursorline' does not always work (Billie
   Cleek, #5533)
 - See remarks at top of src/textprop.c
@@ -861,10 +855,6 @@ missing: --nofork, -A , -b, -h, etc.
 
 ":au * * command" should not be allowed, only use * for event when listing or
 deleting autocmds, not when adding them.
-
-With 'foldmethod' "indent" and appending an empty line, what follows isn't
-included in the existing fold.  Deleting the empty line and undo fixes it.
-(Oleg Koshovetc, 2018 Jul 15, #3214)
 
 Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)
