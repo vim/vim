@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: Vim 7.2.284 (rev 1692)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-05 18:59+0200\n"
-"PO-Revision-Date: 2022-05-11 20:25+0200\n"
+"PO-Revision-Date: 2022-05-12 19:27+0200\n"
 "Last-Translator: victorhck <victorhck@mailbox.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es_ES\n"
@@ -11955,1098 +11955,1139 @@ msgid ""
 "\"last\", \"buffer\" or \"current\": which directory used for the file "
 "browser"
 msgstr ""
+"\"last\", \"buffer\" o \"current\": qué directorio se utilizará para el"
+" navegador de archivos"
 
 #: ../../runtime/optwin.vim:681
 msgid "language to be used for the menus"
-msgstr ""
+msgstr "idioma que se utilizará para los menús"
 
 #: ../../runtime/optwin.vim:684
 msgid "maximum number of items in one menu"
-msgstr ""
+msgstr "número máximo de elementos en un menú"
 
 #: ../../runtime/optwin.vim:687
 msgid "\"no\", \"yes\" or \"menu\"; how to use the ALT key"
-msgstr ""
+msgstr "\"no\", \"yes\" o \"menu\"; cómo usar la tecla ALT"
 
 #: ../../runtime/optwin.vim:690
 msgid "number of pixel lines to use between characters"
-msgstr ""
+msgstr "número de líneas de píxeles para usar entre caracteres"
 
 #: ../../runtime/optwin.vim:693
 msgid "delay in milliseconds before a balloon may pop up"
-msgstr ""
+msgstr "retraso en milisegundos antes de que aparezca un mensaje"
 
 #: ../../runtime/optwin.vim:696
 msgid "use balloon evaluation in the GUI"
-msgstr ""
+msgstr "utilizar mensajes de evaluación en la GUI"
 
 #: ../../runtime/optwin.vim:700
 msgid "use balloon evaluation in the terminal"
-msgstr ""
+msgstr "utilizar mensajes de evaluación en la terminal"
 
 #: ../../runtime/optwin.vim:704
 msgid "expression to show in balloon eval"
-msgstr ""
+msgstr "expresión a mostrar en el mensaje de evaluación"
 
 #: ../../runtime/optwin.vim:711
-#, fuzzy
 msgid "printing"
-msgstr "Imprimiendo %s"
+msgstr "Imprimiendo"
 
 #: ../../runtime/optwin.vim:712
 msgid "list of items that control the format of :hardcopy output"
-msgstr ""
+msgstr "lista de elementos que controlan el formato de salida :hardcopy"
 
 #: ../../runtime/optwin.vim:714
 msgid "name of the printer to be used for :hardcopy"
-msgstr ""
+msgstr "nombre de la impresora que se utilizará para :hardcopy"
 
 #: ../../runtime/optwin.vim:717
 msgid "expression used to print the PostScript file for :hardcopy"
-msgstr ""
+msgstr "expresión utilizada para imprimir el archivo PostScript para :hardcopy"
 
 #: ../../runtime/optwin.vim:720
 msgid "name of the font to be used for :hardcopy"
-msgstr ""
+msgstr "nombre de la fuente que se utilizará para :hardcopy"
 
 #: ../../runtime/optwin.vim:722
 msgid "format of the header used for :hardcopy"
-msgstr ""
+msgstr "formato del encabezado utilizado para :hardcopy"
 
 #: ../../runtime/optwin.vim:725
-#, fuzzy
 msgid "encoding used to print the PostScript file for :hardcopy"
-msgstr "E365: Falló la impresión del archivo PostScript"
+msgstr ""
+"codificación utilizada para imprimir el archivo PostScript para :hardcopy"
 
 #: ../../runtime/optwin.vim:728
 msgid "the CJK character set to be used for CJK output from :hardcopy"
 msgstr ""
+"el conjunto de caracteres CJK que se usará para la salida CJK de :hardcopy"
 
 #: ../../runtime/optwin.vim:730
 msgid "list of font names to be used for CJK output from :hardcopy"
 msgstr ""
+"lista de nombres de fuentes que se utilizarán para la salida CJK de :hardcopy"
 
 #: ../../runtime/optwin.vim:734
 msgid "messages and info"
-msgstr ""
+msgstr "mensajes e información"
 
 #: ../../runtime/optwin.vim:735
 msgid "add 's' flag in 'shortmess' (don't show search message)"
 msgstr ""
+"añadir la opción 's' en 'shortmess' (no mostrar el mensaje de búsqueda)"
 
 #: ../../runtime/optwin.vim:737
 msgid "list of flags to make messages shorter"
-msgstr ""
+msgstr "lista de opciones para hacer los mensajes más cortos"
 
 #: ../../runtime/optwin.vim:739
 msgid "show (partial) command keys in the status line"
-msgstr ""
+msgstr "mostrar (parcialmente) las teclas de comandos en la línea de estado"
 
 #: ../../runtime/optwin.vim:743
 msgid "display the current mode in the status line"
-msgstr ""
+msgstr "mostrar el modo actual en la línea de estado"
 
 #: ../../runtime/optwin.vim:745
 msgid "show cursor position below each window"
-msgstr ""
+msgstr "mostrar la posición del cursor debajo de cada ventana"
 
 #: ../../runtime/optwin.vim:750
 msgid "alternate format to be used for the ruler"
-msgstr ""
+msgstr "formato alternativo que se utilizará para la regla"
 
 #: ../../runtime/optwin.vim:753
 msgid "threshold for reporting number of changed lines"
-msgstr ""
+msgstr "umbral para informar el número de líneas modificadas"
 
 #: ../../runtime/optwin.vim:755
 msgid "the higher the more messages are given"
-msgstr ""
+msgstr "cuanto más alto, más mensajes se dan"
 
 #: ../../runtime/optwin.vim:757
 msgid "file to write messages in"
-msgstr ""
+msgstr "archivo en el que escribir los mensajes"
 
 #: ../../runtime/optwin.vim:759
 msgid "pause listings when the screen is full"
-msgstr ""
+msgstr "pausar los listados cuando la pantalla este llena"
 
 #: ../../runtime/optwin.vim:762
 msgid "start a dialog when a command fails"
-msgstr ""
+msgstr "iniciar un cuadro de diálogo cuando falla un comando"
 
 #: ../../runtime/optwin.vim:765
 msgid "ring the bell for error messages"
-msgstr ""
+msgstr "reproducir un sonido para mensajes de error"
 
 #: ../../runtime/optwin.vim:767
 msgid "use a visual bell instead of beeping"
-msgstr ""
+msgstr "utilizar una alerta visual en vez de un sonido"
 
 #: ../../runtime/optwin.vim:769
 msgid "do not ring the bell for these reasons"
-msgstr ""
+msgstr "no reproducir un sonido para estos motivos"
 
 #: ../../runtime/optwin.vim:772
 msgid "list of preferred languages for finding help"
-msgstr ""
+msgstr "lista de idiomas preferidos para buscar ayuda"
 
 #: ../../runtime/optwin.vim:777
-#, fuzzy
 msgid "selecting text"
-msgstr "Selección"
+msgstr "seleccionar texto"
 
 #: ../../runtime/optwin.vim:778
 msgid "\"old\", \"inclusive\" or \"exclusive\"; how selecting text behaves"
 msgstr ""
+"\"old\", \"inclusive\" o \"exclusive\"; cómo se comporta la selección de texto"
 
 #: ../../runtime/optwin.vim:780
 msgid ""
 "\"mouse\", \"key\" and/or \"cmd\"; when to start Select mode\n"
 "instead of Visual mode"
 msgstr ""
+"\"mouse\", \"key\" y/o \"cmd\"; cuando comenzar el modo de Selección\n"
+"en vez del modo Visual"
 
 #: ../../runtime/optwin.vim:783
 msgid ""
 "\"unnamed\" to use the * register like unnamed register\n"
 "\"autoselect\" to always put selected text on the clipboard"
 msgstr ""
+"\"unnamed\" para utilizar el registro * como el registro sin nombre\n"
+"\"autoselect\" para poner siempre el texto seleccionado en el portapapeles"
 
 #: ../../runtime/optwin.vim:786
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
-msgstr ""
+msgstr "\"startsel\" y/o \"stopsel\"; qué pueden hacer las teclas especiales"
 
 #: ../../runtime/optwin.vim:790
 msgid "editing text"
-msgstr ""
+msgstr "editar texto"
 
 #: ../../runtime/optwin.vim:791
 msgid "maximum number of changes that can be undone"
-msgstr ""
+msgstr "número máximo de cambios que se pueden deshacer"
 
 #: ../../runtime/optwin.vim:794
 msgid "automatically save and restore undo history"
-msgstr ""
+msgstr "guardar y restaurar el historial de deshacer de manera automática"
 
 #: ../../runtime/optwin.vim:796
 msgid "list of directories for undo files"
-msgstr ""
+msgstr "lista de directorios para archivos de deshacer"
 
 #: ../../runtime/optwin.vim:798
 msgid "maximum number lines to save for undo on a buffer reload"
 msgstr ""
+"número máximo de líneas para guardar para deshacer en una recarga de búfer"
 
 #: ../../runtime/optwin.vim:800
 msgid "changes have been made and not written to a file"
-msgstr ""
+msgstr "se han realizado cambios y no se han guardado en un archivo"
 
 #: ../../runtime/optwin.vim:803
 msgid "buffer is not to be written"
-msgstr ""
+msgstr "el búfer no no se guardará"
 
 #: ../../runtime/optwin.vim:806
 msgid "changes to the text are possible"
-msgstr ""
+msgstr "los cambios en el texto son posibles"
 
 #: ../../runtime/optwin.vim:809
 msgid "line length above which to break a line"
-msgstr ""
+msgstr "longitud de línea por encima de la cual hacer romper una línea"
 
 #: ../../runtime/optwin.vim:812
 msgid "margin from the right in which to break a line"
-msgstr ""
+msgstr "margen desde la derecha en el que romper una línea"
 
 #: ../../runtime/optwin.vim:815
 msgid "specifies what <BS>, CTRL-W, etc. can do in Insert mode"
 msgstr ""
+"especifica lo que <Retroceso>, CTRL-W, etc. pueden hacer en el modo Insertar"
 
 #: ../../runtime/optwin.vim:817
 msgid "definition of what comment lines look like"
-msgstr ""
+msgstr "definición de cómo se ven las líneas de comentario"
 
 #: ../../runtime/optwin.vim:820
 msgid "list of flags that tell how automatic formatting works"
-msgstr ""
+msgstr "lista de opciones que indican cómo funciona el formateo automático"
 
 #: ../../runtime/optwin.vim:823
 msgid "pattern to recognize a numbered list"
-msgstr ""
+msgstr "patrón para reconocer una lista numerada"
 
 #: ../../runtime/optwin.vim:827
 msgid "expression used for \"gq\" to format lines"
-msgstr ""
+msgstr "expresión utilizada para \"gq\" para formatear líneas"
 
 #: ../../runtime/optwin.vim:832
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
 msgstr ""
+"especifica cómo funciona el completado del modo Insertar para CTRL-N y CTRL-P"
 
 #: ../../runtime/optwin.vim:835
 msgid "whether to use a popup menu for Insert mode completion"
-msgstr ""
+msgstr "si usar un menú emergente para el completado del modo Insertar"
 
 #: ../../runtime/optwin.vim:838
 msgid "options for the Insert mode completion info popup"
 msgstr ""
+"opciones para la ventana emergente de información del completado del modo"
+" Insertar"
 
 #: ../../runtime/optwin.vim:841
 msgid "maximum height of the popup menu"
-msgstr ""
+msgstr "altura máxima del menú emergente"
 
 #: ../../runtime/optwin.vim:843
 msgid "minimum width of the popup menu"
-msgstr ""
+msgstr "ancho mínimo del menú emergente"
 
 #: ../../runtime/optwin.vim:845
 msgid "user defined function for Insert mode completion"
-msgstr ""
+msgstr "función definida por el usuario para el completado del modo Insertar"
 
 #: ../../runtime/optwin.vim:848
 msgid "function for filetype-specific Insert mode completion"
 msgstr ""
+"función para el completado del modo Insertar para tipos de archivos"
+" específicos"
 
 #: ../../runtime/optwin.vim:851
 msgid "list of dictionary files for keyword completion"
-msgstr ""
+msgstr "lista de archivos de diccionario para el completado de palabras clave"
 
 #: ../../runtime/optwin.vim:854
 msgid "list of thesaurus files for keyword completion"
 msgstr ""
+"lista de archivos de \"thesaurus\" para el completado de palabras clave"
 
 #: ../../runtime/optwin.vim:857
 msgid "function used for thesaurus completion"
-msgstr ""
+msgstr "función utilizada para el completado \"thesaurus\""
 
 #: ../../runtime/optwin.vim:861
 msgid "adjust case of a keyword completion match"
 msgstr ""
+"ajustar las mayúsculas y minúsculas de una coincidencia de palabra clave para"
+" el completado"
 
 #: ../../runtime/optwin.vim:865
 msgid "enable entering digraphs with c1 <BS> c2"
-msgstr ""
+msgstr "habilitar el ingreso de dígrafos con c1 <Retroceso> c2"
 
 #: ../../runtime/optwin.vim:868
 msgid "the \"~\" command behaves like an operator"
-msgstr ""
+msgstr "el comando \"~\" se comporta como un operador"
 
 #: ../../runtime/optwin.vim:870
 msgid "function called for the \"g@\" operator"
-msgstr ""
+msgstr "función llamada para el operador \"g@\""
 
 #: ../../runtime/optwin.vim:872
 msgid "when inserting a bracket, briefly jump to its match"
-msgstr ""
+msgstr "al insertar un corchete, saltar brevemente a su pareja"
 
 #: ../../runtime/optwin.vim:874
 msgid "tenth of a second to show a match for 'showmatch'"
-msgstr ""
+msgstr "décimas de segundo para mostrar una coincidencia para 'showmatch'"
 
 #: ../../runtime/optwin.vim:876
 msgid "list of pairs that match for the \"%\" command"
-msgstr ""
+msgstr "lista de pares que coinciden con el comando \"%\""
 
 #: ../../runtime/optwin.vim:879
 msgid "use two spaces after '.' when joining a line"
-msgstr ""
+msgstr "usar dos espacios después de '.' al unir una línea"
 
 #: ../../runtime/optwin.vim:881
 msgid ""
 "\"alpha\", \"octal\", \"hex\", \"bin\" and/or \"unsigned\"; number formats\n"
 "recognized for CTRL-A and CTRL-X commands"
 msgstr ""
+"\"alpha\", \"octal\", \"hex\", \"bin\" y/o \"unsigned\"; formatos de números\n"
+"reconocidos para los comandos CTRL-A y CTRL-X"
 
 #: ../../runtime/optwin.vim:886
 msgid "tabs and indenting"
-msgstr ""
+msgstr "tabulaciones y márgenes"
 
 #: ../../runtime/optwin.vim:887
 msgid "number of spaces a <Tab> in the text stands for"
-msgstr ""
+msgstr "número de espacios que representa un <Tab> en el texto"
 
 #: ../../runtime/optwin.vim:890
 msgid "number of spaces used for each step of (auto)indent"
-msgstr ""
+msgstr "número de espacios utilizados para cada paso de (auto)sangría"
 
 #: ../../runtime/optwin.vim:894
 msgid "list of number of spaces a tab counts for"
-msgstr ""
+msgstr "lista del número de espacios para los que cuenta una tabulación"
 
 #: ../../runtime/optwin.vim:897
 msgid "list of number of spaces a soft tabsstop counts for"
-msgstr ""
+msgstr "lista del número de espacios para los que cuenta un \"soft tabsstop\""
 
 #: ../../runtime/optwin.vim:901
 msgid "a <Tab> in an indent inserts 'shiftwidth' spaces"
-msgstr ""
+msgstr "un <Tab> en una sangría inserta espacios 'shiftwidth'"
 
 #: ../../runtime/optwin.vim:903
 msgid "if non-zero, number of spaces to insert for a <Tab>"
-msgstr ""
+msgstr "si no es cero, número de espacios para insertar para un <Tab>"
 
 #: ../../runtime/optwin.vim:906
 msgid "round to 'shiftwidth' for \"<<\" and \">>\""
-msgstr ""
+msgstr "redondear a 'shiftwidth' para \"<<\" y \">>\""
 
 #: ../../runtime/optwin.vim:908
 msgid "expand <Tab> to spaces in Insert mode"
-msgstr ""
+msgstr "expandir <Tab> a espacios en el modo Insertar"
 
 #: ../../runtime/optwin.vim:911
 msgid "automatically set the indent of a new line"
-msgstr ""
+msgstr "establecer automáticamente la sangría de una nueva línea"
 
 #: ../../runtime/optwin.vim:915
 msgid "do clever autoindenting"
-msgstr ""
+msgstr "hacer sangría automática inteligente"
 
 #: ../../runtime/optwin.vim:920
 msgid "enable specific indenting for C code"
-msgstr ""
+msgstr "habilitar la sangría específica para el código C"
 
 #: ../../runtime/optwin.vim:923
 msgid "options for C-indenting"
-msgstr ""
+msgstr "opciones para la sangría C"
 
 #: ../../runtime/optwin.vim:926
 msgid "keys that trigger C-indenting in Insert mode"
-msgstr ""
+msgstr "Teclas que activan la sangría C en el modo Insertar"
 
 #: ../../runtime/optwin.vim:929
 msgid "list of words that cause more C-indent"
-msgstr ""
+msgstr "lista de palabras que causan más sangría C"
 
 #: ../../runtime/optwin.vim:932
 msgid "list of scope declaration names used by cino-g"
-msgstr ""
+msgstr "lista de nombres de declaración de alcance utilizados por \"cino-g\""
 
 #: ../../runtime/optwin.vim:935
 msgid "expression used to obtain the indent of a line"
-msgstr ""
+msgstr "expresión utilizada para obtener la sangría de una línea"
 
 #: ../../runtime/optwin.vim:938
 msgid "keys that trigger indenting with 'indentexpr' in Insert mode"
-msgstr ""
+msgstr "teclas que activan la sangría con 'indentexpr' en el modo Insertar"
 
 #: ../../runtime/optwin.vim:942
 msgid "copy whitespace for indenting from previous line"
-msgstr ""
+msgstr "copiar los espacios en blanco para sangrar desde la línea anterior"
 
 #: ../../runtime/optwin.vim:945
 msgid "preserve kind of whitespace when changing indent"
-msgstr ""
+msgstr "preservar el tipo de espacio en blanco al cambiar la sangría"
 
 #: ../../runtime/optwin.vim:949
-#, fuzzy
 msgid "enable lisp mode"
-msgstr "-l\t\t\tModo LISP"
+msgstr "habilitar el modo lisp"
 
 #: ../../runtime/optwin.vim:952
 msgid "words that change how lisp indenting works"
-msgstr ""
+msgstr "palabras que cambian cómo funciona la sangría lisp"
 
 #: ../../runtime/optwin.vim:958
-#, fuzzy
 msgid "folding"
-msgstr "Codificando:"
+msgstr "plegar"
 
 #: ../../runtime/optwin.vim:959
 msgid "unset to display all folds open"
-msgstr ""
+msgstr "desactivado para mostrar todos los pliegues abiertos"
 
 #: ../../runtime/optwin.vim:962
 msgid "folds with a level higher than this number will be closed"
-msgstr ""
+msgstr "los pliegues con un nivel superior a este número se cerrarán"
 
 #: ../../runtime/optwin.vim:965
 msgid "value for 'foldlevel' when starting to edit a file"
-msgstr ""
+msgstr "valor para 'foldlevel' al comenzar a editar un archivo"
 
 #: ../../runtime/optwin.vim:967
 msgid "width of the column used to indicate folds"
-msgstr ""
+msgstr "ancho de la columna utilizada para indicar los pliegues"
 
 #: ../../runtime/optwin.vim:970
 msgid "expression used to display the text of a closed fold"
-msgstr ""
+msgstr "expresión utilizada para mostrar el texto de un pliegue cerrado"
 
 #: ../../runtime/optwin.vim:973
 msgid "set to \"all\" to close a fold when the cursor leaves it"
-msgstr ""
+msgstr "establecer en \"all\" para cerrar un pliegue cuando el cursor lo deja"
 
 #: ../../runtime/optwin.vim:975
 msgid "specifies for which commands a fold will be opened"
-msgstr ""
+msgstr "especifica para qué comandos se abrirá un pliegue"
 
 #: ../../runtime/optwin.vim:977
 msgid "minimum number of screen lines for a fold to be closed"
-msgstr ""
+msgstr "número mínimo de líneas de pantalla para que se cierre un pliegue"
 
 #: ../../runtime/optwin.vim:980
 msgid "template for comments; used to put the marker in"
-msgstr ""
+msgstr "plantilla para comentarios; utilizado para poner el marcador"
 
 #: ../../runtime/optwin.vim:982
 msgid ""
 "folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n"
 "\"syntax\" or \"diff\""
 msgstr ""
+"tipo de plegado: \"manual\", \"indent\", \"expr\", \"marker\",\n"
+"\"syntax\" o \"diff\""
 
 #: ../../runtime/optwin.vim:985
 msgid "expression used when 'foldmethod' is \"expr\""
-msgstr ""
+msgstr "expresión utilizada cuando 'foldmethod' es \"expr\""
 
 #: ../../runtime/optwin.vim:988
 msgid "used to ignore lines when 'foldmethod' is \"indent\""
-msgstr ""
+msgstr "se usa para ignorar líneas cuando 'foldmethod' es \"indent\""
 
 #: ../../runtime/optwin.vim:991
 msgid "markers used when 'foldmethod' is \"marker\""
-msgstr ""
+msgstr "marcadores utilizados cuando 'foldmethod' es \"marker\""
 
 #: ../../runtime/optwin.vim:994
 msgid "maximum fold depth for when 'foldmethod' is \"indent\" or \"syntax\""
 msgstr ""
+"profundidad de pliegue máxima cuando 'foldmethod' es \"indent\" o \"syntax\""
 
 #: ../../runtime/optwin.vim:1001
 msgid "diff mode"
-msgstr ""
+msgstr "modo diff (diferencia)"
 
 #: ../../runtime/optwin.vim:1002
 msgid "use diff mode for the current window"
-msgstr ""
+msgstr "utilizar el modo diff para la ventana actual"
 
 #: ../../runtime/optwin.vim:1005
 msgid "options for using diff mode"
-msgstr ""
+msgstr "opciones para utilizar el modo diferencia"
 
 #: ../../runtime/optwin.vim:1007
-#, fuzzy
 msgid "expression used to obtain a diff file"
-msgstr "expresiones desactivadas al compilar"
+msgstr "expresión utilizada para obtener un archivo \"diff\""
 
 #: ../../runtime/optwin.vim:1009
-#, fuzzy
 msgid "expression used to patch a file"
-msgstr "expresiones desactivadas al compilar"
+msgstr "expresión utilizada para parchear (patch) un archivo"
 
 #: ../../runtime/optwin.vim:1014
-#, fuzzy
 msgid "mapping"
-msgstr "No se encontró ninguna asociación de teclado"
+msgstr "Asignación de teclas (mapping)"
 
 #: ../../runtime/optwin.vim:1015
 msgid "maximum depth of mapping"
-msgstr ""
+msgstr "profundidad máxima de asignación"
 
 #: ../../runtime/optwin.vim:1017
-#, fuzzy
 msgid "recognize mappings in mapped keys"
-msgstr "Parámetros no reconocidos en %s línea %d: %s"
+msgstr "reconocer asignaciones en teclas asignadas"
 
 #: ../../runtime/optwin.vim:1019
 msgid "allow timing out halfway into a mapping"
-msgstr ""
+msgstr "permitir el tiempo de espera (timeout) a la mitad de una asignación"
 
 #: ../../runtime/optwin.vim:1021
 msgid "allow timing out halfway into a key code"
-msgstr ""
+msgstr "permitir el tiempo de espera (timeout) a la mitad de un código clave"
 
 #: ../../runtime/optwin.vim:1023
 msgid "time in msec for 'timeout'"
-msgstr ""
+msgstr "tiempo en mseg para 'timeout'"
 
 #: ../../runtime/optwin.vim:1025
 msgid "time in msec for 'ttimeout'"
-msgstr ""
+msgstr "tiempo en mseg para 'ttimeout'"
 
 #: ../../runtime/optwin.vim:1029
-#, fuzzy
 msgid "reading and writing files"
-msgstr "Leyendo el archivo de diccionario %s..."
+msgstr "leer y guardar archivos"
 
 #: ../../runtime/optwin.vim:1030
 msgid "enable using settings from modelines when reading a file"
 msgstr ""
+"habilitar el uso de configuraciones de \"modelines\" al leer un archivo"
 
 #: ../../runtime/optwin.vim:1033
 msgid "allow setting expression options from a modeline"
-msgstr ""
+msgstr "permitir configurar opciones de expresión desde una \"modeline\""
 
 #: ../../runtime/optwin.vim:1035
 msgid "number of lines to check for modelines"
-msgstr ""
+msgstr "número de líneas a comprobar para \"modeline\""
 
 #: ../../runtime/optwin.vim:1037
 msgid "binary file editing"
-msgstr ""
+msgstr "edición de archivos binarios"
 
 #: ../../runtime/optwin.vim:1040
 msgid "last line in the file has an end-of-line"
-msgstr ""
+msgstr "la última línea del archivo tiene un final de línea"
 
 #: ../../runtime/optwin.vim:1043
 msgid "fixes missing end-of-line at end of text file"
-msgstr ""
+msgstr "corrige la falta de final de línea al final del archivo de texto"
 
 #: ../../runtime/optwin.vim:1046
 msgid "prepend a Byte Order Mark to the file"
-msgstr ""
+msgstr "anteponer una marca \"Byte Order Mark\" al archivo"
 
 #: ../../runtime/optwin.vim:1049
 msgid "end-of-line format: \"dos\", \"unix\" or \"mac\""
-msgstr ""
+msgstr "formato de fin de línea: \"dos\", \"unix\" o \"mac\""
 
 #: ../../runtime/optwin.vim:1052
 msgid "list of file formats to look for when editing a file"
-msgstr ""
+msgstr "lista de formatos de archivo para buscar al editar un archivo"
 
 #: ../../runtime/optwin.vim:1054
 msgid "obsolete, use 'fileformat'"
-msgstr ""
+msgstr "obsoleto, utilizar 'fileformat'"
 
 #: ../../runtime/optwin.vim:1057
 msgid "obsolete, use 'fileformats'"
-msgstr ""
+msgstr "obsoleto, utilizar 'fileformats'"
 
 #: ../../runtime/optwin.vim:1059
-#, fuzzy
 msgid "writing files is allowed"
-msgstr "-m\t\t\tModificación de archivos desactivada"
+msgstr "guardado de archivos permitido"
 
 #: ../../runtime/optwin.vim:1061
 msgid "write a backup file before overwriting a file"
 msgstr ""
+"guardar un archivo de copia de seguridad antes de sobrescribir un archivo"
 
 #: ../../runtime/optwin.vim:1063
 msgid "keep a backup after overwriting a file"
-msgstr ""
+msgstr "mantener una copia de seguridad después de sobrescribir un archivo"
 
 #: ../../runtime/optwin.vim:1065
 msgid "patterns that specify for which files a backup is not made"
 msgstr ""
+"patrones que especifican para qué archivos no se realiza una copia de"
+" seguridad"
 
 #: ../../runtime/optwin.vim:1067
 msgid "whether to make the backup as a copy or rename the existing file"
 msgstr ""
+"hacer la copia de seguridad como una copia o cambiar el nombre del archivo"
+" existente"
 
 #: ../../runtime/optwin.vim:1070
 msgid "list of directories to put backup files in"
 msgstr ""
+"lista de directorios en los que poner los archivos de copia de seguridad"
 
 #: ../../runtime/optwin.vim:1072
 msgid "file name extension for the backup file"
-msgstr ""
+msgstr "extensión de nombre de archivo para el archivo de copia de seguridad"
 
 #: ../../runtime/optwin.vim:1074
 msgid "automatically write a file when leaving a modified buffer"
-msgstr ""
+msgstr "escribir automáticamente un archivo al salir de un búfer modificado"
 
 #: ../../runtime/optwin.vim:1076
 msgid "as 'autowrite', but works with more commands"
-msgstr ""
+msgstr "como 'autowrite', pero funciona con más comandos"
 
 #: ../../runtime/optwin.vim:1078
 msgid "always write without asking for confirmation"
-msgstr ""
+msgstr "guarda siempre sin pedir confirmación"
 
 #: ../../runtime/optwin.vim:1080
 msgid "automatically read a file when it was modified outside of Vim"
-msgstr ""
+msgstr "leer automáticamente un archivo cuando se modificó fuera de Vim"
 
 #: ../../runtime/optwin.vim:1083
 msgid "keep oldest version of a file; specifies file name extension"
 msgstr ""
+"mantener la versión más antigua de un archivo; especifica la extensión del"
+" nombre del archivo"
 
 #: ../../runtime/optwin.vim:1085
 msgid "forcibly sync the file to disk after writing it"
-msgstr ""
+msgstr "sincronizar a la fuerza el archivo en el disco después de escribirlo"
 
 #: ../../runtime/optwin.vim:1087
-#, fuzzy
 msgid "use 8.3 file names"
-msgstr "Nombre de archivo ilegal"
+msgstr "usar nombres de archivo 8.3"
 
 #: ../../runtime/optwin.vim:1090
 msgid "encryption method for file writing: zip, blowfish or blowfish2"
 msgstr ""
+"método de cifrado para la escritura de archivos: zip, blowfish o blowfish2"
 
 #: ../../runtime/optwin.vim:1095
-#, fuzzy
 msgid "the swap file"
-msgstr "No hay archivo de intercambio"
+msgstr "el archivo de intercambio (swap)"
 
 #: ../../runtime/optwin.vim:1096
 msgid "list of directories for the swap file"
-msgstr ""
+msgstr "lista de directorios para el archivo de intercambio"
 
 #: ../../runtime/optwin.vim:1098
-#, fuzzy
 msgid "use a swap file for this buffer"
-msgstr "No hay elementos sintácticos definidos para este búfer"
+msgstr "usar un archivo de intercambio para este búfer"
 
 #: ../../runtime/optwin.vim:1101
 msgid "\"sync\", \"fsync\" or empty; how to flush a swap file to disk"
 msgstr ""
+"\"sync\", \"fsync\" o vacío; cómo vaciar un archivo de intercambio en el disco"
 
 #: ../../runtime/optwin.vim:1103
 msgid "number of characters typed to cause a swap file update"
 msgstr ""
+"número de caracteres escritos para provocar una actualización del archivo de"
+" intercambio"
 
 #: ../../runtime/optwin.vim:1105
 msgid "time in msec after which the swap file will be updated"
 msgstr ""
+"tiempo en mseg después del cual se actualizará el archivo de intercambio"
 
 #: ../../runtime/optwin.vim:1107
 msgid "maximum amount of memory in Kbyte used for one buffer"
-msgstr ""
+msgstr "cantidad máxima de memoria en Kbyte utilizada para un búfer"
 
 #: ../../runtime/optwin.vim:1109
 msgid "maximum amount of memory in Kbyte used for all buffers"
-msgstr ""
+msgstr "cantidad máxima de memoria en Kbyte utilizada para todos los búferes"
 
 #: ../../runtime/optwin.vim:1113
-#, fuzzy
 msgid "command line editing"
-msgstr "Línea de órdenes"
+msgstr "edición de línea de comando"
 
 #: ../../runtime/optwin.vim:1114
 msgid "how many command lines are remembered"
-msgstr ""
+msgstr "cuántas líneas de comando recordar"
 
 #: ../../runtime/optwin.vim:1116
 msgid "key that triggers command-line expansion"
-msgstr ""
+msgstr "tecla que desencadena la expansión de la línea de comandos"
 
 #: ../../runtime/optwin.vim:1118
 msgid "like 'wildchar' but can also be used in a mapping"
-msgstr ""
+msgstr "como 'wildchar' pero también se puede usar en una asignación"
 
 #: ../../runtime/optwin.vim:1120
-#, fuzzy
 msgid "specifies how command line completion works"
-msgstr " Compleción de línea de órdenes (^V^N^P)"
+msgstr "especifica cómo funciona el completado de la línea de comando"
 
 #: ../../runtime/optwin.vim:1123
 msgid "empty or \"tagfile\" to list file name of matching tags"
 msgstr ""
+"vacío o \"tagfile\" para enumerar el nombre de archivo de las etiquetas"
+" coincidentes"
 
 #: ../../runtime/optwin.vim:1126
 msgid "list of file name extensions that have a lower priority"
 msgstr ""
+"lista de extensiones de nombre de archivo que tienen una prioridad más baja"
 
 #: ../../runtime/optwin.vim:1129
 msgid "list of file name extensions added when searching for a file"
 msgstr ""
+"lista de extensiones de nombre de archivo agregadas al buscar un archivo"
 
 #: ../../runtime/optwin.vim:1134
 msgid "list of patterns to ignore files for file name completion"
 msgstr ""
+"lista de patrones para ignorar archivos para completar el nombre del archivo"
 
 #: ../../runtime/optwin.vim:1137
 msgid "ignore case when using file names"
-msgstr ""
+msgstr "ignorar mayúsculas y minúsculas al usar nombres de archivo"
 
 #: ../../runtime/optwin.vim:1139
 msgid "ignore case when completing file names"
-msgstr ""
+msgstr "ignorar mayúsculas y minúsculas al completar nombres de archivos"
 
 #: ../../runtime/optwin.vim:1142
 msgid "command-line completion shows a list of matches"
 msgstr ""
+"el completado de la línea de comandos muestra una lista de coincidencias"
 
 #: ../../runtime/optwin.vim:1145
 msgid "key used to open the command-line window"
-msgstr ""
+msgstr "tecla utilizada para abrir la ventana de línea de comandos"
 
 #: ../../runtime/optwin.vim:1147
 msgid "height of the command-line window"
-msgstr ""
+msgstr "altura de la ventana de la línea de comandos"
 
 #: ../../runtime/optwin.vim:1151
-#, fuzzy
 msgid "executing external commands"
-msgstr "\"columns\" no es 80, no puede ejecutar órdenes externas"
+msgstr "ejecutando comandos externos"
 
 #: ../../runtime/optwin.vim:1152
 msgid "name of the shell program used for external commands"
-msgstr ""
+msgstr "nombre del programa shell utilizado para comandos externos"
 
 #: ../../runtime/optwin.vim:1155
 msgid "when to use the shell or directly execute a command"
-msgstr ""
+msgstr "cuándo usar la shell o ejecutar directamente un comando"
 
 #: ../../runtime/optwin.vim:1158
 msgid "character(s) to enclose a shell command in"
-msgstr ""
+msgstr "carácter(es) con los que encerrar un comando de shell"
 
 #: ../../runtime/optwin.vim:1160
 msgid "like 'shellquote' but include the redirection"
-msgstr ""
+msgstr "como 'shellquote' pero incluye la redirección"
 
 #: ../../runtime/optwin.vim:1162
 msgid "characters to escape when 'shellxquote' is ("
-msgstr ""
+msgstr "caracteres para escapar cuando 'shellxquote' es ("
 
 #: ../../runtime/optwin.vim:1164
 msgid "argument for 'shell' to execute a command"
-msgstr ""
+msgstr "argumento para 'shell' para ejecutar un comando"
 
 #: ../../runtime/optwin.vim:1166
 msgid "used to redirect command output to a file"
-msgstr ""
+msgstr "se utiliza para redirigir la salida del comando a un archivo"
 
 #: ../../runtime/optwin.vim:1168
 msgid "use a temp file for shell commands instead of using a pipe"
 msgstr ""
+"usar un archivo temporal para los comandos de shell en lugar de usar una"
+" tubería (pipe)"
 
 #: ../../runtime/optwin.vim:1170
 msgid "program used for \"=\" command"
-msgstr ""
+msgstr "programa utilizado para el comando \"=\""
 
 #: ../../runtime/optwin.vim:1173
 msgid "program used to format lines with \"gq\" command"
-msgstr ""
+msgstr "programa utilizado para formatear líneas con el comando \"gq\""
 
 #: ../../runtime/optwin.vim:1175
 msgid "program used for the \"K\" command"
-msgstr ""
+msgstr "programa utilizado para el comando \"K\""
 
 #: ../../runtime/optwin.vim:1177
 msgid "warn when using a shell command and a buffer has changes"
-msgstr ""
+msgstr "advertir cuando se usa un comando de shell y un búfer tiene cambios"
 
 #: ../../runtime/optwin.vim:1182
 msgid "running make and jumping to errors (quickfix)"
-msgstr ""
+msgstr "ejecutar \"make\" y saltar a los errores (quickfix)"
 
 #: ../../runtime/optwin.vim:1183
 msgid "name of the file that contains error messages"
-msgstr ""
+msgstr "nombre del archivo que contiene mensajes de error"
 
 #: ../../runtime/optwin.vim:1185
 msgid "list of formats for error messages"
-msgstr ""
+msgstr "lista de formatos para mensajes de error"
 
 #: ../../runtime/optwin.vim:1188
 msgid "program used for the \":make\" command"
-msgstr ""
+msgstr "programa utilizado para el comando \":make\""
 
 #: ../../runtime/optwin.vim:1191
 msgid "string used to put the output of \":make\" in the error file"
 msgstr ""
+"cadena utilizada para poner la salida de \":make\" en el archivo de error"
 
 #: ../../runtime/optwin.vim:1193
 msgid "name of the errorfile for the 'makeprg' command"
-msgstr ""
+msgstr "nombre del archivo de error para el comando 'makeprg'"
 
 #: ../../runtime/optwin.vim:1195
 msgid "program used for the \":grep\" command"
-msgstr ""
+msgstr "programa utilizado para el comando \":grep\""
 
 #: ../../runtime/optwin.vim:1198
 msgid "list of formats for output of 'grepprg'"
-msgstr ""
+msgstr "lista de formatos para la salida de 'grepprg'"
 
 #: ../../runtime/optwin.vim:1200
 msgid "encoding of the \":make\" and \":grep\" output"
-msgstr ""
+msgstr "codificación de la salida \":make\" y \":grep\""
 
 #: ../../runtime/optwin.vim:1203
 msgid "function to display text in the quickfix window"
-msgstr ""
+msgstr "función para mostrar texto en la ventana \"quickfix\""
 
 #: ../../runtime/optwin.vim:1209
 msgid "system specific"
-msgstr ""
+msgstr "específico del sistema"
 
 #: ../../runtime/optwin.vim:1210
 msgid "use forward slashes in file names; for Unix-like shells"
 msgstr ""
+"utilizar barras diagonales en los nombres de archivo; para shells tipo Unix"
 
 #: ../../runtime/optwin.vim:1212
 msgid "specifies slash/backslash used for completion"
-msgstr ""
+msgstr "especifica la barra invertida utilizada para completar"
 
 #: ../../runtime/optwin.vim:1217
 msgid "language specific"
-msgstr ""
+msgstr "específico del idioma"
 
 #: ../../runtime/optwin.vim:1218
-#, fuzzy
 msgid "specifies the characters in a file name"
-msgstr "E18: Caracteres inesperados en :let"
+msgstr "especifica los caracteres en un nombre de archivo"
 
 #: ../../runtime/optwin.vim:1220
 msgid "specifies the characters in an identifier"
-msgstr ""
+msgstr "especifica los caracteres en un identificador"
 
 #: ../../runtime/optwin.vim:1222
 msgid "specifies the characters in a keyword"
-msgstr ""
+msgstr "especifica los caracteres en una palabra clave"
 
 #: ../../runtime/optwin.vim:1225
-#, fuzzy
 msgid "specifies printable characters"
-msgstr "E595: Contiene un carácter no imprimible o de más de un byte"
+msgstr "especifica caracteres imprimibles"
 
 #: ../../runtime/optwin.vim:1228
 msgid "specifies escape characters in a string"
-msgstr ""
+msgstr "especifica caracteres de escape en una cadena"
 
 #: ../../runtime/optwin.vim:1233
 msgid "display the buffer right-to-left"
-msgstr ""
+msgstr "mostrar el búfer de derecha a izquierda"
 
 #: ../../runtime/optwin.vim:1236
 msgid "when to edit the command-line right-to-left"
-msgstr ""
+msgstr "cuándo editar la línea de comandos de derecha a izquierda"
 
 #: ../../runtime/optwin.vim:1239
 msgid "insert characters backwards"
-msgstr ""
+msgstr "insertar caracteres al revés"
 
 #: ../../runtime/optwin.vim:1241
 msgid "allow CTRL-_ in Insert and Command-line mode to toggle 'revins'"
 msgstr ""
+"permitir CTRL-_ en el modo Insertar y Línea de comando para alternar 'revins'"
 
 #: ../../runtime/optwin.vim:1243
 msgid "the ASCII code for the first letter of the Hebrew alphabet"
-msgstr ""
+msgstr "el código ASCII de la primera letra del alfabeto hebreo"
 
 #: ../../runtime/optwin.vim:1245
 msgid "use Hebrew keyboard mapping"
-msgstr ""
+msgstr "usar la asignación de teclado hebreo"
 
 #: ../../runtime/optwin.vim:1247
 msgid "use phonetic Hebrew keyboard mapping"
-msgstr ""
+msgstr "usar la asignación fonética del teclado hebreo"
 
 #: ../../runtime/optwin.vim:1251
 msgid "prepare for editing Arabic text"
-msgstr ""
+msgstr "prepararse para editar texto en árabe"
 
 #: ../../runtime/optwin.vim:1254
 msgid "perform shaping of Arabic characters"
-msgstr ""
+msgstr "realizar la formación de caracteres árabes"
 
 #: ../../runtime/optwin.vim:1256
 msgid "terminal will perform bidi handling"
-msgstr ""
+msgstr "la terminal realizará el manejo de bidi"
 
 #: ../../runtime/optwin.vim:1260
 msgid "name of a keyboard mapping"
-msgstr ""
+msgstr "nombre de una asignación de teclado"
 
 #: ../../runtime/optwin.vim:1264
 msgid "list of characters that are translated in Normal mode"
-msgstr ""
+msgstr "lista de caracteres que se traducen en modo Normal"
 
 #: ../../runtime/optwin.vim:1266
 msgid "apply 'langmap' to mapped characters"
-msgstr ""
+msgstr "aplicar 'langmap' a los caracteres asignados"
 
 #: ../../runtime/optwin.vim:1270
 msgid "when set never use IM; overrules following IM options"
 msgstr ""
+"cuando está configurado, no utilizar nunca IM; anula las siguientes opciones"
+" de IM"
 
 #: ../../runtime/optwin.vim:1273
 msgid "in Insert mode: 1: use :lmap; 2: use IM; 0: neither"
-msgstr ""
+msgstr "en el modo Insertar: 1: utilizar :lmap; 2: utilizar IM; 0: ninguno"
 
 #: ../../runtime/optwin.vim:1276
 msgid "input method style, 0: on-the-spot, 1: over-the-spot"
-msgstr ""
+msgstr "estilo de método de entrada, 0: \"on-the-spot\", 1: \"over-the-spot\""
 
 #: ../../runtime/optwin.vim:1278
 msgid "entering a search pattern: 1: use :lmap; 2: use IM; 0: neither"
 msgstr ""
+"introducir un patrón de búsqueda: 1: utilizar :lmap; 2: utilizar IM; 0:"
+" ninguno"
 
 #: ../../runtime/optwin.vim:1282
 msgid "when set always use IM when starting to edit a command line"
 msgstr ""
+"cuando está configurado, siempre use IM cuando comience a editar una línea de"
+" comando"
 
 #: ../../runtime/optwin.vim:1284
 msgid "function to obtain IME status"
-msgstr ""
+msgstr "función para obtener el estado IME"
 
 #: ../../runtime/optwin.vim:1286
 msgid "function to enable/disable IME"
-msgstr ""
+msgstr "función para habilitar/deshabilitar IME"
 
 #: ../../runtime/optwin.vim:1291
-#, fuzzy
 msgid "multi-byte characters"
-msgstr "%ld caracteres"
+msgstr "caracteres multi bytes"
 
 #: ../../runtime/optwin.vim:1292
 msgid ""
 "character encoding used in Vim: \"latin1\", \"utf-8\",\n"
 "\"euc-jp\", \"big5\", etc."
 msgstr ""
+"codificación de caracteres utilizada en Vim: \"latin1\", \"utf-8\",\n"
+"\"euc-jp\", \"big5\", etc."
 
 #: ../../runtime/optwin.vim:1294
 msgid "character encoding for the current file"
-msgstr ""
+msgstr "codificación de caracteres para el archivo actual"
 
 #: ../../runtime/optwin.vim:1297
 msgid "automatically detected character encodings"
-msgstr ""
+msgstr "codificaciones de caracteres detectadas automáticamente"
 
 #: ../../runtime/optwin.vim:1299
 msgid "character encoding used by the terminal"
-msgstr ""
+msgstr "codificación de caracteres utilizada por la terminal"
 
 #: ../../runtime/optwin.vim:1301
 msgid "expression used for character encoding conversion"
-msgstr ""
+msgstr "expresión utilizada para la conversión de codificación de caracteres"
 
 #: ../../runtime/optwin.vim:1303
 msgid "delete combining (composing) characters on their own"
-msgstr ""
+msgstr "eliminar la combinación (composición) de caracteres por sí solos"
 
 #: ../../runtime/optwin.vim:1305
 msgid "maximum number of combining (composing) characters displayed"
-msgstr ""
+msgstr "número máximo de caracteres combinados (compuestos) mostrados"
 
 #: ../../runtime/optwin.vim:1308
 msgid "key that activates the X input method"
-msgstr ""
+msgstr "tecla que activa el método de entrada X"
 
 #: ../../runtime/optwin.vim:1311
 msgid "width of ambiguous width characters"
-msgstr ""
+msgstr "ancho de caracteres de ancho ambiguo"
 
 #: ../../runtime/optwin.vim:1313
 msgid "emoji characters are full width"
-msgstr ""
+msgstr "los caracteres emoji son de ancho completo"
 
 #: ../../runtime/optwin.vim:1317
 msgid "various"
-msgstr ""
+msgstr "varios"
 
 #: ../../runtime/optwin.vim:1318
 msgid ""
 "when to use virtual editing: \"block\", \"insert\", \"all\"\n"
 "and/or \"onemore\""
 msgstr ""
+"cuándo usar la edición virtual: \"block\", \"insert\", \"all\"\n"
+"y/o \"onemore\""
 
 #: ../../runtime/optwin.vim:1320
 msgid "list of autocommand events which are to be ignored"
-msgstr ""
+msgstr "lista de eventos de autocomando que deben ignorarse"
 
 #: ../../runtime/optwin.vim:1322
 msgid "load plugin scripts when starting up"
-msgstr ""
+msgstr "cargar scripts de complementos al iniciar"
 
 #: ../../runtime/optwin.vim:1324
 msgid "enable reading .vimrc/.exrc/.gvimrc in the current directory"
-msgstr ""
+msgstr "habilitar la lectura de .vimrc/.exrc/.gvimrc en el directorio actual"
 
 #: ../../runtime/optwin.vim:1326
 msgid "safer working with script files in the current directory"
-msgstr ""
+msgstr "trabajo más seguro con archivos de script en el directorio actual"
 
 #: ../../runtime/optwin.vim:1328
 msgid "use the 'g' flag for \":substitute\""
-msgstr ""
+msgstr "usa la opción 'g' para \":substitute\""
 
 #: ../../runtime/optwin.vim:1330
 msgid "'g' and 'c' flags of \":substitute\" toggle"
-msgstr ""
+msgstr "Las opciones 'g' y 'c' de \":substitute\" alternan la función"
 
 #: ../../runtime/optwin.vim:1333
 msgid "allow reading/writing devices"
-msgstr ""
+msgstr "permitir dispositivos de lectura/escritura"
 
 #: ../../runtime/optwin.vim:1337
 msgid "maximum depth of function calls"
-msgstr ""
+msgstr "profundidad máxima de las llamadas a funciones"
 
 #: ../../runtime/optwin.vim:1341
 msgid "list of words that specifies what to put in a session file"
-msgstr ""
+msgstr "lista de palabras que especifica qué poner en un archivo de sesión"
 
 #: ../../runtime/optwin.vim:1343
 msgid "list of words that specifies what to save for :mkview"
-msgstr ""
+msgstr "lista de palabras que especifica para qué guardar :mkview"
 
 #: ../../runtime/optwin.vim:1345
 msgid "directory where to store files with :mkview"
-msgstr ""
+msgstr "directorio donde almacenar archivos con :mkview"
 
 #: ../../runtime/optwin.vim:1349
 msgid "list that specifies what to write in the viminfo file"
-msgstr ""
+msgstr "lista que especifica qué escribir en el archivo viminfo"
 
 #: ../../runtime/optwin.vim:1351
 msgid "file name used for the viminfo file"
-msgstr ""
+msgstr "nombre de archivo utilizado para el archivo viminfo"
 
 #: ../../runtime/optwin.vim:1355
 msgid "what happens with a buffer when it's no longer in a window"
-msgstr ""
+msgstr "qué sucede con un búfer cuando ya no está en una ventana"
 
 #: ../../runtime/optwin.vim:1358
 msgid "empty, \"nofile\", \"nowrite\", \"quickfix\", etc.: type of buffer"
-msgstr ""
+msgstr "vacío, \"nofile\", \"nowrite\", \"quickfix\", etc.: tipo de búfer"
 
 #: ../../runtime/optwin.vim:1362
 msgid "whether the buffer shows up in the buffer list"
-msgstr ""
+msgstr "si el búfer se muestra en la lista de búfer"
 
 #: ../../runtime/optwin.vim:1365
 msgid "set to \"msg\" to see all error messages"
-msgstr ""
+msgstr "establecer en \"msg\" para ver todos los mensajes de error"
 
 #: ../../runtime/optwin.vim:1368
 msgid "whether to show the signcolumn"
-msgstr ""
+msgstr "mostrar la columna de signos"
 
 #: ../../runtime/optwin.vim:1373
 msgid "interval in milliseconds between polls for MzScheme threads"
-msgstr ""
+msgstr "intervalo en milisegundos entre encuestas para subprocesos MzScheme"
 
 #: ../../runtime/optwin.vim:1377
 msgid "name of the Lua dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica Lua"
 
 #: ../../runtime/optwin.vim:1381
 msgid "name of the Perl dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica de Perl"
 
 #: ../../runtime/optwin.vim:1385
 msgid "whether to use Python 2 or 3"
-msgstr ""
+msgstr "usar Python 2 o 3"
 
 #: ../../runtime/optwin.vim:1389
 msgid "name of the Python 2 dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica de Python 2"
 
 #: ../../runtime/optwin.vim:1393
 msgid "name of the Python 2 home directory"
-msgstr ""
+msgstr "nombre del directorio de inicio de Python 2"
 
 #: ../../runtime/optwin.vim:1397
 msgid "name of the Python 3 dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica de Python 3"
 
 #: ../../runtime/optwin.vim:1401
 msgid "name of the Python 3 home directory"
-msgstr ""
+msgstr "nombre del directorio de inicio de Python 3"
 
 #: ../../runtime/optwin.vim:1405
 msgid "name of the Ruby dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica Ruby"
 
 #: ../../runtime/optwin.vim:1409
 msgid "name of the Tcl dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica Tcl"
 
 #: ../../runtime/optwin.vim:1413
 msgid "name of the MzScheme dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica MzScheme"
 
 #: ../../runtime/optwin.vim:1415
 msgid "name of the MzScheme GC dynamic library"
-msgstr ""
+msgstr "nombre de la biblioteca dinámica MzScheme GC"
 
 #~ msgid "1 buffer deleted"
 #~ msgstr "Se suprimió un (1) búfer"
