@@ -78,6 +78,7 @@ enddef
 
 def Test_add()
   v9.CheckDefAndScriptFailure(['add({}, 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<unknown>', 'E1226: List or Blob required for argument 1'])
+  v9.CheckDefAndScriptFailure(['add([])'], 'E119:')
   v9.CheckDefExecFailure([
         'var ln: list<number> = [1]',
         'add(ln, "a")'],

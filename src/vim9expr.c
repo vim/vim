@@ -1122,7 +1122,7 @@ get_lambda_tv_and_compile(
     r = get_lambda_tv(arg, rettv, types_optional, evalarg);
     current_sctx.sc_version = save_sc_version;
     if (r != OK)
-	return r;
+	return r;  // currently unreachable
 
     // "rettv" will now be a partial referencing the function.
     ufunc = rettv->vval.v_partial->pt_func;
@@ -1682,12 +1682,6 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 
-	    while (p > start && (p[-1] == '-' || p[-1] == '+'))
-	    {
-		--p;
-		if (*p == '-')
-		    negate = !negate;
-	    }
 	    // only '-' has an effect, for '+' we only check the type
 	    if (negate)
 	    {
