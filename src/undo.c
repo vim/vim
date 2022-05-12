@@ -2831,9 +2831,10 @@ u_undoredo(int undo)
 	if (oldsize > 0 || newsize > 0)
 	    changed_lines(top + 1, 0, bot, newsize - oldsize);
 
-	// set '[ and '] mark
+	// Set the '[ mark.
 	if (top + 1 < curbuf->b_op_start.lnum)
 	    curbuf->b_op_start.lnum = top + 1;
+	// Set the '] mark.
 	if (newsize == 0 && top + 1 > curbuf->b_op_end.lnum)
 	    curbuf->b_op_end.lnum = top + 1;
 	else if (top + newsize > curbuf->b_op_end.lnum)
@@ -2852,6 +2853,12 @@ u_undoredo(int undo)
 	uep->ue_next = newlist;
 	newlist = uep;
     }
+
+    // Ensure the '[ and '] marks are within bounds.
+    if (curbuf->b_op_start.lnum > curbuf->b_ml.ml_line_count)
+	 curbuf->b_op_start.lnum = curbuf->b_ml.ml_line_count;
+    if (curbuf->b_op_end.lnum > curbuf->b_ml.ml_line_count)
+	 curbuf->b_op_end.lnum = curbuf->b_ml.ml_line_count;
 
     // Set the cursor to the desired position.  Check that the line is valid.
     curwin->w_cursor = new_curpos;
