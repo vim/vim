@@ -140,9 +140,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    typep->type_curr = &t_any;
 	    typep->type_decl = &t_any;
 	}
-	if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
-	    return FAIL;
-	if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
+	if (may_generate_2STRING(-1, FALSE, cctx) == FAIL
+		|| generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 	    return FAIL;
 	if (keeping_dict != NULL)
 	    *keeping_dict = TRUE;
@@ -246,8 +245,7 @@ compile_load_scriptvar(
 	cctx_T *cctx,
 	char_u *name,	    // variable NUL terminated
 	char_u *start,	    // start of variable
-	char_u **end,	    // end of variable, may be NULL
-	int    error)	    // when TRUE may give error
+	char_u **end)	    // end of variable, may be NULL
 {
     scriptitem_T    *si;
     int		    idx;
@@ -368,14 +366,10 @@ compile_load_scriptvar(
 	return OK;
     }
 
-    if (idx == -1 || si->sn_version != SCRIPT_VERSION_VIM9)
-	// variable is not in sn_var_vals: old style script.
-	return generate_OLDSCRIPT(cctx, ISN_LOADS, name, current_sctx.sc_sid,
+    // Can only get here if we know "name" is a script variable and not in a
+    // Vim9 script (variable is not in sn_var_vals): old style script.
+    return generate_OLDSCRIPT(cctx, ISN_LOADS, name, current_sctx.sc_sid,
 								       &t_any);
-
-    if (error)
-	semsg(_(e_item_not_found_str), name);
-    return FAIL;
 }
 
     static int
@@ -462,7 +456,7 @@ compile_load(
 			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
-							    NULL, &end, error);
+								   NULL, &end);
 			  break;
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			  {
@@ -538,7 +532,7 @@ compile_load(
 		// already exists in a Vim9 script or when it's imported.
 		if (script_var_exists(*arg, len, cctx, NULL) == OK
 				      || find_imported(name, 0, FALSE) != NULL)
-		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
+		   res = compile_load_scriptvar(cctx, name, *arg, &end);
 
 		// When evaluating an expression and the name starts with an
 		// uppercase letter it can be a user defined function.

@@ -1140,7 +1140,7 @@ generate_loadvar(
 	    break;
 	case dest_script:
 	    compile_load_scriptvar(cctx,
-		    name + (name[1] == ':' ? 2 : 0), NULL, NULL, TRUE);
+				  name + (name[1] == ':' ? 2 : 0), NULL, NULL);
 	    break;
 	case dest_env:
 	    // Include $ in the name here

@@ -2695,6 +2695,21 @@ def Test_expr8funcref()
       Test()
   END
   v9.CheckScriptSuccess(lines)
+
+  # using funcref in legacy script
+  lines =<< trim END
+      def s:Refme(): string
+        return 'yes'
+      enddef
+
+      def TestFunc()
+        var TheRef = s:Refme
+        assert_equal('yes', TheRef())
+      enddef
+
+      call TestFunc()
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 let g:test_space_dict = {'': 'empty', ' ': 'space'}

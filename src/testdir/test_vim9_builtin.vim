@@ -4083,6 +4083,11 @@ def Test_substitute()
     assert_equal("4", substitute("3", '\d', '\=str2nr(submatch(0)) + 1', 'g'))
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    assert_equal("4", substitute("3", '\d', '\="text" x', 'g'))
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E488: Trailing characters: x')
 enddef
 
 def Test_swapinfo()
