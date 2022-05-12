@@ -467,7 +467,7 @@ def NewGroup(cmd: string) #{{{2
         execute $'highlight link {group} NONE'
     endif
 
-    [hl]->hlset()
+    [hl]->Hlset(cmd)
     Reload()
     search($'^{newname}\_s')
     normal! zv
