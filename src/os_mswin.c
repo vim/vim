@@ -515,13 +515,13 @@ wstat_symlink_aware(const WCHAR *name, stat_T *stp)
     char_u *
 resolve_appexeclink(char_u *fname)
 {
-    DWORD	        attr = 0;
-    int	                idx;
-    WCHAR	        *p, *end, *wname;
+    DWORD		attr = 0;
+    int			idx;
+    WCHAR		*p, *end, *wname;
     // The buffer size is arbitrarily chosen to be "big enough" (TM), the
     // ceiling should be around 16k.
-    char_u	        buf[4096];
-    DWORD	        buf_len = sizeof(buf);
+    char_u		buf[4096];
+    DWORD		buf_len = sizeof(buf);
     REPARSE_DATA_BUFFER *rb = (REPARSE_DATA_BUFFER *)buf;
 
     wname = enc_to_utf16(fname, NULL);
