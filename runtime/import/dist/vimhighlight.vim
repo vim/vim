@@ -872,11 +872,24 @@ def WriteFile(object: list<string>, fname: string) #{{{2
 enddef
 
 def SaveColorsAsVimScript(fname: string) #{{{2
+    if fname->empty()
+        echo 'usage:  :ColorScheme save /path/to/script.vim'
+        return
+    endif
+
+    var colorscheme_name: string = input('name of the new color scheme: ') | redraw
+    if colorscheme_name == ''
+        return
+    elseif colorscheme_name !~ '^\w\+$'
+        echo colorscheme_name->printf('"%s" is not a valid name; only use word characters')
+        return
+    endif
+
     var script: list<string> =<< trim eval ENDD
         set background={&background}
 
         hi clear
-        let g:colors_name = 'MY_COLOR_SCHEME'
+        let g:colors_name = '{colorscheme_name}'
 
         if (has('termguicolors') && &termguicolors) || has('gui_running')
             " TODO: see :help g:terminal_ansi_colors
