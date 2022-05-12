@@ -633,6 +633,8 @@ def SetOptionsAndInterface() #{{{2
     command! -bar -buffer -complete=custom,CompleteFile -nargs=1 Restore Restore(<q-args>)
     command! -bang -bar -buffer -complete=custom,CompleteColorScheme -nargs=? ColorScheme {
         ColorSchemeHandler(<q-args>, <bang>0)
+        # reset undolist
+        undolist = {states: [hlget()], pos: 0}
     }
 enddef
 
