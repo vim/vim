@@ -1894,9 +1894,12 @@ func Test_prop_spell()
   set spell
   call AddPropTypes()
 
-  call setline(1, "helo world")
+  call setline(1, ["helo world", "helo helo helo"])
   call prop_add(1, 1, #{type: 'one', length: 4})
   call prop_add(1, 6, #{type: 'two', length: 5})
+  call prop_add(2, 1, #{type: 'three', length: 4})
+  call prop_add(2, 6, #{type: 'three', length: 4})
+  call prop_add(2, 11, #{type: 'three', length: 4})
 
   " The first prop over 'helo' increases its length after the word is corrected
   " to 'Hello', the second one is shifted to the right.
@@ -1910,6 +1913,20 @@ func Test_prop_spell()
 
   call assert_equal('Hello world', getline(1))
   call assert_equal(expected, prop_list(1))
+
+  " Repeat the replacement done by z=
+  spellrepall
+
+  let expected = [
+      \ {'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 1, 'type': 'three',
+      \ 'length': 5, 'start': 1},
+      \ {'id': 0, 'col': 7, 'type_bufnr': 0, 'end': 1, 'type': 'three',
+      \ 'length': 5, 'start': 1},
+      \ {'id': 0, 'col': 13, 'type_bufnr': 0, 'end': 1, 'type': 'three',
+      \ 'length': 5, 'start': 1}
+      \ ]
+  call assert_equal('Hello Hello Hello', getline(2))
+  call assert_equal(expected, prop_list(2))
 
   call DeletePropTypes()
   set spell&
