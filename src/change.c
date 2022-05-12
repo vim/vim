@@ -2349,11 +2349,15 @@ truncate_line(int fixpos)
     char_u	*newp;
     linenr_T	lnum = curwin->w_cursor.lnum;
     colnr_T	col = curwin->w_cursor.col;
+    char_u	*old_line;
+    int		deleted;
 
+    old_line = ml_get(lnum);
     if (col == 0)
 	newp = vim_strsave((char_u *)"");
     else
-	newp = vim_strnsave(ml_get(lnum), col);
+	newp = vim_strnsave(old_line, col);
+    deleted = STRLEN(old_line) - col;
 
     if (newp == NULL)
 	return FAIL;
@@ -2361,7 +2365,7 @@ truncate_line(int fixpos)
     ml_replace(lnum, newp, FALSE);
 
     // mark the buffer as changed and prepare for displaying
-    changed_bytes(lnum, curwin->w_cursor.col);
+    inserted_bytes(lnum, curwin->w_cursor.col, -(int)deleted);
 
     // If "fixpos" is TRUE we don't want to end up positioned at the NUL.
     if (fixpos && curwin->w_cursor.col > 0)

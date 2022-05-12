@@ -534,6 +534,24 @@ func Test_prop_backspace()
   set bs&
 endfunc
 
+func Test_prop_change()
+  new
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+
+  " Characterwise.
+  exe "normal 7|c$\<Esc>"
+  call assert_equal('xonex ', getline(1))
+  call assert_equal(expected[:0], prop_list(1))
+  " Linewise.
+  exe "normal cc\<Esc>"
+  call assert_equal('', getline(1))
+  call assert_equal([], prop_list(1))
+
+  call DeletePropTypes()
+  bwipe!
+  set bs&
+endfunc
+
 func Test_prop_replace()
   new
   set bs=2
