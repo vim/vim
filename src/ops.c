@@ -287,7 +287,9 @@ shift_block(oparg_T *oap, int amount)
     int			incr;
     colnr_T		ws_vcol;
     int			i = 0, j = 0;
-    int			len;
+    int			added;
+    unsigned		new_line_len;	// the length of the line after the
+					// block shift
 #ifdef FEAT_RIGHTLEFT
     int			old_p_ri = p_ri;
 
@@ -356,16 +358,17 @@ shift_block(oparg_T *oap, int amount)
 #endif
 	// if we're splitting a TAB, allow for it
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
-	len = (int)STRLEN(bd.textstart) + 1;
-	newp = alloc(bd.textcol + i + j + len);
+
+	new_line_len = bd.textcol + i + j + (int)STRLEN(bd.textstart);
+	newp = alloc(new_line_len);
 	if (newp == NULL)
 	    return;
-	vim_memset(newp, NUL, (size_t)(bd.textcol + i + j + len));
+	vim_memset(newp, NUL, (size_t)new_line_len);
 	mch_memmove(newp, oldp, (size_t)bd.textcol);
 	vim_memset(newp + bd.textcol, TAB, (size_t)i);
 	vim_memset(newp + bd.textcol + i, ' ', (size_t)j);
-	// the end
-	mch_memmove(newp + bd.textcol + i + j, bd.textstart, (size_t)len);
+	// Note that STRMOVE() copies the trailing NUL.
+	STRMOVE(newp + bd.textcol + i + j, bd.textstart);
     }
     else // left
     {
@@ -376,8 +379,6 @@ shift_block(oparg_T *oap, int amount)
 	colnr_T	    verbatim_copy_width;// the (displayed) width of this part
 					// of line
 	unsigned    fill;		// nr of spaces that replace a TAB
-	unsigned    new_line_len;	// the length of the line after the
-					// block shift
 	size_t	    block_space_width;
 	size_t	    shift_amount;
 	char_u	    *non_white = bd.textstart;
@@ -448,18 +449,20 @@ shift_block(oparg_T *oap, int amount)
 	// - the rest of the line, pointed to by non_white.
 	new_line_len = (unsigned)(verbatim_copy_end - oldp)
 		       + fill
-		       + (unsigned)STRLEN(non_white) + 1;
+		       + (unsigned)STRLEN(non_white);
 
-	newp = alloc(new_line_len);
+	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
 	mch_memmove(newp, oldp, (size_t)(verbatim_copy_end - oldp));
 	vim_memset(newp + (verbatim_copy_end - oldp), ' ', (size_t)fill);
+	// Note that STRMOVE() copies the trailing NUL.
 	STRMOVE(newp + (verbatim_copy_end - oldp) + fill, non_white);
     }
     // replace the line
+    added = new_line_len - (int)STRLEN(oldp);
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
-    changed_bytes(curwin->w_cursor.lnum, bd.textcol);
+    inserted_bytes(curwin->w_cursor.lnum, bd.textcol, added);
     State = oldstate;
     curwin->w_cursor.col = oldcol;
 #ifdef FEAT_RIGHTLEFT
