@@ -4155,5 +4155,23 @@ if has('lua')
   enddef
 endif
 
+if has('perl')
+  def Test_perl_heredoc_nested()
+    var lines =<< trim END
+        vim9script
+        def F(): string
+            def G(): string
+                perl << EOF
+        EOF
+                return 'done'
+            enddef
+            return G()
+        enddef
+        assert_equal('done', F())
+    END
+    v9.CheckScriptSuccess(lines)
+  enddef
+endif
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

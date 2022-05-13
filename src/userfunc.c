@@ -1051,53 +1051,57 @@ get_function_body(
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		getline_options = GETLINE_NONE;
 		is_heredoc = TRUE;
-		if (eap->cmdidx == CMD_def)
+		if (eap->cmdidx == CMD_def && nesting == 0)
 		    heredoc_concat_len = newlines->ga_len + 1;
 	    }
 
-	    // Check for ":cmd v =<< [trim] EOF"
-	    //       and ":cmd [a, b] =<< [trim] EOF"
-	    //       and "lines =<< [trim] EOF" for Vim9
-	    // Where "cmd" can be "let", "var", "final" or "const".
-	    arg = skipwhite(skiptowhite(p));
-	    if (*arg == '[')
-		arg = vim_strchr(arg, ']');
-	    if (arg != NULL)
+	    if (!is_heredoc)
 	    {
-		int found = (eap->cmdidx == CMD_def && arg[0] == '='
+		// Check for ":cmd v =<< [trim] EOF"
+		//       and ":cmd [a, b] =<< [trim] EOF"
+		//       and "lines =<< [trim] EOF" for Vim9
+		// Where "cmd" can be "let", "var", "final" or "const".
+		arg = skipwhite(skiptowhite(p));
+		if (*arg == '[')
+		    arg = vim_strchr(arg, ']');
+		if (arg != NULL)
+		{
+		    int found = (eap->cmdidx == CMD_def && arg[0] == '='
 					     && arg[1] == '<' && arg[2] =='<');
 
-		if (!found)
-		    // skip over the argument after "cmd"
-		    arg = skipwhite(skiptowhite(arg));
-		if (found || (arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
-			&& (checkforcmd(&p, "let", 2)
-			    || checkforcmd(&p, "var", 3)
-			    || checkforcmd(&p, "final", 5)
-			    || checkforcmd(&p, "const", 5))))
-		{
-		    p = skipwhite(arg + 3);
-		    while (TRUE)
+		    if (!found)
+			// skip over the argument after "cmd"
+			arg = skipwhite(skiptowhite(arg));
+		    if (found || (arg[0] == '=' && arg[1] == '<'
+								&& arg[2] =='<'
+			    && (checkforcmd(&p, "let", 2)
+				|| checkforcmd(&p, "var", 3)
+				|| checkforcmd(&p, "final", 5)
+				|| checkforcmd(&p, "const", 5))))
 		    {
-			if (STRNCMP(p, "trim", 4) == 0)
+			p = skipwhite(arg + 3);
+			while (TRUE)
 			{
-			    // Ignore leading white space.
-			    p = skipwhite(p + 4);
-			    heredoc_trimmed = vim_strnsave(theline,
-				    skipwhite(theline) - theline);
-			    continue;
+			    if (STRNCMP(p, "trim", 4) == 0)
+			    {
+				// Ignore leading white space.
+				p = skipwhite(p + 4);
+				heredoc_trimmed = vim_strnsave(theline,
+					skipwhite(theline) - theline);
+				continue;
+			    }
+			    if (STRNCMP(p, "eval", 4) == 0)
+			    {
+				// Ignore leading white space.
+				p = skipwhite(p + 4);
+				continue;
+			    }
+			    break;
 			}
-			if (STRNCMP(p, "eval", 4) == 0)
-			{
-			    // Ignore leading white space.
-			    p = skipwhite(p + 4);
-			    continue;
-			}
-			break;
+			skip_until = vim_strnsave(p, skiptowhite(p) - p);
+			getline_options = GETLINE_NONE;
+			is_heredoc = TRUE;
 		    }
-		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
-		    getline_options = GETLINE_NONE;
-		    is_heredoc = TRUE;
 		}
 	    }
 	}
