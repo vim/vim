@@ -545,6 +545,12 @@ def Test_expr3_fails()
       endif
   END
   v9.CheckDefAndScriptFailure(lines, ['E1012:', 'E1135: Using a String as a Bool'], 1)
+
+  lines =<< trim END
+      var s = 'asdf'
+      echo true && s
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1012: Type mismatch; expected bool but got string', 'E1135: Using a String as a Bool: "asdf"'])
 enddef
 
 " global variables to use for tests with the "any" type
@@ -3377,6 +3383,18 @@ def Test_expr8_parens()
 
   v9.CheckDefAndScriptFailure(['echo ('], ['E1097: Line incomplete', 'E15: Invalid expression: "("'])
   v9.CheckDefAndScriptFailure(['echo (123]'], "E110: Missing ')'", 1)
+
+  # this uses up the ppconst stack
+  lines =<< eval trim END
+    vim9script
+    def F()
+      g:result = 1 + {repeat('(1 + ', 51)}1{repeat(')', 51)}
+    enddef
+    F()
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal(g:result, 53)
+  unlet g:result
 enddef
 
 def Test_expr8_negate_add()
@@ -3623,6 +3641,18 @@ def Test_expr8_method_call()
     RetVoid()->byteidx(3)
   END
   v9.CheckDefExecFailure(lines, 'E1013:')
+
+  lines =<< trim END
+      const SetList = [function('len')]
+      echo 'xx'->SetList[x]()
+  END
+  v9.CheckDefFailure(lines, 'E1001: Variable not found: x')
+
+  lines =<< trim END
+      const SetList = [function('len')]
+      echo 'xx'->SetList[0]x()
+  END
+  v9.CheckDefFailure(lines, 'E15: Invalid expression: "->SetList[0]x()"')
 enddef
 
 def Test_expr8_method_call_linebreak()
@@ -3785,6 +3815,8 @@ func Test_expr8_fails()
 
   call v9.CheckDefExecFailure(["{['a']: 1->len()"], 'E723:', 2)
   call v9.CheckScriptFailure(['vim9script', "{['a']: 1->len()"], 'E722:', 2)
+
+  call v9.CheckDefFailure(['echo #{}'], 'E1170:')
 endfunc
 
 let g:Funcrefs = [function('add')]

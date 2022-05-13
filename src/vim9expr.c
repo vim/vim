@@ -1899,6 +1899,7 @@ compile_subscript(
 		{
 		    int fail;
 		    int save_len = cctx->ctx_ufunc->uf_lines.ga_len;
+		    int	prev_did_emsg = did_emsg;
 
 		    *paren = NUL;
 
@@ -1916,7 +1917,8 @@ compile_subscript(
 
 		    if (fail)
 		    {
-			semsg(_(e_invalid_expression_str), pstart);
+			if (did_emsg == prev_did_emsg)
+			    semsg(_(e_invalid_expression_str), pstart);
 			return FAIL;
 		    }
 		}
