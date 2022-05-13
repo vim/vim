@@ -988,7 +988,7 @@ def FollowChains(groups: list<string>): list<string> #{{{2
             target = target->LinksTo()
         endwhile
         var a_link_is_cleared: bool = chain
-            ->split($'\s*${LINK}\s*')
+            ->split($'\s*{LINK}\s*')
             ->map((_, g: string) => g->IsCleared())
             ->index(true) >= 0
         if a_link_is_cleared
