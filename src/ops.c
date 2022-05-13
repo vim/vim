@@ -360,7 +360,7 @@ shift_block(oparg_T *oap, int amount)
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
 
 	new_line_len = bd.textcol + i + j + (int)STRLEN(bd.textstart);
-	newp = alloc(new_line_len);
+	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
 	vim_memset(newp, NUL, (size_t)new_line_len);
