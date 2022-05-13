@@ -286,8 +286,9 @@ shift_block(oparg_T *oap, int amount)
     struct block_def	bd;
     int			incr;
     colnr_T		ws_vcol;
-    int			i = 0, j = 0;
-    int			len;
+    int			added;
+    unsigned		new_line_len;	// the length of the line after the
+					// block shift
 #ifdef FEAT_RIGHTLEFT
     int			old_p_ri = p_ri;
 
@@ -308,6 +309,8 @@ shift_block(oparg_T *oap, int amount)
 
     if (!left)
     {
+	int	tabs = 0, spaces = 0;
+
 	/*
 	 *  1. Get start vcol
 	 *  2. Total ws vcols
@@ -343,29 +346,29 @@ shift_block(oparg_T *oap, int amount)
 #ifdef FEAT_VARTABS
 	if (!curbuf->b_p_et)
 	    tabstop_fromto(ws_vcol, ws_vcol + total,
-					ts_val, curbuf->b_p_vts_array, &i, &j);
+				ts_val, curbuf->b_p_vts_array, &tabs, &spaces);
 	else
-	    j = total;
+	    spaces = total;
 #else
 	if (!curbuf->b_p_et)
-	    i = ((ws_vcol % ts_val) + total) / ts_val; // number of tabs
-	if (i)
-	    j = ((ws_vcol % ts_val) + total) % ts_val; // number of spp
+	    tabs = ((ws_vcol % ts_val) + total) / ts_val; // number of tabs
+	if (tabs > 0)
+	    spaces = ((ws_vcol % ts_val) + total) % ts_val; // number of spp
 	else
-	    j = total;
+	    spaces = total;
 #endif
 	// if we're splitting a TAB, allow for it
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
-	len = (int)STRLEN(bd.textstart) + 1;
-	newp = alloc(bd.textcol + i + j + len);
+
+	new_line_len = bd.textcol + tabs + spaces + (int)STRLEN(bd.textstart);
+	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
-	vim_memset(newp, NUL, (size_t)(bd.textcol + i + j + len));
 	mch_memmove(newp, oldp, (size_t)bd.textcol);
-	vim_memset(newp + bd.textcol, TAB, (size_t)i);
-	vim_memset(newp + bd.textcol + i, ' ', (size_t)j);
-	// the end
-	mch_memmove(newp + bd.textcol + i + j, bd.textstart, (size_t)len);
+	vim_memset(newp + bd.textcol, TAB, (size_t)tabs);
+	vim_memset(newp + bd.textcol + tabs, ' ', (size_t)spaces);
+	// Note that STRMOVE() copies the trailing NUL.
+	STRMOVE(newp + bd.textcol + tabs + spaces, bd.textstart);
     }
     else // left
     {
@@ -376,8 +379,6 @@ shift_block(oparg_T *oap, int amount)
 	colnr_T	    verbatim_copy_width;// the (displayed) width of this part
 					// of line
 	unsigned    fill;		// nr of spaces that replace a TAB
-	unsigned    new_line_len;	// the length of the line after the
-					// block shift
 	size_t	    block_space_width;
 	size_t	    shift_amount;
 	char_u	    *non_white = bd.textstart;
@@ -448,18 +449,20 @@ shift_block(oparg_T *oap, int amount)
 	// - the rest of the line, pointed to by non_white.
 	new_line_len = (unsigned)(verbatim_copy_end - oldp)
 		       + fill
-		       + (unsigned)STRLEN(non_white) + 1;
+		       + (unsigned)STRLEN(non_white);
 
-	newp = alloc(new_line_len);
+	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
 	mch_memmove(newp, oldp, (size_t)(verbatim_copy_end - oldp));
 	vim_memset(newp + (verbatim_copy_end - oldp), ' ', (size_t)fill);
+	// Note that STRMOVE() copies the trailing NUL.
 	STRMOVE(newp + (verbatim_copy_end - oldp) + fill, non_white);
     }
     // replace the line
+    added = new_line_len - (int)STRLEN(oldp);
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
-    changed_bytes(curwin->w_cursor.lnum, bd.textcol);
+    inserted_bytes(curwin->w_cursor.lnum, bd.textcol, added);
     State = oldstate;
     curwin->w_cursor.col = oldcol;
 #ifdef FEAT_RIGHTLEFT

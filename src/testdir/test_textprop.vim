@@ -1933,5 +1933,29 @@ func Test_prop_spell()
   bwipe!
 endfunc
 
+func Test_prop_shift_block()
+  new
+  call AddPropTypes()
+
+  call setline(1, ['some     highlighted text']->repeat(2))
+  call prop_add(1, 10, #{type: 'one', length: 11})
+  call prop_add(2, 10, #{type: 'two', length: 11})
+
+  call cursor(1, 1)
+  call feedkeys("5l\<c-v>>", 'nxt')
+  call cursor(2, 1)
+  call feedkeys("5l\<c-v><", 'nxt')
+
+  let expected = [
+      \ {'lnum': 1, 'id': 0, 'col': 8, 'type_bufnr': 0, 'end': 1, 'type': 'one',
+      \ 'length': 11, 'start' : 1},
+      \ {'lnum': 2, 'id': 0, 'col': 6, 'type_bufnr': 0, 'end': 1, 'type': 'two',
+      \ 'length': 11, 'start' : 1}
+      \ ]
+  call assert_equal(expected, prop_list(1, #{end_lnum: 2}))
+
+  call DeletePropTypes()
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
