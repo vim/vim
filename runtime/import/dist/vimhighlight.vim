@@ -9,6 +9,7 @@ const HELP: list<string> =<< trim END
     C      clear highlight group under cursor
     u      undo last change
     <C-R>  redo last change
+    .      repeat last change
     R      reload buffer
     r      rename highlight group under cursor
     D      duplicate highlight group under cursor
@@ -53,6 +54,8 @@ END
 
 var buf: number
 var help_winid: number
+var last_changed_attributes: list<dict<any>>
+var last_changed_group: number
 var undolist: dict<any> = {states: [hlget()], pos: 0}
 var want_colorscheme: bool
 var winid: number
@@ -350,7 +353,6 @@ def MenuFilter(_, key: string): bool #{{{2
         # now, we can reset the group
         [set_attributes]->Hlset('change')
 
-
         # update the popup
         popup_settext(winid, group->GetAttributesFromGroup())
         redraw
@@ -412,6 +414,20 @@ def Clear() #{{{2
         ->get(0, {})
         ->extend({cleared: true})
     [cleared_group]->Hlset('clear')
+    Reload()
+enddef
+
+def Repeat() #{{{2
+    var group: string = GroupUnderCursor()
+    if !group->hlexists()
+        return
+    endif
+
+    last_changed_attributes
+        ->deepcopy()
+        ->map((_, attr: dict<any>) => attr->extend({id: 0, name: group}))
+        ->Hlset('repeat')
+
     Reload()
 enddef
 
@@ -622,6 +638,7 @@ def SetOptionsAndInterface() #{{{2
     nnoremap <buffer><nowait> C <ScriptCmd>Clear()<CR>
     nnoremap <buffer><nowait> u <ScriptCmd>Undo()<CR>
     nnoremap <buffer><nowait> <C-R> <ScriptCmd>Redo()<CR>
+    nnoremap <buffer><nowait> . <ScriptCmd>Repeat()<CR>
     nnoremap <buffer><nowait> R <ScriptCmd>Reload()<CR>
     nnoremap <buffer><nowait> r <ScriptCmd>NewGroup('rename')<CR>
     nnoremap <buffer><nowait> D <ScriptCmd>NewGroup('duplicate')<CR>
@@ -780,10 +797,12 @@ def ChangeAttribute( #{{{2
         return
     endif
 
+    var new_attr: dict<any> = {[attribute_to_change]: new_value}
+    new_attr->SaveLastChange()
     var new_hl: dict<any> = group
             ->hlget()
             ->get(0, {})
-            ->extend({[attribute_to_change]: new_value})
+            ->extend(new_attr)
 
     # to be  able to set the  attributes of a cleared  group, when we work  on a
     # color scheme
@@ -814,7 +833,7 @@ def ReOpenMenu() #{{{2
 enddef
 
 def Hlset(state: list<dict<any>>, cmd: string) #{{{2
-    # clear all the groups  before setting a *set* of highlights
+    # before resetting all the groups, clear them
     if ['undo', 'redo', 'restore']->index(cmd) >= 0
         hlget()
             ->map((_, group: dict<any>) => group->extend({
@@ -1039,6 +1058,18 @@ def GetAttributeValue(attr: any): string #{{{2
             ->join(',')
     endif
     return ''
+enddef
+
+def SaveLastChange(attr: dict<any>) #{{{2
+    var current_changed_group: number = last_changed_attributes
+        ->get(0, {})
+        ->get('id')
+    if current_changed_group != last_changed_group
+        last_changed_attributes = [attr]
+    else
+        last_changed_attributes += [attr]
+    endif
+    last_changed_group = current_changed_group
 enddef
 
 def Error(msg: string) #{{{2
