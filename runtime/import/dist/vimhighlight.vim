@@ -55,7 +55,7 @@ END
 var buf: number
 var help_winid: number
 var last_changed_attributes: list<dict<any>>
-var last_changed_group: number
+var last_changed_group: string
 var undolist: dict<any> = {states: [hlget()], pos: 0}
 var want_colorscheme: bool
 var winid: number
@@ -798,7 +798,7 @@ def ChangeAttribute( #{{{2
     endif
 
     var new_attr: dict<any> = {[attribute_to_change]: new_value}
-    new_attr->SaveLastChange()
+    SaveLastChange(group, new_attr)
     var new_hl: dict<any> = group
             ->hlget()
             ->get(0, {})
@@ -1060,16 +1060,13 @@ def GetAttributeValue(attr: any): string #{{{2
     return ''
 enddef
 
-def SaveLastChange(attr: dict<any>) #{{{2
-    var current_changed_group: number = last_changed_attributes
-        ->get(0, {})
-        ->get('id')
-    if current_changed_group != last_changed_group
+def SaveLastChange(group: string, attr: dict<any>) #{{{2
+    if group != last_changed_group
         last_changed_attributes = [attr]
     else
         last_changed_attributes += [attr]
     endif
-    last_changed_group = current_changed_group
+    last_changed_group = group
 enddef
 
 def Error(msg: string) #{{{2
