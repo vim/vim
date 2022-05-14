@@ -1372,7 +1372,8 @@ open_line(
     char_u	*next_line = NULL;	// copy of the next line
     char_u	*p_extra = NULL;	// what goes to next line
     int		less_cols = 0;		// less columns for mark in new line
-    int		less_cols_off = 0;	// columns to skip for mark adjust
+    int		less_cols_off = 0;	// columns to skip for mark and
+					// textprop adjustment
     pos_T	old_cursor;		// old cursor position
     int		newcol = 0;		// new cursor column
     int		newindent = 0;		// auto-indent of the new line
@@ -2151,9 +2152,9 @@ open_line(
 	did_append = TRUE;
 #ifdef FEAT_PROP_POPUP
 	if ((State & MODE_INSERT) && (State & VREPLACE_FLAG) == 0)
-	    // properties after the split move to the next line
+	    // Properties after the split move to the next line.
 	    adjust_props_for_split(curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-						  curwin->w_cursor.col + 1, 0);
+		    curwin->w_cursor.col + 1, 0);
 #endif
     }
     else
@@ -2248,6 +2249,12 @@ open_line(
 		    mark_col_adjust(curwin->w_cursor.lnum,
 					 curwin->w_cursor.col + less_cols_off,
 						      1L, (long)-less_cols, 0);
+#ifdef FEAT_PROP_POPUP
+		// Keep into account the deleted blanks on the new line.
+		if (curbuf->b_has_textprop && less_cols_off != 0)
+		    adjust_prop_columns(curwin->w_cursor.lnum + 1, 0,
+							    -less_cols_off, 0);
+#endif
 	    }
 	    else
 		changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
