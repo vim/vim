@@ -322,9 +322,7 @@ def MenuFilter(_, key: string): bool #{{{2
         endif
 
         # update the popup
-        var set_attributes: list<string> = winid
-            ->winbufnr()
-            ->getbufline(1, '$')
+        var set_attributes: list<string> = GetPumLines()
         set_attributes += [$'{attr}=']
         set_attributes->sort()->uniq()
         popup_settext(winid, set_attributes)
@@ -1084,6 +1082,12 @@ def GetAttributeValue(attr: any): string #{{{2
     return ''
 enddef
 
+def GetPumLines(): list<string> #{{{2
+    return winid
+        ->winbufnr()
+        ->getbufline(1, '$')
+enddef
+
 def SaveLastChange(group: string, attr: dict<any>) #{{{2
     if group != last_changed_group
         last_changed_attributes = [attr]
@@ -1107,9 +1111,7 @@ def Complete(kind: string, arglead: string): string #{{{2
 
     # filter out attributes which are already present in the popup menu
     if kind == 'attribute'
-        var ignorelist: list<string> = winid
-            ->winbufnr()
-            ->getbufline(1, '$')
+        var ignorelist: list<string> = GetPumLines()
             ->map((_, attr: string) => attr->matchstr('[^=]\+'))
         relevant_inputs
             ->filter((_, input: string): bool => ignorelist->index(input) == -1)
