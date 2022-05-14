@@ -1295,7 +1295,7 @@ docomplete:
 #endif
 	    compl_busy = FALSE;
 #ifdef FEAT_SMARTINDENT
-	    can_si = TRUE; // allow smartindenting
+	    can_si = may_do_si(); // allow smartindenting
 #endif
 	    break;
 

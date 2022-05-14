@@ -1718,12 +1718,7 @@ op_change(oparg_T *oap)
     {
 	l = 0;
 #ifdef FEAT_SMARTINDENT
-	if (!p_paste && curbuf->b_p_si
-# ifdef FEAT_CINDENT
-		&& !curbuf->b_p_cin
-# endif
-		)
-	    can_si = TRUE;	// It's like opening a new line, do si
+	can_si = may_do_si();	// Like opening a new line, do smart indent
 #endif
     }
 
