@@ -19,6 +19,25 @@ runtime/autoload/tar.vim		@cecamp
 runtime/autoload/vimball.vim		@cecamp
 runtime/autoload/xmlformat.vim		@chrisbra
 runtime/autoload/zip.vim		@cecamp
+runtime/colors/blue.vim			@habamax @romainl @neutaaaaan
+runtime/colors/darkblue.vim		@habamax @romainl @neutaaaaan
+runtime/colors/default.vim		@habamax @romainl @neutaaaaan
+runtime/colors/delek.vim		@habamax @romainl @neutaaaaan
+runtime/colors/desert.vim		@habamax @romainl @neutaaaaan
+runtime/colors/elflord.vim		@habamax @romainl @neutaaaaan
+runtime/colors/evening.vim		@habamax @romainl @neutaaaaan
+runtime/colors/industry.vim		@habamax @romainl @neutaaaaan
+runtime/colors/koehler.vim		@habamax @romainl @neutaaaaan
+runtime/colors/morning.vim		@habamax @romainl @neutaaaaan
+runtime/colors/murphy.vim		@habamax @romainl @neutaaaaan
+runtime/colors/pablo.vim		@habamax @romainl @neutaaaaan
+runtime/colors/peachpuff.vim		@habamax @romainl @neutaaaaan
+runtime/colors/ron.vim			@habamax @romainl @neutaaaaan
+runtime/colors/shine.vim		@habamax @romainl @neutaaaaan
+runtime/colors/slate.vim		@habamax @romainl @neutaaaaan
+runtime/colors/tools			@habamax @romainl @neutaaaaan
+runtime/colors/torte.vim		@habamax @romainl @neutaaaaan
+runtime/colors/zellner.vim		@habamax @romainl @neutaaaaan
 runtime/compiler/checkstyle.vim		@dkearns
 runtime/compiler/cm3.vim		@dkearns
 runtime/compiler/cucumber.vim		@tpope
@@ -126,6 +145,8 @@ runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/toml.vim		@averms
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
+runtime/ftplugin/wget.vim		@dkearns
+runtime/ftplugin/wget2.vim		@dkearns
 runtime/ftplugin/xml.vim		@chrisbra
 runtime/ftplugin/zsh.vim		@chrisbra
 runtime/indent/basic.vim		@dkearns
@@ -268,6 +289,7 @@ runtime/syntax/tmux.vim			@ericpruitt
 runtime/syntax/toml.vim			@averms
 runtime/syntax/vim.vim			@cecamp
 runtime/syntax/wget.vim			@dkearns
+runtime/syntax/wget2.vim		@dkearns
 runtime/syntax/xbl.vim			@dkearns
 runtime/syntax/xmath.vim		@cecamp
 runtime/syntax/xml.vim			@chrisbra

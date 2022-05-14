@@ -326,7 +326,8 @@ set_term_and_win_size(term_T *term, jobopt_T *opt)
 
 	    vim_snprintf((char *)buf, 100, "%dx%d",
 						 term->tl_rows, term->tl_cols);
-	    set_option_value((char_u *)"termwinsize", 0L, buf, OPT_LOCAL);
+	    set_option_value_give_err((char_u *)"termwinsize",
+							   0L, buf, OPT_LOCAL);
 	}
     }
 }
@@ -340,9 +341,9 @@ init_job_options(jobopt_T *opt)
 {
     clear_job_options(opt);
 
-    opt->jo_mode = MODE_RAW;
-    opt->jo_out_mode = MODE_RAW;
-    opt->jo_err_mode = MODE_RAW;
+    opt->jo_mode = CH_MODE_RAW;
+    opt->jo_out_mode = CH_MODE_RAW;
+    opt->jo_err_mode = CH_MODE_RAW;
     opt->jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
 }
 
@@ -1266,7 +1267,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	// cleared.
 	// TODO: only update once in a while.
 	ch_log(term->tl_job->jv_channel, "updating screen");
-	if (buffer == curbuf && (State & CMDLINE) == 0)
+	if (buffer == curbuf && (State & MODE_CMDLINE) == 0)
 	{
 	    update_screen(VALID_NO_UPDATE);
 	    // update_screen() can be slow, check the terminal wasn't closed
@@ -2128,7 +2129,7 @@ term_vgetc()
     int modify_other_keys = curbuf->b_term->tl_vterm == NULL ? FALSE
 			: vterm_is_modify_other_keys(curbuf->b_term->tl_vterm);
 
-    State = TERMINAL;
+    State = MODE_TERMINAL;
     got_int = FALSE;
 #ifdef MSWIN
     ctrl_break_was_pressed = FALSE;
@@ -2507,7 +2508,7 @@ term_win_entered()
 	if (term_use_loop_check(TRUE))
 	{
 	    reset_VIsual_and_resel();
-	    if (State & INSERT)
+	    if (State & MODE_INSERT)
 		stop_insert_mode = TRUE;
 	}
 	mouse_was_outside = FALSE;
@@ -4441,15 +4442,15 @@ sync_shell_dir(VTermStringFragment *frag)
     // remove HOSTNAME to get PWD
     while (*pos != '/' && offset < (int)frag->len)
     {
-        offset += 1;
-        pos += 1;
+	offset += 1;
+	pos += 1;
     }
 
     if (offset >= (int)frag->len)
     {
-        semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
+	semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
 								    frag->str);
-        return;
+	return;
     }
 
     new_dir = alloc(frag->len - offset + 1);

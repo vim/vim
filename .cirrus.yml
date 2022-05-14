@@ -2,11 +2,17 @@ env:
   CIRRUS_CLONE_DEPTH: 3
   FEATURES: huge
 
-freebsd_12_task:
+freebsd_task:
+  name: FreeBSD
+  matrix:
+    - name: FreeBSD 13.1
+      freebsd_instance:
+        image_family: freebsd-13-1
+    - name: FreeBSD 12.3
+      freebsd_instance:
+        image_family: freebsd-12-3
   only_if: $CIRRUS_TAG == ''
   timeout_in: 20m
-  freebsd_instance:
-    image: freebsd-12-3-release-amd64
   install_script:
     - pkg update -f
     - pkg install -y gettext

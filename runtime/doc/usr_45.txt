@@ -1,4 +1,4 @@
-*usr_45.txt*	For Vim version 8.2.  Last change: 2020 Jun 11
+*usr_45.txt*	For Vim version 8.2.  Last change: 2022 May 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -15,7 +15,7 @@ in various languages is explained.
 |45.4|	Editing files with a different encoding
 |45.5|	Entering language text
 
-     Next chapter: |usr_46.txt|  Write plugins using Vim9 script
+     Next chapter: |usr_50.txt|  Advanced Vim script writing
  Previous chapter: |usr_44.txt|  Your own syntax highlighted
 Table of contents: |usr_toc.txt|
 
@@ -408,6 +408,6 @@ Don't type the spaces.  See |i_CTRL-V_digit| for the details.
 
 ==============================================================================
 
-Next chapter: |usr_46.txt|  Write plugins using Vim9 script
+Next chapter: |usr_50.txt|  Advanced Vim script writing
 
 Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

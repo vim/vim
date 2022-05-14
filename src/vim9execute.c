@@ -64,13 +64,13 @@ typedef struct {
 //	  arg2		second argument from caller (if present)
 //	  extra_arg1	any missing optional argument default value
 // FP ->  cur_func	calling function
-//        current	previous instruction pointer
-//        frame_ptr	previous Frame Pointer
-//        var1		space for local variable
-//        var2		space for local variable
-//        ....		fixed space for max. number of local variables
-//        temp		temporary values
-//        ....		flexible space for temporary values (can grow big)
+//	  current	previous instruction pointer
+//	  frame_ptr	previous Frame Pointer
+//	  var1		space for local variable
+//	  var2		space for local variable
+//	  ....		fixed space for max. number of local variables
+//	  temp		temporary values
+//	  ....		flexible space for temporary values (can grow big)
 
 /*
  * Execution context.
@@ -5010,6 +5010,10 @@ exe_typval_instr(typval_T *tv, typval_T *rettv)
     int		save_iidx = ectx->ec_iidx;
     int		res;
 
+    // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
+    // even when the compilation fails.
+    rettv->v_type = VAR_UNKNOWN;
+
     ectx->ec_instr = tv->vval.v_instr->instr_instr;
     res = exec_instructions(ectx);
     if (res == OK)
@@ -6158,7 +6162,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 							 iptr->isn_arg.string);
 			    break;
 	    case ISN_PUT:
-	        if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE_ABOVE)
+		if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE_ABOVE)
 		    smsg("%s%4d PUT %c above range",
 				  pfx, current, iptr->isn_arg.put.put_regname);
 		else if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE)

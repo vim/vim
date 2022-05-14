@@ -104,7 +104,27 @@ internal_format(
 
 	// Don't break until after the comment leader
 	if (do_comments)
-	    leader_len = get_leader_len(ml_get_curline(), NULL, FALSE, TRUE);
+	{
+	    char_u *line = ml_get_curline();
+
+	    leader_len = get_leader_len(line, NULL, FALSE, TRUE);
+#ifdef FEAT_CINDENT
+	    if (leader_len == 0 && curbuf->b_p_cin)
+	    {
+		int		comment_start;
+
+		// Check for a line comment after code.
+		comment_start = check_linecomment(line);
+		if (comment_start != MAXCOL)
+		{
+		    leader_len = get_leader_len(
+				      line + comment_start, NULL, FALSE, TRUE);
+		    if (leader_len != 0)
+			leader_len += comment_start;
+		}
+	    }
+#endif
+	}
 	else
 	    leader_len = 0;
 
@@ -156,7 +176,7 @@ internal_format(
 		    // Increment count of how many whitespace chars in this
 		    // group; we only need to know if it's more than one.
 		    if (wcc < 2)
-		        wcc++;
+			wcc++;
 		}
 		if (curwin->w_cursor.col == 0 && WHITECHAR(cc))
 		    break;		// only spaces in front of text
@@ -310,7 +330,7 @@ internal_format(
 	undisplay_dollar();
 
 	// Offset between cursor position and line break is used by replace
-	// stack functions.  VREPLACE does not use this, and backspaces
+	// stack functions.  MODE_VREPLACE does not use this, and backspaces
 	// over the text instead.
 	if (State & VREPLACE_FLAG)
 	    orig_col = startcol;	// Will start backspacing from here
@@ -329,7 +349,7 @@ internal_format(
 
 	if (State & VREPLACE_FLAG)
 	{
-	    // In VREPLACE mode, we will backspace over the text to be
+	    // In MODE_VREPLACE state, we will backspace over the text to be
 	    // wrapped, so save a copy now to put on the next line.
 	    saved_text = vim_strsave(ml_get_cursor());
 	    curwin->w_cursor.col = orig_col;
@@ -408,7 +428,7 @@ internal_format(
 
 	if (State & VREPLACE_FLAG)
 	{
-	    // In VREPLACE mode we have backspaced over the text to be
+	    // In MODE_VREPLACE state we have backspaced over the text to be
 	    // moved, now we re-insert it into the new line.
 	    ins_bytes(saved_text);
 	    vim_free(saved_text);
@@ -1123,13 +1143,13 @@ format_lines(
 		}
 
 		// put cursor on last non-space
-		State = NORMAL;	// don't go past end-of-line
+		State = MODE_NORMAL;	// don't go past end-of-line
 		coladvance((colnr_T)MAXCOL);
 		while (curwin->w_cursor.col && vim_isspace(gchar_cursor()))
 		    dec_cursor();
 
 		// do the formatting, without 'showmode'
-		State = INSERT;	// for open_line()
+		State = MODE_INSERT;	// for open_line()
 		smd_save = p_smd;
 		p_smd = FALSE;
 		insertchar(NUL, INSCHAR_FORMAT

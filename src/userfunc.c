@@ -1051,53 +1051,57 @@ get_function_body(
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		getline_options = GETLINE_NONE;
 		is_heredoc = TRUE;
-		if (eap->cmdidx == CMD_def)
+		if (eap->cmdidx == CMD_def && nesting == 0)
 		    heredoc_concat_len = newlines->ga_len + 1;
 	    }
 
-	    // Check for ":cmd v =<< [trim] EOF"
-	    //       and ":cmd [a, b] =<< [trim] EOF"
-	    //       and "lines =<< [trim] EOF" for Vim9
-	    // Where "cmd" can be "let", "var", "final" or "const".
-	    arg = skipwhite(skiptowhite(p));
-	    if (*arg == '[')
-		arg = vim_strchr(arg, ']');
-	    if (arg != NULL)
+	    if (!is_heredoc)
 	    {
-		int found = (eap->cmdidx == CMD_def && arg[0] == '='
+		// Check for ":cmd v =<< [trim] EOF"
+		//       and ":cmd [a, b] =<< [trim] EOF"
+		//       and "lines =<< [trim] EOF" for Vim9
+		// Where "cmd" can be "let", "var", "final" or "const".
+		arg = skipwhite(skiptowhite(p));
+		if (*arg == '[')
+		    arg = vim_strchr(arg, ']');
+		if (arg != NULL)
+		{
+		    int found = (eap->cmdidx == CMD_def && arg[0] == '='
 					     && arg[1] == '<' && arg[2] =='<');
 
-		if (!found)
-		    // skip over the argument after "cmd"
-		    arg = skipwhite(skiptowhite(arg));
-		if (found || (arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
-			&& (checkforcmd(&p, "let", 2)
-			    || checkforcmd(&p, "var", 3)
-			    || checkforcmd(&p, "final", 5)
-			    || checkforcmd(&p, "const", 5))))
-		{
-		    p = skipwhite(arg + 3);
-		    while (TRUE)
+		    if (!found)
+			// skip over the argument after "cmd"
+			arg = skipwhite(skiptowhite(arg));
+		    if (found || (arg[0] == '=' && arg[1] == '<'
+								&& arg[2] =='<'
+			    && (checkforcmd(&p, "let", 2)
+				|| checkforcmd(&p, "var", 3)
+				|| checkforcmd(&p, "final", 5)
+				|| checkforcmd(&p, "const", 5))))
 		    {
-			if (STRNCMP(p, "trim", 4) == 0)
+			p = skipwhite(arg + 3);
+			while (TRUE)
 			{
-			    // Ignore leading white space.
-			    p = skipwhite(p + 4);
-			    heredoc_trimmed = vim_strnsave(theline,
-				    skipwhite(theline) - theline);
-			    continue;
+			    if (STRNCMP(p, "trim", 4) == 0)
+			    {
+				// Ignore leading white space.
+				p = skipwhite(p + 4);
+				heredoc_trimmed = vim_strnsave(theline,
+					skipwhite(theline) - theline);
+				continue;
+			    }
+			    if (STRNCMP(p, "eval", 4) == 0)
+			    {
+				// Ignore leading white space.
+				p = skipwhite(p + 4);
+				continue;
+			    }
+			    break;
 			}
-			if (STRNCMP(p, "eval", 4) == 0)
-			{
-			    // Ignore leading white space.
-			    p = skipwhite(p + 4);
-			    continue;
-			}
-			break;
+			skip_until = vim_strnsave(p, skiptowhite(p) - p);
+			getline_options = GETLINE_NONE;
+			is_heredoc = TRUE;
 		    }
-		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
-		    getline_options = GETLINE_NONE;
-		    is_heredoc = TRUE;
 		}
 	    }
 	}
@@ -1373,6 +1377,7 @@ get_lambda_tv(
     int		white_error = FALSE;
     int		called_emsg_start = called_emsg;
     int		vim9script = in_vim9script();
+    long	start_lnum = SOURCING_LNUM;
 
     if (equal_arrow && !vim9script)
 	return NOTDONE;
@@ -1433,6 +1438,7 @@ get_lambda_tv(
 	if (evalarg == NULL)
 	    // cannot happen?
 	    goto theend;
+	SOURCING_LNUM = start_lnum;  // used for where lambda is defined
 	if (lambda_function_body(arg, rettv, evalarg, pnewargs,
 			   types_optional ? &argtypes : NULL, varargs,
 			   &default_args, ret_type) == FAIL)
@@ -1563,7 +1569,8 @@ get_lambda_tv(
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ctx = current_sctx;
-	fp->uf_script_ctx.sc_lnum += SOURCING_LNUM - newlines.ga_len + 1;
+	// Use the line number of the arguments.
+	fp->uf_script_ctx.sc_lnum += start_lnum;
 
 	function_using_block_scopes(fp, evalarg->eval_cstack);
 
@@ -2508,7 +2515,7 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
 	    goto failed;
 	if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
 	{
-            vim_free(pt);
+	    vim_free(pt);
 	    goto failed;
 	}
 	ufunc->uf_partial = pt;
@@ -3707,9 +3714,12 @@ list_func_head(ufunc_T *fp, int indent)
     }
     if (fp->uf_va_name != NULL)
     {
-	if (j)
-	    msg_puts(", ");
-	msg_puts("...");
+	if (!fp->uf_varargs)
+	{
+	    if (j)
+		msg_puts(", ");
+	    msg_puts("...");
+	}
 	msg_puts((char *)fp->uf_va_name);
 	if (fp->uf_va_type != NULL)
 	{

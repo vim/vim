@@ -476,7 +476,7 @@ do_exmode(
 	exmode_active = EXMODE_VIM;
     else
 	exmode_active = EXMODE_NORMAL;
-    State = NORMAL;
+    State = MODE_NORMAL;
     may_trigger_modechanged();
 
     // When using ":global /pat/ visual" and then "Q" we return to continue
@@ -2369,7 +2369,7 @@ do_one_cmd(
 	{
 	    ea.line1 = ea.line2;
 	    if (ea.line2 >= LONG_MAX - (n - 1))
-	        ea.line2 = LONG_MAX;  // avoid overflow
+		ea.line2 = LONG_MAX;  // avoid overflow
 	    else
 		ea.line2 += n - 1;
 	    ++ea.addr_count;
@@ -3435,7 +3435,7 @@ append_command(char_u *cmd)
 
     STRCAT(IObuff, ": ");
     d = IObuff + STRLEN(IObuff);
-    while (*s != NUL && d - IObuff < IOSIZE - 7)
+    while (*s != NUL && d - IObuff + 5 < IOSIZE)
     {
 	if (enc_utf8 ? (s[0] == 0xc2 && s[1] == 0xa0) : *s == 0xa0)
 	{
@@ -3443,6 +3443,8 @@ append_command(char_u *cmd)
 	    STRCPY(d, "<a0>");
 	    d += 4;
 	}
+	else if (d - IObuff + (*mb_ptr2len)(s) + 1 >= IOSIZE)
+	    break;
 	else
 	    MB_COPY_CHAR(s, d);
     }
@@ -3683,6 +3685,7 @@ find_ex_command(
 	    // "&opt = expr"
 	    // "var = expr"  where "var" is a variable name or we are skipping
 	    // (variable declaration might have been skipped).
+	    // Not "redir => var" (when skipping).
 	    oplen = assignment_len(skipwhite(p), &heredoc);
 	    if (oplen > 0)
 	    {
@@ -3690,7 +3693,8 @@ find_ex_command(
 			|| *eap->cmd == '&'
 			|| *eap->cmd == '$'
 			|| *eap->cmd == '@'
-			|| eap->skip
+			|| (eap->skip && IS_WHITE_OR_NUL(
+						      *(skipwhite(p) + oplen)))
 			|| lookup(eap->cmd, p - eap->cmd, TRUE, cctx) == OK)
 		{
 		    eap->cmdidx = CMD_var;
@@ -8324,7 +8328,7 @@ ex_redraw(exarg_T *eap)
     need_wait_return = FALSE;
 
     // When invoked from a callback or autocmd the command line may be active.
-    if (State & CMDLINE)
+    if (State & MODE_CMDLINE)
 	redrawcmdline();
 
     out_flush();
@@ -8672,7 +8676,7 @@ ex_startinsert(exarg_T *eap)
 
     // Ignore the command when already in Insert mode.  Inserting an
     // expression register that invokes a function can do this.
-    if (State & INSERT)
+    if (State & MODE_INSERT)
 	return;
 
     if (eap->cmdidx == CMD_startinsert)

@@ -78,6 +78,7 @@ enddef
 
 def Test_add()
   v9.CheckDefAndScriptFailure(['add({}, 1)'], ['E1013: Argument 1: type mismatch, expected list<any> but got dict<unknown>', 'E1226: List or Blob required for argument 1'])
+  v9.CheckDefAndScriptFailure(['add([])'], 'E119:')
   v9.CheckDefExecFailure([
         'var ln: list<number> = [1]',
         'add(ln, "a")'],
@@ -2157,7 +2158,7 @@ def Test_job_getchannel()
     CheckFeature job
   else
     v9.CheckDefAndScriptFailure(['job_getchannel("a")'], ['E1013: Argument 1: type mismatch, expected job but got string', 'E1218: Job required for argument 1'])
-    assert_fails('job_getchannel(test_null_job())', 'E916: not a valid job')
+    assert_fails('job_getchannel(test_null_job())', 'E916: Not a valid job')
   endif
 enddef
 
@@ -2166,7 +2167,7 @@ def Test_job_info()
     CheckFeature job
   else
     v9.CheckDefAndScriptFailure(['job_info("a")'], ['E1013: Argument 1: type mismatch, expected job but got string', 'E1218: Job required for argument 1'])
-    assert_fails('job_info(test_null_job())', 'E916: not a valid job')
+    assert_fails('job_info(test_null_job())', 'E916: Not a valid job')
   endif
 enddef
 
@@ -2463,7 +2464,9 @@ def Test_maparg()
         sid: SID(),
         scriptversion: 999999,
         rhs: 'bar',
-        buffer: 0})
+        buffer: 0,
+        abbr: 0,
+        mode_bits: 0x47})
   unmap foo
   v9.CheckDefAndScriptFailure(['maparg(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['maparg("a", 2)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
@@ -2545,7 +2548,7 @@ def Test_mapnew()
 enddef
 
 def Test_mapset()
-  v9.CheckDefAndScriptFailure(['mapset(1, true, {})'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
+  v9.CheckDefAndScriptFailure(['mapset(1, true, {})'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1223: String or Dictionary required for argument 1'])
   v9.CheckDefAndScriptFailure(['mapset("a", 2, {})'], ['E1013: Argument 2: type mismatch, expected bool but got number', 'E1212: Bool required for argument 2'])
   v9.CheckDefAndScriptFailure(['mapset("a", false, [])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 3'])
 enddef
@@ -3207,12 +3210,11 @@ def Test_remove()
 enddef
 
 def Test_remove_return_type()
-  var l = remove({one: [1, 2], two: [3, 4]}, 'one')
-  var res = 0
-  for n in l
-    res += n
-  endfor
-  res->assert_equal(3)
+  var l: list<number> = remove({one: [1, 2], two: [3, 4]}, 'one')
+  l->assert_equal([1, 2])
+
+  var ll: list<number> = remove(range(3), 0, 1)
+  ll->assert_equal([0, 1])
 enddef
 
 def Test_rename()
@@ -4070,13 +4072,23 @@ def Test_substitute()
   assert_equal('AX234', res)
 
   if has('job')
-    assert_fails('"text"->substitute(".*", () => test_null_job(), "")', 'E908: using an invalid value as a String: job')
-    assert_fails('"text"->substitute(".*", () => test_null_channel(), "")', 'E908: using an invalid value as a String: channel')
+    assert_fails('"text"->substitute(".*", () => test_null_job(), "")', 'E908: Using an invalid value as a String: job')
+    assert_fails('"text"->substitute(".*", () => test_null_channel(), "")', 'E908: Using an invalid value as a String: channel')
   endif
   v9.CheckDefAndScriptFailure(['substitute(1, "b", "1", "d")'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['substitute("a", 2, "1", "d")'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['substitute("a", "b", "1", 4)'], ['E1013: Argument 4: type mismatch, expected string but got number', 'E1174: String required for argument 4'])
   substitute('', '', '', '')->assert_equal('')
+
+  var lines =<< trim END
+    assert_equal("4", substitute("3", '\d', '\=str2nr(submatch(0)) + 1', 'g'))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    assert_equal("4", substitute("3", '\d', '\="text" x', 'g'))
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E488: Trailing characters: x')
 enddef
 
 def Test_swapinfo()
@@ -4546,7 +4558,8 @@ func Test_win_gotoid_in_mapping()
     END
     call writefile(lines, 'Xgotoscript')
     let buf = RunVimInTerminal('-S Xgotoscript', #{rows: 15, wait_for_ruler: 0})
-    call VerifyScreenDump(buf, 'Test_win_gotoid_1', {})
+    " wait longer here, since we didn't wait for the ruler
+    call VerifyScreenDump(buf, 'Test_win_gotoid_1', #{wait: 3000})
     call term_sendkeys(buf, "3Gvl")
     call VerifyScreenDump(buf, 'Test_win_gotoid_2', {})
 

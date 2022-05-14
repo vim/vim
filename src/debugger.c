@@ -22,7 +22,7 @@ static void do_showbacktrace(char_u *cmd);
 
 static char_u *debug_oldval = NULL;	// old and newval for debug expressions
 static char_u *debug_newval = NULL;
-static int     debug_expr   = 0;        // use debug_expr
+static int     debug_expr   = 0;	// use debug_expr
 
     int
 has_watchexpr(void)
@@ -88,7 +88,7 @@ do_debug(char_u *cmd)
     emsg_silent = FALSE;	// display error messages
     redir_off = TRUE;		// don't redirect debug commands
 
-    State = NORMAL;
+    State = MODE_NORMAL;
     debug_mode = TRUE;
 
     if (!debug_did_msg)

@@ -452,8 +452,8 @@ crypt_create(
     if (cryptmethods[method_nr].init_fn(
 	state, key, salt, salt_len, seed, seed_len) == FAIL)
     {
-        vim_free(state);
-        return NULL;
+	vim_free(state);
+	return NULL;
     }
     return state;
 }
@@ -692,7 +692,7 @@ crypt_encode_inplace(
     cryptstate_T *state,
     char_u	*buf,
     size_t	len,
-    int         last)
+    int		last)
 {
     cryptmethods[state->method_nr].encode_inplace_fn(state, buf, len,
 								    buf, last);

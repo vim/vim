@@ -672,7 +672,7 @@ vms_fixfilename(void *instring)
     else if (strchr(instring,'"') == NULL)	// password in the path?
     {
 	// Seems it is a regular file, let guess that it is pure Unix fspec
-        if ( (strchr(instring,'[') == NULL) && (strchr(instring,'<') == NULL) &&
+	if ( (strchr(instring,'[') == NULL) && (strchr(instring,'<') == NULL) &&
 	     (strchr(instring,']') == NULL) && (strchr(instring,'>') == NULL) &&
 	     (strchr(instring,':') == NULL) )
 	{

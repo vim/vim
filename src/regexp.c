@@ -2004,6 +2004,10 @@ vim_regsub_both(
 		    funcexe.fe_partial = partial;
 		    call_func(s, -1, &rettv, 1, argv, &funcexe);
 		}
+		else if (expr->v_type == VAR_INSTR)
+		{
+		    exe_typval_instr(expr, &rettv);
+		}
 		if (matchList.sl_list.lv_len > 0)
 		    // fill_submatch_list() was called
 		    clear_submatch_list(&matchList);

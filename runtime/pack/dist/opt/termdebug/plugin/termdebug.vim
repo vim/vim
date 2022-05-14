@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2022 Apr 16
+" Last Change: 2022 May 09
 "
 " WORK IN PROGRESS - The basics works stable, more to come
 " Note: In general you need at least GDB 7.12 because this provides the
@@ -201,8 +201,8 @@ func s:CheckGdbRunning()
   return 'ok'
 endfunc
 
+" Open a terminal window without a job, to run the debugged program in.
 func s:StartDebug_term(dict)
-  " Open a terminal window without a job, to run the debugged program in.
   let s:ptybuf = term_start('NONE', {
 	\ 'term_name': 'debugged program',
 	\ 'vertical': s:vertical,
@@ -346,8 +346,8 @@ func s:StartDebug_term(dict)
   call s:StartDebugCommon(a:dict)
 endfunc
 
+" Open a window with a prompt buffer to run gdb in.
 func s:StartDebug_prompt(dict)
-  " Open a window with a prompt buffer to run gdb in.
   if s:vertical
     vertical new
   else
@@ -915,7 +915,7 @@ func s:DeleteCommands()
     if empty(s:k_map_saved)
       nunmap K
     else
-      call mapset('n', 0, s:k_map_saved)
+      call mapset(s:k_map_saved)
     endif
     unlet s:k_map_saved
   endif

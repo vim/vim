@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2022 Apr 12
+*starting.txt*  For Vim version 8.2.  Last change: 2022 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -737,6 +737,7 @@ In Evim these options are changed from their default value:
 	:set guioptions-=a	non-Unix only: don't do auto-select
 
 Key mappings:
+	<CTRL-Q>	quit, using `:confirm` prompt if there are changes
 	<Down>		moves by screen lines rather than file lines
 	<Up>		idem
 	Q		does "gq", formatting, instead of Ex mode
@@ -747,7 +748,6 @@ Key mappings:
 	<C-Insert>	idem
 	CTRL-V		Pastes from the clipboard (in any mode)
 	<S-Insert>	idem
-	CTRL-Q		do what CTRL-V used to do
 	CTRL-Z		undo
 	CTRL-Y		redo
 	<M-Space>	system menu
@@ -763,6 +763,8 @@ Additionally:
 
 One hint: If you want to go to Normal mode to be able to type a sequence of
 commands, use CTRL-L. |i_CTRL-L|
+
+There is no way to stop "easy mode", you need to exit Vim.
 
 ==============================================================================
 4. Initialization				*initialization* *startup*

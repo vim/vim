@@ -31,7 +31,7 @@ static int		maphash_valid = FALSE;
  * Returns a value between 0 and 255, index in maphash.
  * Put Normal/Visual mode mappings mostly separately from Insert/Cmdline mode.
  */
-#define MAP_HASH(mode, c1) (((mode) & (NORMAL + VISUAL + SELECTMODE + OP_PENDING + TERMINAL)) ? (c1) : ((c1) ^ 0x80))
+#define MAP_HASH(mode, c1) (((mode) & (MODE_NORMAL | MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING | MODE_TERMINAL)) ? (c1) : ((c1) ^ 0x80))
 
 /*
  * Get the start of the hashed map list for "state" and first character "c".
@@ -101,32 +101,33 @@ map_mode_to_chars(int mode)
 
     ga_init2(&mapmode, 1, 7);
 
-    if ((mode & (INSERT + CMDLINE)) == INSERT + CMDLINE)
+    if ((mode & (MODE_INSERT | MODE_CMDLINE)) == (MODE_INSERT | MODE_CMDLINE))
 	ga_append(&mapmode, '!');			// :map!
-    else if (mode & INSERT)
+    else if (mode & MODE_INSERT)
 	ga_append(&mapmode, 'i');			// :imap
-    else if (mode & LANGMAP)
+    else if (mode & MODE_LANGMAP)
 	ga_append(&mapmode, 'l');			// :lmap
-    else if (mode & CMDLINE)
+    else if (mode & MODE_CMDLINE)
 	ga_append(&mapmode, 'c');			// :cmap
-    else if ((mode & (NORMAL + VISUAL + SELECTMODE + OP_PENDING))
-				 == NORMAL + VISUAL + SELECTMODE + OP_PENDING)
+    else if ((mode
+		 & (MODE_NORMAL | MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING))
+		== (MODE_NORMAL | MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING))
 	ga_append(&mapmode, ' ');			// :map
     else
     {
-	if (mode & NORMAL)
+	if (mode & MODE_NORMAL)
 	    ga_append(&mapmode, 'n');			// :nmap
-	if (mode & OP_PENDING)
+	if (mode & MODE_OP_PENDING)
 	    ga_append(&mapmode, 'o');			// :omap
-	if (mode & TERMINAL)
+	if (mode & MODE_TERMINAL)
 	    ga_append(&mapmode, 't');			// :tmap
-	if ((mode & (VISUAL + SELECTMODE)) == VISUAL + SELECTMODE)
+	if ((mode & (MODE_VISUAL | MODE_SELECT)) == (MODE_VISUAL | MODE_SELECT))
 	    ga_append(&mapmode, 'v');			// :vmap
 	else
 	{
-	    if (mode & VISUAL)
+	    if (mode & MODE_VISUAL)
 		ga_append(&mapmode, 'x');		// :xmap
-	    if (mode & SELECTMODE)
+	    if (mode & MODE_SELECT)
 		ga_append(&mapmode, 's');		// :smap
 	}
     }
@@ -189,17 +190,7 @@ showmap(
     if (*mp->m_str == NUL)
 	msg_puts_attr("<Nop>", HL_ATTR(HLF_8));
     else
-    {
-	// Remove escaping of CSI, because "m_str" is in a format to be used
-	// as typeahead.
-	char_u *s = vim_strsave(mp->m_str);
-	if (s != NULL)
-	{
-	    vim_unescape_csi(s);
-	    msg_outtrans_special(s, FALSE, 0);
-	    vim_free(s);
-	}
-    }
+	msg_outtrans_special(mp->m_str, FALSE, 0);
 #ifdef FEAT_EVAL
     if (p_verbose > 0)
 	last_set_msg(mp->m_script_ctx);
@@ -307,21 +298,21 @@ map_add(
  * arg is pointer to any arguments. Note: arg cannot be a read-only string,
  * it will be modified.
  *
- * for :map   mode is NORMAL + VISUAL + SELECTMODE + OP_PENDING
- * for :map!  mode is INSERT + CMDLINE
- * for :cmap  mode is CMDLINE
- * for :imap  mode is INSERT
- * for :lmap  mode is LANGMAP
- * for :nmap  mode is NORMAL
- * for :vmap  mode is VISUAL + SELECTMODE
- * for :xmap  mode is VISUAL
- * for :smap  mode is SELECTMODE
- * for :omap  mode is OP_PENDING
- * for :tmap  mode is TERMINAL
+ * for :map   mode is MODE_NORMAL | MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING
+ * for :map!  mode is MODE_INSERT | MODE_CMDLINE
+ * for :cmap  mode is MODE_CMDLINE
+ * for :imap  mode is MODE_INSERT
+ * for :lmap  mode is MODE_LANGMAP
+ * for :nmap  mode is MODE_NORMAL
+ * for :vmap  mode is MODE_VISUAL | MODE_SELECT
+ * for :xmap  mode is MODE_VISUAL
+ * for :smap  mode is MODE_SELECT
+ * for :omap  mode is MODE_OP_PENDING
+ * for :tmap  mode is MODE_TERMINAL
  *
- * for :abbr  mode is INSERT + CMDLINE
- * for :iabbr mode is INSERT
- * for :cabbr mode is CMDLINE
+ * for :abbr  mode is MODE_INSERT | MODE_CMDLINE
+ * for :iabbr mode is MODE_INSERT
+ * for :cabbr mode is MODE_CMDLINE
  *
  * Return 0 for success
  *	  1 for invalid arguments
@@ -882,30 +873,31 @@ get_map_mode(char_u **cmdp, int forceit)
     p = *cmdp;
     modec = *p++;
     if (modec == 'i')
-	mode = INSERT;				// :imap
+	mode = MODE_INSERT;				// :imap
     else if (modec == 'l')
-	mode = LANGMAP;				// :lmap
+	mode = MODE_LANGMAP;				// :lmap
     else if (modec == 'c')
-	mode = CMDLINE;				// :cmap
+	mode = MODE_CMDLINE;				// :cmap
     else if (modec == 'n' && *p != 'o')		    // avoid :noremap
-	mode = NORMAL;				// :nmap
+	mode = MODE_NORMAL;				// :nmap
     else if (modec == 'v')
-	mode = VISUAL + SELECTMODE;		// :vmap
+	mode = MODE_VISUAL | MODE_SELECT;		// :vmap
     else if (modec == 'x')
-	mode = VISUAL;				// :xmap
+	mode = MODE_VISUAL;				// :xmap
     else if (modec == 's')
-	mode = SELECTMODE;			// :smap
+	mode = MODE_SELECT;			// :smap
     else if (modec == 'o')
-	mode = OP_PENDING;			// :omap
+	mode = MODE_OP_PENDING;			// :omap
     else if (modec == 't')
-	mode = TERMINAL;			// :tmap
+	mode = MODE_TERMINAL;			// :tmap
     else
     {
 	--p;
 	if (forceit)
-	    mode = INSERT + CMDLINE;		// :map !
+	    mode = MODE_INSERT | MODE_CMDLINE;		// :map !
 	else
-	    mode = VISUAL + SELECTMODE + NORMAL + OP_PENDING;// :map
+	    mode = MODE_VISUAL | MODE_SELECT | MODE_NORMAL | MODE_OP_PENDING;
+							// :map
     }
 
     *cmdp = p;
@@ -1012,21 +1004,21 @@ mode_str2flags(char_u *modechars)
     int		mode = 0;
 
     if (vim_strchr(modechars, 'n') != NULL)
-	mode |= NORMAL;
+	mode |= MODE_NORMAL;
     if (vim_strchr(modechars, 'v') != NULL)
-	mode |= VISUAL + SELECTMODE;
+	mode |= MODE_VISUAL | MODE_SELECT;
     if (vim_strchr(modechars, 'x') != NULL)
-	mode |= VISUAL;
+	mode |= MODE_VISUAL;
     if (vim_strchr(modechars, 's') != NULL)
-	mode |= SELECTMODE;
+	mode |= MODE_SELECT;
     if (vim_strchr(modechars, 'o') != NULL)
-	mode |= OP_PENDING;
+	mode |= MODE_OP_PENDING;
     if (vim_strchr(modechars, 'i') != NULL)
-	mode |= INSERT;
+	mode |= MODE_INSERT;
     if (vim_strchr(modechars, 'l') != NULL)
-	mode |= LANGMAP;
+	mode |= MODE_LANGMAP;
     if (vim_strchr(modechars, 'c') != NULL)
-	mode |= CMDLINE;
+	mode |= MODE_CMDLINE;
 
     return mode;
 }
@@ -1202,9 +1194,10 @@ set_context_in_map_cmd(
 	    expand_mapmodes = get_map_mode(&cmd, forceit || isabbrev);
 	else
 	{
-	    expand_mapmodes = INSERT + CMDLINE;
+	    expand_mapmodes = MODE_INSERT | MODE_CMDLINE;
 	    if (!isabbrev)
-		expand_mapmodes += VISUAL + SELECTMODE + NORMAL + OP_PENDING;
+		expand_mapmodes += MODE_VISUAL | MODE_SELECT | MODE_NORMAL
+							     | MODE_OP_PENDING;
 	}
 	expand_isabbrev = isabbrev;
 	xp->xp_context = EXPAND_MAPPINGS;
@@ -1874,75 +1867,76 @@ makemap(
 		    cmd = "map";
 		switch (mp->m_mode)
 		{
-		    case NORMAL + VISUAL + SELECTMODE + OP_PENDING:
+		    case MODE_NORMAL | MODE_VISUAL | MODE_SELECT
+							     | MODE_OP_PENDING:
 			break;
-		    case NORMAL:
+		    case MODE_NORMAL:
 			c1 = 'n';
 			break;
-		    case VISUAL:
+		    case MODE_VISUAL:
 			c1 = 'x';
 			break;
-		    case SELECTMODE:
+		    case MODE_SELECT:
 			c1 = 's';
 			break;
-		    case OP_PENDING:
+		    case MODE_OP_PENDING:
 			c1 = 'o';
 			break;
-		    case NORMAL + VISUAL:
+		    case MODE_NORMAL | MODE_VISUAL:
 			c1 = 'n';
 			c2 = 'x';
 			break;
-		    case NORMAL + SELECTMODE:
+		    case MODE_NORMAL | MODE_SELECT:
 			c1 = 'n';
 			c2 = 's';
 			break;
-		    case NORMAL + OP_PENDING:
+		    case MODE_NORMAL | MODE_OP_PENDING:
 			c1 = 'n';
 			c2 = 'o';
 			break;
-		    case VISUAL + SELECTMODE:
+		    case MODE_VISUAL | MODE_SELECT:
 			c1 = 'v';
 			break;
-		    case VISUAL + OP_PENDING:
+		    case MODE_VISUAL | MODE_OP_PENDING:
 			c1 = 'x';
 			c2 = 'o';
 			break;
-		    case SELECTMODE + OP_PENDING:
+		    case MODE_SELECT | MODE_OP_PENDING:
 			c1 = 's';
 			c2 = 'o';
 			break;
-		    case NORMAL + VISUAL + SELECTMODE:
+		    case MODE_NORMAL | MODE_VISUAL | MODE_SELECT:
 			c1 = 'n';
 			c2 = 'v';
 			break;
-		    case NORMAL + VISUAL + OP_PENDING:
+		    case MODE_NORMAL | MODE_VISUAL | MODE_OP_PENDING:
 			c1 = 'n';
 			c2 = 'x';
 			c3 = 'o';
 			break;
-		    case NORMAL + SELECTMODE + OP_PENDING:
+		    case MODE_NORMAL | MODE_SELECT | MODE_OP_PENDING:
 			c1 = 'n';
 			c2 = 's';
 			c3 = 'o';
 			break;
-		    case VISUAL + SELECTMODE + OP_PENDING:
+		    case MODE_VISUAL | MODE_SELECT | MODE_OP_PENDING:
 			c1 = 'v';
 			c2 = 'o';
 			break;
-		    case CMDLINE + INSERT:
+		    case MODE_CMDLINE | MODE_INSERT:
 			if (!abbr)
 			    cmd = "map!";
 			break;
-		    case CMDLINE:
+		    case MODE_CMDLINE:
 			c1 = 'c';
 			break;
-		    case INSERT:
+		    case MODE_INSERT:
 			c1 = 'i';
 			break;
-		    case LANGMAP:
+		    case MODE_LANGMAP:
 			c1 = 'l';
 			break;
-		    case TERMINAL:
+		    case MODE_TERMINAL:
 			c1 = 't';
 			break;
 		    default:
@@ -2283,7 +2277,8 @@ mapblock2dict(
 	mapblock_T  *mp,
 	dict_T	    *dict,
 	char_u	    *lhsrawalt,	    // may be NULL
-	int	    buffer_local)   // false if not buffer local mapping
+	int	    buffer_local,   // false if not buffer local mapping
+	int	    abbr)	    // true if abbreviation
 {
     char_u	    *lhs = str2special_save(mp->m_keys, TRUE);
     char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
@@ -2307,6 +2302,8 @@ mapblock2dict(
     dict_add_number(dict, "buffer", (long)buffer_local);
     dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
     dict_add_string(dict, "mode", mapmode);
+    dict_add_number(dict, "abbr", abbr ? 1L : 0L);
+    dict_add_number(dict, "mode_bits", mp->m_mode);
 
     vim_free(mapmode);
 }
@@ -2381,7 +2378,8 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
     }
     else if (rettv_dict_alloc(rettv) != FAIL && rhs != NULL)
 	mapblock2dict(mp, rettv->vval.v_dict,
-			  did_simplify ? keys_simplified : NULL, buffer_local);
+			  did_simplify ? keys_simplified : NULL,
+			  buffer_local, abbr);
 
     vim_free(keys_buf);
     vim_free(alt_keys_buf);
@@ -2448,7 +2446,8 @@ f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
 		vim_free(lhs);
 
 		mapblock2dict(mp, d,
-				 did_simplify ? keys_buf : NULL, buffer_local);
+				 did_simplify ? keys_buf : NULL,
+				 buffer_local, abbr);
 		vim_free(keys_buf);
 	    }
 	}
@@ -2490,6 +2489,57 @@ f_mapcheck(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Get the mapping mode from the mode string.
+ * It may contain multiple characters, eg "nox", or "!", or ' '
+ * Return 0 if there is an error.
+ */
+    static int
+get_map_mode_string(char_u *mode_string, int abbr)
+{
+    char_u	*p = mode_string;
+    int		mode = 0;
+    int		tmode;
+    int		modec;
+    const int	MASK_V = MODE_VISUAL | MODE_SELECT;
+    const int	MASK_MAP = MODE_VISUAL | MODE_SELECT | MODE_NORMAL
+							     | MODE_OP_PENDING;
+    const int	MASK_BANG = MODE_INSERT | MODE_CMDLINE;
+
+    if (*p == NUL)
+	p = (char_u *)" ";	// compatibility
+    while ((modec = *p++))
+    {
+	switch (modec)
+	{
+	    case 'i': tmode = MODE_INSERT;	break;
+	    case 'l': tmode = MODE_LANGMAP;	break;
+	    case 'c': tmode = MODE_CMDLINE;	break;
+	    case 'n': tmode = MODE_NORMAL;	break;
+	    case 'x': tmode = MODE_VISUAL;	break;
+	    case 's': tmode = MODE_SELECT;	break;
+	    case 'o': tmode = MODE_OP_PENDING;	break;
+	    case 't': tmode = MODE_TERMINAL;	break;
+	    case 'v': tmode = MASK_V;		break;
+	    case '!': tmode = MASK_BANG;	break;
+	    case ' ': tmode = MASK_MAP;		break;
+	    default:
+		      return 0; // error, unknown mode character
+	}
+	mode |= tmode;
+    }
+    if ((abbr && (mode & ~MASK_BANG) != 0)
+	|| (!abbr && (mode & (mode-1)) != 0 // more than one bit set
+	    && (
+		// false if multiple bits set in mode and mode is fully
+		// contained in one mask
+		!(((mode & MASK_BANG) != 0 && (mode & ~MASK_BANG) == 0)
+		    || ((mode & MASK_MAP) != 0 && (mode & ~MASK_MAP) == 0)))))
+	return 0;
+
+    return mode;
+}
+
+/*
  * "mapset()" function
  */
     void
@@ -2518,25 +2568,51 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     mapblock_T  **abbr_table = &first_abbr;
     int		nowait;
     char_u	*arg;
+    int		dict_only;
 
+    // If first arg is a dict, then that's the only arg permitted.
+    dict_only = argvars[0].v_type == VAR_DICT;
     if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_bool_arg(argvars, 1) == FAIL
-		|| check_for_dict_arg(argvars, 2) == FAIL))
+	    && (check_for_string_or_dict_arg(argvars, 0) == FAIL
+		|| (dict_only && check_for_unknown_arg(argvars, 1) == FAIL)
+		|| (!dict_only
+		    && (check_for_string_arg(argvars, 0) == FAIL
+			|| check_for_bool_arg(argvars, 1) == FAIL
+			|| check_for_dict_arg(argvars, 2) == FAIL))))
 	return;
 
-    which = tv_get_string_buf_chk(&argvars[0], buf);
-    if (which == NULL)
-	return;
-    mode = get_map_mode(&which, 0);
-    is_abbr = (int)tv_get_bool(&argvars[1]);
-
-    if (argvars[2].v_type != VAR_DICT)
+    if (dict_only)
     {
-	emsg(_(e_key_not_present_in_dictionary));
+	d = argvars[0].vval.v_dict;
+	which = dict_get_string(d, (char_u *)"mode", FALSE);
+	is_abbr = dict_get_bool(d, (char_u *)"abbr", -1);
+	if (which == NULL || is_abbr < 0)
+	{
+	    emsg(_(e_entries_missing_in_mapset_dict_argument));
+	    return;
+	}
+    }
+    else
+    {
+	which = tv_get_string_buf_chk(&argvars[0], buf);
+	if (which == NULL)
+	    return;
+	is_abbr = (int)tv_get_bool(&argvars[1]);
+
+	if (argvars[2].v_type != VAR_DICT)
+	{
+	    emsg(_(e_dictionary_required));
+	    return;
+	}
+	d = argvars[2].vval.v_dict;
+    }
+    mode = get_map_mode_string(which, is_abbr);
+    if (mode == 0)
+    {
+	semsg(_(e_illegal_map_mode_string_str), which);
 	return;
     }
-    d = argvars[2].vval.v_dict;
+
 
     // Get the values in the same order as above in get_maparg().
     lhs = dict_get_string(d, (char_u *)"lhs", FALSE);
@@ -2602,7 +2678,7 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 
 #if defined(MSWIN) || defined(MACOS_X)
 
-# define VIS_SEL	(VISUAL+SELECTMODE)	// abbreviation
+# define VIS_SEL	(MODE_VISUAL | MODE_SELECT)	// abbreviation
 
 /*
  * Default mappings for some often used keys.
@@ -2618,9 +2694,9 @@ struct initmap
 static struct initmap initmappings[] =
 {
 	// paste, copy and cut
-	{(char_u *)"<S-Insert> \"*P", NORMAL},
+	{(char_u *)"<S-Insert> \"*P", MODE_NORMAL},
 	{(char_u *)"<S-Insert> \"-d\"*P", VIS_SEL},
-	{(char_u *)"<S-Insert> <C-R><C-O>*", INSERT+CMDLINE},
+	{(char_u *)"<S-Insert> <C-R><C-O>*", MODE_INSERT | MODE_CMDLINE},
 	{(char_u *)"<C-Insert> \"*y", VIS_SEL},
 	{(char_u *)"<S-Del> \"*d", VIS_SEL},
 	{(char_u *)"<C-Del> \"*d", VIS_SEL},
@@ -2633,24 +2709,24 @@ static struct initmap initmappings[] =
 // Use the Windows (CUA) keybindings. (Console)
 static struct initmap cinitmappings[] =
 {
-	{(char_u *)"\316w <C-Home>", NORMAL+VIS_SEL},
-	{(char_u *)"\316w <C-Home>", INSERT+CMDLINE},
-	{(char_u *)"\316u <C-End>", NORMAL+VIS_SEL},
-	{(char_u *)"\316u <C-End>", INSERT+CMDLINE},
+	{(char_u *)"\316w <C-Home>", MODE_NORMAL | VIS_SEL},
+	{(char_u *)"\316w <C-Home>", MODE_INSERT | MODE_CMDLINE},
+	{(char_u *)"\316u <C-End>", MODE_NORMAL | VIS_SEL},
+	{(char_u *)"\316u <C-End>", MODE_INSERT | MODE_CMDLINE},
 
 	// paste, copy and cut
 #  ifdef FEAT_CLIPBOARD
-	{(char_u *)"\316\324 \"*P", NORMAL},	    // SHIFT-Insert is "*P
+	{(char_u *)"\316\324 \"*P", MODE_NORMAL},   // SHIFT-Insert is "*P
 	{(char_u *)"\316\324 \"-d\"*P", VIS_SEL},   // SHIFT-Insert is "-d"*P
-	{(char_u *)"\316\324 \022\017*", INSERT},  // SHIFT-Insert is ^R^O*
+	{(char_u *)"\316\324 \022\017*", MODE_INSERT},  // SHIFT-Insert is ^R^O*
 	{(char_u *)"\316\325 \"*y", VIS_SEL},	    // CTRL-Insert is "*y
 	{(char_u *)"\316\327 \"*d", VIS_SEL},	    // SHIFT-Del is "*d
 	{(char_u *)"\316\330 \"*d", VIS_SEL},	    // CTRL-Del is "*d
 	{(char_u *)"\030 \"*d", VIS_SEL},	    // CTRL-X is "*d
 #  else
-	{(char_u *)"\316\324 P", NORMAL},	    // SHIFT-Insert is P
+	{(char_u *)"\316\324 P", MODE_NORMAL},	    // SHIFT-Insert is P
 	{(char_u *)"\316\324 \"-dP", VIS_SEL},	    // SHIFT-Insert is "-dP
-	{(char_u *)"\316\324 \022\017\"", INSERT}, // SHIFT-Insert is ^R^O"
+	{(char_u *)"\316\324 \022\017\"", MODE_INSERT}, // SHIFT-Insert is ^R^O"
 	{(char_u *)"\316\325 y", VIS_SEL},	    // CTRL-Insert is y
 	{(char_u *)"\316\327 d", VIS_SEL},	    // SHIFT-Del is d
 	{(char_u *)"\316\330 d", VIS_SEL},	    // CTRL-Del is d
@@ -2663,9 +2739,9 @@ static struct initmap initmappings[] =
 {
 	// Use the Standard MacOS binding.
 	// paste, copy and cut
-	{(char_u *)"<D-v> \"*P", NORMAL},
+	{(char_u *)"<D-v> \"*P", MODE_NORMAL},
 	{(char_u *)"<D-v> \"-d\"*P", VIS_SEL},
-	{(char_u *)"<D-v> <C-R>*", INSERT+CMDLINE},
+	{(char_u *)"<D-v> <C-R>*", MODE_INSERT | MODE_CMDLINE},
 	{(char_u *)"<D-c> \"*y", VIS_SEL},
 	{(char_u *)"<D-x> \"*d", VIS_SEL},
 	{(char_u *)"<Backspace> \"-d", VIS_SEL},

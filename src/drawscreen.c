@@ -686,7 +686,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
     /*
      * Check if not in Insert mode and the line is empty (will show "0-1").
      */
-    if (!(State & INSERT)
+    if ((State & MODE_INSERT) == 0
 		&& *ml_get_buf(wp->w_buffer, wp->w_cursor.lnum, FALSE) == NUL)
 	empty_line = TRUE;
 
@@ -2834,7 +2834,7 @@ update_debug_sign(buf_T *buf, linenr_T lnum)
     // Return when there is nothing to do, screen updating is already
     // happening (recursive call), messages on the screen or still starting up.
     if (!doit || updating_screen
-	    || State == ASKMORE || State == HITRETURN
+	    || State == MODE_ASKMORE || State == MODE_HITRETURN
 	    || msg_scrolled
 #ifdef FEAT_GUI
 	    || gui.starting
@@ -2925,7 +2925,8 @@ redraw_asap(int type)
     schar_T	*screenline2 = NULL;	// copy from ScreenLines2[]
 
     redraw_later(type);
-    if (msg_scrolled || (State != NORMAL && State != NORMAL_BUSY) || exiting)
+    if (msg_scrolled || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
+								    || exiting)
 	return ret;
 
     // Allocate space to save the text displayed in the command line area.
@@ -3049,13 +3050,14 @@ redraw_after_callback(int call_update_screen, int do_message)
 {
     ++redrawing_for_callback;
 
-    if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
-	    || State == EXTERNCMD || State == CONFIRM || exmode_active)
+    if (State == MODE_HITRETURN || State == MODE_ASKMORE
+	    || State == MODE_SETWSIZE || State == MODE_EXTERNCMD
+	    || State == MODE_CONFIRM || exmode_active)
     {
 	if (do_message)
 	    repeat_message();
     }
-    else if (State & CMDLINE)
+    else if (State & MODE_CMDLINE)
     {
 #ifdef FEAT_WILDMENU
 	if (pum_visible())
@@ -3078,7 +3080,7 @@ redraw_after_callback(int call_update_screen, int do_message)
 	    redrawcmdline_ex(FALSE);
 	}
     }
-    else if (State & (NORMAL | INSERT | TERMINAL))
+    else if (State & (MODE_NORMAL | MODE_INSERT | MODE_TERMINAL))
     {
 	update_topline();
 	validate_cursor();

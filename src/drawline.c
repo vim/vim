@@ -1963,7 +1963,7 @@ win_line(
 			// In Insert mode only highlight a word that
 			// doesn't touch the cursor.
 			if (spell_hlf != HLF_COUNT
-				&& (State & INSERT) != 0
+				&& (State & MODE_INSERT)
 				&& wp->w_cursor.lnum == lnum
 				&& wp->w_cursor.col >=
 						    (colnr_T)(prev_ptr - line)
@@ -2477,14 +2477,16 @@ win_line(
 
 #ifdef FEAT_CONCEAL
 	    if (   wp->w_p_cole > 0
-		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
-						       conceal_cursor_line(wp))
+		&& (wp != curwin || lnum != wp->w_cursor.lnum
+						    || conceal_cursor_line(wp))
 		&& ((syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		char_attr = conceal_attr;
-		if ((prev_syntax_id != syntax_seqnr || has_match_conc > 1)
+		if (((prev_syntax_id != syntax_seqnr
+					   && (syntax_flags & HL_CONCEAL) != 0)
+			    || has_match_conc > 1)
 			&& (syn_get_sub_char() != NUL
 				|| (has_match_conc && match_conc)
 				|| wp->w_p_cole == 1)
@@ -2595,7 +2597,7 @@ win_line(
 	if (p_imst == IM_ON_THE_SPOT
 		&& xic != NULL
 		&& lnum == wp->w_cursor.lnum
-		&& (State & INSERT)
+		&& (State & MODE_INSERT)
 		&& !p_imdisable
 		&& im_is_preediting()
 		&& draw_state == WL_LINE)

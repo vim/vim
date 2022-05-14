@@ -455,13 +455,13 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
 
     /*
      * If *s is a TAB, and the TAB is not displayed as ^I, and we're not in
-     * INSERT mode, then col must be adjusted so that it represents the last
-     * screen position of the TAB.  This only fixes an error when the TAB wraps
-     * from one screen line to the next (when 'columns' is not a multiple of
-     * 'ts') -- webb.
+     * MODE_INSERT state, then col must be adjusted so that it represents the
+     * last screen position of the TAB.  This only fixes an error when the TAB
+     * wraps from one screen line to the next (when 'columns' is not a multiple
+     * of 'ts') -- webb.
      */
-    if (*s == TAB && (State & NORMAL) && (!wp->w_p_list ||
-							wp->w_lcs_chars.tab1))
+    if (*s == TAB && (State & MODE_NORMAL)
+				    && (!wp->w_p_list || wp->w_lcs_chars.tab1))
 	col += win_lbr_chartabsize(wp, line, s, (colnr_T)col, NULL) - 1;
 
     /*
@@ -575,7 +575,8 @@ check_status(buf_T *buf)
 }
 
 /*
- * Ask for a reply from the user, a 'y' or a 'n'.
+ * Ask for a reply from the user, a 'y' or a 'n', with prompt "str" (which
+ * should have been translated already).
  * No other characters are accepted, the message is repeated until a valid
  * reply is entered or CTRL-C is hit.
  * If direct is TRUE, don't use vgetc() but ui_inchar(), don't get characters
@@ -595,7 +596,7 @@ ask_yesno(char_u *str, int direct)
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = TRUE;		// disallow scrolling here
 #endif
-    State = CONFIRM;		// mouse behaves like with :confirm
+    State = MODE_CONFIRM;	// mouse behaves like with :confirm
     setmouse();			// disables mouse for xterm
     ++no_mapping;
     ++allow_keys;		// no mapping here, but recognize keys
@@ -653,21 +654,22 @@ get_mode(char_u *buf)
 	{
 	    buf[i++] = VIsual_mode;
 	    if (restart_VIsual_select)
-	        buf[i++] = 's';
+		buf[i++] = 's';
 	}
     }
-    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
-		|| State == CONFIRM)
+    else if (State == MODE_HITRETURN || State == MODE_ASKMORE
+						      || State == MODE_SETWSIZE
+		|| State == MODE_CONFIRM)
     {
 	buf[i++] = 'r';
-	if (State == ASKMORE)
+	if (State == MODE_ASKMORE)
 	    buf[i++] = 'm';
-	else if (State == CONFIRM)
+	else if (State == MODE_CONFIRM)
 	    buf[i++] = '?';
     }
-    else if (State == EXTERNCMD)
+    else if (State == MODE_EXTERNCMD)
 	buf[i++] = '!';
-    else if (State & INSERT)
+    else if (State & MODE_INSERT)
     {
 	if (State & VREPLACE_FLAG)
 	{
@@ -687,7 +689,7 @@ get_mode(char_u *buf)
 	else if (ctrl_x_mode_not_defined_yet())
 	    buf[i++] = 'x';
     }
-    else if ((State & CMDLINE) || exmode_active)
+    else if ((State & MODE_CMDLINE) || exmode_active)
     {
 	buf[i++] = 'c';
 	if (exmode_active == EXMODE_VIM)
@@ -861,8 +863,8 @@ get_keystroke(void)
 
 	if (n == KEYLEN_REMOVED)  // key code removed
 	{
-	    if (must_redraw != 0 && !need_wait_return
-				 && (State & (CMDLINE|HITRETURN|ASKMORE)) == 0)
+	    if (must_redraw != 0 && !need_wait_return && (State
+			& (MODE_CMDLINE | MODE_HITRETURN | MODE_ASKMORE)) == 0)
 	    {
 		// Redrawing was postponed, do it now.
 		update_screen(0);
@@ -1014,7 +1016,7 @@ prompt_for_number(int *mouse_used)
     save_cmdline_row = cmdline_row;
     cmdline_row = 0;
     save_State = State;
-    State = CMDLINE;
+    State = MODE_CMDLINE;
     // May show different mouse shape.
     setmouse();
 

@@ -67,6 +67,29 @@ def Test_range_only()
   endif
 enddef
 
+def Test_invalid_range()
+  var lines =<< trim END
+      :123 eval 1 + 2
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:', 1)
+
+  lines =<< trim END
+      :123 if true
+      endif
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:', 1)
+
+  lines =<< trim END
+      :123 echo 'yes'
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:', 1)
+
+  lines =<< trim END
+      :123 cd there
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E481:', 1)
+enddef
+
 let g:alist = [7]
 let g:astring = 'text'
 let g:anumber = 123
@@ -1504,7 +1527,7 @@ def Test_func_redefine_error()
       source Xtestscript.vim
     catch /E684/
       # function name should contain <SNR> every time
-      assert_match('E684: list index out of range', v:exception)
+      assert_match('E684: List index out of range', v:exception)
       assert_match('function <SNR>\d\+_Func, line 1', v:throwpoint)
     endtry
   endfor
@@ -1615,6 +1638,50 @@ def Test_if_elseif_else_fails()
       endif
   END
   v9.CheckDefAndScriptFailure(lines, ['E1143:', 'E15:'], 4)
+enddef
+
+def Test_if_else_func_using_var()
+  var lines =<< trim END
+      vim9script
+
+      const debug = true
+      if debug
+        var mode_chars = 'something'
+        def Bits2Ascii()
+          var x = mode_chars
+          g:where = 'in true'
+        enddef
+      else
+        def Bits2Ascii()
+          g:where = 'in false'
+        enddef
+      endif
+
+      Bits2Ascii()
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('in true', g:where)
+  unlet g:where
+
+  lines =<< trim END
+      vim9script
+
+      const debug = false
+      if debug
+        var mode_chars = 'something'
+        def Bits2Ascii()
+          g:where = 'in true'
+        enddef
+      else
+        def Bits2Ascii()
+          var x = mode_chars
+          g:where = 'in false'
+        enddef
+      endif
+
+      Bits2Ascii()
+  END
+  v9.CheckScriptFailure(lines, 'E1001: Variable not found: mode_chars')
 enddef
 
 let g:bool_true = v:true
@@ -3707,6 +3774,7 @@ def Test_no_unknown_error_after_error()
       enddef
       def Exit_cb(...l: list<any>)
           sleep 1m
+          g:did_call_exit_cb = true
           source += l
       enddef
       var myjob = job_start('echo burp', {out_cb: Out_cb, exit_cb: Exit_cb, mode: 'raw'})
@@ -3714,7 +3782,13 @@ def Test_no_unknown_error_after_error()
         sleep 10m
       endwhile
       # wait for Exit_cb() to be called
-      sleep 200m
+      for x in range(100)
+        if exists('g:did_call_exit_cb')
+          unlet g:did_call_exit_cb
+          break
+        endif
+        sleep 10m
+      endfor
   END
   writefile(lines, 'Xdef')
   assert_fails('so Xdef', ['E684:', 'E1012:'])
@@ -4125,8 +4199,6 @@ def Test_echo_uninit_variables()
   var Var_func: func
   var var_string: string
   var var_blob: blob
-  var var_job: job
-  var var_channel: channel
   var var_list: list<any>
   var var_dict: dict<any>
 
@@ -4137,14 +4209,23 @@ def Test_echo_uninit_variables()
   echo Var_func
   echo var_string
   echo var_blob
-  echo var_job
-  echo var_channel
   echo var_list
   echo var_dict
   redir END
 
-  assert_equal(['false', '0', '0.0', 'function()', '', '0z', 'no process',
-    'channel fail', '[]', '{}'], res->split('\n'))
+  assert_equal(['false', '0', '0.0', 'function()', '', '0z', '[]', '{}'], res->split('\n'))
+
+  if has('job')
+    var var_job: job
+    var var_channel: channel
+
+    redir => res
+    echo var_job
+    echo var_channel
+    redir END
+
+    assert_equal(['no process', 'channel fail'], res->split('\n'))
+  endif
 enddef
 
 " Keep this last, it messes up highlighting.

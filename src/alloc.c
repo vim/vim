@@ -832,7 +832,7 @@ ga_add_string(garray_T *gap, char_u *p)
 
 /*
  * Concatenate a string to a growarray which contains bytes.
- * When "s" is NULL does not do anything.
+ * When "s" is NULL memory allocation fails does not do anything.
  * Note: Does NOT copy the NUL at the end!
  */
     void
@@ -869,14 +869,14 @@ ga_concat_len(garray_T *gap, char_u *s, size_t len)
 /*
  * Append one byte to a growarray which contains bytes.
  */
-    void
+    int
 ga_append(garray_T *gap, int c)
 {
-    if (ga_grow(gap, 1) == OK)
-    {
-	*((char *)gap->ga_data + gap->ga_len) = c;
-	++gap->ga_len;
-    }
+    if (ga_grow(gap, 1) == FAIL)
+	return FAIL;
+    *((char *)gap->ga_data + gap->ga_len) = c;
+    ++gap->ga_len;
+    return OK;
 }
 
 #if (defined(UNIX) && !defined(USE_SYSTEM)) || defined(MSWIN) \

@@ -4065,7 +4065,8 @@ msgid "E55: Unmatched %s)"
 msgstr "E55: Неупарена %s)"
 
 #, c-format
-msgid "E59: invalid character after %s@"
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
 msgstr "E59: неважећи карактер након %s@"
 
 #, c-format
@@ -4080,7 +4081,8 @@ msgstr "E61: Угњеждено %s*"
 msgid "E62: Nested %s%c"
 msgstr "E62: Угњеждено %s%c"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: неисправна употреба \\_"
 
 #, c-format
@@ -4114,7 +4116,8 @@ msgstr "E71: Неважећи карактер након %s%%"
 msgid "E72: Close error on swap file"
 msgstr "E72: Грешка код затварања привременог фајла"
 
-msgid "E73: tag stack empty"
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
 msgstr "E73: стек ознака је празан"
 
 msgid "E74: Command too complex"
@@ -4357,7 +4360,8 @@ msgstr "E142: Фајл није уписан: Уписивање је онемо
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Аутокоманде су неочекивано обрисале нов бафер %s"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: ненумерички аргумент за :z"
 
 msgid "E145: Shell commands and some functionality not allowed in rvim"
@@ -4484,7 +4488,8 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: Неисправна подразумевана вредност за бројач"
 
 #, c-format
-msgid "E179: argument required for %s"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for %s"
 msgstr "E179: потребан је аргумент за %s"
 
 #, c-format
@@ -4576,7 +4581,8 @@ msgstr "E204: Аутокоманде су на неочекиван начин �
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: Patch режим: оригинални фајл не може да се сачува"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr "E206: Patch режим: не може да се креира празан оригинални фајл"
 
 msgid "E207: Can't delete backup file"
@@ -4622,7 +4628,8 @@ msgstr "E216: Нема такве групе или догађаја: %s"
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Аутокоманде за СВЕ догађаје не могу да се изврше"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: Угњеждавање аутокоманде је сувише дубоко"
 
 msgid "E219: Missing {."
@@ -4637,23 +4644,28 @@ msgstr "E221: Маркер не може да почне малим словом
 msgid "E222: Add to internal buffer that was already read from"
 msgstr "E222: Додавање у интерни бафер из којег се већ читало"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: рекурзивно мапирање"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: глобална скраћеница за %s већ постоји"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: глобално мапирање за %s већ постоји"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: скраћеница за %s већ постоји"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: мапирање за %s већ постоји"
 
 msgid "E228: makemap: Illegal mode"
@@ -4673,7 +4685,8 @@ msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr ""
 "E232: Не може да се креира BalloonEval и са поруком и са повратним позивом"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: приказ не може да се отвори"
 
 #, c-format
@@ -4725,13 +4738,15 @@ msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: FileChangedShell аутокоманда је обрисала бафер"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: нема регистрованог сервера под именом \"%s\""
 
 msgid "E248: Failed to send command to the destination program"
 msgstr "E248: Слање команде циљном програму није успело"
 
-msgid "E249: window layout changed unexpectedly"
+# TODO: Capitalise first word of message?
+msgid "E249: Window layout changed unexpectedly"
 msgstr "E249: распоред прозора се неочекивано променио"
 
 #, c-format
@@ -4756,25 +4771,29 @@ msgstr "E254: Боја %s не може да се алоцира"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: Подаци за знак нису могли да се учитају"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: ознака није пронађена"
 
 msgid "E258: Unable to send to client"
 msgstr "E258: Слање ка клијенту није могуће"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: нису пронађена подударања за cscope упит %s на %s"
 
 msgid "E260: Missing name after ->"
 msgstr "E260: Недостаје име након ->"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: cscope веза %s није пронађена"
 
 #, c-format
-msgid "E262: error reading cscope connection %d"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %d"
 msgstr "E262: грешка код читања cscope везе %d"
 
 msgid ""
@@ -4796,26 +4815,33 @@ msgstr ""
 "E266: Жао нам је, ова команда је онемогућена јер Ruby библиотека није могла "
 "да се учита."
 
-msgid "E267: unexpected return"
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
 msgstr "E267: неочекивано return"
 
-msgid "E268: unexpected next"
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
 msgstr "E268: неочекивано next"
 
-msgid "E269: unexpected break"
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
 msgstr "E269: неочекивано break"
 
-msgid "E270: unexpected redo"
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
 msgstr "E270: неочекивано redo"
 
-msgid "E271: retry outside of rescue clause"
+# TODO: Capitalise first word of message?
+msgid "E271: Retry outside of rescue clause"
 msgstr "E271: retry ван rescue одредбе"
 
-msgid "E272: unhandled exception"
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
 msgstr "E272: необрађени изузетак"
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: непознат longjmp статус %d"
 
 msgid "E274: No white space allowed before parenthesis"
@@ -4862,10 +4888,12 @@ msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr ""
 "E287: Упозорење: Постављање повратне функције за уништење IM није успело"
 
-msgid "E288: input method doesn't support any style"
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
 msgstr "E288: метод уноса не подржава ниједан стил"
 
-msgid "E289: input method doesn't support my preedit type"
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: метод уноса не подржава мој preedit тип"
 
 msgid "E290: List or number required"
@@ -4875,7 +4903,8 @@ msgstr "E290: Захтева се листа или број"
 msgid "E292: Invalid count for del_bytes(): %ld"
 msgstr "E292: Неважећи број за del_bytes(): %ld"
 
-msgid "E293: block was not locked"
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
 msgstr "E293: блок није закључан"
 
 msgid "E294: Seek error in swap file read"
@@ -4955,23 +4984,29 @@ msgid "E314: Preserve failed"
 msgstr "E314: Очување није успело"
 
 #, c-format
-msgid "E315: ml_get: invalid lnum: %ld"
+# TODO: Capitalise first word of message?
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: неисправан lnum: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
+# TODO: Capitalise first word of message?
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: линија %ld у баферу %d не може да се пронађе %s"
 
-msgid "E317: pointer block id wrong"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
 msgstr "E317: ид показивача блока је погрешан"
 
-msgid "E317: pointer block id wrong 2"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
 msgstr "E317: ид показивача блока је погрешан 2"
 
-msgid "E317: pointer block id wrong 3"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
 msgstr "E317: ид показивача блока је погрешан 3"
 
-msgid "E317: pointer block id wrong 4"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
 msgstr "E317: ид показивача блока је погрешан 4"
 
 msgid "E318: Updated too many blocks?"
@@ -4989,11 +5024,13 @@ msgid "E321: Could not reload \"%s\""
 msgstr "E321: \"%s\" не може поново да се учита"
 
 #, c-format
-msgid "E322: line number out of range: %ld past the end"
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: број линије је ван опсега: %ld иза краја"
 
 #, c-format
-msgid "E323: line count wrong in block %ld"
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
 msgstr "E323: број линија је погрешан у блоку %ld"
 
 msgid "E324: Can't open PostScript output file"
@@ -5125,7 +5162,8 @@ msgstr "E360: Командно окружење не може да се извр
 msgid "E362: Using a boolean value as a Float"
 msgstr "E362: Логичка вредност се користи као Покретни"
 
-msgid "E363: pattern uses more memory than 'maxmempattern'"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: шаблон користи више меморије од 'maxmempattern'"
 
 #, c-format
@@ -5143,11 +5181,13 @@ msgid "E367: No such group: \"%s\""
 msgstr "E367: Нема такве групе: \"%s\""
 
 #, c-format
-msgid "E368: got SIG%s in libcall()"
+# TODO: Capitalise first word of message?
+msgid "E368: Got SIG%s in libcall()"
 msgstr "E368: добијен SIG%s у libcall()"
 
 #, c-format
-msgid "E369: invalid item in %s%%[]"
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: неважећа ставка у %s%%[]"
 
 #, c-format
@@ -5200,11 +5240,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: Неисправан стринг за претрагу: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: претрага је достигла ВРХ без подударања за: %s"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: претрага је достигла ДНО без подударања за: %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -5238,7 +5280,8 @@ msgstr "E393: group[t]here се овде не прихвата"
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: Ставка региона није пронађена за %s"
 
-msgid "E395: contains argument not accepted here"
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
 msgstr "E395: садржи аргумент који се овде не прихвата"
 
 msgid "E397: Filename required"
@@ -5263,7 +5306,8 @@ msgstr "E401: Није пронађен граничник шаблона: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Смеће након шаблона: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: синтаксна синхро: шаблон настављања линије је наведен двапут"
 
 #, c-format
@@ -5295,7 +5339,8 @@ msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Неважећа :syntax подкоманда: %s"
 
 #, c-format
-msgid "E411: highlight group not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
 msgstr "E411: група истицања није пронађена: %s"
 
 #, c-format
@@ -5306,19 +5351,23 @@ msgstr "E412: Нема довољно аргумената: \":highlight link %s
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Сувише аргумената: \":highlight link %s\""
 
-msgid "E414: group has settings, highlight link ignored"
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: група има поставке, highlight link се игнорише"
 
 #, c-format
-msgid "E415: unexpected equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: неочекиван знак једнакости: %s"
 
 #, c-format
-msgid "E416: missing equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
 msgstr "E416: недостаје знак једнакости: %s"
 
 #, c-format
-msgid "E417: missing argument: %s"
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
 msgstr "E417: недостаје аргумент: %s"
 
 #, c-format
@@ -5336,7 +5385,8 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Име боје или број нису препознати: %s"
 
 #, c-format
-msgid "E422: terminal code too long: %s"
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
 msgstr "E422: код терминала је предугачак: %s"
 
 #, c-format
@@ -5350,7 +5400,8 @@ msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Не може да се иде испред прве подударајуће ознаке"
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: ознака није пронађена: %s"
 
 msgid "E427: There is only one matching tag"
@@ -5388,16 +5439,20 @@ msgstr "E435: Ознака није могла да се пронађе, сам�
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: Нема \"%s\" ставке у termcap"
 
-msgid "E437: terminal capability \"cm\" required"
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: потребна је могућност терминала \"cm\""
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: погрешни бројеви линије"
 
-msgid "E439: undo list corrupt"
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
 msgstr "E439: листа опозива је искварена"
 
-msgid "E440: undo line missing"
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
 msgstr "E440: недостаје линија опозива"
 
 msgid "E441: There is no preview window"
@@ -5429,7 +5484,8 @@ msgstr "E448: Библиотечка функција %s није могла д�
 msgid "E449: Invalid expression received"
 msgstr "E449: Примљен је неважећи израз"
 
-msgid "E450: buffer number, text or a list required"
+# TODO: Capitalise first word of message?
+msgid "E450: Buffer number, text or a list required"
 msgstr "E450: Захтева број бафера Број или Покретни"
 
 #, c-format
@@ -5442,7 +5498,8 @@ msgstr "E452: Двоструке ; у листи променљивих"
 msgid "E453: UL color unknown"
 msgstr "E453: Непозната UL боја"
 
-msgid "E454: function list was modified"
+# TODO: Capitalise first word of message?
+msgid "E454: Function list was modified"
 msgstr "E454: листа функције је измењена"
 
 msgid "E455: Error writing to PostScript output file"
@@ -5466,7 +5523,8 @@ msgstr "E458: colormap ставка не може да се алоцира, не
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Не може да се оде назад на претходни директоријум"
 
-msgid "E460: entries missing in mapset() dict argument"
+# TODO: Capitalise first word of message?
+msgid "E460: Entries missing in mapset() dict argument"
 msgstr "E460: недостају ставке у mapset() dict аргументу"
 
 #, c-format
@@ -5496,7 +5554,8 @@ msgid "E468: Completion argument only allowed for custom completion"
 msgstr "E468: Аргумент довршавања је дозвољен само за прилагођена довршавања"
 
 #, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: неисправан cscopequickfix индикатор %c за %c"
 
 msgid "E470: Command aborted"
@@ -5581,14 +5640,16 @@ msgstr "E488: Карактери вишка на крају"
 msgid "E488: Trailing characters: %s"
 msgstr "E488: Карактери вишка на крају: %s"
 
-msgid "E489: no call stack to substitute for \"<stack>\""
+# TODO: Capitalise first word of message?
+msgid "E489: No call stack to substitute for \"<stack>\""
 msgstr "E489: нема стека позива који би заменио \"<stack>\""
 
 msgid "E490: No fold found"
 msgstr "E490: Није пронађен ниједан свијутак"
 
 #, c-format
-msgid "E491: json decode error at '%s'"
+# TODO: Capitalise first word of message?
+msgid "E491: JSON decode error at '%s'"
 msgstr "E491: грешка json декодирања на '%s'"
 
 msgid "E492: Not an editor command"
@@ -5600,16 +5661,20 @@ msgstr "E493: Задат је опсег уназад"
 msgid "E494: Use w or w>>"
 msgstr "E494: Користите w или w>>"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: нема имена фајла за аутокоманде које би заменило \"<afile>\""
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: нема броја бафера за аутокоманду који би заменио \"<abuf>\""
 
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: нема имена подударања аутокоманде које би заменило \"<amatch>\""
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: нема имена :source фајла које би заменило \"<sfile>\""
 
 #, no-c-format
@@ -5654,13 +5719,15 @@ msgstr "E509: Резервни фајл не може да се креира (д
 msgid "E510: Can't make backup file (add ! to write anyway)"
 msgstr "E510: Резервни фајл не може да се направи (додајте ! да се упис ипак изврши)"
 
-msgid "E511: netbeans already connected"
+# TODO: Capitalise first word of message?
+msgid "E511: NetBeans already connected"
 msgstr "E511: netbeans је већ повезан"
 
 msgid "E512: Close failed"
 msgstr "E512: Затварање није успело"
 
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
 "E513: грешка при упису, конверзија није успела (оставите 'fenc' празно да "
 "премостите)"
@@ -5673,7 +5740,8 @@ msgstr ""
 "E513: грешка при упису, конверзија није успела у линији %ld (оставите 'fenc' "
 "празно да премостите)"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: грешка при упису (систем фајлова је пун?)"
 
 msgid "E515: No buffers were unloaded"
@@ -5732,10 +5800,12 @@ msgstr "E530: 'term' не може да се промени из ГКИ"
 msgid "E531: Use \":gui\" to start the GUI"
 msgstr "E531: Користите \":gui\" да покренете ГКИ"
 
-msgid "E532: highlighting color name too long in defineAnnoType"
+# TODO: Capitalise first word of message?
+msgid "E532: Highlighting color name too long in defineAnnoType"
 msgstr "E532: име боје истицања у defineAnnoType је сувише дугачко"
 
-msgid "E533: can't select wide font"
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
 msgstr "E533: не може да се изабере широки фонт"
 
 msgid "E534: Invalid wide font"
@@ -5745,7 +5815,8 @@ msgstr "E534: Неважећи широки фонт"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: Недозвољен карактер након <%c>"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: потребан зарез"
 
 #, c-format
@@ -5759,7 +5830,8 @@ msgstr "E539: Недозвољен карактер <%s>"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Низ израза није затворен"
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: неуравнотежене групе"
 
 msgid "E543: Not a valid codepage"
@@ -5777,7 +5849,8 @@ msgstr "E546: Недозвољени режим"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: Недозвољени mouseshape"
 
-msgid "E548: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
 msgstr "E548: очекује се цифра"
 
 msgid "E549: Illegal percentage"
@@ -5789,7 +5862,8 @@ msgstr "E550: Недостаје двотачка"
 msgid "E551: Illegal component"
 msgstr "E551: Неисправна компонента"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: очекује се цифра"
 
 msgid "E553: No more items"
@@ -5799,10 +5873,12 @@ msgstr "E553: Нема више ставки"
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: Синтаксна грешка у %s{...}"
 
-msgid "E555: at bottom of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
 msgstr "E555: на дну стека ознака"
 
-msgid "E556: at top of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
 msgstr "E556: на врху стека ознака"
 
 msgid "E557: Cannot open termcap file"
@@ -5818,7 +5894,8 @@ msgstr "E559: У termcap није пронађена ставка термина
 msgid "E560: Usage: cs[cope] %s"
 msgstr "E560: Употреба: cs[cope] %s"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: непознат cscope тип претраге"
 
 msgid "E562: Usage: cstag <ident>"
@@ -5838,13 +5915,16 @@ msgstr "E565: Није дозвољена измена текста или ме�
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: cscope процесни токови нису могли да се креирају"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: нема cscope веза"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: Дупликат cscope база података није додата"
 
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: фатална грешка у cs_manage_matches"
 
 msgid ""
@@ -5854,7 +5934,8 @@ msgstr ""
 "се учита."
 
 #, c-format
-msgid "E572: exit code %d"
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
 msgstr "E572: излазни кôд %d"
 
 #, c-format
@@ -5877,10 +5958,12 @@ msgstr "Неважеће име регистра"
 msgid "E578: Not allowed to change text here"
 msgstr "E578: Овде није дозвољена измена текста"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: :if угњеждавање је сувише дубоко"
 
-msgid "E579: block nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E579: Block nesting too deep"
 msgstr "E579: угњеждавање блокова је сувише дубоко"
 
 msgid "E580: :endif without :if"
@@ -5892,7 +5975,8 @@ msgstr "E581: :else без :if"
 msgid "E582: :elseif without :if"
 msgstr "E582: :elseif без :if"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: вишеструко :else"
 
 msgid "E584: :elseif after :else"
@@ -5941,7 +6025,8 @@ msgstr ""
 msgid "E596: Invalid font(s)"
 msgstr "E596: Неисправни фонт(ови)"
 
-msgid "E597: can't select fontset"
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
 msgstr "E597: fontset не може да се изабере"
 
 msgid "E598: Invalid fontset"
@@ -5972,7 +6057,8 @@ msgstr "E605: Изузетак није ухваћен: %s"
 msgid "E606: :finally without :try"
 msgstr "E606: :finally без :try"
 
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: вишеструко :finally"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
@@ -6009,11 +6095,13 @@ msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: Не може да се промени у GTK ГКИ"
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: фајл \"%s\" није PostScript resource фајл"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: фајл \"%s\" није подржан PostScript resource фајл"
 
 #, c-format
@@ -6035,22 +6123,27 @@ msgid "E624: Can't open file \"%s\""
 msgstr "E624: Фајл \"%s\" не може да се отвори"
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: cscope database: %s не може да се отвори"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: Информације о cscope бази података не могу да се добију"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): упис док није успостављена веза"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): упис није успео"
 
 #, c-format
-msgid "E654: missing delimiter after search pattern: %s"
+# TODO: Capitalise first word of message?
+msgid "E654: Missing delimiter after search pattern: %s"
 msgstr "E654: недостаје граничник иза шаблона претраге: %s"
 
 msgid "E655: Too many symbolic links (cycle?)"
@@ -6079,14 +6172,16 @@ msgstr "E662: На почетку листе промена"
 msgid "E663: At end of changelist"
 msgstr "E663: На крају листе промена"
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: листа промена је празна"
 
 msgid "E665: Cannot start GUI, no valid font found"
 msgstr "E665: ГКИ не може да се покрене, није пронађен валидан фонт"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: компајлер није подржан: %s"
 
 msgid "E667: Fsync failed"
@@ -6129,7 +6224,8 @@ msgstr "E677: Грешка при упису temp фајла"
 msgid "E678: Invalid character after %s%%[dxouU]"
 msgstr "E678: Неважећи карактер након %s%%[dxouU]"
 
-msgid "E679: recursive loop loading syncolor.vim"
+# TODO: Capitalise first word of message?
+msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: Рекурзивна петља код учитавања syncolor.vim"
 
 #, c-format
@@ -6146,7 +6242,8 @@ msgid "E683: File name missing or invalid pattern"
 msgstr "E683: Недостаје име фајла или неважећи шаблон"
 
 #, c-format
-msgid "E684: list index out of range: %ld"
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
 msgstr "E684: индекс листе је ван опсега: %ld"
 
 #, c-format
@@ -6189,7 +6286,8 @@ msgstr "E696: У Листи недостаје зарез: %s"
 msgid "E697: Missing end of List ']': %s"
 msgstr "E697: Недостаје крај Листе ']': %s"
 
-msgid "E698: variable nested too deep for making a copy"
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: променљива је предубоко угњеждена да би се направила копија"
 
 msgid "E699: Too many arguments"
@@ -6274,7 +6372,8 @@ msgstr "E722: Недостаје зарез у Речнику: %s"
 msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: Недостаје крај Речника '}': %s"
 
-msgid "E724: variable nested too deep for displaying"
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: променљива је угњеждена предубоко да би се приказала"
 
 #, c-format
@@ -6345,7 +6444,8 @@ msgstr "E742: Вредност не може да се промени"
 msgid "E742: Cannot change value of %s"
 msgstr "E742: Вредност %s не може да се промени"
 
-msgid "E743: variable nested too deep for (un)lock"
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: променљива је угњеждена сувише дубоко да би се (за/от)кључала"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
@@ -6367,7 +6467,8 @@ msgstr ""
 msgid "E748: No previously used register"
 msgstr "E748: Нема претходно коришћеног регистра"
 
-msgid "E749: empty buffer"
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
 msgstr "E749: празан бафер"
 
 msgid "E750: First use \":profile start {fname}\""
@@ -6480,10 +6581,12 @@ msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: .sug фајл не одговара .spl фајлу: %s"
 
 #, c-format
-msgid "E782: error while reading .sug file: %s"
+# TODO: Capitalise first word of message?
+msgid "E782: Error while reading .sug file: %s"
 msgstr "E782: грешка приликом читања .sug фајла: %s"
 
-msgid "E783: duplicate char in MAP entry"
+# TODO: Capitalise first word of message?
+msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: карактер дупликат у MAP ставци"
 
 msgid "E784: Cannot close last tab page"
@@ -6568,7 +6671,8 @@ msgstr "E804: '%' не може да се користи са Покретни"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Покретни се користи као Број"
 
-msgid "E806: using Float as a String"
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
 msgstr "E806: Коришћење Покретни као Стринг"
 
 msgid "E807: Expected Float argument for printf()"
@@ -6650,7 +6754,8 @@ msgid "E828: Cannot open undo file for writing: %s"
 msgstr "E828: Фајл опозива не може да се отвори за упис: %s"
 
 #, c-format
-msgid "E829: write error in undo file: %s"
+# TODO: Capitalise first word of message?
+msgid "E829: Write error in undo file: %s"
 msgstr "E829: грешка код уписа у фајл за опозив: %s"
 
 #, c-format
@@ -6681,7 +6786,8 @@ msgstr "E836: Овај Vim не може да изврши :python након к
 msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Овај Vim не може да изврши :py3 након коришћења :python"
 
-msgid "E838: netbeans is not supported with this GUI"
+# TODO: Capitalise first word of message?
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: овај ГКИ не подржава netbeans"
 
 msgid "E840: Completion function deleted text"
@@ -6691,13 +6797,15 @@ msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr ""
 "E841: Резервисано име, не може да се користи за кориснички дефинисану команду"
 
-msgid "E842: no line number to use for \"<slnum>\""
+# TODO: Capitalise first word of message?
+msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: нема броја линије који би се користио за \"<slnum>\""
 
 msgid "E843: Error while updating swap file crypt"
 msgstr "E843: Грешка приликом освежавања шифрирања привременог фајла"
 
-msgid "E844: invalid cchar value"
+# TODO: Capitalise first word of message?
+msgid "E844: Invalid cchar value"
 msgstr "E844: неважећа cchar вредност"
 
 msgid "E845: Insufficient memory, word list will be incomplete"
@@ -6728,7 +6836,8 @@ msgstr "E852: Процес потомак није успео да покрен�
 msgid "E853: Duplicate argument name: %s"
 msgstr "E853: Име аргумента је дуплирано: %s"
 
-msgid "E854: path too long for completion"
+# TODO: Capitalise first word of message?
+msgid "E854: Path too long for completion"
 msgstr "E854: путања је сувише дугачка да би се довршила"
 
 msgid "E855: Autocommands caused command to abort"
@@ -6873,7 +6982,8 @@ msgid "E889: Number required"
 msgstr "E889: Захтева се Број"
 
 #, c-format
-msgid "E890: trailing char after ']': %s]%s"
+# TODO: Capitalise first word of message?
+msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: карактер вишка након ']': %s]%s"
 
 msgid "E891: Using a Funcref as a Float"
@@ -6922,27 +7032,33 @@ msgstr "E901: gethostbyname() у channel_open()"
 msgid "E902: Cannot connect to port"
 msgstr "E902: Повезивање на порт није могуће"
 
-msgid "E903: received command with non-string argument"
+# TODO: Capitalise first word of message?
+msgid "E903: Received command with non-string argument"
 msgstr "E903: примљена команда са аргументом који није стринг"
 
-msgid "E904: last argument for expr/call must be a number"
+# TODO: Capitalise first word of message?
+msgid "E904: Last argument for expr/call must be a number"
 msgstr "E904: последњи аргумент за expr/call мора бити број"
 
-msgid "E904: third argument for call must be a list"
+# TODO: Capitalise first word of message?
+msgid "E904: Third argument for call must be a list"
 msgstr "E904: трећи аргумент за call мора бити листа"
 
 #, c-format
-msgid "E905: received unknown command: %s"
+# TODO: Capitalise first word of message?
+msgid "E905: Received unknown command: %s"
 msgstr "E905: примљена непозната команда: %s"
 
-msgid "E906: not an open channel"
+# TODO: Capitalise first word of message?
+msgid "E906: Not an open channel"
 msgstr "E906: није отворен канал"
 
 msgid "E907: Using a special value as a Float"
 msgstr "E907: Специјална вредност се користи као Покретни"
 
 #, c-format
-msgid "E908: using an invalid value as a String: %s"
+# TODO: Capitalise first word of message?
+msgid "E908: Using an invalid value as a String: %s"
 msgstr "E908: Користи се неважећа вредност као Стринг: %s"
 
 msgid "E909: Cannot index a special variable"
@@ -6954,7 +7070,8 @@ msgstr "E910: Посао се користи као Број"
 msgid "E911: Using a Job as a Float"
 msgstr "E911: Посао се користи као Покретни"
 
-msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+# TODO: Capitalise first word of message?
+msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr ""
 "E912: ch_evalexpr()/ch_sendexpr() не може да се користи са raw или nl каналом"
 
@@ -6967,7 +7084,8 @@ msgstr "E914: Канал се користи као Покретни"
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: in_io бафер захтева да in_buf или in_name буде постављено"
 
-msgid "E916: not a valid job"
+# TODO: Capitalise first word of message?
+msgid "E916: Not a valid job"
 msgstr "E916: није валидан job"
 
 #, c-format
@@ -6975,7 +7093,8 @@ msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: Callback не може да се користи са %s()"
 
 #, c-format
-msgid "E918: buffer must be loaded: %s"
+# TODO: Capitalise first word of message?
+msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: бафер мора бити учитан: %s"
 
 #, c-format
@@ -6988,7 +7107,8 @@ msgstr "E920: _io фајл захтева да _name буде постављен
 msgid "E921: Invalid callback argument"
 msgstr "E921: Неисправан callback аргумент"
 
-msgid "E922: expected a dict"
+# TODO: Capitalise first word of message?
+msgid "E922: Expected a dict"
 msgstr "E922: очекивао се dict"
 
 msgid "E923: Second argument of function() must be a list or a dict"
@@ -7032,7 +7152,8 @@ msgid "E934: Cannot jump to a buffer that does not have a name"
 msgstr "E934: Не може да се скочи на бафер који нема име"
 
 #, c-format
-msgid "E935: invalid submatch number: %d"
+# TODO: Capitalise first word of message?
+msgid "E935: Invalid submatch number: %d"
 msgstr "E935: неисправан број подподударања: %d"
 
 msgid "E936: Cannot delete the current group"
@@ -7053,7 +7174,8 @@ msgstr "E939: Потребан је позитиван број"
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: Не може да се откључа или закључа променљива %s"
 
-msgid "E941: already started a server"
+# TODO: Capitalise first word of message?
+msgid "E941: Already started a server"
 msgstr "E941: сервер је већ покренут"
 
 msgid "E942: +clientserver feature not available"
@@ -7121,7 +7243,8 @@ msgstr "E959: Неисправан diff формат."
 msgid "E960: Problem creating the internal diff"
 msgstr "E960: Проблем код креирања интерног diff-а"
 
-msgid "E961: no line number to use for \"<sflnum>\""
+# TODO: Capitalise first word of message?
+msgid "E961: No line number to use for \"<sflnum>\""
 msgstr "E961: нема броја линије који би се користио за \"<sflnum>\""
 
 #, c-format
@@ -7129,21 +7252,24 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Неисправна акција: '%s'"
 
 #, c-format
-msgid "E963: setting %s to value with wrong type"
+# TODO: Capitalise first word of message?
+msgid "E963: Setting %s to value with wrong type"
 msgstr "E963: постављање %s не вредност погрешног типа"
 
 #, c-format
 msgid "E964: Invalid column number: %ld"
 msgstr "E964: Неисправан број колоне: %ld"
 
-msgid "E965: missing property type name"
+# TODO: Capitalise first word of message?
+msgid "E965: Missing property type name"
 msgstr "E965: недостаје име типа особине"
 
 #, c-format
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: Неисправан број линије: %ld"
 
-msgid "E967: text property info corrupted"
+# TODO: Capitalise first word of message?
+msgid "E967: Text property info corrupted"
 msgstr "E967: информације о особини текста се искварене"
 
 msgid "E968: Need at least one of 'id' or 'type'"
@@ -7186,7 +7312,8 @@ msgstr "E978: Неисправна операција за Блоб"
 msgid "E979: Blob index out of range: %ld"
 msgstr "E979: Индекс Блоба је ван опсега: %ld"
 
-msgid "E980: lowlevel input not supported"
+# TODO: Capitalise first word of message?
+msgid "E980: Lowlevel input not supported"
 msgstr "E980: није подржан улаз ниског нивоа"
 
 msgid "E981: Command not allowed in rvim"
@@ -7205,10 +7332,12 @@ msgstr "E984: :scriptversion се користи ван изворишног ф�
 msgid "E985: .= is not supported with script version >= 2"
 msgstr "E985: .= није подржано са скрипт верзијом >= 2"
 
-msgid "E986: cannot modify the tag stack within tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E986: Cannot modify the tag stack within tagfunc"
 msgstr "E986: стек ознака не може да се измени унутар tagfunc"
 
-msgid "E987: invalid return value from tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E987: Invalid return value from tagfunc"
 msgstr "E987: неисправна враћена вредност из tagfunc"
 
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
@@ -7221,7 +7350,8 @@ msgstr "E989: Неподразумевани аргумент следи иза 
 msgid "E990: Missing end marker '%s'"
 msgstr "E990: Недостаје маркер краја '%s'"
 
-msgid "E991: cannot use =<< here"
+# TODO: Capitalise first word of message?
+msgid "E991: Cannot use =<< here"
 msgstr "E991: овде не може да се користи =<<"
 
 msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
@@ -7229,7 +7359,8 @@ msgstr ""
 "E992: Није дозвољено у режимској линији када је 'modelineexpr' искључена"
 
 #, c-format
-msgid "E993: window %d is not a popup window"
+# TODO: Capitalise first word of message?
+msgid "E993: Window %d is not a popup window"
 msgstr "E993: прозор %d није искачући прозор"
 
 msgid "E994: Not allowed in a popup window"

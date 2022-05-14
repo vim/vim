@@ -2,6 +2,8 @@
 #
 # FIRST AUTHOR SungHyun Nam <goweol@gmail.com>, 2000-2018
 #
+# Original translations.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 8.1\n"
@@ -228,17 +230,21 @@ msgstr "E901: channel_open()에서 gethostbyname()"
 msgid "E898: socket() in channel_open()"
 msgstr "E898: channel_open()에서 socket()"
 
-msgid "E903: received command with non-string argument"
+# TODO: Capitalise first word of message?
+msgid "E903: Received command with non-string argument"
 msgstr "E903: 문자열이 아닌 인자를 명령으로 수신했습니다"
 
-msgid "E904: last argument for expr/call must be a number"
+# TODO: Capitalise first word of message?
+msgid "E904: Last argument for expr/call must be a number"
 msgstr "E904: expr/call의 마지막 인자는 숫자여야 합니다"
 
-msgid "E904: third argument for call must be a list"
+# TODO: Capitalise first word of message?
+msgid "E904: Third argument for call must be a list"
 msgstr "E904: 3번째 인자는 list여야 합니다"
 
 #, c-format
-msgid "E905: received unknown command: %s"
+# TODO: Capitalise first word of message?
+msgid "E905: Received unknown command: %s"
 msgstr "E905: 모르는 명령 수신: %s"
 
 #, c-format
@@ -253,11 +259,13 @@ msgstr "E631: %s(): 쓰기가 실패했습니다"
 msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: %s()에는 callback을 사용할 수 없습니다"
 
-msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+# TODO: Capitalise first word of message?
+msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr ""
 "E912: raw 혹은 nl 채널에서 ch_evalexpr()/ch_sendexpr()을 사용할 수 없습니다"
 
-msgid "E906: not an open channel"
+# TODO: Capitalise first word of message?
+msgid "E906: Not an open channel"
 msgstr "E906: 열린 채널이 아닙니다"
 
 msgid "E920: _io file requires _name to be set"
@@ -267,7 +275,8 @@ msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: in_io 버퍼는 설정하려면 in_buf나 in_name이 필요합니다"
 
 #, c-format
-msgid "E918: buffer must be loaded: %s"
+# TODO: Capitalise first word of message?
+msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: 버퍼가 로딩되어야 합니다: %s"
 
 msgid "E821: File is encrypted with unknown method"
@@ -487,7 +496,8 @@ msgstr "E734: %s=에 대한 잘못된 변수형"
 msgid "E461: Illegal variable name: %s"
 msgstr "E461: 비정상적인 변수 명: %s"
 
-msgid "E806: using Float as a String"
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
 msgstr "E806: Float를 String으로 사용"
 
 msgid "E687: Less targets than List items"
@@ -529,7 +539,8 @@ msgstr "E108: 이런 변수 없음: \"%s\""
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: 변수 %s을(를) 잠금 혹은 해제할 수 없습니다"
 
-msgid "E743: variable nested too deep for (un)lock"
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: 잠금(해제)하기에 변수가 너무 깊이 중첩되었습니다"
 
 msgid "E109: Missing ':' after '?'"
@@ -566,7 +577,8 @@ msgstr "E115: 따옴표 없음: %s"
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr "메모리가 부족하여 가비지 콜렉션이 중단되었습니다!"
 
-msgid "E724: variable nested too deep for displaying"
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: 변수가 표시하기에 너무 깊이 중첩되었습니다"
 
 msgid "E805: Using a Float as a Number"
@@ -617,7 +629,8 @@ msgstr "E730: List를 String으로 사용"
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Dictionary를 String으로 사용"
 
-msgid "E908: using an invalid value as a String"
+# TODO: Capitalise first word of message?
+msgid "E908: Using an invalid value as a String"
 msgstr "E908: 잘못된 값을 String으로 사용하고 있습니다"
 
 #, c-format
@@ -643,7 +656,8 @@ msgstr "모름"
 msgid "E742: Cannot change value of %s"
 msgstr "E742: %s 값을 바꿀 수 없습니다"
 
-msgid "E698: variable nested too deep for making a copy"
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: 복사하기에 변수가 너무 깊게 중첩되었습니다"
 
 msgid ""
@@ -710,7 +724,8 @@ msgstr "확인(&O)"
 msgid "E700: Unknown function: %s"
 msgstr "E700: 모르는 함수: %s"
 
-msgid "E922: expected a dict"
+# TODO: Capitalise first word of message?
+msgid "E922: Expected a dict"
 msgstr "E922: dict가 요구됩니다"
 
 msgid "E923: Second argument of function() must be a list or a dict"
@@ -732,7 +747,8 @@ msgstr "insert() 인자"
 msgid "E786: Range not allowed"
 msgstr "E786: 범위가 허용되지 않습니다"
 
-msgid "E916: not a valid job"
+# TODO: Capitalise first word of message?
+msgid "E916: Not a valid job"
 msgstr "E916: 정상적인 job이 아닙니다"
 
 msgid "E701: Invalid type for len()"
@@ -761,7 +777,8 @@ msgstr "E241: %s(으)로 보낼 수 없습니다"
 msgid "E277: Unable to read a server reply"
 msgstr "E277: 서버의 응답을 읽을 수 없습니다"
 
-msgid "E941: already started a server"
+# TODO: Capitalise first word of message?
+msgid "E941: Already started a server"
 msgstr "E941: 서버가 이미 시작되었습니다"
 
 msgid "E942: +clientserver feature not available"
@@ -799,7 +816,8 @@ msgid "(Invalid)"
 msgstr "(비정상)"
 
 #, c-format
-msgid "E935: invalid submatch number: %d"
+# TODO: Capitalise first word of message?
+msgid "E935: Invalid submatch number: %d"
 msgstr "E935: 비정상적인 submatch number: %d"
 
 msgid "E677: Error writing temp file"
@@ -884,7 +902,8 @@ msgid "E165: Cannot go beyond last file"
 msgstr "E165: 마지막 파일 뒤로는 갈 수 없습니다"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: 컴파일러가 지원되지 않음: %s"
 
 #, c-format
@@ -1133,7 +1152,8 @@ msgstr "파일 고치기"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Autocommand가 뜻 밖에 새 버퍼 %s을(를) 지웠습니다"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: 숫자가 아닌 인자가 :z에 주어졌습니다"
 
 msgid "E145: Shell commands not allowed in rvim"
@@ -1359,10 +1379,12 @@ msgstr "E177: 카운트는 두 번 이상 명시될 수 없습니다"
 msgid "E178: Invalid default value for count"
 msgstr "E178: 잘못된 기본 카운트 값"
 
-msgid "E179: argument required for -complete"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for -complete"
 msgstr "E179: -complete에 인자가 필요합니다"
 
-msgid "E179: argument required for -addr"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for -addr"
 msgstr "E179: -addr에 인자가 필요합니다"
 
 #, c-format
@@ -1489,19 +1511,24 @@ msgstr "E809: #<는 +eval 기능이 포함되어야 사용할 수 있습니다"
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: '#'에 대해 치환할 교체 파일 이름이 없습니다"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: \"<afile>\"에 대해 치환할 자동명령 파일 이름이 없습니다"
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: \"<abuf>\"에 대해 치환할 자동명령 버퍼 번호가 없습니다"
 
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: \"<amatch>\"에 대해 치환할 자동명령 매치 이름이 없습니다"
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: \"<sfile>\"에 대해 치환할 :source 파일 이름이 없습니다"
 
-msgid "E842: no line number to use for \"<slnum>\""
+# TODO: Capitalise first word of message?
+msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: \"<slnum>\"에 사용될 줄 번호가 없습니다"
 
 #, no-c-format
@@ -1567,6 +1594,7 @@ msgstr "에러"
 msgid "Interrupt"
 msgstr "인터럽트"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: :if가 너무 깊게 중첩되었습니다"
 
@@ -1579,7 +1607,8 @@ msgstr "E581: :if없이 :else가 있습니다"
 msgid "E582: :elseif without :if"
 msgstr "E582: :if없이 :elseif가 있습니다"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: 여러개의 :else가 있습니다"
 
 msgid "E584: :elseif after :else"
@@ -1612,7 +1641,8 @@ msgstr "E604: :finally 뒤에 :catch가 있습니다"
 msgid "E606: :finally without :try"
 msgstr "E606: :try없이 :finally가 있습니다"
 
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: 여러개의 :finally가 있습니다"
 
 msgid "E602: :endtry without :try"
@@ -1808,7 +1838,8 @@ msgstr "E949: 쓰는 중에 파일이 변경되었습니다"
 msgid "E512: Close failed"
 msgstr "E512: 닫기가 실패했습니다"
 
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr "E513: 쓰기 에러, 변환 실패 (무시하려면 'fenc'를 비우면 됨)"
 
 #, c-format
@@ -1817,7 +1848,8 @@ msgid ""
 "override)"
 msgstr "E513: 쓰기 에러, %ld 줄에서 변환 실패 (무시하려면 'fenc'를 비우면 됨)"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: 쓰기 에러 (파일 시스템이 꽉찼나요?)"
 
 msgid " CONVERSION ERROR"
@@ -1848,7 +1880,8 @@ msgstr " 저장 했습니다"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: 패치 상태: 원래 파일을 저장할 수 없습니다"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr "E206: 패치 상태: 빈 원래 파일을 만들 수 없습니다"
 
 msgid "E207: Can't delete backup file"
@@ -2019,7 +2052,8 @@ msgstr "E217: ALL 이벤트에 대해 자동명령을 실행할 수 없습니다
 msgid "No matching autocommands"
 msgstr "맞는 자동명령이 없습니다"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: 자동명령이 너무 깊게 중첩되었습니다"
 
 #, c-format
@@ -2058,23 +2092,28 @@ msgstr[1] "+-%3ld 줄들이 접혔습니다"
 msgid "E222: Add to read buffer"
 msgstr "E222: 읽혀진 버퍼에 더하기"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: 재귀 맵핑"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: %s 전역 약어가 이미 존재합니다"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: %s 전역 매핑이 이미 존재합니다"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: %s 약어가 이미 존재합니다"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: %s 매핑이 이미 존재합니다"
 
 msgid "No abbreviation found"
@@ -2371,7 +2410,8 @@ msgstr "E550: 콜론이 없습니다"
 msgid "E551: Illegal component"
 msgstr "E551: 이상한 컴포넌트"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: 숫자가 필요합니다"
 
 #, c-format
@@ -2408,11 +2448,13 @@ msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: 포스트스크립트 리소스 파일 \"%s\"을(를) 읽을 수 없습니다"
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: 파일 \"%s\"은(는) 포스트스크립트 리소스 파일이 아닙니다"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: 파일 \"%s\"은(는) 지원되는 포스트스크립트 리소스 파일이 아닙니다"
 
 #, c-format
@@ -2505,10 +2547,12 @@ msgid "Added cscope database %s"
 msgstr "cscope 데이터베이스 %s에 더했습니다."
 
 #, c-format
-msgid "E262: error reading cscope connection %ld"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %ld"
 msgstr "E262: cscope 연결 %ld 읽기 에러"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: 모르는 cscope 찾기 형식"
 
 msgid "E566: Could not create cscope pipes"
@@ -2532,7 +2576,8 @@ msgstr "cs_create_connection: fr_fp에 대한 fdopen 실패"
 msgid "E623: Could not spawn cscope process"
 msgstr "E623: cscope 프로세스를 spawn할 수 없습니다"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: cscope 연결이 없습니다"
 
 #, c-format
@@ -2574,24 +2619,29 @@ msgstr ""
 "       t: 이 문자열 찾기\n"
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: cscope 데이터베이스를 열 수 없음: %s"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: cscope 데이터베이스 정보를 얻을 수 없습니다"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: 중복된 cscope 데이터베이스는 더해지지 않았습니다"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: cscope 연결 %s을(를) 찾을 수 없습니다"
 
 #, c-format
 msgid "cscope connection %s closed"
 msgstr "cscope 연결 %s이(가) 닫혔습니다"
 
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: cs_manage_matches에 심각한 에러"
 
 #, c-format
@@ -2724,26 +2774,32 @@ msgstr ""
 "E266: 미안합니다, 이 명령은 사용할 수 없습니다, 루비 라이브러리를 로딩할 수 "
 "없습니다."
 
-msgid "E267: unexpected return"
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
 msgstr "E267: 뜻밖의 return"
 
-msgid "E268: unexpected next"
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
 msgstr "E268: 뜻밖의 next"
 
-msgid "E269: unexpected break"
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
 msgstr "E269: 뜻밖의 break"
 
-msgid "E270: unexpected redo"
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
 msgstr "E270: 뜻밖의 redo"
 
 #~ msgid "E271: retry outside of rescue clause"
 #~ msgstr ""
 
-msgid "E272: unhandled exception"
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
 msgstr "E272: 처리않된 예외"
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: 모르는 longjmp 상태 %d"
 
 msgid "invalid buffer number"
@@ -2804,7 +2860,8 @@ msgstr ""
 "습니다."
 
 #, c-format
-msgid "E572: exit code %d"
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
 msgstr "E572: 종료 코드 %d"
 
 msgid "cannot get line"
@@ -3318,13 +3375,16 @@ msgstr "E286: 입력 방식을 열다가 실패했습니다"
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: 경고: IM에 파괴 콜백을 설정할 수 없습니다"
 
-msgid "E288: input method doesn't support any style"
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
 msgstr "E288: 입력 방식이 어떤 형식도 지원하지 않습니다"
 
-msgid "E289: input method doesn't support my preedit type"
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: 입력 방식이 내 preedit 형식을 지원하지 않습니다"
 
-msgid "E293: block was not locked"
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
 msgstr "E293: 구역이 잠궈지지 않았습니다"
 
 msgid "E294: Seek error in swap file read"
@@ -3635,14 +3695,17 @@ msgid "E314: Preserve failed"
 msgstr "E314: 파일 보존을 실패했습니다"
 
 #, c-format
-msgid "E315: ml_get: invalid lnum: %ld"
+# TODO: Capitalise first word of message?
+msgid "E315: Ml_get: invalid lnum: %ld"
 msgstr "E315: ml_get: 잘못된 lnum: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld"
+# TODO: Capitalise first word of message?
+msgid "E316: Ml_get: cannot find line %ld"
 msgstr "E316: ml_get: %ld 줄을 찾을 수 없습니다"
 
-msgid "E317: pointer block id wrong 3"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
 msgstr "E317: 잘못된 포인터 구역 id 3"
 
 msgid "stack_idx should be 0"
@@ -3651,7 +3714,8 @@ msgstr "stack_idx는 0여야만 합니다"
 msgid "E318: Updated too many blocks?"
 msgstr "E318: 너무 많은 구역이 갱신되었나요?"
 
-msgid "E317: pointer block id wrong 4"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
 msgstr "E317: 잘못된 포인터 구역 id 4"
 
 msgid "deleted block 1?"
@@ -3661,24 +3725,28 @@ msgstr "구역 1이 지워졌나요?"
 msgid "E320: Cannot find line %ld"
 msgstr "E320: %ld 줄을 찾을 수 없습니다"
 
-msgid "E317: pointer block id wrong"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
 msgstr "E317: 잘못된 포인터 구역 id"
 
 msgid "pe_line_count is zero"
 msgstr "pe_line_count가 0입니다"
 
 #, c-format
-msgid "E322: line number out of range: %ld past the end"
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: 줄 번호가 범위를 벗어났습니다: 마지막에서 %ld 만큼"
 
 #, c-format
-msgid "E323: line count wrong in block %ld"
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
 msgstr "E323: 구역 %ld의 줄 갯수가 틀렸습니다"
 
 msgid "Stack size increases"
 msgstr "스택 크기 증가"
 
-msgid "E317: pointer block id wrong 2"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
 msgstr "E317: 잘못된 포인터 구역 id 2"
 
 #, c-format
@@ -3970,7 +4038,8 @@ msgstr "E546: 이상한 모드"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: 이상한 마우스모양"
 
-msgid "E548: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
 msgstr "E548: 숫자가 필요합니다"
 
 msgid "E549: Illegal percentage"
@@ -4011,10 +4080,12 @@ msgstr "E668: NetBeans 연결 정보 파일이 접근 모드가 잘못됨: \"%s\
 msgid "E658: NetBeans connection lost for buffer %ld"
 msgstr "E658: 버퍼 %ld에 대한 NetBeans 연결을 잃어버렸습니다"
 
-msgid "E838: netbeans is not supported with this GUI"
+# TODO: Capitalise first word of message?
+msgid "E838: Netbeans is not supported with this GUI"
 msgstr "E838: 이 GUI는 netbeans를 지원하지 않습니다"
 
-msgid "E511: netbeans already connected"
+# TODO: Capitalise first word of message?
+msgid "E511: NetBeans already connected"
 msgstr "E511: netbeans가 이미 연결되어 있습니다"
 
 #, c-format
@@ -4039,7 +4110,8 @@ msgstr "E348: 커서 밑에 문자열이 없습니다"
 msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: 현재의 'foldmethod'으로 접기를 지울 수 없습니다"
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: changelist가 비었습니다"
 
 #~ msgid "E662: At start of changelist"
@@ -4253,13 +4325,15 @@ msgstr "E595: 출력할 수 없는, 혹은 와이드 문자를 포함하고 있�
 msgid "E596: Invalid font(s)"
 msgstr "E596: 잘못된 글꼴(들)"
 
-msgid "E597: can't select fontset"
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
 msgstr "E597: 글꼴셋을 고를 수 없습니다"
 
 msgid "E598: Invalid fontset"
 msgstr "E598: 잘못된 글꼴셋"
 
-msgid "E533: can't select wide font"
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
 msgstr "E533: 와이드 글꼴을 고를 수 없습니다"
 
 msgid "E534: Invalid wide font"
@@ -4269,7 +4343,8 @@ msgstr "E534: 잘못된 와이드 글꼴"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: <%c> 뒤에 이상한 글자"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: 콤마가 필요합니다"
 
 #, c-format
@@ -4283,7 +4358,8 @@ msgid "E540: Unclosed expression sequence"
 msgstr "E540: 닫히지 않은 표현식 배열"
 
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: 균형이 안 잡힌 그룹"
 
 #~ msgid "E946: Cannot make a terminal with running job modifiable"
@@ -4660,7 +4736,8 @@ msgid "E777: String or List expected"
 msgstr "E777: String이나 List가 있어야 함"
 
 #, c-format
-msgid "E369: invalid item in %s%%[]"
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: %s%%[]에 잘못된 항목"
 
 #, c-format
@@ -4716,7 +4793,8 @@ msgid "E52: Unmatched \\z("
 msgstr "E52: 맞지 않는 \\z("
 
 #, c-format
-msgid "E59: invalid character after %s@"
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
 msgstr "E59: %s@ 뒤에 잘못된 문자"
 
 #, c-format
@@ -4731,7 +4809,8 @@ msgstr "E61: Nested %s*"
 msgid "E62: Nested %s%c"
 msgstr "E62: Nested %s%c"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: \\_를 잘 못 사용"
 
 #, c-format
@@ -4885,11 +4964,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: 잘못된 찾기 문자열: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: 처음까지 맞는 문자열이 없습니다: %s"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: 끝까지 맞는 문자열이 없습니다: %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -5042,7 +5123,8 @@ msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: .sug 파일이 .spl 파일과 맞지 않음: %s"
 
 #, c-format
-msgid "E782: error while reading .sug file: %s"
+# TODO: Capitalise first word of message?
+msgid "E782: Error while reading .sug file: %s"
 msgstr "E782: .sug 파일 읽기 에러: %s"
 
 #, c-format
@@ -5310,7 +5392,8 @@ msgstr "단어 '%.*s'이(가) %s에 추가됨"
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: 단어가 spell 파일 간에 다릅니다"
 
-msgid "E783: duplicate char in MAP entry"
+# TODO: Capitalise first word of message?
+msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: MAP 항목에 중복된 문자"
 
 msgid "No Syntax items defined for this buffer"
@@ -5397,10 +5480,12 @@ msgstr "; match "
 msgid " line breaks"
 msgstr " line breaks"
 
-msgid "E395: contains argument not accepted here"
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
 msgstr "E395: contains 인자는 여기에 쓸 수 없습니다"
 
-msgid "E844: invalid cchar value"
+# TODO: Capitalise first word of message?
+msgid "E844: Invalid cchar value"
 msgstr "E844: 잘못된 cchar 값"
 
 msgid "E393: group[t]here not accepted here"
@@ -5421,7 +5506,8 @@ msgid "E789: Missing ']': %s"
 msgstr "E789: ']' 누락: %s"
 
 #, c-format
-msgid "E890: trailing char after ']': %s]%s"
+# TODO: Capitalise first word of message?
+msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: ']' 뒤에 문자가 더 있음: %s]%s"
 
 #, c-format
@@ -5481,11 +5567,13 @@ msgstr "E410: 잘못된 :syntax 하위 명령: %s"
 #~ "  TOTAL      COUNT  MATCH   SLOWEST     AVERAGE   NAME               PATTERN"
 #~ msgstr ""
 
-msgid "E679: recursive loop loading syncolor.vim"
+# TODO: Capitalise first word of message?
+msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: syncolor.vim 반복 로딩"
 
 #, c-format
-msgid "E411: highlight group not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
 msgstr "E411: 하이라이트 그룹을 찾을 수 없습니다: %s"
 
 #, c-format
@@ -5496,19 +5584,23 @@ msgstr "E412: 충분치 않은 인자: \":highlight link %s\""
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: 너무 많은 인자: \":highlight link %s\""
 
-msgid "E414: group has settings, highlight link ignored"
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: group이 설정값이 있습니다, highlight link 무시됨"
 
 #, c-format
-msgid "E415: unexpected equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: 뜻밖의 이퀄 기호: %s"
 
 #, c-format
-msgid "E416: missing equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
 msgstr "E416: 이퀄 기호가 빠졌음: %s"
 
 #, c-format
-msgid "E417: missing argument: %s"
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
 msgstr "E417: 인자가 빠졌음: %s"
 
 #, c-format
@@ -5526,7 +5618,8 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: 색 이름이나 숫자를 인식할 수 없음: %s"
 
 #, c-format
-msgid "E422: terminal code too long: %s"
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
 msgstr "E422: 터미널 코드가 너무 김: %s"
 
 #, c-format
@@ -5545,17 +5638,20 @@ msgstr "W18: 그룹 이름에 이상한 문자"
 msgid "E849: Too many highlight and syntax groups"
 msgstr "E849: highlight와 syntax group이 너무 많습니다"
 
-msgid "E555: at bottom of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
 msgstr "E555: 태그 스택의 끝입니다"
 
-msgid "E556: at top of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
 msgstr "E556: 태그 스택의 처음입니다"
 
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: 첫 번째 맞는 태그 이전으로는 갈 수 없습니다"
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: 태그를 찾을 수 없음: %s"
 
 msgid "  # pri kind tag"
@@ -5650,7 +5746,8 @@ msgstr "E559: 터미널 항목을 termcap에서 찾을 수 없습니다"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: termcap에 \"%s\" 항목이 없습니다"
 
-msgid "E437: terminal capability \"cm\" required"
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: 터미널이 \"cm\" 기능을 지원해야 합니다"
 
 msgid ""
@@ -5728,7 +5825,8 @@ msgid "Writing undo file: %s"
 msgstr "undo 파일 쓰는 중: %s"
 
 #, c-format
-msgid "E829: write error in undo file: %s"
+# TODO: Capitalise first word of message?
+msgid "E829: Write error in undo file: %s"
 msgstr "E829: undo 파일 쓰기 에러: %s"
 
 #, c-format
@@ -5824,10 +5922,12 @@ msgstr "%ld seconds ago"
 msgid "E790: undojoin is not allowed after undo"
 msgstr "E790: undo 뒤에 undojoin은 할 수 없습니다"
 
-msgid "E439: undo list corrupt"
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
 msgstr "E439: undo 목록이 깨졌습니다"
 
-msgid "E440: undo line missing"
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
 msgstr "E440: undo 줄이 없습니다"
 
 #, c-format
@@ -6502,7 +6602,8 @@ msgid "E36: Not enough room"
 msgstr "E36: 빈 공간이 충분하지 않습니다"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: \"%s\"은(는) 등록된 서버명이 아닙니다"
 
 #, c-format
@@ -6530,7 +6631,8 @@ msgstr "E39: 숫자가 필요합니다"
 msgid "E40: Can't open errorfile %s"
 msgstr "E40: 에러파일 %s을(를) 열 수 없습니다"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: 디스플레이를 열 수 없습니다"
 
 msgid "E41: Out of memory!"
@@ -6579,7 +6681,8 @@ msgid "E715: Dictionary required"
 msgstr "E715: Dictionary가 필요합니다"
 
 #, c-format
-msgid "E684: list index out of range: %ld"
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
 msgstr "E684: 목록 번호가 범위를 벗어남: %ld"
 
 #, c-format
@@ -6621,7 +6724,8 @@ msgstr "E255: sign 자료를 읽을 수 없습니다"
 msgid "E72: Close error on swap file"
 msgstr "E72: 스왑 파일을 닫을 수 없습니다"
 
-msgid "E73: tag stack empty"
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
 msgstr "E73: 태그 스택이 비었습니다"
 
 msgid "E74: Command too complex"
@@ -6669,10 +6773,12 @@ msgstr "E463: 영역이 보호되고 있어서 수정할 수 없습니다"
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr "E744: NetBeans는 읽기 전용 파일을 바꿀 수 없습니다"
 
-msgid "E363: pattern uses more memory than 'maxmempattern'"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: 패턴이 'maxmempattern'보다 많은 메모리를 사용합니다"
 
-msgid "E749: empty buffer"
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
 msgstr "E749: 빈 버퍼"
 
 #, c-format

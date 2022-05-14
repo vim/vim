@@ -144,7 +144,9 @@ DOCS = \
 	usr_43.txt \
 	usr_44.txt \
 	usr_45.txt \
-	usr_46.txt \
+	usr_50.txt \
+	usr_51.txt \
+	usr_52.txt \
 	usr_90.txt \
 	usr_toc.txt \
 	various.txt \
@@ -290,7 +292,9 @@ HTMLS = \
 	usr_43.html \
 	usr_44.html \
 	usr_45.html \
-	usr_46.html \
+	usr_50.html \
+	usr_51.html \
+	usr_52.html \
 	usr_90.html \
 	usr_toc.html \
 	various.html \

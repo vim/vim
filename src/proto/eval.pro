@@ -32,7 +32,7 @@ void free_for_info(void *fi_void);
 void set_context_for_expression(expand_T *xp, char_u *arg, cmdidx_T cmdidx);
 int pattern_match(char_u *pat, char_u *text, int ic);
 char_u *eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext);
-char_u *eval_next_line(evalarg_T *evalarg);
+char_u *eval_next_line(char_u *arg, evalarg_T *evalarg);
 char_u *skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg);
 void init_evalarg(evalarg_T *evalarg);
 void clear_evalarg(evalarg_T *evalarg, exarg_T *eap);

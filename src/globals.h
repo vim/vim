@@ -977,7 +977,7 @@ EXTERN pos_T	Insstart;		// This is where the latest
 EXTERN pos_T	Insstart_orig;
 
 /*
- * Stuff for VREPLACE mode.
+ * Stuff for MODE_VREPLACE state.
  */
 EXTERN int	orig_line_count INIT(= 0);  // Line count when "gR" started
 EXTERN int	vr_lines_changed INIT(= 0); // #Lines changed by "gR" so far
@@ -1095,14 +1095,14 @@ EXTERN guicolor_T	xim_bg_color INIT(= INVALCOLOR);
 /*
  * "State" is the main state of Vim.
  * There are other variables that modify the state:
- * "Visual_mode"    When State is NORMAL or INSERT.
- * "finish_op"	    When State is NORMAL, after typing the operator and before
- *		    typing the motion command.
+ * "Visual_mode"    When State is MODE_NORMAL or MODE_INSERT.
+ * "finish_op"	    When State is MODE_NORMAL, after typing the operator and
+ *		    before typing the motion command.
  * "motion_force"   Last motion_force  from do_pending_operator()
  * "debug_mode"	    Debug mode.
  */
-EXTERN int	State INIT(= NORMAL);	// This is the current state of the
-					// command interpreter.
+EXTERN int	State INIT(= MODE_NORMAL);
+
 #ifdef FEAT_EVAL
 EXTERN int	debug_mode INIT(= FALSE);
 #endif

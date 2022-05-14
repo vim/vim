@@ -1,4 +1,4 @@
-*usr_46.txt*	For Vim version 8.2.  Last change: 2020 Jun 14
+*usr_52.txt*	For Vim version 8.2.  Last change: 2022 May 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -9,17 +9,17 @@ The Vim9 script language is used for writing plugins, especially larger ones
 that use multiple files.  This chapter explains how to split up a plugin into
 modules, import and export items and keep the rest local.
 
-|46.1|	Introduction
-|46.2|	Variable declarations
-|46.3|	Functions and types
-|46.?|	Using a Vim9 script from legacy script
+|52.1|	Introduction
+|52.2|	Variable declarations
+|52.3|	Functions and types
+|52.4|	Using a Vim9 script from legacy script
 
      Next chapter: |usr_90.txt|  Installing Vim
- Previous chapter: |usr_45.txt|  Select your language (locale)
+ Previous chapter: |usr_51.txt|  Create a plugin
 Table of contents: |usr_toc.txt|
 
 ==============================================================================
-*46.1*	Introduction				*vim9-script-intro*
+*52.1*	Introduction				*vim9-script-intro*
 
 Vim9 script was designed to make it easier to write large Vim scripts.  It
 looks more like other script languages, especially Typescript.  Also,
@@ -69,7 +69,7 @@ Notice that the assignment `result = GetPart(count)` does not use the `let`
 command.  That is explained in the next section.
 
 ==============================================================================
-*46.2*	Variable declarations				*vim9-declarations*
+*52.2*	Variable declarations				*vim9-declarations*
 
 In Vim9 script variables are declared once with a `:let` or `:const` command.
 Assigning a value is done without `:let` and it is not possible to `:unlet`
@@ -108,7 +108,7 @@ Although it's shorter to do: >
 	let word = condition ? 'yes' : 'no'
 
 ==============================================================================
-*46.3*	Functions and types
+*52.3*	Functions and types
 
 Legacy Vim script does have type checking, but this happens at runtime, when
 the code is executed.  And it's permissive, often a computation gives an
@@ -161,7 +161,7 @@ multiple types, you can use the "any" type: >
 	enddef
 
 ==============================================================================
-*46.?*	Using a Vim9 script from legacy script		*source-vim9-script*
+*52.4*	Using a Vim9 script from legacy script		*source-vim9-script*
 
 In some cases you have a legacy Vim script where you want to use items from a
 Vim9 script.  For example in your .vimrc you want to initialize a plugin.  The

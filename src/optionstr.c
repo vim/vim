@@ -125,6 +125,7 @@ didset_string_options(void)
 #if defined(FEAT_TOOLBAR) && defined(FEAT_GUI_GTK)
     (void)opt_strings_flags(p_tbis, p_tbis_values, &tbis_flags, FALSE);
 #endif
+    (void)opt_strings_flags(p_swb, p_swb_values, &swb_flags, TRUE);
 }
 
 #if defined(FEAT_EVAL)

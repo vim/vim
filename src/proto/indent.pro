@@ -23,6 +23,7 @@ int get_breakindent_win(win_T *wp, char_u *line);
 int inindent(int extra);
 void op_reindent(oparg_T *oap, int (*how)(void));
 int preprocs_left(void);
+int may_do_si(void);
 void ins_try_si(int c);
 void change_indent(int type, int amount, int round, int replaced, int call_changed_bytes);
 int copy_indent(int size, char_u *src);

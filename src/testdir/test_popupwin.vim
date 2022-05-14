@@ -4055,7 +4055,7 @@ func Test_popup_prop_not_visible()
       setline(1, ['', 'some text', '', 'other text'])
       prop_type_add('someprop', {})
       prop_add(2, 9, {type: 'someprop', length: 5})
-      popup_create('attached to "some"', {
+      g:some_id = popup_create('attached to "some"', {
           textprop: 'someprop',
           highlight: 'ErrorMsg',
           line: -1,
@@ -4075,6 +4075,12 @@ func Test_popup_prop_not_visible()
   call writefile(lines, 'XtestPropNotVisble')
   let buf = RunVimInTerminal('-S XtestPropNotVisble', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_01', {})
+
+  " check that hiding and unhiding the popup works
+  call term_sendkeys(buf, ":call popup_hide(g:some_id)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_01a', {})
+  call term_sendkeys(buf, ":call popup_show(g:some_id)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_01b', {})
 
   call term_sendkeys(buf, ":vert resize -14\<CR>")
   call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_02', {})

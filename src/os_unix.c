@@ -1778,10 +1778,10 @@ ex_xrestore(exarg_T *eap)
 {
     if (eap->arg != NULL && STRLEN(eap->arg) > 0)
     {
-        if (xterm_display_allocated)
-            vim_free(xterm_display);
-        xterm_display = (char *)vim_strsave(eap->arg);
-        xterm_display_allocated = TRUE;
+	if (xterm_display_allocated)
+	    vim_free(xterm_display);
+	xterm_display = (char *)vim_strsave(eap->arg);
+	xterm_display_allocated = TRUE;
     }
     smsg(_("restoring display %s"), xterm_display == NULL
 		    ? (char *)mch_getenv((char_u *)"DISPLAY") : xterm_display);
@@ -4976,7 +4976,7 @@ mch_call_shell_fork(
 		p_more_save = p_more;
 		p_more = FALSE;
 		old_State = State;
-		State = EXTERNCMD;	// don't redraw at window resize
+		State = MODE_EXTERNCMD;	// don't redraw at window resize
 
 		if ((options & SHELL_WRITE) && toshell_fd >= 0)
 		{
@@ -7210,7 +7210,7 @@ load_libgpm(void)
     {
 	if (p_verbose > 0)
 	    smsg_attr(HL_ATTR(HLF_W),
-		        _("Could not load gpm library: %s"), dlerror());
+			       _("Could not load gpm library: %s"), dlerror());
 	return FAIL;
     }
 

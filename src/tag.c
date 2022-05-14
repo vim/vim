@@ -280,7 +280,7 @@ do_tag(
     int		skip_msg = FALSE;
     char_u	*buf_ffname = curbuf->b_ffname;	    // name to use for
 						    // priority computation
-    int         use_tfu = 1;
+    int		use_tfu = 1;
 
     // remember the matches for the last used tag
     static int		num_matches = 0;
@@ -1422,8 +1422,8 @@ find_tagfunc_tags(
     pos_T       save_pos;
     list_T      *taglist;
     listitem_T  *item;
-    int         ntags = 0;
-    int         result = FAIL;
+    int		ntags = 0;
+    int		result = FAIL;
     typval_T	args[4];
     typval_T	rettv;
     char_u      flagString[4];
@@ -1820,7 +1820,7 @@ findtags_in_help_init(findtags_state_T *st)
     static int
 findtags_apply_tfu(findtags_state_T *st, char_u *pat, char_u *buf_ffname)
 {
-    int         use_tfu = ((st->flags & TAG_NO_TAGFUNC) == 0);
+    int		use_tfu = ((st->flags & TAG_NO_TAGFUNC) == 0);
     int		retval;
 
     if (!use_tfu || tfu_in_use || *curbuf->b_p_tfu == NUL)
@@ -2642,7 +2642,7 @@ findtags_add_match(
 		vim_strncpy(mfp, tagpp->tagname, len);
 
 	    // if wanted, re-read line to get long form too
-	    if (State & INSERT)
+	    if (State & MODE_INSERT)
 		st->get_searchpat = p_sft;
 	}
     }

@@ -331,6 +331,10 @@ msgid "Not enough memory to use internal diff for buffer \"%s\""
 msgstr ""
 "No hay suficiente memoria para usar la diferencia interna para el búfer \"%s\""
 
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
+msgstr "E684: índice de lista fuera de rango: %ld"
+
 msgid "Patch file"
 msgstr "Archivo de parches"
 
@@ -423,6 +427,11 @@ msgstr ""
 
 msgid "&Ok"
 msgstr "&Aceptar"
+
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
+msgstr "E743: La variable está anidada muy profundamente para (des)bloquear"
+
 
 msgid ""
 "&OK\n"
@@ -527,6 +536,11 @@ msgstr ""
 
 msgid "Edit File"
 msgstr "Editar archivo"
+
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
+msgstr "E724: La variable está anidada demasiado profundamente para mostrarla"
+
 
 #, c-format
 msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
@@ -680,6 +694,11 @@ msgstr "Error"
 msgid "Interrupt"
 msgstr "Interrupción"
 
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
+msgstr "E806: Usando \"Float\" como \"String\""
+
+
 msgid "[Command Line]"
 msgstr "[Línea de órdenes]"
 
@@ -703,6 +722,10 @@ msgstr "[El archivo es demasiado grande]"
 
 msgid "[Permission Denied]"
 msgstr "[Permiso denegado]"
+
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
+msgstr "E698: La variable está anidada muy profundamente para hacer una copia"
 
 msgid "Vim: Reading from stdin...\n"
 msgstr "Vim: Leyendo desde la entrada estándar...\n"
@@ -951,6 +974,11 @@ msgstr "Nueva pestaña"
 msgid "Open Tab..."
 msgstr "Abrir pestaña..."
 
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
+msgstr "E144: Argumento no numérico para \":z\""
+
+
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: La ventana principal fue destruida inesperadamente.\n"
 
@@ -1108,6 +1136,11 @@ msgstr "Mostrar este mensaje"
 
 msgid "Kill a connection"
 msgstr "Matar una conexión"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
+msgstr "E666: El compilador no es compatible en esta versión: %s"
 
 msgid "Reinit all connections"
 msgstr "Reiniciar todas las conexiones"
@@ -1271,6 +1304,10 @@ msgstr "fila %d columna %d"
 msgid "cannot insert/append line"
 msgstr "no se puede insertar/añadir línea"
 
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for -complete"
+msgstr "E179: se necesita un argumento para \"-complete\""
+
 msgid "line number out of range"
 msgstr "el número de la línea está fuera del rango"
 
@@ -1387,6 +1424,26 @@ msgstr "Buscando etiquetas."
 msgid "match in file"
 msgstr "coincidencia en el archivo"
 
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
+msgstr ""
+"E495: No se ha dado un nombre de archivo de auto-órdenes para sustituir a  "
+"\"<afile>\""
+
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
+msgstr "E496: No existe un búfer de auto-órdenes para sustituir por \"<abuf>\""
+
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
+msgstr ""
+"E497: Ningún nombre de auto-orden concuerda para sustituir \"<amatch>\""
+
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
+msgstr ""
+"E498: No hay un nombre de archivo \":source\" que sustituya a \"<sfile>\""
+
 msgid " Adding"
 msgstr " Añadiendo"
 
@@ -1448,6 +1505,10 @@ msgstr "Idioma actual %s: \"%s\""
 msgid "Unknown option argument"
 msgstr "Opción de argumento desconocida"
 
+# TODO: Capitalise first word of message?
+msgid "E579: :if nesting too deep"
+msgstr "E579: ¡\":if\" anidado en exceso!"
+
 msgid "Too many edit arguments"
 msgstr "Demasiados argumentos de edición"
 
@@ -1460,6 +1521,10 @@ msgstr "Basura después del argumento de la opción"
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
 msgstr ""
 "Demasiados argumentos tales como: \"+orden\", \"-c orden\" o \"--cmd orden\""
+
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
+msgstr "E583: ¡\":else\" múltiple!"
 
 msgid "Invalid argument for"
 msgstr "Argumento no válido para"
@@ -1494,6 +1559,11 @@ msgstr "Vim: Error: esta versión de Vim no se ejecuta en una terminal Cygwin\n"
 
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: Advertencia: la salida no es un terminal\n"
+
+# Give up for a multiple ":finally" and ignore it.
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
+msgstr "E607: ¡\":finally\" múltiple!"
 
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: Advertencia: la entrada no es desde un terminal\n"
@@ -1718,6 +1788,10 @@ msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tEvitar la conexión al servidor X"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
+
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
+
 msgstr ""
 "--remote <archivos>\tEditar <archivos> en un servidor Vim si es posible"
 
@@ -1737,6 +1811,11 @@ msgid ""
 msgstr ""
 "--remote-wait-silent <archivos> Lo mismo, pero no se queja si no hay un "
 "servidor disponible"
+
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
+msgstr "E514: Error de escritura (¿Sistema de archivos lleno?)"
+
 
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
@@ -1779,6 +1858,10 @@ msgstr ""
 
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h  o  --help\tMuestra la ayuda (este mensaje) y sale"
+
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
+msgstr "E206: Modo de parcheo: no se puede tocar el archivo original vacío"
 
 msgid "--version\t\tPrint version information and exit"
 msgstr "--version\t\tMuestra la información de la versión y sale"
@@ -1975,6 +2058,10 @@ msgstr ""
 msgid "???MANY LINES MISSING"
 msgstr "???FALTAN MUCHAS LÍNEAS"
 
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
+msgstr "E218: La auto-orden se anida en exceso"
+
 msgid "???LINE COUNT WRONG"
 msgstr "???RECUENTO DE LÍNEAS EQUIVOCADO"
 
@@ -2037,6 +2124,30 @@ msgid "Using crypt key from swap file for the text file.\n"
 msgstr ""
 "Usando la clave de cifrado del archivo de intercambio para el archivo de"
 " texto.\n"
+
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
+msgstr "E223: Asociación recursiva"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
+msgstr "E224: Ya existe una abreviatura global para %s"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
+msgstr "E225: Ya existe una asociación global para %s"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
+msgstr "E226: Ya existe una abreviatura para %s"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
+msgstr "E227: Ya existe una asociación para %s"
 
 # use msg() to start the scrolling properly
 msgid "Swap files found:"
@@ -5904,7 +6015,8 @@ msgstr "E550: Falta un símbolo de dos puntos"
 msgid "E551: Illegal component"
 msgstr "E551: Componente ilegal"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: Se esperaba un dígito"
 
 msgid "E553: No more items"
@@ -5952,6 +6064,16 @@ msgstr "E565: No se permite cambiar texto o cambiar ventana"
 
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: Falló la conexión \"pipe\" para comunicarse con \"cscope\""
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
+msgstr "E618: El archivo \"%s\" no es un archivo de recursos PostScript"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
+msgstr "E619: El archivo \"%s\" no es un recurso PostScript que pueda usar"
 
 msgid "E567: no cscope connections"
 msgstr "E567: No hay conexiones con \"cscope\""
@@ -6029,6 +6151,11 @@ msgstr "E588: \":endwhile\" sin \":while\""
 msgid "E588: :endfor without :for"
 msgstr "E588: \":endfor\" sin un \":for\""
 
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
+msgstr "E257: cstag: no se encontró la etiqueta"
+
+
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: \"backupext\" y \"patchmode\" son iguales"
 
@@ -6052,6 +6179,15 @@ msgstr "E594: Necesita al menos %d columnas"
 msgid "E595: 'showbreak' contains unprintable or wide character"
 msgstr ""
 "E595: \"showbreak\" contiene un carácter no imprimible o de más de un byte"
+
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %ld"
+msgstr "E262: Error al leer la conexión %ld con \"cscope\""
+
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
+msgstr "E561: Tipo de búsqueda desconocido para \"cscope\""
+
 
 msgid "E596: Invalid font(s)"
 msgstr "E596: La/s fuente/s no es/son válida/s"
@@ -6086,6 +6222,21 @@ msgstr "E604: \":catch\" después de \":finally\""
 msgid "E605: Exception not caught: %s"
 msgstr "E605: Excepción no detectada: %s"
 
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
+msgstr "E567: No hay conexiones con \"cscope\""
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
+msgstr ""
+"E259: No se encontraron coincidencias para la búsqueda \"cscope\" %s de %s"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
+msgstr "E469: La marca \"cscopequickfix\" %c para %c no es válida"
+
 msgid "E606: :finally without :try"
 msgstr "E606: \":finally\" sin un \":try\""
 
@@ -6110,12 +6261,35 @@ msgstr "E745: Usando un \"Special\" como \"Number\""
 msgid "E612: Too many signs defined"
 msgstr "E612: Demasiados signos definidos"
 
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
+msgstr "E625: No se pudo abrir la base de datos \"cscope\": %s"
+
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
+msgstr ""
+"E626: No se pudo obtener información acerca de la base de datos \"cscope\""
+
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
+msgstr "E568: Intentó añadir una base de datos de \"cscope\" duplicada"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
+msgstr "E261: No se ha encontrado la conexión \"cscope\" %s"
+
 #, c-format
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Fuente de impresora desconocida: %s"
 
 msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: No puede cambiarse en la interfaz gráfica de GTK"
+
+# should not reach here
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
+msgstr "E570: Error fatal en \"cs_manage_matches\""
 
 #, c-format
 msgid "E618: file \"%s\" is not a PostScript resource file"
@@ -6310,6 +6484,35 @@ msgstr "E696: Falta una coma en la lista: %s"
 msgid "E697: Missing end of List ']': %s"
 msgstr "E697: Falta una marca de final de lista ']': %s"
 
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
+msgstr "E267: \"return\" inesperado"
+
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
+msgstr "E268: \"next\" inesperado"
+
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
+msgstr "E269: \"break\" inesperado"
+
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
+msgstr "E270: \"redo\" inesperado"
+
+# TODO: Capitalise first word of message?
+msgid "E271: Retry outside of rescue clause"
+msgstr "E271: \"retry\" fuera de una cláusula \"rescue\""
+
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
+msgstr "E272: excepción sin manejar"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
+msgstr "E273: El estado %d de \"longjmp\" es desconocido"
+
 msgid "E698: variable nested too deep for making a copy"
 msgstr "E698: Variable anidada demasiado profunda para hacer una copia"
 
@@ -6371,6 +6574,10 @@ msgstr "E715: Se requiere de un diccionario"
 #, c-format
 msgid "E716: Key not present in Dictionary: \"%s\""
 msgstr "E716: Clave no presente en diccionario: \"%s\""
+
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
+msgstr "E572: código de salida %d"
 
 msgid "E717: Dictionary entry already exists"
 msgstr "E717: Esta entrada ya existe en el diccionario"
@@ -6903,6 +7110,17 @@ msgstr ""
 msgid "E865: (NFA) Regexp end encountered prematurely"
 msgstr "E865: (NFA) Fin de Regexp encontrado prematuramente"
 
+"E287: Advertencia: No pude crear una llamada de retorno "
+"de destrucción al IM"
+
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
+msgstr "E288: el método de entrada no admite ningún estilo"
+
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
+msgstr "E289: El método de entrada no soporta mi tipo de pre-edición"
+
 #, c-format
 msgid "E866: (NFA regexp) Misplaced %c"
 msgstr "E866: (NFA regexp) %c fuera de lugar"
@@ -6910,6 +7128,10 @@ msgstr "E866: (NFA regexp) %c fuera de lugar"
 #, c-format
 msgid "E867: (NFA regexp) Unknown operator '\\z%c'"
 msgstr "E867: (NFA regexp) Operador desconocido '\\z%c'"
+
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
+msgstr "E293: El bloque no estaba bloqueado"
 
 #, c-format
 msgid "E867: (NFA regexp) Unknown operator '\\%%%c'"
@@ -7188,6 +7410,19 @@ msgstr "E940: No se puede bloquear o desbloquear la variable %s"
 msgid "E941: already started a server"
 msgstr "E941: Ya inició un servidor"
 
+# TODO: Capitalise first word of message?
+msgid "E315: ml_get: Invalid lnum: %ld"
+msgstr "E315: \"ml_get\": número de línea no válido: %ld"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E316: ml_get: Cannot find line %ld"
+msgstr "E316: \"ml_get\": no se pudo encontrar la línea %ld"
+
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
+msgstr "E317: El id del bloque de punteros es incorrecto. 3"
+
 msgid "E942: +clientserver feature not available"
 msgstr "E942: Característica \"+clientserver\" no disponible"
 
@@ -7196,6 +7431,10 @@ msgstr "E943: La tabla de comandos debe actualizarse, ejecute 'make cmdidxs'"
 
 msgid "E944: Reverse range in character class"
 msgstr "E944: Rango inverso en la clase de caracteres"
+
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
+msgstr "E317: El id del bloque de punteros es incorrecto. 4"
 
 msgid "E945: Range too large in character class"
 msgstr "E945: Rango demasiado grande en la clase de caracteres"
@@ -7209,6 +7448,10 @@ msgstr "E947: El trabajo todavía se está ejecutando en el búfer \"%s\""
 
 msgid "E948: Job still running"
 msgstr "E948: Trabajo aún en ejecución"
+
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
+msgstr "E317: El id del bloque de punteros es incorrecto"
 
 msgid "E948: Job still running (add ! to end the job)"
 msgstr "E948: Trabajo aún en ejecución (añada ! para finalizar el trabajo)"
@@ -7230,6 +7473,15 @@ msgstr "E952: Comando automático provocó un comportamiento recursivo"
 #, c-format
 msgid "E953: File exists: %s"
 msgstr "E953: El archivo existe: %s"
+
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
+msgstr "E322: número de línea fuera de rango: %ld más allá del final"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
+msgstr "E323: recuento de líneas erróneo en el bloque %ld"
 
 msgid "E954: 24-bit colors are not supported on this environment"
 msgstr "E954: Los colores de 24 bits no son compatibles con este entorno"
@@ -7254,6 +7506,10 @@ msgstr "E960: Problema al crear el \"diff\" interno"
 
 msgid "E961: no line number to use for \"<sflnum>\""
 msgstr "E961: No hay número de línea para usar para \"<sflnum>\""
+
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
+msgstr "E317: El id del bloque de punteros es incorrecto. 2"
 
 #, c-format
 msgid "E962: Invalid action: '%s'"
@@ -7600,6 +7856,10 @@ msgstr "E1052: No se puede declarar una opción: %s"
 msgid "E1053: Could not import \"%s\""
 msgstr "E1053: No se pudo importar \"%s\""
 
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
+msgstr "E548: Se esperaba un dígito"
+
 #, c-format
 msgid "E1054: Variable already declared in the script: %s"
 msgstr "E1054: Variable ya declarada en el script: %s"
@@ -7694,6 +7954,10 @@ msgstr "E1079: No se puede declarar una variable en la línea de comando"
 
 msgid "E1080: Invalid assignment"
 msgstr "E1080: Asignación no válida"
+
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
+msgstr "E664: La lista de cambios está vacía"
 
 #, c-format
 msgid "E1081: Cannot unlet %s"
@@ -7970,10 +8234,18 @@ msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
 msgstr ""
 "E1158: No se puede usar flatten() en el script de Vim9, use flattennew()"
 
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
+msgstr "E597: No se pudo seleccionar ese \"fontset\""
+
 msgid "E1159: Cannot split a window when closing the buffer"
 msgstr "E1159: No se puede dividir una ventana al cerrar el búfer"
 
 msgid "E1160: Cannot use a default for variable arguments"
+
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
+
 msgstr ""
 "E1160: No se puede usar un valor predeterminado para argumentos variables"
 
@@ -7984,6 +8256,10 @@ msgstr "E1161: %s no se pudo codificar json"
 #, c-format
 msgid "E1162: Register name must be one character: %s"
 msgstr "E1162: El nombre del registro debe tener un carácter: %s"
+
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
+msgstr "E536: necesita una coma"
 
 #, c-format
 msgid "E1163: Variable %d: type mismatch, expected %s but got %s"
@@ -8006,6 +8282,10 @@ msgstr "E1165: No se puede usar un rango con una asignación: %s"
 # if Vim opened a window: Executing a shell may cause crashes
 msgid "E1166: Cannot use a range with a dictionary"
 msgstr "E1166: No se puede usar un rango con un diccionario"
+
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
+msgstr "E542: Grupos sin equilibrar"
 
 #, c-format
 msgid "E1167: Argument name shadows existing variable: %s"
@@ -8350,6 +8630,13 @@ msgstr "E1255: La asignación <Cmd> debe terminar con <CR>"
 msgid "E1256: String or function required for argument %d"
 msgstr "E1256: \"String\" o función requerida para el argumento %d"
 
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
+msgstr "E369: El elemento en %s%%[] no es válido"
+
+msgid "E339: Pattern too long"
+msgstr "E339: Patrón demasiado largo"
+
 #, c-format
 msgid "E1257: Imported script must use \"as\" or end in .vim: %s"
 msgstr "E1257: El script importado debe usar \"as\" o terminar en .vim: %s"
@@ -8398,6 +8685,10 @@ msgstr ""
 msgid "E1267: Function name must start with a capital: %s"
 msgstr "E1267: El nombre de la función debe comenzar con mayúscula: %s"
 
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
+msgstr "E59: Carácter inválido después de %s@"
+
 #, c-format
 msgid "E1268: Cannot use s: in Vim9 script: %s"
 msgstr "E1268: No se puede usar \"s:\" en el script de Vim9: %s"
@@ -8417,6 +8708,10 @@ msgstr "E1271: Compilando cierre sin contexto: %s"
 #, c-format
 msgid "E1272: Using type not in a script context: %s"
 msgstr "E1272: Uso de tipo no en un script de contexto: %s"
+
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
+msgstr "E63: Uso inválido de \\_"
 
 #, c-format
 msgid "E1273: (NFA regexp) missing value in '\\%%%c'"
@@ -8569,6 +8864,15 @@ msgid "attempt to assign sequence of size %d to extended slice of size %d"
 msgstr ""
 "intente asignar una secuencia de tamaño %d a una porción extendida de tamaño "
 "%d"
+
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
+msgstr "E384: La búsqueda ha llegado al PRINCIPIO sin coincidir con: %s"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
+msgstr "E385: La búsqueda ha llegado al FINAL sin coincidir con: %s"
 
 msgid "failed to add item to list"
 msgstr "no se pudo agregar el elemento a la lista"
@@ -9091,6 +9395,15 @@ msgstr "resaltar errores ortográficos"
 msgid "list of accepted languages"
 msgstr "lista de idiomas aceptados"
 
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E782: Error while reading .sug file: %s"
+msgstr "E782: Error al leer archivo .sig: %s"
+
+# TODO: Capitalise first word of message?
+msgid "E783: Duplicate char in MAP entry"
+msgstr "E783: carácter duplicado en entrada MAP"
+
 msgid "file that \"zg\" adds good words to"
 msgstr "archivo al que \"zg\" añade las palabras correctas"
 
@@ -9141,6 +9454,10 @@ msgstr "número mínimo de columnas utilizadas para la ventana actual"
 msgid "minimal number of columns used for any window"
 msgstr "número mínimo de columnas utilizadas para cualquier ventana"
 
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
+msgstr "E395: el contenido del argumento no se acepta aquí"
+
 msgid "initial height of the help window"
 msgstr "altura inicial de la ventana de ayuda"
 
@@ -9185,6 +9502,10 @@ msgid "key that precedes Vim commands in a terminal window"
 msgstr "tecla que precede a los comandos de Vim en una ventana de terminal"
 
 msgid "max number of lines to keep for scrollback in a terminal window"
+
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
+
 msgstr ""
 "número máximo de líneas a mantener para el desplazamiento hacia atrás "
 "en una ventana de terminal"
@@ -9219,6 +9540,15 @@ msgstr ""
 msgid "terminal"
 msgstr "terminal"
 
+# TODO: Capitalise first word of message?
+msgid "E679: Recursive loop loading syncolor.vim"
+msgstr "E679: bucle recursivo al cargar \"syncolor.vim\""
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
+msgstr "E411: grupo de resaltado no encontrado: %s"
+
 msgid "name of the used terminal"
 msgstr "nombre de la terminal utilizada"
 
@@ -9237,6 +9567,25 @@ msgstr "solicitar códigos de clave de terminal cuando se detecta un xterm"
 msgid "terminal that requires extra redrawing"
 msgstr "terminal que requiere un rediseño adicional"
 
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
+msgstr "E414: Esta grupo está configurado, se ignora el enlace resaltado"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
+msgstr "E415: Signo \"=\" inesperado: %s"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
+msgstr "E416: Falta el signo \"=\": %s"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
+msgstr "E417: Falta el argumento: %s"
+
 msgid "recognize keys that start with <Esc> in Insert mode"
 msgstr "reconocer teclas que comienzan con <Esc> en el modo Insertar"
 
@@ -9253,6 +9602,11 @@ msgstr "especifica cómo se ve el cursor en diferentes modos"
 
 msgid "show info in the window title"
 msgstr "mostrar información en el título de la ventana"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
+msgstr "E422: Código de terminal demasiado largo: %s"
 
 msgid "percentage of 'columns' used for the window title"
 msgstr "porcentaje de 'columnas' utilizadas para el título de la ventana"
@@ -9272,11 +9626,24 @@ msgstr "cuando no está vacío, texto para el icono de esta ventana"
 msgid "restore the screen contents when exiting Vim"
 msgstr "restaurar el contenido de la pantalla al salir de Vim"
 
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
+msgstr "E555: En el final de la pila de etiquetas"
+
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
+msgstr "E556: En el principio de la pila de etiquetas"
+
 msgid "using the mouse"
 msgstr "utilizar el ratón"
 
 msgid "list of flags for using the mouse"
 msgstr "lista de opciones para usar el ratón"
+
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
+msgstr "E426: No se encontró la etiqueta: %s"
 
 msgid "the window with the mouse pointer becomes the current one"
 msgstr "la ventana con el puntero del ratón se convierte en la actual"
@@ -9381,6 +9748,10 @@ msgstr "Imprimiendo"
 msgid "list of items that control the format of :hardcopy output"
 msgstr "lista de elementos que controlan el formato de salida :hardcopy"
 
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
+msgstr "E437: Se necesita la capacidad \"cm\" en el terminal"
+
 msgid "name of the printer to be used for :hardcopy"
 msgstr "nombre de la impresora que se utilizará para :hardcopy"
 
@@ -9411,6 +9782,10 @@ msgstr "mensajes e información"
 msgid "add 's' flag in 'shortmess' (don't show search message)"
 msgstr ""
 "añadir la opción 's' en 'shortmess' (no mostrar el mensaje de búsqueda)"
+
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
+msgstr "E438: \"u_undo\": números de línea erróneos"
 
 msgid "list of flags to make messages shorter"
 msgstr "lista de opciones para hacer los mensajes más cortos"
@@ -9456,6 +9831,14 @@ msgstr "lista de idiomas preferidos para buscar ayuda"
 
 msgid "selecting text"
 msgstr "seleccionar texto"
+
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
+msgstr "E439: la lista de deshacer se ha dañado"
+
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
+msgstr "E440: falta la línea deshacer"
 
 msgid "\"old\", \"inclusive\" or \"exclusive\"; how selecting text behaves"
 msgstr ""
@@ -10041,6 +10424,11 @@ msgstr "prepararse para editar texto en árabe"
 msgid "perform shaping of Arabic characters"
 msgstr "realizar la formación de caracteres árabes"
 
+#, c-format
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
+msgstr "E247: El servidor llamado \"%s\" no está registrado"
+
 msgid "terminal will perform bidi handling"
 msgstr "la terminal realizará el manejo de bidi"
 
@@ -10073,6 +10461,10 @@ msgid "when set always use IM when starting to edit a command line"
 msgstr ""
 "cuando está configurado, siempre use IM cuando comience a editar una línea de"
 " comando"
+
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
+msgstr "E233: No se pudo abrir la pantalla"
 
 msgid "function to obtain IME status"
 msgstr "función para obtener el estado IME"
@@ -10145,6 +10537,10 @@ msgstr "usa la opción 'g' para \":substitute\""
 msgid "'g' and 'c' flags of \":substitute\" toggle"
 msgstr "Las opciones 'g' y 'c' de \":substitute\" alternan la función"
 
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
+msgstr "E73: La pila de etiquetas ('tagstack') está vacía"
+
 msgid "allow reading/writing devices"
 msgstr "permitir dispositivos de lectura/escritura"
 
@@ -10198,6 +10594,14 @@ msgstr "nombre de la biblioteca dinámica de Python 2"
 
 msgid "name of the Python 2 home directory"
 msgstr "nombre del directorio de inicio de Python 2"
+
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
+msgstr "E363: El patrón usa más memoria que 'maxmempattern'"
+
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
+msgstr "E749: Búfer vacío"
 
 msgid "name of the Python 3 dynamic library"
 msgstr "nombre de la biblioteca dinámica de Python 3"

@@ -15,7 +15,6 @@
 
 static int	cmd_showtail;	// Only show path tail in lists ?
 
-static void	set_expand_context(expand_T *xp);
 static int      ExpandGeneric(char_u *pat, expand_T *xp, regmatch_T *regmatch,
 			      char_u ***matches, int *numMatches,
 			      char_u *((*func)(expand_T *, int)), int escaped);
@@ -1230,7 +1229,7 @@ addstar(
  *  EXPAND_ENV_VARS	    Complete environment variable names
  *  EXPAND_USER		    Complete user names
  */
-    static void
+    void
 set_expand_context(expand_T *xp)
 {
     cmdline_info_T	*ccline = get_cmdline_info();
@@ -2788,7 +2787,7 @@ ExpandFromContext(
 
     if (xp->xp_context == EXPAND_SETTINGS
 	    || xp->xp_context == EXPAND_BOOL_SETTINGS)
-	ret = ExpandSettings(xp, &regmatch, pat, numMatches, matches);
+	ret = ExpandSettings(xp, &regmatch, pat, numMatches, matches, fuzzy);
     else if (xp->xp_context == EXPAND_MAPPINGS)
 	ret = ExpandMappings(pat, &regmatch, numMatches, matches);
 # if defined(FEAT_EVAL)

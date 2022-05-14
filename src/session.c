@@ -972,13 +972,13 @@ makeopens(
     // Restore 'shortmess'.
     if (ssop_flags & SSOP_OPTIONS)
     {
-        if (fprintf(fd, "set shortmess=%s", p_shm) < 0 || put_eol(fd) == FAIL)
-            goto fail;
+	if (fprintf(fd, "set shortmess=%s", p_shm) < 0 || put_eol(fd) == FAIL)
+	    goto fail;
     }
     else
     {
-        if (put_line(fd, "let &shortmess = s:shortmess_save") == FAIL)
-            goto fail;
+	if (put_line(fd, "let &shortmess = s:shortmess_save") == FAIL)
+	    goto fail;
     }
 
     if (restore_height_width)

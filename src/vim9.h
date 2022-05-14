@@ -500,7 +500,7 @@ struct dfunc_S {
 
 // Number of entries used by stack frame for a function call.
 // - ec_dfunc_idx:   function index
-// - ec_iidx:        instruction index
+// - ec_iidx:	     instruction index
 // - ec_instr:       instruction list pointer
 // - ec_outer:	     stack used for closures
 // - funclocal:	     function-local data
