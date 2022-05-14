@@ -742,24 +742,21 @@ def ChangeAttribute( #{{{2
         ->get(0, {})
         ->get(attribute_to_change, '')
     if ['term', 'cterm', 'gui']->index(attribute_to_change) >= 0
-        var n: string = input('how many attributes in the new value? ', '1') | redraw
-        if n !~ '^\d\+$'
-            echo n->printf('"%s" is not a valid number')
-            return
-        elseif n->str2nr() > attribute_names->len()
-            echo $'cannot set more than {attribute_names->len()} attributes'
-            return
-        endif
+        var default: string = group
+            ->hlget()
+            ->get(0, {})
+            ->get(attribute_to_change, {})
+            ->keys()
+            ->join(',')
+        var Wrapper: func = (arglead, ..._) => Complete('style', arglead)
+        var input: string = input('value: ', default, $'custom,{Wrapper->string()}') | redraw
         new_value = {}
-        for i in range(1, n->str2nr())
-            var prompt: string = i->printf('attribute %s: ')
-            var Wrapper: func = (arglead, ..._) => Complete('style', arglead)
-            var input: string = input(prompt, '', $'custom,{Wrapper->string()}') | redraw
-            if term_attr->index(input) == -1
-                echo printf('"%s" is not a valid attribute for %s', input, attribute_to_change)
+        for val: string in input->split(',')
+            if term_attr->index(val) == -1
+                echo printf('"%s" is not a valid value for %s', val, attribute_to_change)
                 return
             endif
-            new_value->extend({[input]: true})
+            new_value->extend({[val]: true})
         endfor
 
     elseif ['ctermbg', 'ctermfg', 'ctermul']->index(attribute_to_change) >= 0
@@ -1116,6 +1113,13 @@ def Complete(kind: string, arglead: string): string #{{{2
             ->map((_, attr: string) => attr->matchstr('[^=]\+'))
         relevant_inputs
             ->filter((_, input: string): bool => ignorelist->index(input) == -1)
+
+    elseif kind == 'style'
+        var prefix: string = arglead->matchstr('.*,')
+        return relevant_inputs
+            ->map((_, input: string) => $'{prefix}{input}')
+            ->filter((_, input: string): bool => input->stridx(arglead) == 0)
+            ->join("\n")
     endif
 
     return relevant_inputs
