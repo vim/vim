@@ -1,4 +1,4 @@
-*usr_toc.txt*	For Vim version 8.2.  Last change: 2020 Jun 15
+*usr_toc.txt*	For Vim version 8.2.  Last change: 2022 May 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -7,7 +7,7 @@
 ==============================================================================
 Overview ~
 
-Getting Started
+Getting Started ~
 |usr_01.txt|  About the manuals
 |usr_02.txt|  The first steps in Vim
 |usr_03.txt|  Moving around
@@ -21,7 +21,7 @@ Getting Started
 |usr_11.txt|  Recovering from a crash
 |usr_12.txt|  Clever tricks
 
-Editing Effectively
+Editing Effectively ~
 |usr_20.txt|  Typing command-line commands quickly
 |usr_21.txt|  Go away and come back
 |usr_22.txt|  Finding the file to edit
@@ -36,24 +36,28 @@ Editing Effectively
 |usr_31.txt|  Exploiting the GUI
 |usr_32.txt|  The undo tree
 
-Tuning Vim
+Tuning Vim ~
 |usr_40.txt|  Make new commands
 |usr_41.txt|  Write a Vim script
 |usr_42.txt|  Add new menus
 |usr_43.txt|  Using filetypes
 |usr_44.txt|  Your own syntax highlighted
 |usr_45.txt|  Select your language (locale)
-|usr_46.txt|  Write plugins using Vim9 script
 
-Making Vim Run
+Writing Vim script ~
+|usr_50.txt|  Advanced Vim script writing
+|usr_51.txt|  Create a plugin
+|usr_52.txt|  Write plugins using Vim9 script
+
+Making Vim Run ~
 |usr_90.txt|  Installing Vim
 
 
-Reference manual
+Reference manual ~
 |reference_toc|     More detailed information for all commands
 
-The user manual is available as a single, ready to print HTML and PDF file
-here:
+The user manual (an older version) is available as a single, ready to print
+HTML and PDF file here:
 	http://vimdoc.sf.net
 
 ==============================================================================
@@ -302,12 +306,6 @@ Make Vim work as you like it.
 		|41.8|	Lists and Dictionaries
 		|41.9|	Exceptions
 		|41.10|	Various remarks
-		|41.11|	Writing a plugin
-		|41.12|	Writing a filetype plugin
-		|41.13|	Writing a compiler plugin
-		|41.14|	Writing a plugin that loads quickly
-		|41.15|	Writing library scripts
-		|41.16|	Distributing Vim scripts
 
 |usr_42.txt|  Add new menus
 		|42.1|	Introduction
@@ -340,11 +338,24 @@ Make Vim work as you like it.
 		|45.4|	Editing files with a different encoding
 		|45.5|	Entering language text
 
-|usr_46.txt|  Write plugins using Vim9 script
-		|46.1|	Introduction
-		|46.2|	Variable declarations
-		|46.3|	Functions and types
-		|46.?|	Using a Vim9 script from legacy script
+==============================================================================
+Writing Vim script ~
+
+|usr_50.txt|  TODO
+
+|usr_51.txt|  Write plugins
+		|51.1|	Writing a generic plugin
+		|51.2|	Writing a filetype plugin
+		|51.3|	Writing a compiler plugin
+		|51.4|	Writing a plugin that loads quickly
+		|51.5|	Writing library scripts
+		|51.6|	Distributing Vim scripts
+
+|usr_52.txt|  Write plugins using Vim9 script
+		|52.1|	Introduction
+		|52.2|	Variable declarations
+		|52.3|	Functions and types
+		|52.4|	Using a Vim9 script from legacy script
 
 ==============================================================================
 Making Vim Run ~

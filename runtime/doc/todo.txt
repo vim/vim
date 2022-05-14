@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 May 12
+*todo.txt*      For Vim version 8.2.  Last change: 2022 May 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,12 +41,19 @@ browser use: https://github.com/vim/vim/issues/1234
 Once Vim9 is stable:
 - Use Vim9 for more runtime files.
 - Check code coverage, add more tests if needed.
-	vim9expr.c
 	vim9instr.c
 	vim9script.c
 	vim9type.c
 - Inlude new set of colors: #9795
 - Adjust intro message to say "help version9".
+
+Graduate FEAT_CINDENT and FEAT_SMARTINDENT ?
+
+Update the user manual:
+- Move most of usr_52.txt into usr_41.txt
+- Make usr_41.txt only about basic script writing
+- Fill usr_50.txt as an "advanced section" of usr_41.txt
+
 
 Further Vim9 improvements, possibly after launch:
 - Check performance with callgrind and kcachegrind.

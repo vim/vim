@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2022 May 12
+" Last Change:	2022 May 13
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -215,7 +215,7 @@ hi def link helpError		Error
 hi def link helpTodo		Todo
 hi def link helpURL		String
 
-if expand('%:p') =~ escape($VIMRUNTIME, '\') .. '[/\\]doc[/\\]syntax.txt'
+if expand('%:p') =~ '[/\\]doc[/\\]syntax.txt'
   " highlight groups with their respective color
   import 'dist/vimhelp.vim'
   call vimhelp.HighlightGroups()

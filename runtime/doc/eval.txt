@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 May 11
+*eval.txt*	For Vim version 8.2.  Last change: 2022 May 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2960,7 +2960,7 @@ the "autoload" directory in 'runtimepath'.
 
 Using an autocommand ~
 
-This is introduced in the user manual, section |41.14|.
+This is introduced in the user manual, section |51.4|.
 
 The autocommand is useful if you have a plugin that is a long Vim script file.
 You can define the autocommand and quickly quit the script with `:finish`.
@@ -2978,7 +2978,7 @@ The file "~/vim/bufnetfuncs.vim" should then define functions that start with
 
 Using an autoload script ~
 							*autoload* *E746*
-This is introduced in the user manual, section |41.15|.
+This is introduced in the user manual, section |51.5|.
 
 Using a script in the "autoload" directory is simpler, but requires using
 exactly the right file name.  A function that can be autoloaded has a name
