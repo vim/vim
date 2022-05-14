@@ -2249,10 +2249,12 @@ open_line(
 		    mark_col_adjust(curwin->w_cursor.lnum,
 					 curwin->w_cursor.col + less_cols_off,
 						      1L, (long)-less_cols, 0);
+#ifdef FEAT_PROP_POPUP
 		// Keep into account the deleted blanks on the new line.
 		if (curbuf->b_has_textprop && less_cols_off != 0)
 		    adjust_prop_columns(curwin->w_cursor.lnum + 1, 0,
 			    -less_cols_off, 0);
+#endif
 	    }
 	    else
 		changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
