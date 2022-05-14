@@ -1958,4 +1958,37 @@ func Test_prop_shift_block()
   bwipe!
 endfunc
 
+func Test_prop_insert_multiline()
+  new
+  call AddPropTypes()
+
+  call setline(1, ['foobar', 'barbaz'])
+  call prop_add(1, 4, #{end_lnum: 2, end_col: 4, type: 'one'})
+
+  call feedkeys("1Goquxqux\<Esc>", 'nxt')
+  call feedkeys("2GOquxqux\<Esc>", 'nxt')
+
+  let lines =<< trim END
+      foobar
+      quxqux
+      quxqux
+      barbaz
+  END
+  call assert_equal(lines, getline(1, '$'))
+  let expected = [
+      \ {'lnum': 1, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 0, 'type': 'one',
+      \ 'length': 4 ,'start': 1},
+      \ {'lnum': 2, 'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 0, 'type': 'one',
+      \ 'length': 7, 'start': 0},
+      \ {'lnum': 3, 'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 0, 'type': 'one',
+      \ 'length': 7, 'start': 0},
+      \ {'lnum': 4, 'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 1, 'type': 'one',
+      \ 'length': 3, 'start': 0}
+      \ ]
+  call assert_equal(expected, prop_list(1, #{end_lnum: 10}))
+
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
