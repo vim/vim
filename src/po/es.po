@@ -1020,15 +1020,15 @@ msgstr "Tipo de letra de impresión %d: %s"
 msgid "Font%d width is not twice that of font0"
 msgstr ""
 "La anchura del tipo de letra de impresión %d no es el doble de la de la "
-"tipografía de impresión 0\n"
+"tipografía"
 
 #, c-format
 msgid "Font0 width: %d"
-msgstr "Anchura del tipo de letra de impresión 0: %d\n"
+msgstr "Anchura del tipo de letra de impresión 0: %d"
 
 #, c-format
 msgid "Font%d width: %d"
-msgstr "Anchura del tipo de letra de impresión 0: %d\n"
+msgstr "Anchura del tipo de letra %d: %d"
 
 msgid "Invalid font specification"
 msgstr "La especificación de tipo de letra no es válida"
@@ -2378,8 +2378,8 @@ msgstr[1] "%ld líneas cambiadas"
 #, c-format
 msgid "%d line changed"
 msgid_plural "%d lines changed"
-msgstr[0] "%ld línea cambiada"
-msgstr[1] "%ld líneas cambiadas"
+msgstr[0] "%d línea cambiada"
+msgstr[1] "%d líneas cambiadas"
 
 #, c-format
 msgid "%ld Cols; "
@@ -5122,7 +5122,7 @@ msgid "E339: Pattern too long"
 msgstr "E339: Patrón demasiado largo"
 
 msgid "E341: Internal error: lalloc(0, )"
-msgstr "E341: Error interno: lalloc(%0, )"
+msgstr "E341: Error interno: lalloc(0, )"
 
 #, c-format
 msgid "E342: Out of memory!  (allocating %lu bytes)"
@@ -7391,7 +7391,7 @@ msgstr "E996: No se puede bloquear un registro"
 
 #, c-format
 msgid "E997: Tabpage not found: %d"
-msgstr "E997: Pestaña no encontrada:% d"
+msgstr "E997: Pestaña no encontrada: %d"
 
 #, c-format
 msgid "E998: Reduce of an empty %s with no initial value"
