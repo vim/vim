@@ -323,7 +323,9 @@ def MenuFilter(_, key: string): bool #{{{2
 
         # update the popup
         var set_attributes: list<string> = GetPumLines()
-        set_attributes += [$'{attr}=']
+        if set_attributes->match($'{attr}=') == -1
+            set_attributes += [$'{attr}=']
+        endif
         set_attributes->sort()->uniq()
         popup_settext(winid, set_attributes)
         var choice: number = set_attributes->match('=$') + 1
