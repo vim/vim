@@ -1439,4 +1439,44 @@ func Test_foldtext_scriptlocal_func()
   delfunc s:FoldText
 endfunc
 
+" Make sure a fold containing a nested fold is split correctly when using
+" foldmethod=indent
+func Test_fold_split()
+  new
+  let lines =<< trim END
+    line 1
+      line 2
+      line 3
+        line 4
+        line 5
+  END
+  call setline(1, lines)
+  setlocal sw=2
+  setlocal foldmethod=indent foldenable
+  call assert_equal([0, 1, 1, 2, 2], range(1, 5)->map('foldlevel(v:val)'))
+  call append(2, 'line 2.5')
+  call assert_equal([0, 1, 0, 1, 2, 2], range(1, 6)->map('foldlevel(v:val)'))
+  bw!
+endfunc
+
+" Make sure that when you append under a blank line that is under a fold with
+" the same indent level as your appended line, the fold expands across the
+" blank line
+func Test_indent_append_under_blank_line()
+  new
+  let lines =<< trim END
+    line 1
+      line 2
+      line 3
+  END
+  call setline(1, lines)
+  setlocal sw=2
+  setlocal foldmethod=indent foldenable
+  call assert_equal([0, 1, 1], range(1, 3)->map('foldlevel(v:val)'))
+  call append(3, '')
+  call append(4, '  line 5')
+  call assert_equal([0, 1, 1, 1, 1], range(1, 5)->map('foldlevel(v:val)'))
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

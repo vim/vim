@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2022 Jan 23
+*map.txt*       For Vim version 8.2.  Last change: 2022 May 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -80,6 +80,8 @@ modes.
 			where the map command applies.  Disallow mapping of
 			{rhs}, to avoid nested and recursive mappings.  Often
 			used to redefine a command.
+			Note: When <Plug> appears in the {rhs} this part is
+			always applied even if remapping is disallowed.
 
 
 :unm[ap]  {lhs}			|mapmode-nvo|		*:unm*  *:unmap*
@@ -118,7 +120,8 @@ modes.
 			command applies.
 			Use the <buffer> argument to remove buffer-local
 			mappings |:map-<buffer>|
-			Warning: This also removes the default mappings.
+			Warning: This also removes the |mac-standard-mappings|
+			and the |dos-standard-mappings|.
 
 :map				|mapmode-nvo|
 :nm[ap]				|mapmode-n|
@@ -314,7 +317,7 @@ Here is an example that inserts a list number that increases: >
 
 	func ListItem()
 	  let g:counter += 1
-	  return g:counter . '. '
+	  return g:counter .. '. '
 	endfunc
 
 	func ListReset()
@@ -387,7 +390,7 @@ contain special characters like function keys.
 1.3 MAPPING AND MODES					*:map-modes*
 			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
 
-There are six sets of mappings
+There are seven sets of mappings
 - For Normal mode: When typing commands.
 - For Visual mode: When typing commands while the Visual area is highlighted.
 - For Select mode: like Visual mode but typing text replaces the selection.
@@ -395,6 +398,7 @@ There are six sets of mappings
   etc.).  See below: |omap-info|.
 - For Insert mode.  These are also used in Replace mode.
 - For Command-line mode: When entering a ":" or "/" command.
+- For Terminal mode: When typing in a |:terminal| buffer.
 
 Special case: While typing a count for a command in Normal mode, mapping zero
 is disabled.  This makes it possible to map zero without making it impossible
@@ -693,6 +697,10 @@ that's local to the script.  See |<SID>| for details.
 The special key name "<Plug>" can be used for an internal mapping, which is
 not to be matched with any key sequence.  This is useful in plugins
 |using-<Plug>|.
+
+							*<MouseMove>*
+The special key name "<MouseMove>" can be used to handle mouse movement.  It
+needs to be enabled with 'mousemoveevent'.  Currently only works in the GUI.
 
 							*<Char>* *<Char->*
 To map a character by its decimal, octal or hexadecimal number the <Char>
@@ -1317,7 +1325,8 @@ underscore.  Example: >
 could define a mapping "<SNR>23_Add".
 
 When defining a function in a script, "s:" can be prepended to the name to
-make it local to the script.  But when a mapping is executed from outside of
+make it local to the script (in |Vim9| script functions without a prefix are
+local to the script).  But when a mapping is executed from outside of
 the script, it doesn't know in which script the function was defined.  To
 avoid this problem, use "<SID>" instead of "s:".  The same translation is done
 as for mappings.  This makes it possible to define a call to the function in
@@ -1444,7 +1453,7 @@ See |:verbose-cmd| for more information.
 
 
 Command attributes ~
-
+                                                       *command-attributes*
 User-defined commands are treated by Vim just like any other Ex commands.  They
 can have arguments, or have a range specified.  Arguments are subject to
 completion as filenames, buffers, etc.  Exactly how this works depends upon the
@@ -1561,9 +1570,11 @@ The function arguments are:
 The function may use these for determining context.  For the "custom"
 argument, it is not necessary to filter candidates against the (implicit
 pattern in) ArgLead.  Vim will filter the candidates with its regexp engine
-after function return, and this is probably more efficient in most cases. For
-the "customlist" argument, Vim will not filter the returned completion
-candidates and the user supplied function should filter the candidates.
+after function return, and this is probably more efficient in most cases. If
+'wildoptions' contains "fuzzy", then the candidates will be filtered using
+|fuzzy-matching|.  For the "customlist" argument, Vim will not
+filter the returned completion candidates and the user supplied function
+should filter the candidates.
 
 The following example lists user names to a Finger command >
     :com -complete=custom,ListUsers -nargs=1 Finger !finger <args>
@@ -1697,12 +1708,12 @@ The valid escape sequences are
 		Examples: >
 		    command! -nargs=+ -complete=file MyEdit
 				\ for f in expand(<q-args>, 0, 1) |
-				\ exe '<mods> split ' . f |
+				\ exe '<mods> split ' .. f |
 				\ endfor
 
 		    function! SpecialEdit(files, mods)
 			for f in expand(a:files, 0, 1)
-			    exe a:mods . ' split ' . f
+			    exe a:mods .. ' split ' .. f
 			endfor
 		    endfunction
 		    command! -nargs=+ -complete=file Sedit
@@ -1778,7 +1789,7 @@ This will invoke: >
    :   let i = 0
    :   while i < argc()
    :	  if filereadable(argv(i))
-   :	     execute "e " . argv(i)
+   :	     execute "e " .. argv(i)
    :	     execute a:command
    :      endif
    :      let i = i + 1

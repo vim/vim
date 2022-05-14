@@ -2,6 +2,7 @@
 " Maintainer:		Mikolaj Machowski ( mikmach AT wp DOT pl )
 " Initial Translation:	Marcin Dalecki <martin@dalecki.de>
 " Last Change: 17 May  2010
+" Generated from menu_pl_pl.utf-8.vim, DO NOT EDIT
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

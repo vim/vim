@@ -314,13 +314,13 @@ main(int argc, char **argv)
     params.argv = argv;
     common_init(&params);
 
-    set_option_value((char_u *)"encoding", 0, (char_u *)"utf-8", 0);
+    set_option_value_give_err((char_u *)"encoding", 0, (char_u *)"utf-8", 0);
     init_chartab();
     test_trunc_string();
     test_trunc_string_mbyte();
     test_vim_snprintf();
 
-    set_option_value((char_u *)"encoding", 0, (char_u *)"latin1", 0);
+    set_option_value_give_err((char_u *)"encoding", 0, (char_u *)"latin1", 0);
     init_chartab();
     test_trunc_string();
     test_vim_snprintf();

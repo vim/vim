@@ -68,6 +68,26 @@ func Test_global_print()
   v/foo\|bar/p
   call assert_notequal('', v:statusmsg)
 
+  " In Vim9 script this is an error
+  let caught = 'no'
+  try
+    vim9cmd v/foo\|bar/p
+  catch /E538/
+    let caught = 'yes'
+    call assert_match('E538: Pattern found in every line: foo\|bar', v:exception)
+  endtry
+  call assert_equal('yes', caught)
+
+  " In Vim9 script not matching is an error
+  let caught = 'no'
+  try
+    vim9cmd g/foobarnotfound/p
+  catch /E486/
+    let caught = 'yes'
+    call assert_match('E486: Pattern not found: foobarnotfound', v:exception)
+  endtry
+  call assert_equal('yes', caught)
+
   close!
 endfunc
 

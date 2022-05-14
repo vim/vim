@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 8.2.  Last change: 2019 May 13
+*scroll.txt*    For Vim version 8.2.  Last change: 2022 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -237,30 +237,33 @@ it works depends on your system.  It might also work in an xterm
 |xterm-mouse-wheel|.  By default only vertical scroll wheels are supported,
 but some GUIs also support horizontal scroll wheels.
 
-For the Win32 GUI the scroll action is hard coded.  It works just like
-dragging the scrollbar of the current window.  How many lines are scrolled
-depends on your mouse driver.  If the scroll action causes input focus
-problems, see |intellimouse-wheel-problems|.
+On MS-Windows, if the scroll action causes input focus -problems, see
+|intellimouse-wheel-problems|.
 
-For the X11 GUIs (Motif, Athena and GTK) scrolling the wheel generates key
+For Win32 and the X11 GUIs (Motif and GTK) scrolling the wheel generates key
 presses <ScrollWheelUp>, <ScrollWheelDown>, <ScrollWheelLeft> and
 <ScrollWheelRight>.  For example, if you push the scroll wheel upwards a
 <ScrollWheelUp> key press is generated causing the window to scroll upwards
 (while the text is actually moving downwards).  The default action for these
 keys are:
-    <ScrollWheelUp>	    scroll three lines up	*<ScrollWheelUp>*
+    <ScrollWheelUp>	    scroll N lines up	        *<ScrollWheelUp>*
     <S-ScrollWheelUp>	    scroll one page up		*<S-ScrollWheelUp>*
     <C-ScrollWheelUp>	    scroll one page up		*<C-ScrollWheelUp>*
-    <ScrollWheelDown>	    scroll three lines down	*<ScrollWheelDown>*
+    <ScrollWheelDown>	    scroll N lines down	        *<ScrollWheelDown>*
     <S-ScrollWheelDown>	    scroll one page down	*<S-ScrollWheelDown>*
     <C-ScrollWheelDown>	    scroll one page down	*<C-ScrollWheelDown>*
-    <ScrollWheelLeft>	    scroll six columns left	*<ScrollWheelLeft>*
+    <ScrollWheelLeft>	    scroll N columns left	*<ScrollWheelLeft>*
     <S-ScrollWheelLeft>	    scroll one page left	*<S-ScrollWheelLeft>*
     <C-ScrollWheelLeft>	    scroll one page left	*<C-ScrollWheelLeft>*
-    <ScrollWheelRight>	    scroll six columns right	*<ScrollWheelRight>*
+    <ScrollWheelRight>	    scroll N columns right	*<ScrollWheelRight>*
     <S-ScrollWheelRight>    scroll one page right	*<S-ScrollWheelRight>*
     <C-ScrollWheelRight>    scroll one page right	*<C-ScrollWheelRight>*
 This should work in all modes, except when editing the command line.
+
+The value of N depends on the system.  By default Vim scrolls three lines when
+moving vertically, and six columns when moving horizontally.  On MS-Windows
+the amount of lines and columns for each scroll action is taken from the
+system-wide settings.
 
 Note that horizontal scrolling only works if 'nowrap' is set.  Also, unless
 the "h" flag in 'guioptions' is set, the cursor moves to the longest visible

@@ -95,7 +95,7 @@ func CheckUnix()
   endif
 endfunc
 
-" Command to check for running on Linix
+" Command to check for running on Linux
 command CheckLinux call CheckLinux()
 func CheckLinux()
   if !has('linux')

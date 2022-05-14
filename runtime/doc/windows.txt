@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2022 Feb 03
+*windows.txt*   For Vim version 8.2.  Last change: 2022 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -473,7 +473,7 @@ These commands can also be executed with ":wincmd":
 		the |CursorHold| autocommand event).  Or when a Normal mode
 		command is inconvenient.
 		The count can also be a window number.  Example: >
-			:exe nr . "wincmd w"
+			:exe nr .. "wincmd w"
 <		This goes to window "nr".
 
 ==============================================================================
@@ -892,7 +892,7 @@ windows.
 						*preview-popup*
 Alternatively, a popup window can be used by setting the 'previewpopup'
 option.  When set, it overrules the 'previewwindow' and 'previewheight'
-settings.  The option is a comma separated list of values:
+settings.  The option is a comma-separated list of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)
@@ -964,12 +964,12 @@ CTRL-W g }						*CTRL-W_g}*
 		cursor.  This is less clever than using |:ptag|, but you don't
 		need a tags file and it will also find matches in system
 		include files.  Example: >
-  :au! CursorHold *.[ch] ++nested exe "silent! psearch " . expand("<cword>")
+  :au! CursorHold *.[ch] ++nested exe "silent! psearch " .. expand("<cword>")
 <		Warning: This can be slow.
 
 Example						*CursorHold-example*  >
 
-  :au! CursorHold *.[ch] ++nested exe "silent! ptag " . expand("<cword>")
+  :au! CursorHold *.[ch] ++nested exe "silent! ptag " .. expand("<cword>")
 
 This will cause a ":ptag" to be executed for the keyword under the cursor,
 when the cursor hasn't moved for the time set with 'updatetime'.  The "nested"
@@ -992,14 +992,14 @@ is no word under the cursor, and a few other things: >
   :
   :    " Delete any existing highlight before showing another tag
   :    silent! wincmd P			" jump to preview window
-  :    if &previewwindow			" if we really get there...
+  :    if &previewwindow		" if we really get there...
   :      match none			" delete existing highlight
   :      wincmd p			" back to old window
   :    endif
   :
   :    " Try displaying a matching tag for the word under the cursor
   :    try
-  :       exe "ptag " . w
+  :       exe "ptag " .. w
   :    catch
   :      return
   :    endtry
@@ -1011,10 +1011,10 @@ is no word under the cursor, and a few other things: >
   :	 endif
   :	 call search("$", "b")		" to end of previous line
   :	 let w = substitute(w, '\\', '\\\\', "")
-  :	 call search('\<\V' . w . '\>')	" position cursor on match
+  :	 call search('\<\V' .. w .. '\>')	" position cursor on match
   :	 " Add a match highlight to the word at this position
   :      hi previewWord term=bold ctermbg=green guibg=green
-  :	 exe 'match previewWord "\%' . line(".") . 'l\%' . col(".") . 'c\k*"'
+  :	 exe 'match previewWord "\%' .. line(".") .. 'l\%' .. col(".") .. 'c\k*"'
   :      wincmd p			" back to old window
   :    endif
   :  endif
@@ -1036,7 +1036,7 @@ modified, but is forced (with '!') to be removed from a window, and
 'autowrite' is off or the buffer can't be written.
 
 You can make a hidden buffer not hidden by starting to edit it with any
-command.  Or by deleting it with the ":bdelete" command.
+command, or by deleting it with the ":bdelete" command.
 
 The 'hidden' is global, it is used for all buffers.  The 'bufhidden' option
 can be used to make an exception for a specific buffer.  It can take these

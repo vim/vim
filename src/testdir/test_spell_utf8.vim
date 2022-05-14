@@ -780,5 +780,10 @@ func Test_no_crash_with_weird_text()
   bwipe!
 endfunc
 
+" Invalid bytes may cause trouble when creating the word list.
+func Test_check_for_valid_word()
+  call assert_fails("spellgood! 0\xac", 'E1280:')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

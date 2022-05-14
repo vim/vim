@@ -760,18 +760,20 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 
 /*
  * Get the list item in "l" with index "n1".  "n1" is adjusted if needed.
- * In Vim9, it is at the end of the list, add an item.
+ * In Vim9, it is at the end of the list, add an item if "can_append" is TRUE.
  * Return NULL if there is no such item.
  */
     listitem_T *
-check_range_index_one(list_T *l, long *n1, int quiet)
+check_range_index_one(list_T *l, long *n1, int can_append, int quiet)
 {
-    listitem_T *li = list_find_index(l, n1);
+    long	orig_n1 = *n1;
+    listitem_T	*li = list_find_index(l, n1);
 
     if (li == NULL)
     {
 	// Vim9: Allow for adding an item at the end.
-	if (in_vim9script() && *n1 == l->lv_len && l->lv_lock == 0)
+	if (can_append && in_vim9script()
+					&& *n1 == l->lv_len && l->lv_lock == 0)
 	{
 	    list_append_number(l, 0);
 	    li = list_find_index(l, n1);
@@ -779,7 +781,7 @@ check_range_index_one(list_T *l, long *n1, int quiet)
 	if (li == NULL)
 	{
 	    if (!quiet)
-		semsg(_(e_list_index_out_of_range_nr), *n1);
+		semsg(_(e_list_index_out_of_range_nr), orig_n1);
 	    return NULL;
 	}
     }
@@ -916,59 +918,54 @@ list_assign_range(
 }
 
 /*
- * Flatten "list" to depth "maxdepth".
+ * Flatten up to "maxitems" in "list", starting at "first" to depth "maxdepth".
+ * When "first" is NULL use the first item.
  * It does nothing if "maxdepth" is 0.
  * Returns FAIL when out of memory.
  */
     static void
-list_flatten(list_T *list, long maxdepth)
+list_flatten(list_T *list, listitem_T *first, long maxitems, long maxdepth)
 {
     listitem_T	*item;
-    listitem_T	*tofree;
-    int		n;
+    int		done = 0;
 
     if (maxdepth == 0)
 	return;
     CHECK_LIST_MATERIALIZE(list);
+    if (first == NULL)
+	item = list->lv_first;
+    else
+	item = first;
 
-    n = 0;
-    item = list->lv_first;
-    while (item != NULL)
+    while (item != NULL && done < maxitems)
     {
+	listitem_T	*next = item->li_next;
+
 	fast_breakcheck();
 	if (got_int)
 	    return;
 
 	if (item->li_tv.v_type == VAR_LIST)
 	{
-	    listitem_T *next = item->li_next;
+	    list_T	*itemlist = item->li_tv.vval.v_list;
 
 	    vimlist_remove(list, item, item);
-	    if (list_extend(list, item->li_tv.vval.v_list, next) == FAIL)
+	    if (list_extend(list, itemlist, next) == FAIL)
 	    {
 		list_free_item(list, item);
 		return;
 	    }
+
+	    if (maxdepth > 0)
+		list_flatten(list, item->li_prev == NULL
+				     ? list->lv_first : item->li_prev->li_next,
+				itemlist->lv_len, maxdepth - 1);
 	    clear_tv(&item->li_tv);
-	    tofree = item;
-
-	    if (item->li_prev == NULL)
-		item = list->lv_first;
-	    else
-		item = item->li_prev->li_next;
-	    list_free_item(list, tofree);
-
-	    if (++n >= maxdepth)
-	    {
-		n = 0;
-		item = next;
-	    }
+	    list_free_item(list, item);
 	}
-	else
-	{
-	    n = 0;
-	    item = item->li_next;
-	}
+
+	++done;
+	item = next;
     }
 }
 
@@ -1015,7 +1012,7 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 
     if (make_copy)
     {
-	l = list_copy(l, TRUE, TRUE, get_copyID());
+	l = list_copy(l, FALSE, TRUE, get_copyID());
 	rettv->vval.v_list = l;
 	if (l == NULL)
 	    return;
@@ -1031,7 +1028,7 @@ flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 	++l->lv_refcount;
     }
 
-    list_flatten(l, maxdepth);
+    list_flatten(l, NULL, l->lv_len, maxdepth);
 }
 
 /*
@@ -2198,7 +2195,8 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
 		|| (argvars[1].v_type != VAR_UNKNOWN
-		    && check_for_opt_dict_arg(argvars, 2) == FAIL)))
+		    && (check_for_string_or_func_arg(argvars, 1) == FAIL
+			      || check_for_opt_dict_arg(argvars, 2) == FAIL))))
 	return;
 
     if (argvars[0].v_type != VAR_LIST)

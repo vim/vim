@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2022 Feb 01
+*starting.txt*  For Vim version 8.2.  Last change: 2022 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -344,6 +344,12 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Example: >
 			vim -V20vimlog foobar
 <
+--log {filename}					*--log*
+		Start logging and write entries to {filename}.
+		This works like calling `ch_logfile({filename}, 'a')` very
+		early during startup.
+		{only available with the +channel feature}
+
 							*-D*
 -D		Debugging.  Go to debugging mode when executing the first
 		command from a script. |debug-mode|
@@ -564,6 +570,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		{scriptout} cannot start with a digit.
 		If you want to record what is typed in a human readable for
 		you can use |ch_logfile()|, It adds "raw key input" lines.
+		Also see |--log|.
 
 							*-W*
 -W {scriptout}	Like -w, but do not append, overwrite an existing file.
@@ -730,6 +737,7 @@ In Evim these options are changed from their default value:
 	:set guioptions-=a	non-Unix only: don't do auto-select
 
 Key mappings:
+	<CTRL-Q>	quit, using `:confirm` prompt if there are changes
 	<Down>		moves by screen lines rather than file lines
 	<Up>		idem
 	Q		does "gq", formatting, instead of Ex mode
@@ -740,7 +748,6 @@ Key mappings:
 	<C-Insert>	idem
 	CTRL-V		Pastes from the clipboard (in any mode)
 	<S-Insert>	idem
-	CTRL-Q		do what CTRL-V used to do
 	CTRL-Z		undo
 	CTRL-Y		redo
 	<M-Space>	system menu
@@ -756,6 +763,8 @@ Additionally:
 
 One hint: If you want to go to Normal mode to be able to type a sequence of
 commands, use CTRL-L. |i_CTRL-L|
+
+There is no way to stop "easy mode", you need to exit Vim.
 
 ==============================================================================
 4. Initialization				*initialization* *startup*
@@ -1378,7 +1387,7 @@ resulting file, when executed with a ":source" command:
 After restoring the Session, the full filename of your current Session is
 available in the internal variable "v:this_session" |this_session-variable|.
 An example mapping: >
-  :nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>:so ~/sessions/
+  :nmap <F2> :wa<Bar>exe "mksession! " .. v:this_session<CR>:so ~/sessions/
 This saves the current Session, and starts off the command to load another.
 
 A session includes all tab pages, unless "tabpages" was removed from

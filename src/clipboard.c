@@ -77,7 +77,7 @@ clip_update_selection(Clipboard_T *clip)
     pos_T	    start, end;
 
     // If visual mode is only due to a redo command ("."), then ignore it
-    if (!redo_VIsual_busy && VIsual_active && (State & NORMAL))
+    if (!redo_VIsual_busy && VIsual_active && (State & MODE_NORMAL))
     {
 	if (LT_POS(VIsual, curwin->w_cursor))
 	{
@@ -142,8 +142,8 @@ clip_own_selection(Clipboard_T *cbd)
 	    // selected area.  There is no specific redraw command for this,
 	    // just redraw all windows on the current buffer.
 	    if (cbd->owned
-		    && (get_real_state() == VISUAL
-					    || get_real_state() == SELECTMODE)
+		    && (get_real_state() == MODE_VISUAL
+					    || get_real_state() == MODE_SELECT)
 		    && (cbd == &clip_star ? clip_isautosel_star()
 						      : clip_isautosel_plus())
 		    && HL_ATTR(HLF_V) != HL_ATTR(HLF_VNC))
@@ -195,8 +195,8 @@ clip_lose_selection(Clipboard_T *cbd)
 	// area.  There is no specific redraw command for this, just redraw all
 	// windows on the current buffer.
 	if (was_owned
-		&& (get_real_state() == VISUAL
-					    || get_real_state() == SELECTMODE)
+		&& (get_real_state() == MODE_VISUAL
+					    || get_real_state() == MODE_SELECT)
 		&& (cbd == &clip_star ?
 				clip_isautosel_star() : clip_isautosel_plus())
 		&& HL_ATTR(HLF_V) != HL_ATTR(HLF_VNC)
@@ -214,7 +214,7 @@ clip_lose_selection(Clipboard_T *cbd)
     static void
 clip_copy_selection(Clipboard_T *clip)
 {
-    if (VIsual_active && (State & NORMAL) && clip->available)
+    if (VIsual_active && (State & MODE_NORMAL) && clip->available)
     {
 	clip_update_selection(clip);
 	clip_free_selection(clip);
@@ -1354,7 +1354,7 @@ check_clipboard_option(void)
 
 /*
  * Open the application context (if it hasn't been opened yet).
- * Used for Motif and Athena GUI and the xterm clipboard.
+ * Used for Motif GUI and the xterm clipboard.
  */
     void
 open_app_context(void)

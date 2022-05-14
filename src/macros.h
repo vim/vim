@@ -147,7 +147,7 @@
 				// see mch_open() comment
 # define mch_fopen(n, p)	fopen(vms_fixfilename(n), (p))
 # define mch_fstat(n, p)	fstat((n), (p))
-# undef HAVE_LSTAT	        // VMS does not have lstat()
+# undef HAVE_LSTAT		// VMS does not have lstat()
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 #else
 # ifndef MSWIN
@@ -208,7 +208,7 @@
 #define REPLACE_NORMAL(s) (((s) & REPLACE_FLAG) && !((s) & VREPLACE_FLAG))
 
 #ifdef FEAT_ARABIC
-# define ARABIC_CHAR(ch)            (((ch) & 0xFF00) == 0x0600)
+# define ARABIC_CHAR(ch)	    (((ch) & 0xFF00) == 0x0600)
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_composinglike((p1), (p2))
 #else
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_iscomposing(utf_ptr2char(p2))
@@ -216,7 +216,7 @@
 
 #ifdef FEAT_RIGHTLEFT
     // Whether to draw the vertical bar on the right side of the cell.
-# define CURSOR_BAR_RIGHT (curwin->w_p_rl && (!(State & CMDLINE) || cmdmsg_rl))
+# define CURSOR_BAR_RIGHT (curwin->w_p_rl && (!(State & MODE_CMDLINE) || cmdmsg_rl))
 #endif
 
 /*
@@ -232,11 +232,11 @@
 // Advance multi-byte pointer, do not skip over composing chars.
 #define MB_CPTR_ADV(p)	    p += enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p)
 // Backup multi-byte pointer. Only use with "p" > "s" !
-#define MB_PTR_BACK(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
+#define MB_PTR_BACK(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, (p) - 1) + 1) : 1
 // get length of multi-byte char, not including composing chars
 #define MB_CPTR2LEN(p)	    (enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p))
 
-#define MB_COPY_CHAR(f, t) do { if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++; } while (0)
+#define MB_COPY_CHAR(f, t) do { if (has_mbyte) mb_copy_char(&(f), &(t)); else *(t)++ = *(f)++; } while (0)
 #define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : (int)STRLEN(p))
 #define MB_CHAR2LEN(c)	    (has_mbyte ? mb_char2len(c) : 1)
 #define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
@@ -313,7 +313,7 @@
  * HI2DI() converts a hashitem pointer to a dictitem pointer.
  */
 #define DI2HIKEY(di) ((di)->di_key)
-#define HIKEY2DI(p)  ((dictitem_T *)(p - offsetof(dictitem_T, di_key)))
+#define HIKEY2DI(p)  ((dictitem_T *)((p) - offsetof(dictitem_T, di_key)))
 #define HI2DI(hi)     HIKEY2DI((hi)->hi_key)
 
 /*
@@ -376,9 +376,9 @@
 #define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
 
 // Inlined version of ga_grow() with optimized condition that it fails.
-#define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
+#define GA_GROW_FAILS(gap, n) unlikely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == FAIL)
 // Inlined version of ga_grow() with optimized condition that it succeeds.
-#define GA_GROW_OK(gap, n) likely((((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK) == OK)
+#define GA_GROW_OK(gap, n) likely((((gap)->ga_maxlen - (gap)->ga_len < (n)) ? ga_grow_inner((gap), (n)) : OK) == OK)
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))

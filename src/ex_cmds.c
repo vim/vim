@@ -2116,7 +2116,7 @@ check_overwrite(
 	    // with UNIX it is possible to open a directory
 	    if (mch_isdir(ffname))
 	    {
-		semsg(_(e_src_is_directory), ffname);
+		semsg(_(e_str_is_directory), ffname);
 		return FAIL;
 	    }
 #endif
@@ -2411,8 +2411,7 @@ getfile(
 	if (curbufIsChanged())
 #endif
 	{
-	    if (other)
-		--no_wait_return;
+	    --no_wait_return;
 	    no_write_message();
 	    retval = GETFILE_NOT_WRITTEN;	// file has been changed
 	    goto theend;
@@ -2512,7 +2511,7 @@ do_ecmd(
 #endif
     int		readfile_flags = 0;
     int		did_inc_redrawing_disabled = FALSE;
-    long        *so_ptr = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
+    long	*so_ptr = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
 
 #ifdef FEAT_PROP_POPUP
     if (ERROR_IF_TERM_POPUP_WINDOW)
@@ -3183,7 +3182,7 @@ do_ecmd(
 	redraw_curbuf_later(NOT_VALID);	// redraw this buffer later
     }
 
-    if (p_im)
+    if (p_im && (State & MODE_INSERT) == 0)
 	need_start_insertmode = TRUE;
 
 #ifdef FEAT_AUTOCHDIR
@@ -3272,9 +3271,9 @@ ex_append(exarg_T *eap)
     if (empty && lnum == 1)
 	lnum = 0;
 
-    State = INSERT;		    // behave like in Insert mode
+    State = MODE_INSERT;		    // behave like in Insert mode
     if (curbuf->b_p_iminsert == B_IMODE_LMAP)
-	State |= LANGMAP;
+	State |= MODE_LANGMAP;
 
     for (;;)
     {
@@ -3309,9 +3308,9 @@ ex_append(exarg_T *eap)
 	{
 	    int save_State = State;
 
-	    // Set State to avoid the cursor shape to be set to INSERT mode
-	    // when getline() returns.
-	    State = CMDLINE;
+	    // Set State to avoid the cursor shape to be set to MODE_INSERT
+	    // state when getline() returns.
+	    State = MODE_CMDLINE;
 	    theline = eap->getline(
 #ifdef FEAT_EVAL
 		    eap->cstack->cs_looplevel > 0 ? -1 :
@@ -3367,7 +3366,7 @@ ex_append(exarg_T *eap)
 	    empty = FALSE;
 	}
     }
-    State = NORMAL;
+    State = MODE_NORMAL;
 
     if (eap->forceit)
 	curbuf->b_p_ai = !curbuf->b_p_ai;
@@ -3737,6 +3736,11 @@ ex_substitute(exarg_T *eap)
 	 */
 	if (*cmd == '\\')
 	{
+	    if (in_vim9script())
+	    {
+		emsg(_(e_cannot_use_s_backslash_in_vim9_script));
+		return;
+	    }
 	    ++cmd;
 	    if (vim_strchr((char_u *)"/?&", *cmd) == NULL)
 	    {
@@ -4179,10 +4183,10 @@ ex_substitute(exarg_T *eap)
 		{
 		    int typed = 0;
 
-		    // change State to CONFIRM, so that the mouse works
+		    // change State to MODE_CONFIRM, so that the mouse works
 		    // properly
 		    save_State = State;
-		    State = CONFIRM;
+		    State = MODE_CONFIRM;
 		    setmouse();		// disable mouse in xterm
 		    curwin->w_cursor.col = regmatch.startpos[0].col;
 		    if (curwin->w_p_crb)
@@ -4229,6 +4233,11 @@ ex_substitute(exarg_T *eap)
 			    {
 				typed = *resp;
 				vim_free(resp);
+				// When ":normal" runs out of characters we get
+				// an empty line.  Use "q" to get out of the
+				// loop.
+				if (ex_normal_busy && typed == NUL)
+				    typed = 'q';
 			    }
 			}
 			else
@@ -4951,8 +4960,7 @@ ex_global(exarg_T *eap)
     else
     {
 	delim = *cmd;		// get the delimiter
-	if (delim)
-	    ++cmd;		// skip delimiter if there is one
+	++cmd;			// skip delimiter if there is one
 	pat = cmd;		// remember start of pattern
 	cmd = skip_regexp_ex(cmd, delim, magic_isset(), &eap->arg, NULL, NULL);
 	if (cmd[0] == delim)		    // end delimiter found
@@ -5001,9 +5009,19 @@ ex_global(exarg_T *eap)
 	else if (ndone == 0)
 	{
 	    if (type == 'v')
-		smsg(_("Pattern found in every line: %s"), pat);
+	    {
+		if (in_vim9script())
+		    semsg(_(e_pattern_found_in_every_line_str), pat);
+		else
+		    smsg(_("Pattern found in every line: %s"), pat);
+	    }
 	    else
-		smsg(_("Pattern not found: %s"), pat);
+	    {
+		if (in_vim9script())
+		    semsg(_(e_pattern_not_found_str), pat);
+		else
+		    smsg(_("Pattern not found: %s"), pat);
+	    }
 	}
 	else
 	{

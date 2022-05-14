@@ -558,7 +558,7 @@ transchar_nonprint(buf_T *buf, char_u *charbuf, int c)
 	charbuf[1] = c ^ 0x40;		// DEL displayed as ^?
 	charbuf[2] = NUL;
     }
-    else if (enc_utf8 && c >= 0x80)
+    else if (enc_utf8)
     {
 	transchar_hex(charbuf, c);
     }
@@ -1037,9 +1037,10 @@ win_lbr_chartabsize(
      * May have to add something for 'breakindent' and/or 'showbreak'
      * string at start of line.
      * Set *headp to the size of what we add.
+     * Do not use 'showbreak' at the NUL after the text.
      */
     added = 0;
-    sbr = get_showbreak_value(wp);
+    sbr = c == NUL ? empty_option : get_showbreak_value(wp);
     if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && col != 0)
     {
 	colnr_T sbrlen = 0;
@@ -1299,7 +1300,7 @@ getvcol(
     if (cursor != NULL)
     {
 	if (*ptr == TAB
-		&& (State & NORMAL)
+		&& (State & MODE_NORMAL)
 		&& !wp->w_p_list
 		&& !virtual_active()
 		&& !(VIsual_active
@@ -1642,6 +1643,12 @@ vim_isupper(int c)
 	    return (latin1flags[c] & LATIN1UPPER) == LATIN1UPPER;
     }
     return isupper(c);
+}
+
+    int
+vim_isalpha(int c)
+{
+    return vim_islower(c) || vim_isupper(c);
 }
 
     int

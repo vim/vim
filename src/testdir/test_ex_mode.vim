@@ -250,5 +250,18 @@ func Test_ex_mode_large_indent()
   bwipe!
 endfunc
 
+" This was accessing illegal memory when using "+" for eap->cmd.
+func Test_empty_command_visual_mode()
+  let lines =<< trim END
+      r<sfile>
+      0norm0V:
+      :qall!
+  END
+  call writefile(lines, 'Xexmodescript')
+  call assert_equal(1, RunVim([], [], '-u NONE -e -s -S Xexmodescript'))
+
+  call delete('Xexmodescript')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

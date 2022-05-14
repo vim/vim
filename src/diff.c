@@ -1466,7 +1466,7 @@ set_diff_option(win_T *wp, int value)
     curwin = wp;
     curbuf = curwin->w_buffer;
     ++curbuf_lock;
-    set_option_value((char_u *)"diff", (long)value, NULL, OPT_LOCAL);
+    set_option_value_give_err((char_u *)"diff", (long)value, NULL, OPT_LOCAL);
     --curbuf_lock;
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
@@ -1662,7 +1662,11 @@ diff_read(
     {
 	hunk = ALLOC_ONE(diffhunk_T);
 	if (hunk == NULL)
+	{
+	    if (fd != NULL)
+		fclose(fd);
 	    return;
+	}
     }
 
     for (;;)

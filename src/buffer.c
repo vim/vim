@@ -150,7 +150,8 @@ buffer_ensure_loaded(buf_T *buf)
 	aco_save_T	aco;
 
 	aucmd_prepbuf(&aco, buf);
-	swap_exists_action = SEA_NONE;
+	if (swap_exists_action != SEA_READONLY)
+	    swap_exists_action = SEA_NONE;
 	open_buffer(FALSE, NULL, 0);
 	aucmd_restbuf(&aco);
     }
@@ -708,6 +709,10 @@ aucmd_abort:
      */
     if (wipe_buf)
     {
+	// Do not wipe out the buffer if it is used in a window.
+	if (buf->b_nwindows > 0)
+	    return FALSE;
+
 	if (action == DOBUF_WIPE_REUSE)
 	{
 	    // we can re-use this buffer number, store it
@@ -1049,10 +1054,12 @@ goto_buffer(
     int		count)
 {
     bufref_T	old_curbuf;
+    int		save_sea = swap_exists_action;
 
     set_bufref(&old_curbuf, curbuf);
 
-    swap_exists_action = SEA_DIALOG;
+    if (swap_exists_action == SEA_NONE)
+	swap_exists_action = SEA_DIALOG;
     (void)do_buffer(*eap->cmd == 's' ? DOBUF_SPLIT : DOBUF_GOTO,
 					     start, dir, count, eap->forceit);
     if (swap_exists_action == SEA_QUIT && *eap->cmd == 's')
@@ -1067,7 +1074,7 @@ goto_buffer(
 
 	// Quitting means closing the split window, nothing else.
 	win_close(curwin, TRUE);
-	swap_exists_action = SEA_NONE;
+	swap_exists_action = save_sea;
 	swap_exists_did_quit = TRUE;
 
 #if defined(FEAT_EVAL)
@@ -1767,7 +1774,7 @@ set_curbuf(buf_T *buf, int action)
 	    // another window, might be a timer doing something in another
 	    // window.
 	    if (prevbuf == curbuf
-			 && ((State & INSERT) == 0 || curbuf->b_nwindows <= 1))
+		    && ((State & MODE_INSERT) == 0 || curbuf->b_nwindows <= 1))
 		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
@@ -2061,10 +2068,9 @@ buflist_new(
 	buf = curbuf;
 	// It's like this buffer is deleted.  Watch out for autocommands that
 	// change curbuf!  If that happens, allocate a new buffer anyway.
-	if (curbuf->b_p_bl)
-	    apply_autocmds(EVENT_BUFDELETE, NULL, NULL, FALSE, curbuf);
-	if (buf == curbuf)
-	    apply_autocmds(EVENT_BUFWIPEOUT, NULL, NULL, FALSE, curbuf);
+	buf_freeall(buf, BFA_WIPE | BFA_DEL);
+	if (buf != curbuf)   // autocommands deleted the buffer!
+	    return NULL;
 #ifdef FEAT_EVAL
 	if (aborting())		// autocmds may abort script processing
 	{
@@ -2072,12 +2078,6 @@ buflist_new(
 	    return NULL;
 	}
 #endif
-	if (buf == curbuf)
-	{
-	    // Make sure 'bufhidden' and 'buftype' are empty
-	    clear_string_option(&buf->b_p_bh);
-	    clear_string_option(&buf->b_p_bt);
-	}
     }
     if (buf != curbuf || curbuf == NULL)
     {
@@ -2089,7 +2089,7 @@ buflist_new(
 	}
 #ifdef FEAT_EVAL
 	// init b: variables
-	buf->b_vars = dict_alloc();
+	buf->b_vars = dict_alloc_id(aid_newbuf_bvars);
 	if (buf->b_vars == NULL)
 	{
 	    vim_free(ffname);
@@ -2125,14 +2125,6 @@ buflist_new(
 
     if (buf == curbuf)
     {
-	// free all things allocated for this buffer
-	buf_freeall(buf, 0);
-	if (buf != curbuf)	 // autocommands deleted the buffer!
-	    return NULL;
-#if defined(FEAT_EVAL)
-	if (aborting())		// autocmds may abort script processing
-	    return NULL;
-#endif
 	free_buffer_stuff(buf, FALSE);	// delete local variables et al.
 
 	// Init the options.
@@ -2346,6 +2338,7 @@ free_buf_options(
 #ifdef FEAT_CINDENT
     clear_string_option(&buf->b_p_cink);
     clear_string_option(&buf->b_p_cino);
+    clear_string_option(&buf->b_p_cinsd);
 #endif
 #if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
     clear_string_option(&buf->b_p_cinw);
@@ -2728,10 +2721,12 @@ ExpandBufnames(
     int		round;
     char_u	*p;
     int		attempt;
-    char_u	*patc;
+    char_u	*patc = NULL;
 #ifdef FEAT_VIMINFO
     bufmatch_T	*matches = NULL;
 #endif
+    int		fuzzy;
+    fuzmatch_str_T  *fuzmatch = NULL;
 
     *num_file = 0;		    // return values in case of FAIL
     *file = NULL;
@@ -2741,32 +2736,42 @@ ExpandBufnames(
 	return FAIL;
 #endif
 
-    // Make a copy of "pat" and change "^" to "\(^\|[\/]\)".
-    if (*pat == '^')
+    fuzzy = cmdline_fuzzy_complete(pat);
+
+    // Make a copy of "pat" and change "^" to "\(^\|[\/]\)" (if doing regular
+    // expression matching)
+    if (!fuzzy)
     {
-	patc = alloc(STRLEN(pat) + 11);
-	if (patc == NULL)
-	    return FAIL;
-	STRCPY(patc, "\\(^\\|[\\/]\\)");
-	STRCPY(patc + 11, pat + 1);
+	if (*pat == '^')
+	{
+	    patc = alloc(STRLEN(pat) + 11);
+	    if (patc == NULL)
+		return FAIL;
+	    STRCPY(patc, "\\(^\\|[\\/]\\)");
+	    STRCPY(patc + 11, pat + 1);
+	}
+	else
+	    patc = pat;
     }
-    else
-	patc = pat;
 
     // attempt == 0: try match with    '\<', match at start of word
     // attempt == 1: try match without '\<', match anywhere
-    for (attempt = 0; attempt <= 1; ++attempt)
+    for (attempt = 0; attempt <= (fuzzy ? 0 : 1); ++attempt)
     {
 	regmatch_T	regmatch;
+	int		score = 0;
 
-	if (attempt > 0 && patc == pat)
-	    break;	// there was no anchor, no need to try again
-	regmatch.regprog = vim_regcomp(patc + attempt * 11, RE_MAGIC);
-	if (regmatch.regprog == NULL)
+	if (!fuzzy)
 	{
-	    if (patc != pat)
-		vim_free(patc);
-	    return FAIL;
+	    if (attempt > 0 && patc == pat)
+		break;	// there was no anchor, no need to try again
+	    regmatch.regprog = vim_regcomp(patc + attempt * 11, RE_MAGIC);
+	    if (regmatch.regprog == NULL)
+	    {
+		if (patc != pat)
+		    vim_free(patc);
+		return FAIL;
+	    }
 	}
 
 	// round == 1: Count the matches.
@@ -2786,75 +2791,127 @@ ExpandBufnames(
 			continue;
 #endif
 
-		p = buflist_match(&regmatch, buf, p_wic);
-		if (p != NULL)
+		if (!fuzzy)
+		    p = buflist_match(&regmatch, buf, p_wic);
+		else
 		{
-		    if (round == 1)
-			++count;
-		    else
+		    p = NULL;
+		    // first try matching with the short file name
+		    if ((score = fuzzy_match_str(buf->b_sfname, pat)) != 0)
+			p = buf->b_sfname;
+		    if (p == NULL)
 		    {
-			if (options & WILD_HOME_REPLACE)
-			    p = home_replace_save(buf, p);
-			else
-			    p = vim_strsave(p);
-#ifdef FEAT_VIMINFO
-			if (matches != NULL)
-			{
-			    matches[count].buf = buf;
-			    matches[count].match = p;
-			    count++;
-			}
-			else
-#endif
-			    (*file)[count++] = p;
+			// next try matching with the full path file name
+			if ((score = fuzzy_match_str(buf->b_ffname, pat)) != 0)
+			    p = buf->b_ffname;
 		    }
+		}
+
+		if (p == NULL)
+		    continue;
+
+		if (round == 1)
+		{
+		    ++count;
+		    continue;
+		}
+
+		if (options & WILD_HOME_REPLACE)
+		    p = home_replace_save(buf, p);
+		else
+		    p = vim_strsave(p);
+
+		if (!fuzzy)
+		{
+#ifdef FEAT_VIMINFO
+		    if (matches != NULL)
+		    {
+			matches[count].buf = buf;
+			matches[count].match = p;
+			count++;
+		    }
+		    else
+#endif
+			(*file)[count++] = p;
+		}
+		else
+		{
+		    fuzmatch[count].idx = count;
+		    fuzmatch[count].str = p;
+		    fuzmatch[count].score = score;
+		    count++;
 		}
 	    }
 	    if (count == 0)	// no match found, break here
 		break;
 	    if (round == 1)
 	    {
-		*file = ALLOC_MULT(char_u *, count);
-		if (*file == NULL)
+		if (!fuzzy)
 		{
-		    vim_regfree(regmatch.regprog);
-		    if (patc != pat)
-			vim_free(patc);
-		    return FAIL;
-		}
+		    *file = ALLOC_MULT(char_u *, count);
+		    if (*file == NULL)
+		    {
+			vim_regfree(regmatch.regprog);
+			if (patc != pat)
+			    vim_free(patc);
+			return FAIL;
+		    }
 #ifdef FEAT_VIMINFO
-		if (options & WILD_BUFLASTUSED)
-		    matches = ALLOC_MULT(bufmatch_T, count);
+		    if (options & WILD_BUFLASTUSED)
+			matches = ALLOC_MULT(bufmatch_T, count);
 #endif
+		}
+		else
+		{
+		    fuzmatch = ALLOC_MULT(fuzmatch_str_T, count);
+		    if (fuzmatch == NULL)
+		    {
+			*num_file = 0;
+			*file = NULL;
+			return FAIL;
+		    }
+		}
 	    }
 	}
-	vim_regfree(regmatch.regprog);
-	if (count)		// match(es) found, break here
-	    break;
+
+	if (!fuzzy)
+	{
+	    vim_regfree(regmatch.regprog);
+	    if (count)		// match(es) found, break here
+		break;
+	}
     }
 
-    if (patc != pat)
+    if (!fuzzy && patc != pat)
 	vim_free(patc);
 
 #ifdef FEAT_VIMINFO
-    if (matches != NULL)
+    if (!fuzzy)
     {
-	int i;
-	if (count > 1)
-	    qsort(matches, count, sizeof(bufmatch_T), buf_compare);
-	// if the current buffer is first in the list, place it at the end
-	if (matches[0].buf == curbuf)
+	if (matches != NULL)
 	{
-	    for (i = 1; i < count; i++)
-		(*file)[i-1] = matches[i].match;
-	    (*file)[count-1] = matches[0].match;
+	    int i;
+	    if (count > 1)
+		qsort(matches, count, sizeof(bufmatch_T), buf_compare);
+	    // if the current buffer is first in the list, place it at the end
+	    if (matches[0].buf == curbuf)
+	    {
+		for (i = 1; i < count; i++)
+		    (*file)[i-1] = matches[i].match;
+		(*file)[count-1] = matches[0].match;
+	    }
+	    else
+	    {
+		for (i = 0; i < count; i++)
+		    (*file)[i] = matches[i].match;
+	    }
+	    vim_free(matches);
 	}
-	else
-	{
-	    for (i = 0; i < count; i++)
-		(*file)[i] = matches[i].match;
-	}
-	vim_free(matches);
+    }
+    else
+    {
+	if (fuzzymatches_to_strmatches(fuzmatch, file, count, FALSE) == FAIL)
+	    return FAIL;
     }
 #endif
 
@@ -2875,7 +2932,7 @@ buflist_match(
 
     // First try the short file name, then the long file name.
     match = fname_match(rmp, buf->b_sfname, ignore_case);
-    if (match == NULL)
+    if (match == NULL && rmp->regprog != NULL)
 	match = fname_match(rmp, buf->b_ffname, ignore_case);
 
     return match;
@@ -2900,7 +2957,7 @@ fname_match(
 	rmp->rm_ic = p_fic || ignore_case;
 	if (vim_regexec(rmp, name, (colnr_T)0))
 	    match = name;
-	else
+	else if (rmp->regprog != NULL)
 	{
 	    // Replace $(HOME) with '~' and try matching again.
 	    p = home_replace_save(NULL, name);
@@ -3004,6 +3061,8 @@ buflist_setfpos(
 	wip->wi_fpos.lnum = lnum;
 	wip->wi_fpos.col = col;
     }
+    if (win != NULL)
+	wip->wi_changelistidx = win->w_changelistidx;
     if (copy_options && win != NULL)
     {
 	// Save the window-specific option values.
@@ -3138,6 +3197,8 @@ get_winopts(buf_T *buf)
     }
     else
 	copy_winopt(&curwin->w_allbuf_opt, &curwin->w_onebuf_opt);
+    if (wip != NULL)
+	curwin->w_changelistidx = wip->wi_changelistidx;
 
 #ifdef FEAT_FOLDING
     // Set 'foldlevel' to 'foldlevelstart' if it's not negative.
@@ -4170,8 +4231,11 @@ build_stl_str_hl(
     {
 	stl_items = ALLOC_MULT(stl_item_T, stl_items_len);
 	stl_groupitem = ALLOC_MULT(int, stl_items_len);
-	stl_hltab  = ALLOC_MULT(stl_hlrec_T, stl_items_len);
-	stl_tabtab = ALLOC_MULT(stl_hlrec_T, stl_items_len);
+
+	// Allocate one more, because the last element is used to indicate the
+	// end of the list.
+	stl_hltab  = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
+	stl_tabtab = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
     }
 
 #ifdef FEAT_EVAL
@@ -4251,11 +4315,13 @@ build_stl_str_hl(
 	    if (new_groupitem == NULL)
 		break;
 	    stl_groupitem = new_groupitem;
-	    new_hlrec = vim_realloc(stl_hltab, sizeof(stl_hlrec_T) * new_len);
+	    new_hlrec = vim_realloc(stl_hltab,
+					  sizeof(stl_hlrec_T) * (new_len + 1));
 	    if (new_hlrec == NULL)
 		break;
 	    stl_hltab = new_hlrec;
-	    new_hlrec = vim_realloc(stl_tabtab, sizeof(stl_hlrec_T) * new_len);
+	    new_hlrec = vim_realloc(stl_tabtab,
+					  sizeof(stl_hlrec_T) * (new_len + 1));
 	    if (new_hlrec == NULL)
 		break;
 	    stl_tabtab = new_hlrec;
@@ -4380,7 +4446,8 @@ build_stl_str_hl(
 		// correct the start of the items for the truncation
 		for (l = stl_groupitem[groupdepth] + 1; l < curitem; l++)
 		{
-		    stl_items[l].stl_start -= n;
+		    // Minus one for the leading '<' added above.
+		    stl_items[l].stl_start -= n - 1;
 		    if (stl_items[l].stl_start < t)
 			stl_items[l].stl_start = t;
 		}
@@ -4634,8 +4701,8 @@ build_stl_str_hl(
 	    break;
 
 	case STL_COLUMN:
-	    num = !(State & INSERT) && empty_line
-		  ? 0 : (int)wp->w_cursor.col + 1;
+	    num = (State & MODE_INSERT) == 0 && empty_line
+					       ? 0 : (int)wp->w_cursor.col + 1;
 	    break;
 
 	case STL_VIRTCOL:
@@ -4643,8 +4710,8 @@ build_stl_str_hl(
 	    virtcol = wp->w_virtcol + 1;
 	    // Don't display %V if it's the same as %c.
 	    if (opt == STL_VIRTCOL_ALT
-		    && (virtcol == (colnr_T)(!(State & INSERT) && empty_line
-			    ? 0 : (int)wp->w_cursor.col + 1)))
+		    && (virtcol == (colnr_T)((State & MODE_INSERT) == 0
+			       && empty_line ? 0 : (int)wp->w_cursor.col + 1)))
 		break;
 	    num = (long)virtcol;
 	    break;
@@ -4689,9 +4756,9 @@ build_stl_str_hl(
 	case STL_OFFSET:
 #ifdef FEAT_BYTEOFF
 	    l = ml_find_line_or_offset(wp->w_buffer, wp->w_cursor.lnum, NULL);
-	    num = (wp->w_buffer->b_ml.ml_flags & ML_EMPTY) || l < 0 ?
-		  0L : l + 1 + (!(State & INSERT) && empty_line ?
-				0 : (int)wp->w_cursor.col);
+	    num = (wp->w_buffer->b_ml.ml_flags & ML_EMPTY) || l < 0
+		       ? 0L : l + 1 + ((State & MODE_INSERT) == 0 && empty_line
+				? 0 : (int)wp->w_cursor.col);
 #endif
 	    break;
 
@@ -5261,17 +5328,21 @@ ex_buffer_all(exarg_T *eap)
 	{
 	    wpnext = wp->w_next;
 	    if ((wp->w_buffer->b_nwindows > 1
-		    || ((cmdmod.cmod_split & WSP_VERT)
-			? wp->w_height + wp->w_status_height < Rows - p_ch
-							    - tabline_height()
-			: wp->w_width != Columns)
-		    || (had_tab > 0 && wp != firstwin)) && !ONE_WINDOW
-			     && !(wp->w_closing || wp->w_buffer->b_locked > 0))
+			|| ((cmdmod.cmod_split & WSP_VERT)
+			    ? wp->w_height + wp->w_status_height < Rows - p_ch
+							     - tabline_height()
+			    : wp->w_width != Columns)
+			|| (had_tab > 0 && wp != firstwin))
+		    && !ONE_WINDOW
+		    && !(wp->w_closing || wp->w_buffer->b_locked > 0)
+		    && !win_unlisted(wp))
 	    {
-		win_close(wp, FALSE);
-		wpnext = firstwin;	// just in case an autocommand does
-					// something strange with windows
-		tpnext = first_tabpage;	// start all over...
+		if (win_close(wp, FALSE) == FAIL)
+		    break;
+		// Just in case an autocommand does something strange with
+		// windows: start all over...
+		wpnext = firstwin;
+		tpnext = first_tabpage;
 		open_wins = 0;
 	    }
 	    else

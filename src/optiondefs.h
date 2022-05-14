@@ -44,6 +44,7 @@
 # define PV_CIN		OPT_BUF(BV_CIN)
 # define PV_CINK	OPT_BUF(BV_CINK)
 # define PV_CINO	OPT_BUF(BV_CINO)
+# define PV_CINSD	OPT_BUF(BV_CINSD)
 #endif
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 # define PV_CINW	OPT_BUF(BV_CINW)
@@ -298,7 +299,7 @@ struct vimoption
 # define ISP_LATIN1 (char_u *)"@,161-255"
 #endif
 
-# define HIGHLIGHT_INIT "8:SpecialKey,~:EndOfBuffer,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,a:LineNrAbove,b:LineNrBelow,N:CursorLineNr,G:CursorLineSign,O:CursorLineFold,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,-:Conceal,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine,o:ColorColumn,q:QuickFixLine,z:StatusLineTerm,Z:StatusLineTermNC"
+# define HIGHLIGHT_INIT "8:SpecialKey,~:EndOfBuffer,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,y:CurSearch,m:MoreMsg,M:ModeMsg,n:LineNr,a:LineNrAbove,b:LineNrBelow,N:CursorLineNr,G:CursorLineSign,O:CursorLineFold,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,-:Conceal,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine,o:ColorColumn,q:QuickFixLine,z:StatusLineTerm,Z:StatusLineTermNC"
 
 // Default python version for pyx* commands
 #if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
@@ -603,6 +604,15 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"cinscopedecls", "cinsd", P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
+#ifdef FEAT_CINDENT
+			    (char_u *)&p_cinsd, PV_CINSD,
+			    {(char_u *)"public,protected,private", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"cinwords",    "cinw", P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 			    (char_u *)&p_cinw, PV_CINW,
@@ -1148,21 +1158,17 @@ static struct vimoption options[] =
 #ifdef FEAT_QUICKFIX
 			    (char_u *)&p_gp, PV_GP,
 			    {
-# ifdef MSWIN
+# if defined(MSWIN)
 			    // may be changed to "grep -n" in os_win32.c
 			    (char_u *)"findstr /n",
-# else
-#  ifdef UNIX
+# elif defined(UNIX)
 			    // Add an extra file name so that grep will always
 			    // insert a file name in the match line.
 			    (char_u *)"grep -n $* /dev/null",
-#  else
-#   ifdef VMS
+# elif defined(VMS)
 			    (char_u *)"SEARCH/NUMBERS ",
-#   else
+# else
 			    (char_u *)"grep -n ",
-#   endif
-#  endif
 # endif
 			    (char_u *)0L}
 #else
@@ -1431,14 +1437,12 @@ static struct vimoption options[] =
 				// ( and ) are used in text separating fnames
 			    (char_u *)"@,48-57,/,\\,.,-,_,+,,,#,$,%,{,},[,],:,@-@,!,~,=",
 #else
-# ifdef AMIGA
+# if defined(AMIGA)
 			    (char_u *)"@,48-57,/,.,-,_,+,,,$,:",
-# else
-#  ifdef VMS
+# elif defined(VMS)
 			    (char_u *)"@,48-57,/,.,-,_,+,,,#,$,%,<,>,[,],:,;,~",
-#  else // UNIX et al.
+# else // UNIX et al.
 			    (char_u *)"@,48-57,/,.,-,_,+,,,#,$,%,~,=",
-#  endif
 # endif
 #endif
 				(char_u *)0L} SCTX_INIT},
@@ -1497,18 +1501,14 @@ static struct vimoption options[] =
     {"keywordprg",  "kp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_kp, PV_KP,
 			    {
-#ifdef MSWIN
+#if defined(MSWIN)
 			    (char_u *)":help",
-#else
-# ifdef VMS
+#elif defined(VMS)
 			    (char_u *)"help",
-# else
-#  ifdef USEMAN_S
+#elif defined(USEMAN_S)
 			    (char_u *)"man -s",
-#  else
+#else
 			    (char_u *)"man",
-#  endif
-# endif
 #endif
 				(char_u *)0L} SCTX_INIT},
     {"langmap",     "lmap", P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_SECURE,
@@ -1746,6 +1746,13 @@ static struct vimoption options[] =
 # endif
 #endif
 				(char_u *)0L} SCTX_INIT},
+    {"mousemoveevent",   "mousemev",   P_BOOL|P_VI_DEF,
+#ifdef FEAT_GUI
+			    (char_u *)&p_mousemev, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"mouseshape",  "mouses",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_MOUSESHAPE
 			    (char_u *)&p_mouseshape, PV_NONE,
@@ -2760,13 +2767,11 @@ static struct vimoption options[] =
 			    (char_u *)&p_viminfo, PV_NONE,
 #if defined(MSWIN)
 			    {(char_u *)"", (char_u *)"'100,<50,s10,h,rA:,rB:"}
-#else
-# ifdef AMIGA
+#elif defined(AMIGA)
 			    {(char_u *)"",
 				 (char_u *)"'100,<50,s10,h,rdf0:,rdf1:,rdf2:"}
-# else
+#else
 			    {(char_u *)"", (char_u *)"'100,<50,s10,h"}
-# endif
 #endif
 #else
 			    (char_u *)NULL, PV_NONE,

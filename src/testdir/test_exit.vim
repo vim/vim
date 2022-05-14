@@ -1,6 +1,7 @@
 " Tests for exiting Vim.
 
 source shared.vim
+source check.vim
 
 func Test_exiting()
   let after =<< trim [CODE]
@@ -108,5 +109,22 @@ func Test_exit_code()
   endif
   call delete('Xtestout')
 endfunc
+
+func Test_exit_error_reading_input()
+  CheckNotGui
+  CheckNotMSWindows
+  " The early exit causes memory not to be freed somehow
+  CheckNotAsan
+
+  call writefile([":au VimLeave * call writefile(['l = ' .. v:exiting], 'Xtestout')", ":tabnew", "q:"], 'Xscript', 'b')
+
+  if RunVim([], [], '<Xscript')
+    call assert_equal(1, v:shell_error)
+    call assert_equal(['l = 1'], readfile('Xtestout'))
+  endif
+  call delete('Xscript')
+  call delete('Xtestout')
+endfun
+
 
 " vim: shiftwidth=2 sts=2 expandtab

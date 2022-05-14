@@ -1,12 +1,15 @@
 " Vim script for Evim key bindings
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Jan 27
+" Last Change:	2022 May 10
 
 " Don't use Vi-compatible mode.
 set nocompatible
 
 " Use the mswin.vim script for most mappings
 source <sfile>:p:h/mswin.vim
+
+" Allow for using CTRL-Q in Insert mode to quit Vim.
+inoremap <C-Q> <C-O>:confirm qall<CR>
 
 " Vim is in Insert mode by default
 set insertmode

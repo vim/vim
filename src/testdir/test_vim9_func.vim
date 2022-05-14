@@ -106,6 +106,63 @@ def Test_wrong_function_name()
       enddef
   END
   v9.CheckScriptFailure(lines, 'E1267:')
+
+  lines =<< trim END
+      vim9script
+      var Object = {}
+      function Object.Method()
+      endfunction
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+
+  lines =<< trim END
+      vim9script
+      var Object = {}
+      def Object.Method()
+      enddef
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+
+  lines =<< trim END
+      vim9script
+      g:Object = {}
+      function g:Object.Method()
+      endfunction
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+
+  lines =<< trim END
+      let s:Object = {}
+      def Define()
+        function s:Object.Method()
+        endfunction
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+  delfunc g:Define
+
+  lines =<< trim END
+      let s:Object = {}
+      def Define()
+        def Object.Method()
+        enddef
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+  delfunc g:Define
+
+  lines =<< trim END
+      let g:Object = {}
+      def Define()
+        function g:Object.Method()
+        endfunction
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1182:')
+  delfunc g:Define
 enddef
 
 def Test_autoload_name_mismatch()
@@ -478,6 +535,30 @@ def Test_return_list_any()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_return_any_two_types()
+  var lines =<< trim END
+      vim9script
+
+      def G(Fn: func(string): any)
+        g:result = Fn("hello")
+      enddef
+
+      def F(a: number, b: string): any
+        echo b
+        if a > 0
+          return 1
+        else
+          return []
+        endif
+      enddef
+
+      G(function(F, [1]))
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal(1, g:result)
+  unlet g:result
+enddef
+
 func s:Increment()
   let g:counter += 1
 endfunc
@@ -491,6 +572,44 @@ def Test_call_ufunc_count()
   g:counter->assert_equal(4)
   eval g:counter->assert_equal(4)
   unlet g:counter
+enddef
+
+def Test_call_ufunc_failure()
+  var lines =<< trim END
+      vim9script
+      def Tryit()
+        g:Global(1, 2, 3)
+      enddef
+
+      func g:Global(a, b, c)
+        echo a:a a:b a:c
+      endfunc
+
+      defcompile
+
+      func! g:Global(a, b)
+        echo a:a a:b 
+      endfunc
+      Tryit()
+  END
+  v9.CheckScriptFailure(lines, 'E118: Too many arguments for function: Global')
+  delfunc g:Global
+
+  lines =<< trim END
+      vim9script
+
+      g:Ref = function('len')
+      def Tryit()
+        g:Ref('x')
+      enddef
+
+      defcompile
+
+      g:Ref = function('add')
+      Tryit()
+  END
+  v9.CheckScriptFailure(lines, 'E119: Not enough arguments for function: add')
+  unlet g:Ref
 enddef
 
 def s:MyVarargs(arg: string, ...rest: list<string>): string
@@ -754,6 +873,25 @@ def Test_nested_function()
       defcompile
       assert_equal(1, Test())
       assert_equal(2, Test())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # nested function with recursive call
+  lines =<< trim END
+      vim9script
+
+      def MyFunc(): number
+        def Fib(n: number): number
+          if n < 2
+            return 1
+          endif
+          return Fib(n - 2) + Fib(n - 1)
+        enddef
+
+        return Fib(5)
+      enddef
+
+      assert_equal(8, MyFunc())
   END
   v9.CheckScriptSuccess(lines)
 
@@ -1360,12 +1498,12 @@ def Test_pass_legacy_lambda_to_def_func()
 
   lines =<< trim END
       vim9script
-      def g:TestFunc(f: func)
+      def g:TestFunc(F: func)
       enddef
       legacy call g:TestFunc({-> 0})
       delfunc g:TestFunc
 
-      def g:TestFunc(f: func(number))
+      def g:TestFunc(F: func(number))
       enddef
       legacy call g:TestFunc({nr -> 0})
       delfunc g:TestFunc
@@ -1475,6 +1613,26 @@ def Test_lambda_type_allocated()
     Lambda = (a, b) => strlen(a)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_define_lambda_in_execute()
+  var lines =<< trim [CODE]
+      vim9script
+
+      def BuildFuncMultiLine(): func
+          var x =<< trim END
+              g:SomeRandomFunc = (d: dict<any>) => {
+                  return d.k1 + d.k2
+              }
+          END
+          execute(x)
+          return g:SomeRandomFunc
+      enddef
+      var ResultPlus = BuildFuncMultiLine()
+      assert_equal(7, ResultPlus({k1: 3, k2: 4}))
+  [CODE]
+  v9.CheckScriptSuccess(lines)
+  unlet g:SomeRandomFunc
 enddef
 
 " Default arg and varargs
@@ -2880,6 +3038,24 @@ def Test_lambda_arg_shadows_func()
   assert_equal([42], g:Shadowed())
 enddef
 
+def Test_compiling_referenced_func_no_shadow()
+  var lines =<< trim END
+      vim9script
+
+      def InitializeReply(lspserver: dict<any>)
+      enddef
+
+      def ProcessReply(lspserver: dict<any>)
+        var lsp_reply_handlers: dict<func> =
+          { 'initialize': InitializeReply }
+        lsp_reply_handlers['initialize'](lspserver)
+      enddef
+
+      call ProcessReply({})
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def s:Line_continuation_in_def(dir: string = ''): string
   var path: string = empty(dir)
           \ ? 'empty'
@@ -3231,7 +3407,7 @@ def Test_partial_call()
       var Expr: func(dict<any>): dict<any>
       const Call = Foo(Expr)
   END
-  v9.CheckScriptFailure(lines, 'E1235:')
+  v9.CheckScriptFailure(lines, 'E1031:')
 enddef
 
 def Test_partial_double_nested()
@@ -3240,6 +3416,15 @@ def Test_partial_double_nested()
   var Ref = function(Get, [])
   var RefRef = function(Ref, [])
   assert_equal(123, RefRef())
+enddef
+
+def Test_partial_null_function()
+  var lines =<< trim END
+      var d: dict<func> = {f: null_function}
+      var Ref = d.f
+      assert_equal('func(...): unknown', typename(Ref))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 " Using "idx" from a legacy global function does not work.
@@ -3544,7 +3729,7 @@ def Run_Test_opfunc_error()
 
   var buf = g:RunVimInTerminal('-S XTest_opfunc_error', {rows: 6, wait_for_ruler: 0})
   g:WaitForAssert(() => assert_match('Press ENTER', term_getline(buf, 6)))
-  g:WaitForAssert(() => assert_match('E684: list index out of range: 0', term_getline(buf, 5)))
+  g:WaitForAssert(() => assert_match('E684: List index out of range: 0', term_getline(buf, 5)))
 
   # clean up
   g:StopVimInTerminal(buf)
@@ -3613,6 +3798,24 @@ def Test_nested_closure_in_dict()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_script_local_other_script()
+  var lines =<< trim END
+      function LegacyJob()
+        let FuncRef = function('s:close_cb')
+      endfunction
+      function s:close_cb(...)
+      endfunction
+  END
+  lines->writefile('Xlegacy.vim')
+  source Xlegacy.vim
+  g:LegacyJob()
+  g:LegacyJob()
+  g:LegacyJob()
+
+  delfunc g:LegacyJob
+  delete('Xlegacy.vim')
+enddef
+
 def Test_check_func_arg_types()
   var lines =<< trim END
       vim9script
@@ -3624,8 +3827,8 @@ def Test_check_func_arg_types()
         return x + 1
       enddef
 
-      def G(g: func): dict<func>
-        return {f: g}
+      def G(Fg: func): dict<func>
+        return {f: Fg}
       enddef
 
       def H(d: dict<func>): string
@@ -3635,6 +3838,116 @@ def Test_check_func_arg_types()
 
   v9.CheckScriptSuccess(lines + ['echo H(G(F1))'])
   v9.CheckScriptFailure(lines + ['echo H(G(F2))'], 'E1013:')
+
+  v9.CheckScriptFailure(lines + ['def SomeFunc(ff: func)', 'enddef'], 'E704:')
+enddef
+
+def Test_call_func_with_null()
+  var lines =<< trim END
+      def Fstring(v: string)
+        assert_equal(null_string, v)
+      enddef
+      Fstring(null_string)
+      def Fblob(v: blob)
+        assert_equal(null_blob, v)
+      enddef
+      Fblob(null_blob)
+      def Flist(v: list<number>)
+        assert_equal(null_list, v)
+      enddef
+      Flist(null_list)
+      def Fdict(v: dict<number>)
+        assert_equal(null_dict, v)
+      enddef
+      Fdict(null_dict)
+      def Ffunc(Fv: func(number): number)
+        assert_equal(null_function, Fv)
+      enddef
+      Ffunc(null_function)
+      if has('channel')
+        def Fchannel(v: channel)
+          assert_equal(null_channel, v)
+        enddef
+        Fchannel(null_channel)
+        def Fjob(v: job)
+          assert_equal(null_job, v)
+        enddef
+        Fjob(null_job)
+      endif
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_null_default_argument()
+  var lines =<< trim END
+      def Fstring(v: string = null_string)
+        assert_equal(null_string, v)
+      enddef
+      Fstring()
+      def Fblob(v: blob = null_blob)
+        assert_equal(null_blob, v)
+      enddef
+      Fblob()
+      def Flist(v: list<number> = null_list)
+        assert_equal(null_list, v)
+      enddef
+      Flist()
+      def Fdict(v: dict<number> = null_dict)
+        assert_equal(null_dict, v)
+      enddef
+      Fdict()
+      def Ffunc(Fv: func(number): number = null_function)
+        assert_equal(null_function, Fv)
+      enddef
+      Ffunc()
+      if has('channel')
+        def Fchannel(v: channel = null_channel)
+          assert_equal(null_channel, v)
+        enddef
+        Fchannel()
+        def Fjob(v: job = null_job)
+          assert_equal(null_job, v)
+        enddef
+        Fjob()
+      endif
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_null_return()
+  var lines =<< trim END
+      def Fstring(): string
+        return null_string
+      enddef
+      assert_equal(null_string, Fstring())
+      def Fblob(): blob
+        return null_blob
+      enddef
+      assert_equal(null_blob, Fblob())
+      def Flist(): list<number>
+        return null_list
+      enddef
+      assert_equal(null_list, Flist())
+      def Fdict(): dict<number>
+        return null_dict
+      enddef
+      assert_equal(null_dict, Fdict())
+      def Ffunc(): func(number): number
+        return null_function
+      enddef
+      assert_equal(null_function, Ffunc())
+      if has('channel')
+        def Fchannel(): channel
+          return null_channel
+        enddef
+        assert_equal(null_channel, Fchannel())
+        def Fjob(): job
+          return null_job
+        enddef
+        assert_equal(null_job, Fjob())
+      endif
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_list_any_type_checked()
@@ -3732,12 +4045,12 @@ def Test_too_many_arguments()
   var lines =<< trim END
     echo [0, 1, 2]->map(() => 123)
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1106: 2 arguments too many', 1)
+  v9.CheckDefAndScriptFailure(lines, ['E176:', 'E1106: 2 arguments too many'], 1)
 
   lines =<< trim END
     echo [0, 1, 2]->map((_) => 123)
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1106: One argument too many', 1)
+  v9.CheckDefAndScriptFailure(lines, ['E176', 'E1106: One argument too many'], 1)
 enddef
 
 def Test_closing_brace_at_start_of_line()
@@ -3778,6 +4091,22 @@ def Test_go_beyond_end_of_cmd()
   v9.CheckScriptFailure(lines, 'E476:')
 enddef
 
+" Test for memory allocation failure when defining a new lambda
+func Test_lambda_allocation_failure()
+  new
+  let lines =<< trim END
+    vim9script
+    g:Xlambda = (x): number => {
+        return x + 1
+      }
+  END
+  call setline(1, lines)
+  call test_alloc_fail(GetAllocId('get_func'), 0, 0)
+  call assert_fails('source', 'E342:')
+  call assert_false(exists('g:Xlambda'))
+  bw!
+endfunc
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()
@@ -3810,6 +4139,37 @@ if has('lua')
         x['key'] = 'val'
     EOF
     assert_equal('val', g:d.key)
+  enddef
+
+  def Test_lua_heredoc_fails()
+    var lines = [
+      'vim9script',
+      'def ExeLua()',
+        'lua << trim EOLUA',
+            "x = vim.eval('g:nodict')",
+        'EOLUA',
+      'enddef',
+      'ExeLua()',
+      ]
+    v9.CheckScriptFailure(lines, 'E121: Undefined variable: g:nodict')
+  enddef
+endif
+
+if has('perl')
+  def Test_perl_heredoc_nested()
+    var lines =<< trim END
+        vim9script
+        def F(): string
+            def G(): string
+                perl << EOF
+        EOF
+                return 'done'
+            enddef
+            return G()
+        enddef
+        assert_equal('done', F())
+    END
+    v9.CheckScriptSuccess(lines)
   enddef
 endif
 

@@ -555,6 +555,15 @@ func Test_pum_stopped_by_timer()
   call delete('Xpumscript')
 endfunc
 
+func Test_complete_stopinsert_startinsert()
+  nnoremap <F2> <Cmd>startinsert<CR>
+  inoremap <F2> <Cmd>stopinsert<CR>
+  " This just checks if this causes an error
+  call feedkeys("i\<C-X>\<C-N>\<F2>\<F2>", 'x')
+  nunmap <F2>
+  iunmap <F2>
+endfunc
+
 func Test_pum_with_folds_two_tabs()
   CheckScreendump
 
@@ -604,6 +613,24 @@ func Test_pum_with_preview_win()
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
   call delete('Xpreviewscript')
+endfunc
+
+func Test_scrollbar_on_wide_char()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['a', '            啊啊啊',
+                        \ '             哦哦哦',
+                        \ '              呃呃呃'])
+    call setline(5, range(10)->map({i, v -> 'aa' .. v .. 'bb'}))
+  END
+  call writefile(lines, 'Xwidescript')
+  let buf = RunVimInTerminal('-S Xwidescript', #{rows: 10})
+  call term_sendkeys(buf, "A\<C-N>")
+  call VerifyScreenDump(buf, 'Test_scrollbar_on_wide_char', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xwidescript')
 endfunc
 
 " Test for inserting the tag search pattern in insert mode
@@ -1276,7 +1303,18 @@ func Test_z1_complete_no_history()
   exe "normal owh\<C-X>\<C-K>"
   exe "normal owh\<C-N>"
   call assert_equal(currmess, execute('messages'))
-  close!
+  bwipe!
+endfunc
+
+" A mapping is not used for the key after CTRL-X.
+func Test_no_mapping_for_ctrl_x_key()
+  new
+  inoremap <C-K> <Cmd>let was_mapped = 'yes'<CR>
+  setlocal dictionary=README.txt
+  call feedkeys("aexam\<C-X>\<C-K> ", 'xt')
+  call assert_equal('example ', getline(1))
+  call assert_false(exists('was_mapped'))
+  bwipe!
 endfunc
 
 " Test for different ways of setting the 'completefunc' option
@@ -1454,6 +1492,23 @@ func Test_completefunc_callback()
   call assert_equal([[1, ''], [0, 'script2']], g:CompleteFunc3Args)
   bw!
   delfunc s:CompleteFunc3
+
+  " In Vim9 script s: can be omitted
+  let lines =<< trim END
+      vim9script
+      var CompleteFunc4Args = []
+      def CompleteFunc4(findstart: bool, base: string): any
+        add(CompleteFunc4Args, [findstart, base])
+        return findstart ? 0 : []
+      enddef
+      set completefunc=CompleteFunc4
+      new
+      setline(1, 'script1')
+      feedkeys("A\<C-X>\<C-U>\<Esc>", 'x')
+      assert_equal([[1, ''], [0, 'script1']], CompleteFunc4Args)
+      bw!
+  END
+  call v9.CheckScriptSuccess(lines)
 
   " invalid return value
   let &completefunc = {a -> 'abc'}
@@ -2084,6 +2139,25 @@ func Test_thesaurusfunc_callback()
   delfunc TsrFunc2
   unlet g:TsrFunc1Args g:TsrFunc2Args
   %bw!
+endfunc
+
+func FooBarComplete(findstart, base)
+  if a:findstart
+    return col('.') - 1
+  else
+    return ["Foo", "Bar", "}"]
+  endif
+endfunc
+
+func Test_complete_smartindent()
+  new
+  setlocal smartindent completefunc=FooBarComplete
+
+  exe "norm! o{\<cr>\<c-x>\<c-u>\<c-p>}\<cr>\<esc>"
+  let result = getline(1,'$')
+  call assert_equal(['', '{','}',''], result)
+  bw!
+  delfunction! FooBarComplete
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

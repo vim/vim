@@ -410,6 +410,17 @@ func Test_buffer_scheme()
   set shellslash&
 endfunc
 
+" this was using a NULL pointer after failing to use the pattern
+func Test_buf_pattern_invalid()
+  vsplit 0000000
+  silent! buf [0--]\&\zs*\zs*e
+  bwipe!
+
+  vsplit 00000000000000000000000000
+  silent! buf [0--]\&\zs*\zs*e
+  bwipe!
+endfunc
+
 " Test for the 'maxmem' and 'maxmemtot' options
 func Test_buffer_maxmem()
   " use 1KB per buffer and 2KB for all the buffers
@@ -428,6 +439,76 @@ func Test_buffer_maxmem()
   close
   call assert_equal('', v:errmsg)
   set maxmem& maxmemtot&
+endfunc
+
+" Test for buffer allocation failure
+func Test_buflist_alloc_failure()
+  %bw!
+
+  edit Xfile1
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('edit Xfile2', 'E342:')
+
+  " test for bufadd()
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('call bufadd("Xbuffer")', 'E342:')
+
+  " test for setting the arglist
+  edit Xfile2
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('next Xfile3', 'E342:')
+
+  " test for setting the alternate buffer name when writing a file
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('write Xother', 'E342:')
+  call delete('Xother')
+
+  " test for creating a buffer using bufnr()
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails("call bufnr('Xnewbuf', v:true)", 'E342:')
+
+  " test for renaming buffer using :file
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('file Xnewfile', 'E342:')
+
+  " test for creating a buffer for a popup window
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('call popup_create("mypop", {})', 'E342:')
+
+  if has('terminal')
+    " test for creating a buffer for a terminal window
+    call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+    call assert_fails('call term_start(&shell)', 'E342:')
+    %bw!
+  endif
+
+  " test for loading a new buffer after wiping out all the buffers
+  edit Xfile4
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('%bw!', 'E342:')
+
+  " test for :checktime loading the buffer
+  call writefile(['one'], 'Xfile5')
+  if has('unix')
+    edit Xfile5
+    " sleep for some time to make sure the timestamp is different
+    sleep 200m
+    call writefile(['two'], 'Xfile5')
+    set autoread
+    call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+    call assert_fails('checktime', 'E342:')
+    set autoread&
+    bw!
+  endif
+
+  " test for :vimgrep loading a dummy buffer
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('vimgrep two Xfile5', 'E342:')
+  call delete('Xfile5')
+
+  " test for quickfix command loading a buffer
+  call test_alloc_fail(GetAllocId('newbuf_bvars'), 0, 0)
+  call assert_fails('cexpr "Xfile6:10:Line10"', 'E342:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

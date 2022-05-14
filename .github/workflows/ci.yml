@@ -21,6 +21,7 @@ jobs:
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
+      CFLAGS: -Wno-error=deprecated-declarations
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
@@ -88,17 +89,25 @@ jobs:
           fi
           sudo apt update && sudo apt install -y "${PKGS[@]}"
 
-      - name: Install clang-13
+      - name: Install gcc-11
+        if:  matrix.compiler == 'gcc'
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt install -y gcc-11
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-11
+
+      - name: Install clang-14
         if: matrix.compiler == 'clang'
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-13 main"
-          sudo apt-get install -y clang-13 llvm-13
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-13 100
-          sudo update-alternatives --set clang /usr/bin/clang-13
-          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-13 100
-          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-13 100
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-14 main"
+          sudo apt install -y clang-14 llvm-14
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
+          sudo update-alternatives --set clang /usr/bin/clang-14
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-14 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-14 100
 
       - name: Set up environment
         run: |
@@ -245,7 +254,7 @@ jobs:
 
       - name: Codecov
         if: matrix.coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3.1.0
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
 
@@ -355,6 +364,8 @@ jobs:
       LUA32_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win32_dllw6_lib.zip
       LUA64_URL: https://downloads.sourceforge.net/luabinaries/lua-%LUA_RELEASE%_Win64_dllw6_lib.zip
       LUA_DIR: D:\Lua
+      # do not want \L to end up in pathdef.c and compiler complaining about unknown escape sequences \l
+      LUA_DIR_SLASH: D:/Lua
       # Python 2
       PYTHON_VER: 27
       PYTHON_VER_DOT: '2.7'
@@ -501,7 +512,7 @@ jobs:
             mingw32-make -f Make_ming.mak -j2 \
               FEATURES=${{ matrix.features }} \
               GUI=yes IME=yes ICONV=yes VIMDLL=yes \
-              DYNAMIC_LUA=yes LUA=${LUA_DIR} \
+              DYNAMIC_LUA=yes LUA=${LUA_DIR_SLASH} \
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
               STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
@@ -514,7 +525,11 @@ jobs:
 
       - name: Check version
         shell: cmd
-        run: src\vim --version || exit 1
+        run: |
+          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
+          src\vim --version || exit 1
+          src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
 
       #- name: Prepare Artifact
       #  shell: cmd
@@ -587,14 +602,14 @@ jobs:
 
       - name: Codecov (gVim)
         if: matrix.coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3.1.0
         with:
           directory: src
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
 
       - name: Codecov (Vim)
         if: matrix.coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3.1.0
         with:
           directory: src2
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}

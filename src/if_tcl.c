@@ -1359,7 +1359,7 @@ tclsetoption(
 	    sval = (char_u *)Tcl_GetStringFromObj(objv[objn], NULL);
 	if (err == TCL_OK)
 	{
-	    set_option_value(option, lval, sval, OPT_LOCAL);
+	    set_option_value_give_err(option, lval, sval, OPT_LOCAL);
 	    err = vimerror(interp);
 	}
     }

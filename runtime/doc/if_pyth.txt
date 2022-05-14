@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 8.2.  Last change: 2022 Feb 07
+*if_pyth.txt*   For Vim version 8.2.  Last change: 2022 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -24,6 +24,10 @@ The Python 2.x interface is available only when Vim was compiled with the
 The Python 3 interface is available only when Vim was compiled with the
 |+python3| feature.
 Both can be available at the same time, but read |python-2-and-3|.
+
+NOTE: Python 2 is old and no longer being developed.  Using Python 3 is highly
+recommended.  Python 2 support will be dropped when it does not work properly
+anymore.
 
 ==============================================================================
 1. Commands						*python-commands*
@@ -923,7 +927,7 @@ The `:pyxdo` command works similar to `:pydo`.
 							*has-pythonx*
 You can test if pyx* commands are available with: >
 	if has('pythonx')
-	  echo 'pyx* commands are available. (Python ' . &pyx . ')'
+	  echo 'pyx* commands are available. (Python ' .. &pyx .. ')'
 	endif
 
 When compiled with only one of |+python| or |+python3|, the has() returns 1.

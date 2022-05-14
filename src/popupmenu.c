@@ -100,6 +100,9 @@ pum_display(
 #if defined(FEAT_QUICKFIX)
     win_T	*pvwin;
 #endif
+#ifdef FEAT_RIGHTLEFT
+    int		right_left = State == MODE_CMDLINE ? FALSE : curwin->w_p_rl;
+#endif
 
     do
     {
@@ -116,7 +119,7 @@ pum_display(
 	// Remember the essential parts of the window position and size, so we
 	// can decide when to reposition the popup menu.
 	pum_window = curwin;
-	if (State == CMDLINE)
+	if (State == MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    pum_win_row = cmdline_row;
 	else
@@ -156,11 +159,17 @@ pum_display(
 	{
 	    // pum above "pum_win_row"
 
-	    // Leave two lines of context if possible
-	    if (curwin->w_wrow - curwin->w_cline_row >= 2)
-		context_lines = 2;
+	    if (State == MODE_CMDLINE)
+		// for cmdline pum, no need for context lines
+		context_lines = 0;
 	    else
-		context_lines = curwin->w_wrow - curwin->w_cline_row;
+	    {
+		// Leave two lines of context if possible
+		if (curwin->w_wrow - curwin->w_cline_row >= 2)
+		    context_lines = 2;
+		else
+		    context_lines = curwin->w_wrow - curwin->w_cline_row;
+	    }
 
 	    if (pum_win_row >= size + context_lines)
 	    {
@@ -182,14 +191,20 @@ pum_display(
 	{
 	    // pum below "pum_win_row"
 
-	    // Leave two lines of context if possible
-	    validate_cheight();
-	    if (curwin->w_cline_row
-				+ curwin->w_cline_height - curwin->w_wrow >= 3)
-		context_lines = 3;
+	    if (State == MODE_CMDLINE)
+		// for cmdline pum, no need for context lines
+		context_lines = 0;
 	    else
-		context_lines = curwin->w_cline_row
-				    + curwin->w_cline_height - curwin->w_wrow;
+	    {
+		// Leave two lines of context if possible
+		validate_cheight();
+		if (curwin->w_cline_row
+				+ curwin->w_cline_height - curwin->w_wrow >= 3)
+		    context_lines = 3;
+		else
+		    context_lines = curwin->w_cline_row
+				     + curwin->w_cline_height - curwin->w_wrow;
+	    }
 
 	    pum_row = pum_win_row + context_lines;
 	    if (size > below_row - pum_row)
@@ -220,13 +235,13 @@ pum_display(
 
 	// Calculate column
 #ifdef FEAT_WILDMENU
-	if (State == CMDLINE)
+	if (State == MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    cursor_col = cmdline_compl_startcol();
 	else
 #endif
 #ifdef FEAT_RIGHTLEFT
-	if (curwin->w_p_rl)
+	if (right_left)
 	    cursor_col = curwin->w_wincol + curwin->w_width
 							  - curwin->w_wcol - 1;
 	else
@@ -245,12 +260,10 @@ pum_display(
 	if (def_width < max_width)
 	    def_width = max_width;
 
-	if (((cursor_col < Columns - p_pw
-					   || cursor_col < Columns - max_width)
+	if (((cursor_col < Columns - p_pw || cursor_col < Columns - max_width)
 #ifdef FEAT_RIGHTLEFT
-		    && !curwin->w_p_rl)
-	       || (curwin->w_p_rl
-			       && (cursor_col > p_pw || cursor_col > max_width)
+		    && !right_left)
+	       || (right_left && (cursor_col > p_pw || cursor_col > max_width)
 #endif
 	   ))
 	{
@@ -259,7 +272,7 @@ pum_display(
 
 	    // start with the maximum space available
 #ifdef FEAT_RIGHTLEFT
-	    if (curwin->w_p_rl)
+	    if (right_left)
 		pum_width = pum_col - pum_scrollbar + 1;
 	    else
 #endif
@@ -276,22 +289,22 @@ pum_display(
 	    }
 	    else if (((cursor_col > p_pw || cursor_col > max_width)
 #ifdef FEAT_RIGHTLEFT
-			&& !curwin->w_p_rl)
-		|| (curwin->w_p_rl && (cursor_col < Columns - p_pw
+			&& !right_left)
+		|| (right_left && (cursor_col < Columns - p_pw
 			|| cursor_col < Columns - max_width)
 #endif
 		    ))
 	    {
 		// align pum edge with "cursor_col"
 #ifdef FEAT_RIGHTLEFT
-		if (curwin->w_p_rl
+		if (right_left
 			&& W_ENDCOL(curwin) < max_width + pum_scrollbar + 1)
 		{
 		    pum_col = cursor_col + max_width + pum_scrollbar + 1;
 		    if (pum_col >= Columns)
 			pum_col = Columns - 1;
 		}
-		else if (!curwin->w_p_rl)
+		else if (!right_left)
 #endif
 		{
 		    if (curwin->w_wincol > Columns - max_width - pum_scrollbar
@@ -305,7 +318,7 @@ pum_display(
 		}
 
 #ifdef FEAT_RIGHTLEFT
-		if (curwin->w_p_rl)
+		if (right_left)
 		    pum_width = pum_col - pum_scrollbar + 1;
 		else
 #endif
@@ -315,7 +328,7 @@ pum_display(
 		{
 		    pum_width = p_pw;
 #ifdef FEAT_RIGHTLEFT
-		    if (curwin->w_p_rl)
+		    if (right_left)
 		    {
 			if (pum_width > pum_col)
 			    pum_width = pum_col;
@@ -343,7 +356,7 @@ pum_display(
 	{
 	    // not enough room, will use what we have
 #ifdef FEAT_RIGHTLEFT
-	    if (curwin->w_p_rl)
+	    if (right_left)
 		pum_col = Columns - 1;
 	    else
 #endif
@@ -355,7 +368,7 @@ pum_display(
 	    if (max_width > p_pw)
 		max_width = p_pw;	// truncate
 #ifdef FEAT_RIGHTLEFT
-	    if (curwin->w_p_rl)
+	    if (right_left)
 		pum_col = max_width - 1;
 	    else
 #endif
@@ -863,14 +876,16 @@ pum_set_selected(int n, int repeat UNUSED)
 		    {
 			// Edit a new, empty buffer. Set options for a "wipeout"
 			// buffer.
-			set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-			set_option_value((char_u *)"bl", 0L, NULL, OPT_LOCAL);
-			set_option_value((char_u *)"bt", 0L,
-					       (char_u *)"nofile", OPT_LOCAL);
-			set_option_value((char_u *)"bh", 0L,
-						 (char_u *)"wipe", OPT_LOCAL);
-			set_option_value((char_u *)"diff", 0L,
-							     NULL, OPT_LOCAL);
+			set_option_value_give_err((char_u *)"swf",
+							  0L, NULL, OPT_LOCAL);
+			set_option_value_give_err((char_u *)"bl",
+							  0L, NULL, OPT_LOCAL);
+			set_option_value_give_err((char_u *)"bt",
+					    0L, (char_u *)"nofile", OPT_LOCAL);
+			set_option_value_give_err((char_u *)"bh",
+					      0L, (char_u *)"wipe", OPT_LOCAL);
+			set_option_value_give_err((char_u *)"diff",
+							  0L, NULL, OPT_LOCAL);
 		    }
 		}
 		if (res == OK)

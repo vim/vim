@@ -21,8 +21,8 @@
 #	the first column of a line is removed.
 #	- If you want a version of Vim that is small and starts up quickly,
 #	  you might want to disable the GUI, X11, Perl, Python and Tcl.
-#	- Uncomment the line with --disable-gui if you have Motif, GTK and/or
-#	  Athena but don't want to make gvim (the GUI version of Vim with nice
+#	- Uncomment the line with --disable-gui if you have Motif and/or GTK
+#	  but don't want to make gvim (the GUI version of Vim with nice
 #	  menus and scrollbars, but makes Vim bigger and startup slower).
 #	- Uncomment --disable-darwin if on Mac OS X but you want to compile a
 #	  Unix version.
@@ -182,10 +182,7 @@
 #Irix 6.5	      cc	     ?			6.0  (S) David Harrison
 #Irix 64 bit						4.5  (K) Jon Wright
 #Linux 2.0	      gcc-2.7.2      Infomagic Motif	4.3  (3) Ronald Rietman
-#Linux 2.0.31	      gcc	     +X11 +GUI Athena	5.0w (U) Darren Hiebert
-#LynxOS 3.0.1	      2.9-gnupro-98r2 +X11 +GUI Athena  5.7.1(O) Lorenz Hahn
-#LynxOS 3.1.0	      2.9-gnupro-98r2 +X11 +GUI Athena  5.7.1(O) Lorenz Hahn
-#NEC UP4800 UNIX_SV 4.2MP  cc	     +X11R6 Motif,Athena4.6b (Q) Lennart Schultz
+#NEC UP4800 UNIX_SV 4.2MP  cc	     +X11R6 Motif	4.6b (Q) Lennart Schultz
 #NetBSD 1.0A	      gcc-2.4.5      -X11 -GUI		3.21 (X) Juergen Weigert
 #QNX 4.2	      wcc386-10.6    -X11		4.2  (D) G.F. Desrochers
 #QNX 4.23	      Watcom	     -X11		4.2  (F) John Oleynick
@@ -199,14 +196,12 @@
 #Solaris 2.4 (Sparc)  cc	     +X11 +GUI		3.29 (9) Glauber
 #Solaris 2.4/2.5      clcc	     +X11 -GUI openwin	3.20 (7) Robert Colon
 #Solaris 2.5 (sun4m)  cc (SC4.0)     +X11R6 +GUI (CDE)	4.6b (E) Andrew Large
-#Solaris 2.5	      cc	     +X11 +GUI Athena	4.2  (9) Sonia Heimann
 #Solaris 2.5	      gcc 2.5.6      +X11 Motif		5.0m (R) Ant. Colombo
 #Solaris 2.6	      gcc 2.8.1      ncurses		5.3  (G) Larry W. Virden
 #Solaris with -lthread					5.5  (W) K. Nagano
 #Solaris	      gcc				     (b) Riccardo
 #SunOS 4.1.x			     +X11 -GUI		5.1b (J) Bram Moolenaar
-#SunOS 4.1.3_U1 (sun4c) gcc	     +X11 +GUI Athena	5.0w (J) Darren Hiebert
-#SUPER-UX 6.2 (NEC SX-4) cc	     +X11R6 Motif,Athena4.6b (P) Lennart Schultz
+#SUPER-UX 6.2 (NEC SX-4) cc	     +X11R6 Motif	4.6b (P) Lennart Schultz
 #Tandem/NSK						     (c) Matthew Woehlke
 #Unisys 6035	      cc	     +X11 Motif		5.3  (8) Glauber Ribeiro
 #ESIX V4.2	      cc	     +X11		6.0  (a) Reinhard Wobst
@@ -329,7 +324,7 @@ CClink = $(CC)
 
 # GUI - For creating Vim with GUI (gvim) (B)
 # Uncomment this line when you don't want to get the GUI version, although you
-# have GTK, Motif and/or Athena.  Also use --without-x if you don't want X11
+# have GTK and/or Motif.  Also use --without-x if you don't want X11
 # at all.
 #CONF_OPT_GUI = --disable-gui
 
@@ -343,12 +338,10 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gnome-check
 #CONF_OPT_GUI = --disable-gtk3-check
 #CONF_OPT_GUI = --disable-motif-check
-#CONF_OPT_GUI = --disable-athena-check
-#CONF_OPT_GUI = --disable-nextaw-check
 
 # Uncomment one of these lines to select a specific GUI to use.
 # When using "yes" or nothing, configure will use the first one found: GTK+,
-# Motif or Athena.
+# or Motif.
 #
 # GTK versions that are known not to work 100% are rejected.
 # Use "--disable-gtktest" to accept them anyway.
@@ -372,8 +365,6 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=gtk3 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
-#CONF_OPT_GUI = --enable-gui=athena
-#CONF_OPT_GUI = --enable-gui=nextaw
 
 # Uncomment this line to run an individual test with gvim.
 #GUI_TESTARG = GUI_FLAG=-g 
@@ -526,6 +517,8 @@ CClink = $(CC)
 # though you have gpm libraries and includes.
 # For Debian/Ubuntu gpm support requires the libgpm-dev package.
 #CONF_OPT_GPM = --disable-gpm
+# Use this to enable dynamic loading of the GPM library.
+#CONF_OPT_GPM = --enable-gpm=dynamic
 
 # sysmouse - For mouse support on FreeBSD and DragonFly console via sysmouse
 # Uncomment this when you do not want do include sysmouse support, even
@@ -790,13 +783,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #CC = clcc
 #X_LIBS_DIR = -L/usr/openwin/lib -R/usr/openwin/lib
 #CFLAGS = -O
-
-### (9) Solaris 2.x with cc (SunPro), using Athena.
-###	Only required for compiling gui_at_sb.c.
-###	Symptom: "identifier redeclared: vim_XawScrollbarSetThumb"
-###	Use one of the lines (either Full ANSI or no ANSI at all)
-#CFLAGS = $(CFLAGS) -Xc
-#CFLAGS = $(CFLAGS) -Xs
 
 ### Solaris 2.3 with X11 and specific cc
 #CC=/opt/SUNWspro/bin/cc -O -Xa -v -R/usr/openwin/lib
@@ -1066,6 +1052,7 @@ COLSUBDIR = /colors
 SYNSUBDIR = /syntax
 INDSUBDIR = /indent
 AUTOSUBDIR = /autoload
+IMPORTSUBDIR = /import
 PLUGSUBDIR = /plugin
 FTPLUGSUBDIR = /ftplugin
 LANGSUBDIR = /lang
@@ -1088,6 +1075,7 @@ PODIR = po
 ### SYNSUBLOC	location for syntax files
 ### INDSUBLOC	location for indent files
 ### AUTOSUBLOC	location for standard autoload files
+### IMPORTSUBLOC location for standard import files
 ### PLUGSUBLOC	location for standard plugin files
 ### FTPLUGSUBLOC  location for ftplugin files
 ### LANGSUBLOC	location for language files
@@ -1110,6 +1098,7 @@ COLSUBLOC	= $(VIMRTLOC)$(COLSUBDIR)
 SYNSUBLOC	= $(VIMRTLOC)$(SYNSUBDIR)
 INDSUBLOC	= $(VIMRTLOC)$(INDSUBDIR)
 AUTOSUBLOC	= $(VIMRTLOC)$(AUTOSUBDIR)
+IMPORTSUBLOC	= $(VIMRTLOC)$(IMPORTSUBDIR)
 PLUGSUBLOC	= $(VIMRTLOC)$(PLUGSUBDIR)
 FTPLUGSUBLOC	= $(VIMRTLOC)$(FTPLUGSUBDIR)
 LANGSUBLOC	= $(VIMRTLOC)$(LANGSUBDIR)
@@ -1214,6 +1203,9 @@ INDSOURCE = ../runtime/indent
 # Where to copy the standard plugin files from
 AUTOSOURCE = ../runtime/autoload
 
+# Where to copy the standard import files from
+IMPORTSOURCE = ../runtime/import
+
 # Where to copy the standard plugin files from
 PLUGSOURCE = ../runtime/plugin
 
@@ -1259,8 +1251,8 @@ LINKIT = @echo >/dev/null
 ### 'configure --enable-gui' can enable one of these for you if you did set
 ### a corresponding CONF_OPT_GUI above and have X11.
 ### Override configures choice by uncommenting all the following lines.
-### As they are, the GUI is disabled.  Replace "NONE" with "ATHENA" or "MOTIF"
-### for enabling the Athena or Motif GUI.
+### As they are, the GUI is disabled.  Replace "NONE" with "MOTIF"
+### for enabling the Motif GUI.
 #GUI_SRC	= $(NONE_SRC)
 #GUI_OBJ	= $(NONE_OBJ)
 #GUI_DEFS	= $(NONE_DEFS)
@@ -1311,54 +1303,6 @@ MOTIF_MAN_TARGETS = yes
 MOTIF_TESTTARGET = gui
 MOTIF_BUNDLE	=
 
-### Athena GUI
-### Use Xaw3d to make the menus look a little bit nicer
-#XAW_LIB = -lXaw3d
-XAW_LIB = -lXaw
-
-### When using Xaw3d, uncomment/comment the following lines to also get the
-### scrollbars from Xaw3d.
-#ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
-#ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-#			objects/gui_beval.o objects/gui_at_fs.o
-#ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO) \
-#		    -Dvim_scrollbarWidgetClass=scrollbarWidgetClass \
-#		    -Dvim_XawScrollbarSetThumb=XawScrollbarSetThumb
-ATHENA_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c \
-			gui_at_sb.c gui_at_fs.c
-ATHENA_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/gui_beval.o \
-			objects/gui_at_sb.o objects/gui_at_fs.o
-ATHENA_DEFS	= -DFEAT_GUI_ATHENA $(NARROW_PROTO)
-
-ATHENA_IPATH	= $(GUI_INC_LOC)
-ATHENA_LIBS_DIR = $(GUI_LIB_LOC)
-ATHENA_LIBS1	= $(XAW_LIB)
-ATHENA_LIBS2	= -lXt
-ATHENA_INSTALL  = install_normal install_gui_extra
-ATHENA_TARGETS	= installglinks
-ATHENA_MAN_TARGETS = yes
-ATHENA_TESTTARGET = gui
-ATHENA_BUNDLE	=
-
-### neXtaw GUI
-NEXTAW_LIB = -lneXtaw
-
-NEXTAW_SRC	= gui.c gui_athena.c gui_x11.c gui_beval.c gui_at_fs.c
-NEXTAW_OBJ	= objects/gui.o objects/gui_athena.o objects/gui_x11.o \
-			objects/gui_beval.o objects/gui_at_fs.o
-NEXTAW_DEFS	= -DFEAT_GUI_ATHENA -DFEAT_GUI_NEXTAW $(NARROW_PROTO)
-
-NEXTAW_IPATH	= $(GUI_INC_LOC)
-NEXTAW_LIBS_DIR = $(GUI_LIB_LOC)
-NEXTAW_LIBS1	= $(NEXTAW_LIB)
-NEXTAW_LIBS2	= -lXt
-NEXTAW_INSTALL  =  install_normal install_gui_extra
-NEXTAW_TARGETS	=  installglinks
-NEXTAW_MAN_TARGETS = yes
-NEXTAW_TESTTARGET = gui
-NEXTAW_BUNDLE	=
-
 ### (J)  Sun OpenWindows 3.2 (SunOS 4.1.x) or earlier that produce these ld
 #	 errors:  ld: Undefined symbol
 #		      _get_wmShellWidgetClass
@@ -1399,8 +1343,8 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c gui_haiku.cc
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro gui_haiku.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_gtk_x11.c gui_x11.c gui_haiku.cc
+ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro gui_haiku.pro
 
 # }}}
 
@@ -1537,6 +1481,7 @@ DEST_COL = $(DESTDIR)$(COLSUBLOC)
 DEST_SYN = $(DESTDIR)$(SYNSUBLOC)
 DEST_IND = $(DESTDIR)$(INDSUBLOC)
 DEST_AUTO = $(DESTDIR)$(AUTOSUBLOC)
+DEST_IMPORT = $(DESTDIR)$(IMPORTSUBLOC)
 DEST_PLUG = $(DESTDIR)$(PLUGSUBLOC)
 DEST_FTP = $(DESTDIR)$(FTPLUGSUBLOC)
 DEST_LANG = $(DESTDIR)$(LANGSUBLOC)
@@ -2140,7 +2085,7 @@ autoconf:
 # without changes.
 # This requires a "vim" executable with the +eval feature.
 cmdidxs: ex_cmds.h
-	vim --clean -N -X --not-a-term -u create_cmdidxs.vim -c quit
+	vim --clean -X --not-a-term -S create_cmdidxs.vim -c quit
 
 # Run vim script to generate the normal/visual mode command lookup table.
 # This only needs to be run when a new normal/visual mode command has been
@@ -2151,7 +2096,7 @@ cmdidxs: ex_cmds.h
 #   - run "make nvcmdidxs" to generate nv_cmdidxs.h
 nvcmdidxs: auto/config.mk nv_cmds.h
 	$(CC) -I$(srcdir) $(ALL_CFLAGS) create_nvcmdidxs.c -o create_nvcmdidxs
-	vim --clean -N -X --not-a-term -u create_nvcmdidxs.vim -c quit
+	vim --clean -X --not-a-term -S create_nvcmdidxs.vim -c quit
 	-rm -f create_nvcmdidxs
 
 # The normal command to compile a .c file to its .o file.
@@ -2238,7 +2183,7 @@ os_vms.pro: os_vms.c
 # must use os_vms_conf.h for auto/config.h
 	mv auto/config.h auto/config.h.save
 	cp os_vms_conf.h auto/config.h
-	$(CPROTO) -DVMS -UFEAT_GUI_ATHENA -UFEAT_GUI_NEXTAW -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
+	$(CPROTO) -DVMS -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 	rm auto/config.h
 	mv auto/config.h.save auto/config.h
@@ -2255,8 +2200,7 @@ gui_gtk_gresources.pro: auto/gui_gtk_gresources.c
 notags:
 	-rm -f tags
 
-# Note: tags is made for the currently configured version, can't include both
-#	Motif and Athena GUI
+# Note: tags is made for the currently configured version.
 # You can ignore error messages for missing files.
 tags TAGS: notags
 	$(TAGPRG) $(TAGS_FILES)
@@ -2436,6 +2380,7 @@ installruntime: installrtbase installmacros installpack installtutor installspel
 installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
 		$(DEST_FTP) $(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
+		$(DEST_IMPORT) $(DEST_IMPORT)/dist \
 		$(DEST_PLUG) $(DEST_TUTOR) $(DEST_SPELL) $(DEST_COMP)
 	-$(SHELL) ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 # Generate the help tags with ":helptags" to handle all languages.
@@ -2499,8 +2444,8 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(DEST_PRINT); chmod $(FILEMOD) *.ps
 # install the colorscheme files
 	cd $(COLSOURCE); $(INSTALL_DATA_R) *.vim lists tools README.txt $(DEST_COL)
-	cd $(DEST_COL); chmod $(DIRMOD) tools
-	cd $(DEST_COL); chmod $(HELPMOD) *.vim README.txt tools/*.vim
+	cd $(DEST_COL); chmod $(DIRMOD) lists tools
+	cd $(DEST_COL); chmod $(HELPMOD) *.vim README.txt lists/*.vim tools/*.vim
 # install the syntax files
 	cd $(SYNSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_SYN)
 	cd $(DEST_SYN); chmod $(HELPMOD) *.vim README.txt
@@ -2514,12 +2459,15 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(DEST_AUTO)/dist; chmod $(HELPMOD) *.vim
 	cd $(AUTOSOURCE)/xml; $(INSTALL_DATA) *.vim $(DEST_AUTO)/xml
 	cd $(DEST_AUTO)/xml; chmod $(HELPMOD) *.vim
+# install the standard import files
+	cd $(IMPORTSOURCE)/dist; $(INSTALL_DATA) *.vim $(DEST_IMPORT)/dist
+	cd $(DEST_IMPORT)/dist; chmod $(HELPMOD) *.vim
 # install the standard plugin files
 	cd $(PLUGSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_PLUG)
 	cd $(DEST_PLUG); chmod $(HELPMOD) *.vim README.txt
 # install the ftplugin files
 	cd $(FTPLUGSOURCE); $(INSTALL_DATA) *.vim README.txt logtalk.dict $(DEST_FTP)
-	cd $(DEST_FTP); chmod $(HELPMOD) *.vim README.txt
+	cd $(DEST_FTP); chmod $(HELPMOD) *.vim README.txt logtalk.dict
 # install the compiler files
 	cd $(COMPSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_COMP)
 	cd $(DEST_COMP); chmod $(HELPMOD) *.vim README.txt
@@ -2542,11 +2490,11 @@ installpack: $(DEST_VIM) $(DEST_RT) $(DEST_PACK)
 	chmod $(FILEMOD) `find $(DEST_PACK) -type f -print`
 
 # install the tutor files
-installtutorbin: $(DEST_VIM)
+installtutorbin: $(DEST_BIN)
 	$(INSTALL_DATA) vimtutor $(DEST_BIN)/$(VIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(VIMNAME)tutor
 
-installgtutorbin: $(DEST_VIM)
+installgtutorbin: $(DEST_BIN)
 	$(INSTALL_DATA) gvimtutor $(DEST_BIN)/$(GVIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(GVIMNAME)tutor
 
@@ -2749,7 +2697,8 @@ $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) $(DEST_FTP) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
 		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
-		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_PLUG):
+		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
+		$(DEST_IMPORT) $(DEST_IMPORT)/dist $(DEST_PLUG):
 	$(MKDIR_P) $@
 	-chmod $(DIRMOD) $@
 
@@ -2935,8 +2884,10 @@ uninstall_runtime:
 	-rm -rf $(DEST_FTP)/*.vim $(DEST_FTP)/README.txt $(DEST_FTP)/logtalk.dict
 	-rm -f $(DEST_AUTO)/*.vim $(DEST_AUTO)/README.txt
 	-rm -f $(DEST_AUTO)/dist/*.vim $(DEST_AUTO)/xml/*.vim
+	-rm -f $(DEST_IMPORT)/dist/*.vim
 	-rm -f $(DEST_PLUG)/*.vim $(DEST_PLUG)/README.txt
 	-rmdir $(DEST_FTP) $(DEST_AUTO)/dist $(DEST_AUTO)/xml $(DEST_AUTO)
+	-rmdir $(DEST_IMPORT)/dist $(DEST_IMPORT)
 	-rmdir $(DEST_PLUG) $(DEST_RT)
 #	This will fail when other Vim versions are installed, no worries.
 	-rmdir $(DEST_VIM)
@@ -3008,7 +2959,6 @@ shadow:	runtime pixmaps
 				 ../../testdir/sautest \
 				 ../../testdir/samples \
 				 ../../testdir/dumps \
-				 ../../testdir/test83-tags? \
 				 ../../testdir/*.ok \
 				 ../../testdir/testluaplugin \
 				 .
@@ -3030,7 +2980,7 @@ pixmaps:
 # Update the synmenu.vim file with the latest Syntax menu.
 # This is only needed when runtime/makemenu.vim was changed.
 menu: ./vim ../runtime/makemenu.vim
-	./vim -u ../runtime/makemenu.vim
+	./vim --clean -X --not-a-term -S ../runtime/makemenu.vim
 
 # Start configure from scratch
 scrub scratch:
@@ -3303,15 +3253,6 @@ objects/help.o: help.c
 
 objects/gui.o: gui.c
 	$(CCC) -o $@ gui.c
-
-objects/gui_at_fs.o: gui_at_fs.c
-	$(CCC) -o $@ gui_at_fs.c
-
-objects/gui_at_sb.o: gui_at_sb.c
-	$(CCC) -o $@ gui_at_sb.c
-
-objects/gui_athena.o: gui_athena.c
-	$(CCC) -o $@ gui_athena.c
 
 objects/beval.o: beval.c
 	$(CCC) -o $@ beval.c
@@ -4241,25 +4182,6 @@ objects/gui_xmebw.o: gui_xmebw.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h errors.h gui_xmebwp.h gui_xmebw.h
-objects/gui_athena.o: gui_athena.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h errors.h gui_at_sb.h gui_x11_pm.h \
- ../pixmaps/tb_new.xpm ../pixmaps/tb_open.xpm ../pixmaps/tb_close.xpm \
- ../pixmaps/tb_save.xpm ../pixmaps/tb_print.xpm ../pixmaps/tb_cut.xpm \
- ../pixmaps/tb_copy.xpm ../pixmaps/tb_paste.xpm ../pixmaps/tb_find.xpm \
- ../pixmaps/tb_find_next.xpm ../pixmaps/tb_find_prev.xpm \
- ../pixmaps/tb_find_help.xpm ../pixmaps/tb_exit.xpm \
- ../pixmaps/tb_undo.xpm ../pixmaps/tb_redo.xpm ../pixmaps/tb_help.xpm \
- ../pixmaps/tb_macro.xpm ../pixmaps/tb_make.xpm \
- ../pixmaps/tb_save_all.xpm ../pixmaps/tb_jump.xpm \
- ../pixmaps/tb_ctags.xpm ../pixmaps/tb_load_session.xpm \
- ../pixmaps/tb_save_session.xpm ../pixmaps/tb_new_session.xpm \
- ../pixmaps/tb_blank.xpm ../pixmaps/tb_maximize.xpm \
- ../pixmaps/tb_split.xpm ../pixmaps/tb_minimize.xpm \
- ../pixmaps/tb_shell.xpm ../pixmaps/tb_replace.xpm \
- ../pixmaps/tb_vsplit.xpm ../pixmaps/tb_maxwidth.xpm \
- ../pixmaps/tb_minwidth.xpm
 objects/gui_gtk_x11.o: gui_gtk_x11.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -4270,14 +4192,6 @@ objects/gui_x11.o: gui_x11.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h errors.h ../runtime/vim32x32.xpm \
  ../runtime/vim16x16.xpm ../runtime/vim48x48.xpm
-objects/gui_at_sb.o: gui_at_sb.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h errors.h gui_at_sb.h
-objects/gui_at_fs.o: gui_at_fs.c vim.h protodef.h auto/config.h feature.h \
- os_unix.h auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h errors.h gui_at_sb.h
 objects/gui_haiku.o: gui_haiku.cc vim.h protodef.h auto/config.h feature.h \
  os_unix.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

@@ -326,7 +326,8 @@ set_term_and_win_size(term_T *term, jobopt_T *opt)
 
 	    vim_snprintf((char *)buf, 100, "%dx%d",
 						 term->tl_rows, term->tl_cols);
-	    set_option_value((char_u *)"termwinsize", 0L, buf, OPT_LOCAL);
+	    set_option_value_give_err((char_u *)"termwinsize",
+							   0L, buf, OPT_LOCAL);
 	}
     }
 }
@@ -340,9 +341,9 @@ init_job_options(jobopt_T *opt)
 {
     clear_job_options(opt);
 
-    opt->jo_mode = MODE_RAW;
-    opt->jo_out_mode = MODE_RAW;
-    opt->jo_err_mode = MODE_RAW;
+    opt->jo_mode = CH_MODE_RAW;
+    opt->jo_out_mode = CH_MODE_RAW;
+    opt->jo_err_mode = CH_MODE_RAW;
     opt->jo_set = JO_MODE | JO_OUT_MODE | JO_ERR_MODE;
 }
 
@@ -1266,7 +1267,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	// cleared.
 	// TODO: only update once in a while.
 	ch_log(term->tl_job->jv_channel, "updating screen");
-	if (buffer == curbuf && (State & CMDLINE) == 0)
+	if (buffer == curbuf && (State & MODE_CMDLINE) == 0)
 	{
 	    update_screen(VALID_NO_UPDATE);
 	    // update_screen() can be slow, check the terminal wasn't closed
@@ -2035,7 +2036,7 @@ term_check_timers(int next_due_arg, proftime_T *now)
 set_terminal_mode(term_T *term, int normal_mode)
 {
     term->tl_normal_mode = normal_mode;
-    trigger_modechanged();
+    may_trigger_modechanged();
     if (!normal_mode)
 	handle_postponed_scrollback(term);
     VIM_CLEAR(term->tl_status_text);
@@ -2128,7 +2129,7 @@ term_vgetc()
     int modify_other_keys = curbuf->b_term->tl_vterm == NULL ? FALSE
 			: vterm_is_modify_other_keys(curbuf->b_term->tl_vterm);
 
-    State = TERMINAL;
+    State = MODE_TERMINAL;
     got_int = FALSE;
 #ifdef MSWIN
     ctrl_break_was_pressed = FALSE;
@@ -2507,7 +2508,7 @@ term_win_entered()
 	if (term_use_loop_check(TRUE))
 	{
 	    reset_VIsual_and_resel();
-	    if (State & INSERT)
+	    if (State & MODE_INSERT)
 		stop_insert_mode = TRUE;
 	}
 	mouse_was_outside = FALSE;
@@ -3385,12 +3386,22 @@ handle_postponed_scrollback(term_T *term)
     limit_scrollback(term, &term->tl_scrollback, TRUE);
 }
 
+/*
+ * Called when the terminal wants to ring the system bell.
+ */
+    static int
+handle_bell(void *user UNUSED)
+{
+    vim_beep(BO_TERM);
+    return 0;
+}
+
 static VTermScreenCallbacks screen_callbacks = {
   handle_damage,	// damage
   handle_moverect,	// moverect
   handle_movecursor,	// movecursor
   handle_settermprop,	// settermprop
-  NULL,			// bell
+  handle_bell,		// bell
   handle_resize,	// resize
   handle_pushline,	// sb_pushline
   NULL			// sb_popline
@@ -4193,6 +4204,7 @@ set_vterm_palette(VTerm *vterm, long_u *rgb)
 	color.red = (unsigned)(rgb[index] >> 16);
 	color.green = (unsigned)(rgb[index] >> 8) & 255;
 	color.blue = (unsigned)rgb[index] & 255;
+	color.index = 0;
 	vterm_state_set_palette_color(state, index, &color);
     }
 }
@@ -4310,13 +4322,13 @@ handle_drop_command(listitem_T *item)
 	if (p != NULL)
 	    get_bad_opt(p, &ea);
 
-	if (dict_find(dict, (char_u *)"bin", -1) != NULL)
+	if (dict_has_key(dict, "bin"))
 	    ea.force_bin = FORCE_BIN;
-	if (dict_find(dict, (char_u *)"binary", -1) != NULL)
+	if (dict_has_key(dict, "binary"))
 	    ea.force_bin = FORCE_BIN;
-	if (dict_find(dict, (char_u *)"nobin", -1) != NULL)
+	if (dict_has_key(dict, "nobin"))
 	    ea.force_bin = FORCE_NOBIN;
-	if (dict_find(dict, (char_u *)"nobinary", -1) != NULL)
+	if (dict_has_key(dict, "nobinary"))
 	    ea.force_bin = FORCE_NOBIN;
     }
 
@@ -4430,15 +4442,15 @@ sync_shell_dir(VTermStringFragment *frag)
     // remove HOSTNAME to get PWD
     while (*pos != '/' && offset < (int)frag->len)
     {
-        offset += 1;
-        pos += 1;
+	offset += 1;
+	pos += 1;
     }
 
     if (offset >= (int)frag->len)
     {
-        semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
+	semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
 								    frag->str);
-        return;
+	return;
     }
 
     new_dir = alloc(frag->len - offset + 1);

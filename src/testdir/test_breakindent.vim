@@ -8,6 +8,7 @@ source check.vim
 CheckOption breakindent
 
 source view_util.vim
+source screendump.vim
 
 let s:input ="\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"
 
@@ -730,7 +731,7 @@ func Test_breakindent20_list()
 	\ "shall make no law   ",
 	\ ]
   call s:compare_lines(expect, lines)
-  " set mininum indent
+  " set minimum indent
   setl briopt=min:5
   redraw!
   let lines = s:screen_lines2(1, 6, 20)
@@ -836,17 +837,39 @@ endfunc
 func Test_window_resize_with_linebreak()
   new
   53vnew
-  set linebreak
-  set showbreak=>>
-  set breakindent
-  set breakindentopt=shift:4
+  setl linebreak
+  setl showbreak=>>
+  setl breakindent
+  setl breakindentopt=shift:4
   call setline(1, "\naaaaaaaaa\n\na\naaaaa\n¯aaaaaaaaaa\naaaaaaaaaaaa\naaa\n\"a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa - aaaaaaaa\"\naaaaaaaa\n\"a")
   redraw!
   call assert_equal(["    >>aa^@\"a: "], ScreenLines(2, 14))
   vertical resize 52
   redraw!
   call assert_equal(["    >>aaa^@\"a:"], ScreenLines(2, 14))
+  set linebreak& showbreak& breakindent& breakindentopt&
   %bw!
+endfunc
+
+func Test_cursor_position_with_showbreak()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      &signcolumn = 'yes'
+      &showbreak = '+ '
+      var leftcol: number = win_getid()->getwininfo()->get(0, {})->get('textoff')
+      repeat('x', &columns - leftcol - 1)->setline(1)
+      'second line'->setline(2)
+  END
+  call writefile(lines, 'XscriptShowbreak')
+  let buf = RunVimInTerminal('-S XscriptShowbreak', #{rows: 6})
+
+  call term_sendkeys(buf, "AX")
+  call VerifyScreenDump(buf, 'Test_cursor_position_with_showbreak', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptShowbreak')
 endfunc
 
 func Test_no_spurious_match()
@@ -917,6 +940,59 @@ func Test_no_extra_indent()
   \ "~                   ",
   \ ]
   let lines = s:screen_lines2(1, 5, 20)
+  call s:compare_lines(expect, lines)
+  bwipeout!
+endfunc
+
+func Test_breakindent_column()
+  " restore original
+  let s:input ="\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"
+  call s:test_windows('setl breakindent breakindentopt=column:10')
+  redraw!
+  " 1) default: does not indent, too wide :(
+  let expect = [
+  \ "                    ",
+  \ "    abcdefghijklmnop",
+  \ "qrstuvwxyzABCDEFGHIJ",
+  \ "KLMNOP              "
+  \ ]
+  let lines = s:screen_lines2(1, 4, 20)
+  call s:compare_lines(expect, lines)
+  " 2) lower min value, so that breakindent works
+  setl breakindentopt+=min:5
+  redraw!
+  let expect = [
+  \ "                    ",
+  \ "    abcdefghijklmnop",
+  \ "          qrstuvwxyz",
+  \ "          ABCDEFGHIJ",
+  \ "          KLMNOP    "
+  \ ]
+  let lines = s:screen_lines2(1, 5, 20)
+  " 3) set shift option -> no influence
+  setl breakindentopt+=shift:5
+  redraw!
+  let expect = [
+  \ "                    ",
+  \ "    abcdefghijklmnop",
+  \ "          qrstuvwxyz",
+  \ "          ABCDEFGHIJ",
+  \ "          KLMNOP    "
+  \ ]
+  let lines = s:screen_lines2(1, 5, 20)
+  call s:compare_lines(expect, lines)
+  " 4) add showbreak value
+  setl showbreak=++
+  redraw!
+  let expect = [
+  \ "                    ",
+  \ "    abcdefghijklmnop",
+  \ "          ++qrstuvwx",
+  \ "          ++yzABCDEF",
+  \ "          ++GHIJKLMN",
+  \ "          ++OP      "
+  \ ]
+  let lines = s:screen_lines2(1, 6, 20)
   call s:compare_lines(expect, lines)
   bwipeout!
 endfunc

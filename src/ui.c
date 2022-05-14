@@ -199,10 +199,10 @@ ui_inchar(
      * while (not timed out)
      * {
      *     if (any-timer-triggered)
-     *        invoke-timer-callback;
+     *	      invoke-timer-callback;
      *     wait-for-character();
      *     if (character available)
-     *        break;
+     *	      break;
      * }
      *
      * wait-for-character() does:
@@ -210,13 +210,13 @@ ui_inchar(
      * {
      *     Wait for event;
      *     if (something on channel)
-     *        read/write channel;
-     *     else if (resized)
-     *        handle_resize();
-     *     else if (system event)
-     *        deal-with-system-event;
-     *     else if (character available)
-     *        break;
+     *	      read/write channel;
+     *	   else if (resized)
+     *	      handle_resize();
+     *	   else if (system event)
+     *	      deal-with-system-event;
+     *	   else if (character available)
+     *	      break;
      * }
      *
      */

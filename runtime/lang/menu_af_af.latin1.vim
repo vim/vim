@@ -1,6 +1,7 @@
 " Menu Translations:	Afrikaas
 " Maintainer:		Danie Roux <droux@tuks.co.za>
 " Last Change:		2012 May 01
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2022 Feb 04
+*cmdline.txt*   For Vim version 8.2.  Last change: 2022 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -87,6 +87,7 @@ CTRL-Q		Same as CTRL-V.  But with some terminals it is used for
 CTRL-SHIFT-V				*c_CTRL-SHIFT-V* *c_CTRL-SHIFT-Q*
 CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
 		then it inserts the Escape sequence for a key with modifiers.
+		In the GUI the |key-notation| is inserted without simplifying.
 
 							*c_<Left>* *c_Left*
 <Left>		cursor left
@@ -227,7 +228,7 @@ CTRL-\ e {expr}						*c_CTRL-\_e*
 		Example: >
 			:cmap <F7> <C-\>eAppendSome()<CR>
 			:func AppendSome()
-			   :let cmd = getcmdline() . " Some()"
+			   :let cmd = getcmdline() .. " Some()"
 			   :" place the cursor on the )
 			   :call setcmdpos(strlen(cmd))
 			   :return cmd
@@ -939,7 +940,7 @@ Note: these are typed literally, they are not special keys!
 		   file name of the sourced file.  *E498*
 		   When executing a legacy function, is replaced with the call
 		   stack, as with <stack> (this is for backwards
-		   compatibility, using <stack> is preferred).
+		   compatibility, using <stack> or <script> is preferred).
 		   In Vim9 script using <sfile> in a function gives error
 		   *E1245* .
 		   Note that filename-modifiers are useless when <sfile> is
@@ -951,6 +952,12 @@ Note: these are typed literally, they are not special keys!
 		   ".." in between items.  E.g.:
 		   "function {function-name1}[{lnum}]..{function-name2}[{lnum}]"
 		   If there is no call stack you get error *E489* .
+							*:<script>* *<script>*
+	<script>   When executing a `:source` command, is replaced with the file
+		   name of the sourced file.  When executing a function, is
+		   replaced with the file name of the script where it is
+		   defined.
+		   If the file name cannot be determined you get error *E1274* .
 							*:<slnum>* *<slnum>*
 	<slnum>	   When executing a ":source" command, is replaced with the
 		   line number.  *E842*

@@ -1617,6 +1617,7 @@ regatom(int *flagp)
 			      long_u	n = 0;
 			      int	cmp;
 			      int	cur = FALSE;
+			      int	got_digit = FALSE;
 
 			      cmp = c;
 			      if (cmp == '<' || cmp == '>')
@@ -1628,6 +1629,7 @@ regatom(int *flagp)
 			      }
 			      while (VIM_ISDIGIT(c))
 			      {
+				  got_digit = TRUE;
 				  n = n * 10 + (c - '0');
 				  c = getchr();
 			      }
@@ -1645,11 +1647,13 @@ regatom(int *flagp)
 				  }
 				  break;
 			      }
-			      else if (c == 'l' || c == 'c' || c == 'v')
+			      else if ((c == 'l' || c == 'c' || c == 'v')
+					  && (cur || got_digit))
 			      {
 				  if (cur && n)
 				  {
-				    semsg(_(e_regexp_number_after_dot_pos_search), no_Magic(c));
+				    semsg(_(e_regexp_number_after_dot_pos_search_chr),
+								  no_Magic(c));
 				    rc_did_emsg = TRUE;
 				    return NULL;
 				  }
@@ -3360,8 +3364,17 @@ regmatch(
 		int	mark = OPERAND(scan)[0];
 		int	cmp = OPERAND(scan)[1];
 		pos_T	*pos;
+		size_t	col = REG_MULTI ? rex.input - rex.line : 0;
 
 		pos = getmark_buf(rex.reg_buf, mark, FALSE);
+
+		// Line may have been freed, get it again.
+		if (REG_MULTI)
+		{
+		    rex.line = reg_getline(rex.lnum);
+		    rex.input = rex.line + col;
+		}
+
 		if (pos == NULL		     // mark doesn't exist
 			|| pos->lnum <= 0)   // mark isn't set in reg_buf
 		{
@@ -4615,6 +4628,11 @@ regmatch(
 			    if (rex.input == rex.line)
 			    {
 				// backup to last char of previous line
+				if (rex.lnum == 0)
+				{
+				    status = RA_NOMATCH;
+				    break;
+				}
 				--rex.lnum;
 				rex.line = reg_getline(rex.lnum);
 				// Just in case regrepeat() didn't count

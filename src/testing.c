@@ -1285,10 +1285,10 @@ test_gui_drop_files(dict_T *args UNUSED)
     list_T	*l;
     listitem_T	*li;
 
-    if (dict_find(args, (char_u *)"files", -1) == NULL
-	    || dict_find(args, (char_u *)"row", -1) == NULL
-	    || dict_find(args, (char_u *)"col", -1) == NULL
-	    || dict_find(args, (char_u *)"modifiers", -1) == NULL)
+    if (!dict_has_key(args, "files")
+	    || !dict_has_key(args, "row")
+	    || !dict_has_key(args, "col")
+	    || !dict_has_key(args, "modifiers"))
 	return FALSE;
 
     (void)dict_get_tv(args, (char_u *)"files", &t);
@@ -1341,10 +1341,10 @@ test_gui_find_repl(dict_T *args)
     int		forward;
     int		retval;
 
-    if (dict_find(args, (char_u *)"find_text", -1) == NULL
-	    || dict_find(args, (char_u *)"repl_text", -1) == NULL
-	    || dict_find(args, (char_u *)"flags", -1) == NULL
-	    || dict_find(args, (char_u *)"forward", -1) == NULL)
+    if (!dict_has_key(args, "find_text")
+	    || !dict_has_key(args, "repl_text")
+	    || !dict_has_key(args, "flags")
+	    || !dict_has_key(args, "forward"))
 	return FALSE;
 
     find_text = dict_get_string(args, (char_u *)"find_text", TRUE);
@@ -1368,22 +1368,40 @@ test_gui_mouse_event(dict_T *args)
     int		col;
     int		repeated_click;
     int_u	mods;
+    int		move;
 
-    if (dict_find(args, (char_u *)"button", -1) == NULL
-	    || dict_find(args, (char_u *)"row", -1) == NULL
-	    || dict_find(args, (char_u *)"col", -1) == NULL
-	    || dict_find(args, (char_u *)"multiclick", -1) == NULL
-	    || dict_find(args, (char_u *)"modifiers", -1) == NULL)
+    if (!dict_has_key(args, "row")
+	    || !dict_has_key(args, "col"))
 	return FALSE;
 
-    button = (int)dict_get_number(args, (char_u *)"button");
+    // Note: "move" is optional, requires fewer arguments
+    move = (int)dict_get_bool(args, (char_u *)"move", FALSE);
+
+    if (!move && (!dict_has_key(args, "button")
+	    || !dict_has_key(args, "multiclick")
+	    || !dict_has_key(args, "modifiers")))
+	return FALSE;
+
     row = (int)dict_get_number(args, (char_u *)"row");
     col = (int)dict_get_number(args, (char_u *)"col");
-    repeated_click = (int)dict_get_number(args, (char_u *)"multiclick");
-    mods = (int)dict_get_number(args, (char_u *)"modifiers");
 
-    gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
+    if (move)
+	gui_mouse_moved(col, row);
+    else
+    {
+	button = (int)dict_get_number(args, (char_u *)"button");
+	repeated_click = (int)dict_get_number(args, (char_u *)"multiclick");
+	mods = (int)dict_get_number(args, (char_u *)"modifiers");
+
+	// Reset the scroll values to known values.
+	// XXX: Remove this when/if the scroll step is made configurable.
+	mouse_set_hor_scroll_step(6);
+	mouse_set_vert_scroll_step(3);
+
+	gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
 							repeated_click, mods);
+    }
+
     return TRUE;
 }
 
@@ -1395,9 +1413,9 @@ test_gui_scrollbar(dict_T *args)
     int		dragging;
     scrollbar_T *sb = NULL;
 
-    if (dict_find(args, (char_u *)"which", -1) == NULL
-	    || dict_find(args, (char_u *)"value", -1) == NULL
-	    || dict_find(args, (char_u *)"dragging", -1) == NULL)
+    if (!dict_has_key(args, "which")
+	    || !dict_has_key(args, "value")
+	    || !dict_has_key(args, "dragging"))
 	return FALSE;
 
     which = dict_get_string(args, (char_u *)"which", FALSE);
@@ -1430,7 +1448,7 @@ test_gui_tabline_event(dict_T *args UNUSED)
 #  ifdef FEAT_GUI_TABLINE
     int		tabnr;
 
-    if (dict_find(args, (char_u *)"tabnr", -1) == NULL)
+    if (!dict_has_key(args, "tabnr"))
 	return FALSE;
 
     tabnr = (int)dict_get_number(args, (char_u *)"tabnr");
@@ -1448,8 +1466,8 @@ test_gui_tabmenu_event(dict_T *args UNUSED)
     int	tabnr;
     int	item;
 
-    if (dict_find(args, (char_u *)"tabnr", -1) == NULL
-	    || dict_find(args, (char_u *)"item", -1) == NULL)
+    if (!dict_has_key(args, "tabnr")
+	    || !dict_has_key(args, "item"))
 	return FALSE;
 
     tabnr = (int)dict_get_number(args, (char_u *)"tabnr");

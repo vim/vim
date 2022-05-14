@@ -44,9 +44,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             except socket.error:
                 print("=== socket error ===")
                 break
-            except IOError:
-                print("=== socket closed ===")
-                break
             if data == '':
                 print("=== socket closed ===")
                 break

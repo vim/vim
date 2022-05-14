@@ -391,7 +391,7 @@ normal_cmd_get_more_chars(
     {
 	if (repl)
 	{
-	    State = REPLACE;	// pretend Replace mode
+	    State = MODE_REPLACE;	// pretend Replace mode
 #ifdef CURSOR_SHAPE
 	    ui_cursor_shape();	// show different cursor shape
 #endif
@@ -402,9 +402,9 @@ normal_cmd_get_more_chars(
 	    --no_mapping;
 	    --allow_keys;
 	    if (repl)
-		State = LREPLACE;
+		State = MODE_LREPLACE;
 	    else
-		State = LANGMAP;
+		State = MODE_LANGMAP;
 	    langmap_active = TRUE;
 	}
 #ifdef HAVE_INPUT_METHOD
@@ -413,7 +413,7 @@ normal_cmd_get_more_chars(
 	if (lang && curbuf->b_p_iminsert == B_IMODE_IM)
 	    im_set_active(TRUE);
 #endif
-	if ((State & INSERT) && !p_ek)
+	if ((State & MODE_INSERT) && !p_ek)
 	{
 #ifdef FEAT_JOB_CHANNEL
 	    ch_log_output = TRUE;
@@ -426,7 +426,7 @@ normal_cmd_get_more_chars(
 
 	*cp = plain_vgetc();
 
-	if ((State & INSERT) && !p_ek)
+	if ((State & MODE_INSERT) && !p_ek)
 	{
 #ifdef FEAT_JOB_CHANNEL
 	    ch_log_output = TRUE;
@@ -441,7 +441,7 @@ normal_cmd_get_more_chars(
 	    // Undo the decrement done above
 	    ++no_mapping;
 	    ++allow_keys;
-	    State = NORMAL_BUSY;
+	    State = MODE_NORMAL_BUSY;
 	}
 #ifdef HAVE_INPUT_METHOD
 	if (lang)
@@ -452,7 +452,7 @@ normal_cmd_get_more_chars(
 	}
 	p_smd = save_smd;
 #endif
-	State = NORMAL_BUSY;
+	State = MODE_NORMAL_BUSY;
 #ifdef FEAT_CMDL_INFO
 	*need_flushbuf |= add_to_showcmd(*cp);
 #endif
@@ -606,7 +606,7 @@ normal_cmd_wait_for_msg(void)
 
     // Draw the cursor with the right shape here
     if (restart_edit != 0)
-	State = INSERT;
+	State = MODE_INSERT;
 
     // If need to redraw, and there is a "keep_msg", redraw before the
     // delay
@@ -689,7 +689,7 @@ normal_cmd(
 # endif
     }
 #endif
-    trigger_modechanged();
+    may_trigger_modechanged();
 
     // When not finishing an operator and no register name typed, reset the
     // count.
@@ -714,7 +714,7 @@ normal_cmd(
 
     mapped_len = typebuf_maplen();
 
-    State = NORMAL_BUSY;
+    State = MODE_NORMAL_BUSY;
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = FALSE;	// allow scrolling here
 #endif
@@ -731,7 +731,7 @@ normal_cmd(
      * Get the command character from the user.
      */
     c = safe_vgetc();
-    LANGMAP_ADJUST(c, get_real_state() != SELECTMODE);
+    LANGMAP_ADJUST(c, get_real_state() != MODE_SELECT);
 
     // If a mapping was started in Visual or Select mode, remember the length
     // of the mapping.  This is used below to not return to Insert mode for as
@@ -888,7 +888,7 @@ normal_cmd(
 	    did_cursorhold = FALSE;
     }
 
-    State = NORMAL;
+    State = MODE_NORMAL;
 
     if (ca.nchar == ESC)
     {
@@ -971,7 +971,7 @@ normal_end:
     c = finish_op;
 #endif
     finish_op = FALSE;
-    trigger_modechanged();
+    may_trigger_modechanged();
 #ifdef CURSOR_SHAPE
     // Redraw the cursor with another shape, if we were in Operator-pending
     // mode or did a replace command.
@@ -1027,7 +1027,7 @@ normal_end:
 	if (restart_VIsual_select == 1)
 	{
 	    VIsual_select = TRUE;
-	    trigger_modechanged();
+	    may_trigger_modechanged();
 	    showmode();
 	    restart_VIsual_select = 0;
 	    VIsual_select_reg = 0;
@@ -1151,7 +1151,7 @@ end_visual_mode_keep_button()
     may_clear_cmdline();
 
     adjust_cursor_eol();
-    trigger_modechanged();
+    may_trigger_modechanged();
 }
 
 /*
@@ -2644,7 +2644,7 @@ nv_zet(cmdarg_T *cap)
     long	old_fdl = curwin->w_p_fdl;
     int		old_fen = curwin->w_p_fen;
 #endif
-    long        siso = get_sidescrolloff_value();
+    long	siso = get_sidescrolloff_value();
 
     if (VIM_ISDIGIT(nchar) && !nv_z_get_count(cap, &nchar))
 	    return;
@@ -3222,7 +3222,7 @@ nv_ctrlg(cmdarg_T *cap)
     if (VIsual_active)	// toggle Selection/Visual mode
     {
 	VIsual_select = !VIsual_select;
-	trigger_modechanged();
+	may_trigger_modechanged();
 	showmode();
     }
     else if (!checkclearop(cap->oap))
@@ -3285,7 +3285,7 @@ nv_ctrlo(cmdarg_T *cap)
     if (VIsual_active && VIsual_select)
     {
 	VIsual_select = FALSE;
-	trigger_modechanged();
+	may_trigger_modechanged();
 	showmode();
 	restart_VIsual_select = 2;	// restart Select mode later
     }
@@ -4153,6 +4153,7 @@ nv_search(cmdarg_T *cap)
 						      ? 0 : SEARCH_MARK, NULL);
 }
 
+
 /*
  * Handle "N" and "n" commands.
  * cap->arg is SEARCH_REV for "N", 0 for "n".
@@ -4173,6 +4174,12 @@ nv_next(cmdarg_T *cap)
 	(void)normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg, NULL);
 	cap->count1 -= 1;
     }
+
+#ifdef FEAT_SEARCH_EXTRA
+    // Redraw the window to refresh the highlighted matches.
+    if (i > 0 && p_hls && !no_hlsearch)
+	redraw_later(SOME_VALID);
+#endif
 }
 
 /*
@@ -4190,6 +4197,9 @@ normal_search(
 {
     int		i;
     searchit_arg_T sia;
+#ifdef FEAT_SEARCH_EXTRA
+    pos_T	prev_cursor = curwin->w_cursor;
+#endif
 
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
@@ -4213,6 +4223,11 @@ normal_search(
 	    foldOpenCursor();
 #endif
     }
+#ifdef FEAT_SEARCH_EXTRA
+    // Redraw the window to refresh the highlighted matches.
+    if (!EQUAL_POS(curwin->w_cursor, prev_cursor) && p_hls && !no_hlsearch)
+	redraw_later(SOME_VALID);
+#endif
 
     // "/$" will put the cursor after the end of the line, may need to
     // correct that here
@@ -4858,7 +4873,7 @@ nv_replace(cmdarg_T *cap)
 	    // composing characters for utf-8.
 	    for (n = cap->count1; n > 0; --n)
 	    {
-		State = REPLACE;
+		State = MODE_REPLACE;
 		if (cap->nchar == Ctrl_E || cap->nchar == Ctrl_Y)
 		{
 		    int c = ins_copychar(curwin->w_cursor.lnum
@@ -5422,7 +5437,7 @@ nv_visual(cmdarg_T *cap)
 	{				    //	   or char/line mode
 	    VIsual_mode = cap->cmdchar;
 	    showmode();
-	    trigger_modechanged();
+	    may_trigger_modechanged();
 	}
 	redraw_curbuf_later(INVERTED);	    // update the inversion
     }
@@ -5512,12 +5527,13 @@ start_selection(void)
 
 /*
  * Start Select mode, if "c" is in 'selectmode' and not in a mapping or menu.
+ * When "c" is 'o' (checking for "mouse") then also when mapped.
  */
     void
 may_start_select(int c)
 {
-    VIsual_select = (stuff_empty() && typebuf_typed()
-		    && (vim_strchr(p_slm, c) != NULL));
+    VIsual_select = (c == 'o' || (stuff_empty() && typebuf_typed()))
+		    && vim_strchr(p_slm, c) != NULL;
 }
 
 /*
@@ -5549,7 +5565,7 @@ n_start_visual_mode(int c)
     foldAdjustVisual();
 #endif
 
-    trigger_modechanged();
+    may_trigger_modechanged();
     setmouse();
 #ifdef FEAT_CONCEAL
     // Check if redraw is needed after changing the state.
@@ -6291,7 +6307,7 @@ nv_redo_or_register(cmdarg_T *cap)
 	    // the unnamed register is 0
 	    reg = 0;
 
-        VIsual_select_reg = valid_yank_reg(reg, TRUE) ? reg : 0;
+	VIsual_select_reg = valid_yank_reg(reg, TRUE) ? reg : 0;
 	return;
     }
 
@@ -6815,7 +6831,7 @@ set_cursor_for_append_to_line(void)
 
 	// Pretend Insert mode here to allow the cursor on the
 	// character past the end of the line
-	State = INSERT;
+	State = MODE_INSERT;
 	coladvance((colnr_T)MAXCOL);
 	State = save_State;
     }
@@ -6880,6 +6896,7 @@ nv_edit(cmdarg_T *cap)
     {
 	pos_T old_pos = curwin->w_cursor;
 	pos_T old_visual = VIsual;
+	int old_visual_mode = VIsual_mode;
 
 	// In Visual mode the selected text is deleted.
 	if (VIsual_mode == 'V' || curwin->w_cursor.lnum != VIsual.lnum)
@@ -6895,11 +6912,32 @@ nv_edit(cmdarg_T *cap)
 	do_pending_operator(cap, 0, FALSE);
 	cap->cmdchar = K_PS;
 
-	// When the last char in the line was deleted then append. Detect this
-	// by checking if the cursor moved to before the Visual area.
-	if (*ml_get_cursor() != NUL && LT_POS(curwin->w_cursor, old_pos)
-				       && LT_POS(curwin->w_cursor, old_visual))
-	    inc_cursor();
+	if (*ml_get_cursor() != NUL)
+	{
+	    if (old_visual_mode == 'V')
+	    {
+		// In linewise Visual mode insert before the beginning of the
+		// next line.
+		// When the last line in the buffer was deleted then create a
+		// new line, otherwise there is not need to move cursor.
+		// Detect this by checking if cursor moved above Visual area.
+		if (curwin->w_cursor.lnum < old_pos.lnum
+				&& curwin->w_cursor.lnum < old_visual.lnum)
+		{
+		    if (u_save_cursor() == OK)
+		    {
+			ml_append(curwin->w_cursor.lnum, (char_u *)"", 0,
+									FALSE);
+			appended_lines(curwin->w_cursor.lnum++, 1L);
+		    }
+		}
+	    }
+	    // When the last char in the line was deleted then append.
+	    // Detect this by checking if cursor moved before Visual area.
+	    else if (curwin->w_cursor.col < old_pos.col
+				&& curwin->w_cursor.col < old_visual.col)
+		inc_cursor();
+	}
 
 	// Insert to replace the deleted text with the pasted text.
 	invoke_edit(cap, FALSE, cap->cmdchar, FALSE);
@@ -6945,7 +6983,7 @@ nv_edit(cmdarg_T *cap)
 
 	    // Pretend Insert mode here to allow the cursor on the
 	    // character past the end of the line
-	    State = INSERT;
+	    State = MODE_INSERT;
 	    coladvance(getviscol());
 	    State = save_State;
 	}
@@ -7198,8 +7236,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
     int		was_visual = FALSE;
     int		dir;
     int		flags = 0;
-    int		save_unnamed = FALSE;
-    yankreg_T	*old_y_current, *old_y_previous;
+    int		keep_registers = FALSE;
 
     if (cap->oap->op_type != OP_NOP)
     {
@@ -7246,7 +7283,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    // overwrites if the old contents is being put.
 	    was_visual = TRUE;
 	    regname = cap->oap->regname;
-	    save_unnamed = cap->cmdchar == 'P';
+	    keep_registers = cap->cmdchar == 'P';
 #ifdef FEAT_CLIPBOARD
 	    adjust_clip_reg(&regname);
 #endif
@@ -7264,25 +7301,14 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    }
 
 	    // Now delete the selected text. Avoid messages here.
-	    if (save_unnamed)
-	    {
-		old_y_current = get_y_current();
-		old_y_previous = get_y_previous();
-	    }
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
-	    cap->oap->regname = NUL;
+	    cap->oap->regname = keep_registers ? '_' : NUL;
 	    ++msg_silent;
 	    nv_operator(cap);
 	    do_pending_operator(cap, 0, FALSE);
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 	    --msg_silent;
-
-	    if (save_unnamed)
-	    {
-		set_y_current(old_y_current);
-		set_y_previous(old_y_previous);
-	    }
 
 	    // delete PUT_LINE_BACKWARD;
 	    cap->oap->regname = regname;

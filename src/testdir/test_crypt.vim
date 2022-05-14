@@ -172,7 +172,7 @@ func Test_uncrypt_xchacha20_2()
   call assert_equal(range(1, 4000)->map( {_, v -> string(v)}), getline(1,'$'))
   set key=
   w! ++ff=unix
-  " enryption removed (on MS-Windows the .* matches [unix])
+  " encryption removed (on MS-Windows the .* matches [unix])
   call assert_match('"Xcrypt_sodium.txt".*4000L, 18893B written', execute(':message'))
   bw!
   call delete('Xcrypt_sodium.txt')

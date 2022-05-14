@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Feb 04
+" Last Change:	2022 Mar 02
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -378,7 +378,7 @@ def s:SetupColorSchemes()
   n += globpath(&packpath, "pack/*/opt/*/colors/*.vim", 1, 1)
 
   # Ignore case for VMS and windows, sort on name
-  var names = sort(map(n, 'substitute(v:val, "\\c.*[/\\\\:\\]]\\([^/\\\\:]*\\)\\.vim", "\\1", "")'), 1)
+  var names = sort(map(n, 'substitute(v:val, "\\c.*[/\\\\:\\]]\\([^/\\\\:]*\\)\\.vim", "\\1", "")'), 'i')
 
   # define all the submenu entries
   var idx = 100
@@ -583,9 +583,9 @@ def s:XxdConv()
     :%!mc vim:xxd
   else
     s:XxdFind()
-    exe '%!' .. g:xxdprogram
+    exe ':%!' .. g:xxdprogram
   endif
-  if getline(1) =~ "^0000000:"		# only if it worked
+  if getline(1) =~ "^00000000:"		# only if it worked
     set ft=xxd
   endif
   &mod = mod
@@ -597,7 +597,7 @@ def s:XxdBack()
     :%!mc vim:xxd -r
   else
     s:XxdFind()
-    exe '%!' .. g:xxdprogram .. ' -r'
+    exe ':%!' .. g:xxdprogram .. ' -r'
   endif
   set ft=
   doautocmd filetypedetect BufReadPost

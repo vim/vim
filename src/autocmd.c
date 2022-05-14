@@ -55,7 +55,7 @@ typedef struct AutoCmd
     char	    once;		// "One shot": removed after execution
     char	    nested;		// If autocommands nest here.
     char	    last;		// last command in list
-    sctx_T	    script_ctx;		// script context where defined
+    sctx_T	    script_ctx;		// script context where it is defined
     struct AutoCmd  *next;		// next AutoCmd in list
 } AutoCmd;
 
@@ -190,6 +190,7 @@ static struct event_name
     {"WinClosed",	EVENT_WINCLOSED},
     {"WinEnter",	EVENT_WINENTER},
     {"WinLeave",	EVENT_WINLEAVE},
+    {"WinScrolled",	EVENT_WINSCROLLED},
     {"VimResized",	EVENT_VIMRESIZED},
     {"TextYankPost",	EVENT_TEXTYANKPOST},
     {"VimSuspend",	EVENT_VIMSUSPEND},
@@ -233,12 +234,13 @@ struct AutoPatCmd_S
     char_u	*sfname;	// sfname to match with
     char_u	*tail;		// tail of fname
     event_T	event;		// current event
+    sctx_T	script_ctx;	// script context where it is defined
     int		arg_bufnr;	// Initially equal to <abuf>, set to zero when
 				// buf is deleted.
-    AutoPatCmd   *next;		// chain of active apc-s for auto-invalidation
+    AutoPatCmd_T *next;		// chain of active apc-s for auto-invalidation
 };
 
-static AutoPatCmd *active_apc_list = NULL; // stack of active autocommands
+static AutoPatCmd_T *active_apc_list = NULL; // stack of active autocommands
 
 // Macro to loop over all the patterns for an autocmd event
 #define FOR_ALL_AUTOCMD_PATTERNS(event, ap) \
@@ -263,7 +265,7 @@ static char_u *event_nr2name(event_T event);
 static int au_get_grouparg(char_u **argp);
 static int do_autocmd_event(event_T event, char_u *pat, int once, int nested, char_u *cmd, int forceit, int group, int flags);
 static int apply_autocmds_group(event_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap);
-static void auto_next_pat(AutoPatCmd *apc, int stop_at_last);
+static void auto_next_pat(AutoPatCmd_T *apc, int stop_at_last);
 static int au_find_group(char_u *name);
 
 static event_T	last_event;
@@ -452,9 +454,9 @@ au_cleanup(void)
     void
 aubuflocal_remove(buf_T *buf)
 {
-    AutoPat	*ap;
-    event_T	event;
-    AutoPatCmd	*apc;
+    AutoPat	    *ap;
+    event_T	    event;
+    AutoPatCmd_T    *apc;
 
     // invalidate currently executing autocommands
     for (apc = active_apc_list; apc; apc = apc->next)
@@ -921,16 +923,30 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 		if ((STRNCMP(cmd, "++nested", 8) == 0 && VIM_ISWHITE(cmd[8])))
 		{
 		    if (nested)
+		    {
 			semsg(_(e_duplicate_argument_str), "++nested");
+			return;
+		    }
 		    nested = TRUE;
 		    cmd = skipwhite(cmd + 8);
 		}
 
-		// Check for the old "nested" flag.
+		// Check for the old "nested" flag in legacy script.
 		if (STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6]))
 		{
+		    if (in_vim9script())
+		    {
+			// If there ever is a :nested command this error should
+			// be removed and "nested" accepted as the start of the
+			// command.
+			emsg(_(e_invalid_command_nested_did_you_mean_plusplus_nested));
+			return;
+		    }
 		    if (nested)
+		    {
 			semsg(_(e_duplicate_argument_str), "nested");
+			return;
+		    }
 		    nested = TRUE;
 		    cmd = skipwhite(cmd + 6);
 		}
@@ -1225,18 +1241,17 @@ do_autocmd_event(
 		// need to initialize last_mode for the first ModeChanged
 		// autocmd
 		if (event == EVENT_MODECHANGED && !has_modechanged())
-		{
-		    typval_T rettv;
-		    typval_T tv[2];
-
-		    tv[0].v_type = VAR_NUMBER;
-		    tv[0].vval.v_number = 1;
-		    tv[1].v_type = VAR_UNKNOWN;
-		    f_mode(tv, &rettv);
-		    STRCPY(last_mode, rettv.vval.v_string);
-		    vim_free(rettv.vval.v_string);
-		}
+		    get_mode(last_mode);
 #endif
+		// Initialize the fields checked by the WinScrolled trigger to
+		// stop it from firing right after the first autocmd is defined.
+		if (event == EVENT_WINSCROLLED && !has_winscrolled())
+		{
+		    curwin->w_last_topline = curwin->w_topline;
+		    curwin->w_last_leftcol = curwin->w_leftcol;
+		    curwin->w_last_width = curwin->w_width;
+		    curwin->w_last_height = curwin->w_height;
+		}
 
 		if (is_buflocal)
 		{
@@ -1743,7 +1758,7 @@ apply_autocmds_retval(
     static int
 has_cursorhold(void)
 {
-    return (first_autopat[(int)(get_real_state() == NORMAL_BUSY
+    return (first_autopat[(int)(get_real_state() == MODE_NORMAL_BUSY
 			    ? EVENT_CURSORHOLD : EVENT_CURSORHOLDI)] != NULL);
 }
 
@@ -1762,10 +1777,19 @@ trigger_cursorhold(void)
 	    && !ins_compl_active())
     {
 	state = get_real_state();
-	if (state == NORMAL_BUSY || (state & INSERT) != 0)
+	if (state == MODE_NORMAL_BUSY || (state & MODE_INSERT) != 0)
 	    return TRUE;
     }
     return FALSE;
+}
+
+/*
+ * Return TRUE when there is a WinScrolled autocommand defined.
+ */
+    int
+has_winscrolled(void)
+{
+    return (first_autopat[(int)EVENT_WINSCROLLED] != NULL);
 }
 
 /*
@@ -1891,7 +1915,7 @@ apply_autocmds_group(
     int		save_autocmd_busy;
     int		save_autocmd_nested;
     static int	nesting = 0;
-    AutoPatCmd	patcmd;
+    AutoPatCmd_T patcmd;
     AutoPat	*ap;
     sctx_T	save_current_sctx;
 #ifdef FEAT_EVAL
@@ -2064,7 +2088,8 @@ apply_autocmds_group(
 		|| event == EVENT_DIRCHANGEDPRE
 		|| event == EVENT_MODECHANGED
 		|| event == EVENT_USER
-		|| event == EVENT_WINCLOSED)
+		|| event == EVENT_WINCLOSED
+		|| event == EVENT_WINSCROLLED)
 	{
 	    fname = vim_strsave(fname);
 	    autocmd_fname_full = TRUE; // don't expand it later
@@ -2149,15 +2174,14 @@ apply_autocmds_group(
     tail = gettail(fname);
 
     // Find first autocommand that matches
+    CLEAR_FIELD(patcmd);
     patcmd.curpat = first_autopat[(int)event];
-    patcmd.nextcmd = NULL;
     patcmd.group = group;
     patcmd.fname = fname;
     patcmd.sfname = sfname;
     patcmd.tail = tail;
     patcmd.event = event;
     patcmd.arg_bufnr = autocmd_bufnr;
-    patcmd.next = NULL;
     auto_next_pat(&patcmd, FALSE);
 
     // found one, start executing the autocommands
@@ -2339,16 +2363,21 @@ is_autocmd_blocked(void)
  */
     static void
 auto_next_pat(
-    AutoPatCmd	*apc,
+    AutoPatCmd_T *apc,
     int		stop_at_last)	    // stop when 'last' flag is set
 {
     AutoPat	*ap;
     AutoCmd	*cp;
     char_u	*name;
     char	*s;
-    char_u	**sourcing_namep = &SOURCING_NAME;
+    estack_T	*entry;
+    char_u	*namep;
 
-    VIM_CLEAR(*sourcing_namep);
+    entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
+
+    // Clear the exestack entry for this ETYPE_AUCMD entry.
+    VIM_CLEAR(entry->es_name);
+    entry->es_info.aucmd = NULL;
 
     for (ap = apc->curpat; ap != NULL && !got_int; ap = ap->next)
     {
@@ -2368,19 +2397,21 @@ auto_next_pat(
 	    {
 		name = event_nr2name(apc->event);
 		s = _("%s Autocommands for \"%s\"");
-		*sourcing_namep = alloc(STRLEN(s)
-					      + STRLEN(name) + ap->patlen + 1);
-		if (*sourcing_namep != NULL)
+		namep = alloc(STRLEN(s) + STRLEN(name) + ap->patlen + 1);
+		if (namep != NULL)
 		{
-		    sprintf((char *)*sourcing_namep, s,
-					       (char *)name, (char *)ap->pat);
+		    sprintf((char *)namep, s, (char *)name, (char *)ap->pat);
 		    if (p_verbose >= 8)
 		    {
 			verbose_enter();
-			smsg(_("Executing %s"), *sourcing_namep);
+			smsg(_("Executing %s"), namep);
 			verbose_leave();
 		    }
 		}
+
+		// Update the exestack entry for this autocmd.
+		entry->es_name = namep;
+		entry->es_info.aucmd = apc;
 
 		apc->curpat = ap;
 		apc->nextcmd = ap->cmds;
@@ -2399,6 +2430,15 @@ auto_next_pat(
 }
 
 /*
+ * Get the script context where autocommand "acp" is defined.
+ */
+    sctx_T *
+acp_script_ctx(AutoPatCmd_T *acp)
+{
+    return &acp->script_ctx;
+}
+
+/*
  * Get next autocommand command.
  * Called by do_cmdline() to get the next line for ":if".
  * Returns allocated string, or NULL for end of autocommands.
@@ -2410,7 +2450,7 @@ getnextac(
 	int indent UNUSED,
 	getline_opt_T options UNUSED)
 {
-    AutoPatCmd	    *acp = (AutoPatCmd *)cookie;
+    AutoPatCmd_T    *acp = (AutoPatCmd_T *)cookie;
     char_u	    *retval;
     AutoCmd	    *ac;
 
@@ -2457,6 +2497,7 @@ getnextac(
 	au_del_cmd(ac);
     autocmd_nested = ac->nested;
     current_sctx = ac->script_ctx;
+    acp->script_ctx = current_sctx;
     if (ac->last)
 	acp->nextcmd = NULL;
     else

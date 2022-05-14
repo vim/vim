@@ -118,6 +118,8 @@ func Test_blob_assign()
       LET b[1 : 1] ..= 0z55
   END
   call v9.CheckLegacyAndVim9Failure(lines, ['E734:', 'E1183:', 'E734:'])
+
+  call assert_fails('let b = readblob("a1b2c3")', 'E484:')
 endfunc
 
 func Test_blob_get_range()
@@ -210,6 +212,8 @@ func Test_blob_compare()
       call assert_true(b1 == b2)
       call assert_false(b1 is b2)
       call assert_true(b1 isnot b2)
+      call assert_true(0z != 0z10)
+      call assert_true(0z10 != 0z)
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
@@ -266,7 +270,8 @@ func Test_blob_index_assign()
       VAR b = 0z00
       LET b[1] = 0x11
       LET b[2] = 0x22
-      call assert_equal(0z001122, b)
+      LET b[0] = 0x33
+      call assert_equal(0z331122, b)
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
@@ -279,6 +284,18 @@ func Test_blob_index_assign()
   let lines =<< trim END
       VAR b = 0z00
       LET b[-2] = 0x33
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, 'E979:')
+
+  let lines =<< trim END
+      VAR b = 0z00010203
+      LET b[0 : -1] = 0z33
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, 'E979:')
+
+  let lines =<< trim END
+      VAR b = 0z00010203
+      LET b[3 : 4] = 0z3344
   END
   call v9.CheckLegacyAndVim9Failure(lines, 'E979:')
 endfunc
@@ -423,6 +440,12 @@ func Test_blob_func_remove()
   let lines =<< trim END
       VAR b = 0zDEADBEEF
       call remove(b, 1, 5)
+  END
+  call v9.CheckLegacyAndVim9Failure(lines, 'E979:')
+
+  let lines =<< trim END
+      VAR b = 0zDEADBEEF
+      call remove(b, -10)
   END
   call v9.CheckLegacyAndVim9Failure(lines, 'E979:')
 
@@ -700,6 +723,45 @@ func Test_blob2string()
   let v ..= '01'
   exe 'let b = ' .. v
   call assert_equal(v, string(b))
+endfunc
+
+" Test for blob allocation failure
+func Test_blob_alloc_failure()
+  " blob variable
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let v = 0z10', 'E342:')
+
+  " blob slice
+  let v = 0z1020
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = v[0:0]', 'E342:')
+  call assert_equal(0z1020, x)
+
+  " blob remove()
+  let v = 0z10203040
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = remove(v, 1, 2)', 'E342:')
+  call assert_equal(0, x)
+
+  " list2blob()
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let a = list2blob([1, 2, 4])', 'E342:')
+  call assert_equal(0, a)
+
+  " mapnew()
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = mapnew(0z1234, {_, v -> 1})', 'E342:')
+  call assert_equal(0, x)
+
+  " copy()
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = copy(v)', 'E342:')
+  call assert_equal(0z, x)
+
+  " readblob()
+  call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
+  call assert_fails('let x = readblob("test_blob.vim")', 'E342:')
+  call assert_equal(0, x)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

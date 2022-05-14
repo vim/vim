@@ -40,6 +40,7 @@ if test $what = "install" -o $what = "xxd"; then
    if test ! -d $destdir; then
       echo creating $destdir
       /bin/sh install-sh -c -d $destdir
+      chmod 755 $destdir
    fi
 fi
 

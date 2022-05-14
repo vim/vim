@@ -337,7 +337,11 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
     if (tv->v_type == VAR_STRING)
 	return &t_string;
     if (tv->v_type == VAR_BLOB)
+    {
+	if (tv->vval.v_blob == NULL)
+	    return &t_blob_null;
 	return &t_blob;
+    }
 
     if (tv->v_type == VAR_LIST)
     {
@@ -420,6 +424,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	}
 	else
 	    name = tv->vval.v_string;
+	if (name == NULL && ufunc == NULL)
+	    return &t_func_unknown;
 	if (name != NULL)
 	{
 	    int idx = find_internal_func(name);
@@ -457,7 +463,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		    {
 			type->tt_argcount -= tv->vval.v_partial->pt_argc;
 			type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
-			if (type->tt_argcount == 0)
+			if (type->tt_argcount <= 0)
 			    type->tt_args = NULL;
 			else
 			{
@@ -567,22 +573,19 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 
     if (expected == NULL)
 	return OK;  // didn't expect anything.
+		    //
+    ga_init2(&type_list, sizeof(type_T *), 10);
 
-    // For some values there is no type, assume an error will be given later
-    // for an invalid value.
+    // A null_function and null_partial are special cases, they can be used to
+    // clear a variable.
     if ((actual_tv->v_type == VAR_FUNC && actual_tv->vval.v_string == NULL)
 	    || (actual_tv->v_type == VAR_PARTIAL
 					 && actual_tv->vval.v_partial == NULL))
-    {
-	emsg(_(e_function_reference_is_not_set));
-	return FAIL;
-    }
-
-    ga_init2(&type_list, sizeof(type_T *), 10);
-
-    // When the actual type is list<any> or dict<any> go through the values to
-    // possibly get a more specific type.
-    actual_type = typval2type(actual_tv, get_copyID(), &type_list,
+	actual_type = &t_func_unknown;
+    else
+	// When the actual type is list<any> or dict<any> go through the values
+	// to possibly get a more specific type.
+	actual_type = typval2type(actual_tv, get_copyID(), &type_list,
 					  TVTT_DO_MEMBER | TVTT_MORE_SPECIFIC);
     if (actual_type != NULL)
     {
@@ -777,12 +780,12 @@ check_argument_types(
 	return OK;  // just in case
     if (totcount < type->tt_min_argcount - varargs)
     {
-	semsg(_(e_not_enough_arguments_for_function_str), name);
+	emsg_funcname(e_not_enough_arguments_for_function_str, name);
 	return FAIL;
     }
     if (!varargs && type->tt_argcount >= 0 && totcount > type->tt_argcount)
     {
-	semsg(_(e_too_many_arguments_for_function_str), name);
+	emsg_funcname(e_too_many_arguments_for_function_str, name);
 	return FAIL;
     }
     if (type->tt_args == NULL)
@@ -1235,6 +1238,19 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 	if (type1->tt_type == VAR_FUNC)
 	{
 	    type_T *common;
+
+	    // When one of the types is t_func_unknown return the other one.
+	    // Useful if a list or dict item is null_func.
+	    if (type1 == &t_func_unknown)
+	    {
+		*dest = type2;
+		return;
+	    }
+	    if (type2 == &t_func_unknown)
+	    {
+		*dest = type1;
+		return;
+	    }
 
 	    common_type(type1->tt_member, type2->tt_member, &common, type_gap);
 	    if (type1->tt_argcount == type2->tt_argcount

@@ -22,7 +22,7 @@ static void do_showbacktrace(char_u *cmd);
 
 static char_u *debug_oldval = NULL;	// old and newval for debug expressions
 static char_u *debug_newval = NULL;
-static int     debug_expr   = 0;        // use debug_expr
+static int     debug_expr   = 0;	// use debug_expr
 
     int
 has_watchexpr(void)
@@ -88,7 +88,7 @@ do_debug(char_u *cmd)
     emsg_silent = FALSE;	// display error messages
     redir_off = TRUE;		// don't redirect debug commands
 
-    State = NORMAL;
+    State = MODE_NORMAL;
     debug_mode = TRUE;
 
     if (!debug_did_msg)
@@ -989,7 +989,12 @@ debuggy_find(
 		}
 		else
 		{
-		    if (typval_compare(tv, bp->dbg_val, EXPR_IS, FALSE) == OK
+		    // Use "==" instead of "is" for strings, that is what we
+		    // always have done.
+		    exprtype_T	type = tv->v_type == VAR_STRING
+							? EXPR_EQUAL : EXPR_IS;
+
+		    if (typval_compare(tv, bp->dbg_val, type, FALSE) == OK
 			    && tv->vval.v_number == FALSE)
 		    {
 			typval_T *v;

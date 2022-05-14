@@ -91,6 +91,31 @@ func Test_multi_failure()
   set re=0
 endfunc
 
+func Test_column_success_failure()
+  new
+  call setline(1, 'xbar')
+
+  set re=1
+  %s/\%>0v./A/
+  call assert_equal('Abar', getline(1))
+  call assert_fails('/\%v', 'E71:')
+  call assert_fails('/\%>v', 'E71:')
+  call assert_fails('/\%c', 'E71:')
+  call assert_fails('/\%<c', 'E71:')
+  call assert_fails('/\%l', 'E71:')
+  set re=2
+  %s/\%>0v./B/
+  call assert_equal('Bbar', getline(1))
+  call assert_fails('/\%v', 'E1273:')
+  call assert_fails('/\%>v', 'E1273:')
+  call assert_fails('/\%c', 'E1273:')
+  call assert_fails('/\%<c', 'E1273:')
+  call assert_fails('/\%l', 'E1273:')
+
+  set re=0
+  bwipe!
+endfunc
+
 func Test_recursive_addstate()
   " This will call addstate() recursively until it runs into the limit.
   let lnum = search('\v((){328}){389}')
@@ -799,7 +824,7 @@ func Test_matchstr_with_ze()
   bwipe!
 endfunc
 
-" Check a pattern with a look beind crossing a line boundary
+" Check a pattern with a look behind crossing a line boundary
 func Test_lookbehind_across_line()
   new
   call append(0, ['Behind:', 'asdfasd<yyy', 'xxstart1', 'asdfasd<yy',
@@ -1042,9 +1067,16 @@ endfunc
 
 func Test_using_mark_position()
   " this was using freed memory
+  " new engine
   new
   norm O0
   call assert_fails("s/\\%')", 'E486:')
+  bwipe!
+
+  " old engine
+  new
+  norm O0
+  call assert_fails("s/\\%#=1\\%')", 'E486:')
   bwipe!
 endfunc
 

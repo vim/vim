@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Feb 05
+# Last Change:	2022 Apr 13
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -83,7 +83,7 @@ export def FTbas()
     setf freebasic
   elseif match(lines, qb64_preproc) > -1
     setf qb64
-  elseif match(lines, s:ft_visual_basic_content) > -1
+  elseif match(lines, ft_visual_basic_content) > -1
     setf vb
   else
     setf basic
@@ -104,6 +104,25 @@ export def BindzoneCheck(default = '')
     setf bindzone
   elseif default != ''
     exe 'setf ' .. default
+  endif
+enddef
+
+# Returns true if file content looks like RAPID
+def IsRapid(sChkExt: string = ""): bool
+  if sChkExt == "cfg"
+    return getline(1) =~? '\v^%(EIO|MMC|MOC|PROC|SIO|SYS):CFG'
+  endif
+  # called from FTmod, FTprg or FTsys
+  return getline(nextnonblank(1)) =~? '\v^\s*%(\%{3}|module\s+\k+\s*%(\(|$))'
+enddef
+
+export def FTcfg()
+  if exists("g:filetype_cfg")
+    exe "setf " .. g:filetype_cfg
+  elseif IsRapid("cfg")
+    setf rapid
+  else
+    setf cfg
   endif
 enddef
 
@@ -168,7 +187,7 @@ enddef
 
 export def FTent()
   # This function checks for valid cl syntax in the first five lines.
-  # Look for either an opening comment, '#', or a block start, '{".
+  # Look for either an opening comment, '#', or a block start, '{'.
   # If not found, assume SGML.
   var lnum = 1
   while lnum < 6
@@ -182,7 +201,7 @@ export def FTent()
       break
     endif
     lnum += 1
-  endw
+  endwhile
   setf dtd
 enddef
 
@@ -206,6 +225,10 @@ export def EuphoriaCheck()
 enddef
 
 export def DtraceCheck()
+  if did_filetype()
+    # Filetype was already detected
+    return
+  endif
   var lines = getline(1, min([line("$"), 100]))
   if match(lines, '^module\>\|^import\>') > -1
     # D files often start with a module and/or import statement.
@@ -241,7 +264,7 @@ export def FTfrm()
 
   var lines = getline(1, min([line("$"), 5]))
 
-  if match(lines, s:ft_visual_basic_content) > -1
+  if match(lines, ft_visual_basic_content) > -1
     setf vb
   else
     setf form
@@ -406,6 +429,36 @@ export def FTmm()
   setf nroff
 enddef
 
+# Returns true if file content looks like LambdaProlog
+def IsLProlog(): bool
+  # skip apparent comments and blank lines, what looks like 
+  # LambdaProlog comment may be RAPID header
+  var l: number = nextnonblank(1)
+  while l > 0 && l < line('$') && getline(l) =~ '^\s*%' # LambdaProlog comment
+    l = nextnonblank(l + 1)
+  endwhile
+  # this pattern must not catch a go.mod file
+  return getline(l) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
+enddef
+
+# Determine if *.mod is ABB RAPID, LambdaProlog, Modula-2, Modsim III or go.mod
+export def FTmod()
+  if exists("g:filetype_mod")
+    exe "setf " .. g:filetype_mod
+  elseif IsLProlog()
+    setf lprolog
+  elseif getline(nextnonblank(1)) =~ '\%(\<MODULE\s\+\w\+\s*;\|^\s*(\*\)'
+    setf modula2
+  elseif IsRapid()
+    setf rapid
+  elseif expand("<afile>") =~ '\<go.mod$'
+    setf gomod
+  else
+    # Nothing recognized, assume modsim3
+    setf modsim3
+  endif
+enddef
+
 export def FTpl()
   if exists("g:filetype_pl")
     exe "setf " .. g:filetype_pl
@@ -434,7 +487,7 @@ export def FTinc()
       setf php
     # Pascal supports // comments but they're vary rarely used for file
     # headers so assume POV-Ray
-    elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? s:ft_pascal_keywords
+    elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? ft_pascal_keywords
       setf pascal
     else
       FTasmsyntax()
@@ -478,7 +531,7 @@ export def FTprogress_asm()
       break
     endif
     lnum += 1
-  endw
+  endwhile
   setf progress
 enddef
 
@@ -496,7 +549,7 @@ export def FTprogress_pascal()
   var lnum = 1
   while lnum <= 10 && lnum < line('$')
     var line = getline(lnum)
-    if line =~ s:ft_pascal_comments || line =~? s:ft_pascal_keywords
+    if line =~ ft_pascal_comments || line =~? ft_pascal_keywords
       setf pascal
       return
     elseif line !~ '^\s*$' || line =~ '^/\*'
@@ -505,7 +558,7 @@ export def FTprogress_pascal()
       break
     endif
     lnum += 1
-  endw
+  endwhile
   setf progress
 enddef
 
@@ -514,11 +567,23 @@ export def FTpp()
     exe "setf " .. g:filetype_pp
   else
     var line = getline(nextnonblank(1))
-    if line =~ s:ft_pascal_comments || line =~? s:ft_pascal_keywords
+    if line =~ ft_pascal_comments || line =~? ft_pascal_keywords
       setf pascal
     else
       setf puppet
     endif
+  endif
+enddef
+
+# Determine if *.prg is ABB RAPID. Can also be Clipper, FoxPro or eviews
+export def FTprg()
+  if exists("g:filetype_prg")
+    exe "setf " .. g:filetype_prg
+  elseif IsRapid()
+    setf rapid
+  else
+    # Nothing recognized, assume Clipper
+    setf clipper
   endif
 enddef
 
@@ -568,7 +633,7 @@ export def McSetf()
       return
     endif
   endfor
-  setf m4  " Default: Sendmail .mc file
+  setf m4  # Default: Sendmail .mc file
 enddef
 
 # Called from filetype.vim and scripts.vim.
@@ -685,8 +750,8 @@ export def FTRules()
   endtry
   var dir = expand('<amatch>:p:h')
   for line in config_lines
-    if line =~ s:ft_rules_udev_rules_pattern
-      var udev_rules = substitute(line, s:ft_rules_udev_rules_pattern, '\1', "")
+    if line =~ ft_rules_udev_rules_pattern
+      var udev_rules = substitute(line, ft_rules_udev_rules_pattern, '\1', "")
       if dir == udev_rules
 	setf udevrules
       endif
@@ -701,6 +766,28 @@ export def SQL()
     exe "setf " .. g:filetype_sql
   else
     setf sql
+  endif
+enddef
+
+# This function checks the first 25 lines of file extension "sc" to resolve
+# detection between scala and SuperCollider
+export def FTsc()
+  for lnum in range(1, min([line("$"), 25]))
+    if getline(lnum) =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this.*\||\w*|\|+\s\w*\s{\|\*ar\s'
+      setf supercollider
+      return
+    endif
+  endfor
+  setf scala
+enddef
+
+# This function checks the first line of file extension "scd" to resolve
+# detection between scdoc and SuperCollider
+export def FTscd()
+  if getline(1) =~# '\%^\S\+(\d[0-9A-Za-z]*)\%(\s\+\"[^"]*\"\%(\s\+\"[^"]*\"\)\=\)\=$'
+    setf scdoc
+  else
+    setf supercollider
   endif
 enddef
 
@@ -729,6 +816,16 @@ export def FTperl(): number
     return 1
   endif
   return 0
+enddef
+
+export def FTsys()
+  if exists("g:filetype_sys")
+    exe "setf " .. g:filetype_sys
+  elseif IsRapid()
+    setf rapid
+  else
+    setf bat
+  endif
 enddef
 
 # Choose context, plaintex, or tex (LaTeX) based on these rules:
@@ -892,6 +989,26 @@ export def FTtf()
   setf tf
 enddef
 
+var ft_krl_header = '\&\w+'
+# Determine if a *.src file is Kuka Robot Language
+export def FTsrc()
+  var ft_krl_def_or_deffct = '%(global\s+)?def%(fct)?>'
+  if exists("g:filetype_src")
+    exe "setf " .. g:filetype_src
+  elseif getline(nextnonblank(1)) =~? '\v^\s*%(' .. ft_krl_header .. '|' .. ft_krl_def_or_deffct .. ')'
+    setf krl
+  endif
+enddef
+
+# Determine if a *.dat file is Kuka Robot Language
+export def FTdat()
+  var ft_krl_defdat = 'defdat>'
+  if exists("g:filetype_dat")
+    exe "setf " .. g:filetype_dat
+  elseif getline(nextnonblank(1)) =~? '\v^\s*%(' .. ft_krl_header .. '|' .. ft_krl_defdat .. ')'
+    setf krl
+  endif
+enddef
 
 # Uncomment this line to check for compilation errors early
 # defcompile

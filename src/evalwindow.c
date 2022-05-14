@@ -155,6 +155,8 @@ win_findbuf(typval_T *argvars, list_T *list)
 
 /*
  * Find window specified by "vp" in tabpage "tp".
+ * Returns current window if "vp" is number zero.
+ * Returns NULL if not found.
  */
     win_T *
 find_win_by_nr(
@@ -394,6 +396,9 @@ get_win_info(win_T *wp, short tpnr, short winnr)
     dict = dict_alloc();
     if (dict == NULL)
 	return NULL;
+
+    // make sure w_botline is valid
+    validate_botline_win(wp);
 
     dict_add_number(dict, "tabnr", tpnr);
     dict_add_number(dict, "winnr", winnr);
@@ -814,9 +819,19 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 	return;
     }
 #endif
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
+    if (popup_is_popup(curwin) && curbuf->b_term != NULL)
+    {
+	emsg(_(e_not_allowed_for_terminal_in_popup_window));
+	return;
+    }
+#endif
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_id == id)
 	{
+	    // When jumping to another buffer stop Visual mode.
+	    if (VIsual_active && wp->w_buffer != curbuf)
+		end_visual_mode();
 	    goto_tabpage_win(tp, wp);
 	    rettv->vval.v_number = 1;
 	    return;
@@ -984,28 +999,28 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 	    || !win_valid(wp) || !win_valid(targetwin)
 	    || win_valid_popup(wp) || win_valid_popup(targetwin))
     {
-        emsg(_(e_invalid_window_number));
+	emsg(_(e_invalid_window_number));
 	rettv->vval.v_number = -1;
 	return;
     }
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-        dict_T      *d;
-        dictitem_T  *di;
+	dict_T      *d;
+	dictitem_T  *di;
 
-        if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
-        {
-            emsg(_(e_invalid_argument));
-            return;
-        }
+	if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
+	{
+	    emsg(_(e_invalid_argument));
+	    return;
+	}
 
-        d = argvars[2].vval.v_dict;
-        if (dict_get_bool(d, (char_u *)"vertical", FALSE))
-            flags |= WSP_VERT;
-        if ((di = dict_find(d, (char_u *)"rightbelow", -1)) != NULL)
-            flags |= tv_get_bool(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
-        size = (int)dict_get_number(d, (char_u *)"size");
+	d = argvars[2].vval.v_dict;
+	if (dict_get_bool(d, (char_u *)"vertical", FALSE))
+	    flags |= WSP_VERT;
+	if ((di = dict_find(d, (char_u *)"rightbelow", -1)) != NULL)
+	    flags |= tv_get_bool(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
+	size = (int)dict_get_number(d, (char_u *)"size");
     }
 
     win_move_into_split(wp, targetwin, size, flags);
@@ -1220,27 +1235,27 @@ f_winrestview(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_invalid_argument));
     else
     {
-	if (dict_find(dict, (char_u *)"lnum", -1) != NULL)
+	if (dict_has_key(dict, "lnum"))
 	    curwin->w_cursor.lnum = (linenr_T)dict_get_number(dict, (char_u *)"lnum");
-	if (dict_find(dict, (char_u *)"col", -1) != NULL)
+	if (dict_has_key(dict, "col"))
 	    curwin->w_cursor.col = (colnr_T)dict_get_number(dict, (char_u *)"col");
-	if (dict_find(dict, (char_u *)"coladd", -1) != NULL)
+	if (dict_has_key(dict, "coladd"))
 	    curwin->w_cursor.coladd = (colnr_T)dict_get_number(dict, (char_u *)"coladd");
-	if (dict_find(dict, (char_u *)"curswant", -1) != NULL)
+	if (dict_has_key(dict, "curswant"))
 	{
 	    curwin->w_curswant = (colnr_T)dict_get_number(dict, (char_u *)"curswant");
 	    curwin->w_set_curswant = FALSE;
 	}
 
-	if (dict_find(dict, (char_u *)"topline", -1) != NULL)
+	if (dict_has_key(dict, "topline"))
 	    set_topline(curwin, (linenr_T)dict_get_number(dict, (char_u *)"topline"));
 #ifdef FEAT_DIFF
-	if (dict_find(dict, (char_u *)"topfill", -1) != NULL)
+	if (dict_has_key(dict, "topfill"))
 	    curwin->w_topfill = (int)dict_get_number(dict, (char_u *)"topfill");
 #endif
-	if (dict_find(dict, (char_u *)"leftcol", -1) != NULL)
+	if (dict_has_key(dict, "leftcol"))
 	    curwin->w_leftcol = (colnr_T)dict_get_number(dict, (char_u *)"leftcol");
-	if (dict_find(dict, (char_u *)"skipcol", -1) != NULL)
+	if (dict_has_key(dict, "skipcol"))
 	    curwin->w_skipcol = (colnr_T)dict_get_number(dict, (char_u *)"skipcol");
 
 	check_cursor();

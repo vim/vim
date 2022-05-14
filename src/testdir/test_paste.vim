@@ -2,6 +2,7 @@
 
 " Bracketed paste only works with "xterm".  Not in GUI or Windows console.
 source check.vim
+source term_util.vim
 CheckNotMSWindows
 CheckNotGui
 
@@ -109,23 +110,69 @@ func Test_paste_visual_mode()
   call feedkeys("0fsve\<Esc>[200~more\<Esc>[201~", 'xt')
   call assert_equal('here are more words', getline(1))
   call assert_equal('some', getreg('-'))
+  normal! u
+  call assert_equal('here are some words', getline(1))
+  exe "normal! \<C-R>"
+  call assert_equal('here are more words', getline(1))
 
   " include last char in the line
   call feedkeys("0fwve\<Esc>[200~noises\<Esc>[201~", 'xt')
   call assert_equal('here are more noises', getline(1))
   call assert_equal('words', getreg('-'))
+  normal! u
+  call assert_equal('here are more words', getline(1))
+  exe "normal! \<C-R>"
+  call assert_equal('here are more noises', getline(1))
 
   " exclude last char in the line
   call setline(1, 'some words!')
   call feedkeys("0fwve\<Esc>[200~noises\<Esc>[201~", 'xt')
   call assert_equal('some noises!', getline(1))
   call assert_equal('words', getreg('-'))
+  normal! u
+  call assert_equal('some words!', getline(1))
+  exe "normal! \<C-R>"
+  call assert_equal('some noises!', getline(1))
 
   " multi-line selection
   call setline(1, ['some words', 'and more'])
   call feedkeys("0fwvj0fd\<Esc>[200~letters\<Esc>[201~", 'xt')
   call assert_equal('some letters more', getline(1))
   call assert_equal("words\nand", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  exe "normal! \<C-R>"
+  call assert_equal('some letters more', getline(1))
+
+  " linewise non-last line, cursor at start of line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("0V\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal('lettersand more', getline(1))
+  call assert_equal("some words\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  exe "normal! \<C-R>"
+  call assert_equal('lettersand more', getline(1))
+
+  " linewise non-last line, cursor in the middle of line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("0fwV\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal('lettersand more', getline(1))
+  call assert_equal("some words\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  exe "normal! \<C-R>"
+  call assert_equal('lettersand more', getline(1))
+
+  " linewise last line
+  call setline(1, ['some words', 'and more'])
+  call feedkeys("j0V\<Esc>[200~letters\<Esc>[201~", 'xt')
+  call assert_equal(['some words', 'letters'], getline(1, 2))
+  call assert_equal("and more\n", getreg('1'))
+  normal! u
+  call assert_equal(['some words', 'and more'], getline(1, 2))
+  exe "normal! \<C-R>"
+  call assert_equal(['some words', 'letters'], getline(1, 2))
 
   bwipe!
 endfunc
@@ -169,6 +216,69 @@ func Test_pastetoggle()
   call assert_equal('"set pastetoggle=<F4>', @:)
   set pastetoggle&
   bwipe!
+endfunc
+
+func Test_pastetoggle_timeout_no_typed_after_mapped()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set pastetoggle=abc
+    set ttimeoutlen=10000
+    imap d a
+  END
+  call writefile(lines, 'Xpastetoggle_no_typed_after_mapped.vim')
+  let buf = RunVimInTerminal('-S Xpastetoggle_no_typed_after_mapped.vim', #{rows: 8})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":call feedkeys('id', 't')\<CR>")
+  call term_wait(buf, 200)
+  call term_sendkeys(buf, 'bc')
+  " 'ttimeoutlen' should NOT apply
+  call WaitForAssert({-> assert_match('^-- INSERT --', term_getline(buf, 8))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xpastetoggle_no_typed_after_mapped.vim')
+endfunc
+
+func Test_pastetoggle_timeout_typed_after_mapped()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set pastetoggle=abc
+    set ttimeoutlen=10000
+    imap d a
+  END
+  call writefile(lines, 'Xpastetoggle_typed_after_mapped.vim')
+  let buf = RunVimInTerminal('-S Xpastetoggle_typed_after_mapped.vim', #{rows: 8})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":call feedkeys('idb', 't')\<CR>")
+  call term_wait(buf, 200)
+  call term_sendkeys(buf, 'c')
+  " 'ttimeoutlen' should apply
+  call WaitForAssert({-> assert_match('^-- INSERT (paste) --', term_getline(buf, 8))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xpastetoggle_typed_after_mapped.vim')
+endfunc
+
+func Test_pastetoggle_timeout_typed_after_noremap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set pastetoggle=abc
+    set ttimeoutlen=10000
+    inoremap d a
+  END
+  call writefile(lines, 'Xpastetoggle_typed_after_noremap.vim')
+  let buf = RunVimInTerminal('-S Xpastetoggle_typed_after_noremap.vim', #{rows: 8})
+  call TermWait(buf)
+  call term_sendkeys(buf, ":call feedkeys('idb', 't')\<CR>")
+  call term_wait(buf, 200)
+  call term_sendkeys(buf, 'c')
+  " 'ttimeoutlen' should apply
+  call WaitForAssert({-> assert_match('^-- INSERT (paste) --', term_getline(buf, 8))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xpastetoggle_typed_after_noremap.vim')
 endfunc
 
 " Test for restoring option values when 'paste' is disabled

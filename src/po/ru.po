@@ -5,6 +5,8 @@
 # vassily "vr" ragosin <vrr@users.sourceforge.net>, 2004
 # Sergey Alyoshin <alyoshin.s@gmail.com>, 2013-2014, 2016, 2018-2019
 #
+# Original translations.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: vim_ru\n"
@@ -29,7 +31,8 @@ msgstr "E164: Это первый файл"
 msgid "E165: Cannot go beyond last file"
 msgstr "E165: Это последний файл"
 
-msgid "E249: window layout changed unexpectedly"
+# TODO: Capitalise first word of message?
+msgid "E249: Window layout changed unexpectedly"
 msgstr "E249: Неожиданно изменилось расположение окна"
 
 msgid "--Deleted--"
@@ -78,7 +81,8 @@ msgstr "E217: Невозможно выполнить автокоманды д�
 msgid "No matching autocommands"
 msgstr "Нет подходящих автокоманд"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: слишком глубоко вложенные автокоманды"
 
 #, c-format
@@ -351,7 +355,8 @@ msgstr "E949: Файл был изменён после записи"
 msgid "E512: Close failed"
 msgstr "E512: Операция закрытия не удалась"
 
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
 "E513: Ошибка записи, преобразование не удалось (очистите 'fenc', чтобы "
 "обойти)"
@@ -364,7 +369,8 @@ msgstr ""
 "E513: Ошибка записи, преобразование не удалось на строке %ld (очистите "
 "'fenc', чтобы обойти)"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: Ошибка записи (нет свободного места?)"
 
 msgid " CONVERSION ERROR"
@@ -404,7 +410,8 @@ msgstr " записано"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: Режим заплатки: невозможно сохранение исходного файла"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr ""
 "E206: Режим заплатки: невозможно сменить параметры пустого исходного файла"
 
@@ -433,35 +440,43 @@ msgstr "E901: gethostbyname() в channel_open()"
 msgid "E898: socket() in channel_open()"
 msgstr "E898: socket() в channel_open()"
 
-msgid "E903: received command with non-string argument"
+# TODO: Capitalise first word of message?
+msgid "E903: Received command with non-string argument"
 msgstr "E903: Получена команда с не строковым параметром"
 
-msgid "E904: last argument for expr/call must be a number"
+# TODO: Capitalise first word of message?
+msgid "E904: Last argument for expr/call must be a number"
 msgstr "E904: Последний параметр для выражения или вызова должен быть числом"
 
-msgid "E904: third argument for call must be a list"
+# TODO: Capitalise first word of message?
+msgid "E904: Third argument for call must be a list"
 msgstr "E904: Третий параметр для вызова должен быть списком"
 
 #, c-format
-msgid "E905: received unknown command: %s"
+# TODO: Capitalise first word of message?
+msgid "E905: Received unknown command: %s"
 msgstr "E905: Получена неизвестная команда %s"
 
-msgid "E906: not an open channel"
+# TODO: Capitalise first word of message?
+msgid "E906: Not an open channel"
 msgstr "E906: Не открытый канал"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): запись без соединения"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: Ошибка записи в %s()"
 
 #, c-format
 msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: Невозможно использовать обратный вызов с %s()"
 
-msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+# TODO: Capitalise first word of message?
+msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr ""
 "E912: Невозможно использовать ch_evalexpr() или ch_sendexpr() с каналом nl "
 "или raw"
@@ -473,10 +488,12 @@ msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: буфер in_io требует установленного in_buf или in_name"
 
 #, c-format
-msgid "E918: buffer must be loaded: %s"
+# TODO: Capitalise first word of message?
+msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: Буфер должен быть загружен: %s"
 
-msgid "E916: not a valid job"
+# TODO: Capitalise first word of message?
+msgid "E916: Not a valid job"
 msgstr "E916: Недопустимое задание"
 
 msgid "tagname"
@@ -719,7 +736,8 @@ msgstr "E111: Пропущена ']'"
 msgid "E719: Cannot use [:] with a Dictionary"
 msgstr "E719: Невозможно использовать [:] со словарём"
 
-msgid "E806: using Float as a String"
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
 msgstr "E806: Использование числа с плавающей точкой как строки"
 
 msgid "E274: No white space allowed before parenthesis"
@@ -793,7 +811,8 @@ msgstr "E115: Пропущена кавычка: %s"
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr "Недостаточно памяти для установки ссылки, сборка мусора прекращена!"
 
-msgid "E724: variable nested too deep for displaying"
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: Слишком глубоко вложенные переменные для отображения"
 
 msgid "E805: Using a Float as a Number"
@@ -853,10 +872,12 @@ msgstr "E731: Использование словаря как строки"
 msgid "E976: using Blob as a String"
 msgstr "E976: Использование блоба как строки"
 
-msgid "E908: using an invalid value as a String"
+# TODO: Capitalise first word of message?
+msgid "E908: Using an invalid value as a String"
 msgstr "E908: Использование неправильного значения как строки"
 
-msgid "E698: variable nested too deep for making a copy"
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: Слишком глубоко вложенные переменные для копирования"
 
 msgid ""
@@ -897,14 +918,16 @@ msgstr "E158: Неправильное имя буфера: %s"
 msgid "&Ok"
 msgstr "&Ok"
 
-msgid "E980: lowlevel input not supported"
+# TODO: Capitalise first word of message?
+msgid "E980: Lowlevel input not supported"
 msgstr "E980: Не поддерживается низкоуровневый ввод"
 
 #, c-format
 msgid "E700: Unknown function: %s"
 msgstr "E700: Неизвестная функция: %s"
 
-msgid "E922: expected a dict"
+# TODO: Capitalise first word of message?
+msgid "E922: Expected a dict"
 msgstr "E922: Ожидался словарь"
 
 msgid "E923: Second argument of function() must be a list or a dict"
@@ -942,7 +965,8 @@ msgstr "E241: Не могу отправить сообщение для %s"
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Сервер не отвечает"
 
-msgid "E941: already started a server"
+# TODO: Capitalise first word of message?
+msgid "E941: Already started a server"
 msgstr "E941: Сервер уже запущен"
 
 msgid "E942: +clientserver feature not available"
@@ -959,13 +983,15 @@ msgid "(Invalid)"
 msgstr "(Неправильно)"
 
 #, c-format
-msgid "E935: invalid submatch number: %d"
+# TODO: Capitalise first word of message?
+msgid "E935: Invalid submatch number: %d"
 msgstr "E935: Недопустимый номер подсоответствия: %d"
 
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: Неожиданные символы в :let"
 
-msgid "E991: cannot use =<< here"
+# TODO: Capitalise first word of message?
+msgid "E991: Cannot use =<< here"
 msgstr "E991: Здесь невозможно использовать =<<"
 
 msgid "E221: Marker cannot start with lower case letter"
@@ -1011,11 +1037,13 @@ msgstr "E108: Нет такой переменной: \"%s\""
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: Невозможно (раз)блокировать переменную %s"
 
-msgid "E743: variable nested too deep for (un)lock"
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: Слишком глубоко вложенные переменные для (раз)блокировки"
 
 #, c-format
-msgid "E963: setting %s to value with wrong type"
+# TODO: Capitalise first word of message?
+msgid "E963: Setting %s to value with wrong type"
 msgstr "E963: Установка %s в значение неверного типа"
 
 #, c-format
@@ -1148,7 +1176,8 @@ msgstr "Редактирование файла"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Автокоманды неожиданно убили новый буфер %s"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: Параметр команды :z должен быть числом"
 
 msgid "E145: Shell commands and some functionality not allowed in rvim"
@@ -1267,7 +1296,8 @@ msgstr ""
 "Предупреждение: Неожиданный переход в другой буфер (проверьте автокоманды)"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: Компилятор не поддерживается: %s"
 
 #, c-format
@@ -1441,22 +1471,28 @@ msgstr "E809: #< не доступно без особенности +eval"
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: Нет соседнего имени файла для замены '#'"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: Нет автокомандного имени файла для замены \"<afile>\""
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: Нет автокомандного номера буфера для замены \"<abuf>\""
 
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: Нет автокомандного имени соответствия для замены \"<amatch>\""
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: Нет имени файла :source для замены \"<sfile>\""
 
-msgid "E842: no line number to use for \"<slnum>\""
+# TODO: Capitalise first word of message?
+msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: Нет номера строки для использования \"<slnum>\""
 
-msgid "E961: no line number to use for \"<sflnum>\""
+# TODO: Capitalise first word of message?
+msgid "E961: No line number to use for \"<sflnum>\""
 msgstr "E961: Нет номера строки для использования \"<sflnum>\""
 
 #, no-c-format
@@ -1520,6 +1556,7 @@ msgstr "Ошибка"
 msgid "Interrupt"
 msgstr "Прерывание"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: Слишком глубоко вложенный :if"
 
@@ -1532,7 +1569,8 @@ msgstr "E581: :else без :if"
 msgid "E582: :elseif without :if"
 msgstr "E582: :elseif без :if"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: Обнаружено несколько :else"
 
 msgid "E584: :elseif after :else"
@@ -1565,7 +1603,8 @@ msgstr "E604: :catch после :finally"
 msgid "E606: :finally without :try"
 msgstr "E606: :finally без :try"
 
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: Обнаружено несколько :finally"
 
 msgid "E602: :endtry without :try"
@@ -1787,7 +1826,8 @@ msgid "E338: Sorry, no file browser in console mode"
 msgstr ""
 "E338: Извините, но в консольном режиме нет проводника по файловой системе"
 
-msgid "E854: path too long for completion"
+# TODO: Capitalise first word of message?
+msgid "E854: Path too long for completion"
 msgstr "E854: слишком большой путь для автодополнения"
 
 #, c-format
@@ -1849,7 +1889,8 @@ msgstr[2] "+-%s%3ld строк: "
 msgid "E222: Add to read buffer"
 msgstr "E222: Добавление в буфер чтения"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: Рекурсивная привязка"
 
 msgid "E851: Failed to create a new process for the GUI"
@@ -2146,7 +2187,8 @@ msgstr "E550: Пропущено двоеточие"
 msgid "E551: Illegal component"
 msgstr "E551: Недопустимый компонент"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: Требуется указать цифру"
 
 #, c-format
@@ -2183,11 +2225,13 @@ msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Невозможно прочитать файл ресурсов PostScript \"%s\""
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: Файл \"%s\" не является файлом ресурсов PostScript"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: Файл \"%s\" не является допустимым файлом ресурсов PostScript"
 
 #, c-format
@@ -2233,11 +2277,13 @@ msgstr "E365: Не удалось выполнить печать файла Pos
 msgid "Print job sent."
 msgstr "Задание отправлено на печать."
 
-msgid "E679: recursive loop loading syncolor.vim"
+# TODO: Capitalise first word of message?
+msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: Рекурсивная петля при загрузке syncolor.vim"
 
 #, c-format
-msgid "E411: highlight group not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
 msgstr "E411: Группа подсветки синтаксиса %s не найдена"
 
 #, c-format
@@ -2248,19 +2294,23 @@ msgstr "E412: Не хватает параметров: \":highlight link %s\""
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Слишком много параметров: \":highlight link %s\""
 
-msgid "E414: group has settings, highlight link ignored"
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: У группы есть настройки, пропускается highlight link"
 
 #, c-format
-msgid "E415: unexpected equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: Неожиданный знак равенства: %s"
 
 #, c-format
-msgid "E416: missing equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
 msgstr "E416: Пропущен знак равенства: %s"
 
 #, c-format
-msgid "E417: missing argument: %s"
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
 msgstr "E417: Пропущен параметр: %s"
 
 #, c-format
@@ -2278,7 +2328,8 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Имя или номер цвета не известно: %s"
 
 #, c-format
-msgid "E422: terminal code too long: %s"
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
 msgstr "E422: Слишком длинный код терминала: %s"
 
 #, c-format
@@ -2348,7 +2399,8 @@ msgstr "Эта команда cscope не поддерживает раздел�
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Использование: cstag <имя>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: метка не найдена"
 
 #, c-format
@@ -2367,10 +2419,12 @@ msgid "Added cscope database %s"
 msgstr "Добавлена база данных cscope %s"
 
 #, c-format
-msgid "E262: error reading cscope connection %d"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %d"
 msgstr "E262: Ошибка чтения соединения cscope %d"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: Неизвестный тип поиска cscope"
 
 msgid "E566: Could not create cscope pipes"
@@ -2394,15 +2448,18 @@ msgstr "cs_create_connection: не удалось выполнить fdopen дл
 msgid "E623: Could not spawn cscope process"
 msgstr "E623: Не удалось запустить процесс cscope"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: Соединений с cscope не создано"
 
 #, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: Неправильный флаг cscopequickfix %c для %c"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: Не найдено соответствий по запросу cscope %s для %s"
 
 msgid "cscope commands:\n"
@@ -2436,24 +2493,29 @@ msgstr ""
 "       t: Найти эту текстовую строку\n"
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: Невозможно открыть базу данных cscope: %s"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: Информация о базе данных cscope недоступна"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: Данная база данных cscope уже подсоединена"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: Соединение с cscope %s не обнаружено"
 
 #, c-format
 msgid "cscope connection %s closed"
 msgstr "соединение с cscope %s закрыто"
 
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: Критическая ошибка в cs_manage_matches"
 
 #, c-format
@@ -2586,26 +2648,33 @@ msgstr ""
 "E266: К сожалению эта команда не работает, поскольку не загружена библиотека "
 "Ruby"
 
-msgid "E267: unexpected return"
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
 msgstr "E267: Неожиданный return"
 
-msgid "E268: unexpected next"
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
 msgstr "E268: Неожиданный next"
 
-msgid "E269: unexpected break"
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
 msgstr "E269: Неожиданный break"
 
-msgid "E270: unexpected redo"
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
 msgstr "E270: Неожиданный redo"
 
-msgid "E271: retry outside of rescue clause"
+# TODO: Capitalise first word of message?
+msgid "E271: Retry outside of rescue clause"
 msgstr "E271: retry вне оператора rescue"
 
-msgid "E272: unhandled exception"
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
 msgstr "E272: Необработанное исключение"
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: Неизвестное состояние longjmp %d"
 
 msgid "invalid buffer number"
@@ -2670,7 +2739,8 @@ msgstr ""
 "Tcl"
 
 #, c-format
-msgid "E572: exit code %d"
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
 msgstr "E572: Код выхода %d"
 
 msgid "cannot get line"
@@ -3298,19 +3368,23 @@ msgid ": Send expression failed.\n"
 msgstr ": Отправка выражения не удалась.\n"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: Уже есть глобальное сокращение для %s"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: Уже есть глобальная привязка для %s"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: Уже есть сокращение для %s"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: Уже есть привязка для %s"
 
 msgid "No abbreviation found"
@@ -3375,14 +3449,17 @@ msgstr ""
 "E287: Предупреждение: невозможно назначить обр. вызов уничтожения метода "
 "ввода"
 
-msgid "E288: input method doesn't support any style"
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
 msgstr "E288: Метод ввода не поддерживает стили"
 
-msgid "E289: input method doesn't support my preedit type"
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
 msgstr ""
 "E289: Метод ввода не поддерживает мой тип предварительного редактирования"
 
-msgid "E293: block was not locked"
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
 msgstr "E293: Блок не заблокирован"
 
 msgid "E294: Seek error in swap file read"
@@ -3704,14 +3781,17 @@ msgid "E314: Preserve failed"
 msgstr "E314: Неудачная попытка обновления своп-файла"
 
 #, c-format
-msgid "E315: ml_get: invalid lnum: %ld"
+# TODO: Capitalise first word of message?
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: неправильное значение lnum: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
+# TODO: Capitalise first word of message?
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: невозможно найти строку %ld в буфере %d %s"
 
-msgid "E317: pointer block id wrong 3"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
 msgstr "E317: Неправильное значение указателя блока 3"
 
 msgid "stack_idx should be 0"
@@ -3720,7 +3800,8 @@ msgstr "значение stack_idx должно быть равно 0"
 msgid "E318: Updated too many blocks?"
 msgstr "E318: Обновлено слишком много блоков?"
 
-msgid "E317: pointer block id wrong 4"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
 msgstr "E317: Неправильное значение указателя блока 4"
 
 msgid "deleted block 1?"
@@ -3730,24 +3811,28 @@ msgstr "удалён блок 1?"
 msgid "E320: Cannot find line %ld"
 msgstr "E320: Строка %ld не обнаружена"
 
-msgid "E317: pointer block id wrong"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
 msgstr "E317: Неправильное значение указателя блока"
 
 msgid "pe_line_count is zero"
 msgstr "значение pe_line_count равно нулю"
 
 #, c-format
-msgid "E322: line number out of range: %ld past the end"
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: Номер строки за пределами диапазона: %ld"
 
 #, c-format
-msgid "E323: line count wrong in block %ld"
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
 msgstr "E323: Неправильное значение счётчика строк в блоке %ld"
 
 msgid "Stack size increases"
 msgstr "Размер стека увеличен"
 
-msgid "E317: pointer block id wrong 2"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
 msgstr "E317: Неправильное значение указателя блока 2"
 
 #, c-format
@@ -4041,7 +4126,8 @@ msgstr "E546: Недопустимый режим"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: Недопустимая форма курсора"
 
-msgid "E548: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
 msgstr "E548: Требуется ввести цифру"
 
 msgid "E549: Illegal percentage"
@@ -4056,10 +4142,12 @@ msgstr ""
 msgid "E658: NetBeans connection lost for buffer %d"
 msgstr "E658: Потеряно соединение с NetBeans для буфера %d"
 
-msgid "E838: netbeans is not supported with this GUI"
+# TODO: Capitalise first word of message?
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: NetBeans не поддерживается с этим графическим интерфейсом"
 
-msgid "E511: netbeans already connected"
+# TODO: Capitalise first word of message?
+msgid "E511: NetBeans already connected"
 msgstr "E511: уже соединён с NetBeans"
 
 #, c-format
@@ -4079,7 +4167,8 @@ msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr ""
 "E352: Невозможно стереть складки с текущим значением опции 'foldmethod'"
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: Список изменений пустой"
 
 msgid "E662: At start of changelist"
@@ -4250,7 +4339,8 @@ msgid "E540: Unclosed expression sequence"
 msgstr "E540: Незакрытая последовательность выражения"
 
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: Несбалансированные группы"
 
 msgid "E529: Cannot set 'term' to empty string"
@@ -4300,13 +4390,15 @@ msgstr "E595: 'showbreak' содержит непечатный или широ�
 msgid "E596: Invalid font(s)"
 msgstr "E596: Неправильные шрифты"
 
-msgid "E597: can't select fontset"
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
 msgstr "E597: Невозможно выбрать шрифтовой набор"
 
 msgid "E598: Invalid fontset"
 msgstr "E598: Неправильный шрифтовой набор"
 
-msgid "E533: can't select wide font"
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
 msgstr "E533: Невозможно выбрать шрифт с символами двойной ширины"
 
 msgid "E534: Invalid wide font"
@@ -4316,7 +4408,8 @@ msgstr "E534: Неправильный шрифт с символами двой
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: Неправильный символ после <%c>"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: Требуется запятая"
 
 #, c-format
@@ -4557,7 +4650,8 @@ msgid "E997: Tabpage not found: %d"
 msgstr "E997: Вкладка не найдена: %d"
 
 #, c-format
-msgid "E993: window %d is not a popup window"
+# TODO: Capitalise first word of message?
+msgid "E993: Window %d is not a popup window"
 msgstr "E993: Окно %d не является всплывающим окном"
 
 msgid "E994: Not allowed in a popup window"
@@ -4648,7 +4742,8 @@ msgid "E927: Invalid action: '%s'"
 msgstr "E927: Неправильное действие: '%s'"
 
 #, c-format
-msgid "E369: invalid item in %s%%[]"
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: Недопустимый элемент в %s%%[]"
 
 #, c-format
@@ -4711,7 +4806,8 @@ msgstr "Включено отслеживание движка рег. выра�
 msgid "E65: Illegal back reference"
 msgstr "E65: Недопустимая обратная ссылка"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: Недопустимое использование \\_"
 
 #, c-format
@@ -4730,7 +4826,8 @@ msgid "E71: Invalid character after %s%%"
 msgstr "E71: Недопустимый символ после %s%%"
 
 #, c-format
-msgid "E59: invalid character after %s@"
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
 msgstr "E59: Недопустимый символ после %s@"
 
 #, c-format
@@ -4999,11 +5096,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: Неправильная строка поиска: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: Поиск закончен в НАЧАЛЕ документа; %s не найдено"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: Поиск закончен в КОНЦЕ документа; %s не найдено"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -5201,7 +5300,8 @@ msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: Файл .sug не соответствует файлу .spl: %s"
 
 #, c-format
-msgid "E782: error while reading .sug file: %s"
+# TODO: Capitalise first word of message?
+msgid "E782: Error while reading .sug file: %s"
 msgstr "E782: Ошибка при чтении файла .sug: %s"
 
 #, c-format
@@ -5466,7 +5566,8 @@ msgstr "Слово '%.*s' добавлено в %s"
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Символы слов отличаются в файлах правописания"
 
-msgid "E783: duplicate char in MAP entry"
+# TODO: Capitalise first word of message?
+msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: Повторяющийся символ в элементе MAP"
 
 msgid "Sorry, no suggestions"
@@ -5574,10 +5675,12 @@ msgstr "; соответствие "
 msgid " line breaks"
 msgstr " переносов строк"
 
-msgid "E395: contains argument not accepted here"
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
 msgstr "E395: Здесь нельзя использовать параметр contains"
 
-msgid "E844: invalid cchar value"
+# TODO: Capitalise first word of message?
+msgid "E844: Invalid cchar value"
 msgstr "E844: Недопустимое значение cchar"
 
 msgid "E393: group[t]here not accepted here"
@@ -5598,7 +5701,8 @@ msgid "E789: Missing ']': %s"
 msgstr "E789: Пропущено ']': %s"
 
 #, c-format
-msgid "E890: trailing char after ']': %s]%s"
+# TODO: Capitalise first word of message?
+msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: Лишние символы после ']': %s]%s"
 
 #, c-format
@@ -5623,7 +5727,8 @@ msgstr "E401: Не найден разделитель шаблонов: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Мусор после шаблона: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr ""
 "E403: Синхронизация синтаксиса: шаблон продолжений строки указан дважды"
 
@@ -5660,23 +5765,28 @@ msgid ""
 msgstr ""
 "  ВСЕГО       КОЛ.  СООТВ. ОТСТАЮЩИЙ    СРЕДНИЙ    ИМЯ                ШАБЛОН"
 
-msgid "E555: at bottom of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
 msgstr "E555: Внизу стека меток"
 
-msgid "E556: at top of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
 msgstr "E556: Наверху стека меток"
 
-msgid "E986: cannot modify the tag stack within tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E986: Cannot modify the tag stack within tagfunc"
 msgstr "E986: Невозможно изменить стек меток внутри tagfunc"
 
-msgid "E987: invalid return value from tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E987: Invalid return value from tagfunc"
 msgstr "E987: Неправильное возвращаемое значение из tagfunc"
 
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Невозможно перейти в позицию до первой совпадающей метки"
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: Метка не найдена: %s"
 
 msgid "E427: There is only one matching tag"
@@ -5771,7 +5881,8 @@ msgstr "E559: В termcap нет записи об этом терминале"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: В termcap нет записи \"%s\""
 
-msgid "E437: terminal capability \"cm\" required"
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: Требуется способность терминала \"cm\""
 
 msgid ""
@@ -5832,13 +5943,15 @@ msgstr "E964: Неправильный номер столбца: %ld"
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: Неправильный номер строки: %ld"
 
-msgid "E965: missing property type name"
+# TODO: Capitalise first word of message?
+msgid "E965: Missing property type name"
 msgstr "E965: Пропущено имя для типа свойства"
 
 msgid "E275: Cannot add text property to unloaded buffer"
 msgstr "E275: Невозможно добавить текстовое свойство для выгруженного буфера"
 
-msgid "E967: text property info corrupted"
+# TODO: Capitalise first word of message?
+msgid "E967: Text property info corrupted"
 msgstr "E967: Информация о текстовом свойстве повреждена"
 
 msgid "E968: Need at least one of 'id' or 'type'"
@@ -5894,7 +6007,8 @@ msgid "Writing undo file: %s"
 msgstr "Запись файла отмен: %s"
 
 #, c-format
-msgid "E829: write error in undo file: %s"
+# TODO: Capitalise first word of message?
+msgid "E829: Write error in undo file: %s"
 msgstr "E829: Ошибка при записи файла отмен: %s"
 
 #, c-format
@@ -5946,7 +6060,8 @@ msgstr "Уже на самом последнем изменении"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Не найдена отмена номер %ld"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: неправильные номера строк"
 
 msgid "more line"
@@ -5987,10 +6102,12 @@ msgstr " номер  измен.  когда              сохранено"
 msgid "E790: undojoin is not allowed after undo"
 msgstr "E790: Объединение отмен не допускается после отмены"
 
-msgid "E439: undo list corrupt"
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
 msgstr "E439: Повреждён список отмены"
 
-msgid "E440: undo line missing"
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
 msgstr "E440: Потеряна строка отмены"
 
 msgid ""
@@ -6030,10 +6147,12 @@ msgstr "E177: Число-приставку нельзя указывать дв
 msgid "E178: Invalid default value for count"
 msgstr "E178: Неправильное значение числа-приставки по умолчанию"
 
-msgid "E179: argument required for -complete"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for -complete"
 msgstr "E179: Для -complete требуется указать параметр"
 
-msgid "E179: argument required for -addr"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for -addr"
 msgstr "E179: Для -addr требуется указать параметр"
 
 #, c-format
@@ -6901,7 +7020,8 @@ msgid "E36: Not enough room"
 msgstr "E36: Недостаточно места"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: Сервер \"%s\" не зарегистрирован"
 
 #, c-format
@@ -6929,7 +7049,8 @@ msgstr "E39: Требуется число"
 msgid "E40: Can't open errorfile %s"
 msgstr "E40: Не удалось открыть файл ошибок %s"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: Невозможно открыть дисплей"
 
 msgid "E41: Out of memory!"
@@ -6996,7 +7117,8 @@ msgid "E715: Dictionary required"
 msgstr "E715: Требуется словарь"
 
 #, c-format
-msgid "E684: list index out of range: %ld"
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
 msgstr "E684: Индекс списка за пределами диапазона: %ld"
 
 #, c-format
@@ -7052,7 +7174,8 @@ msgstr "E255: Невозможно прочитать данные о значк
 msgid "E72: Close error on swap file"
 msgstr "E72: Ошибка закрытия своп-файла"
 
-msgid "E73: tag stack empty"
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
 msgstr "E73: Стек меток пустой"
 
 msgid "E74: Command too complex"
@@ -7106,10 +7229,12 @@ msgstr "E463: Невозможно изменить охраняемую обл�
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr "E744: NetBeans не допускает изменений в файлах только для чтения"
 
-msgid "E363: pattern uses more memory than 'maxmempattern'"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: Шаблон использует больше памяти чем 'maxmempattern'"
 
-msgid "E749: empty buffer"
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
 msgstr "E749: Пустой буфер"
 
 #, c-format

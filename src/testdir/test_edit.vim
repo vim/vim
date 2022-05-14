@@ -1213,20 +1213,30 @@ func Test_edit_MOUSE()
   10new
   call setline(1, range(1, 100))
   call cursor(1, 1)
+  call assert_equal(1, line('w0'))
+  call assert_equal(10, line('w$'))
   set mouse=a
+  " One scroll event moves three lines.
   call feedkeys("A\<ScrollWheelDown>\<esc>", 'tnix')
-  call assert_equal([0, 4, 1, 0], getpos('.'))
-  " This should move by one pageDown, but only moves
-  " by one line when the test is run...
+  call assert_equal(4, line('w0'))
+  call assert_equal(13, line('w$'))
+  " This should move by one page down.
   call feedkeys("A\<S-ScrollWheelDown>\<esc>", 'tnix')
-  call assert_equal([0, 5, 1, 0], getpos('.'))
+  call assert_equal(14, line('w0'))
   set nostartofline
+  " Another page down.
   call feedkeys("A\<C-ScrollWheelDown>\<esc>", 'tnix')
-  call assert_equal([0, 6, 1, 0], getpos('.'))
+  call assert_equal(24, line('w0'))
+
+  call assert_equal([0, 24, 2, 0], getpos('.'))
+  call test_setmouse(4, 3)
   call feedkeys("A\<LeftMouse>\<esc>", 'tnix')
-  call assert_equal([0, 6, 1, 0], getpos('.'))
-  call feedkeys("A\<RightMouse>\<esc>", 'tnix')
-  call assert_equal([0, 6, 1, 0], getpos('.'))
+  call assert_equal([0, 27, 2, 0], getpos('.'))
+  set mousemodel=extend
+  call test_setmouse(5, 3)
+  call feedkeys("A\<RightMouse>\<esc>\<esc>", 'tnix')
+  call assert_equal([0, 28, 2, 0], getpos('.'))
+  set mousemodel&
   call cursor(1, 100)
   norm! zt
   " this should move by a screen up, but when the test
@@ -1840,6 +1850,29 @@ func Test_edit_file_no_read_perm()
   call delete('Xfile')
 endfunc
 
+" Using :edit without leaving 'insertmode' should not cause Insert mode to be
+" re-entered immediately after <C-L>
+func Test_edit_insertmode_ex_edit()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set insertmode noruler
+    inoremap <C-B> <Cmd>edit Xfoo<CR>
+  END
+  call writefile(lines, 'Xtest_edit_insertmode_ex_edit')
+
+  let buf = RunVimInTerminal('-S Xtest_edit_insertmode_ex_edit', #{rows: 6})
+  call TermWait(buf, 50)
+  call assert_match('^-- INSERT --\s*$', term_getline(buf, 6))
+  call term_sendkeys(buf, "\<C-B>\<C-L>")
+  call TermWait(buf, 50)
+  call assert_notmatch('^-- INSERT --\s*$', term_getline(buf, 6))
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_edit_insertmode_ex_edit')
+endfunc
+
 " Pressing escape in 'insertmode' should beep
 func Test_edit_insertmode_esc_beeps()
   new
@@ -2094,7 +2127,7 @@ endfunc
 func Test_edit_CTRL_hat()
   CheckFeature xim
 
-  " FIXME: test fails with Athena and Motif GUI.
+  " FIXME: test fails with Motif GUI.
   "        test also fails when running in the GUI.
   CheckFeature gui_gtk
   CheckNotGui
@@ -2125,5 +2158,31 @@ func Test_edit_overlong_file_name()
   bwipe!
 endfunc
 
+func Test_edit_shift_bs()
+  CheckMSWindows
+
+  " FIXME: this works interactively, but the test fails
+  throw 'Skipped: Shift-Backspace Test not working correctly :('
+
+  " Need to run this in Win32 Terminal, do not use CheckRunVimInTerminal
+  if !has("terminal")
+    return
+  endif
+
+  " Shift Backspace should work like Backspace in insert mode
+  let lines =<< trim END
+    call setline(1, ['abc'])
+  END
+  call writefile(lines, 'Xtest_edit_shift_bs')
+
+  let buf = RunVimInTerminal('-S Xtest_edit_shift_bs', #{rows: 3})
+  call term_sendkeys(buf, "A\<S-BS>-\<esc>")
+  call TermWait(buf, 50)
+  call assert_equal('ab-', term_getline(buf, 1))
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_edit_shift_bs')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

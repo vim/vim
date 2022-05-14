@@ -11,10 +11,10 @@ set nomore
 " Clear out t_WS, we don't want to resize the actual terminal.
 let script = [
       \ '" DO NOT EDIT: Generated with gen_opt_test.vim',
+      \ '" Used by test_options.vim.',
       \ '',
       \ 'let save_columns = &columns',
       \ 'let save_lines = &lines',
-      \ 'let save_term = &term',
       \ 'set t_WS=',
       \ ]
 
@@ -152,7 +152,7 @@ let test_values = {
       \ 'virtualedit': [['', 'all', 'all,block'], ['xxx']],
       \ 'whichwrap': [['', 'b,s', 'bs'], ['xxx']],
       \ 'wildmode': [['', 'full', 'list:full', 'full,longest'], ['xxx', 'a4', 'full,full,full,full,full']],
-      \ 'wildoptions': [['', 'tagfile'], ['xxx']],
+      \ 'wildoptions': [['', 'tagfile', 'pum', 'fuzzy'], ['xxx']],
       \ 'winaltkeys': [['menu', 'no'], ['', 'xxx']],
       \
       \ 'luadll': [[], []],
@@ -223,7 +223,6 @@ while 1
   endif
 endwhile
 
-call add(script, 'let &term = save_term')
 call add(script, 'let &columns = save_columns')
 call add(script, 'let &lines = save_lines')
 

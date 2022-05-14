@@ -1,7 +1,7 @@
 " Menu Translations: Português do Brasil
 " Maintainer: José de Paula <jose@infoviaweb.com>
 " Last Change: 2020 Apr 23
-"
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

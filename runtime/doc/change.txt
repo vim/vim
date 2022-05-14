@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2022 Feb 04
+*change.txt*    For Vim version 8.2.  Last change: 2022 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -614,9 +614,10 @@ attack or other people reading your file).  When Vim exits the directory and
 all files in it are deleted.  When Vim has the setuid bit set this may cause
 problems, the temp file is owned by the setuid user but the filter command
 probably runs as the original user.
-On MS-Windows the first of these directories that works is used: $TMP,
-$TEMP, c:\TMP, c:\TEMP.
-For Unix the list of directories is: $TMPDIR, /tmp, current-dir, $HOME.
+Directory for temporary files is created in the first of these directories
+that works:
+	Unix:    $TMPDIR, /tmp, current-dir, $HOME.
+	Windows: $TMP, $TEMP, c:\TMP, c:\TEMP
 For MS-Windows the GetTempFileName() system function is used.
 For other systems the tmpnam() library function is used.
 
@@ -778,8 +779,8 @@ matched pattern is deleted.  The separator after {pattern} can also be left
 out then.  Example: >
 	:%s/TESTING
 This deletes "TESTING" from all lines, but only one per line.
-
-For compatibility with Vi these two exceptions are allowed:
+								*E1270*
+For compatibility with Vi these two exceptions are allowed in legacy script:
 "\/{string}/" and "\?{string}?" do the same as "//{string}/r".
 "\&{string}&" does the same as "//{string}/".
 				*pattern-delimiter* *E146* *E1241* *E1242*
@@ -946,7 +947,7 @@ Consider using a character like "@" or ":".  There is no problem if the result
 of the expression contains the separation character.
 
 Examples: >
-	:s@\n@\="\r" . expand("$HOME") . "\r"@
+	:s@\n@\="\r" .. expand("$HOME") .. "\r"@
 This replaces an end-of-line with a new line containing the value of $HOME. >
 
 	s/E/\="\<Char-0x20ac>"/g
@@ -1123,7 +1124,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			the command.  You need to escape the '|' and '"'
 			characters to prevent them from terminating the
 			command.  Example: >
-				:put ='path' . \",/test\"
+				:put ='path' .. \",/test\"
 <			If there is no expression after '=', Vim uses the
 			previous expression.  You can see it with ":dis =".
 
@@ -1176,14 +1177,15 @@ register.  With blockwise selection it also depends on the size of the block
 and whether the corners are on an existing character.  (Implementation detail:
 it actually works by first putting the register after the selection and then
 deleting the selection.)
-With 'p' the previously selected text is put in the unnamed register.  This is
-useful if you want to put that text somewhere else.  But you cannot repeat the
-same change.
-With 'P' the unnamed register is not changed, you can repeat the same change.
-But the deleted text cannot be used.  If you do need it you can use 'p' with
-another register.  E.g., yank the text to copy, Visually select the text to
-replace and use "0p .  You can repeat this as many times as you like, and the
-unnamed register will be changed each time.
+With |p| the previously selected text is put in the unnamed register (and
+possibly the selection and/or clipboard).  This is useful if you want to put
+that text somewhere else.  But you cannot repeat the same change.
+With |P| the unnamed register is not changed (and neither the selection or
+clipboard), you can repeat the same change. But the deleted text cannot be
+used.  If you do need it you can use |p| with another register.  E.g., yank
+the text to copy, Visually select the text to replace and use "0p .  You can
+repeat this as many times as you like, and the unnamed register will be
+changed each time.
 
 When you use a blockwise Visual mode command and yank only a single line into
 a register, a paste on a visual selected area will paste that single line on
@@ -1671,9 +1673,9 @@ readability.
 
 letter	 meaning when present in 'formatoptions'    ~
 							*fo-t*
-t	Auto-wrap text using textwidth
+t	Auto-wrap text using 'textwidth'
 							*fo-c*
-c	Auto-wrap comments using textwidth, inserting the current comment
+c	Auto-wrap comments using 'textwidth', inserting the current comment
 	leader automatically.
 							*fo-r*
 r	Automatically insert the current comment leader after hitting
@@ -1682,6 +1684,9 @@ r	Automatically insert the current comment leader after hitting
 o	Automatically insert the current comment leader after hitting 'o' or
 	'O' in Normal mode.  In case comment is unwanted in a specific place
 	use CTRL-U to quickly delete it. |i_CTRL-U|
+							*fo-/*
+/	When 'o' is included: do not insert the comment leader for a //
+	comment after a statement, only when // is at the start of the line.
 							*fo-q*
 q	Allow formatting of comments with "gq".
 	Note that formatting will not change blank lines or lines containing
@@ -1744,8 +1749,8 @@ B	When joining lines, don't insert a space between two multibyte
 1	Don't break a line after a one-letter word.  It's broken before it
 	instead (if possible).
 							*fo-]*
-]	Respect textwidth rigorously. With this flag set, no line can be
-	longer than textwidth, unless line-break-prohibition rules make this
+]	Respect 'textwidth' rigorously. With this flag set, no line can be
+	longer than 'textwidth', unless line-break-prohibition rules make this
 	impossible.  Mainly for CJK scripts and works only if 'encoding' is
 	"utf-8".
 							*fo-j*

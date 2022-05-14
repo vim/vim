@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2022 Feb 03
+*various.txt*   For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -114,6 +114,7 @@ g8			Print the hex values of the bytes used in the
 :[range]P[rint] [count] [flags]
 			Just as ":print".  Was apparently added to Vi for
 			people that keep the shift key pressed too long...
+			This command is not supported in |Vim9| script.
 			Note: A user command can overrule this command.
 			See |ex-flags| for [flags].
 
@@ -267,7 +268,7 @@ g8			Print the hex values of the bytes used in the
 			name does not contain a single quote: >
 				:!ls '%'
 <			This should always work, but it's more typing: >
-				:exe "!ls " . shellescape(expand("%"))
+				:exe "!ls " .. shellescape(expand("%"))
 <			To get a literal "%" or "#" prepend it with a
 			backslash.  For example, to list all files starting
 			with "%": >
@@ -380,7 +381,7 @@ N  *+folding*		|folding|
    *+fork*		Unix only: |fork| shell commands
    *+float*		Floating point support
 N  *+gettext*		message translations |multi-lang|
-   *+GUI_Athena*	Unix only: Athena |GUI|
+-  *+GUI_Athena*	Unix only: Athena |GUI|
    *+GUI_neXtaw*	Unix only: neXtaw |GUI|
    *+GUI_GTK*		Unix only: GTK+ |GUI|
    *+GUI_Motif*		Unix only: Motif |GUI|
@@ -410,6 +411,7 @@ T  *+mouse*		Mouse handling |mouse-using|
 N  *+mouseshape*	|'mouseshape'|
 B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
+m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency |/dyn|
 N  *+mouse_jsbterm*	JSB mouse handling |jsbterm-mouse|
 B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
 N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
@@ -649,7 +651,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			used.  In this example |:silent| is used to avoid the
 			message about reading the file and |:unsilent| to be
 			able to list the first line of each file. >
-		:silent argdo unsilent echo expand('%') . ": " . getline(1)
+		:silent argdo unsilent echo expand('%') .. ": " .. getline(1)
 <
 
 						*:verb* *:verbose*

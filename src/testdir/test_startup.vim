@@ -441,7 +441,7 @@ endfunction
 " Test the -reverse and +reverse arguments (for GUI only).
 func Test_reverse()
   CheckCanRunGui
-  CheckAnyOf Feature:gui_gtk Feature:gui_motif Feature:gui_athena
+  CheckAnyOf Feature:gui_gtk Feature:gui_motif
 
   let after =<< trim [CODE]
     call writefile([&background], "Xtest_reverse")
@@ -462,7 +462,7 @@ endfunc
 " Test the -background and -foreground arguments (for GUI only).
 func Test_background_foreground()
   CheckCanRunGui
-  CheckAnyOf Feature:gui_gtk Feature:gui_motif Feature:gui_athena
+  CheckAnyOf Feature:gui_gtk Feature:gui_motif
 
   " Is there a better way to check the effect of -background & -foreground
   " other than merely looking at &background (dark or light)?
@@ -489,7 +489,7 @@ func Test_font()
 
   if has('gui_gtk')
     let font = 'Courier 14'
-  elseif has('gui_motif') || has('gui_athena')
+  elseif has('gui_motif')
     let font = '-misc-fixed-bold-*'
   else
     throw 'Skipped: test does not set a valid font for this GUI'
@@ -511,10 +511,10 @@ endfunc
 " Test the -geometry argument (for GUI only).
 func Test_geometry()
   CheckCanRunGui
-  CheckAnyOf Feature:gui_gtk Feature:gui_motif Feature:gui_athena
+  CheckAnyOf Feature:gui_gtk Feature:gui_motif
 
-  if has('gui_motif') || has('gui_athena')
-    " FIXME: With GUI Athena or Motif, the value of getwinposx(),
+  if has('gui_motif')
+    " FIXME: With GUI Motif the value of getwinposx(),
     "        getwinposy() and getwinpos() do not match exactly the
     "        value given in -geometry. Why?
     "        So only check &columns and &lines for those GUIs.
@@ -550,7 +550,7 @@ endfunc
 " Test the -iconic argument (for GUI only).
 func Test_iconic()
   CheckCanRunGui
-  CheckAnyOf Feature:gui_gtk Feature:gui_motif Feature:gui_athena
+  CheckAnyOf Feature:gui_gtk Feature:gui_motif
 
   call RunVim([], [], '-f -g -iconic -cq')
 
@@ -724,6 +724,25 @@ func Test_startuptime()
     call assert_equal(expected, found)
   endif
   call delete('Xtestout')
+endfunc
+
+func Test_log()
+  CheckFeature channel
+
+  call assert_false(filereadable('Xlogfile'))
+  let after = ['qall']
+  if RunVim([], after, '--log Xlogfile')
+    call assert_equal(1, readfile('Xlogfile')
+          \ ->filter({i, l -> l =~ '==== start log session'})
+          \ ->len())
+    " second time appends to the log
+    if RunVim([], after, '--log Xlogfile')
+      call assert_equal(2, readfile('Xlogfile')
+            \ ->filter({i, l -> l =~ '==== start log session'})
+            \ ->len())
+    endif
+  endif
+  call delete('Xlogfile')
 endfunc
 
 func Test_read_stdin()

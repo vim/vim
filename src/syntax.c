@@ -2504,55 +2504,53 @@ check_state_ends(void)
 		next_match_col = MAXCOL;
 		break;
 	    }
-	    else
+
+	    // handle next_list, unless at end of line and no "skipnl" or
+	    // "skipempty"
+	    current_next_list = cur_si->si_next_list;
+	    current_next_flags = cur_si->si_flags;
+	    if (!(current_next_flags & (HL_SKIPNL | HL_SKIPEMPTY))
+		    && syn_getcurline()[current_col] == NUL)
+		current_next_list = NULL;
+
+	    // When the ended item has "extend", another item with
+	    // "keepend" now needs to check for its end.
+	    had_extend = (cur_si->si_flags & HL_EXTEND);
+
+	    pop_current_state();
+
+	    if (current_state.ga_len == 0)
+		break;
+
+	    if (had_extend && keepend_level >= 0)
 	    {
-		// handle next_list, unless at end of line and no "skipnl" or
-		// "skipempty"
-		current_next_list = cur_si->si_next_list;
-		current_next_flags = cur_si->si_flags;
-		if (!(current_next_flags & (HL_SKIPNL | HL_SKIPEMPTY))
-			&& syn_getcurline()[current_col] == NUL)
-		    current_next_list = NULL;
-
-		// When the ended item has "extend", another item with
-		// "keepend" now needs to check for its end.
-		 had_extend = (cur_si->si_flags & HL_EXTEND);
-
-		pop_current_state();
-
+		syn_update_ends(FALSE);
 		if (current_state.ga_len == 0)
 		    break;
+	    }
 
-		if (had_extend && keepend_level >= 0)
-		{
-		    syn_update_ends(FALSE);
-		    if (current_state.ga_len == 0)
-			break;
-		}
+	    cur_si = &CUR_STATE(current_state.ga_len - 1);
 
-		cur_si = &CUR_STATE(current_state.ga_len - 1);
-
-		/*
-		 * Only for a region the search for the end continues after
-		 * the end of the contained item.  If the contained match
-		 * included the end-of-line, break here, the region continues.
-		 * Don't do this when:
-		 * - "keepend" is used for the contained item
-		 * - not at the end of the line (could be end="x$"me=e-1).
-		 * - "excludenl" is used (HL_HAS_EOL won't be set)
-		 */
-		if (cur_si->si_idx >= 0
-			&& SYN_ITEMS(syn_block)[cur_si->si_idx].sp_type
-							       == SPTYPE_START
-			&& !(cur_si->si_flags & (HL_MATCH | HL_KEEPEND)))
-		{
-		    update_si_end(cur_si, (int)current_col, TRUE);
-		    check_keepend();
-		    if ((current_next_flags & HL_HAS_EOL)
-			    && keepend_level < 0
-			    && syn_getcurline()[current_col] == NUL)
-			break;
-		}
+	    /*
+	     * Only for a region the search for the end continues after
+	     * the end of the contained item.  If the contained match
+	     * included the end-of-line, break here, the region continues.
+	     * Don't do this when:
+	     * - "keepend" is used for the contained item
+	     * - not at the end of the line (could be end="x$"me=e-1).
+	     * - "excludenl" is used (HL_HAS_EOL won't be set)
+	     */
+	    if (cur_si->si_idx >= 0
+		    && SYN_ITEMS(syn_block)[cur_si->si_idx].sp_type
+								== SPTYPE_START
+		    && !(cur_si->si_flags & (HL_MATCH | HL_KEEPEND)))
+	    {
+		update_si_end(cur_si, (int)current_col, TRUE);
+		check_keepend();
+		if ((current_next_flags & HL_HAS_EOL)
+			&& keepend_level < 0
+			&& syn_getcurline()[current_col] == NUL)
+		    break;
 	    }
 	}
 	else
@@ -4764,7 +4762,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
      * filename to include.
      */
     eap->argt |= (EX_XFILE | EX_NOSPC);
-    separate_nextcmd(eap);
+    separate_nextcmd(eap, FALSE);
     if (*eap->arg == '<' || *eap->arg == '$' || mch_isFullName(eap->arg))
     {
 	// For an absolute path, "$VIM/..." or "<sfile>.." we ":source" the
@@ -6488,8 +6486,9 @@ syn_get_id(
     int		keep_state)  // keep state of char at "col"
 {
     // When the position is not after the current position and in the same
-    // line of the same buffer, need to restart parsing.
-    if (wp->w_buffer != syn_buf
+    // line of the same window with the same buffer, need to restart parsing.
+    if (wp != syn_win
+	    || wp->w_buffer != syn_buf
 	    || lnum != current_lnum
 	    || col < current_col)
 	syntax_start(wp, lnum);

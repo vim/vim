@@ -53,15 +53,6 @@ static int can_update_cursor = TRUE; // can display the cursor
 static int disable_flush = 0;	// If > 0, gui_mch_flush() is disabled.
 
 /*
- * The Athena scrollbars can move the thumb to after the end of the scrollbar,
- * this makes the thumb indicate the part of the text that is shown.  Motif
- * can't do this.
- */
-#if defined(FEAT_GUI_ATHENA)
-# define SCROLL_PAST_END
-#endif
-
-/*
  * gui_start -- Called when user wants to start the GUI.
  *
  * Careful: This function can be called recursively when there is a ":gui"
@@ -445,8 +436,7 @@ gui_init_check(void)
     gui.menu_width = 0;
 # endif
 #endif
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
-	|| defined(FEAT_GUI_HAIKU))
+#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU))
     gui.toolbar_height = 0;
 #endif
 #if defined(FEAT_FOOTER) && defined(FEAT_GUI_MOTIF)
@@ -514,7 +504,7 @@ gui_init(void)
 	 * Reset 'paste'.  It's useful in the terminal, but not in the GUI.  It
 	 * breaks the Paste toolbar button.
 	 */
-	set_option_value((char_u *)"paste", 0L, NULL, 0);
+	set_option_value_give_err((char_u *)"paste", 0L, NULL, 0);
 
 	// Set t_Co to the number of colors: RGB.
 	set_color_count(256 * 256 * 256);
@@ -674,7 +664,8 @@ gui_init(void)
      * Set up the fonts.  First use a font specified with "-fn" or "-font".
      */
     if (font_argument != NULL)
-	set_option_value((char_u *)"gfn", 0L, (char_u *)font_argument, 0);
+	set_option_value_give_err((char_u *)"gfn",
+					       0L, (char_u *)font_argument, 0);
     if (
 #ifdef FEAT_XFONTSET
 	    (*p_guifontset == NUL
@@ -789,7 +780,7 @@ gui_init(void)
 	balloonEval = gui_mch_create_beval_area(gui.drawarea, NULL,
 						     &general_beval_cb, NULL);
 # else
-#  if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+#  if defined(FEAT_GUI_MOTIF)
 	{
 	    extern Widget	textArea;
 	    balloonEval = gui_mch_create_beval_area(textArea, NULL,
@@ -1216,7 +1207,7 @@ gui_update_cursor(
 	else
 #endif
 	    shape = &shape_table[get_shape_idx(FALSE)];
-	if (State & LANGMAP)
+	if (State & MODE_LANGMAP)
 	    id = shape->id_lm;
 	else
 	    id = shape->id;
@@ -1441,11 +1432,11 @@ gui_position_components(int total_width UNUSED)
 	text_area_y += gui.tabline_height;
 #endif
 
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_MSWIN))
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
     {
-# if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_HAIKU)
+# if defined(FEAT_GUI_HAIKU)
 	gui_mch_set_toolbar_pos(0, text_area_y,
 				gui.menu_width, gui.toolbar_height);
 # endif
@@ -1589,7 +1580,7 @@ again:
      * At the "more" and ":confirm" prompt there is no redraw, put the cursor
      * at the last line here (why does it have to be one row too low?).
      */
-    if (State == ASKMORE || State == CONFIRM)
+    if (State == MODE_ASKMORE || State == MODE_CONFIRM)
 	gui.row = gui.num_rows;
 
     // Only comparing Rows and Columns may be sufficient, but let's stay on
@@ -2043,10 +2034,10 @@ gui_write(
     old_curwin = curwin;
 
     /*
-     * We need to make sure this is cleared since Athena doesn't tell us when
-     * he is done dragging.  Do the same for GTK.
+     * We need to make sure this is cleared since GTK doesn't tell us when
+     * the user is done dragging.
      */
-#if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_GTK)
     gui.dragged_sb = SBAR_NONE;
 #endif
 
@@ -3142,13 +3133,26 @@ button_set:
 		if (hold_gui_events)
 		    return;
 
+		row = gui_xy2colrow(x, y, &col);
+		// Don't report a mouse move unless moved to a
+		// different character position.
+		if (button == MOUSE_MOVE)
+		{
+		    if (row == prev_row && col == prev_col)
+			return;
+		    else
+		    {
+			prev_row = row >= 0 ? row : 0;
+			prev_col = col;
+		    }
+		}
+
 		string[3] = CSI;
 		string[4] = KS_EXTRA;
 		string[5] = (int)button_char;
 
 		// Pass the pointer coordinates of the scroll event so that we
 		// know which window to scroll.
-		row = gui_xy2colrow(x, y, &col);
 		string[6] = (char_u)(col / 128 + ' ' + 1);
 		string[7] = (char_u)(col % 128 + ' ' + 1);
 		string[8] = (char_u)(row / 128 + ' ' + 1);
@@ -3188,22 +3192,23 @@ button_set:
     // Determine which mouse settings to look for based on the current mode
     switch (get_real_state())
     {
-	case NORMAL_BUSY:
-	case OP_PENDING:
+	case MODE_NORMAL_BUSY:
+	case MODE_OP_PENDING:
 # ifdef FEAT_TERMINAL
-	case TERMINAL:
+	case MODE_TERMINAL:
 # endif
-	case NORMAL:		checkfor = MOUSE_NORMAL;	break;
-	case VISUAL:		checkfor = MOUSE_VISUAL;	break;
-	case SELECTMODE:	checkfor = MOUSE_VISUAL;	break;
-	case REPLACE:
-	case REPLACE+LANGMAP:
-	case VREPLACE:
-	case VREPLACE+LANGMAP:
-	case INSERT:
-	case INSERT+LANGMAP:	checkfor = MOUSE_INSERT;	break;
-	case ASKMORE:
-	case HITRETURN:		// At the more- and hit-enter prompt pass the
+	case MODE_NORMAL:	checkfor = MOUSE_NORMAL; break;
+	case MODE_VISUAL:	checkfor = MOUSE_VISUAL; break;
+	case MODE_SELECT:	checkfor = MOUSE_VISUAL; break;
+	case MODE_REPLACE:
+	case MODE_REPLACE | MODE_LANGMAP:
+	case MODE_VREPLACE:
+	case MODE_VREPLACE | MODE_LANGMAP:
+	case MODE_INSERT:
+	case MODE_INSERT | MODE_LANGMAP:
+				checkfor = MOUSE_INSERT; break;
+	case MODE_ASKMORE:
+	case MODE_HITRETURN:	// At the more- and hit-enter prompt pass the
 				// mouse event for a click on or below the
 				// message line.
 				if (Y_2_ROW(y) >= msg_row)
@@ -3216,8 +3221,8 @@ button_set:
 	     * On the command line, use the clipboard selection on all lines
 	     * but the command line.  But not when pasting.
 	     */
-	case CMDLINE:
-	case CMDLINE+LANGMAP:
+	case MODE_CMDLINE:
+	case MODE_CMDLINE | MODE_LANGMAP:
 	    if (Y_2_ROW(y) < cmdline_row && button != MOUSE_MIDDLE)
 		checkfor = MOUSE_NONE;
 	    else
@@ -3234,7 +3239,8 @@ button_set:
      * modes.  Don't do this when dragging the status line, or extending a
      * Visual selection.
      */
-    if ((State == NORMAL || State == NORMAL_BUSY || (State & INSERT))
+    if ((State == MODE_NORMAL || State == MODE_NORMAL_BUSY
+						      || (State & MODE_INSERT))
 	    && Y_2_ROW(y) >= topframe->fr_height + firstwin->w_winrow
 	    && button != MOUSE_DRAG
 # ifdef FEAT_MOUSESHAPE
@@ -3266,7 +3272,7 @@ button_set:
     if (!mouse_has(checkfor) || checkfor == MOUSE_COMMAND)
     {
 	// Don't do modeless selection in Visual mode.
-	if (checkfor != MOUSE_NONEF && VIsual_active && (State & NORMAL))
+	if (checkfor != MOUSE_NONEF && VIsual_active && (State & MODE_NORMAL))
 	    return;
 
 	/*
@@ -3287,7 +3293,7 @@ button_set:
 	{
 	    if (clip_star.state == SELECT_CLEARED)
 	    {
-		if (State & CMDLINE)
+		if (State & MODE_CMDLINE)
 		{
 		    col = msg_col;
 		    row = msg_row;
@@ -3397,10 +3403,10 @@ button_set:
     prev_col = col;
 
     /*
-     * We need to make sure this is cleared since Athena doesn't tell us when
-     * he is done dragging.  Neither does GTK+ 2 -- at least for now.
+     * We need to make sure this is cleared since GTK doesn't tell us when
+     * the user is done dragging.
      */
-#if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_GTK)
     gui.dragged_sb = SBAR_NONE;
 #endif
 }
@@ -3939,9 +3945,6 @@ gui_create_scrollbar(scrollbar_T *sb, int type, win_T *wp)
     sb->wp = wp;
     sb->type = type;
     sb->value = 0;
-#ifdef FEAT_GUI_ATHENA
-    sb->pixval = 0;
-#endif
     sb->size = 1;
     sb->max = 1;
     sb->top = 0;
@@ -4085,17 +4088,17 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 #ifdef USE_ON_FLY_SCROLL
 	current_scrollbar = sb_num;
 	scrollbar_value = value;
-	if (State & NORMAL)
+	if (State & MODE_NORMAL)
 	{
 	    gui_do_scroll();
 	    setcursor();
 	}
-	else if (State & INSERT)
+	else if (State & MODE_INSERT)
 	{
 	    ins_scroll();
 	    setcursor();
 	}
-	else if (State & CMDLINE)
+	else if (State & MODE_CMDLINE)
 	{
 	    if (msg_scrolled == 0)
 	    {
@@ -4130,11 +4133,11 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 #ifdef USE_ON_FLY_SCROLL
 	scrollbar_value = value;
 
-	if (State & NORMAL)
+	if (State & MODE_NORMAL)
 	    gui_do_horiz_scroll(scrollbar_value, FALSE);
-	else if (State & INSERT)
+	else if (State & MODE_INSERT)
 	    ins_horscroll();
-	else if (State & CMDLINE)
+	else if (State & MODE_CMDLINE)
 	{
 	    if (msg_scrolled == 0)
 	    {
@@ -4323,7 +4326,7 @@ gui_update_scrollbars(
 		y += gui.menu_height;
 #endif
 
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_ATHENA) \
+#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_HAIKU))
 	    if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
 		y += gui.toolbar_height;
@@ -4356,25 +4359,10 @@ gui_update_scrollbars(
 	    }
 	}
 
-	// Reduce the number of calls to gui_mch_set_scrollbar_thumb() by
-	// checking if the thumb moved at least a pixel.  Only do this for
-	// Athena, most other GUIs require the update anyway to make the
-	// arrows work.
-#ifdef FEAT_GUI_ATHENA
-	if (max == 0)
-	    y = 0;
-	else
-	    y = (val * (sb->height + 2) * gui.char_height + max / 2) / max;
-	if (force || sb->pixval != y || sb->size != size || sb->max != max)
-#else
 	if (force || sb->value != val || sb->size != size || sb->max != max)
-#endif
 	{
 	    // Thumb of scrollbar has moved
 	    sb->value = val;
-#ifdef FEAT_GUI_ATHENA
-	    sb->pixval = y;
-#endif
 	    sb->size = size;
 	    sb->max = max;
 	    if (gui.which_scrollbars[SBAR_LEFT]
@@ -4829,7 +4817,7 @@ init_gui_options(void)
     // background color, unless the user has set it already.
     if (!option_was_set((char_u *)"bg") && STRCMP(p_bg, gui_bg_default()) != 0)
     {
-	set_option_value((char_u *)"bg", 0L, gui_bg_default(), 0);
+	set_option_value_give_err((char_u *)"bg", 0L, gui_bg_default(), 0);
 	highlight_changed();
     }
 }
@@ -4904,8 +4892,8 @@ gui_mouse_focus(int x, int y)
     // Only handle this when 'mousefocus' set and ...
     if (p_mousef
 	    && !hold_gui_events		// not holding events
-	    && (State & (NORMAL|INSERT))// Normal/Visual/Insert mode
-	    && State != HITRETURN	// but not hit-return prompt
+	    && (State & (MODE_NORMAL | MODE_INSERT))// Normal/Visual/Insert mode
+	    && State != MODE_HITRETURN	// but not hit-return prompt
 	    && msg_scrolled == 0	// no scrolled message
 	    && !need_mouse_correct	// not moving the pointer
 	    && gui.in_focus)		// gvim in focus
@@ -4967,12 +4955,14 @@ gui_mouse_moved(int x, int y)
     // apply 'mousefocus' and pointer shape
     gui_mouse_focus(x, y);
 
+    if (p_mousemev
 #ifdef FEAT_PROP_POPUP
-    if (popup_visible)
-	// Generate a mouse-moved event, so that the popup can perhaps be
-	// closed, just like in the terminal.
-	gui_send_mouse_event(MOUSE_MOVE, x, y, FALSE, 0);
+	|| popup_uses_mouse_move
 #endif
+   )
+	// Generate a mouse-moved event. For a <MouseMove> mapping. Or so the
+	// popup can perhaps be closed, just like in the terminal.
+	gui_send_mouse_event(MOUSE_MOVE, x, y, FALSE, 0);
 }
 
 /*
@@ -5034,7 +5024,7 @@ xy2win(int x, int y, mouse_find_T popup)
     if (wp == NULL)
 	return NULL;
 #ifdef FEAT_MOUSESHAPE
-    if (State == HITRETURN || State == ASKMORE)
+    if (State == MODE_HITRETURN || State == MODE_ASKMORE)
     {
 	if (Y_2_ROW(y) >= msg_row)
 	    update_mouseshape(SHAPE_IDX_MOREL);
@@ -5043,10 +5033,10 @@ xy2win(int x, int y, mouse_find_T popup)
     }
     else if (row > wp->w_height)	// below status line
 	update_mouseshape(SHAPE_IDX_CLINE);
-    else if (!(State & CMDLINE) && wp->w_vsep_width > 0 && col == wp->w_width
+    else if (!(State & MODE_CMDLINE) && wp->w_vsep_width > 0 && col == wp->w_width
 	    && (row != wp->w_height || !stl_connected(wp)) && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_VSEP);
-    else if (!(State & CMDLINE) && wp->w_status_height > 0
+    else if (!(State & MODE_CMDLINE) && wp->w_status_height > 0
 				  && row == wp->w_height && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_STATUS);
     else
@@ -5107,7 +5097,7 @@ ex_gui(exarg_T *eap)
 	    || defined(FEAT_GUI_HAIKU)) \
 	    && defined(FEAT_TOOLBAR)) || defined(PROTO)
 /*
- * This is shared between Athena, Haiku, Motif, and GTK.
+ * This is shared between Haiku, Motif, and GTK.
  */
 
 /*
@@ -5250,6 +5240,9 @@ gui_update_screen(void)
 	last_cursormoved = curwin->w_cursor;
     }
 
+    if (!finish_op)
+	may_trigger_winscrolled();
+
 # ifdef FEAT_CONCEAL
     if (conceal_update_lines
 	    && (conceal_old_cursor_line != conceal_new_cursor_line
@@ -5378,7 +5371,7 @@ gui_do_findrepl(
     // escape slash and backslash
     p = vim_strsave_escaped(find_text, (char_u *)"/\\");
     if (p != NULL)
-        ga_concat(&ga, p);
+	ga_concat(&ga, p);
     vim_free(p);
     if (flags & FRD_WHOLE_WORD)
 	ga_concat(&ga, (char_u *)"\\>");
@@ -5452,7 +5445,7 @@ gui_do_findrepl(
 	    // direction
 	    p = vim_strsave_escaped(ga.ga_data, (char_u *)"?");
 	    if (p != NULL)
-	        (void)do_search(NULL, '?', '?', p, 1L, searchflags, NULL);
+		(void)do_search(NULL, '?', '?', p, 1L, searchflags, NULL);
 	    vim_free(p);
 	}
 
@@ -5463,7 +5456,7 @@ gui_do_findrepl(
     // syntax HL if we were busy redrawing.
     did_emsg = save_did_emsg;
 
-    if (State & (NORMAL | INSERT))
+    if (State & (MODE_NORMAL | MODE_INSERT))
     {
 	gui_update_screen();		// update the screen
 	msg_didout = 0;			// overwrite any message
@@ -5567,7 +5560,7 @@ gui_handle_drop(
      * When the cursor is at the command line, add the file names to the
      * command line, don't edit the files.
      */
-    if (State & CMDLINE)
+    if (State & MODE_CMDLINE)
     {
 	shorten_filenames(fnames, count);
 	for (i = 0; i < count; ++i)

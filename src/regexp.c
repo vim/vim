@@ -2004,6 +2004,10 @@ vim_regsub_both(
 		    funcexe.fe_partial = partial;
 		    call_func(s, -1, &rettv, 1, argv, &funcexe);
 		}
+		else if (expr->v_type == VAR_INSTR)
+		{
+		    exe_typval_instr(expr, &rettv);
+		}
 		if (matchList.sl_list.lv_len > 0)
 		    // fill_submatch_list() was called
 		    clear_submatch_list(&matchList);
@@ -2535,7 +2539,6 @@ static regengine_T bt_regengine =
     bt_regfree,
     bt_regexec_nl,
     bt_regexec_multi,
-    (char_u *)""
 };
 
 #include "regexp_nfa.c"
@@ -2546,7 +2549,6 @@ static regengine_T nfa_regengine =
     nfa_regfree,
     nfa_regexec_nl,
     nfa_regexec_multi,
-    (char_u *)""
 };
 
 // Which regexp engine to use? Needed for vim_regcomp().
@@ -2874,9 +2876,10 @@ vim_regexec_multi(
 	char_u *pat = vim_strsave(((nfa_regprog_T *)rmp->regprog)->pattern);
 
 	p_re = BACKTRACKING_ENGINE;
-	vim_regfree(rmp->regprog);
 	if (pat != NULL)
 	{
+	    regprog_T *prev_prog = rmp->regprog;
+
 #ifdef FEAT_EVAL
 	    report_re_switch(pat);
 #endif
@@ -2889,9 +2892,16 @@ vim_regexec_multi(
 #ifdef FEAT_SYN_HL
 	    reg_do_extmatch = 0;
 #endif
-
-	    if (rmp->regprog != NULL)
+	    if (rmp->regprog == NULL)
 	    {
+		// Somehow compiling the pattern failed now, put back the
+		// previous one to avoid "regprog" becoming NULL.
+		rmp->regprog = prev_prog;
+	    }
+	    else
+	    {
+		vim_regfree(prev_prog);
+
 		rmp->regprog->re_in_use = TRUE;
 		result = rmp->regprog->engine->regexec_multi(
 				      rmp, win, buf, lnum, col, tm, timed_out);

@@ -2,6 +2,7 @@
 # Edit the src/po/vim.desktop.in file instead.
 [Desktop Entry]
 # Translators: This is the Application Name used in the Vim desktop file
+Name[ca]=Vim
 Name[de]=Vim
 Name[eo]=Vim
 Name[fi]=Vim
@@ -11,8 +12,10 @@ Name[it]=Vim
 Name[ru]=Vim
 Name[sr]=Vim
 Name[tr]=Vim
+Name[uk]=Vim
 Name=Vim
 # Translators: This is the Generic Application Name used in the Vim desktop file
+GenericName[ca]=Editor de text
 GenericName[de]=Texteditor
 GenericName[eo]=Tekstoredaktilo
 GenericName[fi]=Tekstinmuokkain
@@ -23,8 +26,10 @@ GenericName[ja]=テキストエディタ
 GenericName[ru]=Текстовый редактор
 GenericName[sr]=Едитор текст
 GenericName[tr]=Metin Düzenleyici
+GenericName[uk]=Редактор Тексту
 GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
+Comment[ca]=Edita fitxers de text
 Comment[de]=Textdateien bearbeiten
 Comment[eo]=Redakti tekstajn dosierojn
 Comment[fi]=Muokkaa tekstitiedostoja
@@ -35,6 +40,7 @@ Comment[ja]=テキストファイルを編集します
 Comment[ru]=Редактирование текстовых файлов
 Comment[sr]=Уређујте текст фајлове
 Comment[tr]=Metin dosyaları düzenleyin
+Comment[uk]=Редагувати текстові файли
 Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
 # be overwritten by the po file when generating the desktop.file.
@@ -49,7 +55,6 @@ Comment[be]=Рэдагаваньне тэкставых файлаў
 Comment[bg]=Редактиране на текстови файлове
 Comment[bn]=টেক্স্ট ফাইল এডিট করুন
 Comment[bs]=Izmijeni tekstualne datoteke
-Comment[ca]=Edita fitxers de text
 Comment[cs]=Úprava textových souborů
 Comment[cy]=Golygu ffeiliau testun
 Comment[da]=Rediger tekstfiler
@@ -95,7 +100,6 @@ Comment[sv]=Redigera textfiler
 Comment[ta]=உரை கோப்புகளை தொகுக்கவும்
 Comment[th]=แก้ไขแฟ้มข้อความ
 Comment[tk]=Metin faýllary editle
-Comment[uk]=Редактор текстових файлів
 Comment[vi]=Soạn thảo tập tin văn bản
 Comment[wa]=Asspougnî des fitchîs tecses
 Comment[zh_CN]=编辑文本文件
@@ -105,6 +109,7 @@ Exec=vim %F
 Terminal=true
 Type=Application
 # Translators: Search terms to find this application. Do NOT change the semicolons! The list MUST also end with a semicolon!
+Keywords[ca]=Text;editor;
 Keywords[de]=Text;Editor;
 Keywords[eo]=Teksto;redaktilo;
 Keywords[fi]=Teksti;muokkain;editori;
@@ -115,6 +120,7 @@ Keywords[ja]=テキスト;エディタ;
 Keywords[ru]=текст;текстовый редактор;
 Keywords[sr]=Текст;едитор;
 Keywords[tr]=Metin;düzenleyici;
+Keywords[uk]=текст;редактор;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate
 Icon=gvim

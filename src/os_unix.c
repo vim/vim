@@ -55,7 +55,25 @@ static int selinux_enabled = -1;
 #endif
 
 #ifdef FEAT_MOUSE_GPM
+
 # include <gpm.h>
+
+# ifdef DYNAMIC_GPM
+#  define Gpm_Open     (*dll_Gpm_Open)
+#  define Gpm_Close    (*dll_Gpm_Close)
+#  define Gpm_GetEvent (*dll_Gpm_GetEvent)
+#  define gpm_flag     (dll_gpm_flag != NULL ? *dll_gpm_flag :  0)
+#  define gpm_fd       (dll_gpm_fd   != NULL ? *dll_gpm_fd   : -1)
+
+static int (*dll_Gpm_Open)     (Gpm_Connect *, int);
+static int (*dll_Gpm_Close)    (void);
+static int (*dll_Gpm_GetEvent) (Gpm_Event *);
+static int *dll_gpm_flag;
+static int *dll_gpm_fd;
+
+static void *libgpm_hinst;
+# endif
+
 // <linux/keyboard.h> contains defines conflicting with "keymap.h",
 // I just copied relevant defines here. A cleaner solution would be to put gpm
 // code into separate file and include there linux/keyboard.h
@@ -869,8 +887,11 @@ sig_tstp SIGDEFARG(sigarg)
     else
 	got_tstp = TRUE;
 
-    // this is not required on all systems, but it doesn't hurt anybody
+#if !defined(__ANDROID__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
+    // This is not required on all systems.  On some systems (at least Android,
+    // OpenBSD, and DragonFlyBSD) this breaks suspending with CTRL-Z.
     signal(SIGTSTP, (RETSIGTYPE (*)())sig_tstp);
+#endif
     SIGRETURN;
 }
 #endif
@@ -1757,10 +1778,10 @@ ex_xrestore(exarg_T *eap)
 {
     if (eap->arg != NULL && STRLEN(eap->arg) > 0)
     {
-        if (xterm_display_allocated)
-            vim_free(xterm_display);
-        xterm_display = (char *)vim_strsave(eap->arg);
-        xterm_display_allocated = TRUE;
+	if (xterm_display_allocated)
+	    vim_free(xterm_display);
+	xterm_display = (char *)vim_strsave(eap->arg);
+	xterm_display_allocated = TRUE;
     }
     smsg(_("restoring display %s"), xterm_display == NULL
 		    ? (char *)mch_getenv((char_u *)"DISPLAY") : xterm_display);
@@ -3741,7 +3762,7 @@ get_tty_info(int fd, ttyinfo_T *info)
 static int	mouse_ison = FALSE;
 
 /*
- * Set mouse clicks on or off.
+ * Set mouse clicks on or off and possible enable mouse movement events.
  */
     void
 mch_setmouse(int on)
@@ -4955,7 +4976,7 @@ mch_call_shell_fork(
 		p_more_save = p_more;
 		p_more = FALSE;
 		old_State = State;
-		State = EXTERNCMD;	// don't redraw at window resize
+		State = MODE_EXTERNCMD;	// don't redraw at window resize
 
 		if ((options & SHELL_WRITE) && toshell_fd >= 0)
 		{
@@ -5459,6 +5480,9 @@ mch_call_shell(
     char_u	*cmd,
     int		options)	// SHELL_*, see vim.h
 {
+#ifdef FEAT_JOB_CHANNEL
+    ch_log(NULL, "executing shell command: %s", cmd);
+#endif
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
     if (gui.in_use && vim_strchr(p_go, GO_TERMINAL) != NULL)
 	return mch_call_shell_terminal(cmd, options);
@@ -6446,7 +6470,7 @@ select_eintr:
 	}
 # endif
 # ifdef FEAT_MOUSE_GPM
-	if (ret > 0 && gpm_flag && check_for_gpm != NULL && gpm_fd >= 0)
+	if (ret > 0 && check_for_gpm != NULL && gpm_flag && gpm_fd >= 0)
 	{
 	    if (FD_ISSET(gpm_fd, &efds))
 		gpm_close();
@@ -7172,6 +7196,49 @@ mch_rename(const char *src, const char *dest)
 #endif // !HAVE_RENAME
 
 #if defined(FEAT_MOUSE_GPM) || defined(PROTO)
+# if defined(DYNAMIC_GPM) || defined(PROTO)
+/*
+ * Initialize Gpm's symbols for dynamic linking.
+ * Must be called only if libgpm_hinst is NULL.
+ */
+    static int
+load_libgpm(void)
+{
+    libgpm_hinst = dlopen("libgpm.so", RTLD_LAZY|RTLD_GLOBAL);
+
+    if (libgpm_hinst == NULL)
+    {
+	if (p_verbose > 0)
+	    smsg_attr(HL_ATTR(HLF_W),
+			       _("Could not load gpm library: %s"), dlerror());
+	return FAIL;
+    }
+
+    if (
+	    (dll_Gpm_Open     = dlsym(libgpm_hinst, "Gpm_Open"))     == NULL
+	||  (dll_Gpm_Close    = dlsym(libgpm_hinst, "Gpm_Close"))    == NULL
+	||  (dll_Gpm_GetEvent = dlsym(libgpm_hinst, "Gpm_GetEvent")) == NULL
+	||  (dll_gpm_flag     = dlsym(libgpm_hinst, "gpm_flag"))     == NULL
+	||  (dll_gpm_fd       = dlsym(libgpm_hinst, "gpm_fd"))       == NULL
+      )
+    {
+	semsg(_(e_could_not_load_library_str_str), "gpm", dlerror());
+	dlclose(libgpm_hinst);
+	libgpm_hinst = NULL;
+	dll_gpm_flag = NULL;
+	dll_gpm_fd   = NULL;
+	return FAIL;
+    }
+    return OK;
+}
+
+    int
+gpm_available(void)
+{
+    return libgpm_hinst != NULL || load_libgpm() == OK;
+}
+# endif // DYNAMIC_GPM
+
 /*
  * Initializes connection with gpm (if it isn't already opened)
  * Return 1 if succeeded (or connection already opened), 0 if failed
@@ -7180,6 +7247,11 @@ mch_rename(const char *src, const char *dest)
 gpm_open(void)
 {
     static Gpm_Connect gpm_connect; // Must it be kept till closing ?
+
+#ifdef DYNAMIC_GPM
+    if (!gpm_available())
+	return 0;
+#endif
 
     if (!gpm_flag)
     {

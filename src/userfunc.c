@@ -429,6 +429,12 @@ parse_argument_types(ufunc_T *fp, garray_T *argtypes, int varargs)
 		if (type == NULL)
 		    return FAIL;
 		fp->uf_arg_types[i] = type;
+		if (i < fp->uf_args.ga_len
+			&& (type->tt_type == VAR_FUNC
+			    || type->tt_type == VAR_PARTIAL)
+			&& var_wrong_func_name(
+				    ((char_u **)fp->uf_args.ga_data)[i], TRUE))
+		    return FAIL;
 	    }
 	}
     }
@@ -518,6 +524,28 @@ set_ufunc_name(ufunc_T *fp, char_u *name)
 	    STRCAT(fp->uf_name_exp, fp->uf_name + 3);
 	}
     }
+}
+
+/*
+ * If "name" starts with K_SPECIAL and "buf[bufsize]" is big enough
+ * return "buf" filled with a readable function name.
+ * Otherwise just return "name", thus the return value can always be used.
+ * "name" and "buf" may be equal.
+ */
+    char_u *
+make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize)
+{
+    size_t len;
+
+    if (name[0] != K_SPECIAL)
+	return name;
+    len = STRLEN(name);
+    if (len + 3 > bufsize)
+	return name;
+
+    mch_memmove(buf + 5, name + 3, len - 2);  // Include trailing NUL
+    mch_memmove(buf, "<SNR>", 5);
+    return buf;
 }
 
 /*
@@ -821,6 +849,7 @@ get_function_body(
 	{
 	    int	    c;
 	    char_u  *end;
+	    char_u  *cmd;
 
 	    // skip ':' and blanks
 	    for (p = theline; VIM_ISWHITE(*p) || *p == ':'; ++p)
@@ -828,12 +857,16 @@ get_function_body(
 
 	    // Check for "endfunction", "enddef" or "}".
 	    // When a ":" follows it must be a dict key; "enddef: value,"
+	    cmd = p;
 	    if (nesting_inline[nesting]
 		    ? *p == '}'
 		    : (checkforcmd(&p, nesting_def[nesting]
 						? "enddef" : "endfunction", 4)
 			&& *p != ':'))
 	    {
+		if (!nesting_inline[nesting] && nesting_def[nesting]
+								&& p < cmd + 6)
+		    semsg(_(e_command_cannot_be_shortened_str), "enddef");
 		if (nesting-- == 0)
 		{
 		    char_u *nextcmd = NULL;
@@ -1018,48 +1051,63 @@ get_function_body(
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		getline_options = GETLINE_NONE;
 		is_heredoc = TRUE;
-		if (eap->cmdidx == CMD_def)
+		if (eap->cmdidx == CMD_def && nesting == 0)
 		    heredoc_concat_len = newlines->ga_len + 1;
 	    }
 
-	    // Check for ":cmd v =<< [trim] EOF"
-	    //       and ":cmd [a, b] =<< [trim] EOF"
-	    //       and "lines =<< [trim] EOF" for Vim9
-	    // Where "cmd" can be "let", "var", "final" or "const".
-	    arg = skipwhite(skiptowhite(p));
-	    if (*arg == '[')
-		arg = vim_strchr(arg, ']');
-	    if (arg != NULL)
+	    if (!is_heredoc)
 	    {
-		int found = (eap->cmdidx == CMD_def && arg[0] == '='
+		// Check for ":cmd v =<< [trim] EOF"
+		//       and ":cmd [a, b] =<< [trim] EOF"
+		//       and "lines =<< [trim] EOF" for Vim9
+		// Where "cmd" can be "let", "var", "final" or "const".
+		arg = skipwhite(skiptowhite(p));
+		if (*arg == '[')
+		    arg = vim_strchr(arg, ']');
+		if (arg != NULL)
+		{
+		    int found = (eap->cmdidx == CMD_def && arg[0] == '='
 					     && arg[1] == '<' && arg[2] =='<');
 
-		if (!found)
-		    // skip over the argument after "cmd"
-		    arg = skipwhite(skiptowhite(arg));
-		if (found || (arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
-			&& (checkforcmd(&p, "let", 2)
-			    || checkforcmd(&p, "var", 3)
-			    || checkforcmd(&p, "final", 5)
-			    || checkforcmd(&p, "const", 5))))
-		{
-		    p = skipwhite(arg + 3);
-		    if (STRNCMP(p, "trim", 4) == 0)
+		    if (!found)
+			// skip over the argument after "cmd"
+			arg = skipwhite(skiptowhite(arg));
+		    if (found || (arg[0] == '=' && arg[1] == '<'
+								&& arg[2] =='<'
+			    && (checkforcmd(&p, "let", 2)
+				|| checkforcmd(&p, "var", 3)
+				|| checkforcmd(&p, "final", 5)
+				|| checkforcmd(&p, "const", 5))))
 		    {
-			// Ignore leading white space.
-			p = skipwhite(p + 4);
-			heredoc_trimmed = vim_strnsave(theline,
-						 skipwhite(theline) - theline);
+			p = skipwhite(arg + 3);
+			while (TRUE)
+			{
+			    if (STRNCMP(p, "trim", 4) == 0)
+			    {
+				// Ignore leading white space.
+				p = skipwhite(p + 4);
+				heredoc_trimmed = vim_strnsave(theline,
+					skipwhite(theline) - theline);
+				continue;
+			    }
+			    if (STRNCMP(p, "eval", 4) == 0)
+			    {
+				// Ignore leading white space.
+				p = skipwhite(p + 4);
+				continue;
+			    }
+			    break;
+			}
+			skip_until = vim_strnsave(p, skiptowhite(p) - p);
+			getline_options = GETLINE_NONE;
+			is_heredoc = TRUE;
 		    }
-		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
-		    getline_options = GETLINE_NONE;
-		    is_heredoc = TRUE;
 		}
 	    }
 	}
 
 	// Add the line to the function.
-	if (ga_grow(newlines, 1 + sourcing_lnum_off) == FAIL)
+	if (ga_grow_id(newlines, 1 + sourcing_lnum_off, aid_get_func) == FAIL)
 	    goto theend;
 
 	if (heredoc_concat_len > 0)
@@ -1329,6 +1377,7 @@ get_lambda_tv(
     int		white_error = FALSE;
     int		called_emsg_start = called_emsg;
     int		vim9script = in_vim9script();
+    long	start_lnum = SOURCING_LNUM;
 
     if (equal_arrow && !vim9script)
 	return NOTDONE;
@@ -1389,6 +1438,7 @@ get_lambda_tv(
 	if (evalarg == NULL)
 	    // cannot happen?
 	    goto theend;
+	SOURCING_LNUM = start_lnum;  // used for where lambda is defined
 	if (lambda_function_body(arg, rettv, evalarg, pnewargs,
 			   types_optional ? &argtypes : NULL, varargs,
 			   &default_args, ret_type) == FAIL)
@@ -1519,7 +1569,8 @@ get_lambda_tv(
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ctx = current_sctx;
-	fp->uf_script_ctx.sc_lnum += SOURCING_LNUM - newlines.ga_len + 1;
+	// Use the line number of the arguments.
+	fp->uf_script_ctx.sc_lnum += start_lnum;
 
 	function_using_block_scopes(fp, evalarg->eval_cstack);
 
@@ -1664,7 +1715,7 @@ deref_func_name(
 	{
 	    if (!did_type && type != NULL && ht == get_script_local_ht())
 	    {
-		svar_T  *sv = find_typval_in_script(tv, 0);
+		svar_T  *sv = find_typval_in_script(tv, 0, TRUE);
 
 		if (sv != NULL)
 		    *type = sv->sv_type;
@@ -1873,23 +1924,33 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 }
 
 /*
+ * Concatenate the script ID and function name into  "<SNR>99_name".
+ * "buffer" must have size MAX_FUNC_NAME_LEN.
+ */
+    void
+func_name_with_sid(char_u *name, int sid, char_u *buffer)
+{
+    // A script-local function is stored as "<SNR>99_name".
+    buffer[0] = K_SPECIAL;
+    buffer[1] = KS_EXTRA;
+    buffer[2] = (int)KE_SNR;
+    vim_snprintf((char *)buffer + 3, MAX_FUNC_NAME_LEN - 3, "%ld_%s",
+							      (long)sid, name);
+}
+
+/*
  * Find a function "name" in script "sid".
  */
     static ufunc_T *
 find_func_with_sid(char_u *name, int sid)
 {
     hashitem_T	    *hi;
-    char_u	    buffer[200];
+    char_u	    buffer[MAX_FUNC_NAME_LEN];
 
     if (!SCRIPT_ID_VALID(sid))
 	return NULL;	// not in a script
 
-    // A script-local function is stored as "<SNR>99_name".
-    buffer[0] = K_SPECIAL;
-    buffer[1] = KS_EXTRA;
-    buffer[2] = (int)KE_SNR;
-    vim_snprintf((char *)buffer + 3, sizeof(buffer) - 3, "%ld_%s",
-							      (long)sid, name);
+    func_name_with_sid(name, sid, buffer);
     hi = hash_find(&func_hashtab, buffer);
     if (!HASHITEM_EMPTY(hi))
 	return HI2UF(hi);
@@ -1903,7 +1964,7 @@ find_func_with_sid(char_u *name, int sid)
 find_func_with_prefix(char_u *name, int sid)
 {
     hashitem_T	    *hi;
-    char_u	    buffer[200];
+    char_u	    buffer[MAX_FUNC_NAME_LEN];
     scriptitem_T    *si;
 
     if (vim_strchr(name, AUTOLOAD_CHAR) != NULL)
@@ -1958,16 +2019,28 @@ find_func_even_dead(char_u *name, int flags)
 
     if ((flags & FFED_IS_GLOBAL) == 0)
     {
-	int	find_script_local = in_vim9script() && eval_isnamec1(*name)
-					   && (name[1] != ':' || *name == 's');
-
-	if (find_script_local)
+	// Find script-local function before global one.
+	if (in_vim9script() && eval_isnamec1(*name)
+					   && (name[1] != ':' || *name == 's'))
 	{
-	    // Find script-local function before global one.
 	    func = find_func_with_sid(name[0] == 's' && name[1] == ':'
 				       ? name + 2 : name, current_sctx.sc_sid);
 	    if (func != NULL)
 		return func;
+	}
+	if (in_vim9script() && STRNCMP(name, "<SNR>", 5) == 0)
+	{
+	    char_u  *p = name + 5;
+	    long    sid;
+
+	    // printable "<SNR>123_Name" form
+	    sid = getdigits(&p);
+	    if (*p == '_')
+	    {
+		func = find_func_with_sid(p + 1, (int)sid);
+		if (func != NULL)
+		    return func;
+	    }
 	}
     }
 
@@ -2198,8 +2271,9 @@ numbered_function(char_u *name)
 
 /*
  * There are two kinds of function names:
- * 1. ordinary names, function defined with :function or :def
- * 2. numbered functions and lambdas
+ * 1. ordinary names, function defined with :function or :def;
+ *    can start with "<SNR>123_" literally or with K_SPECIAL.
+ * 2. Numbered functions and lambdas: "<lambda>123"
  * For the first we only count the name stored in func_hashtab as a reference,
  * using function() does not count as a reference, because the function is
  * looked up by name.
@@ -2207,7 +2281,7 @@ numbered_function(char_u *name)
     int
 func_name_refcount(char_u *name)
 {
-    return numbered_function(name) || *name == '<';
+    return numbered_function(name) || (name[0] == '<' && name[1] == 'l');
 }
 
 /*
@@ -2441,7 +2515,7 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
 	    goto failed;
 	if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
 	{
-            vim_free(pt);
+	    vim_free(pt);
 	    goto failed;
 	}
 	ufunc->uf_partial = pt;
@@ -3320,13 +3394,12 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
     {
 	case FCERR_UNKNOWN:
 		if (funcexe->fe_found_var)
-		    semsg(_(e_not_callable_type_str), name);
+		    emsg_funcname(e_not_callable_type_str, name);
 		else
 		    emsg_funcname(e_unknown_function_str, name);
 		break;
 	case FCERR_NOTMETHOD:
-		emsg_funcname(
-			N_(e_cannot_use_function_as_method_str), name);
+		emsg_funcname(e_cannot_use_function_as_method_str, name);
 		break;
 	case FCERR_DELETED:
 		emsg_funcname(e_function_was_deleted_str, name);
@@ -3338,8 +3411,7 @@ user_func_error(int error, char_u *name, funcexe_T *funcexe)
 		emsg_funcname(e_not_enough_arguments_for_function_str, name);
 		break;
 	case FCERR_SCRIPT:
-		emsg_funcname(
-		    e_using_sid_not_in_script_context_str, name);
+		emsg_funcname(e_using_sid_not_in_script_context_str, name);
 		break;
 	case FCERR_DICT:
 		emsg_funcname(e_calling_dict_function_without_dictionary_str,
@@ -3579,9 +3651,7 @@ theend:
      * cancelled due to an aborting error, an interrupt, or an exception.
      */
     if (!aborting())
-    {
 	user_func_error(error, (name != NULL) ? name : funcname, funcexe);
-    }
 
     // clear the copies made from the partial
     while (argv_clear > 0)
@@ -3644,9 +3714,12 @@ list_func_head(ufunc_T *fp, int indent)
     }
     if (fp->uf_va_name != NULL)
     {
-	if (j)
-	    msg_puts(", ");
-	msg_puts("...");
+	if (!fp->uf_varargs)
+	{
+	    if (j)
+		msg_puts(", ");
+	    msg_puts("...");
+	}
 	msg_puts((char *)fp->uf_va_name);
 	if (fp->uf_va_type != NULL)
 	{
@@ -4026,14 +4099,29 @@ get_scriptlocal_funcname(char_u *funcname)
     char	sid_buf[25];
     int		off;
     char_u	*newname;
+    char_u	*p = funcname;
 
     if (funcname == NULL)
 	return NULL;
 
     if (STRNCMP(funcname, "s:", 2) != 0
 		&& STRNCMP(funcname, "<SID>", 5) != 0)
-	// The function name is not a script-local function name
-	return NULL;
+    {
+	ufunc_T	    *ufunc;
+
+	// The function name does not have a script-local prefix.  Try finding
+	// it when in a Vim9 script and there is no "g:" prefix.
+	if (!in_vim9script() || STRNCMP(funcname, "g:", 2) == 0)
+	    return NULL;
+	ufunc = find_func(funcname, FALSE);
+	if (ufunc == NULL || func_is_global(ufunc)
+			      || (p = vim_strchr(ufunc->uf_name, '_')) == NULL)
+	    return NULL;
+	++p;
+	off = 0;
+    }
+    else
+	off = *funcname == 's' ? 2 : 5;
 
     if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
     {
@@ -4043,14 +4131,30 @@ get_scriptlocal_funcname(char_u *funcname)
     // Expand s: prefix into <SNR>nr_<name>
     vim_snprintf(sid_buf, sizeof(sid_buf), "<SNR>%ld_",
 	    (long)current_sctx.sc_sid);
-    off = *funcname == 's' ? 2 : 5;
-    newname = alloc(STRLEN(sid_buf) + STRLEN(funcname + off) + 1);
+    newname = alloc(STRLEN(sid_buf) + STRLEN(p + off) + 1);
     if (newname == NULL)
 	return NULL;
     STRCPY(newname, sid_buf);
-    STRCAT(newname, funcname + off);
+    STRCAT(newname, p + off);
 
     return newname;
+}
+
+/*
+ * Return script-local "fname" with the 3-byte sequence replaced by
+ * printable <SNR> in allocated memory.
+ */
+    char_u *
+alloc_printable_func_name(char_u *fname)
+{
+    char_u *n = alloc(STRLEN(fname + 3) + 6);
+
+    if (n != NULL)
+    {
+	STRCPY(n, "<SNR>");
+	STRCPY(n + 5, fname + 3);
+    }
+    return n;
 }
 
 /*
@@ -4225,10 +4329,21 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
     }
     else
     {
-	if (vim9script && p[0] == 's' && p[1] == ':')
+	if (vim9script)
 	{
-	    semsg(_(e_cannot_use_s_colon_in_vim9_script_str), p);
-	    return NULL;
+	    if (p[0] == 's' && p[1] == ':')
+	    {
+		semsg(_(e_cannot_use_s_colon_in_vim9_script_str), p);
+		return NULL;
+	    }
+	    p = to_name_end(p, TRUE);
+	    if (*skipwhite(p) == '.' && vim_strchr(p, '(') != NULL)
+	    {
+		semsg(_(e_cannot_define_dict_func_in_vim9_script_str),
+								     eap->arg);
+		return NULL;
+	    }
+	    p = eap->arg;
 	}
 
 	name = save_function_name(&p, &is_global, eap->skip,
@@ -4570,7 +4685,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 		{
 		    char_u *prefixed = may_prefix_autoload(name);
 
-		    if (prefixed != NULL)
+		    if (prefixed != NULL && prefixed != name)
 		    {
 			v = find_var(prefixed, &ht, TRUE);
 			if (v != NULL)
@@ -5424,7 +5539,6 @@ ex_call(exarg_T *eap)
     }
     if (eap->skip)
 	--emsg_skip;
-    clear_evalarg(&evalarg, eap);
 
     // When inside :try we need to check for following "| catch" or "| endtry".
     // Not when there was an error, but do check if an exception was thrown.
@@ -5444,6 +5558,8 @@ ex_call(exarg_T *eap)
 	else
 	    set_nextcmd(eap, arg);
     }
+    // Must be after using "arg", it may point into memory cleared here.
+    clear_evalarg(&evalarg, eap);
 
 end:
     dict_unref(fudi.fd_dict);
@@ -5671,22 +5787,35 @@ func_has_abort(
 make_partial(dict_T *selfdict_in, typval_T *rettv)
 {
     char_u	*fname;
-    char_u	*tofree = NULL;
-    ufunc_T	*fp;
+    ufunc_T	*fp = NULL;
     char_u	fname_buf[FLEN_FIXED + 1];
     int		error;
     dict_T	*selfdict = selfdict_in;
 
-    if (rettv->v_type == VAR_PARTIAL && rettv->vval.v_partial->pt_func != NULL)
+    if (rettv->v_type == VAR_PARTIAL  && rettv->vval.v_partial != NULL
+				     && rettv->vval.v_partial->pt_func != NULL)
 	fp = rettv->vval.v_partial->pt_func;
     else
     {
 	fname = rettv->v_type == VAR_FUNC ? rettv->vval.v_string
+					 : rettv->vval.v_partial == NULL ? NULL
 					      : rettv->vval.v_partial->pt_name;
-	// Translate "s:func" to the stored function name.
-	fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
-	fp = find_func(fname, FALSE);
-	vim_free(tofree);
+	if (fname == NULL)
+	{
+	    // There is no point binding a dict to a NULL function, just create
+	    // a function reference.
+	    rettv->v_type = VAR_FUNC;
+	    rettv->vval.v_string = NULL;
+	}
+	else
+	{
+	    char_u	*tofree = NULL;
+
+	    // Translate "s:func" to the stored function name.
+	    fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
+	    fp = find_func(fname, FALSE);
+	    vim_free(tofree);
+	}
     }
 
     if (fp != NULL && (fp->uf_flags & FC_DICT))

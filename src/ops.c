@@ -286,15 +286,16 @@ shift_block(oparg_T *oap, int amount)
     struct block_def	bd;
     int			incr;
     colnr_T		ws_vcol;
-    int			i = 0, j = 0;
-    int			len;
+    int			added;
+    unsigned		new_line_len;	// the length of the line after the
+					// block shift
 #ifdef FEAT_RIGHTLEFT
     int			old_p_ri = p_ri;
 
     p_ri = 0;			// don't want revins in indent
 #endif
 
-    State = INSERT;		// don't want REPLACE for State
+    State = MODE_INSERT;	// don't want MODE_REPLACE for State
     block_prep(oap, &bd, curwin->w_cursor.lnum, TRUE);
     if (bd.is_short)
 	return;
@@ -308,6 +309,8 @@ shift_block(oparg_T *oap, int amount)
 
     if (!left)
     {
+	int	tabs = 0, spaces = 0;
+
 	/*
 	 *  1. Get start vcol
 	 *  2. Total ws vcols
@@ -343,29 +346,29 @@ shift_block(oparg_T *oap, int amount)
 #ifdef FEAT_VARTABS
 	if (!curbuf->b_p_et)
 	    tabstop_fromto(ws_vcol, ws_vcol + total,
-					ts_val, curbuf->b_p_vts_array, &i, &j);
+				ts_val, curbuf->b_p_vts_array, &tabs, &spaces);
 	else
-	    j = total;
+	    spaces = total;
 #else
 	if (!curbuf->b_p_et)
-	    i = ((ws_vcol % ts_val) + total) / ts_val; // number of tabs
-	if (i)
-	    j = ((ws_vcol % ts_val) + total) % ts_val; // number of spp
+	    tabs = ((ws_vcol % ts_val) + total) / ts_val; // number of tabs
+	if (tabs > 0)
+	    spaces = ((ws_vcol % ts_val) + total) % ts_val; // number of spp
 	else
-	    j = total;
+	    spaces = total;
 #endif
 	// if we're splitting a TAB, allow for it
 	bd.textcol -= bd.pre_whitesp_c - (bd.startspaces != 0);
-	len = (int)STRLEN(bd.textstart) + 1;
-	newp = alloc(bd.textcol + i + j + len);
+
+	new_line_len = bd.textcol + tabs + spaces + (int)STRLEN(bd.textstart);
+	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
-	vim_memset(newp, NUL, (size_t)(bd.textcol + i + j + len));
 	mch_memmove(newp, oldp, (size_t)bd.textcol);
-	vim_memset(newp + bd.textcol, TAB, (size_t)i);
-	vim_memset(newp + bd.textcol + i, ' ', (size_t)j);
-	// the end
-	mch_memmove(newp + bd.textcol + i + j, bd.textstart, (size_t)len);
+	vim_memset(newp + bd.textcol, TAB, (size_t)tabs);
+	vim_memset(newp + bd.textcol + tabs, ' ', (size_t)spaces);
+	// Note that STRMOVE() copies the trailing NUL.
+	STRMOVE(newp + bd.textcol + tabs + spaces, bd.textstart);
     }
     else // left
     {
@@ -376,8 +379,6 @@ shift_block(oparg_T *oap, int amount)
 	colnr_T	    verbatim_copy_width;// the (displayed) width of this part
 					// of line
 	unsigned    fill;		// nr of spaces that replace a TAB
-	unsigned    new_line_len;	// the length of the line after the
-					// block shift
 	size_t	    block_space_width;
 	size_t	    shift_amount;
 	char_u	    *non_white = bd.textstart;
@@ -448,18 +449,20 @@ shift_block(oparg_T *oap, int amount)
 	// - the rest of the line, pointed to by non_white.
 	new_line_len = (unsigned)(verbatim_copy_end - oldp)
 		       + fill
-		       + (unsigned)STRLEN(non_white) + 1;
+		       + (unsigned)STRLEN(non_white);
 
-	newp = alloc(new_line_len);
+	newp = alloc(new_line_len + 1);
 	if (newp == NULL)
 	    return;
 	mch_memmove(newp, oldp, (size_t)(verbatim_copy_end - oldp));
 	vim_memset(newp + (verbatim_copy_end - oldp), ' ', (size_t)fill);
+	// Note that STRMOVE() copies the trailing NUL.
 	STRMOVE(newp + (verbatim_copy_end - oldp) + fill, non_white);
     }
     // replace the line
+    added = new_line_len - (int)STRLEN(oldp);
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
-    changed_bytes(curwin->w_cursor.lnum, bd.textcol);
+    inserted_bytes(curwin->w_cursor.lnum, bd.textcol, added);
     State = oldstate;
     curwin->w_cursor.col = oldcol;
 #ifdef FEAT_RIGHTLEFT
@@ -488,7 +491,7 @@ block_insert(
     linenr_T	lnum;		// loop var
     int		oldstate = State;
 
-    State = INSERT;		// don't want REPLACE for State
+    State = MODE_INSERT;	// don't want MODE_REPLACE for State
     s_len = (unsigned)STRLEN(s);
 
     for (lnum = oap->start.lnum + 1; lnum <= oap->end.lnum; lnum++)
@@ -625,7 +628,7 @@ op_delete(oparg_T *oap)
 
     if (VIsual_select && oap->is_VIsual)
 	// use register given with CTRL_R, defaults to zero
-        oap->regname = VIsual_select_reg;
+	oap->regname = VIsual_select_reg;
 
 #ifdef FEAT_CLIPBOARD
     adjust_clip_reg(&oap->regname);
@@ -991,7 +994,7 @@ replace_character(int c)
 {
     int n = State;
 
-    State = REPLACE;
+    State = MODE_REPLACE;
     ins_char(c);
     State = n;
     // Backup to the replaced character.
@@ -1208,9 +1211,9 @@ op_replace(oparg_T *oap, int c)
 		curwin->w_cursor.col -= (virtcols + 1);
 		for (; virtcols >= 0; virtcols--)
 		{
-                   if ((*mb_char2len)(c) > 1)
+		    if ((*mb_char2len)(c) > 1)
 		       replace_character(c);
-                   else
+		    else
 			PBYTE(curwin->w_cursor, c);
 		   if (inc(&curwin->w_cursor) == -1)
 		       break;
@@ -1310,7 +1313,7 @@ op_tilde(oparg_T *oap)
 	    changed_lines(oap->start.lnum, oap->start.col, oap->end.lnum + 1,
 									  0L);
 #ifdef FEAT_NETBEANS_INTG
-	    if (netbeans_active() && did_change)
+	    if (netbeans_active())
 	    {
 		char_u *ptr;
 		int count;
@@ -1715,12 +1718,7 @@ op_change(oparg_T *oap)
     {
 	l = 0;
 #ifdef FEAT_SMARTINDENT
-	if (!p_paste && curbuf->b_p_si
-# ifdef FEAT_CINDENT
-		&& !curbuf->b_p_cin
-# endif
-		)
-	    can_si = TRUE;	// It's like opening a new line, do si
+	can_si = may_do_si();	// Like opening a new line, do smart indent
 #endif
     }
 
@@ -1842,7 +1840,7 @@ adjust_cursor_eol(void)
     if (curwin->w_cursor.col > 0
 	    && gchar_cursor() == NUL
 	    && (cur_ve_flags & VE_ONEMORE) == 0
-	    && !(restart_edit || (State & INSERT)))
+	    && !(restart_edit || (State & MODE_INSERT)))
     {
 	// Put the cursor on the last character in the line.
 	dec_cursor();

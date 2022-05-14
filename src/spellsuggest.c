@@ -506,6 +506,10 @@ spell_suggest(int count)
 	    curwin->w_cursor.col = VIsual.col;
 	++badlen;
 	end_visual_mode();
+	// make sure we don't include the NUL at the end of the line
+	line = ml_get_curline();
+	if (badlen > (int)STRLEN(line) - (int)curwin->w_cursor.col)
+	    badlen = (int)STRLEN(line) - (int)curwin->w_cursor.col;
     }
     // Find the start of the badly spelled word.
     else if (spell_move_to(curwin, FORWARD, TRUE, TRUE, NULL) == 0
@@ -677,6 +681,8 @@ spell_suggest(int count)
 	p = alloc(STRLEN(line) - stp->st_orglen + stp->st_wordlen + 1);
 	if (p != NULL)
 	{
+	    int len_diff = stp->st_wordlen - stp->st_orglen;
+
 	    c = (int)(sug.su_badptr - line);
 	    mch_memmove(p, line, c);
 	    STRCPY(p + c, stp->st_word);
@@ -694,6 +700,9 @@ spell_suggest(int count)
 	    curwin->w_cursor.col = c;
 
 	    changed_bytes(curwin->w_cursor.lnum, c);
+	    if (curbuf->b_has_textprop && len_diff != 0)
+		adjust_prop_columns(curwin->w_cursor.lnum, c, len_diff,
+							       APC_SUBSTITUTE);
 	}
     }
     else
@@ -3129,11 +3138,11 @@ suggest_try_soundalike(suginfo_T *su)
 	    // TODO: also soundfold the next words, so that we can try joining
 	    // and splitting
 #ifdef SUGGEST_PROFILE
-	prof_init();
+	    prof_init();
 #endif
 	    suggest_trie_walk(su, lp, salword, TRUE);
 #ifdef SUGGEST_PROFILE
-	prof_report("soundalike");
+	    prof_report("soundalike");
 #endif
 	}
     }

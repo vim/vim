@@ -1,6 +1,6 @@
 " Common preparations for running GUI tests.
 
-let g:x11_based_gui = has('gui_athena') || has('gui_motif')
+let g:x11_based_gui = has('gui_motif')
 	\ || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
 
 " Reasons for 'skipped'.

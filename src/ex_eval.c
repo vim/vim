@@ -940,8 +940,14 @@ ex_eval(exarg_T *eap)
     if (eval0(eap->arg, &tv, eap, &evalarg) == OK)
     {
 	clear_tv(&tv);
-	if (in_vim9script() && name_only && lnum == SOURCING_LNUM)
+	if (in_vim9script() && name_only
+		&& (evalarg.eval_tofree == NULL
+		    || ends_excmd2(evalarg.eval_tofree,
+					      skipwhite(evalarg.eval_tofree))))
+	{
+	    SOURCING_LNUM = lnum;
 	    semsg(_(e_expression_without_effect_str), eap->arg);
+	}
     }
 
     clear_evalarg(&evalarg, eap);
@@ -1118,6 +1124,14 @@ ex_else(exarg_T *eap)
 	skip = TRUE;
     }
 
+    if (cstack->cs_idx >= 0)
+    {
+	// Variables declared in the previous block can no longer be
+	// used.  Needs to be done before setting "cs_flags".
+	leave_block(cstack);
+	enter_block(cstack);
+    }
+
     // if skipping or the ":if" was TRUE, reset ACTIVE, otherwise set it
     if (skip || cstack->cs_flags[cstack->cs_idx] & CSF_TRUE)
     {
@@ -1146,7 +1160,12 @@ ex_else(exarg_T *eap)
 
     if (eap->cmdidx == CMD_elseif)
     {
-	result = eval_to_bool(eap->arg, &error, eap, skip);
+	// When skipping we ignore most errors, but a missing expression is
+	// wrong, perhaps it should have been "else".
+	if (skip && ends_excmd(*eap->arg))
+	    semsg(_(e_invalid_expression_str), eap->arg);
+	else
+	    result = eval_to_bool(eap->arg, &error, eap, skip);
 
 	// When throwing error exceptions, we want to throw always the first
 	// of several errors in a row.  This is what actually happens when
@@ -1827,6 +1846,16 @@ ex_catch(exarg_T *eap)
 	    cstack->cs_flags[idx] |= CSF_ACTIVE | CSF_CAUGHT;
 	    did_emsg = got_int = did_throw = FALSE;
 	    catch_exception((except_T *)cstack->cs_exception[idx]);
+
+	    if (cstack->cs_idx >= 0
+			       && (cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
+	    {
+		// Variables declared in the previous block can no longer be
+		// used.
+		leave_block(cstack);
+		enter_block(cstack);
+	    }
+
 	    // It's mandatory that the current exception is stored in the cstack
 	    // so that it can be discarded at the next ":catch", ":finally", or
 	    // ":endtry" or when the catch clause is left by a ":continue",
@@ -1929,6 +1958,15 @@ ex_finally(exarg_T *eap)
 	     * try block or catch clause.
 	     */
 	    cleanup_conditionals(cstack, CSF_TRY, FALSE);
+
+	    if (cstack->cs_idx >= 0
+			       && (cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
+	    {
+		// Variables declared in the previous block can no longer be
+		// used.
+		leave_block(cstack);
+		enter_block(cstack);
+	    }
 
 	    /*
 	     * Make did_emsg, got_int, did_throw pending.  If set, they overrule

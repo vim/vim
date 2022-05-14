@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2022 Feb 09
+*index.txt*     For Vim version 8.2.  Last change: 2022 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -939,7 +939,7 @@ tag		command	      note action in Visual mode	~
 |v_K|		K		   run 'keywordprg' on the highlighted area
 |v_O|		O		   move horizontally to other corner of area
 |v_P|		P		   replace highlighted area with register
-				   contents; unnamed register is unchanged
+				   contents; registers are unchanged
 		Q		   does not start Ex mode
 |v_R|		R		2  delete the highlighted lines and start
 				   insert
@@ -1170,7 +1170,7 @@ tag		command		action ~
 				be remapped
 |:args|		:ar[gs]		print the argument list
 |:argadd|	:arga[dd]	add items to the argument list
-:argdedupe	:argdedupe	remove duplicates from the argument list
+|:argdedupe|	:argded[upe]	remove duplicates from the argument list
 |:argdelete|	:argd[elete]	delete items from the argument list
 |:argedit|	:arge[dit]	add item to the argument list and edit it
 |:argdo|	:argdo		do a command on all items in the argument list

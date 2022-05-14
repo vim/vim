@@ -2,6 +2,7 @@
 " Maintainer:		Øyvind A. Holm <sunny@sunbase.org>
 " Last Change:		2020 Apr 23
 " menu_no_no.latin1.vim 289 2004-05-16 18:00:52Z sunny
+" Original translations
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

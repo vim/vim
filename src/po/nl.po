@@ -350,7 +350,8 @@ msgid "E18: Unexpected characters in :let"
 msgstr "E18: onverwachte tekens in :let"
 
 #, c-format
-msgid "E684: list index out of range: %ld"
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
 msgstr "E684: lijstindex buiten bereik: %ld"
 
 #, c-format
@@ -449,7 +450,8 @@ msgstr "E107: ontbrekende haakjes: %s"
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: onbekende variabele: \"%s\""
 
-msgid "E743: variable nested too deep for (un)lock"
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: variabele is te diep genest om te beveiligen"
 
 msgid "E109: Missing ':' after '?'"
@@ -522,7 +524,8 @@ msgstr "E722: komma ontbreekt in Dictionary: %s"
 msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: einde van Dictionary '}' ontbreekt: %s"
 
-msgid "E724: variable nested too deep for displaying"
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: variabele is te diep genest om te tonen"
 
 #, c-format
@@ -649,7 +652,8 @@ msgstr "E730: List gebruiken als een String"
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Dictionary gebruiken als een String"
 
-msgid "E806: using Float as a String"
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
 msgstr "E806: Float gebruiken als een String"
 
 #, c-format
@@ -679,7 +683,8 @@ msgstr "Onbekend"
 msgid "E742: Cannot change value of %s"
 msgstr "E742: kan waarde van %s niet veranderen"
 
-msgid "E698: variable nested too deep for making a copy"
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: variabele te diep genest om een kopie te maken"
 
 #, c-format
@@ -908,7 +913,8 @@ msgstr "Bestand bewerken"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: 'Autocommands' hebben het nieuwe buffer %s onverwacht verwijderd"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: niet-numeriek argument voor :z"
 
 msgid "E145: Shell commands not allowed in rvim"
@@ -1091,7 +1097,8 @@ msgid "E165: Cannot go beyond last file"
 msgstr "E165: kan niet verder dan laatste bestand"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: compiler niet ondersteund: %s"
 
 #, c-format
@@ -1244,7 +1251,8 @@ msgstr "E177: aantal kan niet tweemaal worden opgegeven"
 msgid "E178: Invalid default value for count"
 msgstr "E178: ongeldige standaardwaarde voor aantal"
 
-msgid "E179: argument required for -complete"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for -complete"
 msgstr "E179: argument vereist voor -complete"
 
 #, c-format
@@ -1359,16 +1367,20 @@ msgstr "E809: #< is zonder de +eval-functionaliteit niet beschikbaar"
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: er is geen wisselende bestandsnaam beschikbaar om '#' te vervangen"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: er is geen 'autocommand'-bestandsnaam om \"<afile>\" te vervangen"
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: er is geen 'autocommand'-buffernummer om \"<abuf>\" te vervangen"
 
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: er is geen 'autocommand'-naamovereenkomst om \"<amatch>\" te vervangen"
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: er is geen :source-bestandsnaam om \"<sfile>\" te vervangen"
 
 #, no-c-format
@@ -1434,6 +1446,7 @@ msgstr "Fout"
 msgid "Interrupt"
 msgstr "Onderbreken"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: te diepe :if-nesting"
 
@@ -1446,7 +1459,8 @@ msgstr "E581: :else zonder :if"
 msgid "E582: :elseif without :if"
 msgstr "E582: :elseif zonder :if"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: meerdere :else"
 
 msgid "E584: :elseif after :else"
@@ -1482,7 +1496,8 @@ msgid "E606: :finally without :try"
 msgstr "E606: :finally zonder :try"
 
 #. Give up for a multiple ":finally" and ignore it.
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: meerdere :finally"
 
 msgid "E602: :endtry without :try"
@@ -1685,14 +1700,17 @@ msgstr "E667: fsync is mislukt"
 msgid "E512: Close failed"
 msgstr "E512: Afsluiten is mislukt"
 
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr "E513: schrijffout waarbij omzetting is mislukt (leeg 'fenc' om te overschrijven)"
 
 #, c-format
-msgid "E513: write error, conversion failed in line %ld (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed in line %ld (make 'fenc' empty to override)"
 msgstr "E513: schrijffout waarbij omzetting in regel %ld is mislukt (leeg 'fenc' om te overschrijven)"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: schrijffout (is bestandssysteem vol?)"
 
 msgid " CONVERSION ERROR"
@@ -1723,7 +1741,8 @@ msgstr " opgeslagen"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: patch-modus: kan oorspronkelijke bestand niet opslaan"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr "E206: patch-modus: kan oorspronkelijk leeg bestand niet aanraken"
 
 msgid "E207: Can't delete backup file"
@@ -1894,7 +1913,8 @@ msgstr "E217: autocommands kunnen niet voor alle 'events' worden uitgevoerd"
 msgid "No matching autocommands"
 msgstr "Geen overeenkomstige autocommands"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: hierarchie van aanroepen autocommands te diep"
 
 #, c-format
@@ -1931,23 +1951,28 @@ msgstr "+--%3ld regels gevouwen "
 msgid "E222: Add to read buffer"
 msgstr "E222: aan leesbuffer toevoegen"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: recursieve toewijzing"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: algemene afkorting bestaat al voor %s"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: er bestaat al een algemene toewijzing voor %s"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: er bestaat al een afkorting voor %s"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: toewijzing bestaat al voor %s"
 
 msgid "No abbreviation found"
@@ -2242,7 +2267,8 @@ msgstr "E550: dubbelepunt ontbreekt"
 msgid "E551: Illegal component"
 msgstr "E551: ongeldige component"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: cijfer verwacht"
 
 #, c-format
@@ -2279,11 +2305,13 @@ msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: kan 'Postscript resource'-bestand \"%s\" niet lezen"
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: bestand \"%s\" is geen 'Postscript resource'-bestand"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: bestand \"%s\" is geen ondersteund 'Postscript resource'-bestand"
 
 #, c-format
@@ -2357,7 +2385,8 @@ msgstr "Deze cscope-opdracht ondersteunt niet het splitsen van het venster.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Gebruik: cstag <ident>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: tag is gevonden"
 
 #, c-format
@@ -2376,10 +2405,12 @@ msgid "Added cscope database %s"
 msgstr "cscope-databank %s toegevoegd"
 
 #, c-format
-msgid "E262: error reading cscope connection %ld"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %ld"
 msgstr "E262: lezen van cscope-verbinding %ld is mislukt"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: soort cscope-zoekopdracht is onbekend"
 
 msgid "E566: Could not create cscope pipes"
@@ -2400,15 +2431,18 @@ msgstr "cs_create_connection: fdopen voor fr_fp is mislukt"
 msgid "E623: Could not spawn cscope process"
 msgstr "E623: voortbrengen cscope-proces is mislukt"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: geen cscope-verbindingen"
 
 #, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: cscopequickfix-vlag %c voor %c is ongeldig"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: cscope-zoekopdracht %s van %s leverde geen resultaten"
 
 msgid "cscope commands:\n"
@@ -2440,17 +2474,21 @@ msgstr ""
 "       t: zoek toekenningen aan\n"
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: openen is mislukt van cscope-databank: %s"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: opvragen cscope-databankinformatie is mislukt"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: dubbele cscope-databank is niet toegevoegd"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: cscope-verbinding %s is niet gevonden"
 
 #, c-format
@@ -2458,7 +2496,8 @@ msgid "cscope connection %s closed"
 msgstr "cscope-verbinding %s is verbroken"
 
 #. should not reach here
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: fatale fout in cs_manage_matches"
 
 #, c-format
@@ -2609,26 +2648,33 @@ msgstr "E265: $_ moet een instantie van String zijn"
 msgid "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr "E266: helaas, deze opdracht is uitgeschakeld. De Ruby-bibliotheek kan niet worden geladen."
 
-msgid "E267: unexpected return"
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
 msgstr "E267: onverwacht resultaat"
 
-msgid "E268: unexpected next"
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
 msgstr "E268: onverwachte volgende"
 
-msgid "E269: unexpected break"
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
 msgstr "E269: onverwachte onderbreking"
 
-msgid "E270: unexpected redo"
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
 msgstr "E270: onverwachte herstelopdracht"
 
-msgid "E271: retry outside of rescue clause"
+# TODO: Capitalise first word of message?
+msgid "E271: Retry outside of rescue clause"
 msgstr "E271: hernieuwde poging buiten de reddingsclausule"
 
-msgid "E272: unhandled exception"
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
 msgstr "E272: niet-afgehandelde uitzondering"
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: onbekende longjmp-status %d"
 
 msgid "Toggle implementation/definition"
@@ -2740,7 +2786,8 @@ msgid "E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim
 msgstr "E281: Tcl-fout: afsluitcode is geen geheel getal!? Meld dit a.u.b. aan vim-dev@vim.org"
 
 #, c-format
-msgid "E572: exit code %d"
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
 msgstr "E572: afsluitcode %d"
 
 msgid "cannot get line"
@@ -3478,7 +3525,7 @@ msgstr "biep!"
 #~ msgid "E658: NetBeans connection lost for buffer %ld"
 #~ msgstr ""
 
-#~ msgid "E511: netbeans already connected"
+#~ msgid "E511: NetBeans already connected"
 #~ msgstr ""
 
 #~ msgid "E505: "
@@ -3502,7 +3549,8 @@ msgstr "waarschuwing: terminal kan niet oplichten"
 #~ msgid "E352: Cannot erase folds with current 'foldmethod'"
 #~ msgstr ""
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: wijzigingslijst is leeg"
 
 msgid "E662: At start of changelist"
@@ -3702,7 +3750,8 @@ msgstr "E519: optie niet ondersteund"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: ongeldig teken na <%c>"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: komma is vereist"
 
 #, c-format
@@ -3716,7 +3765,8 @@ msgid "E540: Unclosed expression sequence"
 msgstr "E540: ongepaarde expressie-volgorde"
 
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: ongepaarde groepen"
 
 msgid "E590: A preview window already exists"
@@ -4104,7 +4154,8 @@ msgstr "E61: geneste %s*"
 msgid "E62: Nested %s%c"
 msgstr "E62: geneste %s%c"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: onjuist gebruikt van \\_"
 
 #, c-format
@@ -4209,11 +4260,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: ongeldige zoekstring: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: TOP bereikt zonder overeenkomst voor: %s"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: BODEM bereikt zonder overeenkomst voor: %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -4821,7 +4874,8 @@ msgstr ""
 #~ msgstr ""
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: tag niet gevonden: %s"
 
 #~ msgid "  # pri kind tag"
@@ -5020,7 +5074,8 @@ msgstr "Reeds de nieuwste wijziging"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Ongedaan-nummer %ld niet gevonden"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: regelnummers onjuist"
 
 msgid "more line"
@@ -5635,7 +5690,8 @@ msgid "E36: Not enough room"
 msgstr "E36: onvoldoende ruimte"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: \"%s\" niet gevonden als geregistreerde server"
 
 #, c-format
@@ -5666,7 +5722,8 @@ msgstr "E39: getal verwacht"
 msgid "E40: Can't open errorfile %s"
 msgstr "E40: openen foutenbestand %s is mislukt"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: openen scherm is mislukt"
 
 msgid "E41: Out of memory!"
@@ -5784,10 +5841,12 @@ msgstr "E744: NetBeans staat geen veranderingen in alleen-lezenbestanden toe"
 msgid "E685: Internal error: %s"
 msgstr "E685: interne fout: %s"
 
-msgid "E363: pattern uses more memory than 'maxmempattern'"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: patroon gebruikt meer geheugen dan 'maxmempattern'"
 
-msgid "E749: empty buffer"
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
 msgstr "E749: leeg buffer"
 
 msgid "E682: Invalid search pattern or delimiter"

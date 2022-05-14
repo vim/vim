@@ -1373,6 +1373,7 @@ do_perleval(char_u *str, typval_T *rettv)
 		SPAGAIN;
 		SvREFCNT_dec(sv);
 		sv = POPs;
+		PUTBACK;
 	    }
 	}
 	else
@@ -1383,7 +1384,6 @@ do_perleval(char_u *str, typval_T *rettv)
 	    ref_map_free();
 	    err = SvPV(GvSV(PL_errgv), err_len);
 	}
-	PUTBACK;
 	FREETMPS;
 	LEAVE;
     }

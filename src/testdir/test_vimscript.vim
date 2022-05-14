@@ -3025,7 +3025,7 @@ func Test_nested_if_else_errors()
 
   " :elseif without :if
   let code =<< trim END
-    elseif
+    elseif 1
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(elseif):E582: :elseif without :if')
@@ -3033,7 +3033,7 @@ func Test_nested_if_else_errors()
   " :elseif without :if
   let code =<< trim END
     while 1
-      elseif
+      elseif 1
     endwhile
   END
   call writefile(code, 'Xtest')
@@ -3043,7 +3043,7 @@ func Test_nested_if_else_errors()
   let code =<< trim END
     try
     finally
-      elseif
+      elseif 1
     endtry
   END
   call writefile(code, 'Xtest')
@@ -3052,7 +3052,7 @@ func Test_nested_if_else_errors()
   " :elseif without :if
   let code =<< trim END
     try
-      elseif
+      elseif 1
     endtry
   END
   call writefile(code, 'Xtest')
@@ -3063,7 +3063,7 @@ func Test_nested_if_else_errors()
     try
       throw "a"
     catch /a/
-      elseif
+      elseif 1
     endtry
   END
   call writefile(code, 'Xtest')
@@ -3077,7 +3077,7 @@ func Test_nested_if_else_errors()
     endif
   END
   call writefile(code, 'Xtest')
-  call AssertException(['source Xtest'], 'Vim(else):E583: multiple :else')
+  call AssertException(['source Xtest'], 'Vim(else):E583: Multiple :else')
 
   " :elseif after :else
   let code =<< trim END
@@ -3631,7 +3631,7 @@ endfunc
 "	    exceptions.
 "-------------------------------------------------------------------------------
 
-func Test_execption_info_for_error()
+func Test_exception_info_for_error()
   CheckEnglish
 
   let test =<< trim [CODE]
@@ -6546,9 +6546,16 @@ func Test_type()
     call assert_true(v:true != v:false)
 
     call assert_true(v:null == 0)
+    call assert_false(v:null == 1)
     call assert_false(v:null != 0)
     call assert_true(v:none == 0)
+    call assert_false(v:none == 1)
     call assert_false(v:none != 0)
+    if has('float')
+      call assert_true(v:null == 0.0)
+      call assert_false(v:null == 0.1)
+      call assert_false(v:null != 0.0)
+    endif
 
     call assert_true(v:false is v:false)
     call assert_true(v:true is v:true)
@@ -6564,6 +6571,9 @@ func Test_type()
     call assert_false(v:true is 1)
     call assert_false(v:true is v:false)
     call assert_false(v:none is 0)
+    call assert_false(v:none is [])
+    call assert_false(v:none is {})
+    call assert_false(v:none is 'text')
     call assert_false(v:null is 0)
     call assert_false(v:null is v:none)
 
@@ -7475,7 +7485,7 @@ func Test_typed_script_var()
 endfunc
 
 " Test for issue6776              {{{1
-func Test_trinary_expression()
+func Test_ternary_expression()
   try
     call eval('0 ? 0')
   catch

@@ -8,7 +8,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 /*
- * Common code for the Motif and Athena GUI.
+ * Code for the Motif GUI.
  * Not used for GTK.
  */
 
@@ -66,22 +66,13 @@
 #endif
 #define DFLT_TOOLTIP_FONT	XtDefaultFontSet
 
-#ifdef FEAT_GUI_ATHENA
-# define DFLT_MENU_BG_COLOR	"gray77"
-# define DFLT_MENU_FG_COLOR	"black"
-# define DFLT_SCROLL_BG_COLOR	"gray60"
-# define DFLT_SCROLL_FG_COLOR	"gray77"
-# define DFLT_TOOLTIP_BG_COLOR	"#ffff91"
-# define DFLT_TOOLTIP_FG_COLOR	"#000000"
-#else
 // use the default (CDE) colors
-# define DFLT_MENU_BG_COLOR	""
-# define DFLT_MENU_FG_COLOR	""
-# define DFLT_SCROLL_BG_COLOR	""
-# define DFLT_SCROLL_FG_COLOR	""
-# define DFLT_TOOLTIP_BG_COLOR	"#ffff91"
-# define DFLT_TOOLTIP_FG_COLOR	"#000000"
-#endif
+#define DFLT_MENU_BG_COLOR	""
+#define DFLT_MENU_FG_COLOR	""
+#define DFLT_SCROLL_BG_COLOR	""
+#define DFLT_SCROLL_FG_COLOR	""
+#define DFLT_TOOLTIP_BG_COLOR	"#ffff91"
+#define DFLT_TOOLTIP_FG_COLOR	"#000000"
 
 Widget vimShell = (Widget)0;
 
@@ -385,17 +376,6 @@ static XtResource vim_resources[] =
 	(XtPointer)SB_DEFAULT_WIDTH
     },
 #ifdef FEAT_MENU
-# ifdef FEAT_GUI_ATHENA		// with Motif the height is always computed
-    {
-	XtNmenuHeight,
-	XtCMenuHeight,
-	XtRInt,
-	sizeof(int),
-	XtOffsetOf(gui_T, menu_height),
-	XtRImmediate,
-	(XtPointer)MENU_DEFAULT_HEIGHT	    // Should figure out at run time
-    },
-# endif
     {
 # ifdef FONTSET_ALWAYS
 	XtNmenuFontSet,
@@ -1275,8 +1255,6 @@ gui_mch_init(void)
      * Get the colors ourselves.  Using the automatic conversion doesn't
      * handle looking for approximate colors.
      */
-    // NOTE: These next few lines are an exact duplicate of gui_athena.c's
-    // gui_mch_def_colors().  Why?
     gui.menu_fg_pixel = gui_get_color((char_u *)gui.rsrc_menu_fg_name);
     gui.menu_bg_pixel = gui_get_color((char_u *)gui.rsrc_menu_bg_name);
     gui.scroll_fg_pixel = gui_get_color((char_u *)gui.rsrc_scroll_fg_name);
@@ -1284,12 +1262,6 @@ gui_mch_init(void)
 #ifdef FEAT_BEVAL_GUI
     gui.tooltip_fg_pixel = gui_get_color((char_u *)gui.rsrc_tooltip_fg_name);
     gui.tooltip_bg_pixel = gui_get_color((char_u *)gui.rsrc_tooltip_bg_name);
-#endif
-
-#if defined(FEAT_MENU) && defined(FEAT_GUI_ATHENA)
-    // If the menu height was set, don't change it at runtime
-    if (gui.menu_height != MENU_DEFAULT_HEIGHT)
-	gui.menu_height_fixed = TRUE;
 #endif
 
     // Set default foreground and background colours
@@ -1454,11 +1426,7 @@ gui_mch_init(void)
 	XpmFreeAttributes(&attr);
     }
 
-# ifdef FEAT_GUI_ATHENA
-    XtVaSetValues(vimShell, XtNiconPixmap, icon, XtNiconMask, icon_mask, NULL);
-# else
     XtVaSetValues(vimShell, XmNiconPixmap, icon, XmNiconMask, icon_mask, NULL);
-# endif
 #endif
     }
 
@@ -1576,16 +1544,6 @@ gui_mch_open(void)
     }
     XtAddEventHandler(vimShell, PropertyChangeMask, False,
 		      gui_x11_send_event_handler, NULL);
-#endif
-
-
-#if defined(FEAT_MENU) && defined(FEAT_GUI_ATHENA)
-    // The Athena GUI needs this again after opening the window
-    gui_position_menu();
-# ifdef FEAT_TOOLBAR
-    gui_mch_set_toolbar_pos(0, gui.menu_height, gui.menu_width,
-			    gui.toolbar_height);
-# endif
 #endif
 
     // Get the colors for the highlight groups (gui_check_colors() might have
@@ -2153,22 +2111,6 @@ fontset_height(
     extents = XExtentsOfFontSet(fs);
     return extents->max_logical_extent.height;
 }
-
-#if (defined(FONTSET_ALWAYS) && defined(FEAT_GUI_ATHENA) \
-	    && defined(FEAT_MENU)) || defined(PROTO)
-/*
- * Returns the bounding box height around the actual glyph image of all
- * characters in all fonts of the fontset.
- */
-    int
-fontset_height2(XFontSet fs)
-{
-    XFontSetExtents *extents;
-
-    extents = XExtentsOfFontSet(fs);
-    return extents->max_ink_extent.height;
-}
-#endif
 
 #if 0
 // NOT USED YET

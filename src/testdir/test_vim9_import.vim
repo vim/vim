@@ -423,6 +423,46 @@ def Test_import_funcref()
   delete('Xlib.vim')
 enddef
 
+def Test_import_duplicate_function()
+  # Function Hover() exists in both scripts, partial should refer to the right
+  # one.
+  var lines =<< trim END
+      vim9script
+
+      def Hover(d: dict<any>): string
+        return 'found it'
+      enddef
+
+      export def NewLspServer(): dict<any>
+        var d: dict<any> = {}
+        d->extend({hover: function('Hover', [d])})
+        return d
+      enddef
+
+      NewLspServer()
+  END
+  writefile(lines, 'Xserver.vim')
+
+  lines =<< trim END
+      vim9script
+
+      import './Xserver.vim' as server
+
+      export def Hover()
+      enddef
+
+      def AddServer()
+        var d: dict<any> = server.NewLspServer()
+        assert_equal('found it', d.hover())
+      enddef
+      AddServer()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delete('Xserver.vim')
+enddef
+
+
 def Test_import_fails()
   writefile([], 'Xfoo.vim')
   var lines =<< trim END
@@ -465,8 +505,6 @@ def Test_import_fails()
       import './Xfoo.vim' as g:foo
   END
   v9.CheckScriptFailure(lines, 'E1047:')
-
-  delete('Xfoo.vim')
 
   lines =<< trim END
       vim9script
@@ -536,7 +574,26 @@ def Test_import_fails()
   END
   v9.CheckScriptSuccess(lines)
 
+  new
+  setline(1, ['vim9script', 'import "" as abc'])
+  assert_fails('source', 'E1071: Invalid string for :import: "" as abc')
+  setline(2, 'import [] as abc')
+  assert_fails('source', 'E1071: Invalid string for :import: [] as abc')
+  setline(2, 'import test_null_string() as abc')
+  assert_fails('source', 'E1071: Invalid string for :import: test_null_string() as abc')
+  bw!
+  call writefile(['vim9script', "import './Xfoo.vim' ask expo"], 'Xbar.vim')
+  assert_fails('source Xbar.vim', 'E488: Trailing characters: ask expo')
+  writefile([], 'Xtemp')
+  call writefile(['vim9script', "import './Xtemp'"], 'Xbar.vim')
+  assert_fails('source Xbar.vim', 'E1257: Imported script must use "as" or end in .vim: Xtemp')
+  delete('Xtemp')
+  call writefile(['vim9script', "import './Xfoo.vim' as abc | foobar"], 'Xbar.vim')
+  assert_fails('source Xbar.vim', 'E492: Not an editor command:  foobar')
+  call delete('Xbar.vim')
+
   delete('Ximport', 'rf')
+  delete('Xfoo.vim')
 enddef
 
 func g:Trigger()
@@ -602,8 +659,8 @@ enddef
 def Test_use_import_in_mapping()
   var lines =<< trim END
       vim9script
-      export def Funcx()
-        g:result = 42
+      export def Funcx(nr: number)
+        g:result = nr
       enddef
   END
   writefile(lines, 'XsomeExport.vim')
@@ -611,18 +668,79 @@ def Test_use_import_in_mapping()
       vim9script
       import './XsomeExport.vim' as some
       var Funcy = some.Funcx
-      nnoremap <F3> :call <sid>Funcy()<cr>
+      nnoremap <F3> :call <sid>Funcy(42)<cr>
+      nnoremap <F4> :call <sid>some.Funcx(44)<cr>
   END
   writefile(lines, 'Xmapscript.vim')
 
   source Xmapscript.vim
   feedkeys("\<F3>", "xt")
   assert_equal(42, g:result)
+  feedkeys("\<F4>", "xt")
+  assert_equal(44, g:result)
 
   unlet g:result
   delete('XsomeExport.vim')
   delete('Xmapscript.vim')
   nunmap <F3>
+  nunmap <F4>
+enddef
+
+def Test_use_relative_autoload_import_in_mapping()
+  var lines =<< trim END
+      vim9script
+      export def Func()
+        g:result = 42
+      enddef
+  END
+  writefile(lines, 'XrelautoloadExport.vim')
+  lines =<< trim END
+      vim9script
+      import autoload './XrelautoloadExport.vim' as some
+      nnoremap <F3> :call <SID>some.Func()<CR>
+  END
+  writefile(lines, 'Xmapscript.vim')
+
+  source Xmapscript.vim
+  assert_match('\d\+ A: .*XrelautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  feedkeys("\<F3>", "xt")
+  assert_equal(42, g:result)
+
+  unlet g:result
+  delete('XrelautoloadExport.vim')
+  delete('Xmapscript.vim')
+  nunmap <F3>
+enddef
+
+def Test_use_autoload_import_in_mapping()
+  var lines =<< trim END
+      vim9script
+      export def Func()
+        g:result = 49
+      enddef
+  END
+  mkdir('Xdir/autoload', 'p')
+  writefile(lines, 'Xdir/autoload/XautoloadExport.vim')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  lines =<< trim END
+      vim9script
+      import autoload 'XautoloadExport.vim' as some
+      nnoremap <F3> :call <SID>some.Func()<CR>
+  END
+  writefile(lines, 'Xmapscript.vim')
+
+  source Xmapscript.vim
+  assert_match('\d\+ A: .*autoload/XautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  feedkeys("\<F3>", "xt")
+  assert_equal(49, g:result)
+
+  unlet g:result
+  delete('Xmapscript.vim')
+  nunmap <F3>
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
 enddef
 
 def Test_use_import_in_command_completion()
@@ -639,6 +757,30 @@ def Test_use_import_in_command_completion()
       import './Xscript.vim'
 
       command -nargs=1 -complete=customlist,Xscript.Complete Cmd echo 'ok'
+      feedkeys(":Cmd ab\<Tab>\<C-B>#\<CR>", 'xnt')
+      assert_equal('#Cmd abcd', @:)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delcommand Cmd
+  delete('Xscript.vim')
+enddef
+
+def Test_use_import_with_funcref_in_command_completion()
+  var lines =<< trim END
+      vim9script
+      export def Complete(..._): list<string>
+        return ['abcd']
+      enddef
+  END
+  writefile(lines, 'Xscript.vim')
+
+  lines =<< trim END
+      vim9script
+      import './Xscript.vim'
+
+      var Ref = Xscript.Complete
+      exe "command -nargs=1 -complete=customlist," .. expand('<SID>') .. "Ref  Cmd echo 'ok'"
       feedkeys(":Cmd ab\<Tab>\<C-B>#\<CR>", 'xnt')
       assert_equal('#Cmd abcd', @:)
   END
@@ -798,6 +940,220 @@ def Test_use_autoload_import_in_fold_expression()
   bwipe!
   delete('Xdir', 'rf')
   &rtp = save_rtp
+enddef
+
+def Test_autoload_import_relative()
+  var lines =<< trim END
+      vim9script
+
+      g:loaded = 'yes'
+      export def RelFunc(): string
+        return 'relfunc'
+      enddef
+      def NotExported()
+        echo 'not'
+      enddef
+
+      export var someText = 'some text'
+      var notexp = 'bad'
+  END
+  writefile(lines, 'XimportRel.vim')
+  writefile(lines, 'XimportRel2.vim')
+  writefile(lines, 'XimportRel3.vim')
+  writefile(lines, 'XimportRel4.vim')
+  writefile(lines, 'XimportRel5.vim')
+
+  lines =<< trim END
+      vim9script
+      g:loaded = 'no'
+      import autoload './XimportRel.vim'
+      assert_equal('no', g:loaded)
+
+      def AFunc(): string
+        var res = ''
+        res ..= XimportRel.RelFunc()
+        res ..= '/'
+        res ..= XimportRel.someText
+        XimportRel.someText = 'from AFunc'
+        return res
+      enddef
+      # script not loaded when compiling
+      defcompile
+      assert_equal('no', g:loaded)
+
+      assert_equal('relfunc/some text', AFunc())
+      assert_equal('yes', g:loaded)
+      unlet g:loaded
+
+      assert_equal('from AFunc', XimportRel.someText)
+      XimportRel.someText = 'from script'
+      assert_equal('from script', XimportRel.someText)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      echo XimportRel.NotExported()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: NotExported', 3)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      echo XimportRel.notexp
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 3)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      XimportRel.notexp = 'bad'
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 3)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      def Func()
+        echo XimportRel.NotExported()
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: NotExported', 1)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      def Func()
+        echo XimportRel.notexp
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
+
+  # Same, script not imported before
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel4.vim'
+      def Func()
+        echo XimportRel4.notexp
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
+
+  # does not fail if the script wasn't loaded yet and only compiling
+  g:loaded = 'no'
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel2.vim'
+      def Func()
+        echo XimportRel2.notexp
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('no', g:loaded)
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel.vim'
+      def Func()
+        XimportRel.notexp = 'bad'
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
+
+  # fails with a not loaded import
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel3.vim'
+      def Func()
+        XimportRel3.notexp = 'bad'
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E1049: Item not exported in script: notexp', 1)
+  assert_equal('yes', g:loaded)
+  unlet g:loaded
+
+  lines =<< trim END
+      vim9script
+      import autoload './XimportRel5.vim'
+      def Func()
+        XimportRel5.nosuchvar = 'bad'
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E121: Undefined variable: nosuchvar', 1)
+  unlet g:loaded
+
+  # nasty: delete script after compiling function
+  writefile(['vim9script'], 'XimportRelDel.vim')
+  lines =<< trim END
+      vim9script
+
+      import autoload './XimportRelDel.vim'
+      def DoIt()
+        echo XimportRelDel.var
+      enddef
+      defcompile
+      delete('XimportRelDel.vim')
+      DoIt()
+  END
+  v9.CheckScriptFailure(lines, 'E484:')
+
+  delete('XimportRel.vim')
+  delete('XimportRel2.vim')
+  delete('XimportRel3.vim')
+  delete('XimportRel4.vim')
+  delete('XimportRel5.vim')
+enddef
+
+def Test_autoload_import_relative_autoload_dir()
+  mkdir('autoload', 'p')
+  var lines =<< trim END
+      vim9script
+      export def Bar()
+        g:called_bar = 'yes'
+      enddef
+  END
+  writefile(lines, 'autoload/script.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload './autoload/script.vim'
+      def Foo()
+        script.Bar()
+      enddef
+      Foo()
+      assert_equal('yes', g:called_bar)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  unlet g:called_bar
+  delete('autoload', 'rf')
+enddef
+
+def Test_autoload_import_deleted()
+  var lines =<< trim END
+      vim9script
+      export const FOO = 1
+  END
+  writefile(lines, 'Xa.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload './Xa.vim'
+
+      delete('Xa.vim')
+      var x = Xa.FOO
+  END
+  v9.CheckScriptFailure(lines, 'E484:')
+
+  delete('Xdir', 'rf')
 enddef
 
 func Test_import_in_diffexpr()
@@ -1084,6 +1440,7 @@ def Test_export_fails()
   v9.CheckScriptFailure(['export var some = 123'], 'E1042:')
   v9.CheckScriptFailure(['vim9script', 'export var g:some'], 'E1022:')
   v9.CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
+  v9.CheckScriptFailure(['vim9script', 'export function /a1b2c3'], 'E1044:')
 
   assert_fails('export something', 'E1043:')
 enddef
@@ -1382,10 +1739,10 @@ def Test_script_reload_from_function()
   var lines =<< trim END
       vim9script
 
-      if exists('g:loaded')
+      if exists('g:loadedThis')
         finish
       endif
-      g:loaded = 1
+      g:loadedThis = 1
       delcommand CallFunc
       command CallFunc Func()
       def Func()
@@ -1400,7 +1757,7 @@ def Test_script_reload_from_function()
 
   delete('XreloadFunc.vim')
   delcommand CallFunc
-  unlet g:loaded
+  unlet g:loadedThis
   unlet g:didTheFunc
 enddef
 
@@ -2116,7 +2473,7 @@ def Test_vim9script_autoload_duplicate()
      export var Func = 'asdf'
   END
   writefile(lines, 'Xdir/autoload/dup3func.vim')
-  assert_fails('source Xdir/autoload/dup3func.vim', 'E1041: Redefining script item Func')
+  assert_fails('source Xdir/autoload/dup3func.vim', 'E1041: Redefining script item: "Func"')
 
   lines =<< trim END
      vim9script
@@ -2149,7 +2506,7 @@ def Test_vim9script_autoload_duplicate()
      var Func = 'asdf'
   END
   writefile(lines, 'Xdir/autoload/dup6func.vim')
-  assert_fails('source Xdir/autoload/dup6func.vim', 'E1041: Redefining script item Func')
+  assert_fails('source Xdir/autoload/dup6func.vim', 'E1041: Redefining script item: "Func"')
 
   delete('Xdir', 'rf')
 enddef
@@ -2326,6 +2683,12 @@ def Test_vim9script_autoload_fails()
       var n = 0
   END
   v9.CheckScriptFailure(lines, 'E983: Duplicate argument: noclear')
+
+  lines =<< trim END
+      vim9script noclears
+      var n = 0
+  END
+  v9.CheckScriptFailure(lines, 'E475: Invalid argument: noclears')
 enddef
 
 def Test_import_autoload_fails()
@@ -2339,13 +2702,19 @@ def Test_import_autoload_fails()
       vim9script
       import autoload './doesNotExist.vim'
   END
-  v9.CheckScriptFailure(lines, 'E1264:')
+  v9.CheckScriptFailure(lines, 'E282:', 2)
 
   lines =<< trim END
       vim9script
       import autoload '/dir/doesNotExist.vim'
   END
-  v9.CheckScriptFailure(lines, 'E1264:')
+  v9.CheckScriptFailure(lines, 'E282:', 2)
+
+  lines =<< trim END
+      vim9script
+      import autoload '../testdir'
+  END
+  v9.CheckScriptFailure(lines, 'E17:', 2)
 
   lines =<< trim END
       vim9script

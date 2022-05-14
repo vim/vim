@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 Feb 04
+*eval.txt*	For Vim version 8.2.  Last change: 2022 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -181,7 +181,7 @@ You will not get an error if you try to change the type of a variable.
 
 
 1.2 Function references ~
-				*Funcref* *E695* *E718* *E1086* *E1192*
+				*Funcref* *E695* *E718* *E1192*
 A Funcref variable is obtained with the |function()| function, the |funcref()|
 function or created with the lambda expression |expr-lambda|.  It can be used
 in an expression in the place of a function name, before the parenthesis
@@ -261,7 +261,7 @@ position in the sequence.
 
 List creation ~
 							*E696* *E697*
-A List is created with a comma separated list of items in square brackets.
+A List is created with a comma-separated list of items in square brackets.
 Examples: >
 	:let mylist = [1, two, 3, "four"]
 	:let emptylist = []
@@ -470,7 +470,7 @@ It is also possible to put remaining items in a List variable: >
 	:for [i, j; rest] in listlist
 	:   call Doit(i, j)
 	:   if !empty(rest)
-	:      echo "remainder: " . string(rest)
+	:      echo "remainder: " .. string(rest)
 	:   endif
 	:endfor
 
@@ -498,11 +498,11 @@ Functions that are useful with a List: >
 	:let list = split("a b c")	" create list from items in a string
 	:let string = join(list, ', ')	" create string from list items
 	:let s = string(list)		" String representation of list
-	:call map(list, '">> " . v:val')  " prepend ">> " to each item
+	:call map(list, '">> " .. v:val')  " prepend ">> " to each item
 
 Don't forget that a combination of features can make things simple.  For
 example, to add up all the numbers in a list: >
-	:exe 'let sum = ' . join(nrlist, '+')
+	:exe 'let sum = ' .. join(nrlist, '+')
 
 
 1.4 Dictionaries ~
@@ -514,7 +514,7 @@ ordering.
 
 Dictionary creation ~
 						*E720* *E721* *E722* *E723*
-A Dictionary is created with a comma separated list of entries in curly
+A Dictionary is created with a comma-separated list of entries in curly
 braces.  Each entry has a key and a value, separated by a colon.  Each key can
 only appear once.  Examples: >
 	:let mydict = {1: 'one', 2: 'two', 3: 'three'}
@@ -523,8 +523,8 @@ only appear once.  Examples: >
 A key is always a String.  You can use a Number, it will be converted to a
 String automatically.  Thus the String '4' and the number 4 will find the same
 entry.  Note that the String '04' and the Number 04 are different, since the
-Number will be converted to the String '4'.  The empty string can also be used
-as a key.
+Number will be converted to the String '4', leading zeros are dropped.  The
+empty string can also be used as a key.
 
 In |Vim9| script literaly keys can be used if the key consists of alphanumeric
 characters, underscore and dash, see |vim9-literal-dict|.
@@ -534,7 +534,8 @@ legacy script.  This does require the key to consist only of ASCII letters,
 digits, '-' and '_'.  Example: >
 	:let mydict = #{zero: 0, one_key: 1, two-key: 2, 333: 3}
 Note that 333 here is the string "333".  Empty keys are not possible with #{}.
-In |Vim9| script the #{} form cannot be used.
+In |Vim9| script the #{} form cannot be used because it can be confused with
+the start of a comment.
 
 A value can be any expression.  Using a Dictionary for a value creates a
 nested Dictionary: >
@@ -568,7 +569,7 @@ turn the Dictionary into a List and pass it to |:for|.
 
 Most often you want to loop over the keys, using the |keys()| function: >
 	:for key in keys(mydict)
-	:   echo key . ': ' . mydict[key]
+	:   echo key .. ': ' .. mydict[key]
 	:endfor
 
 The List of keys is unsorted.  You may want to sort them first: >
@@ -576,13 +577,13 @@ The List of keys is unsorted.  You may want to sort them first: >
 
 To loop over the values use the |values()| function:  >
 	:for v in values(mydict)
-	:   echo "value: " . v
+	:   echo "value: " .. v
 	:endfor
 
 If you want both the key and the value use the |items()| function.  It returns
 a List in which each item is a List with two items, the key and the value: >
 	:for [key, value] in items(mydict)
-	:   echo key . ': ' . value
+	:   echo key .. ': ' .. value
 	:endfor
 
 
@@ -677,7 +678,7 @@ Functions that can be used with a Dictionary: >
 	:let small = min(dict)		" minimum value in dict
 	:let xs = count(dict, 'x')	" count nr of times 'x' appears in dict
 	:let s = string(dict)		" String representation of dict
-	:call map(dict, '">> " . v:val')  " prepend ">> " to each item
+	:call map(dict, '">> " .. v:val')  " prepend ">> " to each item
 
 
 1.5 Blobs ~
@@ -921,13 +922,13 @@ Expression nesting is limited to 1000 levels deep (300 when build with MSVC)
 to avoid running out of stack and crashing. *E1169*
 
 
-expr1				*expr1* *trinary* *falsy-operator* *??* *E109*
+expr1				*expr1* *ternary* *falsy-operator* *??* *E109*
 -----
 
-The trinary operator: expr2 ? expr1 : expr1
+The ternary operator: expr2 ? expr1 : expr1
 The falsy operator:   expr2 ?? expr1
 
-Trinary operator ~
+Ternary operator ~
 
 In legacy script the expression before the '?' is evaluated to a number.  If
 it evaluates to |TRUE|, the result is the value of the expression between the
@@ -1371,7 +1372,7 @@ And NOT: >
 	-(1.234->string())
 
 What comes after "->" can be a name, a simple expression (not containing any
-parenthesis), or any expression in parenthesis: >
+parenthesis), or any expression in parentheses: >
 	base->name(args)
 	base->some.name(args)
 	base->alist[idx](args)
@@ -1523,6 +1524,33 @@ to be doubled.  These two commands are equivalent: >
 	if a =~ '\s*'
 
 
+interpolated-string					*interp-string* *E256*
+--------------------
+$"string"		interpolated string constant		*expr-$quote*
+$'string'		interpolated literal string constant	*expr-$'*
+
+Interpolated strings are an extension of the |string| and |literal-string|,
+allowing the inclusion of Vim script expressions (see |expr1|).  Any
+expression returning a value can be enclosed between curly braces.  The value
+is converted to a string.  All the text and results of the expressions
+are concatenated to make a new string.
+								*E1278*
+To include an opening brace '{' or closing brace '}' in the string content
+double it.  For double quoted strings using a backslash also works.  A single
+closing brace '}' will result in an error.
+
+Examples: >
+	let your_name = input("What's your name? ")
+<	What's your name?  Peter ~
+>
+	echo
+	echo $"Hello, {your_name}!"
+<	Hello, Peter! ~
+>
+	echo $"The square root of {{9}} is {sqrt(9)}"
+<	The square root of {9} is 3.0 ~
+
+
 option						*expr-option* *E112* *E113*
 ------
 &option			option value, local value if possible
@@ -1530,7 +1558,7 @@ option						*expr-option* *E112* *E113*
 &l:option		local option value
 
 Examples: >
-	echo "tabstop is " . &tabstop
+	echo "tabstop is " .. &tabstop
 	if &insertmode
 
 Any option name can be used here.  See |options|.  When using the local value
@@ -1820,7 +1848,7 @@ maintain a counter: >
 	  echo "script executed for the first time"
 	else
 	  let s:counter = s:counter + 1
-	  echo "script executed " . s:counter . " times now"
+	  echo "script executed " .. s:counter .. " times now"
 	endif
 
 Note that this means that filetype plugins don't get a different set of script
@@ -1834,6 +1862,7 @@ Some variables can be set by the user, but the type cannot be changed.
 					*v:argv* *argv-variable*
 v:argv		The command line arguments Vim was invoked with.  This is a
 		list of strings.  The first item is the Vim command.
+		See |v:progpath| for the command with full path.
 
 					*v:beval_col* *beval_col-variable*
 v:beval_col	The number of the column, over which the mouse pointer is.
@@ -1955,7 +1984,7 @@ v:completed_item
 					*v:count* *count-variable*
 v:count		The count given for the last Normal mode command.  Can be used
 		to get the count before a mapping.  Read-only.  Example: >
-	:map _x :<C-U>echo "the count is " . v:count<CR>
+	:map _x :<C-U>echo "the count is " .. v:count<CR>
 <		Note: The <C-U> is required to remove the line range that you
 		get when typing ':' after a count.
 		When there are two counts, as in "3d2w", they are multiplied,
@@ -2182,7 +2211,8 @@ v:lnum		Line number for the 'foldexpr' |fold-expr|, 'formatexpr' and
 
 						*v:maxcol* *maxcol-variable*
 v:maxcol	Maximum line length.  Depending on where it is used it can be
-		screen columns, characters or bytes.
+		screen columns, characters or bytes.  The value currently is
+		2147483647 on all systems.
 
 					*v:mouse_win* *mouse_win-variable*
 v:mouse_win	Window number for a mouse click obtained with |getchar()|.
@@ -2214,6 +2244,8 @@ v:none		An empty String. Used to put an empty item in JSON.  See
 <			v:none ~
 		That is so that eval() can parse the string back to the same
 		value.  Read-only.
+		Note that using `== v:none` and `!= v:none`  will often give
+		an error.  Instead, use `is v:none` and `isnot v:none` .
 
 					*v:null* *null-variable*
 v:null		An empty String. Used to put "null" in JSON.  See
@@ -2224,7 +2256,10 @@ v:null		An empty String. Used to put "null" in JSON.  See
 <			v:null ~
 		That is so that eval() can parse the string back to the same
 		value.  Read-only.
-		In |Vim9| script "null" can be used without "v:".
+		In |Vim9| script `null` can be used without "v:".
+		In some places `v:null` and `null` can be used for a List,
+		Dict, Job, etc. that is not set.  That is slightly different
+		than an empty List, Dict, etc.
 
 					*v:numbermax* *numbermax-variable*
 v:numbermax	Maximum value of a number.
@@ -2828,9 +2863,9 @@ Example: >
   :  echohl Title
   :  echo a:title
   :  echohl None
-  :  echo a:0 . " items:"
+  :  echo a:0 .. " items:"
   :  for s in a:000
-  :    echon ' ' . s
+  :    echon ' ' .. s
   :  endfor
   :endfunction
 
@@ -2873,7 +2908,7 @@ This function can then be called with: >
 		this works:
 						*function-range-example*  >
 	:function Mynumber(arg)
-	:  echo line(".") . " " . a:arg
+	:  echo line(".") .. " " .. a:arg
 	:endfunction
 	:1,5call Mynumber(getline("."))
 <
@@ -2884,7 +2919,7 @@ This function can then be called with: >
 		Example of a function that handles the range itself: >
 
 	:function Cont() range
-	:  execute (a:firstline + 1) . "," . a:lastline . 's/^/\t\\ '
+	:  execute (a:firstline + 1) .. "," .. a:lastline .. 's/^/\t\\ '
 	:endfunction
 	:4,8call Cont()
 <
@@ -3001,8 +3036,9 @@ Also note that if you have two script files, and one calls a function in the
 other and vice versa, before the used function is defined, it won't work.
 Avoid using the autoload functionality at the toplevel.
 
-In |Vim9| script you will get error *E1263* if you use a function name with a
-"#" character when not in an autoload script.
+In |Vim9| script you will get error *E1263* if you define a function with
+a "#" character in the name.  You should use a name without "#" and use
+`:export`.
 
 Hint: If you distribute a bunch of scripts you can pack them together with the
 |vimball| utility.  Also read the user manual |distribute-script|.
@@ -3075,7 +3111,7 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			This cannot be used to add an item to a |List|.
 			This cannot be used to set a byte in a String.  You
 			can do that like this: >
-				:let var = var[0:2] . 'X' . var[4:]
+				:let var = var[0:2] .. 'X' .. var[4:]
 <			When {var-name} is a |Blob| then {idx} can be the
 			length of the blob, in which case one byte is
 			appended.
@@ -3145,7 +3181,7 @@ declarations and assignments do not use a command.  |vim9-declaration|
 			is just like using the |:set| command: both the local
 			value and the global value are changed.
 			Example: >
-				:let &path = &path . ',/usr/local/include'
+				:let &path = &path .. ',/usr/local/include'
 <			This also works for terminal codes in the form t_xx.
 			But only for alphanumerical names.  Example: >
 				:let &t_k1 = "\<Esc>[234;"
@@ -3216,14 +3252,30 @@ declarations and assignments do not use a command.  |vim9-declaration|
 
 						*:let=<<* *:let-heredoc*
 					*E990* *E991* *E172* *E221* *E1145*
-:let {var-name} =<< [trim] {endmarker}
+:let {var-name} =<< [trim] [eval] {endmarker}
 text...
 text...
 {endmarker}
 			Set internal variable {var-name} to a |List|
 			containing the lines of text bounded by the string
-			{endmarker}. The lines of text is used as a
-			|literal-string|.
+			{endmarker}.
+
+			If "eval" is not specified, then each line of text is
+			used as a |literal-string|, except that single quotes
+			doe not need to be doubled.
+			If "eval" is specified, then any Vim expression in the
+			form {expr} is evaluated and the result replaces the
+			expression, like with |interp-string|.
+			Example where $HOME is expanded: >
+				let lines =<< trim eval END
+				  some text
+				  See the file {$HOME}/.vimrc
+				  more text
+				END
+<			There can be multiple Vim expressions in a single line
+			but an expression cannot span multiple lines.  If any
+			expression evaluation fails, then the assignment fails.
+
 			{endmarker} must not contain white space.
 			{endmarker} cannot start with a lower case character.
 			The last line should end only with the {endmarker}
@@ -3273,6 +3325,13 @@ text...
 					1 2 3 4
 					5 6 7 8
 				DATA
+
+				let code =<< trim eval CODE
+				   let v = {10 + 20}
+				   let h = "{$HOME}"
+				   let s = "{Str1()} abc {Str2()}"
+				   let n = {MyFunc(3, 4)}
+				CODE
 <
 								*E121*
 :let {var-name}	..	List the value of variable {var-name}.  Multiple
@@ -3421,14 +3480,17 @@ text...
 			opposite of |:lockvar|.
 
 :if {expr1}			*:if* *:end* *:endif* *:en* *E171* *E579* *E580*
-:en[dif]		Execute the commands until the next matching ":else"
-			or ":endif" if {expr1} evaluates to non-zero.
+:en[dif]		Execute the commands until the next matching `:else`
+			or `:endif` if {expr1} evaluates to non-zero.
+			Although the short forms work, it is recommended to
+			always use `:endif` to avoid confusion and to make
+			auto-indenting work properly.
 
 			From Vim version 4.5 until 5.0, every Ex command in
-			between the ":if" and ":endif" is ignored.  These two
+			between the `:if` and `:endif` is ignored.  These two
 			commands were just to allow for future expansions in a
 			backward compatible way.  Nesting was allowed.  Note
-			that any ":else" or ":elseif" was ignored, the "else"
+			that any `:else` or `:elseif` was ignored, the `else`
 			part was not executed either.
 
 			You can use this to remain compatible with older
@@ -3437,32 +3499,38 @@ text...
 				:  version-5-specific-commands
 				:endif
 <			The commands still need to be parsed to find the
-			"endif".  Sometimes an older Vim has a problem with a
-			new command.  For example, ":silent" is recognized as
-			a ":substitute" command.  In that case ":execute" can
+			`endif`.  Sometimes an older Vim has a problem with a
+			new command.  For example, `:silent` is recognized as
+			a `:substitute` command.  In that case `:execute` can
 			avoid problems: >
 				:if version >= 600
 				:  execute "silent 1,$delete"
 				:endif
 <
-			NOTE: The ":append" and ":insert" commands don't work
-			properly in between ":if" and ":endif".
+			In |Vim9| script `:endif` cannot be shortened, to
+			improve script readability.
+			NOTE: The `:append` and `:insert` commands don't work
+			properly in between `:if` and `:endif`.
 
 						*:else* *:el* *E581* *E583*
-:el[se]			Execute the commands until the next matching ":else"
-			or ":endif" if they previously were not being
+:el[se]			Execute the commands until the next matching `:else`
+			or `:endif` if they previously were not being
 			executed.
+			In |Vim9| script `:else` cannot be shortened, to
+			improve script readability.
 
 					*:elseif* *:elsei* *E582* *E584*
-:elsei[f] {expr1}	Short for ":else" ":if", with the addition that there
-			is no extra ":endif".
+:elsei[f] {expr1}	Short for `:else` `:if`, with the addition that there
+			is no extra `:endif`.
+			In |Vim9| script `:elseif` cannot be shortened, to
+			improve script readability.
 
 :wh[ile] {expr1}			*:while* *:endwhile* *:wh* *:endw*
 						*E170* *E585* *E588* *E733*
-:endw[hile]		Repeat the commands between ":while" and ":endwhile",
+:endw[hile]		Repeat the commands between `:while` and `:endwhile`,
 			as long as {expr1} evaluates to non-zero.
 			When an error is detected from a command inside the
-			loop, execution continues after the "endwhile".
+			loop, execution continues after the `endwhile`.
 			Example: >
 				:let lnum = 1
 				:while lnum <= line("$")
@@ -3470,14 +3538,16 @@ text...
 				   :let lnum = lnum + 1
 				:endwhile
 <
-			NOTE: The ":append" and ":insert" commands don't work
-			properly inside a ":while" and ":for" loop.
+			In |Vim9| script `:while`  and `:endwhile` cannot be
+			shortened, to improve script readability.
+			NOTE: The `:append` and `:insert` commands don't work
+			properly inside a `:while` and `:for` loop.
 
 :for {var} in {object}					*:for* *E690* *E732*
 :endfo[r]						*:endfo* *:endfor*
-			Repeat the commands between ":for" and ":endfor" for
-			each item in {object}.  {object} can be a |List| or
-			a |Blob|. *E1177*
+			Repeat the commands between `:for` and `:endfor` for
+			each item in {object}.  {object} can be a |List|,
+			a |Blob| or a |String|. *E1177*
 
 			Variable {var} is set to the value of each item.
 			In |Vim9| script the loop variable must not have been
@@ -3485,7 +3555,7 @@ text...
 			global/window/tab/buffer variable.
 
 			When an error is detected for a command inside the
-			loop, execution continues after the "endfor".
+			loop, execution continues after the `endfor`.
 			Changing {object} inside the loop affects what items
 			are used.  Make a copy if this is unwanted: >
 				:for item in copy(mylist)
@@ -3510,9 +3580,12 @@ text...
 			iterate over.  Unlike with |List|, modifying the
 			|Blob| does not affect the iteration.
 
+			In |Vim9| script `:endfor` cannot be shortened, to
+			improve script readability.
+
 :for [{var1}, {var2}, ...] in {listlist}
 :endfo[r]							*E1140*
-			Like ":for" above, but each item in {listlist} must be
+			Like `:for` above, but each item in {listlist} must be
 			a list, of which each item is assigned to {var1},
 			{var2}, etc.  Example: >
 				:for [lnum, col] in [[1, 3], [2, 5], [3, 8]]
@@ -3520,39 +3593,44 @@ text...
 				:endfor
 <
 						*:continue* *:con* *E586*
-:con[tinue]		When used inside a ":while" or ":for" loop, jumps back
+:con[tinue]		When used inside a `:while` or `:for` loop, jumps back
 			to the start of the loop.
-			If it is used after a |:try| inside the loop but
-			before the matching |:finally| (if present), the
-			commands following the ":finally" up to the matching
-			|:endtry| are executed first.  This process applies to
-			all nested ":try"s inside the loop.  The outermost
-			":endtry" then jumps back to the start of the loop.
+			If it is used after a `:try` inside the loop but
+			before the matching `:finally` (if present), the
+			commands following the `:finally` up to the matching
+			`:endtry` are executed first.  This process applies to
+			all nested `:try`s inside the loop.  The outermost
+			`:endtry` then jumps back to the start of the loop.
 
+			In |Vim9| script `:cont` is the shortest form, to
+			improve script readability.
 						*:break* *:brea* *E587*
-:brea[k]		When used inside a ":while" or ":for" loop, skips to
-			the command after the matching ":endwhile" or
-			":endfor".
-			If it is used after a |:try| inside the loop but
-			before the matching |:finally| (if present), the
-			commands following the ":finally" up to the matching
-			|:endtry| are executed first.  This process applies to
-			all nested ":try"s inside the loop.  The outermost
-			":endtry" then jumps to the command after the loop.
+:brea[k]		When used inside a `:while` or `:for` loop, skips to
+			the command after the matching `:endwhile` or
+			`:endfor`.
+			If it is used after a `:try` inside the loop but
+			before the matching `:finally` (if present), the
+			commands following the `:finally` up to the matching
+			`:endtry` are executed first.  This process applies to
+			all nested `:try`s inside the loop.  The outermost
+			`:endtry` then jumps to the command after the loop.
+
+			In |Vim9| script `:break` cannot be shortened, to
+			improve script readability.
 
 :try						*:try* *:endt* *:endtry*
 						*E600* *E601* *E602* *E1032*
 :endt[ry]		Change the error handling for the commands between
-			":try" and ":endtry" including everything being
-			executed across ":source" commands, function calls,
+			`:try` and `:endtry` including everything being
+			executed across `:source` commands, function calls,
 			or autocommand invocations.
 
 			When an error or interrupt is detected and there is
-			a |:finally| command following, execution continues
-			after the ":finally".  Otherwise, or when the
-			":endtry" is reached thereafter, the next
-			(dynamically) surrounding ":try" is checked for
-			a corresponding ":finally" etc.  Then the script
+			a `:finally` command following, execution continues
+			after the `:finally`.  Otherwise, or when the
+			`:endtry` is reached thereafter, the next
+			(dynamically) surrounding `:try` is checked for
+			a corresponding `:finally` etc.  Then the script
 			processing is terminated.  Whether a function
 			definition has an "abort" argument does not matter.
 			Example: >
@@ -3560,9 +3638,9 @@ text...
 		echomsg "not reached"
 <
 			Moreover, an error or interrupt (dynamically) inside
-			":try" and ":endtry" is converted to an exception.  It
-			can be caught as if it were thrown by a |:throw|
-			command (see |:catch|).  In this case, the script
+			`:try` and `:endtry` is converted to an exception.  It
+			can be caught as if it were thrown by a `:throw`
+			command (see `:catch`).  In this case, the script
 			processing is not terminated.
 
 			The value "Vim:Interrupt" is used for an interrupt
@@ -3577,13 +3655,16 @@ text...
 		try | sleep 100 | catch /^Vim:Interrupt$/ | endtry
 		try | edit | catch /^Vim(edit):E\d\+/ | echo "error" | endtry
 <
+			In |Vim9| script `:endtry` cannot be shortened, to
+			improve script readability.
+
 					*:cat* *:catch*
 					*E603* *E604* *E605* *E654* *E1033*
-:cat[ch] /{pattern}/	The following commands until the next |:catch|,
-			|:finally|, or |:endtry| that belongs to the same
-			|:try| as the ":catch" are executed when an exception
+:cat[ch] /{pattern}/	The following commands until the next `:catch`,
+			`:finally`, or `:endtry` that belongs to the same
+			`:try` as the `:catch` are executed when an exception
 			matching {pattern} is being thrown and has not yet
-			been caught by a previous ":catch".  Otherwise, these
+			been caught by a previous `:catch`.  Otherwise, these
 			commands are skipped.
 			When {pattern} is omitted all errors are caught.
 			Examples: >
@@ -3605,29 +3686,35 @@ text...
 			NOTE: It is not reliable to ":catch" the TEXT of
 			an error message because it may vary in different
 			locales.
+			In |Vim9| script `:catch` cannot be shortened, to
+			improve script readability.
 
 					*:fina* *:finally* *E606* *E607*
-:fina[lly]		The following commands until the matching |:endtry|
+:fina[lly]		The following commands until the matching `:endtry`
 			are executed whenever the part between the matching
-			|:try| and the ":finally" is left:  either by falling
-			through to the ":finally" or by a |:continue|,
-			|:break|, |:finish|, or |:return|, or by an error or
-			interrupt or exception (see |:throw|).
+			`:try` and the `:finally` is left:  either by falling
+			through to the `:finally` or by a `:continue`,
+			`:break`, `:finish`, or `:return`, or by an error or
+			interrupt or exception (see `:throw`).
+
+			In |Vim9| script `:finally` cannot be shortened, to
+			improve script readability and avoid confusion with
+			`:final`.
 
 						*:th* *:throw* *E608* *E1129*
 :th[row] {expr1}	The {expr1} is evaluated and thrown as an exception.
-			If the ":throw" is used after a |:try| but before the
-			first corresponding |:catch|, commands are skipped
-			until the first ":catch" matching {expr1} is reached.
-			If there is no such ":catch" or if the ":throw" is
-			used after a ":catch" but before the |:finally|, the
-			commands following the ":finally" (if present) up to
-			the matching |:endtry| are executed.  If the ":throw"
-			is after the ":finally", commands up to the ":endtry"
+			If the ":throw" is used after a `:try` but before the
+			first corresponding `:catch`, commands are skipped
+			until the first `:catch` matching {expr1} is reached.
+			If there is no such `:catch` or if the ":throw" is
+			used after a `:catch` but before the `:finally`, the
+			commands following the `:finally` (if present) up to
+			the matching `:endtry` are executed.  If the `:throw`
+			is after the `:finally`, commands up to the `:endtry`
 			are skipped.  At the ":endtry", this process applies
-			again for the next dynamically surrounding ":try"
+			again for the next dynamically surrounding `:try`
 			(which may be found in a calling function or sourcing
-			script), until a matching ":catch" has been found.
+			script), until a matching `:catch` has been found.
 			If the exception is not caught, the command processing
 			is terminated.
 			Example: >
@@ -3636,13 +3723,16 @@ text...
 			for when an error causes the parsing to skip the whole
 			line and not see the "|" that separates the commands.
 
+			In |Vim9| script `:throw` cannot be shortened, to
+			improve script readability.
+
 							*:ec* *:echo*
 :ec[ho] {expr1} ..	Echoes each {expr1}, with a space in between.  The
 			first {expr1} starts on a new line.
 			Also see |:comment|.
 			Use "\n" to start a new line.  Use "\r" to move the
 			cursor to the first column.
-			Uses the highlighting set by the |:echohl| command.
+			Uses the highlighting set by the `:echohl` command.
 			Cannot be followed by a comment.
 			Example: >
 		:echo "the value of 'shell' is" &shell
@@ -3651,21 +3741,21 @@ text...
 			And since Vim mostly postpones redrawing until it's
 			finished with a sequence of commands this happens
 			quite often.  To avoid that a command from before the
-			":echo" causes a redraw afterwards (redraws are often
+			`:echo` causes a redraw afterwards (redraws are often
 			postponed until you type something), force a redraw
-			with the |:redraw| command.  Example: >
+			with the `:redraw` command.  Example: >
 		:new | redraw | echo "there is a new window"
 <
 							*:echon*
 :echon {expr1} ..	Echoes each {expr1}, without anything added.  Also see
 			|:comment|.
-			Uses the highlighting set by the |:echohl| command.
+			Uses the highlighting set by the `:echohl` command.
 			Cannot be followed by a comment.
 			Example: >
 				:echon "the value of 'shell' is " &shell
 <
-			Note the difference between using ":echo", which is a
-			Vim command, and ":!echo", which is an external shell
+			Note the difference between using `:echo`, which is a
+			Vim command, and `:!echo`, which is an external shell
 			command: >
 		:!echo %		--> filename
 <			The arguments of ":!" are expanded, see |:_%|. >
@@ -3681,8 +3771,8 @@ text...
 
 							*:echoh* *:echohl*
 :echoh[l] {name}	Use the highlight group {name} for the following
-			|:echo|, |:echon| and |:echomsg| commands.  Also used
-			for the |input()| prompt.  Example: >
+			`:echo`, `:echon` and `:echomsg` commands.  Also used
+			for the `input()` prompt.  Example: >
 		:echohl WarningMsg | echo "Don't panic!" | echohl None
 <			Don't forget to set the group back to "None",
 			otherwise all following echo's will be highlighted.
@@ -3691,14 +3781,14 @@ text...
 :echom[sg] {expr1} ..	Echo the expression(s) as a true message, saving the
 			message in the |message-history|.
 			Spaces are placed between the arguments as with the
-			|:echo| command.  But unprintable characters are
+			`:echo` command.  But unprintable characters are
 			displayed, not interpreted.
-			The parsing works slightly different from |:echo|,
-			more like |:execute|.  All the expressions are first
+			The parsing works slightly different from `:echo`,
+			more like `:execute`.  All the expressions are first
 			evaluated and concatenated before echoing anything.
 			If expressions does not evaluate to a Number or
 			String, string() is used to turn it into a string.
-			Uses the highlighting set by the |:echohl| command.
+			Uses the highlighting set by the `:echohl` command.
 			Example: >
 		:echomsg "It's a Zizzer Zazzer Zuzz, as you can plainly see."
 <			See |:echo-redraw| to avoid the message disappearing
@@ -3708,12 +3798,12 @@ text...
 			message in the |message-history|.  When used in a
 			script or function the line number will be added.
 			Spaces are placed between the arguments as with the
-			|:echomsg| command.  When used inside a try conditional,
+			`:echomsg` command.  When used inside a try conditional,
 			the message is raised as an error exception instead
 			(see |try-echoerr|).
 			Example: >
 		:echoerr "This script just failed!"
-<			If you just want a highlighted message use |:echohl|.
+<			If you just want a highlighted message use `:echohl`.
 			And to get a beep: >
 		:exe "normal \<Esc>"
 
@@ -4026,7 +4116,7 @@ exception most recently caught as long it is not finished.
 
 	:function! Caught()
 	:  if v:exception != ""
-	:    echo 'Caught "' . v:exception . '" in ' . v:throwpoint
+	:    echo 'Caught "' . v:exception .. '" in ' .. v:throwpoint
 	:  else
 	:    echo 'Nothing caught'
 	:  endif
@@ -4429,8 +4519,8 @@ a script in order to catch unexpected things.
 	:catch /^Vim:Interrupt$/
 	:    echo "Script interrupted"
 	:catch /.*/
-	:  echo "Internal error (" . v:exception . ")"
-	:  echo " - occurred at " . v:throwpoint
+	:  echo "Internal error (" .. v:exception .. ")"
+	:  echo " - occurred at " .. v:throwpoint
 	:endtry
 	:" end of script
 
@@ -4626,7 +4716,7 @@ parentheses can be cut out from |v:exception| with the ":substitute" command.
 
 	:function! CheckRange(a, func)
 	:  if a:a < 0
-	:    throw "EXCEPT:MATHERR:RANGE(" . a:func . ")"
+	:    throw "EXCEPT:MATHERR:RANGE(" .. a:func .. ")"
 	:  endif
 	:endfunction
 	:
@@ -4653,13 +4743,13 @@ parentheses can be cut out from |v:exception| with the ":substitute" command.
 	:  try
 	:    execute "write" fnameescape(a:file)
 	:  catch /^Vim(write):/
-	:    throw "EXCEPT:IO(" . getcwd() . ", " . a:file . "):WRITEERR"
+	:    throw "EXCEPT:IO(" .. getcwd() .. ", " .. a:file .. "):WRITEERR"
 	:  endtry
 	:endfunction
 	:
 	:try
 	:
-	:  " something with arithmetics and I/O
+	:  " something with arithmetic and I/O
 	:
 	:catch /^EXCEPT:MATHERR:RANGE/
 	:  let function = substitute(v:exception, '.*(\(\a\+\)).*', '\1', "")
@@ -4672,9 +4762,9 @@ parentheses can be cut out from |v:exception| with the ":substitute" command.
 	:  let dir = substitute(v:exception, '.*(\(.\+\),\s*.\+).*', '\1', "")
 	:  let file = substitute(v:exception, '.*(.\+,\s*\(.\+\)).*', '\1', "")
 	:  if file !~ '^/'
-	:    let file = dir . "/" . file
+	:    let file = dir .. "/" .. file
 	:  endif
-	:  echo 'I/O error for "' . file . '"'
+	:  echo 'I/O error for "' .. file .. '"'
 	:
 	:catch /^EXCEPT/
 	:  echo "Unspecified error"
@@ -4742,7 +4832,7 @@ clauses, however, is executed.
 	:    echo "inner finally"
 	:  endtry
 	:catch
-	:  echo 'outer catch-all caught "' . v:exception . '"'
+	:  echo 'outer catch-all caught "' .. v:exception .. '"'
 	:  finally
 	:    echo "outer finally"
 	:endtry
@@ -4804,7 +4894,7 @@ Printing in Binary ~
   :  let n = a:nr
   :  let r = ""
   :  while n
-  :    let r = '01'[n % 2] . r
+  :    let r = '01'[n % 2] .. r
   :    let n = n / 2
   :  endwhile
   :  return r
@@ -4815,7 +4905,7 @@ Printing in Binary ~
   :func String2Bin(str)
   :  let out = ''
   :  for ix in range(strlen(a:str))
-  :    let out = out . '-' . Nr2Bin(char2nr(a:str[ix]))
+  :    let out = out .. '-' .. Nr2Bin(char2nr(a:str[ix]))
   :  endfor
   :  return out[1:]
   :endfunc

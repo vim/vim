@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2022 Jan 21
+*repeat.txt*    For Vim version 8.2.  Last change: 2022 Apr 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -197,6 +197,41 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 :so[urce] {file}	Read Ex commands from {file}.  These are commands that
 			start with a ":".
 			Triggers the |SourcePre| autocommand.
+
+:[range]so[urce] [++clear]
+			Read Ex commands from the [range] of lines in the
+			current buffer.
+
+			When sourcing commands from the current buffer, the
+			same script-ID |<SID>| is used even if the buffer is
+			sourced multiple times. If a buffer is sourced more
+			than once, then the functions in the buffer are
+			defined again.
+
+			To source a range of lines that doesn't start with the
+			|:vim9script| command in Vim9 script context, the
+			|:vim9cmd| modifier can be used.  If you use a Visual
+			selection and type ":", the range in the form "'<,'>"
+			can come before it: >
+				:'<,'>vim9cmd source
+<			Otherwise the range goes after the modifier and must
+			have a colon prefixed, like all Vim9 ranges: >
+				:vim9cmd :5,9source
+
+<			When a range of lines in a buffer is sourced in the
+			Vim9 script context, the previously defined
+			script-local variables and functions are not cleared.
+			This works like the range started with the
+			":vim9script noclear" command.  The "++clear" argument
+			can be used to clear the script-local variables and
+			functions before sourcing the script. This works like
+			the range started with the `:vim9script` command
+			without the "noclear" argument. See |vim9-reload| for
+			more information.
+			Examples: >
+				:4,5source
+				:10,18source ++clear
+
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
 			that are executed from Normal mode, like you type
@@ -419,10 +454,10 @@ An alternative is to put the commands in a file, and execute them with the
 ':source!' command.  Useful for long command sequences.  Can be combined with
 the ':map' command to put complicated commands under a function key.
 
-The ':source' command reads Ex commands from a file line by line.  You will
-have to type any needed keyboard input.  The ':source!' command reads from a
-script file character by character, interpreting each character as if you
-typed it.
+The ':source' command reads Ex commands from a file or a buffer line by line.
+You will have to type any needed keyboard input.  The ':source!' command reads
+from a script file character by character, interpreting each character as if
+you typed it.
 
 Example: When you give the ":!ls" command you get the |hit-enter| prompt.  If
 you ':source' a file with the line "!ls" in it, you will have to type the
@@ -1008,18 +1043,24 @@ For example, to profile the one_script.vim script file: >
 
 
 :prof[ile] start {fname}			*:prof* *:profile* *E750*
-		Start profiling, write the output in {fname} upon exit.
+		Start profiling, write the output in {fname} upon exit or when
+		a `:profile stop` or `:profile dump` command is invoked.
 		"~/" and environment variables in {fname} will be expanded.
 		If {fname} already exists it will be silently overwritten.
 		The variable |v:profiling| is set to one.
 
+:prof[ile] stop
+		Write the collected profiling information to the logfile and
+		stop profiling. You can use the `:profile start` command to
+		clear the profiling statistics and start profiling again.
+
 :prof[ile] pause
-		Don't profile until the following ":profile continue".  Can be
+		Don't profile until the following `:profile continue`.  Can be
 		used when doing something that should not be counted (e.g., an
 		external command).  Does not nest.
 
 :prof[ile] continue
-		Continue profiling after ":profile pause".
+		Continue profiling after `:profile pause`.
 
 :prof[ile] func {pattern}
 		Profile function that matches the pattern {pattern}.
@@ -1036,11 +1077,17 @@ For example, to profile the one_script.vim script file: >
 		after this command.  A :profile command in the script itself
 		won't work.
 
+:prof[ile] dump
+		Write the current state of profiling to the logfile
+		immediately.  After running this command, Vim continues to
+		collect the profiling statistics.
 
 :profd[el] ...						*:profd* *:profdel*
 		Stop profiling for the arguments specified. See |:breakdel|
-		for the arguments.
-
+		for the arguments. Examples: >
+			profdel func MyFunc
+			profdel file MyScript.vim
+			profdel here
 
 You must always start with a ":profile start fname" command.  The resulting
 file is written when Vim exits.  For example, to profile one specific

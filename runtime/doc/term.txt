@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.2.  Last change: 2021 Dec 21
+*term.txt*      For Vim version 8.2.  Last change: 2022 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -386,9 +386,10 @@ Added by Vim (there are no standard codes for these):
 	t_SR	start replace mode (underline cursor shape)	*t_SR* *'t_SR'*
 	t_EI	end insert or replace mode (block cursor shape)	*t_EI* *'t_EI'*
 		|termcap-cursor-shape|
-	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
-		The response is stored in |v:termresponse|
-		|xterm-8bit| |'ttymouse'| |xterm-codes|
+	t_RV	request terminal version string (works for	*t_RV* *'t_RV'*
+		xterm and other terminal emulators)  The
+		response is stored in |v:termresponse| |xterm-8bit|
+		|'ttymouse'| |xterm-codes|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
 		see |'ambiwidth'|
 		The response is stored in |v:termu7resp|
@@ -725,12 +726,12 @@ size is wrong you can use the 'lines' and 'columns' options to set the
 correct values.
 
 One command can be used to set the screen size:
-
 						*:mod* *:mode* *E359*
 :mod[e] [mode]
 
 Without argument this only detects the screen size and redraws the screen.
-[mode] was used on MS-DOS, but it doesn't work anymore.
+[mode] was used on MS-DOS, but it doesn't work anymore.  In |Vim9| this
+command is not supported.
 
 ==============================================================================
 4. Slow and fast terminals			*slow-fast-terminal*
@@ -833,7 +834,7 @@ select and copy the text to the system, then press Esc.
 Another way is to temporarily use ":sh" to run a shell, copy the text, then
 exit the shell.  'mouse' can remain set to "a" then.
 							*xterm-clipboard*
-In the Athena and Motif GUI versions, when running in a terminal and there is
+In the Motif GUI version, when running in a terminal and there is
 access to the X-server (DISPLAY is set), the copy and paste will behave like
 in the GUI.  If not, the middle mouse button will insert the unnamed register.
 In that case, here is how you copy and paste a piece of text:
@@ -984,7 +985,7 @@ an #if/#else/#endif block, the selection becomes linewise.
 For MS-Windows and xterm the time for double clicking can be set with the
 'mousetime' option.  For the other systems this time is defined outside of Vim.
 An example, for using a double click to jump to the tag under the cursor: >
-	:map <2-LeftMouse> :exe "tag ". expand("<cword>")<CR>
+	:map <2-LeftMouse> :exe "tag " .. expand("<cword>")<CR>
 
 Dragging the mouse with a double click (button-down, button-up, button-down
 and then drag) will result in whole words to be selected.  This continues

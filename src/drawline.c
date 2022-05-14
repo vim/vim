@@ -330,7 +330,7 @@ win_line(
 #endif
 #ifdef FEAT_SPELL
     int		has_spell = FALSE;	// this buffer has spell checking
-    int		can_spell;
+    int		can_spell = FALSE;
 # define SPWORDLEN 150
     char_u	nextline[SPWORDLEN * 2];// text with start of the next line
     int		nextlinecol = 0;	// column where nextline[] starts
@@ -354,6 +354,8 @@ win_line(
 #if defined(FEAT_DIFF) || defined(FEAT_SIGNS)
     int		filler_lines = 0;	// nr of filler lines to be drawn
     int		filler_todo = 0;	// nr of filler lines still to do + 1
+#else
+# define filler_lines 0
 #endif
 #ifdef FEAT_DIFF
     hlf_T	diff_hlf = (hlf_T)0;	// type of diff highlighting
@@ -943,8 +945,7 @@ win_line(
     if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
     {
 	// Do not show the cursor line in the text when Visual mode is active,
-	// because it's not clear what is selected then.  Do update
-	// w_last_cursorline.
+	// because it's not clear what is selected then.
 	if (!(wp == curwin && VIsual_active)
 					 && wp->w_p_culopt_flags != CULOPT_NBR)
 	{
@@ -969,18 +970,14 @@ win_line(
 		else
 # endif
 		    line_attr = cul_attr;
-		wp->w_last_cursorline = wp->w_cursor.lnum;
 	    }
 	    else
 	    {
 		line_attr_save = line_attr;
-		wp->w_last_cursorline = 0;
 		margin_columns_win(wp, &left_curline_col, &right_curline_col);
 	    }
 	    area_highlighting = TRUE;
 	}
-	else
-	    wp->w_last_cursorline = wp->w_cursor.lnum;
     }
 #endif
 
@@ -1107,10 +1104,7 @@ win_line(
 		// Display the absolute or relative line number. After the
 		// first fill with blanks when the 'n' flag isn't in 'cpo'
 		if ((wp->w_p_nu || wp->w_p_rnu)
-			&& (row == startrow
-#ifdef FEAT_DIFF
-			    + filler_lines
-#endif
+			&& (row == startrow + filler_lines
 			    || vim_strchr(p_cpo, CPO_NUMCOL) == NULL))
 		{
 #ifdef FEAT_SIGNS
@@ -1127,11 +1121,7 @@ win_line(
 #endif
 		    {
 		      // Draw the line number (empty space after wrapping).
-		      if (row == startrow
-#ifdef FEAT_DIFF
-			    + filler_lines
-#endif
-			    )
+		      if (row == startrow + filler_lines)
 		      {
 			long num;
 			char *fmt = "%*ld ";
@@ -1187,15 +1177,16 @@ win_line(
 #ifdef FEAT_SYN_HL
 		      // When 'cursorline' is set highlight the line number of
 		      // the current line differently.
-		      // When 'cursorlineopt' has "screenline" only highlight
-		      // the line number itself.
+		      // When 'cursorlineopt' does not have "line" only
+		      // highlight the line number itself.
 		      // TODO: Can we use CursorLine instead of CursorLineNr
 		      // when CursorLineNr isn't set?
 		      if (wp->w_p_cul
 			      && lnum == wp->w_cursor.lnum
 			      && (wp->w_p_culopt_flags & CULOPT_NBR)
-			      && (row == startrow
-				  || wp->w_p_culopt_flags & CULOPT_LINE))
+			      && (row == startrow + filler_lines
+				  || (row > startrow + filler_lines
+				     && (wp->w_p_culopt_flags & CULOPT_LINE))))
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
 		      if (wp->w_p_rnu && lnum < wp->w_cursor.lnum
@@ -1230,8 +1221,7 @@ win_line(
 	    {
 		draw_state = WL_BRI;
 		// if need_showbreak is set, breakindent also applies
-		if (wp->w_p_bri && n_extra == 0
-					 && (row != startrow || need_showbreak)
+		if (wp->w_p_bri && (row != startrow || need_showbreak)
 # ifdef FEAT_DIFF
 			&& filler_lines == 0
 # endif
@@ -1973,7 +1963,7 @@ win_line(
 			// In Insert mode only highlight a word that
 			// doesn't touch the cursor.
 			if (spell_hlf != HLF_COUNT
-				&& (State & INSERT) != 0
+				&& (State & MODE_INSERT)
 				&& wp->w_cursor.lnum == lnum
 				&& wp->w_cursor.col >=
 						    (colnr_T)(prev_ptr - line)
@@ -2487,14 +2477,16 @@ win_line(
 
 #ifdef FEAT_CONCEAL
 	    if (   wp->w_p_cole > 0
-		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
-						       conceal_cursor_line(wp))
+		&& (wp != curwin || lnum != wp->w_cursor.lnum
+						    || conceal_cursor_line(wp))
 		&& ((syntax_flags & HL_CONCEAL) != 0 || has_match_conc > 0)
 		&& !(lnum_in_visual_area
 				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		char_attr = conceal_attr;
-		if ((prev_syntax_id != syntax_seqnr || has_match_conc > 1)
+		if (((prev_syntax_id != syntax_seqnr
+					   && (syntax_flags & HL_CONCEAL) != 0)
+			    || has_match_conc > 1)
 			&& (syn_get_sub_char() != NUL
 				|| (has_match_conc && match_conc)
 				|| wp->w_p_cole == 1)
@@ -2605,7 +2597,7 @@ win_line(
 	if (p_imst == IM_ON_THE_SPOT
 		&& xic != NULL
 		&& lnum == wp->w_cursor.lnum
-		&& (State & INSERT)
+		&& (State & MODE_INSERT)
 		&& !p_imdisable
 		&& im_is_preediting()
 		&& draw_state == WL_LINE)

@@ -139,7 +139,7 @@ compile_unlet(
 	//
 	// Figure out the LHS type and other properties.
 	//
-	ret = compile_lhs(p, &lhs, CMD_unlet, FALSE, 0, cctx);
+	ret = compile_lhs(p, &lhs, CMD_unlet, FALSE, FALSE, 0, cctx);
 
 	// Use the info in "lhs" to unlet the item at the index in the
 	// list or dict.
@@ -1206,6 +1206,7 @@ compile_continue(char_u *arg, cctx_T *cctx)
 compile_break(char_u *arg, cctx_T *cctx)
 {
     scope_T	*scope = cctx->ctx_scope;
+    int		try_scopes = 0;
     endlabel_T	**el;
 
     for (;;)
@@ -1215,16 +1216,29 @@ compile_break(char_u *arg, cctx_T *cctx)
 	    emsg(_(e_break_without_while_or_for));
 	    return NULL;
 	}
-	if (scope->se_type == FOR_SCOPE || scope->se_type == WHILE_SCOPE)
+	if (scope->se_type == FOR_SCOPE)
+	{
+	    el = &scope->se_u.se_for.fs_end_label;
 	    break;
+	}
+	if (scope->se_type == WHILE_SCOPE)
+	{
+	    el = &scope->se_u.se_while.ws_end_label;
+	    break;
+	}
+	if (scope->se_type == TRY_SCOPE)
+	    ++try_scopes;
 	scope = scope->se_outer;
     }
 
-    // Jump to the end of the FOR or WHILE loop.
-    if (scope->se_type == FOR_SCOPE)
-	el = &scope->se_u.se_for.fs_end_label;
-    else
-	el = &scope->se_u.se_while.ws_end_label;
+    if (try_scopes > 0)
+	// Inside one or more try/catch blocks we first need to jump to the
+	// "finally" or "endtry" to cleanup.  Then come to the next JUMP
+	// intruction, which we don't know the index of yet.
+	generate_TRYCONT(cctx, try_scopes, cctx->ctx_instr.ga_len + 1);
+
+    // Jump to the end of the FOR or WHILE loop.  The instruction index will be
+    // filled in later.
     if (compile_jump_to_end(el, JUMP_ALWAYS, cctx) == FAIL)
 	return FAIL;
 
@@ -1599,8 +1613,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	// End :catch or :finally scope: set instruction index in ISN_TRY
 	// instruction
 	try_isn->isn_arg.tryref.try_ref->try_endtry = instr->ga_len;
-	if (cctx->ctx_skip != SKIP_YES
-				   && generate_instr(cctx, ISN_ENDTRY) == NULL)
+	if (generate_instr(cctx, ISN_ENDTRY) == NULL)
 	    return NULL;
 #ifdef FEAT_PROFILE
 	if (cctx->ctx_compile_type == CT_PROFILE)
@@ -1753,7 +1766,7 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
 
     if (eap->regname == '=')
     {
-	char_u *p = line + 1;
+	char_u *p = skipwhite(line + 1);
 
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return NULL;
@@ -1835,7 +1848,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	if ((argt & EX_TRLBAR) && !usefilter)
 	{
 	    eap->argt = argt;
-	    separate_nextcmd(eap);
+	    separate_nextcmd(eap, TRUE);
 	    if (eap->nextcmd != NULL)
 		nextcmd = eap->nextcmd;
 	}
@@ -1862,7 +1875,7 @@ compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx)
 	    if (*p == '{')
 	    {
 		exarg_T ea;
-		int	flags;  // unused
+		int	flags = 0;  // unused
 		int	start_lnum = SOURCING_LNUM;
 
 		CLEAR_FIELD(ea);
@@ -2112,7 +2125,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	    generate_instr_type(cctx, ISN_REDIREND, &t_string);
 
 	    if (lhs->lhs_append)
-		generate_instr_drop(cctx, ISN_CONCAT, 1);
+		generate_CONCAT(cctx, 2);
 
 	    if (lhs->lhs_has_index)
 	    {
@@ -2147,7 +2160,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	arg = skipwhite(arg);
 
 	if (compile_assign_lhs(arg, lhs, CMD_redir,
-						FALSE, FALSE, 1, cctx) == FAIL)
+					 FALSE, FALSE, FALSE, 1, cctx) == FAIL)
 	    return NULL;
 	if (need_type(&t_string, lhs->lhs_member_type,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
@@ -2244,8 +2257,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    // return type here.
 	    stack_type = get_type_on_stack(cctx, 0);
 	    if ((check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
-				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown
-				|| cctx->ctx_ufunc->uf_ret_type == &t_any))
+				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown))
 		    || (!check_return_type
 				&& cctx->ctx_ufunc->uf_ret_type == &t_unknown))
 	    {

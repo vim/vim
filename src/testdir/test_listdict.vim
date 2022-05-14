@@ -721,10 +721,13 @@ func Test_list_locked_var_unlet()
     endfor
   endfor
 
-  " Deleting a list range should fail if the range is locked
+  " Deleting a list range with locked items works, but changing the items
+  " fails.
   let l = [1, 2, 3, 4]
   lockvar l[1:2]
-  call assert_fails('unlet l[1:2]', 'E741:')
+  call assert_fails('let l[1:2] = [8, 9]', 'E741:')
+  unlet l[1:2]
+  call assert_equal([1, 4], l)
   unlet l
 endfunc
 
@@ -949,7 +952,7 @@ func Test_reverse_sort_uniq()
         call assert_equal([-1, 'one', 'two', 'three', 'four', 1.0e-15, 0.22, 7, 9, 12, 18, 22, 255], sort(copy(l), 'n'))
 
         LET l = [7, 9, 18, 12, 22, 10.0e-16, -1, 0xff, 0, -0, 0.22, 'bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', {}, []]
-        call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 1))
+        call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 'i'))
         call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 'i'))
         call assert_equal(['BAR', 'Bar', 'FOO', 'FOOBAR', 'Foo', 'bar', 'foo', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l)))
       endif
@@ -961,6 +964,16 @@ func Test_reverse_sort_uniq()
   call assert_fails("call sort([1, 2], function('min'), 1)", "E715:")
   call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")
   call assert_fails("call sort([1, 2], function('min'))", "E118:")
+
+  let lines =<< trim END
+    call sort(['a', 'b'], 0)
+  END
+  call v9.CheckDefAndScriptFailure(lines, 'E1256: String or function required for argument 2')
+
+  let lines =<< trim END
+    call sort(['a', 'b'], 1)
+  END
+  call v9.CheckDefAndScriptFailure(lines, 'E1256: String or function required for argument 2')
 endfunc
 
 " reduce a list, blob or string
@@ -1004,6 +1017,7 @@ func Test_reduce()
 
   call assert_fails("call reduce([], { acc, val -> acc + val })", 'E998: Reduce of an empty List with no initial value')
   call assert_fails("call reduce(0z, { acc, val -> acc + val })", 'E998: Reduce of an empty Blob with no initial value')
+  call assert_fails("call reduce(test_null_blob(), { acc, val -> acc + val })", 'E998: Reduce of an empty Blob with no initial value')
   call assert_fails("call reduce('', { acc, val -> acc + val })", 'E998: Reduce of an empty String with no initial value')
   call assert_fails("call reduce(test_null_string(), { acc, val -> acc + val })", 'E998: Reduce of an empty String with no initial value')
 
@@ -1021,8 +1035,8 @@ func Test_reduce()
   call assert_fails("call reduce('', { acc, val -> acc + val }, 0.1)", 'E1253:')
   call assert_fails("call reduce('', { acc, val -> acc + val }, function('tr'))", 'E1253:')
   call assert_fails("call reduce('abc', { a, v -> a10}, '')", 'E121:')
-  call assert_fails("call reduce(0z01, { a, v -> a10}, 1)", 'E121:')
-  call assert_fails("call reduce([1], { a, v -> a10}, '')", 'E121:')
+  call assert_fails("call reduce(0z0102, { a, v -> a10}, 1)", 'E121:')
+  call assert_fails("call reduce([1, 2], { a, v -> a10}, '')", 'E121:')
 
   let g:lut = [1, 2, 3, 4]
   func EvilRemove()

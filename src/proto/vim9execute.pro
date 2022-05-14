@@ -1,10 +1,12 @@
 /* vim9execute.c */
 void to_string_error(vartype_T vartype);
+void update_has_breakpoint(ufunc_T *ufunc);
 void funcstack_check_refcount(funcstack_T *funcstack);
 int set_ref_in_funcstacks(int copyID);
 char_u *char_from_string(char_u *str, varnumber_T index);
 char_u *string_slice(char_u *str, varnumber_T first, varnumber_T last, int exclusive);
 int fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx);
+int may_load_script(int sid, int *loaded);
 typval_T *lookup_debug_var(char_u *name);
 int may_break_in_function(ufunc_T *ufunc);
 int exe_typval_instr(typval_T *tv, typval_T *rettv);

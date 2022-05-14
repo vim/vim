@@ -2,6 +2,7 @@
 " Maintainer:		Jón Arnar Briem <jonbriem@gmail.com>
 " Originally By:	Jón Arnar Briem <jonbriem@gmail.com>
 " Last Change:	Sun, 24 Mar 2019 22:40:00 CEST
+" Original translations
 " vim:set foldmethod=marker tabstop=8:
 
 " Quit when menu translations have already been done.

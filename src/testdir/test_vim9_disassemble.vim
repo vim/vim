@@ -187,6 +187,26 @@ def Test_disassemble_seachpair()
 enddef
 
 
+def s:SubstituteExpr()
+    substitute('a', 'b', '\=123', 'g')
+enddef
+
+def Test_disassemble_substitute_expr()
+  var res = execute('disass s:SubstituteExpr')
+  assert_match('<SNR>\d*_SubstituteExpr.*' ..
+        'substitute(''a'', ''b'', ''\\=123'', ''g'')\_s*' ..
+        '\d PUSHS "a"\_s*' ..
+        '\d PUSHS "b"\_s*' ..
+        '\d INSTR\_s*' ..
+        '  0 PUSHNR 123\_s*' ..
+        ' -------------\_s*' ..
+        '\d PUSHS "g"\_s*' ..
+        '\d BCALL substitute(argc 4)\_s*' ..
+        '\d DROP\_s*' ..
+        '\d RETURN void',
+        res)
+enddef
+
 def s:RedirVar()
   var result: string
   redir =>> result
@@ -208,7 +228,7 @@ def Test_disassemble_redir_var()
         ' redir END\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d REDIR END\_s*' ..
-        '\d CONCAT\_s*' ..
+        '\d CONCAT size 2\_s*' ..
         '\d STORE $0\_s*' ..
         '\d RETURN void',
         res)
@@ -265,6 +285,7 @@ enddef
 
 def s:PutRange()
   :$-2put a
+  :$-3put! b
 enddef
 
 def Test_disassemble_put_range()
@@ -273,6 +294,10 @@ def Test_disassemble_put_range()
         ' :$-2put a\_s*' ..
         '\d RANGE $-2\_s*' ..
         '\d PUT a range\_s*' ..
+
+        ' :$-3put! b\_s*' ..
+        '\d RANGE $-3\_s*' ..
+        '\d PUT b above range\_s*' ..
         '\d RETURN void',
         res)
 enddef
@@ -316,6 +341,46 @@ def Test_disassemble_push()
 
   delete('Xdir', 'rf')
   &rtp = save_rtp
+enddef
+
+def Test_disassemble_import_autoload()
+  writefile(['vim9script'], 'XimportAL.vim')
+
+  var lines =<< trim END
+      vim9script
+      import autoload './XimportAL.vim'
+
+      def AutoloadFunc()
+        echo XimportAL.SomeFunc()
+        echo XimportAL.someVar
+        XimportAL.someVar = "yes"
+      enddef
+
+      var res = execute('disass AutoloadFunc')
+      assert_match('<SNR>\d*_AutoloadFunc.*' ..
+            'echo XimportAL.SomeFunc()\_s*' ..
+            '\d SOURCE .*/testdir/XimportAL.vim\_s*' ..
+            '\d PUSHFUNC "<80><fd>R\d\+_SomeFunc"\_s*' ..
+            '\d PCALL top (argc 0)\_s*' ..
+            '\d PCALL end\_s*' ..
+            '\d ECHO 1\_s*' ..
+
+            'echo XimportAL.someVar\_s*' ..
+            '\d SOURCE .*/testdir/XimportAL.vim\_s*' ..
+            '\d LOADEXPORT s:someVar from .*/testdir/XimportAL.vim\_s*' ..
+            '\d ECHO 1\_s*' ..
+
+            'XimportAL.someVar = "yes"\_s*' ..
+            '\d\+ PUSHS "yes"\_s*' ..
+            '\d\+ SOURCE .*/testdir/XimportAL.vim\_s*' ..
+            '\d\+ STOREEXPORT someVar in .*/testdir/XimportAL.vim\_s*' ..
+
+            '\d\+ RETURN void',
+            res)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delete('XimportAL.vim')
 enddef
 
 def s:ScriptFuncStore()
@@ -414,6 +479,58 @@ def Test_disassemble_store_member()
         '\d\+ RETURN void',
         res)
 enddef
+
+if has('job')
+  def s:StoreNull()
+    var ss = null_string
+    var bb = null_blob
+    var dd = null_dict
+    var ll = null_list
+    var Ff = null_function
+    var Pp = null_partial
+    var jj = null_job
+    var cc = null_channel
+  enddef
+
+  def Test_disassemble_assign_null()
+    var res = execute('disass s:StoreNull')
+    assert_match('<SNR>\d*_StoreNull\_s*' ..
+          'var ss = null_string\_s*' ..
+          '\d\+ PUSHS "\[NULL\]"\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var bb = null_blob\_s*' ..
+          '\d\+ PUSHBLOB 0z\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var dd = null_dict\_s*' ..
+          '\d\+ NEWDICT size -1\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var ll = null_list\_s*' ..
+          '\d\+ NEWLIST size -1\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var Ff = null_function\_s*' ..
+          '\d\+ PUSHFUNC "\[none\]"\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var Pp = null_partial\_s*' ..
+          '\d\+ NEWPARTIAL\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var jj = null_job\_s*' ..
+          '\d\+ PUSHJOB "no process"\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          'var cc = null_channel\_s*' ..
+          '\d\+ PUSHCHANNEL 0\_s*' ..
+          '\d\+ STORE $\d\_s*' ..
+
+          '\d\+ RETURN void',
+          res)
+  enddef
+endif
 
 def s:ScriptFuncStoreIndex()
   var d = {dd: {}}
@@ -592,6 +709,10 @@ def s:ScriptFuncUnlet()
   unlet g:somevar
   unlet! g:somevar
   unlet $SOMEVAR
+
+  var l = [1, 2, 3]
+  unlet l[2]
+  unlet l[0 : 1]
 enddef
 
 def Test_disassemble_unlet()
@@ -605,13 +726,33 @@ def Test_disassemble_unlet()
         'unlet! g:somevar\_s*' ..
         '\d UNLET! g:somevar\_s*' ..
         'unlet $SOMEVAR\_s*' ..
-        '\d UNLETENV $SOMEVAR\_s*',
+        '\d UNLETENV $SOMEVAR\_s*' ..
+
+        'var l = \[1, 2, 3]\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ PUSHNR 3\_s*' ..
+        '\d\+ NEWLIST size 3\_s*' ..
+        '\d\+ SETTYPE list<number>\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+
+        'unlet l\[2]\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ UNLETINDEX\_s*' ..
+
+        'unlet l\[0 : 1]\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ UNLETRANGE\_s*',
         res)
 enddef
 
 def s:LockLocal()
   var d = {a: 1}
   lockvar d.a
+  const nr = 22
 enddef
 
 def Test_disassemble_lock_local()
@@ -625,7 +766,12 @@ def Test_disassemble_lock_local()
         '\d STORE $0\_s*' ..
         'lockvar d.a\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d LOCKUNLOCK lockvar 2 d.a\_s*',
+        '\d LOCKUNLOCK lockvar 2 d.a\_s*' ..
+
+        'const nr = 22\_s*' ..
+        '\d\+ PUSHNR 22\_s*' ..
+        '\d\+ LOCKCONST\_s*' ..
+        '\d\+ STORE $1',
         res)
 enddef
 
@@ -791,7 +937,7 @@ def Test_disassemble_closure()
         'local ..= arg\_s*' ..
         '\d LOADOUTER level 1 $0\_s*' ..
         '\d LOAD arg\[-1\]\_s*' ..
-        '\d CONCAT\_s*' ..
+        '\d CONCAT size 2\_s*' ..
         '\d STOREOUTER level 1 $0\_s*' ..
         '\d RETURN void',
         res)
@@ -807,6 +953,25 @@ def Test_disassemble_closure()
   unlet g:Get
 enddef
 
+def s:ClosureArg(arg: string)
+  var Ref = () => arg .. "x"
+enddef
+
+def Test_disassemble_closure_arg()
+  var res = execute('disass s:ClosureArg')
+  assert_match('<SNR>\d\+_ClosureArg\_s*' ..
+        'var Ref = () => arg .. "x"\_s*' ..
+        '\d FUNCREF <lambda>\d\+',
+        res)
+  var lres = execute('disass ' .. matchstr(res, '<lambda>\d\+'))
+  assert_match('<lambda>\d\+\_s*' ..
+        'return arg .. "x"\_s*' ..
+        '\d LOADOUTER level 1 arg\[-1]\_s*' ..
+        '\d PUSHS "x"\_s*' ..
+        '\d CONCAT size 2\_s*' ..
+        '\d RETURN',
+         lres)
+enddef
 
 def EchoArg(arg: string): string
   return arg
@@ -881,7 +1046,7 @@ def Test_disassemble_call_default()
         '6 LOAD arg\[-2]\_s*' ..
         '\d LOAD arg\[-1]\_s*' ..
         '\d 2STRING stack\[-1]\_s*' ..
-        '\d\+ CONCAT\_s*' ..
+        '\d\+ CONCAT size 2\_s*' ..
         '\d\+ RETURN',
         res)
 enddef
@@ -923,9 +1088,20 @@ def s:HasGuiRunning()
   endif
 enddef
 
+def s:LenConstant(): number
+  return len("foo") + len("fighters")
+enddef
+
 def Test_disassemble_const_expr()
+  var instr = execute('disassemble LenConstant')
+  assert_match('LenConstant\_s*' ..
+    'return len("foo") + len("fighters")\_s*' ..
+    '\d PUSHNR 11\_s*',
+    instr)
+  assert_notmatch('BCALL len', instr)
+
   assert_equal("\nyes", execute('HasEval()'))
-  var instr = execute('disassemble HasEval')
+  instr = execute('disassemble HasEval')
   assert_match('HasEval\_s*' ..
         'if has("eval")\_s*' ..
         'echo "yes"\_s*' ..
@@ -1142,9 +1318,9 @@ def Test_disassemble_lambda()
         '\d PUSHS "X"\_s*' ..
         '\d LOAD arg\[-1\]\_s*' ..
         '\d 2STRING_ANY stack\[-1\]\_s*' ..
-        '\d CONCAT\_s*' ..
+        '\d CONCAT size 2\_s*' ..
         '\d PUSHS "X"\_s*' ..
-        '\d CONCAT\_s*' ..
+        '\d CONCAT size 2\_s*' ..
         '\d RETURN',
         instr)
 enddef
@@ -1329,7 +1505,7 @@ def Test_disassemble_for_loop_eval()
         '\d\+ LOAD $0\_s*' ..
         '\d\+ LOAD $2\_s*' ..
         '\d 2STRING_ANY stack\[-1\]\_s*' ..
-        '\d\+ CONCAT\_s*' ..
+        '\d\+ CONCAT size 2\_s*' ..
         '\d\+ STORE $0\_s*' ..
         'endfor\_s*' ..
         '\d\+ JUMP -> 5\_s*' ..
@@ -1846,6 +2022,8 @@ def Test_disassemble_compare()
         ['true != isFalse', 'COMPAREBOOL !='],
         ['v:none == isNull', 'COMPARESPECIAL =='],
         ['v:none != isNull', 'COMPARESPECIAL !='],
+        ['"text" == isNull', 'COMPARENULL =='],
+        ['"text" != isNull', 'COMPARENULL !='],
 
         ['111 == aNumber', 'COMPARENR =='],
         ['111 != aNumber', 'COMPARENR !='],
@@ -1950,7 +2128,7 @@ def s:FalsyOp()
   echo "" ?? "empty string"
 enddef
 
-def Test_dsassemble_falsy_op()
+def Test_disassemble_falsy_op()
   var res = execute('disass s:FalsyOp')
   assert_match('\<SNR>\d*_FalsyOp\_s*' ..
       'echo g:flag ?? "yes"\_s*' ..
@@ -2037,7 +2215,7 @@ def Test_disassemble_execute()
         "execute 'help ' .. tag\\_s*" ..
         '\d\+ PUSHS "help "\_s*' ..
         '\d\+ LOAD $1\_s*' ..
-        '\d\+ CONCAT\_s*' ..
+        '\d\+ CONCAT size 2\_s*' ..
         '\d\+ EXECUTE 1\_s*' ..
         '\d\+ RETURN void',
         res)
@@ -2058,6 +2236,33 @@ def Test_disassemble_range_only()
         '\d EXECRANGE 123\_s*' ..
         ':''m\_s*' ..
         '\d EXECRANGE ''m\_s*' ..
+        '\d\+ RETURN void',
+        res)
+enddef
+
+def s:StoreRange()
+  var l = [1, 2]
+  l[0 : 1] = [7, 8]
+enddef
+
+def Test_disassemble_store_range()
+  var res = execute('disass s:StoreRange')
+  assert_match('\<SNR>\d*_StoreRange\_s*' ..
+        'var l = \[1, 2]\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d NEWLIST size 2\_s*' ..
+        '\d SETTYPE list<number>\_s*' ..
+        '\d STORE $0\_s*' ..
+
+        'l\[0 : 1] = \[7, 8]\_s*' ..
+        '\d\+ PUSHNR 7\_s*' ..
+        '\d\+ PUSHNR 8\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ STORERANGE\_s*' ..
         '\d\+ RETURN void',
         res)
 enddef
@@ -2559,6 +2764,22 @@ def Test_disassemble_dict_stack()
         res)
 enddef
 
+def s:RetLegacy(): string
+  legacy return "yes"
+enddef
+
+def Test_disassemble_return_legacy()
+  var res = execute('disass s:RetLegacy')
+  assert_match('<SNR>\d*_RetLegacy\_s*' ..
+          'legacy return "yes"\_s*' ..
+          '\d CMDMOD legacy\_s*' ..
+          '\d EVAL legacy "yes"\_s*' ..
+          '\d CHECKTYPE string stack\[-1]\_s*' ..
+          '\d CMDMOD_REV\_s*' ..
+          '\d RETURN',
+        res)
+enddef
+
 def s:EchoMessages()
   echohl ErrorMsg | echom v:exception | echohl NONE
 enddef
@@ -2619,6 +2840,25 @@ def Test_disassemble_after_reload()
     delfunc g:ThatFunc
 enddef
 
+def s:MakeString(x: number): string
+  return $"x={x} x^2={x * x}"
+enddef
 
+def Test_disassemble_string_interp()
+  var instr = execute('disassemble s:MakeString')
+  assert_match('MakeString\_s*' ..
+        'return $"x={x} x^2={x \* x}"\_s*' ..
+        '0 PUSHS "x="\_s*' ..
+        '1 LOAD arg\[-1\]\_s*' ..
+        '2 2STRING stack\[-1\]\_s*' ..
+        '3 PUSHS " x^2="\_s*' ..
+        '4 LOAD arg\[-1\]\_s*' ..
+        '5 LOAD arg\[-1\]\_s*' ..
+        '6 OPNR \*\_s*' ..
+        '7 2STRING stack\[-1\]\_s*' ..
+        '8 CONCAT size 4\_s*' ..
+        '9 RETURN\_s*',
+        instr)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -50,6 +50,7 @@ int vim_isxdigit(int c);
 int vim_isbdigit(int c);
 int vim_islower(int c);
 int vim_isupper(int c);
+int vim_isalpha(int c);
 int vim_toupper(int c);
 int vim_tolower(int c);
 char_u *skiptowhite(char_u *p);
@@ -63,5 +64,4 @@ int hexhex2nr(char_u *p);
 int rem_backslash(char_u *str);
 void backslash_halve(char_u *p);
 char_u *backslash_halve_save(char_u *p);
-void ebcdic2ascii(char_u *buffer, int len);
 /* vim: set ft=c : */

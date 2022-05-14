@@ -695,6 +695,25 @@ func Test_usercmd_with_block()
   delcommand HelloThere
 
   let lines =<< trim END
+      command EchoCond {
+          const test: string = true
+              ? 'true'
+              : 'false'
+          g:result = test
+      }
+      EchoCond
+  END
+  call v9.CheckScriptSuccess(lines)
+  call assert_equal('true', g:result)
+  unlet g:result
+
+  call feedkeys(":EchoCond\<CR>", 'xt')
+  call assert_equal('true', g:result)
+
+  delcommand EchoCond
+  unlet g:result
+
+  let lines =<< trim END
       command BadCommand {
          echo  {
          'key': 'value',
@@ -797,5 +816,41 @@ func Test_multibyte_in_usercmd()
   bw!
   delcommand SubJapanesePeriodToDot
 endfunc
+
+" Declaring a variable in a {} uses Vim9 script rules, even when defined in a
+" legacy script.
+func Test_block_declaration_legacy_script()
+  let lines =<< trim END
+      command -range Rename {
+                     var save = @a
+                     @a = 'something'
+                     g:someExpr = @a
+                     @a = save
+                }
+  END
+  call writefile(lines, 'Xlegacy')
+  source Xlegacy
+
+  let lines =<< trim END
+      let @a = 'saved'
+      Rename
+      call assert_equal('something', g:someExpr)
+      call assert_equal('saved', @a)
+
+      let g:someExpr = 'xxx'
+      let @a = 'also'
+      Rename
+      call assert_equal('something', g:someExpr)
+      call assert_equal('also', @a)
+  END
+  call writefile(lines, 'Xother')
+  source Xother
+
+  unlet g:someExpr
+  call delete('Xlegacy')
+  call delete('Xother')
+  delcommand Rename
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -251,7 +251,7 @@ static struct {
 sodium_runtime_link_init(int verbose)
 {
     static HINSTANCE hsodium = NULL;
-    const char *libname = "libsodium.dll";
+    const char *libname = DYNAMIC_SODIUM_DLL;
     int i;
 
     if (hsodium != NULL)
@@ -270,7 +270,7 @@ sodium_runtime_link_init(int verbose)
 	if ((*sodium_funcname_table[i].ptr = symbol_from_dll(hsodium,
 			sodium_funcname_table[i].name)) == NULL)
 	{
-	    FreeLibrary(hsodium);
+	    close_dll(hsodium);
 	    hsodium = NULL;
 	    if (verbose)
 		semsg(_(e_could_not_load_library_function_str), sodium_funcname_table[i].name);
@@ -452,8 +452,8 @@ crypt_create(
     if (cryptmethods[method_nr].init_fn(
 	state, key, salt, salt_len, seed, seed_len) == FAIL)
     {
-        vim_free(state);
-        return NULL;
+	vim_free(state);
+	return NULL;
     }
     return state;
 }
@@ -692,7 +692,7 @@ crypt_encode_inplace(
     cryptstate_T *state,
     char_u	*buf,
     size_t	len,
-    int         last)
+    int		last)
 {
     cryptmethods[state->method_nr].encode_inplace_fn(state, buf, len,
 								    buf, last);
@@ -752,7 +752,7 @@ crypt_check_swapfile_curbuf(void)
 	// encryption uses padding and MAC, that does not work very well with
 	// swap and undo files, so disable them
 	mf_close_file(curbuf, TRUE);	// remove the swap file
-	set_option_value((char_u *)"swf", 0, NULL, OPT_LOCAL);
+	set_option_value_give_err((char_u *)"swf", 0, NULL, OPT_LOCAL);
 	msg_scroll = TRUE;
 	msg(_("Note: Encryption of swapfile not supported, disabling swap file"));
     }
@@ -807,7 +807,7 @@ crypt_get_key(
 
 	    if (store)
 	    {
-		set_option_value((char_u *)"key", 0L, p1, OPT_LOCAL);
+		set_option_value_give_err((char_u *)"key", 0L, p1, OPT_LOCAL);
 		crypt_free_key(p1);
 		p1 = curbuf->b_p_key;
 #ifdef FEAT_SODIUM

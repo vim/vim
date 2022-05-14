@@ -339,22 +339,30 @@ generate_two_op(cctx_T *cctx, char_u *op)
 }
 
 /*
- * Get the instruction to use for comparing "type1" with "type2"
+ * Get the instruction to use for comparing two values with specified types.
+ * Either "tv1" and "tv2" are passed or "type1" and "type2".
  * Return ISN_DROP when failed.
  */
     static isntype_T
-get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
+get_compare_isn(
+	exprtype_T exprtype,
+	typval_T    *tv1,
+	typval_T    *tv2,
+	type_T	    *type1,
+	type_T	    *type2)
 {
     isntype_T	isntype = ISN_DROP;
+    vartype_T	vartype1 = tv1 != NULL ? tv1->v_type : type1->tt_type;
+    vartype_T	vartype2 = tv2 != NULL ? tv2->v_type : type2->tt_type;
 
-    if (type1 == VAR_UNKNOWN)
-	type1 = VAR_ANY;
-    if (type2 == VAR_UNKNOWN)
-	type2 = VAR_ANY;
+    if (vartype1 == VAR_UNKNOWN)
+	vartype1 = VAR_ANY;
+    if (vartype2 == VAR_UNKNOWN)
+	vartype2 = VAR_ANY;
 
-    if (type1 == type2)
+    if (vartype1 == vartype2)
     {
-	switch (type1)
+	switch (vartype1)
 	{
 	    case VAR_BOOL: isntype = ISN_COMPAREBOOL; break;
 	    case VAR_SPECIAL: isntype = ISN_COMPARESPECIAL; break;
@@ -368,10 +376,31 @@ get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
 	    default: isntype = ISN_COMPAREANY; break;
 	}
     }
-    else if (type1 == VAR_ANY || type2 == VAR_ANY
-	    || ((type1 == VAR_NUMBER || type1 == VAR_FLOAT)
-	      && (type2 == VAR_NUMBER || type2 == VAR_FLOAT)))
+    else if (vartype1 == VAR_ANY || vartype2 == VAR_ANY
+	    || ((vartype1 == VAR_NUMBER || vartype1 == VAR_FLOAT)
+			  && (vartype2 == VAR_NUMBER || vartype2 == VAR_FLOAT))
+	    || (vartype1 == VAR_FUNC && vartype2 == VAR_PARTIAL)
+	    || (vartype1 == VAR_PARTIAL && vartype2 == VAR_FUNC))
 	isntype = ISN_COMPAREANY;
+    else if (vartype1 == VAR_SPECIAL || vartype2 == VAR_SPECIAL)
+    {
+	if ((vartype1 == VAR_SPECIAL
+		&& (tv1 != NULL ? tv1->vval.v_number == VVAL_NONE
+							    : type1 == &t_none)
+		&& vartype2 != VAR_STRING)
+	    || (vartype2 == VAR_SPECIAL
+		&& (tv2 != NULL ? tv2->vval.v_number == VVAL_NONE
+							    : type2 == &t_none)
+		&& vartype1 != VAR_STRING))
+	{
+	    semsg(_(e_cannot_compare_str_with_str),
+			       vartype_name(vartype1), vartype_name(vartype2));
+	    return ISN_DROP;
+	}
+	// although comparing null with number, float or bool is not useful, we
+	// allow it
+	isntype = ISN_COMPARENULL;
+    }
 
     if ((exprtype == EXPR_IS || exprtype == EXPR_ISNOT)
 	    && (isntype == ISN_COMPAREBOOL
@@ -380,20 +409,20 @@ get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
 	    || isntype == ISN_COMPAREFLOAT))
     {
 	semsg(_(e_cannot_use_str_with_str),
-		exprtype == EXPR_IS ? "is" : "isnot" , vartype_name(type1));
+		exprtype == EXPR_IS ? "is" : "isnot" , vartype_name(vartype1));
 	return ISN_DROP;
     }
     if (isntype == ISN_DROP
 	    || ((exprtype != EXPR_EQUAL && exprtype != EXPR_NEQUAL
-		    && (type1 == VAR_BOOL || type1 == VAR_SPECIAL
-		       || type2 == VAR_BOOL || type2 == VAR_SPECIAL)))
+		    && (vartype1 == VAR_BOOL || vartype1 == VAR_SPECIAL
+		       || vartype2 == VAR_BOOL || vartype2 == VAR_SPECIAL)))
 	    || ((exprtype != EXPR_EQUAL && exprtype != EXPR_NEQUAL
-				 && exprtype != EXPR_IS && exprtype != EXPR_ISNOT
-		    && (type1 == VAR_BLOB || type2 == VAR_BLOB
-			|| type1 == VAR_LIST || type2 == VAR_LIST))))
+			       && exprtype != EXPR_IS && exprtype != EXPR_ISNOT
+		    && (vartype1 == VAR_BLOB || vartype2 == VAR_BLOB
+			|| vartype1 == VAR_LIST || vartype2 == VAR_LIST))))
     {
 	semsg(_(e_cannot_compare_str_with_str),
-		vartype_name(type1), vartype_name(type2));
+		vartype_name(vartype1), vartype_name(vartype2));
 	return ISN_DROP;
     }
     return isntype;
@@ -402,7 +431,7 @@ get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
     int
 check_compare_types(exprtype_T type, typval_T *tv1, typval_T *tv2)
 {
-    if (get_compare_isn(type, tv1->v_type, tv2->v_type) == ISN_DROP)
+    if (get_compare_isn(type, tv1, tv2, NULL, NULL) == ISN_DROP)
 	return FAIL;
     return OK;
 }
@@ -416,17 +445,14 @@ generate_COMPARE(cctx_T *cctx, exprtype_T exprtype, int ic)
     isntype_T	isntype;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
-    vartype_T	type1;
-    vartype_T	type2;
 
     RETURN_OK_IF_SKIP(cctx);
 
     // Get the known type of the two items on the stack.  If they are matching
     // use a type-specific instruction. Otherwise fall back to runtime type
     // checking.
-    type1 = get_type_on_stack(cctx, 1)->tt_type;
-    type2 = get_type_on_stack(cctx, 0)->tt_type;
-    isntype = get_compare_isn(exprtype, type1, type2);
+    isntype = get_compare_isn(exprtype, NULL, NULL,
+		       get_type_on_stack(cctx, 1), get_type_on_stack(cctx, 0));
     if (isntype == ISN_DROP)
 	return FAIL;
 
@@ -441,6 +467,33 @@ generate_COMPARE(cctx_T *cctx, exprtype_T exprtype, int ic)
 	--stack->ga_len;
 	set_type_on_stack(cctx, &t_bool, 0);
     }
+
+    return OK;
+}
+
+/*
+ * Generate an ISN_CONCAT instruction.
+ * "count" is the number of stack elements to join together and it must be
+ * greater or equal to one.
+ * The caller ensures all the "count" elements on the stack have the right type.
+ */
+    int
+generate_CONCAT(cctx_T *cctx, int count)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    RETURN_OK_IF_SKIP(cctx);
+
+    if (count < 1)
+	return FAIL;
+
+    if ((isn = generate_instr(cctx, ISN_CONCAT)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = count;
+
+    // drop the argument types
+    stack->ga_len -= count - 1;
 
     return OK;
 }
@@ -552,6 +605,40 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 		generate_PUSHBLOB(cctx, tv->vval.v_blob);
 		tv->vval.v_blob = NULL;
 		break;
+	    case VAR_LIST:
+		if (tv->vval.v_list != NULL)
+		    iemsg("non-empty list constant not supported");
+		generate_NEWLIST(cctx, 0, TRUE);
+		break;
+	    case VAR_DICT:
+		if (tv->vval.v_dict != NULL)
+		    iemsg("non-empty dict constant not supported");
+		generate_NEWDICT(cctx, 0, TRUE);
+		break;
+#ifdef FEAT_JOB_CHANNEL
+	    case VAR_JOB:
+		if (tv->vval.v_job != NULL)
+		    iemsg("non-null job constant not supported");
+		generate_PUSHJOB(cctx);
+		break;
+	    case VAR_CHANNEL:
+		if (tv->vval.v_channel != NULL)
+		    iemsg("non-null channel constant not supported");
+		generate_PUSHCHANNEL(cctx);
+		break;
+#endif
+	    case VAR_FUNC:
+		if (tv->vval.v_string != NULL)
+		    iemsg("non-null function constant not supported");
+		generate_PUSHFUNC(cctx, NULL, &t_func_unknown);
+		break;
+	    case VAR_PARTIAL:
+		if (tv->vval.v_partial != NULL)
+		    iemsg("non-null partial constant not supported");
+		if (generate_instr_type(cctx, ISN_NEWPARTIAL, &t_func_unknown)
+								       == NULL)
+		    return FAIL;
+		break;
 	    case VAR_STRING:
 		generate_PUSHS(cctx, &tv->vval.v_string);
 		tv->vval.v_string = NULL;
@@ -610,7 +697,8 @@ generate_PUSHSPEC(cctx_T *cctx, varnumber_T number)
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_type(cctx, ISN_PUSHSPEC, &t_special)) == NULL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHSPEC,
+			     number == VVAL_NULL ? &t_null : &t_none)) == NULL)
 	return FAIL;
     isn->isn_arg.number = number;
 
@@ -638,6 +726,8 @@ generate_PUSHF(cctx_T *cctx, float_T fnumber)
 /*
  * Generate an ISN_PUSHS instruction.
  * Consumes "*str".  When freed *str is set to NULL, unless "str" is NULL.
+ * Note that if "str" is used in the instruction OK is returned and "*str" is
+ * not set to NULL.
  */
     int
 generate_PUSHS(cctx_T *cctx, char_u **str)
@@ -662,37 +752,45 @@ generate_PUSHS(cctx_T *cctx, char_u **str)
 }
 
 /*
- * Generate an ISN_PUSHCHANNEL instruction.
- * Consumes "channel".
+ * Generate an ISN_PUSHCHANNEL instruction.  Channel is always NULL.
  */
     int
-generate_PUSHCHANNEL(cctx_T *cctx, channel_T *channel)
+generate_PUSHCHANNEL(cctx_T *cctx)
 {
+#ifdef FEAT_JOB_CHANNEL
     isn_T	*isn;
+#endif
 
     RETURN_OK_IF_SKIP(cctx);
+#ifdef FEAT_JOB_CHANNEL
     if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
 	return FAIL;
-    isn->isn_arg.channel = channel;
-
     return OK;
+#else
+    emsg(_(e_channel_job_feature_not_available));
+    return FAIL;
+#endif
 }
 
 /*
- * Generate an ISN_PUSHJOB instruction.
- * Consumes "job".
+ * Generate an ISN_PUSHJOB instruction.  Job is always NULL.
  */
     int
-generate_PUSHJOB(cctx_T *cctx, job_T *job)
+generate_PUSHJOB(cctx_T *cctx)
 {
+#ifdef FEAT_JOB_CHANNEL
     isn_T	*isn;
+#endif
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_channel)) == NULL)
+#ifdef FEAT_JOB_CHANNEL
+    if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_job)) == NULL)
 	return FAIL;
-    isn->isn_arg.job = job;
-
     return OK;
+#else
+    emsg(_(e_channel_job_feature_not_available));
+    return FAIL;
+#endif
 }
 
 /*
@@ -1011,7 +1109,7 @@ generate_OLDSCRIPT(
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if (isn_type == ISN_LOADS)
+    if (isn_type == ISN_LOADS || isn_type == ISN_LOADEXPORT)
 	isn = generate_instr_type(cctx, isn_type, type);
     else
 	isn = generate_instr_drop(cctx, isn_type, 1);
@@ -1060,10 +1158,11 @@ generate_VIM9SCRIPT(
 }
 
 /*
- * Generate an ISN_NEWLIST instruction.
+ * Generate an ISN_NEWLIST instruction for "count" items.
+ * "use_null" is TRUE for null_list.
  */
     int
-generate_NEWLIST(cctx_T *cctx, int count)
+generate_NEWLIST(cctx_T *cctx, int count, int use_null)
 {
     isn_T	*isn;
     type_T	*member_type;
@@ -1073,7 +1172,7 @@ generate_NEWLIST(cctx_T *cctx, int count)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_NEWLIST)) == NULL)
 	return FAIL;
-    isn->isn_arg.number = count;
+    isn->isn_arg.number = use_null ? -1 : count;
 
     // Get the member type and the declared member type from all the items on
     // the stack.
@@ -1090,9 +1189,10 @@ generate_NEWLIST(cctx_T *cctx, int count)
 
 /*
  * Generate an ISN_NEWDICT instruction.
+ * "use_null" is TRUE for null_dict.
  */
     int
-generate_NEWDICT(cctx_T *cctx, int count)
+generate_NEWDICT(cctx_T *cctx, int count, int use_null)
 {
     isn_T	*isn;
     type_T	*member_type;
@@ -1102,7 +1202,7 @@ generate_NEWDICT(cctx_T *cctx, int count)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_NEWDICT)) == NULL)
 	return FAIL;
-    isn->isn_arg.number = count;
+    isn->isn_arg.number = use_null ? -1 : count;
 
     member_type = get_member_type_from_stack(count, 2, cctx);
     type = get_dict_type(member_type, cctx->ctx_type_list);
@@ -1117,9 +1217,10 @@ generate_NEWDICT(cctx_T *cctx, int count)
 
 /*
  * Generate an ISN_FUNCREF instruction.
+ * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
  */
     int
-generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
+generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc, isn_T **isnp)
 {
     isn_T	*isn;
     type_T	*type;
@@ -1127,6 +1228,8 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
+    if (isnp != NULL)
+	*isnp = isn;
     if (ufunc->uf_def_status == UF_NOT_COMPILED)
 	isn->isn_arg.funcref.fr_func_name = vim_strsave(ufunc->uf_name);
     else
@@ -1134,8 +1237,10 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
     cctx->ctx_has_closure = 1;
 
     // If the referenced function is a closure, it may use items further up in
-    // the nested context, including this one.
-    if (ufunc->uf_flags & FC_CLOSURE)
+    // the nested context, including this one.  But not a function defined at
+    // the script level.
+    if ((ufunc->uf_flags & FC_CLOSURE)
+			       && func_name_refcount(cctx->ctx_ufunc->uf_name))
 	cctx->ctx_ufunc->uf_flags |= FC_CLOSURE;
 
     type = ufunc->uf_func_type == NULL ? &t_func_any : ufunc->uf_func_type;
@@ -1414,6 +1519,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    && ufunc->uf_def_status != UF_COMPILE_ERROR)
     {
 	int		i;
+	compiletype_T	compile_type;
 
 	for (i = 0; i < argcount; ++i)
 	{
@@ -1421,7 +1527,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    type_T *actual;
 
 	    actual = get_type_on_stack(cctx, argcount - i - 1);
-	    if (actual == &t_special
+	    if (actual->tt_type == VAR_SPECIAL
 			      && i >= regular_args - ufunc->uf_def_args.ga_len)
 	    {
 		// assume v:none used for default argument value
@@ -1446,14 +1552,15 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		return FAIL;
 	    }
 	}
-	if (func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
+	compile_type = get_compile_type(ufunc);
+	if (func_needs_compiling(ufunc, compile_type)
 		&& compile_def_function(ufunc, ufunc->uf_ret_type == NULL,
-					    COMPILE_TYPE(ufunc), NULL) == FAIL)
+						   compile_type, NULL) == FAIL)
 	    return FAIL;
     }
     if (ufunc->uf_def_status == UF_COMPILE_ERROR)
     {
-	emsg_funcname(_(e_call_to_function_that_failed_to_compile_str),
+	emsg_funcname(e_call_to_function_that_failed_to_compile_str,
 							       ufunc->uf_name);
 	return FAIL;
     }
@@ -1530,12 +1637,12 @@ generate_PCALL(
 
 	    if (argcount < type->tt_min_argcount - varargs)
 	    {
-		semsg(_(e_not_enough_arguments_for_function_str), name);
+		emsg_funcname(e_not_enough_arguments_for_function_str, name);
 		return FAIL;
 	    }
 	    if (!varargs && argcount > type->tt_argcount)
 	    {
-		semsg(_(e_too_many_arguments_for_function_str), name);
+		emsg_funcname(e_too_many_arguments_for_function_str, name);
 		return FAIL;
 	    }
 	    if (type->tt_args != NULL)
@@ -1552,7 +1659,7 @@ generate_PCALL(
 			expected = type->tt_args[
 					     type->tt_argcount - 1]->tt_member;
 		    else if (i >= type->tt_min_argcount
-						       && actual == &t_special)
+					     && actual->tt_type == VAR_SPECIAL)
 			expected = &t_any;
 		    else
 			expected = type->tt_args[i];
@@ -1659,6 +1766,21 @@ generate_MULT_EXPR(cctx_T *cctx, isntype_T isn_type, int count)
     if ((isn = generate_instr_drop(cctx, isn_type, count)) == NULL)
 	return FAIL;
     isn->isn_arg.number = count;
+
+    return OK;
+}
+
+/*
+ * Generate an ISN_SOURCE instruction.
+ */
+    int
+generate_SOURCE(cctx_T *cctx, int sid)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr(cctx, ISN_SOURCE)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = sid;
 
     return OK;
 }
@@ -1849,9 +1971,24 @@ generate_store_var(
 	    return generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
 	case dest_script:
 	    if (scriptvar_idx < 0)
+	    {
+		isntype_T isn_type = ISN_STORES;
+
+		if (SCRIPT_ID_VALID(scriptvar_sid)
+			 && SCRIPT_ITEM(scriptvar_sid)->sn_import_autoload
+			 && SCRIPT_ITEM(scriptvar_sid)->sn_autoload_prefix
+								       == NULL)
+		{
+		    // "import autoload './dir/script.vim'" - load script first
+		    if (generate_SOURCE(cctx, scriptvar_sid) == FAIL)
+			return FAIL;
+		    isn_type = ISN_STOREEXPORT;
+		}
+
 		// "s:" may be included in the name.
-		return generate_OLDSCRIPT(cctx, ISN_STORES, name,
-							  scriptvar_sid, type);
+		return generate_OLDSCRIPT(cctx, isn_type, name,
+						      scriptvar_sid, type);
+	    }
 	    return generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
 					   scriptvar_sid, scriptvar_idx, type);
 	case dest_local:
@@ -1998,7 +2135,9 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_LOADS:
+	case ISN_LOADEXPORT:
 	case ISN_STORES:
+	case ISN_STOREEXPORT:
 	    vim_free(isn->isn_arg.loadstore.ls_name);
 	    break;
 
@@ -2016,18 +2155,6 @@ delete_instr(isn_T *isn)
 	    blob_unref(isn->isn_arg.blob);
 	    break;
 
-	case ISN_PUSHJOB:
-#ifdef FEAT_JOB_CHANNEL
-	    job_unref(isn->isn_arg.job);
-#endif
-	    break;
-
-	case ISN_PUSHCHANNEL:
-#ifdef FEAT_JOB_CHANNEL
-	    channel_unref(isn->isn_arg.channel);
-#endif
-	    break;
-
 	case ISN_UCALL:
 	    vim_free(isn->isn_arg.ufunc.cuf_name);
 	    break;
@@ -2037,7 +2164,7 @@ delete_instr(isn_T *isn)
 		if (isn->isn_arg.funcref.fr_func_name == NULL)
 		{
 		    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-					   + isn->isn_arg.funcref.fr_dfunc_idx;
+			+ isn->isn_arg.funcref.fr_dfunc_idx;
 		    ufunc_T *ufunc = dfunc->df_ufunc;
 
 		    if (ufunc != NULL && func_name_refcount(ufunc->uf_name))
@@ -2057,10 +2184,10 @@ delete_instr(isn_T *isn)
 	case ISN_DCALL:
 	    {
 		dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-					       + isn->isn_arg.dfunc.cdf_idx;
+		    + isn->isn_arg.dfunc.cdf_idx;
 
 		if (dfunc->df_ufunc != NULL
-			       && func_name_refcount(dfunc->df_ufunc->uf_name))
+			&& func_name_refcount(dfunc->df_ufunc->uf_name))
 		    func_ptr_unref(dfunc->df_ufunc);
 	    }
 	    break;
@@ -2088,7 +2215,7 @@ delete_instr(isn_T *isn)
 
 	case ISN_CMDMOD:
 	    vim_regfree(isn->isn_arg.cmdmod.cf_cmdmod
-					       ->cmod_filter_regmatch.regprog);
+		    ->cmod_filter_regmatch.regprog);
 	    vim_free(isn->isn_arg.cmdmod.cf_cmdmod);
 	    break;
 
@@ -2120,7 +2247,6 @@ delete_instr(isn_T *isn)
 	case ISN_CATCH:
 	case ISN_CEXPR_AUCMD:
 	case ISN_CHECKLEN:
-	case ISN_CHECKNR:
 	case ISN_CLEARDICT:
 	case ISN_CMDMOD_REV:
 	case ISN_COMPAREANY:
@@ -2131,6 +2257,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPAREFUNC:
 	case ISN_COMPARELIST:
 	case ISN_COMPARENR:
+	case ISN_COMPARENULL:
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
 	case ISN_CONCAT:
@@ -2166,6 +2293,7 @@ delete_instr(isn_T *isn)
 	case ISN_NEGATENR:
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:
+	case ISN_NEWPARTIAL:
 	case ISN_OPANY:
 	case ISN_OPFLOAT:
 	case ISN_OPNR:
@@ -2174,7 +2302,9 @@ delete_instr(isn_T *isn)
 	case ISN_PROF_END:
 	case ISN_PROF_START:
 	case ISN_PUSHBOOL:
+	case ISN_PUSHCHANNEL:
 	case ISN_PUSHF:
+	case ISN_PUSHJOB:
 	case ISN_PUSHNR:
 	case ISN_PUSHSPEC:
 	case ISN_PUT:
@@ -2187,21 +2317,22 @@ delete_instr(isn_T *isn)
 	case ISN_STORE:
 	case ISN_STOREINDEX:
 	case ISN_STORENR:
-	case ISN_STOREOUTER:
-	case ISN_STORERANGE:
-	case ISN_STOREREG:
-	case ISN_STOREV:
-	case ISN_STRINDEX:
-	case ISN_STRSLICE:
-	case ISN_THROW:
-	case ISN_TRYCONT:
-	case ISN_UNLETINDEX:
-	case ISN_UNLETRANGE:
-	case ISN_UNPACK:
-	case ISN_USEDICT:
-	    // nothing allocated
-	    break;
-    }
+	case ISN_SOURCE:
+    case ISN_STOREOUTER:
+    case ISN_STORERANGE:
+    case ISN_STOREREG:
+    case ISN_STOREV:
+    case ISN_STRINDEX:
+    case ISN_STRSLICE:
+    case ISN_THROW:
+    case ISN_TRYCONT:
+    case ISN_UNLETINDEX:
+    case ISN_UNLETRANGE:
+    case ISN_UNPACK:
+    case ISN_USEDICT:
+	// nothing allocated
+	break;
+}
 }
 
     void

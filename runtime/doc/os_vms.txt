@@ -603,13 +603,13 @@ program to the new diff on VMS.  Add this to your .vimrc file: >
 	function MyDiff()
 	   let opt = ""
 	   if &diffopt =~ "icase"
-	     let opt = opt . "-i "
+	     let opt = opt .. "-i "
 	   endif
 	   if &diffopt =~ "iwhite"
-	     let opt = opt . "-b "
+	     let opt = opt .. "-b "
 	   endif
-	   silent execute "!mc GNU:diff.exe -a " . opt . v:fname_in . " " .  v:fname_new .
-		\  " > " . v:fname_out
+	   silent execute "!mc GNU:diff.exe -a " .. opt .. v:fname_in .. " " ..  v:fname_new ..
+		\  " > " .. v:fname_out
 	endfunction
       endif
 

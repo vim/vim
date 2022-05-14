@@ -66,7 +66,8 @@ msgstr "E165: Ne eblas iri preter la lastan dosieron"
 msgid "E610: No argument to delete"
 msgstr "E610: Neniu delenda argumento"
 
-msgid "E249: window layout changed unexpectedly"
+# TODO: Capitalise first word of message?
+msgid "E249: Window layout changed unexpectedly"
 msgstr "E249: aranĝo de fenestro ŝanĝiĝis neatendite"
 
 msgid "--Deleted--"
@@ -116,7 +117,8 @@ msgstr "E217: Ne eblas plenumi aŭtokomandojn por ĈIUJ eventoj"
 msgid "No matching autocommands: %s"
 msgstr "Neniu kongruaj aŭtokomandoj: %s"
 
-msgid "E218: autocommand nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E218: Autocommand nesting too deep"
 msgstr "E218: aŭtokomando tro ingita"
 
 #, c-format
@@ -378,7 +380,8 @@ msgstr "E949: Dosiero ŝanĝiĝis dum skribo"
 msgid "E512: Close failed"
 msgstr "E512: Fermo malsukcesis"
 
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+# TODO: Capitalise first word of message?
+msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
 "E513: skriberaro, konverto malsukcesis (igu 'fenc' malplena por transpasi)"
 
@@ -390,7 +393,8 @@ msgstr ""
 "E513: skriberaro, konverto malsukcesis en linio %ld (igu 'fenc' malplena por "
 "transpasi)"
 
-msgid "E514: write error (file system full?)"
+# TODO: Capitalise first word of message?
+msgid "E514: Write error (file system full?)"
 msgstr "E514: skriberaro (ĉu plena dosiersistemo?)"
 
 msgid " CONVERSION ERROR"
@@ -424,7 +428,8 @@ msgstr " skribita(j)"
 msgid "E205: Patchmode: can't save original file"
 msgstr "E205: Patchmode: ne eblas konservi originalan dosieron"
 
-msgid "E206: patchmode: can't touch empty original file"
+# TODO: Capitalise first word of message?
+msgid "E206: Patchmode: can't touch empty original file"
 msgstr "E206: patchmode: ne eblas tuŝi malplenan originalan dosieron"
 
 msgid "E207: Can't delete backup file"
@@ -456,35 +461,43 @@ msgstr "E901: getaddrinfo() en channel_open(): %s"
 msgid "E901: gethostbyname() in channel_open()"
 msgstr "E901: gethostbyname() en channel_open()"
 
-msgid "E903: received command with non-string argument"
+# TODO: Capitalise first word of message?
+msgid "E903: Received command with non-string argument"
 msgstr "E903: ricevis komandon kun argumento, kiu ne estas ĉeno"
 
-msgid "E904: last argument for expr/call must be a number"
+# TODO: Capitalise first word of message?
+msgid "E904: Last argument for expr/call must be a number"
 msgstr "E904: lasta argumento de \"expr/call\" devas esti nombro"
 
-msgid "E904: third argument for call must be a list"
+# TODO: Capitalise first word of message?
+msgid "E904: Third argument for call must be a list"
 msgstr "E904: tria argumento de \"call\" devas esti listo"
 
 #, c-format
-msgid "E905: received unknown command: %s"
+# TODO: Capitalise first word of message?
+msgid "E905: Received unknown command: %s"
 msgstr "E905: nekonata komando ricevita: %s"
 
-msgid "E906: not an open channel"
+# TODO: Capitalise first word of message?
+msgid "E906: Not an open channel"
 msgstr "E906: ne estas malfermita kanalo"
 
 #, c-format
-msgid "E630: %s(): write while not connected"
+# TODO: Capitalise first word of message?
+msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): konservo dum nekonektita"
 
 #, c-format
-msgid "E631: %s(): write failed"
+# TODO: Capitalise first word of message?
+msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): Konservo malsukcesis"
 
 #, c-format
 msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: Ne eblas uzi reagfunkcion kun %s()"
 
-msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
+# TODO: Capitalise first word of message?
+msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr "E912: ne eblas uzi ch_evalexpr()/ch_sendexpr() kun kruda aŭ nl kanalo"
 
 msgid "No display"
@@ -516,7 +529,8 @@ msgstr "E241: Ne eblas sendi al %s"
 msgid "E277: Unable to read a server reply"
 msgstr "E277: Ne eblas legi respondon de servilo"
 
-msgid "E941: already started a server"
+# TODO: Capitalise first word of message?
+msgid "E941: Already started a server"
 msgstr "E941: servilo jam lanĉita"
 
 msgid "E942: +clientserver feature not available"
@@ -774,10 +788,12 @@ msgstr "E695: Ne eblas indeksi Funcref"
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr "Nesufiĉa memoro por valorigi referencojn, senrubigado ĉesigita!"
 
-msgid "E724: variable nested too deep for displaying"
+# TODO: Capitalise first word of message?
+msgid "E724: Variable nested too deep for displaying"
 msgstr "E724: variablo ingita tro profunde por vidigi"
 
-msgid "E698: variable nested too deep for making a copy"
+# TODO: Capitalise first word of message?
+msgid "E698: Variable nested too deep for making a copy"
 msgstr "E698: variablo ingita tro profunde por fari kopion"
 
 msgid ""
@@ -794,14 +810,16 @@ msgstr "E158: Nevalida nomo de bufro: %s"
 msgid "&Ok"
 msgstr "&Bone"
 
-msgid "E980: lowlevel input not supported"
+# TODO: Capitalise first word of message?
+msgid "E980: Lowlevel input not supported"
 msgstr "E980: enigo de baza nivelo ne subtenata"
 
 #, c-format
 msgid "E700: Unknown function: %s"
 msgstr "E700: Nekonata funkcio: %s"
 
-msgid "E922: expected a dict"
+# TODO: Capitalise first word of message?
+msgid "E922: Expected a dict"
 msgstr "E922: vortaro atendita"
 
 msgid "E923: Second argument of function() must be a list or a dict"
@@ -834,10 +852,12 @@ msgid "E962: Invalid action: '%s'"
 msgstr "E962: Nevalida ago: '%s'"
 
 #, c-format
-msgid "E935: invalid submatch number: %d"
+# TODO: Capitalise first word of message?
+msgid "E935: Invalid submatch number: %d"
 msgstr "E935: nevalida indekso de \"submatch\": %d"
 
-msgid "E991: cannot use =<< here"
+# TODO: Capitalise first word of message?
+msgid "E991: Cannot use =<< here"
 msgstr "E991: ne eblas uzi =<< ĉi tie"
 
 msgid "E221: Marker cannot start with lower case letter"
@@ -876,11 +896,13 @@ msgstr "E996: Ne eblas ŝlosi reĝistron"
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: Ne estas tia variablo: \"%s\""
 
-msgid "E743: variable nested too deep for (un)lock"
+# TODO: Capitalise first word of message?
+msgid "E743: Variable nested too deep for (un)lock"
 msgstr "E743: variablo ingita tro profunde por (mal)ŝlosi"
 
 #, c-format
-msgid "E963: setting %s to value with wrong type"
+# TODO: Capitalise first word of message?
+msgid "E963: Setting %s to value with wrong type"
 msgstr "E963: valorizo de %s kun valoro de neĝusta tipo"
 
 #, c-format
@@ -1013,7 +1035,8 @@ msgstr "Redakti dosieron"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Aŭtokomandoj neatendite forviŝis novan bufron %s"
 
-msgid "E144: non-numeric argument to :z"
+# TODO: Capitalise first word of message?
+msgid "E144: Non-numeric argument to :z"
 msgstr "E144: nenumera argumento de :z"
 
 msgid "E145: Shell commands and some functionality not allowed in rvim"
@@ -1087,7 +1110,8 @@ msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
 msgstr "Averto: Eniris neatendite alian bufron (kontrolu aŭtokomandojn)"
 
 #, c-format
-msgid "E666: compiler not supported: %s"
+# TODO: Capitalise first word of message?
+msgid "E666: Compiler not supported: %s"
 msgstr "E666: kompililo nesubtenata: %s"
 
 #, c-format
@@ -1247,26 +1271,32 @@ msgstr "E809: #< ne haveblas sen la eblo +eval"
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: Neniu alterna dosiernomo por anstataŭigi al '#'"
 
-msgid "E495: no autocommand file name to substitute for \"<afile>\""
+# TODO: Capitalise first word of message?
+msgid "E495: No autocommand file name to substitute for \"<afile>\""
 msgstr "E495: neniu dosiernomo de aŭtokomando por anstataŭigi al \"<afile>\""
 
-msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
+# TODO: Capitalise first word of message?
+msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
 msgstr ""
 "E496: neniu numero de bufro de aŭtokomando por anstataŭigi al \"<abuf>\""
 
 # DP: ĉu match estas verbo aŭ nomo en la angla version?
 # AM: ĉi tie, nomo, ŝajnas al mi
-msgid "E497: no autocommand match name to substitute for \"<amatch>\""
+# TODO: Capitalise first word of message?
+msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr ""
 "E497: neniu nomo de kongruo de aŭtokomando por anstataŭigi al \"<amatch>\""
 
-msgid "E498: no :source file name to substitute for \"<sfile>\""
+# TODO: Capitalise first word of message?
+msgid "E498: No :source file name to substitute for \"<sfile>\""
 msgstr "E498: neniu dosiernomo \":source\" por anstataŭigi al \"<sfile>\""
 
-msgid "E842: no line number to use for \"<slnum>\""
+# TODO: Capitalise first word of message?
+msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: neniu uzebla numero de linio por \"<slnum>\""
 
-msgid "E961: no line number to use for \"<sflnum>\""
+# TODO: Capitalise first word of message?
+msgid "E961: No line number to use for \"<sflnum>\""
 msgstr "E961: neniu uzebla numero de linio por \"<sflnum>\""
 
 #, no-c-format
@@ -1326,10 +1356,12 @@ msgstr "Eraro"
 msgid "Interrupt"
 msgstr "Interrompo"
 
+# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: \":if\" tro profunde ingita"
 
-msgid "E583: multiple :else"
+# TODO: Capitalise first word of message?
+msgid "E583: Multiple :else"
 msgstr "E583: pluraj \":else\""
 
 msgid "E584: :elseif after :else"
@@ -1344,7 +1376,8 @@ msgstr "E732: Uzo de \":endfor\" kun \":while\""
 msgid "E733: Using :endwhile with :for"
 msgstr "E733: Uzo de \":endwhile\" kun \":for\""
 
-msgid "E579: block nesting too deep"
+# TODO: Capitalise first word of message?
+msgid "E579: Block nesting too deep"
 msgstr "E579: kodbloko tro profunde ingita"
 
 msgid "E601: :try nesting too deep"
@@ -1573,7 +1606,8 @@ msgstr "E338: Bedaŭrinde ne estas dosierfoliumilo en konzola reĝimo"
 msgid "no matches"
 msgstr "neniuj kongruoj"
 
-msgid "E854: path too long for completion"
+# TODO: Capitalise first word of message?
+msgid "E854: Path too long for completion"
 msgstr "E854: tro longa vojo por kompletigo"
 
 #, c-format
@@ -1634,7 +1668,8 @@ msgstr[1] "+-%s%3ld linioj: "
 msgid "E222: Add to read buffer"
 msgstr "E222: Aldoni al lega bufro"
 
-msgid "E223: recursive mapping"
+# TODO: Capitalise first word of message?
+msgid "E223: Recursive mapping"
 msgstr "E223: rekursia mapo"
 
 msgid "E851: Failed to create a new process for the GUI"
@@ -1898,11 +1933,13 @@ msgstr "E286: Malfermo de eniga metodo malsukcesis"
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: Averto: Ne eblis agordi detruan reagfunkcion al IM"
 
-msgid "E288: input method doesn't support any style"
+# TODO: Capitalise first word of message?
+msgid "E288: Input method doesn't support any style"
 msgstr "E288: eniga metodo subtenas neniun stilon"
 
 # DP: mi ne scias, kio estas "preedit"
-msgid "E289: input method doesn't support my preedit type"
+# TODO: Capitalise first word of message?
+msgid "E289: Input method doesn't support my preedit type"
 msgstr "E289: eniga metodo ne subtenas mian antaŭredaktan tipon"
 
 msgid "Invalid font specification"
@@ -1941,7 +1978,8 @@ msgstr "E550: Mankas dupunkto"
 msgid "E551: Illegal component"
 msgstr "E551: Nevalida komponento"
 
-msgid "E552: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E552: Digit expected"
 msgstr "E552: cifero atendita"
 
 #, c-format
@@ -1978,11 +2016,13 @@ msgid "E457: Can't read PostScript resource file \"%s\""
 msgstr "E457: Ne eblas legi dosieron de PostSkripta rimedo \"%s\""
 
 #, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: \"%s\" ne estas dosiero de PostSkripta rimedo"
 
 #, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
+# TODO: Capitalise first word of message?
+msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: \"%s\" ne estas subtenata dosiero de PostSkripta rimedo"
 
 #, c-format
@@ -2069,10 +2109,12 @@ msgstr "E154: Ripetita etikedo \"%s\" en dosiero %s/%s"
 msgid "E150: Not a directory: %s"
 msgstr "E150: Ne estas dosierujo: %s"
 
-msgid "E679: recursive loop loading syncolor.vim"
+# TODO: Capitalise first word of message?
+msgid "E679: Recursive loop loading syncolor.vim"
 msgstr "E679: rekursia buklo dum ŝargo de syncolor.vim"
 
-msgid "E414: group has settings, highlight link ignored"
+# TODO: Capitalise first word of message?
+msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: grupo havas agordojn, ligilo de emfazo ignorita"
 
 #, c-format
@@ -2093,11 +2135,13 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Kolora nomo aŭ nombro nerekonita: %s"
 
 #, c-format
-msgid "E422: terminal code too long: %s"
+# TODO: Capitalise first word of message?
+msgid "E422: Terminal code too long: %s"
 msgstr "E422: kodo de terminalo estas tro longa: %s"
 
 #, c-format
-msgid "E411: highlight group not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E411: Highlight group not found: %s"
 msgstr "E411: emfaza grupo netrovita: %s"
 
 #, c-format
@@ -2109,15 +2153,18 @@ msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Tro da argumentoj: \":highlight link %s\""
 
 #, c-format
-msgid "E415: unexpected equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: neatendita egalsigno: %s"
 
 #, c-format
-msgid "E416: missing equal sign: %s"
+# TODO: Capitalise first word of message?
+msgid "E416: Missing equal sign: %s"
 msgstr "E416: mankas egalsigno: %s"
 
 #, c-format
-msgid "E417: missing argument: %s"
+# TODO: Capitalise first word of message?
+msgid "E417: Missing argument: %s"
 msgstr "E417: mankas argumento: %s"
 
 #, c-format
@@ -2164,7 +2211,8 @@ msgstr "Tiu ĉi komando de cscope ne subtenas dividon de fenestro.\n"
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Uzo: cstag <ident>"
 
-msgid "E257: cstag: tag not found"
+# TODO: Capitalise first word of message?
+msgid "E257: cstag: Tag not found"
 msgstr "E257: cstag: etikedo netrovita"
 
 #, c-format
@@ -2180,10 +2228,12 @@ msgid "Added cscope database %s"
 msgstr "Aldonis datumbazon de cscope %s"
 
 #, c-format
-msgid "E262: error reading cscope connection %d"
+# TODO: Capitalise first word of message?
+msgid "E262: Error reading cscope connection %d"
 msgstr "E262: eraro dum legado de konekto de cscope %d"
 
-msgid "E561: unknown cscope search type"
+# TODO: Capitalise first word of message?
+msgid "E561: Unknown cscope search type"
 msgstr "E561: nekonata tipo de serĉo de cscope"
 
 msgid "E566: Could not create cscope pipes"
@@ -2207,15 +2257,18 @@ msgstr "cs_create_connection: fdopen de fr_fp malsukcesis"
 msgid "E623: Could not spawn cscope process"
 msgstr "E623: Ne eblis naskigi procezon cscope"
 
-msgid "E567: no cscope connections"
+# TODO: Capitalise first word of message?
+msgid "E567: No cscope connections"
 msgstr "E567: neniu konekto al cscope"
 
 #, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
+# TODO: Capitalise first word of message?
+msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: nevalida flago cscopequickfix %c de %c"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
+# TODO: Capitalise first word of message?
+msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: neniu kongruo trovita por serĉo per cscope %s de %s"
 
 msgid "cscope commands:\n"
@@ -2249,24 +2302,29 @@ msgstr ""
 "       t: Trovi tiun ĉenon\n"
 
 #, c-format
-msgid "E625: cannot open cscope database: %s"
+# TODO: Capitalise first word of message?
+msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: ne eblas malfermi datumbazon de cscope: %s"
 
-msgid "E626: cannot get cscope database information"
+# TODO: Capitalise first word of message?
+msgid "E626: Cannot get cscope database information"
 msgstr "E626: ne eblas akiri informojn pri la datumbazo de cscope"
 
-msgid "E568: duplicate cscope database not added"
+# TODO: Capitalise first word of message?
+msgid "E568: Duplicate cscope database not added"
 msgstr "E568: ripetita datumbazo de cscope ne aldonita"
 
 #, c-format
-msgid "E261: cscope connection %s not found"
+# TODO: Capitalise first word of message?
+msgid "E261: Cscope connection %s not found"
 msgstr "E261: konekto cscope %s netrovita"
 
 #, c-format
 msgid "cscope connection %s closed"
 msgstr "konekto cscope %s fermita"
 
-msgid "E570: fatal error in cs_manage_matches"
+# TODO: Capitalise first word of message?
+msgid "E570: Fatal error in cs_manage_matches"
 msgstr "E570: neriparebla eraro en cs_manage_matches"
 
 #, c-format
@@ -2399,26 +2457,33 @@ msgstr ""
 "E266: Bedaŭrinde tiu komando estas malŝaltita, la biblioteko Ruby ne "
 "ŝargeblis."
 
-msgid "E267: unexpected return"
+# TODO: Capitalise first word of message?
+msgid "E267: Unexpected return"
 msgstr "E267: \"return\" neatendita"
 
-msgid "E268: unexpected next"
+# TODO: Capitalise first word of message?
+msgid "E268: Unexpected next"
 msgstr "E268: \"next\" neatendita"
 
-msgid "E269: unexpected break"
+# TODO: Capitalise first word of message?
+msgid "E269: Unexpected break"
 msgstr "E269: \"break\" neatendita"
 
-msgid "E270: unexpected redo"
+# TODO: Capitalise first word of message?
+msgid "E270: Unexpected redo"
 msgstr "E270: \"redo\" neatendita"
 
-msgid "E271: retry outside of rescue clause"
+# TODO: Capitalise first word of message?
+msgid "E271: Retry outside of rescue clause"
 msgstr "E271: \"retry\" ekster klaŭzo \"rescue\""
 
-msgid "E272: unhandled exception"
+# TODO: Capitalise first word of message?
+msgid "E272: Unhandled exception"
 msgstr "E272: netraktita escepto"
 
 #, c-format
-msgid "E273: unknown longjmp status %d"
+# TODO: Capitalise first word of message?
+msgid "E273: Unknown longjmp status %d"
 msgstr "E273: nekonata stato de longjmp: %d"
 
 msgid "invalid buffer number"
@@ -2483,7 +2548,8 @@ msgstr ""
 "ŝargeblis."
 
 #, c-format
-msgid "E572: exit code %d"
+# TODO: Capitalise first word of message?
+msgid "E572: Exit code %d"
 msgstr "E572: elira kodo %d"
 
 msgid "cannot get line"
@@ -2621,14 +2687,17 @@ msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: bufro in_io bezonas in_buf aŭ in_name"
 
 #, c-format
-msgid "E918: buffer must be loaded: %s"
+# TODO: Capitalise first word of message?
+msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: bufro devas esti ŝargita: %s"
 
-msgid "E916: not a valid job"
+# TODO: Capitalise first word of message?
+msgid "E916: Not a valid job"
 msgstr "E916: nevalida tasko"
 
 #, c-format
-msgid "E491: json decode error at '%s'"
+# TODO: Capitalise first word of message?
+msgid "E491: JSON decode error at '%s'"
 msgstr "E491: eraro dum json-malkodado: '%s'"
 
 #, c-format
@@ -3108,19 +3177,23 @@ msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
 msgstr "--windowid <HWND>\tMalfermi Vim en alia win32 fenestraĵo"
 
 #, c-format
-msgid "E224: global abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: malloka mallongigo jam ekzistas por %s"
 
 #, c-format
-msgid "E225: global mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E225: Global mapping already exists for %s"
 msgstr "E225: malloka mapo jam ekzistas por %s"
 
 #, c-format
-msgid "E226: abbreviation already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: mallongigo jam ekzistas por %s"
 
 #, c-format
-msgid "E227: mapping already exists for %s"
+# TODO: Capitalise first word of message?
+msgid "E227: Mapping already exists for %s"
 msgstr "E227: mapo jam ekzistas por %s"
 
 msgid "No abbreviation found"
@@ -3132,7 +3205,8 @@ msgstr "Neniu mapo trovita"
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Nevalida reĝimo"
 
-msgid "E460: entries missing in mapset() dict argument"
+# TODO: Capitalise first word of message?
+msgid "E460: Entries missing in mapset() dict argument"
 msgstr "E460: mankas eroj en vortara argumento de mapset()"
 
 #, c-format
@@ -3197,7 +3271,8 @@ msgstr "E798: ID estas rezervita por \":match\": %d"
 msgid "E543: Not a valid codepage"
 msgstr "E543: Nevalida kodpaĝo"
 
-msgid "E293: block was not locked"
+# TODO: Capitalise first word of message?
+msgid "E293: Block was not locked"
 msgstr "E293: bloko ne estis ŝlosita"
 
 msgid "E294: Seek error in swap file read"
@@ -3518,14 +3593,17 @@ msgid "E314: Preserve failed"
 msgstr "E314: Konservo malsukcesis"
 
 #, c-format
-msgid "E315: ml_get: invalid lnum: %ld"
+# TODO: Capitalise first word of message?
+msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: nevalida lnum: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
+# TODO: Capitalise first word of message?
+msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: ne eblas trovi linion %ld en bufro %d %s"
 
-msgid "E317: pointer block id wrong 3"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 3"
 msgstr "E317: nevalida referenco de bloko id 3"
 
 msgid "stack_idx should be 0"
@@ -3534,7 +3612,8 @@ msgstr "stack_idx devus esti 0"
 msgid "E318: Updated too many blocks?"
 msgstr "E318: Ĉu ĝisdatigis tro da blokoj?"
 
-msgid "E317: pointer block id wrong 4"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 4"
 msgstr "E317: nevalida referenco de bloko id 4"
 
 msgid "deleted block 1?"
@@ -3544,24 +3623,28 @@ msgstr "ĉu forviŝita bloko 1?"
 msgid "E320: Cannot find line %ld"
 msgstr "E320: Ne eblas trovi linion %ld"
 
-msgid "E317: pointer block id wrong"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong"
 msgstr "E317: nevalida referenco de bloko id"
 
 msgid "pe_line_count is zero"
 msgstr "pe_line_count estas nul"
 
 #, c-format
-msgid "E322: line number out of range: %ld past the end"
+# TODO: Capitalise first word of message?
+msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: numero de linio ekster limoj: %ld preter la fino"
 
 #, c-format
-msgid "E323: line count wrong in block %ld"
+# TODO: Capitalise first word of message?
+msgid "E323: Line count wrong in block %ld"
 msgstr "E323: nevalida nombro de linioj en bloko %ld"
 
 msgid "Stack size increases"
 msgstr "Stako pligrandiĝas"
 
-msgid "E317: pointer block id wrong 2"
+# TODO: Capitalise first word of message?
+msgid "E317: Pointer block id wrong 2"
 msgstr "E317: nevalida referenco de bloko id 2"
 
 #, c-format
@@ -3817,7 +3900,8 @@ msgstr "E546: Reĝimo nepermesata"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: Nevalida formo de muskursoro"
 
-msgid "E548: digit expected"
+# TODO: Capitalise first word of message?
+msgid "E548: Digit expected"
 msgstr "E548: cifero atendata"
 
 msgid "E549: Illegal percentage"
@@ -3832,10 +3916,12 @@ msgstr ""
 msgid "E658: NetBeans connection lost for buffer %d"
 msgstr "E658: Konekto de NetBeans perdita por bufro %d"
 
-msgid "E838: netbeans is not supported with this GUI"
+# TODO: Capitalise first word of message?
+msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: netbeans ne estas subtenata kun tiu grafika interfaco"
 
-msgid "E511: netbeans already connected"
+# TODO: Capitalise first word of message?
+msgid "E511: NetBeans already connected"
 msgstr "E511: nebeans jam konektata"
 
 #, c-format
@@ -3854,7 +3940,8 @@ msgstr "E348: Neniu ĉeno sub la kursoro"
 msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: Ne eblas forviŝi faldon per aktuala 'foldmethod'"
 
-msgid "E664: changelist is empty"
+# TODO: Capitalise first word of message?
+msgid "E664: Changelist is empty"
 msgstr "E664: Listo de ŝanĝoj estas malplena"
 
 msgid "E662: At start of changelist"
@@ -4029,7 +4116,8 @@ msgstr "Por opcio %s"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: '}' mankas"
 
-msgid "E542: unbalanced groups"
+# TODO: Capitalise first word of message?
+msgid "E542: Unbalanced groups"
 msgstr "E542: misekvilibraj grupoj"
 
 msgid "E529: Cannot set 'term' to empty string"
@@ -4073,13 +4161,15 @@ msgstr "E595: 'showbreak' enhavas nepreseblan aŭ plurĉellarĝan signon"
 msgid "E596: Invalid font(s)"
 msgstr "E596: Nevalida(j) tiparo(j)"
 
-msgid "E597: can't select fontset"
+# TODO: Capitalise first word of message?
+msgid "E597: Can't select fontset"
 msgstr "E597: ne eblas elekti tiparon"
 
 msgid "E598: Invalid fontset"
 msgstr "E598: Nevalida tiparo"
 
-msgid "E533: can't select wide font"
+# TODO: Capitalise first word of message?
+msgid "E533: Can't select wide font"
 msgstr "E533: ne eblas elekti larĝan tiparon"
 
 msgid "E534: Invalid wide font"
@@ -4089,7 +4179,8 @@ msgstr "E534: Nevalida larĝa tiparo"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: Nevalida signo post <%c>"
 
-msgid "E536: comma required"
+# TODO: Capitalise first word of message?
+msgid "E536: Comma required"
 msgstr "E536: komo bezonata"
 
 #, c-format
@@ -4325,7 +4416,8 @@ msgstr "la ŝelo liveris %d"
 msgid "E861: Cannot open a second popup with a terminal"
 msgstr "E861: Ne eblas malfermi duan ŝprucfenestron kun terminalo"
 
-msgid "E450: buffer number, text or a list required"
+# TODO: Capitalise first word of message?
+msgid "E450: Buffer number, text or a list required"
 msgstr "E450: numero de bufro, teksto aŭ listo bezonata"
 
 #, c-format
@@ -4333,7 +4425,8 @@ msgid "E997: Tabpage not found: %d"
 msgstr "E997: Langeto netrovita: %d"
 
 #, c-format
-msgid "E993: window %d is not a popup window"
+# TODO: Capitalise first word of message?
+msgid "E993: Window %d is not a popup window"
 msgstr "E993: fenestro %d ne estas ŝprucfenestro"
 
 msgid "E994: Not allowed in a popup window"
@@ -4430,7 +4523,8 @@ msgid "E927: Invalid action: '%s'"
 msgstr "E927: Nevalida ago: '%s'"
 
 #, c-format
-msgid "E369: invalid item in %s%%[]"
+# TODO: Capitalise first word of message?
+msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: nevalida ano en %s%%[]"
 
 #, c-format
@@ -4462,7 +4556,8 @@ msgid "E956: Cannot use pattern recursively"
 msgstr "E956: Ne eblas uzi ŝablonon rekursie"
 
 #, c-format
-msgid "E654: missing delimiter after search pattern: %s"
+# TODO: Capitalise first word of message?
+msgid "E654: Missing delimiter after search pattern: %s"
 msgstr "E654: mankas disigilo post ŝablono de serĉo: %s"
 
 #, c-format
@@ -4486,7 +4581,8 @@ msgstr "Ŝanĝas al malavanca motoro de regulesprimo por ŝablono: "
 msgid "E65: Illegal back reference"
 msgstr "E65: Nevalida retro-referenco"
 
-msgid "E63: invalid use of \\_"
+# TODO: Capitalise first word of message?
+msgid "E63: Invalid use of \\_"
 msgstr "E63: nevalida uzo de \\_"
 
 #, c-format
@@ -4758,11 +4854,13 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: Nevalida serĉenda ĉeno: %s"
 
 #, c-format
-msgid "E384: search hit TOP without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: serĉo atingis SUPRON sen trovi: %s"
 
 #, c-format
-msgid "E385: search hit BOTTOM without match for: %s"
+# TODO: Capitalise first word of message?
+msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: serĉo atingis SUBON sen trovi: %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
@@ -4955,7 +5053,8 @@ msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: Dosiero .sug ne kongruas kun dosiero .spl: %s"
 
 #, c-format
-msgid "E782: error while reading .sug file: %s"
+# TODO: Capitalise first word of message?
+msgid "E782: Error while reading .sug file: %s"
 msgstr "E782: eraro dum legado de dosiero .sug: %s"
 
 #, c-format
@@ -5226,7 +5325,8 @@ msgstr "Vorto '%.*s' aldonita al %s"
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Signoj de vorto malsamas tra literumaj dosieroj"
 
-msgid "E783: duplicate char in MAP entry"
+# TODO: Capitalise first word of message?
+msgid "E783: Duplicate char in MAP entry"
 msgstr "E783: ripetita signo en rikordo MAP"
 
 msgid "Sorry, no suggestions"
@@ -5356,10 +5456,12 @@ msgstr "; kongruo "
 msgid " line breaks"
 msgstr " liniavancoj"
 
-msgid "E395: contains argument not accepted here"
+# TODO: Capitalise first word of message?
+msgid "E395: Contains argument not accepted here"
 msgstr "E395: La argumento \"contains\" ne akcepteblas tie"
 
-msgid "E844: invalid cchar value"
+# TODO: Capitalise first word of message?
+msgid "E844: Invalid cchar value"
 msgstr "E844: nevalida valoro de cchar"
 
 msgid "E393: group[t]here not accepted here"
@@ -5380,7 +5482,8 @@ msgid "E789: Missing ']': %s"
 msgstr "E789: Mankas ']': %s"
 
 #, c-format
-msgid "E890: trailing char after ']': %s]%s"
+# TODO: Capitalise first word of message?
+msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: vosta signo post ']': %s]%s"
 
 #, c-format
@@ -5405,7 +5508,8 @@ msgstr "E401: Disigilo de ŝablono netrovita: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Forĵetindaĵo post ŝablono: %s"
 
-msgid "E403: syntax sync: line continuations pattern specified twice"
+# TODO: Capitalise first word of message?
+msgid "E403: syntax sync: Line continuations pattern specified twice"
 msgstr "E403: sintaksa sinkronigo: ŝablono de linia daŭrigo specifita dufoje"
 
 #, c-format
@@ -5441,23 +5545,28 @@ msgid ""
 msgstr ""
 "  TOTALO    NOMBRO  KONGRUO PLEJ MALRAPID  MEZA   NOMO               ŜABLONO"
 
-msgid "E555: at bottom of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E555: At bottom of tag stack"
 msgstr "E555: ĉe subo de stako de etikedoj"
 
-msgid "E556: at top of tag stack"
+# TODO: Capitalise first word of message?
+msgid "E556: At top of tag stack"
 msgstr "E556: ĉe supro de stako de etikedoj"
 
-msgid "E986: cannot modify the tag stack within tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E986: Cannot modify the tag stack within tagfunc"
 msgstr "E986: ne eblas ŝanĝi stakon de etikedoj en 'tagfunc'"
 
-msgid "E987: invalid return value from tagfunc"
+# TODO: Capitalise first word of message?
+msgid "E987: Invalid return value from tagfunc"
 msgstr "E987: nevalida liveraĵo el 'tagfunc'"
 
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Ne eblas iri antaŭ la unuan kongruan etikedon"
 
 #, c-format
-msgid "E426: tag not found: %s"
+# TODO: Capitalise first word of message?
+msgid "E426: Tag not found: %s"
 msgstr "E426: etikedo netrovita: %s"
 
 msgid "E427: There is only one matching tag"
@@ -5553,7 +5662,8 @@ msgstr "E559: Ne trovis rikordon de terminalo en termcap"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: Neniu rikordo \"%s\" en termcap"
 
-msgid "E437: terminal capability \"cm\" required"
+# TODO: Capitalise first word of message?
+msgid "E437: Terminal capability \"cm\" required"
 msgstr "E437: kapablo de terminalo \"cm\" bezonata"
 
 msgid ""
@@ -5617,10 +5727,12 @@ msgstr "E966: Nevalida numero de linio: %ld"
 msgid "E275: Cannot add text property to unloaded buffer"
 msgstr "E275: Ne eblas aldoni econ de teksto al malŝaltita bufro"
 
-msgid "E965: missing property type name"
+# TODO: Capitalise first word of message?
+msgid "E965: Missing property type name"
 msgstr "E965: nomo de tipo de eco mankas"
 
-msgid "E967: text property info corrupted"
+# TODO: Capitalise first word of message?
+msgid "E967: Text property info corrupted"
 msgstr "E967: difekta informo de eco de teksto"
 
 msgid "E968: Need at least one of 'id' or 'type'"
@@ -5784,7 +5896,8 @@ msgid "Writing undo file: %s"
 msgstr "Skribas malfaran dosieron: %s"
 
 #, c-format
-msgid "E829: write error in undo file: %s"
+# TODO: Capitalise first word of message?
+msgid "E829: Write error in undo file: %s"
 msgstr "E829: Skriberaro en malfara dosiero: %s"
 
 #, c-format
@@ -5836,7 +5949,8 @@ msgstr "Jam al la plej nova ŝanĝo"
 msgid "E830: Undo number %ld not found"
 msgstr "E830: Malfara numero %ld netrovita"
 
-msgid "E438: u_undo: line numbers wrong"
+# TODO: Capitalise first word of message?
+msgid "E438: u_undo: Line numbers wrong"
 msgstr "E438: u_undo: nevalidaj numeroj de linioj"
 
 msgid "more line"
@@ -5876,10 +5990,12 @@ msgstr "numero ŝanĝoj   tempo              konservita"
 msgid "E790: undojoin is not allowed after undo"
 msgstr "E790: undojoin estas nepermesebla post malfaro"
 
-msgid "E439: undo list corrupt"
+# TODO: Capitalise first word of message?
+msgid "E439: Undo list corrupt"
 msgstr "E439: listo de malfaro estas difekta"
 
-msgid "E440: undo line missing"
+# TODO: Capitalise first word of message?
+msgid "E440: Undo line missing"
 msgstr "E440: linio de malfaro mankas"
 
 msgid ""
@@ -5920,10 +6036,12 @@ msgstr "E177: Kvantoro ne povas aperi dufoje"
 msgid "E178: Invalid default value for count"
 msgstr "E178: Nevalida defaŭlta valoro de kvantoro"
 
-msgid "E179: argument required for -complete"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for -complete"
 msgstr "E179: argumento bezonata por -complete"
 
-msgid "E179: argument required for -addr"
+# TODO: Capitalise first word of message?
+msgid "E179: Argument required for -addr"
 msgstr "E179: argumento bezonata por -addr"
 
 #, c-format
@@ -6028,7 +6146,8 @@ msgstr "E128: Nomo de funkcio devas eki per majusklo aŭ per \"s:\": %s"
 msgid "E884: Function name cannot contain a colon: %s"
 msgstr "E884: Nomo de funkcio ne povas enhavi dupunkton: %s"
 
-msgid "E454: function list was modified"
+# TODO: Capitalise first word of message?
+msgid "E454: Function list was modified"
 msgstr "E454: listo de funkcioj ŝanĝiĝis"
 
 #, c-format
@@ -6774,7 +6893,8 @@ msgid "E55: Unmatched %s)"
 msgstr "E55: Neekvilibra %s"
 
 #, c-format
-msgid "E59: invalid character after %s@"
+# TODO: Capitalise first word of message?
+msgid "E59: Invalid character after %s@"
 msgstr "E59: nevalida signo post %s@"
 
 #, c-format
@@ -6833,7 +6953,8 @@ msgstr ""
 "aŭ du ĉenoj"
 
 #, c-format
-msgid "E908: using an invalid value as a String: %s"
+# TODO: Capitalise first word of message?
+msgid "E908: Using an invalid value as a String: %s"
 msgstr "E908: uzo de nevalida valoro kiel Ĉeno: %s"
 
 msgid "E909: Cannot index a special variable"
@@ -7694,7 +7815,8 @@ msgstr "E603: \":catch\" sen \":try\""
 msgid "E606: :finally without :try"
 msgstr "E606: \":finally\" sen \":try\""
 
-msgid "E607: multiple :finally"
+# TODO: Capitalise first word of message?
+msgid "E607: Multiple :finally"
 msgstr "E607: pluraj \":finally\""
 
 msgid "E600: Missing :endtry"
@@ -7795,7 +7917,8 @@ msgid "E481: No range allowed"
 msgstr "E481: Amplekso nepermesebla"
 
 #, c-format
-msgid "E247: no registered server named \"%s\""
+# TODO: Capitalise first word of message?
+msgid "E247: No registered server named \"%s\""
 msgstr "E247: neniu registrita servilo nomita \"%s\""
 
 #, c-format
@@ -7813,7 +7936,8 @@ msgstr "E484: Ne eblas malfermi dosieron %s"
 msgid "E485: Can't read file %s"
 msgstr "E485: Ne eblas legi dosieron %s"
 
-msgid "E233: cannot open display"
+# TODO: Capitalise first word of message?
+msgid "E233: Cannot open display"
 msgstr "E233: ne eblas malfermi vidigon"
 
 msgid "Pattern not found"
@@ -7863,7 +7987,8 @@ msgid "E715: Dictionary required"
 msgstr "E715: Vortaro bezonata"
 
 #, c-format
-msgid "E684: list index out of range: %ld"
+# TODO: Capitalise first word of message?
+msgid "E684: List index out of range: %ld"
 msgstr "E684: indekso de listo ekster limoj: %ld"
 
 #, c-format
@@ -7946,7 +8071,8 @@ msgstr "E255: Ne eblis legi datumojn de simboloj!"
 msgid "E72: Close error on swap file"
 msgstr "E72: Eraro dum malfermo de permutodosiero .swp"
 
-msgid "E73: tag stack empty"
+# TODO: Capitalise first word of message?
+msgid "E73: Tag stack empty"
 msgstr "E73: malplena stako de etikedo"
 
 msgid "E74: Command too complex"
@@ -8021,10 +8147,12 @@ msgstr "E463: Regiono estas gardita, ne eblas ŝanĝi"
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr "E744: NetBeans ne permesas ŝanĝojn en nurlegeblaj dosieroj"
 
-msgid "E363: pattern uses more memory than 'maxmempattern'"
+# TODO: Capitalise first word of message?
+msgid "E363: Pattern uses more memory than 'maxmempattern'"
 msgstr "E363: ŝablono uzas pli da memoro ol 'maxmempattern'"
 
-msgid "E749: empty buffer"
+# TODO: Capitalise first word of message?
+msgid "E749: Empty buffer"
 msgstr "E749: malplena bufro"
 
 #, c-format
@@ -8044,7 +8172,8 @@ msgstr "E764: La opcio '%s' ne estas ŝaltita"
 msgid "E850: Invalid register name"
 msgstr "E850: Nevalida nomo de reĝistro"
 
-msgid "E806: using Float as a String"
+# TODO: Capitalise first word of message?
+msgid "E806: Using Float as a String"
 msgstr "E806: uzo de Glitpunktnombro kiel Ĉeno"
 
 #, c-format

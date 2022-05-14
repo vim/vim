@@ -73,6 +73,13 @@ func Test_Debugger()
 	  endtry
 	  return var1
 	endfunc
+        def Vim9Func()
+          for cmd in ['confirm', 'xxxxxxx']
+            for _ in [1, 2]
+              echo cmd
+            endfor
+          endfor
+        enddef
   END
   call writefile(lines, 'Xtest.vim')
 
@@ -298,6 +305,14 @@ func Test_Debugger()
 	      \ 'line 5: catch'])
   call RunDbgCmd(buf, 'c')
 
+  " Test showing local variable in :def function
+  call RunDbgCmd(buf, ':breakadd func 2 Vim9Func')
+  call RunDbgCmd(buf, ':call Vim9Func()', ['line 2:             for _ in [1, 2]'])
+  call RunDbgCmd(buf, 'next', ['line 2: for _ in [1, 2]'])
+  call RunDbgCmd(buf, 'echo cmd', ['confirm'])
+  call RunDbgCmd(buf, 'breakdel *')
+  call RunDbgCmd(buf, 'cont')
+
   " Test for :quit
   call RunDbgCmd(buf, ':debug echo Foo()')
   call RunDbgCmd(buf, 'breakdel *')
@@ -347,7 +362,39 @@ func Test_Debugger_breakadd()
   call assert_fails('breakadd file Xtest.vim /\)/', 'E55:')
 endfunc
 
-def Test_Debugger_breakadd_expr()
+" Test for expression breakpoint set using ":breakadd expr <expr>"
+func Test_Debugger_breakadd_expr()
+  let lines =<< trim END
+    let g:Xtest_var += 1
+  END
+  call writefile(lines, 'Xtest.vim')
+
+  " Start Vim in a terminal
+  let buf = RunVimInTerminal('Xtest.vim', {})
+  call RunDbgCmd(buf, ':let g:Xtest_var = 10')
+  call RunDbgCmd(buf, ':breakadd expr g:Xtest_var')
+  call RunDbgCmd(buf, ':source %')
+  let expected =<< eval trim END
+    Oldval = "10"
+    Newval = "11"
+    {fnamemodify('Xtest.vim', ':p')}
+    line 1: let g:Xtest_var += 1
+  END
+  call RunDbgCmd(buf, ':source %', expected)
+  call RunDbgCmd(buf, 'cont')
+  let expected =<< eval trim END
+    Oldval = "11"
+    Newval = "12"
+    {fnamemodify('Xtest.vim', ':p')}
+    line 1: let g:Xtest_var += 1
+  END
+  call RunDbgCmd(buf, ':source %', expected)
+
+  call StopVimInTerminal(buf)
+  call delete('Xtest.vim')
+endfunc
+
+def Test_Debugger_breakadd_vim9_expr()
   var lines =<< trim END
       vim9script
       func g:EarlyFunc()

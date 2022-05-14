@@ -1179,7 +1179,7 @@ wait_return(int redraw)
 	// just changed.
 	screenalloc(FALSE);
 
-	State = HITRETURN;
+	State = MODE_HITRETURN;
 	setmouse();
 #ifdef USE_ON_FLY_SCROLL
 	dont_scroll = TRUE;		// disallow scrolling here
@@ -1351,7 +1351,7 @@ wait_return(int redraw)
 				  (Rows - cmdline_row - 1) * Columns + sc_col)
 	VIM_CLEAR(keep_msg);	    // don't redisplay message, it's too long
 
-    if (tmpState == SETWSIZE)	    // got resize event while in vgetc()
+    if (tmpState == MODE_SETWSIZE)  // got resize event while in vgetc()
     {
 	starttermcap();		    // start termcap before redrawing
 	shell_resized();
@@ -1408,7 +1408,7 @@ set_keep_msg(char_u *s, int attr)
 set_keep_msg_from_hist(void)
 {
     if (keep_msg == NULL && last_msg_hist != NULL && msg_scrolled == 0
-							  && (State & NORMAL))
+						      && (State & MODE_NORMAL))
 	set_keep_msg(last_msg_hist->msg, last_msg_hist->attr);
 }
 #endif
@@ -1721,6 +1721,9 @@ msg_outtrans_special(
 	}
 	else
 	    text = (char *)str2special(&str, from);
+	if (text[0] != NUL && text[1] == NUL)
+	    // single-byte character or illegal byte
+	    text = (char *)transchar_byte((char_u)text[0]);
 	len = vim_strsize((char_u *)text);
 	if (maxlen > 0 && retval + len >= maxlen)
 	    break;
@@ -1755,6 +1758,7 @@ str2special_save(
 
 /*
  * Return the printable string for the key codes at "*sp".
+ * On illegal byte return a string with only that byte.
  * Used for translating the lhs or rhs of a mapping to printable chars.
  * Advances "sp" to the next code.
  */
@@ -1798,28 +1802,28 @@ str2special(
 	    special = TRUE;
     }
 
-    if (has_mbyte && !IS_SPECIAL(c))
+    if (has_mbyte && !IS_SPECIAL(c) && MB_BYTE2LEN(c) > 1)
     {
-	int len = (*mb_ptr2len)(str);
+	char_u	*p;
 
-	// For multi-byte characters check for an illegal byte.
-	if (has_mbyte && MB_BYTE2LEN(*str) > len)
-	{
-	    transchar_nonprint(curbuf, buf, c);
+	*sp = str;
+	// Try to un-escape a multi-byte character after modifiers.
+	p = mb_unescape(sp);
+	if (p != NULL)
+	    // Since 'special' is TRUE the multi-byte character 'c' will be
+	    // processed by get_special_key_name()
+	    c = (*mb_ptr2char)(p);
+	else
+	    // illegal byte
 	    *sp = str + 1;
-	    return buf;
-	}
-	// Since 'special' is TRUE the multi-byte character 'c' will be
-	// processed by get_special_key_name()
-	c = (*mb_ptr2char)(str);
-	*sp = str + len;
     }
     else
+	// single-byte character or illegal byte
 	*sp = str + 1;
 
-    // Make unprintable characters in <> form, also <M-Space> and <Tab>.
+    // Make special keys and C0 control characters in <> form, also <M-Space>.
     // Use <Space> only for lhs of a mapping.
-    if (special || char2cells(c) > 1 || (from && c == ' '))
+    if (special || c < ' ' || (from && c == ' '))
 	return get_special_key_name(c, modifiers);
     buf[0] = c;
     buf[1] = NUL;
@@ -2274,7 +2278,7 @@ msg_puts_display(
 	     */
 	    if (lines_left > 0)
 		--lines_left;
-	    if (p_more && lines_left == 0 && State != HITRETURN
+	    if (p_more && lines_left == 0 && State != MODE_HITRETURN
 					    && !msg_no_more && !exmode_active)
 	    {
 #ifdef FEAT_CON_DIALOG
@@ -2837,7 +2841,7 @@ do_more_prompt(int typed_char)
     // We get called recursively when a timer callback outputs a message. In
     // that case don't show another prompt. Also when at the hit-Enter prompt
     // and nothing was typed.
-    if (entered || (State == HITRETURN && typed_char == 0))
+    if (entered || (State == MODE_HITRETURN && typed_char == 0))
 	return FALSE;
     entered = TRUE;
 
@@ -2850,7 +2854,7 @@ do_more_prompt(int typed_char)
 	    mp_last = msg_sb_start(mp_last->sb_prev);
     }
 
-    State = ASKMORE;
+    State = MODE_ASKMORE;
     setmouse();
     if (typed_char == NUL)
 	msg_moremsg(FALSE);
@@ -2870,7 +2874,7 @@ do_more_prompt(int typed_char)
 #if defined(FEAT_MENU) && defined(FEAT_GUI)
 	if (c == K_MENU)
 	{
-	    int idx = get_menu_index(current_menu, ASKMORE);
+	    int idx = get_menu_index(current_menu, MODE_ASKMORE);
 
 	    // Used a menu.  If it starts with CTRL-Y, it must
 	    // be a "Copy" for the clipboard.  Otherwise
@@ -3319,29 +3323,29 @@ msg_moremsg(int full)
 }
 
 /*
- * Repeat the message for the current mode: ASKMORE, EXTERNCMD, CONFIRM or
- * exmode_active.
+ * Repeat the message for the current mode: MODE_ASKMORE, MODE_EXTERNCMD,
+ * MODE_CONFIRM or exmode_active.
  */
     void
 repeat_message(void)
 {
-    if (State == ASKMORE)
+    if (State == MODE_ASKMORE)
     {
 	msg_moremsg(TRUE);	// display --more-- message again
 	msg_row = Rows - 1;
     }
 #ifdef FEAT_CON_DIALOG
-    else if (State == CONFIRM)
+    else if (State == MODE_CONFIRM)
     {
 	display_confirm_msg();	// display ":confirm" message again
 	msg_row = Rows - 1;
     }
 #endif
-    else if (State == EXTERNCMD)
+    else if (State == MODE_EXTERNCMD)
     {
 	windgoto(msg_row, msg_col); // put cursor back
     }
-    else if (State == HITRETURN || State == SETWSIZE)
+    else if (State == MODE_HITRETURN || State == MODE_SETWSIZE)
     {
 	if (msg_row == Rows - 1)
 	{
@@ -3448,7 +3452,7 @@ msg_end(void)
      * we have to redraw the window.
      * Do not do this if we are abandoning the file or editing the command line.
      */
-    if (!exiting && need_wait_return && !(State & CMDLINE))
+    if (!exiting && need_wait_return && !(State & MODE_CMDLINE))
     {
 	wait_return(FALSE);
 	return FALSE;
@@ -3801,7 +3805,7 @@ do_dialog(
 #endif
 
     oldState = State;
-    State = CONFIRM;
+    State = MODE_CONFIRM;
     setmouse();
 
     // Ensure raw mode here.

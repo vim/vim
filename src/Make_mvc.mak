@@ -391,7 +391,8 @@ SODIUM = no
 !if "$(SODIUM)" != "no"
 SOD_INC		= /I "$(SODIUM)\include"
 ! if "$(DYNAMIC_SODIUM)" == "yes"
-SOD_DEFS	= -DHAVE_SODIUM -DDYNAMIC_SODIUM
+SODIUM_DLL	= libsodium.dll
+SOD_DEFS	= -DHAVE_SODIUM -DDYNAMIC_SODIUM -DDYNAMIC_SODIUM_DLL=\"$(SODIUM_DLL)\"
 SOD_LIB		=
 ! else
 SOD_DEFS	= -DHAVE_SODIUM
@@ -1812,19 +1813,19 @@ $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
 $(OUTDIR)/version.obj:	$(OUTDIR) version.c  $(INCL) version.h
 
-$(OUTDIR)/vim9cmds.obj:	$(OUTDIR) vim9cmds.c  $(INCL)
+$(OUTDIR)/vim9cmds.obj:	$(OUTDIR) vim9cmds.c  $(INCL) vim9.h
 
-$(OUTDIR)/vim9compile.obj:	$(OUTDIR) vim9compile.c  $(INCL)
+$(OUTDIR)/vim9compile.obj:	$(OUTDIR) vim9compile.c  $(INCL) vim9.h
 
-$(OUTDIR)/vim9execute.obj:	$(OUTDIR) vim9execute.c  $(INCL)
+$(OUTDIR)/vim9execute.obj:	$(OUTDIR) vim9execute.c  $(INCL) vim9.h
 
-$(OUTDIR)/vim9expr.obj:	$(OUTDIR) vim9expr.c  $(INCL)
+$(OUTDIR)/vim9expr.obj:	$(OUTDIR) vim9expr.c  $(INCL) vim9.h
 
-$(OUTDIR)/vim9instr.obj:	$(OUTDIR) vim9instr.c  $(INCL)
+$(OUTDIR)/vim9instr.obj:	$(OUTDIR) vim9instr.c  $(INCL) vim9.h
 
-$(OUTDIR)/vim9script.obj:	$(OUTDIR) vim9script.c  $(INCL)
+$(OUTDIR)/vim9script.obj:	$(OUTDIR) vim9script.c  $(INCL) vim9.h
 
-$(OUTDIR)/vim9type.obj:	$(OUTDIR) vim9type.c  $(INCL)
+$(OUTDIR)/vim9type.obj:	$(OUTDIR) vim9type.c  $(INCL) vim9.h
 
 $(OUTDIR)/viminfo.obj:	$(OUTDIR) viminfo.c  $(INCL) version.h
 

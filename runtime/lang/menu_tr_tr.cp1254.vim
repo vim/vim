@@ -1,5 +1,6 @@
 " Menu Translations:	Turkish
 " Maintainer:		Emir SARI <bitigchi@me.com>
+" Generated from menu_tr_tr.utf-8.vim, DO NOT EDIT
 
 if exists("did_menu_trans")
    finish

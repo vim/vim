@@ -208,7 +208,7 @@
 
 // GUI support defines
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK)
-#define X_INCLUDE_GRP_H             // To use getgrgid
+#define X_INCLUDE_GRP_H		// To use getgrgid
 #define XUSE_MTSAFE_API
 #define HAVE_X11
 #define WANT_X11

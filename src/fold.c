@@ -1128,7 +1128,7 @@ cloneFoldGrowArray(garray_T *from, garray_T *to)
 // foldFind() {{{2
 /*
  * Search for line "lnum" in folds of growarray "gap".
- * Set *fpp to the fold struct for the fold that contains "lnum" or
+ * Set "*fpp" to the fold struct for the fold that contains "lnum" or
  * the first fold below it (careful: it can be beyond the end of the array!).
  * Returns FALSE when there is no fold that contains "lnum".
  */
@@ -1499,7 +1499,7 @@ foldMarkAdjust(
 	line2 = line1 - amount_after - 1;
     // If appending a line in Insert mode, it should be included in the fold
     // just above the line.
-    if ((State & INSERT) && amount == (linenr_T)1 && line2 == MAXLNUM)
+    if ((State & MODE_INSERT) && amount == (linenr_T)1 && line2 == MAXLNUM)
 	--line1;
     foldMarkAdjustRecurse(&wp->w_folds, line1, line2, amount, amount_after);
 }
@@ -1523,7 +1523,7 @@ foldMarkAdjustRecurse(
 
     // In Insert mode an inserted line at the top of a fold is considered part
     // of the fold, otherwise it isn't.
-    if ((State & INSERT) && amount == (linenr_T)1 && line2 == MAXLNUM)
+    if ((State & MODE_INSERT) && amount == (linenr_T)1 && line2 == MAXLNUM)
 	top = line1 + 1;
     else
 	top = line1;
@@ -2246,7 +2246,14 @@ foldUpdateIEMS(win_T *wp, linenr_T top, linenr_T bot)
 	    getlevel = foldlevelDiff;
 #endif
 	else
+	{
 	    getlevel = foldlevelIndent;
+	    // Start one line back, because if the line above "top" has an
+	    // undefined fold level, folding it relies on the line under it,
+	    // which is "top".
+	    if (top > 1)
+		--fline.lnum;
+	}
 
 	// Backup to a line for which the fold level is defined.  Since it's
 	// always defined for line one, we will stop there.
@@ -2911,7 +2918,8 @@ foldSplit(
     // any between top and bot, they have been removed by the caller.
     gap1 = &fp->fd_nested;
     gap2 = &fp[1].fd_nested;
-    if (foldFind(gap1, bot + 1 - fp->fd_top, &fp2))
+    (void)foldFind(gap1, bot + 1 - fp->fd_top, &fp2);
+    if (fp2 != NULL)
     {
 	len = (int)((fold_T *)gap1->ga_data + gap1->ga_len - fp2);
 	if (len > 0 && ga_grow(gap2, len) == OK)

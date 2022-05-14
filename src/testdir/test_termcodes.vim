@@ -1783,6 +1783,28 @@ func Test_xx06_screen_response()
   call test_override('term_props', 0)
 endfunc
 
+func Do_check_t_8u_set_reset(set_by_user)
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let default_value = "\<Esc>[58;2;%lu;%lu;%lum"
+  let &t_8u = default_value
+  if !a:set_by_user
+    call test_option_not_set('t_8u')
+  endif
+  let seq = "\<Esc>[>0;279;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  call assert_equal(#{
+        \ cursor_style: 'u',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: 's'
+        \ }, terminalprops())
+  call assert_equal(a:set_by_user ? default_value : '', &t_8u)
+endfunc
+
 " This checks the xterm version response.
 " This must be after other tests, because it has side effects to xterm
 " properties.
@@ -1847,22 +1869,10 @@ func Test_xx07_xterm_response()
         \ mouse: 's'
         \ }, terminalprops())
 
-  " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset
-  set ttymouse=xterm
-  call test_option_not_set('ttymouse')
-  let &t_8u = "\<Esc>[58;2;%lu;%lu;%lum"
-  let seq = "\<Esc>[>0;279;0c"
-  call feedkeys(seq, 'Lx!')
-  call assert_equal(seq, v:termresponse)
-  call assert_equal('sgr', &ttymouse)
-
-  call assert_equal(#{
-        \ cursor_style: 'u',
-        \ cursor_blink_mode: 'u',
-        \ underline_rgb: 'u',
-        \ mouse: 's'
-        \ }, terminalprops())
-  call assert_equal('', &t_8u)
+  " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset,
+  " except when it was set by the user
+  call Do_check_t_8u_set_reset(0)
+  call Do_check_t_8u_set_reset(1)
 
   set t_RV=
   call test_override('term_props', 0)
@@ -2098,6 +2108,32 @@ func Test_modifyOtherKeys_mapped()
   set timeoutlen&
 endfunc
 
+func Test_modifyOtherKeys_ambiguous_mapping()
+  new
+  set timeoutlen=10
+  map <C-J> a
+  map <C-J>x <Nop>
+  call setline(1, 'x')
+
+  " CTRL-J b should have trigger the <C-J> mapping and then insert "b"
+  call feedkeys(GetEscCodeCSI27('J', 5) .. "b\<Esc>", 'Lx!')
+  call assert_equal('xb', getline(1))
+
+  unmap <C-J>
+  unmap <C-J>x
+
+  " if a special character is following there should be a check for a termcode
+  nnoremap s aX<Esc>
+  nnoremap s<BS> aY<Esc>
+  set t_kb=
+  call setline(1, 'x')
+  call feedkeys("s\x08", 'Lx!')
+  call assert_equal('xY', getline(1))
+
+  set timeoutlen&
+  bwipe!
+endfunc
+
 " Whether Shift-Tab sends "ESC [ Z" or "ESC [ 27 ; 2 ; 9 ~" is unpredictable,
 " both should work.
 func Test_modifyOtherKeys_shift_tab()
@@ -2314,6 +2350,22 @@ func Test_cmdline_literal()
   set timeoutlen&
 endfunc
 
+func Test_mapping_esc()
+  set timeoutlen=10
+
+  new
+  nnoremap <Up> iHello<Esc>
+  nnoremap <Esc> <Nop>
+
+  call feedkeys(substitute(&t_ku, '\*', '', 'g'), 'Lx!')
+  call assert_equal("Hello", getline(1))
+
+  bwipe!
+  nunmap <Up>
+  nunmap <Esc>
+  set timeoutlen&
+endfunc
+
 " Test for translation of special key codes (<xF1>, <xF2>, etc.)
 func Test_Keycode_Translation()
   let keycodes = [
@@ -2383,6 +2435,29 @@ func Test_terminal_builtin_without_gui()
   call map(output, {_, val -> trim(val)})
   call assert_equal(-1, index(output, 'builtin_gui'))
   call assert_notequal(-1, index(output, 'builtin_dumb'))
+endfunc
+
+func Test_simplify_ctrl_at()
+  " feeding unsimplified CTRL-@ should still trigger i_CTRL-@
+  call feedkeys("ifoo\<Esc>A\<*C-@>x", 'xt')
+  call assert_equal('foofo', getline(1))
+  bw!
+endfunc
+
+func Test_simplify_noremap()
+  call feedkeys("i\<*C-M>", 'nx')
+  call assert_equal('', getline(1))
+  call assert_equal([0, 2, 1, 0, 1], getcurpos())
+  bw!
+endfunc
+
+func Test_simplify_timedout()
+  inoremap <C-M>a b
+  call feedkeys("i\<*C-M>", 'xt')
+  call assert_equal('', getline(1))
+  call assert_equal([0, 2, 1, 0, 1], getcurpos())
+  iunmap <C-M>a
+  bw!
 endfunc
 
 

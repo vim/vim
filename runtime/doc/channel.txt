@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2021 Nov 28
+*channel.txt*      For Vim version 8.2.  Last change: 2022 Apr 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -25,6 +25,7 @@ The Netbeans interface also uses a channel. |netbeans|
 12. Job options				|job-options|
 13. Controlling a job			|job-control|
 14. Using a prompt buffer		|prompt-buffer|
+15. Language Server Protocol		|language-server-protocol|
 
 {only when compiled with the |+channel| feature for channel stuff}
 	You can check this with: `has('channel')`
@@ -53,6 +54,7 @@ RAW	nothing known, Vim cannot tell where a message ends
 NL	every message ends in a NL (newline) character
 JSON	JSON encoding |json_encode()|
 JS	JavaScript style JSON-like encoding |js_encode()|
+LSP	Language Server Protocol encoding |language-server-protocol|
 
 Common combination are:
 - Using a job connected through pipes in NL mode.  E.g., to run a style
@@ -91,7 +93,7 @@ And you should see the message in Vim. You can move the cursor a word forward:
 
 To handle asynchronous communication a callback needs to be used: >
 	func MyHandler(channel, msg)
-	  echo "from the handler: " . a:msg
+	  echo "from the handler: " .. a:msg
 	endfunc
 	call ch_sendexpr(channel, 'hello!', {'callback': "MyHandler"})
 Vim will not wait for a response.  Now the server can send the response later
@@ -118,10 +120,13 @@ To open a channel: >
 
 Use |ch_status()| to see if the channel could be opened.
 
-{address} has the form "hostname:port".  E.g., "localhost:8765".
-
-When using an IPv6 address, enclose it within square brackets.  E.g.,
-"[2001:db8::1]:8765".
+					*channel-address*
+{address} can be a domain name or an IP address, followed by a port number, or
+a Unix-domain socket path prefixed by "unix:".  E.g. >
+    www.example.com:80   " domain + port
+    127.0.0.1:1234       " IPv4 + port
+    [2001:db8::1]:8765   " IPv6 + port
+    unix:/tmp/my-socket  " Unix-domain socket path
 
 {options} is a dictionary with optional entries:	*channel-open-options*
 
@@ -130,18 +135,19 @@ When using an IPv6 address, enclose it within square brackets.  E.g.,
 	"js"   - Use JS (JavaScript) encoding, more efficient than JSON.
 	"nl"   - Use messages that end in a NL character
 	"raw"  - Use raw messages
+	"lsp"  - Use language server protocol encoding
 						*channel-callback* *E921*
 "callback"	A function that is called when a message is received that is
 		not handled otherwise (e.g. a JSON message with ID zero).  It
 		gets two arguments: the channel and the received message.
 		Example: >
 	func Handle(channel, msg)
-	  echo 'Received: ' . a:msg
+	  echo 'Received: ' .. a:msg
 	endfunc
 	let channel = ch_open("localhost:8765", {"callback": "Handle"})
 <
-		When "mode" is "json" or "js" the "msg" argument is the body
-		of the received message, converted to Vim types.
+		When "mode" is "json" or "js" or "lsp" the "msg" argument is
+		the body of the received message, converted to Vim types.
 		When "mode" is "nl" the "msg" argument is one message,
 		excluding the NL.
 		When "mode" is "raw" the "msg" argument is the whole message
@@ -165,7 +171,19 @@ When using an IPv6 address, enclose it within square brackets.  E.g.,
 		to check for messages, the close_cb may be invoked while still
 		in the callback.  The plugin must handle this somehow, it can
 		be useful to know that no more data is coming.
-							*channel-drop*
+		If it is not known if there is a message to be read, use a
+		try/catch block: >
+			try
+			  let msg = ch_readraw(a:channel)
+			catch
+			  let msg = 'no message'
+			endtry
+			try
+			  let err = ch_readraw(a:channel, #{part: 'err'})
+			catch
+			  let err = 'no error'
+			endtry
+<							*channel-drop*
 "drop"		Specifies when to drop messages:
 		    "auto"	When there is no callback to handle a message.
 				The "close_cb" is also considered for this.
@@ -407,6 +425,7 @@ To send a message, without expecting a response: >
 The process can send back a response, the channel handler will be called with
 it.
 
+						*channel-onetime-callback*
 To send a message and letting the response handled by a specific function,
 asynchronously: >
     call ch_sendraw(channel, {string}, {'callback': 'MyHandler'})
@@ -443,7 +462,7 @@ to check if there is something to read.
 Note that when there is no callback, messages are dropped.  To avoid that add
 a close callback to the channel.
 
-To read all output from a RAW channel that is available: >
+To read all normal output from a RAW channel that is available: >
 	let output = ch_readraw(channel)
 To read the error output: >
 	let output = ch_readraw(channel, {"part": "err"})
@@ -503,6 +522,7 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 		according to the type of channel.  The function cannot be used
 		with a raw channel.  See |channel-use|.
 		{handle} can be a Channel or a Job that has a Channel.
+		When using the "lsp" channel mode, {expr} must be a |Dict|.
 								*E917*
 		{options} must be a Dictionary.  It must not have a "callback"
 		entry.  It can have a "timeout" entry to specify the timeout
@@ -510,7 +530,8 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 
 		ch_evalexpr() waits for a response and returns the decoded
 		expression.  When there is an error or timeout it returns an
-		empty string.
+		empty |String| or, when using the "lsp" channel mode, returns an
+		empty |Dict|.
 
 		Note that while waiting for the response, Vim handles other
 		messages.  You need to make sure this doesn't cause trouble.
@@ -564,10 +585,15 @@ ch_info({handle})						*ch_info()*
 		When opened with ch_open():
 		   "hostname"	  the hostname of the address
 		   "port"	  the port of the address
+		   "path"	  the path of the Unix-domain socket
 		   "sock_status"  "open" or "closed"
 		   "sock_mode"	  "NL", "RAW", "JSON" or "JS"
 		   "sock_io"	  "socket"
 		   "sock_timeout" timeout in msec
+
+		Note that "path" is only present for Unix-domain sockets, for
+		regular ones "hostname" and "port" are present instead.
+
 		When opened with job_start():
 		   "out_status"	  "open", "buffered" or "closed"
 		   "out_mode"	  "NL", "RAW", "JSON" or "JS"
@@ -578,7 +604,7 @@ ch_info({handle})						*ch_info()*
 		   "err_io"	  "out", "null", "pipe", "file" or "buffer"
 		   "err_timeout"  timeout in msec
 		   "in_status"	  "open" or "closed"
-		   "in_mode"	  "NL", "RAW", "JSON" or "JS"
+		   "in_mode"	  "NL", "RAW", "JSON", "JS" or "LSP"
 		   "in_io"	  "null", "pipe", "file" or "buffer"
 		   "in_timeout"	  timeout in msec
 
@@ -610,8 +636,8 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		is going on in real time.
 
 		To enable the log very early, to see what is received from a
-		terminal during startup, use |--cmd|: >
-			vim --cmd "call ch_logfile('logfile', 'w')"
+		terminal during startup, use |--log|: >
+			vim --log logfile
 <
 		This function is not available in the |sandbox|.
 		NOTE: the channel communication is stored in the file, be
@@ -626,11 +652,8 @@ ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
 		Returns a Channel.  Use |ch_status()| to check for failure.
 
-		{address} is a String and has the form "hostname:port", e.g.,
-		"localhost:8765".
-
-		When using an IPv6 address, enclose it within square brackets.
-		E.g., "[2001:db8::1]:8765".
+		{address} is a String, see |channel-address| for the possible
+		accepted forms.
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.
@@ -674,6 +697,17 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		with a raw channel.
 		See |channel-use|.				*E912*
 		{handle} can be a Channel or a Job that has a Channel.
+		When using the "lsp" channel mode, {expr} must be a |Dict|.
+
+		If the channel mode is "lsp", then returns a Dict. Otherwise
+		returns an empty String.  If the "callback" item is present in
+		{options}, then the returned Dict contains the ID of the
+		request message.  The ID can be used to send a cancellation
+		request to the LSP server (if needed).  Returns an empty Dict
+		on error.
+
+		If a response message is not expected for {expr}, then don't
+		specify the "callback" item in {options}.
 
 		Can also be used as a |method|: >
 			GetChannel()->ch_sendexpr(expr)
@@ -1288,18 +1322,18 @@ prompt. >
 	" Create a channel log so we can see what happens.
 	call ch_logfile('logfile', 'w')
 
-	" Function handling a line of text has been typed.
+	" Function handling a line of text that has been typed.
 	func TextEntered(text)
 	  " Send the text to a shell with Enter appended.
 	  call ch_sendraw(g:shell_job, a:text .. "\n")
 	endfunc
 
-	" Function handling output from the shell: Added above the prompt.
+	" Function handling output from the shell: Add it above the prompt.
 	func GotOutput(channel, msg)
-	  call append(line("$") - 1, "- " . a:msg)
+	  call append(line("$") - 1, "- " .. a:msg)
 	endfunc
 
-	" Function handling the shell exist: close the window.
+	" Function handling the shell exits: close the window.
 	func JobExit(job, status)
 	  quit!
 	endfunc
@@ -1310,7 +1344,6 @@ prompt. >
 		\ err_cb: function('GotOutput'),
 		\ exit_cb: function('JobExit'),
 		\ })
-	let shell_ch = job_getchannel(shell_job)
 
 	new
 	set buftype=prompt
@@ -1321,6 +1354,231 @@ prompt. >
 	" start accepting shell commands
 	startinsert
 <
+The same in |Vim9| script: >
 
+	vim9script
+
+	# Create a channel log so we can see what happens.
+	ch_logfile('logfile', 'w')
+
+	var shell_job: job
+
+	# Function handling a line of text that has been typed.
+	def TextEntered(text: string)
+	  # Send the text to a shell with Enter appended.
+	  ch_sendraw(shell_job, text .. "\n")
+	enddef
+
+	# Function handling output from the shell: Add it above the prompt.
+	def GotOutput(channel: channel, msg: string)
+	  append(line("$") - 1, "- " .. msg)
+	enddef
+
+	# Function handling the shell exits: close the window.
+	def JobExit(job: job, status: number)
+	  quit!
+	enddef
+
+	# Start a shell in the background.
+	shell_job = job_start(["/bin/sh"], {
+				 out_cb: GotOutput,
+				 err_cb: GotOutput,
+				 exit_cb: JobExit,
+				 })
+
+	new
+	set buftype=prompt
+	var buf = bufnr('')
+	prompt_setcallback(buf, TextEntered)
+	prompt_setprompt(buf, "shell command: ")
+
+	# start accepting shell commands
+	startinsert
+
+==============================================================================
+15. Language Server Protocol			*language-server-protocol*
+
+The language server protocol specification is available at:
+
+    https://microsoft.github.io/language-server-protocol/specification
+
+Each LSP protocol message starts with a simple HTTP header followed by the
+payload encoded in JSON-RPC format.  This is described in:
+
+    https://www.jsonrpc.org/specification
+
+To encode and send a LSP request/notification message in a Vim |Dict| into a
+LSP JSON-RPC message and to receive and decode a LSP JSON-RPC
+response/notification message into a Vim |Dict|, connect to the LSP server
+with the |channel-mode| set to "lsp".
+
+For messages received on a channel with |channel-mode| set to "lsp", Vim will
+process the HTTP header and decode the JSON-RPC payload into a Vim |Dict| type
+and call the |channel-callback| function or the specified
+|channel-onetime-callback| function.  When sending messages on a channel using
+the |ch_evalexpr()| or |ch_sendexpr()| functions, Vim will add the HTTP header
+and encode the Vim expression into JSON.  Refer to |json_encode()| and
+|json_decode()| for more information about how Vim encodes and decodes the
+builtin types into JSON.
+
+To open a channel using the 'lsp' mode, set the 'mode' item in the |ch_open()|
+{options} argument to 'lsp'.  Example: >
+
+    let ch = ch_open(..., #{mode: 'lsp'})
+
+To open a channel using the 'lsp' mode with a job, set the 'in_mode' and
+'out_mode' items in the |job_start()| {options} argument to 'lsp'. Example: >
+
+    let cmd = ['clangd', '--background-index', '--clang-tidy']
+    let opts = {}
+    let opts.in_mode = 'lsp'
+    let opts.out_mode = 'lsp'
+    let opts.err_mode = 'nl'
+    let opts.out_cb = function('LspOutCallback')
+    let opts.err_cb = function('LspErrCallback')
+    let opts.exit_cb = function('LspExitCallback')
+    let job = job_start(cmd, opts)
+
+Note that if a job outputs LSP messages on stdout and non-LSP messages on
+stderr, then the channel-callback function should handle both the message
+formats appropriately or you should use a separate callback function for
+"out_cb" and "err_cb" to handle them as shown above.
+
+To synchronously send a JSON-RPC request to the server, use the
+|ch_evalexpr()| function. This function will wait and return the decoded
+response message from the server. You can use either the |channel-timeout| or
+the 'timeout' field in the {options} argument to control the response wait
+time.  If the request times out, then an empty |Dict| is returned.  Example: >
+
+    let req = {}
+    let req.method = 'textDocument/definition'
+    let req.params = {}
+    let req.params.textDocument = #{uri: 'a.c'}
+    let req.params.position = #{line: 10, character: 3}
+    let defs = ch_evalexpr(ch, req, #{timeout: 100})
+    if defs->empty()
+        ... <handle failure>
+    endif
+
+Note that in the request message the 'id' field should not be specified. If it
+is specified, then Vim will overwrite the value with an internally generated
+identifier.  Vim currently supports only a number type for the 'id' field.
+The callback function will be invoked for both a successful and a failed RPC
+request.
+
+To send a JSON-RPC request to the server and asynchronously process the
+response, use the |ch_sendexpr()| function and supply a callback function.  If
+the "id" field is present in the request message, then Vim will overwrite it
+with an internally generated number.  This function returns a Dict with the
+identifier used for the message.  This can be used to send cancellation
+request to the LSP server (if needed).  Example: >
+
+    let req = {}
+    let req.method = 'textDocument/hover'
+    let req.id = 200
+    let req.params = {}
+    let req.params.textDocument = #{uri: 'a.c'}
+    let req.params.position = #{line: 10, character: 3}
+    let resp = ch_sendexpr(ch, req, #{callback: 'HoverFunc'})
+
+To cancel an outstanding asynchronous LSP request sent to the server using the
+|ch_sendexpr()| function, send a cancelation message to the server using the
+|ch_sendexpr()| function with the ID returned by the |ch_sendexpr()| function
+for the request.  Example: >
+
+    " send a completion request
+    let req = {}
+    let req.method = 'textDocument/completion'
+    let req.params = {}
+    let req.params.textDocument = #{uri: 'a.c'}
+    let req.params.position = #{line: 10, character: 3}
+    let reqstatus = ch_sendexpr(ch, req, #{callback: 'LspComplete'})
+    " send a cancellation notification
+    let notif = {}
+    let notif.method = '$/cancelRequest'
+    let notif.id = reqstatus.id
+    call ch_sendexpr(ch, notif)
+
+To send a JSON-RPC notification message to the server, use the |ch_sendexpr()|
+function. As the server will not send a response message to the notification,
+don't specify the "callback" item.  Example: >
+
+    call ch_sendexpr(ch, #{method: 'initialized'})
+
+To respond to a JSON-RPC request message from the server, use the
+|ch_sendexpr()| function.  In the response message, copy the 'id' field value
+from the server request message. Example: >
+
+    let resp = {}
+    let resp.id = req.id
+    let resp.result = 1
+    call ch_sendexpr(ch, resp)
+
+The JSON-RPC notification messages from the server are delivered through the
+|channel-callback| function.
+
+Depending on the use case, you can use the ch_evalexpr(), ch_sendexpr() and
+ch_sendraw() functions on the same channel.
+
+A LSP request message has the following format (expressed as a Vim Dict).  The
+"params" field is optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"id": <number>,
+	"method": <string>,
+	"params": <list|dict>
+    }
+
+A LSP reponse message has the following format (expressed as a Vim Dict).  The
+"result" and "error" fields are optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"id": <number>,
+	"result": <vim type>
+	"error": <dict>
+    }
+
+A LSP notification message has the following format (expressed as a Vim Dict).
+The "params" field is optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"method": <string>,
+	"params": <list|dict>
+    }
+
+Depending on the use case, you can use the ch_evalexpr(), ch_sendexpr() and
+ch_sendraw() functions on the same channel.
+
+A LSP request message has the following format (expressed as a Vim Dict).  The
+"params" field is optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"id": <number>,
+	"method": <string>,
+	"params": <list|dict>
+    }
+
+A LSP reponse message has the following format (expressed as a Vim Dict).  The
+"result" and "error" fields are optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"id": <number>,
+	"result": <vim type>
+	"error": <dict>
+    }
+
+A LSP notification message has the following format (expressed as a Vim Dict).
+The "params" field is optional: >
+
+    {
+	"jsonrpc": "2.0",
+	"method": <string>,
+	"params": <list|dict>
+    }
 
  vim:tw=78:ts=8:noet:ft=help:norl:

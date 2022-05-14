@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Feb 11
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 May 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -162,7 +162,7 @@ and avoid errors.  Such as thinking that the "-0o36" above makes the number
 negative, while it is actually seen as a subtraction.
 
 To actually have the minus sign be used for negation, you can put the second
-expression in parenthesis: >
+expression in parentheses: >
 
 	echo -0x7f (-0o36)
 
@@ -904,6 +904,7 @@ System functions and manipulation of files:
 	getfperm()		get the permissions of a file
 	setfperm()		set the permissions of a file
 	getftype()		get the kind of a file
+	isabsolutepath()	check if a path is absolute
 	isdirectory()		check if a directory exists
 	getfsize()		get the size of a file
 	getcwd()		get the current working directory
@@ -975,8 +976,12 @@ Buffers, windows and the argument list:
 	swapname()		get the swap file path of a buffer
 
 Command line:					*command-line-functions*
+	getcmdcompltype()	get the type of the current command line
+				completion
 	getcmdline()		get the current command line
 	getcmdpos()		get position of the cursor in the command line
+	getcmdscreenpos()	get screen position of the cursor in the
+				command line
 	setcmdpos()		set position of the cursor in the command line
 	getcmdtype()		return the current command-line type
 	getcmdwintype()		return the current command-line window type
@@ -1092,6 +1097,7 @@ Mappings and Menus:			    *mapping-functions*
 	hasmapto()		check if a mapping exists
 	mapcheck()		check if a matching mapping exists
 	maparg()		get rhs of a mapping
+	maplist()		get list of all mappings
 	mapset()		restore a mapping
 	menu_info()		get information about a menu item
 	wildmenumode()		check if the wildmode is active
@@ -2564,6 +2570,7 @@ Type `:next` to go to the next plugin file.
 There are two special items about these files.  First is a mechanism to allow
 a user to overrule or add to the default file.  The default files start with: >
 
+	vim9script
 	if exists("g:current_compiler")
 	  finish
 	endif

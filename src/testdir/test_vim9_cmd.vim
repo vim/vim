@@ -651,6 +651,20 @@ def Test_use_register()
   v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
 
   lines =<< trim END
+      @a = 'echo "text"'
+      @a
+
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
+
+  lines =<< trim END
+      @a = 'echo "text"'
+      @a
+          # comment
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
+
+  lines =<< trim END
       @/ = 'pattern'
       @/
   END
@@ -1178,8 +1192,19 @@ def Test_map_command()
       nnoremap <F3> :echo 'hit F3 #'<CR>
       assert_equal(":echo 'hit F3 #'<CR>", maparg("<F3>", "n"))
   END
-  v9.CheckDefSuccess(lines)
-  v9.CheckScriptSuccess(['vim9script'] + lines)
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # backslash before bar is not removed
+  lines =<< trim END
+      vim9script
+
+      def Init()
+        noremap <buffer> <F5> <ScriptCmd>MyFunc('a') \| MyFunc('b')<CR>
+      enddef
+      Init()
+      unmap <buffer> <F5>
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_normal_command()
@@ -1217,7 +1242,7 @@ def Test_put_command()
   :2put =['a', 'b', 'c']
   assert_equal(['ppp', 'a', 'b', 'c', 'above'], getline(2, 6))
 
-  :0put ='first'
+  :0put =  'first'
   assert_equal('first', getline(1))
   :1put! ='first again'
   assert_equal('first again', getline(1))
@@ -1352,7 +1377,12 @@ def Test_command_not_recognized()
   var lines =<< trim END
     d.key = 'asdf'
   END
-  v9.CheckDefFailure(lines, 'E1146:', 1)
+  v9.CheckDefFailure(lines, 'E1089: Unknown variable: d', 1)
+
+  lines =<< trim END
+    d['key'] = 'asdf'
+  END
+  v9.CheckDefFailure(lines, 'E1089: Unknown variable: d', 1)
 
   lines =<< trim END
     if 0
@@ -1360,11 +1390,6 @@ def Test_command_not_recognized()
     endif
   END
   v9.CheckDefSuccess(lines)
-
-  lines =<< trim END
-    d['key'] = 'asdf'
-  END
-  v9.CheckDefFailure(lines, 'E1146:', 1)
 enddef
 
 def Test_magic_not_used()
@@ -1527,6 +1552,14 @@ def Test_lockvar()
   d.a = 7
   assert_equal({a: 7, b: 5}, d)
 
+  caught = false
+  try
+    lockvar d.c
+  catch /E716/
+    caught = true
+  endtry
+  assert_true(caught)
+
   var lines =<< trim END
       vim9script
       g:bl = 0z1122
@@ -1550,6 +1583,58 @@ def Test_lockvar()
       SetList()
   END
   v9.CheckScriptFailure(lines, 'E1119', 4)
+
+  lines =<< trim END
+      vim9script
+      var theList = [1, 2, 3]
+      def AddToList()
+        lockvar theList
+        theList += [4]
+      enddef
+      AddToList()
+  END
+  v9.CheckScriptFailure(lines, 'E741', 2)
+
+  lines =<< trim END
+      vim9script
+      var theList = [1, 2, 3]
+      def AddToList()
+        lockvar theList
+        add(theList, 4)
+      enddef
+      AddToList()
+  END
+  v9.CheckScriptFailure(lines, 'E741', 2)
+
+  # can unlet a locked list item but not change it
+  lines =<< trim END
+    var ll = [1, 2, 3]
+    lockvar ll[1]
+    unlet ll[1]
+    assert_equal([1, 3], ll)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+    var ll = [1, 2, 3]
+    lockvar ll[1]
+    ll[1] = 9
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E1119:', 'E741'], 3)
+
+  # can unlet a locked dict item but not change it
+  lines =<< trim END
+    var dd = {a: 1, b: 2}
+    lockvar dd.a
+    unlet dd.a
+    assert_equal({b: 2}, dd)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+  lines =<< trim END
+    var dd = {a: 1, b: 2}
+    lockvar dd.a
+    dd.a = 3
+  END
+  v9.CheckDefExecAndScriptFailure(lines, ['E1121:', 'E741'], 3)
 
   lines =<< trim END
       var theList = [1, 2, 3]
@@ -1579,6 +1664,23 @@ def Test_lockvar()
       LockIt()
   END
   v9.CheckScriptFailure(lines, 'E1246', 1)
+
+  lines =<< trim END
+      vim9script
+      const name = 'john'
+      unlockvar name
+  END
+  v9.CheckScriptFailure(lines, 'E46', 3)
+
+  lines =<< trim END
+      vim9script
+      const name = 'john'
+      def UnLockIt()
+        unlockvar name
+      enddef
+      UnLockIt()
+  END
+  v9.CheckScriptFailure(lines, 'E46', 1)
 enddef
 
 def Test_substitute_expr()
@@ -1603,10 +1705,15 @@ def Test_substitute_expr()
   endfor
   assert_equal('yes no abc', getline(1))
 
+  setline(1, 'from')
+  v9.CheckDefExecFailure(['s/from/\=g:notexist/'], 'E121: Undefined variable: g:notexist')
+
   bwipe!
 
   v9.CheckDefFailure(['s/from/\="x")/'], 'E488:')
   v9.CheckDefFailure(['s/from/\="x"/9'], 'E488:')
+
+  v9.CheckDefExecFailure(['s/this/\="that"/'], 'E486:')
 
   # When calling a function the right instruction list needs to be restored.
   g:cond = true
@@ -1812,14 +1919,18 @@ def Test_no_space_after_command()
       g #pat#cmd
   END
   v9.CheckDefAndScriptFailure(lines, 'E1242:', 1)
+
+  new
+  setline(1, 'some pat')
   lines =<< trim END
-      g#pat#cmd
+      g#pat#print
   END
   v9.CheckDefAndScriptSuccess(lines)
   lines =<< trim END
-      g# pat#cmd
+      g# pat#print
   END
   v9.CheckDefAndScriptSuccess(lines)
+  bwipe!
 
   lines =<< trim END
       s /pat/repl

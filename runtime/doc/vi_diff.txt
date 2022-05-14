@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.2.  Last change: 2021 Jan 21
+*vi_diff.txt*   For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -160,8 +160,8 @@ Graphical User Interface (GUI).				|gui|
 	Included support for GUI: menu's, mouse, scrollbars, etc.  You can
 	define your own menus.  Better support for CTRL/SHIFT/ALT keys in
 	combination with special keys and mouse.  Supported for various
-	platforms, such as X11 (with Motif and Athena interfaces), GTK, Win32
-	(Windows XP and later), Amiga and Macintosh.
+	platforms, such as X11 with Motif, GTK, Win32 (Windows XP and later),
+	Amiga and Macintosh.
 
 Multiple windows and buffers.				|windows.txt|
 	Vim can split the screen into several windows, each editing a

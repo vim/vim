@@ -37,6 +37,12 @@ func Test_taglist()
   call assert_equal('d', cmd[0]['kind'])
   call assert_equal('call cursor(3, 4)', cmd[0]['cmd'])
 
+  " Use characters with value > 127 in the tag extra field.
+  call writefile([
+	\ "vFoo\tXfoo\t4" .. ';"' .. "\ttypename:int\ta£££\tv",
+	\ ], 'Xtags')
+  call assert_equal('v', taglist('vFoo')[0].kind)
+
   call assert_fails("let l=taglist([])", 'E730:')
 
   call delete('Xtags')
@@ -216,6 +222,11 @@ func Test_format_error()
   endtry
   call assert_true(caught_exception)
 
+  " no field after the filename for a tag
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "foo\tXfile"], 'Xtags')
+  call assert_fails("echo taglist('foo')", 'E431:')
+
   set tags&
   call delete('Xtags')
 endfunc
@@ -248,8 +259,15 @@ func Test_tag_complete_with_overlong_line()
   call writefile(tagslines, 'Xtags')
   set tags=Xtags
 
+  " try with binary search
+  set tagbsearch
   call feedkeys(":tag inbou\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"tag inboundGSV inboundGovernor inboundGovernorCounters', @:)
+  " try with linear search
+  set notagbsearch
+  call feedkeys(":tag inbou\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"tag inboundGSV inboundGovernor inboundGovernorCounters', @:)
+  set tagbsearch&
 
   call delete('Xtags')
   set tags&

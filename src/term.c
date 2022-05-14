@@ -165,6 +165,14 @@ static termrequest_T *all_termrequests[] = {
     &winpos_status,
     NULL
 };
+
+// The t_8u code may default to a value but get reset when the term response is
+// received.  To avoid redrawing too often, only redraw when t_8u is not reset
+// and it was supposed to be written.
+// FALSE -> don't output t_8u yet
+// MAYBE -> tried outputing t_8u while FALSE
+// OK    -> can write t_8u
+int write_t_8u_state = FALSE;
 # endif
 
 /*
@@ -197,8 +205,7 @@ static char_u *vim_tgetstr(char *s, char_u **pp);
 static int  detected_8bit = FALSE;	// detected 8-bit terminal
 
 #if (defined(UNIX) || defined(VMS))
-static int focus_mode = FALSE; // xterm's "focus reporting" availability
-static int focus_state = FALSE; // TRUE if the terminal window gains focus
+static int focus_state = MAYBE; // TRUE if the Vim window has focus
 #endif
 
 #ifdef FEAT_TERMRESPONSE
@@ -681,6 +688,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_K8,		"\316\372"},
     {K_K9,		"\316\376"},
     {K_BS,		"\316x"},
+    {K_S_BS,		"\316y"},
 # endif
 
 # if defined(VMS) || defined(ALL_BUILTIN_TCAPS)
@@ -2030,7 +2038,7 @@ set_termname(char_u *term)
 # endif
 	if (p != NULL)
 	{
-	    set_option_value((char_u *)"ttym", 0L, p, 0);
+	    set_option_value_give_err((char_u *)"ttym", 0L, p, 0);
 	    // Reset the WAS_SET flag, 'ttymouse' can be set to "sgr" or
 	    // "xterm2" in check_termcode().
 	    reset_option_was_set((char_u *)"ttym");
@@ -2047,7 +2055,7 @@ set_termname(char_u *term)
 #endif
 
 #ifdef FEAT_MOUSE_XTERM
-    // focus reporting is supported by xterm compatible terminals and tmux.
+    // Focus reporting is supported by xterm compatible terminals and tmux.
     if (use_xterm_like_mouse(term))
     {
 	char_u name[3];
@@ -2062,10 +2070,12 @@ set_termname(char_u *term)
 	name[1] = KE_FOCUSLOST;
 	add_termcode(name, (char_u *)"\033[O", FALSE);
 
-	focus_mode = TRUE;
-	focus_state = TRUE;
 	need_gather = TRUE;
     }
+#endif
+#if (defined(UNIX) || defined(VMS))
+    // First time after setting 'term' a focus event is always reported.
+    focus_state = MAYBE;
 #endif
 
 #ifdef USE_TERM_CONSOLE
@@ -2103,6 +2113,7 @@ set_termname(char_u *term)
 #ifdef FEAT_TERMRESPONSE
     LOG_TR(("setting crv_status to STATUS_GET"));
     crv_status.tr_progress = STATUS_GET;	// Get terminal version later
+    write_t_8u_state = FALSE;
 #endif
 
     /*
@@ -2169,7 +2180,6 @@ set_termname(char_u *term)
 #if defined(EXITFREE) || defined(PROTO)
 
 # ifdef HAVE_DEL_CURTERM
-#  undef TERMINAL	    // name clash in term.h
 #  include <term.h>	    // declares cur_term
 # endif
 
@@ -3048,6 +3058,8 @@ term_rgb_color(char_u *s, guicolor_T rgb)
 #define MAX_COLOR_STR_LEN 100
     char	buf[MAX_COLOR_STR_LEN];
 
+    if (*s == NUL)
+	return;
     vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
 #ifdef FEAT_VTP
@@ -3071,13 +3083,19 @@ term_fg_rgb_color(guicolor_T rgb)
     void
 term_bg_rgb_color(guicolor_T rgb)
 {
-    term_rgb_color(T_8B, rgb);
+    if (rgb != INVALCOLOR)
+	term_rgb_color(T_8B, rgb);
 }
 
     void
 term_ul_rgb_color(guicolor_T rgb)
 {
-    term_rgb_color(T_8U, rgb);
+# ifdef FEAT_TERMRESPONSE
+    if (write_t_8u_state != OK)
+	write_t_8u_state = MAYBE;
+    else
+# endif
+	term_rgb_color(T_8U, rgb);
 }
 #endif
 
@@ -3379,7 +3397,8 @@ win_new_shellsize(void)
     {
 	// If 'window' uses the whole screen, keep it using that.
 	// Don't change it when set with "-w size" on the command line.
-	if (p_window == old_Rows - 1 || (old_Rows == 0 && p_window == 0))
+	if (p_window == old_Rows - 1
+		    || (old_Rows == 0 && !option_was_set((char_u *)"window")))
 	    p_window = Rows - 1;
 	old_Rows = Rows;
 	shell_new_rows();	// update window sizes
@@ -3448,10 +3467,10 @@ set_shellsize(int width, int height, int mustset)
     if (width < 0 || height < 0)    // just checking...
 	return;
 
-    if (State == HITRETURN || State == SETWSIZE)
+    if (State == MODE_HITRETURN || State == MODE_SETWSIZE)
     {
 	// postpone the resizing
-	State = SETWSIZE;
+	State = MODE_SETWSIZE;
 	return;
     }
 
@@ -3487,7 +3506,8 @@ set_shellsize(int width, int height, int mustset)
     // screenalloc() (also invoked from screenclear()).  That is because the
     // "busy" check above may skip this, but not screenalloc().
 
-    if (State != ASKMORE && State != EXTERNCMD && State != CONFIRM)
+    if (State != MODE_ASKMORE && State != MODE_EXTERNCMD
+						      && State != MODE_CONFIRM)
 	screenclear();
     else
 	screen_start();	    // don't know where cursor is now
@@ -3509,8 +3529,8 @@ set_shellsize(int width, int height, int mustset)
 	 * Always need to call update_screen() or screenalloc(), to make
 	 * sure Rows/Columns and the size of ScreenLines[] is correct!
 	 */
-	if (State == ASKMORE || State == EXTERNCMD || State == CONFIRM
-							     || exmode_active)
+	if (State == MODE_ASKMORE || State == MODE_EXTERNCMD
+				     || State == MODE_CONFIRM || exmode_active)
 	{
 	    screenalloc(FALSE);
 	    repeat_message();
@@ -3519,7 +3539,7 @@ set_shellsize(int width, int height, int mustset)
 	{
 	    if (curwin->w_p_scb)
 		do_check_scrollbind(TRUE);
-	    if (State & CMDLINE)
+	    if (State & MODE_CMDLINE)
 	    {
 		update_screen(NOT_VALID);
 		redrawcmdline();
@@ -3633,7 +3653,7 @@ starttermcap(void)
 
 #if defined(UNIX) || defined(VMS)
 	// Enable xterm's focus reporting mode when 'esckeys' is set.
-	if (focus_mode && p_ek && *T_FE != NUL)
+	if (p_ek && *T_FE != NUL)
 	    out_str(T_FE);
 #endif
 
@@ -3691,7 +3711,7 @@ stoptermcap(void)
 
 #if defined(UNIX) || defined(VMS)
 	// Disable xterm's focus reporting mode if 'esckeys' is set.
-	if (focus_mode && p_ek && *T_FD != NUL)
+	if (p_ek && *T_FD != NUL)
 	    out_str(T_FD);
 #endif
 
@@ -4036,9 +4056,9 @@ term_cursor_mode(int forced)
 	return;
     }
 
-    if ((State & REPLACE) == REPLACE)
+    if ((State & MODE_REPLACE) == MODE_REPLACE)
     {
-	if (forced || showing_mode != REPLACE)
+	if (forced || showing_mode != MODE_REPLACE)
 	{
 	    if (*T_CSR != NUL)
 		p = T_CSR;	// Replace mode cursor
@@ -4047,22 +4067,22 @@ term_cursor_mode(int forced)
 	    if (*p != NUL)
 	    {
 		out_str(p);
-		showing_mode = REPLACE;
+		showing_mode = MODE_REPLACE;
 	    }
 	}
     }
-    else if (State & INSERT)
+    else if (State & MODE_INSERT)
     {
-	if ((forced || showing_mode != INSERT) && *T_CSI != NUL)
+	if ((forced || showing_mode != MODE_INSERT) && *T_CSI != NUL)
 	{
 	    out_str(T_CSI);	    // Insert mode cursor
-	    showing_mode = INSERT;
+	    showing_mode = MODE_INSERT;
 	}
     }
-    else if (forced || showing_mode != NORMAL)
+    else if (forced || showing_mode != MODE_NORMAL)
     {
 	out_str(T_CEI);		    // non-Insert mode cursor
-	showing_mode = NORMAL;
+	showing_mode = MODE_NORMAL;
     }
 }
 
@@ -4487,7 +4507,9 @@ is_mouse_topline(win_T *wp)
 #endif
 
 /*
- * Put "string[new_slen]" in typebuf, or in "buf[bufsize]" if "buf" is not NULL.
+ * If "buf" is NULL put "string[new_slen]" in typebuf; "buflen" is not used.
+ * If "buf" is not NULL put "string[new_slen]" in "buf[bufsize]" and adjust
+ * "buflen".
  * Remove "slen" bytes.
  * Returns FAIL for error.
  */
@@ -4511,7 +4533,9 @@ put_string_in_typebuf(
 	    del_typebuf(-extra, offset);
 	else if (extra > 0)
 	    // insert the extra space we need
-	    ins_typebuf(string + slen, REMAP_YES, offset, FALSE, FALSE);
+	    if (ins_typebuf(string + slen, REMAP_YES, offset, FALSE, FALSE)
+								       == FAIL)
+		return FAIL;
 
 	// Careful: del_typebuf() and ins_typebuf() may have reallocated
 	// typebuf.tb_buf[]!
@@ -4603,7 +4627,7 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 	    // Setting the option causes a screen redraw. Do
 	    // that right away if possible, keeping any
 	    // messages.
-	    set_option_value((char_u *)"ambw", 0L, (char_u *)aw, 0);
+	    set_option_value_give_err((char_u *)"ambw", 0L, (char_u *)aw, 0);
 # ifdef DEBUG_TERMRESPONSE
 	    {
 		int r = redraw_asap(CLEAR);
@@ -4673,7 +4697,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
     if (version > 20000)
 	version = 0;
 
-    // Figure out more if the reeponse is CSI > 99 ; 99 ; 99 c
+    // Figure out more if the response is CSI > 99 ; 99 ; 99 c
     if (first == '>' && argc == 3)
     {
 	int need_flush = FALSE;
@@ -4773,9 +4797,10 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    // vandyke SecureCRT sends 1;136;0
 	}
 
-	// Konsole sends 0;115;0
-	else if (version == 115 && arg[0] == 0 && arg[2] == 0)
-	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
+	// Konsole sends 0;115;0 - but t_u8 does not actually work, therefore
+	// commented out.
+	// else if (version == 115 && arg[0] == 0 && arg[2] == 0)
+	//     term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
 	// 30600/40500 is a version number of GNU screen. DA2 support is added
@@ -4804,9 +4829,20 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 
 	// Unless the underline RGB color is expected to work, disable "t_8u".
 	// It does not work for the real Xterm, it resets the background color.
-	if (term_props[TPR_UNDERLINE_RGB].tpr_status != TPR_YES && *T_8U != NUL)
+	// This may cause some flicker.  Alternative would be to set "t_8u"
+	// here if the terminal is expected to support it, but that might
+	// conflict with what was set in the .vimrc.
+	if (term_props[TPR_UNDERLINE_RGB].tpr_status != TPR_YES
+			&& *T_8U != NUL
+			&& !option_was_set((char_u *)"t_8u"))
+	{
 	    set_string_option_direct((char_u *)"t_8u", -1, (char_u *)"",
 								  OPT_FREE, 0);
+	}
+	if (*T_8U != NUL && write_t_8u_state == MAYBE)
+	    // Did skip writing t_8u, a complete redraw is needed.
+	    redraw_later_clear();
+	write_t_8u_state = OK;  // can output t_8u now
 
 	// Only set 'ttymouse' automatically if it was not set
 	// by the user already.
@@ -4814,7 +4850,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& (term_props[TPR_MOUSE].tpr_status == TPR_MOUSE_XTERM2
 		    || term_props[TPR_MOUSE].tpr_status == TPR_MOUSE_SGR))
 	{
-	    set_option_value((char_u *)"ttym", 0L,
+	    set_option_value_give_err((char_u *)"ttym", 0L,
 		    term_props[TPR_MOUSE].tpr_status == TPR_MOUSE_SGR
 				    ? (char_u *)"sgr" : (char_u *)"xterm2", 0);
 	}
@@ -5138,8 +5174,8 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 				      && STRCMP(p_bg, new_bg_val) != 0)
 			{
 			    // value differs, apply it
-			    set_option_value((char_u *)"bg", 0L,
-					      (char_u *)new_bg_val, 0);
+			    set_option_value_give_err((char_u *)"bg",
+						  0L, (char_u *)new_bg_val, 0);
 			    reset_option_was_set((char_u *)"bg");
 			    redraw_asap(CLEAR);
 			}
@@ -5364,7 +5400,7 @@ check_termcode(
 	 * Skip this position if p_ek is not set and tp[0] is an ESC and we
 	 * are in Insert mode.
 	 */
-	if (*tp == ESC && !p_ek && (State & INSERT))
+	if (*tp == ESC && !p_ek && (State & MODE_INSERT))
 	    continue;
 
 	key_name[0] = NUL;	// no key name found yet
@@ -5812,11 +5848,10 @@ check_termcode(
 	 * Handle FocusIn/FocusOut event sequences reported by XTerm.
 	 * (CSI I/CSI O)
 	 */
-	if (focus_mode
+	if (key_name[0] == KS_EXTRA
 # ifdef FEAT_GUI
 		&& !gui.in_use
 # endif
-		&& key_name[0] == KS_EXTRA
 	    )
 	{
 	    if (key_name[1] == KE_FOCUSGAINED)
@@ -5956,30 +5991,32 @@ replace_termcodes(
     int		i;
     int		slen;
     int		key;
-    int		dlen = 0;
+    size_t	dlen = 0;
     char_u	*src;
     int		do_backslash;	// backslash is a special character
     int		do_special;	// recognize <> key codes
     int		do_key_code;	// recognize raw key codes
     char_u	*result;	// buffer for resulting string
+    garray_T	ga;
 
     do_backslash = (vim_strchr(p_cpo, CPO_BSLASH) == NULL);
     do_special = (vim_strchr(p_cpo, CPO_SPECI) == NULL)
 						  || (flags & REPTERM_SPECIAL);
     do_key_code = (vim_strchr(p_cpo, CPO_KEYCODE) == NULL);
+    src = from;
 
     /*
      * Allocate space for the translation.  Worst case a single character is
      * replaced by 6 bytes (shifted special key), plus a NUL at the end.
+     * In the rare case more might be needed ga_grow() must be called again.
      */
-    result = alloc(STRLEN(from) * 6 + 1);
-    if (result == NULL)		// out of memory
+    ga_init2(&ga, 1L, 100);
+    if (ga_grow(&ga, (int)(STRLEN(src) * 6 + 1)) == FAIL) // out of memory
     {
 	*bufp = NULL;
 	return from;
     }
-
-    src = from;
+    result = ga.ga_data;
 
     /*
      * Check for #n at start only: function key n
@@ -6009,8 +6046,11 @@ replace_termcodes(
 	{
 #ifdef FEAT_EVAL
 	    /*
-	     * Replace <SID> by K_SNR <script-nr> _.
+	     * Change <SID>Func to K_SNR <script-nr> _Func.  This name is used
+	     * for script-locla user functions.
 	     * (room: 5 * 6 = 30 bytes; needed: 3 + <nr> + 1 <= 14)
+	     * Also change <SID>name.Func to K_SNR <import-script-nr> _Func.
+	     * Only if "name" is recognized as an import.
 	     */
 	    if (STRNICMP(src, "<SID>", 5) == 0)
 	    {
@@ -6018,22 +6058,55 @@ replace_termcodes(
 		    emsg(_(e_using_sid_not_in_script_context));
 		else
 		{
+		    char_u  *dot;
+		    long    sid = current_sctx.sc_sid;
+
 		    src += 5;
+		    if (in_vim9script()
+				       && (dot = vim_strchr(src, '.')) != NULL)
+		    {
+			imported_T *imp = find_imported(src, dot - src, FALSE);
+
+			if (imp != NULL)
+			{
+			    scriptitem_T    *si = SCRIPT_ITEM(imp->imp_sid);
+			    size_t	    len;
+
+			    src = dot + 1;
+			    if (si->sn_autoload_prefix != NULL)
+			    {
+				// Turn "<SID>name.Func"
+				// into "scriptname#Func".
+				len = STRLEN(si->sn_autoload_prefix);
+				if (ga_grow(&ga,
+				     (int)(STRLEN(src) * 6 + len + 1)) == FAIL)
+				{
+				    ga_clear(&ga);
+				    *bufp = NULL;
+				    return from;
+				}
+				result = ga.ga_data;
+				STRCPY(result + dlen, si->sn_autoload_prefix);
+				dlen += len;
+				continue;
+			    }
+			    sid = imp->imp_sid;
+			}
+		    }
+
 		    result[dlen++] = K_SPECIAL;
 		    result[dlen++] = (int)KS_EXTRA;
 		    result[dlen++] = (int)KE_SNR;
-		    sprintf((char *)result + dlen, "%ld",
-						    (long)current_sctx.sc_sid);
-		    dlen += (int)STRLEN(result + dlen);
+		    sprintf((char *)result + dlen, "%ld", sid);
+		    dlen += STRLEN(result + dlen);
 		    result[dlen++] = '_';
 		    continue;
 		}
 	    }
 #endif
-
 	    slen = trans_special(&src, result + dlen, FSK_KEYCODE
 			  | ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY),
-								 did_simplify);
+							   TRUE, did_simplify);
 	    if (slen)
 	    {
 		dlen += slen;
@@ -6369,7 +6442,7 @@ req_codes_from_term(void)
     static void
 req_more_codes_from_term(void)
 {
-    char	buf[11];
+    char	buf[23];  // extra size to shut up LGTM
     int		old_idx = xt_index_out;
 
     // Don't do anything when going to exit.
@@ -6533,25 +6606,31 @@ update_tcap(int attr)
 
 # ifdef FEAT_TERMGUICOLORS
 #  define KSSIZE 20
-struct ks_tbl_s
+
+typedef enum
 {
-    int  code;		// value of KS_
-    char *vtp;		// code in vtp mode
-    char *vtp2;		// code in vtp2 mode
-    char buf[KSSIZE];   // save buffer in non-vtp mode
-    char vbuf[KSSIZE];  // save buffer in vtp mode
-    char v2buf[KSSIZE]; // save buffer in vtp2 mode
-    char arr[KSSIZE];   // real buffer
+    CMODE_INDEXED = 0,	// Use cmd.exe 4bit palette.
+    CMODE_RGB,		// Use 24bit RGB colors using VTP.
+    CMODE_256COL,	// Emulate xterm's 256-color palette using VTP.
+    CMODE_LAST,
+} cmode_T;
+
+struct ks_tbl_S
+{
+    int  code;				// value of KS_
+    char *vtp;				// code in RGB mode
+    char *vtp2;				// code in 256color mode
+    char buf[CMODE_LAST][KSSIZE];	// real buffer
 };
 
-static struct ks_tbl_s ks_tbl[] =
+static struct ks_tbl_S ks_tbl[] =
 {
     {(int)KS_ME,  "\033|0m",  "\033|0m"},   // normal
     {(int)KS_MR,  "\033|7m",  "\033|7m"},   // reverse
     {(int)KS_MD,  "\033|1m",  "\033|1m"},   // bold
     {(int)KS_SO,  "\033|91m", "\033|91m"},  // standout: bright red text
     {(int)KS_SE,  "\033|39m", "\033|39m"},  // standout end: default color
-    {(int)KS_CZH, "\033|95m", "\033|95m"},  // italic: bright magenta text
+    {(int)KS_CZH, "\033|3m",  "\033|3m"},   // italic
     {(int)KS_CZR, "\033|0m",  "\033|0m"},   // italic end
     {(int)KS_US,  "\033|4m",  "\033|4m"},   // underscore
     {(int)KS_UE,  "\033|24m", "\033|24m"},  // underscore end
@@ -6592,18 +6671,11 @@ swap_tcap(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     static int		init_done = FALSE;
-    static int		curr_mode;
-    struct ks_tbl_s	*ks;
+    static cmode_T	curr_mode;
+    struct ks_tbl_S	*ks;
     struct builtin_term *bt;
-    int			mode;
-    enum
-    {
-	CMODEINDEX,
-	CMODE24,
-	CMODE256
-    };
+    cmode_T		mode;
 
-    // buffer initialization
     if (!init_done)
     {
 	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
@@ -6611,67 +6683,36 @@ swap_tcap(void)
 	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	    if (bt != NULL)
 	    {
-		STRNCPY(ks->buf, bt->bt_string, KSSIZE);
-		STRNCPY(ks->vbuf, ks->vtp, KSSIZE);
-		STRNCPY(ks->v2buf, ks->vtp2, KSSIZE);
+		// Preserve the original value.
+		STRNCPY(ks->buf[CMODE_INDEXED], bt->bt_string, KSSIZE);
+		STRNCPY(ks->buf[CMODE_RGB], ks->vtp, KSSIZE);
+		STRNCPY(ks->buf[CMODE_256COL], ks->vtp2, KSSIZE);
 
-		STRNCPY(ks->arr, bt->bt_string, KSSIZE);
-		bt->bt_string = &ks->arr[0];
+		bt->bt_string = ks->buf[CMODE_INDEXED];
 	    }
 	}
 	init_done = TRUE;
-	curr_mode = CMODEINDEX;
+	curr_mode = CMODE_INDEXED;
     }
 
     if (p_tgc)
-	mode = CMODE24;
+	mode = CMODE_RGB;
     else if (t_colors >= 256)
-	mode = CMODE256;
+	mode = CMODE_256COL;
     else
-	mode = CMODEINDEX;
+	mode = CMODE_INDEXED;
+
+    if (mode == curr_mode)
+	return;
 
     for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
     {
 	bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	if (bt != NULL)
-	{
-	    switch (curr_mode)
-	    {
-	    case CMODEINDEX:
-		STRNCPY(&ks->buf[0], bt->bt_string, KSSIZE);
-		break;
-	    case CMODE24:
-		STRNCPY(&ks->vbuf[0], bt->bt_string, KSSIZE);
-		break;
-	    default:
-		STRNCPY(&ks->v2buf[0], bt->bt_string, KSSIZE);
-	    }
-	}
+	    bt->bt_string = ks->buf[mode];
     }
 
-    if (mode != curr_mode)
-    {
-	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
-	{
-	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
-	    if (bt != NULL)
-	    {
-		switch (mode)
-		{
-		case CMODEINDEX:
-		    STRNCPY(bt->bt_string, &ks->buf[0], KSSIZE);
-		    break;
-		case CMODE24:
-		    STRNCPY(bt->bt_string, &ks->vbuf[0], KSSIZE);
-		    break;
-		default:
-		    STRNCPY(bt->bt_string, &ks->v2buf[0], KSSIZE);
-		}
-	    }
-	}
-
-	curr_mode = mode;
-    }
+    curr_mode = mode;
 # endif
 }
 
@@ -6689,26 +6730,33 @@ static int grey_ramp[] = {
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
 };
 
-static char_u ansi_table[16][4] = {
-//   R    G    B   idx
-  {  0,   0,   0,  1}, // black
-  {224,   0,   0,  2}, // dark red
-  {  0, 224,   0,  3}, // dark green
-  {224, 224,   0,  4}, // dark yellow / brown
-  {  0,   0, 224,  5}, // dark blue
-  {224,   0, 224,  6}, // dark magenta
-  {  0, 224, 224,  7}, // dark cyan
-  {224, 224, 224,  8}, // light grey
+static char_u ansi_table[16][3] = {
+//   R    G    B
+  {  0,   0,   0}, // black
+  {224,   0,   0}, // dark red
+  {  0, 224,   0}, // dark green
+  {224, 224,   0}, // dark yellow / brown
+  {  0,   0, 224}, // dark blue
+  {224,   0, 224}, // dark magenta
+  {  0, 224, 224}, // dark cyan
+  {224, 224, 224}, // light grey
 
-  {128, 128, 128,  9}, // dark grey
-  {255,  64,  64, 10}, // light red
-  { 64, 255,  64, 11}, // light green
-  {255, 255,  64, 12}, // yellow
-  { 64,  64, 255, 13}, // light blue
-  {255,  64, 255, 14}, // light magenta
-  { 64, 255, 255, 15}, // light cyan
-  {255, 255, 255, 16}, // white
+  {128, 128, 128}, // dark grey
+  {255,  64,  64}, // light red
+  { 64, 255,  64}, // light green
+  {255, 255,  64}, // yellow
+  { 64,  64, 255}, // light blue
+  {255,  64, 255}, // light magenta
+  { 64, 255, 255}, // light cyan
+  {255, 255, 255}, // white
 };
+
+#if defined(MSWIN)
+// Mapping between cterm indices < 16 and their counterpart in the ANSI palette.
+static const char_u cterm_ansi_idx[] = {
+    0, 4, 2, 6, 1, 5, 3, 7, 8, 12, 10, 14, 9, 13, 11, 15
+};
+#endif
 
 #define ANSI_INDEX_NONE 0
 
@@ -6719,10 +6767,15 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 
     if (nr < 16)
     {
-	*r = ansi_table[nr][0];
-	*g = ansi_table[nr][1];
-	*b = ansi_table[nr][2];
-	*ansi_idx = ansi_table[nr][3];
+#if defined(MSWIN)
+	idx = cterm_ansi_idx[nr];
+#else
+	idx = nr;
+#endif
+	*r = ansi_table[idx][0];
+	*g = ansi_table[idx][1];
+	*b = ansi_table[idx][2];
+	*ansi_idx = idx + 1;
     }
     else if (nr < 232)
     {

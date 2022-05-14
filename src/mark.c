@@ -871,6 +871,10 @@ ex_jumps(exarg_T *eap UNUSED)
 	{
 	    name = fm_getname(&curwin->w_jumplist[i].fmark, 16);
 
+	    // Make sure to output the current indicator, even when on an wiped
+	    // out buffer.  ":filter" may still skip it.
+	    if (name == NULL && i == curwin->w_jumplistidx)
+		name = vim_strsave((char_u *)"-invalid-");
 	    // apply :filter /pat/ or file name not available
 	    if (name == NULL || message_filtered(name))
 	    {
@@ -1002,21 +1006,21 @@ mark_adjust(
 
     void
 mark_adjust_nofold(
-    linenr_T line1,
-    linenr_T line2,
-    long amount,
-    long amount_after)
+    linenr_T	line1,
+    linenr_T	line2,
+    long	amount,
+    long	amount_after)
 {
     mark_adjust_internal(line1, line2, amount, amount_after, FALSE);
 }
 
     static void
 mark_adjust_internal(
-    linenr_T line1,
-    linenr_T line2,
-    long amount,
-    long amount_after,
-    int adjust_folds UNUSED)
+    linenr_T	line1,
+    linenr_T	line2,
+    long	amount,
+    long	amount_after,
+    int		adjust_folds UNUSED)
 {
     int		i;
     int		fnum = curbuf->b_fnum;

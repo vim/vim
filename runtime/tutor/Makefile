@@ -11,7 +11,7 @@ all: tutor.utf-8 \
 	tutor.de.utf-8 \
 	tutor.el tutor.el.cp737 \
 	tutor.eo \
-	tutor.es.utf-8 \
+	tutor.es \
 	tutor.fr.utf-8 \
 	tutor.hr tutor.hr.cp1250 \
 	tutor.hu tutor.hu.cp1250 \
@@ -48,8 +48,8 @@ tutor.el: tutor.el.utf-8
 tutor.el.cp737: tutor.el.utf-8
 	iconv -f UTF-8 -t cp737 tutor.el.utf-8 > tutor.el.cp737
 
-tutor.es.utf-8: tutor.es
-	iconv -f ISO-8859-1 -t UTF-8 tutor.es > tutor.es.utf-8
+tutor.es: tutor.es.utf-8
+	iconv -f UTF-8 -t ISO-8859-1 tutor.es.utf-8 > tutor.es
 
 tutor.fr.utf-8: tutor.fr
 	iconv -f ISO-8859-1 -t UTF-8 tutor.fr > tutor.fr.utf-8

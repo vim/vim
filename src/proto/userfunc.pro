@@ -1,6 +1,7 @@
 /* userfunc.c */
 void func_init(void);
 hashtab_T *func_tbl_get(void);
+char_u *make_ufunc_name_readable(char_u *name, char_u *buf, size_t bufsize);
 char_u *get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
@@ -8,6 +9,7 @@ char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, type_T **
 void emsg_funcname(char *ermsg, char_u *name);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, evalarg_T *evalarg, funcexe_T *funcexe);
 char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error);
+void func_name_with_sid(char_u *name, int sid, char_u *buffer);
 ufunc_T *find_func_even_dead(char_u *name, int flags);
 ufunc_T *find_func(char_u *name, int is_global);
 int func_is_global(ufunc_T *ufunc);
@@ -38,6 +40,7 @@ char_u *printable_func_name(ufunc_T *fp);
 char_u *trans_function_name(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial, type_T **type);
 char_u *untrans_function_name(char_u *name);
 char_u *get_scriptlocal_funcname(char_u *funcname);
+char_u *alloc_printable_func_name(char_u *fname);
 char_u *save_function_name(char_u **name, int *is_global, int skip, int flags, funcdict_T *fudi);
 void list_functions(regmatch_T *regmatch);
 ufunc_T *define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free);

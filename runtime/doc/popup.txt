@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2022 Jan 08
+*popup.txt*  For Vim version 8.2.  Last change: 2022 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -270,6 +270,11 @@ popup_create({what}, {options})				*popup_create()*
 		When {what} is not a buffer number, a buffer is created with
 		'buftype' set to "popup".  That buffer will be wiped out once
 		the popup closes.
+
+		if {what} is a buffer number and loading the buffer runs into
+		an existing swap file, it is silently opened read-only, as if
+		a |SwapExists| autocommand had set |v:swapchoice| to 'o'.
+		This is because we assume the buffer is only used for viewing.
 
 		{options} is a dictionary with many possible entries.
 		See |popup_create-arguments| for details.

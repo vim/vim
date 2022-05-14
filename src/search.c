@@ -1166,7 +1166,7 @@ searchit(
     return submatch + 1;
 }
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(FEAT_PROTO)
     void
 set_search_direction(int cdir)
 {
@@ -1377,8 +1377,8 @@ do_search(
 	     */
 	    if (*p == '+' || *p == '-' || VIM_ISDIGIT(*p))
 		spats[0].off.line = TRUE;
-	    else if ((options & SEARCH_OPT) &&
-					(*p == 'e' || *p == 's' || *p == 'b'))
+	    else if ((options & SEARCH_OPT)
+				      && (*p == 'e' || *p == 's' || *p == 'b'))
 	    {
 		if (*p == 'e')		// end
 		    spats[0].off.end = SEARCH_END;
@@ -1404,9 +1404,9 @@ do_search(
 	    pat = p;			    // put pat after search command
 	}
 
-	if ((options & SEARCH_ECHO) && messaging() &&
-		!msg_silent &&
-		(!cmd_silent || !shortmess(SHM_SEARCHCOUNT)))
+	if ((options & SEARCH_ECHO) && messaging()
+		&& !msg_silent
+		&& (!cmd_silent || !shortmess(SHM_SEARCHCOUNT)))
 	{
 	    char_u	*trunc;
 	    char_u	off_buf[40];
@@ -2450,8 +2450,8 @@ findmatchlimit(
 	/*
 	 * If FM_BLOCKSTOP given, stop at a '{' or '}' in column 0.
 	 */
-	if (pos.col == 0 && (flags & FM_BLOCKSTOP) &&
-					 (linep[0] == '{' || linep[0] == '}'))
+	if (pos.col == 0 && (flags & FM_BLOCKSTOP)
+				       && (linep[0] == '{' || linep[0] == '}'))
 	{
 	    if (linep[0] == findc && count == 0)	// match!
 		return &pos;
@@ -2653,8 +2653,8 @@ findmatchlimit(
 			    pos.col -= 2;
 			    break;
 			}
-			else if (linep[pos.col - 2] == '\\' &&
-				    pos.col > 2 && linep[pos.col - 3] == '\'')
+			else if (linep[pos.col - 2] == '\\'
+				  && pos.col > 2 && linep[pos.col - 3] == '\'')
 			{
 			    pos.col -= 3;
 			    break;
@@ -2663,8 +2663,8 @@ findmatchlimit(
 		}
 		else if (linep[pos.col + 1])	// forward search
 		{
-		    if (linep[pos.col + 1] == '\\' &&
-			    linep[pos.col + 2] && linep[pos.col + 3] == '\'')
+		    if (linep[pos.col + 1] == '\\'
+			   && linep[pos.col + 2] && linep[pos.col + 3] == '\'')
 		    {
 			pos.col += 3;
 			break;
@@ -2810,8 +2810,8 @@ showmatch(
 #endif
     colnr_T	save_dollar_vcol;
     char_u	*p;
-    long        *so = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
-    long        *siso = curwin->w_p_siso >= 0 ? &curwin->w_p_siso : &p_siso;
+    long	*so = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
+    long	*siso = curwin->w_p_siso >= 0 ? &curwin->w_p_siso : &p_siso;
 
     /*
      * Only show match for chars in the 'matchpairs' option.
@@ -2860,7 +2860,7 @@ showmatch(
 	    save_dollar_vcol = dollar_vcol;
 #ifdef CURSOR_SHAPE
 	    save_state = State;
-	    State = SHOWMATCH;
+	    State = MODE_SHOWMATCH;
 	    ui_cursor_shape();		// may show different cursor shape
 #endif
 	    curwin->w_cursor = mpos;	// move to matching char
@@ -3471,8 +3471,9 @@ find_pattern_in_path(
 		    if (fullpathcmp(new_fname, files[i].name, TRUE, TRUE)
 								    & FPC_SAME)
 		    {
-			if (type != CHECK_PATH &&
-				action == ACTION_SHOW_ALL && files[i].matched)
+			if (type != CHECK_PATH
+				&& action == ACTION_SHOW_ALL
+				&& files[i].matched)
 			{
 			    msg_putchar('\n');	    // cursor below last one
 			    if (!got_int)	    // don't display if 'q'
@@ -4107,7 +4108,7 @@ get_spat_last_idx(void)
 }
 #endif
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 /*
  * "searchcount()" function
  */
@@ -4188,14 +4189,14 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 	    li = list_find(di->di_tv.vval.v_list, 1L);
 	    if (li != NULL)
 	    {
-	        pos.col = tv_get_number_chk(&li->li_tv, &error) - 1;
+		pos.col = tv_get_number_chk(&li->li_tv, &error) - 1;
 		if (error)
 		    return;
 	    }
 	    li = list_find(di->di_tv.vval.v_list, 2L);
 	    if (li != NULL)
 	    {
-	        pos.coladd = tv_get_number_chk(&li->li_tv, &error);
+		pos.coladd = tv_get_number_chk(&li->li_tv, &error);
 		if (error)
 		    return;
 	    }
@@ -4230,6 +4231,7 @@ the_end:
     restore_incsearch_state();
 #endif
 }
+#endif
 
 /*
  * Fuzzy string matching
@@ -4611,6 +4613,7 @@ fuzzy_match(
     return numMatches != 0;
 }
 
+#if defined(FEAT_EVAL) || defined(FEAT_PROTO)
 /*
  * Sort the fuzzy matches in the descending order of the match score.
  * For items with same score, retain the order using the index (stable sort)
@@ -4639,45 +4642,48 @@ fuzzy_match_item_compare(const void *s1, const void *s2)
  */
     static void
 fuzzy_match_in_list(
-	list_T		*items,
+	list_T		*l,
 	char_u		*str,
 	int		matchseq,
 	char_u		*key,
 	callback_T	*item_cb,
 	int		retmatchpos,
-	list_T		*fmatchlist)
+	list_T		*fmatchlist,
+	long		max_matches)
 {
     long	len;
-    fuzzyItem_T	*ptrs;
+    fuzzyItem_T	*items;
     listitem_T	*li;
     long	i = 0;
-    int		found_match = FALSE;
+    long	match_count = 0;
     int_u	matches[MAX_FUZZY_MATCHES];
 
-    len = list_len(items);
+    len = list_len(l);
     if (len == 0)
 	return;
+    if (max_matches > 0 && len > max_matches)
+	len = max_matches;
 
-    ptrs = ALLOC_CLEAR_MULT(fuzzyItem_T, len);
-    if (ptrs == NULL)
+    items = ALLOC_CLEAR_MULT(fuzzyItem_T, len);
+    if (items == NULL)
 	return;
 
     // For all the string items in items, get the fuzzy matching score
-    FOR_ALL_LIST_ITEMS(items, li)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	int		score;
 	char_u		*itemstr;
 	typval_T	rettv;
 
-	ptrs[i].idx = i;
-	ptrs[i].item = li;
-	ptrs[i].score = SCORE_NONE;
+	if (max_matches > 0 && match_count >= max_matches)
+	    break;
+
 	itemstr = NULL;
 	rettv.v_type = VAR_UNKNOWN;
 	if (li->li_tv.v_type == VAR_STRING)	// list of strings
 	    itemstr = li->li_tv.vval.v_string;
-	else if (li->li_tv.v_type == VAR_DICT &&
-				(key != NULL || item_cb->cb_name != NULL))
+	else if (li->li_tv.v_type == VAR_DICT
+				&& (key != NULL || item_cb->cb_name != NULL))
 	{
 	    // For a dict, either use the specified key to lookup the string or
 	    // use the specified callback function to get the string.
@@ -4703,8 +4709,12 @@ fuzzy_match_in_list(
 
 	if (itemstr != NULL
 		&& fuzzy_match(itemstr, str, matchseq, &score, matches,
-		    sizeof(matches) / sizeof(matches[0])))
+							MAX_FUZZY_MATCHES))
 	{
+	    items[match_count].idx = match_count;
+	    items[match_count].item = li;
+	    items[match_count].score = score;
+
 	    // Copy the list of matching positions in itemstr to a list, if
 	    // 'retmatchpos' is set.
 	    if (retmatchpos)
@@ -4712,16 +4722,16 @@ fuzzy_match_in_list(
 		int	j = 0;
 		char_u	*p;
 
-		ptrs[i].lmatchpos = list_alloc();
-		if (ptrs[i].lmatchpos == NULL)
+		items[match_count].lmatchpos = list_alloc();
+		if (items[match_count].lmatchpos == NULL)
 		    goto done;
 
 		p = str;
 		while (*p != NUL)
 		{
-		    if (!VIM_ISWHITE(PTR2CHAR(p)))
+		    if (!VIM_ISWHITE(PTR2CHAR(p)) || matchseq)
 		    {
-			if (list_append_number(ptrs[i].lmatchpos,
+			if (list_append_number(items[match_count].lmatchpos,
 				    matches[j]) == FAIL)
 			    goto done;
 			j++;
@@ -4732,19 +4742,17 @@ fuzzy_match_in_list(
 			++p;
 		}
 	    }
-	    ptrs[i].score = score;
-	    found_match = TRUE;
+	    ++match_count;
 	}
-	++i;
 	clear_tv(&rettv);
     }
 
-    if (found_match)
+    if (match_count > 0)
     {
-	list_T		*l;
+	list_T		*retlist;
 
 	// Sort the list by the descending order of the match score
-	qsort((void *)ptrs, (size_t)len, sizeof(fuzzyItem_T),
+	qsort((void *)items, (size_t)match_count, sizeof(fuzzyItem_T),
 		fuzzy_match_item_compare);
 
 	// For matchfuzzy(), return a list of matched strings.
@@ -4759,17 +4767,17 @@ fuzzy_match_in_list(
 	    li = list_find(fmatchlist, 0);
 	    if (li == NULL || li->li_tv.vval.v_list == NULL)
 		goto done;
-	    l = li->li_tv.vval.v_list;
+	    retlist = li->li_tv.vval.v_list;
 	}
 	else
-	    l = fmatchlist;
+	    retlist = fmatchlist;
 
 	// Copy the matching strings with a valid score to the return list
-	for (i = 0; i < len; i++)
+	for (i = 0; i < match_count; i++)
 	{
-	    if (ptrs[i].score == SCORE_NONE)
+	    if (items[i].score == SCORE_NONE)
 		break;
-	    list_append_tv(l, &ptrs[i].item->li_tv);
+	    list_append_tv(retlist, &items[i].item->li_tv);
 	}
 
 	// next copy the list of matching positions
@@ -4778,14 +4786,15 @@ fuzzy_match_in_list(
 	    li = list_find(fmatchlist, -2);
 	    if (li == NULL || li->li_tv.vval.v_list == NULL)
 		goto done;
-	    l = li->li_tv.vval.v_list;
+	    retlist = li->li_tv.vval.v_list;
 
-	    for (i = 0; i < len; i++)
+	    for (i = 0; i < match_count; i++)
 	    {
-		if (ptrs[i].score == SCORE_NONE)
+		if (items[i].score == SCORE_NONE)
 		    break;
-		if (ptrs[i].lmatchpos != NULL &&
-			list_append_list(l, ptrs[i].lmatchpos) == FAIL)
+		if (items[i].lmatchpos != NULL
+			&& list_append_list(retlist, items[i].lmatchpos)
+								== FAIL)
 		    goto done;
 	    }
 
@@ -4793,19 +4802,19 @@ fuzzy_match_in_list(
 	    li = list_find(fmatchlist, -1);
 	    if (li == NULL || li->li_tv.vval.v_list == NULL)
 		goto done;
-	    l = li->li_tv.vval.v_list;
-	    for (i = 0; i < len; i++)
+	    retlist = li->li_tv.vval.v_list;
+	    for (i = 0; i < match_count; i++)
 	    {
-		if (ptrs[i].score == SCORE_NONE)
+		if (items[i].score == SCORE_NONE)
 		    break;
-		if (list_append_number(l, ptrs[i].score) == FAIL)
+		if (list_append_number(retlist, items[i].score) == FAIL)
 		    goto done;
 	    }
 	}
     }
 
 done:
-    vim_free(ptrs);
+    vim_free(items);
 }
 
 /*
@@ -4819,6 +4828,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     char_u	*key = NULL;
     int		ret;
     int		matchseq = FALSE;
+    long	max_matches = 0;
 
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
@@ -4876,7 +4886,17 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		return;
 	    }
 	}
-	if (dict_find(d, (char_u *)"matchseq", -1) != NULL)
+	else if ((di = dict_find(d, (char_u *)"limit", -1)) != NULL)
+	{
+	    if (di->di_tv.v_type != VAR_NUMBER)
+	    {
+		semsg(_(e_invalid_argument_str), tv_get_string(&di->di_tv));
+		return;
+	    }
+	    max_matches = (long)tv_get_number_chk(&di->di_tv, NULL);
+	}
+
+	if (dict_has_key(d, "matchseq"))
 	    matchseq = TRUE;
     }
 
@@ -4910,7 +4930,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     }
 
     fuzzy_match_in_list(argvars[0].vval.v_list, tv_get_string(&argvars[1]),
-	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list);
+	    matchseq, key, &cb, retmatchpos, rettv->vval.v_list, max_matches);
 
 done:
     free_callback(&cb);
@@ -4933,5 +4953,131 @@ f_matchfuzzypos(typval_T *argvars, typval_T *rettv)
 {
     do_fuzzymatch(argvars, rettv, TRUE);
 }
-
 #endif
+
+/*
+ * Same as fuzzy_match_item_compare() except for use with a string match
+ */
+    static int
+fuzzy_match_str_compare(const void *s1, const void *s2)
+{
+    int		v1 = ((fuzmatch_str_T *)s1)->score;
+    int		v2 = ((fuzmatch_str_T *)s2)->score;
+    int		idx1 = ((fuzmatch_str_T *)s1)->idx;
+    int		idx2 = ((fuzmatch_str_T *)s2)->idx;
+
+    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+}
+
+/*
+ * Sort fuzzy matches by score
+ */
+    static void
+fuzzy_match_str_sort(fuzmatch_str_T *fm, int sz)
+{
+    // Sort the list by the descending order of the match score
+    qsort((void *)fm, (size_t)sz, sizeof(fuzmatch_str_T),
+	    fuzzy_match_str_compare);
+}
+
+/*
+ * Same as fuzzy_match_item_compare() except for use with a function name
+ * string match. <SNR> functions should be sorted to the end.
+ */
+    static int
+fuzzy_match_func_compare(const void *s1, const void *s2)
+{
+    int		v1 = ((fuzmatch_str_T *)s1)->score;
+    int		v2 = ((fuzmatch_str_T *)s2)->score;
+    int		idx1 = ((fuzmatch_str_T *)s1)->idx;
+    int		idx2 = ((fuzmatch_str_T *)s2)->idx;
+    char_u	*str1 = ((fuzmatch_str_T *)s1)->str;
+    char_u	*str2 = ((fuzmatch_str_T *)s2)->str;
+
+    if (*str1 != '<' && *str2 == '<') return -1;
+    if (*str1 == '<' && *str2 != '<') return 1;
+    return v1 == v2 ? (idx1 - idx2) : v1 > v2 ? -1 : 1;
+}
+
+/*
+ * Sort fuzzy matches of function names by score.
+ * <SNR> functions should be sorted to the end.
+ */
+    static void
+fuzzy_match_func_sort(fuzmatch_str_T *fm, int sz)
+{
+    // Sort the list by the descending order of the match score
+    qsort((void *)fm, (size_t)sz, sizeof(fuzmatch_str_T),
+		fuzzy_match_func_compare);
+}
+
+/*
+ * Fuzzy match 'pat' in 'str'. Returns 0 if there is no match. Otherwise,
+ * returns the match score.
+ */
+    int
+fuzzy_match_str(char_u *str, char_u *pat)
+{
+    int		score = 0;
+    int_u	matchpos[MAX_FUZZY_MATCHES];
+
+    if (str == NULL || pat == NULL)
+	return 0;
+
+    fuzzy_match(str, pat, TRUE, &score, matchpos,
+				sizeof(matchpos) / sizeof(matchpos[0]));
+
+    return score;
+}
+
+/*
+ * Free an array of fuzzy string matches "fuzmatch[count]".
+ */
+    void
+fuzmatch_str_free(fuzmatch_str_T *fuzmatch, int count)
+{
+    int i;
+
+    if (fuzmatch == NULL)
+	return;
+    for (i = 0; i < count; ++i)
+	vim_free(fuzmatch[i].str);
+    vim_free(fuzmatch);
+}
+
+/*
+ * Copy a list of fuzzy matches into a string list after sorting the matches by
+ * the fuzzy score. Frees the memory allocated for 'fuzmatch'.
+ * Returns OK on success and FAIL on memory allocation failure.
+ */
+    int
+fuzzymatches_to_strmatches(
+	fuzmatch_str_T	*fuzmatch,
+	char_u		***matches,
+	int		count,
+	int		funcsort)
+{
+    int		i;
+
+    if (count <= 0)
+	return OK;
+
+    *matches = ALLOC_MULT(char_u *, count);
+    if (*matches == NULL)
+    {
+	fuzmatch_str_free(fuzmatch, count);
+	return FAIL;
+    }
+
+    // Sort the list by the descending order of the match score
+    if (funcsort)
+	fuzzy_match_func_sort((void *)fuzmatch, (size_t)count);
+    else
+	fuzzy_match_str_sort((void *)fuzmatch, (size_t)count);
+
+    for (i = 0; i < count; i++)
+	(*matches)[i] = fuzmatch[i].str;
+    vim_free(fuzmatch);
+
+    return OK;
+}

@@ -514,6 +514,19 @@ func Test_popup_firstline()
   call assert_equal(5, popup_getpos(winid).firstline)
 
   call popup_close(winid)
+
+  " Popup with less elements than the maximum height and negative firstline:
+  " check that the popup height is correctly computed.
+  let winid = popup_create(['xxx']->repeat(4), #{
+        \ firstline: -1,
+        \ maxheight: 6,
+	\ })
+
+  let pos = popup_getpos(winid)
+  call assert_equal(3, pos.width)
+  call assert_equal(4, pos.height)
+
+  call popup_close(winid)
 endfunc
 
 func Test_popup_firstline_cursorline()
@@ -610,6 +623,50 @@ func Test_popup_drag()
   call VerifyScreenDump(buf, 'Test_popupwin_drag_05', {})
   call term_sendkeys(buf, ":call DragAllDrag()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_drag_06', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupDrag')
+endfunc
+
+func Test_popup_drag_minwidth()
+  CheckScreendump
+
+  " create a popup that does not fit
+  let lines =<< trim END
+      call range(40)
+	      \ ->map({_,i -> string(i)})
+	      \ ->popup_create({
+	      \   'drag': 1,
+	      \   'wrap': 0,
+	      \   'border': [],
+	      \   'scrollbar': 1,
+	      \   'minwidth': 100,
+	      \   'filter': {w, k -> k ==# 'q' ? len([popup_close(w)]) : 0},
+	      \ })
+	func DragitDown()
+	  map <silent> <F3> :call test_setmouse(1, 10)<CR>
+	  map <silent> <F4> :call test_setmouse(5, 40)<CR>
+	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	func DragitUp()
+	  map <silent> <F3> :call test_setmouse(5, 40)<CR>
+	  map <silent> <F4> :call test_setmouse(4, 40)<CR>
+	  map <silent> <F5> :call test_setmouse(3, 40)<CR>
+	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<F5>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+  END
+  call writefile(lines, 'XtestPopupDrag')
+  let buf = RunVimInTerminal('-S XtestPopupDrag', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_minwidth_1', {})
+
+  call term_sendkeys(buf, ":call DragitDown()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_minwidth_2', {})
+
+  call term_sendkeys(buf, ":call DragitUp()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_minwidth_3', {})
+
+  call term_sendkeys(buf, 'q')
 
   " clean up
   call StopVimInTerminal(buf)
@@ -2731,6 +2788,26 @@ func Test_popupwin_with_buffer()
   call delete('XsomeFile')
 endfunc
 
+func Test_popupwin_buffer_with_swapfile()
+  call writefile(['some text', 'in a buffer'], 'XopenFile')
+  call writefile([''], '.XopenFile.swp')
+  let g:ignoreSwapExists = 1
+
+  let bufnr = bufadd('XopenFile')
+  call assert_equal(0, bufloaded(bufnr))
+  let winid = popup_create(bufnr, {'hidden': 1})
+  call assert_equal(1, bufloaded(bufnr))
+  call popup_close(winid)
+
+  exe 'buffer ' .. bufnr
+  call assert_equal(1, &readonly)
+  bwipe!
+
+  call delete('XopenFile')
+  call delete('.XopenFile.swp')
+  unlet g:ignoreSwapExists
+endfunc
+
 func Test_popupwin_terminal_buffer()
   CheckFeature terminal
   CheckUnix
@@ -3978,7 +4055,7 @@ func Test_popup_prop_not_visible()
       setline(1, ['', 'some text', '', 'other text'])
       prop_type_add('someprop', {})
       prop_add(2, 9, {type: 'someprop', length: 5})
-      popup_create('attached to "some"', {
+      g:some_id = popup_create('attached to "some"', {
           textprop: 'someprop',
           highlight: 'ErrorMsg',
           line: -1,
@@ -3998,6 +4075,12 @@ func Test_popup_prop_not_visible()
   call writefile(lines, 'XtestPropNotVisble')
   let buf = RunVimInTerminal('-S XtestPropNotVisble', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_01', {})
+
+  " check that hiding and unhiding the popup works
+  call term_sendkeys(buf, ":call popup_hide(g:some_id)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_01a', {})
+  call term_sendkeys(buf, ":call popup_show(g:some_id)\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_01b', {})
 
   call term_sendkeys(buf, ":vert resize -14\<CR>")
   call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_02', {})

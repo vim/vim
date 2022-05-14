@@ -898,6 +898,7 @@ string_filter_map(
 	    break;
 	len = (int)STRLEN(tv.vval.v_string);
 
+	newtv.v_type = VAR_UNKNOWN;
 	set_vim_var_nr(VV_KEY, idx);
 	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
 		|| did_emsg)

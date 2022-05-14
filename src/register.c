@@ -1013,20 +1013,28 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     list = list_alloc();
     if (list == NULL)
 	return;
+
+    // yanked text contents
     for (n = 0; n < reg->y_size; n++)
 	list_append_string(list, reg->y_array[n], -1);
     list->lv_lock = VAR_FIXED;
     (void)dict_add_list(v_event, "regcontents", list);
 
+    // register name or empty string for unnamed operation
     buf[0] = (char_u)oap->regname;
     buf[1] = NUL;
     (void)dict_add_string(v_event, "regname", buf);
 
+    // motion type: inclusive or exclusive
+    (void)dict_add_bool(v_event, "inclusive", oap->inclusive);
+
+    // kind of operation (yank, delete, change)
     buf[0] = get_op_char(oap->op_type);
     buf[1] = get_extra_op_char(oap->op_type);
     buf[2] = NUL;
     (void)dict_add_string(v_event, "operator", buf);
 
+    // register type
     buf[0] = NUL;
     buf[1] = NUL;
     switch (get_reg_type(oap->regname, &reglen))
@@ -1040,6 +1048,7 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     }
     (void)dict_add_string(v_event, "regtype", buf);
 
+    // selection type - visual or not
     (void)dict_add_bool(v_event, "visual", oap->is_VIsual);
 
     // Lock the dictionary and its keys
@@ -1330,8 +1339,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	vim_free(y_current->y_array);
 	y_current = curr;
     }
-    if (curwin->w_p_rnu)
-	redraw_later(SOME_VALID);	// cursor moved to start
+
     if (mess)			// Display message about yank?
     {
 	if (yanktype == MCHAR
@@ -2400,8 +2408,8 @@ ex_display(exarg_T *eap)
 			msg_puts_attr("^J", attr);
 			n -= 2;
 		    }
-		    for (p = yb->y_array[j]; *p && (n -= ptr2cells(p)) >= 0;
-									   ++p)
+		    for (p = yb->y_array[j];
+				    *p != NUL && (n -= ptr2cells(p)) >= 0; ++p)
 		    {
 			clen = (*mb_ptr2len)(p);
 			msg_outtrans_len(p, clen);

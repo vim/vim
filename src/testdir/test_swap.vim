@@ -233,7 +233,6 @@ func Test_swap_recover()
     autocmd SwapExists * let v:swapchoice = 'r'
   augroup END
 
-
   call mkdir('Xswap')
   let $Xswap = 'foo'  " Check for issue #4369.
   set dir=Xswap//

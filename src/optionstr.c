@@ -20,7 +20,7 @@ static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 				 "copy", "ctrlg", "error", "esc", "ex",
 				 "hangul", "insertmode", "lang", "mess",
 				 "showmatch", "operator", "register", "shell",
-				 "spell", "wildmode", NULL};
+				 "spell", "term", "wildmode", NULL};
 static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", "unsigned", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
@@ -57,7 +57,7 @@ static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", "huge", "g
 static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm", "pterm", "urxvt", "sgr", NULL};
 #endif
 static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", "none", "NONE", NULL};
-static char *(p_wop_values[]) = {"tagfile", "pum", NULL};
+static char *(p_wop_values[]) = {"fuzzy", "tagfile", "pum", NULL};
 #ifdef FEAT_WAK
 static char *(p_wak_values[]) = {"yes", "menu", "no", NULL};
 #endif
@@ -125,6 +125,7 @@ didset_string_options(void)
 #if defined(FEAT_TOOLBAR) && defined(FEAT_GUI_GTK)
     (void)opt_strings_flags(p_tbis, p_tbis_values, &tbis_flags, FALSE);
 #endif
+    (void)opt_strings_flags(p_swb, p_swb_values, &swb_flags, TRUE);
 }
 
 #if defined(FEAT_EVAL)
@@ -260,6 +261,7 @@ check_buf_options(buf_T *buf)
 #ifdef FEAT_CINDENT
     check_string_option(&buf->b_p_cink);
     check_string_option(&buf->b_p_cino);
+    check_string_option(&buf->b_p_cinsd);
     parse_cino(buf);
 #endif
     check_string_option(&buf->b_p_ft);
@@ -483,7 +485,7 @@ set_string_option_direct_in_buf(
 /*
  * Set a string option to a new value, and handle the effects.
  *
- * Returns NULL on success or error message on error.
+ * Returns NULL on success or an untranslated error message on error.
  */
     char *
 set_string_option(
@@ -502,7 +504,7 @@ set_string_option(
     char_u	*saved_oldval_g = NULL;
     char_u	*saved_newval = NULL;
 #endif
-    char	*r = NULL;
+    char	*errmsg = NULL;
     int		value_checked = FALSE;
 
     if (is_hidden_option(opt_idx))	// don't set hidden option
@@ -541,13 +543,13 @@ set_string_option(
 	    saved_newval = vim_strsave(s);
 	}
 #endif
-	if ((r = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
+	if ((errmsg = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
 					   opt_flags, &value_checked)) == NULL)
 	    did_set_option(opt_idx, opt_flags, TRUE, value_checked);
 
 #if defined(FEAT_EVAL)
 	// call autocommand after handling side effects
-	if (r == NULL)
+	if (errmsg == NULL)
 	    trigger_optionsset_string(opt_idx, opt_flags,
 				   saved_oldval, saved_oldval_l,
 				   saved_oldval_g, saved_newval);
@@ -557,7 +559,7 @@ set_string_option(
 	vim_free(saved_newval);
 #endif
     }
-    return r;
+    return errmsg;
 }
 
 /*
@@ -573,7 +575,7 @@ valid_filetype(char_u *val)
 #ifdef FEAT_STL_OPT
 /*
  * Check validity of options with the 'statusline' format.
- * Return error message or NULL.
+ * Return an untranslated error message or NULL.
  */
     static char *
 check_stl_option(char_u *s)
@@ -624,24 +626,26 @@ check_stl_option(char_u *s)
 	}
 	if (*s == '{')
 	{
-	    int reevaluate = (*s == '%');
+	    int reevaluate = (*++s == '%');
 
-	    s++;
+	    if (reevaluate && *++s == '}')
+		// "}" is not allowed immediately after "%{%"
+		return illegal_char(errbuf, '}');
 	    while ((*s != '}' || (reevaluate && s[-1] != '%')) && *s)
 		s++;
 	    if (*s != '}')
-		return N_(e_unclosed_expression_sequence);
+		return e_unclosed_expression_sequence;
 	}
     }
     if (groupdepth != 0)
-	return N_(e_unbalanced_groups);
+	return e_unbalanced_groups;
     return NULL;
 }
 #endif
 
 /*
  * Handle string options that need some action to perform when changed.
- * Returns NULL for success, or an error message for an error.
+ * Returns NULL for success, or an unstranslated error message for an error.
  */
     char *
 did_set_string_option(
@@ -750,7 +754,7 @@ did_set_string_option(
     {
 	if (STRCMP(*p_bex == '.' ? p_bex + 1 : p_bex,
 		     *p_pm == '.' ? p_pm + 1 : p_pm) == 0)
-	    errmsg = N_(e_backupext_and_patchmode_are_equal);
+	    errmsg = e_backupext_and_patchmode_are_equal;
     }
 #ifdef FEAT_LINEBREAK
     // 'breakindentopt'
@@ -784,15 +788,9 @@ did_set_string_option(
     {
 	// May compute new values for $VIM and $VIMRUNTIME
 	if (didset_vim)
-	{
-	    vim_setenv((char_u *)"VIM", (char_u *)"");
-	    didset_vim = FALSE;
-	}
+	    vim_unsetenv_ext((char_u *)"VIM");
 	if (didset_vimruntime)
-	{
-	    vim_setenv((char_u *)"VIMRUNTIME", (char_u *)"");
-	    didset_vimruntime = FALSE;
-	}
+	    vim_unsetenv_ext((char_u *)"VIMRUNTIME");
     }
 
 #ifdef FEAT_SYN_HL
@@ -875,7 +873,7 @@ did_set_string_option(
 	if (check_opt_strings(p_ambw, p_ambw_values, FALSE) != OK)
 	    errmsg = e_invalid_argument;
 	else if (set_chars_option(curwin, &p_fcs) != NULL)
-	    errmsg = _(e_conflicts_with_value_of_fillchars);
+	    errmsg = e_conflicts_with_value_of_fillchars;
 	else
 	{
 	    tabpage_T	*tp;
@@ -885,7 +883,7 @@ did_set_string_option(
 	    {
 		if (set_chars_option(wp, &wp->w_p_lcs) != NULL)
 		{
-		    errmsg = _(e_conflicts_with_value_of_listchars);
+		    errmsg = e_conflicts_with_value_of_listchars;
 		    goto ambw_end;
 		}
 	    }
@@ -949,14 +947,12 @@ ambw_end:
 		|| check_opt_strings(p_wak, p_wak_values, FALSE) != OK)
 	    errmsg = e_invalid_argument;
 # ifdef FEAT_MENU
-#  ifdef FEAT_GUI_MOTIF
+#  if defined(FEAT_GUI_MOTIF)
 	else if (gui.in_use)
 	    gui_motif_set_mnemonics(p_wak[0] == 'y' || p_wak[0] == 'm');
-#  else
-#   ifdef FEAT_GUI_GTK
+#  elif defined(FEAT_GUI_GTK)
 	else if (gui.in_use)
 	    gui_gtk_set_mnemonics(p_wak[0] == 'y' || p_wak[0] == 'm');
-#   endif
 #  endif
 # endif
     }
@@ -1250,8 +1246,7 @@ ambw_end:
 		int x2 = -1;
 		int x3 = -1;
 
-		if (*p != NUL)
-		    p += mb_ptr2len(p);
+		p += mb_ptr2len(p);
 		if (*p != NUL)
 		    x2 = *p++;
 		if (*p != NUL)
@@ -1492,7 +1487,7 @@ ambw_end:
 	for (s = *varp; *s; )
 	{
 	    if (ptr2cells(s) != 1)
-		errmsg = N_(e_showbreak_contains_unprintable_or_wide_character);
+		errmsg = e_showbreak_contains_unprintable_or_wide_character;
 	    MB_PTR_ADV(s);
 	}
     }
@@ -1534,7 +1529,7 @@ ambw_end:
 		}
 		else
 # endif
-		    errmsg = N_(e_invalid_fonts);
+		    errmsg = e_invalid_fonts;
 	    }
 	}
 	redraw_gui_only = TRUE;
@@ -1543,9 +1538,9 @@ ambw_end:
     else if (varp == &p_guifontset)
     {
 	if (STRCMP(p_guifontset, "*") == 0)
-	    errmsg = N_(e_cant_select_fontset);
+	    errmsg = e_cant_select_fontset;
 	else if (gui.in_use && gui_init_font(p_guifontset, TRUE) != OK)
-	    errmsg = N_(e_invalid_fontset);
+	    errmsg = e_invalid_fontset;
 	redraw_gui_only = TRUE;
     }
 # endif
@@ -1807,8 +1802,8 @@ ambw_end:
     }
 
 #ifdef FEAT_STL_OPT
-    // 'statusline' or 'rulerformat'
-    else if (gvarp == &p_stl || varp == &p_ruf)
+    // 'statusline', 'tabline' or 'rulerformat'
+    else if (gvarp == &p_stl || varp == &p_tal || varp == &p_ruf)
     {
 	int wid;
 
@@ -1826,7 +1821,7 @@ ambw_end:
 	    else
 		errmsg = check_stl_option(p_ruf);
 	}
-	// check 'statusline' only if it doesn't start with "%!"
+	// check 'statusline' or 'tabline' only if it doesn't start with "%!"
 	else if (varp == &p_ruf || s[0] != '%' || s[1] != '!')
 	    errmsg = check_stl_option(s);
 	if (varp == &p_ruf && errmsg == NULL)

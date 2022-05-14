@@ -1269,7 +1269,6 @@ nfa_emit_equi_class(int c)
     EMIT2(c);
     return OK;
 #undef EMIT2
-#undef EMIT2
 }
 
 /*
@@ -1641,6 +1640,7 @@ nfa_regatom(void)
 			long_u	n = 0;
 			int	cmp = c;
 			int	cur = FALSE;
+			int	got_digit = FALSE;
 
 			if (c == '<' || c == '>')
 			    c = getchr();
@@ -1654,8 +1654,11 @@ nfa_regatom(void)
 			    long_u tmp;
 
 			    if (cur)
-				semsg(_(e_regexp_number_after_dot_pos_search),
-								 no_Magic(c));
+			    {
+				semsg(_(e_regexp_number_after_dot_pos_search_chr),
+								  no_Magic(c));
+				return FAIL;
+			    }
 			    tmp = n * 10 + (c - '0');
 
 			    if (tmp < n)
@@ -1666,11 +1669,18 @@ nfa_regatom(void)
 			    }
 			    n = tmp;
 			    c = getchr();
+			    got_digit = TRUE;
 			}
 			if (c == 'l' || c == 'c' || c == 'v')
 			{
 			    long_u limit = INT_MAX;
 
+			    if (!cur && !got_digit)
+			    {
+				semsg(_(e_nfa_regexp_missing_value_in_chr),
+								  no_Magic(c));
+				return FAIL;
+			    }
 			    if (c == 'l')
 			    {
 				if (cur)
@@ -6762,8 +6772,10 @@ nfa_regmatch(
 	    case NFA_MARK_GT:
 	    case NFA_MARK_LT:
 	      {
-		size_t	col = rex.input - rex.line;
-		pos_T	*pos = getmark_buf(rex.reg_buf, t->state->val, FALSE);
+		pos_T	*pos;
+		size_t	col = REG_MULTI ? rex.input - rex.line : 0;
+
+		pos = getmark_buf(rex.reg_buf, t->state->val, FALSE);
 
 		// Line may have been freed, get it again.
 		if (REG_MULTI)

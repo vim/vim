@@ -1371,11 +1371,10 @@ spell_move_to(
 		    // the cursor.
 		    if (dir == BACKWARD
 			    || lnum != wp->w_cursor.lnum
-			    || (lnum == wp->w_cursor.lnum
-				&& (wrapped
-				    || (colnr_T)(curline ? p - buf + len
+			    || (wrapped
+				|| (colnr_T)(curline ? p - buf + len
 						     : p - buf)
-						  > wp->w_cursor.col)))
+						  > wp->w_cursor.col))
 		    {
 #ifdef FEAT_SYN_HL
 			if (has_syntax)
@@ -1966,7 +1965,7 @@ count_syllables(slang_T *slang, char_u *word)
 
 /*
  * Parse 'spelllang' and set w_s->b_langp accordingly.
- * Returns NULL if it's OK, an error message otherwise.
+ * Returns NULL if it's OK, an untranslated error message otherwise.
  */
     char *
 did_set_spelllang(win_T *wp)
@@ -2914,6 +2913,9 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	    STRCAT(p, line + curwin->w_cursor.col + STRLEN(repl_from));
 	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
 	    changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
+	    if (curbuf->b_has_textprop && addlen != 0)
+		adjust_prop_columns(curwin->w_cursor.lnum,
+				 curwin->w_cursor.col, addlen, APC_SUBSTITUTE);
 
 	    if (curwin->w_cursor.lnum != prev_lnum)
 	    {
@@ -3835,8 +3837,8 @@ ex_spelldump(exarg_T *eap)
     do_cmdline_cmd((char_u *)"new");
 
     // enable spelling locally in the new window
-    set_option_value((char_u*)"spell", TRUE, (char_u*)"", OPT_LOCAL);
-    set_option_value((char_u*)"spl",  dummy, spl, OPT_LOCAL);
+    set_option_value_give_err((char_u*)"spell", TRUE, (char_u*)"", OPT_LOCAL);
+    set_option_value_give_err((char_u*)"spl",  dummy, spl, OPT_LOCAL);
     vim_free(spl);
 
     if (!BUFEMPTY())

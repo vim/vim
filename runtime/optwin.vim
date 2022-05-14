@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Dec 21
+" Last Change:	2022 Apr 07
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -624,6 +624,8 @@ call <SID>BinOptionG("scf", &scf)
 if has("gui")
   call <SID>AddOption("mousehide", gettext("hide the mouse pointer while typing"))
   call <SID>BinOptionG("mh", &mh)
+  call <SID>AddOption("mousemoveevent", gettext("report mouse movement events"))
+  call <SID>BinOptionG("mousemev", &mousemev)
 endif
 call <SID>AddOption("mousemodel", gettext("\"extend\", \"popup\" or \"popup_setpos\"; what the right\nmouse button is used for"))
 call <SID>OptionG("mousem", &mousem)
@@ -927,6 +929,9 @@ if has("cindent")
   call <SID>AddOption("cinwords", gettext("list of words that cause more C-indent"))
   call append("$", "\t" .. s:local_to_buffer)
   call <SID>OptionL("cinw")
+  call <SID>AddOption("cinscopedecls", gettext("list of scope declaration names used by cino-g"))
+  call append("$", "\t" .. s:local_to_buffer)
+  call <SID>OptionL("cinsd")
   call <SID>AddOption("indentexpr", gettext("expression used to obtain the indent of a line"))
   call append("$", "\t" .. s:local_to_buffer)
   call <SID>OptionL("inde")

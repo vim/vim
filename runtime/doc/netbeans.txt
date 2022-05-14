@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 8.2.  Last change: 2020 Nov 02
+*netbeans.txt*  For Vim version 8.2.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -124,12 +124,12 @@ In case you do not want the NetBeans interface you can disable it by
 uncommenting a line with "--disable-netbeans" in the Makefile.
 
 Currently the NetBeans interface is supported by Vim running in a terminal and
-by gvim when it is run with one of the following GUIs: GTK, GNOME, Windows,
-Athena and Motif.
+by gvim when it is run with one of the following GUIs: GTK, GNOME, Windows
+and Motif.
 
 							*netbeans-xpm*
 If Motif support is required the user must supply XPM libraries.
-The XPM library is required to show images within Vim with Motif or Athena.
+The XPM library is required to show images within Vim with Motif.
 Without it the toolbar and signs will be disabled.
 
 The XPM library is provided by Arnaud Le Hors of the French National Institute

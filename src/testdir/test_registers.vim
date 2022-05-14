@@ -759,6 +759,45 @@ func Test_record_in_select_mode()
   bwipe!
 endfunc
 
+" mapping that ends macro recording should be removed from recorded macro
+func Test_end_record_using_mapping()
+  call setline(1, 'aaa')
+  nnoremap s q
+  call feedkeys('safas', 'tx')
+  call assert_equal('fa', @a)
+  nunmap s
+
+  nnoremap xx q
+  call feedkeys('0xxafaxx', 'tx')
+  call assert_equal('fa', @a)
+  nunmap xx
+
+  nnoremap xsx q
+  call feedkeys('0qafaxsx', 'tx')
+  call assert_equal('fa', @a)
+  nunmap xsx
+
+  bwipe!
+endfunc
+
+func Test_end_reg_executing()
+  nnoremap s <Nop>
+  let @a = 's'
+  call feedkeys("@aqaq\<Esc>", 'tx')
+  call assert_equal('', @a)
+  call assert_equal('', getline(1))
+
+  call setline(1, 'aaa')
+  nnoremap s qa
+  let @a = 'fa'
+  call feedkeys("@asq\<Esc>", 'tx')
+  call assert_equal('', @a)
+  call assert_equal('aaa', getline(1))
+
+  nunmap s
+  bwipe!
+endfunc
+
 " Make sure that y_append is correctly reset
 " and the previous register is working as expected
 func Test_register_y_append_reset()

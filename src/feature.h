@@ -249,11 +249,6 @@
 #endif
 
 /*
- * +tag_binary		Can use a binary search for the tags file.
- */
-#define FEAT_TAG_BINS
-
-/*
  * +cscope		Unix only: Cscope support.
  */
 #if defined(UNIX) && defined(FEAT_BIG) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)
@@ -588,8 +583,7 @@
 #if defined(FEAT_NORMAL) && defined(FEAT_MENU) \
 	&& (defined(FEAT_GUI_GTK) \
 		|| defined(FEAT_GUI_MSWIN) \
-		|| ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
-			&& defined(HAVE_XPM)) \
+		|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XPM)) \
 		|| defined(FEAT_GUI_PHOTON) \
 		|| defined(FEAT_GUI_HAIKU))
 
@@ -625,7 +619,7 @@
  */
 #if defined(FEAT_NORMAL)
 # define FEAT_BROWSE_CMD
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_PHOTON)
 #  define FEAT_BROWSE
 # endif
@@ -646,8 +640,7 @@
  *			When none of these defined there is no dialog support.
  */
 #ifdef FEAT_NORMAL
-# if ((defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF)) \
-		&& defined(HAVE_X11_XPM_H)) \
+# if (defined(FEAT_GUI_MOTIF) && defined(HAVE_X11_XPM_H)) \
 	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) \
 	|| defined(FEAT_GUI_HAIKU) \
@@ -659,13 +652,13 @@
 # endif
 #endif
 #if !defined(FEAT_GUI_DIALOG) && (defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_MSWIN))
 // need a dialog to show error messages when starting from the desktop
 # define FEAT_GUI_DIALOG
 #endif
 #if defined(FEAT_GUI_DIALOG) && \
-	(defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+	(defined(FEAT_GUI_MOTIF) \
 	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) \
 	 || defined(FEAT_GUI_PHOTON) \
 	 || defined(FEAT_GUI_HAIKU))
@@ -886,7 +879,7 @@
  * +X11			Unix only.  Include code for xterm title saving and X
  *			clipboard.  Only works if HAVE_X11 is also defined.
  */
-#if (defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_NORMAL) || defined(FEAT_GUI_MOTIF)
 # define WANT_X11
 #endif
 
@@ -952,6 +945,12 @@
  */
 #if defined(FEAT_NORMAL) && defined(HAVE_GPM)
 # define FEAT_MOUSE_GPM
+/*
+ * +mouse_gpm/dyn   Load libgpm dynamically.
+ */
+# ifndef DYNAMIC_GPM
+// #  define DYNAMIC_GPM
+# endif
 #endif
 
 #if defined(FEAT_NORMAL) && defined(HAVE_SYSMOUSE)
@@ -1046,7 +1045,7 @@
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON)
 #  define FEAT_MOUSESHAPE
 # endif
@@ -1063,7 +1062,7 @@
 #endif
 
 #if defined(FEAT_MZSCHEME) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)    \
-	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+	|| defined(FEAT_GUI_MOTIF))
 # define MZSCHEME_GUI_THREADS
 #endif
 
@@ -1089,7 +1088,6 @@
  * +tcl			TCL interface: "--enable-tclinterp"
  * +netbeans_intg	Netbeans integration
  * +channel		Inter process communication
- * +GUI_Athena		Athena GUI
  * +GUI_Motif		Motif GUI
  */
 
@@ -1153,8 +1151,7 @@
  */
 #if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_PROP_POPUP)
 # define FEAT_SIGNS
-# if ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
-		&& defined(HAVE_X11_XPM_H)) \
+# if (defined(FEAT_GUI_MOTIF) && defined(HAVE_X11_XPM_H)) \
 	|| defined(FEAT_GUI_GTK) \
 	|| (defined(MSWIN) && defined(FEAT_GUI))
 #  define FEAT_SIGN_ICONS
@@ -1166,7 +1163,7 @@
  *			debugger and for tooltips.
  *			Only for GUIs where it was implemented.
  */
-#if (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+#if (defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN)) \
 	&& (   ((defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)) \
 		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MSWIN)) \
@@ -1178,7 +1175,7 @@
 # endif
 #endif
 
-#if defined(FEAT_BEVAL_GUI) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_BEVAL_GUI) && defined(FEAT_GUI_MOTIF)
 # define FEAT_BEVAL_TIP		// balloon eval used for toolbar tooltip
 #endif
 
@@ -1195,8 +1192,8 @@
 # define FEAT_BEVAL
 #endif
 
-// both Motif and Athena are X11 and share some code
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+// Motif is X11
+#if defined(FEAT_GUI_MOTIF)
 # define FEAT_GUI_X11
 #endif
 

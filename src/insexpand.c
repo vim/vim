@@ -257,7 +257,7 @@ ins_ctrl_x(void)
 	// CTRL-V look like CTRL-N
 	ctrl_x_mode = CTRL_X_CMDLINE_CTRL_X;
 
-    trigger_modechanged();
+    may_trigger_modechanged();
 }
 
 /*
@@ -1966,8 +1966,8 @@ ins_compl_set_original_text(char_u *str)
        p = vim_strsave(str);
        if (p != NULL)
        {
-           vim_free(compl_first_match->cp_prev->cp_str);
-           compl_first_match->cp_prev->cp_str = p;
+	   vim_free(compl_first_match->cp_prev->cp_str);
+	   compl_first_match->cp_prev->cp_str = p;
        }
     }
 }
@@ -2381,7 +2381,7 @@ ins_compl_prep(int c)
 	// upon the (possibly failed) completion.
 	ins_apply_autocmds(EVENT_COMPLETEDONE);
 
-    trigger_modechanged();
+    may_trigger_modechanged();
 
     // reset continue_* if we left expansion-mode, if we stay they'll be
     // (re)set properly in ins_complete()
@@ -2865,7 +2865,7 @@ set_completion(colnr_T startcol, list_T *list)
     // Lazily show the popup menu, unless we got interrupted.
     if (!compl_interrupted)
 	show_pum(save_w_wrow, save_w_leftcol);
-    trigger_modechanged();
+    may_trigger_modechanged();
     out_flush();
 }
 
@@ -2883,7 +2883,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 		|| check_for_list_arg(argvars, 1) == FAIL))
 	return;
 
-    if ((State & INSERT) == 0)
+    if ((State & MODE_INSERT) == 0)
     {
 	emsg(_(e_complete_can_only_be_used_in_insert_mode));
 	return;
@@ -3176,7 +3176,7 @@ typedef struct
  *   st->first_match_pos - position of the first completion match
  *   st->last_match_pos - position of the last completion match
  *   st->set_match_pos - TRUE if the first match position should be saved to
- *		         avoid loops after the search wraps around.
+ *			    avoid loops after the search wraps around.
  *   st->dict - name of the dictionary or thesaurus file to search
  *   st->dict_f - flag specifying whether "dict" is an exact file name or not
  *
@@ -3818,7 +3818,7 @@ ins_compl_get_exp(pos_T *ini)
 	if (compl_curr_match == NULL)
 	    compl_curr_match = compl_old_match;
     }
-    trigger_modechanged();
+    may_trigger_modechanged();
 
     return i;
 }

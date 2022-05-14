@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.2.  Last change: 2021 Dec 27
+*motion.txt*    For Vim version 8.2.  Last change: 2022 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -33,7 +33,8 @@ know what the hjkl keys do.  The mnemonic value of hjkl is clear from looking
 at the keyboard.  Think of j as an arrow pointing downwards.
 
 The 'virtualedit' option can be set to make it possible to move the cursor to
-positions where there is no character or halfway a character.
+positions where there is no character or within a multi-column character (like
+a tab).
 
 ==============================================================================
 1. Motions and operators				*operator*
@@ -445,35 +446,35 @@ between Vi and Vim.
 5. Text object motions					*object-motions*
 
 							*(*
-(			[count] sentences backward.  |exclusive| motion.
+(			[count] |sentence|s backward.  |exclusive| motion.
 
 							*)*
-)			[count] sentences forward.  |exclusive| motion.
+)			[count] |sentence|s forward.  |exclusive| motion.
 
 							*{*
-{			[count] paragraphs backward.  |exclusive| motion.
+{			[count] |paragraph|s backward.  |exclusive| motion.
 
 							*}*
-}			[count] paragraphs forward.  |exclusive| motion.
+}			[count] |paragraph|s forward.  |exclusive| motion.
 
 							*]]*
-]]			[count] sections forward or to the next '{' in the
+]]			[count] |section|s forward or to the next '{' in the
 			first column.  When used after an operator, then also
 			stops below a '}' in the first column.  |exclusive|
 			Note that |exclusive-linewise| often applies.
 
 							*][*
-][			[count] sections forward or to the next '}' in the
+][			[count] |section|s forward or to the next '}' in the
 			first column.  |exclusive|
 			Note that |exclusive-linewise| often applies.
 
 							*[[*
-[[			[count] sections backward or to the previous '{' in
+[[			[count] |section|s backward or to the previous '{' in
 			the first column.  |exclusive|
 			Note that |exclusive-linewise| often applies.
 
 							*[]*
-[]			[count] sections backward or to the previous '}' in
+[]			[count] |section|s backward or to the previous '}' in
 			the first column.  |exclusive|
 			Note that |exclusive-linewise| often applies.
 
@@ -1019,7 +1020,7 @@ These commands are not marks themselves, but jump to a mark:
 				:let lnum = line(".")
 				:keepjumps normal gg
 				:call SetLastChange()
-				:keepjumps exe "normal " . lnum . "G"
+				:keepjumps exe "normal " .. lnum .. "G"
 <
 			Note that ":keepjumps" must be used for every command.
 			When invoking a function the commands in that function
@@ -1075,6 +1076,9 @@ For example, after three jump commands you have this jump list:
 The "file/text" column shows the file name, or the text at the jump if it is
 in the current file (an indent is removed and a long line is truncated to fit
 in the window).
+
+The marker ">" indicates the current position in the jumplist.  It may not be
+shown when filtering the |:jumps| command using |:filter|
 
 You are currently in line 1167.  If you then use the CTRL-O command, the
 cursor is put in line 1154.  This results in:

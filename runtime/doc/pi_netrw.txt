@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 8.2.  Last change: 2021 Aug 16
+*pi_netrw.txt*  For Vim version 8.2.  Last change: 2022 Apr 06
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -968,7 +968,7 @@ itself:
      fun! NetReadFixup(method, line1, line2)
        if method == 3   " ftp (no <.netrc>)
         let fourblanklines= line2 - 3
-        silent fourblanklines.",".line2."g/^\s*/d"
+        silent fourblanklines .. "," .. line2 .. "g/^\s*/d"
        endif
      endfunction
     endif
@@ -1975,7 +1975,7 @@ To use this function, simply assign its output to |g:netrw_list_hide| option.  >
 	Example: let g:netrw_list_hide= netrw_gitignore#Hide('my_gitignore_file')
 		Function can take additional files with git-ignore patterns.
 
-	Example: g:netrw_list_hide= netrw_gitignore#Hide() . '.*\.swp$'
+	Example: let g:netrw_list_hide= netrw_gitignore#Hide() .. '.*\.swp$'
 		Combining 'netrw_gitignore#Hide' with custom patterns.
 <
 
@@ -2815,7 +2815,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				= 2: wide listing (multiple files in columns)
 				= 3: tree style listing
 
-  *g:netrw_list_hide*		comma separated pattern list for hiding files
+  *g:netrw_list_hide*		comma-separated pattern list for hiding files
 				Patterns are regular expressions (see |regexp|)
 				There's some special support for git-ignore
 				files: you may add the output from the helper
@@ -2825,7 +2825,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 
 				Examples:
 				 let g:netrw_list_hide= '.*\.swp$'
-				 let g:netrw_list_hide= netrw_gitignore#Hide().'.*\.swp$'
+				 let g:netrw_list_hide= netrw_gitignore#Hide() .. '.*\.swp$'
 				default: ""
 
   *g:netrw_localcopycmd*	="cp"           Linux/Unix/MacOS/Cygwin

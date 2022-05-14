@@ -420,23 +420,40 @@ cin_islabel_skip(char_u **s)
 }
 
 /*
- * Recognize a "public/private/protected" scope declaration label.
+ * Recognize a scope declaration label from the 'cinscopedecls' option.
  */
     static int
-cin_isscopedecl(char_u *s)
+cin_isscopedecl(char_u *p)
 {
-    int		i;
+    size_t  cinsd_len;
+    char_u  *cinsd_buf;
+    char_u  *cinsd;
+    size_t  len;
+    char_u  *skip;
+    char_u  *s = cin_skipcomment(p);
+    int	    found = FALSE;
 
-    s = cin_skipcomment(s);
-    if (STRNCMP(s, "public", 6) == 0)
-	i = 6;
-    else if (STRNCMP(s, "protected", 9) == 0)
-	i = 9;
-    else if (STRNCMP(s, "private", 7) == 0)
-	i = 7;
-    else
+    cinsd_len = STRLEN(curbuf->b_p_cinsd) + 1;
+    cinsd_buf = alloc(cinsd_len);
+    if (cinsd_buf == NULL)
 	return FALSE;
-    return (*(s = cin_skipcomment(s + i)) == ':' && s[1] != ':');
+
+    for (cinsd = curbuf->b_p_cinsd; *cinsd; )
+    {
+	len = copy_option_part(&cinsd, cinsd_buf, (int)cinsd_len, ",");
+	if (STRNCMP(s, cinsd_buf, len) == 0)
+	{
+	    skip = cin_skipcomment(s + len);
+	    if (*skip == ':' && skip[1] != ':')
+	    {
+		found = TRUE;
+		break;
+	    }
+	}
+    }
+
+    vim_free(cinsd_buf);
+    return found;
 }
 
 /*
@@ -2097,7 +2114,7 @@ get_c_indent(void)
     // inserting new stuff.
     // For unknown reasons the cursor might be past the end of the line, thus
     // check for that.
-    if ((State & INSERT)
+    if ((State & MODE_INSERT)
 	    && curwin->w_cursor.col < (colnr_T)STRLEN(linecopy)
 	    && linecopy[curwin->w_cursor.col] == ')')
 	linecopy[curwin->w_cursor.col] = NUL;
@@ -2164,8 +2181,8 @@ get_c_indent(void)
 			  check_linecomment(ml_get(curwin->w_cursor.lnum - 1));
 	    if (linecomment_pos.col != MAXCOL)
 	    {
-	        trypos = &linecomment_pos;
-	        trypos->lnum = curwin->w_cursor.lnum - 1;
+		trypos = &linecomment_pos;
+		trypos->lnum = curwin->w_cursor.lnum - 1;
 	    }
 	}
 	if (trypos  != NULL)
