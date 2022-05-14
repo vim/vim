@@ -2008,8 +2008,7 @@ getcmdline_int(
 		    (void)showmatches(&xpc, FALSE);
 #endif
 		}
-		if (nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK
-			&& nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
+		if (nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
 		    goto cmdline_changed;
 	    }
 	}
