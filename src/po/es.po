@@ -1505,10 +1505,6 @@ msgstr "Idioma actual %s: \"%s\""
 msgid "Unknown option argument"
 msgstr "Opción de argumento desconocida"
 
-# TODO: Capitalise first word of message?
-msgid "E579: :if nesting too deep"
-msgstr "E579: ¡\":if\" anidado en exceso!"
-
 msgid "Too many edit arguments"
 msgstr "Demasiados argumentos de edición"
 
@@ -1788,10 +1784,6 @@ msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tEvitar la conexión al servidor X"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
-
-# TODO: Capitalise first word of message?
-msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
-
 msgstr ""
 "--remote <archivos>\tEditar <archivos> en un servidor Vim si es posible"
 
@@ -6256,7 +6248,7 @@ msgid "E610: No argument to delete"
 msgstr "E610: No hay argumento para eliminar"
 
 msgid "E611: Using a Special as a Number"
-msgstr "E745: Usando un \"Special\" como \"Number\""
+msgstr "E611: Usando un \"Special\" como \"Number\""
 
 msgid "E612: Too many signs defined"
 msgstr "E612: Demasiados signos definidos"
@@ -7008,7 +7000,7 @@ msgid "E834: Conflicts with value of 'listchars'"
 msgstr "E834: Conflictos con el valor de 'listchars'"
 
 msgid "E835: Conflicts with value of 'fillchars'"
-msgstr "E834: Conflictos con el valor de 'fillchars'"
+msgstr "E835: Conflictos con el valor de 'fillchars'"
 
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: Este Vim no puede ejecutar :python después de usar :py3"
@@ -7253,7 +7245,7 @@ msgstr ""
 "E896: El argumento de %s debe ser una lista un diccionario o un \"blob\""
 
 msgid "E897: List or Blob required"
-msgstr "E714: Se requiere una lista o \"blob\""
+msgstr "E897: Se requiere una lista o \"blob\""
 
 msgid "E898: socket() in channel_connect()"
 msgstr "E898: socket() en channel_connect()"
@@ -7312,7 +7304,7 @@ msgstr ""
 "E912: No se puede usar ch_evalexpr()/ch_sendexpr() con un canal raw o nl"
 
 msgid "E913: Using a Channel as a Number"
-msgstr "E703: Usando \"Channel\" como \"Number\""
+msgstr "E913: Usando \"Channel\" como \"Number\""
 
 msgid "E914: Using a Channel as a Float"
 msgstr "E914: Usando \"Channel\" como \"Float\""
@@ -7872,7 +7864,7 @@ msgid "E1056: Expected a type: %s"
 msgstr "E1056: Se esperaba un tipo: %s"
 
 msgid "E1057: Missing :enddef"
-msgstr "E171: Falta \":enddef\""
+msgstr "E1057: Falta \":enddef\""
 
 msgid "E1058: Function nesting too deep"
 msgstr "E1058: Anidamiento de función demasiado profundo"
@@ -8242,10 +8234,6 @@ msgid "E1159: Cannot split a window when closing the buffer"
 msgstr "E1159: No se puede dividir una ventana al cerrar el búfer"
 
 msgid "E1160: Cannot use a default for variable arguments"
-
-# TODO: Capitalise first word of message?
-msgid "E533: Can't select wide font"
-
 msgstr ""
 "E1160: No se puede usar un valor predeterminado para argumentos variables"
 
@@ -8633,9 +8621,6 @@ msgstr "E1256: \"String\" o función requerida para el argumento %d"
 # TODO: Capitalise first word of message?
 msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: El elemento en %s%%[] no es válido"
-
-msgid "E339: Pattern too long"
-msgstr "E339: Patrón demasiado largo"
 
 #, c-format
 msgid "E1257: Imported script must use \"as\" or end in .vim: %s"
@@ -9502,10 +9487,6 @@ msgid "key that precedes Vim commands in a terminal window"
 msgstr "tecla que precede a los comandos de Vim en una ventana de terminal"
 
 msgid "max number of lines to keep for scrollback in a terminal window"
-
-# TODO: Capitalise first word of message?
-msgid "E403: syntax sync: Line continuations pattern specified twice"
-
 msgstr ""
 "número máximo de líneas a mantener para el desplazamiento hacia atrás "
 "en una ventana de terminal"
