@@ -56,7 +56,8 @@ var buf: number
 var help_winid: number
 var last_changed_attributes: list<dict<any>>
 var last_changed_group: string
-var undolist: dict<any> = {states: [hlget()], pos: 0}
+# `curlines` is used to restore the cursor position after an undo/redo
+var undolist: dict<any> = {states: [hlget()], curlines: [''], pos: 0}
 var want_colorscheme: bool
 var winid: number
 var written_files: list<string>
@@ -385,6 +386,7 @@ def Undo() #{{{2
         ->Hlset('undo')
 
     Reload()
+    RestoreCursorPos()
     PrintStatesPos()
 enddef
 
@@ -400,6 +402,7 @@ def Redo() #{{{2
         ->Hlset('redo')
 
     Reload()
+    RestoreCursorPos()
     PrintStatesPos()
 enddef
 
@@ -651,7 +654,7 @@ def SetOptionsAndInterface() #{{{2
     command! -bang -bar -buffer -complete=custom,CompleteColorScheme -nargs=? ColorScheme {
         ColorSchemeHandler(<q-args>, <bang>0)
         # reset undolist
-        undolist = {states: [hlget()], pos: 0}
+        undolist = {states: [hlget()], curlines: [''], pos: 0}
     }
 enddef
 
@@ -856,9 +859,24 @@ def Hlset(state: list<dict<any>>, cmd: string) #{{{2
 
     if undolist.pos < undolist.states->len() - 1
         undolist.states->remove(undolist.pos + 1, undolist.states->len() - 1)
+        undolist.curlines->remove(undolist.pos + 1, undolist.curlines->len() - 1)
     endif
     undolist.states += [hlget()]
+    undolist.curlines += [getline('.')]
     undolist.pos = undolist.states->len() - 1
+enddef
+
+def RestoreCursorPos() #{{{2
+    var line: string = undolist.curlines
+        # `+ 1` because when  we undo from state 2 to state 1,  we don't want to
+        # get back  to the line where  the change creating state  1 occurred; we
+        # want  to get  back  to the  line  where the  change  creating state  2
+        # occurred
+        ->get(undolist.pos + 1, '')
+    if line == ''
+        return
+    endif
+    search($'^\V{line}\m$', 'c')
 enddef
 
 def PrintStatesPos() #{{{2
