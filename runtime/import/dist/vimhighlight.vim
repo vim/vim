@@ -305,6 +305,11 @@ enddef
 def MenuFilter(_, key: string): bool #{{{2
     var group: string = expand('<cword>')
 
+    def UpdateCallback()
+        var Callback: func = function(ChangeAttribute, [group, group->GetAttributesFromGroup()])
+        popup_setoptions(winid, {callback: Callback})
+    enddef
+
     # add a new attribute to the highlight group
     if key == '+'
         # ask which attribute should be added
@@ -331,6 +336,10 @@ def MenuFilter(_, key: string): bool #{{{2
         ChangeAttribute(group, set_attributes, 0, choice)
         popup_settext(winid, group->GetAttributesFromGroup())
         redraw
+
+        # the existing callback needs to know that the menu has gained 1 entry
+        UpdateCallback()
+
         return true
 
     # remove the selected attribute
@@ -359,8 +368,7 @@ def MenuFilter(_, key: string): bool #{{{2
         redraw
 
         # the existing callback needs to know that the menu has lost 1 entry
-        var Callback: func = function(ChangeAttribute, [group, group->GetAttributesFromGroup()])
-        popup_setoptions(winid, {callback: Callback})
+        UpdateCallback()
 
         # close the popup if the group has no attributes anymore
         if set_attributes->keys()->sort() == ['id', 'name']
@@ -368,6 +376,7 @@ def MenuFilter(_, key: string): bool #{{{2
             # `-1` disables the `ChangeAttribute()` callback
             popup_close(winid, -1)
         endif
+
         return true
     endif
 
