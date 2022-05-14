@@ -3133,7 +3133,10 @@ handle_settermprop(
 	    }
 	    VIM_CLEAR(term->tl_status_text);
 	    if (term == curbuf->b_term)
+	    {
 		maketitle();
+		curwin->w_redr_status = TRUE;
+	    }
 	    break;
 
 	case VTERM_PROP_CURSORVISIBLE:
