@@ -1649,12 +1649,13 @@ adjust_prop(
 {
     proptype_T	*pt = text_prop_type_by_id(curbuf, prop->tp_type);
     int		start_incl = (pt != NULL
-				    && (pt->pt_flags & PT_FLAG_INS_START_INCL))
-						   || (flags & APC_SUBSTITUTE);
+	    && (pt->pt_flags & PT_FLAG_INS_START_INCL))
+	    || (flags & APC_SUBSTITUTE)
+	    || (prop->tp_flags & TP_FLAG_CONT_PREV);
     int		end_incl = (pt != NULL
-				     && (pt->pt_flags & PT_FLAG_INS_END_INCL));
-		// Do not drop zero-width props if they later can increase in
-		// size.
+	    && (pt->pt_flags & PT_FLAG_INS_END_INCL))
+	    || (prop->tp_flags & TP_FLAG_CONT_NEXT);
+    // Do not drop zero-width props if they later can increase in size.
     int		droppable = !(start_incl || end_incl);
     adjustres_T res = {TRUE, FALSE};
 
