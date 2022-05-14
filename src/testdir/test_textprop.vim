@@ -635,6 +635,18 @@ func Test_prop_open_line()
   call assert_equal(expected, prop_list(2))
   call DeletePropTypes()
 
+  " split at the space character with 'ai' active, the leading space is removed
+  " in the second line and the prop is shifted accordingly.
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+  set ai
+  exe "normal 6|i\<CR>\<Esc>"
+  call assert_equal('xonex', getline(1))
+  call assert_equal('xtwoxx', getline(2))
+  let expected[1].col -= 6
+  call assert_equal(expected, prop_list(1) + prop_list(2))
+  set ai&
+  call DeletePropTypes()
+
   bwipe!
   set bs&
 endfunc
