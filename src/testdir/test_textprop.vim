@@ -1693,7 +1693,7 @@ def Test_delete_line_within_multiline_prop()
 
   prop_type_delete('Identifier')
   prop_type_delete('String')
-  bwip
+  bwip!
 enddef
 
 func Test_prop_in_linebreak()
