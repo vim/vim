@@ -9788,43 +9788,40 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
     }
 
 #ifdef FEAT_SPELL
-    if (*curwin->w_s->b_p_spl != NUL)
+    str = tv_get_string(&argvars[0]);
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	str = tv_get_string(&argvars[0]);
-	if (argvars[1].v_type != VAR_UNKNOWN)
+	maxcount = (int)tv_get_number_chk(&argvars[1], &typeerr);
+	if (maxcount <= 0)
+	    return;
+	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    maxcount = (int)tv_get_number_chk(&argvars[1], &typeerr);
-	    if (maxcount <= 0)
+	    need_capital = (int)tv_get_bool_chk(&argvars[2], &typeerr);
+	    if (typeerr)
 		return;
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-	    {
-		need_capital = (int)tv_get_bool_chk(&argvars[2], &typeerr);
-		if (typeerr)
-		    return;
-	    }
 	}
-	else
-	    maxcount = 25;
-
-	spell_suggest_list(&ga, str, maxcount, need_capital, FALSE);
-
-	for (i = 0; i < ga.ga_len; ++i)
-	{
-	    str = ((char_u **)ga.ga_data)[i];
-
-	    li = listitem_alloc();
-	    if (li == NULL)
-		vim_free(str);
-	    else
-	    {
-		li->li_tv.v_type = VAR_STRING;
-		li->li_tv.v_lock = 0;
-		li->li_tv.vval.v_string = str;
-		list_append(rettv->vval.v_list, li);
-	    }
-	}
-	ga_clear(&ga);
     }
+    else
+	maxcount = 25;
+
+    spell_suggest_list(&ga, str, maxcount, need_capital, FALSE);
+
+    for (i = 0; i < ga.ga_len; ++i)
+    {
+	str = ((char_u **)ga.ga_data)[i];
+
+	li = listitem_alloc();
+	if (li == NULL)
+	    vim_free(str);
+	else
+	{
+	    li->li_tv.v_type = VAR_STRING;
+	    li->li_tv.v_lock = 0;
+	    li->li_tv.vval.v_string = str;
+	    list_append(rettv->vval.v_list, li);
+	}
+    }
+    ga_clear(&ga);
     curwin->w_p_spell = wo_spell_save;
 #endif
 }
