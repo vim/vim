@@ -86,4 +86,5 @@ void update_tcap(int attr);
 void swap_tcap(void);
 void cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
 void term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len);
+void ansi_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
 /* vim: set ft=c : */

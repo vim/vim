@@ -2012,10 +2012,12 @@ func Test_terminal_ansicolors_global()
   CheckFeature termguicolors
   CheckFunction term_getansicolors
 
+  set tgc
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
   let buf = Run_shell_in_terminal({})
   call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
   call StopShellInTerminal(buf)
+  set tgc&
 
   exe buf . 'bwipe'
   unlet g:terminal_ansi_colors
@@ -2025,6 +2027,7 @@ func Test_terminal_ansicolors_func()
   CheckFeature termguicolors
   CheckFunction term_getansicolors
 
+  set tgc
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
   let buf = Run_shell_in_terminal({'ansi_colors': s:test_colors})
   call assert_equal(s:test_colors, term_getansicolors(buf))
@@ -2047,6 +2050,7 @@ func Test_terminal_ansicolors_func()
   let colors[4] = 'Invalid'
   call assert_fails('call term_setansicolors(buf, colors)', 'E254:')
   call assert_fails('call term_setansicolors(buf, {})', 'E714:')
+  set tgc&
 
   call StopShellInTerminal(buf)
   call assert_equal(0, term_setansicolors(buf, []))
