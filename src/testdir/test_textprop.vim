@@ -2003,4 +2003,37 @@ func Test_prop_insert_multiline()
   bwipe!
 endfunc
 
+func Test_prop_blockwise_change()
+  new
+  call AddPropTypes()
+
+  call setline(1, ['foooooo', 'bar', 'baaaaz'])
+  call prop_add(1, 1, #{end_col: 3, type: 'one'})
+  call prop_add(2, 1, #{end_col: 3, type: 'two'})
+  call prop_add(3, 1, #{end_col: 3, type: 'three'})
+
+  " Replace the first two columns with '123', since 'start_incl' is false the
+  " prop is not extended.
+  call feedkeys("gg\<c-v>2jc123\<Esc>", 'nxt')
+
+  let lines =<< trim END
+  123oooooo
+  123ar
+  123aaaaz
+  END
+  call assert_equal(lines, getline(1, '$'))
+  let expected = [
+      \ {'lnum': 1, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 1, 'type': 'one',
+      \ 'length': 1, 'start': 1},
+      \ {'lnum': 2, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 1, 'type': 'two',
+      \ 'length': 1, 'start': 1},
+      \ {'lnum': 3, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 1 ,
+      \ 'type': 'three', 'length': 1, 'start': 1}
+      \ ]
+  call assert_equal(expected, prop_list(1, #{end_lnum: 10}))
+
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

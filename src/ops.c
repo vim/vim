@@ -1814,6 +1814,10 @@ op_change(oparg_T *oap)
 			oldp += bd.textcol;
 			STRMOVE(newp + offset, oldp);
 			ml_replace(linenr, newp, FALSE);
+			// Shift the properties for linenr as edit() would do.
+			if (curbuf->b_has_textprop)
+			    adjust_prop_columns(linenr, bd.textcol,
+				    vpos.coladd + ins_len, 0);
 		    }
 		}
 		check_cursor();
