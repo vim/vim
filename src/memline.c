@@ -3569,7 +3569,7 @@ adjust_text_props_for_delete(
 							   : TP_FLAG_CONT_PREV;
 		textprop_T  prop_this;
 
-		mch_memmove(&prop_this, text + textlen + done_del,
+		mch_memmove(&prop_this, text + textlen + done_this,
 							   sizeof(textprop_T));
 		if ((prop_this.tp_flags & flag)
 			&& prop_del.tp_id == prop_this.tp_id
@@ -3577,7 +3577,7 @@ adjust_text_props_for_delete(
 		{
 		    found = TRUE;
 		    prop_this.tp_flags &= ~flag;
-		    mch_memmove(text + textlen + done_del, &prop_this,
+		    mch_memmove(text + textlen + done_this, &prop_this,
 							   sizeof(textprop_T));
 		    break;
 		}

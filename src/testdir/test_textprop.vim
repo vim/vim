@@ -1645,6 +1645,57 @@ def Test_prop_add_delete_line()
   bwipe!
 enddef
 
+" This test is to detect a regression for #10430. It is not an attempt fully
+" cover deleting lines in the presence of multi-line properties.
+def Test_delete_line_within_multiline_prop()
+  new
+  setline(1, '# Top.')
+  append(1, ['some_text = """', 'A string.', '"""', '# Bottom.'])
+  prop_type_add('Identifier', {'highlight': 'ModeMsg', 'priority': 0, 'combine': 0, 'start_incl': 0, 'end_incl': 0})
+  prop_type_add('String', {'highlight': 'MoreMsg', 'priority': 0, 'combine': 0, 'start_incl': 0, 'end_incl': 0})
+  prop_add(2, 1, {'type': 'Identifier', 'end_lnum': 2, 'end_col': 9})
+  prop_add(2, 13, {'type': 'String', 'end_lnum': 4, 'end_col': 4})
+
+  # The property for line 3 should extend into the previous and next lines.
+  var props = prop_list(3)
+  var prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(0, prop['start'])
+  assert_equal(0, prop['end'])
+
+  # This deletion should run without raising an exception.
+  try
+    :2 del
+  catch
+    assert_report('Line delete should have workd, but it raised an error.')
+  endtry
+
+  # The property for line 2 (was 3) should no longer extend into the previous
+  # line.
+  props = prop_list(2)
+  prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(1, prop['start'], 'Property was not changed to start within the line.')
+
+  # This deletion should run without raising an exception.
+  try
+    :3 del
+  catch
+    assert_report('Line delete should have workd, but it raised an error.')
+  endtry
+
+  # The property for line 2 (originally 3) should no longer extend into the next
+  # line.
+  props = prop_list(2)
+  prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(1, prop['end'], 'Property was not changed to end within the line.')
+
+  prop_type_delete('Identifier')
+  prop_type_delete('String')
+  bwip
+enddef
+
 func Test_prop_in_linebreak()
   CheckRunVimInTerminal
 
