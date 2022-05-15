@@ -2829,13 +2829,23 @@ color2index(VTermColor *color, int fg, int *boldp)
     int blue = color->blue;
     int green = color->green;
 
+    *boldp = FALSE;
+
     if (VTERM_COLOR_IS_INVALID(color))
 	return 0;
+
     if (VTERM_COLOR_IS_INDEXED(color))
     {
 	// Use the color as-is if possible, give up otherwise.
 	if (color->index < t_colors)
 	    return color->index + 1;
+	// 8-color terminals can actually display twice as many colors by
+	// setting the high-intensity/bold bit.
+	else if (t_colors == 8 && fg && color->index < 16)
+	{
+	    *boldp = TRUE;
+	    return (color->index & 7) + 1;
+	}
 	return 0;
     }
 
