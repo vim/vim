@@ -9788,8 +9788,6 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
     }
 
 #ifdef FEAT_SPELL
-    if (*curwin->w_s->b_p_spl != NUL)
-    {
 	str = tv_get_string(&argvars[0]);
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
@@ -9824,7 +9822,6 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
 	    }
 	}
 	ga_clear(&ga);
-    }
     curwin->w_p_spell = wo_spell_save;
 #endif
 }
