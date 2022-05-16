@@ -1252,8 +1252,8 @@ func Test_gui_mouse_move_event()
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  if has('win32')
-    " FIXME: on MS-Windows we get a stray event first
+  " FIXME: on MS-Windows we get a stray event first
+  if has('win32') && len(g:eventlist) == 3
     let g:eventlist = g:eventlist[1 : ]
   endif
 
