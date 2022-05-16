@@ -1198,6 +1198,17 @@ func Test_gui_mouse_event()
   set mousemodel&
 endfunc
 
+" Move the mouse to the top-left in preparation for mouse events
+func PrepareForMouseEvent(args)
+  call extend(a:args, #{row: 1, col:1})
+  call test_gui_event('mouse', a:args)
+  call feedkeys('', 'Lx!')
+  " on MS-Windows the event may have a slight delay
+  if has('win32')
+    sleep 20m
+  endif
+endfunc
+
 func Test_gui_mouse_move_event()
   let args = #{move: 1, button: 0, multiclick: 0, modifiers: 0}
 
@@ -1205,67 +1216,59 @@ func Test_gui_mouse_move_event()
   set mousemev&
   call assert_false(&mousemev)
 
-  let n_event = 0
-  nnoremap <special> <MouseMove> :let n_event += 1<CR>
+  let g:n_event = 0
+  nnoremap <special> <MouseMove> :let g:n_event += 1<CR>
 
   " start at mouse pos (1,1), clear counter
-  call extend(args, #{row: 1, col:1})
-  call test_gui_event('mouse', args)
-  call feedkeys('', 'Lx!')
-  let n_event = 0
+  call PrepareForMouseEvent(args)
+  let g:n_event = 0
 
-  call extend(args, #{row: 30, col:300})
+  call extend(args, #{row: 30, col: 300})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call extend(args, #{row: 100, col:300})
+  call extend(args, #{row: 100, col: 300})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
   " no events since mousemev off
-  call assert_equal(0, n_event)
+  call assert_equal(0, g:n_event)
 
   " turn on mouse events and try the same thing
   set mousemev
-  call extend(args, #{row: 1, col:1})
-  call test_gui_event('mouse', args)
-  call feedkeys('', 'Lx!')
-  let n_event = 0
+  call PrepareForMouseEvent(args)
+  let g:n_event = 0
 
-  call extend(args, #{row: 30, col:300})
-  call test_gui_event('mouse', args)
-  call feedkeys('', 'Lx!')
-
-  call extend(args, #{row: 100, col:300})
+  call extend(args, #{row: 30, col: 300})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call assert_equal(2, n_event)
+  call extend(args, #{row: 100, col: 300})
+  call test_gui_event('mouse', args)
+  call feedkeys('', 'Lx!')
+
+  call assert_equal(2, g:n_event)
 
   " wiggle the mouse around, shouldn't get events
-  call extend(args, #{row: 1, col:1})
-  call test_gui_event('mouse', args)
-  call feedkeys('', 'Lx!')
-  let n_event = 0
+  call PrepareForMouseEvent(args)
+  let g:n_event = 0
 
-  call extend(args, #{row: 1, col:2})
-  call test_gui_event('mouse', args)
-  call feedkeys('', 'Lx!')
-
-  call extend(args, #{row: 2, col:2})
+  call extend(args, #{row: 1, col: 2})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call extend(args, #{row: 2, col:1})
+  call extend(args, #{row: 2, col: 2})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call extend(args, #{row: 1, col:1})
+  call extend(args, #{row: 2, col: 1})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call assert_equal(0, n_event)
+  call PrepareForMouseEvent(args)
+  call assert_equal(0, g:n_event)
 
+  unlet g:n_event
   unmap <MouseMove>
   set mousemev&
 endfunc
