@@ -548,6 +548,9 @@ changed_common(
 	curwin->w_changelistidx = curbuf->b_changelistlen;
     }
 
+    if (VIsual_active)
+	check_visual_pos();
+
     FOR_ALL_TAB_WINDOWS(tp, wp)
     {
 	if (wp->w_buffer == curbuf)
