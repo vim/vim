@@ -1386,7 +1386,15 @@ test_gui_mouse_event(dict_T *args)
     col = (int)dict_get_number(args, (char_u *)"col");
 
     if (move)
+    {
+	if (dict_get_bool(args, (char_u *)"cell", FALSE))
+	{
+	    // click in the middle of the character cell
+	    row = row * gui.char_height + gui.char_height / 2;
+	    col = col * gui.char_width + gui.char_width / 2;
+	}
 	gui_mouse_moved(col, row);
+    }
     else
     {
 	button = (int)dict_get_number(args, (char_u *)"button");

@@ -1209,66 +1209,71 @@ func PrepareForMouseEvent(args)
   endif
 endfunc
 
+func MouseWasMoved()
+  let pos = getmousepos()
+  call add(g:eventlist, #{row: pos.screenrow, col: pos.screencol})
+endfunc
+
 func Test_gui_mouse_move_event()
   let args = #{move: 1, button: 0, multiclick: 0, modifiers: 0}
 
-  " default, do not generate mouse move events
+  " by default, does not generate mouse move events
   set mousemev&
   call assert_false(&mousemev)
 
-  let g:n_event = 0
-  nnoremap <special> <MouseMove> :let g:n_event += 1<CR>
+  let g:eventlist = []
+  nnoremap <special> <silent> <MouseMove> :call MouseWasMoved()<CR>
 
   " start at mouse pos (1,1), clear counter
   call PrepareForMouseEvent(args)
-  let g:n_event = 0
+  let g:eventlist = []
 
-  call extend(args, #{row: 30, col: 300})
+  call extend(args, #{row: 3, col: 30, cell: v:true})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call extend(args, #{row: 100, col: 300})
+  call extend(args, #{row: 10, col: 30, cell: v:true})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
   " no events since mousemev off
-  call assert_equal(0, g:n_event)
+  call assert_equal([], g:eventlist)
 
   " turn on mouse events and try the same thing
   set mousemev
   call PrepareForMouseEvent(args)
-  let g:n_event = 0
+  let g:eventlist = []
 
-  call extend(args, #{row: 30, col: 300})
+  call extend(args, #{row: 3, col: 30, cell: v:true})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call extend(args, #{row: 100, col: 300})
+  call extend(args, #{row: 10, col: 30, cell: v:true})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call assert_equal(2, g:n_event)
+  call assert_equal([#{row: 4, col: 31}, #{row: 11, col: 31}], g:eventlist)
 
-  " wiggle the mouse around, shouldn't get events
+  " wiggle the mouse around within a screen cell, shouldn't trigger events
+  call extend(args, #{cell: v:false})
   call PrepareForMouseEvent(args)
-  let g:n_event = 0
+  let g:eventlist = []
 
-  call extend(args, #{row: 1, col: 2})
+  call extend(args, #{row: 1, col: 2, cell: v:false})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call extend(args, #{row: 2, col: 2})
+  call extend(args, #{row: 2, col: 2, cell: v:false})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call extend(args, #{row: 2, col: 1})
+  call extend(args, #{row: 2, col: 1, cell: v:false})
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  call PrepareForMouseEvent(args)
-  call assert_equal(0, g:n_event)
+  call assert_equal([], g:eventlist)
 
-  unlet g:n_event
+  unlet g:eventlist
   unmap <MouseMove>
   set mousemev&
 endfunc
