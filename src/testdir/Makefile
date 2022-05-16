@@ -86,7 +86,7 @@ RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u un
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig XfakeHOME Xdir1 Xfind
 	-rm -f opt_test.vim test.log test_result.log messages
-	-rm -f $(RM_ON_RUN) $(RM_ON_START)
+	-rm -rf $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
 	-rm -f asan.*
 
