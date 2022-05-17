@@ -4086,8 +4086,8 @@ func Test_python3_hidden_buf_mod_does_not_mess_display()
   call TermWait(bufnr, 100)
   call assert_equal('run', job_status(term_getjob(bufnr)))
   let g:test_is_flaky = 0
-  call assert_match('^  3 aaa$', term_getline(bufnr, 1))
-  call assert_match('^ 11 bbbbbb$', term_getline(bufnr, rows - 1))
+  call WaitForAssert({-> assert_match('^  3 aaa$', term_getline(bufnr, 1))})
+  call WaitForAssert({-> assert_match('^ 11 bbbbbb$', term_getline(bufnr, rows - 1))})
 
   call term_sendkeys(bufnr, ":qall!\<CR>")
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(bufnr)))})
