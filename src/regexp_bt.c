@@ -1513,6 +1513,10 @@ regatom(int *flagp)
 		    }
 		    ret = regnode(CURSOR);
 		    break;
+		case 'G':
+		    // misplaced \%G
+		    semsg(_(e_atom_diacritics_must_be_at_start_of_pattern));
+		    return FAIL;
 
 		case 'V':
 		    ret = regnode(RE_VISUAL);
@@ -2006,8 +2010,33 @@ collection:
 	    if (use_multibytecode(c))
 	    {
 do_multibyte:
-		ret = regnode(MULTIBYTECODE);
-		regmbc(c);
+		if (rex.reg_idiac)
+		{
+		    int cc;
+		    len = 1;
+
+		    len = (*mb_ptr2len)(regparse);
+		    cc = mb_ptr2char(regparse);
+		    regparse += len;
+
+		    ret = regnode(ANYOF);
+		    reg_equi_class(cc);
+		    regc(NUL);
+		}
+		else
+		{
+		    ret = regnode(MULTIBYTECODE);
+		    regmbc(c);
+		}
+		*flagp |= HASWIDTH | SIMPLE;
+		break;
+	    }
+
+	    if (rex.reg_idiac)
+	    {
+		ret = regnode(ANYOF);
+		reg_equi_class(c);
+		regc(NUL);
 		*flagp |= HASWIDTH | SIMPLE;
 		break;
 	    }
@@ -2516,6 +2545,8 @@ bt_regcomp(char_u *expr, int re_flags)
 	r->regflags |= RF_HASNL;
     if (flags & HASLOOKBH)
 	r->regflags |= RF_LOOKBH;
+    if (rex.reg_idiac)
+	r->regflags |= RF_IDIAC;
 #ifdef FEAT_SYN_HL
     // Remember whether this pattern has any \z specials in it.
     r->reghasz = re_has_z;
@@ -3766,7 +3797,14 @@ regmatch(
 		    if (enc_utf8)
 			len = utfc_ptr2len(q) - utf_ptr2len(q);
 
-		    MB_CPTR_ADV(rex.input);
+		    if (rex.reg_idiac)
+		    {
+			// skip over composing characters in the input
+			rex.input += enc_utf8 ? utfc_ptr2len(rex.input) :
+			    (*mb_ptr2len)(rex.input);
+		    }
+		    else
+			MB_CPTR_ADV(rex.input);
 		    MB_CPTR_ADV(q);
 
 		    if (!enc_utf8 || len == 0)
@@ -4951,6 +4989,10 @@ bt_regexec_both(
     if (prog->regflags & RF_ICOMBINE)
 	rex.reg_icombine = TRUE;
 
+    // Using \%G to not match diacritic chars
+    if (prog->regflags & RF_IDIAC)
+	rex.reg_idiac = TRUE;
+
     // If there is a "must appear" string, look for it.
     if (prog->regmust != NULL)
     {
@@ -5127,6 +5169,7 @@ bt_regexec_nl(
     rex.reg_win = NULL;
     rex.reg_ic = rmp->rm_ic;
     rex.reg_icombine = FALSE;
+    rex.reg_idiac = FALSE;
     rex.reg_maxcol = 0;
 
     return bt_regexec_both(line, col, NULL);
