@@ -1096,4 +1096,21 @@ func Test_using_invalid_visual_position()
   bwipe!
 endfunc
 
+func! Test_using_two_engines_pattern()
+  new
+  call setline(1, ['foobar=0', 'foobar=1', 'foobar=2'])
+  " \%#= at the end of the pattern
+  for i in range(0, 2)
+    call cursor( (i+1), 7) 
+    call assert_fails("%s/foobar\\%#=" .. i, 'E1281:')
+  endfor
+
+  " \%#= at the start of the pattern
+  for i in range(0, 2)
+    call cursor( (i+1), 7) 
+    exe ":%s/\\%#=" .. i .. "foobar=" .. i
+  endfor
+  call assert_equal(['', '', ''], getline(1, '$'))
+  bwipe!
+endfunc
 " vim: shiftwidth=2 sts=2 expandtab

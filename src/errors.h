@@ -3277,3 +3277,5 @@ EXTERN char e_missing_close_curly_str[]
 EXTERN char e_illegal_character_in_word[]
 	INIT(= N_("E1280: Illegal character in word"));
 #endif
+EXTERN char e_regexp_engine_not_at_start_of_pattern[]
+	INIT(= N_("E1281: Atom '\\%%#=%c' must be at the start of the pattern"));

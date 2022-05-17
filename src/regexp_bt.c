@@ -1503,8 +1503,18 @@ regatom(int *flagp)
 		    break;
 
 		case '#':
-		    ret = regnode(CURSOR);
-		    break;
+			{
+			    if (regparse[0] != NUL && regparse[0] == '=' &&
+				regparse[1] != NUL && regparse[1] >= 48 &&
+				regparse[1] <= 50)
+			    {
+				semsg(_(e_regexp_engine_not_at_start_of_pattern), regparse[1]);
+				return FAIL;
+			    }
+			    else
+				ret = regnode(CURSOR);
+			    break;
+			}
 
 		case 'V':
 		    ret = regnode(RE_VISUAL);
