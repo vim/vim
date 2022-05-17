@@ -452,6 +452,12 @@ def Test_expr3()
       g:vals = []
       assert_equal(false, g:Record(1) && g:Record(true) && g:Record(0))
       assert_equal([1, true, 0], g:vals)
+
+      var failed = false
+      if false && g:a == g:b.c
+        failed = true
+      endif
+      assert_false(failed)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
