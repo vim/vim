@@ -581,10 +581,10 @@ def Test_disassemble_list_assign()
         '\d CHECKTYPE list<any> stack\[-1\]\_s*' ..
         '\d CHECKLEN >= 2\_s*' ..
         '\d\+ ITEM 0\_s*' ..
-        '\d\+ CHECKTYPE string stack\[-1\] arg 1\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\] var 1\_s*' ..
         '\d\+ STORE $0\_s*' ..
         '\d\+ ITEM 1\_s*' ..
-        '\d\+ CHECKTYPE string stack\[-1\] arg 2\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\] var 2\_s*' ..
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
         '\d\+ STORE $2\_s*' ..

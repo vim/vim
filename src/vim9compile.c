@@ -412,7 +412,8 @@ need_type_where(
     // If the actual type can be the expected type add a runtime check.
     if (!actual_is_const && ret == MAYBE && use_typecheck(actual, expected))
     {
-	generate_TYPECHECK(cctx, expected, offset, where.wt_index);
+	generate_TYPECHECK(cctx, expected, offset,
+					    where.wt_variable, where.wt_index);
 	return OK;
     }
 

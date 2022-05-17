@@ -4652,14 +4652,17 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_CHECKTYPE:
 		{
 		    checktype_T *ct = &iptr->isn_arg.type;
+		    int		save_wt_variable = ectx->ec_where.wt_variable;
 
 		    tv = STACK_TV_BOT((int)ct->ct_off);
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (!ectx->ec_where.wt_variable)
 			ectx->ec_where.wt_index = ct->ct_arg_idx;
+		    ectx->ec_where.wt_variable = ct->ct_is_var;
 		    if (check_typval_type(ct->ct_type, tv, ectx->ec_where)
 								       == FAIL)
 			goto on_error;
+		    ectx->ec_where.wt_variable = save_wt_variable;
 		    if (!ectx->ec_where.wt_variable)
 			ectx->ec_where.wt_index = 0;
 
@@ -6114,18 +6117,19 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 	    case ISN_CHECKTYPE:
 		  {
-		      checktype_T *ct = &iptr->isn_arg.type;
-		      char *tofree;
+		      checktype_T   *ct = &iptr->isn_arg.type;
+		      char	    *tofree;
 
 		      if (ct->ct_arg_idx == 0)
 			  smsg("%s%4d CHECKTYPE %s stack[%d]", pfx, current,
 					  type_name(ct->ct_type, &tofree),
 					  (int)ct->ct_off);
 		      else
-			  smsg("%s%4d CHECKTYPE %s stack[%d] arg %d",
+			  smsg("%s%4d CHECKTYPE %s stack[%d] %s %d",
 					  pfx, current,
 					  type_name(ct->ct_type, &tofree),
 					  (int)ct->ct_off,
+					  ct->ct_is_var ? "var": "arg",
 					  (int)ct->ct_arg_idx);
 		      vim_free(tofree);
 		      break;
