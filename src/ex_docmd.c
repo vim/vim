@@ -3551,7 +3551,8 @@ find_ex_command(
 	    char_u  *swp;
 
 	    if (*eap->cmd == '&'
-		    || *eap->cmd == '$'
+		    || (eap->cmd[0] == '$'
+				  && eap->cmd[1] != '\'' && eap->cmd[1] != '"')
 		    || (eap->cmd[0] == '@'
 					&& (valid_yank_reg(eap->cmd[1], FALSE)
 						       || eap->cmd[1] == '@')))
@@ -3590,9 +3591,13 @@ find_ex_command(
 			    // "'string'->func()" is an expression.
 			 || *eap->cmd == '\''
 			    // '"string"->func()' is an expression.
-			 || (eap->cmd[0] == '0' && eap->cmd[1] == 'z')
-			    // '"string"->func()' is an expression.
 			 || *eap->cmd == '"'
+			    // '$"string"->func()' is an expression.
+			    // "$'string'->func()" is an expression.
+			 || (eap->cmd[0] == '$'
+			     && (eap->cmd[1] == '\'' || eap->cmd[1] == '"'))
+			    // '0z1234->func()' is an expression.
+			 || (eap->cmd[0] == '0' && eap->cmd[1] == 'z')
 			    // "g:varname" is an expression.
 			 || eap->cmd[1] == ':'
 			    )
