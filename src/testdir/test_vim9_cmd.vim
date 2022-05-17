@@ -697,6 +697,16 @@ def Test_use_register()
   END
   v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
   $SomeEnv = ''
+
+  lines =<< trim END
+      eval 'value'
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 1)
+
+  lines =<< trim END
+      eval "value"
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 1)
 enddef
 
 def Test_environment_use_linebreak()

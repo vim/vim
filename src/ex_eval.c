@@ -888,8 +888,8 @@ report_discard_pending(int pending, void *value)
 }
 
 /*
- * Return TRUE if "arg" is only a variable, register, environment variable or
- * option name.
+ * Return TRUE if "arg" is only a variable, register, environment variable,
+ * option name or string.
  */
     int
 cmd_is_name_only(char_u *arg)
@@ -903,6 +903,17 @@ cmd_is_name_only(char_u *arg)
 	++p;
 	if (*p != NUL)
 	    ++p;
+    }
+    else if (*p == '\'' || *p == '"')
+    {
+	int	    r;
+
+	if (*p == '"')
+	    r = eval_string(&p, NULL, FALSE, FALSE);
+	else
+	    r = eval_lit_string(&p, NULL, FALSE, FALSE);
+	if (r == FAIL)
+	    return FALSE;
     }
     else
     {
