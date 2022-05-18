@@ -3126,7 +3126,12 @@ win_line(
 #ifdef FEAT_RIGHTLEFT
 	    wp->w_p_rl ? (col < 0) :
 #endif
-				    (col >= wp->w_width))
+#ifdef FEAT_CONCEAL
+				    (col - boguscols >= wp->w_width)
+#else
+				    (col >= wp->w_width)
+#endif
+			    )
 		&& (draw_state != WL_LINE
 		    || *ptr != NUL
 #ifdef FEAT_DIFF
