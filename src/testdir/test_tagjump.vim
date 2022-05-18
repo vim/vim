@@ -1392,6 +1392,15 @@ func Test_macro_search()
   close!
 endfunc
 
+func Test_define_search()
+  " this was accessing freed memory
+  new
+  call setline(1, ['first line', '', '#define something 0'])
+  sil norm o0
+  sil! norm 
+  bwipe!
+endfunc
+
 " Test for [*, [/, ]* and ]/
 func Test_comment_search()
   new
