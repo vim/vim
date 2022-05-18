@@ -1078,6 +1078,28 @@ func Test_mksession_shortmess()
   set sessionoptions&
 endfunc
 
+" Test that when Vim loading session has 'A' in 'shortmess' it does not
+" complain about an existing swapfile.
+func Test_mksession_shortmess_with_A()
+  edit Xtestfile
+  write
+  let fname = swapname('%')
+  let cont = readblob(fname)
+  set sessionoptions-=options
+  mksession Xtestsession
+  bwipe!
+
+  " Recreate the swap file to pretend the file is being edited
+  call writefile(cont, fname)
+  set shortmess+=A
+  source Xtestsession
+
+  set shortmess&
+  set sessionoptions&
+  call delete('Xtestsession')
+  call delete(fname)
+endfunc
+
 " Test for mksession with 'compatible' option
 func Test_mksession_compatible()
   mksession! Xtest_mks1.out

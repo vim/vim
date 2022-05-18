@@ -692,10 +692,15 @@ makeopens(
 	    && put_line(fd, "let s:shortmess_save = &shortmess") == FAIL)
 	goto fail;
 
-    // Now save the current files, current buffer first.
-    if (put_line(fd, "set shortmess=aoO") == FAIL)
+    // set 'shortmess' for the following.  Add the 'A' flag if it was there
+    if (put_line(fd, "if &shortmess =~ 'A'") == FAIL
+	    || put_line(fd, "  set shortmess=aoOA") == FAIL
+	    || put_line(fd, "else") == FAIL
+	    || put_line(fd, "  set shortmess=aoO") == FAIL
+	    || put_line(fd, "endif") == FAIL)
 	goto fail;
 
+    // Now save the current files, current buffer first.
     // Put all buffers into the buffer list.
     // Do it very early to preserve buffer order after loading session (which
     // can be disrupted by prior `edit` or `tabedit` calls).
