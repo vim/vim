@@ -8637,9 +8637,11 @@ strftime({format} [, {time}])				*strftime()*
 			GetFormat()->strftime()
 
 strgetchar({str}, {index})				*strgetchar()*
-		Get character {index} from {str}.  This uses a character
-		index, not a byte index.  Composing characters are considered
-		separate characters here.
+		Get a Number corresponding to the character at {index} in
+		{str}.  This uses a zero-based character index, not a byte
+		index.  Composing characters are considered separate
+		characters here.  Use |nr2char()| to convert the Number to a
+		String.
 		Also see |strcharpart()| and |strchars()|.
 
 		Can also be used as a |method|: >
