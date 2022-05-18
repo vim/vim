@@ -4653,16 +4653,17 @@ exec_instructions(ectx_T *ectx)
 		{
 		    checktype_T *ct = &iptr->isn_arg.type;
 		    int		save_wt_variable = ectx->ec_where.wt_variable;
+		    int		r;
 
 		    tv = STACK_TV_BOT((int)ct->ct_off);
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (!ectx->ec_where.wt_variable)
 			ectx->ec_where.wt_index = ct->ct_arg_idx;
 		    ectx->ec_where.wt_variable = ct->ct_is_var;
-		    if (check_typval_type(ct->ct_type, tv, ectx->ec_where)
-								       == FAIL)
-			goto on_error;
+		    r = check_typval_type(ct->ct_type, tv, ectx->ec_where);
 		    ectx->ec_where.wt_variable = save_wt_variable;
+		    if (r == FAIL)
+			goto on_error;
 		    if (!ectx->ec_where.wt_variable)
 			ectx->ec_where.wt_index = 0;
 
