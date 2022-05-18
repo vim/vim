@@ -290,6 +290,7 @@ func Test_conceal_wrap()
     syntax match XXX /X\+/ conceal cchar=
     set conceallevel=3
     set wrap
+    redraw
   [CODE]
 
   call writefile(code, 'XTest_conceal_wrap')
