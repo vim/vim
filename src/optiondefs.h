@@ -2077,9 +2077,6 @@ static struct vimoption options[] =
     {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_RNU,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"remap",	    NULL,   P_BOOL|P_VI_DEF,
-			    (char_u *)&p_remap, PV_NONE,
-			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"renderoptions", "rop", P_STRING|P_ONECOMMA|P_RCLR|P_VI_DEF,
 #ifdef FEAT_RENDER_OPTIONS
 			    (char_u *)&p_rop, PV_NONE,

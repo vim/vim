@@ -1089,7 +1089,6 @@ The following options are supported by Vi: ~
 'prompt'	  'prompt'  enable prompt in Ex mode
 'readonly'	  'ro'	    disallow writing the buffer {Vim sets 'readonly'
 				when editing a file with `:view`}
-'remap'			    allow mappings to work recursively
 'report'		    threshold for reporting nr. of lines changed
 'scroll'	  'scr'     lines to scroll with CTRL-U and CTRL-D
 'sections'	  'sect'    nroff macros that separate sections

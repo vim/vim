@@ -2480,8 +2480,7 @@ handle_mapping(
     if (no_mapping == 0 && is_maphash_valid()
 	    && (no_zero_mapping == 0 || tb_c1 != '0')
 	    && (typebuf.tb_maplen == 0 || is_plug_map
-		|| (p_remap
-		    && (typebuf.tb_noremap[typebuf.tb_off]
+		|| ((typebuf.tb_noremap[typebuf.tb_off]
 				    & (RM_NONE|RM_ABBR)) == 0))
 	    && !(p_paste && (State & (MODE_INSERT | MODE_CMDLINE)))
 	    && !(State == MODE_HITRETURN && (tb_c1 == CAR || tb_c1 == ' '))
@@ -2701,8 +2700,7 @@ handle_mapping(
 	if (no_mapping == 0 || allow_keys != 0)
 	{
 	    if ((typebuf.tb_maplen == 0
-		    || (p_remap && typebuf.tb_noremap[
-						    typebuf.tb_off] == RM_YES))
+		    || typebuf.tb_noremap[typebuf.tb_off] == RM_YES)
 		&& !*timedout)
 		keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
 	    else

@@ -834,7 +834,6 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'redrawtime'	options.txt	/*'redrawtime'*
 'regexpengine'	options.txt	/*'regexpengine'*
 'relativenumber'	options.txt	/*'relativenumber'*
-'remap'	options.txt	/*'remap'*
 'renderoptions'	options.txt	/*'renderoptions'*
 'report'	options.txt	/*'report'*
 'restorescreen'	options.txt	/*'restorescreen'*
