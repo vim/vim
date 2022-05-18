@@ -1014,8 +1014,6 @@ endif
 call <SID>Header(gettext("mapping"))
 call <SID>AddOption("maxmapdepth", gettext("maximum depth of mapping"))
 call append("$", " \tset mmd=" . &mmd)
-call <SID>AddOption("remap", gettext("recognize mappings in mapped keys"))
-call <SID>BinOptionG("remap", &remap)
 call <SID>AddOption("timeout", gettext("allow timing out halfway into a mapping"))
 call <SID>BinOptionG("to", &to)
 call <SID>AddOption("ttimeout", gettext("allow timing out halfway into a key code"))
