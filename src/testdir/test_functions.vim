@@ -2681,12 +2681,6 @@ func Test_range()
     endif
     call assert_fails('call term_start("' .. cmd .. '", #{term_finish: "close"'
         \ .. ', ansi_colors: range(16)})', 'E475:')
-    " tgc must be enabled for term_start() to pick the color palette.
-    set tgc
-    call assert_fails('call term_start("' .. cmd .. '", #{term_finish: "close"})',
-        \ 'E475:')
-    unlet g:terminal_ansi_colors
-    set tgc&
   endif
 
   " type()

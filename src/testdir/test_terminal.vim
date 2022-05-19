@@ -2012,6 +2012,10 @@ func Test_terminal_ansicolors_global()
   CheckFeature termguicolors
   CheckFunction term_getansicolors
 
+  if has('vtp') && !has('vcon') && !has('gui_running')
+    throw 'Skipped: does not support termguicolors'
+  endif
+
   set tgc
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
   let buf = Run_shell_in_terminal({})
@@ -2026,6 +2030,10 @@ endfunc
 func Test_terminal_ansicolors_func()
   CheckFeature termguicolors
   CheckFunction term_getansicolors
+
+  if has('vtp') && !has('vcon') && !has('gui_running')
+    throw 'Skipped: does not support termguicolors'
+  endif
 
   set tgc
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
