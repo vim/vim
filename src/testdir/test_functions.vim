@@ -2685,8 +2685,8 @@ func Test_range()
     set tgc
     call assert_fails('call term_start("' .. cmd .. '", #{term_finish: "close"})',
         \ 'E475:')
-    set tgc&
     unlet g:terminal_ansi_colors
+    set tgc&
   endif
 
   " type()
