@@ -513,9 +513,6 @@ def Filter(winid: number, key: string): bool #{{{2
         'j', 'J', 'k', 'K', "\<Down>", "\<Up>", "\<C-N>", "\<C-P>",
         'g', 'G', 'z', "\<C-D>", "\<C-U>",
        ]->index(key) >= 0
-        if print_entry
-            PrintEntry()
-        endif
         var scroll_cmd: string = {
             J: 'j',
             K: 'k',
@@ -526,6 +523,10 @@ def Filter(winid: number, key: string): bool #{{{2
         var old_lnum: number = line('.', winid)
         win_execute(winid, $'normal! {scroll_cmd}')
         var new_lnum: number = line('.', winid)
+
+        if print_entry
+            PrintEntry()
+        endif
 
         # wrap around the edges
         if new_lnum == old_lnum
@@ -554,6 +555,7 @@ def Filter(winid: number, key: string): bool #{{{2
             selected_entry_match = matchaddpos('IncSearch', [lnum], 0, -1)
         endif
         SetTitle(winid)
+
         return true
 
     # when we press `p`, print the selected line (useful when it's truncated)
