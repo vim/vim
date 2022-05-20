@@ -568,5 +568,16 @@ func Test_match_too_complicated()
   set regexpengine=0
 endfunc
 
+func Test_combining_chars_in_collactions()
+  new
+  for i in range(0,2)
+    exe "set re=".i
+    put =['ɔ̃', 'ɔ',  '̃  ã', 'abcd']
+    :%s/[ɔ̃]//
+    call assert_equal(['', '', 'ɔ', '̃  ã', 'abcd'], getline(1,'$'))
+    %d
+  endfor
+  bw!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
