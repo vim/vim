@@ -61,7 +61,7 @@ jobs:
             extra: vimtags
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install packages
         run: |
@@ -295,7 +295,7 @@ jobs:
         features: [tiny, normal, huge]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install packages
         if: matrix.features == 'huge'
@@ -432,7 +432,7 @@ jobs:
           msystem: ${{ matrix.msystem }}
           release: false
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Create a list of download URLs
         shell: cmd
