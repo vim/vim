@@ -3720,13 +3720,38 @@ regmatch(
 
 	  case ANYOF:
 	  case ANYBUT:
-	    if (c == NUL)
-		status = RA_NOMATCH;
-	    else if ((cstrchr(OPERAND(scan), c) == NULL) == (op == ANYOF))
-		status = RA_NOMATCH;
-	    else
-		ADVANCE_REGINPUT();
-	    break;
+	    {
+		char_u  *q = OPERAND(scan);
+
+		if (c == NUL)
+		    status = RA_NOMATCH;
+		else if ((cstrchr(q, c) == NULL) == (op == ANYOF))
+		    status = RA_NOMATCH;
+		else
+		{
+		    // Check following combining characters
+		    int	len = 0;
+		    int i;
+
+		    if (enc_utf8)
+			len = utfc_ptr2len(q) - utf_ptr2len(q);
+
+		    MB_CPTR_ADV(rex.input);
+		    MB_CPTR_ADV(q);
+
+		    if (!enc_utf8 || len == 0)
+			break;
+
+		    for (i = 0; i < len; ++i)
+			if (q[i] != rex.input[i])
+			{
+			    status = RA_NOMATCH;
+			    break;
+			}
+		    rex.input += len;
+		}
+		break;
+	    }
 
 	  case MULTIBYTECODE:
 	    if (has_mbyte)
