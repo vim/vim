@@ -285,7 +285,7 @@ endfunc
 func Test_conceal_wrap()
   new
   setlocal concealcursor=n conceallevel=3
-  call setline(1, ['', repeat('X', &columns-5) .. 'YYYY'])
+  call setline(1, ['', repeat('X', &columns-3) .. 'YYYY'])
   syntax match MyConceal /X\+/ conceal cchar= 
   set conceallevel=3 wrap signcolumn=no nonumber
   call cursor(1, 1)
