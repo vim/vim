@@ -306,4 +306,5 @@ src/libvterm/				@leonerd
 src/po/de.po				@chrisbra
 src/po/eo.po				@dpelle
 src/po/fr.po				@dpelle
+src/po/ga.po				@kscanne
 src/xxd/				@jnweiger
