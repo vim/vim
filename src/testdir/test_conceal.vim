@@ -283,23 +283,16 @@ func Test_conceal_eol()
 endfunc
 
 func Test_conceal_wrap()
-  CheckScreendump
-
-  let code =<< trim [CODE]
-    call setline(1, ['', repeat('X', &columns-5) .. 'YYYY'])
-    syntax match XXX /X\+/ conceal cchar=
-    set conceallevel=3
-    set wrap
-    redraw
-  [CODE]
-
-  call writefile(code, 'XTest_conceal_wrap')
-  let buf = RunVimInTerminal('-S XTest_conceal_wrap', {})
-  call VerifyScreenDump(buf, 'Test_conceal_wrap', {})
-
-  " clean up
-  call StopVimInTerminal(buf)
-  call delete('XTest_conceal_wrap')
+  new
+  setlocal concealcursor=n conceallevel=3
+  call setline(1, ['', repeat('X', &columns-5) .. 'YYYY'])
+  syntax match MyConceal /X\+/ conceal cchar= 
+  set conceallevel=3 wrap signcolumn=no nonumber
+  call cursor(1, 1)
+  redraw!
+  call assert_equal('YYYY      ', join(map(range(1, 10), {_, c -> nr2char(screenchar(2, c))}), ''))
+  syntax clear
+  quit!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
