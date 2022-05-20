@@ -2686,7 +2686,10 @@ static regengine_T bt_regengine =
     bt_regcomp,
     bt_regfree,
     bt_regexec_nl,
-    bt_regexec_multi,
+    bt_regexec_multi
+#ifdef DEBUG
+    ,(char_u *)""
+#endif
 };
 
 #include "regexp_nfa.c"
@@ -2696,7 +2699,10 @@ static regengine_T nfa_regengine =
     nfa_regcomp,
     nfa_regfree,
     nfa_regexec_nl,
-    nfa_regexec_multi,
+    nfa_regexec_multi
+#ifdef DEBUG
+    ,(char_u *)""
+#endif
 };
 
 // Which regexp engine to use? Needed for vim_regcomp().
