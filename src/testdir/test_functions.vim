@@ -2679,8 +2679,8 @@ func Test_range()
     else
       let cmd = "ls"
     endif
-    call assert_fails('call term_start("' .. cmd .. '", #{term_finish: "close"})', 'E475:')
-    unlet g:terminal_ansi_colors
+    call assert_fails('call term_start("' .. cmd .. '", #{term_finish: "close"'
+        \ .. ', ansi_colors: range(16)})', 'E475:')
   endif
 
   " type()

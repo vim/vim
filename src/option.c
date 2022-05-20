@@ -3255,6 +3255,7 @@ set_bool_option(
 # endif
 # ifdef FEAT_TERMINAL
 	term_update_colors_all();
+	term_update_palette_all();
 	term_update_wincolor_all();
 # endif
     }

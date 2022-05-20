@@ -34,6 +34,7 @@ int term_get_attr(win_T *wp, linenr_T lnum, int col);
 void term_reset_wincolor(win_T *wp);
 void term_update_wincolor(win_T *wp);
 void term_update_wincolor_all(void);
+void term_update_palette_all(void);
 void term_update_colors_all(void);
 char_u *term_get_status_text(term_T *term);
 void term_clear_status_text(term_T *term);

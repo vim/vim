@@ -6730,7 +6730,7 @@ static int grey_ramp[] = {
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
 };
 
-static char_u ansi_table[16][3] = {
+static const char_u ansi_table[16][3] = {
 //   R    G    B
   {  0,   0,   0}, // black
   {224,   0,   0}, // dark red
@@ -6759,6 +6759,25 @@ static const char_u cterm_ansi_idx[] = {
 #endif
 
 #define ANSI_INDEX_NONE 0
+
+    void
+ansi_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
+{
+    if (nr < 16)
+    {
+	*r = ansi_table[nr][0];
+	*g = ansi_table[nr][1];
+	*b = ansi_table[nr][2];
+	*ansi_idx = nr;
+    }
+    else
+    {
+	*r = 0;
+	*g = 0;
+	*b = 0;
+	*ansi_idx = ANSI_INDEX_NONE;
+    }
+}
 
     void
 cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
