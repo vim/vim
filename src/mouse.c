@@ -1823,7 +1823,7 @@ retnomove:
 	if (dragwin != NULL)
 	{
 	    // Drag the status line
-	    count = row - dragwin->w_winrow - dragwin->w_height + 1
+	    count = row - W_WINROW(dragwin) - dragwin->w_height + 1
 							     - on_status_line;
 	    win_drag_status_line(dragwin, count);
 	    did_drag |= count;
