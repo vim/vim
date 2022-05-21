@@ -2527,6 +2527,21 @@ mch_get_host_name(char_u *s, int len)
 #endif // HAVE_SYS_UTSNAME_H
 
 /*
+ * Insert kernel release is s[len] (like uname(1))
+ */
+#ifdef HAVE_SYS_UTSNAME_H
+    void
+mch_get_kernel_release(char_u *s, int len) {
+    struct utsname vutsname;
+
+    if (uname(&vutsname) < 0)
+        *s = NUL;
+    else
+        vim_strncpy(s, (char_u *)vutsname.release, len - 1);
+}
+#endif
+
+/*
  * return process ID
  */
     long

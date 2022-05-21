@@ -5260,6 +5260,11 @@ f_has(typval_T *argvars, typval_T *rettv)
 	char *name;
 	short present;
     } has_item_T;
+#if (defined(UNIX) || defined(VMS)) \
+    && (!defined(MACOS_X) || defined(HAVE_CONFIG_H)) \
+    && defined(HAVE_SYS_UTSNAME_H)
+    char_u	kernel_release[256];
+#else
     static has_item_T has_list[] =
     {
 	{"amiga",
@@ -6548,6 +6553,25 @@ f_has(typval_T *argvars, typval_T *rettv)
 	    x = TRUE;
 #ifdef FEAT_CLIPBOARD
 	    n = clip_star.available;
+#endif
+	}
+	else if (STRICMP(name, "wsl") == 0)
+	{
+	    x = TRUE;
+#if (defined(UNIX) || defined(VMS)) \
+     && (!defined(MACOS_X) || defined(HAVE_CONFIG_H)) \
+     && defined(HAVE_SYS_UTSNAME_H)
+	    mch_get_kernel_release(kernel_release, 256);
+
+	    for (i = 0; i <= strlen((char *)kernel_release); i++)
+	        kernel_release[i] = TOLOWER_ASC(kernel_release[i]);
+
+	    if (strstr((char *)kernel_release, "microsoft") != NULL)
+	        n = TRUE;
+	    else
+	        n = FALSE;
+#else
+	    n = FALSE;
 #endif
 	}
     }
