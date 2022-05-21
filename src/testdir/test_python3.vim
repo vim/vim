@@ -4063,6 +4063,7 @@ endfunc
 
 " Test to catch regression fix #10437.
 func Test_python3_hidden_buf_mod_does_not_mess_display()
+  CheckRunVimInTerminal
   let testfile = 'Xtest.vim'
   let lines =<< trim END
         set hidden number
