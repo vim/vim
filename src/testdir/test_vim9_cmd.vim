@@ -83,6 +83,16 @@ def Test_vim9cmd()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_defcompile_fails()
+  assert_fails('defcompile NotExists', 'E1061:')
+  assert_fails('defcompile debug debug Test_defcompile_fails', 'E488:')
+  assert_fails('defcompile profile profile Test_defcompile_fails', 'E488:')
+enddef
+
+defcompile Test_defcompile_fails
+defcompile debug Test_defcompile_fails
+defcompile profile Test_defcompile_fails
+
 def Test_cmdmod_execute()
   # "legacy" applies not only to the "exe" argument but also to the commands
   var lines =<< trim END

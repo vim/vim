@@ -6277,55 +6277,15 @@ get_disassemble_argument(expand_T *xp, int idx)
 ex_disassemble(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
-    char_u	*fname;
     ufunc_T	*ufunc;
     dfunc_T	*dfunc;
     isn_T	*instr;
     int		instr_count;
-    int		is_global = FALSE;
-    compiletype_T compile_type = CT_NONE;
+    compiletype_T compile_type;
 
-    if (STRNCMP(arg, "profile", 7) == 0 && VIM_ISWHITE(arg[7]))
-    {
-	compile_type = CT_PROFILE;
-	arg = skipwhite(arg + 7);
-    }
-    else if (STRNCMP(arg, "debug", 5) == 0 && VIM_ISWHITE(arg[5]))
-    {
-	compile_type = CT_DEBUG;
-	arg = skipwhite(arg + 5);
-    }
-
-    if (STRNCMP(arg, "<lambda>", 8) == 0)
-    {
-	arg += 8;
-	(void)getdigits(&arg);
-	fname = vim_strnsave(eap->arg, arg - eap->arg);
-    }
-    else
-	fname = trans_function_name(&arg, &is_global, FALSE,
-		      TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD, NULL, NULL, NULL);
-    if (fname == NULL)
-    {
-	semsg(_(e_invalid_argument_str), eap->arg);
-	return;
-    }
-
-    ufunc = find_func(fname, is_global);
+    ufunc = find_func_by_name(arg, &compile_type);
     if (ufunc == NULL)
-    {
-	char_u *p = untrans_function_name(fname);
-
-	if (p != NULL)
-	    // Try again without making it script-local.
-	    ufunc = find_func(p, FALSE);
-    }
-    vim_free(fname);
-    if (ufunc == NULL)
-    {
-	semsg(_(e_cannot_find_function_str), eap->arg);
 	return;
-    }
     if (func_needs_compiling(ufunc, compile_type)
 	    && compile_def_function(ufunc, FALSE, compile_type, NULL) == FAIL)
 	return;

@@ -45,6 +45,7 @@ char_u *save_function_name(char_u **name, int *is_global, int skip, int flags, f
 void list_functions(regmatch_T *regmatch);
 ufunc_T *define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free);
 void ex_function(exarg_T *eap);
+ufunc_T *find_func_by_name(char_u *name, compiletype_T *compile_type);
 void ex_defcompile(exarg_T *eap);
 int eval_fname_script(char_u *p);
 int translated_function_exists(char_u *name, int is_global);

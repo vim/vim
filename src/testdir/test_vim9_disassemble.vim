@@ -43,6 +43,9 @@ def Test_disassemble_load()
   assert_fails('disass [', 'E475:')
   assert_fails('disass 234', 'E129:')
   assert_fails('disass <XX>foo', 'E129:')
+  assert_fails('disass Test_disassemble_load burp', 'E488:')
+  assert_fails('disass debug debug Test_disassemble_load', 'E488:')
+  assert_fails('disass profile profile Test_disassemble_load', 'E488:')
 
   var res = execute('disass s:ScriptFuncLoad')
   assert_match('<SNR>\d*_ScriptFuncLoad.*' ..
