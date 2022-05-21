@@ -97,6 +97,7 @@ runtime/ftplugin/clojure.vim		@axvr
 runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
+runtime/ftplugin/dosbatch.vim		@mrdubya
 runtime/ftplugin/eiffel.vim		@dkearns
 runtime/ftplugin/eruby.vim		@tpope @dkearns
 runtime/ftplugin/fpcmake.vim		@dkearns
@@ -129,6 +130,7 @@ runtime/ftplugin/octave.vim		@dkearns
 runtime/ftplugin/pascal.vim		@dkearns
 runtime/ftplugin/pbtxt.vim		@lakshayg
 runtime/ftplugin/pdf.vim		@tpope
+runtime/ftplugin/postscr.vim		@mrdubya
 runtime/ftplugin/ps1.vim		@heaths
 runtime/ftplugin/ps1xml.vim		@heaths
 runtime/ftplugin/qb64.vim		@dkearns
@@ -176,7 +178,7 @@ runtime/indent/mma.vim			@dkearns
 runtime/indent/nginx.vim		@chr4
 runtime/indent/nsis.vim			@k-takata
 runtime/indent/occam.vim		@dkearns
-runtime/indent/postscr.vim		@dkearns
+runtime/indent/postscr.vim		@mrdubya
 runtime/indent/prolog.vim		@dkearns
 runtime/indent/ps1.vim			@heaths
 runtime/indent/qb64.vim			@dkearns
@@ -192,6 +194,7 @@ runtime/indent/teraterm.vim		@k-takata
 runtime/indent/xml.vim			@chrisbra
 runtime/indent/zsh.vim			@chrisbra
 runtime/keymap/tamil_tscii.vim		@yegappan
+runtime/lang/menu_en_gb.latin1.vim	@mrdubya
 runtime/pack/dist/opt/cfilter/plugin/cfilter.vim	@yegappan
 runtime/pack/dist/opt/matchit/		@chrisbra
 runtime/plugin/getscriptPlugin.vim	@cecamp
@@ -219,6 +222,7 @@ runtime/syntax/cucumber.vim		@tpope
 runtime/syntax/datascript.vim		@dpelle
 runtime/syntax/dcl.vim			@cecamp
 runtime/syntax/desktop.vim		@e-kwsm
+runtime/syntax/dosbatch.vim		@mrdubya
 runtime/syntax/dot.vim			@mmottl
 runtime/syntax/doxygen.vim		@frogonwheels
 runtime/syntax/dtd.vim			@chrisbra
@@ -260,6 +264,7 @@ runtime/syntax/pascal.vim		@dkearns
 runtime/syntax/pbtxt.vim		@lakshayg
 runtime/syntax/pdf.vim			@tpope
 runtime/syntax/php.vim			@TysonAndre
+runtime/syntax/postscr.vim		@mrdubya
 runtime/syntax/privoxy.vim		@dkearns
 runtime/syntax/prolog.vim		@XVilka
 runtime/syntax/ps1.vim			@heaths
@@ -267,6 +272,7 @@ runtime/syntax/ps1xml.vim		@heaths
 runtime/syntax/psl.vim			@danielkho
 runtime/syntax/qb64.vim			@dkearns
 runtime/syntax/rc.vim			@chrisbra
+runtime/syntax/rebol.vim		@mrdubya
 runtime/syntax/routeros.vim		@zainin
 runtime/syntax/rpcgen.vim		@cecamp
 runtime/syntax/ruby.vim			@dkearns
@@ -306,4 +312,5 @@ src/libvterm/				@leonerd
 src/po/de.po				@chrisbra
 src/po/eo.po				@dpelle
 src/po/fr.po				@dpelle
+src/po/ga.po				@kscanne
 src/xxd/				@jnweiger

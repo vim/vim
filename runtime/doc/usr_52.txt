@@ -1,4 +1,4 @@
-*usr_52.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*usr_52.txt*	For Vim version 8.2.  Last change: 2022 May 16
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -110,10 +110,10 @@ Although it's shorter to do: >
 ==============================================================================
 *52.3*	Functions and types
 
-Legacy Vim script does have type checking, but this happens at runtime, when
-the code is executed.  And it's permissive, often a computation gives an
-unexpected value instead of reporting an error.  Thus you can define a
-function and think it's fine, but see a problem only later when it is called: >
+Legacy Vim script only checks types at runtime, when the code is executed.
+And it's permissive, often a computation gives an unexpected value instead of
+reporting an error.  Thus you can define a function and think it's fine, but
+see a problem only later when it is called: >
 	let s:collected = ''
 	func ExtendAndReturn(add)
 	   let s:collected += a:add
@@ -133,12 +133,16 @@ the argument is used without the "a:" prefix: >
 	   s:collected += add
 	   return s:collected
 	enddef
-	defcompile
+	disassemble ExtendAndReturn
 
-Here we use `:defcompile` to do the compilation right away, without it the
+Here we use `:disassemble` to do the compilation right away, without it the
 compilation would happen when the function is called.  Vim will tell you what
 you did wrong: >
-	E1013: type mismatch, expected number but got string
+	E1051: Wrong argument type for +
+
+Side note: here the context is legacy script, when using Vim9 script you would
+put `:defcompile` at the end of the script to check for errors in the
+functions defined in it.
 
 Vim9 script is strict, it uses the "+" operator only for numbers and floats.
 For string concatenation ".." must be used.  This avoids mistakes and avoids

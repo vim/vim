@@ -1401,7 +1401,7 @@ changenr()						*changenr()*
 		one less than the number of the undone change.
 
 char2nr({string} [, {utf8}])					*char2nr()*
-		Return number value of the first char in {string}.
+		Return Number value of the first char in {string}.
 		Examples: >
 			char2nr(" ")		returns 32
 			char2nr("ABC")		returns 65
@@ -1712,13 +1712,13 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 
 		An example: >
 		   let choice = confirm("What do you want?",
-		   			\ "&Apples\n&Oranges\n&Bananas", 2)
+					\ "&Apples\n&Oranges\n&Bananas", 2)
 		   if choice == 0
-		   	echo "make up your mind!"
+			echo "make up your mind!"
 		   elseif choice == 3
-		   	echo "tasteful"
+			echo "tasteful"
 		   else
-		   	echo "I prefer bananas myself."
+			echo "I prefer bananas myself."
 		   endif
 <		In a GUI dialog, buttons are used.  The layout of the buttons
 		depends on the 'v' flag in 'guioptions'.  If it is included,
@@ -2306,8 +2306,8 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 <		There must be no space between the symbol (&/$/*/#) and the
 		name.
 		There must be no extra characters after the name, although in
-		a few cases this is ignored.  That may become more strict in
-		the future, thus don't count on it!
+		a few cases this is ignored.  That may become stricter in the
+		future, thus don't count on it!
 		Working example: >
 			exists(":make")
 <		NOT working example: >
@@ -3219,7 +3219,7 @@ getchar([expr])						*getchar()*
 
 		Without [expr] and when [expr] is 0 a whole character or
 		special key is returned.  If it is a single character, the
-		result is a number.  Use nr2char() to convert it to a String.
+		result is a Number.  Use |nr2char()| to convert it to a String.
 		Otherwise a String is returned with the encoded character.
 		For a special key it's a String with a sequence of bytes
 		starting with 0x80 (decimal: 128).  This is the same value as
@@ -5468,7 +5468,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		  "sid"	     The script local ID, used for <sid> mappings
 			     (|<SID>|).
 		  "scriptversion"  The version of the script.  999999 for
-		  		   |Vim9| script.
+				   |Vim9| script.
 		  "lnum"     The line number in "sid", zero if unknown.
 		  "nowait"   Do not wait for other, longer mappings.
 			     (|:map-<nowait>|).
@@ -5573,7 +5573,7 @@ mapset({dict})
 		Restore a mapping from a dictionary, possibly returned by
 		|maparg()| or |maplist()|.  A buffer mapping, when dict.buffer
 		is true, is set on the current buffer; it is up to the caller
-		to insure that the intended buffer is the current buffer. This
+		to ensure that the intended buffer is the current buffer. This
 		feature allows copying mappings from one buffer to another.
 		The dict.mode value may restore a single mapping that covers
 		more than one mode, like with mode values of '!', ' ', 'nox',
@@ -8324,7 +8324,7 @@ sort({list} [, {how} [, {dict}]])			*sort()* *E702*
 		If you want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
 
-<		When {how} is omitted or is an string, then sort() uses the
+<		When {how} is omitted or is a string, then sort() uses the
 		string representation of each item to sort on.  Numbers sort
 		after Strings, |Lists| after Numbers.  For sorting text in the
 		current buffer use |:sort|.
@@ -8779,9 +8779,11 @@ strftime({format} [, {time}])				*strftime()*
 			GetFormat()->strftime()
 
 strgetchar({str}, {index})				*strgetchar()*
-		Get character {index} from {str}.  This uses a character
-		index, not a byte index.  Composing characters are considered
-		separate characters here.
+		Get a Number corresponding to the character at {index} in
+		{str}.  This uses a zero-based character index, not a byte
+		index.  Composing characters are considered separate
+		characters here.  Use |nr2char()| to convert the Number to a
+		String.
 		Also see |strcharpart()| and |strchars()|.
 
 		Can also be used as a |method|: >
