@@ -1118,7 +1118,12 @@ ins_char_bytes(char_u *buf, int charlen)
     ml_replace(lnum, newp, FALSE);
 
     // mark the buffer as changed and prepare for displaying
-    inserted_bytes(lnum, col, newlen - oldlen);
+    changed_bytes(lnum, col);
+#ifdef FEAT_PROP_POPUP
+    if (curbuf->b_has_textprop && newlen != oldlen)
+	adjust_prop_columns(lnum, col, newlen - oldlen, State & REPLACE_FLAG
+		? APC_SUBSTITUTE : 0);
+#endif
 
     // If we're in Insert or Replace mode and 'showmatch' is set, then briefly
     // show the match for right parens and braces.

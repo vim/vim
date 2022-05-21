@@ -573,6 +573,13 @@ func Test_prop_replace()
   call assert_equal('yyyex xyyoxx', getline(1))
   call assert_equal(expected, prop_list(1))
 
+  " Replace three 1-byte chars with three 2-byte ones.
+  exe "normal 0l3rø"
+  call assert_equal('yøøøx xyyoxx', getline(1))
+  let expected[0].length += 3
+  let expected[1].col += 3
+  call assert_equal(expected, prop_list(1))
+
   call DeletePropTypes()
   bwipe!
   set bs&
