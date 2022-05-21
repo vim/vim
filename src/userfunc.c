@@ -5037,6 +5037,7 @@ find_func_by_name(char_u *name, compiletype_T *compile_type)
     }
     if (!ends_excmd2(name, arg))
     {
+	vim_free(fname);
 	emsg(ex_errmsg(e_trailing_characters_str, arg));
 	return NULL;
     }
