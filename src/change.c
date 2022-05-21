@@ -1397,17 +1397,11 @@ open_line(
     char_u	*p;
     int		saved_char = NUL;	// init for GCC
     pos_T	*pos;
-#ifdef FEAT_CINDENT
     int		do_cindent;
-#endif
-#ifdef FEAT_SMARTINDENT
     int		do_si = may_do_si();
     int		no_si = FALSE;		// reset did_si afterwards
     int		first_char = NUL;	// init for GCC
-#endif
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     int		vreplace_mode;
-#endif
     int		did_append;		// appended a new line
     int		saved_pi = curbuf->b_p_pi; // copy of preserveindent setting
 
@@ -1453,22 +1447,18 @@ open_line(
     if ((State & MODE_INSERT) && (State & VREPLACE_FLAG) == 0)
     {
 	p_extra = saved_line + curwin->w_cursor.col;
-#ifdef FEAT_SMARTINDENT
 	if (do_si)		// need first char after new line break
 	{
 	    p = skipwhite(p_extra);
 	    first_char = *p;
 	}
-#endif
 	extra_len = (int)STRLEN(p_extra);
 	saved_char = *p_extra;
 	*p_extra = NUL;
     }
 
     u_clearline();		// cannot do "U" command when adding lines
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
-#endif
     ai_col = 0;
 
     // If we just did an auto-indent, then we didn't type anything on
@@ -1479,11 +1469,7 @@ open_line(
 
     // If 'autoindent' and/or 'smartindent' is set, try to figure out what
     // indent to use for the new line.
-    if (curbuf->b_p_ai
-#ifdef FEAT_SMARTINDENT
-			|| do_si
-#endif
-					    )
+    if (curbuf->b_p_ai || do_si)
     {
 	// count white space on current line
 #ifdef FEAT_VARTABS
@@ -1495,7 +1481,6 @@ open_line(
 	if (newindent == 0 && !(flags & OPENLINE_COM_LIST))
 	    newindent = second_line_indent; // for ^^D command in insert mode
 
-#ifdef FEAT_SMARTINDENT
 	// Do smart indenting.
 	// In insert/replace mode (only when dir == FORWARD)
 	// we may move some text to the next line. If it starts with '{'
@@ -1636,22 +1621,19 @@ open_line(
 	}
 	if (do_si)
 	    can_si = TRUE;
-#endif // FEAT_SMARTINDENT
 
 	did_ai = TRUE;
     }
 
-#ifdef FEAT_CINDENT
     // May do indenting after opening a new line.
     do_cindent = !p_paste && (curbuf->b_p_cin
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		    || *curbuf->b_p_inde != NUL
-# endif
+#endif
 		)
 	    && in_cinkeys(dir == FORWARD
 		? KEY_OPEN_FORW
 		: KEY_OPEN_BACK, ' ', linewhite(curwin->w_cursor.lnum));
-#endif
 
     // Find out if the current line starts with a comment leader.
     // This may then be inserted in front of the new line.
@@ -1660,7 +1642,6 @@ open_line(
     {
 	lead_len = get_leader_len(saved_line, &lead_flags,
 							dir == BACKWARD, TRUE);
-#ifdef FEAT_CINDENT
 	if (lead_len == 0 && curbuf->b_p_cin && do_cindent && dir == FORWARD
 					&& !has_format_option(FO_NO_OPEN_COMS))
 	{
@@ -1678,7 +1659,6 @@ open_line(
 		}
 	    }
 	}
-#endif
     }
     else
 	lead_len = 0;
@@ -1984,11 +1964,7 @@ open_line(
 		    }
 
 		    // Recompute the indent, it may have changed.
-		    if (curbuf->b_p_ai
-#ifdef FEAT_SMARTINDENT
-					|| do_si
-#endif
-							   )
+		    if (curbuf->b_p_ai || do_si)
 #ifdef FEAT_VARTABS
 			newindent = get_indent_str_vtab(leader, curbuf->b_p_ts,
 						 curbuf->b_p_vts_array, FALSE);
@@ -2035,11 +2011,7 @@ open_line(
 
 		// if a new indent will be set below, remove the indent that
 		// is in the comment leader
-		if (newindent
-#ifdef FEAT_SMARTINDENT
-				|| did_si
-#endif
-					   )
+		if (newindent || did_si)
 		{
 		    while (lead_len && VIM_ISWHITE(*leader))
 		    {
@@ -2050,9 +2022,7 @@ open_line(
 		}
 
 	    }
-#ifdef FEAT_SMARTINDENT
 	    did_si = can_si = FALSE;
-#endif
 	}
 	else if (comment_end != NULL)
 	{
@@ -2061,11 +2031,7 @@ open_line(
 	    // indent to align with the line containing the start of the
 	    // comment.
 	    if (comment_end[0] == '*' && comment_end[1] == '/' &&
-			(curbuf->b_p_ai
-#ifdef FEAT_SMARTINDENT
-					|| do_si
-#endif
-							   ))
+			(curbuf->b_p_ai || do_si))
 	    {
 		old_cursor = curwin->w_cursor;
 		curwin->w_cursor.col = (colnr_T)(comment_end - saved_line);
@@ -2182,14 +2148,9 @@ open_line(
 	did_append = FALSE;
     }
 
-    if (newindent
-#ifdef FEAT_SMARTINDENT
-		    || did_si
-#endif
-				)
+    if (newindent || did_si)
     {
 	++curwin->w_cursor.lnum;
-#ifdef FEAT_SMARTINDENT
 	if (did_si)
 	{
 	    int sw = (int)get_sw_value(curbuf);
@@ -2198,7 +2159,6 @@ open_line(
 		newindent -= newindent % sw;
 	    newindent += sw;
 	}
-#endif
 	// Copy the indent
 	if (curbuf->b_p_ci)
 	{
@@ -2221,10 +2181,8 @@ open_line(
 	    for (n = 0; n < (int)curwin->w_cursor.col; ++n)
 		replace_push(NUL);
 	newcol += curwin->w_cursor.col;
-#ifdef FEAT_SMARTINDENT
 	if (no_si)
 	    did_si = FALSE;
-#endif
     }
 
     // In MODE_REPLACE state, for each character in the extra leader, there
@@ -2278,7 +2236,6 @@ open_line(
     curwin->w_cursor.col = newcol;
     curwin->w_cursor.coladd = 0;
 
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     // In MODE_VREPLACE state, we are handling the replace stack ourselves, so
     // stop fixthisline() from doing it (via change_indent()) by telling it
     // we're in normal MODE_INSERT state.
@@ -2289,8 +2246,7 @@ open_line(
     }
     else
 	vreplace_mode = 0;
-#endif
-#ifdef FEAT_LISP
+
     // May do lisp indenting.
     if (!p_paste
 	    && leader == NULL
@@ -2300,19 +2256,16 @@ open_line(
 	fixthisline(get_lisp_indent);
 	ai_col = (colnr_T)getwhitecols_curline();
     }
-#endif
-#ifdef FEAT_CINDENT
+
     // May do indenting after opening a new line.
     if (do_cindent)
     {
 	do_c_expr_indent();
 	ai_col = (colnr_T)getwhitecols_curline();
     }
-#endif
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+
     if (vreplace_mode != 0)
 	State = vreplace_mode;
-#endif
 
     // Finally, MODE_VREPLACE gets the stuff on the new line, then puts back
     // the original line, and inserts the new stuff char by char, pushing old

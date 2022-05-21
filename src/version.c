@@ -152,11 +152,7 @@ static char *(features[]) =
 #else
 	"-channel",
 #endif
-#ifdef FEAT_CINDENT
 	"+cindent",
-#else
-	"-cindent",
-#endif
 #ifdef FEAT_CLIENTSERVER
 	"+clientserver",
 #else
@@ -334,11 +330,7 @@ static char *(features[]) =
 #else
 	"-linebreak",
 #endif
-#ifdef FEAT_LISP
 	"+lispindent",
-#else
-	"-lispindent",
-#endif
 	"+listcmds",
 	"+localmap",
 #ifdef FEAT_LUA
@@ -546,11 +538,7 @@ static char *(features[]) =
 #else
 	"-signs",
 #endif
-#ifdef FEAT_SMARTINDENT
 	"+smartindent",
-#else
-	"-smartindent",
-#endif
 #ifdef FEAT_SODIUM
 # ifdef DYNAMIC_SODIUM
 	"+sodium/dyn",
@@ -746,6 +734,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    4993,
 /**/
     4992,
 /**/

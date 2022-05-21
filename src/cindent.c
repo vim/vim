@@ -32,7 +32,6 @@
 #define LOOKFOR_JS_KEY		11
 #define LOOKFOR_COMMA		12
 
-#if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
 /*
  * Return TRUE if the string "line" starts with a word from 'cinwords'.
  */
@@ -64,7 +63,6 @@ cin_is_cinword(char_u *line)
     }
     return retval;
 }
-#endif
 
 /*
  * Skip to the end of a "string" and a 'c' character.
@@ -147,8 +145,6 @@ is_pos_in_string(char_u *line, colnr_T col)
 	p = skip_string(p);
     return !((colnr_T)(p - line) <= col);
 }
-
-#if defined(FEAT_CINDENT) || defined(FEAT_SYN_HL)
 
 /*
  * Find the start of a comment, not knowing if we are in a comment right now.
@@ -254,9 +250,7 @@ ind_find_start_CORS(linenr_T *is_raw)	    // XXX
     }
     return comment_pos;
 }
-#endif // FEAT_CINDENT || FEAT_SYN_HL
 
-#if defined(FEAT_CINDENT) || defined(PROTO)
 
 /*
  * Return TRUE if C-indenting is on.
@@ -265,9 +259,9 @@ ind_find_start_CORS(linenr_T *is_raw)	    // XXX
 cindent_on(void)
 {
     return (!p_paste && (curbuf->b_p_cin
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		    || *curbuf->b_p_inde != NUL
-# endif
+#endif
 		    ));
 }
 
@@ -4151,7 +4145,6 @@ do_c_expr_indent(void)
 # endif
 	fixthisline(get_c_indent);
 }
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
@@ -4160,7 +4153,6 @@ do_c_expr_indent(void)
     void
 f_cindent(typval_T *argvars UNUSED, typval_T *rettv)
 {
-# ifdef FEAT_CINDENT
     pos_T	pos;
     linenr_T	lnum;
 
@@ -4176,7 +4168,6 @@ f_cindent(typval_T *argvars UNUSED, typval_T *rettv)
 	curwin->w_cursor = pos;
     }
     else
-# endif
 	rettv->vval.v_number = -1;
 }
 #endif

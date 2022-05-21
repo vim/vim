@@ -159,10 +159,8 @@ op_shift(oparg_T *oap, int curs_top, int amount)
 	else
 	    // Move the line right if it doesn't start with '#', 'smartindent'
 	    // isn't set or 'cindent' isn't set or '#' isn't in 'cino'.
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	    if (first_char != '#' || !preprocs_left())
-#endif
-	    shift_line(oap->op_type == OP_LSHIFT, p_sr, amount, FALSE);
+		shift_line(oap->op_type == OP_LSHIFT, p_sr, amount, FALSE);
 	++curwin->w_cursor.lnum;
     }
 
@@ -1717,9 +1715,7 @@ op_change(oparg_T *oap)
     if (oap->motion_type == MLINE)
     {
 	l = 0;
-#ifdef FEAT_SMARTINDENT
 	can_si = may_do_si();	// Like opening a new line, do smart indent
-#endif
     }
 
     // First delete the text in the region.  In an empty buffer only need to
@@ -1750,10 +1746,8 @@ op_change(oparg_T *oap)
 	bd.textcol = curwin->w_cursor.col;
     }
 
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
     if (oap->motion_type == MLINE)
 	fix_indent();
-#endif
 
     retval = edit(NUL, FALSE, (linenr_T)1);
 
@@ -3292,11 +3286,9 @@ op_colon(oparg_T *oap)
 	stuffReadbuff((char_u *)"!");
     if (oap->op_type == OP_INDENT)
     {
-#ifndef FEAT_CINDENT
 	if (*get_equalprg() == NUL)
 	    stuffReadbuff((char_u *)"indent");
 	else
-#endif
 	    stuffReadbuff(get_equalprg());
 	stuffReadbuff((char_u *)"\n");
     }
@@ -4057,27 +4049,21 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	case OP_INDENT:
 	case OP_COLON:
 
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
 	    // If 'equalprg' is empty, do the indenting internally.
 	    if (oap->op_type == OP_INDENT && *get_equalprg() == NUL)
 	    {
-# ifdef FEAT_LISP
 		if (curbuf->b_p_lisp)
 		{
 		    op_reindent(oap, get_lisp_indent);
 		    break;
 		}
-# endif
-# ifdef FEAT_CINDENT
 		op_reindent(oap,
-#  ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 			*curbuf->b_p_inde != NUL ? get_expr_indent :
-#  endif
+#endif
 			    get_c_indent);
 		break;
-# endif
 	    }
-#endif
 
 	    op_colon(oap);
 	    break;

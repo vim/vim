@@ -111,6 +111,9 @@
  * +comments		'comments' option.
  * +title		'title' and 'icon' options
  * +jumplist		Jumplist, CTRL-O and CTRL-I commands.
+ * +lispindent		lisp indenting (From Eric Fischer).
+ * +cindent		C code indenting (From Eric Fischer).
+ * +smartindent		smart C code indenting when the 'si' option is set.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -429,25 +432,6 @@
 # else
 #  define SOME_BUILTIN_TCAPS		// default
 # endif
-#endif
-
-/*
- * +lispindent		lisp indenting (From Eric Fischer).
- * +cindent		C code indenting (From Eric Fischer).
- * +smartindent		smart C code indenting when the 'si' option is set.
- *
- * These two need to be defined when making prototypes.
- */
-#if defined(FEAT_NORMAL) || defined(PROTO)
-# define FEAT_LISP
-#endif
-
-#if defined(FEAT_NORMAL) || defined(PROTO)
-# define FEAT_CINDENT
-#endif
-
-#ifdef FEAT_NORMAL
-# define FEAT_SMARTINDENT
 #endif
 
 /*

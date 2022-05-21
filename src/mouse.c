@@ -1083,9 +1083,7 @@ ins_mouse(int c)
 	    curwin = new_curwin;
 	    curbuf = curwin->w_buffer;
 	}
-# ifdef FEAT_CINDENT
 	set_can_cindent(TRUE);
-# endif
     }
 
     // redraw status lines (in case another window became active)
@@ -1173,9 +1171,7 @@ ins_mousescroll(int dir)
     if (!EQUAL_POS(curwin->w_cursor, tpos))
     {
 	start_arrow(&tpos);
-# ifdef FEAT_CINDENT
 	set_can_cindent(TRUE);
-# endif
     }
 }
 

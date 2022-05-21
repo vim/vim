@@ -263,9 +263,7 @@ ins_ctrl_x(void)
 /*
  * Functions to check the current CTRL-X mode.
  */
-#ifdef FEAT_CINDENT
 int ctrl_x_mode_none(void) { return ctrl_x_mode == 0; }
-#endif
 int ctrl_x_mode_normal(void) { return ctrl_x_mode == CTRL_X_NORMAL; }
 int ctrl_x_mode_scroll(void) { return ctrl_x_mode == CTRL_X_SCROLL; }
 int ctrl_x_mode_whole_line(void) { return ctrl_x_mode == CTRL_X_WHOLE_LINE; }
@@ -2151,9 +2149,7 @@ set_ctrl_x_mode(int c)
 ins_compl_stop(int c, int prev_mode, int retval)
 {
     char_u	*ptr;
-#ifdef FEAT_CINDENT
     int		want_cindent;
-#endif
 
     // Get here when we have finished typing a sequence of ^N and
     // ^P or other completion characters in CTRL-X mode.  Free up
@@ -2173,21 +2169,18 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	ins_compl_fixRedoBufForLeader(ptr);
     }
 
-#ifdef FEAT_CINDENT
     want_cindent = (get_can_cindent() && cindent_on());
-#endif
+
     // When completing whole lines: fix indent for 'cindent'.
     // Otherwise, break line if it's too long.
     if (compl_cont_mode == CTRL_X_WHOLE_LINE)
     {
-#ifdef FEAT_CINDENT
 	// re-indent the current line
 	if (want_cindent)
 	{
 	    do_c_expr_indent();
 	    want_cindent = FALSE;	// don't do it again
 	}
-#endif
     }
     else
     {
@@ -2251,11 +2244,9 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	// command line window.
 	update_screen(0);
 #endif
-#ifdef FEAT_CINDENT
     // Indent now if a key was typed that is in 'cinkeys'.
     if (want_cindent && in_cinkeys(KEY_COMPLETE, ' ', inindent(0)))
 	do_c_expr_indent();
-#endif
     // Trigger the CompleteDone event to give scripts a chance to act
     // upon the end of completion.
     ins_apply_autocmds(EVENT_COMPLETEDONE);
@@ -4738,11 +4729,9 @@ ins_compl_start(void)
     // First time we hit ^N or ^P (in a row, I mean)
 
     did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
     can_si = FALSE;
     can_si_back = FALSE;
-#endif
     if (stop_arrow() == FAIL)
 	return FAIL;
 

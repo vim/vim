@@ -1500,8 +1500,7 @@ cindent({lnum})						*cindent()*
 		indenting rules, as with 'cindent'.
 		The indent is counted in spaces, the value of 'tabstop' is
 		relevant.  {lnum} is used just like in |getline()|.
-		When {lnum} is invalid or Vim was not compiled the |+cindent|
-		feature, -1 is returned.
+		When {lnum} is invalid -1 is returned.
 		See |C-indenting|.
 
 		Can also be used as a |method|: >
@@ -5173,8 +5172,7 @@ lispindent({lnum})					*lispindent()*
 		indenting rules, as with 'lisp'.
 		The indent is counted in spaces, the value of 'tabstop' is
 		relevant.  {lnum} is used just like in |getline()|.
-		When {lnum} is invalid or Vim was not compiled the
-		|+lispindent| feature, -1 is returned.  In |Vim9| script an
+		When {lnum} is invalid -1 is returned.  In |Vim9| script an
 		error is given.
 
 		Can also be used as a |method|: >

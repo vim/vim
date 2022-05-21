@@ -5476,13 +5476,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"cindent",
-#ifdef FEAT_CINDENT
-		1
-#else
-		0
-#endif
-		},
+	{"cindent", 1},
 	{"clientserver",
 #ifdef FEAT_CLIENTSERVER
 		1
@@ -5796,13 +5790,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"lispindent",
-#ifdef FEAT_LISP
-		1
-#else
-		0
-#endif
-		},
+	{"lispindent", 1},
 	{"listcmds", 1},
 	{"localmap", 1},
 	{"lua",
@@ -6091,13 +6079,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"smartindent",
-#ifdef FEAT_SMARTINDENT
-		1
-#else
-		0
-#endif
-		},
+	{"smartindent", 1},
 	{"startuptime",
 #ifdef STARTUPTIME
 		1
