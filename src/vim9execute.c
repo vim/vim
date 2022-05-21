@@ -6281,7 +6281,7 @@ ex_disassemble(exarg_T *eap)
     dfunc_T	*dfunc;
     isn_T	*instr;
     int		instr_count;
-    compiletype_T compile_type;
+    compiletype_T compile_type = CT_NONE;
 
     ufunc = find_func_by_name(arg, &compile_type);
     if (ufunc == NULL)

@@ -4999,6 +4999,7 @@ ex_function(exarg_T *eap)
 /*
  * Find a function by name, including "<lambda>123".
  * Check for "profile" and "debug" arguments and set"compile_type".
+ * Caller should initialize "compile_type" to CT_NONE.
  * Return NULL if not found.
  */
     ufunc_T *
@@ -5009,7 +5010,6 @@ find_func_by_name(char_u *name, compiletype_T *compile_type)
     ufunc_T	*ufunc;
     int		is_global = FALSE;
 
-    *compile_type = CT_NONE;
     if (STRNCMP(arg, "profile", 7) == 0 && VIM_ISWHITE(arg[7]))
     {
 	*compile_type = CT_PROFILE;
@@ -5069,7 +5069,7 @@ ex_defcompile(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
-	compiletype_T compile_type;
+	compiletype_T compile_type = CT_NONE;
 
 	ufunc = find_func_by_name(eap->arg, &compile_type);
 	if (ufunc != NULL)
