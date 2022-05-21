@@ -5264,7 +5264,7 @@ f_has(typval_T *argvars, typval_T *rettv)
     && (!defined(MACOS_X) || defined(HAVE_CONFIG_H)) \
     && defined(HAVE_SYS_UTSNAME_H)
     char_u	kernel_release[256];
-#else
+#endif
     static has_item_T has_list[] =
     {
 	{"amiga",
