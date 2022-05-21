@@ -6279,8 +6279,8 @@ ex_disassemble(exarg_T *eap)
     char_u	*arg = eap->arg;
     ufunc_T	*ufunc;
     dfunc_T	*dfunc;
-    isn_T	*instr;
-    int		instr_count;
+    isn_T	*instr = NULL;  // init to shut up gcc warning
+    int		instr_count = 0;  // init to shut up gcc warning
     compiletype_T compile_type = CT_NONE;
 
     ufunc = find_func_by_name(arg, &compile_type);
