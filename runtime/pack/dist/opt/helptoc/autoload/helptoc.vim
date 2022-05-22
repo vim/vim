@@ -39,10 +39,10 @@ const HELP: list<string> =<< trim END
     example: 12/34 (5/6)
     broken down:
 
-        12  number of selected entry
-        34  number of last entry
-         5  number of deepest level currently visible
-         6  number of maximum possible level
+        12  index of selected entry
+        34  index of last entry
+         5  index of deepest level currently visible
+         6  index of maximum possible level
 END
 
 # Init {{{1
@@ -791,12 +791,13 @@ def ToggleHelp(menu_winid: number) #{{{2
             ->map((_, line: string) => line->strcharlen())
             ->max()
         var width: number = [longest_line, winwidth(0) * 2 / 3]->min()
-        var col: number = popup_getpos(menu_winid).col
+        var pos: dict<number> = popup_getpos(menu_winid)
+        var [line: number, col: number] = [pos.line, pos.col]
         --col
         var zindex: number = popup_getoptions(menu_winid).zindex
         ++zindex
         help_winid = HELP->popup_create({
-            line: 2,
+            line: line,
             col: col,
             pos: 'topright',
             minheight: height,
