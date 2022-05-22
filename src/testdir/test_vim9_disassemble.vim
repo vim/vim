@@ -2864,4 +2864,31 @@ def Test_disassemble_string_interp()
         instr)
 enddef
 
+def BitShift()
+  var a = 1 << 2
+  var b = 8 >> 1
+  var c = a << b
+  var d = b << a
+enddef
+
+def Test_disassemble_bitshift()
+  var instr = execute('disassemble BitShift')
+  assert_match('BitShift\_s*' ..
+               'var a = 1 << 2\_s*' ..
+               '0 STORE 4 in $0\_s*' ..
+               'var b = 8 >> 1\_s*' ..
+               '1 STORE 4 in $1\_s*' ..
+               'var c = a << b\_s*' ..
+               '2 LOAD $0\_s*' ..
+               '3 LOAD $1\_s*' ..
+               '4 OPNR <<\_s*' ..
+               '5 STORE $2\_s*' ..
+               'var d = b << a\_s*' ..
+               '6 LOAD $1\_s*' ..
+               '7 LOAD $0\_s*' ..
+               '8 OPNR <<\_s*' ..
+               '9 STORE $3\_s*' ..
+               '10 RETURN void', instr)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -4055,6 +4055,17 @@ exec_instructions(ectx_T *ectx)
 		    varnumber_T res = 0;
 		    int		div_zero = FALSE;
 
+		    if (iptr->isn_arg.op.op_type == EXPR_LSHIFT
+			    || iptr->isn_arg.op.op_type == EXPR_RSHIFT)
+		    {
+			if (arg2 < 0)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    emsg(_(e_bitshift_ops_must_be_postive));
+			    goto on_error;
+			}
+		    }
+
 		    switch (iptr->isn_arg.op.op_type)
 		    {
 			case EXPR_MULT: res = arg1 * arg2; break;
@@ -4077,6 +4088,21 @@ exec_instructions(ectx_T *ectx)
 			case EXPR_GEQUAL: res = arg1 >= arg2; break;
 			case EXPR_SMALLER: res = arg1 < arg2; break;
 			case EXPR_SEQUAL: res = arg1 <= arg2; break;
+			case EXPR_LSHIFT: if (arg2 > MAX_LSHIFT_BITS)
+					      res = 0;
+					  else
+					      res = arg1 << arg2;
+					  break;
+			case EXPR_RSHIFT: if (arg2 > MAX_LSHIFT_BITS)
+					      res = 0;
+					  else
+					  {
+					      res = arg1 >> arg2;
+					      // clear the topmost sign bit
+					      res &= ~((uvarnumber_T)1
+							   << MAX_LSHIFT_BITS);
+					  }
+					  break;
 			default: break;
 		    }
 
@@ -6016,6 +6042,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			case EXPR_REM: what = "%"; break;
 			case EXPR_SUB: what = "-"; break;
 			case EXPR_ADD: what = "+"; break;
+			case EXPR_LSHIFT: what = "<<"; break;
+			case EXPR_RSHIFT: what = ">>"; break;
 			default:       what = "???"; break;
 		    }
 		    switch (iptr->isn_type)

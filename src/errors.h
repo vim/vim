@@ -3279,3 +3279,9 @@ EXTERN char e_illegal_character_in_word[]
 #endif
 EXTERN char e_atom_engine_must_be_at_start_of_pattern[]
 	INIT(= N_("E1281: Atom '\\%%#=%c' must be at the start of the pattern"));
+#ifdef FEAT_EVAL
+EXTERN char e_bitshift_ops_must_be_number[]
+	INIT(= N_("E1282: bitshift operands must be numbers"));
+EXTERN char e_bitshift_ops_must_be_postive[]
+	INIT(= N_("E1283: bitshift amount must be a positive number"));
+#endif

@@ -2808,4 +2808,5 @@ long elapsed(DWORD start_tick);
 #define FFED_IS_GLOBAL	1	// "g:" was used
 #define FFED_NO_GLOBAL	2	// only check for script-local functions
 
+#define MAX_LSHIFT_BITS (varnumber_T)((sizeof(uvarnumber_T) * 8) - 1)
 #endif // VIM__H
