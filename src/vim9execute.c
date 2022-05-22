@@ -4091,7 +4091,7 @@ exec_instructions(ectx_T *ectx)
 			case EXPR_LSHIFT: if (arg2 > MAX_LSHIFT_BITS)
 					      res = 0;
 					  else
-					      res = arg1 << arg2;
+					      res = (uvarnumber_T)arg1 << arg2;
 					  break;
 			case EXPR_RSHIFT: if (arg2 > MAX_LSHIFT_BITS)
 					      res = 0;

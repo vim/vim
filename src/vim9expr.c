@@ -2716,7 +2716,8 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (tv2->vval.v_number > MAX_LSHIFT_BITS)
 		tv1->vval.v_number = 0;
 	    else if (type == EXPR_LSHIFT)
-		tv1->vval.v_number = tv1->vval.v_number << tv2->vval.v_number;
+		tv1->vval.v_number =
+			(uvarnumber_T)tv1->vval.v_number << tv2->vval.v_number;
 	    else
 		tv1->vval.v_number =
 			(uvarnumber_T)tv1->vval.v_number >> tv2->vval.v_number;
