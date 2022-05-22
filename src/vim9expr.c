@@ -2635,8 +2635,6 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     char_u	*next;
     int		len = 2;
     int		ppconst_used = ppconst->pp_used;
-    typval_T	*tv1;
-    typval_T	*tv2;
     isn_T	*isn;
 
     // get the first variable
@@ -2662,8 +2660,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	// Handle a bitwise left or right shift operator
 	if (ppconst->pp_used == ppconst_used + 1)
 	{
-	    tv1 = &ppconst->pp_tv[ppconst->pp_used - 1];
-	    if (tv1->v_type != VAR_NUMBER)
+	    if (ppconst->pp_tv[ppconst->pp_used - 1].v_type != VAR_NUMBER)
 	    {
 		// left operand should be a number
 		emsg(_(e_bitshift_ops_must_be_number));
@@ -2702,8 +2699,10 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	if (ppconst->pp_used == ppconst_used + 2)
 	{
+	    typval_T	*tv1 = &ppconst->pp_tv[ppconst->pp_used - 2];
+	    typval_T	*tv2 = &ppconst->pp_tv[ppconst->pp_used - 1];
+
 	    // Both sides are a constant, compute the result now.
-	    tv2 = &ppconst->pp_tv[ppconst->pp_used - 1];
 	    if (tv2->v_type != VAR_NUMBER || tv2->vval.v_number < 0)
 	    {
 		// right operand should be a positive number
@@ -2825,7 +2824,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	if (ppconst->pp_used == ppconst_used + 2)
 	{
-	    typval_T *	tv1 = &ppconst->pp_tv[ppconst->pp_used - 2];
+	    typval_T	*tv1 = &ppconst->pp_tv[ppconst->pp_used - 2];
 	    typval_T	*tv2 = &ppconst->pp_tv[ppconst->pp_used - 1];
 	    int		ret;
 
