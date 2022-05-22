@@ -5260,9 +5260,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	char *name;
 	short present;
     } has_item_T;
-#if (defined(UNIX) || defined(VMS)) \
-    && (!defined(MACOS_X) || defined(HAVE_CONFIG_H)) \
-    && defined(HAVE_SYS_UTSNAME_H)
+#if defined(__linux__) && defined(HAVE_SYS_UTSNAME_H)
     char_u	kernel_release[256];
 #endif
     static has_item_T has_list[] =
@@ -6558,14 +6556,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "wsl") == 0)
 	{
 	    x = TRUE;
-#if (defined(UNIX) || defined(VMS)) \
-     && (!defined(MACOS_X) || defined(HAVE_CONFIG_H)) \
-     && defined(HAVE_SYS_UTSNAME_H)
+#if defined(__linux__) && defined(HAVE_SYS_UTSNAME_H)
 	    mch_get_kernel_release(kernel_release, 256);
-
-	    for (i = 0; i <= strlen((char *)kernel_release); i++)
-	        kernel_release[i] = TOLOWER_ASC(kernel_release[i]);
-
+	    vim_strlow(kernel_release);
 	    if (strstr((char *)kernel_release, "microsoft") != NULL)
 	        n = TRUE;
 	    else
