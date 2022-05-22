@@ -4096,12 +4096,7 @@ exec_instructions(ectx_T *ectx)
 			case EXPR_RSHIFT: if (arg2 > MAX_LSHIFT_BITS)
 					      res = 0;
 					  else
-					  {
-					      res = arg1 >> arg2;
-					      // clear the topmost sign bit
-					      res &= ~((uvarnumber_T)1
-							   << MAX_LSHIFT_BITS);
-					  }
+					      res = (uvarnumber_T)arg1 >> arg2;
 					  break;
 			default: break;
 		    }

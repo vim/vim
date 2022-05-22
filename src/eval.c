@@ -3091,12 +3091,8 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		rettv->vval.v_number =
 				    rettv->vval.v_number << var2.vval.v_number;
 	    else
-	    {
 		rettv->vval.v_number =
-				    rettv->vval.v_number >> var2.vval.v_number;
-		// clear the topmost sign bit
-		rettv->vval.v_number &= ~((uvarnumber_T)1 << MAX_LSHIFT_BITS);
-	    }
+		      (uvarnumber_T)rettv->vval.v_number >> var2.vval.v_number;
 	}
 
 	clear_tv(&var2);

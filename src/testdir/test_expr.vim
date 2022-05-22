@@ -958,6 +958,8 @@ func Test_bitwise_shift()
     call assert_equal(0, 0 >> 4)
     call assert_equal(0, 999999 >> 100)
     call assert_equal(0, 999999 << 100)
+    call assert_equal(-1, -1 >> 0)
+    call assert_equal(-1, -1 << 0)
     VAR a = 8
     VAR b = 2
     call assert_equal(2, a >> b)
@@ -976,6 +978,15 @@ func Test_bitwise_shift()
     for i in range(0, v:numbersize - 2)
         LET val = and(val, invert(1 << i))
     endfor
+    #" -1 has all the bits set
+    call assert_equal(-2, -1 << 1)
+    call assert_equal(-4, -1 << 2)
+    call assert_equal(-8, -1 << 3)
+    if v:numbersize == 64
+      call assert_equal(0x7fffffffffffffff, -1 >> 1)
+      call assert_equal(0x3fffffffffffffff, -1 >> 2)
+      call assert_equal(0x1fffffffffffffff, -1 >> 3)
+    endif
     call assert_equal(0, val)
     #" multiple operators
     call assert_equal(16, 1 << 2 << 2)

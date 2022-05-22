@@ -2719,11 +2719,8 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    else if (type == EXPR_LSHIFT)
 		tv1->vval.v_number = tv1->vval.v_number << tv2->vval.v_number;
 	    else
-	    {
-		tv1->vval.v_number = tv1->vval.v_number >> tv2->vval.v_number;
-		// clear the topmost sign bit
-		tv1->vval.v_number &= ~((uvarnumber_T)1 << MAX_LSHIFT_BITS);
-	    }
+		tv1->vval.v_number =
+			(uvarnumber_T)tv1->vval.v_number >> tv2->vval.v_number;
 	    clear_tv(tv2);
 	    --ppconst->pp_used;
 	}
