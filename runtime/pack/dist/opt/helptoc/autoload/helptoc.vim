@@ -158,7 +158,7 @@ export def Open() #{{{2
             col: winpos[1] + width - 1,
             pos: 'topright',
             scrollbar: false,
-            highlight: 'Normal',
+            highlight: type == 'terminal' ? 'Terminal' : 'Normal',
             border: [],
             borderchars: ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
             minheight: height,
