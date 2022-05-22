@@ -22,13 +22,13 @@ const HELP: list<string> =<< trim END
     G      select last entry
     H      collapse one level
     L      expand one level
-    p      print current entry on command-line
+    p      print selected entry on command-line
 
     P      same as p but automatically, whenever selection changes;
            press multiple times to toggle feature on/off
 
     q      quit menu
-    z      redraw menu with current entry at center
+    z      redraw menu with selected entry at center
     <C-D>  scroll down half a page
     <C-U>  scroll up half a page
     +      increases width of popup menu
@@ -36,12 +36,13 @@ const HELP: list<string> =<< trim END
 
     title meaning
     ─────────────
-    example: 12/34 (5)
+    example: 12/34 (5/6)
     broken down:
 
-        12  number of current entry
+        12  number of selected entry
         34  number of last entry
          5  number of deepest level currently visible
+         6  number of maximum possible level
 END
 
 # Init {{{1
@@ -476,10 +477,12 @@ enddef
 
 def SetTitle(winid: number) #{{{2
     var lastlnum: number = line('$', winid)
-    var newtitle: string = printf(' %*d/%d (%d)',
+    var newtitle: string = printf(' %*d/%d (%d/%d)',
         len(lastlnum), line('.', winid),
         lastlnum,
-        b:toc.curlvl)
+        b:toc.curlvl,
+        b:toc.maxlvl,
+    )
 
     var width: number = winid->popup_getoptions().minwidth
     newtitle = printf('%s%*s',
