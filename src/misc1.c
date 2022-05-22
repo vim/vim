@@ -377,6 +377,7 @@ plines_win_nofill(
 	return 1;
 #endif
 
+#ifdef FEAT_CONCEAL
     // If conceal level is greater than 0, the lines possibly be NOT wrapped
     // with hidden characters. So return wl_size already calculated.
     if (wp == curwin && wp->w_p_cole > 0 && conceal_cursor_line(wp))
@@ -388,6 +389,7 @@ plines_win_nofill(
 		return wp->w_lines[i].wl_size;
 	}
     }
+#endif
 
     lines = plines_win_nofold(wp, lnum);
     if (winheight > 0 && lines > wp->w_height)
