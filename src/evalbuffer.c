@@ -144,6 +144,7 @@ set_buffer_lines(
     buf_T	*curbuf_save = NULL;
     win_T	*curwin_save = NULL;
     int		is_curbuf = buf == curbuf;
+    int		save_VIsual_active = VIsual_active;
 
     // When using the current buffer ml_mfp will be set if needed.  Useful when
     // setline() is used on startup.  For other buffers the buffer must be
@@ -158,6 +159,7 @@ set_buffer_lines(
 
     if (!is_curbuf)
     {
+	VIsual_active = FALSE;
 	curbuf_save = curbuf;
 	curwin_save = curwin;
 	curbuf = buf;
@@ -264,6 +266,7 @@ done:
     {
 	curbuf = curbuf_save;
 	curwin = curwin_save;
+	VIsual_active = save_VIsual_active;
     }
 }
 
