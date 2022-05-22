@@ -263,6 +263,7 @@ The latter supports the following normal commands: >
 	k     | select previous entry
 	J     | same as j, and jump to corresponding line in main buffer
 	K     | same as k, and jump to corresponding line in main buffer
+	c     | select nearest entry from cursor position in main buffer
 	g     | select first entry
 	G     | select last entry
 	H     | collapse one level

@@ -18,6 +18,7 @@ const HELP: list<string> =<< trim END
     k      select previous entry
     J      same as j, and jump to corresponding line in main buffer
     K      same as k, and jump to corresponding line in main buffer
+    c      select nearest entry from cursor position in main buffer
     g      select first entry
     G      select last entry
     H      collapse one level
@@ -560,6 +561,9 @@ def Filter(winid: number, key: string): bool #{{{2
         SetTitle(winid)
 
         return true
+
+    elseif key == 'c'
+        SelectMostRelevantEntry(winid)
 
     # when we press `p`, print the selected line (useful when it's truncated)
     elseif key == 'p'
