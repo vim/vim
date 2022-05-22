@@ -6558,8 +6558,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 	    x = TRUE;
 #if defined(__linux__) && defined(HAVE_SYS_UTSNAME_H)
 	    mch_get_kernel_release(kernel_release, 256);
-	    vim_strlow(kernel_release);
-	    if (strstr((char *)kernel_release, "microsoft") != NULL)
+	    vim_strup(kernel_release);
+	    if (strstr((char *)kernel_release, "MICROSOFT") != NULL)
 	        n = TRUE;
 	    else
 	        n = FALSE;
