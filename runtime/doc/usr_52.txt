@@ -1,4 +1,4 @@
-*usr_52.txt*	For Vim version 8.2.  Last change: 2022 May 16
+*usr_52.txt*	For Vim version 8.2.  Last change: 2022 May 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -113,36 +113,33 @@ Although it's shorter to do: >
 Legacy Vim script only checks types at runtime, when the code is executed.
 And it's permissive, often a computation gives an unexpected value instead of
 reporting an error.  Thus you can define a function and think it's fine, but
-see a problem only later when it is called: >
-	let s:collected = ''
-	func ExtendAndReturn(add)
-	   let s:collected += a:add
-	   return s:collected
+notice a problem only later when the function is called: >
+	func Concatenate(base, add)
+	   return a:base + a:add
 	endfunc
 
 Can you spot the error?  Try this: >
-	echo ExtendAndReturn('text')
-And you'll see zero.  Why?  Because in legacy Vim script "+=" will convert the
-arguments to numbers, and any string without a number results in zero!
+	echo Concatenate('base', 'text')
+And you'll see zero.  Why?  Because in legacy Vim script "+" will convert the
+arguments to numbers, and any string without a number results in zero!  That's
+not what you expected.
 
-With `:def` the type checking happens when compiling the function.  For that
-you need to specify the argument types and the return type.  Also notice that
-the argument is used without the "a:" prefix: >
-	let s:collected = ''
-	def ExtendAndReturn(add: string): string
-	   s:collected += add
-	   return s:collected
+With `:def` the type checking happens when compiling the function.  You need
+to specify the argument types and the return type to make that possible.  Also
+notice that the argument names are used without the "a:" prefix: >
+	def Concatenate(base: string, add: string): string
+	   return base + add
 	enddef
-	disassemble ExtendAndReturn
+	defcompile Concatenate
 
-Here we use `:disassemble` to do the compilation right away, without it the
-compilation would happen when the function is called.  Vim will tell you what
-you did wrong: >
+Here we use `:defcompile` to do the compilation right away, without it the
+compilation would happen when the function is first called.  Vim will tell you
+what you did wrong: >
 	E1051: Wrong argument type for +
 
-Side note: here the context is legacy script, when using Vim9 script you would
-put `:defcompile` at the end of the script to check for errors in the
-functions defined in it.
+Side note: here the context is legacy script.  When using Vim9 script you
+would put `:defcompile` at the end of the script to check for errors in all
+the functions defined in it.
 
 Vim9 script is strict, it uses the "+" operator only for numbers and floats.
 For string concatenation ".." must be used.  This avoids mistakes and avoids

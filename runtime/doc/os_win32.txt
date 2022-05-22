@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 8.2.  Last change: 2022 Feb 14
+*os_win32.txt*  For Vim version 8.2.  Last change: 2022 May 22
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -41,6 +41,11 @@ The original Windows NT port was done by Roger Knobbe <RogerK@wonderware.com>.
 The GUI version was made by George V. Reilly and Robert Webb.
 
 For compiling see "src/INSTALLpc.txt".			*win32-compiling*
+
+							*WSL*
+When using Vim on WSL (Windows Subsystem for Linux) the remarks here do not
+apply, `has('win32')` will return false then.  In case you need to know
+whether Vim is running on WSL you can use `exists('$WSLENV')`.
 
 ==============================================================================
 1. Known problems					*win32-problems*

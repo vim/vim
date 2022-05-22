@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 May 21
+*todo.txt*      For Vim version 8.2.  Last change: 2022 May 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,19 +38,13 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Make :defcompile accept a function argument, like :disassemble
-Useful for global functions.
-
-Once Vim9 is stable:
+Prepare for Vim 9.0 release:
 - Use Vim9 for more runtime files.
-- Check code coverage, add more tests if needed.
+- Check Vim9 code coverage, add more tests if needed.
 	vim9instr.c
 	vim9script.c
 	vim9type.c
-- Inlude new set of colors: #9795
 - Adjust intro message to say "help version9".
-
-Graduate FEAT_CINDENT and FEAT_SMARTINDENT ?
 
 Update the user manual:
 - Update usr_41.txt for Vim9 script

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
