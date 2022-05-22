@@ -806,7 +806,7 @@ def ToggleHelp(menu_winid: number) #{{{2
             maxwidth: width,
             border: [],
             borderchars: ['─', '│', '─', '│', '┌', '┐', '┘', '└'],
-            highlight: 'Normal',
+            highlight: &buftype == 'terminal' ? 'Terminal' : 'Normal',
             scrollbar: false,
             zindex: zindex,
         })
