@@ -542,6 +542,7 @@ generate_TYPECHECK(
 	cctx_T	    *cctx,
 	type_T	    *expected,
 	int	    offset,
+	int	    is_var,
 	int	    argidx)
 {
     isn_T	*isn;
@@ -551,6 +552,7 @@ generate_TYPECHECK(
 	return FAIL;
     isn->isn_arg.type.ct_type = alloc_type(expected);
     isn->isn_arg.type.ct_off = (int8_T)offset;
+    isn->isn_arg.type.ct_is_var = is_var;
     isn->isn_arg.type.ct_arg_idx = (int8_T)argidx;
 
     // type becomes expected
@@ -1437,7 +1439,7 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     if (maptype != NULL && maptype[0].type_decl->tt_member != NULL
 				  && maptype[0].type_decl->tt_member != &t_any)
 	// Check that map() didn't change the item types.
-	generate_TYPECHECK(cctx, maptype[0].type_decl, -1, 1);
+	generate_TYPECHECK(cctx, maptype[0].type_decl, -1, FALSE, 1);
 
     return OK;
 }

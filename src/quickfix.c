@@ -2494,7 +2494,7 @@ qf_push_dir(char_u *dirbuf, struct dir_stack_T **stackptr, int is_file_stack)
     // store directory on the stack
     if (vim_isAbsName(dirbuf)
 	    || (*stackptr)->next == NULL
-	    || (*stackptr && is_file_stack))
+	    || is_file_stack)
 	(*stackptr)->dirname = vim_strsave(dirbuf);
     else
     {

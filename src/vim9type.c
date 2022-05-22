@@ -807,7 +807,11 @@ check_argument_types(
 	else
 	    tv = &argvars[i];
 	if (varargs && i >= type->tt_argcount - 1)
-	    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
+	{
+	    expected = type->tt_args[type->tt_argcount - 1];
+	    if (expected != NULL)
+		expected = expected->tt_member;
+	}
 	else
 	    expected = type->tt_args[i];
 	if (check_typval_arg_type(expected, tv, NULL, i + 1) == FAIL)

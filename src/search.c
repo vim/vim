@@ -2116,10 +2116,8 @@ findmatchlimit(
     int		match_escaped = 0;	// search for escaped match
     int		dir;			// Direction to search
     int		comment_col = MAXCOL;   // start of / / comment
-#ifdef FEAT_LISP
     int		lispcomm = FALSE;	// inside of Lisp-style comment
     int		lisp = curbuf->b_p_lisp; // engage Lisp-specific hacks ;)
-#endif
 
     pos = curwin->w_cursor;
     pos.coladd = 0;
@@ -2348,16 +2346,11 @@ findmatchlimit(
     CLEAR_POS(&match_pos);
 
     // backward search: Check if this line contains a single-line comment
-    if ((backwards && comment_dir)
-#ifdef FEAT_LISP
-	    || lisp
-#endif
-	    )
+    if ((backwards && comment_dir) || lisp)
 	comment_col = check_linecomment(linep);
-#ifdef FEAT_LISP
     if (lisp && comment_col != MAXCOL && pos.col > (colnr_T)comment_col)
 	lispcomm = TRUE;    // find match inside this comment
-#endif
+
     while (!got_int)
     {
 	/*
@@ -2366,11 +2359,9 @@ findmatchlimit(
 	 */
 	if (backwards)
 	{
-#ifdef FEAT_LISP
 	    // char to match is inside of comment, don't search outside
 	    if (lispcomm && pos.col < (colnr_T)comment_col)
 		break;
-#endif
 	    if (pos.col == 0)		// at start of line, go to prev. one
 	    {
 		if (pos.lnum == 1)	// start of file
@@ -2386,17 +2377,11 @@ findmatchlimit(
 		line_breakcheck();
 
 		// Check if this line contains a single-line comment
-		if (comment_dir
-#ifdef FEAT_LISP
-			|| lisp
-#endif
-			)
+		if (comment_dir || lisp)
 		    comment_col = check_linecomment(linep);
-#ifdef FEAT_LISP
 		// skip comment
 		if (lisp && comment_col != MAXCOL)
 		    pos.col = comment_col;
-#endif
 	    }
 	    else
 	    {
@@ -2409,20 +2394,14 @@ findmatchlimit(
 	{
 	    if (linep[pos.col] == NUL
 		    // at end of line, go to next one
-#ifdef FEAT_LISP
-		    // don't search for match in comment
+		    // For lisp don't search for match in comment
 		    || (lisp && comment_col != MAXCOL
-					   && pos.col == (colnr_T)comment_col)
-#endif
-		    )
+					   && pos.col == (colnr_T)comment_col))
 	    {
 		if (pos.lnum == curbuf->b_ml.ml_line_count  // end of file
-#ifdef FEAT_LISP
 			// line is exhausted and comment with it,
 			// don't search for match in code
-			 || lispcomm
-#endif
-			 )
+			 || lispcomm)
 		    break;
 		++pos.lnum;
 
@@ -2433,10 +2412,8 @@ findmatchlimit(
 		pos.col = 0;
 		do_quotes = -1;
 		line_breakcheck();
-#ifdef FEAT_LISP
 		if (lisp)   // find comment pos in new line
 		    comment_col = check_linecomment(linep);
-#endif
 	    }
 	    else
 	    {
@@ -2679,7 +2656,6 @@ findmatchlimit(
 	    // FALLTHROUGH
 
 	default:
-#ifdef FEAT_LISP
 	    /*
 	     * For Lisp skip over backslashed (), {} and [].
 	     * (actually, we skip #\( et al)
@@ -2690,7 +2666,6 @@ findmatchlimit(
 		    && check_prevcol(linep, pos.col, '\\', NULL)
 		    && check_prevcol(linep, pos.col - 1, '#', NULL))
 		break;
-#endif
 
 	    // Check for match outside of quotes, and inside of
 	    // quotes when the start is also inside of quotes.
@@ -2739,7 +2714,6 @@ check_linecomment(char_u *line)
     char_u  *p;
 
     p = line;
-#ifdef FEAT_LISP
     // skip Lispish one-line comments
     if (curbuf->b_p_lisp)
     {
@@ -2773,17 +2747,16 @@ check_linecomment(char_u *line)
 	    p = NULL;
     }
     else
-#endif
-    while ((p = vim_strchr(p, '/')) != NULL)
-    {
-	// Accept a double /, unless it's preceded with * and followed by *,
-	// because * / / * is an end and start of a C comment.
-	// Only accept the position if it is not inside a string.
-	if (p[1] == '/' && (p == line || p[-1] != '*' || p[2] != '*')
+	while ((p = vim_strchr(p, '/')) != NULL)
+	{
+	    // Accept a double /, unless it's preceded with * and followed by
+	    // *, because * / / * is an end and start of a C comment.  Only
+	    // accept the position if it is not inside a string.
+	    if (p[1] == '/' && (p == line || p[-1] != '*' || p[2] != '*')
 			       && !is_pos_in_string(line, (colnr_T)(p - line)))
-	    break;
-	++p;
-    }
+		break;
+	    ++p;
+	}
 
     if (p == NULL)
 	return MAXCOL;
@@ -3117,8 +3090,6 @@ current_search(
     return OK;
 }
 
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT) || defined(FEAT_TEXTOBJ) \
-	|| defined(PROTO)
 /*
  * return TRUE if line 'lnum' is empty or has white chars only.
  */
@@ -3130,7 +3101,6 @@ linewhite(linenr_T lnum)
     p = skipwhite(ml_get(lnum));
     return (*p == NUL);
 }
-#endif
 
 /*
  * Add the search count "[3/19]" to "msgbuf".

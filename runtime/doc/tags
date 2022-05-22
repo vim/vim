@@ -4267,6 +4267,7 @@ E1274	cmdline.txt	/*E1274*
 E1276	builtin.txt	/*E1276*
 E1278	eval.txt	/*E1278*
 E128	eval.txt	/*E128*
+E1281	pattern.txt	/*E1281*
 E129	eval.txt	/*E129*
 E13	message.txt	/*E13*
 E131	eval.txt	/*E131*
@@ -5778,6 +5779,7 @@ autocmd-events	autocmd.txt	/*autocmd-events*
 autocmd-events-abc	autocmd.txt	/*autocmd-events-abc*
 autocmd-execute	autocmd.txt	/*autocmd-execute*
 autocmd-expand	autocmd.txt	/*autocmd-expand*
+autocmd-functions	usr_41.txt	/*autocmd-functions*
 autocmd-groups	autocmd.txt	/*autocmd-groups*
 autocmd-intro	autocmd.txt	/*autocmd-intro*
 autocmd-list	autocmd.txt	/*autocmd-list*
@@ -5789,6 +5791,9 @@ autocmd-remove	autocmd.txt	/*autocmd-remove*
 autocmd-searchpat	autocmd.txt	/*autocmd-searchpat*
 autocmd-use	autocmd.txt	/*autocmd-use*
 autocmd.txt	autocmd.txt	/*autocmd.txt*
+autocmd_add()	builtin.txt	/*autocmd_add()*
+autocmd_delete()	builtin.txt	/*autocmd_delete()*
+autocmd_get()	builtin.txt	/*autocmd_get()*
 autocmds-kept	version5.txt	/*autocmds-kept*
 autocommand	autocmd.txt	/*autocommand*
 autocommand-events	autocmd.txt	/*autocommand-events*
@@ -6189,6 +6194,7 @@ col()	builtin.txt	/*col()*
 coldfusion.vim	syntax.txt	/*coldfusion.vim*
 collapse	tips.txt	/*collapse*
 collate-variable	eval.txt	/*collate-variable*
+color-schemes	syntax.txt	/*color-schemes*
 color-xterm	syntax.txt	/*color-xterm*
 coloring	syntax.txt	/*coloring*
 colortest.vim	syntax.txt	/*colortest.vim*

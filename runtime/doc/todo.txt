@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 May 14
+*todo.txt*      For Vim version 8.2.  Last change: 2022 May 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,21 +38,19 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Once Vim9 is stable:
+Prepare for Vim 9.0 release:
 - Use Vim9 for more runtime files.
-- Check code coverage, add more tests if needed.
+- Check Vim9 code coverage, add more tests if needed.
 	vim9instr.c
 	vim9script.c
 	vim9type.c
-- Inlude new set of colors: #9795
 - Adjust intro message to say "help version9".
 
-Graduate FEAT_CINDENT and FEAT_SMARTINDENT ?
-
 Update the user manual:
-- Move most of usr_52.txt into usr_41.txt
-- Make usr_41.txt only about basic script writing
+- Update usr_41.txt for Vim9 script
 - Fill usr_50.txt as an "advanced section" of usr_41.txt
+  Add links from usr_41 to usr_50.
+- Make usr_51.txt use Vim9 script.  Still need usr_52.txt?
 
 
 Further Vim9 improvements, possibly after launch:
@@ -130,14 +128,13 @@ Text properties:
   where property fits in.
   Or Should we let the textprop highlight overrule other (e.g. diff) highlight
   if the priority is above a certain value?  (#7392)
+  Combining text property with 'cursorline' does not always work (Billie
+  Cleek, #5533)
 - "C" works OK.  "dd" fails to delete text property in a buffer with a single
   line.
 - Add text property that shifts text to make room for annotation (e.g.
   variable type).  Like the opposite of conceal.  Requires fixing the cursor
   positioning and mouse clicks as with conceal mode.
-- Auto-indenting may cause highlighting to shift. (#7719)
-- Combining text property with 'cursorline' does not always work (Billie
-  Cleek, #5533)
 - See remarks at top of src/textprop.c
 
 'incsearch' with :s:
@@ -659,9 +656,6 @@ that Vim doesn't find the edited file in the buffer list, causing the
 ATTENTION message?  (Tony Mechelynck, 2008 Dec 1)
 Also: swap files are in ~/tmp/  One has relative file name ".mozilla/...".
 
-'foldcolumn' in modeline applied to wrong window when using a session. (Teemu
-Likonen, March 19)
-
 When using a timer callback vgetc_busy is reset, allowing for using input().
 But in a channel callback this does not happen.  We need to do something
 similar to check_due_timer().  Also see #3809.
@@ -886,9 +880,6 @@ word is re-added to it. (Matej Cepl, 2018 Feb 6)
 
 Fold at end of the buffer behaves inconsistently. (James McCoy, 2017 Oct 9)
 
-With foldmethod=syntax and nofoldenable comment highlighting isn't removed.
-(Marcin Szewczyk, 2017 Apr 26)
-
 Using 'wildignore' also applies to literally entered file name.  Also with
 :drop (remote commands).
 
@@ -1001,8 +992,6 @@ After using :noautocmd CursorMoved may still trigger. (Andy Stewart, 2017 Sep
 
 When bracketed paste is used, pasting at the ":append" prompt does not get the
 line breaks. (Ken Takata, 2017 Aug 22)
-
-The ":move" command does not honor closed folds. (Ryan Lue, #2351)
 
 Cannot copy modeless selection when cursor is inside it. (lkintact, #2300)
 
@@ -1534,11 +1523,6 @@ was already defined.
 
 Patch for ordered dict. (Ozaki Kiichi, 2015 May 7)
 
-Patch to make closed folds line up. (Charles Campbell, 2014 Sep 12)
-Remark from Roland Eggner: does it cause crashes? (2014 Dec 12)
-Updated patch by Roland Eggner, Dec 16
-Updated patch from Charles, 2016 Jul 2
-
 Patch for building a 32bit Vim with 64bit MingW compiler.
 (Michael Soyka, 2014 Oct 15)
 
@@ -1714,8 +1698,6 @@ Patch to support 'u' in interactive substitute. (Christian Brabandt, 2012 Sep
 
 Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
 
-Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
-
 -   Add regex for 'paragraphs' and 'sections': 'parare' and 'sectre'.  Combine
     the two into a regex for searching. (Ned Konz)
 Patch by Christian Brabandt, 2013 Apr 20, unfinished.
@@ -1778,10 +1760,6 @@ URXVT:
 - will get stuck if byte sequence does not contain the expected semicolon.
 - Use urxvt mouse support also in xterm.  Explanations:
   http://www.midnight-commander.org/ticket/2662
-
-Patch to have the fold and sign column and at the last line of the buffer.
-(Marco Hinz, 2014 Sep 25)
-Alternate suggestion: let all columns continue, also the number column.
 
 Patch to add tests for if_xcmdsrv.c., Jul 8, need some more work. (Brian Burns)
 New tests Jul 13.   Update Jul 17.  Discussion Jul 18.
@@ -1983,9 +1961,6 @@ the command line. (Ingo Karkat, 2011 Jan 25)
 Since patch 7.2.46 Yankring plugin has become very slow, eventually make Vim
 crash? (Raiwil, 2010 Nov 17)
 
-Patch to add FoldedLineNr highlighting: different highlighting for the line
-number of a closed fold. (eXerigumo Clanjor, 2013 Jul 15)
-
 Regexp engine performance:
 - Profiling:
 	./vim -u NONE -s ~/vim/test/ruby.vim
@@ -2097,9 +2072,6 @@ like it has ":keepjumps" before it.
 Coverity: Check if there are new reported defects:
 https://scan.coverity.com/projects/241
 
-Patch to use 'foldnestmax' also for "marker" foldmethod. (Arnaud Lacombe, 2011
-Jan 7)
-
 Problem with editing file in binary mode. (Ingo Krabbe, 2009 Oct 8)
 
 Display error when 'tabline' that includes a file name with double-width
@@ -2111,9 +2083,6 @@ Using ']' as the end of a range in a pattern requires double escaping:
      /[@-\\]]  (Andy Wokula, 2011 Jun 28)
 
 Syntax priority problem. (Charles Campbell, 2011 Sep 15)
-
-When completion inserts the first match, it may trigger the line to be folded.
-Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)
 
 For running gvim on a USB stick: avoid the OLE registration.  Use a command
 line argument -noregister.
@@ -2188,10 +2157,6 @@ Don't load macmap.vim on startup, turn it into a plugin. (Ron Aaron,
 2009 Apr 7)  Reminder Apr 14.
 
 Add "no_hlsearch" to winsaveview().
-
-When 'foldmethod' is "indent", adding an empty line below a fold and then
-indented text, creates a new fold instead of joining it with the previous one.
-(Evan Laforge, 2009 Oct 17)
 
 Bug: When reloading a buffer changed outside of Vim, BufRead autocommands
 are applied to the wrong buffer/window. (Ben Fritz, 2009 Apr 2, May 11)
@@ -2411,8 +2376,6 @@ Problem with 'ts' set to 9 and 'showbreak' to ">>>". (Matthew Winn, 2007 Oct
 
 ":tab help" always opens a new tab, while ":help" re-uses an existing window.
 Would be more consistent when an existing tab is re-used. (Tony Mechelynck)
-
-Add ":nofold".  Range will apply without expanding to closed fold.
 
 Using Aap to build Vim: add remarks about how to set personal preferences.
 Example on http://www.calmar.ws/tmp/aap.html
@@ -3809,6 +3772,30 @@ Diff mode:
 Folding:
     (commands still available: zI zJ zK zp zP zq zQ zV zy zY;
     secondary: zB zS zT zZ, z=)
+-   Patch to make closed folds line up. (Charles Campbell, 2014 Sep 12)
+    Remark from Roland Eggner: does it cause crashes? (2014 Dec 12)
+    Updated patch by Roland Eggner, Dec 16
+    Updated patch from Charles, 2016 Jul 2
+-   Patch to make fold updates much faster. (Christian Brabandt, 2012 Dec)
+-   Patch to have the fold and sign column and at the last line of the buffer.
+    (Marco Hinz, 2014 Sep 25)
+    Alternate suggestion: let all columns continue, also the number column.
+-   Patch to add FoldedLineNr highlighting: different highlighting for the
+    line number of a closed fold. (eXerigumo Clanjor, 2013 Jul 15)
+-   Patch to use 'foldnestmax' also for "marker" foldmethod. (Arnaud Lacombe,
+    2011 Jan 7)
+-   'foldcolumn' in modeline applied to wrong window when using a session.
+    (Teemu Likonen, March 19)
+-   With foldmethod=syntax and nofoldenable comment highlighting isn't
+    removed.  (Marcin Szewczyk, 2017 Apr 26)
+-   The ":move" command does not honor closed folds. (Ryan Lue, #2351)
+-   When completion inserts the first match, it may trigger the line to be
+    folded.  Disable updating folds while completion is active? (Peter Odding,
+    2010 Jun 9)
+-   When 'foldmethod' is "indent", adding an empty line below a fold and then
+    indented text, creates a new fold instead of joining it with the previous
+    one.  (Evan Laforge, 2009 Oct 17)
+-   Add ":nofold".  Range will apply without expanding to closed fold.
 8   Vertical folds: looks like vertically split windows, but the cursor moves
     through the vertical separator, separator moves when scrolling.
 8   Add "z/" and "z?" for searching in not folded text only.  Or use a regexp

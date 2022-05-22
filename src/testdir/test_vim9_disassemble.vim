@@ -43,6 +43,9 @@ def Test_disassemble_load()
   assert_fails('disass [', 'E475:')
   assert_fails('disass 234', 'E129:')
   assert_fails('disass <XX>foo', 'E129:')
+  assert_fails('disass Test_disassemble_load burp', 'E488:')
+  assert_fails('disass debug debug Test_disassemble_load', 'E488:')
+  assert_fails('disass profile profile Test_disassemble_load', 'E488:')
 
   var res = execute('disass s:ScriptFuncLoad')
   assert_match('<SNR>\d*_ScriptFuncLoad.*' ..
@@ -581,10 +584,10 @@ def Test_disassemble_list_assign()
         '\d CHECKTYPE list<any> stack\[-1\]\_s*' ..
         '\d CHECKLEN >= 2\_s*' ..
         '\d\+ ITEM 0\_s*' ..
-        '\d\+ CHECKTYPE string stack\[-1\] arg 1\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\] var 1\_s*' ..
         '\d\+ STORE $0\_s*' ..
         '\d\+ ITEM 1\_s*' ..
-        '\d\+ CHECKTYPE string stack\[-1\] arg 2\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\] var 2\_s*' ..
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
         '\d\+ STORE $2\_s*' ..

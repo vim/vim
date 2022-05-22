@@ -3671,9 +3671,16 @@ get_visual_text(
 	}
 	if (**pp == NUL)
 	    *lenp = 0;
-	if (has_mbyte && *lenp > 0)
-	    // Correct the length to include all bytes of the last character.
-	    *lenp += (*mb_ptr2len)(*pp + (*lenp - 1)) - 1;
+	if (*lenp > 0)
+	{
+	    if (has_mbyte)
+		// Correct the length to include all bytes of the last
+		// character.
+		*lenp += (*mb_ptr2len)(*pp + (*lenp - 1)) - 1;
+	    else if ((*pp)[*lenp - 1] == NUL)
+		// Do not include a trailing NUL.
+		*lenp -= 1;
+	}
     }
     reset_VIsual_and_resel();
     return OK;

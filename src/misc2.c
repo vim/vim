@@ -622,6 +622,31 @@ check_cursor(void)
     check_cursor_col();
 }
 
+/*
+ * Check if VIsual position is valid, correct it if not.
+ * Can be called when in Visual mode and a change has been made.
+ */
+    void
+check_visual_pos(void)
+{
+    if (VIsual.lnum > curbuf->b_ml.ml_line_count)
+    {
+	VIsual.lnum = curbuf->b_ml.ml_line_count;
+	VIsual.col = 0;
+	VIsual.coladd = 0;
+    }
+    else
+    {
+	int len = (int)STRLEN(ml_get(VIsual.lnum));
+
+	if (VIsual.col > len)
+	{
+	    VIsual.col = len;
+	    VIsual.coladd = 0;
+	}
+    }
+}
+
 #if defined(FEAT_TEXTOBJ) || defined(PROTO)
 /*
  * Make sure curwin->w_cursor is not on the NUL at the end of the line.
@@ -2416,7 +2441,7 @@ get_user_name(char_u *buf, int len)
     return OK;
 }
 
-#if defined(EXITFREE) || defined(PROTOS)
+#if defined(EXITFREE) || defined(PROTO)
 /*
  * Free the memory allocated by get_user_name()
  */

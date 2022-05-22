@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 May 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1210,7 +1210,14 @@ prefix if they do not exist at the time of compiling.
 						*:defc* *:defcompile*
 :defc[ompile]		Compile functions defined in the current script that
 			were not compiled yet.
-			This will report errors found during the compilation.
+			This will report any errors found during compilation.
+
+:defc[ompile] {func}
+:defc[ompile] debug {func}
+:defc[ompile] profile {func}
+			Compile function {func}, if needed.  Use "debug" and
+			"profile" to specify the compilation mode.
+			This will report any errors found during compilation.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.

@@ -3361,7 +3361,8 @@ ml_append_flags(
 }
 
 
-#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(FEAT_PROP_POPUP) \
+	|| defined(PROTO)
 /*
  * Like ml_append() but for an arbitrary buffer.  The buffer must already have
  * a memline.
@@ -3501,8 +3502,9 @@ ml_replace_len(
 #ifdef FEAT_PROP_POPUP
 /*
  * Adjust text properties in line "lnum" for a deleted line.
- * When "above" is true this is the line above the deleted line.
- * "del_props" are the properties of the deleted line.
+ * When "above" is true this is the line above the deleted line, otherwise this
+ * is the line below the deleted line.
+ * "del_props[del_props_len]" are the properties of the deleted line.
  */
     static void
 adjust_text_props_for_delete(
@@ -3569,7 +3571,7 @@ adjust_text_props_for_delete(
 							   : TP_FLAG_CONT_PREV;
 		textprop_T  prop_this;
 
-		mch_memmove(&prop_this, text + textlen + done_del,
+		mch_memmove(&prop_this, text + textlen + done_this,
 							   sizeof(textprop_T));
 		if ((prop_this.tp_flags & flag)
 			&& prop_del.tp_id == prop_this.tp_id
@@ -3577,7 +3579,7 @@ adjust_text_props_for_delete(
 		{
 		    found = TRUE;
 		    prop_this.tp_flags &= ~flag;
-		    mch_memmove(text + textlen + done_del, &prop_this,
+		    mch_memmove(text + textlen + done_this, &prop_this,
 							   sizeof(textprop_T));
 		    break;
 		}

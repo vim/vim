@@ -2562,7 +2562,7 @@ get_augroup_name(expand_T *xp UNUSED, int idx)
 {
     if (idx == augroups.ga_len)		// add "END" add the end
 	return (char_u *)"END";
-    if (idx >= augroups.ga_len)		// end of list
+    if (idx < 0 || idx >= augroups.ga_len)	// end of list
 	return NULL;
     if (AUGROUP_NAME(idx) == NULL || AUGROUP_NAME(idx) == get_deleted_augroup())
 	// skip deleted entries
@@ -2747,4 +2747,355 @@ theend:
     vim_free(arg_save);
     return retval;
 }
+
+/*
+ * autocmd_add() and autocmd_delete() functions
+ */
+    static void
+autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
+{
+    list_T	*event_list;
+    listitem_T	*li;
+    dict_T	*event_dict;
+    char_u	*event_name = NULL;
+    event_T	event;
+    char_u	*group_name = NULL;
+    int		group;
+    char_u	*pat = NULL;
+    char_u	*cmd = NULL;
+    char_u	*end;
+    int		once;
+    int		nested;
+    int		retval = VVAL_TRUE;
+    int		save_augroup = current_augroup;
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_FALSE;
+
+    if (check_for_list_arg(argvars, 0) == FAIL)
+	return;
+
+    event_list = argvars[0].vval.v_list;
+    if (event_list == NULL)
+	return;
+
+    FOR_ALL_LIST_ITEMS(event_list, li)
+    {
+	VIM_CLEAR(event_name);
+	VIM_CLEAR(group_name);
+	VIM_CLEAR(pat);
+	VIM_CLEAR(cmd);
+
+	if (li->li_tv.v_type != VAR_DICT)
+	    continue;
+
+	event_dict = li->li_tv.vval.v_dict;
+	if (event_dict == NULL)
+	    continue;
+
+	event_name = dict_get_string(event_dict, (char_u *)"event", TRUE);
+	if (event_name == NULL)
+	{
+	    if (delete)
+		// if the event name is not specified, delete all the events
+		event = NUM_EVENTS;
+	    else
+		continue;
+	}
+	else
+	{
+	    if (delete && event_name[0] == '*' && event_name[1] == NUL)
+		// if the event name is '*', delete all the events
+		event = NUM_EVENTS;
+	    else
+	    {
+		event = event_name2nr(event_name, &end);
+		if (event == NUM_EVENTS)
+		{
+		    semsg(_(e_no_such_event_str), event_name);
+		    retval = VVAL_FALSE;
+		    break;
+		}
+	    }
+	}
+
+	group_name = dict_get_string(event_dict, (char_u *)"group", TRUE);
+	if (group_name == NULL || *group_name == NUL)
+	    // if the autocmd group name is not specified, then use the current
+	    // autocmd group
+	    group = current_augroup;
+	else
+	{
+	    group = au_find_group(group_name);
+	    if (group == AUGROUP_ERROR)
+	    {
+		if (delete)
+		{
+		    semsg(_(e_no_such_group_str), group_name);
+		    retval = VVAL_FALSE;
+		    break;
+		}
+		// group is not found, create it now
+		group = au_new_group(group_name);
+		if (group == AUGROUP_ERROR)
+		{
+		    semsg(_(e_no_such_group_str), group_name);
+		    retval = VVAL_FALSE;
+		    break;
+		}
+
+		current_augroup = group;
+	    }
+	}
+
+	// if a buffer number is specified, then generate a pattern of the form
+	// "<buffer=n>. Otherwise, use the pattern supplied by the user.
+	if (dict_has_key(event_dict, "bufnr"))
+	{
+	    varnumber_T	bnum;
+
+	    bnum = dict_get_number_def(event_dict, (char_u *)"bufnr", -1);
+	    if (bnum == -1)
+		continue;
+
+	    pat = alloc(128 + 1);
+	    if (pat == NULL)
+		continue;
+	    vim_snprintf((char *)pat, 128, "<buffer=%d>", (int)bnum);
+	}
+	else
+	{
+	    pat = dict_get_string(event_dict, (char_u *)"pattern", TRUE);
+	    if (pat == NULL)
+	    {
+		if (delete)
+		    pat = vim_strsave((char_u *)"");
+		else
+		    continue;
+	    }
+	}
+
+	once = dict_get_bool(event_dict, (char_u *)"once", FALSE);
+	nested = dict_get_bool(event_dict, (char_u *)"nested", FALSE);
+
+	cmd = dict_get_string(event_dict, (char_u *)"cmd", TRUE);
+	if (cmd == NULL)
+	{
+	    if (delete)
+		cmd = vim_strsave((char_u *)"");
+	    else
+		continue;
+	}
+
+	if (event == NUM_EVENTS)
+	{
+	    // event is '*', apply for all the events
+	    for (event = (event_T)0; (int)event < NUM_EVENTS;
+		    event = (event_T)((int)event + 1))
+	    {
+		if (do_autocmd_event(event, pat, once, nested, cmd, delete,
+							group, 0) == FAIL)
+		{
+		    retval = VVAL_FALSE;
+		    break;
+		}
+	    }
+	}
+	else
+	{
+	    if (do_autocmd_event(event, pat, once, nested, cmd, delete, group,
+								    0) == FAIL)
+	    {
+		retval = VVAL_FALSE;
+		break;
+	    }
+	}
+
+	// if only the autocmd group name is specified for delete and the
+	// autocmd event, pattern and cmd are not specified, then delete the
+	// autocmd group.
+	if (delete && group_name != NULL &&
+		(event_name == NULL || event_name[0] == NUL)
+		&& (pat == NULL || pat[0] == NUL)
+		&& (cmd == NULL || cmd[0] == NUL))
+	    au_del_group(group_name);
+    }
+
+    VIM_CLEAR(event_name);
+    VIM_CLEAR(group_name);
+    VIM_CLEAR(pat);
+    VIM_CLEAR(cmd);
+
+    current_augroup = save_augroup;
+    rettv->vval.v_number = retval;
+}
+
+/*
+ * autocmd_add() function
+ */
+    void
+f_autocmd_add(typval_T *argvars, typval_T *rettv)
+{
+    autocmd_add_or_delete(argvars, rettv, FALSE);
+}
+
+/*
+ * autocmd_delete() function
+ */
+    void
+f_autocmd_delete(typval_T *argvars, typval_T *rettv)
+{
+    autocmd_add_or_delete(argvars, rettv, TRUE);
+}
+
+/*
+ * autocmd_get() function
+ * Returns a List of autocmds.
+ */
+    void
+f_autocmd_get(typval_T *argvars, typval_T *rettv)
+{
+    event_T	event_arg = NUM_EVENTS;
+    event_T	event;
+    AutoPat	*ap;
+    AutoCmd	*ac;
+    list_T	*event_list;
+    dict_T	*event_dict;
+    char_u	*event_name = NULL;
+    char_u	*pat = NULL;
+    char_u	*name = NULL;
+    int		group = AUGROUP_ALL;
+
+    if (check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type == VAR_DICT)
+    {
+	// return only the autocmds in the specified group
+	if (dict_has_key(argvars[0].vval.v_dict, "group"))
+	{
+	    name = dict_get_string(argvars[0].vval.v_dict,
+						      (char_u *)"group", TRUE);
+	    if (name == NULL)
+		return;
+
+	    if (*name == NUL)
+		group = AUGROUP_DEFAULT;
+	    else
+	    {
+		group = au_find_group(name);
+		if (group == AUGROUP_ERROR)
+		{
+		    semsg(_(e_no_such_group_str), name);
+		    vim_free(name);
+		    return;
+		}
+	    }
+	    vim_free(name);
+	}
+
+	// return only the autocmds for the specified event
+	if (dict_has_key(argvars[0].vval.v_dict, "event"))
+	{
+	    int		i;
+
+	    name = dict_get_string(argvars[0].vval.v_dict,
+						      (char_u *)"event", TRUE);
+	    if (name == NULL)
+		return;
+
+	    if (name[0] == '*' && name[1] == NUL)
+		event_arg = NUM_EVENTS;
+	    else
+	    {
+		for (i = 0; event_names[i].name != NULL; i++)
+		    if (STRICMP(event_names[i].name, name) == 0)
+			break;
+		if (event_names[i].name == NULL)
+		{
+		    semsg(_(e_no_such_event_str), name);
+		    vim_free(name);
+		    return;
+		}
+		event_arg = event_names[i].event;
+	    }
+	    vim_free(name);
+	}
+
+	// return only the autocmds for the specified pattern
+	if (dict_has_key(argvars[0].vval.v_dict, "pattern"))
+	{
+	    pat = dict_get_string(argvars[0].vval.v_dict,
+						    (char_u *)"pattern", TRUE);
+	    if (pat == NULL)
+		return;
+	}
+    }
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    event_list = rettv->vval.v_list;
+
+    // iterate through all the autocmd events
+    for (event = (event_T)0; (int)event < NUM_EVENTS;
+	    event = (event_T)((int)event + 1))
+    {
+	if (event_arg != NUM_EVENTS && event != event_arg)
+	    continue;
+
+	event_name = event_nr2name(event);
+
+	// iterate through all the patterns for this autocmd event
+	FOR_ALL_AUTOCMD_PATTERNS(event, ap)
+	{
+	    char_u	*group_name;
+
+	    if (group != AUGROUP_ALL && group != ap->group)
+		continue;
+
+	    if (pat != NULL && STRCMP(pat, ap->pat) != 0)
+		continue;
+
+	    group_name = get_augroup_name(NULL, ap->group);
+
+	    // iterate through all the commands for this pattern and add one
+	    // item for each cmd.
+	    for (ac = ap->cmds; ac != NULL; ac = ac->next)
+	    {
+		event_dict = dict_alloc();
+		if (event_dict == NULL)
+		    return;
+
+		if (list_append_dict(event_list, event_dict) == FAIL)
+		    return;
+
+		if (dict_add_string(event_dict, "event", event_name) == FAIL)
+		    return;
+
+		if (dict_add_string(event_dict, "group", group_name == NULL
+			    ? (char_u *)"" : group_name) == FAIL)
+		    return;
+
+		if (ap->buflocal_nr != 0)
+		    if (dict_add_number(event_dict, "bufnr", ap->buflocal_nr)
+								       == FAIL)
+			return;
+
+		if (dict_add_string(event_dict, "pattern", ap->pat) == FAIL)
+		    return;
+
+		if (dict_add_string(event_dict, "cmd", ac->cmd) == FAIL)
+		    return;
+
+		if (dict_add_bool(event_dict, "once", ac->once) == FAIL)
+		    return;
+		if (dict_add_bool(event_dict, "nested", ac->nested) == FAIL)
+		    return;
+	    }
+	}
+    }
+
+    vim_free(pat);
+}
+
 #endif

@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2022 Apr 03
+*testing.txt*	For Vim version 8.2.  Last change: 2022 May 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -154,9 +154,12 @@ test_gui_event({event}, {args})
 		    move:	Optional; if used and TRUE then a mouse move
 			        event can be generated.
 				Only {args} row: and col: are used and
-				required; they are interpreted as pixels.
+				required; they are interpreted as pixels or
+				screen cells, depending on "cell".
 				Only results in an event when 'mousemoveevent'
 				is set or a popup uses mouse move events.
+		    cell:	Optional: when present and TRUE then "move"
+				uses screen cells instead of pixel positions
 
 		"scrollbar":
 		  Set or drag the left, right or horizontal scrollbar.  Only

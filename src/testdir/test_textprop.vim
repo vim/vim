@@ -573,6 +573,13 @@ func Test_prop_replace()
   call assert_equal('yyyex xyyoxx', getline(1))
   call assert_equal(expected, prop_list(1))
 
+  " Replace three 1-byte chars with three 2-byte ones.
+  exe "normal 0l3rø"
+  call assert_equal('yøøøx xyyoxx', getline(1))
+  let expected[0].length += 3
+  let expected[1].col += 3
+  call assert_equal(expected, prop_list(1))
+
   call DeletePropTypes()
   bwipe!
   set bs&
@@ -633,6 +640,18 @@ func Test_prop_open_line()
   let expected = expected[1:1]
   let expected[0].col -= 4
   call assert_equal(expected, prop_list(2))
+  call DeletePropTypes()
+
+  " split at the space character with 'ai' active, the leading space is removed
+  " in the second line and the prop is shifted accordingly.
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+  set ai
+  exe "normal 6|i\<CR>\<Esc>"
+  call assert_equal('xonex', getline(1))
+  call assert_equal('xtwoxx', getline(2))
+  let expected[1].col -= 6
+  call assert_equal(expected, prop_list(1) + prop_list(2))
+  set ai&
   call DeletePropTypes()
 
   bwipe!
@@ -1633,6 +1652,57 @@ def Test_prop_add_delete_line()
   bwipe!
 enddef
 
+" This test is to detect a regression related to #10430. It is not an attempt
+" fully cover deleting lines in the presence of multi-line properties.
+def Test_delete_line_within_multiline_prop()
+  new
+  setline(1, '# Top.')
+  append(1, ['some_text = """', 'A string.', '"""', '# Bottom.'])
+  prop_type_add('Identifier', {'highlight': 'ModeMsg', 'priority': 0, 'combine': 0, 'start_incl': 0, 'end_incl': 0})
+  prop_type_add('String', {'highlight': 'MoreMsg', 'priority': 0, 'combine': 0, 'start_incl': 0, 'end_incl': 0})
+  prop_add(2, 1, {'type': 'Identifier', 'end_lnum': 2, 'end_col': 9})
+  prop_add(2, 13, {'type': 'String', 'end_lnum': 4, 'end_col': 4})
+
+  # The property for line 3 should extend into the previous and next lines.
+  var props = prop_list(3)
+  var prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(0, prop['start'])
+  assert_equal(0, prop['end'])
+
+  # This deletion should run without raising an exception.
+  try
+    :2 del
+  catch
+    assert_report('Line delete should have workd, but it raised an error.')
+  endtry
+
+  # The property for line 2 (was 3) should no longer extend into the previous
+  # line.
+  props = prop_list(2)
+  prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(1, prop['start'], 'Property was not changed to start within the line.')
+
+  # This deletion should run without raising an exception.
+  try
+    :3 del
+  catch
+    assert_report('Line delete should have workd, but it raised an error.')
+  endtry
+
+  # The property for line 2 (originally 3) should no longer extend into the next
+  # line.
+  props = prop_list(2)
+  prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(1, prop['end'], 'Property was not changed to end within the line.')
+
+  prop_type_delete('Identifier')
+  prop_type_delete('String')
+  bwip!
+enddef
+
 func Test_prop_in_linebreak()
   CheckRunVimInTerminal
 
@@ -1953,6 +2023,72 @@ func Test_prop_shift_block()
       \ 'length': 11, 'start' : 1}
       \ ]
   call assert_equal(expected, prop_list(1, #{end_lnum: 2}))
+
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
+func Test_prop_insert_multiline()
+  new
+  call AddPropTypes()
+
+  call setline(1, ['foobar', 'barbaz'])
+  call prop_add(1, 4, #{end_lnum: 2, end_col: 4, type: 'one'})
+
+  call feedkeys("1Goquxqux\<Esc>", 'nxt')
+  call feedkeys("2GOquxqux\<Esc>", 'nxt')
+
+  let lines =<< trim END
+      foobar
+      quxqux
+      quxqux
+      barbaz
+  END
+  call assert_equal(lines, getline(1, '$'))
+  let expected = [
+      \ {'lnum': 1, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 0, 'type': 'one',
+      \ 'length': 4 ,'start': 1},
+      \ {'lnum': 2, 'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 0, 'type': 'one',
+      \ 'length': 7, 'start': 0},
+      \ {'lnum': 3, 'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 0, 'type': 'one',
+      \ 'length': 7, 'start': 0},
+      \ {'lnum': 4, 'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 1, 'type': 'one',
+      \ 'length': 3, 'start': 0}
+      \ ]
+  call assert_equal(expected, prop_list(1, #{end_lnum: 10}))
+
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
+func Test_prop_blockwise_change()
+  new
+  call AddPropTypes()
+
+  call setline(1, ['foooooo', 'bar', 'baaaaz'])
+  call prop_add(1, 1, #{end_col: 3, type: 'one'})
+  call prop_add(2, 1, #{end_col: 3, type: 'two'})
+  call prop_add(3, 1, #{end_col: 3, type: 'three'})
+
+  " Replace the first two columns with '123', since 'start_incl' is false the
+  " prop is not extended.
+  call feedkeys("gg\<c-v>2jc123\<Esc>", 'nxt')
+
+  let lines =<< trim END
+      123oooooo
+      123ar
+      123aaaaz
+  END
+  call assert_equal(lines, getline(1, '$'))
+  let expected = [
+      \ {'lnum': 1, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 1, 'type': 'one',
+      \ 'length': 1, 'start': 1},
+      \ {'lnum': 2, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 1, 'type': 'two',
+      \ 'length': 1, 'start': 1},
+      \ {'lnum': 3, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 1 ,
+      \ 'type': 'three', 'length': 1, 'start': 1}
+      \ ]
+  call assert_equal(expected, prop_list(1, #{end_lnum: 10}))
 
   call DeletePropTypes()
   bwipe!

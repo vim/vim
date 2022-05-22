@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2022 May 06
+*syntax.txt*	For Vim version 8.2.  Last change: 2022 May 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,13 +32,14 @@ In the User Manual:
 10. Including syntax files	|:syn-include|
 11. Synchronizing		|:syn-sync|
 12. Listing syntax items	|:syntax|
-13. Highlight command		|:highlight|
-14. Linking groups		|:highlight-link|
-15. Cleaning up			|:syn-clear|
-16. Highlighting tags		|tag-highlight|
-17. Window-local syntax		|:ownsyntax|
-18. Color xterms		|xterm-color|
-19. When syntax is slow		|:syntime|
+13. Colorschemes		|color-schemes|
+14. Highlight command		|:highlight|
+15. Linking groups		|:highlight-link|
+16. Cleaning up			|:syn-clear|
+17. Highlighting tags		|tag-highlight|
+18. Window-local syntax		|:ownsyntax|
+19. Color xterms		|xterm-color|
+20. When syntax is slow		|:syntime|
 
 {Vi does not have any of these commands}
 
@@ -1511,7 +1512,7 @@ modes Conditional, Number, Statement, Comment, PreProc, Type, and String,
 following the language specifications in 'Symbolic Manipulation with FORM' by
 J.A.M. Vermaseren, CAN, Netherlands, 1991.
 
-If you want include your own changes to the default colors, you have to
+If you want to include your own changes to the default colors, you have to
 redefine the following syntax groups:
 
     - formConditional
@@ -4845,20 +4846,14 @@ Note that the ":syntax" command can be abbreviated to ":sy", although ":syn"
 is mostly used, because it looks better.
 
 ==============================================================================
-13. Highlight command			*:highlight* *:hi* *E28* *E411* *E415*
+13. Colorschemes				*color-schemes*
 
-There are three types of highlight groups:
-- The ones used for specific languages.  For these the name starts with the
-  name of the language.  Many of these don't have any attributes, but are
-  linked to a group of the second type.
-- The ones used for all syntax languages.
-- The ones used for the 'highlight' option.
-							*hitest.vim*
-You can see all the groups currently active with this command: >
-    :so $VIMRUNTIME/syntax/hitest.vim
-This will open a new window containing all highlight group names, displayed
-in their own color.
-
+In the next section you can find information about indivisual highlight groups
+and how to specify colors for them.  Most likely you want to just select a set
+of colors by using the `:colorscheme` command, for example: >
+	
+	    colorscheme pablo
+<
 						*:colo* *:colorscheme* *E185*
 :colo[rscheme]		Output the name of the currently active color scheme.
 			This is basically the same as >
@@ -4876,30 +4871,62 @@ in their own color.
 			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
 
-			You have two options for customizing a color scheme.
-			For changing the appearance of specific colors, you
-			can redefine a color name before loading the scheme.
-			The desert scheme uses the khaki color for the cursor.
-			To use a darker variation of the same color: >
+You have two options for customizing a color scheme.  For changing the
+appearance of specific colors, you can redefine a color name before loading
+the scheme.  The desert scheme uses the khaki color for the cursor.  To use a
+darker variation of the same color: >
 
-				let v:colornames['khaki'] = '#bdb76b'
-				colorscheme desert
+	let v:colornames['khaki'] = '#bdb76b'
+	colorscheme desert
 <
-			For further customization, such as changing
-			|:highlight-link| associations, use another name, e.g.
-			"~/.vim/colors/mine.vim", and use `:runtime` to load
-			the original color scheme: >
-				runtime colors/evening.vim
-				hi Statement ctermfg=Blue guifg=Blue
+For further customization, such as changing |:highlight-link| associations,
+use another name, e.g.  "~/.vim/colors/mine.vim", and use `:runtime` to load
+the original color scheme: >
+	runtime colors/evening.vim
+	hi Statement ctermfg=Blue guifg=Blue
 
-<			Before the color scheme will be loaded all default
-			color list scripts (`colors/lists/default.vim`) will
-			be executed and then the |ColorSchemePre| autocommand
-			event is triggered.  After the color scheme has been
-			loaded the |ColorScheme| autocommand event is
-			triggered.
-			For info about writing a color scheme file: >
-				:edit $VIMRUNTIME/colors/README.txt
+Before the color scheme will be loaded all default color list scripts
+(`colors/lists/default.vim`) will be executed and then the |ColorSchemePre|
+autocommand event is triggered.  After the color scheme has been loaded the
+|ColorScheme| autocommand event is triggered.
+
+If a color scheme is almost right, you can add modifications on top of it by
+using the |ColorScheme| autocommand.  For example, to remove the background
+color (can make it transparent in some terminals): >
+	augroup my_colorschemes
+	  au!
+	  au Colorscheme pablo hi Normal ctermbg=NONE
+	augroup END
+
+If you make a lot of changes it might be better to copy the distributed
+colorscheme to your home directory and change it: >
+	:!cp $VIMRUNTIME/colors/pablo.vim ~/.vim/colors
+	:edit ~/.vim/colors/pablo.vim
+
+With Vim 9.0 the collection of color schemes was updated and made work in many
+different terminals.  One change was to often define the Normal highlight
+group to make sure the colors work well.  In case you prefer the old version,
+you can find them here:
+https://github.com/vim/colorschemes/blob/master/legacy_colors/
+
+For info about writing a color scheme file: >
+	:edit $VIMRUNTIME/colors/README.txt
+
+
+==============================================================================
+14. Highlight command			*:highlight* *:hi* *E28* *E411* *E415*
+
+There are three types of highlight groups:
+- The ones used for specific languages.  For these the name starts with the
+  name of the language.  Many of these don't have any attributes, but are
+  linked to a group of the second type.
+- The ones used for all syntax languages.
+- The ones used for the 'highlight' option.
+							*hitest.vim*
+You can see all the groups currently active with this command: >
+    :so $VIMRUNTIME/syntax/hitest.vim
+This will open a new window containing all highlight group names, displayed
+in their own color.
 
 :hi[ghlight]		List all the current highlight groups that have
 			attributes set.
@@ -5206,7 +5233,7 @@ guisp={color-name}					*highlight-guisp*
 	All values are hexadecimal, range from "00" to "ff".  Examples: >
             :highlight Comment guifg=#11f0c3 guibg=#ff00ff
 <
-	If you are authoring a color scheme and use the same hexademical value
+	If you are authoring a color scheme and use the same hexadecimal value
 	repeatedly, you can define a name for it in |v:colornames|. For
 	example: >
 
@@ -5416,7 +5443,7 @@ Tooltip		Current font, background and foreground of the tooltips.
 		set.
 
 ==============================================================================
-14. Linking groups		*:hi-link* *:highlight-link* *E412* *E413*
+15. Linking groups		*:hi-link* *:highlight-link* *E412* *E413*
 
 When you want to use the same highlighting for several syntax groups, you
 can do this more easily by linking the groups into one common highlight
@@ -5460,7 +5487,7 @@ another color scheme, put a command like this in the
     highlight! default link cComment Question
 
 ==============================================================================
-15. Cleaning up						*:syn-clear* *E391*
+16. Cleaning up						*:syn-clear* *E391*
 
 If you want to clear the syntax stuff for the current buffer, you can use this
 command: >
@@ -5552,7 +5579,7 @@ syntax/syncolor.vim files are loaded:
 		them.
 
 ==============================================================================
-16. Highlighting tags					*tag-highlight*
+17. Highlighting tags					*tag-highlight*
 
 If you want to highlight all the tags in your file, you can use the following
 mappings.
@@ -5588,7 +5615,7 @@ And put these lines in your .vimrc: >
    autocmd BufRead,BufNewFile *.[ch] endif
 
 ==============================================================================
-17. Window-local syntax				*:ownsyntax*
+18. Window-local syntax				*:ownsyntax*
 
 Normally all windows on a buffer share the same syntax settings. It is
 possible, however, to set a particular window on a file to have its own
@@ -5618,7 +5645,7 @@ is loaded into that window or the file is reloaded.
 When splitting the window, the new window will use the original syntax.
 
 ==============================================================================
-18. Color xterms				*xterm-color* *color-xterm*
+19. Color xterms				*xterm-color* *color-xterm*
 
 Most color xterms have only eight colors.  If you don't get colors with the
 default setup, it should work with these lines in your .vimrc: >
@@ -5762,7 +5789,7 @@ that Setup / Font / Enable Bold is NOT enabled.
 
 
 ==============================================================================
-19. When syntax is slow						*:syntime*
+20. When syntax is slow						*:syntime*
 
 This is aimed at authors of a syntax file.
 

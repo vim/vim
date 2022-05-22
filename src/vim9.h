@@ -296,6 +296,7 @@ typedef struct {
     type_T	*ct_type;
     int8_T	ct_off;		// offset in stack, -1 is bottom
     int8_T	ct_arg_idx;	// argument index or zero
+    int8_T	ct_is_var;	// when TRUE checking variable instead of arg
 } checktype_T;
 
 // arguments to ISN_STORENR

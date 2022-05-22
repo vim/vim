@@ -2302,7 +2302,7 @@ def Test_for_loop_fails()
         echo k v
       endfor
   END
-  v9.CheckDefExecAndScriptFailure(lines, ['E1013: Argument 1: type mismatch, expected job but got string', 'E1012: Type mismatch; expected job but got string'], 2)
+  v9.CheckDefExecAndScriptFailure(lines, ['E1163: Variable 1: type mismatch, expected job but got string', 'E1012: Type mismatch; expected job but got string'], 2)
 
   lines =<< trim END
       var i = 0

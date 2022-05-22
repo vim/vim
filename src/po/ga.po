@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 7.0\n"
+"Project-Id-Version: Vim 7.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-01-29 15:33-0600\n"
-"PO-Revision-Date: 2010-04-14 10:01-0500\n"
+"PO-Revision-Date: 2022-05-19 15:41-0500\n"
 "Last-Translator: Kevin Patrick Scannell <kscanne@gmail.com>\n"
 "Language-Team: Irish <gaeilge-gnulinux@lists.sourceforge.net>\n"
 "Language: ga\n"
@@ -4146,9 +4146,8 @@ msgid "E55: Unmatched %s)"
 msgstr "E55: %s) corr"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E59: Invalid character after %s@"
-msgstr "E59: carachtar neamhbhailí i ndiaidh %s@"
+msgstr "E59: Carachtar neamhbhailí i ndiaidh %s@"
 
 #, c-format
 msgid "E60: Too many complex %s{...}s"
@@ -4162,9 +4161,8 @@ msgstr "E61: %s* neadaithe"
 msgid "E62: Nested %s%c"
 msgstr "E62: %s%c neadaithe"
 
-# TODO: Capitalise first word of message?
 msgid "E63: Invalid use of \\_"
-msgstr "E63: úsáid neamhbhailí de \\_"
+msgstr "E63: Úsáid neamhbhailí de \\_"
 
 #, c-format
 msgid "E64: %s%c follows nothing"
@@ -4197,9 +4195,8 @@ msgstr "E71: Carachtar neamhbhailí i ndiaidh %s%%"
 msgid "E72: Close error on swap file"
 msgstr "E72: Earráid agus comhad babhtála á dhúnadh"
 
-# TODO: Capitalise first word of message?
 msgid "E73: Tag stack empty"
-msgstr "E73: tá cruach na gclibeanna folamh"
+msgstr "E73: Tá cruach na gclibeanna folamh"
 
 msgid "E74: Command too complex"
 msgstr "E74: Ordú róchasta"
@@ -4448,9 +4445,8 @@ msgstr "E142: Níor scríobhadh an comhad: díchumasaithe leis an rogha 'write'"
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Scrios na huathorduithe maolán nua %s go tobann"
 
-# TODO: Capitalise first word of message?
 msgid "E144: Non-numeric argument to :z"
-msgstr "E144: argóint neamhuimhriúil chun :z"
+msgstr "E144: Argóint neamhuimhriúil chun :z"
 
 msgid "E145: Shell commands and some functionality not allowed in rvim"
 msgstr "E145: Ní cheadaítear orduithe blaoisce ná feidhmeanna áirithe i rvim"
@@ -4578,9 +4574,8 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: Luach réamhshocraithe neamhbhailí ar áireamh"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E179: Argument required for %s"
-msgstr "E179: argóint ag teastáil i ndiaidh %s"
+msgstr "E179: Argóint ag teastáil i ndiaidh %s"
 
 #, c-format
 msgid "E180: Invalid complete value: %s"
@@ -4669,11 +4664,10 @@ msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: D'athraigh uathordú líon na línte gan choinne"
 
 msgid "E205: Patchmode: can't save original file"
-msgstr "E205: Patchmode: ní féidir an bunchomhad a shábháil"
+msgstr "E205: Patchmode: Ní féidir an bunchomhad a shábháil"
 
-# TODO: Capitalise first word of message?
 msgid "E206: Patchmode: can't touch empty original file"
-msgstr "E206: patchmode: ní féidir an bunchomhad folamh a theagmháil"
+msgstr "E206: Patchmode: Ní féidir an bunchomhad folamh a theagmháil"
 
 msgid "E207: Can't delete backup file"
 msgstr "E207: Ní féidir an comhad cúltaca a scriosadh"
@@ -4718,9 +4712,8 @@ msgstr "E216: Níl a leithéid de ghrúpa nó theagmhas: %s"
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Ní féidir uathorduithe a rith i gcomhair teagmhas UILE"
 
-# TODO: Capitalise first word of message?
 msgid "E218: Autocommand nesting too deep"
-msgstr "E218: uathordú neadaithe ródhomhain"
+msgstr "E218: Uathordú neadaithe ródhomhain"
 
 msgid "E219: Missing {."
 msgstr "E219: { ar iarraidh."
@@ -4734,29 +4727,24 @@ msgstr "E221: Ní cheadaítear litir chás íochtair ag tús marcóra"
 msgid "E222: Add to internal buffer that was already read from"
 msgstr "E222: Cuir le maolán inmheánach a léadh uaidh cheana"
 
-# TODO: Capitalise first word of message?
 msgid "E223: Recursive mapping"
-msgstr "E223: mapáil athchúrsach"
+msgstr "E223: Mapáil athchúrsach"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E224: Global abbreviation already exists for %s"
-msgstr "E224: tá giorrúchán uilíoch ar %s ann cheana"
+msgstr "E224: Tá giorrúchán uilíoch ar %s ann cheana"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E225: Global mapping already exists for %s"
-msgstr "E225: tá mapáil uilíoch ar %s ann cheana"
+msgstr "E225: Tá mapáil uilíoch ar %s ann cheana"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E226: Abbreviation already exists for %s"
-msgstr "E226: tá giorrúchán ann cheana le haghaidh %s"
+msgstr "E226: Tá giorrúchán ann cheana le haghaidh %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E227: Mapping already exists for %s"
-msgstr "E227: tá mapáil ann cheana le haghaidh %s"
+msgstr "E227: Tá mapáil ann cheana le haghaidh %s"
 
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Mód neamhcheadaithe"
@@ -4775,9 +4763,8 @@ msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr ""
 "E232: Ní féidir BalloonEval a chruthú le teachtaireacht agus aisghlaoch araon"
 
-# TODO: Capitalise first word of message?
 msgid "E233: Cannot open display"
-msgstr "E233: ní féidir an scáileán a oscailt"
+msgstr "E233: Ní féidir an scáileán a oscailt"
 
 #, c-format
 msgid "E234: Unknown fontset: %s"
@@ -4828,16 +4815,14 @@ msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: Scrios uathordú FileChangedShell an maolán"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E247: No registered server named \"%s\""
-msgstr "E247: níl aon fhreastalaí cláraithe leis an ainm \"%s\""
+msgstr "E247: Níl aon fhreastalaí cláraithe leis an ainm \"%s\""
 
 msgid "E248: Failed to send command to the destination program"
 msgstr "E248: Theip ar sheoladh ordú chuig an sprioc-chlár"
 
-# TODO: Capitalise first word of message?
 msgid "E249: Window layout changed unexpectedly"
-msgstr "E249: athraíodh leagan amach na bhfuinneog gan súil leis"
+msgstr "E249: Athraíodh leagan amach na bhfuinneog gan súil leis"
 
 #, c-format
 msgid "E250: Fonts for the following charsets are missing in fontset %s:"
@@ -4862,31 +4847,27 @@ msgstr "E254: Ní féidir dath %s a dháileadh"
 msgid "E255: Couldn't read in sign data"
 msgstr "E255: Níorbh fhéidir na sonraí comhartha a léamh"
 
-# TODO: Capitalise first word of message?
 msgid "E257: cstag: Tag not found"
-msgstr "E257: cstag: clib gan aimsiú"
+msgstr "E257: cstag: Clib gan aimsiú"
 
 msgid "E258: Unable to send to client"
 msgstr "E258: Ní féidir aon rud a sheoladh chuig an chliant"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E259: No matches found for cscope query %s of %s"
 msgstr ""
-"E259: níor aimsíodh aon rud comhoiriúnach leis an iarratas cscope %s de %s"
+"E259: Níor aimsíodh aon rud comhoiriúnach leis an iarratas cscope %s de %s"
 
 msgid "E260: Missing name after ->"
 msgstr "E260: Ainm ar iarraidh i ndiaidh ->"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E261: Cscope connection %s not found"
-msgstr "E261: ceangal cscope %s gan aimsiú"
+msgstr "E261: Ceangal cscope %s gan aimsiú"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E262: Error reading cscope connection %d"
-msgstr "E262: earráid agus ceangal cscope %d á léamh"
+msgstr "E262: Earráid agus ceangal cscope %d á léamh"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
@@ -4907,34 +4888,27 @@ msgstr ""
 "E266: Ár leithscéal, níl an t-ordú seo le fáil, níorbh fhéidir an leabharlann "
 "Ruby a luchtú."
 
-# TODO: Capitalise first word of message?
 msgid "E267: Unexpected return"
 msgstr "E267: \"return\" gan choinne"
 
-# TODO: Capitalise first word of message?
 msgid "E268: Unexpected next"
 msgstr "E268: \"next\" gan choinne"
 
-# TODO: Capitalise first word of message?
 msgid "E269: Unexpected break"
 msgstr "E269: \"break\" gan choinne"
 
-# TODO: Capitalise first word of message?
 msgid "E270: Unexpected redo"
 msgstr "E270: \"redo\" gan choinne"
 
-# TODO: Capitalise first word of message?
 msgid "E271: Retry outside of rescue clause"
 msgstr "E271: \"retry\" taobh amuigh de chlásal tarrthála"
 
-# TODO: Capitalise first word of message?
 msgid "E272: Unhandled exception"
-msgstr "E272: eisceacht gan láimhseáil"
+msgstr "E272: Eisceacht gan láimhseáil"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E273: Unknown longjmp status %d"
-msgstr "E273: stádas anaithnid longjmp %d"
+msgstr "E273: Stádas anaithnid longjmp %d"
 
 msgid "E274: No white space allowed before parenthesis"
 msgstr "E274: Ní cheadaítear spás bán roimh lúibín"
@@ -4979,13 +4953,11 @@ msgstr "E286: Theip ar oscailt mhodh ionchuir"
 msgid "E287: Warning: Could not set destroy callback to IM"
 msgstr "E287: Rabhadh: Níorbh fhéidir aisghlaoch léirscriosta a shocrú le IM"
 
-# TODO: Capitalise first word of message?
 msgid "E288: Input method doesn't support any style"
 msgstr "E288: Ní thacaíonn an modh ionchuir aon stíl"
 
-# TODO: Capitalise first word of message?
 msgid "E289: Input method doesn't support my preedit type"
-msgstr "E289: ní thacaíonn an modh ionchuir mo chineál réamheagair"
+msgstr "E289: Ní thacaíonn an modh ionchuir mo chineál réamheagair"
 
 msgid "E290: List or number required"
 msgstr "E290: Tá gá le liosta nó uimhir"
@@ -4994,9 +4966,8 @@ msgstr "E290: Tá gá le liosta nó uimhir"
 msgid "E292: Invalid count for del_bytes(): %ld"
 msgstr "E292: Líon neamhbhailí le haghaidh del_bytes(): %ld"
 
-# TODO: Capitalise first word of message?
 msgid "E293: Block was not locked"
-msgstr "E293: ní raibh an bloc faoi ghlas"
+msgstr "E293: Ní raibh an bloc faoi ghlas"
 
 msgid "E294: Seek error in swap file read"
 msgstr "E294: Earráid chuardaigh agus comhad babhtála á léamh"
@@ -5079,30 +5050,24 @@ msgid "E314: Preserve failed"
 msgstr "E314: Theip ar chaomhnú"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: lnum neamhbhailí: %ld"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
-msgstr "E316: ml_get: ní féidir líne %ld i maolán %d %s a aimsiú"
+msgstr "E316: ml_get: Ní féidir líne %ld i maolán %d %s a aimsiú"
 
-# TODO: Capitalise first word of message?
 msgid "E317: Pointer block id wrong"
-msgstr "E317: aitheantas mícheart ar an mbloc pointeora"
+msgstr "E317: Aitheantas mícheart ar an mbloc pointeora"
 
-# TODO: Capitalise first word of message?
 msgid "E317: Pointer block id wrong 2"
-msgstr "E317: aitheantas mícheart ar an mbloc pointeora 2"
+msgstr "E317: Aitheantas mícheart ar an mbloc pointeora 2"
 
-# TODO: Capitalise first word of message?
 msgid "E317: Pointer block id wrong 3"
-msgstr "E317: aitheantas mícheart ar an mbloc pointeora 3"
+msgstr "E317: Aitheantas mícheart ar an mbloc pointeora 3"
 
-# TODO: Capitalise first word of message?
 msgid "E317: Pointer block id wrong 4"
-msgstr "E317: aitheantas mícheart ar an mbloc pointeora 4"
+msgstr "E317: Aitheantas mícheart ar an mbloc pointeora 4"
 
 msgid "E318: Updated too many blocks?"
 msgstr "E318: An iomarca bloic nuashonraithe?"
@@ -5119,14 +5084,12 @@ msgid "E321: Could not reload \"%s\""
 msgstr "E321: Ní féidir \"%s\" a athluchtú"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E322: Line number out of range: %ld past the end"
-msgstr "E322: líne-uimhir as raon: %ld thar dheireadh"
+msgstr "E322: Líne-uimhir as raon: %ld thar dheireadh"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E323: Line count wrong in block %ld"
-msgstr "E323: líon mícheart na línte i mbloc %ld"
+msgstr "E323: Líon mícheart na línte i mbloc %ld"
 
 msgid "E324: Can't open PostScript output file"
 msgstr "E324: Ní féidir aschomhad PostScript a oscailt"
@@ -5259,9 +5222,8 @@ msgstr "E360: Ní féidir blaosc a rith le rogha -f"
 msgid "E362: Using a boolean value as a Float"
 msgstr "E362: Luach Boole á úsáid mar Shnámhphointe"
 
-# TODO: Capitalise first word of message?
 msgid "E363: Pattern uses more memory than 'maxmempattern'"
-msgstr "E363: úsáideann an patrún níos mó cuimhne ná 'maxmempattern'"
+msgstr "E363: Úsáideann an patrún níos mó cuimhne ná 'maxmempattern'"
 
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
@@ -5278,14 +5240,12 @@ msgid "E367: No such group: \"%s\""
 msgstr "E367: Níl a leithéid de ghrúpa: \"%s\""
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E368: Got SIG%s in libcall()"
 msgstr "E368: Fuarthas SIG%s i libcall()"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E369: Invalid item in %s%%[]"
-msgstr "E369: mír neamhbhailí i %s%%[]"
+msgstr "E369: Mír neamhbhailí i %s%%[]"
 
 #, c-format
 msgid "E370: Could not load library %s: %s"
@@ -5337,14 +5297,12 @@ msgid "E383: Invalid search string: %s"
 msgstr "E383: Teaghrán cuardaigh neamhbhailí: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E384: Search hit TOP without match for: %s"
-msgstr "E384: bhuail an cuardach an BARR gan teaghrán comhoiriúnach le %s"
+msgstr "E384: Bhuail an cuardach an BARR gan teaghrán comhoiriúnach le %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E385: Search hit BOTTOM without match for: %s"
-msgstr "E385: bhuail an cuardach an BUN gan teaghrán comhoiriúnach le %s"
+msgstr "E385: Bhuail an cuardach an BUN gan teaghrán comhoiriúnach le %s"
 
 msgid "E386: Expected '?' or '/'  after ';'"
 msgstr "E386: Ag súil le '?' nó '/'  i ndiaidh ';'"
@@ -5377,9 +5335,8 @@ msgstr "E393: ní ghlactar le group[t]here anseo"
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: Níor aimsíodh mír réigiúin le haghaidh %s"
 
-# TODO: Capitalise first word of message?
 msgid "E395: Contains argument not accepted here"
-msgstr "E395: tá argóint ann nach nglactar leis anseo"
+msgstr "E395: Tá argóint ann nach nglactar leis anseo"
 
 msgid "E397: Filename required"
 msgstr "E397: Tá gá le hainm comhaid"
@@ -5403,9 +5360,8 @@ msgstr "E401: Teormharcóir patrúin gan aimsiú: %s"
 msgid "E402: Garbage after pattern: %s"
 msgstr "E402: Dramhaíl i ndiaidh patrúin: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E403: syntax sync: Line continuations pattern specified twice"
-msgstr "E403: comhréir sionc: tugadh patrún leanúint líne faoi dhó"
+msgstr "E403: comhréir sionc: Tugadh patrún leanúint líne faoi dhó"
 
 #, c-format
 msgid "E404: Illegal arguments: %s"
@@ -5436,7 +5392,6 @@ msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Fo-ordú neamhbhailí :syntax: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E411: Highlight group not found: %s"
 msgstr "E411: Grúpa aibhsithe gan aimsiú: %s"
 
@@ -5448,25 +5403,21 @@ msgstr "E412: Easpa argóintí: \":highlight link %s\""
 msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: An iomarca argóintí: \":highlight link %s\""
 
-# TODO: Capitalise first word of message?
 msgid "E414: Group has settings, highlight link ignored"
 msgstr ""
-"E414: tá socruithe ag an ghrúpa, ag déanamh neamhshuim ar nasc aibhsithe"
+"E414: Tá socruithe ag an ghrúpa, ag déanamh neamhshuim ar nasc aibhsithe"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E415: Unexpected equal sign: %s"
-msgstr "E415: sín chothroime gan choinne: %s"
+msgstr "E415: Sín chothroime gan choinne: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E416: Missing equal sign: %s"
-msgstr "E416: sín chothroime ar iarraidh: %s"
+msgstr "E416: Sín chothroime ar iarraidh: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E417: Missing argument: %s"
-msgstr "E417: argóint ar iarraidh: %s"
+msgstr "E417: Argóint ar iarraidh: %s"
 
 #, c-format
 msgid "E418: Illegal value: %s"
@@ -5483,9 +5434,8 @@ msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Níor aithníodh ainm/uimhir an datha: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E422: Terminal code too long: %s"
-msgstr "E422: cód teirminéil rófhada: %s"
+msgstr "E422: Cód teirminéil rófhada: %s"
 
 #, c-format
 msgid "E423: Illegal argument: %s"
@@ -5498,9 +5448,8 @@ msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Ní féidir a dhul roimh an chéad chlib chomhoiriúnach"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E426: Tag not found: %s"
-msgstr "E426: clib gan aimsiú: %s"
+msgstr "E426: Clib gan aimsiú: %s"
 
 msgid "E427: There is only one matching tag"
 msgstr "E427: Tá aon chlib chomhoiriúnach amháin"
@@ -5537,21 +5486,17 @@ msgstr "E435: Clib gan aimsiú, ag tabhairt buille faoi thuairim!"
 msgid "E436: No \"%s\" entry in termcap"
 msgstr "E436: Níl aon iontráil \"%s\" sa termcap"
 
-# TODO: Capitalise first word of message?
 msgid "E437: Terminal capability \"cm\" required"
-msgstr "E437: tá gá leis an gcumas teirminéil \"cm\""
+msgstr "E437: Tá gá leis an gcumas teirminéil \"cm\""
 
-# TODO: Capitalise first word of message?
 msgid "E438: u_undo: Line numbers wrong"
-msgstr "E438: u_undo: líne-uimhreacha míchearta"
+msgstr "E438: u_undo: Líne-uimhreacha míchearta"
 
-# TODO: Capitalise first word of message?
 msgid "E439: Undo list corrupt"
-msgstr "E439: tá an liosta cealaithe truaillithe"
+msgstr "E439: Tá an liosta cealaithe truaillithe"
 
-# TODO: Capitalise first word of message?
 msgid "E440: Undo line missing"
-msgstr "E440: líne chealaithe ar iarraidh"
+msgstr "E440: Líne chealaithe ar iarraidh"
 
 msgid "E441: There is no preview window"
 msgstr "E441: Níl aon fhuinneog réamhamhairc ann"
@@ -5582,9 +5527,8 @@ msgstr "E448: Ní féidir feidhm %s leabharlainne a luchtú"
 msgid "E449: Invalid expression received"
 msgstr "E449: Fuarthas slonn neamhbhailí"
 
-# TODO: Capitalise first word of message?
 msgid "E450: Buffer number, text or a list required"
-msgstr "E450: uimhir mhaoláin, téacs, nó liosta ag teastáil"
+msgstr "E450: Uimhir mhaoláin, téacs, nó liosta ag teastáil"
 
 #, c-format
 msgid "E451: Expected }: %s"
@@ -5596,9 +5540,8 @@ msgstr "E452: ; dúblach i liosta athróg"
 msgid "E453: UL color unknown"
 msgstr "E453: Dath folíne anaithnid"
 
-# TODO: Capitalise first word of message?
 msgid "E454: Function list was modified"
-msgstr "E454: athraíodh an liosta feidhmeanna"
+msgstr "E454: Athraíodh an liosta feidhmeanna"
 
 msgid "E455: Error writing to PostScript output file"
 msgstr "E455: Earráid le linn scríobh chuig aschomhad PostScript"
@@ -5623,7 +5566,6 @@ msgstr ""
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Ní féidir filleadh ar an gcomhadlann roimhe seo"
 
-# TODO: Capitalise first word of message?
 msgid "E460: Entries missing in mapset() dict argument"
 msgstr "E460: Iontrálacha ar iarraidh san argóint fhoclóra ar mapset()"
 
@@ -5659,9 +5601,8 @@ msgstr ""
 "E468: Ní cheadaítear argóint chomhlánaithe ach le comhlánú saincheaptha"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E469: Invalid cscopequickfix flag %c for %c"
-msgstr "E469: bratach neamhbhailí cscopequickfix %c le haghaidh %c"
+msgstr "E469: Bratach neamhbhailí cscopequickfix %c le haghaidh %c"
 
 msgid "E470: Command aborted"
 msgstr "E470: Ordú tobscortha"
@@ -5745,15 +5686,13 @@ msgstr "E488: Carachtair chun deiridh"
 msgid "E488: Trailing characters: %s"
 msgstr "E488: Carachtair chun deiridh: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E489: No call stack to substitute for \"<stack>\""
-msgstr "E489: níl aon chruach glaonna le cur in ionad \"<stack>\""
+msgstr "E489: Níl aon chruach glaonna le cur in ionad \"<stack>\""
 
 msgid "E490: No fold found"
 msgstr "E490: Níor aimsíodh aon fhilleadh"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E491: JSON decode error at '%s'"
 msgstr "E491: Earráid agus JSON á dhíchódú ag '%s'"
 
@@ -5766,22 +5705,18 @@ msgstr "E493: Tugadh raon droim ar ais"
 msgid "E494: Use w or w>>"
 msgstr "E494: Bain úsáid as w nó w>>"
 
-# TODO: Capitalise first word of message?
 msgid "E495: No autocommand file name to substitute for \"<afile>\""
-msgstr "E495: níl aon ainm comhaid uathordaithe le cur in ionad \"<afile>\""
+msgstr "E495: Níl aon ainm comhaid uathordaithe le cur in ionad \"<afile>\""
 
-# TODO: Capitalise first word of message?
 msgid "E496: No autocommand buffer number to substitute for \"<abuf>\""
-msgstr "E496: níl aon uimhir mhaolán uathordaithe le cur in ionad \"<abuf>\""
+msgstr "E496: Níl aon uimhir mhaolán uathordaithe le cur in ionad \"<abuf>\""
 
-# TODO: Capitalise first word of message?
 msgid "E497: No autocommand match name to substitute for \"<amatch>\""
 msgstr ""
-"E497: níl aon ainm meaitseála uathordaithe le cur in ionad \"<amatch>\""
+"E497: Níl aon ainm meaitseála uathordaithe le cur in ionad \"<amatch>\""
 
-# TODO: Capitalise first word of message?
 msgid "E498: No :source file name to substitute for \"<sfile>\""
-msgstr "E498: níl aon ainm comhaid :source le cur in ionad \"<sfile>\""
+msgstr "E498: Níl aon ainm comhaid :source le cur in ionad \"<sfile>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
@@ -5833,17 +5768,15 @@ msgid "E510: Can't make backup file (add ! to write anyway)"
 msgstr ""
 "E510: Ní féidir comhad cúltaca a chruthú (cuir ! leis le scríobh mar sin féin)"
 
-# TODO: Capitalise first word of message?
 msgid "E511: NetBeans already connected"
-msgstr "E511: Tá netbeans ceangailte cheana"
+msgstr "E511: Tá NetBeans ceangailte cheana"
 
 msgid "E512: Close failed"
 msgstr "E512: Theip ar dúnadh"
 
-# TODO: Capitalise first word of message?
 msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
-"E513: earráid le linn scríobh, theip ar thiontú (úsáid 'fenc' folamh chun "
+"E513: Earráid le linn scríobh, theip ar thiontú (úsáid 'fenc' folamh chun "
 "sárú)"
 
 #, c-format
@@ -5854,9 +5787,8 @@ msgstr ""
 "E513: earráid le linn scríofa, theip ar thiontú ar líne %ld (úsáid 'fenc' "
 "folamh le sárú)"
 
-# TODO: Capitalise first word of message?
 msgid "E514: Write error (file system full?)"
-msgstr "E514: earráid le linn scríofa (an bhfuil an córas comhaid lán?)"
+msgstr "E514: Earráid le linn scríofa (an bhfuil an córas comhaid lán?)"
 
 msgid "E515: No buffers were unloaded"
 msgstr "E515: Níor díluchtaíodh aon mhaolán"
@@ -5914,13 +5846,11 @@ msgstr "E530: Ní féidir 'term' a athrú sa GUI"
 msgid "E531: Use \":gui\" to start the GUI"
 msgstr "E531: Úsáid \":gui\" chun an GUI a chur ag obair"
 
-# TODO: Capitalise first word of message?
 msgid "E532: Highlighting color name too long in defineAnnoType"
 msgstr "E532: Tá ainm an datha aibhsithe rófhada i defineAnnoType"
 
-# TODO: Capitalise first word of message?
 msgid "E533: Can't select wide font"
-msgstr "E533: ní féidir cló leathan a roghnú"
+msgstr "E533: Ní féidir cló leathan a roghnú"
 
 msgid "E534: Invalid wide font"
 msgstr "E534: Cló leathan neamhbhailí"
@@ -5929,9 +5859,8 @@ msgstr "E534: Cló leathan neamhbhailí"
 msgid "E535: Illegal character after <%c>"
 msgstr "E535: Carachtar neamhbhailí i ndiaidh <%c>"
 
-# TODO: Capitalise first word of message?
 msgid "E536: Comma required"
-msgstr "E536: tá gá le camóg"
+msgstr "E536: Tá gá le camóg"
 
 #, c-format
 msgid "E537: 'commentstring' must be empty or contain %s"
@@ -5946,9 +5875,8 @@ msgstr "E539: Carachtar neamhcheadaithe <%s>"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Seicheamh gan dúnadh"
 
-# TODO: Capitalise first word of message?
 msgid "E542: Unbalanced groups"
-msgstr "E542: grúpaí neamhchothromaithe"
+msgstr "E542: Grúpaí neamhchothromaithe"
 
 msgid "E543: Not a valid codepage"
 msgstr "E543: Ní códleathanach bailí é"
@@ -5965,9 +5893,8 @@ msgstr "E546: Mód neamhcheadaithe"
 msgid "E547: Illegal mouseshape"
 msgstr "E547: Cruth neamhcheadaithe luiche"
 
-# TODO: Capitalise first word of message?
 msgid "E548: Digit expected"
-msgstr "E548: ag súil le digit"
+msgstr "E548: Ag súil le digit"
 
 msgid "E549: Illegal percentage"
 msgstr "E549: Céatadán neamhcheadaithe"
@@ -5978,9 +5905,8 @@ msgstr "E550: Idirstad ar iarraidh"
 msgid "E551: Illegal component"
 msgstr "E551: Comhpháirt neamhcheadaithe"
 
-# TODO: Capitalise first word of message?
 msgid "E552: Digit expected"
-msgstr "E552: ag súil le digit"
+msgstr "E552: Ag súil le digit"
 
 msgid "E553: No more items"
 msgstr "E553: Níl aon mhír eile"
@@ -5989,13 +5915,11 @@ msgstr "E553: Níl aon mhír eile"
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: Earráid chomhréire i %s{...}"
 
-# TODO: Capitalise first word of message?
 msgid "E555: At bottom of tag stack"
-msgstr "E555: in íochtar na cruaiche clibeanna"
+msgstr "E555: In íochtar na cruaiche clibeanna"
 
-# TODO: Capitalise first word of message?
 msgid "E556: At top of tag stack"
-msgstr "E556: in uachtar na cruaiche clibeanna"
+msgstr "E556: In uachtar na cruaiche clibeanna"
 
 msgid "E557: Cannot open termcap file"
 msgstr "E557: Ní féidir an comhad termcap a oscailt"
@@ -6010,9 +5934,8 @@ msgstr "E559: Iontráil teirminéil gan aimsiú sa termcap"
 msgid "E560: Usage: cs[cope] %s"
 msgstr "E560: Úsáid: cs[cope] %s"
 
-# TODO: Capitalise first word of message?
 msgid "E561: Unknown cscope search type"
-msgstr "E561: cineál anaithnid cuardaigh cscope"
+msgstr "E561: Cineál anaithnid cuardaigh cscope"
 
 msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Úsáid: cstag <ident>"
@@ -6031,17 +5954,14 @@ msgstr "E565: Níl cead agat téacs ná an fhuinneog a athrú"
 msgid "E566: Could not create cscope pipes"
 msgstr "E566: Níorbh fhéidir píopaí cscope a chruthú"
 
-# TODO: Capitalise first word of message?
 msgid "E567: No cscope connections"
-msgstr "E567: níl aon cheangal cscope ann"
+msgstr "E567: Níl aon cheangal cscope ann"
 
-# TODO: Capitalise first word of message?
 msgid "E568: Duplicate cscope database not added"
-msgstr "E568: níor cuireadh bunachar sonraí dúblach cscope leis"
+msgstr "E568: Níor cuireadh bunachar sonraí dúblach cscope leis"
 
-# TODO: Capitalise first word of message?
 msgid "E570: Fatal error in cs_manage_matches"
-msgstr "E570: earráid mharfach i cs_manage_matches"
+msgstr "E570: Earráid mharfach i cs_manage_matches"
 
 msgid ""
 "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
@@ -6050,9 +5970,8 @@ msgstr ""
 "Tcl a luchtú."
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E572: Exit code %d"
-msgstr "E572: cód scortha %d"
+msgstr "E572: Cód scortha %d"
 
 #, c-format
 msgid "E573: Invalid server id used: %s"
@@ -6074,13 +5993,11 @@ msgstr "Ainm neamhcheadaithe tabhaill"
 msgid "E578: Not allowed to change text here"
 msgstr "E578: Níl cead agat téacs a athrú anseo"
 
-# TODO: Capitalise first word of message?
 msgid "E579: :if nesting too deep"
 msgstr "E579: :if neadaithe ródhomhain"
 
-# TODO: Capitalise first word of message?
 msgid "E579: Block nesting too deep"
-msgstr "E579: bloc neadaithe ródhomhain"
+msgstr "E579: Bloc neadaithe ródhomhain"
 
 msgid "E580: :endif without :if"
 msgstr "E580: :endif gan :if"
@@ -6091,7 +6008,6 @@ msgstr "E581: :else gan :if"
 msgid "E582: :elseif without :if"
 msgstr "E582: :elseif gan :if"
 
-# TODO: Capitalise first word of message?
 msgid "E583: Multiple :else"
 msgstr "E583: :else iomadúla"
 
@@ -6139,9 +6055,8 @@ msgstr "E595: Tá carachtar neamh-inphriontáilte nó leathan i 'showbreak'"
 msgid "E596: Invalid font(s)"
 msgstr "E596: Cló(nna) neamhbhailí"
 
-# TODO: Capitalise first word of message?
 msgid "E597: Can't select fontset"
-msgstr "E597: ní féidir tacar cló a roghnú"
+msgstr "E597: Ní féidir tacar cló a roghnú"
 
 msgid "E598: Invalid fontset"
 msgstr "E598: Tacar cló neamhbhailí"
@@ -6171,7 +6086,6 @@ msgstr "E605: Eisceacht gan láimhseáil: %s"
 msgid "E606: :finally without :try"
 msgstr "E606: :finally gan :try"
 
-# TODO: Capitalise first word of message?
 msgid "E607: Multiple :finally"
 msgstr "E607: :finally iomadúla"
 
@@ -6209,12 +6123,10 @@ msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: Ní féidir é a athrú sa GUI GTK"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: Níl comhad \"%s\" ina chomhad acmhainne PostScript"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: Tá \"%s\" ina chomhad acmhainne PostScript gan tacú"
 
@@ -6237,28 +6149,23 @@ msgid "E624: Can't open file \"%s\""
 msgstr "E624: Ní féidir an comhad \"%s\" a oscailt"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E625: Cannot open cscope database: %s"
-msgstr "E625: ní féidir bunachar sonraí cscope a oscailt: %s"
+msgstr "E625: Ní féidir bunachar sonraí cscope a oscailt: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E626: Cannot get cscope database information"
-msgstr "E626: ní féidir eolas a fháil faoin bhunachar sonraí cscope"
+msgstr "E626: Ní féidir eolas a fháil faoin bhunachar sonraí cscope"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E630: %s(): Write while not connected"
-msgstr "E630: %s(): scríobh gan ceangal a bheith ann"
+msgstr "E630: %s(): Scríobh gan ceangal a bheith ann"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E631: %s(): Write failed"
-msgstr "E631: %s(): theip ar scríobh"
+msgstr "E631: %s(): Theip ar scríobh"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E654: Missing delimiter after search pattern: %s"
-msgstr "E654: deighilteoir ar iarraidh tar éis patrúin cuardaigh: %s"
+msgstr "E654: Deighilteoir ar iarraidh tar éis patrúin cuardaigh: %s"
 
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: An iomarca naisc shiombalacha (ciogal?)"
@@ -6286,18 +6193,16 @@ msgstr "E662: Ag tosach liosta na n-athruithe"
 msgid "E663: At end of changelist"
 msgstr "E663: Ag deireadh liosta na n-athruithe"
 
-# TODO: Capitalise first word of message?
 msgid "E664: Changelist is empty"
-msgstr "E664: tá liosta na n-athruithe folamh"
+msgstr "E664: Tá liosta na n-athruithe folamh"
 
 msgid "E665: Cannot start GUI, no valid font found"
 msgstr ""
 "E665: Ní féidir an GUI a chur ag obair, níl aon chlófhoireann bhailí ann"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E666: Compiler not supported: %s"
-msgstr "E666: ní thacaítear leis an tiomsaitheoir seo: %s"
+msgstr "E666: Ní thacaítear leis an tiomsaitheoir seo: %s"
 
 msgid "E667: Fsync failed"
 msgstr "E667: Theip ar fsync"
@@ -6340,9 +6245,8 @@ msgstr "E677: Earráid agus comhad sealadach á scríobh"
 msgid "E678: Invalid character after %s%%[dxouU]"
 msgstr "E678: Carachtar neamhbhailí i ndiaidh %s%%[dxouU]"
 
-# TODO: Capitalise first word of message?
 msgid "E679: Recursive loop loading syncolor.vim"
-msgstr "E679: lúb athchúrsach agus syncolor.vim á luchtú"
+msgstr "E679: Lúb athchúrsach agus syncolor.vim á luchtú"
 
 #, c-format
 msgid "E680: <buffer=%d>: invalid buffer number"
@@ -6358,9 +6262,8 @@ msgid "E683: File name missing or invalid pattern"
 msgstr "E683: Ainm comhaid ar iarraidh, nó patrún neamhbhailí"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E684: List index out of range: %ld"
-msgstr "E684: innéacs liosta as raon: %ld"
+msgstr "E684: Innéacs liosta as raon: %ld"
 
 #, c-format
 msgid "E685: Internal error: %s"
@@ -6402,9 +6305,8 @@ msgstr "E696: Camóg ar iarraidh i Liosta: %s"
 msgid "E697: Missing end of List ']': %s"
 msgstr "E697: ']' ar iarraidh ag deireadh liosta: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E698: Variable nested too deep for making a copy"
-msgstr "E698: athróg neadaithe ródhomhain chun í a chóipeáil"
+msgstr "E698: Athróg neadaithe ródhomhain chun í a chóipeáil"
 
 msgid "E699: Too many arguments"
 msgstr "E699: An iomarca argóintí"
@@ -6488,9 +6390,8 @@ msgstr "E722: Camóg ar iarraidh i bhFoclóir: %s"
 msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: '}' ar iarraidh ag deireadh foclóra: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E724: Variable nested too deep for displaying"
-msgstr "E724: athróg neadaithe ródhomhain chun í a thaispeáint"
+msgstr "E724: Athróg neadaithe ródhomhain chun í a thaispeáint"
 
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
@@ -6560,9 +6461,8 @@ msgstr "E742: Ní féidir an luach a athrú"
 msgid "E742: Cannot change value of %s"
 msgstr "E742: Ní féidir luach %s a athrú"
 
-# TODO: Capitalise first word of message?
 msgid "E743: Variable nested too deep for (un)lock"
-msgstr "E743: athróg neadaithe ródhomhain chun í a (dí)ghlasáil"
+msgstr "E743: Athróg neadaithe ródhomhain chun í a (dí)ghlasáil"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr "E744: Ní cheadaíonn NetBeans aon athrú i gcomhaid inléite amháin"
@@ -6583,9 +6483,8 @@ msgstr ""
 msgid "E748: No previously used register"
 msgstr "E748: Níl aon tabhall úsáidte roimhe seo"
 
-# TODO: Capitalise first word of message?
 msgid "E749: Empty buffer"
-msgstr "E749: maolán folamh"
+msgstr "E749: Maolán folamh"
 
 msgid "E750: First use \":profile start {fname}\""
 msgstr "E750: Úsáid \":profile start {ainm}\" ar dtús"
@@ -6697,13 +6596,11 @@ msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: Níl an comhad .sug comhoiriúnach leis an gcomhad .spl: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E782: Error while reading .sug file: %s"
-msgstr "E782: earráid agus comhad .sug á léamh: %s"
+msgstr "E782: Earráid agus comhad .sug á léamh: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E783: Duplicate char in MAP entry"
-msgstr "E783: carachtar dúblach in iontráil MAP"
+msgstr "E783: Carachtar dúblach in iontráil MAP"
 
 msgid "E784: Cannot close last tab page"
 msgstr "E784: Ní féidir an cluaisín deiridh a dhúnadh"
@@ -6787,7 +6684,6 @@ msgstr "E804: Ní féidir '%' a úsáid le Snámhphointe"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Snámhphointe á úsáid mar Uimhir"
 
-# TODO: Capitalise first word of message?
 msgid "E806: Using Float as a String"
 msgstr "E806: Snámhphointe á úsáid mar Theaghrán"
 
@@ -6870,9 +6766,8 @@ msgid "E828: Cannot open undo file for writing: %s"
 msgstr "E828: Ní féidir comhad staire a oscailt le scríobh ann: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E829: Write error in undo file: %s"
-msgstr "E829: earráid le linn scríofa i gcomhad staire: %s"
+msgstr "E829: Earráid le linn scríofa i gcomhad staire: %s"
 
 #, c-format
 msgid "E830: Undo number %ld not found"
@@ -6905,9 +6800,8 @@ msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr ""
 "E837: Ní féidir leis an leagan seo de Vim :py3 a rith tar éis :python a úsáid"
 
-# TODO: Capitalise first word of message?
 msgid "E838: NetBeans is not supported with this GUI"
-msgstr "E838: Ní thacaítear le netbeans sa GUI seo"
+msgstr "E838: Ní thacaítear le NetBeans sa GUI seo"
 
 msgid "E840: Completion function deleted text"
 msgstr "E840: Scrios an fheidhm chomhlánaithe roinnt téacs"
@@ -6916,16 +6810,14 @@ msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr ""
 "E841: Ainm in áirithe, ní féidir é a chur ar ordú sainithe ag an úsáideoir"
 
-# TODO: Capitalise first word of message?
 msgid "E842: No line number to use for \"<slnum>\""
-msgstr "E842: níl aon líne-uimhir ar fáil le haghaidh \"<slnum>\""
+msgstr "E842: Níl aon líne-uimhir ar fáil le haghaidh \"<slnum>\""
 
 msgid "E843: Error while updating swap file crypt"
 msgstr "E843: Earráid agus criptiú an chomhaid bhabhtála á nuashonrú"
 
-# TODO: Capitalise first word of message?
 msgid "E844: Invalid cchar value"
-msgstr "E844: luach neamhbhailí cchar"
+msgstr "E844: Luach neamhbhailí cchar"
 
 msgid "E845: Insufficient memory, word list will be incomplete"
 msgstr "E845: Easpa cuimhne, beidh an liosta focal neamhiomlán"
@@ -6955,9 +6847,8 @@ msgstr "E852: Theip ar an macphróiseas an GUI a thosú"
 msgid "E853: Duplicate argument name: %s"
 msgstr "E853: Argóint dhúbailte: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E854: Path too long for completion"
-msgstr "E854: cosán rófhada le comhlánú"
+msgstr "E854: Cosán rófhada le comhlánú"
 
 msgid "E855: Autocommands caused command to abort"
 msgstr "E855: Tobscoireadh an t-ordú mar gheall ar uathorduithe"
@@ -7100,9 +6991,8 @@ msgid "E889: Number required"
 msgstr "E889: Uimhir de dhíth"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E890: Trailing char after ']': %s]%s"
-msgstr "E890: carachtar tar éis ']': %s]%s"
+msgstr "E890: Carachtar tar éis ']': %s]%s"
 
 msgid "E891: Using a Funcref as a Float"
 msgstr "E891: Funcref á úsáid mar Shnámhphointe"
@@ -7150,34 +7040,28 @@ msgstr "E901: gethostbyname() in channel_open()"
 msgid "E902: Cannot connect to port"
 msgstr "E902: Ní féidir ceangal leis an bport"
 
-# TODO: Capitalise first word of message?
 msgid "E903: Received command with non-string argument"
-msgstr "E903: fuarthas ordú le hargóint nach bhfuil ina theaghrán"
+msgstr "E903: Fuarthas ordú le hargóint nach bhfuil ina theaghrán"
 
-# TODO: Capitalise first word of message?
 msgid "E904: Last argument for expr/call must be a number"
-msgstr "E904: ní mór don argóint dheireanach ar expr/call a bheith ina huimhir"
+msgstr "E904: Ní mór don argóint dheireanach ar expr/call a bheith ina huimhir"
 
-# TODO: Capitalise first word of message?
 msgid "E904: Third argument for call must be a list"
 msgstr "E904: Caithfidh an tríú argóint a bheith ina liosta"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E905: Received unknown command: %s"
-msgstr "E905: fuarthas ordú anaithnid: %s"
+msgstr "E905: Fuarthas ordú anaithnid: %s"
 
-# TODO: Capitalise first word of message?
 msgid "E906: Not an open channel"
-msgstr "E906: ní cainéal oscailte é"
+msgstr "E906: Ní cainéal oscailte é"
 
 msgid "E907: Using a special value as a Float"
 msgstr "E907: Luach speisialta á úsáid mar Shnámhphointe"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E908: Using an invalid value as a String: %s"
-msgstr "E908: luach neamhbhailí á úsáid mar Theaghrán: %s"
+msgstr "E908: Luach neamhbhailí á úsáid mar Theaghrán: %s"
 
 msgid "E909: Cannot index a special variable"
 msgstr "E909: Ní féidir athróg speisialta a innéacsú"
@@ -7188,10 +7072,9 @@ msgstr "E910: Jab á úsáid mar Uimhir"
 msgid "E911: Using a Job as a Float"
 msgstr "E911: Jab á úsáid mar Shnámhphointe"
 
-# TODO: Capitalise first word of message?
 msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr ""
-"E912: ní féidir ch_evalexpr()/ch_sendexpr() a úsáid le cainéal raw nó nl"
+"E912: Ní féidir ch_evalexpr()/ch_sendexpr() a úsáid le cainéal raw nó nl"
 
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: Cainéal á úsáid mar Uimhir"
@@ -7202,18 +7085,16 @@ msgstr "E914: Cainéal á úsáid mar Shnámhphointe"
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: Caithfear in_buf nó in_name a shocrú chun maolán in_io a úsáid"
 
-# TODO: Capitalise first word of message?
 msgid "E916: Not a valid job"
-msgstr "E916: ní jab bailí é"
+msgstr "E916: Ní jab bailí é"
 
 #, c-format
 msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: Ní féidir aisghlaoch a úsáid le %s()"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E918: Buffer must be loaded: %s"
-msgstr "E918: ní mór an maolán a luchtú: %s"
+msgstr "E918: Ní mór an maolán a luchtú: %s"
 
 #, c-format
 msgid "E919: Directory not found in '%s': \"%s\""
@@ -7225,9 +7106,8 @@ msgstr "E920: Caithfear _name a shocrú chun comhad _io a úsáid"
 msgid "E921: Invalid callback argument"
 msgstr "E921: Argóint neamhbhailí ar aisghlaoch"
 
-# TODO: Capitalise first word of message?
 msgid "E922: Expected a dict"
-msgstr "E922: bhíothas ag súil le foclóir"
+msgstr "E922: Bhíothas ag súil le foclóir"
 
 msgid "E923: Second argument of function() must be a list or a dict"
 msgstr ""
@@ -7272,9 +7152,8 @@ msgid "E934: Cannot jump to a buffer that does not have a name"
 msgstr "E934: Ní féidir léim go maolán gan ainm"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E935: Invalid submatch number: %d"
-msgstr "E935: uimhir fho-mheaitseála neamhbhailí: %d"
+msgstr "E935: Uimhir fho-mheaitseála neamhbhailí: %d"
 
 msgid "E936: Cannot delete the current group"
 msgstr "E936: Ní féidir an grúpa reatha a scriosadh"
@@ -7294,9 +7173,8 @@ msgstr "E939: Uimhir dheimhneach de dhíth"
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: Ní féidir athróg %s a ghlasáil nó a dhíghlasáil"
 
-# TODO: Capitalise first word of message?
 msgid "E941: Already started a server"
-msgstr "E941: tosaíodh freastalaí cheana"
+msgstr "E941: Tosaíodh freastalaí cheana"
 
 msgid "E942: +clientserver feature not available"
 msgstr "E942: níl an ghné +clientserver ar fáil"
@@ -7362,16 +7240,14 @@ msgstr "E959: Formáid diff neamhbhailí."
 msgid "E960: Problem creating the internal diff"
 msgstr "E960: Bhí fadhb ann agus an diff inmheánach á chruthú"
 
-# TODO: Capitalise first word of message?
 msgid "E961: No line number to use for \"<sflnum>\""
-msgstr "E961: níl aon líne-uimhir ar fáil le haghaidh \"<sflnum>\""
+msgstr "E961: Níl aon líne-uimhir ar fáil le haghaidh \"<sflnum>\""
 
 #, c-format
 msgid "E962: Invalid action: '%s'"
 msgstr "E962: Gníomh neamhbhailí: '%s'"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E963: Setting %s to value with wrong type"
 msgstr "E963: %s á shocrú go dtí luach den chineál mícheart"
 
@@ -7379,17 +7255,15 @@ msgstr "E963: %s á shocrú go dtí luach den chineál mícheart"
 msgid "E964: Invalid column number: %ld"
 msgstr "E964: Uimhir cholúin neamhbhailí: %ld"
 
-# TODO: Capitalise first word of message?
 msgid "E965: Missing property type name"
-msgstr "E965: ainm ar chineál airí ar iarraidh"
+msgstr "E965: Ainm ar chineál airí ar iarraidh"
 
 #, c-format
 msgid "E966: Invalid line number: %ld"
 msgstr "E966: Líne-uimhir neamhbhailí: %ld"
 
-# TODO: Capitalise first word of message?
 msgid "E967: Text property info corrupted"
-msgstr "E967: eolas faoin airí téacs truaillithe"
+msgstr "E967: Eolas faoin airí téacs truaillithe"
 
 msgid "E968: Need at least one of 'id' or 'type'"
 msgstr "E968: Tá gá le 'id' nó 'type' ar a laghad"
@@ -7431,7 +7305,6 @@ msgstr "E978: Oibríocht neamhbhailí ar Bhlobaí"
 msgid "E979: Blob index out of range: %ld"
 msgstr "E979: Innéacs bloba as raon: %ld"
 
-# TODO: Capitalise first word of message?
 msgid "E980: Lowlevel input not supported"
 msgstr "E980: Ní thacaítear le hionchur íseal-leibhéil"
 
@@ -7451,13 +7324,11 @@ msgstr "E984: Úsáideadh :scriptversion lasmuigh de chomhad foinsithe"
 msgid "E985: .= is not supported with script version >= 2"
 msgstr "E985: Ní thacaítear le .= i leagan scripte >= 2"
 
-# TODO: Capitalise first word of message?
 msgid "E986: Cannot modify the tag stack within tagfunc"
-msgstr "E986: ní féidir an chruach clibeanna a athrú laistigh de tagfunc"
+msgstr "E986: Ní féidir an chruach clibeanna a athrú laistigh de tagfunc"
 
-# TODO: Capitalise first word of message?
 msgid "E987: Invalid return value from tagfunc"
-msgstr "E987: thug tagfunc luach neamhbhailí ar ais mar thoradh"
+msgstr "E987: Thug tagfunc luach neamhbhailí ar ais mar thoradh"
 
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
 msgstr "E988: Ní féidir an GUI a úsáid. Níorbh fhéidir gvim.exe a rith."
@@ -7469,7 +7340,6 @@ msgstr "E989: Argóint neamh-réamhshocraithe tar éis argóint réamhshocraithe"
 msgid "E990: Missing end marker '%s'"
 msgstr "E990: Marcóir deiridh ar iarraidh: '%s'"
 
-# TODO: Capitalise first word of message?
 msgid "E991: Cannot use =<< here"
 msgstr "E991: Ní féidir =<< a úsáid anseo"
 
@@ -7477,9 +7347,8 @@ msgid "E992: Not allowed in a modeline when 'modelineexpr' is off"
 msgstr "E992: Ní cheadaítear é seo i módlíne nuair nach bhfuil 'modelineexpr' ar siúl"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E993: Window %d is not a popup window"
-msgstr "E993: ní preabfhuinneog í fuinneog %d"
+msgstr "E993: Ní preabfhuinneog í fuinneog %d"
 
 msgid "E994: Not allowed in a popup window"
 msgstr "E994: Ní cheadaítear é seo i bpreabfhuinneog"
@@ -8434,7 +8303,6 @@ msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: Ní féidir an script chéanna a iompórtáil faoi dhó: %s"
 
 #, c-format
-# TODO: Capitalise first word of message?
 msgid "E1263: Using autoload name in a non-autoload script: %s"
 msgstr "E1263: Ainm uathluchtaithe i script nach bhfuil uathluchtaithe: %s"
 

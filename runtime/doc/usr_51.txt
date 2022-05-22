@@ -1,4 +1,4 @@
-*usr_51.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*usr_51.txt*	For Vim version 8.2.  Last change: 2022 May 14
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -197,8 +197,8 @@ would need to prefix the name with "s:".
 We will define a function that adds a new typing correction: >
 
  30	def Add(from: string, correct: bool)
- 31	  var to = input("type the correction for " .. from .. ": ")
- 32	  exe ":iabbrev " .. from .. " " .. to
+ 31	  var to = input($"type the correction for {from}: ")
+ 32	  exe $":iabbrev {from} {to}"
  ..
  36	enddef
 

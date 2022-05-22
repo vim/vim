@@ -1055,7 +1055,6 @@ inindent(int extra)
 	return FALSE;
 }
 
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT) || defined(PROTO)
 /*
  * op_reindent - handle reindenting a block of lines.
  */
@@ -1092,10 +1091,8 @@ op_reindent(oparg_T *oap, int (*how)(void))
 
 	    // Be vi-compatible: For lisp indenting the first line is not
 	    // indented, unless there is only one line.
-# ifdef FEAT_LISP
 	    if (i != oap->line_count - 1 || oap->line_count == 1
 						     || how != get_lisp_indent)
-# endif
 	    {
 		l = skipwhite(ml_get_curline());
 		if (*l == NUL)		    // empty or blank line
@@ -1142,9 +1139,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
 	curbuf->b_op_end = oap->end;
     }
 }
-#endif // defined(FEAT_LISP) || defined(FEAT_CINDENT)
 
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT) || defined(PROTO)
 /*
  * Return TRUE if lines starting with '#' should be left aligned.
  */
@@ -1152,22 +1147,12 @@ op_reindent(oparg_T *oap, int (*how)(void))
 preprocs_left(void)
 {
     return
-# ifdef FEAT_SMARTINDENT
-#  ifdef FEAT_CINDENT
 	(curbuf->b_p_si && !curbuf->b_p_cin) ||
-#  else
-	curbuf->b_p_si
-#  endif
-# endif
-# ifdef FEAT_CINDENT
 	(curbuf->b_p_cin && in_cinkeys('#', ' ', TRUE)
 					   && curbuf->b_ind_hash_comment == 0)
-# endif
 	;
 }
-#endif
 
-#ifdef FEAT_SMARTINDENT
 /*
  * Return TRUE if the conditions are OK for smart indenting.
  */
@@ -1175,9 +1160,7 @@ preprocs_left(void)
 may_do_si()
 {
     return curbuf->b_p_si
-# ifdef FEAT_CINDENT
 	&& !curbuf->b_p_cin
-# endif
 # ifdef FEAT_EVAL
 	&& *curbuf->b_p_inde == NUL
 # endif
@@ -1263,7 +1246,6 @@ ins_try_si(int c)
     if (ai_col > curwin->w_cursor.col)
 	ai_col = curwin->w_cursor.col;
 }
-#endif
 
 /*
  * Insert an indent (for <Tab> or CTRL-T) or delete an indent (for CTRL-D).
@@ -1865,7 +1847,7 @@ ex_retab(exarg_T *eap)
     u_clearline();
 }
 
-#if (defined(FEAT_CINDENT) && defined(FEAT_EVAL)) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Get indent level from 'indentexpr'.
  */
@@ -1932,8 +1914,6 @@ get_expr_indent(void)
     return indent;
 }
 #endif
-
-#if defined(FEAT_LISP) || defined(PROTO)
 
     static int
 lisp_match(char_u *p)
@@ -2150,9 +2130,7 @@ get_lisp_indent(void)
 
     return amount;
 }
-#endif // FEAT_LISP
 
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT) || defined(PROTO)
 /*
  * Re-indent the current line, based on the current contents of it and the
  * surrounding lines. Fixing the cursor position seems really easy -- I'm very
@@ -2181,19 +2159,12 @@ fix_indent(void)
 {
     if (p_paste)
 	return;
-# ifdef FEAT_LISP
     if (curbuf->b_p_lisp && curbuf->b_p_ai)
 	fixthisline(get_lisp_indent);
-# endif
-# if defined(FEAT_LISP) && defined(FEAT_CINDENT)
     else
-# endif
-# ifdef FEAT_CINDENT
 	if (cindent_on())
 	    do_c_expr_indent();
-# endif
 }
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
@@ -2224,7 +2195,6 @@ f_indent(typval_T *argvars, typval_T *rettv)
     void
 f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
 {
-# ifdef FEAT_LISP
     pos_T	pos;
     linenr_T	lnum;
 
@@ -2242,7 +2212,6 @@ f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
     else if (in_vim9script())
 	semsg(_(e_invalid_line_number_nr), lnum);
     else
-# endif
 	rettv->vval.v_number = -1;
 }
 #endif

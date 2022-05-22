@@ -215,7 +215,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_inex);
 # endif
 #endif
-#if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     check_string_option(&buf->b_p_inde);
     check_string_option(&buf->b_p_indk);
 #endif
@@ -258,16 +258,12 @@ check_buf_options(buf_T *buf)
 #ifdef FEAT_SEARCHPATH
     check_string_option(&buf->b_p_sua);
 #endif
-#ifdef FEAT_CINDENT
     check_string_option(&buf->b_p_cink);
     check_string_option(&buf->b_p_cino);
     check_string_option(&buf->b_p_cinsd);
     parse_cino(buf);
-#endif
     check_string_option(&buf->b_p_ft);
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
     check_string_option(&buf->b_p_cinw);
-#endif
     check_string_option(&buf->b_p_cpt);
 #ifdef FEAT_COMPL_FUNC
     check_string_option(&buf->b_p_cfu);
@@ -291,9 +287,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_tc);
     check_string_option(&buf->b_p_dict);
     check_string_option(&buf->b_p_tsr);
-#ifdef FEAT_LISP
     check_string_option(&buf->b_p_lw);
-#endif
     check_string_option(&buf->b_p_bkc);
     check_string_option(&buf->b_p_menc);
 #ifdef FEAT_VARTABS
@@ -2116,14 +2110,12 @@ ambw_end:
     }
 #endif
 
-#ifdef FEAT_CINDENT
     // 'cinoptions'
     else if (gvarp == &p_cino)
     {
 	// TODO: recognize errors
 	parse_cino(curbuf);
     }
-#endif
 
 #if defined(FEAT_RENDER_OPTIONS)
     // 'renderoptions'
@@ -2315,9 +2307,7 @@ ambw_end:
 # ifdef FEAT_FIND_ID
 	    gvarp == &p_inex ||
 # endif
-# ifdef FEAT_CINDENT
 	    gvarp == &p_inde ||
-# endif
 # ifdef FEAT_DIFF
 	    varp == &p_pex ||
 # endif
@@ -2351,10 +2341,8 @@ ambw_end:
 	if (gvarp == &p_inex)	// 'includeexpr'
 	    p_opt = &curbuf->b_p_inex;
 # endif
-# ifdef FEAT_CINDENT
 	if (gvarp == &p_inde)	// 'indentexpr'
 	    p_opt = &curbuf->b_p_inde;
-# endif
 # ifdef FEAT_DIFF
 	if (varp == &p_pex)	// 'patchexpr'
 	    p_opt = &p_pex;

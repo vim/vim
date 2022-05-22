@@ -17,6 +17,7 @@ void check_cursor_lnum(void);
 void check_cursor_col(void);
 void check_cursor_col_win(win_T *win);
 void check_cursor(void);
+void check_visual_pos(void);
 void adjust_cursor_col(void);
 int leftcol_changed(void);
 int copy_option_part(char_u **option, char_u *buf, int maxlen, char *sep_chars);

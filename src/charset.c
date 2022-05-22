@@ -129,13 +129,11 @@ buf_init_chartab(
 		SET_CHARTAB(buf, c);
 	}
 
-#ifdef FEAT_LISP
     /*
      * In lisp mode the '-' character is included in keywords.
      */
     if (buf->b_p_lisp)
 	SET_CHARTAB(buf, '-');
-#endif
 
     // Walk through the 'isident', 'iskeyword', 'isfname' and 'isprint'
     // options Each option is a list of characters, character numbers or

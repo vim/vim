@@ -2154,11 +2154,9 @@ do_put(
 			ptr = ml_get(lnum);
 			if (cnt == count && i == y_size - 1)
 			    lendiff = (int)STRLEN(ptr);
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 			if (*ptr == '#' && preprocs_left())
 			    indent = 0;     // Leave # lines at start
 			else
-#endif
 			     if (*ptr == NUL)
 			    indent = 0;     // Ignore empty lines
 			else if (first_indent)

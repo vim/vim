@@ -452,6 +452,12 @@ def Test_expr3()
       g:vals = []
       assert_equal(false, g:Record(1) && g:Record(true) && g:Record(0))
       assert_equal([1, true, 0], g:vals)
+
+      var failed = false
+      if false && g:a == g:b.c
+        failed = true
+      endif
+      assert_false(failed)
   END
   v9.CheckDefAndScriptSuccess(lines)
 enddef
@@ -3572,7 +3578,9 @@ def Test_expr8_method_call()
       setline(1, ['first', 'last'])
       'second'->append(1)
       "third"->append(2)
-      assert_equal(['first', 'second', 'third', 'last'], getline(1, '$'))
+      $"fourth"->append(3)
+      $'fifth'->append(4)
+      assert_equal(['first', 'second', 'third', 'fourth', 'fifth', 'last'], getline(1, '$'))
       bwipe!
 
       var bufnr = bufnr()

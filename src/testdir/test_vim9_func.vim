@@ -4107,6 +4107,47 @@ func Test_lambda_allocation_failure()
   bw!
 endfunc
 
+def Test_multiple_funcref()
+  # This was using a NULL pointer
+  var lines =<< trim END
+      vim9script
+      def A(F: func, ...args: list<any>): func
+          return funcref(F, args)
+      enddef
+
+      def B(F: func): func
+          return funcref(A, [F])
+      enddef
+
+      def Test(n: number)
+      enddef
+
+      const X = B(Test)
+      X(1)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # slightly different case
+  lines =<< trim END
+      vim9script
+
+      def A(F: func, ...args: list<any>): any
+          return call(F, args)
+      enddef
+
+      def B(F: func): func
+          return funcref(A, [F])
+      enddef
+
+      def Test(n: number)
+      enddef
+
+      const X = B(Test)
+      X(1)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()

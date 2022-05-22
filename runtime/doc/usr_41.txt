@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 May 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -924,6 +924,11 @@ Date and Time:				*date-functions* *time-functions*
 	reltime()		get the current or elapsed time accurately
 	reltimestr()		convert reltime() result to a string
 	reltimefloat()		convert reltime() result to a Float
+
+Autocmds:					*autocmd-functions*
+	autocmd_add()		add a list of autocmds and groups
+	autocmd_delete()	delete a list of autocmds and groups
+	autocmd_get()		return a list of autocmds
 
 			*buffer-functions* *window-functions* *arg-functions*
 Buffers, windows and the argument list:
@@ -1917,6 +1922,8 @@ are script-local.
 
 If you split your plugin into parts, you can use `import` and `export` to
 share items between those parts.  See `:export` for the details.
+
+More information about writing plugins is in |usr_51.txt|.
 
 ==============================================================================
 

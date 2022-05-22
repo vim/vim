@@ -4412,12 +4412,17 @@ ex_substitute(exarg_T *eap)
 		// Save flags for recursion.  They can change for e.g.
 		// :s/^/\=execute("s#^##gn")
 		subflags_save = subflags;
+
+		// Disallow changing text or switching window in an expression.
+		++textwinlock;
 #endif
 		// get length of substitution part
 		sublen = vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
 			       sub, sub_firstline, FALSE, magic_isset(), TRUE);
 #ifdef FEAT_EVAL
+		--textwinlock;
+
 		// If getting the substitute string caused an error, don't do
 		// the replacement.
 		// Don't keep flags set by a recursive call.
@@ -4518,9 +4523,15 @@ ex_substitute(exarg_T *eap)
 		mch_memmove(new_end, sub_firstline + copycol, (size_t)copy_len);
 		new_end += copy_len;
 
+#ifdef FEAT_EVAL
+		++textwinlock;
+#endif
 		(void)vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
 				      sub, new_end, TRUE, magic_isset(), TRUE);
+#ifdef FEAT_EVAL
+		--textwinlock;
+#endif
 		sub_nsubs++;
 		did_sub = TRUE;
 

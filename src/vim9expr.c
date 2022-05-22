@@ -2102,7 +2102,8 @@ compile_subscript(
 
     // Turn "dict.Func" into a partial for "Func" bound to "dict".
     // This needs to be done at runtime to be able to check the type.
-    if (keeping_dict && generate_instr(cctx, ISN_USEDICT) == NULL)
+    if (keeping_dict && cctx->ctx_skip != SKIP_YES
+				  && generate_instr(cctx, ISN_USEDICT) == NULL)
 	return FAIL;
 
     return OK;

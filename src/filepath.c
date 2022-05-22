@@ -3589,6 +3589,7 @@ unix_expandpath(
     int		didstar)	// expanded "**" once already
 {
     char_u	*buf;
+    size_t	buflen;
     char_u	*path_end;
     char_u	*p, *s, *e;
     int		start_len = gap->ga_len;
@@ -3612,7 +3613,8 @@ unix_expandpath(
     }
 
     // make room for file name
-    buf = alloc(STRLEN(path) + BASENAMELEN + 5);
+    buflen = STRLEN(path) + BASENAMELEN + 5;
+    buf = alloc(buflen);
     if (buf == NULL)
 	return 0;
 
@@ -3737,14 +3739,14 @@ unix_expandpath(
 		{
 		    // For "**" in the pattern first go deeper in the tree to
 		    // find matches.
-		    STRCPY(buf + len, "/**");
-		    STRCPY(buf + len + 3, path_end);
+		    vim_snprintf((char *)buf + len, buflen - len,
+							    "/**%s", path_end);
 		    ++stardepth;
 		    (void)unix_expandpath(gap, buf, len + 1, flags, TRUE);
 		    --stardepth;
 		}
 
-		STRCPY(buf + len, path_end);
+		vim_snprintf((char *)buf + len, buflen - len, "%s", path_end);
 		if (mch_has_exp_wildcard(path_end)) // handle more wildcards
 		{
 		    // need to expand another component of the path
