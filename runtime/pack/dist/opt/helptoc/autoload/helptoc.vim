@@ -5,7 +5,9 @@ vim9script noclear
 const SHELL_PROMPT: string = get(g:, 'helptoc', {})
     ->get('shell_prompt', '^\w\+@\w\+:\f\+\$\s')
 
-const HELP: list<string> =<< trim END
+# Init {{{1
+
+const help_text: list<string> =<< trim END
     normal commands in help window
     ──────────────────────────────
     ?      show/hide this help
@@ -46,9 +48,7 @@ const HELP: list<string> =<< trim END
          6  index of maximum possible level
 END
 
-# Init {{{1
-
-const DB: dict<dict<func: bool>> = {
+const db: dict<dict<func: bool>> = {
     help: {},
 
     man: {
@@ -121,7 +121,7 @@ enddef
 # Interface {{{1
 export def Open() #{{{2
     var type: string = GetType()
-    if DB->keys()->index(type) == -1
+    if db->keys()->index(type) == -1
         return
     endif
 
@@ -186,7 +186,7 @@ enddef
 def SetToc() #{{{2
     var toc: dict<any> = {entries: []}
     var type: string = GetType()
-    toc.maxlvl = DB[type]->keys()->len()
+    toc.maxlvl = db[type]->keys()->len()
     toc.curlvl = toc.maxlvl
     toc.changedtick = b:changedtick
     if !toc->has_key('width')
@@ -207,7 +207,7 @@ def SetToc() #{{{2
 
     var curline: string = getline(1)
     var nextline: string
-    var lvl_and_test: list<list<any>> = DB
+    var lvl_and_test: list<list<any>> = db
         ->get(type, {})
         ->items()
         ->sort((l: list<any>, ll: list<any>): number => l[0]->str2nr() - ll[0]->str2nr())
@@ -789,8 +789,8 @@ enddef
 
 def ToggleHelp(menu_winid: number) #{{{2
     if help_winid == 0
-        var height: number = [HELP->len(), winheight(0) * 2 / 3]->min()
-        var longest_line: number = HELP
+        var height: number = [help_text->len(), winheight(0) * 2 / 3]->min()
+        var longest_line: number = help_text
             ->copy()
             ->map((_, line: string) => line->strcharlen())
             ->max()
@@ -800,7 +800,7 @@ def ToggleHelp(menu_winid: number) #{{{2
         --col
         var zindex: number = popup_getoptions(menu_winid).zindex
         ++zindex
-        help_winid = HELP->popup_create({
+        help_winid = help_text->popup_create({
             line: line,
             col: col,
             pos: 'topright',
