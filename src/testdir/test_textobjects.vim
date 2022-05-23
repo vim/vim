@@ -41,6 +41,24 @@ func Test_inner_block_with_cpo_M_right_backslash()
   call CpoM('(red (blue\) green)', 1, ['red (blue\) green', 'blue\', 'red (blue\) green'])
 endfunc
 
+func Test_inner_block_single_char()
+  new
+  call setline(1, "(a)")
+
+  set selection=inclusive
+  let @"=''
+  call assert_nobeep('norm! 0faviby')
+  call assert_equal('a', @")
+
+  set selection=exclusive
+  let @"=''
+  call assert_nobeep('norm! 0faviby')
+  call assert_equal('a', @")
+
+  set selection&
+  bwipe!
+endfunc
+
 func Test_quote_selection_selection_exclusive()
   new
   call setline(1, "a 'bcde' f")
