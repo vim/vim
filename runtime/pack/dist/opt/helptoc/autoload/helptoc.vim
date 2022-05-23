@@ -630,9 +630,14 @@ def Filter(winid: number, key: string): bool #{{{2
             cnoremap <buffer><nowait> <C-P> <ScriptCmd>Filter({winid}, 'k')<Bar>redraw<CR>
         END
         input_popup_interface->execute()
-        popup_setoptions(winid, {mapping: true})
-        var look_for: string = input('look for: ', '', $'custom,{Complete->string()}') | redraw | echo ''
-        popup_setoptions(winid, {mapping: false})
+        var look_for: string
+        try
+            popup_setoptions(winid, {mapping: true})
+            look_for = input('look for: ', '', $'custom,{Complete->string()}') | redraw | echo ''
+        catch /Vim:Interrupt/
+        finally
+            popup_setoptions(winid, {mapping: false})
+        endtry
         if look_for == ''
             # restore the TOC as it was originally
             Popup_settext(winid, GetTocEntries())
