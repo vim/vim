@@ -118,6 +118,9 @@ def InitHelpLvls()
     }
 enddef
 
+augroup HelpToc
+augroup END
+
 # Interface {{{1
 export def Open() #{{{2
     var type: string = GetType()
@@ -133,7 +136,7 @@ export def Open() #{{{2
         SetToc()
         # in a terminal buffer, `b:changedtick` does not change
         if type == 'terminal'
-            autocmd ModeChanged t:nt ++once unlet! b:toc
+            autocmd! HelpToc ModeChanged t:nt unlet! b:toc
         endif
     endif
 
@@ -618,31 +621,15 @@ def Filter(winid: number, key: string): bool #{{{2
         return true
 
     elseif key == '/'
-        var augroup: string = 'HelpToc'
-        var autocmd: list<string> =<< trim eval END
-            augroup {augroup}
-                autocmd!
-                autocmd CmdlineLeave @ TearDown()
-                autocmd CmdlineChanged @ FuzzyToc({winid})
-            augroup END
-
+        var input_popup_interface: list<string> =<< trim eval END
+            autocmd! HelpToc CmdlineLeave @ TearDown()
+            autocmd! HelpToc CmdlineChanged @ FuzzyToc({winid})
             cnoremap <buffer><nowait> <Down> <ScriptCmd>Filter({winid}, 'j')<Bar>redraw<CR>
             cnoremap <buffer><nowait> <Up> <ScriptCmd>Filter({winid}, 'k')<Bar>redraw<CR>
             cnoremap <buffer><nowait> <C-N> <ScriptCmd>Filter({winid}, 'j')<Bar>redraw<CR>
             cnoremap <buffer><nowait> <C-P> <ScriptCmd>Filter({winid}, 'k')<Bar>redraw<CR>
-
-            if !exists('*TearDown')
-                def TearDown()
-                    autocmd! {augroup}
-                    augroup! {augroup}
-                    cunmap <buffer> <Down>
-                    cunmap <buffer> <Up>
-                    cunmap <buffer> <C-N>
-                    cunmap <buffer> <C-P>
-                enddef
-            endif
         END
-        autocmd->execute()
+        input_popup_interface->execute()
         popup_setoptions(winid, {mapping: true})
         var look_for: string = input('look for: ', '', $'custom,{Complete->string()}') | redraw | echo ''
         popup_setoptions(winid, {mapping: false})
@@ -827,6 +814,14 @@ def ToggleHelp(menu_winid: number) #{{{2
             popup_show(help_winid)
         endif
     endif
+enddef
+
+def TearDown() #{{{2
+    autocmd! HelpToc
+    cunmap <buffer> <Down>
+    cunmap <buffer> <Up>
+    cunmap <buffer> <C-N>
+    cunmap <buffer> <C-P>
 enddef
 #}}}1
 # Util {{{1
