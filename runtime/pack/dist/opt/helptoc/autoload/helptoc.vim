@@ -800,7 +800,7 @@ def Callback(winid: number, choice: number) #{{{2
     endif
 
     if choice == -1
-        fuzzy_entries = null_list
+        TearDown()
         return
     endif
 
@@ -878,6 +878,7 @@ def TearDown() #{{{2
     cunmap <buffer> <Up>
     cunmap <buffer> <C-N>
     cunmap <buffer> <C-P>
+    fuzzy_entries = null_list
 enddef
 #}}}1
 # Util {{{1
