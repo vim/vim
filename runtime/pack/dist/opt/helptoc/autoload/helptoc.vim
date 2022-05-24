@@ -643,6 +643,10 @@ def Filter(winid: number, key: string): bool #{{{2
         return true
 
     elseif key == '/'
+        # This is probably what the user expect if they've started a first fuzzy
+        # search, press Escape, then start a new one.
+        RestoreOriginalToc(winid)
+
         # TODO: include `replace: true` key/value when this PR is merged:
         # https://github.com/vim/vim/pull/10473
         [{
@@ -656,6 +660,7 @@ def Filter(winid: number, key: string): bool #{{{2
             pattern: '@',
             cmd: 'TearDown()',
         }]->autocmd_add()
+
         # Need to evaluate `winid` right now with an `eval`'ed and `execute()`'ed heredoc because:{{{
         #
         #    - the mappings can only access the script-local namespace
@@ -668,6 +673,7 @@ def Filter(winid: number, key: string): bool #{{{2
             cnoremap <buffer><nowait> <C-P> <ScriptCmd>Filter({winid}, 'k')<CR>
         END
         input_mappings->execute()
+
         var look_for: string
         try
             popup_setoptions(winid, {mapping: true})
@@ -686,9 +692,7 @@ enddef
 def FuzzySearch(winid: number) #{{{2
     var look_for: string = getcmdline()
     if look_for == ''
-        # restore the TOC as it was originally
-        fuzzy_entries = null_list
-        Popup_settext(winid, GetTocEntries())
+        RestoreOriginalToc(winid)
         return
     endif
 
@@ -726,6 +730,11 @@ def FuzzySearch(winid: number) #{{{2
     endif
     Win_execute(winid, 'normal! 1Gzt')
     Popup_settext(winid, text)
+enddef
+
+def RestoreOriginalToc(winid: number) #{{{2
+    fuzzy_entries = null_list
+    Popup_settext(winid, GetTocEntries())
 enddef
 
 def PrintEntry(winid: number) #{{{2
