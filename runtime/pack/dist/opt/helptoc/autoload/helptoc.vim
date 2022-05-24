@@ -517,19 +517,20 @@ def SelectNearestEntryFromCursor(winid: number) #{{{2
 enddef
 
 def Filter(winid: number, key: string): bool #{{{2
-    def PrintEntry()
-        echo GetTocEntries()[line('.', winid) - 1]['text']
-    enddef
-
     # support various normal commands for moving/scrolling
     if [
         'j', 'J', 'k', 'K', "\<Down>", "\<Up>", "\<C-N>", "\<C-P>",
-        'g', 'G', 'z', "\<C-D>", "\<C-U>",
+        "\<C-D>", "\<C-U>",
+        "\<PageUp>", "\<PageDown>",
+        'g', 'G', "\<Home>", "\<End>",
+        'z'
        ]->index(key) >= 0
         var scroll_cmd: string = {
             J: 'j',
             K: 'k',
             g: '1G',
+            "\<Home>": '1G',
+            "\<End>": 'G',
             z: 'zz'
         }->get(key, key)
 
@@ -538,7 +539,7 @@ def Filter(winid: number, key: string): bool #{{{2
         var new_lnum: number = line('.', winid)
 
         if print_entry
-            PrintEntry()
+            PrintEntry(winid)
         endif
 
         # wrap around the edges
@@ -576,14 +577,14 @@ def Filter(winid: number, key: string): bool #{{{2
 
     # when we press `p`, print the selected line (useful when it's truncated)
     elseif key == 'p'
-        PrintEntry()
+        PrintEntry(winid)
         return true
 
     # same thing, but automatically
     elseif key == 'P'
         print_entry = !print_entry
         if print_entry
-            PrintEntry()
+            PrintEntry(winid)
         else
             echo ''
         endif
@@ -695,6 +696,10 @@ def FuzzySearch(winid: number) #{{{2
     endif
     Win_execute(winid, 'normal! 1Gzt')
     Popup_settext(winid, text)
+enddef
+
+def PrintEntry(winid: number) #{{{2
+    echo GetTocEntries()[line('.', winid) - 1]['text']
 enddef
 
 def CollapseOrExpand(winid: number, key: string) #{{{2
