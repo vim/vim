@@ -296,7 +296,7 @@ This is meant to match a default bash prompt.  If it doesn't match your prompt,
 you can change the regex with the `shell_prompt` key from the `g:helptoc`
 dictionary variable: >
 
-	let g:helptoc = {shell_prompt: 'regex matching your shell prompt'}
+	let g:helptoc = {'shell_prompt': 'regex matching your shell prompt'}
 
 Tip: After inserting a pattern to look for with the `/` command, if you press
 <Esc> instead of <CR>, you can then get more context for each remaining entry
