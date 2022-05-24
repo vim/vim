@@ -54,12 +54,11 @@ const help_text: list<string> =<< trim END
          5  index of deepest level currently visible
          6  index of maximum possible level
 
-
     tip
     ───
-    after inserting a pattern to look for with the / command, if you press <Esc>
-    instead of <CR>, you can then get more context for each remaining entry by
-    pressing J or K
+    after inserting a pattern to look for with the / command,
+    if you press <Esc> instead of <CR>, you can then get
+    more context for each remaining entry by pressing J or K
 END
 
 const match_entry: dict<dict<func: bool>> = {
@@ -636,7 +635,7 @@ def Filter(winid: number, key: string): bool #{{{2
         return true
 
     elseif key == '/'
-        # TODO: Include `replace: true` key when this PR is merged:
+        # TODO: include `replace: true` key/value when this PR is merged:
         # https://github.com/vim/vim/pull/10473
         [{
             group: augroup,
