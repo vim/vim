@@ -65,9 +65,9 @@ const match_entry: dict<dict<func: bool>> = {
 
     markdown: {
         1: (line: string, nextline: string): bool =>
-            line =~ '^#[^#]' || nextline =~ '^=\+$' && line =~ '\w',
+           (line =~ '^#[^#]' || nextline =~ '^=\+$') && line =~ '\w',
         2: (line: string, nextline: string): bool =>
-            line =~ '^##[^#]' || nextline =~ '^-\+$' && line =~ '\w',
+           (line =~ '^##[^#]' || nextline =~ '^-\+$') && line =~ '\w',
         3: (line: string, _): bool => line =~ '^###[^#]',
         4: (line: string, _): bool => line =~ '^####[^#]',
         5: (line: string, _): bool => line =~ '^#####[^#]',
