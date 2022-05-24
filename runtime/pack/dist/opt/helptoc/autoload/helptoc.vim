@@ -187,8 +187,6 @@ enddef
 def SetToc() #{{{2
     var toc: dict<any> = {entries: []}
     var type: string = GetType()
-    toc.maxlvl = match_entry[type]->keys()->len()
-    toc.curlvl = toc.maxlvl
     toc.changedtick = b:changedtick
     if !toc->has_key('width')
         toc.width = 0
@@ -231,6 +229,9 @@ def SetToc() #{{{2
         endfor
         curline = nextline
     endfor
+
+    b:toc.maxlvl = GetMaxLvl()
+    b:toc.curlvl = b:toc.maxlvl
 enddef
 
 def SetTocHelp() #{{{2
@@ -361,10 +362,7 @@ def SetTocHelp() #{{{2
         b:toc.entries->remove(0, i - 1)
     endif
 
-    b:toc.maxlvl = b:toc.entries
-        ->copy()
-        ->map((_, entry: dict<any>) => entry.lvl)
-        ->max()
+    b:toc.maxlvl = GetMaxLvl()
     b:toc.curlvl = b:toc.maxlvl
 
     # set level of tag entries to the deepest level
@@ -840,6 +838,13 @@ enddef
 # Util {{{1
 def GetType(): string #{{{2
     return &buftype == 'terminal' ?  'terminal' : &filetype
+enddef
+
+def GetMaxLvl(): number #{{{2
+    return b:toc.entries
+        ->copy()
+        ->map((_, entry: dict<any>) => entry.lvl)
+        ->max()
 enddef
 
 def GetTocEntries(): list<dict<any>> #{{{2
