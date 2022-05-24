@@ -678,6 +678,7 @@ def FuzzySearch(winid: number) #{{{2
     var look_for: string = getcmdline()
     if look_for == ''
         # restore the TOC as it was originally
+        fuzzy_entries = null_list
         Popup_settext(winid, GetTocEntries())
         return
     endif
