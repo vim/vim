@@ -170,7 +170,7 @@ export def Open() #{{{2
             filter: Filter,
             callback: Callback,
         })
-    win_execute(winid, [$'ownsyntax {&filetype}', '&l:conceallevel = 3'])
+    Win_execute(winid, [$'ownsyntax {&filetype}', '&l:conceallevel = 3'])
     # In a help file, we might reduce some noisy tags to a trailing asterisk.
     # Hide those.
     if type == 'help'
@@ -479,6 +479,7 @@ def Popup_settext(winid: number, entries: list<dict<any>>) #{{{2
     endif
     popup_settext(winid, text)
     SetTitle(winid)
+    redraw
 enddef
 
 def SetTitle(winid: number) #{{{2
@@ -497,7 +498,6 @@ def SetTitle(winid: number) #{{{2
         'press ? for help ')
 
     popup_setoptions(winid, {title: newtitle})
-    redraw
 enddef
 
 def SelectMostRelevantEntry(winid: number) #{{{2
@@ -509,7 +509,7 @@ def SelectMostRelevantEntry(winid: number) #{{{2
     if firstline == 0
         return
     endif
-    win_execute(winid, $'normal! {firstline}Gzz')
+    Win_execute(winid, $'normal! {firstline}Gzz')
 enddef
 
 def Filter(winid: number, key: string): bool #{{{2
@@ -530,7 +530,7 @@ def Filter(winid: number, key: string): bool #{{{2
         }->get(key, key)
 
         var old_lnum: number = line('.', winid)
-        win_execute(winid, $'normal! {scroll_cmd}')
+        Win_execute(winid, $'normal! {scroll_cmd}')
         var new_lnum: number = line('.', winid)
 
         if print_entry
@@ -550,7 +550,7 @@ def Filter(winid: number, key: string): bool #{{{2
                 "\<C-P>": 'G',
             }->get(key, '')
             if !scroll_cmd->empty()
-                win_execute(winid, $'normal! {scroll_cmd}')
+                Win_execute(winid, $'normal! {scroll_cmd}')
             endif
         endif
 
@@ -601,7 +601,7 @@ def Filter(winid: number, key: string): bool #{{{2
         elseif scroll_cmd == 'k' && line('.', help_winid) == 1
             scroll_cmd = 'G'
         endif
-        win_execute(help_winid, $'normal! {scroll_cmd}')
+        Win_execute(help_winid, $'normal! {scroll_cmd}')
         return true
 
     # increase/decrease the popup's width
@@ -627,12 +627,12 @@ def Filter(winid: number, key: string): bool #{{{2
             augroup HelpToc
                 autocmd!
                 autocmd CmdlineLeave @ TearDown()
-                autocmd CmdlineChanged @ FuzzyToc({winid})
+                autocmd CmdlineChanged @ FuzzySearch({winid})
             augroup END
-            cnoremap <buffer><nowait> <Down> <ScriptCmd>Filter({winid}, 'j')<Bar>redraw<CR>
-            cnoremap <buffer><nowait> <Up> <ScriptCmd>Filter({winid}, 'k')<Bar>redraw<CR>
-            cnoremap <buffer><nowait> <C-N> <ScriptCmd>Filter({winid}, 'j')<Bar>redraw<CR>
-            cnoremap <buffer><nowait> <C-P> <ScriptCmd>Filter({winid}, 'k')<Bar>redraw<CR>
+            cnoremap <buffer><nowait> <Down> <ScriptCmd>Filter({winid}, 'j')<CR>
+            cnoremap <buffer><nowait> <Up> <ScriptCmd>Filter({winid}, 'k')<CR>
+            cnoremap <buffer><nowait> <C-N> <ScriptCmd>Filter({winid}, 'j')<CR>
+            cnoremap <buffer><nowait> <C-P> <ScriptCmd>Filter({winid}, 'k')<CR>
         END
         input_popup_interface->execute()
         var look_for: string
@@ -644,8 +644,6 @@ def Filter(winid: number, key: string): bool #{{{2
             popup_setoptions(winid, {mapping: false})
         endtry
         if look_for == ''
-            # restore the TOC as it was originally
-            Popup_settext(winid, GetTocEntries())
             return true
         else
             return popup_filter_menu(winid, "\<CR>")
@@ -655,10 +653,11 @@ def Filter(winid: number, key: string): bool #{{{2
     return popup_filter_menu(winid, key)
 enddef
 
-def FuzzyToc(winid: number) #{{{2
+def FuzzySearch(winid: number) #{{{2
     var look_for: string = getcmdline()
     if look_for == ''
-        Popup_settext(winid, b:toc.entries)
+        # restore the TOC as it was originally
+        Popup_settext(winid, GetTocEntries())
         return
     endif
 
@@ -681,7 +680,7 @@ def FuzzyToc(winid: number) #{{{2
             prop_type_add('help-fuzzy-toc', {
                 bufnr: buf,
                 combine: false,
-                highlight: 'WarningMsg',
+                highlight: 'IncSearch',
             })
         endif
         text = matches
@@ -694,8 +693,8 @@ def FuzzyToc(winid: number) #{{{2
                     type: 'help-fuzzy-toc',
             }))}))
     endif
+    Win_execute(winid, 'normal! 1Gzt')
     Popup_settext(winid, text)
-    win_execute(winid, 'normal! 1Gzt')
 enddef
 
 def CollapseOrExpand(winid: number, key: string) #{{{2
@@ -746,7 +745,7 @@ def CollapseOrExpand(winid: number, key: string) #{{{2
         endif
         ++toc_lnum
     endfor
-    win_execute(winid, $'normal! {toc_lnum ?? 1}Gzz')
+    Win_execute(winid, $'normal! {toc_lnum ?? 1}Gzz')
 enddef
 
 def MatchDelete() #{{{2
@@ -824,6 +823,11 @@ def ToggleHelp(menu_winid: number) #{{{2
             popup_show(help_winid)
         endif
     endif
+enddef
+
+def Win_execute(winid: number, cmd: any) #{{{2
+    win_execute(winid, cmd)
+    redraw
 enddef
 
 def TearDown() #{{{2
