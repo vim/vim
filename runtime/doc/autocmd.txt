@@ -47,6 +47,28 @@ effects.  Be careful not to destroy your text.
   It's a good idea to use the same autocommands for the File* and Buf* events
   when possible.
 
+Recommended use:
+- Always use a group, so that it's easy to delete the autocommand.
+- Keep the command itself short, call a function to do more work.
+- Make it so that the script it is defined it can be sourced several times
+  without the autocommand being repeated.
+
+Example in Vim9 script: >
+   autocmd_add({replace: true,
+		group:   'DemoGroup',
+		event:   'BufEnter',
+		pattern: '*.txt',
+		cmd:     'call DemoBufEnter()'
+		})
+
+In legacy script: >
+   call autocmd_add(#{replace: v:true,
+		    \ group: 'DemoGroup',
+   		    \ event: 'BufEnter',
+		    \ pattern: '*.txt',
+		    \ cmd: 'call DemoBufEnter()'
+		    \ })
+
 ==============================================================================
 2. Defining autocommands				*autocmd-define*
 
@@ -83,7 +105,8 @@ triggered.
 		}
 
 The |autocmd_add()| function can be used to add a list of autocmds and autocmd
-groups from a Vim script.
+groups from a Vim script.  It is preferred if you have anything that would
+require using `:execute` with `:autocmd`.
 
 Note: The ":autocmd" command can only be followed by another command when the
 '|' appears where the pattern is expected.  This works: >

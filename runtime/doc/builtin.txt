@@ -940,13 +940,19 @@ autocmd_add({acmds})					*autocmd_add()*
 				If this group doesn't exist then it is
 				created.  If not specified or empty, then the
 				default group is used.
-		    nested	set to v:true to add a nested autocmd.
-				Refer to |autocmd-nested|.
-		    once	set to v:true to add a autocmd which executes
-				only once. Refer to |autocmd-once|.
+		    nested	boolean flag, set to v:true to add a nested
+				autocmd.  Refer to |autocmd-nested|.
+		    once	boolean flag, set to v:true to add a autocmd
+				which executes only once. Refer to
+				|autocmd-once|.
 		    pattern	autocmd pattern string. Refer to
 				|autocmd-patterns|.  If "bufnr" item is
 				present, then this item is ignored.
+		    replace	boolean flag, set to v:true to remove all the
+				commands associated with the specified autocmd
+				event and group and add the {cmd}.  This is
+				useful to avoid adding the same command
+				multiple times for a autocmd event in a group.
 
 		Returns v:true on success and v:false on failure.
 		Examples: >
@@ -1037,10 +1043,10 @@ autocmd_get([{opts}])					*autocmd_get()*
 		    cmd		Command executed for this autocmd.
 		    event	Autocmd event name.
 		    group	Autocmd group name.
-		    nested	Set to v:true for a nested autocmd. See
-				|autocmd-nested|.
-		    once	Set to v:true, if the autocmd will be executed
-				only once. See |autocmd-once|.
+		    nested	Boolean flag, set to v:true for a nested
+				autocmd. See |autocmd-nested|.
+		    once	Boolean flag, set to v:true, if the autocmd
+				will be executed only once. See |autocmd-once|.
 		    pattern	Autocmd pattern.  For a buffer-local
 				autocmd, this will be of the form "<buffer=n>".
 		If there are multiple commands for an autocmd event in a
