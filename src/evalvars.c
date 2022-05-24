@@ -2023,7 +2023,7 @@ do_unlet(char_u *name, int forceit)
 {
     hashtab_T	*ht;
     hashitem_T	*hi;
-    char_u	*varname;
+    char_u	*varname = NULL;
     dict_T	*d;
     dictitem_T	*di;
 
