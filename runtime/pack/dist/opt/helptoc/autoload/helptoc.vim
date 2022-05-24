@@ -673,6 +673,7 @@ def Filter(winid: number, key: string): bool #{{{2
             popup_setoptions(winid, {mapping: true})
             look_for = input('look for: ', '', $'custom,{Complete->string()}') | redraw | echo ''
         catch /Vim:Interrupt/
+            TearDown()
         finally
             popup_setoptions(winid, {mapping: false})
         endtry
@@ -800,7 +801,7 @@ def Callback(winid: number, choice: number) #{{{2
     endif
 
     if choice == -1
-        TearDown()
+        fuzzy_entries = null_list
         return
     endif
 
@@ -878,7 +879,6 @@ def TearDown() #{{{2
     cunmap <buffer> <Up>
     cunmap <buffer> <C-N>
     cunmap <buffer> <C-P>
-    fuzzy_entries = null_list
 enddef
 #}}}1
 # Util {{{1
