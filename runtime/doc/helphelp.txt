@@ -275,8 +275,8 @@ The latter supports the following normal commands: >
 
 	q   | quit menu
 	z   | redraw menu with current entry at center
-	+   | increases width of popup menu
-	-   | decreases width of popup menu
+	+   | increase width of popup menu
+	-   | decrease width of popup menu
 	?   | show/hide a help window
 
 	<C-D>      | scroll down half a page
