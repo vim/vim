@@ -589,6 +589,7 @@ def Filter(winid: number, key: string): bool #{{{2
 
     elseif key == 'c'
         SelectNearestEntryFromCursor(winid)
+        return true
 
     # when we press `p`, print the selected line (useful when it's truncated)
     elseif key == 'p'
