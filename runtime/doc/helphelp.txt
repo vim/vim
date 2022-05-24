@@ -298,6 +298,10 @@ dictionary variable: >
 
 	let g:helptoc = {shell_prompt: 'regex matching your shell prompt'}
 
+Tip: After inserting a pattern to look for with `/`, if you press <Esc> instead
+of <CR>, you can then get more context for each remaining entry by pressing `J`
+or `K`.
+
 ==============================================================================
 2. Translated help files				*help-translated*
 
