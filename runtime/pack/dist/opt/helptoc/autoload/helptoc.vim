@@ -645,7 +645,7 @@ def Filter(winid: number, key: string): bool #{{{2
     elseif key == '/'
         # This is probably what the user expect if they've started a first fuzzy
         # search, press Escape, then start a new one.
-        RestoreOriginalToc(winid)
+        DisplayNonFuzzyToc(winid)
 
         # TODO: include `replace: true` key/value when this PR is merged:
         # https://github.com/vim/vim/pull/10473
@@ -692,7 +692,7 @@ enddef
 def FuzzySearch(winid: number) #{{{2
     var look_for: string = getcmdline()
     if look_for == ''
-        RestoreOriginalToc(winid)
+        DisplayNonFuzzyToc(winid)
         return
     endif
 
@@ -732,7 +732,7 @@ def FuzzySearch(winid: number) #{{{2
     Popup_settext(winid, text)
 enddef
 
-def RestoreOriginalToc(winid: number) #{{{2
+def DisplayNonFuzzyToc(winid: number) #{{{2
     fuzzy_entries = null_list
     Popup_settext(winid, GetTocEntries())
 enddef
