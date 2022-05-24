@@ -288,7 +288,7 @@ The latter supports the following normal commands: >
 
 The plugin can also provides a table of contents in man pages, markdown files,
 and terminal buffers.  In the latter, the entries will be the past executed
-shell commands.  To find those, Vim uses the following regex: >
+shell commands.  To find those, the following regex is used: >
 
 	^\w\+@\w\+:\f\+\$\s
 
@@ -296,9 +296,7 @@ This is meant to match a default bash prompt.  If it doesn't match your prompt,
 you can change the regex with the `shell_prompt` key from the `g:helptoc`
 dictionary variable: >
 
-	g:helptoc = {
-	  shell_prompt: 'regex matching your shell prompt'
-	}
+	let g:helptoc = {shell_prompt: 'regex matching your shell prompt'}
 
 ==============================================================================
 2. Translated help files				*help-translated*

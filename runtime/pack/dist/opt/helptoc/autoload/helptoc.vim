@@ -2,7 +2,8 @@ vim9script noclear
 
 # Config {{{1
 
-const SHELL_PROMPT: string = get(g:, 'helptoc', {})
+const SHELL_PROMPT: string = g:
+    ->get('helptoc', {})
     ->get('shell_prompt', '^\w\+@\w\+:\f\+\$\s')
 
 # Init {{{1
@@ -73,12 +74,6 @@ const match_entry: dict<dict<func: bool>> = {
         6: (line: string, _): bool => line =~ '^######[^#]',
     },
 
-    # We support a terminal buffer.{{{
-    #
-    # The TOC  should display each  shell command executed  in the buffer  as an
-    # entry.  This is useful for a buffer created with `:terminal`, but also for
-    # a regular Vim buffer capturing a tmux pane.
-    #}}}
     terminal: {
         1: (line: string, _): bool => line =~ SHELL_PROMPT,
     }
@@ -148,12 +143,11 @@ export def Open() #{{{2
     var height: number = winheight(0) - 2
     var width: number = winwidth(0)
     b:toc.width = b:toc.width ?? width / 3
-    # The popup needs enough space to display the help message in its title.
-    # Make some test in `:Man ffmpeg-all`.
+    # the popup needs enough space to display the help message in its title
     if b:toc.width < 30
         b:toc.width = 30
     endif
-    # Is `popup_menu()` ok with a list of dictionaries?{{{
+    # Is `popup_menu()` OK with a list of dictionaries?{{{
     #
     # Yes, see `:help popup_create-arguments`.
     # Although, it expects dictionaries with the keys `text` and `props`.
@@ -199,9 +193,9 @@ def SetToc() #{{{2
     endif
     # We cache the toc in `b:toc` to get better performance.{{{
     #
-    # Without caching,  when you  press `H`, `L`,  `H`, `L`, ...  quickly for  a few
-    # seconds, there is some lag if you then try to move with `j` and `k`.
-    # This can only be perceived in big man pages like ffmpeg-all.
+    # Without caching, when we  press `H`, `L`, `H`, `L`, ...  quickly for a few
+    # seconds, there is some lag if we then try to move with `j` and `k`.
+    # This can only be perceived in big man pages like with `:Man ffmpeg-all`.
     #}}}
     b:toc = toc
 
@@ -344,7 +338,7 @@ def SetTocHelp() #{{{2
         # It's used as a tag:
         #
         #     *01.1*  Two manuals
-        #     ^----^
+        #     ^    ^
         #}}}
         if prevline =~ main_ruler && curline =~ '^\*\d\+\.\d\+\*'
             AddEntryInTocHelp('*01.1*', lnum, curline)
@@ -634,18 +628,29 @@ def Filter(winid: number, key: string): bool #{{{2
         return true
 
     elseif key == '/'
-        var input_popup_interface: list<string> =<< trim eval END
-            augroup HelpToc
-                autocmd!
-                autocmd CmdlineLeave @ TearDown()
-                autocmd CmdlineChanged @ FuzzySearch({winid})
-            augroup END
+        [{
+            group: 'HelpToc',
+            event: 'CmdlineChanged',
+            pattern: '@',
+            cmd: $'FuzzySearch({winid})',
+        }, {
+            group: 'HelpToc',
+            event: 'CmdlineLeave',
+            pattern: '@',
+            cmd: 'TearDown()',
+        }]->autocmd_add()
+        # Need to evaluate `winid` right now with an `eval`'ed and `execute()`'ed heredoc because:{{{
+        #
+        #    - the mappings can only access the script-local namespace
+        #    - `winid` is in the function namespace; not in the script-local one
+        #}}}
+        var input_mappings: list<string> =<< trim eval END
             cnoremap <buffer><nowait> <Down> <ScriptCmd>Filter({winid}, 'j')<CR>
             cnoremap <buffer><nowait> <Up> <ScriptCmd>Filter({winid}, 'k')<CR>
             cnoremap <buffer><nowait> <C-N> <ScriptCmd>Filter({winid}, 'j')<CR>
             cnoremap <buffer><nowait> <C-P> <ScriptCmd>Filter({winid}, 'k')<CR>
         END
-        input_popup_interface->execute()
+        input_mappings->execute()
         var look_for: string
         try
             popup_setoptions(winid, {mapping: true})
@@ -727,7 +732,7 @@ def CollapseOrExpand(winid: number, key: string) #{{{2
                 break
             endif
             var did_change: bool = new != old
-            if b:toc.curlvl == 1 || did_change
+            if did_change || b:toc.curlvl == 1
                 break
             endif
         endwhile
@@ -737,7 +742,7 @@ def CollapseOrExpand(winid: number, key: string) #{{{2
             var old: list<dict<any>> = GetTocEntries()
             ++b:toc.curlvl
             var did_change: bool = GetTocEntries() != old
-            if b:toc.curlvl == b:toc.maxlvl || did_change
+            if did_change || b:toc.curlvl == b:toc.maxlvl
                 break
             endif
         endwhile
@@ -845,8 +850,7 @@ def Win_execute(winid: number, cmd: any) #{{{2
 enddef
 
 def TearDown() #{{{2
-    autocmd! HelpToc
-    augroup! HelpToc
+    autocmd_delete([{group: 'HelpToc'}])
     cunmap <buffer> <Down>
     cunmap <buffer> <Up>
     cunmap <buffer> <C-N>
