@@ -286,7 +286,7 @@ The latter supports the following normal commands: >
 	<Home>     | select first entry
 	<End>      | select last entry
 
-The plugin can also provides a table of contents in man pages, markdown files,
+The plugin can also provide a table of contents in man pages, markdown files,
 and terminal buffers.  In the latter, the entries will be the past executed
 shell commands.  To find those, the following regex is used: >
 
