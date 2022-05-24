@@ -88,11 +88,6 @@ const help_ruler: string = help_rulers->values()->join('\|')
 # the regex is copied from the help syntax plugin
 const help_tag: string = '\*[#-)!+-~]\+\*\%(\s\|$\)\@='
 
-var fuzzy_toc: list<dict<any>>
-var help_winid: number
-var print_entry: bool
-var selected_entry_match: number
-
 # Adapted from `$VIMRUNTIME/syntax/help.vim`.{{{
 #
 # The original regex is:
@@ -118,6 +113,12 @@ def InitHelpLvls()
         tag: 0,
     }
 enddef
+
+const augroup: string = 'HelpToc'
+var fuzzy_toc: list<dict<any>>
+var help_winid: number
+var print_entry: bool
+var selected_entry_match: number
 
 # Interface {{{1
 export def Open() #{{{2
@@ -631,12 +632,12 @@ def Filter(winid: number, key: string): bool #{{{2
         # TODO: Include `replace: true` key when this PR is merged:
         # https://github.com/vim/vim/pull/10473
         [{
-            group: 'HelpToc',
+            group: augroup,
             event: 'CmdlineChanged',
             pattern: '@',
             cmd: $'FuzzySearch({winid})',
         }, {
-            group: 'HelpToc',
+            group: augroup,
             event: 'CmdlineLeave',
             pattern: '@',
             cmd: 'TearDown()',
@@ -852,7 +853,7 @@ def Win_execute(winid: number, cmd: any) #{{{2
 enddef
 
 def TearDown() #{{{2
-    autocmd_delete([{group: 'HelpToc'}])
+    autocmd_delete([{group: augroup}])
     cunmap <buffer> <Down>
     cunmap <buffer> <Up>
     cunmap <buffer> <C-N>
