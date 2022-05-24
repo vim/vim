@@ -176,7 +176,7 @@ export def Open() #{{{2
     if type == 'help'
         matchadd('Conceal', '\*$', 0, -1, {window: winid})
     endif
-    SelectMostRelevantEntry(winid)
+    SelectNearestEntryFromCursor(winid)
 
     # can't set  the title before  jumping to  the relevant line,  otherwise the
     # indicator in the title might be wrong
@@ -500,7 +500,7 @@ def SetTitle(winid: number) #{{{2
     popup_setoptions(winid, {title: newtitle})
 enddef
 
-def SelectMostRelevantEntry(winid: number) #{{{2
+def SelectNearestEntryFromCursor(winid: number) #{{{2
     var lnum: number = line('.')
     var firstline: number = b:toc.entries
         ->copy()
@@ -568,7 +568,7 @@ def Filter(winid: number, key: string): bool #{{{2
         return true
 
     elseif key == 'c'
-        SelectMostRelevantEntry(winid)
+        SelectNearestEntryFromCursor(winid)
 
     # when we press `p`, print the selected line (useful when it's truncated)
     elseif key == 'p'
@@ -643,11 +643,7 @@ def Filter(winid: number, key: string): bool #{{{2
         finally
             popup_setoptions(winid, {mapping: false})
         endtry
-        if look_for == ''
-            return true
-        else
-            return popup_filter_menu(winid, "\<CR>")
-        endif
+        return look_for == '' ? true : popup_filter_menu(winid, "\<CR>")
     endif
 
     return popup_filter_menu(winid, key)
@@ -826,6 +822,8 @@ def ToggleHelp(menu_winid: number) #{{{2
 enddef
 
 def Win_execute(winid: number, cmd: any) #{{{2
+# wrapper around `win_execute()`  to enforce a redraw, which  might be necessary
+# whenever we change the cursor position
     win_execute(winid, cmd)
     redraw
 enddef
