@@ -4004,6 +4004,8 @@ ml_flush_line(buf_T *buf)
 	    {
 #if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
 		int old_prop_len = 0;
+		if (buf->b_has_textprop)
+		    old_prop_len = old_len - (int)STRLEN(old_line) - 1;
 #endif
 		// if the length changes and there are following lines
 		count = buf->b_ml.ml_locked_high - buf->b_ml.ml_locked_low + 1;
@@ -4023,10 +4025,6 @@ ml_flush_line(buf_T *buf)
 		// adjust free space
 		dp->db_free -= extra;
 		dp->db_txt_start -= extra;
-#if defined(FEAT_BYTEOFF) && defined(FEAT_PROP_POPUP)
-		if (buf->b_has_textprop)
-		    old_prop_len = old_len - (int)STRLEN(new_line) - 1;
-#endif
 
 		// copy new line into the data block
 		mch_memmove(old_line - extra, new_line, (size_t)new_len);

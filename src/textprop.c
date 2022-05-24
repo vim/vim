@@ -344,6 +344,10 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
 	return;
 
+    // This must be done _before_ we start adding properties because property
+    // changes trigger buffer (memline) reorganisation, which needs this flag
+    // to be correctly set.
+    buf->b_has_textprop = TRUE;  // this is never reset
     FOR_ALL_LIST_ITEMS(argvars[1].vval.v_list, li)
     {
 	if (li->li_tv.v_type != VAR_LIST || li->li_tv.vval.v_list == NULL)
@@ -368,7 +372,6 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	    return;
     }
 
-    buf->b_has_textprop = TRUE;  // this is never reset
     redraw_buf_later(buf, VALID);
 }
 
@@ -441,9 +444,13 @@ prop_add_common(
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
 	return;
 
+    // This must be done _before_ we add the property because property changes
+    // trigger buffer (memline) reorganisation, which needs this flag to be
+    // correctly set.
+    buf->b_has_textprop = TRUE;  // this is never reset
+
     prop_add_one(buf, type_name, id, start_lnum, end_lnum, start_col, end_col);
 
-    buf->b_has_textprop = TRUE;  // this is never reset
     redraw_buf_later(buf, VALID);
 }
 
