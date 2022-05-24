@@ -282,16 +282,16 @@ The latter supports the following normal commands: >
 	?     | show/hide a help window
 
 The plugin can also provides a table of contents in man pages, markdown files,
-and terminal buffers.  In the latter, the entries should be the past executed
+and terminal buffers.  In the latter, the entries will be the past executed
 shell commands.  To find those, Vim uses the following regex: >
 
 	^\w\+@\w\+:\f\+\$\s
 
-This should match a default bash prompt.  If it doesn't match your prompt, you
-can change the regex with the `shell_prompt` key from the `g:helptoc` variable: >
+This is meant to match a default bash prompt.  If it doesn't match your prompt,
+you can change the regex with the `shell_prompt` key from the `g:helptoc` variable: >
 
 	g:helptoc = {
-	  shell_prompt: 'regex matching my shell prompt'
+	  shell_prompt: 'regex matching your shell prompt'
 	}
 
 ==============================================================================

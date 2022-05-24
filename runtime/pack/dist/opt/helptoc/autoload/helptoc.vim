@@ -48,7 +48,7 @@ const help_text: list<string> =<< trim END
          6  index of maximum possible level
 END
 
-const db: dict<dict<func: bool>> = {
+const match_entry: dict<dict<func: bool>> = {
     help: {},
 
     man: {
@@ -121,7 +121,7 @@ enddef
 # Interface {{{1
 export def Open() #{{{2
     var type: string = GetType()
-    if db->keys()->index(type) == -1
+    if match_entry->keys()->index(type) == -1
         return
     endif
 
@@ -187,7 +187,7 @@ enddef
 def SetToc() #{{{2
     var toc: dict<any> = {entries: []}
     var type: string = GetType()
-    toc.maxlvl = db[type]->keys()->len()
+    toc.maxlvl = match_entry[type]->keys()->len()
     toc.curlvl = toc.maxlvl
     toc.changedtick = b:changedtick
     if !toc->has_key('width')
@@ -212,15 +212,15 @@ def SetToc() #{{{2
 
     var curline: string = getline(1)
     var nextline: string
-    var lvl_and_test: list<list<any>> = db
+    var lvl_and_test: list<list<any>> = match_entry
         ->get(type, {})
         ->items()
         ->sort((l: list<any>, ll: list<any>): number => l[0]->str2nr() - ll[0]->str2nr())
 
     for lnum: number in range(1, line('$'))
         nextline = getline(lnum + 1)
-        for [lvl: string, IsInToc: func: bool] in lvl_and_test
-            if IsInToc(curline, nextline)
+        for [lvl: string, IsEntry: func: bool] in lvl_and_test
+            if IsEntry(curline, nextline)
                 b:toc.entries += [{
                     lnum: lnum,
                     lvl: lvl->str2nr(),
