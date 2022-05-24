@@ -647,18 +647,18 @@ def Filter(winid: number, key: string): bool #{{{2
         # search, press Escape, then start a new one.
         DisplayNonFuzzyToc(winid)
 
-        # TODO: include `replace: true` key/value when this PR is merged:
-        # https://github.com/vim/vim/pull/10473
         [{
             group: augroup,
             event: 'CmdlineChanged',
             pattern: '@',
             cmd: $'FuzzySearch({winid})',
+            replace: true,
         }, {
             group: augroup,
             event: 'CmdlineLeave',
             pattern: '@',
             cmd: 'TearDown()',
+            replace: true,
         }]->autocmd_add()
 
         # Need to evaluate `winid` right now with an `eval`'ed and `execute()`'ed heredoc because:{{{
