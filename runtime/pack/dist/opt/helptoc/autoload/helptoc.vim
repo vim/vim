@@ -628,6 +628,8 @@ def Filter(winid: number, key: string): bool #{{{2
         return true
 
     elseif key == '/'
+        # TODO: Include `replace: true` key when this PR is merged:
+        # https://github.com/vim/vim/pull/10473
         [{
             group: 'HelpToc',
             event: 'CmdlineChanged',
