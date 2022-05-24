@@ -121,7 +121,7 @@ enddef
 # Interface {{{1
 export def Open() #{{{2
     var type: string = GetType()
-    if match_entry->keys()->index(type) == -1
+    if !match_entry->has_key(type)
         return
     endif
 
