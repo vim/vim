@@ -230,8 +230,7 @@ def SetToc() #{{{2
         curline = nextline
     endfor
 
-    b:toc.maxlvl = GetMaxLvl()
-    b:toc.curlvl = b:toc.maxlvl
+    InitMaxAndCurLvl()
 enddef
 
 def SetTocHelp() #{{{2
@@ -362,8 +361,7 @@ def SetTocHelp() #{{{2
         b:toc.entries->remove(0, i - 1)
     endif
 
-    b:toc.maxlvl = GetMaxLvl()
-    b:toc.curlvl = b:toc.maxlvl
+    InitMaxAndCurLvl()
 
     # set level of tag entries to the deepest level
     var has_tag: bool = b:toc.entries
@@ -460,6 +458,11 @@ def AddEntryInTocHelp(type: string, lnum: number, line: string) #{{{2
         text: text,
         type: type,
     }]
+enddef
+
+def InitMaxAndCurLvl() #{{{2
+    b:toc.maxlvl = GetMaxLvl()
+    b:toc.curlvl = b:toc.maxlvl
 enddef
 
 def Popup_settext(winid: number, entries: list<dict<any>>) #{{{2
