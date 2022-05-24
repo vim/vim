@@ -840,8 +840,12 @@ def ToggleHelp(menu_winid: number) #{{{2
         setwinvar(help_winid, '&cursorline', true)
         setwinvar(help_winid, '&linebreak', true)
         matchadd('Special', '^<\S\+\|^\S\{,2}  \@=', 0, -1, {window: help_winid})
-        matchadd('Title', '^[a-z]\{2,}\%(\s*\w*\)*$', 0, -1, {window: help_winid})
         matchadd('Number', '\d\+', 0, -1, {window: help_winid})
+        for lnum: number in help_text->len()->range()
+            if help_text[lnum] =~ '^─\+$'
+                matchaddpos('Title', [lnum], 0, -1, {window: help_winid})
+            endif
+        endfor
 
     else
         if IsVisible(help_winid)
