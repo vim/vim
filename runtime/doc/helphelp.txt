@@ -294,7 +294,7 @@ shell commands.  To find those, Vim uses the following regex: >
 
 This is meant to match a default bash prompt.  If it doesn't match your prompt,
 you can change the regex with the `shell_prompt` key from the `g:helptoc`
-variable: >
+dictionary variable: >
 
 	g:helptoc = {
 	  shell_prompt: 'regex matching your shell prompt'

@@ -10,7 +10,7 @@ const SHELL_PROMPT: string = get(g:, 'helptoc', {})
 const help_text: list<string> =<< trim END
     normal commands in help window
     ──────────────────────────────
-    ?      show/hide this help
+    ?      hide this help window
     <C-J>  scroll down one line
     <C-K>  scroll up one line
 
@@ -32,10 +32,16 @@ const help_text: list<string> =<< trim END
 
     q      quit menu
     z      redraw menu with selected entry at center
-    <C-D>  scroll down half a page
-    <C-U>  scroll up half a page
-    +      increases width of popup menu
-    -      decreases width of popup menu
+    +      increase width of popup menu
+    -      decrease width of popup menu
+    ?      show a help window
+
+    <C-D>       scroll down half a page
+    <C-U>       scroll up half a page
+    <PageUp>    scroll down a whole page
+    <PageDown>  scroll up a whole page
+    <Home>      select first entry
+    <End>       select last entry
 
     title meaning
     ─────────────
