@@ -2094,12 +2094,12 @@ func Test_prop_blockwise_change()
   bwipe!
 endfunc
 
-func Test_props_do_not_affect_byte_offsets()
+func Do_test_props_do_not_affect_byte_offsets(ff, increment)
   new
   let lcount = 410
 
   " File format affects byte-offset calculations, so make sure it is known.
-  setlocal fileformat=unix
+  exec 'setlocal fileformat=' . a:ff
 
   " Fill the buffer with varying length lines. We need a suitably large number
   " to force Vim code through paths wehere previous error have occurred. This
@@ -2108,7 +2108,7 @@ func Test_props_do_not_affect_byte_offsets()
   call setline(1, text)
   let offsets = [1]
   for idx in range(lcount)
-      call add(offsets, offsets[idx] + len(text) + 1)
+      call add(offsets, offsets[idx] + len(text) + a:increment)
       if (idx % 6) == 0
           let text = text . 'a'
       endif
@@ -2129,39 +2129,12 @@ func Test_props_do_not_affect_byte_offsets()
   bwipe!
 endfunc
 
+func Test_props_do_not_affect_byte_offsets()
+  call Do_test_props_do_not_affect_byte_offsets('unix', 1)
+endfunc
+
 func Test_props_do_not_affect_byte_offsets_dos()
-  new
-  let lcount = 410
-
-  " File format affects byte-offset calculations, so make sure it is known.
-  setlocal fileformat=dos
-
-  " Fill the buffer with varying length lines. We need a suitably large number
-  " to force Vim code through paths wehere previous error have occurred. This
-  " is more 'art' than 'science'.
-  let text = 'a'
-  call setline(1, text)
-  let offsets = [1]
-  for idx in range(lcount)
-      call add(offsets, offsets[idx] + len(text) + 2)
-      if (idx % 6) == 0
-          let text = text . 'a'
-      endif
-      call append(line('$'), text)
-  endfor
-
-  " Set a property that spans a few lines to cause Vim's internal buffer code
-  " to perform a reasonable amount of rearrangement.
-  call prop_type_add('one', {'highlight': 'ErrorMsg'})
-  call prop_add(1, 1, {'type': 'one', 'end_lnum': 6, 'end_col': 2})
-
-  for idx in range(lcount)
-      let boff = line2byte(idx + 1)
-      call assert_equal(offsets[idx], boff, 'Bad byte offset at line ' . (idx + 1))
-  endfor
-
-  call prop_type_delete('one')
-  bwipe!
+  call Do_test_props_do_not_affect_byte_offsets('dos', 2)
 endfunc
 
 func Test_props_do_not_affect_byte_offsets_editline()
