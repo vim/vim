@@ -115,7 +115,7 @@ def InitHelpLvls()
 enddef
 
 const augroup: string = 'HelpToc'
-var fuzzy_toc: list<dict<any>>
+var fuzzy_entries: list<dict<any>>
 var help_winid: number
 var print_entry: bool
 var selected_entry_match: number
@@ -683,7 +683,7 @@ def FuzzySearch(winid: number) #{{{2
         ->copy()
         ->matchfuzzypos(look_for, {key: 'text'})
 
-    fuzzy_toc = matches->get(0, [])->copy()
+    fuzzy_entries = matches->get(0, [])->copy()
     var pos: list<list<number>> = matches->get(1, [])
 
     var text: list<dict<any>>
@@ -785,14 +785,15 @@ def Callback(winid: number, choice: number) #{{{2
     endif
 
     if choice == -1
+        fuzzy_entries = null_list
         return
     endif
 
-    var lnum: number = (fuzzy_toc ?? GetTocEntries())
+    var lnum: number = GetTocEntries()
         ->get(choice - 1, {})
         ->get('lnum')
 
-    fuzzy_toc = null_list
+    fuzzy_entries = null_list
 
     if lnum == 0
         return
@@ -866,7 +867,7 @@ def GetType(): string #{{{2
 enddef
 
 def GetTocEntries(): list<dict<any>> #{{{2
-    return b:toc.entries
+    return fuzzy_entries ?? b:toc.entries
         ->copy()
         ->filter((_, entry: dict<any>): bool => entry.lvl <= b:toc.curlvl)
 enddef
