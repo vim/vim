@@ -494,9 +494,18 @@ def Popup_settext(winid: number, entries: list<dict<any>>) #{{{2
 enddef
 
 def SetTitle(winid: number) #{{{2
-    var lastlnum: number = line('$', winid)
+    var is_empty: bool = line('$', winid) == 1
+        && winid->winbufnr()->getbufline(1)->get(0, '') == ''
+    var curlnum: number
+    var lastlnum: number
+    if is_empty
+        [curlnum, lastlnum] = [0, 0]
+    else
+        curlnum = line('.', winid)
+        lastlnum = line('$', winid)
+    endif
     var newtitle: string = printf(' %*d/%d (%d/%d)',
-        len(lastlnum), line('.', winid),
+        len(lastlnum), curlnum,
         lastlnum,
         b:toc.curlvl,
         b:toc.maxlvl,
