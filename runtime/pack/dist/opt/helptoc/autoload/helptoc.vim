@@ -461,7 +461,10 @@ def AddEntryInTocHelp(type: string, lnum: number, line: string) #{{{2
 enddef
 
 def InitMaxAndCurLvl() #{{{2
-    b:toc.maxlvl = GetMaxLvl()
+    b:toc.maxlvl = b:toc.entries
+        ->copy()
+        ->map((_, entry: dict<any>) => entry.lvl)
+        ->max()
     b:toc.curlvl = b:toc.maxlvl
 enddef
 
@@ -841,13 +844,6 @@ enddef
 # Util {{{1
 def GetType(): string #{{{2
     return &buftype == 'terminal' ?  'terminal' : &filetype
-enddef
-
-def GetMaxLvl(): number #{{{2
-    return b:toc.entries
-        ->copy()
-        ->map((_, entry: dict<any>) => entry.lvl)
-        ->max()
 enddef
 
 def GetTocEntries(): list<dict<any>> #{{{2
