@@ -118,9 +118,6 @@ def InitHelpLvls()
     }
 enddef
 
-augroup HelpToc
-augroup END
-
 # Interface {{{1
 export def Open() #{{{2
     var type: string = GetType()
@@ -129,15 +126,16 @@ export def Open() #{{{2
     endif
 
     # invalidate the cache if the buffer's contents has changed
-    if exists('b:toc') && b:toc.changedtick != b:changedtick
-        unlet! b:toc
+    if exists('b:toc')
+        if b:toc.changedtick != b:changedtick
+        # in a terminal buffer, `b:changedtick` does not change
+        || type == 'terminal' && line('$') > b:toc.linecount
+            unlet! b:toc
+        endif
     endif
+
     if !exists('b:toc')
         SetToc()
-        # in a terminal buffer, `b:changedtick` does not change
-        if type == 'terminal'
-            autocmd! HelpToc ModeChanged t:nt unlet! b:toc
-        endif
     endif
 
     var winpos: list<number> = winnr()->win_screenpos()
@@ -206,6 +204,10 @@ def SetToc() #{{{2
     if type == 'help'
         SetTocHelp()
         return
+    endif
+
+    if type == 'terminal'
+        b:toc.linecount = line('$')
     endif
 
     var curline: string = getline(1)
@@ -622,8 +624,11 @@ def Filter(winid: number, key: string): bool #{{{2
 
     elseif key == '/'
         var input_popup_interface: list<string> =<< trim eval END
-            autocmd! HelpToc CmdlineLeave @ TearDown()
-            autocmd! HelpToc CmdlineChanged @ FuzzyToc({winid})
+            augroup HelpToc
+                autocmd!
+                autocmd CmdlineLeave @ TearDown()
+                autocmd CmdlineChanged @ FuzzyToc({winid})
+            augroup END
             cnoremap <buffer><nowait> <Down> <ScriptCmd>Filter({winid}, 'j')<Bar>redraw<CR>
             cnoremap <buffer><nowait> <Up> <ScriptCmd>Filter({winid}, 'k')<Bar>redraw<CR>
             cnoremap <buffer><nowait> <C-N> <ScriptCmd>Filter({winid}, 'j')<Bar>redraw<CR>
@@ -823,6 +828,7 @@ enddef
 
 def TearDown() #{{{2
     autocmd! HelpToc
+    augroup! HelpToc
     cunmap <buffer> <Down>
     cunmap <buffer> <Up>
     cunmap <buffer> <C-N>
