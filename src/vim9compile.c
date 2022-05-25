@@ -1151,7 +1151,7 @@ generate_loadvar(
 	    generate_LOAD(cctx, ISN_LOADREG, name[1], NULL, &t_string);
 	    break;
 	case dest_vimvar:
-	    generate_LOADV(cctx, name + 2, TRUE);
+	    generate_LOADV(cctx, name + 2);
 	    break;
 	case dest_local:
 	    if (lvar->lv_from_outer > 0)

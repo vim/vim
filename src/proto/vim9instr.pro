@@ -32,7 +32,7 @@ int generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name);
 int generate_STORENR(cctx_T *cctx, int idx, varnumber_T value);
 int generate_LOAD(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name, type_T *type);
 int generate_LOADOUTER(cctx_T *cctx, int idx, int nesting, type_T *type);
-int generate_LOADV(cctx_T *cctx, char_u *name, int error);
+int generate_LOADV(cctx_T *cctx, char_u *name);
 int generate_UNLET(cctx_T *cctx, isntype_T isn_type, char_u *name, int forceit);
 int generate_LOCKCONST(cctx_T *cctx);
 int generate_OLDSCRIPT(cctx_T *cctx, isntype_T isn_type, char_u *name, int sid, type_T *type);

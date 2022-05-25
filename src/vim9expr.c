@@ -442,7 +442,7 @@ compile_load(
 
 	    switch (**arg)
 	    {
-		case 'v': res = generate_LOADV(cctx, name, error);
+		case 'v': res = generate_LOADV(cctx, name);
 			  break;
 		case 's': if (current_script_is_vim9())
 			  {
