@@ -689,7 +689,8 @@ undotree()			List	undo file tree
 uniq({list} [, {func} [, {dict}]])
 				List	remove adjacent duplicates from a list
 values({dict})			List	values in {dict}
-virtcol({expr})			Number	screen column of cursor or mark
+virtcol({expr} [, {list}])	Number or List
+					screen column of cursor or mark
 visualmode([expr])		String	last visual mode used
 wildmenumode()			Number	whether 'wildmenu' mode is active
 win_execute({id}, {command} [, {silent}])
@@ -9727,7 +9728,7 @@ values({dict})						*values()*
 		Can also be used as a |method|: >
 			mydict->values()
 
-virtcol({expr})						*virtcol()*
+virtcol({expr} [, {list}])				*virtcol()*
 		The result is a Number, which is the screen column of the file
 		position given with {expr}.  That is, the last screen position
 		occupied by the character at that position, when the screen
@@ -9754,11 +9755,22 @@ virtcol({expr})						*virtcol()*
 			    cursor is the end).  When not in Visual mode
 			    returns the cursor position.  Differs from |'<| in
 			    that it's updated right away.
+
+		If {list} is present and non-zero then virtcol() returns a list
+		with the first and last screen position occupied by the
+		character.
+
 		Note that only marks in the current file can be used.
 		Examples: >
-  virtcol(".")	   with text "foo^Lbar", with cursor on the "^L", returns 5
-  virtcol("$")	   with text "foo^Lbar", returns 9
-  virtcol("'t")    with text "	  there", with 't at 'h', returns 6
+			" With text "foo^Lbar" and cursor on the "^L":
+
+			virtcol(".")	" returns 5
+			virtcol(".", 1)	" returns [4, 5]
+			virtcol("$")	" returns 9
+
+			" With text "	  there", with 't at 'h':
+
+			virtcol("'t")	" returns 6
 <		The first column is 1.  0 is returned for an error.
 		A more advanced example that echoes the maximum length of
 		all lines: >

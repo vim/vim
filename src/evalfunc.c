@@ -1458,6 +1458,20 @@ ret_getreg(int argcount,
 }
 
     static type_T *
+ret_virtcol(int argcount,
+	type2_T *argtypes UNUSED,
+	type_T	**decl_type)
+{
+    // Assume that if the second argument is passed it's non-zero
+    if (argcount == 2)
+    {
+	*decl_type = &t_list_any;
+	return &t_list_number;
+    }
+    return &t_number;
+}
+
+    static type_T *
 ret_maparg(int argcount,
 	type2_T *argtypes UNUSED,
 	type_T	**decl_type UNUSED)
@@ -2665,8 +2679,8 @@ static funcentry_T global_functions[] =
 			ret_first_arg,	    f_uniq},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_any,	    f_values},
-    {"virtcol",		1, 1, FEARG_1,	    arg1_string_or_list_any,
-			ret_number,	    f_virtcol},
+    {"virtcol",		1, 2, FEARG_1,	    arg2_string_bool,
+			ret_virtcol,	    f_virtcol},
     {"visualmode",	0, 1, 0,	    arg1_bool,
 			ret_string,	    f_visualmode},
     {"wildmenumode",	0, 0, 0,	    NULL,
@@ -10380,23 +10394,26 @@ f_type(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "virtcol(string)" function
+ * "virtcol(string, bool)" function
  */
     static void
 f_virtcol(typval_T *argvars, typval_T *rettv)
 {
-    colnr_T	vcol = 0;
+    colnr_T	vcol_start = 0;
+    colnr_T	vcol_end = 0;
     pos_T	*fp;
     int		fnum = curbuf->b_fnum;
     int		len;
 
     if (in_vim9script()
-	    && check_for_string_or_list_arg(argvars, 0) == FAIL)
+	    && (check_for_string_or_list_arg(argvars, 0) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_bool_arg(argvars, 1) == FAIL)))
 	return;
 
     fp = var2fpos(&argvars[0], FALSE, &fnum, FALSE);
     if (fp != NULL && fp->lnum <= curbuf->b_ml.ml_line_count
-						    && fnum == curbuf->b_fnum)
+	    && fnum == curbuf->b_fnum)
     {
 	// Limit the column to a valid value, getvvcol() doesn't check.
 	if (fp->col < 0)
@@ -10407,11 +10424,23 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
 	    if (fp->col > len)
 		fp->col = len;
 	}
-	getvvcol(curwin, fp, NULL, NULL, &vcol);
-	++vcol;
+	getvvcol(curwin, fp, &vcol_start, NULL, &vcol_end);
+	++vcol_start;
+	++vcol_end;
     }
 
-    rettv->vval.v_number = vcol;
+    if (argvars[1].v_type != VAR_UNKNOWN && tv_get_bool(&argvars[1]))
+    {
+	if (rettv_list_alloc(rettv) == OK)
+	{
+	    list_append_number(rettv->vval.v_list, vcol_start);
+	    list_append_number(rettv->vval.v_list, vcol_end);
+	}
+	else
+	    rettv->vval.v_number = 0;
+    }
+    else
+	rettv->vval.v_number = vcol_end;
 }
 
 /*
