@@ -994,6 +994,7 @@ static argcheck_T arg2_string_dict[] = {arg_string, arg_dict_any};
 static argcheck_T arg2_string_list_number[] = {arg_string, arg_list_number};
 static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
+static argcheck_T arg2_string_or_list_bool[] = {arg_string_or_list_any, arg_bool};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
 static argcheck_T arg3_any_list_dict[] = {NULL, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
@@ -2679,7 +2680,7 @@ static funcentry_T global_functions[] =
 			ret_first_arg,	    f_uniq},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_any,	    f_values},
-    {"virtcol",		1, 2, FEARG_1,	    arg2_string_bool,
+    {"virtcol",		1, 2, FEARG_1,	    arg2_string_or_list_bool,
 			ret_virtcol,	    f_virtcol},
     {"visualmode",	0, 1, 0,	    arg1_bool,
 			ret_string,	    f_visualmode},
