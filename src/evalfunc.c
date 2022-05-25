@@ -2682,6 +2682,8 @@ static funcentry_T global_functions[] =
 			ret_list_any,	    f_values},
     {"virtcol",		1, 2, FEARG_1,	    arg2_string_or_list_bool,
 			ret_virtcol,	    f_virtcol},
+    {"virtcol2col",	3, 3, FEARG_1,	    arg3_number,
+			ret_number,	    f_virtcol2col},
     {"visualmode",	0, 1, 0,	    arg1_bool,
 			ret_string,	    f_visualmode},
     {"wildmenumode",	0, 0, 0,	    NULL,

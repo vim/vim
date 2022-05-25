@@ -1322,6 +1322,39 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_number(dict, "curscol", ccol);
     dict_add_number(dict, "endcol", ecol);
 }
+
+/*
+ * "virtcol2col({winid}, {lnum}, {col})" function
+ */
+    void
+f_virtcol2col(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    win_T	*wp;
+    linenr_T	lnum;
+    int		screencol;
+    int		error = FALSE;
+
+    rettv->vval.v_number = -1;
+
+    if (check_for_number_arg(argvars, 0) == FAIL
+	    || check_for_number_arg(argvars, 1) == FAIL
+	    || check_for_number_arg(argvars, 2) == FAIL)
+	return;
+
+    wp = find_win_by_nr_or_id(&argvars[0]);
+    if (wp == NULL)
+	return;
+
+    lnum = tv_get_number_chk(&argvars[1], &error);
+    if (error || lnum < 0 || lnum > wp->w_buffer->b_ml.ml_line_count)
+	return;
+
+    screencol = tv_get_number_chk(&argvars[2], &error);
+    if (error || screencol < 0)
+	return;
+
+    rettv->vval.v_number = vcol2col(wp, lnum, screencol);
+}
 #endif
 
 /*
