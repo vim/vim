@@ -1184,7 +1184,7 @@ EXTERN char e_invalid_argument_str[]
 	INIT(= N_("E475: Invalid argument: %s"));
 EXTERN char e_invalid_value_for_argument_str[]
 	INIT(= N_("E475: Invalid value for argument %s"));
-#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_PROP_POPUP)
+#if defined(FEAT_JOB_CHANNEL) || defined(FEAT_PROP_POPUP) || defined(FEAT_EVAL)
 EXTERN char e_invalid_value_for_argument_str_str[]
 	INIT(= N_("E475: Invalid value for argument %s: %s"));
 #endif
@@ -3281,7 +3281,7 @@ EXTERN char e_atom_engine_must_be_at_start_of_pattern[]
 	INIT(= N_("E1281: Atom '\\%%#=%c' must be at the start of the pattern"));
 #ifdef FEAT_EVAL
 EXTERN char e_bitshift_ops_must_be_number[]
-	INIT(= N_("E1282: bitshift operands must be numbers"));
+	INIT(= N_("E1282: Bitshift operands must be numbers"));
 EXTERN char e_bitshift_ops_must_be_postive[]
-	INIT(= N_("E1283: bitshift amount must be a positive number"));
+	INIT(= N_("E1283: Bitshift amount must be a positive number"));
 #endif

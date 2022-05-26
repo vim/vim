@@ -938,7 +938,8 @@ autocmd_add({acmds})					*autocmd_add()*
 				item is ignored.
 		    cmd		Ex command to execute for this autocmd event
 		    event	autocmd event name. Refer to |autocmd-events|.
-		    		TODO: currently only accepts one event.
+				This can be either a String with a single
+				event name or a List of event names.
 		    group	autocmd group name. Refer to |autocmd-groups|.
 				If this group doesn't exist then it is
 				created.  If not specified or empty, then the
@@ -950,7 +951,9 @@ autocmd_add({acmds})					*autocmd_add()*
 				|autocmd-once|.
 		    pattern	autocmd pattern string. Refer to
 				|autocmd-patterns|.  If "bufnr" item is
-				present, then this item is ignored.
+				present, then this item is ignored.  This can
+				be a String with a single pattern or a List of
+				patterns.
 		    replace	boolean flag, set to v:true to remove all the
 				commands associated with the specified autocmd
 				event and group and add the {cmd}.  This is

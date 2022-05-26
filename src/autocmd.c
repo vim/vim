@@ -2754,16 +2754,22 @@ theend:
     static void
 autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 {
-    list_T	*event_list;
+    list_T	*aucmd_list;
     listitem_T	*li;
     dict_T	*event_dict;
+    dictitem_T	*di;
     char_u	*event_name = NULL;
+    list_T	*event_list;
+    listitem_T	*eli;
     event_T	event;
     char_u	*group_name = NULL;
     int		group;
     char_u	*pat = NULL;
+    list_T	*pat_list;
+    listitem_T	*pli;
     char_u	*cmd = NULL;
     char_u	*end;
+    char_u	*p;
     int		once;
     int		nested;
     int		replace;		// replace the cmd for a group/event
@@ -2776,16 +2782,18 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
     if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
 
-    event_list = argvars[0].vval.v_list;
-    if (event_list == NULL)
+    aucmd_list = argvars[0].vval.v_list;
+    if (aucmd_list == NULL)
 	return;
 
-    FOR_ALL_LIST_ITEMS(event_list, li)
+    FOR_ALL_LIST_ITEMS(aucmd_list, li)
     {
-	VIM_CLEAR(event_name);
 	VIM_CLEAR(group_name);
-	VIM_CLEAR(pat);
 	VIM_CLEAR(cmd);
+	event_name = NULL;
+	event_list = NULL;
+	pat = NULL;
+	pat_list = NULL;
 
 	if (li->li_tv.v_type != VAR_DICT)
 	    continue;
@@ -2794,29 +2802,31 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	if (event_dict == NULL)
 	    continue;
 
-	event_name = dict_get_string(event_dict, (char_u *)"event", TRUE);
-	if (event_name == NULL)
+	di = dict_find(event_dict, (char_u *)"event", -1);
+	if (di != NULL)
 	{
-	    if (delete)
-		// if the event name is not specified, delete all the events
-		event = NUM_EVENTS;
-	    else
-		continue;
-	}
-	else
-	{
-	    if (delete && event_name[0] == '*' && event_name[1] == NUL)
-		// if the event name is '*', delete all the events
-		event = NUM_EVENTS;
+	    if (di->di_tv.v_type == VAR_STRING)
+	    {
+		event_name = di->di_tv.vval.v_string;
+		if (event_name == NULL)
+		{
+		    emsg(_(e_string_required));
+		    continue;
+		}
+	    }
+	    else if (di->di_tv.v_type == VAR_LIST)
+	    {
+		event_list = di->di_tv.vval.v_list;
+		if (event_list == NULL)
+		{
+		    emsg(_(e_list_required));
+		    continue;
+		}
+	    }
 	    else
 	    {
-		event = event_name2nr(event_name, &end);
-		if (event == NUM_EVENTS)
-		{
-		    semsg(_(e_no_such_event_str), event_name);
-		    retval = VVAL_FALSE;
-		    break;
-		}
+		emsg(_(e_string_or_list_expected));
+		continue;
 	    }
 	}
 
@@ -2859,21 +2869,40 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	    if (bnum == -1)
 		continue;
 
-	    pat = alloc(128 + 1);
-	    if (pat == NULL)
-		continue;
-	    vim_snprintf((char *)pat, 128, "<buffer=%d>", (int)bnum);
+	    vim_snprintf((char *)IObuff, IOSIZE, "<buffer=%d>", (int)bnum);
+	    pat = IObuff;
 	}
 	else
 	{
-	    pat = dict_get_string(event_dict, (char_u *)"pattern", TRUE);
-	    if (pat == NULL)
+	    di = dict_find(event_dict, (char_u *)"pattern", -1);
+	    if (di != NULL)
 	    {
-		if (delete)
-		    pat = vim_strsave((char_u *)"");
+		if (di->di_tv.v_type == VAR_STRING)
+		{
+		    pat = di->di_tv.vval.v_string;
+		    if (pat == NULL)
+		    {
+			emsg(_(e_string_required));
+			continue;
+		    }
+		}
+		else if (di->di_tv.v_type == VAR_LIST)
+		{
+		    pat_list = di->di_tv.vval.v_list;
+		    if (pat_list == NULL)
+		    {
+			emsg(_(e_list_required));
+			continue;
+		    }
+		}
 		else
+		{
+		    emsg(_(e_string_or_list_expected));
 		    continue;
+		}
 	    }
+	    else if (delete)
+		pat = (char_u *)"";
 	}
 
 	once = dict_get_bool(event_dict, (char_u *)"once", FALSE);
@@ -2891,9 +2920,10 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 		continue;
 	}
 
-	if (event == NUM_EVENTS)
+	if (delete && (event_name == NULL
+		    || (event_name[0] == '*' && event_name[1] == NUL)))
 	{
-	    // event is '*', apply for all the events
+	    // if the event name is not specified or '*', delete all the events
 	    for (event = (event_T)0; (int)event < NUM_EVENTS;
 		    event = (event_T)((int)event + 1))
 	    {
@@ -2907,11 +2937,76 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	}
 	else
 	{
-	    if (do_autocmd_event(event, pat, once, nested, cmd,
-					delete | replace, group, 0) == FAIL)
+	    eli = NULL;
+	    end = NULL;
+	    while (TRUE)
 	    {
-		retval = VVAL_FALSE;
-		break;
+		if (event_list != NULL)
+		{
+		    if (eli == NULL)
+			eli = event_list->lv_first;
+		    else
+			eli = eli->li_next;
+		    if (eli == NULL)
+			break;
+		    if (eli->li_tv.v_type != VAR_STRING
+			    || eli->li_tv.vval.v_string == NULL)
+		    {
+			emsg(_(e_string_required));
+			continue;
+		    }
+		    p = eli->li_tv.vval.v_string;
+		}
+		else
+		{
+		    if (end == NULL)
+			p = end = event_name;
+		    if (end == NULL || *end == NUL)
+			break;
+		}
+		if (p == NULL)
+		    continue;
+
+		event = event_name2nr(p, &end);
+		if (event == NUM_EVENTS || *end != NUL)
+		{
+		    semsg(_(e_no_such_event_str), p);
+		    retval = VVAL_FALSE;
+		    break;
+		}
+		if (pat != NULL)
+		{
+		    if (do_autocmd_event(event, pat, once, nested, cmd,
+				delete | replace, group, 0) == FAIL)
+		    {
+			retval = VVAL_FALSE;
+			break;
+		    }
+		}
+		else if (pat_list != NULL)
+		{
+		    FOR_ALL_LIST_ITEMS(pat_list, pli)
+		    {
+			if (pli->li_tv.v_type != VAR_STRING
+				|| pli->li_tv.vval.v_string == NULL)
+			{
+			    emsg(_(e_string_required));
+			    continue;
+			}
+			if (do_autocmd_event(event,
+				    pli->li_tv.vval.v_string, once, nested,
+				    cmd, delete | replace, group, 0) ==
+				FAIL)
+			{
+			    retval = VVAL_FALSE;
+			    break;
+			}
+		    }
+		    if (retval == VVAL_FALSE)
+			break;
+		}
+		if (event_name != NULL)
+		    p = end;
 	    }
 	}
 
@@ -2925,9 +3020,7 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	    au_del_group(group_name);
     }
 
-    VIM_CLEAR(event_name);
     VIM_CLEAR(group_name);
-    VIM_CLEAR(pat);
     VIM_CLEAR(cmd);
 
     current_augroup = save_augroup;
