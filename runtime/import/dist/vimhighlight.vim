@@ -575,7 +575,7 @@ enddef
 def VimHelp(): string #{{{2
     var group: string = GroupUnderCursor()
     if default_syntax_groups->index(group) >= 0
-        return $'help group-name | search('{group}') | normal! zz'
+        return $'help group-name | search("{group}") | normal! zz'
     endif
     return $'help hl-{group}'
 enddef
