@@ -244,25 +244,6 @@ cursor_color_get(char_u *color)
     return (color == NULL) ? (char_u *)"" : color;
 }
 
-/*
- * Return TRUE if the user-defined palette (either g:terminal_ansi_colors or the
- * "ansi_colors" argument in term_start()) shall be applied.
- */
-    static int
-term_use_palette()
-{
-    if (0
-#ifdef FEAT_GUI
-	    || gui.in_use
-#endif
-#ifdef FEAT_TERMGUICOLORS
-	    || p_tgc
-#endif
-       )
-	return TRUE;
-    return FALSE;
-}
-
 
 /*
  * Parse 'termwinsize' and set "rows" and "cols" for the terminal size in the
@@ -726,6 +707,7 @@ term_start(
     if (opt->jo_set2 & JO2_TERM_HIGHLIGHT)
 	term->tl_highlight_name = vim_strsave(opt->jo_term_highlight);
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     // Save the user-defined palette, it is only used in GUI (or 'tgc' is on).
     if (opt->jo_set2 & JO2_ANSI_COLORS)
     {
@@ -737,6 +719,7 @@ term_start(
 	}
 	memcpy(term->tl_palette, opt->jo_ansi_colors, sizeof(long_u) * 16);
     }
+#endif
 
     // System dependent: setup the vterm and maybe start the job in it.
     if (argv == NULL
@@ -4215,6 +4198,25 @@ init_default_colors(term_T *term)
 
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 /*
+ * Return TRUE if the user-defined palette (either g:terminal_ansi_colors or the
+ * "ansi_colors" argument in term_start()) shall be applied.
+ */
+    static int
+term_use_palette()
+{
+    if (0
+#ifdef FEAT_GUI
+	    || gui.in_use
+#endif
+#ifdef FEAT_TERMGUICOLORS
+	    || p_tgc
+#endif
+       )
+	return TRUE;
+    return FALSE;
+}
+
+/*
  * Set the 16 ANSI colors from array of RGB values
  */
     static void
@@ -4744,10 +4746,11 @@ term_reset_palette(VTerm *vterm)
     static void
 term_update_palette(term_T *term)
 {
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette()
 	    && (term->tl_palette != NULL
 		|| find_var((char_u *)"g:terminal_ansi_colors", NULL, TRUE)
-		!= NULL))
+								      != NULL))
     {
 	if (term->tl_palette != NULL)
 	    set_vterm_palette(term->tl_vterm, term->tl_palette);
@@ -4755,6 +4758,7 @@ term_update_palette(term_T *term)
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
     else
+#endif
 	term_reset_palette(term->tl_vterm);
 }
 
@@ -6939,6 +6943,7 @@ conpty_term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	goto failed;
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -6946,6 +6951,7 @@ conpty_term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
+#endif
 
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
@@ -7271,6 +7277,7 @@ winpty_term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	goto failed;
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -7278,6 +7285,7 @@ winpty_term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
+#endif
 
     channel_set_job(channel, job, opt);
     job_set_options(job, opt);
@@ -7531,6 +7539,7 @@ term_and_job_init(
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	return FAIL;
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     if (term_use_palette())
     {
 	if (term->tl_palette != NULL)
@@ -7538,6 +7547,7 @@ term_and_job_init(
 	else
 	    init_vterm_ansi_colors(term->tl_vterm);
     }
+#endif
 
     // This may change a string in "argvar".
     term->tl_job = job_start(argvar, argv, opt, &term->tl_job);
