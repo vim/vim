@@ -3507,6 +3507,18 @@ one_letter_cmd(char_u *p, cmdidx_T *idx)
 }
 
 /*
+ * Return TRUE if "cmd" starts with "123->", a number followed by a method
+ * call.
+ */
+    int
+number_method(char_u *cmd)
+{
+    char_u *p = skipdigits(cmd);
+
+    return p > cmd && (p = skipwhite(p))[0] == '-' && p[1] == '>';
+}
+
+/*
  * Find an Ex command by its name, either built-in or user.
  * Start of the name can be found at eap->cmd.
  * Sets eap->cmdidx and returns a pointer to char after the command name.
@@ -3714,6 +3726,13 @@ find_ex_command(
 		eap->cmdidx = CMD_eval;
 		return eap->cmd;
 	    }
+	}
+
+	// 1234->func() is a method call
+	if (number_method(eap->cmd))
+	{
+	    eap->cmdidx = CMD_eval;
+	    return eap->cmd;
 	}
 
 	// "g:", "s:" and "l:" are always assumed to be a variable, thus start
