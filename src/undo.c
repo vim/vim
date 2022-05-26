@@ -2327,6 +2327,12 @@ undo_time(
     int		    above = FALSE;
     int		    did_undo = TRUE;
 
+    if (text_locked())
+    {
+	text_locked_msg();
+	return;
+    }
+
     // First make sure the current undoable change is synced.
     if (curbuf->b_u_synced == FALSE)
 	u_sync(TRUE);
