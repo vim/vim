@@ -312,6 +312,14 @@ def Test_vim9_import_export()
   writefile(import_no_as_lines, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E488:', '', 2, 'Ximport.vim')
 
+  # trailing starts with "as"
+  var import_bad_as_lines =<< trim END
+    vim9script
+    import './Xexport.vim' asname
+  END
+  writefile(import_no_as_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E488:', '', 2, 'Ximport.vim')
+
   var import_invalid_string_lines =<< trim END
     vim9script
     import Xexport.vim
@@ -394,6 +402,27 @@ def Test_vim9_import_export()
   assert_equal(newcpo, g:cpo_after_vim9script)
 
   delete('Xvim9_script')
+enddef
+
+def Test_import_very_long_name()
+  var lines =<< trim END
+      vim9script
+
+      export var verylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongname = 'asdf'
+  END
+  writefile(lines, 'Xverylong.vim')
+
+  lines =<< trim END
+      vim9script
+      import './Xverylong.vim'
+
+      g:result = Xverylong.verylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongnameverylongname
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('asdf', g:result)
+
+  delete('Xverylong.vim')
+  unlet g:result
 enddef
 
 def Test_import_funcref()
@@ -710,6 +739,16 @@ def Test_use_relative_autoload_import_in_mapping()
   delete('XrelautoloadExport.vim')
   delete('Xmapscript.vim')
   nunmap <F3>
+enddef
+
+def Test_autoload_import_var()
+  # variable name starts with "autoload"
+  var lines =<< trim END
+      vim9script
+      var autoloaded = "Xtest.vim"
+      import autoloaded
+  END
+  v9.CheckScriptFailure(lines, 'E1053: Could not import "Xtest.vim')
 enddef
 
 def Test_use_autoload_import_in_mapping()

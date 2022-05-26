@@ -213,6 +213,8 @@ def Test_assignment()
   v9.CheckDefFailure(['var s:var = 123'], 'E1101:')
   v9.CheckDefFailure(['var s:var: number'], 'E1101:')
 
+  v9.CheckDefAndScriptFailure(['var $VAR: number'], ['E1016:', 'E475:'])
+
   lines =<< trim END
     vim9script
     def SomeFunc()

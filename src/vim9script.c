@@ -804,7 +804,7 @@ find_exported(
 }
 
 /*
- * Declare a script-local variable without init: "let var: type".
+ * Declare a script-local variable without init: "var name: type".
  * "const" is an error since the value is missing.
  * Returns a pointer to after the type.
  */
