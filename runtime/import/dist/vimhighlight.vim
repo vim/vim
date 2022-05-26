@@ -575,7 +575,7 @@ enddef
 def VimHelp(): string #{{{2
     var group: string = GroupUnderCursor()
     if default_syntax_groups->index(group) >= 0
-        return $'help group-name | search("{group}") | normal! zz'
+        return $'help group-name | search('{group}') | normal! zz'
     endif
     return $'help hl-{group}'
 enddef
@@ -965,9 +965,9 @@ def SaveColorsAsVimScript(fname: string) #{{{2
             tokens += [
                 'hi',
                 hl.name,
-                hl->has_key('term') ? $'term={hl.term->keys()->join(",")}' : '',
-                hl->has_key('cterm') ? $'cterm={hl.cterm->keys()->join(",")}' : '',
-                hl->has_key('gui') ? $'gui={hl.gui->keys()->join(",")}' : '',
+                hl->has_key('term') ? $'term={hl.term->keys()->join(',')}' : '',
+                hl->has_key('cterm') ? $'cterm={hl.cterm->keys()->join(',')}' : '',
+                hl->has_key('gui') ? $'gui={hl.gui->keys()->join(',')}' : '',
                 hl->has_key('ctermbg') ? $'ctermbg={hl.ctermbg}' : '',
                 hl->has_key('ctermfg') ? $'ctermfg={hl.ctermfg}' : '',
                 hl->has_key('ctermul') ? $'ctermul={hl.ctermul}' : '',
