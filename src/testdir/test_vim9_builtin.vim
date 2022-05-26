@@ -4494,14 +4494,23 @@ def Test_values()
 enddef
 
 def Test_virtcol()
-  v9.CheckDefAndScriptFailure(['virtcol(1.1)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1222: String or List required for argument 1'])
-  v9.CheckDefExecAndScriptFailure(['virtcol("")'], 'E1209: Invalid value for a line number')
+  v9.CheckDefAndScriptFailure(['virtcol(1.1)'], [
+    'E1013: Argument 1: type mismatch, expected string but got float',
+    'E1222: String or List required for argument 1'])
+  v9.CheckDefAndScriptFailure(['virtcol(".", "a")'], [
+    'E1013: Argument 2: type mismatch, expected bool but got string',
+    'E1212: Bool required for argument 2'])
+  v9.CheckDefExecAndScriptFailure(['virtcol("")'],
+    'E1209: Invalid value for a line number')
   new
-  setline(1, ['abcdefgh'])
+  setline(1, ['abcde和平fgh'])
   cursor(1, 4)
   assert_equal(4, virtcol('.'))
+  assert_equal([4, 4], virtcol('.', 1))
+  cursor(1, 6)
+  assert_equal([6, 7], virtcol('.', 1))
   assert_equal(4, virtcol([1, 4]))
-  assert_equal(9, virtcol([1, '$']))
+  assert_equal(13, virtcol([1, '$']))
   assert_equal(0, virtcol([10, '$']))
   bw!
 enddef
