@@ -3271,8 +3271,12 @@ regmatch(
 	    break;
 	}
 #ifdef FEAT_RELTIME
-	// Check for timeout once in a 100 times to avoid overhead.
-	if (tm != NULL && ++tm_count == 100)
+	// Check for timeout once in a 250 times to minimize the
+	// overhead of reading the system clock. The value 250 has been
+	// chosen by experiment so thet the system clock will be read
+	// around once per millisecond (using 64-bit, i7-6700K CPU @
+	// 4.00GHz).
+	if (tm != NULL && ++tm_count == 250)
 	{
 	    tm_count = 0;
 	    if (profile_passed_limit(tm))
@@ -4990,8 +4994,12 @@ bt_regexec_both(
 	    else
 		++col;
 #ifdef FEAT_RELTIME
-	    // Check for timeout once in a twenty times to avoid overhead.
-	    if (tm != NULL && ++tm_count == 20)
+	    // Check for timeout once in a 500 times to minimize the
+	    // overhead of reading the system clock. The value 500 has
+	    // been chosen by experiment so thet the system clock will
+	    // be read around once per millisecond (using 64-bit,
+	    // i7-6700K CPU @ 4.00GHz).
+	    if (tm != NULL && ++tm_count == 500)
 	    {
 		tm_count = 0;
 		if (profile_passed_limit(tm))

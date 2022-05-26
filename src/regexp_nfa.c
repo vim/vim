@@ -5649,11 +5649,21 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
     static int
 nfa_did_time_out()
 {
-    if (nfa_time_limit != NULL && profile_passed_limit(nfa_time_limit))
+    static int tm_count = 0;
+
+    // Check for timeout once in a 800 times to minimize the overhead
+    // of reading the system clock. The value 800 has been chosen by
+    // experiment so thet the system clock will be read around once
+    // per millisecond (using 64-bit, i7-6700K CPU @ 4.00GHz).
+    if (nfa_time_limit != NULL && ++tm_count == 800)
     {
-	if (nfa_timed_out != NULL)
-	    *nfa_timed_out = TRUE;
-	return TRUE;
+	tm_count = 0;
+	if (profile_passed_limit(nfa_time_limit))
+	{
+	    if (nfa_timed_out != NULL)
+		*nfa_timed_out = TRUE;
+	    return TRUE;
+	}
     }
     return FALSE;
 }
