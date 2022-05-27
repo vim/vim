@@ -5649,11 +5649,27 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
     static int
 nfa_did_time_out()
 {
-    if (nfa_time_limit != NULL && profile_passed_limit(nfa_time_limit))
+    static int tm_count = 0;
+
+    // Check for timeout once in 800 times to avoid excessive overhead from
+    // reading the clock.  The value has been picked to check about once per
+    // msec on a modern CPU.
+    if (nfa_time_limit != NULL)
     {
-	if (nfa_timed_out != NULL)
-	    *nfa_timed_out = TRUE;
-	return TRUE;
+	if (tm_count == 800)
+	{
+	    if (profile_passed_limit(nfa_time_limit))
+	    {
+		if (nfa_timed_out != NULL)
+		    *nfa_timed_out = TRUE;
+		return TRUE;
+	    }
+	    // Only reset the count when not timed out, so that when it did
+	    // timeout it keeps timing out until the time limit is changed.
+	    tm_count = 0;
+	}
+	else
+	    ++tm_count;
     }
     return FALSE;
 }

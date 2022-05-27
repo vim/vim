@@ -3271,8 +3271,10 @@ regmatch(
 	    break;
 	}
 #ifdef FEAT_RELTIME
-	// Check for timeout once in a 100 times to avoid overhead.
-	if (tm != NULL && ++tm_count == 100)
+	// Check for timeout once in 250 times to avoid excessive overhead from
+	// reading the clock.  The value has been picked to check about once
+	// per msec on a modern CPU.
+	if (tm != NULL && ++tm_count == 250)
 	{
 	    tm_count = 0;
 	    if (profile_passed_limit(tm))
@@ -3313,7 +3315,7 @@ regmatch(
 	op = OP(scan);
 	// Check for character class with NL added.
 	if (!rex.reg_line_lbr && WITH_NL(op) && REG_MULTI
-			     && *rex.input == NUL && rex.lnum <= rex.reg_maxline)
+			   && *rex.input == NUL && rex.lnum <= rex.reg_maxline)
 	{
 	    reg_nextline();
 	}
@@ -4990,8 +4992,10 @@ bt_regexec_both(
 	    else
 		++col;
 #ifdef FEAT_RELTIME
-	    // Check for timeout once in a twenty times to avoid overhead.
-	    if (tm != NULL && ++tm_count == 20)
+	    // Check for timeout once in 500 times to avoid excessive overhead
+	    // from reading the clock.  The value has been picked to check
+	    // about once per msec on a modern CPU.
+	    if (tm != NULL && ++tm_count == 500)
 	    {
 		tm_count = 0;
 		if (profile_passed_limit(tm))
