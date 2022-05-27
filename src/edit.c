@@ -168,8 +168,7 @@ edit(
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
     // Don't allow recursive insert mode when busy with completion.
-    if (textwinlock != 0 || textlock != 0
-			  || ins_compl_active() || compl_busy || pum_visible())
+    if (textlock != 0 || ins_compl_active() || compl_busy || pum_visible())
     {
 	emsg(_(e_not_allowed_to_change_text_or_change_window));
 	return FALSE;
@@ -5342,7 +5341,7 @@ do_insert_char_pre(int c)
     }
 
     // Lock the text to avoid weird things from happening.
-    ++textwinlock;
+    ++textlock;
     set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
 
     res = NULL;
@@ -5356,7 +5355,7 @@ do_insert_char_pre(int c)
     }
 
     set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char
-    --textwinlock;
+    --textlock;
 
     // Restore the State, it may have been changed.
     State = save_State;

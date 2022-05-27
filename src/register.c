@@ -1055,9 +1055,9 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     dict_set_items_ro(v_event);
 
     recursive = TRUE;
-    textwinlock++;
+    textlock++;
     apply_autocmds(EVENT_TEXTYANKPOST, NULL, NULL, FALSE, curbuf);
-    textwinlock--;
+    textlock--;
     recursive = FALSE;
 
     // Empty the dictionary, v:event is still valid

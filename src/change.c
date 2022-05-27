@@ -324,7 +324,7 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
 	    next = lnr->lr_next;
 	    if (lnr->lr_id == id)
 	    {
-		if (textwinlock > 0)
+		if (textlock > 0)
 		{
 		    // in invoke_listeners(), clear ID and delete later
 		    lnr->lr_id = 0;
@@ -401,7 +401,7 @@ invoke_listeners(buf_T *buf)
 
     argv[4].v_type = VAR_LIST;
     argv[4].vval.v_list = buf->b_recorded_changes;
-    ++textwinlock;
+    ++textlock;
 
     for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
@@ -421,7 +421,7 @@ invoke_listeners(buf_T *buf)
 	    prev = lnr;
     }
 
-    --textwinlock;
+    --textlock;
     list_unref(buf->b_recorded_changes);
     buf->b_recorded_changes = NULL;
 

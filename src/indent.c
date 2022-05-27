@@ -1872,7 +1872,7 @@ get_expr_indent(void)
     set_vim_var_nr(VV_LNUM, curwin->w_cursor.lnum);
     if (use_sandbox)
 	++sandbox;
-    ++textwinlock;
+    ++textlock;
     current_sctx = curbuf->b_p_script_ctx[BV_INDE];
 
     // Need to make a copy, the 'indentexpr' option could be changed while
@@ -1886,7 +1886,7 @@ get_expr_indent(void)
 
     if (use_sandbox)
 	--sandbox;
-    --textwinlock;
+    --textlock;
     current_sctx = save_sctx;
 
     // Restore the cursor position so that 'indentexpr' doesn't need to.

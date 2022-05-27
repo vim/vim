@@ -331,9 +331,9 @@ undo_allowed(void)
 
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
-    if (textwinlock != 0 || textlock != 0)
+    if (textlock != 0)
     {
-	emsg(_(e_not_allowed_to_change_text_here));
+	emsg(_(e_not_allowed_to_change_text_or_change_window));
 	return FALSE;
     }
 

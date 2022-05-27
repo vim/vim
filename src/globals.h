@@ -846,15 +846,10 @@ EXTERN int	secure INIT(= FALSE);
 				// allowed, e.g. when sourcing .exrc or .vimrc
 				// in current directory
 
-EXTERN int	textwinlock INIT(= 0);
+EXTERN int	textlock INIT(= 0);
 				// non-zero when changing text and jumping to
 				// another window or editing another buffer is
 				// not allowed
-
-EXTERN int	textlock INIT(= 0);
-				// non-zero when changing text is not allowed,
-				// jumping to another window is allowed,
-				// editing another buffer is not allowed.
 
 EXTERN int	curbuf_lock INIT(= 0);
 				// non-zero when the current buffer can't be

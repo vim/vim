@@ -3,7 +3,6 @@ void cmdline_init(void);
 char_u *getcmdline(int firstc, long count, int indent, getline_opt_T do_concat);
 char_u *getcmdline_prompt(int firstc, char_u *prompt, int attr, int xp_context, char_u *xp_arg);
 int check_opt_wim(void);
-int text_and_win_locked(void);
 void text_locked_msg(void);
 char *get_text_locked_msg(void);
 int text_locked(void);
