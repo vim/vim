@@ -543,7 +543,7 @@ eval_to_string(
 
 /*
  * Call eval_to_string() without using current local variables and using
- * textwinlock.  When "use_sandbox" is TRUE use the sandbox.
+ * textlock.  When "use_sandbox" is TRUE use the sandbox.
  * Use legacy Vim script syntax.
  */
     char_u *
@@ -562,12 +562,12 @@ eval_to_string_safe(
     save_funccal(&funccal_entry);
     if (use_sandbox)
 	++sandbox;
-    ++textwinlock;
+    ++textlock;
     may_garbage_collect = FALSE;
     retval = eval_to_string(arg, FALSE);
     if (use_sandbox)
 	--sandbox;
-    --textwinlock;
+    --textlock;
     may_garbage_collect = save_garbage;
     restore_funccal();
     current_sctx.sc_version = save_sc_version;
@@ -807,7 +807,7 @@ eval_foldexpr(win_T *wp, int *cp)
     ++emsg_off;
     if (use_sandbox)
 	++sandbox;
-    ++textwinlock;
+    ++textlock;
     *cp = NUL;
     if (eval0(arg, &tv, NULL, &EVALARG_EVALUATE) == FAIL)
 	retval = 0;
@@ -832,7 +832,7 @@ eval_foldexpr(win_T *wp, int *cp)
     --emsg_off;
     if (use_sandbox)
 	--sandbox;
-    --textwinlock;
+    --textlock;
     clear_evalarg(&EVALARG_EVALUATE, NULL);
     current_sctx = saved_sctx;
 

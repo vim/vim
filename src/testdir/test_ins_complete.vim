@@ -698,7 +698,7 @@ func Test_completefunc_error()
   endfunc
   set completefunc=CompleteFunc
   call setline(1, ['', 'abcd', ''])
-  call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E578:')
+  call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E565:')
 
   " delete text when called for the second time
   func CompleteFunc2(findstart, base)
@@ -710,7 +710,7 @@ func Test_completefunc_error()
   endfunc
   set completefunc=CompleteFunc2
   call setline(1, ['', 'abcd', ''])
-  call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E578:')
+  call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E565:')
 
   " Jump to a different window from the complete function
   func CompleteFunc3(findstart, base)

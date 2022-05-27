@@ -850,12 +850,12 @@ cmdline_handle_backslash_key(int c, int *gotesc)
 	c = get_expr_register();
 	if (c == '=')
 	{
-	    // Need to save and restore ccline.  And set "textwinlock"
+	    // Need to save and restore ccline.  And set "textlock"
 	    // to avoid nasty things like going to another buffer when
 	    // evaluating an expression.
-	    ++textwinlock;
+	    ++textlock;
 	    p = get_expr_line();
-	    --textwinlock;
+	    --textlock;
 
 	    if (p != NULL)
 	    {
@@ -2710,13 +2710,13 @@ check_opt_wim(void)
  * 'balloonexpr', etc.
  */
     int
-text_and_win_locked(void)
+text_locked(void)
 {
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	return TRUE;
 #endif
-    return textwinlock != 0;
+    return textlock != 0;
 }
 
 /*
@@ -2736,19 +2736,7 @@ get_text_locked_msg(void)
     if (cmdwin_type != 0)
 	return e_invalid_in_cmdline_window;
 #endif
-    if (textwinlock != 0)
-	return e_not_allowed_to_change_text_or_change_window;
-    return e_not_allowed_to_change_text_here;
-}
-
-/*
- * Return TRUE when the text must not be changed and/or we cannot switch to
- * another window.  TRUE while evaluating 'completefunc'.
- */
-    int
-text_locked(void)
-{
-    return text_and_win_locked() || textlock != 0;
+    return e_not_allowed_to_change_text_or_change_window;
 }
 
 /*
@@ -3730,11 +3718,11 @@ cmdline_paste(
     regname = may_get_selection(regname);
 #endif
 
-    // Need to  set "textwinlock" to avoid nasty things like going to another
+    // Need to set "textlock" to avoid nasty things like going to another
     // buffer when evaluating an expression.
-    ++textwinlock;
+    ++textlock;
     i = get_spec_reg(regname, &arg, &allocated, TRUE);
-    --textwinlock;
+    --textlock;
 
     if (i)
     {

@@ -4414,14 +4414,14 @@ ex_substitute(exarg_T *eap)
 		subflags_save = subflags;
 
 		// Disallow changing text or switching window in an expression.
-		++textwinlock;
+		++textlock;
 #endif
 		// get length of substitution part
 		sublen = vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
 			       sub, sub_firstline, FALSE, magic_isset(), TRUE);
 #ifdef FEAT_EVAL
-		--textwinlock;
+		--textlock;
 
 		// If getting the substitute string caused an error, don't do
 		// the replacement.
@@ -4524,13 +4524,13 @@ ex_substitute(exarg_T *eap)
 		new_end += copy_len;
 
 #ifdef FEAT_EVAL
-		++textwinlock;
+		++textlock;
 #endif
 		(void)vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
 				      sub, new_end, TRUE, magic_isset(), TRUE);
 #ifdef FEAT_EVAL
-		--textwinlock;
+		--textlock;
 #endif
 		sub_nsubs++;
 		did_sub = TRUE;

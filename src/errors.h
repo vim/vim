@@ -1458,8 +1458,7 @@ EXTERN char e_nonr_missing_gt[]
 EXTERN char e_illegal_register_name[]
 	INIT(= N_("Illegal register name"));
 #endif
-EXTERN char e_not_allowed_to_change_text_here[]
-	INIT(= N_("E578: Not allowed to change text here"));
+// E578 unused
 #ifdef FEAT_EVAL
 EXTERN char e_if_nesting_too_deep[]
 	INIT(= N_("E579: :if nesting too deep"));

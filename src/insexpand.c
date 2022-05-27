@@ -1144,9 +1144,9 @@ trigger_complete_changed_event(int cur)
     dict_set_items_ro(v_event);
 
     recursive = TRUE;
-    textwinlock++;
+    textlock++;
     apply_autocmds(EVENT_COMPLETECHANGED, NULL, NULL, FALSE, curbuf);
-    textwinlock--;
+    textlock--;
     recursive = FALSE;
 
     restore_v_event(v_event, &save_v_event);
@@ -2643,7 +2643,7 @@ expand_by_function(int type, char_u *base)
     // Lock the text to avoid weird things from happening.  Also disallow
     // switching to another window, it should not be needed and may end up in
     // Insert mode in another buffer.
-    ++textwinlock;
+    ++textlock;
 
     cb = get_insert_callback(type);
     retval = call_callback(cb, 0, &rettv, 2, args);
@@ -2669,7 +2669,7 @@ expand_by_function(int type, char_u *base)
 		break;
 	}
     }
-    --textwinlock;
+    --textlock;
 
     curwin->w_cursor = pos;	// restore the cursor position
     validate_cursor();
@@ -2867,7 +2867,6 @@ set_completion(colnr_T startcol, list_T *list)
 f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int	    startcol;
-    int	    save_textlock = textlock;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -2879,10 +2878,6 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_complete_can_only_be_used_in_insert_mode));
 	return;
     }
-
-    // "textlock" is set when evaluating 'completefunc' but we can change
-    // text here.
-    textlock = 0;
 
     // Check for undo allowed here, because if something was already inserted
     // the line was already saved for undo and this check isn't done.
@@ -2897,7 +2892,6 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 	if (startcol > 0)
 	    set_completion(startcol - 1, argvars[1].vval.v_list);
     }
-    textlock = save_textlock;
 }
 
 /*
@@ -4508,10 +4502,10 @@ get_userdefined_compl_info(colnr_T curs_col UNUSED)
     args[1].vval.v_string = (char_u *)"";
     args[2].v_type = VAR_UNKNOWN;
     pos = curwin->w_cursor;
-    ++textwinlock;
+    ++textlock;
     cb = get_insert_callback(ctrl_x_mode);
     col = call_callback_retnr(cb, 2, args);
-    --textwinlock;
+    --textlock;
 
     State = save_State;
     curwin->w_cursor = pos;	// restore the cursor position

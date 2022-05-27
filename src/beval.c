@@ -284,7 +284,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    curbuf = save_curbuf;
 	    if (use_sandbox)
 		++sandbox;
-	    ++textwinlock;
+	    ++textlock;
 
 	    if (bexpr == p_bexpr)
 	    {
@@ -311,7 +311,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 
 	    if (use_sandbox)
 		--sandbox;
-	    --textwinlock;
+	    --textlock;
 	    current_sctx = save_sctx;
 
 	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);

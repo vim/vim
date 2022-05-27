@@ -1041,7 +1041,7 @@ func Test_edit_completefunc_delete()
   set completefunc=CompleteFunc
   call setline(1, ['', 'abcd', ''])
   2d
-  call assert_fails("normal 2G$a\<C-X>\<C-U>", 'E578:')
+  call assert_fails("normal 2G$a\<C-X>\<C-U>", 'E565:')
   bwipe!
 endfunc
 

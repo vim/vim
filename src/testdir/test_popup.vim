@@ -655,7 +655,7 @@ func Test_complete_func_mess()
   set completefunc=MessComplete
   new
   call setline(1, 'Ju')
-  call assert_fails('call feedkeys("A\<c-x>\<c-u>/\<esc>", "tx")', 'E578:')
+  call assert_fails('call feedkeys("A\<c-x>\<c-u>/\<esc>", "tx")', 'E565:')
   call assert_equal('Jan/', getline(1))
   bwipe!
   set completefunc=
