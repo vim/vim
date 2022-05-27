@@ -2769,7 +2769,6 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
     listitem_T	*pli;
     char_u	*cmd = NULL;
     char_u	*end;
-    char_u	*p;
     int		once;
     int		nested;
     int		replace;		// replace the cmd for a group/event
@@ -2937,6 +2936,8 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	}
 	else
 	{
+	    char_u *p = NULL;
+
 	    eli = NULL;
 	    end = NULL;
 	    while (TRUE)

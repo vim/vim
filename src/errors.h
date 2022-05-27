@@ -1953,10 +1953,10 @@ EXTERN char e_eval_feature_not_available[]
 #ifdef FEAT_QUICKFIX
 EXTERN char e_no_location_list[]
 	INIT(= N_("E776: No location list"));
-# ifdef FEAT_EVAL
+#endif
+#ifdef FEAT_EVAL
 EXTERN char e_string_or_list_expected[]
 	INIT(= N_("E777: String or List expected"));
-# endif
 #endif
 #ifdef FEAT_SPELL
 EXTERN char e_this_does_not_look_like_sug_file_str[]
