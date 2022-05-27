@@ -381,11 +381,13 @@ func Test_python3_opt_reset_local_to_global()
         \ ['errorformat', '%f:%l:%m', '%s-%l-%m', ''],
         \ ['grepprg', 'ggprg', 'lgprg', ''],
         \ ['makeprg', 'gmprg', 'lmprg', ''],
-        \ ['balloonexpr', 'gbexpr', 'lbexpr', ''],
         \ ['cryptmethod', 'blowfish2', 'zip', ''],
         \ ['lispwords', 'abc', 'xyz', ''],
         \ ['makeencoding', 'utf-8', 'latin1', ''],
         \ ['undolevels', 100, 200, -123456]]
+  if has('balloon_eval')
+    call add(bopts, ['balloonexpr', 'gbexpr', 'lbexpr', ''])
+  endif
 
   " Set the global and buffer-local option values and then clear the
   " buffer-local option value.
