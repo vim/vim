@@ -2245,8 +2245,11 @@ testgui:
 testtiny:
 	cd testdir; $(MAKE) -f Makefile tiny VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
+# Run benchmarks.
 benchmark:
-	cd testdir; $(MAKE) -f Makefile benchmark VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+	cd testdir; \
+		$(MAKE) -f Makefile benchmarkclean; \
+		$(MAKE) -f Makefile benchmark VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 unittesttargets:
 	$(MAKE) -f Makefile $(UNITTEST_TARGETS)

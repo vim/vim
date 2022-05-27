@@ -90,6 +90,10 @@ clean:
 	-rm -f valgrind.*
 	-rm -f asan.*
 
+# Delete the files produced by benchmarking, so they can run again.
+benchmarkclean:
+	rm -f $(SCRIPTS_BENCH)
+
 nolog:
 	-rm -f test.log test_result.log messages
 
