@@ -2734,9 +2734,9 @@ typedef enum {
 # endif
 #endif
 
-#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+#if defined(HAVE_SYS_TIME_H)
 # define ELAPSED_TIMEVAL
-# define ELAPSED_INIT(v) gettimeofday(&(v), NULL)
+# define ELAPSED_INIT(v) time_now(&(v))
 # define ELAPSED_FUNC(v) elapsed(&(v))
 typedef struct timeval elapsed_T;
 long elapsed(struct timeval *start_tv);

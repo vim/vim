@@ -2779,7 +2779,7 @@ check_termcode_mouse(
 		    /*
 		     * Compute the time elapsed since the previous mouse click.
 		     */
-		    gettimeofday(&mouse_time, NULL);
+		    time_now(&mouse_time);
 		    if (orig_mouse_time.tv_sec == 0)
 		    {
 			/*

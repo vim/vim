@@ -3848,6 +3848,18 @@ static void set_flag(union sigval) {}
     AC_MSG_RESULT(yes); AC_DEFINE(HAVE_TIMER_CREATE),
     AC_MSG_RESULT(no)))
 
+dnl Check for clock_gettime.
+AC_MSG_CHECKING([for clock_gettime])
+AC_TRY_COMPILE([
+#include<time.h>
+#include<sys/time.h>],
+[
+ struct timespec ts;
+ (void)clock_gettime(0, &ts);
+],
+AC_MSG_RESULT(yes); AC_DEFINE(HAVE_CLOCK_GETTIME),
+AC_MSG_RESULT(no))
+
 AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_slash],
   [
     AC_RUN_IFELSE([AC_LANG_SOURCE([[

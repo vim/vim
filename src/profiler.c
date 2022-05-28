@@ -24,7 +24,7 @@ profile_start(proftime_T *tm)
 # ifdef MSWIN
     QueryPerformanceCounter(tm);
 # else
-    gettimeofday(tm, NULL);
+    time_now(tm);
 # endif
 }
 
@@ -40,7 +40,7 @@ profile_end(proftime_T *tm)
     QueryPerformanceCounter(&now);
     tm->QuadPart = now.QuadPart - tm->QuadPart;
 # else
-    gettimeofday(&now, NULL);
+    time_now(&now);
     tm->tv_usec = now.tv_usec - tm->tv_usec;
     tm->tv_sec = now.tv_sec - tm->tv_sec;
     if (tm->tv_usec < 0)
@@ -127,7 +127,7 @@ profile_setlimit(long msec, proftime_T *tm)
 # else
 	long	    usec;
 
-	gettimeofday(tm, NULL);
+	time_now(tm);
 	usec = (long)tm->tv_usec + (long)msec * 1000;
 	tm->tv_usec = usec % 1000000L;
 	tm->tv_sec += usec / 1000000L;
@@ -151,7 +151,7 @@ profile_passed_limit(proftime_T *tm)
 # else
     if (tm->tv_sec == 0)    // timer was not set
 	return FALSE;
-    gettimeofday(&now, NULL);
+    time_now(&now);
     return (now.tv_sec > tm->tv_sec
 	    || (now.tv_sec == tm->tv_sec && now.tv_usec > tm->tv_usec));
 # endif

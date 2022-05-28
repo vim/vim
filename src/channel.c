@@ -827,7 +827,7 @@ channel_connect(
 	    tv.tv_sec = waitnow / 1000;
 	    tv.tv_usec = (waitnow % 1000) * 1000;
 #ifndef MSWIN
-	    gettimeofday(&start_tv, NULL);
+	    time_now(&start_tv);
 #endif
 	    ch_log(channel,
 		      "Waiting for connection (waiting %d msec)...", waitnow);
@@ -893,7 +893,7 @@ channel_connect(
 		// Did not detect an error, connection is established.
 		break;
 
-	    gettimeofday(&end_tv, NULL);
+	    time_now(&end_tv);
 	    elapsed_msec = (end_tv.tv_sec - start_tv.tv_sec) * 1000
 				 + (end_tv.tv_usec - start_tv.tv_usec) / 1000;
 #endif
@@ -2395,7 +2395,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 #ifdef MSWIN
 	    chanpart->ch_deadline = GetTickCount() + 100L;
 #else
-	    gettimeofday(&chanpart->ch_deadline, NULL);
+	    time_now(&chanpart->ch_deadline);
 	    chanpart->ch_deadline.tv_usec += 100 * 1000;
 	    if (chanpart->ch_deadline.tv_usec > 1000 * 1000)
 	    {
@@ -2413,7 +2413,7 @@ channel_parse_json(channel_T *channel, ch_part_T part)
 	    {
 		struct timeval now_tv;
 
-		gettimeofday(&now_tv, NULL);
+		time_now(&now_tv);
 		timeout = now_tv.tv_sec > chanpart->ch_deadline.tv_sec
 		      || (now_tv.tv_sec == chanpart->ch_deadline.tv_sec
 			   && now_tv.tv_usec > chanpart->ch_deadline.tv_usec);
@@ -4066,7 +4066,7 @@ channel_read_json_block(
 		{
 		    struct timeval now_tv;
 
-		    gettimeofday(&now_tv, NULL);
+		    time_now(&now_tv);
 		    timeout = (chanpart->ch_deadline.tv_sec
 						       - now_tv.tv_sec) * 1000
 			+ (chanpart->ch_deadline.tv_usec

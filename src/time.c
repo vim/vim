@@ -13,6 +13,10 @@
 
 #include "vim.h"
 
+#ifdef MACOS_X
+#include <mach/mach_time.h>
+#endif
+
 /*
  * Cache of the current timezone name as retrieved from TZ, or an empty string
  * where unset, up to 64 octets long including trailing null byte.
@@ -936,6 +940,78 @@ gettimeofday(struct timeval *tv, char *dummy UNUSED)
 }
 #  endif
 
+# if defined(HAVE_CLOCK_GETTIME)
+#   if defined(CLOCK_MONOTONIC)
+#     define MONOTONIC_CLOCK_ID CLOCK_MONOTONIC
+#   elif defined(CLOCK_HIGHRES)
+#     define MONOTONIC_CLOCK_ID CLOCK_HIGHRES
+#   else
+#     error "No monotonic clock source defined for this platform."
+#   endif
+# endif
+
+/*
+ * Returns a timestamp useful for measuring the elapsed time between two
+ * operations using a monotonic time source (if available).
+ */
+    int
+time_now(struct timeval *tv)
+{
+# if defined(MSWIN)
+    LARGE_INTEGER pf, pc;
+    if (!QueryPerformanceFrequency(&pf) || !QueryPerformanceCounter(&pc))
+	return FAIL;
+
+    tv->tv_sec = (time_t)(pc.QuadPart / pf.QuadPart);
+    tv->tv_usec = (int)(((pc.QuadPart % pf.QuadPart) * 1000000 +
+		(pf.QuadPart >> 1)) / pf.QuadPart);
+    if (tv->tv_usec >= 1000000) {
+	tv->tv_sec++;
+	tv->tv_usec -= 1000000;
+    }
+
+    return OK;
+# elif defined(MACOS_X)
+    // Some older versions of macOS provide a weak clock_gettime symbol, making
+    // the binary fail to load on systems where it's not available. Use the
+    // slightly more complicated but safer approach everywhere.
+    static mach_timebase_info_data_t tb;
+    uint64_t us;
+    // Fetch the timebase only once.
+    if (tb.denom == 0)
+	(void)mach_timebase_info(&tb);
+
+    us = mach_absolute_time();
+    us *= tb.numer;
+    us /= tb.denom;
+    us /= 1000;
+
+    tv->tv_sec = us / 1000000;
+    tv->tv_usec = (int)(us % 1000000);
+
+    return OK;
+# elif defined(HAVE_CLOCK_GETTIME)
+    struct timespec ts;
+    if (!clock_gettime(MONOTONIC_CLOCK_ID, &ts))
+    {
+	tv->tv_sec = ts.tv_sec;
+	tv->tv_usec = ts.tv_nsec / 1000;
+	return OK;
+    }
+    // Fallback to some other method if the desired clock is unavailable.
+#endif
+
+# if defined(HAVE_GETTIMEOFDAY)
+    if (gettimeofday(tv, NULL))
+	return FAIL;
+# else
+    tv->tv_sec = time(NULL);
+    tv->tv_usec = 0;
+# endif
+
+    return OK;
+}
+
 /*
  * Save the previous time before doing something that could nest.
  * set "*tv_rel" to the time elapsed so far.
@@ -944,7 +1020,7 @@ gettimeofday(struct timeval *tv, char *dummy UNUSED)
 time_push(void *tv_rel, void *tv_start)
 {
     *((struct timeval *)tv_rel) = prev_timeval;
-    gettimeofday(&prev_timeval, NULL);
+    time_now(&prev_timeval);
     ((struct timeval *)tv_rel)->tv_usec = prev_timeval.tv_usec
 					- ((struct timeval *)tv_rel)->tv_usec;
     ((struct timeval *)tv_rel)->tv_sec = prev_timeval.tv_sec
@@ -1001,13 +1077,13 @@ time_msg(
     {
 	if (strstr(mesg, "STARTING") != NULL)
 	{
-	    gettimeofday(&start, NULL);
+	    time_now(&start);
 	    prev_timeval = start;
 	    fprintf(time_fd, "\n\ntimes in msec\n");
 	    fprintf(time_fd, " clock   self+sourced   self:  sourced script\n");
 	    fprintf(time_fd, " clock   elapsed:              other lines\n\n");
 	}
-	gettimeofday(&now, NULL);
+	time_now(&now);
 	time_diff(&start, &now);
 	if (((struct timeval *)tv_start) != NULL)
 	{

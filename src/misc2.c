@@ -2814,7 +2814,7 @@ elapsed(struct timeval *start_tv)
 {
     struct timeval  now_tv;
 
-    gettimeofday(&now_tv, NULL);
+    time_now(&now_tv);
     return (now_tv.tv_sec - start_tv->tv_sec) * 1000L
 	 + (now_tv.tv_usec - start_tv->tv_usec) / 1000L;
 }
