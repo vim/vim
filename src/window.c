@@ -1354,9 +1354,6 @@ win_split_ins(
 	    p_wh = size;
     }
 
-    // Keep same changelist position in new window.
-    wp->w_changelistidx = oldwin->w_changelistidx;
-
     /*
      * make the new window the current window
      */
@@ -1431,6 +1428,10 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     }
     newp->w_tagstackidx = oldp->w_tagstackidx;
     newp->w_tagstacklen = oldp->w_tagstacklen;
+
+    // Keep same changelist position in new window.
+    newp->w_changelistidx = oldp->w_changelistidx;
+
 #ifdef FEAT_FOLDING
     copyFoldingState(oldp, newp);
 #endif
