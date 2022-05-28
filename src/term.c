@@ -1570,6 +1570,11 @@ parse_builtin_tcap(char_u *term)
 		else
 		{
 		    term_strings[p->bt_entry] = (char_u *)p->bt_string;
+#ifdef MSWIN
+		    // Console has 256 Colors since Windows 1703
+		    if (is_term_win32() && has_vtp_working() && p->bt_entry == (int)KS_CCO)
+			term_strings[p->bt_entry] = (char_u *)"256";
+#endif
 #ifdef FEAT_EVAL
 		    opt_idx = get_term_opt_idx(&term_strings[p->bt_entry]);
 #endif
@@ -2539,6 +2544,18 @@ termcapinit(char_u *name)
      * Avoid using "term" here, because the next mch_getenv() may overwrite it.
      */
     set_termname(T_NAME != NULL ? T_NAME : term);
+#ifdef FEAT_VTP
+    if (is_term_win32() && has_vtp_working())
+    {
+	swap_tcap();
+	set_normal_colors();
+	do_highlight((char_u*) "Normal ctermbg=black guibg=black", FALSE, FALSE);
+	highlight_gui_started();
+	control_console_color_rgb();
+	set_termname(T_NAME);
+	//init_highlight(TRUE, FALSE);
+    }
+#endif
 }
 
 /*
