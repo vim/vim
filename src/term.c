@@ -1570,7 +1570,7 @@ parse_builtin_tcap(char_u *term)
 		else
 		{
 		    term_strings[p->bt_entry] = (char_u *)p->bt_string;
-#ifdef MSWIN
+#ifdef FEAT_VTP
 		    // Console has 256 Colors since Windows 1703
 		    if (is_term_win32() && has_vtp_working() && p->bt_entry == (int)KS_CCO)
 			term_strings[p->bt_entry] = (char_u *)"256";
