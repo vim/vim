@@ -4053,7 +4053,6 @@ static int	    nfa_match;
 #ifdef FEAT_RELTIME
 static proftime_T  *nfa_time_limit;
 static int	   *nfa_timed_out;
-static int	    nfa_time_count;
 #endif
 
 static void copy_sub(regsub_T *to, regsub_T *from);
@@ -5646,22 +5645,26 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
 }
 
 #ifdef FEAT_RELTIME
+/*
+ * Check if we are past the time limit, if there is one.
+ * To reduce overhead, only check one in "count" times.
+ */
     static int
-nfa_did_time_out()
+nfa_did_time_out(int count)
 {
     static int tm_count = 0;
 
-    // Check for timeout once in 800 times to avoid excessive overhead from
-    // reading the clock.  The value has been picked to check about once per
-    // msec on a modern CPU.
+    // Check for timeout once in "count" times to avoid excessive overhead from
+    // reading the clock.
     if (nfa_time_limit != NULL)
     {
-	if (tm_count == 800)
+	if (tm_count >= count)
 	{
 	    if (profile_passed_limit(nfa_time_limit))
 	    {
 		if (nfa_timed_out != NULL)
 		    *nfa_timed_out = TRUE;
+		tm_count = 99999;
 		return TRUE;
 	    }
 	    // Only reset the count when not timed out, so that when it did
@@ -5722,7 +5725,8 @@ nfa_regmatch(
     if (got_int)
 	return FALSE;
 #ifdef FEAT_RELTIME
-    if (nfa_did_time_out())
+    // Check relatively often here, since this is the toplevel matching.
+    if (nfa_did_time_out(100))
 	return FALSE;
 #endif
 
@@ -5876,12 +5880,9 @@ nfa_regmatch(
 	    if (got_int)
 		break;
 #ifdef FEAT_RELTIME
-	    if (nfa_time_limit != NULL && ++nfa_time_count == 20)
-	    {
-		nfa_time_count = 0;
-		if (nfa_did_time_out())
-		    break;
-	    }
+	    // do not check very often here, since this is a loop in a loop
+	    if (nfa_did_time_out(2000))
+		break;
 #endif
 	    t = &thislist->t[listidx];
 
@@ -7126,13 +7127,9 @@ nextchar:
 	if (got_int)
 	    break;
 #ifdef FEAT_RELTIME
-	// Check for timeout once in a twenty times to avoid overhead.
-	if (nfa_time_limit != NULL && ++nfa_time_count == 20)
-	{
-	    nfa_time_count = 0;
-	    if (nfa_did_time_out())
-		break;
-	}
+	// check regularly but not too often here
+	if (nfa_did_time_out(800))
+	    break;
 #endif
     }
 
@@ -7178,7 +7175,6 @@ nfa_regtry(
 #ifdef FEAT_RELTIME
     nfa_time_limit = tm;
     nfa_timed_out = timed_out;
-    nfa_time_count = 0;
 #endif
 
 #ifdef ENABLE_LOG
