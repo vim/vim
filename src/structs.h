@@ -3414,6 +3414,7 @@ typedef struct
     int		trail;
     int		lead;
     int		*multispace;
+    int		*leadmultispace;
 #ifdef FEAT_CONCEAL
     int		conceal;
 #endif

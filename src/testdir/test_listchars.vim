@@ -132,7 +132,7 @@ func Test_listchars()
 	      \ 'h<<<<<<<<<<<$',
 	      \ '<<<<<<<<<<<<$',
 	      \ '>>>>0xx0<<<<$',
-              \ '$'
+        \ '$'
 	      \ ]
   redraw!
   for i in range(1, 5)
@@ -162,7 +162,7 @@ func Test_listchars()
 	      \ ' hyYzZyYzZyY$',
 	      \ 'yYzZyYzZyYj $',
 	      \ 'yYzZ0yY0yYzZ$',
-              \ '$'
+        \ '$'
 	      \ ]
   redraw!
   for i in range(1, 5)
@@ -172,7 +172,132 @@ func Test_listchars()
 
   call assert_equal(expected, split(execute("%list"), "\n"))
 
+  " Test leadmultispace + multispace
+  normal ggdG
+  set listchars=eol:$,multispace:yYzZ
+  set listchars+=leadmultispace:ABCD
+  set list
+
+  call append(0, [
+	      \ '    ffff    ',
+	      \ '  i i     gg',
+	      \ ' h          ',
+	      \ '          j ',
+	      \ '    0  0    ',
+	      \ ])
+
+  let expected = [
+	      \ 'ABCDffffyYzZ$',
+	      \ 'ABi iyYzZygg$',
+	      \ ' hyYzZyYzZyY$',
+	      \ 'ABCDABCDABj $',
+	      \ 'ABCD0yY0yYzZ$',
+        \ '$'
+	      \ ]
+  redraw!
+  for i in range(1, 5)
+    call cursor(i, 1)
+    call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
+  endfor
+
+  call assert_equal(expected, split(execute("%list"), "\n"))
+
+  " Test leadmultispace without multispace
+  normal ggdG
+  set listchars-=multispace:yYzZ
+  set listchars+=space:+,trail:>,eol:$
+  set list
+
+  call append(0, [
+	      \ '    ffff    ',
+	      \ '  i i     gg',
+	      \ ' h          ',
+	      \ '          j ',
+	      \ '    0  0    ',
+	      \ ])
+
+  let expected = [
+	      \ 'ABCDffff>>>>$',
+	      \ 'ABi+i+++++gg$',
+	      \ '+h>>>>>>>>>>$',
+	      \ 'ABCDABCDABj>$',
+	      \ 'ABCD0++0>>>>$',
+        \ '$',
+	      \ ]
+
+  redraw!
+  call assert_equal('eol:$,leadmultispace:ABCD,space:+,trail:>,eol:$', &listchars)
+  for i in range(1, 5)
+    call cursor(i, 1)
+    call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
+  endfor
+
+  call assert_equal(expected, split(execute("%list"), "\n"))
+
+  " Test leadmultispace only
+  normal ggdG
+  set listchars&
+  set listchars=leadmultispace:ABCD
+  set list
+
+  call append(0, [
+	      \ '    ffff    ',
+	      \ '  i i     gg',
+	      \ ' h          ',
+	      \ '          j ',
+	      \ '    0  0    ',
+	      \ ])
+
+  let expected = [
+	      \ 'ABCDffff    ',
+	      \ 'ABi i     gg',
+	      \ ' h          ',
+	      \ 'ABCDABCDABj ',
+	      \ 'ABCD0  0    ',
+        \ ' ',
+	      \ ]
+  redraw!
+  call assert_equal('leadmultispace:ABCD', &listchars)
+  for i in range(1, 5)
+    call cursor(i, 1)
+    call assert_equal([expected[i - 1]], ScreenLines(i, 12))
+  endfor
+  call assert_equal(expected, split(execute("%list"), "\n"))
+
+  " Test leadmultispace and lead and space
+  normal ggdG
+  set listchars&
+  set listchars+=lead:<,space:-
+  set listchars+=leadmultispace:ABCD
+  set list
+
+  call append(0, [
+	      \ '    ffff    ',
+	      \ '  i i     gg',
+	      \ ' h          ',
+	      \ '          j ',
+	      \ '    0  0    ',
+	      \ ])
+
+  let expected = [
+	      \ 'ABCDffff----$',
+	      \ 'ABi-i-----gg$',
+	      \ '<h----------$',
+	      \ 'ABCDABCDABj-$',
+	      \ 'ABCD0--0----$',
+        \ '$',
+	      \ ]
+  redraw!
+  call assert_equal('eol:$,lead:<,space:-,leadmultispace:ABCD', &listchars)
+  for i in range(1, 5)
+    call cursor(i, 1)
+    call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
+  endfor
+  call assert_equal(expected, split(execute("%list"), "\n"))
+
   " the last occurrence of 'multispace:' is used
+  set listchars&
+  set listchars+=multispace:yYzZ
   set listchars+=space:x,multispace:XyY
 
   let expected = [
@@ -181,9 +306,10 @@ func Test_listchars()
 	      \ 'xhXyYXyYXyYX$',
 	      \ 'XyYXyYXyYXjx$',
 	      \ 'XyYX0Xy0XyYX$',
-              \ '$'
+        \ '$'
 	      \ ]
   redraw!
+  call assert_equal('eol:$,multispace:yYzZ,space:x,multispace:XyY', &listchars)
   for i in range(1, 5)
     call cursor(i, 1)
     call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
@@ -199,7 +325,7 @@ func Test_listchars()
 	      \ '>h<<<<<<<<<<$',
 	      \ '>>>>>>>>>>j<$',
 	      \ '>>>>0Xy0<<<<$',
-              \ '$'
+        \ '$'
 	      \ ]
   redraw!
   for i in range(1, 5)
@@ -219,7 +345,7 @@ func Test_listchars()
 	      \ '>h<<<<<<<<<<$',
 	      \ '>>>>>>>>>>j<$',
 	      \ '>>>>0xx0<<<<$',
-              \ '$'
+        \ '$'
 	      \ ]
   redraw!
   for i in range(1, 5)
@@ -315,11 +441,13 @@ func Test_listchars_invalid()
   call assert_fails('set listchars=x', 'E474:')
   call assert_fails('set listchars=x', 'E474:')
   call assert_fails('set listchars=multispace', 'E474:')
+  call assert_fails('set listchars=leadmultispace', 'E474:')
 
   " Too short
   call assert_fails('set listchars=space:', 'E474:')
   call assert_fails('set listchars=tab:x', 'E474:')
   call assert_fails('set listchars=multispace:', 'E474:')
+  call assert_fails('set listchars=leadmultispace:', 'E474:')
 
   " One occurrence too short
   call assert_fails('set listchars=space:,space:x', 'E474:')
@@ -328,6 +456,8 @@ func Test_listchars_invalid()
   call assert_fails('set listchars=tab:xx,tab:x', 'E474:')
   call assert_fails('set listchars=multispace:,multispace:x', 'E474:')
   call assert_fails('set listchars=multispace:x,multispace:', 'E474:')
+  call assert_fails('set listchars=leadmultispace:,leadmultispace:x', 'E474:')
+  call assert_fails('set listchars=leadmultispace:x,leadmultispace:', 'E474:')
 
   " Too long
   call assert_fails('set listchars=space:xx', 'E474:')
@@ -340,6 +470,8 @@ func Test_listchars_invalid()
   call assert_fails('set listchars=tab:xx·', 'E474:')
   call assert_fails('set listchars=multispace:·', 'E474:')
   call assert_fails('set listchars=multispace:xxx·', 'E474:')
+  call assert_fails('set listchars=leadmultispace:·', 'E474:')
+  call assert_fails('set listchars=leadmultispace:xxx·', 'E474:')
 
   " Has control character
   call assert_fails("set listchars=space:\x01", 'E474:')
@@ -354,6 +486,10 @@ func Test_listchars_invalid()
   call assert_fails('set listchars=tab:xx\\x01', 'E474:')
   call assert_fails('set listchars=multispace:\\x01', 'E474:')
   call assert_fails('set listchars=multispace:xxx\\x01', 'E474:')
+  call assert_fails("set listchars=leadmultispace:\x01", 'E474:')
+  call assert_fails('set listchars=leadmultispace:\\x01', 'E474:')
+  call assert_fails("set listchars=leadmultispace:xxx\x01", 'E474:')
+  call assert_fails('set listchars=leadmultispace:xxx\\x01', 'E474:')
 
   enew!
   set ambiwidth& listchars& ff&
