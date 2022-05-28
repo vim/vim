@@ -717,5 +717,13 @@ func Test_address_line_overflow()
   bwipe!
 endfunc
 
+" This was leaving the cursor in line zero
+func Test_using_zero_in_range()
+  new
+  norm o00
+  silent!  0;s/\%')
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
