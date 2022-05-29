@@ -375,22 +375,36 @@ popup_is_in_scrollbar(win_T *wp, int row, int col)
     void
 popup_handle_scrollbar_click(win_T *wp, int row, int col)
 {
-    int	    height = popup_height(wp);
-    int	    old_topline = wp->w_topline;
-
     if (popup_is_in_scrollbar(wp, row, col))
     {
+	int	    height = popup_height(wp);
+	int	    new_topline = wp->w_topline;
+
 	if (row >= height / 2)
 	{
 	    // Click in lower half, scroll down.
 	    if (wp->w_topline < wp->w_buffer->b_ml.ml_line_count)
-		++wp->w_topline;
+		++new_topline;
 	}
 	else if (wp->w_topline > 1)
 	    // click on upper half, scroll up.
-	    --wp->w_topline;
-	if (wp->w_topline != old_topline)
+	    --new_topline;
+	if (new_topline != wp->w_topline)
 	{
+	    set_topline(wp, new_topline);
+	    if (wp == curwin)
+	    {
+		if (wp->w_cursor.lnum < wp->w_topline)
+		{
+		    wp->w_cursor.lnum = wp->w_topline;
+		    check_cursor();
+		}
+		else if (wp->w_cursor.lnum >= wp->w_botline)
+		{
+		    wp->w_cursor.lnum = wp->w_botline - 1;
+		    check_cursor();
+		}
+	    }
 	    popup_set_firstline(wp);
 	    redraw_win_later(wp, NOT_VALID);
 	}
@@ -1419,8 +1433,9 @@ popup_adjust_position(win_T *wp)
     wp->w_has_scrollbar = wp->w_want_scrollbar
 	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
 #ifdef FEAT_TERMINAL
-    if (wp->w_buffer->b_term != NULL)
-	// Terminal window never has a scrollbar, adjusts to window height.
+    if (wp->w_buffer->b_term != NULL && !term_is_finished(wp->w_buffer))
+	// Terminal window with running job never has a scrollbar, adjusts to
+	// window height.
 	wp->w_has_scrollbar = FALSE;
 #endif
     maxwidth_no_scrollbar = maxwidth;
@@ -1587,7 +1602,7 @@ popup_adjust_position(win_T *wp)
 	// add a scrollbar.
 	wp->w_height = Rows - wp->w_winrow - extra_height;
 #ifdef FEAT_TERMINAL
-	if (wp->w_buffer->b_term == NULL)
+	if (wp->w_buffer->b_term == NULL || term_is_finished(wp->w_buffer))
 #endif
 	{
 	    wp->w_has_scrollbar = TRUE;

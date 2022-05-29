@@ -2856,7 +2856,7 @@ func Test_popupwin_terminal_buffer()
   call assert_fails('call popup_create(termbuf2, #{})', 'E861:')
   call term_sendkeys(termbuf2, "exit\<CR>")
 
-  " Exiting shell closes popup window
+  " Exiting shell puts popup window in Terminal-Normal mode.
   call feedkeys("exit\<CR>", 'xt')
   " Wait for shell to exit
   call WaitForAssert({-> assert_equal("dead", job_status(term_getjob(termbuf)))})
@@ -2864,6 +2864,42 @@ func Test_popupwin_terminal_buffer()
   helpclose
   call feedkeys(":quit\<CR>", 'xt')
   call assert_equal(origwin, win_getid())
+endfunc
+
+func Test_popupwin_terminal_scrollbar()
+  CheckFeature terminal
+  CheckScreendump
+  CheckUnix
+
+  call writefile(range(50), 'Xtestfile')
+  let lines =<< trim END
+      vim9script
+
+      term_start(['cat', 'Xtestfile'], {hidden: true})
+	  ->popup_create({
+	      minwidth: 40,
+	      maxwidth: 40,
+	      minheight: 8,
+	      maxheight: 8,
+	      scrollbar: true,
+	      border: []
+	  })
+  END
+  call writefile(lines, 'Xpterm')
+  let buf = RunVimInTerminal('-S Xpterm', #{rows: 15})
+  call VerifyScreenDump(buf, 'Test_popupwin_poptermscroll_1', {})
+
+  " scroll to the middle
+  call term_sendkeys(buf, "50%")
+  call VerifyScreenDump(buf, 'Test_popupwin_poptermscroll_2', {})
+
+  " close the popupwin.
+  call term_sendkeys(buf, ":q\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_poptermscroll_3', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xtestfile')
+  call delete('Xpterm')
 endfunc
 
 func Test_popupwin_close_prevwin()
