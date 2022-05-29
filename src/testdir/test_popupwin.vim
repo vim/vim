@@ -2880,6 +2880,24 @@ func Test_popupwin_terminal_buffer()
   call assert_equal(origwin, win_getid())
 endfunc
 
+func Test_popupwin_terminal_buffer_none()
+  CheckFeature terminal
+  CheckUnix
+
+  " Starting a terminal to run a shell in is considered flaky.
+  let g:test_is_flaky = 1
+
+  let origwin = win_getid()
+  call term_start("NONE", {"hidden": 1})->popup_create({"border": []})
+  sleep 50m
+
+  " since no actual job is running can close the window with :quit
+  call feedkeys("\<C-W>:q\<CR>", 'xt')
+  call assert_equal([], popup_list())
+
+  call assert_equal(origwin, win_getid())
+endfunc
+
 func Test_popupwin_terminal_scrollbar()
   CheckFeature terminal
   CheckScreendump

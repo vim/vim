@@ -8,6 +8,7 @@ void free_terminal(buf_T *buf);
 void free_unused_terminals(void);
 void write_to_term(buf_T *buffer, char_u *msg, channel_T *channel);
 int term_job_running(term_T *term);
+int term_job_running_not_none(term_T *term);
 int term_none_open(term_T *term);
 int term_try_stop_job(buf_T *buf);
 int term_check_timers(int next_due_arg, proftime_T *now);

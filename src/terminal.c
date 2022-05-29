@@ -1630,6 +1630,16 @@ term_job_running(term_T *term)
 }
 
 /*
+ * Return TRUE if the job for "term" is still running, ignoring the job was
+ * "NONE".
+ */
+    int
+term_job_running_not_none(term_T *term)
+{
+    return term_job_running(term) && !term_none_open(term);
+}
+
+/*
  * Return TRUE if "term" has an active channel and used ":term NONE".
  */
     int
@@ -3512,7 +3522,7 @@ term_after_channel_closed(term_T *term)
 may_close_term_popup(void)
 {
     if (popup_is_popup(curwin) && curbuf->b_term != NULL
-					  && !term_job_running(curbuf->b_term))
+				 && !term_job_running_not_none(curbuf->b_term))
     {
 	win_T *pwin = curwin;
 
