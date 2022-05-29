@@ -4087,6 +4087,7 @@ update_popups(void (*win_update)(win_T *wp))
 	{
 	    linenr_T	linecount = wp->w_buffer->b_ml.ml_line_count;
 	    int		height = wp->w_height;
+	    int		last;
 
 	    sb_thumb_height = ((linenr_T)height * height + linecount / 2)
 								   / linecount;
@@ -4104,6 +4105,10 @@ update_popups(void (*win_update)(win_T *wp))
 						  / (linecount - wp->w_height);
 	    if (wp->w_topline > 1 && sb_thumb_top == 0 && height > 1)
 		sb_thumb_top = 1;  // show it's scrolled
+	    last = total_height - top_off - wp->w_popup_border[2];
+	    if (sb_thumb_top >= last)
+		// show at least one character
+		sb_thumb_top = last;
 
 	    if (wp->w_scrollbar_highlight != NULL)
 		attr_scroll = syn_name2attr(wp->w_scrollbar_highlight);

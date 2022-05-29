@@ -2314,8 +2314,8 @@ func Test_popup_scrollbar()
       endif
     endfunc
 
-    def CreatePopup(text: list<string>)
-      popup_create(text, {
+    def CreatePopup(text: list<string>): number
+      return popup_create(text, {
 	    \ minwidth: 30,
 	    \ maxwidth: 30,
 	    \ minheight: 4,
@@ -2341,6 +2341,11 @@ func Test_popup_scrollbar()
 	  long line long line long line long line long line long line
       END
       call CreatePopup(text)
+    endfunc
+    func ScrollBottom()
+      call popup_clear()
+      let id = CreatePopup(range(20)->map({k, v -> string(v)}))
+      call popup_setoptions(id, #{firstline: 20})
     endfunc
     map <silent> <F3> :call test_setmouse(5, 36)<CR>
     map <silent> <F4> :call test_setmouse(4, 42)<CR>
@@ -2396,6 +2401,10 @@ func Test_popup_scrollbar()
   " check size with wrapping lines
   call term_sendkeys(buf, "j")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_12', {})
+
+  " check thumb when scrolled all the way down
+  call term_sendkeys(buf, ":call ScrollBottom()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_13', {})
 
   " clean up
   call term_sendkeys(buf, "x")
