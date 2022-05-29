@@ -1072,7 +1072,7 @@ func Test_popup_invalid_arguments()
   call assert_fails('call popup_create("text", #{borderchars: "none"})', 'E714:')
   call popup_clear()
 
-  call assert_fails('call popup_create([#{text: "text"}, 666], {})', 'E715:')
+  call assert_fails('call popup_create([#{text: "text"}, 666], {})', 'E1284: Argument 1, list item 2: Dictionary required')
   call popup_clear()
   call assert_fails('call popup_create([#{text: "text", props: "none"}], {})', 'E714:')
   call popup_clear()
@@ -1090,6 +1090,11 @@ func Test_popup_invalid_arguments()
   call assert_fails('call popup_create("text", #{mapping: []})', 'E745:')
   call popup_clear()
   call assert_fails('call popup_create("text", #{tabpage : 4})', 'E997:')
+  call popup_clear()
+
+  call assert_fails('call popup_create(range(10), {})', 'E1024:')
+  call popup_clear()
+  call assert_fails('call popup_create([1, 2], {})', 'E1284: Argument 1, list item 1: Dictionary required')
   call popup_clear()
 endfunc
 

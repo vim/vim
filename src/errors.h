@@ -3284,3 +3284,7 @@ EXTERN char e_bitshift_ops_must_be_number[]
 EXTERN char e_bitshift_ops_must_be_postive[]
 	INIT(= N_("E1283: Bitshift amount must be a positive number"));
 #endif
+#if defined(FEAT_PROP_POPUP)
+EXTERN char e_argument_1_list_item_nr_dictionary_required[]
+	INIT(= N_("E1284: Argument 1, list item %d: Dictionary required"));
+#endif

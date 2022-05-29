@@ -1047,7 +1047,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictionary_required));
+	    semsg(_(e_argument_1_list_item_nr_dictionary_required), lnum + 1);
 	    return;
 	}
 	dict = li->li_tv.vval.v_dict;
@@ -1685,7 +1685,9 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
 
 	if (l != NULL && l->lv_len > 0)
 	{
-	    if (l->lv_first->li_tv.v_type == VAR_STRING)
+	    if (l->lv_first == &range_list_item)
+		emsg(_(e_using_number_as_string));
+	    else if (l->lv_first->li_tv.v_type == VAR_STRING)
 		// list of strings
 		add_popup_strings(buf, l);
 	    else
