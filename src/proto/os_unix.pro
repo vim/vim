@@ -86,4 +86,6 @@ int xsmp_handle_requests(void);
 void xsmp_init(void);
 void xsmp_close(void);
 int gpm_available(void);
+void stop_timeout(void);
+const int *start_timeout(long msec);
 /* vim: set ft=c : */

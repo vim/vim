@@ -1,4 +1,6 @@
 /* regexp.c */
+void init_regexp_timeout(long msec);
+void disable_regexp_timeout(void);
 int re_multiline(regprog_T *prog);
 char_u *skip_regexp(char_u *startp, int delim, int magic);
 char_u *skip_regexp_err(char_u *startp, int delim, int magic);
@@ -18,5 +20,5 @@ int regprog_in_use(regprog_T *prog);
 int vim_regexec_prog(regprog_T **prog, int ignore_case, char_u *line, colnr_T col);
 int vim_regexec(regmatch_T *rmp, char_u *line, colnr_T col);
 int vim_regexec_nl(regmatch_T *rmp, char_u *line, colnr_T col);
-long vim_regexec_multi(regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, proftime_T *tm, int *timed_out);
+long vim_regexec_multi(regmmatch_T *rmp, win_T *win, buf_T *buf, linenr_T lnum, colnr_T col, int *timed_out);
 /* vim: set ft=c : */

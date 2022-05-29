@@ -20,6 +20,11 @@
 # define BT_REGEXP_DEBUG_LOG_NAME	"bt_regexp_debug.log"
 #endif
 
+#ifdef FEAT_RELTIME
+static int dummy_timeout_flag = 0;
+static const int *timeout_flag = &dummy_timeout_flag;
+#endif
+
 /*
  * Magic characters have a special meaning, they don't match literally.
  * Magic characters are negative.  This separates them from literal characters
@@ -44,6 +49,20 @@ toggle_Magic(int x)
 	return un_Magic(x);
     return Magic(x);
 }
+
+#ifdef FEAT_RELTIME
+    void
+init_regexp_timeout(long msec)
+{
+    timeout_flag = start_timeout(msec);
+}
+
+    void
+disable_regexp_timeout(void)
+{
+    stop_timeout();
+}
+#endif
 
 /*
  * The first byte of the BT regexp internal "program" is actually this magic
@@ -2905,7 +2924,6 @@ vim_regexec_multi(
     buf_T       *buf,		// buffer in which to search
     linenr_T	lnum,		// nr of line to start looking for match
     colnr_T	col,		// column to start looking for match
-    proftime_T	*tm,		// timeout limit or NULL
     int		*timed_out)	// flag is set when timeout limit reached
 {
     int		result;
@@ -2926,7 +2944,7 @@ vim_regexec_multi(
     rex_in_use = TRUE;
 
     result = rmp->regprog->engine->regexec_multi(
-				      rmp, win, buf, lnum, col, tm, timed_out);
+				      rmp, win, buf, lnum, col, timed_out);
     rmp->regprog->re_in_use = FALSE;
 
     // NFA engine aborted because it's very slow.
@@ -2966,7 +2984,7 @@ vim_regexec_multi(
 
 		rmp->regprog->re_in_use = TRUE;
 		result = rmp->regprog->engine->regexec_multi(
-				      rmp, win, buf, lnum, col, tm, timed_out);
+				      rmp, win, buf, lnum, col, timed_out);
 		rmp->regprog->re_in_use = FALSE;
 	    }
 	    vim_free(pat);

@@ -1550,6 +1550,28 @@ func Test_search_errors()
   bwipe!
 endfunc
 
+func Test_search_timeout()
+  new
+  let pattern = '\%#=1a*.*X\@<=b*'
+
+  for n in range(40, 400, 30)
+      call setline(1, ['aaa', repeat('abc ', n), 'ccc'])
+      let start = reltime()
+      call search(pattern, '', 0)
+      let elapsed = reltimefloat(reltime(start))
+      if elapsed > 0.1
+          break
+      endif
+  endfor
+  call assert_true(elapsed > 0.1)
+
+  let start = reltime()
+  call search(pattern, '', 0, 10)
+  let elapsed = reltimefloat(reltime(start))
+  call assert_true(elapsed < 0.05)
+  bwipe!
+endfunc
+
 func Test_search_display_pattern()
   new
   call setline(1, ['foo', 'bar', 'foobar'])

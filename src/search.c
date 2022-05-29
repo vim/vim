@@ -658,19 +658,14 @@ searchit(
     int		break_loop = FALSE;
 #endif
     linenr_T	stop_lnum = 0;	// stop after this line number when != 0
-#ifdef FEAT_RELTIME
-    proftime_T	*tm = NULL;	// timeout limit or NULL
-    int		*timed_out = NULL;  // set when timed out or NULL
-#endif
 
-    if (extra_arg != NULL)
-    {
-	stop_lnum = extra_arg->sa_stop_lnum;
-#ifdef FEAT_RELTIME
-	tm = extra_arg->sa_tm;
-	timed_out = &extra_arg->sa_timed_out;
-#endif
-    }
+#   ifdef FEAT_RELTIME
+    static int       unused_timeout_flag = FALSE;
+    int	             *timed_out = &unused_timeout_flag;  // set when timed out.
+#   else
+    static const int unused_timeout_flag = FALSE;
+    const int	     *timed_out = &unused_timeout_flag;
+#   endif
 
     if (search_regcomp(pat, RE_SEARCH, pat_use,
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
@@ -678,6 +673,16 @@ searchit(
 	if ((options & SEARCH_MSG) && !rc_did_emsg)
 	    semsg(_(e_invalid_search_string_str), mr_pattern);
 	return FAIL;
+    }
+
+    if (extra_arg != NULL)
+    {
+	stop_lnum = extra_arg->sa_stop_lnum;
+#ifdef FEAT_RELTIME
+	if (extra_arg->sa_tm > 0)
+	    init_regexp_timeout(extra_arg->sa_tm);
+	timed_out = &extra_arg->sa_timed_out;
+#endif
     }
 
     /*
@@ -753,34 +758,21 @@ searchit(
 		if (stop_lnum != 0 && (dir == FORWARD
 				       ? lnum > stop_lnum : lnum < stop_lnum))
 		    break;
-#ifdef FEAT_RELTIME
-		// Stop after passing the "tm" time limit.
-		if (tm != NULL && profile_passed_limit(tm))
+		// Stop after passing the time limit.
+		if (*timed_out)
 		    break;
-#endif
 
 		/*
 		 * Look for a match somewhere in line "lnum".
 		 */
 		col = at_first_line && (options & SEARCH_COL) ? pos->col
 								 : (colnr_T)0;
-		nmatched = vim_regexec_multi(&regmatch, win, buf,
-					     lnum, col,
-#ifdef FEAT_RELTIME
-					     tm, timed_out
-#else
-					     NULL, NULL
-#endif
-						      );
+		nmatched = vim_regexec_multi(&regmatch, win, buf, lnum, col, timed_out);
 		// vim_regexec_multi() may clear "regprog"
 		if (regmatch.regprog == NULL)
 		    break;
 		// Abort searching on an error (e.g., out of stack).
-		if (called_emsg > called_emsg_before
-#ifdef FEAT_RELTIME
-			|| (timed_out != NULL && *timed_out)
-#endif
-			)
+		if (called_emsg > called_emsg_before || *timed_out)
 		    break;
 		if (nmatched > 0)
 		{
@@ -863,13 +855,7 @@ searchit(
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
 					      win, buf, lnum + matchpos.lnum,
-					      matchcol,
-#ifdef FEAT_RELTIME
-					      tm, timed_out
-#else
-					      NULL, NULL
-#endif
-					      )) == 0)
+					      matchcol, timed_out)) == 0)
 			    {
 				match_ok = FALSE;
 				break;
@@ -974,21 +960,13 @@ searchit(
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
 					      win, buf, lnum + matchpos.lnum,
-					      matchcol,
-#ifdef FEAT_RELTIME
-					      tm, timed_out
-#else
-					      NULL, NULL
-#endif
-					    )) == 0)
+					      matchcol, timed_out)) == 0)
 			    {
-#ifdef FEAT_RELTIME
 				// If the search timed out, we did find a match
 				// but it might be the wrong one, so that's not
 				// OK.
-				if (timed_out != NULL && *timed_out)
+				if (*timed_out)
 				    match_ok = FALSE;
-#endif
 				break;
 			    }
 			    // vim_regexec_multi() may clear "regprog"
@@ -1097,10 +1075,7 @@ searchit(
 	     * twice.
 	     */
 	    if (!p_ws || stop_lnum != 0 || got_int
-					    || called_emsg > called_emsg_before
-#ifdef FEAT_RELTIME
-				|| (timed_out != NULL && *timed_out)
-#endif
+					    || called_emsg > called_emsg_before || *timed_out
 #ifdef FEAT_SEARCH_EXTRA
 				|| break_loop
 #endif
@@ -1124,10 +1099,7 @@ searchit(
 	    if (extra_arg != NULL)
 		extra_arg->sa_wrapped = TRUE;
 	}
-	if (got_int || called_emsg > called_emsg_before
-#ifdef FEAT_RELTIME
-		|| (timed_out != NULL && *timed_out)
-#endif
+	if (got_int || called_emsg > called_emsg_before || *timed_out
 #ifdef FEAT_SEARCH_EXTRA
 		|| break_loop
 #endif
@@ -1136,6 +1108,9 @@ searchit(
     }
     while (--count > 0 && found);   // stop after count matches or no match
 
+#   ifdef FEAT_RELTIME
+    disable_regexp_timeout();
+#   endif
     vim_regfree(regmatch.regprog);
 
     if (!found)		    // did not find it
@@ -2915,7 +2890,7 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
 	{
 	    regmatch.startpos[0].col++;
 	    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
-			       pos.lnum, regmatch.startpos[0].col, NULL, NULL);
+			       pos.lnum, regmatch.startpos[0].col, NULL);
 	    if (nmatched != 0)
 		break;
 	} while (regmatch.regprog != NULL

@@ -417,7 +417,6 @@ may_do_incsearch_highlighting(
     int		found;  // do_search() result
     pos_T	end_pos;
 #ifdef FEAT_RELTIME
-    proftime_T	tm;
     searchit_arg_T sia;
 #endif
     int		next_char;
@@ -484,10 +483,6 @@ may_do_incsearch_highlighting(
 	cursor_off();	// so the user knows we're busy
 	out_flush();
 	++emsg_off;	// so it doesn't beep if bad expr
-#ifdef FEAT_RELTIME
-	// Set the time limit to half a second.
-	profile_setlimit(500L, &tm);
-#endif
 	if (!p_hls)
 	    search_flags += SEARCH_KEEP;
 	if (search_first_line != 0)
@@ -495,7 +490,8 @@ may_do_incsearch_highlighting(
 	ccline.cmdbuff[skiplen + patlen] = NUL;
 #ifdef FEAT_RELTIME
 	CLEAR_FIELD(sia);
-	sia.sa_tm = &tm;
+	// Set the time limit to half a second.
+	sia.sa_tm = 500;
 #endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
 				 ccline.cmdbuff + skiplen, count, search_flags,

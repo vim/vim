@@ -8315,3 +8315,80 @@ GetWin32Error(void)
     }
     return msg;
 }
+
+#ifdef FEAT_RELTIME
+static HANDLE   timer_handle;
+static int      timer_active        = FALSE;
+
+/*
+ * Calls to start_timeout alternate the return value pointer between the two
+ * entries in timeout_flags. If the previously active timeout is very close to
+ * expiring when start_timeout() is called then a race condition means that the
+ * set_flag() function may still be invoked after the previous timer is
+ * deleted. Ping-ponging between the two flags prevents this causing 'fake'
+ * timeouts.
+ */
+static int      timeout_flags[2];
+static int      flag_idx = 0;
+
+    static void
+set_flag(void *param, BOOLEAN unused2)
+{
+    int *timeout_flag = (int *)param;
+    *timeout_flag = 1;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    if (timer_active)
+    {
+        BOOL ret = DeleteTimerQueueTimer(NULL, timer_handle, NULL);
+	timer_active = FALSE;
+	if (!ret && GetLastError() != ERROR_IO_PENDING)
+	{
+	    semsg(_(e_could_not_clear_timeout), GetWin32Error());
+	}
+    }
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The period is defined in milliseconds.
+ *
+ * The return value is a pointer to a flag that is initialised to 0.  If the
+ * timeout expires, the flag is set to 1. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it still returns a
+ * valid flag pointer; the flag will remain stuck at zero.
+ */
+    const int *
+start_timeout(long msec)
+{
+    UINT interval = (UINT)msec;
+    BOOL ret;
+    int *timeout_flag = &timeout_flags[flag_idx];
+
+    stop_timeout();
+    ret = CreateTimerQueueTimer(
+	    &timer_handle, NULL, set_flag, timeout_flag,
+	    (DWORD)msec, 0, WT_EXECUTEDEFAULT);
+    if (!ret)
+    {
+	semsg(_(e_could_not_set_timeout), GetWin32Error());
+    }
+    else
+    {
+	flag_idx = (flag_idx + 1) % 2;
+	timer_active = TRUE;
+	*timeout_flag = 0;
+    }
+    return timeout_flag;
+}
+#endif
