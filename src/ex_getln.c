@@ -2740,6 +2740,21 @@ get_text_locked_msg(void)
 }
 
 /*
+ * Check for text, window or buffer locked.
+ * Give an error message and return TRUE if something is locked.
+ */
+    int
+text_or_buf_locked(void)
+{
+    if (text_locked())
+    {
+	text_locked_msg();
+	return TRUE;
+    }
+    return curbuf_locked();
+}
+
+/*
  * Check if "curbuf_lock" or "allbuf_lock" is set and return TRUE when it is
  * and give an error message.
  */
@@ -4378,6 +4393,10 @@ open_cmdwin(void)
 #ifdef FEAT_FOLDING
     int			save_KeyTyped;
 #endif
+
+    // Can't do this when text or buffer is locked.
+    if (text_or_buf_locked())
+	return K_IGNORE;
 
     // Can't do this recursively.  Can't do it when typing a password.
     if (cmdwin_type != 0

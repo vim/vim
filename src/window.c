@@ -4585,14 +4585,11 @@ win_goto(win_T *wp)
 	return;
     }
 #endif
-    if (text_locked())
+    if (text_or_buf_locked())
     {
 	beep_flush();
-	text_locked_msg();
 	return;
     }
-    if (curbuf_locked())
-	return;
 
     if (wp->w_buffer != curbuf)
 	reset_VIsual_and_resel();

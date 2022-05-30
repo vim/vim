@@ -2407,12 +2407,7 @@ buflist_getfile(
     if (buf == curbuf)
 	return OK;
 
-    if (text_locked())
-    {
-	text_locked_msg();
-	return FAIL;
-    }
-    if (curbuf_locked())
+    if (text_or_buf_locked())
 	return FAIL;
 
     // altfpos may be changed by getfile(), get it now
