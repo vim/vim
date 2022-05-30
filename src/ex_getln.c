@@ -4395,11 +4395,9 @@ open_cmdwin(void)
 #endif
 
     // Can't do this when text or buffer is locked.
-    if (text_or_buf_locked())
-	return K_IGNORE;
-
     // Can't do this recursively.  Can't do it when typing a password.
-    if (cmdwin_type != 0
+    if (text_or_buf_locked()
+	    || cmdwin_type != 0
 # if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 	    || cmdline_star > 0
 # endif
