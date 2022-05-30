@@ -16,7 +16,7 @@ const help_text: list<string> =<< trim END
     <C-K>  scroll up one line
 
     normal commands in TOC menu
-    ─────────────────────────────
+    ───────────────────────────
     j      select next entry
     k      select previous entry
     J      same as j, and jump to corresponding line in main buffer
@@ -130,6 +130,12 @@ var selected_entry_match: number
 export def Open() #{{{2
     var type: string = GetType()
     if !match_entry->has_key(type)
+        return
+    endif
+    if type == 'terminal' && win_gettype() == 'popup'
+        # trying to deal with a popup menu on top of a popup terminal seems
+        # too tricky for now
+        echomsg 'does not work in a popup window; only in a regular window'
         return
     endif
 
