@@ -2907,6 +2907,9 @@ func Test_popupwin_terminal_scrollbar()
   let lines =<< trim END
       vim9script
 
+      # testing CTRL-W CTRL-W requires two windows
+      split
+
       term_start(['cat', 'Xtestfile'], {hidden: true})
 	  ->popup_create({
 	      minwidth: 40,
@@ -2925,9 +2928,13 @@ func Test_popupwin_terminal_scrollbar()
   call term_sendkeys(buf, "50%")
   call VerifyScreenDump(buf, 'Test_popupwin_poptermscroll_2', {})
 
+  " get error if trying to escape the window
+  call term_sendkeys(buf, "\<C-W>\<C-W>")
+  call VerifyScreenDump(buf, 'Test_popupwin_poptermscroll_3', {})
+
   " close the popupwin.
   call term_sendkeys(buf, ":q\<CR>")
-  call VerifyScreenDump(buf, 'Test_popupwin_poptermscroll_3', {})
+  call VerifyScreenDump(buf, 'Test_popupwin_poptermscroll_4', {})
 
   call StopVimInTerminal(buf)
   call delete('Xtestfile')

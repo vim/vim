@@ -2760,7 +2760,6 @@ error_if_popup_window(int also_with_term UNUSED)
     if (WIN_IS_POPUP(curwin)
 # ifdef FEAT_TERMINAL
 	    && (also_with_term || curbuf->b_term == NULL)
-	    && !term_is_finished(curbuf)
 # endif
 	    )
     {
