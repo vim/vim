@@ -4108,7 +4108,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    last = total_height - top_off - wp->w_popup_border[2];
 	    if (sb_thumb_top >= last)
 		// show at least one character
-		sb_thumb_top = last;
+		sb_thumb_top = last - 1;
 
 	    if (wp->w_scrollbar_highlight != NULL)
 		attr_scroll = syn_name2attr(wp->w_scrollbar_highlight);

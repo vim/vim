@@ -2344,8 +2344,8 @@ func Test_popup_scrollbar()
     endfunc
     func ScrollBottom()
       call popup_clear()
-      let id = CreatePopup(range(20)->map({k, v -> string(v)}))
-      call popup_setoptions(id, #{firstline: 20})
+      let id = CreatePopup(range(100)->map({k, v -> string(v)}))
+      call popup_setoptions(id, #{firstline: 100, minheight: 9, maxheight: 9})
     endfunc
     map <silent> <F3> :call test_setmouse(5, 36)<CR>
     map <silent> <F4> :call test_setmouse(4, 42)<CR>
