@@ -798,7 +798,11 @@ update_search_hl(
 		// Highlight the match were the cursor is using the CurSearch
 		// group.
 		if (shl == search_hl && shl->has_cursor)
+		{
 		    shl->attr_cur = HL_ATTR(HLF_LC);
+		    if (shl->attr_cur != shl->attr)
+			search_hl_has_cursor_lnum = lnum;
+		}
 
 	    }
 	    else if (col == shl->endcol)

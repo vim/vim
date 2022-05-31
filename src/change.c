@@ -663,6 +663,10 @@ changed_common(
 	    }
 #endif
 	}
+#ifdef FEAT_SEARCH_EXTRA
+	if (wp == curwin && xtra != 0 && search_hl_has_cursor_lnum >= lnum)
+	    search_hl_has_cursor_lnum += xtra;
+#endif
     }
 
     // Call update_screen() later, which checks out what needs to be redrawn,
