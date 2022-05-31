@@ -493,13 +493,7 @@ next_search_hl(
 				&& cur->match.regprog == cur->hl.rm.regprog);
 
 	    nmatched = vim_regexec_multi(&shl->rm, win, shl->buf, lnum,
-		    matchcol,
-#ifdef FEAT_RELTIME
-		    &timed_out
-#else
-		    NULL, NULL
-#endif
-		    );
+		    matchcol, &timed_out);
 	    // Copy the regprog, in case it got freed and recompiled.
 	    if (regprog_is_copy)
 		cur->match.regprog = cur->hl.rm.regprog;

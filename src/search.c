@@ -767,7 +767,8 @@ searchit(
 		 */
 		col = at_first_line && (options & SEARCH_COL) ? pos->col
 								 : (colnr_T)0;
-		nmatched = vim_regexec_multi(&regmatch, win, buf, lnum, col, timed_out);
+		nmatched = vim_regexec_multi(&regmatch, win, buf,
+					     lnum, col, timed_out);
 		// vim_regexec_multi() may clear "regprog"
 		if (regmatch.regprog == NULL)
 		    break;
@@ -1075,7 +1076,7 @@ searchit(
 	     * twice.
 	     */
 	    if (!p_ws || stop_lnum != 0 || got_int
-					    || called_emsg > called_emsg_before || *timed_out
+			        || called_emsg > called_emsg_before || *timed_out
 #ifdef FEAT_SEARCH_EXTRA
 				|| break_loop
 #endif

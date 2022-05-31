@@ -3151,9 +3151,7 @@ syn_regexec(
     syn_time_T  *st UNUSED)
 {
     int r;
-#ifdef FEAT_RELTIME
     int timed_out = FALSE;
-#endif
 #ifdef FEAT_PROFILE
     proftime_T	pt;
 
@@ -3168,13 +3166,7 @@ syn_regexec(
 	return FALSE;
 
     rmp->rmm_maxcol = syn_buf->b_p_smc;
-    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col,
-#ifdef FEAT_RELTIME
-	    &timed_out
-#else
-	    NULL
-#endif
-	    );
+    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, &timed_out);
 
 #ifdef FEAT_PROFILE
     if (syn_time_on)
