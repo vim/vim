@@ -2951,26 +2951,24 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 		    if (eli == NULL)
 			break;
 		    if (eli->li_tv.v_type != VAR_STRING
-			    || eli->li_tv.vval.v_string == NULL)
+			    || (p = eli->li_tv.vval.v_string) == NULL)
 		    {
 			emsg(_(e_string_required));
-			continue;
+			break;
 		    }
-		    p = eli->li_tv.vval.v_string;
 		}
 		else
 		{
-		    if (end == NULL)
-			p = end = event_name;
-		    if (end == NULL || *end == NUL)
+		    if (p == NULL)
+			p = event_name;
+		    if (p == NULL || *p == NUL)
 			break;
 		}
-		if (p == NULL)
-		    continue;
 
 		event = event_name2nr(p, &end);
 		if (event == NUM_EVENTS || *end != NUL)
 		{
+		    // this also catches something following a valid event name
 		    semsg(_(e_no_such_event_str), p);
 		    retval = VVAL_FALSE;
 		    break;
