@@ -45,7 +45,7 @@ syn match   javaScriptNumber           "\<0[oO][0-7]\+\(_[0-7]\+\)*\>"
 syn match   javaScriptNumber           "\<0\([0-7]\+\(_[0-7]\+\)*\)\?\>"
 syn match   javaScriptNumber           "\<0[xX][0-9a-fA-F]\+\(_[0-9a-fA-F]\+\)*\>"
 syn match   javaScriptNumber           "\<[0-9]\+\(_[0-9]\+\)*[eE][+-]\?\d\+\>"
-syn match   javaScriptNumber           "\<[1-9]\+\(_[0-9]\+\)*\(\.\([0-9]\+\(_[0-9]\+\)*\([eE][+-]\?\d\+\)\?\)\?\)\?\>"
+syn match   javaScriptNumber           "\<[1-9][0-9]*\(_[0-9]\+\)*\(\.\([0-9]\+\(_[0-9]\+\)*\([eE][+-]\?\d\+\)\?\)\?\)\?\>"
 syn match   javaScriptNumber           "\<\([0-9]\+\(_[0-9]\+\)*\)\?\.[0-9]\+\(_[0-9]\+\)*\([eE][+-]\?\d\+\)\?\>"
 syn match   javaScriptNumber           "\<[0-9]\+\(_[0-9]\+\)*\.\([0-9]\+\(_[0-9]\+\)*\([eE][+-]\?\d\+\)\?\)\?\>"
 syn region  javaScriptRegexpString     start=+[,(=+]\s*/[^/*]+ms=e-1,me=e-1 skip=+\\\\\|\\/+ end=+/[gimuys]\{0,2\}\s*$+ end=+/[gimuys]\{0,2\}\s*[+;.,)\]}]+me=e-1 end=+/[gimuys]\{0,2\}\s\+\/+me=e-1 contains=@htmlPreproc,javaScriptComment oneline
