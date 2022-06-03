@@ -1,22 +1,71 @@
-*usr_50.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*usr_50.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
 			 Advanced Vim script writing
 
 
-TODO - this chapter is to be written
-
-|50.1|	Writing stuff
+|50.1|	Line continuation
+|50.2|	Restoring the view
 
      Next chapter: |usr_51.txt|  Create a plugin
  Previous chapter: |usr_45.txt|  Select your language (local)
 Table of contents: |usr_toc.txt|
 
 ==============================================================================
-*50.1*	Writing stuff
+*50.1*	Line continuation
 
-TODO
+In legacy Vim script line contination is done by preceding a contination line
+with a backslash: >
+	let mylist = [
+			\ 'one',
+			\ 'two',
+			\ ]
+
+This requires the 'cpo' option to exclude the "C" flag.  Normally this is done
+by putting this at the start of the script: >
+	let s:save_cpo = &cpo
+	set cpo&vim
+
+And restore the option at the end of the script: >
+	let &cpo = s:save_cpo
+	unlet s:save_cpo
+
+A few more details can be found here: |line-continuation|.
+
+In |Vim9| script the backslash can still be used, but in most places it is not
+needed: >
+	var mylist = [
+			'one',
+			'two',
+			]
+
+Also, the 'cpo' option does not need to be changed.  See
+|vim9-line-continuation| for details.
+
+==============================================================================
+*50.2*	Restoring the view
+
+Sometimes you want to make a change and go back to where the cursor was.
+Restoring the relative position would also be nice, so that the same line
+appears at the top of the window.
+
+This example yanks the current line, puts it above the first line in the file
+and then restores the view: >
+
+	map ,p ma"aYHmbgg"aP`bzt`a
+
+What this does: >
+	ma"aYHmbgg"aP`bzt`a
+<	ma			set mark a at cursor position
+	  "aY			yank current line into register a
+	     Hmb		go to top line in window and set mark b there
+		gg		go to first line in file
+		  "aP		put the yanked line above it
+		     `b		go back to top line in display
+		       zt	position the text in the window as before
+			 `a	go back to saved cursor position
+
 
 ==============================================================================
 

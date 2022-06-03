@@ -1,25 +1,27 @@
-*usr_52.txt*	For Vim version 8.2.  Last change: 2022 May 21
+*usr_52.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
-		       Write plugins using Vim9 script
+		       Write larger plugins
 
+TODO: this file needs to be updated
 
-The Vim9 script language is used for writing plugins, especially larger ones
-that use multiple files.  This chapter explains how to split up a plugin into
-modules, import and export items and keep the rest local.
+When plugins do more than simple things, they tend to grow big.  This file
+explains how to make sure they still load fast and how to split them up in
+smaller parts
 
-|52.1|	Introduction
-|52.2|	Variable declarations
-|52.3|	Functions and types
-|52.4|	Using a Vim9 script from legacy script
+|52.1|	Export and import
+|52.2|	Autoloading
+|52.3|	Autoloading without import/export
+|52.4|	Other mechanisms to use
+|52.5|	Using a Vim9 script from legacy script
 
      Next chapter: |usr_90.txt|  Installing Vim
  Previous chapter: |usr_51.txt|  Create a plugin
 Table of contents: |usr_toc.txt|
 
 ==============================================================================
-*52.1*	Introduction				*vim9-script-intro*
+*52.1*	Export and import
 
 Vim9 script was designed to make it easier to write large Vim scripts.  It
 looks more like other script languages, especially Typescript.  Also,
@@ -65,104 +67,190 @@ the return type.  Vim9 functions, defined with `def`, require specifying the
 type of arguments and the return type.  That way Vim can compile the code
 efficiently.  The GetPart function defines an argument "nr" of type "number".
 
-Notice that the assignment `result = GetPart(count)` does not use the `let`
-command.  That is explained in the next section.
+TODO: import/export example
+
+USING GLOBALS
+
+Sometimes you will want to use global variables or functions, so that they can
+be used anywhere.  A good example is a global variable that passes a
+preference to a plugin.  To avoid other scripts using the same name, use a
+prefix that is very unlikely to be used elsewhere.  For example, if you have a
+"mytags" plugin, you could use: >
+
+	g:mytags_location = '$HOME/project'
+	g:mytags_style = 'fast'
 
 ==============================================================================
-*52.2*	Variable declarations				*vim9-declarations*
+*52.2*	Autoloading
 
-In Vim9 script variables are declared once with a `:let` or `:const` command.
-Assigning a value is done without `:let` and it is not possible to `:unlet`
-the variable.
+TODO: autoloading with import/export
 
-In most cases you will want to declare the variable and initialize it at the
-same time: >
-	let myText = 'some text'
-	...
-	myText = 'other text'
+After splitting your large script into pieces, all the lines will still be
+loaded and executed the moment the script is used.  Every `import` loads the
+imported script to find the items defined there.  Although that is good for
+finding errors early, it also takes time.  Which is wasted if the
+functionality is not often used.
 
-The type of the variable will be inferred from the expression.  In this case
-it is a string.  If you initialize with a number, then the type is number: >
-	let myNumber = 1234
-	...
-	myNumber = 0
+Instead of having `import` load the script immediately, it can be postponed
+until needed. >
+	import autoload "./LoadLater.vim"
 
-If you try to assign a string to this variable, you will get an error: >
-	let myNumber = 'this fails!'
+Now you can use exported items as usual: "LoadLater.GetMonth(4)".
+However, the type will not be checked. Not even the existence of the
+GetMonth() function is checked until it is used.  You will have to decide what
+is more important for your script.  You can also add the "autoload" argument
+later, after you have checked everything works.
 
-In the rare case you want a variable that can take values of any type, you
-have to specify the type: >
-	let myVar: any = 1234
-	myVar = 'text also works'
+Another form is to use a script name that is not an absolute or relative
+path: >
+	import autload "monthlib.vim"
 
-You can also declare a variable without assigning a value.  In that case Vim
-will initialize it to zero or empty: >
-	let word: string
-	if condition
-	  word = 'yes'
-	else
-	  word = 'no'
+This will search for the script "monthlib.vim" in the autoload directories of
+'runtimepath'.  With Unix the directory often is "~/.vim/autoload".
+
+The main advantage of this is that this script can be shared with other
+scripts.  You do need to make sure that the script name is unique, since Vim
+will search all the "autoload" directories in 'runtimepath', and if you are
+using several plugins, these may add several directories to 'runtimepath',
+each of which might have an "autoload" directory.
+
+==============================================================================
+*52.3*	Autoloading without import/export
+
+						*write-library-script*
+A mechanism from before import/export is still useful and some users may find
+it a bit simpler.  The idea is that you call a function with a special name.
+That function is then in an autoload script.  We will call that one script a
+library script.
+
+The autoload mechanism is based on a funtion name that has "#" characters: >
+
+	mylib#myfunction(arg)
+
+Vim will recognize the function name by the embedded "#" character and when
+it is not defined yet search for the script "autoload/mylib.vim" in
+'runtimepath'.  That script must define the "mylib#myfunction()" function.
+Obviously the name "mylib" is the part before the "#" and is used as the name
+of the script, adding ".vim".
+
+You can put many other functions in the mylib.vim script, you are free to
+organize your functions in library scripts.  But you must use function names
+where the part before the '#' matches the script name.  Otherwise Vim would
+not know what script to load.  This is where it differs from the import/export
+mechanism.
+
+If you get really enthusiastic and write lots of library scripts, you may
+want to use subdirectories.  Example: >
+
+	netlib#ftp#read('somefile')
+
+Here the script name is taken from the function name up to the last "#". The
+"#" in the middle are replaced by a slash, the last one by ".vim".  Thus you
+get "netlib/ftp.vim".  For Unix the library script used for this could be:
+
+	~/.vim/autoload/netlib/ftp.vim
+
+Where the function is defined like this: >
+
+	def netlib#ftp#read(fname: string)
+		#  Read the file fname through ftp
+	enddef
+
+Notice that the name the function is defined with is exactly the same as the
+name used for calling the function.  And the part before the last '#'
+exactly matches the subdirectory and script name.
+
+You can use the same mechanism for variables: >
+
+	var weekdays = dutch#weekdays
+
+This will load the script "autoload/dutch.vim", which should contain something
+like: >
+
+	var dutch#weekdays = ['zondag', 'maandag', 'dinsdag', 'woensdag',
+		\ 'donderdag', 'vrijdag', 'zaterdag']
+
+Further reading: |autoload|.
+
+==============================================================================
+*52.4*	Other mechanisms to use
+
+Some may find the use of several files a hassle and prefer to keep everything
+together in one script.  To avoid this resulting in slow startup there is a
+mechanism that only defines a small part and postpones the rest to when it is
+actually used.  *write-plugin-quickload*
+
+The basic idea is that the plugin is loaded twice.  The first time user
+commands and mappings are defined that offer the functionality.  The second
+time the functions that implement the functionality are defined.
+
+It may sound surprising that quickload means loading a script twice.  What we
+mean is that it loads quickly the first time, postponing the bulk of the
+script to the second time, which only happens when you actually use it.  When
+you always use the functionality it actually gets slower!
+
+This uses a FuncUndefined autocommand.  This works differently from the
+|autoload| functionality explained above.
+
+The following example shows how it's done: >
+
+	" Vim global plugin for demonstrating quick loading
+	" Last Change:	2005 Feb 25
+	" Maintainer:	Bram Moolenaar <Bram@vim.org>
+	" License:	This file is placed in the public domain.
+
+	if !exists("s:did_load")
+		command -nargs=* BNRead  call BufNetRead(<f-args>)
+		map <F19> :call BufNetWrite('something')<CR>
+
+		let s:did_load = 1
+		exe 'au FuncUndefined BufNet* source ' .. expand('<sfile>')
+		finish
 	endif
 
-Although it's shorter to do: >
-	let word = condition ? 'yes' : 'no'
+	function BufNetRead(...)
+		echo 'BufNetRead(' .. string(a:000) .. ')'
+		" read functionality here
+	endfunction
+
+	function BufNetWrite(...)
+		echo 'BufNetWrite(' .. string(a:000) .. ')'
+		" write functionality here
+	endfunction
+
+When the script is first loaded "s:did_load" is not set.  The commands between
+the "if" and "endif" will be executed.  This ends in a |:finish| command, thus
+the rest of the script is not executed.
+
+The second time the script is loaded "s:did_load" exists and the commands
+after the "endif" are executed.  This defines the (possible long)
+BufNetRead() and BufNetWrite() functions.
+
+If you drop this script in your plugin directory Vim will execute it on
+startup.  This is the sequence of events that happens:
+
+1. The "BNRead" command is defined and the <F19> key is mapped when the script
+   is sourced at startup.  A |FuncUndefined| autocommand is defined.  The
+   ":finish" command causes the script to terminate early.
+
+2. The user types the BNRead command or presses the <F19> key.  The
+   BufNetRead() or BufNetWrite() function will be called.
+
+3. Vim can't find the function and triggers the |FuncUndefined| autocommand
+   event.  Since the pattern "BufNet*" matches the invoked function, the
+   command "source fname" will be executed.  "fname" will be equal to the name
+   of the script, no matter where it is located, because it comes from
+   expanding "<sfile>" (see |expand()|).
+
+4. The script is sourced again, the "s:did_load" variable exists and the
+   functions are defined.
+
+Notice that the functions that are loaded afterwards match the pattern in the
+|FuncUndefined| autocommand.  You must make sure that no other plugin defines
+functions that match this pattern.
 
 ==============================================================================
-*52.3*	Functions and types
-
-Legacy Vim script only checks types at runtime, when the code is executed.
-And it's permissive, often a computation gives an unexpected value instead of
-reporting an error.  Thus you can define a function and think it's fine, but
-notice a problem only later when the function is called: >
-	func Concatenate(base, add)
-	   return a:base + a:add
-	endfunc
-
-Can you spot the error?  Try this: >
-	echo Concatenate('base', 'text')
-And you'll see zero.  Why?  Because in legacy Vim script "+" will convert the
-arguments to numbers, and any string without a number results in zero!  That's
-not what you expected.
-
-With `:def` the type checking happens when compiling the function.  You need
-to specify the argument types and the return type to make that possible.  Also
-notice that the argument names are used without the "a:" prefix: >
-	def Concatenate(base: string, add: string): string
-	   return base + add
-	enddef
-	defcompile Concatenate
-
-Here we use `:defcompile` to do the compilation right away, without it the
-compilation would happen when the function is first called.  Vim will tell you
-what you did wrong: >
-	E1051: Wrong argument type for +
-
-Side note: here the context is legacy script.  When using Vim9 script you
-would put `:defcompile` at the end of the script to check for errors in all
-the functions defined in it.
-
-Vim9 script is strict, it uses the "+" operator only for numbers and floats.
-For string concatenation ".." must be used.  This avoids mistakes and avoids
-the automatic conversion that gave a surprising result above.  So you change
-the first line of the function to: >
-	   s:collected ..= add
-And now it works.
-
-If the function does not return anything, just leave out the return type: >
-	def ReportResult(result: string)
-	   echo 'The result is: ' .. result
-	enddef
-
-This is also checked, if you try to return a value you'll get an error.
-
-In case you don't care about types or have a function that does work with
-multiple types, you can use the "any" type: >
-	def Store(key: string, value: any)
-	  resultDict[key] = value
-	enddef
-
-==============================================================================
-*52.4*	Using a Vim9 script from legacy script		*source-vim9-script*
+*52.5*	Using a Vim9 script from legacy script		*source-vim9-script*
 
 In some cases you have a legacy Vim script where you want to use items from a
 Vim9 script.  For example in your .vimrc you want to initialize a plugin.  The
@@ -189,5 +277,6 @@ will have to make sure to use a unique name for these global items. Example: >
 ==============================================================================
 
 Next chapter: |usr_90.txt|  Installing Vim
+
 
 Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

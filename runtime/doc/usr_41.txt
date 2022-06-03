@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 May 21
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -7,7 +7,7 @@
 
 The Vim script language is used for the startup vimrc file, syntax files, and
 many other things.  This chapter explains the items that can be used in a Vim
-script.  There are a lot of them, thus this is a long chapter.
+script.  There are a lot of them, therefore this is a long chapter.
 
 |41.1|	Introduction
 |41.2|	Variables
@@ -28,9 +28,10 @@ Table of contents: |usr_toc.txt|
 *41.1*	Introduction				*vim-script-intro* *script*
 
 Your first experience with Vim scripts is the vimrc file.  Vim reads it when
-it starts up and executes the commands.  You can set options to values you
-prefer.  And you can use any colon command in it (commands that start with a
-":"; these are sometimes referred to as Ex commands or command-line commands).
+it starts up and executes the commands.  You can set options to the values you
+prefer, define mappings, select plugins and much more.   You can use any colon
+command in it (commands that start with a ":"; these are sometimes referred to
+as Ex commands or command-line commands).
 
 Syntax files are also Vim scripts.  As are files that set options for a
 specific file type.  A complicated macro can be defined by a separate Vim
@@ -38,8 +39,8 @@ script file.  You can think of other uses yourself.
 
 Vim script comes in two flavors: legacy and |Vim9|.  Since this help file is
 for new users, we'll teach you the newer and more convenient |Vim9| syntax.
-While legacy script is particular for Vim, |Vim9| script looks more like other
-languages, such as JavaScript and TypeScript.
+While legacy script is particularly for Vim, |Vim9| script looks more like
+other languages, such as JavaScript and TypeScript.
 
 To try out Vim script the best way is to edit a script file and source it.
 Basically: >
@@ -66,7 +67,7 @@ The output of the example code is:
 
 In the first line the `vim9script` command makes clear this is a new, |Vim9|
 script file.  That matters for how the rest of the file is used.
-
+							*vim9-declarations*
 The `var i = 1` command declares the "i" variable and initializes it.  The
 generic form is: >
 
@@ -100,29 +101,53 @@ The example was given to explain the commands, but would you really want to
 make such a loop, it can be written much more compact: >
 
 	for i in range(1, 4)
-	  echo "count is" i
+	  echo $"count is {i}"
 	endfor
 
-We won't explain how `for` and `range()` work until later.  Follow the links
-if you are impatient.
+We won't explain how `for`, `range()`and `$"string"` work until later.  Follow
+the links if you are impatient.
+
+
+TRYING OUT EXAMPLES
+
+You can easily try out most examples in these help files without saving the
+commands in a file.  For example, to try out the "for" loop above do this:
+1. position the cursor on the "for"
+2. start Visual mode with "v"
+3. move down to the "endfor"
+4. press colon, then "so" and Enter
+
+After pressing colon you will see ":'<,'>", which is the range of the Visually
+selected text.
+
+For some commands it matters they are executed as in |Vim9| script.  But typed
+commands normally use legacy script syntax, such as the example below that
+causes the E1004 error.  For that use this fourth step:
+4. press colon, then "vim9 so" and Enter
+
+"vim9" is short for `vim9cmd`, which is a command modifier to execute the
+following command in |Vim9| syntax.
+
+Note that this won't work for examples that require a script context.
 
 
 FOUR KINDS OF NUMBERS
 
-Numbers can be decimal, hexadecimal, octal or binary.
+Numbers can be decimal, hexadecimal, octal and binary.
 
 A hexadecimal number starts with "0x" or "0X".  For example "0x1f" is decimal
-31.
+31 and 0x1234 is decimal 4660.
 
 An octal number starts with "0o", "0O".  "0o17" is decimal 15.
 
 A binary number starts with "0b" or "0B".  For example "0b101" is decimal 5.
 
 A decimal number is just digits.  Careful: In legacy script don't put a zero
-before a decimal number, it will be interpreted as an octal number!
+before a decimal number, it will be interpreted as an octal number!  That's
+one reason to use |Vim9| script.
 
-The `echo` command evaluates its argument and always prints decimal numbers.
-Example: >
+The `echo` command evaluates its argument and when it is a number always
+prints the decimal form.  Example: >
 
 	echo 0x7f 0o36
 <	127 30 ~
@@ -155,6 +180,7 @@ To actually have the minus sign be used for negation, you can put the second
 expression in parentheses: >
 
 	echo -0x7f (-0o36)
+<	-127 -30 ~
 
 ==============================================================================
 *41.2*	Variables
@@ -165,7 +191,7 @@ cannot start with a digit.  Valid variable names are:
 	counter
 	_aap3
 	very_long_variable_name_with_underscores
-	FuncLength
+	CamelCaseName
 	LENGTH
 
 Invalid names are "foo+bar" and "6var".
@@ -175,9 +201,9 @@ variables type this command: >
 
 	:let
 
-You can use global variables everywhere.  However, it is easy to use the same
-name in two unrelated scripts.  Therefore variables declared in a script are
-local to that script.  For example, if you have this in "script1.vim": >
+You can use global variables everywhere.  However, it is too easy to use the
+same name in two unrelated scripts.  Therefore variables declared in a script
+are local to that script.  For example, if you have this in "script1.vim": >
 
 	vim9script
 	var counter = 5
@@ -194,18 +220,23 @@ Using a script-local variable means you can be sure that it is only changed in
 that script and not elsewhere.
 
 If you do want to share variables between scripts, use the "g:" prefix and
-assign the value directly, do not use `var`.  Thus in "script1.vim": >
+assign the value directly, do not use `var`.  And use a specific name to avoid
+mistakes.  Thus in "script1.vim": >
 
 	vim9script
-	g:counter = 5
-	echo g:counter
+	g:mash_counter = 5
+	echo g:mash_counter
 <	5 ~
 
 And then in "script2.vim": >
 
 	vim9script
-	echo g:counter
+	echo g:mash_counter
 <	5 ~
+
+Global variables can also be accessed on the command line, E.g. typing this: >
+	echo g:mash_counter
+That will not work for a script-local variable.
 
 More about script-local variables here: |script-variable|.
 
@@ -231,7 +262,7 @@ when it doesn't, append !: >
 
 	unlet! g:counter
 
-You cannot `unlet` script-local variables in |Vim9| script.  You can in legacy
+You cannot `unlet` script-local variables in |Vim9| script, only in legacy
 script.
 
 When a script finishes, the local variables declared there will not be
@@ -251,12 +282,15 @@ Every time you call the function it will return the next count: >
 	:echo g:GetCount()
 <	2 ~
 
-If you are worried a script-local variable is consuming too much
-memory, set it to an empty value after you no longer need it.
+If you are worried a script-local variable is consuming too much memory, set
+it to an empty or null value after you no longer need it.  Example: >
+	var lines = readfile(...)
+	...
+	lines = []
 
-Note: below we'll leave out the `vim9script` line, so we can concentrate on
-the relevant commands, but you'll still need to put it at the top of your
-script file.
+Note: below we'll leave out the `vim9script` line from examples, so we can
+concentrate on the relevant commands, but you'll still need to put it at the
+top of your script file.
 
 
 STRING VARIABLES AND CONSTANTS
@@ -275,9 +309,13 @@ want to give the variable a value yet, you need to specify the type: >
 
 	var name: string
 	var age: number
-	...
-	name = "Peter"
-	age = 42
+	if male
+	   name = "Peter"
+	   age = 42
+	else
+	   name = "Elisa"
+	   age = 45
+	endif
 
 If you make a mistake and try to assign the wrong type of value you'll get an
 error: >
@@ -287,8 +325,8 @@ error: >
 
 More about types in |41.8|.
 
-To assign a string value to a variable, you need to use a string constant.
-There are two types of these.  First the string in double quotes, as we used
+To assign a string value to a variable, you can use a string constant.  There
+are two types of these.  First the string in double quotes, as we used
 already.  If you want to include a double quote inside the string, put a
 backslash in front of it: >
 
@@ -296,7 +334,7 @@ backslash in front of it: >
 	echo name
 <	he is "Peter" ~
 
-To avoid the need for a backslash, you can use a string in single quotes: >
+To avoid the need for backslashes, you can use a string in single quotes: >
 
 	var name = 'he is "Peter"'
 	echo name
@@ -341,8 +379,8 @@ themselves.  Thus everywhere an expression is expected, you can use a number,
 string or variable.  Other basic items in an expression are:
 
 	$NAME		environment variable
-	&name		option
-	@r		register
+	&name		option value
+	@r		register contents
 
 Examples: >
 
@@ -384,14 +422,23 @@ Grouping is done with parentheses.  No surprises here.  Example: >
 	echo (10 + 5) * 2
 <	30 ~
 
+
+OTHERS
+
 Strings can be concatenated with ".." (see |expr6|).  Example: >
 
-	echo "foo" .. "bar"
-<	foobar ~
+	echo "Name: " .. name
+	Name: Peter
 
 When the "echo" command gets multiple arguments, it separates them with a
 space.  In the example the argument is a single expression, thus no space is
 inserted.
+
+If you don't like the concatenation you can use the $"string" form, which
+accepts an expression in curly braces: >
+	echo $"Name: {name}"
+
+See |interp-string| for more information.
 
 Borrowed from the C language is the conditional expression: >
 
@@ -407,6 +454,10 @@ The three parts of the constructs are always evaluated first, thus you could
 see it works as: >
 
 	(a) ? (b) : (c)
+
+There is also the falsy operator: >
+	echo name ?? "No name given"
+See |??|.
 
 ==============================================================================
 *41.4*	Conditionals
@@ -472,16 +523,17 @@ ones:
 
 The result is true if the condition is met and false otherwise.  An example: >
 
-	if v:version >= 700
+	if v:version >= 800
 	  echo "congratulations"
 	else
 	  echo "you are using an old version, upgrade!"
 	endif
 
 Here "v:version" is a variable defined by Vim, which has the value of the Vim
-version.  600 is for version 6.0, version 6.1 has the value 601.  This is
-very useful to write a script that works with multiple versions of Vim.
-|v:version|
+version.  800 is for version 8.0, version 8.1 has the value 801.  This is
+useful to write a script that works with multiple versions of Vim.
+See |v:version|.  You can also check for a specific feature with `has()` or a
+specific patch, see |has-patch|.
 
 The logic operators work both for numbers and strings.  When comparing two
 strings, the mathematical difference is used.  This compares byte values,
@@ -505,8 +557,8 @@ pattern, like what's used for searching.  Example: >
 	endif
 
 Notice the use of a single-quote string for the pattern.  This is useful,
-because backslashes would need to be doubled in a double-quote string and
-patterns tend to contain many backslashes.
+because patterns tend to contain many backslashes and backslashes need to be
+doubled in a double-quote string.
 
 The match is not anchored, if you want to match the whole string start with
 "^" and end with "$".
@@ -543,6 +595,7 @@ Example: >
 The `sleep` command makes Vim take a nap.  The "50m" specifies fifty
 milliseconds.  Another example is `sleep 4`, which sleeps for four seconds.
 
+`continue` and `break` can also be used in between `for` and `endfor`.
 Even more looping can be done with the `for` command, see below in |41.8|.
 
 ==============================================================================
@@ -579,9 +632,9 @@ Example: >
 This will move the cursor "count" lines down.
 
 Make sure that the argument for `normal` is a complete command.  Otherwise
-Vim will run into the end of the argument and abort the command.  For example,
-if you start the delete operator, you must give the movement command also.
-This works: >
+Vim will run into the end of the argument and silently abort the command.  For
+example, if you start the delete operator, you must give the movement command
+also.  This works: >
 	
 	normal d$
 
@@ -604,8 +657,8 @@ Notice the use of the special key "\<Esc>".  This avoids having to enter a
 real <Esc> character in your script.  That is where `execute` with a
 double-quote string comes in handy.
 
-If you don't want to execute a string but evaluate it to get its expression
-value, you can use the eval() function: >
+If you don't want to execute a string as a command but evaluate it to get the
+result of the expression, you can use the eval() function: >
 
 	var optname = "path"
 	var optvalue = eval('&' .. optname)
@@ -620,19 +673,20 @@ Vim defines many functions and provides a large amount of functionality that
 way.  A few examples will be given in this section.  You can find the whole
 list below: |function-list|.
 
-A function is called with the `call` command.  The parameters are passed in
-between parentheses separated by commas.  Example: >
+A function is called with the parameters in between parentheses, separated by
+commas.  Example: >
 
-	call search("Date: ", "W")
+	search("Date: ", "W")
 
 This calls the search() function, with arguments "Date: " and "W".  The
 search() function uses its first argument as a search pattern and the second
 one as flags.  The "W" flag means the search doesn't wrap around the end of
 the file.
 
-Using `call` is optional in |Vim9| script, this works the same way: >
+Using the  `call` command is optional in |Vim9| script.  This works the same
+way and also works in legacy script and on the command line: >
 
-	search("Date: ", "W")
+	call search("Date: ", "W")
 
 A function can be called in an expression.  Example: >
 
@@ -644,10 +698,10 @@ The getline() function obtains a line from the current buffer.  Its argument
 is a specification of the line number.  In this case "." is used, which means
 the line where the cursor is.
 
-The substitute() function does something similar to the `substitute` command.
-The first argument is the string on which to perform the substitution.  The
-second argument is the pattern, the third the replacement string.  Finally,
-the last arguments are the flags.
+The substitute() function does something similar to the `:substitute` command.
+The first argument "line" is the string on which to perform the substitution.
+The second argument '\a' is the pattern, the third "*" is the replacement
+string.  Finally, the last argument "g" is the flags.
 
 The setline() function sets the line, specified by the first argument, to a
 new string, the second argument.  In this example the line under the cursor is
@@ -1404,15 +1458,19 @@ functions in the script: >
 
 	defcompile
 
-For a function that does not return anything leave out the return type: >
+Compiling functions takes a little time, but does report errors early.  You
+could use `:defcompile` at the end of your script while working on it, and
+comment it out when everything is fine.
+
+For a function that does not return anything simply leave out the return type: >
 
 	def SayIt(text: string)
 	  echo text
 	enddef
 
 It is also possible to define a legacy function with `function` and
-`endfunction`.  These do not have types and are not compiled.  They execute
-much slower.
+`endfunction`.  These do not have types and are not compiled.  Therefore they
+execute much slower.
 
 
 USING A RANGE
@@ -1440,15 +1498,15 @@ argument (start) and can have up to 20 additional arguments: >
 
 	def Show(start: string, ...items: list<string>)
 
-The variable "items" will be a list containing the extra arguments.  You can
-use it like any list, for example: >
+The variable "items" will be a list in the function containing the extra
+arguments.  You can use it like any list, for example: >
 
 	def Show(start: string, ...items: list<string>)
 	  echohl Title
 	  echo "start is " .. start
 	  echohl None
 	  for index in range(len(items))
-	    echon "  Arg " .. index .. " is " .. items[index]
+	    echon $"  Arg {index} is {items[index]}"
 	  endfor
 	  echo
 	enddef
@@ -1489,12 +1547,11 @@ To see what a function does, use its name as an argument for `function`: >
 	3     endif ~
 	   endfunction ~
 
-To see the "Show" function you need to include the script prefix, since a
-"Show" function can be defined multiple times in different scripts.  To find
+To see the "Show" function you need to include the script prefix, since
+multiple "Show" functions can be defined in different scripts.  To find
 the exact name you can use `function`, but the result may be a very long list.
 To only get the functions matching a pattern you can use the `filter` prefix:
 >
-
 	:filter Show function
 <	def <SNR>86_Show(start: string, ...items: list<string>) ~
 >
@@ -1528,21 +1585,21 @@ You get an error when the function doesn't exist or cannot be deleted.
 FUNCTION REFERENCES
 
 Sometimes it can be useful to have a variable point to one function or
-another.  You can do it with function reference variable.  Often shortened to
-"funcref".  Example: >
+another.  You can do it with a function reference variable.  Often shortened
+to "funcref".  Example: >
 
-	def Right()
+	def Right(): string
 	  return 'Right!'
 	enddef
-	def Wrong()
+	def Wrong(): string
 	  return 'Wrong!'
 	enddef
 	
 	var Afunc = g:result == 1 ? Right : Wrong
-	Afunc()
+	echo Afunc()
 <	Wrong! ~
 
-This assumes "g:result" is not one.
+This assumes "g:result" is not one.  See |Funcref| for details.
 
 Note that the name of a variable that holds a function reference must start
 with a capital.  Otherwise it could be confused with the name of a builtin
@@ -1560,7 +1617,7 @@ A List is an ordered sequence of items.  The items can be any kind of value,
 thus you can make a List of numbers, a List of Lists and even a List of mixed
 items.  To create a List with three strings: >
 
-	var alist = ['aap', 'mies', 'noot']
+	var alist = ['aap', 'noot', 'mies']
 
 The List items are enclosed in square brackets and separated by commas.  To
 create an empty List: >
@@ -1582,14 +1639,14 @@ List concatenation is done with +: >
 	echo alist
 <	['foo', 'bar', 'and', 'more'] ~
 
-Or, if you want to extend a List with a function: >
+Or, if you want to extend a List with a function, use `extend()`: >
 
 	var alist = ['one']
 	extend(alist, ['two', 'three'])
 	echo alist
 <	['one', 'two', 'three'] ~
 
-Notice that using `add()` will have a different effect: >
+Notice that using `add()` will have a different effect than `extend()`: >
 
 	var alist = ['one']
 	add(alist, ['two', 'three'])
@@ -1614,7 +1671,7 @@ One of the nice things you can do with a List is iterate over it: >
 This will loop over each element in List "alist", assigning each value to
 variable "n".  The generic form of a for loop is: >
 
-	for {varname} in {listexpression}
+	for {varname} in {list-expression}
 	  {commands}
 	endfor
 
@@ -1629,7 +1686,10 @@ range() function creates one for you: >
 	2 ~
 
 Notice that the first item of the List that range() produces is zero, thus the
-last item is one less than the length of the list.
+last item is one less than the length of the list.  Detail: Internally range()
+does not actually create the list, so that a large range used in a for loop
+works efficiently.  When used elsewhere, the range is turned into an actual
+list, which takes more time for a long ist.
 
 You can also specify the maximum value, the stride and even go backwards: >
 
@@ -1640,15 +1700,17 @@ You can also specify the maximum value, the stride and even go backwards: >
 	6 ~
 	4 ~
 
-A more useful example, looping over lines in the buffer: >
+A more useful example, looping over all the lines in the buffer: >
 
-	for line in getline(1, 20)
+	for line in getline(1, 50)
 	  if line =~ "Date: "
 	    echo line
 	  endif
 	endfor
 
-This looks into lines 1 to 20 (inclusive) and echoes any date found in there.
+This looks into lines 1 to 50 (inclusive) and echoes any date found in there.
+
+For further reading see |Lists|.
 
 
 DICTIONARIES
@@ -1700,8 +1762,7 @@ specific order: >
 But you can never get back the order in which items are defined.  For that you
 need to use a List, it stores items in an ordered sequence.
 
-
-For further reading see |Lists| and |Dictionaries|.
+For further reading see |Dictionaries|.
 
 ==============================================================================
 *41.9*	Exceptions
@@ -1716,7 +1777,7 @@ Let's start with an example: >
 
 The `read` command will fail if the file does not exist.  Instead of
 generating an error message, this code catches the error and gives the user a
-nice message.
+message with more information.
 
 For the commands in between `try` and `endtry` errors are turned into
 exceptions.  An exception is a string.  In the case of an error the string
@@ -1725,12 +1786,12 @@ case, the error we catch contains "E484:".  This number is guaranteed to stay
 the same (the text may change, e.g., it may be translated).
 
 Besides being able to give a nice error message, Vim will also continue
-executing commands.  Otherwise, once an uncaught error is encountered,
-execution will be aborted.
+executing commands after the `:endtry`.  Otherwise, once an uncaught error is
+encountered, execution of the script/function/mapping will be aborted.
 
 When the `read` command causes another error, the pattern "E484:" will not
 match in it.  Thus this exception will not be caught and result in the usual
-error message.
+error message and excecution is aborted.
 
 You might be tempted to do this: >
 
@@ -1742,7 +1803,7 @@ You might be tempted to do this: >
 
 This means all errors are caught.  But then you will not see an error that
 would indicate a completely different problem, such as "E21: Cannot make
-changes, 'modifiable' is off".
+changes, 'modifiable' is off".  Think twice before you catch any error!
 
 Another useful mechanism is the `finally` command: >
 
@@ -1753,14 +1814,17 @@ Another useful mechanism is the `finally` command: >
 	   :.,$delete
 	   exe ":$read " .. tmp
 	finally
-	   call delete(tmp)
+	   delete(tmp)
 	endtry
 
 This filters the lines from the cursor until the end of the file through the
 "filter" command, which takes a file name argument.  No matter if the
-filtering works, something goes wrong in between `try` and `finally` or the
-user cancels the filtering by pressing CTRL-C, the `call delete(tmp)` is
+filtering works, if something goes wrong in between `try` and `finally` or the
+user cancels the filtering by pressing CTRL-C, the `delete(tmp)` call is
 always executed.  This makes sure you don't leave the temporary file behind.
+
+The `finally` does not catch the exception, the error will still abort
+further execution.
 
 More information about exception handling can be found in the reference
 manual: |exception-handling|.
@@ -1768,10 +1832,13 @@ manual: |exception-handling|.
 ==============================================================================
 *41.10*	Various remarks
 
-Here is a summary of items that are useful to know when writing Vim scripts.
+Here are a few items that are useful to know when writing Vim scripts.
+
+
+FILEFORMAT
 
 The end-of-line character depends on the system.  For Vim scripts it is
-recommended to always use the Unix fileformat, this also works on any other
+recommended to always use the Unix fileformat.  This also works on any other
 system.  That way you can copy your Vim scripts from MS-Windows to Unix and
 they still work.  See |:source_crnl|.  To be sure it is set right, do this
 before writing the file: >
@@ -1793,11 +1860,11 @@ escaped by a "\" (backslash)  as in the following example: >
 
 	:set tags=my\ nice\ file
 
-The same example written as: >
+If it would be written as: >
 
 	:set tags=my nice file
 
-will issue an error, because it is interpreted as: >
+This will issue an error, because it is interpreted as: >
 
 	:set tags=my
 	:set nice
@@ -1805,17 +1872,21 @@ will issue an error, because it is interpreted as: >
 
 |Vim9| script is very picky when it comes to white space.  This was done
 intentionally to make sure scripts are easy to read and to avoid mistakes.
+If you use white space sensibly it will just work.  When not you will get an
+error message telling you where white space is missing or should be removed.
 
 
 COMMENTS
 
-In |Vim9| script the character # starts a comment.  Everything after
-and including this character until the end-of-line is considered a comment and
+In |Vim9| script the character # starts a comment.  That character and
+everything after it until the end-of-line is considered a comment and
 is ignored, except for commands that don't consider comments, as shown in
 examples below.  A comment can start on any character position on the line,
-but not when it is part of the command, e.g. in a string.
+but not when it is part of the command, e.g. inside a string.
 
 The character " (the double quote mark) starts a comment in legacy script.  
+This involves some cleverness to make sure double quoted strings are not
+recognized as comments (just one reason to prefer |Vim9| script).
 
 There is a little "catch" with comments for some commands.  Examples: >
 
@@ -1824,11 +1895,12 @@ There is a little "catch" with comments for some commands.  Examples: >
 	execute cmd		# do it
 	!ls *.c			# list C files
 
-The abbreviation 'dev' will be expanded to 'development  # shorthand'.  The
-mapping of <F3> will actually be the whole line after the 'o# ....' including
-the '# insert include'.  The `execute` command will give an error.  The `!`
-command will send everything after it to the shell, most likely causing an
-error.
+- The abbreviation 'dev' will be expanded to 'development  # shorthand'.
+- The mapping of <F3> will actually be the whole line after the 'o# ....'
+  including the '# insert include'.
+- The `execute` command will give an error.
+- The `!` command will send everything after it to the shell, most likely
+  causing an error.
 
 There can be no comment after `map`, `abbreviate`, `execute` and `!` commands
 (there are a few more commands with this restriction).  For the `map`,
@@ -1850,7 +1922,8 @@ trailing whitespace is included: >
 
 	map <F4> o#include  
 
-To spot these problems, you can highlight trailing spaces: >
+Here it is intended, in other cases it might be accidental.  To spot these
+problems, you can highlight trailing spaces: >
 	match Search /\s\+$/
 
 For Unix there is one special way to comment a line, that allows making a Vim
@@ -1860,71 +1933,7 @@ script executable, and it also works in legacy script: >
 	quit
 
 
-PITFALLS
-
-An even bigger problem arises in the following example: >
-
-	map ,ab o#include
-	unmap ,ab 
-
-Here the unmap command will not work, because it tries to unmap ",ab ".  This
-does not exist as a mapped sequence.  An error will be issued, which is very
-hard to identify, because the ending whitespace character in `unmap ,ab ` is
-not visible.
-
-And this is the same as what happens when one uses a comment after an 'unmap'
-command: >
-
-	unmap ,ab     # comment
-
-Here the comment part will be ignored.  However, Vim will try to unmap
-',ab     ', which does not exist.  Rewrite it as: >
-
-	unmap ,ab|    # comment
-
-
-RESTORING THE VIEW
-
-Sometimes you want to make a change and go back to where the cursor was.
-Restoring the relative position would also be nice, so that the same line
-appears at the top of the window.
-
-This example yanks the current line, puts it above the first line in the file
-and then restores the view: >
-
-	map ,p ma"aYHmbgg"aP`bzt`a
-
-What this does: >
-	ma"aYHmbgg"aP`bzt`a
-<	ma			set mark a at cursor position
-	  "aY			yank current line into register a
-	     Hmb		go to top line in window and set mark b there
-		gg		go to first line in file
-		  "aP		put the yanked line above it
-		     `b		go back to top line in display
-		       zt	position the text in the window as before
-			 `a	go back to saved cursor position
-
-
-PACKAGING
-
-Sometimes you will want to use global variables or functions, so that they can
-be used anywhere.  A good example is a global variable that passes a
-preference to a  plugin.  To avoid other scripts using the same name, use a
-prefix that is very unlikely to be used elsewhere.  For example, if you have a
-"mytags" plugin, you could use: >
-
-	g:mytags_location = '$HOME/project'
-	g:mytags_style = 'fast'
-
-To minimize interference between plugins keep as much as possible local to the
-script.  |Vim9| script helps you with that, by default functions and variables
-are script-local.
-
-If you split your plugin into parts, you can use `import` and `export` to
-share items between those parts.  See `:export` for the details.
-
-More information about writing plugins is in |usr_51.txt|.
+Advance information about writing Vim script is in |usr_50.txt|.
 
 ==============================================================================
 

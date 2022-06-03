@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2022 May 20
+*syntax.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4896,6 +4896,14 @@ color (can make it transparent in some terminals): >
 	augroup my_colorschemes
 	  au!
 	  au Colorscheme pablo hi Normal ctermbg=NONE
+	augroup END
+
+Change a couple more colors: >
+	augroup my_colorschemes
+	  au!
+	  au Colorscheme pablo hi Normal ctermbg=NONE
+		      \ | higlight Special ctermfg=63
+		      \ | highlight Identifier ctermfg=44
 	augroup END
 
 If you make a lot of changes it might be better to copy the distributed

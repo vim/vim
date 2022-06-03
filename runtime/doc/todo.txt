@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 May 22
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,19 +39,13 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Prepare for Vim 9.0 release:
+- Update the user manual:
+  - Add import/export example to 52.1
+  - Add more to usr_50.txt as an "advanced section" of usr_41.txt
+  - Move some from vim9.txt to the user manual?  Keep the specification.
 - Use Vim9 for more runtime files.
-- Check Vim9 code coverage, add more tests if needed.
-	vim9instr.c
-	vim9script.c
-	vim9type.c
+- Make popup-examples use Vim9 script  Issue #10499
 - Adjust intro message to say "help version9".
-
-Update the user manual:
-- Update usr_41.txt for Vim9 script
-- Fill usr_50.txt as an "advanced section" of usr_41.txt
-  Add links from usr_41 to usr_50.
-- Make usr_51.txt use Vim9 script.  Still need usr_52.txt?
-
 
 Further Vim9 improvements, possibly after launch:
 - Check performance with callgrind and kcachegrind.
@@ -89,9 +83,9 @@ Update list of features to vote on:
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
     (Yegappan Lakshmanan, 2021 May 22
+- Srollbar thumb somtimes not visible  #10492
 - Add a function to redraw a specific popup window.  Esp. to be used when
   editing the command line, when screen updating doesn't happen. (Shougo)
-- In some cases prop_remove() does not work correctly. (#8261)
 - Add a flag to make a popup window focusable?
     CTRL-W P cycle over any preview window or focusable popup, end up back in
 	     current window.
@@ -152,6 +146,9 @@ Prompt buffer:
 - add prompt_addtext({buf}, {expr})	none	add text to a prompt buffer
 
 Terminal debugger:
+- Add a mechanism for configuration.  Instead of several global variables use
+  a dictionary.  Use callbacks for some things, e.g. opening a debug window in
+  a certain position.
 - Make prompt-buffer variant work better.
 - Add option to not open the program window.  It's not used when attaching to
   an already running program. (M. Kelly)
@@ -207,12 +204,7 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Add autocmd functions. PR #10291
-  a couple of outstanding comments, wait for Yegappan to respond
-
 Can deref_func_name() and deref_function_name() be merged?
-
-Add mode bits to maparg() dict?  PR #10356
 
 After patch 8.2.4915 w_botline is computed much more often. Can this be
 reduced?
@@ -227,11 +219,6 @@ feature is supported or not.  Replaces the xterm mechanism to request each
 entry separately. #6609
 Multiplexers (screen, tmux) can request it to the underlaying terminal, and
 pass it on with modifications.
-
-Test_communicate_ipv6(): is flaky on many systems
-Fails in line 64 of Ch_communicate, no exception is thrown.
-
-Rename getdigraphlist -> digraph_getlist() etc.
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
 
@@ -255,8 +242,6 @@ Memory leaks in test_channel? (or is it because of fork())
 
 PR to support %e and %k in 'errorformat'. #9624
 
-PR to add left and right bitwise shift. #8457
-
 Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 
 ":set &shellpipe" and ":set &shellredir" should use the logic from
@@ -276,8 +261,6 @@ Add support for "underdouble", "underdot" and "underdash". #9553
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
-Mapping with partial match not executed properly in GTK. (Ingo Karkat, #7082)
-
 Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
 spread out.  Make a section with copy/paste examples of script and pointers to
 more information.
@@ -293,6 +276,8 @@ Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
 (#8179)
 
 ":filter set termcap" only filters terminal codes, not keys. (#9297)
+
+Add an option to restrict 'incsearch' to not scroll the view. (Tavis Ormandy)
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
@@ -315,9 +300,6 @@ Add optional argument to virtcol() that specifies "start", "cursor" or "end"
 to tell which value from getvvcol() should be used. (#7964)
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
-
-Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
-Scroll doesn't work correctly, why?
 
 globpath() does not use 'wildignorecase' at all? (related to #8350)
 
@@ -359,9 +341,6 @@ Should also work without any group:
 
 Should add a match/str/list/pos method that also returns the test and position
 of submatches.  #8355
-
-Syntax highlight for a region does not work with a "nextgroup" if the start
-match is empty. #8449
 
 Check out PR #543 (Roland Puntaier).
 Patch for multibyte characters in langmap and applying a mapping on them.
@@ -484,9 +463,6 @@ Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 Sound: support on Mac?  Or does libcanberra work there?
 
 Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
-
-The :syntax cchar value can only be a single character.  It would be useful to
-support combining characters. (Charles Campbell)  Also #4687
 
 "--cleanFOO" does not result in an error. (#5537)
 
@@ -803,13 +779,6 @@ Compiler warning (geeknik, 2017 Oct 26):
 Add Native language protocol server (LSP) support. (Yegappan Lakshmanan, 2018
 Oct 28)
 
-Add more testing of the GTK GUI.
-- gtk_test_widget_click() can be used to simulate a click in a widget.
-
-Tests failing for "make testgui" with GTK:
-- Test_setbufvar_options()
-- Test_exit_callback_interval()
-
 Patch to be able to use hex numbers with :digraph. (Lcd, 2015 Sep 6)
 Update Sep 7.  Update by Christian Brabandt, 2015 Sep 8, 2016 Feb 1.
 Patch to be able to disable default digraphs (incomplete) (Eric Pruitt, 2018
@@ -938,9 +907,6 @@ Requires 'formatoptions' to include "j". (Gary Johnson, 2017 Dec 24)
 Patch to support hunspell. (Matej Cepl, Jan 2018, #2500) Based on older patch
 in #846)
 Doesn't work on Windows yet.  Not ready to included, hard coded paths.
-
-Win32 GUI: when running a fast timer, the cursor no longer blinks.
-Was reported: cursor blinks in terminal on widows with a timer. (xtal8, #2142)
 
 When a timer is running and typing CTRL-R on the command line, it is not
 redrawn properly. (xtal8, 2017 Oct 23, #2241)
@@ -1103,10 +1069,6 @@ Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
 #1330)
 
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
-
-GTK: When adding a timer from 'balloonexpr' it won't fire, because
-g_main_context_iteration() doesn't return.  Need to trigger an event when the
-timer expires.
 
 Rule to use "^" for statusline does not work if a space is defined with
 highlighting for both stl and stlnc.  Patch by Ken Hamada (itchyny, 2016 Dec 11)
@@ -1507,8 +1469,6 @@ Result of systemlist() does not show whether text ended in line break.
 When in 'comments' "n:x" follows after three-part comment directly it repeats
 any one-character from the previous line. (Kartik Agaram, 2014 Sep 19)
 
-Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
-
 Adding "~" to 'cdpath' doesn't work for completion?  (Davido, 2013 Aug 19)
 
 Patch: Let rare word highlighting overrule good word highlighting.
@@ -1630,9 +1590,6 @@ Also see #2034.
 
 Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 
-Several syntax file match "^\s*" which may get underlined if that's in the
-highlight group.  Add a "\zs" after it?
-
 Updated spec ftplugin. (Matěj Cepl, 2013 Oct 16)
 
 Patch to handle integer overflow. (Aaron Burrow, 2013 Dec 12)
@@ -1653,9 +1610,6 @@ When evaluating expression in backticks, autoload doesn't work.
 
 Using <nr>ifoobar<esc> can slow down Vim.  Patch by Christian Brabandt, 2013
 Dec 13.  Only helps a bit, 10000ii<Esc> is still too slow.
-
-GTK: problem with 'L' in 'guioptions' changing the window width.
-(Aaron Cornelius, 2012 Feb 6)
 
 Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 
@@ -1682,9 +1636,6 @@ Patch to fix that 'cedit' is recognized after :normal. (Christian Brabandt,
 
 Patch to view coverage of the tests. (Nazri Ramliy, 2013 Feb 15)
 
-Patch to invert characters differently in GTK. (Yukihiro Nakadaira, 2013 May
-5)
-
 Patch to add "Q" and "A" responses to interactive :substitute. They are
 carried over when using :global. (Christian Brabandt, 2013 Jun 19)
 
@@ -1703,13 +1654,6 @@ Dialog is too big on Linux too. (David Fishburn, 2013 Sep 2)
 Patch by Christian Brabandt, 2013 Apr 20, unfinished.
 
 Bug: findfile("any", "file:///tmp;") does not work.
-
-patch to add "combine" flag to  syntax commands. (so8res, 2012 Dec 6)
-Patch to add "combine" to :syntax, combines highlight attributes. (Nate
-Soares, 2012 Dec 3)
-
-Syntax update problem in one buffer opened in two windows, bottom window is
-not correctly updated. (Paul Harris, 2012 Feb 27)
 
 Patch to add getsid(). (Tyru, 2011 Oct 2)  Do we want this?  Update Oct 4.
 Or use expand('<sid>')?
@@ -1814,10 +1758,6 @@ On MS-Windows a temp dir with a & init causes system() to fail. (Ben Fritz,
 Patch 7.3.116 was the wrong solution.
 Christian Brabandt has another incomplete patch. (2011 Jul 13)
 
-Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
-only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
-21, Ben Fritz, 2010 Sep 14)
-
 Win32: Patch to use task dialogs when available. (Sergiu Dotenco, 2011 Sep 17)
 New feature, requires testing.  Made some remarks.
 
@@ -1879,17 +1819,11 @@ the help file.
 After patch 7.3.097 still get E15. (Yukihiro Nakadaira, 2011 Jan 18)
 Also for another example (ZyX, 2011 Jan 24)
 
-Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
-
 "0g@$" puts '] on last byte of multibyte. (ZyX, 2011 Jan 22)
 
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
 Problem with "syn sync grouphere". (Gustavo Niemeyer, 2011 Jan 27)
-
-Using "syn sync breaklines=2" works for when text is changed, but not when
-scrolling or redrawing.  Should start search for syntax patterns above the
-first drawn line. (#8103)
 
 Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 2010 Dec 18)
@@ -1923,18 +1857,11 @@ In the sandbox it's not allowed to do many things, but it's possible to change
 or set variables.  Add a way to prevent variables from being changed in the
 sandbox?  E.g.: ":protect g:restore_settings".
 
-GTK: drawing a double-width combining character over single-width characters
-doesn't look right. (Dominique Pelle, 2010 Aug 8)
-
-GTK: tear-off menu does not work. (Kurt Sonnenmoser, 2010 Oct 25)
-
 Win32: tear-off menu does not work when menu language is German. (Markus
 Bossler, 2011 Mar 2)  Fixed by 7.3.095?
 
 Wish for NetBeans commands:
     - make it possible to have 'defineAnnoType' also handle terminal colors.
-
-Version of netbeans.c for use with MacVim. (Kazuki Sakamoto, 2010 Nov 18)
 
 7.3.014 changed how backslash at end of line works, but still get a NUL when
 there is one backslash. (Ray Frush, 2010 Nov 18)  What does the original ex
@@ -2009,8 +1936,6 @@ C-indenting: A matching { in a comment is ignored, but intermediate { are not
 checked to be in a comment.  Implement FM_SKIPCOMM flag of findmatchlimit().
 Issue 46.
 
-Mac with X11: clipboard doesn't work properly. (Raf, 2010 Aug 16)
-
 Using CompilerSet doesn't record where an option was set from.  E.g., in the
 gcc compiler plugin. (Gary Johnson, 2010 Dec 13)
 
@@ -2082,8 +2007,6 @@ Problem with stop directory in findfile(). (Adam Simpkins, 2009 Aug 26)
 Using ']' as the end of a range in a pattern requires double escaping:
      /[@-\\]]  (Andy Wokula, 2011 Jun 28)
 
-Syntax priority problem. (Charles Campbell, 2011 Sep 15)
-
 For running gvim on a USB stick: avoid the OLE registration.  Use a command
 line argument -noregister.
 
@@ -2139,8 +2062,6 @@ J.  Wang, 2009 Mar 31)
 When $VIMRUNTIME is set in .vimrc, need to reload lang files.  Already done
 for GTK, how about others? (Ron Aaron, 2010 Apr 10)
 
-Patch for GTK buttons X1Mouse and X2Mouse. (Christian J. Robinson, 2010 Aug 9)
-
 ":tab split fname" doesn't set the alternate file in the original window,
 because win_valid() always returns FALSE.  Below win_new_tabpage() in
 ex_docmd.c.
@@ -2173,9 +2094,6 @@ displayed in a window should return the value that's stored for that buffer.
 ":he ctrl_u" can be auto-corrected to ":he ctrl-u".
 
 Diff mode out of sync. (Gary Johnson, 2010 Aug 4)
-
-Win32 GUI: last message from startup doesn't show up when there is an echoerr
-command. (Cyril Slobin, 2009 Mar 13)
 
 Win32: completion of file name ":e c:\!test" results in ":e c:\\!test", which
 does not work. (Nieko Maatjes, 2009 Jan 8, Ingo Karkat, 2009 Jan 22)
@@ -2316,10 +2234,6 @@ Win32: Using "gvim --remote-tab-silent elŝuti.txt" doesn't work, the
 multibyte character isn't passed and edits elsuti.txt.
 (Raúl Núñez de Arenas Coronado, 2015 Dec 18)
 
-Problem with 'langmap' being used on the rhs of a mapping. (Nikolai Weibull,
-2008 May 14)
-Possibly related problem: Alexey Muranov, 2015 Apr 2
-
 Problem with CTRL-F. (Charles Campbell, 2008 March 21)
 Only happens with "gvim -geometry "160x26+4+27" -u NONE -U NONE prop.c".
 'lines' is 54. (2008 March 27)
@@ -2346,21 +2260,6 @@ line doesn't fit. (Dasn, 2008 May 1)
 GUI: In Normal mode can't yank the modeless selection.  Make "gy" do this?
 Works like CTRL-Y in Command line mode.
 
-Mac: Move Carbon todo items to os_mac.txt.  Note that this version is frozen,
-try the Cocoa version.
-
-Mac: After a ":vsplit" the left scrollbar doesn't appear until 'columns' is
-changed or the window is resized.
-
-GTK: when setting 'columns' in a startup script and doing ":vertical diffsplit"
-the window isn't redrawn properly, see two vertical bars.
-
-Mac: Patch for configure: remove arch from ruby link args. (Knezevic, 2008
-Mar 5)  Alternative: Kazuki Sakamoto, Mar 7.
-
-Mac: trouble compiling with Motif, requires --disable-darwin. (Raf, 2008 Aug
-1)  Reply by Ben Schmidt.
-
 C't: On utf-8 system, editing file with umlaut through Gnome results in URL
 with %nn%nn, which is taken as two characters instead of one.
 Try to reproduce at work.
@@ -2379,10 +2278,6 @@ Would be more consistent when an existing tab is re-used. (Tony Mechelynck)
 
 Using Aap to build Vim: add remarks about how to set personal preferences.
 Example on http://www.calmar.ws/tmp/aap.html
-
-Syntax highlighting wrong for transparent region. (Doug Kearns, 2007 Feb 26)
-Bug in using a transparent syntax region. (Hanlen in vim-dev maillist, 2007
-Jul 31)
 
 When 'diffopt' has "context:0" a single deleted line causes two folds to merge
 and mess up syncing. (Austin Jennings, 2008 Jan 31)
@@ -2592,8 +2487,6 @@ Jul 22)
 
 There should be something about spell checking in the user manual.
 
-Mac: Using gvim: netrw window disappears. (Nick Lo, 2006 Jun 21)
-
 Add an option to specify the character to use when a double-width character is
 moved to the next line.  Default '>', set to a space to blank it out.  Check
 that char is single width when it's set (compare with 'listchars').
@@ -2644,8 +2537,6 @@ Only skip shortening for ":cc"?
 Problem with ":call" and dictionary function. Hari Krishna Dara, Charles
 Campbell 2006 Jul 06.
 
-Syntax HL error caused by "containedin". (Peter Hodge, 2006 Oct 6)
-
 A custom completion function in a ":command" cannot be a Funcref. (Andy
 Wokula, 2007 Aug 25)
 
@@ -2678,17 +2569,8 @@ and <notisdir> to autocommand patterns?  Also <isfile>?
 Add command modifier that skips wildcard expansion, so that you don't need to
 put backslashes before special chars, only for white space.
 
-Syntax HL: open two windows on the same C code, delete a ")" in one window,
-resulting in highlighted "{" in that window, not in the other.
-
 In mswin.vim: Instead of mapping <C-V> for Insert mode in a complicated way,
 can it be done like ":imap <C-V> <MiddleMouse>" without negative side effects?
-
-GTK: when the Tab pages bar appears or disappears while the window is
-maximized the window is no longer maximized.  Patch that has some idea but
-doesn't work from Geoffrey Antos, 2008 May 5.
-Also: the window may no longer fit on the screen, thus the command line is not
-visible.
 
 When right after "vim file", "M" then CTRL-W v the windows are scrolled
 differently and unexpectedly.  Caused by patch 7.2.398?
@@ -2718,9 +2600,6 @@ When completing from another file that uses a different encoding completion
 text has the wrong encoding.  E.g., when 'encoding' is utf-8 and file is
 latin1.  Example from Gombault Damien, 2007 Mar 24.
 
-Syntax HL: When using "nextgroup" and the group has an empty match, there is
-no search at that position for another match. (Lukas Mai, 2008 April 11)
-
 In gvim the backspace key produces a backspace character, but on Linux the
 VERASE key is Delete.  Set VERASE to Backspace? (patch by Stephane Chazelas,
 2007 Oct 16)
@@ -2740,9 +2619,6 @@ this, at least for Unix (using device/inode)?
 When switching between windows the cursor is often put in the middle.
 Remember the relative position and restore that, just like lnum and col are
 restored. (Luc St-Louis)
-
-Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
-2010 Jun 30)
 
 Add an option for a minimal text length before inserting a line break for
 'textwidth'.  Avoids very short lines when a very long word follows.
@@ -2982,7 +2858,7 @@ Vi incompatibility:
     thing.  (only repeat insert for the first line).
 
 
-GTK+ GUI known bugs:
+GTK+ GUI:
 9   Crash with X command server over ssh. (Ciaran McCreesh, 2006 Feb 6)
 8   GTK 2: Combining UTF-8 characters not displayed properly in menus (Mikolaj
     Machowski)  They are displayed as separate characters.  Problem in
@@ -2997,6 +2873,33 @@ GTK+ GUI known bugs:
 -   Gnome2: When moving the toolbar out of the dock, so that it becomes
     floating, it can no longer be moved.  Therefore making it float has been
     blocked for now.
+-   Mapping with partial match not executed properly in GTK. (Ingo Karkat,
+    #7082)
+-   Add more testing of the GTK GUI.
+    - gtk_test_widget_click() can be used to simulate a click in a widget.
+-   Tests failing for "make testgui" with GTK:
+    - Test_setbufvar_options()
+    - Test_exit_callback_interval()
+-   When adding a timer from 'balloonexpr' it won't fire, because
+    g_main_context_iteration() doesn't return.  Need to trigger an event when
+    the timer expires.
+-   problem with 'L' in 'guioptions' changing the window width.  (Aaron
+    Cornelius, 2012 Feb 6)
+-   Patch to invert characters differently in GTK. (Yukihiro Nakadaira, 2013
+    May 5)
+-   drawing a double-width combining character over single-width characters
+    doesn't look right. (Dominique Pelle, 2010 Aug 8)
+-   tear-off menu does not work. (Kurt Sonnenmoser, 2010 Oct 25)
+-   Patch for GTK buttons X1Mouse and X2Mouse. (Christian J. Robinson, 2010
+    Aug 9)
+-   When setting 'columns' in a startup script and doing ":vertical diffsplit"
+    the window isn't redrawn properly, see two vertical bars.
+-   when the Tab pages bar appears or disappears while the window is maximized
+    the window is no longer maximized.  Patch that has some idea but doesn't
+    work from Geoffrey Antos, 2008 May 5.  Also: the window may no longer fit
+    on the screen, thus the command line is not visible.
+-   Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn
+    Winckler, 2010 Jun 30)
 
 
 Win32 GUI known bugs:
@@ -3062,6 +2965,10 @@ Win32 GUI known bugs:
     still be used somewhere.  This is too tricky, do the font selection first,
     then set the new font by name (requires putting all logfont parameters in
     the font name).
+-   When running a fast timer, the cursor no longer blinks.  Was reported:
+    cursor blinks in terminal on widows with a timer. (xtal8, #2142)
+-   Last message from startup doesn't show up when there is an echoerr
+    command. (Cyril Slobin, 2009 Mar 13)
 
 
 Motif:
@@ -3242,6 +3149,18 @@ Macintosh:
 9   When DiskLock is running, using a swap file causes a crash.  Appears to be
     a problem with writing a file that starts with a dot. (Giacalone)
 9   In mac_expandpath() check that handling of backslashes is done properly.
+-   Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
+-   Version of netbeans.c for use with MacVim. (Kazuki Sakamoto, 2010 Nov 18)
+-   Mac with X11: clipboard doesn't work properly. (Raf, 2010 Aug 16)
+-   Move Carbon todo items to os_mac.txt.  Note that this version is frozen,
+    try the Cocoa version.
+-   After a ":vsplit" the left scrollbar doesn't appear until 'columns' is
+    changed or the window is resized.
+-   Patch for configure: remove arch from ruby link args. (Knezevic, 2008 Mar
+    5)  Alternative: Kazuki Sakamoto, Mar 7.
+-   trouble compiling with Motif, requires --disable-darwin. (Raf, 2008 Aug 1)
+    Reply by Ben Schmidt.
+-   Using gvim: netrw window disappears. (Nick Lo, 2006 Jun 21)
 
 
 "Small" problems:
@@ -3899,6 +3818,8 @@ Multi-byte characters:
     table anymore (breakat_flags[]).
     Simplistic solution: when 'formatoptions' contains "m" also break a line
     at a multibyte character >= 0x100.
+    Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
+    Scroll doesn't work correctly, why?
 -   Add the possibility to enter mappings which are used whenever normal text
     could be entered.  E.g., for "f" command.  But not in Normal mode.  Sort
     of opposite of 'langmap'.  Use ":amap" command?
@@ -3906,6 +3827,9 @@ Multi-byte characters:
     account.  The "linebreak" program from Bruno Haible can do it:
     ftp://ftp.ilog.fr/pub/Users/haible/gnu/linebreak-0.1.tar.gz
     But it's very complicated...
+-   Problem with 'langmap' being used on the rhs of a mapping. (Nikolai
+    Weibull, 2008 May 14).
+    Possibly related problem: Alexey Muranov, 2015 Apr 2
 
 
 Printing:
@@ -3929,8 +3853,8 @@ Printing:
 
 Syntax highlighting:
     Long term goal: faster, better, etc.  Options:
-    - use treesitter, NeoVim uses it
-    - use TextMate, vscode uses it.  #9087
+    - use treesitter, NeoVim uses it - Many people don't like it.
+    - use TextMate, vscode uses it.  #9087 - possibly a long term solution
 8   Make ":syn off" use 'runtimepath' instead of $VIMRUNTIME. (Gary Johnson)
     Should do the same for ":syn on" and ":syn manual".
 8   Support "containedin" argument for ":syn include", so that the defined
@@ -4079,6 +4003,34 @@ Syntax highlighting:
     text, exit at end of file, don't allow editing, etc.  moreim?  lessim?
 7   SpecialKey highlighting overrules syntax highlighting.  Can't give an
     unprintable char another color.  Would be useful for ^M at end of line.
+-   Syntax highlight for a region does not work with a "nextgroup" if the
+    start match is empty. #8449
+-   The :syntax cchar value can only be a single character.  It would be
+    useful to support combining characters. (Charles Campbell)  Also #4687
+-   Syntax highlighting slow (hangs) in SASS file. (Niek Bosch, 2013 Aug 21)
+-   Several syntax file match "^\s*" which may get underlined if that's in the
+    highlight group.  Add a "\zs" after it?
+-   patch to add "combine" flag to  syntax commands. (so8res, 2012 Dec 6)
+    Patch to add "combine" to :syntax, combines highlight attributes. (Nate
+    Soares, 2012 Dec 3)
+-   Syntax update problem in one buffer opened in two windows, bottom window
+    is not correctly updated. (Paul Harris, 2012 Feb 27)
+-   Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set
+    to 2, only one of the two ends gets the cchar displayed. (Brett Stahlman,
+    2010 Aug 21, Ben Fritz, 2010 Sep 14)
+-   Using "syn sync breaklines=2" works for when text is changed, but not when
+    scrolling or redrawing.  Should start search for syntax patterns above the
+    first drawn line. (#8103)
+-   Syntax priority problem. (Charles Campbell, 2011 Sep 15)
+-   Syntax highlighting wrong for transparent region. (Doug Kearns, 2007 Feb
+    26)
+-   Bug in using a transparent syntax region. (Hanlen in vim-dev maillist,
+    2007 Jul 31)
+-   Syntax HL error caused by "containedin". (Peter Hodge, 2006 Oct 6)
+-   Open two windows on the same C code, delete a ")" in one window, resulting
+    in highlighted "{" in that window, not in the other.
+-   When using "nextgroup" and the group has an empty match, there is no
+    search at that position for another match. (Lukas Mai, 2008 April 11)
 
 
 Vim script language:

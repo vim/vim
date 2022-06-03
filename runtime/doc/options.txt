@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2022 May 21
+*options.txt*	For Vim version 8.2.  Last change: 2022 Jun 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4264,7 +4264,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The type of highlighting used can be set with the 'l' occasion in the
 	'highlight' option.  This uses the "Search" highlight group by
 	default.  Note that only the matching text is highlighted, any offsets
-	are not applied.
+	are not applied.  If the "CurSearch" highlight group is set then the
+	current match is highlighted with that.
 	See also: 'incsearch' and |:match|.
 	When you get bored looking at the highlighted matches, you can turn it
 	off with |:nohlsearch|.  This does not change the option value, as
@@ -7624,10 +7625,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	If the statusline is not updated when you want it (e.g., after setting
 	a variable that's used in an expression), you can force an update by
-	setting an option without changing its value.  Example: >
-		:let &ro = &ro
+	using `:redrawstatus`.
 
-<	A result of all digits is regarded a number for display purposes.
+	A result of all digits is regarded a number for display purposes.
 	Otherwise the result is taken as flag text and applied to the rules
 	described above.
 

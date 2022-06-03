@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 8.2.  Last change: 2022 May 22
+*os_win32.txt*  For Vim version 8.2.  Last change: 2022 May 24
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -7,7 +7,7 @@
 						*win32* *Win32* *MS-Windows*
 This file documents the idiosyncrasies of the Win32 version of Vim.
 
-The Win32 version of Vim works on Windows XP, Vista, 7, 8 and 10.  There are
+The Win32 version of Vim works on Windows XP, Vista, 7, 8, 10 and 11.  There are
 both console and GUI versions.
 
 The 32 bit version also runs on 64 bit MS-Windows systems.
