@@ -1554,7 +1554,7 @@ func Test_search_timeout()
   new
   let pattern = '\%#=1a*.*X\@<=b*'
   let search_timeout = 0.02
-  let slow_target_timeout = search_timeout * 10.0
+  let slow_target_timeout = search_timeout * 15.0
 
   for n in range(40, 400, 30)
       call setline(1, ['aaa', repeat('abc ', n), 'ccc'])
