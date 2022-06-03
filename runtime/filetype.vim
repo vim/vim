@@ -1307,8 +1307,8 @@ au BufNewFile,BufRead *.org,*.org_archive	setf org
 " Packet filter conf
 au BufNewFile,BufRead pf.conf			setf pf
 
-" Pacman config
-au BufNewFile,BufRead */etc/pacman.conf		setf conf
+" ini style config files
+au BufNewFile,BufRead */etc/pacman.conf,mpv.conf		setf confini
 
 " Pacman hooks
 au BufNewFile,BufRead *.hook
