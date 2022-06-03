@@ -8330,12 +8330,14 @@ static int      timer_active        = FALSE;
  */
 static int      timeout_flags[2];
 static int      flag_idx = 0;
+static int      *timeout_flag = &timeout_flags[0];
 
-    static void
+
+    static void CALLBACK
 set_flag(void *param, BOOLEAN unused2)
 {
     int *timeout_flag = (int *)param;
-    *timeout_flag = 1;
+    *timeout_flag = TRUE;
 }
 
 /*
@@ -8353,6 +8355,7 @@ stop_timeout(void)
 	    semsg(_(e_could_not_clear_timeout), GetWin32Error());
 	}
     }
+    *timeout_flag = FALSE;
 }
 
 /*
@@ -8373,7 +8376,7 @@ start_timeout(long msec)
 {
     UINT interval = (UINT)msec;
     BOOL ret;
-    int *timeout_flag = &timeout_flags[flag_idx];
+    timeout_flag = &timeout_flags[flag_idx];
 
     stop_timeout();
     ret = CreateTimerQueueTimer(
@@ -8387,7 +8390,7 @@ start_timeout(long msec)
     {
 	flag_idx = (flag_idx + 1) % 2;
 	timer_active = TRUE;
-	*timeout_flag = 0;
+	*timeout_flag = FALSE;
     }
     return timeout_flag;
 }

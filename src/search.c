@@ -658,8 +658,8 @@ searchit(
     int		break_loop = FALSE;
 #endif
     linenr_T	stop_lnum = 0;	// stop after this line number when != 0
-    static int  unused_timeout_flag = FALSE;
-    int	        *timed_out = &unused_timeout_flag;  // set when timed out.
+    int		unused_timeout_flag = FALSE;
+    int		*timed_out = &unused_timeout_flag;  // set when timed out.
 
     if (search_regcomp(pat, RE_SEARCH, pat_use,
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
@@ -674,8 +674,10 @@ searchit(
 	stop_lnum = extra_arg->sa_stop_lnum;
 #ifdef FEAT_RELTIME
 	if (extra_arg->sa_tm > 0)
+	{
 	    init_regexp_timeout(extra_arg->sa_tm);
-	timed_out = &extra_arg->sa_timed_out;
+	    timed_out = &extra_arg->sa_timed_out;
+	}
 #endif
     }
 
