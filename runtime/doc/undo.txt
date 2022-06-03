@@ -109,8 +109,12 @@ change.
 To do the opposite, break a change into two undo blocks, in Insert mode use
 CTRL-G u.  This is useful if you want an insert command to be undoable in
 parts.  E.g., for each sentence.  |i_CTRL-G_u|
-Setting the value of 'undolevels' also breaks undo.  Even when the new value
-is equal to the old value.
+
+You can also use the built-in function |breakundo()| to break the undo
+sequence from a script.
+
+Setting the value of 'undolevels' also breaks undo, even when the new value is
+equal to the old value.
 
 ==============================================================================
 4. Undo branches				*undo-branches* *undo-tree*

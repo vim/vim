@@ -773,4 +773,16 @@ func Test_undo_mark()
   bwipe!
 endfunc
 
+func Test_breakundo()
+  new
+  call append(0, 'foo')
+  call breakundo()
+  call append(0, 'bar')
+  normal u
+  call assert_equal('foo', getline(1))
+  " We shouild have 2 lines left, one for "foo", and one for the line with the cursor.
+  call assert_equal(2, line('$'))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

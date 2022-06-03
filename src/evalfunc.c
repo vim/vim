@@ -28,6 +28,7 @@ static void f_balloon_show(typval_T *argvars, typval_T *rettv);
 static void f_balloon_split(typval_T *argvars, typval_T *rettv);
 # endif
 #endif
+static void f_breakundo(typval_T *argvars, typval_T *rettv);
 static void f_byte2line(typval_T *argvars, typval_T *rettv);
 static void f_call(typval_T *argvars, typval_T *rettv);
 static void f_changenr(typval_T *argvars, typval_T *rettv);
@@ -1634,6 +1635,8 @@ static funcentry_T global_functions[] =
 			},
     {"blob2list",	1, 1, FEARG_1,	    arg1_blob,
 			ret_list_number,    f_blob2list},
+    {"breakundo",	0, 0, 0,	    NULL,
+			ret_void,	    f_breakundo},
     {"browse",		4, 4, 0,	    arg4_browse,
 			ret_string,	    f_browse},
     {"browsedir",	2, 2, 0,	    arg2_string,
@@ -3183,6 +3186,15 @@ get_buf_arg(typval_T *arg)
     if (buf == NULL)
 	semsg(_(e_invalid_buffer_name_str), tv_get_string(arg));
     return buf;
+}
+
+/*
+ * "breakundo()" function
+ */
+    static void
+f_breakundo(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    u_sync(1);
 }
 
 /*

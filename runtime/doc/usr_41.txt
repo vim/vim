@@ -1289,6 +1289,7 @@ Various:					*various-functions*
 	libcall()		call a function in an external library
 	libcallnr()		idem, returning a number
 
+	breakundo()		break the undo sequence
 	undofile()		get the name of the undo file
 	undotree()		return the state of the undo tree
 

@@ -67,6 +67,7 @@ balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
 blob2list({blob})		List	convert {blob} into a list of numbers
+breakundo()			none	break the undo sequence
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
@@ -1134,6 +1135,10 @@ blob2list({blob})					*blob2list()*
 
 		Can also be used as a |method|: >
 			GetBlob()->blob2list()
+
+breakundo()						*breakundo()*
+		Create a break in the undo sequence, like |i_CTRL-G_u|. See
+		also |undo-blocks|.
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
