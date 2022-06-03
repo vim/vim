@@ -2136,6 +2136,35 @@ eval_func(
 }
 
 /*
+ * After a NL, skip over empty lines and comment-only lines.
+ */
+    static char_u *
+newline_skip_comments(char_u *arg)
+{
+    char_u *p = arg + 1;
+
+    for (;;)
+    {
+	p = skipwhite(p);
+
+	if (*p == NUL)
+	    break;
+	if (vim9_comment_start(p))
+	{
+	    char_u *nl = vim_strchr(p, NL);
+
+	    if (nl == NULL)
+		    break;
+	    p = nl;
+	}
+	if (*p != NL)
+	    break;
+	++p;  // skip another NL
+    }
+    return p;
+}
+
+/*
  * Get the next line source line without advancing.  But do skip over comment
  * lines.
  * Only called for Vim9 script.
@@ -2184,7 +2213,7 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 	char_u *next;
 
 	if (*p == NL)
-	    next = p + 1;
+	    next = newline_skip_comments(p);
 	else if (evalarg->eval_cookie != NULL)
 	    next = getline_peek_skip_comments(evalarg);
 	else
@@ -2212,7 +2241,7 @@ eval_next_line(char_u *arg, evalarg_T *evalarg)
     if (arg != NULL)
     {
 	if (*arg == NL)
-	    return skipwhite(arg + 1);
+	    return newline_skip_comments(arg);
 	// Truncate before a trailing comment, so that concatenating the lines
 	// won't turn the rest into a comment.
 	if (*skipwhite(arg) == '#')

@@ -3102,6 +3102,22 @@ func Test_autocmd_with_block()
 
   augroup block_testing
     au!
+    autocmd CursorHold * {
+      if true
+        # comment
+        && true
+
+        && true
+        g:done = 'yes'
+      endif
+      }
+  augroup END
+  doautocmd CursorHold
+  call assert_equal('yes', g:done)
+
+  unlet g:done
+  augroup block_testing
+    au!
   augroup END
 endfunc
 
