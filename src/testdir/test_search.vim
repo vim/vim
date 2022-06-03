@@ -1553,22 +1553,26 @@ endfunc
 func Test_search_timeout()
   new
   let pattern = '\%#=1a*.*X\@<=b*'
+  let search_timeout = 0.02
+  let slow_target_timeout = search_timeout * 10.0
 
   for n in range(40, 400, 30)
       call setline(1, ['aaa', repeat('abc ', n), 'ccc'])
       let start = reltime()
       call search(pattern, '', 0)
       let elapsed = reltimefloat(reltime(start))
-      if elapsed > 0.1
+      if elapsed > slow_target_timeout
           break
       endif
   endfor
-  call assert_true(elapsed > 0.1)
+  call assert_true(elapsed > slow_target_timeout)
 
+  let max_time = elapsed / 2.0
   let start = reltime()
-  call search(pattern, '', 0, 10)
+  call search(pattern, '', 0, float2nr(search_timeout * 1000))
   let elapsed = reltimefloat(reltime(start))
-  call assert_true(elapsed < 0.05)
+  call assert_true(elapsed < max_time)
+
   bwipe!
 endfunc
 
