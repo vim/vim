@@ -642,15 +642,15 @@ manpages and follows linked manpages on hitting CTRL-]).
 
 For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
 
-	export MANPAGER="vim -M +MANPAGER -"
+	export MANPAGER="vim +MANPAGER --not-a-term -"
 
 For (t)csh, add to the config file
 
-	setenv MANPAGER "vim -M +MANPAGER -"
+	setenv MANPAGER "vim +MANPAGER --not-a-term -"
 
 For fish, add to the config file
 
-	set -x MANPAGER "vim -M +MANPAGER -"
+	set -x MANPAGER "vim +MANPAGER --not-a-term -"
 
 
 MARKDOWN                                                *ft-markdown-plugin*
