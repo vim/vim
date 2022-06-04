@@ -1462,9 +1462,8 @@ ambw_end:
 	}
 	if (varp == &T_BE && termcap_active)
 	{
-#ifdef FEAT_JOB_CHANNEL
-	    ch_log_output = TRUE;
-#endif
+	    MAY_WANT_TO_LOG_THIS;
+
 	    if (*T_BE == NUL)
 		// When clearing t_BE we assume the user no longer wants
 		// bracketed paste, thus disable it by writing t_BD.

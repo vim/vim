@@ -2570,7 +2570,7 @@ out_flush(void)
 	out_pos = 0;
 	ui_write(out_buf, len, FALSE);
 #ifdef FEAT_JOB_CHANNEL
-	if (ch_log_output)
+	if (ch_log_output != FALSE)
 	{
 	    out_buf[len] = NUL;
 	    ch_log(NULL, "raw %s output: \"%s\"",
@@ -2579,7 +2579,8 @@ out_flush(void)
 # endif
 			"terminal",
 			out_buf);
-	    ch_log_output = FALSE;
+	    if (ch_log_output == TRUE)
+		ch_log_output = FALSE;  // only log once
 	}
 #endif
     }
@@ -3106,9 +3107,8 @@ term_ul_rgb_color(guicolor_T rgb)
     void
 term_settitle(char_u *title)
 {
-#ifdef FEAT_JOB_CHANNEL
-    ch_log_output = TRUE;
-#endif
+    MAY_WANT_TO_LOG_THIS;
+
     // t_ts takes one argument: column in status line
     OUT_STR(tgoto((char *)T_TS, 0, 0));	// set title start
     out_str_nf(title);
@@ -3610,9 +3610,8 @@ settmode(tmode_T tmode)
 	    if (termcap_active && tmode != TMODE_SLEEP
 						   && cur_tmode != TMODE_SLEEP)
 	    {
-#ifdef FEAT_JOB_CHANNEL
-		ch_log_output = TRUE;
-#endif
+		MAY_WANT_TO_LOG_THIS;
+
 		if (tmode != TMODE_RAW)
 		{
 		    out_str(T_BD);	// disable bracketed paste mode
@@ -3643,9 +3642,8 @@ starttermcap(void)
 {
     if (full_screen && !termcap_active)
     {
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
+
 	out_str(T_TI);			// start termcap mode
 	out_str(T_CTI);			// start "raw" mode
 	out_str(T_KS);			// start "keypad transmit" mode
@@ -3705,9 +3703,7 @@ stoptermcap(void)
 	    check_for_codes_from_term();
 	}
 #endif
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
 
 #if defined(UNIX) || defined(VMS)
 	// Disable xterm's focus reporting mode if 'esckeys' is set.
@@ -3750,9 +3746,7 @@ may_req_termresponse(void)
 	    && starting == 0
 	    && *T_CRV != NUL)
     {
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
 	LOG_TR(("Sending CRV request"));
 	out_str(T_CRV);
 	termrequest_sent(&crv_status);
@@ -3791,9 +3785,7 @@ check_terminal_behavior(void)
 	// width, that will be (1, 2).  This function has the side effect that
 	// changes cursor position, so it must be called immediately after
 	// entering termcap mode.
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
 	LOG_TR(("Sending request for ambiwidth check"));
 	// Do this in the second row.  In the first row the returned sequence
 	// may be CSI 1;2R, which is the same as <S-F3>.
@@ -3822,9 +3814,7 @@ check_terminal_behavior(void)
 	// sequence is ignored and the cursor does not move.  If the terminal
 	// handles test sequence incorrectly, a garbage string is displayed and
 	// the cursor does move.
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
 	LOG_TR(("Sending xterm compatibility test sequence."));
 	// Do this in the third row.  Second row is used by ambiguous
 	// character width check.
@@ -3875,9 +3865,7 @@ may_req_bg_color(void)
 	// Only request foreground if t_RF is set.
 	if (rfg_status.tr_progress == STATUS_GET && *T_RFG != NUL)
 	{
-#ifdef FEAT_JOB_CHANNEL
-	    ch_log_output = TRUE;
-#endif
+	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR(("Sending FG request"));
 	    out_str(T_RFG);
 	    termrequest_sent(&rfg_status);
@@ -3888,9 +3876,7 @@ may_req_bg_color(void)
 	// Only request background if t_RB is set.
 	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL)
 	{
-#ifdef FEAT_JOB_CHANNEL
-	    ch_log_output = TRUE;
-#endif
+	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR(("Sending BG request"));
 	    out_str(T_RBG);
 	    termrequest_sent(&rbg_status);
@@ -3954,9 +3940,7 @@ scroll_start(void)
 {
     if (*T_VS != NUL && *T_CVS != NUL)
     {
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
 	out_str(T_VS);
 	out_str(T_CVS);
 	screen_start();		// don't know where cursor is now
@@ -4866,9 +4850,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& *T_CSH != NUL
 		&& *T_CRS != NUL)
 	{
-#ifdef FEAT_JOB_CHANNEL
-	    ch_log_output = TRUE;
-#endif
+	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR(("Sending cursor style request"));
 	    out_str(T_CRS);
 	    termrequest_sent(&rcs_status);
@@ -4883,9 +4865,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& term_props[TPR_CURSOR_BLINK].tpr_status == TPR_YES
 		&& *T_CRC != NUL)
 	{
-#ifdef FEAT_JOB_CHANNEL
-	    ch_log_output = TRUE;
-#endif
+	    MAY_WANT_TO_LOG_THIS;
 	    LOG_TR(("Sending cursor blink mode request"));
 	    out_str(T_CRC);
 	    termrequest_sent(&rbm_status);
@@ -6455,9 +6435,7 @@ req_more_codes_from_term(void)
     {
 	char *key_name = key_names[xt_index_out];
 
-#ifdef FEAT_JOB_CHANNEL
-	ch_log_output = TRUE;
-#endif
+	MAY_WANT_TO_LOG_THIS;
 	LOG_TR(("Requesting XT %d: %s", xt_index_out, key_name));
 	sprintf(buf, "\033P+q%02x%02x\033\\", key_name[0], key_name[1]);
 	out_str_nf((char_u *)buf);

@@ -1479,6 +1479,17 @@ typedef enum
 
 #define MAYBE	2	    // sometimes used for a variant on TRUE
 
+#define LOG_ALWAYS 9	    // must be different from TRUE and FALSE
+
+#ifdef FEAT_JOB_CHANNEL
+// If "--log logfile" was used or ch_logfile() was called then log some or all
+// terminal output.
+# define MAY_WANT_TO_LOG_THIS if (ch_log_output == FALSE) ch_log_output = TRUE;
+#else
+// no logging support
+# define MAY_WANT_TO_LOG_THIS
+#endif
+
 #ifndef UINT32_T
 typedef UINT32_TYPEDEF UINT32_T;
 #endif
