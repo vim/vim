@@ -3812,6 +3812,41 @@ AC_TRY_COMPILE(
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ST_BLKSIZE),
 	AC_MSG_RESULT(no))
 
+dnl Check for timer_create. It probably requires the 'rt' library.
+AC_MSG_CHECKING([for timer_create])
+save_LIBS="$LIBS"
+LIBS="$LIBS -lrt"
+AC_TRY_LINK([
+#include<signal.h>
+#include<time.h>
+void set_flag(union sigval _unused) {}
+], [
+  struct timespec ts;
+  struct sigevent action = {0};
+  timer_t timer_id;
+
+  action.sigev_notify = SIGEV_THREAD;
+  action.sigev_notify_function = set_flag;
+  timer_create(CLOCK_REALTIME, &action, &timer_id);
+  ],
+  AC_MSG_RESULT(yes; with -lrt); AC_DEFINE(HAVE_TIMER_CREATE),
+  LIBS="$save_LIBS"
+  AC_TRY_LINK([
+#include<signal.h>
+#include<time.h>
+void set_flag(union sigval _unused) {}
+    ], [
+    struct timespec ts;
+    struct sigevent action = {0};
+    timer_t timer_id;
+
+    action.sigev_notify = SIGEV_THREAD;
+    action.sigev_notify_function = set_flag;
+    timer_create(CLOCK_REALTIME, &action, &timer_id);
+    ],
+    AC_MSG_RESULT(yes); AC_DEFINE(HAVE_TIMER_CREATE),
+    AC_MSG_RESULT(no)))
+
 AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_slash],
   [
     AC_RUN_IFELSE([AC_LANG_SOURCE([[

@@ -27,7 +27,11 @@
 #ifdef FEAT_RELTIME
 #include <errno.h>
 #include <signal.h>
-#include <sys/time.h>
+# ifdef HAVE_TIMER_CREATE
+#  include <time.h>
+# else
+#  include <sys/time.h>
+# endif
 #endif
 
 #include "os_unixx.h"	    // unix includes for os_unix.c only
@@ -8264,6 +8268,85 @@ xsmp_close(void)
 #endif // USE_XSMP
 
 #ifdef FEAT_RELTIME
+# if defined(HAVE_TIMER_CREATE) || defined(MACOS_X)
+static int timeout_flag = FALSE;
+static timer_t timer_id;
+static int timer_created = FALSE;
+/*
+ * Callback for when the timer expires.
+ */
+    static void
+set_flag(union sigval _unused)
+{
+    timeout_flag = TRUE;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    static struct itimerspec disarm = {{0, 0}, {0, 0}};
+
+    if (timer_created)
+    {
+	int ret = timer_settime(timer_id, 0, &disarm, NULL);
+	if (ret < 0)
+	    semsg(_(e_could_not_clear_timeout), strerror(errno));
+    }
+
+    // Clear the current timeout flag; any previous timeout should be
+    // considered _not_ triggered.
+    timeout_flag = FALSE;
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The return value is a pointer to a flag that is initialised to FALSE. If the
+ * timeout expires, the flag is set to TRUE. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it will still return a
+ * valid flag pointer; the flag will remain stuck as FALSE .
+ */
+    const int *
+start_timeout(long msec)
+{
+    struct itimerspec interval = {
+	    {0, 0},                                   // Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000000}};  // Timeout interval
+    int ret;
+
+    // This is really the caller's responsibility, but let's make sure the
+    // previous timer has been stopped.
+    stop_timeout();
+    timeout_flag = FALSE;
+
+    if (!timer_created)
+    {
+	struct sigevent action = {0};
+
+	action.sigev_notify = SIGEV_THREAD;
+	action.sigev_notify_function = set_flag;
+        ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
+        if (ret < 0)
+	{
+	    semsg(_(e_could_not_set_timeout), strerror(errno));
+	    return &timeout_flag;
+	}
+	timer_created = TRUE;
+    }
+
+    ret = timer_settime(timer_id, 0, &interval, NULL);
+    if (ret < 0)
+	semsg(_(e_could_not_set_timeout), strerror(errno));
+
+    return &timeout_flag;
+}
+# else
 static struct itimerval prev_interval;
 static struct sigaction prev_sigaction;
 static int timeout_flag         = FALSE;
@@ -8298,6 +8381,7 @@ stop_timeout(void)
 	ret = setitimer(ITIMER_REAL, &disarm, &prev_interval);
 	if (ret < 0)
 	{
+	    // Should only get here as a result of coding errors.
 	    semsg(_(e_could_not_clear_timeout), strerror(errno));
 	}
     }
@@ -8318,13 +8402,13 @@ stop_timeout(void)
 /*
  * Start the timeout timer.
  *
- * The return value is a pointer to a flag that is initialised to 0. If the
- * timeout expires, the flag is set to 1. This will only return pointers to
+ * The return value is a pointer to a flag that is initialised to FALSE. If the
+ * timeout expires, the flag is set to TRUE. This will only return pointers to
  * static memory; i.e. any pointer returned by this function may always be
  * safely dereferenced.
  *
- * This function is not expected to fail, but if it does it still, return a
- * valid flag pointer; the flag will remain stuck at zero.
+ * This function is not expected to fail, but if it does it will still return a
+ * valid flag pointer; the flag will remain stuck as FALSE .
  */
     const int *
 start_timeout(long msec)
@@ -8387,4 +8471,5 @@ start_timeout(long msec)
     timer_active = TRUE;
     return &timeout_flag;
 }
+# endif
 #endif
