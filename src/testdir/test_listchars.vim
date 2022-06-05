@@ -174,13 +174,13 @@ func Test_listchars()
 
   " Test leadmultispace + multispace
   normal ggdG
-  set listchars=eol:$,multispace:yYzZ
+  set listchars=eol:$,multispace:yYzZ,nbsp:S
   set listchars+=leadmultispace:ABCD
   set list
 
   call append(0, [
 	      \ '    ffff    ',
-	      \ '  i i     gg',
+	      \ '  i i     gg',
 	      \ ' h          ',
 	      \ '          j ',
 	      \ '    0  0    ',
@@ -188,13 +188,14 @@ func Test_listchars()
 
   let expected = [
 	      \ 'ABCDffffyYzZ$',
-	      \ 'ABi iyYzZygg$',
+	      \ 'ABi iSyYzZgg$',
 	      \ ' hyYzZyYzZyY$',
 	      \ 'ABCDABCDABj $',
 	      \ 'ABCD0yY0yYzZ$',
         \ '$'
 	      \ ]
   redraw!
+  call assert_equal('eol:$,multispace:yYzZ,nbsp:S,leadmultispace:ABCD', &listchars)
   for i in range(1, 5)
     call cursor(i, 1)
     call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
@@ -226,7 +227,7 @@ func Test_listchars()
 	      \ ]
 
   redraw!
-  call assert_equal('eol:$,leadmultispace:ABCD,space:+,trail:>,eol:$', &listchars)
+  call assert_equal('eol:$,nbsp:S,leadmultispace:ABCD,space:+,trail:>,eol:$', &listchars)
   for i in range(1, 5)
     call cursor(i, 1)
     call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
