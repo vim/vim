@@ -4529,8 +4529,8 @@ fi
 test "$GCC" = yes && CPP_MM=M;
 
 if test -f ./toolcheck; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for buggy tools..." >&5
-$as_echo "$as_me: checking for buggy tools..." >&6;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for buggy tools" >&5
+$as_echo_n "checking for buggy tools... " >&6; }
   sh ./toolcheck 1>&6
 fi
 
@@ -10580,12 +10580,21 @@ if test -z "$SKIP_MOTIF"; then
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   if test "$zOSUnix" = "yes"; then
-	xmheader="Xm/Xm.h"
+	for ac_header in Xm/Xm.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "Xm/Xm.h" "ac_cv_header_Xm_Xm_h" "$ac_includes_default"
+if test "x$ac_cv_header_Xm_Xm_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_XM_XM_H 1
+_ACEOF
+
+fi
+
+done
+
   else
-	xmheader="Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h
-	   Xm/UnhighlightT.h Xm/Notebook.h"
-  fi
-  for ac_header in $xmheader
+	for ac_header in Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h
+	   Xm/UnhighlightT.h Xm/Notebook.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -10598,6 +10607,7 @@ fi
 
 done
 
+  fi
 
   if test "x$ac_cv_header_Xm_XpmP_h" = "xyes"; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XpmAttributes_21 in Xm/XpmP.h" >&5
