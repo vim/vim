@@ -2126,16 +2126,11 @@ win_line(
 			if (wp->w_lcs_chars.leadmultispace[multispace_pos] == NUL)
 			    multispace_pos = 0;
 		    }
-#if 0
-		    else
-			c = (ptr > line + trailcol) ? wp->w_lcs_chars.trail
-			     : (wp->w_lcs_chars.lead ? wp->w_lcs_chars.lead : ' ');
-#endif
 
 		    else if (ptr > line + trailcol && wp->w_lcs_chars.trail)
 			c = wp->w_lcs_chars.trail;
 
-		    else if (ptr < line + trailcol && wp->w_lcs_chars.lead)
+		    else if (ptr < line + leadcol && wp->w_lcs_chars.lead)
 			c = wp->w_lcs_chars.lead;
 
 		    else if (leadcol != 0 && c == ' ' && wp->w_lcs_chars.space)

@@ -175,7 +175,7 @@ func Test_listchars()
   " Test leadmultispace + multispace
   normal ggdG
   set listchars=eol:$,multispace:yYzZ,nbsp:S
-  set listchars+=leadmultispace:ABCD
+  set listchars+=leadmultispace:.-+*
   set list
 
   call append(0, [
@@ -187,15 +187,15 @@ func Test_listchars()
 	      \ ])
 
   let expected = [
-	      \ 'ABCDffffyYzZ$',
-	      \ 'ABi iSyYzZgg$',
+	      \ '.-+*ffffyYzZ$',
+	      \ '.-i iSyYzZgg$',
 	      \ ' hyYzZyYzZyY$',
-	      \ 'ABCDABCDABj $',
-	      \ 'ABCD0yY0yYzZ$',
+	      \ '.-+*.-+*.-j $',
+	      \ '.-+*0yY0yYzZ$',
         \ '$'
 	      \ ]
   redraw!
-  call assert_equal('eol:$,multispace:yYzZ,nbsp:S,leadmultispace:ABCD', &listchars)
+  call assert_equal('eol:$,multispace:yYzZ,nbsp:S,leadmultispace:.-+*', &listchars)
   for i in range(1, 5)
     call cursor(i, 1)
     call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
@@ -218,16 +218,16 @@ func Test_listchars()
 	      \ ])
 
   let expected = [
-	      \ 'ABCDffff>>>>$',
-	      \ 'ABi+i+++++gg$',
+	      \ '.-+*ffff>>>>$',
+	      \ '.-i+i+++++gg$',
 	      \ '+h>>>>>>>>>>$',
-	      \ 'ABCDABCDABj>$',
-	      \ 'ABCD0++0>>>>$',
+	      \ '.-+*.-+*.-j>$',
+	      \ '.-+*0++0>>>>$',
         \ '$',
 	      \ ]
 
   redraw!
-  call assert_equal('eol:$,nbsp:S,leadmultispace:ABCD,space:+,trail:>,eol:$', &listchars)
+  call assert_equal('eol:$,nbsp:S,leadmultispace:.-+*,space:+,trail:>,eol:$', &listchars)
   for i in range(1, 5)
     call cursor(i, 1)
     call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
@@ -238,7 +238,7 @@ func Test_listchars()
   " Test leadmultispace only
   normal ggdG
   set listchars&
-  set listchars=leadmultispace:ABCD
+  set listchars=leadmultispace:.-+*
   set list
 
   call append(0, [
@@ -250,15 +250,15 @@ func Test_listchars()
 	      \ ])
 
   let expected = [
-	      \ 'ABCDffff    ',
-	      \ 'ABi i     gg',
+	      \ '.-+*ffff    ',
+	      \ '.-i i     gg',
 	      \ ' h          ',
-	      \ 'ABCDABCDABj ',
-	      \ 'ABCD0  0    ',
+	      \ '.-+*.-+*.-j ',
+	      \ '.-+*0  0    ',
         \ ' ',
 	      \ ]
   redraw!
-  call assert_equal('leadmultispace:ABCD', &listchars)
+  call assert_equal('leadmultispace:.-+*', &listchars)
   for i in range(1, 5)
     call cursor(i, 1)
     call assert_equal([expected[i - 1]], ScreenLines(i, 12))
@@ -269,7 +269,7 @@ func Test_listchars()
   normal ggdG
   set listchars&
   set listchars+=lead:<,space:-
-  set listchars+=leadmultispace:ABCD
+  set listchars+=leadmultispace:.-+*
   set list
 
   call append(0, [
@@ -281,15 +281,15 @@ func Test_listchars()
 	      \ ])
 
   let expected = [
-	      \ 'ABCDffff----$',
-	      \ 'ABi-i-----gg$',
+	      \ '.-+*ffff----$',
+	      \ '.-i-i-----gg$',
 	      \ '<h----------$',
-	      \ 'ABCDABCDABj-$',
-	      \ 'ABCD0--0----$',
+	      \ '.-+*.-+*.-j-$',
+	      \ '.-+*0--0----$',
         \ '$',
 	      \ ]
   redraw!
-  call assert_equal('eol:$,lead:<,space:-,leadmultispace:ABCD', &listchars)
+  call assert_equal('eol:$,lead:<,space:-,leadmultispace:.-+*', &listchars)
   for i in range(1, 5)
     call cursor(i, 1)
     call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))

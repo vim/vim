@@ -4839,9 +4839,9 @@ set_chars_option(win_T *wp, char_u **varp)
     char_u	*p, *s;
     int		c1 = 0, c2 = 0, c3 = 0;
     char_u	*last_multispace = NULL; // Last occurrence of "multispace:"
-    char_u	*last_lmultispace = NULL; // Last occurrence of "lead-multispace:"
+    char_u	*last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
     int		multispace_len = 0;	 // Length of lcs-multispace string
-    int		lead_multispace_len = 0; // Length of lcs-lead-multispace string
+    int		lead_multispace_len = 0; // Length of lcs-leadmultispace string
     struct charstab
     {
 	int	*cp;
@@ -5032,7 +5032,7 @@ set_chars_option(win_T *wp, char_u **varp)
 		    s = p + len2 + 1;
 		    if (round == 0)
 		    {
-			// Get length of lcs-multispace string in first round
+			// Get length of lcsmultispace string in first round
 			last_lmultispace = p;
 			lead_multispace_len = 0;
 			while (*s != NUL && *s != ',')
@@ -5043,7 +5043,7 @@ set_chars_option(win_T *wp, char_u **varp)
 			    ++lead_multispace_len;
 			}
 			if (lead_multispace_len == 0)
-			    // lcs-multispace cannot be an empty string
+			    // lcsmultispace cannot be an empty string
 			    return e_invalid_argument;
 			p = s;
 		    }
