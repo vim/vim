@@ -8276,7 +8276,7 @@ static int timer_created = FALSE;
  * Callback for when the timer expires.
  */
     static void
-set_flag(union sigval _unused)
+set_flag(union sigval _unused UNUSED)
 {
     timeout_flag = TRUE;
 }

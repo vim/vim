@@ -225,7 +225,7 @@ releasepool:
 typedef struct macos_timer macos_timer_T;
 
     static void
-_timer_cancel(void *arg)
+_timer_cancel(void *arg UNUSED)
 {
     // This is not currently used, but it might be useful in the future and
     // it is non-trivial enough to provide as usable implementation.
@@ -338,8 +338,10 @@ timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid)
  */
     int
 timer_settime(
-    timer_t timerid, int unused_flags, 
-    const struct itimerspec *new_value, struct itimerspec *old_value)
+    timer_t timerid,
+    int unused_flags UNUSED,
+    const struct itimerspec *new_value,
+    struct itimerspec *old_value UNUSED)
 {
     uint64_t first_shot = itime_to_ns(&new_value->it_value);
 
