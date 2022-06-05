@@ -8439,7 +8439,6 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     int		retval = 0;	// default: FAIL
     long	lnum_stop = 0;
 #ifdef FEAT_RELTIME
-    proftime_T	tm;
     long	time_limit = 0;
 #endif
     int		options = SEARCH_KEEP;
@@ -8486,11 +8485,6 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	}
     }
 
-#ifdef FEAT_RELTIME
-    // Set the time limit, if there is one.
-    profile_setlimit(time_limit, &tm);
-#endif
-
     /*
      * This function does not accept SP_REPEAT and SP_RETCOUNT flags.
      * Check to make sure only those flags are set.
@@ -8509,7 +8503,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     CLEAR_FIELD(sia);
     sia.sa_stop_lnum = (linenr_T)lnum_stop;
 #ifdef FEAT_RELTIME
-    sia.sa_tm = &tm;
+    sia.sa_tm = time_limit;
 #endif
 
     // Repeat until {skip} returns FALSE.
@@ -8955,18 +8949,10 @@ do_searchpair(
     int		use_skip = FALSE;
     int		err;
     int		options = SEARCH_KEEP;
-#ifdef FEAT_RELTIME
-    proftime_T	tm;
-#endif
 
     // Make 'cpoptions' empty, the 'l' flag should not be used here.
     save_cpo = p_cpo;
     p_cpo = empty_option;
-
-#ifdef FEAT_RELTIME
-    // Set the time limit, if there is one.
-    profile_setlimit(time_limit, &tm);
-#endif
 
     // Make two search patterns: start/end (pat2, for in nested pairs) and
     // start/middle/end (pat3, for the top pair).
@@ -8998,7 +8984,7 @@ do_searchpair(
 	CLEAR_FIELD(sia);
 	sia.sa_stop_lnum = lnum_stop;
 #ifdef FEAT_RELTIME
-	sia.sa_tm = &tm;
+	sia.sa_tm = time_limit;
 #endif
 	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
 						     options, RE_SEARCH, &sia);

@@ -8256,3 +8256,217 @@ xsmp_close(void)
     }
 }
 #endif // USE_XSMP
+
+#if defined(FEAT_RELTIME) || defined(PROTO)
+# if defined(HAVE_TIMER_CREATE) || defined(MACOS_X)
+/*
+ * Implement timeout with timer_create() and timer_settime().
+ */
+static int	timeout_flag = FALSE;
+static timer_t	timer_id;
+static int	timer_created = FALSE;
+
+/*
+ * Callback for when the timer expires.
+ */
+    static void
+set_flag(union sigval _unused UNUSED)
+{
+    timeout_flag = TRUE;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    static struct itimerspec disarm = {{0, 0}, {0, 0}};
+
+    if (timer_created)
+    {
+	int ret = timer_settime(timer_id, 0, &disarm, NULL);
+
+	if (ret < 0)
+	    semsg(_(e_could_not_clear_timeout_str), strerror(errno));
+    }
+
+    // Clear the current timeout flag; any previous timeout should be
+    // considered _not_ triggered.
+    timeout_flag = FALSE;
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The return value is a pointer to a flag that is initialised to FALSE. If the
+ * timeout expires, the flag is set to TRUE. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it will still return a
+ * valid flag pointer; the flag will remain stuck as FALSE .
+ */
+    const int *
+start_timeout(long msec)
+{
+    struct itimerspec interval = {
+	    {0, 0},                                   // Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000000}};  // Timeout interval
+    int ret;
+
+    // This is really the caller's responsibility, but let's make sure the
+    // previous timer has been stopped.
+    stop_timeout();
+    timeout_flag = FALSE;
+
+    if (!timer_created)
+    {
+	struct sigevent action = {0};
+
+	action.sigev_notify = SIGEV_THREAD;
+	action.sigev_notify_function = set_flag;
+        ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
+        if (ret < 0)
+	{
+	    semsg(_(e_could_not_set_timeout_str), strerror(errno));
+	    return &timeout_flag;
+	}
+	timer_created = TRUE;
+    }
+
+    ret = timer_settime(timer_id, 0, &interval, NULL);
+    if (ret < 0)
+	semsg(_(e_could_not_set_timeout_str), strerror(errno));
+
+    return &timeout_flag;
+}
+
+# else
+
+/*
+ * Implement timeout with setitimer()
+ */
+static struct itimerval prev_interval;
+static struct sigaction prev_sigaction;
+static int		timeout_flag         = FALSE;
+static int		timer_active         = FALSE;
+static int		timer_handler_active = FALSE;
+static int		alarm_pending        = FALSE;
+
+/*
+ * Handle SIGALRM for a timeout.
+ */
+    static RETSIGTYPE
+set_flag SIGDEFARG(sigarg)
+{
+    if (alarm_pending)
+	alarm_pending = FALSE;
+    else
+	timeout_flag = TRUE;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    static struct itimerval disarm = {{0, 0}, {0, 0}};
+    int			    ret;
+
+    if (timer_active)
+    {
+	timer_active = FALSE;
+	ret = setitimer(ITIMER_REAL, &disarm, &prev_interval);
+	if (ret < 0)
+	    // Should only get here as a result of coding errors.
+	    semsg(_(e_could_not_clear_timeout_str), strerror(errno));
+    }
+
+    if (timer_handler_active)
+    {
+	timer_handler_active = FALSE;
+	ret = sigaction(SIGALRM, &prev_sigaction, NULL);
+	if (ret < 0)
+	    // Should only get here as a result of coding errors.
+	    semsg(_(e_could_not_reset_handler_for_timeout_str),
+							      strerror(errno));
+    }
+    timeout_flag = 0;
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The return value is a pointer to a flag that is initialised to FALSE. If the
+ * timeout expires, the flag is set to TRUE. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it will still return a
+ * valid flag pointer; the flag will remain stuck as FALSE .
+ */
+    const int *
+start_timeout(long msec)
+{
+    struct itimerval	interval = {
+	    {0, 0},                                // Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000}};  // Timeout interval
+    struct sigaction	handle_alarm;
+    int			ret;
+    sigset_t		sigs;
+    sigset_t		saved_sigs;
+
+    // This is really the caller's responsibility, but let's make sure the
+    // previous timer has been stopped.
+    stop_timeout();
+
+    // There is a small chance that SIGALRM is pending and so the handler must
+    // ignore it on the first call.
+    alarm_pending = FALSE;
+    ret = sigemptyset(&sigs);
+    ret = ret == 0 ? sigaddset(&sigs, SIGALRM) : ret;
+    ret = ret == 0 ? sigprocmask(SIG_BLOCK, &sigs, &saved_sigs) : ret;
+    timeout_flag = FALSE;
+    ret = ret == 0 ? sigpending(&sigs) : ret;
+    if (ret == 0)
+    {
+	alarm_pending = sigismember(&sigs, SIGALRM);
+	ret = ret == 0 ? sigprocmask(SIG_SETMASK, &saved_sigs, NULL) : ret;
+    }
+    if (unlikely(ret != 0 || alarm_pending < 0))
+    {
+	// Just catching coding errors. Write an error message, but carry on.
+	semsg(_(e_could_not_check_for_pending_sigalrm_str), strerror(errno));
+	alarm_pending = FALSE;
+    }
+
+    // Set up the alarm handler first.
+    ret = sigemptyset(&handle_alarm.sa_mask);
+    handle_alarm.sa_handler = set_flag;
+    handle_alarm.sa_flags = 0;
+    ret = ret == 0 ?  sigaction(SIGALRM, &handle_alarm, &prev_sigaction) : ret;
+    if (ret < 0)
+    {
+	// Should only get here as a result of coding errors.
+	semsg(_(e_could_not_set_handler_for_timeout_str), strerror(errno));
+	return &timeout_flag;
+    }
+    timer_handler_active = TRUE;
+
+    // Set up the interval timer once the alarm handler is in place.
+    ret = setitimer(ITIMER_REAL, &interval, &prev_interval);
+    if (ret < 0)
+    {
+	// Should only get here as a result of coding errors.
+	semsg(_(e_could_not_set_timeout_str), strerror(errno));
+	stop_timeout();
+	return &timeout_flag;
+    }
+
+    timer_active = TRUE;
+    return &timeout_flag;
+}
+# endif // HAVE_TIMER_CREATE
+#endif  // FEAT_RELTIME

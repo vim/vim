@@ -3329,9 +3329,6 @@ typedef struct
 			    // matchaddpos(). TRUE/FALSE
     char	has_cursor; // TRUE if the cursor is inside the match, used for
 			    // CurSearch
-#ifdef FEAT_RELTIME
-    proftime_T	tm;	    // for a time limit
-#endif
 } match_T;
 
 // number of positions supported by matchaddpos()
@@ -4419,7 +4416,7 @@ typedef struct
 {
     linenr_T	sa_stop_lnum;	// stop after this line number when != 0
 #ifdef FEAT_RELTIME
-    proftime_T	*sa_tm;		// timeout limit or NULL
+    long	sa_tm;		// timeout limit or zero
     int		sa_timed_out;	// set when timed out
 #endif
     int		sa_wrapped;	// search wrapped around

@@ -83,5 +83,7 @@ int get_conpty_type(void);
 int is_conpty_stable(void);
 int get_conpty_fix_type(void);
 void resize_console_buf(void);
-char * GetWin32Error(void);
+char *GetWin32Error(void);
+void stop_timeout(void);
+const int *start_timeout(long msec);
 /* vim: set ft=c : */

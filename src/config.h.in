@@ -231,6 +231,7 @@
 #undef HAVE_UTIME
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
 #undef HAVE_MBLEN
+#undef HAVE_TIMER_CREATE
 
 /* Define, if needed, for accessing large files. */
 #undef _LARGE_FILES

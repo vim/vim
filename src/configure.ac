@@ -1,7 +1,8 @@
 dnl configure.ac: autoconf script for Vim
 
-dnl Process this file with autoconf 2.12 or 2.13 to produce "configure".
-dnl Should also work with autoconf 2.54 and later.
+dnl Process this file with autoconf 2.69 to produce "configure".
+dnl This should also work with other versions of autoconf, but 2.70 and later
+dnl generate lots of hard to fix "obsolete" warnings.
 
 AC_INIT(vim.h)
 AC_CONFIG_HEADER(auto/config.h:config.h.in)
@@ -3811,6 +3812,41 @@ AC_TRY_COMPILE(
 	n = (int)st.st_blksize;],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ST_BLKSIZE),
 	AC_MSG_RESULT(no))
+
+dnl Check for timer_create. It probably requires the 'rt' library.
+AC_MSG_CHECKING([for timer_create])
+save_LIBS="$LIBS"
+LIBS="$LIBS -lrt"
+AC_TRY_LINK([
+#include<signal.h>
+#include<time.h>
+static void set_flag(union sigval) {}
+], [
+  struct timespec ts;
+  struct sigevent action = {0};
+  timer_t timer_id;
+
+  action.sigev_notify = SIGEV_THREAD;
+  action.sigev_notify_function = set_flag;
+  timer_create(CLOCK_REALTIME, &action, &timer_id);
+  ],
+  AC_MSG_RESULT(yes; with -lrt); AC_DEFINE(HAVE_TIMER_CREATE),
+  LIBS="$save_LIBS"
+  AC_TRY_LINK([
+#include<signal.h>
+#include<time.h>
+static void set_flag(union sigval) {}
+    ], [
+    struct timespec ts;
+    struct sigevent action = {0};
+    timer_t timer_id;
+
+    action.sigev_notify = SIGEV_THREAD;
+    action.sigev_notify_function = set_flag;
+    timer_create(CLOCK_REALTIME, &action, &timer_id);
+    ],
+    AC_MSG_RESULT(yes); AC_DEFINE(HAVE_TIMER_CREATE),
+    AC_MSG_RESULT(no)))
 
 AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_slash],
   [
