@@ -3644,17 +3644,6 @@ fi
 
 dnl Checks for library functions. ===================================
 
-dnl TODO: this generates an obsolete warning, would need to remove and replace
-dnl all  RETSIGTYPE with "void" and SIGRETURN with "return".
-AC_TYPE_SIGNAL
-
-dnl find out what to use at the end of a signal function
-if test $ac_cv_type_signal = void; then
-  AC_DEFINE(SIGRETURN, [return])
-else
-  AC_DEFINE(SIGRETURN, [return 0])
-fi
-
 dnl check if struct sigcontext is defined (used for SGI only)
 AC_MSG_CHECKING(for struct sigcontext)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([

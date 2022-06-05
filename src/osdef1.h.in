@@ -105,9 +105,9 @@ extern int	waitpid(pid_t, int *, int);
 extern int	toupper(int);
 extern int	tolower(int);
 
-extern RETSIGTYPE (*signal(int, RETSIGTYPE (*func) SIGPROTOARG)) SIGPROTOARG;
+extern void (*signal(int, void (*func) SIGPROTOARG)) SIGPROTOARG;
 #ifdef HAVE_SIGSET
-extern RETSIGTYPE (*sigset(int, RETSIGTYPE (*func) SIGPROTOARG)) SIGPROTOARG;
+extern void (*sigset(int, void (*func) SIGPROTOARG)) SIGPROTOARG;
 #endif
 
 #if defined(HAVE_SETJMP_H)

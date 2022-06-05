@@ -250,8 +250,6 @@
 #endif
 #undef  HAVE_AVAIL_MEM
 #ifndef HAVE_CONFIG_H
-# define RETSIGTYPE void
-# define SIGRETURN  return
 //# define USE_SYSTEM  // Output ship do debugger :(, but not compile
 # define HAVE_SYS_WAIT_H 1 // Attempt
 # define HAVE_TERMIOS_H 1
