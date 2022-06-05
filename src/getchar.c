@@ -669,7 +669,7 @@ stuffReadbuffSpec(char_u *s)
 	}
 	else
 	{
-	    c = mb_ptr2char_adv(&s);
+	    c = mb_cptr2char_adv(&s);
 	    if (c == CAR || c == NL || c == ESC)
 		c = ' ';
 	    stuffcharReadbuff(c);
