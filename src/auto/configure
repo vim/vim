@@ -10593,8 +10593,7 @@ fi
 done
 
   else
-	for ac_header in Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h
-	   Xm/UnhighlightT.h Xm/Notebook.h
+	for ac_header in Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h Xm/UnhighlightT.h Xm/Notebook.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"

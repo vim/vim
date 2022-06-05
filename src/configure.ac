@@ -3112,8 +3112,7 @@ if test -z "$SKIP_MOTIF"; then
   if test "$zOSUnix" = "yes"; then
 	AC_CHECK_HEADERS(Xm/Xm.h)
   else
-	AC_CHECK_HEADERS(Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h
-	   Xm/UnhighlightT.h Xm/Notebook.h)
+	AC_CHECK_HEADERS(Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h Xm/UnhighlightT.h Xm/Notebook.h)
   fi    
 
   if test "x$ac_cv_header_Xm_XpmP_h" = "xyes"; then
