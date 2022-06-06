@@ -78,12 +78,11 @@ myfread(char *buf, int elsize /*ignored*/, int max, FILE *fp)
 }
 
 
-void
+int
 main(int argc, char *argv[])
 {
 	int	append = 0;
 	int	numfiles;
-	int	opt;
 	int	maxfiles;
 	FILE	**filepointers;
 	int	i;
