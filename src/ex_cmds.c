@@ -4484,7 +4484,7 @@ ex_substitute(exarg_T *eap)
 		/*
 		 * Make sure needed_len always greater than copy_len
 		 */
-		if((unsigned)STRLEN(p1) == 0)	{
+		if(*p1 == 0)	{
 			needed_len = copy_len + sublen + 1;
 		}		
 		else {
