@@ -4480,8 +4480,18 @@ ex_substitute(exarg_T *eap)
 		    nmatch_tl += nmatch - 1;
 		}
 		copy_len = regmatch.startpos[0].col - copycol;
-		needed_len = copy_len + ((unsigned)STRLEN(p1)
+
+		/*
+		 * Make sure needed_len always greater than copy_len
+		 */
+		if((unsigned)STRLEN(p1) == 0)	{
+			needed_len = copy_len + sublen + 1;
+		}		
+		else {
+			needed_len = copy_len + ((unsigned)STRLEN(p1)
 				       - regmatch.endpos[0].col) + sublen + 1;
+		}
+
 		if (new_start == NULL)
 		{
 		    /*
