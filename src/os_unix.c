@@ -8422,7 +8422,7 @@ start_timeout(long msec)
     if (ret == 0)
     {
 	alarm_pending = sigismember(&sigs, SIGALRM);
-	ret = ret == 0 ? sigprocmask(SIG_SETMASK, &saved_sigs, NULL) : ret;
+	ret = sigprocmask(SIG_SETMASK, &saved_sigs, NULL);
     }
     if (unlikely(ret != 0 || alarm_pending < 0))
     {

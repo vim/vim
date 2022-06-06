@@ -446,14 +446,6 @@ next_search_hl(
     // or none is found in this line.
     for (;;)
     {
-# ifdef FEAT_RELTIME
-	// Stop searching after passing the time limit.
-	if (timed_out)
-	{
-	    shl->lnum = 0;		// no match found in time
-	    break;
-	}
-# endif
 	// Three situations:
 	// 1. No useful previous match: search from start of line.
 	// 2. Not Vi compatible or empty match: continue at next character.
