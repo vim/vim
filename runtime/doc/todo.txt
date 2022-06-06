@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 03
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,7 +40,6 @@ browser use: https://github.com/vim/vim/issues/1234
 
 Prepare for Vim 9.0 release:
 - Update the user manual:
-  - Add import/export example to 52.1
   - Add more to usr_50.txt as an "advanced section" of usr_41.txt
   - Move some from vim9.txt to the user manual?  Keep the specification.
 - Use Vim9 for more runtime files.
@@ -82,8 +81,8 @@ Update list of features to vote on:
 
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
-    (Yegappan Lakshmanan, 2021 May 22
-- Srollbar thumb somtimes not visible  #10492
+  (Yegappan Lakshmanan, 2021 May 22)
+- Srollbar thumb sometimes not visible  #10492
 - Add a function to redraw a specific popup window.  Esp. to be used when
   editing the command line, when screen updating doesn't happen. (Shougo)
 - Add a flag to make a popup window focusable?
@@ -204,6 +203,10 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Autoconf: must use autoconf 2.69, later version generates lots of warnings
+    attempt in ~/tmp/configure.ac
+- try using autoconf 2.71 and fix all "obsolete" warnings
+
 Can deref_func_name() and deref_function_name() be merged?
 
 After patch 8.2.4915 w_botline is computed much more often. Can this be
@@ -217,7 +220,7 @@ Improvement in terminal configuration mess: Request the terminfo entry from
 the terminal itself.  The $TERM value then is only relevant for whether this
 feature is supported or not.  Replaces the xterm mechanism to request each
 entry separately. #6609
-Multiplexers (screen, tmux) can request it to the underlaying terminal, and
+Multiplexers (screen, tmux) can request it to the underlying terminal, and
 pass it on with modifications.
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002

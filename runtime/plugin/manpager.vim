@@ -1,11 +1,14 @@
 " Vim plugin for using Vim as manpager.
 " Maintainer: Enno Nagel <ennonagel+vim@gmail.com>
-" Last Change: 2020 Aug 05
+" Last Change: 2022 Jun 05
 
 command! -nargs=0 MANPAGER call s:ManPager() | delcommand MANPAGER
 
-function! s:ManPager()
-  set nocompatible
+function s:ManPager()
+  " global options, keep these to a minimum to avoid side effects
+  if &compatible
+    set nocompatible
+  endif
   if exists('+viminfofile')
     set viminfofile=NONE
   endif
@@ -27,7 +30,7 @@ function! s:ManPager()
   if n > 1
     exe "1," . n-1 . "d"
   endif
-  setlocal nomodified readonly
+  setlocal nomodifiable nomodified readonly nowrite
 
   syntax on
 endfunction

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2022 May 10
+*starting.txt*  For Vim version 8.2.  Last change: 2022 Jun 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
