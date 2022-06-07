@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2022 May 29
+*popup.txt*  For Vim version 8.2.  Last change: 2022 Jun 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -999,7 +999,7 @@ To make the four corners transparent:
 ==============================================================================
 4. Examples						*popup-examples*
 
-These examplese use |Vim9| script.
+These examples use |Vim9| script.
 
 TODO: more interesting examples
 
@@ -1042,6 +1042,10 @@ Extend popup_filter_menu() with shortcut keys: >
 
 	  " No shortcut, pass to generic filter
 	  return popup_filter_menu(a:id, a:key)
+	endfunc
+
+	func MyMenuHandler(id, result)
+	  echo $'Result: {a:result}'
 	endfunc
 <
 					*popup_beval_example*

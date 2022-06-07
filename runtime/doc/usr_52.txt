@@ -1,14 +1,12 @@
-*usr_52.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
+*usr_52.txt*	For Vim version 8.2.  Last change: 2022 Jun 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
 		       Write larger plugins
 
-TODO: this file needs to be updated
-
 When plugins do more than simple things, they tend to grow big.  This file
 explains how to make sure they still load fast and how to split them up in
-smaller parts
+smaller parts.
 
 |52.1|	Export and import
 |52.2|	Autoloading
@@ -29,45 +27,97 @@ functions are compiled into instructions that can be executed quickly.  This
 makes Vim9 script a lot faster, up to a 100 times.
 
 The basic idea is that a script file has items that are private, only used
-inside the script file, and items that are exported, used outside of the
-script file.  The exported items can then be used by scripts that import them.
-That makes very clear what is defined where.
+inside the script file, and items that are exported, which can be used by
+scripts that import them.  That makes very clear what is defined where.
 
 Let's start with an example, a script that exports one function and has one
 private function: >
 
-	vim9script  " This indicates a Vim9 script file.
+	vim9script
 
-	export def GetMessage(): string
-	   let result = ''
-	   ...
-	   result = GetPart(count)
-	   ...
+	export def GetMessage(count: string): string
+	   var nr = str2nr(count)
+	   var result = $'To {nr} we say '
+	   result ..= GetReply(nr)
 	   return result
 	enddef
 
-	def GetPart(nr: number): string
-	  if nr == 4
+	def GetReply(nr: number): string
+	  if nr == 42
 	     return 'yes'
+	  elseif nr = 22
+	     return 'maybe'
 	  else
 	     return 'no'
 	  endif
 	enddef
 
-The `vim9script` command must be the very first command in the file.  Without
-it Vim will assume legacy script syntax.
+The `vim9script` command is required, `export` only works in a |Vim9| script.
 
-The `export def GetMessage(): string` line starts with `export`, meaning that
-this function can be imported and called by other scripts. The line
-`def GetPart(...` does not start with `export`, this is a script-local
-function, it can only be used inside this script file.
+The `export def GetMessage(...` line starts with `export`, meaning that this
+function can be called by other scripts.  The line `def GetReply(...` does not
+start with `export`, this is a script-local function, it can only be used
+inside this script file.
 
-In the `export def GetMessage(): string` line you will notice the colon and
-the return type.  Vim9 functions, defined with `def`, require specifying the
-type of arguments and the return type.  That way Vim can compile the code
-efficiently.  The GetPart function defines an argument "nr" of type "number".
+Now about the script where this is imported.  In this example we use this
+layout, which works well for a plugin below the "pack" directory:
+	.../plugin/theplugin.vim
+	.../lib/getmessage.vim
 
-TODO: import/export example
+Assuming the "..." directory has been added to 'runtimepath', Vim will look
+for plugins in the "plugin" directory and source "theplugin.vim".  Vim does
+not recognize the "lib" directory, you can put any scripts there.
+
+The above script that exports GetMessage() goes in lib/getmessage.vim.  The
+GetMessage() function is used in plugin/theplugin.vim: >
+
+	vim9script
+
+	import "../lib/getmessage.vim"
+	command -nargs=1 ShowMessage echomsg getmessage.GetMessage(<f-args>)
+
+The `import` command uses a relative path, it starts with "../", which means
+to go one directory up.  For other kinds of paths see the `:import` command.
+
+How we can try out the command that the plugin provides: >
+	ShowMessage 1
+<	To 1 we say no ~
+>
+	ShowMessage 22
+<	To 22 we say maybe ~
+
+Notice that the function GetMessage() is prefixed with the imported script
+name "getmessage".  That way, for every imported function used, you know what
+script it was imported from.  If you import several scripts each of them could
+define a GetMessage() function: >
+
+	vim9script
+
+	import "../lib/getmessage.vim"
+	import "../lib/getother.vim"
+	command -nargs=1 ShowMessage echomsg getmessage.GetMessage(<f-args>)
+	command -nargs=1 ShowOther echomsg getother.GetMessage(<f-args>)
+
+If the imported script name is long or you use it in many places, you can
+shorten it by adding an "as" argument: >
+	import "../lib/getmessage.vim" as msg
+	command -nargs=1 ShowMessage echomsg msg.GetMessage(<f-args>)
+
+
+RELOADING
+
+One thing to keep in mind: the imported "lib/getmessage.vim" script will be
+sourced only once.  When it is imported a second time sourcing it will be
+skipped, since the items in it have already been created.  It does not matter
+if this import command is in another script, or in the same script that is
+sourced again.
+
+This is efficient when using a plugin, but when still developing a plugin it
+means that changing "lib/getmessage.vim" after it has been imported will have
+no effect.  You need to quit Vim and start it again. (Rationale: the items
+defined in the script could be used in a compiled function, sourcing the
+script again may break those functions).
+
 
 USING GLOBALS
 
@@ -83,8 +133,6 @@ prefix that is very unlikely to be used elsewhere.  For example, if you have a
 ==============================================================================
 *52.2*	Autoloading
 
-TODO: autoloading with import/export
-
 After splitting your large script into pieces, all the lines will still be
 loaded and executed the moment the script is used.  Every `import` loads the
 imported script to find the items defined there.  Although that is good for
@@ -92,27 +140,39 @@ finding errors early, it also takes time.  Which is wasted if the
 functionality is not often used.
 
 Instead of having `import` load the script immediately, it can be postponed
-until needed. >
-	import autoload "./LoadLater.vim"
+until needed.  Using the example above, only one change needs to be made in
+the plugin/theplugin.vim script: >
+	import autoload "../lib/getmessage.vim"
 
-Now you can use exported items as usual: "LoadLater.GetMonth(4)".
-However, the type will not be checked. Not even the existence of the
-GetMonth() function is checked until it is used.  You will have to decide what
-is more important for your script.  You can also add the "autoload" argument
-later, after you have checked everything works.
+Nothing in the rest of the script needs to change.  However, the types will
+not be checked.  Not even the existence of the GetMessage() function is
+checked until it is used.  You will have to decide what is more important for
+your script: fast startup or getting errors early.  You can also add the
+"autoload" argument later, after you have checked everything works.
 
-Another form is to use a script name that is not an absolute or relative
-path: >
+
+AUTOLOAD DIRECTORY
+
+Another form is to use autoload with a script name that is not an absolute or
+relative path: >
 	import autload "monthlib.vim"
 
 This will search for the script "monthlib.vim" in the autoload directories of
-'runtimepath'.  With Unix the directory often is "~/.vim/autoload".
+'runtimepath'.  With Unix one of the directories often is "~/.vim/autoload".
 
-The main advantage of this is that this script can be shared with other
+The main advantage of this is that this script can be easily shared with other
 scripts.  You do need to make sure that the script name is unique, since Vim
 will search all the "autoload" directories in 'runtimepath', and if you are
-using several plugins, these may add several directories to 'runtimepath',
-each of which might have an "autoload" directory.
+using several plugins with a plugin manager, it may add a directory to
+'runtimepath', each of which might have an "autoload" directory.
+
+Without autoload: >
+	import "monthlib.vim"
+
+Vim will search for the script "monthlib.vim" in the import directories of
+'runtimepath'.  Note that in this case adding or removing "autoload" changes
+where the script is found.  With a relative or absolute path the location does
+not change.
 
 ==============================================================================
 *52.3*	Autoloading without import/export
@@ -256,13 +316,13 @@ In some cases you have a legacy Vim script where you want to use items from a
 Vim9 script.  For example in your .vimrc you want to initialize a plugin.  The
 best way to do this is to use `:import`.  For example: >
 
-	import Init as NiceInit from 'myNicePlugin.vim'
-	call NiceInit('today')
+	import 'myNicePlugin.vim'
+	call myNicePlugin.NiceInit('today')
 
-This finds the exported function "Init" in the Vim9 script file and makes it
-available as script-local item "NiceInit". `:import` always uses the script
-namespace, even when "s:" is not given.  If "myNicePlugin.vim" was already
-sourced it is not sourced again.
+This finds the exported function "NiceInit" in the Vim9 script file and makes
+it available as script-local item "myNicePlugin.NiceInit". `:import` always
+uses the script namespace, even when "s:" is not given.  If "myNicePlugin.vim"
+was already sourced it is not sourced again.
 
 Besides avoiding putting any items in the global namespace (where name clashes
 can cause unexpected errors), this also means the script is sourced only once,

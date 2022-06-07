@@ -1545,6 +1545,10 @@ func Test_input_func()
   call feedkeys(":let c = input('name? ', \"x\\<BS>y\")\<CR>\<CR>", 'xt')
   call assert_equal('y', c)
 
+  " Test for using text with composing characters as default input
+  call feedkeys(":let c = input('name? ', \"ã̳\")\<CR>\<CR>", 'xt')
+  call assert_equal('ã̳', c)
+
   " Test for using <CR> as default input
   call feedkeys(":let c = input('name? ', \"\\<CR>\")\<CR>x\<CR>", 'xt')
   call assert_equal(' x', c)

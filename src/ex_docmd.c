@@ -3441,9 +3441,17 @@ theend:
     static void
 append_command(char_u *cmd)
 {
-    char_u *s = cmd;
-    char_u *d;
+    size_t  len = STRLEN(IObuff);
+    char_u  *s = cmd;
+    char_u  *d;
 
+    if (len > IOSIZE - 100)
+    {
+	// Not enough space, truncate and put in "...".
+	d = IObuff + IOSIZE - 100;
+	d -= mb_head_off(IObuff, d);
+	STRCPY(d, "...");
+    }
     STRCAT(IObuff, ": ");
     d = IObuff + STRLEN(IObuff);
     while (*s != NUL && d - IObuff + 5 < IOSIZE)

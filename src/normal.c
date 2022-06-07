@@ -431,9 +431,8 @@ normal_cmd_get_more_chars(
 #endif
 	if ((State & MODE_INSERT) && !p_ek)
 	{
-#ifdef FEAT_JOB_CHANNEL
-	    ch_log_output = TRUE;
-#endif
+	    MAY_WANT_TO_LOG_THIS;
+
 	    // Disable bracketed paste and modifyOtherKeys here, we won't
 	    // recognize the escape sequences with 'esckeys' off.
 	    out_str(T_BD);
@@ -444,9 +443,8 @@ normal_cmd_get_more_chars(
 
 	if ((State & MODE_INSERT) && !p_ek)
 	{
-#ifdef FEAT_JOB_CHANNEL
-	    ch_log_output = TRUE;
-#endif
+	    MAY_WANT_TO_LOG_THIS;
+
 	    // Re-enable bracketed paste mode and modifyOtherKeys
 	    out_str(T_BE);
 	    out_str(T_CTI);

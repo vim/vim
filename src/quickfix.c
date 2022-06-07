@@ -5990,7 +5990,7 @@ vgr_match_buflines(
 	{
 	    // Regular expression match
 	    while (vim_regexec_multi(regmatch, curwin, buf, lnum,
-			col, NULL, NULL) > 0)
+			col, NULL) > 0)
 	    {
 		// Pass the buffer number so that it gets used even for a
 		// dummy buffer, unless duplicate_name is set, then the

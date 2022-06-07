@@ -330,10 +330,6 @@ init_search_hl(win_T *wp, match_T *search_hl)
 	cur->hl.buf = wp->w_buffer;
 	cur->hl.lnum = 0;
 	cur->hl.first_lnum = 0;
-# ifdef FEAT_RELTIME
-	// Set the time limit to 'redrawtime'.
-	profile_setlimit(p_rdt, &(cur->hl.tm));
-# endif
 	cur = cur->next;
     }
     search_hl->buf = wp->w_buffer;
@@ -424,6 +420,7 @@ next_search_hl(
     colnr_T	matchcol;
     long	nmatched;
     int		called_emsg_before = called_emsg;
+    int         timed_out = FALSE;
 
     // for :{range}s/pat only highlight inside the range
     if ((lnum < search_first_line || lnum > search_last_line) && cur == NULL)
@@ -449,14 +446,6 @@ next_search_hl(
     // or none is found in this line.
     for (;;)
     {
-# ifdef FEAT_RELTIME
-	// Stop searching after passing the time limit.
-	if (profile_passed_limit(&(shl->tm)))
-	{
-	    shl->lnum = 0;		// no match found in time
-	    break;
-	}
-# endif
 	// Three situations:
 	// 1. No useful previous match: search from start of line.
 	// 2. Not Vi compatible or empty match: continue at next character.
@@ -494,16 +483,9 @@ next_search_hl(
 	    int regprog_is_copy = (shl != search_hl && cur != NULL
 				&& shl == &cur->hl
 				&& cur->match.regprog == cur->hl.rm.regprog);
-	    int timed_out = FALSE;
 
 	    nmatched = vim_regexec_multi(&shl->rm, win, shl->buf, lnum,
-		    matchcol,
-#ifdef FEAT_RELTIME
-		    &(shl->tm), &timed_out
-#else
-		    NULL, NULL
-#endif
-		    );
+							 matchcol, &timed_out);
 	    // Copy the regprog, in case it got freed and recompiled.
 	    if (regprog_is_copy)
 		cur->match.regprog = cur->hl.rm.regprog;

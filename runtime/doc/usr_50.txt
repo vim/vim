@@ -15,8 +15,8 @@ Table of contents: |usr_toc.txt|
 ==============================================================================
 *50.1*	Line continuation
 
-In legacy Vim script line contination is done by preceding a contination line
-with a backslash: >
+In legacy Vim script line continuation is done by preceding a continuation
+line with a backslash: >
 	let mylist = [
 			\ 'one',
 			\ 'two',

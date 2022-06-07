@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 May 27
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jun 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -753,7 +753,7 @@ acos({expr})							*acos()*
 		Return the arc cosine of {expr} measured in radians, as a
 		|Float| in the range of [0, pi].
 		{expr} must evaluate to a |Float| or a |Number| in the range
-		[-1, 1].
+		[-1, 1].  Otherwise acos() returns "nan".
 		Examples: >
 			:echo acos(0)
 <			1.570796 >
@@ -775,6 +775,7 @@ add({object}, {expr})					*add()*
 		item.  Use |extend()| to concatenate |Lists|.
 		When {object} is a |Blob| then  {expr} must be a number.
 		Use |insert()| to add an item at another position.
+		Returns 1 if {object} is not a |List| or a |Blob|.
 
 		Can also be used as a |method|: >
 			mylist->add(val1)->add(val2)
@@ -877,11 +878,17 @@ argv([{nr} [, {winid}]])
 		The {winid} argument specifies the window ID, see |argc()|.
 		For the Vim command line arguments see |v:argv|.
 
+		Returns an empty string if {nr}th argument is not present in
+		the argument list.  Returns an empty List if the {winid}
+		argument is invalid.
+
 asin({expr})						*asin()*
 		Return the arc sine of {expr} measured in radians, as a |Float|
 		in the range of [-pi/2, pi/2].
 		{expr} must evaluate to a |Float| or a |Number| in the range
 		[-1, 1].
+		Returns "nan" if {expr} is outside the range [-1, 1].  Returns
+		0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo asin(0.8)
 <			0.927295 >
@@ -902,6 +909,7 @@ atan({expr})						*atan()*
 		Return the principal value of the arc tangent of {expr}, in
 		the range [-pi/2, +pi/2] radians, as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo atan(100)
 <			1.560797 >
@@ -918,6 +926,8 @@ atan2({expr1}, {expr2})					*atan2()*
 		Return the arc tangent of {expr1} / {expr2}, measured in
 		radians, as a |Float| in the range [-pi, pi].
 		{expr1} and {expr2} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr1} or {expr2} is not a |Float| or a
+		|Number|.
 		Examples: >
 			:echo atan2(-1, 1)
 <			-0.785398 >
@@ -1002,7 +1012,7 @@ autocmd_delete({acmds})					*autocmd_delete()*
 		{pattern} and {cmd} are not specified, then that autocmd group
 		is deleted.
 
-		Returns v:true on success and v:false on failure.
+		Returns |v:true| on success and |v:false| on failure.
 		Examples: >
 			" :autocmd! BufLeave *.vim
 			let acmd = #{event: 'BufLeave', pattern: '*.vim'}
@@ -1060,6 +1070,9 @@ autocmd_get([{opts}])					*autocmd_get()*
 		If there are multiple commands for an autocmd event in a
 		group, then separate items are returned for each command.
 
+		Returns an empty List if an autocmd with the specified group
+		or event or pattern is not found.
+
 		Examples: >
 			" :autocmd MyGroup
 			echo autocmd_get(#{group: 'Mygroup'})
@@ -1080,7 +1093,8 @@ autocmd_get([{opts}])					*autocmd_get()*
 <
 balloon_gettext()					*balloon_gettext()*
 		Return the current text in the balloon.  Only for the string,
-		not used for the List.
+		not used for the List.  Returns an empty string if balloon
+		is not present.
 
 balloon_show({expr})					*balloon_show()*
 		Show {expr} inside the balloon.  For the GUI {expr} is used as
@@ -1117,7 +1131,8 @@ balloon_split({msg})					*balloon_split()*
 		Split String {msg} into lines to be displayed in a balloon.
 		The splits are made for the current window size and optimize
 		to show debugger output.
-		Returns a |List| with the split lines.
+		Returns a |List| with the split lines.  Returns an empty List
+		on error.
 		Can also be used as a |method|: >
 			GetText()->balloon_split()->balloon_show()
 
@@ -1171,7 +1186,8 @@ bufadd({name})						*bufadd()*
 			let bufnr = bufadd('someName')
 			call bufload(bufnr)
 			call setbufline(bufnr, 1, ['some', 'text'])
-<		Can also be used as a |method|: >
+<		Returns 0 on error.
+		Can also be used as a |method|: >
 			let bufnr = 'somename'->bufadd()
 
 bufexists({buf})					*bufexists()*
@@ -1326,6 +1342,8 @@ byte2line({byte})					*byte2line()*
 		one.
 		Also see |line2byte()|, |go| and |:goto|.
 
+		Returns -1 if the {byte} value is invalid.
+
 		Can also be used as a |method|: >
 			GetOffset()->byte2line()
 
@@ -1397,6 +1415,8 @@ ceil({expr})							*ceil()*
 			echo ceil(4.0)
 <			4.0
 
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
+
 		Can also be used as a |method|: >
 			Compute()->ceil()
 <
@@ -1413,6 +1433,7 @@ changenr()						*changenr()*
 		When a change was made it is the number of that change.  After
 		redo it is the number of the redone change.  After undo it is
 		one less than the number of the undone change.
+		Returns 0 if the undo list is empty.
 
 char2nr({string} [, {utf8}])					*char2nr()*
 		Return Number value of the first char in {string}.
@@ -1431,9 +1452,10 @@ char2nr({string} [, {utf8}])					*char2nr()*
 		    let list = map(split(str, '\zs'), {_, val -> char2nr(val)})
 <		Result: [65, 66, 67]
 
+		Returns 0 if {string} is not a |String|.
+
 		Can also be used as a |method|: >
 			GetChar()->char2nr()
-
 
 charclass({string})					*charclass()*
 		Return the character class of the first character in {string}.
@@ -1444,6 +1466,7 @@ charclass({string})					*charclass()*
 			3	emoji
 			other	specific Unicode class
 		The class is used in patterns and word motions.
+		Returns 0 if {string} is not a |String|.
 
 
 charcol({expr})						*charcol()*
@@ -1555,7 +1578,7 @@ col({expr})	The result is a Number, which is the byte index of the column
 			col("$")		length of cursor line plus one
 			col("'t")		column of mark t
 			col("'" .. markname)	column of mark markname
-<		The first column is 1.  0 is returned for an error.
+<		The first column is 1.  Returns 0 if {expr} is invalid.
 		For an uppercase mark the column may actually be in another
 		buffer.
 		For the cursor position, when 'virtualedit' is active, the
@@ -1673,6 +1696,8 @@ complete_info([{what}])				*complete_info()*
 		|pum_getpos()|. It's also available in |v:event| during the
 		|CompleteChanged| event.
 
+		Returns an empty |Dictionary| on error.
+
 		Examples: >
 			" Get all items
 			call complete_info()
@@ -1758,6 +1783,7 @@ copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 cos({expr})						*cos()*
 		Return the cosine of {expr}, measured in radians, as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo cos(100)
 <			0.862319 >
@@ -1774,6 +1800,7 @@ cosh({expr})						*cosh()*
 		Return the hyperbolic cosine of {expr} as a |Float| in the range
 		[1, inf].
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo cosh(0.5)
 <			1.127626 >
@@ -1884,6 +1911,9 @@ debugbreak({pid})					*debugbreak()*
 		will cause process {pid} to get a SIGTRAP.  Behavior for other
 		processes is undefined. See |terminal-debugger|.
 		{only available on MS-Windows}
+
+		Returns |TRUE| if successfully interrupted the program.
+		Otherwise returns |FALSE|.
 
 		Can also be used as a |method|: >
 			GetPid()->debugbreak()
@@ -2355,6 +2385,7 @@ exp({expr})							*exp()*
 		Return the exponential of {expr} as a |Float| in the range
 		[0, inf].
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo exp(2)
 <			7.389056 >
@@ -2521,7 +2552,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		{expr2} remains unchanged.
 		When {expr1} is locked and {expr2} is not empty the operation
 		fails.
-		Returns {expr1}.
+		Returns {expr1}.  Returns 0 on error.
 
 		Can also be used as a |method|: >
 			mylist->extend(otherlist)
@@ -2695,6 +2726,8 @@ finddir({name} [, {path} [, {count}]])				*finddir()*
 		{name} in {path} instead of the first one.
 		When {count} is negative return all the matches in a |List|.
 
+		Returns an empty string if the directory is not found.
+
 		This is quite similar to the ex-command `:find`.
 		{only available when compiled with the |+file_in_path|
 		feature}
@@ -2745,6 +2778,7 @@ float2nr({expr})					*float2nr()*
 		Convert {expr} to a Number by omitting the part after the
 		decimal point.
 		{expr} must evaluate to a |Float| or a Number.
+		Returns 0 if {expr} is not a |Float| or a |Number|.
 		When the value of {expr} is out of range for a |Number| the
 		result is truncated to 0x7fffffff or -0x7fffffff (or when
 		64-bit Number support is enabled, 0x7fffffffffffffff or
@@ -2772,6 +2806,7 @@ floor({expr})							*floor()*
 		Return the largest integral value less than or equal to
 		{expr} as a |Float| (round down).
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			echo floor(1.856)
 <			1.0  >
@@ -2794,6 +2829,8 @@ fmod({expr1}, {expr2})					*fmod()*
 		the magnitude of {expr2}.  If {expr2} is zero, the value
 		returned is zero.  The value returned is a |Float|.
 		{expr1} and {expr2} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr1} or {expr2} is not a |Float| or a
+		|Number|.
 		Examples: >
 			:echo fmod(12.33, 1.22)
 <			0.13 >
@@ -2815,6 +2852,7 @@ fnameescape({string})					*fnameescape()*
 		appears in a filename, it depends on the value of 'isfname'.
 		A leading '+' and '>' is also escaped (special after |:edit|
 		and |:write|).  And a "-" by itself (special after |:cd|).
+		Returns an empty string on error.
 		Example: >
 			:let fname = '+some str%nge|name'
 			:exe "edit " .. fnameescape(fname)
@@ -2832,7 +2870,8 @@ fnamemodify({fname}, {mods})				*fnamemodify()*
 			:echo fnamemodify("main.c", ":p:h")
 <		results in: >
 			/home/mool/vim/vim/src
-<		If {mods} is empty then {fname} is returned.
+<		If {mods} is empty or an unsupported modifier is used then
+		{fname} is returned.
 		Note: Environment variables don't work in {fname}, use
 		|expand()| first then.
 
@@ -2889,6 +2928,7 @@ foldtext()	Returns a String, to be displayed for a closed fold.  This is
 		When used to draw the actual foldtext, the rest of the line
 		will be filled with the fold char from the 'fillchars'
 		setting.
+		Returns an empty string when there is no fold.
 		{not available when compiled without the |+folding| feature}
 
 foldtextresult({lnum})					*foldtextresult()*
@@ -2940,6 +2980,7 @@ funcref({name} [, {arglist}] [, {dict}])
 		been loaded (to avoid mistakenly loading the autoload script
 		when only intending to use the function name, use |function()|
 		instead). {name} cannot be a builtin function.
+		Returns 0 on error.
 
 		Can also be used as a |method|: >
 			GetFuncname()->funcref([arg])
@@ -3020,6 +3061,8 @@ function({name} [, {arglist}] [, {dict}])
 <		Invokes the function as with: >
 			call context.Callback('one', 500)
 <
+		Returns 0 on error.
+
 		Can also be used as a |method|: >
 			GetFuncname()->function([arg])
 
@@ -3073,6 +3116,7 @@ get({func}, {what})
 			"func"	The function
 			"dict"	The dictionary
 			"args"	The list with arguments
+		Returns zero on error.
 		Preferably used as a |method|: >
 			myfunc->get(what)
 <
@@ -3315,7 +3359,7 @@ getcharmod()						*getcharmod()*
 			128	command (Macintosh only)
 		Only the modifiers that have not been included in the
 		character itself are obtained.  Thus Shift-a results in "A"
-		without a modifier.
+		without a modifier.  Returns 0 if no modifiers are used.
 
 							*getcharpos()*
 getcharpos({expr})
@@ -3665,7 +3709,7 @@ getftype({fname})					*getftype()*
 
 getimstatus()						*getimstatus()*
 		The result is a Number, which is |TRUE| when the IME status is
-		active.
+		active and |FALSE| otherwise.
 		See 'imstatusfunc'.
 
 getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
@@ -3675,7 +3719,8 @@ getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		With {winnr} only use this window in the current tab page.
 		{winnr} can also be a |window-ID|.
 		With {winnr} and {tabnr} use the window in the specified tab
-		page.
+		page.  If {winnr} or {tabnr} is invalid, an empty list is
+		returned.
 
 		The returned list contains two entries: a list with the jump
 		locations and the last used jump position number in the list.
@@ -3756,7 +3801,8 @@ getmarklist([{buf}])					*getmarklist()*
 
 		If the optional {buf} argument is specified, returns the
 		local marks defined in buffer {buf}.  For the use of {buf},
-		see |bufname()|.
+		see |bufname()|.  If {buf} is invalid, an empty list is
+		returned.
 
 		Each item in the returned List is a |Dict| with the following:
 		    mark   name of the mark prefixed by "'"
@@ -3778,7 +3824,8 @@ getmatches([{win}])					*getmatches()*
 		as |setmatches()| can restore a list of matches saved by
 		|getmatches()|.
 		If {win} is specified, use the window with this number or
-		window ID instead of the current window.
+		window ID instead of the current window.  If {win} is invalid,
+		an empty list is returned.
 		Example: >
 			:echo getmatches()
 <			[{'group': 'MyGroup1', 'pattern': 'TODO',
@@ -3850,6 +3897,7 @@ getpos({expr})	Get the position for String {expr}.  For possible values of
 		use |getcharpos()|.
 		A very large column number equal to |v:maxcol| can be returned,
 		in which case it means "after the end of the line".
+		If {expr} is invalid, returns a list with all zeros.
 		This can be used to save and restore the position of a mark: >
 			let save_a_mark = getpos("'a")
 			...
@@ -6870,7 +6918,9 @@ reltime([{start} [, {end}]])				*reltime()*
 		The item can be passed to |reltimestr()| to convert it to a
 		string or |reltimefloat()| to convert to a Float.
 
-		Without an argument reltime() returns the current time.
+		Without an argument reltime() returns the current time (the
+		representation is system-dependend, it can not be used as the
+		wall-clock time, see |localtime()| for that).
 		With one argument is returns the time passed since the time
 		specified in the argument.
 		With two arguments it returns the time passed between {start}
@@ -10095,6 +10145,7 @@ winnr([{arg}])	The result is a Number, which is the number of the current
 				current window (where |CTRL-W_l| goes to).
 		The number can be used with |CTRL-W_w| and ":wincmd w"
 		|:wincmd|.
+		When {arg} is invalid an error is given and zero is returned.
 		Also see |tabpagewinnr()| and |win_getid()|.
 		Examples: >
 			let window_count = winnr('$')

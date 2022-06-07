@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jun 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -66,7 +66,8 @@ The output of the example code is:
 	count is 4 ~
 
 In the first line the `vim9script` command makes clear this is a new, |Vim9|
-script file.  That matters for how the rest of the file is used.
+script file.  That matters for how the rest of the file is used.  It is
+recommended to put it in the very fist line, before any comments.
 							*vim9-declarations*
 The `var i = 1` command declares the "i" variable and initializes it.  The
 generic form is: >
@@ -1791,7 +1792,7 @@ encountered, execution of the script/function/mapping will be aborted.
 
 When the `read` command causes another error, the pattern "E484:" will not
 match in it.  Thus this exception will not be caught and result in the usual
-error message and excecution is aborted.
+error message and execution is aborted.
 
 You might be tempted to do this: >
 

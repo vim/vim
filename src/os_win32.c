@@ -100,6 +100,8 @@ typedef char * LPCSTR;
 typedef char * LPWSTR;
 typedef int ACCESS_MASK;
 typedef int BOOL;
+typedef int BOOLEAN;
+typedef int CALLBACK;
 typedef int COLORREF;
 typedef int CONSOLE_CURSOR_INFO;
 typedef int COORD;
@@ -7327,6 +7329,7 @@ typedef struct _FILE_EA_INFORMATION_ {
     ULONG EaSize;
 } FILE_EA_INFORMATION_, *PFILE_EA_INFORMATION_;
 
+#ifndef PROTO
 typedef NTSTATUS (NTAPI *PfnNtOpenFile)(
 	PHANDLE FileHandle,
 	ACCESS_MASK DesiredAccess,
@@ -7367,6 +7370,7 @@ PfnNtSetEaFile pNtSetEaFile = NULL;
 PfnNtQueryEaFile pNtQueryEaFile = NULL;
 PfnNtQueryInformationFile pNtQueryInformationFile = NULL;
 PfnRtlInitUnicodeString pRtlInitUnicodeString = NULL;
+#endif
 
 /*
  * Load ntdll.dll functions.
@@ -8315,3 +8319,85 @@ GetWin32Error(void)
     }
     return msg;
 }
+
+#if defined(FEAT_RELTIME) || defined(PROTO)
+static HANDLE   timer_handle;
+static int      timer_active = FALSE;
+
+/*
+ * Calls to start_timeout alternate the return value pointer between the two
+ * entries in timeout_flags. If the previously active timeout is very close to
+ * expiring when start_timeout() is called then a race condition means that the
+ * set_flag() function may still be invoked after the previous timer is
+ * deleted. Ping-ponging between the two flags prevents this causing 'fake'
+ * timeouts.
+ */
+static int      timeout_flags[2];
+static int      flag_idx = 0;
+static int      *timeout_flag = &timeout_flags[0];
+
+
+    static void CALLBACK
+set_flag(void *param, BOOLEAN unused2)
+{
+    int *timeout_flag = (int *)param;
+
+    *timeout_flag = TRUE;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    if (timer_active)
+    {
+        BOOL ret = DeleteTimerQueueTimer(NULL, timer_handle, NULL);
+	timer_active = FALSE;
+	if (!ret && GetLastError() != ERROR_IO_PENDING)
+	{
+	    semsg(_(e_could_not_clear_timeout_str), GetWin32Error());
+	}
+    }
+    *timeout_flag = FALSE;
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The period is defined in milliseconds.
+ *
+ * The return value is a pointer to a flag that is initialised to 0.  If the
+ * timeout expires, the flag is set to 1. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it still returns a
+ * valid flag pointer; the flag will remain stuck at zero.
+ */
+    const int *
+start_timeout(long msec)
+{
+    UINT interval = (UINT)msec;
+    BOOL ret;
+
+    timeout_flag = &timeout_flags[flag_idx];
+
+    stop_timeout();
+    ret = CreateTimerQueueTimer(
+	    &timer_handle, NULL, set_flag, timeout_flag,
+	    (DWORD)msec, 0, WT_EXECUTEDEFAULT);
+    if (!ret)
+    {
+	semsg(_(e_could_not_set_timeout_str), GetWin32Error());
+    }
+    else
+    {
+	flag_idx = (flag_idx + 1) % 2;
+	timer_active = TRUE;
+	*timeout_flag = FALSE;
+    }
+    return timeout_flag;
+}
+#endif

@@ -132,12 +132,6 @@
 #undef PTYRANGE0
 #undef PTYRANGE1
 
-/* Define as the return type of signal handlers (int or void).  */
-#undef RETSIGTYPE
-
-/* Define as the command at the end of signal handlers ("" or "return 0;").  */
-#undef SIGRETURN
-
 /* Define if struct sigcontext is present */
 #undef HAVE_SIGCONTEXT
 
@@ -231,6 +225,7 @@
 #undef HAVE_UTIME
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
 #undef HAVE_MBLEN
+#undef HAVE_TIMER_CREATE
 
 /* Define, if needed, for accessing large files. */
 #undef _LARGE_FILES

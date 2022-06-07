@@ -3288,3 +3288,15 @@ EXTERN char e_bitshift_ops_must_be_postive[]
 EXTERN char e_argument_1_list_item_nr_dictionary_required[]
 	INIT(= N_("E1284: Argument 1, list item %d: Dictionary required"));
 #endif
+#ifdef FEAT_RELTIME
+EXTERN char e_could_not_clear_timeout_str[]
+	INIT(= N_("E1285: Could not clear timeout: %s"));
+EXTERN char e_could_not_set_timeout_str[]
+	INIT(= N_("E1286: Could not set timeout: %s"));
+EXTERN char e_could_not_set_handler_for_timeout_str[]
+	INIT(= N_("E1287: Could not set handler for timeout: %s"));
+EXTERN char e_could_not_reset_handler_for_timeout_str[]
+	INIT(= N_("E1288: Could not reset handler for timeout: %s"));
+EXTERN char e_could_not_check_for_pending_sigalrm_str[]
+	INIT(= N_("E1289: Could not check for pending SIGALRM: %s"));
+#endif

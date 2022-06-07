@@ -99,7 +99,7 @@ static int mch_gpm_process(void);
 
 static int sysmouse_open(void);
 static void sysmouse_close(void);
-static RETSIGTYPE sig_sysmouse SIGPROTOARG;
+static void sig_sysmouse SIGPROTOARG;
 #endif
 
 /*
@@ -171,33 +171,33 @@ static int do_xterm_trace(void);
 static void handle_resize(void);
 
 #if defined(SIGWINCH)
-static RETSIGTYPE sig_winch SIGPROTOARG;
+static void sig_winch SIGPROTOARG;
 #endif
 #if defined(SIGTSTP)
-static RETSIGTYPE sig_tstp SIGPROTOARG;
+static void sig_tstp SIGPROTOARG;
 // volatile because it is used in signal handler sig_tstp() and sigcont_handler().
 static volatile sig_atomic_t in_mch_suspend = FALSE;
 #endif
 #if defined(SIGINT)
-static RETSIGTYPE catch_sigint SIGPROTOARG;
+static void catch_sigint SIGPROTOARG;
 #endif
 #if defined(SIGUSR1)
-static RETSIGTYPE catch_sigusr1 SIGPROTOARG;
+static void catch_sigusr1 SIGPROTOARG;
 #endif
 #if defined(SIGPWR)
-static RETSIGTYPE catch_sigpwr SIGPROTOARG;
+static void catch_sigpwr SIGPROTOARG;
 #endif
 #if defined(SIGALRM) && defined(FEAT_X11) && !defined(FEAT_GUI_GTK)
 # define SET_SIG_ALARM
-static RETSIGTYPE sig_alarm SIGPROTOARG;
+static void sig_alarm SIGPROTOARG;
 // volatile because it is used in signal handler sig_alarm().
 static volatile sig_atomic_t sig_alarm_called;
 #endif
-static RETSIGTYPE deathtrap SIGPROTOARG;
+static void deathtrap SIGPROTOARG;
 
 static void catch_int_signal(void);
 static void set_signals(void);
-static void catch_signals(RETSIGTYPE (*func_deadly)(), RETSIGTYPE (*func_other)());
+static void catch_signals(void (*func_deadly)(), void (*func_other)());
 #ifdef HAVE_SIGPROCMASK
 # define SIGSET_DECL(set)	sigset_t set;
 # define BLOCK_SIGNALS(set)	block_signals(set)
@@ -213,7 +213,7 @@ static int  have_dollars(int, char_u **);
 static int save_patterns(int num_pat, char_u **pat, int *num_file, char_u ***file);
 
 #ifndef SIG_ERR
-# define SIG_ERR	((RETSIGTYPE (*)())-1)
+# define SIG_ERR	((void (*)())-1)
 #endif
 
 // volatile because it is used in signal handler sig_winch().
@@ -864,18 +864,17 @@ init_signal_stack(void)
  * Let me try it with a few tricky defines from my own osdef.h	(jw).
  */
 #if defined(SIGWINCH)
-    static RETSIGTYPE
+    static void
 sig_winch SIGDEFARG(sigarg)
 {
     // this is not required on all systems, but it doesn't hurt anybody
-    signal(SIGWINCH, (RETSIGTYPE (*)())sig_winch);
+    signal(SIGWINCH, (void (*)())sig_winch);
     do_resize = TRUE;
-    SIGRETURN;
 }
 #endif
 
 #if defined(SIGTSTP)
-    static RETSIGTYPE
+    static void
 sig_tstp SIGDEFARG(sigarg)
 {
     // Second time we get called we actually need to suspend
@@ -890,47 +889,43 @@ sig_tstp SIGDEFARG(sigarg)
 #if !defined(__ANDROID__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
     // This is not required on all systems.  On some systems (at least Android,
     // OpenBSD, and DragonFlyBSD) this breaks suspending with CTRL-Z.
-    signal(SIGTSTP, (RETSIGTYPE (*)())sig_tstp);
+    signal(SIGTSTP, (void (*)())sig_tstp);
 #endif
-    SIGRETURN;
 }
 #endif
 
 #if defined(SIGINT)
-    static RETSIGTYPE
+    static void
 catch_sigint SIGDEFARG(sigarg)
 {
     // this is not required on all systems, but it doesn't hurt anybody
-    signal(SIGINT, (RETSIGTYPE (*)())catch_sigint);
+    signal(SIGINT, (void (*)())catch_sigint);
     got_int = TRUE;
-    SIGRETURN;
 }
 #endif
 
 #if defined(SIGUSR1)
-    static RETSIGTYPE
+    static void
 catch_sigusr1 SIGDEFARG(sigarg)
 {
     // this is not required on all systems, but it doesn't hurt anybody
-    signal(SIGUSR1, (RETSIGTYPE (*)())catch_sigusr1);
+    signal(SIGUSR1, (void (*)())catch_sigusr1);
     got_sigusr1 = TRUE;
-    SIGRETURN;
 }
 #endif
 
 #if defined(SIGPWR)
-    static RETSIGTYPE
+    static void
 catch_sigpwr SIGDEFARG(sigarg)
 {
     // this is not required on all systems, but it doesn't hurt anybody
-    signal(SIGPWR, (RETSIGTYPE (*)())catch_sigpwr);
+    signal(SIGPWR, (void (*)())catch_sigpwr);
     /*
      * I'm not sure we get the SIGPWR signal when the system is really going
      * down or when the batteries are almost empty.  Just preserve the swap
      * files and don't exit, that can't do any harm.
      */
     ml_sync_all(FALSE, FALSE);
-    SIGRETURN;
 }
 #endif
 
@@ -938,12 +933,11 @@ catch_sigpwr SIGDEFARG(sigarg)
 /*
  * signal function for alarm().
  */
-    static RETSIGTYPE
+    static void
 sig_alarm SIGDEFARG(sigarg)
 {
     // doesn't do anything, just to break a system call
     sig_alarm_called = TRUE;
-    SIGRETURN;
 }
 #endif
 
@@ -1021,7 +1015,7 @@ mch_didjmp(void)
  * NOTE: Avoid unsafe functions, such as allocating memory, they can result in
  * a deadlock.
  */
-    static RETSIGTYPE
+    static void
 deathtrap SIGDEFARG(sigarg)
 {
     static int	entered = 0;	    // count the number of times we got here.
@@ -1054,7 +1048,7 @@ deathtrap SIGDEFARG(sigarg)
     // interrupt us.  But in cooked mode we may also get SIGQUIT, e.g., when
     // pressing CTRL-\, but we don't want Vim to exit then.
     if (in_mch_delay && sigarg == SIGQUIT)
-	SIGRETURN;
+	return;
 # endif
 
     // When SIGHUP, SIGQUIT, etc. are blocked: postpone the effect and return
@@ -1082,7 +1076,7 @@ deathtrap SIGDEFARG(sigarg)
 # endif
 		)
 	    && !vim_handle_signal(sigarg))
-	SIGRETURN;
+	return;
 #endif
 
     // Remember how often we have been called.
@@ -1181,8 +1175,6 @@ deathtrap SIGDEFARG(sigarg)
     may_core_dump();
     abort();
 #endif
-
-    SIGRETURN;
 }
 
 /*
@@ -1202,7 +1194,7 @@ after_sigcont(void)
 }
 
 #if defined(SIGCONT)
-static RETSIGTYPE sigcont_handler SIGPROTOARG;
+static void sigcont_handler SIGPROTOARG;
 
 /*
  * With multi-threading, suspending might not work immediately.  Catch the
@@ -1216,12 +1208,12 @@ static RETSIGTYPE sigcont_handler SIGPROTOARG;
  * volatile because it is used in signal handler sigcont_handler().
  */
 static volatile sig_atomic_t sigcont_received;
-static RETSIGTYPE sigcont_handler SIGPROTOARG;
+static void sigcont_handler SIGPROTOARG;
 
 /*
  * signal handler for SIGCONT
  */
-    static RETSIGTYPE
+    static void
 sigcont_handler SIGDEFARG(sigarg)
 {
     if (in_mch_suspend)
@@ -1239,8 +1231,6 @@ sigcont_handler SIGDEFARG(sigarg)
 	cursor_on_force();
 	out_flush();
     }
-
-    SIGRETURN;
 }
 #endif
 
@@ -1392,7 +1382,7 @@ set_signals(void)
     /*
      * WINDOW CHANGE signal is handled with sig_winch().
      */
-    signal(SIGWINCH, (RETSIGTYPE (*)())sig_winch);
+    signal(SIGWINCH, (void (*)())sig_winch);
 #endif
 
 #ifdef SIGTSTP
@@ -1404,7 +1394,7 @@ set_signals(void)
 # ifdef FEAT_GUI
 				: gui.in_use || gui.starting ? SIG_DFL
 # endif
-				    : (RETSIGTYPE (*)())sig_tstp);
+				    : (void (*)())sig_tstp);
 #endif
 #if defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
@@ -1424,7 +1414,7 @@ set_signals(void)
     /*
      * Call user's handler on SIGUSR1
      */
-    signal(SIGUSR1, (RETSIGTYPE (*)())catch_sigusr1);
+    signal(SIGUSR1, (void (*)())catch_sigusr1);
 #endif
 
     /*
@@ -1439,7 +1429,7 @@ set_signals(void)
      * Catch SIGPWR (power failure?) to preserve the swap files, so that no
      * work will be lost.
      */
-    signal(SIGPWR, (RETSIGTYPE (*)())catch_sigpwr);
+    signal(SIGPWR, (void (*)())catch_sigpwr);
 #endif
 
     /*
@@ -1463,7 +1453,7 @@ set_signals(void)
     static void
 catch_int_signal(void)
 {
-    signal(SIGINT, (RETSIGTYPE (*)())catch_sigint);
+    signal(SIGINT, (void (*)())catch_sigint);
 }
 #endif
 
@@ -1479,8 +1469,8 @@ reset_signals(void)
 
     static void
 catch_signals(
-    RETSIGTYPE (*func_deadly)(),
-    RETSIGTYPE (*func_other)())
+    void (*func_deadly)(),
+    void (*func_other)())
 {
     int	    i;
 
@@ -1932,7 +1922,7 @@ get_x11_windis(void)
     if (x11_window != 0 && x11_display == NULL)
     {
 #ifdef SET_SIG_ALARM
-	RETSIGTYPE (*sig_save)();
+	void (*sig_save)();
 #endif
 #ifdef ELAPSED_FUNC
 	elapsed_T start_tv;
@@ -1947,15 +1937,14 @@ get_x11_windis(void)
 	 * the network connection is bad.  Set an alarm timer to get out.
 	 */
 	sig_alarm_called = FALSE;
-	sig_save = (RETSIGTYPE (*)())signal(SIGALRM,
-						 (RETSIGTYPE (*)())sig_alarm);
+	sig_save = (void (*)())signal(SIGALRM, (void (*)())sig_alarm);
 	alarm(2);
 #endif
 	x11_display = XOpenDisplay(NULL);
 
 #ifdef SET_SIG_ALARM
 	alarm(0);
-	signal(SIGALRM, (RETSIGTYPE (*)())sig_save);
+	signal(SIGALRM, (void (*)())sig_save);
 	if (p_verbose > 0 && sig_alarm_called)
 	    verb_msg(_("Opening the X display timed out"));
 #endif
@@ -7267,7 +7256,7 @@ gpm_open(void)
 	    // we are going to suspend or starting an external process
 	    // so we shouldn't  have problem with this
 # ifdef SIGTSTP
-	    signal(SIGTSTP, restricted ? SIG_IGN : (RETSIGTYPE (*)())sig_tstp);
+	    signal(SIGTSTP, restricted ? SIG_IGN : (void (*)())sig_tstp);
 # endif
 	    return 1; // succeed
 	}
@@ -7400,7 +7389,7 @@ sysmouse_open(void)
     mouse.u.mode.signal = SIGUSR2;
     if (ioctl(1, CONS_MOUSECTL, &mouse) != -1)
     {
-	signal(SIGUSR2, (RETSIGTYPE (*)())sig_sysmouse);
+	signal(SIGUSR2, (void (*)())sig_sysmouse);
 	mouse.operation = MOUSE_SHOW;
 	ioctl(1, CONS_MOUSECTL, &mouse);
 	return OK;
@@ -7427,7 +7416,7 @@ sysmouse_close(void)
 /*
  * Gets info from sysmouse and adds special keys to input buf.
  */
-    static RETSIGTYPE
+    static void
 sig_sysmouse SIGDEFARG(sigarg)
 {
     struct mouse_info	mouse;
@@ -8256,3 +8245,217 @@ xsmp_close(void)
     }
 }
 #endif // USE_XSMP
+
+#if defined(FEAT_RELTIME) || defined(PROTO)
+# if defined(HAVE_TIMER_CREATE) || defined(MACOS_X)
+/*
+ * Implement timeout with timer_create() and timer_settime().
+ */
+static int	timeout_flag = FALSE;
+static timer_t	timer_id;
+static int	timer_created = FALSE;
+
+/*
+ * Callback for when the timer expires.
+ */
+    static void
+set_flag(union sigval _unused UNUSED)
+{
+    timeout_flag = TRUE;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    static struct itimerspec disarm = {{0, 0}, {0, 0}};
+
+    if (timer_created)
+    {
+	int ret = timer_settime(timer_id, 0, &disarm, NULL);
+
+	if (ret < 0)
+	    semsg(_(e_could_not_clear_timeout_str), strerror(errno));
+    }
+
+    // Clear the current timeout flag; any previous timeout should be
+    // considered _not_ triggered.
+    timeout_flag = FALSE;
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The return value is a pointer to a flag that is initialised to FALSE. If the
+ * timeout expires, the flag is set to TRUE. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it will still return a
+ * valid flag pointer; the flag will remain stuck as FALSE .
+ */
+    const int *
+start_timeout(long msec)
+{
+    struct itimerspec interval = {
+	    {0, 0},                                   // Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000000}};  // Timeout interval
+    int ret;
+
+    // This is really the caller's responsibility, but let's make sure the
+    // previous timer has been stopped.
+    stop_timeout();
+    timeout_flag = FALSE;
+
+    if (!timer_created)
+    {
+	struct sigevent action = {0};
+
+	action.sigev_notify = SIGEV_THREAD;
+	action.sigev_notify_function = set_flag;
+        ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
+        if (ret < 0)
+	{
+	    semsg(_(e_could_not_set_timeout_str), strerror(errno));
+	    return &timeout_flag;
+	}
+	timer_created = TRUE;
+    }
+
+    ret = timer_settime(timer_id, 0, &interval, NULL);
+    if (ret < 0)
+	semsg(_(e_could_not_set_timeout_str), strerror(errno));
+
+    return &timeout_flag;
+}
+
+# else
+
+/*
+ * Implement timeout with setitimer()
+ */
+static struct itimerval prev_interval;
+static struct sigaction prev_sigaction;
+static int		timeout_flag         = FALSE;
+static int		timer_active         = FALSE;
+static int		timer_handler_active = FALSE;
+static int		alarm_pending        = FALSE;
+
+/*
+ * Handle SIGALRM for a timeout.
+ */
+    static void
+set_flag SIGDEFARG(sigarg)
+{
+    if (alarm_pending)
+	alarm_pending = FALSE;
+    else
+	timeout_flag = TRUE;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    static struct itimerval disarm = {{0, 0}, {0, 0}};
+    int			    ret;
+
+    if (timer_active)
+    {
+	timer_active = FALSE;
+	ret = setitimer(ITIMER_REAL, &disarm, &prev_interval);
+	if (ret < 0)
+	    // Should only get here as a result of coding errors.
+	    semsg(_(e_could_not_clear_timeout_str), strerror(errno));
+    }
+
+    if (timer_handler_active)
+    {
+	timer_handler_active = FALSE;
+	ret = sigaction(SIGALRM, &prev_sigaction, NULL);
+	if (ret < 0)
+	    // Should only get here as a result of coding errors.
+	    semsg(_(e_could_not_reset_handler_for_timeout_str),
+							      strerror(errno));
+    }
+    timeout_flag = 0;
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The return value is a pointer to a flag that is initialised to FALSE. If the
+ * timeout expires, the flag is set to TRUE. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it will still return a
+ * valid flag pointer; the flag will remain stuck as FALSE .
+ */
+    const int *
+start_timeout(long msec)
+{
+    struct itimerval	interval = {
+	    {0, 0},                                // Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000}};  // Timeout interval
+    struct sigaction	handle_alarm;
+    int			ret;
+    sigset_t		sigs;
+    sigset_t		saved_sigs;
+
+    // This is really the caller's responsibility, but let's make sure the
+    // previous timer has been stopped.
+    stop_timeout();
+
+    // There is a small chance that SIGALRM is pending and so the handler must
+    // ignore it on the first call.
+    alarm_pending = FALSE;
+    ret = sigemptyset(&sigs);
+    ret = ret == 0 ? sigaddset(&sigs, SIGALRM) : ret;
+    ret = ret == 0 ? sigprocmask(SIG_BLOCK, &sigs, &saved_sigs) : ret;
+    timeout_flag = FALSE;
+    ret = ret == 0 ? sigpending(&sigs) : ret;
+    if (ret == 0)
+    {
+	alarm_pending = sigismember(&sigs, SIGALRM);
+	ret = sigprocmask(SIG_SETMASK, &saved_sigs, NULL);
+    }
+    if (unlikely(ret != 0 || alarm_pending < 0))
+    {
+	// Just catching coding errors. Write an error message, but carry on.
+	semsg(_(e_could_not_check_for_pending_sigalrm_str), strerror(errno));
+	alarm_pending = FALSE;
+    }
+
+    // Set up the alarm handler first.
+    ret = sigemptyset(&handle_alarm.sa_mask);
+    handle_alarm.sa_handler = set_flag;
+    handle_alarm.sa_flags = 0;
+    ret = ret == 0 ?  sigaction(SIGALRM, &handle_alarm, &prev_sigaction) : ret;
+    if (ret < 0)
+    {
+	// Should only get here as a result of coding errors.
+	semsg(_(e_could_not_set_handler_for_timeout_str), strerror(errno));
+	return &timeout_flag;
+    }
+    timer_handler_active = TRUE;
+
+    // Set up the interval timer once the alarm handler is in place.
+    ret = setitimer(ITIMER_REAL, &interval, &prev_interval);
+    if (ret < 0)
+    {
+	// Should only get here as a result of coding errors.
+	semsg(_(e_could_not_set_timeout_str), strerror(errno));
+	stop_timeout();
+	return &timeout_flag;
+    }
+
+    timer_active = TRUE;
+    return &timeout_flag;
+}
+# endif // HAVE_TIMER_CREATE
+#endif  // FEAT_RELTIME
