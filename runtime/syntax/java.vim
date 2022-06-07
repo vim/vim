@@ -142,7 +142,7 @@ if exists("java_space_errors")
   endif
 endif
 
-syn region  javaLabelRegion	transparent matchgroup=javaLabel start="\<case\>" matchgroup=NONE end=":" contains=javaNumber,javaCharacter,javaString
+syn region  javaLabelRegion	transparent matchgroup=javaLabel start="\<case\>" end="->" matchgroup=NONE end=":" contains=javaNumber,javaCharacter,javaString
 syn match   javaUserLabel	"^\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\s*:"he=e-1 contains=javaLabel
 syn keyword javaLabel		default
 
