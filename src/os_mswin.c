@@ -560,7 +560,7 @@ resolve_appexeclink(char_u *fname)
 	    && idx < (int)rb->AppExecLinkReparseBuffer.StringCount
 	    && idx != 2; )
     {
-	if ((*p++ == L'\0'))
+	if (*p++ == L'\0')
 	    ++idx;
     }
 

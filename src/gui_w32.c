@@ -4153,7 +4153,8 @@ _OnMouseWheel(HWND hwnd, WPARAM wParam, LPARAM lParam, int horizontal)
 {
     int		button;
     win_T	*wp;
-    int		modifiers, kbd_modifiers;
+    int		modifiers = 0;
+    int		kbd_modifiers;
     int		zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
     POINT	pt;
 
@@ -4213,7 +4214,7 @@ _OnMouseWheel(HWND hwnd, WPARAM wParam, LPARAM lParam, int horizontal)
     pt.y = GET_Y_LPARAM(lParam);
     ScreenToClient(s_textArea, &pt);
 
-    gui_send_mouse_event(button, pt.x, pt.y, FALSE, kbd_modifiers);
+    gui_send_mouse_event(button, pt.x, pt.y, FALSE, modifiers);
 }
 
 #ifdef USE_SYSMENU_FONT

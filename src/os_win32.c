@@ -3495,7 +3495,7 @@ mch_writable(char_u *name)
  * the allocated memory.
  */
     int
-mch_can_exe(char_u *name, char_u **path, int use_path)
+mch_can_exe(char_u *name, char_u **path, int use_path UNUSED)
 {
     return executable_exists((char *)name, path, TRUE, TRUE);
 }
@@ -8379,7 +8379,6 @@ stop_timeout(void)
     const int *
 start_timeout(long msec)
 {
-    UINT interval = (UINT)msec;
     BOOL ret;
 
     timeout_flag = &timeout_flags[flag_idx];
