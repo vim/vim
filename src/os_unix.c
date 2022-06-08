@@ -8247,7 +8247,7 @@ xsmp_close(void)
 #endif // USE_XSMP
 
 #if defined(FEAT_RELTIME) || defined(PROTO)
-# if defined(HAVE_TIMER_CREATE) || defined(MACOS_X)
+# if defined(HAVE_TIMER_CREATE)
 /*
  * Implement timeout with timer_create() and timer_settime().
  */
