@@ -82,7 +82,7 @@ int
 main(int argc, char *argv[])
 {
 	int	append = 0;
-	int	numfiles;
+	size_t	numfiles;
 	int	maxfiles;
 	FILE	**filepointers;
 	int	i;
@@ -121,7 +121,8 @@ main(int argc, char *argv[])
 	filepointers = calloc(numfiles, sizeof(FILE *));
 	if (filepointers == NULL)
 	{
-		fprintf(stderr, "Error allocating memory for %d files\n", numfiles);
+		fprintf(stderr, "Error allocating memory for %ld files\n",
+															   (long)numfiles);
 		exit(1);
 	}
 	for (i = 0; i < numfiles; i++)
