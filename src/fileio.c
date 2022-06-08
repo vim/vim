@@ -1631,7 +1631,6 @@ retry:
 		 * Do the conversion.
 		 */
 		dst = ptr;
-		size = size;
 		while (size > 0)
 		{
 		    found_bad = FALSE;

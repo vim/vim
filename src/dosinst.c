@@ -211,8 +211,8 @@ check_unpack(void)
     {
 	printf("ERROR: Cannot find filetype.vim in \"%s\"\n", installdir);
 	printf("It looks like you did not unpack the runtime archive.\n");
-	printf("You must unpack the runtime archive \"vim%srt.zip\" before installing.\n",
-		VIM_VERSION_NODOT + 3);
+	printf("You must unpack the runtime archive \"%srt.zip\" before installing.\n",
+		VIM_VERSION_NODOT);
 	myexit(1);
     }
 
