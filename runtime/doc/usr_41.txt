@@ -17,8 +17,10 @@ script.  There are a lot of them, therefore this is a long chapter.
 |41.6|	Using functions
 |41.7|	Defining a function
 |41.8|	Lists and Dictionaries
-|41.9|	Exceptions
-|41.10|	Various remarks
+|41.9|	White space
+|41.10|	Line continuation
+|41.11|	Comments
+|41.12|	Fileformat
 
      Next chapter: |usr_42.txt|  Add new menus
  Previous chapter: |usr_40.txt|  Make new commands
@@ -112,7 +114,7 @@ the links if you are impatient.
 TRYING OUT EXAMPLES
 
 You can easily try out most examples in these help files without saving the
-commands in a file.  For example, to try out the "for" loop above do this:
+commands to a file.  For example, to try out the "for" loop above do this:
 1. position the cursor on the "for"
 2. start Visual mode with "v"
 3. move down to the "endfor"
@@ -195,7 +197,7 @@ cannot start with a digit.  Valid variable names are:
 	CamelCaseName
 	LENGTH
 
-Invalid names are "foo+bar" and "6var".
+Invalid names are "foo.bar" and "6var".
 
 Some variables are global.  To see a list of currently defined global
 variables type this command: >
@@ -684,8 +686,8 @@ search() function uses its first argument as a search pattern and the second
 one as flags.  The "W" flag means the search doesn't wrap around the end of
 the file.
 
-Using the  `call` command is optional in |Vim9| script.  This works the same
-way and also works in legacy script and on the command line: >
+Using the  `call` command is optional in |Vim9| script.  It is required in
+legacy script and on the command line: >
 
 	call search("Date: ", "W")
 
@@ -711,7 +713,7 @@ statements is equal to: >
 
 	:substitute/\a/*/g
 
-Using the functions becomes more interesting when you do more work before and
+Using the functions becomes interesting when you do more work before and
 after the substitute() call.
 
 
@@ -1402,8 +1404,9 @@ Let's assign the variable "smaller" the value of the smallest number: >
 	  smaller = num2
 	endif
 
-The variable "smaller" is a local variable.  Variables used inside a function
-are local unless prefixed by something like "g:", "w:", or "s:".
+The variable "smaller" is a local variable.  It is declared to be a number,
+that way Vim can warn you for any mistakes.  Variables used inside a function
+are local unless prefixed by something like "g:", "w:", or "b:".
 
 	Note:
 	To access a global variable from inside a function you must prepend
@@ -1469,6 +1472,10 @@ For a function that does not return anything simply leave out the return type: >
 	  echo text
 	enddef
 
+If you want to return any kind of value, you can use the "any" return type: >
+	def GetValue(): any
+This disables type checking for the return value, use only when needed.
+
 It is also possible to define a legacy function with `function` and
 `endfunction`.  These do not have types and are not compiled.  Therefore they
 execute much slower.
@@ -1485,45 +1492,10 @@ once for every line in the range, with the cursor in that line.  Example: >
 
 If you call this function with: >
 
-	:10,15call Number()
+	:10,15Number()
 
 The function will be called six times, starting on line 10 and ending on line
 15.
-
-
-VARIABLE NUMBER OF ARGUMENTS
-
-Vim enables you to define functions that have a variable number of arguments.
-The following command, for instance, defines a function that must have 1
-argument (start) and can have up to 20 additional arguments: >
-
-	def Show(start: string, ...items: list<string>)
-
-The variable "items" will be a list in the function containing the extra
-arguments.  You can use it like any list, for example: >
-
-	def Show(start: string, ...items: list<string>)
-	  echohl Title
-	  echo "start is " .. start
-	  echohl None
-	  for index in range(len(items))
-	    echon $"  Arg {index} is {items[index]}"
-	  endfor
-	  echo
-	enddef
-
-You can call it like this: >
-
-	Show('Title', 'one', 'two', 'three')
-<	start is Title  Arg 0 is one  Arg 1 is two  Arg 2 is three ~
-	
-This uses the `echohl` command to specify the highlighting used for the
-following `echo` command.  `echohl None` stops it again.  The `echon` command
-works like `echo`, but doesn't output a line break.
-
-If you call it with one argument the "items" list will be empty.
-`range(len(items))` returns a list with the indexes, what `for` loops over,
-we'll explain that further down.
 
 
 LISTING FUNCTIONS
@@ -1605,6 +1577,11 @@ This assumes "g:result" is not one.  See |Funcref| for details.
 Note that the name of a variable that holds a function reference must start
 with a capital.  Otherwise it could be confused with the name of a builtin
 function.
+
+
+FURTHER READING
+
+Using a variable number of arguments is introduced in section |50.2|.
 
 More information about defining your own functions here: |user-functions|.
 
@@ -1766,95 +1743,16 @@ need to use a List, it stores items in an ordered sequence.
 For further reading see |Dictionaries|.
 
 ==============================================================================
-*41.9*	Exceptions
-
-Let's start with an example: >
-
-	try
-	   read ~/templates/pascal.tmpl
-	catch /E484:/
-	   echo "Sorry, the Pascal template file cannot be found."
-	endtry
-
-The `read` command will fail if the file does not exist.  Instead of
-generating an error message, this code catches the error and gives the user a
-message with more information.
-
-For the commands in between `try` and `endtry` errors are turned into
-exceptions.  An exception is a string.  In the case of an error the string
-contains the error message.  And every error message has a number.  In this
-case, the error we catch contains "E484:".  This number is guaranteed to stay
-the same (the text may change, e.g., it may be translated).
-
-Besides being able to give a nice error message, Vim will also continue
-executing commands after the `:endtry`.  Otherwise, once an uncaught error is
-encountered, execution of the script/function/mapping will be aborted.
-
-When the `read` command causes another error, the pattern "E484:" will not
-match in it.  Thus this exception will not be caught and result in the usual
-error message and execution is aborted.
-
-You might be tempted to do this: >
-
-	try
-	   read ~/templates/pascal.tmpl
-	catch
-	   echo "Sorry, the Pascal template file cannot be found."
-	endtry
-
-This means all errors are caught.  But then you will not see an error that
-would indicate a completely different problem, such as "E21: Cannot make
-changes, 'modifiable' is off".  Think twice before you catch any error!
-
-Another useful mechanism is the `finally` command: >
-
-	var tmp = tempname()
-	try
-	   exe ":.,$write " .. tmp
-	   exe "!filter " .. tmp
-	   :.,$delete
-	   exe ":$read " .. tmp
-	finally
-	   delete(tmp)
-	endtry
-
-This filters the lines from the cursor until the end of the file through the
-"filter" command, which takes a file name argument.  No matter if the
-filtering works, if something goes wrong in between `try` and `finally` or the
-user cancels the filtering by pressing CTRL-C, the `delete(tmp)` call is
-always executed.  This makes sure you don't leave the temporary file behind.
-
-The `finally` does not catch the exception, the error will still abort
-further execution.
-
-More information about exception handling can be found in the reference
-manual: |exception-handling|.
-
-==============================================================================
-*41.10*	Various remarks
-
-Here are a few items that are useful to know when writing Vim scripts.
-
-
-FILEFORMAT
-
-The end-of-line character depends on the system.  For Vim scripts it is
-recommended to always use the Unix fileformat.  This also works on any other
-system.  That way you can copy your Vim scripts from MS-Windows to Unix and
-they still work.  See |:source_crnl|.  To be sure it is set right, do this
-before writing the file: >
-
-	:setlocal fileformat=unix
-
-
-WHITE SPACE
+*41.9*	White space
 
 Blank lines are allowed and ignored.
 
 Leading whitespace characters (blanks and TABs) are always ignored.
 
 Trailing whitespace is often ignored, but not always.  One command that
-includes it is `map`.
+includes it is `map`.  You have to watch out for that, it can cause hard to
+understand mistakes.  A generic solution is to never use trailing white space,
+unless you really need it.
 
 To include a whitespace character in the value of an option, it must be
 escaped by a "\" (backslash)  as in the following example: >
@@ -1876,8 +1774,39 @@ intentionally to make sure scripts are easy to read and to avoid mistakes.
 If you use white space sensibly it will just work.  When not you will get an
 error message telling you where white space is missing or should be removed.
 
+==============================================================================
+*41.10*	Line continuation
 
-COMMENTS
+In legacy Vim script line continuation is done by preceding a continuation
+line with a backslash: >
+	let mylist = [
+			\ 'one',
+			\ 'two',
+			\ ]
+
+This requires the 'cpo' option to exclude the "C" flag.  Normally this is done
+by putting this at the start of the script: >
+	let s:save_cpo = &cpo
+	set cpo&vim
+
+And restore the option at the end of the script: >
+	let &cpo = s:save_cpo
+	unlet s:save_cpo
+
+A few more details can be found here: |line-continuation|.
+
+In |Vim9| script the backslash can still be used, but in most places it is not
+needed: >
+	var mylist = [
+			'one',
+			'two',
+			]
+
+Also, the 'cpo' option does not need to be changed.  See
+|vim9-line-continuation| for details.
+
+==============================================================================
+*41.11*	Comments
 
 In |Vim9| script the character # starts a comment.  That character and
 everything after it until the end-of-line is considered a comment and
@@ -1933,10 +1862,20 @@ script executable, and it also works in legacy script: >
 	echo "this is a Vim script"
 	quit
 
+==============================================================================
+*41.12*	Fileformat
 
-Advance information about writing Vim script is in |usr_50.txt|.
+The end-of-line character depends on the system.  For Vim scripts it is
+recommended to always use the Unix fileformat.  This also works on any other
+system.  That way you can copy your Vim scripts from MS-Windows to Unix and
+they still work.  See |:source_crnl|.  To be sure it is set right, do this
+before writing the file: >
+
+	:setlocal fileformat=unix
 
 ==============================================================================
+
+Advance information about writing Vim script is in |usr_50.txt|.
 
 Next chapter: |usr_42.txt|  Add new menus
 

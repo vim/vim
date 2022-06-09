@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 05
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -245,6 +245,9 @@ Memory leaks in test_channel? (or is it because of fork())
 
 PR to support %e and %k in 'errorformat'. #9624
 
+With a window height of 6 and 'scrolloff' set to 3, using "j" does not scroll
+evenly. (#10545)
+
 Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 
 ":set &shellpipe" and ":set &shellredir" should use the logic from
@@ -305,6 +308,8 @@ Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 globpath() does not use 'wildignorecase' at all? (related to #8350)
+
+Add a "--gui-dialog-file" argument, to be used in tests to avoid getting stuck.
 
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740

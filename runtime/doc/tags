@@ -1916,6 +1916,8 @@ $quote	eval.txt	/*$quote*
 40.3	usr_40.txt	/*40.3*
 41.1	usr_41.txt	/*41.1*
 41.10	usr_41.txt	/*41.10*
+41.11	usr_41.txt	/*41.11*
+41.12	usr_41.txt	/*41.12*
 41.2	usr_41.txt	/*41.2*
 41.3	usr_41.txt	/*41.3*
 41.4	usr_41.txt	/*41.4*
@@ -1950,6 +1952,7 @@ $quote	eval.txt	/*$quote*
 45.5	usr_45.txt	/*45.5*
 50.1	usr_50.txt	/*50.1*
 50.2	usr_50.txt	/*50.2*
+50.3	usr_50.txt	/*50.3*
 51.1	usr_51.txt	/*51.1*
 51.2	usr_51.txt	/*51.2*
 51.3	usr_51.txt	/*51.3*
@@ -8046,6 +8049,7 @@ lcs-conceal	options.txt	/*lcs-conceal*
 lcs-eol	options.txt	/*lcs-eol*
 lcs-extends	options.txt	/*lcs-extends*
 lcs-lead	options.txt	/*lcs-lead*
+lcs-leadmultispace	options.txt	/*lcs-leadmultispace*
 lcs-multispace	options.txt	/*lcs-multispace*
 lcs-nbsp	options.txt	/*lcs-nbsp*
 lcs-precedes	options.txt	/*lcs-precedes*

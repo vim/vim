@@ -7,7 +7,7 @@ export def HighlightGroups()
   var buf: number = bufnr('%')
   var lnum: number = search('\*highlight-groups\*', 'cn')
   while getline(lnum) !~ '===' && lnum < line('$')
-    var word: string = getline(lnum)->matchstr('^\w\+\ze\t')
+    var word: string = getline(lnum)->matchstr('^\w\+\ze\s')
     if word->hlexists()
       var name = 'help-hl-' .. word
       if prop_type_list({bufnr: buf})->match(name) == -1

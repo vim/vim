@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2022 May 23
+*terminal.txt*	For Vim version 8.2.  Last change: 2022 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -101,7 +101,7 @@ The special key combination CTRL-\ CTRL-N can be used to switch to Normal
 mode, just like this works in any other mode.
 							*t_CTRL-W_CTRL-C*
 CTRL-W CTRL-C can be typed to forcefully end the job.  On MS-Windows a
-CTRL-BREAK will also kill the job.
+CTRL-Break will also kill the job.
 
 If you type CTRL-C the effect depends on what the pty has been configured to
 do.  For simple commands this causes a SIGINT to be sent to the job, which

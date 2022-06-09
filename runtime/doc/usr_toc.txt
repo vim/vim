@@ -304,8 +304,10 @@ Make Vim work as you like it.
 		|41.6|	Using functions
 		|41.7|	Defining a function
 		|41.8|	Lists and Dictionaries
-		|41.9|	Exceptions
-		|41.10|	Various remarks
+		|41.9|	White space
+		|41.10|	Line continuation
+		|41.11|	Comments
+		|41.12|	Fileformat
 
 |usr_42.txt|  Add new menus
 		|42.1|	Introduction
@@ -342,8 +344,9 @@ Make Vim work as you like it.
 Writing Vim script ~
 
 |usr_50.txt|  Advanced Vim script writing
-		|50.1|	Line continuation
-		|50.2|	Restoring the view
+		|50.1|	Exceptions
+		|50.2|    Function with variable number of arguments
+		|50.3|	Restoring the view
 
 |usr_51.txt|  Write plugins
 		|51.1|	Writing a generic plugin
