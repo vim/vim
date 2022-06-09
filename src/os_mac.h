@@ -272,15 +272,14 @@
 
 # include <dispatch/dispatch.h>
 
-# if !defined(MAC_OS_X_VERSION_10_12) || \
-	(MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12)
+# ifndef MAC_OS_X_VERSION_10_12
 typedef int clockid_t;
 # endif
 # ifndef CLOCK_REALTIME
-#   define CLOCK_REALTIME 0
+#  define CLOCK_REALTIME 0
 # endif
 # ifndef CLOCK_MONOTONIC
-#   define CLOCK_MONOTONIC 1
+#  define CLOCK_MONOTONIC 1
 # endif
 
 struct itimerspec
