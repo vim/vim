@@ -73,6 +73,12 @@ char *searchpath(char *name);
 #  define KEY_WOW64_32KEY 0x0200
 # endif
 
+#ifdef __MINGW32__
+# define UNUSED __attribute__((unused))
+#else
+# define UNUSED
+#endif
+
 #define VIM_STARTMENU "Programs\\Vim " VIM_VERSION_SHORT
 
 int	interactive;		// non-zero when running interactively
@@ -450,7 +456,7 @@ mch_chdir(char *path)
  * Expand the executable name into a full path name.
  */
     static char *
-my_fullpath(char *buf, char *fname, int len)
+my_fullpath(char *buf, char *fname UNUSED, int len)
 {
     // Only GetModuleFileName() will get the long file name path.
     // GetFullPathName() may still use the short (FAT) name.
