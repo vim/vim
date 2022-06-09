@@ -52,6 +52,12 @@
 # define __out		SAL__out
 #endif
 
+#ifdef __MINGW32__
+# define UNUSED __attribute__((unused))
+#else
+# define UNUSED
+#endif
+
 #if (defined(_MSC_VER) && (_MSC_VER >= 1700)) || (__cplusplus >= 201103L)
 # define FINAL final
 #else
@@ -419,7 +425,7 @@ public:
     }
 
     IFACEMETHOD(IsPixelSnappingDisabled)(
-	__maybenull void* clientDrawingContext,
+	__maybenull void* clientDrawingContext UNUSED,
 	__out BOOL* isDisabled)
     {
 	*isDisabled = FALSE;
@@ -427,7 +433,7 @@ public:
     }
 
     IFACEMETHOD(GetCurrentTransform)(
-	__maybenull void* clientDrawingContext,
+	__maybenull void* clientDrawingContext UNUSED,
 	__out DWRITE_MATRIX* transform)
     {
 	// forward the render target's transform
@@ -437,7 +443,7 @@ public:
     }
 
     IFACEMETHOD(GetPixelsPerDip)(
-	__maybenull void* clientDrawingContext,
+	__maybenull void* clientDrawingContext UNUSED,
 	__out FLOAT* pixelsPerDip)
     {
 	float dpiX, unused;
@@ -447,33 +453,33 @@ public:
     }
 
     IFACEMETHOD(DrawUnderline)(
-	__maybenull void* clientDrawingContext,
-	FLOAT baselineOriginX,
-	FLOAT baselineOriginY,
-	__in DWRITE_UNDERLINE const* underline,
-	IUnknown* clientDrawingEffect)
+	__maybenull void* clientDrawingContext UNUSED,
+	FLOAT baselineOriginX UNUSED,
+	FLOAT baselineOriginY UNUSED,
+	__in DWRITE_UNDERLINE const* underline UNUSED,
+	IUnknown* clientDrawingEffect UNUSED)
     {
 	return E_NOTIMPL;
     }
 
     IFACEMETHOD(DrawStrikethrough)(
-	__maybenull void* clientDrawingContext,
-	FLOAT baselineOriginX,
-	FLOAT baselineOriginY,
-	__in DWRITE_STRIKETHROUGH const* strikethrough,
-	IUnknown* clientDrawingEffect)
+	__maybenull void* clientDrawingContext UNUSED,
+	FLOAT baselineOriginX UNUSED,
+	FLOAT baselineOriginY UNUSED,
+	__in DWRITE_STRIKETHROUGH const* strikethrough UNUSED,
+	IUnknown* clientDrawingEffect UNUSED)
     {
 	return E_NOTIMPL;
     }
 
     IFACEMETHOD(DrawInlineObject)(
-	__maybenull void* clientDrawingContext,
-	FLOAT originX,
-	FLOAT originY,
-	IDWriteInlineObject* inlineObject,
-	BOOL isSideways,
-	BOOL isRightToLeft,
-	IUnknown* clientDrawingEffect)
+	__maybenull void* clientDrawingContext UNUSED,
+	FLOAT originX UNUSED,
+	FLOAT originY UNUSED,
+	IDWriteInlineObject* inlineObject UNUSED,
+	BOOL isSideways UNUSED,
+	BOOL isRightToLeft UNUSED,
+	IUnknown* clientDrawingEffect UNUSED)
     {
 	return E_NOTIMPL;
     }
@@ -482,10 +488,10 @@ public:
 	__maybenull void* clientDrawingContext,
 	FLOAT baselineOriginX,
 	FLOAT baselineOriginY,
-	DWRITE_MEASURING_MODE measuringMode,
+	DWRITE_MEASURING_MODE measuringMode UNUSED,
 	__in DWRITE_GLYPH_RUN const* glyphRun,
-	__in DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription,
-	IUnknown* clientDrawingEffect)
+	__in DWRITE_GLYPH_RUN_DESCRIPTION const* glyphRunDescription UNUSED,
+	IUnknown* clientDrawingEffect UNUSED)
     {
 	TextRendererContext *context =
 	    reinterpret_cast<TextRendererContext*>(clientDrawingContext);

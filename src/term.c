@@ -6603,28 +6603,28 @@ struct ks_tbl_S
 
 static struct ks_tbl_S ks_tbl[] =
 {
-    {(int)KS_ME,  "\033|0m",  "\033|0m"},   // normal
-    {(int)KS_MR,  "\033|7m",  "\033|7m"},   // reverse
-    {(int)KS_MD,  "\033|1m",  "\033|1m"},   // bold
-    {(int)KS_SO,  "\033|91m", "\033|91m"},  // standout: bright red text
-    {(int)KS_SE,  "\033|39m", "\033|39m"},  // standout end: default color
-    {(int)KS_CZH, "\033|3m",  "\033|3m"},   // italic
-    {(int)KS_CZR, "\033|0m",  "\033|0m"},   // italic end
-    {(int)KS_US,  "\033|4m",  "\033|4m"},   // underscore
-    {(int)KS_UE,  "\033|24m", "\033|24m"},  // underscore end
+    {(int)KS_ME,  "\033|0m",  "\033|0m", {""}},   // normal
+    {(int)KS_MR,  "\033|7m",  "\033|7m", {""}},   // reverse
+    {(int)KS_MD,  "\033|1m",  "\033|1m", {""}},   // bold
+    {(int)KS_SO,  "\033|91m", "\033|91m", {""}},  // standout: bright red text
+    {(int)KS_SE,  "\033|39m", "\033|39m", {""}},  // standout end: default color
+    {(int)KS_CZH, "\033|3m",  "\033|3m", {""}},   // italic
+    {(int)KS_CZR, "\033|0m",  "\033|0m", {""}},   // italic end
+    {(int)KS_US,  "\033|4m",  "\033|4m", {""}},   // underscore
+    {(int)KS_UE,  "\033|24m", "\033|24m", {""}},  // underscore end
 #  ifdef TERMINFO
-    {(int)KS_CAB, "\033|%p1%db", "\033|%p14%dm"}, // set background color
-    {(int)KS_CAF, "\033|%p1%df", "\033|%p13%dm"}, // set foreground color
-    {(int)KS_CS,  "\033|%p1%d;%p2%dR", "\033|%p1%d;%p2%dR"},
-    {(int)KS_CSV, "\033|%p1%d;%p2%dV", "\033|%p1%d;%p2%dV"},
+    {(int)KS_CAB, "\033|%p1%db", "\033|%p14%dm", {""}}, // set background color
+    {(int)KS_CAF, "\033|%p1%df", "\033|%p13%dm", {""}}, // set foreground color
+    {(int)KS_CS,  "\033|%p1%d;%p2%dR", "\033|%p1%d;%p2%dR", {""}},
+    {(int)KS_CSV, "\033|%p1%d;%p2%dV", "\033|%p1%d;%p2%dV", {""}},
 #  else
-    {(int)KS_CAB, "\033|%db", "\033|4%dm"}, // set background color
-    {(int)KS_CAF, "\033|%df", "\033|3%dm"}, // set foreground color
-    {(int)KS_CS,  "\033|%d;%dR", "\033|%d;%dR"},
-    {(int)KS_CSV, "\033|%d;%dV", "\033|%d;%dV"},
+    {(int)KS_CAB, "\033|%db", "\033|4%dm", {""}}, // set background color
+    {(int)KS_CAF, "\033|%df", "\033|3%dm", {""}}, // set foreground color
+    {(int)KS_CS,  "\033|%d;%dR", "\033|%d;%dR", {""}},
+    {(int)KS_CSV, "\033|%d;%dV", "\033|%d;%dV", {""}},
 #  endif
-    {(int)KS_CCO, "256", "256"},	    // colors
-    {(int)KS_NAME}			    // terminator
+    {(int)KS_CCO, "256", "256", {""}},	    // colors
+    {(int)KS_NAME, NULL, NULL, {""}}			    // terminator
 };
 
     static struct builtin_term *

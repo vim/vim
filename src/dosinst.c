@@ -439,7 +439,7 @@ static int num_windows;
  */
 //ARGSUSED
     static BOOL CALLBACK
-window_cb(HWND hwnd, LPARAM lparam)
+window_cb(HWND hwnd, LPARAM lparam UNUSED)
 {
     char title[256];
 
@@ -1170,7 +1170,7 @@ init_bat_choices(void)
  * Install the vimrc file.
  */
     static void
-install_vimrc(int idx)
+install_vimrc(int idx UNUSED)
 {
     FILE	*fd, *tfd;
     char	*fname;
@@ -1891,7 +1891,7 @@ build_shortcut(
  * Create shortcut(s) in the Start Menu\Programs\Vim folder.
  */
     static void
-install_start_menu(int idx)
+install_start_menu(int idx UNUSED)
 {
     need_uninstall_entry = 1;
     printf("Creating start menu\n");
