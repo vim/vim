@@ -2116,14 +2116,15 @@ win_line(
 			mb_utf8 = FALSE;
 		}
 
-		if ((trailcol != MAXCOL && ptr > line + trailcol && c == ' ')
-			|| (leadcol != 0 && ptr < line + leadcol && c == ' '))
+		if (c == ' ' && ((trailcol != MAXCOL && ptr > line + trailcol)
+				    || (leadcol != 0 && ptr < line + leadcol)))
 		{
 		    if (leadcol != 0 && in_multispace && ptr < line + leadcol
 			    && wp->w_lcs_chars.leadmultispace != NULL)
 		    {
 			c = wp->w_lcs_chars.leadmultispace[multispace_pos++];
-			if (wp->w_lcs_chars.leadmultispace[multispace_pos] == NUL)
+			if (wp->w_lcs_chars.leadmultispace[multispace_pos]
+									== NUL)
 			    multispace_pos = 0;
 		    }
 
@@ -2133,7 +2134,7 @@ win_line(
 		    else if (ptr < line + leadcol && wp->w_lcs_chars.lead)
 			c = wp->w_lcs_chars.lead;
 
-		    else if (leadcol != 0 && c == ' ' && wp->w_lcs_chars.space)
+		    else if (leadcol != 0 && wp->w_lcs_chars.space)
 			c = wp->w_lcs_chars.space;
 
 
