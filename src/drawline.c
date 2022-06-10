@@ -2133,7 +2133,7 @@ win_line(
 		    else if (ptr < line + leadcol && wp->w_lcs_chars.lead)
 			c = wp->w_lcs_chars.lead;
 
-		    else if (leadcol != 0 && c == ' ' && wp->w_lcs_chars.space)
+		    else if (leadcol != 0 && wp->w_lcs_chars.space)
 			c = wp->w_lcs_chars.space;
 
 
