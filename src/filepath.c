@@ -191,7 +191,8 @@ shortpath_for_invalid_fname(
 	}
 
 	// concat the not-shortened part of the path
-	vim_strncpy(*fname + len, endp, sfx_len);
+	if ((*fname + len) != endp)
+	    vim_strncpy(*fname + len, endp, sfx_len);
 	(*fname)[new_len] = NUL;
     }
 

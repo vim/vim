@@ -2355,11 +2355,11 @@ theend:
  * worth allowing these to make debugging of issues easier.
  */
     static void
-bad_param_handler(const wchar_t *expression,
-    const wchar_t *function,
-    const wchar_t *file,
-    unsigned int line,
-    uintptr_t pReserved)
+bad_param_handler(const wchar_t *expression UNUSED,
+    const wchar_t *function UNUSED,
+    const wchar_t *file UNUSED,
+    unsigned int line UNUSED,
+    uintptr_t pReserved UNUSED)
 {
 }
 
