@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 09
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,9 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+searchpair() must call function to set timeout, not pass the time limit down
+(and set it many times).  #10562
 
 Prepare for Vim 9.0 release:
 - Update the user manual:

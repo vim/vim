@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jun 04
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jun 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1509,7 +1509,7 @@ functions: >
 	function SetSyn(name) ~
 
 The "<SNR>" prefix means that a function is script-local.  |Vim9| functions
-wil start with "def" and include argument and return types.  Legacy functions
+will start with "def" and include argument and return types.  Legacy functions
 are listed with "function".
 
 To see what a function does, use its name as an argument for `function`: >
@@ -1667,7 +1667,7 @@ Notice that the first item of the List that range() produces is zero, thus the
 last item is one less than the length of the list.  Detail: Internally range()
 does not actually create the list, so that a large range used in a for loop
 works efficiently.  When used elsewhere, the range is turned into an actual
-list, which takes more time for a long ist.
+list, which takes more time for a long list.
 
 You can also specify the maximum value, the stride and even go backwards: >
 

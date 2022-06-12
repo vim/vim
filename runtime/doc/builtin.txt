@@ -5107,7 +5107,7 @@ len({expr})	The result is a Number, which is the length of the argument.
 		When {expr} is a |Blob| the number of bytes is returned.
 		When {expr} is a |Dictionary| the number of entries in the
 		|Dictionary| is returned.
-		Otherwise an error is given.
+		Otherwise an error is given and returns zero.
 
 		Can also be used as a |method|: >
 			mylist->len()
@@ -5200,6 +5200,7 @@ line({expr} [, {winid}])				*line()*
 		|getpos()|.
 		With the optional {winid} argument the values are obtained for
 		that window instead of the current window.
+		Returns 0 for invalid values of {expr} and {winid}.
 		Examples: >
 			line(".")		line number of the cursor
 			line(".", winid)	idem, in window "winid"
@@ -5267,6 +5268,8 @@ list2str({list} [, {utf8}])				*list2str()*
 		With UTF-8 composing characters work as expected: >
 			list2str([97, 769])	returns "á"
 <
+		Returns an empty string on error.
+
 		Can also be used as a |method|: >
 			GetList()->list2str()
 
@@ -5339,6 +5342,8 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		The {callback} is also not invoked when the buffer is
 		unloaded, use the |BufUnload| autocmd event for that.
 
+		Returns zero if {callback} or {buf} is invalid.
+
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetBuffer()->listener_add(callback)
@@ -5371,6 +5376,7 @@ log({expr})						*log()*
 		Return the natural logarithm (base e) of {expr} as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number| in the range
 		(0, inf].
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo log(10)
 <			2.302585 >
@@ -5386,6 +5392,7 @@ log({expr})						*log()*
 log10({expr})						*log10()*
 		Return the logarithm of Float {expr} to base 10 as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo log10(1000)
 <			3.0 >
@@ -5484,8 +5491,9 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		below. To get a list of all mappings see |maplist()|.
 
 		When there is no mapping for {name}, an empty String is
-		returned.  When the mapping for {name} is empty, then "<Nop>"
-		is returned.
+		returned if {dict} is FALSE, otherwise returns an empty Dict.
+		When the mapping for {name} is empty, then "<Nop>" is
+		returned.
 
 		The {name} can have special key names, like in the ":map"
 		command.
@@ -5778,6 +5786,8 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 		The number of matches is not limited, as it is the case with
 		the |:match| commands.
 
+		Returns -1 on error.
+
 		Example: >
 			:highlight MyGroup ctermbg=green guibg=green
 			:let m = matchadd("MyGroup", "TODO")
@@ -5815,6 +5825,8 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 		  the third number gives the length of the highlight in bytes.
 
 		The maximum number of positions in {pos} is 8.
+
+		Returns -1 on error.
 
 		Example: >
 			:highlight MyGroup ctermbg=green guibg=green
@@ -6285,6 +6297,7 @@ pathshorten({path} [, {len}])				*pathshorten()*
 			:echo pathshorten('~/.vim/autoload/myfile.vim', 2)
 <			~/.vi/au/myfile.vim ~
 		It doesn't matter if the path exists or not.
+		Returns an empty string on error.
 
 		Can also be used as a |method|: >
 			GetDirectories()->pathshorten()
@@ -6314,6 +6327,7 @@ popup_ functions are documented here: |popup-functions|
 pow({x}, {y})						*pow()*
 		Return the power of {x} to the exponent {y} as a |Float|.
 		{x} and {y} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {x} or {y} is not a |Float| or a |Number|.
 		Examples: >
 			:echo pow(3, 3)
 <			27.0 >
@@ -6690,6 +6704,7 @@ rand([{expr}])						*rand()* *random*
 		{expr} can be initialized by |srand()| and will be updated by
 		rand().  If {expr} is omitted, an internal seed value is used
 		and updated.
+		Returns -1 if {expr} is invalid.
 
 		Examples: >
 			:echo rand()
@@ -6779,6 +6794,8 @@ readdir({directory} [, {expr} [, {dict}]])			*readdir()*
 		  endfunction
 		  echo s:tree(".")
 <
+		Returns an empty List on error.
+
 		Can also be used as a |method|: >
 			GetDirName()->readdir()
 <
@@ -6837,7 +6854,6 @@ readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		For example, to get a list of all files in the current
 		directory without sorting the individual entries: >
 		  readdirex(dirname, '1', #{sort: 'none'})
-
 <
 		Can also be used as a |method|: >
 			GetDirName()->readdirex()
@@ -6927,8 +6943,8 @@ reltime([{start} [, {end}]])				*reltime()*
 		and {end}.
 
 		The {start} and {end} arguments must be values returned by
-		reltime().  If there is an error zero is returned in legacy
-		script, in Vim9 script an error is given.
+		reltime().  If there is an error an empty List is returned in
+		legacy script, in Vim9 script an error is given.
 
 		Can also be used as a |method|: >
 			GetStart()->reltime()
@@ -7047,7 +7063,8 @@ remote_peek({serverid} [, {retvar}])		*remote_peek()*
 remote_read({serverid}, [{timeout}])			*remote_read()*
 		Return the oldest available reply from {serverid} and consume
 		it.  Unless a {timeout} in seconds is given, it blocks until a
-		reply is available.
+		reply is available.  Returns an empty string, if a reply is
+		not available or on error.
 		See also |clientserver|.
 		This function is not available in the |sandbox|.
 		{only available when compiled with the |+clientserver| feature}
@@ -7106,6 +7123,7 @@ remove({list}, {idx} [, {end}])				*remove()*
 		item as {end} a list with one item is returned.  When {end}
 		points to an item before {idx} this is an error.
 		See |list-index| for possible values of {idx} and {end}.
+		Returns zero on error.
 		Example: >
 			:echo "last item: " .. remove(mylist, -1)
 			:call remove(mylist, 0, 9)
@@ -7122,6 +7140,7 @@ remove({blob}, {idx} [, {end}])
 		return a |Blob| with these bytes.  When {idx} points to the same
 		byte as {end} a |Blob| with one byte is returned.  When {end}
 		points to a byte before {idx} this is an error.
+		Returns zero on error.
 		Example: >
 			:echo "last byte: " .. remove(myblob, -1)
 			:call remove(mylist, 0, 9)
@@ -7131,6 +7150,7 @@ remove({dict}, {key})
 		Example: >
 			:echo "removed " .. remove(dict, "one")
 <		If there is no {key} in {dict} this is an error.
+		Returns zero on error.
 
 rename({from}, {to})					*rename()*
 		Rename the file by the name {from} to the name {to}.  This
@@ -7179,6 +7199,7 @@ reverse({object})					*reverse()*
 		Reverse the order of items in {object} in-place.
 		{object} can be a |List| or a |Blob|.
 		Returns {object}.
+		Returns zero if {object} is not a List or a Blob.
 		If you want an object to remain unmodified make a copy first: >
 			:let revlist = reverse(copy(mylist))
 <		Can also be used as a |method|: >
@@ -7189,6 +7210,7 @@ round({expr})							*round()*
 		as a |Float|.  If {expr} lies halfway between two integral
 		values, then use the larger one (away from zero).
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			echo round(0.456)
 <			0.0  >
@@ -7223,6 +7245,7 @@ screenattr({row}, {col})					*screenattr()*
 		Like |screenchar()|, but return the attribute.  This is a rather
 		arbitrary number that can only be used to compare to the
 		attribute at other positions.
+		Returns -1 when row or col is out of range.
 
 		Can also be used as a |method|: >
 			GetRow()->screenattr(col)
@@ -7286,6 +7309,7 @@ screenpos({winid}, {lnum}, {col})				*screenpos()*
 		|conceal| taken into account.
 		If the position is in a closed fold the screen position of the
 		first character is returned, {col} is not used.
+		Returns an empty Dict if {winid} is invalid.
 
 		Can also be used as a |method|: >
 			GetWinid()->screenpos(lnum, col)
@@ -8346,6 +8370,7 @@ simplify({filename})					*simplify()*
 sin({expr})						*sin()*
 		Return the sine of {expr}, measured in radians, as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo sin(100)
 <			-0.506366 >
@@ -8362,6 +8387,7 @@ sinh({expr})						*sinh()*
 		Return the hyperbolic sine of {expr} as a |Float| in the range
 		[-inf, inf].
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo sinh(0.5)
 <			0.521095 >
@@ -8381,6 +8407,7 @@ slice({expr}, {start} [, {end}])			*slice()*
 		|vim9script|.  Also, composing characters are not counted.
 		When {end} is omitted the slice continues to the last item.
 		When {end} is -1 the last item is omitted.
+		Returns an empty value if {start} or {end} are invalid.
 
 		Can also be used as a |method|: >
 			GetList()->slice(offset)
@@ -8626,7 +8653,8 @@ sqrt({expr})						*sqrt()*
 		Return the non-negative square root of Float {expr} as a
 		|Float|.
 		{expr} must evaluate to a |Float| or a |Number|.  When {expr}
-		is negative the result is NaN (Not a Number).
+		is negative the result is NaN (Not a Number).  Returns 0.0 if
+		{expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo sqrt(100)
 <			10.0 >
@@ -8707,6 +8735,8 @@ str2float({string} [, {quoted}])				*str2float()*
 		|substitute()|: >
 			let f = str2float(substitute(text, ',', '', 'g'))
 <
+		Returns 0.0 if the conversion fails.
+
 		Can also be used as a |method|: >
 			let f = text->substitute(',', '', 'g')->str2float()
 <
@@ -8746,6 +8776,8 @@ str2nr({string} [, {base} [, {quoted}]])			*str2nr()*
 		{base} is 2 a leading "0b" or "0B" is ignored.
 		Text after the number is silently ignored.
 
+		Returns 0 if {string} is empty or on error.
+
 		Can also be used as a |method|: >
 			GetText()->str2nr()
 
@@ -8755,6 +8787,8 @@ strcharlen({string})					*strcharlen()*
 		in String {string}.  Composing characters are ignored.
 		|strchars()| can count the number of characters, counting
 		composing characters separately.
+
+		Returns 0 if {string} is empty or on error.
 
 		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
 

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 May 21
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1612,7 +1612,7 @@ and cannot be accessed by the importing script.
 This mechanism exists for writing a script that can be sourced (imported) by
 other scripts, while making sure these other scripts only have access to what
 you want them to.  This also avoids using the global namespace, which has a
-risc of name collisions.  For example when you have two plugins with similar
+risk of name collisions.  For example when you have two plugins with similar
 functionality.
 
 You can cheat by using the global namespace explicitly.  That should be done
@@ -1758,7 +1758,9 @@ used: >
 
 When the mapping is defined "<SID>name." will be replaced with <SNR> and the
 script ID of the imported script.
-
+An even simpler solution is using |<ScriptCmd>|: >
+	noremap ,a <ScriptCmd>name.Function()<CR>
+<
 							*:import-cycle*
 The `import` commands are executed when encountered.  If script A imports
 script B, and B (directly or indirectly) imports A, this will be skipped over.
@@ -2202,7 +2204,7 @@ dictionary.  With some care this can be made to work, but it does not look
 like real classes.  On top of that, it's quite slow, because of the use of
 dictionaries.
 
-It would be good to support real classes, and this is planned for a leter
+It would be good to support real classes, and this is planned for a later
 version.  The support is a "minimal common functionality" of class support in
 most languages.  It will work much like Java, which is the most popular
 programming language.
