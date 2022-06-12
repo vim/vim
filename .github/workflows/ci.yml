@@ -355,7 +355,7 @@ jobs:
           make ${TEST}
 
   windows:
-    runs-on: windows-2019
+    runs-on: windows-2020
 
     env:
       # Interfaces
