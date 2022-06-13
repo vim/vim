@@ -3798,7 +3798,11 @@ do_dialog(
     // When GUI is running and 'c' not in 'guioptions', use the GUI dialog
     if (gui.in_use && vim_strchr(p_go, GO_CONDIALOG) == NULL)
     {
-	c = gui_mch_dialog(type, title, message, buttons, dfltbutton,
+	// --gui-dialog-file: write text to a file
+	if (gui_dialog_log(title, message))
+	    c = dfltbutton;
+	else
+	    c = gui_mch_dialog(type, title, message, buttons, dfltbutton,
 							   textfield, ex_cmd);
 	// avoid a hit-enter prompt without clearing the cmdline
 	need_wait_return = FALSE;

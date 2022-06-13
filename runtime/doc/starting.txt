@@ -431,6 +431,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Also avoids the "Reading from stdin..." message.
 		Also avoids the "N files to edit" message.
 
+--gui-dialog-file {name}				*--gui-dialog-file*
+		When using the GUI, instead of showing a dialog, write the
+		title and message of the dialog to file {name}.  The file is
+		careted or appended to.  Only useful for testing, to avoid
+		that the test gets stuck on a dialog that can't be seen.
+		Without the GUI the argument is ignored.
+
 							*--ttyfail*
 --ttyfail	When the stdin or stdout is not a terminal (tty) then exit
 		right away.

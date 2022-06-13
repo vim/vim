@@ -676,7 +676,10 @@ display_errors(void)
 	    for (p = (char *)error_ga.ga_data; *p; ++p)
 		if (!isspace(*p))
 		{
-		    (void)gui_mch_dialog(
+		    // Only use a dialog when not using --gui-dialog-file:
+		    // write text to a file.
+		    if (!gui_dialog_log((char_u *)"Errors", p))
+			(void)gui_mch_dialog(
 				     gui.starting ? VIM_INFO :
 					     VIM_ERROR,
 				     gui.starting ? (char_u *)_("Message") :

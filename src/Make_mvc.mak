@@ -1466,7 +1466,7 @@ test:
 	$(MAKE) /NOLOGO -f Make_dos.mak
 	cd ..
 
-testgvim:
+testgvim testgui:
 	cd testdir
 	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\gvim
 	cd ..
