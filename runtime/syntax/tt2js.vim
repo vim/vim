@@ -2,8 +2,8 @@
 " Language:      TT2 embedded with Javascript
 " Maintainer:    Andy Lester <andy@petdance.com>
 " Author:        Yates, Peter <pd.yates@gmail.com>
-" Homepage:      http://github.com/vim-perl/vim-perl
-" Bugs/requests: http://github.com/vim-perl/vim-perl/issues
+" Homepage:      https://github.com/vim-perl/vim-perl
+" Bugs/requests: https://github.com/vim-perl/vim-perl/issues
 " License:       Vim License (see :help license)
 " Last Change:   2018 Mar 28
 

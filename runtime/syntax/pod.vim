@@ -2,8 +2,8 @@
 " Language:      Perl POD format
 " Maintainer:    vim-perl <vim-perl@googlegroups.com>
 " Previously:    Scott Bigham <dsb@killerbunnies.org>
-" Homepage:      http://github.com/vim-perl/vim-perl
-" Bugs/requests: http://github.com/vim-perl/vim-perl/issues
+" Homepage:      https://github.com/vim-perl/vim-perl
+" Bugs/requests: https://github.com/vim-perl/vim-perl/issues
 " License:       Vim License (see :help license)
 " Last Change:   2021 Oct 8
 
