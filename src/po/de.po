@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-21 15:36+0100\n"
+"POT-Creation-Date: 2022-05-21 19:01+0200\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -806,10 +806,12 @@ msgstr "Achtung"
 
 msgid ""
 "&OK\n"
-"&Load File"
+"&Load File\n"
+"Load File &and Options"
 msgstr ""
 "&OK\n"
-"&Lies Datei"
+"&Lade Datei\n"
+"Lade D&atei und Optionen"
 
 msgid "<empty>"
 msgstr "<leer>"
@@ -844,24 +846,6 @@ msgstr[1] "+-%s%3ld Zeilen: "
 msgid "No match at cursor, finding next"
 msgstr "Kein Treffer beim Cursor, finde den nächsten"
 
-msgid "<cannot open> "
-msgstr "<kann nicht öffnen> "
-
-msgid "Pathname:"
-msgstr "Pfadname:"
-
-msgid "OK"
-msgstr "OK"
-
-msgid "Cancel"
-msgstr "Abbrechen"
-
-msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
-msgstr "Scrollbar Widget: Geometrie des Bildchens kann nicht ermittelt werden."
-
-msgid "Vim dialog"
-msgstr "Vim-Dialog"
-
 msgid "_Save"
 msgstr "_Speichern"
 
@@ -883,11 +867,17 @@ msgstr ""
 "&Nein\n"
 "&Abbrechen"
 
+msgid "OK"
+msgstr "OK"
+
 msgid "Yes"
 msgstr "Ja"
 
 msgid "No"
 msgstr "Nein"
+
+msgid "Cancel"
+msgstr "Abbrechen"
 
 msgid "Input _Methods"
 msgstr "Eingabe _Methoden"
@@ -969,6 +959,9 @@ msgstr "&OK"
 
 msgid "Selection"
 msgstr "Auswahl"
+
+msgid "Vim dialog"
+msgstr "Vim-Dialog"
 
 msgid "Find &Next"
 msgstr "&Nächste"
@@ -1737,6 +1730,9 @@ msgstr "--servername <Name>\tBenutze den Vim-Server <Name>"
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <Datei>\tSchreibe Start Zeitmessung in <Datei>"
 
+msgid "--log <file>\tStart logging to <file> early"
+msgstr "--log <Datei>\tLogge frühzeitig in <Datei>"
+
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tBenutze <viminfo> statt .viminfo"
 
@@ -1756,20 +1752,6 @@ msgid ""
 msgstr ""
 "\n"
 "Argumente für den gvim (Motif Version):\n"
-
-msgid ""
-"\n"
-"Arguments recognised by gvim (neXtaw version):\n"
-msgstr ""
-"\n"
-"Argumente für den gvim (neXtaw Version):\n"
-
-msgid ""
-"\n"
-"Arguments recognised by gvim (Athena version):\n"
-msgstr ""
-"\n"
-"Argumente für den gvim (Athena Version):\n"
 
 msgid "-display <display>\tRun Vim on <display>"
 msgstr "-display <display>\tStarte Vim auf <display>"
@@ -1809,10 +1791,6 @@ msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
 msgstr ""
 "-scrollbarwidth <Breite>  Benutze eine Scrollbar der Breite <Breite> (auch "
 "mit: -sw)"
-
-msgid "-menuheight <height>\tUse a menu bar height of <height> (also: -mh)"
-msgstr ""
-"-menuheight <Höhe>\tBenutze einen Menü-Balken der Höhe <Höhe> (auch mit: -mh)"
 
 msgid "-reverse\t\tUse reverse video (also: -rv)"
 msgstr "-reverse\t\tBenutze invertierte Farben (auch mit: -rv)"
@@ -2575,6 +2553,10 @@ msgid "XSMP lost ICE connection"
 msgstr "XSMP verlor ICE Verbindung"
 
 #, c-format
+msgid "Could not load gpm library: %s"
+msgstr "Konnte GPM-Bibliothek nicht laden: %s"
+
+#, c-format
 msgid "dlerror = \"%s\""
 msgstr "dlerror = \"%s\""
 
@@ -3165,38 +3147,6 @@ msgstr "Keine Syntax-Elemente für diesen Buffer definiert"
 msgid "'redrawtime' exceeded, syntax highlighting disabled"
 msgstr "'redrawtime' überschritten, Syntaxhighlighting deaktiviert"
 
-msgid "syntax conceal on"
-msgstr "Syntax conceal aktiviert"
-
-msgid "syntax conceal off"
-msgstr "Syntax conceal deaktiviert"
-
-msgid "syntax case ignore"
-msgstr "Syntax ignoriere Groß-/Kleinschreibung"
-
-msgid "syntax case match"
-msgstr "Syntax unterscheide Groß-/Kleinschreibung"
-
-msgid "syntax foldlevel start"
-msgstr "Syntax foldlevel Start"
-
-msgid "syntax foldlevel minimum"
-msgstr "Syntax foldlevel Minimum"
-
-msgid "syntax spell toplevel"
-msgstr "Prüfe Rechtschreibung von Text ohne zugehörige Syntaxgruppe"
-
-msgid "syntax spell notoplevel"
-msgstr "Prüfe keine Rechtschreibung von Text ohne zugehörige Syntaxgruppe"
-
-msgid "syntax spell default"
-msgstr ""
-"Prüfe Rechtschreibung von Text ohne zugehörige Syntaxgruppen nur bei @Spell/"
-"@NoSpell Attribut"
-
-msgid "syntax iskeyword "
-msgstr "syntax iskeyword "
-
 msgid "syntax iskeyword not set"
 msgstr "syntax iskeyword nicht gesetzt"
 
@@ -3283,16 +3233,16 @@ msgstr ""
 "\n"
 "  # NACH TAG       VON Zeile  in Datei/Text"
 
-#, c-format
-msgid "Searching tags file %s"
-msgstr "Tag-Datei %s wird durchsucht"
+msgid "Ignoring long line in tags file"
+msgstr "Ignoriere zu lange Zeile in Tag-Datei"
 
 #, c-format
 msgid "Before byte %ld"
 msgstr "Vor Byte %ld"
 
-msgid "Ignoring long line in tags file"
-msgstr "Ignoriere zu lange Zeile in Tag-Datei"
+#, c-format
+msgid "Searching tags file %s"
+msgstr "Tag-Datei %s wird durchsucht"
 
 #, c-format
 msgid "Duplicate field name: %s"
@@ -3460,6 +3410,10 @@ msgid "%s returning %s"
 msgstr "%s lieferte \"%s\" zurück"
 
 #, c-format
+msgid "Function %s does not need compiling"
+msgstr "Funktion %s muss nicht kompiliert werden"
+
+#, c-format
 msgid "%s (%s, compiled %s)"
 msgstr "%s (%s kompiliert am %s)"
 
@@ -3605,12 +3559,6 @@ msgstr "mit GTK2 GUI."
 
 msgid "with X11-Motif GUI."
 msgstr "mit X11-Motif GUI."
-
-msgid "with X11-neXtaw GUI."
-msgstr "mit X11-neXtaw GUI."
-
-msgid "with X11-Athena GUI."
-msgstr "mit X11-Athena GUI."
 
 msgid "with Haiku GUI."
 msgstr "mit Haiku GUI."
@@ -3908,9 +3856,6 @@ msgstr ""
 "Dieser Befehl ist nicht verfügbar, da die Perl-Bibliothek nicht geladen "
 "werden konnte"
 
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr "E299: Perl-Evaluierung in der Sandbox ohne dem 'Safe' Modul"
-
 msgid "Edit with Vim using &tabpages"
 msgstr "Öffne Datei mit Vim in einem neuen Reiter"
 
@@ -4103,8 +4048,8 @@ msgstr "E54: %s( ohne Gegenstück"
 msgid "E55: Unmatched %s)"
 msgstr "E55: %s) ohne Gegenstück"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E59: Invalid character after %s@"
 msgstr "E59: Ungültiges Zeichen nach %s@"
 
@@ -4532,8 +4477,8 @@ msgstr "E177: Zähler kann nicht zweimal angegeben werden"
 msgid "E178: Invalid default value for count"
 msgstr "E178: Ungültige Voreinstellung für den Zähler"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E179: Argument required for %s"
 msgstr "E179: Argument benötigt für %s"
 
@@ -4693,29 +4638,30 @@ msgid "E221: Marker cannot start with lower case letter"
 msgstr "E221: Markierung darf nicht mit Kleinbuchstaben beginnen"
 
 msgid "E222: Add to internal buffer that was already read from"
-msgstr "E222: zu einem internen Puffer hinzugefügt, von dem bereits gelesen wurde"
+msgstr ""
+"E222: zu einem internen Puffer hinzugefügt, von dem bereits gelesen wurde"
 
 # TODO: Capitalise first word of message?
 msgid "E223: Recursive mapping"
 msgstr "E223: rekursives Mapping"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E224: Global abbreviation already exists for %s"
 msgstr "E224: Globale Kurzform für %s existiert bereits"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E225: Global mapping already exists for %s"
 msgstr "E225: Globales Mapping für %s existiert bereits"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E226: Abbreviation already exists for %s"
 msgstr "E226: Kurzform %s existiert bereits"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E227: Mapping already exists for %s"
 msgstr "E227: Mapping für %s existiert bereits"
 
@@ -4790,8 +4736,8 @@ msgstr "E245: Unzulässiges Zeichen '%c' in der Schriftart \"%s\""
 msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: FileChangedShell-Autokommando löschte Buffer"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E247: No registered server named \"%s\""
 msgstr "E247: Kein registrierter Servername \"%s\""
 
@@ -4832,21 +4778,21 @@ msgstr "E257: cstag: Tag nicht gefunden"
 msgid "E258: Unable to send to client"
 msgstr "E258: Kann nicht zum Client senden"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E259: No matches found for cscope query %s of %s"
 msgstr "E259: keine Übereinstimmungen gefunden für cscope Abfrage %s aus %s"
 
 msgid "E260: Missing name after ->"
 msgstr "E260: Fehlende Name nach ->"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E261: Cscope connection %s not found"
 msgstr "E261: cscope Verbindung %s nicht gefunden"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E262: Error reading cscope connection %d"
 msgstr "E262: Fehler beim Lesen der cscope Verbindung %d"
 
@@ -4893,8 +4839,8 @@ msgstr "E271: 'retry' außerhalb der 'rescue clause'"
 msgid "E272: Unhandled exception"
 msgstr "E272: Unbehandelte Exception"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E273: Unknown longjmp status %d"
 msgstr "E273: Unbekannter longjmp Status %d"
 
@@ -4981,6 +4927,9 @@ msgstr "E298: Block Nr. 1 nicht erhalten?"
 msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Block Nr. 2 nicht erhalten?"
 
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr "E299: Perl-Evaluierung in der Sandbox ohne dem 'Safe' Modul"
+
 msgid "E300: Swap file already exists (symlink attack?)"
 msgstr "E300: Auslagerungsdatei ist bereits vorhanden (symlink Attacke?)"
 
@@ -5037,13 +4986,13 @@ msgstr "E313: Kann nicht absichern, es gibt keine Auslagerungsdatei"
 msgid "E314: Preserve failed"
 msgstr "E314: Absicherung fehlgeschlagen"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: unzulässige Zeilennummer: %ld"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
 msgstr "E316: ml_get: kann Zeile %ld in Buffer %d %s nicht finden"
 
@@ -5077,13 +5026,13 @@ msgstr "E320: Kann Zeile %ld nicht finden"
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: \"%s\" konnte nicht neu geladen werden"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E322: Line number out of range: %ld past the end"
 msgstr "E322: Zeilennummer nicht im zulässigen Bereich: %ld nach dem Ende"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E323: Line count wrong in block %ld"
 msgstr "E323: Zeilenanzahl falsch in Block %ld"
 
@@ -5240,13 +5189,13 @@ msgstr "E366: Popup-Fenster zu betreten nicht erlaubt"
 msgid "E367: No such group: \"%s\""
 msgstr "E367: Keine solche Gruppe: \"%s\""
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E368: Got SIG%s in libcall()"
 msgstr "E368: erhielt SIG%s in libcall()"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E369: Invalid item in %s%%[]"
 msgstr "E369: Ungültiges Element in %s%%[]"
 
@@ -5299,13 +5248,13 @@ msgstr "E382: Kann nicht schreiben, 'buftype'-Option ist gesetzt"
 msgid "E383: Invalid search string: %s"
 msgstr "E383: Unzulässiges Suchmuster: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E384: Search hit TOP without match for: %s"
 msgstr "E384: Suche erreichte den ANFANG ohne Treffer für: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E385: Search hit BOTTOM without match for: %s"
 msgstr "E385: Suche erreichte das ENDE ohne Treffer für: %s"
 
@@ -5399,8 +5348,8 @@ msgstr "E409: Unbekannter Gruppenname: %s"
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Ungültiger :syntax Befehl: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E411: Highlight group not found: %s"
 msgstr "E411: Hervorhebungsgruppe nicht gefunden: %s"
 
@@ -5416,18 +5365,18 @@ msgstr "E413: Zu viele Argumente: \":highlight link %s\""
 msgid "E414: Group has settings, highlight link ignored"
 msgstr "E414: Gruppe hat Einstellungen, highlight link ignoriert"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E415: Unexpected equal sign: %s"
 msgstr "E415: Unerwartetes Gleichheitszeichen: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E416: Missing equal sign: %s"
 msgstr "E416: fehlendes Gleichheitszeichen: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E417: Missing argument: %s"
 msgstr "E417: Fehlendes Argument: %s"
 
@@ -5445,8 +5394,8 @@ msgstr "E420: Hintergrundfarbe unbekannt"
 msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Unbekannte Farbbezeichnung oder -Nummer: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E422: Terminal code too long: %s"
 msgstr "E422: Terminal-Code zu lang: %s"
 
@@ -5460,8 +5409,8 @@ msgstr "E424: Zu viele verschieden Hervorhebungsattribute in Gebrauch"
 msgid "E425: Cannot go before first matching tag"
 msgstr "E425: Kann nicht vor den ersten passenden Tag hinausgehen"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E426: Tag not found: %s"
 msgstr "E426: Konnte Tag \"%s\" nicht finden"
 
@@ -5626,8 +5575,8 @@ msgstr ""
 "E468: Argument für Vervollständigung nur für benutzerdefinierte "
 "Vervollständigung erlaubt"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E469: Invalid cscopequickfix flag %c for %c"
 msgstr "E469: Unzulässiges cscopequickfix Flag %c für %c"
 
@@ -5720,8 +5669,8 @@ msgstr "E489: kein CallStack zur Ersetzung mit \"<stack>\" vorhanden"
 msgid "E490: No fold found"
 msgstr "E490: Keine Faltung gefunden"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E491: JSON decode error at '%s'"
 msgstr "E491: JSON Dekodierungsfehler in Zeile '%s'"
 
@@ -5807,13 +5756,12 @@ msgstr ""
 
 #, c-format
 msgid ""
-"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
+"E513: Write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Schreibfehler, Konvertierung in Zeile %ld fehlgeschlagen (leere 'fenc' "
-"um es zu erzwingen)"
+"E513: Schreibfehler, Konvertierung für Zeile %ld fehlgeschlagen (leere 'fenc' "
+"zum Erzwingen)"
 
-# TODO: Capitalise first word of message?
 msgid "E514: Write error (file system full?)"
 msgstr "E514: Schreibfehler (Dateisystem voll?)"
 
@@ -5895,6 +5843,10 @@ msgstr "E536: Komma benötigt"
 #, c-format
 msgid "E537: 'commentstring' must be empty or contain %s"
 msgstr "E537: 'commentstring' muss leer sein oder %s enthalten"
+
+#, c-format
+msgid "E538: Pattern found in every line: %s"
+msgstr "E538: Muster in jeder Zeile gefunden: %s"
 
 #, c-format
 msgid "E539: Illegal character <%s>"
@@ -6006,8 +5958,8 @@ msgstr ""
 "E571: Dieser Befehl ist nicht verfügbar: die Tcl Bibliothek konnte nicht "
 "geladen werden."
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E572: Exit code %d"
 msgstr "E572: Exit-Code %d"
 
@@ -6152,26 +6104,16 @@ msgstr "E612: Zu viele Zeichen definiert"
 msgid "E613: Unknown printer font: %s"
 msgstr "E613: Unbekannte Druckerschriftart: %s"
 
-msgid "E614: vim_SelFile: can't return to current directory"
-msgstr "E614: vim_SelFile: kann nicht zum aktuellen Verzeichnis zurückkehren"
-
-msgid "E615: vim_SelFile: can't get current directory"
-msgstr "E615: vim_SelFile: aktuelles Verzeichnis kann nicht ermittelt werden"
-
-#, c-format
-msgid "E616: vim_SelFile: can't get font %s"
-msgstr "E616: vim_SelFile: kann Schriftart %s nicht erhalten"
-
 msgid "E617: Cannot be changed in the GTK GUI"
 msgstr "E617: Kann in der GTK+ GUI nicht verändert werden"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E618: File \"%s\" is not a PostScript resource file"
 msgstr "E618: Datei \"%s\" ist keine PostScript Ressource-Datei"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E619: File \"%s\" is not a supported PostScript resource file"
 msgstr "E619: Datei \"%s\" ist keine unterstützte PostScript Ressource-Datei"
 
@@ -6194,8 +6136,8 @@ msgstr "E623: Konnte cscope Prozess nicht starten"
 msgid "E624: Can't open file \"%s\""
 msgstr "E624: Datei \"%s\" kann nicht geöffnet werden"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E625: Cannot open cscope database: %s"
 msgstr "E625: Kann cscope Datenbank nicht öffnen: %s"
 
@@ -6203,18 +6145,18 @@ msgstr "E625: Kann cscope Datenbank nicht öffnen: %s"
 msgid "E626: Cannot get cscope database information"
 msgstr "E626: Kann cscope Datenbank-Informationen nicht bekommen"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E630: %s(): Write while not connected"
 msgstr "E630: %s(): geschrieben ohne eine Verbindung hergestellt zu haben"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E631: %s(): Write failed"
 msgstr "E631: %s(): Schreiben fehlgeschlagen"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E654: Missing delimiter after search pattern: %s"
 msgstr "E654: Fehlendes Trennzeichen nach Suchmuster: %s"
 
@@ -6251,8 +6193,8 @@ msgstr "E664: Liste der Änderungen ist leer"
 msgid "E665: Cannot start GUI, no valid font found"
 msgstr "E665: GUI kann nicht gestartet werden, keine gültige Schrift gefunden"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E666: Compiler not supported: %s"
 msgstr "E666: Compiler nicht unterstützt: %s"
 
@@ -6316,8 +6258,8 @@ msgstr "E682: Ungültiges Suchmuster oder Trennzeichen"
 msgid "E683: File name missing or invalid pattern"
 msgstr "E683: Dateiname fehlt oder ungültiges Muster"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E684: List index out of range: %ld"
 msgstr "E684: Index der Liste außerhalb des zulässigen Bereichs: %ld"
 
@@ -6657,8 +6599,8 @@ msgstr "E780: .sug Datei ist für eine neuere Version von Vim: %s"
 msgid "E781: .sug file doesn't match .spl file: %s"
 msgstr "E781: .sug Datei passt nicht zur .spl Datei: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E782: Error while reading .sug file: %s"
 msgstr "E782: Fehler beim Lesen der .sug Datei: %s"
 
@@ -6833,8 +6775,8 @@ msgstr "E827: Undo-Datei ist verschlüsselt: %s"
 msgid "E828: Cannot open undo file for writing: %s"
 msgstr "E828: Undo-Datei kann nicht zum Schreiben geöffnet werden: %s"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E829: Write error in undo file: %s"
 msgstr "E829: Fehler beim Schreiben in Undo-Datei: %s"
 
@@ -7018,7 +6960,8 @@ msgid "E877: (NFA regexp) Invalid character class: %d"
 msgstr "E877: (NFA Regexp) Ungültige Zeichenklasse: %d"
 
 msgid "E878: (NFA regexp) Could not allocate memory for branch traversal!"
-msgstr "E878: (NFA Regexp) Konnte nicht Speicher allokieren um Äste zu durchlaufen!"
+msgstr ""
+"E878: (NFA Regexp) Konnte nicht Speicher allokieren um Äste zu durchlaufen!"
 
 msgid "E879: (NFA regexp) Too many \\z("
 msgstr "E879: (NFA Regexp) Zu viele \\z("
@@ -7033,10 +6976,10 @@ msgid "E882: Uniq compare function failed"
 msgstr "E882: Die Uniq Vergleichsfunktion ist fehlgeschlagen"
 
 msgid ""
-"E883: search pattern and expression register may not contain two or more "
+"E883: Search pattern and expression register may not contain two or more "
 "lines"
 msgstr ""
-"E883: Suchmuster- und Ausdrucksregister dürfen nicht mehr als 1 Zeile "
+"E883: Suchmuster- und Ausdrucksregister dürfen nicht mehr als 2 Zeilen "
 "enthalten"
 
 #, c-format
@@ -7065,8 +7008,8 @@ msgstr "E888: (NFA regexp) kann nicht wiederholt werden %s"
 msgid "E889: Number required"
 msgstr "E889: Zahl erforderlich"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E890: Trailing char after ']': %s]%s"
 msgstr "E890: Überschüssige Zeichen nach ']': %s]%s"
 
@@ -7128,8 +7071,8 @@ msgstr "E904: Letztes Argument für expr/call muss eine Zahl sein"
 msgid "E904: Third argument for call must be a list"
 msgstr "E904: Drittes Argument für call muss eine Liste sein"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E905: Received unknown command: %s"
 msgstr "E905: Unbekannter Befehl empfangen: %s"
 
@@ -7140,8 +7083,8 @@ msgstr "E906: Kein offener Channel"
 msgid "E907: Using a special value as a Float"
 msgstr "E907: Benutze Spezialvariable als Float"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E908: Using an invalid value as a String: %s"
 msgstr "E908: Ungültiger Wert als Zeichenkette verwendet: %s"
 
@@ -7177,8 +7120,8 @@ msgstr "E916: kein gültiger Job"
 msgid "E917: Cannot use a callback with %s()"
 msgstr "E917: Kann keinen Callback mit %s() durchführen"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E918: Buffer must be loaded: %s"
 msgstr "E918: Buffer muss geladen sein: %s"
 
@@ -7239,8 +7182,8 @@ msgstr "E933: Funktion wurde gelöscht: %s"
 msgid "E934: Cannot jump to a buffer that does not have a name"
 msgstr "E934: Kann nicht zu einem Buffer ohne Namen springen"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E935: Invalid submatch number: %d"
 msgstr "E935: Ungültige Submatch Nummer: %d"
 
@@ -7339,8 +7282,8 @@ msgstr "E961: Keine Zeilennummer für  \"<slnum>\" vorhanden"
 msgid "E962: Invalid action: '%s'"
 msgstr "E962: Ungültige Aktion '%s'"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E963: Setting %s to value with wrong type"
 msgstr "E963: %s auf Wert mit falschem Typ gesetzt"
 
@@ -7448,8 +7391,8 @@ msgstr ""
 "E992: Nicht erlaubt innerhalb einer Modeline, da die Option 'modelineexpr' "
 "deaktiviert ist"
 
-#, c-format
 # TODO: Capitalise first word of message?
+#, c-format
 msgid "E993: Window %d is not a popup window"
 msgstr "E993: Fenster %d ist kein Popup-Fenster"
 
@@ -7642,8 +7585,8 @@ msgid "E1040: Cannot use :scriptversion after :vim9script"
 msgstr "E1040: :scriptversion kann nicht nach :vim9script verwendet werden"
 
 #, c-format
-msgid "E1041: Redefining script item %s"
-msgstr "E1041: Neudefinition von Scriptelement %s"
+msgid "E1041: Redefining script item: \"%s\""
+msgstr "E1041: Neudefinition von Scriptelement \"%s\""
 
 msgid "E1042: Export can only be used in vim9script"
 msgstr "E1042: Export kann nur für Vim9script verwendet werden"
@@ -7720,6 +7663,10 @@ msgid "E1064: Yank register changed while using it"
 msgstr "E1064: Kopier-Register wurde während der Nutzung verändert"
 
 #, c-format
+msgid "E1065: Command cannot be shortened: %s"
+msgstr "E1065: Befehl kann nicht gekürzt werden: %s"
+
+#, c-format
 msgid "E1066: Cannot declare a register: %s"
 msgstr "E1066: Kann kein Register deklarieren: %s"
 
@@ -7761,9 +7708,21 @@ msgstr "E1076: Vim wurde nicht mit der \"float\"-Eigenschaft übersetzt"
 msgid "E1077: Missing argument type for %s"
 msgstr "E1077: Fehlender Argumenttyp für %s"
 
+msgid "E1078: Invalid command \"nested\", did you mean \"++nested\"?"
+msgstr "E1078: Ungültiger Befehl \"nested\", war \"++nested\" gemeint?"
+
+msgid "E1079: Cannot declare a variable on the command line"
+msgstr "E1079: Kann Variable nicht in der Befehlszeile deklarieren"
+
+msgid "E1080: Invalid assignment"
+msgstr "E1080: Ungültiges Argument"
+
 #, c-format
 msgid "E1081: Cannot unlet %s"
 msgstr "E1081: Kann Variable nicht entfernen %s"
+
+msgid "E1082: Command modifier without command"
+msgstr "E1082: Befehlsmodifier ohne Befehl"
 
 msgid "E1083: Missing backtick"
 msgstr "E1083: Fehlender Backtick:"
@@ -7776,11 +7735,11 @@ msgstr "E1084: Vim9 Funktion %s kann nicht gelöscht werden"
 msgid "E1085: Not a callable type: %s"
 msgstr "E1085: Kein aufrufbarer Typ: %s"
 
-msgid "E1086: Function reference invalid"
-msgstr "E1086: Funktionsreferenz ungültig"
-
 msgid "E1087: Cannot use an index when declaring a variable"
 msgstr "E1087: Kann Index nicht verwenden, wenn eine Variable deklariert wird"
+
+msgid "E1088: Script cannot import itself"
+msgstr "E1088: Script kann sich nicht selbst importieren"
 
 #, c-format
 msgid "E1089: Unknown variable: %s"
@@ -7793,6 +7752,9 @@ msgstr "E1090: Kann dem Argument nicht zuweisen %s"
 #, c-format
 msgid "E1091: Function is not compiled: %s"
 msgstr "E1091: Funktion ist nicht kompiliert: %s"
+
+msgid "E1092: Cannot nest :redir"
+msgstr "E1092: Kann :redir nicht verschachteln"
 
 #, c-format
 msgid "E1093: Expected %d items but got %d"
@@ -7886,11 +7848,11 @@ msgstr "E1116: \"assert_fails()\" fünftes Argument muss eine Zahl sein"
 msgid "E1117: Cannot use ! with nested :def"
 msgstr "E1117: Kann nicht ! innerhalb verschachtelter :def verwenden"
 
-msgid "E1118: Cannot change list"
-msgstr "E1118: Kann Liste nicht ändern"
+msgid "E1118: Cannot change locked list"
+msgstr "E1118: Kann gesperrte Liste nicht ändern"
 
-msgid "E1119: Cannot change list item"
-msgstr "E1119: Kann Listenwert nicht ändern"
+msgid "E1119: Cannot change locked list item"
+msgstr "E1119: Kann gesperrten Listenwert nicht ändern"
 
 msgid "E1120: Cannot change dict"
 msgstr "E1120: Kann Dictionary nicht ändern"
@@ -7964,6 +7926,10 @@ msgstr "E1140: :for Argument muss eine Folge von Listen sein"
 msgid "E1141: Indexable type required"
 msgstr "E1141: indexierbarer Typ erforderlich"
 
+msgid "E1142: Calling test_garbagecollect_now() while v:testing is not set"
+msgstr "E1142: Rufe test_garbagecollect_now() auf, obwohl v:testing nicht"
+"definiert wurde"
+
 #, c-format
 msgid "E1143: Empty expression: \"%s\""
 msgstr "E1143: Leerer Ausdruck: \"%s\""
@@ -8016,8 +7982,9 @@ msgstr "E1156: Die Argumentenliste kann nicht rekursiv geändert werden"
 msgid "E1157: Missing return type"
 msgstr "E1157: Fehlender Rückgabetyp"
 
-msgid "E1158: Cannot use flatten() in Vim9 script"
+msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
 msgstr "E1158: flatten() kann nicht in Vim9 Script verwendet werden"
+"Benutze flattennew()"
 
 msgid "E1159: Cannot split a window when closing the buffer"
 msgstr ""
@@ -8060,6 +8027,10 @@ msgstr "E1167: Argumentname verdeckt bestehende Variable: %s"
 #, c-format
 msgid "E1168: Argument already declared in the script: %s"
 msgstr "E1168: Argument bereits in Script %s deklariert"
+
+#, c-format
+msgid "E1169: Expression too recursive: %s"
+msgstr "E1169: Ausdruck zu rekursiv: %s"
 
 msgid "E1170: Cannot use #{ to start a comment"
 msgstr "E1170: Kann #{ nicht als Beginn eines Kommentars verwenden"
@@ -8107,8 +8078,9 @@ msgstr "E1180: der Typ der variablen Argumente muss eine Liste sein: %s"
 msgid "E1181: Cannot use an underscore here"
 msgstr "E1181: Unterstrich kann hier nicht genutzt werden"
 
-msgid "E1182: Blob required"
-msgstr "E1182: Blob erforderlich"
+#, c-format
+msgid "E1182: Cannot define a dict function in Vim9 script: %s"
+msgstr "E1182: Kann eine Dict-Function nicht in Vim9 Scrfipt definieren: %s"
 
 #, c-format
 msgid "E1183: Cannot use a range with an assignment operator: %s"
@@ -8116,9 +8088,6 @@ msgstr "E1183: Kann einen Bereich nicht mit einem Zuweisungsoperator %s nutzen"
 
 msgid "E1184: Blob not set"
 msgstr "E1184: Blob nicht gesetzt"
-
-msgid "E1185: Cannot nest :redir"
-msgstr "E1185: Kann :redir nicht verschachteln"
 
 msgid "E1185: Missing :redir END"
 msgstr "E1185: Fehlendes :redir END"
@@ -8311,9 +8280,6 @@ msgstr ""
 msgid "E1234: legacy must be followed by a command"
 msgstr "E1234: legacy muss von einem Befehl gefolgt werden"
 
-msgid "E1235: Function reference is not set"
-msgstr "E1235: Funktionsreferenz nicht gesetzt"
-
 #, c-format
 msgid "E1236: Cannot use %s itself, it is imported"
 msgstr "E1236: Kann %s nicht verwenden, es wurde import"
@@ -8395,7 +8361,8 @@ msgstr "E1256: Zeichenkette oder Funktion erforderlich für Argument %d"
 
 #, c-format
 msgid "E1257: Imported script must use \"as\" or end in .vim: %s"
-msgstr "E1257: Importiertes Script muss \"as\" verwenden oder mit .vim enden: %s"
+msgstr ""
+"E1257: Importiertes Script muss \"as\" verwenden oder mit .vim enden: %s"
 
 #, c-format
 msgid "E1258: No '.' after imported name: %s"
@@ -8416,12 +8383,78 @@ msgstr "E1261: Kann .vim ohne \"as\" nicht importieren"
 msgid "E1262: Cannot import the same script twice: %s"
 msgstr "E1262: Kann das gleich Script nicht mehrmals importieren: %s"
 
+msgid "E1263: Cannot use name with # in Vim9 script, use export instead"
+msgstr "E1263: Kann Namen mit # nicht in Vim9 Script benutzen, benutze export"
+
 #, c-format
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
-msgstr "E1264: Autoload import kann keinen absoluten oder relativen Pfad nutzen: %s"
+msgstr ""
+"E1264: Autoload import kann keinen absoluten oder relativen Pfad nutzen: %s"
 
 msgid "E1265: Cannot use a partial here"
 msgstr "E1265: Kann Partial hier nicht verwenden"
+
+msgid ""
+"E1266: Critical error in python3 initialization, check your python3 "
+"installation"
+msgstr ""
+"E1266: Kritischer Fehler bei der Python3 Initializierierung, bitte "
+"prüfe Python3 Installation"
+
+#, c-format
+msgid "E1267: Function name must start with a capital: %s"
+msgstr "E1267: Funktion muss mit einem Großbuchstaben anfangen: %s"
+
+#, c-format
+msgid "E1268: Cannot use s: in Vim9 script: %s"
+msgstr "E1268: Kann s: nicht mit Vim9 Script verwenden: %s"
+
+#, c-format
+msgid "E1269: Cannot create a Vim9 script variable in a function: %s"
+msgstr "E1269: Kann Vim9 Script Variable nicht in Funktion: %s verwenden"
+
+msgid "E1270: Cannot use :s\\/sub/ in Vim9 script"
+msgstr "E1270: Kann :s\\/sub/ nicht in Vim9 Script verwenden"
+
+#, c-format
+msgid "E1271: Compiling closure without context: %s"
+msgstr "E1271: Kompiliere Closure ohne Kontext: %s"
+
+#, c-format
+msgid "E1272: Using type not in a script context: %s"
+msgstr "E1272: Typ wurde nicht in Skript-Kontext benutzt: %s"
+
+#, c-format
+msgid "E1273: (NFA regexp) missing value in '\\%%%c'"
+msgstr "E1273: (NFA Regexp) fehlender Wert in '\\%%%c'"
+
+msgid "E1274: No script file name to substitute for \"<script>\""
+msgstr "E1274: Script Dateiname zum Ersetzen für \"<sfile>\" fehlt"
+
+msgid "E1275: String or function required for ->(expr)"
+msgstr "E1275: Zeichenkette oder Funktion erforderlich für ->(expr)"
+
+#, c-format
+msgid "E1276: Illegal map mode string: '%s'"
+msgstr "E1276: Ungültige Map-Mode Zeichenkette '%s'"
+
+msgid "E1277: Channel and job feature is not available"
+msgstr "E1277: Channel und Job Eigenschaft nicht verfügbar"
+
+#, c-format
+msgid "E1278: Stray '}' without a matching '{': %s"
+msgstr "E1278: '}' ohne zugehörige '{': %s"
+
+#, c-format
+msgid "E1279: Missing '}': %s"
+msgstr "E1279: Fehlende '}': %s"
+
+msgid "E1280: Illegal character in word"
+msgstr "E1280: Ungültiges Zeichen in Wort"
+
+#, c-format
+msgid "E1281: Atom '\\%%#=%c' must be at the start of the pattern"
+msgstr "E1281: Atom '\\%%#=%c' muss am Anfang des Muster stehen"
 
 msgid "--No lines in buffer--"
 msgstr "--Keine Zeilen im Buffer--"
@@ -9271,6 +9304,9 @@ msgstr "das Fenster mit dem Mauszeiger wird mit der Maus gescrollt"
 msgid "hide the mouse pointer while typing"
 msgstr "den Mauszeiger beim Tippen verstecken"
 
+msgid "report mouse movement events"
+msgstr "Mausbewegungsereignisse mitteilen"
+
 msgid ""
 "\"extend\", \"popup\" or \"popup_setpos\"; what the right\n"
 "mouse button is used for"
@@ -9611,6 +9647,9 @@ msgstr "Tasten, die C-Code Einrücken im Einfüge-Modus auslösen"
 
 msgid "list of words that cause more C-indent"
 msgstr "Liste an Wörtern, die ein eweiteres C-Code Einrücken auslösen"
+
+msgid "list of scope declaration names used by cino-g"
+msgstr "Liste von Scope Deklaration genutzt für cino-g"
 
 msgid "expression used to obtain the indent of a line"
 msgstr "Ausdruck um den Einzug einer Zeile zu erhalten"

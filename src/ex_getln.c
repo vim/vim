@@ -417,7 +417,6 @@ may_do_incsearch_highlighting(
     int		found;  // do_search() result
     pos_T	end_pos;
 #ifdef FEAT_RELTIME
-    proftime_T	tm;
     searchit_arg_T sia;
 #endif
     int		next_char;
@@ -484,10 +483,6 @@ may_do_incsearch_highlighting(
 	cursor_off();	// so the user knows we're busy
 	out_flush();
 	++emsg_off;	// so it doesn't beep if bad expr
-#ifdef FEAT_RELTIME
-	// Set the time limit to half a second.
-	profile_setlimit(500L, &tm);
-#endif
 	if (!p_hls)
 	    search_flags += SEARCH_KEEP;
 	if (search_first_line != 0)
@@ -495,7 +490,8 @@ may_do_incsearch_highlighting(
 	ccline.cmdbuff[skiplen + patlen] = NUL;
 #ifdef FEAT_RELTIME
 	CLEAR_FIELD(sia);
-	sia.sa_tm = &tm;
+	// Set the time limit to half a second.
+	sia.sa_tm = 500;
 #endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
 				 ccline.cmdbuff + skiplen, count, search_flags,
@@ -2740,6 +2736,21 @@ get_text_locked_msg(void)
 }
 
 /*
+ * Check for text, window or buffer locked.
+ * Give an error message and return TRUE if something is locked.
+ */
+    int
+text_or_buf_locked(void)
+{
+    if (text_locked())
+    {
+	text_locked_msg();
+	return TRUE;
+    }
+    return curbuf_locked();
+}
+
+/*
  * Check if "curbuf_lock" or "allbuf_lock" is set and return TRUE when it is
  * and give an error message.
  */
@@ -4379,8 +4390,10 @@ open_cmdwin(void)
     int			save_KeyTyped;
 #endif
 
+    // Can't do this when text or buffer is locked.
     // Can't do this recursively.  Can't do it when typing a password.
-    if (cmdwin_type != 0
+    if (text_or_buf_locked()
+	    || cmdwin_type != 0
 # if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 	    || cmdline_star > 0
 # endif

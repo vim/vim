@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2022 Apr 16
+*channel.txt*      For Vim version 8.2.  Last change: 2022 Jun 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -628,15 +628,18 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		Start logging channel activity to {fname}.
 		When {fname} is an empty string: stop logging.
 
-		When {mode} is omitted or "a" append to the file.
-		When {mode} is "w" start with an empty file.
+		When {mode} is omitted or contains "a" or is "o" then append
+		to the file.
+		When {mode} contains "w" and not "a" start with an empty file.
+		When {mode} contains "o" then log all terminal output.
+		Otherwise only some interesting terminal output is logged.
 
 		Use |ch_log()| to write log messages.  The file is flushed
 		after every message, on Unix you can use "tail -f" to see what
 		is going on in real time.
 
 		To enable the log very early, to see what is received from a
-		terminal during startup, use |--log|: >
+		terminal during startup, use |--log| (this uses mode "ao"): >
 			vim --log logfile
 <
 		This function is not available in the |sandbox|.

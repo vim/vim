@@ -2769,7 +2769,6 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
     listitem_T	*pli;
     char_u	*cmd = NULL;
     char_u	*end;
-    char_u	*p;
     int		once;
     int		nested;
     int		replace;		// replace the cmd for a group/event
@@ -2937,6 +2936,8 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	}
 	else
 	{
+	    char_u *p = NULL;
+
 	    eli = NULL;
 	    end = NULL;
 	    while (TRUE)
@@ -2950,26 +2951,24 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 		    if (eli == NULL)
 			break;
 		    if (eli->li_tv.v_type != VAR_STRING
-			    || eli->li_tv.vval.v_string == NULL)
+			    || (p = eli->li_tv.vval.v_string) == NULL)
 		    {
 			emsg(_(e_string_required));
-			continue;
+			break;
 		    }
-		    p = eli->li_tv.vval.v_string;
 		}
 		else
 		{
-		    if (end == NULL)
-			p = end = event_name;
-		    if (end == NULL || *end == NUL)
+		    if (p == NULL)
+			p = event_name;
+		    if (p == NULL || *p == NUL)
 			break;
 		}
-		if (p == NULL)
-		    continue;
 
 		event = event_name2nr(p, &end);
 		if (event == NUM_EVENTS || *end != NUL)
 		{
+		    // this also catches something following a valid event name
 		    semsg(_(e_no_such_event_str), p);
 		    retval = VVAL_FALSE;
 		    break;
@@ -3160,33 +3159,23 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	    for (ac = ap->cmds; ac != NULL; ac = ac->next)
 	    {
 		event_dict = dict_alloc();
-		if (event_dict == NULL)
+		if (event_dict == NULL
+			|| list_append_dict(event_list, event_dict) == FAIL)
 		    return;
 
-		if (list_append_dict(event_list, event_dict) == FAIL)
-		    return;
-
-		if (dict_add_string(event_dict, "event", event_name) == FAIL)
-		    return;
-
-		if (dict_add_string(event_dict, "group", group_name == NULL
-			    ? (char_u *)"" : group_name) == FAIL)
-		    return;
-
-		if (ap->buflocal_nr != 0)
-		    if (dict_add_number(event_dict, "bufnr", ap->buflocal_nr)
-								       == FAIL)
-			return;
-
-		if (dict_add_string(event_dict, "pattern", ap->pat) == FAIL)
-		    return;
-
-		if (dict_add_string(event_dict, "cmd", ac->cmd) == FAIL)
-		    return;
-
-		if (dict_add_bool(event_dict, "once", ac->once) == FAIL)
-		    return;
-		if (dict_add_bool(event_dict, "nested", ac->nested) == FAIL)
+		if (dict_add_string(event_dict, "event", event_name) == FAIL
+			|| dict_add_string(event_dict, "group",
+					group_name == NULL ? (char_u *)""
+							  : group_name) == FAIL
+			|| (ap->buflocal_nr != 0
+				&& (dict_add_number(event_dict, "bufnr",
+						    ap->buflocal_nr) == FAIL))
+			|| dict_add_string(event_dict, "pattern",
+							      ap->pat) == FAIL
+			|| dict_add_string(event_dict, "cmd", ac->cmd) == FAIL
+			|| dict_add_bool(event_dict, "once", ac->once) == FAIL
+			|| dict_add_bool(event_dict, "nested",
+							   ac->nested) == FAIL)
 		    return;
 	    }
 	}

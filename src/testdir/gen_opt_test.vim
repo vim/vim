@@ -90,7 +90,7 @@ let test_values = {
       \ 'display': [['', 'lastline', 'lastline,uhex'], ['xxx']],
       \ 'eadirection': [['', 'both', 'ver'], ['xxx', 'ver,hor']],
       \ 'encoding': [['latin1'], ['xxx', '']],
-      \ 'eventignore': [['', 'WinEnter', 'WinLeave,winenter'], ['xxx']],
+      \ 'eventignore': [['', 'WinEnter', 'WinLeave,winenter', 'all,WinEnter'], ['xxx']],
       \ 'fileencoding': [['', 'latin1', 'xxx'], []],
       \ 'fileformat': [['', 'dos', 'unix'], ['xxx']],
       \ 'fileformats': [['', 'dos', 'dos,unix'], ['xxx']],

@@ -658,19 +658,8 @@ searchit(
     int		break_loop = FALSE;
 #endif
     linenr_T	stop_lnum = 0;	// stop after this line number when != 0
-#ifdef FEAT_RELTIME
-    proftime_T	*tm = NULL;	// timeout limit or NULL
-    int		*timed_out = NULL;  // set when timed out or NULL
-#endif
-
-    if (extra_arg != NULL)
-    {
-	stop_lnum = extra_arg->sa_stop_lnum;
-#ifdef FEAT_RELTIME
-	tm = extra_arg->sa_tm;
-	timed_out = &extra_arg->sa_timed_out;
-#endif
-    }
+    int		unused_timeout_flag = FALSE;
+    int		*timed_out = &unused_timeout_flag;  // set when timed out.
 
     if (search_regcomp(pat, RE_SEARCH, pat_use,
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
@@ -678,6 +667,18 @@ searchit(
 	if ((options & SEARCH_MSG) && !rc_did_emsg)
 	    semsg(_(e_invalid_search_string_str), mr_pattern);
 	return FAIL;
+    }
+
+    if (extra_arg != NULL)
+    {
+	stop_lnum = extra_arg->sa_stop_lnum;
+#ifdef FEAT_RELTIME
+	if (extra_arg->sa_tm > 0)
+	{
+	    init_regexp_timeout(extra_arg->sa_tm);
+	    timed_out = &extra_arg->sa_timed_out;
+	}
+#endif
     }
 
     /*
@@ -753,11 +754,9 @@ searchit(
 		if (stop_lnum != 0 && (dir == FORWARD
 				       ? lnum > stop_lnum : lnum < stop_lnum))
 		    break;
-#ifdef FEAT_RELTIME
-		// Stop after passing the "tm" time limit.
-		if (tm != NULL && profile_passed_limit(tm))
+		// Stop after passing the time limit.
+		if (*timed_out)
 		    break;
-#endif
 
 		/*
 		 * Look for a match somewhere in line "lnum".
@@ -765,22 +764,12 @@ searchit(
 		col = at_first_line && (options & SEARCH_COL) ? pos->col
 								 : (colnr_T)0;
 		nmatched = vim_regexec_multi(&regmatch, win, buf,
-					     lnum, col,
-#ifdef FEAT_RELTIME
-					     tm, timed_out
-#else
-					     NULL, NULL
-#endif
-						      );
+					     lnum, col, timed_out);
 		// vim_regexec_multi() may clear "regprog"
 		if (regmatch.regprog == NULL)
 		    break;
 		// Abort searching on an error (e.g., out of stack).
-		if (called_emsg > called_emsg_before
-#ifdef FEAT_RELTIME
-			|| (timed_out != NULL && *timed_out)
-#endif
-			)
+		if (called_emsg > called_emsg_before || *timed_out)
 		    break;
 		if (nmatched > 0)
 		{
@@ -863,13 +852,7 @@ searchit(
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
 					      win, buf, lnum + matchpos.lnum,
-					      matchcol,
-#ifdef FEAT_RELTIME
-					      tm, timed_out
-#else
-					      NULL, NULL
-#endif
-					      )) == 0)
+					      matchcol, timed_out)) == 0)
 			    {
 				match_ok = FALSE;
 				break;
@@ -974,21 +957,13 @@ searchit(
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
 					      win, buf, lnum + matchpos.lnum,
-					      matchcol,
-#ifdef FEAT_RELTIME
-					      tm, timed_out
-#else
-					      NULL, NULL
-#endif
-					    )) == 0)
+					      matchcol, timed_out)) == 0)
 			    {
-#ifdef FEAT_RELTIME
 				// If the search timed out, we did find a match
 				// but it might be the wrong one, so that's not
 				// OK.
-				if (timed_out != NULL && *timed_out)
+				if (*timed_out)
 				    match_ok = FALSE;
-#endif
 				break;
 			    }
 			    // vim_regexec_multi() may clear "regprog"
@@ -1097,10 +1072,7 @@ searchit(
 	     * twice.
 	     */
 	    if (!p_ws || stop_lnum != 0 || got_int
-					    || called_emsg > called_emsg_before
-#ifdef FEAT_RELTIME
-				|| (timed_out != NULL && *timed_out)
-#endif
+			        || called_emsg > called_emsg_before || *timed_out
 #ifdef FEAT_SEARCH_EXTRA
 				|| break_loop
 #endif
@@ -1124,10 +1096,7 @@ searchit(
 	    if (extra_arg != NULL)
 		extra_arg->sa_wrapped = TRUE;
 	}
-	if (got_int || called_emsg > called_emsg_before
-#ifdef FEAT_RELTIME
-		|| (timed_out != NULL && *timed_out)
-#endif
+	if (got_int || called_emsg > called_emsg_before || *timed_out
 #ifdef FEAT_SEARCH_EXTRA
 		|| break_loop
 #endif
@@ -1136,6 +1105,9 @@ searchit(
     }
     while (--count > 0 && found);   // stop after count matches or no match
 
+#   ifdef FEAT_RELTIME
+    disable_regexp_timeout();
+#   endif
     vim_regfree(regmatch.regprog);
 
     if (!found)		    // did not find it
@@ -2915,7 +2887,7 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
 	{
 	    regmatch.startpos[0].col++;
 	    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
-			       pos.lnum, regmatch.startpos[0].col, NULL, NULL);
+			       pos.lnum, regmatch.startpos[0].col, NULL);
 	    if (nmatched != 0)
 		break;
 	} while (regmatch.regprog != NULL
@@ -3305,6 +3277,21 @@ update_search_stat(
 }
 
 #if defined(FEAT_FIND_ID) || defined(PROTO)
+
+/*
+ * Get line "lnum" and copy it into "buf[LSIZE]".
+ * The copy is made because the regexp may make the line invalid when using a
+ * mark.
+ */
+    static char_u *
+get_line_and_copy(linenr_T lnum, char_u *buf)
+{
+    char_u *line = ml_get(lnum);
+
+    vim_strncpy(buf, line, LSIZE - 1);
+    return buf;
+}
+
 /*
  * Find identifiers or defines in included files.
  * If p_ic && compl_status_sol() then ptr must be in lowercase.
@@ -3409,7 +3396,7 @@ find_pattern_in_path(
 	end_lnum = curbuf->b_ml.ml_line_count;
     if (lnum > end_lnum)		// do at least one line
 	lnum = end_lnum;
-    line = ml_get(lnum);
+    line = get_line_and_copy(lnum, file_line);
 
     for (;;)
     {
@@ -3738,7 +3725,7 @@ search_line:
 		    {
 			if (lnum >= end_lnum)
 			    goto exit_matched;
-			line = ml_get(++lnum);
+			line = get_line_and_copy(++lnum, file_line);
 		    }
 		    else if (vim_fgets(line = file_line,
 						      LSIZE, files[depth].fp))
@@ -3950,7 +3937,7 @@ exit_matched:
 	{
 	    if (++lnum > end_lnum)
 		break;
-	    line = ml_get(lnum);
+	    line = get_line_and_copy(lnum, file_line);
 	}
 	already = NULL;
     }

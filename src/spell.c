@@ -1275,7 +1275,7 @@ spell_move_to(
     char_u	*line;
     char_u	*p;
     char_u	*endp;
-    hlf_T	attr;
+    hlf_T	attr = 0;
     int		len;
 #ifdef FEAT_SYN_HL
     int		has_syntax = syntax_present(wp);
@@ -1308,6 +1308,8 @@ spell_move_to(
 
     while (!got_int)
     {
+	int empty_line;
+
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
 	len = (int)STRLEN(line);
@@ -1340,7 +1342,9 @@ spell_move_to(
 	}
 
 	// Copy the line into "buf" and append the start of the next line if
-	// possible.
+	// possible.  Note: this ml_get_buf() may make "line" invalid, check
+	// for empty line first.
+	empty_line = *skipwhite(line) == NUL;
 	STRCPY(buf, line);
 	if (lnum < wp->w_buffer->b_ml.ml_line_count)
 	    spell_cat_line(buf + STRLEN(buf),
@@ -1487,7 +1491,7 @@ spell_move_to(
 	    --capcol;
 
 	    // But after empty line check first word in next line
-	    if (*skipwhite(line) == NUL)
+	    if (empty_line)
 		capcol = 0;
 	}
 

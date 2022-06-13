@@ -3574,7 +3574,7 @@ u_blockfree(buf_T *buf)
 bufIsChanged(buf_T *buf)
 {
 #ifdef FEAT_TERMINAL
-    if (term_job_running(buf->b_term))
+    if (term_job_running_not_none(buf->b_term))
 	return TRUE;
 #endif
     return bufIsChangedNotTerm(buf);

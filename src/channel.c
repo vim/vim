@@ -152,7 +152,8 @@ static proftime_T log_start;
     void
 ch_logfile(char_u *fname, char_u *opt)
 {
-    FILE   *file = NULL;
+    FILE	*file = NULL;
+    char	*mode = "a";
 
     if (log_fd != NULL)
     {
@@ -163,9 +164,14 @@ ch_logfile(char_u *fname, char_u *opt)
 	fclose(log_fd);
     }
 
+    // The "a" flag overrules the "w" flag.
+    if (vim_strchr(opt, 'a') == NULL && vim_strchr(opt, 'w') != NULL)
+	mode = "w";
+    ch_log_output = vim_strchr(opt, 'o') != NULL ? LOG_ALWAYS : FALSE;
+
     if (*fname != NUL)
     {
-	file = fopen((char *)fname, *opt == 'w' ? "w" : "a");
+	file = fopen((char *)fname, mode);
 	if (file == NULL)
 	{
 	    semsg(_(e_cant_open_file_str), fname);

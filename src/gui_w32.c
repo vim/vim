@@ -392,7 +392,7 @@ stubGetDpiForSystem(void)
 }
 
     static int WINAPI
-stubGetSystemMetricsForDpi(int nIndex, UINT dpi)
+stubGetSystemMetricsForDpi(int nIndex, UINT dpi UNUSED)
 {
     return GetSystemMetrics(nIndex);
 }
@@ -1712,7 +1712,7 @@ gui_mch_get_color(char_u *name)
     /*
      * Try to look up a system colour.
      */
-    for (i = 0; i < ARRAY_LENGTH(sys_table); i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(sys_table); i++)
 	if (STRICMP(name, sys_table[i].name) == 0)
 	    return GetSysColor(sys_table[i].color);
 
@@ -4149,11 +4149,12 @@ init_mouse_wheel(void)
  * Mouse scroll event handler.
  */
     static void
-_OnMouseWheel(HWND hwnd, WPARAM wParam, LPARAM lParam, int horizontal)
+_OnMouseWheel(HWND hwnd UNUSED, WPARAM wParam, LPARAM lParam, int horizontal)
 {
     int		button;
     win_T	*wp;
-    int		modifiers, kbd_modifiers;
+    int		modifiers = 0;
+    int		kbd_modifiers;
     int		zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
     POINT	pt;
 
@@ -4213,7 +4214,7 @@ _OnMouseWheel(HWND hwnd, WPARAM wParam, LPARAM lParam, int horizontal)
     pt.y = GET_Y_LPARAM(lParam);
     ScreenToClient(s_textArea, &pt);
 
-    gui_send_mouse_event(button, pt.x, pt.y, FALSE, kbd_modifiers);
+    gui_send_mouse_event(button, pt.x, pt.y, FALSE, modifiers);
 }
 
 #ifdef USE_SYSMENU_FONT
@@ -4335,9 +4336,10 @@ static HWND hwndTip = NULL;
     static void
 show_sizing_tip(int cols, int rows)
 {
-    TOOLINFOA ti = {sizeof(ti)};
+    TOOLINFOA ti;
     char buf[32];
 
+    ti.cbSize = sizeof(ti);
     ti.hwnd = s_hwnd;
     ti.uId = (UINT_PTR)s_hwnd;
     ti.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
@@ -4635,7 +4637,7 @@ _OnMenuSelect(HWND hwnd, WPARAM wParam, LPARAM lParam)
 #endif
 
     static LRESULT
-_OnDpiChanged(HWND hwnd, UINT xdpi, UINT ydpi, RECT *rc)
+_OnDpiChanged(HWND hwnd, UINT xdpi UNUSED, UINT ydpi, RECT *rc UNUSED)
 {
     s_dpi = ydpi;
     s_in_dpichanged = TRUE;
@@ -5105,12 +5107,12 @@ load_dpi_func(void)
     if (hUser32 == NULL)
 	goto fail;
 
-    pGetDpiForSystem = (void*)GetProcAddress(hUser32, "GetDpiForSystem");
-    pGetDpiForWindow = (void*)GetProcAddress(hUser32, "GetDpiForWindow");
-    pGetSystemMetricsForDpi = (void*)GetProcAddress(hUser32, "GetSystemMetricsForDpi");
+    pGetDpiForSystem = (UINT (WINAPI *)(void))GetProcAddress(hUser32, "GetDpiForSystem");
+    pGetDpiForWindow = (UINT (WINAPI *)(HWND))GetProcAddress(hUser32, "GetDpiForWindow");
+    pGetSystemMetricsForDpi = (int (WINAPI *)(int, UINT))GetProcAddress(hUser32, "GetSystemMetricsForDpi");
     //pGetWindowDpiAwarenessContext = (void*)GetProcAddress(hUser32, "GetWindowDpiAwarenessContext");
-    pSetThreadDpiAwarenessContext = (void*)GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
-    pGetAwarenessFromDpiAwarenessContext = (void*)GetProcAddress(hUser32, "GetAwarenessFromDpiAwarenessContext");
+    pSetThreadDpiAwarenessContext = (DPI_AWARENESS_CONTEXT (WINAPI *)(DPI_AWARENESS_CONTEXT))GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
+    pGetAwarenessFromDpiAwarenessContext = (DPI_AWARENESS (WINAPI *)(DPI_AWARENESS_CONTEXT))GetProcAddress(hUser32, "GetAwarenessFromDpiAwarenessContext");
 
     if (pSetThreadDpiAwarenessContext != NULL)
     {
@@ -7798,8 +7800,9 @@ initialise_toolbar(void)
 update_toolbar_size(void)
 {
     int		w, h;
-    TBMETRICS	tbm = {sizeof(TBMETRICS)};
+    TBMETRICS	tbm;
 
+    tbm.cbSize = sizeof(TBMETRICS);
     tbm.dwMask = TBMF_PAD | TBMF_BUTTONSPACING;
     SendMessage(s_toolbarhwnd, TB_GETMETRICS, 0, (LPARAM)&tbm);
     //TRACE("Pad: %d, %d", tbm.cxPad, tbm.cyPad);
@@ -8042,27 +8045,27 @@ dyn_imm_load(void)
 	return;
 
     pImmGetCompositionStringW
-	    = (void *)GetProcAddress(hLibImm, "ImmGetCompositionStringW");
+	    = (LONG (WINAPI *)(HIMC, DWORD, LPVOID, DWORD))GetProcAddress(hLibImm, "ImmGetCompositionStringW");
     pImmGetContext
-	    = (void *)GetProcAddress(hLibImm, "ImmGetContext");
+	    = (HIMC (WINAPI *)(HWND))GetProcAddress(hLibImm, "ImmGetContext");
     pImmAssociateContext
-	    = (void *)GetProcAddress(hLibImm, "ImmAssociateContext");
+	    = (HIMC (WINAPI *)(HWND, HIMC))GetProcAddress(hLibImm, "ImmAssociateContext");
     pImmReleaseContext
-	    = (void *)GetProcAddress(hLibImm, "ImmReleaseContext");
+	    = (BOOL (WINAPI *)(HWND, HIMC))GetProcAddress(hLibImm, "ImmReleaseContext");
     pImmGetOpenStatus
-	    = (void *)GetProcAddress(hLibImm, "ImmGetOpenStatus");
+	    = (BOOL (WINAPI *)(HIMC))GetProcAddress(hLibImm, "ImmGetOpenStatus");
     pImmSetOpenStatus
-	    = (void *)GetProcAddress(hLibImm, "ImmSetOpenStatus");
+	    = (BOOL (WINAPI *)(HIMC, BOOL))GetProcAddress(hLibImm, "ImmSetOpenStatus");
     pImmGetCompositionFontW
-	    = (void *)GetProcAddress(hLibImm, "ImmGetCompositionFontW");
+	    = (BOOL (WINAPI *)(HIMC, LPLOGFONTW))GetProcAddress(hLibImm, "ImmGetCompositionFontW");
     pImmSetCompositionFontW
-	    = (void *)GetProcAddress(hLibImm, "ImmSetCompositionFontW");
+	    = (BOOL (WINAPI *)(HIMC, LPLOGFONTW))GetProcAddress(hLibImm, "ImmSetCompositionFontW");
     pImmSetCompositionWindow
-	    = (void *)GetProcAddress(hLibImm, "ImmSetCompositionWindow");
+	    = (BOOL (WINAPI *)(HIMC, LPCOMPOSITIONFORM))GetProcAddress(hLibImm, "ImmSetCompositionWindow");
     pImmGetConversionStatus
-	    = (void *)GetProcAddress(hLibImm, "ImmGetConversionStatus");
+	    = (BOOL (WINAPI *)(HIMC, LPDWORD, LPDWORD))GetProcAddress(hLibImm, "ImmGetConversionStatus");
     pImmSetConversionStatus
-	    = (void *)GetProcAddress(hLibImm, "ImmSetConversionStatus");
+	    = (BOOL (WINAPI *)(HIMC, DWORD, DWORD))GetProcAddress(hLibImm, "ImmSetConversionStatus");
 
     if (       pImmGetCompositionStringW == NULL
 	    || pImmGetContext == NULL

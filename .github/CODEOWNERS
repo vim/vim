@@ -309,8 +309,16 @@ runtime/tutor/tutor.fr			@dpelle
 runtime/tutor/tutor.fr.utf-8		@dpelle
 src/iscygpty.*				@k-takata
 src/libvterm/				@leonerd
+src/po/ca.po				@nfdisco
 src/po/de.po				@chrisbra
 src/po/eo.po				@dpelle
+src/po/es.po				@victorhck
+src/po/fi.po				@flammie
 src/po/fr.po				@dpelle
 src/po/ga.po				@kscanne
+src/po/it.po				@azc100
+src/po/ja.po				@k-takata
+src/po/sr.po				@eevan78
+src/po/tr.po				@bitigchi
+src/po/uk.po				@sakhnik
 src/xxd/				@jnweiger

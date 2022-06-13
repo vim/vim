@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*eval.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -183,10 +183,15 @@ You will not get an error if you try to change the type of a variable.
 1.2 Function references ~
 				*Funcref* *E695* *E718* *E1192*
 A Funcref variable is obtained with the |function()| function, the |funcref()|
-function or created with the lambda expression |expr-lambda|.  It can be used
-in an expression in the place of a function name, before the parenthesis
-around the arguments, to invoke the function it refers to.  Example: >
+function, (in |Vim9| script) the name of a function, or created with the
+lambda expression |expr-lambda|.  It can be used in an expression in the place
+of a function name, before the parenthesis around the arguments, to invoke the
+function it refers to.  Example in |Vim9| script: >
 
+	:var Fn = MyFunc
+	:echo Fn()
+
+Legacy script: >
 	:let Fn = function("MyFunc")
 	:echo Fn()
 <							*E704* *E705* *E707*
@@ -1544,7 +1549,7 @@ to be doubled.  These two commands are equivalent: >
 	if a =~ '\s*'
 
 
-interpolated-string					*interp-string* *E256*
+interpolated-string				*$quote* *interp-string* *E256*
 --------------------
 $"string"		interpolated string constant		*expr-$quote*
 $'string'		interpolated literal string constant	*expr-$'*
@@ -2998,7 +3003,7 @@ The file "~/vim/bufnetfuncs.vim" should then define functions that start with
 
 Using an autoload script ~
 							*autoload* *E746*
-This is introduced in the user manual, section |51.5|.
+This is introduced in the user manual, section |52.2|.
 
 Using a script in the "autoload" directory is simpler, but requires using
 exactly the right file name.  A function that can be autoloaded has a name

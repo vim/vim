@@ -1953,10 +1953,10 @@ EXTERN char e_eval_feature_not_available[]
 #ifdef FEAT_QUICKFIX
 EXTERN char e_no_location_list[]
 	INIT(= N_("E776: No location list"));
-# ifdef FEAT_EVAL
+#endif
+#ifdef FEAT_EVAL
 EXTERN char e_string_or_list_expected[]
 	INIT(= N_("E777: String or List expected"));
-# endif
 #endif
 #ifdef FEAT_SPELL
 EXTERN char e_this_does_not_look_like_sug_file_str[]
@@ -3283,4 +3283,20 @@ EXTERN char e_bitshift_ops_must_be_number[]
 	INIT(= N_("E1282: Bitshift operands must be numbers"));
 EXTERN char e_bitshift_ops_must_be_postive[]
 	INIT(= N_("E1283: Bitshift amount must be a positive number"));
+#endif
+#if defined(FEAT_PROP_POPUP)
+EXTERN char e_argument_1_list_item_nr_dictionary_required[]
+	INIT(= N_("E1284: Argument 1, list item %d: Dictionary required"));
+#endif
+#ifdef FEAT_RELTIME
+EXTERN char e_could_not_clear_timeout_str[]
+	INIT(= N_("E1285: Could not clear timeout: %s"));
+EXTERN char e_could_not_set_timeout_str[]
+	INIT(= N_("E1286: Could not set timeout: %s"));
+EXTERN char e_could_not_set_handler_for_timeout_str[]
+	INIT(= N_("E1287: Could not set handler for timeout: %s"));
+EXTERN char e_could_not_reset_handler_for_timeout_str[]
+	INIT(= N_("E1288: Could not reset handler for timeout: %s"));
+EXTERN char e_could_not_check_for_pending_sigalrm_str[]
+	INIT(= N_("E1289: Could not check for pending SIGALRM: %s"));
 #endif

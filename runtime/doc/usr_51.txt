@@ -1,4 +1,4 @@
-*usr_51.txt*	For Vim version 8.2.  Last change: 2022 May 14
+*usr_51.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -12,11 +12,9 @@ most common Vim plugins.
 |51.1|	Writing a generic plugin
 |51.2|	Writing a filetype plugin
 |51.3|	Writing a compiler plugin
-|51.4|	Writing a plugin that loads quickly
-|51.5|	Writing library scripts
-|51.6|	Distributing Vim scripts
+|51.4|	Distributing Vim scripts
 
-     Next chapter: |usr_52.txt|  Write plugins using Vim9 script
+     Next chapter: |usr_52.txt|  Write large plugins
  Previous chapter: |usr_50.txt|  Advanced Vim script writing
 Table of contents: |usr_toc.txt|
 
@@ -35,6 +33,9 @@ filetype plugins: Only for files of a specific type.
 In this section the first type is explained.  Most items are also relevant for
 writing filetype plugins.  The specifics for filetype plugins are in the next
 section |write-filetype-plugin|.
+
+We will use |Vim9| syntax here, the recommended way to write new plugins.
+Make sure the file starts with the `vim9script` command.
 
 
 NAME
@@ -55,11 +56,11 @@ BODY
 
 Let's start with the body of the plugin, the lines that do the actual work: >
 
- 14	iabbrev teh the
- 15	iabbrev otehr other
- 16	iabbrev wnat want
- 17	iabbrev synchronisation
- 18		\ synchronization
+ 12	iabbrev teh the
+ 13	iabbrev otehr other
+ 14	iabbrev wnat want
+ 15	iabbrev synchronisation
+ 16		\ synchronization
 
 The actual list should be much longer, of course.
 
@@ -98,28 +99,6 @@ the top of the plugin should be sufficient.  Example: >
   5	# License:	This file is placed in the public domain.
 
 
-LINE CONTINUATION AND AVOIDING SIDE EFFECTS		 *use-cpo-save*
-
-In line 18 above, the line-continuation mechanism is used |line-continuation|.
-Users with 'compatible' set will run into trouble here, they will get an error
-message.  We can't just reset 'compatible', because that has a lot of side
-effects.  Instead, we will set the 'cpoptions' option to its Vim default
-value and restore it later.  That will allow the use of line-continuation and
-make the script work for most people.  It is done like this: >
-
- 11	var save_cpo = &cpo
- 12	set cpo&vim
- ..
- 42	&cpo = save_cpo
-
-We first store the old value of 'cpoptions' in the "save_cpo" variable.  At
-the end of the plugin this value is restored.
-
-Notice that "save_cpo" is a script-local variable.  A global variable could
-already be in use for something else.  Always use script-local variables for
-things that are only used in the script.
-
-
 NOT LOADING
 
 It is possible that a user doesn't always want to load this plugin.  Or the
@@ -153,7 +132,7 @@ for this mapping, but the user might already use it for something else.  To
 allow the user to define which keys a mapping in a plugin uses, the <Leader>
 item can be used: >
 
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
+ 20	  map <unique> <Leader>a  <Plug>TypecorrAdd;
 
 The "<Plug>TypecorrAdd;" thing will do the work, more about that further on.
 
@@ -171,9 +150,9 @@ already happened to exist. |:map-<unique>|
 But what if the user wants to define his own key sequence?  We can allow that
 with this mechanism: >
 
- 21	if !hasmapto('<Plug>TypecorrAdd;')
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
- 23	endif
+ 19	if !hasmapto('<Plug>TypecorrAdd;')
+ 20	  map <unique> <Leader>a  <Plug>TypecorrAdd;
+ 21	endif
 
 This checks if a mapping to "<Plug>TypecorrAdd;" already exists, and only
 defines the mapping from "<Leader>a" if it doesn't.  The user then has a
@@ -196,11 +175,11 @@ would need to prefix the name with "s:".
 
 We will define a function that adds a new typing correction: >
 
- 30	def Add(from: string, correct: bool)
- 31	  var to = input($"type the correction for {from}: ")
- 32	  exe $":iabbrev {from} {to}"
- ..
- 36	enddef
+ 28	def Add(from: string, correct: bool)
+ 29	  var to = input($"type the correction for {from}: ")
+ 30	  exe $":iabbrev {from} {to}"
+ ...
+ 34	enddef
 
 Now we can call the function Add() from within this script.  If another
 script also defines Add(), it will be local to that script and can only
@@ -210,9 +189,9 @@ which is again another function.
 <SID> can be used with mappings.  It generates a script ID, which identifies
 the current script.  In our typing correction plugin we use it like this: >
 
- 24	noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
- ..
- 28	noremap <SID>Add  :call <SID>Add(expand("<cword>"), true)<CR>
+ 22	noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
+ ...
+ 26	noremap <SID>Add  :call <SID>Add(expand("<cword>"), true)<CR>
 
 Thus when a user types "\a", this sequence is invoked: >
 
@@ -232,7 +211,7 @@ Add() in other places (the script itself, autocommands, user commands).
 
 We can also add a menu entry to do the same as the mapping: >
 
- 26	noremenu <script> Plugin.Add\ Correction      <SID>Add
+ 24	noremenu <script> Plugin.Add\ Correction      <SID>Add
 
 The "Plugin" menu is recommended for adding menu items for plugins.  In this
 case only one item is used.  When adding more items, creating a submenu is
@@ -276,9 +255,9 @@ USER COMMAND
 
 Now let's add a user command to add a correction: >
 
- 38	if !exists(":Correct")
- 39	  command -nargs=1  Correct  :call Add(<q-args>, false)
- 40	endif
+ 36	if !exists(":Correct")
+ 37	  command -nargs=1  Correct  :call Add(<q-args>, false)
+ 38	endif
 
 The user command is defined only if no command with the same name already
 exists.  Otherwise we would get an error here.  Overriding the existing user
@@ -299,20 +278,21 @@ the same script again. |s:var|
 
 The nice thing about |Vim9| script is that variables are local to the script
 by default.  You can prepend "s:" if you like, but you do not need to.  And
-functions in the script can also use the script variables without a prefix.
+functions in the script can also use the script variables without a prefix
+(they must be declared before the function for this to work).
 
 Script-local variables can also be used in functions, autocommands and user
 commands that are defined in the script.  Thus they are the perfect way to
 share information between parts of your plugin, without it leaking out.  In
 our example we can add a few lines to count the number of corrections: >
 
- 19	var count = 4
- ..
- 30	def Add(from: string, correct: bool)
- ..
- 34	  count += 1
- 35	  echo "you now have " .. count .. " corrections"
- 36	enddef
+ 17	var count = 4
+ ...
+ 28	def Add(from: string, correct: bool)
+ ...
+ 32	  count += 1
+ 33	  echo "you now have " .. count .. " corrections"
+ 34	enddef
 
 "count" is declared and initialized to 4 in the script itself.  When later
 the Add() function is called, it increments "count".  It doesn't matter from
@@ -334,40 +314,36 @@ Here is the resulting complete example: >
   8	  finish
   9	endif
  10	g:loaded_typecorrect = 1
- 11	var save_cpo = &cpo
- 12	set cpo&vim
- 13
- 14	iabbrev teh the
- 15	iabbrev otehr other
- 16	iabbrev wnat want
- 17	iabbrev synchronisation
- 18		\ synchronization
- 19	var count = 4
- 20
- 21	if !hasmapto('<Plug>TypecorrAdd;')
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
- 23	endif
- 24	noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
+ 11
+ 12	iabbrev teh the
+ 13	iabbrev otehr other
+ 14	iabbrev wnat want
+ 15	iabbrev synchronisation
+ 16		\ synchronization
+ 17	var count = 4
+ 18
+ 19	if !hasmapto('<Plug>TypecorrAdd;')
+ 20	  map <unique> <Leader>a  <Plug>TypecorrAdd;
+ 21	endif
+ 22	noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
+ 23
+ 24	noremenu <script> Plugin.Add\ Correction      <SID>Add
  25
- 26	noremenu <script> Plugin.Add\ Correction      <SID>Add
+ 26	noremap <SID>Add  :call <SID>Add(expand("<cword>"), true)<CR>
  27
- 28	noremap <SID>Add  :call <SID>Add(expand("<cword>"), true)<CR>
- 29
- 30	def Add(from: string, correct: bool)
- 31	  var to = input("type the correction for " .. from .. ": ")
- 32	  exe ":iabbrev " .. from .. " " .. to
- 33	  if correct | exe "normal viws\<C-R>\" \b\e" | endif
- 34	  count += 1
- 35	  echo "you now have " .. count .. " corrections"
- 36	enddef
- 37
- 38	if !exists(":Correct")
- 39	  command -nargs=1  Correct  call Add(<q-args>, false)
- 40	endif
- 41
- 42	&cpo = save_cpo
+ 28	def Add(from: string, correct: bool)
+ 29	  var to = input("type the correction for " .. from .. ": ")
+ 30	  exe ":iabbrev " .. from .. " " .. to
+ 31	  if correct | exe "normal viws\<C-R>\" \b\e" | endif
+ 32	  count += 1
+ 33	  echo "you now have " .. count .. " corrections"
+ 34	enddef
+ 35
+ 36	if !exists(":Correct")
+ 37	  command -nargs=1  Correct  call Add(<q-args>, false)
+ 38	endif
 
-Line 33 wasn't explained yet.  It applies the new correction to the word under
+Line 31 wasn't explained yet.  It applies the new correction to the word under
 the cursor.  The |:normal| command is used to use the new abbreviation.  Note
 that mappings and abbreviations are expanded here, even though the function
 was called from a mapping defined with ":noremap".
@@ -411,24 +387,6 @@ them, like "typecorrect-settings" in the example.
 
 Using references to other parts of the help in || is recommended.  This makes
 it easy for the user to find associated help.
-
-
-FILETYPE DETECTION					*plugin-filetype*
-
-If your filetype is not already detected by Vim, you should create a filetype
-detection snippet in a separate file.  It is usually in the form of an
-autocommand that sets the filetype when the file name matches a pattern.
-Example: >
-
-	au BufNewFile,BufRead *.foo		setlocal filetype=foofoo
-
-Write this single-line file as "ftdetect/foofoo.vim" in the first directory
-that appears in 'runtimepath'.  For Unix that would be
-"~/.vim/ftdetect/foofoo.vim".  The convention is to use the name of the
-filetype for the script name.
-
-You can make more complicated checks if you like, for example to inspect the
-contents of the file to recognize the language.  Also see |new-filetype|.
 
 
 SUMMARY							*plugin-special*
@@ -497,7 +455,7 @@ you can write the different setting in a script: >
 Now write this in the "after" directory, so that it gets sourced after the
 distributed "vim.vim" ftplugin |after-directory|.  For Unix this would be
 "~/.vim/after/ftplugin/vim.vim".  Note that the default plugin will have set
-"b:did_ftplugin", but it is ignored here.
+"b:did_ftplugin", it is ignored here.
 
 
 OPTIONS
@@ -591,6 +549,9 @@ This construct makes sure the function is only defined once: >
 	  enddef
 	endif
 <
+Don't forget to use "noclear" with the `vim9script` command to avoid that the
+function is deleted when the script is sourced a second time.
+
 
 UNDO						*undo_indent* *undo_ftplugin*
 
@@ -598,14 +559,11 @@ When the user does ":setfiletype xyz" the effect of the previous filetype
 should be undone.  Set the b:undo_ftplugin variable to the commands that will
 undo the settings in your filetype plugin.  Example: >
 
-	let b:undo_ftplugin = "setlocal fo< com< tw< commentstring<"
+	b:undo_ftplugin = "setlocal fo< com< tw< commentstring<"
 		\ .. "| unlet b:match_ignorecase b:match_words b:match_skip"
 
 Using ":setlocal" with "<" after the option name resets the option to its
 global value.  That is mostly the best way to reset the option value.
-
-This does require removing the "C" flag from 'cpoptions' to allow line
-continuation, as mentioned above |use-cpo-save|.
 
 For undoing the effect of an indent script, the b:undo_indent variable should
 be set accordingly.
@@ -623,6 +581,24 @@ these three forms:
 	.../ftplugin/stuff/bar.vim
 
 "stuff" is the filetype, "foo" and "bar" are arbitrary names.
+
+
+FILETYPE DETECTION					*plugin-filetype*
+
+If your filetype is not already detected by Vim, you should create a filetype
+detection snippet in a separate file.  It is usually in the form of an
+autocommand that sets the filetype when the file name matches a pattern.
+Example: >
+
+	au BufNewFile,BufRead *.foo		setlocal filetype=foofoo
+
+Write this single-line file as "ftdetect/foofoo.vim" in the first directory
+that appears in 'runtimepath'.  For Unix that would be
+"~/.vim/ftdetect/foofoo.vim".  The convention is to use the name of the
+filetype for the script name.
+
+You can make more complicated checks if you like, for example to inspect the
+contents of the file to recognize the language.  Also see |new-filetype|.
 
 
 SUMMARY							*ftplugin-special*
@@ -693,149 +669,7 @@ last, thus it should be in a directory at the end of 'runtimepath'.  For Unix
 that could be ~/.vim/after/compiler.
 
 ==============================================================================
-*51.4*	Writing a plugin that loads quickly	*write-plugin-quickload*
-
-A plugin may grow and become quite long.  The startup delay may become
-noticeable, while you hardly ever use the plugin.  Then it's time for a
-quickload plugin.
-
-The basic idea is that the plugin is loaded twice.  The first time user
-commands and mappings are defined that offer the functionality.  The second
-time the functions that implement the functionality are defined.
-
-It may sound surprising that quickload means loading a script twice.  What we
-mean is that it loads quickly the first time, postponing the bulk of the
-script to the second time, which only happens when you actually use it.  When
-you always use the functionality it actually gets slower!
-
-This uses a FuncUndefined autocommand.  Since Vim 7 there is an alternative:
-use the |autoload| functionality |51.5|.  That will also use |Vim9| script
-instead of legacy script that is used here.
-
-The following example shows how it's done: >
-
-	" Vim global plugin for demonstrating quick loading
-	" Last Change:	2005 Feb 25
-	" Maintainer:	Bram Moolenaar <Bram@vim.org>
-	" License:	This file is placed in the public domain.
-
-	if !exists("s:did_load")
-		command -nargs=* BNRead  call BufNetRead(<f-args>)
-		map <F19> :call BufNetWrite('something')<CR>
-
-		let s:did_load = 1
-		exe 'au FuncUndefined BufNet* source ' .. expand('<sfile>')
-		finish
-	endif
-
-	function BufNetRead(...)
-		echo 'BufNetRead(' .. string(a:000) .. ')'
-		" read functionality here
-	endfunction
-
-	function BufNetWrite(...)
-		echo 'BufNetWrite(' .. string(a:000) .. ')'
-		" write functionality here
-	endfunction
-
-When the script is first loaded "s:did_load" is not set.  The commands between
-the "if" and "endif" will be executed.  This ends in a |:finish| command, thus
-the rest of the script is not executed.
-
-The second time the script is loaded "s:did_load" exists and the commands
-after the "endif" are executed.  This defines the (possible long)
-BufNetRead() and BufNetWrite() functions.
-
-If you drop this script in your plugin directory Vim will execute it on
-startup.  This is the sequence of events that happens:
-
-1. The "BNRead" command is defined and the <F19> key is mapped when the script
-   is sourced at startup.  A |FuncUndefined| autocommand is defined.  The
-   ":finish" command causes the script to terminate early.
-
-2. The user types the BNRead command or presses the <F19> key.  The
-   BufNetRead() or BufNetWrite() function will be called.
-
-3. Vim can't find the function and triggers the |FuncUndefined| autocommand
-   event.  Since the pattern "BufNet*" matches the invoked function, the
-   command "source fname" will be executed.  "fname" will be equal to the name
-   of the script, no matter where it is located, because it comes from
-   expanding "<sfile>" (see |expand()|).
-
-4. The script is sourced again, the "s:did_load" variable exists and the
-   functions are defined.
-
-Notice that the functions that are loaded afterwards match the pattern in the
-|FuncUndefined| autocommand.  You must make sure that no other plugin defines
-functions that match this pattern.
-
-==============================================================================
-*51.5*	Writing library scripts			*write-library-script*
-
-Some functionality will be required in several places.  When this becomes more
-than a few lines you will want to put it in one script and use it from many
-scripts.  We will call that one script a library script.
-
-Manually loading a library script is possible, so long as you avoid loading it
-when it's already done.  You can do this with the |exists()| function.
-Example: >
-
-	if !exists('*MyLibFunction')
-	   runtime library/mylibscript.vim
-	endif
-	MyLibFunction(arg)
-
-Here you need to know that MyLibFunction() is defined in a script
-"library/mylibscript.vim" in one of the directories in 'runtimepath'.
-
-To make this a bit simpler Vim offers the autoload mechanism.  Then the
-example looks like this: >
-
-	mylib#myfunction(arg)
-
-That's a lot simpler, isn't it?  Vim will recognize the function name by the
-embedded "#" character and when it's not defined search for the script
-"autoload/mylib.vim" in 'runtimepath'.  That script must define the
-"mylib#myfunction()" function.
-
-You can put many other functions in the mylib.vim script, you are free to
-organize your functions in library scripts.  But you must use function names
-where the part before the '#' matches the script name.  Otherwise Vim would
-not know what script to load.
-
-If you get really enthusiastic and write lots of library scripts, you may
-want to use subdirectories.  Example: >
-
-	netlib#ftp#read('somefile')
-
-For Unix the library script used for this could be:
-
-	~/.vim/autoload/netlib/ftp.vim
-
-Where the function is defined like this: >
-
-	def netlib#ftp#read(fname: string)
-		#  Read the file fname through ftp
-	enddef
-
-Notice that the name the function is defined with is exactly the same as the
-name used for calling the function.  And the part before the last '#'
-exactly matches the subdirectory and script name.
-
-You can use the same mechanism for variables: >
-
-	var weekdays = dutch#weekdays
-
-This will load the script "autoload/dutch.vim", which should contain something
-like: >
-
-	var dutch#weekdays = ['zondag', 'maandag', 'dinsdag', 'woensdag',
-		\ 'donderdag', 'vrijdag', 'zaterdag']
-
-Further reading: |autoload|.
-
-==============================================================================
-*51.6*	Distributing Vim scripts			*distribute-script*
+*51.4*	Distributing Vim scripts			*distribute-script*
 
 Vim users will look for scripts on the Vim website: http://www.vim.org.
 If you made something that is useful for others, share it!
@@ -855,6 +689,6 @@ It's good if you add a line to allow automatic updating.  See |glvs-plugins|.
 
 ==============================================================================
 
-Next chapter: |usr_52.txt|  Write plugins using Vim9 script
+Next chapter: |usr_52.txt|  Write large plugins
 
 Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

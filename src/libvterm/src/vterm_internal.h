@@ -7,9 +7,13 @@
 
 #if defined(__GNUC__) && !defined(__MINGW32__)
 # define INTERNAL __attribute__((visibility("internal")))
-# define UNUSED __attribute__((unused))
 #else
 # define INTERNAL
+#endif
+
+#if defined(__GNUC__) || defined(__MINGW32__)
+# define UNUSED __attribute__((unused))
+#else
 # define UNUSED
 #endif
 

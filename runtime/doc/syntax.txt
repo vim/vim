@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2022 May 20
+*syntax.txt*	For Vim version 8.2.  Last change: 2022 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4898,6 +4898,14 @@ color (can make it transparent in some terminals): >
 	  au Colorscheme pablo hi Normal ctermbg=NONE
 	augroup END
 
+Change a couple more colors: >
+	augroup my_colorschemes
+	  au!
+	  au Colorscheme pablo hi Normal ctermbg=NONE
+		      \ | higlight Special ctermfg=63
+		      \ | highlight Identifier ctermfg=44
+	augroup END
+
 If you make a lot of changes it might be better to copy the distributed
 colorscheme to your home directory and change it: >
 	:!cp $VIMRUNTIME/colors/pablo.vim ~/.vim/colors
@@ -5387,8 +5395,8 @@ StatusLineNC	status lines of not-current windows
 							*hl-StatusLineTerm*
 StatusLineTerm	Status line of current window, if it is a |terminal| window.
 							*hl-StatusLineTermNC*
-StatusLineTermNC   Status lines of not-current windows that is a |terminal|
-		window.
+StatusLineTermNC	Status lines of not-current windows that is a
+			|terminal| window.
 							*hl-TabLine*
 TabLine		Tab pages line, not active tab page label.
 							*hl-TabLineFill*

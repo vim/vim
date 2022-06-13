@@ -1063,9 +1063,18 @@ func Test_cmdline_complete_various()
   augroup END
   call feedkeys(":augroup X\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"augroup XTest.test", @:)
+
+  " group name completion in :autocmd
   call feedkeys(":au X\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"au XTest.test", @:)
+  call feedkeys(":au XTest.test\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"au XTest.test", @:)
+
   augroup! XTest.test
+
+  " autocmd pattern completion
+  call feedkeys(":au BufEnter *.py\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"au BufEnter *.py\t", @:)
 
   " completion for the :unlet command
   call feedkeys(":unlet one two\<C-A>\<C-B>\"\<CR>", 'xt')
@@ -3402,6 +3411,11 @@ func Test_recursive_register()
     let caught = 'yes'
   endtry
   call assert_equal('yes', caught)
+endfunc
+
+func Test_long_error_message()
+  " the error should be truncated, not overrun IObuff
+  silent! norm Q00000000000000     000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000                                                                                                                                                                                                                        
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

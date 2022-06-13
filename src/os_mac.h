@@ -6,6 +6,9 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
+#ifndef OS_MAC__H
+#define OS_MAC__H
+
 // Before Including the MacOS specific files,
 // let's set the OPAQUE_TOOLBOX_STRUCTS to 0 so we
 // can access the internal structures.
@@ -247,8 +250,6 @@
 #endif
 #undef  HAVE_AVAIL_MEM
 #ifndef HAVE_CONFIG_H
-# define RETSIGTYPE void
-# define SIGRETURN  return
 //# define USE_SYSTEM  // Output ship do debugger :(, but not compile
 # define HAVE_SYS_WAIT_H 1 // Attempt
 # define HAVE_TERMIOS_H 1
@@ -266,3 +267,51 @@
 
 // A Mac constant causing big problem to syntax highlighting
 #define UNKNOWN_CREATOR '\?\?\?\?'
+
+#ifdef FEAT_RELTIME
+
+# include <dispatch/dispatch.h>
+
+# ifndef MAC_OS_X_VERSION_10_12
+typedef int clockid_t;
+# endif
+# ifndef CLOCK_REALTIME
+#  define CLOCK_REALTIME 0
+# endif
+# ifndef CLOCK_MONOTONIC
+#  define CLOCK_MONOTONIC 1
+# endif
+
+struct itimerspec
+{
+    struct timespec it_interval;  // timer period
+    struct timespec it_value;	  // initial expiration
+};
+
+struct sigevent;
+
+struct macos_timer
+{
+    dispatch_queue_t tim_queue;
+    dispatch_source_t tim_timer;
+    void (*tim_func)(union sigval);
+    void *tim_arg;
+};
+
+typedef struct macos_timer *timer_t;
+
+extern int timer_create(
+    clockid_t clockid,
+    struct sigevent *sevp,
+    timer_t *timerid);
+
+extern int timer_delete(timer_t timerid);
+
+extern int timer_settime(
+    timer_t timerid, int flags,
+    const struct itimerspec *new_value,
+    struct itimerspec *unused);
+
+#endif // FEAT_RELTIME
+
+#endif // OS_MAC__H

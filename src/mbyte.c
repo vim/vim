@@ -4922,13 +4922,18 @@ iconv_enabled(int verbose)
 	return FALSE;
     }
 
-    iconv	= (void *)GetProcAddress(hIconvDLL, "libiconv");
-    iconv_open	= (void *)GetProcAddress(hIconvDLL, "libiconv_open");
-    iconv_close	= (void *)GetProcAddress(hIconvDLL, "libiconv_close");
-    iconvctl	= (void *)GetProcAddress(hIconvDLL, "libiconvctl");
-    iconv_errno	= get_dll_import_func(hIconvDLL, "_errno");
+    iconv	= (size_t (*)(iconv_t, const char **,
+			size_t *, char **, size_t *))
+				GetProcAddress(hIconvDLL, "libiconv");
+    iconv_open	= (iconv_t (*)(const char *, const char *))
+				GetProcAddress(hIconvDLL, "libiconv_open");
+    iconv_close	= (int (*)(iconv_t))
+				GetProcAddress(hIconvDLL, "libiconv_close");
+    iconvctl	= (int (*)(iconv_t, int, void *))
+				GetProcAddress(hIconvDLL, "libiconvctl");
+    iconv_errno	= (int *(*)(void))get_dll_import_func(hIconvDLL, "_errno");
     if (iconv_errno == NULL)
-	iconv_errno = (void *)GetProcAddress(hMsvcrtDLL, "_errno");
+	iconv_errno = (int *(*)(void))GetProcAddress(hMsvcrtDLL, "_errno");
     if (iconv == NULL || iconv_open == NULL || iconv_close == NULL
 	    || iconvctl == NULL || iconv_errno == NULL)
     {

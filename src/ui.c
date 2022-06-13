@@ -897,7 +897,8 @@ read_from_input_buf(char_u *buf, long maxlen)
 	maxlen = inbufcount;
     mch_memmove(buf, inbuf, (size_t)maxlen);
     inbufcount -= maxlen;
-    if (inbufcount)
+    // check "maxlen" to avoid clang warning
+    if (inbufcount > 0 && maxlen > 0)
 	mch_memmove(inbuf, inbuf + maxlen, (size_t)inbufcount);
     return (int)maxlen;
 }

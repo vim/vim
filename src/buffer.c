@@ -2407,12 +2407,7 @@ buflist_getfile(
     if (buf == curbuf)
 	return OK;
 
-    if (text_locked())
-    {
-	text_locked_msg();
-	return FAIL;
-    }
-    if (curbuf_locked())
+    if (text_or_buf_locked())
 	return FAIL;
 
     // altfpos may be changed by getfile(), get it now
@@ -3282,7 +3277,7 @@ buflist_list(exarg_T *eap)
     {
 #ifdef FEAT_TERMINAL
 	job_running = term_job_running(buf->b_term);
-	job_none_open = job_running && term_none_open(buf->b_term);
+	job_none_open = term_none_open(buf->b_term);
 #endif
 	// skip unlisted buffers, unless ! was used
 	if ((!buf->b_p_bl && !eap->forceit && !vim_strchr(eap->arg, 'u'))
@@ -3318,9 +3313,9 @@ buflist_list(exarg_T *eap)
 	changed_char = (buf->b_flags & BF_READERR) ? 'x'
 					     : (bufIsChanged(buf) ? '+' : ' ');
 #ifdef FEAT_TERMINAL
-	if (term_job_running(buf->b_term))
+	if (job_running)
 	{
-	    if (term_none_open(buf->b_term))
+	    if (job_none_open)
 		ro_char = '?';
 	    else
 		ro_char = 'R';

@@ -152,7 +152,7 @@ main
 # endif
 # ifdef FEAT_JOB_CHANNEL
 	if (STRICMP(argv[i], "--log") == 0)
-	    ch_logfile((char_u *)(argv[i + 1]), (char_u *)"a");
+	    ch_logfile((char_u *)(argv[i + 1]), (char_u *)"ao");
 # endif
     }
 #endif

@@ -13,7 +13,8 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository from github
+        uses: actions/checkout@v3
 
       - name: Download Coverity
         run: |

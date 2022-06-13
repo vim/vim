@@ -266,9 +266,6 @@ static reg_extmatch_T *next_match_extmatch = NULL;
 static win_T	*syn_win;		// current window for highlighting
 static buf_T	*syn_buf;		// current buffer for highlighting
 static synblock_T *syn_block;		// current buffer for highlighting
-#ifdef FEAT_RELTIME
-static proftime_T *syn_tm;		// timeout limit
-#endif
 static linenr_T current_lnum = 0;	// lnum of current state
 static colnr_T	current_col = 0;	// column of current state
 static int	current_state_stored = 0; // TRUE if stored current state
@@ -349,18 +346,6 @@ static void init_syn_patterns(void);
 static char_u *get_syn_pattern(char_u *arg, synpat_T *ci);
 static int get_id_list(char_u **arg, int keylen, short **list, int skip);
 static void syn_combine_list(short **clstr1, short **clstr2, int list_op);
-
-#if defined(FEAT_RELTIME) || defined(PROTO)
-/*
- * Set the timeout used for syntax highlighting.
- * Use NULL to reset, no timeout.
- */
-    void
-syn_set_timeout(proftime_T *tm)
-{
-    syn_tm = tm;
-}
-#endif
 
 /*
  * Start the syntax recognition for a line.  This function is normally called
@@ -3166,9 +3151,7 @@ syn_regexec(
     syn_time_T  *st UNUSED)
 {
     int r;
-#ifdef FEAT_RELTIME
     int timed_out = FALSE;
-#endif
 #ifdef FEAT_PROFILE
     proftime_T	pt;
 
@@ -3183,13 +3166,7 @@ syn_regexec(
 	return FALSE;
 
     rmp->rmm_maxcol = syn_buf->b_p_smc;
-    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col,
-#ifdef FEAT_RELTIME
-	    syn_tm, &timed_out
-#else
-	    NULL, NULL
-#endif
-	    );
+    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, &timed_out);
 
 #ifdef FEAT_PROFILE
     if (syn_time_on)

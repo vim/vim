@@ -375,22 +375,36 @@ popup_is_in_scrollbar(win_T *wp, int row, int col)
     void
 popup_handle_scrollbar_click(win_T *wp, int row, int col)
 {
-    int	    height = popup_height(wp);
-    int	    old_topline = wp->w_topline;
-
     if (popup_is_in_scrollbar(wp, row, col))
     {
+	int	    height = popup_height(wp);
+	int	    new_topline = wp->w_topline;
+
 	if (row >= height / 2)
 	{
 	    // Click in lower half, scroll down.
 	    if (wp->w_topline < wp->w_buffer->b_ml.ml_line_count)
-		++wp->w_topline;
+		++new_topline;
 	}
 	else if (wp->w_topline > 1)
 	    // click on upper half, scroll up.
-	    --wp->w_topline;
-	if (wp->w_topline != old_topline)
+	    --new_topline;
+	if (new_topline != wp->w_topline)
 	{
+	    set_topline(wp, new_topline);
+	    if (wp == curwin)
+	    {
+		if (wp->w_cursor.lnum < wp->w_topline)
+		{
+		    wp->w_cursor.lnum = wp->w_topline;
+		    check_cursor();
+		}
+		else if (wp->w_cursor.lnum >= wp->w_botline)
+		{
+		    wp->w_cursor.lnum = wp->w_botline - 1;
+		    check_cursor();
+		}
+	    }
 	    popup_set_firstline(wp);
 	    redraw_win_later(wp, NOT_VALID);
 	}
@@ -1033,7 +1047,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	{
-	    emsg(_(e_dictionary_required));
+	    semsg(_(e_argument_1_list_item_nr_dictionary_required), lnum + 1);
 	    return;
 	}
 	dict = li->li_tv.vval.v_dict;
@@ -1419,8 +1433,9 @@ popup_adjust_position(win_T *wp)
     wp->w_has_scrollbar = wp->w_want_scrollbar
 	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
 #ifdef FEAT_TERMINAL
-    if (wp->w_buffer->b_term != NULL)
-	// Terminal window never has a scrollbar, adjusts to window height.
+    if (wp->w_buffer->b_term != NULL && !term_is_finished(wp->w_buffer))
+	// Terminal window with running job never has a scrollbar, adjusts to
+	// window height.
 	wp->w_has_scrollbar = FALSE;
 #endif
     maxwidth_no_scrollbar = maxwidth;
@@ -1587,7 +1602,7 @@ popup_adjust_position(win_T *wp)
 	// add a scrollbar.
 	wp->w_height = Rows - wp->w_winrow - extra_height;
 #ifdef FEAT_TERMINAL
-	if (wp->w_buffer->b_term == NULL)
+	if (wp->w_buffer->b_term == NULL || term_is_finished(wp->w_buffer))
 #endif
 	{
 	    wp->w_has_scrollbar = TRUE;
@@ -1670,7 +1685,9 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
 
 	if (l != NULL && l->lv_len > 0)
 	{
-	    if (l->lv_first->li_tv.v_type == VAR_STRING)
+	    if (l->lv_first == &range_list_item)
+		emsg(_(e_using_number_as_string));
+	    else if (l->lv_first->li_tv.v_type == VAR_STRING)
 		// list of strings
 		add_popup_strings(buf, l);
 	    else
@@ -2743,7 +2760,6 @@ error_if_popup_window(int also_with_term UNUSED)
     if (WIN_IS_POPUP(curwin)
 # ifdef FEAT_TERMINAL
 	    && (also_with_term || curbuf->b_term == NULL)
-	    && !term_is_finished(curbuf)
 # endif
 	    )
     {
@@ -4070,6 +4086,7 @@ update_popups(void (*win_update)(win_T *wp))
 	{
 	    linenr_T	linecount = wp->w_buffer->b_ml.ml_line_count;
 	    int		height = wp->w_height;
+	    int		last;
 
 	    sb_thumb_height = ((linenr_T)height * height + linecount / 2)
 								   / linecount;
@@ -4087,6 +4104,10 @@ update_popups(void (*win_update)(win_T *wp))
 						  / (linecount - wp->w_height);
 	    if (wp->w_topline > 1 && sb_thumb_top == 0 && height > 1)
 		sb_thumb_top = 1;  // show it's scrolled
+	    last = total_height - top_off - wp->w_popup_border[2];
+	    if (sb_thumb_top >= last)
+		// show at least one character
+		sb_thumb_top = last - 1;
 
 	    if (wp->w_scrollbar_highlight != NULL)
 		attr_scroll = syn_name2attr(wp->w_scrollbar_highlight);

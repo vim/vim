@@ -159,7 +159,12 @@ func Test_gui_read_stdin()
 
   " Cannot use --not-a-term here, the "reading from stdin" message would not be
   " displayed.
-  let vimcmd = substitute(GetVimCommand(), '--not-a-term', '', '')
+  " However, when using XIM we might get E285, do use it then.
+  if has('xim')
+    let vimcmd = GetVimCommand()
+  else
+    let vimcmd = substitute(GetVimCommand(), '--not-a-term', '', '')
+  endif
 
   call system('cat Xstdin | ' .. vimcmd .. ' -f -g -S Xscript -')
   call assert_equal(['some', 'lines'], readfile('XstdinOK'))

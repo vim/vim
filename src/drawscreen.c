@@ -1474,9 +1474,6 @@ win_update(win_T *wp)
 #if defined(FEAT_SYN_HL) || defined(FEAT_SEARCH_EXTRA)
     int		save_got_int;
 #endif
-#ifdef SYN_TIME_LIMIT
-    proftime_T	syntax_tm;
-#endif
 
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
     // This needs to be done only for the first window when update_screen() is
@@ -1618,6 +1615,19 @@ win_update(win_T *wp)
 	    }
 #endif
 	}
+
+#ifdef FEAT_SEARCH_EXTRA
+	if (search_hl_has_cursor_lnum > 0)
+	{
+	    // CurSearch was used last time, need to redraw the line with it to
+	    // avoid having two matches highlighted with CurSearch.
+	    if (mod_top == 0 || mod_top > search_hl_has_cursor_lnum)
+		mod_top = search_hl_has_cursor_lnum;
+	    if (mod_bot == 0 || mod_bot < search_hl_has_cursor_lnum + 1)
+		mod_bot = search_hl_has_cursor_lnum + 1;
+	}
+#endif
+
 #ifdef FEAT_FOLDING
 	if (mod_top != 0 && hasAnyFolding(wp))
 	{
@@ -1684,6 +1694,10 @@ win_update(win_T *wp)
     }
     wp->w_redraw_top = 0;	// reset for next time
     wp->w_redraw_bot = 0;
+#ifdef FEAT_SEARCH_EXTRA
+    search_hl_has_cursor_lnum = 0;
+#endif
+
 
     // When only displaying the lines at the top, set top_end.  Used when
     // window has scrolled down for msg_scrolled.
@@ -2165,8 +2179,7 @@ win_update(win_T *wp)
 #endif
 #ifdef SYN_TIME_LIMIT
     // Set the time limit to 'redrawtime'.
-    profile_setlimit(p_rdt, &syntax_tm);
-    syn_set_timeout(&syntax_tm);
+    init_regexp_timeout(p_rdt);
 #endif
 #ifdef FEAT_FOLDING
     win_foldinfo.fi_level = 0;
@@ -2678,7 +2691,7 @@ win_update(win_T *wp)
     }
 
 #ifdef SYN_TIME_LIMIT
-    syn_set_timeout(NULL);
+    disable_regexp_timeout();
 #endif
 
     // Reset the type of redrawing required, the window has been updated.

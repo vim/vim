@@ -669,7 +669,7 @@ stuffReadbuffSpec(char_u *s)
 	}
 	else
 	{
-	    c = mb_ptr2char_adv(&s);
+	    c = mb_cptr2char_adv(&s);
 	    if (c == CAR || c == NL || c == ESC)
 		c = ' ';
 	    stuffcharReadbuff(c);
@@ -1115,33 +1115,12 @@ ins_typebuf(
  * Returns the length of what was inserted.
  */
     int
-ins_char_typebuf(int c, int modifier)
+ins_char_typebuf(int c, int modifiers)
 {
     char_u	buf[MB_MAXBYTES * 3 + 4];
-    int		len = 0;
+    int		len = special_to_buf(c, modifiers, TRUE, buf);
 
-    if (modifier != 0)
-    {
-	buf[0] = K_SPECIAL;
-	buf[1] = KS_MODIFIER;
-	buf[2] = modifier;
-	buf[3] = NUL;
-	len = 3;
-    }
-    if (IS_SPECIAL(c))
-    {
-	buf[len] = K_SPECIAL;
-	buf[len + 1] = K_SECOND(c);
-	buf[len + 2] = K_THIRD(c);
-	buf[len + 3] = NUL;
-	len += 3;
-    }
-    else
-    {
-	char_u *end = add_char2buf(c, buf + len);
-	*end = NUL;
-	len = end - buf;
-    }
+    buf[len] = NUL;
     (void)ins_typebuf(buf, KeyNoremap, 0, !KeyTyped, cmd_silent);
     return len;
 }
@@ -3458,8 +3437,8 @@ vgetorpeek(int advance)
  * get a character: 3. from the user - get it
  */
 		if (typebuf.tb_len == 0)
-		    // timedout may have been set while waiting for a mapping
-		    // that has a <Nop> RHS.
+		    // timedout may have been set if a mapping with empty RHS
+		    // fully matched while longer mappings timed out.
 		    timedout = FALSE;
 
 		if (advance)

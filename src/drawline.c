@@ -767,6 +767,7 @@ win_line(
     {
 	if (wp->w_lcs_chars.space
 		|| wp->w_lcs_chars.multispace != NULL
+		|| wp->w_lcs_chars.leadmultispace != NULL
 		|| wp->w_lcs_chars.trail
 		|| wp->w_lcs_chars.lead
 		|| wp->w_lcs_chars.nbsp)
@@ -781,7 +782,7 @@ win_line(
 	    trailcol += (colnr_T) (ptr - line);
 	}
 	// find end of leading whitespace
-	if (wp->w_lcs_chars.lead)
+	if (wp->w_lcs_chars.lead || wp->w_lcs_chars.leadmultispace != NULL)
 	{
 	    leadcol = 0;
 	    while (VIM_ISWHITE(ptr[leadcol]))
@@ -2115,11 +2116,28 @@ win_line(
 			mb_utf8 = FALSE;
 		}
 
-		if ((trailcol != MAXCOL && ptr > line + trailcol && c == ' ')
-			|| (leadcol != 0 && ptr < line + leadcol && c == ' '))
+		if (c == ' ' && ((trailcol != MAXCOL && ptr > line + trailcol)
+				    || (leadcol != 0 && ptr < line + leadcol)))
 		{
-		    c = (ptr > line + trailcol) ? wp->w_lcs_chars.trail
-							: wp->w_lcs_chars.lead;
+		    if (leadcol != 0 && in_multispace && ptr < line + leadcol
+			    && wp->w_lcs_chars.leadmultispace != NULL)
+		    {
+			c = wp->w_lcs_chars.leadmultispace[multispace_pos++];
+			if (wp->w_lcs_chars.leadmultispace[multispace_pos]
+									== NUL)
+			    multispace_pos = 0;
+		    }
+
+		    else if (ptr > line + trailcol && wp->w_lcs_chars.trail)
+			c = wp->w_lcs_chars.trail;
+
+		    else if (ptr < line + leadcol && wp->w_lcs_chars.lead)
+			c = wp->w_lcs_chars.lead;
+
+		    else if (leadcol != 0 && wp->w_lcs_chars.space)
+			c = wp->w_lcs_chars.space;
+
+
 		    if (!attr_pri)
 		    {
 			n_attr = 1;

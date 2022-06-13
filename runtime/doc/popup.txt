@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2022 Apr 04
+*popup.txt*  For Vim version 8.2.  Last change: 2022 Jun 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -147,7 +147,8 @@ A special case is running a terminal in a popup window.  Many rules are then
 different:						*E863*
 - The popup window always has focus, it is not possible to switch to another
   window.
-- When the job ends, the popup window closes.
+- When the job ends, the popup window shows the buffer in Terminal-Normal
+  mode.  Use `:q` to close it or use "term_finish" value "close".
 - The popup window can be closed with `popup_close()`, the terminal buffer
   then becomes hidden.
 - It is not possible to open a second popup window with a terminal. *E861*
@@ -998,20 +999,23 @@ To make the four corners transparent:
 ==============================================================================
 4. Examples						*popup-examples*
 
+These examples use |Vim9| script.
+
 TODO: more interesting examples
+
 					*popup_dialog-example*
 Prompt the user to press y/Y or n/N: >
 
-	func MyDialogHandler(id, result)
-	   if a:result
-	      " ... 'y' or 'Y' was pressed
-	   endif
-	endfunc
-
-	call popup_dialog('Continue? y/n', #{
-		\ filter: 'popup_filter_yesno',
-		\ callback: 'MyDialogHandler',
-		\ })
+	popup_dialog('Continue? y/n', {
+		 filter: 'popup_filter_yesno',
+		 callback: (id, result) => {
+				if result == 1
+				  echomsg "'y' or 'Y' was pressed"
+				else
+				  echomsg "'y' or 'Y' was NOT pressed"
+				endif
+			     },
+		 })
 <
 					*popup_menu-shortcut-example*
 Extend popup_filter_menu() with shortcut keys: >
@@ -1038,6 +1042,10 @@ Extend popup_filter_menu() with shortcut keys: >
 
 	  " No shortcut, pass to generic filter
 	  return popup_filter_menu(a:id, a:key)
+	endfunc
+
+	func MyMenuHandler(id, result)
+	  echo $'Result: {a:result}'
 	endfunc
 <
 					*popup_beval_example*

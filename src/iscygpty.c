@@ -56,6 +56,11 @@
 # endif
 #endif // USE_FILEEXTD
 
+#ifdef __MINGW32__
+# define UNUSED __attribute__((unused))
+#else
+# define UNUSED
+#endif
 
 #include "iscygpty.h"
 
@@ -70,10 +75,10 @@ static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
 
 # ifndef USE_FILEEXTD
 static BOOL WINAPI stub_GetFileInformationByHandleEx(
-		HANDLE						hFile,
-		FILE_INFO_BY_HANDLE_CLASS	FileInformationClass,
-		LPVOID						lpFileInformation,
-		DWORD						dwBufferSize)
+		HANDLE						hFile UNUSED,
+		FILE_INFO_BY_HANDLE_CLASS	FileInformationClass UNUSED,
+		LPVOID						lpFileInformation UNUSED,
+		DWORD						dwBufferSize UNUSED)
 {
 	return FALSE;
 }

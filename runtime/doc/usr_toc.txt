@@ -1,4 +1,4 @@
-*usr_toc.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*usr_toc.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -304,8 +304,10 @@ Make Vim work as you like it.
 		|41.6|	Using functions
 		|41.7|	Defining a function
 		|41.8|	Lists and Dictionaries
-		|41.9|	Exceptions
-		|41.10|	Various remarks
+		|41.9|	White space
+		|41.10|	Line continuation
+		|41.11|	Comments
+		|41.12|	Fileformat
 
 |usr_42.txt|  Add new menus
 		|42.1|	Introduction
@@ -341,21 +343,23 @@ Make Vim work as you like it.
 ==============================================================================
 Writing Vim script ~
 
-|usr_50.txt|  TODO
+|usr_50.txt|  Advanced Vim script writing
+		|50.1|	Exceptions
+		|50.2|    Function with variable number of arguments
+		|50.3|	Restoring the view
 
 |usr_51.txt|  Write plugins
 		|51.1|	Writing a generic plugin
 		|51.2|	Writing a filetype plugin
 		|51.3|	Writing a compiler plugin
-		|51.4|	Writing a plugin that loads quickly
-		|51.5|	Writing library scripts
-		|51.6|	Distributing Vim scripts
+		|51.4|	Distributing Vim scripts
 
-|usr_52.txt|  Write plugins using Vim9 script
-		|52.1|	Introduction
-		|52.2|	Variable declarations
-		|52.3|	Functions and types
-		|52.4|	Using a Vim9 script from legacy script
+|usr_52.txt|  Write larger plugins
+		|52.1|	Export and import
+		|52.2|	Autoloading
+		|52.3|	Autoloading without import/export
+		|52.4|	Other mechanisms to use
+		|52.5|	Using a Vim9 script from legacy script
 
 ==============================================================================
 Making Vim Run ~
