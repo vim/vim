@@ -664,7 +664,7 @@ mch_suspend(void)
 display_errors(void)
 {
 # ifdef FEAT_GUI
-    char *p;
+    char_u *p;
 
 #  ifdef VIMDLL
     if (gui.in_use || gui.starting)
@@ -673,7 +673,7 @@ display_errors(void)
 	if (error_ga.ga_data != NULL)
 	{
 	    // avoid putting up a message box with blanks only
-	    for (p = (char *)error_ga.ga_data; *p; ++p)
+	    for (p = (char_u *)error_ga.ga_data; *p; ++p)
 		if (!isspace(*p))
 		{
 		    // Only use a dialog when not using --gui-dialog-file:
@@ -684,7 +684,7 @@ display_errors(void)
 					     VIM_ERROR,
 				     gui.starting ? (char_u *)_("Message") :
 					     (char_u *)_("Error"),
-				     (char_u *)p, (char_u *)_("&Ok"),
+					     p, (char_u *)_("&Ok"),
 					1, NULL, FALSE);
 		    break;
 		}
