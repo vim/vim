@@ -2786,8 +2786,7 @@ parse_command_modifiers(
 {
     char_u  *orig_cmd = eap->cmd;
     char_u  *cmd_start = NULL;
-    int	    did_plus_cmd = FALSE;
-    char_u  *p;
+    int	    use_plus_cmd = FALSE;
     int	    starts_with_colon = FALSE;
     int	    vim9script = in_vim9script();
     int	    has_visual_range = FALSE;
@@ -2799,7 +2798,9 @@ parse_command_modifiers(
     {
 	// The automatically inserted Visual area range is skipped, so that
 	// typing ":cmdmod cmd" in Visual mode works without having to move the
-	// range to after the modififiers.
+	// range to after the modififiers. The command will be
+	// "'<,'>cmdmod cmd", parse "cmdmod cmd" and then put back "'<,'>"
+	// before "cmd" below.
 	eap->cmd += 5;
 	cmd_start = eap->cmd;
 	has_visual_range = TRUE;
@@ -2808,6 +2809,8 @@ parse_command_modifiers(
     // Repeat until no more command modifiers are found.
     for (;;)
     {
+	char_u  *p;
+
 	while (*eap->cmd == ' ' || *eap->cmd == '\t' || *eap->cmd == ':')
 	{
 	    if (*eap->cmd == ':')
@@ -2815,16 +2818,16 @@ parse_command_modifiers(
 	    ++eap->cmd;
 	}
 
-	// in ex mode, an empty line works like :+
+	// in ex mode, an empty command (after modifiers) works like :+
 	if (*eap->cmd == NUL && exmode_active
 		   && (getline_equal(eap->getline, eap->cookie, getexmodeline)
 		       || getline_equal(eap->getline, eap->cookie, getexline))
 			&& curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	{
-	    eap->cmd = (char_u *)"+";
-	    did_plus_cmd = TRUE;
+	    use_plus_cmd = TRUE;
 	    if (!skip_only)
 		ex_pressedreturn = TRUE;
+	    break;  // no modifiers following
 	}
 
 	// ignore comment and empty lines
@@ -3108,12 +3111,12 @@ parse_command_modifiers(
 	    // Since the modifiers have been parsed put the colon on top of the
 	    // space: "'<,'>mod cmd" -> "mod:'<,'>cmd
 	    // Put eap->cmd after the colon.
-	    if (did_plus_cmd)
+	    if (use_plus_cmd)
 	    {
 		size_t len = STRLEN(cmd_start);
 
-		// Special case: empty command may have been changed to "+":
-		//  "'<,'>mod" -> "mod'<,'>+
+		// Special case: empty command uses "+":
+		//  "'<,'>mods" -> "mods'<,'>+
 		mch_memmove(orig_cmd, cmd_start, len);
 		STRCPY(orig_cmd + len, "'<,'>+");
 	    }
@@ -3126,12 +3129,14 @@ parse_command_modifiers(
 	}
 	else
 	    // No modifiers, move the pointer back.
-	    // Special case: empty command may have been changed to "+".
-	    if (did_plus_cmd)
+	    // Special case: change empty command to "+".
+	    if (use_plus_cmd)
 		eap->cmd = (char_u *)"'<,'>+";
 	    else
 		eap->cmd = orig_cmd;
     }
+    else if (use_plus_cmd)
+	eap->cmd = (char_u *)"+";
 
     return OK;
 }
