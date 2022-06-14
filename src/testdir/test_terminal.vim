@@ -1218,6 +1218,9 @@ endfunc
 " argument, check that :confirm qall works.
 func Test_terminal_qall_prompt()
   CheckRunVimInTerminal
+
+  " the shell may set the window title, we don't want that here
+  call test_override('vterm_title', 1)
   let buf = RunVimInTerminal('', {})
 
   " Open a terminal window and wait for the prompt to appear
@@ -1233,6 +1236,7 @@ func Test_terminal_qall_prompt()
 
   " close the terminal window where Vim was running
   quit
+  call test_override('ALL', 0)
 endfunc
 
 " Run Vim in a terminal, then start a terminal window with a shell and check
