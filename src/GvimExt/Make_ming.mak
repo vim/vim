@@ -53,7 +53,9 @@ WINDRES := $(CROSS_COMPILE)windres
 WINDRES_FLAGS =
 LIBS :=  -luuid -lgdi32
 RES  := gvimext.res
+ifeq ($(findstring clang++,$(CXX)),)
 DEFFILE = gvimext_ming.def
+endif
 OBJ  := gvimext.o
 
 DLL  := gvimext.dll
