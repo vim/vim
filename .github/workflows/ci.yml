@@ -432,6 +432,7 @@ jobs:
         if: matrix.toolchain == 'mingw'
         with:
           update: true
+          install: tar
           pacboy: >-
             make:p gcc:p
           msystem: ${{ matrix.msystem }}
