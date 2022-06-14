@@ -433,7 +433,7 @@ jobs:
         with:
           update: true
           pacboy: >-
-            make:p gcc:p tar:p
+            make:p gcc:p
           msystem: ${{ matrix.msystem }}
           release: false
 
