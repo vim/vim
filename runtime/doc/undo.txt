@@ -257,7 +257,7 @@ message about that when opening a file.
 Undo files are normally saved in the same directory as the file.  This can be
 changed with the 'undodir' option.
 
-When the file is encrypted, the text in the undo file is also crypted.  The
+When the file is encrypted, the text in the undo file is also encrypted.  The
 same key and method is used. |encryption|
 
 Note that text properties are not stored in the undo file.  You can restore
