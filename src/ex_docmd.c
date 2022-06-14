@@ -3089,12 +3089,11 @@ parse_command_modifiers(
 			    break;
 			if (vim_isdigit(*eap->cmd))
 			{
-			    cmod->cmod_verbose = atoi((char *)eap->cmd);
-			    if (cmod->cmod_verbose == 0)
-				cmod->cmod_verbose = -1;
+			    // zero means not set, one is verbose == 0, etc.
+			    cmod->cmod_verbose = atoi((char *)eap->cmd) + 1;
 			}
 			else
-			    cmod->cmod_verbose = 1;
+			    cmod->cmod_verbose = 2;  // default: verbose == 1
 			eap->cmd = p;
 			continue;
 	}
@@ -3147,7 +3146,7 @@ has_cmdmod(cmdmod_T *cmod, int ignore_silent)
 		|| (cmod->cmod_flags
 		      & ~(CMOD_SILENT | CMOD_ERRSILENT | CMOD_UNSILENT)) != 0))
 	    || cmod->cmod_split != 0
-	    || cmod->cmod_verbose != 0
+	    || cmod->cmod_verbose > 0
 	    || cmod->cmod_tab != 0
 	    || cmod->cmod_filter_regmatch.regprog != NULL;
 }
@@ -3182,11 +3181,11 @@ apply_cmdmod(cmdmod_T *cmod)
 	cmod->cmod_did_sandbox = TRUE;
     }
 #endif
-    if (cmod->cmod_verbose != 0)
+    if (cmod->cmod_verbose > 0)
     {
 	if (cmod->cmod_verbose_save == 0)
 	    cmod->cmod_verbose_save = p_verbose + 1;
-	p_verbose = cmod->cmod_verbose < 0 ? 0 : cmod->cmod_verbose;
+	p_verbose = cmod->cmod_verbose - 1;
     }
 
     if ((cmod->cmod_flags & (CMOD_SILENT | CMOD_UNSILENT))

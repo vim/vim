@@ -662,8 +662,8 @@ typedef struct
     regmatch_T	cmod_filter_regmatch;	// set by :filter /pat/
     int		cmod_filter_force;	// set for :filter!
 
-    int		cmod_verbose;		// non-zero to set 'verbose', -1 is
-					// used for zero override
+    int		cmod_verbose;		// 0 if not set, > 0 to set 'verbose'
+					// to cmod_verbose - 1
 
     // values for undo_cmdmod()
     char_u	*cmod_save_ei;		// saved value of 'eventignore'
