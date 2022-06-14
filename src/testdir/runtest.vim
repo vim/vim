@@ -246,8 +246,7 @@ func RunTheTest(test)
   endif
 
   if filereadable('guidialogfile')
-    call add(v:errors, "Unexpected dialog:")
-    call add(v:errors, readfile('guidialogfile').join('\n'))
+    call add(v:errors, "Unexpected dialog: " .. readfile('guidialogfile')->join('<NL>'))
     call delete('guidialogfile')
   endif
 
