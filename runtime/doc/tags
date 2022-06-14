@@ -1456,6 +1456,7 @@ $quote	eval.txt	/*$quote*
 --clean	starting.txt	/*--clean*
 --cmd	starting.txt	/*--cmd*
 --echo-wid	starting.txt	/*--echo-wid*
+--gui-dialog-file	starting.txt	/*--gui-dialog-file*
 --help	starting.txt	/*--help*
 --literal	starting.txt	/*--literal*
 --log	starting.txt	/*--log*

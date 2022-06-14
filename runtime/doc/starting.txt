@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2022 Jun 04
+*starting.txt*  For Vim version 8.2.  Last change: 2022 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -434,7 +434,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 --gui-dialog-file {name}				*--gui-dialog-file*
 		When using the GUI, instead of showing a dialog, write the
 		title and message of the dialog to file {name}.  The file is
-		careted or appended to.  Only useful for testing, to avoid
+		created or appended to.  Only useful for testing, to avoid
 		that the test gets stuck on a dialog that can't be seen.
 		Without the GUI the argument is ignored.
 
