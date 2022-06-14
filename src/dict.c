@@ -1457,6 +1457,9 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
     dict_T	*d;
     int		todo;
 
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
     if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
 	return;
 
@@ -1466,8 +1469,6 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 	return;
     }
 
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
     if ((d = argvars[0].vval.v_dict) == NULL)
 	// empty dict behaves like an empty dict
 	return;
