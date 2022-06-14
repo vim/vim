@@ -424,7 +424,11 @@ jobs:
         run: |
           git config --global core.autocrlf input
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
-          choco install python2 -ForceX86
+          if [ "${{ matrix.arch }}" = "x86" ]; then
+            choco install python2 --forcex86
+          else
+            choco install python2
+          fi
           python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
