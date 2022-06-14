@@ -3065,6 +3065,9 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
     if (check_for_opt_dict_arg(argvars, 0) == FAIL)
 	return;
 
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
     if (argvars[0].v_type == VAR_DICT)
     {
 	// return only the autocmds in the specified group
@@ -3128,8 +3131,6 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
     event_list = rettv->vval.v_list;
 
     // iterate through all the autocmd events

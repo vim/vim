@@ -1440,6 +1440,8 @@ f_join(typval_T *argvars, typval_T *rettv)
     garray_T	ga;
     char_u	*sep;
 
+    rettv->v_type = VAR_STRING;
+
     if (in_vim9script()
 	    && (check_for_list_arg(argvars, 0) == FAIL
 		|| check_for_opt_string_arg(argvars, 1) == FAIL))
@@ -1450,7 +1452,7 @@ f_join(typval_T *argvars, typval_T *rettv)
 	emsg(_(e_list_required));
 	return;
     }
-    rettv->v_type = VAR_STRING;
+
     if (argvars[0].vval.v_list == NULL)
 	return;
 
