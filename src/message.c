@@ -1920,8 +1920,9 @@ msg_prt_line(char_u *s, int list)
 		    && (mb_ptr2char(s) == 160
 			|| mb_ptr2char(s) == 0x202f))
 	    {
-		mb_char2bytes(curwin->w_lcs_chars.nbsp, buf);
-		buf[(*mb_ptr2len)(buf)] = NUL;
+		int len = mb_char2bytes(curwin->w_lcs_chars.nbsp, buf);
+
+		buf[len] = NUL;
 	    }
 	    else
 	    {
