@@ -1783,7 +1783,9 @@ ex_retab(exarg_T *eap)
 		emsg(_(e_resulting_text_too_long));
 		// when not inside a try/catch set got_int to break out of any
 		// loop
+#ifdef FEAT_EVAL
 		if (trylevel == 0)
+#endif
 		    got_int = TRUE;
 		break;
 	    }
