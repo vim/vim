@@ -201,6 +201,7 @@ func RunTheTest(test)
     endtry
   endif
 
+  au VimLeavePre * call EarlyExit(g:testfunc)
   if a:test =~ 'Test_nocatch_'
     " Function handles errors itself.  This avoids skipping commands after the
     " error.
@@ -212,9 +213,7 @@ func RunTheTest(test)
     endif
   else
     try
-      au VimLeavePre * call EarlyExit(g:testfunc)
       exe 'call ' . a:test
-      au! VimLeavePre
     catch /^\cskipped/
       call add(s:messages, '    Skipped')
       call add(s:skipped, 'SKIPPED ' . a:test . ': ' . substitute(v:exception, '^\S*\s\+', '',  ''))
@@ -222,6 +221,7 @@ func RunTheTest(test)
       call add(v:errors, 'Caught exception in ' . a:test . ': ' . v:exception . ' @ ' . v:throwpoint)
     endtry
   endif
+  au! VimLeavePre
 
   " In case 'insertmode' was set and something went wrong, make sure it is
   " reset to avoid trouble with anything else.

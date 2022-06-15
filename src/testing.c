@@ -742,6 +742,7 @@ theend:
     suppress_errthrow = FALSE;
     in_assert_fails = FALSE;
     did_emsg = FALSE;
+    got_int = FALSE;
     msg_col = 0;
     need_wait_return = FALSE;
     emsg_on_display = FALSE;

@@ -1781,8 +1781,10 @@ ex_retab(exarg_T *eap)
 	    if (vcol >= MAXCOL)
 	    {
 		emsg(_(e_resulting_text_too_long));
-		// set got_int to break out of any loop
-		got_int = TRUE;
+		// when not inside a try/catch set got_int to break out of any
+		// loop
+		if (trylevel == 0)
+		    got_int = TRUE;
 		break;
 	    }
 	    if (has_mbyte)
