@@ -217,10 +217,12 @@ MKDIR = mkdir
 DIRSLASH = \\
  endif
 endif
-ifeq ($(CC),)
+# set $CC to "gcc" unless it matches "clang"
+ifeq ($(findstring clang,$(CC)),)
 CC := $(CROSS_COMPILE)gcc
 endif
-ifeq ($(CXX),)
+# set $CXX to "g++" unless it matches "clang"
+ifeq ($(findstring clang,$(CXX)),)
 CXX := $(CROSS_COMPILE)g++
 endif
 ifeq ($(UNDER_CYGWIN),yes)
