@@ -296,9 +296,10 @@ Go to the source directory of Vim, then execute the make command.  E.g.:
 
     CC=clang
     CXX=clang++
-    make -f Make_ming.mak
+    # To build Vim without the GUI support
     make -f Make_ming.mak GUI=no
-    make -f Make_ming.mak GUI=yes
+    # To build Vim with the GUI support
+    make -f Make_ming.mak GUI=yes XPM=no
 
 To build Vim with the address sanitizer (ASAN), execute the following command:
 
