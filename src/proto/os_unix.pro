@@ -88,4 +88,5 @@ void xsmp_init(void);
 void xsmp_close(void);
 void stop_timeout(void);
 const int *start_timeout(long msec);
+void delete_timer(void);
 /* vim: set ft=c : */

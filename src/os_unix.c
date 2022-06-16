@@ -8247,7 +8247,7 @@ xsmp_close(void)
 #endif // USE_XSMP
 
 #if defined(FEAT_RELTIME) || defined(PROTO)
-# if defined(HAVE_TIMER_CREATE)
+# if defined(HAVE_TIMER_CREATE) || defined(PROTO)
 /*
  * Implement timeout with timer_create() and timer_settime().
  */
@@ -8329,6 +8329,19 @@ start_timeout(long msec)
 	semsg(_(e_could_not_set_timeout_str), strerror(errno));
 
     return &timeout_flag;
+}
+
+/*
+ * To be used before fork/exec: delete any created timer.
+ */
+    void
+delete_timer(void)
+{
+    if (timer_created)
+    {
+	timer_delete(timer_id);
+	timer_created = FALSE;
+    }
 }
 
 # else
