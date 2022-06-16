@@ -89,6 +89,7 @@ clean:
 	-rm -rf $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
 	-rm -f asan.*
+	-rm -f guidialog guidialogfile
 
 # Delete the files produced by benchmarking, so they can run again.
 benchmarkclean:
@@ -127,7 +128,8 @@ tinytests: $(SCRIPTS_TINY_OUT)
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
-RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim
+# Add --gui-dialog-file to avoid getting stuck in a dialog.
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim --gui-dialog-file guidialog
 
 newtests: newtestssilent
 	@/bin/sh -c "if test -f messages; then cat messages; fi"

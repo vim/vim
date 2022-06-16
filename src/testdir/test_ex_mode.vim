@@ -261,6 +261,9 @@ func Test_empty_command_visual_mode()
   call assert_equal(1, RunVim([], [], '-u NONE -e -s -S Xexmodescript'))
 
   call delete('Xexmodescript')
+
+  " This may cause a dialog to be displayed for an empty command, ignore it.
+  call delete('guidialogfile')
 endfunc
 
 

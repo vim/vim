@@ -4,24 +4,28 @@ vim9script
 
 # Called when editing the doc/syntax.txt file
 export def HighlightGroups()
+  var save_cursor = getcurpos()
   var buf: number = bufnr('%')
-  var lnum: number = search('\*highlight-groups\*', 'cn')
-  while getline(lnum) !~ '===' && lnum < line('$')
-    var word: string = getline(lnum)->matchstr('^\w\+\ze\s')
+
+  var start: number = search('\*highlight-groups\*', 'c')
+  var end: number = search('^======')
+  for lnum in range(start, end)
+    var word: string = getline(lnum)->matchstr('^\w\+\ze\t')
     if word->hlexists()
-      var name = 'help-hl-' .. word
-      if prop_type_list({bufnr: buf})->match(name) == -1
-	prop_type_add('help-hl-' .. word, {
-	  bufnr: buf,
-	  highlight: word,
-	  combine: false,
-	  })
-      else
+      var type = 'help-hl-' .. word
+      if prop_type_list({bufnr: buf})->index(type) != -1
 	# was called before, delete existing properties
-	prop_remove({type: name, bufnr: buf})
+	prop_remove({type: type, bufnr: buf})
+	prop_type_delete(type, {bufnr: buf})
       endif
-      prop_add(lnum, 1, {length: word->strlen(), type: 'help-hl-' .. word})
+      prop_type_add(type, {
+	bufnr: buf,
+	highlight: word,
+	combine: false,
+	})
+      prop_add(lnum, 1, {length: word->strlen(), type: type})
     endif
-    ++lnum
-  endwhile
+  endfor
+
+  setpos('.', save_cursor)
 enddef

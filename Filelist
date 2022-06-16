@@ -574,7 +574,6 @@ SRC_DOS =	\
 		src/testdir/Make_ming.mak \
 		src/testdir/dos.vim \
 		src/uninstall.c \
-		src/vim.def \
 		src/vim.rc \
 		src/vim.manifest \
 		src/vimrun.c \

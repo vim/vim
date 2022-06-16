@@ -2112,7 +2112,7 @@ function Test_dirchanged_global()
   exe 'cd ' .. s:dir_bar
   autocmd! test_dirchanged DirChanged global let g:result = expand("<afile>")
   cd -
-  call assert_equal(s:dir_foo, g:result)
+  call assert_equal(s:dir_foo, substitute(g:result, '\\', '/', 'g'))
 
   call s:After_test_dirchanged()
 endfunc

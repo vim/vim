@@ -662,8 +662,8 @@ typedef struct
     regmatch_T	cmod_filter_regmatch;	// set by :filter /pat/
     int		cmod_filter_force;	// set for :filter!
 
-    int		cmod_verbose;		// non-zero to set 'verbose', -1 is
-					// used for zero override
+    int		cmod_verbose;		// 0 if not set, > 0 to set 'verbose'
+					// to cmod_verbose - 1
 
     // values for undo_cmdmod()
     char_u	*cmod_save_ei;		// saved value of 'eventignore'
@@ -4207,6 +4207,9 @@ typedef struct
 
     int		want_full_screen;
     int		not_a_term;		// no warning for missing term?
+#ifdef FEAT_GUI
+    char_u	*gui_dialog_file;	// file to write dialog text in
+#endif
     int		tty_fail;		// exit if not a tty
     char_u	*term;			// specified terminal name
 #ifdef FEAT_CRYPT

@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     env:
       CC: ${{ matrix.compiler }}
@@ -167,11 +167,6 @@ jobs:
             # Use llvm-cov instead of gcov when compiler is clang.
             ln -fs /usr/bin/llvm-cov ${HOME}/bin/gcov
           fi
-          # Setup lua5.3 manually since its package doesn't provide alternative.
-          # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
-          if [[ ${CONFOPT} =~ luainterp ]]; then
-            sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
-          fi
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
@@ -268,7 +263,7 @@ jobs:
           done
 
   # coveralls:
-  #   runs-on: ubuntu-18.04
+  #   runs-on: ubuntu-20.04
   #
   #   needs: linux
   #   if: always() && github.event_name != 'pull_request'
@@ -355,7 +350,7 @@ jobs:
           make ${TEST}
 
   windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     env:
       # Interfaces
@@ -371,6 +366,7 @@ jobs:
       # Python 2
       PYTHON_VER: 27
       PYTHON_VER_DOT: '2.7'
+      PYTHON_DIR: 'C:\Python27'
       # Python 3
       PYTHON3_VER: 310
       PYTHON3_VER_DOT: '3.10'
@@ -423,14 +419,21 @@ jobs:
         run: |
           git config --global core.autocrlf input
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
-          python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
+          if [ "${{ matrix.arch }}" = "x86" ]; then
+            choco install python2 --forcex86
+          else
+            choco install python2
+          fi
           python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
-          echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
         if: matrix.toolchain == 'mingw'
         with:
+          update: true
+          install: tar
+          pacboy: >-
+            make:p gcc:p
           msystem: ${{ matrix.msystem }}
           release: false
 

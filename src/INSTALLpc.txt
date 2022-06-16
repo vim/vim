@@ -282,6 +282,29 @@ This command is in msys32.bat.  Or for the 64 bit compiler use msys64.bat:
 If you have msys64 in another location you will need to adjust the paths for
 that.
 
+2.5. Build Vim with Clang
+
+The following package group is required for building Vim with Clang:
+
+* mingw-w64-clang-x86_64-clang
+
+Use the following command to install it:
+
+    $ pacman -S mingw-w64-clang-x86_64-clang
+
+Go to the source directory of Vim, then execute the make command.  E.g.:
+
+    CC=clang
+    CXX=clang++
+    make -f Make_ming.mak
+    make -f Make_ming.mak GUI=no
+    make -f Make_ming.mak GUI=yes
+
+To build Vim with the address sanitizer (ASAN), execute the following command:
+
+    CC=clang
+    CXX=clang++
+    make -f Make_ming.mak DEBUG=yes ASAN=yes
 
 3. MinGW
 ========

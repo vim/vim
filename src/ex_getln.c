@@ -256,7 +256,6 @@ do_incsearch_highlighting(
     ea.cmd = ccline.cmdbuff;
     ea.addr_type = ADDR_LINES;
 
-    CLEAR_FIELD(dummy_cmdmod);
     parse_command_modifiers(&ea, &dummy, &dummy_cmdmod, TRUE);
 
     cmd = skip_range(ea.cmd, TRUE, NULL);

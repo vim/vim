@@ -1218,7 +1218,11 @@ endfunc
 " argument, check that :confirm qall works.
 func Test_terminal_qall_prompt()
   CheckRunVimInTerminal
+
   let buf = RunVimInTerminal('', {})
+
+  " the shell may set the window title, we don't want that here
+  call term_sendkeys(buf, ":test_override('vterm_title', 1)\<CR>")
 
   " Open a terminal window and wait for the prompt to appear
   call term_sendkeys(buf, ":term\<CR>")

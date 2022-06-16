@@ -1744,6 +1744,7 @@ do_one_cmd(
     int		did_set_expr_line = FALSE;
 #endif
     int		sourcing = flags & DOCMD_VERBOSE;
+    int		did_append_cmd = FALSE;
 
     CLEAR_FIELD(ea);
     ea.line1 = 1;
@@ -2019,6 +2020,7 @@ do_one_cmd(
 		    append_command(after_modifier);
 		else
 		    append_command(*cmdlinep);
+		did_append_cmd = TRUE;
 	    }
 	    errormsg = (char *)IObuff;
 	    did_emsg_syntax = TRUE;
@@ -2609,7 +2611,7 @@ doend:
 
     if (errormsg != NULL && *errormsg != NUL && !did_emsg)
     {
-	if (sourcing || !KeyTyped)
+	if ((sourcing || !KeyTyped) && !did_append_cmd)
 	{
 	    if (errormsg != (char *)IObuff)
 	    {
@@ -2786,8 +2788,7 @@ parse_command_modifiers(
 {
     char_u  *orig_cmd = eap->cmd;
     char_u  *cmd_start = NULL;
-    int	    did_plus_cmd = FALSE;
-    char_u  *p;
+    int	    use_plus_cmd = FALSE;
     int	    starts_with_colon = FALSE;
     int	    vim9script = in_vim9script();
     int	    has_visual_range = FALSE;
@@ -2799,7 +2800,9 @@ parse_command_modifiers(
     {
 	// The automatically inserted Visual area range is skipped, so that
 	// typing ":cmdmod cmd" in Visual mode works without having to move the
-	// range to after the modififiers.
+	// range to after the modififiers. The command will be
+	// "'<,'>cmdmod cmd", parse "cmdmod cmd" and then put back "'<,'>"
+	// before "cmd" below.
 	eap->cmd += 5;
 	cmd_start = eap->cmd;
 	has_visual_range = TRUE;
@@ -2808,6 +2811,8 @@ parse_command_modifiers(
     // Repeat until no more command modifiers are found.
     for (;;)
     {
+	char_u  *p;
+
 	while (*eap->cmd == ' ' || *eap->cmd == '\t' || *eap->cmd == ':')
 	{
 	    if (*eap->cmd == ':')
@@ -2815,16 +2820,16 @@ parse_command_modifiers(
 	    ++eap->cmd;
 	}
 
-	// in ex mode, an empty line works like :+
+	// in ex mode, an empty command (after modifiers) works like :+
 	if (*eap->cmd == NUL && exmode_active
 		   && (getline_equal(eap->getline, eap->cookie, getexmodeline)
 		       || getline_equal(eap->getline, eap->cookie, getexline))
 			&& curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	{
-	    eap->cmd = (char_u *)"+";
-	    did_plus_cmd = TRUE;
+	    use_plus_cmd = TRUE;
 	    if (!skip_only)
 		ex_pressedreturn = TRUE;
+	    break;  // no modifiers following
 	}
 
 	// ignore comment and empty lines
@@ -3089,12 +3094,11 @@ parse_command_modifiers(
 			    break;
 			if (vim_isdigit(*eap->cmd))
 			{
-			    cmod->cmod_verbose = atoi((char *)eap->cmd);
-			    if (cmod->cmod_verbose == 0)
-				cmod->cmod_verbose = -1;
+			    // zero means not set, one is verbose == 0, etc.
+			    cmod->cmod_verbose = atoi((char *)eap->cmd) + 1;
 			}
 			else
-			    cmod->cmod_verbose = 1;
+			    cmod->cmod_verbose = 2;  // default: verbose == 1
 			eap->cmd = p;
 			continue;
 	}
@@ -3109,12 +3113,12 @@ parse_command_modifiers(
 	    // Since the modifiers have been parsed put the colon on top of the
 	    // space: "'<,'>mod cmd" -> "mod:'<,'>cmd
 	    // Put eap->cmd after the colon.
-	    if (did_plus_cmd)
+	    if (use_plus_cmd)
 	    {
 		size_t len = STRLEN(cmd_start);
 
-		// Special case: empty command may have been changed to "+":
-		//  "'<,'>mod" -> "mod'<,'>+
+		// Special case: empty command uses "+":
+		//  "'<,'>mods" -> "mods'<,'>+
 		mch_memmove(orig_cmd, cmd_start, len);
 		STRCPY(orig_cmd + len, "'<,'>+");
 	    }
@@ -3127,12 +3131,14 @@ parse_command_modifiers(
 	}
 	else
 	    // No modifiers, move the pointer back.
-	    // Special case: empty command may have been changed to "+".
-	    if (did_plus_cmd)
+	    // Special case: change empty command to "+".
+	    if (use_plus_cmd)
 		eap->cmd = (char_u *)"'<,'>+";
 	    else
 		eap->cmd = orig_cmd;
     }
+    else if (use_plus_cmd)
+	eap->cmd = (char_u *)"+";
 
     return OK;
 }
@@ -3147,7 +3153,7 @@ has_cmdmod(cmdmod_T *cmod, int ignore_silent)
 		|| (cmod->cmod_flags
 		      & ~(CMOD_SILENT | CMOD_ERRSILENT | CMOD_UNSILENT)) != 0))
 	    || cmod->cmod_split != 0
-	    || cmod->cmod_verbose != 0
+	    || cmod->cmod_verbose > 0
 	    || cmod->cmod_tab != 0
 	    || cmod->cmod_filter_regmatch.regprog != NULL;
 }
@@ -3182,11 +3188,11 @@ apply_cmdmod(cmdmod_T *cmod)
 	cmod->cmod_did_sandbox = TRUE;
     }
 #endif
-    if (cmod->cmod_verbose != 0)
+    if (cmod->cmod_verbose > 0)
     {
 	if (cmod->cmod_verbose_save == 0)
 	    cmod->cmod_verbose_save = p_verbose + 1;
-	p_verbose = cmod->cmod_verbose < 0 ? 0 : cmod->cmod_verbose;
+	p_verbose = cmod->cmod_verbose - 1;
     }
 
     if ((cmod->cmod_flags & (CMOD_SILENT | CMOD_UNSILENT))

@@ -8133,6 +8133,9 @@ f_range(typval_T *argvars, typval_T *rettv)
     varnumber_T	stride = 1;
     int		error = FALSE;
 
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
 		|| check_for_opt_number_arg(argvars, 1) == FAIL
@@ -8159,7 +8162,7 @@ f_range(typval_T *argvars, typval_T *rettv)
 	emsg(_(e_stride_is_zero));
     else if (stride > 0 ? end + 1 < start : end - 1 > start)
 	emsg(_(e_start_past_end));
-    else if (rettv_list_alloc(rettv) == OK)
+    else
     {
 	list_T *list = rettv->vval.v_list;
 
