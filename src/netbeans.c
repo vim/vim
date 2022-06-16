@@ -2323,7 +2323,7 @@ special_keys(char_u *args)
 	    strcpy(&keybuf[i], tok);
 	    vim_snprintf(cmdbuf, sizeof(cmdbuf),
 				 "<silent><%s> :nbkey %s<CR>", keybuf, keybuf);
-	    do_map(0, (char_u *)cmdbuf, MODE_NORMAL, FALSE);
+	    do_map(MAPTYPE_MAP, (char_u *)cmdbuf, MODE_NORMAL, FALSE);
 	}
 	tok = strtok(NULL, " ");
     }

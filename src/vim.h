@@ -17,7 +17,7 @@
 # define MSWIN
 #endif
 
-#ifdef MSWIN
+#if defined(MSWIN) && !defined(PROTO)
 # include <io.h>
 #endif
 
@@ -378,7 +378,7 @@ typedef		 long		long_i;
  * We assume that when fseeko() is available then ftello() is too.
  * Note that Windows has different function names.
  */
-#ifdef MSWIN
+#if defined(MSWIN) && !defined(PROTO)
 typedef __int64 off_T;
 # ifdef __MINGW32__
 #  define vim_lseek lseek64
@@ -966,6 +966,11 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define KEY_OPEN_FORW	0x101
 #define KEY_OPEN_BACK	0x102
 #define KEY_COMPLETE	0x103	// end of completion
+
+// Used for the first argument of do_map()
+#define MAPTYPE_MAP	0
+#define MAPTYPE_UNMAP	1
+#define MAPTYPE_NOREMAP	2
 
 // Values for "noremap" argument of ins_typebuf().  Also used for
 // map->m_noremap and menu->noremap[].

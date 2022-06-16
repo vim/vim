@@ -22,7 +22,7 @@ void f_maparg(typval_T *argvars, typval_T *rettv);
 void f_mapcheck(typval_T *argvars, typval_T *rettv);
 void f_mapset(typval_T *argvars, typval_T *rettv);
 void init_mappings(void);
-void add_map(char_u *map, int mode);
+void add_map(char_u *map, int mode, int nore);
 int langmap_adjust_mb(int c);
 void langmap_init(void);
 void langmap_set(void);
