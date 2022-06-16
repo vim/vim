@@ -189,6 +189,10 @@ def DetectFromHashBang(firstline: string)
   elseif name =~ 'gforth\>'
     set ft=forth
 
+    # Icon
+  elseif name =~ 'icon\>'
+    set ft=icon
+
   endif
 enddef
 
