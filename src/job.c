@@ -1893,7 +1893,7 @@ f_job_info(typval_T *argvars, typval_T *rettv)
 	job_T	*job;
 
 	job = get_job_arg(&argvars[0]);
-	if (job != NULL && rettv_dict_alloc(rettv) != FAIL)
+	if (job != NULL && rettv_dict_alloc(rettv) == OK)
 	    job_info(job, rettv->vval.v_dict);
     }
     else if (rettv_list_alloc(rettv) == OK)

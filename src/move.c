@@ -1298,7 +1298,7 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
     int		row = 0;
     int		scol = 0, ccol = 0, ecol = 0;
 
-    if (rettv_dict_alloc(rettv) != OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
     dict = rettv->vval.v_dict;
 

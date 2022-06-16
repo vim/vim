@@ -3754,7 +3754,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     else
        pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
 
-    if ((rettv_list_alloc(rettv) != FAIL) && (pat != NULL))
+    if (rettv_list_alloc(rettv) == OK && pat != NULL)
     {
 	int	i;
 

@@ -172,7 +172,7 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     proftime_T	start;
     long	n1, n2;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script()
@@ -787,7 +787,7 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
 {
     timer_T *timer = NULL;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)

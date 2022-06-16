@@ -2945,7 +2945,7 @@ f_menu_info(typval_T *argvars, typval_T *rettv)
     vimmenu_T	*menu;
     dict_T	*retdict;
 
-    if (rettv_dict_alloc(rettv) != OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
     retdict = rettv->vval.v_dict;
 

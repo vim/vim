@@ -3099,7 +3099,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     linenr_T	lnum = 0;
     varnumber_T column = 0;
 
-    if (rettv_dict_alloc(rettv) != OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
     d = rettv->vval.v_dict;
 

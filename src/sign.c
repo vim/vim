@@ -2335,7 +2335,7 @@ f_sign_define(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_UNKNOWN)
     {
 	// Define multiple signs
-	if (rettv_list_alloc(rettv) != OK)
+	if (rettv_list_alloc(rettv) == FAIL)
 	    return;
 
 	sign_define_multiple(argvars[0].vval.v_list, rettv->vval.v_list);
@@ -2367,7 +2367,7 @@ f_sign_getdefined(typval_T *argvars, typval_T *rettv)
 {
     char_u	*name = NULL;
 
-    if (rettv_list_alloc_id(rettv, aid_sign_getdefined) != OK)
+    if (rettv_list_alloc_id(rettv, aid_sign_getdefined) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_opt_string_arg(argvars, 0) == FAIL)
@@ -2393,7 +2393,7 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
     char_u	*group = NULL;
     int		notanum = FALSE;
 
-    if (rettv_list_alloc_id(rettv, aid_sign_getplaced) != OK)
+    if (rettv_list_alloc_id(rettv, aid_sign_getplaced) == FAIL)
 	return;
 
     if (in_vim9script()
@@ -2661,7 +2661,7 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
     listitem_T	*li;
     int		sign_id;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
@@ -2721,7 +2721,7 @@ f_sign_undefine(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_UNKNOWN)
     {
 	// Undefine multiple signs
-	if (rettv_list_alloc(rettv) != OK)
+	if (rettv_list_alloc(rettv) == FAIL)
 	    return;
 
 	sign_undefine_multiple(argvars[0].vval.v_list, rettv->vval.v_list);
@@ -2892,7 +2892,7 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
     listitem_T	*li;
     int		retval;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)

@@ -471,7 +471,7 @@ f_gettabinfo(typval_T *argvars, typval_T *rettv)
     dict_T	*d;
     int		tpnr = 0;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
@@ -510,7 +510,7 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
     dict_T	*d;
     short	tabnr = 0, winnr;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
@@ -779,7 +779,7 @@ f_win_findbuf(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
-    if (rettv_list_alloc(rettv) != FAIL)
+    if (rettv_list_alloc(rettv) == OK)
 	win_findbuf(argvars, rettv->vval.v_list);
 }
 
@@ -847,7 +847,7 @@ f_win_id2tabwin(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
-    if (rettv_list_alloc(rettv) != FAIL)
+    if (rettv_list_alloc(rettv) == OK)
 	win_id2tabwin(argvars, rettv->vval.v_list);
 }
 
@@ -1143,7 +1143,7 @@ f_winlayout(typval_T *argvars, typval_T *rettv)
 {
     tabpage_T	*tp;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)

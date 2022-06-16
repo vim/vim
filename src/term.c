@@ -1470,7 +1470,7 @@ f_terminalprops(typval_T *argvars UNUSED, typval_T *rettv)
     int i;
 # endif
 
-    if (rettv_dict_alloc(rettv) != OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
 # ifdef FEAT_TERMRESPONSE
     for (i = 0; i < TPR_COUNT; ++i)

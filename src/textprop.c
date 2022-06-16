@@ -1076,7 +1076,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
 	return;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     // default: get text properties on current line

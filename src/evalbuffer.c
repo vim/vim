@@ -680,7 +680,7 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
     int		sel_bufloaded = FALSE;
     int		sel_bufmodified = FALSE;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script()

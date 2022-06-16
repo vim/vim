@@ -2379,7 +2379,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	}
 
     }
-    else if (rettv_dict_alloc(rettv) != FAIL && rhs != NULL)
+    else if (rettv_dict_alloc(rettv) == OK && rhs != NULL)
 	mapblock2dict(mp, rettv->vval.v_dict,
 			  did_simplify ? keys_simplified : NULL,
 			  buffer_local, abbr);
@@ -2409,7 +2409,7 @@ f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
     if (argvars[0].v_type != VAR_UNKNOWN)
 	abbr = tv_get_bool(&argvars[0]);
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     validate_maphash();
