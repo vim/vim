@@ -2179,7 +2179,7 @@ win_update(win_T *wp)
 #endif
 #ifdef SYN_TIME_LIMIT
     // Set the time limit to 'redrawtime'.
-    init_regexp_timeout(p_rdt);
+    start_timeout(p_rdt);
 #endif
 #ifdef FEAT_FOLDING
     win_foldinfo.fi_level = 0;
@@ -2691,7 +2691,7 @@ win_update(win_T *wp)
     }
 
 #ifdef SYN_TIME_LIMIT
-    disable_regexp_timeout();
+    stop_timeout();
 #endif
 
     // Reset the type of redrawing required, the window has been updated.

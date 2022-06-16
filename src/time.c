@@ -1124,3 +1124,58 @@ add_time(char_u *buf, size_t buflen, time_t tt)
 		seconds);
     }
 }
+
+#if defined(FEAT_RELTIME) || defined(PROTO)
+/*
+ * The one-shot timeout mechanism.
+ *
+ * This mechanism is provided by the following public functions:
+ *
+ * - start_timeout(long msec)
+ * - int stop_timeout()
+ * - int timeout_occurred()
+ *
+ * Calls to start_timeout and stop_timeout may be nested; a counter is used to
+ * track the level of nesting. The timer is only activated by start_timeout
+ * when this counter is zero and only deactivate by stop_timeout when the
+ * counter drops to zero. It is an error to invoke stop_timeout() when the
+ * timer is not active.
+ *
+ * The functions timeout_occurred and stop_timeout return TRUE if the timer is
+ * both activated and expired.
+ */
+
+long timeout_level = 0;
+int  timeout_flag  = FALSE;
+
+/*
+ * Stop any timeout started by a matching start_timeout call.
+ */
+    int
+stop_timeout(void)
+{
+    // printf("Stop T/O, level = %ld\n", timeout_level);
+    if (timeout_level == 0)
+    {
+	emsg(_(e_timeout_not_active));
+	return FALSE;
+    }
+    if (--timeout_level == 0)
+	return mch_stop_timeout();
+    else
+	return timeout_flag;
+}
+
+/*
+ * Start the timeout timer, if one is not already in progress.
+ */
+    void
+start_timeout(long msec)
+{
+    // printf("Start T/O %ld, level = %ld\n", msec, timeout_level);
+    if (timeout_level++ == 0)
+    {
+	return mch_start_timeout(msec);
+    }
+}
+#endif

@@ -3227,8 +3227,7 @@ restore_subexpr(regbehind_T *bp)
  */
     static int
 regmatch(
-    char_u	*scan,		    // Current node.
-    int		*timed_out UNUSED)  // flag set on timeout or NULL
+    char_u	*scan)		    // Current node.
 {
   char_u	*next;		// Next node.
   int		op;
@@ -3267,10 +3266,8 @@ regmatch(
 	    break;
 	}
 #ifdef FEAT_RELTIME
-	if (*timeout_flag)
+	if (timeout_occurred())
 	{
-	    if (timed_out != NULL)
-		*timed_out = TRUE;
 	    status = RA_FAIL;
 	    break;
 	}
@@ -4720,8 +4717,7 @@ regmatch(
     static long
 regtry(
     bt_regprog_T	*prog,
-    colnr_T		col,
-    int			*timed_out)	// flag set on timeout or NULL
+    colnr_T		col)
 {
     rex.input = rex.line + col;
     rex.need_clear_subexpr = TRUE;
@@ -4730,7 +4726,7 @@ regtry(
     rex.need_clear_zsubexpr = (prog->reghasz == REX_SET);
 #endif
 
-    if (regmatch(prog->program + 1, timed_out) == 0)
+    if (regmatch(prog->program + 1) == 0)
 	return 0;
 
     cleanup_subexpr();
@@ -4804,8 +4800,7 @@ regtry(
     static long
 bt_regexec_both(
     char_u	*line,
-    colnr_T	col,		// column to start looking for match
-    int		*timed_out)	// flag set on timeout or NULL
+    colnr_T	col)		// column to start looking for match
 {
     bt_regprog_T    *prog;
     char_u	    *s;
@@ -4927,7 +4922,7 @@ bt_regexec_both(
 		    && (((enc_utf8 && utf_fold(prog->regstart) == utf_fold(c)))
 			|| (c < 255 && prog->regstart < 255 &&
 			    MB_TOLOWER(prog->regstart) == MB_TOLOWER(c)))))
-	    retval = regtry(prog, col, timed_out);
+	    retval = regtry(prog, col);
 	else
 	    retval = 0;
     }
@@ -4959,7 +4954,7 @@ bt_regexec_both(
 		break;
 	    }
 
-	    retval = regtry(prog, col, timed_out);
+	    retval = regtry(prog, col);
 	    if (retval > 0)
 		break;
 
@@ -4976,12 +4971,8 @@ bt_regexec_both(
 	    else
 		++col;
 #ifdef FEAT_RELTIME
-	    if (*timeout_flag)
-	    {
-		if (timed_out != NULL)
-		    *timed_out = TRUE;
+	    if (timeout_occurred())
 		break;
-	    }
 #endif
 	}
     }
@@ -5044,7 +5035,7 @@ bt_regexec_nl(
     rex.reg_icombine = FALSE;
     rex.reg_maxcol = 0;
 
-    return bt_regexec_both(line, col, NULL);
+    return bt_regexec_both(line, col);
 }
 
 /*
@@ -5061,11 +5052,10 @@ bt_regexec_multi(
     win_T	*win,		// window in which to search or NULL
     buf_T	*buf,		// buffer in which to search
     linenr_T	lnum,		// nr of line to start looking for match
-    colnr_T	col,		// column to start looking for match
-    int		*timed_out)	// flag set on timeout or NULL
+    colnr_T	col)		// column to start looking for match
 {
     init_regexec_multi(rmp, win, buf, lnum);
-    return bt_regexec_both(NULL, col, timed_out);
+    return bt_regexec_both(NULL, col);
 }
 
 /*

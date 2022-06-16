@@ -8506,7 +8506,8 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     CLEAR_FIELD(sia);
     sia.sa_stop_lnum = (linenr_T)lnum_stop;
 #ifdef FEAT_RELTIME
-    sia.sa_tm = time_limit;
+    if (time_limit > 0)
+	start_timeout(time_limit);
 #endif
 
     // Repeat until {skip} returns FALSE.
@@ -8544,6 +8545,10 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 		break;
 	}
     }
+#ifdef FEAT_RELTIME
+    if (time_limit > 0)
+	stop_timeout();
+#endif
 
     if (subpatnum != FAIL)
     {
@@ -8880,8 +8885,16 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
 	}
     }
 
+#   ifdef FEAT_RELTIME
+    if (time_limit > 0)
+	start_timeout(time_limit);
+#   endif
     retval = do_searchpair(spat, mpat, epat, dir, skip, flags,
-					    match_pos, lnum_stop, time_limit);
+					    match_pos, lnum_stop);
+#   ifdef FEAT_RELTIME
+    if (time_limit > 0)
+	stop_timeout();
+#   endif
 
 theend:
     p_ws = save_p_ws;
@@ -8935,8 +8948,7 @@ do_searchpair(
     typval_T	*skip,	    // skip expression
     int		flags,	    // SP_SETPCMARK and other SP_ values
     pos_T	*match_pos,
-    linenr_T	lnum_stop,  // stop at this line if not zero
-    long	time_limit UNUSED) // stop after this many msec
+    linenr_T	lnum_stop)  // stop at this line if not zero
 {
     char_u	*save_cpo;
     char_u	*pat, *pat2 = NULL, *pat3 = NULL;
@@ -8980,15 +8992,13 @@ do_searchpair(
     CLEAR_POS(&firstpos);
     CLEAR_POS(&foundpos);
     pat = pat3;
+
     for (;;)
     {
 	searchit_arg_T sia;
 
 	CLEAR_FIELD(sia);
 	sia.sa_stop_lnum = lnum_stop;
-#ifdef FEAT_RELTIME
-	sia.sa_tm = time_limit;
-#endif
 	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
 						     options, RE_SEARCH, &sia);
 	if (n == FAIL || (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos)))
@@ -9061,7 +9071,6 @@ do_searchpair(
 	    nest = 1;	    // search for next unmatched
 	}
     }
-
     if (match_pos != NULL)
     {
 	// Store the match cursor position

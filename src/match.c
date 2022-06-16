@@ -12,6 +12,7 @@
  */
 
 #include "vim.h"
+#include "timers.h"
 
 #if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
 
@@ -420,7 +421,6 @@ next_search_hl(
     colnr_T	matchcol;
     long	nmatched;
     int		called_emsg_before = called_emsg;
-    int         timed_out = FALSE;
 
     // for :{range}s/pat only highlight inside the range
     if ((lnum < search_first_line || lnum > search_last_line) && cur == NULL)
@@ -485,12 +485,13 @@ next_search_hl(
 				&& cur->match.regprog == cur->hl.rm.regprog);
 
 	    nmatched = vim_regexec_multi(&shl->rm, win, shl->buf, lnum,
-							 matchcol, &timed_out);
+							 matchcol);
 	    // Copy the regprog, in case it got freed and recompiled.
 	    if (regprog_is_copy)
 		cur->match.regprog = cur->hl.rm.regprog;
 
-	    if (called_emsg > called_emsg_before || got_int || timed_out)
+	    if (called_emsg > called_emsg_before || got_int
+		|| timeout_occurred())
 	    {
 		// Error while handling regexp: stop using this regexp.
 		if (shl == search_hl)

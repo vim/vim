@@ -4419,10 +4419,6 @@ typedef struct spat
 typedef struct
 {
     linenr_T	sa_stop_lnum;	// stop after this line number when != 0
-#ifdef FEAT_RELTIME
-    long	sa_tm;		// timeout limit or zero
-    int		sa_timed_out;	// set when timed out
-#endif
     int		sa_wrapped;	// search wrapped around
 } searchit_arg_T;
 

@@ -11,6 +11,7 @@
  */
 
 #include "vim.h"
+#include "timers.h"
 
 #ifdef FEAT_EVAL
 static void set_vv_searchforward(void);
@@ -658,8 +659,6 @@ searchit(
     int		break_loop = FALSE;
 #endif
     linenr_T	stop_lnum = 0;	// stop after this line number when != 0
-    int		unused_timeout_flag = FALSE;
-    int		*timed_out = &unused_timeout_flag;  // set when timed out.
 
     if (search_regcomp(pat, RE_SEARCH, pat_use,
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
@@ -670,16 +669,7 @@ searchit(
     }
 
     if (extra_arg != NULL)
-    {
 	stop_lnum = extra_arg->sa_stop_lnum;
-#ifdef FEAT_RELTIME
-	if (extra_arg->sa_tm > 0)
-	{
-	    init_regexp_timeout(extra_arg->sa_tm);
-	    timed_out = &extra_arg->sa_timed_out;
-	}
-#endif
-    }
 
     /*
      * find the string
@@ -755,7 +745,7 @@ searchit(
 				       ? lnum > stop_lnum : lnum < stop_lnum))
 		    break;
 		// Stop after passing the time limit.
-		if (*timed_out)
+		if (timeout_occurred())
 		    break;
 
 		/*
@@ -764,12 +754,12 @@ searchit(
 		col = at_first_line && (options & SEARCH_COL) ? pos->col
 								 : (colnr_T)0;
 		nmatched = vim_regexec_multi(&regmatch, win, buf,
-					     lnum, col, timed_out);
+					     lnum, col);
 		// vim_regexec_multi() may clear "regprog"
 		if (regmatch.regprog == NULL)
 		    break;
 		// Abort searching on an error (e.g., out of stack).
-		if (called_emsg > called_emsg_before || *timed_out)
+		if (called_emsg > called_emsg_before || timeout_occurred())
 		    break;
 		if (nmatched > 0)
 		{
@@ -852,7 +842,7 @@ searchit(
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
 					      win, buf, lnum + matchpos.lnum,
-					      matchcol, timed_out)) == 0)
+					      matchcol)) == 0)
 			    {
 				match_ok = FALSE;
 				break;
@@ -957,12 +947,12 @@ searchit(
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
 					      win, buf, lnum + matchpos.lnum,
-					      matchcol, timed_out)) == 0)
+					      matchcol)) == 0)
 			    {
 				// If the search timed out, we did find a match
 				// but it might be the wrong one, so that's not
 				// OK.
-				if (*timed_out)
+				if (timeout_occurred())
 				    match_ok = FALSE;
 				break;
 			    }
@@ -1072,7 +1062,8 @@ searchit(
 	     * twice.
 	     */
 	    if (!p_ws || stop_lnum != 0 || got_int
-			        || called_emsg > called_emsg_before || *timed_out
+			        || called_emsg > called_emsg_before
+				|| timeout_occurred()
 #ifdef FEAT_SEARCH_EXTRA
 				|| break_loop
 #endif
@@ -1096,7 +1087,7 @@ searchit(
 	    if (extra_arg != NULL)
 		extra_arg->sa_wrapped = TRUE;
 	}
-	if (got_int || called_emsg > called_emsg_before || *timed_out
+	if (got_int || called_emsg > called_emsg_before || timeout_occurred()
 #ifdef FEAT_SEARCH_EXTRA
 		|| break_loop
 #endif
@@ -1105,9 +1096,6 @@ searchit(
     }
     while (--count > 0 && found);   // stop after count matches or no match
 
-#   ifdef FEAT_RELTIME
-    disable_regexp_timeout();
-#   endif
     vim_regfree(regmatch.regprog);
 
     if (!found)		    // did not find it
@@ -2887,7 +2875,7 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
 	{
 	    regmatch.startpos[0].col++;
 	    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
-			       pos.lnum, regmatch.startpos[0].col, NULL);
+			       pos.lnum, regmatch.startpos[0].col);
 	    if (nmatched != 0)
 		break;
 	} while (regmatch.regprog != NULL

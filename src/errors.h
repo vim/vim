@@ -3299,4 +3299,6 @@ EXTERN char e_could_not_reset_handler_for_timeout_str[]
 	INIT(= N_("E1288: Could not reset handler for timeout: %s"));
 EXTERN char e_could_not_check_for_pending_sigalrm_str[]
 	INIT(= N_("E1289: Could not check for pending SIGALRM: %s"));
+EXTERN char e_timeout_not_active[]
+	INIT(= N_("E1290: The timeout timer is not active"));
 #endif

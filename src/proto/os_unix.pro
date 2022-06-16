@@ -86,6 +86,6 @@ void clip_xterm_set_selection(Clipboard_T *cbd);
 int xsmp_handle_requests(void);
 void xsmp_init(void);
 void xsmp_close(void);
-void stop_timeout(void);
-const int *start_timeout(long msec);
+int mch_stop_timeout(void);
+void mch_start_timeout(long msec);
 /* vim: set ft=c : */

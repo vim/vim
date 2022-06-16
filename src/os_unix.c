@@ -8247,11 +8247,13 @@ xsmp_close(void)
 #endif // USE_XSMP
 
 #if defined(FEAT_RELTIME) || defined(PROTO)
+
+#include "timers.h"
+
 # if defined(HAVE_TIMER_CREATE)
 /*
  * Implement timeout with timer_create() and timer_settime().
  */
-static int	timeout_flag = FALSE;
 static timer_t	timer_id;
 static int	timer_created = FALSE;
 
@@ -8267,8 +8269,8 @@ set_flag(union sigval _unused UNUSED)
 /*
  * Stop any active timeout.
  */
-    void
-stop_timeout(void)
+    int
+mch_stop_timeout(void)
 {
     static struct itimerspec disarm = {{0, 0}, {0, 0}};
 
@@ -8279,10 +8281,7 @@ stop_timeout(void)
 	if (ret < 0)
 	    semsg(_(e_could_not_clear_timeout_str), strerror(errno));
     }
-
-    // Clear the current timeout flag; any previous timeout should be
-    // considered _not_ triggered.
-    timeout_flag = FALSE;
+    return timeout_flag;
 }
 
 /*
@@ -8296,30 +8295,26 @@ stop_timeout(void)
  * This function is not expected to fail, but if it does it will still return a
  * valid flag pointer; the flag will remain stuck as FALSE .
  */
-    const int *
-start_timeout(long msec)
+    void
+mch_start_timeout(long msec)
 {
     struct itimerspec interval = {
-	    {0, 0},                                   // Do not repeat.
-	    {msec / 1000, (msec % 1000) * 1000000}};  // Timeout interval
+	{0, 0},                                   // Do not repeat.
+	{msec / 1000, (msec % 1000) * 1000000}};  // Timeout interval
     int ret;
 
-    // This is really the caller's responsibility, but let's make sure the
-    // previous timer has been stopped.
-    stop_timeout();
     timeout_flag = FALSE;
-
     if (!timer_created)
     {
 	struct sigevent action = {0};
 
 	action.sigev_notify = SIGEV_THREAD;
 	action.sigev_notify_function = set_flag;
-        ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
-        if (ret < 0)
+	ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
+	if (ret < 0)
 	{
 	    semsg(_(e_could_not_set_timeout_str), strerror(errno));
-	    return &timeout_flag;
+	    return;
 	}
 	timer_created = TRUE;
     }
@@ -8327,8 +8322,6 @@ start_timeout(long msec)
     ret = timer_settime(timer_id, 0, &interval, NULL);
     if (ret < 0)
 	semsg(_(e_could_not_set_timeout_str), strerror(errno));
-
-    return &timeout_flag;
 }
 
 # else
@@ -8338,7 +8331,6 @@ start_timeout(long msec)
  */
 static struct itimerval prev_interval;
 static struct sigaction prev_sigaction;
-static int		timeout_flag         = FALSE;
 static int		timer_active         = FALSE;
 static int		timer_handler_active = FALSE;
 static int		alarm_pending        = FALSE;
@@ -8358,11 +8350,11 @@ set_flag SIGDEFARG(sigarg)
 /*
  * Stop any active timeout.
  */
-    void
-stop_timeout(void)
+    int
+mch_stop_timeout(void)
 {
+    int	                    ret;
     static struct itimerval disarm = {{0, 0}, {0, 0}};
-    int			    ret;
 
     if (timer_active)
     {
@@ -8380,9 +8372,9 @@ stop_timeout(void)
 	if (ret < 0)
 	    // Should only get here as a result of coding errors.
 	    semsg(_(e_could_not_reset_handler_for_timeout_str),
-							      strerror(errno));
+		    strerror(errno));
     }
-    timeout_flag = 0;
+    return timeout_flag;
 }
 
 /*
@@ -8396,20 +8388,16 @@ stop_timeout(void)
  * This function is not expected to fail, but if it does it will still return a
  * valid flag pointer; the flag will remain stuck as FALSE .
  */
-    const int *
-start_timeout(long msec)
+    void
+mch_start_timeout(long msec)
 {
     struct itimerval	interval = {
-	    {0, 0},                                // Do not repeat.
-	    {msec / 1000, (msec % 1000) * 1000}};  // Timeout interval
+	{0, 0},                                // Do not repeat.
+	{msec / 1000, (msec % 1000) * 1000}};  // Timeout interval
     struct sigaction	handle_alarm;
     int			ret;
     sigset_t		sigs;
     sigset_t		saved_sigs;
-
-    // This is really the caller's responsibility, but let's make sure the
-    // previous timer has been stopped.
-    stop_timeout();
 
     // There is a small chance that SIGALRM is pending and so the handler must
     // ignore it on the first call.
@@ -8440,7 +8428,7 @@ start_timeout(long msec)
     {
 	// Should only get here as a result of coding errors.
 	semsg(_(e_could_not_set_handler_for_timeout_str), strerror(errno));
-	return &timeout_flag;
+	return;
     }
     timer_handler_active = TRUE;
 
@@ -8450,12 +8438,11 @@ start_timeout(long msec)
     {
 	// Should only get here as a result of coding errors.
 	semsg(_(e_could_not_set_timeout_str), strerror(errno));
-	stop_timeout();
-	return &timeout_flag;
+	return;
     }
 
     timer_active = TRUE;
-    return &timeout_flag;
 }
 # endif // HAVE_TIMER_CREATE
+
 #endif  // FEAT_RELTIME

@@ -415,9 +415,6 @@ may_do_incsearch_highlighting(
     int		skiplen, patlen;
     int		found;  // do_search() result
     pos_T	end_pos;
-#ifdef FEAT_RELTIME
-    searchit_arg_T sia;
-#endif
     int		next_char;
     int		use_last_pat;
     int		did_do_incsearch = is_state->did_incsearch;
@@ -488,18 +485,15 @@ may_do_incsearch_highlighting(
 	    search_flags += SEARCH_START;
 	ccline.cmdbuff[skiplen + patlen] = NUL;
 #ifdef FEAT_RELTIME
-	CLEAR_FIELD(sia);
 	// Set the time limit to half a second.
-	sia.sa_tm = 500;
+	start_timeout(500);
 #endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
 				 ccline.cmdbuff + skiplen, count, search_flags,
+				 NULL);
 #ifdef FEAT_RELTIME
-		&sia
-#else
-		NULL
+	stop_timeout();
 #endif
-		);
 	ccline.cmdbuff[skiplen + patlen] = next_char;
 	--emsg_off;
 

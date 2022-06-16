@@ -12,6 +12,7 @@
  */
 
 #include "vim.h"
+#include "timers.h"
 
 #if defined(FEAT_SYN_HL) || defined(PROTO)
 
@@ -3151,7 +3152,6 @@ syn_regexec(
     syn_time_T  *st UNUSED)
 {
     int r;
-    int timed_out = FALSE;
 #ifdef FEAT_PROFILE
     proftime_T	pt;
 
@@ -3166,7 +3166,7 @@ syn_regexec(
 	return FALSE;
 
     rmp->rmm_maxcol = syn_buf->b_p_smc;
-    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, &timed_out);
+    r = vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col);
 
 #ifdef FEAT_PROFILE
     if (syn_time_on)
@@ -3181,7 +3181,7 @@ syn_regexec(
     }
 #endif
 #ifdef FEAT_RELTIME
-    if (timed_out && !syn_win->w_s->b_syn_slow)
+    if (timeout_occurred() && !syn_win->w_s->b_syn_slow)
     {
 	syn_win->w_s->b_syn_slow = TRUE;
 	msg(_("'redrawtime' exceeded, syntax highlighting disabled"));

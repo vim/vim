@@ -25,4 +25,6 @@ time_T get8ctime(FILE *fd);
 int put_time(FILE *fd, time_T the_time);
 void time_to_bytes(time_T the_time, char_u *buf);
 void add_time(char_u *buf, size_t buflen, time_t tt);
+int stop_timeout(void);
+void start_timeout(long msec);
 /* vim: set ft=c : */

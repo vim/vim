@@ -25,5 +25,5 @@ int dynamic_feature(char_u *feature);
 void f_len(typval_T *argvars, typval_T *rettv);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
 void range_list_materialize(list_T *list);
-long do_searchpair(char_u *spat, char_u *mpat, char_u *epat, int dir, typval_T *skip, int flags, pos_T *match_pos, linenr_T lnum_stop, long time_limit);
+long do_searchpair(char_u *spat, char_u *mpat, char_u *epat, int dir, typval_T *skip, int flags, pos_T *match_pos, linenr_T lnum_stop);
 /* vim: set ft=c : */
