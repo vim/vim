@@ -1576,6 +1576,22 @@ func Test_search_timeout()
   bwipe!
 endfunc
 
+function! Skip()
+    let id = synID(line('.'), col('.'), 0)
+    let attr = synIDattr(id, 'name')
+    return attr !~ 'comment'
+endfunction
+
+func Test_searchpair_timeout()
+  edit ../evalfunc.c
+  let start = reltime()
+  let found = searchpair('(', '', ')', 'crnm', 'Skip()', 0, 1)
+  let elapsed = reltimefloat(reltime(start))
+  call assert_true(elapsed >= 0.001)
+  call assert_true(elapsed < 0.010)
+  bwipe!
+endfunc
+
 func Test_search_display_pattern()
   new
   call setline(1, ['foo', 'bar', 'foobar'])
