@@ -6788,6 +6788,9 @@ nv_esc(cmdarg_T *cap)
 		msg(_("Type  :qa  and press <Enter> to exit Vim"));
 	}
 
+	if (restart_edit != 0)
+	    redraw_mode = TRUE;  // remove "-- (insert) --"
+
 	// Don't reset "restart_edit" when 'insertmode' is set, it won't be
 	// set again below when halfway a mapping.
 	if (!p_im)

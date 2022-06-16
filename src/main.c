@@ -1419,7 +1419,7 @@ main_loop(
 		update_screen(0);
 		mch_enable_flush();
 	    }
-	    else if (redraw_cmdline || clear_cmdline)
+	    else if (redraw_cmdline || clear_cmdline || redraw_mode)
 		showmode();
 	    redraw_statuslines();
 	    if (need_maketitle)
