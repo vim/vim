@@ -8975,6 +8975,10 @@ do_searchpair(
     if (skip != NULL)
 	use_skip = eval_expr_valid_arg(skip);
 
+#ifdef FEAT_RELTIME
+    if (time_limit > 0)
+	init_regexp_timeout(time_limit);
+#endif
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
     CLEAR_POS(&firstpos);
@@ -8986,9 +8990,6 @@ do_searchpair(
 
 	CLEAR_FIELD(sia);
 	sia.sa_stop_lnum = lnum_stop;
-#ifdef FEAT_RELTIME
-	sia.sa_tm = time_limit;
-#endif
 	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
 						     options, RE_SEARCH, &sia);
 	if (n == FAIL || (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos)))
@@ -9074,6 +9075,9 @@ do_searchpair(
 	curwin->w_cursor = save_cursor;
 
 theend:
+#ifdef FEAT_RELTIME
+    disable_regexp_timeout();
+#endif
     vim_free(pat2);
     vim_free(pat3);
     if (p_cpo == empty_option)

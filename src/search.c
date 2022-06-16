@@ -674,10 +674,10 @@ searchit(
 	stop_lnum = extra_arg->sa_stop_lnum;
 #ifdef FEAT_RELTIME
 	if (extra_arg->sa_tm > 0)
-	{
 	    init_regexp_timeout(extra_arg->sa_tm);
-	    timed_out = &extra_arg->sa_timed_out;
-	}
+	// Also set the pointer when sa_tm is zero, the caller may have set the
+	// timeout.
+	timed_out = &extra_arg->sa_timed_out;
 #endif
     }
 
@@ -1105,9 +1105,10 @@ searchit(
     }
     while (--count > 0 && found);   // stop after count matches or no match
 
-#   ifdef FEAT_RELTIME
-    disable_regexp_timeout();
-#   endif
+#ifdef FEAT_RELTIME
+    if (extra_arg != NULL && extra_arg->sa_tm > 0)
+	disable_regexp_timeout();
+#endif
     vim_regfree(regmatch.regprog);
 
     if (!found)		    // did not find it
@@ -4859,7 +4860,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 
     // get the fuzzy matches
     ret = rettv_list_alloc(rettv);
-    if (ret != OK)
+    if (ret == FAIL)
 	goto done;
     if (retmatchpos)
     {

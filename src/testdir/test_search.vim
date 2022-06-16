@@ -328,7 +328,31 @@ func Test_searchpair()
   call assert_equal(3, searchpair('\<if\>', '\<else\>', '\<endif\>', 'W'))
   call assert_equal([0, 3, 3, 0], getpos('.'))
 
-  q!
+  bwipe!
+endfunc
+
+func Test_searchpair_timeout()
+  CheckFeature reltime
+
+  func Waitabit()
+    sleep 20m
+    return 1  " skip match
+  endfunc
+
+  new
+  call setline(1, range(100))
+  call setline(1, "(start here")
+  call setline(100, "end here)")
+  let starttime = reltime()
+
+  " A timeout of 100 msec should happen after about five times of 20 msec wait
+  " in Waitabit().  When the timeout applies to each search the elapsed time
+  " will be much longer.
+  call assert_equal(0, searchpair('(', '\d', ')', '', "Waitabit()", 0, 100))
+  let elapsed = reltime(starttime)->reltimefloat()
+  call assert_inrange(0.09, 0.300, elapsed)
+
+  bwipe!
 endfunc
 
 func Test_searchpairpos()
