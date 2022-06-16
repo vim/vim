@@ -2766,12 +2766,12 @@ init_mappings(void)
 #  endif
     {
 	for (i = 0; i < (int)ARRAY_LENGTH(cinitmappings); ++i)
-	    add_map(cinitmappings[i].arg, cinitmappings[i].mode);
+	    add_map(cinitmappings[i].arg, cinitmappings[i].mode, FALSE);
     }
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(MACOS_X)
     for (i = 0; i < (int)ARRAY_LENGTH(initmappings); ++i)
-	add_map(initmappings[i].arg, initmappings[i].mode);
+	add_map(initmappings[i].arg, initmappings[i].mode, FALSE);
 # endif
 #endif
 }
@@ -2783,7 +2783,7 @@ init_mappings(void)
  * Need to put string in allocated memory, because do_map() will modify it.
  */
     void
-add_map(char_u *map, int mode)
+add_map(char_u *map, int mode, int nore)
 {
     char_u	*s;
     char_u	*cpo_save = p_cpo;
@@ -2792,7 +2792,7 @@ add_map(char_u *map, int mode)
     s = vim_strsave(map);
     if (s != NULL)
     {
-	(void)do_map(0, s, mode, FALSE);
+	(void)do_map(nore ? 2 : 0, s, mode, FALSE);
 	vim_free(s);
     }
     p_cpo = cpo_save;
