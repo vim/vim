@@ -118,9 +118,8 @@ func Test_quoteplus()
 
   let test_call     = 'Can you hear me?'
   let test_response = 'Yes, I can.'
-  let vim_exe = GetVimCommand()
-  let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
-        \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
+  let testee = 'VIMRUNTIME=' .. $VIMRUNTIME .. '; export VIMRUNTIME;'
+        \ .. GetVimCommand() .. ' --noplugin --not-a-term -c ''%s'''
   " Ignore the "failed to create input context" error.
   let cmd = 'call test_ignore_error("E285") | '
         \ . 'gui -f | '
@@ -1586,6 +1585,23 @@ func Test_gui_CTRL_SHIFT_V()
   call feedkeys(":let g:str = '\<*C-S-V>\<*C-S-I>\<*C-S-V>\<*C-S-@>'\<CR>", 'tx')
   call assert_equal('<C-S-I><C-S-@>', g:str)
   unlet g:str
+endfunc
+
+func Test_gui_dialog_file()
+  let lines =<< trim END
+    file Xfile
+    normal axxx
+    confirm qa
+  END
+  call writefile(lines, 'Xlines')
+  execute '!' .. GetVimCommand() .. ' -g -f --clean --gui-dialog-file Xdialog -S Xlines'
+
+  call WaitForAssert({-> assert_true(filereadable('Xdialog'))})
+  call assert_match('Question: Save changes to "Xfile"?', readfile('Xdialog')->join('<NL>'))
+
+  call delete('Xdialog')
+  call delete('Xfile')
+  call delete('Xlines')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
