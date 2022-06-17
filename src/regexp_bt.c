@@ -3152,6 +3152,27 @@ regstack_pop(char_u **scan)
     regstack.ga_len -= sizeof(regitem_T);
 }
 
+#ifdef FEAT_RELTIME
+/*
+ * Check if the timer expired, return TRUE if so.
+ */
+    static int
+bt_did_time_out(int *timed_out)
+{
+    if (*timeout_flag)
+    {
+	if (timed_out != NULL)
+	{
+	    if (!*timed_out)
+		ch_log(NULL, "BT regexp timed out");
+	    *timed_out = TRUE;
+	}
+	return TRUE;
+    }
+    return FALSE;
+}
+#endif
+
 /*
  * Save the current subexpr to "bp", so that they can be restored
  * later by restore_subexpr().
@@ -3267,10 +3288,8 @@ regmatch(
 	    break;
 	}
 #ifdef FEAT_RELTIME
-	if (*timeout_flag)
+	if (bt_did_time_out(timed_out))
 	{
-	    if (timed_out != NULL)
-		*timed_out = TRUE;
 	    status = RA_FAIL;
 	    break;
 	}
@@ -4687,6 +4706,14 @@ regmatch(
 	if (status == RA_CONT || rp == (regitem_T *)
 			     ((char *)regstack.ga_data + regstack.ga_len) - 1)
 	    break;
+
+#ifdef FEAT_RELTIME
+	if (bt_did_time_out(timed_out))
+	{
+	    status = RA_FAIL;
+	    break;
+	}
+#endif
     }
 
     // May need to continue with the inner loop, starting at "scan".
@@ -4976,12 +5003,8 @@ bt_regexec_both(
 	    else
 		++col;
 #ifdef FEAT_RELTIME
-	    if (*timeout_flag)
-	    {
-		if (timed_out != NULL)
-		    *timed_out = TRUE;
+	    if (bt_did_time_out(timed_out))
 		break;
-	    }
 #endif
 	}
     }
