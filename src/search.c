@@ -4844,7 +4844,8 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		return;
 	    }
 	}
-	else if ((di = dict_find(d, (char_u *)"limit", -1)) != NULL)
+
+	if ((di = dict_find(d, (char_u *)"limit", -1)) != NULL)
 	{
 	    if (di->di_tv.v_type != VAR_NUMBER)
 	    {
