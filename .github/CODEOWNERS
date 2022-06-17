@@ -53,6 +53,7 @@ runtime/compiler/fbc.vim		@dkearns
 runtime/compiler/gawk.vim		@dkearns
 runtime/compiler/gjs.vim		@dkearns
 runtime/compiler/haml.vim		@tpope
+runtime/compiler/icon.vim		@dkearns
 runtime/compiler/javac.vim		@dkearns
 runtime/compiler/jest.vim		@dkearns
 runtime/compiler/jjs.vim		@dkearns
@@ -114,6 +115,7 @@ runtime/ftplugin/gprof.vim		@dpelle
 runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hgcommit.vim		@k-takata
 runtime/ftplugin/i3config.vim		@hiqua
+runtime/ftplugin/icon.vim		@dkearns
 runtime/ftplugin/indent.vim		@dkearns
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
@@ -250,6 +252,7 @@ runtime/syntax/haml.vim			@tpope
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
 runtime/syntax/i3config.vim		@hiqua
+runtime/syntax/icon.vim			@dkearns
 runtime/syntax/indent.vim		@dkearns
 runtime/syntax/kconfig.vim		@chrisbra
 runtime/syntax/less.vim			@genoma

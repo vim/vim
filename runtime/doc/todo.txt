@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 14
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,19 +38,15 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-retab test Test_retab_endless() disabled - why is interrupt not caught?
-
-searchpair() must call function to set timeout, not pass the time limit down
-(and set it many times).  #10562
-
-Add test for --gui-dialog-file, check :confirm q with change buffer.
+Searchpair() timeout using skip expression using synID() interferes with
+syntax highlighting. #10562
+Add flag that timeout is set for 'redrawtime' and only then set b_syn_slow.
 
 Prepare for Vim 9.0 release:
 - Update the user manual:
   - Add more to usr_50.txt as an "advanced section" of usr_41.txt
   - Move some from vim9.txt to the user manual?  Keep the specification.
 - Use Vim9 for more runtime files.
-- Make popup-examples use Vim9 script  Issue #10499
 - Adjust intro message to say "help version9".
 
 Further Vim9 improvements, possibly after launch:

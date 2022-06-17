@@ -531,7 +531,7 @@ entry.  Note that the String '04' and the Number 04 are different, since the
 Number will be converted to the String '4', leading zeros are dropped.  The
 empty string can also be used as a key.
 
-In |Vim9| script literaly keys can be used if the key consists of alphanumeric
+In |Vim9| script literally keys can be used if the key consists of alphanumeric
 characters, underscore and dash, see |vim9-literal-dict|.
 						*literal-Dict* *#{}*
 To avoid having to put quotes around every key the #{} form can be used in
@@ -1144,7 +1144,7 @@ expr6 >> expr6	bitwise right shift				*expr->>*
 The "<<" and ">>" operators can be used to perform bitwise left or right shift
 of the left operand by the number of bits specified by the right operand.  The
 operands are used as positive numbers.  When shifting right with ">>" the
-topmost bit (somtimes called the sign bit) is cleared.  If the right operand
+topmost bit (sometimes called the sign bit) is cleared.  If the right operand
 (shift amount) is more than the maximum number of bits in a number
 (|v:numbersize|) the result is zero.
 

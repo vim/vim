@@ -14,7 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2022-06-05 10:20+0100\n"
+"POT-Creation-Date: 2022-06-16 21:37+0200\n"
+"PO-Revision-Date: 2022-06-16 23:00+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -383,6 +384,7 @@ msgstr ""
 "\n"
 "\tImpostata l'ultima volta da "
 
+#.
 msgid "&Ok"
 msgstr "&OK"
 
@@ -1516,6 +1518,9 @@ msgstr "-T <terminale>\tImposta tipo terminale a <terminale>"
 
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr "--not-a-term\t\tNon avvisare se input/output non da terminale"
+
+msgid "--gui-dialog-file {fname}  For testing: write dialog text"
+msgstr "--gui-dialog-file {nomefile}  Per test: scrive testo del dialogo"
 
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\tEsce se l'input o l'output non sono da un terminale"
@@ -2836,6 +2841,7 @@ msgstr "Compressi %s: %ld di %ld nodi; ne restano %ld (%ld%%)"
 msgid "Reading back spell file..."
 msgstr "Rilettura file ortografico..."
 
+#.
 msgid "Performing soundfolding..."
 msgstr "Eseguo soundfolding..."
 
@@ -7535,9 +7541,25 @@ msgstr "E1283: L'ammontare dello spostamento dev'essere un numero positivo"
 msgid "E1284: Argument 1, list item %d: Dictionary required"
 msgstr "E1284: Argomento 1, elemento di Lista %d: Dizionario richiesto"
 
+msgid "E1285: Could not clear timeout: %s"
+msgstr "E1285: Non riesco ad azzerare timeout: %s"
+
+msgid "E1286: Could not set timeout: %s"
+msgstr "E1286: Non riesco a impostare timeout: %s"
+
+msgid "E1287: Could not set handler for timeout: %s"
+msgstr "E1287: Non riesco a impostare il gestore del timeout: %s"
+
+msgid "E1288: Could not reset handler for timeout: %s"
+msgstr "E1288: Non riesco ad annullare il gestore del timeout: %s"
+
+msgid "E1289: Could not check for pending SIGALRM: %s"
+msgstr "E1289: Non riesco a controllare se in attesa di SIGALRM: %s"
+
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
 
+#.
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "raggiunta la CIMA nella ricerca, continuo dal FONDO"
 

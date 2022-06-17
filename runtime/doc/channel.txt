@@ -1485,7 +1485,7 @@ request to the LSP server (if needed).  Example: >
     let resp = ch_sendexpr(ch, req, #{callback: 'HoverFunc'})
 
 To cancel an outstanding asynchronous LSP request sent to the server using the
-|ch_sendexpr()| function, send a cancelation message to the server using the
+|ch_sendexpr()| function, send a cancellation message to the server using the
 |ch_sendexpr()| function with the ID returned by the |ch_sendexpr()| function
 for the request.  Example: >
 
@@ -1533,7 +1533,7 @@ A LSP request message has the following format (expressed as a Vim Dict).  The
 	"params": <list|dict>
     }
 
-A LSP reponse message has the following format (expressed as a Vim Dict).  The
+A LSP response message has the following format (expressed as a Vim Dict).  The
 "result" and "error" fields are optional: >
 
     {
@@ -1565,7 +1565,7 @@ A LSP request message has the following format (expressed as a Vim Dict).  The
 	"params": <list|dict>
     }
 
-A LSP reponse message has the following format (expressed as a Vim Dict).  The
+A LSP response message has the following format (expressed as a Vim Dict).  The
 "result" and "error" fields are optional: >
 
     {
