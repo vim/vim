@@ -3021,6 +3021,15 @@ call_user_func_check(
 {
     int error;
 
+#ifdef FEAT_LUA
+    if (fp->uf_flags & FC_CFUNC)
+    {
+	cfunc_T cb = fp->uf_cb;
+
+	return (*cb)(argcount, argvars, rettv, fp->uf_cb_state);
+    }
+#endif
+
     if (fp->uf_flags & FC_RANGE && funcexe->fe_doesrange != NULL)
 	*funcexe->fe_doesrange = TRUE;
     error = check_user_func_argcount(fp, argcount);
@@ -3584,14 +3593,6 @@ call_func(
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
 		error = FCERR_DELETED;
-#ifdef FEAT_LUA
-	    else if (fp != NULL && (fp->uf_flags & FC_CFUNC))
-	    {
-		cfunc_T cb = fp->uf_cb;
-
-		error = (*cb)(argcount, argvars, rettv, fp->uf_cb_state);
-	    }
-#endif
 	    else if (fp != NULL)
 	    {
 		if (funcexe->fe_argv_func != NULL)

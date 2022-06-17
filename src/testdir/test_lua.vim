@@ -664,6 +664,17 @@ func Test_lua_blob()
         \ '[string "vim chunk"]:1: string expected, got table')
 endfunc
 
+def Vim9Test(Callback: func())
+  Callback()
+enddef
+
+func Test_call_lua_func_from_vim9_func()
+  " this only tests that Vim doesn't crash
+  lua << EOF
+vim.fn.Vim9Test(function () print('Hello') end)
+EOF
+endfunc
+
 func Test_lua_funcref()
   function I(x)
     return a:x
