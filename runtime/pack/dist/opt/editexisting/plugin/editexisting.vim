@@ -35,32 +35,36 @@ func s:EditElsewhere(filename)
     endif
 
     " Check if this server is editing our file.
-    if remote_expr(servername, "bufloaded('" . fname_esc . "')")
-      " Yes, bring it to the foreground.
-      if has("win32")
-	call remote_foreground(servername)
-      endif
-      call remote_expr(servername, "foreground()")
-
-      if remote_expr(servername, "exists('*EditExisting')")
-	" Make sure the file is visible in a window (not hidden).
-	" If v:swapcommand exists and is set, send it to the server.
-	if exists("v:swapcommand")
-	  let c = substitute(v:swapcommand, "'", "''", "g")
-	  call remote_expr(servername, "EditExisting('" . fname_esc . "', '" . c . "')")
-	else
-	  call remote_expr(servername, "EditExisting('" . fname_esc . "', '')")
+    try
+      if remote_expr(servername, "bufloaded('" . fname_esc . "')")
+	" Yes, bring it to the foreground.
+	if has("win32")
+	  call remote_foreground(servername)
 	endif
-      endif
+	call remote_expr(servername, "foreground()")
 
-      if !(has('vim_starting') && has('gui_running') && has('gui_win32'))
-	" Tell the user what is happening.  Not when the GUI is starting
-	" though, it would result in a message box.
-	echomsg "File is being edited by " . servername
-	sleep 2
+	if remote_expr(servername, "exists('*EditExisting')")
+	  " Make sure the file is visible in a window (not hidden).
+	  " If v:swapcommand exists and is set, send it to the server.
+	  if exists("v:swapcommand")
+	    let c = substitute(v:swapcommand, "'", "''", "g")
+	    call remote_expr(servername, "EditExisting('" . fname_esc . "', '" . c . "')")
+	  else
+	    call remote_expr(servername, "EditExisting('" . fname_esc . "', '')")
+	  endif
+	endif
+
+	if !(has('vim_starting') && has('gui_running') && has('gui_win32'))
+	  " Tell the user what is happening.  Not when the GUI is starting
+	  " though, it would result in a message box.
+	  echomsg "File is being edited by " . servername
+	  sleep 2
+	endif
+	return 'q'
       endif
-      return 'q'
-    endif
+    catch /^Vim\%((\a\+)\)\=:E241:/
+      " Unable to send to this server. Ignore it.
+    endtry
   endwhile
   return ''
 endfunc
