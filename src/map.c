@@ -1273,7 +1273,7 @@ ExpandMappings(
     int		i;
     int		fuzzy;
     int		match;
-    int		score;
+    int		score = 0;
     fuzmatch_str_T  *fuzmatch;
 
     fuzzy = cmdline_fuzzy_complete(pat);
