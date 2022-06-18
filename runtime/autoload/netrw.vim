@@ -3665,7 +3665,7 @@ fun! s:NetrwBookHistRead()
   " read bookmarks
   if !exists("s:netrw_initbookhist")
    let home    = s:NetrwHome()
-   let savefile= home."/.netrwbook"
+   let savefile= home."/netrwbook"
    if filereadable(s:NetrwFile(savefile))
 "    call Decho("sourcing .netrwbook",'~'.expand("<slnum>"))
     exe "keepalt NetrwKeepj so ".savefile
@@ -3673,7 +3673,7 @@ fun! s:NetrwBookHistRead()
 
    " read history
    if g:netrw_dirhistmax > 0
-    let savefile= home."/.netrwhist"
+    let savefile= home."/netrwhist"
     if filereadable(s:NetrwFile(savefile))
 "    call Decho("sourcing .netrwhist",'~'.expand("<slnum>"))
      exe "keepalt NetrwKeepj so ".savefile
@@ -3704,7 +3704,7 @@ fun! s:NetrwBookHistSave()
    return
   endif
 
-  let savefile= s:NetrwHome()."/.netrwhist"
+  let savefile= s:NetrwHome()."/netrwhist"
 "  call Decho("savefile<".savefile.">",'~'.expand("<slnum>"))
   1split
 
@@ -3753,7 +3753,7 @@ fun! s:NetrwBookHistSave()
   if exists("g:netrw_bookmarklist") && g:netrw_bookmarklist != []
 "   call Decho("saving bookmarks",'~'.expand("<slnum>"))
    " merge and write .netrwbook
-   let savefile= s:NetrwHome()."/.netrwbook"
+   let savefile= s:NetrwHome()."/netrwbook"
 
    if filereadable(s:NetrwFile(savefile))
     let booklist= deepcopy(g:netrw_bookmarklist)
@@ -11811,7 +11811,7 @@ endfun
 fun! s:MergeBookmarks()
 "  call Dfunc("s:MergeBookmarks() : merge current bookmarks into .netrwbook")
   " get bookmarks from .netrwbook file
-  let savefile= s:NetrwHome()."/.netrwbook"
+  let savefile= s:NetrwHome()."/netrwbook"
   if filereadable(s:NetrwFile(savefile))
 "   call Decho("merge bookmarks (active and file)",'~'.expand("<slnum>"))
    NetrwKeepj call s:NetrwBookHistSave()
