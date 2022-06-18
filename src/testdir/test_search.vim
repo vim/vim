@@ -1584,11 +1584,20 @@ endfunction
 
 func Test_searchpair_timeout()
   edit ../evalfunc.c
+  if has('win32')
+    " Windows timeouts are rather coarse grained, about 16ms.
+    let ms = 20
+    let min_time = 0.016
+  else
+    let ms = 1
+    let min_time = 0.001
+  endif
+  let max_time = min_time * 10.0
   let start = reltime()
-  let found = searchpair('(', '', ')', 'crnm', 'Skip()', 0, 1)
+  let found = searchpair('(', '', ')', 'crnm', 'Skip()', 0, ms)
   let elapsed = reltimefloat(reltime(start))
-  call assert_true(elapsed >= 0.001)
-  call assert_true(elapsed < 0.010)
+  call assert_true(elapsed >= min_time)
+  call assert_true(elapsed < max_time)
   bwipe!
 endfunc
 

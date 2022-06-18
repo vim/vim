@@ -1145,8 +1145,9 @@ add_time(char_u *buf, size_t buflen, time_t tt)
  * both activated and expired.
  */
 
+static int def_timeout_flag = 0;
 long timeout_level = 0;
-int  timeout_flag  = FALSE;
+int  *timeout_flag  = &def_timeout_flag;
 
 /*
  * Stop any timeout started by a matching start_timeout call.
@@ -1163,7 +1164,7 @@ stop_timeout(void)
     if (--timeout_level == 0)
 	return mch_stop_timeout();
     else
-	return timeout_flag;
+	return *timeout_flag;
 }
 
 /*
@@ -1175,7 +1176,7 @@ start_timeout(long msec)
     // printf("Start T/O %ld, level = %ld\n", msec, timeout_level);
     if (timeout_level++ == 0)
     {
-	return mch_start_timeout(msec);
+	mch_start_timeout(msec);
     }
 }
 #endif

@@ -17,7 +17,7 @@
 
 #if defined(FEAT_RELTIME)
 EXTERN long timeout_level;
-EXTERN int  timeout_flag;
+EXTERN int  *timeout_flag;
 
 // Check for whether a timeout has occurred.
     static inline int
@@ -26,7 +26,7 @@ timeout_occurred()
     if (timeout_level == 0)
 	return FALSE;
     else
-	return timeout_flag;
+	return *timeout_flag;
 }
 #else
     static inline int

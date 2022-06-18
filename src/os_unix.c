@@ -8254,7 +8254,7 @@ xsmp_close(void)
 /*
  * Implement timeout with timer_create() and timer_settime().
  */
-static timer_t	timer_id;
+static timer_t	 timer_id;
 static int	timer_created = FALSE;
 
 /*
@@ -8263,7 +8263,7 @@ static int	timer_created = FALSE;
     static void
 set_flag(union sigval _unused UNUSED)
 {
-    timeout_flag = TRUE;
+    *timeout_flag = TRUE;
 }
 
 /*
@@ -8281,19 +8281,13 @@ mch_stop_timeout(void)
 	if (ret < 0)
 	    semsg(_(e_could_not_clear_timeout_str), strerror(errno));
     }
-    return timeout_flag;
+    return *timeout_flag;
 }
 
 /*
  * Start the timeout timer.
  *
- * The return value is a pointer to a flag that is initialised to FALSE. If the
- * timeout expires, the flag is set to TRUE. This will only return pointers to
- * static memory; i.e. any pointer returned by this function may always be
- * safely dereferenced.
- *
- * This function is not expected to fail, but if it does it will still return a
- * valid flag pointer; the flag will remain stuck as FALSE .
+ * The period is defined in milliseconds.
  */
     void
 mch_start_timeout(long msec)
@@ -8303,7 +8297,7 @@ mch_start_timeout(long msec)
 	{msec / 1000, (msec % 1000) * 1000000}};  // Timeout interval
     int ret;
 
-    timeout_flag = FALSE;
+    *timeout_flag = FALSE;
     if (!timer_created)
     {
 	struct sigevent action = {0};
@@ -8344,7 +8338,7 @@ set_flag SIGDEFARG(sigarg)
     if (alarm_pending)
 	alarm_pending = FALSE;
     else
-	timeout_flag = TRUE;
+	*timeout_flag = TRUE;
 }
 
 /*
@@ -8374,19 +8368,13 @@ mch_stop_timeout(void)
 	    semsg(_(e_could_not_reset_handler_for_timeout_str),
 		    strerror(errno));
     }
-    return timeout_flag;
+    return *timeout_flag;
 }
 
 /*
  * Start the timeout timer.
  *
- * The return value is a pointer to a flag that is initialised to FALSE. If the
- * timeout expires, the flag is set to TRUE. This will only return pointers to
- * static memory; i.e. any pointer returned by this function may always be
- * safely dereferenced.
- *
- * This function is not expected to fail, but if it does it will still return a
- * valid flag pointer; the flag will remain stuck as FALSE .
+ * The period is defined in milliseconds.
  */
     void
 mch_start_timeout(long msec)
@@ -8405,7 +8393,7 @@ mch_start_timeout(long msec)
     ret = sigemptyset(&sigs);
     ret = ret == 0 ? sigaddset(&sigs, SIGALRM) : ret;
     ret = ret == 0 ? sigprocmask(SIG_BLOCK, &sigs, &saved_sigs) : ret;
-    timeout_flag = FALSE;
+    *timeout_flag = FALSE;
     ret = ret == 0 ? sigpending(&sigs) : ret;
     if (ret == 0)
     {

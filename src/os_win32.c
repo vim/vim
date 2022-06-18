@@ -21,6 +21,7 @@
  */
 
 #include "vim.h"
+#include "timers.h"
 
 #ifdef FEAT_MZSCHEME
 # include "if_mzsch.h"
@@ -8336,22 +8337,21 @@ static int      timer_active = FALSE;
  */
 static int      timeout_flags[2];
 static int      flag_idx = 0;
-static int      *timeout_flag = &timeout_flags[0];
 
 
     static void CALLBACK
 set_flag(void *param, BOOLEAN unused2 UNUSED)
 {
-    int *timeout_flag = (int *)param;
+    int *flag = (int *)param;
 
-    *timeout_flag = TRUE;
+    *flag = TRUE;
 }
 
 /*
  * Stop any active timeout.
  */
-    void
-stop_timeout(void)
+    int
+mch_stop_timeout(void)
 {
     if (timer_active)
     {
@@ -8362,30 +8362,22 @@ stop_timeout(void)
 	    semsg(_(e_could_not_clear_timeout_str), GetWin32Error());
 	}
     }
-    *timeout_flag = FALSE;
+    return *timeout_flag;
 }
 
 /*
  * Start the timeout timer.
  *
  * The period is defined in milliseconds.
- *
- * The return value is a pointer to a flag that is initialised to 0.  If the
- * timeout expires, the flag is set to 1. This will only return pointers to
- * static memory; i.e. any pointer returned by this function may always be
- * safely dereferenced.
- *
- * This function is not expected to fail, but if it does it still returns a
- * valid flag pointer; the flag will remain stuck at zero.
  */
-    const int *
-start_timeout(long msec)
+    void
+mch_start_timeout(long msec)
 {
     BOOL ret;
 
     timeout_flag = &timeout_flags[flag_idx];
+    *timeout_flag = FALSE;
 
-    stop_timeout();
     ret = CreateTimerQueueTimer(
 	    &timer_handle, NULL, set_flag, timeout_flag,
 	    (DWORD)msec, 0, WT_EXECUTEDEFAULT);
@@ -8397,8 +8389,6 @@ start_timeout(long msec)
     {
 	flag_idx = (flag_idx + 1) % 2;
 	timer_active = TRUE;
-	*timeout_flag = FALSE;
     }
-    return timeout_flag;
 }
 #endif
