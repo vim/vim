@@ -54,8 +54,7 @@ func Test_hlsearch_hangs()
   let @/ = '\%#=1a*.*X\@<=b*'
   redraw
   let elapsed = reltimefloat(reltime(start))
-  call assert_true(elapsed > min_timeout)
-  call assert_true(elapsed < 1.0)
+  call assert_inrange(min_timeout, 1.0, elapsed)
   set nohlsearch redrawtime&
   bwipe!
 endfunc
