@@ -544,22 +544,20 @@ func Test_syntax_hangs()
   syn match Error /\%#=1a*.*X\@<=b*/
   redraw
   let elapsed = reltimefloat(reltime(start))
-  call assert_true(elapsed > min_timeout)
-  call assert_true(elapsed < 1.0)
+  call assert_inrange(min_timeout, 1.0, elapsed)
 
   " second time syntax HL is disabled
   let start = reltime()
   redraw
   let elapsed = reltimefloat(reltime(start))
-  call assert_true(elapsed < 0.1)
+  call assert_inrange(0, 0.1, elapsed)
 
   " after CTRL-L the timeout flag is reset
   let start = reltime()
   exe "normal \<C-L>"
   redraw
   let elapsed = reltimefloat(reltime(start))
-  call assert_true(elapsed > min_timeout)
-  call assert_true(elapsed < 1.0)
+  call assert_inrange(min_timeout, 1.0, elapsed)
 
   set redrawtime&
   bwipe!
