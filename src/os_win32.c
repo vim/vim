@@ -8378,7 +8378,7 @@ stop_timeout(void)
  * This function is not expected to fail, but if it does it still returns a
  * valid flag pointer; the flag will remain stuck at zero.
  */
-    const int *
+    volatile int *
 start_timeout(long msec)
 {
     BOOL ret;
