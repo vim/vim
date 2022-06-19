@@ -7013,7 +7013,7 @@ else
      * Only the first python version used will be switched on.
      */
 
-    int no_rtl_global_needed_for(char *python_instsoname, char *prefix)
+    static int no_rtl_global_needed_for(char *python_instsoname, char *prefix)
     {
       int needed = 0;
       void* pylib = dlopen(python_instsoname, RTLD_LAZY|RTLD_LOCAL);
@@ -7032,7 +7032,7 @@ else
       return !needed;
     }
 
-    int main(int argc, char** argv)
+    int main()
     {
       int not_needed = 0;
       if (no_rtl_global_needed_for("${vi_cv_dll_name_python}", "${vi_cv_path_python_pfx}"))
@@ -7079,7 +7079,7 @@ else
      * Only the first python version used will be switched on.
      */
 
-    int no_rtl_global_needed_for(char *python_instsoname, wchar_t *prefix)
+    static int no_rtl_global_needed_for(char *python_instsoname, wchar_t *prefix)
     {
       int needed = 0;
       void* pylib = dlopen(python_instsoname, RTLD_LAZY|RTLD_LOCAL);
@@ -7098,7 +7098,7 @@ else
       return !needed;
     }
 
-    int main(int argc, char** argv)
+    int main()
     {
       int not_needed = 0;
       if (no_rtl_global_needed_for("${vi_cv_dll_name_python3}", L"${vi_cv_path_python3_pfx}"))
@@ -9209,7 +9209,7 @@ else
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-		main()
+		int main()
 		{
 		  if (sizeof(wchar_t) <= 2)
 		    exit(1);
@@ -10751,7 +10751,7 @@ else
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main() { exit(toupper('A') == 'A' && tolower('z') == 'z'); }
+int main() { exit(toupper('A') == 'A' && tolower('z') == 'z'); }
 
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
@@ -11973,7 +11973,7 @@ else
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main() {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(0); }
+int main() {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(0); }
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
   res="OK"
@@ -12050,7 +12050,7 @@ else
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main()
+int main()
 {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!strcmp(s==0 ? "" : s, "1")); }
 
 _ACEOF
@@ -12099,7 +12099,7 @@ else
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main()
+int main()
 {char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist"); exit(res != 0); }
 
 _ACEOF
@@ -12464,7 +12464,7 @@ else
 #include <unistd.h>
 #endif
 char *dagger[] = { "IFS=pwd", 0 };
-main()
+int main()
 {
   char buffer[500];
   extern char **environ;
@@ -13128,7 +13128,7 @@ else
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
-main() {struct stat st;  exit(stat("configure/", &st) != 0); }
+int main() {struct stat st;  exit(stat("configure/", &st) != 0); }
 
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
@@ -14282,7 +14282,7 @@ else
 #ifdef HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
-main() {
+int main() {
   uint32_t nr1 = (uint32_t)-1;
   uint32_t nr2 = (uint32_t)0xffffffffUL;
   if (sizeof(uint32_t) != 4 || nr1 != 0xffffffffUL || nr2 + 1 != 0) return 1;
@@ -14310,7 +14310,7 @@ bcopy_test_prog='
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main() {
+int main() {
   char buf[10];
   strcpy(buf, "abcdefghi");
   mch_memmove(buf, buf + 2, 3);

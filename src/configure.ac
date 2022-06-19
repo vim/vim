@@ -1695,7 +1695,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
      * Only the first python version used will be switched on.
      */
 
-    int no_rtl_global_needed_for(char *python_instsoname, char *prefix)
+    static int no_rtl_global_needed_for(char *python_instsoname, char *prefix)
     {
       int needed = 0;
       void* pylib = dlopen(python_instsoname, RTLD_LAZY|RTLD_LOCAL);
@@ -1714,7 +1714,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
       return !needed;
     }
 
-    int main(int argc, char** argv)
+    int main()
     {
       int not_needed = 0;
       if (no_rtl_global_needed_for("${vi_cv_dll_name_python}", "${vi_cv_path_python_pfx}"))
@@ -1741,7 +1741,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
      * Only the first python version used will be switched on.
      */
 
-    int no_rtl_global_needed_for(char *python_instsoname, wchar_t *prefix)
+    static int no_rtl_global_needed_for(char *python_instsoname, wchar_t *prefix)
     {
       int needed = 0;
       void* pylib = dlopen(python_instsoname, RTLD_LAZY|RTLD_LOCAL);
@@ -1760,7 +1760,7 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
       return !needed;
     }
 
-    int main(int argc, char** argv)
+    int main()
     {
       int not_needed = 0;
       if (no_rtl_global_needed_for("${vi_cv_dll_name_python3}", L"${vi_cv_path_python3_pfx}"))
@@ -2420,7 +2420,7 @@ else
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-		main()
+		int main()
 		{
 		  if (sizeof(wchar_t) <= 2)
 		    exit(1);
@@ -3218,7 +3218,7 @@ AC_CACHE_CHECK([whether toupper is broken], [vim_cv_toupper_broken],
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main() { exit(toupper('A') == 'A' && tolower('z') == 'z'); }
+int main() { exit(toupper('A') == 'A' && tolower('z') == 'z'); }
   ]])],[
     vim_cv_toupper_broken=yes
   ],[
@@ -3442,7 +3442,7 @@ else
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main() {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(0); }])],
+int main() {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(0); }])],
 			  res="OK", res="FAIL", res="FAIL")
       if test "$res" = "OK"; then
 	break
@@ -3481,7 +3481,7 @@ AC_CACHE_CHECK([whether we talk terminfo], [vim_cv_terminfo],
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main()
+int main()
 {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!strcmp(s==0 ? "" : s, "1")); }
     ]])],[
       vim_cv_terminfo=no
@@ -3507,7 +3507,7 @@ AC_CACHE_CHECK([what tgetent() returns for an unknown terminal], [vim_cv_tgetent
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main()
+int main()
 {char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist"); exit(res != 0); }
     ]])],[
       vim_cv_tgetent=zero
@@ -3670,7 +3670,7 @@ AC_CACHE_CHECK([getcwd implementation is broken], [vim_cv_getcwd_broken],
 #include <unistd.h>
 #endif
 char *dagger[] = { "IFS=pwd", 0 };
-main()
+int main()
 {
   char buffer[500];
   extern char **environ;
@@ -3849,7 +3849,7 @@ AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_s
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
-main() {struct stat st;  exit(stat("configure/", &st) != 0); }
+int main() {struct stat st;  exit(stat("configure/", &st) != 0); }
     ]])],[
       vim_cv_stat_ignores_slash=yes
     ],[
@@ -4238,7 +4238,7 @@ AC_RUN_IFELSE([AC_LANG_SOURCE([
 #ifdef HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
-main() {
+int main() {
   uint32_t nr1 = (uint32_t)-1;
   uint32_t nr2 = (uint32_t)0xffffffffUL;
   if (sizeof(uint32_t) != 4 || nr1 != 0xffffffffUL || nr2 + 1 != 0) return 1;
@@ -4260,7 +4260,7 @@ dnl present, fixes problem with incompatibility between Solaris 2.4 and 2.5.
 # include <stdlib.h>
 # include <stddef.h>
 #endif
-main() {
+int main() {
   char buf[10];
   strcpy(buf, "abcdefghi");
   mch_memmove(buf, buf + 2, 3);
