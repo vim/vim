@@ -370,7 +370,6 @@ timer_settime(
  * Disabled because it is not currently used, but an implemented provided
  * for completeness and possible future use.
  */
-#if 0
     int
 timer_delete(timer_t timerid)
 {
@@ -380,7 +379,6 @@ timer_delete(timer_t timerid)
 
     return 0;
 }
-#endif
 
 #endif /* FEAT_RELTIME */
 
