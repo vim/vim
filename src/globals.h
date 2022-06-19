@@ -1228,6 +1228,10 @@ EXTERN int	do_redraw INIT(= FALSE);    // extra redraw once
 #ifdef FEAT_DIFF
 EXTERN int	need_diff_redraw INIT(= 0); // need to call diff_redraw()
 #endif
+#ifdef FEAT_RELTIME
+// flag set when 'redrawtime' timeout has been set
+EXTERN int	redrawtime_limit_set INIT(= FALSE);
+#endif
 
 EXTERN int	need_highlight_changed INIT(= TRUE);
 

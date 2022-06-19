@@ -3150,8 +3150,8 @@ syn_regexec(
     colnr_T	col,
     syn_time_T  *st UNUSED)
 {
-    int r;
-    int timed_out = FALSE;
+    int		r;
+    int		timed_out = FALSE;
 #ifdef FEAT_PROFILE
     proftime_T	pt;
 
@@ -3181,7 +3181,7 @@ syn_regexec(
     }
 #endif
 #ifdef FEAT_RELTIME
-    if (timed_out && !syn_win->w_s->b_syn_slow)
+    if (timed_out && redrawtime_limit_set && !syn_win->w_s->b_syn_slow)
     {
 	syn_win->w_s->b_syn_slow = TRUE;
 	msg(_("'redrawtime' exceeded, syntax highlighting disabled"));
