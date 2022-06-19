@@ -528,7 +528,7 @@ func Test_connect_waittime()
     call ch_close(handle)
   else
     let elapsed = reltime(start)
-    call assert_true(reltimefloat(elapsed) < 1.0)
+    call assert_inrange(0.0, 1.0, reltimefloat(elapsed))
   endif
 
   " We intend to use a socket that doesn't exist and wait for half a second
@@ -1634,8 +1634,7 @@ func Test_exit_callback_interval()
   let g:exit_cb_val.process = job_info(job).process
   call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
   let elapsed = reltimefloat(g:exit_cb_val.end)
-  call assert_true(elapsed > 0.5)
-  call assert_true(elapsed < 1.0)
+  call assert_inrange(0.5, 1.0, elapsed)
 
   " case: unreferenced job, using timer
   if !has('timers')
