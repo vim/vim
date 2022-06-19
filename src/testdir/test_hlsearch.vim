@@ -37,7 +37,7 @@ endfunc
 func Test_hlsearch_hangs()
   CheckFunction reltimefloat
 
-  " So, it turns out the Windows 7 implements TimerQueue timers differently
+  " So, it turns out that Windows 7 implements TimerQueue timers differently
   " and they can expire *before* the requested time has elapsed. So allow for
   " the timeout occurring after 80 ms (5 * 16 (the typical clock tick)).
   if has("win32")

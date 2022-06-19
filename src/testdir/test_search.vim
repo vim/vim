@@ -355,6 +355,37 @@ func Test_searchpair_timeout()
   bwipe!
 endfunc
 
+func SearchpairSkip()
+  let id = synID(line('.'), col('.'), 0)
+  let attr = synIDattr(id, 'name')
+  return attr !~ 'comment'
+endfunc
+
+func Test_searchpair_timeout_with_skip()
+  let g:test_is_flaky = 1
+
+  edit ../evalfunc.c
+  if has('win32')
+    " Windows timeouts are rather coarse grained, about 16ms.
+    let ms = 20
+    let min_time = 0.016
+    let max_time = min_time * 10.0
+  else
+    let ms = 1
+    let min_time = 0.001
+    let max_time = min_time * 10.0
+    if GetVimCommand() =~ 'valgrind.*--log-file='
+      let max_time += 0.04  " this can be slow with valgrind
+    endif
+  endif
+  let start = reltime()
+  let found = searchpair('(', '', ')', 'crnm', 'SearchpairSkip()', 0, ms)
+  let elapsed = reltimefloat(reltime(start))
+  call assert_inrange(min_time, max_time, elapsed)
+
+  bwipe!
+endfunc
+
 func Test_searchpairpos()
   new
   call setline(1, ['other code', 'here [', ' [', ' " cursor here', ' ]]'])

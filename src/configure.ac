@@ -80,7 +80,7 @@ dnl Check for the flag that fails if stuff are missing.
 AC_MSG_CHECKING(--enable-fail-if-missing argument)
 AC_ARG_ENABLE(fail_if_missing,
 	[  --enable-fail-if-missing    Fail if dependencies on additional features
-     specified on the command line are missing.], 
+     specified on the command line are missing.],
 	[fail_if_missing="yes"],
 	[fail_if_missing="no"])
 AC_MSG_RESULT($fail_if_missing)
@@ -237,7 +237,7 @@ if test "$vim_cv_uname_output" = Darwin; then
   AC_ARG_WITH(developer-dir, [  --with-developer-dir=PATH    use PATH as location for Xcode developer tools],
 	DEVELOPER_DIR="$withval"; AC_MSG_RESULT($DEVELOPER_DIR),
         AC_MSG_RESULT(not present))
-  
+
   if test "x$DEVELOPER_DIR" = "x"; then
     AC_PATH_PROG(XCODE_SELECT, xcode-select)
     if test "x$XCODE_SELECT" != "x"; then
@@ -287,6 +287,8 @@ if test "$vim_cv_uname_output" = Darwin; then
     MACOS_X_DARWIN=yes
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
+    dnl os_macosx.m implements timer_create() and friends
+    AC_DEFINE(HAVE_TIMER_CREATE)
     dnl TODO: use -arch i386 on Intel machines
     dnl Removed -no-cpp-precomp, only for very old compilers.
     CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
@@ -1499,36 +1501,36 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
        if ${vi_cv_path_python3} -c \
            "import sys; sys.exit(${vi_cv_var_python3_version} < 3.2)"
        then
-         vi_cv_var_python3_abiflags=`${vi_cv_path_python3} -c \    
+         vi_cv_var_python3_abiflags=`${vi_cv_path_python3} -c \
            "import sys; print(sys.abiflags)"`
        fi ])
-  
+
       dnl -- find where python3 thinks it was installed
       AC_CACHE_CHECK(Python's install prefix,vi_cv_path_python3_pfx,
       [ vi_cv_path_python3_pfx=`
        ${vi_cv_path_python3} -c \
        "import sys; print(sys.prefix)"` ])
-  
+
       dnl -- and where it thinks it runs
       AC_CACHE_CHECK(Python's execution prefix,vi_cv_path_python3_epfx,
       [ vi_cv_path_python3_epfx=`
        ${vi_cv_path_python3} -c \
        "import sys; print(sys.exec_prefix)"` ])
-  
+
       dnl -- python3's internal library path
-  
+
       AC_CACHE_VAL(vi_cv_path_python3path,
       [ vi_cv_path_python3path=`
        unset PYTHONPATH;
        ${vi_cv_path_python3} -c \
        "import sys, string; print(':'.join(sys.path))"` ])
-  
+
       dnl -- where the Python implementation library archives are
-  
+
       AC_ARG_WITH(python3-config-dir,
        [  --with-python3-config-dir=PATH  Python's config directory (deprecated)],
        [ vi_cv_path_python3_conf="${withval}"; have_python3_config_dir=1 ] )
-  
+
       AC_CACHE_CHECK(Python's configuration directory,vi_cv_path_python3_conf,
       [
        vi_cv_path_python3_conf=
@@ -1550,13 +1552,13 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
          done
        fi
       ])
-  
+
       PYTHON3_CONFDIR="${vi_cv_path_python3_conf}"
-  
+
       if test "X$PYTHON3_CONFDIR" = "X"; then
         AC_MSG_RESULT([can't find it!])
       else
-  
+
         dnl -- we need to examine Python's config/Makefile too
         dnl    see what the interpreter is built from
         AC_CACHE_VAL(vi_cv_path_python3_plibs,
@@ -1601,7 +1603,7 @@ eof
 	fi
         PYTHON3_SRC="if_python3.c"
         PYTHON3_OBJ="objects/if_python3.o"
-  
+
         dnl On FreeBSD linking with "-pthread" is required to use threads.
         dnl _THREAD_SAFE must be used for compiling then.
         dnl The "-pthread" is added to $LIBS, so that the following check for
@@ -1636,7 +1638,7 @@ eof
         else
           AC_MSG_RESULT(no)
         fi
-  
+
         dnl check that compiling a simple program still works with the flags
         dnl added for Python.
         AC_MSG_CHECKING([if compile and link flags for Python 3 are sane])
@@ -1675,7 +1677,7 @@ AC_SUBST(PYTHON3_SRC)
 AC_SUBST(PYTHON3_OBJ)
 
 dnl if python2.x and python3.x are enabled one can only link in code
-dnl with dlopen(), dlsym(), dlclose() 
+dnl with dlopen(), dlsym(), dlclose()
 if test "$python_ok" = yes && test "$python3_ok" = yes; then
   AC_DEFINE(DYNAMIC_PYTHON)
   AC_DEFINE(DYNAMIC_PYTHON3)
@@ -3113,7 +3115,7 @@ if test -z "$SKIP_MOTIF"; then
 	AC_CHECK_HEADERS(Xm/Xm.h)
   else
 	AC_CHECK_HEADERS(Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h Xm/UnhighlightT.h Xm/Notebook.h)
-  fi    
+  fi
 
   if test "x$ac_cv_header_Xm_XpmP_h" = "xyes"; then
     dnl Solaris uses XpmAttributes_21, very annoying.
@@ -3809,7 +3811,7 @@ LIBS="$LIBS -lrt"
 AC_LINK_IFELSE([AC_LANG_PROGRAM([
 #include<signal.h>
 #include<time.h>
-static void set_flag(union sigval) {}
+static void set_flag(union sigval sv) {}
 ], [
   struct timespec ts;
   struct sigevent action = {0};
@@ -3824,7 +3826,7 @@ static void set_flag(union sigval) {}
   AC_LINK_IFELSE([AC_LANG_PROGRAM([
 #include<signal.h>
 #include<time.h>
-static void set_flag(union sigval) {}
+static void set_flag(union sigval sv) {}
     ], [
     struct timespec ts;
     struct sigevent action = {0};
@@ -3885,7 +3887,7 @@ if test $ac_cv_struct_st_mtim_nsec != no; then
   AC_DEFINE_UNQUOTED([ST_MTIM_NSEC], [$ac_cv_struct_st_mtim_nsec],
   [Define if struct stat contains a nanoseconds field])
 fi
-  
+
 dnl Link with iconv for charset translation, if not found without library.
 dnl check for iconv() requires including iconv.h
 dnl Add "-liconv" when possible; Solaris has iconv but use GNU iconv when it

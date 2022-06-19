@@ -4769,6 +4769,8 @@ rm -f core conftest.err conftest.$ac_objext \
     MACOS_X_DARWIN=yes
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
+        $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
+
             CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
 
                if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
@@ -13044,7 +13046,7 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 
 #include<signal.h>
 #include<time.h>
-static void set_flag(union sigval) {}
+static void set_flag(union sigval sv) {}
 
 int
 main ()
@@ -13073,7 +13075,7 @@ else
 
 #include<signal.h>
 #include<time.h>
-static void set_flag(union sigval) {}
+static void set_flag(union sigval sv) {}
 
 int
 main ()
