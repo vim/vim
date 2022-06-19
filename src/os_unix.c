@@ -8307,7 +8307,6 @@ start_timeout(long msec)
     // This is really the caller's responsibility, but let's make sure the
     // previous timer has been stopped.
     stop_timeout();
-    timeout_flag = FALSE;
 
     if (!timer_created)
     {
