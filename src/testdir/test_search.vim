@@ -374,7 +374,7 @@ func Test_searchpair_timeout_with_skip()
     let ms = 1
     let min_time = 0.001
     let max_time = min_time * 10.0
-    if GetVimCommand() =~ 'valgrind.*--log-file='
+    if RunningWithValgrind()
       let max_time += 0.04  " this can be slow with valgrind
     endif
   endif
