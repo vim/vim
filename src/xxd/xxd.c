@@ -55,6 +55,7 @@
  * 11.01.2019  Add full 64/32 bit range to -o and output by Christer Jensen.
  * 04.02.2020  Add -d for decimal offsets by Aapo Rantalainen
  * 14.01.2022  Disable extra newlines with -c0 -p by Erik Auerswald.
+ * 20.06.2022  Permit setting the variable names used by -i by David Gow
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@gmail.com)
  *
@@ -226,6 +227,7 @@ exit_with_usage(void)
   fprintf(stderr, "    -h          print this summary.\n");
   fprintf(stderr, "    -i          output in C include file style.\n");
   fprintf(stderr, "    -l len      stop after <len> octets.\n");
+  fprintf(stderr, "    -n name     set the variable name used in C include output (-i).\n");
   fprintf(stderr, "    -o off      add <off> to the displayed file position.\n");
   fprintf(stderr, "    -ps         output in postscript plain hexdump style.\n");
   fprintf(stderr, "    -r          reverse operation: convert (or patch) hexdump into binary.\n");
@@ -497,6 +499,7 @@ main(int argc, char *argv[])
   unsigned long displayoff = 0;
   static char l[LLEN+1];  /* static because it may be too big for stack */
   char *pp;
+  char *varname = NULL;
   int addrlen = 9;
 
 #ifdef AMIGA
@@ -635,6 +638,19 @@ main(int argc, char *argv[])
 	      argc--;
 	    }
 	}
+      else if (!STRNCMP(pp, "-n", 2))
+        {
+          if (pp[2] && STRNCMP("ame", pp + 2, 3))
+            varname = pp + 2;
+          else
+            {
+              if (!argv[2])
+                exit_with_usage();
+              varname = argv[2];
+              argv++;
+              argc--;
+            }
+        }
       else if (!strcmp(pp, "--"))	/* end of options */
 	{
 	  argv++;
@@ -753,10 +769,16 @@ main(int argc, char *argv[])
 
   if (hextype == HEX_CINCLUDE)
     {
-      if (fp != stdin)
+      /* A user-set variable name overrides fp == stdin */
+      int have_varname = (varname || fp != stdin);
+
+      if (!varname)
+        varname = argv[1];
+
+      if (have_varname)
 	{
 	  FPRINTF_OR_DIE((fpo, "unsigned char %s", isdigit((int)argv[1][0]) ? "__" : ""));
-	  for (e = 0; (c = argv[1][e]) != 0; e++)
+	  for (e = 0; (c = varname[e]) != 0; e++)
 	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  fputs_or_die("[] = {\n", fpo);
 	}
@@ -776,8 +798,8 @@ main(int argc, char *argv[])
       if (fp != stdin)
 	{
 	  fputs_or_die("};\n", fpo);
-	  FPRINTF_OR_DIE((fpo, "unsigned int %s", isdigit((int)argv[1][0]) ? "__" : ""));
-	  for (e = 0; (c = argv[1][e]) != 0; e++)
+	  FPRINTF_OR_DIE((fpo, "unsigned int %s", isdigit((int)varname[0]) ? "__" : ""));
+	  for (e = 0; (c = varname[e]) != 0; e++)
 	    putc_or_die(isalnum(c) ? CONDITIONAL_CAPITALIZE(c) : '_', fpo);
 	  FPRINTF_OR_DIE((fpo, "_%s = %d;\n", capitalize ? "LEN" : "len", p));
 	}
