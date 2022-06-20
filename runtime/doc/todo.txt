@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 17
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,18 +38,15 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Searchpair() timeout using skip expression using synID() interferes with
-syntax highlighting. #10562
-Add flag that timeout is set for 'redrawtime' and only then set b_syn_slow.
-
 Prepare for Vim 9.0 release:
 - Update the user manual:
   - Add more to usr_50.txt as an "advanced section" of usr_41.txt
   - Move some from vim9.txt to the user manual?  Keep the specification.
-- Use Vim9 for more runtime files.
+- Update version9.txt
 - Adjust intro message to say "help version9".
 
 Further Vim9 improvements, possibly after launch:
+- Use Vim9 for more runtime files.
 - Check performance with callgrind and kcachegrind.
     getline()/substitute()/setline() in #5632
 - Better implementation for partial and tests for that.
@@ -80,7 +77,8 @@ Further Vim9 improvements, possibly after launch:
 Update list of features to vote on:
 - multiple cursors
 - built-in LSP support
-- start first line halfway
+- virtual text, using text properties
+- start first line halfway, scroll per screen line
 
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
@@ -206,8 +204,15 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Patches considered for including:
+- Add "-n" option to xxd. #10599
+- Support %e and %k in 'errorformat'. #9624
+- Add support for "underdouble", "underdot" and "underdash". #9553
+- Patch to implement the vimtutor with a plugin: #6414
+  Was originally written by Felipe Morales.
+- Patch to make fillchars global-local. (#5206)
+
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
-    attempt in ~/tmp/configure.ac
 - try using autoconf 2.71 and fix all "obsolete" warnings
 
 Can deref_func_name() and deref_function_name() be merged?
@@ -228,32 +233,15 @@ pass it on with modifications.
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
 
-Valgrind reports memory leaks in test_options.
-Valgrind reports overlapping memcpy in
-    test_conceal.3
-    test_edit.1
-    test_functions.4
-    test_ins_complete.3
-    test_method
-    test_normal
-    test_popupwin.35 et al.
-    test_search_stat
-Memory leak in test_debugger
-Memory leak in test_paste, using XtOpenDisplay several times
-OLD:
-TODO: be able to run all parts of test_alot with valgrind separately
-Memory leak in test_alot with pyeval() (allocating partial)
-Memory leak in test_alot with expand()
-Memory leaks in test_channel? (or is it because of fork())
-
-PR to support %e and %k in 'errorformat'. #9624
+Problems reported by Valgrind:
+Memory leaks in test_channel, in func Test_job_start_fails().  Weird.
 
 With a window height of 6 and 'scrolloff' set to 3, using "j" does not scroll
-evenly. (#10545)
+evenly. (#10545)  Need to handle this in scroll_cursor_bot().
 
 Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 
-":set &shellpipe" and ":set &shellredir" should use the logic from
+":set shellpipe&" and ":set shellredir&" should use the logic from
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
 
@@ -266,8 +254,6 @@ The line number can be obtained from win->w_lines[].
 
 MS-Windows: did path modifier :p:8 stop working?  #8600
 
-Add support for "underdouble", "underdot" and "underdash". #9553
-
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
 Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
@@ -277,9 +263,6 @@ more information.
 Problem that a previous silent ":throw" causes a following try/catch not to
 work. (ZyX, 2013 Sep 28) With examples: (Malcolm Rowe, 2015 Dec 24)
 Also see #8487 for an example.
-
-Patch to implement the vimtutor with a plugin: #6414
-Was originally written by Felipe Morales.
 
 Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
 (#8179)
@@ -317,8 +300,6 @@ with 'termguicolors'. #1740
 
 Patch for blockwise paste reporting changes: #6660.  Asked for a PR.
 
-Patch to make fillchars global-local. (#5206)
-
 Missing filetype test for bashrc, PKGBUILD, etc.
 
 Add an option to not fetch terminal codes in xterm, to avoid flicker when t_Co
@@ -338,6 +319,10 @@ Try setting a color then request the current color, like using t_u7.
 
 Make the jumplist behave like a tag stack. (#7738)  Should there be a more
 time bound navigation, like with undo?
+
+For testing, make a copy of ml_line_ptr instead of pointing it into the data
+block, so that valgrind can do out of bounds check.  Set ML_LINE_DIRTY flag or
+add ML_LINE_ALLOCED.
 
 Changing a capturing group to non-capturing changes the result: #7607
     :echo matchstr('aaa bbb', '\(.\{-1,}\>\)\|.*')

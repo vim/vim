@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
+*eval.txt*	For Vim version 8.2.  Last change: 2022 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -531,7 +531,7 @@ entry.  Note that the String '04' and the Number 04 are different, since the
 Number will be converted to the String '4', leading zeros are dropped.  The
 empty string can also be used as a key.
 
-In |Vim9| script literally keys can be used if the key consists of alphanumeric
+In |Vim9| script a literal key can be used if it consists only of alphanumeric
 characters, underscore and dash, see |vim9-literal-dict|.
 						*literal-Dict* *#{}*
 To avoid having to put quotes around every key the #{} form can be used in

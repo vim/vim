@@ -3197,6 +3197,7 @@ $quote	eval.txt	/*$quote*
 :sort	change.txt	/*:sort*
 :source	repeat.txt	/*:source*
 :source!	repeat.txt	/*:source!*
+:source-range	repeat.txt	/*:source-range*
 :source_crnl	repeat.txt	/*:source_crnl*
 :sp	windows.txt	/*:sp*
 :spe	spell.txt	/*:spe*
@@ -5444,6 +5445,7 @@ SpellFileMissing	autocmd.txt	/*SpellFileMissing*
 StdinReadPost	autocmd.txt	/*StdinReadPost*
 StdinReadPre	autocmd.txt	/*StdinReadPre*
 String	eval.txt	/*String*
+Sven-Guckes	version9.txt	/*Sven-Guckes*
 SwapExists	autocmd.txt	/*SwapExists*
 Syntax	autocmd.txt	/*Syntax*
 T	motion.txt	/*T*

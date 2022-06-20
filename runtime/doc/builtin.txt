@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jun 16
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2869,7 +2869,7 @@ fnamemodify({fname}, {mods})				*fnamemodify()*
 		Example: >
 			:echo fnamemodify("main.c", ":p:h")
 <		results in: >
-			/home/mool/vim/vim/src
+			/home/user/vim/vim/src
 <		If {mods} is empty or an unsupported modifier is used then
 		{fname} is returned.
 		Note: Environment variables don't work in {fname}, use
@@ -10021,8 +10021,6 @@ win_gettype([{nr}])					*win_gettype()*
 		Also see the 'buftype' option.  When running a terminal in a
 		popup window then 'buftype' is "terminal" and win_gettype()
 		returns "popup".
-
-		Return an empty string if the window cannot be found.
 
 		Can also be used as a |method|: >
 			GetWinid()->win_gettype()
