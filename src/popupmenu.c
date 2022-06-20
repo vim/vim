@@ -470,6 +470,14 @@ pum_redraw(void)
     for (i = 0; i < pum_height; ++i)
     {
 	idx = i + pum_first;
+
+	if(pum_row > pum_win_row)
+	{
+	    // invert the menu if it's displayed below the current row
+	    // so first auto complete selection is shown right below current line
+	    idx = pum_size - idx - 1;
+	}
+
 	attr = (idx == pum_selected) ? attr_select : attr_norm;
 
 	// prepend a space if there is room
