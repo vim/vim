@@ -8323,8 +8323,10 @@ start_timeout(long msec)
 	timer_created = TRUE;
     }
 
+# ifdef FEAT_JOB_CHANNEL
     ch_log(NULL, "setting timeout timer to %d sec %ld nsec",
 	       (int)interval.it_value.tv_sec, (long)interval.it_value.tv_nsec);
+# endif
     ret = timer_settime(timer_id, 0, &interval, NULL);
     if (ret < 0)
 	semsg(_(e_could_not_set_timeout_str), strerror(errno));
