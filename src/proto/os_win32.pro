@@ -85,5 +85,5 @@ int get_conpty_fix_type(void);
 void resize_console_buf(void);
 char *GetWin32Error(void);
 void stop_timeout(void);
-volatile int *start_timeout(long msec);
+volatile sig_atomic_t *start_timeout(long msec);
 /* vim: set ft=c : */

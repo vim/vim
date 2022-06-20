@@ -87,6 +87,6 @@ int xsmp_handle_requests(void);
 void xsmp_init(void);
 void xsmp_close(void);
 void stop_timeout(void);
-volatile int *start_timeout(long msec);
+volatile sig_atomic_t *start_timeout(long msec);
 void delete_timer(void);
 /* vim: set ft=c : */

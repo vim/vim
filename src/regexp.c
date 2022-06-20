@@ -21,8 +21,8 @@
 #endif
 
 #ifdef FEAT_RELTIME
-static int dummy_timeout_flag = 0;
-static volatile int *timeout_flag = &dummy_timeout_flag;
+static sig_atomic_t dummy_timeout_flag = 0;
+static volatile sig_atomic_t *timeout_flag = &dummy_timeout_flag;
 #endif
 
 /*
