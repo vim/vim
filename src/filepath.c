@@ -1314,7 +1314,7 @@ f_glob(typval_T *argvars, typval_T *rettv)
 	if (rettv->v_type == VAR_STRING)
 	    rettv->vval.v_string = ExpandOne(&xpc, tv_get_string(&argvars[0]),
 						     NULL, options, WILD_ALL);
-	else if (rettv_list_alloc(rettv) != FAIL)
+	else if (rettv_list_alloc(rettv) == OK)
 	{
 	  int i;
 
@@ -1395,7 +1395,7 @@ f_globpath(typval_T *argvars, typval_T *rettv)
 	globpath(tv_get_string(&argvars[0]), file, &ga, flags);
 	if (rettv->v_type == VAR_STRING)
 	    rettv->vval.v_string = ga_concat_strings(&ga, "\n");
-	else if (rettv_list_alloc(rettv) != FAIL)
+	else if (rettv_list_alloc(rettv) == OK)
 	    for (i = 0; i < ga.ga_len; ++i)
 		list_append_string(rettv->vval.v_list,
 					    ((char_u **)(ga.ga_data))[i], -1);

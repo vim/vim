@@ -2983,7 +2983,7 @@ f_popup_list(typval_T *argvars UNUSED, typval_T *rettv)
     win_T	*wp;
     tabpage_T	*tp;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
     FOR_ALL_POPUPWINS(wp)
 	list_append_number(rettv->vval.v_list, wp->w_id);
