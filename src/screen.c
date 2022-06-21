@@ -3395,7 +3395,12 @@ win_ins_lines(
     if (invalid)
 	wp->w_lines_valid = 0;
 
+    // with only a few lines it's not worth the effort
     if (wp->w_height < 5)
+	return FAIL;
+
+    // with the popup menu visible this might not work correctly
+    if (pum_visible())
 	return FAIL;
 
     if (line_count > wp->w_height - row)
