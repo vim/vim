@@ -2055,7 +2055,7 @@ char_avail(void)
 getchar_common(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T		n;
-    int			error = FALSE;
+    varnumber_T		arg = -1;
 
     if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
 	return;
@@ -2067,20 +2067,31 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     parse_queued_messages();
 #endif
 
-    // Position the cursor.  Needed after a message that ends in a space.
-    windgoto(msg_row, msg_col);
+    if (argvars[0].v_type != VAR_UNKNOWN) {
+	int error = FALSE;
+	arg = tv_get_number_chk(&argvars[0], &error);
+	if (error || arg < 0) {
+	    arg = 0;
+	}
+    }
+
+    // getchar(2): blocking wait without moving the cursor
+    if (arg != 2) {
+	// Position the cursor.  Needed after a message that ends in a space.
+	windgoto(msg_row, msg_col);
+    }
 
     ++no_mapping;
     ++allow_keys;
     for (;;)
     {
-	if (argvars[0].v_type == VAR_UNKNOWN)
-	    // getchar(): blocking wait.
+	if (arg == -1 || arg == 2)
+	    // getchar() or getchar(2): blocking wait.
 	    n = plain_vgetc();
-	else if (tv_get_bool_chk(&argvars[0], &error))
+	else if (arg == 1)
 	    // getchar(1): only check if char avail
 	    n = vpeekc_any();
-	else if (error || vpeekc_any() == NUL)
+	else if (vpeekc_any() == NUL)
 	    // illegal argument or getchar(0) and no char avail: return zero
 	    n = 0;
 	else
