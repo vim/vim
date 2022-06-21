@@ -1695,8 +1695,7 @@ def Test_getcharpos()
 enddef
 
 def Test_getcharstr()
-  v9.CheckDefAndScriptFailure(['getcharstr(2)'], ['E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1'])
-  v9.CheckDefAndScriptFailure(['getcharstr("1")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1'])
+  v9.CheckDefAndScriptFailure(['getcharstr("1")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1290: Bool or Number required for argument 1'])
 enddef
 
 def Test_getcompletion()
