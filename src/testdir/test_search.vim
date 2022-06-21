@@ -353,6 +353,7 @@ func Test_searchpair_timeout()
   let elapsed = reltime(starttime)->reltimefloat()
   call assert_inrange(0.09, 0.300, elapsed)
 
+  delfunc Waitabit
   bwipe!
 endfunc
 
