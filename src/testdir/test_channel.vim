@@ -1201,19 +1201,22 @@ func Test_pipe_null()
     call job_stop(job)
   endtry
 
-  let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'out_io': 'null', 'err_io': 'out'})
-  call assert_equal("run", job_status(job))
-  call job_stop(job)
+  " This causes spurious leak errors with valgrind.
+  if !RunningWithValgrind()
+    let job = job_start(s:python . " test_channel_pipe.py something",
+          \ {'out_io': 'null', 'err_io': 'out'})
+    call assert_equal("run", job_status(job))
+    call job_stop(job)
 
-  let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'in_io': 'null', 'out_io': 'null', 'err_io': 'null'})
-  call assert_equal("run", job_status(job))
-  call assert_equal('channel fail', string(job_getchannel(job)))
-  call assert_equal('fail', ch_status(job))
-  call assert_equal('no process', string(test_null_job()))
-  call assert_equal('channel fail', string(test_null_channel()))
-  call job_stop(job)
+    let job = job_start(s:python . " test_channel_pipe.py something",
+          \ {'in_io': 'null', 'out_io': 'null', 'err_io': 'null'})
+    call assert_equal("run", job_status(job))
+    call assert_equal('channel fail', string(job_getchannel(job)))
+    call assert_equal('fail', ch_status(job))
+    call assert_equal('no process', string(test_null_job()))
+    call assert_equal('channel fail', string(test_null_channel()))
+    call job_stop(job)
+  endif
 endfunc
 
 func Test_pipe_to_buffer_raw()
@@ -1760,19 +1763,21 @@ func Test_job_start_fails()
   call assert_fails("call job_start('ls',
         \ {'err_io' : 'buffer', 'err_buf' : -1})", 'E475:')
 
+  let cmd = has('win32') ? "cmd /c dir" : "ls"
+
   set nomodifiable
-  call assert_fails("call job_start('cmd /c dir',
+  call assert_fails("call job_start(cmd,
         \ {'out_io' : 'buffer', 'out_buf' :" .. bufnr() .. "})", 'E21:')
-  call assert_fails("call job_start('cmd /c dir',
+  call assert_fails("call job_start(cmd,
         \ {'err_io' : 'buffer', 'err_buf' :" .. bufnr() .. "})", 'E21:')
   set modifiable
 
-  call assert_fails("call job_start('ls', {'in_io' : 'buffer'})", 'E915:')
+  call assert_fails("call job_start(cmd, {'in_io' : 'buffer'})", 'E915:')
 
   edit! XXX
   let bnum = bufnr()
   enew
-  call assert_fails("call job_start('ls',
+  call assert_fails("call job_start(cmd,
         \ {'in_io' : 'buffer', 'in_buf' : bnum})", 'E918:')
 
   " Empty job tests
@@ -1787,6 +1792,11 @@ func Test_job_start_fails()
 endfunc
 
 func Test_job_stop_immediately()
+  " With valgrind this causes spurious leak reports
+  if RunningWithValgrind()
+    return
+  endif
+
   let g:job = job_start([s:python, '-c', 'import time;time.sleep(10)'])
   try
     eval g:job->job_stop()
