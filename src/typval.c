@@ -481,6 +481,32 @@ check_for_opt_bool_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a bool or
+ * a number.
+ */
+    int
+check_for_bool_or_number_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_BOOL && args[idx].v_type != VAR_NUMBER)
+    {
+	semsg(_(e_bool_or_number_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check for an optional bool or number argument at 'idx'.
+ */
+    int
+check_for_opt_bool_or_number_arg(typval_T *args, int idx)
+{
+    return (args[idx].v_type == VAR_UNKNOWN
+	    || check_for_bool_or_number_arg(args, idx) != FAIL);
+}
+
+
+/*
  * Give an error and return FAIL unless "args[idx]" is a blob.
  */
     int

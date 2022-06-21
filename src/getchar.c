@@ -2057,7 +2057,7 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     varnumber_T		n;
     varnumber_T		arg = -1;
 
-    if (in_vim9script() && check_for_opt_bool_arg(argvars, 0) == FAIL)
+    if (in_vim9script() && check_for_opt_bool_or_number_arg(argvars, 0) == FAIL)
 	return;
 
 #ifdef MESSAGE_QUEUE

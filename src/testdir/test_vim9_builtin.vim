@@ -1683,8 +1683,7 @@ def Test_getchar()
   endwhile
   getchar(true)->assert_equal(0)
   getchar(1)->assert_equal(0)
-  v9.CheckDefAndScriptFailure(['getchar(2)'], ['E1013: Argument 1: type mismatch, expected bool but got number', 'E1212: Bool required for argument 1'])
-  v9.CheckDefAndScriptFailure(['getchar("1")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1212: Bool required for argument 1'])
+  v9.CheckDefAndScriptFailure(['getchar("1")'], ['E1013: Argument 1: type mismatch, expected bool but got string', 'E1290: Bool or Number required for argument 1'])
 enddef
 
 def Test_getcharpos()
