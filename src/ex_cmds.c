@@ -3701,6 +3701,7 @@ ex_substitute(exarg_T *eap)
     int		start_nsubs;
 #ifdef FEAT_EVAL
     int		save_ma = 0;
+    int		save_sandbox = 0;
 #endif
 
     cmd = eap->arg;
@@ -4403,6 +4404,7 @@ ex_substitute(exarg_T *eap)
 		 */
 #ifdef FEAT_EVAL
 		save_ma = curbuf->b_p_ma;
+		save_sandbox = sandbox;
 		if (subflags.do_count)
 		{
 		    // prevent accidentally changing the buffer by a function
@@ -4416,7 +4418,8 @@ ex_substitute(exarg_T *eap)
 		// Disallow changing text or switching window in an expression.
 		++textlock;
 #endif
-		// get length of substitution part
+		// Get length of substitution part, including the NUL.
+		// When it fails sublen is zero.
 		sublen = vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
 			       sub, sub_firstline, 0,
@@ -4429,11 +4432,10 @@ ex_substitute(exarg_T *eap)
 		// the replacement.
 		// Don't keep flags set by a recursive call.
 		subflags = subflags_save;
-		if (aborting() || subflags.do_count)
+		if (sublen == 0 || aborting() || subflags.do_count)
 		{
 		    curbuf->b_p_ma = save_ma;
-		    if (sandbox > 0)
-			sandbox--;
+		    sandbox = save_sandbox;
 		    goto skip;
 		}
 #endif

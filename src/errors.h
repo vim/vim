@@ -3300,3 +3300,7 @@ EXTERN char e_could_not_reset_handler_for_timeout_str[]
 EXTERN char e_could_not_check_for_pending_sigalrm_str[]
 	INIT(= N_("E1289: Could not check for pending SIGALRM: %s"));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_substitute_nesting_too_deep[]
+	INIT(= N_("E1290: substitute nesting too deep"));
+#endif

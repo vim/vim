@@ -1922,6 +1922,23 @@ vim_regsub_multi(
     return result;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+// When nesting more than a couple levels it's probably a mistake.
+# define MAX_REGSUB_NESTING 4
+static char_u   *eval_result[MAX_REGSUB_NESTING] = {NULL, NULL, NULL, NULL};
+
+# if defined(EXITFREE) || defined(PROTO)
+    void
+free_resub_eval_result(void)
+{
+    int i;
+
+    for (i = 0; i < MAX_REGSUB_NESTING; ++i)
+	VIM_CLEAR(eval_result[i]);
+}
+# endif
+#endif
+
     static int
 vim_regsub_both(
     char_u	*source,
@@ -1941,7 +1958,8 @@ vim_regsub_both(
     linenr_T	clnum = 0;	// init for GCC
     int		len = 0;	// init for GCC
 #ifdef FEAT_EVAL
-    static char_u   *eval_result = NULL;
+    static int  nesting = 0;
+    int		nested;
 #endif
     int		copy = flags & REGSUB_COPY;
 
@@ -1953,6 +1971,14 @@ vim_regsub_both(
     }
     if (prog_magic_wrong())
 	return 0;
+#ifdef FEAT_EVAL
+    if (nesting == MAX_REGSUB_NESTING)
+    {
+	emsg(_(e_substitute_nesting_too_deep));
+	return 0;
+    }
+    nested = nesting;
+#endif
     src = source;
     dst = dest;
 
@@ -1969,11 +1995,11 @@ vim_regsub_both(
 	// "flags & REGSUB_COPY" != 0.
 	if (copy)
 	{
-	    if (eval_result != NULL)
+	    if (eval_result[nested] != NULL)
 	    {
-		STRCPY(dest, eval_result);
-		dst += STRLEN(eval_result);
-		VIM_CLEAR(eval_result);
+		STRCPY(dest, eval_result[nested]);
+		dst += STRLEN(eval_result[nested]);
+		VIM_CLEAR(eval_result[nested]);
 	    }
 	}
 	else
@@ -1981,7 +2007,7 @@ vim_regsub_both(
 	    int		    prev_can_f_submatch = can_f_submatch;
 	    regsubmatch_T   rsm_save;
 
-	    VIM_CLEAR(eval_result);
+	    VIM_CLEAR(eval_result[nested]);
 
 	    // The expression may contain substitute(), which calls us
 	    // recursively.  Make sure submatch() gets the text from the first
@@ -1994,6 +2020,11 @@ vim_regsub_both(
 	    rsm.sm_firstlnum = rex.reg_firstlnum;
 	    rsm.sm_maxline = rex.reg_maxline;
 	    rsm.sm_line_lbr = rex.reg_line_lbr;
+
+	    // Although unlikely, it is possible that the expression invokes a
+	    // substitute command (it might fail, but still).  Therefore keep
+	    // an array if eval results.
+	    ++nesting;
 
 	    if (expr != NULL)
 	    {
@@ -2034,26 +2065,27 @@ vim_regsub_both(
 
 		if (rettv.v_type == VAR_UNKNOWN)
 		    // something failed, no need to report another error
-		    eval_result = NULL;
+		    eval_result[nested] = NULL;
 		else
 		{
-		    eval_result = tv_get_string_buf_chk(&rettv, buf);
-		    if (eval_result != NULL)
-			eval_result = vim_strsave(eval_result);
+		    eval_result[nested] = tv_get_string_buf_chk(&rettv, buf);
+		    if (eval_result[nested] != NULL)
+			eval_result[nested] = vim_strsave(eval_result[nested]);
 		}
 		clear_tv(&rettv);
 	    }
 	    else if (substitute_instr != NULL)
 		// Execute instructions from ISN_SUBSTITUTE.
-		eval_result = exe_substitute_instr();
+		eval_result[nested] = exe_substitute_instr();
 	    else
-		eval_result = eval_to_string(source + 2, TRUE);
+		eval_result[nested] = eval_to_string(source + 2, TRUE);
+	    --nesting;
 
-	    if (eval_result != NULL)
+	    if (eval_result[nested] != NULL)
 	    {
 		int had_backslash = FALSE;
 
-		for (s = eval_result; *s != NUL; MB_PTR_ADV(s))
+		for (s = eval_result[nested]; *s != NUL; MB_PTR_ADV(s))
 		{
 		    // Change NL to CR, so that it becomes a line break,
 		    // unless called from vim_regexec_nl().
@@ -2077,15 +2109,15 @@ vim_regsub_both(
 		if (had_backslash && (flags & REGSUB_BACKSLASH))
 		{
 		    // Backslashes will be consumed, need to double them.
-		    s = vim_strsave_escaped(eval_result, (char_u *)"\\");
+		    s = vim_strsave_escaped(eval_result[nested], (char_u *)"\\");
 		    if (s != NULL)
 		    {
-			vim_free(eval_result);
-			eval_result = s;
+			vim_free(eval_result[nested]);
+			eval_result[nested] = s;
 		    }
 		}
 
-		dst += STRLEN(eval_result);
+		dst += STRLEN(eval_result[nested]);
 	    }
 
 	    can_f_submatch = prev_can_f_submatch;

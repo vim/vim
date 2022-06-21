@@ -586,6 +586,9 @@ free_all_mem(void)
 # ifdef FEAT_QUICKFIX
     check_quickfix_busy();
 # endif
+# ifdef FEAT_EVAL
+    free_resub_eval_result();
+# endif
 }
 #endif
 
