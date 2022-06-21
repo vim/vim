@@ -1793,9 +1793,7 @@ endfunc
 
 func Test_job_stop_immediately()
   " With valgrind this causes spurious leak reports
-  if RunningWithValgrind()
-    return
-  endif
+  CheckNotValgrind
 
   let g:job = job_start([s:python, '-c', 'import time;time.sleep(10)'])
   try
