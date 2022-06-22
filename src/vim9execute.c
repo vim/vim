@@ -478,20 +478,16 @@ call_dfunc(
     arg_to_add = ufunc->uf_args.ga_len - argcount;
     if (arg_to_add < 0)
     {
-	if (arg_to_add == -1)
-	    emsg(_(e_one_argument_too_many));
-	else
-	    semsg(_(e_nr_arguments_too_many), -arg_to_add);
+	semsg(NGETTEXT(e_one_argument_too_many, e_nr_arguments_too_many,
+			-arg_to_add), -arg_to_add);
 	return FAIL;
     }
     else if (arg_to_add > ufunc->uf_def_args.ga_len)
     {
 	int missing = arg_to_add - ufunc->uf_def_args.ga_len;
 
-	if (missing == 1)
-	    emsg(_(e_one_argument_too_few));
-	else
-	    semsg(_(e_nr_arguments_too_few), missing);
+	semsg(NGETTEXT(e_one_argument_too_few, e_nr_arguments_too_few,
+			missing), missing);
 	return FAIL;
     }
 
@@ -5170,19 +5166,15 @@ call_def_function(
     idx = argc - ufunc->uf_args.ga_len;
     if (idx > 0 && ufunc->uf_va_name == NULL)
     {
-	if (idx == 1)
-	    emsg(_(e_one_argument_too_many));
-	else
-	    semsg(_(e_nr_arguments_too_many), idx);
+	semsg(NGETTEXT(e_one_argument_too_many, e_nr_arguments_too_many,
+			idx), idx);
 	goto failed_early;
     }
     idx = argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
     if (idx < 0)
     {
-	if (idx == -1)
-	    emsg(_(e_one_argument_too_few));
-	else
-	    semsg(_(e_nr_arguments_too_few), -idx);
+	semsg(NGETTEXT(e_one_argument_too_few, e_nr_arguments_too_few,
+			-idx), -idx);
 	goto failed_early;
     }
 
