@@ -1206,6 +1206,7 @@ cmdline_insert_reg(int *gotesc UNUSED)
 {
     int		i;
     int		c;
+    int		save_new_cmdpos = new_cmdpos;
 
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = TRUE;	// disallow scrolling here
@@ -1224,8 +1225,6 @@ cmdline_insert_reg(int *gotesc UNUSED)
 #ifdef FEAT_EVAL
     /*
      * Insert the result of an expression.
-     * Need to save the current command line, to be able to enter
-     * a new one...
      */
     new_cmdpos = -1;
     if (c == '=')
@@ -1266,6 +1265,8 @@ cmdline_insert_reg(int *gotesc UNUSED)
 	}
 #endif
     }
+    new_cmdpos = save_new_cmdpos;
+
     // remove the double quote
     redrawcmd();
 
