@@ -2076,8 +2076,11 @@ get_lisp_indent(void)
 		    amount += 2;
 		else
 		{
-		    that++;
-		    amount++;
+		    if (*that != NUL)
+		    {
+			that++;
+			amount++;
+		    }
 		    firsttry = amount;
 
 		    while (VIM_ISWHITE(*that))
