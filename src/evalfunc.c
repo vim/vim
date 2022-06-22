@@ -8524,6 +8524,9 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	    break;
 	firstpos = pos;
 
+	// clear the start flag to avoid getting stuck here
+	options &= ~SEARCH_START;
+
 	// If the skip expression matches, ignore this match.
 	{
 	    int	    do_skip;
