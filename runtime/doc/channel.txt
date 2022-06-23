@@ -464,8 +464,10 @@ a close callback to the channel.
 
 To read all normal output from a RAW channel that is available: >
 	let output = ch_readraw(channel)
-To read the error output: >
+To read all error output from a RAW channel that is available:: >
 	let output = ch_readraw(channel, {"part": "err"})
+Note that if the channel is in NL mode, ch_readraw() will only return one line
+for each call.
 
 ch_read() and ch_readraw() use the channel timeout.  When there is nothing to
 read within that time an empty string is returned.  To specify a different
