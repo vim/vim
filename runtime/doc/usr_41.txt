@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jun 10
+*usr_41.txt*	For Vim version 8.2.  Last change: 2022 Jun 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1745,9 +1745,10 @@ For further reading see |Dictionaries|.
 ==============================================================================
 *41.9*	White space
 
-Blank lines are allowed and ignored.
+Blank lines are allowed in a script and ignored.
 
-Leading whitespace characters (blanks and TABs) are always ignored.
+Leading whitespace characters (blanks and TABs) are ignored, except when using
+|:let-heredoc| without "trim".
 
 Trailing whitespace is often ignored, but not always.  One command that
 includes it is `map`.  You have to watch out for that, it can cause hard to
@@ -1866,12 +1867,15 @@ script executable, and it also works in legacy script: >
 *41.12*	Fileformat
 
 The end-of-line character depends on the system.  For Vim scripts it is
-recommended to always use the Unix fileformat.  This also works on any other
-system.  That way you can copy your Vim scripts from MS-Windows to Unix and
-they still work.  See |:source_crnl|.  To be sure it is set right, do this
-before writing the file: >
-
+recommended to always use the Unix fileformat.  Lines are then separated with
+the Newline character.  This also works on any other system.  That way you can
+copy your Vim scripts from MS-Windows to Unix and they still work.  See
+|:source_crnl|.  To be sure it is set right, do this before writing the file:
+>
 	:setlocal fileformat=unix
+
+When using "dos" fileformat, lines are separated with CR-NL, two characters.
+The CR character causes various problems, better avoid this.
 
 ==============================================================================
 

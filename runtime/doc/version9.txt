@@ -245,6 +245,8 @@ Fuzzy completion support for command line completion using 'wildoptions'.
 
 Fuzzy match support for |:vimgrep|.
 
+Haiku support. |Haiku|
+
 Support for "lsp" channel mode to simplify LSP server RPC communication
 |language-server-protocol|.
 
@@ -256,16 +258,31 @@ report to a file: `:profile dump` .  |:profile|
 Argument completion support for the |:scriptnames|, |:profile|, |:profdel|,
 |:breakadd| and |:breakdel| commands.
 
-Support for using a funcref/lambda value with the 'foldtext', 'completefunc',
-'omnifunc', 'operatorfunc', 'thesaurusfunc', 'quickfixtextfunc', 'tagfunc',
-'imactivatefunc' and 'imstatusfunc' options.
+Support for setting the 'foldtext', 'completefunc', 'omnifunc',
+'operatorfunc', 'thesaurusfunc', 'quickfixtextfunc', 'tagfunc',
+'imactivatefunc' and 'imstatusfunc' options to a function reference or a
+lambda function or a script-local function.
 
-Support for using multibyte items with the 'fillchars', 'stl' and 'stlnc'
-options.
+Support directly setting the 'balloonexpr', 'charconvert' 'foldexpr',
+'formatexpr', 'includeexpr', 'printexpr', 'patchexpr', 'indentexpr',
+'modelineexpr', 'diffexpr' and 'printexpr' options to a script-local function.
 
-Support for xchacha20 encryption method 'cryptmethod'
+Support for configuring the character used to mark the beginning of a fold,
+show a closed fold and show a fold separator using "foldopen", "foldclose" and
+"foldsep" respectively in 'fillchars'.
+
+Support for configuring the character displayed in non existing lines using
+"eob" in 'fillchars'.
+
+Support for using multibyte items with the "stl", "stlnc", "foldopen",
+"foldclose" and "foldsep" items in the 'fillchars' option.
+
+Support for the XChaCha20 encryption method. 'cryptmethod'
 
 Spell check current word with |z=| even when 'spell' is off.
+
+Add "timeout" to 'spellsuggest' to limit the searching time for spell
+suggestions.
 
 Support for executing Ex commands in a map without changing the current mode
 |<Cmd>| and |<ScriptCmd>|.
@@ -282,7 +299,7 @@ IPv6 support in channels |channel-address|.
 
 Call Vim functions from Lua (vim.call('func', 'arg')).
 
-Add unsigned to 'nrformats'.
+Recognize numbers as unsigned when "unsigned" is set in 'nrformats'.
 
 Allow setting underline color in terminal.
 
@@ -296,7 +313,12 @@ Hide cursor when sleeping using |:sleep!|.
 
 Detect focus events in terminal (|FocusGained| and |FocusLost|).
 
-Highlight leading spaces when 'list' is set (|'listchars'|)
+Add "multispace" to 'listchars' to show two or more spaces no matter where
+they appear.  Add "leadmultispace" to 'listchars' to show two or more leading
+spaces.  Add "lead" to 'listchars' to set the character used to show leading
+spaces.
+
+Make 'listchars', 'virtualedit' and 'thesaurusfunc' global-local options.
 
 Support for looping over a string using |:for|.
 
@@ -315,23 +337,13 @@ Add "list" to 'breakindentopt' to add additional indent for lines that match
 a numbered or bulleted list.  Add "column" to 'breakindentopt' to indent
 soft-wrapped lines at a specific column.
 
-Add "multispace" to 'listchars' to show two or more spaces no matter where
-they appear.
-
-Add |hl-CursorLineSign| and |hl-CursorLineFold| default highlight groups to
+Add the |hl-CursorLineSign| and |hl-CursorLineFold| default highlight groups to
 adjust sign highlighting for 'cursorline'.
 
 Add the |hl-CurSearch| default highlight group for the current search match.
 
-Support directly setting the 'balloonexpr', 'foldexpr', 'formatexpr',
-'includeexpr', 'printexpr', 'patchexpr', 'indentexpr', 'modelineexpr',
-'diffexpr' and 'printexpr' options to a script-local function.
-
 Add the 'P' command in visual mode to paste text in visual mode without
 yanking the deleted text to the unnamed register.
-
-Add "timeout" to 'spellsuggest' to limit the searching time for spell
-suggestions.
 
 Add support for parsing the end line number (%e) and end column number
 (%k) using 'errorformat'.
@@ -341,13 +353,45 @@ Add support for logging on Vim startup (|--log|).
 Add "/" in 'formatoptions' to stop inserting // when using "o" on a line with
 inline comment.
 
+Display every option in a separate line when "!" is used with |:set|.
+
+Add "nostop" to 'backspace' to allow backspacing over the start of insert for
+|CTRL-W| and |CTRL-U| also.
+
+Add bell support for the terminal window. ('belloff')
+
+Sync the undo file if 'fsync' is set.
+
+Support excluding the 'runtimepath' and 'packpath' options from a session file
+using "skiprtp" in 'sessionoptions'.
+
+Stop insert mode completion without changing text (|i_CTRL-X_CTRL-Z|).
 
 TODO: more
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-9*
 
-TODO
+The following features are now enabled in all the builds:
+  |+cindent|
+  |+jumplist|
+  |+lispindent|
+  |+num64|
+  |+smartindent|
+  |+tag_binary|
+  |+title|
+
+The following features have been removed.  They are either obsolete or didn't
+work properly:
+  - Athena GUI support (use Motif instead)
+  - EBCDIC support
+  - Atari MiNT
+  - Mac Carbon GUI (use MacVim instead)
+
+The rgb.txt file is no longer included, use colors/lists/default.vim instead.
+
+Several source files were split, mainly to make it easier to inspect code
+coverage information.
 
 ==============================================================================
 PATCHES						*patches-9* *bug-fixes-9*

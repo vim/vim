@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jun 10
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jun 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1842,13 +1842,6 @@ Reset it later with: >
 	test_override('autoload', 0)
 Or: >
 	test_override('ALL', 0)
-
-
-Import in legacy Vim script ~
-
-If an `import` statement is used in legacy Vim script, the script-local "s:"
-namespace will be used for the imported items, even when "s:" is not
-specified.
 
 
 ==============================================================================

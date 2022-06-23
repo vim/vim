@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 20
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,10 +38,7 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Prepare for Vim 9.0 release:
-- Update the user manual:
-  - Add more to usr_50.txt as an "advanced section" of usr_41.txt
-  - Move some from vim9.txt to the user manual?  Keep the specification.
+Prepare for the Vim 9.0 release:
 - Update version9.txt
 - Adjust intro message to say "help version9".
 
@@ -205,12 +202,14 @@ Terminal emulator window:
   conversions.
 
 Patches considered for including:
+- use ngettext() in a few more places #10606
 - Add "-n" option to xxd. #10599
 - Support %e and %k in 'errorformat'. #9624
 - Add support for "underdouble", "underdot" and "underdash". #9553
 - Patch to implement the vimtutor with a plugin: #6414
   Was originally written by Felipe Morales.
 - Patch to make fillchars global-local. (#5206)
+- Version of getchar() that does not move the cursor - #10603
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
 - try using autoconf 2.71 and fix all "obsolete" warnings
@@ -232,9 +231,6 @@ Multiplexers (screen, tmux) can request it to the underlying terminal, and
 pass it on with modifications.
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
-
-Problems reported by Valgrind:
-Memory leaks in test_channel, in func Test_job_start_fails().  Weird.
 
 With a window height of 6 and 'scrolloff' set to 3, using "j" does not scroll
 evenly. (#10545)  Need to handle this in scroll_cursor_bot().
@@ -381,6 +377,10 @@ Lua: updating wrong buffer when using newly created, unloaded buffer.
 (#6539)
 
 File marks merging has duplicates since 7.4.1925. (Ingo Karkat, #5733)
+
+A syntax plugin cannot use autocommands, it could be sourced from setting
+'syntax' in a modeline.  Add a function that indicates whethere "secure"
+and/or "sandbox" are set.
 
 Problem with auto-formatting - inserting space and putting cursor before added
 character. (#6154)
