@@ -2872,6 +2872,7 @@ uninstall_runtime:
 	-rm -f $(SYS_OPTWIN_FILE)
 	-rm -f $(DEST_COL)/*.vim $(DEST_COL)/README.txt
 	-rm -rf $(DEST_COL)/tools
+	-rm -rf $(DEST_COL)/lists
 	-rm -f $(DEST_SYN)/*.vim $(DEST_SYN)/README.txt
 	-rm -f $(DEST_IND)/*.vim $(DEST_IND)/README.txt
 	-rm -rf $(DEST_MACRO)
