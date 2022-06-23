@@ -1343,8 +1343,6 @@ endfunc
 
 " Test for dropping files into a window in GUI
 func DropFilesInCmdLine()
-  CheckFeature drop_file
-
   call feedkeys(":\"", 'L')
   let d = #{files: ['a.c', 'b.c'], row: &lines, col: 1, modifiers: 0}
   call test_gui_event('dropfiles', d)

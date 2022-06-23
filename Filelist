@@ -1017,6 +1017,7 @@ LANG_GEN = \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
+		runtime/spell/sr/README_sr.txt \
 		runtime/spell/tet/*.diff \
 		runtime/spell/tet/main.aap \
 		runtime/spell/check/main.aap \

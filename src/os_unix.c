@@ -175,7 +175,8 @@ static void sig_winch SIGPROTOARG;
 #endif
 #if defined(SIGTSTP)
 static void sig_tstp SIGPROTOARG;
-// volatile because it is used in signal handler sig_tstp() and sigcont_handler().
+// volatile because it is used in signal handler sig_tstp() and
+// sigcont_handler().
 static volatile sig_atomic_t in_mch_suspend = FALSE;
 #endif
 #if defined(SIGINT)

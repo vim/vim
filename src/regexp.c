@@ -2023,7 +2023,7 @@ vim_regsub_both(
 
 	    // Although unlikely, it is possible that the expression invokes a
 	    // substitute command (it might fail, but still).  Therefore keep
-	    // an array if eval results.
+	    // an array of eval results.
 	    ++nesting;
 
 	    if (expr != NULL)

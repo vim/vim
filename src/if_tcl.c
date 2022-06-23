@@ -221,12 +221,13 @@ tcl_runtime_link_init(char *libname, int verbose)
     for (i = 0; tcl_funcname_table[i].ptr; ++i)
     {
 	if (!(*tcl_funcname_table[i].ptr = symbol_from_dll(hTclLib,
-			tcl_funcname_table[i].name)))
+						  tcl_funcname_table[i].name)))
 	{
 	    close_dll(hTclLib);
 	    hTclLib = NULL;
 	    if (verbose)
-		semsg(_(e_could_not_load_library_function_str), tcl_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str),
+						   tcl_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -263,11 +264,13 @@ tcl_enabled(int verbose)
     {
 	Tcl_Interp *interp;
 
+	// Note: the library will allocate memory to store the executable name,
+	// which will be reported as possibly leaked by valgrind.
 	dll_Tcl_FindExecutable(find_executable_arg);
 
 	if ((interp = dll_Tcl_CreateInterp()) != NULL)
 	{
-	    if (Tcl_InitStubs(interp, DYNAMIC_TCL_VER, 0))
+	    if (Tcl_InitStubs(interp, DYNAMIC_TCL_VER, 0) != NULL)
 	    {
 		Tcl_DeleteInterp(interp);
 		stubs_initialized = TRUE;
@@ -280,6 +283,9 @@ tcl_enabled(int verbose)
 #endif
 
 #if defined(EXITFREE) || defined(PROTO)
+/*
+ * Called once when exiting.
+ */
     void
 vim_tcl_finalize(void)
 {
