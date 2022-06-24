@@ -2952,7 +2952,12 @@ do_check_cursorbind(void)
 	    restart_edit_save = restart_edit;
 	    restart_edit = TRUE;
 	    check_cursor();
-	    validate_cursor();
+
+	    // Avoid a scroll here for the cursor position, 'scrollbind' is
+	    // more important.
+	    if (!curwin->w_p_scb)
+		validate_cursor();
+
 	    restart_edit = restart_edit_save;
 	    // Correct cursor for multi-byte character.
 	    if (has_mbyte)
