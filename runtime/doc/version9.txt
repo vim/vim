@@ -248,15 +248,18 @@ Fuzzy match support for |:vimgrep|.
 Haiku support. |Haiku|
 
 Support for "lsp" channel mode to simplify LSP server RPC communication
-|language-server-protocol|.
+|language-server-protocol|.  Support for using a Unix domain socket with a
+|channel|.  IPv6 support in channels |channel-address|.
 
 Support for sourcing lines from the current buffer. |:source-range|
+
+Support for opening a terminal in a popup window. |popup-terminal|
 
 Support for stopping profiling a Vim script: `:profile stop` and dumping the
 report to a file: `:profile dump` .  |:profile|
 
-Argument completion support for the |:scriptnames|, |:profile|, |:profdel|,
-|:breakadd| and |:breakdel| commands.
+Argument completion support for the |:breakadd|, |:breakdel|, |:diffget|,
+|:diffput|, |:profile|, |:profdel| and |:scriptnames| commands.
 
 Support for setting the 'foldtext', 'completefunc', 'omnifunc',
 'operatorfunc', 'thesaurusfunc', 'quickfixtextfunc', 'tagfunc',
@@ -287,17 +290,9 @@ suggestions.
 Support for executing Ex commands in a map without changing the current mode
 |<Cmd>| and |<ScriptCmd>|.
 
-A large number of tests have been added to verify the Vim functionality.  Most
-of the old style tests have been converted to new style tests using the new
-style assert_* functions.
-
 Add optional error code to |:cquit|.
 
-Support for using a Unix domain socket with a |channel|.
-
-IPv6 support in channels |channel-address|.
-
-Call Vim functions from Lua (vim.call('func', 'arg')).
+Support for calling Vim functions from Lua (vim.call() and vim.fn()).
 
 Recognize numbers as unsigned when "unsigned" is set in 'nrformats'.
 
@@ -305,7 +300,8 @@ Allow setting underline color in terminal.
 
 Expand script ID using expand('<SID>'). |expand()|
 
-Jump to the last accessed tab page using |g<Tab>|.
+Jump to the last accessed tab page using |g<Tab>| and support using the
+last accessed tab page in |:tabnext| et al.
 
 Locale aware sorting using |:sort| and |sort()|.
 
@@ -343,15 +339,22 @@ adjust sign highlighting for 'cursorline'.
 Add the |hl-CurSearch| default highlight group for the current search match.
 
 Add the 'P' command in visual mode to paste text in visual mode without
-yanking the deleted text to the unnamed register.
-
-Add support for parsing the end line number (%e) and end column number
-(%k) using 'errorformat'.
+yanking the deleted text to the unnamed register.  |put-Visual-mode|
 
 Add support for logging on Vim startup (|--log|).
 
 Add "/" in 'formatoptions' to stop inserting // when using "o" on a line with
-inline comment.
+inline comment. |fo-/|
+
+Add support for customizing the quickfix buffer contents using
+'quickfixtextfunc'.  Support for the "note" error type (%t) in |errorformat|.
+Add support for parsing the end line number (%e) and end column number (%k)
+using 'errorformat'.
+
+Support truncating the tag stack using |settagstack()|.
+
+Support using any Vim type for user_data with the completion functions
+(|complete-items|).
 
 Display every option in a separate line when "!" is used with |:set|.
 
@@ -366,6 +369,74 @@ Support excluding the 'runtimepath' and 'packpath' options from a session file
 using "skiprtp" in 'sessionoptions'.
 
 Stop insert mode completion without changing text (|i_CTRL-X_CTRL-Z|).
+
+Support for getting the number of lines (linecount) in a buffer using
+|getbufinfo()|.
+
+Support |filter()| and |map()| for blob and string types.
+
+Support for using a multi-byte character for the tag kind. |tags-file-format|
+
+Add support for checking whether a function name is valid using |exists()|.
+
+Update xdiff to version 2.33.  Update libvterm to revision 789.
+
+Added support for the |Haiku| OS.
+
+Support 'trim' for Python/Lua/Perl/Tcl/Ruby/MzScheme interface heredoc.
+
+Add the |t_AU| and |t_8u| termap codes for underline and undercurl.  Add the
+t_fd and t_fe termcap codes for detecting focus events.
+
+Support for indenting C pragmas like normal code. (|cino-P|)
+
+Add support for defining the syntax fold level (|:syn-foldlevel|)
+
+Add support for using \<*xxx> in a string to prepend a modifier to a
+character. (|expr-quote|).
+
+Add support trimming characters at the beginning or end of a string using
+|trim()|.
+
+Make ":verbose pwd" show the scope of the directory. |:pwd-verbose|
+
+Add the "0o" notation for specifying octal numbers |scriptversion-4|
+
+Support for changing to the previous tab-local and window-local directories
+using the "tcd -" and "lcd -" commands. (|:tcd-| and |:lcd-|)
+
+Add support for skipping an expression using |search()|.
+
+Add the "cmdline" option to |getcompletion()| to return the command line
+arguments.
+
+Add support for spell checking CamelCased words by adding "camel" to
+'spelloptions'.
+
+Add support for importing Vim scripts using |:import| from a Vimscript.
+
+Add support for sorting the directory contents returned by the |readdir()|
+and |readdirex()| functions by case.
+
+Add support for executing (|:@|) a register containing line continuation.
+
+Convert a Lua function and a closure to a Vim funcref so that it can be
+accessed in a Vimscript. (|lua-funcref|) Make Lua arrays one based.
+Add table.insert() and table.remove() functions.
+
+Support mouse left-right scrolling in a terminal window.
+
+Updated colorschemes from https://github.com/vim/colorschemes is included.
+
+TermDebug enhancements:
+Support for showing the disassembled code in a separate window.  Support for
+the GDB until command.  Use a separate group for the signs.
+
+A large number of tests have been added to verify the Vim functionality.  Most
+of the old style tests have been converted to new style tests using the new
+style assert_* functions.
+
+Many Coverity static analysis warnings are fixed.
 
 TODO: more
 
@@ -383,15 +454,17 @@ The following features are now enabled in all the builds:
 
 The following features have been removed.  They are either obsolete or didn't
 work properly:
-  - Athena GUI support (use Motif instead)
+  - Athena and neXTaw GUI support (use Motif instead)
   - EBCDIC support
-  - Atari MiNT
+  - Atari MiNT and BeOS
   - Mac Carbon GUI (use MacVim instead)
 
 The rgb.txt file is no longer included, use colors/lists/default.vim instead.
 
 Several source files were split, mainly to make it easier to inspect code
 coverage information.
+
+Support for building Vim with Mingw64 clang compiler on MS-Windows.
 
 ==============================================================================
 PATCHES						*patches-9* *bug-fixes-9*

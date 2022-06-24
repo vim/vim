@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2022 Jun 21
+*options.txt*	For Vim version 8.2.  Last change: 2022 Jun 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4955,8 +4955,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	executing macros, registers and other commands that have not been
 	typed.  Also, updating the window title is postponed.  To force an
 	update use |:redraw|.
-	This may ocasionally cause display errors.  It is only meant to be set
-	termporarily when performaing an operation where redrawing may cause
+	This may occasionally cause display errors.  It is only meant to be set
+	temporarily when performing an operation where redrawing may cause
 	flickering or cause a slow down.
 
 			*'linebreak'* *'lbr'* *'nolinebreak'* *'nolbr'*

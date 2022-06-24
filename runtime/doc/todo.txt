@@ -40,7 +40,6 @@ browser use: https://github.com/vim/vim/issues/1234
 
 Prepare for the Vim 9.0 release:
 - Update version9.txt
-- Adjust intro message to say "help version9".
 
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
@@ -203,6 +202,8 @@ Terminal emulator window:
 
 Patches considered for including:
 - use ngettext() in a few more places #10606
+- move f_hasmapto() to map.c  #10611
+- allow for nesting of timeout, sketch in #10595
 - Add "-n" option to xxd. #10599
 - Support %e and %k in 'errorformat'. #9624
 - Add support for "underdouble", "underdot" and "underdash". #9553

@@ -1,4 +1,4 @@
-*usr_40.txt*	For Vim version 8.2.  Last change: 2022 Jun 20
+*usr_40.txt*	For Vim version 8.2.  Last change: 2022 Jun 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -464,7 +464,7 @@ The optional [++nested] flag allows for nesting of autocommands (see below),
 and finally, {command} is the command to be executed.
 
 When adding an autocommand the already existing ones remain.  To avoid adding
-the autocommand several time you should use this form: >
+the autocommand several times you should use this form: >
 
 	:augroup updateDate
 	:  autocmd!

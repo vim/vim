@@ -3736,8 +3736,8 @@ msgstr "clóscríobh  :q<Enter>               chun scor      "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "clóscríobh  :help<Enter>  nó  <F1>  le haghaidh cabhrach ar líne"
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "clóscríobh  :help version8<Enter>   le haghaidh eolais faoin leagan"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "clóscríobh  :help version9<Enter>   le haghaidh eolais faoin leagan"
 
 msgid "Running in Vi compatible mode"
 msgstr "I mód comhoiriúnachta Vi"
