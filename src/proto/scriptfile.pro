@@ -40,7 +40,6 @@ void ex_scriptversion(exarg_T *eap);
 void ex_finish(exarg_T *eap);
 void do_finish(exarg_T *eap, int reanimate);
 int source_finished(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
-char_u *script_name_after_autoload(scriptitem_T *si);
 char_u *get_autoload_prefix(scriptitem_T *si);
 char_u *may_prefix_autoload(char_u *name);
 char_u *autoload_name(char_u *name);

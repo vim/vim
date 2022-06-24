@@ -32,6 +32,7 @@ static funccall_T *previous_funccal = NULL;
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 static void func_clear(ufunc_T *fp, int force);
 static int func_free(ufunc_T *fp, int force);
+static char_u *untrans_function_name(char_u *name);
 
     void
 func_init()
@@ -4073,7 +4074,7 @@ theend:
  * This can be used to first search for a script-local function and fall back
  * to the global function if not found.
  */
-    char_u *
+    static char_u *
 untrans_function_name(char_u *name)
 {
     char_u *p;

@@ -2346,7 +2346,7 @@ source_finished(
  * Find the path of a script below the "autoload" directory.
  * Returns NULL if there is no "/autoload/" in the script name.
  */
-    char_u *
+    static char_u *
 script_name_after_autoload(scriptitem_T *si)
 {
     char_u	*p = si->sn_name;
