@@ -379,6 +379,10 @@ func Test_searchpair_timeout_with_skip()
     if RunningWithValgrind()
       let max_time += 0.04  " this can be slow with valgrind
     endif
+    if has('bsd')
+      " test often fails with FreeBSD
+      let max_time = max_time * 2.0
+    endif
   endif
   let start = reltime()
   let found = searchpair('(', '', ')', 'crnm', 'SearchpairSkip()', 0, ms)
