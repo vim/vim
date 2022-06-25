@@ -2055,21 +2055,21 @@ process_message(void)
 	    int		i;
 	    UINT	scan_code;
 
-	    // Construct the keyboard state table, the modifiers can and will
-	    // affect the character translation performed by ToUnicode.
-	    // Eg. With a Russian keyboard layout pressing 'n' produces 'т' but
-	    // Ctrl+p produces 'p', this is essential for the keybindings to
-	    // work.
+	    // Construct the state table with only a few modifiers, we don't
+	    // really care about the presence of Ctrl/Alt as those modifiers are
+	    // handled by Vim separately.
 	    memset(keyboard_state, 0, 256);
-	    if (GetKeyState(VK_CONTROL) & 0x8000)
-		keyboard_state[VK_CONTROL] = 0x80;
 	    if (GetKeyState(VK_SHIFT) & 0x8000)
 		keyboard_state[VK_SHIFT] = 0x80;
 	    if (GetKeyState(VK_CAPITAL) & 0x0001)
 		keyboard_state[VK_CAPITAL] = 0x01;
-	    // Alt-Gr is synthesized as (Right)Alt + Ctrl.
-	    if ((GetKeyState(VK_RMENU) & 0x8000) && keyboard_state[VK_CONTROL])
+	    // Alt-Gr is synthesized as Alt + Ctrl.
+	    if ((GetKeyState(VK_RMENU) & 0x8000)
+					 && (GetKeyState(VK_CONTROL) & 0x8000))
+	    {
 		keyboard_state[VK_MENU] = 0x80;
+		keyboard_state[VK_CONTROL] = 0x80;
+	    }
 
 	    // Translate the virtual key according to the current keyboard
 	    // layout.
@@ -2079,16 +2079,6 @@ process_message(void)
 	    // If this is a dead key ToUnicode returns a negative value.
 	    len = ToUnicode(vk, scan_code, keyboard_state, ch, ARRAY_LENGTH(ch),
 		    0);
-	    if (len == 0 && keyboard_state[VK_CONTROL])
-	    {
-		// Handle one more special case: pressing Ctrl+key may
-		// generate an unprintable ASCII character, try again without
-		// the modifier to get the pressed key value.
-		keyboard_state[VK_CONTROL] = 0;
-		len = ToUnicode(vk, scan_code, keyboard_state, ch,
-			ARRAY_LENGTH(ch), 0);
-		keyboard_state[VK_CONTROL] = 0x80;
-	    }
 	    dead_key = len < 0;
 
 	    if (len <= 0)
