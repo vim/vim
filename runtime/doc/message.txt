@@ -78,7 +78,7 @@ See `:messages` above.
 LIST OF MESSAGES
 			*E222* *E228* *E232* *E293* *E298* *E304* *E317*
 			*E318* *E356* *E438* *E439* *E440* *E316* *E320* *E322*
-			*E323* *E341* *E473* *E570* *E685* *E292* 
+			*E323* *E341* *E473* *E570* *E685* *E292*
   Add to read buffer ~
   makemap: Illegal mode ~
   Cannot create BalloonEval with both message and callback ~
@@ -109,26 +109,26 @@ report. |bugs|
 
 See |ATTENTION|.
 
-							*E92* 
+							*E92*
   Buffer {N} not found ~
 
 The buffer you requested does not exist.  This can also happen when you have
 wiped out a buffer which contains a mark or is referenced in another way.
 |:bwipeout|
 
-							*E95* 
+							*E95*
   Buffer with this name already exists ~
 
 You cannot have two buffers with exactly the same name.  This includes the
 path leading to the file.
 
-							*E72* 
+							*E72*
   Close error on swap file ~
 
 The |swap-file|, that is used to keep a copy of the edited text, could not be
 closed properly.  Mostly harmless.
 
-							*E169* 
+							*E169*
   Command too recursive ~
 
 This happens when an Ex command executes an Ex command that executes an Ex
@@ -136,18 +136,18 @@ command, etc.  The limit is 200 or the value of 'maxfuncdepth', whatever is
 larger.  When it's more there probably is an endless loop.  Probably a
 |:execute| or |:source| command is involved.
 
-							*E254* 
+							*E254*
   Cannot allocate color {name} ~
 
 The color name {name} is unknown.  See |gui-colors| for a list of colors that
 are available on most systems.
 
-							*E1244* 
+							*E1244*
   Bad color string: {str} ~
 
 The provided color did not conform to the pattern #rrggbb
 
-							*E458* 
+							*E458*
   Cannot allocate colormap entry, some colors may be incorrect ~
 
 This means that there are not enough colors available for Vim.  It will still
@@ -164,21 +164,21 @@ This can also be done with a line in your Xdefaults file:
 or
 	Netscape*maxImageColors:  64 ~
 
-							*E79* 
+							*E79*
   Cannot expand wildcards ~
 
 A filename contains a strange combination of characters, which causes Vim to
 attempt expanding wildcards but this fails.  This does NOT mean that no
 matching file names could be found, but that the pattern was illegal.
 
-							*E459* 
+							*E459*
   Cannot go back to previous directory ~
 
 While expanding a file name, Vim failed to go back to the previously used
 directory.  All file names being used may be invalid now!  You need to have
 execute permission on the current directory.
 
-							*E190* *E212* 
+							*E190* *E212*
   Cannot open "{filename}" for writing ~
   Can't open file for writing ~
 
@@ -186,7 +186,7 @@ For some reason the file you are writing to cannot be created or overwritten.
 The reason could be that you do not have permission to write in the directory
 or the file name is not valid.
 
-							*E166* 
+							*E166*
   Can't open linked file for writing ~
 
 You are trying to write to a file which can't be overwritten, and the file is
@@ -198,19 +198,19 @@ place.  If you really want to write the file under this name, you have to
 manually delete the link or the file, or change the permissions so that Vim
 can overwrite.
 
-							*E46* 
+							*E46*
   Cannot change read-only variable "{name}" ~
 
 You are trying to assign a value to an argument of a function |a:var| or a Vim
 internal variable |v:var| which is read-only.
 
-							*E90* 
+							*E90*
   Cannot unload last buffer ~
 
 Vim always requires one buffer to be loaded, otherwise there would be nothing
 to display in the window.
 
-							*E40* 
+							*E40*
   Can't open errorfile <filename> ~
 
 When using the ":make" or ":grep" commands: The file used to save the error
@@ -223,7 +223,7 @@ messages or grep output cannot be opened.  This can have several causes:
 - The 'grepprg' or 'makeprg' could not be executed.  This cannot always be
   detected (especially on MS-Windows).  Check your $PATH.
 
- 
+
   Can't open file C:\TEMP\VIoD243.TMP ~
 
 On MS-Windows, this message appears when the output of an external command was
@@ -232,14 +232,14 @@ many things.  Check the 'shell', 'shellquote', 'shellxquote', 'shellslash' and
 related options.  It might also be that the external command was not found,
 there is no different error message for that.
 
-							*E12* 
+							*E12*
   Command not allowed from exrc/vimrc in current dir or tag search ~
 
 Some commands are not allowed for security reasons.  These commands mostly
 come from a .exrc or .vimrc file in the current directory, or from a tags
 file.  Also see 'secure'.
 
-							*E74* 
+							*E74*
   Command too complex ~
 
 A mapping resulted in a very long command string.  Could be caused by a
@@ -258,20 +258,20 @@ If there is a backup file, when 'writebackup' or 'backup' is set, it will not
 be deleted, so you can move it back into place if you want to discard the
 changes.
 
-							*E302* 
+							*E302*
   Could not rename swap file ~
 
 When the file name changes, Vim tries to rename the |swap-file| as well.
 This failed and the old swap file is now still used.  Mostly harmless.
 
-							*E43* *E44* 
+							*E43* *E44*
   Damaged match string ~
   Corrupted regexp program ~
 
 Something inside Vim went wrong and resulted in a corrupted regexp.  If you
 know how to reproduce this problem, please report it. |bugs|
 
-							*E208* *E209* *E210* 
+							*E208* *E209* *E210*
   Error writing to "{filename}" ~
   Error closing "{filename}" ~
   Error reading "{filename}" ~
@@ -288,19 +288,19 @@ This occurs when Vim cannot read typed characters while input is required.
 Vim got stuck, the only thing it can do is exit.  This can happen when both
 stdin and stderr are redirected and executing a script that doesn't exit Vim.
 
-							*E47* 
+							*E47*
   Error while reading errorfile ~
 
 Reading the error file was not possible.  This is NOT caused by an error
 message that was not recognized.
 
-							*E80* 
+							*E80*
   Error while writing ~
 
 Writing a file was not completed successfully.  The file is probably
 incomplete.
 
-							*E13* *E189* 
+							*E13* *E189*
   File exists (add ! to override) ~
   "{filename}" exists (add ! to override) ~
 
@@ -311,7 +311,7 @@ Example: >
 changes to: >
 	:w! /tmp/test
 <
-							*E768* 
+							*E768*
   Swap file exists: {filename} (:silent! overrides) ~
 
 You are protected from overwriting a file that is being edited by Vim.  This
@@ -324,45 +324,45 @@ happens when you use ":w! filename" and a swapfile is found.
 < The special command is needed, since you already added the ! for overwriting
   an existing file.
 
-							*E139* 
+							*E139*
   File is loaded in another buffer ~
 
 You are trying to write a file under a name which is also used in another
 buffer.  This would result in two versions of the same file.
 
-							*E142* 
+							*E142*
   File not written: Writing is disabled by 'write' option ~
 
 The 'write' option is off.  This makes all commands that try to write a file
 generate this message.  This could be caused by a |-m| commandline argument.
 You can switch the 'write' option on with ":set write".
 
-							*E25* 
+							*E25*
   GUI cannot be used: Not enabled at compile time ~
 
 You are running a version of Vim that doesn't include the GUI code.  Therefore
 "gvim" and ":gui" don't work.
 
-							*E49* 
+							*E49*
   Invalid scroll size ~
 
 This is caused by setting an invalid value for the 'scroll', 'scrolljump' or
 'scrolloff' options.
 
-							*E17* 
+							*E17*
   "{filename}" is a directory ~
 
 You tried to write a file with the name of a directory.  This is not possible.
 You probably need to append a file name.
 
-							*E19* 
+							*E19*
   Mark has invalid line number ~
 
 You are using a mark that has a line number that doesn't exist.  This can
 happen when you have a mark in another file, and some other program has
 deleted lines from it.
 
-							*E219* *E220* 
+							*E219* *E220*
   Missing {. ~
   Missing }. ~
 
@@ -370,13 +370,13 @@ Using a {} construct in a file name, but there is a { without a matching } or
 the other way around.  It should be used like this: {foo,bar}.  This matches
 "foo" and "bar".
 
-							*E315* 
+							*E315*
   ml_get: invalid lnum: {number} ~
 
 This is an internal Vim error.  Please try to find out how it can be
 reproduced, and submit a bug report |bugreport.vim|.
 
-							*E173* 
+							*E173*
   {number} more files to edit ~
 
 You are trying to exit, while the last item in the argument list has not been
@@ -384,19 +384,19 @@ edited.  This protects you from accidentally exiting when you still have more
 files to work on.  See |argument-list|.  If you do want to exit, just do it
 again and it will work.
 
-							*E23* *E194* 
+							*E23* *E194*
   No alternate file ~
   No alternate file name to substitute for '#' ~
 
 The alternate file is not defined yet.  See |alternate-file|.
 
-							*E32* 
+							*E32*
   No file name ~
 
 The current buffer has no name.  To write it, use ":w fname".  Or give the
 buffer a name with ":file fname".
 
-							*E141* 
+							*E141*
   No file name for buffer {number} ~
 
 One of the buffers that was changed does not have a file name.  Therefore it
@@ -404,7 +404,7 @@ cannot be written.  You need to give the buffer a file name: >
 	:buffer {number}
 	:file {filename}
 <
-							*E33* 
+							*E33*
   No previous substitute regular expression ~
 
 When using the '~' character in a pattern, it is replaced with the previously
@@ -412,13 +412,13 @@ used pattern in a ":substitute" command.  This fails when no such command has
 been used yet.  See |/~|.  This also happens when using ":s/pat/%/", where the
 "%" stands for the previous substitute string.
 
-							*E35* 
+							*E35*
   No previous regular expression ~
 
 When using an empty search pattern, the previous search pattern is used.  But
 that is not possible if there was no previous search.
 
-							*E24* 
+							*E24*
   No such abbreviation ~
 
 You have used an ":unabbreviate" command with an argument which is not an
@@ -441,7 +441,7 @@ mapping.  All variations of this command give the same message: ":cunmap",
 - If the mapping is buffer-local you need to use ":unmap <buffer>".
   |:map-<buffer>|
 
-							*E37* *E89* 
+							*E37* *E89*
   No write since last change (add ! to override) ~
   No write since last change for buffer {N} (add ! to override) ~
 
@@ -453,7 +453,7 @@ adding a '!' character just after the command you used.  Example: >
 changes to: >
 	:e! other_file
 <
-							*E162* 
+							*E162*
   No write since last change for buffer "{name}" ~
 
 This appears when you try to exit Vim while some buffers are changed.  You
@@ -468,13 +468,13 @@ about a buffer, especially when 'hidden' is set.
 This appears when executing a shell command while at least one buffer was
 changed.  To avoid the message reset the 'warn' option.
 
-							*E38* 
+							*E38*
   Null argument ~
 
 Something inside Vim went wrong and resulted in a NULL pointer.  If you know
 how to reproduce this problem, please report it. |bugs|
 
-						*E41* *E82* *E83* *E342* 
+						*E41* *E82* *E83* *E342*
   Out of memory! ~
   Out of memory!  (allocating {number} bytes) ~
   Cannot allocate any buffer, exiting... ~
@@ -496,7 +496,7 @@ in memory, you can reduce that with these options:
   helps for a change that affects all lines.
 - 'undoreload' Set to zero to disable.
 
-							*E339* 
+							*E339*
   Pattern too long ~
 
 This happens on systems with 16 bit ints: The compiled regexp pattern is
@@ -504,7 +504,7 @@ longer than about 65000 characters.  Try using a shorter pattern.
 It also happens when the offset of a rule doesn't fit in the space available.
 Try simplifying the pattern.
 
-							*E45* 
+							*E45*
   'readonly' option is set (add ! to override) ~
 
 You are trying to write a file that was marked as read-only.  To write the
@@ -514,7 +514,7 @@ after the command you used.  Example: >
 changes to: >
 	:w!
 <
-							*E294* *E295* *E301* 
+							*E294* *E295* *E301*
   Read error in swap file ~
   Seek error in swap file read ~
   Oops, lost the swap file!!! ~
@@ -524,7 +524,7 @@ text in the related buffer may now be corrupted!  Check carefully before you
 write a buffer.  You may want to write it in another file and check for
 differences.
 
-							*E192* 
+							*E192*
   Recursive use of :normal too deep ~
 
 You are using a ":normal" command, whose argument again uses a ":normal"
@@ -533,7 +533,7 @@ example illustrates how to get this message: >
 	:map gq :normal gq<CR>
 If you type "gq", it will execute this mapping, which will call "gq" again.
 
-							*E22* 
+							*E22*
   Scripts nested too deep ~
 
 Scripts can be read with the "-s" command-line argument and with the
@@ -541,7 +541,7 @@ Scripts can be read with the "-s" command-line argument and with the
 continue for about 14 levels.  When more nesting is done, Vim assumes that
 there is a recursive loop and stops with this error message.
 
-							*E319* 
+							*E319*
   Sorry, the command is not available in this version ~
 
 You have used a command that is not present in the version of Vim you are
@@ -550,7 +550,7 @@ disabled.  This depends on how big Vim has chosen to be and the operating
 system.  See |+feature-list| for when which feature is available.  The
 |:version| command shows which feature Vim was compiled with.
 
-							*E300* 
+							*E300*
   Swap file already exists (symlink attack?) ~
 
 This message appears when Vim is trying to open a swap file and finds it
@@ -560,7 +560,7 @@ opened the same file at exactly the same moment (very unlikely) or someone is
 attempting a symlink attack (could happen when editing a file in /tmp or when
 'directory' starts with "/tmp", which is a bad choice).
 
-							*E432* 
+							*E432*
   Tags file not sorted: {file name} ~
 
 Vim (and Vi) expect tags files to be sorted in ASCII order.  Binary searching
@@ -570,20 +570,20 @@ This message is only given when Vim detects a problem when searching for a
 tag.  Sometimes this message is not given, even though the tags file is not
 properly sorted.
 
-							*E424* 
+							*E424*
   Too many different highlighting attributes in use ~
 
 Vim can only handle about 223 different kinds of highlighting.  If you run
 into this limit, you have used too many |:highlight| commands with different
 arguments.  A ":highlight link" is not counted.
 
-							*E77* 
+							*E77*
   Too many file names ~
 
 When expanding file names, more than one match was found.  Only one match is
 allowed for the command that was used.
 
-							*E303* 
+							*E303*
   Unable to open swap file for "{filename}", recovery impossible ~
 
 Vim was not able to create a swap file.  You can still edit the file, but if
@@ -592,7 +592,7 @@ memory when editing a big file.  You may want to change the 'directory' option
 to avoid this error.  This error is not given when 'directory' is empty.  See
 |swap-file|.
 
-							*E140* 
+							*E140*
   Use ! to write partial buffer ~
 
 When using a range to write part of a buffer, it is unusual to overwrite the
@@ -609,7 +609,7 @@ X11 configuration is wrong.  You can find a hint on how to solve this here:
 http://groups.yahoo.com/group/solarisonintel/message/12179.
 [this URL is no longer valid]
 
-							*W10* 
+							*W10*
   Warning: Changing a readonly file ~
 
 The file is read-only and you are making a change to it anyway.  You can use
@@ -618,14 +618,14 @@ must reset the 'readonly' option).  See 'modifiable' to completely disallow
 making changes to a file.
 This message is only given for the first change after 'readonly' has been set.
 
-							*W13* 
+							*W13*
   Warning: File "{filename}" has been created after editing started ~
 
 You are editing a file in Vim when it didn't exist, but it does exist now.
 You will have to decide if you want to keep the version in Vim or the newly
 created file.  This message is not given when 'buftype' is not empty.
 
-							*W11* 
+							*W11*
   Warning: File "{filename}" has changed since editing started ~
 
 The file which you have started editing has got another timestamp and the
@@ -649,14 +649,14 @@ starts.  It can be fixed in one of these ways:
 If you get W11 all the time, you may need to disable "Acronis Active
 Protection" or register Vim as a trusted service/application.
 
-							*W12* 
+							*W12*
   Warning: File "{filename}" has changed and the buffer was changed in Vim as well ~
 
 Like the above, and the buffer for the file was changed in this Vim as well.
 You will have to decide if you want to keep the version in this Vim or the one
 on disk.  This message is not given when 'buftype' is not empty.
 
-							*W16* 
+							*W16*
   Warning: Mode of file "{filename}" has changed since editing started ~
 
 When the timestamp for a buffer was changed and the contents are still the
@@ -665,27 +665,27 @@ checking out a file from a version control system, which causes the read-only
 bit to be reset.  It should be safe to reload the file.  Set 'autoread' to
 automatically reload the file.
 
-							*E211* 
+							*E211*
   File "{filename}" no longer available ~
 
 The file which you have started editing has disappeared, or is no longer
 accessible.  Make sure you write the buffer somewhere to avoid losing
 changes.  This message is not given when 'buftype' is not empty.
 
-							*W14* 
+							*W14*
   Warning: List of file names overflow ~
 
 You must be using an awful lot of buffers.  It's now possible that two buffers
 have the same number, which causes various problems.  You might want to exit
 Vim and restart it.
 
-							*E931* 
+							*E931*
   Buffer cannot be registered ~
 
 Out of memory or a duplicate buffer number.  May happen after W14.  Looking up
 a buffer will not always work, better restart Vim.
 
-							*E296* *E297* 
+							*E296* *E297*
   Seek error in swap file write ~
   Write error in swap file ~
 
@@ -694,7 +694,7 @@ This mostly happens when the disk is full.  Vim could not write text into the
 text may be lost without recovery being possible.  Vim might run out of memory
 when this problem persists.
 
-						*connection-refused* 
+						*connection-refused*
   Xlib: connection to "<machine-name:0.0" refused by server ~
 
 This happens when Vim tries to connect to the X server, but the X server does
@@ -703,7 +703,7 @@ to restore the title and for the xterm clipboard support.  Unfortunately this
 error message cannot be avoided, except by disabling the |+xterm_clipboard|
 and |+X11| features.
 
-							*E10* 
+							*E10*
   \\ should be followed by /, ? or & ~
 
 A command line started with a backslash or the range of a command contained a
@@ -711,13 +711,13 @@ backslash in a wrong place.  This is often caused by command-line continuation
 being disabled.  Remove the 'C' flag from the 'cpoptions' option to enable it.
 Or use ":set nocp".
 
-							*E471* 
+							*E471*
   Argument required ~
 
 This happens when an Ex command with mandatory argument(s) was executed, but
 no argument has been specified.
 
-							*E474* *E475* *E983* 
+							*E474* *E475* *E983*
   Invalid argument ~
   Invalid argument: {arg} ~
   Duplicate argument: {arg} ~
@@ -725,32 +725,32 @@ no argument has been specified.
 An Ex command or function has been executed, but an invalid argument has been
 specified.
 
-							*E488* 
+							*E488*
   Trailing characters ~
   Trailing characters: {text} ~
 
 An argument has been added to an Ex command that does not permit one.
 Or the argument has invalid characters and has not been recognized.
 
-							*E477* *E478* 
+							*E477* *E478*
   No ! allowed ~
   Don't panic! ~
 
 You have added a "!" after an Ex command that doesn't permit one.
 
-							*E481* 
+							*E481*
   No range allowed ~
 
 A range was specified for an Ex command that doesn't permit one.  See
 |cmdline-ranges|.
 
-							*E482* *E483* 
+							*E482* *E483*
   Can't create file {filename} ~
   Can't get temp file name ~
 
 Vim cannot create a temporary file.
 
-							*E484* *E485* 
+							*E484* *E485*
   Can't open file {filename} ~
   Can't read file {filename} ~
 
@@ -760,7 +760,7 @@ changed with patch 7.3.443.  Try using |shellescape()| for all shell arguments
 given to |system()|, or explicitly add escaping with ^.  Also see
 'shellxquote' and 'shellxescape'.
 
-							*E464* 
+							*E464*
   Ambiguous use of user-defined command ~
 
 There are two user-defined commands with a common name prefix, and you used
@@ -770,20 +770,20 @@ Example: >
 	:command MyCommand2 echo "two"
 	:MyCommand
 <
-							*E492* 
+							*E492*
   Not an editor command ~
 
 You tried to execute a command that is neither an Ex command nor
 a user-defined command.
 
-							*E943* 
+							*E943*
   Command table needs to be updated, run 'make cmdidxs' ~
 
 This can only happen when changing the source code, when adding a command in
 src/ex_cmds.h.  The lookup table then needs to be updated, by running: >
 	make cmdidxs
 <
-						*E928* *E889* 
+						*E928* *E889*
   E928: String required ~
   E889: Number required ~
 
@@ -842,7 +842,7 @@ Also see 'mouse'.  The hit-enter message is highlighted with the |hl-Question|
 group.
 
 
-						*more-prompt* *pager* 
+						*more-prompt* *pager*
   -- More -- ~
   -- More -- SPACE/d/j: screen/page/line down, b/u/k: up, q: quit ~
 

@@ -370,8 +370,8 @@ New autocommand events: ~
 |OptionSet|		after setting any option
 |TabClosed|		after closing a tab page
 |TabNew|		after creating a new tab page
-|TextChangedI|		after a change was made to the text in Insert mode
 |TextChanged|		after a change was made to the text in Normal mode
+|TextChangedI|		after a change was made to the text in Insert mode
 |WinNew|		after creating a new window
 
 

@@ -91,9 +91,9 @@ test_gui_event({event}, {args})
 
 		{event} is a String and the supported values are:
 		    "dropfiles"	drop one or more files in a window.
-		    "findrepl"  search and replace text
+		    "findrepl"  search and replace text.
 		    "mouse"	mouse button click event.
-		    "scrollbar" move or drag the scrollbar
+		    "scrollbar" move or drag the scrollbar.
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
 
@@ -119,7 +119,7 @@ test_gui_event({event}, {args})
 		  Perform a search and replace of text.  The supported items
 		  in {args} are:
 		    find_text:	string to find.
-		    repl_text:	replacement string
+		    repl_text:	replacement string.
 		    flags:	flags controlling the find/replace. Supported
 				values are:
 				    1	search next string (find dialog)

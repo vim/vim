@@ -839,10 +839,10 @@ Raising SystemExit exception in python isn't endorsed way to quit vim, use: >
 	:py vim.command("qall!")
 <
 							*E1266*
-This error can occur when python 3 cannot load the required modules.  This
-means that your python 3 is not correctly installed or there are some mistakes
+This error can occur when Python 3 cannot load the required modules.  This
+means that your Python 3 is not correctly installed or there are some mistakes
 in your settings.  Please check the following items:
-1. Make sure that python 3 is correctly installed.  Also check the version of
+1. Make sure that Python 3 is correctly installed.  Also check the version of
    python.
 2. Check the 'pythonthreedll' option.
 3. Check the 'pythonthreehome' option.
@@ -887,8 +887,8 @@ the runtime library cannot be found.
 ==============================================================================
 11. Python X						*python_x* *pythonx*
 
-Because most python code can be written so that it works with python 2.6+ and
-python 3 the pyx* functions and commands have been written.  They work exactly
+Because most python code can be written so that it works with Python 2.6+ and
+Python 3 the pyx* functions and commands have been written.  They work exactly
 the same as the Python 2 and 3 variants, but select the Python version using
 the 'pyxversion' setting.
 

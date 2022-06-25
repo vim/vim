@@ -345,7 +345,7 @@ Writing Vim script ~
 
 |usr_50.txt|  Advanced Vim script writing
 		|50.1|	Exceptions
-		|50.2|    Function with variable number of arguments
+		|50.2|	Function with variable number of arguments
 		|50.3|	Restoring the view
 
 |usr_51.txt|  Write plugins

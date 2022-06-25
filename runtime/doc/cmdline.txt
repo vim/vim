@@ -936,7 +936,7 @@ Note: these are typed literally, they are not special keys!
 		   When the match is with a file name, it is expanded to the
 		   full path.
 							*:<sfile>* *<sfile>*
-	<sfile>    When executing a ":source" command, is replaced with the
+	<sfile>    When executing a `:source` command, is replaced with the
 		   file name of the sourced file.  *E498*
 		   When executing a legacy function, is replaced with the call
 		   stack, as with <stack> (this is for backwards
@@ -959,7 +959,7 @@ Note: these are typed literally, they are not special keys!
 		   defined.
 		   If the file name cannot be determined you get error *E1274* .
 							*:<slnum>* *<slnum>*
-	<slnum>	   When executing a ":source" command, is replaced with the
+	<slnum>	   When executing a `:source` command, is replaced with the
 		   line number.  *E842*
 		   When executing a function it's the line number relative to
 		   the start of the function.
