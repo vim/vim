@@ -73,7 +73,7 @@ func Test_getfontname_with_arg()
     let fname = '-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO8859-1'
     call assert_match(fname, getfontname(fname))
 
-  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3') || has('gui_gtk4')
     " Invalid font name. The result should be the name plus the default size.
     call assert_equal('notexist 10', getfontname('notexist'))
     call assert_equal('', getfontname('*'))
@@ -96,7 +96,7 @@ func Test_getfontname_without_arg()
     " 'expected' is DFLT_FONT of gui_x11.c or its real name.
     let pat = '\(7x13\)\|\(\c-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO8859-1\)'
     call assert_match(pat, fname)
-  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3') || has('gui_gtk4')
     " 'expected' is DEFAULT_FONT of gui_gtk_x11.c.
     call assert_equal('Monospace 10', fname)
   endif
@@ -404,7 +404,7 @@ func Test_set_guifont()
     let pat = '\(7x13\)\|\(\c-Misc-Fixed-Medium-R-Normal--13-120-75-75-C-70-ISO8859-1\)'
     call assert_match(pat, getfontname())
 
-  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3') || has('gui_gtk4')
     " For GTK, what we refer to as 'font names' in our manual are actually
     " 'initial font patterns'.  A valid font which matches the 'canonical font
     " pattern' constructed from a given 'initial pattern' is to be looked up
@@ -577,7 +577,7 @@ endfunc
 func Test_set_guiligatures()
   CheckX11BasedGui
 
-  if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+  if has('gui_gtk') || has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3') || has('gui_gtk4')
     " Try correct value
     set guiligatures=<>=ab
     call assert_equal("<>=ab", &guiligatures)
