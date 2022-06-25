@@ -4361,7 +4361,7 @@ msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "zadejte :help<Enter>  èi <F1> pro nápovìdu"
 
 msgid "type  :help version9<Enter>   for version info"
-msgstr "zadejte :help version9<Enter>  pro informace o verzi 8"
+msgstr "zadejte :help version9<Enter>  pro informace o verzi 9"
 
 msgid "Running in Vi compatible mode"
 msgstr "Bìžím v režimu kompatibility s Vi"

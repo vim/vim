@@ -10421,7 +10421,7 @@ bsd			Compiled on an OS in the BSD family (excluding macOS).
 builtin_terms		Compiled with some builtin terminals.
 byte_offset		Compiled with support for 'o' in 'statusline'
 channel			Compiled with support for |channel| and |job|
-cindent			Compiled with 'cindent' support.
+cindent			Compiled with 'cindent' support. (always true)
 clientserver		Compiled with remote invocation support |clientserver|.
 clipboard		Compiled with 'clipboard' support.
 clipboard_working	Compiled with 'clipboard' support and it can be used.
@@ -10483,7 +10483,7 @@ insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode. (always true)
 job			Compiled with support for |channel| and |job|
 ipv6			Compiled with support for IPv6 networking in |channel|.
-jumplist		Compiled with |jumplist| support.
+jumplist		Compiled with |jumplist| support. (always true)
 keymap			Compiled with 'keymap' support.
 lambda			Compiled with |lambda| support.
 langmap			Compiled with 'langmap' support.
@@ -10492,6 +10492,7 @@ linebreak		Compiled with 'linebreak', 'breakat', 'showbreak' and
 			'breakindent' support.
 linux			Linux version of Vim.
 lispindent		Compiled with support for lisp indenting.
+			(always true)
 listcmds		Compiled with commands for the buffer list |:files|
 			and the argument list |arglist|.
 localmap		Compiled with local mappings and abbr. |:map-local|
@@ -10521,7 +10522,7 @@ mzscheme		Compiled with MzScheme interface |mzscheme|.
 nanotime		Compiled with sub-second time stamp checks.
 netbeans_enabled	Compiled with support for |netbeans| and connected.
 netbeans_intg		Compiled with support for |netbeans|.
-num64			Compiled with 64-bit |Number| support.
+num64			Compiled with 64-bit |Number| support. (always true)
 ole			Compiled with OLE automation support for Win32.
 osx			Compiled for macOS  cf. mac
 osxdarwin		Compiled for macOS, with |mac-darwin-feature|
@@ -10547,7 +10548,7 @@ ruby			Compiled with Ruby interface |ruby|.
 scrollbind		Compiled with 'scrollbind' support. (always true)
 showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
-smartindent		Compiled with 'smartindent' support.
+smartindent		Compiled with 'smartindent' support. (always true)
 sodium			Compiled with libsodium for better crypt support
 sound			Compiled with sound support, e.g. `sound_playevent()`
 spell			Compiled with spell checking support |spell|.
@@ -10561,7 +10562,7 @@ syntax_items		There are active syntax highlighting items for the
 			current buffer.
 system			Compiled to use system() instead of fork()/exec().
 tag_binary		Compiled with binary searching in tags files
-			|tag-binary-search|.
+			|tag-binary-search|. (always true)
 tag_old_static		Support for old static tags was removed, see
 			|tag-old-static|.
 tcl			Compiled with Tcl interface.
@@ -10575,6 +10576,7 @@ tgetent			Compiled with tgetent support, able to use a termcap
 			or terminfo file.
 timers			Compiled with |timer_start()| support.
 title			Compiled with window title support |'title'|.
+			(always true)
 toolbar			Compiled with support for |gui-toolbar|.
 ttyin			input is a terminal (tty)
 ttyout			output is a terminal (tty)

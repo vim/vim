@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2022 May 21
+*various.txt*   For Vim version 8.2.  Last change: 2022 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -558,7 +558,10 @@ N  *+X11*		Unix only: can restore window title |X11|
 			initialized to an empty string.  After the redirection
 			starts, if the variable is removed or locked or the
 			variable type is changed, then further command output
-			messages will cause errors.
+			messages will cause errors.  When using a local
+			variable (l:var in a function or s:var in a script)
+			and another `:redir` causes the current one to end,
+			the scope might be different and the assignment fails.
 			In Vim9 script: the variable must have been declared
 			as a string.
 			The variable will remain empty until redirection ends.

@@ -14,6 +14,7 @@ Name[ru]=GVim
 Name[sr]=GVim
 Name[tr]=GVim
 Name[uk]=GVim
+Name[zh_CN]=GVim
 Name=GVim
 # Translators: This is the Generic Application Name used in the Vim desktop file
 GenericName[ca]=Editor de text
@@ -29,6 +30,7 @@ GenericName[ru]=Текстовый редактор
 GenericName[sr]=Едитор текст
 GenericName[tr]=Metin Düzenleyici
 GenericName[uk]=Редактор Тексту
+GenericName[zh_CN]=文本编辑器
 GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
 Comment[ca]=Edita fitxers de text
@@ -44,6 +46,7 @@ Comment[ru]=Редактирование текстовых файлов
 Comment[sr]=Уређујте текст фајлове
 Comment[tr]=Metin dosyaları düzenleyin
 Comment[uk]=Редагувати текстові файли
+Comment[zh_CN]=编辑文本文件
 Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
 # be overwritten by the po file when generating the desktop.file!
@@ -104,7 +107,6 @@ Comment[th]=แก้ไขแฟ้มข้อความ
 Comment[tk]=Metin faýllary editle
 Comment[vi]=Soạn thảo tập tin văn bản
 Comment[wa]=Asspougnî des fitcs tecses
-Comment[zh_CN]=编辑文本文件
 Comment[zh_TW]=編輯文字檔
 TryExec=gvim
 Exec=gvim -f %F
@@ -124,6 +126,7 @@ Keywords[ru]=текст;текстовый редактор;
 Keywords[sr]=Текст;едитор;
 Keywords[tr]=Metin;düzenleyici;
 Keywords[uk]=текст;редактор;
+Keywords[zh_CN]=Text;editor;文本;编辑器;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate
 Icon=gvim

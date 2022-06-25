@@ -18427,7 +18427,7 @@ Problem:    When 'wrapscan' is off "gn" does not select the whole pattern when
 Solution:   Check if the search fails. (Christian Brabandt, closes #1683)
 Files:      src/search.c, src/testdir/test_gn.vim
 
-Patch 8.0.0628 (after 8.0.0626
+Patch 8.0.0628 (after 8.0.0626)
 Problem:    Cursor disappears after silent mapping. (Ramel Eshed)
 Solution:   Do restore the cursor when it was changed, but don't change it in
             the first place for a silent mapping.

@@ -12849,7 +12849,7 @@ Files:	    src/getchar.c, src/normal.c, src/proto/getchar.pro
 
 Patch 7.3.430
 Problem:    When a custom filetype detection uses "augroup END" the conf
-	    fileytpe detection does not have the filetypedetect group.
+	    filetype detection does not have the filetypedetect group.
 Solution:   Always end the group and include filetypedetect in the conf
 	    autocommand. (Lech Lorens)
 Files:	    runtime/filetype.vim

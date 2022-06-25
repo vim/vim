@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2022 Jun 22
+" Last Change: 2022 Jun 24
 "
 " WORK IN PROGRESS - The basics works stable, more to come
 " Note: In general you need at least GDB 7.12 because this provides the
@@ -534,6 +534,7 @@ func TermDebugSendCommand(cmd)
       Stop
       sleep 10m
     endif
+    " TODO: should we prepend CTRL-U to clear the command?
     call term_sendkeys(s:gdbbuf, a:cmd . "\r")
     if do_continue
       Continue

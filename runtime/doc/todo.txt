@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 23
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,7 +39,7 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Prepare for the Vim 9.0 release:
-- Update version9.txt
+- Update version number in help
 
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
@@ -79,7 +79,7 @@ Update list of features to vote on:
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
   (Yegappan Lakshmanan, 2021 May 22)
-- Srollbar thumb sometimes not visible  #10492
+- Scrollbar thumb sometimes not visible  #10492
 - Add a function to redraw a specific popup window.  Esp. to be used when
   editing the command line, when screen updating doesn't happen. (Shougo)
 - Add a flag to make a popup window focusable?
@@ -201,6 +201,7 @@ Terminal emulator window:
   conversions.
 
 Patches considered for including:
+- make functions static if possible, add a few tests. #10612
 - use ngettext() in a few more places #10606
 - move f_hasmapto() to map.c  #10611
 - allow for nesting of timeout, sketch in #10595
@@ -211,6 +212,8 @@ Patches considered for including:
   Was originally written by Felipe Morales.
 - Patch to make fillchars global-local. (#5206)
 - Version of getchar() that does not move the cursor - #10603
+  Use a separate argument for the new flag.
+- Improved VB filetype detection. (Doug Kearns, June 25)
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
 - try using autoconf 2.71 and fix all "obsolete" warnings
@@ -304,6 +307,11 @@ changes.
 
 Add ??= operator, "a ??= b" works like "a = a ?? b". #10343
 
+When ":redir" is used while already active, the previous one is ended.  But
+when redirecting to a local variable (function or script) storing the value
+won't work.  At least give an error.  Is there a way to make it work?
+#10616
+
 Add an option to start_timer() to return from the input loop with K_IGNORE.
 This is useful e.g. when a popup was created that disables mappings, we need
 to return from vgetc() to make this happen.  #7011
@@ -380,7 +388,7 @@ Lua: updating wrong buffer when using newly created, unloaded buffer.
 File marks merging has duplicates since 7.4.1925. (Ingo Karkat, #5733)
 
 A syntax plugin cannot use autocommands, it could be sourced from setting
-'syntax' in a modeline.  Add a function that indicates whethere "secure"
+'syntax' in a modeline.  Add a function that indicates whether "secure"
 and/or "sandbox" are set.
 
 Problem with auto-formatting - inserting space and putting cursor before added
