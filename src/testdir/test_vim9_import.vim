@@ -1234,6 +1234,8 @@ def Run_Test_import_in_diffexpr()
   redraw
 
   diffoff!
+  set diffexpr=
+  set diffopt&
   bwipe!
   bwipe!
   delete('Xdiffexpr')
