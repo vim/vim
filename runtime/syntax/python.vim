@@ -95,8 +95,8 @@ syn keyword pythonAsync		async await
 " See https://peps.python.org/pep-0634/#the-match-statement for more on this.
 " In Python 3.10's IDLE for example, 'match' and 'case' are only highlighted
 " when in the right context
-syn match   pythonConditional   "\v^\s*case(.*:$)@="
-syn match   pythonConditional   "\v^\s*match(.*:$)@="
+syn match   pythonConditional   "\v^\s*case(.*:\s*$)@="
+syn match   pythonConditional   "\v^\s*match(.*:\s*$)@="
 
 " Decorators
 " A dot must be allowed because of @MyClass.myfunc decorators.
