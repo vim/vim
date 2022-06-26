@@ -4183,7 +4183,7 @@ ins_bs(
 #endif
 
 	    // delete characters until we are at or before want_vcol
-	    while (vcol > want_vcol
+	    while (vcol > want_vcol && curwin->w_cursor.col > 0
 		    && (cc = *(ml_get_cursor() - 1), VIM_ISWHITE(cc)))
 		ins_bs_one(&vcol);
 
