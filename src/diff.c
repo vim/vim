@@ -403,9 +403,9 @@ diff_mark_adjust_tp(
 		// 2. 3. 4. 5.: inserted/deleted lines touching this diff.
 		if (deleted > 0)
 		{
+		    off = 0;
 		    if (dp->df_lnum[idx] >= line1)
 		    {
-			off = dp->df_lnum[idx] - lnum_deleted;
 			if (last <= line2)
 			{
 			    // 4. delete all lines of diff
@@ -426,6 +426,7 @@ diff_mark_adjust_tp(
 			else
 			{
 			    // 5. delete lines at or just before top of diff
+			    off = dp->df_lnum[idx] - lnum_deleted;
 			    n = off;
 			    dp->df_count[idx] -= line2 - dp->df_lnum[idx] + 1;
 			    check_unchanged = TRUE;
@@ -434,7 +435,6 @@ diff_mark_adjust_tp(
 		    }
 		    else
 		    {
-			off = 0;
 			if (last < line2)
 			{
 			    // 2. delete at end of diff
