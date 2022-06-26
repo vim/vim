@@ -17,14 +17,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Simplified Chinese)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-08 17:23+0800\n"
+"POT-Creation-Date: 2022-06-24 13:26+0800\n"
 "PO-Revision-Date: 2006-04-21 14:00+0800\n"
 "Last-Translator: lilydjwg, Ada (Haowen) Yu\n"
 "Language-Team: Simplified Chinese\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=gbk\n"
-"Content-Transfer-Encoding: 8-bit\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #: ../alloc.c:93 ../alloc.c:109
@@ -91,11 +91,11 @@ msgstr "执行 %s"
 msgid "autocommand %s"
 msgstr "自动命令 %s"
 
-#: ../blob.c:429 ../list.c:2572
+#: ../blob.c:429 ../list.c:2574
 msgid "add() argument"
 msgstr "add() 参数"
 
-#: ../blob.c:606 ../list.c:2819
+#: ../blob.c:606 ../list.c:2821
 msgid "insert() argument"
 msgstr "insert() 参数"
 
@@ -146,12 +146,12 @@ msgstr "[未编辑]"
 msgid "[Read errors]"
 msgstr "[读错误]"
 
-#: ../buffer.c:3787 ../buffer.c:4776 ../drawscreen.c:496 ../fileio.c:2449
+#: ../buffer.c:3787 ../buffer.c:4776 ../drawscreen.c:496 ../fileio.c:2448
 #: ../netbeans.c:3425
 msgid "[RO]"
 msgstr "[只读]"
 
-#: ../buffer.c:3788 ../fileio.c:2449 ../netbeans.c:3425
+#: ../buffer.c:3788 ../fileio.c:2448 ../netbeans.c:3425
 msgid "[readonly]"
 msgstr "[只读]"
 
@@ -235,11 +235,11 @@ msgstr " 转换错误"
 msgid " in line %ld;"
 msgstr "位于第 %ld 行；"
 
-#: ../bufwrite.c:2371 ../fileio.c:2469
+#: ../bufwrite.c:2371 ../fileio.c:2468
 msgid "[NOT converted]"
 msgstr "[未转换]"
 
-#: ../bufwrite.c:2376 ../fileio.c:2474
+#: ../bufwrite.c:2376 ../fileio.c:2473
 msgid "[converted]"
 msgstr "[已转换]"
 
@@ -324,7 +324,7 @@ msgstr "选项 'history' 为零"
 
 #: ../crypt.c:741
 msgid "Warning: Using a weak encryption method; see :help 'cm'"
-msgstr "警告：正在使用脆弱加密方法；参见 :help 'cm'"
+msgstr "警告：正在使用脆弱的加密方法；参见 :help 'cm'"
 
 #: ../crypt.c:757
 msgid "Note: Encryption of swapfile not supported, disabling swap file"
@@ -399,7 +399,7 @@ msgstr "%3d  %s %s  第 %ld 行"
 msgid "%3d  expr %s"
 msgstr "%3d  表达式 %s"
 
-#: ../dict.c:1093 ../list.c:2787
+#: ../dict.c:1093 ../list.c:2789
 msgid "extend() argument"
 msgstr "extend() 参数"
 
@@ -529,7 +529,7 @@ msgstr ""
 #. * this way has the compelling advantage that translations need not to
 #. * be touched at all.  See below what 'ok' and 'ync' are used for.
 #.
-#: ../evalfunc.c:3462 ../gui.c:5172 ../gui_gtk.c:1670 ../os_mswin.c:684
+#: ../evalfunc.c:3462 ../gui.c:5177 ../gui_gtk.c:1670 ../os_mswin.c:687
 msgid "&Ok"
 msgstr "确定(&O)"
 
@@ -650,50 +650,50 @@ msgstr ""
 msgid "Edit File"
 msgstr "编辑文件"
 
-#: ../ex_cmds.c:4316
+#: ../ex_cmds.c:4317
 #, c-format
 msgid "replace with %s (y/n/a/q/l/^E/^Y)?"
 msgstr "替换为 %s (y/n/a/q/l/^E/^Y)？"
 
-#: ../ex_cmds.c:4851
+#: ../ex_cmds.c:4853
 msgid "(Interrupted) "
 msgstr "(已中断) "
 
-#: ../ex_cmds.c:4856
+#: ../ex_cmds.c:4858
 #, c-format
 msgid "%ld match on %ld line"
 msgid_plural "%ld matches on %ld line"
-msgstr[0] "%2$ld 行 %1$ld 个匹配"
+msgstr[0] "%ld 个匹配（%ld 行）"
 
-#: ../ex_cmds.c:4858
+#: ../ex_cmds.c:4860
 #, c-format
 msgid "%ld substitution on %ld line"
 msgid_plural "%ld substitutions on %ld line"
-msgstr[0] "%2$ld 行 %1$ld 次替换"
-
-#: ../ex_cmds.c:4861
-#, c-format
-msgid "%ld match on %ld lines"
-msgid_plural "%ld matches on %ld lines"
-msgstr[0] "%2$ld 行 %1$ld 个匹配"
+msgstr[0] "%ld 次替换（%ld 行）"
 
 #: ../ex_cmds.c:4863
 #, c-format
+msgid "%ld match on %ld lines"
+msgid_plural "%ld matches on %ld lines"
+msgstr[0] "%ld 个匹配（%ld 行）"
+
+#: ../ex_cmds.c:4865
+#, c-format
 msgid "%ld substitution on %ld lines"
 msgid_plural "%ld substitutions on %ld lines"
-msgstr[0] "%2$ld 行 %1$ld 次替换"
+msgstr[0] "%ld 次替换（%ld 行）"
 
-#: ../ex_cmds.c:5031
+#: ../ex_cmds.c:5033
 #, c-format
 msgid "Pattern found in every line: %s"
 msgstr "每行都匹配表达式: %s"
 
-#: ../ex_cmds.c:5038
+#: ../ex_cmds.c:5040
 #, c-format
 msgid "Pattern not found: %s"
 msgstr "找不到模式：%s"
 
-#: ../ex_cmds.c:5436
+#: ../ex_cmds.c:5438
 msgid "No old files"
 msgstr "没有旧文件"
 
@@ -714,64 +714,64 @@ msgstr "脚本文件结束"
 msgid "End of function"
 msgstr "函数结束"
 
-#: ../ex_docmd.c:2154
+#: ../ex_docmd.c:2156
 msgid "Backwards range given, OK to swap"
 msgstr "使用了逆向的范围，确定交换吗"
 
-#: ../ex_docmd.c:4651
+#: ../ex_docmd.c:4660
 msgid ""
 "INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"
-msgstr "内部:不能使用 EX_DFLALL 与 ADDR_NONE, ADDR_UNSIGNED 或 ADDR_QUICKFIX"
+msgstr "内部信息：不能使用 EX_DFLALL 与 ADDR_NONE, ADDR_UNSIGNED 或 ADDR_QUICKFIX"
 
-#: ../ex_docmd.c:5700
+#: ../ex_docmd.c:5709
 #, c-format
 msgid "%d more file to edit.  Quit anyway?"
 msgid_plural "%d more files to edit.  Quit anyway?"
 msgstr[0] "还有 %d 个文件未编辑。确实要退出吗？"
 
-#: ../ex_docmd.c:5751
+#: ../ex_docmd.c:5760
 msgid "unknown"
 msgstr "未知"
 
-#: ../ex_docmd.c:5771
+#: ../ex_docmd.c:5780
 msgid "Greetings, Vim user!"
 msgstr "您好，Vim 用户！"
 
-#: ../ex_docmd.c:6209
+#: ../ex_docmd.c:6218
 msgid "Already only one tab page"
 msgstr "已经只剩一个标签页了"
 
-#: ../ex_docmd.c:6726
+#: ../ex_docmd.c:6735
 msgid "Edit File in new tab page"
 msgstr "在新标签页中编辑文件"
 
-#: ../ex_docmd.c:6727
+#: ../ex_docmd.c:6736
 msgid "Edit File in new window"
 msgstr "在新窗口编辑文件"
 
-#: ../ex_docmd.c:6880
+#: ../ex_docmd.c:6889
 #, c-format
 msgid "Tab page %d"
 msgstr "Tab 页 %d"
 
-#: ../ex_docmd.c:7265
+#: ../ex_docmd.c:7275
 msgid "No swap file"
 msgstr "无交换文件"
 
-#: ../ex_docmd.c:7367
+#: ../ex_docmd.c:7377
 msgid "Append File"
 msgstr "追加文件"
 
-#: ../ex_docmd.c:7874
+#: ../ex_docmd.c:7886
 #, c-format
 msgid "Window position: X %d, Y %d"
 msgstr "窗口位置: X %d, Y %d"
 
-#: ../ex_docmd.c:8254
+#: ../ex_docmd.c:8266
 msgid "Save Redirection"
 msgstr "保存重定向"
 
-#: ../ex_docmd.c:9487
+#: ../ex_docmd.c:9499
 msgid "Untitled"
 msgstr "未命名"
 
@@ -825,8 +825,8 @@ msgstr "异常"
 msgid "Error and interrupt"
 msgstr "错误和中断"
 
-#: ../ex_eval.c:816 ../gui.c:5171 ../gui_xmdlg.c:685 ../gui_xmdlg.c:804
-#: ../os_mswin.c:683
+#: ../ex_eval.c:816 ../gui.c:5176 ../gui_xmdlg.c:685 ../gui_xmdlg.c:804
+#: ../os_mswin.c:686
 msgid "Error"
 msgstr "错误"
 
@@ -836,7 +836,7 @@ msgid "Interrupt"
 msgstr "中断"
 
 # do not translate to avoid writing Chinese in files
-#: ../ex_getln.c:4442
+#: ../ex_getln.c:4446
 msgid "[Command Line]"
 msgstr "[命令行]"
 
@@ -877,135 +877,135 @@ msgstr "Vim: 从标准输入读取...\n"
 msgid "Reading from stdin..."
 msgstr "从标准输入读取..."
 
-#: ../fileio.c:2431
+#: ../fileio.c:2430
 msgid "[fifo]"
 msgstr "[fifo]"
 
-#: ../fileio.c:2436
+#: ../fileio.c:2435
 msgid "[socket]"
 msgstr "[套接字]"
 
-#: ../fileio.c:2442
+#: ../fileio.c:2441
 msgid "[character special]"
 msgstr "[字符设备]"
 
-#: ../fileio.c:2459
+#: ../fileio.c:2458
 msgid "[CR missing]"
 msgstr "[缺少 CR]'"
 
-#: ../fileio.c:2464
+#: ../fileio.c:2463
 msgid "[long lines split]"
 msgstr "[长行分割]"
 
-#: ../fileio.c:2487
+#: ../fileio.c:2486
 #, c-format
 msgid "[CONVERSION ERROR in line %ld]"
 msgstr "[第 %ld 行转换错误]"
 
-#: ../fileio.c:2493
+#: ../fileio.c:2492
 #, c-format
 msgid "[ILLEGAL BYTE in line %ld]"
 msgstr "[第 %ld 行无效字符]"
 
-#: ../fileio.c:2498
+#: ../fileio.c:2497
 msgid "[READ ERRORS]"
 msgstr "[读错误]"
 
-#: ../fileio.c:2836
+#: ../fileio.c:2835
 msgid "Can't find temp file for conversion"
 msgstr "找不到用于转换的临时文件"
 
-#: ../fileio.c:2843
+#: ../fileio.c:2842
 msgid "Conversion with 'charconvert' failed"
 msgstr "'charconvert' 转换失败"
 
-#: ../fileio.c:2846
+#: ../fileio.c:2845
 msgid "can't read output of 'charconvert'"
 msgstr "无法读取 'charconvert' 的输出"
 
-#: ../fileio.c:3068
+#: ../fileio.c:3067
 msgid "[dos]"
 msgstr "[dos]"
 
-#: ../fileio.c:3068
+#: ../fileio.c:3067
 msgid "[dos format]"
 msgstr "[dos 格式]"
 
-#: ../fileio.c:3074
+#: ../fileio.c:3073
 msgid "[mac]"
 msgstr "[mac]"
 
-#: ../fileio.c:3074
+#: ../fileio.c:3073
 msgid "[mac format]"
 msgstr "[mac 格式]"
 
-#: ../fileio.c:3080
+#: ../fileio.c:3079
 msgid "[unix]"
 msgstr "[unix]"
 
-#: ../fileio.c:3080
+#: ../fileio.c:3079
 msgid "[unix format]"
 msgstr "[unix 格式]"
 
-#: ../fileio.c:3107
+#: ../fileio.c:3106
 #, c-format
 msgid "%ld line, "
 msgid_plural "%ld lines, "
 msgstr[0] "%ld 行，"
 
-#: ../fileio.c:3110
+#: ../fileio.c:3109
 #, c-format
 msgid "%lld byte"
 msgid_plural "%lld bytes"
 msgstr[0] "%lld 字节"
 
-#: ../fileio.c:3121 ../netbeans.c:3430
+#: ../fileio.c:3120 ../netbeans.c:3430
 msgid "[noeol]"
 msgstr "[noeol]"
 
-#: ../fileio.c:3121 ../netbeans.c:3431
+#: ../fileio.c:3120 ../netbeans.c:3431
 msgid "[Incomplete last line]"
 msgstr "[最后一行不完整]"
 
-#: ../fileio.c:4194
+#: ../fileio.c:4193
 #, c-format
 msgid ""
 "W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
 "well"
 msgstr "W12: 警告: 文件 \"%s\" 已变动，并且在 Vim 中的缓冲区也已变动"
 
-#: ../fileio.c:4195
+#: ../fileio.c:4194
 msgid "See \":help W12\" for more info."
 msgstr "进一步说明请见 \":help W12\""
 
-#: ../fileio.c:4199
+#: ../fileio.c:4198
 #, c-format
 msgid "W11: Warning: File \"%s\" has changed since editing started"
 msgstr "W11: 警告: 编辑开始后，文件 \"%s\" 已变动"
 
-#: ../fileio.c:4200
+#: ../fileio.c:4199
 msgid "See \":help W11\" for more info."
 msgstr "进一步说明请见 \":help W11\""
 
-#: ../fileio.c:4204
+#: ../fileio.c:4203
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr "W16: 警告: 编辑开始后，文件 \"%s\" 的模式已变动"
 
-#: ../fileio.c:4205
+#: ../fileio.c:4204
 msgid "See \":help W16\" for more info."
 msgstr "进一步说明请见 \":help W16\""
 
-#: ../fileio.c:4223
+#: ../fileio.c:4222
 #, c-format
 msgid "W13: Warning: File \"%s\" has been created after editing started"
 msgstr "W13: 警告: 编辑开始后，文件 \"%s\" 已被创建"
 
-#: ../fileio.c:4252
+#: ../fileio.c:4251
 msgid "Warning"
 msgstr "警告"
 
-#: ../fileio.c:4254
+#: ../fileio.c:4253
 msgid ""
 "&OK\n"
 "&Load File\n"
@@ -1015,27 +1015,27 @@ msgstr ""
 "加载文件(&L)\n"
 "加载文件和选项(&A)"
 
-#: ../filepath.c:1783 ../filepath.c:2307 ../terminal.c:5014
+#: ../filepath.c:1784 ../filepath.c:2308 ../terminal.c:5014
 msgid "<empty>"
 msgstr "<空>"
 
-#: ../filepath.c:2276
+#: ../filepath.c:2277
 msgid "writefile() first argument must be a List or a Blob"
 msgstr "writefile() 的第一个参数必须是列表或者 blob"
 
-#: ../filepath.c:2368
+#: ../filepath.c:2369
 msgid "Select Directory dialog"
 msgstr "选择目录对话框"
 
-#: ../filepath.c:2370
+#: ../filepath.c:2371
 msgid "Save File dialog"
 msgstr "保存文件对话框"
 
-#: ../filepath.c:2372
+#: ../filepath.c:2373
 msgid "Open File dialog"
 msgstr "打开文件对话框"
 
-#: ../filepath.c:4020
+#: ../filepath.c:4021
 msgid "no matches"
 msgstr "没有匹配"
 
@@ -1051,7 +1051,7 @@ msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
 msgstr[0] "+-%s%3ld 行: "
 
-#: ../gui.c:5418
+#: ../gui.c:5423
 msgid "No match at cursor, finding next"
 msgstr "在光标处没有匹配，查找下一个"
 
@@ -1071,7 +1071,7 @@ msgstr "取消(_C)"
 msgid "_OK"
 msgstr "确定(_O)"
 
-#: ../gui_gtk.c:1671 ../message.c:4139
+#: ../gui_gtk.c:1671 ../message.c:4138
 msgid ""
 "&Yes\n"
 "&No\n"
@@ -1482,17 +1482,17 @@ msgid "Lua library cannot be loaded."
 msgstr "Lua 库无法载入。"
 
 #: ../if_lua.c:2615 ../if_mzsch.c:2458 ../if_mzsch.c:2488 ../if_mzsch.c:2584
-#: ../if_mzsch.c:2647 ../if_mzsch.c:2769 ../if_mzsch.c:2825 ../if_tcl.c:673
-#: ../if_tcl.c:718 ../if_tcl.c:792 ../if_tcl.c:862 ../if_tcl.c:1985
+#: ../if_mzsch.c:2647 ../if_mzsch.c:2769 ../if_mzsch.c:2825 ../if_tcl.c:679
+#: ../if_tcl.c:724 ../if_tcl.c:798 ../if_tcl.c:868 ../if_tcl.c:1991
 #: ../if_py_both.h:41 ../if_py_both.h:5726
 msgid "cannot save undo information"
 msgstr "无法保存撤销信息"
 
-#: ../if_mzsch.c:1661 ../if_tcl.c:1394 ../if_py_both.h:913 ../if_py_both.h:964
+#: ../if_mzsch.c:1661 ../if_tcl.c:1400 ../if_py_both.h:913 ../if_py_both.h:964
 msgid "invalid expression"
 msgstr "无效的表达式"
 
-#: ../if_mzsch.c:1670 ../if_tcl.c:1402
+#: ../if_mzsch.c:1670 ../if_tcl.c:1408
 msgid "expressions disabled at compile time"
 msgstr "编译时没有启用表达式"
 
@@ -1500,7 +1500,7 @@ msgstr "编译时没有启用表达式"
 msgid "hidden option"
 msgstr "隐藏的选项"
 
-#: ../if_mzsch.c:1782 ../if_tcl.c:490
+#: ../if_mzsch.c:1782 ../if_tcl.c:496
 msgid "unknown option"
 msgstr "未知的选项"
 
@@ -1516,7 +1516,7 @@ msgstr "无法打开缓冲区"
 msgid "cannot delete line"
 msgstr "无法删除行"
 
-#: ../if_mzsch.c:2494 ../if_mzsch.c:2676 ../if_tcl.c:679 ../if_tcl.c:2014
+#: ../if_mzsch.c:2494 ../if_mzsch.c:2676 ../if_tcl.c:685 ../if_tcl.c:2020
 #: ../if_py_both.h:44
 msgid "cannot replace line"
 msgstr "无法替换行"
@@ -1537,7 +1537,7 @@ msgstr "将 Scheme 值转换到 Vim 时出错"
 msgid "Vim error: ~a"
 msgstr "Vim 错误: ~a"
 
-#: ../if_mzsch.c:3567 ../if_tcl.c:1422
+#: ../if_mzsch.c:3567 ../if_tcl.c:1428
 msgid "Vim error"
 msgstr "Vim 错误"
 
@@ -1557,67 +1557,67 @@ msgstr "行号超出范围"
 msgid "not allowed in the Vim sandbox"
 msgstr "不允许在 sandbox 中使用"
 
-#: ../if_tcl.c:408
+#: ../if_tcl.c:414
 msgid "invalid buffer number"
 msgstr "无效的缓冲区号"
 
-#: ../if_tcl.c:454 ../if_tcl.c:922 ../if_tcl.c:1103
+#: ../if_tcl.c:460 ../if_tcl.c:928 ../if_tcl.c:1109
 msgid "not implemented yet"
 msgstr "尚未实现"
 
 #. ???
-#: ../if_tcl.c:763
+#: ../if_tcl.c:769
 msgid "cannot set line(s)"
 msgstr "无法设定行"
 
-#: ../if_tcl.c:823 ../if_py_both.h:5350
+#: ../if_tcl.c:829 ../if_py_both.h:5350
 msgid "invalid mark name"
 msgstr "无效的标记名称"
 
-#: ../if_tcl.c:832
+#: ../if_tcl.c:838
 msgid "mark not set"
 msgstr "没有设定标记"
 
-#: ../if_tcl.c:839 ../if_tcl.c:1058
+#: ../if_tcl.c:845 ../if_tcl.c:1064
 #, c-format
 msgid "row %d column %d"
 msgstr "第 %d 行 第 %d 列"
 
-#: ../if_tcl.c:871
+#: ../if_tcl.c:877
 msgid "cannot insert/append line"
 msgstr "无法插入/追加行"
 
-#: ../if_tcl.c:1204 ../if_py_both.h:4873 ../if_py_both.h:4929
+#: ../if_tcl.c:1210 ../if_py_both.h:4873 ../if_py_both.h:4929
 #: ../if_py_both.h:5013
 msgid "line number out of range"
 msgstr "行号超出范围"
 
-#: ../if_tcl.c:1257
+#: ../if_tcl.c:1263
 msgid "unknown flag: "
 msgstr "未知的标志: "
 
-#: ../if_tcl.c:1328
+#: ../if_tcl.c:1334
 msgid "unknown vimOption"
 msgstr "未知的 vim 选项"
 
-#: ../if_tcl.c:1417
+#: ../if_tcl.c:1423
 msgid "keyboard interrupt"
 msgstr "键盘中断"
 
-#: ../if_tcl.c:1465
+#: ../if_tcl.c:1471
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "无法创建缓冲区/窗口命令: 对象将被删除"
 
-#: ../if_tcl.c:1530
+#: ../if_tcl.c:1536
 msgid ""
 "cannot register callback command: buffer/window is already being deleted"
 msgstr "无法注册回调命令: 缓冲区/窗口已被删除"
 
-#: ../if_tcl.c:1548
+#: ../if_tcl.c:1554
 msgid "cannot register callback command: buffer/window reference not found"
 msgstr "无法注册回调命令: 找不到缓冲区/窗口引用"
 
-#: ../if_tcl.c:1995
+#: ../if_tcl.c:2001
 msgid "cannot get line"
 msgstr "无法获取行"
 
@@ -1779,35 +1779,35 @@ msgstr "匹配 %d"
 msgid "flatten() argument"
 msgstr "flatten() 参数"
 
-#: ../list.c:2215
+#: ../list.c:2217
 msgid "sort() argument"
 msgstr "sort() 参数"
 
-#: ../list.c:2215
+#: ../list.c:2217
 msgid "uniq() argument"
 msgstr "uniq() 参数"
 
-#: ../list.c:2458
+#: ../list.c:2460
 msgid "map() argument"
 msgstr "map() 参数"
 
-#: ../list.c:2460
+#: ../list.c:2462
 msgid "mapnew() argument"
 msgstr "mapnew() 参数"
 
-#: ../list.c:2461
+#: ../list.c:2463
 msgid "filter() argument"
 msgstr "filter() 参数"
 
-#: ../list.c:2799
+#: ../list.c:2801
 msgid "extendnew() argument"
 msgstr "extendnew() 参数"
 
-#: ../list.c:2872
+#: ../list.c:2874
 msgid "remove() argument"
 msgstr "remove() 参数"
 
-#: ../list.c:2902
+#: ../list.c:2904
 msgid "reverse() argument"
 msgstr "reverse() 参数"
 
@@ -1849,48 +1849,48 @@ msgstr "还有 %d 个文件等待编辑\n"
 msgid "netbeans is not supported with this GUI\n"
 msgstr "此 GUI 中不支持 netbeans\n"
 
-#: ../main.c:1814
+#: ../main.c:1825
 msgid "'-nb' cannot be used: not enabled at compile time\n"
 msgstr "'-nb' 无法使用：编译时未启用\n"
 
-#: ../main.c:1915
+#: ../main.c:1926
 msgid "This Vim was not compiled with the diff feature."
 msgstr "此 Vim 编译时没有加入比对（diff）功能"
 
-#: ../main.c:2473
+#: ../main.c:2500
 msgid "Attempt to open script file again: \""
 msgstr "试图再次打开脚本文件: \""
 
-#: ../main.c:2482
+#: ../main.c:2509
 msgid "Cannot open for reading: \""
 msgstr "无法打开并读取: \""
 
-#: ../main.c:2537
+#: ../main.c:2564
 msgid "Cannot open for script output: \""
 msgstr "无法打开并输出脚本: \""
 
-#: ../main.c:2702
+#: ../main.c:2729
 msgid "Vim: Error: Failure to start gvim from NetBeans\n"
 msgstr "Vim: 错误: 无法从 NetBeans 中启动 gvim\n"
 
-#: ../main.c:2728
+#: ../main.c:2755
 msgid "Vim: Error: This version of Vim does not run in a Cygwin terminal\n"
 msgstr "Vim: 错误: 此版本的 Vim 不支持在 Cygwin 终端中运行\n"
 
-#: ../main.c:2733
+#: ../main.c:2760
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: 警告: 输出不是到终端(屏幕)\n"
 
-#: ../main.c:2735
+#: ../main.c:2762
 msgid "Vim: Warning: Input is not from a terminal\n"
 msgstr "Vim: 警告: 输入不是来自终端(键盘)\n"
 
 #. just in case..
-#: ../main.c:3065
+#: ../main.c:3092
 msgid "pre-vimrc command line"
 msgstr "pre-vimrc 命令行"
 
-#: ../main.c:3410
+#: ../main.c:3437
 msgid ""
 "\n"
 "More info with: \"vim -h\"\n"
@@ -1898,23 +1898,23 @@ msgstr ""
 "\n"
 "更多信息请见: \"vim -h\"\n"
 
-#: ../main.c:3442
+#: ../main.c:3469
 msgid "[file ..]       edit specified file(s)"
 msgstr "[文件 ..]       编辑指定的文件"
 
-#: ../main.c:3443
+#: ../main.c:3470
 msgid "-               read text from stdin"
 msgstr "-               从标准输入(stdin)读取文本"
 
-#: ../main.c:3444
+#: ../main.c:3471
 msgid "-t tag          edit file where tag is defined"
 msgstr "-t tag          编辑 tag 定义处的文件"
 
-#: ../main.c:3446
+#: ../main.c:3473
 msgid "-q [errorfile]  edit file with first error"
 msgstr "-q [errorfile]  编辑第一个出错处的文件"
 
-#: ../main.c:3456
+#: ../main.c:3483
 msgid ""
 "\n"
 "\n"
@@ -1924,11 +1924,11 @@ msgstr ""
 "\n"
 "用法:"
 
-#: ../main.c:3459
+#: ../main.c:3486
 msgid " vim [arguments] "
 msgstr " vim [参数] "
 
-#: ../main.c:3463
+#: ../main.c:3490
 msgid ""
 "\n"
 "   or:"
@@ -1936,15 +1936,15 @@ msgstr ""
 "\n"
 "  或:"
 
-#: ../main.c:3466
+#: ../main.c:3493
 msgid ""
 "\n"
 "Where case is ignored prepend / to make flag upper case"
 msgstr ""
 "\n"
-"在样例被忽略的地方/使标志大写"
+"如果大小写被忽略，在标志前加 / 来表示大写"
 
-#: ../main.c:3469
+#: ../main.c:3496
 msgid ""
 "\n"
 "\n"
@@ -1954,271 +1954,275 @@ msgstr ""
 "\n"
 "参数:\n"
 
-#: ../main.c:3470
+#: ../main.c:3497
 msgid "--\t\t\tOnly file names after this"
 msgstr "--\t\t\t在这以后只有文件名"
 
-#: ../main.c:3472
+#: ../main.c:3499
 msgid "--literal\t\tDon't expand wildcards"
 msgstr "--literal\t\t不扩展通配符"
 
-#: ../main.c:3475
+#: ../main.c:3502
 msgid "-register\t\tRegister this gvim for OLE"
 msgstr "-register\t\t注册此 gvim 到 OLE"
 
-#: ../main.c:3476
+#: ../main.c:3503
 msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\t取消 OLE 中的 gvim 注册"
 
-#: ../main.c:3479
+#: ../main.c:3506
 msgid "-g\t\t\tRun using GUI (like \"gvim\")"
 msgstr "-g\t\t\t使用图形界面 (同 \"gvim\")"
 
-#: ../main.c:3480
+#: ../main.c:3507
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
 msgstr "-f  或  --nofork\t前台: 启动图形界面时不 fork"
 
-#: ../main.c:3482
+#: ../main.c:3509
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tVi 模式 (同 \"vi\")"
 
-#: ../main.c:3483
+#: ../main.c:3510
 msgid "-e\t\t\tEx mode (like \"ex\")"
 msgstr "-e\t\t\tEx 模式 (同 \"ex\")"
 
-#: ../main.c:3484
+#: ../main.c:3511
 msgid "-E\t\t\tImproved Ex mode"
 msgstr "-E\t\t\t改进的 Ex 模式"
 
-#: ../main.c:3485
+#: ../main.c:3512
 msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
 msgstr "-s\t\t\t安静(批处理)模式 (只能与 \"ex\" 一起使用)"
 
-#: ../main.c:3487
+#: ../main.c:3514
 msgid "-d\t\t\tDiff mode (like \"vimdiff\")"
 msgstr "-d\t\t\tDiff 模式 (同 \"vimdiff\")"
 
-#: ../main.c:3489
+#: ../main.c:3516
 msgid "-y\t\t\tEasy mode (like \"evim\", modeless)"
 msgstr "-y\t\t\t容易模式 (同 \"evim\"，无模式)"
 
-#: ../main.c:3490
+#: ../main.c:3517
 msgid "-R\t\t\tReadonly mode (like \"view\")"
 msgstr "-R\t\t\t只读模式 (同 \"view\")"
 
-#: ../main.c:3491
+#: ../main.c:3518
 msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
 msgstr "-Z\t\t\t限制模式 (同 \"rvim\")"
 
-#: ../main.c:3492
+#: ../main.c:3519
 msgid "-m\t\t\tModifications (writing files) not allowed"
 msgstr "-m\t\t\t不可修改(写入文件)"
 
-#: ../main.c:3493
+#: ../main.c:3520
 msgid "-M\t\t\tModifications in text not allowed"
 msgstr "-M\t\t\t文本不可修改"
 
-#: ../main.c:3494
+#: ../main.c:3521
 msgid "-b\t\t\tBinary mode"
 msgstr "-b\t\t\t二进制模式"
 
-#: ../main.c:3495
+#: ../main.c:3522
 msgid "-l\t\t\tLisp mode"
 msgstr "-l\t\t\tLisp 模式"
 
-#: ../main.c:3496
+#: ../main.c:3523
 msgid "-C\t\t\tCompatible with Vi: 'compatible'"
 msgstr "-C\t\t\t兼容传统的 Vi: 'compatible'"
 
-#: ../main.c:3497
+#: ../main.c:3524
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\t不完全兼容传统的 Vi: 'nocompatible'"
 
-#: ../main.c:3498
+#: ../main.c:3525
 msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
 msgstr "-V[N][文件名]\t显示详细信息 [级别 N] [记录消息到指定的文件名]"
 
-#: ../main.c:3500
+#: ../main.c:3527
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\t调试模式"
 
-#: ../main.c:3502
+#: ../main.c:3529
 msgid "-n\t\t\tNo swap file, use memory only"
 msgstr "-n\t\t\t不使用交换文件，只使用内存"
 
-#: ../main.c:3503
+#: ../main.c:3530
 msgid "-r\t\t\tList swap files and exit"
 msgstr "-r\t\t\t列出交换文件并退出"
 
-#: ../main.c:3504
+#: ../main.c:3531
 msgid "-r (with file name)\tRecover crashed session"
 msgstr "-r (跟文件名)\t恢复崩溃的会话"
 
-#: ../main.c:3505
+#: ../main.c:3532
 msgid "-L\t\t\tSame as -r"
 msgstr "-L\t\t\t同 -r"
 
-#: ../main.c:3507
+#: ../main.c:3534
 msgid "-f\t\t\tDon't use newcli to open window"
 msgstr "-f\t\t\t不使用 newcli 来打开窗口"
 
-#: ../main.c:3508
+#: ../main.c:3535
 msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <device>\t\t使用 <device> 进行输入输出"
 
-#: ../main.c:3511
+#: ../main.c:3538
 msgid "-A\t\t\tStart in Arabic mode"
 msgstr "-A\t\t\t以 Arabic 模式启动"
 
-#: ../main.c:3514
+#: ../main.c:3541
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\t以 Hebrew 模式启动"
 
-#: ../main.c:3516
+#: ../main.c:3543
 msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <terminal>\t设定终端类型为 <terminal>"
 
-#: ../main.c:3517
+#: ../main.c:3544
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr "--not-a-term\t\t跳过输入/输出不是终端的警告"
 
-#: ../main.c:3518
+#: ../main.c:3546
+msgid "--gui-dialog-file {fname}  For testing: write dialog text"
+msgstr "--gui-dialog-file {文件名}  测试用：输出对话文本"
+
+#: ../main.c:3548
 msgid "--ttyfail\t\tExit if input or output is not a terminal"
 msgstr "--ttyfail\t\t如果输入或输出不是终端就退出"
 
-#: ../main.c:3519
+#: ../main.c:3549
 msgid "-u <vimrc>\t\tUse <vimrc> instead of any .vimrc"
 msgstr "-u <vimrc>\t\t使用 <vimrc> 替代任何 .vimrc"
 
-#: ../main.c:3521
+#: ../main.c:3551
 msgid "-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"
 msgstr "-U <gvimrc>\t\t使用 <gvimrc> 替代任何 .gvimrc"
 
-#: ../main.c:3523
+#: ../main.c:3553
 msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\t不加载 plugin 脚本"
 
-#: ../main.c:3524
+#: ../main.c:3554
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
 msgstr "-p[N]\t\t打开 N 个标签页 (默认值: 每个文件一个)"
 
-#: ../main.c:3525
+#: ../main.c:3555
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\t打开 N 个窗口 (默认值: 每个文件一个)"
 
-#: ../main.c:3526
+#: ../main.c:3556
 msgid "-O[N]\t\tLike -o but split vertically"
 msgstr "-O[N]\t\t同 -o 但垂直分割"
 
-#: ../main.c:3527
+#: ../main.c:3557
 msgid "+\t\t\tStart at end of file"
 msgstr "+\t\t\t启动后跳到文件末尾"
 
-#: ../main.c:3528
+#: ../main.c:3558
 msgid "+<lnum>\t\tStart at line <lnum>"
 msgstr "+<lnum>\t\t启动后跳到第 <lnum> 行"
 
-#: ../main.c:3529
+#: ../main.c:3559
 msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
 msgstr "--cmd <command>\t加载任何 vimrc 文件前执行 <command>"
 
-#: ../main.c:3530
+#: ../main.c:3560
 msgid "-c <command>\t\tExecute <command> after loading the first file"
 msgstr "-c <command>\t\t加载第一个文件后执行 <command>"
 
-#: ../main.c:3531
+#: ../main.c:3561
 msgid "-S <session>\t\tSource file <session> after loading the first file"
 msgstr "-S <session>\t\t加载第一个文件后执行文件 <session>"
 
-#: ../main.c:3532
+#: ../main.c:3562
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr "-s <scriptin>\t从文件 <scriptin> 读入正常模式的命令"
 
-#: ../main.c:3533
+#: ../main.c:3563
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr "-w <scriptout>\t将所有输入的命令追加到文件 <scriptout>"
 
-#: ../main.c:3534
+#: ../main.c:3564
 msgid "-W <scriptout>\tWrite all typed commands to file <scriptout>"
 msgstr "-W <scriptout>\t将所有输入的命令写入到文件 <scriptout>"
 
-#: ../main.c:3536
+#: ../main.c:3566
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\t编辑加密的文件"
 
-#: ../main.c:3540
+#: ../main.c:3570
 msgid "-display <display>\tConnect Vim to this particular X-server"
 msgstr "-display <display>\t将 Vim 与指定的 X-server 连接"
 
-#: ../main.c:3542
+#: ../main.c:3572
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\t不连接到 X Server"
 
-#: ../main.c:3545
+#: ../main.c:3575
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <files>\t如有可能，在 Vim 服务器上编辑 <files>"
 
-#: ../main.c:3546
+#: ../main.c:3576
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-silent <files>  同上，找不到服务器时不给出消息"
 
-#: ../main.c:3547
+#: ../main.c:3577
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr "--remote-wait <files>  同 --remote 但会等待文件完成编辑"
 
-#: ../main.c:3548
+#: ../main.c:3578
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-wait-silent <files>  同上，找不到服务器时不给出消息"
 
-#: ../main.c:3549
+#: ../main.c:3579
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
 "--remote-tab[-wait][-silent] <files>  同 --remote 但对每个文件打开一个标签页"
 
-#: ../main.c:3550
+#: ../main.c:3580
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <keys>\t送出 <keys> 到 Vim 服务器并退出"
 
-#: ../main.c:3551
+#: ../main.c:3581
 msgid "--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"
 msgstr "--remote-expr <expr>\t在 Vim 服务器上求 <expr> 的值并打印结果"
 
-#: ../main.c:3552
+#: ../main.c:3582
 msgid "--serverlist\t\tList available Vim server names and exit"
 msgstr "--serverlist\t\t列出可用的 Vim 服务器名称并退出"
 
-#: ../main.c:3553
+#: ../main.c:3583
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <名称>\t发送到或成为 Vim 服务器 <名称>"
 
-#: ../main.c:3556
+#: ../main.c:3586
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <文件>\t将启动计时信息写入 <文件>"
 
-#: ../main.c:3559
+#: ../main.c:3589
 msgid "--log <file>\tStart logging to <file> early"
 msgstr "--log <文件>\t尽早开始记录日志到 <文件>"
 
-#: ../main.c:3562
+#: ../main.c:3592
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\t使用 <viminfo> 取代 .viminfo"
 
-#: ../main.c:3564
+#: ../main.c:3594
 msgid "--clean\t\t'nocompatible', Vim defaults, no plugins, no viminfo"
 msgstr "--clean\t\t'nocompatible', Vim 默认选项, 不加载插件, 不读写 viminfo"
 
-#: ../main.c:3565
+#: ../main.c:3595
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h  或  --help\t打印帮助(本信息)并退出"
 
-#: ../main.c:3566
+#: ../main.c:3596
 msgid "--version\t\tPrint version information and exit"
 msgstr "--version\t\t打印版本信息并退出"
 
-#: ../main.c:3570
+#: ../main.c:3600
 msgid ""
 "\n"
 "Arguments recognised by gvim (Motif version):\n"
@@ -2226,59 +2230,59 @@ msgstr ""
 "\n"
 "gvim (Motif 版本) 可识别的参数:\n"
 
-#: ../main.c:3572
+#: ../main.c:3602
 msgid "-display <display>\tRun Vim on <display>"
 msgstr "-display <display>\t在 <display> 上运行 vim"
 
-#: ../main.c:3573 ../main.c:3592
+#: ../main.c:3603 ../main.c:3622
 msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\t启动后最小化"
 
-#: ../main.c:3574 ../main.c:3588
+#: ../main.c:3604 ../main.c:3618
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <color>\t使用 <color> 作为背景色 (也可用 -bg)"
 
-#: ../main.c:3575 ../main.c:3589
+#: ../main.c:3605 ../main.c:3619
 msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
 msgstr "-foreground <color>\t使用 <color> 作为一般文字颜色 (也可用 -fg)"
 
-#: ../main.c:3576 ../main.c:3590
+#: ../main.c:3606 ../main.c:3620
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
 msgstr "-font <font>\t\t使用 <font> 作为一般字体 (也可用 -fn)"
 
-#: ../main.c:3577
+#: ../main.c:3607
 msgid "-boldfont <font>\tUse <font> for bold text"
 msgstr "-boldfont <font>\t使用 <font> 作为粗体字体"
 
-#: ../main.c:3578
+#: ../main.c:3608
 msgid "-italicfont <font>\tUse <font> for italic text"
 msgstr "-italicfont <font>\t使用 <font> 作为斜体字体"
 
-#: ../main.c:3579 ../main.c:3591
+#: ../main.c:3609 ../main.c:3621
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
 msgstr "-geometry <geom>\t使用 <geom> 作为初始位置 (也可用 -geom)"
 
-#: ../main.c:3580
+#: ../main.c:3610
 msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
 msgstr "-borderwidth <width>\t设定边框宽度为 <width> (也可用 -bw)"
 
-#: ../main.c:3581
+#: ../main.c:3611
 msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
 msgstr "-scrollbarwidth <width> 设定滚动条宽度为 <width> (也可用 -sw)"
 
-#: ../main.c:3582 ../main.c:3593
+#: ../main.c:3612 ../main.c:3623
 msgid "-reverse\t\tUse reverse video (also: -rv)"
 msgstr "-reverse\t\t使用反显 (也可用 -rv)"
 
-#: ../main.c:3583
+#: ../main.c:3613
 msgid "+reverse\t\tDon't use reverse video (also: +rv)"
 msgstr "+reverse\t\t不使用反显 (也可用 +rv)"
 
-#: ../main.c:3584
+#: ../main.c:3614
 msgid "-xrm <resource>\tSet the specified resource"
 msgstr "-xrm <resource>\t设定指定的资源"
 
-#: ../main.c:3587
+#: ../main.c:3617
 msgid ""
 "\n"
 "Arguments recognised by gvim (GTK+ version):\n"
@@ -2286,35 +2290,35 @@ msgstr ""
 "\n"
 "gvim (GTK+ 版本) 可识别的参数:\n"
 
-#: ../main.c:3594
+#: ../main.c:3624
 msgid "-display <display>\tRun Vim on <display> (also: --display)"
 msgstr "-display <display>\t在 <display> 上运行 Vim (也可用 --display)"
 
-#: ../main.c:3595
+#: ../main.c:3625
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <role>\t设置用于区分主窗口的窗口角色名"
 
-#: ../main.c:3596
+#: ../main.c:3626
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
 msgstr "--socketid <xid>\t在另一个 GTK 部件中打开 Vim"
 
-#: ../main.c:3597
+#: ../main.c:3627
 msgid "--echo-wid\t\tMake gvim echo the Window ID on stdout"
 msgstr "--echo-wid\t\t让 gvim 在标准输出上显示窗口 ID"
 
-#: ../main.c:3604
+#: ../main.c:3634
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <parent title>\t在父应用程序中打开 Vim"
 
-#: ../main.c:3605
+#: ../main.c:3635
 msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
 msgstr "--windowid <HWND>\t在另一个 win32 控件中打开 Vim"
 
-#: ../map.c:833
+#: ../map.c:836
 msgid "No abbreviation found"
 msgstr "找不到缩写"
 
-#: ../map.c:835
+#: ../map.c:838
 msgid "No mapping found"
 msgstr "找不到映射"
 
@@ -2406,7 +2410,7 @@ msgstr "原始文件 \"%s\""
 #: ../memline.c:1459
 #, c-format
 msgid "Swap file is encrypted: \"%s\""
-msgstr "交换文件已被加密: \"%s\""
+msgstr "交换文件已被加密：\"%s\""
 
 #: ../memline.c:1460
 msgid ""
@@ -2792,7 +2796,7 @@ msgstr "撕下此菜单"
 #: ../message.c:480
 #, c-format
 msgid "Error detected while compiling %s:"
-msgstr "编译 %s 时发生错误:"
+msgstr "编译 %s 时发生错误："
 
 #: ../message.c:483
 #, c-format
@@ -2818,28 +2822,28 @@ msgstr "已中断: "
 msgid "Press ENTER or type command to continue"
 msgstr "请按 ENTER 或其它命令继续"
 
-#: ../message.c:2473 ../os_mswin.c:1584
+#: ../message.c:2468 ../os_mswin.c:1587
 msgid "Unknown"
 msgstr "未知"
 
-#: ../message.c:2480
+#: ../message.c:2475
 #, c-format
 msgid "%s line %ld"
 msgstr "%s 第 %ld 行"
 
-#: ../message.c:3331
+#: ../message.c:3326
 msgid "-- More --"
 msgstr "-- 更多 --"
 
-#: ../message.c:3337
+#: ../message.c:3332
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
 msgstr " 空格/d/j: 屏幕/页/行 下翻，b/u/k: 上翻，q: 退出 "
 
-#: ../message.c:4122 ../message.c:4137
+#: ../message.c:4121 ../message.c:4136
 msgid "Question"
 msgstr "问题"
 
-#: ../message.c:4124
+#: ../message.c:4123
 msgid ""
 "&Yes\n"
 "&No"
@@ -2847,7 +2851,7 @@ msgstr ""
 "是(&Y)\n"
 "否(&N)"
 
-#: ../message.c:4157
+#: ../message.c:4156
 msgid ""
 "&Yes\n"
 "&No\n"
@@ -2879,7 +2883,7 @@ msgstr[0] "多了 %ld 行"
 #, c-format
 msgid "%ld line less"
 msgid_plural "%ld fewer lines"
-msgstr[0] "少了 1 行"
+msgstr[0] "少了 %ld 行"
 
 #: ../misc1.c:1071
 msgid " (Interrupted)"
@@ -3070,26 +3074,26 @@ msgstr "ANCHOR_BUF_SIZE 太小"
 msgid "I/O ERROR"
 msgstr "I/O 错误"
 
-#: ../os_mswin.c:682
+#: ../os_mswin.c:685
 msgid "Message"
 msgstr "消息"
 
-#: ../os_mswin.c:1501
+#: ../os_mswin.c:1504
 #, c-format
 msgid "to %s on %s"
 msgstr "从 %s 到 %s"
 
-#: ../os_mswin.c:1606
+#: ../os_mswin.c:1609
 #, c-format
 msgid "Printing '%s'"
 msgstr "打印 '%s'"
 
-#: ../os_unix.c:1625
+#: ../os_unix.c:1626
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "打开 X display 用时 %ld 秒"
 
-#: ../os_unix.c:1644
+#: ../os_unix.c:1645
 msgid ""
 "\n"
 "Vim: Got X error\n"
@@ -3097,20 +3101,20 @@ msgstr ""
 "\n"
 "Vim: X 错误\n"
 
-#: ../os_unix.c:1776
+#: ../os_unix.c:1777
 #, c-format
 msgid "restoring display %s"
 msgstr "恢复显示 %s"
 
-#: ../os_unix.c:1807
+#: ../os_unix.c:1808
 msgid "Testing the X display failed"
 msgstr "测试 X display 失败"
 
-#: ../os_unix.c:1949
+#: ../os_unix.c:1950
 msgid "Opening the X display timed out"
 msgstr "打开 X display 超时"
 
-#: ../os_unix.c:2926 ../os_unix.c:2933
+#: ../os_unix.c:2927 ../os_unix.c:2934
 msgid ""
 "\n"
 "Could not get security context for "
@@ -3118,7 +3122,7 @@ msgstr ""
 "\n"
 "无法获取安全上下文："
 
-#: ../os_unix.c:2943
+#: ../os_unix.c:2944
 msgid ""
 "\n"
 "Could not set security context for "
@@ -3126,17 +3130,19 @@ msgstr ""
 "\n"
 "无法设置安全上下文："
 
-#: ../os_unix.c:2992
+#: ../os_unix.c:2993
+# reorder if possible
 #, c-format
 msgid "Could not set security context %s for %s"
-msgstr "无法为 %2$s 设置安全上下文 %1$s"
+msgstr "无法设置安全上下文 %s：%s"
 
-#: ../os_unix.c:3012
+#: ../os_unix.c:3013
+# reorder if possible
 #, c-format
 msgid "Could not get security context %s for %s. Removing it!"
-msgstr "无法为 %2$s 获取安全上下文 %1$s。删掉它！"
+msgstr "无法设置安全上下文 %s：%s。删掉它！"
 
-#: ../os_unix.c:4605
+#: ../os_unix.c:4606
 msgid ""
 "\n"
 "Cannot execute shell sh\n"
@@ -3144,7 +3150,7 @@ msgstr ""
 "\n"
 "无法执行 shell sh\n"
 
-#: ../os_unix.c:4608 ../os_unix.c:5443
+#: ../os_unix.c:4609 ../os_unix.c:5444
 msgid ""
 "\n"
 "shell returned "
@@ -3152,7 +3158,7 @@ msgstr ""
 "\n"
 "Shell 已返回"
 
-#: ../os_unix.c:4710 ../os_win32.c:4421
+#: ../os_unix.c:4711 ../os_win32.c:4423
 msgid ""
 "\n"
 "Cannot create pipes\n"
@@ -3160,7 +3166,7 @@ msgstr ""
 "\n"
 "无法建立管道\n"
 
-#: ../os_unix.c:4725 ../os_unix.c:4976
+#: ../os_unix.c:4726 ../os_unix.c:4977
 msgid ""
 "\n"
 "Cannot fork\n"
@@ -3168,7 +3174,7 @@ msgstr ""
 "\n"
 "无法 fork\n"
 
-#: ../os_unix.c:5437
+#: ../os_unix.c:5438
 msgid ""
 "\n"
 "Cannot execute shell "
@@ -3176,7 +3182,7 @@ msgstr ""
 "\n"
 "无法执行 shell"
 
-#: ../os_unix.c:5450
+#: ../os_unix.c:5451
 msgid ""
 "\n"
 "Command terminated\n"
@@ -3184,38 +3190,38 @@ msgstr ""
 "\n"
 "命令已结束\n"
 
-#: ../os_unix.c:6308 ../os_unix.c:6476 ../os_unix.c:8143
+#: ../os_unix.c:6309 ../os_unix.c:6477 ../os_unix.c:8144
 msgid "XSMP lost ICE connection"
 msgstr "XSMP 丢失了到 ICE 的连接"
 
-#: ../os_unix.c:7202
+#: ../os_unix.c:7203
 #, c-format
 msgid "Could not load gpm library: %s"
 msgstr "无法加载 gpm 库：%s"
 
 # do not translate
-#: ../os_unix.c:7530 ../os_unix.c:7633
+#: ../os_unix.c:7531 ../os_unix.c:7634
 #, c-format
 msgid "dlerror = \"%s\""
 msgstr "dlerror = \"%s\""
 
-#: ../os_unix.c:7717
+#: ../os_unix.c:7718
 msgid "Opening the X display failed"
 msgstr "打开 X display 失败"
 
-#: ../os_unix.c:8054
+#: ../os_unix.c:8055
 msgid "XSMP handling save-yourself request"
 msgstr "XSMP 处理 save-yourself 请求"
 
-#: ../os_unix.c:8166
+#: ../os_unix.c:8167
 msgid "XSMP opening connection"
 msgstr "XSMP 打开连接"
 
-#: ../os_unix.c:8185
+#: ../os_unix.c:8186
 msgid "XSMP ICE connection watch failed"
 msgstr "XSMP ICE 连接监视失败"
 
-#: ../os_unix.c:8212
+#: ../os_unix.c:8213
 #, c-format
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection 调用失败: %s"
@@ -3224,24 +3230,24 @@ msgstr "XSMP SmcOpenConnection 调用失败: %s"
 msgid "At line"
 msgstr "在行号 "
 
-#: ../os_win32.c:3747
+#: ../os_win32.c:3749
 #, c-format
 msgid "Vim: Caught %s event\n"
 msgstr "Vim: 拦截到 %s 事件\n"
 
-#: ../os_win32.c:3749
+#: ../os_win32.c:3751
 msgid "close"
 msgstr "关闭"
 
-#: ../os_win32.c:3751
+#: ../os_win32.c:3753
 msgid "logoff"
 msgstr "注消"
 
-#: ../os_win32.c:3752
+#: ../os_win32.c:3754
 msgid "shutdown"
 msgstr "关机"
 
-#: ../os_win32.c:5031
+#: ../os_win32.c:5033
 msgid ""
 "VIMRUN.EXE not found in your $PATH.\n"
 "External commands will not pause after completion.\n"
@@ -3251,11 +3257,11 @@ msgstr ""
 "外部命令执行完毕后将不会暂停。\n"
 "进一步说明请见 :help win32-vimrun"
 
-#: ../os_win32.c:5034
+#: ../os_win32.c:5036
 msgid "Vim Warning"
 msgstr "Vim 警告"
 
-#: ../os_win32.c:5089
+#: ../os_win32.c:5091
 #, c-format
 msgid "shell returned %d"
 msgstr "Shell 返回 %d"
@@ -3291,11 +3297,11 @@ msgstr "无法打开文件 \"%s\""
 msgid "cannot have both a list and a \"what\" argument"
 msgstr "不能同时有列表和 \"what\" 参数"
 
-#: ../regexp_bt.c:3290
+#: ../regexp_bt.c:3311
 msgid "External submatches:\n"
-msgstr "外部符合:\n"
+msgstr "外部子匹配：\n"
 
-#: ../regexp.c:2776
+#: ../regexp.c:2809
 msgid "Switching to backtracking RE engine for pattern: "
 msgstr "为此模式切换到回溯正则引擎："
 
@@ -3309,16 +3315,18 @@ msgid " into \"%c"
 msgstr "进 \"%c "
 
 #: ../register.c:1364
+# reorder if possible
 #, c-format
 msgid "block of %ld line yanked%s"
 msgid_plural "block of %ld lines yanked%s"
-msgstr[0] "复制了 %ld 行的块"
+msgstr[0] "%ld 行的块复制%s了"
 
 #: ../register.c:1370
+# reorder if possible
 #, c-format
 msgid "%ld line yanked%s"
 msgid_plural "%ld lines yanked%s"
-msgstr[0] "复制%2$s了 %1$ld 行"
+msgstr[0] "%ld 行复制%s了"
 
 #. Highlight title
 #: ../register.c:2344
@@ -3329,71 +3337,71 @@ msgstr ""
 "\n"
 "类型 名称 内容"
 
-#: ../screen.c:4234
+#: ../screen.c:4239
 msgid " VREPLACE"
 msgstr " V-替换"
 
-#: ../screen.c:4236
+#: ../screen.c:4241
 msgid " REPLACE"
 msgstr " 替换"
 
-#: ../screen.c:4241
+#: ../screen.c:4246
 msgid " REVERSE"
 msgstr " 反向"
 
-#: ../screen.c:4243
+#: ../screen.c:4248
 msgid " INSERT"
 msgstr " 插入"
 
-#: ../screen.c:4247
+#: ../screen.c:4252
 msgid " (insert)"
 msgstr " (插入)"
 
-#: ../screen.c:4249
+#: ../screen.c:4254
 msgid " (replace)"
 msgstr " (替换)"
 
-#: ../screen.c:4251
+#: ../screen.c:4256
 msgid " (vreplace)"
 msgstr " (V-替换)"
 
-#: ../screen.c:4254
+#: ../screen.c:4259
 msgid " Hebrew"
 msgstr " Hebrew"
 
-#: ../screen.c:4261
+#: ../screen.c:4266
 msgid " Arabic"
 msgstr " Arabic"
 
-#: ../screen.c:4270
+#: ../screen.c:4275
 msgid " (paste)"
 msgstr " (粘帖)"
 
-#: ../screen.c:4282
+#: ../screen.c:4287
 msgid " VISUAL"
 msgstr " 可视"
 
-#: ../screen.c:4283
+#: ../screen.c:4288
 msgid " VISUAL LINE"
 msgstr " 可视 行"
 
-#: ../screen.c:4284
+#: ../screen.c:4289
 msgid " VISUAL BLOCK"
 msgstr " 可视 块"
 
-#: ../screen.c:4285
+#: ../screen.c:4290
 msgid " SELECT"
 msgstr " 选择"
 
-#: ../screen.c:4286
+#: ../screen.c:4291
 msgid " SELECT LINE"
 msgstr " 选择 行"
 
-#: ../screen.c:4287
+#: ../screen.c:4292
 msgid " SELECT BLOCK"
 msgstr " 选择 块"
 
-#: ../screen.c:4385
+#: ../screen.c:4390
 msgid "recording"
 msgstr "记录中"
 
@@ -3479,46 +3487,46 @@ msgstr "改变了窗口大小"
 msgid "W15: Warning: Wrong line separator, ^M may be missing"
 msgstr "W15: 警告: 错误的行分隔符，可能是少了 ^M"
 
-#: ../search.c:3441
+#: ../search.c:3442
 msgid " (includes previously listed match)"
 msgstr " (包括上次列出符合项)"
 
 #. cursor at status line
-#: ../search.c:3460
+#: ../search.c:3461
 msgid "--- Included files "
 msgstr "--- 包含文件 "
 
-#: ../search.c:3462
+#: ../search.c:3463
 msgid "not found "
 msgstr "找不到 "
 
-#: ../search.c:3463
+#: ../search.c:3464
 msgid "in path ---\n"
 msgstr "在路径 ---\n"
 
-#: ../search.c:3536
+#: ../search.c:3537
 msgid "  (Already listed)"
 msgstr "  (已列出)"
 
-#: ../search.c:3538
+#: ../search.c:3539
 msgid "  NOT FOUND"
 msgstr "  找不到"
 
-#: ../search.c:3590
+#: ../search.c:3591
 #, c-format
 msgid "Scanning included file: %s"
 msgstr "查找包含文件: %s"
 
-#: ../search.c:3597
+#: ../search.c:3598
 #, c-format
 msgid "Searching included file %s"
 msgstr "查找包含的文件 %s"
 
-#: ../search.c:3961
+#: ../search.c:3962
 msgid "All included files were found"
 msgstr "所有包含文件都已找到"
 
-#: ../search.c:3963
+#: ../search.c:3964
 msgid "No included files"
 msgstr "没有包含文件"
 
@@ -3549,7 +3557,7 @@ msgstr ""
 #: ../sign.c:803
 #, c-format
 msgid "Signs for %s:"
-msgstr "%s 的标号:"
+msgstr "%s 的标号："
 
 #: ../sign.c:814
 #, c-format
@@ -3569,19 +3577,19 @@ msgstr " (找不到)"
 msgid " (not supported)"
 msgstr " (不支持)"
 
-#: ../spell.c:1599
+#: ../spell.c:1603
 #, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
 msgstr "警告: 找不到单词列表 \"%s_%s.spl\" 或 \"%s_ascii.spl\""
 
-#: ../spell.c:1601
+#: ../spell.c:1605
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
 msgstr "警告: 找不到单词列表 \"%s.%s.spl\" or \"%s.ascii.spl\""
 
 #. This is probably an error.  Give a warning and
 #. accept the words anyway.
-#: ../spell.c:2127
+#: ../spell.c:2131
 #, c-format
 msgid "Warning: region %s not supported"
 msgstr "警告: 区域 %s 不支持"
@@ -3635,22 +3643,19 @@ msgstr "%s 第 %d 行，在使用标志后出现 FLAG: %s"
 msgid ""
 "Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
 "%d"
-msgstr "在 PFX 项之后定义 COMPOUNDFORBIDFLAG 可能会在 %s 行给出错误的结果"
-"%d"
+msgstr "在 PFX 项之后定义 COMPOUNDFORBIDFLAG （%s 第%d行）可能会给出错误的结果"
 
 #: ../spellfile.c:2450
 #, c-format
 msgid ""
 "Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
 "%d"
-msgstr ""
-"在PFX项之后定义 COMPOUNDPERMITFLAG 可能会在 %s 行给出错误的结果"
-"%d"
+msgstr "在 PFX 项之后定义 COMPOUNDPERMITFLAG （%s 第%d行）可能会给出错误的结果"
 
 #: ../spellfile.c:2471
 #, c-format
 msgid "Wrong COMPOUNDRULES value in %s line %d: %s"
-msgstr "%s 第 %d 行，错误的 COMPOUNDMIN 值: %s"
+msgstr "%s 第%d行，错误的 COMPOUNDRULES 值: %s"
 
 #: ../spellfile.c:2502
 #, c-format
@@ -3898,18 +3903,20 @@ msgid "Done!"
 msgstr "完成！"
 
 #: ../spellfile.c:6287
+# reorder if possible
 #, c-format
 msgid "Word '%.*s' removed from %s"
-msgstr "从 %2$s 中删除了单词 '%1$.*s'"
+msgstr "单词 '%.*s' 从 %s 中删除了"
 
 #: ../spellfile.c:6293
 msgid "Seek error in spellfile"
 msgstr "拼写文件中定位错误"
 
 #: ../spellfile.c:6340
+# reorder if possible
 #, c-format
 msgid "Word '%.*s' added to %s"
-msgstr "向 %2$s 中添加了单词 '%1$.*s'"
+msgstr "单词 '%.*s' 添加到了 %s"
 
 #: ../spellsuggest.c:558
 msgid "Sorry, no suggestions"
@@ -3942,7 +3949,7 @@ msgstr "'redrawtime' 已过，语法高亮被禁用"
 
 #: ../syntax.c:3453
 msgid "syntax iskeyword not set"
-msgstr "语法 iskeyword 未设置"
+msgstr "syntax iskeyword 未设置"
 
 #: ../syntax.c:3832
 msgid "syncing on C-style comments"
@@ -4124,13 +4131,13 @@ msgstr "%Y-%m-%d %H:%M:%S"
 #, c-format
 msgid "%ld second ago"
 msgid_plural "%ld seconds ago"
-msgstr[0] ""
+msgstr[0] "%ld 秒前"
 
 #: ../ui.c:583
 msgid "new shell started\n"
 msgstr "启动新 shell\n"
 
-#: ../ui.c:1067
+#: ../ui.c:1068
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: 读错误，退出中...\n"
 
@@ -4271,17 +4278,17 @@ msgstr "%s 返回 #%ld "
 msgid "%s returning %s"
 msgstr "%s 返回 %s"
 
-#: ../userfunc.c:5080
+#: ../userfunc.c:5081
 #, c-format
 msgid "Function %s does not need compiling"
-msgstr "文件 \"%s\" 不存在"
+msgstr "函数 %s 不需要编译"
 
-#: ../version.c:66
+#: ../version.c:67
 #, c-format
 msgid "%s (%s, compiled %s)"
 msgstr "%s (%s, 编译于 %s)"
 
-#: ../version.c:11078
+#: ../version.c:11255
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI/console version"
@@ -4289,7 +4296,7 @@ msgstr ""
 "\n"
 "MS-Windows 64 位图形/控制台版本"
 
-#: ../version.c:11080
+#: ../version.c:11257
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI/console version"
@@ -4297,7 +4304,7 @@ msgstr ""
 "\n"
 "MS-Windows 32 位图形/控制台版本"
 
-#: ../version.c:11084
+#: ../version.c:11261
 msgid ""
 "\n"
 "MS-Windows 64-bit GUI version"
@@ -4305,7 +4312,7 @@ msgstr ""
 "\n"
 "MS-Windows 64 位图形界面版本"
 
-#: ../version.c:11086
+#: ../version.c:11263
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI version"
@@ -4313,11 +4320,11 @@ msgstr ""
 "\n"
 "MS-Windows 32 位图形界面版本"
 
-#: ../version.c:11090
+#: ../version.c:11267
 msgid " with OLE support"
 msgstr " 带 OLE 支持"
 
-#: ../version.c:11094
+#: ../version.c:11271
 msgid ""
 "\n"
 "MS-Windows 64-bit console version"
@@ -4325,7 +4332,7 @@ msgstr ""
 "\n"
 "MS-Windows 64 位控制台版本"
 
-#: ../version.c:11096
+#: ../version.c:11273
 msgid ""
 "\n"
 "MS-Windows 32-bit console version"
@@ -4333,7 +4340,7 @@ msgstr ""
 "\n"
 "MS-Windows 32 位控制台版本"
 
-#: ../version.c:11102
+#: ../version.c:11279
 msgid ""
 "\n"
 "macOS version"
@@ -4341,7 +4348,7 @@ msgstr ""
 "\n"
 "macOS 版本"
 
-#: ../version.c:11104
+#: ../version.c:11281
 msgid ""
 "\n"
 "macOS version w/o darwin feat."
@@ -4349,7 +4356,7 @@ msgstr ""
 "\n"
 "无 darwin 特性的 macOS 版本"
 
-#: ../version.c:11114
+#: ../version.c:11291
 msgid ""
 "\n"
 "OpenVMS version"
@@ -4357,7 +4364,7 @@ msgstr ""
 "\n"
 "OpenVMS 版本"
 
-#: ../version.c:11129
+#: ../version.c:11306
 msgid ""
 "\n"
 "Included patches: "
@@ -4365,7 +4372,7 @@ msgstr ""
 "\n"
 "包含补丁: "
 
-#: ../version.c:11154
+#: ../version.c:11331
 msgid ""
 "\n"
 "Extra patches: "
@@ -4373,11 +4380,11 @@ msgstr ""
 "\n"
 "额外的补丁："
 
-#: ../version.c:11166 ../version.c:11470
+#: ../version.c:11343 ../version.c:11647
 msgid "Modified by "
 msgstr "修改者 "
 
-#: ../version.c:11173
+#: ../version.c:11350
 msgid ""
 "\n"
 "Compiled "
@@ -4385,11 +4392,11 @@ msgstr ""
 "\n"
 "编译"
 
-#: ../version.c:11176
+#: ../version.c:11353
 msgid "by "
 msgstr "者 "
 
-#: ../version.c:11188
+#: ../version.c:11365
 msgid ""
 "\n"
 "Huge version "
@@ -4397,7 +4404,7 @@ msgstr ""
 "\n"
 "巨型版本 "
 
-#: ../version.c:11190
+#: ../version.c:11367
 msgid ""
 "\n"
 "Big version "
@@ -4405,7 +4412,7 @@ msgstr ""
 "\n"
 "大型版本 "
 
-#: ../version.c:11192
+#: ../version.c:11369
 msgid ""
 "\n"
 "Normal version "
@@ -4413,7 +4420,7 @@ msgstr ""
 "\n"
 "正常版本 "
 
-#: ../version.c:11194
+#: ../version.c:11371
 msgid ""
 "\n"
 "Small version "
@@ -4421,7 +4428,7 @@ msgstr ""
 "\n"
 "小型版本 "
 
-#: ../version.c:11196
+#: ../version.c:11373
 msgid ""
 "\n"
 "Tiny version "
@@ -4429,205 +4436,207 @@ msgstr ""
 "\n"
 "微型版本 "
 
-#: ../version.c:11199
+#: ../version.c:11376
 msgid "without GUI."
 msgstr "无图形界面。"
 
-#: ../version.c:11202
+#: ../version.c:11379
 msgid "with GTK3 GUI."
 msgstr "带 GTK3 图形界面。"
 
-#: ../version.c:11204
+#: ../version.c:11381
 msgid "with GTK2-GNOME GUI."
 msgstr "带 GTK2-GNOME 图形界面。"
 
-#: ../version.c:11206
+#: ../version.c:11383
 msgid "with GTK2 GUI."
 msgstr "带 GTK2 图形界面。"
 
-#: ../version.c:11209
+#: ../version.c:11386
 msgid "with X11-Motif GUI."
 msgstr "带 X11-Motif 图形界面。"
 
-#: ../version.c:11211
+#: ../version.c:11388
 msgid "with Haiku GUI."
 msgstr "带 Haiku 图形界面。"
 
-#: ../version.c:11213
+#: ../version.c:11390
 msgid "with Photon GUI."
 msgstr "带 Photon 图形界面。"
 
-#: ../version.c:11215
+#: ../version.c:11392
 msgid "with GUI."
 msgstr "带图形界面。"
 
-#: ../version.c:11217
+#: ../version.c:11394
 msgid "  Features included (+) or not (-):\n"
 msgstr "  可使用(+)与不可使用(-)的功能:\n"
 
-#: ../version.c:11224
+#: ../version.c:11401
 msgid "   system vimrc file: \""
 msgstr "     系统 vimrc 文件: \""
 
-#: ../version.c:11229
+#: ../version.c:11406
 msgid "     user vimrc file: \""
 msgstr "     用户 vimrc 文件: \""
 
-#: ../version.c:11234
+#: ../version.c:11411
 msgid " 2nd user vimrc file: \""
 msgstr " 第二用户 vimrc 文件: \""
 
-#: ../version.c:11239
+#: ../version.c:11416
 msgid " 3rd user vimrc file: \""
 msgstr " 第三用户 vimrc 文件: \""
 
-#: ../version.c:11244
+#: ../version.c:11421
 msgid "      user exrc file: \""
 msgstr "      用户 exrc 文件: \""
 
-#: ../version.c:11249
+#: ../version.c:11426
 msgid "  2nd user exrc file: \""
 msgstr "  第二用户 exrc 文件: \""
 
-#: ../version.c:11255
+#: ../version.c:11432
 msgid "  system gvimrc file: \""
 msgstr "    系统 gvimrc 文件: \""
 
-#: ../version.c:11259
+#: ../version.c:11436
 msgid "    user gvimrc file: \""
 msgstr "    用户 gvimrc 文件: \""
 
-#: ../version.c:11263
+#: ../version.c:11440
 msgid "2nd user gvimrc file: \""
 msgstr "第二用户 gvimrc 文件: \""
 
-#: ../version.c:11268
+#: ../version.c:11445
 msgid "3rd user gvimrc file: \""
 msgstr "第三用户 gvimrc 文件: \""
 
-#: ../version.c:11273
+#: ../version.c:11450
 msgid "       defaults file: \""
 msgstr "       defaults 文件: \""
 
-#: ../version.c:11278
+#: ../version.c:11455
 msgid "    system menu file: \""
 msgstr "        系统菜单文件: \""
 
-#: ../version.c:11286
+#: ../version.c:11463
 msgid "  fall-back for $VIM: \""
 msgstr "         $VIM 预设值: \""
 
-#: ../version.c:11292
+#: ../version.c:11469
 msgid " f-b for $VIMRUNTIME: \""
 msgstr "  $VIMRUNTIME 预设值: \""
 
-#: ../version.c:11296
+#: ../version.c:11473
 msgid "Compilation: "
 msgstr "编译方式: "
 
-#: ../version.c:11302
+#: ../version.c:11479
 msgid "Compiler: "
 msgstr "编译器: "
 
-#: ../version.c:11307
+#: ../version.c:11484
 msgid "Linking: "
 msgstr "链接方式: "
 
-#: ../version.c:11312
+#: ../version.c:11489
 msgid "  DEBUG BUILD"
 msgstr "  调试版本"
 
-#: ../version.c:11348
+#: ../version.c:11525
 msgid "VIM - Vi IMproved"
 msgstr "VIM - Vi IMproved"
 
-#: ../version.c:11350
+#: ../version.c:11527
 msgid "version "
 msgstr "版本 "
 
-#: ../version.c:11351
+#: ../version.c:11528
 msgid "by Bram Moolenaar et al."
 msgstr "维护人 Bram Moolenaar 等"
 
-#: ../version.c:11355
+#: ../version.c:11532
 msgid "Vim is open source and freely distributable"
 msgstr "Vim 是可自由分发的开放源代码软件"
 
-#: ../version.c:11357
+#: ../version.c:11534
 msgid "Help poor children in Uganda!"
 msgstr "帮助乌干达的可怜儿童！"
 
-#: ../version.c:11358
+#: ../version.c:11535
 msgid "type  :help iccf<Enter>       for information "
 msgstr "输入  :help iccf<Enter>       查看说明        "
 
-#: ../version.c:11360
+#: ../version.c:11537
 msgid "type  :q<Enter>               to exit         "
 msgstr "输入  :q<Enter>               退出            "
 
-#: ../version.c:11361
+#: ../version.c:11538
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "输入  :help<Enter>  或  <F1>  查看在线帮助    "
 
-#: ../version.c:11362
-msgid "type  :help version8<Enter>   for version info"
-msgstr "输入  :help version8<Enter>   查看版本信息    "
+#: ../version.c:11539
+msgid "type  :help version9<Enter>   for version info"
+msgstr "输入  :help version9<Enter>   查看版本信息    "
 
-#: ../version.c:11365
+#: ../version.c:11542
 msgid "Running in Vi compatible mode"
 msgstr "运行于 Vi 兼容模式"
 
-#: ../version.c:11366
+#: ../version.c:11543
 msgid "type  :set nocp<Enter>        for Vim defaults"
 msgstr "输入  :set nocp<Enter>        恢复默认的 Vim  "
 
-#: ../version.c:11367
+#: ../version.c:11544
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr "输入  :help cp-default<Enter> 查看相关说明    "
 
-#: ../version.c:11382
+#: ../version.c:11559
 msgid "menu  Help->Orphans           for information    "
-msgstr "菜单  帮助->孤儿           查看说明           "
+msgstr "菜单  帮助->孤儿              查看说明           "
 
-#: ../version.c:11384
+#: ../version.c:11561
 msgid "Running modeless, typed text is inserted"
 msgstr "无模式运行，输入文字即插入"
 
-#: ../version.c:11385
+#: ../version.c:11562
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "菜单  编辑->全局设定->开/关插入模式  "
+msgstr "菜单  编辑->全局设定->开/关插入模式              "
 
-#: ../version.c:11386
+#: ../version.c:11563
+# FIXME: this doesn't show up
 msgid "                              for two modes      "
-msgstr "                              两种模式状态"
+msgstr "                              两种模式状态       "
 
-#: ../version.c:11390
+#: ../version.c:11567
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
-msgstr "菜单  编辑->全局设定->切换 Vi 兼容模式"
+msgstr "菜单  编辑->全局设定->切换 Vi 兼容模式           "
 
-#: ../version.c:11391
+#: ../version.c:11568
+# FIXME: this doesn't show up
 msgid "                              for Vim defaults   "
-msgstr "                              Vim 默认状态"
+msgstr "                                 Vim 默认状态    "
 
-#: ../version.c:11432
+#: ../version.c:11609
 msgid "Sponsor Vim development!"
 msgstr "赞助 Vim 的开发！"
 
-#: ../version.c:11433
+#: ../version.c:11610
 msgid "Become a registered Vim user!"
 msgstr "成为 Vim 的注册用户！"
 
-#: ../version.c:11436
+#: ../version.c:11613
 msgid "type  :help sponsor<Enter>    for information "
 msgstr "输入  :help sponsor<Enter>    查看说明        "
 
-#: ../version.c:11437
+#: ../version.c:11614
 msgid "type  :help register<Enter>   for information "
 msgstr "输入  :help register<Enter>   查看说明        "
 
-#: ../version.c:11439
+#: ../version.c:11616
 msgid "menu  Help->Sponsor/Register  for information    "
-msgstr "菜单  Help->Sponsor/Register  查看说明           "
+msgstr "菜单  帮助->赞助/注册         查看说明           "
 
 #: ../vim9compile.c:1198
 msgid "global"
@@ -4647,7 +4656,7 @@ msgstr "标签页"
 
 #: ../vim9expr.c:1310
 msgid "[end of lines]"
-msgstr "多了 %ld 行"
+msgstr ""
 
 #: ../viminfo.c:432
 msgid ""
@@ -4738,7 +4747,7 @@ msgstr ""
 
 #: ../viminfo.c:1546
 msgid "Substitute "
-msgstr "1 次替换，"
+msgstr "替换 "
 
 #: ../viminfo.c:1829
 msgid ""
@@ -4850,7 +4859,7 @@ msgstr "用 Vim 编辑(&V)"
 
 #: ../GvimExt/gvimext.cpp:662
 msgid "Edit with existing Vim"
-msgstr "用当前的 Vim 编辑"
+msgstr "用已有的 Vim 编辑"
 
 #: ../GvimExt/gvimext.cpp:693
 msgid "Edit with existing Vim - "
@@ -5237,7 +5246,7 @@ msgstr "E95: 已有缓冲区使用该名称"
 #: ../errors.h:227
 #, c-format
 msgid "E96: Cannot diff more than %d buffers"
-msgstr "E96: 不能对比(diff) %d 个以上的缓冲区"
+msgstr "E96: 不能比对(diff) %d 个以上的缓冲区"
 
 #: ../errors.h:229
 msgid "E97: Cannot create diffs"
@@ -5594,7 +5603,7 @@ msgstr "E173: 还有 %d 个文件未编辑"
 #: ../errors.h:408
 #, c-format
 msgid "E174: Command already exists: add ! to replace it: %s"
-msgstr "E174: 命令已存在: 请加 ! 强制替换：%s"
+msgstr "E174: 命令已存在：请加 ! 强制替换：%s"
 
 #: ../errors.h:410
 msgid "E175: No attribute specified"
@@ -5906,9 +5915,10 @@ msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
 msgstr "E243: 不支持的参数: \"-%s\"；请使用 OLE 版本。"
 
 #: ../errors.h:589
-#, c-format
-msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
-msgstr "E244: 字体名 \"%3$s\" 中有非法 %1$s 名称 \"%2$s\""
+# reorder if possible
+#, fuzzy, c-format
+# msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
+# msgstr "E244: 字体名 \"%3$s\" 中有非法 %1$s 名称 \"%2$s\""
 
 #: ../errors.h:591
 #, c-format
@@ -5971,7 +5981,7 @@ msgstr "E258: 无法发送到客户端"
 #: ../errors.h:636
 #, c-format
 msgid "E259: No matches found for cscope query %s of %s"
-msgstr "E259: cscope %s 查询 %s 没有找到匹配"
+msgstr "E259: cscope 查询 %s %s 没有找到匹配"
 
 #: ../errors.h:640
 msgid "E260: Missing name after ->"
@@ -6214,9 +6224,10 @@ msgid "E315: ml_get: Invalid lnum: %ld"
 msgstr "E315: ml_get: 无效的 lnum: %ld"
 
 #: ../errors.h:788
-#, c-format
-msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
-msgstr "E316: ml_get: 在缓冲区 %2$d %3$s 中找不到第 %1$ld 行"
+# reorder if possible
+#, fuzzy, c-format
+# msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
+# msgstr "E316: ml_get: 在缓冲区 %2$d %3$s 中找不到第 %1$ld 行"
 
 #: ../errors.h:790
 msgid "E317: Pointer block id wrong"
@@ -7020,7 +7031,7 @@ msgstr "E488: 多余的尾部字符：%s"
 
 #: ../errors.h:1226
 msgid "E489: No call stack to substitute for \"<stack>\""
-msgstr "E498: 没有用于替换 \"<stack>\" 的调用栈"
+msgstr "E489: 没有用于替换 \"<stack>\" 的调用栈"
 
 #: ../errors.h:1229
 msgid "E490: No fold found"
@@ -8214,12 +8225,12 @@ msgstr "E793: 没有其它可修改的差异模式的缓冲区"
 
 #: ../errors.h:2011
 msgid "E794: Cannot set variable in the sandbox"
-msgstr "E794: 不能在沙盒中设定变量"
+msgstr "E794: 不能在沙盒中设置变量"
 
 #: ../errors.h:2013
 #, c-format
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
-msgstr "E794: 不能在沙盒中设定变量：\"%s\""
+msgstr "E794: 不能在沙盒中设置变量：\"%s\""
 
 #: ../errors.h:2015
 msgid "E795: Cannot delete variable"
@@ -8265,7 +8276,7 @@ msgstr "E802: 无效的 ID：%d（必须大于等于 1）"
 #: ../errors.h:2044
 #, c-format
 msgid "E803: ID not found: %d"
-msgstr "E803: 找不到 ID：%s"
+msgstr "E803: 找不到 ID：%d"
 
 #: ../errors.h:2049
 #, no-c-format
@@ -8286,7 +8297,7 @@ msgstr "E807: printf() 预期浮点数参数"
 
 #: ../errors.h:2063
 msgid "E808: Number or Float required"
-msgstr "E808: 需要数或浮点数"
+msgstr "E808: 需要整数或浮点数"
 
 #: ../errors.h:2067
 msgid "E809: #< is not available without the +eval feature"
@@ -8394,7 +8405,7 @@ msgstr "E831: 使用空密码调用了 bf_key_init()"
 #: ../errors.h:2129
 #, c-format
 msgid "E832: Non-encrypted file has encrypted undo file: %s"
-msgstr "E832: 未加密的文件有被加密的撤销文件：%s"
+msgstr "E832: 文件未加密，但是撤销文件被加密：%s"
 
 #: ../errors.h:2133
 #, c-format
@@ -8452,11 +8463,11 @@ msgstr "E846: 键码未设置"
 
 #: ../errors.h:2174
 msgid "E847: Too many syntax includes"
-msgstr "E847: 语法 include 过多"
+msgstr "E847: syntax include 过多"
 
 #: ../errors.h:2176
 msgid "E848: Too many syntax clusters"
-msgstr "E848: 语法 cluster 过多"
+msgstr "E848: syntax cluster 过多"
 
 #: ../errors.h:2179
 msgid "E849: Too many highlight and syntax groups"
@@ -8492,7 +8503,8 @@ msgid ""
 "E856: \"assert_fails()\" second argument must be a string or a list with one "
 "or two strings"
 msgstr ""
-"E856: \"assert_fails()\" 的第二个参数必须是字符串，或者包含一或两个字符串的列表"
+"E856: \"assert_fails()\" 的第二个参数必须是字符串，或者包含一或两个字符串的列"
+"表"
 
 #: ../errors.h:2202
 #, c-format
@@ -8572,7 +8584,7 @@ msgstr "E872: (NFA regexp) 太多 '('"
 
 #: ../errors.h:2248
 msgid "E873: (NFA regexp) proper termination error"
-msgstr "E873: (NFA regexp) 适当的终止错误"
+msgstr "E873: (NFA regexp) 未适当终止"
 
 #: ../errors.h:2250
 msgid "E874: (NFA regexp) Could not pop the stack!"
@@ -8696,7 +8708,7 @@ msgstr "E899: %s 的参数必须是列表或 blob"
 
 #: ../errors.h:2325
 msgid "E900: maxdepth must be non-negative number"
-msgstr "E900: maxdepth 必须是非负数"
+msgstr "E900: maxdepth 必须是非负整数"
 
 #: ../errors.h:2329
 #, c-format
@@ -8717,7 +8729,7 @@ msgstr "E903: 收到非字符串参数的命令"
 
 #: ../errors.h:2339
 msgid "E904: Last argument for expr/call must be a number"
-msgstr "E904: expr/call 的最后一个参数必须是数"
+msgstr "E904: expr/call 的最后一个参数必须是整数"
 
 #: ../errors.h:2341
 msgid "E904: Third argument for call must be a list"
@@ -8902,12 +8914,12 @@ msgstr "E945: 字符类中的范围太大了"
 
 #: ../errors.h:2460
 msgid "E946: Cannot make a terminal with running job modifiable"
-msgstr "E946: 不能将运行中的终端设置为可修改"
+msgstr "E946: 不能将在运行任务的终端设置为可修改"
 
 #: ../errors.h:2462
 #, c-format
 msgid "E947: Job still running in buffer \"%s\""
-msgstr "E947: 任务还在缓冲区 \"%s\" 中运行"
+msgstr "E947: 任务仍在缓冲区 \"%s\" 中运行"
 
 #: ../errors.h:2464
 msgid "E948: Job still running"
@@ -8958,7 +8970,7 @@ msgstr "E957: 无效的窗口号"
 
 #: ../errors.h:2499
 msgid "E958: Job already finished"
-msgstr "E958: 任务已完成"
+msgstr "E958: 任务已结束"
 
 #: ../errors.h:2503
 msgid "E959: Invalid diff format."
@@ -8975,7 +8987,7 @@ msgstr "E961: 没有用于替换 \"<sflnum>\" 的行号"
 #: ../errors.h:2511
 #, c-format
 msgid "E962: Invalid action: '%s'"
-msgstr "E962: 无效的动作: '%s'"
+msgstr "E962: 无效的动作：'%s'"
 
 #: ../errors.h:2513
 #, c-format
@@ -9087,7 +9099,7 @@ msgstr "E987: 从 tagfunc 返回了无效的值"
 
 #: ../errors.h:2581
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
-msgstr "E9885: 无法使用图形界面。不能执行 gvim.exe。"
+msgstr "E988: 无法使用图形界面。不能执行 gvim.exe。"
 
 #: ../errors.h:2585
 msgid "E989: Non-default argument follows default argument"
@@ -9312,7 +9324,7 @@ msgstr "E1031: 不能使用空值"
 
 #: ../errors.h:2694
 msgid "E1032: Missing :catch or :finally"
-msgstr "E1032: 缺少:catch 或 :finally"
+msgstr "E1032: 缺少 :catch 或 :finally"
 
 #: ../errors.h:2696
 msgid "E1033: Catch unreachable after catch-all"
@@ -9334,9 +9346,10 @@ msgid "E1036: %c requires number or float arguments"
 msgstr "E1036: %c 需要整数或者浮点数参数"
 
 #: ../errors.h:2705
-#, c-format
-msgid "E1037: Cannot use \"%s\" with %s"
-msgstr "E1037: 不能对 %2$s 使用 \"%1$s\""
+# reorder if possible
+#, fuzzy, c-format
+# msgid "E1037: Cannot use \"%s\" with %s"
+# msgstr "E1037: 不能对 %2$s 使用 \"%1$s\""
 
 #: ../errors.h:2707
 msgid "E1038: \"vim9script\" can only be used in a script"
@@ -9353,7 +9366,7 @@ msgstr "E1040: :vim9script 之后不能使用 :scriptversion"
 #: ../errors.h:2715
 #, c-format
 msgid "E1041: Redefining script item: \"%s\""
-msgstr "E1041: 重定义脚本项：\"%s\""
+msgstr "E1041: 重定义脚本项目：\"%s\""
 
 #: ../errors.h:2717
 msgid "E1042: Export can only be used in vim9script"
@@ -9510,7 +9523,7 @@ msgstr "E1077: %s 缺少参数类型"
 
 #: ../errors.h:2790
 msgid "E1078: Invalid command \"nested\", did you mean \"++nested\"?"
-msgstr "E1078: 无效的命令 \"nested\"，你是否想要的是 \"++nested\"？"
+msgstr "E1078: 无效的命令 \"nested\"，你是否是想要 \"++nested\"？"
 
 #: ../errors.h:2793
 msgid "E1079: Cannot declare a variable on the command line"
@@ -9603,21 +9616,21 @@ msgstr "E1099: 执行 %s 时遇到未知错误"
 #: ../errors.h:2836
 #, c-format
 msgid "E1100: Command not supported in Vim9 script (missing :var?): %s"
-msgstr "E1100: Vim9 脚本不支持命令(缺少 :var?): %s"
+msgstr "E1100: Vim9 脚本不支持此命令（缺少 :var？）: %s"
 
 #: ../errors.h:2838
 #, c-format
 msgid "E1101: Cannot declare a script variable in a function: %s"
-msgstr "E1101: 不能在函数中声明脚本变量: %s"
+msgstr "E1101: 不能在函数中声明脚本变量：%s"
 
 #: ../errors.h:2840
 #, c-format
 msgid "E1102: Lambda function not found: %s"
-msgstr "E1102: Lambda 函数未找到: %s"
+msgstr "E1102: lambda 函数未找到：%s"
 
 #: ../errors.h:2842
 msgid "E1103: Dictionary not set"
-msgstr "E1103: 字典没有设置"
+msgstr "E1103: 字典未设置"
 
 #: ../errors.h:2844
 msgid "E1104: Missing >"
@@ -9635,7 +9648,7 @@ msgstr "E1106: 一个参数太多"
 #: ../errors.h:2850
 #, c-format
 msgid "E1106: %d arguments too many"
-msgstr "E1106: %d 参数太多"
+msgstr "E1106: %d 个参数太多"
 
 #: ../errors.h:2852
 msgid "E1107: String, List, Dict or Blob required"
@@ -9649,12 +9662,12 @@ msgstr "E1108: 未找到项：%s"
 #: ../errors.h:2856
 #, c-format
 msgid "E1109: List item %d is not a List"
-msgstr "E1109: 列表项 %d 不是一个列表"
+msgstr "E1109: 列表项 %d 不是列表"
 
 #: ../errors.h:2858
 #, c-format
 msgid "E1110: List item %d does not contain 3 numbers"
-msgstr "E1110: 列表项 %d 不包含三个数字"
+msgstr "E1110: 列表项 %d 不包含三个整数"
 
 #: ../errors.h:2860
 #, c-format
@@ -9673,11 +9686,11 @@ msgstr "E1113: 重叠范围为 0x%lx"
 
 #: ../errors.h:2866
 msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114： 只支持 0x100 或更高的值"
+msgstr "E1114: 只支持 0x100 或更高的值"
 
 #: ../errors.h:2868
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
-msgstr "E1115: \"assert_fails()\" 第四个参数必须是一个数字"
+msgstr "E1115: \"assert_fails()\" 第四个参数必须是一个整数"
 
 #: ../errors.h:2870
 msgid "E1116: \"assert_fails()\" fifth argument must be a string"
@@ -9685,15 +9698,15 @@ msgstr "E1116: \"assert_fails()\" 第五个参数必须是一个字符串"
 
 #: ../errors.h:2872
 msgid "E1117: Cannot use ! with nested :def"
-msgstr "E1117: 不能使用 ! 嵌套 :def"
+msgstr "E1117: 不能对嵌套的 :def 使用 !"
 
 #: ../errors.h:2874
 msgid "E1118: Cannot change locked list"
-msgstr "E1118: 无法更改锁定列表"
+msgstr "E1118: 无法更改锁定的列表"
 
 #: ../errors.h:2876
 msgid "E1119: Cannot change locked list item"
-msgstr "E1119: 无法更改锁定列表项"
+msgstr "E1119: 无法更改锁定的列表项"
 
 #: ../errors.h:2878
 msgid "E1120: Cannot change dict"
@@ -9706,25 +9719,25 @@ msgstr "E1121: 无法更改字典项"
 #: ../errors.h:2882
 #, c-format
 msgid "E1122: Variable is locked: %s"
-msgstr "E1122: 变量已锁定为: %s"
+msgstr "E1122: 变量已锁定：%s"
 
 #: ../errors.h:2884
 #, c-format
 msgid "E1123: Missing comma before argument: %s"
-msgstr "E1123: 参数前缺少逗号: %s"
+msgstr "E1123: 参数前缺少逗号：%s"
 
 #: ../errors.h:2886
 #, c-format
 msgid "E1124: \"%s\" cannot be used in legacy Vim script"
-msgstr "E1124: \"%s\"不能在遗留 Vim 脚本中使用"
+msgstr "E1124: \"%s\" 不能在老式 Vim 脚本中使用"
 
 #: ../errors.h:2888
 msgid "E1125: Final requires a value"
-msgstr "E1125: Final 需要一个值"
+msgstr "E1125: final 需要值"
 
 #: ../errors.h:2890
 msgid "E1126: Cannot use :let in Vim9 script"
-msgstr "E1126: 不能在 Vim9脚本中使用 :let"
+msgstr "E1126: 不能在 Vim9 脚本中使用 :let"
 
 #: ../errors.h:2892
 msgid "E1127: Missing name after dot"
@@ -9761,11 +9774,11 @@ msgstr "E1134: 不能扩充 null 列表"
 #: ../errors.h:2908
 #, c-format
 msgid "E1135: Using a String as a Bool: \"%s\""
-msgstr "E1135: 将字符串作布尔值使用: \"%s\""
+msgstr "E1135: 将字符串作布尔值使用：\"%s\""
 
 #: ../errors.h:2911
 msgid "E1136: <Cmd> mapping must end with <CR> before second <Cmd>"
-msgstr "E1136: <Cmd> 映射必须和下一个 <Cmd> 间隔 <回车>"
+msgstr "E1136: <Cmd> 映射必须和下一个 <Cmd> 间隔 <CR>"
 
 #: ../errors.h:2913
 #, c-format
@@ -9774,7 +9787,7 @@ msgstr "E1137: <Cmd> 映射不能包含 %s 键"
 
 #: ../errors.h:2916
 msgid "E1138: Using a Bool as a Number"
-msgstr "E1138: 将布尔值作数字使用"
+msgstr "E1138: 将布尔值作整数使用"
 
 #: ../errors.h:2918
 msgid "E1139: Missing matching bracket after dict key"
@@ -9782,7 +9795,7 @@ msgstr "E1139: 字典键后缺少匹配的括号"
 
 #: ../errors.h:2920
 msgid "E1140: :for argument must be a sequence of lists"
-msgstr "E1140: ：for 参数必须是一个列表序列"
+msgstr "E1140: :for 参数必须是一个列表序列"
 
 #: ../errors.h:2922
 msgid "E1141: Indexable type required"
@@ -9795,26 +9808,26 @@ msgstr "E1142: 在 v:testing 未设置的时候调用 test_garbagecollect_now()"
 #: ../errors.h:2926
 #, c-format
 msgid "E1143: Empty expression: \"%s\""
-msgstr "E1143: 空的表达式: \"%s\""
+msgstr "E1143: 空的表达式：\"%s\""
 
 #: ../errors.h:2928
 #, c-format
 msgid "E1144: Command \"%s\" is not followed by white space: %s"
-msgstr "E1144: 命令 \"%s\" 后面没有空格: %s"
+msgstr "E1144: 命令 \"%s\" 后面没有空格：%s"
 
 #: ../errors.h:2930
 #, c-format
 msgid "E1145: Missing heredoc end marker: %s"
-msgstr "E1145: 缺少以下文档结束标记: %s"
+msgstr "E1145: 缺少 heredoc 结束标记：%s"
 
 #: ../errors.h:2932
 #, c-format
 msgid "E1146: Command not recognized: %s"
-msgstr "E1146: 命令不能识别: %s"
+msgstr "E1146: 命令不能识别：%s"
 
 #: ../errors.h:2934
 msgid "E1147: List not set"
-msgstr "E1147: 列表中没有设置"
+msgstr "E1147: 列表未设置"
 
 #: ../errors.h:2936
 #, c-format
@@ -9861,7 +9874,7 @@ msgstr "E1157: 缺少返回类型"
 
 #: ../errors.h:2958
 msgid "E1158: Cannot use flatten() in Vim9 script, use flattennew()"
-msgstr "E1158: 在 Vim9 脚本中不能用 flatten(), 要用 flattennew()"
+msgstr "E1158: 在 Vim9 脚本中不能用 flatten()，要用 flattennew()"
 
 #: ../errors.h:2961
 msgid "E1159: Cannot split a window when closing the buffer"
@@ -9869,7 +9882,7 @@ msgstr "E1159: 关闭缓冲区时不能分割窗口"
 
 #: ../errors.h:2964
 msgid "E1160: Cannot use a default for variable arguments"
-msgstr "E1160:不能为变量参数使用默认值 "
+msgstr "E1160: 不能为可变参数使用默认值"
 
 #: ../errors.h:2966
 #, c-format
@@ -9879,17 +9892,18 @@ msgstr "E1161: json 不能编码 %s"
 #: ../errors.h:2968
 #, c-format
 msgid "E1162: Register name must be one character: %s"
-msgstr "E1162: 注册名必须是一个字符: %s"
+msgstr "E1162: 寄存器名必须是一个字符：%s"
 
 #: ../errors.h:2970
 #, c-format
 msgid "E1163: Variable %d: type mismatch, expected %s but got %s"
-msgstr "E1163: 变量 %d: 类型不匹配, 需要 %s 但得到 %s"
+msgstr "E1163: 变量 %d: 类型不匹配，需要 %s 但得到 %s"
 
 #: ../errors.h:2972
+# reorder if possible
 #, c-format
 msgid "E1163: Variable %d: type mismatch, expected %s but got %s in %s"
-msgstr "E1163: E1163: 变量 %d: 类型不匹配, 需要 %s 但得到 %s, 在 %s 中"
+msgstr "E1163: 变量 %d: 类型不匹配，需要 %s 但得到 %s 于 %s 中"
 
 #: ../errors.h:2975
 msgid "E1164: vim9cmd must be followed by a command"
@@ -9907,12 +9921,12 @@ msgstr "E1166: 不能与字典一起使用范围"
 #: ../errors.h:2982
 #, c-format
 msgid "E1167: Argument name shadows existing variable: %s"
-msgstr "E1167: 数名隐藏现有变量: %s"
+msgstr "E1167: 参数名遮掩现有变量：%s"
 
 #: ../errors.h:2984
 #, c-format
 msgid "E1168: Argument already declared in the script: %s"
-msgstr "E1168: 参数已经在脚本中声明: %s"
+msgstr "E1168: 参数已经在脚本中声明：%s"
 
 #: ../errors.h:2986
 #, c-format
@@ -9929,17 +9943,17 @@ msgstr "E1171: 内联函数后缺少 }"
 
 #: ../errors.h:2992
 msgid "E1172: Cannot use default values in a lambda"
-msgstr "E1172: 不能在 lambda 中使用缺省值"
+msgstr "E1172: 不能在 lambda 中使用默认值"
 
 #: ../errors.h:2994
 #, c-format
 msgid "E1173: Text found after %s: %s"
-msgstr "E1173:  在 %s 后发现的文本: %s"
+msgstr "E1173:  在 %s 后发现的文本：%s"
 
 #: ../errors.h:2996
 #, c-format
 msgid "E1174: String required for argument %d"
-msgstr "E1174: 参数 %d 所需的字符串"
+msgstr "E1174: 参数 %d 需要字符串"
 
 #: ../errors.h:2998
 #, c-format
@@ -9948,12 +9962,12 @@ msgstr "E1175: 参数 %d 需要非空字符串"
 
 #: ../errors.h:3000
 msgid "E1176: Misplaced command modifier"
-msgstr "E1176: 错放的命令修改器"
+msgstr "E1176: 错放的命令修饰符"
 
 #: ../errors.h:3002
 #, c-format
 msgid "E1177: For loop on %s not supported"
-msgstr "E1177: 不支持在 %s 上的 For 循环"
+msgstr "E1177: 不支持对 %s 进行 for 循环"
 
 #: ../errors.h:3004
 msgid "E1178: Cannot lock or unlock a local variable"
@@ -9964,12 +9978,12 @@ msgstr "E1178: 无法锁定或解锁局部变量"
 msgid ""
 "E1179: Failed to extract PWD from %s, check your shell's config related to "
 "OSC 7"
-msgstr "E1179: 无法从%s中提取 PWD，请检查与 OSC 7 相关的 shell 配置"
+msgstr "E1179: 无法从 %s 中提取 PWD，请检查与 OSC 7 相关的 shell 配置"
 
 #: ../errors.h:3012
 #, c-format
 msgid "E1180: Variable arguments type must be a list: %s"
-msgstr "E1180: 变量参数类型必须是一个列表: %s"
+msgstr "E1180: 可变参数类型必须是一个列表：%s"
 
 #: ../errors.h:3014
 msgid "E1181: Cannot use an underscore here"
@@ -9978,12 +9992,12 @@ msgstr "E1181: 不能在这里使用下划线"
 #: ../errors.h:3016
 #, c-format
 msgid "E1182: Cannot define a dict function in Vim9 script: %s"
-msgstr "E1182: 无法在 Vim9 脚本: %s 中定义 dict 函数"
+msgstr "E1182: 无法在 Vim9 脚本中定义字典函数：%s"
 
 #: ../errors.h:3018
 #, c-format
 msgid "E1183: Cannot use a range with an assignment operator: %s"
-msgstr "E1183: 不能使用带赋值操作符的范围 :%s"
+msgstr "E1183: 不能对赋值操作符使用范围：%s"
 
 #: ../errors.h:3022
 msgid "E1184: Blob not set"
@@ -9991,12 +10005,12 @@ msgstr "E1184: blob 未设置"
 
 #: ../errors.h:3024
 msgid "E1185: Missing :redir END"
-msgstr "E1185： 缺少 :redir END"
+msgstr "E1185: 缺少 :redir END"
 
 #: ../errors.h:3026
 #, c-format
 msgid "E1186: Expression does not result in a value: %s"
-msgstr "E1186: 表达式不会产生一个值: %s"
+msgstr "E1186: 表达式不产生值：%s"
 
 #: ../errors.h:3029
 msgid "E1187: Failed to source defaults.vim"
@@ -10009,7 +10023,7 @@ msgstr "E1188: 无法从命令行窗口打开终端"
 #: ../errors.h:3036
 #, c-format
 msgid "E1189: Cannot use :legacy with this command: %s"
-msgstr "E1189: 不能将 :legacy 用于此命令:%s"
+msgstr "E1189: 不能将 :legacy 用于此命令：%s"
 
 #: ../errors.h:3038
 msgid "E1190: One argument too few"
@@ -10023,7 +10037,7 @@ msgstr "E1190: %d 个参数太少"
 #: ../errors.h:3042
 #, c-format
 msgid "E1191: Call to function that failed to compile: %s"
-msgstr "E1191: 编译失败的函数调用: %s"
+msgstr "E1191: 调用编译失败的函数：%s"
 
 #: ../errors.h:3044
 msgid "E1192: Empty function name"
@@ -10031,7 +10045,7 @@ msgstr "E1192: 空函数名"
 
 #: ../errors.h:3050
 msgid "E1193: cryptmethod xchacha20 not built into this Vim"
-msgstr "E1193: 此 Vim 中没有内置 cryptmethod xchacha20"
+msgstr "E1193: cryptmethod xchacha20 没有编译进此 Vim"
 
 #: ../errors.h:3054
 msgid "E1194: Cannot encrypt header, not enough space"
@@ -10047,40 +10061,42 @@ msgstr "E1196: 无法解密头部，空间不足"
 
 #: ../errors.h:3061
 msgid "E1197: Cannot allocate_buffer for encryption"
-msgstr "E1197: 无法为加密分配任何缓冲区"
+msgstr "E1197: 无法为加密 allocate_buffer"
 
 #: ../errors.h:3063
 msgid "E1198: Decryption failed: Header incomplete!"
-msgstr "E1198: 解密失败: 头部不完整!"
+msgstr "E1198: 解密失败：头部不完整！"
 
 #: ../errors.h:3066
 msgid "E1199: Cannot decrypt buffer, not enough space"
-msgstr "E1199: 无法解密缓冲区: 空间不足"
+msgstr "E1199: 无法解密缓冲区，空间不足"
 
 #: ../errors.h:3069
 msgid "E1200: Decryption failed!"
-msgstr "E1200: 解密失败"
+msgstr "E1200: 解密失败！"
 
 #: ../errors.h:3071
 msgid "E1201: Decryption failed: pre-mature end of file!"
-msgstr "E1201: 解密失败: 文件提前结束"
+msgstr "E1201: 解密失败：文件提前结束！"
 
 #: ../errors.h:3076
 #, c-format
 msgid "E1202: No white space allowed after '%s': %s"
-msgstr "E1202: '%s'后不允许有空格: %s"
+msgstr "E1202: '%s' 后不允许有空格：%s"
 
 #: ../errors.h:3078
 #, c-format
 msgid "E1203: Dot can only be used on a dictionary: %s"
-msgstr "E1203: 点只能用于字典: %s"
+msgstr "E1203: 点只能用于字典：%s"
 
 #: ../errors.h:3081
 #, c-format
 msgid "E1204: No Number allowed after .: '\\%%%c'"
-msgstr "E1204: .: '\\%%%c' 之后不能加数字"
+msgstr "E1204: . 后不能加整数: '\\%%%c'"
 
 #: ../errors.h:3083
+# FIXME: impossible to reorder correctly!
+#, fuzzy
 msgid "E1205: No white space allowed between option and"
 msgstr "E1205: 选项和之间不允许有空格"
 
@@ -10092,26 +10108,26 @@ msgstr "E1206: 参数 %d 需要字典"
 #: ../errors.h:3088
 #, c-format
 msgid "E1207: Expression without an effect: %s"
-msgstr "E1207: 无效表达式: %s"
+msgstr "E1207: 表达式无副作用：%s"
 
 #: ../errors.h:3091
 msgid "E1208: -complete used without allowing arguments"
-msgstr "E1208: -complete 不允许使用参数"
+msgstr "E1208: 用了 -complete 却不允许使用参数"
 
 #: ../errors.h:3094
 #, c-format
 msgid "E1209: Invalid value for a line number: \"%s\""
-msgstr "E1209: 行号的值无效: \"%s\""
+msgstr "E1209: 行号的值无效：\"%s\""
 
 #: ../errors.h:3096
 #, c-format
 msgid "E1210: Number required for argument %d"
-msgstr "E1210: 参数 %d 所需的数字"
+msgstr "E1210: 参数 %d 需要整数"
 
 #: ../errors.h:3098
 #, c-format
 msgid "E1211: List required for argument %d"
-msgstr "E1211: 参数 %d 所需的列表"
+msgstr "E1211: 参数 %d 需要列表"
 
 #: ../errors.h:3100
 #, c-format
@@ -10121,42 +10137,42 @@ msgstr "E1212: 参数 %d 需要布尔值"
 #: ../errors.h:3102
 #, c-format
 msgid "E1213: Redefining imported item \"%s\""
-msgstr "E1213: 重新定义导入项目 \"%s\""
+msgstr "E1213: 重新定义导入的项目 \"%s\""
 
 #: ../errors.h:3106
 #, c-format
 msgid "E1214: Digraph must be just two characters: %s"
-msgstr "E1214: 有向图必须只有两个字符: %s"
+msgstr "E1214: 二合字符必须只有两个字符：%s"
 
 #: ../errors.h:3108
 #, c-format
 msgid "E1215: Digraph must be one character: %s"
-msgstr "E1215: 有向图必须只有一个字符: %s"
+msgstr "E1215: 二合字符必须是一个字符：%s"
 
 #: ../errors.h:3110
 msgid ""
 "E1216: digraph_setlist() argument must be a list of lists with two items"
-msgstr "E1216: Digraph_setlist() 参数必须是包含两项的列表的列表"
+msgstr "E1216: digraph_setlist() 参数必须是包含两项的列表的列表"
 
 #: ../errors.h:3115
 #, c-format
 msgid "E1217: Channel or Job required for argument %d"
-msgstr "E1217: 需要参数 %d 的通道或任务"
+msgstr "E1217: 参数 %d 需要通道或任务"
 
 #: ../errors.h:3117
 #, c-format
 msgid "E1218: Job required for argument %d"
-msgstr "E1218: 需要 %d 参数的任务"
+msgstr "E1218: 参数 %d 需要任务"
 
 #: ../errors.h:3120
 #, c-format
 msgid "E1219: Float or Number required for argument %d"
-msgstr "E1219: 参数 %d 需要浮点数或数字"
+msgstr "E1219: 参数 %d 需要浮点数或整数"
 
 #: ../errors.h:3122
 #, c-format
 msgid "E1220: String or Number required for argument %d"
-msgstr "E1220: 参数 %d 需要字符串或数字"
+msgstr "E1220: 参数 %d 需要字符串或整数"
 
 #: ../errors.h:3125
 #, c-format
@@ -10176,17 +10192,17 @@ msgstr "E1223: 参数 %d 需要字符串或字典"
 #: ../errors.h:3132
 #, c-format
 msgid "E1224: String, Number or List required for argument %d"
-msgstr "E1224: 参数 %d 需要字符串或数字或列表"
+msgstr "E1224: 参数 %d 需要字符串或整数或列表"
 
 #: ../errors.h:3134
 #, c-format
 msgid "E1225: String, List or Dictionary required for argument %d"
-msgstr "参数 %d 需要字符串或字典"
+msgstr "E1225: 参数 %d 需要字符串、列表或字典"
 
 #: ../errors.h:3136
 #, c-format
 msgid "E1226: List or Blob required for argument %d"
-msgstr "E1226: 参数 %d 需要列表或blob"
+msgstr "E1226: 参数 %d 需要列表或 blob"
 
 #: ../errors.h:3138
 #, c-format
@@ -10201,7 +10217,7 @@ msgstr "E1228: 参数 %d 需要列表、字典或 blob"
 #: ../errors.h:3142
 #, c-format
 msgid "E1229: Expected dictionary for using key \"%s\", but got %s"
-msgstr "E1229: 期望字典使用键 \"%s\"，但得到 %s"
+msgstr "E1229: 期望对字典使用键 \"%s\"，但得到 %s"
 
 #: ../errors.h:3146
 msgid "E1230: Encryption: sodium_mlock() failed"
@@ -10210,7 +10226,7 @@ msgstr "E1230: 加密：sodium_mlock() 失败"
 #: ../errors.h:3149
 #, c-format
 msgid "E1231: Cannot use a bar to separate commands here: %s"
-msgstr "E1231: 在这里不能使用条分隔命令:%s"
+msgstr "E1231: 在这里不能使用竖线分隔命令：%s"
 
 #: ../errors.h:3152
 msgid "E1232: Argument of exists_compiled() must be a literal string"
@@ -10218,11 +10234,11 @@ msgstr "E1232: exists_compile() 的参数必须是一个字面值字符串"
 
 #: ../errors.h:3154
 msgid "E1233: exists_compiled() can only be used in a :def function"
-msgstr "E1233: exists_compiled() 只能用于:def 函数"
+msgstr "E1233: exists_compiled() 只能在 :def 函数中使用"
 
 #: ../errors.h:3157
 msgid "E1234: legacy must be followed by a command"
-msgstr "E1234: legacy 后面必须跟着一个命令"
+msgstr "E1234: legacy 后面必须跟着命令"
 
 #: ../errors.h:3161
 #, c-format
@@ -10232,7 +10248,7 @@ msgstr "E1236: 不能使用 %s 本身，它是导入的"
 #: ../errors.h:3164
 #, c-format
 msgid "E1237: No such user-defined command in current buffer: %s"
-msgstr "E1237: 当前缓冲区中没有这样的用户定义命令: %s"
+msgstr "E1237: 当前缓冲区中无此用户定义命令：%s"
 
 #: ../errors.h:3167
 #, c-format
@@ -10242,39 +10258,39 @@ msgstr "E1238: 参数 %d 需要 blob"
 #: ../errors.h:3169
 #, c-format
 msgid "E1239: Invalid value for blob: %d"
-msgstr "E1239: 无效的 blob 值: %d"
+msgstr "E1239: 无效的 blob 值：%d"
 
 #: ../errors.h:3172
 msgid "E1240: Resulting text too long"
-msgstr "E1240: 导致文本过长"
+msgstr "E1240: 得到的文本过长"
 
 #: ../errors.h:3175
 #, c-format
 msgid "E1241: Separator not supported: %s"
-msgstr "E1241: 分隔符不支持: %s"
+msgstr "E1241: 不支持的分隔符：%s"
 
 #: ../errors.h:3177
 #, c-format
 msgid "E1242: No white space allowed before separator: %s"
-msgstr "E1242: 分隔符: %s 之前不允许有空格"
+msgstr "E1242: 分隔符前不允许有空格：%s"
 
 #: ../errors.h:3181
 msgid "E1243: ASCII code not in 32-127 range"
-msgstr "E1243: ASCII 码不在32-127范围内"
+msgstr "E1243: ASCII 码不在 32-127 范围内"
 
 #: ../errors.h:3186
 #, c-format
 msgid "E1244: Bad color string: %s"
-msgstr "E1244: 不合法的颜色的字符串: %s"
+msgstr "E1244: 无效的颜色的字符串: %s"
 
 #: ../errors.h:3189
 msgid "E1245: Cannot expand <sfile> in a Vim9 function"
-msgstr "E1245: 不能在 Vim9 函数中拓展 <sfile>"
+msgstr "E1245: 不能在 Vim9 函数中扩展 <sfile>"
 
 #: ../errors.h:3191
 #, c-format
 msgid "E1246: Cannot find variable to (un)lock: %s"
-msgstr "E1246: 无法找到(解)锁的变量: %s"
+msgstr "E1246: 无法找到要锁定/解锁的变量：%s"
 
 #: ../errors.h:3194
 msgid "E1247: Line number out of range"
@@ -10282,26 +10298,26 @@ msgstr "E1247: 行号超出范围"
 
 #: ../errors.h:3197
 msgid "E1248: Closure called from invalid context"
-msgstr "E1248: 从无效上下文中调用的闭包"
+msgstr "E1248: 从无效上下文中调用了闭包"
 
 #: ../errors.h:3200
 msgid "E1249: Highlight group name too long"
-msgstr "E1249: 突出显示组名称太长"
+msgstr "E1249: 高亮组名称太长"
 
 #: ../errors.h:3203
 #, c-format
 msgid "E1250: Argument of %s must be a List, String, Dictionary or Blob"
-msgstr "E1250: %s 的参数必须是 列表，字符串或者字典"
+msgstr "E1250: %s 的参数必须是列表、字符串、字典或 blob"
 
 #: ../errors.h:3205
 #, c-format
 msgid "E1251: List, Dictionary, Blob or String required for argument %d"
-msgstr "E1251: 参数 %d 需要列表, blob 或字符串"
+msgstr "E1251: 参数 %d 需要列表、blob 或字符串"
 
 #: ../errors.h:3207
 #, c-format
 msgid "E1252: String, List or Blob required for argument %d"
-msgstr "E1252: 参数 %d 需要字符串, 列表或 blob"
+msgstr "E1252: 参数 %d 需要字符串、列表或 blob"
 
 #: ../errors.h:3209
 #, c-format
@@ -10310,11 +10326,11 @@ msgstr "E1253: 参数 %d 需要字符串"
 
 #: ../errors.h:3211
 msgid "E1254: Cannot use script variable in for loop"
-msgstr "E1254: 不能在for循环中使用脚本变量"
+msgstr "E1254: 不能在 for 循环中使用脚本变量"
 
 #: ../errors.h:3214
 msgid "E1255: <Cmd> mapping must end with <CR>"
-msgstr "E1255: <Cmd> 映射必须以 <回车>"
+msgstr "E1255: <Cmd> 映射必须以 <CR> 结束"
 
 #: ../errors.h:3217
 #, c-format
@@ -10324,22 +10340,22 @@ msgstr "E1256: 参数 %d 需要字符串或函数"
 #: ../errors.h:3219
 #, c-format
 msgid "E1257: Imported script must use \"as\" or end in .vim: %s"
-msgstr "E1257: 导入的脚本必须使用 \"as\" 或以 .vim: %s 结尾"
+msgstr "E1257: 导入的脚本必须使用 \"as\" 或以 .vim结尾：%s"
 
 #: ../errors.h:3221
 #, c-format
 msgid "E1258: No '.' after imported name: %s"
-msgstr "E1258: 导入名: %s 后不要加'.'"
+msgstr "E1258: 导入名后没有 '.'：%s"
 
 #: ../errors.h:3223
 #, c-format
 msgid "E1259: Missing name after imported name: %s"
-msgstr "E1259: 导入名: %s 后缺少名称"
+msgstr "E1259: 导入名后缺少名称：%s"
 
 #: ../errors.h:3225
 #, c-format
 msgid "E1260: Cannot unlet an imported item: %s"
-msgstr "E1260: 无法取消导入项: %s"
+msgstr "E1260: 无法 unlet 导入项：%s"
 
 #: ../errors.h:3227
 msgid "E1261: Cannot import .vim without using \"as\""
@@ -10348,16 +10364,16 @@ msgstr "E1261: 不使用 \"as\" 无法导入 .vim"
 #: ../errors.h:3229
 #, c-format
 msgid "E1262: Cannot import the same script twice: %s"
-msgstr "E1262: 不能导入相同的脚本两次: %s"
+msgstr "E1262: 不能导入相同的脚本两次：%s"
 
 #: ../errors.h:3231
 msgid "E1263: Cannot use name with # in Vim9 script, use export instead"
-msgstr "E1263: 在 Vim9 脚本中不能使用带有#的名称，请使用 export 代替"
+msgstr "E1263: 在 Vim9 脚本中不能使用带有 # 的名称，请使用 export 代替"
 
 #: ../errors.h:3233
 #, c-format
 msgid "E1264: Autoload import cannot use absolute or relative path: %s"
-msgstr "E1264: 自动加载导入不能使用绝对或相对路径: %s"
+msgstr "E1264: 自动加载导入不能使用绝对或相对路径：%s"
 
 #: ../errors.h:3235
 msgid "E1265: Cannot use a partial here"
@@ -10377,7 +10393,7 @@ msgstr "E1267: 函数名必须以大写字母开头：%s"
 #: ../errors.h:3245
 #, c-format
 msgid "E1268: Cannot use s: in Vim9 script: %s"
-msgstr "E1268: 在 Vim9 脚本: %s 中不能使用 s:"
+msgstr "E1268: 在 Vim9 脚本中不能使用 s:：%s"
 
 #: ../errors.h:3247
 #, c-format
@@ -10423,80 +10439,84 @@ msgstr "E1277: 通道和任务功能不可用"
 #: ../errors.h:3271
 #, c-format
 msgid "E1278: Stray '}' without a matching '{': %s"
-msgstr "E1278: 没有匹配'{'的'}': %s"
+msgstr "E1278: 没有匹配 '{' 的 '}'：%s"
 
 #: ../errors.h:3273
 #, c-format
 msgid "E1279: Missing '}': %s"
-msgstr "E1279: 缺少 '}': %s"
+msgstr "E1279: 缺少 '}'：%s"
 
 #: ../errors.h:3277
 msgid "E1280: Illegal character in word"
-msgstr "E1280: 词中的非法字符"
+msgstr "E1280: 词中有非法字符"
 
 #: ../errors.h:3280
 #, c-format
 msgid "E1281: Atom '\\%%#=%c' must be at the start of the pattern"
-msgstr "E1281: 原子'\\%%#=%c'必须位于模式的开头"
+msgstr "E1281: 原子 '\\%%#=%c' 必须位于模式的开头"
 
 #: ../errors.h:3283
 msgid "E1282: Bitshift operands must be numbers"
-msgstr "E1282: 位移位操作数必须是数字"
+msgstr "E1282: 移位操作数必须是整数"
 
 #: ../errors.h:3285
 msgid "E1283: Bitshift amount must be a positive number"
-msgstr "E1283: 位偏移量必须为正数"
+msgstr "E1283: 移位量必须为正数"
 
 #: ../errors.h:3289
 #, c-format
 msgid "E1284: Argument 1, list item %d: Dictionary required"
-msgstr "E1284: 参数1，列表项 %d: 需要字典"
+msgstr "E1284: 参数 1，列表项 %d：需要字典"
 
 #: ../errors.h:3293
 #, c-format
 msgid "E1285: Could not clear timeout: %s"
-msgstr "E1285: 无法清除超时: %s"
+msgstr "E1285: 无法清除超时：%s"
 
 #: ../errors.h:3295
 #, c-format
 msgid "E1286: Could not set timeout: %s"
-msgstr "E1286: 无法设置超时时间: %s"
+msgstr "E1286: 无法设置超时：%s"
 
 #: ../errors.h:3297
 #, c-format
 msgid "E1287: Could not set handler for timeout: %s"
-msgstr "E1287: 无法为超时设置处理程序: %s"
+msgstr "E1287: 无法为超时设置处理器：%s"
 
 #: ../errors.h:3299
 #, c-format
 msgid "E1288: Could not reset handler for timeout: %s"
-msgstr "E1288: 无法为超时重新设置处理程序: %s"
+msgstr "E1288: 无法为超时重置处理器：%s"
 
 #: ../errors.h:3301
 #, c-format
 msgid "E1289: Could not check for pending SIGALRM: %s"
-msgstr "E1289: 无法检查挂起的 SIGALRM: %s"
+msgstr "E1289: 无法检查未决的 SIGALRM：%s"
 
-#: ../globals.h:1403
+#: ../errors.h:3305
+msgid "E1290: substitute nesting too deep"
+msgstr "E1290: 替换嵌套层数过深"
+
+#: ../globals.h:1407
 msgid "--No lines in buffer--"
 msgstr "--缓冲区无内容--"
 
 #.
 #. * Some messages that can be shared are included here.
 #.
-#: ../globals.h:1601
+#: ../globals.h:1605
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "已查找到文件开头，再从结尾继续查找"
 
-#: ../globals.h:1602
+#: ../globals.h:1606
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "已查找到文件结尾，再从开头继续查找"
 
-#: ../globals.h:1605
+#: ../globals.h:1609
 msgid " line "
 msgstr " 行 "
 
-#: ../globals.h:1609
+#: ../globals.h:1613
 #, c-format
 msgid "Need encryption key for \"%s\""
 msgstr "\"%s\" 需要密码"
@@ -10589,7 +10609,7 @@ msgstr "内部错误：imp.find_module 返回了含有 NULL 的元组"
 
 #: ../if_py_both.h:1659
 msgid "cannot delete vim.Dictionary attributes"
-msgstr "不能删除 vim.Dictionary 属性"
+msgstr "不能删除 vim.Dictionary 的属性"
 
 #: ../if_py_both.h:1668
 msgid "cannot modify fixed dictionary"
@@ -10621,7 +10641,7 @@ msgstr "列表索引超出范围"
 #: ../if_py_both.h:2404 ../if_py_both.h:2709 ../if_py_both.h:2736
 #, c-format
 msgid "internal error: failed to get Vim list item %d"
-msgstr "内部错误:无法获取 Vim 列表项%d"
+msgstr "内部错误：无法获取 Vim 列表项 %d"
 
 #: ../if_py_both.h:2420 ../if_py_both.h:2524
 msgid "slice step cannot be zero"
@@ -10630,7 +10650,7 @@ msgstr "切片步长不能为零"
 #: ../if_py_both.h:2542 ../if_py_both.h:2647
 #, c-format
 msgid "attempt to assign sequence of size greater than %d to extended slice"
-msgstr "尝试将大小大于 %d 的序列分配给扩展片"
+msgstr "尝试将大小大于 %d 的序列赋值给扩展切片"
 
 #: ../if_py_both.h:2566
 #, c-format
@@ -10648,7 +10668,7 @@ msgstr "内部错误：未能添加项目到列表中"
 #: ../if_py_both.h:2660
 #, c-format
 msgid "attempt to assign sequence of size %d to extended slice of size %d"
-msgstr "尝试将大小为 %d 的序列分配给大小为%d的扩展片"
+msgstr "尝试将大小为 %d 的序列分配给大小为 %d 的扩展切片"
 
 #: ../if_py_both.h:2727
 msgid "failed to add item to list"
@@ -10683,7 +10703,7 @@ msgstr "无法获取选项值"
 
 #: ../if_py_both.h:3440
 msgid "internal error: unknown option type"
-msgstr "内部错误:未知选项类型"
+msgstr "内部错误：未知的选项类型"
 
 #: ../if_py_both.h:3546
 msgid "problem while switching windows"
@@ -10752,7 +10772,7 @@ msgstr "期望 vim.Window 对象，但得到 %s"
 
 #: ../if_py_both.h:5614
 msgid "failed to find window in the current tab page"
-msgstr "未能在当前选项卡页中找到窗口"
+msgstr "未能在当前标签页中找到窗口"
 
 #: ../if_py_both.h:5625
 msgid "did not switch to the specified window"
@@ -10788,11 +10808,11 @@ msgstr "无法将 %s 转换为 Vim 结构"
 
 #: ../if_py_both.h:6380
 msgid "internal error: NULL reference passed"
-msgstr "内部错误:传递 NULL 引用"
+msgstr "内部错误：传递了 NULL 引用"
 
 #: ../if_py_both.h:6439
 msgid "internal error: invalid value type"
-msgstr "内部错误:无效的值类型"
+msgstr "内部错误：无效的值类型"
 
 #: ../if_py_both.h:6751
 msgid ""
@@ -10800,21 +10820,21 @@ msgid ""
 "You should now do the following:\n"
 "- append vim.path_hook to sys.path_hooks\n"
 "- append vim.VIM_SPECIAL_PATH to sys.path\n"
-msgstr "" 
-"路径设置失败：sys.path_hooks 不是列表\n"
-"你应该做以下事情:\n"
-"-添加 vim.path_hook 到 sys.path_hooks\n"
-"-添加 vim.VIM_SPECIAL_PATH 到 sys.path\n"
+msgstr ""
+"路径钩子设置失败：sys.path_hooks 不是列表\n"
+"你现在应该做以下事情：\n"
+"- 添加 vim.path_hook 到 sys.path_hooks\n"
+"- 添加 vim.VIM_SPECIAL_PATH 到 sys.path\n"
 
 #: ../if_py_both.h:6781
 msgid ""
 "Failed to set path: sys.path is not a list\n"
 "You should now append vim.VIM_SPECIAL_PATH to sys.path"
 msgstr ""
-"路径设置失败：sys.path_hooks 不是列表\n"
+"路径设置失败：sys.path 不是列表\n"
 "你应该现在添加 vim.VIM_SPECIAL_PATH 到 sys.path"
 
-#: ../vim.h:2316
+#: ../vim.h:2321
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*.*)\t*.*\n"
@@ -10822,11 +10842,11 @@ msgstr ""
 "Vim 宏文件 (*.vim)\t*.vim\n"
 "所有文件 (*.*)\t*.*\n"
 
-#: ../vim.h:2317
+#: ../vim.h:2322
 msgid "All Files (*.*)\t*.*\n"
 msgstr "所有文件 (*.*)\t*.*\n"
 
-#: ../vim.h:2319
+#: ../vim.h:2324
 msgid ""
 "All Files (*.*)\t*.*\n"
 "C source (*.c, *.h)\t*.c;*.h\n"
@@ -10840,7 +10860,7 @@ msgstr ""
 "VB 代码 (*.bas, *.frm)\t*.bas;*.frm\n"
 "Vim 文件 (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
-#: ../vim.h:2322
+#: ../vim.h:2327
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*)\t*\n"
@@ -10848,11 +10868,11 @@ msgstr ""
 "Vim 宏文件 (*.vim)\t*.vim\n"
 "所有文件 (*)\t*\n"
 
-#: ../vim.h:2323
+#: ../vim.h:2328
 msgid "All Files (*)\t*\n"
 msgstr "所有文件 (*)\t*\n"
 
-#: ../vim.h:2325
+#: ../vim.h:2330
 msgid ""
 "All Files (*)\t*\n"
 "C source (*.c, *.h)\t*.c;*.h\n"
@@ -10908,7 +10928,7 @@ msgstr "\" 每个 \"set\" 行显示左侧选项的当前值"
 
 #: ../../runtime/optwin.vim:154
 msgid "\" Hit <Enter> on a \"set\" line to execute it."
-msgstr "\" 在 \"set\" 行上按 <Enter> 来执行。"
+msgstr "\" 在 \"set\" 行上按 <回车> 来执行。"
 
 #: ../../runtime/optwin.vim:155
 msgid "\"            A boolean option will be toggled."
@@ -11024,7 +11044,7 @@ msgstr "改变反斜杠在搜索模式中的使用方式"
 
 #: ../../runtime/optwin.vim:279
 msgid "select the default regexp engine used"
-msgstr "选择使用的缺省的正则表达式引擎"
+msgstr "选择默认的正则表达式引擎"
 
 #: ../../runtime/optwin.vim:281
 msgid "ignore case when using a search pattern"
@@ -11040,7 +11060,7 @@ msgstr "用什么方法来改变字母的大小写"
 
 #: ../../runtime/optwin.vim:287
 msgid "maximum amount of memory in Kbyte used for pattern matching"
-msgstr "模式匹配使用的最大内存(以千字节为单位)"
+msgstr "模式匹配使用的最大内存（以千字节为单位）"
 
 #: ../../runtime/optwin.vim:289
 msgid "pattern for a macro definition line"
@@ -11088,7 +11108,7 @@ msgstr ":tag 命令将使用 tagstack"
 
 #: ../../runtime/optwin.vim:317
 msgid "when completing tags in Insert mode show more info"
-msgstr "当完成标签在插入模式显示更多信息"
+msgstr "在插入模式补全标签时显示更多信息"
 
 #: ../../runtime/optwin.vim:320
 msgid "a function to be used to perform tag searches"
@@ -11104,7 +11124,7 @@ msgstr "标签命令使用 cscope"
 
 #: ../../runtime/optwin.vim:329
 msgid "0 or 1; the order in which \":cstag\" performs a search"
-msgstr "0或1; \":cstag\"执行搜索的顺序"
+msgstr "0 或 1; \":cstag\" 执行搜索的顺序"
 
 #: ../../runtime/optwin.vim:331
 msgid "give messages when adding a cscope database"
@@ -11112,11 +11132,11 @@ msgstr "在添加 cscope 数据库时给出消息"
 
 #: ../../runtime/optwin.vim:333
 msgid "how many components of the path to show"
-msgstr "要显示路径的多少个组件"
+msgstr "显示路径的多少个部分"
 
 #: ../../runtime/optwin.vim:335
 msgid "when to open a quickfix window for cscope"
-msgstr "何时打开 cscope 的快速修复窗口"
+msgstr "何时为 cscope 打开快速修复窗口"
 
 #: ../../runtime/optwin.vim:337
 msgid "file names in a cscope file are relative to that file"
@@ -11140,15 +11160,15 @@ msgstr "长行折行"
 
 #: ../../runtime/optwin.vim:351
 msgid "wrap long lines at a character in 'breakat'"
-msgstr "在 'breakat' 中的字符长度较长时需要换行"
+msgstr "在 'breakat' 中的字符处对长行折行"
 
 #: ../../runtime/optwin.vim:354
 msgid "preserve indentation in wrapped text"
-msgstr "在换行文本中保持缩进"
+msgstr "在折行文本中保持缩进"
 
 #: ../../runtime/optwin.vim:357
 msgid "adjust breakindent behaviour"
-msgstr "调整折行缩进的行为"
+msgstr "调整 breakindent 的行为"
 
 #: ../../runtime/optwin.vim:360
 msgid "which characters might cause a line break"
@@ -11156,7 +11176,7 @@ msgstr "哪些字符可能导致换行"
 
 #: ../../runtime/optwin.vim:362
 msgid "string to put before wrapped screen lines"
-msgstr "要放在回绕的屏幕线之前的字符串"
+msgstr "放在折回的屏幕行之前的字符串"
 
 #: ../../runtime/optwin.vim:364
 msgid "minimal number of columns to scroll horizontally"
@@ -11164,7 +11184,7 @@ msgstr "水平滚动的最小列数"
 
 #: ../../runtime/optwin.vim:366
 msgid "minimal number of columns to keep left and right of the cursor"
-msgstr "保留光标左右的最小列数"
+msgstr "保留在光标左右的最小列数"
 
 #: ../../runtime/optwin.vim:368
 msgid ""
@@ -11172,11 +11192,11 @@ msgid ""
 "include \"uhex\" to show unprintable characters as a hex number"
 msgstr ""
 "包含 \"lastline\" 来显示最后一行，即使它显示不下\n"
-"包含\"uhex\"以十六进制显示不可打印字符"
+"包含 \"uhex\" 以十六进制显示不可打印字符"
 
 #: ../../runtime/optwin.vim:370
 msgid "characters to use for the status line, folds and filler lines"
-msgstr "用于状态行、折叠行和填充行的字符"
+msgstr "用于状态行、折叠和填充行的字符"
 
 #: ../../runtime/optwin.vim:372
 msgid "number of lines used for the command-line"
@@ -11214,7 +11234,7 @@ msgstr "以 ^I 显示 <Tab>, 以 $ 显示行尾"
 
 #: ../../runtime/optwin.vim:391
 msgid "list of strings used for list mode"
-msgstr "用于列表模式的字符串列表"
+msgstr "用于 list 模式的字符串列表"
 
 #: ../../runtime/optwin.vim:393
 msgid "show the line number for each line"
@@ -11234,7 +11254,7 @@ msgstr "控制是否隐藏可隐藏文本"
 
 #: ../../runtime/optwin.vim:408
 msgid "modes in which text in the cursor line can be concealed"
-msgstr "隐藏光标行的文本的模式"
+msgstr "可隐藏光标行的文本的模式"
 
 #: ../../runtime/optwin.vim:414
 msgid "syntax, highlighting and spelling"
@@ -11250,15 +11270,15 @@ msgstr "文件类型; 在设置时触发 FileType 事件"
 
 #: ../../runtime/optwin.vim:421
 msgid "name of syntax highlighting used"
-msgstr "使用的语法高亮显示的名称"
+msgstr "使用中的语法高亮显示的名称"
 
 #: ../../runtime/optwin.vim:424
 msgid "maximum column to look for syntax items"
-msgstr "查找语法项的最大列"
+msgstr "寻找语法项的最大列"
 
 #: ../../runtime/optwin.vim:428
 msgid "which highlighting to use for various occasions"
-msgstr "在各种场合使用哪些高亮提示"
+msgstr "在不同场合使用哪些高亮提示"
 
 #: ../../runtime/optwin.vim:430
 msgid "highlight all matches for the last used search pattern"
@@ -11282,7 +11302,7 @@ msgstr "突出显示光标的屏幕行"
 
 #: ../../runtime/optwin.vim:446
 msgid "specifies which area 'cursorline' highlights"
-msgstr "指定 'cursorline' 突出显示的区域"
+msgstr "指定 'cursorline' 高亮显示的区域"
 
 #: ../../runtime/optwin.vim:449
 msgid "columns to highlight"
@@ -11294,7 +11314,7 @@ msgstr "高亮拼写错误"
 
 #: ../../runtime/optwin.vim:455
 msgid "list of accepted languages"
-msgstr "已接受的语言列表"
+msgstr "接受的语言列表"
 
 #: ../../runtime/optwin.vim:458
 msgid "file that \"zg\" adds good words to"
@@ -11314,7 +11334,7 @@ msgstr "用于建议修正的方法"
 
 #: ../../runtime/optwin.vim:469
 msgid "amount of memory used by :mkspell before compressing"
-msgstr ":mkspell 在压缩前使用的内存数量"
+msgstr ":mkspell 在压缩前使用的内存量"
 
 #: ../../runtime/optwin.vim:474
 msgid "multiple windows"
@@ -11342,7 +11362,7 @@ msgstr "当前窗口的最小行数"
 
 #: ../../runtime/optwin.vim:487
 msgid "minimal number of lines used for any window"
-msgstr "窗口的最小行数"
+msgstr "任何窗口的最小行数"
 
 #: ../../runtime/optwin.vim:489
 msgid "keep the height of the window"
@@ -11358,7 +11378,7 @@ msgstr "当前窗口的最小列数"
 
 #: ../../runtime/optwin.vim:497
 msgid "minimal number of columns used for any window"
-msgstr "窗口的最小列数"
+msgstr "任何窗口的最小列数"
 
 #: ../../runtime/optwin.vim:499
 msgid "initial height of the help window"
@@ -11366,7 +11386,7 @@ msgstr "帮助窗口的初始高度"
 
 #: ../../runtime/optwin.vim:502
 msgid "use a popup window for preview"
-msgstr "使用一个弹出窗口预览"
+msgstr "使用弹出窗口来预览"
 
 #: ../../runtime/optwin.vim:504
 msgid "default height for the preview window"
@@ -11396,15 +11416,15 @@ msgstr "新窗口放在当前窗口的右边"
 
 #: ../../runtime/optwin.vim:518
 msgid "this window scrolls together with other bound windows"
-msgstr "此窗口与其他绑定窗口一起滚动"
+msgstr "此窗口与其他已绑定的窗口一起滚动"
 
 #: ../../runtime/optwin.vim:521
 msgid "\"ver\", \"hor\" and/or \"jump\"; list of options for 'scrollbind'"
-msgstr "'scrollbind'的选项列表: \"ver\", \"hor\" 和/或 \"jump\""
+msgstr "'scrollbind' 的选项列表: \"ver\", \"hor\" 和/或 \"jump\""
 
 #: ../../runtime/optwin.vim:523
 msgid "this window's cursor moves together with other bound windows"
-msgstr "此窗口的光标与其他绑定的 Windows 一起移动"
+msgstr "此窗口的光标与其他已绑定的窗口一起移动"
 
 #: ../../runtime/optwin.vim:527
 msgid "size of a terminal window"
@@ -11412,11 +11432,11 @@ msgstr "终端窗口的大小"
 
 #: ../../runtime/optwin.vim:530
 msgid "key that precedes Vim commands in a terminal window"
-msgstr "终端窗口中 Vim 命令前面的键"
+msgstr "终端窗口中 Vim 命令的前导键"
 
 #: ../../runtime/optwin.vim:533
 msgid "max number of lines to keep for scrollback in a terminal window"
-msgstr "终端窗口中用于滚动的最大行数"
+msgstr "终端窗口中用于回滚的最大行数"
 
 #: ../../runtime/optwin.vim:537
 msgid "type of pty to use for a terminal window"
@@ -11436,7 +11456,7 @@ msgstr "0, 1 或 2; 何时使用标签页行"
 
 #: ../../runtime/optwin.vim:550
 msgid "maximum number of tab pages to open for -p and \"tab all\""
-msgstr "-p 和 \"tab all\" 打开的最大标签页数量"
+msgstr "-p 和 \"tab all\" 打开的最大标签页数"
 
 #: ../../runtime/optwin.vim:552
 msgid "custom tab pages line"
@@ -11444,11 +11464,11 @@ msgstr "自定义标签页行"
 
 #: ../../runtime/optwin.vim:555
 msgid "custom tab page label for the GUI"
-msgstr "GUI 的自定义标签页"
+msgstr "为 GUI 自定义标签页的标签"
 
 #: ../../runtime/optwin.vim:557
 msgid "custom tab page tooltip for the GUI"
-msgstr "GUI 自定义标签页的工具提示"
+msgstr "为 GUI 自定义标签页的工具提示"
 
 #: ../../runtime/optwin.vim:562
 msgid "terminal"
@@ -11456,7 +11476,7 @@ msgstr "终端"
 
 #: ../../runtime/optwin.vim:563
 msgid "name of the used terminal"
-msgstr "使用的终端的名字"
+msgstr "使用中的终端的名字"
 
 #: ../../runtime/optwin.vim:566
 msgid "alias for 'term'"
@@ -11476,7 +11496,7 @@ msgstr "当检测到 xterm 时，请求终端键码"
 
 #: ../../runtime/optwin.vim:578
 msgid "terminal that requires extra redrawing"
-msgstr "需要额外重绘的终端"
+msgstr "终端需要额外的重绘"
 
 #: ../../runtime/optwin.vim:581
 msgid "recognize keys that start with <Esc> in Insert mode"
@@ -11516,7 +11536,7 @@ msgstr "设置此窗口图标的文本"
 
 #: ../../runtime/optwin.vim:606
 msgid "when not empty, text for the icon of this window"
-msgstr "此窗口图标非空的文本"
+msgstr "非空时，设置此窗口图标的文本"
 
 #: ../../runtime/optwin.vim:610
 msgid "restore the screen contents when exiting Vim"
@@ -11550,7 +11570,7 @@ msgstr "报告鼠标移动事件"
 msgid ""
 "\"extend\", \"popup\" or \"popup_setpos\"; what the right\n"
 "mouse button is used for"
-msgstr "鼠标按钮用于"
+msgstr "\"extend\", \"popup\" 或 \"popup_setpos\"; 鼠标右键用于什么"
 
 #: ../../runtime/optwin.vim:632
 msgid "maximum time in msec to recognize a double-click"
@@ -11558,7 +11578,7 @@ msgstr "识别双击的最大时间（以毫秒计）"
 
 #: ../../runtime/optwin.vim:634
 msgid "\"xterm\", \"xterm2\", \"sgr\", etc.; type of mouse"
-msgstr "鼠标类型：\"xterm\", \"xterm2\", \"sgr\" 等"
+msgstr "\"xterm\", \"xterm2\", \"sgr\" 等; 鼠标类型"
 
 #: ../../runtime/optwin.vim:637
 msgid "what the mouse pointer looks like in different modes"
@@ -11578,7 +11598,7 @@ msgstr "用于多字节编辑的字体对"
 
 #: ../../runtime/optwin.vim:650
 msgid "list of font names to be used for double-wide characters"
-msgstr "用于双宽字符的字体名称列表"
+msgstr "用于双宽度字符的字体名称列表"
 
 #: ../../runtime/optwin.vim:653
 msgid "use smooth, antialiased fonts"
@@ -11590,7 +11610,7 @@ msgstr "指定 GUI 工作方式的标志列表"
 
 #: ../../runtime/optwin.vim:659
 msgid "\"icons\", \"text\" and/or \"tooltips\"; how to show the toolbar"
-msgstr "如何显示工具条：\"icons\", \"text\" 和/或 \"tooltips\""
+msgstr "\"icons\", \"text\" 和/或 \"tooltips\"; 如何显示工具栏"
 
 #: ../../runtime/optwin.vim:662
 msgid "size of toolbar icons"
@@ -11598,7 +11618,7 @@ msgstr "工具栏图标大小"
 
 #: ../../runtime/optwin.vim:665
 msgid "room (in pixels) left above/below the window"
-msgstr "窗口上方/下方的空间(以像素为单位)"
+msgstr "窗口上方/下方的空间（以像素为单位）"
 
 #: ../../runtime/optwin.vim:667
 msgid "list of ASCII characters that can be combined into complex shapes"
@@ -11610,13 +11630,13 @@ msgstr "文本渲染选项"
 
 #: ../../runtime/optwin.vim:674
 msgid "use a pseudo-tty for I/O to external commands"
-msgstr "外部命令的 I/O 的伪 tty"
+msgstr "对外部命令的 I/O 使用伪终端"
 
 #: ../../runtime/optwin.vim:677
 msgid ""
 "\"last\", \"buffer\" or \"current\": which directory used for the file "
 "browser"
-msgstr "文件浏览器使用哪个目录：\"last\", \"buffer\" 或 \"current\""
+msgstr "\"last\", \"buffer\" 或 \"current\"; 文件浏览器使用哪个目录"
 
 #: ../../runtime/optwin.vim:681
 msgid "language to be used for the menus"
@@ -11624,11 +11644,11 @@ msgstr "菜单使用的语言"
 
 #: ../../runtime/optwin.vim:684
 msgid "maximum number of items in one menu"
-msgstr "菜单中的最大项目数量"
+msgstr "单个菜单中的最大项目数量"
 
 #: ../../runtime/optwin.vim:687
 msgid "\"no\", \"yes\" or \"menu\"; how to use the ALT key"
-msgstr "如何使用ALT键：\"no\", \"yes\" 或 \"menu\""
+msgstr "\"no\", \"yes\" 或 \"menu\"; 如何使用 ALT 键"
 
 #: ../../runtime/optwin.vim:690
 msgid "number of pixel lines to use between characters"
@@ -11636,19 +11656,19 @@ msgstr "字符之间使用的像素行数"
 
 #: ../../runtime/optwin.vim:693
 msgid "delay in milliseconds before a balloon may pop up"
-msgstr "延迟数毫秒后，气泡可能会弹出"
+msgstr "延迟指定毫秒后，气泡可能会弹出"
 
 #: ../../runtime/optwin.vim:696
 msgid "use balloon evaluation in the GUI"
-msgstr "在 GUI 中使用气泡评估"
+msgstr "在 GUI 中使用气泡求值"
 
 #: ../../runtime/optwin.vim:700
 msgid "use balloon evaluation in the terminal"
-msgstr "在终端中使用气泡评估"
+msgstr "在终端中使用气泡求值"
 
 #: ../../runtime/optwin.vim:704
 msgid "expression to show in balloon eval"
-msgstr "要在气泡 eval 中显示的表达式"
+msgstr "在气泡求值中显示的表达式"
 
 #: ../../runtime/optwin.vim:711
 msgid "printing"
@@ -11656,23 +11676,23 @@ msgstr "打印"
 
 #: ../../runtime/optwin.vim:712
 msgid "list of items that control the format of :hardcopy output"
-msgstr "控制格式的项目列表 :hardcopy 输出"
+msgstr "控制 :hardcopy 输出格式的项目列表"
 
 #: ../../runtime/optwin.vim:714
 msgid "name of the printer to be used for :hardcopy"
-msgstr "使用的打印机名称:hardcopy"
+msgstr "用于 :hardcopy 的打印机名称"
 
 #: ../../runtime/optwin.vim:717
 msgid "expression used to print the PostScript file for :hardcopy"
-msgstr "用于打印 PostScript 文件的表达式 :hardcopy"
+msgstr "用于 :hardcopy 打印 PostScript 文件的表达式"
 
 #: ../../runtime/optwin.vim:720
 msgid "name of the font to be used for :hardcopy"
-msgstr "要使用的字体名称:hardcopy"
+msgstr ":hardcopy 使用的字体名称"
 
 #: ../../runtime/optwin.vim:722
 msgid "format of the header used for :hardcopy"
-msgstr "用于:hardcopy 的文件头格式"
+msgstr "用于 :hardcopy 的标头格式"
 
 #: ../../runtime/optwin.vim:725
 msgid "encoding used to print the PostScript file for :hardcopy"
@@ -11680,11 +11700,11 @@ msgstr "用于 :hardcopy 打印 PostScript 文件的编码"
 
 #: ../../runtime/optwin.vim:728
 msgid "the CJK character set to be used for CJK output from :hardcopy"
-msgstr "从 :hardcopy 用于 CJK 输出的 CJK 字符集"
+msgstr ":hardcopy 用于 CJK 输出的 CJK 字符集"
 
 #: ../../runtime/optwin.vim:730
 msgid "list of font names to be used for CJK output from :hardcopy"
-msgstr "从 :hardcopy 用于 CJK 输出的字体名称列表"
+msgstr ":hardcopy 用于 CJK 输出的字体名称列表"
 
 #: ../../runtime/optwin.vim:734
 msgid "messages and info"
@@ -11700,7 +11720,7 @@ msgstr "使消息更短的标志列表"
 
 #: ../../runtime/optwin.vim:739
 msgid "show (partial) command keys in the status line"
-msgstr "在状态行中显示(部分)命令键"
+msgstr "在状态行中显示（不完整的）命令键"
 
 #: ../../runtime/optwin.vim:743
 msgid "display the current mode in the status line"
@@ -11712,11 +11732,11 @@ msgstr "在每个窗口下方显示光标的位置"
 
 #: ../../runtime/optwin.vim:750
 msgid "alternate format to be used for the ruler"
-msgstr "标尺的替代格式"
+msgstr "ruler 的替代格式"
 
 #: ../../runtime/optwin.vim:753
 msgid "threshold for reporting number of changed lines"
-msgstr "报告更改行数的阈值"
+msgstr "报告已更改行数的阈值"
 
 #: ../../runtime/optwin.vim:755
 msgid "the higher the more messages are given"
@@ -11728,7 +11748,7 @@ msgstr "用于写入消息的文件"
 
 #: ../../runtime/optwin.vim:759
 msgid "pause listings when the screen is full"
-msgstr "当屏幕满时的暂停显示清单"
+msgstr "当屏幕满时暂停显示清单"
 
 #: ../../runtime/optwin.vim:762
 msgid "start a dialog when a command fails"
@@ -11756,25 +11776,25 @@ msgstr "选择文本"
 
 #: ../../runtime/optwin.vim:778
 msgid "\"old\", \"inclusive\" or \"exclusive\"; how selecting text behaves"
-msgstr "如何选择文本: \"old\", \"inclusive\" 或 \"exclusive\""
+msgstr "\"old\", \"inclusive\" 或 \"exclusive\"; 如何选择文本"
 
 #: ../../runtime/optwin.vim:780
 msgid ""
 "\"mouse\", \"key\" and/or \"cmd\"; when to start Select mode\n"
 "instead of Visual mode"
-msgstr "何时启动选择模式而不是可视化模式：\"mouse\", \"key\" 和/或 \"cmd\""
+msgstr "\"mouse\", \"key\" 和/或 \"cmd\"; 何时启动选择模式而不是可视模式"
 
 #: ../../runtime/optwin.vim:783
 msgid ""
 "\"unnamed\" to use the * register like unnamed register\n"
 "\"autoselect\" to always put selected text on the clipboard"
 msgstr ""
-"像未命名寄存器一样使用*寄存器：\"unnamed\"\n"
-"将选择的文本始终放在剪贴板上: \"autoselect\""
+"\"unnamed\": 像无名寄存器一样使用 * 寄存器\n"
+"\"autoselect\": 将选择的文本始终放在剪贴板上"
 
 #: ../../runtime/optwin.vim:786
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
-msgstr "特殊键可以做：\"startsel\" 和/或 \"stopsel\""
+msgstr "\"startsel\" 和/或 \"stopsel\"; 特殊键可以做"
 
 #: ../../runtime/optwin.vim:790
 msgid "editing text"
@@ -11782,15 +11802,15 @@ msgstr "编辑文本"
 
 #: ../../runtime/optwin.vim:791
 msgid "maximum number of changes that can be undone"
-msgstr "可以撤消的最大更改数"
+msgstr "可以撤销的最大更改数"
 
 #: ../../runtime/optwin.vim:794
 msgid "automatically save and restore undo history"
-msgstr "自动保存和恢复撤消的历史记录"
+msgstr "自动保存和恢复撤销历史"
 
 #: ../../runtime/optwin.vim:796
 msgid "list of directories for undo files"
-msgstr "撤消的文件的目录列表"
+msgstr "撤销文件的目录列表"
 
 #: ../../runtime/optwin.vim:798
 msgid "maximum number lines to save for undo on a buffer reload"
@@ -11798,11 +11818,11 @@ msgstr "缓冲区重新加载时为撤销保存的最大行数"
 
 #: ../../runtime/optwin.vim:800
 msgid "changes have been made and not written to a file"
-msgstr "已经进行了修改，但没有被写入文件"
+msgstr "已经做出了修改，但没有被写入文件"
 
 #: ../../runtime/optwin.vim:803
 msgid "buffer is not to be written"
-msgstr "缓冲区不被写入"
+msgstr "缓冲区不会被写入"
 
 #: ../../runtime/optwin.vim:806
 msgid "changes to the text are possible"
@@ -11810,11 +11830,11 @@ msgstr "可以对文本进行更改"
 
 #: ../../runtime/optwin.vim:809
 msgid "line length above which to break a line"
-msgstr "超过行长度就要断行"
+msgstr "超过行长度就断行"
 
 #: ../../runtime/optwin.vim:812
 msgid "margin from the right in which to break a line"
-msgstr "从右侧划线的空白"
+msgstr "断行开始的右边距"
 
 #: ../../runtime/optwin.vim:815
 msgid "specifies what <BS>, CTRL-W, etc. can do in Insert mode"
@@ -11822,11 +11842,11 @@ msgstr "指定 <BS>, CTRL-W 等在插入模式下可以做什么"
 
 #: ../../runtime/optwin.vim:817
 msgid "definition of what comment lines look like"
-msgstr "注释行外观的定义"
+msgstr "定义注释行长什么样"
 
 #: ../../runtime/optwin.vim:820
 msgid "list of flags that tell how automatic formatting works"
-msgstr "说明自动格式化如何工作的标志列表"
+msgstr "控制自动格式化如何工作的标志列表"
 
 #: ../../runtime/optwin.vim:823
 msgid "pattern to recognize a numbered list"
@@ -11834,11 +11854,11 @@ msgstr "识别编号列表的模式"
 
 #: ../../runtime/optwin.vim:827
 msgid "expression used for \"gq\" to format lines"
-msgstr "用于格式化行的 \"gq\" 使用的表达式"
+msgstr "用 \"gq\" 格式化行时使用的表达式"
 
 #: ../../runtime/optwin.vim:832
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
-msgstr "指定 CTRL-N 和 CTRL-P 的插入模式补全工作方式"
+msgstr "指定使用 CTRL-N 和 CTRL-P 进行插入模式补全的工作方式"
 
 #: ../../runtime/optwin.vim:835
 msgid "whether to use a popup menu for Insert mode completion"
@@ -11846,7 +11866,7 @@ msgstr "是否在插入模式补全时使用弹出菜单"
 
 #: ../../runtime/optwin.vim:838
 msgid "options for the Insert mode completion info popup"
-msgstr "插入模式补全信息弹出的选项"
+msgstr "插入模式补全信息弹框的选项"
 
 #: ../../runtime/optwin.vim:841
 msgid "maximum height of the popup menu"
@@ -11882,39 +11902,39 @@ msgstr "调整关键字补全匹配的大小写"
 
 #: ../../runtime/optwin.vim:865
 msgid "enable entering digraphs with c1 <BS> c2"
-msgstr "允许使用 c1 <BS> c2 进入有向图;c2"
+msgstr "支持使用 c1 <BS> c2 输入二合字符"
 
 #: ../../runtime/optwin.vim:868
 msgid "the \"~\" command behaves like an operator"
-msgstr "\"~\"命令表现地像操作符"
+msgstr "\"~\"命令表现得像操作符"
 
 #: ../../runtime/optwin.vim:870
 msgid "function called for the \"g@\" operator"
-msgstr "函数调用 \"g@\" 操作符"
+msgstr "\"g@\" 操作符调用的函数"
 
 #: ../../runtime/optwin.vim:872
 msgid "when inserting a bracket, briefly jump to its match"
-msgstr "当插入括号时，直接跳转到它匹配的括号"
+msgstr "当插入括号时，短暂地跳转到匹配它的括号"
 
 #: ../../runtime/optwin.vim:874
 msgid "tenth of a second to show a match for 'showmatch'"
-msgstr "需要十分之一秒显示'showmatch'的匹配"
+msgstr "显示 'showmatch' 的匹配的时长（以十分之一秒计）"
 
 #: ../../runtime/optwin.vim:876
 msgid "list of pairs that match for the \"%\" command"
-msgstr "与 \"%\" 命令匹配的对列表"
+msgstr "\"%\" 命令匹配的对列表"
 
 #: ../../runtime/optwin.vim:879
 msgid "use two spaces after '.' when joining a line"
-msgstr "连接行时，在 '.' 后面添加两个空格。"
+msgstr "连接行时，在 '.' 后面添加两个空格"
 
 #: ../../runtime/optwin.vim:881
 msgid ""
 "\"alpha\", \"octal\", \"hex\", \"bin\" and/or \"unsigned\"; number formats\n"
 "recognized for CTRL-A and CTRL-X commands"
 msgstr ""
-"CTRL-A 和 CTRL-X 命令识别的数字格式：\n"
-"\"alpha\", \"octal\", \"hex\", \"bin\" 和/或 \"unsigned\""
+"\"alpha\", \"octal\", \"hex\", \"bin\" 和/或 \"unsigned\"\n"
+"CTRL-A 和 CTRL-X 命令识别的数字的格式"
 
 #: ../../runtime/optwin.vim:886
 msgid "tabs and indenting"
@@ -11922,31 +11942,31 @@ msgstr "Tab 和缩进"
 
 #: ../../runtime/optwin.vim:887
 msgid "number of spaces a <Tab> in the text stands for"
-msgstr "<Tab> 在文中代表空格的数量"
+msgstr "<Tab> 在文本中代表的空格数"
 
 #: ../../runtime/optwin.vim:890
 msgid "number of spaces used for each step of (auto)indent"
-msgstr "每步(自动)缩进所使用的空格数"
+msgstr "每步（自动）缩进所使用的空格数"
 
 #: ../../runtime/optwin.vim:894
 msgid "list of number of spaces a tab counts for"
-msgstr "tab 计数的空格数列表"
+msgstr "tab 代表的空格数的列表"
 
 #: ../../runtime/optwin.vim:897
 msgid "list of number of spaces a soft tabsstop counts for"
-msgstr "软制表符计数的空格数列表"
+msgstr "软制表符代表的空格数的列表"
 
 #: ../../runtime/optwin.vim:901
 msgid "a <Tab> in an indent inserts 'shiftwidth' spaces"
-msgstr "用 <Tab> 键缩进的时候插入 'shiftwidth' 个空格"
+msgstr "用 <Tab> 键缩进时插入 'shiftwidth' 个空格"
 
 #: ../../runtime/optwin.vim:903
 msgid "if non-zero, number of spaces to insert for a <Tab>"
-msgstr "如果非零，为 <Tab> 插入的空格数。"
+msgstr "如果非零，为 <Tab> 插入的空格数"
 
 #: ../../runtime/optwin.vim:906
 msgid "round to 'shiftwidth' for \"<<\" and \">>\""
-msgstr "用 \"<<\" 或 \">>\" 快捷键缩进时，插入 'shiftwidth' 整数倍个空格"
+msgstr "用 \"<<\" 和 \">>\" 缩进时，插入 'shiftwidth' 整数倍个空格"
 
 #: ../../runtime/optwin.vim:908
 msgid "expand <Tab> to spaces in Insert mode"
@@ -11958,7 +11978,7 @@ msgstr "自动设置新行缩进"
 
 #: ../../runtime/optwin.vim:915
 msgid "do clever autoindenting"
-msgstr "自动缩进"
+msgstr "智能自动缩进"
 
 #: ../../runtime/optwin.vim:920
 msgid "enable specific indenting for C code"
@@ -11990,11 +12010,11 @@ msgstr "在插入模式下使用 'indentexpr' 触发缩进的键"
 
 #: ../../runtime/optwin.vim:942
 msgid "copy whitespace for indenting from previous line"
-msgstr "从上一行复制用于缩进的空格"
+msgstr "为缩进从上一行复制空白字符"
 
 #: ../../runtime/optwin.vim:945
 msgid "preserve kind of whitespace when changing indent"
-msgstr "在更改缩进时保留空白"
+msgstr "在更改缩进时保留空白类型"
 
 #: ../../runtime/optwin.vim:949
 msgid "enable lisp mode"
@@ -12010,11 +12030,11 @@ msgstr "折叠"
 
 #: ../../runtime/optwin.vim:959
 msgid "unset to display all folds open"
-msgstr "取消设置以显示所有折叠打开"
+msgstr "取消设置以打开所有折叠"
 
 #: ../../runtime/optwin.vim:962
 msgid "folds with a level higher than this number will be closed"
-msgstr "比这个数字高一等级的折叠将被关闭"
+msgstr "等级比这个数字高的折叠将被关闭"
 
 #: ../../runtime/optwin.vim:965
 msgid "value for 'foldlevel' when starting to edit a file"
@@ -12022,27 +12042,27 @@ msgstr "开始编辑文件时，'foldlevel' 的值"
 
 #: ../../runtime/optwin.vim:967
 msgid "width of the column used to indicate folds"
-msgstr "用来表示折叠的列宽"
+msgstr "用来指示折叠的列的宽度"
 
 #: ../../runtime/optwin.vim:970
 msgid "expression used to display the text of a closed fold"
-msgstr "用于显示关闭折叠的文本"
+msgstr "用于显示已关闭折叠的表达式"
 
 #: ../../runtime/optwin.vim:973
 msgid "set to \"all\" to close a fold when the cursor leaves it"
-msgstr "设置为 \"all\" 用于在光标离开时关闭折叠"
+msgstr "设置为 \"all\" 来在光标离开时关闭折叠"
 
 #: ../../runtime/optwin.vim:975
 msgid "specifies for which commands a fold will be opened"
-msgstr "指定打开折叠的命令"
+msgstr "指定会打开折叠的命令"
 
 #: ../../runtime/optwin.vim:977
 msgid "minimum number of screen lines for a fold to be closed"
-msgstr "要关闭折叠所需的最小行数"
+msgstr "可关闭折叠所需的最小屏幕行数"
 
 #: ../../runtime/optwin.vim:980
 msgid "template for comments; used to put the marker in"
-msgstr "注释的模板，模板里有占位符"
+msgstr "注释的模板，用于放置折叠标记"
 
 #: ../../runtime/optwin.vim:982
 msgid ""
@@ -12058,15 +12078,15 @@ msgstr "当 'foldmethod' 为 \"expr\" 时使用的表达式"
 
 #: ../../runtime/optwin.vim:988
 msgid "used to ignore lines when 'foldmethod' is \"indent\""
-msgstr "当 'foldmethod' 为 \"indent\" 时忽略的行"
+msgstr "当 'foldmethod' 为 \"indent\" 时用于忽略行"
 
 #: ../../runtime/optwin.vim:991
 msgid "markers used when 'foldmethod' is \"marker\""
-msgstr "当 'foldmethod' 为 \"marker\" 时的标志"
+msgstr "当 'foldmethod' 为 \"marker\" 时所使用的标记"
 
 #: ../../runtime/optwin.vim:994
 msgid "maximum fold depth for when 'foldmethod' is \"indent\" or \"syntax\""
-msgstr "当 'foldmethod' 为 \"indent\" 或 \"syntax\"时的最大折叠深度"
+msgstr "当 'foldmethod' 为 \"indent\" 或 \"syntax\" 时的最大折叠深度"
 
 #: ../../runtime/optwin.vim:1001
 msgid "diff mode"
@@ -12098,7 +12118,7 @@ msgstr "最大映射深度"
 
 #: ../../runtime/optwin.vim:1017
 msgid "recognize mappings in mapped keys"
-msgstr "识别映射键中的映射"
+msgstr "识别已映射键中的映射"
 
 #: ../../runtime/optwin.vim:1019
 msgid "allow timing out halfway into a mapping"
@@ -12106,15 +12126,15 @@ msgstr "允许在映射中途超时"
 
 #: ../../runtime/optwin.vim:1021
 msgid "allow timing out halfway into a key code"
-msgstr "允许在映射的中途暂停"
+msgstr "允许在键码中途超时"
 
 #: ../../runtime/optwin.vim:1023
 msgid "time in msec for 'timeout'"
-msgstr "超时时间 (以毫秒计)"
+msgstr "'timeout' 的时间（以毫秒计）"
 
 #: ../../runtime/optwin.vim:1025
 msgid "time in msec for 'ttimeout'"
-msgstr "键盘代码超时时间 (以毫秒计)"
+msgstr "'ttimeout' 的时间（以毫秒计）"
 
 #: ../../runtime/optwin.vim:1029
 msgid "reading and writing files"
@@ -12122,7 +12142,7 @@ msgstr "读写文件"
 
 #: ../../runtime/optwin.vim:1030
 msgid "enable using settings from modelines when reading a file"
-msgstr "Vim 读取文件的时候是否允许使用 modeline 里指定的设置"
+msgstr "读取文件时是否使用 modeline 里的设置"
 
 #: ../../runtime/optwin.vim:1033
 msgid "allow setting expression options from a modeline"
@@ -12130,7 +12150,7 @@ msgstr "允许从 modeline 中设置表达式选项"
 
 #: ../../runtime/optwin.vim:1035
 msgid "number of lines to check for modelines"
-msgstr "检查 modeline 的行数"
+msgstr "为 modeline 而检查的行数"
 
 #: ../../runtime/optwin.vim:1037
 msgid "binary file editing"
@@ -12138,7 +12158,7 @@ msgstr "二进制文件编辑"
 
 #: ../../runtime/optwin.vim:1040
 msgid "last line in the file has an end-of-line"
-msgstr "文件的最后一行有一个换行符"
+msgstr "文件的最后一行有换行符"
 
 #: ../../runtime/optwin.vim:1043
 msgid "fixes missing end-of-line at end of text file"
@@ -12150,11 +12170,11 @@ msgstr "在文件前加上字节顺序标记"
 
 #: ../../runtime/optwin.vim:1049
 msgid "end-of-line format: \"dos\", \"unix\" or \"mac\""
-msgstr "换行符格式： \"dos\", \"unix\" or \"mac\""
+msgstr "换行符格式： \"dos\", \"unix\" 或 \"mac\""
 
 #: ../../runtime/optwin.vim:1052
 msgid "list of file formats to look for when editing a file"
-msgstr "编辑文件时要查找的文件格式列表"
+msgstr "编辑文件时要检查的文件格式列表"
 
 #: ../../runtime/optwin.vim:1054
 msgid "obsolete, use 'fileformat'"
@@ -12170,19 +12190,19 @@ msgstr "允许写入文件"
 
 #: ../../runtime/optwin.vim:1061
 msgid "write a backup file before overwriting a file"
-msgstr "覆盖备份文件前，请先写入备份文件"
+msgstr "覆盖文件前先写入备份文件"
 
 #: ../../runtime/optwin.vim:1063
 msgid "keep a backup after overwriting a file"
-msgstr "覆盖文件后进行备份"
+msgstr "覆盖文件后保留备份"
 
 #: ../../runtime/optwin.vim:1065
 msgid "patterns that specify for which files a backup is not made"
-msgstr "指定不为哪些文件进行备份的模式"
+msgstr "不备份的文件的模式"
 
 #: ../../runtime/optwin.vim:1067
 msgid "whether to make the backup as a copy or rename the existing file"
-msgstr "是否以副本形式进行备份或重命名现有文件"
+msgstr "通过复制还是重命名已有文件进行备份"
 
 #: ../../runtime/optwin.vim:1070
 msgid "list of directories to put backup files in"
@@ -12202,15 +12222,15 @@ msgstr "类似于 'autowrite'，但适用于更多命令"
 
 #: ../../runtime/optwin.vim:1078
 msgid "always write without asking for confirmation"
-msgstr "写时不需要确认"
+msgstr "写文件时总是不需要确认"
 
 #: ../../runtime/optwin.vim:1080
 msgid "automatically read a file when it was modified outside of Vim"
-msgstr "当文件在Vim之外被修改时，自动读取文件"
+msgstr "在 Vim 之外修改了文件时，自动读取文件"
 
 #: ../../runtime/optwin.vim:1083
 msgid "keep oldest version of a file; specifies file name extension"
-msgstr "保存最旧版本的文件; 指定文件扩展名"
+msgstr "保存最旧版本的文件；指定文件扩展名"
 
 #: ../../runtime/optwin.vim:1085
 msgid "forcibly sync the file to disk after writing it"
@@ -12218,11 +12238,11 @@ msgstr "文件写入后强制同步到磁盘"
 
 #: ../../runtime/optwin.vim:1087
 msgid "use 8.3 file names"
-msgstr "文件名使用为 8.3 格式"
+msgstr "使用 8.3 格式的文件名"
 
 #: ../../runtime/optwin.vim:1090
 msgid "encryption method for file writing: zip, blowfish or blowfish2"
-msgstr "文件写入加密方法：zip, blowfish 或 blowfish2"
+msgstr "写入文件时使用的加密算法：zip, blowfish 或 blowfish2"
 
 #: ../../runtime/optwin.vim:1095
 msgid "the swap file"
@@ -12238,7 +12258,7 @@ msgstr "对这个缓冲区使用交换文件"
 
 #: ../../runtime/optwin.vim:1101
 msgid "\"sync\", \"fsync\" or empty; how to flush a swap file to disk"
-msgstr "如何将交换文件刷新到磁盘：\"sync\", \"fsync\" 或 empty"
+msgstr "\"sync\", \"fsync\" 或留空; 将交换文件刷新到磁盘的方式"
 
 #: ../../runtime/optwin.vim:1103
 msgid "number of characters typed to cause a swap file update"
@@ -12246,15 +12266,15 @@ msgstr "导致交换文件更新的字符数"
 
 #: ../../runtime/optwin.vim:1105
 msgid "time in msec after which the swap file will be updated"
-msgstr "刷新交换文件所需的毫秒数"
+msgstr "更新交换文件前所需的毫秒数"
 
 #: ../../runtime/optwin.vim:1107
 msgid "maximum amount of memory in Kbyte used for one buffer"
-msgstr "缓冲区使用的最大内存量(以千字节为单位)"
+msgstr "单个缓冲区使用的最大内存量（以千字节为单位）"
 
 #: ../../runtime/optwin.vim:1109
 msgid "maximum amount of memory in Kbyte used for all buffers"
-msgstr "所有缓冲区使用的最大内存量(以千字节为单位)"
+msgstr "所有缓冲区使用的最大内存量（以千字节为单位）"
 
 # do not translate to avoid writing Chinese in files
 #: ../../runtime/optwin.vim:1113
@@ -12279,7 +12299,7 @@ msgstr "指定命令行如何补全"
 
 #: ../../runtime/optwin.vim:1123
 msgid "empty or \"tagfile\" to list file name of matching tags"
-msgstr "空或 \"tagfile\" 来列出匹配标记的文件名"
+msgstr "空或 \"tagfile\" 来列出匹配标签的文件名"
 
 #: ../../runtime/optwin.vim:1126
 msgid "list of file name extensions that have a lower priority"
@@ -12291,7 +12311,7 @@ msgstr "搜索文件时添加的文件扩展名列表"
 
 #: ../../runtime/optwin.vim:1134
 msgid "list of patterns to ignore files for file name completion"
-msgstr "为补全文件名而忽略文件的模式列表"
+msgstr "文件名补全所忽略文件的模式列表"
 
 #: ../../runtime/optwin.vim:1137
 msgid "ignore case when using file names"
@@ -12299,7 +12319,7 @@ msgstr "使用文件名时忽略大小写"
 
 #: ../../runtime/optwin.vim:1139
 msgid "ignore case when completing file names"
-msgstr "在补全文件名时忽略大小写"
+msgstr "补全文件名时忽略大小写"
 
 #: ../../runtime/optwin.vim:1142
 msgid "command-line completion shows a list of matches"
@@ -12323,19 +12343,19 @@ msgstr "用于外部命令的 shell 程序的名称"
 
 #: ../../runtime/optwin.vim:1155
 msgid "when to use the shell or directly execute a command"
-msgstr "何时使用 shell 或直接执行命令"
+msgstr "何时使用 shell 还是直接执行命令"
 
 #: ../../runtime/optwin.vim:1158
 msgid "character(s) to enclose a shell command in"
-msgstr "用于封装 shell 命令的字符"
+msgstr "用于包围 shell 命令的字符"
 
 #: ../../runtime/optwin.vim:1160
 msgid "like 'shellquote' but include the redirection"
-msgstr "类似'shellquote'，但包含重定向"
+msgstr "类似 'shellquote'，但包含重定向"
 
 #: ../../runtime/optwin.vim:1162
 msgid "characters to escape when 'shellxquote' is ("
-msgstr "'shellxquote' 为 ( 时使用的转义字符"
+msgstr "'shellxquote' 为 ( 时需要转义的字符"
 
 #: ../../runtime/optwin.vim:1164
 msgid "argument for 'shell' to execute a command"
@@ -12343,11 +12363,11 @@ msgstr "'shell' 执行命令的参数"
 
 #: ../../runtime/optwin.vim:1166
 msgid "used to redirect command output to a file"
-msgstr "将命令输出重定向到文件"
+msgstr "用于将命令输出重定向到文件"
 
 #: ../../runtime/optwin.vim:1168
 msgid "use a temp file for shell commands instead of using a pipe"
-msgstr "对 shell 命令使用临时文件，而不是使用管道"
+msgstr "对 shell 命令使用临时文件而不是管道"
 
 #: ../../runtime/optwin.vim:1170
 msgid "program used for \"=\" command"
@@ -12355,7 +12375,7 @@ msgstr "用于 \"=\" 命令的程序"
 
 #: ../../runtime/optwin.vim:1173
 msgid "program used to format lines with \"gq\" command"
-msgstr "用 \"gq\" 命令格式化代码时，使用的外部格式化程序"
+msgstr "用 \"gq\" 命令格式化代码时使用的程序"
 
 #: ../../runtime/optwin.vim:1175
 msgid "program used for the \"K\" command"
@@ -12363,7 +12383,7 @@ msgstr "用于 \"K\" 命令的程序"
 
 #: ../../runtime/optwin.vim:1177
 msgid "warn when using a shell command and a buffer has changes"
-msgstr "当使用 shell 命令和缓冲区发生变化时发出警告"
+msgstr "当使用 shell 命令并且缓冲区有修改时发出警告"
 
 #: ../../runtime/optwin.vim:1182
 msgid "running make and jumping to errors (quickfix)"
@@ -12403,7 +12423,7 @@ msgstr "\":make\" 和 \":grep\" 输出的编码"
 
 #: ../../runtime/optwin.vim:1203
 msgid "function to display text in the quickfix window"
-msgstr "快速修复窗口中显示文本的函数"
+msgstr "用于在快速修复窗口中显示文本的函数"
 
 #: ../../runtime/optwin.vim:1209
 msgid "system specific"
@@ -12411,7 +12431,7 @@ msgstr "系统特定"
 
 #: ../../runtime/optwin.vim:1210
 msgid "use forward slashes in file names; for Unix-like shells"
-msgstr "类 unix shells 中，在文件名中使用正斜杠;"
+msgstr "在文件名中使用正斜杠；用于类 Unix shell"
 
 #: ../../runtime/optwin.vim:1212
 msgid "specifies slash/backslash used for completion"
@@ -12451,11 +12471,11 @@ msgstr "何时从右到左编辑命令行"
 
 #: ../../runtime/optwin.vim:1239
 msgid "insert characters backwards"
-msgstr "向后插入字符"
+msgstr "倒序插入字符"
 
 #: ../../runtime/optwin.vim:1241
 msgid "allow CTRL-_ in Insert and Command-line mode to toggle 'revins'"
-msgstr "允许 CTRL-_ 在插入和命令行模式下切换 'revins'"
+msgstr "在插入和命令行模式下允许 CTRL-_ 切换 'revins'"
 
 #: ../../runtime/optwin.vim:1243
 msgid "the ASCII code for the first letter of the Hebrew alphabet"
@@ -12463,11 +12483,11 @@ msgstr "希伯来字母表第一个字母的 ASCII 码"
 
 #: ../../runtime/optwin.vim:1245
 msgid "use Hebrew keyboard mapping"
-msgstr "使用希伯来键盘映射"
+msgstr "使用希伯来语键盘映射"
 
 #: ../../runtime/optwin.vim:1247
 msgid "use phonetic Hebrew keyboard mapping"
-msgstr "使用希伯来语的音节键盘映射"
+msgstr "使用希伯来语的语音键盘映射"
 
 #: ../../runtime/optwin.vim:1251
 msgid "prepare for editing Arabic text"
@@ -12475,7 +12495,7 @@ msgstr "准备编辑阿拉伯语文本"
 
 #: ../../runtime/optwin.vim:1254
 msgid "perform shaping of Arabic characters"
-msgstr "阿拉伯语的字型重整"
+msgstr "阿拉伯语的字形重整"
 
 #: ../../runtime/optwin.vim:1256
 msgid "terminal will perform bidi handling"
@@ -12507,11 +12527,11 @@ msgstr "输入法样式：0：on-the-spot；1：over-the-spot"
 
 #: ../../runtime/optwin.vim:1278
 msgid "entering a search pattern: 1: use :lmap; 2: use IM; 0: neither"
-msgstr "进入搜索模式：1：使用 :lamp；2：使用输入法；0：都不用"
+msgstr "输入搜索模式时：1：使用 :lamp；2：使用输入法；0：都不用"
 
 #: ../../runtime/optwin.vim:1282
 msgid "when set always use IM when starting to edit a command line"
-msgstr "如果设置，在开始编辑命令行时总是使用输入法"
+msgstr "如果设置，开始编辑命令行时总是使用输入法"
 
 #: ../../runtime/optwin.vim:1284
 msgid "function to obtain IME status"
@@ -12563,7 +12583,7 @@ msgstr "激活 X 输入方法的键"
 
 #: ../../runtime/optwin.vim:1311
 msgid "width of ambiguous width characters"
-msgstr "多宽度字符的宽度"
+msgstr "宽度有歧义字符的宽度"
 
 #: ../../runtime/optwin.vim:1313
 msgid "emoji characters are full width"
@@ -12578,12 +12598,11 @@ msgid ""
 "when to use virtual editing: \"block\", \"insert\", \"all\"\n"
 "and/or \"onemore\""
 msgstr ""
-"何时使用虚拟编辑：\"block\", \"insert\", \"all\"\n"
-"和/或 \"onemore\""
+"何时使用虚拟编辑：\"block\", \"insert\", \"all\" 和/或 \"onemore\""
 
 #: ../../runtime/optwin.vim:1320
 msgid "list of autocommand events which are to be ignored"
-msgstr "需要忽略的自动命令事件列表"
+msgstr "要忽略的自动命令事件列表"
 
 #: ../../runtime/optwin.vim:1322
 msgid "load plugin scripts when starting up"
@@ -12591,23 +12610,23 @@ msgstr "启动时加载插件脚本"
 
 #: ../../runtime/optwin.vim:1324
 msgid "enable reading .vimrc/.exrc/.gvimrc in the current directory"
-msgstr "在当前目录下能够阅读 .vimrc/.exrc/.gvimrc"
+msgstr "启用读取在当前目录下的 .vimrc/.exrc/.gvimrc"
 
 #: ../../runtime/optwin.vim:1326
 msgid "safer working with script files in the current directory"
-msgstr "在当前目录下使用脚本文件更安全"
+msgstr "在当前目录下使用脚本文件时更安全"
 
 #: ../../runtime/optwin.vim:1328
 msgid "use the 'g' flag for \":substitute\""
-msgstr "缺省打开 \":substitute\" 的 'g' 标志"
+msgstr "打开 \":substitute\" 的 'g' 标志"
 
 #: ../../runtime/optwin.vim:1330
 msgid "'g' and 'c' flags of \":substitute\" toggle"
-msgstr "\":substitute\" 开关的 'g' and 'c' 标志"
+msgstr "\":substitute\" 的 'g' and 'c' 标志用作开关切换"
 
 #: ../../runtime/optwin.vim:1333
 msgid "allow reading/writing devices"
-msgstr "允许读/写设备"
+msgstr "允许读写设备"
 
 #: ../../runtime/optwin.vim:1337
 msgid "maximum depth of function calls"
@@ -12615,23 +12634,23 @@ msgstr "函数调用的最大深度"
 
 #: ../../runtime/optwin.vim:1341
 msgid "list of words that specifies what to put in a session file"
-msgstr "指定在会话文件中放入内容的单词列表"
+msgstr "指定放入会话文件的内容的单词列表"
 
 #: ../../runtime/optwin.vim:1343
 msgid "list of words that specifies what to save for :mkview"
-msgstr "指定保存内容的单词列表 :mkview"
+msgstr "指定 :mkview 保存的内容的单词列表"
 
 #: ../../runtime/optwin.vim:1345
 msgid "directory where to store files with :mkview"
-msgstr "存放文件的目录 :mkview"
+msgstr ":mkview 存放文件的目录"
 
 #: ../../runtime/optwin.vim:1349
 msgid "list that specifies what to write in the viminfo file"
-msgstr "指定在 viminfo 文件中写入内容的列表"
+msgstr "指定在 viminfo 文件中写入的内容的列表"
 
 #: ../../runtime/optwin.vim:1351
 msgid "file name used for the viminfo file"
-msgstr "viminfo文件使用的文件名"
+msgstr "viminfo 文件使用的文件名"
 
 #: ../../runtime/optwin.vim:1355
 msgid "what happens with a buffer when it's no longer in a window"
@@ -12639,7 +12658,7 @@ msgstr "当缓冲区不再位于窗口中时，会发生什么"
 
 #: ../../runtime/optwin.vim:1358
 msgid "empty, \"nofile\", \"nowrite\", \"quickfix\", etc.: type of buffer"
-msgstr "缓冲区类型：空, \"nofile\", \"nowrite\", \"quickfix\"等"
+msgstr "空, \"nofile\", \"nowrite\", \"quickfix\" 等; 缓冲区类型"
 
 #: ../../runtime/optwin.vim:1362
 msgid "whether the buffer shows up in the buffer list"
@@ -12655,7 +12674,7 @@ msgstr "是否显示标号列"
 
 #: ../../runtime/optwin.vim:1373
 msgid "interval in milliseconds between polls for MzScheme threads"
-msgstr "MzScheme 线程的轮询间隔(以毫秒为单位)"
+msgstr "MzScheme 线程的轮询间隔（以毫秒为单位）"
 
 #: ../../runtime/optwin.vim:1377
 msgid "name of the Lua dynamic library"
@@ -12667,7 +12686,7 @@ msgstr "Perl 动态库的名字"
 
 #: ../../runtime/optwin.vim:1385
 msgid "whether to use Python 2 or 3"
-msgstr "是否使用 Python 2 或 3"
+msgstr "是否使用 Python 2 和 3"
 
 #: ../../runtime/optwin.vim:1389
 msgid "name of the Python 2 dynamic library"
@@ -12700,6 +12719,3 @@ msgstr "MzScheme 动态库的名字"
 #: ../../runtime/optwin.vim:1415
 msgid "name of the MzScheme GC dynamic library"
 msgstr "MzScheme GC 动态库的名字"
-
-#~ msgid "E578: Not allowed to change text here"
-#~ msgstr "E578: 不允许在此改变文本"
