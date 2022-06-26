@@ -4898,10 +4898,10 @@ invert({expr})						*invert()*
 <		Can also be used as a |method|: >
 			:let bits = bits->invert()
 
-isabsolutepath({directory})				*isabsolutepath()*
+isabsolutepath({path})					*isabsolutepath()*
 		The result is a Number, which is |TRUE| when {path} is an
 		absolute path.
-<		On Unix, a path is considered absolute when it starts with '/'.
+		On Unix, a path is considered absolute when it starts with '/'.
 		On MS-Windows, it is considered absolute when it starts with an
 		optional drive prefix and is followed by a '\' or '/'. UNC paths
 		are always absolute.
@@ -4911,7 +4911,7 @@ isabsolutepath({directory})				*isabsolutepath()*
 			echo isabsolutepath('C:\Windows')	" 1
 			echo isabsolutepath('foobar')		" 0
 			echo isabsolutepath('\\remote\file')	" 1
-
+<
 		Can also be used as a |method|: >
 			GetName()->isabsolutepath()
 
@@ -10595,6 +10595,7 @@ viminfo			Compiled with viminfo support.
 vimscript-1		Compiled Vim script version 1 support
 vimscript-2		Compiled Vim script version 2 support
 vimscript-3		Compiled Vim script version 3 support
+vimscript-4		Compiled Vim script version 4 support
 virtualedit		Compiled with 'virtualedit' option. (always true)
 visual			Compiled with Visual mode. (always true)
 visualextra		Compiled with extra Visual mode commands. (always

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jun 20
+*vim9.txt*	For Vim version 8.2.  Last change: 2022 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,10 +37,10 @@ A secondary goal is to avoid Vim-specific constructs and get closer to
 commonly used programming languages, such as JavaScript, TypeScript and Java.
 
 The performance improvements can only be achieved by not being 100% backwards
-compatible.  For example, making function arguments available in the
-"a:" dictionary adds quite a lot of overhead.  In a Vim9 function this
-dictionary is not available.  Other differences are more subtle, such as how
-errors are handled.
+compatible.  For example, making function arguments available in the "a:"
+dictionary adds quite a lot of overhead.  In a Vim9 function this dictionary
+is not available.  Other differences are more subtle, such as how errors are
+handled.
 
 The Vim9 script syntax and semantics are used in:
 - a function defined with the `:def` command

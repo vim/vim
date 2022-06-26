@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 25
+*todo.txt*      For Vim version 8.2.  Last change: 2022 Jun 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -206,14 +206,14 @@ Patches considered for including:
 - move f_hasmapto() to map.c  #10611
 - allow for nesting of timeout, sketch in #10595
 - Add "-n" option to xxd. #10599
-- Support %e and %k in 'errorformat'. #9624
 - Add support for "underdouble", "underdot" and "underdash". #9553
 - Patch to implement the vimtutor with a plugin: #6414
   Was originally written by Felipe Morales.
 - Patch to make fillchars global-local. (#5206)
 - Version of getchar() that does not move the cursor - #10603
   Use a separate argument for the new flag.
-- Improved VB filetype detection. (Doug Kearns, June 25)
+- Improved VB filetype detection. (Doug Kearns, June 26)
+- Improved FreeBasic runtime files (and a second one). (Doug Kearns, June 26)
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
 - try using autoconf 2.71 and fix all "obsolete" warnings

@@ -72,7 +72,7 @@ FIRST LINE
 >
   1	vim9script noclear
 
-You need to use `vimscript` as the very first command.  Best is to put it in
+You need to use `vim9script` as the very first command.  Best is to put it in
 the very first line.
 
 The script we are writing will have a `finish` command to bail out when it is
@@ -615,7 +615,7 @@ noremap <script>	Only remap mappings defined in this script that start
 
 setlocal		Set an option for the current buffer only.
 
-command -buffer	Define a user command local to the buffer.
+command -buffer		Define a user command local to the buffer.
 
 exists("*s:Func")	Check if a function was already defined.
 

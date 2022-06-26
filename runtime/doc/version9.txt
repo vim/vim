@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 8.2.  Last change: 2022 Jun 24
+*version9.txt*  For Vim version 8.2.  Last change: 2022 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -461,6 +461,10 @@ TermDebug enhancements:
 - Use a separate group for the signs.
 
 xxd: Support for showing offset as a decimal number (-d).
+
+The C omni-complete plugin (|ft-c-omni|), the file type detection script
+(ft.vim) and the syntax menu generation script (makemenu.vim) have been
+rewritten using the Vim9 script syntax.
 
 A large number of tests have been added to verify the Vim functionality.  Most
 of the old style tests have been converted to new style tests using the new
@@ -27439,7 +27443,7 @@ Solution:   Only check an autoload name when is prefixed.
 Files:      src/userfunc.c
 
 Patch 8.2.4473
-Problem:    Coverity warnds for not checking return value of ftell().
+Problem:    Coverity warns for not checking return value of ftell().
 Solution:   Bail out if ftell() returns a negative value.
 Files:      src/spellfile.c
 
@@ -27813,7 +27817,7 @@ Solution:   Consider empty string and null to be different for "is".
 Files:      src/typval.c, src/vim9execute.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.4535
-Problem:    Filename modifer ":8" removes the filename.
+Problem:    Filename modifier ":8" removes the filename.
 Solution:   Use strncpy() instead of vim_strncpy(). (Christian Brabandt,
             closes #9918, closes #8600)
 Files:      src/filepath.c, src/testdir/test_shortpathname.vim
@@ -28668,7 +28672,7 @@ Files:      src/screen.c
 
 Patch 8.2.4674
 Problem:    Cannot force getting MouseMove events.
-Solution:   Add the 'mousemoveevent' option with implementaiton for the GUI.
+Solution:   Add the 'mousemoveevent' option with implementation for the GUI.
             (Ernie Rael, closes #10044)
 Files:      runtime/doc/gui.txt, runtime/doc/options.txt,
             runtime/doc/testing.txt, src/gui.c, src/option.h,
@@ -29432,7 +29436,7 @@ Solution:   Uncomment the line that deletes the file.
 Files:      src/testdir/test_cursorline.vim
 
 Patch 8.2.4797
-Problem:    getwininfo() may get oudated values.
+Problem:    getwininfo() may get outdated values.
 Solution:   Make sure w_botline is up-to-date. (closes #10226)
 Files:      src/evalwindow.c, src/testdir/test_bufwintabinfo.vim
 
@@ -30039,7 +30043,7 @@ Files:      src/buffer.c, src/testdir/test_buffer.vim
 
 Patch 8.2.4902
 Problem:    Mouse wheel scrolling is inconsistent.
-Solution:   Use the MS-Winows system setting. (closes #10368)
+Solution:   Use the MS-Windows system setting. (closes #10368)
 Files:      runtime/doc/scroll.txt, src/gui_w32.c, src/mouse.c,
             src/proto/mouse.pro, src/testing.c, src/testdir/test_gui.vim
 
@@ -30719,7 +30723,7 @@ Files:      src/change.c, src/vim.h, src/textformat.c,
             src/testdir/test_textformat.vim
 
 Patch 8.2.5009
-Problem:    Fold may not be closeable after appending.
+Problem:    Fold may not be closable after appending.
 Solution:   Set the fd_small flag to MAYBE. (Brandon Simmons, closes #10471)
 Files:      src/fold.c, src/testdir/test_fold.vim
 
@@ -31399,7 +31403,7 @@ Solution:   Use assert_inrange().
 Files:      src/testdir/test_syntax.vim
 
 Patch 8.2.5125
-Problem:    MS-Windows: warnings from MinGW compyler.
+Problem:    MS-Windows: warnings from MinGW compiler.
 Solution:   Use "volatile". (Yasuhiro Matsumoto, closes #10589)  Initialize
             variable.
 Files:      src/os_win32.c, src/proto/os_win32.pro, src/map.c
@@ -31580,6 +31584,21 @@ Problem:    MS-Windows GUI: CTRL-key combinations do not always work.
 Solution:   Handle special key combinations better. (closes #10613,
             closes #10602, closes #10579)
 Files:      src/gui_w32.c
+
+Patch 8.2.5158
+Problem:    TSTP and INT signal tests are not run with valgrind.
+Solution:   Sleep a bit longer. (closes #10614)
+Files:      src/testdir/test_signals.vim
+
+Patch 8.2.5159 (after 8.2.5157)
+Problem:    Fix for CTRL-key combinations causes more problems than it solves.
+Solution:   Roll back the change.
+Files:      src/gui_w32.c
+
+Patch 8.2.5160
+Problem:    Accessing invalid memory after changing terminal size.
+Solution:   Adjust cmdline_row and msg_row to the value of Rows.
+Files:      src/term.c
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

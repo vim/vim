@@ -9649,6 +9649,7 @@ subscribe-maillist	intro.txt	/*subscribe-maillist*
 subscript	eval.txt	/*subscript*
 substitute()	builtin.txt	/*substitute()*
 substitute-CR	version6.txt	/*substitute-CR*
+substring	eval.txt	/*substring*
 suffixes	cmdline.txt	/*suffixes*
 suspend	starting.txt	/*suspend*
 swap-exists-choices	usr_11.txt	/*swap-exists-choices*

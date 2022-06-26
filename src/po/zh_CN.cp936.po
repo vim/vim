@@ -3614,8 +3614,8 @@ msgstr "窗口"
 msgid "tab"
 msgstr "标签页"
 
-msgid "[end of lines]"
-msgstr "[结束所有规则]"
+#~ msgid "[end of lines]"
+#~ msgstr ""
 
 msgid ""
 "\n"
@@ -4599,8 +4599,8 @@ msgstr "E243: 不支持的参数: \"-%s\"；请使用 OLE 版本。"
 
 # reorder if possible
 #, fuzzy, c-format
-#~ msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
-#~ msgstr "E244: 字体名 \"%3$s\" 中有非法 %1$s 名称 \"%2$s\""
+# msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
+# msgstr "E244: 字体名 \"%3$s\" 中有非法 %1$s 名称 \"%2$s\""
 
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
@@ -4838,8 +4838,8 @@ msgstr "E315: ml_get: 无效的 lnum: %ld"
 
 # reorder if possible
 #, fuzzy, c-format
-#~ msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
-#~ msgstr "E316: ml_get: 在缓冲区 %2$d %3$s 中找不到第 %1$ld 行"
+# msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
+# msgstr "E316: ml_get: 在缓冲区 %2$d %3$s 中找不到第 %1$ld 行"
 
 msgid "E317: Pointer block id wrong"
 msgstr "E317: 指针块 id 错误"
@@ -7248,8 +7248,8 @@ msgstr "E1036: %c 需要整数或者浮点数参数"
 
 # reorder if possible
 #, fuzzy, c-format
-#~ msgid "E1037: Cannot use \"%s\" with %s"
-#~ msgstr "E1037: 不能对 %2$s 使用 \"%1$s\""
+# msgid "E1037: Cannot use \"%s\" with %s"
+# msgstr "E1037: 不能对 %2$s 使用 \"%1$s\""
 
 msgid "E1038: \"vim9script\" can only be used in a script"
 msgstr "E1038: \"vim9script\" 只能在脚本中使用"
@@ -8567,7 +8567,7 @@ msgid "change the way backslashes are used in search patterns"
 msgstr "改变反斜杠在搜索模式中的使用方式"
 
 msgid "select the default regexp engine used"
-msgstr "选择使用的缺省的正则表达式引擎"
+msgstr "选择默认的正则表达式引擎"
 
 msgid "ignore case when using a search pattern"
 msgstr "使用搜索模式时忽略大小写"
@@ -8579,7 +8579,7 @@ msgid "what method to use for changing case of letters"
 msgstr "用什么方法来改变字母的大小写"
 
 msgid "maximum amount of memory in Kbyte used for pattern matching"
-msgstr "模式匹配使用的最大内存(以千字节为单位)"
+msgstr "模式匹配使用的最大内存（以千字节为单位）"
 
 msgid "pattern for a macro definition line"
 msgstr "宏定义行的模式"
@@ -8616,7 +8616,7 @@ msgid "a :tag command will use the tagstack"
 msgstr ":tag 命令将使用 tagstack"
 
 msgid "when completing tags in Insert mode show more info"
-msgstr "当完成标签在插入模式显示更多信息"
+msgstr "在插入模式补全标签时显示更多信息"
 
 msgid "a function to be used to perform tag searches"
 msgstr "用于执行标签搜索的函数"
@@ -8628,16 +8628,16 @@ msgid "use cscope for tag commands"
 msgstr "标签命令使用 cscope"
 
 msgid "0 or 1; the order in which \":cstag\" performs a search"
-msgstr "0或1; \":cstag\"执行搜索的顺序"
+msgstr "0 或 1; \":cstag\" 执行搜索的顺序"
 
 msgid "give messages when adding a cscope database"
 msgstr "在添加 cscope 数据库时给出消息"
 
 msgid "how many components of the path to show"
-msgstr "要显示路径的多少个组件"
+msgstr "显示路径的多少个部分"
 
 msgid "when to open a quickfix window for cscope"
-msgstr "何时打开 cscope 的快速修复窗口"
+msgstr "何时为 cscope 打开快速修复窗口"
 
 msgid "file names in a cscope file are relative to that file"
 msgstr "cscope 文件中的文件名是相对于该文件的"
@@ -8655,35 +8655,35 @@ msgid "long lines wrap"
 msgstr "长行折行"
 
 msgid "wrap long lines at a character in 'breakat'"
-msgstr "在 'breakat' 中的字符长度较长时需要换行"
+msgstr "在 'breakat' 中的字符处对长行折行"
 
 msgid "preserve indentation in wrapped text"
-msgstr "在换行文本中保持缩进"
+msgstr "在折行文本中保持缩进"
 
 msgid "adjust breakindent behaviour"
-msgstr "调整折行缩进的行为"
+msgstr "调整 breakindent 的行为"
 
 msgid "which characters might cause a line break"
 msgstr "哪些字符可能导致换行"
 
 msgid "string to put before wrapped screen lines"
-msgstr "要放在回绕的屏幕线之前的字符串"
+msgstr "放在折回的屏幕行之前的字符串"
 
 msgid "minimal number of columns to scroll horizontally"
 msgstr "水平滚动的最小列数"
 
 msgid "minimal number of columns to keep left and right of the cursor"
-msgstr "保留光标左右的最小列数"
+msgstr "保留在光标左右的最小列数"
 
 msgid ""
 "include \"lastline\" to show the last line even if it doesn't fit\n"
 "include \"uhex\" to show unprintable characters as a hex number"
 msgstr ""
 "包含 \"lastline\" 来显示最后一行，即使它显示不下\n"
-"包含\"uhex\"以十六进制显示不可打印字符"
+"包含 \"uhex\" 以十六进制显示不可打印字符"
 
 msgid "characters to use for the status line, folds and filler lines"
-msgstr "用于状态行、折叠行和填充行的字符"
+msgstr "用于状态行、折叠和填充行的字符"
 
 msgid "number of lines used for the command-line"
 msgstr "用于命令行的行数"
@@ -8712,7 +8712,7 @@ msgid "show <Tab> as ^I and end-of-line as $"
 msgstr "以 ^I 显示 <Tab>, 以 $ 显示行尾"
 
 msgid "list of strings used for list mode"
-msgstr "用于列表模式的字符串列表"
+msgstr "用于 list 模式的字符串列表"
 
 msgid "show the line number for each line"
 msgstr "对每一行显示行号"
@@ -8727,7 +8727,7 @@ msgid "controls whether concealable text is hidden"
 msgstr "控制是否隐藏可隐藏文本"
 
 msgid "modes in which text in the cursor line can be concealed"
-msgstr "隐藏光标行的文本的模式"
+msgstr "可隐藏光标行的文本的模式"
 
 msgid "syntax, highlighting and spelling"
 msgstr "语法、高亮和拼写"
@@ -8739,13 +8739,13 @@ msgid "type of file; triggers the FileType event when set"
 msgstr "文件类型; 在设置时触发 FileType 事件"
 
 msgid "name of syntax highlighting used"
-msgstr "使用的语法高亮显示的名称"
+msgstr "使用中的语法高亮显示的名称"
 
 msgid "maximum column to look for syntax items"
-msgstr "查找语法项的最大列"
+msgstr "寻找语法项的最大列"
 
 msgid "which highlighting to use for various occasions"
-msgstr "在各种场合使用哪些高亮提示"
+msgstr "在不同场合使用哪些高亮提示"
 
 msgid "highlight all matches for the last used search pattern"
 msgstr "高亮显示最后使用的搜索模式的所有匹配项"
@@ -8763,7 +8763,7 @@ msgid "highlight the screen line of the cursor"
 msgstr "突出显示光标的屏幕行"
 
 msgid "specifies which area 'cursorline' highlights"
-msgstr "指定 'cursorline' 突出显示的区域"
+msgstr "指定 'cursorline' 高亮显示的区域"
 
 msgid "columns to highlight"
 msgstr "要高亮的列"
@@ -8772,7 +8772,7 @@ msgid "highlight spelling mistakes"
 msgstr "高亮拼写错误"
 
 msgid "list of accepted languages"
-msgstr "已接受的语言列表"
+msgstr "接受的语言列表"
 
 msgid "file that \"zg\" adds good words to"
 msgstr "\"zg\" 添加正确单词的文件"
@@ -8787,7 +8787,7 @@ msgid "methods used to suggest corrections"
 msgstr "用于建议修正的方法"
 
 msgid "amount of memory used by :mkspell before compressing"
-msgstr ":mkspell 在压缩前使用的内存数量"
+msgstr ":mkspell 在压缩前使用的内存量"
 
 msgid "multiple windows"
 msgstr "多个窗口"
@@ -8808,7 +8808,7 @@ msgid "minimal number of lines used for the current window"
 msgstr "当前窗口的最小行数"
 
 msgid "minimal number of lines used for any window"
-msgstr "窗口的最小行数"
+msgstr "任何窗口的最小行数"
 
 msgid "keep the height of the window"
 msgstr "保持窗口的高度"
@@ -8820,13 +8820,13 @@ msgid "minimal number of columns used for the current window"
 msgstr "当前窗口的最小列数"
 
 msgid "minimal number of columns used for any window"
-msgstr "窗口的最小列数"
+msgstr "任何窗口的最小列数"
 
 msgid "initial height of the help window"
 msgstr "帮助窗口的初始高度"
 
 msgid "use a popup window for preview"
-msgstr "使用一个弹出窗口预览"
+msgstr "使用弹出窗口来预览"
 
 msgid "default height for the preview window"
 msgstr "预览窗口的默认高度"
@@ -8849,22 +8849,22 @@ msgid "a new window is put right of the current one"
 msgstr "新窗口放在当前窗口的右边"
 
 msgid "this window scrolls together with other bound windows"
-msgstr "此窗口与其他绑定窗口一起滚动"
+msgstr "此窗口与其他已绑定的窗口一起滚动"
 
 msgid "\"ver\", \"hor\" and/or \"jump\"; list of options for 'scrollbind'"
-msgstr "'scrollbind'的选项列表: \"ver\", \"hor\" 和/或 \"jump\""
+msgstr "'scrollbind' 的选项列表: \"ver\", \"hor\" 和/或 \"jump\""
 
 msgid "this window's cursor moves together with other bound windows"
-msgstr "此窗口的光标与其他绑定的 Windows 一起移动"
+msgstr "此窗口的光标与其他已绑定的窗口一起移动"
 
 msgid "size of a terminal window"
 msgstr "终端窗口的大小"
 
 msgid "key that precedes Vim commands in a terminal window"
-msgstr "终端窗口中 Vim 命令前面的键"
+msgstr "终端窗口中 Vim 命令的前导键"
 
 msgid "max number of lines to keep for scrollback in a terminal window"
-msgstr "终端窗口中用于滚动的最大行数"
+msgstr "终端窗口中用于回滚的最大行数"
 
 msgid "type of pty to use for a terminal window"
 msgstr "终端窗口的 pty 类型"
@@ -8879,22 +8879,22 @@ msgid "0, 1 or 2; when to use a tab pages line"
 msgstr "0, 1 或 2; 何时使用标签页行"
 
 msgid "maximum number of tab pages to open for -p and \"tab all\""
-msgstr "-p 和 \"tab all\" 打开的最大标签页数量"
+msgstr "-p 和 \"tab all\" 打开的最大标签页数"
 
 msgid "custom tab pages line"
 msgstr "自定义标签页行"
 
 msgid "custom tab page label for the GUI"
-msgstr "GUI 的自定义标签页"
+msgstr "为 GUI 自定义标签页的标签"
 
 msgid "custom tab page tooltip for the GUI"
-msgstr "GUI 自定义标签页的工具提示"
+msgstr "为 GUI 自定义标签页的工具提示"
 
 msgid "terminal"
 msgstr "终端"
 
 msgid "name of the used terminal"
-msgstr "使用的终端的名字"
+msgstr "使用中的终端的名字"
 
 msgid "alias for 'term'"
 msgstr "'term' 的别名"
@@ -8909,7 +8909,7 @@ msgid "request terminal key codes when an xterm is detected"
 msgstr "当检测到 xterm 时，请求终端键码"
 
 msgid "terminal that requires extra redrawing"
-msgstr "需要额外重绘的终端"
+msgstr "终端需要额外的重绘"
 
 msgid "recognize keys that start with <Esc> in Insert mode"
 msgstr "识别在插入模式下以 <Esc> 开头的键"
@@ -8939,7 +8939,7 @@ msgid "set the text of the icon for this window"
 msgstr "设置此窗口图标的文本"
 
 msgid "when not empty, text for the icon of this window"
-msgstr "此窗口图标非空的文本"
+msgstr "非空时，设置此窗口图标的文本"
 
 msgid "restore the screen contents when exiting Vim"
 msgstr "退出 Vim 时恢复屏幕内容"
@@ -8965,13 +8965,13 @@ msgstr "报告鼠标移动事件"
 msgid ""
 "\"extend\", \"popup\" or \"popup_setpos\"; what the right\n"
 "mouse button is used for"
-msgstr "鼠标按钮用于"
+msgstr "\"extend\", \"popup\" 或 \"popup_setpos\"; 鼠标右键用于什么"
 
 msgid "maximum time in msec to recognize a double-click"
 msgstr "识别双击的最大时间（以毫秒计）"
 
 msgid "\"xterm\", \"xterm2\", \"sgr\", etc.; type of mouse"
-msgstr "鼠标类型：\"xterm\", \"xterm2\", \"sgr\" 等"
+msgstr "\"xterm\", \"xterm2\", \"sgr\" 等; 鼠标类型"
 
 msgid "what the mouse pointer looks like in different modes"
 msgstr "鼠标指针在不同模式下的样子"
@@ -8986,7 +8986,7 @@ msgid "pair of fonts to be used, for multibyte editing"
 msgstr "用于多字节编辑的字体对"
 
 msgid "list of font names to be used for double-wide characters"
-msgstr "用于双宽字符的字体名称列表"
+msgstr "用于双宽度字符的字体名称列表"
 
 msgid "use smooth, antialiased fonts"
 msgstr "使用平滑、抗锯齿的字体"
@@ -8995,13 +8995,13 @@ msgid "list of flags that specify how the GUI works"
 msgstr "指定 GUI 工作方式的标志列表"
 
 msgid "\"icons\", \"text\" and/or \"tooltips\"; how to show the toolbar"
-msgstr "如何显示工具条：\"icons\", \"text\" 和/或 \"tooltips\""
+msgstr "\"icons\", \"text\" 和/或 \"tooltips\"; 如何显示工具栏"
 
 msgid "size of toolbar icons"
 msgstr "工具栏图标大小"
 
 msgid "room (in pixels) left above/below the window"
-msgstr "窗口上方/下方的空间(以像素为单位)"
+msgstr "窗口上方/下方的空间（以像素为单位）"
 
 msgid "list of ASCII characters that can be combined into complex shapes"
 msgstr "可以组合成复杂形状的 ASCII 字符列表"
@@ -9010,63 +9010,63 @@ msgid "options for text rendering"
 msgstr "文本渲染选项"
 
 msgid "use a pseudo-tty for I/O to external commands"
-msgstr "外部命令的 I/O 的伪 tty"
+msgstr "对外部命令的 I/O 使用伪终端"
 
 msgid ""
 "\"last\", \"buffer\" or \"current\": which directory used for the file "
 "browser"
-msgstr "文件浏览器使用哪个目录：\"last\", \"buffer\" 或 \"current\""
+msgstr "\"last\", \"buffer\" 或 \"current\"; 文件浏览器使用哪个目录"
 
 msgid "language to be used for the menus"
 msgstr "菜单使用的语言"
 
 msgid "maximum number of items in one menu"
-msgstr "菜单中的最大项目数量"
+msgstr "单个菜单中的最大项目数量"
 
 msgid "\"no\", \"yes\" or \"menu\"; how to use the ALT key"
-msgstr "如何使用ALT键：\"no\", \"yes\" 或 \"menu\""
+msgstr "\"no\", \"yes\" 或 \"menu\"; 如何使用 ALT 键"
 
 msgid "number of pixel lines to use between characters"
 msgstr "字符之间使用的像素行数"
 
 msgid "delay in milliseconds before a balloon may pop up"
-msgstr "延迟数毫秒后，气泡可能会弹出"
+msgstr "延迟指定毫秒后，气泡可能会弹出"
 
 msgid "use balloon evaluation in the GUI"
-msgstr "在 GUI 中使用气泡评估"
+msgstr "在 GUI 中使用气泡求值"
 
 msgid "use balloon evaluation in the terminal"
-msgstr "在终端中使用气泡评估"
+msgstr "在终端中使用气泡求值"
 
 msgid "expression to show in balloon eval"
-msgstr "要在气泡 eval 中显示的表达式"
+msgstr "在气泡求值中显示的表达式"
 
 msgid "printing"
 msgstr "打印"
 
 msgid "list of items that control the format of :hardcopy output"
-msgstr "控制格式的项目列表 :hardcopy 输出"
+msgstr "控制 :hardcopy 输出格式的项目列表"
 
 msgid "name of the printer to be used for :hardcopy"
-msgstr "使用的打印机名称:hardcopy"
+msgstr "用于 :hardcopy 的打印机名称"
 
 msgid "expression used to print the PostScript file for :hardcopy"
-msgstr "用于打印 PostScript 文件的表达式 :hardcopy"
+msgstr "用于 :hardcopy 打印 PostScript 文件的表达式"
 
 msgid "name of the font to be used for :hardcopy"
-msgstr "要使用的字体名称:hardcopy"
+msgstr ":hardcopy 使用的字体名称"
 
 msgid "format of the header used for :hardcopy"
-msgstr "用于:hardcopy 的文件头格式"
+msgstr "用于 :hardcopy 的标头格式"
 
 msgid "encoding used to print the PostScript file for :hardcopy"
 msgstr "用于 :hardcopy 打印 PostScript 文件的编码"
 
 msgid "the CJK character set to be used for CJK output from :hardcopy"
-msgstr "从 :hardcopy 用于 CJK 输出的 CJK 字符集"
+msgstr ":hardcopy 用于 CJK 输出的 CJK 字符集"
 
 msgid "list of font names to be used for CJK output from :hardcopy"
-msgstr "从 :hardcopy 用于 CJK 输出的字体名称列表"
+msgstr ":hardcopy 用于 CJK 输出的字体名称列表"
 
 msgid "messages and info"
 msgstr "消息和信息"
@@ -9078,7 +9078,7 @@ msgid "list of flags to make messages shorter"
 msgstr "使消息更短的标志列表"
 
 msgid "show (partial) command keys in the status line"
-msgstr "在状态行中显示(部分)命令键"
+msgstr "在状态行中显示（不完整的）命令键"
 
 msgid "display the current mode in the status line"
 msgstr "在状态行中显示当前模式"
@@ -9087,10 +9087,10 @@ msgid "show cursor position below each window"
 msgstr "在每个窗口下方显示光标的位置"
 
 msgid "alternate format to be used for the ruler"
-msgstr "标尺的替代格式"
+msgstr "ruler 的替代格式"
 
 msgid "threshold for reporting number of changed lines"
-msgstr "报告更改行数的阈值"
+msgstr "报告已更改行数的阈值"
 
 msgid "the higher the more messages are given"
 msgstr "等级越高，给出的信息越多"
@@ -9099,7 +9099,7 @@ msgid "file to write messages in"
 msgstr "用于写入消息的文件"
 
 msgid "pause listings when the screen is full"
-msgstr "当屏幕满时的暂停显示清单"
+msgstr "当屏幕满时暂停显示清单"
 
 msgid "start a dialog when a command fails"
 msgstr "当命令失败时开启对话框"
@@ -9120,76 +9120,76 @@ msgid "selecting text"
 msgstr "选择文本"
 
 msgid "\"old\", \"inclusive\" or \"exclusive\"; how selecting text behaves"
-msgstr "如何选择文本: \"old\", \"inclusive\" 或 \"exclusive\""
+msgstr "\"old\", \"inclusive\" 或 \"exclusive\"; 如何选择文本"
 
 msgid ""
 "\"mouse\", \"key\" and/or \"cmd\"; when to start Select mode\n"
 "instead of Visual mode"
-msgstr "何时启动选择模式而不是可视化模式：\"mouse\", \"key\" 和/或 \"cmd\""
+msgstr "\"mouse\", \"key\" 和/或 \"cmd\"; 何时启动选择模式而不是可视模式"
 
 msgid ""
 "\"unnamed\" to use the * register like unnamed register\n"
 "\"autoselect\" to always put selected text on the clipboard"
 msgstr ""
-"像未命名寄存器一样使用*寄存器：\"unnamed\"\n"
-"将选择的文本始终放在剪贴板上: \"autoselect\""
+"\"unnamed\": 像无名寄存器一样使用 * 寄存器\n"
+"\"autoselect\": 将选择的文本始终放在剪贴板上"
 
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
-msgstr "特殊键可以做：\"startsel\" 和/或 \"stopsel\""
+msgstr "\"startsel\" 和/或 \"stopsel\"; 特殊键可以做"
 
 msgid "editing text"
 msgstr "编辑文本"
 
 msgid "maximum number of changes that can be undone"
-msgstr "可以撤消的最大更改数"
+msgstr "可以撤销的最大更改数"
 
 msgid "automatically save and restore undo history"
-msgstr "自动保存和恢复撤消的历史记录"
+msgstr "自动保存和恢复撤销历史"
 
 msgid "list of directories for undo files"
-msgstr "撤消的文件的目录列表"
+msgstr "撤销文件的目录列表"
 
 msgid "maximum number lines to save for undo on a buffer reload"
 msgstr "缓冲区重新加载时为撤销保存的最大行数"
 
 msgid "changes have been made and not written to a file"
-msgstr "已经进行了修改，但没有被写入文件"
+msgstr "已经做出了修改，但没有被写入文件"
 
 msgid "buffer is not to be written"
-msgstr "缓冲区不被写入"
+msgstr "缓冲区不会被写入"
 
 msgid "changes to the text are possible"
 msgstr "可以对文本进行更改"
 
 msgid "line length above which to break a line"
-msgstr "超过行长度就要断行"
+msgstr "超过行长度就断行"
 
 msgid "margin from the right in which to break a line"
-msgstr "从右侧划线的空白"
+msgstr "断行开始的右边距"
 
 msgid "specifies what <BS>, CTRL-W, etc. can do in Insert mode"
 msgstr "指定 <BS>, CTRL-W 等在插入模式下可以做什么"
 
 msgid "definition of what comment lines look like"
-msgstr "注释行外观的定义"
+msgstr "定义注释行长什么样"
 
 msgid "list of flags that tell how automatic formatting works"
-msgstr "说明自动格式化如何工作的标志列表"
+msgstr "控制自动格式化如何工作的标志列表"
 
 msgid "pattern to recognize a numbered list"
 msgstr "识别编号列表的模式"
 
 msgid "expression used for \"gq\" to format lines"
-msgstr "用于格式化行的 \"gq\" 使用的表达式"
+msgstr "用 \"gq\" 格式化行时使用的表达式"
 
 msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
-msgstr "指定 CTRL-N 和 CTRL-P 的插入模式补全工作方式"
+msgstr "指定使用 CTRL-N 和 CTRL-P 进行插入模式补全的工作方式"
 
 msgid "whether to use a popup menu for Insert mode completion"
 msgstr "是否在插入模式补全时使用弹出菜单"
 
 msgid "options for the Insert mode completion info popup"
-msgstr "插入模式补全信息弹出的选项"
+msgstr "插入模式补全信息弹框的选项"
 
 msgid "maximum height of the popup menu"
 msgstr "弹出菜单的最大高度"
@@ -9216,56 +9216,56 @@ msgid "adjust case of a keyword completion match"
 msgstr "调整关键字补全匹配的大小写"
 
 msgid "enable entering digraphs with c1 <BS> c2"
-msgstr "允许使用 c1 <BS> c2 进入有向图;c2"
+msgstr "支持使用 c1 <BS> c2 输入二合字符"
 
 msgid "the \"~\" command behaves like an operator"
-msgstr "\"~\"命令表现地像操作符"
+msgstr "\"~\"命令表现得像操作符"
 
 msgid "function called for the \"g@\" operator"
-msgstr "函数调用 \"g@\" 操作符"
+msgstr "\"g@\" 操作符调用的函数"
 
 msgid "when inserting a bracket, briefly jump to its match"
-msgstr "当插入括号时，直接跳转到它匹配的括号"
+msgstr "当插入括号时，短暂地跳转到匹配它的括号"
 
 msgid "tenth of a second to show a match for 'showmatch'"
-msgstr "需要十分之一秒显示'showmatch'的匹配"
+msgstr "显示 'showmatch' 的匹配的时长（以十分之一秒计）"
 
 msgid "list of pairs that match for the \"%\" command"
-msgstr "与 \"%\" 命令匹配的对列表"
+msgstr "\"%\" 命令匹配的对列表"
 
 msgid "use two spaces after '.' when joining a line"
-msgstr "连接行时，在 '.' 后面添加两个空格。"
+msgstr "连接行时，在 '.' 后面添加两个空格"
 
 msgid ""
 "\"alpha\", \"octal\", \"hex\", \"bin\" and/or \"unsigned\"; number formats\n"
 "recognized for CTRL-A and CTRL-X commands"
 msgstr ""
-"CTRL-A 和 CTRL-X 命令识别的数字格式：\n"
-"\"alpha\", \"octal\", \"hex\", \"bin\" 和/或 \"unsigned\""
+"\"alpha\", \"octal\", \"hex\", \"bin\" 和/或 \"unsigned\"\n"
+"CTRL-A 和 CTRL-X 命令识别的数字的格式"
 
 msgid "tabs and indenting"
 msgstr "Tab 和缩进"
 
 msgid "number of spaces a <Tab> in the text stands for"
-msgstr "<Tab> 在文中代表空格的数量"
+msgstr "<Tab> 在文本中代表的空格数"
 
 msgid "number of spaces used for each step of (auto)indent"
-msgstr "每步(自动)缩进所使用的空格数"
+msgstr "每步（自动）缩进所使用的空格数"
 
 msgid "list of number of spaces a tab counts for"
-msgstr "tab 计数的空格数列表"
+msgstr "tab 代表的空格数的列表"
 
 msgid "list of number of spaces a soft tabsstop counts for"
-msgstr "软制表符计数的空格数列表"
+msgstr "软制表符代表的空格数的列表"
 
 msgid "a <Tab> in an indent inserts 'shiftwidth' spaces"
-msgstr "用 <Tab> 键缩进的时候插入 'shiftwidth' 个空格"
+msgstr "用 <Tab> 键缩进时插入 'shiftwidth' 个空格"
 
 msgid "if non-zero, number of spaces to insert for a <Tab>"
-msgstr "如果非零，为 <Tab> 插入的空格数。"
+msgstr "如果非零，为 <Tab> 插入的空格数"
 
 msgid "round to 'shiftwidth' for \"<<\" and \">>\""
-msgstr "用 \"<<\" 或 \">>\" 快捷键缩进时，插入 'shiftwidth' 整数倍个空格"
+msgstr "用 \"<<\" 和 \">>\" 缩进时，插入 'shiftwidth' 整数倍个空格"
 
 msgid "expand <Tab> to spaces in Insert mode"
 msgstr "在插入模式下将 <Tab> 展开为空格"
@@ -9274,7 +9274,7 @@ msgid "automatically set the indent of a new line"
 msgstr "自动设置新行缩进"
 
 msgid "do clever autoindenting"
-msgstr "自动缩进"
+msgstr "智能自动缩进"
 
 msgid "enable specific indenting for C code"
 msgstr "为 C 代码启用特定的缩进"
@@ -9298,10 +9298,10 @@ msgid "keys that trigger indenting with 'indentexpr' in Insert mode"
 msgstr "在插入模式下使用 'indentexpr' 触发缩进的键"
 
 msgid "copy whitespace for indenting from previous line"
-msgstr "从上一行复制用于缩进的空格"
+msgstr "为缩进从上一行复制空白字符"
 
 msgid "preserve kind of whitespace when changing indent"
-msgstr "在更改缩进时保留空白"
+msgstr "在更改缩进时保留空白类型"
 
 msgid "enable lisp mode"
 msgstr "启用 lisp 模式"
@@ -9313,31 +9313,31 @@ msgid "folding"
 msgstr "折叠"
 
 msgid "unset to display all folds open"
-msgstr "取消设置以显示所有折叠打开"
+msgstr "取消设置以打开所有折叠"
 
 msgid "folds with a level higher than this number will be closed"
-msgstr "比这个数字高一等级的折叠将被关闭"
+msgstr "等级比这个数字高的折叠将被关闭"
 
 msgid "value for 'foldlevel' when starting to edit a file"
 msgstr "开始编辑文件时，'foldlevel' 的值"
 
 msgid "width of the column used to indicate folds"
-msgstr "用来表示折叠的列宽"
+msgstr "用来指示折叠的列的宽度"
 
 msgid "expression used to display the text of a closed fold"
-msgstr "用于显示关闭折叠的文本"
+msgstr "用于显示已关闭折叠的表达式"
 
 msgid "set to \"all\" to close a fold when the cursor leaves it"
-msgstr "设置为 \"all\" 用于在光标离开时关闭折叠"
+msgstr "设置为 \"all\" 来在光标离开时关闭折叠"
 
 msgid "specifies for which commands a fold will be opened"
-msgstr "指定打开折叠的命令"
+msgstr "指定会打开折叠的命令"
 
 msgid "minimum number of screen lines for a fold to be closed"
-msgstr "要关闭折叠所需的最小行数"
+msgstr "可关闭折叠所需的最小屏幕行数"
 
 msgid "template for comments; used to put the marker in"
-msgstr "注释的模板，模板里有占位符"
+msgstr "注释的模板，用于放置折叠标记"
 
 msgid ""
 "folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n"
@@ -9350,13 +9350,13 @@ msgid "expression used when 'foldmethod' is \"expr\""
 msgstr "当 'foldmethod' 为 \"expr\" 时使用的表达式"
 
 msgid "used to ignore lines when 'foldmethod' is \"indent\""
-msgstr "当 'foldmethod' 为 \"indent\" 时忽略的行"
+msgstr "当 'foldmethod' 为 \"indent\" 时用于忽略行"
 
 msgid "markers used when 'foldmethod' is \"marker\""
-msgstr "当 'foldmethod' 为 \"marker\" 时的标志"
+msgstr "当 'foldmethod' 为 \"marker\" 时所使用的标记"
 
 msgid "maximum fold depth for when 'foldmethod' is \"indent\" or \"syntax\""
-msgstr "当 'foldmethod' 为 \"indent\" 或 \"syntax\"时的最大折叠深度"
+msgstr "当 'foldmethod' 为 \"indent\" 或 \"syntax\" 时的最大折叠深度"
 
 msgid "diff mode"
 msgstr "差异模式"
@@ -9380,37 +9380,37 @@ msgid "maximum depth of mapping"
 msgstr "最大映射深度"
 
 msgid "recognize mappings in mapped keys"
-msgstr "识别映射键中的映射"
+msgstr "识别已映射键中的映射"
 
 msgid "allow timing out halfway into a mapping"
 msgstr "允许在映射中途超时"
 
 msgid "allow timing out halfway into a key code"
-msgstr "允许在映射的中途暂停"
+msgstr "允许在键码中途超时"
 
 msgid "time in msec for 'timeout'"
-msgstr "超时时间 (以毫秒计)"
+msgstr "'timeout' 的时间（以毫秒计）"
 
 msgid "time in msec for 'ttimeout'"
-msgstr "键盘代码超时时间 (以毫秒计)"
+msgstr "'ttimeout' 的时间（以毫秒计）"
 
 msgid "reading and writing files"
 msgstr "读写文件"
 
 msgid "enable using settings from modelines when reading a file"
-msgstr "Vim 读取文件的时候是否允许使用 modeline 里指定的设置"
+msgstr "读取文件时是否使用 modeline 里的设置"
 
 msgid "allow setting expression options from a modeline"
 msgstr "允许从 modeline 中设置表达式选项"
 
 msgid "number of lines to check for modelines"
-msgstr "检查 modeline 的行数"
+msgstr "为 modeline 而检查的行数"
 
 msgid "binary file editing"
 msgstr "二进制文件编辑"
 
 msgid "last line in the file has an end-of-line"
-msgstr "文件的最后一行有一个换行符"
+msgstr "文件的最后一行有换行符"
 
 msgid "fixes missing end-of-line at end of text file"
 msgstr "修复文本文件末尾缺少换行符的问题"
@@ -9419,10 +9419,10 @@ msgid "prepend a Byte Order Mark to the file"
 msgstr "在文件前加上字节顺序标记"
 
 msgid "end-of-line format: \"dos\", \"unix\" or \"mac\""
-msgstr "换行符格式： \"dos\", \"unix\" or \"mac\""
+msgstr "换行符格式： \"dos\", \"unix\" 或 \"mac\""
 
 msgid "list of file formats to look for when editing a file"
-msgstr "编辑文件时要查找的文件格式列表"
+msgstr "编辑文件时要检查的文件格式列表"
 
 msgid "obsolete, use 'fileformat'"
 msgstr "已废止，用 'fileformat'"
@@ -9434,16 +9434,16 @@ msgid "writing files is allowed"
 msgstr "允许写入文件"
 
 msgid "write a backup file before overwriting a file"
-msgstr "覆盖备份文件前，请先写入备份文件"
+msgstr "覆盖文件前先写入备份文件"
 
 msgid "keep a backup after overwriting a file"
-msgstr "覆盖文件后进行备份"
+msgstr "覆盖文件后保留备份"
 
 msgid "patterns that specify for which files a backup is not made"
-msgstr "指定不为哪些文件进行备份的模式"
+msgstr "不备份的文件的模式"
 
 msgid "whether to make the backup as a copy or rename the existing file"
-msgstr "是否以副本形式进行备份或重命名现有文件"
+msgstr "通过复制还是重命名已有文件进行备份"
 
 msgid "list of directories to put backup files in"
 msgstr "存放备份文件的目录列表"
@@ -9458,22 +9458,22 @@ msgid "as 'autowrite', but works with more commands"
 msgstr "类似于 'autowrite'，但适用于更多命令"
 
 msgid "always write without asking for confirmation"
-msgstr "写时不需要确认"
+msgstr "写文件时总是不需要确认"
 
 msgid "automatically read a file when it was modified outside of Vim"
-msgstr "当文件在Vim之外被修改时，自动读取文件"
+msgstr "在 Vim 之外修改了文件时，自动读取文件"
 
 msgid "keep oldest version of a file; specifies file name extension"
-msgstr "保存最旧版本的文件; 指定文件扩展名"
+msgstr "保存最旧版本的文件；指定文件扩展名"
 
 msgid "forcibly sync the file to disk after writing it"
 msgstr "文件写入后强制同步到磁盘"
 
 msgid "use 8.3 file names"
-msgstr "文件名使用为 8.3 格式"
+msgstr "使用 8.3 格式的文件名"
 
 msgid "encryption method for file writing: zip, blowfish or blowfish2"
-msgstr "文件写入加密方法：zip, blowfish 或 blowfish2"
+msgstr "写入文件时使用的加密算法：zip, blowfish 或 blowfish2"
 
 msgid "the swap file"
 msgstr "交换文件"
@@ -9485,19 +9485,19 @@ msgid "use a swap file for this buffer"
 msgstr "对这个缓冲区使用交换文件"
 
 msgid "\"sync\", \"fsync\" or empty; how to flush a swap file to disk"
-msgstr "如何将交换文件刷新到磁盘：\"sync\", \"fsync\" 或 empty"
+msgstr "\"sync\", \"fsync\" 或留空; 将交换文件刷新到磁盘的方式"
 
 msgid "number of characters typed to cause a swap file update"
 msgstr "导致交换文件更新的字符数"
 
 msgid "time in msec after which the swap file will be updated"
-msgstr "刷新交换文件所需的毫秒数"
+msgstr "更新交换文件前所需的毫秒数"
 
 msgid "maximum amount of memory in Kbyte used for one buffer"
-msgstr "缓冲区使用的最大内存量(以千字节为单位)"
+msgstr "单个缓冲区使用的最大内存量（以千字节为单位）"
 
 msgid "maximum amount of memory in Kbyte used for all buffers"
-msgstr "所有缓冲区使用的最大内存量(以千字节为单位)"
+msgstr "所有缓冲区使用的最大内存量（以千字节为单位）"
 
 # do not translate to avoid writing Chinese in files
 msgid "command line editing"
@@ -9516,7 +9516,7 @@ msgid "specifies how command line completion works"
 msgstr "指定命令行如何补全"
 
 msgid "empty or \"tagfile\" to list file name of matching tags"
-msgstr "空或 \"tagfile\" 来列出匹配标记的文件名"
+msgstr "空或 \"tagfile\" 来列出匹配标签的文件名"
 
 msgid "list of file name extensions that have a lower priority"
 msgstr "优先级低的文件扩展名列表"
@@ -9525,13 +9525,13 @@ msgid "list of file name extensions added when searching for a file"
 msgstr "搜索文件时添加的文件扩展名列表"
 
 msgid "list of patterns to ignore files for file name completion"
-msgstr "为补全文件名而忽略文件的模式列表"
+msgstr "文件名补全所忽略文件的模式列表"
 
 msgid "ignore case when using file names"
 msgstr "使用文件名时忽略大小写"
 
 msgid "ignore case when completing file names"
-msgstr "在补全文件名时忽略大小写"
+msgstr "补全文件名时忽略大小写"
 
 msgid "command-line completion shows a list of matches"
 msgstr "命令行补全时显示匹配列表"
@@ -9549,37 +9549,37 @@ msgid "name of the shell program used for external commands"
 msgstr "用于外部命令的 shell 程序的名称"
 
 msgid "when to use the shell or directly execute a command"
-msgstr "何时使用 shell 或直接执行命令"
+msgstr "何时使用 shell 还是直接执行命令"
 
 msgid "character(s) to enclose a shell command in"
-msgstr "用于封装 shell 命令的字符"
+msgstr "用于包围 shell 命令的字符"
 
 msgid "like 'shellquote' but include the redirection"
-msgstr "类似'shellquote'，但包含重定向"
+msgstr "类似 'shellquote'，但包含重定向"
 
 msgid "characters to escape when 'shellxquote' is ("
-msgstr "'shellxquote' 为 ( 时使用的转义字符"
+msgstr "'shellxquote' 为 ( 时需要转义的字符"
 
 msgid "argument for 'shell' to execute a command"
 msgstr "'shell' 执行命令的参数"
 
 msgid "used to redirect command output to a file"
-msgstr "将命令输出重定向到文件"
+msgstr "用于将命令输出重定向到文件"
 
 msgid "use a temp file for shell commands instead of using a pipe"
-msgstr "对 shell 命令使用临时文件，而不是使用管道"
+msgstr "对 shell 命令使用临时文件而不是管道"
 
 msgid "program used for \"=\" command"
 msgstr "用于 \"=\" 命令的程序"
 
 msgid "program used to format lines with \"gq\" command"
-msgstr "用 \"gq\" 命令格式化代码时，使用的外部格式化程序"
+msgstr "用 \"gq\" 命令格式化代码时使用的程序"
 
 msgid "program used for the \"K\" command"
 msgstr "用于 \"K\" 命令的程序"
 
 msgid "warn when using a shell command and a buffer has changes"
-msgstr "当使用 shell 命令和缓冲区发生变化时发出警告"
+msgstr "当使用 shell 命令并且缓冲区有修改时发出警告"
 
 msgid "running make and jumping to errors (quickfix)"
 msgstr "运行 make 并跳到错误（快速修复）"
@@ -9609,13 +9609,13 @@ msgid "encoding of the \":make\" and \":grep\" output"
 msgstr "\":make\" 和 \":grep\" 输出的编码"
 
 msgid "function to display text in the quickfix window"
-msgstr "快速修复窗口中显示文本的函数"
+msgstr "用于在快速修复窗口中显示文本的函数"
 
 msgid "system specific"
 msgstr "系统特定"
 
 msgid "use forward slashes in file names; for Unix-like shells"
-msgstr "类 unix shells 中，在文件名中使用正斜杠;"
+msgstr "在文件名中使用正斜杠；用于类 Unix shell"
 
 msgid "specifies slash/backslash used for completion"
 msgstr "指定补全时使用的斜杠/反斜杠"
@@ -9645,25 +9645,25 @@ msgid "when to edit the command-line right-to-left"
 msgstr "何时从右到左编辑命令行"
 
 msgid "insert characters backwards"
-msgstr "向后插入字符"
+msgstr "倒序插入字符"
 
 msgid "allow CTRL-_ in Insert and Command-line mode to toggle 'revins'"
-msgstr "允许 CTRL-_ 在插入和命令行模式下切换 'revins'"
+msgstr "在插入和命令行模式下允许 CTRL-_ 切换 'revins'"
 
 msgid "the ASCII code for the first letter of the Hebrew alphabet"
 msgstr "希伯来字母表第一个字母的 ASCII 码"
 
 msgid "use Hebrew keyboard mapping"
-msgstr "使用希伯来键盘映射"
+msgstr "使用希伯来语键盘映射"
 
 msgid "use phonetic Hebrew keyboard mapping"
-msgstr "使用希伯来语的音节键盘映射"
+msgstr "使用希伯来语的语音键盘映射"
 
 msgid "prepare for editing Arabic text"
 msgstr "准备编辑阿拉伯语文本"
 
 msgid "perform shaping of Arabic characters"
-msgstr "阿拉伯语的字型重整"
+msgstr "阿拉伯语的字形重整"
 
 msgid "terminal will perform bidi handling"
 msgstr "终端支持双向文本"
@@ -9687,10 +9687,10 @@ msgid "input method style, 0: on-the-spot, 1: over-the-spot"
 msgstr "输入法样式：0：on-the-spot；1：over-the-spot"
 
 msgid "entering a search pattern: 1: use :lmap; 2: use IM; 0: neither"
-msgstr "进入搜索模式：1：使用 :lamp；2：使用输入法；0：都不用"
+msgstr "输入搜索模式时：1：使用 :lamp；2：使用输入法；0：都不用"
 
 msgid "when set always use IM when starting to edit a command line"
-msgstr "如果设置，在开始编辑命令行时总是使用输入法"
+msgstr "如果设置，开始编辑命令行时总是使用输入法"
 
 msgid "function to obtain IME status"
 msgstr "获取输入法状态的函数"
@@ -9730,7 +9730,7 @@ msgid "key that activates the X input method"
 msgstr "激活 X 输入方法的键"
 
 msgid "width of ambiguous width characters"
-msgstr "多宽度字符的宽度"
+msgstr "宽度有歧义字符的宽度"
 
 msgid "emoji characters are full width"
 msgstr "表情字符视作全宽"
@@ -9742,53 +9742,52 @@ msgid ""
 "when to use virtual editing: \"block\", \"insert\", \"all\"\n"
 "and/or \"onemore\""
 msgstr ""
-"何时使用虚拟编辑：\"block\", \"insert\", \"all\"\n"
-"和/或 \"onemore\""
+"何时使用虚拟编辑：\"block\", \"insert\", \"all\" 和/或 \"onemore\""
 
 msgid "list of autocommand events which are to be ignored"
-msgstr "需要忽略的自动命令事件列表"
+msgstr "要忽略的自动命令事件列表"
 
 msgid "load plugin scripts when starting up"
 msgstr "启动时加载插件脚本"
 
 msgid "enable reading .vimrc/.exrc/.gvimrc in the current directory"
-msgstr "在当前目录下能够阅读 .vimrc/.exrc/.gvimrc"
+msgstr "启用读取在当前目录下的 .vimrc/.exrc/.gvimrc"
 
 msgid "safer working with script files in the current directory"
-msgstr "在当前目录下使用脚本文件更安全"
+msgstr "在当前目录下使用脚本文件时更安全"
 
 msgid "use the 'g' flag for \":substitute\""
-msgstr "缺省打开 \":substitute\" 的 'g' 标志"
+msgstr "打开 \":substitute\" 的 'g' 标志"
 
 msgid "'g' and 'c' flags of \":substitute\" toggle"
-msgstr "\":substitute\" 开关的 'g' and 'c' 标志"
+msgstr "\":substitute\" 的 'g' and 'c' 标志用作开关切换"
 
 msgid "allow reading/writing devices"
-msgstr "允许读/写设备"
+msgstr "允许读写设备"
 
 msgid "maximum depth of function calls"
 msgstr "函数调用的最大深度"
 
 msgid "list of words that specifies what to put in a session file"
-msgstr "指定在会话文件中放入内容的单词列表"
+msgstr "指定放入会话文件的内容的单词列表"
 
 msgid "list of words that specifies what to save for :mkview"
-msgstr "指定保存内容的单词列表 :mkview"
+msgstr "指定 :mkview 保存的内容的单词列表"
 
 msgid "directory where to store files with :mkview"
-msgstr "存放文件的目录 :mkview"
+msgstr ":mkview 存放文件的目录"
 
 msgid "list that specifies what to write in the viminfo file"
-msgstr "指定在 viminfo 文件中写入内容的列表"
+msgstr "指定在 viminfo 文件中写入的内容的列表"
 
 msgid "file name used for the viminfo file"
-msgstr "viminfo文件使用的文件名"
+msgstr "viminfo 文件使用的文件名"
 
 msgid "what happens with a buffer when it's no longer in a window"
 msgstr "当缓冲区不再位于窗口中时，会发生什么"
 
 msgid "empty, \"nofile\", \"nowrite\", \"quickfix\", etc.: type of buffer"
-msgstr "缓冲区类型：空, \"nofile\", \"nowrite\", \"quickfix\"等"
+msgstr "空, \"nofile\", \"nowrite\", \"quickfix\" 等; 缓冲区类型"
 
 msgid "whether the buffer shows up in the buffer list"
 msgstr "缓冲区是否显示在缓冲区列表中"
@@ -9800,7 +9799,7 @@ msgid "whether to show the signcolumn"
 msgstr "是否显示标号列"
 
 msgid "interval in milliseconds between polls for MzScheme threads"
-msgstr "MzScheme 线程的轮询间隔(以毫秒为单位)"
+msgstr "MzScheme 线程的轮询间隔（以毫秒为单位）"
 
 msgid "name of the Lua dynamic library"
 msgstr "Lua 动态库的名字"
@@ -9809,7 +9808,7 @@ msgid "name of the Perl dynamic library"
 msgstr "Perl 动态库的名字"
 
 msgid "whether to use Python 2 or 3"
-msgstr "是否使用 Python 2 或 3"
+msgstr "是否使用 Python 2 和 3"
 
 msgid "name of the Python 2 dynamic library"
 msgstr "Python 2 动态库的名字"

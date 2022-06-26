@@ -322,7 +322,7 @@ want to give the variable a value yet, you need to specify the type: >
 
 If you make a mistake and try to assign the wrong type of value you'll get an
 error: >
-	
+
 	age = "Peter"
 <	E1012: Type mismatch; expected number but got string ~
 
@@ -638,7 +638,7 @@ Make sure that the argument for `normal` is a complete command.  Otherwise
 Vim will run into the end of the argument and silently abort the command.  For
 example, if you start the delete operator, you must give the movement command
 also.  This works: >
-	
+
 	normal d$
 
 This does nothing: >
@@ -1567,7 +1567,7 @@ to "funcref".  Example: >
 	def Wrong(): string
 	  return 'Wrong!'
 	enddef
-	
+
 	var Afunc = g:result == 1 ? Right : Wrong
 	echo Afunc()
 <	Wrong! ~
@@ -1815,7 +1815,7 @@ is ignored, except for commands that don't consider comments, as shown in
 examples below.  A comment can start on any character position on the line,
 but not when it is part of the command, e.g. inside a string.
 
-The character " (the double quote mark) starts a comment in legacy script.  
+The character " (the double quote mark) starts a comment in legacy script.
 This involves some cleverness to make sure double quoted strings are not
 recognized as comments (just one reason to prefer |Vim9| script).
 

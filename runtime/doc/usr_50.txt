@@ -6,7 +6,7 @@
 
 
 |50.1|	Exceptions
-|50.2|    Function with variable number of arguments
+|50.2|	Function with variable number of arguments
 |50.3|	Restoring the view
 
      Next chapter: |usr_51.txt|  Create a plugin
@@ -104,7 +104,7 @@ You can call it like this: >
 
 	Show('Title', 'one', 'two', 'three')
 <	start is Title  Arg 0 is one  Arg 1 is two  Arg 2 is three ~
-	
+
 This uses the `echohl` command to specify the highlighting used for the
 following `echo` command.  `echohl None` stops it again.  The `echon` command
 works like `echo`, but doesn't output a line break.

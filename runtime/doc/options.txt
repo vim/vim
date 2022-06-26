@@ -1427,7 +1427,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  hide		hide the buffer (don't unload it), even if 'hidden' is
 			not set
 	  unload	unload the buffer, even if 'hidden' is set; the
-			|:hide| command will also unlod the buffer
+			|:hide| command will also unload the buffer
 	  delete	delete the buffer from the buffer list, even if
 			'hidden' is set; the |:hide| command will also delete
 			the buffer, making it behave like |:bdelete|
@@ -4518,7 +4518,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 				 *'incsearch'* *'is'* *'noincsearch'* *'nois'*
 'incsearch' 'is'	boolean	(default off, set in |defaults.vim| if the
-						+reltime feature is supported)
+					    |+reltime| feature is supported)
 			global
 			{not available when compiled without the
 			|+extra_search| features}
@@ -5090,9 +5090,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 <							*lcs-leadmultispace*
 	  leadmultispace:c...
 			Like multispace value, but only for leading whitespace
-			Overrides |lcs-lead| for leading multiple spaces.
-			`:set listchars=leadmultispace:---+` shows ten consecutive
-			leading spaces as:
+			overrides |lcs-lead| for leading multiple spaces.
+			`:set listchars=leadmultispace:---+` shows ten
+			consecutive leading spaces as:
 				---+---+--XXX ~
 			Where "XXX" denotes the first non-blank characters in
 			the line.
@@ -7421,7 +7421,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{millisec} milli seconds.  Applies to the following
 			methods.  When omitted the limit is 5000. When
 			negative there is no limit.  {only works when built
-			with the +reltime feature}
+			with the |+reltime| feature}
 
 	file:{filename} Read file {filename}, which must have two columns,
 			separated by a slash.  The first column contains the
@@ -9021,7 +9021,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	mode.  On pressing 'wildchar' (usually <Tab>) to invoke completion,
 	the possible matches are shown just above the command line, with the
 	first match highlighted (overwriting the status line, if there is
-	one).  This is the behavior without "pum" in 'wildoptions.
+	one).  This is the behavior without "pum" in 'wildoptions'.
 	Keys that show the previous/next match, such as <Tab> or
 	CTRL-P/CTRL-N, cause the highlight to move to the appropriate match.
 	When 'wildmode' is used, "wildmenu" mode is used where "full" is
@@ -9132,7 +9132,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			expansion. Currently fuzzy matching based completion
 			is not supported for file and directory names and
 			instead wildcard expansion is used.
-	  pum		Display the completion matches using the popupmenu
+	  pum		Display the completion matches using the popup menu
 			in the same style as the |ins-completion-menu|.
 	  tagfile	When using CTRL-D to list matching tags, the kind of
 			tag and the file of the tag is listed.	Only one match
