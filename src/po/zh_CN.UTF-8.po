@@ -5917,8 +5917,8 @@ msgstr "E243: 不支持的参数: \"-%s\"；请使用 OLE 版本。"
 #: ../errors.h:589
 # reorder if possible
 #, fuzzy, c-format
-msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
-msgstr "E244: 字体名 \"%3$s\" 中有非法 %1$s 名称 \"%2$s\""
+# msgid "E244: Illegal %s name \"%s\" in font name \"%s\""
+# msgstr "E244: 字体名 \"%3$s\" 中有非法 %1$s 名称 \"%2$s\""
 
 #: ../errors.h:591
 #, c-format
@@ -6226,8 +6226,8 @@ msgstr "E315: ml_get: 无效的 lnum: %ld"
 #: ../errors.h:788
 # reorder if possible
 #, fuzzy, c-format
-msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
-msgstr "E316: ml_get: 在缓冲区 %2$d %3$s 中找不到第 %1$ld 行"
+# msgid "E316: ml_get: Cannot find line %ld in buffer %d %s"
+# msgstr "E316: ml_get: 在缓冲区 %2$d %3$s 中找不到第 %1$ld 行"
 
 #: ../errors.h:790
 msgid "E317: Pointer block id wrong"
@@ -9348,8 +9348,8 @@ msgstr "E1036: %c 需要整数或者浮点数参数"
 #: ../errors.h:2705
 # reorder if possible
 #, fuzzy, c-format
-msgid "E1037: Cannot use \"%s\" with %s"
-msgstr "E1037: 不能对 %2$s 使用 \"%1$s\""
+# msgid "E1037: Cannot use \"%s\" with %s"
+# msgstr "E1037: 不能对 %2$s 使用 \"%1$s\""
 
 #: ../errors.h:2707
 msgid "E1038: \"vim9script\" can only be used in a script"
