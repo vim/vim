@@ -4719,19 +4719,23 @@ f_get(typval_T *argvars, typval_T *rettv)
 	if (pt != NULL)
 	{
 	    char_u *what = tv_get_string(&argvars[1]);
-	    char_u *n;
 
 	    if (STRCMP(what, "func") == 0 || STRCMP(what, "name") == 0)
 	    {
+		char_u *name = partial_name(pt);
+
 		rettv->v_type = (*what == 'f' ? VAR_FUNC : VAR_STRING);
-		n = partial_name(pt);
-		if (n == NULL)
+		if (name == NULL)
 		    rettv->vval.v_string = NULL;
 		else
 		{
-		    rettv->vval.v_string = vim_strsave(n);
 		    if (rettv->v_type == VAR_FUNC)
-			func_ref(rettv->vval.v_string);
+			func_ref(name);
+		    if (*what == 'n' && pt->pt_name == NULL
+							&& pt->pt_func != NULL)
+			// use <SNR> instead of the byte code
+			name = printable_func_name(pt->pt_func);
+		    rettv->vval.v_string = vim_strsave(name);
 		}
 	    }
 	    else if (STRCMP(what, "dict") == 0)
