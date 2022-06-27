@@ -8074,13 +8074,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	This requires Vim to be built with the |+vtp| feature.
 
 	Note that the "cterm" attributes are still used, not the "gui" ones.
-
-	When using Vim with Windows Terminal, the background of Windows
-	Terminal is normally filled with the Vim background color.  Setting
-	'termguicolors' and the guibg of the Normal highlight group to NONE
-	will make the background transparent: >
-		:hi Normal guibg=NONE
-<
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'termwinkey'* *'twk'*
