@@ -1653,7 +1653,7 @@ void *vim_memset(void *, int, size_t);
 
 /*
  * defines to avoid typecasts from (char_u *) to (char *) and back
- * (vim_strchr() and vim_strrchr() are now in alloc.c)
+ * (vim_strchr() and vim_strrchr() are now in strings.c)
  */
 #define STRLEN(s)	    strlen((char *)(s))
 #define STRCPY(d, s)	    strcpy((char *)(d), (char *)(s))

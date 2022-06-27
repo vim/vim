@@ -2404,7 +2404,8 @@ get_cmd_output_as_rettv(
 
     if (in_vim9script()
 	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_or_number_or_list_arg(argvars, 1) == FAIL))
+		|| check_for_opt_string_or_number_or_list_arg(argvars, 1)
+								      == FAIL))
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)

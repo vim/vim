@@ -4133,7 +4133,7 @@ screen_del_lines(
 skip_showmode()
 {
     // Call char_avail() only when we are going to show something, because it
-    // takes a bit of time.  redrawing() may also call char_avail_avail().
+    // takes a bit of time.  redrawing() may also call char_avail().
     if (global_busy
 	    || msg_silent != 0
 	    || !redrawing()
