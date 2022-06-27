@@ -692,7 +692,12 @@ py3__PyObject_TypeCheck(PyObject *ob, PyTypeObject *type)
 {
     return Py_IS_TYPE(ob, type) || PyType_IsSubtype(Py_TYPE(ob), type);
 }
-#  define _PyObject_TypeCheck(o,t) py3__PyObject_TypeCheck(o,t)
+#  if PY_VERSION_HEX >= 0x030b00b3
+#   undef PyObject_TypeCheck
+#   define PyObject_TypeCheck(o,t) py3__PyObject_TypeCheck(o,t)
+#  else
+#   define _PyObject_TypeCheck(o,t) py3__PyObject_TypeCheck(o,t)
+#  endif
 # endif
 
 # ifdef MSWIN
