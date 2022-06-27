@@ -2,7 +2,7 @@ vim9script
 
 # Script to define the syntax menu in synmenu.vim
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Feb 04
+# Last Change:	2022 Jun 27
 
 # This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -39,13 +39,13 @@ def Syn(arg: string)
   else
     # When starting a new letter, insert a menu separator.
     var c = submenu_name[0]
-    if c != s:cur_menu_char
-      exe 'an 50.' .. s:cur_menu_nr .. '.' .. s:cur_menu_item .. ' &Syntax.' .. menu_name .. ".-" .. c .. '- <nul>'
+    if c != cur_menu_char
+      exe 'an 50.' .. cur_menu_nr .. '.' .. cur_menu_item .. ' &Syntax.' .. menu_name .. ".-" .. c .. '- <nul>'
       cur_menu_item += 10
       cur_menu_char = c
     endif
   endif
-  append(lnum, 'an 50.' .. s:cur_menu_nr .. '.' .. s:cur_menu_item .. ' &Syntax.' .. menu_name .. "." .. submenu_name .. ' :cal SetSyn("' .. syntax_name .. '")<CR>')
+  append(lnum, 'an 50.' .. cur_menu_nr .. '.' .. cur_menu_item .. ' &Syntax.' .. menu_name .. "." .. submenu_name .. ' :cal SetSyn("' .. syntax_name .. '")<CR>')
   cur_menu_item += 10
   lnum += 1
 enddef
