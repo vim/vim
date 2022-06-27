@@ -17,7 +17,7 @@ void win_redr_custom(win_T *wp, int draw_ruler);
 void screen_putchar(int c, int row, int col, int attr);
 void screen_getbytes(int row, int col, char_u *bytes, int *attrp);
 void screen_puts(char_u *text, int row, int col, int attr);
-void screen_puts_len(char_u *text, int textlen, int row, int col, int attr);
+void screen_puts_len(char_u *text, int textlen, int row, int col, int attr_arg);
 void start_search_hl(void);
 void end_search_hl(void);
 void screen_stop_highlight(void);

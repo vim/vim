@@ -272,9 +272,11 @@ typedef int HRESULT;
 # undef MSG
 typedef int MSG;
 typedef int NEWTEXTMETRIC;
+typedef int NMHDR;
 typedef int OSVERSIONINFO;
 typedef int PWORD;
 typedef int RECT;
+typedef int SIZE;
 typedef int UINT;
 typedef int WORD;
 typedef int WPARAM;

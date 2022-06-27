@@ -92,6 +92,7 @@ typedef int HFONT;
 typedef int HICON;
 typedef int HWND;
 typedef int INPUT_RECORD;
+typedef int INT_PTR;
 typedef int KEY_EVENT_RECORD;
 typedef int LOGFONTW;
 typedef int LPARAM;
