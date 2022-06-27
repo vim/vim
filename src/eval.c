@@ -2387,27 +2387,32 @@ eval0_retarg(
 
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evalarg);
-    expr_end = p;
-    p = skipwhite(p);
 
-    // In Vim9 script a command block is not split at NL characters for
-    // commands using an expression argument.  Skip over a '#' comment to check
-    // for a following NL.  Require white space before the '#'.
-    if (in_vim9script() && p > expr_end && retarg == NULL)
-	while (*p == '#')
-	{
-	    char_u *nl = vim_strchr(p, NL);
+    if (ret != FAIL)
+    {
+	expr_end = p;
+	p = skipwhite(p);
 
-	    if (nl == NULL)
-		break;
-	    p = skipwhite(nl + 1);
-	    if (eap != NULL && *p != NUL)
-		eap->nextcmd = p;
-	    check_for_end = FALSE;
-	}
+	// In Vim9 script a command block is not split at NL characters for
+	// commands using an expression argument.  Skip over a '#' comment to
+	// check for a following NL.  Require white space before the '#'.
+	if (in_vim9script() && p > expr_end && retarg == NULL)
+	    while (*p == '#')
+	    {
+		char_u *nl = vim_strchr(p, NL);
 
-    if (ret != FAIL && check_for_end)
-	end_error = !ends_excmd2(arg, p);
+		if (nl == NULL)
+		    break;
+		p = skipwhite(nl + 1);
+		if (eap != NULL && *p != NUL)
+		    eap->nextcmd = p;
+		check_for_end = FALSE;
+	    }
+
+	if (check_for_end)
+	    end_error = !ends_excmd2(arg, p);
+    }
+
     if (ret == FAIL || end_error)
     {
 	if (ret != FAIL)
@@ -2433,7 +2438,8 @@ eval0_retarg(
 	// Some of the expression may not have been consumed.  Do not check for
 	// a next command to avoid more errors, unless "|" is following, which
 	// could only be a command separator.
-	if (eap != NULL && skipwhite(p)[0] == '|' && skipwhite(p)[1] != '|')
+	if (eap != NULL && p != NULL
+			  &&  skipwhite(p)[0] == '|' && skipwhite(p)[1] != '|')
 	    eap->nextcmd = check_nextcmd(p);
 	return FAIL;
     }
