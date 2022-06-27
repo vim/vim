@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jun 17
+*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jun 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1120,10 +1120,10 @@ balloon_show({expr})					*balloon_show()*
 		is initiated from 'balloonexpr'.  It will invoke an
 		asynchronous method, in which a callback invokes
 		balloon_show().  The 'balloonexpr' itself can return an
-		empty string or a placeholder.
+		empty string or a placeholder, e.g. "loading...".
 
-		When showing a balloon is not possible nothing happens, no
-		error message.
+		When showing a balloon is not possible then nothing happens,
+		no error message is given.
 		{only available when compiled with the |+balloon_eval| or
 		|+balloon_eval_term| feature}
 
