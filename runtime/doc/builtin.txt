@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 Jun 27
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Jun 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6935,7 +6935,7 @@ reltime([{start} [, {end}]])				*reltime()*
 		string or |reltimefloat()| to convert to a Float.
 
 		Without an argument reltime() returns the current time (the
-		representation is system-dependend, it can not be used as the
+		representation is system-dependent, it can not be used as the
 		wall-clock time, see |localtime()| for that).
 		With one argument is returns the time passed since the time
 		specified in the argument.

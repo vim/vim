@@ -1,4 +1,4 @@
-*arabic.txt*	For Vim version 8.2.  Last change: 2021 Jun 22
+*arabic.txt*	For Vim version 9.0.  Last change: 2021 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Nadim Shaikli

@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 8.2.  Last change: 2019 Jul 21
+*if_ruby.txt*   For Vim version 9.0.  Last change: 2019 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda

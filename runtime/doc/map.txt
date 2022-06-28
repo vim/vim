@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2022 Jun 18
+*map.txt*       For Vim version 9.0.  Last change: 2022 Jun 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

@@ -1,7 +1,6 @@
 ﻿The location of source files for Serbian spelling dictionary were downloaded
-from 
-https://github.com/LibreOffice/dictionaries/tree/master/sr
-(Serbian Spelling and Hyphenation for LibreOffice).
+from https://github.com/LibreOffice/dictionaries/tree/master/sr (Serbian
+Spelling and Hyphenation for LibreOffice).
 
 Here is the content of original README file from the repository:
 
@@ -26,18 +25,21 @@ Here is the content of original README file from the repository:
 
 
 This dictionary used to create Vim spl file is the result of merging the two
-LibreOffice dictionaries, for cyrillic and latin script.
+LibreOffice dictionaries for cyrillic and latin script.
 
-The merge was accomplished by concatenating two .dic files, removing 1061
-duplicates using the fixdup Vim script and updating the word count.
+The merge was accomplished by concatenating two .dic and .aff files (appending
+the latin to cyrillic).
 
-In both affix files each SFX (and two PFX) directive had to be appended with
-the . at the end of the line. KEY and WORDCHAR directives were removed, and
-MIDWORD was added.  Each SFX block is the union of corresponding blocks from
-sr.aff and sr-Latn.aff.  Header line of each block was updated to the new
-count (2 times the value from the corresponding block in the input affix
-file).
+The first step was to fix both .aff files by adding a '.' at the end of every
+SFX and PFX directive and removing directives that are not supported by Vim
+(KEY, MIDWORD).
+
+Next, update the flags in latin .dic and .aff files so that the flag sequence
+continues monotonically after the last flag number in cyrillic .aff file. 
+
+A couple of words in cyrillic dict used a latin codepoints for 'a' and 'e',
+that was also corrected.
 
 
 Ivan Pešić
-23.06.2022. 
+28.06.2022.

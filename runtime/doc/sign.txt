@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.2.  Last change: 2021 Dec 05
+*sign.txt*      For Vim version 9.0.  Last change: 2021 Dec 05
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur

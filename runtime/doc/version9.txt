@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 8.2.  Last change: 2022 Jun 27
+*version9.txt*  For Vim version 9.0.  Last change: 2022 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14671,7 +14671,7 @@ Files:      src/vim9execute.c, src/testdir/test_vim9_script.vim
 
 Patch 8.2.2352
 Problem:    If the focus lost/gained escape sequence is received twice it is
-            not ignored. (Christ van Willigen)
+            not ignored. (Christ van Willegen)
 Solution:   Adjust the logic to ignore the escape code.
 Files:      src/term.c
 
@@ -21611,7 +21611,7 @@ Files:      runtime/doc/options.txt, src/gui.c, src/gui.h, src/gui_gtk_x11.c,
 
 Patch 8.2.3525
 Problem:    Option variable name does not match option name. (Christ van
-            Willigen)
+            Willegen)
 Solution:   Rename the variable.
 Files:      src/buffer.c, src/insexpand.c, src/option.c, src/optionstr.c,
             src/structs.h
@@ -28625,7 +28625,7 @@ Files:      src/vim9compile.c, src/proto/vim9compile.pro, src/vim9cmds.c,
 
 Patch 8.2.4667
 Problem:    expandcmd() fails on an error.
-Solution:   On failure return the command unmodified. (yegappan Lakshmanan,
+Solution:   On failure return the command unmodified. (Yegappan Lakshmanan,
             closes #10063)
 Files:      runtime/doc/builtin.txt, src/evalfunc.c,
             src/testdir/test_expand.vim
@@ -31311,7 +31311,7 @@ Files:      src/evalbuffer.c, src/channel.c, src/cmdexpand.c, src/evalfunc.c,
 
 Patch 8.2.5108
 Problem:    Retab test disabled because it hangs on MS-Windows.
-Solution:   Also set got_int at the other place a overlong text is detected.
+Solution:   Also set got_int at the other place an overlong text is detected.
 Files:      src/indent.c, src/testdir/test_retab.vim
 
 Patch 8.2.5109
@@ -31475,7 +31475,7 @@ Files:      src/os_unix.c, src/regexp_nfa.c, src/regexp_bt.c
 
 Patch 8.2.5138
 Problem:    Various small issues.
-Solution:   Various small improvments.
+Solution:   Various small improvements.
 Files:      src/filepath.c, src/job.c, src/mark.c, src/move.c,
             src/popupwin.c, src/testdir/test_filetype.vim
 
@@ -31645,6 +31645,27 @@ Patch 8.2.5169
 Problem:    Nested :source may use NULL pointer.
 Solution:   Do not use the NULL pointer.
 Files:      src/eval.c, src/testdir/test_vimscript.vim
+
+Patch 8.2.5170
+Problem:    Tiny issues.
+Solution:   Tiny improvements.
+Files:      src/misc1.c, src/screen.c, src/vim.h
+
+Patch 8.2.5171
+Problem:    Dependencies and proto files are outdated.
+Solution:   Update dependencies and proto files.  Avoid errors.
+Files:      src/Makefile, src/gui_w32.c, src/os_mswin.c, src/proto/buffer.pro,
+            src/proto/cmdexpand.pro, src/proto/getchar.pro,
+            src/proto/help.pro, src/proto/mbyte.pro, src/proto/option.pro,
+            src/proto/screen.pro, src/proto/syntax.pro,
+            src/proto/textformat.pro, src/proto/textobject.pro,
+            src/proto/time.pro, src/proto/gui_x11.pro, src/proto/if_tcl.pro,
+            src/proto/os_mswin.pro
+
+Patch 8.2.5172
+Problem:    "make menu" still uses legacy script.
+Solution:   make menu generation script use Vim9 script, fix errors.
+Files:      runtime/makemenu.vim
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

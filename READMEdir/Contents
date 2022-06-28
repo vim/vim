@@ -9,15 +9,15 @@ Vim		Vi IMproved.  A clone of the UNIX text editor Vi.  Very useful
 		messages, shows current file name in window title, on-line
 		help, rectangular cut/paste, etc., etc., etc...
 
-		Version 8.2.  Also runs under UNIX, MS-Windows, Mac, etc.
-		vim82rt.tgz  contains the documentation and syntax files.
-		vim82bin.tgz contains the binaries.
-		vim82src.tgz contains the sources.
+		Version 9.0.  Also runs under UNIX, MS-Windows, Mac, etc.
+		vim90rt.tgz  contains the documentation and syntax files.
+		vim90bin.tgz contains the binaries.
+		vim90src.tgz contains the sources.
 		Author: Bram Moolenaar et al.
 
 
 Xxd		Hex dumper and reader.  Can be used to view files as hex, edit
 		them and write them back.  Can also be used to patch files.
 
-		Version 1.10 (1997 May 22)
+		Version 2022 Jan 14
 		Author: Juergen Weigert
