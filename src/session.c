@@ -827,9 +827,14 @@ makeopens(
 		    goto fail;
 		need_tabnext = FALSE;
 
-		if (fputs("edit ", fd) < 0
-			      || ses_fname(fd, wp->w_buffer, &ssop_flags, TRUE)
-								       == FAIL)
+		if (fputs("if bufexists(fnamemodify('", fd) < 0
+		  || ses_fname(fd, wp->w_buffer, &ssop_flags, FALSE) == FAIL
+		  || fputs("', ':p')) | buffer ", fd) < 0
+		  || ses_fname(fd, wp->w_buffer, &ssop_flags, FALSE) == FAIL
+		  || fputs(" | else | edit ", fd) < 0
+		  || ses_fname(fd, wp->w_buffer, &ssop_flags, FALSE) == FAIL
+		  || fputs(" | endif", fd) < 0
+		  || put_eol(fd) == FAIL)
 		    goto fail;
 		if (!wp->w_arg_idx_invalid)
 		    edited_win = wp;
