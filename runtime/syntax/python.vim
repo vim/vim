@@ -92,11 +92,10 @@ syn keyword pythonAsync		async await
 
 " Soft keywords
 " These keywords do not mean anything unless used in the right context
-" See https://peps.python.org/pep-0634/#the-match-statement for more on this.
-" In Python 3.10's IDLE for example, 'match' and 'case' are only highlighted
-" when in the right context
-syn match   pythonConditional   "\v^\s*case(.*:\s*$)@="
-syn match   pythonConditional   "\v^\s*match(.*:\s*$)@="
+" See https://docs.python.org/3/reference/lexical_analysis.html#soft-keywords 
+" for more on this.
+syn match   pythonConditional   "^\s*\zscase\%(\s.*:.*$\)\@="
+syn match   pythonConditional   "^\s*\zsmatch\%(\s.*:\s*\%(#.*\)\?$\)\@="
 
 " Decorators
 " A dot must be allowed because of @MyClass.myfunc decorators.
