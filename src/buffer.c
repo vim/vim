@@ -1004,8 +1004,8 @@ free_buffer_stuff(
 #ifdef FEAT_NETBEANS_INTG
     netbeans_file_killed(buf);
 #endif
-    map_clear_int(buf, MAP_ALL_MODES, TRUE, FALSE);  // clear local mappings
-    map_clear_int(buf, MAP_ALL_MODES, TRUE, TRUE);   // clear local abbrevs
+    map_clear_mode(buf, MAP_ALL_MODES, TRUE, FALSE);  // clear local mappings
+    map_clear_mode(buf, MAP_ALL_MODES, TRUE, TRUE);   // clear local abbrevs
     VIM_CLEAR(buf->b_start_fenc);
 }
 
