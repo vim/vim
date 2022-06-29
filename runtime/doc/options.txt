@@ -4211,7 +4211,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 		b	bold		(termcap entry "md" and "me")
 		s	standout	(termcap entry "so" and "se")
 		u	underline	(termcap entry "us" and "ue")
-		c	undercurl	(termcap entry "Cs" and "Ce")
+		c	undercurl	(termcap entry "Us" and "Ce")
+		2	double underline (termcap entry "Ds" and "Ce")
+		d	dotted underline (termcap entry "ds" and "Ce")
+		=	dashed underline (termcap entry "Ds" and "Ce")
 		t	strikethrough	(termcap entry "Ts" and "Te")
 		n	no highlighting
 		-	no highlighting

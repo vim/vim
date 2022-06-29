@@ -372,8 +372,11 @@ OUTPUT CODES						*terminal-output-codes*
 
 Added by Vim (there are no standard codes for these):
 	t_AU	set underline color (ANSI)			*t_AU* *'t_AU'*
-	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
-	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
+	t_Ce	undercurl and underline end			*t_Ce* *'t_Ce'*
+	t_Cs	undercurl (curly underline) mode		*t_Cs* *'t_Cs'*
+	t_Us	double underline mode				*t_Us* *'t_Us'*
+	t_ds	dotted underline mode				*t_ds* *'t_ds'*
+	t_Ds	dashed underline mode				*t_Ds* *'t_Ds'*
 	t_Te	strikethrough end				*t_Te* *'t_Te'*
 	t_Ts	strikethrough mode				*t_Ts* *'t_Ts'*
 	t_IS	set icon text start				*t_IS* *'t_IS'*

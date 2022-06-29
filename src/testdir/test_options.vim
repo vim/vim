@@ -955,6 +955,18 @@ func Test_opt_set_keycode()
   set <F9>=xyz
   call assert_equal('xyz', &t_k9)
   set <t_k9>&
+
+  " should we test all of them?
+  set t_Ce=testCe
+  set t_Cs=testCs
+  set t_Us=testUs
+  set t_ds=testds
+  set t_Ds=testDs
+  call assert_equal('testCe', &t_Ce)
+  call assert_equal('testCs', &t_Cs)
+  call assert_equal('testUs', &t_Us)
+  call assert_equal('testds', &t_ds)
+  call assert_equal('testDs', &t_Ds)
 endfunc
 
 " Test for changing options in a sandbox

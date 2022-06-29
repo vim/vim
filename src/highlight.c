@@ -25,10 +25,16 @@
  * following names, separated by commas (but no spaces!).
  */
 static char *(hl_name_table[]) =
-    {"bold", "standout", "underline", "undercurl",
-      "italic", "reverse", "inverse", "nocombine", "strikethrough", "NONE"};
+    {"bold", "standout", "underline",
+	"undercurl", "underdouble", "underdotted", "underdashed",
+	"italic", "reverse", "inverse", "nocombine", "strikethrough", "NONE"};
 static int hl_attr_table[] =
-    {HL_BOLD, HL_STANDOUT, HL_UNDERLINE, HL_UNDERCURL, HL_ITALIC, HL_INVERSE, HL_INVERSE, HL_NOCOMBINE, HL_STRIKETHROUGH, 0};
+    {HL_BOLD, HL_STANDOUT, HL_UNDERLINE,
+	HL_UNDERCURL, HL_UNDERDOUBLE, HL_UNDERDOTTED, HL_UNDERDASHED,
+	HL_ITALIC, HL_INVERSE, HL_INVERSE, HL_NOCOMBINE, HL_STRIKETHROUGH, 0};
+// length of all attribute names, plus commas, together (and a bit more)
+#define MAX_ATTR_LEN 120
+
 #define ATTR_COMBINE(attr_a, attr_b) ((((attr_b) & HL_NOCOMBINE) ? (attr_b) : (attr_a)) | (attr_b))
 
 /*
@@ -2963,7 +2969,7 @@ highlight_list_arg(
     char_u	*sarg,
     char	*name)
 {
-    char_u	buf[100];
+    char_u	buf[MAX_ATTR_LEN];
     char_u	*ts;
     int		i;
 
@@ -2984,8 +2990,8 @@ highlight_list_arg(
 		if (iarg & hl_attr_table[i])
 		{
 		    if (buf[0] != NUL)
-			vim_strcat(buf, (char_u *)",", 100);
-		    vim_strcat(buf, (char_u *)hl_name_table[i], 100);
+			vim_strcat(buf, (char_u *)",", MAX_ATTR_LEN);
+		    vim_strcat(buf, (char_u *)hl_name_table[i], MAX_ATTR_LEN);
 		    iarg &= ~hl_attr_table[i];	    // don't want "inverse"
 		}
 	    }
@@ -3287,7 +3293,8 @@ set_hl_attr(
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
 	// Only use the underline/undercurl color when used, it may clear the
 	// background color if not supported.
-	if (sgp->sg_cterm & (HL_UNDERLINE | HL_UNDERCURL))
+	if (sgp->sg_cterm & (HL_UNDERLINE | HL_UNDERCURL
+			   | HL_UNDERDOUBLE | HL_UNDERDOTTED | HL_UNDERDASHED))
 	    at_en.ae_u.cterm.ul_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_sp);
 	else
 	    at_en.ae_u.cterm.ul_rgb = INVALCOLOR;
@@ -3800,6 +3807,12 @@ highlight_changed(void)
 		    case 'u':	attr |= HL_UNDERLINE;
 				break;
 		    case 'c':	attr |= HL_UNDERCURL;
+				break;
+		    case '2':	attr |= HL_UNDERDOUBLE;
+				break;
+		    case 'd':	attr |= HL_UNDERDOTTED;
+				break;
+		    case '=':	attr |= HL_UNDERDASHED;
 				break;
 		    case 't':	attr |= HL_STRIKETHROUGH;
 				break;
@@ -4362,9 +4375,9 @@ hlg_add_or_update(dict_T *dict)
 {
     char_u	*name;
     int		error;
-    char_u	term_attr[80];
-    char_u	cterm_attr[80];
-    char_u	gui_attr[80];
+    char_u	term_attr[MAX_ATTR_LEN];
+    char_u	cterm_attr[MAX_ATTR_LEN];
+    char_u	gui_attr[MAX_ATTR_LEN];
     char_u	*start;
     char_u	*stop;
     char_u	*ctermfg;

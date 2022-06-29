@@ -5002,14 +5002,18 @@ the same syntax file on all terminals, and use the optimal highlighting.
 1. highlight arguments for normal terminals
 
 					*bold* *underline* *undercurl*
-					*inverse* *italic* *standout*
-					*nocombine* *strikethrough*
+					*underdouble* *underdotted*
+					*underdashed* *inverse* *italic*
+					*standout* *nocombine* *strikethrough*
 term={attr-list}			*attr-list* *highlight-term* *E418*
 	attr-list is a comma-separated list (without spaces) of the
 	following items (in any order):
 		bold
 		underline
 		undercurl	not always available
+		underdouble	not always available
+		underdotted	not always available
+		underdashed	not always available
 		strikethrough	not always available
 		reverse
 		inverse		same as reverse
@@ -5020,6 +5024,7 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 
 	Note that "bold" can be used here and by using a bold font.  They
 	have the same effect.
+							*underline-codes*
 	"undercurl" is a curly underline.  When "undercurl" is not possible
 	then "underline" is used.  In general "undercurl" and "strikethrough"
 	are only available in the GUI and some terminals.  The color is set
@@ -5027,6 +5032,17 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 	termcap entries to make undercurl work in a terminal: >
 	    let &t_Cs = "\e[4:3m"
 	    let &t_Ce = "\e[4:0m"
+
+<	"underdouble" is a double underline, "underdotted" is a dotted
+	underline and "underdashed" is a dashed underline.  These are only
+	supported by some terminals.  If your terminal supports them you may
+	have to specify the codes like this: >
+	    let &t_Us = "\e[4:2m"
+	    let &t_ds = "\e[4:4m"
+	    let &t_Ds = "\e[4:5m"
+<	They are reset with |t_Ce|, the same as curly underline (undercurl).
+	When t_Us, t_ds or t_Ds is not set then underline will be used as a
+	fallback.
 
 
 start={term-list}				*highlight-start* *E422*

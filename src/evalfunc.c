@@ -10104,14 +10104,27 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 		break;
 
 	case 'u':
-		if (TOLOWER_ASC(what[1]) == 'l')	// ul
-		    p = highlight_color(id, what, modec);
-		else if (STRLEN(what) <= 5 || TOLOWER_ASC(what[5]) != 'c')
+		if (STRLEN(what) >= 9)
+		{
+		    if (TOLOWER_ASC(what[5]) == 'l')
 							// underline
-		    p = highlight_has_attr(id, HL_UNDERLINE, modec);
-		else
+			p = highlight_has_attr(id, HL_UNDERLINE, modec);
+		    else if (TOLOWER_ASC(what[5]) != 'd')
 							// undercurl
-		    p = highlight_has_attr(id, HL_UNDERCURL, modec);
+			p = highlight_has_attr(id, HL_UNDERCURL, modec);
+		    else if (TOLOWER_ASC(what[6]) != 'o')
+							// underdashed
+			p = highlight_has_attr(id, HL_UNDERDASHED, modec);
+		    else if (TOLOWER_ASC(what[7]) == 'u')
+							// underdouble
+			p = highlight_has_attr(id, HL_UNDERDOUBLE, modec);
+		    else
+							// underdotted
+			p = highlight_has_attr(id, HL_UNDERDOTTED, modec);
+		}
+		else
+							// ul
+		    p = highlight_color(id, what, modec);
 		break;
     }
 

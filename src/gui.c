@@ -2501,6 +2501,8 @@ gui_outstr_nowrap(
     if (hl_mask_todo & HL_UNDERCURL)
 	draw_flags |= DRAW_UNDERC;
 
+    // TODO: HL_UNDERDOUBLE, HL_UNDERDOTTED, HL_UNDERDASHED
+
     // Do we strikethrough the text?
     if (hl_mask_todo & HL_STRIKETHROUGH)
 	draw_flags |= DRAW_STRIKE;
