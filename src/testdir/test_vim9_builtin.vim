@@ -3364,6 +3364,22 @@ def Test_searchdecl()
   v9.CheckDefAndScriptFailure(['searchdecl(1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['searchdecl("a", 2)'], ['E1013: Argument 2: type mismatch, expected bool but got number', 'E1212: Bool required for argument 2'])
   v9.CheckDefAndScriptFailure(['searchdecl("a", true, 2)'], ['E1013: Argument 3: type mismatch, expected bool but got number', 'E1212: Bool required for argument 3'])
+
+  # search for an empty string declaration
+  var lines: list<string> =<< trim END
+    int var1;
+
+    {
+       int var2;
+       var1 = 10;
+    }
+  END
+  new
+  setline(1, lines)
+  cursor(5, 4)
+  searchdecl('')
+  assert_equal([3, 1], [line('.'), col('.')])
+  bw!
 enddef
 
 def Test_searchpair()

@@ -566,7 +566,7 @@ static int color_numbers_8[28] = {0, 4, 2, 6,
  * "boldp" will be set to TRUE or FALSE for a foreground color when using 8
  * colors, otherwise it will be unchanged.
  */
-    int
+    static int
 lookup_color(int idx, int foreground, int *boldp)
 {
     int		color = color_numbers_16[idx];

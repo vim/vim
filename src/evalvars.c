@@ -648,7 +648,7 @@ eval_one_expr_in_str(char_u *p, garray_T *gap, int evaluate)
  * Used for a heredoc assignment.
  * Returns NULL for an error.
  */
-    char_u *
+    static char_u *
 eval_all_expr_in_str(char_u *str)
 {
     garray_T	ga;
