@@ -10,7 +10,9 @@ CheckOption breakindent
 source view_util.vim
 source screendump.vim
 
-let s:input ="\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"
+func SetUp()
+  let s:input ="\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"
+endfunc
 
 func s:screen_lines(lnum, width) abort
   return ScreenLines([a:lnum, a:lnum + 2], a:width)
@@ -714,6 +716,9 @@ func Test_breakindent20_cpo_n_nextpage()
 endfunc
 
 func Test_breakindent20_list()
+  " FIXME - this should not matter
+  call test_override('alloc_lines', 0)
+
   call s:test_windows('setl breakindent breakindentopt= linebreak')
   " default:
   call setline(1, ['  1.  Congress shall make no law',
@@ -830,6 +835,9 @@ func Test_breakindent20_list()
   let lines = s:screen_lines2(1, 6, 20)
   call s:compare_lines(expect, lines)
   call s:close_windows('set breakindent& briopt& linebreak& list& listchars& showbreak&')
+
+  " FIXME - this should not matter
+  call test_override('alloc_lines', 1)
 endfunc
 
 " The following used to crash Vim. This is fixed by 8.2.3391.
@@ -873,15 +881,20 @@ func Test_cursor_position_with_showbreak()
 endfunc
 
 func Test_no_spurious_match()
+  " FIXME - fails under valgrind - this should not matter - timing issue?
+  call test_override('alloc_lines', 0)
+
   let s:input = printf('- y %s y %s', repeat('x', 50), repeat('x', 50))
   call s:test_windows('setl breakindent breakindentopt=list:-1 formatlistpat=^- hls')
   let @/ = '\%>3v[y]'
   redraw!
   call searchcount().total->assert_equal(1)
+
   " cleanup
   set hls&vim
-  let s:input = "\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"
   bwipeout!
+  " FIXME - this should not matter
+  call test_override('alloc_lines', 1)
 endfunc
 
 func Test_no_extra_indent()
@@ -945,8 +958,6 @@ func Test_no_extra_indent()
 endfunc
 
 func Test_breakindent_column()
-  " restore original
-  let s:input ="\tabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP"
   call s:test_windows('setl breakindent breakindentopt=column:10')
   redraw!
   " 1) default: does not indent, too wide :(

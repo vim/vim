@@ -1535,13 +1535,17 @@ open_line(
 			    {
 				// End of C comment, indent should line up
 				// with the line containing the start of
-				// the comment
+				// the comment.
 				curwin->w_cursor.col = (colnr_T)(p - ptr);
 				if ((pos = findmatch(NULL, NUL)) != NULL)
 				{
 				    curwin->w_cursor.lnum = pos->lnum;
 				    newindent = get_indent();
+				    break;
 				}
+				// this may make "ptr" invalid, get it again
+				ptr = ml_get(curwin->w_cursor.lnum);
+				p = ptr + curwin->w_cursor.col;
 			    }
 			}
 		    }

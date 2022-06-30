@@ -287,7 +287,7 @@ prop_add_one(
 					    props + i * sizeof(textprop_T),
 					    sizeof(textprop_T) * (proplen - i));
 
-	if (buf->b_ml.ml_flags & ML_LINE_DIRTY)
+	if (buf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
 	    vim_free(buf->b_ml.ml_line_ptr);
 	buf->b_ml.ml_line_ptr = newtext;
 	buf->b_ml.ml_line_len += sizeof(textprop_T);
@@ -564,7 +564,7 @@ set_text_props(linenr_T lnum, char_u *props, int len)
     mch_memmove(newtext, text, textlen);
     if (len > 0)
 	mch_memmove(newtext + textlen, props, len);
-    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)
+    if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
 	vim_free(curbuf->b_ml.ml_line_ptr);
     curbuf->b_ml.ml_line_ptr = newtext;
     curbuf->b_ml.ml_line_len = textlen + len;
@@ -698,6 +698,8 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 		// need to allocate the line now
 		if (newtext == NULL)
 		    return;
+		if (buf->b_ml.ml_flags & ML_ALLOCATED)
+		    vim_free(buf->b_ml.ml_line_ptr);
 		buf->b_ml.ml_line_ptr = newtext;
 		buf->b_ml.ml_flags |= ML_LINE_DIRTY;
 	    }
@@ -1273,6 +1275,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			    return;
 			mch_memmove(newptr, buf->b_ml.ml_line_ptr,
 							buf->b_ml.ml_line_len);
+			if (buf->b_ml.ml_flags & ML_ALLOCATED)
+			    vim_free(buf->b_ml.ml_line_ptr);
 			buf->b_ml.ml_line_ptr = newptr;
 			buf->b_ml.ml_flags |= ML_LINE_DIRTY;
 
@@ -1766,8 +1770,13 @@ adjust_prop_columns(
 	colnr_T newlen = (int)textlen + wi * (colnr_T)sizeof(textprop_T);
 
 	if ((curbuf->b_ml.ml_flags & ML_LINE_DIRTY) == 0)
-	    curbuf->b_ml.ml_line_ptr =
-				 vim_memsave(curbuf->b_ml.ml_line_ptr, newlen);
+	{
+	    char_u *p = vim_memsave(curbuf->b_ml.ml_line_ptr, newlen);
+
+	    if (curbuf->b_ml.ml_flags & ML_ALLOCATED)
+		vim_free(curbuf->b_ml.ml_line_ptr);
+	    curbuf->b_ml.ml_line_ptr = p;
+	}
 	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
 	curbuf->b_ml.ml_line_len = newlen;
     }

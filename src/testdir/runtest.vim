@@ -154,6 +154,10 @@ endif
 " Prepare for calling test_garbagecollect_now().
 let v:testing = 1
 
+" By default, copy each buffer line into allocated memory, so that valgrind can
+" detect accessing memory before and after it.
+call test_override('alloc_lines', 1)
+
 " Support function: get the alloc ID by name.
 function GetAllocId(name)
   exe 'split ' . s:srcdir . '/alloc.h'
@@ -182,7 +186,7 @@ func RunTheTest(test)
   " mode message.
   set noshowmode
 
-  " Clear any overrides.
+  " Clear any overrides, except "alloc_lines".
   call test_override('ALL', 0)
 
   " Some tests wipe out buffers.  To be consistent, always wipe out all

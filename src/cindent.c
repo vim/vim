@@ -2794,8 +2794,6 @@ get_c_indent(void)
 			    break;
 			}
 
-			l = ml_get_curline();
-
 			// If we're in a comment or raw string now, skip to
 			// the start of it.
 			trypos = ind_find_start_CORS(NULL);
@@ -2805,6 +2803,8 @@ get_c_indent(void)
 			    curwin->w_cursor.col = 0;
 			    continue;
 			}
+
+			l = ml_get_curline();
 
 			// Skip preprocessor directives and blank lines.
 			if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum,
@@ -2905,8 +2905,6 @@ get_c_indent(void)
 					      < ourscope - FIND_NAMESPACE_LIM)
 				break;
 
-			    l = ml_get_curline();
-
 			    // If we're in a comment or raw string now, skip
 			    // to the start of it.
 			    trypos = ind_find_start_CORS(NULL);
@@ -2916,6 +2914,8 @@ get_c_indent(void)
 				curwin->w_cursor.col = 0;
 				continue;
 			    }
+
+			    l = ml_get_curline();
 
 			    // Skip preprocessor directives and blank lines.
 			    if (cin_ispreproc_cont(&l, &curwin->w_cursor.lnum,
@@ -3196,11 +3196,16 @@ get_c_indent(void)
 				    && trypos->col < tryposBrace->col)))
 			trypos = NULL;
 
+		    l = ml_get_curline();
+
 		    // If we are looking for ',', we also look for matching
 		    // braces.
-		    if (trypos == NULL && terminated == ','
-					      && find_last_paren(l, '{', '}'))
-			trypos = find_start_brace();
+		    if (trypos == NULL && terminated == ',')
+		    {
+			if (find_last_paren(l, '{', '}'))
+			    trypos = find_start_brace();
+			l = ml_get_curline();
+		    }
 
 		    if (trypos != NULL)
 		    {
@@ -3233,6 +3238,7 @@ get_c_indent(void)
 			    --curwin->w_cursor.lnum;
 			    curwin->w_cursor.col = 0;
 			}
+			l = ml_get_curline();
 		    }
 
 		    // Get indent and pointer to text for current line,

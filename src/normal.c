@@ -5120,6 +5120,8 @@ n_swapchar(cmdarg_T *cap)
 			count = (int)STRLEN(ptr) - pos.col;
 			netbeans_removed(curbuf, pos.lnum, pos.col,
 								 (long)count);
+			// line may have been flushed, get it again
+			ptr = ml_get(pos.lnum);
 			netbeans_inserted(curbuf, pos.lnum, pos.col,
 							&ptr[pos.col], count);
 		    }

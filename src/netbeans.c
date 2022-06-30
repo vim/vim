@@ -2741,13 +2741,15 @@ netbeans_inserted(
     if (nbbuf->insertDone)
 	nbbuf->modified = 1;
 
+    // send the "insert" EVT
+    newtxt = alloc(newlen + 1);
+    vim_strncpy(newtxt, txt, newlen);
+
+    // Note: this may make "txt" invalid
     pos.lnum = linenr;
     pos.col = col;
     off = pos2off(bufp, &pos);
 
-    // send the "insert" EVT
-    newtxt = alloc(newlen + 1);
-    vim_strncpy(newtxt, txt, newlen);
     p = nb_quote(newtxt);
     if (p != NULL)
     {

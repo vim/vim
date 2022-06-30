@@ -858,7 +858,8 @@ ml_close(buf_T *buf, int del_file)
     if (buf->b_ml.ml_mfp == NULL)		// not open
 	return;
     mf_close(buf->b_ml.ml_mfp, del_file);	// close the .swp file
-    if (buf->b_ml.ml_line_lnum != 0 && (buf->b_ml.ml_flags & ML_LINE_DIRTY))
+    if (buf->b_ml.ml_line_lnum != 0
+		      && (buf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED)))
 	vim_free(buf->b_ml.ml_line_ptr);
     vim_free(buf->b_ml.ml_stack);
 #ifdef FEAT_BYTEOFF
@@ -2620,7 +2621,6 @@ ml_get_buf(
 	    --recursive;
 	}
 	ml_flush_line(buf);
-	buf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
 errorret:
 	STRCPY(questions, "???");
 	buf->b_ml.ml_line_len = 4;
@@ -2686,17 +2686,44 @@ errorret:
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
 	buf->b_ml.ml_line_len = len;
 	buf->b_ml.ml_line_lnum = lnum;
-	buf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
+	buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     }
     if (will_change)
+    {
 	buf->b_ml.ml_flags |= (ML_LOCKED_DIRTY | ML_LOCKED_POS);
+#ifdef FEAT_EVAL
+	if (ml_get_alloc_lines && (buf->b_ml.ml_flags & ML_ALLOCATED))
+	    // can't make the change in the data block
+	    buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+#endif
+    }
 
+#ifdef FEAT_EVAL
+    if (ml_get_alloc_lines
+		 && (buf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED)) == 0)
+    {
+	char_u *p = alloc(buf->b_ml.ml_line_len);
+
+	// make sure the text is in allocated memory
+	if (p != NULL)
+	{
+	    memmove(p, buf->b_ml.ml_line_ptr, buf->b_ml.ml_line_len);
+	    buf->b_ml.ml_line_ptr = p;
+	    buf->b_ml.ml_flags |= ML_ALLOCATED;
+	    if (will_change)
+		// can't make the change in the data block
+		buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+	}
+    }
+#endif
     return buf->b_ml.ml_line_ptr;
 }
 
 /*
  * Check if a line that was just obtained by a call to ml_get
  * is in allocated memory.
+ * This ignores ML_ALLOCATED to get the same behavior as without the test
+ * override.
  */
     int
 ml_line_alloced(void)
@@ -3409,6 +3436,8 @@ ml_replace(linenr_T lnum, char_u *line, int copy)
  * "len_arg" is the length of the text, excluding NUL.
  * If "has_props" is TRUE then "line_arg" includes the text properties and
  * "len_arg" includes the NUL of the text.
+ * When "copy" is TRUE copy the text into allocated memory, otherwise
+ * "line_arg" must be allocated and will be consumed here.
  */
     int
 ml_replace_len(
@@ -3454,7 +3483,6 @@ ml_replace_len(
     {
 	// another line is buffered, flush it
 	ml_flush_line(curbuf);
-	curbuf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
 
 #ifdef FEAT_PROP_POPUP
 	if (curbuf->b_has_textprop && !has_props)
@@ -3488,8 +3516,8 @@ ml_replace_len(
     }
 #endif
 
-    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)	// same line allocated
-	vim_free(curbuf->b_ml.ml_line_ptr);	// free it
+    if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+	vim_free(curbuf->b_ml.ml_line_ptr);	// free allocated line
 
     curbuf->b_ml.ml_line_ptr = line;
     curbuf->b_ml.ml_line_len = len;
@@ -4064,7 +4092,10 @@ ml_flush_line(buf_T *buf)
 
 	entered = FALSE;
     }
+    else if (buf->b_ml.ml_flags & ML_ALLOCATED)
+	vim_free(buf->b_ml.ml_line_ptr);
 
+    buf->b_ml.ml_flags &= ~(ML_LINE_DIRTY | ML_ALLOCATED);
     buf->b_ml.ml_line_lnum = 0;
 }
 

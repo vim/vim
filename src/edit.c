@@ -5013,7 +5013,7 @@ ins_tab(void)
 		    mch_memmove(newp + col, ptr + i,
 					   curbuf->b_ml.ml_line_len - col - i);
 
-		    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)
+		    if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
 			vim_free(curbuf->b_ml.ml_line_ptr);
 		    curbuf->b_ml.ml_line_ptr = newp;
 		    curbuf->b_ml.ml_line_len -= i;
@@ -5232,10 +5232,10 @@ ins_copychar(linenr_T lnum)
     }
 
     // try to advance to the cursor column
+    validate_virtcol();
     temp = 0;
     line = ptr = ml_get(lnum);
     prev_ptr = ptr;
-    validate_virtcol();
     while ((colnr_T)temp < curwin->w_virtcol && *ptr != NUL)
     {
 	prev_ptr = ptr;
