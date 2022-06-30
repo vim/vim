@@ -1058,6 +1058,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    disable_vterm_title_for_testing = val;
 	else if (STRCMP(name, (char_u *)"uptime") == 0)
 	    override_sysinfo_uptime = val;
+	else if (STRCMP(name, (char_u *)"alloc_lines") == 0)
+	    ml_get_alloc_lines = val;
 	else if (STRCMP(name, (char_u *)"autoload") == 0)
 	    override_autoload = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
@@ -1070,6 +1072,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    ui_delay_for_testing = 0;
 	    reset_term_props_on_termresponse = FALSE;
 	    override_sysinfo_uptime = -1;
+	    // ml_get_alloc_lines is not reset by "ALL"
 	    if (save_starting >= 0)
 	    {
 		starting = save_starting;
