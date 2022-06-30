@@ -1918,6 +1918,8 @@ do_put(
 		    vim_memset(ptr, ' ', (size_t)spaces);
 		    ptr += spaces;
 		}
+		else
+		    totlen -= spaces;  // didn't use these spaces
 	    }
 
 	    // may insert some spaces after the new text
