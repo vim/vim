@@ -402,6 +402,7 @@ free_all_mem(void)
 # ifdef FEAT_MENU
 	// Clear menus.
 	do_cmdline_cmd((char_u *)"aunmenu *");
+	do_cmdline_cmd((char_u *)"tlunmenu *");
 #  ifdef FEAT_MULTI_LANG
 	do_cmdline_cmd((char_u *)"menutranslate clear");
 #  endif

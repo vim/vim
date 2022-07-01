@@ -2361,11 +2361,10 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
     }
 
     // For the WinBar menu always use the Normal mode menu.
-    if (idx == -1 || eap == NULL)
+    if (idx == MENU_INDEX_INVALID || eap == NULL)
 	idx = MENU_INDEX_NORMAL;
 
-    if (idx != MENU_INDEX_INVALID && menu->strings[idx] != NULL
-						 && (menu->modes & (1 << idx)))
+    if (menu->strings[idx] != NULL && (menu->modes & (1 << idx)))
     {
 	// When executing a script or function execute the commands right now.
 	// Also for the window toolbar.
