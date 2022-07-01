@@ -716,9 +716,6 @@ func Test_breakindent20_cpo_n_nextpage()
 endfunc
 
 func Test_breakindent20_list()
-  " FIXME - this should not matter
-  call test_override('alloc_lines', 0)
-
   call s:test_windows('setl breakindent breakindentopt= linebreak')
   " default:
   call setline(1, ['  1.  Congress shall make no law',
@@ -802,12 +799,12 @@ func Test_breakindent20_list()
   call s:compare_lines(expect, lines)
   " check formatlistpat indent with different list levels
   let &l:flp = '^\s*\*\+\s\+'
-  redraw!
   %delete _
   call setline(1, ['* Congress shall make no law',
         \ '*** Congress shall make no law',
         \ '**** Congress shall make no law'])
   norm! 1gg
+  redraw!
   let expect = [
 	\ "* Congress shall    ",
 	\ "  make no law       ",
@@ -835,9 +832,6 @@ func Test_breakindent20_list()
   let lines = s:screen_lines2(1, 6, 20)
   call s:compare_lines(expect, lines)
   call s:close_windows('set breakindent& briopt& linebreak& list& listchars& showbreak&')
-
-  " FIXME - this should not matter
-  call test_override('alloc_lines', 1)
 endfunc
 
 " The following used to crash Vim. This is fixed by 8.2.3391.
@@ -881,9 +875,6 @@ func Test_cursor_position_with_showbreak()
 endfunc
 
 func Test_no_spurious_match()
-  " FIXME - fails under valgrind - this should not matter - timing issue?
-  call test_override('alloc_lines', 0)
-
   let s:input = printf('- y %s y %s', repeat('x', 50), repeat('x', 50))
   call s:test_windows('setl breakindent breakindentopt=list:-1 formatlistpat=^- hls')
   let @/ = '\%>3v[y]'
@@ -893,8 +884,6 @@ func Test_no_spurious_match()
   " cleanup
   set hls&vim
   bwipeout!
-  " FIXME - this should not matter
-  call test_override('alloc_lines', 1)
 endfunc
 
 func Test_no_extra_indent()

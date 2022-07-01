@@ -924,7 +924,8 @@ get_breakindent_win(
 {
     static int	    prev_indent = 0;	// cached indent value
     static long	    prev_ts     = 0L;	// cached tabstop value
-    static char_u   *prev_line = NULL;	// cached pointer to line
+    static int	    prev_fnum   = 0;	// cached buffer number
+    static char_u   *prev_line  = NULL;	// cached copy of "line"
     static varnumber_T prev_tick = 0;   // changedtick of cached value
 # ifdef FEAT_VARTABS
     static int      *prev_vts = NULL;   // cached vartabs values
@@ -941,21 +942,28 @@ get_breakindent_win(
 						? number_width(wp) + 1 : 0);
 
     // used cached indent, unless
-    // - line pointer changed
+    // - buffer changed
     // - 'tabstop' changed
+    // - buffer was changed
     // - 'briopt_list changed' changed or
     // - 'formatlistpattern' changed
-    if (prev_line != line || prev_ts != wp->w_buffer->b_p_ts
+    // - line changed
+    // - 'vartabs' changed
+    if (prev_fnum != wp->w_buffer->b_fnum
+	    || prev_ts != wp->w_buffer->b_p_ts
 	    || prev_tick != CHANGEDTICK(wp->w_buffer)
 	    || prev_listopt != wp->w_briopt_list
-	    || (prev_flp == NULL
-		|| (STRCMP(prev_flp, get_flp_value(wp->w_buffer)) != 0))
+	    || prev_flp == NULL
+	    || STRCMP(prev_flp, get_flp_value(wp->w_buffer)) != 0
+	    || prev_line == NULL || STRCMP(prev_line, line) != 0
 # ifdef FEAT_VARTABS
 	    || prev_vts != wp->w_buffer->b_p_vts_array
 # endif
 	)
     {
-	prev_line = line;
+	prev_fnum = wp->w_buffer->b_fnum;
+	vim_free(prev_line);
+	prev_line = vim_strsave(line);
 	prev_ts = wp->w_buffer->b_p_ts;
 	prev_tick = CHANGEDTICK(wp->w_buffer);
 # ifdef FEAT_VARTABS
