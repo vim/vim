@@ -62,7 +62,7 @@ syn match   fetchmailNoise	display '[:;,]'
 syn keyword fetchmailSet	nextgroup=fetchmailOptions skipwhite skipnl set
 
 syn keyword fetchmailOptions	daemon postmaster bouncemail spambounce
-				\ softbounce logfile idfile syslog properties
+				\ softbounce logfile pidfile idfile syslog properties
 syn match   fetchmailOptions	'\<no\_s\+\(bouncemail\|spambounce\|softbounce\|syslog\)'
 
 hi def link fetchmailComment	Comment
