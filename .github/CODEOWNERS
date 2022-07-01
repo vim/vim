@@ -111,6 +111,7 @@ runtime/ftplugin/dosbatch.vim		@mrdubya
 runtime/ftplugin/eiffel.vim		@dkearns
 runtime/ftplugin/erlang.vim		@hcs42
 runtime/ftplugin/eruby.vim		@tpope @dkearns
+runtime/ftplugin/fetchmail.vim		@dkearns
 runtime/ftplugin/fpcmake.vim		@dkearns
 runtime/ftplugin/freebasic.vim		@dkearns
 runtime/ftplugin/fstab.vim		@rid9
@@ -298,6 +299,7 @@ runtime/syntax/erlang.vim		@hcs42
 runtime/syntax/eruby.vim		@tpope @dkearns
 runtime/syntax/exports.vim		@cecamp
 runtime/syntax/falcon.vim		@steveno
+runtime/syntax/fetchmail.vim		@dkearns
 runtime/syntax/forth.vim		@jkotlinski
 runtime/syntax/fpcmake.vim		@dkearns
 runtime/syntax/fstab.vim		@rid9
