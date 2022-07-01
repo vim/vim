@@ -2184,4 +2184,12 @@ func Test_complete_smartindent()
   delfunction! FooBarComplete
 endfunc
 
+func Test_complete_overrun()
+  " this was going past the end of the copied text
+  new
+  sil norm si0s0
+  bwipe!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

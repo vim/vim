@@ -2209,11 +2209,21 @@ ins_compl_stop(int c, int prev_mode, int retval)
     // but only do this, if the Popup is still visible
     if (c == Ctrl_E)
     {
+	char_u *p = NULL;
+
 	ins_compl_delete();
 	if (compl_leader != NULL)
-	    ins_bytes(compl_leader + get_compl_len());
+	    p = compl_leader;
 	else if (compl_first_match != NULL)
-	    ins_bytes(compl_orig_text + get_compl_len());
+	    p = compl_orig_text;
+	if (p != NULL)
+	{
+	    int	    compl_len = get_compl_len();
+	    int	    len = (int)STRLEN(p);
+
+	    if (len > compl_len)
+		ins_bytes_len(p + compl_len, len - compl_len);
+	}
 	retval = TRUE;
     }
 
