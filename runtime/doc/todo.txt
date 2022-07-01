@@ -38,9 +38,6 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Prepare for the Vim 9.0 release:
-- Update version number in help
-
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
 - Check performance with callgrind and kcachegrind.
@@ -201,19 +198,11 @@ Terminal emulator window:
   conversions.
 
 Patches considered for including:
-- make functions static if possible, add a few tests. #10612
-- use ngettext() in a few more places #10606
-- move f_hasmapto() to map.c  #10611
+- Add "-n" option to xxd. #10599  needs a test
 - allow for nesting of timeout, sketch in #10595
-- Add "-n" option to xxd. #10599
-- Add support for "underdouble", "underdot" and "underdash". #9553
 - Patch to implement the vimtutor with a plugin: #6414
   Was originally written by Felipe Morales.
 - Patch to make fillchars global-local. (#5206)
-- Version of getchar() that does not move the cursor - #10603
-  Use a separate argument for the new flag.
-- Improved VB filetype detection. (Doug Kearns, June 26)
-- Improved FreeBasic runtime files (and a second one). (Doug Kearns, June 26)
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
 - try using autoconf 2.71 and fix all "obsolete" warnings
@@ -236,6 +225,8 @@ pass it on with modifications.
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
 
+Typed keys invisible after calling interrupt() from a timer. #10631
+
 With a window height of 6 and 'scrolloff' set to 3, using "j" does not scroll
 evenly. (#10545)  Need to handle this in scroll_cursor_bot().
 
@@ -253,6 +244,9 @@ When converting screen column to text position use this.
 The line number can be obtained from win->w_lines[].
 
 MS-Windows: did path modifier :p:8 stop working?  #8600
+
+Version of getchar() that does not move the cursor - #10603 Use a separate
+argument for the new flag.
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
@@ -294,6 +288,8 @@ Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
 globpath() does not use 'wildignorecase' at all? (related to #8350)
+
+mksession uses :buffer instead of :edit in one place but not another. #10629
 
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
@@ -4423,6 +4419,8 @@ GUI:
 
 
 Autocommands:
+9   Add WinNewPre - before creating a new window. #10635
+9   When triggering WinNew provide the window ID somehow.  #10633
 9   Rework the code from FEAT_OSFILETYPE for autocmd-osfiletypes to use
     'filetype'.  Only for when the current buffer is known.
 -   Put autocommand event names in a hashtable for faster lookup?

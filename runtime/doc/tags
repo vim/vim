@@ -988,6 +988,7 @@ $quote	eval.txt	/*$quote*
 't_Co'	term.txt	/*'t_Co'*
 't_Cs'	term.txt	/*'t_Cs'*
 't_DL'	term.txt	/*'t_DL'*
+'t_Ds'	term.txt	/*'t_Ds'*
 't_EC'	term.txt	/*'t_EC'*
 't_EI'	term.txt	/*'t_EI'*
 't_F1'	term.txt	/*'t_F1'*
@@ -1044,6 +1045,7 @@ $quote	eval.txt	/*$quote*
 't_TI'	term.txt	/*'t_TI'*
 't_Te'	term.txt	/*'t_Te'*
 't_Ts'	term.txt	/*'t_Ts'*
+'t_Us'	term.txt	/*'t_Us'*
 't_VS'	term.txt	/*'t_VS'*
 't_WP'	term.txt	/*'t_WP'*
 't_WS'	term.txt	/*'t_WS'*
@@ -1059,6 +1061,7 @@ $quote	eval.txt	/*$quote*
 't_da'	term.txt	/*'t_da'*
 't_db'	term.txt	/*'t_db'*
 't_dl'	term.txt	/*'t_dl'*
+'t_ds'	term.txt	/*'t_ds'*
 't_fd'	term.txt	/*'t_fd'*
 't_fe'	term.txt	/*'t_fe'*
 't_fs'	term.txt	/*'t_fs'*
@@ -6875,6 +6878,11 @@ format-formatexpr	change.txt	/*format-formatexpr*
 formatting	change.txt	/*formatting*
 forth.vim	syntax.txt	/*forth.vim*
 fortran.vim	syntax.txt	/*fortran.vim*
+freebasic.vim	syntax.txt	/*freebasic.vim*
+freebasic_no_comment_fold	syntax.txt	/*freebasic_no_comment_fold*
+freebasic_operators	syntax.txt	/*freebasic_operators*
+freebasic_space_errors	syntax.txt	/*freebasic_space_errors*
+freebasic_type_suffixes	syntax.txt	/*freebasic_type_suffixes*
 friendship	intro.txt	/*friendship*
 frombook	usr_01.txt	/*frombook*
 ft-abel-syntax	syntax.txt	/*ft-abel-syntax*
@@ -6931,6 +6939,8 @@ ft-forth-syntax	syntax.txt	/*ft-forth-syntax*
 ft-fortran-indent	indent.txt	/*ft-fortran-indent*
 ft-fortran-plugin	filetype.txt	/*ft-fortran-plugin*
 ft-fortran-syntax	syntax.txt	/*ft-fortran-syntax*
+ft-freebasic-plugin	filetype.txt	/*ft-freebasic-plugin*
+ft-freebasic-syntax	syntax.txt	/*ft-freebasic-syntax*
 ft-fvwm-syntax	syntax.txt	/*ft-fvwm-syntax*
 ft-gitcommit-plugin	filetype.txt	/*ft-gitcommit-plugin*
 ft-gprof-plugin	filetype.txt	/*ft-gprof-plugin*
@@ -9726,6 +9736,7 @@ t_Ce	term.txt	/*t_Ce*
 t_Co	term.txt	/*t_Co*
 t_Cs	term.txt	/*t_Cs*
 t_DL	term.txt	/*t_DL*
+t_Ds	term.txt	/*t_Ds*
 t_EC	term.txt	/*t_EC*
 t_EI	term.txt	/*t_EI*
 t_F1	term.txt	/*t_F1*
@@ -9782,6 +9793,7 @@ t_TE	term.txt	/*t_TE*
 t_TI	term.txt	/*t_TI*
 t_Te	term.txt	/*t_Te*
 t_Ts	term.txt	/*t_Ts*
+t_Us	term.txt	/*t_Us*
 t_VS	term.txt	/*t_VS*
 t_WP	term.txt	/*t_WP*
 t_WS	term.txt	/*t_WS*
@@ -9808,6 +9820,7 @@ t_da	term.txt	/*t_da*
 t_db	term.txt	/*t_db*
 t_dict-variable	eval.txt	/*t_dict-variable*
 t_dl	term.txt	/*t_dl*
+t_ds	term.txt	/*t_ds*
 t_ed	version4.txt	/*t_ed*
 t_el	version4.txt	/*t_el*
 t_f1	version4.txt	/*t_f1*
@@ -10204,7 +10217,11 @@ u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*
 uganda.txt	uganda.txt	/*uganda.txt*
 undercurl	syntax.txt	/*undercurl*
+underdashed	syntax.txt	/*underdashed*
+underdotted	syntax.txt	/*underdotted*
+underdouble	syntax.txt	/*underdouble*
 underline	syntax.txt	/*underline*
+underline-codes	syntax.txt	/*underline-codes*
 undo	undo.txt	/*undo*
 undo-blocks	undo.txt	/*undo-blocks*
 undo-branches	undo.txt	/*undo-branches*

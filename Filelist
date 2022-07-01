@@ -15,7 +15,6 @@ SRC_ALL =	\
 		.gitignore \
 		.hgignore \
 		.lgtm.yml \
-		.travis.yml \
 		.appveyor.yml \
 		.codecov.yml \
 		ci/appveyor.bat \
@@ -1017,6 +1016,7 @@ LANG_GEN = \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
 		runtime/spell/sr/README_sr.txt \
+		runtime/spell/sr/convert.vim \
 		runtime/spell/tet/*.diff \
 		runtime/spell/tet/main.aap \
 		runtime/spell/check/main.aap \

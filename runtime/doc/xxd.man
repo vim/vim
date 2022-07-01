@@ -46,7 +46,7 @@ OPTIONS
               long line of output.
 
        -C | -capitalize
-              Capitalize variable names in C include file  style,  when  using
+              Capitalize  variable  names  in C include file style, when using
               -i.
 
        -E | -EBCDIC
@@ -57,27 +57,31 @@ OPTIONS
        -e     Switch to little-endian hexdump.  This option treats byte groups
               as words in little-endian byte order.  The default grouping of 4
               bytes may be changed using -g.  This option only applies to hex‐
-              dump, leaving the ASCII (or  EBCDIC)  representation  unchanged.
+              dump,  leaving  the  ASCII (or EBCDIC) representation unchanged.
               The command line switches -r, -p, -i do not work with this mode.
 
        -g bytes | -groupsize bytes
-              Separate  the  output of every <bytes> bytes (two hex characters
+              Separate the output of every <bytes> bytes (two  hex  characters
               or eight bit-digits each) by a whitespace.  Specify -g 0 to sup‐
               press grouping.  <Bytes> defaults to 2 in normal mode, 4 in lit‐
-              tle-endian mode and 1 in bits mode.  Grouping does not apply  to
+              tle-endian  mode and 1 in bits mode.  Grouping does not apply to
               postscript or include style.
 
        -h | -help
-              Print  a summary of available commands and exit.  No hex dumping
+              Print a summary of available commands and exit.  No hex  dumping
               is performed.
 
        -i | -include
-              Output in C include file style. A complete static array  defini‐
-              tion  is  written (named after the input file), unless xxd reads
+              Output  in C include file style. A complete static array defini‐
+              tion is written (named after the input file), unless  xxd  reads
               from stdin.
 
        -l len | -len len
               Stop after writing <len> octets.
+
+       -n name  |  -name name
+              Override  the variable name output when -i is used. The array is
+              named name and the length is named name_len.
 
        -o offset
               Add <offset> to the displayed file position.
@@ -91,8 +95,8 @@ OPTIONS
               not writing to stdout, xxd writes into its output  file  without
               truncating it. Use the combination -r -p to read plain hexadeci‐
               mal dumps without line number information and without a particu‐
-              lar  column  layout.  Additional  Whitespace and line-breaks are
-              allowed anywhere.
+              lar column layout. Additional Whitespace and line-breaks are al‐
+              lowed anywhere.
 
        -seek offset
               When used after -r: revert with <offset> added to file positions
@@ -209,8 +213,8 @@ EXAMPLES
        *
        000fffc: 0000 0000 40                   ....A
 
-       Create  a  1  byte  file containing a single 'A' character.  The number
-       after '-r -s' adds to the linenumbers found in the file; in effect, the
+       Create a 1 byte file containing a single 'A' character.  The number af‐
+       ter '-r -s' adds to the linenumbers found in the file; in  effect,  the
        leading bytes are suppressed.
        % echo "010000: 41" | xxd -r -s -0x10000 > file
 

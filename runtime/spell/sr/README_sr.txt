@@ -40,6 +40,20 @@ continues monotonically after the last flag number in cyrillic .aff file.
 A couple of words in cyrillic dict used a latin codepoints for 'a' and 'e',
 that was also corrected.
 
+You should be able to reproduce this with these steps:
+  * Save the existing sr.aff and sr.dic files, if you have them, they will be
+    overwritten.
+  * Create a subfolder "new".
+  * Put 4 files downloaded from LibreOffice dictionaries GitHub repository in
+    it: sr.aff, sr-Latn.aff, sr.dic and sr-Latn.dic
+  * Open Vim and cd into "new"
+  * Execute:  :so ../convert.vim
+  * The resulting sr.aff and sr.dic are created in the parent spell folder
+    (here).
+  * Now one can generate spl file as usual using the merged dic and aff
+    files:
+        env LANG=sr_RS.UTF-8 vim -u NONE -e -c "set enc=utf-8" -c "mkspell! ../sr sr" -c q
+
 
 Ivan Pešić
 28.06.2022.
