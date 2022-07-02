@@ -774,6 +774,26 @@ shorten_dir(char_u *str)
     shorten_dir_len(str, 1);
 }
 
+/*
+ * Return TRUE if "fname" is a readable file.
+ */
+    int
+file_is_readable(char_u *fname)
+{
+    int		fd;
+
+#ifndef O_NONBLOCK
+# define O_NONBLOCK 0
+#endif
+    if (*fname && !mch_isdir(fname)
+	      && (fd = mch_open((char *)fname, O_RDONLY | O_NONBLOCK, 0)) >= 0)
+    {
+	close(fd);
+	return TRUE;
+    }
+    return FALSE;
+}
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 
 /*
@@ -891,26 +911,6 @@ f_exepath(typval_T *argvars, typval_T *rettv)
     (void)mch_can_exe(tv_get_string(&argvars[0]), &p, TRUE);
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = p;
-}
-
-/*
- * Return TRUE if "fname" is a readable file.
- */
-    int
-file_is_readable(char_u *fname)
-{
-    int		fd;
-
-#ifndef O_NONBLOCK
-# define O_NONBLOCK 0
-#endif
-    if (*fname && !mch_isdir(fname)
-	      && (fd = mch_open((char *)fname, O_RDONLY | O_NONBLOCK, 0)) >= 0)
-    {
-	close(fd);
-	return TRUE;
-    }
-    return FALSE;
 }
 
 /*

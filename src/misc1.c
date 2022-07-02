@@ -1655,7 +1655,21 @@ vim_version_dir(char_u *vimdir)
     vim_free(p);
     p = concat_fnames(vimdir, (char_u *)RUNTIME_DIRNAME, TRUE);
     if (p != NULL && mch_isdir(p))
-	return p;
+    {
+	char_u *fname = concat_fnames(p, (char_u *)"defaults.vim", TRUE);
+
+	// Check that "defaults.vim" exists in this directory, to avoid picking
+	// up a stray "runtime" directory, it would make many tests fail in
+	// mysterious ways.
+	if (fname != NULL)
+	{
+	    int exists = file_is_readable(fname);
+
+	    vim_free(fname);
+	    if (exists)
+		return p;
+	}
+    }
     vim_free(p);
     return NULL;
 }
