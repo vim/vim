@@ -624,6 +624,7 @@ SRC_DOS_BIN =	\
 		src/xpm/x86/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
+		runtime/bitmaps/vim.ico \
 		nsis/icons.zip \
 
 # source files for Amiga, DOS, etc. (also in the extra archive)

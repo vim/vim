@@ -414,6 +414,7 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
 	tar cf - \
 		$(SRC_ALL) \
 		$(SRC_DOS) \
+		$(SRC_DOS_BIN) \
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS_UNIX) \
 		runtime/doc/uganda.nsis.txt \
@@ -423,9 +424,6 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
 	rmdir dist/vim/$(VIMRTDIR)/runtime
 	# This file needs to be in dos fileformat for NSIS.
 	$(VIM) -e -X -u no_title.vim -c ":set tx|wq" dist/vim/$(VIMRTDIR)/doc/uganda.nsis.txt
-	tar cf - \
-		$(SRC_DOS_BIN) \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	cd dist && zip -9 -rD -z vim$(VERSION)src.zip vim <$(COMMENT_SRC)
 
 runtime/doc/uganda.nsis.txt: runtime/doc/uganda.txt
