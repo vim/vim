@@ -2437,7 +2437,8 @@ handle_mapping(
     int		is_plug_map = FALSE;
 
     // If typehead starts with <Plug> then remap, even for a "noremap" mapping.
-    if (typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
+    if (typebuf.tb_len >= 3
+	    && typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
 	    && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
 	    && typebuf.tb_buf[typebuf.tb_off + 2] == KE_PLUG)
 	is_plug_map = TRUE;
