@@ -13041,7 +13041,13 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 $as_echo_n "checking for timer_create... " >&6; }
 save_LIBS="$LIBS"
 LIBS="$LIBS -lrt"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #include<signal.h>
@@ -13058,18 +13064,25 @@ main ()
 
   action.sigev_notify = SIGEV_THREAD;
   action.sigev_notify_function = set_flag;
-  timer_create(CLOCK_REALTIME, &action, &timer_id);
+  if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
+    exit(1);  // cannot create a monotonic timer
 
   ;
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
+if ac_fn_c_try_run "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes; with -lrt" >&5
 $as_echo "yes; with -lrt" >&6; }; $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
 
 else
   LIBS="$save_LIBS"
+  if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5; }
+else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -13087,13 +13100,14 @@ main ()
 
     action.sigev_notify = SIGEV_THREAD;
     action.sigev_notify_function = set_flag;
-    timer_create(CLOCK_REALTIME, &action, &timer_id);
+    if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
+      exit(1);  // cannot create a monotonic timer
 
   ;
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
+if ac_fn_c_try_run "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }; $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
 
@@ -13101,11 +13115,15 @@ else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
+
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether stat() ignores a trailing slash" >&5
 $as_echo_n "checking whether stat() ignores a trailing slash... " >&6; }

@@ -3805,10 +3805,12 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 	AC_MSG_RESULT(no))
 
 dnl Check for timer_create. It probably requires the 'rt' library.
+dnl Run the program to find out if timer_create(CLOCK_MONOTONIC) actually
+dnl works, on Solaris timer_create() exists but fails at runtime.
 AC_MSG_CHECKING([for timer_create])
 save_LIBS="$LIBS"
 LIBS="$LIBS -lrt"
-AC_LINK_IFELSE([AC_LANG_PROGRAM([
+AC_RUN_IFELSE([AC_LANG_PROGRAM([
 #include<signal.h>
 #include<time.h>
 static void set_flag(union sigval sv) {}
@@ -3819,11 +3821,12 @@ static void set_flag(union sigval sv) {}
 
   action.sigev_notify = SIGEV_THREAD;
   action.sigev_notify_function = set_flag;
-  timer_create(CLOCK_REALTIME, &action, &timer_id);
+  if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
+    exit(1);  // cannot create a monotonic timer
   ])],
   AC_MSG_RESULT(yes; with -lrt); AC_DEFINE(HAVE_TIMER_CREATE),
   LIBS="$save_LIBS"
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([
+  AC_RUN_IFELSE([AC_LANG_PROGRAM([
 #include<signal.h>
 #include<time.h>
 static void set_flag(union sigval sv) {}
@@ -3834,7 +3837,8 @@ static void set_flag(union sigval sv) {}
 
     action.sigev_notify = SIGEV_THREAD;
     action.sigev_notify_function = set_flag;
-    timer_create(CLOCK_REALTIME, &action, &timer_id);
+    if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
+      exit(1);  // cannot create a monotonic timer
     ])],
     AC_MSG_RESULT(yes); AC_DEFINE(HAVE_TIMER_CREATE),
     AC_MSG_RESULT(no)))
