@@ -3118,9 +3118,11 @@ parse_command_modifiers(
 		size_t len = STRLEN(cmd_start);
 
 		// Special case: empty command uses "+":
-		//  "'<,'>mods" -> "mods'<,'>+
+		//  "'<,'>mods" -> "mods *+
+		//  Use "*" instead of "'<,'>" to avoid the command getting
+		//  longer, in case is was allocated.
 		mch_memmove(orig_cmd, cmd_start, len);
-		STRCPY(orig_cmd + len, "'<,'>+");
+		STRCPY(orig_cmd + len, " *+");
 	    }
 	    else
 	    {
