@@ -416,100 +416,6 @@ func Test_compl_feedkeys()
   set completeopt&
 endfunc
 
-func s:ComplInCmdwin_GlobalCompletion(a, l, p)
-  return 'global'
-endfunc
-
-func s:ComplInCmdwin_LocalCompletion(a, l, p)
-  return 'local'
-endfunc
-
-func Test_compl_in_cmdwin()
-  CheckFeature cmdwin
-
-  set wildmenu wildchar=<Tab>
-  com! -nargs=1 -complete=command GetInput let input = <q-args>
-  com! -buffer TestCommand echo 'TestCommand'
-  let w:test_winvar = 'winvar'
-  let b:test_bufvar = 'bufvar'
-
-  " User-defined commands
-  let input = ''
-  call feedkeys("q:iGetInput T\<C-x>\<C-v>\<CR>", 'tx!')
-  call assert_equal('TestCommand', input)
-
-  let input = ''
-  call feedkeys("q::GetInput T\<Tab>\<CR>:q\<CR>", 'tx!')
-  call assert_equal('T', input)
-
-
-  com! -nargs=1 -complete=var GetInput let input = <q-args>
-  " Window-local variables
-  let input = ''
-  call feedkeys("q:iGetInput w:test_\<C-x>\<C-v>\<CR>", 'tx!')
-  call assert_equal('w:test_winvar', input)
-
-  let input = ''
-  call feedkeys("q::GetInput w:test_\<Tab>\<CR>:q\<CR>", 'tx!')
-  call assert_equal('w:test_', input)
-
-  " Buffer-local variables
-  let input = ''
-  call feedkeys("q:iGetInput b:test_\<C-x>\<C-v>\<CR>", 'tx!')
-  call assert_equal('b:test_bufvar', input)
-
-  let input = ''
-  call feedkeys("q::GetInput b:test_\<Tab>\<CR>:q\<CR>", 'tx!')
-  call assert_equal('b:test_', input)
-
-
-  " Argument completion of buffer-local command
-  func s:ComplInCmdwin_GlobalCompletionList(a, l, p)
-    return ['global']
-  endfunc
-
-  func s:ComplInCmdwin_LocalCompletionList(a, l, p)
-    return ['local']
-  endfunc
-
-  func s:ComplInCmdwin_CheckCompletion(arg)
-    call assert_equal('local', a:arg)
-  endfunc
-
-  com! -nargs=1 -complete=custom,<SID>ComplInCmdwin_GlobalCompletion
-       \ TestCommand call s:ComplInCmdwin_CheckCompletion(<q-args>)
-  com! -buffer -nargs=1 -complete=custom,<SID>ComplInCmdwin_LocalCompletion
-       \ TestCommand call s:ComplInCmdwin_CheckCompletion(<q-args>)
-  call feedkeys("q:iTestCommand \<Tab>\<CR>", 'tx!')
-
-  com! -nargs=1 -complete=customlist,<SID>ComplInCmdwin_GlobalCompletionList
-       \ TestCommand call s:ComplInCmdwin_CheckCompletion(<q-args>)
-  com! -buffer -nargs=1 -complete=customlist,<SID>ComplInCmdwin_LocalCompletionList
-       \ TestCommand call s:ComplInCmdwin_CheckCompletion(<q-args>)
-
-  call feedkeys("q:iTestCommand \<Tab>\<CR>", 'tx!')
-
-  func! s:ComplInCmdwin_CheckCompletion(arg)
-    call assert_equal('global', a:arg)
-  endfunc
-  new
-  call feedkeys("q:iTestCommand \<Tab>\<CR>", 'tx!')
-  quit
-
-  delfunc s:ComplInCmdwin_GlobalCompletion
-  delfunc s:ComplInCmdwin_LocalCompletion
-  delfunc s:ComplInCmdwin_GlobalCompletionList
-  delfunc s:ComplInCmdwin_LocalCompletionList
-  delfunc s:ComplInCmdwin_CheckCompletion
-
-  delcom -buffer TestCommand
-  delcom TestCommand
-  delcom GetInput
-  unlet w:test_winvar
-  unlet b:test_bufvar
-  set wildmenu& wildchar&
-endfunc
-
 " Test for insert path completion with completeslash option
 func Test_ins_completeslash()
   CheckMSWindows
@@ -2190,6 +2096,5 @@ func Test_complete_overrun()
   sil norm si0s0
   bwipe!
 endfunc
-
 
 " vim: shiftwidth=2 sts=2 expandtab
