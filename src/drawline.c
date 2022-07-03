@@ -970,7 +970,11 @@ win_line(
 		}
 		else
 # endif
+# if defined(FEAT_QUICKFIX)
+		    line_attr = hl_combine_attr(line_attr, cul_attr);
+# else
 		    line_attr = cul_attr;
+# endif
 	    }
 	    else
 	    {
