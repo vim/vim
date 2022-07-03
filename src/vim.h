@@ -2078,18 +2078,19 @@ typedef int sock_T;
 #define VV_TERMU7RESP	90
 #define VV_TERMSTYLERESP 91
 #define VV_TERMBLINKRESP 92
-#define VV_EVENT	93
-#define VV_VERSIONLONG	94
-#define VV_ECHOSPACE	95
-#define VV_ARGV		96
-#define VV_COLLATE      97
-#define VV_EXITING	98
-#define VV_COLORNAMES   99
-#define VV_SIZEOFINT	100
-#define VV_SIZEOFLONG	101
-#define VV_SIZEOFPOINTER 102
-#define VV_MAXCOL	103
-#define VV_LEN		104	// number of v: vars
+#define VV_TIMEDOUT	93
+#define VV_EVENT	94
+#define VV_VERSIONLONG	95
+#define VV_ECHOSPACE	96
+#define VV_ARGV		97
+#define VV_COLLATE	98
+#define VV_EXITING	99
+#define VV_COLORNAMES	100
+#define VV_SIZEOFINT	101
+#define VV_SIZEOFLONG	102
+#define VV_SIZEOFPOINTER 103
+#define VV_MAXCOL	104
+#define VV_LEN		105	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL

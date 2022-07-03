@@ -2877,7 +2877,7 @@ handle_mapping(
 	    may_garbage_collect = FALSE;
 
 	    save_m_keys = vim_strsave(mp->m_keys);
-	    map_str = eval_map_expr(mp, NUL);
+	    map_str = eval_map_expr(mp, NUL, *timedout);
 
 	    // The mapping may do anything, but we expect it to take care of
 	    // redrawing.  Do put the cursor back where it was.

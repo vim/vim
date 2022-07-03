@@ -1641,7 +1641,7 @@ check_abbr(
 	    expr = mp->m_expr;
 
 	    if (expr)
-		s = eval_map_expr(mp, c);
+		s = eval_map_expr(mp, c, FALSE);
 	    else
 #endif
 		s = mp->m_str;
@@ -1678,7 +1678,8 @@ check_abbr(
     char_u *
 eval_map_expr(
     mapblock_T	*mp,
-    int		c)	    // NUL or typed character for abbreviation
+    int		c,	    // NUL or typed character for abbreviation
+    int		timedout)   // whether mapping is triggered on timeout
 {
     char_u	*res;
     char_u	*p;
@@ -1701,6 +1702,7 @@ eval_map_expr(
     ++textlock;
     ++ex_normal_lock;
     set_vim_var_char(c);  // set v:char to the typed character
+    set_vim_var_nr(VV_TIMEDOUT, timedout);
     save_cursor = curwin->w_cursor;
     save_msg_col = msg_col;
     save_msg_row = msg_row;
@@ -1713,6 +1715,7 @@ eval_map_expr(
     // Note: the evaluation may make "mp" invalid.
     p = eval_to_string(expr, FALSE);
 
+    set_vim_var_nr(VV_TIMEDOUT, FALSE);
     --textlock;
     --ex_normal_lock;
     curwin->w_cursor = save_cursor;

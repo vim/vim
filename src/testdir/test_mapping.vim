@@ -1685,6 +1685,36 @@ func Test_expr_map_escape_special()
   nunmap …
 endfunc
 
+" Test for v:timedout
+func Test_expr_map_v_timedout()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set timeout timeoutlen=400
+    inoremap <expr> a v:timedout ? 'T' : 'S'
+    inoremap ab L
+  END
+  call writefile(lines, 'Xtest_expr_map_v_timedout')
+  let buf = RunVimInTerminal('-S Xtest_expr_map_v_timedout', #{rows: 6})
+
+  " Enter Insert mode
+  call term_sendkeys(buf, 'i')
+  " Trigger the "a" mapping on timeout
+  call term_sendkeys(buf, 'a')
+  call term_wait(buf, 500)
+  call WaitForAssert({-> assert_equal("T", term_getline(buf, 1))})
+  " Trigger the "a" mapping because there are no longer matches
+  call term_sendkeys(buf, 'ac')
+  call WaitForAssert({-> assert_equal("TSc", term_getline(buf, 1))})
+  " Trigger a longer match "ab"
+  call term_sendkeys(buf, 'ab')
+  call WaitForAssert({-> assert_equal("TScL", term_getline(buf, 1))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_expr_map_v_timedout')
+endfunc
+
 " Testing for mapping after an <Nop> mapping is triggered on timeout.
 " Test for what patch 8.1.0052 fixes.
 func Test_map_after_timed_out_nop()

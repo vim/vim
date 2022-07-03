@@ -2544,6 +2544,10 @@ v:testing	Must be set before using `test_garbagecollect_now()`.
 		Also, when set certain error messages won't be shown for 2
 		seconds. (e.g. "'dictionary' option is empty")
 
+					*v:timedout* *timedout-variable*
+v:timedout	Set to |TRUE| when inside an <expr> mapping triggered on
+		timeout and |FALSE| otherwise.
+
 				*v:this_session* *this_session-variable*
 v:this_session	Full filename of the last loaded or saved session file.  See
 		|:mksession|.  It is allowed to set this variable.  When no

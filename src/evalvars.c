@@ -144,6 +144,7 @@ static struct vimvar
     {VV_NAME("termu7resp",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("termstyleresp",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("termblinkresp",	 VAR_STRING), NULL, VV_RO},
+    {VV_NAME("timedout",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("event",		 VAR_DICT), NULL, VV_RO},
     {VV_NAME("versionlong",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("echospace",	 VAR_NUMBER), NULL, VV_RO},

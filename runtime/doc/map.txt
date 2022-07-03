@@ -283,6 +283,9 @@ For abbreviations |v:char| is set to the character that was typed to trigger
 the abbreviation.  You can use this to decide how to expand the {lhs}.  You
 should not either insert or change the v:char.
 
+For mappings |v:timedout| is set to |TRUE| if the mapping the triggered on
+timeout and |FALSE| otherwise.
+
 In case you want the mapping to not do anything, you can have the expression
 evaluate to an empty string.  If something changed that requires Vim to
 go through the main loop (e.g. to update the display), return "\<Ignore>".
