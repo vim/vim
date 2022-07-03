@@ -378,7 +378,14 @@ in a plugin using an autoload script: >
 	vim9script
 	import autoload 'implementation.vim' as impl
 	nnoremap <F4> <ScriptCmd>impl.DoTheWork()<CR>
-
+<
+It is also particularly helpful when referencing an imported vim9 function
+from a mapping in a legacy script: >
+	" without <ScriptCmd> using s: would result in
+	" E121: Undefined variable: s:impl
+	import 'implementation.vim' as impl
+	nnoremap <F4> <ScriptCmd>:call s:impl.DoTheWork()
+<
 No matter where <F4> is typed, the "impl" import will be found in the script
 context of where the mapping was defined.  And since it's an autoload import,
 the "implementation.vim" script will only be loaded once <F4> is typed, not
