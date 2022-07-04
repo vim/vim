@@ -285,9 +285,9 @@ fill_foldcolumn(
     {
 	if (win_foldinfo.fi_lnum == lnum
 		&& first_level + i >= win_foldinfo.fi_low_level)
-	    symbol = fill_foldopen;
+	    symbol = wp->w_fill_chars.foldopen;
 	else if (first_level == 1)
-	    symbol = fill_foldsep;
+	    symbol = wp->w_fill_chars.foldsep;
 	else if (first_level + i <= 9)
 	    symbol = '0' + first_level + i;
 	else
@@ -312,7 +312,7 @@ fill_foldcolumn(
 		// for a multibyte character, erase all the bytes
 		vim_memset(p + byte_counter, ' ', len);
 	}
-	symbol = fill_foldclosed;
+	symbol = wp->w_fill_chars.foldclosed;
 	len = utf_char2bytes(symbol, &p[byte_counter]);
 	byte_counter += len;
     }
@@ -430,11 +430,12 @@ reset_screen_attr(void)
  */
     void
 screen_line(
-    int	    row,
-    int	    coloff,
-    int	    endcol,
-    int	    clear_width,
-    int	    flags UNUSED)
+	win_T	*wp,
+	int	row,
+	int	coloff,
+	int	endcol,
+	int	clear_width,
+	int	flags UNUSED)
 {
     unsigned	    off_from;
     unsigned	    off_to;
@@ -794,7 +795,7 @@ screen_line(
 	    {
 		int c;
 
-		c = fillchar_vsep(&hl);
+		c = fillchar_vsep(&hl, wp);
 		if (ScreenLines[off_to] != (schar_T)c
 			|| (enc_utf8 && (int)ScreenLinesUC[off_to]
 							!= (c >= 0x80 ? c : 0))
@@ -853,7 +854,7 @@ draw_vsep_win(win_T *wp, int row)
     if (wp->w_vsep_width)
     {
 	// draw the vertical separator right of this window
-	c = fillchar_vsep(&hl);
+	c = fillchar_vsep(&hl, wp);
 	screen_fill(W_WINROW(wp) + row, W_WINROW(wp) + wp->w_height,
 		W_ENDCOL(wp), W_ENDCOL(wp) + 1,
 		c, ' ', hl);
@@ -4619,12 +4620,12 @@ fillchar_status(int *attr, win_T *wp)
 	if (wp == curwin)
 	{
 	    *attr = HL_ATTR(HLF_ST);
-	    fill = fill_stl;
+	    fill = wp->w_fill_chars.stl;
 	}
 	else
 	{
 	    *attr = HL_ATTR(HLF_STNC);
-	    fill = fill_stlnc;
+	    fill = wp->w_fill_chars.stlnc;
 	}
     }
     else
@@ -4632,19 +4633,19 @@ fillchar_status(int *attr, win_T *wp)
     if (wp == curwin)
     {
 	*attr = HL_ATTR(HLF_S);
-	fill = fill_stl;
+	fill = wp->w_fill_chars.stl;
     }
     else
     {
 	*attr = HL_ATTR(HLF_SNC);
-	fill = fill_stlnc;
+	fill = wp->w_fill_chars.stlnc;
     }
     // Use fill when there is highlighting, and highlighting of current
     // window differs, or the fillchars differ, or this is not the
     // current window
     if (*attr != 0 && ((HL_ATTR(HLF_S) != HL_ATTR(HLF_SNC)
 			|| wp != curwin || ONE_WINDOW)
-		    || (fill_stl != fill_stlnc)))
+		    || (wp->w_fill_chars.stl != wp->w_fill_chars.stlnc)))
 	return fill;
     if (wp == curwin)
 	return '^';
@@ -4656,13 +4657,13 @@ fillchar_status(int *attr, win_T *wp)
  * Get its attributes in "*attr".
  */
     int
-fillchar_vsep(int *attr)
+fillchar_vsep(int *attr, win_T *wp)
 {
     *attr = HL_ATTR(HLF_C);
-    if (*attr == 0 && fill_vert == ' ')
+    if (*attr == 0 && wp->w_fill_chars.vert == ' ')
 	return '|';
     else
-	return fill_vert;
+	return wp->w_fill_chars.vert;
 }
 
 /*
@@ -4848,29 +4849,30 @@ get_encoded_char_adv(char_u **p)
     char *
 set_chars_option(win_T *wp, char_u **varp)
 {
-    int		round, i, len, len2, entries;
-    char_u	*p, *s;
-    int		c1 = 0, c2 = 0, c3 = 0;
-    char_u	*last_multispace = NULL; // Last occurrence of "multispace:"
-    char_u	*last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
-    int		multispace_len = 0;	 // Length of lcs-multispace string
-    int		lead_multispace_len = 0; // Length of lcs-leadmultispace string
+    int	    round, i, len, len2, entries;
+    char_u  *p, *s;
+    int	    c1 = 0, c2 = 0, c3 = 0;
+    char_u  *last_multispace = NULL;  // Last occurrence of "multispace:"
+    char_u  *last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
+    int	    multispace_len = 0;	      // Length of lcs-multispace string
+    int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
     struct charstab
     {
 	int	*cp;
 	char	*name;
     };
+    static fill_chars_T fill_chars;
     static struct charstab filltab[] =
     {
-	{&fill_stl,		"stl"},
-	{&fill_stlnc,		"stlnc"},
-	{&fill_vert,		"vert"},
-	{&fill_fold,		"fold"},
-	{&fill_foldopen,	"foldopen"},
-	{&fill_foldclosed,	"foldclose"},
-	{&fill_foldsep,		"foldsep"},
-	{&fill_diff,		"diff"},
-	{&fill_eob,		"eob"},
+	{&fill_chars.stl,	"stl"},
+	{&fill_chars.stlnc,	"stlnc"},
+	{&fill_chars.vert,	"vert"},
+	{&fill_chars.fold,	"fold"},
+	{&fill_chars.foldopen,	"foldopen"},
+	{&fill_chars.foldclosed, "foldclose"},
+	{&fill_chars.foldsep,	"foldsep"},
+	{&fill_chars.diff,	"diff"},
+	{&fill_chars.eob,	"eob"},
     };
     static lcs_chars_T lcs_chars;
     struct charstab lcstab[] =
@@ -4903,6 +4905,8 @@ set_chars_option(win_T *wp, char_u **varp)
     {
 	tab = filltab;
 	entries = ARRAY_LENGTH(filltab);
+	if (varp == &wp->w_p_fcs && wp->w_p_fcs[0] == NUL)
+	    varp = &p_fcs;
     }
 
     // first round: check for valid value, second round: assign values
@@ -4910,15 +4914,12 @@ set_chars_option(win_T *wp, char_u **varp)
     {
 	if (round > 0)
 	{
-	    // After checking that the value is valid: set defaults: space for
-	    // 'fillchars', NUL for 'listchars'
-	    for (i = 0; i < entries; ++i)
-		if (tab[i].cp != NULL)
-		    *(tab[i].cp) =
-			((varp == &p_lcs || varp == &wp->w_p_lcs) ? NUL : ' ');
-
+	    // After checking that the value is valid: set defaults.
 	    if (varp == &p_lcs || varp == &wp->w_p_lcs)
 	    {
+		for (i = 0; i < entries; ++i)
+		    if (tab[i].cp != NULL)
+			*(tab[i].cp) = NUL;
 		lcs_chars.tab1 = NUL;
 		lcs_chars.tab3 = NUL;
 
@@ -4932,7 +4933,8 @@ set_chars_option(win_T *wp, char_u **varp)
 
 		if (lead_multispace_len > 0)
 		{
-		    lcs_chars.leadmultispace = ALLOC_MULT(int, lead_multispace_len + 1);
+		    lcs_chars.leadmultispace =
+				      ALLOC_MULT(int, lead_multispace_len + 1);
 		    lcs_chars.leadmultispace[lead_multispace_len] = NUL;
 		}
 		else
@@ -4940,11 +4942,15 @@ set_chars_option(win_T *wp, char_u **varp)
 	    }
 	    else
 	    {
-		fill_diff = '-';
-		fill_foldopen = '-';
-		fill_foldclosed = '+';
-		fill_foldsep = '|';
-		fill_eob = '~';
+		fill_chars.stl = ' ';
+		fill_chars.stlnc = ' ';
+		fill_chars.vert = ' ';
+		fill_chars.fold = '-';
+		fill_chars.foldopen = '-';
+		fill_chars.foldclosed = '+';
+		fill_chars.foldsep = '|';
+		fill_chars.diff = '-';
+		fill_chars.eob = '~';
 	    }
 	}
 	p = *varp;
@@ -5083,11 +5089,16 @@ set_chars_option(win_T *wp, char_u **varp)
 		++p;
 	}
     }
+
     if (tab == lcstab)
     {
 	vim_free(wp->w_lcs_chars.multispace);
 	vim_free(wp->w_lcs_chars.leadmultispace);
 	wp->w_lcs_chars = lcs_chars;
+    }
+    else
+    {
+	wp->w_fill_chars = fill_chars;
     }
 
     return NULL;	// no error

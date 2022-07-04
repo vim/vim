@@ -1311,7 +1311,7 @@ ambw_end:
 	if (errmsg == NULL)
 	{
 	    tabpage_T	*tp;
-	    win_T		*wp;
+	    win_T	*wp;
 
 	    // The current window is set to use the global 'listchars' value.
 	    // So clear the window-local value.
@@ -1320,18 +1320,40 @@ ambw_end:
 	    FOR_ALL_TAB_WINDOWS(tp, wp)
 		// If no error was returned above, we don't expect an error
 		// here, so ignore the return value.
-		(void)set_chars_option(wp, &wp->w_p_lcs);
+		if (*wp->w_p_lcs == NUL)
+		    (void)set_chars_option(wp, &wp->w_p_lcs);
 
 	    redraw_all_later(NOT_VALID);
 	}
     }
-
     // local 'listchars'
     else if (varp == &curwin->w_p_lcs)
 	errmsg = set_chars_option(curwin, varp);
 
     // 'fillchars'
     else if (varp == &p_fcs)
+    {
+	errmsg = set_chars_option(curwin, varp);
+	if (errmsg == NULL)
+	{
+	    tabpage_T	*tp;
+	    win_T	*wp;
+
+	    // The current window is set to use the global 'fillchars' value.
+	    // So clear the window-local value.
+	    if (!(opt_flags & OPT_GLOBAL))
+		clear_string_option(&curwin->w_p_fcs);
+	    FOR_ALL_TAB_WINDOWS(tp, wp)
+		// If no error was returned above, we don't expect an error
+		// here, so ignore the return value.
+		if (*wp->w_p_fcs == NUL)
+		    (void)set_chars_option(wp, &wp->w_p_fcs);
+
+	    redraw_all_later(NOT_VALID);
+	}
+    }
+    // local 'fillchars'
+    else if (varp == &curwin->w_p_fcs)
     {
 	errmsg = set_chars_option(curwin, varp);
     }

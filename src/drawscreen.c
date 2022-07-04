@@ -555,7 +555,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	if (stl_connected(wp))
 	    fillchar = fillchar_status(&attr, wp);
 	else
-	    fillchar = fillchar_vsep(&attr);
+	    fillchar = fillchar_vsep(&attr, wp);
 	screen_putchar(fillchar, row, W_ENDCOL(wp), attr);
     }
     busy = FALSE;
@@ -1038,7 +1038,7 @@ redraw_win_toolbar(win_T *wp)
     }
     wp->w_winbar_items[item_idx].wb_menu = NULL; // end marker
 
-    screen_line(wp->w_winrow, wp->w_wincol, wp->w_width, wp->w_width, 0);
+    screen_line(wp, wp->w_winrow, wp->w_wincol, wp->w_width, wp->w_width, 0);
 }
 #endif
 
@@ -1246,7 +1246,8 @@ fold_line(
 
     txtcol = col;	// remember where text starts
 
-    // 5. move the text to current_ScreenLine.  Fill up with "fill_fold".
+    // 5. move the text to current_ScreenLine.  Fill up with "fold" from
+    //    'fillchars'.
     //    Right-left text is put in columns 0 - number-col, normal text is put
     //    in columns number-col - window-width.
     col = text_to_screenline(wp, text, col);
@@ -1262,23 +1263,25 @@ fold_line(
 #endif
 	    )
     {
+	int c = wp->w_fill_chars.fold;
+
 	if (enc_utf8)
 	{
-	    if (fill_fold >= 0x80)
+	    if (c >= 0x80)
 	    {
-		ScreenLinesUC[off + col] = fill_fold;
+		ScreenLinesUC[off + col] = c;
 		ScreenLinesC[0][off + col] = 0;
 		ScreenLines[off + col] = 0x80; // avoid storing zero
 	    }
 	    else
 	    {
 		ScreenLinesUC[off + col] = 0;
-		ScreenLines[off + col] = fill_fold;
+		ScreenLines[off + col] = c;
 	    }
 	    col++;
 	}
 	else
-	    ScreenLines[off + col++] = fill_fold;
+	    ScreenLines[off + col++] = c;
     }
 
     if (text != buf)
@@ -1371,7 +1374,8 @@ fold_line(
     }
 #endif
 
-    screen_line(row + W_WINROW(wp), wp->w_wincol, wp->w_width, wp->w_width, 0);
+    screen_line(wp, row + W_WINROW(wp), wp->w_wincol,
+						  wp->w_width, wp->w_width, 0);
 
     // Update w_cline_height and w_cline_folded if the cursor line was
     // updated (saves a call to plines() later).
@@ -2669,10 +2673,10 @@ win_update(win_T *wp)
 	    if (j > 0 && !wp->w_botfill)
 	    {
 		// Display filler lines at the end of the file.
-		if (char2cells(fill_diff) > 1)
+		if (char2cells(wp->w_fill_chars.diff) > 1)
 		    i = '-';
 		else
-		    i = fill_diff;
+		    i = wp->w_fill_chars.diff;
 		if (row + j > wp->w_height)
 		    j = wp->w_height - row;
 		win_draw_end(wp, i, i, TRUE, row, row + (int)j, HLF_DED);
@@ -2683,12 +2687,14 @@ win_update(win_T *wp)
 	else if (dollar_vcol == -1)
 	    wp->w_botline = lnum;
 
-	// Make sure the rest of the screen is blank
-	// write the 'fill_eob' character to rows that aren't part of the file
+	// Make sure the rest of the screen is blank.
+	// write the "eob" character from 'fillchars' to rows that aren't part
+	// of the file.
 	if (WIN_IS_POPUP(wp))
 	    win_draw_end(wp, ' ', ' ', FALSE, row, wp->w_height, HLF_AT);
 	else
-	    win_draw_end(wp, fill_eob, ' ', FALSE, row, wp->w_height, HLF_EOB);
+	    win_draw_end(wp, wp->w_fill_chars.eob, ' ', FALSE,
+						   row, wp->w_height, HLF_EOB);
     }
 
 #ifdef SYN_TIME_LIMIT
@@ -3026,7 +3032,7 @@ redraw_asap(int type)
 		    mch_memmove(ScreenLines2 + off,
 				screenline2 + r * cols,
 				(size_t)cols * sizeof(schar_T));
-		screen_line(cmdline_row + r, 0, cols, cols, 0);
+		screen_line(curwin, cmdline_row + r, 0, cols, cols, 0);
 	    }
 	    ret = 4;
 	}

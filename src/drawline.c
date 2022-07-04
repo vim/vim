@@ -1268,14 +1268,14 @@ win_line(
 		if (filler_todo > 0)
 		{
 		    // Draw "deleted" diff line(s).
-		    if (char2cells(fill_diff) > 1)
+		    if (char2cells(wp->w_fill_chars.diff) > 1)
 		    {
 			c_extra = '-';
 			c_final = NUL;
 		    }
 		    else
 		    {
-			c_extra = fill_diff;
+			c_extra = wp->w_fill_chars.diff;
 			c_final = NUL;
 		    }
 #  ifdef FEAT_RIGHTLEFT
@@ -1352,7 +1352,7 @@ win_line(
 #endif
 		)
 	{
-	    screen_line(screen_row, wp->w_wincol, col, -wp->w_width,
+	    screen_line(wp, screen_row, wp->w_wincol, col, -wp->w_width,
 							    screen_line_flags);
 	    // Pretend we have finished updating the window.  Except when
 	    // 'cursorcolumn' is set.
@@ -2859,7 +2859,7 @@ win_line(
 	    }
 #endif
 
-	    screen_line(screen_row, wp->w_wincol, col,
+	    screen_line(wp, screen_row, wp->w_wincol, col,
 					  wp->w_width, screen_line_flags);
 	    row++;
 
@@ -3160,11 +3160,11 @@ win_line(
 		)
 	{
 #ifdef FEAT_CONCEAL
-	    screen_line(screen_row, wp->w_wincol, col - boguscols,
+	    screen_line(wp, screen_row, wp->w_wincol, col - boguscols,
 					  wp->w_width, screen_line_flags);
 	    boguscols = 0;
 #else
-	    screen_line(screen_row, wp->w_wincol, col,
+	    screen_line(wp, screen_row, wp->w_wincol, col,
 					  wp->w_width, screen_line_flags);
 #endif
 	    ++row;

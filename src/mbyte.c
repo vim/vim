@@ -4229,8 +4229,7 @@ theend:
 #if defined(FEAT_GUI_GTK) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Return TRUE if string "s" is a valid utf-8 string.
- * When "end" is NULL stop at the first NUL.
- * When "end" is positive stop there.
+ * When "end" is NULL stop at the first NUL.  Otherwise stop at "end".
  */
     int
 utf_valid_string(char_u *s, char_u *end)
@@ -5529,6 +5528,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     cw_interval_T   *table;
     cw_interval_T   *cw_table_save;
     size_t	    cw_table_size_save;
+    char	    *error = NULL;
 
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
@@ -5648,29 +5648,35 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     // Check that the new value does not conflict with 'fillchars' or
     // 'listchars'.
     if (set_chars_option(curwin, &p_fcs) != NULL)
-    {
-	emsg(_(e_conflicts_with_value_of_fillchars));
-	cw_table = cw_table_save;
-	cw_table_size = cw_table_size_save;
-	vim_free(table);
-	return;
-    }
+	error = e_conflicts_with_value_of_fillchars;
+    else if (set_chars_option(curwin, &p_lcs) != NULL)
+	error = e_conflicts_with_value_of_listchars;
     else
     {
-	tabpage_T	*tp;
-	win_T	*wp;
+	tabpage_T   *tp;
+	win_T	    *wp;
 
 	FOR_ALL_TAB_WINDOWS(tp, wp)
 	{
 	    if (set_chars_option(wp, &wp->w_p_lcs) != NULL)
 	    {
-		emsg((e_conflicts_with_value_of_listchars));
-		cw_table = cw_table_save;
-		cw_table_size = cw_table_size_save;
-		vim_free(table);
-		return;
+		error = e_conflicts_with_value_of_listchars;
+		break;
+	    }
+	    if (set_chars_option(wp, &wp->w_p_fcs) != NULL)
+	    {
+		error = e_conflicts_with_value_of_fillchars;
+		break;
 	    }
 	}
+    }
+    if (error != NULL)
+    {
+	emsg(_(error));
+	cw_table = cw_table_save;
+	cw_table_size = cw_table_size_save;
+	vim_free(table);
+	return;
     }
 
     vim_free(cw_table_save);

@@ -182,6 +182,7 @@
 # define PV_LBR		OPT_WIN(WV_LBR)
 #endif
 #define PV_LCS		OPT_BOTH(OPT_WIN(WV_LCS))
+#define PV_FCS		OPT_BOTH(OPT_WIN(WV_FCS))
 #define PV_NU		OPT_WIN(WV_NU)
 #define PV_RNU		OPT_WIN(WV_RNU)
 #define PV_VE		OPT_BOTH(OPT_WIN(WV_VE))
@@ -947,7 +948,7 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
     {"fillchars",   "fcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_fcs, PV_NONE,
+			    (char_u *)&p_fcs, PV_FCS,
 			    {(char_u *)"vert:|,fold:-,eob:~", (char_u *)0L}
 			    SCTX_INIT},
     {"fixendofline",  "fixeol", P_BOOL|P_VI_DEF|P_RSTAT,
