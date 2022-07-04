@@ -1246,6 +1246,7 @@ key_press_event(GtkWidget *widget UNUSED,
 	}
     }
 
+#ifdef GDK_KEY_dead_circumflex
     // Belgian Ctrl+[ workaround
     if (len == 0 && key_sym == GDK_KEY_dead_circumflex)
     {
@@ -1259,6 +1260,7 @@ key_press_event(GtkWidget *widget UNUSED,
 	// are confusing code downstream
 	return TRUE;
     }
+#endif
 
     if (len == 0)   // Unrecognized key
 	return TRUE;
