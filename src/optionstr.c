@@ -866,7 +866,7 @@ did_set_string_option(
     {
 	if (check_opt_strings(p_ambw, p_ambw_values, FALSE) != OK)
 	    errmsg = e_invalid_argument;
-	else if (set_chars_option(curwin, &p_fcs) != NULL)
+	else if (set_chars_option(curwin, &p_fcs, FALSE) != NULL)
 	    errmsg = e_conflicts_with_value_of_fillchars;
 	else
 	{
@@ -875,7 +875,7 @@ did_set_string_option(
 
 	    FOR_ALL_TAB_WINDOWS(tp, wp)
 	    {
-		if (set_chars_option(wp, &wp->w_p_lcs) != NULL)
+		if (set_chars_option(wp, &wp->w_p_lcs, FALSE) != NULL)
 		{
 		    errmsg = e_conflicts_with_value_of_listchars;
 		    goto ambw_end;
@@ -1304,60 +1304,47 @@ ambw_end:
 	}
     }
 
-    // global 'listchars'
-    else if (varp == &p_lcs)
+    // global 'listchars' or 'fillchars'
+    else if (varp == &p_lcs || varp == &p_fcs)
     {
-	errmsg = set_chars_option(curwin, varp);
+	char_u **local_ptr = varp == &p_lcs
+					 ? &curwin->w_p_lcs : &curwin->w_p_fcs;
+
+	// only apply the global value to "curwin" when it does not have a
+	// local value
+	errmsg = set_chars_option(curwin, varp,
+			      **local_ptr == NUL || !(opt_flags & OPT_GLOBAL));
 	if (errmsg == NULL)
 	{
 	    tabpage_T	*tp;
 	    win_T	*wp;
 
-	    // If the current window is set to use the global 'listchars'
-	    // value, clear the window-local value.
+	    // If the current window is set to use the global
+	    // 'listchars'/'fillchars' value, clear the window-local value.
 	    if (!(opt_flags & OPT_GLOBAL))
-		clear_string_option(&curwin->w_p_lcs);
+		clear_string_option(local_ptr);
 	    FOR_ALL_TAB_WINDOWS(tp, wp)
+	    {
 		// If the current window has a local value need to apply it
 		// again, it was changed when setting the global value.
 		// If no error was returned above, we don't expect an error
 		// here, so ignore the return value.
-		(void)set_chars_option(wp, &wp->w_p_lcs);
+		local_ptr = varp == &p_lcs ? &wp->w_p_lcs : &wp->w_p_fcs;
+		if (**local_ptr == NUL)
+		    (void)set_chars_option(wp, local_ptr, TRUE);
+	    }
 
 	    redraw_all_later(NOT_VALID);
 	}
     }
     // local 'listchars'
     else if (varp == &curwin->w_p_lcs)
-	errmsg = set_chars_option(curwin, varp);
+	errmsg = set_chars_option(curwin, varp, TRUE);
 
-    // 'fillchars'
-    else if (varp == &p_fcs)
-    {
-	errmsg = set_chars_option(curwin, varp);
-	if (errmsg == NULL)
-	{
-	    tabpage_T	*tp;
-	    win_T	*wp;
-
-	    // If the current window is set to use the global 'fillchars'
-	    // value clear the window-local value.
-	    if (!(opt_flags & OPT_GLOBAL))
-		clear_string_option(&curwin->w_p_fcs);
-	    FOR_ALL_TAB_WINDOWS(tp, wp)
-		// If the current window has a local value need to apply it
-		// again, it was changed when setting the global value.
-		// If no error was returned above, we don't expect an error
-		// here, so ignore the return value.
-		(void)set_chars_option(wp, &wp->w_p_fcs);
-
-	    redraw_all_later(NOT_VALID);
-	}
-    }
     // local 'fillchars'
     else if (varp == &curwin->w_p_fcs)
     {
-	errmsg = set_chars_option(curwin, varp);
+	errmsg = set_chars_option(curwin, varp, TRUE);
     }
 
 #ifdef FEAT_CMDWIN

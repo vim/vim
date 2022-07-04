@@ -5647,9 +5647,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 
     // Check that the new value does not conflict with 'fillchars' or
     // 'listchars'.
-    if (set_chars_option(curwin, &p_fcs) != NULL)
+    if (set_chars_option(curwin, &p_fcs, FALSE) != NULL)
 	error = e_conflicts_with_value_of_fillchars;
-    else if (set_chars_option(curwin, &p_lcs) != NULL)
+    else if (set_chars_option(curwin, &p_lcs, FALSE) != NULL)
 	error = e_conflicts_with_value_of_listchars;
     else
     {
@@ -5658,12 +5658,12 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 
 	FOR_ALL_TAB_WINDOWS(tp, wp)
 	{
-	    if (set_chars_option(wp, &wp->w_p_lcs) != NULL)
+	    if (set_chars_option(wp, &wp->w_p_lcs, FALSE) != NULL)
 	    {
 		error = e_conflicts_with_value_of_listchars;
 		break;
 	    }
-	    if (set_chars_option(wp, &wp->w_p_fcs) != NULL)
+	    if (set_chars_option(wp, &wp->w_p_fcs, FALSE) != NULL)
 	    {
 		error = e_conflicts_with_value_of_fillchars;
 		break;

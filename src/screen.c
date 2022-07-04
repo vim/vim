@@ -4843,11 +4843,13 @@ get_encoded_char_adv(char_u **p)
 
 /*
  * Handle setting 'listchars' or 'fillchars'.
+ * "varp" points to either the global or the window-local value.
+ * When "apply" is FALSE do not store the flags, only check for errors.
  * Assume monocell characters.
  * Returns error message, NULL if it's OK.
  */
     char *
-set_chars_option(win_T *wp, char_u **varp)
+set_chars_option(win_T *wp, char_u **varp, int apply)
 {
     int	    round, i, len, len2, entries;
     char_u  *p, *s;
@@ -4856,11 +4858,16 @@ set_chars_option(win_T *wp, char_u **varp)
     char_u  *last_lmultispace = NULL; // Last occurrence of "leadmultispace:"
     int	    multispace_len = 0;	      // Length of lcs-multispace string
     int	    lead_multispace_len = 0;  // Length of lcs-leadmultispace string
+    int	    is_listchars = (varp == &p_lcs || varp == &wp->w_p_lcs);
+    char_u  *value = *varp;
+
     struct charstab
     {
 	int	*cp;
 	char	*name;
     };
+    struct charstab *tab;
+
     static fill_chars_T fill_chars;
     static struct charstab filltab[] =
     {
@@ -4874,6 +4881,7 @@ set_chars_option(win_T *wp, char_u **varp)
 	{&fill_chars.diff,	"diff"},
 	{&fill_chars.eob,	"eob"},
     };
+
     static lcs_chars_T lcs_chars;
     struct charstab lcstab[] =
     {
@@ -4891,22 +4899,21 @@ set_chars_option(win_T *wp, char_u **varp)
 	{NULL,			"conceal"},
 #endif
     };
-    struct charstab *tab;
 
-    if (varp == &p_lcs || varp == &wp->w_p_lcs)
+    if (is_listchars)
     {
 	tab = lcstab;
 	CLEAR_FIELD(lcs_chars);
 	entries = ARRAY_LENGTH(lcstab);
 	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
-	    varp = &p_lcs;
+	    value = p_lcs;  // local value is empty, us the global value
     }
     else
     {
 	tab = filltab;
 	entries = ARRAY_LENGTH(filltab);
 	if (varp == &wp->w_p_fcs && wp->w_p_fcs[0] == NUL)
-	    varp = &p_fcs;
+	    value = p_fcs;  // local value is empty, us the global value
     }
 
     // first round: check for valid value, second round: assign values
@@ -4915,7 +4922,7 @@ set_chars_option(win_T *wp, char_u **varp)
 	if (round > 0)
 	{
 	    // After checking that the value is valid: set defaults.
-	    if (varp == &p_lcs || varp == &wp->w_p_lcs)
+	    if (is_listchars)
 	    {
 		for (i = 0; i < entries; ++i)
 		    if (tab[i].cp != NULL)
@@ -4926,7 +4933,8 @@ set_chars_option(win_T *wp, char_u **varp)
 		if (multispace_len > 0)
 		{
 		    lcs_chars.multispace = ALLOC_MULT(int, multispace_len + 1);
-		    lcs_chars.multispace[multispace_len] = NUL;
+		    if (lcs_chars.multispace != NULL)
+			lcs_chars.multispace[multispace_len] = NUL;
 		}
 		else
 		    lcs_chars.multispace = NULL;
@@ -4953,7 +4961,7 @@ set_chars_option(win_T *wp, char_u **varp)
 		fill_chars.eob = '~';
 	    }
 	}
-	p = *varp;
+	p = value;
 	while (*p)
 	{
 	    for (i = 0; i < entries; ++i)
@@ -5007,7 +5015,7 @@ set_chars_option(win_T *wp, char_u **varp)
 	    {
 		len = (int)STRLEN("multispace");
 		len2 = (int)STRLEN("leadmultispace");
-		if ((varp == &p_lcs || varp == &wp->w_p_lcs)
+		if (is_listchars
 			&& STRNCMP(p, "multispace", len) == 0
 			&& p[len] == ':'
 			&& p[len + 1] != NUL)
@@ -5044,7 +5052,7 @@ set_chars_option(win_T *wp, char_u **varp)
 		    }
 		}
 
-		else if ((varp == &p_lcs || varp == &wp->w_p_lcs)
+		else if (is_listchars
 			&& STRNCMP(p, "leadmultispace", len2) == 0
 			&& p[len2] == ':'
 			&& p[len2 + 1] != NUL)
@@ -5090,15 +5098,23 @@ set_chars_option(win_T *wp, char_u **varp)
 	}
     }
 
-    if (tab == lcstab)
+    if (apply)
     {
-	vim_free(wp->w_lcs_chars.multispace);
-	vim_free(wp->w_lcs_chars.leadmultispace);
-	wp->w_lcs_chars = lcs_chars;
+	if (is_listchars)
+	{
+	    vim_free(wp->w_lcs_chars.multispace);
+	    vim_free(wp->w_lcs_chars.leadmultispace);
+	    wp->w_lcs_chars = lcs_chars;
+	}
+	else
+	{
+	    wp->w_fill_chars = fill_chars;
+	}
     }
-    else
+    else if (is_listchars)
     {
-	wp->w_fill_chars = fill_chars;
+	vim_free(lcs_chars.multispace);
+	vim_free(lcs_chars.leadmultispace);
     }
 
     return NULL;	// no error
