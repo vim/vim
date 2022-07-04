@@ -3775,7 +3775,7 @@ update_system_term(term_T *term)
 	else
 	    pos.col = 0;
 
-	screen_line(term->tl_toprow + pos.row, 0, pos.col, Columns, 0);
+	screen_line(curwin, term->tl_toprow + pos.row, 0, pos.col, Columns, 0);
     }
 
     term->tl_dirty_row_start = MAX_ROW;
@@ -3894,7 +3894,7 @@ term_update_window(win_T *wp)
 	else
 	    pos.col = 0;
 
-	screen_line(wp->w_winrow + pos.row
+	screen_line(wp, wp->w_winrow + pos.row
 #ifdef FEAT_MENU
 				+ winbar_height(wp)
 #endif
