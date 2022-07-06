@@ -1,5 +1,7 @@
+" Menu Translations:    Simplified Chinese
 " Maintainer:           Ada (Haowen) Yu <me@yuhaowen.com>
-" Last Change:          2022 Jun 22
+" Previous Maintainer:  Shun Bai <baishunde@gmail.com>, Yuheng Xie <elephant@linux.net.cn>
+" Last Change:          2022 July 6
 " Original translations
 "
 " Generated with the scripts from:
@@ -71,7 +73,7 @@ menutrans &Find\.\.\. 查找(&F)\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\. 查找和替换(&L)\.\.\.
 menutrans &Find<Tab>/ 查找(&F)<Tab>/
 menutrans Find\ and\ Rep&lace<Tab>:%s 查找和替换(&L)<Tab>:%s
-" menutrans Find\ and\ Rep&lace<Tab>:s TRANSLATION\ MISSING
+menutrans Find\ and\ Rep&lace<Tab>:s 查找和替换(&L)<Tab>:s
 menutrans Settings\ &Window 设置窗口(&W)
 menutrans Startup\ &Settings 启动设置(&S)
 
@@ -735,7 +737,7 @@ menutrans Set\ '&filetype'\ Too 也设置\ 'filetype'(&F)
 " menutrans Omnimark TRANSLATION\ MISSING
 " menutrans OpenROAD TRANSLATION\ MISSING
 " menutrans Open\ Psion\ Lang TRANSLATION\ MISSING
-" menutrans Oracle\ config TRANSLATION\ MISSING
+menutrans Oracle\ config Oracle\ 配置文件
 " menutrans PQ TRANSLATION\ MISSING
 " menutrans Packet\ filter\ conf TRANSLATION\ MISSING
 " menutrans Palm\ resource\ compiler TRANSLATION\ MISSING
@@ -961,10 +963,10 @@ menutrans Set\ '&filetype'\ Too 也设置\ 'filetype'(&F)
 " menutrans Vgrindefs TRANSLATION\ MISSING
 " menutrans VHDL TRANSLATION\ MISSING
 " menutrans Vim TRANSLATION\ MISSING
-" menutrans Vim\ help\ file TRANSLATION\ MISSING
-" menutrans Vim\ script TRANSLATION\ MISSING
-" menutrans Viminfo\ file TRANSLATION\ MISSING
-" menutrans Virata\ config TRANSLATION\ MISSING
+menutrans Vim\ help\ file Vim\ 帮助文件
+menutrans Vim\ script Vim\ 脚本
+menutrans Viminfo\ file Vim信息文件
+menutrans Virata\ config Virata\ 主配置文件
 " menutrans VOS\ CM\ macro TRANSLATION\ MISSING
 " menutrans VRML TRANSLATION\ MISSING
 " menutrans Vroom TRANSLATION\ MISSING
@@ -1104,56 +1106,40 @@ menutrans Set\ '&filetype'\ Too 也设置\ 'filetype'(&F)
 " Shellmenu menu
 " Shellmenu menuitems {{{1
 " From shellmenu.vim
-" menutrans MAIL TRANSLATION\ MISSING
-" menutrans eval TRANSLATION\ MISSING
-" menutrans Stmts TRANSLATION\ MISSING
-" menutrans for TRANSLATION\ MISSING
-" menutrans case TRANSLATION\ MISSING
-" menutrans if TRANSLATION\ MISSING
-" menutrans if-else TRANSLATION\ MISSING
-" menutrans elif TRANSLATION\ MISSING
-" menutrans while TRANSLATION\ MISSING
-" menutrans break TRANSLATION\ MISSING
-" menutrans continue TRANSLATION\ MISSING
-" menutrans function TRANSLATION\ MISSING
-" menutrans return TRANSLATION\ MISSING
-" menutrans return-true TRANSLATION\ MISSING
-" menutrans return-false TRANSLATION\ MISSING
-" menutrans exit TRANSLATION\ MISSING
-" menutrans shift TRANSLATION\ MISSING
+menutrans Stmts 语句
 " menutrans trap TRANSLATION\ MISSING
-" menutrans Test TRANSLATION\ MISSING
-" menutrans existence TRANSLATION\ MISSING
-" menutrans existence\ -\ file TRANSLATION\ MISSING
-" menutrans existence\ -\ file\ (not\ empty) TRANSLATION\ MISSING
-" menutrans existence\ -\ directory TRANSLATION\ MISSING
-" menutrans existence\ -\ executable TRANSLATION\ MISSING
-" menutrans existence\ -\ readable TRANSLATION\ MISSING
-" menutrans existence\ -\ writable TRANSLATION\ MISSING
-" menutrans String\ is\ empty TRANSLATION\ MISSING
-" menutrans String\ is\ not\ empty TRANSLATION\ MISSING
-" menutrans Strings\ is\ equal TRANSLATION\ MISSING
-" menutrans Strings\ is\ not\ equal TRANSLATION\ MISSING
-" menutrans Values\ is\ greater\ than TRANSLATION\ MISSING
-" menutrans Values\ is\ greater\ equal TRANSLATION\ MISSING
-" menutrans Values\ is\ equal TRANSLATION\ MISSING
-" menutrans Values\ is\ not\ equal TRANSLATION\ MISSING
-" menutrans Values\ is\ less\ than TRANSLATION\ MISSING
-" menutrans Values\ is\ less\ equal TRANSLATION\ MISSING
-" menutrans ParmSub TRANSLATION\ MISSING
-" menutrans Substitute\ word\ if\ parm\ not\ set TRANSLATION\ MISSING
-" menutrans Set\ parm\ to\ word\ if\ not\ set TRANSLATION\ MISSING
-" menutrans Substitute\ word\ if\ parm\ set\ else\ nothing TRANSLATION\ MISSING
-" menutrans If\ parm\ not\ set\ print\ word\ and\ exit TRANSLATION\ MISSING
-" menutrans SpShVars TRANSLATION\ MISSING
-" menutrans Number\ of\ positional\ parameters TRANSLATION\ MISSING
-" menutrans All\ positional\ parameters\ (quoted\ spaces) TRANSLATION\ MISSING
-" menutrans All\ positional\ parameters\ (unquoted\ spaces) TRANSLATION\ MISSING
-" menutrans Flags\ set TRANSLATION\ MISSING
-" menutrans Return\ code\ of\ last\ command TRANSLATION\ MISSING
-" menutrans Process\ number\ of\ this\ shell TRANSLATION\ MISSING
-" menutrans Process\ number\ of\ last\ background\ command TRANSLATION\ MISSING
-" menutrans Environ TRANSLATION\ MISSING
+menutrans Test 测试
+menutrans existence 存在
+menutrans existence\ -\ file 存在\ -\ 文件
+menutrans existence\ -\ file\ (not\ empty) 存在\ -\ 文件(非空)
+menutrans existence\ -\ directory 存在目录
+menutrans existence\ -\ executable 存在可执行
+menutrans existence\ -\ readable 存在可读
+menutrans existence\ -\ writable 存在可写
+menutrans String\ is\ empty 字符串为空
+menutrans String\ is\ not\ empty 字符串非空
+menutrans Strings\ is\ equal 字符串值相等
+menutrans Strings\ is\ not\ equal 字符串值不相等
+menutrans Values\ is\ greater\ than 值大于
+menutrans Values\ is\ greater\ equal 值大于等于
+menutrans Values\ is\ equal 值相等
+menutrans Values\ is\ not\ equal 值不相等
+menutrans Values\ is\ less\ than 值小于
+menutrans Values\ is\ less\ equal 值小于等于
+menutrans ParmSub 参数替换
+menutrans Substitute\ word\ if\ parm\ not\ set 如果参数没设置就替换该词
+menutrans Set\ parm\ to\ word\ if\ not\ set 参数未设置就设为该词
+menutrans Substitute\ word\ if\ parm\ set\ else\ nothing 如果参数设置就替换该词，否则什么都不做
+menutrans If\ parm\ not\ set\ print\ word\ and\ exit 如果参数没有设置就打印该词并退出
+menutrans SpShVars Shell\ 特殊变量
+menutrans Number\ of\ positional\ parameters 位置参数的数目
+menutrans All\ positional\ parameters\ (quoted\ spaces) 所有位置参数(quoted\ spaces)
+menutrans All\ positional\ parameters\ (unquoted\ spaces) 所有位置参数(unquoted\ spaces)
+menutrans Flags\ set 设置标志
+menutrans Return\ code\ of\ last\ command 返回前一条命令的代码
+menutrans Process\ number\ of\ this\ shell shell\ 中进程号
+menutrans Process\ number\ of\ last\ background\ command 前一条背景命令的进程号
+menutrans Environ 环境变量
 " menutrans HOME TRANSLATION\ MISSING
 " menutrans PATH TRANSLATION\ MISSING
 " menutrans CDPATH TRANSLATION\ MISSING
@@ -1182,16 +1168,16 @@ menutrans Set\ '&filetype'\ Too 也设置\ 'filetype'(&F)
 " menutrans wait TRANSLATION\ MISSING
 " menutrans Set TRANSLATION\ MISSING
 " menutrans unset TRANSLATION\ MISSING
-" menutrans mark\ modified\ or\ modified\ variables TRANSLATION\ MISSING
-" menutrans exit\ when\ command\ returns\ non-zero\ exit\ code TRANSLATION\ MISSING
-" menutrans Disable\ file\ name\ generation TRANSLATION\ MISSING
-" menutrans remember\ function\ commands TRANSLATION\ MISSING
-" menutrans All\ keyword\ arguments\ are\ placed\ in\ the\ environment TRANSLATION\ MISSING
-" menutrans Read\ commands\ but\ do\ not\ execute\ them TRANSLATION\ MISSING
-" menutrans Exit\ after\ reading\ and\ executing\ one\ command TRANSLATION\ MISSING
-" menutrans Treat\ unset\ variables\ as\ an\ error\ when\ substituting TRANSLATION\ MISSING
-" menutrans Print\ shell\ input\ lines\ as\ they\ are\ read TRANSLATION\ MISSING
-" menutrans Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed TRANSLATION\ MISSING
+menutrans mark\ modified\ or\ modified\ variables 标记更改或未更改的变量
+menutrans exit\ when\ command\ returns\ non-zero\ exit\ code 当命令返回非零代码时退出
+menutrans Disable\ file\ name\ generation 禁用文件名生成
+menutrans remember\ function\ commands 记住函数命令
+menutrans All\ keyword\ arguments\ are\ placed\ in\ the\ environment 所有关键字参数被放到环境里
+menutrans Read\ commands\ but\ do\ not\ execute\ them 读命令但是不要执行
+menutrans Exit\ after\ reading\ and\ executing\ one\ command 读并执行命令之后退出
+menutrans Treat\ unset\ variables\ as\ an\ error\ when\ substituting 替换时把恢复命令视为错误
+menutrans Print\ shell\ input\ lines\ as\ they\ are\ read 读\ shell\ 输入行的时候打印
+menutrans Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed 被执行时打印命令和参数
 " }}}
 
 " termdebug menu
