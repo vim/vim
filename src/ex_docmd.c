@@ -3120,7 +3120,7 @@ parse_command_modifiers(
 		// Special case: empty command uses "+":
 		//  "'<,'>mods" -> "mods *+
 		//  Use "*" instead of "'<,'>" to avoid the command getting
-		//  longer, in case is was allocated.
+		//  longer, in case it was allocated.
 		mch_memmove(orig_cmd, cmd_start, len);
 		STRCPY(orig_cmd + len, " *+");
 	    }

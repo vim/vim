@@ -1883,7 +1883,8 @@ msg_prt_line(char_u *s, int list)
 		--trail;
 	}
 	// find end of leading whitespace
-	if (curwin->w_lcs_chars.lead || curwin->w_lcs_chars.leadmultispace != NULL)
+	if (curwin->w_lcs_chars.lead
+				 || curwin->w_lcs_chars.leadmultispace != NULL)
 	{
 	    lead = s;
 	    while (VIM_ISWHITE(lead[0]))

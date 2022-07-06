@@ -2059,7 +2059,6 @@ find_mps_values(
  * "oap" is only used to set oap->motion_type for a linewise motion, it can be
  * NULL
  */
-
     pos_T *
 findmatchlimit(
     oparg_T	*oap,
