@@ -965,8 +965,8 @@ menutrans Oracle\ config Oracle\ 配置文件
 " menutrans Vim TRANSLATION\ MISSING
 menutrans Vim\ help\ file Vim\ 帮助文件
 menutrans Vim\ script Vim\ 脚本
-menutrans Viminfo\ file Vim信息文件
-menutrans Virata\ config Virata\ 主配置文件
+menutrans Viminfo\ file Vim\ 信息文件
+menutrans Virata\ config Virata\ 配置文件
 " menutrans VOS\ CM\ macro TRANSLATION\ MISSING
 " menutrans VRML TRANSLATION\ MISSING
 " menutrans Vroom TRANSLATION\ MISSING
@@ -1112,10 +1112,10 @@ menutrans Test 测试
 menutrans existence 存在
 menutrans existence\ -\ file 存在\ -\ 文件
 menutrans existence\ -\ file\ (not\ empty) 存在\ -\ 文件(非空)
-menutrans existence\ -\ directory 存在目录
-menutrans existence\ -\ executable 存在可执行
-menutrans existence\ -\ readable 存在可读
-menutrans existence\ -\ writable 存在可写
+menutrans existence\ -\ directory 存在\ -\ 目录
+menutrans existence\ -\ executable 存在\ -\ 可执行
+menutrans existence\ -\ readable 存在\ -\ 可读
+menutrans existence\ -\ writable 存在\ -\ 可写
 menutrans String\ is\ empty 字符串为空
 menutrans String\ is\ not\ empty 字符串非空
 menutrans Strings\ is\ equal 字符串值相等
@@ -1137,8 +1137,8 @@ menutrans All\ positional\ parameters\ (quoted\ spaces) 所有位置参数(quote
 menutrans All\ positional\ parameters\ (unquoted\ spaces) 所有位置参数(unquoted\ spaces)
 menutrans Flags\ set 设置标志
 menutrans Return\ code\ of\ last\ command 返回前一条命令的代码
-menutrans Process\ number\ of\ this\ shell shell\ 中进程号
-menutrans Process\ number\ of\ last\ background\ command 前一条背景命令的进程号
+menutrans Process\ number\ of\ this\ shell shell\ 自身进程号
+menutrans Process\ number\ of\ last\ background\ command 前一条后台命令的进程号
 menutrans Environ 环境变量
 " menutrans HOME TRANSLATION\ MISSING
 " menutrans PATH TRANSLATION\ MISSING
@@ -1168,14 +1168,14 @@ menutrans Environ 环境变量
 " menutrans wait TRANSLATION\ MISSING
 " menutrans Set TRANSLATION\ MISSING
 " menutrans unset TRANSLATION\ MISSING
-menutrans mark\ modified\ or\ modified\ variables 标记更改或未更改的变量
+" menutrans mark\ modified\ or\ modified\ variables TRANSLATION\ MISSING
 menutrans exit\ when\ command\ returns\ non-zero\ exit\ code 当命令返回非零代码时退出
 menutrans Disable\ file\ name\ generation 禁用文件名生成
-menutrans remember\ function\ commands 记住函数命令
-menutrans All\ keyword\ arguments\ are\ placed\ in\ the\ environment 所有关键字参数被放到环境里
+" menutrans remember\ function\ commands TRANSLATION\ MISSING
+" menutrans All\ keyword\ arguments\ are\ placed\ in\ the\ environment TRANSLATION\ MISSING
 menutrans Read\ commands\ but\ do\ not\ execute\ them 读命令但是不要执行
-menutrans Exit\ after\ reading\ and\ executing\ one\ command 读并执行命令之后退出
-menutrans Treat\ unset\ variables\ as\ an\ error\ when\ substituting 替换时把恢复命令视为错误
+menutrans Exit\ after\ reading\ and\ executing\ one\ command 读并执行一个命令之后退出
+menutrans Treat\ unset\ variables\ as\ an\ error\ when\ substituting 替换时把未设置命令视为错误
 menutrans Print\ shell\ input\ lines\ as\ they\ are\ read 读\ shell\ 输入行的时候打印
 menutrans Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed 被执行时打印命令和参数
 " }}}
@@ -1183,64 +1183,58 @@ menutrans Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed 被执
 " termdebug menu
 " termdebug menuitems {{{1
 " From termdebug.vim
-" menutrans Set\ breakpoint TRANSLATION\ MISSING
-" menutrans Clear\ breakpoint TRANSLATION\ MISSING
-" menutrans Run\ until TRANSLATION\ MISSING
-" menutrans Evaluate TRANSLATION\ MISSING
-" menutrans WinBar TRANSLATION\ MISSING
-" menutrans Step TRANSLATION\ MISSING
-" menutrans Next TRANSLATION\ MISSING
-" menutrans Finish TRANSLATION\ MISSING
-" menutrans Cont TRANSLATION\ MISSING
-" menutrans Stop TRANSLATION\ MISSING
+menutrans Set\ breakpoint 设置断点
+menutrans Clear\ breakpoint 清除断点
+menutrans Run\ until 运行到
+menutrans Evaluate 求值
+menutrans WinBar 工具条
+menutrans Step 单步
+menutrans Next 下一个
+menutrans Finish 结束
+menutrans Cont 继续
+menutrans Stop 停止
 " }}}
 
 " debchangelog menu
 " debchangelog menuitems {{{1
 " From debchangelog.vim
-" menutrans &Changelog TRANSLATION\ MISSING
-" menutrans &New\ Version TRANSLATION\ MISSING
-" menutrans &Add\ Entry TRANSLATION\ MISSING
-" menutrans &Close\ Bug TRANSLATION\ MISSING
-" menutrans Set\ &Distribution TRANSLATION\ MISSING
-" menutrans &unstable TRANSLATION\ MISSING
-" menutrans &frozen TRANSLATION\ MISSING
-" menutrans &stable TRANSLATION\ MISSING
-" menutrans frozen\ unstable TRANSLATION\ MISSING
-" menutrans stable\ unstable TRANSLATION\ MISSING
-" menutrans stable\ frozen TRANSLATION\ MISSING
-" menutrans stable\ frozen\ unstable TRANSLATION\ MISSING
-" menutrans Set\ &Urgency TRANSLATION\ MISSING
-" menutrans &low TRANSLATION\ MISSING
-" menutrans &medium TRANSLATION\ MISSING
-" menutrans &high TRANSLATION\ MISSING
-" menutrans U&nfinalise TRANSLATION\ MISSING
-" menutrans &Finalise TRANSLATION\ MISSING
+menutrans &Changelog 更新日志(&C)
+menutrans &New\ Version 新版本(&N)
+menutrans &Add\ Entry 添加条目(&A)
+menutrans &Close\ Bug 关闭\ Bug(&C)
+menutrans Set\ &Distribution 设置发行版(&D)
+menutrans &unstable 不稳定(&U)
+menutrans Set\ &Urgency 设置紧急(&U)
+menutrans &low 低(&L)
+menutrans &medium 中(&M)
+menutrans &high 高(&H)
+menutrans U&nfinalise 未完成(&N)
+menutrans &Finalise 完成(&F)
 " }}}
 
 " ada menu
 " ada menuitems {{{1
 " From ada.vim
-" menutrans Tag TRANSLATION\ MISSING
-" menutrans List TRANSLATION\ MISSING
-" menutrans Jump TRANSLATION\ MISSING
-" menutrans Create\ File TRANSLATION\ MISSING
-" menutrans Create\ Dir TRANSLATION\ MISSING
-" menutrans Highlight TRANSLATION\ MISSING
-" menutrans Toggle\ Space\ Errors TRANSLATION\ MISSING
-" menutrans Toggle\ Lines\ Errors TRANSLATION\ MISSING
-" menutrans Toggle\ Rainbow\ Color TRANSLATION\ MISSING
-" menutrans Toggle\ Standard\ Types TRANSLATION\ MISSING
+menutrans Tag 标签
+menutrans List 列表
+menutrans Jump 跳转
+menutrans Create\ File 创建文件
+menutrans Create\ Dir 创建目录
+menutrans Highlight 高亮
+menutrans Toggle\ Space\ Errors 切换空格错误
+menutrans Toggle\ Lines\ Errors 切换行错误
+menutrans Toggle\ Rainbow\ Color 切换彩虹颜色
+menutrans Toggle\ Standard\ Types 切换标准类型
 " }}}
 
 " gnat menu
 " gnat menuitems {{{1
 " From gnat.vim
 " menutrans GNAT TRANSLATION\ MISSING
-" menutrans Build TRANSLATION\ MISSING
-" menutrans Pretty\ Print TRANSLATION\ MISSING
-" menutrans Find TRANSLATION\ MISSING
-" menutrans Set\ Projectfile\.\.\. TRANSLATION\ MISSING
+menutrans Build 构建
+menutrans Pretty\ Print 重新格式化代码
+menutrans Find 查找
+menutrans Set\ Projectfile\.\.\. 设置项目文件\.\.\.
 " }}}
 
 let &cpo = s:keepcpo
