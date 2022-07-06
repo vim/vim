@@ -145,6 +145,17 @@ Do not start a comment with #{, it looks like the legacy dictionary literal
 and produces an error where this might be confusing.  #{{ or #{{{ are OK,
 these can be used to start a fold.
 
+When starting to read a script file Vim doesn't know it is |Vim9| script until
+the `vim9script` command is found.  Until that point you would need to use
+legacy comments: >
+	" legacy comment
+	vim9script
+	# Vim9 comment
+
+That looks ugly, better put `vim9script` in the very first line: >
+	vim9script
+	# Vim9 comment
+
 In legacy Vim script # is also used for the alternate file name.  In Vim9
 script you need to use %% instead.  Instead of ## use %%% (stands for all
 arguments).
@@ -1687,21 +1698,34 @@ be exported. {not implemented yet: class, interface}
 Import ~
 					*:import* *:imp* *E1094* *E1047* *E1262*
 					*E1048* *E1049* *E1053* *E1071* *E1236*
-The exported items can be imported in another Vim9 script: >
+The exported items can be imported in another script. The import syntax has
+two forms. The simple form: >
+	import {filename}
+<
+Where {filename} is an expression that must evaluate to a string.  In this
+form the filename should end in ".vim" and the portion before ".vim" will
+become the script local name of the namespace. For example: >
 	import "myscript.vim"
-
-This makes each item available as "myscript.item".
+<
+This makes each exported item in "myscript.vim" available as "myscript.item".
 						*:import-as* *E1257* *E1261*
-In case the name is long or ambiguous, another name can be specified: >
-	import "thatscript.vim" as that
+In case the name is long or ambiguous, this form can be used to specify
+another name: >
+	import {longfilename} as {name}
+<
+In this form {name} becomes a specific script local name for the imported
+namespace.  Therefore {name} must consist of letters, digits and '_', like
+|internal-variables|.  The {longfilename} expression must evaluate to any
+filename.  For example: >
+	import "thatscript.vim.v2" as that
 <						*E1060* *E1258* *E1259* *E1260*
-Then you can use "that.EXPORTED_CONST", "that.someValue", etc.  You are free
-to choose the name "that".  Use something that will be recognized as referring
-to the imported script.  Avoid command names, command modifiers and builtin
-function names, because the name will shadow them.
-If the name starts with a capital letter it can also shadow global user
-commands and functions.  Also, you cannot use the name for something else in
-the script, such as a function or variable name.
+Then you can use "that.item", etc.  You are free to choose the name "that".
+Use something that will be recognized as referring to the imported script.
+Avoid command names, command modifiers and builtin function names, because the
+name will shadow them.  Better not start the name starts with a capital
+letter, since it can then also shadow global user commands and functions.
+Also, you cannot use the name for something else in the script, such as a
+function or variable name.
 
 In case the dot in the name is undesired, a local reference can be made for a
 function: >
@@ -1713,15 +1737,6 @@ This also works for constants: >
 This does not work for variables, since the value would be copied once and
 when changing the variable the copy will change, not the original variable.
 You will need to use the full name, with the dot.
-
-The full syntax of the command is:
-	import {filename} [as {name}]
-Where {filename} is an expression that must evaluate to a string.  Without the
-"as {name}" part it must end in ".vim".  {name} must consist of letters,
-digits and '_', like |internal-variables|.
-
-`:import` can also be used in legacy Vim script.  The imported items still
-become script-local, even when the "s:" prefix is not given.
 
 `:import` can not be used in a function.  Imported items are intended to exist
 at the script level and only imported once.
@@ -1752,14 +1767,38 @@ line, there can be no line break: >
 	echo that
 		.name  # Error!
 
-To refer to a function in an imported script in a mapping, |<SID>| can be
-used: >
+When you've imported a function from one script into a vim9 script you can
+refer to the imported function in a mapping by prefixing it with |<SID>|: >
 	noremap <silent> ,a :call <SID>name.Function()<CR>
 
 When the mapping is defined "<SID>name." will be replaced with <SNR> and the
 script ID of the imported script.
 An even simpler solution is using |<ScriptCmd>|: >
 	noremap ,a <ScriptCmd>name.Function()<CR>
+
+Note that this does not work for variables, only for functions.
+
+					    *import-legacy* *legacy-import*
+`:import` can also be used in legacy Vim script.  The imported namespace still
+becomes script-local, even when the "s:" prefix is not given. For example: >
+        import "myfile.vim"
+	call s:myfile.MyFunc()
+
+And using the "as name" form: >
+	import "otherfile.vim9script" as that
+	call s:that.OtherFunc()
+
+However, the namespace cannot be resolved on it's own: >
+	import "that.vim"
+	echo s:that
+	" ERROR: E1060: Expected dot after name: s:that
+<
+This also affects the use of |<SID>| in the legacy mapping context.  Since
+|<SID>| is only a valid prefix for a function and NOT for a namespace, you
+cannot use it
+to scope a function in a script local namespace. Instead of prefixing the
+function with |<SID>| you should use|<ScriptCmd>|. For example: >
+	noremap ,a <ScriptCmd>:call s:that.OtherFunc()<CR>
 <
 							*:import-cycle*
 The `import` commands are executed when encountered.  If script A imports

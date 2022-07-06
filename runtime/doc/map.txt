@@ -374,15 +374,17 @@ command: it is executed as if an (unrestricted) |autocommand| was invoked.
 <ScriptCmd> is like <Cmd> but sets the context to the script the mapping was
 defined in, for the duration of the command execution.  This is especially
 useful for |Vim9| script.  It also works to access an import, which is useful
-in a plugin using an autoload script: >
+in a plugin using a, possibly autoloaded, script: >
 	vim9script
 	import autoload 'implementation.vim' as impl
 	nnoremap <F4> <ScriptCmd>impl.DoTheWork()<CR>
-
+<
 No matter where <F4> is typed, the "impl" import will be found in the script
-context of where the mapping was defined.  And since it's an autoload import,
-the "implementation.vim" script will only be loaded once <F4> is typed, not
-when the mapping is defined.
+context of where the mapping was defined.  When it's an autoload import, as in
+the example, the "implementation.vim" script will only be loaded once <F4> is
+typed, not when the mapping is defined.
+
+Without <ScriptCmd> using "s:impl" would result in "E121: Undefined variable".
 
 Note:
 - Because <Cmd> and <ScriptCmd> avoid mode-changes it does not trigger

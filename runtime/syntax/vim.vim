@@ -1,8 +1,8 @@
 " Vim syntax file
-" Language:	Vim 8.2 script
+" Language:	Vim 9.0 script
 " Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
-" Last Change:	Jun 16, 20222
-" Version:	8.2-46
+" Last Change:	July 01, 2022
+" Version:	9.0-01
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
 
@@ -49,8 +49,8 @@ syn keyword vimOption contained	invai invaltkeymap invar invarabicshape invasd i
 syn keyword vimOption contained	invakm invanti invarab invari invautochdir invautoshelldir invaw invballooneval invbevalterm invbk invbreakindent invcf invcindent invcopyindent invcscoperelative invcsre invcuc invcursorcolumn invdelcombine invdigraph inved invemo inveol invesckeys invexpandtab invfic invfixeol invfoldenable invgd invhid invhkmap invhls invicon invimc invimdisable invinfercase invjoinspaces invlangremap invlinebreak invlnr invlrm invmacatsui invml invmodeline invmodified
 
 " termcap codes (which can also be set) {{{2
-syn keyword vimOption contained	t_8b t_8u t_AF t_AL t_bc t_BE t_ce t_cl t_Co t_Cs t_CV t_db t_DL t_EI t_F2 t_F4 t_F6 t_F8 t_fd t_fs t_IE t_k1 t_k2 t_K3 t_K4 t_K5 t_K6 t_K7 t_K8 t_K9 t_kb t_KB t_kd t_KD t_KE t_KG t_kh t_KH t_kI t_KI t_KJ t_KK t_kl t_KL t_kN t_kP t_kr t_ks t_ku t_le t_mb t_md t_me t_mr t_ms t_nd t_op t_PE t_PS t_RB t_RC t_RF t_Ri t_RI t_RS t_RT t_RV t_Sb t_SC t_se t_Sf t_SH t_Si t_SI t_so t_sr t_SR t_ST t_te t_Te t_TE t_ti t_TI t_ts t_Ts t_u7 t_ue t_us t_ut t_vb t_ve t_vi t_vs t_VS t_WP t_WS t_xn t_xs t_ZH t_ZR
-syn keyword vimOption contained	t_8f t_AB t_al t_AU t_BD t_cd t_Ce t_cm t_cs t_CS t_da t_dl t_EC t_F1 t_F3 t_F5 t_F7 t_F9 t_fe t_GP t_IS t_K1 t_k3 t_k4 t_k5 t_k6 t_k7 t_k8 t_k9 t_KA t_kB t_KC t_kD t_ke t_KF
+syn keyword vimOption contained	t_8b t_8u t_AF t_AL t_bc t_BE t_ce t_cl t_Co t_Cs t_CV t_db t_DL t_Ds t_EI t_F2 t_F4 t_F6 t_F8 t_fd t_fs t_IE t_k1 t_k2 t_K3 t_K4 t_K5 t_K6 t_K7 t_K8 t_K9 t_kb t_KB t_kd t_KD t_KE t_KG t_KH t_KI t_KJ t_KK t_kl t_KL t_kN t_kP t_kr t_ks t_ku t_le t_mb t_md t_me t_mr t_ms t_nd t_op t_PE t_PS t_RB t_RC t_RF t_Ri t_RI t_RS t_RT t_RV t_Sb t_SC t_se t_Sf t_SH t_Si t_SI t_so t_sr t_SR t_ST t_te t_Te t_TE t_ti t_TI t_ts t_Ts t_u7 t_ue t_us t_Us t_ut t_vb t_ve t_vi t_vs t_VS t_WP t_WS t_xn t_xs t_ZH t_ZR
+syn keyword vimOption contained	t_8f t_AB t_al t_AU t_BD t_cd t_Ce t_cm t_cs t_CS t_da t_dl t_ds t_EC t_F1 t_F3 t_F5 t_F7 t_F9 t_fe t_GP t_IS t_K1 t_k3 t_k4 t_k5 t_k6 t_k7 t_k8 t_k9 t_KA t_kB t_KC t_kD t_ke t_KF t_kh t_kI
 syn match   vimOption contained	"t_%1"
 syn match   vimOption contained	"t_#2"
 syn match   vimOption contained	"t_#4"
@@ -400,7 +400,7 @@ syn match	vimSetMod	contained	"&vim\=\|[!&?<]\|all&"
 " Let: {{{2
 " ===
 syn keyword	vimLet	let	unl[et]	skipwhite nextgroup=vimVar,vimFuncVar,vimLetHereDoc
-VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s\+\%(trim\%(\s\+eval\)\=\|eval\%(\s\+trim\)\=\)\=\s*\z(\L\S*\)'	matchgroup=vimLetHereDocStop end='^\s*\z1\s*$'
+VimFoldh syn region vimLetHereDoc	matchgroup=vimLetHereDocStart start='=<<\s\+\%(trim\|eval\>\)\=\s*\z(\L\S*\)'	matchgroup=vimLetHereDocStop end='^\s*\z1\s*$'
 
 " Abbreviations: {{{2
 " =============

@@ -633,10 +633,13 @@ When the GUI is running 't_Co' is set to 16777216.
 				*termcap-cursor-shape* *termcap-cursor-color*
 When Vim enters Insert mode the 't_SI' escape sequence is sent.  When Vim
 enters Replace mode the 't_SR' escape sequence is sent if it is set, otherwise
-'t_SI' is sent.  When leaving Insert mode or Replace mode 't_EI' is used. This
-can be used to change the shape or color of the cursor in Insert or Replace
-mode. These are not standard termcap/terminfo entries, you need to set them
-yourself.
+'t_SI' is sent.  When leaving Insert mode or Replace mode 't_EI' is used.
+Note: When 't_EI' is not set then 't_SI' and 't_SR' will not be sent.  And
+when 't_SI' or 't_SR' is not set then 't_EI' is sent only once.
+
+This can be used to change the shape or color of the cursor in Insert or
+Replace mode. These are not standard termcap/terminfo entries, you need to set
+them yourself.
 Example for an xterm, this changes the color of the cursor: >
     if &term =~ "xterm"
 	let &t_SI = "\<Esc>]12;purple\x7"
