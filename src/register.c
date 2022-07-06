@@ -1409,7 +1409,8 @@ op_yank(oparg_T *oap, int deleting, int mess)
 # ifdef FEAT_X11
     // If we were yanking to the '+' register, send result to selection.
     // Also copy to the '*' register, in case auto-select is off.  But not when
-    // 'clipboard' has "unnamedplus" and not "unnamed".
+    // 'clipboard' has "unnamedplus" and not "unnamed"; and not when
+    // deleting and both "unnamedplus" and "unnamed".
     if (clip_plus.available
 	    && (curr == &(y_regs[PLUS_REGISTER])
 		|| (!deleting && oap->regname == 0
@@ -1425,6 +1426,8 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	if (!clip_isautosel_star()
 		&& !clip_isautosel_plus()
 		&& !((clip_unnamed | clip_unnamed_saved) == CLIP_UNNAMED_PLUS)
+		&& !(deleting && (clip_unnamed | clip_unnamed_saved)
+					== (CLIP_UNNAMED|CLIP_UNNAMED_PLUS))
 		&& !did_star
 		&& curr == &(y_regs[PLUS_REGISTER]))
 	{

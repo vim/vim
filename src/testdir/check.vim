@@ -233,6 +233,17 @@ func CheckX11BasedGui()
   endif
 endfunc
 
+" Command to check that there are two clipboards
+command CheckTwoClipboards call CheckTwoClipboards()
+func CheckTwoClipboards()
+  let @* = 'xxx1'
+  let @+ = 'xxx2'
+
+  if @* != 'xxx1' || @+ != 'xxx2'
+    throw 'Skipped: requires two clipboards'
+  endif
+endfunc
+
 " Command to check for satisfying any of the conditions.
 " e.g. CheckAnyOf Feature:bsd Feature:sun Linux
 command -nargs=+ CheckAnyOf call CheckAnyOf(<f-args>)
