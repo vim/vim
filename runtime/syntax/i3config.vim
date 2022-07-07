@@ -213,6 +213,7 @@ hi def link i3ConfigTimeUnit                        Constant
 hi def link i3ConfigModifier                        Constant
 hi def link i3ConfigString                          Constant
 hi def link i3ConfigNegativeSize                    Constant
+hi def link i3ConfigInclude                         Constant
 hi def link i3ConfigFontSeparator                   Special
 hi def link i3ConfigVariableModifier                Special
 hi def link i3ConfigSizeSpecial                     Special
