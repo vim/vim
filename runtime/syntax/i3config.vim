@@ -17,6 +17,9 @@ endif
 
 scriptencoding utf-8
 
+" Error
+syn match i3ConfigError /.*/
+
 " Todo
 syn keyword i3ConfigTodo TODO FIXME XXX contained
 
@@ -183,6 +186,7 @@ syn region i3ConfigBlock start=+^\s*[^#]*s\?{$+ end=+^\s*[^#]*}$+ contains=i3Con
 syn region i3ConfigLineCont start=/^.*\\$/ end=/^.*$/ contains=i3ConfigBlockKeyword,i3ConfigString,i3ConfigBind,i3ConfigComment,i3ConfigFont,i3ConfigFocusWrappingType,i3ConfigColor,i3ConfigVariable transparent keepend extend
 
 " Define the highlighting.
+hi def link i3ConfigError                           Error
 hi def link i3ConfigTodo                            Todo
 hi def link i3ConfigComment                         Comment
 hi def link i3ConfigFontContent                     Type
