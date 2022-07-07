@@ -74,7 +74,7 @@ syn match i3ConfigBind /^\s*\(bindsym\|bindcode\)\s\+.*$/ contains=i3ConfigVaria
 syn keyword i3ConfigSizeSpecial x contained
 syn match i3ConfigNegativeSize /-/ contained
 syn match i3ConfigSize /-\?\d\+\s\?x\s\?-\?\d\+/ contained contains=i3ConfigSizeSpecial,i3ConfigNumber,i3ConfigNegativeSize
-syn match i3ConfigFloating /^\s*floating_modifier\s\+\$\w\+\d\?/ contains=i3ConfigVariable
+syn match i3ConfigFloatingModifier /^\s*floating_modifier\s\+\$\w\+\d\?/ contains=i3ConfigVariable
 syn match i3ConfigFloating /^\s*floating_\(maximum\|minimum\)_size\s\+-\?\d\+\s\?x\s\?-\?\d\+/ contains=i3ConfigSize
 
 " Orientation
@@ -233,6 +233,7 @@ hi def link i3ConfigLayout                          Identifier
 hi def link i3ConfigBorderStyle                     Identifier
 hi def link i3ConfigEdge                            Identifier
 hi def link i3ConfigFloating                        Identifier
+hi def link i3ConfigFloatingModifier                Identifier
 hi def link i3ConfigCommandKeyword                  Identifier
 hi def link i3ConfigNoFocusKeyword                  Identifier
 hi def link i3ConfigInitializeKeyword               Identifier
