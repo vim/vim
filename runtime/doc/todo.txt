@@ -74,10 +74,10 @@ Update list of features to vote on:
 - Change "add IDE features" to "improve terminal debugger"
 - Change "diff/merge capability for CVS" to "CVS and git"
 - Remove "pre-compile them" from "improve the performance of Vim scripts"
-- multiple cursors
-- built-in LSP support
-- virtual text, using text properties
-- start first line halfway, scroll per screen line
+- Add: multiple cursors, edit text in more than one place at a time
+- Add: fast syntax highlighting with parser instead of regex patterns
+- Add: virtual text, text properties can insert text in the line
+- Add: start first line halfway, scroll per wrapped screen line
 
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
@@ -3758,7 +3758,9 @@ Printing:
 Syntax highlighting:
     Long term goal: faster, better, etc.  Options:
     - use treesitter, NeoVim uses it - Many people don't like it.
-    - use TextMate, vscode uses it.  #9087 - possibly a long term solution
+    - use TextMate, vscode uses it.  #9087 - Other people don't like it.
+      Vscode is asked to switch to treesitter:
+      https://github.com/microsoft/vscode/issues/50140
 8   Make ":syn off" use 'runtimepath' instead of $VIMRUNTIME. (Gary Johnson)
     Should do the same for ":syn on" and ":syn manual".
 8   Support "containedin" argument for ":syn include", so that the defined

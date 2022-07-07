@@ -679,6 +679,9 @@ Of these three, Vim uses PRIMARY when reading and writing the "* register
 |'clipboard'| of "autoselect"), and CLIPBOARD when reading and writing the "+
 register.  Vim does not access the SECONDARY selection.
 
+This applies both to the GUI and the terminal version.  For non-X11 systems
+the plus and the star register both us the system clipboard.
+
 Examples: (assuming the default option values)
 - Select a URL in Visual mode in Vim.  Go to your browser and click the
   middle mouse button in the URL text field.  The selected text will be
