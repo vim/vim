@@ -13,6 +13,9 @@ def SetSyn(name: string)
     g:use_fvwm_2 = name == "fvwm2"
     filetype = "fvwm"
   endif
+  if name == "whitespace"
+    filetype = &ft .. ".whitespace"
+  endif
   if !exists("s:syntax_menu_synonly")
     exe "set ft=" .. filetype
     if exists("g:syntax_manual")
