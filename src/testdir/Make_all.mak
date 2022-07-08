@@ -125,7 +125,6 @@ NEW_TESTS = \
 	test_expand_func \
 	test_expr \
 	test_expr_utf8 \
-	test_feedkeys \
 	test_file_perm \
 	test_file_size \
 	test_filechanged \
@@ -164,6 +163,7 @@ NEW_TESTS = \
 	test_increment \
 	test_increment_dbcs \
 	test_indent \
+	test_input \
 	test_ins_complete \
 	test_ins_complete_no_halt \
 	test_interrupt \
