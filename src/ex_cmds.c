@@ -4010,7 +4010,7 @@ ex_substitute(exarg_T *eap)
     {
 	// If cmdheight is 0, cmdheight must be set to 1 when we enter command
 	// line.
-	set_option_value("ch", 1L, NULL, 0);
+	set_option_value((char_u *)"ch", 1L, NULL, 0);
 	redraw_statuslines();
     }
 
@@ -4839,7 +4839,7 @@ outofmem:
 
     // Restore cmdheight
     if (cmdheight0)
-	set_option_value("ch", 0L, NULL, 0);
+	set_option_value((char_u *)"ch", 0L, NULL, 0);
 
     vim_regfree(regmatch.regprog);
     vim_free(sub_copy);

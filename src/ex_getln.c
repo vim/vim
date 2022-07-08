@@ -1616,7 +1616,7 @@ getcmdline_int(
     if (cmdheight0)
     {
 	// If cmdheight is 0, cmdheight must be set to 1 when we enter command line.
-	set_option_value("ch", 1L, NULL, 0);
+	set_option_value((char_u *)"ch", 1L, NULL, 0);
 	update_screen(VALID);                 // redraw the screen NOW
     }
 
@@ -2599,7 +2599,7 @@ theend:
 
 	if (cmdheight0)
 	{
-	    set_option_value("ch", 0L, NULL, 0);
+	    set_option_value((char_u *)"ch", 0L, NULL, 0);
 	    // Redraw is needed for command line completion
 	    redraw_all_later(CLEAR);
 	}
