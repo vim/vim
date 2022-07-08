@@ -30,21 +30,21 @@ imenu ShellMemu.Statements.return-false	return 1
 imenu ShellMemu.Statements.exit	exit 
 imenu ShellMemu.Statements.shift	shift 
 imenu ShellMemu.Statements.trap	trap 
-imenu ShellMemu.Test.existence	[ -e  ]<esc>hi
-imenu ShellMemu.Test.existence\ -\ file		[ -f  ]<esc>hi
-imenu ShellMemu.Test.existence\ -\ file\ (not\ empty)	[ -s  ]<esc>hi
-imenu ShellMemu.Test.existence\ -\ directory	[ -d  ]<esc>hi
-imenu ShellMemu.Test.existence\ -\ executable	[ -x  ]<esc>hi
-imenu ShellMemu.Test.existence\ -\ readable	[ -r  ]<esc>hi
-imenu ShellMemu.Test.existence\ -\ writable	[ -w  ]<esc>hi
+imenu ShellMemu.Test.Existence	[ -e  ]<esc>hi
+imenu ShellMemu.Test.Existence\ -\ file		[ -f  ]<esc>hi
+imenu ShellMemu.Test.Existence\ -\ file\ (not\ empty)	[ -s  ]<esc>hi
+imenu ShellMemu.Test.Existence\ -\ directory	[ -d  ]<esc>hi
+imenu ShellMemu.Test.Existence\ -\ executable	[ -x  ]<esc>hi
+imenu ShellMemu.Test.Existence\ -\ readable	[ -r  ]<esc>hi
+imenu ShellMemu.Test.Existence\ -\ writable	[ -w  ]<esc>hi
 imenu ShellMemu.Test.String\ is\ empty [ x = "x$" ]<esc>hhi
 imenu ShellMemu.Test.String\ is\ not\ empty [ x != "x$" ]<esc>hhi
-imenu ShellMemu.Test.Strings\ is\ equal [ "" = "" ]<esc>hhhhhhhi
-imenu ShellMemu.Test.Strings\ is\ not\ equal [ "" != "" ]<esc>hhhhhhhhi
+imenu ShellMemu.Test.Strings\ are\ equal [ "" = "" ]<esc>hhhhhhhi
+imenu ShellMemu.Test.Strings\ are\ not\ equal [ "" != "" ]<esc>hhhhhhhhi
 imenu ShellMemu.Test.Value\ is\ greater\ than [  -gt  ]<esc>hhhhhhi
 imenu ShellMemu.Test.Value\ is\ greater\ equal [  -ge  ]<esc>hhhhhhi
-imenu ShellMemu.Test.Value\ is\ equal [  -eq  ]<esc>hhhhhhi
-imenu ShellMemu.Test.Value\ is\ not\ equal [  -ne  ]<esc>hhhhhhi
+imenu ShellMemu.Test.Values\ are\ equal [  -eq  ]<esc>hhhhhhi
+imenu ShellMemu.Test.Values\ are\ not\ equal [  -ne  ]<esc>hhhhhhi
 imenu ShellMemu.Test.Value\ is\ less\ than [  -lt  ]<esc>hhhhhhi
 imenu ShellMemu.Test.Value\ is\ less\ equal [  -le  ]<esc>hhhhhhi
 imenu ShellMemu.ParmSub.Substitute\ word\ if\ parm\ not\ set ${:-}<esc>hhi
@@ -91,11 +91,11 @@ imenu ShellMemu.Set.unset unset
 imenu ShellMemu.Set.Mark\ created\ or\ modified\ variables\ for\ export set -a
 imenu ShellMemu.Set.Exit\ when\ command\ returns\ non-zero\ status set -e
 imenu ShellMemu.Set.Disable\ file\ name\ expansion set -f
-imenu ShellMemu.Set.Locate\ and\ remember\ function\ commands\ when\ being\ looked\ up set -h
-imenu ShellMemu.Set.All\ keyword\ arguments\ are\ placed\ in\ the\ environment\ for\ a\ command set -k
+imenu ShellMemu.Set.Locate\ and\ remember\ commands\ when\ being\ looked\ up set -h
+imenu ShellMemu.Set.All\ assignment\ arguments\ are\ placed\ in\ the\ environment\ for\ a\ command set -k
 imenu ShellMemu.Set.Read\ commands\ but\ do\ not\ execute\ them set -n
 imenu ShellMemu.Set.Exit\ after\ reading\ and\ executing\ one\ command set -t
-imenu ShellMemu.Set.Treat\ unset\ variables\ as\ an\ error\ when\ performing\ parameter\  expansion set -u
+imenu ShellMemu.Set.Treat\ unset\ variables\ as\ an\ error\ when\ substituting set -u
 imenu ShellMemu.Set.Print\ shell\ input\ lines\ as\ they\ are\ read set -v
 imenu ShellMemu.Set.Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed set -x
 
