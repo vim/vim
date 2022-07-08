@@ -104,8 +104,8 @@ function NewVersion()
     amenu disable Changelog.New\ Version
     amenu enable Changelog.Add\ Entry
     amenu enable Changelog.Close\ Bug
-    amenu enable Changelog.Set\ Distribution
-    amenu enable Changelog.Set\ Urgency
+    amenu enable Changelog.Set\ &Distribution
+    amenu enable Changelog.Set\ &Urgency
     amenu disable Changelog.Unfinalise
     amenu enable Changelog.Finalise
     call append(0, substitute(getline(1), '-\([[:digit:]]\+\))', '-$$\1)', ''))
@@ -164,8 +164,8 @@ function <SID>UnfinaliseMenu()
     amenu disable Changelog.New\ Version
     amenu enable Changelog.Add\ Entry
     amenu enable Changelog.Close\ Bug
-    amenu enable Changelog.Set\ Distribution
-    amenu enable Changelog.Set\ Urgency
+    amenu enable Changelog.Set\ &Distribution
+    amenu enable Changelog.Set\ &Urgency
     amenu disable Changelog.Unfinalise
     amenu enable Changelog.Finalise
 endfunction
@@ -182,8 +182,8 @@ function <SID>FinaliseMenu()
     amenu enable Changelog.New\ Version
     amenu disable Changelog.Add\ Entry
     amenu disable Changelog.Close\ Bug
-    amenu disable Changelog.Set\ Distribution
-    amenu disable Changelog.Set\ Urgency
+    amenu disable Changelog.Set\ &Distribution
+    amenu disable Changelog.Set\ &Urgency
     amenu enable Changelog.Unfinalise
     amenu disable Changelog.Finalise
 endfunction
@@ -203,17 +203,17 @@ function <SID>MakeMenu()
     menu Changelog.-sep-				<nul>
 
     amenu Changelog.Set\ &Distribution.&unstable	:call Distribution("unstable")<CR>
-    amenu Changelog.Set\ Distribution.&frozen		:call Distribution("frozen")<CR>
-    amenu Changelog.Set\ Distribution.&stable		:call Distribution("stable")<CR>
-    menu Changelog.Set\ Distribution.-sep-		<nul>
-    amenu Changelog.Set\ Distribution.frozen\ unstable	:call Distribution("frozen unstable")<CR>
-    amenu Changelog.Set\ Distribution.stable\ unstable	:call Distribution("stable unstable")<CR>
-    amenu Changelog.Set\ Distribution.stable\ frozen	:call Distribution("stable frozen")<CR>
-    amenu Changelog.Set\ Distribution.stable\ frozen\ unstable	:call Distribution("stable frozen unstable")<CR>
+    amenu Changelog.Set\ &Distribution.&frozen		:call Distribution("frozen")<CR>
+    amenu Changelog.Set\ &Distribution.&stable		:call Distribution("stable")<CR>
+    menu Changelog.Set\ &Distribution.-sep-		<nul>
+    amenu Changelog.Set\ &Distribution.frozen\ unstable	:call Distribution("frozen unstable")<CR>
+    amenu Changelog.Set\ &Distribution.stable\ unstable	:call Distribution("stable unstable")<CR>
+    amenu Changelog.Set\ &Distribution.stable\ frozen	:call Distribution("stable frozen")<CR>
+    amenu Changelog.Set\ &Distribution.stable\ frozen\ unstable	:call Distribution("stable frozen unstable")<CR>
 
     amenu Changelog.Set\ &Urgency.&low			:call Urgency("low")<CR>
-    amenu Changelog.Set\ Urgency.&medium		:call Urgency("medium")<CR>
-    amenu Changelog.Set\ Urgency.&high			:call Urgency("high")<CR>
+    amenu Changelog.Set\ &Urgency.&medium		:call Urgency("medium")<CR>
+    amenu Changelog.Set\ &Urgency.&high			:call Urgency("high")<CR>
 
     menu Changelog.-sep-				<nul>
     amenu Changelog.U&nfinalise				:call Unfinalise()<CR>
