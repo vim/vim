@@ -2436,7 +2436,7 @@ handle_mapping(
     int		local_State = get_real_state();
     int		is_plug_map = FALSE;
 
-    // If typehead starts with <Plug> then remap, even for a "noremap" mapping.
+    // If typeahead starts with <Plug> then remap, even for a "noremap" mapping.
     if (typebuf.tb_len >= 3
 	    && typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
 	    && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
