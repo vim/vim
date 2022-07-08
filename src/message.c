@@ -3424,7 +3424,7 @@ msg_clr_eos_force(void)
 		out_str(T_CE);	// clear to end of line
 	}
     }
-    else
+    else if (p_ch > 0)
     {
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)
