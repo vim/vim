@@ -15,89 +15,89 @@
 let s:cpo_save = &cpo
 set cpo&vim
 
-imenu Stmts.for	for  in <CR>do<CR><CR>done<esc>ki	<esc>kk0elli
-imenu Stmts.case	case  in<CR>) ;;<CR>esac<esc>bki	<esc>k0elli
-imenu Stmts.if	if   <CR>then<CR><CR>fi<esc>ki	<esc>kk0elli
-imenu Stmts.if-else	if   <CR>then<CR><CR>else<CR><CR>fi<esc>ki	<esc>kki	<esc>kk0elli
-imenu Stmts.elif	elif   <CR>then<CR><CR><esc>ki	<esc>kk0elli
-imenu Stmts.while	while   do<CR><CR>done<esc>ki	<esc>kk0elli
-imenu Stmts.break	break 
-imenu Stmts.continue	continue 
-imenu Stmts.function	() {<CR><CR>}<esc>ki	<esc>k0i
-imenu Stmts.return	return 
-imenu Stmts.return-true	return 0
-imenu Stmts.return-false	return 1
-imenu Stmts.exit	exit 
-imenu Stmts.shift	shift 
-imenu Stmts.trap	trap 
-imenu Test.existence	[ -e  ]<esc>hi
-imenu Test.existence\ -\ file		[ -f  ]<esc>hi
-imenu Test.existence\ -\ file\ (not\ empty)	[ -s  ]<esc>hi
-imenu Test.existence\ -\ directory	[ -d  ]<esc>hi
-imenu Test.existence\ -\ executable	[ -x  ]<esc>hi
-imenu Test.existence\ -\ readable	[ -r  ]<esc>hi
-imenu Test.existence\ -\ writable	[ -w  ]<esc>hi
-imenu Test.String\ is\ empty [ x = "x$" ]<esc>hhi
-imenu Test.String\ is\ not\ empty [ x != "x$" ]<esc>hhi
-imenu Test.Strings\ is\ equal [ "" = "" ]<esc>hhhhhhhi
-imenu Test.Strings\ is\ not\ equal [ "" != "" ]<esc>hhhhhhhhi
-imenu Test.Values\ is\ greater\ than [  -gt  ]<esc>hhhhhhi
-imenu Test.Values\ is\ greater\ equal [  -ge  ]<esc>hhhhhhi
-imenu Test.Values\ is\ equal [  -eq  ]<esc>hhhhhhi
-imenu Test.Values\ is\ not\ equal [  -ne  ]<esc>hhhhhhi
-imenu Test.Values\ is\ less\ than [  -lt  ]<esc>hhhhhhi
-imenu Test.Values\ is\ less\ equal [  -le  ]<esc>hhhhhhi
-imenu ParmSub.Substitute\ word\ if\ parm\ not\ set ${:-}<esc>hhi
-imenu ParmSub.Set\ parm\ to\ word\ if\ not\ set ${:=}<esc>hhi
-imenu ParmSub.Substitute\ word\ if\ parm\ set\ else\ nothing ${:+}<esc>hhi
-imenu ParmSub.If\ parm\ not\ set\ print\ word\ and\ exit ${:?}<esc>hhi
-imenu SpShVars.Number\ of\ positional\ parameters ${#}
-imenu SpShVars.All\ positional\ parameters\ (quoted\ spaces) ${*}
-imenu SpShVars.All\ positional\ parameters\ (unquoted\ spaces) ${@}
-imenu SpShVars.Flags\ set ${-}
-imenu SpShVars.Return\ code\ of\ last\ command ${?}
-imenu SpShVars.Process\ number\ of\ this\ shell ${$}
-imenu SpShVars.Process\ number\ of\ last\ background\ command ${!}
-imenu Environ.HOME ${HOME}
-imenu Environ.PATH ${PATH}
-imenu Environ.CDPATH ${CDPATH}
-imenu Environ.MAIL ${MAIL}
-imenu Environ.MAILCHECK ${MAILCHECK}
-imenu Environ.PS1 ${PS1}
-imenu Environ.PS2 ${PS2}
-imenu Environ.IFS ${IFS}
-imenu Environ.SHACCT ${SHACCT}
-imenu Environ.SHELL ${SHELL}
-imenu Environ.LC_CTYPE ${LC_CTYPE}
-imenu Environ.LC_MESSAGES ${LC_MESSAGES}
-imenu Builtins.cd cd
-imenu Builtins.echo echo
-imenu Builtins.eval eval
-imenu Builtins.exec exec
-imenu Builtins.export export
-imenu Builtins.getopts getopts
-imenu Builtins.hash hash
-imenu Builtins.newgrp newgrp
-imenu Builtins.pwd pwd
-imenu Builtins.read read
-imenu Builtins.readonly readonly
-imenu Builtins.return return
-imenu Builtins.times times
-imenu Builtins.type type
-imenu Builtins.umask umask
-imenu Builtins.wait wait
-imenu Set.set set
-imenu Set.unset unset
-imenu Set.mark\ modified\ or\ modified\ variables set -a
-imenu Set.exit\ when\ command\ returns\ non-zero\ exit\ code set -e
-imenu Set.Disable\ file\ name\ generation set -f
-imenu Set.remember\ function\ commands set -h
-imenu Set.All\ keyword\ arguments\ are\ placed\ in\ the\ environment set -k
-imenu Set.Read\ commands\ but\ do\ not\ execute\ them set -n
-imenu Set.Exit\ after\ reading\ and\ executing\ one\ command set -t
-imenu Set.Treat\ unset\ variables\ as\ an\ error\ when\ substituting set -u
-imenu Set.Print\ shell\ input\ lines\ as\ they\ are\ read set -v
-imenu Set.Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed set -x
+imenu ShellMemu.Statements.for	for  in <CR>do<CR><CR>done<esc>ki	<esc>kk0elli
+imenu ShellMemu.Statements.case	case  in<CR>) ;;<CR>esac<esc>bki	<esc>k0elli
+imenu ShellMemu.Statements.if	if   <CR>then<CR><CR>fi<esc>ki	<esc>kk0elli
+imenu ShellMemu.Statements.if-else	if   <CR>then<CR><CR>else<CR><CR>fi<esc>ki	<esc>kki	<esc>kk0elli
+imenu ShellMemu.Statements.elif	elif   <CR>then<CR><CR><esc>ki	<esc>kk0elli
+imenu ShellMemu.Statements.while	while   do<CR><CR>done<esc>ki	<esc>kk0elli
+imenu ShellMemu.Statements.break	break 
+imenu ShellMemu.Statements.continue	continue 
+imenu ShellMemu.Statements.function	() {<CR><CR>}<esc>ki	<esc>k0i
+imenu ShellMemu.Statements.return	return 
+imenu ShellMemu.Statements.return-true	return 0
+imenu ShellMemu.Statements.return-false	return 1
+imenu ShellMemu.Statements.exit	exit 
+imenu ShellMemu.Statements.shift	shift 
+imenu ShellMemu.Statements.trap	trap 
+imenu ShellMemu.Test.existence	[ -e  ]<esc>hi
+imenu ShellMemu.Test.existence\ -\ file		[ -f  ]<esc>hi
+imenu ShellMemu.Test.existence\ -\ file\ (not\ empty)	[ -s  ]<esc>hi
+imenu ShellMemu.Test.existence\ -\ directory	[ -d  ]<esc>hi
+imenu ShellMemu.Test.existence\ -\ executable	[ -x  ]<esc>hi
+imenu ShellMemu.Test.existence\ -\ readable	[ -r  ]<esc>hi
+imenu ShellMemu.Test.existence\ -\ writable	[ -w  ]<esc>hi
+imenu ShellMemu.Test.String\ is\ empty [ x = "x$" ]<esc>hhi
+imenu ShellMemu.Test.String\ is\ not\ empty [ x != "x$" ]<esc>hhi
+imenu ShellMemu.Test.Strings\ is\ equal [ "" = "" ]<esc>hhhhhhhi
+imenu ShellMemu.Test.Strings\ is\ not\ equal [ "" != "" ]<esc>hhhhhhhhi
+imenu ShellMemu.Test.Value\ is\ greater\ than [  -gt  ]<esc>hhhhhhi
+imenu ShellMemu.Test.Value\ is\ greater\ equal [  -ge  ]<esc>hhhhhhi
+imenu ShellMemu.Test.Value\ is\ equal [  -eq  ]<esc>hhhhhhi
+imenu ShellMemu.Test.Value\ is\ not\ equal [  -ne  ]<esc>hhhhhhi
+imenu ShellMemu.Test.Value\ is\ less\ than [  -lt  ]<esc>hhhhhhi
+imenu ShellMemu.Test.Value\ is\ less\ equal [  -le  ]<esc>hhhhhhi
+imenu ShellMemu.ParmSub.Substitute\ word\ if\ parm\ not\ set ${:-}<esc>hhi
+imenu ShellMemu.ParmSub.Set\ parm\ to\ word\ if\ not\ set ${:=}<esc>hhi
+imenu ShellMemu.ParmSub.Substitute\ word\ if\ parm\ set\ else\ nothing ${:+}<esc>hhi
+imenu ShellMemu.ParmSub.If\ parm\ not\ set\ print\ word\ and\ exit ${:?}<esc>hhi
+imenu ShellMemu.SpShVars.Number\ of\ positional\ parameters ${#}
+imenu ShellMemu.SpShVars.All\ positional\ parameters\ (quoted\ spaces) ${*}
+imenu ShellMemu.SpShVars.All\ positional\ parameters\ (unquoted\ spaces) ${@}
+imenu ShellMemu.SpShVars.Flags\ set ${-}
+imenu ShellMemu.SpShVars.Return\ code\ of\ last\ command ${?}
+imenu ShellMemu.SpShVars.Process\ number\ of\ this\ shell ${$}
+imenu ShellMemu.SpShVars.Process\ number\ of\ last\ background\ command ${!}
+imenu ShellMemu.Environ.HOME ${HOME}
+imenu ShellMemu.Environ.PATH ${PATH}
+imenu ShellMemu.Environ.CDPATH ${CDPATH}
+imenu ShellMemu.Environ.MAIL ${MAIL}
+imenu ShellMemu.Environ.MAILCHECK ${MAILCHECK}
+imenu ShellMemu.Environ.PS1 ${PS1}
+imenu ShellMemu.Environ.PS2 ${PS2}
+imenu ShellMemu.Environ.IFS ${IFS}
+imenu ShellMemu.Environ.SHACCT ${SHACCT}
+imenu ShellMemu.Environ.SHELL ${SHELL}
+imenu ShellMemu.Environ.LC_CTYPE ${LC_CTYPE}
+imenu ShellMemu.Environ.LC_MESSAGES ${LC_MESSAGES}
+imenu ShellMemu.Builtins.cd cd
+imenu ShellMemu.Builtins.echo echo
+imenu ShellMemu.Builtins.eval eval
+imenu ShellMemu.Builtins.exec exec
+imenu ShellMemu.Builtins.export export
+imenu ShellMemu.Builtins.getopts getopts
+imenu ShellMemu.Builtins.hash hash
+imenu ShellMemu.Builtins.newgrp newgrp
+imenu ShellMemu.Builtins.pwd pwd
+imenu ShellMemu.Builtins.read read
+imenu ShellMemu.Builtins.readonly readonly
+imenu ShellMemu.Builtins.return return
+imenu ShellMemu.Builtins.times times
+imenu ShellMemu.Builtins.type type
+imenu ShellMemu.Builtins.umask umask
+imenu ShellMemu.Builtins.wait wait
+imenu ShellMemu.Set.set set
+imenu ShellMemu.Set.unset unset
+imenu ShellMemu.Set.Mark\ created\ or\ modified\ variables\ for\ export set -a
+imenu ShellMemu.Set.Exit\ when\ command\ returns\ non-zero\ status set -e
+imenu ShellMemu.Set.Disable\ file\ name\ expansion set -f
+imenu ShellMemu.Set.Locate\ and\ remember\ function\ commands\ when\ being\ looked\ up set -h
+imenu ShellMemu.Set.All\ keyword\ arguments\ are\ placed\ in\ the\ environment\ for\ a\ command set -k
+imenu ShellMemu.Set.Read\ commands\ but\ do\ not\ execute\ them set -n
+imenu ShellMemu.Set.Exit\ after\ reading\ and\ executing\ one\ command set -t
+imenu ShellMemu.Set.Treat\ unset\ variables\ as\ an\ error\ when\ performing\ parameter\  expansion set -u
+imenu ShellMemu.Set.Print\ shell\ input\ lines\ as\ they\ are\ read set -v
+imenu ShellMemu.Set.Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed set -x
 
 " Restore the previous value of 'cpoptions'.
 let &cpo = s:cpo_save
