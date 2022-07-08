@@ -65,7 +65,9 @@ func Test_pastetoggle()
   let &pastetoggle = str
   call assert_equal(str, &pastetoggle)
   call assert_equal("\n  pastetoggle=" .. strtrans(str), execute('set pastetoggle?'))
+
   unlet str
+  set pastetoggle&
 endfunc
 
 func Test_wildchar()
