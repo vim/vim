@@ -371,6 +371,7 @@ do_record(int c)
 {
     char_u	    *p;
     static int	    regname;
+    static int change_cmdheight = FALSE;
     yankreg_T	    *old_y_previous, *old_y_current;
     int		    retval;
 
@@ -385,6 +386,15 @@ do_record(int c)
 	    showmode();
 	    regname = c;
 	    retval = OK;
+
+	    if (p_ch < 1)
+	    {
+		// Enable macro indicator temporary
+		set_option_value((char_u *)"ch", 1L, NULL, 0);
+		update_screen(VALID);
+
+		change_cmdheight = TRUE;
+	    }
 	}
     }
     else			    // stop recording
@@ -411,6 +421,16 @@ do_record(int c)
 
 	    y_previous = old_y_previous;
 	    y_current = old_y_current;
+	}
+
+	if (change_cmdheight)
+	{
+	    // Restore cmdheight
+	    set_option_value((char_u *)"ch", 0L, NULL, 0);
+
+	    redraw_all_later(CLEAR);
+
+	    change_cmdheight = FALSE;
 	}
     }
     return retval;
