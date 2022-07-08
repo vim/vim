@@ -92,7 +92,7 @@ imenu ShellMemu.Set.Mark\ created\ or\ modified\ variables\ for\ export set -a
 imenu ShellMemu.Set.Exit\ when\ command\ returns\ non-zero\ status set -e
 imenu ShellMemu.Set.Disable\ file\ name\ expansion set -f
 imenu ShellMemu.Set.Locate\ and\ remember\ commands\ when\ being\ looked\ up set -h
-imenu ShellMemu.Set.All\ assignment\ arguments\ are\ placed\ in\ the\ environment\ for\ a\ command set -k
+imenu ShellMemu.Set.All\ assignment\ statements\ are\ placed\ in\ the\ environment\ for\ a\ command set -k
 imenu ShellMemu.Set.Read\ commands\ but\ do\ not\ execute\ them set -n
 imenu ShellMemu.Set.Exit\ after\ reading\ and\ executing\ one\ command set -t
 imenu ShellMemu.Set.Treat\ unset\ variables\ as\ an\ error\ when\ substituting set -u
