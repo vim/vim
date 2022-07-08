@@ -1766,6 +1766,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The value of this option is stored with the tab page, so that each tab
 	page can have a different value.
 
+	When 'cmdheight' is zero, it disables echo area and all outputs need
+	|hit-enter| prompt.
+
 						*'cmdwinheight'* *'cwh'*
 'cmdwinheight' 'cwh'	number	(default 7)
 			global
@@ -6446,9 +6449,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 		45%	relative position in the file
 	If 'rulerformat' is set, it will determine the contents of the ruler.
 	Each window has its own ruler.  If a window has a status line, the
-	ruler is shown there.  Otherwise it is shown in the last line of the
-	screen.  If the statusline is given by 'statusline' (i.e. not empty),
-	this option takes precedence over 'ruler' and 'rulerformat'
+	ruler is shown there.  If a window doesn't have a status line and
+	'cmdheight' is 0, the ruler is not shown.  Otherwise it is shown in
+	the last line of the screen.  If the statusline is given by
+	'statusline' (i.e. not empty), this option takes precedence over
+	'ruler' and 'rulerformat'
 	If the number of characters displayed is different from the number of
 	bytes in the text (e.g., for a TAB or a multibyte character), both
 	the text column (byte number) and the screen column are shown,
@@ -7098,6 +7103,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			|+cmdline_info| feature}
 	Show (partial) command in the last line of the screen.  Set this
 	option off if your terminal is slow.
+	The option is disabled if 'cmdheight' is 0.
 	In Visual mode the size of the selected area is shown:
 	- When selecting characters within a line, the number of characters.
 	  If the number of bytes is different it is also displayed: "2-6"
@@ -7147,6 +7153,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If in Insert, Replace or Visual mode put a message on the last line.
 	Use the 'M' flag in 'highlight' to set the type of highlighting for
 	this message.
+	The option is disabled if 'cmdheight' is 0.
 	When |XIM| may be used the message will include "XIM".  But this
 	doesn't mean XIM is really active, especially when 'imactivatekey' is
 	not set.

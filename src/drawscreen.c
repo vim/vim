@@ -649,8 +649,8 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
     int		off = 0;
     int		width;
 
-    // If 'ruler' off or redrawing disabled, don't do anything
-    if (!p_ru)
+    // If 'ruler' off or messages area disabled, don't do anything
+    if (!p_ru || p_ch < 1)
 	return;
 
     /*
@@ -671,7 +671,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	return;
 
 #ifdef FEAT_STL_OPT
-    if (*p_ruf)
+    if (*p_ruf && p_ch > 0)
     {
 	int	called_emsg_before = called_emsg;
 
@@ -2952,18 +2952,18 @@ redraw_asap(int type)
 
     // Allocate space to save the text displayed in the command line area.
     rows = screen_Rows - cmdline_row;
-    screenline = LALLOC_MULT(schar_T, rows * cols);
-    screenattr = LALLOC_MULT(sattr_T, rows * cols);
+    screenline = p_ch < 1 ? NULL : LALLOC_MULT(schar_T, rows * cols);
+    screenattr = p_ch < 1 ? NULL : LALLOC_MULT(sattr_T, rows * cols);
     if (screenline == NULL || screenattr == NULL)
 	ret = 2;
     if (enc_utf8)
     {
-	screenlineUC = LALLOC_MULT(u8char_T, rows * cols);
+	screenlineUC = p_ch < 1 ? NULL : LALLOC_MULT(u8char_T, rows * cols);
 	if (screenlineUC == NULL)
 	    ret = 2;
 	for (i = 0; i < p_mco; ++i)
 	{
-	    screenlineC[i] = LALLOC_MULT(u8char_T, rows * cols);
+	    screenlineC[i] = p_ch < 1 ? NULL : LALLOC_MULT(u8char_T, rows * cols);
 	    if (screenlineC[i] == NULL)
 		ret = 2;
 	}

@@ -1611,6 +1611,14 @@ getcmdline_int(
     int		did_save_ccline = FALSE;
     int		cmdline_type;
     int		wild_type;
+    int cmdheight0 = p_ch < 1;
+
+    if (cmdheight0)
+    {
+	// If cmdheight is 0, cmdheight must be set to 1 when we enter command line.
+	set_option_value("ch", 1L, NULL, 0);
+	update_screen(VALID);                 // redraw the screen NOW
+    }
 
     // one recursion level deeper
     ++depth;
@@ -2588,6 +2596,13 @@ returncmd:
 theend:
     {
 	char_u *p = ccline.cmdbuff;
+
+	if (cmdheight0)
+	{
+	    set_option_value("ch", 0L, NULL, 0);
+	    // Redraw is needed for command line completion
+	    redraw_all_later(CLEAR);
+	}
 
 	--depth;
 	if (did_save_ccline)

@@ -4727,7 +4727,7 @@ redrawing(void)
     int
 messaging(void)
 {
-    return (!(p_lz && char_avail() && !KeyTyped));
+    return (!(p_lz && char_avail() && !KeyTyped)) && p_ch > 0;
 }
 
 /*
