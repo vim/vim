@@ -17,8 +17,12 @@
  * ScreenLines[off]  Contains a copy of the whole screen, as it is currently
  *		     displayed (excluding text written by external commands).
  * ScreenAttrs[off]  Contains the associated attributes.
- * LineOffset[row]   Contains the offset into ScreenLines*[] and ScreenAttrs[]
- *		     for each line.
+ * ScreenCols[off]   Contains the byte offset in the line. -1 means not
+ *		     available (below last line), MAXCOL means after the end
+ *		     of the line.
+ *
+ * LineOffset[row]   Contains the offset into ScreenLines*[], ScreenAttrs[]
+ *		     and ScreenCols[] for each line.
  * LineWraps[row]    Flag for each line whether it wraps to the next line.
  *
  * For double-byte characters, two consecutive bytes in ScreenLines[] can form
@@ -453,7 +457,6 @@ screen_line(
     int		    clear_next = FALSE;
     int		    char_cells;		// 1: normal char
 					// 2: occupies two display cells
-# define CHAR_CELLS char_cells
 
     // Check for illegal row and col, just in case.
     if (row >= Rows)
@@ -519,8 +522,8 @@ screen_line(
 	    char_cells = 1;
 
 	redraw_this = redraw_next;
-	redraw_next = force || char_needs_redraw(off_from + CHAR_CELLS,
-			      off_to + CHAR_CELLS, endcol - col - CHAR_CELLS);
+	redraw_next = force || char_needs_redraw(off_from + char_cells,
+			      off_to + char_cells, endcol - col - char_cells);
 
 #ifdef FEAT_GUI
 	// If the next character was bold, then redraw the current character to
@@ -528,7 +531,7 @@ screen_line(
 	// happens in the GUI.
 	if (redraw_next && gui.in_use)
 	{
-	    hl = ScreenAttrs[off_to + CHAR_CELLS];
+	    hl = ScreenAttrs[off_to + char_cells];
 	    if (hl > HL_ALL)
 		hl = syn_attr2attr(hl);
 	    if (hl & HL_BOLD)
@@ -666,11 +669,15 @@ screen_line(
 	    }
 #endif
 	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
+	    ScreenCols[off_to] = ScreenCols[off_from];
 
 	    // For simplicity set the attributes of second half of a
 	    // double-wide character equal to the first half.
 	    if (char_cells == 2)
+	    {
 		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+		ScreenCols[off_to + 1] = ScreenCols[off_from + 1];
+	    }
 
 	    if (enc_dbcs != 0 && char_cells == 2)
 		screen_char_2(off_to, row, col + coloff);
@@ -695,9 +702,13 @@ screen_line(
 		screen_stop_highlight();
 	}
 
-	off_to += CHAR_CELLS;
-	off_from += CHAR_CELLS;
-	col += CHAR_CELLS;
+	ScreenCols[off_to] = ScreenCols[off_from];
+	if (char_cells == 2)
+	    ScreenCols[off_to + 1] = ScreenCols[off_from];
+
+	off_to += char_cells;
+	off_from += char_cells;
+	col += char_cells;
     }
 
     if (clear_next)
@@ -725,6 +736,7 @@ screen_line(
 						  && ScreenAttrs[off_to] == 0
 				  && (!enc_utf8 || ScreenLinesUC[off_to] == 0))
 	{
+	    ScreenCols[off_to] = MAXCOL;
 	    ++off_to;
 	    ++col;
 	}
@@ -774,8 +786,11 @@ screen_line(
 #endif
 	    screen_fill(row, row + 1, col + coloff, clear_width + coloff,
 								 ' ', ' ', 0);
-	    off_to += clear_width - col;
-	    col = clear_width;
+	    while (col < clear_width)
+	    {
+		ScreenCols[off_to++] = MAXCOL;
+		++col;
+	    }
 	}
     }
 
@@ -1679,6 +1694,7 @@ screen_puts_len(
 		ScreenLines[off + mbyte_blen] = 0;
 	    ScreenLines[off] = c;
 	    ScreenAttrs[off] = attr;
+	    ScreenCols[off] = -1;
 	    if (enc_utf8)
 	    {
 		if (c < 0x80 && u8cc[0] == 0)
@@ -1699,6 +1715,7 @@ screen_puts_len(
 		{
 		    ScreenLines[off + 1] = 0;
 		    ScreenAttrs[off + 1] = attr;
+		    ScreenCols[off + 1] = -1;
 		}
 		screen_char(off, row, col);
 	    }
@@ -1706,6 +1723,7 @@ screen_puts_len(
 	    {
 		ScreenLines[off + 1] = ptr[1];
 		ScreenAttrs[off + 1] = attr;
+		ScreenCols[off + 1] = -1;
 		screen_char_2(off, row, col);
 	    }
 	    else if (enc_dbcs == DBCS_JPNU && c == 0x8e)
@@ -2174,6 +2192,7 @@ screen_char(unsigned off, int row, int col)
        )
     {
 	ScreenAttrs[off] = (sattr_T)-1;
+	ScreenCols[off] = -1;
 	return;
     }
 
@@ -2250,6 +2269,7 @@ screen_char_2(unsigned off, int row, int col)
     if (row == screen_Rows - 1 && col >= screen_Columns - 2)
     {
 	ScreenAttrs[off] = (sattr_T)-1;
+	ScreenCols[off] = -1;
 	return;
     }
 
@@ -2335,6 +2355,7 @@ space_to_screenline(int off, int attr)
 {
     ScreenLines[off] = ' ';
     ScreenAttrs[off] = attr;
+    ScreenCols[off] = -1;
     if (enc_utf8)
 	ScreenLinesUC[off] = 0;
 }
@@ -2505,6 +2526,7 @@ screen_fill(
 		if (!did_delete || c != ' ')
 		    screen_char(off, row, col);
 	    }
+	    ScreenCols[off] = -1;
 	    ++off;
 	    if (col == start_col)
 	    {
@@ -2598,6 +2620,7 @@ screenalloc(int doclear)
     schar_T	    *new_ScreenLines2 = NULL;
     int		    i;
     sattr_T	    *new_ScreenAttrs;
+    colnr_T	    *new_ScreenCols;
     unsigned	    *new_LineOffset;
     char_u	    *new_LineWraps;
     short	    *new_TabPageIdxs;
@@ -2688,6 +2711,7 @@ retry:
     if (enc_dbcs == DBCS_JPNU)
 	new_ScreenLines2 = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
     new_ScreenAttrs = LALLOC_MULT(sattr_T, (Rows + 1) * Columns);
+    new_ScreenCols = LALLOC_MULT(colnr_T, (Rows + 1) * Columns);
     new_LineOffset = LALLOC_MULT(unsigned, Rows);
     new_LineWraps = LALLOC_MULT(char_u, Rows);
     new_TabPageIdxs = LALLOC_MULT(short, Columns);
@@ -2735,6 +2759,7 @@ give_up:
 	    || (enc_utf8 && (new_ScreenLinesUC == NULL || i != p_mco))
 	    || (enc_dbcs == DBCS_JPNU && new_ScreenLines2 == NULL)
 	    || new_ScreenAttrs == NULL
+	    || new_ScreenCols == NULL
 	    || new_LineOffset == NULL
 	    || new_LineWraps == NULL
 	    || new_TabPageIdxs == NULL
@@ -2760,6 +2785,7 @@ give_up:
 	    VIM_CLEAR(new_ScreenLinesC[i]);
 	VIM_CLEAR(new_ScreenLines2);
 	VIM_CLEAR(new_ScreenAttrs);
+	VIM_CLEAR(new_ScreenCols);
 	VIM_CLEAR(new_LineOffset);
 	VIM_CLEAR(new_LineWraps);
 	VIM_CLEAR(new_TabPageIdxs);
@@ -2802,6 +2828,8 @@ give_up:
 				       0, (size_t)Columns * sizeof(schar_T));
 		(void)vim_memset(new_ScreenAttrs + new_row * Columns,
 					0, (size_t)Columns * sizeof(sattr_T));
+		(void)vim_memset(new_ScreenCols + new_row * Columns,
+					0, (size_t)Columns * sizeof(colnr_T));
 		old_row = new_row + (screen_Rows - Rows);
 		if (old_row >= 0 && ScreenLines != NULL)
 		{
@@ -2835,6 +2863,9 @@ give_up:
 		    mch_memmove(new_ScreenAttrs + new_LineOffset[new_row],
 			    ScreenAttrs + LineOffset[old_row],
 			    (size_t)len * sizeof(sattr_T));
+		    mch_memmove(new_ScreenCols + new_LineOffset[new_row],
+			    ScreenAttrs + LineOffset[old_row],
+			    (size_t)len * sizeof(colnr_T));
 		}
 	    }
 	}
@@ -2857,6 +2888,7 @@ give_up:
     Screen_mco = p_mco;
     ScreenLines2 = new_ScreenLines2;
     ScreenAttrs = new_ScreenAttrs;
+    ScreenCols = new_ScreenCols;
     LineOffset = new_LineOffset;
     LineWraps = new_LineWraps;
     TabPageIdxs = new_TabPageIdxs;
@@ -2929,6 +2961,7 @@ free_screenlines(void)
     VIM_CLEAR(ScreenLines2);
     VIM_CLEAR(ScreenLines);
     VIM_CLEAR(ScreenAttrs);
+    VIM_CLEAR(ScreenCols);
     VIM_CLEAR(LineOffset);
     VIM_CLEAR(LineWraps);
     VIM_CLEAR(TabPageIdxs);
@@ -3018,6 +3051,7 @@ lineclear(unsigned off, int width, int attr)
 	(void)vim_memset(ScreenLinesUC + off, 0,
 					  (size_t)width * sizeof(u8char_T));
     (void)vim_memset(ScreenAttrs + off, attr, (size_t)width * sizeof(sattr_T));
+    (void)vim_memset(ScreenCols + off, -1, (size_t)width * sizeof(colnr_T));
 }
 
 /*
@@ -3028,6 +3062,7 @@ lineclear(unsigned off, int width, int attr)
 lineinvalid(unsigned off, int width)
 {
     (void)vim_memset(ScreenAttrs + off, -1, (size_t)width * sizeof(sattr_T));
+    (void)vim_memset(ScreenCols + off, -1, (size_t)width * sizeof(colnr_T));
 }
 
 /*
@@ -3066,6 +3101,8 @@ linecopy(int to, int from, win_T *wp)
 		wp->w_width * sizeof(schar_T));
     mch_memmove(ScreenAttrs + off_to, ScreenAttrs + off_from,
 	    wp->w_width * sizeof(sattr_T));
+    mch_memmove(ScreenCols + off_to, ScreenCols + off_from,
+	    wp->w_width * sizeof(colnr_T));
 }
 
 /*

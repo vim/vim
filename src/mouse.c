@@ -1543,8 +1543,9 @@ jump_to_mouse(
     int		first;
     int		row = mouse_row;
     int		col = mouse_col;
+    colnr_T	col_from_screen = -1;
 #ifdef FEAT_FOLDING
-    int		mouse_char;
+    int		mouse_char = ' ';
 #endif
 
     mouse_past_bottom = FALSE;
@@ -1625,16 +1626,6 @@ retnomove:
 
     if (flags & MOUSE_SETPOS)
 	goto retnomove;				// ugly goto...
-
-#ifdef FEAT_FOLDING
-    // Remember the character under the mouse, it might be a '-' or '+' in the
-    // fold column.
-    if (row >= 0 && row < Rows && col >= 0 && col <= Columns
-						       && ScreenLines != NULL)
-	mouse_char = ScreenLines[LineOffset[row] + col];
-    else
-	mouse_char = ' ';
-#endif
 
     old_curwin = curwin;
     old_cursor = curwin->w_cursor;
@@ -1969,6 +1960,22 @@ retnomove:
 	}
     }
 
+    if (prev_row >= 0 && prev_row < Rows && prev_col >= 0 && prev_col <= Columns
+						       && ScreenLines != NULL)
+    {
+	int off = LineOffset[prev_row] + prev_col;
+
+	// Only use ScreenCols[] after the window was redrawn.  Mainly matters
+	// for tests, a user would not click before redrawing.
+	if (curwin->w_redr_type <= VALID_NO_UPDATE)
+	    col_from_screen = ScreenCols[off];
+#ifdef FEAT_FOLDING
+	// Remember the character under the mouse, it might be a '-' or '+' in
+	// the fold column.
+	mouse_char = ScreenLines[off];
+#endif
+    }
+
 #ifdef FEAT_FOLDING
     // Check for position outside of the fold column.
     if (
@@ -2001,16 +2008,40 @@ retnomove:
 	    redraw_cmdline = TRUE;	// show visual mode later
     }
 
-    curwin->w_curswant = col;
-    curwin->w_set_curswant = FALSE;	// May still have been TRUE
-    if (coladvance(col) == FAIL)	// Mouse click beyond end of line
+    if (col_from_screen >= 0)
     {
-	if (inclusive != NULL)
-	    *inclusive = TRUE;
-	mouse_past_eol = TRUE;
+	// Use the column from ScreenCols[], it is accurate also after
+	// concealed characters.
+	curwin->w_cursor.col = col_from_screen;
+	if (col_from_screen == MAXCOL)
+	{
+	    curwin->w_curswant = col_from_screen;
+	    curwin->w_set_curswant = FALSE;	// May still have been TRUE
+	    mouse_past_eol = TRUE;
+	    if (inclusive != NULL)
+		*inclusive = TRUE;
+	}
+	else
+	{
+	    curwin->w_set_curswant = TRUE;
+	    if (inclusive != NULL)
+		*inclusive = FALSE;
+	}
+	check_cursor_col();
     }
-    else if (inclusive != NULL)
-	*inclusive = FALSE;
+    else
+    {
+	curwin->w_curswant = col;
+	curwin->w_set_curswant = FALSE;	// May still have been TRUE
+	if (coladvance(col) == FAIL)	// Mouse click beyond end of line
+	{
+	    if (inclusive != NULL)
+		*inclusive = TRUE;
+	    mouse_past_eol = TRUE;
+	}
+	else if (inclusive != NULL)
+	    *inclusive = FALSE;
+    }
 
     count = IN_BUFFER;
     if (curwin != old_curwin || curwin->w_cursor.lnum != old_cursor.lnum
