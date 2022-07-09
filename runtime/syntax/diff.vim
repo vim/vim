@@ -364,6 +364,14 @@ syn match diffIndexLine	"^index \x\x\x\x.*"
 
 syn match diffComment	"^#.*"
 
+" Folding support
+syn region diffFoldFile start='^\z(diff\>\|+++ \|Index: \|==== \|\*\*\* \|--- \)' end='\n\ze\z1' fold keepend contains=diffFoldHunk,diffFile,diffOldFile,diffNewFile,diffIndexLine
+syn region diffFoldHunk start='^@@' end='\n\ze@@' fold keepend contained contains=ALL
+syn region diffFoldHunk start='^\d\+\(,\d\+\)\=[cda]\d\+\>.*' end='\n\ze\d\+\(,\d\+\)\=[cda]\d\+\>.*' fold keepend contained contains=ALL
+" Alternatively, the following seems to work too:
+" syntax sync minlines=3 maxlines=3
+syntax sync match diffFoldFileSync grouphere diffFoldFile '^\(diff\>\|+++ \|Index: \|==== \|\*\*\* \|--- \)'
+
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
 hi def link diffOldFile		diffFile
