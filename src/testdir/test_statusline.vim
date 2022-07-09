@@ -7,6 +7,10 @@ source view_util.vim
 source check.vim
 source screendump.vim
 
+func SetUp()
+  set laststatus=2
+endfunc
+
 func s:get_statusline()
   return ScreenLines(&lines - 1, &columns)[0]
 endfunc
@@ -35,7 +39,6 @@ endfunc
 
 func Test_caught_error_in_statusline()
   let s:func_in_statusline_called = 0
-  set laststatus=2
   let statusline = '%{StatuslineWithCaughtError()}'
   let &statusline = statusline
   redrawstatus
@@ -46,7 +49,6 @@ endfunc
 
 func Test_statusline_will_be_disabled_with_error()
   let s:func_in_statusline_called = 0
-  set laststatus=2
   let statusline = '%{StatuslineWithError()}'
   try
     let &statusline = statusline
@@ -73,7 +75,6 @@ func Test_statusline()
   call assert_match('^ ((2) of 2)\s*$', s:get_statusline())
 
   only
-  set laststatus=2
   set splitbelow
   call setline(1, range(1, 10000))
 
@@ -432,7 +433,6 @@ func Test_statusline()
   %bw!
   call delete('Xstatusline')
   set statusline&
-  set laststatus&
   set splitbelow&
 endfunc
 
@@ -518,7 +518,6 @@ endfunc
 " with a custom 'statusline'
 func Test_statusline_mbyte_fillchar()
   only
-  set laststatus=2
   set fillchars=vert:\|,fold:-,stl:━,stlnc:═
   set statusline=a%=b
   call assert_match('^a\+━\+b$', s:get_statusline())
@@ -526,7 +525,7 @@ func Test_statusline_mbyte_fillchar()
   call assert_match('^a\+━\+b━a\+═\+b$', s:get_statusline())
   wincmd w
   call assert_match('^a\+═\+b═a\+━\+b$', s:get_statusline())
-  set statusline& fillchars& laststatus&
+  set statusline& fillchars&
   %bw!
 endfunc
 
