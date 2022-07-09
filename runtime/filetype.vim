@@ -404,6 +404,9 @@ au BufNewFile,BufRead configure.in,configure.ac setf config
 " Cooklang
 au BufNewFile,BufRead *.cook			setf cook
 
+" CSV Files
+au BufNewFile,BufRead *.csv			setf csv
+
 " CUDA Compute Unified Device Architecture
 au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 
@@ -2027,6 +2030,9 @@ au BufNewFile,BufReadPost *.tssop		setf tssop
 
 " TSS - Command Line (temporary)
 au BufNewFile,BufReadPost *.tsscl		setf tsscl
+
+" TSV Files
+au BufNewFile,BufRead *.tsv			setf tsv
 
 " TWIG files
 au BufNewFile,BufReadPost *.twig		setf twig
