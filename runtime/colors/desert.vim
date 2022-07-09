@@ -24,7 +24,7 @@ hi! link LineNrBelow LineNr
 hi! link CurSearch Search
 hi! link CursorLineFold CursorLine
 hi! link CursorLineSign CursorLine
-hi! link EndOfBuffer NonText
+hi EndOfBuffer guifg=#add8e6 guibg=#4d4d4d gui=NONE cterm=NONE
 hi Normal guifg=#ffffff guibg=#333333 gui=NONE cterm=NONE
 hi StatusLine guifg=#333333 guibg=#c2bfa5 gui=NONE cterm=NONE
 hi StatusLineNC guifg=#7f7f8c guibg=#c2bfa5 gui=NONE cterm=NONE
