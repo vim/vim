@@ -8541,3 +8541,37 @@ netbeans_draw_multisign_indicator(int row)
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
 }
 #endif
+
+#ifdef FEAT_EVAL
+    int
+test_gui_w32_sendevent(dict_T *args)
+{
+    char_u	*event;
+    INPUT	inputs[1];
+
+    event = dict_get_string(args, "event", TRUE);
+    if (!event)
+	return FALSE;
+
+    ZeroMemory(inputs, sizeof(inputs));
+
+    if (STRICMP(event, "keydown") == 0 || STRICMP(event, "keyup") == 0)
+    {
+	WORD	    vkCode;
+
+	vkCode = dict_get_number_def(args, "keycode", 0);
+	if (vkCode <= 0 || vkCode >= 0xFF)
+	    return FALSE;
+
+	inputs[0].type = INPUT_KEYBOARD;
+	inputs[0].ki.wVk = vkCode;
+	if (STRICMP(event, "keyup") == 0)
+	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+    }
+
+    vim_free(event);
+
+    return TRUE;
+}
+#endif

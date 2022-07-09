@@ -94,6 +94,7 @@ test_gui_event({event}, {args})
 		    "findrepl"  search and replace text.
 		    "mouse"	mouse button click event.
 		    "scrollbar" move or drag the scrollbar.
+		    "sendevent" send an low-level GUI event.
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
 
@@ -176,6 +177,15 @@ test_gui_event({event}, {args})
 				length, assuming 'wrap' is not set.
 		    dragging:	1 to drag the scrollbar and 0 to click in the
 				scrollbar.
+
+		"sendevent":
+		  Send a low-level GUI event (e.g. key up or down).
+		  Currently only supported on MS-Windows.
+		  The supported items in {args} are:
+		    event:	The supported string values are:
+				    keyup   generate a keyup event
+				    keydown generate a keydown event
+		    keycode:    Keycode to use for a keyup or a keydown event.
 
 		"tabline":
 		  Inject a mouse click event on the tabline to select a

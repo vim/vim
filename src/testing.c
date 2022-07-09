@@ -1500,6 +1500,12 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     rettv->v_type = VAR_BOOL;
     rettv->vval.v_number = FALSE;
 
+    if (sandbox != 0)
+    {
+	emsg(_(e_not_allowed_in_sandbox));
+	return;
+    }
+
     if (check_for_string_arg(argvars, 0) == FAIL
 	    || check_for_dict_arg(argvars, 1) == FAIL
 	    || argvars[1].vval.v_dict == NULL)
@@ -1520,6 +1526,10 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	rettv->vval.v_number = test_gui_tabline_event(argvars[1].vval.v_dict);
     else if (STRCMP(event, "tabmenu") == 0)
 	rettv->vval.v_number = test_gui_tabmenu_event(argvars[1].vval.v_dict);
+#  ifdef FEAT_GUI_MSWIN
+    else if (STRCMP(event, "sendevent") == 0)
+	rettv->vval.v_number = test_gui_w32_sendevent(argvars[1].vval.v_dict);
+#  endif
     else
     {
 	semsg(_(e_invalid_argument_str), event);
