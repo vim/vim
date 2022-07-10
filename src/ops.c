@@ -703,8 +703,6 @@ op_delete(oparg_T *oap)
 	 * Put deleted text into register 1 and shift number registers if the
 	 * delete contains a line break, or when using a specific operator (Vi
 	 * compatible)
-	 * Use the register name from before adjust_clip_reg() may have
-	 * changed it.
 	 */
 	if (oap->motion_type == MLINE || oap->line_count > 1
 							   || oap->use_reg_one)
