@@ -2819,7 +2819,7 @@ long elapsed(DWORD start_tick);
 #define UC_BUFFER	1	// -buffer: local to current buffer
 #define UC_VIM9		2	// {} argument: Vim9 syntax.
 
-// flags used by vim_strsave_escaped()
+// flags used by vim_strsave_fnameescape()
 #define VSE_NONE	0
 #define VSE_SHELL	1	// escape for a shell command
 #define VSE_BUFFER	2	// escape for a ":buffer" command
