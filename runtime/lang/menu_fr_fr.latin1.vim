@@ -1,486 +1,1267 @@
-" Menu Translations:	Francais
-" Maintainer:		Adrien Beau <version.francaise@free.fr>
-" First Version:	Francois Thunus <thunus@systran.fr>
-" Contributors:		David Blanchet <david.blanchet@free.fr>
-" 			Gabriel Dupras <gabrieldupras@gmail.com>
-" Last Change:		2021 Feb 16
+" Menu Translations:	  Francais
+" Maintainer:           Ada (Haowen) Yu <me@yuhaowen.com>
+" Previous Maintainer:  Adrien Beau <version.francaise@free.fr>
+" Contributors:         Francois Thunus <thunus@systran.fr>, David Blanchet <david.blanchet@free.fr>, Gabriel Dupras <gabrieldupras@gmail.com>
+" Last Change:          2022 July 10
 " Original translations
+"
+" Generated with the scripts from:
+"
+"       https://github.com/adaext/vim-menutrans-helper
 
 " Quit when menu translations have already been done.
+
 if exists("did_menu_trans")
   finish
 endif
 let did_menu_trans = 1
-let s:keepcpo= &cpo
+let s:keepcpo = &cpo
 set cpo&vim
 
-" The translations below are in latin1, but they work for cp1252 and
-" iso-8859-15 without conversion as well.
-if &enc != "cp1252" && &enc != "iso-8859-15" && &enc != "iso-8859-1"
-  scriptencoding latin1
+scriptencoding latin1
+
+" Help menu
+menutrans &Help &Aide
+" Help menuitems and dialog {{{1
+menutrans &Overview<Tab><F1> &Sommaire<Tab><F1>
+menutrans &User\ Manual &Manuel\ utilisateur
+menutrans &How-to\ Links &Tï¿½ches\ courantes
+menutrans &Find\.\.\. Rec&hercher\.\.\.
+menutrans &Credits &Remerciements
+menutrans Co&pying &License
+menutrans &Sponsor/Register Sponsor/&Enregistrement
+menutrans O&rphans &Orphelins
+menutrans &Version &Version
+menutrans &About ï¿½\ &propos\ de\ Vim
+
+" fun! s:Helpfind()
+if !exists("g:menutrans_help_dialog")
+  let g:menutrans_help_dialog = "Entrez une commande ou un mot ï¿½ rechercher dans l'aide.\n\nAjoutez i_ pour les commandes du mode Insertion (ex: i_CTRL-X)\nAjoutez c_ pour l'ï¿½dition de la ligne de commande (ex: c_<Del>)\nEntourez les options avec des apostrophes (ex: 'shiftwidth')"
+endif
+" }}}
+
+" File menu
+menutrans &File &Fichier
+" File menuitems {{{1
+menutrans &Open\.\.\.<Tab>:e &Ouvrir\.\.\.<Tab>:e
+menutrans Sp&lit-Open\.\.\.<Tab>:sp Ouvrir\ ï¿½\ p&art\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew Ouvrir\ dans\ un\ onglet\.\.\.<Tab>:tabnew
+menutrans &New<Tab>:enew &Nouveau<Tab>:enew
+menutrans &Close<Tab>:close &Fermer<Tab>:close
+menutrans &Save<Tab>:w &Enregistrer<Tab>:w
+menutrans Save\ &As\.\.\.<Tab>:sav Enregistrer\ &sous\.\.\.<Tab>:sav
+menutrans Split\ &Diff\ With\.\.\. &Diffï¿½rence\ avec\.\.\.
+menutrans Split\ Patched\ &By\.\.\. &Tester\ un\ patch\.\.\.
+menutrans &Print &Imprimer
+menutrans Sa&ve-Exit<Tab>:wqa En&registrer\ et\ quitter<Tab>:wqa
+menutrans E&xit<Tab>:qa &Quitter<Tab>:qa
+" }}}
+
+" Edit menu
+menutrans &Edit &Edition
+" Edit menuitems {{{1
+menutrans &Undo<Tab>u &Annuler<Tab>u
+menutrans &Redo<Tab>^R Re&faire<Tab>^R
+menutrans Rep&eat<Tab>\. R&ï¿½pï¿½ter<Tab>\.
+menutrans Cu&t<Tab>"+x Co&uper<Tab>"+x
+menutrans &Copy<Tab>"+y Cop&ier<Tab>"+y
+menutrans &Paste<Tab>"+gP C&oller<Tab>"+gP
+menutrans Put\ &Before<Tab>[p Placer\ a&vant<Tab>[p
+menutrans Put\ &After<Tab>]p Placer\ apr&ï¿½s<Tab>]p
+menutrans &Delete<Tab>x Effa&cer<Tab>x
+menutrans &Select\ All<Tab>ggVG &Sï¿½lectionner\ tout<Tab>ggVG
+menutrans &Find\.\.\. Rec&hercher\.\.\.
+menutrans Find\ and\ Rep&lace\.\.\. Re&mplacer\.\.\.
+menutrans &Find<Tab>/ Rec&hercher<Tab>/
+menutrans Find\ and\ Rep&lace<Tab>:%s Re&mplacer<Tab>:%s
+menutrans Find\ and\ Rep&lace<Tab>:s Re&mplacer<Tab>:s
+menutrans Settings\ &Window Fe&nï¿½tre\ des\ rï¿½glages
+menutrans Startup\ &Settings Rï¿½glages\ de\ &lancement
+
+" Edit/Global Settings
+menutrans &Global\ Settings Rï¿½glages\ globau&x
+" Edit.Global Settings menuitems and dialogs {{{2
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls! &Surligner\ recherche\ on/off<Tab>:set\ hls!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic! &Ignorer\ casse\ on/off<Tab>:set\ ic!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm! Vï¿½rifier\ parenth&ï¿½ses\ on/off<Tab>:set\ sm!
+menutrans &Context\ Lines Lignes\ &autour\ du\ curseur
+menutrans &Virtual\ Edit ï¿½dition\ &virtuelle
+" Edit.Global Settings.Virtual Edit menuitems {{{3
+menutrans Never &Jamais
+menutrans Block\ Selection &Sï¿½lection\ en\ bloc
+menutrans Insert\ Mode &Mode\ insertion
+menutrans Block\ and\ Insert &Bloc\ et\ insertion
+menutrans Always &Toujours
+" }}}
+menutrans Toggle\ Insert\ &Mode<Tab>:set\ im! I&nsertion\ permanente\ on/off<Tab>:set\ im!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp! &Compatibilitï¿½\ Vi\ on/off<Tab>:set\ cp!
+menutrans Search\ &Path\.\.\. Chemin\ de\ rec&herche\ des\ fichiers\.\.\.
+menutrans Ta&g\ Files\.\.\. Fichiers\ d'&ï¿½tiquettes\.\.\.
+
+" GUI options
+menutrans Toggle\ &Toolbar Barre\ d'&outils\ on/off
+menutrans Toggle\ &Bottom\ Scrollbar Ascenseur\ &horizontal\ on/off
+menutrans Toggle\ &Left\ Scrollbar Ascenseur\ ï¿½\ ga&uche\ on/off
+menutrans Toggle\ &Right\ Scrollbar Ascenseur\ ï¿½\ &droite\ on/off
+
+" fun! s:SearchP()
+if !exists("g:menutrans_path_dialog")
+  let g:menutrans_path_dialog = "Entrez le chemin de recherche des fichiers.\nSï¿½parez les rï¿½pertoires par des virgules."
 endif
 
-menutrans &Help				&Aide
+" fun! s:TagFiles()
+if !exists("g:menutrans_tags_dialog")
+  let g:menutrans_tags_dialog = "Entrez les noms des fichiers d'ï¿½tiquettes.\nSï¿½parez les noms par des virgules."
+endif
+" }}}
 
-menutrans &Overview<Tab><F1>			&Sommaire<Tab><F1>
-menutrans &User\ Manual				&Manuel\ utilisateur
-menutrans &How-to\ links			&Tâches\ courantes
-menutrans &Find\.\.\.				Rec&hercher\.\.\.
-" -sep1-
-menutrans &Credits				&Remerciements
-menutrans Co&pying				&License
-menutrans &Sponsor/Register			Sponsor/&Enregistrement
-menutrans O&rphans				&Orphelins
-" -sep2-
-menutrans &Version				&Version
-menutrans &About				À\ &propos\ de\ Vim
+" Edit/File Settings
+menutrans F&ile\ Settings Rï¿½glages\ fichie&r
+" Edit.File Settings menuitems and dialogs {{{2
+" Boolean options
+menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu! &Numï¿½rotation\ on/off<Tab>:set\ nu!
+menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu! &Numï¿½rotation\ relative\ on/off<Tab>:set\ nu!
+menutrans Toggle\ &List\ Mode<Tab>:set\ list! Mode\ &listing\ on/off<Tab>:set\ list!
+menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap! &Retour\ ï¿½\ la\ ligne\ on/off<Tab>:set\ wrap!
+menutrans Toggle\ W&rapping\ at\ Word<Tab>:set\ lbr! Retour\ sur\ &mot\ on/off<Tab>:set\ lbr!
+menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et! &Tab\.\ en\ espaces\ on/off<Tab>:set\ et!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai! Indentation\ &auto\.\ on/off<Tab>:set\ ai!
+menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin! Indent\.\ langage\ &C\ on/off<Tab>:set\ cin!
 
-let g:menutrans_help_dialog = "Entrez une commande ou un mot à rechercher dans l'aide.\n\nAjoutez i_ pour les commandes du mode Insertion (ex: i_CTRL-X)\nAjoutez c_ pour l'édition de la ligne de commande (ex: c_<Del>)\nEntourez les options avec des apostrophes (ex: 'shiftwidth')"
+" other options
+menutrans &Shiftwidth Largeur\ des\ in&dentations
+menutrans Soft\ &Tabstop &Pseudo-tabulations
+menutrans Te&xt\ Width\.\.\. Largeur\ du\ te&xte\.\.\.
+menutrans &File\ Format\.\.\. Format\ du\ &fichier\.\.\.
 
+" fun! s:TextWidth()
+if !exists("g:menutrans_textwidth_dialog")
+  let g:menutrans_textwidth_dialog = "Entrez la nouvelle largeur du texte\n(0 pour dï¿½sactiver le formatage)."
+endif
 
-menutrans &File				&Fichier
+" fun! s:FileFormat()
+if !exists("g:menutrans_fileformat_dialog")
+  let g:menutrans_fileformat_dialog = "Choisissez le format dans lequel ï¿½crire le fichier."
+endif
+if !exists("g:menutrans_fileformat_choices")
+  let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Annuler "
+endif
+" }}}
+menutrans Show\ C&olor\ Schemes\ in\ Menu Afficher\ les\ &jeux\ de\ couleurs
+menutrans C&olor\ Scheme &Jeu\ de\ couleurs
+menutrans None (aucun)
+menutrans Show\ &Keymaps\ in\ Menu Afficher\ les\ &types\ de\ clavier
+menutrans &Keymap &Type\ de\ clavier
+menutrans Select\ Fo&nt\.\.\. Sï¿½lectionner\ &police\.\.\.
+" }}}
 
-menutrans &Open\.\.\.<Tab>:e			&Ouvrir\.\.\.<Tab>:e
-menutrans Sp&lit-Open\.\.\.<Tab>:sp		Ouvrir\ à\ p&art\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew		Ouvrir\ dans\ un\ onglet\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew			&Nouveau<Tab>:enew
-menutrans &Close<Tab>:close			&Fermer<Tab>:close
-" -SEP1-
-menutrans &Save<Tab>:w				&Enregistrer<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav		Enregistrer\ &sous\.\.\.<Tab>:sav
-" -SEP2-
-menutrans Split\ &Diff\ with\.\.\.		&Différence\ avec\.\.\.
-"menutrans Split\ Patched\ &By\.\.\.		&Patcher\ avec\.\.\.
-menutrans Split\ Patched\ &By\.\.\.		&Tester\ un\ patch\.\.\.
-" -SEP3-
-menutrans &Print				&Imprimer
-" -SEP4-
-menutrans Sa&ve-Exit<Tab>:wqa			En&registrer\ et\ quitter<Tab>:wqa
-menutrans E&xit<Tab>:qa				&Quitter<Tab>:qa
+" Programming menu
+menutrans &Tools &Outils
+" Tools menuitems {{{1
+menutrans &Jump\ to\ This\ Tag<Tab>g^] &Atteindre\ cette\ ï¿½tiquette<Tab>g^]
+menutrans Jump\ &Back<Tab>^T Repartir\ en\ arri&ï¿½re<Tab>^T
+menutrans Build\ &Tags\ File &Gï¿½nï¿½rer\ fichier\ d'ï¿½tiquettes
 
+" Tools.Spelling Menu
+menutrans &Spelling &Orthographe
+" Tools.Spelling menuitems and dialog {{{2
+menutrans &Spell\ Check\ On &Activer
+menutrans Spell\ Check\ &Off &Dï¿½sactiver
+menutrans To\ &Next\ Error<Tab>]s ï¿½\ l'erreur\ &suivante<Tab>]s
+menutrans To\ &Previous\ Error<Tab>[s ï¿½\ l'erreur\ &prï¿½cï¿½dente<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z= Suggï¿½rer\ &correction<Tab>z=
+menutrans &Repeat\ Correction<Tab>:spellrepall &Reporter\ la\ correction<Tab>:spellrepall
+menutrans Set\ Language\ to\ "en" Dictionnaire\ &anglais\ (en)
+menutrans Set\ Language\ to\ "en_au" Dictionnaire\ anglais\ (en_au)
+menutrans Set\ Language\ to\ "en_ca" Dictionnaire\ anglais\ (en_ca)
+menutrans Set\ Language\ to\ "en_gb" Dictionnaire\ anglais\ (en_gb)
+menutrans Set\ Language\ to\ "en_nz" Dictionnaire\ anglais\ (en_nz)
+menutrans Set\ Language\ to\ "en_us" Dictionnaire\ anglais\ (en_us)
+menutrans &Find\ More\ Languages &Trouver\ d'autres\ langues
 
-menutrans &Edit				&Edition
+" func! s:SpellLang()
+if !exists("g:menutrans_set_lang_to")
+  let g:menutrans_set_lang_to = "Dictionnaire "
+endif
+" }}}
 
-menutrans &Undo<Tab>u				&Annuler<Tab>u
-menutrans &Redo<Tab>^R				Re&faire<Tab>^R
-menutrans Rep&eat<Tab>\.			R&épéter<Tab>\.
-" -SEP1-
-menutrans Cu&t<Tab>"+x				Co&uper<Tab>"+x
-menutrans &Copy<Tab>"+y				Cop&ier<Tab>"+y
-menutrans &Paste<Tab>"+gP			C&oller<Tab>"+gP
-menutrans Put\ &Before<Tab>[p			Placer\ a&vant<Tab>[p
-menutrans Put\ &After<Tab>]p			Placer\ apr&ès<Tab>]p
-menutrans &Delete<Tab>x				Effa&cer<Tab>x
-menutrans &Select\ All<Tab>ggVG			&Sélectionner\ tout<Tab>ggVG
-" -SEP2-
-menutrans &Find\.\.\.				Rec&hercher\.\.\.
-menutrans Find\ and\ Rep&lace\.\.\.		Re&mplacer\.\.\.
-menutrans &Find<Tab>/				Rec&hercher<Tab>/
-menutrans Find\ and\ Rep&lace<Tab>:%s		Re&mplacer<Tab>:%s
-menutrans Find\ and\ Rep&lace<Tab>:s		Re&mplacer<Tab>:s
-" -SEP3-
-menutrans Settings\ &Window			Fe&nêtre\ des\ réglages
-menutrans Startup\ &Settings			Réglages\ de\ &lancement
-menutrans &Global\ Settings			Réglages\ globau&x
+" Tools.Fold Menu
+menutrans &Folding &Replis
+" Tools.Fold menuitems {{{2
+" open close folds
+menutrans &Enable/Disable\ Folds<Tab>zi &Replis\ on/off<Tab>zi
+menutrans &View\ Cursor\ Line<Tab>zv D&ï¿½plier\ ligne\ curseur<Tab>zv
+menutrans Vie&w\ Cursor\ Line\ Only<Tab>zMzx Tout\ plier\ &sauf\ ligne\ curseur<Tab>zMzx
+menutrans C&lose\ More\ Folds<Tab>zm Fermer\ &plus\ de\ replis<Tab>zm
+menutrans &Close\ All\ Folds<Tab>zM F&ermer\ tous\ les\ replis<Tab>zM
+menutrans O&pen\ More\ Folds<Tab>zr Ouvrir\ pl&us\ de\ replis<Tab>zr
+menutrans &Open\ All\ Folds<Tab>zR &Ouvrir\ tous\ les\ replis<Tab>zR
+" fold method
+menutrans Fold\ Met&hod &Mï¿½thode\ de\ repli
+" Tools.Fold.Fold Method menuitems {{{3
+menutrans M&anual &Manuelle
+menutrans I&ndent &Indentation
+menutrans E&xpression &Expression
+menutrans S&yntax &Syntaxe
+menutrans &Diff &Diffï¿½rence
+menutrans Ma&rker Ma&rqueurs
+" }}}
+" create and delete folds
+menutrans Create\ &Fold<Tab>zf &Crï¿½er\ repli<Tab>zf
+menutrans &Delete\ Fold<Tab>zd E&ffacer\ repli<Tab>zd
+menutrans Delete\ &All\ Folds<Tab>zD Effacer\ &tous\ les\ replis<Tab>zD
+" moving around in folds
+menutrans Fold\ Col&umn\ Width &Largeur\ colonne\ replis
+" }}}
 
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!		&Surligner\ recherche\ on/off<Tab>:set\ hls!
-menutrans Toggle\ &Ignoring\ case<Tab>:set\ ic!			&Ignorer\ casse\ on/off<Tab>:set\ ic!
-menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Vérifier\ parenth&èses\ on/off<Tab>:set\ sm!
+" Tools.Diff Menu
+menutrans &Diff &Diffï¿½rence
+" Tools.Diff menuitems {{{2
+menutrans &Update &Mettre\ ï¿½\ jour
+menutrans &Get\ Block Corriger\ &ce\ tampon
+menutrans &Put\ Block Corriger\ l'&autre\ tampon
+" }}}
 
-menutrans &Context\ lines				Lignes\ &autour\ du\ curseur
+menutrans &Make<Tab>:make Lancer\ ma&ke<Tab>:make
+menutrans &List\ Errors<Tab>:cl Lister\ &erreurs<Tab>:cl
+menutrans L&ist\ Messages<Tab>:cl! Lister\ &messages<Tab>:cl!
+menutrans &Next\ Error<Tab>:cn Erreur\ &suivante<Tab>:cn
+menutrans &Previous\ Error<Tab>:cp Erreur\ pr&ï¿½cï¿½dente<Tab>:cp
+menutrans &Older\ List<Tab>:cold Liste\ &prï¿½cï¿½dente<Tab>:cold
+menutrans N&ewer\ List<Tab>:cnew Liste\ suivan&te<Tab>:cnew
+menutrans Error\ &Window &Fenï¿½tre\ d'erreurs
+" Tools.Error Window menuitems {{{2
+menutrans &Update<Tab>:cwin &Mettre\ ï¿½\ jour<Tab>:cwin
+menutrans &Open<Tab>:copen &Ouvrir<Tab>:copen
+menutrans &Close<Tab>:cclose &Fermer<Tab>:cclose
+" }}}
+menutrans Show\ Compiler\ Se&ttings\ in\ Menu &Afficher\ les\ compilateurs
+menutrans Se&t\ Compiler &Type\ de\ compilateur
+menutrans &Convert\ to\ HEX<Tab>:%!xxd Convertir\ en\ he&xa<Tab>:%!xxd
+menutrans Conve&rt\ Back<Tab>:%!xxd\ -r Dï¿½con&vertir<Tab>:%!xxd\ -r
+" }}}
 
-menutrans &Virtual\ Edit				Édition\ &virtuelle
-menutrans Never							&Jamais
-menutrans Block\ Selection					&Sélection\ en\ bloc
-menutrans Insert\ mode						&Mode\ insertion
-menutrans Block\ and\ Insert					&Bloc\ et\ insertion
-menutrans Always						&Toujours
+" Buffer menu
+menutrans &Buffers &Tampons
+menutrans Dummy Factice
+" Buffer menuitems and dialog {{{1
+menutrans &Refresh\ Menu &Mettre\ ce\ menu\ ï¿½\ jour
+menutrans &Delete &Effacer
+menutrans &Alternate &Alterner
+menutrans &Next &Suivant
+menutrans &Previous &Prï¿½cï¿½dent
 
-menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		I&nsertion\ permanente\ on/off<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	&Compatibilité\ Vi\ on/off<Tab>:set\ cp!
-menutrans Search\ &Path\.\.\.				Chemin\ de\ rec&herche\ des\ fichiers\.\.\.
-menutrans Ta&g\ Files\.\.\.				Fichiers\ d'&étiquettes\.\.\.
-" -SEP1-
-menutrans Toggle\ &Toolbar				Barre\ d'&outils\ on/off
-menutrans Toggle\ &Bottom\ Scrollbar			Ascenseur\ &horizontal\ on/off
-menutrans Toggle\ &Left\ Scrollbar			Ascenseur\ à\ ga&uche\ on/off
-menutrans Toggle\ &Right\ Scrollbar			Ascenseur\ à\ &droite\ on/off
+" func! s:BMMunge(fname, bnum)
+if !exists("g:menutrans_no_file")
+  let g:menutrans_no_file = "[Aucun fichier]"
+endif
+" }}}
 
-let g:menutrans_path_dialog = "Entrez le chemin de recherche des fichiers.\nSéparez les répertoires par des virgules."
-let g:menutrans_tags_dialog = "Entrez les noms des fichiers d'étiquettes.\nSéparez les noms par des virgules."
+" Window menu
+menutrans &Window Fe&nï¿½tre
+" Window menuitems {{{1
+menutrans &New<Tab>^Wn &Nouvelle\ fenï¿½tre<Tab>^Wn
+menutrans S&plit<Tab>^Ws &Fractionner<Tab>^Ws
+menutrans Sp&lit\ To\ #<Tab>^W^^ Fractionner\ p&our\ #<Tab>^W^^
+menutrans Split\ &Vertically<Tab>^Wv Fractionner\ &verticalement<Tab>^Wv
+menutrans Split\ File\ E&xplorer Fractionner\ &explorateur
+menutrans &Close<Tab>^Wc Fer&mer<Tab>^Wc
+menutrans Close\ &Other(s)<Tab>^Wo Fermer\ les\ &autres<Tab>^Wo
+menutrans Move\ &To &Dï¿½placer\ vers\ le
+menutrans &Top<Tab>^WK &Haut<Tab>^WK
+menutrans &Bottom<Tab>^WJ &Bas<Tab>^WJ
+menutrans &Left\ Side<Tab>^WH Cï¿½tï¿½\ &gauche<Tab>^WH
+menutrans &Right\ Side<Tab>^WL Cï¿½tï¿½\ &droit<Tab>^WL
+menutrans Rotate\ &Up<Tab>^WR Rotation\ vers\ le\ &haut<Tab>^WR
+menutrans Rotate\ &Down<Tab>^Wr Rotation\ vers\ le\ &bas<Tab>^Wr
+menutrans &Equal\ Size<Tab>^W= ï¿½galiser\ ta&illes<Tab>^W=
+menutrans &Max\ Height<Tab>^W_ Hau&teur\ maximale<Tab>^W_
+menutrans M&in\ Height<Tab>^W1_ Ha&uteur\ minimale<Tab>^W1_
+menutrans Max\ &Width<Tab>^W\| &Largeur\ maximale<Tab>^W\|
+menutrans Min\ Widt&h<Tab>^W1\| La&rgeur\ minimale<Tab>^W1\|
+" }}}
 
-menutrans F&ile\ Settings			Réglages\ fichie&r
+" The popup menu {{{1
+menutrans &Undo &Annuler
+menutrans Cu&t Co&uper
+menutrans &Copy Cop&ier
+menutrans &Paste C&oller
+menutrans &Delete &Effacer
+menutrans Select\ Blockwise Sï¿½lectionner\ &bloc
+menutrans Select\ &Word Sï¿½lectionner\ &mot
+menutrans Select\ &Sentence Sï¿½lectionner\ &phrase
+menutrans Select\ Pa&ragraph Sï¿½lectionner\ pa&ragraphe
+menutrans Select\ &Line Sï¿½lectionner\ &ligne
+menutrans Select\ &Block Sï¿½lectionner\ &bloc
+menutrans Select\ &All Sï¿½lectionner\ &tout
 
-menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	&Numérotation\ on/off<Tab>:set\ nu!
-menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	&Numérotation\ relative\ on/off<Tab>:set\ nu!
-menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Mode\ &listing\ on/off<Tab>:set\ list!
-menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!	&Retour\ à\ la\ ligne\ on/off<Tab>:set\ wrap!
-menutrans Toggle\ W&rapping\ at\ Word<Tab>:set\ lbr!	Retour\ sur\ &mot\ on/off<Tab>:set\ lbr!
-menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!		&Tab\.\ en\ espaces\ on/off<Tab>:set\ et!
-menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!	Indentation\ &auto\.\ on/off<Tab>:set\ ai!
-menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	Indent\.\ langage\ &C\ on/off<Tab>:set\ cin!
-" -SEP2-
-menutrans &Shiftwidth					Largeur\ des\ in&dentations
-menutrans Soft\ &Tabstop				&Pseudo-tabulations
-menutrans Te&xt\ Width\.\.\.				Largeur\ du\ te&xte\.\.\.
-menutrans &File\ Format\.\.\.				Format\ du\ &fichier\.\.\.
+" func! <SID>SpellPopup()
+if !exists("g:menutrans_spell_change_ARG_to")
+  let g:menutrans_spell_change_ARG_to = 'Remplacer\ "%s"\ par'
+endif
+if !exists("g:menutrans_spell_add_ARG_to_word_list")
+  let g:menutrans_spell_add_ARG_to_word_list = 'Ajouter\ "%s"\ au\ dictionnaire'
+endif
+if !exists("g:menutrans_spell_ignore_ARG")
+  let g:menutrans_spell_ignore_ARG = 'Ignorer\ "%s"'
+endif
+" }}}
 
-let g:menutrans_textwidth_dialog = "Entrez la nouvelle largeur du texte\n(0 pour désactiver le formatage)."
-let g:menutrans_fileformat_dialog = "Choisissez le format dans lequel écrire le fichier."
-let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Annuler "
-
-menutrans C&olor\ Scheme			&Jeu\ de\ couleurs
-menutrans Show\ C&olor\ Schemes\ in\ Menu	Afficher\ les\ &jeux\ de\ couleurs
-menutrans &Keymap				&Type\ de\ clavier
-menutrans Show\ &Keymaps\ in\ Menu		Afficher\ les\ &types\ de\ clavier
-menutrans None						(aucun)
-menutrans Select\ Fo&nt\.\.\.			Sélectionner\ &police\.\.\.
-
-
-menutrans &Tools			&Outils
-
-menutrans &Jump\ to\ this\ tag<Tab>g^]		&Atteindre\ cette\ étiquette<Tab>g^]
-menutrans Jump\ &back<Tab>^T			Repartir\ en\ arri&ère<Tab>^T
-menutrans Build\ &Tags\ File			&Générer\ fichier\ d'étiquettes
-
-" -SEP1-
-menutrans &Spelling			&Orthographe
-menutrans &Spell\ Check\ On			&Activer
-menutrans Spell\ Check\ &Off			&Désactiver
-menutrans To\ &Next\ error<Tab>]s		À\ l'erreur\ &suivante<Tab>]s
-menutrans To\ &Previous\ error<Tab>[s		À\ l'erreur\ &précédente<Tab>[s
-menutrans Suggest\ &Corrections<Tab>z=		Suggérer\ &correction<Tab>z=
-menutrans &Repeat\ correction<Tab>:spellrepall	&Reporter\ la\ correction<Tab>:spellrepall
-
-an 40.335.205 &Tools.&Spelling.Dictionnaire\ &français\ (fr)	:set spl=fr spell<CR>
-menutrans Set\ language\ to\ "en"		Dictionnaire\ &anglais\ (en)
-menutrans Set\ language\ to\ "en_au"		Dictionnaire\ anglais\ (en_au)
-menutrans Set\ language\ to\ "en_ca"		Dictionnaire\ anglais\ (en_ca)
-menutrans Set\ language\ to\ "en_gb"		Dictionnaire\ anglais\ (en_gb)
-menutrans Set\ language\ to\ "en_nz"		Dictionnaire\ anglais\ (en_nz)
-menutrans Set\ language\ to\ "en_us"		Dictionnaire\ anglais\ (en_us)
-
-menutrans &Find\ More\ Languages		&Trouver\ d'autres\ langues
-
-let g:menutrans_set_lang_to = "Dictionnaire "
-
-
-menutrans &Folding				&Replis
-
-menutrans &Enable/Disable\ folds<Tab>zi			&Replis\ on/off<Tab>zi
-menutrans &View\ Cursor\ Line<Tab>zv			D&éplier\ ligne\ curseur<Tab>zv
-menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx		Tout\ plier\ &sauf\ ligne\ curseur<Tab>zMzx
-menutrans C&lose\ more\ folds<Tab>zm			Fermer\ &plus\ de\ replis<Tab>zm
-menutrans &Close\ all\ folds<Tab>zM			F&ermer\ tous\ les\ replis<Tab>zM
-menutrans O&pen\ more\ folds<Tab>zr			Ouvrir\ pl&us\ de\ replis<Tab>zr
-menutrans &Open\ all\ folds<Tab>zR			&Ouvrir\ tous\ les\ replis<Tab>zR
-" -SEP1-
-menutrans Fold\ Met&hod					&Méthode\ de\ repli
-
-menutrans M&anual						&Manuelle
-menutrans I&ndent						&Indentation
-menutrans E&xpression						&Expression
-menutrans S&yntax						&Syntaxe
-menutrans &Diff							&Différence
-menutrans Ma&rker						Ma&rqueurs
-
-menutrans Create\ &Fold<Tab>zf				&Créer\ repli<Tab>zf
-menutrans &Delete\ Fold<Tab>zd				E&ffacer\ repli<Tab>zd
-menutrans Delete\ &All\ Folds<Tab>zD			Effacer\ &tous\ les\ replis<Tab>zD
-" -SEP2-
-menutrans Fold\ col&umn\ width				&Largeur\ colonne\ replis
-
-menutrans &Diff					&Différence
-
-menutrans &Update					&Mettre\ à\ jour
-menutrans &Get\ Block					Corriger\ &ce\ tampon
-menutrans &Put\ Block					Corriger\ l'&autre\ tampon
-
-" -SEP2-
-menutrans &Make<Tab>:make			Lancer\ ma&ke<Tab>:make
-menutrans &List\ Errors<Tab>:cl			Lister\ &erreurs<Tab>:cl
-menutrans L&ist\ Messages<Tab>:cl!		Lister\ &messages<Tab>:cl!
-menutrans &Next\ Error<Tab>:cn			Erreur\ &suivante<Tab>:cn
-menutrans &Previous\ Error<Tab>:cp		Erreur\ pr&écédente<Tab>:cp
-"menutrans &Older\ List<Tab>:cold		A&ncienne\ liste<Tab>:cold
-menutrans &Older\ List<Tab>:cold		Liste\ &précédente<Tab>:cold
-"menutrans N&ewer\ List<Tab>:cnew		No&uvelle\ liste<Tab>:cnew
-menutrans N&ewer\ List<Tab>:cnew		Liste\ suivan&te<Tab>:cnew
-
-menutrans Error\ &Window			&Fenêtre\ d'erreurs
-
-menutrans &Update<Tab>:cwin				&Mettre\ à\ jour<Tab>:cwin
-menutrans &Open<Tab>:copen				&Ouvrir<Tab>:copen
-menutrans &Close<Tab>:cclose				&Fermer<Tab>:cclose
-
-" -SEP3-
-menutrans &Convert\ to\ HEX<Tab>:%!xxd		Convertir\ en\ he&xa<Tab>:%!xxd
-menutrans Conve&rt\ back<Tab>:%!xxd\ -r		Décon&vertir<Tab>:%!xxd\ -r
-
-menutrans Se&T\ Compiler			&Type\ de\ compilateur
-menutrans Show\ Compiler\ Se&ttings\ in\ Menu	&Afficher\ les\ compilateurs
-
-
-menutrans &Buffers			&Tampons
-
-menutrans Dummy					Factice
-menutrans &Refresh\ menu			&Mettre\ ce\ menu\ à\ jour
-menutrans &Delete				&Effacer
-menutrans &Alternate				&Alterner
-menutrans &Next					&Suivant
-menutrans &Previous				&Précédent
-" -SEP-
-
-menutrans &others				au&tres
-menutrans &u-z					&uvwxyz
-let g:menutrans_no_file = "[Aucun fichier]"
-
-
-menutrans &Window			Fe&nêtre
-
-menutrans &New<Tab>^Wn				&Nouvelle\ fenêtre<Tab>^Wn
-menutrans S&plit<Tab>^Ws			&Fractionner<Tab>^Ws
-menutrans Sp&lit\ To\ #<Tab>^W^^		Fractionner\ p&our\ #<Tab>^W^^
-menutrans Split\ &Vertically<Tab>^Wv		Fractionner\ &verticalement<Tab>^Wv
-menutrans Split\ File\ E&xplorer		Fractionner\ &explorateur
-" -SEP1-
-menutrans &Close<Tab>^Wc			Fer&mer<Tab>^Wc
-menutrans Close\ &Other(s)<Tab>^Wo		Fermer\ les\ &autres<Tab>^Wo
-" -SEP2-
-menutrans Move\ &To				&Déplacer\ vers\ le
-
-menutrans &Top<Tab>^WK					&Haut<Tab>^WK
-menutrans &Bottom<Tab>^WJ				&Bas<Tab>^WJ
-menutrans &Left\ side<Tab>^WH				Côté\ &gauche<Tab>^WH
-menutrans &Right\ side<Tab>^WL				Côté\ &droit<Tab>^WL
-
-menutrans Rotate\ &Up<Tab>^WR			Rotation\ vers\ le\ &haut<Tab>^WR
-menutrans Rotate\ &Down<Tab>^Wr			Rotation\ vers\ le\ &bas<Tab>^Wr
-" -SEP3-
-menutrans &Equal\ Size<Tab>^W=			Égaliser\ ta&illes<Tab>^W=
-menutrans &Max\ Height<Tab>^W_			Hau&teur\ maximale<Tab>^W_
-menutrans M&in\ Height<Tab>^W1_			Ha&uteur\ minimale<Tab>^W1_
-menutrans Max\ &Width<Tab>^W\|			&Largeur\ maximale<Tab>^W\|
-menutrans Min\ Widt&h<Tab>^W1\|			La&rgeur\ minimale<Tab>^W1\|
-
-
-" PopUp
-
-menutrans &Undo					&Annuler
-" -SEP1-
-menutrans Cu&t					Co&uper
-menutrans &Copy					Cop&ier
-menutrans &Paste				C&oller
-" &Buffers.&Delete overwrites this one
-menutrans &Delete				&Effacer
-" -SEP2-
-menutrans Select\ Blockwise			Sélectionner\ &bloc
-menutrans Select\ &Word				Sélectionner\ &mot
-menutrans Select\ &Sentence			Sélectionner\ &phrase
-menutrans Select\ Pa&ragraph			Sélectionner\ pa&ragraphe
-menutrans Select\ &Line				Sélectionner\ &ligne
-menutrans Select\ &Block			Sélectionner\ &bloc
-menutrans Select\ &All				Sélectionner\ &tout
-
-let g:menutrans_spell_change_ARG_to = 'Remplacer\ "%s"\ par'
-let g:menutrans_spell_add_ARG_to_word_list = 'Ajouter\ "%s"\ au\ dictionnaire'
-let g:menutrans_spell_ignore_ARG = 'Ignorer\ "%s"'
-
-" ToolBar
-
-menutrans Open					Ouvrir
-menutrans Save					Enreg
-menutrans SaveAll				EnregTout
-menutrans Print					Imprimer
-" -sep1-
-menutrans Undo					Annuler
-menutrans Redo					Refaire
-" -sep2-
-menutrans Cut					Couper
-menutrans Copy					Copier
-menutrans Paste					Coller
-" -sep3-
-menutrans Find					Chercher
-menutrans FindNext				CherchSuiv
-menutrans FindPrev				CherchPrec
-menutrans Replace				Remplacer
-" -sep4-
-menutrans New					Nouvelle
-menutrans WinSplit				FenFract
-menutrans WinMax				FenMax
-menutrans WinMin				FenMin
-menutrans WinVSplit				FenVFract
-menutrans WinMaxWidth				FenMaxLarg
-menutrans WinMinWidth				FenMinLarg
-menutrans WinClose				FenFerme
-" -sep5-
-menutrans LoadSesn				OuvrirSess
-menutrans SaveSesn				EnregSess
-menutrans RunScript				LancScript
-" -sep6-
-menutrans Make					Make
-menutrans RunCtags				CréerEtiqu
-menutrans TagJump				AllerEtiqu
-" -sep7-
-menutrans Help					Aide
-menutrans FindHelp				CherchAide
-
-fun! Do_toolbar_tmenu()
-  let did_toolbar_tmenu = 1
-  tmenu ToolBar.Open				Ouvrir fichier
-  tmenu ToolBar.Save				Enregistrer fichier courant
-  tmenu ToolBar.SaveAll				Enregistrer tous les fichiers
-  tmenu ToolBar.Print				Imprimer
-  tmenu ToolBar.Undo				Annuler
-  tmenu ToolBar.Redo				Refaire
-  tmenu ToolBar.Cut				Couper
-  tmenu ToolBar.Copy				Copier
-  tmenu ToolBar.Paste				Coller
-  if !has("gui_athena")
-    tmenu ToolBar.Find				Rechercher
-    tmenu ToolBar.FindNext			Chercher suivant
-    tmenu ToolBar.FindPrev			Chercher précédent
-    tmenu ToolBar.Replace			Remplacer
+" The GUI toolbar {{{1
+if has("toolbar")
+  if exists("*Do_toolbar_tmenu")
+    delfun Do_toolbar_tmenu
   endif
- if 0	" disabled; These are in the Windows menu
-  tmenu ToolBar.New				Nouvelle fenêtre
-  tmenu ToolBar.WinSplit			Fractionner fenêtre
-  tmenu ToolBar.WinMax				Maximiser fenêtre
-  tmenu ToolBar.WinMin				Minimiser fenêtre
-  tmenu ToolBar.WinVSplit			Fractionner verticalement
-  tmenu ToolBar.WinMaxWidth			Maximiser largeur fenêtre
-  tmenu ToolBar.WinMinWidth			Minimiser largeur fenêtre
-  tmenu ToolBar.WinClose			Fermer fenêtre
- endif
-  tmenu ToolBar.LoadSesn			Ouvrir session
-  tmenu ToolBar.SaveSesn			Enregistrer session courante
-  tmenu ToolBar.RunScript			Lancer un script Vim
-  tmenu ToolBar.Make				Lancer make
-  tmenu ToolBar.RunCtags			Créer les étiquettes
-  tmenu ToolBar.TagJump				Atteindre cette étiquette
-  tmenu ToolBar.Help				Aide de Vim
-  tmenu ToolBar.FindHelp			Rechercher dans l'aide
-endfun
+  fun Do_toolbar_tmenu()
+    let did_toolbar_tmenu = 1
+    tmenu ToolBar.Open Ouvrir fichier
+    tmenu ToolBar.Save Enregistrer fichier courant
+    tmenu ToolBar.SaveAll Enregistrer tous les fichiers
+    tmenu ToolBar.Print Imprimer
+    tmenu ToolBar.Undo Annuler
+    tmenu ToolBar.Redo Refaire
+    tmenu ToolBar.Cut Couper
+    tmenu ToolBar.Copy Copier
+    tmenu ToolBar.Paste Coller
+    if !has("gui_athena")
+      tmenu ToolBar.Replace Remplacer
+      tmenu ToolBar.FindNext Chercher suivant
+      tmenu ToolBar.FindPrev Chercher prï¿½cï¿½dent
+    endif
+    tmenu ToolBar.LoadSesn Ouvrir session
+    tmenu ToolBar.SaveSesn Enregistrer session courante
+    tmenu ToolBar.RunScript Lancer un script Vim
+    tmenu ToolBar.Make Lancer make
+    tmenu ToolBar.RunCtags Crï¿½er les ï¿½tiquettes
+    tmenu ToolBar.TagJump Atteindre cette ï¿½tiquette
+    tmenu ToolBar.Help Aide de Vim
+    tmenu ToolBar.FindHelp Rechercher dans l'aide
+  endfun
+endif
+" }}}
 
+" Syntax menu
+menutrans &Syntax &Syntaxe
+" Syntax menuitems {{{1
+menutrans &Show\ File\ Types\ in\ Menu &Afficher\ tout\ le\ menu
+menutrans &Off &Off
+menutrans &Manual &Manuelle
+menutrans A&utomatic &Automatique
+menutrans On/Off\ for\ &This\ File On/off\ pour\ &ce\ fichier
+menutrans Co&lor\ Test Tester\ les\ co&uleurs
+menutrans &Highlight\ Test Tester\ les\ g&roupes\ de\ surbrillance
+menutrans &Convert\ to\ HTML Con&vertir\ en\ HTML
 
-menutrans &Syntax			&Syntaxe
+" From synmenu.vim
+menutrans Set\ '&syntax'\ Only Changer\ '&syntax'\ seulement
+menutrans Set\ '&filetype'\ Too Changer\ '&filetype'\ aussi
+" menutrans AB TRANSLATION\ MISSING
+" menutrans A2ps\ config TRANSLATION\ MISSING
+" menutrans Aap TRANSLATION\ MISSING
+" menutrans ABAP/4 TRANSLATION\ MISSING
+" menutrans Abaqus TRANSLATION\ MISSING
+menutrans ABC\ music\ notation ABC\ (notation\ musicale)
+" menutrans ABEL TRANSLATION\ MISSING
+menutrans AceDB\ model Modï¿½le\ AceDB
+" menutrans Ada TRANSLATION\ MISSING
+" menutrans AfLex TRANSLATION\ MISSING
+" menutrans ALSA\ config TRANSLATION\ MISSING
+" menutrans Altera\ AHDL TRANSLATION\ MISSING
+" menutrans Amiga\ DOS TRANSLATION\ MISSING
+" menutrans AMPL TRANSLATION\ MISSING
+" menutrans Ant\ build\ file TRANSLATION\ MISSING
+" menutrans ANTLR TRANSLATION\ MISSING
+menutrans Apache\ config Config\.\ Apache
+menutrans Apache-style\ config Config\.\ style\ Apache
+" menutrans Applix\ ELF TRANSLATION\ MISSING
+" menutrans APT\ config TRANSLATION\ MISSING
+" menutrans Arc\ Macro\ Language TRANSLATION\ MISSING
+" menutrans Arch\ inventory TRANSLATION\ MISSING
+" menutrans Arduino TRANSLATION\ MISSING
+" menutrans ART TRANSLATION\ MISSING
+" menutrans Ascii\ Doc TRANSLATION\ MISSING
+menutrans ASP\ with\ VBScript ASP\ avec\ VBScript
+menutrans ASP\ with\ Perl ASP\ avec\ Perl
+menutrans Assembly Assembleur
+" menutrans 680x0 TRANSLATION\ MISSING
+" menutrans AVR TRANSLATION\ MISSING
+" menutrans Flat TRANSLATION\ MISSING
+" menutrans GNU TRANSLATION\ MISSING
+" menutrans GNU\ H-8300 TRANSLATION\ MISSING
+" menutrans Intel\ IA-64 TRANSLATION\ MISSING
+" menutrans Microsoft TRANSLATION\ MISSING
+" menutrans Netwide TRANSLATION\ MISSING
+" menutrans PIC TRANSLATION\ MISSING
+" menutrans Turbo TRANSLATION\ MISSING
+" menutrans VAX\ Macro\ Assembly TRANSLATION\ MISSING
+" menutrans Z-80 TRANSLATION\ MISSING
+" menutrans xa\ 6502\ cross\ assember TRANSLATION\ MISSING
+" menutrans ASN\.1 TRANSLATION\ MISSING
+" menutrans Asterisk\ config TRANSLATION\ MISSING
+" menutrans Asterisk\ voicemail\ config TRANSLATION\ MISSING
+" menutrans Atlas TRANSLATION\ MISSING
+" menutrans Autodoc TRANSLATION\ MISSING
+" menutrans AutoHotKey TRANSLATION\ MISSING
+" menutrans AutoIt TRANSLATION\ MISSING
+" menutrans Automake TRANSLATION\ MISSING
+" menutrans Avenue TRANSLATION\ MISSING
+" menutrans Awk TRANSLATION\ MISSING
+" menutrans AYacc TRANSLATION\ MISSING
+" menutrans B TRANSLATION\ MISSING
+" menutrans Baan TRANSLATION\ MISSING
+" menutrans Bash TRANSLATION\ MISSING
+" menutrans Basic TRANSLATION\ MISSING
+" menutrans FreeBasic TRANSLATION\ MISSING
+" menutrans IBasic TRANSLATION\ MISSING
+" menutrans QBasic TRANSLATION\ MISSING
+" menutrans Visual\ Basic TRANSLATION\ MISSING
+" menutrans Bazaar\ commit\ file TRANSLATION\ MISSING
+" menutrans Bazel TRANSLATION\ MISSING
+menutrans BC\ calculator Calculateur\ BC
+menutrans BDF\ font Fonte\ BDF
+" menutrans BibTeX TRANSLATION\ MISSING
+" menutrans Bibliography\ database TRANSLATION\ MISSING
+" menutrans Bibliography\ Style TRANSLATION\ MISSING
+" menutrans BIND TRANSLATION\ MISSING
+menutrans BIND\ config Config\.\ BIND
+menutrans BIND\ zone Zone\ BIND
+" menutrans Blank TRANSLATION\ MISSING
+" menutrans C TRANSLATION\ MISSING
+" menutrans C++ TRANSLATION\ MISSING
+" menutrans C# TRANSLATION\ MISSING
+" menutrans Cabal\ Haskell\ build\ file TRANSLATION\ MISSING
+" menutrans Calendar TRANSLATION\ MISSING
+menutrans Cascading\ Style\ Sheets Feuilles\ de\ style\ en\ cascade
+" menutrans CDL TRANSLATION\ MISSING
+" menutrans Cdrdao\ TOC TRANSLATION\ MISSING
+" menutrans Cdrdao\ config TRANSLATION\ MISSING
+" menutrans Century\ Term TRANSLATION\ MISSING
+" menutrans CH\ script TRANSLATION\ MISSING
+" menutrans ChaiScript TRANSLATION\ MISSING
+" menutrans Changelog TRANSLATION\ MISSING
+" menutrans CHILL TRANSLATION\ MISSING
+menutrans Cheetah\ template Patron\ Cheetah
+" menutrans Chicken TRANSLATION\ MISSING
+" menutrans ChordPro TRANSLATION\ MISSING
+" menutrans Clean TRANSLATION\ MISSING
+" menutrans Clever TRANSLATION\ MISSING
+" menutrans Clipper TRANSLATION\ MISSING
+" menutrans Clojure TRANSLATION\ MISSING
+" menutrans Cmake TRANSLATION\ MISSING
+" menutrans Cmod TRANSLATION\ MISSING
+" menutrans Cmusrc TRANSLATION\ MISSING
+" menutrans Cobol TRANSLATION\ MISSING
+" menutrans Coco/R TRANSLATION\ MISSING
+" menutrans Cold\ Fusion TRANSLATION\ MISSING
+" menutrans Conary\ Recipe TRANSLATION\ MISSING
+" menutrans Config TRANSLATION\ MISSING
+menutrans Cfg\ Config\ file Fichier\ de\ config\.\ \.cfg
+" menutrans Configure\.in TRANSLATION\ MISSING
+menutrans Generic\ Config\ file Fichier\ de\ config\.\ gï¿½nï¿½rique
+" menutrans CRM114 TRANSLATION\ MISSING
+" menutrans Crontab TRANSLATION\ MISSING
+" menutrans CSDL TRANSLATION\ MISSING
+" menutrans CSP TRANSLATION\ MISSING
+" menutrans Ctrl-H TRANSLATION\ MISSING
+" menutrans Cucumber TRANSLATION\ MISSING
+" menutrans CUDA TRANSLATION\ MISSING
+" menutrans CUPL TRANSLATION\ MISSING
+" menutrans Simulation TRANSLATION\ MISSING
+" menutrans CVS TRANSLATION\ MISSING
+menutrans commit\ file Fichier\ commit
+" menutrans cvsrc TRANSLATION\ MISSING
+" menutrans Cyn++ TRANSLATION\ MISSING
+" menutrans Cynlib TRANSLATION\ MISSING
+" menutrans DE TRANSLATION\ MISSING
+" menutrans D TRANSLATION\ MISSING
+" menutrans Dart TRANSLATION\ MISSING
+" menutrans Datascript TRANSLATION\ MISSING
+" menutrans Debian TRANSLATION\ MISSING
+" menutrans Debian\ ChangeLog TRANSLATION\ MISSING
+" menutrans Debian\ Control TRANSLATION\ MISSING
+" menutrans Debian\ Copyright TRANSLATION\ MISSING
+" menutrans Debian\ Sources\.list TRANSLATION\ MISSING
+" menutrans Denyhosts TRANSLATION\ MISSING
+" menutrans Desktop TRANSLATION\ MISSING
+" menutrans Dict\ config TRANSLATION\ MISSING
+" menutrans Dictd\ config TRANSLATION\ MISSING
+" menutrans Diff TRANSLATION\ MISSING
+menutrans Digital\ Command\ Lang DCL
+" menutrans Dircolors TRANSLATION\ MISSING
+" menutrans Dirpager TRANSLATION\ MISSING
+" menutrans Django\ template TRANSLATION\ MISSING
+menutrans DNS/BIND\ zone Zone\ BIND/DNS
+" menutrans Dnsmasq\ config TRANSLATION\ MISSING
+" menutrans DocBook TRANSLATION\ MISSING
+" menutrans auto-detect TRANSLATION\ MISSING
+" menutrans SGML TRANSLATION\ MISSING
+" menutrans XML TRANSLATION\ MISSING
+" menutrans Dockerfile TRANSLATION\ MISSING
+" menutrans Dot TRANSLATION\ MISSING
+" menutrans Doxygen TRANSLATION\ MISSING
+" menutrans C\ with\ doxygen TRANSLATION\ MISSING
+" menutrans C++\ with\ doxygen TRANSLATION\ MISSING
+" menutrans IDL\ with\ doxygen TRANSLATION\ MISSING
+" menutrans Java\ with\ doxygen TRANSLATION\ MISSING
+" menutrans DataScript\ with\ doxygen TRANSLATION\ MISSING
+" menutrans Dracula TRANSLATION\ MISSING
+" menutrans DSSSL TRANSLATION\ MISSING
+" menutrans DTD TRANSLATION\ MISSING
+" menutrans DTML\ (Zope) TRANSLATION\ MISSING
+" menutrans DTrace TRANSLATION\ MISSING
+" menutrans Dts/dtsi TRANSLATION\ MISSING
+" menutrans Dune TRANSLATION\ MISSING
+" menutrans Dylan TRANSLATION\ MISSING
+menutrans Dylan\ interface Interface
+menutrans Dylan\ lid LID
+" menutrans EDIF TRANSLATION\ MISSING
+" menutrans Eiffel TRANSLATION\ MISSING
+" menutrans Eight TRANSLATION\ MISSING
+" menutrans Elinks\ config TRANSLATION\ MISSING
+menutrans Elm\ filter\ rules Rï¿½gles\ de\ filtrage\ Elm
+" menutrans Embedix\ Component\ Description TRANSLATION\ MISSING
+menutrans ERicsson\ LANGuage Erlang\ (langage\ Ericsson)
+" menutrans ESMTP\ rc TRANSLATION\ MISSING
+" menutrans ESQL-C TRANSLATION\ MISSING
+menutrans Essbase\ script Script\ Essbase
+" menutrans Esterel TRANSLATION\ MISSING
+menutrans Eterm\ config Config\.\ Eterm
+" menutrans Euphoria\ 3 TRANSLATION\ MISSING
+" menutrans Euphoria\ 4 TRANSLATION\ MISSING
+" menutrans Eviews TRANSLATION\ MISSING
+menutrans Exim\ conf Config\.\ Exim
+" menutrans Expect TRANSLATION\ MISSING
+" menutrans Exports TRANSLATION\ MISSING
+" menutrans FG TRANSLATION\ MISSING
+" menutrans Falcon TRANSLATION\ MISSING
+" menutrans Fantom TRANSLATION\ MISSING
+" menutrans Fetchmail TRANSLATION\ MISSING
+" menutrans FlexWiki TRANSLATION\ MISSING
+" menutrans Focus\ Executable TRANSLATION\ MISSING
+" menutrans Focus\ Master TRANSLATION\ MISSING
+" menutrans FORM TRANSLATION\ MISSING
+" menutrans Forth TRANSLATION\ MISSING
+" menutrans Fortran TRANSLATION\ MISSING
+" menutrans FoxPro TRANSLATION\ MISSING
+" menutrans FrameScript TRANSLATION\ MISSING
+" menutrans Fstab TRANSLATION\ MISSING
+" menutrans Fvwm TRANSLATION\ MISSING
+menutrans Fvwm\ configuration Config\.\ Fvwm
+menutrans Fvwm2\ configuration Config\.\ Fvwm2
+menutrans Fvwm2\ configuration\ with\ M4 Config\.\ Fvwm2\ avec\ M4
+menutrans GDB\ command\ file Fichier\ de\ commandes\ GDB
+" menutrans GDMO TRANSLATION\ MISSING
+" menutrans Gedcom TRANSLATION\ MISSING
+" menutrans Git TRANSLATION\ MISSING
+" menutrans Output TRANSLATION\ MISSING
+" menutrans Commit TRANSLATION\ MISSING
+" menutrans Rebase TRANSLATION\ MISSING
+" menutrans Send\ Email TRANSLATION\ MISSING
+" menutrans Gitolite TRANSLATION\ MISSING
+" menutrans Gkrellmrc TRANSLATION\ MISSING
+" menutrans Gnash TRANSLATION\ MISSING
+" menutrans Go TRANSLATION\ MISSING
+" menutrans Godoc TRANSLATION\ MISSING
+" menutrans GP TRANSLATION\ MISSING
+" menutrans GPG TRANSLATION\ MISSING
+" menutrans Grof TRANSLATION\ MISSING
+" menutrans Group\ file TRANSLATION\ MISSING
+" menutrans Grub TRANSLATION\ MISSING
+" menutrans GNU\ Server\ Pages TRANSLATION\ MISSING
+" menutrans GNUplot TRANSLATION\ MISSING
+" menutrans GrADS\ scripts TRANSLATION\ MISSING
+" menutrans Gretl TRANSLATION\ MISSING
+" menutrans Groff TRANSLATION\ MISSING
+" menutrans Groovy TRANSLATION\ MISSING
+" menutrans GTKrc TRANSLATION\ MISSING
+" menutrans HIJK TRANSLATION\ MISSING
+" menutrans Haml TRANSLATION\ MISSING
+" menutrans Hamster TRANSLATION\ MISSING
+" menutrans Haskell TRANSLATION\ MISSING
+" menutrans Haskell-c2hs TRANSLATION\ MISSING
+" menutrans Haskell-literate TRANSLATION\ MISSING
+" menutrans HASTE TRANSLATION\ MISSING
+" menutrans HASTE\ preproc TRANSLATION\ MISSING
+" menutrans Hercules TRANSLATION\ MISSING
+" menutrans Hex\ dump TRANSLATION\ MISSING
+" menutrans XXD TRANSLATION\ MISSING
+" menutrans Intel\ MCS51 TRANSLATION\ MISSING
+" menutrans Hg\ commit TRANSLATION\ MISSING
+" menutrans Hollywood TRANSLATION\ MISSING
+" menutrans HTML TRANSLATION\ MISSING
+menutrans HTML\ with\ M4 HTML\ avec\ M4
+" menutrans HTML\ with\ Ruby\ (eRuby) TRANSLATION\ MISSING
+menutrans Cheetah\ HTML\ template Patron\ Cheetah\ pour\ HTML
+" menutrans Django\ HTML\ template TRANSLATION\ MISSING
+" menutrans Vue TRANSLATION\ MISSING
+" menutrans js\ HTML\ template TRANSLATION\ MISSING
+" menutrans HTML/OS TRANSLATION\ MISSING
+" menutrans XHTML TRANSLATION\ MISSING
+" menutrans Host\.conf TRANSLATION\ MISSING
+" menutrans Hosts\ access TRANSLATION\ MISSING
+" menutrans Hyper\ Builder TRANSLATION\ MISSING
+" menutrans Icewm\ menu TRANSLATION\ MISSING
+" menutrans Icon TRANSLATION\ MISSING
+menutrans IDL\Generic\ IDL IDL\IDL\ gï¿½nï¿½rique
+menutrans IDL\Microsoft\ IDL IDL\IDL\ Microsoft
+menutrans Indent\ profile Profil\ Indent
+" menutrans Inform TRANSLATION\ MISSING
+" menutrans Informix\ 4GL TRANSLATION\ MISSING
+" menutrans Initng TRANSLATION\ MISSING
+" menutrans Inittab TRANSLATION\ MISSING
+menutrans Inno\ setup Config\.\ Inno
+" menutrans Innovation\ Data\ Processing TRANSLATION\ MISSING
+" menutrans Upstream\ dat TRANSLATION\ MISSING
+" menutrans Upstream\ log TRANSLATION\ MISSING
+" menutrans Upstream\ rpt TRANSLATION\ MISSING
+" menutrans Upstream\ Install\ log TRANSLATION\ MISSING
+" menutrans Usserver\ log TRANSLATION\ MISSING
+" menutrans USW2KAgt\ log TRANSLATION\ MISSING
+menutrans InstallShield\ script Script\ InstallShield
+" menutrans Interactive\ Data\ Lang TRANSLATION\ MISSING
+" menutrans IPfilter TRANSLATION\ MISSING
+" menutrans J TRANSLATION\ MISSING
+" menutrans JAL TRANSLATION\ MISSING
+" menutrans JAM TRANSLATION\ MISSING
+" menutrans Jargon TRANSLATION\ MISSING
+" menutrans Java TRANSLATION\ MISSING
+" menutrans JavaCC TRANSLATION\ MISSING
+" menutrans Java\ Server\ Pages TRANSLATION\ MISSING
+" menutrans Java\ Properties TRANSLATION\ MISSING
+" menutrans JavaScript TRANSLATION\ MISSING
+" menutrans JavaScriptReact TRANSLATION\ MISSING
+" menutrans Jess TRANSLATION\ MISSING
+" menutrans Jgraph TRANSLATION\ MISSING
+" menutrans Jovial TRANSLATION\ MISSING
+" menutrans JSON TRANSLATION\ MISSING
+" menutrans Kconfig TRANSLATION\ MISSING
+menutrans KDE\ script Script\ KDE
+" menutrans Kimwitu++ TRANSLATION\ MISSING
+" menutrans Kivy TRANSLATION\ MISSING
+" menutrans KixTart TRANSLATION\ MISSING
+" menutrans L TRANSLATION\ MISSING
+" menutrans Lace TRANSLATION\ MISSING
+" menutrans LamdaProlog TRANSLATION\ MISSING
+" menutrans Latte TRANSLATION\ MISSING
+" menutrans Ld\ script TRANSLATION\ MISSING
+" menutrans LDAP TRANSLATION\ MISSING
+" menutrans LDIF TRANSLATION\ MISSING
+" menutrans Configuration TRANSLATION\ MISSING
+" menutrans Less TRANSLATION\ MISSING
+" menutrans Lex TRANSLATION\ MISSING
+menutrans LFTP\ config Config\.\ LFTP
+" menutrans Libao TRANSLATION\ MISSING
+menutrans LifeLines\ script Script\ LifeLines
+" menutrans Lilo TRANSLATION\ MISSING
+" menutrans Limits\ config TRANSLATION\ MISSING
+" menutrans Linden\ scripting TRANSLATION\ MISSING
+" menutrans Liquid TRANSLATION\ MISSING
+" menutrans Lisp TRANSLATION\ MISSING
+" menutrans Lite TRANSLATION\ MISSING
+" menutrans LiteStep\ RC TRANSLATION\ MISSING
+" menutrans Locale\ Input TRANSLATION\ MISSING
+" menutrans Login\.access TRANSLATION\ MISSING
+" menutrans Login\.defs TRANSLATION\ MISSING
+" menutrans Logtalk TRANSLATION\ MISSING
+" menutrans LOTOS TRANSLATION\ MISSING
+" menutrans LotusScript TRANSLATION\ MISSING
+" menutrans Lout TRANSLATION\ MISSING
+" menutrans LPC TRANSLATION\ MISSING
+" menutrans Lua TRANSLATION\ MISSING
+menutrans Lynx\ Style Style\ Lynx
+menutrans Lynx\ config Config\.\ Lynx
+" menutrans M TRANSLATION\ MISSING
+" menutrans M4 TRANSLATION\ MISSING
+" menutrans MaGic\ Point TRANSLATION\ MISSING
+" menutrans Mail\ aliases TRANSLATION\ MISSING
+" menutrans Mailcap TRANSLATION\ MISSING
+" menutrans Mallard TRANSLATION\ MISSING
+" menutrans Makefile TRANSLATION\ MISSING
+" menutrans MakeIndex TRANSLATION\ MISSING
+menutrans Man\ page Page\ Man
+" menutrans Man\.conf TRANSLATION\ MISSING
+" menutrans Maple\ V TRANSLATION\ MISSING
+" menutrans Markdown TRANSLATION\ MISSING
+" menutrans Markdown\ with\ R\ statements TRANSLATION\ MISSING
+" menutrans Mason TRANSLATION\ MISSING
+" menutrans Mathematica TRANSLATION\ MISSING
+" menutrans Matlab TRANSLATION\ MISSING
+" menutrans Maxima TRANSLATION\ MISSING
+menutrans MEL\ (for\ Maya) MEL\ (pour\ Maya)
+" menutrans Meson TRANSLATION\ MISSING
+" menutrans Messages\ (/var/log) TRANSLATION\ MISSING
+" menutrans Metafont TRANSLATION\ MISSING
+" menutrans MetaPost TRANSLATION\ MISSING
+" menutrans MGL TRANSLATION\ MISSING
+" menutrans MIX TRANSLATION\ MISSING
+" menutrans MMIX TRANSLATION\ MISSING
+" menutrans Modconf TRANSLATION\ MISSING
+" menutrans Model TRANSLATION\ MISSING
+" menutrans Modsim\ III TRANSLATION\ MISSING
+" menutrans Modula\ 2 TRANSLATION\ MISSING
+" menutrans Modula\ 3 TRANSLATION\ MISSING
+" menutrans Monk TRANSLATION\ MISSING
+" menutrans Motorola\ S-Record TRANSLATION\ MISSING
+" menutrans Mplayer\ config TRANSLATION\ MISSING
+" menutrans MOO TRANSLATION\ MISSING
+" menutrans Mrxvtrc TRANSLATION\ MISSING
+" menutrans MS-DOS/Windows TRANSLATION\ MISSING
+menutrans 4DOS\ \.bat\ file Fichier\ \.bat\ 4DOS
+menutrans \.bat\/\.cmd\ file Fichier\ \.bat\ /\ \.cmd
+menutrans \.ini\ file Fichier\ \.ini
+" menutrans Message\ text TRANSLATION\ MISSING
+menutrans Module\ Definition Dï¿½finition\ de\ module
+menutrans Registry Extrait\ du\ registre
+menutrans Resource\ file Fichier\ de\ ressources
+" menutrans Msql TRANSLATION\ MISSING
+" menutrans MuPAD TRANSLATION\ MISSING
+" menutrans Murphi TRANSLATION\ MISSING
+" menutrans MUSHcode TRANSLATION\ MISSING
+" menutrans Muttrc TRANSLATION\ MISSING
+" menutrans NO TRANSLATION\ MISSING
+" menutrans N1QL TRANSLATION\ MISSING
+" menutrans Nanorc TRANSLATION\ MISSING
+" menutrans Nastran\ input/DMAP TRANSLATION\ MISSING
+" menutrans Natural TRANSLATION\ MISSING
+" menutrans NeoMutt\ setup\ files TRANSLATION\ MISSING
+" menutrans Netrc TRANSLATION\ MISSING
+" menutrans Ninja TRANSLATION\ MISSING
+menutrans Novell\ NCF\ batch Batch\ Novell\ NCF
+" menutrans Not\ Quite\ C\ (LEGO) TRANSLATION\ MISSING
+" menutrans Nroff TRANSLATION\ MISSING
+menutrans NSIS\ script Script\ NSIS
+" menutrans Obj\ 3D\ wavefront TRANSLATION\ MISSING
+" menutrans Objective\ C TRANSLATION\ MISSING
+" menutrans Objective\ C++ TRANSLATION\ MISSING
+" menutrans OCAML TRANSLATION\ MISSING
+" menutrans Occam TRANSLATION\ MISSING
+" menutrans Omnimark TRANSLATION\ MISSING
+" menutrans OpenROAD TRANSLATION\ MISSING
+" menutrans Open\ Psion\ Lang TRANSLATION\ MISSING
+menutrans Oracle\ config Config\.\ Oracle
+" menutrans PQ TRANSLATION\ MISSING
+" menutrans Packet\ filter\ conf TRANSLATION\ MISSING
+menutrans Palm\ resource\ compiler Compil\.\ de\ resources\ Palm
+" menutrans Pam\ config TRANSLATION\ MISSING
+" menutrans PApp TRANSLATION\ MISSING
+" menutrans Pascal TRANSLATION\ MISSING
+" menutrans Password\ file TRANSLATION\ MISSING
+" menutrans PCCTS TRANSLATION\ MISSING
+" menutrans PDF TRANSLATION\ MISSING
+" menutrans Perl TRANSLATION\ MISSING
+" menutrans Perl\ 6 TRANSLATION\ MISSING
+" menutrans Perl\ POD TRANSLATION\ MISSING
+" menutrans Perl\ XS TRANSLATION\ MISSING
+" menutrans Template\ toolkit TRANSLATION\ MISSING
+" menutrans Template\ toolkit\ Html TRANSLATION\ MISSING
+" menutrans Template\ toolkit\ JS TRANSLATION\ MISSING
+" menutrans PHP TRANSLATION\ MISSING
+menutrans PHP\ 3-4 PHP\ 3\ et\ 4
+" menutrans Phtml\ (PHP\ 2) TRANSLATION\ MISSING
+" menutrans Pike TRANSLATION\ MISSING
+" menutrans Pine\ RC TRANSLATION\ MISSING
+" menutrans Pinfo\ RC TRANSLATION\ MISSING
+" menutrans PL/M TRANSLATION\ MISSING
+" menutrans PL/SQL TRANSLATION\ MISSING
+" menutrans Pli TRANSLATION\ MISSING
+" menutrans PLP TRANSLATION\ MISSING
+" menutrans PO\ (GNU\ gettext) TRANSLATION\ MISSING
+menutrans Postfix\ main\ config Config\.\ Postfix
+" menutrans PostScript TRANSLATION\ MISSING
+" menutrans PostScript\ Printer\ Description TRANSLATION\ MISSING
+" menutrans Povray TRANSLATION\ MISSING
+menutrans Povray\ scene\ descr Scï¿½ne\ Povray
+menutrans Povray\ configuration Config\.\ Povray
+" menutrans PPWizard TRANSLATION\ MISSING
+" menutrans Prescribe\ (Kyocera) TRANSLATION\ MISSING
+" menutrans Printcap TRANSLATION\ MISSING
+" menutrans Privoxy TRANSLATION\ MISSING
+" menutrans Procmail TRANSLATION\ MISSING
+" menutrans Product\ Spec\ File TRANSLATION\ MISSING
+" menutrans Progress TRANSLATION\ MISSING
+" menutrans Prolog TRANSLATION\ MISSING
+" menutrans ProMeLa TRANSLATION\ MISSING
+" menutrans Proto TRANSLATION\ MISSING
+" menutrans Protocols TRANSLATION\ MISSING
+menutrans Purify\ log Log\ Purify
+" menutrans Pyrex TRANSLATION\ MISSING
+" menutrans Python TRANSLATION\ MISSING
+" menutrans Quake TRANSLATION\ MISSING
+" menutrans Quickfix\ window TRANSLATION\ MISSING
+" menutrans R TRANSLATION\ MISSING
+" menutrans R\ help TRANSLATION\ MISSING
+" menutrans R\ noweb TRANSLATION\ MISSING
+" menutrans Racc\ input TRANSLATION\ MISSING
+" menutrans Radiance TRANSLATION\ MISSING
+" menutrans Raml TRANSLATION\ MISSING
+" menutrans Ratpoison TRANSLATION\ MISSING
+" menutrans RCS TRANSLATION\ MISSING
+menutrans RCS\ log\ output Log\ RCS
+menutrans RCS\ file Fichier\ RCS
+menutrans Readline\ config Config\.\ Readline
+" menutrans Rebol TRANSLATION\ MISSING
+" menutrans ReDIF TRANSLATION\ MISSING
+" menutrans Rego TRANSLATION\ MISSING
+" menutrans Relax\ NG TRANSLATION\ MISSING
+" menutrans Remind TRANSLATION\ MISSING
+" menutrans Relax\ NG\ compact TRANSLATION\ MISSING
+" menutrans Renderman TRANSLATION\ MISSING
+" menutrans Renderman\ Shader\ Lang TRANSLATION\ MISSING
+" menutrans Renderman\ Interface\ Bytestream TRANSLATION\ MISSING
+" menutrans Resolv\.conf TRANSLATION\ MISSING
+" menutrans Reva\ Forth TRANSLATION\ MISSING
+" menutrans Rexx TRANSLATION\ MISSING
+" menutrans Robots\.txt TRANSLATION\ MISSING
+menutrans RockLinux\ package\ desc\. Desc\.\ pkg\.\ RockLinux
+" menutrans Rpcgen TRANSLATION\ MISSING
+" menutrans RPL/2 TRANSLATION\ MISSING
+" menutrans ReStructuredText TRANSLATION\ MISSING
+" menutrans ReStructuredText\ with\ R\ statements TRANSLATION\ MISSING
+" menutrans RTF TRANSLATION\ MISSING
+" menutrans Ruby TRANSLATION\ MISSING
+" menutrans Rust TRANSLATION\ MISSING
+" menutrans S-Sm TRANSLATION\ MISSING
+" menutrans S-Lang TRANSLATION\ MISSING
+menutrans Samba\ config Config\.\ Samba
+" menutrans SAS TRANSLATION\ MISSING
+" menutrans Sass TRANSLATION\ MISSING
+" menutrans Sather TRANSLATION\ MISSING
+" menutrans Sbt TRANSLATION\ MISSING
+" menutrans Scala TRANSLATION\ MISSING
+" menutrans Scheme TRANSLATION\ MISSING
+" menutrans Scilab TRANSLATION\ MISSING
+" menutrans Screen\ RC TRANSLATION\ MISSING
+" menutrans SCSS TRANSLATION\ MISSING
+" menutrans SDC\ Synopsys\ Design\ Constraints TRANSLATION\ MISSING
+" menutrans SDL TRANSLATION\ MISSING
+" menutrans Sed TRANSLATION\ MISSING
+" menutrans Sendmail\.cf TRANSLATION\ MISSING
+" menutrans Send-pr TRANSLATION\ MISSING
+" menutrans Sensors\.conf TRANSLATION\ MISSING
+" menutrans Service\ Location\ config TRANSLATION\ MISSING
+" menutrans Service\ Location\ registration TRANSLATION\ MISSING
+" menutrans Service\ Location\ SPI TRANSLATION\ MISSING
+" menutrans Services TRANSLATION\ MISSING
+" menutrans Setserial\ config TRANSLATION\ MISSING
+menutrans SGML\ catalog Catalogue\ SGML
+menutrans SGML\ DTD DTD\ SGML
+menutrans SGML\ Declaration Dï¿½claration\ SGML
+" menutrans SGML-linuxdoc TRANSLATION\ MISSING
+menutrans Shell\ script Script\ shell
+menutrans sh\ and\ ksh sh\ et\ ksh
+" menutrans csh TRANSLATION\ MISSING
+" menutrans tcsh TRANSLATION\ MISSING
+" menutrans zsh TRANSLATION\ MISSING
+" menutrans SiCAD TRANSLATION\ MISSING
+" menutrans Sieve TRANSLATION\ MISSING
+" menutrans Simula TRANSLATION\ MISSING
+" menutrans Sinda TRANSLATION\ MISSING
+menutrans Sinda\ compare Comparaison\ Sinda
+menutrans Sinda\ input Entrï¿½e\ Sinda
+menutrans Sinda\ output Sortie\ Sinda
+" menutrans SiSU TRANSLATION\ MISSING
+" menutrans SKILL TRANSLATION\ MISSING
+menutrans SKILL\ for\ Diva SKILL\ pour\ Diva
+" menutrans Slice TRANSLATION\ MISSING
+" menutrans SLRN TRANSLATION\ MISSING
+" menutrans Slrn\ rc TRANSLATION\ MISSING
+" menutrans Slrn\ score TRANSLATION\ MISSING
+" menutrans SmallTalk TRANSLATION\ MISSING
+menutrans Smarty\ Templates Patrons\ Smarty
+" menutrans SMIL TRANSLATION\ MISSING
+" menutrans SMITH TRANSLATION\ MISSING
+" menutrans Sn-Sy TRANSLATION\ MISSING
+" menutrans SNMP\ MIB TRANSLATION\ MISSING
+" menutrans SNNS TRANSLATION\ MISSING
+menutrans SNNS\ network Rï¿½seau\ SNNS
+menutrans SNNS\ pattern Motif\ SNNS
+menutrans SNNS\ result Rï¿½sultat\ SNNS
+" menutrans Snobol4 TRANSLATION\ MISSING
+menutrans Snort\ Configuration Config\.\ Snort
+" menutrans SPEC\ (Linux\ RPM) TRANSLATION\ MISSING
+" menutrans Specman TRANSLATION\ MISSING
+" menutrans Spice TRANSLATION\ MISSING
+" menutrans Spyce TRANSLATION\ MISSING
+" menutrans Speedup TRANSLATION\ MISSING
+" menutrans Splint TRANSLATION\ MISSING
+menutrans Squid\ config Config\.\ Squid
+" menutrans SQL TRANSLATION\ MISSING
+" menutrans SAP\ HANA TRANSLATION\ MISSING
+" menutrans MySQL TRANSLATION\ MISSING
+" menutrans SQL\ Anywhere TRANSLATION\ MISSING
+" menutrans SQL\ (automatic) TRANSLATION\ MISSING
+" menutrans SQL\ (Oracle) TRANSLATION\ MISSING
+" menutrans SQL\ Forms TRANSLATION\ MISSING
+" menutrans SQLJ TRANSLATION\ MISSING
+" menutrans SQL-Informix TRANSLATION\ MISSING
+" menutrans SQR TRANSLATION\ MISSING
+" menutrans Ssh TRANSLATION\ MISSING
+" menutrans ssh_config TRANSLATION\ MISSING
+" menutrans sshd_config TRANSLATION\ MISSING
+" menutrans Standard\ ML TRANSLATION\ MISSING
+" menutrans Stata TRANSLATION\ MISSING
+" menutrans SMCL TRANSLATION\ MISSING
+" menutrans Stored\ Procedures TRANSLATION\ MISSING
+" menutrans Strace TRANSLATION\ MISSING
+" menutrans Streaming\ descriptor\ file TRANSLATION\ MISSING
+menutrans Subversion\ commit Commit\ Subversion
+" menutrans Sudoers TRANSLATION\ MISSING
+" menutrans SVG TRANSLATION\ MISSING
+" menutrans Symbian\ meta-makefile TRANSLATION\ MISSING
+" menutrans Sysctl\.conf TRANSLATION\ MISSING
+" menutrans Systemd TRANSLATION\ MISSING
+" menutrans SystemVerilog TRANSLATION\ MISSING
+" menutrans T TRANSLATION\ MISSING
+" menutrans TADS TRANSLATION\ MISSING
+" menutrans Tags TRANSLATION\ MISSING
+" menutrans TAK TRANSLATION\ MISSING
+menutrans TAK\ compare Comparaison\ TAK
+menutrans TAK\ input Entrï¿½e\ TAK
+menutrans TAK\ output Sortie\ TAK
+" menutrans Tar\ listing TRANSLATION\ MISSING
+" menutrans Task\ data TRANSLATION\ MISSING
+" menutrans Task\ 42\ edit TRANSLATION\ MISSING
+" menutrans Tcl/Tk TRANSLATION\ MISSING
+" menutrans TealInfo TRANSLATION\ MISSING
+" menutrans Telix\ Salt TRANSLATION\ MISSING
+" menutrans Termcap/Printcap TRANSLATION\ MISSING
+" menutrans Terminfo TRANSLATION\ MISSING
+" menutrans Tera\ Term TRANSLATION\ MISSING
+" menutrans TeX TRANSLATION\ MISSING
+" menutrans TeX/LaTeX TRANSLATION\ MISSING
+" menutrans plain\ TeX TRANSLATION\ MISSING
+" menutrans Initex TRANSLATION\ MISSING
+" menutrans ConTeXt TRANSLATION\ MISSING
+menutrans TeX\ configuration Config\.\ TeX
+" menutrans Texinfo TRANSLATION\ MISSING
+menutrans TF\ mud\ client TF\ (client\ MUD)
+menutrans Tidy\ configuration Config\.\ Tidy
+" menutrans Tilde TRANSLATION\ MISSING
+" menutrans Tmux\ configuration TRANSLATION\ MISSING
+" menutrans TPP TRANSLATION\ MISSING
+menutrans Trasys\ input Entrï¿½e\ Trasys
+" menutrans Treetop TRANSLATION\ MISSING
+" menutrans Trustees TRANSLATION\ MISSING
+" menutrans TSS TRANSLATION\ MISSING
+menutrans Command\ Line Ligne\ de\ commande
+menutrans Geometry Gï¿½omï¿½trie
+menutrans Optics Optiques
+" menutrans Typescript TRANSLATION\ MISSING
+" menutrans TypescriptReact TRANSLATION\ MISSING
+" menutrans UV TRANSLATION\ MISSING
+" menutrans Udev\ config TRANSLATION\ MISSING
+" menutrans Udev\ permissions TRANSLATION\ MISSING
+" menutrans Udev\ rules TRANSLATION\ MISSING
+" menutrans UIT/UIL TRANSLATION\ MISSING
+" menutrans UnrealScript TRANSLATION\ MISSING
+" menutrans Updatedb\.conf TRANSLATION\ MISSING
+" menutrans Upstart TRANSLATION\ MISSING
+" menutrans Valgrind TRANSLATION\ MISSING
+" menutrans Vera TRANSLATION\ MISSING
+" menutrans Verbose\ TAP\ Output TRANSLATION\ MISSING
+" menutrans Verilog-AMS\ HDL TRANSLATION\ MISSING
+" menutrans Verilog\ HDL TRANSLATION\ MISSING
+" menutrans Vgrindefs TRANSLATION\ MISSING
+" menutrans VHDL TRANSLATION\ MISSING
+" menutrans Vim TRANSLATION\ MISSING
+menutrans Vim\ help\ file Fichier\ d'aide\ Vim
+menutrans Vim\ script Script\ Vim
+menutrans Viminfo\ file Fichier\ Viminfo
+menutrans Virata\ config Config\.\ Virata
+" menutrans VOS\ CM\ macro TRANSLATION\ MISSING
+" menutrans VRML TRANSLATION\ MISSING
+" menutrans Vroom TRANSLATION\ MISSING
+" menutrans VSE\ JCL TRANSLATION\ MISSING
+" menutrans WXYZ TRANSLATION\ MISSING
+" menutrans WEB TRANSLATION\ MISSING
+" menutrans CWEB TRANSLATION\ MISSING
+" menutrans WEB\ Changes TRANSLATION\ MISSING
+" menutrans WebAssembly TRANSLATION\ MISSING
+" menutrans Webmacro TRANSLATION\ MISSING
+" menutrans Website\ MetaLanguage TRANSLATION\ MISSING
+" menutrans wDiff TRANSLATION\ MISSING
+menutrans Wget\ config Config\.\ wget
+menutrans Whitespace\ (add) Espaces\ et\ tabulations
+menutrans WildPackets\ EtherPeek\ Decoder Dï¿½codeur\ WildPackets\ EtherPeek
+" menutrans WinBatch/Webbatch TRANSLATION\ MISSING
+" menutrans Windows\ Scripting\ Host TRANSLATION\ MISSING
+" menutrans WSML TRANSLATION\ MISSING
+" menutrans WvDial TRANSLATION\ MISSING
+" menutrans X\ Keyboard\ Extension TRANSLATION\ MISSING
+" menutrans X\ Pixmap TRANSLATION\ MISSING
+" menutrans X\ Pixmap\ (2) TRANSLATION\ MISSING
+menutrans X\ resources Resources\ X
+" menutrans XBL TRANSLATION\ MISSING
+" menutrans Xinetd\.conf TRANSLATION\ MISSING
+" menutrans Xmodmap TRANSLATION\ MISSING
+" menutrans Xmath TRANSLATION\ MISSING
+" menutrans XML\ Schema\ (XSD) TRANSLATION\ MISSING
+" menutrans XQuery TRANSLATION\ MISSING
+" menutrans Xslt TRANSLATION\ MISSING
+menutrans XFree86\ Config Config\.\ XFree86
+" menutrans YAML TRANSLATION\ MISSING
+" menutrans Yacc TRANSLATION\ MISSING
+" menutrans Zimbu TRANSLATION\ MISSING
+" }}}
 
-menutrans &Off					Désactiver
-menutrans &Manual				&Manuelle
-menutrans A&utomatic				&Automatique
-menutrans on/off\ for\ &This\ file		On/off\ pour\ &ce\ fichier
+" Netrw menu {{{1
+" Plugin loading may be after menu translation
+" So giveup testing if Netrw Plugin is loaded
+" if exists("g:loaded_netrwPlugin")
+  " menutrans Help<tab><F1> TRANSLATION\ MISSING
+  " menutrans Bookmarks TRANSLATION\ MISSING
+  " menutrans History TRANSLATION\ MISSING
+  " menutrans Go\ Up\ Directory<tab>- TRANSLATION\ MISSING
+  " menutrans Apply\ Special\ Viewer<tab>x TRANSLATION\ MISSING
+  " menutrans Bookmarks\ and\ History TRANSLATION\ MISSING
+  " Netrw.Bookmarks and History menuitems {{{2
+  " menutrans Bookmark\ Current\ Directory<tab>mb TRANSLATION\ MISSING
+  " menutrans Bookmark\ Delete TRANSLATION\ MISSING
+  " menutrans Goto\ Prev\ Dir\ (History)<tab>u TRANSLATION\ MISSING
+  " menutrans Goto\ Next\ Dir\ (History)<tab>U TRANSLATION\ MISSING
+  " menutrans List<tab>qb TRANSLATION\ MISSING
+  " }}}
+  " menutrans Browsing\ Control TRANSLATION\ MISSING
+  " Netrw.Browsing Control menuitems {{{2
+  " menutrans Horizontal\ Split<tab>o TRANSLATION\ MISSING
+  " menutrans Vertical\ Split<tab>v TRANSLATION\ MISSING
+  " menutrans New\ Tab<tab>t TRANSLATION\ MISSING
+  " menutrans Preview<tab>p TRANSLATION\ MISSING
+  " menutrans Edit\ File\ Hiding\ List<tab><ctrl-h> TRANSLATION\ MISSING
+  " menutrans Edit\ Sorting\ Sequence<tab>S TRANSLATION\ MISSING
+  " menutrans Quick\ Hide/Unhide\ Dot\ Files<tab>gh TRANSLATION\ MISSING
+  " menutrans Refresh\ Listing<tab><ctrl-l> TRANSLATION\ MISSING
+  " menutrans Settings/Options<tab>:NetrwSettings TRANSLATION\ MISSING
+  " }}}
+  " menutrans Delete\ File/Directory<tab>D TRANSLATION\ MISSING
+  " menutrans Edit\ File/Dir TRANSLATION\ MISSING
+  " Netrw.Edit File menuitems {{{2
+  " menutrans Create\ New\ File<tab>% TRANSLATION\ MISSING
+  " menutrans In\ Current\ Window<tab><cr> TRANSLATION\ MISSING
+  " menutrans Preview\ File/Directory<tab>p TRANSLATION\ MISSING
+  " menutrans In\ Previous\ Window<tab>P TRANSLATION\ MISSING
+  " menutrans In\ New\ Window<tab>o TRANSLATION\ MISSING
+  " menutrans In\ New\ Tab<tab>t TRANSLATION\ MISSING
+  " menutrans In\ New\ Vertical\ Window<tab>v TRANSLATION\ MISSING
+  " }}}
+  " menutrans Explore TRANSLATION\ MISSING
+  " Netrw.Explore menuitems {{{2
+  " menutrans Directory\ Name TRANSLATION\ MISSING
+  " menutrans Filenames\ Matching\ Pattern\ (curdir\ only)<tab>:Explore\ */ TRANSLATION\ MISSING
+  " menutrans Filenames\ Matching\ Pattern\ (+subdirs)<tab>:Explore\ **/ TRANSLATION\ MISSING
+  " menutrans Files\ Containing\ String\ Pattern\ (curdir\ only)<tab>:Explore\ *// TRANSLATION\ MISSING
+  " menutrans Files\ Containing\ String\ Pattern\ (+subdirs)<tab>:Explore\ **// TRANSLATION\ MISSING
+  " menutrans Next\ Match<tab>:Nexplore TRANSLATION\ MISSING
+  " menutrans Prev\ Match<tab>:Pexplore TRANSLATION\ MISSING
+  " }}}
+  " menutrans Make\ Subdirectory<tab>d TRANSLATION\ MISSING
+  " menutrans Marked\ Files TRANSLATION\ MISSING
+  " Netrw.Marked Files menuitems {{{2
+  " menutrans Mark\ File<tab>mf TRANSLATION\ MISSING
+  " menutrans Mark\ Files\ by\ Regexp<tab>mr TRANSLATION\ MISSING
+  " menutrans Hide-Show-List\ Control<tab>a TRANSLATION\ MISSING
+  " menutrans Copy\ To\ Target<tab>mc TRANSLATION\ MISSING
+  " menutrans Delete<tab>D TRANSLATION\ MISSING
+  " menutrans Diff<tab>md TRANSLATION\ MISSING
+  " menutrans Edit<tab>me TRANSLATION\ MISSING
+  " menutrans Exe\ Cmd<tab>mx TRANSLATION\ MISSING
+  " menutrans Move\ To\ Target<tab>mm TRANSLATION\ MISSING
+  " menutrans Obtain<tab>O TRANSLATION\ MISSING
+  " menutrans Print<tab>mp TRANSLATION\ MISSING
+  " menutrans Replace<tab>R TRANSLATION\ MISSING
+  " menutrans Set\ Target<tab>mt TRANSLATION\ MISSING
+  " menutrans Tag<tab>mT TRANSLATION\ MISSING
+  " menutrans Zip/Unzip/Compress/Uncompress<tab>mz TRANSLATION\ MISSING
+  " }}}
+  " menutrans Obtain\ File<tab>O TRANSLATION\ MISSING
+  " menutrans Style TRANSLATION\ MISSING
+  " Netrw.Style menuitems {{{2
+  " menutrans Listing TRANSLATION\ MISSING
+  " Netrw.Style.Listing menuitems {{{3
+  " menutrans thin<tab>i TRANSLATION\ MISSING
+  " menutrans long<tab>i TRANSLATION\ MISSING
+  " menutrans wide<tab>i TRANSLATION\ MISSING
+  " menutrans tree<tab>i TRANSLATION\ MISSING
+  " }}}
+  " menutrans Normal-Hide-Show TRANSLATION\ MISSING
+  " Netrw.Style.Normal-Hide_show menuitems {{{3
+  " menutrans Show\ All<tab>a TRANSLATION\ MISSING
+  " menutrans Normal<tab>a TRANSLATION\ MISSING
+  " menutrans Hidden\ Only<tab>a TRANSLATION\ MISSING
+  " }}}
+  " menutrans Reverse\ Sorting\ Order<tab>r TRANSLATION\ MISSING
+  " menutrans Sorting\ Method TRANSLATION\ MISSING
+  " Netrw.Style.Sorting Method menuitems {{{3
+  " menutrans Name<tab>s TRANSLATION\ MISSING
+  " menutrans Time<tab>s TRANSLATION\ MISSING
+  " menutrans Size<tab>s TRANSLATION\ MISSING
+  " menutrans Exten<tab>s TRANSLATION\ MISSING
+  " }}}
+  " }}}
+  " menutrans Rename\ File/Directory<tab>R TRANSLATION\ MISSING
+  " menutrans Set\ Current\ Directory<tab>c TRANSLATION\ MISSING
+  " menutrans Targets TRANSLATION\ MISSING
+" endif
+" }}}
 
-" The Start Of The Syntax Menu
-menutrans ABC\ music\ notation		ABC\ (notation\ musicale)
-menutrans AceDB\ model			Modèle\ AceDB
-menutrans Apache\ config		Config\.\ Apache
-menutrans Apache-style\ config		Config\.\ style\ Apache
-menutrans ASP\ with\ VBScript		ASP\ avec\ VBScript
-menutrans ASP\ with\ Perl		ASP\ avec\ Perl
-menutrans Assembly			Assembleur
-menutrans BC\ calculator		Calculateur\ BC
-menutrans BDF\ font			Fonte\ BDF
-menutrans BIND\ config			Config\.\ BIND
-menutrans BIND\ zone			Zone\ BIND
-menutrans Cascading\ Style\ Sheets	Feuilles\ de\ style\ en\ cascade
-menutrans Cfg\ Config\ file		Fichier\ de\ config\.\ \.cfg
-menutrans Cheetah\ template		Patron\ Cheetah
-menutrans commit\ file			Fichier\ commit
-menutrans Generic\ Config\ file		Fichier\ de\ config\.\ générique
-menutrans Digital\ Command\ Lang	DCL
-menutrans DNS/BIND\ zone		Zone\ BIND/DNS
-menutrans Dylan\ interface		Interface
-menutrans Dylan\ lid			LID
-menutrans Elm\ filter\ rules		Règles\ de\ filtrage\ Elm
-menutrans ERicsson\ LANGuage		Erlang\ (langage\ Ericsson)
-menutrans Essbase\ script		Script\ Essbase
-menutrans Eterm\ config			Config\.\ Eterm
-menutrans Exim\ conf			Config\.\ Exim
-menutrans Fvwm\ configuration		Config\.\ Fvwm
-menutrans Fvwm2\ configuration		Config\.\ Fvwm2
-menutrans Fvwm2\ configuration\ with\ M4	Config\.\ Fvwm2\ avec\ M4
-menutrans GDB\ command\ file		Fichier\ de\ commandes\ GDB
-menutrans HTML\ with\ M4		HTML\ avec\ M4
-menutrans Cheetah\ HTML\ template	Patron\ Cheetah\ pour\ HTML
-menutrans IDL\Generic\ IDL		IDL\IDL\ générique
-menutrans IDL\Microsoft\ IDL		IDL\IDL\ Microsoft
-menutrans Indent\ profile		Profil\ Indent
-menutrans Inno\ setup			Config\.\ Inno
-menutrans InstallShield\ script		Script\ InstallShield
-menutrans KDE\ script			Script\ KDE
-menutrans LFTP\ config			Config\.\ LFTP
-menutrans LifeLines\ script		Script\ LifeLines
-menutrans Lynx\ Style			Style\ Lynx
-menutrans Lynx\ config			Config\.\ Lynx
-menutrans Man\ page			Page\ Man
-menutrans MEL\ (for\ Maya)		MEL\ (pour\ Maya)
-menutrans 4DOS\ \.bat\ file		Fichier\ \.bat\ 4DOS
-menutrans \.bat\/\.cmd\ file		Fichier\ \.bat\ /\ \.cmd
-menutrans \.ini\ file			Fichier\ \.ini
-menutrans Module\ Definition		Définition\ de\ module
-menutrans Registry			Extrait\ du\ registre
-menutrans Resource\ file		Fichier\ de\ ressources
-menutrans Novell\ NCF\ batch		Batch\ Novell\ NCF
-menutrans NSIS\ script			Script\ NSIS
-menutrans Oracle\ config		Config\.\ Oracle
-menutrans Palm\ resource\ compiler	Compil\.\ de\ resources\ Palm
-menutrans PHP\ 3-4			PHP\ 3\ et\ 4
-menutrans Postfix\ main\ config		Config\.\ Postfix
-menutrans Povray\ scene\ descr		Scène\ Povray
-menutrans Povray\ configuration		Config\.\ Povray
-menutrans Purify\ log			Log\ Purify
-menutrans Readline\ config		Config\.\ Readline
-menutrans RCS\ log\ output		Log\ RCS
-menutrans RCS\ file			Fichier\ RCS
-menutrans RockLinux\ package\ desc\.	Desc\.\ pkg\.\ RockLinux
-menutrans Samba\ config			Config\.\ Samba
-menutrans SGML\ catalog			Catalogue\ SGML
-menutrans SGML\ DTD			DTD\ SGML
-menutrans SGML\ Declaration		Déclaration\ SGML
-menutrans Shell\ script			Script\ shell
-menutrans sh\ and\ ksh			sh\ et\ ksh
-menutrans Sinda\ compare		Comparaison\ Sinda
-menutrans Sinda\ input			Entrée\ Sinda
-menutrans Sinda\ output			Sortie\ Sinda
-menutrans SKILL\ for\ Diva		SKILL\ pour\ Diva
-menutrans Smarty\ Templates		Patrons\ Smarty
-menutrans SNNS\ network			Réseau\ SNNS
-menutrans SNNS\ pattern			Motif\ SNNS
-menutrans SNNS\ result			Résultat\ SNNS
-menutrans Snort\ Configuration		Config\.\ Snort
-menutrans Squid\ config			Config\.\ Squid
-menutrans Subversion\ commit		Commit\ Subversion
-menutrans TAK\ compare			Comparaison\ TAK
-menutrans TAK\ input			Entrée\ TAK
-menutrans TAK\ output			Sortie\ TAK
-menutrans TeX\ configuration		Config\.\ TeX
-menutrans TF\ mud\ client		TF\ (client\ MUD)
-menutrans Tidy\ configuration		Config\.\ Tidy
-menutrans Trasys\ input			Entrée\ Trasys
-menutrans Command\ Line			Ligne\ de\ commande
-menutrans Geometry			Géométrie
-menutrans Optics			Optiques
-menutrans Vim\ help\ file		Fichier\ d'aide\ Vim
-menutrans Vim\ script			Script\ Vim
-menutrans Viminfo\ file			Fichier\ Viminfo
-menutrans Virata\ config		Config\.\ Virata
-menutrans Wget\ config			Config\.\ wget
-menutrans Whitespace\ (add)		Espaces\ et\ tabulations
-menutrans WildPackets\ EtherPeek\ Decoder	Décodeur\ WildPackets\ EtherPeek
-menutrans X\ resources			Resources\ X
-menutrans XXD\ hex\ dump		Sortie\ hexa\.\ de\ xxd
-menutrans XFree86\ Config		Config\.\ XFree86
-" The End Of The Syntax Menu
+" Shellmenu menu
+" Shellmenu menuitems {{{1
+" From shellmenu.vim
+" menutrans ShellMenu TRANSLATION\ MISSING
+" menutrans MAIL TRANSLATION\ MISSING
+" menutrans eval TRANSLATION\ MISSING
+" menutrans Statements TRANSLATION\ MISSING
+" menutrans for TRANSLATION\ MISSING
+" menutrans case TRANSLATION\ MISSING
+" menutrans if TRANSLATION\ MISSING
+" menutrans if-else TRANSLATION\ MISSING
+" menutrans elif TRANSLATION\ MISSING
+" menutrans while TRANSLATION\ MISSING
+" menutrans break TRANSLATION\ MISSING
+" menutrans continue TRANSLATION\ MISSING
+" menutrans function TRANSLATION\ MISSING
+" menutrans return TRANSLATION\ MISSING
+" menutrans return-true TRANSLATION\ MISSING
+" menutrans return-false TRANSLATION\ MISSING
+" menutrans exit TRANSLATION\ MISSING
+" menutrans shift TRANSLATION\ MISSING
+" menutrans trap TRANSLATION\ MISSING
+" menutrans Test TRANSLATION\ MISSING
+" menutrans Existence TRANSLATION\ MISSING
+" menutrans Existence\ -\ file TRANSLATION\ MISSING
+" menutrans Existence\ -\ file\ (not\ empty) TRANSLATION\ MISSING
+" menutrans Existence\ -\ directory TRANSLATION\ MISSING
+" menutrans Existence\ -\ executable TRANSLATION\ MISSING
+" menutrans Existence\ -\ readable TRANSLATION\ MISSING
+" menutrans Existence\ -\ writable TRANSLATION\ MISSING
+" menutrans String\ is\ empty TRANSLATION\ MISSING
+" menutrans String\ is\ not\ empty TRANSLATION\ MISSING
+" menutrans Strings\ are\ equal TRANSLATION\ MISSING
+" menutrans Strings\ are\ not\ equal TRANSLATION\ MISSING
+" menutrans Value\ is\ greater\ than TRANSLATION\ MISSING
+" menutrans Value\ is\ greater\ equal TRANSLATION\ MISSING
+" menutrans Values\ are\ equal TRANSLATION\ MISSING
+" menutrans Values\ are\ not\ equal TRANSLATION\ MISSING
+" menutrans Value\ is\ less\ than TRANSLATION\ MISSING
+" menutrans Value\ is\ less\ equal TRANSLATION\ MISSING
+" menutrans ParmSub TRANSLATION\ MISSING
+" menutrans Substitute\ word\ if\ parm\ not\ set TRANSLATION\ MISSING
+" menutrans Set\ parm\ to\ word\ if\ not\ set TRANSLATION\ MISSING
+" menutrans Substitute\ word\ if\ parm\ set\ else\ nothing TRANSLATION\ MISSING
+" menutrans If\ parm\ not\ set\ print\ word\ and\ exit TRANSLATION\ MISSING
+" menutrans SpShVars TRANSLATION\ MISSING
+" menutrans Number\ of\ positional\ parameters TRANSLATION\ MISSING
+" menutrans All\ positional\ parameters\ (quoted\ spaces) TRANSLATION\ MISSING
+" menutrans All\ positional\ parameters\ (unquoted\ spaces) TRANSLATION\ MISSING
+" menutrans Flags\ set TRANSLATION\ MISSING
+" menutrans Return\ code\ of\ last\ command TRANSLATION\ MISSING
+" menutrans Process\ number\ of\ this\ shell TRANSLATION\ MISSING
+" menutrans Process\ number\ of\ last\ background\ command TRANSLATION\ MISSING
+" menutrans Environ TRANSLATION\ MISSING
+" menutrans HOME TRANSLATION\ MISSING
+" menutrans PATH TRANSLATION\ MISSING
+" menutrans CDPATH TRANSLATION\ MISSING
+" menutrans MAILCHECK TRANSLATION\ MISSING
+" menutrans PS1 TRANSLATION\ MISSING
+" menutrans PS2 TRANSLATION\ MISSING
+" menutrans IFS TRANSLATION\ MISSING
+" menutrans SHACCT TRANSLATION\ MISSING
+" menutrans SHELL TRANSLATION\ MISSING
+" menutrans LC_CTYPE TRANSLATION\ MISSING
+" menutrans LC_MESSAGES TRANSLATION\ MISSING
+" menutrans Builtins TRANSLATION\ MISSING
+" menutrans cd TRANSLATION\ MISSING
+" menutrans echo TRANSLATION\ MISSING
+" menutrans exec TRANSLATION\ MISSING
+" menutrans export TRANSLATION\ MISSING
+" menutrans getopts TRANSLATION\ MISSING
+" menutrans hash TRANSLATION\ MISSING
+" menutrans newgrp TRANSLATION\ MISSING
+" menutrans pwd TRANSLATION\ MISSING
+" menutrans read TRANSLATION\ MISSING
+" menutrans readonly TRANSLATION\ MISSING
+" menutrans times TRANSLATION\ MISSING
+" menutrans type TRANSLATION\ MISSING
+" menutrans umask TRANSLATION\ MISSING
+" menutrans wait TRANSLATION\ MISSING
+" menutrans Set TRANSLATION\ MISSING
+" menutrans unset TRANSLATION\ MISSING
+" menutrans Mark\ created\ or\ modified\ variables\ for\ export TRANSLATION\ MISSING
+" menutrans Exit\ when\ command\ returns\ non-zero\ status TRANSLATION\ MISSING
+" menutrans Disable\ file\ name\ expansion TRANSLATION\ MISSING
+" menutrans Locate\ and\ remember\ commands\ when\ being\ looked\ up TRANSLATION\ MISSING
+" menutrans All\ assignment\ statements\ are\ placed\ in\ the\ environment\ for\ a\ command TRANSLATION\ MISSING
+" menutrans Read\ commands\ but\ do\ not\ execute\ them TRANSLATION\ MISSING
+" menutrans Exit\ after\ reading\ and\ executing\ one\ command TRANSLATION\ MISSING
+" menutrans Treat\ unset\ variables\ as\ an\ error\ when\ substituting TRANSLATION\ MISSING
+" menutrans Print\ shell\ input\ lines\ as\ they\ are\ read TRANSLATION\ MISSING
+" menutrans Print\ commands\ and\ their\ arguments\ as\ they\ are\ executed TRANSLATION\ MISSING
+" }}}
 
-menutrans &Show\ file\ types\ in\ menu		&Afficher\ tout\ le\ menu
-" -SEP1-
-menutrans Set\ '&syntax'\ only			Changer\ '&syntax'\ seulement
-menutrans Set\ '&filetype'\ too			Changer\ '&filetype'\ aussi
-menutrans &Off					&Off
-" -SEP3-
-menutrans Co&lor\ test				Tester\ les\ co&uleurs
-menutrans &Highlight\ test			Tester\ les\ g&roupes\ de\ surbrillance
-menutrans &Convert\ to\ HTML			Con&vertir\ en\ HTML
+" termdebug menu
+" termdebug menuitems {{{1
+" From termdebug.vim
+" menutrans Set\ breakpoint TRANSLATION\ MISSING
+" menutrans Clear\ breakpoint TRANSLATION\ MISSING
+" menutrans Run\ until TRANSLATION\ MISSING
+" menutrans Evaluate TRANSLATION\ MISSING
+" menutrans WinBar TRANSLATION\ MISSING
+" menutrans Step TRANSLATION\ MISSING
+" menutrans Next TRANSLATION\ MISSING
+" menutrans Finish TRANSLATION\ MISSING
+" menutrans Cont TRANSLATION\ MISSING
+" menutrans Stop TRANSLATION\ MISSING
+" }}}
+
+" debchangelog menu
+" debchangelog menuitems {{{1
+" From debchangelog.vim
+" menutrans &Changelog TRANSLATION\ MISSING
+" menutrans &New\ Version TRANSLATION\ MISSING
+" menutrans &Add\ Entry TRANSLATION\ MISSING
+" menutrans &Close\ Bug TRANSLATION\ MISSING
+" menutrans Set\ &Distribution TRANSLATION\ MISSING
+" menutrans &unstable TRANSLATION\ MISSING
+" menutrans &frozen TRANSLATION\ MISSING
+" menutrans &stable TRANSLATION\ MISSING
+" menutrans frozen\ unstable TRANSLATION\ MISSING
+" menutrans stable\ unstable TRANSLATION\ MISSING
+" menutrans stable\ frozen TRANSLATION\ MISSING
+" menutrans stable\ frozen\ unstable TRANSLATION\ MISSING
+" menutrans Set\ &Urgency TRANSLATION\ MISSING
+" menutrans &low TRANSLATION\ MISSING
+" menutrans &medium TRANSLATION\ MISSING
+" menutrans &high TRANSLATION\ MISSING
+" menutrans U&nfinalise TRANSLATION\ MISSING
+" menutrans &Finalise TRANSLATION\ MISSING
+" }}}
+
+" ada menu
+" ada menuitems {{{1
+" From ada.vim
+" menutrans Tag TRANSLATION\ MISSING
+" menutrans List TRANSLATION\ MISSING
+" menutrans Jump TRANSLATION\ MISSING
+" menutrans Create\ File TRANSLATION\ MISSING
+" menutrans Create\ Dir TRANSLATION\ MISSING
+" menutrans Highlight TRANSLATION\ MISSING
+" menutrans Toggle\ Space\ Errors TRANSLATION\ MISSING
+" menutrans Toggle\ Lines\ Errors TRANSLATION\ MISSING
+" menutrans Toggle\ Rainbow\ Color TRANSLATION\ MISSING
+" menutrans Toggle\ Standard\ Types TRANSLATION\ MISSING
+" }}}
+
+" gnat menu
+" gnat menuitems {{{1
+" From gnat.vim
+" menutrans GNAT TRANSLATION\ MISSING
+" menutrans Build TRANSLATION\ MISSING
+" menutrans Pretty\ Print TRANSLATION\ MISSING
+menutrans Find Chercher
+" menutrans Set\ Projectfile\.\.\. TRANSLATION\ MISSING
+" }}}
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
+
+" vim: set ts=4 sw=4 noet fdm=marker fdc=4 :
