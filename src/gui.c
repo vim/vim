@@ -2133,9 +2133,9 @@ gui_outstr(char_u *s, int len)
 	}
 	else
 	    if (gui.col + len > Columns)
-	    this_len = Columns - gui.col;
-	else
-	    this_len = len;
+		this_len = Columns - gui.col;
+	    else
+		this_len = len;
 
 	(void)gui_outstr_nowrap(s, this_len,
 					  0, (guicolor_T)0, (guicolor_T)0, 0);
