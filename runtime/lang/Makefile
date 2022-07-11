@@ -22,6 +22,9 @@ all: \
 		menu_sr_rs.iso_8859-2.vim \
 		menu_sr_rs.ascii.vim \
 		menu_czech_czech_republic.ascii.vim \
+		menu_hu_hu.iso_8859-2.vim \
+		menu_sk_sk.iso_8859-2.vim \
+
 
 # Convert menu_zh_cn.utf-8.vim to create menu_chinese_gb.936.vim.
 menu_chinese_gb.936.vim: menu_zh_cn.utf-8.vim
@@ -194,3 +197,15 @@ menu_uk_ua.koi8-u.vim: menu_uk_ua.utf-8.vim
 	rm -f menu_uk_ua.koi8-u.vim
 	iconv -f utf-8 -t koi8-u menu_uk_ua.utf-8.vim | \
 		sed -e 's/scriptencoding utf-8/scriptencoding koi8-u/' -e 's/" Original translations/" Generated from menu_uk_ua.utf-8.vim, DO NOT EDIT/' > menu_uk_ua.koi8-u.vim
+
+# Convert menu_hu_hu.utf-8.vim to create menu_hu_hu.iso_8859-2.vim.
+menu_hu_hu.iso_8859-2.vim: menu_hu_hu.utf-8.vim
+	rm -f menu_hu_hu.iso_8859-2.vim
+	iconv -f utf-8 -t iso8859-2 menu_hu_hu.utf-8.vim | \
+		sed -e 's/scriptencoding utf-8/scriptencoding iso8859-2/' -e 's/" Original translations/" Generated from menu_hu_hu.utf-8.vim, DO NOT EDIT/' > menu_hu_hu.iso_8859-2.vim
+
+# Convert menu_hu_hu.utf-8.vim to create menu_hu_hu.iso_8859-2.vim.
+menu_sk_sk.iso_8859-2.vim: menu_slovak_slovak_republic.1250.vim
+	rm -f menu_sk_sk.iso_8859-2.vim
+	iconv -f cp1250 -t iso8859-2 menu_slovak_slovak_republic.1250.vim | \
+		sed -e 's/scriptencoding cp1250/scriptencoding iso8859-2/' -e 's/" Original translations/" Generated from menu_slovak_slovak_republic.1250.vim, DO NOT EDIT/' > menu_sk_sk.iso_8859-2.vim
