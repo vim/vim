@@ -1786,6 +1786,8 @@ getcmdline_int(
 				// that occurs while typing a command should
 				// cause the command not to be executed.
 
+	got_int = FALSE;	// Avoid infinite Ctrl-C loop in Ex mode
+
 	// Trigger SafeState if nothing is pending.
 	may_trigger_safestate(xpc.xp_numfiles <= 0);
 
