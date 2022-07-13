@@ -6197,8 +6197,8 @@ win_drag_status_line(win_T *dragwin, int offset)
     screen_fill(row, cmdline_row, 0, (int)Columns, ' ', ' ', 0);
     cmdline_row = row;
     p_ch = Rows - cmdline_row;
-    if (p_ch < 1)
-	p_ch = 1;
+    if (p_ch < 0)
+	p_ch = 0;
     curtab->tp_ch_used = p_ch;
     redraw_all_later(SOME_VALID);
     showmode();
