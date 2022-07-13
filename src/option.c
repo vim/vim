@@ -3714,7 +3714,12 @@ set_num_option(
 		&& !gui.starting
 #endif
 	    )
+        {
 	    set_shellsize((int)Columns, (int)Rows, TRUE);
+	    // If Rows is smaller, command line height must be positive
+	    if (old_Rows > Rows && cmdline_row >= Rows && p_ch < 1)
+		set_option_value((char_u *)"ch", 1L, NULL, 0);
+        }
 	else
 	{
 	    // Postpone the resizing; check the size and cmdline position for
