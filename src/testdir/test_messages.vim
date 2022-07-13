@@ -408,10 +408,17 @@ func Test_cmdheight_zero()
   %s/somestring/otherstring/gc
   call assert_equal(getline(1), 'otherstring')
 
-  call feedkeys("\<C-g>", "xt")
+  call feedkeys("g\<C-g>", "xt")
   call assert_equal(
-        \ '"[No Name]" [Modified] line 1 of 1 --100%-- col 1',
+        \ 'Col 1 of 11; Line 1 of 1; Word 1 of 1; Byte 1 of 12',
         \ Screenline(&lines))
+
+  " Check split behavior
+  for i in range(1, 10)
+    split
+  endfor
+  only
+  call assert_equal(&cmdheight, 0)
 
   set cmdheight&
   set showcmd&
