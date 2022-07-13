@@ -377,4 +377,26 @@ func Test_fileinfo_after_echo()
   call delete('b.txt')
 endfunc
 
+func Test_cmdheight_zero()
+  set cmdheight=0
+  redraw!
+
+  echo 'test echo'
+  call assert_equal(116, screenchar(&lines, 1))
+  redraw!
+
+  echomsg 'test echomsg'
+  call assert_equal(116, screenchar(&lines, 1))
+  redraw!
+
+  call feedkeys(":ls\<CR>", "xt")
+  call assert_match(':ls', Screenline(&lines - 1))
+  redraw!
+
+  let char = getchar(0)
+  call assert_match(char, 0)
+
+  set cmdheight&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
