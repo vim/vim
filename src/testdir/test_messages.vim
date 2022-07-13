@@ -379,6 +379,7 @@ endfunc
 
 func Test_cmdheight_zero()
   set cmdheight=0
+  set showcmd
   redraw!
 
   echo 'test echo'
@@ -390,13 +391,30 @@ func Test_cmdheight_zero()
   redraw!
 
   call feedkeys(":ls\<CR>", "xt")
-  call assert_match(':ls', Screenline(&lines - 1))
+  call assert_equal(':ls', Screenline(&lines - 1))
   redraw!
 
   let char = getchar(0)
   call assert_match(char, 0)
 
+  " Check change/restore cmdheight when macro
+  call feedkeys("qa", "xt")
+  call assert_equal(&cmdheight, 1)
+  call feedkeys("q", "xt")
+  call assert_equal(&cmdheight, 0)
+
+  call setline(1, 'somestring')
+  call feedkeys("y", "n")
+  %s/somestring/otherstring/gc
+  call assert_equal(getline(1), 'otherstring')
+
+  call feedkeys("\<C-g>", "xt")
+  call assert_equal(
+        \ '"[No Name]" [Modified] line 1 of 1 --100%-- col 1',
+        \ Screenline(&lines))
+
   set cmdheight&
+  set showcmd&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
