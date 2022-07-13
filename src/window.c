@@ -6145,9 +6145,7 @@ win_drag_status_line(win_T *dragwin, int offset)
 	 * Only dragging the last status line can reduce p_ch.
 	 */
 	room = Rows - cmdline_row;
-	if (curfr->fr_next == NULL)
-	    room -= 1;
-	else
+	if (curfr->fr_next != NULL)
 	    room -= p_ch;
 	if (room < 0)
 	    room = 0;
