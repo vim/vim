@@ -84,7 +84,7 @@ menutrans &Global\ Settings &Globale\ Einstellungen
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls! &Hervorhebungen\ ein-\ und\ ausschalten<Tab>:set\ hls!
 menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic! Groﬂschreibung\ &ignorieren\ oder\ benutzen<Tab>:set\ ic!
 menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm! Anzeige\ des\ passenden\ &Symbols\ ein-\ und\ ausschalten<Tab>:set\ sm!
-menutrans &Context\ Lines &Zusammenhang
+menutrans &Context\ Lines &Kontext
 menutrans &Virtual\ Edit &Virtueller\ Editier-Modus
 " Edit.Global Settings.Virtual Edit menuitems {{{3
 menutrans Never Nie
@@ -100,9 +100,9 @@ menutrans Ta&g\ Files\.\.\. Ta&g-Dateien\.\.\.
 
 " GUI options
 menutrans Toggle\ &Toolbar Werkzeugleiste\ ein-\ und\ ausschalten
-menutrans Toggle\ &Bottom\ Scrollbar Unteren\ Rollbalken\ ein-\ und\ ausschalten
-menutrans Toggle\ &Left\ Scrollbar Linken\ Rollbalken\ ein-\ und\ ausschalten
-menutrans Toggle\ &Right\ Scrollbar Rechten\ Rollbalken\ ein-\ und\ ausschalten
+menutrans Toggle\ &Bottom\ Scrollbar Unteren\ Scrollbar\ ein-\ und\ ausschalten
+menutrans Toggle\ &Left\ Scrollbar Linken\ Scrollbar\ ein-\ und\ ausschalten
+menutrans Toggle\ &Right\ Scrollbar Rechten\ Scrollbar\ ein-\ und\ ausschalten
 
 " fun! s:SearchP()
 if !exists("g:menutrans_path_dialog")
