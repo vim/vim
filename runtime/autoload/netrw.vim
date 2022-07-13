@@ -5345,8 +5345,8 @@ fun! netrw#BrowseX(fname,remote)
      " g:Netrw_corehandler is a List of function references (see :help Funcref)
 "     call Decho("g:Netrw_corehandler is a List",'~'.expand("<slnum>"))
      for Fncref in g:Netrw_corehandler
-      if type(FncRef) == 2
-       call FncRef(a:fname)
+      if type(Fncref) == 2
+       call Fncref(a:fname)
       endif
      endfor
     endif
