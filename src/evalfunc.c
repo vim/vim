@@ -3194,7 +3194,7 @@ get_buf_arg(typval_T *arg)
     static void
 f_breakundo(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    u_sync(1);
+    u_sync(TRUE);
 }
 
 /*
