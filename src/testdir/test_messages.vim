@@ -409,8 +409,8 @@ func Test_cmdheight_zero()
   call assert_equal(getline(1), 'otherstring')
 
   call feedkeys("g\<C-g>", "xt")
-  call assert_equal(
-        \ 'Col 1 of 11; Line 1 of 1; Word 1 of 1; Byte 1 of 12',
+  call assert_match(
+        \ 'Col 1 of 11; Line 1 of 1; Word 1 of 1',
         \ Screenline(&lines))
 
   " Check split behavior
