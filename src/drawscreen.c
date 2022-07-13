@@ -1175,7 +1175,13 @@ fold_line(
 
     // Set all attributes of the 'number' or 'relativenumber' column and the
     // text
-    RL_MEMSET(col, HL_ATTR(HLF_FL), wp->w_width - col);
+    int line_highlight = (wp->w_p_cul
+	    && lnum <= wp->w_cursor.lnum
+	    && wp->w_cursor.lnum <= lnume
+	    && (wp->w_p_culopt_flags & CULOPT_NBR))
+	? HL_ATTR(HLF_CUL)
+	: HL_ATTR(HLF_FL);
+    RL_MEMSET(col, line_highlight, wp->w_width - col);
 
 #ifdef FEAT_SIGNS
     // If signs are being displayed, add two spaces.
@@ -1229,14 +1235,20 @@ fold_line(
 	    }
 
 	    sprintf((char *)buf, fmt, w, num);
+	    int linenr_highlight = (wp->w_p_cul
+		    && lnum <= wp->w_cursor.lnum
+		    && wp->w_cursor.lnum <= lnume
+		    && (wp->w_p_culopt_flags & CULOPT_NBR))
+		? HL_ATTR(HLF_CLN)
+		: HL_ATTR(HLF_N);
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		// the line number isn't reversed
 		copy_text_attr(off + wp->w_width - len - col, buf, len,
-							     HL_ATTR(HLF_FL));
+							     linenr_highlight);
 	    else
 #endif
-		copy_text_attr(off + col, buf, len, HL_ATTR(HLF_FL));
+		copy_text_attr(off + col, buf, len, linenr_highlight);
 	    col += len;
 	}
     }
