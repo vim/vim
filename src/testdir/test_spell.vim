@@ -884,6 +884,16 @@ func Test_spell_good_word_invalid()
   bwipe!
 endfunc
 
+func Test_spell_good_word_slash()
+  " This caused E1280.
+  new
+  norm afoo /
+  1
+  norm zG
+
+  bwipe!
+endfunc
+
 func LoadAffAndDic(aff_contents, dic_contents)
   set enc=latin1
   set spellfile=
