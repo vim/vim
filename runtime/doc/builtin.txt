@@ -293,7 +293,7 @@ index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
-inputdialog({prompt} [, {text} [, {completion}]])
+inputdialog({prompt} [, {text} [, {cancelreturn}]])
 				String	like input() but in a GUI dialog
 inputlist({textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
