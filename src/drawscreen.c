@@ -2506,7 +2506,8 @@ win_update(win_T *wp)
 	    // Past end of the window or end of the screen. Note that after
 	    // resizing wp->w_height may be end up too big. That's a problem
 	    // elsewhere, but prevent a crash here.
-	    if (row > wp->w_height || row + wp->w_winrow >= Rows)
+	    if (row > wp->w_height ||
+		    row + wp->w_winrow >= (p_ch > 0 ? Rows : Rows + 1))
 	    {
 		// we may need the size of that too long line later on
 		if (dollar_vcol == -1)
@@ -2560,7 +2561,7 @@ win_update(win_T *wp)
 
 	// Safety check: if any of the wl_size values is wrong we might go over
 	// the end of w_lines[].
-	if (idx >= Rows)
+	if (idx >= (p_ch > 0 ? Rows : Rows + 1))
 	    break;
     }
 
