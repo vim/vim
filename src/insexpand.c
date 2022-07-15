@@ -643,7 +643,7 @@ ins_compl_infercase_gettext(
 	    if (ga_grow(&gap, IOSIZE) == FAIL)
 		return (char_u *)"[failed]";
 	    STRCPY(gap.ga_data, IObuff);
-	    gap.ga_len = STRLEN(IObuff);
+	    gap.ga_len = (int)STRLEN(IObuff);
 	}
 	else if (has_mbyte)
 	    p += (*mb_char2bytes)(wca[i++], p);
