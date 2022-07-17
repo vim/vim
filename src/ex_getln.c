@@ -1611,7 +1611,7 @@ getcmdline_int(
     int		did_save_ccline = FALSE;
     int		cmdline_type;
     int		wild_type;
-    int cmdheight0 = p_ch < 1;
+    int		cmdheight0 = p_ch < 1;
 
     if (cmdheight0)
     {
