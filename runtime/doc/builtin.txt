@@ -1149,7 +1149,7 @@ blob2list({blob})					*blob2list()*
 
 		Can also be used as a |method|: >
 			GetBlob()->blob2list()
-
+<
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
 		Put up a file requester.  This only works when "has("browse")"

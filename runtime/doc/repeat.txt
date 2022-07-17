@@ -231,7 +231,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Examples: >
 				:4,5source
 				:10,18source ++clear
-
+<
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
 			that are executed from Normal mode, like you type
