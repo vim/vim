@@ -2947,24 +2947,26 @@ redraw_asap(int type)
     schar_T	*screenline2 = NULL;	// copy from ScreenLines2[]
 
     redraw_later(type);
-    if (msg_scrolled || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
-								    || exiting)
+    if (msg_scrolled
+	    || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
+	    || exiting
+	    || p_ch < 1)
 	return ret;
 
     // Allocate space to save the text displayed in the command line area.
     rows = screen_Rows - cmdline_row;
-    screenline = p_ch < 1 ? NULL : LALLOC_MULT(schar_T, rows * cols);
-    screenattr = p_ch < 1 ? NULL : LALLOC_MULT(sattr_T, rows * cols);
+    screenline = LALLOC_MULT(schar_T, rows * cols);
+    screenattr = LALLOC_MULT(sattr_T, rows * cols);
     if (screenline == NULL || screenattr == NULL)
 	ret = 2;
     if (enc_utf8)
     {
-	screenlineUC = p_ch < 1 ? NULL : LALLOC_MULT(u8char_T, rows * cols);
+	screenlineUC = LALLOC_MULT(u8char_T, rows * cols);
 	if (screenlineUC == NULL)
 	    ret = 2;
 	for (i = 0; i < p_mco; ++i)
 	{
-	    screenlineC[i] = p_ch < 1 ? NULL : LALLOC_MULT(u8char_T, rows * cols);
+	    screenlineC[i] = LALLOC_MULT(u8char_T, rows * cols);
 	    if (screenlineC[i] == NULL)
 		ret = 2;
 	}
