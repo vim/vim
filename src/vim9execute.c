@@ -2786,6 +2786,7 @@ exec_instructions(ectx_T *ectx)
 		    ea.cmdlinep = &iptr->isn_arg.cexpr.cexpr_ref->cer_cmdline;
 		    --ectx->ec_stack.ga_len;
 		    tv = STACK_TV_BOT(0);
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    res = cexpr_core(&ea, tv);
 		    clear_tv(tv);
 		    if (res == FAIL)
