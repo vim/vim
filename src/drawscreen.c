@@ -1175,12 +1175,14 @@ fold_line(
 
     // Set all attributes of the 'number' or 'relativenumber' column and the
     // text
-    int line_highlight = (wp->w_p_cul
-	    && lnum <= wp->w_cursor.lnum
-	    && wp->w_cursor.lnum <= lnume
-	    && (wp->w_p_culopt_flags & CULOPT_NBR))
-	? HL_ATTR(HLF_CUL)
-	: HL_ATTR(HLF_FL);
+    int line_highlight = HL_ATTR(HLF_FL);
+    if (wp->w_p_cul
+	  && lnum <= wp->w_cursor.lnum
+	  && wp->w_cursor.lnum <= lnume
+	  && (wp->w_p_culopt_flags & CULOPT_NBR))
+    {
+	line_highlight = hl_combine_attr(line_highlight, HL_ATTR(HLF_CUL));
+    }
     RL_MEMSET(col, line_highlight, wp->w_width - col);
 
 #ifdef FEAT_SIGNS
