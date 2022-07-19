@@ -10,6 +10,11 @@
 " Bug completion requires apt-listbugs installed for Debian packages or
 " python-launchpadlib installed for Ubuntu packages
 
+" Make sure the '<' and 'C' flags are not included in 'cpoptions', otherwise
+" <CR> would not be recognized.  See ":help 'cpoptions'".
+let s:cpo_save = &cpo
+set cpo&vim
+
 if exists('b:did_ftplugin')
   finish
 endif
@@ -101,7 +106,7 @@ endfunction
 " These functions implement the menus
 function NewVersion()
     " The new entry is unfinalised and shall be changed
-    amenu disable &Changelog.New\ Version
+    amenu disable &Changelog.&New\ Version
     amenu enable &Changelog.Add\ Entry
     amenu enable &Changelog.Close\ Bug
     amenu enable &Changelog.Set\ &Distribution
@@ -117,6 +122,8 @@ function NewVersion()
     normal! 1G0
     call search(')')
     normal! h
+    " ':normal' doens't support key annotation (<c-a>) directly.
+    " Vim's manual recommends using ':exe' to use key annotation indirectly (backslash-escaping needed though).
     exe "normal! \<c-a>"
     call setline(1, substitute(getline(1), '-\$\$', '-', ''))
     if exists('g:debchangelog_fold_enable')
@@ -161,7 +168,7 @@ endfunction
 
 function <SID>UnfinaliseMenu()
     " This means the entry shall be changed
-    amenu disable &Changelog.New\ Version
+    amenu disable &Changelog.&New\ Version
     amenu enable &Changelog.Add\ Entry
     amenu enable &Changelog.Close\ Bug
     amenu enable &Changelog.Set\ &Distribution
@@ -179,7 +186,7 @@ endfunction
 
 function <SID>FinaliseMenu()
     " This means the entry should not be changed anymore
-    amenu enable &Changelog.New\ Version
+    amenu enable &Changelog.&New\ Version
     amenu disable &Changelog.Add\ Entry
     amenu disable &Changelog.Close\ Bug
     amenu disable &Changelog.Set\ &Distribution
@@ -379,5 +386,9 @@ endfun
 setlocal omnifunc=DebCompleteBugs
 
 " }}}
+
+" Restore the previous value of 'cpoptions'.
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " vim: set foldmethod=marker:
