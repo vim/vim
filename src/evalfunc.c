@@ -6473,7 +6473,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 			     || (minor == VIM_VERSION_MINOR
 				 && has_patch(atoi((char *)name + 10))))));
 	    }
-	    else
+	    else if (isdigit(name[5]))
 		n = has_patch(atoi((char *)name + 5));
 	}
 	else if (STRICMP(name, "vim_starting") == 0)

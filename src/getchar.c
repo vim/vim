@@ -3020,8 +3020,9 @@ check_end_reg_executing(int advance)
 vgetorpeek(int advance)
 {
     int		c, c1;
-    int		timedout = FALSE;	// waited for more than 1 second
-					// for mapping to complete
+    int		timedout = FALSE;	// waited for more than 'timeoutlen'
+					// for mapping to complete or
+					// 'ttimeoutlen' for complete key code
     int		mapdepth = 0;		// check for recursive mapping
     int		mode_deleted = FALSE;   // set when mode has been deleted
 #ifdef FEAT_CMDL_INFO

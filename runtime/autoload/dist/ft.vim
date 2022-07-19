@@ -519,12 +519,14 @@ export def FTinc()
     # headers so assume POV-Ray
     elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? ft_pascal_keywords
       setf pascal
+    elseif lines =~# '\<\%(require\|inherit\)\>' || lines =~# '\w\+ = '
+      setf bitbake
     else
       FTasmsyntax()
       if exists("b:asmsyntax")
-	exe "setf " .. fnameescape(b:asmsyntax)
+        exe "setf " .. fnameescape(b:asmsyntax)
       else
-	setf pov
+        setf pov
       endif
     endif
   endif

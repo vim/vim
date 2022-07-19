@@ -3994,7 +3994,16 @@ ex_substitute(exarg_T *eap)
 	sub_copy = sub;
     }
     else
-	sub = regtilde(sub, magic_isset());
+    {
+	char_u *newsub = regtilde(sub, magic_isset());
+
+	if (newsub != sub)
+	{
+	    // newsub was allocated, free it later.
+	    sub_copy = newsub;
+	    sub = newsub;
+	}
+    }
 
     /*
      * Check for a match on each line.

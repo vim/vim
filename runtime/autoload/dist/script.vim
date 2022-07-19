@@ -193,6 +193,10 @@ def DetectFromHashBang(firstline: string)
   elseif name =~ 'icon\>'
     set ft=icon
 
+    # Guile
+  elseif name =~ 'guile'
+    set ft=scheme
+
   endif
 enddef
 

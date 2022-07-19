@@ -4205,6 +4205,18 @@ def Test_multiple_funcref()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_cexpr_errmsg_line_number()
+  var lines =<< trim END
+      vim9script
+      def Func()
+        var qfl = {}
+        cexpr qfl
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E777', 2)
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()

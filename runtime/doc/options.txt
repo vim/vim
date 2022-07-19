@@ -1677,7 +1677,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature is included}
 	This option is a list of comma-separated names.
 	Note: if one of the items is "exclude:", then you can't add an item
-	after that.  Therefore do append an item with += but use ^= to
+	after that.  Therefore do not append an item with += but use ^= to
 	prepend, e.g.: >
 		set clipboard^=unnamed
 <	These names are recognized:

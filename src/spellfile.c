@@ -4371,13 +4371,13 @@ wordtree_alloc(spellinfo_T *spin)
  * Control characters and trailing '/' are invalid.  Space is OK.
  */
     static int
-valid_spell_word(char_u *word)
+valid_spell_word(char_u *word, char_u *end)
 {
     char_u *p;
 
-    if (enc_utf8 && !utf_valid_string(word, NULL))
+    if (enc_utf8 && !utf_valid_string(word, end))
 	return FALSE;
-    for (p = word; *p != NUL; p += mb_ptr2len(p))
+    for (p = word; *p != NUL && p < end; p += mb_ptr2len(p))
 	if (*p < ' ' || (p[0] == '/' && p[1] == NUL))
 	    return FALSE;
     return TRUE;
@@ -4408,7 +4408,7 @@ store_word(
     char_u	*p;
 
     // Avoid adding illegal bytes to the word tree.
-    if (!valid_spell_word(word))
+    if (!valid_spell_word(word, word + len))
 	return FAIL;
 
     (void)spell_casefold(curwin, word, len, foldword, MAXWLEN);
@@ -6211,7 +6211,7 @@ spell_add_word(
     int		i;
     char_u	*spf;
 
-    if (!valid_spell_word(word))
+    if (!valid_spell_word(word, word + len))
     {
 	emsg(_(e_illegal_character_in_word));
 	return;

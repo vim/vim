@@ -7881,6 +7881,7 @@ if_sniff.txt	if_sniff.txt	/*if_sniff.txt*
 if_tcl.txt	if_tcl.txt	/*if_tcl.txt*
 ignore-errors	eval.txt	/*ignore-errors*
 ignore-timestamp	editing.txt	/*ignore-timestamp*
+import-legacy	vim9.txt	/*import-legacy*
 improved-autocmds-5.4	version5.txt	/*improved-autocmds-5.4*
 improved-quickfix	version5.txt	/*improved-quickfix*
 improved-sessions	version5.txt	/*improved-sessions*
@@ -8070,6 +8071,7 @@ lcs-space	options.txt	/*lcs-space*
 lcs-tab	options.txt	/*lcs-tab*
 lcs-trail	options.txt	/*lcs-trail*
 left-right-motions	motion.txt	/*left-right-motions*
+legacy-import	vim9.txt	/*legacy-import*
 len()	builtin.txt	/*len()*
 less	various.txt	/*less*
 letter	print.txt	/*letter*

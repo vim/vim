@@ -92,7 +92,7 @@ internal_format(
 	int	did_do_comment = FALSE;
 
 	virtcol = get_nolist_virtcol()
-		+ char2cells(c != NUL ? c : gchar_cursor());
+				   + char2cells(c != NUL ? c : gchar_cursor());
 	if (virtcol <= (colnr_T)textwidth)
 	    break;
 

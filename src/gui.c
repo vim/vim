@@ -2131,8 +2131,7 @@ gui_outstr(char_u *s, int len)
 	    if (this_len > len)
 		this_len = len;	    // don't include following composing char
 	}
-	else
-	    if (gui.col + len > Columns)
+	else if (gui.col + len > Columns)
 	    this_len = Columns - gui.col;
 	else
 	    this_len = len;

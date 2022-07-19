@@ -68,10 +68,16 @@ Further Vim9 improvements, possibly after launch:
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
 Update list of features to vote on:
-- multiple cursors
-- built-in LSP support
-- virtual text, using text properties
-- start first line halfway, scroll per screen line
+- Remove Athena item (won't happen)
+- Remove "add open mode" (won't happen)
+- Remove "editing of a hidden buffer" (done)
+- Change "add IDE features" to "improve terminal debugger"
+- Change "diff/merge capability for CVS" to "CVS and git"
+- Remove "pre-compile them" from "improve the performance of Vim scripts"
+- Add: multiple cursors, edit text in more than one place at a time
+- Add: fast syntax highlighting with parser instead of regex patterns
+- Add: virtual text, text properties can insert text in the line
+- Add: start first line halfway, scroll per wrapped screen line
 
 Popup windows:
 - Preview popup not properly updated when it overlaps with completion menu.
@@ -117,8 +123,6 @@ Text properties:
   if the priority is above a certain value?  (#7392)
   Combining text property with 'cursorline' does not always work (Billie
   Cleek, #5533)
-- "C" works OK.  "dd" fails to delete text property in a buffer with a single
-  line.
 - Add text property that shifts text to make room for annotation (e.g.
   variable type).  Like the opposite of conceal.  Requires fixing the cursor
   positioning and mouse clicks as with conceal mode.
@@ -200,9 +204,6 @@ Terminal emulator window:
 Patches considered for including:
 - Add "-n" option to xxd. #10599  needs a test
 - allow for nesting of timeout, sketch in #10595
-- Patch to implement the vimtutor with a plugin: #6414
-  Was originally written by Felipe Morales.
-- Patch to make fillchars global-local. (#5206)
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
 - try using autoconf 2.71 and fix all "obsolete" warnings
@@ -3757,7 +3758,9 @@ Printing:
 Syntax highlighting:
     Long term goal: faster, better, etc.  Options:
     - use treesitter, NeoVim uses it - Many people don't like it.
-    - use TextMate, vscode uses it.  #9087 - possibly a long term solution
+    - use TextMate, vscode uses it.  #9087 - Other people don't like it.
+      Vscode is asked to switch to treesitter:
+      https://github.com/microsoft/vscode/issues/50140
 8   Make ":syn off" use 'runtimepath' instead of $VIMRUNTIME. (Gary Johnson)
     Should do the same for ":syn on" and ":syn manual".
 8   Support "containedin" argument for ":syn include", so that the defined
