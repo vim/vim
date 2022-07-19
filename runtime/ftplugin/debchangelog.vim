@@ -101,13 +101,13 @@ endfunction
 " These functions implement the menus
 function NewVersion()
     " The new entry is unfinalised and shall be changed
-    amenu disable Changelog.New\ Version
-    amenu enable Changelog.Add\ Entry
-    amenu enable Changelog.Close\ Bug
-    amenu enable Changelog.Set\ &Distribution
-    amenu enable Changelog.Set\ &Urgency
-    amenu disable Changelog.Unfinalise
-    amenu enable Changelog.Finalise
+    amenu disable &Changelog.New\ Version
+    amenu enable &Changelog.Add\ Entry
+    amenu enable &Changelog.Close\ Bug
+    amenu enable &Changelog.Set\ &Distribution
+    amenu enable &Changelog.Set\ &Urgency
+    amenu disable &Changelog.Unfinalise
+    amenu enable &Changelog.Finalise
     call append(0, substitute(getline(1), '-\([[:digit:]]\+\))', '-$$\1)', ''))
     call append(1, '')
     call append(2, '')
@@ -117,7 +117,7 @@ function NewVersion()
     normal! 1G0
     call search(')')
     normal! h
-    normal! 
+    exe "normal! \<c-a>"
     call setline(1, substitute(getline(1), '-\$\$', '-', ''))
     if exists('g:debchangelog_fold_enable')
         foldopen
@@ -161,13 +161,13 @@ endfunction
 
 function <SID>UnfinaliseMenu()
     " This means the entry shall be changed
-    amenu disable Changelog.New\ Version
-    amenu enable Changelog.Add\ Entry
-    amenu enable Changelog.Close\ Bug
-    amenu enable Changelog.Set\ &Distribution
-    amenu enable Changelog.Set\ &Urgency
-    amenu disable Changelog.Unfinalise
-    amenu enable Changelog.Finalise
+    amenu disable &Changelog.New\ Version
+    amenu enable &Changelog.Add\ Entry
+    amenu enable &Changelog.Close\ Bug
+    amenu enable &Changelog.Set\ &Distribution
+    amenu enable &Changelog.Set\ &Urgency
+    amenu disable &Changelog.Unfinalise
+    amenu enable &Changelog.Finalise
 endfunction
 
 function Unfinalise()
@@ -179,13 +179,13 @@ endfunction
 
 function <SID>FinaliseMenu()
     " This means the entry should not be changed anymore
-    amenu enable Changelog.New\ Version
-    amenu disable Changelog.Add\ Entry
-    amenu disable Changelog.Close\ Bug
-    amenu disable Changelog.Set\ &Distribution
-    amenu disable Changelog.Set\ &Urgency
-    amenu enable Changelog.Unfinalise
-    amenu disable Changelog.Finalise
+    amenu enable &Changelog.New\ Version
+    amenu disable &Changelog.Add\ Entry
+    amenu disable &Changelog.Close\ Bug
+    amenu disable &Changelog.Set\ &Distribution
+    amenu disable &Changelog.Set\ &Urgency
+    amenu enable &Changelog.Unfinalise
+    amenu disable &Changelog.Finalise
 endfunction
 
 function Finalise()
@@ -198,26 +198,26 @@ endfunction
 
 function <SID>MakeMenu()
     amenu &Changelog.&New\ Version			:call NewVersion()<CR>
-    amenu Changelog.&Add\ Entry				:call AddEntry()<CR>
-    amenu Changelog.&Close\ Bug				:call CloseBug()<CR>
-    menu Changelog.-sep-				<nul>
+    amenu &Changelog.&Add\ Entry				:call AddEntry()<CR>
+    amenu &Changelog.&Close\ Bug				:call CloseBug()<CR>
+    menu &Changelog.-sep-				<nul>
 
-    amenu Changelog.Set\ &Distribution.&unstable	:call Distribution("unstable")<CR>
-    amenu Changelog.Set\ &Distribution.&frozen		:call Distribution("frozen")<CR>
-    amenu Changelog.Set\ &Distribution.&stable		:call Distribution("stable")<CR>
-    menu Changelog.Set\ &Distribution.-sep-		<nul>
-    amenu Changelog.Set\ &Distribution.frozen\ unstable	:call Distribution("frozen unstable")<CR>
-    amenu Changelog.Set\ &Distribution.stable\ unstable	:call Distribution("stable unstable")<CR>
-    amenu Changelog.Set\ &Distribution.stable\ frozen	:call Distribution("stable frozen")<CR>
-    amenu Changelog.Set\ &Distribution.stable\ frozen\ unstable	:call Distribution("stable frozen unstable")<CR>
+    amenu &Changelog.Set\ &Distribution.&unstable	:call Distribution("unstable")<CR>
+    amenu &Changelog.Set\ &Distribution.&frozen		:call Distribution("frozen")<CR>
+    amenu &Changelog.Set\ &Distribution.&stable		:call Distribution("stable")<CR>
+    menu &Changelog.Set\ &Distribution.-sep-		<nul>
+    amenu &Changelog.Set\ &Distribution.frozen\ unstable	:call Distribution("frozen unstable")<CR>
+    amenu &Changelog.Set\ &Distribution.stable\ unstable	:call Distribution("stable unstable")<CR>
+    amenu &Changelog.Set\ &Distribution.stable\ frozen	:call Distribution("stable frozen")<CR>
+    amenu &Changelog.Set\ &Distribution.stable\ frozen\ unstable	:call Distribution("stable frozen unstable")<CR>
 
-    amenu Changelog.Set\ &Urgency.&low			:call Urgency("low")<CR>
-    amenu Changelog.Set\ &Urgency.&medium		:call Urgency("medium")<CR>
-    amenu Changelog.Set\ &Urgency.&high			:call Urgency("high")<CR>
+    amenu &Changelog.Set\ &Urgency.&low			:call Urgency("low")<CR>
+    amenu &Changelog.Set\ &Urgency.&medium		:call Urgency("medium")<CR>
+    amenu &Changelog.Set\ &Urgency.&high			:call Urgency("high")<CR>
 
-    menu Changelog.-sep-				<nul>
-    amenu Changelog.U&nfinalise				:call Unfinalise()<CR>
-    amenu Changelog.&Finalise				:call Finalise()<CR>
+    menu &Changelog.-sep-				<nul>
+    amenu &Changelog.U&nfinalise				:call Unfinalise()<CR>
+    amenu &Changelog.&Finalise				:call Finalise()<CR>
 
     if <SID>Finalised()
 	call <SID>FinaliseMenu()
@@ -228,7 +228,7 @@ endfunction
 
 augroup changelogMenu
 au BufEnter * if &filetype == "debchangelog" | call <SID>MakeMenu() | endif
-au BufLeave * if &filetype == "debchangelog" | silent! aunmenu Changelog | endif
+au BufLeave * if &filetype == "debchangelog" | silent! aunmenu &Changelog | endif
 augroup END
 
 " }}}
