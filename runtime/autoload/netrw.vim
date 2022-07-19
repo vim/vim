@@ -7810,6 +7810,10 @@ fun! s:NetrwMarkFileMove(islocal)
 "    call Decho("movecmd<".movecmd."> (#3 linux or cygwin)",'~'.expand("<slnum>"))
    endif
    for fname in s:netrwmarkfilelist_{bufnr("%")}
+    if g:netrw_keepdir
+      let fname = b:netrw_curdir."/".fname
+    endif
+
     if !g:netrw_cygwin && (has("win32") || has("win95") || has("win64") || has("win16"))
      let fname= substitute(fname,'/','\\','g')
     endif
