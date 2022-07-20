@@ -1571,21 +1571,18 @@ screen_puts_len(
 	// check if this is the first byte of a multibyte
 	if (has_mbyte)
 	{
-	    if (enc_utf8 && len > 0)
-		mbyte_blen = utfc_ptr2len_len(ptr, (int)((text + len) - ptr));
-	    else
-		mbyte_blen = (*mb_ptr2len)(ptr);
+	    mbyte_blen = enc_utf8 && len > 0
+			 ? utfc_ptr2len_len(ptr, (int)((text + len) - ptr))
+			 : (*mb_ptr2len)(ptr);
 	    if (enc_dbcs == DBCS_JPNU && c == 0x8e)
 		mbyte_cells = 1;
 	    else if (enc_dbcs != 0)
 		mbyte_cells = mbyte_blen;
 	    else	// enc_utf8
 	    {
-		if (len >= 0)
-		    u8c = utfc_ptr2char_len(ptr, u8cc,
-						   (int)((text + len) - ptr));
-		else
-		    u8c = utfc_ptr2char(ptr, u8cc);
+		u8c = len >= 0
+		      ? utfc_ptr2char_len(ptr, u8cc, (int)((text + len) - ptr))
+		      : utfc_ptr2char(ptr, u8cc);
 		mbyte_cells = utf_char2cells(u8c);
 #ifdef FEAT_ARABIC
 		if (p_arshape && !p_tbidi && ARABIC_CHAR(u8c))
@@ -1599,8 +1596,10 @@ screen_puts_len(
 		    }
 		    else
 		    {
-			nc = utfc_ptr2char_len(ptr + mbyte_blen, pcc,
-				      (int)((text + len) - ptr - mbyte_blen));
+			nc = len >= 0
+			     ? utfc_ptr2char_len(ptr + mbyte_blen, pcc,
+					(int)((text + len) - ptr - mbyte_blen))
+			     : utfc_ptr2char(ptr + mbyte_blen, pcc);
 			nc1 = pcc[0];
 		    }
 		    pc = prev_c;
