@@ -541,7 +541,7 @@ ins_compl_infercase_gettext(
     int		was_letter = FALSE;
     garray_T	gap;
 
-    IObuff[0] = NUL;
+    vim_memset(IObuff, NUL, IOSIZE * sizeof(char_u));
 
     // Allocate wide character array for the completion and fill it.
     wca = ALLOC_MULT(int, char_len);
