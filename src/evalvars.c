@@ -4112,7 +4112,7 @@ get_var_from(
 	// autocommands get blocked.
 	// If we have a buffer reference avoid the switching, we're saving and
 	// restoring curbuf directly.
-	need_switch_win = !(tp == curtab && win == curwin) || (buf != NULL);
+	need_switch_win = !(tp == curtab && win == curwin) && buf == NULL;
 	if (!need_switch_win || switch_win(&switchwin, win, tp, TRUE) == OK)
 	{
 	    // Handle options. There are no tab-local options.
