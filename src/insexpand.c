@@ -642,6 +642,7 @@ ins_compl_infercase_gettext(
 	    // growarray.  Add the character in the next round.
 	    if (ga_grow(&gap, IOSIZE) == FAIL)
 		return (char_u *)"[failed]";
+	    *p = NUL;
 	    STRCPY(gap.ga_data, IObuff);
 	    gap.ga_len = (int)STRLEN(IObuff);
 	}
