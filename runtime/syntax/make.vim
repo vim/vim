@@ -45,11 +45,11 @@ syn match makeImplicit		"^\.[A-Za-z0-9_./\t -]\+\s*:$"me=e-1
 syn match makeImplicit		"^\.[A-Za-z0-9_./\t -]\+\s*:[^=]"me=e-2
 
 syn region makeTarget transparent matchgroup=makeTarget
-	\ start="^[~A-Za-z0-9_./$()%-][A-Za-z0-9_./\t $()%-]*:\{1,2}[^:=]"rs=e-1
+	\ start="^[~A-Za-z0-9_./$()%-][A-Za-z0-9_./\t $()%-]*&\?:\?:\{1,2}[^:=]"rs=e-1
 	\ end="[^\\]$"
 	\ keepend contains=makeIdent,makeSpecTarget,makeNextLine,makeComment,makeDString
 	\ skipnl nextGroup=makeCommands
-syn match makeTarget		"^[~A-Za-z0-9_./$()%*@-][A-Za-z0-9_./\t $()%*@-]*::\=\s*$"
+syn match makeTarget		"^[~A-Za-z0-9_./$()%*@-][A-Za-z0-9_./\t $()%*@-]*&\?::\=\s*$"
 	\ contains=makeIdent,makeSpecTarget,makeComment
 	\ skipnl nextgroup=makeCommands,makeCommandError
 
