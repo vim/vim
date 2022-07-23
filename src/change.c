@@ -172,9 +172,9 @@ check_recorded_changes(
 	FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
 	{
 	    prev_lnum = (linenr_T)dict_get_number(
-				      li->li_tv.vval.v_dict, (char_u *)"lnum");
+						li->li_tv.vval.v_dict, "lnum");
 	    prev_lnume = (linenr_T)dict_get_number(
-				       li->li_tv.vval.v_dict, (char_u *)"end");
+						 li->li_tv.vval.v_dict, "end");
 	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	    {
 		// the current change is going to make the line number in
@@ -384,13 +384,13 @@ invoke_listeners(buf_T *buf)
     {
 	varnumber_T lnum;
 
-	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"lnum");
+	lnum = dict_get_number(li->li_tv.vval.v_dict, "lnum");
 	if (start > lnum)
 	    start = lnum;
-	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"end");
+	lnum = dict_get_number(li->li_tv.vval.v_dict, "end");
 	if (end < lnum)
 	    end = lnum;
-	added += dict_get_number(li->li_tv.vval.v_dict, (char_u *)"added");
+	added += dict_get_number(li->li_tv.vval.v_dict, "added");
     }
     argv[1].v_type = VAR_NUMBER;
     argv[1].vval.v_number = start;

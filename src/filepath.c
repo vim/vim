@@ -1619,7 +1619,7 @@ readdirex_dict_arg(typval_T *tv, int *cmp)
     }
 
     if (dict_has_key(tv->vval.v_dict, "sort"))
-	compare = dict_get_string(tv->vval.v_dict, (char_u *)"sort", FALSE);
+	compare = dict_get_string(tv->vval.v_dict, "sort", FALSE);
     else
     {
 	semsg(_(e_dictionary_key_str_required), "sort");

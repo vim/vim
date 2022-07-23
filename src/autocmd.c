@@ -2833,7 +2833,7 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	    }
 	}
 
-	group_name = dict_get_string(event_dict, (char_u *)"group", TRUE);
+	group_name = dict_get_string(event_dict, "group", TRUE);
 	if (group_name == NULL || *group_name == NUL)
 	    // if the autocmd group name is not specified, then use the current
 	    // autocmd group
@@ -2868,7 +2868,7 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	{
 	    varnumber_T	bnum;
 
-	    bnum = dict_get_number_def(event_dict, (char_u *)"bufnr", -1);
+	    bnum = dict_get_number_def(event_dict, "bufnr", -1);
 	    if (bnum == -1)
 		continue;
 
@@ -2908,13 +2908,13 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 		pat = (char_u *)"";
 	}
 
-	once = dict_get_bool(event_dict, (char_u *)"once", FALSE);
-	nested = dict_get_bool(event_dict, (char_u *)"nested", FALSE);
+	once = dict_get_bool(event_dict, "once", FALSE);
+	nested = dict_get_bool(event_dict, "nested", FALSE);
 	// if 'replace' is true, then remove all the commands associated with
 	// this autocmd event/group and add the new command.
-	replace = dict_get_bool(event_dict, (char_u *)"replace", FALSE);
+	replace = dict_get_bool(event_dict, "replace", FALSE);
 
-	cmd = dict_get_string(event_dict, (char_u *)"cmd", TRUE);
+	cmd = dict_get_string(event_dict, "cmd", TRUE);
 	if (cmd == NULL)
 	{
 	    if (delete)
@@ -3076,8 +3076,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	// return only the autocmds in the specified group
 	if (dict_has_key(argvars[0].vval.v_dict, "group"))
 	{
-	    name = dict_get_string(argvars[0].vval.v_dict,
-						      (char_u *)"group", TRUE);
+	    name = dict_get_string(argvars[0].vval.v_dict, "group", TRUE);
 	    if (name == NULL)
 		return;
 
@@ -3101,8 +3100,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	{
 	    int		i;
 
-	    name = dict_get_string(argvars[0].vval.v_dict,
-						      (char_u *)"event", TRUE);
+	    name = dict_get_string(argvars[0].vval.v_dict, "event", TRUE);
 	    if (name == NULL)
 		return;
 
@@ -3127,8 +3125,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	// return only the autocmds for the specified pattern
 	if (dict_has_key(argvars[0].vval.v_dict, "pattern"))
 	{
-	    pat = dict_get_string(argvars[0].vval.v_dict,
-						    (char_u *)"pattern", TRUE);
+	    pat = dict_get_string(argvars[0].vval.v_dict, "pattern", TRUE);
 	    if (pat == NULL)
 		return;
 	}

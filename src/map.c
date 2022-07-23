@@ -2621,8 +2621,8 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     if (dict_only)
     {
 	d = argvars[0].vval.v_dict;
-	which = dict_get_string(d, (char_u *)"mode", FALSE);
-	is_abbr = dict_get_bool(d, (char_u *)"abbr", -1);
+	which = dict_get_string(d, "mode", FALSE);
+	is_abbr = dict_get_bool(d, "abbr", -1);
 	if (which == NULL || is_abbr < 0)
 	{
 	    emsg(_(e_entries_missing_in_mapset_dict_argument));
@@ -2652,10 +2652,10 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 
 
     // Get the values in the same order as above in get_maparg().
-    lhs = dict_get_string(d, (char_u *)"lhs", FALSE);
-    lhsraw = dict_get_string(d, (char_u *)"lhsraw", FALSE);
-    lhsrawalt = dict_get_string(d, (char_u *)"lhsrawalt", FALSE);
-    rhs = dict_get_string(d, (char_u *)"rhs", FALSE);
+    lhs = dict_get_string(d, "lhs", FALSE);
+    lhsraw = dict_get_string(d, "lhsraw", FALSE);
+    lhsrawalt = dict_get_string(d, "lhsrawalt", FALSE);
+    rhs = dict_get_string(d, "rhs", FALSE);
     if (lhs == NULL || lhsraw == NULL || rhs == NULL)
     {
 	emsg(_(e_entries_missing_in_mapset_dict_argument));
@@ -2665,16 +2665,16 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     rhs = replace_termcodes(rhs, &arg_buf,
 					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
-    noremap = dict_get_number(d, (char_u *)"noremap") ? REMAP_NONE: 0;
-    if (dict_get_number(d, (char_u *)"script") != 0)
+    noremap = dict_get_number(d, "noremap") ? REMAP_NONE: 0;
+    if (dict_get_number(d, "script") != 0)
 	noremap = REMAP_SCRIPT;
-    expr = dict_get_number(d, (char_u *)"expr") != 0;
-    silent = dict_get_number(d, (char_u *)"silent") != 0;
-    sid = dict_get_number(d, (char_u *)"sid");
-    scriptversion = dict_get_number(d, (char_u *)"scriptversion");
-    lnum = dict_get_number(d, (char_u *)"lnum");
-    buffer = dict_get_number(d, (char_u *)"buffer");
-    nowait = dict_get_number(d, (char_u *)"nowait") != 0;
+    expr = dict_get_number(d, "expr") != 0;
+    silent = dict_get_number(d, "silent") != 0;
+    sid = dict_get_number(d, "sid");
+    scriptversion = dict_get_number(d, "scriptversion");
+    lnum = dict_get_number(d, "lnum");
+    buffer = dict_get_number(d, "buffer");
+    nowait = dict_get_number(d, "nowait") != 0;
     // mode from the dict is not used
 
     if (buffer)

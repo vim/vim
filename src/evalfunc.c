@@ -4217,8 +4217,7 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[1].v_type == VAR_DICT
-	    && dict_get_bool(argvars[1].vval.v_dict, (char_u *)"errmsg",
-								VVAL_FALSE))
+		&& dict_get_bool(argvars[1].vval.v_dict, "errmsg", VVAL_FALSE))
 	emsgoff = FALSE;
 
     rettv->v_type = VAR_STRING;
@@ -9172,7 +9171,7 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
 
     if ((d = argvars[0].vval.v_dict) != NULL)
     {
-	csearch = dict_get_string(d, (char_u *)"char", FALSE);
+	csearch = dict_get_string(d, "char", FALSE);
 	if (csearch != NULL)
 	{
 	    if (enc_utf8)
@@ -9368,7 +9367,7 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 	if (di != NULL)
 	    regcontents = &di->di_tv;
 
-	stropt = dict_get_string(d, (char_u *)"regtype", FALSE);
+	stropt = dict_get_string(d, "regtype", FALSE);
 	if (stropt != NULL)
 	{
 	    int ret = get_yank_type(&stropt, &yank_type, &block_len);
@@ -9382,14 +9381,14 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 
 	if (regname == '"')
 	{
-	    stropt = dict_get_string(d, (char_u *)"points_to", FALSE);
+	    stropt = dict_get_string(d, "points_to", FALSE);
 	    if (stropt != NULL)
 	    {
 		pointreg = *stropt;
 		regname = pointreg;
 	    }
 	}
-	else if (dict_get_bool(d, (char_u *)"isunnamed", -1) > 0)
+	else if (dict_get_bool(d, "isunnamed", -1) > 0)
 	    pointreg = regname;
     }
     else

@@ -4338,9 +4338,9 @@ handle_drop_command(listitem_T *item)
 	dict_T *dict = opt_item->li_tv.vval.v_dict;
 	char_u *p;
 
-	p = dict_get_string(dict, (char_u *)"ff", FALSE);
+	p = dict_get_string(dict, "ff", FALSE);
 	if (p == NULL)
-	    p = dict_get_string(dict, (char_u *)"fileformat", FALSE);
+	    p = dict_get_string(dict, "fileformat", FALSE);
 	if (p != NULL)
 	{
 	    if (check_ff_value(p) == FAIL)
@@ -4348,9 +4348,9 @@ handle_drop_command(listitem_T *item)
 	    else
 		ea.force_ff = *p;
 	}
-	p = dict_get_string(dict, (char_u *)"enc", FALSE);
+	p = dict_get_string(dict, "enc", FALSE);
 	if (p == NULL)
-	    p = dict_get_string(dict, (char_u *)"encoding", FALSE);
+	    p = dict_get_string(dict, "encoding", FALSE);
 	if (p != NULL)
 	{
 	    ea.cmd = alloc(STRLEN(p) + 12);
@@ -4362,7 +4362,7 @@ handle_drop_command(listitem_T *item)
 	    }
 	}
 
-	p = dict_get_string(dict, (char_u *)"bad", FALSE);
+	p = dict_get_string(dict, "bad", FALSE);
 	if (p != NULL)
 	    get_bad_opt(p, &ea);
 
@@ -4995,8 +4995,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	d = argvars[2].vval.v_dict;
 	if (d != NULL)
 	{
-	    max_height = dict_get_number(d, (char_u *)"rows");
-	    max_width = dict_get_number(d, (char_u *)"columns");
+	    max_height = dict_get_number(d, "rows");
+	    max_width = dict_get_number(d, "columns");
 	}
     }
 

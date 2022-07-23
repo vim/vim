@@ -961,8 +961,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
     }
 
     if (dict_has_key(tv->vval.v_dict, "conceal"))
-	*conceal_char = dict_get_string(tv->vval.v_dict,
-						   (char_u *)"conceal", FALSE);
+	*conceal_char = dict_get_string(tv->vval.v_dict, "conceal", FALSE);
 
     if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) != NULL)
     {
@@ -1161,16 +1160,16 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		}
 	    }
 
-	    group = dict_get_string(d, (char_u *)"group", TRUE);
-	    priority = (int)dict_get_number(d, (char_u *)"priority");
-	    id = (int)dict_get_number(d, (char_u *)"id");
+	    group = dict_get_string(d, "group", TRUE);
+	    priority = (int)dict_get_number(d, "priority");
+	    id = (int)dict_get_number(d, "id");
 	    conceal = dict_has_key(d, "conceal")
-			      ? dict_get_string(d, (char_u *)"conceal", TRUE)
+			      ? dict_get_string(d, "conceal", TRUE)
 			      : NULL;
 	    if (i == 0)
 	    {
 		match_add(win, group,
-		    dict_get_string(d, (char_u *)"pattern", FALSE),
+		    dict_get_string(d, "pattern", FALSE),
 		    priority, id, NULL, conceal);
 	    }
 	    else

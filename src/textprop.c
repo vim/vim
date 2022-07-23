@@ -336,10 +336,10 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_missing_property_type_name));
 	return;
     }
-    type_name = dict_get_string(dict, (char_u *)"type", FALSE);
+    type_name = dict_get_string(dict, "type", FALSE);
 
     if (dict_has_key(dict, "id"))
-	id = dict_get_number(dict, (char_u *)"id");
+	id = dict_get_number(dict, "id");
 
     if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
 	return;
@@ -399,11 +399,11 @@ prop_add_common(
 	emsg(_(e_missing_property_type_name));
 	return;
     }
-    type_name = dict_get_string(dict, (char_u *)"type", FALSE);
+    type_name = dict_get_string(dict, "type", FALSE);
 
     if (dict_has_key(dict, "end_lnum"))
     {
-	end_lnum = dict_get_number(dict, (char_u *)"end_lnum");
+	end_lnum = dict_get_number(dict, "end_lnum");
 	if (end_lnum < start_lnum)
 	{
 	    semsg(_(e_invalid_value_for_argument_str), "end_lnum");
@@ -415,7 +415,7 @@ prop_add_common(
 
     if (dict_has_key(dict, "length"))
     {
-	long length = dict_get_number(dict, (char_u *)"length");
+	long length = dict_get_number(dict, "length");
 
 	if (length < 0 || end_lnum > start_lnum)
 	{
@@ -426,7 +426,7 @@ prop_add_common(
     }
     else if (dict_has_key(dict, "end_col"))
     {
-	end_col = dict_get_number(dict, (char_u *)"end_col");
+	end_col = dict_get_number(dict, "end_col");
 	if (end_col <= 0)
 	{
 	    semsg(_(e_invalid_value_for_argument_str), "end_col");
@@ -439,7 +439,7 @@ prop_add_common(
 	end_col = 1;
 
     if (dict_has_key(dict, "id"))
-	id = dict_get_number(dict, (char_u *)"id");
+	id = dict_get_number(dict, "id");
 
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
 	return;
@@ -784,23 +784,23 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    skipstart = dict_get_bool(dict, (char_u *)"skipstart", 0);
+    skipstart = dict_get_bool(dict, "skipstart", 0);
 
     if (dict_has_key(dict, "id"))
     {
-	id = dict_get_number(dict, (char_u *)"id");
+	id = dict_get_number(dict, "id");
 	id_found = TRUE;
     }
     if (dict_has_key(dict, "type"))
     {
-	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
+	char_u	    *name = dict_get_string(dict, "type", FALSE);
 	proptype_T  *type = lookup_prop_type(name, buf);
 
 	if (type == NULL)
 	    return;
 	type_id = type->pt_id;
     }
-    both = dict_get_bool(dict, (char_u *)"both", FALSE);
+    both = dict_get_bool(dict, "both", FALSE);
     if (!id_found && type_id == -1)
     {
 	emsg(_(e_need_at_least_one_of_id_or_type));
@@ -1213,20 +1213,20 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     if (buf->b_ml.ml_mfp == NULL)
 	return;
 
-    do_all = dict_get_bool(dict, (char_u *)"all", FALSE);
+    do_all = dict_get_bool(dict, "all", FALSE);
 
     if (dict_has_key(dict, "id"))
-	id = dict_get_number(dict, (char_u *)"id");
+	id = dict_get_number(dict, "id");
     if (dict_has_key(dict, "type"))
     {
-	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
+	char_u	    *name = dict_get_string(dict, "type", FALSE);
 	proptype_T  *type = lookup_prop_type(name, buf);
 
 	if (type == NULL)
 	    return;
 	type_id = type->pt_id;
     }
-    both = dict_get_bool(dict, (char_u *)"both", FALSE);
+    both = dict_get_bool(dict, "both", FALSE);
 
     if (id == -1 && type_id == -1)
     {
@@ -1383,7 +1383,7 @@ prop_type_set(typval_T *argvars, int add)
 	    char_u	*highlight;
 	    int		hl_id = 0;
 
-	    highlight = dict_get_string(dict, (char_u *)"highlight", FALSE);
+	    highlight = dict_get_string(dict, "highlight", FALSE);
 	    if (highlight != NULL && *highlight != NUL)
 		hl_id = syn_name2id(highlight);
 	    if (hl_id <= 0)

@@ -4317,8 +4317,7 @@ hldict_attr_to_str(
     p = attr_str;
     for (i = 0; i < (int)ARRAY_LENGTH(hl_name_table); i++)
     {
-	if (dict_get_bool(attrdict, (char_u *)hl_name_table[i],
-		    VVAL_FALSE) == VVAL_TRUE)
+	if (dict_get_bool(attrdict, hl_name_table[i], VVAL_FALSE) == VVAL_TRUE)
 	{
 	    if (p != attr_str && (size_t)(p - attr_str + 2) < len)
 		STRCPY(p, (char_u *)",");
@@ -4398,10 +4397,10 @@ hlg_add_or_update(dict_T *dict)
     if (name == NULL || *name == NUL || error)
 	return FALSE;
 
-    if (dict_get_bool(dict, (char_u *)"force", VVAL_FALSE) == VVAL_TRUE)
+    if (dict_get_bool(dict, "force", VVAL_FALSE) == VVAL_TRUE)
 	forceit = TRUE;
 
-    if (dict_get_bool(dict, (char_u *)"default", VVAL_FALSE) == VVAL_TRUE)
+    if (dict_get_bool(dict, "default", VVAL_FALSE) == VVAL_TRUE)
 	dodefault = TRUE;
 
     if (dict_has_key(dict, "cleared"))
@@ -4409,7 +4408,7 @@ hlg_add_or_update(dict_T *dict)
 	varnumber_T	cleared;
 
 	// clear a highlight group
-	cleared = dict_get_bool(dict, (char_u *)"cleared", FALSE);
+	cleared = dict_get_bool(dict, "cleared", FALSE);
 	if (cleared == TRUE)
 	{
 	    vim_snprintf((char *)hlsetBuf, HLSETBUFSZ, "clear %s", name);

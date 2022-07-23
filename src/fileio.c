@@ -4746,8 +4746,8 @@ compare_readdirex_item(const void *p1, const void *p2)
 {
     char_u  *name1, *name2;
 
-    name1 = dict_get_string(*(dict_T**)p1, (char_u*)"name", FALSE);
-    name2 = dict_get_string(*(dict_T**)p2, (char_u*)"name", FALSE);
+    name1 = dict_get_string(*(dict_T**)p1, "name", FALSE);
+    name2 = dict_get_string(*(dict_T**)p2, "name", FALSE);
     if (readdirex_sort == READDIR_SORT_BYTE)
 	return STRCMP(name1, name2);
     else if (readdirex_sort == READDIR_SORT_IC)

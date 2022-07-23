@@ -2267,7 +2267,7 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
     {
 	if (dict == NULL)
 	    return -1;
-	name = dict_get_string(dict, (char_u *)"name", TRUE);
+	name = dict_get_string(dict, "name", TRUE);
     }
     else
 	name = vim_strsave(name_arg);
@@ -2275,12 +2275,12 @@ sign_define_from_dict(char_u *name_arg, dict_T *dict)
 	goto cleanup;
     if (dict != NULL)
     {
-	icon = dict_get_string(dict, (char_u *)"icon", TRUE);
-	linehl = dict_get_string(dict, (char_u *)"linehl", TRUE);
-	text = dict_get_string(dict, (char_u *)"text", TRUE);
-	texthl = dict_get_string(dict, (char_u *)"texthl", TRUE);
-	culhl = dict_get_string(dict, (char_u *)"culhl", TRUE);
-	numhl = dict_get_string(dict, (char_u *)"numhl", TRUE);
+	icon = dict_get_string(dict, "icon", TRUE);
+	linehl = dict_get_string(dict, "linehl", TRUE);
+	text = dict_get_string(dict, "text", TRUE);
+	texthl = dict_get_string(dict, "texthl", TRUE);
+	culhl = dict_get_string(dict, "culhl", TRUE);
+	numhl = dict_get_string(dict, "numhl", TRUE);
     }
 
     if (sign_define_by_name(name, icon, linehl, text, texthl, culhl, numhl) == OK)
@@ -2765,7 +2765,7 @@ sign_unplace_from_dict(typval_T *group_tv, dict_T *dict)
     if (group_tv != NULL)
 	group = tv_get_string(group_tv);
     else
-	group = dict_get_string(dict, (char_u *)"group", FALSE);
+	group = dict_get_string(dict, "group", FALSE);
     if (group != NULL)
     {
 	if (group[0] == '\0')			// global sign group
@@ -2788,7 +2788,7 @@ sign_unplace_from_dict(typval_T *group_tv, dict_T *dict)
 	}
 	if (dict_has_key(dict, "id"))
 	{
-	    sign_id = dict_get_number(dict, (char_u *)"id");
+	    sign_id = dict_get_number(dict, "id");
 	    if (sign_id <= 0)
 	    {
 		emsg(_(e_invalid_argument));

@@ -433,7 +433,7 @@ popup_add_timeout(win_T *wp, int time)
     static poppos_T
 get_pos_entry(dict_T *d, int give_error)
 {
-    char_u  *str = dict_get_string(d, (char_u *)"pos", FALSE);
+    char_u  *str = dict_get_string(d, "pos", FALSE);
     int	    nr;
 
     if (str == NULL)
@@ -458,13 +458,13 @@ apply_move_options(win_T *wp, dict_T *d)
     char_u	*str;
     dictitem_T	*di;
 
-    if ((nr = dict_get_number_def(d, (char_u *)"minwidth", -1)) >= 0)
+    if ((nr = dict_get_number_def(d, "minwidth", -1)) >= 0)
 	wp->w_minwidth = nr;
-    if ((nr = dict_get_number_def(d, (char_u *)"minheight", -1)) >= 0)
+    if ((nr = dict_get_number_def(d, "minheight", -1)) >= 0)
 	wp->w_minheight = nr;
-    if ((nr = dict_get_number_def(d, (char_u *)"maxwidth", -1)) >= 0)
+    if ((nr = dict_get_number_def(d, "maxwidth", -1)) >= 0)
 	wp->w_maxwidth = nr;
-    if ((nr = dict_get_number_def(d, (char_u *)"maxheight", -1)) >= 0)
+    if ((nr = dict_get_number_def(d, "maxheight", -1)) >= 0)
 	wp->w_maxheight = nr;
 
     nr = popup_options_one(d, (char_u *)"line");
@@ -475,7 +475,7 @@ apply_move_options(win_T *wp, dict_T *d)
 	wp->w_wantcol = nr;
 
 
-    nr = dict_get_bool(d, (char_u *)"fixed", -1);
+    nr = dict_get_bool(d, "fixed", -1);
     if (nr != -1)
 	wp->w_popup_fixed = nr != 0;
 
@@ -486,7 +486,7 @@ apply_move_options(win_T *wp, dict_T *d)
 	    wp->w_popup_pos = ppt;
     }
 
-    str = dict_get_string(d, (char_u *)"textprop", FALSE);
+    str = dict_get_string(d, "textprop", FALSE);
     if (str != NULL)
     {
 	wp->w_popup_prop_type = 0;
@@ -513,7 +513,7 @@ apply_move_options(win_T *wp, dict_T *d)
 
     di = dict_find(d, (char_u *)"textpropid", -1);
     if (di != NULL)
-	wp->w_popup_prop_id = dict_get_number(d, (char_u *)"textpropid");
+	wp->w_popup_prop_id = dict_get_number(d, "textpropid");
 }
 
 /*
@@ -696,27 +696,27 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"firstline", -1);
     if (di != NULL)
     {
-	wp->w_firstline = dict_get_number(dict, (char_u *)"firstline");
+	wp->w_firstline = dict_get_number(dict, "firstline");
 	if (wp->w_firstline < 0)
 	    wp->w_firstline = -1;
     }
 
-    nr = dict_get_bool(dict, (char_u *)"scrollbar", -1);
+    nr = dict_get_bool(dict, "scrollbar", -1);
     if (nr != -1)
 	wp->w_want_scrollbar = nr;
 
-    str = dict_get_string(dict, (char_u *)"title", FALSE);
+    str = dict_get_string(dict, "title", FALSE);
     if (str != NULL)
     {
 	vim_free(wp->w_popup_title);
 	wp->w_popup_title = vim_strsave(str);
     }
 
-    nr = dict_get_bool(dict, (char_u *)"wrap", -1);
+    nr = dict_get_bool(dict, "wrap", -1);
     if (nr != -1)
 	wp->w_p_wrap = nr != 0;
 
-    nr = dict_get_bool(dict, (char_u *)"drag", -1);
+    nr = dict_get_bool(dict, "drag", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -724,7 +724,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	else
 	    wp->w_popup_flags &= ~POPF_DRAG;
     }
-    nr = dict_get_bool(dict, (char_u *)"dragall", -1);
+    nr = dict_get_bool(dict, "dragall", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -733,7 +733,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_DRAGALL;
     }
 
-    nr = dict_get_bool(dict, (char_u *)"posinvert", -1);
+    nr = dict_get_bool(dict, "posinvert", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -742,7 +742,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_POSINVERT;
     }
 
-    nr = dict_get_bool(dict, (char_u *)"resize", -1);
+    nr = dict_get_bool(dict, "resize", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -775,7 +775,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    semsg(_(e_invalid_value_for_argument_str_str), "close", tv_get_string(&di->di_tv));
     }
 
-    str = dict_get_string(dict, (char_u *)"highlight", FALSE);
+    str = dict_get_string(dict, "highlight", FALSE);
     if (str != NULL)
     {
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
@@ -861,7 +861,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"zindex", -1);
     if (di != NULL)
     {
-	wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
+	wp->w_zindex = dict_get_number(dict, "zindex");
 	if (wp->w_zindex < 1)
 	    wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
 	if (wp->w_zindex > 32000)
@@ -903,7 +903,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 
 #if defined(FEAT_TIMERS)
     // Add timer to close the popup after some time.
-    nr = dict_get_number(dict, (char_u *)"time");
+    nr = dict_get_number(dict, "time");
     if (nr > 0)
 	popup_add_timeout(wp, nr);
 #endif
@@ -922,7 +922,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	handle_moved_argument(wp, di, TRUE);
     }
 
-    nr = dict_get_bool(dict, (char_u *)"cursorline", -1);
+    nr = dict_get_bool(dict, "cursorline", -1);
     if (nr != -1)
     {
 	if (nr != 0)
@@ -942,7 +942,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    set_callback(&wp->w_filter_cb, &callback);
 	}
     }
-    nr = dict_get_bool(dict, (char_u *)"mapping", -1);
+    nr = dict_get_bool(dict, "mapping", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -951,7 +951,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_MAPPING;
     }
 
-    str = dict_get_string(dict, (char_u *)"filtermode", FALSE);
+    str = dict_get_string(dict, "filtermode", FALSE);
     if (str != NULL)
     {
 	if (STRCMP(str, "a") == 0)
@@ -990,7 +990,7 @@ apply_options(win_T *wp, dict_T *dict, int create)
 
     apply_general_options(wp, dict);
 
-    nr = dict_get_bool(dict, (char_u *)"hidden", FALSE);
+    nr = dict_get_bool(dict, "hidden", FALSE);
     if (nr > 0)
 	wp->w_popup_flags |= POPF_HIDDEN | POPF_HIDDEN_FORCE;
 
@@ -1051,8 +1051,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 	    return;
 	}
 	dict = li->li_tv.vval.v_dict;
-	p = dict == NULL ? NULL
-			      : dict_get_string(dict, (char_u *)"text", FALSE);
+	p = dict == NULL ? NULL : dict_get_string(dict, "text", FALSE);
 	ml_append_buf(buf, lnum++,
 			       p == NULL ? (char_u *)"" : p, (colnr_T)0, TRUE);
     }
@@ -1086,7 +1085,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 		    dict = pli->li_tv.vval.v_dict;
 		    if (dict != NULL)
 		    {
-			int col = dict_get_number(dict, (char_u *)"col");
+			int col = dict_get_number(dict, "col");
 
 			prop_add_common( lnum, col, dict, buf, NULL);
 		    }
@@ -1975,7 +1974,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     if (d != NULL)
     {
 	if (dict_has_key(d, "tabpage"))
-	    tabnr = (int)dict_get_number(d, (char_u *)"tabpage");
+	    tabnr = (int)dict_get_number(d, "tabpage");
 	else if (type == TYPE_NOTIFICATION)
 	    tabnr = -1;  // notifications are global by default
 	else

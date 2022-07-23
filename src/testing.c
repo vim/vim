@@ -1295,10 +1295,10 @@ test_gui_drop_files(dict_T *args UNUSED)
 	    || !dict_has_key(args, "modifiers"))
 	return FALSE;
 
-    (void)dict_get_tv(args, (char_u *)"files", &t);
-    row = (int)dict_get_number(args, (char_u *)"row");
-    col = (int)dict_get_number(args, (char_u *)"col");
-    mods = (int)dict_get_number(args, (char_u *)"modifiers");
+    (void)dict_get_tv(args, "files", &t);
+    row = (int)dict_get_number(args, "row");
+    col = (int)dict_get_number(args, "col");
+    mods = (int)dict_get_number(args, "modifiers");
 
     if (t.v_type != VAR_LIST || list_len(t.vval.v_list) == 0)
 	return FALSE;
@@ -1351,10 +1351,10 @@ test_gui_find_repl(dict_T *args)
 	    || !dict_has_key(args, "forward"))
 	return FALSE;
 
-    find_text = dict_get_string(args, (char_u *)"find_text", TRUE);
-    repl_text = dict_get_string(args, (char_u *)"repl_text", TRUE);
-    flags = (int)dict_get_number(args, (char_u *)"flags");
-    forward = (int)dict_get_number(args, (char_u *)"forward");
+    find_text = dict_get_string(args, "find_text", TRUE);
+    repl_text = dict_get_string(args, "repl_text", TRUE);
+    flags = (int)dict_get_number(args, "flags");
+    forward = (int)dict_get_number(args, "forward");
 
     retval = gui_do_findrepl(flags, find_text, repl_text, forward);
     vim_free(find_text);
@@ -1379,19 +1379,19 @@ test_gui_mouse_event(dict_T *args)
 	return FALSE;
 
     // Note: "move" is optional, requires fewer arguments
-    move = (int)dict_get_bool(args, (char_u *)"move", FALSE);
+    move = (int)dict_get_bool(args, "move", FALSE);
 
     if (!move && (!dict_has_key(args, "button")
 	    || !dict_has_key(args, "multiclick")
 	    || !dict_has_key(args, "modifiers")))
 	return FALSE;
 
-    row = (int)dict_get_number(args, (char_u *)"row");
-    col = (int)dict_get_number(args, (char_u *)"col");
+    row = (int)dict_get_number(args, "row");
+    col = (int)dict_get_number(args, "col");
 
     if (move)
     {
-	if (dict_get_bool(args, (char_u *)"cell", FALSE))
+	if (dict_get_bool(args, "cell", FALSE))
 	{
 	    // click in the middle of the character cell
 	    row = row * gui.char_height + gui.char_height / 2;
@@ -1401,9 +1401,9 @@ test_gui_mouse_event(dict_T *args)
     }
     else
     {
-	button = (int)dict_get_number(args, (char_u *)"button");
-	repeated_click = (int)dict_get_number(args, (char_u *)"multiclick");
-	mods = (int)dict_get_number(args, (char_u *)"modifiers");
+	button = (int)dict_get_number(args, "button");
+	repeated_click = (int)dict_get_number(args, "multiclick");
+	mods = (int)dict_get_number(args, "modifiers");
 
 	// Reset the scroll values to known values.
 	// XXX: Remove this when/if the scroll step is made configurable.
@@ -1430,9 +1430,9 @@ test_gui_scrollbar(dict_T *args)
 	    || !dict_has_key(args, "dragging"))
 	return FALSE;
 
-    which = dict_get_string(args, (char_u *)"which", FALSE);
-    value = (long)dict_get_number(args, (char_u *)"value");
-    dragging = (int)dict_get_number(args, (char_u *)"dragging");
+    which = dict_get_string(args, "which", FALSE);
+    value = (long)dict_get_number(args, "value");
+    dragging = (int)dict_get_number(args, "dragging");
 
     if (STRCMP(which, "left") == 0)
 	sb = &curwin->w_scrollbars[SBAR_LEFT];
@@ -1463,7 +1463,7 @@ test_gui_tabline_event(dict_T *args UNUSED)
     if (!dict_has_key(args, "tabnr"))
 	return FALSE;
 
-    tabnr = (int)dict_get_number(args, (char_u *)"tabnr");
+    tabnr = (int)dict_get_number(args, "tabnr");
 
     return send_tabline_event(tabnr);
 #  else
@@ -1482,8 +1482,8 @@ test_gui_tabmenu_event(dict_T *args UNUSED)
 	    || !dict_has_key(args, "item"))
 	return FALSE;
 
-    tabnr = (int)dict_get_number(args, (char_u *)"tabnr");
-    item = (int)dict_get_number(args, (char_u *)"item");
+    tabnr = (int)dict_get_number(args, "tabnr");
+    item = (int)dict_get_number(args, "item");
 
     send_tabline_menu_event(tabnr, item);
 #  endif

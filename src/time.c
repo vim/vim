@@ -863,7 +863,7 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 	    return;
 	}
 	if (dict_has_key(dict, "repeat"))
-	    repeat = dict_get_number(dict, (char_u *)"repeat");
+	    repeat = dict_get_number(dict, "repeat");
     }
 
     callback = get_callback(&argvars[1]);
