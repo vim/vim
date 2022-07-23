@@ -77,6 +77,7 @@ int tabline_height(void);
 int min_rows(void);
 int only_one_window(void);
 void check_lnums(int do_curwin);
+void check_lnums_nested(int do_curwin);
 void reset_lnums(void);
 void make_snapshot(int idx);
 void restore_snapshot(int idx, int close_curwin);

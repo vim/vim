@@ -2209,9 +2209,13 @@ apply_autocmds_group(
 	    ap->last = FALSE;
 	ap->last = TRUE;
 
+	// Make sure cursor and topline are valid.  The first time the current
+	// values are saved, restored by reset_lnums().  When nested only the
+	// values are corrected when needed.
 	if (nesting == 1)
-	    // make sure cursor and topline are valid
 	    check_lnums(TRUE);
+	else
+	    check_lnums_nested(TRUE);
 
 	save_did_emsg = did_emsg;
 
