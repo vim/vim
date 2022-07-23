@@ -1758,6 +1758,13 @@ getcmdline_int(
 		wp->w_redr_status = TRUE;
 		found_one = TRUE;
 	    }
+
+	if (*p_tal != NUL)
+	{
+	    redraw_tabline = TRUE;
+	    found_one = TRUE;
+	}
+
 	if (found_one)
 	    redraw_statuslines();
     }
