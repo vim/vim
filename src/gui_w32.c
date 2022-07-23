@@ -8549,7 +8549,7 @@ test_gui_w32_sendevent(dict_T *args)
     char_u	*event;
     INPUT	inputs[1];
 
-    event = dict_get_string(args, "event", TRUE);
+    event = dict_get_string(args, (char_u *)"event", TRUE);
     if (event == NULL)
 	return FALSE;
 
@@ -8559,7 +8559,7 @@ test_gui_w32_sendevent(dict_T *args)
     {
 	WORD	    vkCode;
 
-	vkCode = dict_get_number_def(args, "keycode", 0);
+	vkCode = dict_get_number_def(args, (char_u *)"keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
 	{
 	    semsg(_(e_invalid_argument_nr), (long)vkCode);
