@@ -13039,13 +13039,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for timer_create" >&5
 $as_echo_n "checking for timer_create... " >&6; }
-save_LIBS="$LIBS"
+if ${vim_cv_timer_create+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  save_LIBS="$LIBS"
 LIBS="$LIBS -lrt"
 if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
+  as_fn_error $? "cross-compiling: please set 'vim_cv_timer_create'" "$LINENO" 5
+
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -13072,9 +13073,8 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes; with -lrt" >&5
-$as_echo "yes; with -lrt" >&6; }; $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
-
+  { $as_echo "$as_me:${as_lineno-$LINENO}: timer_create with -lrt" >&5
+$as_echo "$as_me: timer_create with -lrt" >&6;}; vim_cv_timer_create=yes
 else
   LIBS="$save_LIBS"
   if test "$cross_compiling" = yes; then :
@@ -13108,12 +13108,9 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }; $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
-
+  vim_cv_timer_create=yes
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+  vim_cv_timer_create=no
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
@@ -13122,6 +13119,16 @@ fi
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create" >&5
+$as_echo "$vim_cv_timer_create" >&6; }
+
+if test "x$vim_cv_timer_create" = "xyes" ; then
+  $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
+
 fi
 
 
