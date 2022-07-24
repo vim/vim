@@ -62,7 +62,7 @@ syn match i3ConfigSmartBorder /^\s*smart_borders\s\+\(on\|no_gaps\)\s\?$/ contai
 " Keyboard bindings
 syn match i3ConfigOperator /[,;]/ contained
 syn keyword i3ConfigAction move exec exit restart reload layout append_layout workspace focus kill open fullscreen sticky split floating mark unmark resize rename scratchpad swap mode bar gaps border contained
-syn keyword i3ConfigOption enable disable toggle mode_toggle shrink grow height width restore container to left right up down position absolute relative output window splitv splith tabbed stacked default on off inner outer current all set plus minus top bottom horizontal vertical auto none normal pixel prev next back_and_forth child parent contained
+syn keyword i3ConfigOption enable disable toggle mode_toggle shrink grow height width restore container to left right up down position absolute relative output window splitv splith tabbed stacked default on off inner outer current all set plus minus top bottom horizontal vertical auto none normal pixel prev next back_and_forth child parent show contained
 syn match i3ConfigNumber /\s\(-\|+\)\?\d\+/ contained
 syn match i3ConfigUnit /\sp\(pt\|x\)/ contained
 syn match i3ConfigUnitOr /\sor/ contained
