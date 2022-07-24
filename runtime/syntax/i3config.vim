@@ -245,22 +245,22 @@ hi def link i3ConfigNoStartupId                     i3ConfigBindArgument
 hi def link i3ConfigWorkspaceKeyword                i3ConfigCommand
 hi def link i3ConfigOutput                          i3ConfigOption
 hi def link i3ConfigClientColorKeyword              Keyword
-hi def link i3ConfigClientColor                     Operator
-hi def link i3ConfigTitleAlignKeyword               Normal
+hi def link i3ConfigClientColor                     i3ConfigOperator
+hi def link i3ConfigTitleAlignKeyword               i3ConfigOption
 hi def link i3ConfigTitleAlign                      Keyword
 hi def link i3ConfigInterprocessKeyword             Keyword
 hi def link i3ConfigMouseWarpingKeyword             Keyword
-hi def link i3ConfigMouseWarpingType                Normal
+hi def link i3ConfigMouseWarpingType                i3ConfigOption
 hi def link i3ConfigFocusFollowsMouseKeyword        Keyword
 hi def link i3ConfigPopupOnFullscreenKeyword        Keyword
-hi def link i3ConfigPopupOnFullscreenType           Normal
+hi def link i3ConfigPopupOnFullscreenType           i3ConfigOption
 hi def link i3ConfigFocusWrappingKeyword            Keyword
 hi def link i3ConfigForceXineramaKeyword            Keyword
 hi def link i3ConfigAutomaticSwitchKeyword          Keyword
 hi def link i3ConfigTimeUnit                        Number
 hi def link i3ConfigDelayUrgencyKeyword             Keyword
 hi def link i3ConfigFocusOnActivationKeyword        Keyword
-hi def link i3ConfigFocusOnActivationType           Normal
+hi def link i3ConfigFocusOnActivationType           i3ConfigOption
 hi def link i3ConfigShowMarksKeyword                Keyword
 hi def link i3ConfigBlockKeyword                    Keyword
 
