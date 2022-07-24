@@ -7475,7 +7475,7 @@ searchcount([{options}])					*searchcount()*
 			" to 1)
 			let result = searchcount()
 <
-		The function is useful to add the count to |statusline|: >
+		The function is useful to add the count to |status-line|: >
 			function! LastSearchCount() abort
 			  let result = searchcount(#{recompute: 0})
 			  if empty(result)
