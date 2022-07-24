@@ -213,17 +213,16 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 	# Delete the temporary files
 	rm *.js
 
-vim.desktop: vim.desktop.in $(POFILES)
+LINGUAS:
 	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+
+vim.desktop: vim.desktop.in $(POFILES) LINGUAS
 	$(MSGFMT) --desktop -d . --template vim.desktop.in -o tmp_vim.desktop
-	rm -f LINGUAS
 	if command -v desktop-file-validate; then desktop-file-validate tmp_vim.desktop; fi
 	mv tmp_vim.desktop vim.desktop
 
-gvim.desktop: gvim.desktop.in $(POFILES)
-	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+gvim.desktop: gvim.desktop.in $(POFILES) LINGUAS
 	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o tmp_gvim.desktop
-	rm -f LINGUAS
 	if command -v desktop-file-validate; then desktop-file-validate tmp_gvim.desktop; fi
 	mv tmp_gvim.desktop gvim.desktop
 
