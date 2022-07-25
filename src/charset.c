@@ -960,10 +960,12 @@ init_chartabsize_arg(
  * Free any allocated item in "cts".
  */
     void
-clear_chartabsize_arg(chartabsize_T *cts)
+clear_chartabsize_arg(chartabsize_T *cts UNUSED)
 {
+#ifdef FEAT_PROP_POPUP
     if (cts->cts_text_prop_count > 0)
 	vim_free(cts->cts_text_props);
+#endif
 }
 
 /*
@@ -1023,7 +1025,9 @@ win_lbr_chartabsize(
 	int		*headp UNUSED)
 {
     win_T	*wp = cts->cts_win;
+#ifdef FEAT_PROP_POPUP
     char_u	*line = cts->cts_line; // start of the line
+#endif
     char_u	*s = cts->cts_ptr;
     colnr_T	vcol = cts->cts_vcol;
 #ifdef FEAT_LINEBREAK
