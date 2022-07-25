@@ -1085,6 +1085,8 @@ fold_line(
     int		txtcol;
     int		off = (int)(current_ScreenLine - ScreenLines);
     int		ri;
+    int		line_highlight;
+    int		linenr_highlight;
 
     // Build the fold line:
     // 1. Add the cmdwin_type for the command-line window
@@ -1175,7 +1177,7 @@ fold_line(
 
     // Set all attributes of the 'number' or 'relativenumber' column and the
     // text
-    int line_highlight = HL_ATTR(HLF_FL);
+    line_highlight = HL_ATTR(HLF_FL);
     if (wp->w_p_cul
 	  && lnum <= wp->w_cursor.lnum
 	  && wp->w_cursor.lnum <= lnume
@@ -1237,7 +1239,7 @@ fold_line(
 	    }
 
 	    sprintf((char *)buf, fmt, w, num);
-	    int linenr_highlight = (wp->w_p_cul
+	    linenr_highlight = (wp->w_p_cul
 		    && lnum <= wp->w_cursor.lnum
 		    && wp->w_cursor.lnum <= lnume
 		    && (wp->w_p_culopt_flags & CULOPT_NBR))
