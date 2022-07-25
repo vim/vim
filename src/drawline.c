@@ -1524,7 +1524,7 @@ win_line(
 			if (p != NULL)
 			{
 			    p_extra = p;
-			    n_extra = STRLEN(p);
+			    n_extra = (int)STRLEN(p);
 			    extra_attr = used_attr;
 			    n_attr = n_extra;
 			    text_prop_attr = 0;

@@ -1092,7 +1092,7 @@ win_lbr_chartabsize(
 		char_u *p = ((char_u **)wp->w_buffer->b_textprop_text.ga_data)[
 							       -tp->tp_id - 1];
 		// TODO: count screen cells
-		cts->cts_cur_text_width = STRLEN(p);
+		cts->cts_cur_text_width = (int)STRLEN(p);
 		size += cts->cts_cur_text_width;
 		break;
 	    }
