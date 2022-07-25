@@ -12,8 +12,8 @@
 #if defined(HAVE_WCHAR_H)
 # include <wchar.h>	    // for towupper() and towlower()
 #endif
-static int win_nolbr_chartabsize(win_T *wp, char_u *s, colnr_T col, int *headp);
 
+static int win_nolbr_chartabsize(chartabsize_T *cts, int *headp);
 static unsigned nr2hex(unsigned c);
 
 static int    chartab_initialized = FALSE;
@@ -737,8 +737,9 @@ win_chartabsize(win_T *wp, char_u *p, colnr_T col)
 #endif
 
 /*
- * Return the number of characters the string 's' will take on the screen,
+ * Return the number of characters the string "s" will take on the screen,
  * taking into account the size of a tab.
+ * Does not handle text properties, since "s" is not a buffer line.
  */
     int
 linetabsize(char_u *s)
@@ -747,32 +748,34 @@ linetabsize(char_u *s)
 }
 
 /*
- * Like linetabsize(), but starting at column "startcol".
+ * Like linetabsize(), but "s" starts at column "startcol".
  */
     int
 linetabsize_col(int startcol, char_u *s)
 {
-    colnr_T	col = startcol;
-    char_u	*line = s; // pointer to start of line, for breakindent
+    chartabsize_T cts;
 
-    while (*s != NUL)
-	col += lbr_chartabsize_adv(line, &s, col);
-    return (int)col;
+    init_chartabsize_arg(&cts, curwin, 0, startcol, s, s);
+    while (*cts.cts_ptr != NUL)
+	cts.cts_vcol += lbr_chartabsize_adv(&cts);
+    clear_chartabsize_arg(&cts);
+    return (int)cts.cts_vcol;
 }
 
 /*
  * Like linetabsize(), but for a given window instead of the current one.
  */
     int
-win_linetabsize(win_T *wp, char_u *line, colnr_T len)
+win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len)
 {
-    colnr_T	col = 0;
-    char_u	*s;
+    chartabsize_T cts;
 
-    for (s = line; *s != NUL && (len == MAXCOL || s < line + len);
-								MB_PTR_ADV(s))
-	col += win_lbr_chartabsize(wp, line, s, col, NULL);
-    return (int)col;
+    init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+    for ( ; *cts.cts_ptr != NUL && (len == MAXCOL || cts.cts_ptr < line + len);
+						      MB_PTR_ADV(cts.cts_ptr))
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+    clear_chartabsize_arg(&cts);
+    return (int)cts.cts_vcol;
 }
 
 /*
@@ -893,25 +896,101 @@ vim_isprintc_strict(int c)
 }
 
 /*
- * like chartabsize(), but also check for line breaks on the screen
+ * Prepare the structure passed to chartabsize functions.
+ * "line" is the start of the line, "ptr" is the first relevant character.
+ * When "lnum" is zero do not use text properties that insert text.
+ */
+    void
+init_chartabsize_arg(
+	chartabsize_T	*cts,
+	win_T		*wp,
+	linenr_T	lnum,
+	colnr_T		col,
+	char_u		*line,
+	char_u		*ptr)
+{
+    cts->cts_win = wp;
+    cts->cts_lnum = lnum;
+    cts->cts_vcol = col;
+    cts->cts_line = line;
+    cts->cts_ptr = ptr;
+#ifdef FEAT_PROP_POPUP
+    cts->cts_text_prop_count = 0;
+    cts->cts_has_prop_with_text = FALSE;
+    cts->cts_cur_text_width = 0;
+    if (lnum > 0)
+    {
+	char_u *prop_start;
+
+	cts->cts_text_prop_count = get_text_props(wp->w_buffer, lnum,
+							  &prop_start, FALSE);
+	if (cts->cts_text_prop_count > 0)
+	{
+	    // Make a copy of the properties, so that they are properly
+	    // aligned.
+	    cts->cts_text_props = ALLOC_MULT(textprop_T,
+						    cts->cts_text_prop_count);
+	    if (cts->cts_text_props == NULL)
+		cts->cts_text_prop_count = 0;
+	    else
+	    {
+		int i;
+
+		mch_memmove(cts->cts_text_props, prop_start,
+			       cts->cts_text_prop_count * sizeof(textprop_T));
+		for (i = 0; i < cts->cts_text_prop_count; ++i)
+		    if (cts->cts_text_props[i].tp_id < 0)
+		    {
+			cts->cts_has_prop_with_text = TRUE;
+			break;
+		    }
+		if (!cts->cts_has_prop_with_text)
+		{
+		    // won't use the text properties, free them
+		    vim_free(cts->cts_text_props);
+		    cts->cts_text_prop_count = 0;
+		}
+	    }
+	}
+    }
+#endif
+}
+
+/*
+ * Free any allocated item in "cts".
+ */
+    void
+clear_chartabsize_arg(chartabsize_T *cts)
+{
+    if (cts->cts_text_prop_count > 0)
+	vim_free(cts->cts_text_props);
+}
+
+/*
+ * Like chartabsize(), but also check for line breaks on the screen and text
+ * properties that insert text.
  */
     int
-lbr_chartabsize(
-    char_u		*line UNUSED, // start of the line
-    unsigned char	*s,
-    colnr_T		col)
+lbr_chartabsize(chartabsize_T *cts)
 {
-#ifdef FEAT_LINEBREAK
-    if (!curwin->w_p_lbr && *get_showbreak_value(curwin) == NUL
-							   && !curwin->w_p_bri)
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
+    if (1
+# ifdef FEAT_LINEBREAK
+	&& !curwin->w_p_lbr && *get_showbreak_value(curwin) == NUL
+							   && !curwin->w_p_bri
+# endif
+# ifdef FEAT_PROP_POPUP
+	&& !cts->cts_has_prop_with_text
+#endif
+       )
     {
 #endif
 	if (curwin->w_p_wrap)
-	    return win_nolbr_chartabsize(curwin, s, col, NULL);
-	RET_WIN_BUF_CHARTABSIZE(curwin, curbuf, s, col)
-#ifdef FEAT_LINEBREAK
+	    return win_nolbr_chartabsize(cts, NULL);
+	RET_WIN_BUF_CHARTABSIZE(curwin, curbuf, cts->cts_ptr, cts->cts_vcol)
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     }
-    return win_lbr_chartabsize(curwin, line == NULL ? s : line, s, col, NULL);
+    return win_lbr_chartabsize(cts, NULL);
 #endif
 }
 
@@ -919,19 +998,19 @@ lbr_chartabsize(
  * Call lbr_chartabsize() and advance the pointer.
  */
     int
-lbr_chartabsize_adv(
-    char_u	*line, // start of the line
-    char_u	**s,
-    colnr_T	col)
+lbr_chartabsize_adv(chartabsize_T *cts)
 {
     int		retval;
 
-    retval = lbr_chartabsize(line, *s, col);
-    MB_PTR_ADV(*s);
+    retval = lbr_chartabsize(cts);
+    MB_PTR_ADV(cts->cts_ptr);
     return retval;
 }
 
 /*
+ * Return the screen size of the character indicated by "cts".
+ * "cts->cts_cur_text_width" is set to the extra size for a text property that
+ * inserts text.
  * This function is used very often, keep it fast!!!!
  *
  * If "headp" not NULL, set *headp to the size of what we for 'showbreak'
@@ -940,17 +1019,18 @@ lbr_chartabsize_adv(
  */
     int
 win_lbr_chartabsize(
-    win_T	*wp,
-    char_u	*line UNUSED, // start of the line
-    char_u	*s,
-    colnr_T	col,
-    int		*headp UNUSED)
+	chartabsize_T	*cts,
+	int		*headp UNUSED)
 {
+    win_T	*wp = cts->cts_win;
+    char_u	*line = cts->cts_line; // start of the line
+    char_u	*s = cts->cts_ptr;
+    colnr_T	vcol = cts->cts_vcol;
 #ifdef FEAT_LINEBREAK
     int		c;
     int		size;
     colnr_T	col2;
-    colnr_T	col_adj = 0; // col + screen size of tab
+    colnr_T	col_adj = 0; // vcol + screen size of tab
     colnr_T	colmax;
     int		added;
     int		mb_added = 0;
@@ -959,23 +1039,66 @@ win_lbr_chartabsize(
     int		tab_corr = (*s == TAB);
     int		n;
     char_u	*sbr;
+#endif
 
+#if defined(FEAT_PROP_POPUP)
+    cts->cts_cur_text_width = 0;
+#endif
+
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     /*
-     * No 'linebreak', 'showbreak' and 'breakindent': return quickly.
+     * No 'linebreak', 'showbreak', 'breakindent' and text properties that
+     * insert text: return quickly.
      */
-    if (!wp->w_p_lbr && !wp->w_p_bri && *get_showbreak_value(wp) == NUL)
+    if (1
+# ifdef FEAT_LINEBREAK
+	    && !wp->w_p_lbr && !wp->w_p_bri && *get_showbreak_value(wp) == NUL
+# endif
+# ifdef FEAT_PROP_POPUP
+	    && !cts->cts_has_prop_with_text
+# endif
+	    )
 #endif
     {
 	if (wp->w_p_wrap)
-	    return win_nolbr_chartabsize(wp, s, col, headp);
-	RET_WIN_BUF_CHARTABSIZE(wp, wp->w_buffer, s, col)
+	    return win_nolbr_chartabsize(cts, headp);
+	RET_WIN_BUF_CHARTABSIZE(wp, wp->w_buffer, s, vcol)
     }
 
-#ifdef FEAT_LINEBREAK
+#if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
     /*
-     * First get normal size, without 'linebreak'
+     * First get the normal size, without 'linebreak' or text properties
      */
-    size = win_chartabsize(wp, s, col);
+    size = win_chartabsize(wp, s, vcol);
+
+# ifdef FEAT_PROP_POPUP
+    if (cts->cts_has_prop_with_text)
+    {
+	int i;
+	int col = (int)(s - line);
+
+	for (i = 0; i < cts->cts_text_prop_count; ++i)
+	{
+	    textprop_T *tp = cts->cts_text_props + i;
+
+	    if (tp->tp_id < 0
+		     && tp->tp_col - 1 >= col && tp->tp_col - 1 < col + size
+		     && -tp->tp_id <= wp->w_buffer->b_textprop_text.ga_len)
+	    {
+		char_u *p = ((char_u **)wp->w_buffer->b_textprop_text.ga_data)[
+							       -tp->tp_id - 1];
+		// TODO: count screen cells
+		cts->cts_cur_text_width = STRLEN(p);
+		size += cts->cts_cur_text_width;
+		break;
+	    }
+	    if (tp->tp_col - 1 > col)
+		break;
+	}
+    }
+# endif
+
+# ifdef FEAT_LINEBREAK
     c = *s;
     if (tab_corr)
 	col_adj = size - 1;
@@ -995,14 +1118,14 @@ win_lbr_chartabsize(
 	 * non-blank after a blank.
 	 */
 	numberextra = win_col_off(wp);
-	col2 = col;
+	col2 = vcol;
 	colmax = (colnr_T)(wp->w_width - numberextra - col_adj);
-	if (col >= colmax)
+	if (vcol >= colmax)
 	{
 	    colmax += col_adj;
 	    n = colmax +  win_col_off2(wp);
 	    if (n > 0)
-		colmax += (((col - colmax) / n) + 1) * n - col_adj;
+		colmax += (((vcol - colmax) / n) + 1) * n - col_adj;
 	}
 
 	for (;;)
@@ -1013,19 +1136,19 @@ win_lbr_chartabsize(
 	    if (!(c != NUL
 		    && (VIM_ISBREAK(c)
 			|| (!VIM_ISBREAK(c)
-			    && (col2 == col || !VIM_ISBREAK((int)*ps))))))
+			       && (col2 == vcol || !VIM_ISBREAK((int)*ps))))))
 		break;
 
 	    col2 += win_chartabsize(wp, s, col2);
 	    if (col2 >= colmax)		// doesn't fit
 	    {
-		size = colmax - col + col_adj;
+		size = colmax - vcol + col_adj;
 		break;
 	    }
 	}
     }
     else if (has_mbyte && size == 2 && MB_BYTE2LEN(*s) > 1
-				    && wp->w_p_wrap && in_win_border(wp, col))
+				   && wp->w_p_wrap && in_win_border(wp, vcol))
     {
 	++size;		// Count the ">" in the last column.
 	mb_added = 1;
@@ -1039,33 +1162,33 @@ win_lbr_chartabsize(
      */
     added = 0;
     sbr = c == NUL ? empty_option : get_showbreak_value(wp);
-    if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && col != 0)
+    if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && vcol != 0)
     {
 	colnr_T sbrlen = 0;
 	int	numberwidth = win_col_off(wp);
 
 	numberextra = numberwidth;
-	col += numberextra + mb_added;
-	if (col >= (colnr_T)wp->w_width)
+	vcol += numberextra + mb_added;
+	if (vcol >= (colnr_T)wp->w_width)
 	{
-	    col -= wp->w_width;
+	    vcol -= wp->w_width;
 	    numberextra = wp->w_width - (numberextra - win_col_off2(wp));
-	    if (col >= numberextra && numberextra > 0)
-		col %= numberextra;
+	    if (vcol >= numberextra && numberextra > 0)
+		vcol %= numberextra;
 	    if (*sbr != NUL)
 	    {
 		sbrlen = (colnr_T)MB_CHARLEN(sbr);
-		if (col >= sbrlen)
-		    col -= sbrlen;
+		if (vcol >= sbrlen)
+		    vcol -= sbrlen;
 	    }
-	    if (col >= numberextra && numberextra > 0)
-		col = col % numberextra;
-	    else if (col > 0 && numberextra > 0)
-		col += numberwidth - win_col_off2(wp);
+	    if (vcol >= numberextra && numberextra > 0)
+		vcol = vcol % numberextra;
+	    else if (vcol > 0 && numberextra > 0)
+		vcol += numberwidth - win_col_off2(wp);
 
 	    numberwidth -= win_col_off2(wp);
 	}
-	if (col == 0 || col + size + sbrlen > (colnr_T)wp->w_width)
+	if (vcol == 0 || vcol + size + sbrlen > (colnr_T)wp->w_width)
 	{
 	    added = 0;
 	    if (*sbr != NUL)
@@ -1074,8 +1197,8 @@ win_lbr_chartabsize(
 		{
 		    // calculate effective window width
 		    int width = (colnr_T)wp->w_width - sbrlen - numberwidth;
-		    int prev_width = col
-				 ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
+		    int prev_width = vcol
+			       ? ((colnr_T)wp->w_width - (sbrlen + vcol)) : 0;
 
 		    if (width <= 0)
 			width = (colnr_T)1;
@@ -1091,28 +1214,32 @@ win_lbr_chartabsize(
 		added += get_breakindent_win(wp, line);
 
 	    size += added;
-	    if (col != 0)
+	    if (vcol != 0)
 		added = 0;
 	}
     }
     if (headp != NULL)
 	*headp = added + mb_added;
     return size;
+# endif
 #endif
 }
 
 /*
- * Like win_lbr_chartabsize(), except that we know 'linebreak' is off and
- * 'wrap' is on.  This means we need to check for a double-byte character that
- * doesn't fit at the end of the screen line.
+ * Like win_lbr_chartabsize(), except that we know 'linebreak' is off, 'wrap'
+ * is on and there are no properties that insert text.  This means we need to
+ * check for a double-byte character that doesn't fit at the end of the screen
+ * line.
+ * Only uses "cts_win", "cts_ptr" and "cts_vcol" from "cts".
  */
     static int
 win_nolbr_chartabsize(
-    win_T	*wp,
-    char_u	*s,
-    colnr_T	col,
-    int		*headp)
+	chartabsize_T	*cts,
+	int		*headp)
 {
+    win_T	*wp = cts->cts_win;
+    char_u	*s = cts->cts_ptr;
+    colnr_T	col = cts->cts_vcol;
     int		n;
 
     if (*s == TAB && (!wp->w_p_list || wp->w_lcs_chars.tab1))
@@ -1187,6 +1314,7 @@ getvcol(
 #endif
     int		ts = wp->w_buffer->b_p_ts;
     int		c;
+    chartabsize_T cts;
 
     vcol = 0;
     line = ptr = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
@@ -1209,15 +1337,20 @@ getvcol(
 	    posptr -= (*mb_head_off)(line, posptr);
     }
 
+    init_chartabsize_arg(&cts, wp, pos->lnum, 0, line, line);
+
     /*
      * This function is used very often, do some speed optimizations.
      * When 'list', 'linebreak', 'showbreak' and 'breakindent' are not set
-     * use a simple loop.
+     * and there are no text properties with "text" use a simple loop.
      * Also use this when 'list' is set but tabs take their normal size.
      */
     if ((!wp->w_p_list || wp->w_lcs_chars.tab1 != NUL)
 #ifdef FEAT_LINEBREAK
 	    && !wp->w_p_lbr && *get_showbreak_value(wp) == NUL && !wp->w_p_bri
+#endif
+#ifdef FEAT_PROP_POPUP
+	    && !cts.cts_has_prop_with_text
 #endif
        )
     {
@@ -1274,29 +1407,39 @@ getvcol(
     {
 	for (;;)
 	{
-	    // A tab gets expanded, depending on the current column
+	    // A tab gets expanded, depending on the current column.
+	    // Other things also take up space.
 	    head = 0;
-	    incr = win_lbr_chartabsize(wp, line, ptr, vcol, &head);
+	    incr = win_lbr_chartabsize(&cts, &head);
 	    // make sure we don't go past the end of the line
-	    if (*ptr == NUL)
+	    if (*cts.cts_ptr == NUL)
 	    {
 		incr = 1;	// NUL at end of line only takes one column
 		break;
 	    }
 
-	    if (posptr != NULL && ptr >= posptr) // character at pos->col
+	    if (posptr != NULL && cts.cts_ptr >= posptr)
+		// character at pos->col
 		break;
 
-	    vcol += incr;
-	    MB_PTR_ADV(ptr);
+	    cts.cts_vcol += incr;
+	    MB_PTR_ADV(cts.cts_ptr);
 	}
+	vcol = cts.cts_vcol;
+	ptr = cts.cts_ptr;
     }
+    clear_chartabsize_arg(&cts);
+
     if (start != NULL)
 	*start = vcol + head;
     if (end != NULL)
 	*end = vcol + incr - 1;
     if (cursor != NULL)
     {
+#ifdef FEAT_PROP_POPUP
+	// cursor is after inserted text
+	vcol += cts.cts_cur_text_width;
+#endif
 	if (*ptr == TAB
 		&& (State & MODE_NORMAL)
 		&& !wp->w_p_list

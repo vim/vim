@@ -6775,7 +6775,9 @@ nfa_regmatch(
 		    }
 		    if (!result)
 			result = nfa_re_num_cmp(t->state->val, op,
-				(long_u)win_linetabsize(wp, rex.line, col) + 1);
+				(long_u)win_linetabsize(wp,
+						rex.reg_firstlnum + rex.lnum,
+						rex.line, col) + 1);
 		    if (result)
 		    {
 			add_here = TRUE;

@@ -3441,7 +3441,9 @@ regmatch(
 	  case RE_VCOL:
 	    if (!re_num_cmp((long_u)win_linetabsize(
 			    rex.reg_win == NULL ? curwin : rex.reg_win,
-			    rex.line, (colnr_T)(rex.input - rex.line)) + 1, scan))
+			    rex.reg_firstlnum + rex.lnum,
+			    rex.line,
+			    (colnr_T)(rex.input - rex.line)) + 1, scan))
 		status = RA_NOMATCH;
 	    break;
 

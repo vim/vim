@@ -397,7 +397,7 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
     s = ml_get_buf(wp->w_buffer, lnum, FALSE);
     if (*s == NUL)		// empty line
 	return 1;
-    col = win_linetabsize(wp, s, (colnr_T)MAXCOL);
+    col = win_linetabsize(wp, lnum, s, (colnr_T)MAXCOL);
 
     /*
      * If list mode is on, then the '$' at the end of the line may take up one
@@ -427,10 +427,10 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
 plines_win_col(win_T *wp, linenr_T lnum, long column)
 {
     long	col;
-    char_u	*s;
     int		lines = 0;
     int		width;
     char_u	*line;
+    chartabsize_T cts;
 
 #ifdef FEAT_DIFF
     // Check for filler lines above this buffer line.  When folded the result
@@ -444,25 +444,27 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     if (wp->w_width == 0)
 	return lines + 1;
 
-    line = s = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
-    col = 0;
-    while (*s != NUL && --column >= 0)
+    init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+    while (*cts.cts_ptr != NUL && --column >= 0)
     {
-	col += win_lbr_chartabsize(wp, line, s, (colnr_T)col, NULL);
-	MB_PTR_ADV(s);
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	MB_PTR_ADV(cts.cts_ptr);
     }
 
     /*
-     * If *s is a TAB, and the TAB is not displayed as ^I, and we're not in
-     * MODE_INSERT state, then col must be adjusted so that it represents the
-     * last screen position of the TAB.  This only fixes an error when the TAB
-     * wraps from one screen line to the next (when 'columns' is not a multiple
-     * of 'ts') -- webb.
+     * If *cts.cts_ptr is a TAB, and the TAB is not displayed as ^I, and we're
+     * not in MODE_INSERT state, then col must be adjusted so that it
+     * represents the last screen position of the TAB.  This only fixes an
+     * error when the TAB wraps from one screen line to the next (when
+     * 'columns' is not a multiple of 'ts') -- webb.
      */
-    if (*s == TAB && (State & MODE_NORMAL)
+    col = cts.cts_vcol;
+    if (*cts.cts_ptr == TAB && (State & MODE_NORMAL)
 				    && (!wp->w_p_list || wp->w_lcs_chars.tab1))
-	col += win_lbr_chartabsize(wp, line, s, (colnr_T)col, NULL) - 1;
+	col += win_lbr_chartabsize(&cts, NULL) - 1;
+    clear_chartabsize_arg(&cts);
 
     /*
      * Add column offset for 'number', 'relativenumber', 'foldcolumn', etc.

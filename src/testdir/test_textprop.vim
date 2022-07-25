@@ -2187,4 +2187,27 @@ func Test_props_do_not_affect_byte_offsets_editline()
   bwipe!
 endfunc
 
+func Test_prop_inserts_text()
+  CheckRunVimInTerminal
+
+  " Just a basic check for now
+  let lines =<< trim END
+      call setline(1, 'insert some text here and other text there and some more text after wrapping')
+      call prop_type_add('someprop', #{highlight: 'ErrorMsg'})
+      call prop_type_add('otherprop', #{highlight: 'Search'})
+      call prop_type_add('moreprop', #{highlight: 'DiffAdd'})
+      call prop_add(1, 18, #{type: 'someprop', text: 'SOME '})
+      call prop_add(1, 38, #{type: 'otherprop', text: 'OTHER '})
+      call prop_add(1, 69, #{type: 'moreprop', text: 'MORE '})
+      redraw
+      normal $
+  END
+  call writefile(lines, 'XscriptPropsWithText')
+  let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithText')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

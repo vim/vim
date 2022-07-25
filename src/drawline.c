@@ -326,6 +326,7 @@ win_line(
     int		text_props_active = 0;
     proptype_T  *text_prop_type = NULL;
     int		text_prop_attr = 0;
+    int		text_prop_id = 0;	// active property ID
     int		text_prop_combine = FALSE;
 #endif
 #ifdef FEAT_SPELL
@@ -816,15 +817,21 @@ win_line(
 	v = wp->w_leftcol;
     if (v > 0 && !number_only)
     {
-	char_u	*prev_ptr = ptr;
+	char_u		*prev_ptr = ptr;
+	chartabsize_T	cts;
+	int		charsize;
 
-	while (vcol < v && *ptr != NUL)
+	init_chartabsize_arg(&cts, wp, lnum, vcol, line, ptr);
+	while (cts.cts_vcol < v && *cts.cts_ptr != NUL)
 	{
-	    c = win_lbr_chartabsize(wp, line, ptr, (colnr_T)vcol, NULL);
-	    vcol += c;
-	    prev_ptr = ptr;
-	    MB_PTR_ADV(ptr);
+	    charsize = win_lbr_chartabsize(&cts, NULL);
+	    cts.cts_vcol += charsize;
+	    prev_ptr = cts.cts_ptr;
+	    MB_PTR_ADV(cts.cts_ptr);
 	}
+	vcol = cts.cts_vcol;
+	ptr = cts.cts_ptr;
+	clear_chartabsize_arg(&cts);
 
 	// When:
 	// - 'cuc' is set, or
@@ -844,11 +851,11 @@ win_line(
 	// that character but skip the first few screen characters.
 	if (vcol > v)
 	{
-	    vcol -= c;
+	    vcol -= charsize;
 	    ptr = prev_ptr;
 	    // If the character fits on the screen, don't need to skip it.
 	    // Except for a TAB.
-	    if (( (*mb_ptr2cells)(ptr) >= c || *ptr == TAB) && col == 0)
+	    if (( (*mb_ptr2cells)(ptr) >= charsize || *ptr == TAB) && col == 0)
 	       n_skip = v - vcol;
 	}
 
@@ -1476,8 +1483,12 @@ win_line(
 		text_prop_attr = 0;
 		text_prop_combine = FALSE;
 		text_prop_type = NULL;
+		text_prop_id = 0;
 		if (text_props_active > 0)
 		{
+		    int used_tpi;
+		    int used_attr = 0;
+
 		    // Sort the properties on priority and/or starting last.
 		    // Then combine the attributes, highest priority last.
 		    current_text_props = text_props;
@@ -1491,15 +1502,43 @@ win_line(
 			proptype_T  *pt = text_prop_type_by_id(
 					wp->w_buffer, text_props[tpi].tp_type);
 
-			if (pt != NULL && pt->pt_hl_id > 0)
+			if (pt != NULL && pt->pt_hl_id > 0
+					  && text_props[tpi].tp_id != -MAXCOL)
 			{
-			    int pt_attr = syn_id2attr(pt->pt_hl_id);
-
+			    used_attr = syn_id2attr(pt->pt_hl_id);
 			    text_prop_type = pt;
 			    text_prop_attr =
-				      hl_combine_attr(text_prop_attr, pt_attr);
+				   hl_combine_attr(text_prop_attr, used_attr);
 			    text_prop_combine = pt->pt_flags & PT_FLAG_COMBINE;
+			    text_prop_id = text_props[tpi].tp_id;
+			    used_tpi = tpi;
 			}
+		    }
+		    if (n_extra == 0 && text_prop_id < 0
+			    && -text_prop_id
+				      <= wp->w_buffer->b_textprop_text.ga_len)
+		    {
+			char_u *p = ((char_u **)wp->w_buffer
+						   ->b_textprop_text.ga_data)[
+							   -text_prop_id - 1];
+			if (p != NULL)
+			{
+			    p_extra = p;
+			    n_extra = STRLEN(p);
+			    extra_attr = used_attr;
+			    n_attr = n_extra;
+			    text_prop_attr = 0;
+
+			    // If the cursor is on or after this position,
+			    // move it forward.
+			    if (wp == curwin
+				    && lnum == curwin->w_cursor.lnum
+				    && curwin->w_cursor.col >= vcol)
+				curwin->w_cursor.col += n_extra;
+			}
+			// reset the ID in the copy to avoid it being used
+			// again
+			text_props[used_tpi].tp_id = -MAXCOL;
 		    }
 		}
 	    }
@@ -2025,10 +2064,10 @@ win_line(
 		    int	    mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1)
 									   : 0;
 		    char_u  *p = ptr - (mb_off + 1);
+		    chartabsize_T cts;
 
-		    // TODO: is passing p for start of the line OK?
-		    n_extra = win_lbr_chartabsize(wp, line, p, (colnr_T)vcol,
-								    NULL) - 1;
+		    init_chartabsize_arg(&cts, wp, lnum, vcol, line, p);
+		    n_extra = win_lbr_chartabsize(&cts, NULL) - 1;
 
 		    // We have just drawn the showbreak value, no need to add
 		    // space for it again.
@@ -2069,6 +2108,7 @@ win_line(
 			if (!wp->w_p_list)
 			    c = ' ';
 		    }
+		    clear_chartabsize_arg(&cts);
 		}
 #endif
 

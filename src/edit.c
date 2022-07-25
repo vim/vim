@@ -4905,6 +4905,8 @@ ins_tab(void)
 	colnr_T		want_vcol, vcol;
 	int		change_col = -1;
 	int		save_list = curwin->w_p_list;
+	char_u		*tab = (char_u *)"\t";
+	chartabsize_T	cts;
 
 	/*
 	 * Get the current line.  For MODE_VREPLACE state, don't make real
@@ -4950,12 +4952,14 @@ ins_tab(void)
 	getvcol(curwin, &fpos, &vcol, NULL, NULL);
 	getvcol(curwin, cursor, &want_vcol, NULL, NULL);
 
+	init_chartabsize_arg(&cts, curwin, 0, vcol, tab, tab);
+
 	// Use as many TABs as possible.  Beware of 'breakindent', 'showbreak'
 	// and 'linebreak' adding extra virtual columns.
 	while (VIM_ISWHITE(*ptr))
 	{
-	    i = lbr_chartabsize(NULL, (char_u *)"\t", vcol);
-	    if (vcol + i > want_vcol)
+	    i = lbr_chartabsize(&cts);
+	    if (cts.cts_vcol + i > want_vcol)
 		break;
 	    if (*ptr != TAB)
 	    {
@@ -4970,21 +4974,27 @@ ins_tab(void)
 	    }
 	    ++fpos.col;
 	    ++ptr;
-	    vcol += i;
+	    cts.cts_vcol += i;
 	}
+	vcol = cts.cts_vcol;
+	clear_chartabsize_arg(&cts);
 
 	if (change_col >= 0)
 	{
-	    int repl_off = 0;
-	    char_u *line = ptr;
+	    int		    repl_off = 0;
 
 	    // Skip over the spaces we need.
-	    while (vcol < want_vcol && *ptr == ' ')
+	    init_chartabsize_arg(&cts, curwin, 0, vcol, ptr, ptr);
+	    while (cts.cts_vcol < want_vcol && *cts.cts_ptr == ' ')
 	    {
-		vcol += lbr_chartabsize(line, ptr, vcol);
-		++ptr;
+		cts.cts_vcol += lbr_chartabsize(&cts);
+		++cts.cts_ptr;
 		++repl_off;
 	    }
+	    ptr = cts.cts_ptr;
+	    vcol = cts.cts_vcol;
+	    clear_chartabsize_arg(&cts);
+
 	    if (vcol > want_vcol)
 	    {
 		// Must have a char with 'showbreak' just before it.
@@ -5220,10 +5230,10 @@ ins_digraph(void)
     int
 ins_copychar(linenr_T lnum)
 {
-    int	    c;
-    int	    temp;
-    char_u  *ptr, *prev_ptr;
-    char_u  *line;
+    int		    c;
+    char_u	    *ptr, *prev_ptr;
+    char_u	    *line;
+    chartabsize_T   cts;
 
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
     {
@@ -5233,16 +5243,19 @@ ins_copychar(linenr_T lnum)
 
     // try to advance to the cursor column
     validate_virtcol();
-    temp = 0;
-    line = ptr = ml_get(lnum);
-    prev_ptr = ptr;
-    while ((colnr_T)temp < curwin->w_virtcol && *ptr != NUL)
+    line = ml_get(lnum);
+    prev_ptr = line;
+    init_chartabsize_arg(&cts, curwin, lnum, 0, line, line);
+    while (cts.cts_vcol < curwin->w_virtcol && *cts.cts_ptr != NUL)
     {
-	prev_ptr = ptr;
-	temp += lbr_chartabsize_adv(line, &ptr, (colnr_T)temp);
+	prev_ptr = cts.cts_ptr;
+	cts.cts_vcol += lbr_chartabsize_adv(&cts);
     }
-    if ((colnr_T)temp > curwin->w_virtcol)
+    if (cts.cts_vcol > curwin->w_virtcol)
 	ptr = prev_ptr;
+    else
+	ptr = cts.cts_ptr;
+    clear_chartabsize_arg(&cts);
 
     c = (*mb_ptr2char)(ptr);
     if (c == NUL)

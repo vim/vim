@@ -137,7 +137,11 @@ prop_add({lnum}, {col}, {props})
 		   bufnr	buffer to add the property to; when omitted
 				the current buffer is used
 		   id		user defined ID for the property; must be a
-				number; when omitted zero is used
+				number, should be positive; when using "text"
+				then "id" must not be present and will be set
+				automatically to a negative number; otherwise
+				zero is used
+		   text		text to be displayed at {col}
 		   type		name of the text property type
 		All fields except "type" are optional.
 
@@ -157,6 +161,17 @@ prop_add({lnum}, {col}, {props})
 		"type" will first be looked up in the buffer the property is
 		added to. When not found, the global property types are used.
 		If not found an error is given.
+							*virtual-text*
+		When "text" is used this text will be displayed at the start
+		location of the text property.  The text of the buffer line
+		will be shifted to make room.  This is called "virtual text".
+		The text will be displayed but it is not part of the actual
+		buffer line, the cursor cannot be placed on it.  A mouse click
+		in the text will move the cursor to the first character after
+		the text.
+		A negative "id" will be chosen and is returned.  Once a
+		property with "text" has been added for a buffer then using a
+		negative "id" for any other property will give an error.
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
@@ -180,6 +195,9 @@ prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
 		of the text where the property will be attached and the last
 		two items {end-lnum} and {end-col} specify the position just
 		after the text.
+
+		It is not possible to add a text property with a "text" field
+		here.
 
 		Example:
 			call prop_add_list(#{type: 'MyProp', id: 2},

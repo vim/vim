@@ -150,7 +150,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
  * prop_add({lnum}, {col}, {props})
  */
     void
-f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
+f_prop_add(typval_T *argvars, typval_T *rettv)
 {
     linenr_T	start_lnum;
     colnr_T	start_col;
@@ -174,20 +174,22 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
 
-    prop_add_common(start_lnum, start_col, argvars[2].vval.v_dict,
-							  curbuf, &argvars[2]);
+    rettv->vval.v_number = prop_add_common(start_lnum, start_col,
+				 argvars[2].vval.v_dict, curbuf, &argvars[2]);
 }
 
 /*
  * Attach a text property 'type_name' to the text starting
  * at [start_lnum, start_col] and ending at [end_lnum, end_col] in
- * the buffer 'buf' and assign identifier 'id'.
+ * the buffer "buf" and assign identifier "id".
+ * When "text" is not NULL add it to buf->b_textprop_text[-id - 1].
  */
     static int
 prop_add_one(
 	buf_T		*buf,
 	char_u		*type_name,
 	int		id,
+	char_u		*text_arg,
 	linenr_T	start_lnum,
 	linenr_T	end_lnum,
 	colnr_T		start_col,
@@ -202,26 +204,43 @@ prop_add_one(
     char_u	*newtext;
     int		i;
     textprop_T	tmp_prop;
+    char_u	*text = text_arg;
+    int		res = FAIL;
 
     type = lookup_prop_type(type_name, buf);
     if (type == NULL)
-	return FAIL;
+	goto theend;
 
     if (start_lnum < 1 || start_lnum > buf->b_ml.ml_line_count)
     {
 	semsg(_(e_invalid_line_number_nr), (long)start_lnum);
-	return FAIL;
+	goto theend;
     }
     if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
     {
 	semsg(_(e_invalid_line_number_nr), (long)end_lnum);
-	return FAIL;
+	goto theend;
     }
 
     if (buf->b_ml.ml_mfp == NULL)
     {
 	emsg(_(e_cannot_add_text_property_to_unloaded_buffer));
-	return FAIL;
+	goto theend;
+    }
+
+    if (text != NULL)
+    {
+	garray_T *gap = &buf->b_textprop_text;
+
+	// double check we got the right ID
+	if (-id - 1 != gap->ga_len)
+	    iemsg("text prop ID mismatch");
+	if (gap->ga_growsize == 0)
+	    ga_init2(gap, sizeof(char *), 50);
+	if (ga_grow(gap, 1) == FAIL)
+	    goto theend;
+	((char_u **)gap->ga_data)[gap->ga_len++] = text;
+	text = NULL;
     }
 
     for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
@@ -240,7 +259,7 @@ prop_add_one(
 	if (col - 1 > (colnr_T)textlen)
 	{
 	    semsg(_(e_invalid_column_number_nr), (long)start_col);
-	    return FAIL;
+	    goto theend;
 	}
 
 	if (lnum == end_lnum)
@@ -255,7 +274,7 @@ prop_add_one(
 	// Allocate the new line with space for the new property.
 	newtext = alloc(buf->b_ml.ml_line_len + sizeof(textprop_T));
 	if (newtext == NULL)
-	    return FAIL;
+	    goto theend;
 	// Copy the text, including terminating NUL.
 	mch_memmove(newtext, buf->b_ml.ml_line_ptr, textlen);
 
@@ -295,7 +314,11 @@ prop_add_one(
     }
 
     changed_lines_buf(buf, start_lnum, end_lnum + 1, 0);
-    return OK;
+    res = OK;
+
+theend:
+    vim_free(text);
+    return res;
 }
 
 /*
@@ -367,7 +390,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	    emsg(_(e_invalid_argument));
 	    return;
 	}
-	if (prop_add_one(buf, type_name, id, start_lnum, end_lnum,
+	if (prop_add_one(buf, type_name, id, NULL, start_lnum, end_lnum,
 						start_col, end_col) == FAIL)
 	    return;
     }
@@ -376,11 +399,22 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * Get the next ID to use for a textprop with text in buffer "buf".
+ */
+    static int
+get_textprop_id(buf_T *buf)
+{
+    // TODO: recycle deleted entries
+    return -(buf->b_textprop_text.ga_len + 1);
+}
+
+/*
  * Shared between prop_add() and popup_create().
  * "dict_arg" is the function argument of a dict containing "bufnr".
  * it is NULL for popup_create().
+ * Returns the "id" used for "text" or zero.
  */
-    void
+    int
 prop_add_common(
 	linenr_T    start_lnum,
 	colnr_T	    start_col,
@@ -393,11 +427,12 @@ prop_add_common(
     char_u	*type_name;
     buf_T	*buf = default_buf;
     int		id = 0;
+    char_u	*text = NULL;
 
     if (dict == NULL || !dict_has_key(dict, "type"))
     {
 	emsg(_(e_missing_property_type_name));
-	return;
+	goto theend;
     }
     type_name = dict_get_string(dict, "type", FALSE);
 
@@ -407,7 +442,7 @@ prop_add_common(
 	if (end_lnum < start_lnum)
 	{
 	    semsg(_(e_invalid_value_for_argument_str), "end_lnum");
-	    return;
+	    goto theend;
 	}
     }
     else
@@ -420,7 +455,7 @@ prop_add_common(
 	if (length < 0 || end_lnum > start_lnum)
 	{
 	    semsg(_(e_invalid_value_for_argument_str), "length");
-	    return;
+	    goto theend;
 	}
 	end_col = start_col + length;
     }
@@ -430,7 +465,7 @@ prop_add_common(
 	if (end_col <= 0)
 	{
 	    semsg(_(e_invalid_value_for_argument_str), "end_col");
-	    return;
+	    goto theend;
 	}
     }
     else if (start_lnum == end_lnum)
@@ -441,17 +476,40 @@ prop_add_common(
     if (dict_has_key(dict, "id"))
 	id = dict_get_number(dict, "id");
 
+    if (dict_has_key(dict, "text"))
+    {
+	text = dict_get_string(dict, "text", TRUE);
+	if (text == NULL)
+	    goto theend;
+	// use a default length of 1 to make multiple props show up
+	end_col = start_col + 1;
+    }
+
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
-	return;
+	goto theend;
+
+    if (id < 0 && buf->b_textprop_text.ga_len > 0)
+    {
+	emsg(_(e_cannot_use_negative_id_after_adding_textprop_with_text));
+	goto theend;
+    }
+    if (text != NULL)
+	id = get_textprop_id(buf);
 
     // This must be done _before_ we add the property because property changes
     // trigger buffer (memline) reorganisation, which needs this flag to be
     // correctly set.
     buf->b_has_textprop = TRUE;  // this is never reset
 
-    prop_add_one(buf, type_name, id, start_lnum, end_lnum, start_col, end_col);
+    prop_add_one(buf, type_name, id, text,
+				    start_lnum, end_lnum, start_col, end_col);
+    text = NULL;
 
     redraw_buf_later(buf, VALID);
+
+theend:
+    vim_free(text);
+    return id;
 }
 
 /*
@@ -954,9 +1012,9 @@ get_props_in_line(
 	if ((prop_types == NULL
 		    || prop_type_or_id_in_list(prop_types, prop_types_len,
 			prop.tp_type))
-		&& (prop_ids == NULL ||
-		    prop_type_or_id_in_list(prop_ids, prop_ids_len,
-			prop.tp_id)))
+		&& (prop_ids == NULL
+		    || prop_type_or_id_in_list(prop_ids, prop_ids_len,
+								 prop.tp_id)))
 	{
 	    dict_T *d = dict_alloc();
 

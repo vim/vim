@@ -1350,26 +1350,28 @@ change_indent(
 	new_cursor_col = curwin->w_cursor.col;
     else
     {
+	chartabsize_T cts;
+
 	// Compute the screen column where the cursor should be.
 	vcol = get_indent() - vcol;
 	curwin->w_virtcol = (colnr_T)((vcol < 0) ? 0 : vcol);
 
 	// Advance the cursor until we reach the right screen column.
-	vcol = last_vcol = 0;
-	new_cursor_col = -1;
+	last_vcol = 0;
 	ptr = ml_get_curline();
-	while (vcol <= (int)curwin->w_virtcol)
+	init_chartabsize_arg(&cts, curwin, 0, 0, ptr, ptr);
+	while (cts.cts_vcol <= (int)curwin->w_virtcol)
 	{
-	    last_vcol = vcol;
-	    if (has_mbyte && new_cursor_col >= 0)
-		new_cursor_col += (*mb_ptr2len)(ptr + new_cursor_col);
-	    else
-		++new_cursor_col;
-	    if (ptr[new_cursor_col] == NUL)
+	    last_vcol = cts.cts_vcol;
+	    if (cts.cts_vcol > 0)
+		MB_PTR_ADV(cts.cts_ptr);
+	    if (*cts.cts_ptr == NUL)
 		break;
-	    vcol += lbr_chartabsize(ptr, ptr + new_cursor_col, (colnr_T)vcol);
+	    cts.cts_vcol += lbr_chartabsize(&cts);
 	}
 	vcol = last_vcol;
+	new_cursor_col = cts.cts_ptr - cts.cts_line;
+	clear_chartabsize_arg(&cts);
 
 	// May need to insert spaces to be able to position the cursor on
 	// the right screen column.
@@ -2064,14 +2066,18 @@ get_lisp_indent(void)
 		amount = 2;
 	    else
 	    {
-		char_u *line = that;
+		char_u		*line = that;
+		chartabsize_T	cts;
 
-		amount = 0;
-		while (*that && col)
+		init_chartabsize_arg(&cts, curwin, pos->lnum, 0, line, line);
+		while (*cts.cts_ptr != NUL && col > 0)
 		{
-		    amount += lbr_chartabsize_adv(line, &that, (colnr_T)amount);
+		    cts.cts_vcol += lbr_chartabsize_adv(&cts);
 		    col--;
 		}
+		amount = cts.cts_vcol;
+		that = cts.cts_ptr;
+		clear_chartabsize_arg(&cts);
 
 		// Some keywords require "body" indenting rules (the
 		// non-standard-lisp ones are Scheme special forms):
@@ -2091,11 +2097,16 @@ get_lisp_indent(void)
 		    }
 		    firsttry = amount;
 
-		    while (VIM_ISWHITE(*that))
+		    init_chartabsize_arg(&cts, curwin, (colnr_T)(that - line),
+							   amount, line, that);
+		    while (VIM_ISWHITE(*cts.cts_ptr))
 		    {
-			amount += lbr_chartabsize(line, that, (colnr_T)amount);
-			++that;
+			cts.cts_vcol += lbr_chartabsize(&cts);
+			++cts.cts_ptr;
 		    }
+		    that = cts.cts_ptr;
+		    amount = cts.cts_vcol;
+		    clear_chartabsize_arg(&cts);
 
 		    if (*that && *that != ';') // not a comment line
 		    {
@@ -2107,42 +2118,47 @@ get_lisp_indent(void)
 			parencount = 0;
 			quotecount = 0;
 
+			init_chartabsize_arg(&cts, curwin,
+				   (colnr_T)(that - line), amount, line, that);
 			if (vi_lisp
 				|| (*that != '"'
 				    && *that != '\''
 				    && *that != '#'
 				    && (*that < '0' || *that > '9')))
 			{
-			    while (*that
-				    && (!VIM_ISWHITE(*that)
+			    while (*cts.cts_ptr
+				    && (!VIM_ISWHITE(*cts.cts_ptr)
 					|| quotecount
 					|| parencount)
-				    && (!((*that == '(' || *that == '[')
+				    && (!((*cts.cts_ptr == '('
+							|| *cts.cts_ptr == '[')
 					    && !quotecount
 					    && !parencount
 					    && vi_lisp)))
 			    {
-				if (*that == '"')
+				if (*cts.cts_ptr == '"')
 				    quotecount = !quotecount;
-				if ((*that == '(' || *that == '[')
+				if ((*cts.cts_ptr == '(' || *cts.cts_ptr == '[')
 							       && !quotecount)
 				    ++parencount;
-				if ((*that == ')' || *that == ']')
+				if ((*cts.cts_ptr == ')' || *cts.cts_ptr == ']')
 							       && !quotecount)
 				    --parencount;
-				if (*that == '\\' && *(that+1) != NUL)
-				    amount += lbr_chartabsize_adv(
-						line, &that, (colnr_T)amount);
-				amount += lbr_chartabsize_adv(
-						line, &that, (colnr_T)amount);
+				if (*cts.cts_ptr == '\\'
+						    && *(cts.cts_ptr+1) != NUL)
+				    cts.cts_vcol += lbr_chartabsize_adv(&cts);
+				cts.cts_vcol += lbr_chartabsize_adv(&cts);
 			    }
 			}
-			while (VIM_ISWHITE(*that))
+			while (VIM_ISWHITE(*cts.cts_ptr))
 			{
-			    amount += lbr_chartabsize(
-						 line, that, (colnr_T)amount);
-			    that++;
+			    cts.cts_vcol += lbr_chartabsize(&cts);
+			    ++cts.cts_ptr;
 			}
+			that = cts.cts_ptr;
+			amount = cts.cts_vcol;
+			clear_chartabsize_arg(&cts);
+
 			if (!*that || *that == ';')
 			    amount = firsttry;
 		    }

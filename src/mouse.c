@@ -3101,18 +3101,20 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
     int
 vcol2col(win_T *wp, linenr_T lnum, int vcol)
 {
-    // try to advance to the specified column
-    int		count = 0;
-    char_u	*ptr;
-    char_u	*line;
+    char_u	    *line;
+    chartabsize_T   cts;
 
-    line = ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    while (count < vcol && *ptr != NUL)
+    // try to advance to the specified column
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+    while (cts.cts_vcol < vcol && *cts.cts_ptr != NUL)
     {
-	count += win_lbr_chartabsize(wp, line, ptr, count, NULL);
-	MB_PTR_ADV(ptr);
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	MB_PTR_ADV(cts.cts_ptr);
     }
-    return (int)(ptr - line);
+    clear_chartabsize_arg(&cts);
+
+    return (int)(cts.cts_ptr - line);
 }
 #endif
 
