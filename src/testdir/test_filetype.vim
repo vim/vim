@@ -85,7 +85,7 @@ let s:filename_checks = {
     \ 'bindzone': ['named.root', '/bind/db.file', '/named/db.file', 'any/bind/db.file', 'any/named/db.file'],
     \ 'bitbake': ['file.bb', 'file.bbappend', 'file.bbclass', 'build/conf/local.conf', 'meta/conf/layer.conf', 'build/conf/bbappend.conf', 'meta-layer/conf/distro/foo.conf'],
     \ 'blank': ['file.bl'],
-    \ 'bsdl': ['file.bsd', 'file.bsdl', 'bsd', 'some-bsd'],
+    \ 'bsdl': ['file.bsd', 'file.bsdl'],
     \ 'bst': ['file.bst'],
     \ 'bzl': ['file.bazel', 'file.bzl', 'WORKSPACE'],
     \ 'bzr': ['bzr_log.any', 'bzr_log.file'],
