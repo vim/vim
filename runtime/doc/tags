@@ -10228,6 +10228,7 @@ undo	undo.txt	/*undo*
 undo-blocks	undo.txt	/*undo-blocks*
 undo-branches	undo.txt	/*undo-branches*
 undo-break	undo.txt	/*undo-break*
+undo-close-block	undo.txt	/*undo-close-block*
 undo-commands	undo.txt	/*undo-commands*
 undo-persistence	undo.txt	/*undo-persistence*
 undo-redo	undo.txt	/*undo-redo*

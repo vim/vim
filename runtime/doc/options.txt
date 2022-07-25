@@ -4843,7 +4843,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	help.  (Note that previously setting the global option to the empty
 	value did this, which is now deprecated.)
 	When the first character is ":", the command is invoked as a Vim
-	Ex command prefixed with [count].
+	Ex command with [count] added as an argument if it is not zero.
 	When "man", "man -s" or an Ex command is used, Vim will automatically
 	translate a count for the "K" command and pass it as the first
 	argument.  For "man -s" the "-s" is removed when there is no count.

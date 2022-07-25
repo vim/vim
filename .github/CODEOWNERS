@@ -109,12 +109,15 @@ runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
 runtime/ftplugin/dosbatch.vim		@mrdubya
 runtime/ftplugin/eiffel.vim		@dkearns
+runtime/ftplugin/expect.vim		@dkearns
 runtime/ftplugin/erlang.vim		@hcs42
 runtime/ftplugin/eruby.vim		@tpope @dkearns
+runtime/ftplugin/fennel.vim		@gpanders
 runtime/ftplugin/fetchmail.vim		@dkearns
 runtime/ftplugin/fpcmake.vim		@dkearns
 runtime/ftplugin/freebasic.vim		@dkearns
 runtime/ftplugin/fstab.vim		@rid9
+runtime/ftplugin/gdb.vim		@xeyownt
 runtime/ftplugin/git.vim		@tpope
 runtime/ftplugin/gitcommit.vim		@tpope
 runtime/ftplugin/gitconfig.vim		@tpope
@@ -124,6 +127,7 @@ runtime/ftplugin/go.vim			@dbarnett
 runtime/ftplugin/gprof.vim		@dpelle
 runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hgcommit.vim		@k-takata
+runtime/ftplugin/html.vim		@dkearns
 runtime/ftplugin/i3config.vim		@hiqua
 runtime/ftplugin/icon.vim		@dkearns
 runtime/ftplugin/indent.vim		@dkearns
@@ -297,8 +301,10 @@ runtime/syntax/eiffel.vim		@jocelyn
 runtime/syntax/elmfilt.vim		@cecamp
 runtime/syntax/erlang.vim		@hcs42
 runtime/syntax/eruby.vim		@tpope @dkearns
+runtime/syntax/expect.vim		@dkearns
 runtime/syntax/exports.vim		@cecamp
 runtime/syntax/falcon.vim		@steveno
+runtime/syntax/fennel.vim		@gpanders
 runtime/syntax/fetchmail.vim		@dkearns
 runtime/syntax/forth.vim		@jkotlinski
 runtime/syntax/fpcmake.vim		@dkearns
@@ -316,6 +322,7 @@ runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/haml.vim			@tpope
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
+runtime/syntax/html.vim		@dkearns
 runtime/syntax/i3config.vim		@hiqua
 runtime/syntax/icon.vim			@dkearns
 runtime/syntax/indent.vim		@dkearns

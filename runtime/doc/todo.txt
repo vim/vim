@@ -38,6 +38,20 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+PR to consider:
+- Fix CTRL-[ for Win32 on Belgian keyboard  #10687 (closes #10454)
+- stricter parsing for has('patch-x.y.z')  #10752
+- cmdheight=0  #10675  Does it work properly?
+- add splitscroll  #10682  Useful?  Any trouble? Null Chilly says it's OK.
+    suggestion: names instead of numbers for the option value
+
+Support virtual text:
+- clear b_textprop_text when buffer is cleared
+- Remove and free text when textprop is removed with negative ID.
+- "gj" does not work correctly
+- placement at the end of the line: after the text (text_align: "end"), right
+  aligned (text_align: "right")
+
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
 - Check performance with callgrind and kcachegrind.
@@ -223,6 +237,10 @@ feature is supported or not.  Replaces the xterm mechanism to request each
 entry separately. #6609
 Multiplexers (screen, tmux) can request it to the underlying terminal, and
 pass it on with modifications.
+
+When scheme can't be found by configure there is no clear "not found" message:
+    configure:5769: checking MzScheme install prefix
+    configure:5781: result: 
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
 
@@ -1159,9 +1177,6 @@ cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 :map X may print invalid data. (Nikolay Pavlov, 2017 Jul 3, #1816)
 
 Patch to order results from taglist(). (Duncan McDougall, 2016 Oct 25)
-
-Syntax highlighting for messages with RFC3339 timestamp (#946)
-Did maintainer reply?
 
 ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
@@ -3761,6 +3776,7 @@ Syntax highlighting:
     - use TextMate, vscode uses it.  #9087 - Other people don't like it.
       Vscode is asked to switch to treesitter:
       https://github.com/microsoft/vscode/issues/50140
+    - sublime grammar?
 8   Make ":syn off" use 'runtimepath' instead of $VIMRUNTIME. (Gary Johnson)
     Should do the same for ":syn on" and ":syn manual".
 8   Support "containedin" argument for ":syn include", so that the defined
