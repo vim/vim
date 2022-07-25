@@ -4098,6 +4098,7 @@ get_var_from(
     int		done = FALSE;
     switchwin_T	switchwin;
     int		need_switch_win;
+    int		do_change_curbuf = buf != NULL && htname == 'b';
 
     ++emsg_off;
 
@@ -4112,7 +4113,7 @@ get_var_from(
 	// autocommands get blocked.
 	// If we have a buffer reference avoid the switching, we're saving and
 	// restoring curbuf directly.
-	need_switch_win = !(tp == curtab && win == curwin) || (buf != NULL);
+	need_switch_win = !(tp == curtab && win == curwin) && !do_change_curbuf;
 	if (!need_switch_win || switch_win(&switchwin, win, tp, TRUE) == OK)
 	{
 	    // Handle options. There are no tab-local options.
@@ -4121,12 +4122,12 @@ get_var_from(
 		buf_T	*save_curbuf = curbuf;
 
 		// Change curbuf so the option is read from the correct buffer.
-		if (buf != NULL && htname == 'b')
+		if (do_change_curbuf)
 		    curbuf = buf;
 
 		if (varname[1] == NUL)
 		{
-		    // get all window-local options in a dict
+		    // get all window-local or buffer-local options in a dict
 		    dict_T	*opts = get_winbuf_options(htname == 'b');
 
 		    if (opts != NULL)
