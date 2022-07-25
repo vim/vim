@@ -819,7 +819,7 @@ win_line(
     {
 	char_u		*prev_ptr = ptr;
 	chartabsize_T	cts;
-	int		charsize;
+	int		charsize = 0;
 
 	init_chartabsize_arg(&cts, wp, lnum, vcol, line, ptr);
 	while (cts.cts_vcol < v && *cts.cts_ptr != NUL)
