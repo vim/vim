@@ -1087,6 +1087,9 @@ fold_line(
     int		ri;
     int		line_highlight;
     int		linenr_highlight;
+    int		sign_highlight;
+    sign_attrs_T sattr;
+    char_u	*sign_text;
 
     // Build the fold line:
     // 1. Add the cmdwin_type for the command-line window
@@ -1196,14 +1199,22 @@ fold_line(
 	{
 	    if (len > 2)
 		len = 2;
+
+	    sign_text = (char_u *)"  ";
+	    sign_highlight = HL_ATTR(HLF_FL);
+	    if (buf_get_signattrs(wp, lnum, &sattr))
+	    {
+		sign_text = sattr.sat_text;
+		sign_highlight = sattr.sat_texthl;
+	    }
 # ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		// the line number isn't reversed
 		copy_text_attr(off + wp->w_width - len - col,
-					(char_u *)"  ", len, HL_ATTR(HLF_FL));
+					sign_text, len, sign_highlight);
 	    else
 # endif
-		copy_text_attr(off + col, (char_u *)"  ", len, HL_ATTR(HLF_FL));
+		copy_text_attr(off + col, sign_text, len, sign_highlight);
 	    col += len;
 	}
     }
