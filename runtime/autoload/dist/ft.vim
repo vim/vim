@@ -519,7 +519,7 @@ export def FTinc()
     # headers so assume POV-Ray
     elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? ft_pascal_keywords
       setf pascal
-    elseif lines =~# '\<\%(require\|inherit\)\>' || lines =~# '\w\+ = '
+    elseif lines =~# '\<\%(require\|inherit\)\>' || lines =~# '[A-Z][A-Za-z0-9_:${}]*\s\+\%(??\|[?:+]\)\?= '
       setf bitbake
     else
       FTasmsyntax()
