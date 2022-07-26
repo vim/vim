@@ -964,7 +964,10 @@ clear_chartabsize_arg(chartabsize_T *cts UNUSED)
 {
 #ifdef FEAT_PROP_POPUP
     if (cts->cts_text_prop_count > 0)
+    {
 	vim_free(cts->cts_text_props);
+	cts->cts_text_prop_count = 0;  // avoid double free
+    }
 #endif
 }
 

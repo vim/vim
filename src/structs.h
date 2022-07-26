@@ -4570,9 +4570,10 @@ typedef struct {
     char_u	*cts_line;	    // start of the line
     char_u	*cts_ptr;	    // current position in line
 #ifdef FEAT_PROP_POPUP
-    int		cts_text_prop_count;	// number of text props
-    textprop_T	*cts_text_props;	// text props (allocated) or NULL
-    char	cts_has_prop_with_text;  // TRUE if if a property inserts text
+    int		cts_text_prop_count;	// number of text props; when zero
+					// cts_text_props is not used
+    textprop_T	*cts_text_props;	// text props (allocated)
+    char	cts_has_prop_with_text; // TRUE if if a property inserts text
     int         cts_cur_text_width;     // width of current inserted text
 #endif
     int		cts_vcol;	    // virtual column at current position
