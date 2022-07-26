@@ -2899,6 +2899,10 @@ do_ecmd(
     // highlighting to work in the other file.
     did_filetype = FALSE;
 
+    // If file name was changed, reset the flag when reloading the file.
+    if (!other_file)
+	curbuf->b_flags &= ~BF_NOTEDITED;
+
 /*
  * other_file	oldbuf
  *  FALSE	FALSE	    re-edit same file, buffer is re-used
