@@ -2973,6 +2973,11 @@ do_ecmd(
     // Assume success now
     retval = OK;
 
+    // If the file name was changed, reset the not-edit flag so that ":write"
+    // works.
+    if (!other_file)
+	curbuf->b_flags &= ~BF_NOTEDITED;
+
     /*
      * Check if we are editing the w_arg_idx file in the argument list.
      */
