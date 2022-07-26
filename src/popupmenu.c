@@ -1549,8 +1549,8 @@ pum_show_popupmenu(vimmenu_T *menu)
 
 	c = vgetc();
 
-	// Bail out when typing Esc, CTRL-C or some callback closed the popup
-	// menu.
+	// Bail out when typing Esc, CTRL-C or some callback or <expr> mapping
+	// closed the popup menu.
 	if (c == ESC || c == Ctrl_C || pum_array == NULL)
 	    break;
 	else if (c == CAR || c == NL)
