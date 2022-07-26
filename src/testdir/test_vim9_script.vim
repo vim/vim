@@ -3440,6 +3440,30 @@ def Test_error_in_autoload_script()
   delete(dir, 'rf')
 enddef
 
+def Test_error_in_autoload_script_foldexpr()
+  var save_rtp = &rtp
+  mkdir('Xvim/autoload', 'p')
+  &runtimepath = 'Xvim'
+
+  var lines =<< trim END
+      vim9script
+      eval [][0]
+      echomsg 'no error'
+  END
+  lines->writefile('Xvim/autoload/script.vim')
+
+  lines =<< trim END
+      vim9script
+      import autoload 'script.vim'
+      &foldmethod = 'expr'
+      &foldexpr = 'script.Func()'
+      redraw
+  END
+  v9.CheckScriptFailure(lines, 'E684: List index out of range: 0')
+
+  delete('Xvim', 'rf')
+enddef
+
 def Test_invalid_sid()
   assert_fails('func <SNR>1234_func', 'E123:')
 

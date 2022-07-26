@@ -610,12 +610,20 @@ find_imported(char_u *name, size_t len, int load)
     ret = find_imported_in_script(name, len, current_sctx.sc_sid);
     if (ret != NULL && load && (ret->imp_flags & IMP_FLAGS_AUTOLOAD))
     {
-	scid_T dummy;
+	scid_T	dummy;
+	int	save_emsg_off = emsg_off;
+
+	// "emsg_off" will be set when evaluating an expression silently, but
+	// we do want to know about errors in a script.  Also because it then
+	// aborts when an error is encountered.
+	emsg_off = FALSE;
 
 	// script found before but not loaded yet
 	ret->imp_flags &= ~IMP_FLAGS_AUTOLOAD;
 	(void)do_source(SCRIPT_ITEM(ret->imp_sid)->sn_name, FALSE,
 							    DOSO_NONE, &dummy);
+
+	emsg_off = save_emsg_off;
     }
     return ret;
 }
