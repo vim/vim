@@ -537,7 +537,7 @@ set_string_option(
 	    saved_newval = vim_strsave(s);
 	}
 #endif
-	if ((errmsg = did_set_string_option(opt_idx, varp, TRUE, oldval, NULL,
+	if ((errmsg = did_set_string_option(opt_idx, varp, oldval, NULL,
 					   opt_flags, &value_checked)) == NULL)
 	    did_set_option(opt_idx, opt_flags, TRUE, value_checked);
 
@@ -639,13 +639,13 @@ check_stl_option(char_u *s)
 
 /*
  * Handle string options that need some action to perform when changed.
+ * The new value must be allocated.
  * Returns NULL for success, or an unstranslated error message for an error.
  */
     char *
 did_set_string_option(
     int		opt_idx,		// index in options[] table
     char_u	**varp,			// pointer to the option variable
-    int		new_value_alloced,	// new value was allocated
     char_u	*oldval,		// previous value of the option
     char	*errbuf,		// buffer for errors, or NULL
     int		opt_flags,		// OPT_LOCAL and/or OPT_GLOBAL
@@ -1188,10 +1188,8 @@ ambw_end:
 	    // When setting the global value to empty, make it "zip".
 	    if (*p_cm == NUL)
 	    {
-		if (new_value_alloced)
-		    free_string_option(p_cm);
+		free_string_option(p_cm);
 		p_cm = vim_strsave((char_u *)"zip");
-		new_value_alloced = TRUE;
 	    }
 	    // When using ":set cm=name" the local value is going to be empty.
 	    // Do that here, otherwise the crypt functions will still use the
@@ -1441,8 +1439,7 @@ ambw_end:
 		t_colors = colors;
 		if (t_colors <= 1)
 		{
-		    if (new_value_alloced)
-			vim_free(T_CCO);
+		    vim_free(T_CCO);
 		    T_CCO = empty_option;
 		}
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
@@ -1511,12 +1508,8 @@ ambw_end:
 	    if (STRCMP(p, "*") == 0)
 	    {
 		p = gui_mch_font_dialog(oldval);
-
-		if (new_value_alloced)
-		    free_string_option(p_guifont);
-
+		free_string_option(p_guifont);
 		p_guifont = (p != NULL) ? p : vim_strsave(oldval);
-		new_value_alloced = TRUE;
 	    }
 # endif
 	    if (p != NULL && gui_init_font(p_guifont, FALSE) != OK)
@@ -1526,10 +1519,8 @@ ambw_end:
 		{
 		    // Dialog was cancelled: Keep the old value without giving
 		    // an error message.
-		    if (new_value_alloced)
-			free_string_option(p_guifont);
+		    free_string_option(p_guifont);
 		    p_guifont = vim_strsave(oldval);
-		    new_value_alloced = TRUE;
 		}
 		else
 # endif
@@ -1950,10 +1941,8 @@ ambw_end:
 				      REPTERM_FROM_PART | REPTERM_DO_LT, NULL);
 	    if (p != NULL)
 	    {
-		if (new_value_alloced)
-		    free_string_option(p_pt);
+		free_string_option(p_pt);
 		p_pt = p;
-		new_value_alloced = TRUE;
 	    }
 	}
     }
@@ -2369,10 +2358,8 @@ ambw_end:
 	    name = get_scriptlocal_funcname(*p_opt);
 	    if (name != NULL)
 	    {
-		if (new_value_alloced)
-		    free_string_option(*p_opt);
+		free_string_option(*p_opt);
 		*p_opt = name;
-		new_value_alloced = TRUE;
 	    }
 	}
 
@@ -2486,8 +2473,7 @@ ambw_end:
     // If error detected, restore the previous value.
     if (errmsg != NULL)
     {
-	if (new_value_alloced)
-	    free_string_option(*varp);
+	free_string_option(*varp);
 	*varp = oldval;
 	// When resetting some values, need to act on it.
 	if (did_chartab)
@@ -2506,10 +2492,7 @@ ambw_end:
 	// our fingers (esp. init_highlight()).
 	if (free_oldval)
 	    free_string_option(oldval);
-	if (new_value_alloced)
-	    set_option_flag(opt_idx, P_ALLOCED);
-	else
-	    clear_option_flag(opt_idx, P_ALLOCED);
+	set_option_flag(opt_idx, P_ALLOCED);
 
 	if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0
 		&& is_global_local_option(opt_idx))
