@@ -1486,7 +1486,7 @@ win_line(
 		text_prop_id = 0;
 		if (text_props_active > 0)
 		{
-		    int used_tpi;
+		    int used_tpi = -1;
 		    int used_attr = 0;
 
 		    // Sort the properties on priority and/or starting last.
@@ -1514,7 +1514,7 @@ win_line(
 			    used_tpi = tpi;
 			}
 		    }
-		    if (n_extra == 0 && text_prop_id < 0
+		    if (n_extra == 0 && text_prop_id < 0 && used_tpi >= 0
 			    && -text_prop_id
 				      <= wp->w_buffer->b_textprop_text.ga_len)
 		    {
