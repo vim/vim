@@ -4650,6 +4650,7 @@ open_cmdwin(void)
 # endif
 
     State = save_State;
+    may_trigger_modechanged();
     setmouse();
 
     return cmdwin_result;
