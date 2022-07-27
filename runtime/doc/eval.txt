@@ -2005,6 +2005,8 @@ v:completed_item
 		|Dictionary| containing the |complete-items| for the most
 		recently completed word after |CompleteDone|.  The
 		|Dictionary| is empty if the completion failed.
+		Note: Plugins can modify the value to emulate builtin
+		|CompleteDone| behavior.
 
 					*v:count* *count-variable*
 v:count		The count given for the last Normal mode command.  Can be used
