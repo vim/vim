@@ -4297,7 +4297,7 @@ build_stl_str_hl(
     curitem = 0;
     prevchar_isflag = TRUE;
     prevchar_isitem = FALSE;
-    for (s = usefmt; *s; )
+    for (s = usefmt; *s != NUL; )
     {
 	if (curitem == (int)stl_items_len)
 	{
@@ -4327,7 +4327,7 @@ build_stl_str_hl(
 	    stl_items_len = new_len;
 	}
 
-	if (*s != NUL && *s != '%')
+	if (*s != '%')
 	    prevchar_isflag = prevchar_isitem = FALSE;
 
 	/*
