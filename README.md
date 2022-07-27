@@ -142,6 +142,17 @@ lists to discuss them with Vim users and developers:
 If nothing else works, report bugs directly:
 	Bram Moolenaar <Bram@vim.org>
 
+If you are on macOS, you can use Macvim: 
+
+https://macvim-dev.github.io/macvim/
+
+Neovim is also available here:
+
+https://neovim.io
+
+Vim is also highly configurable, for plugin see here:
+
+https://vimawesome.com
 
 ## Main author ##
 
