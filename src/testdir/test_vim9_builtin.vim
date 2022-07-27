@@ -3719,6 +3719,7 @@ def Test_setwinvar()
   v9.CheckDefAndScriptFailure(['setwinvar("a", "b", 1)'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckDefAndScriptFailure(['setwinvar(1, 2, "c")'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
   assert_fails('setwinvar(1, "", 10)', 'E461: Illegal variable name')
+  assert_fails('setwinvar(0, "&rulerformat", true)', 'E928:')
 enddef
 
 def Test_sha256()

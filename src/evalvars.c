@@ -4223,6 +4223,11 @@ set_option_from_tv(char_u *varname, typval_T *varp)
 
     if (varp->v_type == VAR_BOOL)
     {
+	if (is_string_option(varname))
+	{
+	    emsg(_(e_string_required));
+	    return;
+	}
 	numval = (long)varp->vval.v_number;
 	strval = (char_u *)"0";  // avoid using "false"
     }

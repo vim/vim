@@ -4478,6 +4478,20 @@ is_option_allocated(char *name)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return TRUE if "name" is a string option.
+ * Returns FALSE if option "name" does not exist.
+ */
+    int
+is_string_option(char_u *name)
+{
+    int idx = findoption(name);
+
+    return idx >= 0 && (options[idx].flags & P_STRING);
+}
+#endif
+
 /*
  * Translate a string like "t_xx", "<t_xx>" or "<S-Tab>" to a key number.
  * When "has_lt" is true there is a '<' before "*arg_arg".
