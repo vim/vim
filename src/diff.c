@@ -464,7 +464,10 @@ diff_mark_adjust_tp(
 		    for (i = 0; i < DB_COUNT; ++i)
 			if (tp->tp_diffbuf[i] != NULL && i != idx)
 			{
-			    dp->df_lnum[i] -= off;
+			    if (dp->df_lnum[i] > off)
+				dp->df_lnum[i] -= off;
+			    else
+				dp->df_lnum[i] = 1;
 			    dp->df_count[i] += n;
 			}
 		}
@@ -2863,8 +2866,8 @@ ex_diffgetput(exarg_T *eap)
 	    {
 		// remember deleting the last line of the buffer
 		buf_empty = curbuf->b_ml.ml_line_count == 1;
-		ml_delete(lnum);
-		--added;
+		if (ml_delete(lnum) == OK)
+		    --added;
 	    }
 	    for (i = 0; i < dp->df_count[idx_from] - start_skip - end_skip; ++i)
 	    {
