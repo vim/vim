@@ -3622,13 +3622,31 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     }
     msg_puts(" ");
 
-    // Remove newlines and leading whitespace from the text.  For an
-    // unrecognized line keep the indent, the compiler may mark a word
-    // with ^^^^.
-    qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
-				? skipwhite(qfp->qf_text) : qfp->qf_text,
-				IObuff, IOSIZE);
-    msg_prt_line(IObuff, FALSE);
+    {
+	char_u *tbuf = IObuff;
+	size_t	tbuflen = IOSIZE;
+	size_t	len = STRLEN(qfp->qf_text) + 3;
+
+	if (len > IOSIZE)
+	{
+	    tbuf = alloc(len);
+	    if (tbuf != NULL)
+		tbuflen = len;
+	    else
+		tbuf = IObuff;
+	}
+
+	// Remove newlines and leading whitespace from the text.  For an
+	// unrecognized line keep the indent, the compiler may mark a word
+	// with ^^^^.
+	qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
+				    ? skipwhite(qfp->qf_text) : qfp->qf_text,
+				    tbuf, tbuflen);
+	msg_prt_line(tbuf, FALSE);
+
+	if (tbuf != IObuff)
+	    vim_free(tbuf);
+    }
     out_flush();		// show one line at a time
 }
 
