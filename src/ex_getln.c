@@ -3892,6 +3892,7 @@ redrawcmd(void)
 	return;
     }
 
+    sb_text_restart_cmdline();
     msg_start();
     redrawcmdprompt();
 
@@ -4106,7 +4107,7 @@ get_cmdline_info(void)
 
 #if defined(FEAT_EVAL) || defined(FEAT_CMDWIN) || defined(PROTO)
 /*
- * Get pointer to the command line info to use. save_ccline() may clear
+ * Get pointer to the command line info to use. save_cmdline() may clear
  * ccline and put the previous value in prev_ccline.
  */
     static cmdline_info_T *
