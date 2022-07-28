@@ -13037,14 +13037,12 @@ $as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for timer_create" >&5
-$as_echo_n "checking for timer_create... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for timer_create without -lrt" >&5
+$as_echo_n "checking for timer_create without -lrt... " >&6; }
 if ${vim_cv_timer_create+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
-save_LIBS="$LIBS"
-LIBS="$LIBS -lrt"
 if test "$cross_compiling" = yes; then :
   as_fn_error $? "cross-compiling: please set 'vim_cv_timer_create'" "$LINENO" 5
 
@@ -13078,45 +13076,6 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: timer_create with -lrt" >&5
-$as_echo "$as_me: timer_create with -lrt" >&6;}; vim_cv_timer_create=yes
-else
-  LIBS="$save_LIBS"
-  if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-#include<signal.h>
-#include<time.h>
-static void set_flag(union sigval sv) {}
-
-int
-main ()
-{
-
-    struct timespec ts;
-    struct sigevent action = {0};
-    timer_t timer_id;
-
-    action.sigev_notify = SIGEV_THREAD;
-    action.sigev_notify_function = set_flag;
-    if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
-      exit(1);  // cannot create a monotonic timer
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
   vim_cv_timer_create=yes
 else
   vim_cv_timer_create=no
@@ -13126,20 +13085,76 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
 fi
 
 fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create" >&5
+$as_echo "$vim_cv_timer_create" >&6; }
+
+if test "x$vim_cv_timer_create" = "xno" ; then
+  save_LIBS="$LIBS"
+  LIBS="$LIBS -lrt"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for timer_create with -lrt" >&5
+$as_echo_n "checking for timer_create with -lrt... " >&6; }
+if ${vim_cv_timer_create_with_lrt+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test "$cross_compiling" = yes; then :
+  as_fn_error $? "cross-compiling: please set 'vim_cv_timer_create_with_lrt'" "$LINENO" 5
+
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #if STDC_HEADERS
+    # include <stdlib.h>
+    # include <stddef.h>
+    #endif
+    #include <signal.h>
+    #include <time.h>
+    static void set_flag(union sigval sv) {}
+
+int
+main ()
+{
+
+      struct timespec ts;
+      struct sigevent action = {0};
+      timer_t timer_id;
+
+      action.sigev_notify = SIGEV_THREAD;
+      action.sigev_notify_function = set_flag;
+      if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
+	exit(1);  // cannot create a monotonic timer
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  vim_cv_timer_create_with_lrt=yes
+else
+  vim_cv_timer_create_with_lrt=no
+fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create" >&5
-$as_echo "$vim_cv_timer_create" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create_with_lrt" >&5
+$as_echo "$vim_cv_timer_create_with_lrt" >&6; }
+  LIBS="$save_LIBS"
+else
+  vim_cv_timer_create_with_lrt=no
+fi
 
 if test "x$vim_cv_timer_create" = "xyes" ; then
   $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
 
 fi
+if test "x$vim_cv_timer_create_with_lrt" = "xyes" ; then
+  $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
 
+  LIBS="$LIBS -lrt"
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether stat() ignores a trailing slash" >&5
 $as_echo_n "checking whether stat() ignores a trailing slash... " >&6; }
