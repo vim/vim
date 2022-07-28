@@ -13042,7 +13042,8 @@ $as_echo_n "checking for timer_create... " >&6; }
 if ${vim_cv_timer_create+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  save_LIBS="$LIBS"
+
+save_LIBS="$LIBS"
 LIBS="$LIBS -lrt"
 if test "$cross_compiling" = yes; then :
   as_fn_error $? "cross-compiling: please set 'vim_cv_timer_create'" "$LINENO" 5
@@ -13051,8 +13052,12 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-#include<signal.h>
-#include<time.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#include <signal.h>
+#include <time.h>
 static void set_flag(union sigval sv) {}
 
 int
@@ -13086,6 +13091,10 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
 #include<signal.h>
 #include<time.h>
 static void set_flag(union sigval sv) {}

@@ -3807,12 +3807,16 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 dnl Check for timer_create. It probably requires the 'rt' library.
 dnl Run the program to find out if timer_create(CLOCK_MONOTONIC) actually
 dnl works, on Solaris timer_create() exists but fails at runtime.
-AC_CACHE_CHECK([for timer_create], [vim_cv_timer_create],
+AC_CACHE_CHECK([for timer_create], [vim_cv_timer_create], [
 save_LIBS="$LIBS"
 LIBS="$LIBS -lrt"
 AC_RUN_IFELSE([AC_LANG_PROGRAM([
-#include<signal.h>
-#include<time.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#include <signal.h>
+#include <time.h>
 static void set_flag(union sigval sv) {}
 ], [
   struct timespec ts;
@@ -3827,6 +3831,10 @@ static void set_flag(union sigval sv) {}
   AC_MSG_NOTICE(timer_create with -lrt); vim_cv_timer_create=yes,
   LIBS="$save_LIBS"
   AC_RUN_IFELSE([AC_LANG_PROGRAM([
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
 #include<signal.h>
 #include<time.h>
 static void set_flag(union sigval sv) {}
@@ -3843,7 +3851,7 @@ static void set_flag(union sigval sv) {}
     vim_cv_timer_create=yes,
     vim_cv_timer_create=no),
     AC_MSG_ERROR(cross-compiling: please set 'vim_cv_timer_create')
-    )
+    )]
 )
 
 if test "x$vim_cv_timer_create" = "xyes" ; then
