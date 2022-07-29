@@ -3997,10 +3997,7 @@ trans_function_name(
 	{
 	    if (vim9script && lead == 2 && !ASCII_ISUPPER(*lv.ll_name))
 	    {
-		semsg(_(vim9script
-			   ? e_function_name_must_start_with_capital_str
-			   : e_function_name_must_start_with_capital_or_s_str),
-									start);
+		semsg(_(e_function_name_must_start_with_capital_str), start);
 		goto theend;
 	    }
 	    lead = 3;
