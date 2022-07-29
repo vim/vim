@@ -2103,7 +2103,6 @@ $quote	eval.txt	/*$quote*
 :XMLent	insert.txt	/*:XMLent*
 :XMLns	insert.txt	/*:XMLns*
 :[range]	motion.txt	/*:[range]*
-:[vV\x16]	autocmd.txt	/*:[vV\\x16]*
 :\bar	cmdline.txt	/*:\\bar*
 :_!	cmdline.txt	/*:_!*
 :_#	cmdline.txt	/*:_#*
@@ -10226,15 +10225,12 @@ try-finally	eval.txt	/*try-finally*
 try-nested	eval.txt	/*try-nested*
 try-nesting	eval.txt	/*try-nesting*
 tutor	usr_01.txt	/*tutor*
-twice	if_cscop.txt	/*twice*
 two-engines	pattern.txt	/*two-engines*
 type()	builtin.txt	/*type()*
 type-casting	vim9.txt	/*type-casting*
 type-checking	vim9.txt	/*type-checking*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
-typecorrect-settings	usr_51.txt	/*typecorrect-settings*
-typecorrect.txt	usr_51.txt	/*typecorrect.txt*
 typename()	builtin.txt	/*typename()*
 u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*

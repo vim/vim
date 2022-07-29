@@ -21,6 +21,8 @@ main(int argc, char **argv)
 	char	*p1, *p2;
 	char	*p;
 	FILE	*fd;
+	int		len;
+	int		in_example;
 
 	if (argc <= 1)
 	{
@@ -37,8 +39,16 @@ main(int argc, char **argv)
 			fprintf(stderr, "Unable to open %s for reading\n", argv[0]);
 			continue;
 		}
+		in_example = 0;
 		while (fgets(line, LINELEN, fd) != NULL)
 		{
+			if (in_example)  /* skip over examples */
+			{
+				if (strchr(" \t\n\r", line[0]))
+					continue;
+				else
+					in_example = 0;
+			}
 			p1 = strchr(line, '*');				/* find first '*' */
 			while (p1 != NULL)
 			{
@@ -74,6 +84,12 @@ main(int argc, char **argv)
 					}
 				}
 				p1 = p2;
+			}
+			len = strlen(line);
+			if ((len == 2 && strcmp(&line[len - 2], ">\n") == 0) ||
+				(len >= 3 && strcmp(&line[len - 3], " >\n") == 0))
+			{
+				in_example = 1;
 			}
 		}
 		fclose(fd);
