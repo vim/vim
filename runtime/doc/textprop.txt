@@ -171,7 +171,8 @@ prop_add({lnum}, {col}, {props})
 		the text.
 		A negative "id" will be chosen and is returned.  Once a
 		property with "text" has been added for a buffer then using a
-		negative "id" for any other property will give an error.
+		negative "id" for any other property will give an error:
+		*E1293*
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)

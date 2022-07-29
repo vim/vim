@@ -281,7 +281,7 @@ start with an upper case letter even when using the "s:" prefix.  In legacy
 script "s:funcref" could be used, because it could not be referred to with
 "funcref".  In Vim9 script it can, therefore "s:Funcref" must be used to avoid
 that the name interferes with builtin functions.
-							*vim9-s-namespace*
+						*vim9-s-namespace* *E1268*
 The use of the "s:" prefix is not supported at the Vim9 script level.  All
 functions and variables without a prefix are script-local.
 
@@ -857,6 +857,8 @@ No curly braces expansion ~
 Command modifiers are not ignored ~
 								*E1176*
 Using a command modifier for a command that does not use it gives an error.
+								*E1082*
+Also, using a command modifier without a following command is now an error.
 
 
 Dictionary literals ~
@@ -1234,6 +1236,9 @@ variables can be accessed without the "s:" prefix.  They must be defined
 before the function is compiled.  If the script the function is defined in is
 legacy script, then script-local variables must be accessed with the "s:"
 prefix if they do not exist at the time of compiling.
+							*E1269*
+Script-local variables in a |Vim9| script must be declared at the script
+level.  They cannot be created in a function, also not in a legacy function.
 
 						*:defc* *:defcompile*
 :defc[ompile]		Compile functions defined in the current script that
@@ -1492,6 +1497,8 @@ value is not actually changed.  If you need to change the type, e.g. to change
 it to a string, use the |string()| function.  Or use |str2nr()| to convert a
 string to a number.
 
+If a type is given where it is not expected you can get *E1272* .
+
 
 Type inference ~
 							*type-inference*
@@ -1696,8 +1703,8 @@ be exported. {not implemented yet: class, interface}
 
 
 Import ~
-					*:import* *:imp* *E1094* *E1047* *E1262*
-					*E1048* *E1049* *E1053* *E1071* *E1236*
+				*:import* *:imp* *E1094* *E1047* *E1262*
+				*E1048* *E1049* *E1053* *E1071* *E1088* *E1236*
 The exported items can be imported in another script. The import syntax has
 two forms. The simple form: >
 	import {filename}

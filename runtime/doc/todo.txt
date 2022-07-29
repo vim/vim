@@ -39,18 +39,24 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 PR to consider:
-- Fix CTRL-[ for Win32 on Belgian keyboard  #10687 (closes #10454)
 - stricter parsing for has('patch-x.y.z')  #10752
 - cmdheight=0  #10675  Does it work properly?
 - add splitscroll  #10682  Useful?  Any trouble? Null Chilly says it's OK.
     suggestion: names instead of numbers for the option value
+    problem depending on whether window is focused or not
 
-Support virtual text:
-- clear b_textprop_text when buffer is cleared
+Support virtual text:  #7553
 - Remove and free text when textprop is removed with negative ID.
 - "gj" does not work correctly
+- no virtual text when 'signcolumn' is set to "yes"  #10794
 - placement at the end of the line: after the text (text_align: "end"), right
-  aligned (text_align: "right")
+  aligned (text_align: "right"); choice: truncate when not enough space or
+  wrap to next line (text_wrap: "yes"); Also: fill with space to text wraps to
+  start of next screen line (text_align: "below")
+  Also consider an empty line, should fix #10786.  Also check inserting text.
+- win_lbr_chartabsize() TODO item: count screen cells
+- wrong cursor position (Yegappan, July 27)
+- many tests
 
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
@@ -237,6 +243,9 @@ feature is supported or not.  Replaces the xterm mechanism to request each
 entry separately. #6609
 Multiplexers (screen, tmux) can request it to the underlying terminal, and
 pass it on with modifications.
+
+Using "A" and "o" in manually created fold (in empty buffer) does not behave
+consistenly (James McCoy, #10698)
 
 When scheme can't be found by configure there is no clear "not found" message:
     configure:5769: checking MzScheme install prefix

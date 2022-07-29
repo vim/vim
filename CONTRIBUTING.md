@@ -65,9 +65,6 @@ If the maintainer does not respond, contact the vim-dev maillist.
 
 # Translations
 
-Translations of this CONTRIBUTING file:
-[Korean](https://github.com/cjw1359/opensource/blob/master/Vim/CONTRIBUTING_ko.md)
-
 Translating messages and runtime files is very much appreciated!  These things
 can be translated:
 *   Messages in Vim, see [src/po/README.txt][1]

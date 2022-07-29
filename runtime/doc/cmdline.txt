@@ -1147,6 +1147,8 @@ character that indicates the type of command-line being edited, see
 
 Vim will be in Normal mode when the editor is opened, except when 'insertmode'
 is set.
+								*E1292*
+Once a command-line window is open it is not possible to open another one.
 
 The height of the window is specified with 'cmdwinheight' (or smaller if there
 is no room).  The window is always full width and is positioned just above the

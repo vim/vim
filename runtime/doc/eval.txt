@@ -1399,7 +1399,7 @@ parenthesis), or any expression in parentheses: >
 	base->alist[idx](args)
 	base->(getFuncRef())(args)
 Note that in the last call the base is passed to the function resulting from
-"(getFuncRef())", inserted before "args".
+"(getFuncRef())", inserted before "args".  *E1275*
 
 							*E274*
 "->name(" must not contain white space.  There can be white space before the
@@ -1559,7 +1559,7 @@ allowing the inclusion of Vim script expressions (see |expr1|).  Any
 expression returning a value can be enclosed between curly braces.  The value
 is converted to a string.  All the text and results of the expressions
 are concatenated to make a new string.
-								*E1278*
+							*E1278* *E1279*
 To include an opening brace '{' or closing brace '}' in the string content
 double it.  For double quoted strings using a backslash also works.  A single
 closing brace '}' will result in an error.
@@ -2682,7 +2682,7 @@ See |:verbose-cmd| for more information.
 			Define a new function by the name {name}.  The body of
 			the function follows in the next lines, until the
 			matching |:endfunction|.
-
+								*E1267*
 			The name must be made of alphanumeric characters and
 			'_', and must start with a capital or "s:" (see
 			above).  Note that using "b:" or "g:" is not allowed.

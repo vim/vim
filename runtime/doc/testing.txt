@@ -186,6 +186,7 @@ test_gui_event({event}, {args})
 				    keyup   generate a keyup event
 				    keydown generate a keydown event
 		    keycode:    Keycode to use for a keyup or a keydown event.
+								*E1291*
 
 		"tabline":
 		  Inject a mouse click event on the tabline to select a
