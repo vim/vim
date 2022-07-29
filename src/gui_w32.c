@@ -8658,3 +8658,86 @@ test_gui_w32_sendevent(dict_T *args)
     return TRUE;
 }
 #endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    int
+test_gui_w32_setkblayout(dict_T *args)
+{
+    char_u	*kblayout;
+    const char	*kblayout_internal_name = 0;
+
+    HKL hkl, prev_hkl;
+
+    kblayout = dict_get_string(args, "kblayout", TRUE);
+    if (kblayout == NULL)
+	return FALSE;
+
+    /*
+	EN: GetKeyboardLayoutName: 00000409
+	CS: GetKeyboardLayoutName: A0000405
+	FR: GetKeyboardLayoutName: 0000080C
+	DE: GetKeyboardLayoutName: 00000407
+	RU: GetKeyboardLayoutName: 00000419
+	*/
+
+
+    if (STRICMP(kblayout, "EN") == 0)
+	kblayout_internal_name = "00000409";
+    else if (STRICMP(kblayout, "CS") == 0)
+	kblayout_internal_name = "A0000405"; // just my special
+					     // case?
+    else if (STRICMP(kblayout, "FR") == 0)
+	kblayout_internal_name = "0000080C";
+    else if (STRICMP(kblayout, "DE") == 0)
+	kblayout_internal_name = "00000407";
+    else if (STRICMP(kblayout, "RU") == 0)
+	kblayout_internal_name = "00000419";
+    else
+    {
+	semsg(_(e_invalid_argument_str), kblayout);
+	goto ENDKB;
+    }
+
+    hkl = LoadKeyboardLayout(kblayout_internal_name, KLF_ACTIVATE|KLF_SUBSTITUTE_OK);
+    if (hkl == NULL)
+    {
+	semsg(_(e_invalid_argument_str), "cannot load kb layout");
+	goto ENDKB;
+    }
+
+    prev_hkl = ActivateKeyboardLayout(
+	  hkl,
+	  KLF_SETFORPROCESS
+	);
+    if (prev_hkl == NULL)
+    {
+	semsg(_(e_invalid_argument_str), "cannot activate kb layout");
+	goto ENDKB;
+    }
+
+    //{
+    //    WORD	    vkCode;
+
+    //    vkCode = dict_get_number_def(args, "keycode", 0);
+    //    if (vkCode <= 0 || vkCode >= 0xFF)
+    //    {
+    //        semsg(_(e_invalid_argument_nr), (long)vkCode);
+    //        return FALSE;
+    //    }
+
+    //    inputs[0].type = INPUT_KEYBOARD;
+    //    inputs[0].ki.wVk = vkCode;
+    //    if (STRICMP(event, "keyup") == 0)
+    //        inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+    //    SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+    //}
+    //else
+    //    semsg(_(e_invalid_argument_str), event);
+
+ENDKB:
+
+    vim_free(kblayout);
+
+    return TRUE;
+}
+#endif

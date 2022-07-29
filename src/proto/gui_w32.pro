@@ -97,4 +97,5 @@ BalloonEval *gui_mch_create_beval_area(void *target, char_u *mesg, void (*mesgCB
 void gui_mch_destroy_beval_area(BalloonEval *beval);
 void netbeans_draw_multisign_indicator(int row);
 int test_gui_w32_sendevent(dict_T *args);
+int test_gui_w32_setkblayout(dict_T *args);
 /* vim: set ft=c : */

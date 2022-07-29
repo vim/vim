@@ -1529,6 +1529,8 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #  ifdef FEAT_GUI_MSWIN
     else if (STRCMP(event, "sendevent") == 0)
 	rettv->vval.v_number = test_gui_w32_sendevent(argvars[1].vval.v_dict);
+    else if (STRCMP(event, "setkblayout") == 0)
+	rettv->vval.v_number = test_gui_w32_setkblayout(argvars[1].vval.v_dict);
 #  endif
     else
     {
