@@ -2204,7 +2204,10 @@ func Test_prop_inserts_text()
   END
   call writefile(lines, 'XscriptPropsWithText')
   let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 6, cols: 60})
-  call VerifyScreenDump(buf, 'Test_prop_inserts_text', {})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_1', {})
+
+  call term_sendkeys(buf, ":set signcolumn=yes\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_2', {})
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropsWithText')
