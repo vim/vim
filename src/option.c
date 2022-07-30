@@ -3559,7 +3559,7 @@ set_num_option(
     // if p_ch changed value, change the command line height
     else if (pp == &p_ch)
     {
-	if (p_ch < 1)
+	if (p_ch < 0)
 	{
 	    errmsg = e_argument_must_be_positive;
 	    p_ch = 1;

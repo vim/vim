@@ -3260,6 +3260,11 @@ cursor_pos_info(dict_T *dict)
 	    // Don't shorten this message, the user asked for it.
 	    p = p_shm;
 	    p_shm = (char_u *)"";
+	    if (p_ch < 1)
+	    {
+		msg_start();
+		msg_scroll = TRUE;
+	    }
 	    msg((char *)IObuff);
 	    p_shm = p;
 	}

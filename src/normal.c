@@ -1798,6 +1798,9 @@ display_showcmd(void)
 {
     int	    len;
 
+    if (p_ch == 0)
+	return;
+
     cursor_off();
 
     len = (int)STRLEN(showcmd_buf);

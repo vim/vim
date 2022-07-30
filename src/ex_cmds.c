@@ -3704,6 +3704,7 @@ ex_substitute(exarg_T *eap)
     int		endcolumn = FALSE;	// cursor in last column when done
     pos_T	old_cursor = curwin->w_cursor;
     int		start_nsubs;
+    int		cmdheight0 = p_ch == 0;
 #ifdef FEAT_EVAL
     int		save_ma = 0;
     int		save_sandbox = 0;
@@ -4008,6 +4009,14 @@ ex_substitute(exarg_T *eap)
 	    sub_copy = newsub;
 	    sub = newsub;
 	}
+    }
+
+    if (cmdheight0)
+    {
+	// If cmdheight is 0, cmdheight must be set to 1 when we enter command
+	// line.
+	set_option_value((char_u *)"ch", 1L, NULL, 0);
+	redraw_statuslines();
     }
 
     /*
@@ -4832,6 +4841,10 @@ outofmem:
 	// Cursor position may require updating
 	changed_window_setting();
 #endif
+
+    // Restore cmdheight
+    if (cmdheight0)
+	set_option_value((char_u *)"ch", 0L, NULL, 0);
 
     vim_regfree(regmatch.regprog);
     vim_free(sub_copy);

@@ -953,7 +953,7 @@ msg_may_trunc(int force, char_u *s)
     // just in case.
     room = (int)(Rows - cmdline_row - 1) * Columns + sc_col - 1;
     if (room > 0 && (force || (shortmess(SHM_TRUNC) && !exmode_active))
-	    && (n = (int)STRLEN(s) - room) > 0)
+	    && (n = (int)STRLEN(s) - room) > 0 && p_ch > 0)
     {
 	if (has_mbyte)
 	{
@@ -1430,7 +1430,7 @@ msg_start(void)
     }
 
 #ifdef FEAT_EVAL
-    if (need_clr_eos)
+    if (need_clr_eos || p_ch == 0)
     {
 	// Halfway an ":echo" command and getting an (error) message: clear
 	// any text from the command.
@@ -1448,7 +1448,7 @@ msg_start(void)
 #endif
 	    0;
     }
-    else if (msg_didout)		    // start message on next line
+    else if (msg_didout || p_ch == 0)	    // start message on next line
     {
 	msg_putchar('\n');
 	did_return = TRUE;
@@ -3460,7 +3460,7 @@ msg_clr_eos_force(void)
 		out_str(T_CE);	// clear to end of line
 	}
     }
-    else
+    else if (p_ch > 0)
     {
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)

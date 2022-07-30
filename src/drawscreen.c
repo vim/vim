@@ -649,8 +649,8 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
     int		off = 0;
     int		width;
 
-    // If 'ruler' off or redrawing disabled, don't do anything
-    if (!p_ru)
+    // If 'ruler' off or messages area disabled, don't do anything
+    if (!p_ru || (wp->w_status_height == 0 && p_ch == 0))
 	return;
 
     /*
@@ -671,7 +671,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	return;
 
 #ifdef FEAT_STL_OPT
-    if (*p_ruf)
+    if (*p_ruf && p_ch > 0)
     {
 	int	called_emsg_before = called_emsg;
 
@@ -2506,7 +2506,8 @@ win_update(win_T *wp)
 	    // Past end of the window or end of the screen. Note that after
 	    // resizing wp->w_height may be end up too big. That's a problem
 	    // elsewhere, but prevent a crash here.
-	    if (row > wp->w_height || row + wp->w_winrow >= Rows)
+	    if (row > wp->w_height
+		    || row + wp->w_winrow >= (p_ch > 0 ? Rows : Rows + 1))
 	    {
 		// we may need the size of that too long line later on
 		if (dollar_vcol == -1)
@@ -2560,7 +2561,7 @@ win_update(win_T *wp)
 
 	// Safety check: if any of the wl_size values is wrong we might go over
 	// the end of w_lines[].
-	if (idx >= Rows)
+	if (idx >= (p_ch > 0 ? Rows : Rows + 1))
 	    break;
     }
 
@@ -2946,8 +2947,10 @@ redraw_asap(int type)
     schar_T	*screenline2 = NULL;	// copy from ScreenLines2[]
 
     redraw_later(type);
-    if (msg_scrolled || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
-								    || exiting)
+    if (msg_scrolled
+	    || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
+	    || exiting
+	    || p_ch == 0)
 	return ret;
 
     // Allocate space to save the text displayed in the command line area.
