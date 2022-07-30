@@ -3828,7 +3828,7 @@ static void set_flag(union sigval sv) {}
   ])],
   vim_cv_timer_create=yes,
   vim_cv_timer_create=no,
-  AC_MSG_ERROR(cross-compiling: please set 'vim_cv_timer_create')
+  AC_MSG_WARN([failed to build test program; if cross-compiling please set 'vim_cv_timer_create'])
   )])
 
 dnl If the previous failed, check for timer_create() and linking with -lrt.
@@ -3856,7 +3856,7 @@ if test "x$vim_cv_timer_create" = "xno" ; then
       ])],
       vim_cv_timer_create_with_lrt=yes,
       vim_cv_timer_create_with_lrt=no,
-      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_timer_create_with_lrt')
+      AC_MSG_WARN([failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'])
     )])
   LIBS="$save_LIBS"
 else

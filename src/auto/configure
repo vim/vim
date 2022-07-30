@@ -13044,7 +13044,8 @@ if ${vim_cv_timer_create+:} false; then :
 else
 
 if test "$cross_compiling" = yes; then :
-  as_fn_error $? "cross-compiling: please set 'vim_cv_timer_create'" "$LINENO" 5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create'" >&5
+$as_echo "$as_me: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create'" >&2;}
 
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
@@ -13098,7 +13099,8 @@ if ${vim_cv_timer_create_with_lrt+:} false; then :
 else
 
     if test "$cross_compiling" = yes; then :
-  as_fn_error $? "cross-compiling: please set 'vim_cv_timer_create_with_lrt'" "$LINENO" 5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'" >&5
+$as_echo "$as_me: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'" >&2;}
 
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
