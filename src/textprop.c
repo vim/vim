@@ -1233,9 +1233,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     dict_T	*dict;
     buf_T	*buf = curbuf;
     int		do_all;
-    int		id = -1;
+    int		id = -MAXCOL;
     int		type_id = -1;
     int		both;
+    int		did_remove_text = FALSE;
 
     rettv->vval.v_number = 0;
 
@@ -1286,12 +1287,12 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
     both = dict_get_bool(dict, "both", FALSE);
 
-    if (id == -1 && type_id == -1)
+    if (id == -MAXCOL && type_id == -1)
     {
 	emsg(_(e_need_at_least_one_of_id_or_type));
 	return;
     }
-    if (both && (id == -1 || type_id == -1))
+    if (both && (id == -MAXCOL || type_id == -1))
     {
 	emsg(_(e_need_id_and_type_with_both));
 	return;
@@ -1350,6 +1351,21 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 		    buf->b_ml.ml_line_len -= sizeof(textprop_T);
 		    --idx;
 
+		    if (textprop.tp_id < 0)
+		    {
+			garray_T    *gap = &buf->b_textprop_text;
+			int	    ii = -textprop.tp_id - 1;
+
+			// negative ID: property with text - free the text
+			if (ii < gap->ga_len)
+			{
+			    char_u **p = ((char_u **)gap->ga_data) + ii;
+			    vim_free(*p);
+			    *p = NULL;
+			    did_remove_text = TRUE;
+			}
+		    }
+
 		    if (first_changed == 0)
 			first_changed = lnum;
 		    last_changed = lnum;
@@ -1360,10 +1376,21 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    }
 	}
     }
+
     if (first_changed > 0)
     {
 	changed_lines_buf(buf, first_changed, last_changed + 1, 0);
 	redraw_buf_later(buf, VALID);
+    }
+
+    if (did_remove_text)
+    {
+	garray_T    *gap = &buf->b_textprop_text;
+
+	// Reduce the growarray size for NULL pointers at the end.
+	while (gap->ga_len > 0
+			 && ((char_u **)gap->ga_data)[gap->ga_len - 1] == NULL)
+	    --gap->ga_len;
     }
 }
 
