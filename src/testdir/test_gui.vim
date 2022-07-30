@@ -1729,9 +1729,9 @@ func GetSendMyKeysSrc()
 
 endfunc
 
-" test if ctrl+dead circumflex on AZERTY/FR (and on QWERTZ/DE) generates ESC
+" test if ctrl+dead circumflex on QWERTZ/DE generates ESC
 " (This has failed before 9.0.0087 (#10687, #10454)
-func Test_gui_lowlevel_ctrl_dead_clfex_eq_esc()
+func Test_gui_lowlvl_DE_ctrl_dead_cflex_eq_esc()
   CheckMSWindows
   new
 
@@ -1745,7 +1745,7 @@ func Test_gui_lowlevel_ctrl_dead_clfex_eq_esc()
     " <dead>
     call SendMyKeys(["68","du","69","du","65","du","68","du"])
 
-    " { this should generate "ESC" via new feature "dead circumflex in DE"
+    " this should generate "ESC" via new feature "dead circumflex in DE"
     " 17 = ctrl; 220 = dead^ on german keyboard
     call SendMyKeys([17,"d",220,"du",17,"u"])
 
@@ -1765,6 +1765,68 @@ func Test_gui_lowlevel_ctrl_dead_clfex_eq_esc()
 
     " <shift v m i (56 )57 shift up ENTER>
     call SendMyKeys([16,"d", 86, "du", 77, "du", 73, "du", 56, "du", 57, "du", 16, "u", 13, "du"])
+
+    func VMI()
+      write
+      quit
+    endfunction
+  END
+
+  call writefile(sendmykeys_src + lines, 'Xlines')
+  "call writefile(lines, 'Xlines')
+
+  let prefix = '!'
+  if has('win32')
+    let prefix = '!start '
+  endif
+  execute prefix .. GetVimCommand() .. ' -g -u NONE Xresult -S Xlines'
+
+  call WaitForAssert({-> assert_true(filereadable('Xresult'))})
+  edit Xresult
+
+  call assert_equal("dead"      , getline(1)) 
+  call assert_equal("circumflex", getline(2)) 
+
+  bw!
+  call delete('Xresult')
+  call delete('Xlines')
+endfunc
+
+" test if ctrl+dead circumflex on AZERTY/FR generates ESC
+" (This has failed before 9.0.0087 (#10687, #10454)
+func Test_gui_lowlvl_FR_ctrl_dead_cflex_eq_esc()
+  CheckMSWindows
+  new
+
+  let sendmykeys_src = GetSendMyKeysSrc()
+
+  let lines =<< trim END
+    call test_gui_event("setkblayout", #{kblayout: "FR", keycode: -99})
+
+    " <i>
+    call SendMyKeys([73,"du"])
+    " <dead>
+    call SendMyKeys(["68","du","69","du","65","du","68","du"])
+
+    " this should generate "ESC" via new feature "ctrl+dead circumflex in
+    " FR=ESC"
+    " 17 = ctrl; 221 = dead^ on AZERTY keyboard
+    call SendMyKeys([17,"d",221,"du",17,"u"])
+
+    " <o>
+    call SendMyKeys([79,"du"])
+
+    " <cicrumflex>
+    call SendMyKeys(["67","du","73","du","82","du","67","du","85","du",77,"du","70","du","76","du",69,"du",88,"du"])
+
+    " <ESC>
+    call SendMyKeys([27,"du"])
+
+    " <':'(azerty) 'c' 'a' 'l' 'l' space>
+    call SendMyKeys([191,"du",67,"du",65,"du",76,"du",76,"du",32,"du"])
+
+    " <shift v m i (56 )57 shift up ENTER>
+    call SendMyKeys([16,"d", 86, "du", 77, "du", 73, "du", 16, "u", 53, "du", 219, "du", 13, "du"])
 
     func VMI()
       write
