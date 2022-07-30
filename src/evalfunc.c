@@ -10083,8 +10083,11 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 		    p = highlight_has_attr(id, HL_ITALIC, modec);
 		break;
 
-	case 'n':					// name
-		p = get_highlight_name_ext(NULL, id - 1, FALSE);
+	case 'n':					
+		if (TOLOWER_ASC(what[1]) == 'o')	// nocombine
+		    p = highlight_has_attr(id, HL_NOCOMBINE, modec);
+		else					// name
+		    p = get_highlight_name_ext(NULL, id - 1, FALSE);
 		break;
 
 	case 'r':					// reverse
