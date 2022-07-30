@@ -6365,7 +6365,8 @@ win_new_height(win_T *wp, int height)
 
     // There is no point in adjusting the scroll position when exiting.  Some
     // values might be invalid.
-    if (!exiting)
+    // Skip scroll_to_fraction() when 'cmdheight' was set to one from zero.
+    if (!exiting && !made_cmdheight_nonzero)
 	scroll_to_fraction(wp, prev_height);
 }
 

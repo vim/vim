@@ -1615,10 +1615,17 @@ getcmdline_int(
 
     if (cmdheight0)
     {
-	// If cmdheight is 0, cmdheight must be set to 1 when we enter command
-	// line.
+	int  save_so = lastwin->w_p_so;
+
+	// If cmdheight is 0, cmdheight must be set to 1 when we enter the
+	// command line.  Set "made_cmdheight_nonzero" and reset 'scrolloff' to
+	// avoid scrolling the last window.
+	made_cmdheight_nonzero = TRUE;
+	lastwin->w_p_so = 0;
 	set_option_value((char_u *)"ch", 1L, NULL, 0);
 	update_screen(VALID);                 // redraw the screen NOW
+	made_cmdheight_nonzero = FALSE;
+	lastwin->w_p_so = save_so;
     }
 
     // one recursion level deeper
@@ -2606,9 +2613,11 @@ theend:
 
 	if (cmdheight0)
 	{
+	    made_cmdheight_nonzero = TRUE;
 	    set_option_value((char_u *)"ch", 0L, NULL, 0);
 	    // Redraw is needed for command line completion
 	    redraw_all_later(CLEAR);
+	    made_cmdheight_nonzero = FALSE;
 	}
 
 	--depth;
