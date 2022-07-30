@@ -960,6 +960,8 @@ helptags_one(
     int		utf8 = MAYBE;
     int		this_utf8;
     int		firstline;
+    int		in_example;
+    int		len;
     int		mix = FALSE;	// detected mixed encodings
 
     // Find all *.txt files.
@@ -1025,6 +1027,7 @@ helptags_one(
 	}
 	fname = files[fi] + dirlen + 1;
 
+	in_example = FALSE;
 	firstline = TRUE;
 	while (!vim_fgets(IObuff, IOSIZE, fd) && !got_int)
 	{
@@ -1058,6 +1061,13 @@ helptags_one(
 		    got_int = TRUE;
 		}
 		firstline = FALSE;
+	    }
+	    if (in_example)
+	    {
+		// skip over example; a non-white in the first column ends it
+		if (vim_strchr((char_u *)" \t\n\r", IObuff[0]))
+		    continue;
+		in_example = FALSE;
 	    }
 	    p1 = vim_strchr(IObuff, '*');	// find first '*'
 	    while (p1 != NULL)
@@ -1103,6 +1113,10 @@ helptags_one(
 		}
 		p1 = p2;
 	    }
+	    len = (int)STRLEN(IObuff);
+	    if ((len == 2 && STRCMP(&IObuff[len - 2], ">\n") == 0)
+		    || (len >= 3 && STRCMP(&IObuff[len - 3], " >\n") == 0))
+		in_example = TRUE;
 	    line_breakcheck();
 	}
 
