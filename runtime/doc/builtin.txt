@@ -9233,6 +9233,7 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		"underline"	"1" if underlined
 		"undercurl"	"1" if undercurled
 		"strike"	"1" if strikethrough
+		"nocombine"	"1" if nocombine
 
 		Returns an empty string on error.
 
