@@ -1729,5 +1729,5 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 // overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.
 EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
 
-// Set when 'cmdheight' is changed from non-zero to one temporarily.
+// Set when 'cmdheight' is changed from zero to one temporarily.
 EXTERN int made_cmdheight_nonzero INIT(= FALSE);

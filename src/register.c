@@ -389,7 +389,7 @@ do_record(int c)
 
 	    if (p_ch < 1)
 	    {
-		// Enable macro indicator temporary
+		// Enable macro indicator temporarily
 		set_option_value((char_u *)"ch", 1L, NULL, 0);
 		update_screen(VALID);
 
