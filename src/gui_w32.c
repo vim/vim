@@ -2047,7 +2047,7 @@ process_message(void)
 	{
 	    // ignore VK_SPACE when ALT key pressed: system menu
 	    if (special_keys[i].key_sym == vk
-		    && (vk != VK_SPACE || !(GetKeyState(VK_LMENU) & 0x8000)))
+		    && (vk != VK_SPACE || !(GetKeyState(VK_MENU) & 0x8000)))
 	    {
 		/*
 		 * Behave as expected if we have a dead key and the special key
@@ -2055,7 +2055,8 @@ process_message(void)
 		 * character output (such as a NUMPAD printable character or
 		 * the TAB key, etc...).
 		 */
-		if (dead_key == DEAD_KEY_SET_DEFAULT && (special_keys[i].vim_code0 == 'K'
+		if (dead_key == DEAD_KEY_SET_DEFAULT
+			&& (special_keys[i].vim_code0 == 'K'
 						|| vk == VK_TAB || vk == CAR))
 		{
 		    outputDeadKey_rePost(msg);
