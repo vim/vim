@@ -771,7 +771,9 @@ win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len)
     chartabsize_T cts;
 
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+#ifdef FEAT_PROP_POPUP
     cts.cts_with_trailing = len == MAXCOL;
+#endif
     for ( ; *cts.cts_ptr != NUL && (len == MAXCOL || cts.cts_ptr < line + len);
 						      MB_PTR_ADV(cts.cts_ptr))
 	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
