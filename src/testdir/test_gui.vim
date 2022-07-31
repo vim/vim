@@ -1773,8 +1773,8 @@ func Test_GUI_lowlvl_QWERTY_Ctrl_minus_Ex()
 
   let lines =<< trim END
     " TODO: this do not work - why?
-    "imap <C-_> BINGO
-    exec "imap \x1f BINGO"
+    imap <C-_> BINGO
+    "exec "imap \x1f BINGO"
 
     " <i>
     call SendMyKeys([73,"du"])
@@ -1796,7 +1796,8 @@ func Test_GUI_lowlvl_QWERTY_Ctrl_minus_Ex()
     call SendMyKeys([16,"d", 86, "du", 77, "du", 73, "du", 57, "du", 48, "du", 16, "u", 13, "du"])
 
     func VMI()
-      write
+      write Xresult
+      bw!
       quit
     endfunction
   END
@@ -1808,7 +1809,7 @@ func Test_GUI_lowlvl_QWERTY_Ctrl_minus_Ex()
   if has('win32')
     let prefix = '!start '
   endif
-  execute prefix .. GetVimCommand() .. ' -g -u NONE Xresult -S Xlines'
+  execute prefix .. GetVimCommand() .. ' -g -N -u NONE -S Xlines'
 
   call WaitForAssert({-> assert_true(filereadable('Xresult'))})
   edit Xresult
