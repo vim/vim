@@ -1241,32 +1241,31 @@ arg_all(void)
 	for (idx = 0; idx < ARGCOUNT; ++idx)
 	{
 	    p = alist_name(&ARGLIST[idx]);
-	    if (p != NULL)
+	    if (p == NULL)
+		continue;
+	    if (len > 0)
 	    {
-		if (len > 0)
-		{
-		    // insert a space in between names
-		    if (retval != NULL)
-			retval[len] = ' ';
-		    ++len;
-		}
-		for ( ; *p != NUL; ++p)
-		{
-		    if (*p == ' '
+		// insert a space in between names
+		if (retval != NULL)
+		    retval[len] = ' ';
+		++len;
+	    }
+	    for ( ; *p != NUL; ++p)
+	    {
+		if (*p == ' '
 #ifndef BACKSLASH_IN_FILENAME
-			    || *p == '\\'
+			|| *p == '\\'
 #endif
-			    || *p == '`')
-		    {
-			// insert a backslash
-			if (retval != NULL)
-			    retval[len] = '\\';
-			++len;
-		    }
+			|| *p == '`')
+		{
+		    // insert a backslash
 		    if (retval != NULL)
-			retval[len] = *p;
+			retval[len] = '\\';
 		    ++len;
 		}
+		if (retval != NULL)
+		    retval[len] = *p;
+		++len;
 	    }
 	}
 

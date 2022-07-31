@@ -1916,45 +1916,45 @@ check_scrollbind(linenr_T topline_diff, long leftcol_diff)
     FOR_ALL_WINDOWS(curwin)
     {
 	curbuf = curwin->w_buffer;
-	// skip original window  and windows with 'noscrollbind'
-	if (curwin != old_curwin && curwin->w_p_scb)
+	// skip original window and windows with 'noscrollbind'
+	if (curwin == old_curwin || !curwin->w_p_scb)
+	    continue;
+
+	// do the vertical scroll
+	if (want_ver)
 	{
-	    // do the vertical scroll
-	    if (want_ver)
-	    {
 #ifdef FEAT_DIFF
-		if (old_curwin->w_p_diff && curwin->w_p_diff)
-		{
-		    diff_set_topline(old_curwin, curwin);
-		}
-		else
-#endif
-		{
-		    curwin->w_scbind_pos += topline_diff;
-		    topline = curwin->w_scbind_pos;
-		    if (topline > curbuf->b_ml.ml_line_count)
-			topline = curbuf->b_ml.ml_line_count;
-		    if (topline < 1)
-			topline = 1;
-
-		    y = topline - curwin->w_topline;
-		    if (y > 0)
-			scrollup(y, FALSE);
-		    else
-			scrolldown(-y, FALSE);
-		}
-
-		redraw_later(VALID);
-		cursor_correct();
-		curwin->w_redr_status = TRUE;
-	    }
-
-	    // do the horizontal scroll
-	    if (want_hor && curwin->w_leftcol != tgt_leftcol)
+	    if (old_curwin->w_p_diff && curwin->w_p_diff)
 	    {
-		curwin->w_leftcol = tgt_leftcol;
-		leftcol_changed();
+		diff_set_topline(old_curwin, curwin);
 	    }
+	    else
+#endif
+	    {
+		curwin->w_scbind_pos += topline_diff;
+		topline = curwin->w_scbind_pos;
+		if (topline > curbuf->b_ml.ml_line_count)
+		    topline = curbuf->b_ml.ml_line_count;
+		if (topline < 1)
+		    topline = 1;
+
+		y = topline - curwin->w_topline;
+		if (y > 0)
+		    scrollup(y, FALSE);
+		else
+		    scrolldown(-y, FALSE);
+	    }
+
+	    redraw_later(VALID);
+	    cursor_correct();
+	    curwin->w_redr_status = TRUE;
+	}
+
+	// do the horizontal scroll
+	if (want_hor && curwin->w_leftcol != tgt_leftcol)
+	{
+	    curwin->w_leftcol = tgt_leftcol;
+	    leftcol_changed();
 	}
     }
 
