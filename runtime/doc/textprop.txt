@@ -141,7 +141,20 @@ prop_add({lnum}, {col}, {props})
 				then "id" must not be present and will be set
 				automatically to a negative number; otherwise
 				zero is used
-		   text		text to be displayed at {col}
+		   text		text to be displayed before {col}, or after the
+				line if {col} is zero
+		   text_align	when "text" is present and {col} is zero
+				specifies where to display the text:
+				   after   after the end of the line
+				   right   right aligned in the window
+				   below   in the next screen line
+				When omitted "after" is used.
+		   text_wrap	when "text" is present and {col} is zero,
+				specifies what happens if the text doesn't
+				fit:
+				   wrap      wrap the text to the next line
+				   truncate  truncate the text to make it fit
+		   		When omitted "truncate" is used.
 		   type		name of the text property type
 		All fields except "type" are optional.
 
@@ -162,17 +175,26 @@ prop_add({lnum}, {col}, {props})
 		added to. When not found, the global property types are used.
 		If not found an error is given.
 							*virtual-text*
-		When "text" is used this text will be displayed at the start
-		location of the text property.  The text of the buffer line
-		will be shifted to make room.  This is called "virtual text".
+		When "text" is used and the column is non-zero then this text
+		will be displayed at the start location of the text property
+		after the text.  The text of the buffer line will be shifted
+		to make room.  This is called "virtual text".
+		When the column is zero the virtual text will appear after the
+		buffer text.  The "text_align" and "text_wrap" arguments
+		determine how it is displayed.
 		The text will be displayed but it is not part of the actual
 		buffer line, the cursor cannot be placed on it.  A mouse click
 		in the text will move the cursor to the first character after
-		the text.
+		the text, or the last character of the line.
 		A negative "id" will be chosen and is returned.  Once a
 		property with "text" has been added for a buffer then using a
 		negative "id" for any other property will give an error:
 		*E1293*
+		Make sure to use a highlight that makes clear to the user that
+		this is virtual text, otherwise it will be very confusing that
+		the text cannot be edited.
+		To separate the virtual text from the buffer text prepend
+		and/or append spaces to the "text" field.
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)

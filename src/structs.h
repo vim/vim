@@ -808,7 +808,13 @@ typedef struct textprop_S
 
 #define TP_FLAG_CONT_NEXT	0x1	// property continues in next line
 #define TP_FLAG_CONT_PREV	0x2	// property was continued from prev line
-#define TP_VIRTUAL		0x4	// virtual text, uses tp_id
+
+// without these text is placed after the end of the line
+#define TP_FLAG_ALIGN_RIGHT	0x10	// virtual text is right-aligned
+#define TP_FLAG_ALIGN_BELOW	0x20	// virtual text on next screen line
+
+#define TP_FLAG_WRAP		0x40	// virtual text wraps - when missing
+					// text is truncated
 
 /*
  * Structure defining a property type.
@@ -4575,6 +4581,8 @@ typedef struct {
     textprop_T	*cts_text_props;	// text props (allocated)
     char	cts_has_prop_with_text; // TRUE if if a property inserts text
     int         cts_cur_text_width;     // width of current inserted text
+    int		cts_with_trailing;	// include size of trailing props with
+					// last character
 #endif
     int		cts_vcol;	    // virtual column at current position
 } chartabsize_T;

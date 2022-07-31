@@ -771,6 +771,7 @@ win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len)
     chartabsize_T cts;
 
     init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+    cts.cts_with_trailing = len = MAXCOL;
     for ( ; *cts.cts_ptr != NUL && (len == MAXCOL || cts.cts_ptr < line + len);
 						      MB_PTR_ADV(cts.cts_ptr))
 	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
@@ -1089,15 +1090,24 @@ win_lbr_chartabsize(
 	    textprop_T *tp = cts->cts_text_props + i;
 
 	    if (tp->tp_id < 0
-		     && tp->tp_col - 1 >= col && tp->tp_col - 1 < col + size
-		     && -tp->tp_id <= wp->w_buffer->b_textprop_text.ga_len)
+		    && ((tp->tp_col - 1 >= col && tp->tp_col - 1 < col + size
+			&& -tp->tp_id <= wp->w_buffer->b_textprop_text.ga_len)
+		    || (tp->tp_col == MAXCOL && (s[0] == NUL || s[1] == NUL)
+						   && cts->cts_with_trailing)))
 	    {
 		char_u *p = ((char_u **)wp->w_buffer->b_textprop_text.ga_data)[
 							       -tp->tp_id - 1];
+		int len = (int)STRLEN(p);
+
 		// TODO: count screen cells
-		cts->cts_cur_text_width = (int)STRLEN(p);
-		size += cts->cts_cur_text_width;
-		break;
+		if (tp->tp_col == MAXCOL)
+		{
+		    // TODO: truncating
+		    if (tp->tp_flags & TP_FLAG_ALIGN_BELOW)
+			len += wp->w_width - (vcol + size) % wp->w_width;
+		}
+		cts->cts_cur_text_width += len;
+		size += len;
 	    }
 	    if (tp->tp_col - 1 > col)
 		break;

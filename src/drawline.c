@@ -208,13 +208,16 @@ static buf_T		*current_buf = NULL;
 text_prop_compare(const void *s1, const void *s2)
 {
     int  idx1, idx2;
+    textprop_T	*tp1, *tp2;
     proptype_T  *pt1, *pt2;
     colnr_T col1, col2;
 
     idx1 = *(int *)s1;
     idx2 = *(int *)s2;
-    pt1 = text_prop_type_by_id(current_buf, current_text_props[idx1].tp_type);
-    pt2 = text_prop_type_by_id(current_buf, current_text_props[idx2].tp_type);
+    tp1 = &current_text_props[idx1];
+    tp2 = &current_text_props[idx2];
+    pt1 = text_prop_type_by_id(current_buf, tp1->tp_type);
+    pt2 = text_prop_type_by_id(current_buf, tp2->tp_type);
     if (pt1 == pt2)
 	return 0;
     if (pt1 == NULL)
@@ -223,8 +226,25 @@ text_prop_compare(const void *s1, const void *s2)
 	return 1;
     if (pt1->pt_priority != pt2->pt_priority)
 	return pt1->pt_priority > pt2->pt_priority ? 1 : -1;
-    col1 = current_text_props[idx1].tp_col;
-    col2 = current_text_props[idx2].tp_col;
+    col1 = tp1->tp_col;
+    col2 = tp2->tp_col;
+    if (col1 == MAXCOL && col2 == MAXCOL)
+    {
+	int flags1 = 0;
+	int flags2 = 0;
+
+	// order on 0: after, 1: right, 2: below
+	if (tp1->tp_flags & TP_FLAG_ALIGN_RIGHT)
+	    flags1 = 1;
+	if (tp1->tp_flags & TP_FLAG_ALIGN_BELOW)
+	    flags1 = 2;
+	if (tp2->tp_flags & TP_FLAG_ALIGN_RIGHT)
+	    flags2 = 1;
+	if (tp2->tp_flags & TP_FLAG_ALIGN_BELOW)
+	    flags2 = 2;
+	if (flags1 != flags2)
+	    return flags1 < flags2 ? 1 : -1;
+    }
     return col1 == col2 ? 0 : col1 > col2 ? 1 : -1;
 }
 #endif
@@ -281,10 +301,11 @@ win_line(
     int		saved_c_final = 0;
     int		saved_char_attr = 0;
 
-    int		n_attr = 0;		// chars with special attr
-    int		saved_attr2 = 0;	// char_attr saved for n_attr
-    int		n_attr3 = 0;		// chars with overruling special attr
-    int		saved_attr3 = 0;	// char_attr saved for n_attr3
+    int		n_attr = 0;	    // chars with special attr
+    int		n_attr_skip = 0;    // chars to skip before using extra_attr
+    int		saved_attr2 = 0;    // char_attr saved for n_attr
+    int		n_attr3 = 0;	    // chars with overruling special attr
+    int		saved_attr3 = 0;    // char_attr saved for n_attr3
 
     int		n_skip = 0;		// nr of chars to skip for 'nowrap'
 
@@ -328,6 +349,7 @@ win_line(
     int		text_prop_attr = 0;
     int		text_prop_id = 0;	// active property ID
     int		text_prop_combine = FALSE;
+    int		text_prop_follows = FALSE;  // another text prop to display
 #endif
 #ifdef FEAT_SPELL
     int		has_spell = FALSE;	// this buffer has spell checking
@@ -1472,7 +1494,9 @@ win_line(
 # endif
 		// Add any text property that starts in this column.
 		while (text_prop_next < text_prop_count
-			   && bcol >= text_props[text_prop_next].tp_col - 1)
+			   && (text_props[text_prop_next].tp_col == MAXCOL
+			      ? *ptr == NUL
+			      : bcol >= text_props[text_prop_next].tp_col - 1))
 		{
 		    if (bcol <= text_props[text_prop_next].tp_col - 1
 					   + text_props[text_prop_next].tp_len)
@@ -1484,13 +1508,15 @@ win_line(
 		text_prop_combine = FALSE;
 		text_prop_type = NULL;
 		text_prop_id = 0;
-		if (text_props_active > 0)
+		if (text_props_active > 0 && n_extra == 0)
 		{
 		    int used_tpi = -1;
 		    int used_attr = 0;
+		    int other_tpi = -1;
 
 		    // Sort the properties on priority and/or starting last.
 		    // Then combine the attributes, highest priority last.
+		    text_prop_follows = FALSE;
 		    current_text_props = text_props;
 		    current_buf = wp->w_buffer;
 		    qsort((void *)text_prop_idxs, (size_t)text_props_active,
@@ -1511,10 +1537,11 @@ win_line(
 				   hl_combine_attr(text_prop_attr, used_attr);
 			    text_prop_combine = pt->pt_flags & PT_FLAG_COMBINE;
 			    text_prop_id = text_props[tpi].tp_id;
+			    other_tpi = used_tpi;
 			    used_tpi = tpi;
 			}
 		    }
-		    if (n_extra == 0 && text_prop_id < 0 && used_tpi >= 0
+		    if (text_prop_id < 0 && used_tpi >= 0
 			    && -text_prop_id
 				      <= wp->w_buffer->b_textprop_text.ga_len)
 		    {
@@ -1523,6 +1550,11 @@ win_line(
 							   -text_prop_id - 1];
 			if (p != NULL)
 			{
+			    int	    right = (text_props[used_tpi].tp_flags
+							& TP_FLAG_ALIGN_RIGHT);
+			    int	    below = (text_props[used_tpi].tp_flags
+							& TP_FLAG_ALIGN_BELOW);
+
 			    p_extra = p;
 			    c_extra = NUL;
 			    c_final = NUL;
@@ -1530,6 +1562,33 @@ win_line(
 			    extra_attr = used_attr;
 			    n_attr = n_extra;
 			    text_prop_attr = 0;
+			    if (*ptr == NUL)
+				// don't combine char attr after EOL
+				text_prop_combine = FALSE;
+
+			    // TODO: truncation if it doesn't fit
+			    if (right || below)
+			    {
+				int	added = wp->w_width - col;
+				char_u	*l;
+
+				// Right-align: fill with spaces
+				// TODO: count screen columns
+				if (right)
+				    added -= n_extra;
+				if (added < 0 || (below && col == 0))
+				    added = 0;
+				l = alloc(n_extra + added + 1);
+				if (l != NULL)
+				{
+				    vim_memset(l, ' ', added);
+				    STRCPY(l + added, p);
+				    vim_free(p_extra_free);
+				    p_extra = p_extra_free = l;
+				    n_extra += added;
+				    n_attr_skip = added;
+				}
+			    }
 
 			    // If the cursor is on or after this position,
 			    // move it forward.
@@ -1541,6 +1600,10 @@ win_line(
 			// reset the ID in the copy to avoid it being used
 			// again
 			text_props[used_tpi].tp_id = -MAXCOL;
+
+			// If another text prop follows the condition below at
+			// the last window column must know.
+			text_prop_follows = other_tpi != -1;
 		    }
 		}
 	    }
@@ -2641,8 +2704,9 @@ win_line(
 	}
 #endif
 
-	// Don't override visual selection highlighting.
-	if (n_attr > 0
+	// Use "extra_attr", but don't override visual selection highlighting.
+	// Don't use "extra_attr" until n_attr_skip is zero.
+	if (n_attr_skip == 0 && n_attr > 0
 		&& draw_state == WL_LINE
 		&& !attr_pri)
 	{
@@ -3188,8 +3252,11 @@ win_line(
 	    char_attr = saved_attr3;
 
 	// restore attributes after last 'listchars' or 'number' char
-	if (n_attr > 0 && draw_state == WL_LINE && --n_attr == 0)
+	if (n_attr > 0 && draw_state == WL_LINE
+					  && n_attr_skip == 0 && --n_attr == 0)
 	    char_attr = saved_attr2;
+	if (n_attr_skip > 0)
+	    --n_attr_skip;
 
 	// At end of screen line and there is more to come: Display the line
 	// so far.  If there is no more to display it is caught above.
@@ -3202,6 +3269,9 @@ win_line(
 		    || *ptr != NUL
 #ifdef FEAT_DIFF
 		    || filler_todo > 0
+#endif
+#ifdef FEAT_PROP_POPUP
+		    || text_prop_follows
 #endif
 		    || (wp->w_p_list && wp->w_lcs_chars.eol != NUL
 						&& p_extra != at_end_str)
@@ -3223,7 +3293,10 @@ win_line(
 	    // '$' and highlighting until last column, break here.
 	    if ((!wp->w_p_wrap
 #ifdef FEAT_DIFF
-		    && filler_todo <= 0
+			&& filler_todo <= 0
+#endif
+#ifdef FEAT_PROP_POPUP
+			&& !text_prop_follows
 #endif
 		    ) || lcs_eol_one == -1)
 		break;
@@ -3250,6 +3323,9 @@ win_line(
 	    if (screen_cur_row == screen_row - 1
 #ifdef FEAT_DIFF
 		     && filler_todo <= 0
+#endif
+#ifdef FEAT_PROP_POPUP
+		     && !text_prop_follows
 #endif
 		     && wp->w_width == Columns)
 	    {

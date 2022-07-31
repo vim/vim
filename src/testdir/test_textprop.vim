@@ -2213,6 +2213,26 @@ func Test_prop_inserts_text()
   call delete('XscriptPropsWithText')
 endfunc
 
+func Test_props_with_text_after()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, 'some text here and other text there')
+      call prop_type_add('rightprop', #{highlight: 'ErrorMsg'})
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_type_add('belowprop', #{highlight: 'DiffAdd'})
+      call prop_add(1, 0, #{type: 'rightprop', text: ' RIGHT ', text_align: 'right'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' AFTER ', text_align: 'after'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' BELOW ', text_align: 'below'})
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfter')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfter', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfter')
+endfunc
+
 func Test_removed_prop_with_text_cleans_up_array()
   new
   call setline(1, 'some text here')
