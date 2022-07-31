@@ -1485,58 +1485,53 @@ syn_stack_equal(synstate_T *sp)
     reg_extmatch_T	*six, *bsx;
 
     // First a quick check if the stacks have the same size end nextlist.
-    if (sp->sst_stacksize == current_state.ga_len
-	    && sp->sst_next_list == current_next_list)
-    {
-	// Need to compare all states on both stacks.
-	if (sp->sst_stacksize > SST_FIX_STATES)
-	    bp = SYN_STATE_P(&(sp->sst_union.sst_ga));
-	else
-	    bp = sp->sst_union.sst_stack;
+    if (sp->sst_stacksize != current_state.ga_len
+	    || sp->sst_next_list != current_next_list)
+	return FALSE;
 
-	for (i = current_state.ga_len; --i >= 0; )
+    // Need to compare all states on both stacks.
+    if (sp->sst_stacksize > SST_FIX_STATES)
+	bp = SYN_STATE_P(&(sp->sst_union.sst_ga));
+    else
+	bp = sp->sst_union.sst_stack;
+
+    for (i = current_state.ga_len; --i >= 0; )
+    {
+	// If the item has another index the state is different.
+	if (bp[i].bs_idx != CUR_STATE(i).si_idx)
+	    break;
+	if (bp[i].bs_extmatch == CUR_STATE(i).si_extmatch)
+	    continue;
+	// When the extmatch pointers are different, the strings in
+	// them can still be the same.  Check if the extmatch
+	// references are equal.
+	bsx = bp[i].bs_extmatch;
+	six = CUR_STATE(i).si_extmatch;
+	// If one of the extmatch pointers is NULL the states are
+	// different.
+	if (bsx == NULL || six == NULL)
+	    break;
+	for (j = 0; j < NSUBEXP; ++j)
 	{
-	    // If the item has another index the state is different.
-	    if (bp[i].bs_idx != CUR_STATE(i).si_idx)
-		break;
-	    if (bp[i].bs_extmatch != CUR_STATE(i).si_extmatch)
+	    // Check each referenced match string. They must all be
+	    // equal.
+	    if (bsx->matches[j] != six->matches[j])
 	    {
-		// When the extmatch pointers are different, the strings in
-		// them can still be the same.  Check if the extmatch
-		// references are equal.
-		bsx = bp[i].bs_extmatch;
-		six = CUR_STATE(i).si_extmatch;
-		// If one of the extmatch pointers is NULL the states are
-		// different.
-		if (bsx == NULL || six == NULL)
+		// If the pointer is different it can still be the
+		// same text.  Compare the strings, ignore case when
+		// the start item has the sp_ic flag set.
+		if (bsx->matches[j] == NULL || six->matches[j] == NULL)
 		    break;
-		for (j = 0; j < NSUBEXP; ++j)
-		{
-		    // Check each referenced match string. They must all be
-		    // equal.
-		    if (bsx->matches[j] != six->matches[j])
-		    {
-			// If the pointer is different it can still be the
-			// same text.  Compare the strings, ignore case when
-			// the start item has the sp_ic flag set.
-			if (bsx->matches[j] == NULL
-				|| six->matches[j] == NULL)
-			    break;
-			if ((SYN_ITEMS(syn_block)[CUR_STATE(i).si_idx]).sp_ic
-				? MB_STRICMP(bsx->matches[j],
-							 six->matches[j]) != 0
-				: STRCMP(bsx->matches[j], six->matches[j]) != 0)
-			    break;
-		    }
-		}
-		if (j != NSUBEXP)
+		if ((SYN_ITEMS(syn_block)[CUR_STATE(i).si_idx]).sp_ic
+			? MB_STRICMP(bsx->matches[j], six->matches[j]) != 0
+			: STRCMP(bsx->matches[j], six->matches[j]) != 0)
 		    break;
 	    }
 	}
-	if (i < 0)
-	    return TRUE;
+	if (j != NSUBEXP)
+	    break;
     }
-    return FALSE;
+    return i < 0 ? TRUE : FALSE;
 }
 
 /*
