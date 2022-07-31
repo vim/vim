@@ -430,6 +430,15 @@ func Test_cmdheight_zero()
   only
   call assert_equal(&cmdheight, 0)
 
+  " Check that pressing ":" should not scroll a window
+  " Check for what patch 9.0.0115 fixes
+  botright 10new
+  call setline(1, range(12))
+  7
+  call feedkeys(":\"\<C-R>=line('w0')\<CR>\<CR>", "xt")
+  call assert_equal('"1', @:)
+  bwipe!
+
   set cmdheight&
   set showcmd&
 endfunc
