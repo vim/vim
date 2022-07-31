@@ -1916,7 +1916,7 @@ check_scrollbind(linenr_T topline_diff, long leftcol_diff)
     FOR_ALL_WINDOWS(curwin)
     {
 	curbuf = curwin->w_buffer;
-	// skip original window  and windows with 'noscrollbind'
+	// skip original window and windows with 'noscrollbind'
 	if (curwin == old_curwin || !curwin->w_p_scb)
 	    continue;
 
