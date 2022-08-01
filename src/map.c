@@ -2582,7 +2582,6 @@ get_map_mode_string(char_u *mode_string, int abbr)
     void
 f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    char_u	*keys_buf = NULL;
     char_u	*which;
     int		mode;
     char_u	buf[NUMBUFLEN];
@@ -2707,7 +2706,6 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	(void)map_add(map_table, abbr_table, lhsrawalt, rhs, orig_rhs, noremap,
 		nowait, silent, mode, is_abbr, expr, sid, scriptversion,
 								      lnum, 1);
-    vim_free(keys_buf);
     vim_free(arg_buf);
 }
 #endif
