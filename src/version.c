@@ -64,10 +64,12 @@ init_longVersion(void)
 #else
 	char *date_time = __DATE__ " " __TIME__;
 #endif
-	char *msg = _("%s (%s, compiled %s)");
+	int hp = highest_patch();
+	char *msg = _("%s.%d (%s, compiled %s)");
 	size_t len = strlen(msg)
 		    + strlen(VIM_VERSION_LONG_ONLY)
 		    + strlen(VIM_VERSION_DATE_ONLY)
+		    + hp
 		    + strlen(date_time);
 
 	longVersion = alloc(len);
@@ -75,7 +77,7 @@ init_longVersion(void)
 	    longVersion = VIM_VERSION_LONG;
 	else
 	    vim_snprintf(longVersion, len, msg,
-		      VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+		      VIM_VERSION_LONG_ONLY, hp, VIM_VERSION_DATE_ONLY, date_time);
     }
 }
 # endif
