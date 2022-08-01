@@ -3641,7 +3641,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
 	// with ^^^^.
 	qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
 				    ? skipwhite(qfp->qf_text) : qfp->qf_text,
-				    tbuf, tbuflen);
+				    tbuf, (int)tbuflen);
 	msg_prt_line(tbuf, FALSE);
 
 	if (tbuf != IObuff)
