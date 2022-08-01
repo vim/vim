@@ -2197,7 +2197,7 @@ func Test_prop_inserts_text()
       call prop_type_add('otherprop', #{highlight: 'Search'})
       call prop_type_add('moreprop', #{highlight: 'DiffAdd'})
       call prop_add(1, 18, #{type: 'someprop', text: 'SOME '})
-      call prop_add(1, 38, #{type: 'otherprop', text: 'OTHER '})
+      call prop_add(1, 38, #{type: 'otherprop', text: "OTHER\t"})
       call prop_add(1, 69, #{type: 'moreprop', text: 'MORE '})
       redraw
       normal $
@@ -2222,7 +2222,7 @@ func Test_props_with_text_after()
       call prop_type_add('afterprop', #{highlight: 'Search'})
       call prop_type_add('belowprop', #{highlight: 'DiffAdd'})
       call prop_add(1, 0, #{type: 'rightprop', text: ' RIGHT ', text_align: 'right'})
-      call prop_add(1, 0, #{type: 'afterprop', text: ' AFTER ', text_align: 'after'})
+      call prop_add(1, 0, #{type: 'afterprop', text: "\tAFTER\t", text_align: 'after'})
       call prop_add(1, 0, #{type: 'belowprop', text: ' BELOW ', text_align: 'below'})
 
       call setline(2, 'Last line.')

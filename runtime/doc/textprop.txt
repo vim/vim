@@ -187,6 +187,8 @@ prop_add({lnum}, {col}, {props})
 		in the text will move the cursor to the first character after
 		the text, or the last character of the line.
 		A negative "id" will be chosen and is returned.  Once a
+		Any Tab in the text will be changed to a space (Rationale:
+		otherwise the size of the text is difficult to compute).
 		property with "text" has been added for a buffer then using a
 		negative "id" for any other property will give an error:
 		*E1293*

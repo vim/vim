@@ -226,7 +226,8 @@ prop_add_one(
 
     if (text != NULL)
     {
-	garray_T *gap = &buf->b_textprop_text;
+	garray_T    *gap = &buf->b_textprop_text;
+	char_u	    *p;
 
 	// double check we got the right ID
 	if (-id - 1 != gap->ga_len)
@@ -236,6 +237,11 @@ prop_add_one(
 	if (ga_grow(gap, 1) == FAIL)
 	    goto theend;
 	((char_u **)gap->ga_data)[gap->ga_len++] = text;
+
+	// change any Tab to a Space to make it simpler to compute the size
+	for (p = text; *p != NUL; MB_PTR_ADV(p))
+	    if (*p == TAB)
+		*p = ' ';
 	text = NULL;
     }
 
