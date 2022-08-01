@@ -1549,7 +1549,7 @@ to be doubled.  These two commands are equivalent: >
 	if a =~ '\s*'
 
 
-interpolated-string				*$quote* *interp-string* *E256*
+interpolated-string				*$quote* *interp-string*
 --------------------
 $"string"		interpolated string constant		*expr-$quote*
 $'string'		interpolated literal string constant	*expr-$'*

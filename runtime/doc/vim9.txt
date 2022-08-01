@@ -107,7 +107,7 @@ script and `:def` functions; details are below:
 	`:t`
   	`:xit`
 - Some commands, especially those used for flow control, cannot be shortened.
-  E.g., `:throw` cannot be written as `:th`. *E839*
+  E.g., `:throw` cannot be written as `:th`.
 - You cannot use curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that

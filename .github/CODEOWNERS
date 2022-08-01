@@ -107,6 +107,7 @@ runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
+runtime/ftplugin/desktop.vim		@e-kwsm
 runtime/ftplugin/dosbatch.vim		@mrdubya
 runtime/ftplugin/eiffel.vim		@dkearns
 runtime/ftplugin/expect.vim		@dkearns
@@ -173,6 +174,7 @@ runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/sdoc.vim		@gpanders
 runtime/ftplugin/solution.vim		@dkearns
 runtime/ftplugin/spec.vim		@ignatenkobrain
+runtime/ftplugin/swayconfig.vim		@jamespeapen
 runtime/ftplugin/systemverilog.vim	@Kocha
 runtime/ftplugin/tap.vim		@petdance
 runtime/ftplugin/tcsh.vim		@dkearns
@@ -394,6 +396,7 @@ runtime/syntax/sshconfig.vim		@Jakuje
 runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/sudoers.vim		@e-kwsm
 runtime/syntax/svn.vim			@hdima
+runtime/syntax/swayconfig.vim       @jamespeapen
 runtime/syntax/systemverilog.vim	@Kocha
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/tap.vim			@petdance
