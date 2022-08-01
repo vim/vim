@@ -1975,7 +1975,12 @@ lisp_match(char_u *p)
     int
 get_lisp_indent(void)
 {
-    pos_T	*pos, realpos, paren;
+    typedef struct {
+	int found;
+	pos_T pos;
+    } search;
+    pos_T	*pos, realpos;
+    search	paren, square, curly;
     int		amount;
     char_u	*that;
     colnr_T	col;
@@ -1989,15 +1994,37 @@ get_lisp_indent(void)
     realpos = curwin->w_cursor;
     curwin->w_cursor.col = 0;
 
-    if ((pos = findmatch(NULL, '(')) == NULL)
-	pos = findmatch(NULL, '[');
-    else
+    // Find starting point
+    // Post-condition:
+    // - pos is NULL if no opening bracket is found, OR
+    // - pos points to the "greatest" (by LT_POSP) non-NULL position of an
+    // opening bracket
+    // The temporary pos_T values are to hold the value returned by findmatch,
+    // which is a static global overwritten by subsequent calls to findmatch.
+    paren.found = square.found = curly.found = 0;
+    if ((pos = findmatch(NULL, '(')) != NULL)
     {
-	paren = *pos;
-	pos = findmatch(NULL, '[');
-	if (pos == NULL || LT_POSP(pos, &paren))
-	    pos = &paren;
+	paren.pos = *pos;
+	paren.found = 1;
     }
+    if ((pos = findmatch(NULL, '[')) != NULL)
+    {
+	square.pos = *pos;
+	square.found = 1;
+    }
+    if ((pos = findmatch(NULL, '{')) != NULL)
+    {
+	curly.pos = *pos;
+	curly.found = 1;
+    }
+    pos = NULL;
+    if (paren.found)
+	pos = &paren.pos;
+    if (square.found && (pos == NULL || LT_POSP(pos, &square.pos)))
+	pos = &square.pos;
+    if (curly.found && (pos == NULL || LT_POSP(pos, &curly.pos)))
+	pos = &curly.pos;
+
     if (pos != NULL)
     {
 	// Extra trick: Take the indent of the first previous non-white
@@ -2042,9 +2069,9 @@ get_lisp_indent(void)
 		    if (*that == NUL)
 			break;
 		}
-		if (*that == '(' || *that == '[')
+		if (*that == '(' || *that == '[' || *that == '{')
 		    ++parencount;
-		else if (*that == ')' || *that == ']')
+		else if (*that == ')' || *that == ']' || *that == '}')
 		    --parencount;
 	    }
 	    if (parencount == 0)
@@ -2085,7 +2112,7 @@ get_lisp_indent(void)
 		// (let ((a 1))    instead    (let ((a 1))
 		//   (...))	      of	   (...))
 
-		if (!vi_lisp && (*that == '(' || *that == '[')
+		if (!vi_lisp && (*that == '(' || *that == '[' || *that == '{')
 						      && lisp_match(that + 1))
 		    amount += 2;
 		else
@@ -2112,7 +2139,8 @@ get_lisp_indent(void)
 		    {
 			// test *that != '(' to accommodate first let/do
 			// argument if it is more than one line
-			if (!vi_lisp && *that != '(' && *that != '[')
+			if (!vi_lisp && *that != '(' && *that != '['
+						     && *that != '{')
 			    firsttry++;
 
 			parencount = 0;
@@ -2131,17 +2159,20 @@ get_lisp_indent(void)
 					|| quotecount
 					|| parencount)
 				    && (!((*cts.cts_ptr == '('
-							|| *cts.cts_ptr == '[')
+							|| *cts.cts_ptr == '['
+							|| *cts.cts_ptr == '{')
 					    && !quotecount
 					    && !parencount
 					    && vi_lisp)))
 			    {
 				if (*cts.cts_ptr == '"')
 				    quotecount = !quotecount;
-				if ((*cts.cts_ptr == '(' || *cts.cts_ptr == '[')
+				if ((*cts.cts_ptr == '(' || *cts.cts_ptr == '['
+							 || *cts.cts_ptr == '{')
 							       && !quotecount)
 				    ++parencount;
-				if ((*cts.cts_ptr == ')' || *cts.cts_ptr == ']')
+				if ((*cts.cts_ptr == ')' || *cts.cts_ptr == ']'
+							 || *cts.cts_ptr == '}')
 							       && !quotecount)
 				    --parencount;
 				if (*cts.cts_ptr == '\\'
@@ -2167,7 +2198,7 @@ get_lisp_indent(void)
 	}
     }
     else
-	amount = 0;	// no matching '(' or '[' found, use zero indent
+	amount = 0;	// no matching '(', '[', or '{' found, use zero indent
 
     curwin->w_cursor = realpos;
 

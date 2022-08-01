@@ -42,7 +42,12 @@ func Test_lisp_indent()
 	      \ '`(progn',
 	      \ '(format t "<a href=\"~A\">" (html-file ,dest))',
 	      \ ',@body',
-	      \ '(princ "</a>")))'
+	      \ '(princ "</a>")))',
+	      \ '',
+	      \ ';;; Racket supports {} and [] as synonyms for ()',
+	      \ '{defun add1 (v)',
+	      \ '[inc',
+	      \ 'v]}',
 	      \ ])
   call assert_equal(7, lispindent(2))
   call assert_equal(5, 6->lispindent())
@@ -78,7 +83,12 @@ func Test_lisp_indent()
 	      \ '    (format t "<a href=\"~A\">" (html-file ,dest))',
 	      \ '    ,@body',
 	      \ '    (princ "</a>")))',
-	      \ ''
+	      \ '',
+	      \ ';;; Racket supports {} and [] as synonyms for ()',
+	      \ '{defun add1 (v)',
+	      \ '  [inc',
+	      \ '   v]}',
+	      \ '',
 	      \ ], getline(1, "$"))
 
   enew!
