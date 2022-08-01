@@ -1220,38 +1220,38 @@ do_helptags(char_u *dirname, int add_help_tags, int ignore_writeerr)
     for (i = 0; i < filecount; ++i)
     {
 	len = (int)STRLEN(files[i]);
-	if (len > 4)
-	{
-	    if (STRICMP(files[i] + len - 4, ".txt") == 0)
-	    {
-		// ".txt" -> language "en"
-		lang[0] = 'e';
-		lang[1] = 'n';
-	    }
-	    else if (files[i][len - 4] == '.'
-		    && ASCII_ISALPHA(files[i][len - 3])
-		    && ASCII_ISALPHA(files[i][len - 2])
-		    && TOLOWER_ASC(files[i][len - 1]) == 'x')
-	    {
-		// ".abx" -> language "ab"
-		lang[0] = TOLOWER_ASC(files[i][len - 3]);
-		lang[1] = TOLOWER_ASC(files[i][len - 2]);
-	    }
-	    else
-		continue;
+	if (len <= 4)
+	    continue;
 
-	    // Did we find this language already?
-	    for (j = 0; j < ga.ga_len; j += 2)
-		if (STRNCMP(lang, ((char_u *)ga.ga_data) + j, 2) == 0)
-		    break;
-	    if (j == ga.ga_len)
-	    {
-		// New language, add it.
-		if (ga_grow(&ga, 2) == FAIL)
-		    break;
-		((char_u *)ga.ga_data)[ga.ga_len++] = lang[0];
-		((char_u *)ga.ga_data)[ga.ga_len++] = lang[1];
-	    }
+	if (STRICMP(files[i] + len - 4, ".txt") == 0)
+	{
+	    // ".txt" -> language "en"
+	    lang[0] = 'e';
+	    lang[1] = 'n';
+	}
+	else if (files[i][len - 4] == '.'
+		&& ASCII_ISALPHA(files[i][len - 3])
+		&& ASCII_ISALPHA(files[i][len - 2])
+		&& TOLOWER_ASC(files[i][len - 1]) == 'x')
+	{
+	    // ".abx" -> language "ab"
+	    lang[0] = TOLOWER_ASC(files[i][len - 3]);
+	    lang[1] = TOLOWER_ASC(files[i][len - 2]);
+	}
+	else
+	    continue;
+
+	// Did we find this language already?
+	for (j = 0; j < ga.ga_len; j += 2)
+	    if (STRNCMP(lang, ((char_u *)ga.ga_data) + j, 2) == 0)
+		break;
+	if (j == ga.ga_len)
+	{
+	    // New language, add it.
+	    if (ga_grow(&ga, 2) == FAIL)
+		break;
+	    ((char_u *)ga.ga_data)[ga.ga_len++] = lang[0];
+	    ((char_u *)ga.ga_data)[ga.ga_len++] = lang[1];
 	}
     }
 

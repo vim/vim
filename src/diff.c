@@ -678,34 +678,36 @@ diff_redraw(
 
     need_diff_redraw = FALSE;
     FOR_ALL_WINDOWS(wp)
+    {
 	// when closing windows or wiping buffers skip invalid window
-	if (wp->w_p_diff && buf_valid(wp->w_buffer))
-	{
-	    redraw_win_later(wp, SOME_VALID);
-	    if (wp != curwin)
-		wp_other = wp;
+	if (!wp->w_p_diff || !buf_valid(wp->w_buffer))
+	    continue;
+
+	redraw_win_later(wp, SOME_VALID);
+	if (wp != curwin)
+	    wp_other = wp;
 #ifdef FEAT_FOLDING
-	    if (dofold && foldmethodIsDiff(wp))
-		foldUpdateAll(wp);
+	if (dofold && foldmethodIsDiff(wp))
+	    foldUpdateAll(wp);
 #endif
-	    // A change may have made filler lines invalid, need to take care
-	    // of that for other windows.
-	    n = diff_check(wp, wp->w_topline);
-	    if ((wp != curwin && wp->w_topfill > 0) || n > 0)
+	// A change may have made filler lines invalid, need to take care of
+	// that for other windows.
+	n = diff_check(wp, wp->w_topline);
+	if ((wp != curwin && wp->w_topfill > 0) || n > 0)
+	{
+	    if (wp->w_topfill > n)
+		wp->w_topfill = (n < 0 ? 0 : n);
+	    else if (n > 0 && n > wp->w_topfill)
 	    {
-		if (wp->w_topfill > n)
-		    wp->w_topfill = (n < 0 ? 0 : n);
-		else if (n > 0 && n > wp->w_topfill)
-		{
-		    wp->w_topfill = n;
-		    if (wp == curwin)
-			used_max_fill_curwin = TRUE;
-		    else if (wp_other != NULL)
-			used_max_fill_other = TRUE;
-		}
-		check_topfill(wp, FALSE);
+		wp->w_topfill = n;
+		if (wp == curwin)
+		    used_max_fill_curwin = TRUE;
+		else if (wp_other != NULL)
+		    used_max_fill_other = TRUE;
 	    }
+	    check_topfill(wp, FALSE);
 	}
+    }
 
     if (wp_other != NULL && curwin->w_p_scb)
     {

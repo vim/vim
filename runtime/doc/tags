@@ -2103,7 +2103,6 @@ $quote	eval.txt	/*$quote*
 :XMLent	insert.txt	/*:XMLent*
 :XMLns	insert.txt	/*:XMLns*
 :[range]	motion.txt	/*:[range]*
-:[vV\x16]	autocmd.txt	/*:[vV\\x16]*
 :\bar	cmdline.txt	/*:\\bar*
 :_!	cmdline.txt	/*:_!*
 :_#	cmdline.txt	/*:_#*
@@ -4437,7 +4436,6 @@ E252	options.txt	/*E252*
 E253	mbyte.txt	/*E253*
 E254	message.txt	/*E254*
 E255	sign.txt	/*E255*
-E256	eval.txt	/*E256*
 E257	if_cscop.txt	/*E257*
 E258	remote.txt	/*E258*
 E259	if_cscop.txt	/*E259*
@@ -5060,7 +5058,6 @@ E835	options.txt	/*E835*
 E836	if_pyth.txt	/*E836*
 E837	if_pyth.txt	/*E837*
 E838	netbeans.txt	/*E838*
-E839	vim9.txt	/*E839*
 E84	windows.txt	/*E84*
 E840	insert.txt	/*E840*
 E841	map.txt	/*E841*
@@ -10226,15 +10223,12 @@ try-finally	eval.txt	/*try-finally*
 try-nested	eval.txt	/*try-nested*
 try-nesting	eval.txt	/*try-nesting*
 tutor	usr_01.txt	/*tutor*
-twice	if_cscop.txt	/*twice*
 two-engines	pattern.txt	/*two-engines*
 type()	builtin.txt	/*type()*
 type-casting	vim9.txt	/*type-casting*
 type-checking	vim9.txt	/*type-checking*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
-typecorrect-settings	usr_51.txt	/*typecorrect-settings*
-typecorrect.txt	usr_51.txt	/*typecorrect.txt*
 typename()	builtin.txt	/*typename()*
 u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*

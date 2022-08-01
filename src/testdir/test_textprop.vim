@@ -2197,10 +2197,13 @@ func Test_prop_inserts_text()
       call prop_type_add('otherprop', #{highlight: 'Search'})
       call prop_type_add('moreprop', #{highlight: 'DiffAdd'})
       call prop_add(1, 18, #{type: 'someprop', text: 'SOME '})
-      call prop_add(1, 38, #{type: 'otherprop', text: 'OTHER '})
+      call prop_add(1, 38, #{type: 'otherprop', text: "OTHER\t"})
       call prop_add(1, 69, #{type: 'moreprop', text: 'MORE '})
-      redraw
       normal $
+
+      call setline(2, 'prepost')
+      call prop_type_add('multibyte', #{highlight: 'Visual'})
+      call prop_add(2, 4, #{type: 'multibyte', text: 'söme和平téxt'})
   END
   call writefile(lines, 'XscriptPropsWithText')
   let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 6, cols: 60})
@@ -2211,6 +2214,33 @@ func Test_prop_inserts_text()
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropsWithText')
+endfunc
+
+func Test_props_with_text_after()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, 'some text here and other text there')
+      call prop_type_add('rightprop', #{highlight: 'ErrorMsg'})
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_type_add('belowprop', #{highlight: 'DiffAdd'})
+      call prop_add(1, 0, #{type: 'rightprop', text: ' RIGHT ', text_align: 'right'})
+      call prop_add(1, 0, #{type: 'afterprop', text: "\tAFTER\t", text_align: 'after'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' BELOW ', text_align: 'below'})
+
+      call setline(2, 'Last line.')
+      call prop_add(2, 0, #{type: 'afterprop', text: ' After Last ', text_align: 'after'})
+      normal G$
+
+      call setline(3, 'right here')
+      call prop_add(3, 0, #{type: 'rightprop', text: 'söme和平téxt', text_align: 'right'})
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfter')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfter', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfter')
 endfunc
 
 func Test_removed_prop_with_text_cleans_up_array()
@@ -2231,5 +2261,21 @@ func Test_removed_prop_with_text_cleans_up_array()
   call prop_type_delete('some')
   bwipe!
 endfunc
+
+def Test_insert_text_before_virtual_text()
+  new foobar
+  setline(1, '12345678')
+  prop_type_add('test', {highlight: 'Search'})
+  prop_add(1, 5, {
+    type: 'test',
+    text: ' virtual text '
+    })
+  normal! f4axyz
+  normal! f5iXYZ
+  assert_equal('1234xyzXYZ5678', getline(1))
+
+  prop_type_delete('test')
+  bwipe!
+enddef
 
 " vim: shiftwidth=2 sts=2 expandtab

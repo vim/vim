@@ -75,7 +75,7 @@ typedef struct ff_stack
     // of wc_part
     char_u		**ffs_filearray;
     int			ffs_filearray_size;
-    char_u		ffs_filearray_cur;   // needed for partly handled dirs
+    int			ffs_filearray_cur;   // needed for partly handled dirs
 
     // to store status of partly handled directories
     // 0: we work on this directory for the first time
