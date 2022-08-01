@@ -921,6 +921,7 @@ init_chartabsize_arg(
     cts->cts_text_prop_count = 0;
     cts->cts_has_prop_with_text = FALSE;
     cts->cts_cur_text_width = 0;
+    cts->cts_with_trailing = 0;
     if (lnum > 0)
     {
 	char_u *prop_start;
