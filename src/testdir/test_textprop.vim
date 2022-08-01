@@ -2199,8 +2199,11 @@ func Test_prop_inserts_text()
       call prop_add(1, 18, #{type: 'someprop', text: 'SOME '})
       call prop_add(1, 38, #{type: 'otherprop', text: "OTHER\t"})
       call prop_add(1, 69, #{type: 'moreprop', text: 'MORE '})
-      redraw
       normal $
+
+      call setline(2, 'prepost')
+      call prop_type_add('multibyte', #{highlight: 'Visual'})
+      call prop_add(2, 4, #{type: 'multibyte', text: 'söme和平téxt'})
   END
   call writefile(lines, 'XscriptPropsWithText')
   let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 6, cols: 60})
@@ -2228,6 +2231,9 @@ func Test_props_with_text_after()
       call setline(2, 'Last line.')
       call prop_add(2, 0, #{type: 'afterprop', text: ' After Last ', text_align: 'after'})
       normal G$
+
+      call setline(3, 'right here')
+      call prop_add(3, 0, #{type: 'rightprop', text: 'söme和平téxt', text_align: 'right'})
   END
   call writefile(lines, 'XscriptPropsWithTextAfter')
   let buf = RunVimInTerminal('-S XscriptPropsWithTextAfter', #{rows: 6, cols: 60})

@@ -279,7 +279,7 @@ win_line(
     int		screen_row;		// row on the screen, incl w_winrow
 
     char_u	extra[21];		// "%ld " and 'fdc' must fit in here
-    int		n_extra = 0;		// number of extra chars
+    int		n_extra = 0;		// number of extra bytes
     char_u	*p_extra = NULL;	// string of extra chars, plus NUL
     char_u	*p_extra_free = NULL;   // p_extra needs to be freed
     int		c_extra = NUL;		// extra chars, all the same
@@ -1560,7 +1560,7 @@ win_line(
 			    c_final = NUL;
 			    n_extra = (int)STRLEN(p);
 			    extra_attr = used_attr;
-			    n_attr = n_extra;
+			    n_attr = mb_charlen(p);
 			    text_prop_attr = 0;
 			    if (*ptr == NUL)
 				// don't combine char attr after EOL
@@ -1573,9 +1573,8 @@ win_line(
 				char_u	*l;
 
 				// Right-align: fill with spaces
-				// TODO: count screen columns
 				if (right)
-				    added -= n_extra;
+				    added -= vim_strsize(p_extra);
 				if (added < 0 || (below && col == 0))
 				    added = 0;
 				l = alloc(n_extra + added + 1);

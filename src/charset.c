@@ -1097,9 +1097,8 @@ win_lbr_chartabsize(
 	    {
 		char_u *p = ((char_u **)wp->w_buffer->b_textprop_text.ga_data)[
 							       -tp->tp_id - 1];
-		int len = (int)STRLEN(p);
+		int len = vim_strsize(p);
 
-		// TODO: count screen cells
 		if (tp->tp_col == MAXCOL)
 		{
 		    // TODO: truncating
@@ -1454,8 +1453,9 @@ getvcol(
     if (cursor != NULL)
     {
 #ifdef FEAT_PROP_POPUP
-	// cursor is after inserted text
-	vcol += cts.cts_cur_text_width;
+	if ((State & MODE_INSERT) == 0)
+	    // cursor is after inserted text
+	    vcol += cts.cts_cur_text_width;
 #endif
 	if (*ptr == TAB
 		&& (State & MODE_NORMAL)
