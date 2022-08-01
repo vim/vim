@@ -288,8 +288,13 @@ edit(
     conceal_check_cursor_line(cursor_line_was_concealed);
 #endif
 
-    // need to position cursor again when on a TAB
-    if (gchar_cursor() == TAB)
+    // Need to position cursor again when on a TAB and when on a char with
+    // virtual text.
+    if (gchar_cursor() == TAB
+#ifdef FEAT_PROP_POPUP
+	    || curbuf->b_has_textprop
+#endif
+       )
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 
     /*

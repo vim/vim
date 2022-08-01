@@ -1589,13 +1589,6 @@ win_line(
 				    n_attr_skip = added;
 				}
 			    }
-
-			    // If the cursor is on or after this position,
-			    // move it forward.
-			    if (wp == curwin
-				    && lnum == curwin->w_cursor.lnum
-				    && curwin->w_cursor.col >= vcol)
-				curwin->w_cursor.col += n_extra;
 			}
 			// reset the ID in the copy to avoid it being used
 			// again
