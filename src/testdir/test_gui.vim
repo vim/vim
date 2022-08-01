@@ -1772,9 +1772,7 @@ func Test_GUI_lowlvl_QWERTY_Ctrl_minus_Ex()
   let sendmykeys_src = GetSendMyKeysSrc()
 
   let lines =<< trim END
-    " TODO: this do not work - why?
     imap <C-_> BINGO
-    "exec "imap \x1f BINGO"
 
     " <i>
     call SendMyKeys([73,"du"])
@@ -1796,14 +1794,13 @@ func Test_GUI_lowlvl_QWERTY_Ctrl_minus_Ex()
     call SendMyKeys([16,"d", 86, "du", 77, "du", 73, "du", 57, "du", 48, "du", 16, "u", 13, "du"])
 
     func VMI()
-      write Xresult
+      write Xresult_unique
       bw!
       quit
     endfunction
   END
 
   call writefile(sendmykeys_src + lines, 'Xlines')
-  "call writefile(lines, 'Xlines')
 
   let prefix = '!'
   if has('win32')
@@ -1811,15 +1808,15 @@ func Test_GUI_lowlvl_QWERTY_Ctrl_minus_Ex()
   endif
   execute prefix .. GetVimCommand() .. ' -g -N -u NONE -S Xlines'
 
-  call WaitForAssert({-> assert_true(filereadable('Xresult'))})
-  edit Xresult
+  call WaitForAssert({-> assert_true(filereadable('Xresult_unique'))})
+  edit Xresult_unique
 
   call assert_equal("BINGO"      , getline(1)) 
   " ^_ is 0x1f byte
   call assert_equal("\x1f", getline(2)) 
 
   bw!
-  call delete('Xresult')
+  call delete('Xresult_unique')
   call delete('Xlines')
 endfunc
 
