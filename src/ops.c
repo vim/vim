@@ -2012,7 +2012,8 @@ do_join(
     {
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
 #ifdef FEAT_PROP_POPUP
-	propcount += count_props((linenr_T) (curwin->w_cursor.lnum + t), t > 0);
+	propcount += count_props((linenr_T) (curwin->w_cursor.lnum + t),
+							t > 0, t + 1 == count);
 #endif
 	if (t == 0 && setmark && (cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	{
@@ -2147,7 +2148,6 @@ do_join(
 		curwin->w_cursor.lnum + t, t == count - 1,
 		(long)(cend - newp), spaces_removed);
 #endif
-
 	if (t == 0)
 	    break;
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));

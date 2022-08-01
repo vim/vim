@@ -2243,6 +2243,32 @@ func Test_props_with_text_after()
   call delete('XscriptPropsWithTextAfter')
 endfunc
 
+func Test_props_with_text_after_joined()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['one', 'two', 'three', 'four'])
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' ONE', text_align: 'after'})
+      call prop_add(4, 0, #{type: 'afterprop', text: ' FOUR', text_align: 'after'})
+      normal ggJ
+      normal GkJ
+
+      call setline(3, ['a', 'b', 'c', 'd', 'e', 'f'])
+      call prop_add(3, 0, #{type: 'afterprop', text: ' AAA', text_align: 'after'})
+      call prop_add(5, 0, #{type: 'afterprop', text: ' CCC', text_align: 'after'})
+      call prop_add(7, 0, #{type: 'afterprop', text: ' EEE', text_align: 'after'})
+      call prop_add(8, 0, #{type: 'afterprop', text: ' FFF', text_align: 'after'})
+      normal 3G6J
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfterJoined')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfterJoined', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_joined_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfterJoined')
+endfunc
+
 func Test_removed_prop_with_text_cleans_up_array()
   new
   call setline(1, 'some text here')

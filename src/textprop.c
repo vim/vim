@@ -600,7 +600,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
  * be considered.
  */
     int
-count_props(linenr_T lnum, int only_starting)
+count_props(linenr_T lnum, int only_starting, int last_line)
 {
     char_u	*props;
     int		proplen = get_text_props(curbuf, lnum, &props, 0);
@@ -608,13 +608,16 @@ count_props(linenr_T lnum, int only_starting)
     int		i;
     textprop_T	prop;
 
-    if (only_starting)
-	for (i = 0; i < proplen; ++i)
-	{
-	    mch_memmove(&prop, props + i * sizeof(prop), sizeof(prop));
-	    if (prop.tp_flags & TP_FLAG_CONT_PREV)
-		--result;
-	}
+    for (i = 0; i < proplen; ++i)
+    {
+	mch_memmove(&prop, props + i * sizeof(prop), sizeof(prop));
+	// A prop is droppend when in the first line and it continues from the
+	// previous line, or when not in the last line and it is virtual text
+	// after the line.
+	if ((only_starting && (prop.tp_flags & TP_FLAG_CONT_PREV))
+		|| (!last_line && prop.tp_col == MAXCOL))
+	    --result;
+    }
     return result;
 }
 
@@ -2024,7 +2027,7 @@ prepend_joined_props(
 	int	    propcount,
 	int	    *props_remaining,
 	linenr_T    lnum,
-	int	    add_all,
+	int	    last_line,
 	long	    col,
 	int	    removed)
 {
@@ -2038,12 +2041,14 @@ prepend_joined_props(
 	int	    end;
 
 	mch_memmove(&prop, props + i * sizeof(prop), sizeof(prop));
+	if (prop.tp_col == MAXCOL && !last_line)
+	    continue;  // drop property with text after the line
 	end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
 
 	adjust_prop(&prop, 0, -removed, 0); // Remove leading spaces
 	adjust_prop(&prop, -1, col, 0); // Make line start at its final column
 
-	if (add_all || end)
+	if (last_line || end)
 	    mch_memmove(new_props + --(*props_remaining) * sizeof(prop),
 							  &prop, sizeof(prop));
 	else
