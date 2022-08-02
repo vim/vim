@@ -1611,6 +1611,23 @@ func Test_prop_one_line_window()
   bwipe!
 endfunc
 
+def Test_prop_column_zero_error()
+  prop_type_add('proptype', {highlight: 'Search'})
+  var caught = false
+  try
+    popup_create([{
+            text: 'a',
+            props: [{col: 0, length: 1, type: 'type'}],
+     }], {})
+  catch /E964:/
+    caught = true
+  endtry
+  assert_true(caught)
+
+  popup_clear()
+  prop_type_delete('proptype')
+enddef
+
 " This was calling ml_append_int() and copy a text property from a previous
 " line at the wrong moment.  Exact text length matters.
 def Test_prop_splits_data_block()
