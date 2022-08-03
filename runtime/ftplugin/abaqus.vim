@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:     Abaqus finite element input file (www.abaqus.com)
-" Maintainer:   Carl Osterwisch <osterwischc@asme.org>
-" Last Change:  2022 May 09
+" Maintainer:   Carl Osterwisch <costerwi@gmail.com>
+" Last Change:  2022 Aug 03
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin") | finish | endif

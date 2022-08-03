@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Abaqus finite element input file (www.hks.com)
-" Maintainer:	Carl Osterwisch <osterwischc@asme.org>
+" Maintainer:	Carl Osterwisch <costerwi@gmail.com>
 " Last Change:	2002 Feb 24
 " Remark:	Huge improvement in folding performance--see filetype plugin
 
