@@ -28,8 +28,7 @@ syn match abaqusBadLine	"^\s\+\*.*" display
 hi def link abaqusComment	Comment
 hi def link abaqusKeyword	Statement
 hi def link abaqusParameter	Identifier
-hi def link abaqusValue	Constant
-hi def link abaqusBadLine    Error
-
+hi def link abaqusValue		Constant
+hi def link abaqusBadLine    	Error
 
 let b:current_syntax = "abaqus"
