@@ -2403,7 +2403,7 @@ check_termcode_mouse(
 	    // Apparently 0x23 and 0x24 are used by rxvt scroll wheel.
 	    // And 0x40 and 0x41 are used by some xterm emulator.
 	    wheel_code = mouse_code - (mouse_code >= 0x40 ? 0x40 : 0x23)
-		+ MOUSEWHEEL_LOW;
+							      + MOUSEWHEEL_LOW;
 	}
 #   endif
 
@@ -2788,8 +2788,10 @@ check_termcode_mouse(
 	    is_drag = TRUE;
 	current_button = held_button;
     }
-    else if (wheel_code == 0)
+    else
     {
+      if (wheel_code == 0)
+      {
 # ifdef CHECK_DOUBLE_CLICK
 #  ifdef FEAT_MOUSE_GPM
 	/*
@@ -2849,7 +2851,8 @@ check_termcode_mouse(
 	orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
 # endif
 	is_click = TRUE;
-	orig_mouse_code = mouse_code;
+      }
+      orig_mouse_code = mouse_code;
     }
     if (!is_drag)
 	held_button = mouse_code & MOUSE_CLICK_MASK;
