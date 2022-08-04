@@ -655,6 +655,9 @@ char2cells(int c)
     int
 ptr2cells(char_u *p)
 {
+    if (!has_mbyte)
+	return byte2cells(*p);
+
     // For UTF-8 we need to look at more bytes if the first byte is >= 0x80.
     if (enc_utf8 && *p >= 0x80)
 	return utf_ptr2cells(p);
@@ -682,16 +685,13 @@ vim_strnsize(char_u *s, int len)
     int		size = 0;
 
     while (*s != NUL && --len >= 0)
-	if (has_mbyte)
-	{
-	    int	    l = (*mb_ptr2len)(s);
+    {
+	int	    l = (*mb_ptr2len)(s);
 
-	    size += ptr2cells(s);
-	    s += l;
-	    len -= l - 1;
-	}
-	else
-	    size += byte2cells(*s++);
+	size += ptr2cells(s);
+	s += l;
+	len -= l - 1;
+    }
 
     return size;
 }
@@ -1026,6 +1026,40 @@ lbr_chartabsize_adv(chartabsize_T *cts)
     return retval;
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+/*
+ * Return the cell size of virtual text after truncation.
+ */
+    int
+textprop_size_after_trunc(
+	win_T	*wp,
+	int	below,
+	int	added,
+	char_u	*text,
+	int	*n_used_ptr)
+{
+    int	space = below ? wp->w_width : added;
+    int len = (int)STRLEN(text);
+    int strsize = 0;
+    int n_used;
+
+    // if the remaining size is to small wrap
+    // anyway and use the next line
+    if (space < PROP_TEXT_MIN_CELLS)
+	space += wp->w_width;
+    for (n_used = 0; n_used < len; n_used += (*mb_ptr2len)(text + n_used))
+    {
+	int clen = ptr2cells(text + n_used);
+
+	if (strsize + clen > space)
+	    break;
+	strsize += clen;
+    }
+    *n_used_ptr = n_used;
+    return strsize;
+}
+#endif
+
 /*
  * Return the screen size of the character indicated by "cts".
  * "cts->cts_cur_text_width" is set to the extra size for a text property that
@@ -1110,16 +1144,28 @@ win_lbr_chartabsize(
 	    {
 		char_u *p = ((char_u **)wp->w_buffer->b_textprop_text.ga_data)[
 							       -tp->tp_id - 1];
-		int len = vim_strsize(p);
+		int	cells = vim_strsize(p);
 
+		added = wp->w_width - (vcol + size) % wp->w_width;
 		if (tp->tp_col == MAXCOL)
 		{
-		    // TODO: truncating
-		    if (tp->tp_flags & TP_FLAG_ALIGN_BELOW)
-			len += wp->w_width - (vcol + size) % wp->w_width;
+		    int below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
+		    int	wrap = (tp->tp_flags & TP_FLAG_WRAP);
+		    int len = (int)STRLEN(p);
+		    int n_used = len;
+
+		    // Keep in sync with where textprop_size_after_trunc() is
+		    // called in win_line().
+		    if (!wrap)
+			cells = textprop_size_after_trunc(wp,
+						     below, added, p, &n_used);
+		    // right-aligned does not really matter here, same as
+		    // "after"
+		    if (below)
+			cells += wp->w_width - (vcol + size) % wp->w_width;
 		}
-		cts->cts_cur_text_width += len;
-		size += len;
+		cts->cts_cur_text_width += cells;
+		size += cells;
 	    }
 	    if (tp->tp_col - 1 > col)
 		break;

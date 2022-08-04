@@ -2286,6 +2286,70 @@ func Test_props_with_text_after_joined()
   call delete('XscriptPropsWithTextAfterJoined')
 endfunc
 
+func Test_props_with_text_after_truncated()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['one two three four five six seven'])
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' ONE and TWO and THREE and FOUR and FIVE'})
+
+      call setline(2, ['one two three four five six seven'])
+      call prop_add(2, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five', text_align: 'right'})
+
+      call setline(3, ['one two three four five six seven'])
+      call prop_add(3, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five lets wrap after some more text', text_align: 'below'})
+
+      call setline(4, ['cursor here'])
+      normal 4Gfh
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfterTrunc')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfterTrunc', #{rows: 9, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_1', {})
+
+  call term_sendkeys(buf, ":37vsp\<CR>gg")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_2', {})
+
+  call term_sendkeys(buf, ":36wincmd |\<CR>")
+  call term_sendkeys(buf, "2G$")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_3', {})
+
+  call term_sendkeys(buf, ":33wincmd |\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_4', {})
+
+  call term_sendkeys(buf, ":18wincmd |\<CR>")
+  call term_sendkeys(buf, "0fx")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfterTrunc')
+endfunc
+
+func Test_props_with_text_after_wraps()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['one two three four five six seven'])
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' ONE and TWO and THREE and FOUR and FIVE', text_wrap: 'wrap'})
+
+      call setline(2, ['one two three four five six seven'])
+      call prop_add(2, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five', text_align: 'right', text_wrap: 'wrap'})
+
+      call setline(3, ['one two three four five six seven'])
+      call prop_add(3, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five lets wrap after some more text', text_align: 'below', text_wrap: 'wrap'})
+
+      call setline(4, ['cursor here'])
+      normal 4Gfh
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfterWraps')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfterWraps', #{rows: 9, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_wraps_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfterWraps')
+endfunc
+
 func Test_removed_prop_with_text_cleans_up_array()
   new
   call setline(1, 'some text here')

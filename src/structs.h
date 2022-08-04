@@ -815,6 +815,8 @@ typedef struct textprop_S
 
 #define TP_FLAG_WRAP		0x40	// virtual text wraps - when missing
 					// text is truncated
+#define PROP_TEXT_MIN_CELLS	4	// minimun number of cells to use for
+					// the text, even when truncating
 
 /*
  * Structure defining a property type.

@@ -33,6 +33,7 @@ void init_chartabsize_arg(chartabsize_T *cts, win_T *wp, linenr_T lnum, colnr_T 
 void clear_chartabsize_arg(chartabsize_T *cts);
 int lbr_chartabsize(chartabsize_T *cts);
 int lbr_chartabsize_adv(chartabsize_T *cts);
+int textprop_size_after_trunc(win_T *wp, int below, int added, char_u *text, int *n_used_ptr);
 int win_lbr_chartabsize(chartabsize_T *cts, int *headp);
 void getvcol(win_T *wp, pos_T *pos, colnr_T *start, colnr_T *cursor, colnr_T *end);
 colnr_T getvcol_nolist(pos_T *posp);

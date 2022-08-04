@@ -1554,6 +1554,8 @@ win_line(
 							& TP_FLAG_ALIGN_RIGHT);
 			    int	    below = (text_props[used_tpi].tp_flags
 							& TP_FLAG_ALIGN_BELOW);
+			    int	    wrap = (text_props[used_tpi].tp_flags
+							& TP_FLAG_WRAP);
 
 			    p_extra = p;
 			    c_extra = NUL;
@@ -1566,26 +1568,53 @@ win_line(
 				// don't combine char attr after EOL
 				text_prop_combine = FALSE;
 
-			    // TODO: truncation if it doesn't fit
-			    if (right || below)
+			    // Keep in sync with where
+			    // textprop_size_after_trunc() is called in
+			    // win_lbr_chartabsize().
+			    if ((right || below || !wrap) && wp->w_width > 2)
 			    {
 				int	added = wp->w_width - col;
+				int	n_used = n_extra;
 				char_u	*l;
+				int	strsize = wrap
+					    ? vim_strsize(p_extra)
+					    : textprop_size_after_trunc(wp,
+					       below, added, p_extra, &n_used);
 
-				// Right-align: fill with spaces
-				if (right)
-				    added -= vim_strsize(p_extra);
-				if (added < 0 || (below && col == 0))
-				    added = 0;
-				l = alloc(n_extra + added + 1);
-				if (l != NULL)
+				if (wrap || right || below || n_used < n_extra)
 				{
-				    vim_memset(l, ' ', added);
-				    STRCPY(l + added, p);
-				    vim_free(p_extra_free);
-				    p_extra = p_extra_free = l;
-				    n_extra += added;
-				    n_attr_skip = added;
+				    // Right-align: fill with spaces
+				    if (right)
+					added -= strsize;
+				    if (added < 0 || (below && col == 0)
+					       || (!below && n_used < n_extra))
+					added = 0;
+				    // add 1 for NUL, 2 for when '…' is used
+				    l = alloc(n_used + added + 3);
+				    if (l != NULL)
+				    {
+					vim_memset(l, ' ', added);
+					vim_strncpy(l + added, p_extra, n_used);
+					if (n_used < n_extra)
+					{
+					    char_u *lp = l + added + n_used - 1;
+
+					    if (has_mbyte)
+					    {
+						// change last character to '…'
+						lp -= (*mb_head_off)(l, lp);
+						STRCPY(lp, "…");
+						n_used = lp - l + 3;
+					    }
+					    else
+						// change last character to '>'
+						*lp = '>';
+					}
+					vim_free(p_extra_free);
+					p_extra = p_extra_free = l;
+					n_extra = n_used + added;
+					n_attr_skip = added;
+				    }
 				}
 			    }
 			}
@@ -1598,6 +1627,14 @@ win_line(
 			text_prop_follows = other_tpi != -1;
 		    }
 		}
+		else if (text_prop_next < text_prop_count
+			   && text_props[text_prop_next].tp_col == MAXCOL
+			   && *ptr != NUL
+			   && ptr[mb_ptr2len(ptr)] == NUL)
+		    // When at last-but-one character and a text property
+		    // follows after it, we may need to flush the line after
+		    // displaying that character.
+		    text_prop_follows = TRUE;
 	    }
 #endif
 
