@@ -25,6 +25,7 @@ int vim_iswordc_buf(int c, buf_T *buf);
 int vim_iswordp(char_u *p);
 int vim_iswordp_buf(char_u *p, buf_T *buf);
 int vim_isfilec(int c);
+int vim_is_fname_char(int c);
 int vim_isfilec_or_wc(int c);
 int vim_isprintc(int c);
 int vim_isprintc_strict(int c);

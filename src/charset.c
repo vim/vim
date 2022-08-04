@@ -225,7 +225,8 @@ buf_init_chartab(
 			    }
 			    else
 			    {
-				g_chartab[c] = (g_chartab[c] & ~CT_CELL_MASK) + 1;
+				g_chartab[c] = (g_chartab[c] & ~CT_CELL_MASK)
+									   + 1;
 				g_chartab[c] |= CT_PRINT_CHAR;
 			    }
 			}
@@ -846,13 +847,25 @@ vim_iswordp_buf(char_u *p, buf_T *buf)
 }
 
 /*
- * return TRUE if 'c' is a valid file-name character
+ * Return TRUE if 'c' is a valid file-name character as specified with the
+ * 'isfname' option.
  * Assume characters above 0x100 are valid (multi-byte).
+ * To be used for commands like "gf".
  */
     int
 vim_isfilec(int c)
 {
     return (c >= 0x100 || (c > 0 && (g_chartab[c] & CT_FNAME_CHAR)));
+}
+
+/*
+ * Return TRUE if 'c' is a valid file-name character, including characters left
+ * out of 'isfname' to make "gf" work, such as comma, space, '@', etc.
+ */
+    int
+vim_is_fname_char(int c)
+{
+    return vim_isfilec(c) || c == ',' || c == ' ' || c == '@';
 }
 
 /*
