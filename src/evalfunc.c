@@ -3929,6 +3929,7 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     int		save_redir_off = redir_off;
     garray_T	save_ga;
     int		save_msg_col = msg_col;
+    int		save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     int		echo_output = FALSE;
 
     rettv->vval.v_string = NULL;
@@ -3985,6 +3986,8 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     if (!echo_output)
 	msg_col = 0;  // prevent leading spaces
 
+    // "legacy call execute('cmd')" and "vim9cmd execute('cmd')" applies to "cmd".
+    sticky_cmdmod_flags = cmdmod.cmod_flags & (CMOD_LEGACY | CMOD_VIM9CMD);
     if (cmd != NULL)
 	do_cmdline_cmd(cmd);
     else
@@ -3997,6 +4000,7 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
 		      DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT|DOCMD_KEYTYPED);
 	--list->lv_refcount;
     }
+    sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 
     // Need to append a NUL to the result.
     if (ga_grow(&redir_execute_ga, 1) == OK)
