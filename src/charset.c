@@ -1129,43 +1129,49 @@ win_lbr_chartabsize(
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text)
     {
-	int i;
-	int col = (int)(s - line);
+	int	    i;
+	int	    col = (int)(s - line);
+	garray_T    *gap = &wp->w_buffer->b_textprop_text;
 
 	for (i = 0; i < cts->cts_text_prop_count; ++i)
 	{
 	    textprop_T *tp = cts->cts_text_props + i;
 
+	    // Watch out for the text being deleted.  "cts_text_props" is a
+	    // copy, the text prop may actually have been removed from the line.
 	    if (tp->tp_id < 0
-		    && ((tp->tp_col - 1 >= col && tp->tp_col - 1 < col + size
-			&& -tp->tp_id <= wp->w_buffer->b_textprop_text.ga_len)
-		    || (tp->tp_col == MAXCOL && (s[0] == NUL || s[1] == NUL)
-						   && cts->cts_with_trailing)))
+		    && ((tp->tp_col - 1 >= col && tp->tp_col - 1 < col + size)
+		       || (tp->tp_col == MAXCOL && (s[0] == NUL || s[1] == NUL)
+						   && cts->cts_with_trailing))
+		    && -tp->tp_id - 1 < gap->ga_len)
 	    {
-		char_u *p = ((char_u **)wp->w_buffer->b_textprop_text.ga_data)[
-							       -tp->tp_id - 1];
-		int	cells = vim_strsize(p);
+		char_u *p = ((char_u **)gap->ga_data)[-tp->tp_id - 1];
 
-		added = wp->w_width - (vcol + size) % wp->w_width;
-		if (tp->tp_col == MAXCOL)
+		if (p != NULL)
 		{
-		    int below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
-		    int	wrap = (tp->tp_flags & TP_FLAG_WRAP);
-		    int len = (int)STRLEN(p);
-		    int n_used = len;
+		    int	cells = vim_strsize(p);
 
-		    // Keep in sync with where textprop_size_after_trunc() is
-		    // called in win_line().
-		    if (!wrap)
-			cells = textprop_size_after_trunc(wp,
+		    added = wp->w_width - (vcol + size) % wp->w_width;
+		    if (tp->tp_col == MAXCOL)
+		    {
+			int below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
+			int	wrap = (tp->tp_flags & TP_FLAG_WRAP);
+			int len = (int)STRLEN(p);
+			int n_used = len;
+
+			// Keep in sync with where textprop_size_after_trunc()
+			// is called in win_line().
+			if (!wrap)
+			    cells = textprop_size_after_trunc(wp,
 						     below, added, p, &n_used);
-		    // right-aligned does not really matter here, same as
-		    // "after"
-		    if (below)
-			cells += wp->w_width - (vcol + size) % wp->w_width;
+			// right-aligned does not really matter here, same as
+			// "after"
+			if (below)
+			    cells += wp->w_width - (vcol + size) % wp->w_width;
+		    }
+		    cts->cts_cur_text_width += cells;
+		    size += cells;
 		}
-		cts->cts_cur_text_width += cells;
-		size += cells;
 	    }
 	    if (tp->tp_col - 1 > col)
 		break;
