@@ -3709,6 +3709,9 @@ ex_substitute(exarg_T *eap)
     int		save_ma = 0;
     int		save_sandbox = 0;
 #endif
+#ifdef FEAT_PROP_POPUP
+    textprop_T	*text_props = NULL;
+#endif
 
     cmd = eap->arg;
     if (!global_busy)
@@ -4049,6 +4052,7 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_PROP_POPUP
 	    int		apc_flags = APC_SAVE_FOR_UNDO | APC_SUBSTITUTE;
 	    colnr_T	total_added =  0;
+	    int		text_prop_count = 0;
 #endif
 
 	    /*
@@ -4501,8 +4505,59 @@ ex_substitute(exarg_T *eap)
 		}
 		else
 		{
-		    p1 = ml_get(sub_firstlnum + nmatch - 1);
+		    linenr_T	lastlnum = sub_firstlnum + nmatch - 1;
+#ifdef FEAT_PROP_POPUP
+		    if (curbuf->b_has_textprop)
+		    {
+			char_u	*prop_start;
+
+			// Props in the first line may be shortened or deleted
+			if (adjust_prop_columns(lnum,
+					total_added + regmatch.startpos[0].col,
+						       -MAXCOL, apc_flags))
+			    apc_flags &= ~APC_SAVE_FOR_UNDO;
+			total_added -= (colnr_T)STRLEN(
+				     sub_firstline + regmatch.startpos[0].col);
+
+			// Props in the last line may be moved or deleted
+			if (adjust_prop_columns(lastlnum,
+					0, -regmatch.endpos[0].col, apc_flags))
+			    // When text properties are changed, need to save
+			    // for undo first, unless done already.
+			    apc_flags &= ~APC_SAVE_FOR_UNDO;
+
+			// Copy the text props of the last line, they will be
+			// later appended to the changed line.
+			text_prop_count = get_text_props(curbuf, lastlnum,
+							   &prop_start, FALSE);
+			if (text_prop_count > 0)
+			{
+			    // TODO: what when we already did this?
+			    vim_free(text_props);
+			    text_props = ALLOC_MULT(textprop_T,
+							      text_prop_count);
+			    if (text_props != NULL)
+			    {
+				int pi;
+
+				mch_memmove(text_props, prop_start,
+					 text_prop_count * sizeof(textprop_T));
+				// After joining the text prop columns will
+				// increase.
+				for (pi = 0; pi < text_prop_count; ++pi)
+				    text_props[pi].tp_col +=
+					 regmatch.startpos[0].col + sublen - 1;
+			    }
+			}
+		    }
+#endif
+		    p1 = ml_get(lastlnum);
 		    nmatch_tl += nmatch - 1;
+#ifdef FEAT_PROP_POPUP
+		    if (curbuf->b_has_textprop)
+			total_added += (colnr_T)STRLEN(
+						  p1 + regmatch.endpos[0].col);
+#endif
 		}
 		copy_len = regmatch.startpos[0].col - copycol;
 		needed_len = copy_len + ((unsigned)STRLEN(p1)
@@ -4708,7 +4763,10 @@ skip:
 			if (u_savesub(lnum) != OK)
 			    break;
 			ml_replace(lnum, new_start, TRUE);
-
+#ifdef FEAT_PROP_POPUP
+			if (text_props != NULL)
+			    add_text_props(lnum, text_props, text_prop_count);
+#endif
 			if (nmatch_tl > 0)
 			{
 			    /*
@@ -4792,6 +4850,10 @@ skip:
 
 outofmem:
     vim_free(sub_firstline); // may have to free allocated copy of the line
+
+#ifdef FEAT_PROP_POPUP
+    vim_free(text_props);
+#endif
 
     // ":s/pat//n" doesn't move the cursor
     if (subflags.do_count)

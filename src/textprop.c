@@ -12,7 +12,6 @@
  *
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
- *   -> a :substitute with a multi-line match
  *   -> search for changed_bytes() from misc1.c
  *   -> search for mark_col_adjust()
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
@@ -680,6 +679,29 @@ set_text_props(linenr_T lnum, char_u *props, int len)
 	vim_free(curbuf->b_ml.ml_line_ptr);
     curbuf->b_ml.ml_line_ptr = newtext;
     curbuf->b_ml.ml_line_len = textlen + len;
+    curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
+}
+
+/*
+ * Add "text_props" with "text_prop_count" text propertis to line "lnum".
+ */
+    void
+add_text_props(linenr_T lnum, textprop_T *text_props, int text_prop_count)
+{
+    char_u  *text;
+    char_u  *newtext;
+    int	    proplen = text_prop_count * (int)sizeof(textprop_T);
+
+    text = ml_get(lnum);
+    newtext = alloc(curbuf->b_ml.ml_line_len + proplen);
+    if (newtext == NULL)
+	return;
+    mch_memmove(newtext, text, curbuf->b_ml.ml_line_len);
+    mch_memmove(newtext + curbuf->b_ml.ml_line_len, text_props, proplen);
+    if (curbuf->b_ml.ml_flags & (ML_LINE_DIRTY | ML_ALLOCATED))
+	vim_free(curbuf->b_ml.ml_line_ptr);
+    curbuf->b_ml.ml_line_ptr = newtext;
+    curbuf->b_ml.ml_line_len += proplen;
     curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
 }
 

@@ -1363,15 +1363,18 @@ func Test_proptype_substitute2()
         \ #{type_bufnr: 0, id: 0, col: 50, end: 1, type: 'number', length: 4, start: 1}]
 
   " TODO
-  return
-  " Add some text in between
-  %s/\s\+/   /g
-  call assert_equal(expected, prop_list(1) + prop_list(2) + prop_list(3))
+  if 0
+    " Add some text in between
+    %s/\s\+/   /g
+    call assert_equal(expected, prop_list(1) + prop_list(2) + prop_list(3))
 
-  " remove some text
-  :1s/[a-z]\{3\}//g
-  let expected = [{'id': 0, 'col': 10, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}]
-  call assert_equal(expected, prop_list(1))
+    " remove some text
+    :1s/[a-z]\{3\}//g
+    let expected = [{'id': 0, 'col': 10, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}]
+    call assert_equal(expected, prop_list(1))
+  endif
+
+  call prop_type_delete('number')
   bwipe!
 endfunc
 
@@ -1385,6 +1388,36 @@ func Test_proptype_substitute3()
   redraw
 
   call prop_type_delete('test')
+  bwipe!
+endfunc
+
+func Test_proptype_substitute_join()
+  new
+  call setline(1, [
+        \ 'This is some end',
+        \ 'start is highlighted end',
+        \ 'some is highlighted',
+        \ 'start is also highlighted'])
+
+  call prop_type_add('number', {'highlight': 'ErrorMsg'})
+
+  call prop_add(1, 6, {'length': 2, 'type': 'number'})
+  call prop_add(2, 7, {'length': 2, 'type': 'number'})
+  call prop_add(3, 6, {'length': 2, 'type': 'number'})
+  call prop_add(4, 7, {'length': 2, 'type': 'number'})
+  " The highlighted "is" in line 1, 2 and 4 is kept and ajudsted.
+  " The highlighted "is" in line 3 is deleted.
+  let expected = [
+        \ #{type_bufnr: 0, id: 0, col: 6, end: 1, type: 'number', length: 2, start: 1},
+        \ #{type_bufnr: 0, id: 0, col: 21, end: 1, type: 'number', length: 2, start: 1},
+        \ #{type_bufnr: 0, id: 0, col: 43, end: 1, type: 'number', length: 2, start: 1}]
+
+  s/end\nstart/joined/
+  s/end\n.*\nstart/joined/
+  call assert_equal('This is some joined is highlighted joined is also highlighted', getline(1))
+  call assert_equal(expected, prop_list(1))
+
+  call prop_type_delete('number')
   bwipe!
 endfunc
 
