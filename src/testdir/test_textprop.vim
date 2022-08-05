@@ -1133,6 +1133,38 @@ func Test_textprop_screenshot_various()
   call delete('XtestProp')
 endfunc
 
+func Test_textprop_hl_override()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, ['One one one one one', 'Two two two two two', 'Three three three three'])
+      hi OverProp ctermfg=blue ctermbg=yellow
+      hi CursorLine cterm=bold,underline ctermfg=red ctermbg=green
+      hi Vsual ctermfg=cyan ctermbg=grey
+      call prop_type_add('under', #{highlight: 'OverProp'})
+      call prop_type_add('over', #{highlight: 'OverProp', override: 1})
+      call prop_add(1, 5, #{type: 'under', length: 4})
+      call prop_add(1, 13, #{type: 'over', length: 4})
+      call prop_add(2, 5, #{type: 'under', length: 4})
+      call prop_add(2, 13, #{type: 'over', length: 4})
+      call prop_add(3, 5, #{type: 'under', length: 4})
+      call prop_add(3, 13, #{type: 'over', length: 4})
+      set cursorline
+      2
+  END
+  call writefile(lines, 'XtestOverProp')
+  let buf = RunVimInTerminal('-S XtestOverProp', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_textprop_hl_override_1', {})
+
+  call term_sendkeys(buf, "3Gllv$hh")
+  call VerifyScreenDump(buf, 'Test_textprop_hl_override_2', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestOverProp')
+endfunc
+
 func RunTestVisualBlock(width, dump)
   call writefile([
 	\ "call setline(1, ["

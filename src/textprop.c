@@ -238,9 +238,10 @@ prop_add_one(
 	    goto theend;
 	((char_u **)gap->ga_data)[gap->ga_len++] = text;
 
-	// change any Tab to a Space to make it simpler to compute the size
+	// change any control character (Tab, Newline, etc.) to a Space to make
+	// it simpler to compute the size
 	for (p = text; *p != NUL; MB_PTR_ADV(p))
-	    if (*p == TAB)
+	    if (*p < ' ')
 		*p = ' ';
 	text = NULL;
     }
@@ -1540,6 +1541,15 @@ prop_type_set(typval_T *argvars, int add)
 		prop->pt_flags |= PT_FLAG_COMBINE;
 	    else
 		prop->pt_flags &= ~PT_FLAG_COMBINE;
+	}
+
+	di = dict_find(dict, (char_u *)"override", -1);
+	if (di != NULL)
+	{
+	    if (tv_get_bool(&di->di_tv))
+		prop->pt_flags |= PT_FLAG_OVERRIDE;
+	    else
+		prop->pt_flags &= ~PT_FLAG_OVERRIDE;
 	}
 
 	di = dict_find(dict, (char_u *)"priority", -1);

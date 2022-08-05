@@ -377,6 +377,8 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 		   combine	when omitted or TRUE combine the highlight
 				with any syntax highlight; when FALSE syntax
 				highlight will not be used
+		   override	when TRUE the highlight overrides any other,
+				including 'cursorline' and Visual
 		   start_incl	when TRUE inserts at the start position will
 				be included in the text property
 		   end_incl	when TRUE inserts at the end position will be
