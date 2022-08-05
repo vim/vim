@@ -348,7 +348,7 @@ win_line(
     proptype_T  *text_prop_type = NULL;
     int		text_prop_attr = 0;
     int		text_prop_id = 0;	// active property ID
-    int		text_prop_combine = FALSE;
+    int		text_prop_flags = 0;
     int		text_prop_follows = FALSE;  // another text prop to display
 #endif
 #ifdef FEAT_SPELL
@@ -1505,7 +1505,7 @@ win_line(
 		}
 
 		text_prop_attr = 0;
-		text_prop_combine = FALSE;
+		text_prop_flags = 0;
 		text_prop_type = NULL;
 		text_prop_id = 0;
 		if (text_props_active > 0 && n_extra == 0)
@@ -1535,7 +1535,7 @@ win_line(
 			    text_prop_type = pt;
 			    text_prop_attr =
 				   hl_combine_attr(text_prop_attr, used_attr);
-			    text_prop_combine = pt->pt_flags & PT_FLAG_COMBINE;
+			    text_prop_flags = pt->pt_flags;
 			    text_prop_id = text_props[tpi].tp_id;
 			    other_tpi = used_tpi;
 			    used_tpi = tpi;
@@ -1566,7 +1566,7 @@ win_line(
 			    text_prop_attr = 0;
 			    if (*ptr == NUL)
 				// don't combine char attr after EOL
-				text_prop_combine = FALSE;
+				text_prop_flags &= ~PT_FLAG_COMBINE;
 
 			    // Keep in sync with where
 			    // textprop_size_after_trunc() is called in
@@ -1704,7 +1704,7 @@ win_line(
 	    // Combine text property highlight into syntax highlight.
 	    if (text_prop_type != NULL)
 	    {
-		if (text_prop_combine)
+		if (text_prop_flags & PT_FLAG_COMBINE)
 		    syntax_attr = hl_combine_attr(syntax_attr, text_prop_attr);
 		else
 		    syntax_attr = text_prop_attr;
@@ -1760,6 +1760,11 @@ win_line(
 		char_attr = 0;
 #endif
 	    }
+#ifdef FEAT_PROP_POPUP
+	    // override with text property highlight when "override" is TRUE
+	    if (text_prop_type != NULL && (text_prop_flags & PT_FLAG_OVERRIDE))
+		char_attr = hl_combine_attr(char_attr, text_prop_attr);
+#endif
 	}
 
 	// combine attribute with 'wincolor'
