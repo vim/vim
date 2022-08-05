@@ -392,6 +392,7 @@ win_line(
 #ifdef FEAT_LINEBREAK
     int		need_showbreak = FALSE; // overlong line, skipping first x
 					// chars
+    int		dont_use_showbreak = FALSE;  // do not use 'showbreak'
 #endif
 #if defined(FEAT_SIGNS) || defined(FEAT_QUICKFIX) \
 	|| defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
@@ -1567,7 +1568,15 @@ win_line(
 			    if (*ptr == NUL)
 				// don't combine char attr after EOL
 				text_prop_flags &= ~PT_FLAG_COMBINE;
-
+#ifdef FEAT_LINEBREAK
+			    if (below || right)
+			    {
+				// no 'showbreak' before "below" text property
+				// or after "right" text property
+				need_showbreak = FALSE;
+				dont_use_showbreak = TRUE;
+			    }
+#endif
 			    // Keep in sync with where
 			    // textprop_size_after_trunc() is called in
 			    // win_lbr_chartabsize().
@@ -3441,9 +3450,11 @@ win_line(
 	    n_extra = 0;
 	    lcs_prec_todo = wp->w_lcs_chars.prec;
 #ifdef FEAT_LINEBREAK
+	    if (!dont_use_showbreak
 # ifdef FEAT_DIFF
-	    if (filler_todo <= 0)
+		    && filler_todo <= 0
 # endif
+	       )
 		need_showbreak = TRUE;
 #endif
 #ifdef FEAT_DIFF
