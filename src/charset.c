@@ -1127,7 +1127,7 @@ win_lbr_chartabsize(
     size = win_chartabsize(wp, s, vcol);
 
 # ifdef FEAT_PROP_POPUP
-    if (cts->cts_has_prop_with_text)
+    if (cts->cts_has_prop_with_text && *line != NUL)
     {
 	int	    i;
 	int	    col = (int)(s - line);

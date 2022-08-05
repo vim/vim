@@ -2221,6 +2221,9 @@ func Test_prop_inserts_text()
       call setline(2, 'prepost')
       call prop_type_add('multibyte', #{highlight: 'Visual'})
       call prop_add(2, 4, #{type: 'multibyte', text: 'söme和平téxt'})
+
+      call setline(3, '')
+      call prop_add(3, 1, #{type: 'someprop', text: 'empty line'})
   END
   call writefile(lines, 'XscriptPropsWithText')
   let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 6, cols: 60})
@@ -2228,6 +2231,12 @@ func Test_prop_inserts_text()
 
   call term_sendkeys(buf, ":set signcolumn=yes\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_2', {})
+
+  call term_sendkeys(buf, "2G$")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_3', {})
+
+  call term_sendkeys(buf, "3G")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_4', {})
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropsWithText')
