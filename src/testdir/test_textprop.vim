@@ -2318,6 +2318,7 @@ func Test_props_with_text_after()
       call prop_add(1, 0, #{type: 'rightprop', text: ' RIGHT ', text_align: 'right'})
       call prop_add(1, 0, #{type: 'afterprop', text: "\tAFTER\t", text_align: 'after'})
       call prop_add(1, 0, #{type: 'belowprop', text: ' BELOW ', text_align: 'below'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' ALSO BELOW ', text_align: 'below'})
 
       call setline(2, 'Last line.')
       call prop_add(2, 0, #{type: 'afterprop', text: ' After Last ', text_align: 'after'})
@@ -2327,7 +2328,7 @@ func Test_props_with_text_after()
       call prop_add(3, 0, #{type: 'rightprop', text: 'söme和平téxt', text_align: 'right'})
   END
   call writefile(lines, 'XscriptPropsWithTextAfter')
-  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfter', #{rows: 6, cols: 60})
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfter', #{rows: 8, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_1', {})
 
   call StopVimInTerminal(buf)

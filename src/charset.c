@@ -1173,7 +1173,7 @@ win_lbr_chartabsize(
 		    size += cells;
 		}
 	    }
-	    if (tp->tp_col - 1 > col)
+	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
 		break;
 	}
     }
