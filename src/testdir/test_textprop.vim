@@ -2450,6 +2450,41 @@ func Test_props_with_text_after_nowrap()
   call delete('XscriptPropsAfterNowrap')
 endfunc
 
+func Test_props_with_text_after_split_join()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['1122'])
+      call prop_type_add('belowprop', #{highlight: 'ErrorMsg'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' Below the line ', text_align: 'below'})
+      exe "normal f2i\<CR>\<Esc>"
+
+      func AddMore()
+        call prop_type_add('another', #{highlight: 'Search'})
+        call prop_add(1, 0, #{type: 'another', text: ' after the text ', text_align: 'after'})
+        call prop_add(1, 0, #{type: 'another', text: ' right here', text_align: 'right'})
+      endfunc
+  END
+  call writefile(lines, 'XscriptPropsAfterSplitJoin')
+  let buf = RunVimInTerminal('-S XscriptPropsAfterSplitJoin', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_1', {})
+
+  call term_sendkeys(buf, "ggJ")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_2', {})
+
+  call term_sendkeys(buf, ":call AddMore()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_3', {})
+
+  call term_sendkeys(buf, "ggf s\<CR>\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_4', {})
+
+  call term_sendkeys(buf, "ggJ")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsAfterSplitJoin')
+endfunc
+
 func Test_removed_prop_with_text_cleans_up_array()
   new
   call setline(1, 'some text here')

@@ -1944,7 +1944,7 @@ skip_comment(
 }
 
 /*
- * Join 'count' lines (minimal 2) at cursor position.
+ * Join 'count' lines (minimal 2) at the cursor position.
  * When "save_undo" is TRUE save lines for undo first.
  * Set "use_formatoptions" to FALSE when e.g. processing backspace and comment
  * leaders should not be removed.

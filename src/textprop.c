@@ -621,6 +621,8 @@ prop_count_below(buf_T *buf, linenr_T lnum)
  * Return the number of text properties on line "lnum" in the current buffer.
  * When "only_starting" is true only text properties starting in this line will
  * be considered.
+ * When "last_line" is FALSE then text properties after the line are not
+ * counted.
  */
     int
 count_props(linenr_T lnum, int only_starting, int last_line)
@@ -634,7 +636,7 @@ count_props(linenr_T lnum, int only_starting, int last_line)
     for (i = 0; i < proplen; ++i)
     {
 	mch_memmove(&prop, props + i * sizeof(prop), sizeof(prop));
-	// A prop is droppend when in the first line and it continues from the
+	// A prop is dropped when in the first line and it continues from the
 	// previous line, or when not in the last line and it is virtual text
 	// after the line.
 	if ((only_starting && (prop.tp_flags & TP_FLAG_CONT_PREV))
@@ -706,7 +708,7 @@ set_text_props(linenr_T lnum, char_u *props, int len)
 }
 
 /*
- * Add "text_props" with "text_prop_count" text propertis to line "lnum".
+ * Add "text_props" with "text_prop_count" text properties to line "lnum".
  */
     void
 add_text_props(linenr_T lnum, textprop_T *text_props, int text_prop_count)
@@ -2031,8 +2033,9 @@ adjust_props_for_split(
 	pt = text_prop_type_by_id(curbuf, prop.tp_type);
 	start_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL));
 	end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
-	cont_prev = prop.tp_col + !start_incl <= kept;
-	cont_next = skipped <= prop.tp_col + prop.tp_len - !end_incl;
+	cont_prev = prop.tp_col != MAXCOL && prop.tp_col + !start_incl <= kept;
+	cont_next = prop.tp_col != MAXCOL
+			   && skipped <= prop.tp_col + prop.tp_len - !end_incl;
 
 	if (cont_prev && ga_grow(&prevprop, 1) == OK)
 	{
@@ -2048,17 +2051,22 @@ adjust_props_for_split(
 
 	// Only add the property to the next line if the length is bigger than
 	// zero.
-	if (cont_next && ga_grow(&nextprop, 1) == OK)
+	if ((cont_next || prop.tp_col == MAXCOL)
+						&& ga_grow(&nextprop, 1) == OK)
 	{
 	    textprop_T *p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
+
 	    *p = prop;
 	    ++nextprop.ga_len;
-	    if (p->tp_col > skipped)
-		p->tp_col -= skipped - 1;
-	    else
+	    if (p->tp_col != MAXCOL)
 	    {
-		p->tp_len -= skipped - p->tp_col;
-		p->tp_col = 1;
+		if (p->tp_col > skipped)
+		    p->tp_col -= skipped - 1;
+		else
+		{
+		    p->tp_len -= skipped - p->tp_col;
+		    p->tp_col = 1;
+		}
 	    }
 	    if (cont_prev)
 		p->tp_flags |= TP_FLAG_CONT_PREV;
