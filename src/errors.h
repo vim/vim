@@ -2984,8 +2984,8 @@ EXTERN char e_argument_already_declared_in_script_str[]
 	INIT(= N_("E1168: Argument already declared in the script: %s"));
 EXTERN char e_expression_too_recursive_str[]
 	INIT(= N_("E1169: Expression too recursive: %s"));
-EXTERN char e_cannot_use_hash_curly_to_start_comment_in_an_expression[]
-	INIT(= N_("E1170: Cannot use #{ to start a comment in an expression"));
+EXTERN char e_cannot_use_hash_curly_to_start_comment[]
+	INIT(= N_("E1170: Cannot use #{ to start a comment"));
 EXTERN char e_missing_end_block[]
 	INIT(= N_("E1171: Missing } after inline function"));
 EXTERN char e_cannot_use_default_values_in_lambda[]

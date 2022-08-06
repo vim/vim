@@ -2668,8 +2668,12 @@ def Test_vim9_comment()
       'vim9script',
       '# something',
       '#something',
-      '#{something',
+      '#{{something',
       ])
+  v9.CheckScriptFailure([
+      'vim9script',
+      '#{something',
+      ], 'E1170:')
 
   split Xfile
   v9.CheckScriptSuccess([

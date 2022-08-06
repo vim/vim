@@ -2157,8 +2157,6 @@ newline_skip_comments(char_u *arg)
 		    break;
 	    p = nl;
 	}
-	else if (vim9_bad_comment(p))
-	    break;
 	if (*p != NL)
 	    break;
 	++p;  // skip another NL
@@ -2184,10 +2182,7 @@ getline_peek_skip_comments(evalarg_T *evalarg)
 	    break;
 	p = skipwhite(next);
 	if (*p != NUL && !vim9_comment_start(p))
-	{
-	    (void)vim9_bad_comment(p);
 	    return next;
-	}
 	if (eval_next_line(NULL, evalarg) == NULL)
 	    break;
     }

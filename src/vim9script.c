@@ -176,16 +176,18 @@ not_in_vim9(exarg_T *eap)
 }
 
 /*
- * Give an error message if "p" points at "#{" and return TRUE.
+ * Return TRUE if "p" points at "#{", not "#{{".
+ * Give an error message if not done already.
  * This avoids that using a legacy style #{} dictionary leads to difficult to
  * understand errors.
  */
     int
 vim9_bad_comment(char_u *p)
 {
-    if (!did_emsg && p[0] == '#' && p[1] == '{' && p[2] != '{')
+    if (p[0] == '#' && p[1] == '{' && p[2] != '{')
     {
-	emsg(_(e_cannot_use_hash_curly_to_start_comment_in_an_expression));
+	if (!did_emsg)
+	    emsg(_(e_cannot_use_hash_curly_to_start_comment));
 	return TRUE;
     }
     return FALSE;
@@ -194,12 +196,13 @@ vim9_bad_comment(char_u *p)
 
 /*
  * Return TRUE if "p" points at a "#" not followed by one '{'.
+ * Gives an error for using "#{", not for "#{{".
  * Does not check for white space.
  */
     int
 vim9_comment_start(char_u *p)
 {
-    return p[0] == '#' && (p[1] != '{' || p[2] == '{');
+    return p[0] == '#' && !vim9_bad_comment(p);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
