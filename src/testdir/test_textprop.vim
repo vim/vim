@@ -2443,6 +2443,9 @@ func Test_props_with_text_after_nowrap()
   let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 8, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_1', {})
 
+  call term_sendkeys(buf, ":set signcolumn=yes foldcolumn=3\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_2', {})
+
   call StopVimInTerminal(buf)
   call delete('XscriptPropsAfterNowrap')
 endfunc
