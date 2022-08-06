@@ -2336,6 +2336,35 @@ func Test_props_with_text_after()
   call delete('XscriptPropsWithTextAfter')
 endfunc
 
+func Test_props_with_text_after_below_trunc()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      edit foobar
+      set showbreak=+++
+      setline(1, ['onasdf asdf asdf asdf asd fas df', 'two'])
+      prop_type_add('test', {highlight: 'Special'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'the quick brown fox jumps over the lazy dog',
+          text_align: 'after'
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'the quick brown fox jumps over the lazy dog',
+          text_align: 'below'
+      })
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsAfterTrunc')
+  let buf = RunVimInTerminal('-S XscriptPropsAfterTrunc', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_below_trunc_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsAfterTrunc')
+endfunc
+
 func Test_props_with_text_after_joined()
   CheckRunVimInTerminal
 

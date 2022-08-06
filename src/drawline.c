@@ -1722,7 +1722,7 @@ win_line(
 				// don't combine char attr after EOL
 				text_prop_flags &= ~PT_FLAG_COMBINE;
 #ifdef FEAT_LINEBREAK
-			    if (below || right)
+			    if (below || right || !wrap)
 			    {
 				// no 'showbreak' before "below" text property
 				// or after "right" text property

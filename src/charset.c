@@ -1094,6 +1094,7 @@ win_lbr_chartabsize(
     int		tab_corr = (*s == TAB);
     int		n;
     char_u	*sbr;
+    int		no_sbr = FALSE;
 #endif
 
 #if defined(FEAT_PROP_POPUP)
@@ -1155,7 +1156,7 @@ win_lbr_chartabsize(
 		    if (tp->tp_col == MAXCOL)
 		    {
 			int below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
-			int	wrap = (tp->tp_flags & TP_FLAG_WRAP);
+			int wrap = (tp->tp_flags & TP_FLAG_WRAP);
 			int len = (int)STRLEN(p);
 			int n_used = len;
 
@@ -1168,6 +1169,9 @@ win_lbr_chartabsize(
 			// "after"
 			if (below)
 			    cells += wp->w_width - (vcol + size) % wp->w_width;
+#ifdef FEAT_LINEBREAK
+			no_sbr = TRUE;  // don't use 'showbreak' now
+#endif
 		    }
 		    cts->cts_cur_text_width += cells;
 		    size += cells;
@@ -1242,7 +1246,7 @@ win_lbr_chartabsize(
      * Do not use 'showbreak' at the NUL after the text.
      */
     added = 0;
-    sbr = c == NUL ? empty_option : get_showbreak_value(wp);
+    sbr = (c == NUL || no_sbr) ? empty_option : get_showbreak_value(wp);
     if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && vcol != 0)
     {
 	colnr_T sbrlen = 0;
