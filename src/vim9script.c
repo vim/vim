@@ -183,9 +183,9 @@ not_in_vim9(exarg_T *eap)
     int
 vim9_bad_comment(char_u *p)
 {
-    if (p[0] == '#' && p[1] == '{' && p[2] != '{')
+    if (!did_emsg && p[0] == '#' && p[1] == '{' && p[2] != '{')
     {
-	emsg(_(e_cannot_use_hash_curly_to_start_comment));
+	emsg(_(e_cannot_use_hash_curly_to_start_comment_in_an_expression));
 	return TRUE;
     }
     return FALSE;

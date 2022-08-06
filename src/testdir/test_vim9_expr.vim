@@ -2823,6 +2823,8 @@ def Test_expr9_dict()
   v9.CheckDefAndScriptFailure(["var x = 'a' .. #{a: 1}"], 'E1170:', 1)
   v9.CheckDefAndScriptFailure(["var x = true ? #{a: 1}"], 'E1170:', 1)
 
+  v9.CheckDefAndScriptFailure(["var x = 'a'", " #{a: 1}"], 'E1170:', 1)
+
   v9.CheckDefAndScriptFailure(["var x = {a:8}"], 'E1069:', 1)
   v9.CheckDefAndScriptFailure(["var x = {a : 8}"], 'E1068:', 1)
   v9.CheckDefAndScriptFailure(["var x = {a :8}"], 'E1068:', 1)
