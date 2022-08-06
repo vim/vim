@@ -588,7 +588,7 @@ win_line(
 	|| defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
 # define LINE_ATTR
     int		line_attr = 0;		// attribute for the whole line
-    int		line_attr_save;
+    int		line_attr_save = 0;
 #endif
 #ifdef FEAT_SIGNS
     int		sign_present = FALSE;
