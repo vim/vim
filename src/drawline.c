@@ -369,7 +369,7 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
  * Start a screen line at column zero.
  */
     static void
-win_line_start(win_T *wp, winlinevars_T *wlv)
+win_line_start(win_T *wp UNUSED, winlinevars_T *wlv)
 {
     wlv->col = 0;
     wlv->off = (unsigned)(current_ScreenLine - ScreenLines);
