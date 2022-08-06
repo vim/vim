@@ -3473,7 +3473,7 @@ win_line(
 		    ) || lcs_eol_one == -1)
 		break;
 #ifdef FEAT_PROP_POPUP
-	    if (!wp->w_p_wrap)
+	    if (!wp->w_p_wrap && text_prop_follows)
 	    {
 		// do not output more of the line, only the "below" prop
 		ptr += STRLEN(ptr);
