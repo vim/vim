@@ -2434,13 +2434,16 @@ func Test_props_with_text_after_nowrap()
       call setline(1, ['one', 'two', 'three'])
       call prop_type_add('belowprop', #{highlight: 'ErrorMsg'})
       call prop_type_add('anotherprop', #{highlight: 'Search'})
+      call prop_type_add('someprop', #{highlight: 'DiffChange'})
       call prop_add(1, 0, #{type: 'belowprop', text: ' Below the line ', text_align: 'below'})
       call prop_add(2, 0, #{type: 'anotherprop', text: 'another', text_align: 'below'})
       call prop_add(2, 0, #{type: 'belowprop', text: 'One More Here', text_align: 'below'})
+      call prop_add(1, 0, #{type: 'someprop', text: 'right here', text_align: 'right'})
+      call prop_add(1, 0, #{type: 'someprop', text: ' After the text', text_align: 'after'})
       normal G$
   END
   call writefile(lines, 'XscriptPropsAfterNowrap')
-  let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 8, cols: 60})
+  let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 10, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_1', {})
 
   call term_sendkeys(buf, ":set signcolumn=yes foldcolumn=3\<CR>")

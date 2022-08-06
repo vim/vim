@@ -293,16 +293,6 @@ text_prop_compare(const void *s1, const void *s2)
     idx2 = *(int *)s2;
     tp1 = &current_text_props[idx1];
     tp2 = &current_text_props[idx2];
-    pt1 = text_prop_type_by_id(current_buf, tp1->tp_type);
-    pt2 = text_prop_type_by_id(current_buf, tp2->tp_type);
-    if (pt1 == pt2)
-	return 0;
-    if (pt1 == NULL)
-	return -1;
-    if (pt2 == NULL)
-	return 1;
-    if (pt1->pt_priority != pt2->pt_priority)
-	return pt1->pt_priority > pt2->pt_priority ? 1 : -1;
     col1 = tp1->tp_col;
     col2 = tp2->tp_col;
     if (col1 == MAXCOL && col2 == MAXCOL)
@@ -322,6 +312,16 @@ text_prop_compare(const void *s1, const void *s2)
 	if (flags1 != flags2)
 	    return flags1 < flags2 ? 1 : -1;
     }
+    pt1 = text_prop_type_by_id(current_buf, tp1->tp_type);
+    pt2 = text_prop_type_by_id(current_buf, tp2->tp_type);
+    if (pt1 == pt2)
+	return 0;
+    if (pt1 == NULL)
+	return -1;
+    if (pt2 == NULL)
+	return 1;
+    if (pt1->pt_priority != pt2->pt_priority)
+	return pt1->pt_priority > pt2->pt_priority ? 1 : -1;
     return col1 == col2 ? 0 : col1 > col2 ? 1 : -1;
 }
 #endif
@@ -1785,7 +1785,8 @@ win_line(
 
 				// When 'wrap' is off then for "below" we need
 				// to start a new line explictly.
-				if (!wp->w_p_wrap)
+				if (below && wlv.col > win_col_off(wp)
+							      && !wp->w_p_wrap)
 				{
 				    draw_screen_line(wp, &wlv);
 
