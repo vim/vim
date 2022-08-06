@@ -2846,9 +2846,11 @@ parse_command_modifiers(
 	    {
 		if (has_cmdmod(cmod, FALSE))
 		    *errormsg = _(e_command_modifier_without_command);
+#ifdef FEAT_EVAL
 		if (eap->cmd[0] == '#' && eap->cmd[1] == '{'
 							 && eap->cmd[2] != '{')
 		    *errormsg = _(e_cannot_use_hash_curly_to_start_comment);
+#endif
 	    }
 	    return FAIL;
 	}

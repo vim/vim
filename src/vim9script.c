@@ -202,7 +202,11 @@ vim9_bad_comment(char_u *p)
     int
 vim9_comment_start(char_u *p)
 {
+#ifdef FEAT_EVAL
     return p[0] == '#' && !vim9_bad_comment(p);
+#else
+    return p[0] == '#' && (p[1] != '{' || p[2] == '{');
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
