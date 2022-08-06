@@ -1642,9 +1642,15 @@ win_line(
 		    --bcol;
 # endif
 		// Add any text property that starts in this column.
+		// With 'nowrap' and not in the first screen line only "below"
+		// text prop can show.
 		while (text_prop_next < text_prop_count
 			   && (text_props[text_prop_next].tp_col == MAXCOL
-			      ? *ptr == NUL
+			      ? (*ptr == NUL
+				  && (wp->w_p_wrap
+				      || wlv.row == startrow
+				      || (text_props[text_prop_next].tp_flags
+						       & TP_FLAG_ALIGN_BELOW)))
 			      : bcol >= text_props[text_prop_next].tp_col - 1))
 		{
 		    if (bcol <= text_props[text_prop_next].tp_col - 1
@@ -1761,7 +1767,8 @@ win_line(
 					vim_memset(l, ' ', added);
 					vim_strncpy(l + added, wlv.p_extra,
 								       n_used);
-					if (n_used < wlv.n_extra)
+					if (n_used < wlv.n_extra
+							       && wp->w_p_wrap)
 					{
 					    char_u *lp = l + added + n_used - 1;
 
@@ -1810,11 +1817,15 @@ win_line(
 		}
 		else if (text_prop_next < text_prop_count
 			   && text_props[text_prop_next].tp_col == MAXCOL
-			   && *ptr != NUL
-			   && ptr[mb_ptr2len(ptr)] == NUL)
+			   && ((*ptr != NUL && ptr[mb_ptr2len(ptr)] == NUL)
+			       || (!wp->w_p_wrap
+				       && wlv.col == wp->w_width - 1
+				       && (text_props[text_prop_next].tp_flags
+						      & TP_FLAG_ALIGN_BELOW))))
 		    // When at last-but-one character and a text property
 		    // follows after it, we may need to flush the line after
 		    // displaying that character.
+		    // Or when not wrapping and at the rightmost column.
 		    text_prop_follows = TRUE;
 	    }
 #endif
@@ -3461,6 +3472,16 @@ win_line(
 #endif
 		    ) || lcs_eol_one == -1)
 		break;
+#ifdef FEAT_PROP_POPUP
+	    if (!wp->w_p_wrap)
+	    {
+		// do not output more of the line, only the "below" prop
+		ptr += STRLEN(ptr);
+# ifdef FEAT_LINEBREAK
+		dont_use_showbreak = TRUE;
+# endif
+	    }
+#endif
 
 	    // When the window is too narrow draw all "@" lines.
 	    if (wlv.draw_state != WL_LINE

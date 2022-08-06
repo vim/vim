@@ -2482,6 +2482,39 @@ func Test_props_with_text_after_nowrap()
   call delete('XscriptPropsAfterNowrap')
 endfunc
 
+func Test_props_with_text_below_nowrap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      edit foobar
+      set nowrap
+      set showbreak=+++\ 
+      setline(1, ['onasdf asdf asdf sdf df asdf asdf e asdf asdf asdf asdf asd fas df', 'two'])
+      prop_type_add('test', {highlight: 'Special'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'the quick brown fox jumps over the lazy dog',
+          text_align: 'after'
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'the quick brown fox jumps over the lazy dog',
+          text_align: 'below'
+      })
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsBelowNowrap')
+  let buf = RunVimInTerminal('-S XscriptPropsBelowNowrap', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_below_nowrap_1', {})
+
+  call term_sendkeys(buf, "gg$")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_below_nowrap_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsBelowNowrap')
+endfunc
+
 func Test_props_with_text_after_split_join()
   CheckRunVimInTerminal
 
