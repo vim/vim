@@ -364,9 +364,6 @@ plines_win_nofill(
 #endif
     int		lines;
 
-    if (!wp->w_p_wrap)
-	return 1;
-
     if (wp->w_width == 0)
 	return 1;
 
@@ -377,7 +374,16 @@ plines_win_nofill(
 	return 1;
 #endif
 
-    lines = plines_win_nofold(wp, lnum);
+    if (!wp->w_p_wrap)
+	lines = 1
+#ifdef FEAT_PROP_POPUP
+	    // add a line for each "below" aligned text property
+		    + prop_count_below(wp->w_buffer, lnum)
+#endif
+	;
+    else
+	lines = plines_win_nofold(wp, lnum);
+
     if (winheight > 0 && lines > wp->w_height)
 	return wp->w_height;
     return lines;

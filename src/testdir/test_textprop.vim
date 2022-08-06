@@ -2426,6 +2426,27 @@ func Test_props_with_text_after_wraps()
   call delete('XscriptPropsWithTextAfterWraps')
 endfunc
 
+func Test_props_with_text_after_nowrap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set nowrap
+      call setline(1, ['one', 'two', 'three'])
+      call prop_type_add('belowprop', #{highlight: 'ErrorMsg'})
+      call prop_type_add('anotherprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' Below the line ', text_align: 'below'})
+      call prop_add(2, 0, #{type: 'anotherprop', text: 'another', text_align: 'below'})
+      call prop_add(2, 0, #{type: 'belowprop', text: 'One More Here', text_align: 'below'})
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsAfterNowrap')
+  let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsAfterNowrap')
+endfunc
+
 func Test_removed_prop_with_text_cleans_up_array()
   new
   call setline(1, 'some text here')

@@ -594,6 +594,29 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     return (int)(proplen / sizeof(textprop_T));
 }
 
+/*
+ * Return the number of text properties with "below" alignment in line "lnum".
+ */
+    int
+prop_count_below(buf_T *buf, linenr_T lnum)
+{
+    char_u	*props;
+    int		count = get_text_props(buf, lnum, &props, FALSE);
+    int		result = 0;
+    textprop_T	prop;
+    int		i;
+
+    if (count == 0)
+	return 0;
+    for (i = 0; i < count; ++i)
+    {
+	mch_memmove(&prop, props + i * sizeof(prop), sizeof(prop));
+	if (prop.tp_col == MAXCOL && (prop.tp_flags & TP_FLAG_ALIGN_BELOW))
+	    ++result;
+    }
+    return result;
+}
+
 /**
  * Return the number of text properties on line "lnum" in the current buffer.
  * When "only_starting" is true only text properties starting in this line will
