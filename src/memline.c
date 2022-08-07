@@ -2821,6 +2821,9 @@ ml_append_int(
     infoptr_T	*ip;
 #ifdef FEAT_PROP_POPUP
     char_u	*tofree = NULL;
+# ifdef FEAT_BYTEOFF
+    colnr_T	text_len = 0;	// text len with NUL without text properties
+# endif
 #endif
     int		ret = FAIL;
 
@@ -2831,7 +2834,19 @@ ml_append_int(
 	lowest_marked = lnum + 1;
 
     if (len == 0)
+    {
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_BYTEOFF)
+	text_len = len;
+#endif
+    }
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_BYTEOFF)
+    else if (curbuf->b_has_textprop)
+	// "len" may include text properties, get the length of the text.
+	text_len = (colnr_T)STRLEN(line) + 1;
+    else
+	text_len = len;
+#endif
 
 #ifdef FEAT_PROP_POPUP
     if (curbuf->b_has_textprop && lnum > 0
@@ -3292,13 +3307,14 @@ ml_append_int(
     }
 
 #ifdef FEAT_BYTEOFF
-# ifdef FEAT_PROP_POPUP
-    if (curbuf->b_has_textprop)
-	// only use the space needed for the text, ignore properties
-	len = (colnr_T)STRLEN(line) + 1;
-# endif
     // The line was inserted below 'lnum'
-    ml_updatechunk(buf, lnum + 1, (long)len, ML_CHNK_ADDLINE);
+    ml_updatechunk(buf, lnum + 1,
+# ifdef FEAT_PROP_POPUP
+	    (long)text_len
+# else
+	    (long)len
+#endif
+	    , ML_CHNK_ADDLINE);
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
