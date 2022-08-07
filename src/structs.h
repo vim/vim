@@ -3084,6 +3084,7 @@ struct file_buffer
 #ifdef FEAT_PROP_POPUP
     int		b_has_textprop;	// TRUE when text props were added
     hashtab_T	*b_proptypes;	// text property types local to buffer
+    proptype_T	**b_proparray;	// entries of b_proptypes sorted on tp_id
     garray_T	b_textprop_text; // stores text for props, index by (-id - 1)
 #endif
 
