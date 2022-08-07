@@ -1408,6 +1408,9 @@ win_line(
 # ifdef FEAT_DIFF
 			&& filler_lines == 0
 # endif
+# ifdef FEAT_PROP_POPUP
+			&& !dont_use_showbreak
+# endif
 		   )
 		{
 		    wlv.char_attr = 0;

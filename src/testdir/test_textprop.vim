@@ -2312,7 +2312,8 @@ func Test_props_with_text_after()
 
   let lines =<< trim END
       set showbreak=+++
-      call setline(1, 'some text here and other text there')
+      set breakindent
+      call setline(1, '   some text here and other text there')
       call prop_type_add('rightprop', #{highlight: 'ErrorMsg'})
       call prop_type_add('afterprop', #{highlight: 'Search'})
       call prop_type_add('belowprop', #{highlight: 'DiffAdd'})
