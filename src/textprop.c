@@ -11,12 +11,8 @@
  * Text properties implementation.  See ":help text-properties".
  *
  * TODO:
- * - Checking the text length to detect text properties is slow.  Use a flag in
- *   the index, like DB_MARKED?
  * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
  *   into account.
- * - Perhaps have a window-local option to disable highlighting from text
- *   properties?
  */
 
 #include "vim.h"
@@ -579,13 +575,14 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     text = ml_get_buf(buf, lnum, will_change);
     textlen = STRLEN(text) + 1;
     proplen = buf->b_ml.ml_line_len - textlen;
+    if (proplen == 0)
+	return 0;
     if (proplen % sizeof(textprop_T) != 0)
     {
 	iemsg(_(e_text_property_info_corrupted));
 	return 0;
     }
-    if (proplen > 0)
-	*props = text + textlen;
+    *props = text + textlen;
     return (int)(proplen / sizeof(textprop_T));
 }
 
