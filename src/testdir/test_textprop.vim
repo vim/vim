@@ -658,6 +658,36 @@ func Test_prop_open_line()
   set bs&
 endfunc
 
+func Test_prop_put()
+  new
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+
+  let @a = 'new'
+  " insert just after the prop
+  normal 03l"ap
+  " insert inside the prop
+  normal 02l"ap
+  " insert just before the prop
+  normal 0"ap
+
+  call assert_equal('xnewonnewenewx xtwoxx', getline(1))
+  let expected[0].col += 3
+  let expected[0].length += 3
+  let expected[1].col += 9
+  call assert_equal(expected, prop_list(1))
+
+  " Visually select 4 chars in the prop and put "AB" to replace them
+  let @a = 'AB'
+  normal 05lv3l"ap
+  call assert_equal('xnewoABenewx xtwoxx', getline(1))
+  let expected[0].length -= 2
+  let expected[1].col -= 2
+  call assert_equal(expected, prop_list(1))
+
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
 func Test_prop_clear()
   new
   call AddPropTypes()

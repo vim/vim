@@ -2101,6 +2101,8 @@ do_put(
 		    STRMOVE(ptr, oldp + col);
 		    ml_replace(lnum, newp, FALSE);
 
+		    inserted_bytes(lnum, col, totlen);
+
 		    // compute the byte offset for the last character
 		    first_byte_off = mb_head_off(newp, ptr - 1);
 
@@ -2128,7 +2130,6 @@ do_put(
 		++curwin->w_cursor.col;
 	    else
 		curwin->w_cursor.col -= first_byte_off;
-	    changed_bytes(lnum, col);
 	}
 	else
 	{
