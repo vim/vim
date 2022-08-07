@@ -2099,12 +2099,14 @@ do_put(
 			ptr += yanklen;
 		    }
 		    STRMOVE(ptr, oldp + col);
-		    ml_replace(lnum, newp, FALSE);
-
-		    inserted_bytes(lnum, col, totlen);
 
 		    // compute the byte offset for the last character
 		    first_byte_off = mb_head_off(newp, ptr - 1);
+
+		    // Note: this may free "newp"
+		    ml_replace(lnum, newp, FALSE);
+
+		    inserted_bytes(lnum, col, totlen);
 
 		    // Place cursor on last putted char.
 		    if (lnum == curwin->w_cursor.lnum)
