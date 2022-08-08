@@ -1130,6 +1130,7 @@ win_lbr_chartabsize(
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text && *line != NUL)
     {
+	int	    normal_size = size;
 	int	    i;
 	int	    col = (int)(s - line);
 	garray_T    *gap = &wp->w_buffer->b_textprop_text;
@@ -1141,7 +1142,8 @@ win_lbr_chartabsize(
 	    // Watch out for the text being deleted.  "cts_text_props" is a
 	    // copy, the text prop may actually have been removed from the line.
 	    if (tp->tp_id < 0
-		    && ((tp->tp_col - 1 >= col && tp->tp_col - 1 < col + size)
+		    && ((tp->tp_col - 1 >= col
+					 && tp->tp_col - 1 < col + normal_size)
 		       || (tp->tp_col == MAXCOL && (s[0] == NUL || s[1] == NUL)
 						   && cts->cts_with_trailing))
 		    && -tp->tp_id - 1 < gap->ga_len)
@@ -1152,7 +1154,6 @@ win_lbr_chartabsize(
 		{
 		    int	cells = vim_strsize(p);
 
-		    added = wp->w_width - (vcol + size) % wp->w_width;
 		    if (tp->tp_col == MAXCOL)
 		    {
 			int below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
@@ -1163,8 +1164,11 @@ win_lbr_chartabsize(
 			// Keep in sync with where textprop_size_after_trunc()
 			// is called in win_line().
 			if (!wrap)
+			{
+			    added = wp->w_width - (vcol + size) % wp->w_width;
 			    cells = textprop_size_after_trunc(wp,
 						     below, added, p, &n_used);
+			}
 			// right-aligned does not really matter here, same as
 			// "after"
 			if (below)

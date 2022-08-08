@@ -2317,11 +2317,16 @@ func Test_prop_inserts_text()
       call prop_type_add('multibyte', #{highlight: 'Visual'})
       call prop_add(2, 4, #{type: 'multibyte', text: 'söme和平téxt'})
 
-      call setline(3, '')
-      call prop_add(3, 1, #{type: 'someprop', text: 'empty line'})
+      call setline(3, 'Foo foo = { 1, 2 };')
+      call prop_type_add( 'testprop', #{highlight: 'Comment'})
+      call prop_add(3, 13, #{type: 'testprop', text: '.x='})
+      call prop_add(3, 16, #{type: 'testprop', text: '.y='})
+
+      call setline(4, '')
+      call prop_add(4, 1, #{type: 'someprop', text: 'empty line'})
   END
   call writefile(lines, 'XscriptPropsWithText')
-  let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 6, cols: 60})
+  let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 8, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_1', {})
 
   call term_sendkeys(buf, ":set signcolumn=yes\<CR>")
@@ -2330,8 +2335,13 @@ func Test_prop_inserts_text()
   call term_sendkeys(buf, "2G$")
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_3', {})
 
-  call term_sendkeys(buf, "3G")
+  call term_sendkeys(buf, "3Gf1")
   call VerifyScreenDump(buf, 'Test_prop_inserts_text_4', {})
+  call term_sendkeys(buf, "f2")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_5', {})
+
+  call term_sendkeys(buf, "4G")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_6', {})
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropsWithText')
