@@ -1159,7 +1159,10 @@ win_line(
 		else
 # endif
 # if defined(FEAT_QUICKFIX)
-		    line_attr = hl_combine_attr(line_attr, cul_attr);
+		    // let the line attribute overrule 'cursorline', otherwise
+		    // it disappears when both have background set;
+		    // 'cursorline' can use underline or bold to make it show
+		    line_attr = hl_combine_attr(cul_attr, line_attr);
 # else
 		    line_attr = cul_attr;
 # endif
