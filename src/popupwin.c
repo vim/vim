@@ -1087,7 +1087,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 		    {
 			int col = dict_get_number(dict, "col");
 
-			prop_add_common( lnum, col, dict, buf, NULL);
+			prop_add_common(lnum, col, dict, buf, NULL);
 		    }
 		}
 	    }

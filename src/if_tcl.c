@@ -651,7 +651,8 @@ bufselfcmd(
 			err = TCL_ERROR;
 		}
 	    }
-	    else {  // objc == 3
+	    else
+	    {  // objc == 3
 		line = (char *)ml_get_buf(buf, (linenr_T)val1, FALSE);
 		Tcl_SetResult(interp, line, TCL_VOLATILE);
 	    }
@@ -1090,7 +1091,8 @@ winselfcmd(
 		if (err != TCL_OK)
 		    break;
 	    }
-	    else {  // objc == 4
+	    else
+	    {  // objc == 4
 		err = tclgetlinenum(interp, objv[2], &val1, win->w_buffer);
 		if (err != TCL_OK)
 		    break;

@@ -1501,7 +1501,8 @@ luaV_buffer_newindex(lua_State *L)
 	    curbuf = buf;
 	    luaL_error(L, "cannot replace line");
 	}
-	else changed_bytes(n, 0);
+	else
+	    changed_bytes(n, 0);
 	curbuf = buf;
 	if (b == curwin->w_buffer)
 	    check_cursor_col();
