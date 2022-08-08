@@ -866,6 +866,8 @@ did_set_string_option(
     {
 	if (check_opt_strings(p_ambw, p_ambw_values, FALSE) != OK)
 	    errmsg = e_invalid_argument;
+	else if (set_chars_option(curwin, &p_lcs, FALSE) != NULL)
+	    errmsg = e_conflicts_with_value_of_listchars;
 	else if (set_chars_option(curwin, &p_fcs, FALSE) != NULL)
 	    errmsg = e_conflicts_with_value_of_fillchars;
 	else
@@ -878,6 +880,11 @@ did_set_string_option(
 		if (set_chars_option(wp, &wp->w_p_lcs, FALSE) != NULL)
 		{
 		    errmsg = e_conflicts_with_value_of_listchars;
+		    goto ambw_end;
+		}
+		if (set_chars_option(wp, &wp->w_p_fcs, FALSE) != NULL)
+		{
+		    errmsg = e_conflicts_with_value_of_fillchars;
 		    goto ambw_end;
 		}
 	    }
