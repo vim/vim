@@ -9,10 +9,6 @@
 
 /*
  * Text properties implementation.  See ":help text-properties".
- *
- * TODO:
- * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
- *   into account.
  */
 
 #include "vim.h"

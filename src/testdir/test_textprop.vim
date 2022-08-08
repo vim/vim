@@ -904,6 +904,30 @@ func Test_prop_multiline()
   call prop_type_delete('comment')
 endfunc
 
+func Run_test_with_line2byte(add_props)
+  new
+  setlocal ff=unix
+  if a:add_props
+    call prop_type_add('textprop', #{highlight: 'Search'})
+  endif
+  for nr in range(1, 1000)
+    call setline(nr, 'some longer text here')
+    if a:add_props && nr % 17 == 0
+      call prop_add(nr, 13, #{type: 'textprop', length: 4})
+    endif
+  endfor
+  call assert_equal(21935, line2byte(998))
+  for nr in range(1, 1000, 7)
+    exe nr .. "s/longer/much more/"
+  endfor
+  call assert_equal(22364, line2byte(998))
+
+  if a:add_props
+    call prop_type_delete('textprop')
+  endif
+  bwipe!
+endfunc
+
 func Test_prop_line2byte()
   call prop_type_add('comment', {'highlight': 'Directory'})
   new
@@ -934,6 +958,11 @@ func Test_prop_line2byte()
   2delete
   call assert_equal(1489, line2byte(400))
   bwipe!
+
+  " Add many lines so that the data block is split.
+  " With and without props should give the same result.
+  call Run_test_with_line2byte(0)
+  call Run_test_with_line2byte(1)
 
   call prop_type_delete('comment')
 endfunc
