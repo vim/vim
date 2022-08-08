@@ -149,6 +149,7 @@ struct terminal_S {
     garray_T	tl_scrollback;
     int		tl_scrollback_scrolled;
     garray_T	tl_scrollback_postponed;
+    int		tl_scrollback_snapshot;
 
     char_u	*tl_highlight_name; // replaces "Terminal"; allocated
 
@@ -2013,16 +2014,31 @@ cleanup_scrollback(term_T *term)
 {
     sb_line_T	*line;
     garray_T	*gap;
+    char_u	*bufline;
+    size_t      bufline_length;
 
     curbuf = term->tl_buffer;
     gap = &term->tl_scrollback;
-    while (curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled
-							    && gap->ga_len > 0)
+    bufline = ml_get_buf(curbuf, curbuf->b_ml.ml_line_count, FALSE);
+    bufline_length = STRLEN(bufline);
+    while (term->tl_scrollback_snapshot && gap->ga_len > 0)
     {
-	ml_delete(curbuf->b_ml.ml_line_count);
 	line = (sb_line_T *)gap->ga_data + gap->ga_len - 1;
+	bufline_length -= line->sb_cols;
+	if (!bufline_length)
+	{
+	    ml_delete(curbuf->b_ml.ml_line_count);
+	    bufline = ml_get_buf(curbuf, curbuf->b_ml.ml_line_count, FALSE);
+	    bufline_length = STRLEN(bufline);
+	}
 	vim_free(line->sb_cells);
 	--gap->ga_len;
+	--term->tl_scrollback_snapshot;
+    }
+    if (bufline_length < STRLEN(bufline))
+    {
+	char_u *shortened = vim_strnsave(bufline, bufline_length);
+	ml_replace(curbuf->b_ml.ml_line_count, shortened, FALSE);
     }
     curbuf = curwin->w_buffer;
     if (curbuf == term->tl_buffer)
@@ -2077,7 +2093,10 @@ update_snapshot(term_T *term)
 		// Line was skipped, add an empty line.
 		--lines_skipped;
 		if (add_empty_scrollback(term, &fill_attr, 0) == OK)
+		{
 		    add_scrollback_line_to_buffer(term, (char_u *)"", 0, 0);
+		    ++term->tl_scrollback_snapshot;
+		}
 	    }
 
 	    if (len == 0)
@@ -2134,6 +2153,7 @@ update_snapshot(term_T *term)
 		line->continuation = lineinfo->continuation;
 		fill_attr = new_fill_attr;
 		++term->tl_scrollback.ga_len;
+		++term->tl_scrollback_snapshot;
 
 		if (ga_grow(&ga, 1) == FAIL)
 		    add_scrollback_line_to_buffer(term, (char_u *)"", 0, 0);
@@ -2156,7 +2176,10 @@ update_snapshot(term_T *term)
 	    ++pos.row)
     {
 	if (add_empty_scrollback(term, &fill_attr, 0) == OK)
+	{
 	    add_scrollback_line_to_buffer(term, (char_u *)"", 0, 0);
+	    ++term->tl_scrollback_snapshot;
+	}
     }
 
     term->tl_dirty_snapshot = FALSE;
