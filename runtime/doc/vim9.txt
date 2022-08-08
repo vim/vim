@@ -1773,7 +1773,7 @@ line, there can be no line break: >
 		name   # Error!
 	echo that
 		.name  # Error!
-
+<						*import-map*
 When you've imported a function from one script into a vim9 script you can
 refer to the imported function in a mapping by prefixing it with |<SID>|: >
 	noremap <silent> ,a :call <SID>name.Function()<CR>

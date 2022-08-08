@@ -268,14 +268,15 @@ when it doesn't, append !: >
 You cannot `unlet` script-local variables in |Vim9| script, only in legacy
 script.
 
-When a script finishes, the local variables declared there will not be
-deleted.  Functions defined in the script can use them.  Example:
+When a script has been processed to the end, the local variables declared
+there will not be deleted.  Functions defined in the script can use them.
+Example:
 >
 	vim9script
 	var counter = 0
 	def g:GetCount(): number
-	  s:counter += 1
-	  return s:counter
+	  counter += 1
+	  return counter
 	enddef
 
 Every time you call the function it will return the next count: >

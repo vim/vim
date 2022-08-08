@@ -7900,6 +7900,7 @@ if_tcl.txt	if_tcl.txt	/*if_tcl.txt*
 ignore-errors	eval.txt	/*ignore-errors*
 ignore-timestamp	editing.txt	/*ignore-timestamp*
 import-legacy	vim9.txt	/*import-legacy*
+import-map	vim9.txt	/*import-map*
 improved-autocmds-5.4	version5.txt	/*improved-autocmds-5.4*
 improved-quickfix	version5.txt	/*improved-quickfix*
 improved-sessions	version5.txt	/*improved-sessions*
@@ -10086,6 +10087,7 @@ termdebug_use_prompt	terminal.txt	/*termdebug_use_prompt*
 termdebug_wide	terminal.txt	/*termdebug_wide*
 terminal	terminal.txt	/*terminal*
 terminal-api	terminal.txt	/*terminal-api*
+terminal-autoshelldir	terminal.txt	/*terminal-autoshelldir*
 terminal-client-server	terminal.txt	/*terminal-client-server*
 terminal-close	terminal.txt	/*terminal-close*
 terminal-colors	os_unix.txt	/*terminal-colors*

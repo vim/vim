@@ -1019,6 +1019,36 @@ A trick to have Vim send this escape sequence: >
 
 Rationale: Why not allow for any command or expression?  Because that might
 create a security problem.
+						*terminal-autoshelldir*
+This can be used to pass the current directory from a shell to Vim.
+Put this in your .vimrc: >
+	def g:Tapi_lcd(_, args: string)
+	    execute 'silent lcd ' .. args
+	enddef
+<
+And, in a bash init file: >
+        if [[ -n "$VIM_TERMINAL" ]]; then
+            PROMPT_COMMAND='_vim_sync_PWD'
+            function _vim_sync_PWD() {
+              printf '\033]51;["call", "Tapi_lcd", "%q"]\007' "$PWD"
+            }
+        fi
+<
+Or, for zsh: >
+	if [[ -n "$VIM_TERMINAL" ]]; then
+	    autoload -Uz add-zsh-hook
+	    add-zsh-hook -Uz chpwd _vim_sync_PWD
+	    function _vim_sync_PWD() {
+		printf '\033]51;["call", "Tapi_lcd", "%q"]\007' "$PWD"
+	    }
+	fi
+<
+Or, for fish: >
+	if test -n "$VIM_TERMINAL"
+	    function _vim_sync_PWD --on-variable=PWD
+		printf '\033]51;["call", "Tapi_lcd", "%s"]\007' "$PWD"
+	    end
+	end
 
 
 Using the client-server feature ~
