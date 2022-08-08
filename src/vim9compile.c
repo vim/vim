@@ -2899,7 +2899,9 @@ compile_def_function(
 
 	if (*ea.cmd == '#')
 	{
-	    // "#" starts a comment
+	    // "#" starts a comment, but "#{" is an error
+	    if (vim9_bad_comment(ea.cmd))
+		goto erret;
 	    line = (char_u *)"";
 	    continue;
 	}

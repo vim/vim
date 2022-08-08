@@ -74,6 +74,10 @@ def TestCompilingErrorInTry()
   delete('Xdir', 'rf')
 enddef
 
+def Test_comment_error()
+  v9.CheckDefFailure(['#{ comment'], 'E1170:')
+enddef
+
 def Test_compile_error_in_called_function()
   var lines =<< trim END
       vim9script
