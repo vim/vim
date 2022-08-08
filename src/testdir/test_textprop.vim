@@ -71,6 +71,18 @@ func Test_proptype_buf()
   call assert_fails("call prop_type_add('one', {'bufnr': 98764})", "E158:")
 endfunc
 
+def Test_proptype_add_remove()
+  # add and remove a prop type so that the array is empty
+  prop_type_add('local', {bufnr: bufnr('%')})
+  prop_type_delete('local', {bufnr: bufnr('%')})
+  prop_type_add('global', {highlight: 'ErrorMsg'})
+  prop_add(1, 1, {length: 1, type: 'global'})
+  redraw
+
+  prop_clear(1)
+  prop_type_delete('global')
+enddef
+
 def Test_proptype_buf_list()
   new
   var bufnr = bufnr('')

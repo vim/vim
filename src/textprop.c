@@ -736,7 +736,7 @@ find_type_by_id(hashtab_T *ht, proptype_T ***array, int id)
     int low = 0;
     int high;
 
-    if (ht == NULL)
+    if (ht == NULL || ht->ht_used == 0)
 	return NULL;
 
     // Make the loopup faster by creating an array with pointers to
