@@ -1179,7 +1179,7 @@ typval_compare(
 
     if (type_is && tv1->v_type != tv2->v_type)
     {
-	// For "is" a different type always means FALSE, for "notis"
+	// For "is" a different type always means FALSE, for "isnot"
 	// it means TRUE.
 	n1 = (type == EXPR_ISNOT);
     }
