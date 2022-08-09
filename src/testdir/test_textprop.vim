@@ -922,20 +922,22 @@ func Run_test_with_line2byte(add_props)
   if a:add_props
     call prop_type_add('textprop', #{highlight: 'Search'})
   endif
+  " Add a text prop to every fourth line and then change every fifth line so
+  " that it causes a data block split a few times.
   for nr in range(1, 1000)
     call setline(nr, 'some longer text here')
-    if a:add_props && nr % 17 == 0
+    if a:add_props && nr % 4 == 0
       call prop_add(nr, 13, #{type: 'textprop', length: 4})
     endif
   endfor
-  call assert_equal(21935, line2byte(998))
-  for nr in range(1, 1000, 7)
+  let expected = 22 * 997 + 1
+  call assert_equal(expected, line2byte(998))
+
+  for nr in range(1, 1000, 5)
     exe nr .. "s/longer/much more/"
+    let expected += 3
+    call assert_equal(expected, line2byte(998), 'line ' .. nr)
   endfor
-  " FIXME: somehow this fails on MS-Windows
-  if !(a:add_props && has('win32'))
-    call assert_equal(22364, line2byte(998))
-  endif
 
   if a:add_props
     call prop_type_delete('textprop')
