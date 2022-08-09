@@ -974,10 +974,12 @@ func Test_prop_line2byte()
   call assert_equal(1489, line2byte(400))
   bwipe!
 
+call ch_logfile('logfile', 'w')
   " Add many lines so that the data block is split.
   " With and without props should give the same result.
   call Run_test_with_line2byte(0)
   call Run_test_with_line2byte(1)
+call ch_logfile('', 'w')
 
   call prop_type_delete('comment')
 endfunc
@@ -1891,6 +1893,46 @@ func Test_prop_after_tab()
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropAfterTab')
+endfunc
+
+func Test_prop_before_tab()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ["\tx"]->repeat(6))
+      call prop_type_add('test', #{highlight: 'Search'})
+      call prop_add(1, 1, #{type: 'test', text: '123'})
+      call prop_add(2, 1, #{type: 'test', text: '1234567'})
+      call prop_add(3, 1, #{type: 'test', text: '12345678'})
+      call prop_add(4, 1, #{type: 'test', text: '123456789'})
+      call prop_add(5, 2, #{type: 'test', text: 'ABC'})
+      call prop_add(6, 3, #{type: 'test', text: 'ABC'})
+      normal gg0
+  END
+  call writefile(lines, 'XscriptPropBeforeTab')
+  let buf = RunVimInTerminal('-S XscriptPropBeforeTab', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_01', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_02', {})
+  call term_sendkeys(buf, "j0")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_03', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_04', {})
+  call term_sendkeys(buf, "j0")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_05', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_06', {})
+  call term_sendkeys(buf, "j0")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_07', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_08', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_09', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_10', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropBeforeTab')
 endfunc
 
 func Test_prop_after_linebreak()

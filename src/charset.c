@@ -1130,7 +1130,8 @@ win_lbr_chartabsize(
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text && *line != NUL)
     {
-	int	    normal_size = size;
+	int	    tab_size = size;
+	int	    charlen = mb_ptr2len(s);
 	int	    i;
 	int	    col = (int)(s - line);
 	garray_T    *gap = &wp->w_buffer->b_textprop_text;
@@ -1143,7 +1144,7 @@ win_lbr_chartabsize(
 	    // copy, the text prop may actually have been removed from the line.
 	    if (tp->tp_id < 0
 		    && ((tp->tp_col - 1 >= col
-					 && tp->tp_col - 1 < col + normal_size)
+					     && tp->tp_col - 1 < col + charlen)
 		       || (tp->tp_col == MAXCOL && (s[0] == NUL || s[1] == NUL)
 						   && cts->cts_with_trailing))
 		    && -tp->tp_id - 1 < gap->ga_len)
@@ -1179,6 +1180,13 @@ win_lbr_chartabsize(
 		    }
 		    cts->cts_cur_text_width += cells;
 		    size += cells;
+		    if (*s == TAB)
+		    {
+			// tab size changes because of the inserted text
+			size -= tab_size;
+			tab_size = win_chartabsize(wp, s, vcol + size);
+			size += tab_size;
+		    }
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
@@ -1525,11 +1533,6 @@ getvcol(
 	*end = vcol + incr - 1;
     if (cursor != NULL)
     {
-#ifdef FEAT_PROP_POPUP
-	if ((State & MODE_INSERT) == 0)
-	    // cursor is after inserted text
-	    vcol += cts.cts_cur_text_width;
-#endif
 	if (*ptr == TAB
 		&& (State & MODE_NORMAL)
 		&& !wp->w_p_list
@@ -1539,7 +1542,14 @@ getvcol(
 		)
 	    *cursor = vcol + incr - 1;	    // cursor at end
 	else
+	{
+#ifdef FEAT_PROP_POPUP
+	    if ((State & MODE_INSERT) == 0)
+		// cursor is after inserted text
+		vcol += cts.cts_cur_text_width;
+#endif
 	    *cursor = vcol + head;	    // cursor at start
+	}
     }
 }
 
