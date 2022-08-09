@@ -4284,7 +4284,7 @@ set_cmdline_pos(
 	}
     }
 
-    rettv->vval.v_number = set_cmdline_str(tv_get_string_chk(&argvars[0]), pos);
+    rettv->vval.v_number = set_cmdline_str((char *)tv_get_string_chk(&argvars[0]), pos);
 }
 
 /*
