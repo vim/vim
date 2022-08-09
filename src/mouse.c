@@ -1967,7 +1967,8 @@ retnomove:
 
 	// Only use ScreenCols[] after the window was redrawn.  Mainly matters
 	// for tests, a user would not click before redrawing.
-	if (curwin->w_redr_type <= VALID_NO_UPDATE)
+	// Do not use when 'virtualedit' is active.
+	if (curwin->w_redr_type <= VALID_NO_UPDATE && !virtual_active())
 	    col_from_screen = ScreenCols[off];
 #ifdef FEAT_FOLDING
 	// Remember the character under the mouse, it might be a '-' or '+' in
