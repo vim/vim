@@ -974,12 +974,10 @@ func Test_prop_line2byte()
   call assert_equal(1489, line2byte(400))
   bwipe!
 
-call ch_logfile('logfile', 'w')
   " Add many lines so that the data block is split.
   " With and without props should give the same result.
   call Run_test_with_line2byte(0)
   call Run_test_with_line2byte(1)
-call ch_logfile('', 'w')
 
   call prop_type_delete('comment')
 endfunc
