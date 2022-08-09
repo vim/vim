@@ -2369,6 +2369,8 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setcharpos},
     {"setcharsearch",	1, 1, FEARG_1,	    arg1_dict_any,
 			ret_void,	    f_setcharsearch},
+    {"setcmdline",	1, 2, FEARG_1,	    arg1_number,
+			ret_number_bool,    f_setcmdline},
     {"setcmdpos",	1, 1, FEARG_1,	    arg1_number,
 			ret_number_bool,    f_setcmdpos},
     {"setcursorcharpos", 1, 3, FEARG_1,	    arg13_cursor,
