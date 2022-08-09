@@ -1980,7 +1980,10 @@ win_line(
 		if (has_spell && v >= word_end && v > cur_checked_col)
 		{
 		    spell_attr = 0;
-		    if (c != 0 && (
+		    // do not calculate cap_col at the end of the line
+		    // or when only trailing white space is following
+		    if (c != 0 && (*skipwhite(prev_ptr) != NUL) &&
+			    (
 # ifdef FEAT_SYN_HL
 				!has_syntax ||
 # endif
