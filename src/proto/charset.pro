@@ -18,6 +18,7 @@ int chartabsize(char_u *p, colnr_T col);
 int linetabsize(char_u *s);
 int linetabsize_col(int startcol, char_u *s);
 int win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len);
+void win_linetabsize_cts(chartabsize_T *cts, colnr_T len);
 int vim_isIDc(int c);
 int vim_isNormalIDc(int c);
 int vim_iswordc(int c);

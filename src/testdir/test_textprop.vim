@@ -2557,6 +2557,32 @@ func Test_props_with_text_after_truncated()
   call delete('XscriptPropsWithTextAfterTrunc')
 endfunc
 
+func Test_props_with_text_empty_line()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['', 'aaa', '', 'bbbbbb'])
+      call prop_type_add('prop1', #{highlight: 'Search'})
+      call prop_add(1, 1, #{type: 'prop1', text_wrap: 'wrap', text: repeat('X', &columns)})
+      call prop_add(3, 1, #{type: 'prop1', text_wrap: 'wrap', text: repeat('X', &columns + 1)})
+      normal gg0
+  END
+  call writefile(lines, 'XscriptPropsWithTextEmptyLine')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextEmptyLine', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_1', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_2', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_3', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_4', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextEmptyLine')
+endfunc
+
 func Test_props_with_text_after_wraps()
   CheckRunVimInTerminal
 
