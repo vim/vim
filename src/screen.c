@@ -5155,3 +5155,28 @@ set_chars_option(win_T *wp, char_u **varp, int apply)
 
     return NULL;	// no error
 }
+
+/*
+ * Check all global and local values of 'listchars' and 'fillchars'.
+ * Return an untranslated error messages if any of them is invalid, NULL
+ * otherwise.
+ */
+    char *
+check_chars_options(void)
+{
+    tabpage_T   *tp;
+    win_T	    *wp;
+
+    if (set_chars_option(curwin, &p_lcs, FALSE) != NULL)
+	return e_conflicts_with_value_of_listchars;
+    if (set_chars_option(curwin, &p_fcs, FALSE) != NULL)
+	return e_conflicts_with_value_of_fillchars;
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+    {
+	if (set_chars_option(wp, &wp->w_p_lcs, FALSE) != NULL)
+	    return e_conflicts_with_value_of_listchars;
+	if (set_chars_option(wp, &wp->w_p_fcs, FALSE) != NULL)
+	    return e_conflicts_with_value_of_fillchars;
+    }
+    return NULL;
+}

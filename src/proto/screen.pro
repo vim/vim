@@ -56,4 +56,5 @@ int number_width(win_T *wp);
 int screen_screencol(void);
 int screen_screenrow(void);
 char *set_chars_option(win_T *wp, char_u **varp, int apply);
+char *check_chars_options(void);
 /* vim: set ft=c : */

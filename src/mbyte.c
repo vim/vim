@@ -5645,31 +5645,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     cw_table = table;
     cw_table_size = l->lv_len;
 
-    // Check that the new value does not conflict with 'fillchars' or
-    // 'listchars'.
-    if (set_chars_option(curwin, &p_fcs, FALSE) != NULL)
-	error = e_conflicts_with_value_of_fillchars;
-    else if (set_chars_option(curwin, &p_lcs, FALSE) != NULL)
-	error = e_conflicts_with_value_of_listchars;
-    else
-    {
-	tabpage_T   *tp;
-	win_T	    *wp;
-
-	FOR_ALL_TAB_WINDOWS(tp, wp)
-	{
-	    if (set_chars_option(wp, &wp->w_p_lcs, FALSE) != NULL)
-	    {
-		error = e_conflicts_with_value_of_listchars;
-		break;
-	    }
-	    if (set_chars_option(wp, &wp->w_p_fcs, FALSE) != NULL)
-	    {
-		error = e_conflicts_with_value_of_fillchars;
-		break;
-	    }
-	}
-    }
+    // Check that the new value does not conflict with 'listchars' or
+    // 'fillchars'.
+    error = check_chars_options();
     if (error != NULL)
     {
 	emsg(_(error));
