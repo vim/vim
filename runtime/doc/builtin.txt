@@ -505,8 +505,8 @@ setbufvar({buf}, {varname}, {val})
 setcellwidths({list})		none	set character cell width overrides
 setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		Dict	set character search from {dict}
-setcmdpos({pos})		Number	set cursor position in command-line
 setcmdline({str} [, {pos}])	Number	set command-line
+setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
 setenv({name}, {val})		none	set environment variable
 setfperm({fname}, {mode})	Number	set {fname} file permissions to {mode}
