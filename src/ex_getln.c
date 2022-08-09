@@ -4219,9 +4219,8 @@ int set_cmdline_str(const char *str, int pos)
     int cmdline_type;
     int len;
 
-    if (p == NULL) {
+    if (p == NULL)
 	return 1;
-    }
 
     len = (int)STRLEN(str);
     realloc_cmdbuff(len + 1);
