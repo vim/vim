@@ -2370,7 +2370,12 @@ win_line(
 		    chartabsize_T cts;
 
 		    init_chartabsize_arg(&cts, wp, lnum, wlv.vcol, line, p);
+# ifdef FEAT_PROP_POPUP
+		    // do not want virtual text counted here
+		    cts.cts_has_prop_with_text = FALSE;
+# endif
 		    wlv.n_extra = win_lbr_chartabsize(&cts, NULL) - 1;
+		    clear_chartabsize_arg(&cts);
 
 		    // We have just drawn the showbreak value, no need to add
 		    // space for it again.
@@ -2398,7 +2403,7 @@ win_line(
 
 		    wlv.c_extra = mb_off > 0 ? MB_FILLER_CHAR : ' ';
 		    wlv.c_final = NUL;
-# if defined(FEAT_PROP_POPUP)
+# ifdef FEAT_PROP_POPUP
 		    if (wlv.n_extra > 0 && c != TAB)
 			in_linebreak = TRUE;
 # endif
@@ -2412,10 +2417,8 @@ win_line(
 			if (!wp->w_p_list)
 			    c = ' ';
 		    }
-		    clear_chartabsize_arg(&cts);
 		}
 #endif
-
 		in_multispace = c == ' '
 		    && ((ptr > line + 1 && ptr[-2] == ' ') || *ptr == ' ');
 		if (!in_multispace)
