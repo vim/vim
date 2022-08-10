@@ -1335,13 +1335,13 @@ win_split_ins(
 	msg_col = 0;	// put position back at start of line
     }
 
-    // If we have there is a winbar, win_equal invalidates w_botline
-    // before we get to spsc_correct_scroll (why only with winbar?).
+    // If there is a winbar, win_equal invalidates w_botline before
+    // we get to spsc_correct_scroll (why only with winbar?).
     if (!p_spsc && WINBAR_HEIGHT(curwin)) {
-	if (before)
-	    spsc_correct_scroll(wp, SPSC_WINBAR);
-	else
-	    spsc_correct_cursor(curwin);
+        if (before)
+            spsc_correct_scroll(wp, SPSC_WINBAR);
+        else
+            spsc_correct_cursor(curwin);
     }
 
     /*
@@ -6373,13 +6373,13 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
 {
     int      state;
     int      curnormal;
+    int      framewins;
     int      tabwins = 0;
-    int      framewins = 0;
     long     so;
     win_T    *wp;
     frame_T  *fr;
     linenr_T lnum;
-    linenr_T nlnum;
+    linenr_T nlnum = 0;
 
     FOR_ALL_WINDOWS_IN_TAB(curtab, wp)
         tabwins++;
@@ -6407,9 +6407,11 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
         // and scrolling the cursor to FRACTION_MULT.
         if (wp->w_winrow != wp->w_prev_winrow)
         {
-            if (wp->w_frame->fr_parent)
+            if (wp->w_frame->fr_parent) {
+                framewins = 0;
                 FOR_ALL_FRAMES(fr, wp->w_frame->fr_parent->fr_child)
                     framewins++;
+            }
             else
                 framewins = 1;
 
@@ -6441,18 +6443,19 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
         if (wp == next_curwin || curnormal)
         {
             if (lnum < (wp->w_topline + so))
-                wp->w_cursor.lnum = nlnum = wp->w_topline
-                                             + (so ? so : (wp->w_height / 2));
+                nlnum = wp->w_topline + (so ? so : (wp->w_height / 2));
             else if (lnum > (wp->w_botline - so - 1))
-                wp->w_cursor.lnum = nlnum = wp->w_botline
-                                       - (so ? (so + 1) : (wp->w_height / 2));
-            else
-                wp->w_cursor.lnum = nlnum = lnum;
+                nlnum = wp->w_botline - (so ? (so + 1) : (wp->w_height / 2));
 
-            if (curnormal && nlnum != lnum)
+            wp->w_cursor.lnum = lnum;
+            if (nlnum)
             {
-                wp->w_cursor.lnum = lnum;
-                scroll_to_fraction(wp, wp->w_prev_height);
+                if (curnormal)
+                    scroll_to_fraction(wp, wp->w_prev_height);
+                else {
+                    setmark('\'');
+                    wp->w_cursor.lnum = nlnum;
+		}
             }
         }
 
@@ -6469,15 +6472,13 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
     void
 spsc_correct_cursor(win_T *wp)
 {
-    long so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
+    long     so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
+    linenr_T nlnum = 0;
     linenr_T lnum = wp->w_cursor.lnum;
     wp->w_cursor.lnum = wp->w_botline - so;
 
     if (lnum < wp->w_topline + so)
-    {
-        wp->w_cursor.lnum = wp->w_topline + (so ? so : (wp->w_height / 2));
-        return;
-    }
+        nlnum = wp->w_topline + (so ? so : (wp->w_height / 2));
     else
     {
         if (wp->w_winrow == wp->w_prev_winrow)
@@ -6486,13 +6487,15 @@ spsc_correct_cursor(win_T *wp)
             validate_botline_win(wp);
         }
         if (lnum > (wp->w_botline - so - 1))
-        {
-            wp->w_cursor.lnum = wp->w_botline -
-                                    (so ? (so + 1) : (wp->w_height / 2));
-            return;
-        }
+            nlnum = wp->w_botline -
+                          (so ? (so + 1) : (wp->w_height / 2));
     }
+
     wp->w_cursor.lnum = lnum;
+    if (nlnum) {
+        setmark('\'');
+        wp->w_cursor.lnum = nlnum;
+    }
 }
 
 /*
