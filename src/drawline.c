@@ -1706,7 +1706,8 @@ win_line(
 			proptype_T  *pt = text_prop_type_by_id(
 					wp->w_buffer, text_props[tpi].tp_type);
 
-			if (pt != NULL && pt->pt_hl_id > 0
+			if (pt != NULL && (pt->pt_hl_id > 0
+						  || text_props[tpi].tp_id < 0)
 					  && text_props[tpi].tp_id != -MAXCOL)
 			{
 			    used_attr = syn_id2attr(pt->pt_hl_id);

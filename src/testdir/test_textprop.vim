@@ -2469,12 +2469,16 @@ func Test_prop_inserts_text()
       call prop_add(2, 4, #{type: 'multibyte', text: 'söme和平téxt'})
 
       call setline(3, 'Foo foo = { 1, 2 };')
-      call prop_type_add( 'testprop', #{highlight: 'Comment'})
+      call prop_type_add('testprop', #{highlight: 'Comment'})
       call prop_add(3, 13, #{type: 'testprop', text: '.x='})
       call prop_add(3, 16, #{type: 'testprop', text: '.y='})
 
       call setline(4, '')
       call prop_add(4, 1, #{type: 'someprop', text: 'empty line'})
+
+      call setline(5, 'look highlight')
+      call prop_type_add('nohi', #{})
+      call prop_add(5, 6, #{type: 'nohi', text: 'no '})
   END
   call writefile(lines, 'XscriptPropsWithText')
   let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 8, cols: 60})
