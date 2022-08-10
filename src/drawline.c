@@ -281,6 +281,11 @@ get_sign_display_info(
 static textprop_T	*current_text_props = NULL;
 static buf_T		*current_buf = NULL;
 
+/*
+ * Function passed to qsort() to sort text properties.
+ * Return 1 if "s1" has priority over "s2", -1 if the other way around, zero if
+ * both have the same priority.
+ */
     static int
 text_prop_compare(const void *s1, const void *s2)
 {
@@ -300,7 +305,8 @@ text_prop_compare(const void *s1, const void *s2)
 	int flags1 = 0;
 	int flags2 = 0;
 
-	// order on 0: after, 1: right, 2: below
+	// both props add text are after the line, order on 0: after (default),
+	// 1: right, 2: below (comes last)
 	if (tp1->tp_flags & TP_FLAG_ALIGN_RIGHT)
 	    flags1 = 1;
 	if (tp1->tp_flags & TP_FLAG_ALIGN_BELOW)
@@ -312,17 +318,28 @@ text_prop_compare(const void *s1, const void *s2)
 	if (flags1 != flags2)
 	    return flags1 < flags2 ? 1 : -1;
     }
+
+    // property that inserts text has priority over one that doesn't
+    if ((tp1->tp_id < 0) != (tp2->tp_id < 0))
+	return tp1->tp_id < 0 ? 1 : -1;
+
+    // check highest priority, defined by the type
     pt1 = text_prop_type_by_id(current_buf, tp1->tp_type);
     pt2 = text_prop_type_by_id(current_buf, tp2->tp_type);
-    if (pt1 == pt2)
-	return 0;
-    if (pt1 == NULL)
-	return -1;
-    if (pt2 == NULL)
-	return 1;
-    if (pt1->pt_priority != pt2->pt_priority)
-	return pt1->pt_priority > pt2->pt_priority ? 1 : -1;
-    return col1 == col2 ? 0 : col1 > col2 ? 1 : -1;
+    if (pt1 != pt2)
+    {
+	if (pt1 == NULL)
+	    return -1;
+	if (pt2 == NULL)
+	    return 1;
+	if (pt1->pt_priority != pt2->pt_priority)
+	    return pt1->pt_priority > pt2->pt_priority ? 1 : -1;
+    }
+
+    // same priority, one that starts first wins
+    if (col1 != col2)
+	return col1 < col2 ? 1 : -1;
+    return 0;
 }
 #endif
 

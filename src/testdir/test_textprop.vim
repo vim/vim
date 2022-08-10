@@ -1334,6 +1334,33 @@ func Test_textprop_nowrap_scrolled()
   call delete('XtestNowrap')
 endfunc
 
+func Test_textprop_text_priority()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, "function( call, argument, here )")
+
+      call prop_type_add('one', #{highlight: 'Error'})
+      call prop_type_add('two', #{highlight: 'Function'})
+      call prop_type_add('three', #{highlight: 'DiffChange'})
+      call prop_type_add('arg', #{highlight: 'Search'})
+
+      call prop_add(1, 27, #{type: 'arg', length: len('here')})
+      call prop_add(1, 27, #{type: 'three', text: 'three: '})
+      call prop_add(1, 11, #{type: 'one', text: 'one: '})
+      call prop_add(1, 11, #{type: 'arg', length: len('call')})
+      call prop_add(1, 17, #{type: 'two', text: 'two: '})
+      call prop_add(1, 17, #{type: 'arg', length: len('argument')})
+  END
+  call writefile(lines, 'XtestPropPrio')
+  let buf = RunVimInTerminal('-S XtestPropPrio', {'rows': 5})
+  call VerifyScreenDump(buf, 'Test_prop_at_same_pos', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPropPrio')
+endfunc
+
 func Test_textprop_with_syntax()
   CheckScreendump
 
