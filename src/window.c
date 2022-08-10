@@ -5666,8 +5666,6 @@ win_setheight_win(int height, win_T *win)
     if (full_screen && msg_scrolled == 0 && row < cmdline_row)
 	screen_fill(row, cmdline_row, 0, (int)Columns, ' ', ' ', 0);
     cmdline_row = row;
-    p_ch = MAX(Rows - cmdline_row, 0);
-    curtab->tp_ch_used = p_ch;
     msg_row = row;
     msg_col = 0;
 
