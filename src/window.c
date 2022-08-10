@@ -25,6 +25,8 @@ static frame_T *win_altframe(win_T *win, tabpage_T *tp);
 static tabpage_T *alt_tabpage(void);
 static win_T *frame2win(frame_T *frp);
 static int frame_has_win(frame_T *frp, win_T *wp);
+static void spsc_correct_scroll(win_T *next_curwin, int flags);
+static void spsc_correct_cursor(win_T *wp);
 static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
 static int frame_fixed_height(frame_T *frp);
 static int frame_fixed_width(frame_T *frp);
@@ -75,6 +77,11 @@ static win_T *win_alloc(win_T *after, int hidden);
 #define WEE_TRIGGER_ENTER_AUTOCMDS	0x08
 #define WEE_TRIGGER_LEAVE_AUTOCMDS	0x10
 #define WEE_ALLOW_PARSE_MESSAGES	0x20
+
+// flags for spsc_correct_scroll()
+#define SPSC_CLOSE                      0x01
+#define SPSC_RESIZE                     0x02
+#define SPSC_WINBAR                     0x04
 
 static char *m_onlyone = N_("Already only one window");
 
@@ -1327,6 +1334,15 @@ win_split_ins(
 	msg_col = 0;	// put position back at start of line
     }
 
+    // If we have there is a winbar, win_equal invalidates w_botline
+    // before we get to spsc_correct_scroll (why only with winbar?).
+    if (!p_spsc && WINBAR_HEIGHT(curwin)) {
+	if (before)
+	    spsc_correct_scroll(wp, SPSC_WINBAR);
+	else
+	    spsc_correct_cursor(curwin);
+    }
+
     /*
      * equalize the window sizes.
      */
@@ -1355,6 +1371,9 @@ win_split_ins(
 	if (size != 0)
 	    p_wh = size;
     }
+
+    if (!p_spsc)
+        spsc_correct_scroll(wp, 0);
 
     /*
      * make the new window the current window
@@ -1417,6 +1436,9 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
 				    ? NULL : vim_strsave(oldp->w_localdir);
     newp->w_prevdir = (oldp->w_prevdir == NULL)
 				    ? NULL : vim_strsave(oldp->w_prevdir);
+
+    if (!p_spsc)
+        newp->w_botline = oldp->w_botline;
 
     // copy tagstack and folds
     for (i = 0; i < oldp->w_tagstacklen; i++)
@@ -2723,12 +2745,20 @@ win_close(win_T *win, int free_buf)
 	// using the window.
 	check_cursor();
     }
+
+    if (!p_spsc)
+        spsc_correct_cursor(wp);
+
     if (p_ea && (*p_ead == 'b' || *p_ead == dir))
 	// If the frame of the closed window contains the new current window,
 	// only resize that frame.  Otherwise resize all windows.
 	win_equal(curwin, curwin->w_frame->fr_parent == win_frame, dir);
     else
 	win_comp_pos();
+
+    if (!p_spsc)
+        spsc_correct_scroll(wp, SPSC_CLOSE);
+
     if (close_curwin)
     {
 	// Pass WEE_ALLOW_PARSE_MESSAGES to decrement dont_parse_messages
@@ -4064,6 +4094,9 @@ win_new_tabpage(int after)
 	newtp->tp_topframe = topframe;
 	last_status(FALSE);
 
+	if(!p_spsc)
+	    spsc_correct_scroll(curwin, 0);
+
 	lastused_tabpage = prev_tp;
 
 #if defined(FEAT_GUI)
@@ -4934,7 +4967,10 @@ win_enter_ext(win_T *wp, int flags)
     check_cursor();
     if (!virtual_active())
 	curwin->w_cursor.coladd = 0;
-    changed_line_abv_curs();	// assume cursor position needs updating
+    if (p_spsc) // assume cursor position needs updating.
+        changed_line_abv_curs();
+    else if (!(flags & WEE_TRIGGER_NEW_AUTOCMDS))
+        spsc_correct_cursor(wp);
 
     // Now it is OK to parse messages again, which may be needed in
     // autocommands.
@@ -5458,6 +5494,8 @@ shell_new_rows(void)
     // First try setting the heights of windows with 'winfixheight'.  If
     // that doesn't result in the right height, forget about that option.
     frame_new_height(topframe, h, FALSE, TRUE);
+    if (!p_spsc)
+	spsc_correct_scroll(curwin, SPSC_RESIZE);
     if (!frame_check_height(topframe, h))
 	frame_new_height(topframe, h, FALSE, FALSE);
 
@@ -6327,6 +6365,133 @@ set_fraction(win_T *wp)
 }
 
 /*
+ * Handle scroll position for 'nosplitscroll'
+ */
+    void
+spsc_correct_scroll(win_T *next_curwin, int flags)
+{
+    int      curnormal;
+    int      tabwins = 0;
+    int      framewins = 0;
+    long     so;
+    win_T    *wp;
+    frame_T  *fr;
+    linenr_T lnum;
+
+    FOR_ALL_WINDOWS_IN_TAB(curtab, wp)
+        tabwins++;
+
+    FOR_ALL_WINDOWS_IN_TAB(curtab, wp)
+    {
+        // No need to correct if height has not changed.
+        if (wp->w_prev_height == wp->w_height)
+            continue;
+
+        lnum = wp->w_cursor.lnum;
+        so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
+
+        // When resizing set invalid cursor to botline.
+        if (flags & SPSC_RESIZE) {
+            wp->w_valid = ~VALID_BOTLINE;
+            validate_botline_win(wp);
+            if (lnum > (wp->w_botline - so - 1))
+                wp->w_cursor.lnum = wp->w_botline - so - 1;
+            continue;
+        }
+
+        // If winrow has moved, we maintain the same botline by setting cursor
+        // position, depending on 'laststatus', number of windows in tab/frame,
+        // and scrolling the cursor to FRACTION_MULT.
+        if (wp->w_winrow != wp->w_prev_winrow)
+        {
+            if (wp->w_frame->fr_parent)
+                FOR_ALL_FRAMES(fr, wp->w_frame->fr_parent->fr_child)
+                    framewins++;
+            else
+                framewins = 1;
+
+            wp->w_cursor.lnum = wp->w_botline - ((p_ls == 1 && !(flags & SPSC_CLOSE)
+                                    && (framewins == 2 && tabwins == 2)) ? 2 : 1);
+            if ((flags & SPSC_WINBAR) && (p_ls && framewins == 2 && tabwins != 2))
+                wp->w_cursor.lnum += (flags & SPSC_CLOSE) ? -1 : 1;
+        }
+        else
+        {
+            wp->w_valid = ~VALID_BOTLINE;
+            validate_botline_win(wp);
+            if (flags & SPSC_WINBAR)
+                wp->w_cursor.lnum = wp->w_botline - WINBAR_HEIGHT(curwin) - 1;
+        }
+
+	if (wp->w_winrow != wp->w_prev_winrow || (flags & SPSC_WINBAR)) {
+            p_so = 0;
+            wp->w_fraction = FRACTION_MULT;
+            scroll_to_fraction(wp, wp->w_prev_height);
+            wp->w_cursor.lnum = wp->w_topline + wp->w_height / 2;
+	}
+        // Only ensure the cursor position is valid for the current window
+        // to be. Non-current windows may be left invalid and corrected
+        // in win_close() or win_enter_ext() by spsc_correct_cursor().
+        // If we are not in normal mode and cursor is invalid, scroll instead.
+        curnormal = (wp == curwin && get_real_state() != MODE_NORMAL);
+        if (wp == next_curwin || curnormal)
+        {
+            int nlnum;
+
+            if (lnum < (wp->w_topline + so))
+                wp->w_cursor.lnum = nlnum = wp->w_topline + (so ? so : (wp->w_height / 2));
+            else if (lnum > (wp->w_botline - so - 1))
+                wp->w_cursor.lnum = nlnum = wp->w_botline - (so ? (so + 1) : (wp->w_height / 2));
+            else
+                wp->w_cursor.lnum = nlnum = lnum;
+
+            if (curnormal && nlnum != lnum)
+            {
+                wp->w_cursor.lnum = lnum;
+                scroll_to_fraction(wp, wp->w_prev_height);
+            }
+        }
+
+        p_so = so;
+        wp->w_prev_winrow = wp->w_winrow;
+        wp->w_prev_height = wp->w_height;
+    }
+}
+
+/*
+ * Correct potentially invalid cursor position.
+ * Set to 'scrolloff when set, middle of window otherwise.
+ */
+    void
+spsc_correct_cursor(win_T *wp)
+{
+    long so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
+    linenr_T lnum = wp->w_cursor.lnum;
+    wp->w_cursor.lnum = wp->w_botline - so;
+
+    if (lnum < wp->w_topline + so)
+    {
+        wp->w_cursor.lnum = wp->w_topline + (so ? so : (wp->w_height / 2));
+        return;
+    }
+    else
+    {
+        if (wp->w_winrow == wp->w_prev_winrow)
+        {
+            wp->w_valid &= ~(VALID_BOTLINE);
+            validate_botline_win(wp);
+        }
+        if (lnum > (wp->w_botline - so - 1))
+        {
+            wp->w_cursor.lnum = wp->w_botline -
+                                    (so ? (so + 1) : (wp->w_height / 2));
+            return;
+        }
+    }
+    wp->w_cursor.lnum = lnum;
+}
+
+/*
  * Set the height of a window.
  * "height" excludes any window toolbar.
  * This takes care of the things inside the window, not what happens to the
@@ -6360,10 +6525,10 @@ win_new_height(win_T *wp, int height)
     wp->w_height = height;
     wp->w_skipcol = 0;
 
-    // There is no point in adjusting the scroll position when exiting.  Some
+    // There is no point in adjusting the scroll position when exiting. Some
     // values might be invalid.
     // Skip scroll_to_fraction() when 'cmdheight' was set to one from zero.
-    if (!exiting && !made_cmdheight_nonzero)
+    if (!exiting && !made_cmdheight_nonzero && p_spsc)
 	scroll_to_fraction(wp, prev_height);
 }
 

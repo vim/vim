@@ -515,6 +515,8 @@ call <SID>AddOption("splitbelow", gettext("a new window is put below the current
 call <SID>BinOptionG("sb", &sb)
 call <SID>AddOption("splitright", gettext("a new window is put right of the current one"))
 call <SID>BinOptionG("spr", &spr)
+call <SID>AddOption("splitscroll", gettext("determines scroll behavior when opening splits"))
+call <SID>BinOptionG("spsc", &spsc)
 call <SID>AddOption("scrollbind", gettext("this window scrolls together with other bound windows"))
 call append("$", "\t" .. s:local_to_window)
 call <SID>BinOptionL("scb")

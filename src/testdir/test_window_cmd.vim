@@ -1560,4 +1560,44 @@ func Test_window_alloc_failure()
   tabonly
 endfunc
 
+func Test_splitscroll_with_splits()
+  set nosplitscroll
+  set nowrap | redraw
+  set lines=80 | redraw
+  call setline(1, range(1, 256))
+  for i in [0, 1]
+    execute (i == 1) ? 'nnoremenu 1.10 WinBar.Test :echo' : ''
+    for j in [0, 1]
+      execute 'set ' . ((j == 1) ? 'splitbelow' : 'nosplitbelow')
+      for so in [0, 5, 10]
+        execute ':set scrolloff=' . so
+        for ls in range(0, 2)
+          let ls1win = (ls == 2) ? 1 : 0
+          let ls2win = (ls != 0) ? 1 : 0
+          execute ':set laststatus=' . ls | redrawstatus
+          split | redraw | wincmd k
+          call assert_equal(winheight(0), line("w$"))
+          wincmd j
+          call assert_equal(&lines - &cmdheight - ls2win - i, line("w$"))
+          quit | copen | wincmd k
+          call assert_equal(winheight(0), line("w$"))
+          only | execute (i == 1) ? 'nnoremenu 1.10 WinBar.Test :echo' : '' | redraw
+          call assert_equal(&lines - &cmdheight - ls1win - i, line("w$"))
+          above copen | let qfheight = winheight(0)
+          wincmd j
+          call assert_equal(qfheight + 2, line("w0"))
+          only
+        endfor
+      endfor
+    endfor
+  endfor
+
+  bwipe!
+  set scrolloff&
+  set splitbelow&
+  set laststatus&
+  set splitscroll&
+  set wrap&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
