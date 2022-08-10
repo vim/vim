@@ -1898,6 +1898,24 @@ func Test_prop_with_linebreak()
   call delete('XscriptPropWithLinebreak')
 endfunc
 
+func Test_prop_with_wrap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      set linebreak
+      setline(1, 'asdf '->repeat(15))
+      prop_type_add('test', {highlight: 'Special'})
+      prop_add(1, 43, {text: 'some virtual text', type: 'test'})
+  END
+  call writefile(lines, 'XscriptPropWithWrap')
+  let buf = RunVimInTerminal('-S XscriptPropWithWrap', #{rows: 6, cols: 50})
+  call VerifyScreenDump(buf, 'Test_prop_with_wrap_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropWithWrap')
+endfunc
+
 func Test_prop_after_tab()
   CheckRunVimInTerminal
 

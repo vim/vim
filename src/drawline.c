@@ -1793,6 +1793,7 @@ win_line(
 					wlv.p_extra = p_extra_free2 = l;
 					wlv.n_extra = n_used + added;
 					n_attr_skip = added;
+					n_attr = mb_charlen(wlv.p_extra);
 				    }
 				}
 
