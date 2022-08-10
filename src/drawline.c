@@ -1710,7 +1710,8 @@ win_line(
 						  || text_props[tpi].tp_id < 0)
 					  && text_props[tpi].tp_id != -MAXCOL)
 			{
-			    used_attr = syn_id2attr(pt->pt_hl_id);
+			    if (pt->pt_hl_id > 0)
+				used_attr = syn_id2attr(pt->pt_hl_id);
 			    text_prop_type = pt;
 			    text_prop_attr =
 				   hl_combine_attr(text_prop_attr, used_attr);
