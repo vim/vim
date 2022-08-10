@@ -3313,4 +3313,6 @@ EXTERN char e_cmdline_window_already_open[]
 #ifdef FEAT_PROP_POPUP
 EXTERN char e_cannot_use_negative_id_after_adding_textprop_with_text[]
 	INIT(= N_("E1293: Cannot use a negative id after adding a textprop with text"));
+EXTERN char e_can_only_use_text_align_when_column_is_zero[]
+	INIT(= N_("E1294: Can only use text_align when column is zero"));
 #endif

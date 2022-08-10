@@ -488,6 +488,11 @@ prop_add_common(
 
 	    if (p == NULL)
 		goto theend;
+	    if (start_col != 0)
+	    {
+		emsg(_(e_can_only_use_text_align_when_column_is_zero));
+		goto theend;
+	    }
 	    if (STRCMP(p, "right") == 0)
 		flags |= TP_FLAG_ALIGN_RIGHT;
 	    else if (STRCMP(p, "below") == 0)

@@ -2530,6 +2530,8 @@ func Test_props_with_text_after()
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropsWithTextAfter')
+
+  call assert_fails('call prop_add(1, 2, #{text: "yes", text_align: "right", type: "some"})', 'E1294:')
 endfunc
 
 func Test_props_with_text_after_below_trunc()
