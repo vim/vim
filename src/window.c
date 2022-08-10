@@ -1337,7 +1337,8 @@ win_split_ins(
 
     // If there is a winbar, win_equal invalidates w_botline before
     // we get to spsc_correct_scroll (why only with winbar?).
-    if (!p_spsc && WINBAR_HEIGHT(curwin)) {
+    if (!p_spsc && WINBAR_HEIGHT(curwin))
+    {
         if (before)
             spsc_correct_scroll(wp, SPSC_WINBAR);
         else
@@ -6371,9 +6372,7 @@ set_fraction(win_T *wp)
     void
 spsc_correct_scroll(win_T *next_curwin, int flags)
 {
-    int      state;
-    int      curnormal;
-    int      framewins;
+    int      state, curnormal, framewins;
     int      tabwins = 0;
     long     so;
     win_T    *wp;
@@ -6394,7 +6393,8 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
         so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
 
         // When resizing set invalid cursor to botline.
-        if (flags & SPSC_RESIZE) {
+        if (flags & SPSC_RESIZE)
+        {
             wp->w_valid &= ~VALID_BOTLINE;
             validate_botline_win(wp);
             if (lnum > (wp->w_botline - so - 1))
@@ -6407,7 +6407,8 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
         // and scrolling the cursor to FRACTION_MULT.
         if (wp->w_winrow != wp->w_prev_winrow)
         {
-            if (wp->w_frame->fr_parent) {
+            if (wp->w_frame->fr_parent)
+            {
                 framewins = 0;
                 FOR_ALL_FRAMES(fr, wp->w_frame->fr_parent->fr_child)
                     framewins++;
@@ -6428,7 +6429,8 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
                 wp->w_cursor.lnum = wp->w_botline - WINBAR_HEIGHT(curwin) - 1;
         }
 
-        if (wp->w_winrow != wp->w_prev_winrow || (flags & SPSC_WINBAR)) {
+        if (wp->w_winrow != wp->w_prev_winrow || (flags & SPSC_WINBAR))
+        {
             p_so = 0;
             wp->w_fraction = FRACTION_MULT;
             scroll_to_fraction(wp, wp->w_prev_height);
@@ -6487,12 +6489,13 @@ spsc_correct_cursor(win_T *wp)
             validate_botline_win(wp);
         }
         if (lnum > (wp->w_botline - so - 1))
-            nlnum = wp->w_botline -
-                          (so ? (so + 1) : (wp->w_height / 2));
+            nlnum = wp->w_botline - (so ? (so + 1) : (wp->w_height / 2));
     }
 
     wp->w_cursor.lnum = lnum;
-    if (nlnum) {
+
+    if (nlnum)
+    {
         setmark('\'');
         wp->w_cursor.lnum = nlnum;
     }
