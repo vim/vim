@@ -8,6 +8,9 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
+let s:save_cpo = &cpo
+set cpo&vim
+
 " Matchit support
 if exists('loaded_matchit') && !exists('b:match_words')
   let b:match_ignorecase = 0
@@ -21,3 +24,6 @@ if exists('loaded_matchit') && !exists('b:match_words')
 endif
 
 setlocal commentstring=#\ %s
+
+let &cpo = s:save_cpo
+unlet s:save_cpo
