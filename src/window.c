@@ -6367,7 +6367,15 @@ set_fraction(win_T *wp)
 }
 
 /*
- * Handle scroll position for 'nosplitscroll'
+ * Handle scroll position for 'nosplitscroll', replaces
+ * scroll_to_fraction() call from win_new_height(). 
+ * Instead we iterate over all windows in a tabpage.
+ * Called by win_split_ins()/win_close().
+ * TODO: figure out if we can unify spsc_correct_scroll()
+ * and spsc_correct_cursor() and perhaps return to a 
+ * function handling just a single window by moving back
+ * to win_new_height. Seems cleaner that way we are just
+ * replacing scroll_to_fraction() in win_new_height().
  */
     void
 spsc_correct_scroll(win_T *next_curwin, int flags)
@@ -6444,9 +6452,10 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
         curnormal = wp == curwin && state != MODE_NORMAL && state != MODE_CMDLINE;
         if (wp == next_curwin || curnormal)
         {
-            if (lnum < (wp->w_topline + so))
+            if (lnum > so && lnum < wp->w_topline + so)
                 nlnum = wp->w_topline + (so ? so : (wp->w_height / 2));
-            else if (lnum > (wp->w_botline - so - 1))
+            else if (lnum > (wp->w_botline - so - 1)
+                    && lnum < wp->w_buffer->b_ml.ml_line_count - so)
                 nlnum = wp->w_botline - (so ? (so + 1) : (wp->w_height / 2));
 
             wp->w_cursor.lnum = lnum;
@@ -6457,7 +6466,7 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
                 else {
                     setmark('\'');
                     wp->w_cursor.lnum = nlnum;
-		}
+                }
             }
         }
 
@@ -6479,7 +6488,7 @@ spsc_correct_cursor(win_T *wp)
     linenr_T lnum = wp->w_cursor.lnum;
     wp->w_cursor.lnum = wp->w_botline - so;
 
-    if (lnum < wp->w_topline + so)
+    if (lnum > so && lnum < wp->w_topline + so)
         nlnum = wp->w_topline + (so ? so : (wp->w_height / 2));
     else
     {
@@ -6488,7 +6497,8 @@ spsc_correct_cursor(win_T *wp)
             wp->w_valid &= ~VALID_BOTLINE;
             validate_botline_win(wp);
         }
-        if (lnum > (wp->w_botline - so - 1))
+        if (lnum > (wp->w_botline - so - 1)
+                && lnum < wp->w_buffer->b_ml.ml_line_count - so)
             nlnum = wp->w_botline - (so ? (so + 1) : (wp->w_height / 2));
     }
 
