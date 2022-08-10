@@ -7484,7 +7484,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, splitting a window will put the new window right of the
 	current one. |:vsplit|
 
-			                *'splitscroll'* *'spsc'*
+			*'splitscroll'* *'spsc'* *'nosplitscroll'* *'nospsc'*
 'splitscroll' 'spsc'	boolean	(default 1)
 			global
 	The value of this option determines the scroll behavior when opening
@@ -7493,7 +7493,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		relative cursor position in both the old and new window.
 		When "off", scrolling will be avoided to stabilize the buffer
 		content. Instead, the cursor position will be changed when
-		necessary.
+		necessary. In this case, the jumplist will be populated with
+		the previous cursor position. Works best with 'nowrap' set.
 
 			   *'startofline'* *'sol'* *'nostartofline'* *'nosol'*
 'startofline' 'sol'	boolean	(default on)
