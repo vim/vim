@@ -1593,11 +1593,11 @@ func Test_splitscroll_with_splits()
   endfor
 
   bwipe!
+  set wrap&
   set scrolloff&
   set splitbelow&
   set laststatus&
   set splitscroll&
-  set wrap&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

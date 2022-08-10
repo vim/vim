@@ -82,6 +82,7 @@ static win_T *win_alloc(win_T *after, int hidden);
 #define SPSC_CLOSE                      0x01
 #define SPSC_RESIZE                     0x02
 #define SPSC_WINBAR                     0x04
+#define SPSC_VERT                       0x08
 
 static char *m_onlyone = N_("Already only one window");
 
@@ -1373,7 +1374,7 @@ win_split_ins(
     }
 
     if (!p_spsc)
-        spsc_correct_scroll(wp, 0);
+        spsc_correct_scroll(wp, (flags & WSP_VERT) ? SPSC_VERT : 0);
 
     /*
      * make the new window the current window
@@ -6384,7 +6385,7 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
     FOR_ALL_WINDOWS_IN_TAB(curtab, wp)
     {
         // No need to correct if height has not changed.
-        if (wp->w_prev_height == wp->w_height)
+        if (wp->w_prev_height == wp->w_height || (flags & SPSC_VERT))
             continue;
 
         lnum = wp->w_cursor.lnum;
@@ -6423,12 +6424,12 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
                 wp->w_cursor.lnum = wp->w_botline - WINBAR_HEIGHT(curwin) - 1;
         }
 
-	if (wp->w_winrow != wp->w_prev_winrow || (flags & SPSC_WINBAR)) {
+        if (wp->w_winrow != wp->w_prev_winrow || (flags & SPSC_WINBAR)) {
             p_so = 0;
             wp->w_fraction = FRACTION_MULT;
             scroll_to_fraction(wp, wp->w_prev_height);
             wp->w_cursor.lnum = wp->w_topline + wp->w_height / 2;
-	}
+        }
         // Only ensure the cursor position is valid for the current window
         // to be. Non-current windows may be left invalid and corrected
         // in win_close() or win_enter_ext() by spsc_correct_cursor().
