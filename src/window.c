@@ -5702,7 +5702,7 @@ frame_setheight(frame_T *curfrp, int height)
 
     if (curfrp->fr_parent == NULL)
     {
-	// topframe: can only change the command line
+	// topframe: can only change the command line height
 	if (height > ROWS_AVAIL)
 	    // If height is greater than the available space, try to create
 	    // space for the frame by reducing 'cmdheight' if possible, while
@@ -6089,6 +6089,12 @@ win_drag_status_line(win_T *dragwin, int offset)
     int		row;
     int		up;	// if TRUE, drag status line up, otherwise down
     int		n;
+    static int	p_ch_was_zero = FALSE;
+
+    // If the user explicitly set 'cmdheight' to zero, then allow for dragging
+    // the status line making it zero again.
+    if (p_ch == 0)
+	p_ch_was_zero = TRUE;
 
     fr = dragwin->w_frame;
     curfr = fr;
@@ -6147,6 +6153,8 @@ win_drag_status_line(win_T *dragwin, int offset)
 	room = Rows - cmdline_row;
 	if (curfr->fr_next != NULL)
 	    room -= p_ch;
+	else if (!p_ch_was_zero)
+	    --room;
 	if (room < 0)
 	    room = 0;
 	// sum up the room of frames below of the current one
@@ -6196,7 +6204,7 @@ win_drag_status_line(win_T *dragwin, int offset)
     row = win_comp_pos();
     screen_fill(row, cmdline_row, 0, (int)Columns, ' ', ' ', 0);
     cmdline_row = row;
-    p_ch = MAX(Rows - cmdline_row, 0);
+    p_ch = MAX(Rows - cmdline_row, p_ch_was_zero ? 0 : 1);
     curtab->tp_ch_used = p_ch;
     redraw_all_later(SOME_VALID);
     showmode();
@@ -6541,6 +6549,11 @@ command_height(void)
     // GUI starts up, we can't be sure in what order things happen.  And when
     // p_ch was changed in another tab page.
     curtab->tp_ch_used = p_ch;
+
+    // If the space for the command line is already more than 'cmdheight' there
+    // is nothing to do (window size must have decreased).
+    if (p_ch > old_p_ch && cmdline_row <= Rows - p_ch)
+	return;
 
     // Find bottom frame with width of screen.
     frp = lastwin->w_frame;
