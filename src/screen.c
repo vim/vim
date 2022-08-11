@@ -4184,6 +4184,7 @@ skip_showmode()
     if (global_busy
 	    || msg_silent != 0
 	    || !redrawing()
+	    || p_ch <= 0
 	    || (char_avail() && !KeyTyped))
     {
 	redraw_mode = TRUE;		// show mode later
