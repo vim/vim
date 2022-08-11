@@ -388,6 +388,7 @@ func Test_fileinfo_after_echo()
 endfunc
 
 func Test_cmdheight_zero()
+  enew
   set cmdheight=0
   set showcmd
   redraw!
@@ -437,10 +438,13 @@ func Test_cmdheight_zero()
   7
   call feedkeys(":\"\<C-R>=line('w0')\<CR>\<CR>", "xt")
   call assert_equal('"1', @:)
-  bwipe!
 
+  bwipe!
+  bwipe!
   set cmdheight&
   set showcmd&
+  tabnew
+  tabonly
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
