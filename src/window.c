@@ -26,7 +26,7 @@ static tabpage_T *alt_tabpage(void);
 static win_T *frame2win(frame_T *frp);
 static int frame_has_win(frame_T *frp, win_T *wp);
 static void spsc_correct_scroll(win_T *next_curwin, int flags);
-static void spsc_correct_cursor(win_T *wp);
+static void spsc_correct_cursor(win_T *wp, linenr_T lnum, int curnormal);
 static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
 static int frame_fixed_height(frame_T *frp);
 static int frame_fixed_width(frame_T *frp);
@@ -81,8 +81,6 @@ static win_T *win_alloc(win_T *after, int hidden);
 // flags for spsc_correct_scroll()
 #define SPSC_CLOSE                      0x01
 #define SPSC_RESIZE                     0x02
-#define SPSC_WINBAR                     0x04
-#define SPSC_VERT                       0x08
 
 static char *m_onlyone = N_("Already only one window");
 
@@ -1335,16 +1333,6 @@ win_split_ins(
 	msg_col = 0;	// put position back at start of line
     }
 
-    // If there is a winbar, win_equal invalidates w_botline before
-    // we get to spsc_correct_scroll (why only with winbar?).
-    if (!p_spsc && WINBAR_HEIGHT(curwin))
-    {
-        if (before)
-            spsc_correct_scroll(wp, SPSC_WINBAR);
-        else
-            spsc_correct_cursor(curwin);
-    }
-
     /*
      * equalize the window sizes.
      */
@@ -1375,7 +1363,7 @@ win_split_ins(
     }
 
     if (!p_spsc)
-        spsc_correct_scroll(wp, (flags & WSP_VERT) ? SPSC_VERT : 0);
+        spsc_correct_scroll(wp, 0);
 
     /*
      * make the new window the current window
@@ -2747,9 +2735,6 @@ win_close(win_T *win, int free_buf)
 	// using the window.
 	check_cursor();
     }
-
-    if (!p_spsc)
-        spsc_correct_cursor(wp);
 
     if (p_ea && (*p_ead == 'b' || *p_ead == dir))
 	// If the frame of the closed window contains the new current window,
@@ -4972,7 +4957,7 @@ win_enter_ext(win_T *wp, int flags)
     if (p_spsc) // assume cursor position needs updating.
         changed_line_abv_curs();
     else if (!(flags & WEE_TRIGGER_NEW_AUTOCMDS))
-        spsc_correct_cursor(wp);
+        spsc_correct_cursor(wp, wp->w_cursor.lnum, FALSE);
 
     // Now it is OK to parse messages again, which may be needed in
     // autocommands.
@@ -6370,12 +6355,6 @@ set_fraction(win_T *wp)
  * Handle scroll position for 'nosplitscroll', replaces
  * scroll_to_fraction() call from win_new_height(). 
  * Instead we iterate over all windows in a tabpage.
- * Called by win_split_ins()/win_close().
- * TODO: figure out if we can unify spsc_correct_scroll()
- * and spsc_correct_cursor() and perhaps return to a 
- * function handling just a single window by moving back
- * to win_new_height. Seems cleaner that way we are just
- * replacing scroll_to_fraction() in win_new_height().
  */
     void
 spsc_correct_scroll(win_T *next_curwin, int flags)
@@ -6386,29 +6365,18 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
     win_T    *wp;
     frame_T  *fr;
     linenr_T lnum;
-    linenr_T nlnum = 0;
 
     FOR_ALL_WINDOWS_IN_TAB(curtab, wp)
         tabwins++;
 
     FOR_ALL_WINDOWS_IN_TAB(curtab, wp)
     {
-        // No need to correct if height has not changed.
-        if (wp->w_prev_height == wp->w_height || (flags & SPSC_VERT))
-            continue;
-
         lnum = wp->w_cursor.lnum;
         so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
 
-        // When resizing set invalid cursor to botline.
-        if (flags & SPSC_RESIZE)
-        {
-            wp->w_valid &= ~VALID_BOTLINE;
-            validate_botline_win(wp);
-            if (lnum > (wp->w_botline - so - 1))
-                wp->w_cursor.lnum = wp->w_botline - so - 1;
+        // No need to correct if height has not changed.
+        if (wp->w_prev_height == wp->w_height)
             continue;
-        }
 
         // If winrow has moved, we maintain the same botline by setting cursor
         // position, depending on 'laststatus', number of windows in tab/frame,
@@ -6423,54 +6391,34 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
             }
             else
                 framewins = 1;
-
-            wp->w_cursor.lnum = wp->w_botline - ((p_ls == 1 && !(flags & SPSC_CLOSE)
-                                    && (framewins == 2 && tabwins == 2)) ? 2 : 1);
-            if ((flags & SPSC_WINBAR) && (p_ls && framewins == 2 && tabwins != 2))
-                wp->w_cursor.lnum += (flags & SPSC_CLOSE) ? -1 : 1;
+             wp->w_cursor.lnum = wp->w_botline - ((p_ls == 1 && !(flags & SPSC_CLOSE)
+                                     && (framewins == 2 && tabwins == 2)) ? 2 : 1);
         }
-        else
+
+        wp->w_valid &= ~VALID_BOTLINE;
+        validate_botline_win(wp);
+
+        if ((flags & SPSC_RESIZE)
+		&& wp->w_cursor.lnum > (wp->w_botline - so - 1))
         {
-            wp->w_valid &= ~VALID_BOTLINE;
-            validate_botline_win(wp);
-            if (flags & SPSC_WINBAR)
-                wp->w_cursor.lnum = wp->w_botline - WINBAR_HEIGHT(curwin) - 1;
+            wp->w_cursor.lnum = wp->w_botline - so - 1;
+            continue;
         }
-
-        if (wp->w_winrow != wp->w_prev_winrow || (flags & SPSC_WINBAR))
+        else if (wp->w_winrow != wp->w_prev_winrow)
         {
             p_so = 0;
             wp->w_fraction = FRACTION_MULT;
             scroll_to_fraction(wp, wp->w_prev_height);
-            wp->w_cursor.lnum = wp->w_topline + wp->w_height / 2;
+            wp->w_cursor.lnum = wp->w_topline + so;
+            p_so = so;
         }
-        // Only ensure the cursor position is valid for the current window
-        // to be. Non-current windows may be left invalid and corrected
-        // in win_close() or win_enter_ext() by spsc_correct_cursor().
-        // If we are not in normal mode and cursor is invalid, scroll instead.
+        // Ensure cursor position is valid for the current window to be
+        // or if currently not in normal/cmdline mode. 
         state = get_real_state();
         curnormal = wp == curwin && state != MODE_NORMAL && state != MODE_CMDLINE;
         if (wp == next_curwin || curnormal)
-        {
-            if (lnum > so && lnum < wp->w_topline + so)
-                nlnum = wp->w_topline + (so ? so : (wp->w_height / 2));
-            else if (lnum > (wp->w_botline - so - 1)
-                    && lnum < wp->w_buffer->b_ml.ml_line_count - so)
-                nlnum = wp->w_botline - (so ? (so + 1) : (wp->w_height / 2));
+	    spsc_correct_cursor(wp, lnum, curnormal);
 
-            wp->w_cursor.lnum = lnum;
-            if (nlnum)
-            {
-                if (curnormal)
-                    scroll_to_fraction(wp, wp->w_prev_height);
-                else {
-                    setmark('\'');
-                    wp->w_cursor.lnum = nlnum;
-                }
-            }
-        }
-
-        p_so = so;
         wp->w_prev_winrow = wp->w_winrow;
         wp->w_prev_height = wp->w_height;
     }
@@ -6478,36 +6426,30 @@ spsc_correct_scroll(win_T *next_curwin, int flags)
 
 /*
  * Correct potentially invalid cursor position.
- * Set to 'scrolloff when set, middle of window otherwise.
  */
     void
-spsc_correct_cursor(win_T *wp)
+spsc_correct_cursor(win_T *wp, linenr_T lnum, int curnormal)
 {
     long     so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
     linenr_T nlnum = 0;
-    linenr_T lnum = wp->w_cursor.lnum;
-    wp->w_cursor.lnum = wp->w_botline - so;
+    wp->w_cursor.lnum = wp->w_topline + so;
 
-    if (lnum > so && lnum < wp->w_topline + so)
-        nlnum = wp->w_topline + (so ? so : (wp->w_height / 2));
-    else
-    {
-        if (wp->w_winrow == wp->w_prev_winrow)
-        {
-            wp->w_valid &= ~VALID_BOTLINE;
-            validate_botline_win(wp);
-        }
-        if (lnum > (wp->w_botline - so - 1)
-                && lnum < wp->w_buffer->b_ml.ml_line_count - so)
-            nlnum = wp->w_botline - (so ? (so + 1) : (wp->w_height / 2));
-    }
+    if (lnum > so && lnum < (wp->w_topline + so))
+        nlnum = wp->w_topline + so;
+    else if (lnum > (wp->w_botline - so - 1)
+	    && lnum < (wp->w_buffer->b_ml.ml_line_count - so))
+	nlnum = wp->w_botline - so - 1;
 
     wp->w_cursor.lnum = lnum;
 
     if (nlnum)
     {
-        setmark('\'');
-        wp->w_cursor.lnum = nlnum;
+	if (curnormal)
+	    scroll_to_fraction(wp, wp->w_prev_height);
+	else {
+	    setmark('\'');
+	    wp->w_cursor.lnum = nlnum;
+	}
     }
 }
 
@@ -6684,7 +6626,8 @@ win_new_width(win_T *wp, int width)
     wp->w_width = width;
     wp->w_lines_valid = 0;
     changed_line_abv_curs_win(wp);
-    invalidate_botline_win(wp);
+    if (p_spsc) // Handled in spsc_correct_scroll()
+	invalidate_botline_win(wp);
     if (wp == curwin)
     {
 	update_topline();
