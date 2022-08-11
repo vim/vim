@@ -2502,6 +2502,42 @@ func Test_prop_inserts_text()
   call delete('XscriptPropsWithText')
 endfunc
 
+func Test_prop_inserts_text_highlight()
+  CheckRunVimInTerminal
+
+  " Just a basic check for now
+  let lines =<< trim END
+      call setline(1, 'insert some text (here) and there')
+      call prop_type_add('someprop', #{highlight: 'ErrorMsg'})
+      let bef_prop = prop_add(1, 18, #{type: 'someprop', text: 'BEFORE'})
+      set hlsearch
+      let thematch = matchaddpos("DiffAdd", [[1, 18]])
+      func DoAfter()
+        call prop_remove(#{id: g:bef_prop})
+        call prop_add(1, 19, #{type: 'someprop', text: 'AFTER'})
+        let g:thematch = matchaddpos("DiffAdd", [[1, 18]])
+        let @/ = ''
+      endfunc
+  END
+  call writefile(lines, 'XscriptPropsWithHighlight')
+  let buf = RunVimInTerminal('-S XscriptPropsWithHighlight', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_1', {})
+  call term_sendkeys(buf, "/text (he\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_2', {})
+  call term_sendkeys(buf, ":call matchdelete(thematch)\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_3', {})
+
+  call term_sendkeys(buf, ":call DoAfter()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_4', {})
+  call term_sendkeys(buf, "/text (he\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_5', {})
+  call term_sendkeys(buf, ":call matchdelete(thematch)\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_6', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithHighlight')
+endfunc
+
 func Test_props_with_text_after()
   CheckRunVimInTerminal
 
