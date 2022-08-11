@@ -1010,12 +1010,16 @@ do_bang(
     }
     if (addr_count == 0)		// :!
     {
-	// echo the command
-	msg_start();
-	msg_putchar(':');
-	msg_putchar('!');
-	msg_outtrans(newcmd);
-	msg_clr_eos();
+        if (p_ch > 0)
+	{
+	    // echo the command
+	    msg_start();
+	    msg_putchar(':');
+	    msg_putchar('!');
+	    msg_outtrans(newcmd);
+	    msg_clr_eos();
+	}
+
 	windgoto(msg_row, msg_col);
 
 	do_shell(newcmd, 0);
