@@ -1808,9 +1808,13 @@ win_update(win_T *wp)
 
 			    // Move the entries that were scrolled, disable
 			    // the entries for the lines to be redrawn.
+			    // Avoid using a wrong index when 'cmdheight' is
+			    // zero and wp->w_height == Rows.
 			    if ((wp->w_lines_valid += j) > wp->w_height)
 				wp->w_lines_valid = wp->w_height;
-			    for (idx = wp->w_lines_valid; idx - j >= 0; idx--)
+			    for (idx = wp->w_lines_valid >= wp->w_height
+				    ? wp->w_height - 1 : wp->w_lines_valid;
+							   idx - j >= 0; idx--)
 				wp->w_lines[idx] = wp->w_lines[idx - j];
 			    while (idx >= 0)
 				wp->w_lines[idx--].wl_valid = FALSE;
