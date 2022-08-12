@@ -457,7 +457,6 @@ func Test_cmdheight_zero()
 
   bwipe!
   bwipe!
-
   set cmdheight&
   set showcmd&
   tabnew
@@ -479,6 +478,7 @@ func Test_cmdheight_showmode()
   let str = trim(join(chars, ''))
   call assert_equal('~', str)
 
+  redraw!
   set showmode&
   set cmdheight&
 endfunc
@@ -493,6 +493,7 @@ func Test_cmdheight_zero_shell()
   call assert_equal(['foo!'], readfile('Xfile.out'))
   call delete('Xfile.out')
 
+  redraw!
   set more&
   set cmdheight&
 endfunc
@@ -507,6 +508,7 @@ func Test_cmdheight_zero_ctrl_c()
   let str = trim(join(chars, ''))
   call assert_equal('~', str)
 
+  redraw!
   set cmdheight&
 endfunc
 
