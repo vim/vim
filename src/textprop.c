@@ -310,6 +310,7 @@ prop_add_one(
 	buf->b_ml.ml_flags |= ML_LINE_DIRTY;
     }
 
+    changed_line_display_buf(buf);
     changed_lines_buf(buf, start_lnum, end_lnum + 1, 0);
     res = OK;
 
@@ -1507,6 +1508,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
     if (first_changed > 0)
     {
+	changed_line_display_buf(buf);
 	changed_lines_buf(buf, first_changed, last_changed + 1, 0);
 	redraw_buf_later(buf, VALID);
     }

@@ -2775,6 +2775,45 @@ func Test_props_with_text_below_nowrap()
   call delete('XscriptPropsBelowNowrap')
 endfunc
 
+func Test_props_with_text_CursorMoved()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['this is line one', 'this is line two', 'three', 'four', 'five'])
+
+      call prop_type_add('prop', #{highlight: 'Error'})
+      let g:long_text = repeat('x', &columns * 2)
+
+      let g:prop_id = v:null
+      func! Update()
+        if line('.') == 1
+          if g:prop_id == v:null
+            let g:prop_id = prop_add(1, 0, #{type: 'prop', text_wrap: 'wrap', text: g:long_text})
+          endif
+        elseif g:prop_id != v:null
+          call prop_remove(#{id: g:prop_id})
+          let g:prop_id = v:null
+        endif
+      endfunc
+
+      autocmd CursorMoved * call Update()
+  END
+  call writefile(lines, 'XscriptPropsCursorMovec')
+  let buf = RunVimInTerminal('-S XscriptPropsCursorMovec', #{rows: 8, cols: 60})
+  call term_sendkeys(buf, "gg0w")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_cursormoved_1', {})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_cursormoved_2', {})
+
+  " back to the first state
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_cursormoved_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsCursorMovec')
+endfunc
+
 func Test_props_with_text_after_split_join()
   CheckRunVimInTerminal
 

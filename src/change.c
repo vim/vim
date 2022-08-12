@@ -801,6 +801,7 @@ deleted_lines_mark(linenr_T lnum, long count)
 
 /*
  * Marks the area to be redrawn after a change.
+ * Consider also calling changed_line_display_buf().
  */
     void
 changed_lines_buf(
