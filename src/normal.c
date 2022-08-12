@@ -6777,7 +6777,6 @@ nv_esc(cmdarg_T *cap)
 		&& cmdwin_type == 0
 #endif
 		&& !VIsual_active
-		&& p_ch > 0
 		&& no_reason)
 	{
 	    if (anyBufIsChanged())

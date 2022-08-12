@@ -3676,6 +3676,8 @@ msg_clr_eos_force(void)
 	    screen_fill(msg_row + 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
 	}
     }
+    else
+	redraw_later(CLEAR);
 }
 
 /*
