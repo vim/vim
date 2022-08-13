@@ -2704,7 +2704,7 @@ clear_hl_tables(void)
 hl_combine_attr(int char_attr, int prim_attr)
 {
     attrentry_T *char_aep = NULL;
-    attrentry_T *spell_aep;
+    attrentry_T *prim_aep;
     attrentry_T new_en;
 
     if (char_attr == 0)
@@ -2732,22 +2732,22 @@ hl_combine_attr(int char_attr, int prim_attr)
 	    new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, prim_attr);
 	else
 	{
-	    spell_aep = syn_gui_attr2entry(prim_attr);
-	    if (spell_aep != NULL)
+	    prim_aep = syn_gui_attr2entry(prim_attr);
+	    if (prim_aep != NULL)
 	    {
 		new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr,
-							   spell_aep->ae_attr);
-		if (spell_aep->ae_u.gui.fg_color != INVALCOLOR)
-		    new_en.ae_u.gui.fg_color = spell_aep->ae_u.gui.fg_color;
-		if (spell_aep->ae_u.gui.bg_color != INVALCOLOR)
-		    new_en.ae_u.gui.bg_color = spell_aep->ae_u.gui.bg_color;
-		if (spell_aep->ae_u.gui.sp_color != INVALCOLOR)
-		    new_en.ae_u.gui.sp_color = spell_aep->ae_u.gui.sp_color;
-		if (spell_aep->ae_u.gui.font != NOFONT)
-		    new_en.ae_u.gui.font = spell_aep->ae_u.gui.font;
+							   prim_aep->ae_attr);
+		if (prim_aep->ae_u.gui.fg_color != INVALCOLOR)
+		    new_en.ae_u.gui.fg_color = prim_aep->ae_u.gui.fg_color;
+		if (prim_aep->ae_u.gui.bg_color != INVALCOLOR)
+		    new_en.ae_u.gui.bg_color = prim_aep->ae_u.gui.bg_color;
+		if (prim_aep->ae_u.gui.sp_color != INVALCOLOR)
+		    new_en.ae_u.gui.sp_color = prim_aep->ae_u.gui.sp_color;
+		if (prim_aep->ae_u.gui.font != NOFONT)
+		    new_en.ae_u.gui.font = prim_aep->ae_u.gui.font;
 # ifdef FEAT_XFONTSET
-		if (spell_aep->ae_u.gui.fontset != NOFONTSET)
-		    new_en.ae_u.gui.fontset = spell_aep->ae_u.gui.fontset;
+		if (prim_aep->ae_u.gui.fontset != NOFONTSET)
+		    new_en.ae_u.gui.fontset = prim_aep->ae_u.gui.fontset;
 # endif
 	    }
 	}
@@ -2777,37 +2777,37 @@ hl_combine_attr(int char_attr, int prim_attr)
 		new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, prim_attr);
 	else
 	{
-	    spell_aep = syn_cterm_attr2entry(prim_attr);
-	    if (spell_aep != NULL)
+	    prim_aep = syn_cterm_attr2entry(prim_attr);
+	    if (prim_aep != NULL)
 	    {
 		new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr,
-							   spell_aep->ae_attr);
-		if (spell_aep->ae_u.cterm.fg_color > 0)
-		    new_en.ae_u.cterm.fg_color = spell_aep->ae_u.cterm.fg_color;
-		if (spell_aep->ae_u.cterm.bg_color > 0)
-		    new_en.ae_u.cterm.bg_color = spell_aep->ae_u.cterm.bg_color;
-		if (spell_aep->ae_u.cterm.ul_color > 0)
-		    new_en.ae_u.cterm.ul_color = spell_aep->ae_u.cterm.ul_color;
+							   prim_aep->ae_attr);
+		if (prim_aep->ae_u.cterm.fg_color > 0)
+		    new_en.ae_u.cterm.fg_color = prim_aep->ae_u.cterm.fg_color;
+		if (prim_aep->ae_u.cterm.bg_color > 0)
+		    new_en.ae_u.cterm.bg_color = prim_aep->ae_u.cterm.bg_color;
+		if (prim_aep->ae_u.cterm.ul_color > 0)
+		    new_en.ae_u.cterm.ul_color = prim_aep->ae_u.cterm.ul_color;
 #ifdef FEAT_TERMGUICOLORS
 		// If both fg and bg are not set fall back to cterm colors.
 		// Helps for SpellBad which uses undercurl in the GUI.
-		if (COLOR_INVALID(spell_aep->ae_u.cterm.fg_rgb)
-			&& COLOR_INVALID(spell_aep->ae_u.cterm.bg_rgb))
+		if (COLOR_INVALID(prim_aep->ae_u.cterm.fg_rgb)
+			&& COLOR_INVALID(prim_aep->ae_u.cterm.bg_rgb))
 		{
-		    if (spell_aep->ae_u.cterm.fg_color > 0)
+		    if (prim_aep->ae_u.cterm.fg_color > 0)
 			new_en.ae_u.cterm.fg_rgb = CTERMCOLOR;
-		    if (spell_aep->ae_u.cterm.bg_color > 0)
+		    if (prim_aep->ae_u.cterm.bg_color > 0)
 			new_en.ae_u.cterm.bg_rgb = CTERMCOLOR;
 		}
 		else
 		{
-		    if (spell_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
-			new_en.ae_u.cterm.fg_rgb = spell_aep->ae_u.cterm.fg_rgb;
-		    if (spell_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
-			new_en.ae_u.cterm.bg_rgb = spell_aep->ae_u.cterm.bg_rgb;
+		    if (prim_aep->ae_u.cterm.fg_rgb != INVALCOLOR)
+			new_en.ae_u.cterm.fg_rgb = prim_aep->ae_u.cterm.fg_rgb;
+		    if (prim_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
+			new_en.ae_u.cterm.bg_rgb = prim_aep->ae_u.cterm.bg_rgb;
 		}
-		if (spell_aep->ae_u.cterm.ul_rgb != INVALCOLOR)
-		    new_en.ae_u.cterm.ul_rgb = spell_aep->ae_u.cterm.ul_rgb;
+		if (prim_aep->ae_u.cterm.ul_rgb != INVALCOLOR)
+		    new_en.ae_u.cterm.ul_rgb = prim_aep->ae_u.cterm.ul_rgb;
 #endif
 	    }
 	}
@@ -2829,14 +2829,14 @@ hl_combine_attr(int char_attr, int prim_attr)
 	new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, prim_attr);
     else
     {
-	spell_aep = syn_term_attr2entry(prim_attr);
-	if (spell_aep != NULL)
+	prim_aep = syn_term_attr2entry(prim_attr);
+	if (prim_aep != NULL)
 	{
-	    new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, spell_aep->ae_attr);
-	    if (spell_aep->ae_u.term.start != NULL)
+	    new_en.ae_attr = ATTR_COMBINE(new_en.ae_attr, prim_aep->ae_attr);
+	    if (prim_aep->ae_u.term.start != NULL)
 	    {
-		new_en.ae_u.term.start = spell_aep->ae_u.term.start;
-		new_en.ae_u.term.stop = spell_aep->ae_u.term.stop;
+		new_en.ae_u.term.start = prim_aep->ae_u.term.start;
+		new_en.ae_u.term.stop = prim_aep->ae_u.term.stop;
 	    }
 	}
     }
