@@ -6814,6 +6814,7 @@ indexof_eval_expr(typval_T *expr)
 	return FALSE;
 
     found = tv_get_bool_chk(&newtv, &error);
+    clear_tv(&newtv);
 
     return error ? FALSE : found;
 }
@@ -6864,6 +6865,7 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 {
     listitem_T	*item;
     long	idx = 0;
+    int		found;
 
     if (l == NULL)
 	return -1;
@@ -6888,7 +6890,10 @@ indexof_list(list_T *l, long startidx, typval_T *expr)
 	set_vim_var_nr(VV_KEY, idx);
 	copy_tv(&item->li_tv, get_vim_var_tv(VV_VAL));
 
-	if (indexof_eval_expr(expr))
+	found = indexof_eval_expr(expr);
+	clear_tv(get_vim_var_tv(VV_VAL));
+
+	if (found)
 	    return idx;
     }
 

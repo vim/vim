@@ -2074,10 +2074,36 @@ def Test_indexof()
   var b = 0zdeadbeef
   indexof(b, "v:val == 0xef")->assert_equal(3)
 
-  def TestIdx(k: number, v: dict<any>): bool
+  def TestIdx1(k: number, v: dict<any>): bool
     return v.color == 'blue'
   enddef
-  indexof(l, TestIdx)->assert_equal(1)
+  indexof(l, TestIdx1)->assert_equal(1)
+
+  var lines =<< trim END
+    def TestIdx(v: dict<any>): bool
+      return v.color == 'blue'
+    enddef
+
+    indexof([{color: "red"}], TestIdx)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E176: Invalid number of arguments', 'E118: Too many arguments for function'])
+
+  lines =<< trim END
+    def TestIdx(k: number, v: dict<any>)
+    enddef
+
+    indexof([{color: "red"}], TestIdx)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?any): bool', 'E1031: Cannot use void value'])
+
+  lines =<< trim END
+    def TestIdx(k: number, v: dict<any>): string
+      return "abc"
+    enddef
+
+    indexof([{color: "red"}], TestIdx)
+  END
+  v9.CheckDefAndScriptFailure(lines, ['E1013: Argument 2: type mismatch, expected func(?number, ?any): bool', 'E1135: Using a String as a Bool'])
 enddef
 
 def Test_input()
