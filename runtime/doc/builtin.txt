@@ -291,6 +291,8 @@ iconv({expr}, {from}, {to})	String	convert encoding of {expr}
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
+indexof({object}, {expr} [, {opts}]])
+				Number	index in {object} returned by {expr}
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
 inputdialog({prompt} [, {text} [, {cancelreturn}]])
@@ -4750,6 +4752,44 @@ index({object}, {expr} [, {start} [, {ic}]])			*index()*
 
 <		Can also be used as a |method|: >
 			GetObject()->index(what)
+
+indexof({object}, {expr} [, {opt}])			*indexof()*
+		{object} must be a |List| or a |Blob|.
+		If {object} is a |List|, evaluate {expr} for each item in the
+		List until the expression returns v:true and return the index
+		of the item.
+
+		If {object} is a |Blob| evaluate {expr} for each byte in the
+		Blob until the expression returns v:true and return the index
+		of the byte.
+
+		{expr} must be a |string| or |Funcref|.
+
+		If {expr} is a |string|: If {object} is a |List|, inside
+		{expr} |v:key| has the index of the current List item and
+		|v:val| has the value of the item.  If {object} is a |Blob|,
+		inside {expr} |v:key| has the index of the current byte and
+		|v:val| has the byte value.
+
+		If {expr} is a |Funcref| it must take two arguments:
+			1. the key or the index of the current item.
+			2. the value of the current item.
+		The function must return |TRUE| if the item is found and the
+		search should stop.
+
+		The optional argument {opt} is a Dict and supports the
+		following items:
+		    start	start evaluating {expr} at the item with index
+				{start} (may be negative for an item relative
+				to the end).
+		Returns -1 when {expr} evaluates to v:false for all the items.
+		Example: >
+			:let l = [#{n: 10}, #{n: 20}, #{n: 30]]
+			:let idx = indexof(l, "v:val.n == 20")
+			:let idx = indexof(l, {i, v -> v.n == 30})
+
+<		Can also be used as a |method|: >
+			mylist->indexof(expr)
 
 input({prompt} [, {text} [, {completion}]])		*input()*
 		The result is a String, which is whatever the user typed on

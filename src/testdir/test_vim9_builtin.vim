@@ -2066,6 +2066,13 @@ def Test_index()
   v9.CheckDefAndScriptFailure(['index(0z1020, 10, 1, 2)'], ['E1013: Argument 4: type mismatch, expected bool but got number', 'E1212: Bool required for argument 4'])
 enddef
 
+def Test_indexof()
+  var l = [{color: 'red'}, {color: 'blue'}, {color: 'green'}]
+  indexof(l, (i, v) => v.color == 'green')->assert_equal(2)
+  var b = 0zdeadbeef
+  indexof(b, "v:val == 0xef")->assert_equal(3)
+enddef
+
 def Test_input()
   v9.CheckDefAndScriptFailure(['input(5)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['input(["a"])'], ['E1013: Argument 1: type mismatch, expected string but got list<string>', 'E1174: String required for argument 1'])

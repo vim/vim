@@ -800,6 +800,8 @@ List manipulation:					*list-functions*
 	string()		String representation of a List
 	call()			call a function with List as arguments
 	index()			index of a value in a List
+	indexof()		call a function to get the index of a value in
+				a List or Blob
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List

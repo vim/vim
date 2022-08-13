@@ -79,6 +79,7 @@ static void f_hlID(typval_T *argvars, typval_T *rettv);
 static void f_hlexists(typval_T *argvars, typval_T *rettv);
 static void f_hostname(typval_T *argvars, typval_T *rettv);
 static void f_index(typval_T *argvars, typval_T *rettv);
+static void f_indexof(typval_T *argvars, typval_T *rettv);
 static void f_input(typval_T *argvars, typval_T *rettv);
 static void f_inputdialog(typval_T *argvars, typval_T *rettv);
 static void f_inputlist(typval_T *argvars, typval_T *rettv);
@@ -1037,6 +1038,7 @@ static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, NULL};
 static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg25_globpath[] = {arg_string, arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg24_index[] = {arg_list_or_blob, arg_item_of_prev, arg_number, arg_bool};
+static argcheck_T arg23_index[] = {arg_list_or_blob, arg_filter_func, arg_dict_any};
 static argcheck_T arg23_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
 static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
@@ -1995,6 +1997,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_indent},
     {"index",		2, 4, FEARG_1,	    arg24_index,
 			ret_number,	    f_index},
+    {"indexof",		2, 3, FEARG_1,	    arg23_index,
+			ret_number,	    f_indexof},
     {"input",		1, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_input},
     {"inputdialog",	1, 3, FEARG_1,	    arg3_string,
@@ -6787,6 +6791,136 @@ f_index(typval_T *argvars, typval_T *rettv)
 		break;
 	    }
     }
+}
+
+/*
+ * Evaluate 'expr' with the v:key and v:val arguments and return the result.
+ * The expression is expected to return a boolean value.  The caller should set
+ * the VV_KEY and VV_VAL vim variables before calling this function.
+ */
+    static int
+indexof_eval_expr(typval_T *expr)
+{
+    typval_T	argv[3];
+    typval_T	newtv;
+    varnumber_T	found;
+    int		error = FALSE;
+
+    argv[0] = *get_vim_var_tv(VV_KEY);
+    argv[1] = *get_vim_var_tv(VV_VAL);
+    newtv.v_type = VAR_UNKNOWN;
+
+    if (eval_expr_typval(expr, argv, 2, &newtv) == FAIL)
+	return FALSE;
+
+    found = tv_get_bool_chk(&newtv, &error);
+
+    return error ? FALSE : found;
+}
+
+/*
+ * "indexof()" function
+ */
+    static void
+f_indexof(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    listitem_T	*item;
+    blob_T	*b;
+    long	startidx = 0;
+    long	idx = 0;
+    typval_T	save_val;
+    typval_T	save_key;
+    int		save_did_emsg;
+
+    rettv->vval.v_number = -1;
+
+    if (check_for_list_or_blob_arg(argvars, 0) == FAIL
+	    || check_for_string_or_func_arg(argvars, 1) == FAIL
+	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
+	return;
+
+    if ((argvars[1].v_type == VAR_STRING && argvars[1].vval.v_string == NULL)
+	    || (argvars[1].v_type == VAR_FUNC
+		&& argvars[1].vval.v_partial == NULL))
+	return;
+
+    if (argvars[2].v_type == VAR_DICT)
+	startidx = dict_get_number_def(argvars[2].vval.v_dict, "startidx", 0);
+
+    prepare_vimvar(VV_VAL, &save_val);
+    prepare_vimvar(VV_KEY, &save_key);
+
+    // We reset "did_emsg" to be able to detect whether an error occurred
+    // during evaluation of the expression.
+    save_did_emsg = did_emsg;
+    did_emsg = FALSE;
+
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	b = argvars[0].vval.v_blob;
+	if (b == NULL)
+	    goto theend;
+	if (startidx < 0)
+	{
+	    startidx = blob_len(b) + startidx;
+	    if (startidx < 0)
+		startidx = 0;
+	}
+
+	set_vim_var_type(VV_KEY, VAR_NUMBER);
+	set_vim_var_type(VV_VAL, VAR_NUMBER);
+
+	for (idx = startidx; idx < blob_len(b); ++idx)
+	{
+	    set_vim_var_nr(VV_KEY, idx);
+	    set_vim_var_nr(VV_VAL, blob_get(b, idx));
+
+	    if (indexof_eval_expr(&argvars[1]))
+	    {
+		rettv->vval.v_number = idx;
+		break;
+	    }
+	}
+    }
+    else
+    {
+	l = argvars[0].vval.v_list;
+	if (l == NULL)
+	    goto theend;
+
+	CHECK_LIST_MATERIALIZE(l);
+
+	if (startidx == 0)
+	    item = l->lv_first;
+	else
+	{
+	    // Start at specified item.  Use the cached index that list_find()
+	    // sets, so that a negative number also works.
+	    item = list_find(l, startidx);
+	    if (item != NULL)
+		idx = l->lv_u.mat.lv_idx;
+	}
+
+	set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+	for ( ; item != NULL; item = item->li_next, ++idx)
+	{
+	    set_vim_var_nr(VV_KEY, idx);
+	    copy_tv(&item->li_tv, get_vim_var_tv(VV_VAL));
+
+	    if (indexof_eval_expr(&argvars[1]))
+	    {
+		rettv->vval.v_number = idx;
+		break;
+	    }
+	}
+    }
+
+theend:
+    restore_vimvar(VV_KEY, &save_key);
+    restore_vimvar(VV_VAL, &save_val);
+    did_emsg |= save_did_emsg;
 }
 
 static int inputsecret_flag = 0;
