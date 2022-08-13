@@ -1638,7 +1638,8 @@ win_line(
 						       & TP_FLAG_ALIGN_BELOW)))
 			      : bcol >= text_props[text_prop_next].tp_col - 1))
 		{
-		    if (bcol <= text_props[text_prop_next].tp_col - 1
+		    if (text_props[text_prop_next].tp_col == MAXCOL
+			    || bcol <= text_props[text_prop_next].tp_col - 1
 					   + text_props[text_prop_next].tp_len)
 			text_prop_idxs[text_props_active++] = text_prop_next;
 		    ++text_prop_next;
@@ -2989,7 +2990,7 @@ win_line(
 	{
 #ifdef LINE_ATTR
 	    if (line_attr)
-		wlv.char_attr = hl_combine_attr(extra_attr, line_attr);
+		wlv.char_attr = hl_combine_attr(line_attr, extra_attr);
 	    else
 #endif
 		wlv.char_attr = extra_attr;

@@ -2756,12 +2756,13 @@ func Test_props_with_text_after_nowrap()
 
       call prop_add(3, 0, #{type: 'anotherprop', text: 'right aligned', text_align: 'right'})
       call prop_add(3, 0, #{type: 'anotherprop', text: 'also right aligned', text_align: 'right'})
+      hi CursorLine ctermbg=lightgrey
   END
   call writefile(lines, 'XscriptPropsAfterNowrap')
   let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 12, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_1', {})
 
-  call term_sendkeys(buf, ":set signcolumn=yes foldcolumn=3\<CR>")
+  call term_sendkeys(buf, ":set signcolumn=yes foldcolumn=3 cursorline\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_2', {})
 
   call term_sendkeys(buf, "j")
