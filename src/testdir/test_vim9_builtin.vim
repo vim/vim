@@ -2071,6 +2071,11 @@ def Test_indexof()
   indexof(l, (i, v) => v.color == 'green')->assert_equal(2)
   var b = 0zdeadbeef
   indexof(b, "v:val == 0xef")->assert_equal(3)
+
+  def TestIdx(k: number, v: dict<any>): bool
+    return v.color == 'blue'
+  enddef
+  indexof(l, TestIdx)->assert_equal(1)
 enddef
 
 def Test_input()
