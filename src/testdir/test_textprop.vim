@@ -2538,6 +2538,29 @@ func Test_prop_inserts_text_highlight()
   call delete('XscriptPropsWithHighlight')
 endfunc
 
+func Test_props_with_text_right_align_twice()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ["some text some text some text some text", 'line two'])
+      call prop_type_add( 'MyErrorText', #{ highlight: 'ErrorMsg' } )
+      call prop_type_add( 'MyPadding', #{ highlight: 'DiffChange' } )
+      call prop_add( 1, 0, #{ type: 'MyPadding', text: ' nothing here', text_wrap: 'wrap'} )
+      call prop_add( 1, 0, #{ type: 'MyErrorText', text: 'Some error', text_wrap: 'wrap', text_align: 'right' } )
+      call prop_add( 1, 0, #{ type: 'MyErrorText', text: 'Another error', text_wrap: 'wrap', text_align: 'right' } )
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsRightAlign')
+  let buf = RunVimInTerminal('-S XscriptPropsRightAlign', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_prop_right_align_twice_1', {})
+
+  call term_sendkeys(buf, "ggisome more text\<Esc>G$")
+  call VerifyScreenDump(buf, 'Test_prop_right_align_twice_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsRightAlign')
+endfunc
+
 func Test_props_with_text_after()
   CheckRunVimInTerminal
 

@@ -1181,6 +1181,7 @@ win_lbr_chartabsize(
 		    if (tp->tp_col == MAXCOL)
 		    {
 			int below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
+			int right = (tp->tp_flags & TP_FLAG_ALIGN_RIGHT);
 			int wrap = (tp->tp_flags & TP_FLAG_WRAP);
 			int len = (int)STRLEN(p);
 			int n_used = len;
@@ -1193,10 +1194,19 @@ win_lbr_chartabsize(
 			    cells = textprop_size_after_trunc(wp,
 						     below, added, p, &n_used);
 			}
-			// right-aligned does not really matter here, same as
-			// "after"
 			if (below)
 			    cells += wp->w_width - (vcol + size) % wp->w_width;
+			else if (right)
+			{
+			    len = wp->w_width - vcol % wp->w_width;
+			    if (len > cells + size)
+				// add the padding for right-alignment
+				cells = len - size;
+			    else if (len == 0)
+				// padding to right-align in the next line
+				cells += cells > wp->w_width ? 0
+							  :wp->w_width - cells;
+			}
 #ifdef FEAT_LINEBREAK
 			no_sbr = TRUE;  // don't use 'showbreak' now
 #endif
