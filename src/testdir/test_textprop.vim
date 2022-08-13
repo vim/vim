@@ -2743,7 +2743,7 @@ func Test_props_with_text_after_nowrap()
 
   let lines =<< trim END
       set nowrap
-      call setline(1, ['one', 'two', 'three'])
+      call setline(1, ['one', 'two', 'three', 'four'])
       call prop_type_add('belowprop', #{highlight: 'ErrorMsg'})
       call prop_type_add('anotherprop', #{highlight: 'Search'})
       call prop_type_add('someprop', #{highlight: 'DiffChange'})
@@ -2752,14 +2752,20 @@ func Test_props_with_text_after_nowrap()
       call prop_add(2, 0, #{type: 'belowprop', text: 'One More Here', text_align: 'below'})
       call prop_add(1, 0, #{type: 'someprop', text: 'right here', text_align: 'right'})
       call prop_add(1, 0, #{type: 'someprop', text: ' After the text', text_align: 'after'})
-      normal G$
+      normal 3G$
+
+      call prop_add(3, 0, #{type: 'anotherprop', text: 'right aligned', text_align: 'right'})
+      call prop_add(3, 0, #{type: 'anotherprop', text: 'also right aligned', text_align: 'right'})
   END
   call writefile(lines, 'XscriptPropsAfterNowrap')
-  let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 10, cols: 60})
+  let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 12, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_1', {})
 
   call term_sendkeys(buf, ":set signcolumn=yes foldcolumn=3\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_2', {})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_3', {})
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropsAfterNowrap')

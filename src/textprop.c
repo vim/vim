@@ -590,6 +590,8 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 
 /*
  * Return the number of text properties with "below" alignment in line "lnum".
+ * A "right" aligned property also goes below after a "below" or other "right"
+ * aligned property.
  */
     int
 prop_count_below(buf_T *buf, linenr_T lnum)
@@ -599,14 +601,25 @@ prop_count_below(buf_T *buf, linenr_T lnum)
     int		result = 0;
     textprop_T	prop;
     int		i;
+    int		next_right_goes_below = FALSE;
 
     if (count == 0)
 	return 0;
     for (i = 0; i < count; ++i)
     {
 	mch_memmove(&prop, props + i * sizeof(prop), sizeof(prop));
-	if (prop.tp_col == MAXCOL && (prop.tp_flags & TP_FLAG_ALIGN_BELOW))
-	    ++result;
+	if (prop.tp_col == MAXCOL)
+	{
+	    if ((prop.tp_flags & TP_FLAG_ALIGN_BELOW)
+		    || (next_right_goes_below
+				     && (prop.tp_flags & TP_FLAG_ALIGN_RIGHT)))
+	    {
+		next_right_goes_below = TRUE;
+		++result;
+	    }
+	    else if (prop.tp_flags & TP_FLAG_ALIGN_RIGHT)
+		next_right_goes_below = TRUE;
+	}
     }
     return result;
 }
