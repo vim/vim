@@ -1818,6 +1818,14 @@ set_curbuf(buf_T *buf, int action)
     static void
 enter_buffer(buf_T *buf)
 {
+    // when closing the current buffer stop Visual mode
+    if (VIsual_active
+#if defined(EXITFREE)
+	    && !entered_free_all_mem
+#endif
+	    )
+	end_visual_mode();
+
     // Get the buffer in the current window.
     curwin->w_buffer = buf;
     curbuf = buf;
