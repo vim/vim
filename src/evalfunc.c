@@ -6819,16 +6819,89 @@ indexof_eval_expr(typval_T *expr)
 }
 
 /*
+ * Evaluate 'expr' for each byte in the Blob 'b' starting with the byte at
+ * 'startidx' and return the index of the byte where 'expr' is TRUE.  Returns
+ * -1 if 'expr' doesn't evaluate to TRUE for any of the bytes.
+ */
+    static int
+indexof_blob(blob_T *b, long startidx, typval_T *expr)
+{
+    long	idx = 0;
+
+    if (b == NULL)
+	return -1;
+
+    if (startidx < 0)
+    {
+	// negative index: index from the last byte
+	startidx = blob_len(b) + startidx;
+	if (startidx < 0)
+	    startidx = 0;
+    }
+
+    set_vim_var_type(VV_KEY, VAR_NUMBER);
+    set_vim_var_type(VV_VAL, VAR_NUMBER);
+
+    for (idx = startidx; idx < blob_len(b); ++idx)
+    {
+	set_vim_var_nr(VV_KEY, idx);
+	set_vim_var_nr(VV_VAL, blob_get(b, idx));
+
+	if (indexof_eval_expr(expr))
+	    return idx;
+    }
+
+    return -1;
+}
+
+/*
+ * Evaluate 'expr' for each item in the List 'l' starting with the item at
+ * 'startidx' and return the index of the item where 'expr' is TRUE.  Returns
+ * -1 if 'expr' doesn't evaluate to TRUE for any of the items.
+ */
+    static int
+indexof_list(list_T *l, long startidx, typval_T *expr)
+{
+    listitem_T	*item;
+    long	idx = 0;
+
+    if (l == NULL)
+	return -1;
+
+    CHECK_LIST_MATERIALIZE(l);
+
+    if (startidx == 0)
+	item = l->lv_first;
+    else
+    {
+	// Start at specified item.  Use the cached index that list_find()
+	// sets, so that a negative number also works.
+	item = list_find(l, startidx);
+	if (item != NULL)
+	    idx = l->lv_u.mat.lv_idx;
+    }
+
+    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+    for ( ; item != NULL; item = item->li_next, ++idx)
+    {
+	set_vim_var_nr(VV_KEY, idx);
+	copy_tv(&item->li_tv, get_vim_var_tv(VV_VAL));
+
+	if (indexof_eval_expr(expr))
+	    return idx;
+    }
+
+    return -1;
+}
+
+/*
  * "indexof()" function
  */
     static void
 f_indexof(typval_T *argvars, typval_T *rettv)
 {
-    list_T	*l;
-    listitem_T	*item;
-    blob_T	*b;
     long	startidx = 0;
-    long	idx = 0;
     typval_T	save_val;
     typval_T	save_key;
     int		save_did_emsg;
@@ -6857,67 +6930,12 @@ f_indexof(typval_T *argvars, typval_T *rettv)
     did_emsg = FALSE;
 
     if (argvars[0].v_type == VAR_BLOB)
-    {
-	b = argvars[0].vval.v_blob;
-	if (b == NULL)
-	    goto theend;
-	if (startidx < 0)
-	{
-	    startidx = blob_len(b) + startidx;
-	    if (startidx < 0)
-		startidx = 0;
-	}
-
-	set_vim_var_type(VV_KEY, VAR_NUMBER);
-	set_vim_var_type(VV_VAL, VAR_NUMBER);
-
-	for (idx = startidx; idx < blob_len(b); ++idx)
-	{
-	    set_vim_var_nr(VV_KEY, idx);
-	    set_vim_var_nr(VV_VAL, blob_get(b, idx));
-
-	    if (indexof_eval_expr(&argvars[1]))
-	    {
-		rettv->vval.v_number = idx;
-		break;
-	    }
-	}
-    }
+	rettv->vval.v_number = indexof_blob(argvars[0].vval.v_blob, startidx,
+								&argvars[1]);
     else
-    {
-	l = argvars[0].vval.v_list;
-	if (l == NULL)
-	    goto theend;
+	rettv->vval.v_number = indexof_list(argvars[0].vval.v_list, startidx,
+								&argvars[1]);
 
-	CHECK_LIST_MATERIALIZE(l);
-
-	if (startidx == 0)
-	    item = l->lv_first;
-	else
-	{
-	    // Start at specified item.  Use the cached index that list_find()
-	    // sets, so that a negative number also works.
-	    item = list_find(l, startidx);
-	    if (item != NULL)
-		idx = l->lv_u.mat.lv_idx;
-	}
-
-	set_vim_var_type(VV_KEY, VAR_NUMBER);
-
-	for ( ; item != NULL; item = item->li_next, ++idx)
-	{
-	    set_vim_var_nr(VV_KEY, idx);
-	    copy_tv(&item->li_tv, get_vim_var_tv(VV_VAL));
-
-	    if (indexof_eval_expr(&argvars[1]))
-	    {
-		rettv->vval.v_number = idx;
-		break;
-	    }
-	}
-    }
-
-theend:
     restore_vimvar(VV_KEY, &save_key);
     restore_vimvar(VV_VAL, &save_val);
     did_emsg |= save_did_emsg;
