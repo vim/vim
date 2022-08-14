@@ -1692,7 +1692,7 @@ WaitForChar(long msec, int ignore_input)
 		{
 		    // The screen is now messed up, must redraw the command
 		    // line and later all the windows.
-		    redraw_all_later(CLEAR);
+		    redraw_all_later(UPD_CLEAR);
 		    compute_cmdrow();
 		    redrawcmd();
 		}
@@ -6483,7 +6483,7 @@ mch_write(
 	// sequence may be inserted asynchronously.
 	if (len < 0)
 	{
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
 	    return;
 	}
 

@@ -758,7 +758,7 @@ did_set_string_option(
 	    errmsg = e_invalid_argument;
 	// list setting requires a redraw
 	if (curwin->w_briopt_list)
-	    redraw_all_later(NOT_VALID);
+	    redraw_all_later(UPD_NOT_VALID);
     }
 #endif
 
@@ -1121,7 +1121,7 @@ did_set_string_option(
 	    // Redraw needed when switching to/from "mac": a CR in the text
 	    // will be displayed differently.
 	    if (get_fileformat(curbuf) == EOL_MAC || *oldval == 'm')
-		redraw_curbuf_later(NOT_VALID);
+		redraw_curbuf_later(UPD_NOT_VALID);
 	}
     }
 
@@ -1316,7 +1316,7 @@ did_set_string_option(
 		    (void)set_chars_option(wp, local_ptr, TRUE);
 	    }
 
-	    redraw_all_later(NOT_VALID);
+	    redraw_all_later(UPD_NOT_VALID);
 	}
     }
     // local 'listchars'
@@ -1441,7 +1441,7 @@ did_set_string_option(
 	if (varp == &T_ME)
 	{
 	    out_str(T_ME);
-	    redraw_later(CLEAR);
+	    redraw_later(UPD_CLEAR);
 #if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 	    // Since t_me has been set, this probably means that the user
 	    // wants to use this as default colors.  Need to reset default
@@ -1773,7 +1773,7 @@ did_set_string_option(
 	    if (curwin->w_status_height)
 	    {
 		curwin->w_redr_status = TRUE;
-		redraw_later(VALID);
+		redraw_later(UPD_VALID);
 	    }
 	    curbuf->b_help = (curbuf->b_p_bt[0] == 'h');
 	    redraw_titles();
@@ -2581,7 +2581,7 @@ did_set_string_option(
     // redraw
     if ((varp == &p_flp || varp == &(curbuf->b_p_flp))
 	    && curwin->w_briopt_list)
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(UPD_NOT_VALID);
 #endif
 
     if (curwin->w_curswant != MAXCOL

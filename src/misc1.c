@@ -585,8 +585,8 @@ check_status(buf_T *buf)
 	if (wp->w_buffer == buf && wp->w_status_height)
 	{
 	    wp->w_redr_status = TRUE;
-	    if (must_redraw < VALID)
-		must_redraw = VALID;
+	    if (must_redraw < UPD_VALID)
+		must_redraw = UPD_VALID;
 	}
 }
 
@@ -1149,7 +1149,7 @@ vim_beep(unsigned val)
 # endif
 			)
 		    {
-			redraw_later(CLEAR);
+			redraw_later(UPD_CLEAR);
 			update_screen(0);
 			redrawcmd();
 		    }

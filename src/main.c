@@ -686,7 +686,7 @@ vim_main2(void)
 			&& !gui.in_use
 #endif
 					)
-	must_redraw = CLEAR;
+	must_redraw = UPD_CLEAR;
     else
     {
 	screenclear();			// clear screen
@@ -788,7 +788,7 @@ vim_main2(void)
 #endif
 
     RedrawingDisabled = 0;
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     no_wait_return = FALSE;
 
     // 'autochdir' has been postponed
@@ -1412,7 +1412,7 @@ main_loop(
 	    validate_cursor();
 
 	    if (VIsual_active)
-		update_curbuf(INVERTED); // update inverted part
+		update_curbuf(UPD_INVERTED); // update inverted part
 	    else if (must_redraw)
 	    {
 		mch_disable_flush();	// Stop issuing gui_mch_flush().

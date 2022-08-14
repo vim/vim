@@ -1228,7 +1228,7 @@ sigcont_handler SIGDEFARG(sigarg)
 	// back to a sane mode. We should redraw, but we can't really do that
 	// in a signal handler, do a redraw later.
 	after_sigcont();
-	redraw_later(CLEAR);
+	redraw_later(UPD_CLEAR);
 	cursor_on_force();
 	out_flush();
     }

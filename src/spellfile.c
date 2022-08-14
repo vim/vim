@@ -1759,7 +1759,7 @@ spell_reload_one(
 	    if (spell_load_file(fname, NULL, slang, FALSE) == NULL)
 		// reloading failed, clear the language
 		slang_clear(slang);
-	    redraw_all_later(SOME_VALID);
+	    redraw_all_later(UPD_SOME_VALID);
 	    didit = TRUE;
 	}
     }
@@ -6367,7 +6367,7 @@ spell_add_word(
 	if (buf != NULL)
 	    buf_reload(buf, buf->b_orig_mode, FALSE);
 
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
     }
     vim_free(fnamebuf);
 }

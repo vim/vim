@@ -4701,7 +4701,7 @@ ins_up(
 		|| old_topfill != curwin->w_topfill
 #endif
 		)
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	start_arrow(&tpos);
 	can_cindent = TRUE;
     }
@@ -4758,7 +4758,7 @@ ins_down(
 		|| old_topfill != curwin->w_topfill
 #endif
 		)
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	start_arrow(&tpos);
 	can_cindent = TRUE;
     }
@@ -5283,7 +5283,7 @@ ins_ctrl_ey(int tc)
 	    scrolldown_clamp();
 	else
 	    scrollup_clamp();
-	redraw_later(VALID);
+	redraw_later(UPD_VALID);
     }
     else
     {

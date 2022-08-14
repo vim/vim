@@ -395,7 +395,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	    return;
     }
 
-    redraw_buf_later(buf, VALID);
+    redraw_buf_later(buf, UPD_VALID);
 }
 
 /*
@@ -550,7 +550,7 @@ prop_add_common(
 				    start_lnum, end_lnum, start_col, end_col);
     text = NULL;
 
-    redraw_buf_later(buf, VALID);
+    redraw_buf_later(buf, UPD_VALID);
 
 theend:
     vim_free(text);
@@ -909,7 +909,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 	}
     }
     if (did_clear)
-	redraw_buf_later(buf, NOT_VALID);
+	redraw_buf_later(buf, UPD_NOT_VALID);
 }
 
 /*
@@ -1525,7 +1525,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     {
 	changed_line_display_buf(buf);
 	changed_lines_buf(buf, first_changed, last_changed + 1, 0);
-	redraw_buf_later(buf, VALID);
+	redraw_buf_later(buf, UPD_VALID);
     }
 
     if (did_remove_text)

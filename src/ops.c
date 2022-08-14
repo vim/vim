@@ -1358,7 +1358,7 @@ op_tilde(oparg_T *oap)
 
     if (!did_change && oap->is_VIsual)
 	// No change: need to remove the Visual selection
-	redraw_curbuf_later(INVERTED);
+	redraw_curbuf_later(UPD_INVERTED);
 
     if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
@@ -1493,7 +1493,7 @@ op_insert(oparg_T *oap, long count1)
 
     // vis block is still marked. Get rid of it now.
     curwin->w_cursor.lnum = oap->start.lnum;
-    update_screen(INVERTED);
+    update_screen(UPD_INVERTED);
 
     if (oap->block_mode)
     {
@@ -2485,7 +2485,7 @@ op_addsub(
 
 	if (!change_cnt && oap->is_VIsual)
 	    // No change: need to remove the Visual selection
-	    redraw_curbuf_later(INVERTED);
+	    redraw_curbuf_later(UPD_INVERTED);
 
 	// Set '[ mark if something changed. Keep the last end
 	// position from do_addsub().
@@ -3908,7 +3908,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    // make sure redrawing is correct
 		    curwin->w_p_lbr = lbr_saved;
 #endif
-		    redraw_curbuf_later(INVERTED);
+		    redraw_curbuf_later(UPD_INVERTED);
 		}
 	    }
 	}
@@ -3948,7 +3948,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 	    curwin->w_p_lbr = lbr_saved;
 #endif
-	    redraw_curbuf_later(INVERTED);
+	    redraw_curbuf_later(UPD_INVERTED);
 	}
 
 	// If the end of an operator is in column one while oap->motion_type

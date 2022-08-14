@@ -931,13 +931,13 @@ bufselfcmd(
     }
 
     if (flags & FL_UPDATE_CURBUF)
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
     curbuf = savebuf;
     curwin = savewin;
     if (flags & FL_ADJUST_CURSOR)
 	check_cursor();
     if (flags & (FL_UPDATE_SCREEN | FL_UPDATE_CURBUF))
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 
     return err;
 }
@@ -1115,7 +1115,7 @@ winselfcmd(
     curwin = savewin;
     curbuf = savebuf;
     if (flags & FL_UPDATE_SCREEN)
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 
     return err;
 }
@@ -1131,7 +1131,7 @@ commandcmd(
     int		err;
 
     err = tcldoexcommand(interp, objc, objv, 1);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return err;
 }
 
@@ -1145,7 +1145,7 @@ optioncmd(
     int		err;
 
     err = tclsetoption(interp, objc, objv, 1);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return err;
 }
 

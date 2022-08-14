@@ -123,7 +123,7 @@ diff_buf_delete(buf_T *buf)
 		// don't redraw right away, more might change or buffer state
 		// is invalid right now
 		need_diff_redraw = TRUE;
-		redraw_later(VALID);
+		redraw_later(UPD_VALID);
 	    }
 	}
     }
@@ -683,7 +683,7 @@ diff_redraw(
 	if (!wp->w_p_diff || !buf_valid(wp->w_buffer))
 	    continue;
 
-	redraw_win_later(wp, SOME_VALID);
+	redraw_win_later(wp, UPD_SOME_VALID);
 	if (wp != curwin)
 	    wp_other = wp;
 #ifdef FEAT_FOLDING
@@ -1336,7 +1336,7 @@ ex_diffpatch(exarg_T *eap)
 #endif
 
     // patch probably has written over the screen
-    redraw_later(CLEAR);
+    redraw_later(UPD_CLEAR);
 
     // Delete any .orig or .rej file created.
     STRCPY(buf, tmp_new);
@@ -1544,7 +1544,7 @@ diff_win_options(
 
     if (addbuf)
 	diff_buf_add(wp->w_buffer);
-    redraw_win_later(wp, NOT_VALID);
+    redraw_win_later(wp, UPD_NOT_VALID);
 }
 
 /*

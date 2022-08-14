@@ -1138,7 +1138,7 @@ wait_return(int redraw)
     FILE	*save_scriptout;
 
     if (redraw == TRUE)
-	must_redraw = CLEAR;
+	must_redraw = UPD_CLEAR;
 
     // If using ":silent cmd", don't wait for a return.  Also don't set
     // need_wait_return to do it later.
@@ -1362,7 +1362,7 @@ wait_return(int redraw)
 	    && (redraw == TRUE || (msg_scrolled != 0 && redraw != -1)))
     {
 	starttermcap();		    // start termcap before redrawing
-	redraw_later(VALID);
+	redraw_later(UPD_VALID);
     }
 }
 
@@ -2485,8 +2485,8 @@ inc_msg_scrolled(void)
     }
 #endif
     ++msg_scrolled;
-    if (must_redraw < VALID)
-	must_redraw = VALID;
+    if (must_redraw < UPD_VALID)
+	must_redraw = UPD_VALID;
 }
 
 /*

@@ -3038,7 +3038,7 @@ u_undo_end(
 	FOR_ALL_WINDOWS(wp)
 	{
 	    if (wp->w_buffer == curbuf && wp->w_p_cole > 0)
-		redraw_win_later(wp, NOT_VALID);
+		redraw_win_later(wp, UPD_NOT_VALID);
 	}
     }
 #endif

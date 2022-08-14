@@ -391,7 +391,7 @@ do_record(int c)
 	    {
 		// Enable macro indicator temporarily
 		set_option_value((char_u *)"ch", 1L, NULL, 0);
-		update_screen(VALID);
+		update_screen(UPD_VALID);
 
 		changed_cmdheight = TRUE;
 	    }
@@ -427,7 +427,7 @@ do_record(int c)
 	{
 	    // Restore cmdheight
 	    set_option_value((char_u *)"ch", 0L, NULL, 0);
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
 	}
     }
     return retval;

@@ -1628,12 +1628,12 @@ may_adjust_color_count(int val)
 	init_highlight(TRUE, FALSE);
 # ifdef DEBUG_TERMRESPONSE
 	{
-	    int r = redraw_asap(CLEAR);
+	    int r = redraw_asap(UPD_CLEAR);
 
 	    log_tr("Received t_Co, redraw_asap(): %d", r);
 	}
 # else
-	redraw_asap(CLEAR);
+	redraw_asap(UPD_CLEAR);
 # endif
     }
 }
@@ -3551,7 +3551,7 @@ set_shellsize(int width, int height, int mustset)
 		do_check_scrollbind(TRUE);
 	    if (State & MODE_CMDLINE)
 	    {
-		update_screen(NOT_VALID);
+		update_screen(UPD_NOT_VALID);
 		redrawcmdline();
 	    }
 	    else
@@ -3559,10 +3559,10 @@ set_shellsize(int width, int height, int mustset)
 		update_topline();
 		if (pum_visible())
 		{
-		    redraw_later(NOT_VALID);
+		    redraw_later(UPD_NOT_VALID);
 		    ins_compl_show_pum();
 		}
-		update_screen(NOT_VALID);
+		update_screen(UPD_NOT_VALID);
 		if (redrawing())
 		    setcursor();
 	    }
@@ -3920,8 +3920,8 @@ log_tr(const char *fmt, ...)
     now = start;
     profile_end(&now);
     fprintf(fd_tr, "%s: %s ", profile_msg(&now),
-					must_redraw == NOT_VALID ? "NV"
-					: must_redraw == CLEAR ? "CL" : "  ");
+				must_redraw == UPD_NOT_VALID ? "NV"
+				     : must_redraw == UPD_CLEAR ? "CL" : "  ");
     va_start(ap, fmt);
     vfprintf(fd_tr, fmt, ap);
     va_end(ap);
@@ -4624,12 +4624,12 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 	    set_option_value_give_err((char_u *)"ambw", 0L, (char_u *)aw, 0);
 # ifdef DEBUG_TERMRESPONSE
 	    {
-		int r = redraw_asap(CLEAR);
+		int r = redraw_asap(UPD_CLEAR);
 
 		log_tr("set 'ambiwidth', redraw_asap(): %d", r);
 	    }
 # else
-	    redraw_asap(CLEAR);
+	    redraw_asap(UPD_CLEAR);
 # endif
 # ifdef FEAT_EVAL
 	    set_vim_var_string(VV_TERMU7RESP, tp, csi_len);
@@ -5167,7 +5167,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 			    set_option_value_give_err((char_u *)"bg",
 						  0L, (char_u *)new_bg_val, 0);
 			    reset_option_was_set((char_u *)"bg");
-			    redraw_asap(CLEAR);
+			    redraw_asap(UPD_CLEAR);
 			}
 		    }
 # ifdef FEAT_TERMINAL

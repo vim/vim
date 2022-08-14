@@ -719,7 +719,7 @@ leftcol_changed(void)
 
     if (retval)
 	curwin->w_set_curswant = TRUE;
-    redraw_later(NOT_VALID);
+    redraw_later(UPD_NOT_VALID);
     return retval;
 }
 

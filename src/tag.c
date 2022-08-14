@@ -4024,7 +4024,7 @@ jumpto_tag(
 	{
 	    // Return cursor to where we were
 	    validate_cursor();
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    win_enter(curwin_save, TRUE);
 	}
 #endif

@@ -1763,7 +1763,7 @@ ml_recover(int checkext)
 	set_option_value_give_err((char_u *)"key", 0L, buf->b_p_key, OPT_LOCAL);
     }
 #endif
-    redraw_curbuf_later(NOT_VALID);
+    redraw_curbuf_later(UPD_NOT_VALID);
 
 theend:
     vim_free(fname_used);
@@ -3074,8 +3074,6 @@ ml_append_int(
 	 */
 	if (lines_moved)
 	{
-	    /*
-	     */
 	    dp_right->db_txt_start -= data_moved;
 	    dp_right->db_free -= total_moved;
 	    mch_memmove((char *)dp_right + dp_right->db_txt_start,
@@ -3433,7 +3431,7 @@ ml_append_buf(
  * Do not use it after calling ml_replace().
  *
  * Check: The caller of this function should probably also call
- * changed_lines(), unless update_screen(NOT_VALID) is used.
+ * changed_lines(), unless update_screen(UPD_NOT_VALID) is used.
  *
  * return FAIL for failure, OK otherwise
  */
@@ -5145,7 +5143,7 @@ findswapname(
 
 			// pretend screen didn't scroll, need redraw anyway
 			msg_scrolled = 0;
-			redraw_all_later(NOT_VALID);
+			redraw_all_later(UPD_NOT_VALID);
 		    }
 #endif
 

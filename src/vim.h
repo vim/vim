@@ -579,19 +579,19 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #endif
 
 /*
- * flags for update_screen()
- * The higher the value, the higher the priority
+ * Flags for update_screen().
+ * The higher the value, the higher the priority.
  */
-#define VALID_NO_UPDATE		 5  // no new changes, keep the command line if
+#define UPD_VALID_NO_UPDATE	 5  // no new changes, keep the command line if
 				    // possible
-#define VALID			10  // buffer not changed, or changes marked
+#define UPD_VALID		10  // buffer not changed, or changes marked
 				    // with b_mod_*
-#define INVERTED		20  // redisplay inverted part that changed
-#define INVERTED_ALL		25  // redisplay whole inverted part
-#define REDRAW_TOP		30  // display first w_upd_rows screen lines
-#define SOME_VALID		35  // like NOT_VALID but may scroll
-#define NOT_VALID		40  // buffer needs complete redraw
-#define CLEAR			50  // screen messed up, clear it
+#define UPD_INVERTED		20  // redisplay inverted part that changed
+#define UPD_INVERTED_ALL	25  // redisplay whole inverted part
+#define UPD_REDRAW_TOP		30  // display first w_upd_rows screen lines
+#define UPD_SOME_VALID		35  // like UPD_NOT_VALID but may scroll
+#define UPD_NOT_VALID		40  // buffer needs complete redraw
+#define UPD_CLEAR		50  // screen messed up, clear it
 
 // flags for screen_line()
 #define SLF_RIGHTLEFT	1

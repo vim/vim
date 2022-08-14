@@ -397,9 +397,9 @@ finish_incsearch_highlighting(
 	magic_overruled = is_state->magic_overruled_save;
 
 	validate_cursor();	// needed for TAB
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
 	if (call_update_screen)
-	    update_screen(SOME_VALID);
+	    update_screen(UPD_SOME_VALID);
     }
 }
 
@@ -473,7 +473,7 @@ may_do_incsearch_highlighting(
     {
 	found = 0;
 	set_no_hlsearch(TRUE); // turn off previous highlight
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
     }
     else
     {
@@ -556,7 +556,7 @@ may_do_incsearch_highlighting(
 	if (empty_pattern(ccline.cmdbuff + skiplen, search_delim)
 							       && !no_hlsearch)
 	{
-	    redraw_all_later(SOME_VALID);
+	    redraw_all_later(UPD_SOME_VALID);
 	    set_no_hlsearch(TRUE);
 	}
 	ccline.cmdbuff[skiplen + patlen] = next_char;
@@ -567,7 +567,7 @@ may_do_incsearch_highlighting(
     if (p_ru && curwin->w_status_height > 0)
 	curwin->w_redr_status = TRUE;
 
-    update_screen(SOME_VALID);
+    update_screen(UPD_SOME_VALID);
     highlight_match = FALSE;
     restore_last_search_pattern();
 
@@ -692,7 +692,7 @@ may_adjust_incsearch_highlighting(
 	validate_cursor();
 	highlight_match = TRUE;
 	save_viewstate(&is_state->old_viewstate);
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 	highlight_match = FALSE;
 	redrawcmdline();
 	curwin->w_cursor = is_state->match_end;
@@ -1623,7 +1623,7 @@ getcmdline_int(
 	made_cmdheight_nonzero = TRUE;
 	lastwin->w_p_so = 0;
 	set_option_value((char_u *)"ch", 1L, NULL, 0);
-	update_screen(VALID);                 // redraw the screen NOW
+	update_screen(UPD_VALID);                 // redraw the screen NOW
 	made_cmdheight_nonzero = FALSE;
 	lastwin->w_p_so = save_so;
     }
@@ -2616,7 +2616,7 @@ theend:
 	    made_cmdheight_nonzero = TRUE;
 	    set_option_value((char_u *)"ch", 0L, NULL, 0);
 	    // Redraw is needed for command line completion
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
 	    made_cmdheight_nonzero = FALSE;
 	}
 
@@ -4541,7 +4541,7 @@ open_cmdwin(void)
     curwin->w_cursor.col = ccline.cmdpos;
     changed_line_abv_curs();
     invalidate_botline();
-    redraw_later(SOME_VALID);
+    redraw_later(UPD_SOME_VALID);
 
     // No Ex mode here!
     exmode_active = 0;

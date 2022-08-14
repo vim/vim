@@ -406,7 +406,7 @@ popup_handle_scrollbar_click(win_T *wp, int row, int col)
 		}
 	    }
 	    popup_set_firstline(wp);
-	    redraw_win_later(wp, NOT_VALID);
+	    redraw_win_later(wp, UPD_NOT_VALID);
 	}
     }
 }
@@ -674,7 +674,7 @@ popup_highlight_curline(win_T *wp)
 
 	sign_place(&sign_id, (char_u *)"PopUpMenu", sign_name,
 			       wp->w_buffer, wp->w_cursor.lnum, SIGN_DEF_PRIO);
-	redraw_win_later(wp, NOT_VALID);
+	redraw_win_later(wp, UPD_NOT_VALID);
     }
     else
 	sign_undefine_by_name(sign_name, FALSE);
@@ -1223,7 +1223,7 @@ popup_adjust_position(win_T *wp)
 	    {
 		wp->w_popup_flags |= POPF_HIDDEN;
 		if (win_valid(wp->w_popup_prop_win))
-		    redraw_win_later(wp->w_popup_prop_win, SOME_VALID);
+		    redraw_win_later(wp->w_popup_prop_win, UPD_SOME_VALID);
 	    }
 	    return;
 	}
@@ -1636,7 +1636,7 @@ popup_adjust_position(win_T *wp)
 	    || org_width != wp->w_width
 	    || org_height != wp->w_height)
     {
-	redraw_win_later(wp, NOT_VALID);
+	redraw_win_later(wp, UPD_NOT_VALID);
 	if (wp->w_popup_flags & POPF_ON_CMDLINE)
 	    clear_cmdline = TRUE;
 	popup_mask_refresh = TRUE;
@@ -2211,7 +2211,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     wp->w_vsep_width = 0;
 
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     popup_mask_refresh = TRUE;
 
 #ifdef FEAT_TERMINAL
@@ -2640,7 +2640,7 @@ popup_hide(win_T *wp)
     {
 	wp->w_popup_flags |= POPF_HIDDEN;
 	// Do not decrement b_nwindows, we still reference the buffer.
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(UPD_NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
 }
@@ -2672,7 +2672,7 @@ popup_show(win_T *wp)
     if ((wp->w_popup_flags & POPF_HIDDEN) != 0)
     {
 	wp->w_popup_flags &= ~POPF_HIDDEN;
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(UPD_NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
 }
@@ -2725,7 +2725,7 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 	else
 	{
 	    popup_set_buffer_text(wp->w_buffer, argvars[1]);
-	    redraw_win_later(wp, NOT_VALID);
+	    redraw_win_later(wp, UPD_NOT_VALID);
 	    popup_adjust_position(wp);
 	}
     }
@@ -2740,7 +2740,7 @@ popup_free(win_T *wp)
 	clear_cmdline = TRUE;
     win_free_popup(wp);
 
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     popup_mask_refresh = TRUE;
 }
 
@@ -2919,7 +2919,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     apply_options(wp, dict, FALSE);
 
     if (old_firstline != wp->w_firstline)
-	redraw_win_later(wp, NOT_VALID);
+	redraw_win_later(wp, UPD_NOT_VALID);
     popup_adjust_position(wp);
 }
 
@@ -3675,9 +3675,9 @@ may_update_popup_mask(int type)
     int		redrawing_all_win;
 
     // Need to recompute when switching tabs.
-    // Also recompute when the type is CLEAR or NOT_VALID, something basic
-    // (such as the screen size) must have changed.
-    if (popup_mask_tab != curtab || type >= NOT_VALID)
+    // Also recompute when the type is UPD_CLEAR or UPD_NOT_VALID, something
+    // basic (such as the screen size) must have changed.
+    if (popup_mask_tab != curtab || type >= UPD_NOT_VALID)
     {
 	popup_mask_refresh = TRUE;
 	redraw_all_popups = TRUE;
@@ -3709,7 +3709,7 @@ may_update_popup_mask(int type)
     // compare with "popup_mask" to see what changed.
     redrawing_all_win = TRUE;
     FOR_ALL_WINDOWS(wp)
-	if (wp->w_redr_type < SOME_VALID)
+	if (wp->w_redr_type < UPD_SOME_VALID)
 	    redrawing_all_win = FALSE;
     if (redrawing_all_win)
 	mask = popup_mask;
@@ -3796,7 +3796,7 @@ may_update_popup_mask(int type)
 #if defined(FEAT_TERMINAL)
 			    // A terminal window needs to be redrawn.
 			    if (bt_terminal(wp->w_buffer))
-				redraw_win_later(wp, NOT_VALID);
+				redraw_win_later(wp, UPD_NOT_VALID);
 			    else
 #endif
 			    {
@@ -4454,7 +4454,7 @@ popup_set_title(win_T *wp)
 	if (wp->w_popup_title != NULL)
 	    vim_snprintf((char *)wp->w_popup_title, len, " %s ",
 							wp->w_buffer->b_fname);
-	redraw_win_later(wp, VALID);
+	redraw_win_later(wp, UPD_VALID);
     }
 }
 

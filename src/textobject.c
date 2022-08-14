@@ -740,7 +740,7 @@ current_word(
 	{
 	    // should do something when inclusive == FALSE !
 	    VIsual = start_pos;
-	    redraw_curbuf_later(INVERTED);	// update the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// update the inversion
 	}
 	else
 	{
@@ -1010,7 +1010,7 @@ extend:
 	VIsual = start_pos;
 	VIsual_mode = 'v';
 	redraw_cmdline = TRUE;		// show mode later
-	redraw_curbuf_later(INVERTED);	// update the inversion
+	redraw_curbuf_later(UPD_INVERTED);	// update the inversion
     }
     else
     {
@@ -1167,7 +1167,7 @@ current_block(
 	    inc(&curwin->w_cursor);	// include the line break
 	VIsual = start_pos;
 	VIsual_mode = 'v';
-	redraw_curbuf_later(INVERTED);	// update the inversion
+	redraw_curbuf_later(UPD_INVERTED);	// update the inversion
 	showmode();
     }
     else
@@ -1447,7 +1447,7 @@ again:
 	    inc_cursor();
 	VIsual = start_pos;
 	VIsual_mode = 'v';
-	redraw_curbuf_later(INVERTED);	// update the inversion
+	redraw_curbuf_later(UPD_INVERTED);	// update the inversion
 	showmode();
     }
     else
@@ -1630,7 +1630,7 @@ extend:
 	    VIsual.col = 0;
 	}
 	VIsual_mode = 'V';
-	redraw_curbuf_later(INVERTED);	// update the inversion
+	redraw_curbuf_later(UPD_INVERTED);	// update the inversion
 	showmode();
     }
     else
@@ -1933,7 +1933,7 @@ current_quote(
 				|| line[VIsual.col - 1] != quotechar)))))
 	{
 	    VIsual = curwin->w_cursor;
-	    redraw_curbuf_later(INVERTED);
+	    redraw_curbuf_later(UPD_INVERTED);
 	}
     }
     else

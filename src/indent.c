@@ -1132,7 +1132,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
 		oap->is_VIsual ? start_lnum + oap->line_count :
 		last_changed + 1, 0L);
     else if (oap->is_VIsual)
-	redraw_curbuf_later(INVERTED);
+	redraw_curbuf_later(UPD_INVERTED);
 
     if (oap->line_count > p_report)
     {
@@ -1830,10 +1830,10 @@ ex_retab(exarg_T *eap)
 	&& tabstop_eq(curbuf->b_p_vts_array, new_vts_array))
 	; // not changed
     else
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
 #else
     if (curbuf->b_p_ts != new_ts)
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
 #endif
     if (first_line != 0)
 	changed_lines(first_line, 0, last_line + 1, 0L);

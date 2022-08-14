@@ -559,8 +559,8 @@ changed_common(
 	    linenr_T last = lnume + xtra - 1;  // last line after the change
 #endif
 	    // Mark this window to be redrawn later.
-	    if (wp->w_redr_type < VALID)
-		wp->w_redr_type = VALID;
+	    if (wp->w_redr_type < UPD_VALID)
+		wp->w_redr_type = UPD_VALID;
 
 	    // Check if a change in the buffer has invalidated the cached
 	    // values for the cursor.
@@ -648,18 +648,18 @@ changed_common(
 	    if (wp->w_p_rnu && xtra != 0)
 	    {
 		wp->w_last_cursor_lnum_rnu = 0;
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 	    }
 #ifdef FEAT_SYN_HL
 	    // Cursor line highlighting probably need to be updated with
-	    // "VALID" if it's below the change.
+	    // "UPD_VALID" if it's below the change.
 	    // If the cursor line is inside the change we need to redraw more.
 	    if (wp->w_p_cul)
 	    {
 		if (xtra == 0)
-		    redraw_win_later(wp, VALID);
+		    redraw_win_later(wp, UPD_VALID);
 		else if (lnum <= wp->w_last_cursorline)
-		    redraw_win_later(wp, SOME_VALID);
+		    redraw_win_later(wp, UPD_SOME_VALID);
 	    }
 #endif
 	}
@@ -671,8 +671,8 @@ changed_common(
 
     // Call update_screen() later, which checks out what needs to be redrawn,
     // since it notices b_mod_set and then uses b_mod_*.
-    if (must_redraw < VALID)
-	must_redraw = VALID;
+    if (must_redraw < UPD_VALID)
+	must_redraw = UPD_VALID;
 
     // when the cursor line is changed always trigger CursorMoved
     if (lnum <= curwin->w_cursor.lnum
@@ -724,7 +724,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_diff && wp != curwin)
 	    {
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 		wlnum = diff_lnum_win(lnum, wp);
 		if (wlnum > 0)
 		    changedOneline(wp->w_buffer, wlnum);
@@ -869,7 +869,7 @@ changed_lines(
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_diff && wp != curwin)
 	    {
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 		wlnum = diff_lnum_win(lnum, wp);
 		if (wlnum > 0)
 		    changed_lines_buf(wp->w_buffer, wlnum,

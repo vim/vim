@@ -551,7 +551,7 @@ do_exmode(
 #endif
     --RedrawingDisabled;
     --no_wait_return;
-    update_screen(CLEAR);
+    update_screen(UPD_CLEAR);
     need_wait_return = FALSE;
     msg_scroll = save_msg_scroll;
 }
@@ -5777,7 +5777,7 @@ ex_colorscheme(exarg_T *eap)
     else if (has_vtp_working())
     {
 	// background color change requires clear + redraw
-	update_screen(CLEAR);
+	update_screen(UPD_CLEAR);
 	redrawcmd();
     }
 #endif
@@ -7116,7 +7116,7 @@ do_exedit(
 #ifdef FEAT_GUI
 		hold_gui_events = 0;
 #endif
-		must_redraw = CLEAR;
+		must_redraw = UPD_CLEAR;
 		pending_exmode_active = TRUE;
 
 		main_loop(FALSE, TRUE);
@@ -7342,7 +7342,7 @@ ex_syncbind(exarg_T *eap UNUSED)
 	    else
 		scrolldown(-y, TRUE);
 	    curwin->w_scbind_pos = topline;
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    cursor_correct();
 	    curwin->w_redr_status = TRUE;
 	}
@@ -7438,7 +7438,7 @@ ex_read(exarg_T *eap)
 		    deleted_lines_mark(lnum, 1L);
 		}
 	    }
-	    redraw_curbuf_later(VALID);
+	    redraw_curbuf_later(UPD_VALID);
 	}
     }
 }
@@ -8370,7 +8370,7 @@ ex_redraw(exarg_T *eap)
     p_lz = FALSE;
     validate_cursor();
     update_topline();
-    update_screen(eap->forceit ? CLEAR : VIsual_active ? INVERTED : 0);
+    update_screen(eap->forceit ? UPD_CLEAR : VIsual_active ? UPD_INVERTED : 0);
     if (need_maketitle)
 	maketitle();
 #if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
@@ -8414,7 +8414,7 @@ ex_redrawstatus(exarg_T *eap UNUSED)
 	status_redraw_all();
     else
 	status_redraw_curbuf();
-    update_screen(VIsual_active ? INVERTED : 0);
+    update_screen(VIsual_active ? UPD_INVERTED : 0);
     RedrawingDisabled = r;
     p_lz = p;
     out_flush();
@@ -8937,7 +8937,7 @@ ex_pedit(exarg_T *eap)
     {
 	// Return cursor to where we were
 	validate_cursor();
-	redraw_later(VALID);
+	redraw_later(UPD_VALID);
 	win_enter(curwin_save, TRUE);
     }
 # ifdef FEAT_PROP_POPUP
@@ -9685,7 +9685,7 @@ set_no_hlsearch(int flag)
 ex_nohlsearch(exarg_T *eap UNUSED)
 {
     set_no_hlsearch(TRUE);
-    redraw_all_later(SOME_VALID);
+    redraw_all_later(UPD_SOME_VALID);
 }
 #endif
 

@@ -2025,8 +2025,10 @@ listdigraphs(int use_headers)
 	ui_breakcheck();
 	++dp;
     }
-    must_redraw = CLEAR;    // clear screen, because some digraphs may be
-			    // wrong, in which case we messed up ScreenLines
+
+    // clear screen, because some digraphs may be wrong, in which case we
+    // messed up ScreenLines
+    must_redraw = UPD_CLEAR;
 }
 
     static void

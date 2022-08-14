@@ -248,7 +248,7 @@ insert_sign(
 	    // column for signs.
 	    if (buf->b_signlist == NULL)
 	    {
-		redraw_buf_later(buf, NOT_VALID);
+		redraw_buf_later(buf, UPD_NOT_VALID);
 		changed_line_abv_curs();
 	    }
 
@@ -616,7 +616,7 @@ buf_delsign(
     // sign columns no longer shows.  And the 'signcolumn' may be hidden.
     if (buf->b_signlist == NULL)
     {
-	redraw_buf_later(buf, NOT_VALID);
+	redraw_buf_later(buf, UPD_NOT_VALID);
 	changed_line_abv_curs();
     }
 
@@ -757,7 +757,7 @@ buf_delete_signs(buf_T *buf, char_u *group)
     // sign column. Not when curwin is NULL (this means we're exiting).
     if (buf->b_signlist != NULL && curwin != NULL)
     {
-	redraw_buf_later(buf, NOT_VALID);
+	redraw_buf_later(buf, UPD_NOT_VALID);
 	changed_line_abv_curs();
     }
 
@@ -1073,7 +1073,7 @@ sign_define_by_name(
 	// non-empty sign list.
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_buffer->b_signlist != NULL)
-		redraw_buf_later(wp->w_buffer, NOT_VALID);
+		redraw_buf_later(wp->w_buffer, UPD_NOT_VALID);
     }
 
     // set values for a defined sign.
@@ -1243,7 +1243,7 @@ sign_unplace(int sign_id, char_u *sign_group, buf_T *buf, linenr_T atlnum)
     if (sign_id == 0)
     {
 	// Delete all the signs in the specified buffer
-	redraw_buf_later(buf, NOT_VALID);
+	redraw_buf_later(buf, UPD_NOT_VALID);
 	buf_delete_signs(buf, sign_group);
     }
     else

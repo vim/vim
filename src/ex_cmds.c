@@ -1184,7 +1184,7 @@ do_filter(
 	    vim_free(cmd_buf);
 	    goto error;
 	}
-	redraw_curbuf_later(VALID);
+	redraw_curbuf_later(UPD_VALID);
     }
     read_linecount = curbuf->b_ml.ml_line_count;
 
@@ -3184,7 +3184,7 @@ do_ecmd(
 	update_topline();
 	curwin->w_scbind_pos = curwin->w_topline;
 	*so_ptr = n;
-	redraw_curbuf_later(NOT_VALID);	// redraw this buffer later
+	redraw_curbuf_later(UPD_NOT_VALID);	// redraw this buffer later
     }
 
     if (p_im && (State & MODE_INSERT) == 0)
@@ -4324,9 +4324,9 @@ ex_substitute(exarg_T *eap)
 
 			    update_topline();
 			    validate_cursor();
-			    update_screen(SOME_VALID);
+			    update_screen(UPD_SOME_VALID);
 			    highlight_match = FALSE;
-			    redraw_later(SOME_VALID);
+			    redraw_later(UPD_SOME_VALID);
 
 #ifdef FEAT_FOLDING
 			    curwin->w_p_fen = save_p_fen;
@@ -5270,7 +5270,7 @@ prepare_tagpreview(
 		    popup_hide(wp);
 		// When the popup moves or resizes it may reveal part of
 		// another window.  TODO: can this be done more efficiently?
-		redraw_all_later(NOT_VALID);
+		redraw_all_later(UPD_NOT_VALID);
 	    }
 	}
 	else

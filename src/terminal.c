@@ -1286,7 +1286,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	ch_log(term->tl_job->jv_channel, "updating screen");
 	if (buffer == curbuf && (State & MODE_CMDLINE) == 0)
 	{
-	    update_screen(VALID_NO_UPDATE);
+	    update_screen(UPD_VALID_NO_UPDATE);
 	    // update_screen() can be slow, check the terminal wasn't closed
 	    // already
 	    if (buffer == curbuf && curbuf->b_term != NULL)
@@ -2017,7 +2017,7 @@ may_move_terminal_to_buffer(term_T *term, int redraw)
 		    if (wp->w_topline < min_topline)
 			wp->w_topline = min_topline;
 		}
-		redraw_win_later(wp, NOT_VALID);
+		redraw_win_later(wp, UPD_NOT_VALID);
 	    }
 	}
     }
@@ -2136,10 +2136,10 @@ term_enter_job_mode()
 
     if (term->tl_channel_closed)
 	cleanup_vterm(term);
-    redraw_buf_and_status_later(curbuf, NOT_VALID);
+    redraw_buf_and_status_later(curbuf, UPD_NOT_VALID);
 #ifdef FEAT_PROP_POPUP
     if (WIN_IS_POPUP(curwin))
-	redraw_later(NOT_VALID);
+	redraw_later(UPD_NOT_VALID);
 #endif
 }
 
@@ -3015,7 +3015,7 @@ handle_damage(VTermRect rect, void *user)
     term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, rect.start_row);
     term->tl_dirty_row_end = MAX(term->tl_dirty_row_end, rect.end_row);
     set_dirty_snapshot(term);
-    redraw_buf_later(term->tl_buffer, SOME_VALID);
+    redraw_buf_later(term->tl_buffer, UPD_SOME_VALID);
     return 1;
 }
 
@@ -3068,7 +3068,7 @@ handle_moverect(VTermRect dest, VTermRect src, void *user)
 
     // Note sure if the scrolling will work correctly, let's do a complete
     // redraw later.
-    redraw_buf_later(term->tl_buffer, NOT_VALID);
+    redraw_buf_later(term->tl_buffer, UPD_NOT_VALID);
     return 1;
 }
 
@@ -3222,7 +3222,7 @@ handle_resize(int rows, int cols, void *user)
 		win_setwidth_win(cols, wp);
 	    }
 	}
-	redraw_buf_later(term->tl_buffer, NOT_VALID);
+	redraw_buf_later(term->tl_buffer, UPD_NOT_VALID);
     }
     return 1;
 }
@@ -3511,7 +3511,7 @@ term_after_channel_closed(term_T *term)
 	    ch_log(NULL, "terminal job finished");
     }
 
-    redraw_buf_and_status_later(term->tl_buffer, NOT_VALID);
+    redraw_buf_and_status_later(term->tl_buffer, UPD_NOT_VALID);
     return FALSE;
 }
 
@@ -3816,9 +3816,9 @@ term_update_window(win_T *wp)
     screen = vterm_obtain_screen(vterm);
     state = vterm_obtain_state(vterm);
 
-    // We use NOT_VALID on a resize or scroll, redraw everything then.  With
-    // SOME_VALID only redraw what was marked dirty.
-    if (wp->w_redr_type > SOME_VALID)
+    // We use UPD_NOT_VALID on a resize or scroll, redraw everything then.
+    // With UPD_SOME_VALID only redraw what was marked dirty.
+    if (wp->w_redr_type > UPD_SOME_VALID)
     {
 	term->tl_dirty_row_start = 0;
 	term->tl_dirty_row_end = MAX_ROW;
@@ -3955,7 +3955,7 @@ term_change_in_curbuf(void)
     if (term_is_finished(curbuf) && term->tl_scrollback.ga_len > 0)
     {
 	free_scrollback(term);
-	redraw_buf_later(term->tl_buffer, NOT_VALID);
+	redraw_buf_later(term->tl_buffer, UPD_NOT_VALID);
 
 	// The buffer is now like a normal buffer, it cannot be easily
 	// abandoned when changed.
@@ -5538,7 +5538,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	    while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
 		ml_delete((linenr_T)1);
 	    free_scrollback(curbuf->b_term);
-	    redraw_later(NOT_VALID);
+	    redraw_later(UPD_NOT_VALID);
 	}
     }
     else
@@ -5831,7 +5831,7 @@ term_swap_diff()
     term->tl_top_diff_rows = bot_rows;
     term->tl_bot_diff_rows = top_rows;
 
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
     return OK;
 }
 

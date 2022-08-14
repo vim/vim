@@ -3416,7 +3416,7 @@ syn_cmd_spell(exarg_T *eap, int syncing UNUSED)
     }
 
     // assume spell checking changed, force a redraw
-    redraw_win_later(curwin, NOT_VALID);
+    redraw_win_later(curwin, UPD_NOT_VALID);
 }
 
 /*
@@ -3467,7 +3467,7 @@ syn_cmd_iskeyword(exarg_T *eap, int syncing UNUSED)
 	    curbuf->b_p_isk = save_isk;
 	}
     }
-    redraw_win_later(curwin, NOT_VALID);
+    redraw_win_later(curwin, UPD_NOT_VALID);
 }
 
 /*
@@ -3697,7 +3697,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 	    arg = skipwhite(arg_end);
 	}
     }
-    redraw_curbuf_later(SOME_VALID);
+    redraw_curbuf_later(UPD_SOME_VALID);
     syn_stack_free_all(curwin->w_s);		// Need to recompute all syntax.
 }
 
@@ -4890,7 +4890,7 @@ error:
     else
 	semsg(_(e_invalid_argument_str), arg);
 
-    redraw_curbuf_later(SOME_VALID);
+    redraw_curbuf_later(UPD_SOME_VALID);
     syn_stack_free_all(curwin->w_s);		// Need to recompute all syntax.
 }
 
@@ -4981,7 +4981,7 @@ syn_cmd_match(
 		++curwin->w_s->b_syn_folditems;
 #endif
 
-	    redraw_curbuf_later(SOME_VALID);
+	    redraw_curbuf_later(UPD_SOME_VALID);
 	    syn_stack_free_all(curwin->w_s);	// Need to recompute all syntax.
 	    return;	// don't free the progs and patterns now
 	}
@@ -5233,7 +5233,7 @@ syn_cmd_region(
 		}
 	    }
 
-	    redraw_curbuf_later(SOME_VALID);
+	    redraw_curbuf_later(UPD_SOME_VALID);
 	    syn_stack_free_all(curwin->w_s);	// Need to recompute all syntax.
 	    success = TRUE;	    // don't free the progs and patterns now
 	}
@@ -5585,7 +5585,7 @@ syn_cmd_cluster(exarg_T *eap, int syncing UNUSED)
 
 	if (got_clstr)
 	{
-	    redraw_curbuf_later(SOME_VALID);
+	    redraw_curbuf_later(UPD_SOME_VALID);
 	    syn_stack_free_all(curwin->w_s);	// Need to recompute all.
 	}
     }
@@ -5862,7 +5862,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
     else if (!finished)
     {
 	set_nextcmd(eap, arg_start);
-	redraw_curbuf_later(SOME_VALID);
+	redraw_curbuf_later(UPD_SOME_VALID);
 	syn_stack_free_all(curwin->w_s);	// Need to recompute all syntax.
     }
 }

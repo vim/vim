@@ -1924,7 +1924,7 @@ enter_buffer(buf_T *buf)
     curbuf->b_last_used = vim_time();
 #endif
 
-    redraw_later(NOT_VALID);
+    redraw_later(UPD_NOT_VALID);
 }
 
 #if defined(FEAT_AUTOCHDIR) || defined(PROTO)

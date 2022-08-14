@@ -1543,7 +1543,7 @@ luaV_buffer_insert(lua_State *L)
     else
 	appended_lines_mark(n, 1L);
     curbuf = buf;
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return 0;
 }
 
@@ -1645,7 +1645,7 @@ luaV_window_newindex(lua_State *L)
 	if (v < 1 || v > w->w_buffer->b_ml.ml_line_count)
 	    luaL_error(L, "line out of range");
 	w->w_cursor.lnum = v;
-	update_screen(VALID);
+	update_screen(UPD_VALID);
     }
     else if (strncmp(s, "col", 3) == 0)
     {
@@ -1654,7 +1654,7 @@ luaV_window_newindex(lua_State *L)
 #endif
 	w->w_cursor.col = v - 1;
 	w->w_set_curswant = TRUE;
-	update_screen(VALID);
+	update_screen(UPD_VALID);
     }
     else if (strncmp(s, "width", 5) == 0)
     {
@@ -1914,7 +1914,7 @@ luaV_command(lua_State *L)
 
     execute_cmds_from_string(s);
     vim_free(s);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return 0;
 }
 
@@ -2661,7 +2661,7 @@ ex_luado(exarg_T *eap)
     }
     lua_pop(L, 1); // function
     check_cursor();
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
 }
 
     void
