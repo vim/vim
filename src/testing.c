@@ -597,6 +597,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     int		save_trylevel = trylevel;
     int		called_emsg_before = called_emsg;
     char	*wrong_arg_msg = NULL;
+    char_u	*tofree = NULL;
 
     if (check_for_string_or_number_arg(argvars, 0) == FAIL
 	    || check_for_opt_string_or_list_arg(argvars, 1) == FAIL
@@ -660,13 +661,17 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	    }
 	    else if (list->lv_len == 2)
 	    {
-		tv = &list->lv_u.mat.lv_last->li_tv;
-		actual = get_vim_var_str(VV_ERRMSG);
-		expected = tv_get_string_buf_chk(tv, buf);
-		if (!pattern_match(expected, actual, FALSE))
+		// make a copy, an error in pattern_match() may free it
+		tofree = actual = vim_strsave(get_vim_var_str(VV_ERRMSG));
+		if (actual != NULL)
 		{
-		    error_found = TRUE;
-		    expected_str = expected;
+		    tv = &list->lv_u.mat.lv_last->li_tv;
+		    expected = tv_get_string_buf_chk(tv, buf);
+		    if (!pattern_match(expected, actual, FALSE))
+		    {
+			error_found = TRUE;
+			expected_str = expected;
+		    }
 		}
 	    }
 	}
@@ -749,6 +754,7 @@ theend:
     msg_scrolled = 0;
     lines_left = Rows;
     VIM_CLEAR(emsg_assert_fails_msg);
+    vim_free(tofree);
     set_vim_var_string(VV_ERRMSG, NULL, 0);
     if (wrong_arg_msg != NULL)
 	emsg(_(wrong_arg_msg));
