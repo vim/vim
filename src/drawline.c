@@ -2993,7 +2993,11 @@ win_line(
 	// Don't use "extra_attr" until n_attr_skip is zero.
 	if (n_attr_skip == 0 && n_attr > 0
 		&& wlv.draw_state == WL_LINE
-		&& (!attr_pri || (text_prop_flags & PT_FLAG_OVERRIDE)))
+		&& (!attr_pri
+#ifdef FEAT_PROP_POPUP
+		    || (text_prop_flags & PT_FLAG_OVERRIDE)
+#endif
+		   ))
 	{
 #ifdef LINE_ATTR
 	    if (line_attr)
