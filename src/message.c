@@ -531,6 +531,7 @@ msg_source(int attr)
 	return;
     recursive = TRUE;
 
+    msg_scroll = TRUE;
     ++no_wait_return;
     p = get_emsg_source();
     if (p != NULL)
