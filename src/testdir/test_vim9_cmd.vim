@@ -1740,12 +1740,19 @@ def Test_lockvar()
 
   lines =<< trim END
       def _()
-        s:0([], s:0)
         lockv
       enddef
       defcomp
   END
-  v9.CheckScriptFailure(lines, 'E179', 2)
+  v9.CheckScriptFailure(lines, 'E179', 1)
+
+  lines =<< trim END
+      def T()
+        unlet
+      enddef
+      defcomp
+  END
+  v9.CheckScriptFailure(lines, 'E179', 1)
 enddef
 
 def Test_substitute_expr()
