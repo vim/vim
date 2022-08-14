@@ -3677,7 +3677,7 @@ msg_clr_eos_force(void)
 	}
     }
     else
-	redrawWinline(curwin, msg_row);
+	redraw_all_later(VALID);
 }
 
 /*
