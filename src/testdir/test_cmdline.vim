@@ -3291,6 +3291,11 @@ func Test_setcmdline()
   com! -nargs=* -complete=custom,CustomComplete DoCmd :
   call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"DoCmd January February Mars', @:)
+
+  " Called in <expr>
+  cnoremap <expr><C-l> setcmdline('let foo=')
+  call feedkeys(":aaaaaaa\<C-l>\<CR>", 'tx')
+  call assert_equal('let foo=0', @:)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
