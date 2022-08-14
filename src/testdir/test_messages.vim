@@ -478,9 +478,9 @@ func Test_cmdheight_showmode()
   let str = trim(join(chars, ''))
   call assert_equal('~', str)
 
-  redraw!
   set showmode&
   set cmdheight&
+  redraw!
 endfunc
 
 func Test_cmdheight_zero_shell()
@@ -493,9 +493,9 @@ func Test_cmdheight_zero_shell()
   call assert_equal(['foo!'], readfile('Xfile.out'))
   call delete('Xfile.out')
 
-  redraw!
   set more&
   set cmdheight&
+  redraw!
 endfunc
 
 func Test_cmdheight_zero_ctrl_c()
@@ -508,8 +508,8 @@ func Test_cmdheight_zero_ctrl_c()
   let str = trim(join(chars, ''))
   call assert_equal('~', str)
 
-  redraw!
   set cmdheight&
+  redraw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
