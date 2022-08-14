@@ -2805,6 +2805,30 @@ func Test_props_with_text_below_nowrap()
   call delete('XscriptPropsBelowNowrap')
 endfunc
 
+func Test_props_with_text_override()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, 'some text here')
+      hi Likethis ctermfg=blue ctermbg=cyan
+      prop_type_add('prop', {highlight: 'Likethis', override: true})
+      prop_add(1, 6, {type: 'prop', text: ' inserted '})
+      hi CursorLine cterm=underline ctermbg=lightgrey
+      set cursorline
+  END
+  call writefile(lines, 'XscriptPropsOverride')
+  let buf = RunVimInTerminal('-S XscriptPropsOverride', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_override_1', {})
+
+  call term_sendkeys(buf, ":set nocursorline\<CR>")
+  call term_sendkeys(buf, "0llvfr")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_override_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsOverride')
+endfunc
+
 func Test_props_with_text_CursorMoved()
   CheckRunVimInTerminal
 

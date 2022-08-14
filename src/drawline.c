@@ -554,6 +554,7 @@ win_line(
     int		*text_prop_idxs = NULL;
     int		text_props_active = 0;
     proptype_T  *text_prop_type = NULL;
+    int		extra_for_textprop = FALSE; // wlv.n_extra set for textprop
     int		text_prop_attr = 0;
     int		text_prop_id = 0;	// active property ID
     int		text_prop_flags = 0;
@@ -1645,10 +1646,13 @@ win_line(
 		    ++text_prop_next;
 		}
 
-		text_prop_attr = 0;
-		text_prop_flags = 0;
-		text_prop_type = NULL;
-		text_prop_id = 0;
+		if (wlv.n_extra == 0 || !extra_for_textprop)
+		{
+		    text_prop_attr = 0;
+		    text_prop_flags = 0;
+		    text_prop_type = NULL;
+		    text_prop_id = 0;
+		}
 		if (text_props_active > 0 && wlv.n_extra == 0)
 		{
 		    int used_tpi = -1;
@@ -1709,6 +1713,7 @@ win_line(
 			    wlv.c_extra = NUL;
 			    wlv.c_final = NUL;
 			    wlv.n_extra = (int)STRLEN(p);
+			    extra_for_textprop = TRUE;
 			    extra_attr = used_attr;
 			    n_attr = mb_charlen(p);
 			    saved_search_attr = search_attr;
@@ -2094,6 +2099,7 @@ win_line(
 #if defined(FEAT_PROP_POPUP)
 	    if (wlv.n_extra <= 0)
 	    {
+		extra_for_textprop = FALSE;
 		in_linebreak = FALSE;
 		if (search_attr == 0)
 		    search_attr = saved_search_attr;
@@ -2982,11 +2988,12 @@ win_line(
 	}
 #endif
 
-	// Use "extra_attr", but don't override visual selection highlighting.
+	// Use "extra_attr", but don't override visual selection highlighting,
+	// unless text property overrides.
 	// Don't use "extra_attr" until n_attr_skip is zero.
 	if (n_attr_skip == 0 && n_attr > 0
 		&& wlv.draw_state == WL_LINE
-		&& !attr_pri)
+		&& (!attr_pri || (text_prop_flags & PT_FLAG_OVERRIDE)))
 	{
 #ifdef LINE_ATTR
 	    if (line_attr)
