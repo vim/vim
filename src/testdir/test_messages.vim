@@ -480,7 +480,6 @@ func Test_cmdheight_showmode()
 
   set showmode&
   set cmdheight&
-  redraw!
 endfunc
 
 func Test_cmdheight_zero_shell()
@@ -492,10 +491,10 @@ func Test_cmdheight_zero_shell()
   silent !echo <cWORD> > Xfile.out
   call assert_equal(['foo!'], readfile('Xfile.out'))
   call delete('Xfile.out')
+  redraw!
 
   set more&
   set cmdheight&
-  redraw!
 endfunc
 
 func Test_cmdheight_zero_ctrl_c()
@@ -509,7 +508,6 @@ func Test_cmdheight_zero_ctrl_c()
   call assert_equal('~', str)
 
   set cmdheight&
-  redraw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
