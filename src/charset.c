@@ -1186,6 +1186,11 @@ win_lbr_chartabsize(
 			int len = (int)STRLEN(p);
 			int n_used = len;
 
+			// The "$" for 'list' mode will go between the EOL and
+			// the text prop, account for that.
+			if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
+			    ++vcol;
+
 			// Keep in sync with where textprop_size_after_trunc()
 			// is called in win_line().
 			if (!wrap)

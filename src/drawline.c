@@ -1640,6 +1640,13 @@ win_line(
 			      : bcol >= text_props[text_prop_next].tp_col - 1))
 		{
 		    if (text_props[text_prop_next].tp_col == MAXCOL
+			     && *ptr == NUL && wp->w_p_list && lcs_eol_one > 0)
+		    {
+			// first display the '$' after the line
+			text_prop_follows = TRUE;
+			break;
+		    }
+		    if (text_props[text_prop_next].tp_col == MAXCOL
 			    || bcol <= text_props[text_prop_next].tp_col - 1
 					   + text_props[text_prop_next].tp_len)
 			text_prop_idxs[text_props_active++] = text_prop_next;
@@ -1755,6 +1762,16 @@ win_line(
 						? wlv.col == 0 || !wp->w_p_wrap
 						: n_used < wlv.n_extra))
 					added = 0;
+
+				    // With 'nowrap' add one to show the
+				    // "extends" character if needed (it
+				    // doesn't show it the text just fits).
+				    if (!wp->w_p_wrap
+					    && n_used < wlv.n_extra
+					    && wp->w_lcs_chars.ext != NUL
+					    && wp->w_p_list)
+					++n_used;
+
 				    // add 1 for NUL, 2 for when '…' is used
 				    l = alloc(n_used + added + 3);
 				    if (l != NULL)
@@ -2728,16 +2745,10 @@ win_line(
 		    {
 			// In virtualedit, visual selections may extend
 			// beyond end of line.
-			if (area_highlighting && virtual_active()
-				&& tocol != MAXCOL && wlv.vcol < tocol)
-			    wlv.n_extra = 0;
-			else
-			{
+			if (!(area_highlighting && virtual_active()
+				       && tocol != MAXCOL && wlv.vcol < tocol))
 			    wlv.p_extra = at_end_str;
-			    wlv.n_extra = 1;
-			    wlv.c_extra = NUL;
-			    wlv.c_final = NUL;
-			}
+			wlv.n_extra = 0;
 		    }
 		    if (wp->w_p_list && wp->w_lcs_chars.eol > 0)
 			c = wp->w_lcs_chars.eol;
@@ -3218,8 +3229,8 @@ win_line(
 #endif
 		    wlv.col == wp->w_width - 1)
 		&& (*ptr != NUL
-		    || (wp->w_p_list && lcs_eol_one > 0)
-		    || (wlv.n_extra && (wlv.c_extra != NUL
+		    || lcs_eol_one > 0
+		    || (wlv.n_extra > 0 && (wlv.c_extra != NUL
 						     || *wlv.p_extra != NUL))))
 	{
 	    c = wp->w_lcs_chars.ext;

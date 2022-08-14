@@ -2969,4 +2969,34 @@ func Test_insert_text_start_incl()
   call delete('XscriptPropsStartIncl')
 endfunc
 
+func Test_insert_text_list_mode()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['This is a line with quite a bit of text here.',
+                  'second line', 'third line'])
+      set list listchars+=extends:»
+      prop_type_add('Prop1', {highlight: 'Error'})
+      prop_add(1, 0, {
+          type: 'Prop1',
+          text: 'The quick brown fox jumps over the lazy dog',
+          text_align: 'right'
+      })
+  END
+  call writefile(lines, 'XscriptPropsListMode')
+  let buf = RunVimInTerminal('-S XscriptPropsListMode', #{rows: 8, cols: 60})
+  call term_sendkeys(buf, "ggj")
+  call VerifyScreenDump(buf, 'Test_prop_insert_list_mode_1', {})
+
+  call term_sendkeys(buf, ":set nowrap\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_list_mode_2', {})
+
+  call term_sendkeys(buf, "ggd32l")
+  call VerifyScreenDump(buf, 'Test_prop_insert_list_mode_3', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsListMode')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
