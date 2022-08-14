@@ -3281,6 +3281,16 @@ func Test_setcmdline()
 
   " setcmdline() returns 1 when not editing the command line.
   call assert_equal(1, 'foo'->setcmdline())
+
+  " Called in custom function
+  func CustomComplete(A, L, P)
+    call assert_equal(0, setcmdline("DoCmd "))
+    return "January\nFebruary\nMars\n"
+  endfunc
+
+  com! -nargs=* -complete=custom,CustomComplete DoCmd :
+  call feedkeys(":DoCmd \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"DoCmd January February Mars', @:)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
