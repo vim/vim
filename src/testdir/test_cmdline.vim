@@ -3293,9 +3293,10 @@ func Test_setcmdline()
   call assert_equal('"DoCmd January February Mars', @:)
 
   " Called in <expr>
-  cnoremap <expr><C-l> setcmdline('let foo=')
-  call feedkeys(":\<C-l>\<CR>", 'tx')
+  cnoremap <expr>a setcmdline('let foo=')
+  call feedkeys(":a\<CR>", 'tx')
   call assert_equal('let foo=0', @:)
+  cunmap a
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
