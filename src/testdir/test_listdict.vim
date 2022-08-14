@@ -1462,7 +1462,13 @@ func Test_indexof()
   call assert_equal(-1, indexof(l, "v:val.n == 10", #{startidx: -4}))
   call assert_equal(0, indexof(l, "v:val.n == 10", test_null_dict()))
 
+  let s = ["a", "b", "c"]
+  call assert_equal(2, indexof(s, {_, v -> v == 'c'}))
+  call assert_equal(-1, indexof(s, {_, v -> v == 'd'}))
+  call assert_equal(-1, indexof(s, {_, v -> "v == 'd'"}))
+
   call assert_equal(-1, indexof([], {i, v -> v == 'a'}))
+  call assert_equal(-1, indexof([1, 2, 3], {_, v -> "v == 2"}))
   call assert_equal(-1, indexof(test_null_list(), {i, v -> v == 'a'}))
   call assert_equal(-1, indexof(l, test_null_string()))
   call assert_equal(-1, indexof(l, test_null_function()))
