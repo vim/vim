@@ -3294,7 +3294,7 @@ func Test_setcmdline()
 
   " Called in <expr>
   cnoremap <expr><C-l> setcmdline('let foo=')
-  call feedkeys(":aaaaaaa\<C-l>\<CR>", 'tx')
+  call feedkeys(":\<C-l>\<CR>", 'tx')
   call assert_equal('let foo=0', @:)
 endfunc
 
