@@ -2914,4 +2914,35 @@ def Test_insert_text_before_virtual_text()
   bwipe!
 enddef
 
+func Test_insert_text_start_incl()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, 'text one text two')
+
+      prop_type_add('propincl', {highlight: 'NonText', start_incl: true})
+      prop_add(1, 6, {type: 'propincl', text: 'after '})
+      cursor(1, 6)
+      prop_type_add('propnotincl', {highlight: 'NonText', start_incl: false})
+      prop_add(1, 15, {type: 'propnotincl', text: 'before '})
+  END
+  call writefile(lines, 'XscriptPropsStartIncl')
+  let buf = RunVimInTerminal('-S XscriptPropsStartIncl', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_1', {})
+
+  call term_sendkeys(buf, "i")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_2', {})
+  call term_sendkeys(buf, "xx\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_3', {})
+
+  call term_sendkeys(buf, "2wi")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_4', {})
+  call term_sendkeys(buf, "yy\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsStartIncl')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -815,6 +815,8 @@ typedef struct textprop_S
 
 #define TP_FLAG_WRAP		0x40	// virtual text wraps - when missing
 					// text is truncated
+#define TP_FLAG_START_INCL	0x80	// "start_incl" copied from proptype
+
 #define PROP_TEXT_MIN_CELLS	4	// minimun number of cells to use for
 					// the text, even when truncating
 
@@ -4587,6 +4589,7 @@ typedef struct {
     int         cts_cur_text_width;     // width of current inserted text
     int		cts_with_trailing;	// include size of trailing props with
 					// last character
+    int		cts_start_incl;		// prop has true "start_incl" arg
 #endif
     int		cts_vcol;	    // virtual column at current position
 } chartabsize_T;

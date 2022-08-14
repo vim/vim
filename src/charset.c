@@ -1212,6 +1212,7 @@ win_lbr_chartabsize(
 #endif
 		    }
 		    cts->cts_cur_text_width += cells;
+		    cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
 		    size += cells;
 		    if (*s == TAB)
 		    {
@@ -1585,7 +1586,9 @@ getvcol(
 	else
 	{
 #ifdef FEAT_PROP_POPUP
-	    if ((State & MODE_INSERT) == 0 && !on_NUL)
+	    // in Insert mode, if "start_incl" is true the text gets inserted
+	    // after the virtual text, thus add its width
+	    if (((State & MODE_INSERT) == 0 || cts.cts_start_incl) && !on_NUL)
 		// cursor is after inserted text, unless on the NUL
 		vcol += cts.cts_cur_text_width;
 #endif

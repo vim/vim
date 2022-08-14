@@ -294,7 +294,9 @@ prop_add_one(
 	tmp_prop.tp_type = type->pt_id;
 	tmp_prop.tp_flags = text_flags
 			    | (lnum > start_lnum ? TP_FLAG_CONT_PREV : 0)
-			    | (lnum < end_lnum ? TP_FLAG_CONT_NEXT : 0);
+			    | (lnum < end_lnum ? TP_FLAG_CONT_NEXT : 0)
+			    | ((type->pt_flags & PT_FLAG_INS_START_INCL)
+						     ? TP_FLAG_START_INCL : 0);
 	mch_memmove(newprops + i * sizeof(textprop_T), &tmp_prop,
 							   sizeof(textprop_T));
 
