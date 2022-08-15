@@ -797,7 +797,8 @@ set_indent(
 	    // the old indent, when decreasing indent it behaves like spaces
 	    // were deleted at the new indent.
 	    adjust_prop_columns(curwin->w_cursor.lnum,
-			  added > 0 ? old_offset : (colnr_T)ind_len, added, 0);
+				  added > 0 ? old_offset : (colnr_T)ind_len,
+				  added, APC_INDENT);
 	}
 #endif
 	retval = TRUE;
