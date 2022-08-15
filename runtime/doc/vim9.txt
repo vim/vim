@@ -913,6 +913,12 @@ Comparators ~
 The 'ignorecase' option is not used for comparators that use strings.
 Thus "=~" works like "=~#".
 
+"is" and "isnot" (|expr-is| and |expr-isnot|) when used on strings now return
+false.  In legacy script they just compare the strings, in |Vim9| script they
+check identity, and strings are copied when used, thus two strings are never
+the same (this might change some day if strings are not copied but reference
+counted).
+
 
 Abort after error ~
 

@@ -814,7 +814,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		if [[ -n "$VIM_TERMINAL" ]]; then
 		    PROMPT_COMMAND='_vim_sync_PWD'
 		    function _vim_sync_PWD() {
-			printf "\033]7;file://%s\033\\" "$PWD"
+			printf '\033]7;file://%s\033\\' "$PWD"
 		    }
 		fi
 <
@@ -823,14 +823,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    autoload -Uz add-zsh-hook
 		    add-zsh-hook -Uz chpwd _vim_sync_PWD
 		    function _vim_sync_PWD() {
-			printf "\033]7;file://%s\033\\" "$PWD"
+			printf '\033]7;file://%s\033\\' "$PWD"
 		    }
 		fi
 <
 	In a fish init file: >
 		if test -n "$VIM_TERMINAL"
 		    function _vim_sync_PWD --on-variable=PWD
-			printf "\033]7;file://%s\033\\" "$PWD"
+			printf '\033]7;file://%s\033\\' "$PWD"
 		    end
 		end
 <
@@ -1793,7 +1793,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	When 'cmdheight' is zero, there is no command-line unless it is being
 	used.  Some informative messages will not be displayed, any other
-	messages will cause the |hit-enter| prompt.
+	messages will cause the |hit-enter| prompt.  Expect some other
+	unexpected behavior too.
 
 						*'cmdwinheight'* *'cwh'*
 'cmdwinheight' 'cwh'	number	(default 7)

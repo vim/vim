@@ -4300,6 +4300,7 @@ E1290	change.txt	/*E1290*
 E1291	testing.txt	/*E1291*
 E1292	cmdline.txt	/*E1292*
 E1293	textprop.txt	/*E1293*
+E1294	textprop.txt	/*E1294*
 E13	message.txt	/*E13*
 E131	eval.txt	/*E131*
 E132	eval.txt	/*E132*
@@ -7933,6 +7934,7 @@ indentkeys-format	indent.txt	/*indentkeys-format*
 index	index.txt	/*index*
 index()	builtin.txt	/*index()*
 index.txt	index.txt	/*index.txt*
+indexof()	builtin.txt	/*indexof()*
 info-message	starting.txt	/*info-message*
 inform.vim	syntax.txt	/*inform.vim*
 informix	ft_sql.txt	/*informix*

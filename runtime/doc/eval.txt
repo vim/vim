@@ -1098,6 +1098,7 @@ a different type means the values are different: >
 	echo 0 is []
 	0
 "is#"/"isnot#" and "is?"/"isnot?" can be used to match and ignore case.
+In |Vim9| script this doesn't work, two strings are never identical.
 
 In legacy script, when comparing a String with a Number, the String is
 converted to a Number, and the comparison is done on Numbers.  This means

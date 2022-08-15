@@ -814,6 +814,8 @@ RT_SCRIPTS =	\
 		runtime/plugin/README.txt \
 		runtime/syntax/*.vim \
 		runtime/syntax/README.txt \
+		runtime/syntax/shared/*.vim \
+		runtime/syntax/shared/README.txt \
 
 # Unix runtime
 RT_UNIX =	\
