@@ -2943,13 +2943,17 @@ func Test_insert_text_start_incl()
 
   let lines =<< trim END
       vim9script
-      setline(1, 'text one text two')
+      setline(1, ['text one text two', '', 'function(arg)'])
 
       prop_type_add('propincl', {highlight: 'NonText', start_incl: true})
       prop_add(1, 6, {type: 'propincl', text: 'after '})
       cursor(1, 6)
       prop_type_add('propnotincl', {highlight: 'NonText', start_incl: false})
       prop_add(1, 15, {type: 'propnotincl', text: 'before '})
+
+      set cindent sw=4 
+      prop_type_add('argname', {highlight: 'DiffChange', start_incl: true})
+      prop_add(3, 10, {type: 'argname', text: 'arg: '})
   END
   call writefile(lines, 'XscriptPropsStartIncl')
   let buf = RunVimInTerminal('-S XscriptPropsStartIncl', #{rows: 8, cols: 60})
@@ -2964,6 +2968,13 @@ func Test_insert_text_start_incl()
   call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_4', {})
   call term_sendkeys(buf, "yy\<Esc>")
   call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_5', {})
+
+  call term_sendkeys(buf, "3Gfai\<CR>\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_6', {})
+  call term_sendkeys(buf, ">>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_7', {})
+  call term_sendkeys(buf, "<<<<")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_8', {})
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropsStartIncl')
