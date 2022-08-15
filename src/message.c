@@ -3677,7 +3677,7 @@ msg_clr_eos_force(void)
 	}
     }
     else
-	redraw_all_later(CLEAR);
+	redraw_all_later(UPD_CLEAR);
 }
 
 /*
