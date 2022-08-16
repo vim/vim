@@ -6,9 +6,9 @@ set cpo&vim
 " need to inspect some old g:pyindent_* variables to be backward compatible
 let g:pyindent = extend(get(g:, 'pyindent', {}), #{
   \ closed_paren_align_last_line: v:true,
-  \ open_paren: get(g:, 'pyindent_open_paren', 'shiftwidth() * 2')->eval(),
-  \ nested_paren: get(g:, 'pyindent_nested_paren', 'shiftwidth()')->eval(),
-  \ continue: get(g:, 'pyindent_continue', 'shiftwidth() * 2')->eval(),
+  \ open_paren: get(g:, 'pyindent_open_paren', 'shiftwidth() * 2'),
+  \ nested_paren: get(g:, 'pyindent_nested_paren', 'shiftwidth()'),
+  \ continue: get(g:, 'pyindent_continue', 'shiftwidth() * 2'),
   "\ searchpair() can be slow, limit the time to 150 msec or what is put in
   "\ g:pyindent.searchpair_timeout
   \ searchpair_timeout: get(g:, 'pyindent_searchpair_timeout', 150),
@@ -43,7 +43,7 @@ function python#GetIndent(lnum, ...)
     if a:lnum > 1 && getline(a:lnum - 2) =~ '\\$'
       return indent(a:lnum - 1)
     endif
-    return indent(a:lnum - 1) + g:pyindent.continue
+    return indent(a:lnum - 1) + g:pyindent.continue->eval()
   endif
 
   " If the start of the line is in a string don't change the indent.
@@ -132,9 +132,9 @@ function python#GetIndent(lnum, ...)
           " When the start is inside parenthesis, only indent one 'shiftwidth'.
           let [pp, _] = s:SearchBracket(a:lnum, 'bW')
           if pp > 0
-            return indent(plnum) + g:pyindent.nest_paren
+            return indent(plnum) + g:pyindent.nested_paren->eval()
           endif
-          return indent(plnum) + g:pyindent.open_paren
+          return indent(plnum) + g:pyindent.open_paren->eval()
         endif
         if plnumstart == p
           return indent(plnum)

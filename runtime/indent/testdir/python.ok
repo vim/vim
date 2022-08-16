@@ -1,9 +1,11 @@
 # vim: set ft=python sw=4 et:
 
 # START_INDENT
-# INDENT_EXE let [g:pyindent.open_paren, g:pyindent.closed_paren_align_last_line] = [4, v:false]
+# INDENT_EXE let [g:pyindent.open_paren, g:pyindent.closed_paren_align_last_line] = ['shiftwidth()', v:false]
 dict = {
     'a': 1,
+    'b': 2,
+    'c': 3,
 }
 # END_INDENT
 
