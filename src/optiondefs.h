@@ -108,9 +108,7 @@
 #endif
 #define PV_PATH		OPT_BOTH(OPT_BUF(BV_PATH))
 #define PV_PI		OPT_BUF(BV_PI)
-#ifdef FEAT_TEXTOBJ
-# define PV_QE		OPT_BUF(BV_QE)
-#endif
+#define PV_QE		OPT_BUF(BV_QE)
 #define PV_RO		OPT_BUF(BV_RO)
 #define PV_SI		OPT_BUF(BV_SI)
 #define PV_SN		OPT_BUF(BV_SN)
@@ -2009,14 +2007,8 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
-#ifdef FEAT_TEXTOBJ
 			    (char_u *)&p_qe, PV_QE,
-			    {(char_u *)"\\", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCTX_INIT},
+			    {(char_u *)"\\", (char_u *)0L} SCTX_INIT},
     {"readonly",    "ro",   P_BOOL|P_VI_DEF|P_RSTAT|P_NOGLOB,
 			    (char_u *)&p_ro, PV_RO,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},

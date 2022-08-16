@@ -532,8 +532,6 @@ including white space, the commands starting with "i" select an "inner" object
 without white space, or just the white space.  Thus the "inner" commands
 always select less text than the "a" commands.
 
-These commands are not available when the |+textobjects| feature has been
-disabled at compile time.
 Also see `gn` and `gN`, operating on the last search pattern.
 
 							*v_aw* *aw*
@@ -634,6 +632,7 @@ at			"a tag block", select [count] tag blocks, from the
 			"</aaa>", including the "<aaa>" and "</aaa>".
 			See |tag-blocks| about the details.
 			When used in Visual mode it is made characterwise.
+			Only available when compiled with the |+eval| feature.
 
 						*v_it* *it*
 it			"inner tag block", select [count] tag blocks, from the

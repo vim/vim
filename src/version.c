@@ -614,11 +614,7 @@ static char *(features[]) =
 #else
 	"-termresponse",
 #endif
-#ifdef FEAT_TEXTOBJ
 	"+textobjects",
-#else
-	"-textobjects",
-#endif
 #ifdef FEAT_PROP_POPUP
 	"+textprop",
 #else
@@ -735,6 +731,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    222,
 /**/
     221,
 /**/

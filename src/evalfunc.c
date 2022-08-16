@@ -6200,13 +6200,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"textobjects",
-#ifdef FEAT_TEXTOBJ
-		1
-#else
-		0
-#endif
-		},
+	{"textobjects", 1},
 	{"textprop",
 #ifdef FEAT_PROP_POPUP
 		1

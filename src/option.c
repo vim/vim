@@ -5514,9 +5514,7 @@ get_varp(struct vimoption *p)
 	case PV_MOD:	return (char_u *)&(curbuf->b_changed);
 	case PV_NF:	return (char_u *)&(curbuf->b_p_nf);
 	case PV_PI:	return (char_u *)&(curbuf->b_p_pi);
-#ifdef FEAT_TEXTOBJ
 	case PV_QE:	return (char_u *)&(curbuf->b_p_qe);
-#endif
 	case PV_RO:	return (char_u *)&(curbuf->b_p_ro);
 	case PV_SI:	return (char_u *)&(curbuf->b_p_si);
 	case PV_SN:	return (char_u *)&(curbuf->b_p_sn);
@@ -6132,10 +6130,8 @@ buf_copy_options(buf_T *buf, int flags)
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_tsrfu = empty_option;
 #endif
-#ifdef FEAT_TEXTOBJ
 	    buf->b_p_qe = vim_strsave(p_qe);
 	    COPY_OPT_SCTX(buf, BV_QE);
-#endif
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
 	    buf->b_p_bexpr = empty_option;
 #endif

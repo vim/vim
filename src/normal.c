@@ -109,9 +109,7 @@ static void	nv_normal(cmdarg_T *cap);
 static void	nv_esc(cmdarg_T *oap);
 static void	nv_edit(cmdarg_T *cap);
 static void	invoke_edit(cmdarg_T *cap, int repl, int cmd, int startln);
-#ifdef FEAT_TEXTOBJ
 static void	nv_object(cmdarg_T *cap);
-#endif
 static void	nv_record(cmdarg_T *cap);
 static void	nv_at(cmdarg_T *cap);
 static void	nv_halfpage(cmdarg_T *cap);
@@ -6888,11 +6886,7 @@ nv_edit(cmdarg_T *cap)
     else if ((cap->cmdchar == 'a' || cap->cmdchar == 'i')
 	    && (cap->oap->op_type != OP_NOP || VIsual_active))
     {
-#ifdef FEAT_TEXTOBJ
 	nv_object(cap);
-#else
-	clearopbeep(cap->oap);
-#endif
     }
 #ifdef FEAT_TERMINAL
     else if (term_in_normal_mode())
@@ -7044,7 +7038,6 @@ invoke_edit(
 	restart_edit = restart_edit_save;
 }
 
-#ifdef FEAT_TEXTOBJ
 /*
  * "a" or "i" while an operator is pending or in Visual mode: object motion.
  */
@@ -7091,6 +7084,7 @@ nv_object(
 	case '>':
 		flag = current_block(cap->oap, cap->count1, include, '<', '>');
 		break;
+#ifdef FEAT_EVAL
 	case 't': // "at" = a tag block (xml and html)
 		// Do not adjust oap->end in do_pending_operator()
 		// otherwise there are different results for 'dit'
@@ -7101,6 +7095,7 @@ nv_object(
 		cap->retval |= CA_NO_ADJ_OP_END;
 		flag = current_tagblock(cap->oap, cap->count1, include);
 		break;
+#endif
 	case 'p': // "ap" = a paragraph
 		flag = current_par(cap->oap, cap->count1, include, 'p');
 		break;
@@ -7129,7 +7124,6 @@ nv_object(
     adjust_cursor_col();
     curwin->w_set_curswant = TRUE;
 }
-#endif
 
 /*
  * "q" command: Start/stop recording.

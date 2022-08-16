@@ -470,7 +470,7 @@ m  *+terminal*		Support for terminal window |terminal|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
 B  *+termguicolors*	24-bit color in xterm-compatible terminals support
-N  *+textobjects*	|text-objects| selection
+T  *+textobjects*	|text-objects| selection. Always enabled since 9.0.0222.
 N  *+textprop*		|text-properties|
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function

@@ -2372,9 +2372,7 @@ free_buf_options(
 #endif
     clear_string_option(&buf->b_p_dict);
     clear_string_option(&buf->b_p_tsr);
-#ifdef FEAT_TEXTOBJ
     clear_string_option(&buf->b_p_qe);
-#endif
     buf->b_p_ar = -1;
     buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
     clear_string_option(&buf->b_p_lw);

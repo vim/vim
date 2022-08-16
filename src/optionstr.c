@@ -242,9 +242,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_cms);
 #endif
     check_string_option(&buf->b_p_nf);
-#ifdef FEAT_TEXTOBJ
     check_string_option(&buf->b_p_qe);
-#endif
 #ifdef FEAT_SYN_HL
     check_string_option(&buf->b_p_syn);
     check_string_option(&buf->b_s.b_syn_isk);

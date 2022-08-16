@@ -2959,9 +2959,7 @@ struct file_buffer
     int		b_p_ma;		// 'modifiable'
     char_u	*b_p_nf;	// 'nrformats'
     int		b_p_pi;		// 'preserveindent'
-#ifdef FEAT_TEXTOBJ
     char_u	*b_p_qe;	// 'quoteescape'
-#endif
     int		b_p_ro;		// 'readonly'
     long	b_p_sw;		// 'shiftwidth'
     int		b_p_sn;		// 'shortname'

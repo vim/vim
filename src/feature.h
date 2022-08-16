@@ -114,6 +114,7 @@
  * +lispindent		lisp indenting (From Eric Fischer).
  * +cindent		C code indenting (From Eric Fischer).
  * +smartindent		smart C code indenting when the 'si' option is set.
+ * +textobjects		Text objects: "vaw", "das", etc.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -299,13 +300,6 @@
  */
 #if defined(FEAT_RELTIME) && (defined(UNIX) || defined(MSWIN) || defined(VMS) )
 # define FEAT_TIMERS
-#endif
-
-/*
- * +textobjects		Text objects: "vaw", "das", etc.
- */
-#if defined(FEAT_NORMAL) && defined(FEAT_EVAL)
-# define FEAT_TEXTOBJ
 #endif
 
 /*

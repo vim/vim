@@ -1378,6 +1378,7 @@ do_source_ext(
     int			    sid;
     scriptitem_T	    *si = NULL;
     int			    save_estack_compiling = estack_compiling;
+    ESTACK_CHECK_DECLARATION
 #endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
@@ -1388,7 +1389,6 @@ do_source_ext(
 #endif
     int			    save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     int			    trigger_source_post = FALSE;
-    ESTACK_CHECK_DECLARATION
 
     CLEAR_FIELD(cookie);
     if (fname == NULL)
@@ -1693,7 +1693,9 @@ do_source_ext(
 
     if (got_int)
 	emsg(_(e_interrupted));
+#ifdef FEAT_EVAL
     ESTACK_CHECK_NOW
+#endif
     estack_pop();
     if (p_verbose > 1)
     {

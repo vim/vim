@@ -614,7 +614,6 @@ skip_chars(int cclass, int dir)
     return FALSE;
 }
 
-#if defined(FEAT_TEXTOBJ) || defined(PROTO)
 /*
  * Go back to the start of the word or the start of white space
  */
@@ -1189,6 +1188,7 @@ current_block(
     return OK;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if the cursor is on a "<aaa>" tag.  Ignore "<aaa/>".
  * When "end_tag" is TRUE return TRUE if the cursor is on "</aaa>".
@@ -1470,6 +1470,7 @@ theend:
     p_ws = save_p_ws;
     return retval;
 }
+#endif
 
     int
 current_par(
@@ -2001,5 +2002,3 @@ abort_search:
     }
     return FALSE;
 }
-
-#endif // FEAT_TEXTOBJ
