@@ -1035,7 +1035,8 @@ EXTERN vimconv_T output_conv;			// type of output conversion
  * (DBCS).
  * The value is set in mb_init();
  */
-// length of char in bytes, including following composing chars
+// Length of char in bytes, including any following composing chars.
+// NUL has length zero.
 EXTERN int (*mb_ptr2len)(char_u *p) INIT(= latin_ptr2len);
 
 // idem, with limit on string length

@@ -1077,24 +1077,28 @@ dbcs_char2bytes(int c, char_u *buf)
 }
 
 /*
- * mb_ptr2len() function pointer.
- * Get byte length of character at "*p" but stop at a NUL.
- * For UTF-8 this includes following composing characters.
- * Returns 0 when *p is NUL.
+ * Get byte length of character at "*p".  Returns zero when "*p" is NUL.
+ * Used for mb_ptr2len() when 'encoding' latin.
  */
     int
 latin_ptr2len(char_u *p)
 {
- return MB_BYTE2LEN(*p);
+    return *p == NUL ? 0 : 1;
 }
 
+/*
+ * Get byte length of character at "*p".  Returns zero when "*p" is NUL.
+ * Used for mb_ptr2len() when 'encoding' DBCS.
+ */
     static int
-dbcs_ptr2len(
-    char_u	*p)
+dbcs_ptr2len(char_u *p)
 {
     int		len;
 
-    // Check if second byte is not missing.
+    if (*p == NUL)
+	return 0;
+
+    // if the second byte is missing the length is 1
     len = MB_BYTE2LEN(*p);
     if (len == 2 && p[1] == NUL)
 	len = 1;
@@ -2105,6 +2109,7 @@ utf_ptr2len_len(char_u *p, int size)
 /*
  * Return the number of bytes the UTF-8 encoding of the character at "p" takes.
  * This includes following composing characters.
+ * Returns zero for NUL.
  */
     int
 utfc_ptr2len(char_u *p)
