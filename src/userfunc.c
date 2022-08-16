@@ -3791,6 +3791,7 @@ trans_function_name(
     int		prefix_g = FALSE;
     lval_T	lv;
     int		vim9script = in_vim9script();
+    int		script_is_vim9 = current_script_is_vim9();
     int		vim9_local;
 
     if (fdp != NULL)
@@ -3995,7 +3996,8 @@ trans_function_name(
     {
 	if (!vim9_local)
 	{
-	    if (vim9script && lead == 2 && !ASCII_ISUPPER(*lv.ll_name))
+	    if (vim9script && lead == 2 && !ASCII_ISUPPER(*lv.ll_name)
+		    && script_is_vim9)
 	    {
 		semsg(_(e_function_name_must_start_with_capital_str), start);
 		goto theend;
