@@ -911,6 +911,18 @@ def Test_nested_function()
   v9.CheckScriptFailure(lines, 'E1173: Text found after enddef: burp', 3)
 enddef
 
+def Test_nested_function_fails()
+  var lines =<< trim END
+      def T()
+        def Func(g: string):string
+        enddef
+        Func()
+      enddef
+      silent! defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1069:')
+enddef
+
 def Test_not_nested_function()
   echo printf('%d',
       function('len')('xxx'))
