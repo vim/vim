@@ -1,6 +1,13 @@
-" vim: set ft=python sw=4 et:
+# vim: set ft=python sw=4 et:
 
-" START_INDENT
+# START_INDENT
+# INDENT_EXE let [g:pyindent.open_paren, g:pyindent.closed_paren_align_last_line] = [4, v:false]
+dict = {
+'a': 1,
+}
+# END_INDENT
+
+# START_INDENT
 open_paren_not_at_EOL(100,
 (200,
 300),
@@ -65,4 +72,4 @@ open_paren_not_at_EOL(100,
 open_paren_at_EOL(
 100, 200, 300, 400)
 
-" END_INDENT
+# END_INDENT
