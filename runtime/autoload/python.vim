@@ -4,13 +4,13 @@ let s:keepcpo= &cpo
 set cpo&vim
 
 " need to inspect some old g:pyindent_* variables to be backward compatible
-let g:pyindent = extend(get(g:, 'pyindent', {}), #{
+let g:python_indent = extend(get(g:, 'python_indent', {}), #{
   \ closed_paren_align_last_line: v:true,
   \ open_paren: get(g:, 'pyindent_open_paren', 'shiftwidth() * 2'),
   \ nested_paren: get(g:, 'pyindent_nested_paren', 'shiftwidth()'),
   \ continue: get(g:, 'pyindent_continue', 'shiftwidth() * 2'),
   "\ searchpair() can be slow, limit the time to 150 msec or what is put in
-  "\ g:pyindent.searchpair_timeout
+  "\ g:python_indent.searchpair_timeout
   \ searchpair_timeout: get(g:, 'pyindent_searchpair_timeout', 150),
   "\ Identing inside parentheses can be very slow, regardless of the searchpair()
   "\ timeout, so let the user disable this feature if he doesn't need it
@@ -23,7 +23,7 @@ function s:SearchBracket(fromlnum, flags)
   return searchpairpos('[[({]', '', '[])}]', a:flags,
           \ {-> synID('.', col('.'), v:true)->synIDattr('name')
           \ =~ '\%(Comment\|Todo\|String\)$'},
-          \ [0, a:fromlnum - s:maxoff]->max(), g:pyindent.searchpair_timeout)
+          \ [0, a:fromlnum - s:maxoff]->max(), g:python_indent.searchpair_timeout)
 endfunction
 
 " See if the specified line is already user-dedented from the expected value.
@@ -43,7 +43,7 @@ function python#GetIndent(lnum, ...)
     if a:lnum > 1 && getline(a:lnum - 2) =~ '\\$'
       return indent(a:lnum - 1)
     endif
-    return indent(a:lnum - 1) + g:pyindent.continue->eval()
+    return indent(a:lnum - 1) + g:python_indent.continue->eval()
   endif
 
   " If the start of the line is in a string don't change the indent.
@@ -60,7 +60,7 @@ function python#GetIndent(lnum, ...)
     return 0
   endif
 
-  if g:pyindent.disable_parentheses_indenting == 1
+  if g:python_indent.disable_parentheses_indenting == 1
     let plindent = indent(plnum)
     let plnumstart = plnum
   else
@@ -78,7 +78,7 @@ function python#GetIndent(lnum, ...)
     if parlnum > 0
       if parcol != col([parlnum, '$']) - 1
         return parcol
-      elseif getline(a:lnum) =~ '^\s*[])}]' && !g:pyindent.closed_paren_align_last_line
+      elseif getline(a:lnum) =~ '^\s*[])}]' && !g:python_indent.closed_paren_align_last_line
         return indent(parlnum)
       endif
     endif
@@ -132,9 +132,9 @@ function python#GetIndent(lnum, ...)
           " When the start is inside parenthesis, only indent one 'shiftwidth'.
           let [pp, _] = s:SearchBracket(a:lnum, 'bW')
           if pp > 0
-            return indent(plnum) + g:pyindent.nested_paren->eval()
+            return indent(plnum) + g:python_indent.nested_paren->eval()
           endif
-          return indent(plnum) + g:pyindent.open_paren->eval()
+          return indent(plnum) + g:python_indent.open_paren->eval()
         endif
         if plnumstart == p
           return indent(plnum)
