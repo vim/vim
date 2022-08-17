@@ -983,7 +983,7 @@ indentation: >
 PYTHON							*ft-python-indent*
 
 The amount of indent can be set for the following situations.  The examples
-given are the defaults.  Note that the dictionary values is are set to an
+given are the defaults.  Note that the dictionary values are set to an
 expression, so that you can change the value of 'shiftwidth' later.
 
 Indent after an open paren: >
