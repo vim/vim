@@ -4,7 +4,7 @@
 " Previous Maintainer: Jeff Lanzarotta (jefflanzarotta at yahoo dot com)
 " Previous Maintainer: C. Laurence Gonsalves (clgonsal@kami.com)
 " URL: https://github.com/lee-lindley/vim_plsql_syntax
-" Last Change: April 28, 2022   
+" Last Change: May 4, 2022   
 " History  Lee Lindley (lee dot lindley at gmail dot com)
 "               updated to 19c keywords. refined quoting. 
 "               separated reserved, non-reserved keywords and functions
@@ -22,6 +22,10 @@
 "
 " To enable folding (It does setlocal foldmethod=syntax)
 " let plsql_fold = 1
+"
+" To disable folding procedure/functions (recommended if you habitually
+"  do not put the method name on the END statement)
+" let plsql_disable_procedure_fold = 1
 "
 "     From my vimrc file -- turn syntax and syntax folding on,
 "     associate file suffixes as plsql, open all the folds on file open
@@ -698,24 +702,31 @@ if exists("plsql_fold")
         \ transparent
         \ contains=ALLBUT,@plsqlOnlyGroup,plsqlUpdateSet
 
-    " this is brute force and requires you have the procedure/function name in the END
-    " statement. ALthough Oracle makes it optional, we cannot. If you do not
-    " have it, then you can fold the BEGIN/END block of the procedure but not
-    " the specification of it (other than a paren group). You also cannot fold
-    " BEGIN/END blocks in the procedure body. Local procedures will fold as
-    " long as the END statement includes the procedure/function name.
-    " As for why we cannot make it work any other way, I don't know. It is
-    " something to do with both plsqlBlock and plsqlProcedure both consuming BEGIN and END,
-    " even if we use a lookahead for one of them.
-    syntax region plsqlProcedure
-        "\ start="\(create\(\_s\+or\_s\+replace\)\?\_s\+\)\?\<\(procedure\|function\)\>\_s\+\z([a-z][a-z0-9$_#]*\)"
-        \ start="\<\(procedure\|function\)\>\_s\+\(\z([a-z][a-z0-9$_#]*\)\)\([^;]\|\n\)\{-}\<\(is\|as\)\>\_.\{-}\(\<end\>\_s\+\2\_s*;\)\@="
-        \ end="\<end\>\_s\+\z1\_s*;"
-        \ fold
-        \ keepend 
-        \ extend
-        \ transparent
-        \ contains=ALLBUT,plsqlBlock
+    if !exists("plsql_disable_procedure_fold")
+        " this is brute force and requires you have the procedure/function name in the END
+        " statement. ALthough Oracle makes it optional, we cannot. If you do not
+        " have it, then you can fold the BEGIN/END block of the procedure but not
+        " the specification of it (other than a paren group). You also cannot fold
+        " BEGIN/END blocks in the procedure body. Local procedures will fold as
+        " long as the END statement includes the procedure/function name.
+        " As for why we cannot make it work any other way, I don't know. It is
+        " something to do with both plsqlBlock and plsqlProcedure both consuming BEGIN and END,
+        " even if we use a lookahead for one of them.
+        "
+        " If you habitualy do not put the method name in the END statement,
+        " this can be expensive because it searches to end of file on every
+        " procedure/function declaration
+        "
+        syntax region plsqlProcedure
+            "\ start="\(create\(\_s\+or\_s\+replace\)\?\_s\+\)\?\<\(procedure\|function\)\>\_s\+\z([a-z][a-z0-9$_#]*\)"
+            \ start="\<\(procedure\|function\)\>\_s\+\(\z([a-z][a-z0-9$_#]*\)\)\([^;]\|\n\)\{-}\<\(is\|as\)\>\_.\{-}\(\<end\>\_s\+\2\_s*;\)\@="
+            \ end="\<end\>\_s\+\z1\_s*;"
+            \ fold
+            \ keepend 
+            \ extend
+            \ transparent
+            \ contains=ALLBUT,plsqlBlock
+    endif
 
     syntax region plsqlBlock
         \ start="\<begin\>"
