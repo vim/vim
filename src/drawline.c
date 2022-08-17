@@ -9,7 +9,7 @@
 
 /*
  * drawline.c: Functions for drawing window lines on the screen.
- * This is the middle level, drawscreen. is the higher level and screen.c the
+ * This is the middle level, drawscreen.c is the higher level and screen.c the
  * lower level.
  */
 
