@@ -2097,6 +2097,19 @@ def Test_for_skipped_block()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_skipped_redir()
+  var lines =<< trim END
+      def T()
+        if 0
+          redir =>l[0]
+          redir END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_for_loop()
   var lines =<< trim END
       var result = ''
