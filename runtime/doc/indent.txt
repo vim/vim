@@ -1010,11 +1010,11 @@ parentheses, you can completely disable this feature: >
 	let g:python_indent.disable_parentheses_indenting = 1
 
 For backward compatibility, these variables are also supported: >
-	g:python_indent.open_paren
-	g:python_indent.nested_paren
-	g:python_indent.continue
-	g:python_indent.searchpair_timeout
-	g:python_indent.disable_parentheses_indenting
+	g:pyindent_open_paren
+	g:pyindent_nested_paren
+	g:pyindent_continue
+	g:pyindent_searchpair_timeout
+	g:pyindent_disable_parentheses_indenting
 
 
 R								*ft-r-indent*
