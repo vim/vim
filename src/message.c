@@ -3677,7 +3677,10 @@ msg_clr_eos_force(void)
 	}
     }
     else
-	redraw_all_later(UPD_CLEAR);
+    {
+	redraw_all_later(UPD_NOT_VALID);
+	clear_cmdline = TRUE;
+    }
 }
 
 /*
