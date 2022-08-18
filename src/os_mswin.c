@@ -92,6 +92,7 @@ typedef int HFONT;
 typedef int HICON;
 typedef int HWND;
 typedef int INPUT_RECORD;
+typedef int INT_PTR;
 typedef int KEY_EVENT_RECORD;
 typedef int LOGFONTW;
 typedef int LPARAM;
@@ -560,7 +561,7 @@ resolve_appexeclink(char_u *fname)
 	    && idx < (int)rb->AppExecLinkReparseBuffer.StringCount
 	    && idx != 2; )
     {
-	if ((*p++ == L'\0'))
+	if (*p++ == L'\0')
 	    ++idx;
     }
 
@@ -664,7 +665,7 @@ mch_suspend(void)
 display_errors(void)
 {
 # ifdef FEAT_GUI
-    char *p;
+    char_u *p;
 
 #  ifdef VIMDLL
     if (gui.in_use || gui.starting)
@@ -673,15 +674,18 @@ display_errors(void)
 	if (error_ga.ga_data != NULL)
 	{
 	    // avoid putting up a message box with blanks only
-	    for (p = (char *)error_ga.ga_data; *p; ++p)
+	    for (p = (char_u *)error_ga.ga_data; *p; ++p)
 		if (!isspace(*p))
 		{
-		    (void)gui_mch_dialog(
+		    // Only use a dialog when not using --gui-dialog-file:
+		    // write text to a file.
+		    if (!gui_dialog_log((char_u *)"Errors", p))
+			(void)gui_mch_dialog(
 				     gui.starting ? VIM_INFO :
 					     VIM_ERROR,
 				     gui.starting ? (char_u *)_("Message") :
 					     (char_u *)_("Error"),
-				     (char_u *)p, (char_u *)_("&Ok"),
+					     p, (char_u *)_("&Ok"),
 					1, NULL, FALSE);
 		    break;
 		}
@@ -1968,6 +1972,10 @@ HWND message_window = 0;	    // window that's handling messages
 # define VIM_CLASSNAME      "VIM_MESSAGES"
 # define VIM_CLASSNAME_LEN  (sizeof(VIM_CLASSNAME) - 1)
 
+// Timeout for sending a message to another Vim instance.  Normally this works
+// instantly, but it may hang when the other Vim instance is halted.
+# define SENDMESSAGE_TIMEOUT	(5 * 1000)
+
 // Communication is via WM_COPYDATA messages. The message type is sent in
 // the dwData parameter. Types are defined here.
 # define COPYDATA_KEYS		0
@@ -1989,9 +1997,9 @@ static char_u	*client_enc = NULL;
 
 /*
  * Tell the other side what encoding we are using.
- * Errors are ignored.
+ * Return -1 if timeout happens.  Other errors are ignored.
  */
-    static void
+    static int
 serverSendEnc(HWND target)
 {
     COPYDATASTRUCT data;
@@ -1999,8 +2007,11 @@ serverSendEnc(HWND target)
     data.dwData = COPYDATA_ENCODING;
     data.cbData = (DWORD)STRLEN(p_enc) + 1;
     data.lpData = p_enc;
-    (void)SendMessage(target, WM_COPYDATA, (WPARAM)message_window,
-							     (LPARAM)(&data));
+    if (SendMessageTimeout(target, WM_COPYDATA,
+	    (WPARAM)message_window, (LPARAM)&data,
+	    SMTO_ABORTIFHUNG, SENDMESSAGE_TIMEOUT, NULL) == 0)
+	return -1;
+    return 0;
 }
 
 /*
@@ -2058,6 +2069,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	COPYDATASTRUCT	reply;
 	char_u		*res;
 	int		retval;
+	DWORD_PTR	dwret = 0;
 	char_u		*str;
 	char_u		*tofree;
 
@@ -2111,9 +2123,17 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	    reply.lpData = res;
 	    reply.cbData = (DWORD)STRLEN(res) + 1;
 
-	    serverSendEnc(sender);
-	    retval = (int)SendMessage(sender, WM_COPYDATA,
-				    (WPARAM)message_window, (LPARAM)(&reply));
+	    if (serverSendEnc(sender) < 0)
+		retval = -1;
+	    else
+	    {
+		if (SendMessageTimeout(sender, WM_COPYDATA,
+			(WPARAM)message_window, (LPARAM)&reply,
+			SMTO_ABORTIFHUNG, SENDMESSAGE_TIMEOUT, &dwret) == 0)
+		    retval = -1;
+		else
+		    retval = (int)dwret;
+	    }
 	    vim_free(tofree);
 	    vim_free(res);
 	    return retval;
@@ -2391,6 +2411,7 @@ serverSendReply(
     HWND	target;
     COPYDATASTRUCT data;
     long_u	n = 0;
+    DWORD_PTR	dwret = 0;
 
     // The "name" argument is a magic cookie obtained from expand("<client>").
     // It should be of the form 0xXXXXX - i.e. a C hex literal, which is the
@@ -2407,12 +2428,13 @@ serverSendReply(
     data.cbData = (DWORD)STRLEN(reply) + 1;
     data.lpData = reply;
 
-    serverSendEnc(target);
-    if (SendMessage(target, WM_COPYDATA, (WPARAM)message_window,
-							     (LPARAM)(&data)))
-	return 0;
-
-    return -1;
+    if (serverSendEnc(target) < 0)
+	return -1;
+    if (SendMessageTimeout(target, WM_COPYDATA,
+		(WPARAM)message_window, (LPARAM)&data,
+		SMTO_ABORTIFHUNG, SENDMESSAGE_TIMEOUT, &dwret) == 0)
+	return -1;
+    return dwret ? 0 : -1;
 }
 
     int
@@ -2429,6 +2451,7 @@ serverSendToVim(
     COPYDATASTRUCT data;
     char_u	*retval = NULL;
     int		retcode = 0;
+    DWORD_PTR	dwret = 0;
     char_u	altname_buf[MAX_PATH];
 
     // Execute locally if no display or target is ourselves
@@ -2460,9 +2483,13 @@ serverSendToVim(
     data.cbData = (DWORD)STRLEN(cmd) + 1;
     data.lpData = cmd;
 
-    serverSendEnc(target);
-    if (SendMessage(target, WM_COPYDATA, (WPARAM)message_window,
-							(LPARAM)(&data)) == 0)
+    if (serverSendEnc(target) < 0)
+	return -1;
+    if (SendMessageTimeout(target, WM_COPYDATA,
+		(WPARAM)message_window, (LPARAM)&data,
+		SMTO_ABORTIFHUNG, SENDMESSAGE_TIMEOUT, &dwret) == 0)
+	return -1;
+    if (dwret == 0)
 	return -1;
 
     if (asExpr)

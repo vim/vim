@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2022 May 07
+*change.txt*    For Vim version 9.0.  Last change: 2022 May 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -802,6 +802,8 @@ When the {string} starts with "\=" it is evaluated as an expression, see
 |sub-replace-expression|.  You can use that for complex replacement or special
 characters.
 
+The substitution is limited in recursion to 4 levels. *E1290*
+
 Otherwise these characters in {string} have a special meaning:
 								*:s%*
 When {string} is equal to "%" and '/' is included with the 'cpoptions' option,
@@ -1272,7 +1274,7 @@ to their previous contents.  When the '>' flag is present in 'cpoptions' then
 a line break is inserted before the appended text.
 
 5. Read-only registers ":, ". and "%
-These are '%', '#', ':' and '.'.  You can use them only with the "p", "P",
+These are '%', ':' and '.'.  You can use them only with the "p", "P",
 and ":put" commands and with CTRL-R.
 						*quote_.* *quote.* *E29*
 	".	Contains the last inserted text (the same as what is inserted

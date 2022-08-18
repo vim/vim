@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 8.2.  Last change: 2022 Apr 03
+*gui_x11.txt*   For Vim version 9.0.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -678,6 +678,9 @@ Of these three, Vim uses PRIMARY when reading and writing the "* register
 (hence when the X11 selections are available, Vim sets a default value for
 |'clipboard'| of "autoselect"), and CLIPBOARD when reading and writing the "+
 register.  Vim does not access the SECONDARY selection.
+
+This applies both to the GUI and the terminal version.  For non-X11 systems
+the plus and the star register both use the system clipboard.
 
 Examples: (assuming the default option values)
 - Select a URL in Visual mode in Vim.  Go to your browser and click the

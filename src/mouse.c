@@ -624,7 +624,7 @@ do_mouse(
 	    if (jump_flags)
 	    {
 		jump_flags = jump_to_mouse(jump_flags, NULL, which_button);
-		update_curbuf(VIsual_active ? INVERTED : VALID);
+		update_curbuf(VIsual_active ? UPD_INVERTED : UPD_VALID);
 		setcursor();
 		out_flush();    // Update before showing popup menu
 	    }
@@ -1027,7 +1027,7 @@ do_mouse(
 	    curwin->w_set_curswant = TRUE;
 	}
 	if (is_click)
-	    redraw_curbuf_later(INVERTED);	// update the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// update the inversion
     }
     else if (VIsual_active && !old_active)
     {
@@ -1083,9 +1083,7 @@ ins_mouse(int c)
 	    curwin = new_curwin;
 	    curbuf = curwin->w_buffer;
 	}
-# ifdef FEAT_CINDENT
 	set_can_cindent(TRUE);
-# endif
     }
 
     // redraw status lines (in case another window became active)
@@ -1166,16 +1164,14 @@ ins_mousescroll(int dir)
     // overlapped by the popup menu.
     if (pum_visible() && did_scroll)
     {
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(UPD_NOT_VALID);
 	ins_compl_show_pum();
     }
 
     if (!EQUAL_POS(curwin->w_cursor, tpos))
     {
 	start_arrow(&tpos);
-# ifdef FEAT_CINDENT
 	set_can_cindent(TRUE);
-# endif
     }
 }
 
@@ -1547,8 +1543,9 @@ jump_to_mouse(
     int		first;
     int		row = mouse_row;
     int		col = mouse_col;
+    colnr_T	col_from_screen = -1;
 #ifdef FEAT_FOLDING
-    int		mouse_char;
+    int		mouse_char = ' ';
 #endif
 
     mouse_past_bottom = FALSE;
@@ -1600,7 +1597,7 @@ retnomove:
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
 	    end_visual_mode_keep_button();
-	    redraw_curbuf_later(INVERTED);	// delete the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// delete the inversion
 	}
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	// Continue a modeless selection in another window.
@@ -1629,16 +1626,6 @@ retnomove:
 
     if (flags & MOUSE_SETPOS)
 	goto retnomove;				// ugly goto...
-
-#ifdef FEAT_FOLDING
-    // Remember the character under the mouse, it might be a '-' or '+' in the
-    // fold column.
-    if (row >= 0 && row < Rows && col >= 0 && col <= Columns
-						       && ScreenLines != NULL)
-	mouse_char = ScreenLines[LineOffset[row] + col];
-    else
-	mouse_char = ' ';
-#endif
 
     old_curwin = curwin;
     old_cursor = curwin->w_cursor;
@@ -1751,7 +1738,7 @@ retnomove:
 			&& (flags & MOUSE_MAY_STOP_VIS))))
 	{
 	    end_visual_mode_keep_button();
-	    redraw_curbuf_later(INVERTED);	// delete the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// delete the inversion
 	}
 #ifdef FEAT_CMDWIN
 	if (cmdwin_type != 0 && wp != curwin)
@@ -1823,7 +1810,7 @@ retnomove:
 	if (dragwin != NULL)
 	{
 	    // Drag the status line
-	    count = row - dragwin->w_winrow - dragwin->w_height + 1
+	    count = row - W_WINROW(dragwin) - dragwin->w_height + 1
 							     - on_status_line;
 	    win_drag_status_line(dragwin, count);
 	    did_drag |= count;
@@ -1855,7 +1842,7 @@ retnomove:
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
 	    end_visual_mode_keep_button();
-	    redraw_curbuf_later(INVERTED);	// delete the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// delete the inversion
 	}
 
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
@@ -1917,7 +1904,7 @@ retnomove:
 #endif
 	    curwin->w_valid &=
 		      ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    row = 0;
 	}
 	else if (row >= curwin->w_height)
@@ -1955,7 +1942,7 @@ retnomove:
 #ifdef FEAT_DIFF
 	    check_topfill(curwin, FALSE);
 #endif
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    curwin->w_valid &=
 		      ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
 	    row = curwin->w_height - 1;
@@ -1971,6 +1958,23 @@ retnomove:
 		    && curwin->w_cursor.lnum == curwin->w_topline)
 		curwin->w_valid &= ~(VALID_TOPLINE);
 	}
+    }
+
+    if (prev_row >= 0 && prev_row < Rows && prev_col >= 0 && prev_col <= Columns
+						       && ScreenLines != NULL)
+    {
+	int off = LineOffset[prev_row] + prev_col;
+
+	// Only use ScreenCols[] after the window was redrawn.  Mainly matters
+	// for tests, a user would not click before redrawing.
+	// Do not use when 'virtualedit' is active.
+	if (curwin->w_redr_type <= UPD_VALID_NO_UPDATE && !virtual_active())
+	    col_from_screen = ScreenCols[off];
+#ifdef FEAT_FOLDING
+	// Remember the character under the mouse, it might be a '-' or '+' in
+	// the fold column.
+	mouse_char = ScreenLines[off];
+#endif
     }
 
 #ifdef FEAT_FOLDING
@@ -2005,16 +2009,40 @@ retnomove:
 	    redraw_cmdline = TRUE;	// show visual mode later
     }
 
-    curwin->w_curswant = col;
-    curwin->w_set_curswant = FALSE;	// May still have been TRUE
-    if (coladvance(col) == FAIL)	// Mouse click beyond end of line
+    if (col_from_screen >= 0)
     {
-	if (inclusive != NULL)
-	    *inclusive = TRUE;
-	mouse_past_eol = TRUE;
+	// Use the column from ScreenCols[], it is accurate also after
+	// concealed characters.
+	curwin->w_cursor.col = col_from_screen;
+	if (col_from_screen == MAXCOL)
+	{
+	    curwin->w_curswant = col_from_screen;
+	    curwin->w_set_curswant = FALSE;	// May still have been TRUE
+	    mouse_past_eol = TRUE;
+	    if (inclusive != NULL)
+		*inclusive = TRUE;
+	}
+	else
+	{
+	    curwin->w_set_curswant = TRUE;
+	    if (inclusive != NULL)
+		*inclusive = FALSE;
+	}
+	check_cursor_col();
     }
-    else if (inclusive != NULL)
-	*inclusive = FALSE;
+    else
+    {
+	curwin->w_curswant = col;
+	curwin->w_set_curswant = FALSE;	// May still have been TRUE
+	if (coladvance(col) == FAIL)	// Mouse click beyond end of line
+	{
+	    if (inclusive != NULL)
+		*inclusive = TRUE;
+	    mouse_past_eol = TRUE;
+	}
+	else if (inclusive != NULL)
+	    *inclusive = FALSE;
+    }
 
     count = IN_BUFFER;
     if (curwin != old_curwin || curwin->w_cursor.lnum != old_cursor.lnum
@@ -2022,7 +2050,7 @@ retnomove:
 	count |= CURSOR_MOVED;		// Cursor has moved
 
 # ifdef FEAT_FOLDING
-    if (mouse_char == fill_foldclosed)
+    if (mouse_char == curwin->w_fill_chars.foldclosed)
 	count |= MOUSE_FOLD_OPEN;
     else if (mouse_char != ' ')
 	count |= MOUSE_FOLD_CLOSE;
@@ -2376,7 +2404,7 @@ check_termcode_mouse(
 	    // Apparently 0x23 and 0x24 are used by rxvt scroll wheel.
 	    // And 0x40 and 0x41 are used by some xterm emulator.
 	    wheel_code = mouse_code - (mouse_code >= 0x40 ? 0x40 : 0x23)
-		+ MOUSEWHEEL_LOW;
+							      + MOUSEWHEEL_LOW;
 	}
 #   endif
 
@@ -2761,8 +2789,10 @@ check_termcode_mouse(
 	    is_drag = TRUE;
 	current_button = held_button;
     }
-    else if (wheel_code == 0)
+    else
     {
+      if (wheel_code == 0)
+      {
 # ifdef CHECK_DOUBLE_CLICK
 #  ifdef FEAT_MOUSE_GPM
 	/*
@@ -2822,7 +2852,8 @@ check_termcode_mouse(
 	orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
 # endif
 	is_click = TRUE;
-	orig_mouse_code = mouse_code;
+      }
+      orig_mouse_code = mouse_code;
     }
     if (!is_drag)
 	held_button = mouse_code & MOUSE_CLICK_MASK;
@@ -3074,18 +3105,20 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
     int
 vcol2col(win_T *wp, linenr_T lnum, int vcol)
 {
-    // try to advance to the specified column
-    int		count = 0;
-    char_u	*ptr;
-    char_u	*line;
+    char_u	    *line;
+    chartabsize_T   cts;
 
-    line = ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    while (count < vcol && *ptr != NUL)
+    // try to advance to the specified column
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+    while (cts.cts_vcol < vcol && *cts.cts_ptr != NUL)
     {
-	count += win_lbr_chartabsize(wp, line, ptr, count, NULL);
-	MB_PTR_ADV(ptr);
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	MB_PTR_ADV(cts.cts_ptr);
     }
-    return (int)(ptr - line);
+    clear_chartabsize_arg(&cts);
+
+    return (int)(cts.cts_ptr - line);
 }
 #endif
 
@@ -3103,7 +3136,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     linenr_T	lnum = 0;
     varnumber_T column = 0;
 
-    if (rettv_dict_alloc(rettv) != OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
     d = rettv->vval.v_dict;
 

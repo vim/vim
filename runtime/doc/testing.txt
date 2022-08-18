@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2022 Apr 03
+*testing.txt*	For Vim version 9.0.  Last change: 2022 May 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -91,9 +91,10 @@ test_gui_event({event}, {args})
 
 		{event} is a String and the supported values are:
 		    "dropfiles"	drop one or more files in a window.
-		    "findrepl"  search and replace text
+		    "findrepl"  search and replace text.
 		    "mouse"	mouse button click event.
-		    "scrollbar" move or drag the scrollbar
+		    "scrollbar" move or drag the scrollbar.
+		    "sendevent" send a low-level GUI event.
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
 
@@ -119,7 +120,7 @@ test_gui_event({event}, {args})
 		  Perform a search and replace of text.  The supported items
 		  in {args} are:
 		    find_text:	string to find.
-		    repl_text:	replacement string
+		    repl_text:	replacement string.
 		    flags:	flags controlling the find/replace. Supported
 				values are:
 				    1	search next string (find dialog)
@@ -154,9 +155,12 @@ test_gui_event({event}, {args})
 		    move:	Optional; if used and TRUE then a mouse move
 			        event can be generated.
 				Only {args} row: and col: are used and
-				required; they are interpreted as pixels.
+				required; they are interpreted as pixels or
+				screen cells, depending on "cell".
 				Only results in an event when 'mousemoveevent'
 				is set or a popup uses mouse move events.
+		    cell:	Optional: when present and TRUE then "move"
+				uses screen cells instead of pixel positions
 
 		"scrollbar":
 		  Set or drag the left, right or horizontal scrollbar.  Only
@@ -173,6 +177,16 @@ test_gui_event({event}, {args})
 				length, assuming 'wrap' is not set.
 		    dragging:	1 to drag the scrollbar and 0 to click in the
 				scrollbar.
+
+		"sendevent":
+		  Send a low-level GUI event (e.g. key-up or down).
+		  Currently only supported on MS-Windows.
+		  The supported items in {args} are:
+		    event:	The supported string values are:
+				    keyup   generate a keyup event
+				    keydown generate a keydown event
+		    keycode:    Keycode to use for a keyup or a keydown event.
+								*E1291*
 
 		"tabline":
 		  Inject a mouse click event on the tabline to select a
@@ -265,6 +279,9 @@ test_override({name}, {val})				*test_override()*
 		Current supported values for {name} are:
 
 		{name}	     effect when {val} is non-zero ~
+		alloc_lines  make a copy of every buffer line into allocated
+			     memory, so that memory access errors can be found
+			     by valgrind
 		autoload     `import autoload` will load the script right
 			     away, not postponed until an item is used
 		char_avail   disable the char_avail() function
@@ -284,7 +301,8 @@ test_override({name}, {val})				*test_override()*
 		uptime 	     overrules sysinfo.uptime
 		vterm_title  setting the window title by a job running in a
 			     terminal window
-		ALL	     clear all overrides ({val} is not used)
+		ALL	     clear all overrides, except alloc_lines ({val} is
+			     not used)
 
 		"starting" is to be used when a test should behave like
 		startup was done.  Since the tests are run by sourcing a

@@ -75,6 +75,8 @@ func VerifyScreenDump(buf, filename, options, ...)
 	endif
       else
 	let msg = 'See new dump file: call term_dumpload("testdir/' .. testfile .. '")'
+	" no point in retrying
+	let g:run_nr = 10
       endif
       for i in range(len(refdump))
 	if i >= len(testdump)

@@ -27,7 +27,7 @@ let fontname = has('win32') ? 'fixedsys' : 'fixed'
 " Two lists with values: values that work and values that fail.
 " When not listed, "othernum" or "otherstring" is used.
 let test_values = {
-      \ 'cmdheight': [[1, 2, 10], [-1, 0]],
+      \ 'cmdheight': [[0, 1, 2, 10], [-1]],
       \ 'cmdwinheight': [[1, 2, 10], [-1, 0]],
       \ 'columns': [[12, 80], [-1, 0, 10]],
       \ 'conceallevel': [[0, 1, 2, 3], [-1, 4, 99]],
@@ -90,7 +90,7 @@ let test_values = {
       \ 'display': [['', 'lastline', 'lastline,uhex'], ['xxx']],
       \ 'eadirection': [['', 'both', 'ver'], ['xxx', 'ver,hor']],
       \ 'encoding': [['latin1'], ['xxx', '']],
-      \ 'eventignore': [['', 'WinEnter', 'WinLeave,winenter'], ['xxx']],
+      \ 'eventignore': [['', 'WinEnter', 'WinLeave,winenter', 'all,WinEnter'], ['xxx']],
       \ 'fileencoding': [['', 'latin1', 'xxx'], []],
       \ 'fileformat': [['', 'dos', 'unix'], ['xxx']],
       \ 'fileformats': [['', 'dos', 'dos,unix'], ['xxx']],

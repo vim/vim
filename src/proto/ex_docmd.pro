@@ -17,6 +17,7 @@ void apply_cmdmod(cmdmod_T *cmod);
 void undo_cmdmod(cmdmod_T *cmod);
 int parse_cmd_address(exarg_T *eap, char **errormsg, int silent);
 char_u *skip_option_env_lead(char_u *start);
+int number_method(char_u *cmd);
 char_u *find_ex_command(exarg_T *eap, int *full, int (*lookup)(char_u *, size_t, int cmd, cctx_T *), cctx_T *cctx);
 int modifier_len(char_u *cmd);
 int cmd_exists(char_u *name);

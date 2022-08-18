@@ -18,7 +18,7 @@ REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C L
 #   The output goes into a file "valgrind.testN"
 #   Vim should be compiled with EXITFREE to avoid false warnings.
 #   This will make testing about 10 times as slow.
-# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind.$*
+# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=35 --log-file=valgrind.$*
 
 default: nongui
 
@@ -86,9 +86,14 @@ RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u un
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig XfakeHOME Xdir1 Xfind
 	-rm -f opt_test.vim test.log test_result.log messages
-	-rm -f $(RM_ON_RUN) $(RM_ON_START)
+	-rm -rf $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
 	-rm -f asan.*
+	-rm -f guidialog guidialogfile
+
+# Delete the files produced by benchmarking, so they can run again.
+benchmarkclean:
+	rm -f $(SCRIPTS_BENCH)
 
 nolog:
 	-rm -f test.log test_result.log messages
@@ -123,7 +128,8 @@ tinytests: $(SCRIPTS_TINY_OUT)
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
-RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim
+# Add --gui-dialog-file to avoid getting stuck in a dialog.
+RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim --gui-dialog-file guidialog
 
 newtests: newtestssilent
 	@/bin/sh -c "if test -f messages; then cat messages; fi"

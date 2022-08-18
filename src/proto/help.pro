@@ -11,4 +11,3 @@ void ex_exusage(exarg_T *eap);
 void ex_viusage(exarg_T *eap);
 void ex_helptags(exarg_T *eap);
 /* vim: set ft=c : */
-

@@ -478,20 +478,16 @@ call_dfunc(
     arg_to_add = ufunc->uf_args.ga_len - argcount;
     if (arg_to_add < 0)
     {
-	if (arg_to_add == -1)
-	    emsg(_(e_one_argument_too_many));
-	else
-	    semsg(_(e_nr_arguments_too_many), -arg_to_add);
+	semsg(NGETTEXT(e_one_argument_too_many, e_nr_arguments_too_many,
+			-arg_to_add), -arg_to_add);
 	return FAIL;
     }
     else if (arg_to_add > ufunc->uf_def_args.ga_len)
     {
 	int missing = arg_to_add - ufunc->uf_def_args.ga_len;
 
-	if (missing == 1)
-	    emsg(_(e_one_argument_too_few));
-	else
-	    semsg(_(e_nr_arguments_too_few), missing);
+	semsg(NGETTEXT(e_one_argument_too_few, e_nr_arguments_too_few,
+			missing), missing);
 	return FAIL;
     }
 
@@ -2790,6 +2786,7 @@ exec_instructions(ectx_T *ectx)
 		    ea.cmdlinep = &iptr->isn_arg.cexpr.cexpr_ref->cer_cmdline;
 		    --ectx->ec_stack.ga_len;
 		    tv = STACK_TV_BOT(0);
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    res = cexpr_core(&ea, tv);
 		    clear_tv(tv);
 		    if (res == FAIL)
@@ -4055,6 +4052,17 @@ exec_instructions(ectx_T *ectx)
 		    varnumber_T res = 0;
 		    int		div_zero = FALSE;
 
+		    if (iptr->isn_arg.op.op_type == EXPR_LSHIFT
+			    || iptr->isn_arg.op.op_type == EXPR_RSHIFT)
+		    {
+			if (arg2 < 0)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    emsg(_(e_bitshift_ops_must_be_postive));
+			    goto on_error;
+			}
+		    }
+
 		    switch (iptr->isn_arg.op.op_type)
 		    {
 			case EXPR_MULT: res = arg1 * arg2; break;
@@ -4077,6 +4085,16 @@ exec_instructions(ectx_T *ectx)
 			case EXPR_GEQUAL: res = arg1 >= arg2; break;
 			case EXPR_SMALLER: res = arg1 < arg2; break;
 			case EXPR_SEQUAL: res = arg1 <= arg2; break;
+			case EXPR_LSHIFT: if (arg2 > MAX_LSHIFT_BITS)
+					      res = 0;
+					  else
+					      res = (uvarnumber_T)arg1 << arg2;
+					  break;
+			case EXPR_RSHIFT: if (arg2 > MAX_LSHIFT_BITS)
+					      res = 0;
+					  else
+					      res = (uvarnumber_T)arg1 >> arg2;
+					  break;
 			default: break;
 		    }
 
@@ -4652,13 +4670,17 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_CHECKTYPE:
 		{
 		    checktype_T *ct = &iptr->isn_arg.type;
+		    int		save_wt_variable = ectx->ec_where.wt_variable;
+		    int		r;
 
 		    tv = STACK_TV_BOT((int)ct->ct_off);
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (!ectx->ec_where.wt_variable)
 			ectx->ec_where.wt_index = ct->ct_arg_idx;
-		    if (check_typval_type(ct->ct_type, tv, ectx->ec_where)
-								       == FAIL)
+		    ectx->ec_where.wt_variable = ct->ct_is_var;
+		    r = check_typval_type(ct->ct_type, tv, ectx->ec_where);
+		    ectx->ec_where.wt_variable = save_wt_variable;
+		    if (r == FAIL)
 			goto on_error;
 		    if (!ectx->ec_where.wt_variable)
 			ectx->ec_where.wt_index = 0;
@@ -5145,19 +5167,15 @@ call_def_function(
     idx = argc - ufunc->uf_args.ga_len;
     if (idx > 0 && ufunc->uf_va_name == NULL)
     {
-	if (idx == 1)
-	    emsg(_(e_one_argument_too_many));
-	else
-	    semsg(_(e_nr_arguments_too_many), idx);
+	semsg(NGETTEXT(e_one_argument_too_many, e_nr_arguments_too_many,
+			idx), idx);
 	goto failed_early;
     }
     idx = argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
     if (idx < 0)
     {
-	if (idx == -1)
-	    emsg(_(e_one_argument_too_few));
-	else
-	    semsg(_(e_nr_arguments_too_few), -idx);
+	semsg(NGETTEXT(e_one_argument_too_few, e_nr_arguments_too_few,
+			-idx), -idx);
 	goto failed_early;
     }
 
@@ -6012,6 +6030,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 			case EXPR_REM: what = "%"; break;
 			case EXPR_SUB: what = "-"; break;
 			case EXPR_ADD: what = "+"; break;
+			case EXPR_LSHIFT: what = "<<"; break;
+			case EXPR_RSHIFT: what = ">>"; break;
 			default:       what = "???"; break;
 		    }
 		    switch (iptr->isn_type)
@@ -6114,18 +6134,19 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 	    case ISN_CHECKTYPE:
 		  {
-		      checktype_T *ct = &iptr->isn_arg.type;
-		      char *tofree;
+		      checktype_T   *ct = &iptr->isn_arg.type;
+		      char	    *tofree;
 
 		      if (ct->ct_arg_idx == 0)
 			  smsg("%s%4d CHECKTYPE %s stack[%d]", pfx, current,
 					  type_name(ct->ct_type, &tofree),
 					  (int)ct->ct_off);
 		      else
-			  smsg("%s%4d CHECKTYPE %s stack[%d] arg %d",
+			  smsg("%s%4d CHECKTYPE %s stack[%d] %s %d",
 					  pfx, current,
 					  type_name(ct->ct_type, &tofree),
 					  (int)ct->ct_off,
+					  ct->ct_is_var ? "var": "arg",
 					  (int)ct->ct_arg_idx);
 		      vim_free(tofree);
 		      break;
@@ -6272,55 +6293,15 @@ get_disassemble_argument(expand_T *xp, int idx)
 ex_disassemble(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
-    char_u	*fname;
     ufunc_T	*ufunc;
     dfunc_T	*dfunc;
-    isn_T	*instr;
-    int		instr_count;
-    int		is_global = FALSE;
+    isn_T	*instr = NULL;  // init to shut up gcc warning
+    int		instr_count = 0;  // init to shut up gcc warning
     compiletype_T compile_type = CT_NONE;
 
-    if (STRNCMP(arg, "profile", 7) == 0 && VIM_ISWHITE(arg[7]))
-    {
-	compile_type = CT_PROFILE;
-	arg = skipwhite(arg + 7);
-    }
-    else if (STRNCMP(arg, "debug", 5) == 0 && VIM_ISWHITE(arg[5]))
-    {
-	compile_type = CT_DEBUG;
-	arg = skipwhite(arg + 5);
-    }
-
-    if (STRNCMP(arg, "<lambda>", 8) == 0)
-    {
-	arg += 8;
-	(void)getdigits(&arg);
-	fname = vim_strnsave(eap->arg, arg - eap->arg);
-    }
-    else
-	fname = trans_function_name(&arg, &is_global, FALSE,
-		      TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD, NULL, NULL, NULL);
-    if (fname == NULL)
-    {
-	semsg(_(e_invalid_argument_str), eap->arg);
-	return;
-    }
-
-    ufunc = find_func(fname, is_global);
+    ufunc = find_func_by_name(arg, &compile_type);
     if (ufunc == NULL)
-    {
-	char_u *p = untrans_function_name(fname);
-
-	if (p != NULL)
-	    // Try again without making it script-local.
-	    ufunc = find_func(p, FALSE);
-    }
-    vim_free(fname);
-    if (ufunc == NULL)
-    {
-	semsg(_(e_cannot_find_function_str), eap->arg);
 	return;
-    }
     if (func_needs_compiling(ufunc, compile_type)
 	    && compile_def_function(ufunc, FALSE, compile_type, NULL) == FAIL)
 	return;

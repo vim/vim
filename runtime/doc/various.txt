@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2022 Apr 03
+*various.txt*   For Vim version 9.0.  Last change: 2022 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -346,7 +346,7 @@ B  *++builtin_terms*	maximal terminals builtin |builtin-terms|
 N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 			and ":goto" commands.
 m  *+channel*		inter process communication |channel|
-N  *+cindent*		|'cindent'|, C indenting
+6  *+cindent*		|'cindent'|, C indenting
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
@@ -398,7 +398,7 @@ N  *+lambda*		|lambda| and |closure|
 B  *+langmap*		|'langmap'|
 N  *+libcall*		|libcall()|
 N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
-N  *+lispindent*	|'lisp'|
+t  *+lispindent*	|'lisp'|
 T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
 T  *+localmap*		Support for mappings local to a buffer |:map-local|
@@ -411,7 +411,8 @@ T  *+mouse*		Mouse handling |mouse-using|
 N  *+mouseshape*	|'mouseshape'|
 B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
-m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency |/dyn|
+m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency
+			|/dyn|
 N  *+mouse_jsbterm*	JSB mouse handling |jsbterm-mouse|
 B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
 N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
@@ -450,7 +451,7 @@ m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
 T  *+scrollbind*	|'scrollbind'|
 B  *+signs*		|:sign|
-N  *+smartindent*	|'smartindent'|
+t  *+smartindent*	|'smartindent'|
 B  *+sodium*		compiled with libsodium for better encryption support
 B  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
 N  *+spell*		spell checking support, see |spell|
@@ -469,7 +470,7 @@ m  *+terminal*		Support for terminal window |terminal|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
 B  *+termguicolors*	24-bit color in xterm-compatible terminals support
-N  *+textobjects*	|text-objects| selection
+T  *+textobjects*	|text-objects| selection. Always enabled since 9.0.0222.
 N  *+textprop*		|text-properties|
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function
@@ -558,7 +559,10 @@ N  *+X11*		Unix only: can restore window title |X11|
 			initialized to an empty string.  After the redirection
 			starts, if the variable is removed or locked or the
 			variable type is changed, then further command output
-			messages will cause errors.
+			messages will cause errors.  When using a local
+			variable (l:var in a function or s:var in a script)
+			and another `:redir` causes the current one to end,
+			the scope might be different and the assignment fails.
 			In Vim9 script: the variable must have been declared
 			as a string.
 			The variable will remain empty until redirection ends.

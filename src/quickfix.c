@@ -3622,13 +3622,31 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     }
     msg_puts(" ");
 
-    // Remove newlines and leading whitespace from the text.  For an
-    // unrecognized line keep the indent, the compiler may mark a word
-    // with ^^^^.
-    qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
-				? skipwhite(qfp->qf_text) : qfp->qf_text,
-				IObuff, IOSIZE);
-    msg_prt_line(IObuff, FALSE);
+    {
+	char_u *tbuf = IObuff;
+	size_t	tbuflen = IOSIZE;
+	size_t	len = STRLEN(qfp->qf_text) + 3;
+
+	if (len > IOSIZE)
+	{
+	    tbuf = alloc(len);
+	    if (tbuf != NULL)
+		tbuflen = len;
+	    else
+		tbuf = IObuff;
+	}
+
+	// Remove newlines and leading whitespace from the text.  For an
+	// unrecognized line keep the indent, the compiler may mark a word
+	// with ^^^^.
+	qf_fmt_text((fname != NULL || qfp->qf_lnum != 0)
+				    ? skipwhite(qfp->qf_text) : qfp->qf_text,
+				    tbuf, (int)tbuflen);
+	msg_prt_line(tbuf, FALSE);
+
+	if (tbuf != IObuff)
+	    vim_free(tbuf);
+    }
     out_flush();		// show one line at a time
 }
 
@@ -4334,7 +4352,7 @@ qf_win_goto(win_T *win, linenr_T lnum)
     curwin->w_cursor.coladd = 0;
     curwin->w_curswant = 0;
     update_topline();		// scroll to show the line
-    redraw_later(VALID);
+    redraw_later(UPD_VALID);
     curwin->w_redr_status = TRUE;	// update ruler
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
@@ -4555,7 +4573,7 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 	// Only redraw when added lines are visible.  This avoids flickering
 	// when the added lines are not visible.
 	if ((win = qf_find_win(qi)) != NULL && old_line_count < win->w_botline)
-	    redraw_buf_later(buf, NOT_VALID);
+	    redraw_buf_later(buf, UPD_NOT_VALID);
     }
 }
 
@@ -4809,7 +4827,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	--curbuf_lock;
 
 	// make sure it will be redrawn
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
     }
 
     // Restore KeyTyped, setting 'filetype' may reset it.
@@ -5990,7 +6008,7 @@ vgr_match_buflines(
 	{
 	    // Regular expression match
 	    while (vim_regexec_multi(regmatch, curwin, buf, lnum,
-			col, NULL, NULL) > 0)
+			col, NULL) > 0)
 	    {
 		// Pass the buffer number so that it gets used even for a
 		// dummy buffer, unless duplicate_name is set, then the
@@ -6450,7 +6468,7 @@ ex_vimgrep(exarg_T *eap)
 #ifdef FEAT_FOLDING
 	foldUpdateAll(curwin);
 #else
-	redraw_later(NOT_VALID);
+	redraw_later(UPD_NOT_VALID);
 #endif
     }
 
@@ -7209,18 +7227,18 @@ qf_add_entry_from_dict(
     if (first_entry)
 	did_bufnr_emsg = FALSE;
 
-    filename = dict_get_string(d, (char_u *)"filename", TRUE);
-    module = dict_get_string(d, (char_u *)"module", TRUE);
-    bufnum = (int)dict_get_number(d, (char_u *)"bufnr");
-    lnum = (int)dict_get_number(d, (char_u *)"lnum");
-    end_lnum = (int)dict_get_number(d, (char_u *)"end_lnum");
-    col = (int)dict_get_number(d, (char_u *)"col");
-    end_col = (int)dict_get_number(d, (char_u *)"end_col");
-    vcol = (int)dict_get_number(d, (char_u *)"vcol");
-    nr = (int)dict_get_number(d, (char_u *)"nr");
-    type = dict_get_string(d, (char_u *)"type", TRUE);
-    pattern = dict_get_string(d, (char_u *)"pattern", TRUE);
-    text = dict_get_string(d, (char_u *)"text", TRUE);
+    filename = dict_get_string(d, "filename", TRUE);
+    module = dict_get_string(d, "module", TRUE);
+    bufnum = (int)dict_get_number(d, "bufnr");
+    lnum = (int)dict_get_number(d, "lnum");
+    end_lnum = (int)dict_get_number(d, "end_lnum");
+    col = (int)dict_get_number(d, "col");
+    end_col = (int)dict_get_number(d, "end_col");
+    vcol = (int)dict_get_number(d, "vcol");
+    nr = (int)dict_get_number(d, "nr");
+    type = dict_get_string(d, "type", TRUE);
+    pattern = dict_get_string(d, "pattern", TRUE);
+    text = dict_get_string(d, "text", TRUE);
     if (text == NULL)
 	text = vim_strsave((char_u *)"");
 
@@ -7243,7 +7261,7 @@ qf_add_entry_from_dict(
 
     // If the 'valid' field is present it overrules the detected value.
     if (dict_has_key(d, "valid"))
-	valid = (int)dict_get_bool(d, (char_u *)"valid", FALSE);
+	valid = (int)dict_get_bool(d, "valid", FALSE);
 
     status =  qf_add_entry(qfl,
 			NULL,		// dir
@@ -7419,7 +7437,7 @@ qf_setprop_title(qf_info_T *qi, int qf_idx, dict_T *what, dictitem_T *di)
 	return FAIL;
 
     vim_free(qfl->qf_title);
-    qfl->qf_title = dict_get_string(what, (char_u *)"title", TRUE);
+    qfl->qf_title = dict_get_string(what, "title", TRUE);
     if (qf_idx == qi->qf_curlist)
 	qf_update_win_titlevar(qi);
 

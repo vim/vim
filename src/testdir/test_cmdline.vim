@@ -215,6 +215,40 @@ func Test_redraw_in_autocmd()
   call delete('XTest_redraw')
 endfunc
 
+func Test_changing_cmdheight()
+  CheckScreendump
+
+  let lines =<< trim END
+      set cmdheight=1 laststatus=2
+  END
+  call writefile(lines, 'XTest_cmdheight')
+
+  let buf = RunVimInTerminal('-S XTest_cmdheight', {'rows': 8})
+  call term_sendkeys(buf, ":resize -3\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_1', {})
+
+  " using the space available doesn't change the status line
+  call term_sendkeys(buf, ":set cmdheight+=3\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_2', {})
+
+  " using more space moves the status line up
+  call term_sendkeys(buf, ":set cmdheight+=1\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_3', {})
+
+  " reducing cmdheight moves status line down
+  call term_sendkeys(buf, ":set cmdheight-=2\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_4', {})
+
+  " reducing window size and then setting cmdheight 
+  call term_sendkeys(buf, ":resize -1\<CR>")
+  call term_sendkeys(buf, ":set cmdheight=1\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_5', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_cmdheight')
+endfunc
+
 func Test_map_completion()
   call feedkeys(":map <unique> <si\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"map <unique> <silent>', getreg(':'))
@@ -808,6 +842,14 @@ func Test_illegal_address2()
   call delete('Xtest.vim')
 endfunc
 
+func Test_mark_from_line_zero()
+  " this was reading past the end of the first (empty) line
+  new
+  norm oxxxx
+  call assert_fails("0;'(", 'E20:')
+  bwipe!
+endfunc
+
 func Test_cmdline_complete_wildoptions()
   help
   call feedkeys(":tag /\<c-a>\<c-b>\"\<cr>", 'tx')
@@ -832,6 +874,16 @@ func Test_cmdline_complete_user_cmd()
   call feedkeys(":Foo b\\x\<Tab>\<Home>\"\<cr>", 'tx')
   call assert_equal('"Foo b\x', @:)
   delcommand Foo
+endfunc
+
+func Test_complete_user_cmd()
+  command FooBar echo 'global'
+  command -buffer FooBar echo 'local'
+  call feedkeys(":Foo\<C-A>\<Home>\"\<CR>", 'tx')
+  call assert_equal('"FooBar', @:)
+
+  delcommand -buffer FooBar
+  delcommand FooBar
 endfunc
 
 func s:ScriptLocalFunction()
@@ -1063,9 +1115,18 @@ func Test_cmdline_complete_various()
   augroup END
   call feedkeys(":augroup X\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"augroup XTest.test", @:)
+
+  " group name completion in :autocmd
   call feedkeys(":au X\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"au XTest.test", @:)
+  call feedkeys(":au XTest.test\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"au XTest.test", @:)
+
   augroup! XTest.test
+
+  " autocmd pattern completion
+  call feedkeys(":au BufEnter *.py\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"au BufEnter *.py\t", @:)
 
   " completion for the :unlet command
   call feedkeys(":unlet one two\<C-A>\<C-B>\"\<CR>", 'xt')
@@ -1305,57 +1366,6 @@ func Test_getcmdtype()
   call assert_equal('', getcmdline())
 endfunc
 
-func Test_getcmdwintype()
-  CheckFeature cmdwin
-
-  call feedkeys("q/:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
-  call assert_equal('/', a)
-
-  call feedkeys("q?:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
-  call assert_equal('?', a)
-
-  call feedkeys("q::let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
-  call assert_equal(':', a)
-
-  call feedkeys(":\<C-F>:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
-  call assert_equal(':', a)
-
-  call assert_equal('', getcmdwintype())
-endfunc
-
-func Test_getcmdwin_autocmd()
-  CheckFeature cmdwin
-
-  let s:seq = []
-  augroup CmdWin
-  au WinEnter * call add(s:seq, 'WinEnter ' .. win_getid())
-  au WinLeave * call add(s:seq, 'WinLeave ' .. win_getid())
-  au BufEnter * call add(s:seq, 'BufEnter ' .. bufnr())
-  au BufLeave * call add(s:seq, 'BufLeave ' .. bufnr())
-  au CmdWinEnter * call add(s:seq, 'CmdWinEnter ' .. win_getid())
-  au CmdWinLeave * call add(s:seq, 'CmdWinLeave ' .. win_getid())
-
-  let org_winid = win_getid()
-  let org_bufnr = bufnr()
-  call feedkeys("q::let a = getcmdwintype()\<CR>:let s:cmd_winid = win_getid()\<CR>:let s:cmd_bufnr = bufnr()\<CR>:q\<CR>", 'x!')
-  call assert_equal(':', a)
-  call assert_equal([
-	\ 'WinLeave ' .. org_winid,
-	\ 'WinEnter ' .. s:cmd_winid,
-	\ 'BufLeave ' .. org_bufnr,
-	\ 'BufEnter ' .. s:cmd_bufnr,
-	\ 'CmdWinEnter ' .. s:cmd_winid,
-	\ 'CmdWinLeave ' .. s:cmd_winid,
-	\ 'BufLeave ' .. s:cmd_bufnr,
-	\ 'WinLeave ' .. s:cmd_winid,
-	\ 'WinEnter ' .. org_winid,
-	\ 'BufEnter ' .. org_bufnr,
-	\ ], s:seq)
-
-  au!
-  augroup END
-endfunc
-
 func Test_verbosefile()
   set verbosefile=Xlog
   echomsg 'foo'
@@ -1437,65 +1447,6 @@ func Test_cmdline_overstrike()
   let &encoding = encoding_save
 endfunc
 
-func Test_cmdwin_bug()
-  CheckFeature cmdwin
-
-  let winid = win_getid()
-  sp
-  try
-    call feedkeys("q::call win_gotoid(" .. winid .. ")\<CR>:q\<CR>", 'x!')
-  catch /^Vim\%((\a\+)\)\=:E11/
-  endtry
-  bw!
-endfunc
-
-func Test_cmdwin_restore()
-  CheckFeature cmdwin
-  CheckScreendump
-
-  let lines =<< trim [SCRIPT]
-    augroup vimHints | au! | augroup END
-    call setline(1, range(30))
-    2split
-  [SCRIPT]
-  call writefile(lines, 'XTest_restore')
-
-  let buf = RunVimInTerminal('-S XTest_restore', {'rows': 12})
-  call TermWait(buf, 50)
-  call term_sendkeys(buf, "q:")
-  call VerifyScreenDump(buf, 'Test_cmdwin_restore_1', {})
-
-  " normal restore
-  call term_sendkeys(buf, ":q\<CR>")
-  call VerifyScreenDump(buf, 'Test_cmdwin_restore_2', {})
-
-  " restore after setting 'lines' with one window
-  call term_sendkeys(buf, ":close\<CR>")
-  call term_sendkeys(buf, "q:")
-  call term_sendkeys(buf, ":set lines=18\<CR>")
-  call term_sendkeys(buf, ":q\<CR>")
-  call VerifyScreenDump(buf, 'Test_cmdwin_restore_3', {})
-
-  " clean up
-  call StopVimInTerminal(buf)
-  call delete('XTest_restore')
-endfunc
-
-func Test_cmdwin_no_terminal()
-  CheckFeature cmdwin
-  CheckFeature terminal
-  CheckNotMSWindows
-
-  let buf = RunVimInTerminal('', {'rows': 12})
-  call TermWait(buf, 50)
-  call term_sendkeys(buf, ":set cmdheight=2\<CR>")
-  call term_sendkeys(buf, "q:")
-  call term_sendkeys(buf, ":let buf = term_start(['/bin/echo'], #{hidden: 1})\<CR>")
-  call VerifyScreenDump(buf, 'Test_cmdwin_no_terminal', {})
-  call term_sendkeys(buf, ":q\<CR>")
-  call StopVimInTerminal(buf)
-endfunc
-
 func Test_buffers_lastused()
   " check that buffers are sorted by time when wildmode has lastused
   call test_settime(1550020000)	  " middle
@@ -1541,61 +1492,6 @@ func Test_buffers_lastused()
   bwipeout bufc
 endfunc
 
-func Test_cmdwin_feedkeys()
-  CheckFeature cmdwin
-
-  " This should not generate E488
-  call feedkeys("q:\<CR>", 'x')
-  " Using feedkeys with q: only should automatically close the cmd window
-  call feedkeys('q:', 'xt')
-  call assert_equal(1, winnr('$'))
-  call assert_equal('', getcmdwintype())
-endfunc
-
-" Tests for the issues fixed in 7.4.441.
-" When 'cedit' is set to Ctrl-C, opening the command window hangs Vim
-func Test_cmdwin_cedit()
-  CheckFeature cmdwin
-
-  exe "set cedit=\<C-c>"
-  normal! :
-  call assert_equal(1, winnr('$'))
-
-  let g:cmd_wintype = ''
-  func CmdWinType()
-      let g:cmd_wintype = getcmdwintype()
-      let g:wintype = win_gettype()
-      return ''
-  endfunc
-
-  call feedkeys("\<C-c>a\<C-R>=CmdWinType()\<CR>\<CR>")
-  echo input('')
-  call assert_equal('@', g:cmd_wintype)
-  call assert_equal('command', g:wintype)
-
-  set cedit&vim
-  delfunc CmdWinType
-endfunc
-
-" Test for CmdwinEnter autocmd
-func Test_cmdwin_autocmd()
-  CheckFeature cmdwin
-
-  augroup CmdWin
-    au!
-    autocmd BufLeave * if &buftype == '' | update | endif
-    autocmd CmdwinEnter * startinsert
-  augroup END
-
-  call assert_fails('call feedkeys("q:xyz\<CR>", "xt")', 'E492:')
-  call assert_equal('xyz', @:)
-
-  augroup CmdWin
-    au!
-  augroup END
-  augroup! CmdWin
-endfunc
-
 func Test_cmdlineclear_tabenter()
   CheckScreendump
 
@@ -1630,57 +1526,6 @@ func Test_cmdline_expand_special()
   close
   call delete('Xfile.cpp')
   call delete('Xfile.java')
-endfunc
-
-func Test_cmdwin_jump_to_win()
-  CheckFeature cmdwin
-
-  call assert_fails('call feedkeys("q:\<C-W>\<C-W>\<CR>", "xt")', 'E11:')
-  new
-  set modified
-  call assert_fails('call feedkeys("q/:qall\<CR>", "xt")', ['E37:', 'E162:'])
-  close!
-  call feedkeys("q/:close\<CR>", "xt")
-  call assert_equal(1, winnr('$'))
-  call feedkeys("q/:exit\<CR>", "xt")
-  call assert_equal(1, winnr('$'))
-
-  " opening command window twice should fail
-  call assert_beeps('call feedkeys("q:q:\<CR>\<CR>", "xt")')
-  call assert_equal(1, winnr('$'))
-endfunc
-
-func Test_cmdwin_tabpage()
-  tabedit
-  call assert_fails("silent norm q/g	:I\<Esc>", 'E11:')
-  tabclose!
-endfunc
-
-func Test_cmdwin_interrupted()
-  CheckFeature cmdwin
-  CheckScreendump
-
-  " aborting the :smile output caused the cmdline window to use the current
-  " buffer.
-  let lines =<< trim [SCRIPT]
-    au WinNew * smile
-  [SCRIPT]
-  call writefile(lines, 'XTest_cmdwin')
-
-  let buf = RunVimInTerminal('-S XTest_cmdwin', {'rows': 18})
-  " open cmdwin
-  call term_sendkeys(buf, "q:")
-  call WaitForAssert({-> assert_match('-- More --', term_getline(buf, 18))})
-  " quit more prompt for :smile command
-  call term_sendkeys(buf, "q")
-  call WaitForAssert({-> assert_match('^$', term_getline(buf, 18))})
-  " execute a simple command
-  call term_sendkeys(buf, "aecho 'done'\<CR>")
-  call VerifyScreenDump(buf, 'Test_cmdwin_interrupted', {})
-
-  " clean up
-  call StopVimInTerminal(buf)
-  call delete('XTest_cmdwin')
 endfunc
 
 " Test for backtick expression in the command line
@@ -1978,6 +1823,11 @@ func Test_cmdline_expr()
   call assert_equal("\"e \<C-\>\<C-Y>", @:)
 endfunc
 
+" This was making the insert position negative
+func Test_cmdline_expr_register()
+  exe "sil! norm! ?\<C-\>e0\<C-R>0\<Esc>?\<C-\>e0\<CR>"
+endfunc
+
 " Test for 'imcmdline' and 'imsearch'
 " This test doesn't actually test the input method functionality.
 func Test_cmdline_inputmethod()
@@ -2011,14 +1861,6 @@ func Test_cmdline_inputmethod()
   %bwipe!
 endfunc
 
-" Test for recursively getting multiple command line inputs
-func Test_cmdwin_multi_input()
-  CheckFeature cmdwin
-
-  call feedkeys(":\<C-R>=input('P: ')\<CR>\"cyan\<CR>\<CR>", 'xt')
-  call assert_equal('"cyan', @:)
-endfunc
-
 " Test for using CTRL-_ in the command line with 'allowrevins'
 func Test_cmdline_revins()
   CheckNotMSWindows
@@ -2035,50 +1877,6 @@ endfunc
 func Test_cmdline_composing_chars()
   call feedkeys(":\"\<C-V>u3046\<C-V>u3099\<CR>", 'xt')
   call assert_equal('"ゔ', @:)
-endfunc
-
-" Test for normal mode commands not supported in the cmd window
-func Test_cmdwin_blocked_commands()
-  CheckFeature cmdwin
-
-  call assert_fails('call feedkeys("q:\<C-T>\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-]>\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-^>\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:Q\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:Z\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<F1>\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>s\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>v\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>^\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>n\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>z\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>o\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>w\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>j\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>k\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>h\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>l\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>T\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>x\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>r\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>R\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>K\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>}\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>]\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>f\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>d\<CR>", "xt")', 'E11:')
-  call assert_fails('call feedkeys("q:\<C-W>g\<CR>", "xt")', 'E11:')
-endfunc
-
-" Close the Cmd-line window in insert mode using CTRL-C
-func Test_cmdwin_insert_mode_close()
-  CheckFeature cmdwin
-
-  %bw!
-  let s = ''
-  exe "normal q:a\<C-C>let s='Hello'\<CR>"
-  call assert_equal('Hello', s)
-  call assert_equal(1, winnr('$'))
 endfunc
 
 " test that ";" works to find a match at the start of the first line
@@ -2659,17 +2457,18 @@ endfunc
 " buffer name fuzzy completion
 func Test_fuzzy_completion_bufname()
   set wildoptions&
-  edit SomeFile.txt
+  " Use a long name to reduce the risk of matching a random directory name
+  edit SomeRandomFileWithLetters.txt
   enew
-  call feedkeys(":b SF\<Tab>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"b SF', @:)
-  call feedkeys(":b S*File.txt\<Tab>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"b SomeFile.txt', @:)
+  call feedkeys(":b SRFWL\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b SRFWL', @:)
+  call feedkeys(":b S*FileWithLetters.txt\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b SomeRandomFileWithLetters.txt', @:)
   set wildoptions=fuzzy
-  call feedkeys(":b SF\<Tab>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"b SomeFile.txt', @:)
-  call feedkeys(":b S*File.txt\<Tab>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"b S*File.txt', @:)
+  call feedkeys(":b SRFWL\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b SomeRandomFileWithLetters.txt', @:)
+  call feedkeys(":b S*FileWithLetters.txt\<Tab>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"b S*FileWithLetters.txt', @:)
   %bw!
   set wildoptions&
 endfunc
@@ -3380,6 +3179,16 @@ func Test_cmdline_complete_substitute_short()
   endfor
 endfunc
 
+" Test for :! shell command argument completion
+func Test_cmdline_complete_bang_cmd_argument()
+  set wildoptions=fuzzy
+  call feedkeys(":!vim test_cmdline.\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"!vim test_cmdline.vim', @:)
+  set wildoptions&
+  call feedkeys(":!vim test_cmdline.\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"!vim test_cmdline.vim', @:)
+endfunc
+
 func Check_completion()
   call assert_equal('let a', getcmdline())
   call assert_equal(6, getcmdpos())
@@ -3390,6 +3199,39 @@ endfunc
 
 func Test_screenpos_and_completion()
   call feedkeys(":let a\<C-R>=Check_completion()\<CR>\<Esc>", "xt")
+endfunc
+
+func Test_recursive_register()
+  let @= = ''
+  silent! ?e/
+  let caught = 'no'
+  try
+    normal // 
+  catch /E169:/
+    let caught = 'yes'
+  endtry
+  call assert_equal('yes', caught)
+endfunc
+
+func Test_long_error_message()
+  " the error should be truncated, not overrun IObuff
+  silent! norm Q00000000000000     000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000                                                                                                                                                                                                                        
+endfunc
+
+func Test_cmdline_redraw_tabline()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set showtabline=2
+      autocmd CmdlineEnter * set tabline=foo
+  END
+  call writefile(lines, 'Xcmdline_redraw_tabline')
+  let buf = RunVimInTerminal('-S Xcmdline_redraw_tabline', #{rows: 6})
+  call term_sendkeys(buf, ':')
+  call WaitForAssert({-> assert_match('^foo', term_getline(buf, 1))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xcmdline_redraw_tabline')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

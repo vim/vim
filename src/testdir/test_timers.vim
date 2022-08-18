@@ -298,8 +298,9 @@ func Interrupt(timer)
 endfunc
 
 func Test_timer_peek_and_get_char()
-  CheckUnix
-  CheckGui
+  if !has('unix') && !has('gui_running')
+    throw 'Skipped: cannot feed low-level input'
+  endif
 
   call timer_start(0, 'FeedAndPeek')
   let intr = timer_start(100, 'Interrupt')
@@ -310,7 +311,7 @@ endfunc
 
 func Test_timer_getchar_zero()
   if has('win32') && !has('gui_running')
-    throw 'Skipped: cannot get low-level input'
+    throw 'Skipped: cannot feed low-level input'
   endif
   CheckFunction reltimefloat
 
@@ -368,7 +369,7 @@ endfunc
 
 " Test that the garbage collector isn't triggered if a timer callback invokes
 " vgetc().
-func Test_timer_nocatch_garbage_collect()
+func Test_nocatch_timer_garbage_collect()
   " 'uptimetime. must be bigger than the timer timeout
   set ut=200
   call test_garbagecollect_soon()

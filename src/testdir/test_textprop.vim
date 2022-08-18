@@ -71,6 +71,18 @@ func Test_proptype_buf()
   call assert_fails("call prop_type_add('one', {'bufnr': 98764})", "E158:")
 endfunc
 
+def Test_proptype_add_remove()
+  # add and remove a prop type so that the array is empty
+  prop_type_add('local', {bufnr: bufnr('%')})
+  prop_type_delete('local', {bufnr: bufnr('%')})
+  prop_type_add('global', {highlight: 'ErrorMsg'})
+  prop_add(1, 1, {length: 1, type: 'global'})
+  redraw
+
+  prop_clear(1)
+  prop_type_delete('global')
+enddef
+
 def Test_proptype_buf_list()
   new
   var bufnr = bufnr('')
@@ -573,6 +585,13 @@ func Test_prop_replace()
   call assert_equal('yyyex xyyoxx', getline(1))
   call assert_equal(expected, prop_list(1))
 
+  " Replace three 1-byte chars with three 2-byte ones.
+  exe "normal 0l3rø"
+  call assert_equal('yøøøx xyyoxx', getline(1))
+  let expected[0].length += 3
+  let expected[1].col += 3
+  call assert_equal(expected, prop_list(1))
+
   call DeletePropTypes()
   bwipe!
   set bs&
@@ -649,6 +668,36 @@ func Test_prop_open_line()
 
   bwipe!
   set bs&
+endfunc
+
+func Test_prop_put()
+  new
+  let expected = SetupOneLine() " 'xonex xtwoxx'
+
+  let @a = 'new'
+  " insert just after the prop
+  normal 03l"ap
+  " insert inside the prop
+  normal 02l"ap
+  " insert just before the prop
+  normal 0"ap
+
+  call assert_equal('xnewonnewenewx xtwoxx', getline(1))
+  let expected[0].col += 3
+  let expected[0].length += 3
+  let expected[1].col += 9
+  call assert_equal(expected, prop_list(1))
+
+  " Visually select 4 chars in the prop and put "AB" to replace them
+  let @a = 'AB'
+  normal 05lv3l"ap
+  call assert_equal('xnewoABenewx xtwoxx', getline(1))
+  let expected[0].length -= 2
+  let expected[1].col -= 2
+  call assert_equal(expected, prop_list(1))
+
+  call DeletePropTypes()
+  bwipe!
 endfunc
 
 func Test_prop_clear()
@@ -867,6 +916,35 @@ func Test_prop_multiline()
   call prop_type_delete('comment')
 endfunc
 
+func Run_test_with_line2byte(add_props)
+  new
+  setlocal ff=unix
+  if a:add_props
+    call prop_type_add('textprop', #{highlight: 'Search'})
+  endif
+  " Add a text prop to every fourth line and then change every fifth line so
+  " that it causes a data block split a few times.
+  for nr in range(1, 1000)
+    call setline(nr, 'some longer text here')
+    if a:add_props && nr % 4 == 0
+      call prop_add(nr, 13, #{type: 'textprop', length: 4})
+    endif
+  endfor
+  let expected = 22 * 997 + 1
+  call assert_equal(expected, line2byte(998))
+
+  for nr in range(1, 1000, 5)
+    exe nr .. "s/longer/much more/"
+    let expected += 3
+    call assert_equal(expected, line2byte(998), 'line ' .. nr)
+  endfor
+
+  if a:add_props
+    call prop_type_delete('textprop')
+  endif
+  bwipe!
+endfunc
+
 func Test_prop_line2byte()
   call prop_type_add('comment', {'highlight': 'Directory'})
   new
@@ -897,6 +975,11 @@ func Test_prop_line2byte()
   2delete
   call assert_equal(1489, line2byte(400))
   bwipe!
+
+  " Add many lines so that the data block is split.
+  " With and without props should give the same result.
+  call Run_test_with_line2byte(0)
+  call Run_test_with_line2byte(1)
 
   call prop_type_delete('comment')
 endfunc
@@ -1126,6 +1209,38 @@ func Test_textprop_screenshot_various()
   call delete('XtestProp')
 endfunc
 
+func Test_textprop_hl_override()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, ['One one one one one', 'Two two two two two', 'Three three three three'])
+      hi OverProp ctermfg=blue ctermbg=yellow
+      hi CursorLine cterm=bold,underline ctermfg=red ctermbg=green
+      hi Vsual ctermfg=cyan ctermbg=grey
+      call prop_type_add('under', #{highlight: 'OverProp'})
+      call prop_type_add('over', #{highlight: 'OverProp', override: 1})
+      call prop_add(1, 5, #{type: 'under', length: 4})
+      call prop_add(1, 13, #{type: 'over', length: 4})
+      call prop_add(2, 5, #{type: 'under', length: 4})
+      call prop_add(2, 13, #{type: 'over', length: 4})
+      call prop_add(3, 5, #{type: 'under', length: 4})
+      call prop_add(3, 13, #{type: 'over', length: 4})
+      set cursorline
+      2
+  END
+  call writefile(lines, 'XtestOverProp')
+  let buf = RunVimInTerminal('-S XtestOverProp', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_textprop_hl_override_1', {})
+
+  call term_sendkeys(buf, "3Gllv$hh")
+  call VerifyScreenDump(buf, 'Test_textprop_hl_override_2', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestOverProp')
+endfunc
+
 func RunTestVisualBlock(width, dump)
   call writefile([
 	\ "call setline(1, ["
@@ -1217,6 +1332,33 @@ func Test_textprop_nowrap_scrolled()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestNowrap')
+endfunc
+
+func Test_textprop_text_priority()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, "function( call, argument, here )")
+
+      call prop_type_add('one', #{highlight: 'Error'})
+      call prop_type_add('two', #{highlight: 'Function'})
+      call prop_type_add('three', #{highlight: 'DiffChange'})
+      call prop_type_add('arg', #{highlight: 'Search'})
+
+      call prop_add(1, 27, #{type: 'arg', length: len('here')})
+      call prop_add(1, 27, #{type: 'three', text: 'three: '})
+      call prop_add(1, 11, #{type: 'one', text: 'one: '})
+      call prop_add(1, 11, #{type: 'arg', length: len('call')})
+      call prop_add(1, 17, #{type: 'two', text: 'two: '})
+      call prop_add(1, 17, #{type: 'arg', length: len('argument')})
+  END
+  call writefile(lines, 'XtestPropPrio')
+  let buf = RunVimInTerminal('-S XtestPropPrio', {'rows': 5})
+  call VerifyScreenDump(buf, 'Test_prop_at_same_pos', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPropPrio')
 endfunc
 
 func Test_textprop_with_syntax()
@@ -1324,15 +1466,18 @@ func Test_proptype_substitute2()
         \ #{type_bufnr: 0, id: 0, col: 50, end: 1, type: 'number', length: 4, start: 1}]
 
   " TODO
-  return
-  " Add some text in between
-  %s/\s\+/   /g
-  call assert_equal(expected, prop_list(1) + prop_list(2) + prop_list(3))
+  if 0
+    " Add some text in between
+    %s/\s\+/   /g
+    call assert_equal(expected, prop_list(1) + prop_list(2) + prop_list(3))
 
-  " remove some text
-  :1s/[a-z]\{3\}//g
-  let expected = [{'id': 0, 'col': 10, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}]
-  call assert_equal(expected, prop_list(1))
+    " remove some text
+    :1s/[a-z]\{3\}//g
+    let expected = [{'id': 0, 'col': 10, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}]
+    call assert_equal(expected, prop_list(1))
+  endif
+
+  call prop_type_delete('number')
   bwipe!
 endfunc
 
@@ -1346,6 +1491,36 @@ func Test_proptype_substitute3()
   redraw
 
   call prop_type_delete('test')
+  bwipe!
+endfunc
+
+func Test_proptype_substitute_join()
+  new
+  call setline(1, [
+        \ 'This is some end',
+        \ 'start is highlighted end',
+        \ 'some is highlighted',
+        \ 'start is also highlighted'])
+
+  call prop_type_add('number', {'highlight': 'ErrorMsg'})
+
+  call prop_add(1, 6, {'length': 2, 'type': 'number'})
+  call prop_add(2, 7, {'length': 2, 'type': 'number'})
+  call prop_add(3, 6, {'length': 2, 'type': 'number'})
+  call prop_add(4, 7, {'length': 2, 'type': 'number'})
+  " The highlighted "is" in line 1, 2 and 4 is kept and ajudsted.
+  " The highlighted "is" in line 3 is deleted.
+  let expected = [
+        \ #{type_bufnr: 0, id: 0, col: 6, end: 1, type: 'number', length: 2, start: 1},
+        \ #{type_bufnr: 0, id: 0, col: 21, end: 1, type: 'number', length: 2, start: 1},
+        \ #{type_bufnr: 0, id: 0, col: 43, end: 1, type: 'number', length: 2, start: 1}]
+
+  s/end\nstart/joined/
+  s/end\n.*\nstart/joined/
+  call assert_equal('This is some joined is highlighted joined is also highlighted', getline(1))
+  call assert_equal(expected, prop_list(1))
+
+  call prop_type_delete('number')
   bwipe!
 endfunc
 
@@ -1604,6 +1779,23 @@ func Test_prop_one_line_window()
   bwipe!
 endfunc
 
+def Test_prop_column_zero_error()
+  prop_type_add('proptype', {highlight: 'Search'})
+  var caught = false
+  try
+    popup_create([{
+            text: 'a',
+            props: [{col: 0, length: 1, type: 'type'}],
+     }], {})
+  catch /E964:/
+    caught = true
+  endtry
+  assert_true(caught)
+
+  popup_clear()
+  prop_type_delete('proptype')
+enddef
+
 " This was calling ml_append_int() and copy a text property from a previous
 " line at the wrong moment.  Exact text length matters.
 def Test_prop_splits_data_block()
@@ -1645,6 +1837,57 @@ def Test_prop_add_delete_line()
   bwipe!
 enddef
 
+" This test is to detect a regression related to #10430. It is not an attempt
+" fully cover deleting lines in the presence of multi-line properties.
+def Test_delete_line_within_multiline_prop()
+  new
+  setline(1, '# Top.')
+  append(1, ['some_text = """', 'A string.', '"""', '# Bottom.'])
+  prop_type_add('Identifier', {'highlight': 'ModeMsg', 'priority': 0, 'combine': 0, 'start_incl': 0, 'end_incl': 0})
+  prop_type_add('String', {'highlight': 'MoreMsg', 'priority': 0, 'combine': 0, 'start_incl': 0, 'end_incl': 0})
+  prop_add(2, 1, {'type': 'Identifier', 'end_lnum': 2, 'end_col': 9})
+  prop_add(2, 13, {'type': 'String', 'end_lnum': 4, 'end_col': 4})
+
+  # The property for line 3 should extend into the previous and next lines.
+  var props = prop_list(3)
+  var prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(0, prop['start'])
+  assert_equal(0, prop['end'])
+
+  # This deletion should run without raising an exception.
+  try
+    :2 del
+  catch
+    assert_report('Line delete should have workd, but it raised an error.')
+  endtry
+
+  # The property for line 2 (was 3) should no longer extend into the previous
+  # line.
+  props = prop_list(2)
+  prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(1, prop['start'], 'Property was not changed to start within the line.')
+
+  # This deletion should run without raising an exception.
+  try
+    :3 del
+  catch
+    assert_report('Line delete should have workd, but it raised an error.')
+  endtry
+
+  # The property for line 2 (originally 3) should no longer extend into the next
+  # line.
+  props = prop_list(2)
+  prop = props[0]
+  assert_equal(1, len(props))
+  assert_equal(1, prop['end'], 'Property was not changed to end within the line.')
+
+  prop_type_delete('Identifier')
+  prop_type_delete('String')
+  bwip!
+enddef
+
 func Test_prop_in_linebreak()
   CheckRunVimInTerminal
 
@@ -1662,6 +1905,44 @@ func Test_prop_in_linebreak()
   call delete('XscriptPropLinebreak')
 endfunc
 
+func Test_prop_with_linebreak()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      set linebreak
+      setline(1, 'one twoword')
+      prop_type_add('test', {highlight: 'Special'})
+      prop_add(1, 4, {text: ': virtual text', type: 'test', text_wrap: 'wrap'})
+  END
+  call writefile(lines, 'XscriptPropWithLinebreak')
+  let buf = RunVimInTerminal('-S XscriptPropWithLinebreak', #{rows: 6, cols: 50})
+  call VerifyScreenDump(buf, 'Test_prop_with_linebreak_1', {})
+  call term_sendkeys(buf, "iasdf asdf asdf asdf asdf as\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_with_linebreak_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropWithLinebreak')
+endfunc
+
+func Test_prop_with_wrap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      set linebreak
+      setline(1, 'asdf '->repeat(15))
+      prop_type_add('test', {highlight: 'Special'})
+      prop_add(1, 43, {text: 'some virtual text', type: 'test'})
+  END
+  call writefile(lines, 'XscriptPropWithWrap')
+  let buf = RunVimInTerminal('-S XscriptPropWithWrap', #{rows: 6, cols: 50})
+  call VerifyScreenDump(buf, 'Test_prop_with_wrap_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropWithWrap')
+endfunc
+
 func Test_prop_after_tab()
   CheckRunVimInTerminal
 
@@ -1677,6 +1958,46 @@ func Test_prop_after_tab()
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropAfterTab')
+endfunc
+
+func Test_prop_before_tab()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ["\tx"]->repeat(6))
+      call prop_type_add('test', #{highlight: 'Search'})
+      call prop_add(1, 1, #{type: 'test', text: '123'})
+      call prop_add(2, 1, #{type: 'test', text: '1234567'})
+      call prop_add(3, 1, #{type: 'test', text: '12345678'})
+      call prop_add(4, 1, #{type: 'test', text: '123456789'})
+      call prop_add(5, 2, #{type: 'test', text: 'ABC'})
+      call prop_add(6, 3, #{type: 'test', text: 'ABC'})
+      normal gg0
+  END
+  call writefile(lines, 'XscriptPropBeforeTab')
+  let buf = RunVimInTerminal('-S XscriptPropBeforeTab', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_01', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_02', {})
+  call term_sendkeys(buf, "j0")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_03', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_04', {})
+  call term_sendkeys(buf, "j0")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_05', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_06', {})
+  call term_sendkeys(buf, "j0")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_07', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_08', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_09', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_before_tab_10', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropBeforeTab')
 endfunc
 
 func Test_prop_after_linebreak()
@@ -2034,6 +2355,659 @@ func Test_prop_blockwise_change()
 
   call DeletePropTypes()
   bwipe!
+endfunc
+
+func Do_test_props_do_not_affect_byte_offsets(ff, increment)
+  new
+  let lcount = 410
+
+  " File format affects byte-offset calculations, so make sure it is known.
+  exec 'setlocal fileformat=' . a:ff
+
+  " Fill the buffer with varying length lines. We need a suitably large number
+  " to force Vim code through paths wehere previous error have occurred. This
+  " is more 'art' than 'science'.
+  let text = 'a'
+  call setline(1, text)
+  let offsets = [1]
+  for idx in range(lcount)
+      call add(offsets, offsets[idx] + len(text) + a:increment)
+      if (idx % 6) == 0
+          let text = text . 'a'
+      endif
+      call append(line('$'), text)
+  endfor
+
+  " Set a property that spans a few lines to cause Vim's internal buffer code
+  " to perform a reasonable amount of rearrangement.
+  call prop_type_add('one', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'type': 'one', 'end_lnum': 6, 'end_col': 2})
+
+  for idx in range(lcount)
+      let boff = line2byte(idx + 1)
+      call assert_equal(offsets[idx], boff, 'Bad byte offset at line ' . (idx + 1))
+  endfor
+
+  call prop_type_delete('one')
+  bwipe!
+endfunc
+
+func Test_props_do_not_affect_byte_offsets()
+  call Do_test_props_do_not_affect_byte_offsets('unix', 1)
+endfunc
+
+func Test_props_do_not_affect_byte_offsets_dos()
+  call Do_test_props_do_not_affect_byte_offsets('dos', 2)
+endfunc
+
+func Test_props_do_not_affect_byte_offsets_editline()
+  new
+  let lcount = 410
+
+  " File format affects byte-offset calculations, so make sure it is known.
+  setlocal fileformat=unix
+
+  " Fill the buffer with varying length lines. We need a suitably large number
+  " to force Vim code through paths wehere previous error have occurred. This
+  " is more 'art' than 'science'.
+  let text = 'aa'
+  call setline(1, text)
+  let offsets = [1]
+  for idx in range(lcount)
+      call add(offsets, offsets[idx] + len(text) + 1)
+      if (idx % 6) == 0
+          let text = text . 'a'
+      endif
+      call append(line('$'), text)
+  endfor
+
+  " Set a property that just covers the first line. When this test was
+  " developed, this did not trigger a byte-offset error.
+  call prop_type_add('one', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'type': 'one', 'end_lnum': 1, 'end_col': 3})
+
+  for idx in range(lcount)
+      let boff = line2byte(idx + 1)
+      call assert_equal(offsets[idx], boff,
+          \ 'Confounding bad byte offset at line ' . (idx + 1))
+  endfor
+
+  " Insert text in the middle of the first line, keeping the property
+  " unchanged.
+  :1
+  normal aHello
+  for idx in range(1, lcount)
+      let offsets[idx] = offsets[idx] + 5
+  endfor
+
+  for idx in range(lcount)
+      let boff = line2byte(idx + 1)
+      call assert_equal(offsets[idx], boff,
+          \ 'Bad byte offset at line ' . (idx + 1))
+  endfor
+
+  call prop_type_delete('one')
+  bwipe!
+endfunc
+
+func Test_prop_inserts_text()
+  CheckRunVimInTerminal
+
+  " Just a basic check for now
+  let lines =<< trim END
+      call setline(1, 'insert some text here and other text there and some more text after wrapping')
+      call prop_type_add('someprop', #{highlight: 'ErrorMsg'})
+      call prop_type_add('otherprop', #{highlight: 'Search'})
+      call prop_type_add('moreprop', #{highlight: 'DiffAdd'})
+      call prop_add(1, 18, #{type: 'someprop', text: 'SOME '})
+      call prop_add(1, 38, #{type: 'otherprop', text: "OTHER\t"})
+      call prop_add(1, 69, #{type: 'moreprop', text: 'MORE '})
+      normal $
+
+      call setline(2, 'prepost')
+      call prop_type_add('multibyte', #{highlight: 'Visual'})
+      call prop_add(2, 4, #{type: 'multibyte', text: 'söme和平téxt'})
+
+      call setline(3, 'Foo foo = { 1, 2 };')
+      call prop_type_add('testprop', #{highlight: 'Comment'})
+      call prop_add(3, 13, #{type: 'testprop', text: '.x='})
+      call prop_add(3, 16, #{type: 'testprop', text: '.y='})
+
+      call setline(4, '')
+      call prop_add(4, 1, #{type: 'someprop', text: 'empty line'})
+
+      call setline(5, 'look highlight')
+      call prop_type_add('nohi', #{})
+      call prop_add(5, 6, #{type: 'nohi', text: 'no '})
+  END
+  call writefile(lines, 'XscriptPropsWithText')
+  let buf = RunVimInTerminal('-S XscriptPropsWithText', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_1', {})
+
+  call term_sendkeys(buf, ":set signcolumn=yes\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_2', {})
+
+  call term_sendkeys(buf, "2G$")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_3', {})
+
+  call term_sendkeys(buf, "3Gf1")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_4', {})
+  call term_sendkeys(buf, "f2")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_5', {})
+
+  call term_sendkeys(buf, "4G")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_6', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithText')
+endfunc
+
+func Test_prop_inserts_text_highlight()
+  CheckRunVimInTerminal
+
+  " Just a basic check for now
+  let lines =<< trim END
+      call setline(1, 'insert some text (here) and there')
+      call prop_type_add('someprop', #{highlight: 'ErrorMsg'})
+      let bef_prop = prop_add(1, 18, #{type: 'someprop', text: 'BEFORE'})
+      set hlsearch
+      let thematch = matchaddpos("DiffAdd", [[1, 18]])
+      func DoAfter()
+        call prop_remove(#{id: g:bef_prop})
+        call prop_add(1, 19, #{type: 'someprop', text: 'AFTER'})
+        let g:thematch = matchaddpos("DiffAdd", [[1, 18]])
+        let @/ = ''
+      endfunc
+  END
+  call writefile(lines, 'XscriptPropsWithHighlight')
+  let buf = RunVimInTerminal('-S XscriptPropsWithHighlight', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_1', {})
+  call term_sendkeys(buf, "/text (he\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_2', {})
+  call term_sendkeys(buf, ":call matchdelete(thematch)\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_3', {})
+
+  call term_sendkeys(buf, ":call DoAfter()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_4', {})
+  call term_sendkeys(buf, "/text (he\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_5', {})
+  call term_sendkeys(buf, ":call matchdelete(thematch)\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_inserts_text_hi_6', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithHighlight')
+endfunc
+
+func Test_props_with_text_right_align_twice()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ["some text some text some text some text", 'line two'])
+      call prop_type_add( 'MyErrorText', #{ highlight: 'ErrorMsg' } )
+      call prop_type_add( 'MyPadding', #{ highlight: 'DiffChange' } )
+      call prop_add( 1, 0, #{ type: 'MyPadding', text: ' nothing here', text_wrap: 'wrap'} )
+      call prop_add( 1, 0, #{ type: 'MyErrorText', text: 'Some error', text_wrap: 'wrap', text_align: 'right' } )
+      call prop_add( 1, 0, #{ type: 'MyErrorText', text: 'Another error', text_wrap: 'wrap', text_align: 'right' } )
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsRightAlign')
+  let buf = RunVimInTerminal('-S XscriptPropsRightAlign', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_prop_right_align_twice_1', {})
+
+  call term_sendkeys(buf, "ggisome more text\<Esc>G$")
+  call VerifyScreenDump(buf, 'Test_prop_right_align_twice_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsRightAlign')
+endfunc
+
+func Test_props_with_text_after()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set showbreak=+++
+      set breakindent
+      call setline(1, '   some text here and other text there')
+      call prop_type_add('rightprop', #{highlight: 'ErrorMsg'})
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_type_add('belowprop', #{highlight: 'DiffAdd'})
+      call prop_add(1, 0, #{type: 'rightprop', text: ' RIGHT ', text_align: 'right'})
+      call prop_add(1, 0, #{type: 'afterprop', text: "\tAFTER\t", text_align: 'after'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' BELOW ', text_align: 'below'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' ALSO BELOW ', text_align: 'below'})
+
+      call setline(2, 'Last line.')
+      call prop_add(2, 0, #{type: 'afterprop', text: ' After Last ', text_align: 'after'})
+      normal G$
+
+      call setline(3, 'right here')
+      call prop_add(3, 0, #{type: 'rightprop', text: 'söme和平téxt', text_align: 'right'})
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfter')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfter', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfter')
+
+  call assert_fails('call prop_add(1, 2, #{text: "yes", text_align: "right", type: "some"})', 'E1294:')
+endfunc
+
+func Test_props_with_text_after_below_trunc()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      edit foobar
+      set showbreak=+++
+      setline(1, ['onasdf asdf asdf asdf asd fas df', 'two'])
+      prop_type_add('test', {highlight: 'Special'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'the quick brown fox jumps over the lazy dog',
+          text_align: 'after'
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'the quick brown fox jumps over the lazy dog',
+          text_align: 'below'
+      })
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsAfterTrunc')
+  let buf = RunVimInTerminal('-S XscriptPropsAfterTrunc', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_below_trunc_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsAfterTrunc')
+endfunc
+
+func Test_props_with_text_after_joined()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['one', 'two', 'three', 'four'])
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' ONE', text_align: 'after'})
+      call prop_add(4, 0, #{type: 'afterprop', text: ' FOUR', text_align: 'after'})
+      normal ggJ
+      normal GkJ
+
+      call setline(3, ['a', 'b', 'c', 'd', 'e', 'f'])
+      call prop_add(3, 0, #{type: 'afterprop', text: ' AAA', text_align: 'after'})
+      call prop_add(5, 0, #{type: 'afterprop', text: ' CCC', text_align: 'after'})
+      call prop_add(7, 0, #{type: 'afterprop', text: ' EEE', text_align: 'after'})
+      call prop_add(8, 0, #{type: 'afterprop', text: ' FFF', text_align: 'after'})
+      normal 3G6J
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfterJoined')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfterJoined', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_joined_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfterJoined')
+endfunc
+
+func Test_props_with_text_after_truncated()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['one two three four five six seven'])
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' ONE and TWO and THREE and FOUR and FIVE'})
+
+      call setline(2, ['one two three four five six seven'])
+      call prop_add(2, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five', text_align: 'right'})
+
+      call setline(3, ['one two three four five six seven'])
+      call prop_add(3, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five lets wrap after some more text', text_align: 'below'})
+
+      call setline(4, ['cursor here'])
+      normal 4Gfh
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfterTrunc')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfterTrunc', #{rows: 9, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_1', {})
+
+  call term_sendkeys(buf, ":37vsp\<CR>gg")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_2', {})
+
+  call term_sendkeys(buf, ":36wincmd |\<CR>")
+  call term_sendkeys(buf, "2G$")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_3', {})
+
+  call term_sendkeys(buf, ":33wincmd |\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_4', {})
+
+  call term_sendkeys(buf, ":18wincmd |\<CR>")
+  call term_sendkeys(buf, "0fx")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_trunc_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfterTrunc')
+endfunc
+
+func Test_props_with_text_empty_line()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['', 'aaa', '', 'bbbbbb'])
+      call prop_type_add('prop1', #{highlight: 'Search'})
+      call prop_add(1, 1, #{type: 'prop1', text_wrap: 'wrap', text: repeat('X', &columns)})
+      call prop_add(3, 1, #{type: 'prop1', text_wrap: 'wrap', text: repeat('X', &columns + 1)})
+      normal gg0
+  END
+  call writefile(lines, 'XscriptPropsWithTextEmptyLine')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextEmptyLine', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_1', {})
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_2', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_3', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_4', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_empty_line_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextEmptyLine')
+endfunc
+
+func Test_props_with_text_after_wraps()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['one two three four five six seven'])
+      call prop_type_add('afterprop', #{highlight: 'Search'})
+      call prop_add(1, 0, #{type: 'afterprop', text: ' ONE and TWO and THREE and FOUR and FIVE', text_wrap: 'wrap'})
+
+      call setline(2, ['one two three four five six seven'])
+      call prop_add(2, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five', text_align: 'right', text_wrap: 'wrap'})
+
+      call setline(3, ['one two three four five six seven'])
+      call prop_add(3, 0, #{type: 'afterprop', text: ' one AND two AND three AND four AND five lets wrap after some more text', text_align: 'below', text_wrap: 'wrap'})
+
+      call setline(4, ['cursor here'])
+      normal 4Gfh
+  END
+  call writefile(lines, 'XscriptPropsWithTextAfterWraps')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAfterWraps', #{rows: 9, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_wraps_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsWithTextAfterWraps')
+endfunc
+
+func Test_props_with_text_after_nowrap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set nowrap
+      call setline(1, ['one', 'two', 'three', 'four'])
+      call prop_type_add('belowprop', #{highlight: 'ErrorMsg'})
+      call prop_type_add('anotherprop', #{highlight: 'Search'})
+      call prop_type_add('someprop', #{highlight: 'DiffChange'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' Below the line ', text_align: 'below'})
+      call prop_add(2, 0, #{type: 'anotherprop', text: 'another', text_align: 'below'})
+      call prop_add(2, 0, #{type: 'belowprop', text: 'One More Here', text_align: 'below'})
+      call prop_add(1, 0, #{type: 'someprop', text: 'right here', text_align: 'right'})
+      call prop_add(1, 0, #{type: 'someprop', text: ' After the text', text_align: 'after'})
+      normal 3G$
+
+      call prop_add(3, 0, #{type: 'anotherprop', text: 'right aligned', text_align: 'right'})
+      call prop_add(3, 0, #{type: 'anotherprop', text: 'also right aligned', text_align: 'right'})
+      hi CursorLine ctermbg=lightgrey
+  END
+  call writefile(lines, 'XscriptPropsAfterNowrap')
+  let buf = RunVimInTerminal('-S XscriptPropsAfterNowrap', #{rows: 12, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_1', {})
+
+  call term_sendkeys(buf, ":set signcolumn=yes foldcolumn=3 cursorline\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_2', {})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_3', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsAfterNowrap')
+endfunc
+
+func Test_props_with_text_below_nowrap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      edit foobar
+      set nowrap
+      set showbreak=+++\ 
+      setline(1, ['onasdf asdf asdf sdf df asdf asdf e asdf asdf asdf asdf asd fas df', 'two'])
+      prop_type_add('test', {highlight: 'Special'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'the quick brown fox jumps over the lazy dog',
+          text_align: 'after'
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'the quick brown fox jumps over the lazy dog',
+          text_align: 'below'
+      })
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsBelowNowrap')
+  let buf = RunVimInTerminal('-S XscriptPropsBelowNowrap', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_below_nowrap_1', {})
+
+  call term_sendkeys(buf, "gg$")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_below_nowrap_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsBelowNowrap')
+endfunc
+
+func Test_props_with_text_override()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, 'some text here')
+      hi Likethis ctermfg=blue ctermbg=cyan
+      prop_type_add('prop', {highlight: 'Likethis', override: true})
+      prop_add(1, 6, {type: 'prop', text: ' inserted '})
+      hi CursorLine cterm=underline ctermbg=lightgrey
+      set cursorline
+  END
+  call writefile(lines, 'XscriptPropsOverride')
+  let buf = RunVimInTerminal('-S XscriptPropsOverride', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_override_1', {})
+
+  call term_sendkeys(buf, ":set nocursorline\<CR>")
+  call term_sendkeys(buf, "0llvfr")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_override_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsOverride')
+endfunc
+
+func Test_props_with_text_CursorMoved()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['this is line one', 'this is line two', 'three', 'four', 'five'])
+
+      call prop_type_add('prop', #{highlight: 'Error'})
+      let g:long_text = repeat('x', &columns * 2)
+
+      let g:prop_id = v:null
+      func! Update()
+        if line('.') == 1
+          if g:prop_id == v:null
+            let g:prop_id = prop_add(1, 0, #{type: 'prop', text_wrap: 'wrap', text: g:long_text})
+          endif
+        elseif g:prop_id != v:null
+          call prop_remove(#{id: g:prop_id})
+          let g:prop_id = v:null
+        endif
+      endfunc
+
+      autocmd CursorMoved * call Update()
+  END
+  call writefile(lines, 'XscriptPropsCursorMovec')
+  let buf = RunVimInTerminal('-S XscriptPropsCursorMovec', #{rows: 8, cols: 60})
+  call term_sendkeys(buf, "gg0w")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_cursormoved_1', {})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_cursormoved_2', {})
+
+  " back to the first state
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_cursormoved_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsCursorMovec')
+endfunc
+
+func Test_props_with_text_after_split_join()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['1122'])
+      call prop_type_add('belowprop', #{highlight: 'ErrorMsg'})
+      call prop_add(1, 0, #{type: 'belowprop', text: ' Below the line ', text_align: 'below'})
+      exe "normal f2i\<CR>\<Esc>"
+
+      func AddMore()
+        call prop_type_add('another', #{highlight: 'Search'})
+        call prop_add(1, 0, #{type: 'another', text: ' after the text ', text_align: 'after'})
+        call prop_add(1, 0, #{type: 'another', text: ' right here', text_align: 'right'})
+      endfunc
+  END
+  call writefile(lines, 'XscriptPropsAfterSplitJoin')
+  let buf = RunVimInTerminal('-S XscriptPropsAfterSplitJoin', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_1', {})
+
+  call term_sendkeys(buf, "ggJ")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_2', {})
+
+  call term_sendkeys(buf, ":call AddMore()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_3', {})
+
+  call term_sendkeys(buf, "ggf s\<CR>\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_4', {})
+
+  call term_sendkeys(buf, "ggJ")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_join_split_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsAfterSplitJoin')
+endfunc
+
+func Test_removed_prop_with_text_cleans_up_array()
+  new
+  call setline(1, 'some text here')
+  call prop_type_add('some', #{highlight: 'ErrorMsg'})
+  let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
+  call assert_equal(-1, id1)
+  let id2 = prop_add(1, 10, #{type: 'some', text: "HERE"})
+  call assert_equal(-2, id2)
+
+  " removing the props resets the index
+  call prop_remove(#{id: id1})
+  call prop_remove(#{id: id2})
+  let id1 = prop_add(1, 5, #{type: 'some', text: "SOME"})
+  call assert_equal(-1, id1)
+
+  call prop_type_delete('some')
+  bwipe!
+endfunc
+
+def Test_insert_text_before_virtual_text()
+  new foobar
+  setline(1, '12345678')
+  prop_type_add('test', {highlight: 'Search'})
+  prop_add(1, 5, {
+    type: 'test',
+    text: ' virtual text '
+    })
+  normal! f4axyz
+  normal! f5iXYZ
+  assert_equal('1234xyzXYZ5678', getline(1))
+
+  prop_type_delete('test')
+  bwipe!
+enddef
+
+func Test_insert_text_start_incl()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['text one text two', '', 'function(arg)'])
+
+      prop_type_add('propincl', {highlight: 'NonText', start_incl: true})
+      prop_add(1, 6, {type: 'propincl', text: 'after '})
+      cursor(1, 6)
+      prop_type_add('propnotincl', {highlight: 'NonText', start_incl: false})
+      prop_add(1, 15, {type: 'propnotincl', text: 'before '})
+
+      set cindent sw=4 
+      prop_type_add('argname', {highlight: 'DiffChange', start_incl: true})
+      prop_add(3, 10, {type: 'argname', text: 'arg: '})
+  END
+  call writefile(lines, 'XscriptPropsStartIncl')
+  let buf = RunVimInTerminal('-S XscriptPropsStartIncl', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_1', {})
+
+  call term_sendkeys(buf, "i")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_2', {})
+  call term_sendkeys(buf, "xx\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_3', {})
+
+  call term_sendkeys(buf, "2wi")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_4', {})
+  call term_sendkeys(buf, "yy\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_5', {})
+
+  call term_sendkeys(buf, "3Gfai\<CR>\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_6', {})
+  call term_sendkeys(buf, ">>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_7', {})
+  call term_sendkeys(buf, "<<<<")
+  call VerifyScreenDump(buf, 'Test_prop_insert_start_incl_8', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsStartIncl')
+endfunc
+
+func Test_insert_text_list_mode()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['This is a line with quite a bit of text here.',
+                  'second line', 'third line'])
+      set list listchars+=extends:»
+      prop_type_add('Prop1', {highlight: 'Error'})
+      prop_add(1, 0, {
+          type: 'Prop1',
+          text: 'The quick brown fox jumps over the lazy dog',
+          text_align: 'right'
+      })
+  END
+  call writefile(lines, 'XscriptPropsListMode')
+  let buf = RunVimInTerminal('-S XscriptPropsListMode', #{rows: 8, cols: 60})
+  call term_sendkeys(buf, "ggj")
+  call VerifyScreenDump(buf, 'Test_prop_insert_list_mode_1', {})
+
+  call term_sendkeys(buf, ":set nowrap\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_insert_list_mode_2', {})
+
+  call term_sendkeys(buf, "ggd32l")
+  call VerifyScreenDump(buf, 'Test_prop_insert_list_mode_3', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsListMode')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

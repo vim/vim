@@ -19,6 +19,9 @@ DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
 .SUFFIXES: .in .out .res .vim
 
+# Add --gui-dialog-file to avoid getting stuck in a dialog.
+COMMON_ARGS = $(NO_INITS) --gui-dialog-file guidialog
+
 nongui:	nolog tinytests newtests report
 
 gui:	nolog tinytests newtests report
@@ -31,7 +34,7 @@ report:
 	@rem without the +eval feature test_result.log is a copy of test.log
 	@if exist test.log ( copy /y test.log test_result.log > nul ) \
 		else ( echo No failures reported > test_result.log )
-	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages
+	$(VIMPROG) -u NONE $(COMMON_ARGS) -S summarize.vim messages
 	@echo.
 	@echo Test results:
 	@cmd /c type test_result.log
@@ -70,6 +73,8 @@ clean:
 	-if exist messages del messages
 	-if exist benchmark.out del benchmark.out
 	-if exist opt_test.vim del opt_test.vim
+	-if exist guidialog del guidialog
+	-if exist guidialogfile del guidialogfile
 
 nolog:
 	-if exist test.log del test.log
@@ -84,7 +89,7 @@ tinytests: $(SCRIPTS_TINY_OUT)
 $(DOSTMP_INFILES): $(*B).in
 	if not exist $(DOSTMP)\NUL md $(DOSTMP)
 	if exist $@ del $@
-	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=dos|f $@|wq" $(*B).in
+	$(VIMPROG) -u dos.vim $(COMMON_ARGS) "+set ff=dos|f $@|wq" $(*B).in
 
 # For each input file dostmp/test99.in run the tests.
 # This moves test99.in to test99.in.bak temporarily.
@@ -94,7 +99,7 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 	move $(*B).in $(*B).in.bak > nul
 	copy $(DOSTMP)\$(*B).in $(*B).in > nul
 	copy $(*B).ok test.ok > nul
-	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(*B).in
+	$(VIMPROG) -u dos.vim $(COMMON_ARGS) -s dotest.in $(*B).in
 	-@if exist test.out MOVE /y test.out $(DOSTMP)\$(*B).out > nul
 	-@if exist $(*B).in.bak move /y $(*B).in.bak $(*B).in > nul
 	-@if exist test.ok del test.ok
@@ -103,7 +108,7 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 	-@if exist XfakeHOME rd /s /q XfakeHOME
 	-@del X*
 	-@if exist viminfo del viminfo
-	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.out|wq" \
+	$(VIMPROG) -u dos.vim $(COMMON_ARGS) "+set ff=unix|f test.out|wq" \
 		$(DOSTMP)\$(*B).out
 	@diff test.out $*.ok & if errorlevel 1 \
 		( move /y test.out $*.failed > nul \
@@ -123,12 +128,12 @@ newtestssilent: $(NEW_TESTS_RES)
 
 .vim.res:
 	@echo $(VIMPROG) > vimcmd
-	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
+	$(VIMPROG) -u NONE $(COMMON_ARGS) -S runtest.vim $*.vim
 	@del vimcmd
 
 test_gui.res: test_gui.vim
 	@echo $(VIMPROG) > vimcmd
-	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
+	$(VIMPROG) -u NONE $(COMMON_ARGS) -S runtest.vim $*.vim
 	@del vimcmd
 
 test_gui_init.res: test_gui_init.vim
@@ -142,6 +147,6 @@ opt_test.vim: ../optiondefs.h gen_opt_test.vim
 test_bench_regexp.res: test_bench_regexp.vim
 	-if exist benchmark.out del benchmark.out
 	@echo $(VIMPROG) > vimcmd
-	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
+	$(VIMPROG) -u NONE $(COMMON_ARGS) -S runtest.vim $*.vim
 	@del vimcmd
 	@IF EXIST benchmark.out ( type benchmark.out )

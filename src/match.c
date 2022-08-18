@@ -39,7 +39,7 @@ match_add(
     matchitem_T	*m;
     int		hlg_id;
     regprog_T	*regprog = NULL;
-    int		rtype = SOME_VALID;
+    int		rtype = UPD_SOME_VALID;
 
     if (*grp == NUL || (pat != NULL && *pat == NUL))
 	return -1;
@@ -192,7 +192,7 @@ match_add(
 	    }
 	    m->pos.toplnum = toplnum;
 	    m->pos.botlnum = botlnum;
-	    rtype = VALID;
+	    rtype = UPD_VALID;
 	}
     }
 
@@ -228,7 +228,7 @@ match_delete(win_T *wp, int id, int perr)
 {
     matchitem_T	*cur = wp->w_match_head;
     matchitem_T	*prev = cur;
-    int		rtype = SOME_VALID;
+    int		rtype = UPD_SOME_VALID;
 
     if (id < 1)
     {
@@ -269,7 +269,7 @@ match_delete(win_T *wp, int id, int perr)
 	    wp->w_buffer->b_mod_bot = cur->pos.botlnum;
 	    wp->w_buffer->b_mod_xlines = 0;
 	}
-	rtype = VALID;
+	rtype = UPD_VALID;
     }
     vim_free(cur);
     redraw_win_later(wp, rtype);
@@ -292,7 +292,7 @@ clear_matches(win_T *wp)
 	vim_free(wp->w_match_head);
 	wp->w_match_head = m;
     }
-    redraw_win_later(wp, SOME_VALID);
+    redraw_win_later(wp, UPD_SOME_VALID);
 }
 
 /*
@@ -330,10 +330,6 @@ init_search_hl(win_T *wp, match_T *search_hl)
 	cur->hl.buf = wp->w_buffer;
 	cur->hl.lnum = 0;
 	cur->hl.first_lnum = 0;
-# ifdef FEAT_RELTIME
-	// Set the time limit to 'redrawtime'.
-	profile_setlimit(p_rdt, &(cur->hl.tm));
-# endif
 	cur = cur->next;
     }
     search_hl->buf = wp->w_buffer;
@@ -424,6 +420,7 @@ next_search_hl(
     colnr_T	matchcol;
     long	nmatched;
     int		called_emsg_before = called_emsg;
+    int         timed_out = FALSE;
 
     // for :{range}s/pat only highlight inside the range
     if ((lnum < search_first_line || lnum > search_last_line) && cur == NULL)
@@ -449,14 +446,6 @@ next_search_hl(
     // or none is found in this line.
     for (;;)
     {
-# ifdef FEAT_RELTIME
-	// Stop searching after passing the time limit.
-	if (profile_passed_limit(&(shl->tm)))
-	{
-	    shl->lnum = 0;		// no match found in time
-	    break;
-	}
-# endif
 	// Three situations:
 	// 1. No useful previous match: search from start of line.
 	// 2. Not Vi compatible or empty match: continue at next character.
@@ -494,16 +483,9 @@ next_search_hl(
 	    int regprog_is_copy = (shl != search_hl && cur != NULL
 				&& shl == &cur->hl
 				&& cur->match.regprog == cur->hl.rm.regprog);
-	    int timed_out = FALSE;
 
 	    nmatched = vim_regexec_multi(&shl->rm, win, shl->buf, lnum,
-		    matchcol,
-#ifdef FEAT_RELTIME
-		    &(shl->tm), &timed_out
-#else
-		    NULL, NULL
-#endif
-		    );
+							 matchcol, &timed_out);
 	    // Copy the regprog, in case it got freed and recompiled.
 	    if (regprog_is_copy)
 		cur->match.regprog = cur->hl.rm.regprog;
@@ -798,7 +780,11 @@ update_search_hl(
 		// Highlight the match were the cursor is using the CurSearch
 		// group.
 		if (shl == search_hl && shl->has_cursor)
+		{
 		    shl->attr_cur = HL_ATTR(HLF_LC);
+		    if (shl->attr_cur != shl->attr)
+			search_hl_has_cursor_lnum = lnum;
+		}
 
 	    }
 	    else if (col == shl->endcol)
@@ -975,8 +961,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
     }
 
     if (dict_has_key(tv->vval.v_dict, "conceal"))
-	*conceal_char = dict_get_string(tv->vval.v_dict,
-						   (char_u *)"conceal", FALSE);
+	*conceal_char = dict_get_string(tv->vval.v_dict, "conceal", FALSE);
 
     if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) != NULL)
     {
@@ -1175,16 +1160,16 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		}
 	    }
 
-	    group = dict_get_string(d, (char_u *)"group", TRUE);
-	    priority = (int)dict_get_number(d, (char_u *)"priority");
-	    id = (int)dict_get_number(d, (char_u *)"id");
+	    group = dict_get_string(d, "group", TRUE);
+	    priority = (int)dict_get_number(d, "priority");
+	    id = (int)dict_get_number(d, "id");
 	    conceal = dict_has_key(d, "conceal")
-			      ? dict_get_string(d, (char_u *)"conceal", TRUE)
+			      ? dict_get_string(d, "conceal", TRUE)
 			      : NULL;
 	    if (i == 0)
 	    {
 		match_add(win, group,
-		    dict_get_string(d, (char_u *)"pattern", FALSE),
+		    dict_get_string(d, "pattern", FALSE),
 		    priority, id, NULL, conceal);
 	    }
 	    else

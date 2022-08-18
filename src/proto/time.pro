@@ -1,6 +1,6 @@
 /* time.c */
-char *get_ctime(time_t thetime, int add_newline);
 time_T vim_time(void);
+char *get_ctime(time_t thetime, int add_newline);
 void f_localtime(typval_T *argvars, typval_T *rettv);
 void f_reltime(typval_T *argvars, typval_T *rettv);
 void f_reltimefloat(typval_T *argvars, typval_T *rettv);

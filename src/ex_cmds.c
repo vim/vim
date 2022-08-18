@@ -1184,7 +1184,7 @@ do_filter(
 	    vim_free(cmd_buf);
 	    goto error;
 	}
-	redraw_curbuf_later(VALID);
+	redraw_curbuf_later(UPD_VALID);
     }
     read_linecount = curbuf->b_ml.ml_line_count;
 
@@ -2973,6 +2973,11 @@ do_ecmd(
     // Assume success now
     retval = OK;
 
+    // If the file name was changed, reset the not-edit flag so that ":write"
+    // works.
+    if (!other_file)
+	curbuf->b_flags &= ~BF_NOTEDITED;
+
     /*
      * Check if we are editing the w_arg_idx file in the argument list.
      */
@@ -3179,7 +3184,7 @@ do_ecmd(
 	update_topline();
 	curwin->w_scbind_pos = curwin->w_topline;
 	*so_ptr = n;
-	redraw_curbuf_later(NOT_VALID);	// redraw this buffer later
+	redraw_curbuf_later(UPD_NOT_VALID);	// redraw this buffer later
     }
 
     if (p_im && (State & MODE_INSERT) == 0)
@@ -3699,8 +3704,13 @@ ex_substitute(exarg_T *eap)
     int		endcolumn = FALSE;	// cursor in last column when done
     pos_T	old_cursor = curwin->w_cursor;
     int		start_nsubs;
+    int		cmdheight0 = p_ch == 0;
 #ifdef FEAT_EVAL
     int		save_ma = 0;
+    int		save_sandbox = 0;
+#endif
+#ifdef FEAT_PROP_POPUP
+    textprop_T	*text_props = NULL;
 #endif
 
     cmd = eap->arg;
@@ -3993,7 +4003,24 @@ ex_substitute(exarg_T *eap)
 	sub_copy = sub;
     }
     else
-	sub = regtilde(sub, magic_isset());
+    {
+	char_u *newsub = regtilde(sub, magic_isset());
+
+	if (newsub != sub)
+	{
+	    // newsub was allocated, free it later.
+	    sub_copy = newsub;
+	    sub = newsub;
+	}
+    }
+
+    if (cmdheight0)
+    {
+	// If cmdheight is 0, cmdheight must be set to 1 when we enter command
+	// line.
+	set_option_value((char_u *)"ch", 1L, NULL, 0);
+	redraw_statuslines();
+    }
 
     /*
      * Check for a match on each line.
@@ -4006,7 +4033,7 @@ ex_substitute(exarg_T *eap)
 		); ++lnum)
     {
 	nmatch = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
-						       (colnr_T)0, NULL, NULL);
+						       (colnr_T)0, NULL);
 	if (nmatch)
 	{
 	    colnr_T	copycol;
@@ -4025,6 +4052,7 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_PROP_POPUP
 	    int		apc_flags = APC_SAVE_FOR_UNDO | APC_SUBSTITUTE;
 	    colnr_T	total_added =  0;
+	    int		text_prop_count = 0;
 #endif
 
 	    /*
@@ -4296,9 +4324,9 @@ ex_substitute(exarg_T *eap)
 
 			    update_topline();
 			    validate_cursor();
-			    update_screen(SOME_VALID);
+			    update_screen(UPD_SOME_VALID);
 			    highlight_match = FALSE;
-			    redraw_later(SOME_VALID);
+			    redraw_later(UPD_SOME_VALID);
 
 #ifdef FEAT_FOLDING
 			    curwin->w_p_fen = save_p_fen;
@@ -4403,6 +4431,7 @@ ex_substitute(exarg_T *eap)
 		 */
 #ifdef FEAT_EVAL
 		save_ma = curbuf->b_p_ma;
+		save_sandbox = sandbox;
 		if (subflags.do_count)
 		{
 		    // prevent accidentally changing the buffer by a function
@@ -4412,21 +4441,28 @@ ex_substitute(exarg_T *eap)
 		// Save flags for recursion.  They can change for e.g.
 		// :s/^/\=execute("s#^##gn")
 		subflags_save = subflags;
+
+		// Disallow changing text or switching window in an expression.
+		++textlock;
 #endif
-		// get length of substitution part
+		// Get length of substitution part, including the NUL.
+		// When it fails sublen is zero.
 		sublen = vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
-			       sub, sub_firstline, FALSE, magic_isset(), TRUE);
+			       sub, sub_firstline, 0,
+			       REGSUB_BACKSLASH
+				    | (magic_isset() ? REGSUB_MAGIC : 0));
 #ifdef FEAT_EVAL
+		--textlock;
+
 		// If getting the substitute string caused an error, don't do
 		// the replacement.
 		// Don't keep flags set by a recursive call.
 		subflags = subflags_save;
-		if (aborting() || subflags.do_count)
+		if (sublen == 0 || aborting() || subflags.do_count)
 		{
 		    curbuf->b_p_ma = save_ma;
-		    if (sandbox > 0)
-			sandbox--;
+		    sandbox = save_sandbox;
 		    goto skip;
 		}
 #endif
@@ -4469,8 +4505,59 @@ ex_substitute(exarg_T *eap)
 		}
 		else
 		{
-		    p1 = ml_get(sub_firstlnum + nmatch - 1);
+		    linenr_T	lastlnum = sub_firstlnum + nmatch - 1;
+#ifdef FEAT_PROP_POPUP
+		    if (curbuf->b_has_textprop)
+		    {
+			char_u	*prop_start;
+
+			// Props in the first line may be shortened or deleted
+			if (adjust_prop_columns(lnum,
+					total_added + regmatch.startpos[0].col,
+						       -MAXCOL, apc_flags))
+			    apc_flags &= ~APC_SAVE_FOR_UNDO;
+			total_added -= (colnr_T)STRLEN(
+				     sub_firstline + regmatch.startpos[0].col);
+
+			// Props in the last line may be moved or deleted
+			if (adjust_prop_columns(lastlnum,
+					0, -regmatch.endpos[0].col, apc_flags))
+			    // When text properties are changed, need to save
+			    // for undo first, unless done already.
+			    apc_flags &= ~APC_SAVE_FOR_UNDO;
+
+			// Copy the text props of the last line, they will be
+			// later appended to the changed line.
+			text_prop_count = get_text_props(curbuf, lastlnum,
+							   &prop_start, FALSE);
+			if (text_prop_count > 0)
+			{
+			    // TODO: what when we already did this?
+			    vim_free(text_props);
+			    text_props = ALLOC_MULT(textprop_T,
+							      text_prop_count);
+			    if (text_props != NULL)
+			    {
+				int pi;
+
+				mch_memmove(text_props, prop_start,
+					 text_prop_count * sizeof(textprop_T));
+				// After joining the text prop columns will
+				// increase.
+				for (pi = 0; pi < text_prop_count; ++pi)
+				    text_props[pi].tp_col +=
+					 regmatch.startpos[0].col + sublen - 1;
+			    }
+			}
+		    }
+#endif
+		    p1 = ml_get(lastlnum);
 		    nmatch_tl += nmatch - 1;
+#ifdef FEAT_PROP_POPUP
+		    if (curbuf->b_has_textprop)
+			total_added += (colnr_T)STRLEN(
+						  p1 + regmatch.endpos[0].col);
+#endif
 		}
 		copy_len = regmatch.startpos[0].col - copycol;
 		needed_len = copy_len + ((unsigned)STRLEN(p1)
@@ -4518,9 +4605,17 @@ ex_substitute(exarg_T *eap)
 		mch_memmove(new_end, sub_firstline + copycol, (size_t)copy_len);
 		new_end += copy_len;
 
+#ifdef FEAT_EVAL
+		++textlock;
+#endif
 		(void)vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
-				      sub, new_end, TRUE, magic_isset(), TRUE);
+				      sub, new_end, sublen,
+				      REGSUB_COPY | REGSUB_BACKSLASH
+					 | (magic_isset() ? REGSUB_MAGIC : 0));
+#ifdef FEAT_EVAL
+		--textlock;
+#endif
 		sub_nsubs++;
 		did_sub = TRUE;
 
@@ -4648,7 +4743,7 @@ skip:
 			|| nmatch_tl > 0
 			|| (nmatch = vim_regexec_multi(&regmatch, curwin,
 							curbuf, sub_firstlnum,
-						    matchcol, NULL, NULL)) == 0
+						    matchcol, NULL)) == 0
 			|| regmatch.startpos[0].lnum > 0)
 		{
 		    if (new_start != NULL)
@@ -4668,7 +4763,10 @@ skip:
 			if (u_savesub(lnum) != OK)
 			    break;
 			ml_replace(lnum, new_start, TRUE);
-
+#ifdef FEAT_PROP_POPUP
+			if (text_props != NULL)
+			    add_text_props(lnum, text_props, text_prop_count);
+#endif
 			if (nmatch_tl > 0)
 			{
 			    /*
@@ -4713,7 +4811,7 @@ skip:
 		    }
 		    if (nmatch == -1 && !lastone)
 			nmatch = vim_regexec_multi(&regmatch, curwin, curbuf,
-					  sub_firstlnum, matchcol, NULL, NULL);
+					  sub_firstlnum, matchcol, NULL);
 
 		    /*
 		     * 5. break if there isn't another match in this line
@@ -4752,6 +4850,10 @@ skip:
 
 outofmem:
     vim_free(sub_firstline); // may have to free allocated copy of the line
+
+#ifdef FEAT_PROP_POPUP
+    vim_free(text_props);
+#endif
 
     // ":s/pat//n" doesn't move the cursor
     if (subflags.do_count)
@@ -4801,6 +4903,10 @@ outofmem:
 	// Cursor position may require updating
 	changed_window_setting();
 #endif
+
+    // Restore cmdheight
+    if (cmdheight0)
+	set_option_value((char_u *)"ch", 0L, NULL, 0);
 
     vim_regfree(regmatch.regprog);
     vim_free(sub_copy);
@@ -4977,7 +5083,7 @@ ex_global(exarg_T *eap)
     {
 	lnum = curwin->w_cursor.lnum;
 	match = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
-						       (colnr_T)0, NULL, NULL);
+						       (colnr_T)0, NULL);
 	if ((type == 'g' && match) || (type == 'v' && !match))
 	    global_exe_one(cmd, lnum);
     }
@@ -4990,7 +5096,7 @@ ex_global(exarg_T *eap)
 	{
 	    // a match on this line?
 	    match = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
-						       (colnr_T)0, NULL, NULL);
+						       (colnr_T)0, NULL);
 	    if (regmatch.regprog == NULL)
 		break;  // re-compiling regprog failed
 	    if ((type == 'g' && match) || (type == 'v' && !match))
@@ -5164,7 +5270,7 @@ prepare_tagpreview(
 		    popup_hide(wp);
 		// When the popup moves or resizes it may reveal part of
 		// another window.  TODO: can this be done more efficiently?
-		redraw_all_later(NOT_VALID);
+		redraw_all_later(UPD_NOT_VALID);
 	    }
 	}
 	else

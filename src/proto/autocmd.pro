@@ -38,4 +38,7 @@ char_u *set_context_in_autocmd(expand_T *xp, char_u *arg, int doautocmd);
 char_u *get_event_name(expand_T *xp, int idx);
 int autocmd_supported(char_u *name);
 int au_exists(char_u *arg);
+void f_autocmd_add(typval_T *argvars, typval_T *rettv);
+void f_autocmd_delete(typval_T *argvars, typval_T *rettv);
+void f_autocmd_get(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

@@ -188,7 +188,7 @@ mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
-    RETSIGTYPE (*sigcld) SIGPROTOARG;
+    void (*sigcld) SIGPROTOARG;
     static char TtyName[32];  // used for opening a new pty-pair
 
     if ((f = posix_openpt(O_RDWR | O_NOCTTY | O_EXTRA)) == -1)
@@ -259,7 +259,7 @@ mch_openpty(char **ttyn)
 {
     int f;
     char *name;
-    RETSIGTYPE (*sigcld) SIGPROTOARG;
+    void (*sigcld) SIGPROTOARG;
 
     /*
      * SIGCHLD set to SIG_DFL for _getpty() because it may fork() and
@@ -312,7 +312,7 @@ mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
-    RETSIGTYPE (*sigcld) SIGPROTOARG;
+    void (*sigcld) SIGPROTOARG;
     // used for opening a new pty-pair:
     static char TtyName[32];
 

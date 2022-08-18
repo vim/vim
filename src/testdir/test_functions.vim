@@ -40,6 +40,9 @@ func Test_has()
   " Will we ever have patch 9999?
   let ver = 'patch-' .. v:version / 100 .. '.' .. v:version % 100 .. '.9999'
   call assert_equal(0, has(ver))
+
+  " There actually isn't a patch 9.0.0, but this is more consistent.
+  call assert_equal(1, has('patch-9.0.0'))
 endfunc
 
 func Test_empty()
@@ -1545,6 +1548,10 @@ func Test_input_func()
   call feedkeys(":let c = input('name? ', \"x\\<BS>y\")\<CR>\<CR>", 'xt')
   call assert_equal('y', c)
 
+  " Test for using text with composing characters as default input
+  call feedkeys(":let c = input('name? ', \"ã̳\")\<CR>\<CR>", 'xt')
+  call assert_equal('ã̳', c)
+
   " Test for using <CR> as default input
   call feedkeys(":let c = input('name? ', \"\\<CR>\")\<CR>x\<CR>", 'xt')
   call assert_equal(' x', c)
@@ -2679,7 +2686,8 @@ func Test_range()
     else
       let cmd = "ls"
     endif
-    call assert_fails('call term_start("' .. cmd .. '", #{term_finish: "close"})', 'E475:')
+    call assert_fails('call term_start("' .. cmd .. '", #{term_finish: "close"'
+        \ .. ', ansi_colors: range(16)})', 'E475:')
     unlet g:terminal_ansi_colors
   endif
 
@@ -2944,6 +2952,17 @@ func Test_exepath()
   else
     call assert_notequal(exepath('sh'), '')
   endif
+endfunc
+
+" Test for virtcol()
+func Test_virtcol()
+  enew!
+  call setline(1, "the\tquick\tbrown\tfox")
+  norm! 4|
+  call assert_equal(8, virtcol('.'))
+  call assert_equal(8, virtcol('.', v:false))
+  call assert_equal([4, 8], virtcol('.', v:true))
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

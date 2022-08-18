@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 8.2.  Last change: 2022 May 10
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Jun 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -60,6 +60,9 @@ assert_report({msg})		Number	report a test failure
 assert_true({actual} [, {msg}])	Number	assert {actual} is true
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
+autocmd_add({acmds})		Bool	add a list of autocmds and groups
+autocmd_delete({acmds})		Bool	delete a list of autocmds and groups
+autocmd_get([{opts}])		List	return a list of autocmds
 balloon_gettext()		String	current text in the balloon
 balloon_show({expr})		none	show {expr} inside the balloon
 balloon_split({msg})		List	split {msg} as used for a balloon
@@ -288,9 +291,11 @@ iconv({expr}, {from}, {to})	String	convert encoding of {expr}
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
+indexof({object}, {expr} [, {opts}]])
+				Number	index in {object} where {expr} is true
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
-inputdialog({prompt} [, {text} [, {completion}]])
+inputdialog({prompt} [, {text} [, {cancelreturn}]])
 				String	like input() but in a GUI dialog
 inputlist({textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
@@ -686,7 +691,10 @@ undotree()			List	undo file tree
 uniq({list} [, {func} [, {dict}]])
 				List	remove adjacent duplicates from a list
 values({dict})			List	values in {dict}
-virtcol({expr})			Number	screen column of cursor or mark
+virtcol({expr} [, {list}])	Number or List
+					screen column of cursor or mark
+virtcol2col({winid}, {lnum}, {col})
+				Number  byte index of a character on screen
 visualmode([expr])		String	last visual mode used
 wildmenumode()			Number	whether 'wildmenu' mode is active
 win_execute({id}, {command} [, {silent}])
@@ -747,7 +755,7 @@ acos({expr})							*acos()*
 		Return the arc cosine of {expr} measured in radians, as a
 		|Float| in the range of [0, pi].
 		{expr} must evaluate to a |Float| or a |Number| in the range
-		[-1, 1].
+		[-1, 1].  Otherwise acos() returns "nan".
 		Examples: >
 			:echo acos(0)
 <			1.570796 >
@@ -769,6 +777,7 @@ add({object}, {expr})					*add()*
 		item.  Use |extend()| to concatenate |Lists|.
 		When {object} is a |Blob| then  {expr} must be a number.
 		Use |insert()| to add an item at another position.
+		Returns 1 if {object} is not a |List| or a |Blob|.
 
 		Can also be used as a |method|: >
 			mylist->add(val1)->add(val2)
@@ -777,6 +786,7 @@ add({object}, {expr})					*add()*
 and({expr}, {expr})					*and()*
 		Bitwise AND on the two arguments.  The arguments are converted
 		to a number.  A List, Dict or Float argument causes an error.
+		Also see `or()` and `xor()`.
 		Example: >
 			:let flag = and(bits, 0x80)
 <		Can also be used as a |method|: >
@@ -870,11 +880,17 @@ argv([{nr} [, {winid}]])
 		The {winid} argument specifies the window ID, see |argc()|.
 		For the Vim command line arguments see |v:argv|.
 
+		Returns an empty string if {nr}th argument is not present in
+		the argument list.  Returns an empty List if the {winid}
+		argument is invalid.
+
 asin({expr})						*asin()*
 		Return the arc sine of {expr} measured in radians, as a |Float|
 		in the range of [-pi/2, pi/2].
 		{expr} must evaluate to a |Float| or a |Number| in the range
 		[-1, 1].
+		Returns "nan" if {expr} is outside the range [-1, 1].  Returns
+		0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo asin(0.8)
 <			0.927295 >
@@ -895,6 +911,7 @@ atan({expr})						*atan()*
 		Return the principal value of the arc tangent of {expr}, in
 		the range [-pi/2, +pi/2] radians, as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo atan(100)
 <			1.560797 >
@@ -911,6 +928,8 @@ atan2({expr1}, {expr2})					*atan2()*
 		Return the arc tangent of {expr1} / {expr2}, measured in
 		radians, as a |Float| in the range [-pi, pi].
 		{expr1} and {expr2} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr1} or {expr2} is not a |Float| or a
+		|Number|.
 		Examples: >
 			:echo atan2(-1, 1)
 <			-0.785398 >
@@ -922,9 +941,162 @@ atan2({expr1}, {expr2})					*atan2()*
 <
 		{only available when compiled with the |+float| feature}
 
+
+autocmd_add({acmds})					*autocmd_add()*
+		Adds a List of autocmds and autocmd groups.
+
+		The {acmds} argument is a List where each item is a Dict with
+		the following optional items:
+		    bufnr	buffer number to add a buffer-local autocmd.
+				If this item is specified, then the "pattern"
+				item is ignored.
+		    cmd		Ex command to execute for this autocmd event
+		    event	autocmd event name. Refer to |autocmd-events|.
+				This can be either a String with a single
+				event name or a List of event names.
+		    group	autocmd group name. Refer to |autocmd-groups|.
+				If this group doesn't exist then it is
+				created.  If not specified or empty, then the
+				default group is used.
+		    nested	boolean flag, set to v:true to add a nested
+				autocmd.  Refer to |autocmd-nested|.
+		    once	boolean flag, set to v:true to add an autocmd
+				which executes only once. Refer to
+				|autocmd-once|.
+		    pattern	autocmd pattern string. Refer to
+				|autocmd-patterns|.  If "bufnr" item is
+				present, then this item is ignored.  This can
+				be a String with a single pattern or a List of
+				patterns.
+		    replace	boolean flag, set to v:true to remove all the
+				commands associated with the specified autocmd
+				event and group and add the {cmd}.  This is
+				useful to avoid adding the same command
+				multiple times for an autocmd event in a group.
+
+		Returns v:true on success and v:false on failure.
+		Examples: >
+			" Create a buffer-local autocmd for buffer 5
+			let acmd = {}
+			let acmd.group = 'MyGroup'
+			let acmd.event = 'BufEnter'
+			let acmd.bufnr = 5
+			let acmd.cmd = 'call BufEnterFunc()'
+			call autocmd_add([acmd])
+
+		Can also be used as a |method|: >
+			GetAutocmdList()->autocmd_add()
+<
+autocmd_delete({acmds})					*autocmd_delete()*
+		Deletes a List of autocmds and autocmd groups.
+
+		The {acmds} argument is a List where each item is a Dict with
+		the following optional items:
+		    bufnr	buffer number to delete a buffer-local autocmd.
+				If this item is specified, then the "pattern"
+				item is ignored.
+		    cmd		Ex command for this autocmd event
+		    event	autocmd event name. Refer to |autocmd-events|.
+				If '*' then all the autocmd events in this
+				group are deleted.
+		    group	autocmd group name. Refer to |autocmd-groups|.
+				If not specified or empty, then the default
+				group is used.
+		    nested	set to v:true for a nested autocmd.
+				Refer to |autocmd-nested|.
+		    once	set to v:true for an autocmd which executes
+				only once. Refer to |autocmd-once|.
+		    pattern	autocmd pattern string. Refer to
+				|autocmd-patterns|.  If "bufnr" item is
+				present, then this item is ignored.
+
+		If only {group} is specified in a {acmds} entry and {event},
+		{pattern} and {cmd} are not specified, then that autocmd group
+		is deleted.
+
+		Returns |v:true| on success and |v:false| on failure.
+		Examples: >
+			" :autocmd! BufLeave *.vim
+			let acmd = #{event: 'BufLeave', pattern: '*.vim'}
+			call autocmd_delete([acmd]})
+			" :autocmd! MyGroup1 BufLeave
+			let acmd = #{group: 'MyGroup1', event: 'BufLeave'}
+			call autocmd_delete([acmd])
+			" :autocmd! MyGroup2 BufEnter *.c
+			let acmd = #{group: 'MyGroup2', event: 'BufEnter',
+							\ pattern: '*.c'}
+			" :autocmd! MyGroup2 * *.c
+			let acmd = #{group: 'MyGroup2', event: '*',
+							\ pattern: '*.c'}
+			call autocmd_delete([acmd])
+			" :autocmd! MyGroup3
+			let acmd = #{group: 'MyGroup3'}
+			call autocmd_delete([acmd])
+<
+		Can also be used as a |method|: >
+			GetAutocmdList()->autocmd_delete()
+
+autocmd_get([{opts}])					*autocmd_get()*
+		Returns a |List| of autocmds. If {opts} is not supplied, then
+		returns the autocmds for all the events in all the groups.
+
+		The optional {opts} Dict argument supports the following
+		items:
+		    group	Autocmd group name. If specified, returns only
+				the autocmds defined in this group. If the
+				specified group doesn't exist, results in an
+				error message.  If set to an empty string,
+				then the default autocmd group is used.
+		    event	Autocmd event name. If specified, returns only
+				the autocmds defined for this event.  If set
+				to "*", then returns autocmds for all the
+				events.  If the specified event doesn't exist,
+				results in an error message.
+		    pattern	Autocmd pattern. If specified, returns only
+				the autocmds defined for this pattern.
+		A combination of the above three times can be supplied in
+		{opts}.
+
+		Each Dict in the returned List contains the following items:
+		    bufnr	For buffer-local autocmds, buffer number where
+				the autocmd is defined.
+		    cmd		Command executed for this autocmd.
+		    event	Autocmd event name.
+		    group	Autocmd group name.
+		    nested	Boolean flag, set to v:true for a nested
+				autocmd. See |autocmd-nested|.
+		    once	Boolean flag, set to v:true, if the autocmd
+				will be executed only once. See |autocmd-once|.
+		    pattern	Autocmd pattern.  For a buffer-local
+				autocmd, this will be of the form "<buffer=n>".
+		If there are multiple commands for an autocmd event in a
+		group, then separate items are returned for each command.
+
+		Returns an empty List if an autocmd with the specified group
+		or event or pattern is not found.
+
+		Examples: >
+			" :autocmd MyGroup
+			echo autocmd_get(#{group: 'Mygroup'})
+			" :autocmd G BufUnload
+			echo autocmd_get(#{group: 'G', event: 'BufUnload'})
+			" :autocmd G * *.ts
+			let acmd = #{group: 'G', event: '*', pattern: '*.ts'}
+			echo autocmd_get(acmd)
+			" :autocmd Syntax
+			echo autocmd_get(#{event: 'Syntax'})
+			" :autocmd G BufEnter *.ts
+			let acmd = #{group: 'G', event: 'BufEnter',
+							\ pattern: '*.ts'}
+			echo autocmd_get(acmd)
+<
+		Can also be used as a |method|: >
+			Getopts()->autocmd_get()
+<
 balloon_gettext()					*balloon_gettext()*
 		Return the current text in the balloon.  Only for the string,
-		not used for the List.
+		not used for the List.  Returns an empty string if balloon
+		is not present.
 
 balloon_show({expr})					*balloon_show()*
 		Show {expr} inside the balloon.  For the GUI {expr} is used as
@@ -950,10 +1122,10 @@ balloon_show({expr})					*balloon_show()*
 		is initiated from 'balloonexpr'.  It will invoke an
 		asynchronous method, in which a callback invokes
 		balloon_show().  The 'balloonexpr' itself can return an
-		empty string or a placeholder.
+		empty string or a placeholder, e.g. "loading...".
 
-		When showing a balloon is not possible nothing happens, no
-		error message.
+		When showing a balloon is not possible then nothing happens,
+		no error message is given.
 		{only available when compiled with the |+balloon_eval| or
 		|+balloon_eval_term| feature}
 
@@ -961,7 +1133,8 @@ balloon_split({msg})					*balloon_split()*
 		Split String {msg} into lines to be displayed in a balloon.
 		The splits are made for the current window size and optimize
 		to show debugger output.
-		Returns a |List| with the split lines.
+		Returns a |List| with the split lines.  Returns an empty List
+		on error.
 		Can also be used as a |method|: >
 			GetText()->balloon_split()->balloon_show()
 
@@ -978,7 +1151,7 @@ blob2list({blob})					*blob2list()*
 
 		Can also be used as a |method|: >
 			GetBlob()->blob2list()
-
+<
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
 		Put up a file requester.  This only works when "has("browse")"
@@ -1015,7 +1188,8 @@ bufadd({name})						*bufadd()*
 			let bufnr = bufadd('someName')
 			call bufload(bufnr)
 			call setbufline(bufnr, 1, ['some', 'text'])
-<		Can also be used as a |method|: >
+<		Returns 0 on error.
+		Can also be used as a |method|: >
 			let bufnr = 'somename'->bufadd()
 
 bufexists({buf})					*bufexists()*
@@ -1170,6 +1344,8 @@ byte2line({byte})					*byte2line()*
 		one.
 		Also see |line2byte()|, |go| and |:goto|.
 
+		Returns -1 if the {byte} value is invalid.
+
 		Can also be used as a |method|: >
 			GetOffset()->byte2line()
 
@@ -1241,6 +1417,8 @@ ceil({expr})							*ceil()*
 			echo ceil(4.0)
 <			4.0
 
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
+
 		Can also be used as a |method|: >
 			Compute()->ceil()
 <
@@ -1257,9 +1435,10 @@ changenr()						*changenr()*
 		When a change was made it is the number of that change.  After
 		redo it is the number of the redone change.  After undo it is
 		one less than the number of the undone change.
+		Returns 0 if the undo list is empty.
 
 char2nr({string} [, {utf8}])					*char2nr()*
-		Return number value of the first char in {string}.
+		Return Number value of the first char in {string}.
 		Examples: >
 			char2nr(" ")		returns 32
 			char2nr("ABC")		returns 65
@@ -1275,9 +1454,10 @@ char2nr({string} [, {utf8}])					*char2nr()*
 		    let list = map(split(str, '\zs'), {_, val -> char2nr(val)})
 <		Result: [65, 66, 67]
 
+		Returns 0 if {string} is not a |String|.
+
 		Can also be used as a |method|: >
 			GetChar()->char2nr()
-
 
 charclass({string})					*charclass()*
 		Return the character class of the first character in {string}.
@@ -1288,6 +1468,7 @@ charclass({string})					*charclass()*
 			3	emoji
 			other	specific Unicode class
 		The class is used in patterns and word motions.
+		Returns 0 if {string} is not a |String|.
 
 
 charcol({expr})						*charcol()*
@@ -1358,8 +1539,7 @@ cindent({lnum})						*cindent()*
 		indenting rules, as with 'cindent'.
 		The indent is counted in spaces, the value of 'tabstop' is
 		relevant.  {lnum} is used just like in |getline()|.
-		When {lnum} is invalid or Vim was not compiled the |+cindent|
-		feature, -1 is returned.
+		When {lnum} is invalid -1 is returned.
 		See |C-indenting|.
 
 		Can also be used as a |method|: >
@@ -1400,7 +1580,7 @@ col({expr})	The result is a Number, which is the byte index of the column
 			col("$")		length of cursor line plus one
 			col("'t")		column of mark t
 			col("'" .. markname)	column of mark markname
-<		The first column is 1.  0 is returned for an error.
+<		The first column is 1.  Returns 0 if {expr} is invalid.
 		For an uppercase mark the column may actually be in another
 		buffer.
 		For the cursor position, when 'virtualedit' is active, the
@@ -1518,6 +1698,8 @@ complete_info([{what}])				*complete_info()*
 		|pum_getpos()|. It's also available in |v:event| during the
 		|CompleteChanged| event.
 
+		Returns an empty |Dictionary| on error.
+
 		Examples: >
 			" Get all items
 			call complete_info()
@@ -1570,13 +1752,13 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 
 		An example: >
 		   let choice = confirm("What do you want?",
-		   			\ "&Apples\n&Oranges\n&Bananas", 2)
+					\ "&Apples\n&Oranges\n&Bananas", 2)
 		   if choice == 0
-		   	echo "make up your mind!"
+			echo "make up your mind!"
 		   elseif choice == 3
-		   	echo "tasteful"
+			echo "tasteful"
 		   else
-		   	echo "I prefer bananas myself."
+			echo "I prefer bananas myself."
 		   endif
 <		In a GUI dialog, buttons are used.  The layout of the buttons
 		depends on the 'v' flag in 'guioptions'.  If it is included,
@@ -1603,6 +1785,7 @@ copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 cos({expr})						*cos()*
 		Return the cosine of {expr}, measured in radians, as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo cos(100)
 <			0.862319 >
@@ -1619,6 +1802,7 @@ cosh({expr})						*cosh()*
 		Return the hyperbolic cosine of {expr} as a |Float| in the range
 		[1, inf].
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo cosh(0.5)
 <			1.127626 >
@@ -1729,6 +1913,9 @@ debugbreak({pid})					*debugbreak()*
 		will cause process {pid} to get a SIGTRAP.  Behavior for other
 		processes is undefined. See |terminal-debugger|.
 		{only available on MS-Windows}
+
+		Returns |TRUE| if successfully interrupted the program.
+		Otherwise returns |FALSE|.
 
 		Can also be used as a |method|: >
 			GetPid()->debugbreak()
@@ -2131,7 +2318,9 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 					To check for a supported command
 					always check the return value to be 2.
 			:2match		The |:2match| command.
-			:3match		The |:3match| command.
+			:3match		The |:3match| command (but you
+					probably should not use it, it is
+					reserved for internal usage)
 			#event		autocommand defined for this event
 			#event#pattern	autocommand defined for this event and
 					pattern (the pattern is taken
@@ -2164,8 +2353,8 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 <		There must be no space between the symbol (&/$/*/#) and the
 		name.
 		There must be no extra characters after the name, although in
-		a few cases this is ignored.  That may become more strict in
-		the future, thus don't count on it!
+		a few cases this is ignored.  That may become stricter in the
+		future, thus don't count on it!
 		Working example: >
 			exists(":make")
 <		NOT working example: >
@@ -2200,6 +2389,7 @@ exp({expr})							*exp()*
 		Return the exponential of {expr} as a |Float| in the range
 		[0, inf].
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo exp(2)
 <			7.389056 >
@@ -2366,7 +2556,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		{expr2} remains unchanged.
 		When {expr1} is locked and {expr2} is not empty the operation
 		fails.
-		Returns {expr1}.
+		Returns {expr1}.  Returns 0 on error.
 
 		Can also be used as a |method|: >
 			mylist->extend(otherlist)
@@ -2540,6 +2730,8 @@ finddir({name} [, {path} [, {count}]])				*finddir()*
 		{name} in {path} instead of the first one.
 		When {count} is negative return all the matches in a |List|.
 
+		Returns an empty string if the directory is not found.
+
 		This is quite similar to the ex-command `:find`.
 		{only available when compiled with the |+file_in_path|
 		feature}
@@ -2590,6 +2782,7 @@ float2nr({expr})					*float2nr()*
 		Convert {expr} to a Number by omitting the part after the
 		decimal point.
 		{expr} must evaluate to a |Float| or a Number.
+		Returns 0 if {expr} is not a |Float| or a |Number|.
 		When the value of {expr} is out of range for a |Number| the
 		result is truncated to 0x7fffffff or -0x7fffffff (or when
 		64-bit Number support is enabled, 0x7fffffffffffffff or
@@ -2617,6 +2810,7 @@ floor({expr})							*floor()*
 		Return the largest integral value less than or equal to
 		{expr} as a |Float| (round down).
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			echo floor(1.856)
 <			1.0  >
@@ -2639,6 +2833,8 @@ fmod({expr1}, {expr2})					*fmod()*
 		the magnitude of {expr2}.  If {expr2} is zero, the value
 		returned is zero.  The value returned is a |Float|.
 		{expr1} and {expr2} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr1} or {expr2} is not a |Float| or a
+		|Number|.
 		Examples: >
 			:echo fmod(12.33, 1.22)
 <			0.13 >
@@ -2660,6 +2856,7 @@ fnameescape({string})					*fnameescape()*
 		appears in a filename, it depends on the value of 'isfname'.
 		A leading '+' and '>' is also escaped (special after |:edit|
 		and |:write|).  And a "-" by itself (special after |:cd|).
+		Returns an empty string on error.
 		Example: >
 			:let fname = '+some str%nge|name'
 			:exe "edit " .. fnameescape(fname)
@@ -2676,8 +2873,13 @@ fnamemodify({fname}, {mods})				*fnamemodify()*
 		Example: >
 			:echo fnamemodify("main.c", ":p:h")
 <		results in: >
-			/home/mool/vim/vim/src
-<		If {mods} is empty then {fname} is returned.
+			/home/user/vim/vim/src
+<		If {mods} is empty or an unsupported modifier is used then
+		{fname} is returned.
+		When {fname} is empty then with {mods} ":h" returns ".", so
+		that `:cd` can be used with it.  This is different from
+		expand('%:h') without a buffer name, which returns an empty
+		string.
 		Note: Environment variables don't work in {fname}, use
 		|expand()| first then.
 
@@ -2734,6 +2936,7 @@ foldtext()	Returns a String, to be displayed for a closed fold.  This is
 		When used to draw the actual foldtext, the rest of the line
 		will be filled with the fold char from the 'fillchars'
 		setting.
+		Returns an empty string when there is no fold.
 		{not available when compiled without the |+folding| feature}
 
 foldtextresult({lnum})					*foldtextresult()*
@@ -2785,6 +2988,7 @@ funcref({name} [, {arglist}] [, {dict}])
 		been loaded (to avoid mistakenly loading the autoload script
 		when only intending to use the function name, use |function()|
 		instead). {name} cannot be a builtin function.
+		Returns 0 on error.
 
 		Can also be used as a |method|: >
 			GetFuncname()->funcref([arg])
@@ -2865,6 +3069,8 @@ function({name} [, {arglist}] [, {dict}])
 <		Invokes the function as with: >
 			call context.Callback('one', 500)
 <
+		Returns 0 on error.
+
 		Can also be used as a |method|: >
 			GetFuncname()->function([arg])
 
@@ -2918,6 +3124,7 @@ get({func}, {what})
 			"func"	The function
 			"dict"	The dictionary
 			"args"	The list with arguments
+		Returns zero on error.
 		Preferably used as a |method|: >
 			myfunc->get(what)
 <
@@ -3077,7 +3284,7 @@ getchar([expr])						*getchar()*
 
 		Without [expr] and when [expr] is 0 a whole character or
 		special key is returned.  If it is a single character, the
-		result is a number.  Use nr2char() to convert it to a String.
+		result is a Number.  Use |nr2char()| to convert it to a String.
 		Otherwise a String is returned with the encoded character.
 		For a special key it's a String with a sequence of bytes
 		starting with 0x80 (decimal: 128).  This is the same value as
@@ -3160,7 +3367,7 @@ getcharmod()						*getcharmod()*
 			128	command (Macintosh only)
 		Only the modifiers that have not been included in the
 		character itself are obtained.  Thus Shift-a results in "A"
-		without a modifier.
+		without a modifier.  Returns 0 if no modifiers are used.
 
 							*getcharpos()*
 getcharpos({expr})
@@ -3510,7 +3717,7 @@ getftype({fname})					*getftype()*
 
 getimstatus()						*getimstatus()*
 		The result is a Number, which is |TRUE| when the IME status is
-		active.
+		active and |FALSE| otherwise.
 		See 'imstatusfunc'.
 
 getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
@@ -3520,7 +3727,8 @@ getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		With {winnr} only use this window in the current tab page.
 		{winnr} can also be a |window-ID|.
 		With {winnr} and {tabnr} use the window in the specified tab
-		page.
+		page.  If {winnr} or {tabnr} is invalid, an empty list is
+		returned.
 
 		The returned list contains two entries: a list with the jump
 		locations and the last used jump position number in the list.
@@ -3601,7 +3809,8 @@ getmarklist([{buf}])					*getmarklist()*
 
 		If the optional {buf} argument is specified, returns the
 		local marks defined in buffer {buf}.  For the use of {buf},
-		see |bufname()|.
+		see |bufname()|.  If {buf} is invalid, an empty list is
+		returned.
 
 		Each item in the returned List is a |Dict| with the following:
 		    mark   name of the mark prefixed by "'"
@@ -3623,7 +3832,8 @@ getmatches([{win}])					*getmatches()*
 		as |setmatches()| can restore a list of matches saved by
 		|getmatches()|.
 		If {win} is specified, use the window with this number or
-		window ID instead of the current window.
+		window ID instead of the current window.  If {win} is invalid,
+		an empty list is returned.
 		Example: >
 			:echo getmatches()
 <			[{'group': 'MyGroup1', 'pattern': 'TODO',
@@ -3695,6 +3905,7 @@ getpos({expr})	Get the position for String {expr}.  For possible values of
 		use |getcharpos()|.
 		A very large column number equal to |v:maxcol| can be returned,
 		in which case it means "after the end of the line".
+		If {expr} is invalid, returns a list with all zeros.
 		This can be used to save and restore the position of a mark: >
 			let save_a_mark = getpos("'a")
 			...
@@ -4521,19 +4732,25 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 			GetLnum()->indent()
 
 index({object}, {expr} [, {start} [, {ic}]])			*index()*
+		Find {expr} in {object} and return its index.  See
+		|indexof()| for using a lambda to select the item.
+
 		If {object} is a |List| return the lowest index where the item
 		has a value equal to {expr}.  There is no automatic
 		conversion, so the String "4" is different from the Number 4.
 		And the number 4 is different from the Float 4.0.  The value
-		of 'ignorecase' is not used here, case always matters.
+		of 'ignorecase' is not used here, case matters as indicated by
+		the {ic} argument.
 
 		If {object} is |Blob| return the lowest index where the byte
 		value is equal to {expr}.
 
 		If {start} is given then start looking at the item with index
 		{start} (may be negative for an item relative to the end).
+
 		When {ic} is given and it is |TRUE|, ignore case.  Otherwise
 		case must match.
+
 		-1 is returned when {expr} is not found in {object}.
 		Example: >
 			:let idx = index(words, "the")
@@ -4541,6 +4758,47 @@ index({object}, {expr} [, {start} [, {ic}]])			*index()*
 
 <		Can also be used as a |method|: >
 			GetObject()->index(what)
+
+indexof({object}, {expr} [, {opts}])			*indexof()*
+		Returns the index of an item in {object} where {expr} is
+		v:true.  {object} must be a |List| or a |Blob|.
+
+		If {object} is a |List|, evaluate {expr} for each item in the
+		List until the expression is v:true and return the index of
+		this item.
+
+		If {object} is a |Blob| evaluate {expr} for each byte in the
+		Blob until the expression is v:true and return the index of
+		this byte.
+
+		{expr} must be a |string| or |Funcref|.
+
+		If {expr} is a |string|: If {object} is a |List|, inside
+		{expr} |v:key| has the index of the current List item and
+		|v:val| has the value of the item.  If {object} is a |Blob|,
+		inside {expr} |v:key| has the index of the current byte and
+		|v:val| has the byte value.
+
+		If {expr} is a |Funcref| it must take two arguments:
+			1. the key or the index of the current item.
+			2. the value of the current item.
+		The function must return |TRUE| if the item is found and the
+		search should stop.
+
+		The optional argument {opts} is a Dict and supports the
+		following items:
+		    startidx	start evaluating {expr} at the item with this
+				index; may be negative for an item relative to
+				the end
+		Returns -1 when {expr} evaluates to v:false for all the items.
+		Example: >
+			:let l = [#{n: 10}, #{n: 20}, #{n: 30}]
+			:echo indexof(l, "v:val.n == 20")
+			:echo indexof(l, {i, v -> v.n == 30})
+			:echo indexof(l, "v:val.n == 20", #{startidx: 1})
+
+<		Can also be used as a |method|: >
+			mylist->indexof(expr)
 
 input({prompt} [, {text} [, {completion}]])		*input()*
 		The result is a String, which is whatever the user typed on
@@ -4695,10 +4953,10 @@ invert({expr})						*invert()*
 <		Can also be used as a |method|: >
 			:let bits = bits->invert()
 
-isabsolutepath({directory})				*isabsolutepath()*
+isabsolutepath({path})					*isabsolutepath()*
 		The result is a Number, which is |TRUE| when {path} is an
 		absolute path.
-<		On Unix, a path is considered absolute when it starts with '/'.
+		On Unix, a path is considered absolute when it starts with '/'.
 		On MS-Windows, it is considered absolute when it starts with an
 		optional drive prefix and is followed by a '\' or '/'. UNC paths
 		are always absolute.
@@ -4708,7 +4966,7 @@ isabsolutepath({directory})				*isabsolutepath()*
 			echo isabsolutepath('C:\Windows')	" 1
 			echo isabsolutepath('foobar')		" 0
 			echo isabsolutepath('\\remote\file')	" 1
-
+<
 		Can also be used as a |method|: >
 			GetName()->isabsolutepath()
 
@@ -4904,7 +5162,7 @@ len({expr})	The result is a Number, which is the length of the argument.
 		When {expr} is a |Blob| the number of bytes is returned.
 		When {expr} is a |Dictionary| the number of entries in the
 		|Dictionary| is returned.
-		Otherwise an error is given.
+		Otherwise an error is given and returns zero.
 
 		Can also be used as a |method|: >
 			mylist->len()
@@ -4997,6 +5255,7 @@ line({expr} [, {winid}])				*line()*
 		|getpos()|.
 		With the optional {winid} argument the values are obtained for
 		that window instead of the current window.
+		Returns 0 for invalid values of {expr} and {winid}.
 		Examples: >
 			line(".")		line number of the cursor
 			line(".", winid)	idem, in window "winid"
@@ -5031,8 +5290,7 @@ lispindent({lnum})					*lispindent()*
 		indenting rules, as with 'lisp'.
 		The indent is counted in spaces, the value of 'tabstop' is
 		relevant.  {lnum} is used just like in |getline()|.
-		When {lnum} is invalid or Vim was not compiled the
-		|+lispindent| feature, -1 is returned.  In |Vim9| script an
+		When {lnum} is invalid -1 is returned.  In |Vim9| script an
 		error is given.
 
 		Can also be used as a |method|: >
@@ -5065,6 +5323,8 @@ list2str({list} [, {utf8}])				*list2str()*
 		With UTF-8 composing characters work as expected: >
 			list2str([97, 769])	returns "á"
 <
+		Returns an empty string on error.
+
 		Can also be used as a |method|: >
 			GetList()->list2str()
 
@@ -5137,6 +5397,8 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		The {callback} is also not invoked when the buffer is
 		unloaded, use the |BufUnload| autocmd event for that.
 
+		Returns zero if {callback} or {buf} is invalid.
+
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetBuffer()->listener_add(callback)
@@ -5169,6 +5431,7 @@ log({expr})						*log()*
 		Return the natural logarithm (base e) of {expr} as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number| in the range
 		(0, inf].
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo log(10)
 <			2.302585 >
@@ -5184,6 +5447,7 @@ log({expr})						*log()*
 log10({expr})						*log10()*
 		Return the logarithm of Float {expr} to base 10 as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo log10(1000)
 <			3.0 >
@@ -5282,8 +5546,9 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		below. To get a list of all mappings see |maplist()|.
 
 		When there is no mapping for {name}, an empty String is
-		returned.  When the mapping for {name} is empty, then "<Nop>"
-		is returned.
+		returned if {dict} is FALSE, otherwise returns an empty Dict.
+		When the mapping for {name} is empty, then "<Nop>" is
+		returned.
 
 		The {name} can have special key names, like in the ":map"
 		command.
@@ -5326,7 +5591,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		  "sid"	     The script local ID, used for <sid> mappings
 			     (|<SID>|).
 		  "scriptversion"  The version of the script.  999999 for
-		  		   |Vim9| script.
+				   |Vim9| script.
 		  "lnum"     The line number in "sid", zero if unknown.
 		  "nowait"   Do not wait for other, longer mappings.
 			     (|:map-<nowait>|).
@@ -5431,7 +5696,7 @@ mapset({dict})
 		Restore a mapping from a dictionary, possibly returned by
 		|maparg()| or |maplist()|.  A buffer mapping, when dict.buffer
 		is true, is set on the current buffer; it is up to the caller
-		to insure that the intended buffer is the current buffer. This
+		to ensure that the intended buffer is the current buffer. This
 		feature allows copying mappings from one buffer to another.
 		The dict.mode value may restore a single mapping that covers
 		more than one mode, like with mode values of '!', ' ', 'nox',
@@ -5559,8 +5824,10 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 		message will appear and the match will not be added.  An ID
 		is specified as a positive integer (zero excluded).  IDs 1, 2
 		and 3 are reserved for |:match|, |:2match| and |:3match|,
-		respectively.  If the {id} argument is not specified or -1,
-		|matchadd()| automatically chooses a free ID.
+		respectively.  3 is reserved for use by the |matchparen|
+		plugin.
+		If the {id} argument is not specified or -1, |matchadd()|
+		automatically chooses a free ID.
 
 		The optional {dict} argument allows for further custom
 		values. Currently this is used to specify a match specific
@@ -5575,6 +5842,8 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 
 		The number of matches is not limited, as it is the case with
 		the |:match| commands.
+
+		Returns -1 on error.
 
 		Example: >
 			:highlight MyGroup ctermbg=green guibg=green
@@ -5613,6 +5882,8 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 		  the third number gives the length of the highlight in bytes.
 
 		The maximum number of positions in {pos} is 8.
+
+		Returns -1 on error.
 
 		Example: >
 			:highlight MyGroup ctermbg=green guibg=green
@@ -5685,6 +5956,8 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		    matchseq	When this item is present return only matches
 				that contain the characters in {str} in the
 				given sequence.
+		    limit	Maximum number of matches in {list} to be
+				returned.  Zero means no limit.
 
 		If {list} is a list of dictionaries, then the optional {dict}
 		argument supports the following additional items:
@@ -5696,8 +5969,6 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 				This should accept a dictionary item as the
 				argument and return the text for that item to
 				use for fuzzy matching.
-		    limit	Maximum number of matches in {list} to be
-				returned.  Zero means no limit.
 
 		{str} is treated as a literal string and regular expression
 		matching is NOT supported.  The maximum supported {str} length
@@ -6059,10 +6330,16 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
 		to a number.  A List, Dict or Float argument causes an error.
+		Also see `and()` and `xor()`.
 		Example: >
 			:let bits = or(bits, 0x80)
 <		Can also be used as a |method|: >
 			:let bits = bits->or(0x80)
+
+<		Rationale: The reason this is a function and not using the "|"
+		character like many languages, is that Vi has always used "|"
+		to separate commands.  In many places it would not be clear if
+		"|" is an operator or a command separator.
 
 
 pathshorten({path} [, {len}])				*pathshorten()*
@@ -6077,6 +6354,7 @@ pathshorten({path} [, {len}])				*pathshorten()*
 			:echo pathshorten('~/.vim/autoload/myfile.vim', 2)
 <			~/.vi/au/myfile.vim ~
 		It doesn't matter if the path exists or not.
+		Returns an empty string on error.
 
 		Can also be used as a |method|: >
 			GetDirectories()->pathshorten()
@@ -6106,6 +6384,7 @@ popup_ functions are documented here: |popup-functions|
 pow({x}, {y})						*pow()*
 		Return the power of {x} to the exponent {y} as a |Float|.
 		{x} and {y} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {x} or {y} is not a |Float| or a |Number|.
 		Examples: >
 			:echo pow(3, 3)
 <			27.0 >
@@ -6482,6 +6761,7 @@ rand([{expr}])						*rand()* *random*
 		{expr} can be initialized by |srand()| and will be updated by
 		rand().  If {expr} is omitted, an internal seed value is used
 		and updated.
+		Returns -1 if {expr} is invalid.
 
 		Examples: >
 			:echo rand()
@@ -6571,6 +6851,8 @@ readdir({directory} [, {expr} [, {dict}]])			*readdir()*
 		  endfunction
 		  echo s:tree(".")
 <
+		Returns an empty List on error.
+
 		Can also be used as a |method|: >
 			GetDirName()->readdir()
 <
@@ -6629,7 +6911,6 @@ readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		For example, to get a list of all files in the current
 		directory without sorting the individual entries: >
 		  readdirex(dirname, '1', #{sort: 'none'})
-
 <
 		Can also be used as a |method|: >
 			GetDirName()->readdirex()
@@ -6710,15 +6991,17 @@ reltime([{start} [, {end}]])				*reltime()*
 		The item can be passed to |reltimestr()| to convert it to a
 		string or |reltimefloat()| to convert to a Float.
 
-		Without an argument reltime() returns the current time.
+		Without an argument reltime() returns the current time (the
+		representation is system-dependent, it can not be used as the
+		wall-clock time, see |localtime()| for that).
 		With one argument is returns the time passed since the time
 		specified in the argument.
 		With two arguments it returns the time passed between {start}
 		and {end}.
 
 		The {start} and {end} arguments must be values returned by
-		reltime().  If there is an error zero is returned in legacy
-		script, in Vim9 script an error is given.
+		reltime().  If there is an error an empty List is returned in
+		legacy script, in Vim9 script an error is given.
 
 		Can also be used as a |method|: >
 			GetStart()->reltime()
@@ -6837,7 +7120,8 @@ remote_peek({serverid} [, {retvar}])		*remote_peek()*
 remote_read({serverid}, [{timeout}])			*remote_read()*
 		Return the oldest available reply from {serverid} and consume
 		it.  Unless a {timeout} in seconds is given, it blocks until a
-		reply is available.
+		reply is available.  Returns an empty string, if a reply is
+		not available or on error.
 		See also |clientserver|.
 		This function is not available in the |sandbox|.
 		{only available when compiled with the |+clientserver| feature}
@@ -6896,6 +7180,7 @@ remove({list}, {idx} [, {end}])				*remove()*
 		item as {end} a list with one item is returned.  When {end}
 		points to an item before {idx} this is an error.
 		See |list-index| for possible values of {idx} and {end}.
+		Returns zero on error.
 		Example: >
 			:echo "last item: " .. remove(mylist, -1)
 			:call remove(mylist, 0, 9)
@@ -6912,6 +7197,7 @@ remove({blob}, {idx} [, {end}])
 		return a |Blob| with these bytes.  When {idx} points to the same
 		byte as {end} a |Blob| with one byte is returned.  When {end}
 		points to a byte before {idx} this is an error.
+		Returns zero on error.
 		Example: >
 			:echo "last byte: " .. remove(myblob, -1)
 			:call remove(mylist, 0, 9)
@@ -6921,6 +7207,7 @@ remove({dict}, {key})
 		Example: >
 			:echo "removed " .. remove(dict, "one")
 <		If there is no {key} in {dict} this is an error.
+		Returns zero on error.
 
 rename({from}, {to})					*rename()*
 		Rename the file by the name {from} to the name {to}.  This
@@ -6969,6 +7256,7 @@ reverse({object})					*reverse()*
 		Reverse the order of items in {object} in-place.
 		{object} can be a |List| or a |Blob|.
 		Returns {object}.
+		Returns zero if {object} is not a List or a Blob.
 		If you want an object to remain unmodified make a copy first: >
 			:let revlist = reverse(copy(mylist))
 <		Can also be used as a |method|: >
@@ -6979,6 +7267,7 @@ round({expr})							*round()*
 		as a |Float|.  If {expr} lies halfway between two integral
 		values, then use the larger one (away from zero).
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			echo round(0.456)
 <			0.0  >
@@ -7013,6 +7302,7 @@ screenattr({row}, {col})					*screenattr()*
 		Like |screenchar()|, but return the attribute.  This is a rather
 		arbitrary number that can only be used to compare to the
 		attribute at other positions.
+		Returns -1 when row or col is out of range.
 
 		Can also be used as a |method|: >
 			GetRow()->screenattr(col)
@@ -7076,6 +7366,7 @@ screenpos({winid}, {lnum}, {col})				*screenpos()*
 		|conceal| taken into account.
 		If the position is in a closed fold the screen position of the
 		first character is returned, {col} is not used.
+		Returns an empty Dict if {winid} is invalid.
 
 		Can also be used as a |method|: >
 			GetWinid()->screenpos(lnum, col)
@@ -7145,7 +7436,7 @@ search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 <		When {stopline} is used and it is not zero this also implies
 		that the search does not wrap around the end of the file.
 		A zero value is equal to not giving the argument.
-
+				*E1285* *E1286* *E1287* *E1288* *E1289*
 		When the {timeout} argument is given the search stops when
 		more than this many milliseconds have passed.  Thus when
 		{timeout} is 500 the search stops after half a second.
@@ -7237,7 +7528,7 @@ searchcount([{options}])					*searchcount()*
 			" to 1)
 			let result = searchcount()
 <
-		The function is useful to add the count to |statusline|: >
+		The function is useful to add the count to 'statusline': >
 			function! LastSearchCount() abort
 			  let result = searchcount(#{recompute: 0})
 			  if empty(result)
@@ -8136,6 +8427,7 @@ simplify({filename})					*simplify()*
 sin({expr})						*sin()*
 		Return the sine of {expr}, measured in radians, as a |Float|.
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo sin(100)
 <			-0.506366 >
@@ -8152,6 +8444,7 @@ sinh({expr})						*sinh()*
 		Return the hyperbolic sine of {expr} as a |Float| in the range
 		[-inf, inf].
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo sinh(0.5)
 <			0.521095 >
@@ -8171,6 +8464,7 @@ slice({expr}, {start} [, {end}])			*slice()*
 		|vim9script|.  Also, composing characters are not counted.
 		When {end} is omitted the slice continues to the last item.
 		When {end} is -1 the last item is omitted.
+		Returns an empty value if {start} or {end} are invalid.
 
 		Can also be used as a |method|: >
 			GetList()->slice(offset)
@@ -8182,7 +8476,7 @@ sort({list} [, {how} [, {dict}]])			*sort()* *E702*
 		If you want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
 
-<		When {how} is omitted or is an string, then sort() uses the
+<		When {how} is omitted or is a string, then sort() uses the
 		string representation of each item to sort on.  Numbers sort
 		after Strings, |Lists| after Numbers.  For sorting text in the
 		current buffer use |:sort|.
@@ -8416,7 +8710,8 @@ sqrt({expr})						*sqrt()*
 		Return the non-negative square root of Float {expr} as a
 		|Float|.
 		{expr} must evaluate to a |Float| or a |Number|.  When {expr}
-		is negative the result is NaN (Not a Number).
+		is negative the result is NaN (Not a Number).  Returns 0.0 if
+		{expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo sqrt(100)
 <			10.0 >
@@ -8497,6 +8792,8 @@ str2float({string} [, {quoted}])				*str2float()*
 		|substitute()|: >
 			let f = str2float(substitute(text, ',', '', 'g'))
 <
+		Returns 0.0 if the conversion fails.
+
 		Can also be used as a |method|: >
 			let f = text->substitute(',', '', 'g')->str2float()
 <
@@ -8536,6 +8833,8 @@ str2nr({string} [, {base} [, {quoted}]])			*str2nr()*
 		{base} is 2 a leading "0b" or "0B" is ignored.
 		Text after the number is silently ignored.
 
+		Returns 0 if {string} is empty or on error.
+
 		Can also be used as a |method|: >
 			GetText()->str2nr()
 
@@ -8545,6 +8844,8 @@ strcharlen({string})					*strcharlen()*
 		in String {string}.  Composing characters are ignored.
 		|strchars()| can count the number of characters, counting
 		composing characters separately.
+
+		Returns 0 if {string} is empty or on error.
 
 		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
 
@@ -8565,6 +8866,8 @@ strcharpart({src}, {start} [, {len} [, {skipcc}]])		*strcharpart()*
 			strcharpart('abc', -1, 2)
 <		results in 'a'.
 
+		Returns an empty string on error.
+
 		Can also be used as a |method|: >
 			GetText()->strcharpart(5)
 
@@ -8576,6 +8879,8 @@ strchars({string} [, {skipcc}])					*strchars()*
 		counted separately.
 		When {skipcc} set to 1, Composing characters are ignored.
 		|strcharlen()| always does this.
+
+		Returns zero on error.
 
 		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
 
@@ -8609,6 +8914,7 @@ strdisplaywidth({string} [, {col}])			*strdisplaywidth()*
 		'tabstop' and 'display'.
 		When {string} contains characters with East Asian Width Class
 		Ambiguous, this function's return value depends on 'ambiwidth'.
+		Returns zero on error.
 		Also see |strlen()|, |strwidth()| and |strchars()|.
 
 		Can also be used as a |method|: >
@@ -8637,9 +8943,12 @@ strftime({format} [, {time}])				*strftime()*
 			GetFormat()->strftime()
 
 strgetchar({str}, {index})				*strgetchar()*
-		Get character {index} from {str}.  This uses a character
-		index, not a byte index.  Composing characters are considered
-		separate characters here.
+		Get a Number corresponding to the character at {index} in
+		{str}.  This uses a zero-based character index, not a byte
+		index.  Composing characters are considered separate
+		characters here.  Use |nr2char()| to convert the Number to a
+		String.
+		Returns -1 if {index} is invalid.
 		Also see |strcharpart()| and |strchars()|.
 
 		Can also be used as a |method|: >
@@ -8694,7 +9003,7 @@ strlen({string})						*strlen()*
 		The result is a Number, which is the length of the String
 		{string} in bytes.
 		If the argument is a Number it is first converted to a String.
-		For other types an error is given.
+		For other types an error is given and zero is returned.
 		If you want to count the number of multibyte characters use
 		|strchars()|.
 		Also see |len()|, |strdisplaywidth()| and |strwidth()|.
@@ -8725,6 +9034,8 @@ strpart({src}, {start} [, {len} [, {chars}]])			*strpart()*
 		example, to get the character under the cursor: >
 			strpart(getline("."), col(".") - 1, 1, v:true)
 <
+		Returns an empty string on error.
+
 		Can also be used as a |method|: >
 			GetText()->strpart(5)
 
@@ -8787,6 +9098,8 @@ strtrans({string})					*strtrans()*
 <		This displays a newline in register a as "^@" instead of
 		starting a new line.
 
+		Returns an empty string on error.
+
 		Can also be used as a |method|: >
 			GetString()->strtrans()
 
@@ -8796,6 +9109,7 @@ strwidth({string})					*strwidth()*
 		cell, alternatively use |strdisplaywidth()|.
 		When {string} contains characters with East Asian Width Class
 		Ambiguous, this function's return value depends on 'ambiwidth'.
+		Returns zero on error.
 		Also see |strlen()|, |strdisplaywidth()| and |strchars()|.
 
 		Can also be used as a |method|: >
@@ -8820,6 +9134,8 @@ submatch({nr} [, {list}])			*submatch()* *E935*
 
 		When substitute() is used recursively only the submatches in
 		the current (deepest) call can be obtained.
+
+		Returns an empty string or list on error.
 
 		Examples: >
 			:s/\d\+/\=submatch(0) + 1/
@@ -8871,7 +9187,9 @@ substitute({string}, {pat}, {sub}, {flags})		*substitute()*
 		|submatch()| returns.  Example: >
 		   :echo substitute(s, '%\(\x\x\)', {m -> '0x' .. m[1]}, 'g')
 
-<		Can also be used as a |method|: >
+<		Returns an empty string on error.
+
+		Can also be used as a |method|: >
 			GetString()->substitute(pat, sub, flags)
 
 swapinfo({fname})					*swapinfo()*
@@ -8926,6 +9244,8 @@ synID({lnum}, {col}, {trans})				*synID()*
 		Warning: This function can be very slow.  Best speed is
 		obtained by going through the file in forward direction.
 
+		Returns zero on error.
+
 		Example (echoes the name of the syntax item under the cursor): >
 			:echo synIDattr(synID(line("."), col("."), 1), "name")
 <
@@ -8962,6 +9282,9 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		"underline"	"1" if underlined
 		"undercurl"	"1" if undercurled
 		"strike"	"1" if strikethrough
+		"nocombine"	"1" if nocombine
+
+		Returns an empty string on error.
 
 		Example (echoes the color of the syntax item under the
 		cursor): >
@@ -8976,6 +9299,8 @@ synIDtrans({synID})					*synIDtrans()*
 		{synID}.  This is the syntax group ID of what is being used to
 		highlight the character.  Highlight links given with
 		":highlight link" are followed.
+
+		Returns zero on error.
 
 		Can also be used as a |method|: >
 	:echo synID(line("."), col("."), 1)->synIDtrans()->synIDattr("fg")
@@ -9021,7 +9346,7 @@ synstack({lnum}, {col})					*synstack()*
 			   echo synIDattr(id, "name")
 			endfor
 <		When the position specified with {lnum} and {col} is invalid
-		nothing is returned.  The position just after the last
+		an empty List is returned.  The position just after the last
 		character in a line and the first column in an empty line are
 		valid positions.
 
@@ -9135,6 +9460,8 @@ tabpagenr([{arg}])					*tabpagenr()*
 				previous tab page 0 is returned.
 		The number can be used with the |:tab| command.
 
+		Returns zero on error.
+
 
 tabpagewinnr({tabarg} [, {arg}])			*tabpagewinnr()*
 		Like |winnr()| but for tab page {tabarg}.
@@ -9207,6 +9534,7 @@ tan({expr})						*tan()*
 		Return the tangent of {expr}, measured in radians, as a |Float|
 		in the range [-inf, inf].
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo tan(10)
 <			0.648361 >
@@ -9223,6 +9551,7 @@ tanh({expr})						*tanh()*
 		Return the hyperbolic tangent of {expr} as a |Float| in the
 		range [-1, 1].
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			:echo tanh(0.5)
 <			0.462117 >
@@ -9352,6 +9681,8 @@ timer_start({time}, {callback} [, {options}])
 				Vim becomes unusable because of all the error
 				messages.
 
+		Returns -1 on error.
+
 		Example: >
 			func MyHandler(timer)
 			  echo 'Handler called'
@@ -9387,7 +9718,7 @@ timer_stopall()						*timer_stopall()*
 tolower({expr})						*tolower()*
 		The result is a copy of the String given, with all uppercase
 		characters turned into lowercase (just like applying |gu| to
-		the string).
+		the string).  Returns an empty string on error.
 
 		Can also be used as a |method|: >
 			GetText()->tolower()
@@ -9395,7 +9726,7 @@ tolower({expr})						*tolower()*
 toupper({expr})						*toupper()*
 		The result is a copy of the String given, with all lowercase
 		characters turned into uppercase (just like applying |gU| to
-		the string).
+		the string).  Returns an empty string on error.
 
 		Can also be used as a |method|: >
 			GetText()->toupper()
@@ -9407,6 +9738,8 @@ tr({src}, {fromstr}, {tostr})				*tr()*
 		{fromstr} is translated into the first character in {tostr}
 		and so on.  Exactly like the unix "tr" command.
 		This code also deals with multibyte characters properly.
+
+		Returns an empty string on error.
 
 		Examples: >
 			echo tr("hello there", "ht", "HT")
@@ -9433,6 +9766,7 @@ trim({text} [, {mask} [, {dir}]])				*trim()*
 		When omitted both ends are trimmed.
 
 		This function deals with multibyte characters properly.
+		Returns an empty string on error.
 
 		Examples: >
 			echo trim("   some text ")
@@ -9451,6 +9785,7 @@ trunc({expr})							*trunc()*
 		Return the largest integral value with magnitude less than or
 		equal to {expr} as a |Float| (truncate towards zero).
 		{expr} must evaluate to a |Float| or a |Number|.
+		Returns 0.0 if {expr} is not a |Float| or a |Number|.
 		Examples: >
 			echo trunc(1.456)
 <			1.0  >
@@ -9569,17 +9904,20 @@ uniq({list} [, {func} [, {dict}]])			*uniq()* *E882*
 <		The default compare function uses the string representation of
 		each item.  For the use of {func} and {dict} see |sort()|.
 
+		Returns zero if {list} is not a |List|.
+
 		Can also be used as a |method|: >
 			mylist->uniq()
 
 values({dict})						*values()*
 		Return a |List| with all the values of {dict}.  The |List| is
 		in arbitrary order.  Also see |items()| and |keys()|.
+		Returns zero if {dict} is not a |Dict|.
 
 		Can also be used as a |method|: >
 			mydict->values()
 
-virtcol({expr})						*virtcol()*
+virtcol({expr} [, {list}])				*virtcol()*
 		The result is a Number, which is the screen column of the file
 		position given with {expr}.  That is, the last screen position
 		occupied by the character at that position, when the screen
@@ -9588,13 +9926,17 @@ virtcol({expr})						*virtcol()*
 		the <Tab>.  For example, for a <Tab> in column 1, with 'ts'
 		set to 8, it returns 8. |conceal| is ignored.
 		For the byte position use |col()|.
+
 		For the use of {expr} see |col()|.
-		When 'virtualedit' is used {expr} can be [lnum, col, off], where
-		"off" is the offset in screen columns from the start of the
-		character.  E.g., a position within a <Tab> or after the last
-		character.  When "off" is omitted zero is used.
-		When Virtual editing is active in the current mode, a position
-		beyond the end of the line can be returned. |'virtualedit'|
+
+		When 'virtualedit' is used {expr} can be [lnum, col, off],
+		where "off" is the offset in screen columns from the start of
+		the character.  E.g., a position within a <Tab> or after the
+		last character.  When "off" is omitted zero is used.  When
+		Virtual editing is active in the current mode, a position
+		beyond the end of the line can be returned.  Also see
+		|'virtualedit'|
+
 		The accepted positions are:
 		    .	    the cursor position
 		    $	    the end of the cursor line (the result is the
@@ -9606,11 +9948,22 @@ virtcol({expr})						*virtcol()*
 			    cursor is the end).  When not in Visual mode
 			    returns the cursor position.  Differs from |'<| in
 			    that it's updated right away.
+
+		If {list} is present and non-zero then virtcol() returns a List
+		with the first and last screen position occupied by the
+		character.
+
 		Note that only marks in the current file can be used.
 		Examples: >
-  virtcol(".")	   with text "foo^Lbar", with cursor on the "^L", returns 5
-  virtcol("$")	   with text "foo^Lbar", returns 9
-  virtcol("'t")    with text "	  there", with 't at 'h', returns 6
+			" With text "foo^Lbar" and cursor on the "^L":
+
+			virtcol(".")	" returns 5
+			virtcol(".", 1)	" returns [4, 5]
+			virtcol("$")	" returns 9
+
+			" With text "	  there", with 't at 'h':
+
+			virtcol("'t")	" returns 6
 <		The first column is 1.  0 is returned for an error.
 		A more advanced example that echoes the maximum length of
 		all lines: >
@@ -9619,6 +9972,25 @@ virtcol({expr})						*virtcol()*
 <		Can also be used as a |method|: >
 			GetPos()->virtcol()
 
+virtcol2col({winid}, {lnum}, {col})			*virtcol2col()*
+		The result is a Number, which is the byte index of the
+		character in window {winid} at buffer line {lnum} and virtual
+		column {col}.
+
+		If {col} is greater than the last virtual column in line
+		{lnum}, then the byte index of the character at the last
+		virtual column is returned.
+
+		The {winid} argument can be the window number or the
+		|window-ID|. If this is zero, then the current window is used.
+
+		Returns -1 if the window {winid} doesn't exist or the buffer
+		line {lnum} or virtual column {col} is invalid.
+
+		See also |screenpos()|, |virtcol()| and |col()|.
+
+		Can also be used as a |method|: >
+			GetWinid()->virtcol2col(lnum, col)
 
 visualmode([{expr}])						*visualmode()*
 		The result is a String, which describes the last Visual mode
@@ -9745,6 +10117,8 @@ win_move_separator({nr}, {offset})			*win_move_separator()*
 		specified (e.g., as a consequence of maintaining
 		'winminwidth'). Returns TRUE if the window can be found and
 		FALSE otherwise.
+		This will fail for the rightmost window and a full-width
+		window, since it has no separator on the right.
 
 		Can also be used as a |method|: >
 			GetWinnr()->win_move_separator(offset)
@@ -9899,6 +10273,7 @@ winnr([{arg}])	The result is a Number, which is the number of the current
 				current window (where |CTRL-W_l| goes to).
 		The number can be used with |CTRL-W_w| and ":wincmd w"
 		|:wincmd|.
+		When {arg} is invalid an error is given and zero is returned.
 		Also see |tabpagewinnr()| and |win_getid()|.
 		Examples: >
 			let window_count = winnr('$')
@@ -10051,6 +10426,7 @@ writefile({object}, {fname} [, {flags}])
 xor({expr}, {expr})					*xor()*
 		Bitwise XOR on the two arguments.  The arguments are converted
 		to a number.  A List, Dict or Float argument causes an error.
+		Also see `and()` and `or()`.
 		Example: >
 			:let bits = xor(bits, 0x80)
 <
@@ -10103,7 +10479,7 @@ bsd			Compiled on an OS in the BSD family (excluding macOS).
 builtin_terms		Compiled with some builtin terminals.
 byte_offset		Compiled with support for 'o' in 'statusline'
 channel			Compiled with support for |channel| and |job|
-cindent			Compiled with 'cindent' support.
+cindent			Compiled with 'cindent' support. (always true)
 clientserver		Compiled with remote invocation support |clientserver|.
 clipboard		Compiled with 'clipboard' support.
 clipboard_working	Compiled with 'clipboard' support and it can be used.
@@ -10165,7 +10541,7 @@ insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode. (always true)
 job			Compiled with support for |channel| and |job|
 ipv6			Compiled with support for IPv6 networking in |channel|.
-jumplist		Compiled with |jumplist| support.
+jumplist		Compiled with |jumplist| support. (always true)
 keymap			Compiled with 'keymap' support.
 lambda			Compiled with |lambda| support.
 langmap			Compiled with 'langmap' support.
@@ -10174,6 +10550,7 @@ linebreak		Compiled with 'linebreak', 'breakat', 'showbreak' and
 			'breakindent' support.
 linux			Linux version of Vim.
 lispindent		Compiled with support for lisp indenting.
+			(always true)
 listcmds		Compiled with commands for the buffer list |:files|
 			and the argument list |arglist|.
 localmap		Compiled with local mappings and abbr. |:map-local|
@@ -10203,7 +10580,7 @@ mzscheme		Compiled with MzScheme interface |mzscheme|.
 nanotime		Compiled with sub-second time stamp checks.
 netbeans_enabled	Compiled with support for |netbeans| and connected.
 netbeans_intg		Compiled with support for |netbeans|.
-num64			Compiled with 64-bit |Number| support.
+num64			Compiled with 64-bit |Number| support. (always true)
 ole			Compiled with OLE automation support for Win32.
 osx			Compiled for macOS  cf. mac
 osxdarwin		Compiled for macOS, with |mac-darwin-feature|
@@ -10229,7 +10606,7 @@ ruby			Compiled with Ruby interface |ruby|.
 scrollbind		Compiled with 'scrollbind' support. (always true)
 showcmd			Compiled with 'showcmd' support.
 signs			Compiled with |:sign| support.
-smartindent		Compiled with 'smartindent' support.
+smartindent		Compiled with 'smartindent' support. (always true)
 sodium			Compiled with libsodium for better crypt support
 sound			Compiled with sound support, e.g. `sound_playevent()`
 spell			Compiled with spell checking support |spell|.
@@ -10243,7 +10620,7 @@ syntax_items		There are active syntax highlighting items for the
 			current buffer.
 system			Compiled to use system() instead of fork()/exec().
 tag_binary		Compiled with binary searching in tags files
-			|tag-binary-search|.
+			|tag-binary-search|. (always true)
 tag_old_static		Support for old static tags was removed, see
 			|tag-old-static|.
 tcl			Compiled with Tcl interface.
@@ -10257,6 +10634,7 @@ tgetent			Compiled with tgetent support, able to use a termcap
 			or terminfo file.
 timers			Compiled with |timer_start()| support.
 title			Compiled with window title support |'title'|.
+			(always true)
 toolbar			Compiled with support for |gui-toolbar|.
 ttyin			input is a terminal (tty)
 ttyout			output is a terminal (tty)
@@ -10275,6 +10653,7 @@ viminfo			Compiled with viminfo support.
 vimscript-1		Compiled Vim script version 1 support
 vimscript-2		Compiled Vim script version 2 support
 vimscript-3		Compiled Vim script version 3 support
+vimscript-4		Compiled Vim script version 4 support
 virtualedit		Compiled with 'virtualedit' option. (always true)
 visual			Compiled with Visual mode. (always true)
 visualextra		Compiled with extra Visual mode commands. (always

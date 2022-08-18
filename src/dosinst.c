@@ -211,8 +211,8 @@ check_unpack(void)
     {
 	printf("ERROR: Cannot find filetype.vim in \"%s\"\n", installdir);
 	printf("It looks like you did not unpack the runtime archive.\n");
-	printf("You must unpack the runtime archive \"vim%srt.zip\" before installing.\n",
-		VIM_VERSION_NODOT + 3);
+	printf("You must unpack the runtime archive \"%srt.zip\" before installing.\n",
+		VIM_VERSION_NODOT);
 	myexit(1);
     }
 
@@ -439,7 +439,7 @@ static int num_windows;
  */
 //ARGSUSED
     static BOOL CALLBACK
-window_cb(HWND hwnd, LPARAM lparam)
+window_cb(HWND hwnd, LPARAM lparam UNUSED)
 {
     char title[256];
 
@@ -1170,7 +1170,7 @@ init_bat_choices(void)
  * Install the vimrc file.
  */
     static void
-install_vimrc(int idx)
+install_vimrc(int idx UNUSED)
 {
     FILE	*fd, *tfd;
     char	*fname;
@@ -1527,7 +1527,7 @@ register_openwith(
 		"*\\OpenWithList\\gvim.exe",
 	};
 
-	for (i = 0; ERROR_SUCCESS == lRet && i < ARRAYSIZE(openwith); i++)
+	for (i = 0; ERROR_SUCCESS == lRet && i < (int)ARRAYSIZE(openwith); i++)
 	    lRet = reg_create_key_and_value(hRootKey, openwith[i], NULL, "", flag);
     }
 
@@ -1891,7 +1891,7 @@ build_shortcut(
  * Create shortcut(s) in the Start Menu\Programs\Vim folder.
  */
     static void
-install_start_menu(int idx)
+install_start_menu(int idx UNUSED)
 {
     need_uninstall_entry = 1;
     printf("Creating start menu\n");

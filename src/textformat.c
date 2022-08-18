@@ -92,7 +92,7 @@ internal_format(
 	int	did_do_comment = FALSE;
 
 	virtcol = get_nolist_virtcol()
-		+ char2cells(c != NUL ? c : gchar_cursor());
+				   + char2cells(c != NUL ? c : gchar_cursor());
 	if (virtcol <= (colnr_T)textwidth)
 	    break;
 
@@ -108,7 +108,6 @@ internal_format(
 	    char_u *line = ml_get_curline();
 
 	    leader_len = get_leader_len(line, NULL, FALSE, TRUE);
-#ifdef FEAT_CINDENT
 	    if (leader_len == 0 && curbuf->b_p_cin)
 	    {
 		int		comment_start;
@@ -123,7 +122,6 @@ internal_format(
 			leader_len += comment_start;
 		}
 	    }
-#endif
 	}
 	else
 	    leader_len = 0;
@@ -373,6 +371,7 @@ internal_format(
 	open_line(FORWARD, OPENLINE_DELSPACES + OPENLINE_MARKFIX
 		+ (fo_white_par ? OPENLINE_KEEPTRAIL : 0)
 		+ (do_comments ? OPENLINE_DO_COM : 0)
+		+ OPENLINE_FORMAT
 		+ ((flags & INSCHAR_COM_LIST) ? OPENLINE_COM_LIST : 0)
 		, ((flags & INSCHAR_COM_LIST) ? second_indent : old_indent),
 		&did_do_comment);
@@ -444,16 +443,12 @@ internal_format(
 	}
 
 	haveto_redraw = TRUE;
-#ifdef FEAT_CINDENT
 	set_can_cindent(TRUE);
-#endif
 	// moved the cursor, don't autoindent or cindent now
 	did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
 	did_si = FALSE;
 	can_si = FALSE;
 	can_si_back = FALSE;
-#endif
 	line_breakcheck();
     }
 
@@ -466,7 +461,7 @@ internal_format(
     if (!format_only && haveto_redraw)
     {
 	update_topline();
-	redraw_curbuf_later(VALID);
+	redraw_curbuf_later(UPD_VALID);
     }
 }
 
@@ -845,7 +840,7 @@ op_format(
 
     if (oap->is_VIsual)
 	// When there is no change: need to remove the Visual selection
-	redraw_curbuf_later(INVERTED);
+	redraw_curbuf_later(UPD_INVERTED);
 
     if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	// Set '[ mark at the start of the formatted area
@@ -875,6 +870,9 @@ op_format(
     {
 	curwin->w_cursor = saved_cursor;
 	saved_cursor.lnum = 0;
+
+	// formatting may have made the cursor position invalid
+	check_cursor();
     }
 
     if (oap->is_VIsual)
@@ -905,7 +903,7 @@ op_formatexpr(oparg_T *oap)
 {
     if (oap->is_VIsual)
 	// When there is no change: need to remove the Visual selection
-	redraw_curbuf_later(INVERTED);
+	redraw_curbuf_later(UPD_INVERTED);
 
     if (fex_format(oap->start.lnum, oap->line_count, NUL) != 0)
 	// As documented: when 'formatexpr' returns non-zero fall back to
@@ -1119,14 +1117,10 @@ format_lines(
 		    // indent.
 		    if (curwin->w_cursor.lnum == first_line)
 			indent = get_indent();
-		    else
-# ifdef FEAT_LISP
-		    if (curbuf->b_p_lisp)
+		    else if (curbuf->b_p_lisp)
 			indent = get_lisp_indent();
 		    else
-# endif
 		    {
-#ifdef FEAT_CINDENT
 			if (cindent_on())
 			{
 			    indent =
@@ -1136,7 +1130,6 @@ format_lines(
 				 get_c_indent();
 			}
 			else
-#endif
 			    indent = get_indent();
 		    }
 		    (void)set_indent(indent, SIN_CHANGED);
@@ -1196,7 +1189,7 @@ format_lines(
 		    {
 			(void)del_bytes(indent, FALSE, FALSE);
 			mark_col_adjust(curwin->w_cursor.lnum,
-					       (colnr_T)0, 0L, (long)-indent, 0);
+					     (colnr_T)0, 0L, (long)-indent, 0);
 		    }
 		}
 		curwin->w_cursor.lnum--;

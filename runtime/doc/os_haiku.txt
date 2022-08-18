@@ -1,4 +1,4 @@
-*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 May 13
+*os_haiku.txt*	For Vim version 9.0.  Last change: 2020 May 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

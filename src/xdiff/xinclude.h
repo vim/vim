@@ -33,7 +33,7 @@
 
 // Mark unused function arguments with UNUSED, so that gcc -Wunused-parameter
 // can be used to check for mistakes.
-#ifdef HAVE_ATTRIBUTE_UNUSED
+#if defined(HAVE_ATTRIBUTE_UNUSED) || defined(__MINGW32__)
 # define UNUSED __attribute__((unused))
 #else
 # define UNUSED

@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 8.2.  Last change: 2022 May 06
+*visual.txt*    For Vim version 9.0.  Last change: 2022 Jun 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -509,6 +509,13 @@ work both in Visual mode and in Select mode.  When these are used in Select
 mode Vim automatically switches to Visual mode, so that the same behavior as
 in Visual mode is effective.  If you don't want this use |:xmap| or |:smap|.
 
+One particular edge case: >
+  	:vnoremap <C-K> <Esc>
+This ends Visual mode when in Visual mode, but in Select mode it does not
+work, because Select mode is restored after executing the mapped keys.  You
+need to use: >
+  	:snoremap <C-K> <Esc>
+<
 Users will expect printable characters to replace the selected area.
 Therefore avoid mapping printable characters in Select mode.  Or use
 |:sunmap|  after |:map| and |:vmap| to remove it for Select mode.

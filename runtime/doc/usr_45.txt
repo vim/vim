@@ -1,4 +1,4 @@
-*usr_45.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*usr_45.txt*	For Vim version 9.0.  Last change: 2022 May 13
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

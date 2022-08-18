@@ -72,6 +72,7 @@ int mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***fil
 int mch_has_exp_wildcard(char_u *p);
 int mch_has_wildcard(char_u *p);
 int mch_rename(const char *src, const char *dest);
+int gpm_available(void);
 int gpm_enabled(void);
 int mch_libcall(char_u *libname, char_u *funcname, char_u *argstring, int argint, char_u **string_result, int *number_result);
 void setup_term_clip(void);
@@ -85,5 +86,7 @@ void clip_xterm_set_selection(Clipboard_T *cbd);
 int xsmp_handle_requests(void);
 void xsmp_init(void);
 void xsmp_close(void);
-int gpm_available(void);
+void stop_timeout(void);
+volatile sig_atomic_t *start_timeout(long msec);
+void delete_timer(void);
 /* vim: set ft=c : */

@@ -1290,6 +1290,17 @@ func Test_inc_search()
   close!
 endfunc
 
+" this was using a line from ml_get() freed by the regexp
+func Test_isearch_copy_line()
+  new
+  norm o
+  norm 0
+  0norm o
+  sil! norm bc0
+  sil! isearch \%')
+  bwipe!
+endfunc
+
 " Test for :dsearch, :dlist, :djump and :dsplit commands
 " Test for [d, ]d, [D, ]D, [ CTRL-D, ] CTRL-D and CTRL-W d commands
 func Test_macro_search()
@@ -1390,6 +1401,21 @@ func Test_macro_search()
   call assert_fails('dsplit BAR', 'E388:')
 
   close!
+endfunc
+
+func Test_define_search()
+  " this was accessing freed memory
+  new
+  call setline(1, ['first line', '', '#define something 0'])
+  sil norm o0
+  sil! norm 
+  bwipe!
+
+  new somefile
+  call setline(1, ['first line', '', '#define something 0'])
+  sil norm 0o0
+  sil! norm ]d
+  bwipe!
 endfunc
 
 " Test for [*, [/, ]* and ]/

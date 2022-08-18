@@ -1,19 +1,31 @@
 " Vim plugin for using Vim as manpager.
 " Maintainer: Enno Nagel <ennonagel+vim@gmail.com>
-" Last Change: 2020 Aug 05
+" Last Change: 2022 Jun 17
 
-command! -nargs=0 MANPAGER call s:ManPager() | delcommand MANPAGER
+" Set up the current buffer (likely read from stdin) as a manpage
+command MANPAGER call s:ManPager()
 
-function! s:ManPager()
-  set nocompatible
+function s:ManPager()
+  " global options, keep these to a minimum to avoid side effects
+  if &compatible
+    set nocompatible
+  endif
   if exists('+viminfofile')
     set viminfofile=NONE
   endif
-  set noswapfile 
+  syntax on
 
-  setlocal ft=man
-  runtime ftplugin/man.vim
-  setlocal buftype=nofile bufhidden=hide iskeyword+=: modifiable
+  " Make this an unlisted, readonly scratch buffer
+  setlocal buftype=nofile noswapfile bufhidden=hide nobuflisted readonly
+
+  " Is this useful?  Should allow for using K on word with a colon.
+  setlocal iskeyword+=:
+
+  " Ensure text width matches window width
+  setlocal foldcolumn& nofoldenable nonumber norelativenumber
+
+  " In case Vim was invoked with -M
+  setlocal modifiable
 
   " Emulate 'col -b'
   silent! keepj keepp %s/\v(.)\b\ze\1?//ge
@@ -27,7 +39,11 @@ function! s:ManPager()
   if n > 1
     exe "1," . n-1 . "d"
   endif
-  setlocal nomodified readonly
 
-  syntax on
+  " Finished preprocessing the buffer, prevent any further modifications
+  setlocal nomodified nomodifiable
+
+  " Set filetype to man even if ftplugin is disabled
+  setlocal iskeyword+=: filetype=man
+  runtime ftplugin/man.vim
 endfunction

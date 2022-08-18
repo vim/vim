@@ -1,4 +1,4 @@
-*os_390.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
+*os_390.txt*    For Vim version 9.0.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL	  by Ralf Schandl

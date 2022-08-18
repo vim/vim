@@ -83,6 +83,16 @@ def Test_vim9cmd()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_defcompile_fails()
+  assert_fails('defcompile NotExists', 'E1061:')
+  assert_fails('defcompile debug debug Test_defcompile_fails', 'E488:')
+  assert_fails('defcompile profile profile Test_defcompile_fails', 'E488:')
+enddef
+
+defcompile Test_defcompile_fails
+defcompile debug Test_defcompile_fails
+defcompile profile Test_defcompile_fails
+
 def Test_cmdmod_execute()
   # "legacy" applies not only to the "exe" argument but also to the commands
   var lines =<< trim END
@@ -132,6 +142,42 @@ def Test_cmdmod_execute()
   END
   v9.CheckScriptSuccess(lines)
   delfunc g:TheFunc
+
+  # vim9cmd execute(cmd) executes code in vim9 script context
+  lines =<< trim END
+    vim9cmd execute("g:vim9executetest = 'bar'")
+    call assert_equal('bar', g:vim9executetest)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vim9executetest
+
+  lines =<< trim END
+    vim9cmd execute(["g:vim9executetest1 = 'baz'", "g:vim9executetest2 = 'foo'"])
+    call assert_equal('baz', g:vim9executetest1)
+    call assert_equal('foo', g:vim9executetest2)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vim9executetest1
+  unlet g:vim9executetest2
+
+  # legacy call execute(cmd) executes code in vim script context
+  lines =<< trim END
+    vim9script
+    legacy call execute("let g:vim9executetest = 'bar'")
+    assert_equal('bar', g:vim9executetest)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vim9executetest
+
+  lines =<< trim END
+    vim9script
+    legacy call execute(["let g:vim9executetest1 = 'baz'", "let g:vim9executetest2 = 'foo'"])
+    assert_equal('baz', g:vim9executetest1)
+    assert_equal('foo', g:vim9executetest2)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vim9executetest1
+  unlet g:vim9executetest2
 enddef
 
 def Test_edit_wildcards()
@@ -697,6 +743,16 @@ def Test_use_register()
   END
   v9.CheckDefAndScriptFailure(lines, 'E1207:', 2)
   $SomeEnv = ''
+
+  lines =<< trim END
+      eval 'value'
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 1)
+
+  lines =<< trim END
+      eval "value"
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1207:', 1)
 enddef
 
 def Test_environment_use_linebreak()
@@ -1681,6 +1737,22 @@ def Test_lockvar()
       UnLockIt()
   END
   v9.CheckScriptFailure(lines, 'E46', 1)
+
+  lines =<< trim END
+      def _()
+        lockv
+      enddef
+      defcomp
+  END
+  v9.CheckScriptFailure(lines, 'E179', 1)
+
+  lines =<< trim END
+      def T()
+        unlet
+      enddef
+      defcomp
+  END
+  v9.CheckScriptFailure(lines, 'E179', 1)
 enddef
 
 def Test_substitute_expr()

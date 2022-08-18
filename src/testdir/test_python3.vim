@@ -381,11 +381,13 @@ func Test_python3_opt_reset_local_to_global()
         \ ['errorformat', '%f:%l:%m', '%s-%l-%m', ''],
         \ ['grepprg', 'ggprg', 'lgprg', ''],
         \ ['makeprg', 'gmprg', 'lmprg', ''],
-        \ ['balloonexpr', 'gbexpr', 'lbexpr', ''],
         \ ['cryptmethod', 'blowfish2', 'zip', ''],
         \ ['lispwords', 'abc', 'xyz', ''],
         \ ['makeencoding', 'utf-8', 'latin1', ''],
         \ ['undolevels', 100, 200, -123456]]
+  if has('balloon_eval')
+    call add(bopts, ['balloonexpr', 'gbexpr', 'lbexpr', ''])
+  endif
 
   " Set the global and buffer-local option values and then clear the
   " buffer-local option value.
@@ -4059,6 +4061,42 @@ func Test_python3_fold_hidden_buffer()
   set fdm& fde&
   delfunc Fde
   bwipe! Xa.txt
+endfunc
+
+" Test to catch regression fix #10437.
+func Test_python3_hidden_buf_mod_does_not_mess_up_display()
+  CheckRunVimInTerminal
+
+  let testfile = 'Xtest.vim'
+  let lines =<< trim END
+        set hidden number
+        new
+        hide
+        sil call setline(1, repeat(['aaa'], &lines) + ['bbbbbb'])
+        fu Func()
+        python3 << EOF
+        import vim
+        b = vim.buffers[2]
+        b[:] = ['', '']
+        EOF
+        endfu
+        norm! Gzb
+        call feedkeys(":call Func()\r", 'n')
+  END
+  call writefile(lines, testfile)
+
+  let rows = 10
+  let bufnr = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
+  call TermWait(bufnr, 100)
+  call assert_equal('run', job_status(term_getjob(bufnr)))
+  let g:test_is_flaky = 0
+  call WaitForAssert({-> assert_match('^  3 aaa$', term_getline(bufnr, 1))})
+  call WaitForAssert({-> assert_match('^ 11 bbbbbb$', term_getline(bufnr, rows - 1))})
+
+  call term_sendkeys(bufnr, ":qall!\<CR>")
+  call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(bufnr)))})
+  exe bufnr . 'bwipe!'
+  call delete(testfile)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

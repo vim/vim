@@ -1,6 +1,6 @@
 [![Vim Logo](https://github.com/vim/vim/raw/master/runtime/vimlogo.gif)](https://www.vim.org)
 
-[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22) [![Travis Build Status](https://travis-ci.com/vim/vim.svg?branch=master)](https://travis-ci.com/github/vim/vim) [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim) [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim) [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master) [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim) [![Language Grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/vim/vim.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vim/vim/context:cpp) [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim) [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim) [![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
+[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22) [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim) [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim) [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master) [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim) [![Language Grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/vim/vim.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vim/vim/context:cpp) [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim) [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim) [![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
 
 <sub>For translations of this README see the end.</sub>
 
@@ -128,6 +128,8 @@ If you would like to help making Vim better, see the
 
 ## Information ##
 
+If you are on macOS, you can use [Macvim](https://macvim-dev.github.io/macvim/).
+
 The latest news about Vim can be found on the Vim home page:
 	https://www.vim.org/
 
@@ -149,9 +151,4 @@ Send any other comments, patches, flowers and suggestions to:
 	Bram Moolenaar <Bram@vim.org>
 
 
-This is `README.md` for version 8.2 of Vim: Vi IMproved.
-
-
-## Translations of this README ##
-
-[Korean](https://github.com/cjw1359/opensource/blob/master/Vim/README_ko.md)
+This is `README.md` for version 9.0 of Vim: Vi IMproved.

@@ -10,6 +10,9 @@ More information in the on-line help:
 	:help 'langmenu'
 	:help :language
 
+You can find a couple of helper tools for translating menus on github:
+https://github.com/adaext/vim-menutrans-helper
+
 The "$VIMRUNTIME/menu.vim" file will search for a menu translation file.  This
 depends on the value of the "v:lang" variable.
 

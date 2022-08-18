@@ -290,9 +290,7 @@ open_buffer(
     if (curbuf->b_flags & BF_NEVERLOADED)
     {
 	(void)buf_init_chartab(curbuf, FALSE);
-#ifdef FEAT_CINDENT
 	parse_cino(curbuf);
-#endif
     }
 
     // Set/reset the Changed flag first, autocmds may change the buffer.
@@ -1006,8 +1004,11 @@ free_buffer_stuff(
 #ifdef FEAT_NETBEANS_INTG
     netbeans_file_killed(buf);
 #endif
-    map_clear_int(buf, MAP_ALL_MODES, TRUE, FALSE);  // clear local mappings
-    map_clear_int(buf, MAP_ALL_MODES, TRUE, TRUE);   // clear local abbrevs
+#ifdef FEAT_PROP_POPUP
+    ga_clear_strings(&buf->b_textprop_text);
+#endif
+    map_clear_mode(buf, MAP_ALL_MODES, TRUE, FALSE);  // clear local mappings
+    map_clear_mode(buf, MAP_ALL_MODES, TRUE, TRUE);   // clear local abbrevs
     VIM_CLEAR(buf->b_start_fenc);
 }
 
@@ -1817,6 +1818,14 @@ set_curbuf(buf_T *buf, int action)
     static void
 enter_buffer(buf_T *buf)
 {
+    // when closing the current buffer stop Visual mode
+    if (VIsual_active
+#if defined(EXITFREE)
+	    && !entered_free_all_mem
+#endif
+	    )
+	end_visual_mode();
+
     // Get the buffer in the current window.
     curwin->w_buffer = buf;
     curbuf = buf;
@@ -1915,7 +1924,7 @@ enter_buffer(buf_T *buf)
     curbuf->b_last_used = vim_time();
 #endif
 
-    redraw_later(NOT_VALID);
+    redraw_later(UPD_NOT_VALID);
 }
 
 #if defined(FEAT_AUTOCHDIR) || defined(PROTO)
@@ -2274,7 +2283,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_inex);
 # endif
 #endif
-#if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     clear_string_option(&buf->b_p_inde);
     clear_string_option(&buf->b_p_indk);
 #endif
@@ -2335,14 +2344,10 @@ free_buf_options(
     clear_string_option(&buf->b_p_sua);
 #endif
     clear_string_option(&buf->b_p_ft);
-#ifdef FEAT_CINDENT
     clear_string_option(&buf->b_p_cink);
     clear_string_option(&buf->b_p_cino);
     clear_string_option(&buf->b_p_cinsd);
-#endif
-#if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
     clear_string_option(&buf->b_p_cinw);
-#endif
     clear_string_option(&buf->b_p_cpt);
 #ifdef FEAT_COMPL_FUNC
     clear_string_option(&buf->b_p_cfu);
@@ -2367,14 +2372,10 @@ free_buf_options(
 #endif
     clear_string_option(&buf->b_p_dict);
     clear_string_option(&buf->b_p_tsr);
-#ifdef FEAT_TEXTOBJ
     clear_string_option(&buf->b_p_qe);
-#endif
     buf->b_p_ar = -1;
     buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
-#ifdef FEAT_LISP
     clear_string_option(&buf->b_p_lw);
-#endif
     clear_string_option(&buf->b_p_bkc);
     clear_string_option(&buf->b_p_menc);
 }
@@ -2415,12 +2416,7 @@ buflist_getfile(
     if (buf == curbuf)
 	return OK;
 
-    if (text_locked())
-    {
-	text_locked_msg();
-	return FAIL;
-    }
-    if (curbuf_locked())
+    if (text_or_buf_locked())
 	return FAIL;
 
     // altfpos may be changed by getfile(), get it now
@@ -3290,7 +3286,7 @@ buflist_list(exarg_T *eap)
     {
 #ifdef FEAT_TERMINAL
 	job_running = term_job_running(buf->b_term);
-	job_none_open = job_running && term_none_open(buf->b_term);
+	job_none_open = term_none_open(buf->b_term);
 #endif
 	// skip unlisted buffers, unless ! was used
 	if ((!buf->b_p_bl && !eap->forceit && !vim_strchr(eap->arg, 'u'))
@@ -3326,9 +3322,9 @@ buflist_list(exarg_T *eap)
 	changed_char = (buf->b_flags & BF_READERR) ? 'x'
 					     : (bufIsChanged(buf) ? '+' : ' ');
 #ifdef FEAT_TERMINAL
-	if (term_job_running(buf->b_term))
+	if (job_running)
 	{
-	    if (term_none_open(buf->b_term))
+	    if (job_none_open)
 		ro_char = '?';
 	    else
 		ro_char = 'R';
@@ -4307,7 +4303,7 @@ build_stl_str_hl(
     curitem = 0;
     prevchar_isflag = TRUE;
     prevchar_isitem = FALSE;
-    for (s = usefmt; *s; )
+    for (s = usefmt; *s != NUL; )
     {
 	if (curitem == (int)stl_items_len)
 	{
@@ -4337,7 +4333,7 @@ build_stl_str_hl(
 	    stl_items_len = new_len;
 	}
 
-	if (*s != NUL && *s != '%')
+	if (*s != '%')
 	    prevchar_isflag = prevchar_isitem = FALSE;
 
 	/*

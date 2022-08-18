@@ -100,6 +100,8 @@ typedef char * LPCSTR;
 typedef char * LPWSTR;
 typedef int ACCESS_MASK;
 typedef int BOOL;
+typedef int BOOLEAN;
+typedef int CALLBACK;
 typedef int COLORREF;
 typedef int CONSOLE_CURSOR_INFO;
 typedef int COORD;
@@ -271,11 +273,12 @@ typedef BOOL (WINAPI *PfnRtlGetVersion)(LPOSVERSIONINFOW);
     static DWORD
 get_build_number(void)
 {
-    OSVERSIONINFOW	osver = {sizeof(OSVERSIONINFOW)};
+    OSVERSIONINFOW	osver;
     HMODULE		hNtdll;
     PfnRtlGetVersion	pRtlGetVersion;
     DWORD		ver = MAKE_VER(0, 0, 0);
 
+    osver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
     hNtdll = GetModuleHandle("ntdll.dll");
     if (hNtdll != NULL)
     {
@@ -323,7 +326,7 @@ make_ambiwidth_event(
 read_console_input(
     HANDLE	    hInput,
     INPUT_RECORD    *lpBuffer,
-    DWORD	    nLength,
+    int		    nLength,
     LPDWORD	    lpEvents)
 {
     enum
@@ -421,7 +424,7 @@ peek_console_input(
     DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
-    return read_console_input(hInput, lpBuffer, (DWORD)-1, lpEvents);
+    return read_console_input(hInput, lpBuffer, -1, lpEvents);
 }
 
 # ifdef FEAT_CLIENTSERVER
@@ -433,7 +436,7 @@ msg_wait_for_multiple_objects(
     DWORD    dwMilliseconds,
     DWORD    dwWakeMask)
 {
-    if (read_console_input(NULL, NULL, (DWORD)-2, NULL))
+    if (read_console_input(NULL, NULL, -2, NULL))
 	return WAIT_OBJECT_0;
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
@@ -446,7 +449,7 @@ wait_for_single_object(
     HANDLE hHandle,
     DWORD dwMilliseconds)
 {
-    if (read_console_input(NULL, NULL, (DWORD)-2, NULL))
+    if (read_console_input(NULL, NULL, -2, NULL))
 	return WAIT_OBJECT_0;
     return WaitForSingleObject(hHandle, dwMilliseconds);
 }
@@ -758,8 +761,8 @@ dyn_libintl_init(void)
     }
 
     // The bind_textdomain_codeset() function is optional.
-    dyn_libintl_bind_textdomain_codeset = (void *)GetProcAddress(hLibintlDLL,
-						   "bind_textdomain_codeset");
+    dyn_libintl_bind_textdomain_codeset = (char *(*)(const char *, const char *))
+			GetProcAddress(hLibintlDLL, "bind_textdomain_codeset");
     if (dyn_libintl_bind_textdomain_codeset == NULL)
 	dyn_libintl_bind_textdomain_codeset =
 					 null_libintl_bind_textdomain_codeset;
@@ -767,7 +770,8 @@ dyn_libintl_init(void)
     // _wputenv() function for the libintl.dll is optional.
     hmsvcrt = find_imported_module_by_funcname(hLibintlDLL, "getenv");
     if (hmsvcrt != NULL)
-	dyn_libintl_wputenv = (void *)GetProcAddress(hmsvcrt, "_wputenv");
+	dyn_libintl_wputenv = (int (*)(const wchar_t *))
+					GetProcAddress(hmsvcrt, "_wputenv");
     if (dyn_libintl_wputenv == NULL || dyn_libintl_wputenv == _wputenv)
 	dyn_libintl_wputenv = null_libintl_wputenv;
 
@@ -1688,7 +1692,7 @@ WaitForChar(long msec, int ignore_input)
 		{
 		    // The screen is now messed up, must redraw the command
 		    // line and later all the windows.
-		    redraw_all_later(CLEAR);
+		    redraw_all_later(UPD_CLEAR);
 		    compute_cmdrow();
 		    redrawcmd();
 		}
@@ -2351,11 +2355,11 @@ theend:
  * worth allowing these to make debugging of issues easier.
  */
     static void
-bad_param_handler(const wchar_t *expression,
-    const wchar_t *function,
-    const wchar_t *file,
-    unsigned int line,
-    uintptr_t pReserved)
+bad_param_handler(const wchar_t *expression UNUSED,
+    const wchar_t *function UNUSED,
+    const wchar_t *file UNUSED,
+    unsigned int line UNUSED,
+    uintptr_t pReserved UNUSED)
 {
 }
 
@@ -3493,7 +3497,7 @@ mch_writable(char_u *name)
  * the allocated memory.
  */
     int
-mch_can_exe(char_u *name, char_u **path, int use_path)
+mch_can_exe(char_u *name, char_u **path, int use_path UNUSED)
 {
     return executable_exists((char *)name, path, TRUE, TRUE);
 }
@@ -4222,7 +4226,7 @@ sub_process_writer(LPVOID param)
 		      s == NULL ? l : (DWORD)(s - (lp + written)),
 		      &len, NULL);
 	}
-	if (len == (int)l)
+	if (len == l)
 	{
 	    // Finished a line, add a NL, unless this line should not have
 	    // one.
@@ -6479,7 +6483,7 @@ mch_write(
 	// sequence may be inserted asynchronously.
 	if (len < 0)
 	{
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
 	    return;
 	}
 
@@ -7327,6 +7331,7 @@ typedef struct _FILE_EA_INFORMATION_ {
     ULONG EaSize;
 } FILE_EA_INFORMATION_, *PFILE_EA_INFORMATION_;
 
+#ifndef PROTO
 typedef NTSTATUS (NTAPI *PfnNtOpenFile)(
 	PHANDLE FileHandle,
 	ACCESS_MASK DesiredAccess,
@@ -7367,6 +7372,7 @@ PfnNtSetEaFile pNtSetEaFile = NULL;
 PfnNtQueryEaFile pNtQueryEaFile = NULL;
 PfnNtQueryInformationFile pNtQueryInformationFile = NULL;
 PfnRtlInitUnicodeString pRtlInitUnicodeString = NULL;
+#endif
 
 /*
  * Load ntdll.dll functions.
@@ -8315,3 +8321,84 @@ GetWin32Error(void)
     }
     return msg;
 }
+
+#if defined(FEAT_RELTIME) || defined(PROTO)
+static HANDLE   timer_handle;
+static int      timer_active = FALSE;
+
+/*
+ * Calls to start_timeout alternate the return value pointer between the two
+ * entries in timeout_flags. If the previously active timeout is very close to
+ * expiring when start_timeout() is called then a race condition means that the
+ * set_flag() function may still be invoked after the previous timer is
+ * deleted. Ping-ponging between the two flags prevents this causing 'fake'
+ * timeouts.
+ */
+static sig_atomic_t timeout_flags[2];
+static int	    timeout_flag_idx = 0;
+static sig_atomic_t *timeout_flag = &timeout_flags[0];
+
+
+    static void CALLBACK
+set_flag(void *param, BOOLEAN unused2 UNUSED)
+{
+    int *timeout_flag = (int *)param;
+
+    *timeout_flag = TRUE;
+}
+
+/*
+ * Stop any active timeout.
+ */
+    void
+stop_timeout(void)
+{
+    if (timer_active)
+    {
+        BOOL ret = DeleteTimerQueueTimer(NULL, timer_handle, NULL);
+	timer_active = FALSE;
+	if (!ret && GetLastError() != ERROR_IO_PENDING)
+	{
+	    semsg(_(e_could_not_clear_timeout_str), GetWin32Error());
+	}
+    }
+    *timeout_flag = FALSE;
+}
+
+/*
+ * Start the timeout timer.
+ *
+ * The period is defined in milliseconds.
+ *
+ * The return value is a pointer to a flag that is initialised to 0.  If the
+ * timeout expires, the flag is set to 1. This will only return pointers to
+ * static memory; i.e. any pointer returned by this function may always be
+ * safely dereferenced.
+ *
+ * This function is not expected to fail, but if it does it still returns a
+ * valid flag pointer; the flag will remain stuck at zero.
+ */
+    volatile sig_atomic_t *
+start_timeout(long msec)
+{
+    BOOL ret;
+
+    timeout_flag = &timeout_flags[timeout_flag_idx];
+
+    stop_timeout();
+    ret = CreateTimerQueueTimer(
+	    &timer_handle, NULL, set_flag, timeout_flag,
+	    (DWORD)msec, 0, WT_EXECUTEDEFAULT);
+    if (!ret)
+    {
+	semsg(_(e_could_not_set_timeout_str), GetWin32Error());
+    }
+    else
+    {
+	timeout_flag_idx = (timeout_flag_idx + 1) % 2;
+	timer_active = TRUE;
+	*timeout_flag = FALSE;
+    }
+    return timeout_flag;
+}
+#endif

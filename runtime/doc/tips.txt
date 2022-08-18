@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 8.2.  Last change: 2021 Nov 06
+*tips.txt*      For Vim version 9.0.  Last change: 2021 Nov 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

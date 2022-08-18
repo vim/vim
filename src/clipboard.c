@@ -147,7 +147,7 @@ clip_own_selection(Clipboard_T *cbd)
 		    && (cbd == &clip_star ? clip_isautosel_star()
 						      : clip_isautosel_plus())
 		    && HL_ATTR(HLF_V) != HL_ATTR(HLF_VNC))
-		redraw_curbuf_later(INVERTED_ALL);
+		redraw_curbuf_later(UPD_INVERTED_ALL);
 	}
     }
 #else
@@ -202,7 +202,7 @@ clip_lose_selection(Clipboard_T *cbd)
 		&& HL_ATTR(HLF_V) != HL_ATTR(HLF_VNC)
 		&& !exiting)
 	{
-	    update_curbuf(INVERTED_ALL);
+	    update_curbuf(UPD_INVERTED_ALL);
 	    setcursor();
 	    cursor_on();
 	    out_flush_cursor(TRUE, FALSE);

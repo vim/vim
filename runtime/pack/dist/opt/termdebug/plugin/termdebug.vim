@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2022 May 09
+" Last Change: 2022 Jun 24
 "
 " WORK IN PROGRESS - The basics works stable, more to come
 " Note: In general you need at least GDB 7.12 because this provides the
@@ -65,11 +65,6 @@ set cpo&vim
 command -nargs=* -complete=file -bang Termdebug call s:StartDebug(<bang>0, <f-args>)
 command -nargs=+ -complete=file -bang TermdebugCommand call s:StartDebugCommand(<bang>0, <f-args>)
 
-" Name of the gdb command, defaults to "gdb".
-if !exists('g:termdebugger')
-  let g:termdebugger = 'gdb'
-endif
-
 let s:pc_id = 12
 let s:asm_id = 13
 let s:break_id = 14  " breakpoint number is added to this
@@ -99,8 +94,17 @@ call s:Highlight(1, '', &background)
 hi default debugBreakpoint term=reverse ctermbg=red guibg=red
 hi default debugBreakpointDisabled term=reverse ctermbg=gray guibg=gray
 
+" Get the command to execute the debugger as a list, defaults to ["gdb"].
 func s:GetCommand()
-  return type(g:termdebugger) == v:t_list ? copy(g:termdebugger) : [g:termdebugger]
+  if exists('g:termdebug_config')
+    let cmd = get(g:termdebug_config, 'command', 'gdb')
+  elseif exists('g:termdebugger')
+    let cmd = g:termdebugger
+  else
+    let cmd = 'gdb'
+  endif
+
+  return type(cmd) == v:t_list ? copy(cmd) : [cmd]
 endfunc
 
 func s:StartDebug(bang, ...)
@@ -144,10 +148,16 @@ func s:StartDebug_internal(dict)
 
   let s:save_columns = 0
   let s:allleft = 0
-  if exists('g:termdebug_wide')
-    if &columns < g:termdebug_wide
+  let wide = 0
+  if exists('g:termdebug_config')
+    let wide = get(g:termdebug_config, 'wide', 0)
+  elseif exists('g:termdebug_wide')
+    let wide = g:termdebug_wide
+  endif
+  if wide > 0
+    if &columns < wide
       let s:save_columns = &columns
-      let &columns = g:termdebug_wide
+      let &columns = wide
       " If we make the Vim window wider, use the whole left half for the debug
       " windows.
       let s:allleft = 1
@@ -158,7 +168,12 @@ func s:StartDebug_internal(dict)
   endif
 
   " Override using a terminal window by setting g:termdebug_use_prompt to 1.
-  let use_prompt = exists('g:termdebug_use_prompt') && g:termdebug_use_prompt
+  let use_prompt = 0
+  if exists('g:termdebug_config')
+    let use_prompt = get(g:termdebug_config, 'use_prompt', 0)
+  elseif exists('g:termdebug_use_prompt')
+    let use_prompt = g:termdebug_use_prompt
+  endif
   if has('terminal') && !has('win32') && !use_prompt
     let s:way = 'terminal'
   else
@@ -171,12 +186,10 @@ func s:StartDebug_internal(dict)
     call s:StartDebug_term(a:dict)
   endif
 
-  if exists('g:termdebug_disasm_window')
-    if g:termdebug_disasm_window
-      let curwinid = win_getid(winnr())
-      call s:GotoAsmwinOrCreateIt()
-      call win_gotoid(curwinid)
-    endif
+  if s:GetDisasmWindow()
+    let curwinid = win_getid(winnr())
+    call s:GotoAsmwinOrCreateIt()
+    call win_gotoid(curwinid)
   endif
 
   if exists('#User#TermdebugStartPost')
@@ -240,18 +253,28 @@ func s:StartDebug_term(dict)
   let proc_args = get(a:dict, 'proc_args', [])
 
   let gdb_cmd = s:GetCommand()
-  " Add -quiet to avoid the intro message causing a hit-enter prompt.
-  let gdb_cmd += ['-quiet']
-  " Disable pagination, it causes everything to stop at the gdb
-  let gdb_cmd += ['-iex', 'set pagination off']
-  " Interpret commands while the target is running.  This should usually only
-  " be exec-interrupt, since many commands don't work properly while the
-  " target is running (so execute during startup).
-  let gdb_cmd += ['-iex', 'set mi-async on']
-  " Open a terminal window to run the debugger.
-  let gdb_cmd += ['-tty', pty]
-  " Command executed _after_ startup is done, provides us with the necessary feedback
-  let gdb_cmd += ['-ex', 'echo startupdone\n']
+
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'command_add_args')
+    let gdb_cmd = g:termdebug_config.command_add_args(gdb_cmd, pty)
+  else
+    " Add -quiet to avoid the intro message causing a hit-enter prompt.
+    let gdb_cmd += ['-quiet']
+    " Disable pagination, it causes everything to stop at the gdb
+    let gdb_cmd += ['-iex', 'set pagination off']
+    " Interpret commands while the target is running.  This should usually only
+    " be exec-interrupt, since many commands don't work properly while the
+    " target is running (so execute during startup).
+    let gdb_cmd += ['-iex', 'set mi-async on']
+    " Open a terminal window to run the debugger.
+    let gdb_cmd += ['-tty', pty]
+    " Command executed _after_ startup is done, provides us with the necessary
+    " feedback
+    let gdb_cmd += ['-ex', 'echo startupdone\n']
+  endif
+
+  if exists('g:termdebug_config') && has_key(g:termdebug_config, 'command_filter')
+    let gdb_cmd = g:termdebug_config.command_filter(gdb_cmd)
+  endif
 
   " Adding arguments requested by the user
   let gdb_cmd += gdb_args
@@ -511,6 +534,7 @@ func TermDebugSendCommand(cmd)
       Stop
       sleep 10m
     endif
+    " TODO: should we prepend CTRL-U to clear the command?
     call term_sendkeys(s:gdbbuf, a:cmd . "\r")
     if do_continue
       Continue
@@ -855,7 +879,13 @@ func s:InstallCommands()
   command Asm call s:GotoAsmwinOrCreateIt()
   command Winbar call s:InstallWinbar()
 
-  if !exists('g:termdebug_map_K') || g:termdebug_map_K
+  let map = 1
+  if exists('g:termdebug_config')
+    let map = get(g:termdebug_config, 'map_K', 1)
+  elseif exists('g:termdebug_map_K')
+    let map = g:termdebug_map_K
+  endif
+  if map
     let s:k_map_saved = maparg('K', 'n', 0, 1)
     nnoremap K :Evaluate<CR>
   endif
@@ -863,7 +893,13 @@ func s:InstallCommands()
   if has('menu') && &mouse != ''
     call s:InstallWinbar()
 
-    if !exists('g:termdebug_popup') || g:termdebug_popup != 0
+    let popup = 1
+    if exists('g:termdebug_config')
+      let popup = get(g:termdebug_config, 'popup', 1)
+    elseif exists('g:termdebug_popup')
+      let popup = g:termdebug_popup
+    endif
+    if popup
       let s:saved_mousemodel = &mousemodel
       let &mousemodel = 'popup_setpos'
       an 1.200 PopUp.-SEP3-	<Nop>
@@ -1183,6 +1219,26 @@ func s:GotoSourcewinOrCreateIt()
   endif
 endfunc
 
+func s:GetDisasmWindow()
+  if exists('g:termdebug_config')
+    return get(g:termdebug_config, 'disasm_window', 0)
+  endif
+  if exists('g:termdebug_disasm_window')
+    return g:termdebug_disasm_window
+  endif
+  return 0
+endfunc
+
+func s:GetDisasmWindowHeight()
+  if exists('g:termdebug_config')
+    return get(g:termdebug_config, 'disasm_window_height', 0)
+  endif
+  if exists('g:termdebug_disasm_window') && g:termdebug_disasm_window > 1
+    return g:termdebug_disasm_window
+  endif
+  return 0
+endfunc
+
 func s:GotoAsmwinOrCreateIt()
   if !win_gotoid(s:asmwin)
     if win_gotoid(s:sourcewin)
@@ -1206,10 +1262,8 @@ func s:GotoAsmwinOrCreateIt()
       exe 'file Termdebug-asm-listing'
     endif
 
-    if exists('g:termdebug_disasm_window')
-      if g:termdebug_disasm_window > 1
-        exe 'resize ' . g:termdebug_disasm_window
-      endif
+    if s:GetDisasmWindowHeight() > 0
+      exe 'resize ' .. s:GetDisasmWindowHeight()
     endif
   endif
 
@@ -1273,12 +1327,12 @@ func s:HandleCursor(msg)
 echomsg 'different fname: "' .. expand('%:p') .. '" vs "' .. fnamemodify(fname, ':p') .. '"'
 	augroup Termdebug
 	  " Always open a file read-only instead of showing the ATTENTION
-	  " prompt, since we are unlikely to want to edit the file.
+	  " prompt, since it is unlikely we want to edit the file.
 	  " The file may be changed but not saved, warn for that.
 	  au SwapExists * echohl WarningMsg
 		\ | echo 'Warning: file is being edited elsewhere'
 		\ | echohl None
-		\ | let v:swapchoice = '0'
+		\ | let v:swapchoice = 'o'
         augroup END
         if &modified
           " TODO: find existing window

@@ -263,9 +263,7 @@ ins_ctrl_x(void)
 /*
  * Functions to check the current CTRL-X mode.
  */
-#ifdef FEAT_CINDENT
 int ctrl_x_mode_none(void) { return ctrl_x_mode == 0; }
-#endif
 int ctrl_x_mode_normal(void) { return ctrl_x_mode == CTRL_X_NORMAL; }
 int ctrl_x_mode_scroll(void) { return ctrl_x_mode == CTRL_X_SCROLL; }
 int ctrl_x_mode_whole_line(void) { return ctrl_x_mode == CTRL_X_WHOLE_LINE; }
@@ -526,29 +524,32 @@ ins_compl_accept_char(int c)
 
 /*
  * Get the completed text by inferring the case of the originally typed text.
+ * If the result is in allocated memory "tofree" is set to it.
  */
     static char_u *
 ins_compl_infercase_gettext(
 	char_u	*str,
-	int	actual_len,
-	int	actual_compl_length,
-	int	min_len)
+	int	char_len,
+	int	compl_char_len,
+	int	min_len,
+	char_u  **tofree)
 {
     int		*wca;			// Wide character array.
     char_u	*p;
     int		i, c;
     int		has_lower = FALSE;
     int		was_letter = FALSE;
+    garray_T	gap;
 
     IObuff[0] = NUL;
 
     // Allocate wide character array for the completion and fill it.
-    wca = ALLOC_MULT(int, actual_len);
+    wca = ALLOC_MULT(int, char_len);
     if (wca == NULL)
 	return IObuff;
 
     p = str;
-    for (i = 0; i < actual_len; ++i)
+    for (i = 0; i < char_len; ++i)
 	if (has_mbyte)
 	    wca[i] = mb_ptr2char_adv(&p);
 	else
@@ -568,7 +569,7 @@ ins_compl_infercase_gettext(
 	    if (MB_ISUPPER(wca[i]))
 	    {
 		// Rule 1 is satisfied.
-		for (i = actual_compl_length; i < actual_len; ++i)
+		for (i = compl_char_len; i < char_len; ++i)
 		    wca[i] = MB_TOLOWER(wca[i]);
 		break;
 	    }
@@ -589,7 +590,7 @@ ins_compl_infercase_gettext(
 	    if (was_letter && MB_ISUPPER(c) && MB_ISLOWER(wca[i]))
 	    {
 		// Rule 2 is satisfied.
-		for (i = actual_compl_length; i < actual_len; ++i)
+		for (i = compl_char_len; i < char_len; ++i)
 		    wca[i] = MB_TOUPPER(wca[i]);
 		break;
 	    }
@@ -612,20 +613,53 @@ ins_compl_infercase_gettext(
     }
 
     // Generate encoding specific output from wide character array.
-    // Multi-byte characters can occupy up to five bytes more than
-    // ASCII characters, and we also need one byte for NUL, so stay
-    // six bytes away from the edge of IObuff.
     p = IObuff;
     i = 0;
-    while (i < actual_len && (p - IObuff + 6) < IOSIZE)
-	if (has_mbyte)
+    ga_init2(&gap, 1, 500);
+    while (i < char_len)
+    {
+	if (gap.ga_data != NULL)
+	{
+	    if (ga_grow(&gap, 10) == FAIL)
+	    {
+		ga_clear(&gap);
+		return (char_u *)"[failed]";
+	    }
+	    p = (char_u *)gap.ga_data + gap.ga_len;
+	    if (has_mbyte)
+		gap.ga_len += (*mb_char2bytes)(wca[i++], p);
+	    else
+	    {
+		*p = wca[i++];
+		++gap.ga_len;
+	    }
+	}
+	else if ((p - IObuff) + 6 >= IOSIZE)
+	{
+	    // Multi-byte characters can occupy up to five bytes more than
+	    // ASCII characters, and we also need one byte for NUL, so when
+	    // getting to six bytes from the edge of IObuff switch to using a
+	    // growarray.  Add the character in the next round.
+	    if (ga_grow(&gap, IOSIZE) == FAIL)
+		return (char_u *)"[failed]";
+	    *p = NUL;
+	    STRCPY(gap.ga_data, IObuff);
+	    gap.ga_len = (int)STRLEN(IObuff);
+	}
+	else if (has_mbyte)
 	    p += (*mb_char2bytes)(wca[i++], p);
 	else
 	    *(p++) = wca[i++];
-    *p = NUL;
-
+    }
     vim_free(wca);
 
+    if (gap.ga_data != NULL)
+    {
+	*tofree = gap.ga_data;
+	return gap.ga_data;
+    }
+
+    *p = NUL;
     return IObuff;
 }
 
@@ -646,10 +680,12 @@ ins_compl_add_infercase(
 {
     char_u	*str = str_arg;
     char_u	*p;
-    int		actual_len;		// Take multi-byte characters
-    int		actual_compl_length;	// into account.
+    int		char_len;		// count multi-byte characters
+    int		compl_char_len;
     int		min_len;
     int		flags = 0;
+    int		res;
+    char_u	*tofree = NULL;
 
     if (p_ic && curbuf->b_p_inf && len > 0)
     {
@@ -659,44 +695,45 @@ ins_compl_add_infercase(
 	if (has_mbyte)
 	{
 	    p = str;
-	    actual_len = 0;
+	    char_len = 0;
 	    while (*p != NUL)
 	    {
 		MB_PTR_ADV(p);
-		++actual_len;
+		++char_len;
 	    }
 	}
 	else
-	    actual_len = len;
+	    char_len = len;
 
 	// Find actual length of original text.
 	if (has_mbyte)
 	{
 	    p = compl_orig_text;
-	    actual_compl_length = 0;
+	    compl_char_len = 0;
 	    while (*p != NUL)
 	    {
 		MB_PTR_ADV(p);
-		++actual_compl_length;
+		++compl_char_len;
 	    }
 	}
 	else
-	    actual_compl_length = compl_length;
+	    compl_char_len = compl_length;
 
-	// "actual_len" may be smaller than "actual_compl_length" when using
+	// "char_len" may be smaller than "compl_char_len" when using
 	// thesaurus, only use the minimum when comparing.
-	min_len = actual_len < actual_compl_length
-					   ? actual_len : actual_compl_length;
+	min_len = char_len < compl_char_len ? char_len : compl_char_len;
 
-	str = ins_compl_infercase_gettext(str, actual_len, actual_compl_length,
-								min_len);
+	str = ins_compl_infercase_gettext(str, char_len,
+					  compl_char_len, min_len, &tofree);
     }
     if (cont_s_ipos)
 	flags |= CP_CONT_S_IPOS;
     if (icase)
 	flags |= CP_ICASE;
 
-    return ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE);
+    res = ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE);
+    vim_free(tofree);
+    return res;
 }
 
 /*
@@ -750,7 +787,8 @@ ins_compl_add(
 	{
 	    if (!match_at_original_text(match)
 		    && STRNCMP(match->cp_str, str, len) == 0
-		    && match->cp_str[len] == NUL)
+		    && ((int)STRLEN(match->cp_str) <= len
+						 || match->cp_str[len] == NUL))
 		return NOTDONE;
 	    match = match->cp_next;
 	} while (match != NULL && !is_first_match(match));
@@ -1146,9 +1184,9 @@ trigger_complete_changed_event(int cur)
     dict_set_items_ro(v_event);
 
     recursive = TRUE;
-    textwinlock++;
+    textlock++;
     apply_autocmds(EVENT_COMPLETECHANGED, NULL, NULL, FALSE, curbuf);
-    textwinlock--;
+    textlock--;
     recursive = FALSE;
 
     restore_v_event(v_event, &save_v_event);
@@ -2151,9 +2189,7 @@ set_ctrl_x_mode(int c)
 ins_compl_stop(int c, int prev_mode, int retval)
 {
     char_u	*ptr;
-#ifdef FEAT_CINDENT
     int		want_cindent;
-#endif
 
     // Get here when we have finished typing a sequence of ^N and
     // ^P or other completion characters in CTRL-X mode.  Free up
@@ -2173,21 +2209,18 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	ins_compl_fixRedoBufForLeader(ptr);
     }
 
-#ifdef FEAT_CINDENT
     want_cindent = (get_can_cindent() && cindent_on());
-#endif
+
     // When completing whole lines: fix indent for 'cindent'.
     // Otherwise, break line if it's too long.
     if (compl_cont_mode == CTRL_X_WHOLE_LINE)
     {
-#ifdef FEAT_CINDENT
 	// re-indent the current line
 	if (want_cindent)
 	{
 	    do_c_expr_indent();
 	    want_cindent = FALSE;	// don't do it again
 	}
-#endif
     }
     else
     {
@@ -2216,11 +2249,21 @@ ins_compl_stop(int c, int prev_mode, int retval)
     // but only do this, if the Popup is still visible
     if (c == Ctrl_E)
     {
+	char_u *p = NULL;
+
 	ins_compl_delete();
 	if (compl_leader != NULL)
-	    ins_bytes(compl_leader + get_compl_len());
+	    p = compl_leader;
 	else if (compl_first_match != NULL)
-	    ins_bytes(compl_orig_text + get_compl_len());
+	    p = compl_orig_text;
+	if (p != NULL)
+	{
+	    int	    compl_len = get_compl_len();
+	    int	    len = (int)STRLEN(p);
+
+	    if (len > compl_len)
+		ins_bytes_len(p + compl_len, len - compl_len);
+	}
 	retval = TRUE;
     }
 
@@ -2251,11 +2294,9 @@ ins_compl_stop(int c, int prev_mode, int retval)
 	// command line window.
 	update_screen(0);
 #endif
-#ifdef FEAT_CINDENT
     // Indent now if a key was typed that is in 'cinkeys'.
     if (want_cindent && in_cinkeys(KEY_COMPLETE, ' ', inindent(0)))
 	do_c_expr_indent();
-#endif
     // Trigger the CompleteDone event to give scripts a chance to act
     // upon the end of completion.
     ins_apply_autocmds(EVENT_COMPLETEDONE);
@@ -2652,7 +2693,7 @@ expand_by_function(int type, char_u *base)
     // Lock the text to avoid weird things from happening.  Also disallow
     // switching to another window, it should not be needed and may end up in
     // Insert mode in another buffer.
-    ++textwinlock;
+    ++textlock;
 
     cb = get_insert_callback(type);
     retval = call_callback(cb, 0, &rettv, 2, args);
@@ -2678,7 +2719,7 @@ expand_by_function(int type, char_u *base)
 		break;
 	}
     }
-    --textwinlock;
+    --textlock;
 
     curwin->w_cursor = pos;	// restore the cursor position
     validate_cursor();
@@ -2726,25 +2767,21 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {
-	word = dict_get_string(tv->vval.v_dict, (char_u *)"word", FALSE);
-	cptext[CPT_ABBR] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"abbr", FALSE);
-	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"menu", FALSE);
-	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"kind", FALSE);
-	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"info", FALSE);
-	dict_get_tv(tv->vval.v_dict, (char_u *)"user_data", &user_data);
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL
-			&& dict_get_number(tv->vval.v_dict, (char_u *)"icase"))
+	word = dict_get_string(tv->vval.v_dict, "word", FALSE);
+	cptext[CPT_ABBR] = dict_get_string(tv->vval.v_dict, "abbr", FALSE);
+	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict, "menu", FALSE);
+	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict, "kind", FALSE);
+	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
+	dict_get_tv(tv->vval.v_dict, "user_data", &user_data);
+	if (dict_get_string(tv->vval.v_dict, "icase", FALSE) != NULL
+				  && dict_get_number(tv->vval.v_dict, "icase"))
 	    flags |= CP_ICASE;
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
-	    dup = dict_get_number(tv->vval.v_dict, (char_u *)"dup");
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"empty", FALSE) != NULL)
-	    empty = dict_get_number(tv->vval.v_dict, (char_u *)"empty");
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"equal", FALSE) != NULL
-			&& dict_get_number(tv->vval.v_dict, (char_u *)"equal"))
+	if (dict_get_string(tv->vval.v_dict, "dup", FALSE) != NULL)
+	    dup = dict_get_number(tv->vval.v_dict, "dup");
+	if (dict_get_string(tv->vval.v_dict, "empty", FALSE) != NULL)
+	    empty = dict_get_number(tv->vval.v_dict, "empty");
+	if (dict_get_string(tv->vval.v_dict, "equal", FALSE) != NULL
+				  && dict_get_number(tv->vval.v_dict, "equal"))
 	    flags |= CP_EQUAL;
     }
     else
@@ -2876,7 +2913,6 @@ set_completion(colnr_T startcol, list_T *list)
 f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int	    startcol;
-    int	    save_textlock = textlock;
 
     if (in_vim9script()
 	    && (check_for_number_arg(argvars, 0) == FAIL
@@ -2888,10 +2924,6 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_complete_can_only_be_used_in_insert_mode));
 	return;
     }
-
-    // "textlock" is set when evaluating 'completefunc' but we can change
-    // text here.
-    textlock = 0;
 
     // Check for undo allowed here, because if something was already inserted
     // the line was already saved for undo and this check isn't done.
@@ -2906,7 +2938,6 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 	if (startcol > 0)
 	    set_completion(startcol - 1, argvars[1].vval.v_list);
     }
-    textlock = save_textlock;
 }
 
 /*
@@ -3104,7 +3135,7 @@ f_complete_info(typval_T *argvars, typval_T *rettv)
 {
     list_T	*what_list = NULL;
 
-    if (rettv_dict_alloc(rettv) != OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_opt_list_arg(argvars, 0) == FAIL)
@@ -3470,7 +3501,7 @@ ins_comp_get_next_word_or_line(
     {
 	char_u	*tmp_ptr = ptr;
 
-	if (compl_status_adding())
+	if (compl_status_adding() && compl_length <= (int)STRLEN(tmp_ptr))
 	{
 	    tmp_ptr += compl_length;
 	    // Skip if already inside a word.
@@ -4517,10 +4548,10 @@ get_userdefined_compl_info(colnr_T curs_col UNUSED)
     args[1].vval.v_string = (char_u *)"";
     args[2].v_type = VAR_UNKNOWN;
     pos = curwin->w_cursor;
-    ++textwinlock;
+    ++textlock;
     cb = get_insert_callback(ctrl_x_mode);
     col = call_callback_retnr(cb, 2, args);
-    --textwinlock;
+    --textlock;
 
     State = save_State;
     curwin->w_cursor = pos;	// restore the cursor position
@@ -4531,11 +4562,12 @@ get_userdefined_compl_info(colnr_T curs_col UNUSED)
 	return FAIL;
     }
 
-    // Return value -2 means the user complete function wants to
-    // cancel the complete without an error.
-    // Return value -3 does the same as -2 and leaves CTRL-X mode.
-    if (col == -2)
+    // Return value -2 means the user complete function wants to cancel the
+    // complete without an error, do the same if the function did not execute
+    // successfully.
+    if (col == -2 || aborting())
 	return FAIL;
+    // Return value -3 does the same as -2 and leaves CTRL-X mode.
     if (col == -3)
     {
 	ctrl_x_mode = CTRL_X_NORMAL;
@@ -4738,11 +4770,9 @@ ins_compl_start(void)
     // First time we hit ^N or ^P (in a row, I mean)
 
     did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
     did_si = FALSE;
     can_si = FALSE;
     can_si_back = FALSE;
-#endif
     if (stop_arrow() == FAIL)
 	return FAIL;
 

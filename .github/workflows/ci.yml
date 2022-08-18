@@ -61,7 +61,8 @@ jobs:
             extra: vimtags
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository from github
+        uses: actions/checkout@v3
 
       - name: Install packages
         run: |
@@ -176,7 +177,7 @@ jobs:
           sudo bash ci/setup-xvfb.sh
 
       - name: Cache snd-dummy
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.SND_DUMMY_DIR }}
           key: linux-${{ env.LINUX_VERSION }}-snd-dummy
@@ -295,7 +296,8 @@ jobs:
         features: [tiny, normal, huge]
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository from github
+        uses: actions/checkout@v3
 
       - name: Install packages
         if: matrix.features == 'huge'
@@ -353,7 +355,7 @@ jobs:
           make ${TEST}
 
   windows:
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     env:
       # Interfaces
@@ -369,6 +371,7 @@ jobs:
       # Python 2
       PYTHON_VER: 27
       PYTHON_VER_DOT: '2.7'
+      PYTHON_DIR: 'C:\Python27'
       # Python 3
       PYTHON3_VER: 310
       PYTHON3_VER_DOT: '3.10'
@@ -421,18 +424,26 @@ jobs:
         run: |
           git config --global core.autocrlf input
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
-          python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
+          if [ "${{ matrix.arch }}" = "x86" ]; then
+            choco install python2 --forcex86
+          else
+            choco install python2
+          fi
           python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
-          echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
         if: matrix.toolchain == 'mingw'
         with:
+          update: true
+          install: tar
+          pacboy: >-
+            make:p gcc:p
           msystem: ${{ matrix.msystem }}
           release: false
 
-      - uses: actions/checkout@v2
+      - name: Checkout repository from github
+        uses: actions/checkout@v3
 
       - name: Create a list of download URLs
         shell: cmd
@@ -442,7 +453,7 @@ jobs:
           echo %WINPTY_URL%>> urls.txt
 
       - name: Cache downloaded files
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: downloads
           key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}

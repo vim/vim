@@ -276,6 +276,7 @@ func GetVimCommand(...)
     let cmd = cmd . ' -u ' . name
   endif
   let cmd .= ' --not-a-term'
+  let cmd .= ' --gui-dialog-file guidialogfile'
   let cmd = substitute(cmd, 'VIMRUNTIME=\S\+', '', '')
 
   " If using valgrind, make sure every run uses a different log file.
@@ -285,6 +286,12 @@ func GetVimCommand(...)
   endif
 
   return cmd
+endfunc
+
+" Return one when it looks like the tests are run with valgrind, which means
+" that everything is much slower.
+func RunningWithValgrind()
+  return GetVimCommand() =~ '\<valgrind\>'
 endfunc
 
 " Get the command to run Vim, with --clean instead of "-u NONE".

@@ -14,6 +14,8 @@ func TearDown()
   call delete('Xtest.latin1.add.spl')
   call delete('Xtest.latin1.spl')
   call delete('Xtest.latin1.sug')
+  " set 'encoding' to clear the word list
+  set encoding=utf-8
 endfunc
 
 func Test_wrap_search()
@@ -67,6 +69,16 @@ func Test_z_equal_on_invalid_utf8_word()
   call setline(1, "\xff")
   norm z=
   set nospell
+  bwipe!
+endfunc
+
+func Test_z_equal_on_single_character()
+  " this was decrementing the index below zero
+  new
+  norm a0\Ê
+  norm zW
+  norm z=
+
   bwipe!
 endfunc
 
@@ -137,6 +149,10 @@ func Test_spell_file_missing()
   augroup END
   call assert_fails('set spell spelllang=ab_cd', 'E797:')
 
+  " clean up
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing
+  augroup END
   augroup! TestSpellFileMissing
   unlet s:spell_file_missing
   set spell& spelllang&
@@ -144,19 +160,34 @@ func Test_spell_file_missing()
 endfunc
 
 func Test_spelldump()
+  " In case the spell file is not found avoid getting the download dialog, we
+  " would get stuck at the prompt.
+  let g:en_not_found = 0
+  augroup TestSpellFileMissing
+    au! SpellFileMissing * let g:en_not_found = 1
+  augroup END
   set spell spelllang=en
   spellrare! emacs
+  if g:en_not_found
+    call assert_report("Could not find English spell file")
+  else
+    spelldump
 
-  spelldump
+    " Check assumption about region: 1: us, 2: au, 3: ca, 4: gb, 5: nz.
+    call assert_equal('/regions=usaucagbnz', getline(1))
+    call assert_notequal(0, search('^theater/1$'))    " US English only.
+    call assert_notequal(0, search('^theatre/2345$')) " AU, CA, GB or NZ English.
 
-  " Check assumption about region: 1: us, 2: au, 3: ca, 4: gb, 5: nz.
-  call assert_equal('/regions=usaucagbnz', getline(1))
-  call assert_notequal(0, search('^theater/1$'))    " US English only.
-  call assert_notequal(0, search('^theatre/2345$')) " AU, CA, GB or NZ English.
+    call assert_notequal(0, search('^emacs/?$'))      " ? for a rare word.
+    call assert_notequal(0, search('^the the/!$'))    " ! for a wrong word.
+  endif
 
-  call assert_notequal(0, search('^emacs/?$'))      " ? for a rare word.
-  call assert_notequal(0, search('^the the/!$'))    " ! for a wrong word.
-
+  " clean up
+  unlet g:en_not_found
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing
+  augroup END
+  augroup! TestSpellFileMissing
   bwipe
   set spell&
 endfunc
@@ -165,18 +196,37 @@ func Test_spelldump_bang()
   new
   call setline(1, 'This is a sample sentence.')
   redraw
+
+  " In case the spell file is not found avoid getting the download dialog, we
+  " would get stuck at the prompt.
+  let g:en_not_found = 0
+  augroup TestSpellFileMissing
+    au! SpellFileMissing * let g:en_not_found = 1
+  augroup END
+
   set spell
-  redraw
-  spelldump!
 
-  " :spelldump! includes the number of times a word was found while updating
-  " the screen.
-  " Common word count starts at 10, regular word count starts at 0.
-  call assert_notequal(0, search("^is\t11$"))    " common word found once.
-  call assert_notequal(0, search("^the\t10$"))   " common word never found.
-  call assert_notequal(0, search("^sample\t1$")) " regular word found once.
-  call assert_equal(0, search("^screen\t"))      " regular word never found.
+  if g:en_not_found
+    call assert_report("Could not find English spell file")
+  else
+    redraw
+    spelldump!
 
+    " :spelldump! includes the number of times a word was found while updating
+    " the screen.
+    " Common word count starts at 10, regular word count starts at 0.
+    call assert_notequal(0, search("^is\t11$"))    " common word found once.
+    call assert_notequal(0, search("^the\t10$"))   " common word never found.
+    call assert_notequal(0, search("^sample\t1$")) " regular word found once.
+    call assert_equal(0, search("^screen\t"))      " regular word never found.
+  endif
+
+  " clean up
+  unlet g:en_not_found
+  augroup TestSpellFileMissing
+    autocmd! SpellFileMissing
+  augroup END
+  augroup! TestSpellFileMissing
   %bwipe!
   set spell&
 endfunc
@@ -233,6 +283,18 @@ func Test_spellreall()
   call assert_fails('spellrepall', 'E753:')
   set spell&
   bwipe!
+endfunc
+
+func Test_spell_dump_word_length()
+  " this was running over MAXWLEN
+  new
+  noremap 0 0a0zW0000000
+  sil! norm 0z=0
+  sil norm 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  sil! norm 0z=0
+
+  bwipe!
+  nunmap 0
 endfunc
 
 " Test spellsuggest({word} [, {max} [, {capital}]])
@@ -733,6 +795,10 @@ func Test_zz_sal_and_addition()
   set spl=Xtest_ca.latin1.spl
   call assert_equal("elequint", FirstSpellWord())
   call assert_equal("elekwint", SecondSpellWord())
+
+  bwipe!
+  set spellfile=
+  set spl&
 endfunc
 
 func Test_spellfile_value()
@@ -806,6 +872,28 @@ func Test_spellsuggest_too_deep()
   bwipe!
 endfunc
 
+func Test_spell_good_word_invalid()
+  " This was adding a word with a 0x02 byte, which causes havoc.
+  enew
+  norm o0
+  sil! norm rzzWs00/
+  2
+  sil! norm VzGprzzW
+  sil! norm z=
+
+  bwipe!
+endfunc
+
+func Test_spell_good_word_slash()
+  " This caused E1280.
+  new
+  norm afoo /
+  1
+  norm zG
+
+  bwipe!
+endfunc
+
 func LoadAffAndDic(aff_contents, dic_contents)
   set enc=latin1
   set spellfile=
@@ -875,6 +963,29 @@ func Test_spell_screendump()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestSpell')
+endfunc
+
+func Test_spell_screendump_spellcap()
+  CheckScreendump
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "   This line has a sepll error. and missing caps and trailing spaces.   ",
+             \ "another missing cap here.",
+             \ "",
+             \ "and here.",
+             \ "    ",
+             \ "and here."
+             \ ])
+       set spell spelllang=en
+  END
+  call writefile(lines, 'XtestSpellCap')
+  let buf = RunVimInTerminal('-S XtestSpellCap', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_spell_2', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestSpellCap')
 endfunc
 
 let g:test_data_aff1 = [

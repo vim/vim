@@ -3584,8 +3584,8 @@ msgstr "終了するには           :q<Enter>              "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "オンラインヘルプは     :help<Enter> か <F1>   "
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "バージョン情報は       :help version8<Enter>  "
+msgid "type  :help version9<Enter>   for version info"
+msgstr "バージョン情報は       :help version9<Enter>  "
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi互換モードで動作中"

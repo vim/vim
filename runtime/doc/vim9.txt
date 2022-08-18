@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2022 May 13
+*vim9.txt*	For Vim version 9.0.  Last change: 2022 Jun 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,10 +37,10 @@ A secondary goal is to avoid Vim-specific constructs and get closer to
 commonly used programming languages, such as JavaScript, TypeScript and Java.
 
 The performance improvements can only be achieved by not being 100% backwards
-compatible.  For example, making function arguments available in the
-"a:" dictionary adds quite a lot of overhead.  In a Vim9 function this
-dictionary is not available.  Other differences are more subtle, such as how
-errors are handled.
+compatible.  For example, making function arguments available in the "a:"
+dictionary adds quite a lot of overhead.  In a Vim9 function this dictionary
+is not available.  Other differences are more subtle, such as how errors are
+handled.
 
 The Vim9 script syntax and semantics are used in:
 - a function defined with the `:def` command
@@ -86,7 +86,7 @@ script and `:def` functions; details are below:
 	var count = 0
 	count += 3
 - Constants can be declared with `:final` and `:const`: >
-	final matches = []		  # add matches
+	final matches = []		  # add to the list later
 	const names = ['Betty', 'Peter']  # cannot be changed
 - `:final` cannot be used as an abbreviation of `:finally`.
 - Variables and functions are script-local by default.
@@ -107,7 +107,7 @@ script and `:def` functions; details are below:
 	`:t`
   	`:xit`
 - Some commands, especially those used for flow control, cannot be shortened.
-  E.g., `:throw` cannot be written as `:th`. *E839*
+  E.g., `:throw` cannot be written as `:th`.
 - You cannot use curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that
@@ -145,6 +145,17 @@ Do not start a comment with #{, it looks like the legacy dictionary literal
 and produces an error where this might be confusing.  #{{ or #{{{ are OK,
 these can be used to start a fold.
 
+When starting to read a script file Vim doesn't know it is |Vim9| script until
+the `vim9script` command is found.  Until that point you would need to use
+legacy comments: >
+	" legacy comment
+	vim9script
+	# Vim9 comment
+
+That looks ugly, better put `vim9script` in the very first line: >
+	vim9script
+	# Vim9 comment
+
 In legacy Vim script # is also used for the alternate file name.  In Vim9
 script you need to use %% instead.  Instead of ## use %%% (stands for all
 arguments).
@@ -177,12 +188,12 @@ created yet.  In this case you can call `execute()` to invoke it at runtime. >
 `:def` has no options like `:function` does: "range", "abort", "dict" or
 "closure".  A `:def` function always aborts on an error (unless `:silent!` was
 used for the command or the error was caught a `:try` block), does not get a
-range passed cannot be a "dict" function, and can always be a closure.
+range passed, cannot be a "dict" function, and can always be a closure.
 						*vim9-no-dict-function*
 Later classes will be added, which replaces the "dict function" mechanism.
 For now you will need to pass the dictionary explicitly: >
-	def DictFunc(d: dict<any>, arg: string)
-	   echo d[arg]
+	def DictFunc(self: dict<any>, arg: string)
+	   echo self[arg]
 	enddef
 	var ad = {item: 'value', func: DictFunc}
 	ad.func(ad, 'item')
@@ -223,7 +234,7 @@ The argument "_" (an underscore) can be used to ignore the argument.  This is
 most useful in callbacks where you don't need it, but do need to give an
 argument to match the call.  E.g. when using map() two arguments are passed,
 the key and the value, to ignore the key: >
-	map(myList, (_, v) => v * 2)
+	map(numberList, (_, v) => v * 2)
 There is no error for using the "_" argument multiple times.  No type needs to
 be given.
 
@@ -234,7 +245,7 @@ When using `:function` or `:def` to specify a new function at the script level
 in a Vim9 script, the function is local to the script.  Like prefixing "s:" in
 legacy script.  To define a global function or variable the "g:" prefix must
 be used.  For functions in a script that is to be imported and in an autoload
-script "export" needs to be used. >
+script "export" needs to be used for those to be used elsewhere. >
 	def ThisFunction()          # script-local
 	def g:ThatFunction()        # global
 	export def Function()       # for import and import autoload
@@ -250,20 +261,27 @@ argument, pass the function reference itself: >
 	  var Fok = function(Inner)     # OK
 	  var Fbad = function('Inner')  # does not work
 
-It is not possible to define a script-local function.  It is possible to
-define a global function by using the "g:" prefix.
+Detail: this is because "Inner" will actually become a function reference to a
+function with a generated name.
+
+It is not possible to define a script-local function in a function.  You can
+define a local function and assign it to a script-local funcref (it must have
+been declared at the script level).  It is possible to define a global
+function by using the "g:" prefix.
 
 When referring to a function and no "s:" or "g:" prefix is used, Vim will
 search for the function:
 - in the function scope, in block scopes
-- in the script scope, possibly imported
+- in the script scope
+
+Imported functions are found with the prefix from the `:import` command.
 
 Since a script-local function reference can be used without "s:" the name must
 start with an upper case letter even when using the "s:" prefix.  In legacy
 script "s:funcref" could be used, because it could not be referred to with
 "funcref".  In Vim9 script it can, therefore "s:Funcref" must be used to avoid
 that the name interferes with builtin functions.
-							*vim9-s-namespace*
+						*vim9-s-namespace* *E1268*
 The use of the "s:" prefix is not supported at the Vim9 script level.  All
 functions and variables without a prefix are script-local.
 
@@ -272,6 +290,7 @@ variables and functions in a legacy script do use "s:", while in a Vim9 script
 they do not use "s:".  This matches what you see in the rest of the file.
 
 In legacy functions the use of "s:" for script items is required, as before.
+No matter if the script is Vim9 or legacy.
 
 In all cases the function must be defined before used.  That is when it is
 called, when `:defcompile` causes it to be compiled, or when code that calls
@@ -279,11 +298,13 @@ it is being compiled (to figure out the return type).
 
 The result is that functions and variables without a namespace can usually be
 found in the script, either defined there or imported.  Global functions and
-variables could be defined anywhere (good luck finding out where!).
+variables could be defined anywhere (good luck finding out where!  You can
+often see where it was last set using |:verbose|).
 							*E1102*
 Global functions can still be defined and deleted at nearly any time.  In
 Vim9 script script-local functions are defined once when the script is sourced
-and cannot be deleted or replaced.
+and cannot be deleted or replaced by itself (it can be by reloading the
+script).
 
 When compiling a function and a function call is encountered for a function
 that is not (yet) defined, the |FuncUndefined| autocommand is not triggered.
@@ -348,6 +369,13 @@ The declaration must be done earlier: >
 	   inner = 5
 	else
 	   inner = 0
+	endif
+	echo inner
+
+Although this is shorter and faster for simple values: >
+	var inner = 0
+	if cond
+	   inner = 5
 	endif
 	echo inner
 <							*E1025* *E1128*
@@ -829,6 +857,8 @@ No curly braces expansion ~
 Command modifiers are not ignored ~
 								*E1176*
 Using a command modifier for a command that does not use it gives an error.
+								*E1082*
+Also, using a command modifier without a following command is now an error.
 
 
 Dictionary literals ~
@@ -882,6 +912,12 @@ Comparators ~
 
 The 'ignorecase' option is not used for comparators that use strings.
 Thus "=~" works like "=~#".
+
+"is" and "isnot" (|expr-is| and |expr-isnot|) when used on strings now return
+false.  In legacy script they just compare the strings, in |Vim9| script they
+check identity, and strings are copied when used, thus two strings are never
+the same (this might change some day if strings are not copied but reference
+counted).
 
 
 Abort after error ~
@@ -1206,11 +1242,21 @@ variables can be accessed without the "s:" prefix.  They must be defined
 before the function is compiled.  If the script the function is defined in is
 legacy script, then script-local variables must be accessed with the "s:"
 prefix if they do not exist at the time of compiling.
+							*E1269*
+Script-local variables in a |Vim9| script must be declared at the script
+level.  They cannot be created in a function, also not in a legacy function.
 
 						*:defc* *:defcompile*
 :defc[ompile]		Compile functions defined in the current script that
 			were not compiled yet.
-			This will report errors found during the compilation.
+			This will report any errors found during compilation.
+
+:defc[ompile] {func}
+:defc[ompile] debug {func}
+:defc[ompile] profile {func}
+			Compile function {func}, if needed.  Use "debug" and
+			"profile" to specify the compilation mode.
+			This will report any errors found during compilation.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
@@ -1457,6 +1503,8 @@ value is not actually changed.  If you need to change the type, e.g. to change
 it to a string, use the |string()| function.  Or use |str2nr()| to convert a
 string to a number.
 
+If a type is given where it is not expected you can get *E1272* .
+
 
 Type inference ~
 							*type-inference*
@@ -1588,7 +1636,7 @@ and cannot be accessed by the importing script.
 This mechanism exists for writing a script that can be sourced (imported) by
 other scripts, while making sure these other scripts only have access to what
 you want them to.  This also avoids using the global namespace, which has a
-risc of name collisions.  For example when you have two plugins with similar
+risk of name collisions.  For example when you have two plugins with similar
 functionality.
 
 You can cheat by using the global namespace explicitly.  That should be done
@@ -1661,23 +1709,36 @@ be exported. {not implemented yet: class, interface}
 
 
 Import ~
-					*:import* *:imp* *E1094* *E1047* *E1262*
-					*E1048* *E1049* *E1053* *E1071* *E1236*
-The exported items can be imported in another Vim9 script: >
+				*:import* *:imp* *E1094* *E1047* *E1262*
+				*E1048* *E1049* *E1053* *E1071* *E1088* *E1236*
+The exported items can be imported in another script. The import syntax has
+two forms. The simple form: >
+	import {filename}
+<
+Where {filename} is an expression that must evaluate to a string.  In this
+form the filename should end in ".vim" and the portion before ".vim" will
+become the script local name of the namespace. For example: >
 	import "myscript.vim"
-
-This makes each item available as "myscript.item".
+<
+This makes each exported item in "myscript.vim" available as "myscript.item".
 						*:import-as* *E1257* *E1261*
-In case the name is long or ambiguous, another name can be specified: >
-	import "thatscript.vim" as that
+In case the name is long or ambiguous, this form can be used to specify
+another name: >
+	import {longfilename} as {name}
+<
+In this form {name} becomes a specific script local name for the imported
+namespace.  Therefore {name} must consist of letters, digits and '_', like
+|internal-variables|.  The {longfilename} expression must evaluate to any
+filename.  For example: >
+	import "thatscript.vim.v2" as that
 <						*E1060* *E1258* *E1259* *E1260*
-Then you can use "that.EXPORTED_CONST", "that.someValue", etc.  You are free
-to choose the name "that".  Use something that will be recognized as referring
-to the imported script.  Avoid command names, command modifiers and builtin
-function names, because the name will shadow them.
-If the name starts with a capital letter it can also shadow global user
-commands and functions.  Also, you cannot use the name for something else in
-the script, such as a function or variable name.
+Then you can use "that.item", etc.  You are free to choose the name "that".
+Use something that will be recognized as referring to the imported script.
+Avoid command names, command modifiers and builtin function names, because the
+name will shadow them.  Better not start the name starts with a capital
+letter, since it can then also shadow global user commands and functions.
+Also, you cannot use the name for something else in the script, such as a
+function or variable name.
 
 In case the dot in the name is undesired, a local reference can be made for a
 function: >
@@ -1689,15 +1750,6 @@ This also works for constants: >
 This does not work for variables, since the value would be copied once and
 when changing the variable the copy will change, not the original variable.
 You will need to use the full name, with the dot.
-
-The full syntax of the command is:
-	import {filename} [as {name}]
-Where {filename} is an expression that must evaluate to a string.  Without the
-"as {name}" part it must end in ".vim".  {name} must consist of letters,
-digits and '_', like |internal-variables|.
-
-`:import` can also be used in legacy Vim script.  The imported items still
-become script-local, even when the "s:" prefix is not given.
 
 `:import` can not be used in a function.  Imported items are intended to exist
 at the script level and only imported once.
@@ -1727,14 +1779,40 @@ line, there can be no line break: >
 		name   # Error!
 	echo that
 		.name  # Error!
-
-To refer to a function in an imported script in a mapping, |<SID>| can be
-used: >
+<						*import-map*
+When you've imported a function from one script into a vim9 script you can
+refer to the imported function in a mapping by prefixing it with |<SID>|: >
 	noremap <silent> ,a :call <SID>name.Function()<CR>
 
 When the mapping is defined "<SID>name." will be replaced with <SNR> and the
 script ID of the imported script.
+An even simpler solution is using |<ScriptCmd>|: >
+	noremap ,a <ScriptCmd>name.Function()<CR>
 
+Note that this does not work for variables, only for functions.
+
+					    *import-legacy* *legacy-import*
+`:import` can also be used in legacy Vim script.  The imported namespace still
+becomes script-local, even when the "s:" prefix is not given. For example: >
+        import "myfile.vim"
+	call s:myfile.MyFunc()
+
+And using the "as name" form: >
+	import "otherfile.vim9script" as that
+	call s:that.OtherFunc()
+
+However, the namespace cannot be resolved on it's own: >
+	import "that.vim"
+	echo s:that
+	" ERROR: E1060: Expected dot after name: s:that
+<
+This also affects the use of |<SID>| in the legacy mapping context.  Since
+|<SID>| is only a valid prefix for a function and NOT for a namespace, you
+cannot use it
+to scope a function in a script local namespace. Instead of prefixing the
+function with |<SID>| you should use|<ScriptCmd>|. For example: >
+	noremap ,a <ScriptCmd>:call s:that.OtherFunc()<CR>
+<
 							*:import-cycle*
 The `import` commands are executed when encountered.  If script A imports
 script B, and B (directly or indirectly) imports A, this will be skipped over.
@@ -1816,13 +1894,6 @@ Reset it later with: >
 	test_override('autoload', 0)
 Or: >
 	test_override('ALL', 0)
-
-
-Import in legacy Vim script ~
-
-If an `import` statement is used in legacy Vim script, the script-local "s:"
-namespace will be used for the imported items, even when "s:" is not
-specified.
 
 
 ==============================================================================
@@ -1938,13 +2009,14 @@ We can also remove clutter, mainly things that were done to make Vim script
 backwards compatible with the good old Vi commands.
 
 Examples:
-- Drop `:call` for calling a function and `:eval` for manipulating data.
+- Drop `:call` for calling a function and `:eval` for evaluating an
+  expression.
 - Drop using a leading backslash for line continuation, automatically figure
   out where an expression ends.
 
 However, this does require that some things need to change:
 - Comments start with # instead of ", to avoid confusing them with strings.
-  This is good anyway, it is known from several popular languages.
+  This is good anyway, it is also used by several popular languages.
 - Ex command ranges need to be prefixed with a colon, to avoid confusion with
   expressions (single quote can be a string or a mark, "/" can be divide or a
   search command, etc.).
@@ -2074,12 +2146,13 @@ values are accepted:
 	false: `false`, `v:false`, `0`, `0 > 9`
 Note that the number zero is false and the number one is true.  This is more
 permissive than most other languages.  It was done because many builtin
-functions return these values.
+functions return these values, and changing that causes more problems than it
+solves.  After using this for a while it turned out to work well.
 
 If you have any type of value and want to use it as a boolean, use the `!!`
 operator:
-	true: `!!'text'`, `!![99]`, `!!{'x': 1}`, `!!99`
-	false: `!!''`, `!![]`, `!!{}`
+	true: `!!'text'`   `!![99]`   `!!{'x': 1}`   `!!99`
+	false: `!!''`   `!![]`   `!!{}`
 
 From a language like JavaScript we have this handy construct: >
 	GetName() || 'unknown'
@@ -2101,19 +2174,20 @@ In Vim9 script a mechanism very similar to the JavaScript import and export
 mechanism is supported.  It is a variant to the existing `:source` command
 that works like one would expect:
 - Instead of making everything global by default, everything is script-local,
-  unless exported.
+  some of these are exported.
 - When importing a script the symbols that are imported are explicitly listed,
   avoiding name conflicts and failures if functionality is added later.
 - The mechanism allows for writing a big, long script with a very clear API:
-  the exported function(s) and class(es).
+  the exported functions, variables and classes.
 - By using relative paths loading can be much faster for an import inside of a
   package, no need to search many directories.
-- Once an import has been used, it can be cached and loading it again can be
-  avoided.
+- Once an import has been used, its items are cached and loading it again is
+  not needed.
 - The Vim-specific use of "s:" to make things script-local can be dropped.
 
-When sourcing a Vim9 script from a legacy script, only the items defined
-globally can be used, not the exported items.  Alternatives considered:
+When sourcing a Vim9 script (from a Vim9 or legacy script), only the items
+defined globally can be used, not the exported items.  Alternatives
+considered:
 - All the exported items become available as script-local items.  This makes
   it uncontrollable what items get defined and likely soon leads to trouble.
 - Use the exported items and make them global.  Disadvantage is that it's then
@@ -2121,7 +2195,7 @@ globally can be used, not the exported items.  Alternatives considered:
 - Completely disallow sourcing a Vim9 script, require using `:import`.  That
   makes it difficult to use scripts for testing, or sourcing them from the
   command line to try them out.
-Note that you can also use `:import` in legacy Vim script, see above.
+Note that you CAN also use `:import` in legacy Vim script, see above.
 
 
 Compiling functions early ~
@@ -2139,17 +2213,17 @@ figure out their type, so that forward references are found, and only then
 execute the script and compile the functions.  This means the script has to be
 parsed twice, which is slower, and some conditions at the script level, such
 as checking if a feature is supported, are hard to use.  An attempt was made
-to see if it works, but it turned out to be impossible to make work nicely.
+to see if it works, but it turned out to be impossible to make work well.
 
 It would be possible to compile all the functions at the end of the script.
 The drawback is that if a function never gets called, the overhead of
 compiling it counts anyway.  Since startup speed is very important, in most
 cases it's better to do it later and accept that syntax and type errors are
 only reported then.  In case these errors should be found early, e.g. when
-testing, the `:defcompile` command will help out.
+testing, a `:defcompile` command at the end of the script will help out.
 
 
-Why not use an embedded language? ~
+Why not use an existing embedded language? ~
 
 Vim supports interfaces to Perl, Python, Lua, Tcl and a few others.  But
 these interfaces have never become widely used, for various reasons.  When
@@ -2158,8 +2232,8 @@ and concentrate on Vim script.
 
 Still, plugin writers may find other languages more familiar, want to use
 existing libraries or see a performance benefit.  We encourage plugin authors
-to write code in any language and run it as an external tool, using jobs and
-channels.  We can try to make this easier somehow.
+to write code in any language and run it as an external process, using jobs
+and channels.  We can try to make this easier somehow.
 
 Using an external tool also has disadvantages.  An alternative is to convert
 the tool into Vim script.  For that to be possible without too much
@@ -2175,9 +2249,10 @@ dictionary.  With some care this can be made to work, but it does not look
 like real classes.  On top of that, it's quite slow, because of the use of
 dictionaries.
 
-The support of classes in Vim9 script is a "minimal common functionality" of
-class support in most languages.  It works much like Java, which is the most
-popular programming language.
+It would be good to support real classes, and this is planned for a later
+version.  The support is a "minimal common functionality" of class support in
+most languages.  It will work much like Java, which is the most popular
+programming language.
 
 
 

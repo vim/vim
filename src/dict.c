@@ -662,11 +662,11 @@ dict_has_key(dict_T *d, char *key)
  * Returns FAIL if the entry doesn't exist or out of memory.
  */
     int
-dict_get_tv(dict_T *d, char_u *key, typval_T *rettv)
+dict_get_tv(dict_T *d, char *key, typval_T *rettv)
 {
     dictitem_T	*di;
 
-    di = dict_find(d, key, -1);
+    di = dict_find(d, (char_u *)key, -1);
     if (di == NULL)
 	return FAIL;
     copy_tv(&di->di_tv, rettv);
@@ -680,12 +680,12 @@ dict_get_tv(dict_T *d, char_u *key, typval_T *rettv)
  * Returns NULL if the entry doesn't exist or out of memory.
  */
     char_u *
-dict_get_string(dict_T *d, char_u *key, int save)
+dict_get_string(dict_T *d, char *key, int save)
 {
     dictitem_T	*di;
     char_u	*s;
 
-    di = dict_find(d, key, -1);
+    di = dict_find(d, (char_u *)key, -1);
     if (di == NULL)
 	return NULL;
     s = tv_get_string(&di->di_tv);
@@ -699,7 +699,7 @@ dict_get_string(dict_T *d, char_u *key, int save)
  * Returns 0 if the entry doesn't exist.
  */
     varnumber_T
-dict_get_number(dict_T *d, char_u *key)
+dict_get_number(dict_T *d, char *key)
 {
     return dict_get_number_def(d, key, 0);
 }
@@ -709,11 +709,11 @@ dict_get_number(dict_T *d, char_u *key)
  * Returns "def" if the entry doesn't exist.
  */
     varnumber_T
-dict_get_number_def(dict_T *d, char_u *key, int def)
+dict_get_number_def(dict_T *d, char *key, int def)
 {
     dictitem_T	*di;
 
-    di = dict_find(d, key, -1);
+    di = dict_find(d, (char_u *)key, -1);
     if (di == NULL)
 	return def;
     return tv_get_number(&di->di_tv);
@@ -745,11 +745,11 @@ dict_get_number_check(dict_T *d, char_u *key)
  * Returns "def" if the entry doesn't exist.
  */
     varnumber_T
-dict_get_bool(dict_T *d, char_u *key, int def)
+dict_get_bool(dict_T *d, char *key, int def)
 {
     dictitem_T	*di;
 
-    di = dict_find(d, key, -1);
+    di = dict_find(d, (char_u *)key, -1);
     if (di == NULL)
 	return def;
     return tv_get_bool(&di->di_tv);
@@ -1457,6 +1457,9 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
     dict_T	*d;
     int		todo;
 
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
     if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
 	return;
 
@@ -1466,8 +1469,6 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 	return;
     }
 
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
     if ((d = argvars[0].vval.v_dict) == NULL)
 	// empty dict behaves like an empty dict
 	return;

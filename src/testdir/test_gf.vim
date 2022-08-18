@@ -138,7 +138,7 @@ func Test_gf_visual()
   call assert_equal('Xtest_gf_visual', bufname('%'))
   call assert_equal(3, getcurpos()[1])
 
-  " do not include the NUL at the end 
+  " do not include the NUL at the end
   call writefile(['x'], 'X')
   let save_enc = &enc
   for enc in ['latin1', 'utf-8']
@@ -248,6 +248,29 @@ func Test_includeexpr_scriptlocal_func()
   set includeexpr&
   delfunc s:IncludeFunc
   bw!
+endfunc
+
+" Check that expanding directories can handle more than 255 entries.
+func Test_gf_subdirs_wildcard()
+  let cwd = getcwd()
+  let dir = 'Xtestgf_dir'
+  call mkdir(dir)
+  call chdir(dir)
+  for i in range(300)
+    call mkdir(i)
+    call writefile([], i .. '/' .. i, 'S')
+  endfor
+  set path=./**
+
+  new | only
+  call setline(1, '99')
+  w! Xtest1
+  normal gf
+  call assert_equal('99', fnamemodify(bufname(''), ":t"))
+
+  call chdir(cwd)
+  call delete(dir, 'rf')
+  set path&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

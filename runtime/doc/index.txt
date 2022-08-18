@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2022 Mar 05
+*index.txt*     For Vim version 9.0.  Last change: 2022 Jun 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -295,7 +295,7 @@ tag		char	      note action in Normal mode	~
 |/|		/{pattern}<CR>	1  search forward for the Nth occurrence of
 				   {pattern}
 |/<CR>|		/<CR>		1  search forward for {pattern} of last search
-|count|		0		1  cursor to the first char of the line
+|0|		0		1  cursor to the first char of the line
 |count|		1		   prepend to command to give a count
 |count|		2			"
 |count|		3			"

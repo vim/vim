@@ -232,6 +232,8 @@ typedef struct
 #define w_p_list w_onebuf_opt.wo_list	// 'list'
     char_u	*wo_lcs;
 #define w_p_lcs w_onebuf_opt.wo_lcs	// 'listchars'
+    char_u	*wo_fcs;
+#define w_p_fcs w_onebuf_opt.wo_fcs	// 'fillchars'
     int		wo_nu;
 #define w_p_nu w_onebuf_opt.wo_nu	// 'number'
     int		wo_rnu;
@@ -662,8 +664,8 @@ typedef struct
     regmatch_T	cmod_filter_regmatch;	// set by :filter /pat/
     int		cmod_filter_force;	// set for :filter!
 
-    int		cmod_verbose;		// non-zero to set 'verbose', -1 is
-					// used for zero override
+    int		cmod_verbose;		// 0 if not set, > 0 to set 'verbose'
+					// to cmod_verbose - 1
 
     // values for undo_cmdmod()
     char_u	*cmod_save_ei;		// saved value of 'eventignore'
@@ -756,10 +758,11 @@ typedef struct memline
     int		ml_stack_top;	// current top of ml_stack
     int		ml_stack_size;	// total number of entries in ml_stack
 
-#define ML_EMPTY	1	// empty buffer
-#define ML_LINE_DIRTY	2	// cached line was changed and allocated
-#define ML_LOCKED_DIRTY	4	// ml_locked was changed
-#define ML_LOCKED_POS	8	// ml_locked needs positive block number
+#define ML_EMPTY	0x01	// empty buffer
+#define ML_LINE_DIRTY	0x02	// cached line was changed and allocated
+#define ML_LOCKED_DIRTY	0x04	// ml_locked was changed
+#define ML_LOCKED_POS	0x08	// ml_locked needs positive block number
+#define ML_ALLOCATED	0x10	// ml_line_ptr is an allocated copy
     int		ml_flags;
 
     colnr_T	ml_line_len;	// length of the cached line, including NUL
@@ -803,8 +806,19 @@ typedef struct textprop_S
     int		tp_flags;	// TP_FLAG_ values
 } textprop_T;
 
-#define TP_FLAG_CONT_NEXT	1	// property continues in next line
-#define TP_FLAG_CONT_PREV	2	// property was continued from prev line
+#define TP_FLAG_CONT_NEXT	0x1	// property continues in next line
+#define TP_FLAG_CONT_PREV	0x2	// property was continued from prev line
+
+// without these text is placed after the end of the line
+#define TP_FLAG_ALIGN_RIGHT	0x10	// virtual text is right-aligned
+#define TP_FLAG_ALIGN_BELOW	0x20	// virtual text on next screen line
+
+#define TP_FLAG_WRAP		0x40	// virtual text wraps - when missing
+					// text is truncated
+#define TP_FLAG_START_INCL	0x80	// "start_incl" copied from proptype
+
+#define PROP_TEXT_MIN_CELLS	4	// minimun number of cells to use for
+					// the text, even when truncating
 
 /*
  * Structure defining a property type.
@@ -822,6 +836,7 @@ typedef struct proptype_S
 #define PT_FLAG_INS_START_INCL	1	// insert at start included in property
 #define PT_FLAG_INS_END_INCL	2	// insert at end included in property
 #define PT_FLAG_COMBINE		4	// combine with syntax highlight
+#define PT_FLAG_OVERRIDE	8	// override any highlight
 
 // Sign group
 typedef struct signgroup_S
@@ -2879,15 +2894,11 @@ struct file_buffer
     int		b_has_qf_entry;
 #endif
     int		b_p_bl;		// 'buflisted'
-#ifdef FEAT_CINDENT
     int		b_p_cin;	// 'cindent'
     char_u	*b_p_cino;	// 'cinoptions'
     char_u	*b_p_cink;	// 'cinkeys'
     char_u	*b_p_cinsd;	// 'cinscopedecls'
-#endif
-#if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
     char_u	*b_p_cinw;	// 'cinwords'
-#endif
     char_u	*b_p_com;	// 'comments'
 #ifdef FEAT_FOLDING
     char_u	*b_p_cms;	// 'commentstring'
@@ -2926,7 +2937,7 @@ struct file_buffer
     long_u	b_p_inex_flags;	// flags for 'includeexpr'
 # endif
 #endif
-#if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     char_u	*b_p_inde;	// 'indentexpr'
     long_u	b_p_inde_flags;	// flags for 'indentexpr'
     char_u	*b_p_indk;	// 'indentkeys'
@@ -2940,9 +2951,7 @@ struct file_buffer
     char_u	*b_p_key;	// 'key'
 #endif
     char_u	*b_p_kp;	// 'keywordprg'
-#ifdef FEAT_LISP
     int		b_p_lisp;	// 'lisp'
-#endif
     char_u	*b_p_menc;	// 'makeencoding'
     char_u	*b_p_mps;	// 'matchpairs'
     int		b_p_ml;		// 'modeline'
@@ -2950,15 +2959,11 @@ struct file_buffer
     int		b_p_ma;		// 'modifiable'
     char_u	*b_p_nf;	// 'nrformats'
     int		b_p_pi;		// 'preserveindent'
-#ifdef FEAT_TEXTOBJ
     char_u	*b_p_qe;	// 'quoteescape'
-#endif
     int		b_p_ro;		// 'readonly'
     long	b_p_sw;		// 'shiftwidth'
     int		b_p_sn;		// 'shortname'
-#ifdef FEAT_SMARTINDENT
     int		b_p_si;		// 'smartindent'
-#endif
     long	b_p_sts;	// 'softtabstop'
     long	b_p_sts_nopaste; // b_p_sts saved for paste mode
 #ifdef FEAT_SEARCHPATH
@@ -3012,9 +3017,7 @@ struct file_buffer
 #ifdef FEAT_PERSISTENT_UNDO
     int		b_p_udf;	// 'undofile'
 #endif
-#ifdef FEAT_LISP
     char_u	*b_p_lw;	// 'lispwords' local value
-#endif
 #ifdef FEAT_TERMINAL
     long	b_p_twsl;	// 'termwinscroll'
 #endif
@@ -3023,7 +3026,6 @@ struct file_buffer
      * end of buffer options
      */
 
-#ifdef FEAT_CINDENT
     // values set from b_p_cino
     int		b_ind_level;
     int		b_ind_open_imag;
@@ -3062,7 +3064,6 @@ struct file_buffer
     int		b_ind_if_for_while;
     int		b_ind_cpp_extern_c;
     int		b_ind_pragma;
-#endif
 
     linenr_T	b_no_eol_lnum;	// non-zero lnum when last line of next binary
 				// write should not have an end-of-line
@@ -3083,6 +3084,8 @@ struct file_buffer
 #ifdef FEAT_PROP_POPUP
     int		b_has_textprop;	// TRUE when text props were added
     hashtab_T	*b_proptypes;	// text property types local to buffer
+    proptype_T	**b_proparray;	// entries of b_proptypes sorted on tp_id
+    garray_T	b_textprop_text; // stores text for props, index by (-id - 1)
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
@@ -3341,9 +3344,6 @@ typedef struct
 			    // matchaddpos(). TRUE/FALSE
     char	has_cursor; // TRUE if the cursor is inside the match, used for
 			    // CurSearch
-#ifdef FEAT_RELTIME
-    proftime_T	tm;	    // for a time limit
-#endif
 } match_T;
 
 // number of positions supported by matchaddpos()
@@ -3426,10 +3426,27 @@ typedef struct
     int		trail;
     int		lead;
     int		*multispace;
+    int		*leadmultispace;
 #ifdef FEAT_CONCEAL
     int		conceal;
 #endif
 } lcs_chars_T;
+
+/*
+ * Characters from the 'fillchars' option
+ */
+typedef struct
+{
+    int	stl;
+    int	stlnc;
+    int	vert;
+    int	fold;
+    int	foldopen;
+    int	foldclosed;
+    int	foldsep;
+    int	diff;
+    int	eob;
+} fill_chars_T;
 
 /*
  * Structure which contains all information that belongs to a window
@@ -3483,6 +3500,7 @@ struct window_S
 					 // redrawn
 
     lcs_chars_T	w_lcs_chars;	    // 'listchars' characters
+    fill_chars_T w_fill_chars;	    // 'fillchars' characters
 
     /*
      * "w_topline", "w_leftcol" and "w_skipcol" specify the offsets for
@@ -3678,7 +3696,7 @@ struct window_S
 
     int		w_redr_type;	    // type of redraw to be performed on win
     int		w_upd_rows;	    // number of window lines to update when
-				    // w_redr_type is REDRAW_TOP
+				    // w_redr_type is UPD_REDRAW_TOP
     linenr_T	w_redraw_top;	    // when != 0: first line needing redraw
     linenr_T	w_redraw_bot;	    // when != 0: last line needing redraw
     int		w_redr_status;	    // if TRUE status line must be redrawn
@@ -4164,6 +4182,8 @@ typedef enum
     EXPR_MULT,		// *
     EXPR_DIV,		// /
     EXPR_REM,		// %
+    EXPR_LSHIFT,	// <<
+    EXPR_RSHIFT,	// >>
     // used with ISN_ADDLIST
     EXPR_COPY,		// create new list
     EXPR_APPEND,	// append to first list
@@ -4219,6 +4239,9 @@ typedef struct
 
     int		want_full_screen;
     int		not_a_term;		// no warning for missing term?
+#ifdef FEAT_GUI
+    char_u	*gui_dialog_file;	// file to write dialog text in
+#endif
     int		tty_fail;		// exit if not a tty
     char_u	*term;			// specified terminal name
 #ifdef FEAT_CRYPT
@@ -4429,7 +4452,7 @@ typedef struct
 {
     linenr_T	sa_stop_lnum;	// stop after this line number when != 0
 #ifdef FEAT_RELTIME
-    proftime_T	*sa_tm;		// timeout limit or NULL
+    long	sa_tm;		// timeout limit or zero
     int		sa_timed_out;	// set when timed out
 #endif
     int		sa_wrapped;	// search wrapped around
@@ -4549,3 +4572,22 @@ typedef struct {
     char_u	*str;
     int		score;
 } fuzmatch_str_T;
+
+// Argument for lbr_chartabsize().
+typedef struct {
+    win_T	*cts_win;
+    linenr_T	cts_lnum;	    // zero when not using text properties
+    char_u	*cts_line;	    // start of the line
+    char_u	*cts_ptr;	    // current position in line
+#ifdef FEAT_PROP_POPUP
+    int		cts_text_prop_count;	// number of text props; when zero
+					// cts_text_props is not used
+    textprop_T	*cts_text_props;	// text props (allocated)
+    char	cts_has_prop_with_text; // TRUE if if a property inserts text
+    int         cts_cur_text_width;     // width of current inserted text
+    int		cts_with_trailing;	// include size of trailing props with
+					// last character
+    int		cts_start_incl;		// prop has true "start_incl" arg
+#endif
+    int		cts_vcol;	    // virtual column at current position
+} chartabsize_T;

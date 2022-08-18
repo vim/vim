@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
+*spell.txt*	For Vim version 9.0.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -103,7 +103,7 @@ zuW							*zuG* *zuW*
 zuG			Undo |zW| and |zG|, remove the word from the internal
 			word list.  Count used as with |zg|.
 
-							*:spe* *:spellgood*
+						*:spe* *:spellgood* *E1280*
 :[count]spe[llgood] {word}
 			Add {word} as a good word to 'spellfile', like with
 			|zg|.  Without count the first name is used, with a

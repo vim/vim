@@ -63,6 +63,33 @@ func Test_getimstatus()
   set imstatusfunc=
 endfunc
 
+func Test_imactivatefunc_imstatusfunc_callback_no_breaks_foldopen()
+  CheckScreendump
+
+  let lines =<< trim END
+    func IM_activatefunc(active)
+    endfunc
+    func IM_statusfunc()
+      return 0
+    endfunc
+    set imactivatefunc=IM_activatefunc
+    set imstatusfunc=IM_statusfunc
+    set foldmethod=marker
+    set foldopen=search
+    call setline(1, ['{{{', 'abc', '}}}'])
+    %foldclose
+  END
+  call writefile(lines, 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call assert_notequal('abc', term_getline(buf, 2))
+  call term_sendkeys(buf, "/abc\n")
+  call WaitForAssert({-> assert_equal('abc', term_getline(buf, 2))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+endfunc
+
 " Test for using an lmap in insert mode
 func Test_lmap_in_insert_mode()
   new

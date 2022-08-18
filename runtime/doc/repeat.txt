@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2022 Apr 08
+*repeat.txt*    For Vim version 9.0.  Last change: 2022 Jun 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -197,7 +197,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 :so[urce] {file}	Read Ex commands from {file}.  These are commands that
 			start with a ":".
 			Triggers the |SourcePre| autocommand.
-
+							*:source-range*
 :[range]so[urce] [++clear]
 			Read Ex commands from the [range] of lines in the
 			current buffer.
@@ -231,7 +231,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Examples: >
 				:4,5source
 				:10,18source ++clear
-
+<
 							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
 			that are executed from Normal mode, like you type

@@ -152,7 +152,8 @@ static proftime_T log_start;
     void
 ch_logfile(char_u *fname, char_u *opt)
 {
-    FILE   *file = NULL;
+    FILE	*file = NULL;
+    char	*mode = "a";
 
     if (log_fd != NULL)
     {
@@ -163,9 +164,14 @@ ch_logfile(char_u *fname, char_u *opt)
 	fclose(log_fd);
     }
 
+    // The "a" flag overrules the "w" flag.
+    if (vim_strchr(opt, 'a') == NULL && vim_strchr(opt, 'w') != NULL)
+	mode = "w";
+    ch_log_output = vim_strchr(opt, 'o') != NULL ? LOG_ALWAYS : FALSE;
+
     if (*fname != NUL)
     {
-	file = fopen((char *)fname, *opt == 'w' ? "w" : "a");
+	file = fopen((char *)fname, mode);
 	if (file == NULL)
 	{
 	    semsg(_(e_cant_open_file_str), fname);
@@ -2924,7 +2930,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 		}
 	    }
 	}
-	redraw_buf_and_status_later(buffer, VALID);
+	redraw_buf_and_status_later(buffer, UPD_VALID);
 	channel_need_redraw = TRUE;
     }
 
@@ -5269,7 +5275,7 @@ f_ch_info(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
-    if (channel != NULL && rettv_dict_alloc(rettv) != FAIL)
+    if (channel != NULL && rettv_dict_alloc(rettv) == OK)
 	channel_info(channel, rettv->vval.v_dict);
 }
 

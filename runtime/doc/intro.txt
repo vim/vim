@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.2.  Last change: 2022 Apr 03
+*intro.txt*     For Vim version 9.0.  Last change: 2022 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -697,7 +697,8 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 			line-input editing commands (<Del> or <BS> to erase,
 			CTRL-U to kill the whole line).
 			Vim will enter this mode by default if it's invoked as
-			"ex" on the command-line.
+			"ex" on the command-line or the |-e| command line
+			argument was used.
 			Use the ":vi" command |:visual| to exit "Ex" mode.
 			Note: In older versions of Vim "Q" formatted text,
 			that is now done with |gq|.  But if you use the
@@ -708,7 +709,7 @@ Q			Switch to "Ex" mode.  This is a bit like typing ":"
 gQ			Switch to "Ex" mode like with "Q", but really behave
 			like typing ":" commands after another.  All command
 			line editing, completion etc. is available.
-			Use the ":vi" command |:visual| to exit "Ex" mode.
+			Use the `:vi` command (`:visual`) to exit "Ex" mode.
 
 ==============================================================================
 7. The window contents					*window-contents*

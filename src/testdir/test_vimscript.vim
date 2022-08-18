@@ -7528,6 +7528,25 @@ func Test_for_over_string()
   call assert_equal('', res)
 endfunc
 
+" Test for deeply nested :source command  {{{1
+func Test_deeply_nested_source()
+  let lines =<< trim END
+
+      so
+      sil 0scr
+      delete
+      so
+      0
+  END
+  call writefile(["vim9 silent! @0 \n/"] + lines, 'Xnested.vim')
+
+  " this must not crash
+  let cmd = GetVimCommand() .. " -e -s -S Xnested.vim -c qa!"
+  call system(cmd)
+
+  call delete('Xnested.vim')
+endfunc
+
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

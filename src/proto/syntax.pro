@@ -1,5 +1,4 @@
 /* syntax.c */
-void syn_set_timeout(proftime_T *tm);
 void syntax_start(win_T *wp, linenr_T lnum);
 void syn_stack_free_all(synblock_T *block);
 void syn_stack_apply_changes(buf_T *buf);

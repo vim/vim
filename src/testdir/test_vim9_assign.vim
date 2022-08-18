@@ -213,6 +213,8 @@ def Test_assignment()
   v9.CheckDefFailure(['var s:var = 123'], 'E1101:')
   v9.CheckDefFailure(['var s:var: number'], 'E1101:')
 
+  v9.CheckDefAndScriptFailure(['var $VAR: number'], ['E1016:', 'E475:'])
+
   lines =<< trim END
     vim9script
     def SomeFunc()
@@ -1118,6 +1120,9 @@ def Test_assignment_dict()
   var dict3: dict<string> = {key: 'value'}
   var dict4: dict<any> = {one: 1, two: '2'}
   var dict5: dict<blob> = {one: 0z01, two: 0z02}
+
+  # check the type is OK
+  var events: dict<string> = v:event
 
   # overwrite
   dict3['key'] = 'another'
@@ -2103,6 +2108,32 @@ def Test_var_declaration_fails()
       va foo = 123
   END
   v9.CheckDefAndScriptFailure(lines, 'E1065:', 1)
+
+  lines =<< trim END
+      var foo: func(number
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E110:', 1)
+
+  lines =<< trim END
+      var foo: func(number): func(
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E110:', 1)
+
+  for type in ['num_ber',
+               'anys', 'ani',
+               'bools', 'boel',
+               'blobs', 'blub',
+               'channels', 'channol',
+               'dicts', 'duct',
+               'floats', 'floot',
+               'funcs', 'funk',
+               'jobs', 'jop',
+               'lists', 'last'
+               'numbers', 'numbar',
+               'strings', 'strung',
+               'voids', 'viod']
+    v9.CheckDefAndScriptFailure([$'var foo: {type}'], 'E1010:', 1)
+  endfor
 enddef
 
 def Test_var_declaration_inferred()
@@ -2116,6 +2147,34 @@ def Test_var_declaration_inferred()
       echo GetList()->extend(['x'])
   END
   v9.CheckScriptFailure(lines, 'E1013:', 6)
+
+  lines =<< trim END
+      vim9script
+      def GetNr(): number
+        return 5
+      enddef
+      def TestOne()
+        var some = [function('len'), GetNr]
+        g:res = typename(some)
+      enddef
+      TestOne()
+      assert_equal('list<func(): number>', g:res)
+
+      def TestTwo()
+        var some = [function('len'), GetNr]
+        g:res = typename(some)
+      enddef
+      TestTwo()
+      assert_equal('list<func(): number>', g:res)
+      unlet g:res
+
+      # FIXME: why is the type different?
+      var first = [function('len'), GetNr]
+      assert_equal('list<func(...): number>', typename(first))
+      var second = [GetNr, function('len')]
+      assert_equal('list<func(...): number>', typename(second))
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_script_local_in_legacy()

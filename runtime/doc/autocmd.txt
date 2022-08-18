@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2022 Apr 17
+*autocmd.txt*   For Vim version 9.0.  Last change: 2022 May 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -47,6 +47,28 @@ effects.  Be careful not to destroy your text.
   It's a good idea to use the same autocommands for the File* and Buf* events
   when possible.
 
+Recommended use:
+- Always use a group, so that it's easy to delete the autocommand.
+- Keep the command itself short, call a function to do more work.
+- Make it so that the script it is defined in can be sourced several times
+  without the autocommand being repeated.
+
+Example in Vim9 script: >
+   autocmd_add({replace: true,
+		group:   'DemoGroup',
+		event:   'BufEnter',
+		pattern: '*.txt',
+		cmd:     'call DemoBufEnter()'
+		})
+
+In legacy script: >
+   call autocmd_add(#{replace: v:true,
+		    \ group: 'DemoGroup',
+   		    \ event: 'BufEnter',
+		    \ pattern: '*.txt',
+		    \ cmd: 'call DemoBufEnter()'
+		    \ })
+
 ==============================================================================
 2. Defining autocommands				*autocmd-define*
 
@@ -81,6 +103,10 @@ triggered.
 		  setlocal matchpairs+=<:>
 		  /<start
 		}
+
+The |autocmd_add()| function can be used to add a list of autocmds and autocmd
+groups from a Vim script.  It is preferred if you have anything that would
+require using `:execute` with `:autocmd`.
 
 Note: The ":autocmd" command can only be followed by another command when the
 '|' appears where the pattern is expected.  This works: >
@@ -146,6 +172,9 @@ prompt.  When one command outputs two messages this can happen anyway.
 ==============================================================================
 3. Removing autocommands				*autocmd-remove*
 
+In addition to the below described commands, the |autocmd_delete()| function can
+be used to remove a list of autocmds and autocmd groups from a Vim script.
+
 :au[tocmd]! [group] {event} {aupat} [++once] [++nested] {cmd}
 			Remove all autocommands associated with {event} and
 			{aupat}, and add the command {cmd}.
@@ -197,6 +226,9 @@ argument behavior differs from that for defining and removing autocommands.
 
 In order to list buffer-local autocommands, use a pattern in the form <buffer>
 or <buffer=N>.  See |autocmd-buflocal|.
+
+The |autocmd_get()| function can be used from a Vim script to get a list of
+autocmds.
 
 							*:autocmd-verbose*
 When 'verbose' is non-zero, listing an autocommand will also display where it
@@ -1243,7 +1275,7 @@ User				Never executed automatically.  To be used for
 				    if exists('#User#MyEvent')
 					doautocmd User MyEvent
 				    endif
-
+<
 							*SigUSR1*
 SigUSR1				After the SIGUSR1 signal has been detected.
 				Could be used if other ways of notifying Vim

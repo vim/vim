@@ -32,6 +32,7 @@ static void gui_do_scrollbar(win_T *wp, int which, int enable);
 static void gui_update_horiz_scrollbar(int);
 static void gui_set_fg_color(char_u *name);
 static void gui_set_bg_color(char_u *name);
+static void init_gui_options(void);
 static win_T *xy2win(int x, int y, mouse_find_T popup);
 
 #ifdef GUI_MAY_FORK
@@ -225,6 +226,11 @@ gui_do_fork(void)
     int		status;
     int		exit_status;
     pid_t	pid = -1;
+
+#if defined(FEAT_RELTIME) && defined(HAVE_TIMER_CREATE)
+    // a timer is not carried forward
+    delete_timer();
+#endif
 
     // Setup a pipe between the child and the parent, so that the parent
     // knows when the child has done the setsid() call and is allowed to
@@ -1390,7 +1396,7 @@ gui_update_cursor(
 }
 
 #if defined(FEAT_MENU) || defined(PROTO)
-    void
+    static void
 gui_position_menu(void)
 {
 # if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MOTIF)
@@ -2125,8 +2131,7 @@ gui_outstr(char_u *s, int len)
 	    if (this_len > len)
 		this_len = len;	    // don't include following composing char
 	}
-	else
-	    if (gui.col + len > Columns)
+	else if (gui.col + len > Columns)
 	    this_len = Columns - gui.col;
 	else
 	    this_len = len;
@@ -2494,6 +2499,8 @@ gui_outstr_nowrap(
     // Do we undercurl the text?
     if (hl_mask_todo & HL_UNDERCURL)
 	draw_flags |= DRAW_UNDERC;
+
+    // TODO: HL_UNDERDOUBLE, HL_UNDERDOTTED, HL_UNDERDASHED
 
     // Do we strikethrough the text?
     if (hl_mask_todo & HL_STRIKETHROUGH)
@@ -4509,11 +4516,11 @@ gui_do_scroll(void)
 #endif
 	    )
     {
-	int type = VALID;
+	int type = UPD_VALID;
 
 	if (pum_visible())
 	{
-	    type = NOT_VALID;
+	    type = UPD_NOT_VALID;
 	    wp->w_lines_valid = 0;
 	}
 
@@ -4810,7 +4817,7 @@ gui_bg_default(void)
 /*
  * Option initializations that can only be done after opening the GUI window.
  */
-    void
+    static void
 init_gui_options(void)
 {
     // Set the 'background' option according to the lightness of the
@@ -5520,7 +5527,7 @@ drop_callback(void *cookie)
     }
 
     // Update the screen display
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
 # ifdef FEAT_MENU
     gui_update_menus(0);
 # endif
@@ -5641,3 +5648,26 @@ check_for_interrupt(int key, int modifiers_arg)
     return NUL;
 }
 
+/*
+ * If the "--gui-log-file fname" argument is given write the dialog title and
+ * message to a file and return TRUE.  Otherwise return FALSE.
+ * When there is any problem opening the file or writing to the file this is
+ * ignored, showing the dialog might get the test to get stuck.
+ */
+    int
+gui_dialog_log(char_u *title, char_u *message)
+{
+    char_u  *fname = get_gui_dialog_file();
+    FILE    *fd;
+
+    if (fname == NULL)
+	return FALSE;
+
+    fd = mch_fopen((char *)fname, "a");
+    if (fd != NULL)
+    {
+	fprintf(fd, "%s: %s\n", title, message);
+	fclose(fd);
+    }
+    return TRUE;
+}

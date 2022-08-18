@@ -217,8 +217,14 @@ MKDIR = mkdir
 DIRSLASH = \\
  endif
 endif
+# set $CC to "gcc" unless it matches "clang"
+ifeq ($(findstring clang,$(CC)),)
 CC := $(CROSS_COMPILE)gcc
+endif
+# set $CXX to "g++" unless it matches "clang"
+ifeq ($(findstring clang,$(CXX)),)
 CXX := $(CROSS_COMPILE)g++
+endif
 ifeq ($(UNDER_CYGWIN),yes)
 WINDRES := $(CROSS_COMPILE)windres
 else
@@ -520,6 +526,8 @@ endif
 ###########################################################################
 
 CFLAGS = -I. -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
+# To get additional compiler warnings
+#CFLAGS += -Wextra -pedantic
 CXXFLAGS = -std=gnu++11
 # This used to have --preprocessor, but it's no longer supported
 WINDRES_FLAGS =
@@ -722,7 +730,11 @@ else
 CFLAGS += -Os
  else ifeq ($(OPTIMIZE), MAXSPEED)
 CFLAGS += -O3
-CFLAGS += -fomit-frame-pointer -freg-struct-return
+CFLAGS += -fomit-frame-pointer
+  ifeq ($(findstring clang,$(CC)),)
+# Only GCC supports the "reg-struct-return" option. Clang doesn't support this.
+CFLAGS += -freg-struct-return
+  endif
  else  # SPEED
 CFLAGS += -O2
  endif
@@ -732,6 +744,17 @@ endif
 ifeq ($(COVERAGE),yes)
 CFLAGS += --coverage
 LFLAGS += --coverage
+endif
+
+# If the ASAN=yes argument is supplied, then compile Vim with the address
+# sanitizer (asan).  Only supported by MingW64 clang compiler.
+# May make Vim twice as slow.  Errors are reported on stderr.
+# More at: https://code.google.com/p/address-sanitizer/
+# Useful environment variable:
+#     set ASAN_OPTIONS=print_stacktrace=1 log_path=asan
+ifeq ($(ASAN),yes)
+#CFLAGS += -g -O0  -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
+CFLAGS += -g -O0  -fsanitize-recover=all -fsanitize=address -fno-omit-frame-pointer
 endif
 
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
@@ -1075,6 +1098,13 @@ endif
 ifeq (yes, $(MAP))
 LFLAGS += -Wl,-Map=$(TARGET).map
 endif
+
+# The default stack size on Windows is 2 MB.  With the default stack size, the
+# following tests fail with the clang address sanitizer:
+#   Test_listdict_compare, Test_listdict_compare_complex, Test_deep_recursion,
+#   Test_map_error, Test_recursive_define, Test_recursive_addstate
+# To increase the stack size to 16MB, uncomment the following line:
+#LFLAGS += -Wl,-stack -Wl,0x1000000
 
 all: $(MAIN_TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstall.exe GvimExt/gvimext.dll
 

@@ -256,7 +256,6 @@ do_incsearch_highlighting(
     ea.cmd = ccline.cmdbuff;
     ea.addr_type = ADDR_LINES;
 
-    CLEAR_FIELD(dummy_cmdmod);
     parse_command_modifiers(&ea, &dummy, &dummy_cmdmod, TRUE);
 
     cmd = skip_range(ea.cmd, TRUE, NULL);
@@ -398,9 +397,9 @@ finish_incsearch_highlighting(
 	magic_overruled = is_state->magic_overruled_save;
 
 	validate_cursor();	// needed for TAB
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
 	if (call_update_screen)
-	    update_screen(SOME_VALID);
+	    update_screen(UPD_SOME_VALID);
     }
 }
 
@@ -417,7 +416,6 @@ may_do_incsearch_highlighting(
     int		found;  // do_search() result
     pos_T	end_pos;
 #ifdef FEAT_RELTIME
-    proftime_T	tm;
     searchit_arg_T sia;
 #endif
     int		next_char;
@@ -475,7 +473,7 @@ may_do_incsearch_highlighting(
     {
 	found = 0;
 	set_no_hlsearch(TRUE); // turn off previous highlight
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
     }
     else
     {
@@ -484,10 +482,6 @@ may_do_incsearch_highlighting(
 	cursor_off();	// so the user knows we're busy
 	out_flush();
 	++emsg_off;	// so it doesn't beep if bad expr
-#ifdef FEAT_RELTIME
-	// Set the time limit to half a second.
-	profile_setlimit(500L, &tm);
-#endif
 	if (!p_hls)
 	    search_flags += SEARCH_KEEP;
 	if (search_first_line != 0)
@@ -495,7 +489,8 @@ may_do_incsearch_highlighting(
 	ccline.cmdbuff[skiplen + patlen] = NUL;
 #ifdef FEAT_RELTIME
 	CLEAR_FIELD(sia);
-	sia.sa_tm = &tm;
+	// Set the time limit to half a second.
+	sia.sa_tm = 500;
 #endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
 				 ccline.cmdbuff + skiplen, count, search_flags,
@@ -561,7 +556,7 @@ may_do_incsearch_highlighting(
 	if (empty_pattern(ccline.cmdbuff + skiplen, search_delim)
 							       && !no_hlsearch)
 	{
-	    redraw_all_later(SOME_VALID);
+	    redraw_all_later(UPD_SOME_VALID);
 	    set_no_hlsearch(TRUE);
 	}
 	ccline.cmdbuff[skiplen + patlen] = next_char;
@@ -572,7 +567,7 @@ may_do_incsearch_highlighting(
     if (p_ru && curwin->w_status_height > 0)
 	curwin->w_redr_status = TRUE;
 
-    update_screen(SOME_VALID);
+    update_screen(UPD_SOME_VALID);
     highlight_match = FALSE;
     restore_last_search_pattern();
 
@@ -697,7 +692,7 @@ may_adjust_incsearch_highlighting(
 	validate_cursor();
 	highlight_match = TRUE;
 	save_viewstate(&is_state->old_viewstate);
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 	highlight_match = FALSE;
 	redrawcmdline();
 	curwin->w_cursor = is_state->match_end;
@@ -850,12 +845,12 @@ cmdline_handle_backslash_key(int c, int *gotesc)
 	c = get_expr_register();
 	if (c == '=')
 	{
-	    // Need to save and restore ccline.  And set "textwinlock"
+	    // Need to save and restore ccline.  And set "textlock"
 	    // to avoid nasty things like going to another buffer when
 	    // evaluating an expression.
-	    ++textwinlock;
+	    ++textlock;
 	    p = get_expr_line();
-	    --textwinlock;
+	    --textlock;
 
 	    if (p != NULL)
 	    {
@@ -1211,6 +1206,9 @@ cmdline_insert_reg(int *gotesc UNUSED)
 {
     int		i;
     int		c;
+#ifdef FEAT_EVAL
+    int		save_new_cmdpos = new_cmdpos;
+#endif
 
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = TRUE;	// disallow scrolling here
@@ -1229,8 +1227,6 @@ cmdline_insert_reg(int *gotesc UNUSED)
 #ifdef FEAT_EVAL
     /*
      * Insert the result of an expression.
-     * Need to save the current command line, to be able to enter
-     * a new one...
      */
     new_cmdpos = -1;
     if (c == '=')
@@ -1271,6 +1267,10 @@ cmdline_insert_reg(int *gotesc UNUSED)
 	}
 #endif
     }
+#ifdef FEAT_EVAL
+    new_cmdpos = save_new_cmdpos;
+#endif
+
     // remove the double quote
     redrawcmd();
 
@@ -1581,6 +1581,7 @@ getcmdline_int(
     int		indent,		// indent for inside conditionals
     int		clear_ccline)	// clear ccline first
 {
+    static int	depth = 0;	    // call depth
     int		c;
     int		i;
     int		j;
@@ -1610,6 +1611,25 @@ getcmdline_int(
     int		did_save_ccline = FALSE;
     int		cmdline_type;
     int		wild_type;
+    int		cmdheight0 = p_ch == 0;
+
+    if (cmdheight0)
+    {
+	int  save_so = lastwin->w_p_so;
+
+	// If cmdheight is 0, cmdheight must be set to 1 when we enter the
+	// command line.  Set "made_cmdheight_nonzero" and reset 'scrolloff' to
+	// avoid scrolling the last window.
+	made_cmdheight_nonzero = TRUE;
+	lastwin->w_p_so = 0;
+	set_option_value((char_u *)"ch", 1L, NULL, 0);
+	update_screen(UPD_VALID);                 // redraw the screen NOW
+	made_cmdheight_nonzero = FALSE;
+	lastwin->w_p_so = save_so;
+    }
+
+    // one recursion level deeper
+    ++depth;
 
     if (ccline.cmdbuff != NULL)
     {
@@ -1640,6 +1660,13 @@ getcmdline_int(
 
     if (init_ccline(firstc, indent) != OK)
 	goto theend;	// out of memory
+
+    if (depth == 50)
+    {
+	// Somehow got into a loop recursively calling getcmdline(), bail out.
+	emsg(_(e_command_too_recursive));
+	goto theend;
+    }
 
     ExpandInit(&xpc);
     ccline.xpc = &xpc;
@@ -1747,6 +1774,13 @@ getcmdline_int(
 		wp->w_redr_status = TRUE;
 		found_one = TRUE;
 	    }
+
+	if (*p_tal != NUL)
+	{
+	    redraw_tabline = TRUE;
+	    found_one = TRUE;
+	}
+
 	if (found_one)
 	    redraw_statuslines();
     }
@@ -1837,7 +1871,8 @@ getcmdline_int(
 		&& firstc != '@'
 #endif
 #ifdef FEAT_EVAL
-		&& !break_ctrl_c
+		// do clear got_int in Ex mode to avoid infinite Ctrl-C loop
+		&& (!break_ctrl_c || exmode_active)
 #endif
 		&& !global_busy)
 	    got_int = FALSE;
@@ -2576,6 +2611,16 @@ theend:
     {
 	char_u *p = ccline.cmdbuff;
 
+	if (cmdheight0)
+	{
+	    made_cmdheight_nonzero = TRUE;
+	    set_option_value((char_u *)"ch", 0L, NULL, 0);
+	    // Redraw is needed for command line completion
+	    redraw_all_later(UPD_CLEAR);
+	    made_cmdheight_nonzero = FALSE;
+	}
+
+	--depth;
 	if (did_save_ccline)
 	    restore_cmdline(&save_ccline);
 	else
@@ -2698,13 +2743,13 @@ check_opt_wim(void)
  * 'balloonexpr', etc.
  */
     int
-text_and_win_locked(void)
+text_locked(void)
 {
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	return TRUE;
 #endif
-    return textwinlock != 0;
+    return textlock != 0;
 }
 
 /*
@@ -2724,19 +2769,22 @@ get_text_locked_msg(void)
     if (cmdwin_type != 0)
 	return e_invalid_in_cmdline_window;
 #endif
-    if (textwinlock != 0)
-	return e_not_allowed_to_change_text_or_change_window;
-    return e_not_allowed_to_change_text_here;
+    return e_not_allowed_to_change_text_or_change_window;
 }
 
 /*
- * Return TRUE when the text must not be changed and/or we cannot switch to
- * another window.  TRUE while evaluating 'completefunc'.
+ * Check for text, window or buffer locked.
+ * Give an error message and return TRUE if something is locked.
  */
     int
-text_locked(void)
+text_or_buf_locked(void)
 {
-    return text_and_win_locked() || textlock != 0;
+    if (text_locked())
+    {
+	text_locked_msg();
+	return TRUE;
+    }
+    return curbuf_locked();
 }
 
 /*
@@ -3718,11 +3766,11 @@ cmdline_paste(
     regname = may_get_selection(regname);
 #endif
 
-    // Need to  set "textwinlock" to avoid nasty things like going to another
+    // Need to set "textlock" to avoid nasty things like going to another
     // buffer when evaluating an expression.
-    ++textwinlock;
+    ++textlock;
     i = get_spec_reg(regname, &arg, &allocated, TRUE);
-    --textwinlock;
+    --textlock;
 
     if (i)
     {
@@ -3869,6 +3917,7 @@ redrawcmd(void)
 	return;
     }
 
+    sb_text_restart_cmdline();
     msg_start();
     redrawcmdprompt();
 
@@ -4083,7 +4132,7 @@ get_cmdline_info(void)
 
 #if defined(FEAT_EVAL) || defined(FEAT_CMDWIN) || defined(PROTO)
 /*
- * Get pointer to the command line info to use. save_ccline() may clear
+ * Get pointer to the command line info to use. save_cmdline() may clear
  * ccline and put the previous value in prev_ccline.
  */
     static cmdline_info_T *
@@ -4379,8 +4428,10 @@ open_cmdwin(void)
     int			save_KeyTyped;
 #endif
 
+    // Can't do this when text or buffer is locked.
     // Can't do this recursively.  Can't do it when typing a password.
-    if (cmdwin_type != 0
+    if (text_or_buf_locked()
+	    || cmdwin_type != 0
 # if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
 	    || cmdline_star > 0
 # endif
@@ -4451,8 +4502,8 @@ open_cmdwin(void)
     {
 	if (p_wc == TAB)
 	{
-	    add_map((char_u *)"<buffer> <Tab> <C-X><C-V>", MODE_INSERT);
-	    add_map((char_u *)"<buffer> <Tab> a<C-X><C-V>", MODE_NORMAL);
+	    add_map((char_u *)"<buffer> <Tab> <C-X><C-V>", MODE_INSERT, TRUE);
+	    add_map((char_u *)"<buffer> <Tab> a<C-X><C-V>", MODE_NORMAL, TRUE);
 	}
 	set_option_value_give_err((char_u *)"ft",
 					       0L, (char_u *)"vim", OPT_LOCAL);
@@ -4490,7 +4541,7 @@ open_cmdwin(void)
     curwin->w_cursor.col = ccline.cmdpos;
     changed_line_abv_curs();
     invalidate_botline();
-    redraw_later(SOME_VALID);
+    redraw_later(UPD_SOME_VALID);
 
     // No Ex mode here!
     exmode_active = 0;
@@ -4631,6 +4682,7 @@ open_cmdwin(void)
 # endif
 
     State = save_State;
+    may_trigger_modechanged();
     setmouse();
 
     return cmdwin_result;

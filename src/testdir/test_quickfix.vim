@@ -185,6 +185,14 @@ func XlistTests(cchar)
 	\ ' 2 Data.Text:20 col 10 warning  22: ModuleWarning',
 	\ ' 3 Data/Text.hs:30 col 15 warning  33: FileWarning'], l)
 
+  " Very long line should be displayed.
+  let text = 'Line' .. repeat('1234567890', 130)
+  let lines = ['Xtestfile9:2:9:' .. text]
+  Xgetexpr lines
+
+  let l = split(execute('Xlist', ''), "\n")
+  call assert_equal([' 1 Xtestfile9:2 col 9: ' .. text] , l)
+
   " For help entries in the quickfix list, only the filename without directory
   " should be displayed
   Xhelpgrep setqflist()
@@ -3136,6 +3144,12 @@ func Test_cwindow_highlight()
   call term_sendkeys(buf, ":cnext\<CR>")
   call VerifyScreenDump(buf, 'Test_quickfix_cwindow_2', {})
 
+  call term_sendkeys(buf, "\<C-W>j:set cursorline\<CR>")
+  call VerifyScreenDump(buf, 'Test_quickfix_cwindow_3', {})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_quickfix_cwindow_4', {})
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestCwindow')
@@ -3363,8 +3377,11 @@ func Test_bufoverflow()
   cgetexpr ['Compiler: ' . repeat('a', 1015), 'File1:10:Hello World']
 
   set efm=%DEntering\ directory\ %f,%f:%l:%m
-  cgetexpr ['Entering directory ' . repeat('a', 1006),
-	      \ 'File1:10:Hello World']
+  let lines =<< trim eval END
+    Entering directory $"{repeat('a', 1006)}"
+    File1:10:Hello World
+  END
+  cgetexpr lines
   set efm&vim
 endfunc
 
@@ -3474,7 +3491,7 @@ endfunc
 func Test_vimgrep_with_textlock()
   new
 
-  " Simple way to execute something with "textwinlock" set.
+  " Simple way to execute something with "textlock" set.
   " Check that vimgrep without jumping can be executed.
   au InsertCharPre * vimgrep /RunTheTest/j runtest.vim
   normal ax

@@ -1296,6 +1296,16 @@ func Test_visual_block_append_invalid_char()
   set isprint&
 endfunc
 
+func Test_visual_block_with_substitute()
+  " this was reading beyond the end of the line
+  new
+  norm a0)
+  sil! norm  O
+  s/)
+  sil! norm 
+  bwipe!
+endfunc
+
 func Test_visual_reselect_with_count()
   " this was causing an illegal memory access
   let lines =<< trim END
@@ -1457,6 +1467,38 @@ func Test_visual_paste_clipboard()
     set guioptions&
   endif
   bwipe!
+endfunc
+
+func Test_visual_area_adjusted_when_hiding()
+  " The Visual area ended after the end of the line after :hide
+  call setline(1, 'xxx')
+  vsplit Xfile
+  call setline(1, 'xxxxxxxx')
+  norm! $o
+  hid
+  norm! zW
+  bwipe!
+  bwipe!
+endfunc
+
+func Test_switch_buffer_ends_visual_mode()
+  enew
+  call setline(1, 'foo')
+  set hidden
+  set virtualedit=all
+  let buf1 = bufnr()
+  enew
+  let buf2 = bufnr()
+  call setline(1, ['', '', '', ''])
+  call cursor(4, 5)
+  call feedkeys("\<C-V>3k4h", 'xt')
+  exe 'buffer' buf1
+  call assert_equal('n', mode())
+
+  set nohidden
+  set virtualedit=
+  bwipe!
+  exe 'bwipe!' buf2
 endfunc
 
 

@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 8.2.  Last change: 2022 Apr 07
+*indent.txt*    For Vim version 9.0.  Last change: 2022 May 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -21,9 +21,6 @@ formatting conventions established with C.  These options affect only the
 indent and do not perform other formatting.  There are additional options that
 affect other kinds of formatting as well as indenting, see |format-comments|,
 |fo-table|, |gq| and |formatting| for the main ones.
-
-Note that this will not work when the |+smartindent| or |+cindent| features
-have been disabled at compile time.
 
 There are in fact four main methods available for indentation, each one
 overrides the previous if it is enabled, or non-empty for 'indentexpr':
@@ -294,7 +291,7 @@ The examples below assume a 'shiftwidth' of 4.
 <
 							*cino-g*
 	gN    Place C++ scope declarations N characters from the indent of the
-	      block they are in.  (default 'shiftwidth'). By default, a scope 
+	      block they are in.  (default 'shiftwidth'). By default, a scope
 	      declaration is "public:", "protected:" or "private:". This can
 	      be adjusted with the 'cinscopedecls' option.
 

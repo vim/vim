@@ -1160,6 +1160,7 @@ key_press_event(GtkWidget *widget UNUSED,
     int		key;
     guint	state;
     char_u	*s, *d;
+    int		ctrl_prefix_added = 0;
 
     gui.event_time = event->time;
     key_sym = event->keyval;
@@ -1245,6 +1246,22 @@ key_press_event(GtkWidget *widget UNUSED,
 	}
     }
 
+#ifdef GDK_KEY_dead_circumflex
+    // Belgian Ctrl+[ workaround
+    if (len == 0 && key_sym == GDK_KEY_dead_circumflex)
+    {
+	string[0] = CSI;
+	string[1] = KS_MODIFIER;
+	string[2] = MOD_MASK_CTRL;
+	string[3] = '[';
+	len = 4;
+	add_to_input_buf(string, len);
+	// workaround has to return here, otherwise our fake string[] entries
+	// are confusing code downstream
+	return TRUE;
+    }
+#endif
+
     if (len == 0)   // Unrecognized key
 	return TRUE;
 
@@ -1288,6 +1305,8 @@ key_press_event(GtkWidget *widget UNUSED,
 	string2[1] = KS_MODIFIER;
 	string2[2] = modifiers;
 	add_to_input_buf(string2, 3);
+	if (modifiers == 0x4)
+	    ctrl_prefix_added = 1;
     }
 
     // Check if the key interrupts.
@@ -1302,6 +1321,15 @@ key_press_event(GtkWidget *widget UNUSED,
 	}
     }
 
+    // workaround for German keyboard, where instead of '[' char we have code
+    // sequence of bytes 195, 188 (UTF-8 for "u-umlaut")
+    if (ctrl_prefix_added && len == 2
+		    && ((int)string[0]) == 195
+		    && ((int)string[1]) == 188)
+    {
+	string[0] = 91; // ASCII('[')
+	len = 1;
+    }
     add_to_input_buf(string, len);
 
     // blank out the pointer if necessary

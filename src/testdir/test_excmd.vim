@@ -717,5 +717,29 @@ func Test_address_line_overflow()
   bwipe!
 endfunc
 
+" This was leaving the cursor in line zero
+func Test_using_zero_in_range()
+  new
+  norm o00
+  silent!  0;s/\%')
+  bwipe!
+endfunc
+
+" Test :write after changing name with :file and loading it with :edit
+func Test_write_after_rename()
+  call writefile(['text'], 'Xfile')
+
+  enew
+  file Xfile
+  call assert_fails('write', 'E13: File exists (add ! to override)')
+
+  " works OK after ":edit"
+  edit
+  write
+
+  call delete('Xfile')
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

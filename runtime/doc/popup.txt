@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2022 Apr 04
+*popup.txt*  For Vim version 9.0.  Last change: 2022 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -147,7 +147,8 @@ A special case is running a terminal in a popup window.  Many rules are then
 different:						*E863*
 - The popup window always has focus, it is not possible to switch to another
   window.
-- When the job ends, the popup window closes.
+- When the job ends, the popup window shows the buffer in Terminal-Normal
+  mode.  Use `:q` to close it or use "term_finish" value "close".
 - The popup window can be closed with `popup_close()`, the terminal buffer
   then becomes hidden.
 - It is not possible to open a second popup window with a terminal. *E861*
@@ -590,7 +591,7 @@ POPUP_CREATE() ARGUMENTS			 *popup_create-arguments*
 
 The first argument of |popup_create()| (and the second argument to
 |popup_settext()|) specifies the text to be displayed, and optionally text
-properties.  It is in one of four forms:
+properties.  It is in one of four forms:  *E1284*
 - a buffer number
 - a string
 - a list of strings
@@ -998,98 +999,101 @@ To make the four corners transparent:
 ==============================================================================
 4. Examples						*popup-examples*
 
-TODO: more interesting examples
+These examples use |Vim9| script.
+
 					*popup_dialog-example*
 Prompt the user to press y/Y or n/N: >
 
-	func MyDialogHandler(id, result)
-	   if a:result
-	      " ... 'y' or 'Y' was pressed
-	   endif
-	endfunc
-
-	call popup_dialog('Continue? y/n', #{
-		\ filter: 'popup_filter_yesno',
-		\ callback: 'MyDialogHandler',
-		\ })
+	popup_dialog('Continue? y/n', {
+		 filter: 'popup_filter_yesno',
+		 callback: (id, result) => {
+				if result == 1
+				  echomsg "'y' or 'Y' was pressed"
+				else
+				  echomsg "'y' or 'Y' was NOT pressed"
+				endif
+			     },
+		 padding: [2, 4, 2, 4],
+		 })
 <
 					*popup_menu-shortcut-example*
 Extend popup_filter_menu() with shortcut keys: >
 
-	call popup_menu(['Save', 'Cancel', 'Discard'], #{
-		\ filter: 'MyMenuFilter',
-		\ callback: 'MyMenuHandler',
-		\ })
-
-	func MyMenuFilter(id, key)
-	  " Handle shortcuts
-	  if a:key == 'S'
-	     call popup_close(a:id, 1)
-	     return 1
-	  endif
-	  if a:key == 'C'
-	     call popup_close(a:id, 2)
-	     return 1
-	  endif
-	  if a:key == 'D'
-	     call popup_close(a:id, 3)
-	     return 1
-	  endif
-
-	  " No shortcut, pass to generic filter
-	  return popup_filter_menu(a:id, a:key)
-	endfunc
+	popup_menu(['Save', 'Cancel', 'Discard'], {
+	    callback: (_, result) => {
+		echo 'dialog result is' result
+	    },
+	    filter: (id, key) => {
+		# Handle shortcuts
+		if key == 'S' || key == 's'
+		    popup_close(id, 1)
+		elseif key == 'C' || key == 'c'
+		    popup_close(id, 2)
+		elseif key == 'D' || key == 'd'
+		    popup_close(id, 3)
+		else
+		    # No shortcut, pass to generic filter
+		    return popup_filter_menu(id, key)
+		endif
+		return true
+	    },
+	})
 <
 					*popup_beval_example*
 Example for using a popup window for 'ballooneval': >
 
 	set ballooneval balloonevalterm
 	set balloonexpr=BalloonExpr()
-	let s:winid = 0
-	let s:last_text = ''
+	var winid: number
+	var last_text: string
 
-	func BalloonExpr()
-	  if s:winid && popup_getpos(s:winid) != {}
-	    " previous popup window still shows
-	    if v:beval_text == s:last_text
-	      " Still the same text, keep the existing popup
-	      return ''
+	def BalloonExpr(): string
+	    # here you would use "v:beval_text" to lookup something interesting
+	    var text = v:beval_text
+	    if winid > 0 && popup_getpos(winid) != null_dict
+		# previous popup window still shows
+		if text == last_text
+		    # still the same text, keep the existing popup
+		    return null_string
+		endif
+		popup_close(winid)
 	    endif
-	    call popup_close(s:winid)
-	  endif
-	  let s:winid = popup_beval(v:beval_text, #{mousemoved: 'word'})
-	  let s:last_text = v:beval_text
-	  return ''
-	endfunc
-<
+
+	    winid = popup_beval(text, {})
+	    last_text = text
+	    return null_string
+	enddef
+
 If the text has to be obtained asynchronously return an empty string from the
 expression function and call popup_beval() once the text is available.  In
 this example simulated with a timer callback: >
 
 	set ballooneval balloonevalterm
 	set balloonexpr=BalloonExpr()
-	let s:winid = 0
-	let s:balloonText = ''
+	var winid: number
+	var last_text: string
 
-	func BalloonExpr()
-	  if s:winid && popup_getpos(s:winid) != {}
-	    " previous popup window still shows
-	    if  v:beval_text == s:balloonText
-	      " Still the same text, keep the existing popup
-	      return ''
+	def BalloonExpr(): string
+	    var text = v:beval_text
+	    if winid > 0 && popup_getpos(winid) != null_dict
+		# previous popup window still shows
+		if text == last_text
+		    # still the same text, keep the existing popup
+		    return null_string
+		endif
+		popup_close(winid)
 	    endif
-	    call popup_close(s:winid)
-	    let s:winid = 0
-	  endif
-	  " simulate an asynchronous lookup for the text to display
-	  let s:balloonText = v:beval_text
-	  call timer_start(100, 'ShowPopup')
-	  return ''
-	endfunc
 
-	func ShowPopup(id)
-	  let s:winid = popup_beval(s:balloonText, #{mousemoved: 'word'})
-	endfunc
+	    # Simulate an asynchronous lookup that takes half a second for the
+	    # text to display.
+	    last_text = text
+	    timer_start(500, 'ShowPopup')
+	    return null_string
+	enddef
+
+	def ShowPopup(timerid: number)
+	    winid = popup_beval('Result: ' .. last_text, {})
+	enddef
 <
 
  vim:tw=78:ts=8:noet:ft=help:norl:

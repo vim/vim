@@ -4024,7 +4024,7 @@ jumpto_tag(
 	{
 	    // Return cursor to where we were
 	    validate_cursor();
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    win_enter(curwin_save, TRUE);
 	}
 #endif
@@ -4589,17 +4589,16 @@ tagstack_push_items(win_T *wp, list_T *l)
 	    continue;
 	if (list2fpos(&di->di_tv, &mark, &fnum, NULL, FALSE) != OK)
 	    continue;
-	if ((tagname =
-		dict_get_string(itemdict, (char_u *)"tagname", TRUE)) == NULL)
+	if ((tagname = dict_get_string(itemdict, "tagname", TRUE)) == NULL)
 	    continue;
 
 	if (mark.col > 0)
 	    mark.col--;
 	tagstack_push_item(wp, tagname,
-		(int)dict_get_number(itemdict, (char_u *)"bufnr"),
-		(int)dict_get_number(itemdict, (char_u *)"matchnr") - 1,
+		(int)dict_get_number(itemdict, "bufnr"),
+		(int)dict_get_number(itemdict, "matchnr") - 1,
 		mark, fnum,
-		dict_get_string(itemdict, (char_u *)"user_data", TRUE));
+		dict_get_string(itemdict, "user_data", TRUE));
     }
 }
 

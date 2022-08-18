@@ -1378,6 +1378,7 @@ do_source_ext(
     int			    sid;
     scriptitem_T	    *si = NULL;
     int			    save_estack_compiling = estack_compiling;
+    ESTACK_CHECK_DECLARATION
 #endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
@@ -1388,7 +1389,6 @@ do_source_ext(
 #endif
     int			    save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     int			    trigger_source_post = FALSE;
-    ESTACK_CHECK_DECLARATION
 
     CLEAR_FIELD(cookie);
     if (fname == NULL)
@@ -1534,10 +1534,6 @@ do_source_ext(
     cookie.level = ex_nesting_level;
 #endif
 
-    // Keep the sourcing name/lnum, for recursive calls.
-    estack_push(ETYPE_SCRIPT, fname_exp, 0);
-    ESTACK_CHECK_SETUP
-
 #ifdef STARTUPTIME
     if (time_fd != NULL)
 	time_push(&tv_rel, &tv_start);
@@ -1630,6 +1626,10 @@ do_source_ext(
 	si->sn_is_vimrc = is_vimrc;
     }
 
+    // Keep the sourcing name/lnum, for recursive calls.
+    estack_push(ETYPE_SCRIPT, si->sn_name, 0);
+    ESTACK_CHECK_SETUP
+
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
     {
@@ -1693,7 +1693,9 @@ do_source_ext(
 
     if (got_int)
 	emsg(_(e_interrupted));
+#ifdef FEAT_EVAL
     ESTACK_CHECK_NOW
+#endif
     estack_pop();
     if (p_verbose > 1)
     {
@@ -1965,6 +1967,7 @@ get_one_sourceline(source_cookie_T *sp)
 		break;
 	    buf = (char_u *)ga.ga_data;
 	    buf[ga.ga_len++] = NUL;
+	    len = ga.ga_len;
 	}
 	else
 	{
@@ -1972,8 +1975,8 @@ get_one_sourceline(source_cookie_T *sp)
 	    if (fgets((char *)buf + ga.ga_len, ga.ga_maxlen - ga.ga_len,
 			sp->fp) == NULL)
 		break;
+	    len = ga.ga_len + (int)STRLEN(buf + ga.ga_len);
 	}
-	len = ga.ga_len + (int)STRLEN(buf + ga.ga_len);
 #ifdef USE_CRNL
 	// Ignore a trailing CTRL-Z, when in Dos mode.	Only recognize the
 	// CTRL-Z by its own, or after a NL.
@@ -2345,7 +2348,7 @@ source_finished(
  * Find the path of a script below the "autoload" directory.
  * Returns NULL if there is no "/autoload/" in the script name.
  */
-    char_u *
+    static char_u *
 script_name_after_autoload(scriptitem_T *si)
 {
     char_u	*p = si->sn_name;

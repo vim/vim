@@ -8,7 +8,7 @@
  */
 
 /*
- * vim9cmds.c: Dealing with compiled function expressions
+ * vim9expr.c: Dealing with compiled function expressions
  */
 
 #define USING_FLOAT_STUFF
@@ -442,7 +442,7 @@ compile_load(
 
 	    switch (**arg)
 	    {
-		case 'v': res = generate_LOADV(cctx, name, error);
+		case 'v': res = generate_LOADV(cctx, name);
 			  break;
 		case 's': if (current_script_is_vim9())
 			  {
@@ -451,8 +451,7 @@ compile_load(
 			      vim_free(name);
 			      return FAIL;
 			  }
-			  if (is_expr && ASCII_ISUPPER(*name)
-					     && find_func(name, FALSE) != NULL)
+			  if (is_expr && find_func(name, FALSE) != NULL)
 			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
@@ -1748,7 +1747,7 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     return ret;
 }
 
-static int compile_expr8(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst);
+static int compile_expr9(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst);
 
 /*
  * Compile whatever comes after "name" or "name()".
@@ -1909,7 +1908,7 @@ compile_subscript(
 		    // do not look in the next line
 		    cctx->ctx_ufunc->uf_lines.ga_len = 1;
 
-		    fail = compile_expr8(arg, cctx, ppconst) == FAIL
+		    fail = compile_expr9(arg, cctx, ppconst) == FAIL
 						    || *skipwhite(*arg) != NUL;
 		    *paren = '(';
 		    --paren_follows_after_expr;
@@ -2102,7 +2101,8 @@ compile_subscript(
 
     // Turn "dict.Func" into a partial for "Func" bound to "dict".
     // This needs to be done at runtime to be able to check the type.
-    if (keeping_dict && generate_instr(cctx, ISN_USEDICT) == NULL)
+    if (keeping_dict && cctx->ctx_skip != SKIP_YES
+				  && generate_instr(cctx, ISN_USEDICT) == NULL)
 	return FAIL;
 
     return OK;
@@ -2142,7 +2142,7 @@ compile_subscript(
  *  trailing ->name()	method call
  */
     static int
-compile_expr8(
+compile_expr9(
 	char_u **arg,
 	cctx_T *cctx,
 	ppconst_T *ppconst)
@@ -2388,10 +2388,10 @@ compile_expr8(
 }
 
 /*
- * <type>expr8: runtime type check / conversion
+ * <type>expr9: runtime type check / conversion
  */
     static int
-compile_expr7(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
+compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     type_T *want_type = NULL;
 
@@ -2416,7 +2416,7 @@ compile_expr7(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
     }
 
-    if (compile_expr8(arg, cctx, ppconst) == FAIL)
+    if (compile_expr9(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
     if (want_type != NULL)
@@ -2443,14 +2443,14 @@ compile_expr7(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
  *	%	number modulo
  */
     static int
-compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
+compile_expr7(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*op;
     char_u	*next;
     int		ppconst_used = ppconst->pp_used;
 
     // get the first expression
-    if (compile_expr7(arg, cctx, ppconst) == FAIL)
+    if (compile_expr8(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
     /*
@@ -2476,7 +2476,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 
 	// get the second expression
-	if (compile_expr7(arg, cctx, ppconst) == FAIL)
+	if (compile_expr8(arg, cctx, ppconst) == FAIL)
 	    return FAIL;
 
 	if (ppconst->pp_used == ppconst_used + 2
@@ -2521,7 +2521,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
  *      ..	string concatenation
  */
     static int
-compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
+compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*op;
     char_u	*next;
@@ -2529,7 +2529,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     int		ppconst_used = ppconst->pp_used;
 
     // get the first variable
-    if (compile_expr6(arg, cctx, ppconst) == FAIL)
+    if (compile_expr7(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
     /*
@@ -2561,7 +2561,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 
 	// get the second expression
-	if (compile_expr6(arg, cctx, ppconst) == FAIL)
+	if (compile_expr7(arg, cctx, ppconst) == FAIL)
 	    return FAIL;
 
 	if (ppconst->pp_used == ppconst_used + 2
@@ -2620,6 +2620,133 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 }
 
 /*
+ * expr6a >> expr6b
+ * expr6a << expr6b
+ *
+ * Produces instructions:
+ *	OPNR			bitwise left or right shift
+ */
+    static int
+compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
+{
+    exprtype_T	type = EXPR_UNKNOWN;
+    char_u	*p;
+    char_u	*next;
+    int		len = 2;
+    int		ppconst_used = ppconst->pp_used;
+    isn_T	*isn;
+
+    // get the first variable
+    if (compile_expr6(arg, cctx, ppconst) == FAIL)
+	return FAIL;
+
+    /*
+     * Repeat computing, until no "+", "-" or ".." is following.
+     */
+    for (;;)
+    {
+	type = EXPR_UNKNOWN;
+
+	p = may_peek_next_line(cctx, *arg, &next);
+	if (p[0] == '<' && p[1] == '<')
+	    type = EXPR_LSHIFT;
+	else if (p[0] == '>' && p[1] == '>')
+	    type = EXPR_RSHIFT;
+
+	if (type == EXPR_UNKNOWN)
+	    return OK;
+
+	// Handle a bitwise left or right shift operator
+	if (ppconst->pp_used == ppconst_used + 1)
+	{
+	    if (ppconst->pp_tv[ppconst->pp_used - 1].v_type != VAR_NUMBER)
+	    {
+		// left operand should be a number
+		emsg(_(e_bitshift_ops_must_be_number));
+		return FAIL;
+	    }
+	}
+	else
+	{
+	    type_T	*t = get_type_on_stack(cctx, 0);
+
+	    if (need_type(t, &t_number, 0, 0, cctx, FALSE, FALSE) == FAIL)
+	    {
+		emsg(_(e_bitshift_ops_must_be_number));
+		return FAIL;
+	    }
+	}
+
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    p = skipwhite(*arg);
+	}
+
+	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[len]))
+	{
+	    error_white_both(p, len);
+	    return FAIL;
+	}
+
+	// get the second variable
+	if (may_get_next_line_error(p + len, arg, cctx) == FAIL)
+	    return FAIL;
+
+	if (compile_expr6(arg, cctx, ppconst) == FAIL)
+	    return FAIL;
+
+	if (ppconst->pp_used == ppconst_used + 2)
+	{
+	    typval_T	*tv1 = &ppconst->pp_tv[ppconst->pp_used - 2];
+	    typval_T	*tv2 = &ppconst->pp_tv[ppconst->pp_used - 1];
+
+	    // Both sides are a constant, compute the result now.
+	    if (tv2->v_type != VAR_NUMBER || tv2->vval.v_number < 0)
+	    {
+		// right operand should be a positive number
+		if (tv2->v_type != VAR_NUMBER)
+		    emsg(_(e_bitshift_ops_must_be_number));
+		else
+		    emsg(_(e_bitshift_ops_must_be_postive));
+		return FAIL;
+	    }
+
+	    if (tv2->vval.v_number > MAX_LSHIFT_BITS)
+		tv1->vval.v_number = 0;
+	    else if (type == EXPR_LSHIFT)
+		tv1->vval.v_number =
+			(uvarnumber_T)tv1->vval.v_number << tv2->vval.v_number;
+	    else
+		tv1->vval.v_number =
+			(uvarnumber_T)tv1->vval.v_number >> tv2->vval.v_number;
+	    clear_tv(tv2);
+	    --ppconst->pp_used;
+	}
+	else
+	{
+	    if (need_type(get_type_on_stack(cctx, 0), &t_number, 0, 0, cctx,
+			FALSE, FALSE) == FAIL)
+	    {
+		emsg(_(e_bitshift_ops_must_be_number));
+		return FAIL;
+	    }
+
+	    generate_ppconst(cctx, ppconst);
+
+	    isn = generate_instr_drop(cctx, ISN_OPNR, 1);
+	    if (isn == NULL)
+		return FAIL;
+
+	    if (isn != NULL)
+		isn->isn_arg.op.op_type = type;
+	}
+    }
+
+    return OK;
+}
+
+/*
  * expr5a == expr5b
  * expr5a =~ expr5b
  * expr5a != expr5b
@@ -2651,6 +2778,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	return FAIL;
 
     p = may_peek_next_line(cctx, *arg, &next);
+
     type = get_compare_type(p, &len, &type_is);
 
     /*
@@ -2696,7 +2824,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	if (ppconst->pp_used == ppconst_used + 2)
 	{
-	    typval_T *	tv1 = &ppconst->pp_tv[ppconst->pp_used - 2];
+	    typval_T	*tv1 = &ppconst->pp_tv[ppconst->pp_used - 2];
 	    typval_T	*tv2 = &ppconst->pp_tv[ppconst->pp_used - 1];
 	    int		ret;
 

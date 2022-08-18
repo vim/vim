@@ -583,21 +583,29 @@ func Test_mkview_open_folds()
 
   call append(0, ['a', 'b', 'c'])
   1,3fold
-  " zR affects 'foldlevel', make sure the option is applied after the folds
-  " have been recreated.
-  normal zR
   write! Xtestfile
 
+  call assert_notequal(-1, foldclosed(1))
+  call assert_notequal(-1, foldclosed(2))
+  call assert_notequal(-1, foldclosed(3))
+
+  " Save the view with folds closed
+  mkview! Xtestview
+
+  " zR affects 'foldlevel', make sure the option is applied after the folds
+  " have been recreated.
+  " Open folds to ensure they get closed when restoring the view
+  normal zR
+
   call assert_equal(-1, foldclosed(1))
   call assert_equal(-1, foldclosed(2))
   call assert_equal(-1, foldclosed(3))
 
-  mkview! Xtestview
   source Xtestview
 
-  call assert_equal(-1, foldclosed(1))
-  call assert_equal(-1, foldclosed(2))
-  call assert_equal(-1, foldclosed(3))
+  call assert_notequal(-1, foldclosed(1))
+  call assert_notequal(-1, foldclosed(2))
+  call assert_notequal(-1, foldclosed(3))
 
   call delete('Xtestview')
   call delete('Xtestfile')
@@ -1076,6 +1084,28 @@ func Test_mksession_shortmess()
   call delete('Xtest_mks.out')
   close
   set sessionoptions&
+endfunc
+
+" Test that when Vim loading session has 'A' in 'shortmess' it does not
+" complain about an existing swapfile.
+func Test_mksession_shortmess_with_A()
+  edit Xtestfile
+  write
+  let fname = swapname('%')
+  let cont = readblob(fname)
+  set sessionoptions-=options
+  mksession Xtestsession
+  bwipe!
+
+  " Recreate the swap file to pretend the file is being edited
+  call writefile(cont, fname)
+  set shortmess+=A
+  source Xtestsession
+
+  set shortmess&
+  set sessionoptions&
+  call delete('Xtestsession')
+  call delete(fname)
 endfunc
 
 " Test for mksession with 'compatible' option

@@ -2107,6 +2107,13 @@ function Test_dirchanged_global()
   call assert_equal(expected, s:li)
   exe 'lcd ' .. fnameescape(s:dir_bar)
   call assert_equal(expected, s:li)
+
+  exe 'cd ' .. s:dir_foo
+  exe 'cd ' .. s:dir_bar
+  autocmd! test_dirchanged DirChanged global let g:result = expand("<afile>")
+  cd -
+  call assert_equal(s:dir_foo, substitute(g:result, '\\', '/', 'g'))
+
   call s:After_test_dirchanged()
 endfunc
 
@@ -2292,6 +2299,57 @@ func Test_autocmd_nested()
 
   call assert_fails('au WinNew * ++nested ++nested echo bad', 'E983:')
   call assert_fails('au WinNew * nested nested echo bad', 'E983:')
+endfunc
+
+func Test_autocmd_nested_cursor_invalid()
+  set laststatus=0
+  copen
+  cclose
+  call setline(1, ['foo', 'bar', 'baz'])
+  3
+  augroup nested_inv
+    autocmd User foo ++nested copen
+    autocmd BufAdd * let &laststatus = 2 - &laststatus
+  augroup END
+  doautocmd User foo
+
+  augroup nested_inv
+    au!
+  augroup END
+  set laststatus&
+  cclose
+  bwipe!
+endfunc
+
+func Test_autocmd_nested_keeps_cursor_pos()
+  enew
+  call setline(1, 'foo')
+  autocmd User foo ++nested normal! $a
+  autocmd InsertLeave * :
+  doautocmd User foo
+  call assert_equal([0, 1, 3, 0], getpos('.'))
+
+  bwipe!
+endfunc
+
+func Test_autocmd_nested_switch_window()
+  " run this in a separate Vim so that SafeState works
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      ['()']->writefile('Xautofile')
+      autocmd VimEnter * ++nested edit Xautofile | split
+      autocmd BufReadPost * autocmd SafeState * ++once foldclosed('.')
+      autocmd WinEnter * matchadd('ErrorMsg', 'pat')
+  END
+  call writefile(lines, 'Xautoscript')
+  let buf = RunVimInTerminal('-S Xautoscript', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_autocmd_nested_switch', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xautofile')
+  call delete('Xautoscript')
 endfunc
 
 func Test_autocmd_once()
@@ -2605,7 +2663,6 @@ endfunc
 
 func Test_autocmd_SafeState()
   CheckRunVimInTerminal
-  let g:test_is_flaky = 1
 
   let lines =<< trim END
 	let g:safe = 0
@@ -3102,6 +3159,22 @@ func Test_autocmd_with_block()
 
   augroup block_testing
     au!
+    autocmd CursorHold * {
+      if true
+        # comment
+        && true
+
+        && true
+        g:done = 'yes'
+      endif
+      }
+  augroup END
+  doautocmd CursorHold
+  call assert_equal('yes', g:done)
+
+  unlet g:done
+  augroup block_testing
+    au!
   augroup END
 endfunc
 
@@ -3191,6 +3264,110 @@ func Test_v_event_readonly()
   au! TextYankPost
 endfunc
 
+" Test for ModeChanged pattern
+func Test_mode_changes()
+  let g:index = 0
+  let g:mode_seq = ['n', 'i', 'n', 'v', 'V', 'i', 'ix', 'i', 'ic', 'i', 'n', 'no', 'n', 'V', 'v', 's', 'n']
+  func! TestMode()
+    call assert_equal(g:mode_seq[g:index], get(v:event, "old_mode"))
+    call assert_equal(g:mode_seq[g:index + 1], get(v:event, "new_mode"))
+    call assert_equal(mode(1), get(v:event, "new_mode"))
+    let g:index += 1
+  endfunc
+
+  au ModeChanged * :call TestMode()
+  let g:n_to_any = 0
+  au ModeChanged n:* let g:n_to_any += 1
+  call feedkeys("i\<esc>vVca\<CR>\<C-X>\<C-L>\<esc>ggdG", 'tnix')
+
+  let g:V_to_v = 0
+  au ModeChanged V:v let g:V_to_v += 1
+  call feedkeys("Vv\<C-G>\<esc>", 'tnix')
+  call assert_equal(len(filter(g:mode_seq[1:], {idx, val -> val == 'n'})), g:n_to_any)
+  call assert_equal(1, g:V_to_v)
+  call assert_equal(len(g:mode_seq) - 1, g:index)
+
+  let g:n_to_i = 0
+  au ModeChanged n:i let g:n_to_i += 1
+  let g:n_to_niI = 0
+  au ModeChanged i:niI let g:n_to_niI += 1
+  let g:niI_to_i = 0
+  au ModeChanged niI:i let g:niI_to_i += 1
+  let g:nany_to_i = 0
+  au ModeChanged n*:i let g:nany_to_i += 1
+  let g:i_to_n = 0
+  au ModeChanged i:n let g:i_to_n += 1
+  let g:nori_to_any = 0
+  au ModeChanged [ni]:* let g:nori_to_any += 1
+  let g:i_to_any = 0
+  au ModeChanged i:* let g:i_to_any += 1
+  let g:index = 0
+  let g:mode_seq = ['n', 'i', 'niI', 'i', 'n']
+  call feedkeys("a\<C-O>l\<esc>", 'tnix')
+  call assert_equal(len(g:mode_seq) - 1, g:index)
+  call assert_equal(1, g:n_to_i)
+  call assert_equal(1, g:n_to_niI)
+  call assert_equal(1, g:niI_to_i)
+  call assert_equal(2, g:nany_to_i)
+  call assert_equal(1, g:i_to_n)
+  call assert_equal(2, g:i_to_any)
+  call assert_equal(3, g:nori_to_any)
+
+  if has('terminal')
+    let g:mode_seq += ['c', 'n', 't', 'nt', 'c', 'nt', 'n']
+    call feedkeys(":term\<CR>\<C-W>N:bd!\<CR>", 'tnix')
+    call assert_equal(len(g:mode_seq) - 1, g:index)
+    call assert_equal(1, g:n_to_i)
+    call assert_equal(1, g:n_to_niI)
+    call assert_equal(1, g:niI_to_i)
+    call assert_equal(2, g:nany_to_i)
+    call assert_equal(1, g:i_to_n)
+    call assert_equal(2, g:i_to_any)
+    call assert_equal(5, g:nori_to_any)
+  endif
+
+  if has('cmdwin')
+    let g:n_to_c = 0
+    au ModeChanged n:c let g:n_to_c += 1
+    let g:c_to_n = 0
+    au ModeChanged c:n let g:c_to_n += 1
+    let g:mode_seq += ['c', 'n', 'c', 'n']
+    call feedkeys("q:\<C-C>\<Esc>", 'tnix')
+    call assert_equal(len(g:mode_seq) - 1, g:index)
+    call assert_equal(2, g:n_to_c)
+    call assert_equal(2, g:c_to_n)
+    unlet g:n_to_c
+    unlet g:c_to_n
+  endif
+
+  au! ModeChanged
+  delfunc TestMode
+  unlet! g:mode_seq
+  unlet! g:index
+  unlet! g:n_to_any
+  unlet! g:V_to_v
+  unlet! g:n_to_i
+  unlet! g:n_to_niI
+  unlet! g:niI_to_i
+  unlet! g:nany_to_i
+  unlet! g:i_to_n
+  unlet! g:nori_to_any
+  unlet! g:i_to_any
+endfunc
+
+func Test_recursive_ModeChanged()
+  au! ModeChanged * norm 0u
+  sil! norm 
+  au! ModeChanged
+endfunc
+
+func Test_ModeChanged_starts_visual()
+  " This was triggering ModeChanged before setting VIsual, causing a crash.
+  au! ModeChanged * norm 0u
+  sil! norm 
+
+  au! ModeChanged
+endfunc
 
 func Test_noname_autocmd()
   augroup test_noname_autocmd_group
@@ -3208,6 +3385,375 @@ func Test_noname_autocmd()
 
   au! test_noname_autocmd_group
   augroup! test_noname_autocmd_group
+endfunc
+
+" Test for the autocmd_get() function
+func Test_autocmd_get()
+  augroup TestAutoCmdFns
+    au!
+    autocmd BufAdd *.vim echo "bufadd-vim"
+    autocmd BufAdd *.py echo "bufadd-py"
+    autocmd BufHidden *.vim echo "bufhidden"
+  augroup END
+  augroup TestAutoCmdFns2
+    autocmd BufAdd *.vim echo "bufadd-vim-2"
+    autocmd BufRead *.a1b2c3 echo "bufadd-vim-2"
+  augroup END
+
+  let l = autocmd_get()
+  call assert_true(l->len() > 0)
+
+  " Test for getting all the autocmds in a group
+  let expected = [
+        \ #{cmd: 'echo "bufadd-vim"', group: 'TestAutoCmdFns',
+        \  pattern: '*.vim', nested: v:false, once: v:false,
+        \  event: 'BufAdd'},
+        \ #{cmd: 'echo "bufadd-py"', group: 'TestAutoCmdFns',
+        \  pattern: '*.py', nested: v:false, once: v:false,
+        \  event: 'BufAdd'},
+        \ #{cmd: 'echo "bufhidden"', group: 'TestAutoCmdFns',
+        \  pattern: '*.vim', nested: v:false,
+        \  once: v:false, event: 'BufHidden'}]
+  call assert_equal(expected, autocmd_get(#{group: 'TestAutoCmdFns'}))
+
+  " Test for getting autocmds for all the patterns in a group
+  call assert_equal(expected, autocmd_get(#{group: 'TestAutoCmdFns',
+        \ event: '*'}))
+
+  " Test for getting autocmds for an event in a group
+  let expected = [
+        \ #{cmd: 'echo "bufadd-vim"', group: 'TestAutoCmdFns',
+        \  pattern: '*.vim', nested: v:false, once: v:false,
+        \  event: 'BufAdd'},
+        \ #{cmd: 'echo "bufadd-py"', group: 'TestAutoCmdFns',
+        \  pattern: '*.py', nested: v:false, once: v:false,
+        \  event: 'BufAdd'}]
+  call assert_equal(expected, autocmd_get(#{group: 'TestAutoCmdFns',
+        \ event: 'BufAdd'}))
+
+  " Test for getting the autocmds for all the events in a group for particular
+  " pattern
+  call assert_equal([{'cmd': 'echo "bufadd-py"', 'group': 'TestAutoCmdFns',
+        \ 'pattern': '*.py', 'nested': v:false, 'once': v:false,
+        \ 'event': 'BufAdd'}],
+        \ autocmd_get(#{group: 'TestAutoCmdFns', event: '*', pattern: '*.py'}))
+
+  " Test for getting the autocmds for an events in a group for particular
+  " pattern
+  let l = autocmd_get(#{group: 'TestAutoCmdFns', event: 'BufAdd',
+        \ pattern: '*.vim'})
+  call assert_equal([
+        \ #{cmd: 'echo "bufadd-vim"', group: 'TestAutoCmdFns',
+        \  pattern: '*.vim', nested: v:false, once: v:false,
+        \  event: 'BufAdd'}], l)
+
+  " Test for getting the autocmds for a pattern in a group
+  let l = autocmd_get(#{group: 'TestAutoCmdFns', pattern: '*.vim'})
+  call assert_equal([
+        \ #{cmd: 'echo "bufadd-vim"', group: 'TestAutoCmdFns',
+        \  pattern: '*.vim', nested: v:false, once: v:false,
+        \  event: 'BufAdd'},
+        \ #{cmd: 'echo "bufhidden"', group: 'TestAutoCmdFns',
+        \  pattern: '*.vim', nested: v:false,
+        \  once: v:false, event: 'BufHidden'}], l)
+
+  " Test for getting the autocmds for a pattern in all the groups
+  let l = autocmd_get(#{pattern: '*.a1b2c3'})
+  call assert_equal([{'cmd': 'echo "bufadd-vim-2"', 'group': 'TestAutoCmdFns2',
+        \ 'pattern': '*.a1b2c3', 'nested': v:false, 'once': v:false,
+        \ 'event': 'BufRead'}], l)
+
+  " Test for getting autocmds for a pattern without any autocmds
+  call assert_equal([], autocmd_get(#{group: 'TestAutoCmdFns',
+        \ pattern: '*.abc'}))
+  call assert_equal([], autocmd_get(#{group: 'TestAutoCmdFns',
+        \ event: 'BufAdd', pattern: '*.abc'}))
+  call assert_equal([], autocmd_get(#{group: 'TestAutoCmdFns',
+        \ event: 'BufWipeout'}))
+  call assert_fails("call autocmd_get(#{group: 'abc', event: 'BufAdd'})",
+        \ 'E367:')
+  let cmd = "echo autocmd_get(#{group: 'TestAutoCmdFns', event: 'abc'})"
+  call assert_fails(cmd, 'E216:')
+  call assert_fails("call autocmd_get(#{group: 'abc'})", 'E367:')
+  call assert_fails("echo autocmd_get(#{event: 'abc'})", 'E216:')
+
+  augroup TestAutoCmdFns
+    au!
+  augroup END
+  call assert_equal([], autocmd_get(#{group: 'TestAutoCmdFns'}))
+
+  " Test for nested and once autocmds
+  augroup TestAutoCmdFns
+    au!
+    autocmd VimSuspend * ++nested echo "suspend"
+    autocmd VimResume * ++once echo "resume"
+  augroup END
+
+  let expected = [
+        \ {'cmd': 'echo "suspend"', 'group': 'TestAutoCmdFns', 'pattern': '*',
+        \ 'nested': v:true, 'once': v:false, 'event': 'VimSuspend'},
+        \ {'cmd': 'echo "resume"', 'group': 'TestAutoCmdFns', 'pattern': '*',
+        \  'nested': v:false, 'once': v:true, 'event': 'VimResume'}]
+  call assert_equal(expected, autocmd_get(#{group: 'TestAutoCmdFns'}))
+
+  " Test for buffer-local autocmd
+  augroup TestAutoCmdFns
+    au!
+    autocmd TextYankPost <buffer> echo "textyankpost"
+  augroup END
+
+  let expected = [
+        \ {'cmd': 'echo "textyankpost"', 'group': 'TestAutoCmdFns',
+        \  'pattern': '<buffer=' .. bufnr() .. '>', 'nested': v:false,
+        \  'once': v:false, 'bufnr': bufnr(), 'event': 'TextYankPost'}]
+  call assert_equal(expected, autocmd_get(#{group: 'TestAutoCmdFns'}))
+
+  augroup TestAutoCmdFns
+    au!
+  augroup END
+  augroup! TestAutoCmdFns
+  augroup TestAutoCmdFns2
+    au!
+  augroup END
+  augroup! TestAutoCmdFns2
+
+  call assert_fails("echo autocmd_get(#{group: []})", 'E730:')
+  call assert_fails("echo autocmd_get(#{event: {}})", 'E731:')
+  call assert_fails("echo autocmd_get([])", 'E1206:')
+endfunc
+
+" Test for the autocmd_add() function
+func Test_autocmd_add()
+  " Define a single autocmd in a group
+  call autocmd_add([#{group: 'TestAcSet', event: 'BufAdd', pattern: '*.sh',
+        \ cmd: 'echo "bufadd"', once: v:true, nested: v:true}])
+  call assert_equal([#{cmd: 'echo "bufadd"', group: 'TestAcSet',
+        \ pattern: '*.sh', nested: v:true, once: v:true,
+        \ event: 'BufAdd'}], autocmd_get(#{group: 'TestAcSet'}))
+
+  " Define two autocmds in the same group
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  call autocmd_add([#{group: 'TestAcSet', event: 'BufAdd', pattern: '*.sh',
+        \ cmd: 'echo "bufadd"'},
+        \ #{group: 'TestAcSet', event: 'BufEnter', pattern: '*.sh',
+        \   cmd: 'echo "bufenter"'}])
+  call assert_equal([
+        \ #{cmd: 'echo "bufadd"', group: 'TestAcSet', pattern: '*.sh',
+        \   nested: v:false, once: v:false, event: 'BufAdd'},
+        \ #{cmd: 'echo "bufenter"', group: 'TestAcSet', pattern: '*.sh',
+        \   nested: v:false, once: v:false, event: 'BufEnter'}],
+        \   autocmd_get(#{group: 'TestAcSet'}))
+
+  " Define a buffer-local autocmd
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  call autocmd_add([#{group: 'TestAcSet', event: 'CursorHold',
+        \ bufnr: bufnr(), cmd: 'echo "cursorhold"'}])
+  call assert_equal([
+        \ #{cmd: 'echo "cursorhold"', group: 'TestAcSet',
+        \   pattern: '<buffer=' .. bufnr() .. '>', nested: v:false,
+        \   once: v:false, bufnr: bufnr(), event: 'CursorHold'}],
+        \   autocmd_get(#{group: 'TestAcSet'}))
+
+  " Use an invalid buffer number
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  call autocmd_add([#{group: 'TestAcSet', event: 'BufEnter',
+        \ bufnr: -1, cmd: 'echo "bufenter"'}])
+  let l = [#{group: 'TestAcSet', event: 'BufAdd', bufnr: 9999,
+        \ cmd: 'echo "bufadd"'}]
+  call assert_fails("echo autocmd_add(l)", 'E680:')
+  let l = [#{group: 'TestAcSet', event: 'BufAdd', bufnr: 9999,
+        \ pattern: '*.py', cmd: 'echo "bufadd"'}]
+  call assert_fails("echo autocmd_add(l)", 'E680:')
+  let l = [#{group: 'TestAcSet', event: 'BufAdd', bufnr: 9999,
+        \ pattern: ['*.py', '*.c'], cmd: 'echo "bufadd"'}]
+  call assert_fails("echo autocmd_add(l)", 'E680:')
+  let l = [#{group: 'TestAcSet', event: 'BufRead', bufnr: [],
+        \ cmd: 'echo "bufread"'}]
+  call assert_fails("echo autocmd_add(l)", 'E745:')
+  call assert_equal([], autocmd_get(#{group: 'TestAcSet'}))
+
+  " Add two commands to the same group, event and pattern
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  call autocmd_add([#{group: 'TestAcSet', event: 'BufUnload',
+        \ pattern: 'abc', cmd: 'echo "cmd1"'}])
+  call autocmd_add([#{group: 'TestAcSet', event: 'BufUnload',
+        \ pattern: 'abc', cmd: 'echo "cmd2"'}])
+  call assert_equal([
+        \ #{cmd: 'echo "cmd1"', group: 'TestAcSet', pattern: 'abc',
+        \   nested: v:false,  once: v:false, event: 'BufUnload'},
+        \ #{cmd: 'echo "cmd2"', group: 'TestAcSet', pattern: 'abc',
+        \   nested: v:false,  once: v:false, event: 'BufUnload'}],
+        \   autocmd_get(#{group: 'TestAcSet'}))
+
+  " When adding a new autocmd, if the autocmd 'group' is not specified, then
+  " the current autocmd group should be used.
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  augroup TestAcSet
+    call autocmd_add([#{event: 'BufHidden', pattern: 'abc', cmd: 'echo "abc"'}])
+  augroup END
+  call assert_equal([
+        \ #{cmd: 'echo "abc"', group: 'TestAcSet', pattern: 'abc',
+        \   nested: v:false,  once: v:false, event: 'BufHidden'}],
+        \   autocmd_get(#{group: 'TestAcSet'}))
+
+  " Test for replacing a cmd for an event in a group
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  call autocmd_add([#{replace: v:true, group: 'TestAcSet', event: 'BufEnter',
+        \ pattern: '*.py', cmd: 'echo "bufenter"'}])
+  call autocmd_add([#{replace: v:true, group: 'TestAcSet', event: 'BufEnter',
+        \ pattern: '*.py', cmd: 'echo "bufenter"'}])
+  call assert_equal([
+        \ #{cmd: 'echo "bufenter"', group: 'TestAcSet', pattern: '*.py',
+        \   nested: v:false,  once: v:false, event: 'BufEnter'}],
+        \   autocmd_get(#{group: 'TestAcSet'}))
+
+  " Test for adding a command for an unsupported autocmd event
+  let l = [#{group: 'TestAcSet', event: 'abc', pattern: '*.sh',
+        \ cmd: 'echo "bufadd"'}]
+  call assert_fails('call autocmd_add(l)', 'E216:')
+
+  " Test for using a list of events and patterns
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  let l = [#{group: 'TestAcSet', event: ['BufEnter', 'BufLeave'],
+        \ pattern: ['*.py', '*.sh'], cmd: 'echo "bufcmds"'}]
+  call autocmd_add(l)
+  call assert_equal([
+        \ #{cmd: 'echo "bufcmds"', group: 'TestAcSet', pattern: '*.py',
+        \   nested: v:false,  once: v:false, event: 'BufEnter'},
+        \ #{cmd: 'echo "bufcmds"', group: 'TestAcSet', pattern: '*.sh',
+        \   nested: v:false,  once: v:false, event: 'BufEnter'},
+        \ #{cmd: 'echo "bufcmds"', group: 'TestAcSet', pattern: '*.py',
+        \   nested: v:false,  once: v:false, event: 'BufLeave'},
+        \ #{cmd: 'echo "bufcmds"', group: 'TestAcSet', pattern: '*.sh',
+        \   nested: v:false,  once: v:false, event: 'BufLeave'}],
+        \   autocmd_get(#{group: 'TestAcSet'}))
+
+  " Test for invalid values for 'event' item
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  let l = [#{group: 'TestAcSet', event: test_null_string(),
+        \ pattern: "*.py", cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E928:')
+  let l = [#{group: 'TestAcSet', event: test_null_list(),
+        \ pattern: "*.py", cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E714:')
+  let l = [#{group: 'TestAcSet', event: {},
+        \ pattern: "*.py", cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E777:')
+  let l = [#{group: 'TestAcSet', event: [{}],
+        \ pattern: "*.py", cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E928:')
+  let l = [#{group: 'TestAcSet', event: [test_null_string()],
+        \ pattern: "*.py", cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E928:')
+  let l = [#{group: 'TestAcSet', event: 'BufEnter,BufLeave',
+        \ pattern: '*.py', cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E216:')
+  let l = [#{group: 'TestAcSet', event: [],
+        \ pattern: "*.py", cmd: 'echo "bufcmds"'}]
+  call autocmd_add(l)
+  let l = [#{group: 'TestAcSet', event: [""],
+        \ pattern: "*.py", cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E216:')
+  let l = [#{group: 'TestAcSet', event: "",
+        \ pattern: "*.py", cmd: 'echo "bufcmds"'}]
+  call autocmd_add(l)
+  call assert_equal([], autocmd_get(#{group: 'TestAcSet'}))
+
+  " Test for invalid values for 'pattern' item
+  let l = [#{group: 'TestAcSet', event: "BufEnter",
+        \ pattern: test_null_string(), cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E928:')
+  let l = [#{group: 'TestAcSet', event: "BufEnter",
+        \ pattern: test_null_list(), cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E714:')
+  let l = [#{group: 'TestAcSet', event: "BufEnter",
+        \ pattern: {}, cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E777:')
+  let l = [#{group: 'TestAcSet', event: "BufEnter",
+        \ pattern: [{}], cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E928:')
+  let l = [#{group: 'TestAcSet', event: "BufEnter",
+        \ pattern: [test_null_string()], cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E928:')
+  let l = [#{group: 'TestAcSet', event: "BufEnter",
+        \ pattern: [], cmd: 'echo "bufcmds"'}]
+  call autocmd_add(l)
+  let l = [#{group: 'TestAcSet', event: "BufEnter",
+        \ pattern: [""], cmd: 'echo "bufcmds"'}]
+  call autocmd_add(l)
+  let l = [#{group: 'TestAcSet', event: "BufEnter",
+        \ pattern: "", cmd: 'echo "bufcmds"'}]
+  call autocmd_add(l)
+  call assert_equal([], autocmd_get(#{group: 'TestAcSet'}))
+
+  let l = [#{group: 'TestAcSet', event: 'BufEnter,abc,BufLeave',
+        \ pattern: '*.py', cmd: 'echo "bufcmds"'}]
+  call assert_fails('call autocmd_add(l)', 'E216:')
+
+  call assert_fails("call autocmd_add({})", 'E1211:')
+  call assert_equal(v:false,  autocmd_add(test_null_list()))
+  call assert_true(autocmd_add([[]]))
+  call assert_true(autocmd_add([test_null_dict()]))
+
+  augroup TestAcSet
+    au!
+  augroup END
+
+  call autocmd_add([#{group: 'TestAcSet'}])
+  call autocmd_add([#{group: 'TestAcSet', event: 'BufAdd'}])
+  call autocmd_add([#{group: 'TestAcSet', pat: '*.sh'}])
+  call autocmd_add([#{group: 'TestAcSet', cmd: 'echo "a"'}])
+  call autocmd_add([#{group: 'TestAcSet', event: 'BufAdd', pat: '*.sh'}])
+  call autocmd_add([#{group: 'TestAcSet', event: 'BufAdd', cmd: 'echo "a"'}])
+  call autocmd_add([#{group: 'TestAcSet', pat: '*.sh', cmd: 'echo "a"'}])
+  call assert_equal([], autocmd_get(#{group: 'TestAcSet'}))
+
+  augroup! TestAcSet
+endfunc
+
+" Test for deleting autocmd events and groups
+func Test_autocmd_delete()
+  " Delete an event in an autocmd group
+  augroup TestAcSet
+    au!
+    au BufAdd *.sh echo "bufadd"
+    au BufEnter *.sh echo "bufenter"
+  augroup END
+  call autocmd_delete([#{group: 'TestAcSet', event: 'BufAdd'}])
+  call assert_equal([#{cmd: 'echo "bufenter"', group: 'TestAcSet',
+        \ pattern: '*.sh', nested: v:false, once: v:false,
+        \ event: 'BufEnter'}], autocmd_get(#{group: 'TestAcSet'}))
+
+  " Delete all the events in an autocmd group
+  augroup TestAcSet
+    au BufAdd *.sh echo "bufadd"
+  augroup END
+  call autocmd_delete([#{group: 'TestAcSet', event: '*'}])
+  call assert_equal([], autocmd_get(#{group: 'TestAcSet'}))
+
+  " Delete a non-existing autocmd group
+  call assert_fails("call autocmd_delete([#{group: 'abc'}])", 'E367:')
+  " Delete a non-existing autocmd event
+  let l = [#{group: 'TestAcSet', event: 'abc'}]
+  call assert_fails("call autocmd_delete(l)", 'E216:')
+  " Delete a non-existing autocmd pattern
+  let l = [#{group: 'TestAcSet', event: 'BufAdd', pat: 'abc'}]
+  call assert_true(autocmd_delete(l))
+  " Delete an autocmd for a non-existing buffer
+  let l = [#{event: '*', bufnr: 9999, cmd: 'echo "x"'}]
+  call assert_fails('call autocmd_delete(l)', 'E680:')
+
+  " Delete an autocmd group
+  augroup TestAcSet
+    au!
+    au BufAdd *.sh echo "bufadd"
+    au BufEnter *.sh echo "bufenter"
+  augroup END
+  call autocmd_delete([#{group: 'TestAcSet'}])
+  call assert_fails("call autocmd_get(#{group: 'TestAcSet'})", 'E367:')
+
+  call assert_true(autocmd_delete([[]]))
+  call assert_true(autocmd_delete([test_null_dict()]))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

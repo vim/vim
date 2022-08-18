@@ -89,17 +89,21 @@ set_imstatusfunc_option(void)
 call_imactivatefunc(int active)
 {
     typval_T argv[2];
+    int save_KeyTyped = KeyTyped;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = active ? 1 : 0;
     argv[1].v_type = VAR_UNKNOWN;
     (void)call_callback_retnr(&imaf_cb, 1, argv);
+
+    KeyTyped = save_KeyTyped;
 }
 
     static int
 call_imstatusfunc(void)
 {
     int is_active;
+    int save_KeyTyped = KeyTyped;
 
     // FIXME: Don't execute user function in unsafe situation.
     if (exiting || is_autocmd_blocked())
@@ -109,6 +113,8 @@ call_imstatusfunc(void)
     ++msg_silent;
     is_active = call_callback_retnr(&imsf_cb, 0, NULL);
     --msg_silent;
+
+    KeyTyped = save_KeyTyped;
     return (is_active > 0);
 }
 #endif

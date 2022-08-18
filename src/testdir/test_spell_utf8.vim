@@ -13,6 +13,8 @@ func TearDown()
   call delete('Xtest.utf-8.add.spl')
   call delete('Xtest.utf-8.spl')
   call delete('Xtest.utf-8.sug')
+  " set 'encoding' to clear the word list
+  set encoding=utf-8
 endfunc
 
 let g:test_data_aff1 = [
@@ -484,7 +486,6 @@ let g:test_data_aff_sal = [
       \ ]
 
 func LoadAffAndDic(aff_contents, dic_contents)
-  set enc=utf-8
   set spellfile=
   call writefile(a:aff_contents, "Xtest.aff")
   call writefile(a:dic_contents, "Xtest.dic")
@@ -629,7 +630,7 @@ func Test_spell_affix()
         \ ["bar", "barbork", "end", "fooa1", "fooa\u00E9", "nouend", "prebar", "prebarbork", "start"],
         \ [
         \   ["bad", ["bar", "end", "fooa1"]],
-        \   ["foo", ["fooa1", "fooa\u00E9", "bar"]],
+        \   ["foo", ["fooa1", "bar", "end"]],
         \   ["fooa2", ["fooa1", "fooa\u00E9", "bar"]],
         \   ["prabar", ["prebar", "bar", "bar bar"]],
         \   ["probarbirk", ["prebarbork"]],
@@ -647,7 +648,7 @@ func Test_spell_affix()
         \ ["bar", "barbork", "end", "lead", "meea1", "meea\u00E9", "prebar", "prebarbork"],
         \ [
         \   ["bad", ["bar", "end", "lead"]],
-        \   ["mee", ["meea1", "meea\u00E9", "bar"]],
+        \   ["mee", ["meea1", "bar", "end"]],
         \   ["meea2", ["meea1", "meea\u00E9", "lead"]],
         \   ["prabar", ["prebar", "bar", "leadbar"]],
         \   ["probarbirk", ["prebarbork"]],
@@ -664,7 +665,7 @@ func Test_spell_affix()
         \ ["bar", "barmeat", "lead", "meea1", "meea\u00E9", "meezero", "prebar", "prebarmeat", "tail"],
         \ [
         \   ["bad", ["bar", "lead", "tail"]],
-        \   ["mee", ["meea1", "meea\u00E9", "bar"]],
+        \   ["mee", ["meea1", "bar", "lead"]],
         \   ["meea2", ["meea1", "meea\u00E9", "lead"]],
         \   ["prabar", ["prebar", "bar", "leadbar"]],
         \   ["probarmaat", ["prebarmeat"]],
@@ -758,11 +759,16 @@ func Test_spell_sal_and_addition()
   set spl=Xtest_ca.utf-8.spl
   call assert_equal("elequint", FirstSpellWord())
   call assert_equal("elekwint", SecondSpellWord())
+
+  bwipe!
+  set spellfile=
+  set spl&
 endfunc
 
 func Test_spellfile_value()
   set spellfile=Xdir/Xtest.utf-8.add
   set spellfile=Xdir/Xtest.utf-8.add,Xtest_other.add
+  set spellfile=
 endfunc
 
 func Test_no_crash_with_weird_text()
@@ -775,7 +781,12 @@ func Test_no_crash_with_weird_text()
       
   END
   call setline(1, lines)
-  exe "%norm \<C-v>ez=>\<C-v>wzG"
+  try
+    exe "%norm \<C-v>ez=>\<C-v>wzG"
+  catch /E1280:/
+    let caught = 'yes'
+  endtry
+  call assert_equal('yes', caught)
 
   bwipe!
 endfunc
@@ -783,6 +794,37 @@ endfunc
 " Invalid bytes may cause trouble when creating the word list.
 func Test_check_for_valid_word()
   call assert_fails("spellgood! 0\xac", 'E1280:')
+endfunc
+
+" This was going over the end of the word
+func Test_word_index()
+  new
+  norm R0
+  spellgood! ﬂ0
+  sil norm z=
+
+  bwipe!
+  call delete('Xtmpfile')
+endfunc
+
+func Test_check_empty_line()
+  " This was using freed memory
+  enew
+  spellgood! ﬂ
+  norm z=
+  norm yy
+  sil! norm P]svc
+  norm P]s
+
+  bwipe!
+endfunc
+
+func Test_spell_suggest_too_long()
+  " this was creating a word longer than MAXWLEN
+  new
+  call setline(1, 'a' .. repeat("\u0333", 150))
+  norm! z=
+  bwipe!
 endfunc
 
 

@@ -1759,7 +1759,7 @@ spell_reload_one(
 	    if (spell_load_file(fname, NULL, slang, FALSE) == NULL)
 		// reloading failed, clear the language
 		slang_clear(slang);
-	    redraw_all_later(SOME_VALID);
+	    redraw_all_later(UPD_SOME_VALID);
 	    didit = TRUE;
 	}
     }
@@ -4367,6 +4367,23 @@ wordtree_alloc(spellinfo_T *spin)
 }
 
 /*
+ * Return TRUE if "word" contains valid word characters.
+ * Control characters and trailing '/' are invalid.  Space is OK.
+ */
+    static int
+valid_spell_word(char_u *word, char_u *end)
+{
+    char_u *p;
+
+    if (enc_utf8 && !utf_valid_string(word, end))
+	return FALSE;
+    for (p = word; *p != NUL && p < end; p += mb_ptr2len(p))
+	if (*p < ' ' || (p[0] == '/' && p[1] == NUL))
+	    return FALSE;
+    return TRUE;
+}
+
+/*
  * Store a word in the tree(s).
  * Always store it in the case-folded tree.  For a keep-case word this is
  * useful when the word can also be used with all caps (no WF_FIXCAP flag) and
@@ -4391,7 +4408,7 @@ store_word(
     char_u	*p;
 
     // Avoid adding illegal bytes to the word tree.
-    if (enc_utf8 && !utf_valid_string(word, NULL))
+    if (!valid_spell_word(word, word + len))
 	return FAIL;
 
     (void)spell_casefold(curwin, word, len, foldword, MAXWLEN);
@@ -6194,7 +6211,7 @@ spell_add_word(
     int		i;
     char_u	*spf;
 
-    if (enc_utf8 && !utf_valid_string(word, NULL))
+    if (!valid_spell_word(word, word + len))
     {
 	emsg(_(e_illegal_character_in_word));
 	return;
@@ -6350,7 +6367,7 @@ spell_add_word(
 	if (buf != NULL)
 	    buf_reload(buf, buf->b_orig_mode, FALSE);
 
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
     }
     vim_free(fnamebuf);
 }

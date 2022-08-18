@@ -1,4 +1,4 @@
-*ft_rust.txt*	For Vim version 8.2.  Last change: 2017 Nov 02
+*ft_rust.txt*	For Vim version 9.0.  Last change: 2017 Nov 02
 
 This is documentation for the Rust filetype plugin.
 

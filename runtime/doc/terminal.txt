@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2022 Apr 06
+*terminal.txt*	For Vim version 9.0.  Last change: 2022 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -101,7 +101,7 @@ The special key combination CTRL-\ CTRL-N can be used to switch to Normal
 mode, just like this works in any other mode.
 							*t_CTRL-W_CTRL-C*
 CTRL-W CTRL-C can be typed to forcefully end the job.  On MS-Windows a
-CTRL-BREAK will also kill the job.
+CTRL-Break will also kill the job.
 
 If you type CTRL-C the effect depends on what the pty has been configured to
 do.  For simple commands this causes a SIGINT to be sent to the job, which
@@ -1019,6 +1019,36 @@ A trick to have Vim send this escape sequence: >
 
 Rationale: Why not allow for any command or expression?  Because that might
 create a security problem.
+						*terminal-autoshelldir*
+This can be used to pass the current directory from a shell to Vim.
+Put this in your .vimrc: >
+	def g:Tapi_lcd(_, args: string)
+	    execute 'silent lcd ' .. args
+	enddef
+<
+And, in a bash init file: >
+        if [[ -n "$VIM_TERMINAL" ]]; then
+            PROMPT_COMMAND='_vim_sync_PWD'
+            function _vim_sync_PWD() {
+              printf '\033]51;["call", "Tapi_lcd", "%q"]\007' "$PWD"
+            }
+        fi
+<
+Or, for zsh: >
+	if [[ -n "$VIM_TERMINAL" ]]; then
+	    autoload -Uz add-zsh-hook
+	    add-zsh-hook -Uz chpwd _vim_sync_PWD
+	    function _vim_sync_PWD() {
+		printf '\033]51;["call", "Tapi_lcd", "%q"]\007' "$PWD"
+	    }
+	fi
+<
+Or, for fish: >
+	if test -n "$VIM_TERMINAL"
+	    function _vim_sync_PWD --on-variable=PWD
+		printf '\033]51;["call", "Tapi_lcd", "%s"]\007' "$PWD"
+	    end
+	end
 
 
 Using the client-server feature ~
@@ -1367,7 +1397,7 @@ Four autocommands can be used: >
 						*TermdebugStartPre*
 TermdebugStartPre		Before starting debugging.
 				Not triggered if the debugger is already
-				running or |g:termdebugger| cannot be
+				running or the debugger command cannot be
 				executed.
 						*TermdebugStartPost*
 TermdebugStartPost		After debugging has initialized.
@@ -1398,18 +1428,24 @@ in a buffer with 'buftype' set to "prompt".  This works slightly differently:
 
 						*termdebug_use_prompt*
 Prompt mode can be used even when the |+terminal| feature is present with: >
+	let g:termdebug_config['use_prompt'] = 1
+Or if there is no g:termdebug_config: >
 	let g:termdebug_use_prompt = 1
 <
 						*termdebug_map_K*
 The K key is normally mapped to :Evaluate. If you do not want this use: >
+	let g:termdebug_config['map_K'] = 0
+Or if there is no g:termdebug_config: >
 	let g:termdebug_map_K = 0
-
 <
 						*termdebug_disasm_window*
-If you want the Asm window shown by default, set this to 1. Setting to
-any value greater than 1 will set the Asm window height to that value: >
+If you want the Asm window shown by default, set the flag to 1.
+the "disasm_window_height" entry can be used to set the window height: >
+	let g:termdebug_config['disasm_window'] = 1
+	let g:termdebug_config['disasm_window_height'] = 15
+or, if there is no g:termdebug_config: >
 	let g:termdebug_disasm_window = 15
-<
+Any value greater than 1 will set the Asm window height to that value.
 
 Communication ~
 						*termdebug-communication*
@@ -1426,15 +1462,36 @@ communication channel.
 
 
 Customizing ~
+				*termdebug-customizing* *g:termdebug_config*
+In the past several global variables were used for configuration.  These are
+deprecated, using the g:termdebug_config dictionary is preferred.  When
+g:termdebug_config exists the other global variables will not be used.
 
-GDB command						*termdebug-customizing*
+
+GDB command ~
 							*g:termdebugger*
-To change the name of the gdb command, set the "g:termdebugger" variable before
-invoking `:Termdebug`: >
+To change the name of the gdb command, set "debugger" entry in
+g:termdebug_config or the "g:termdebugger" variable before invoking
+`:Termdebug`: >
+	let g:termdebug_config['command'] = "mygdb"
+Or if there is no g:termdebug_config: >
 	let g:termdebugger = "mygdb"
+
 If the command needs an argument use a List: >
+	let g:termdebug_config['command'] = ['rr', 'replay', '--']
+Or if there is no g:termdebug_config: >
 	let g:termdebugger = ['rr', 'replay', '--']
-<							*gdb-version*
+
+Several arguments will be added to make gdb work well for the debugger.
+If you want to modify them, add a function to filter the argument list: >
+	let g:termdebug_config['command_filter'] = MyDebugFilter
+
+If you do not want the arguments to be added, but you do need to set the
+"pty", use a function to add the necessary arguments: >
+	let g:termdebug_config['command_add_args'] = MyAddArguments
+The function will be called with the list of arguments so far, and a second
+argument that is the name of the pty.
+							*gdb-version*
 Only debuggers fully compatible with gdb will work.  Vim uses the GDB/MI
 interface.  The "new-ui" command  requires gdb version 7.12 or later.  if you
 get this error:
@@ -1442,8 +1499,8 @@ get this error:
 Then your gdb is too old.
 
 
-Colors						*hl-debugPC* *hl-debugBreakpoint*
-
+Colors ~
+						*hl-debugPC* *hl-debugBreakpoint*
 The color of the signs can be adjusted with these highlight groups:
 - debugPC		the current position
 - debugBreakpoint	a breakpoint
@@ -1457,7 +1514,8 @@ When 'background' is "dark":
   hi debugBreakpoint term=reverse ctermbg=red guibg=red
 
 
-Shortcuts						*termdebug_shortcuts*
+Shortcuts ~
+							*termdebug_shortcuts*
 
 You can define your own shortcuts (mappings) to control gdb, that can work in
 any window, using the TermDebugSendCommand() function.  Example: >
@@ -1465,7 +1523,8 @@ any window, using the TermDebugSendCommand() function.  Example: >
 The argument is the gdb command.
 
 
-Popup menu						*termdebug_popup*
+Popup menu ~
+							*termdebug_popup*
 
 By default the Termdebug plugin sets 'mousemodel' to "popup_setpos" and adds
 these entries to the popup menu:
@@ -1473,22 +1532,27 @@ these entries to the popup menu:
 	Clear breakpoint	`:Clear`
 	Evaluate		`:Evaluate`
 If you don't want this then disable it with: >
+	let g:termdebug_config['popup'] = 0
+or if there is no g:termdebug_config: >
 	let g:termdebug_popup = 0
 
 
-Vim window width						*termdebug_wide*
+Vim window width ~
+							*termdebug_wide*
 
 To change the width of the Vim window when debugging starts and use a vertical
 split: >
+	let g:termdebug_config['wide'] = 163
+Or if there is no g:termdebug_config: >
 	let g:termdebug_wide = 163
 
 This will set 'columns' to 163 when `:Termdebug` is used.  The value is
 restored when quitting the debugger.
 
-If g:termdebug_wide is set and 'columns' is already a greater value, then a
+If the wide value is set and 'columns' is already a greater value, then a
 vertical split will be used without modifying 'columns'.
 
-Set g:termdebug_wide to 1 to use a vertical split without ever changing
+Set the wide value to 1 to use a vertical split without ever changing
 'columns'.  This is useful when the terminal can't be resized by Vim.
 
 

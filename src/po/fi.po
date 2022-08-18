@@ -3657,8 +3657,8 @@ msgstr "kirjoita :q<Enter>            lopettaaksesi                "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "kirjoita :help<Enter> tai <F1> ohjetta varten              "
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "kirjoita :help version8<Enter> versiotietoja varten        "
+msgid "type  :help version9<Enter>   for version info"
+msgstr "kirjoita :help version9<Enter> versiotietoja varten        "
 
 msgid "Running in Vi compatible mode"
 msgstr "Suoritetaan Vi-yhteensopivuustilaa"

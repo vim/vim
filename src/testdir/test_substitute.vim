@@ -469,7 +469,6 @@ func Run_SubCmd_Tests(tests)
   for t in a:tests
     let start = line('.') + 1
     let end = start + len(t[2]) - 1
-    " TODO: why is there a one second delay the first time we get here?
     exe "normal o" . t[0]
     call cursor(start, 1)
     exe t[1]
@@ -504,7 +503,8 @@ func Test_sub_cmd_1()
 	      \ ['sSs', 's/S/\c/', ['scs']],
 	      \ ['tTt', "s/T/\<C-V>\<C-J>/", ["t\<C-V>\<C-J>t"]],
 	      \ ['U', 's/U/\L\uuUu\l\EU/', ['UuuU']],
-	      \ ['V', 's/V/\U\lVvV\u\Ev/', ['vVVv']]
+	      \ ['V', 's/V/\U\lVvV\u\Ev/', ['vVVv']],
+	      \ ['\', 's/\\/\\\\/', ['\\']]
 	      \ ]
   call Run_SubCmd_Tests(tests)
 endfunc
@@ -535,7 +535,8 @@ func Test_sub_cmd_2()
 	      \ ['sSs', 's/S/\c/', ['scs']],
 	      \ ['tTt', "s/T/\<C-V>\<C-J>/", ["t\<C-V>\<C-J>t"]],
 	      \ ['U', 's/U/\L\uuUu\l\EU/', ['UuuU']],
-	      \ ['V', 's/V/\U\lVvV\u\Ev/', ['vVVv']]
+	      \ ['V', 's/V/\U\lVvV\u\Ev/', ['vVVv']],
+	      \ ['\', 's/\\/\\\\/', ['\\']]
 	      \ ]
   call Run_SubCmd_Tests(tests)
 endfunc
@@ -690,10 +691,11 @@ func Test_nocatch_sub_failure_handling()
   endfunc
   new
   call setline(1, ['1 aaa', '2 aaa', '3 aaa'])
-  %s/aaa/\=Foo()/g
+  " need silent! to avoid a delay when entering Insert mode
+  silent! %s/aaa/\=Foo()/g
   call assert_equal(['1 0', '2 0', '3 0'], getline(1, 3))
 
-  " Trow without try-catch causes abort after the first line.
+  " Throw without try-catch causes abort after the first line.
   " We cannot test this, since it would stop executing the test script.
 
   " try/catch does not result in any changes
@@ -993,11 +995,85 @@ func Test_using_old_sub()
     ~
     s/
   endfunc
-  silent!  s/\%')/\=Repl()
+  silent! s/\%')/\=Repl()
 
   delfunc Repl
   bwipe!
   set nocompatible
+endfunc
+
+" This was switching windows in between computing the length and using it.
+func Test_sub_change_window()
+  silent! lfile
+  sil! norm o0000000000000000000000000000000000000000000000000000
+  func Repl()
+    lopen
+  endfunc
+  silent!  s/\%')/\=Repl()
+  bwipe!
+  bwipe!
+  delfunc Repl
+endfunc
+
+" This was undoign a change in between computing the length and using it.
+func Do_Test_sub_undo_change()
+  new
+  norm o0000000000000000000000000000000000000000000000000000
+  silent! s/\%')/\=Repl()
+  bwipe!
+endfunc
+
+func Test_sub_undo_change()
+  func Repl()
+    silent! norm g-
+  endfunc
+  call Do_Test_sub_undo_change()
+
+  func! Repl()
+    silent earlier
+  endfunc
+  call Do_Test_sub_undo_change()
+
+  delfunc Repl
+endfunc
+
+" This was opening a command line window from the expression
+func Test_sub_open_cmdline_win()
+  " the error only happens in a very specific setup, run a new Vim instance to
+  " get a clean starting point.
+  let lines =<< trim [SCRIPT]
+    set vb t_vb=
+    norm o0000000000000000000000000000000000000000000000000000
+    func Replace()
+      norm q/
+    endfunc
+    s/\%')/\=Replace()
+    redir >Xresult
+    messages
+    redir END
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+  if RunVim([], [], '-u NONE -S Xscript')
+    call assert_match('E565: Not allowed to change text or change window',
+          \ readfile('Xresult')->join('XX'))
+  endif
+
+  call delete('Xscript')
+  call delete('Xresult')
+endfunc
+
+" This was editing a script file from the expression
+func Test_sub_edit_scriptfile()
+  new
+  norm o0000000000000000000000000000000000000000000000000000
+  func EditScript()
+    silent! scr! Xfile
+  endfunc
+  s/\%')/\=EditScript()
+
+  delfunc EditScript
+  bwipe!
 endfunc
 
 " Test for the 2-letter and 3-letter :substitute commands
@@ -1281,6 +1357,16 @@ func Test_substitute_short_cmd()
   sIe
 
   bw!
+endfunc
+
+" This should be done last to reveal a memory leak when vim_regsub_both() is
+" called to evaluate an expression but it is not used in a second call.
+func Test_z_substitute_expr_leak()
+  func SubExpr()
+    ~n
+  endfunc
+  silent! s/\%')/\=SubExpr()
+  delfunc SubExpr
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

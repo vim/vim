@@ -289,11 +289,28 @@ func Test_format_c_comment()
       x
   END
   call assert_equal(expected, getline(1, '$'))
+
+  " Comment is formatted when it wraps
+  normal 2GA with some more text added
+  let expected =<< trim END
+      nop;
+      val = val;      // This is a comment
+                      // with some more text
+                      // added
+      x
+  END
+  call assert_equal(expected, getline(1, '$'))
+
   set fo-=/
 
   " using 'indentexpr' instead of 'cindent' does not repeat a comment
   setl nocindent indentexpr=2
-  3delete
+  %del
+  let text =<< trim END
+      nop;
+      val = val;      // This is a comment
+  END
+  call setline(1, text)
   normal 2Gox
   let expected =<< trim END
       nop;
@@ -1272,6 +1289,18 @@ func Test_fo_2()
         \ "paragraph.  second line of the",
         \ "same paragraph.  third line."], getline(1, '$'))
   close!
+endfunc
+
+" This was leaving the cursor after the end of a line.  Complicated way to
+" have the problem show up with valgrind.
+func Test_correct_cursor_position()
+  set encoding=iso8859
+  new
+  norm a0000
+  sil! norm gggg0i0gw0gg
+
+  bwipe!
+  set encoding=utf8
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
