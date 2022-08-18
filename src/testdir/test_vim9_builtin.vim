@@ -528,6 +528,7 @@ def Test_ch_getbufnr()
     v9.CheckDefAndScriptFailure(['ch_getbufnr(test_null_channel(), 1)'], ['E1013: Argument 2: type mismatch, expected string but got number', 'E1174: String required for argument 2'])
     # test empty string argument for ch_getbufnr()
     var job: job = job_start(&shell)
+    g:WaitForAssert(() => assert_equal('run', job_status(job)))
     job->ch_getbufnr('')->assert_equal(-1)
     job_stop(job)
   endif
