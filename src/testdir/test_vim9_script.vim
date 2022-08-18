@@ -1560,6 +1560,19 @@ def Test_func_redefine_fails()
   v9.CheckScriptFailure(lines, 'E1073:')
 enddef
 
+def Test_lambda_split()
+  # this was using freed memory, because of the split expression
+  var lines =<< trim END
+      vim9script
+      try
+      0
+      0->(0
+        ->a.0(
+        ->u
+  END
+  v9.CheckScriptFailure(lines, 'E1050:')
+enddef
+
 def Test_fixed_size_list()
   # will be allocated as one piece of memory, check that changes work
   var l = [1, 2, 3, 4]
