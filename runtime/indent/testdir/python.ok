@@ -1,6 +1,15 @@
 # vim: set ft=python sw=4 et:
 
 # START_INDENT
+# INDENT_EXE let [g:python_indent.open_paren, g:python_indent.closed_paren_align_last_line] = ['shiftwidth()', v:false]
+dict = {
+    'a': 1,
+    'b': 2,
+    'c': 3,
+}
+# END_INDENT
+
+# START_INDENT
 # INDENT_EXE syntax match pythonFoldMarkers /{{{\d*/ contained containedin=pythonComment
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx {{{1
 
@@ -15,7 +24,7 @@ open_paren_not_at_EOL(100,
                       400)
 
 open_paren_at_EOL(
-        100, 200, 300, 400)
+    100, 200, 300, 400)
 
 open_paren_not_at_EOL(100,
                       (200,
@@ -23,7 +32,7 @@ open_paren_not_at_EOL(100,
                       400)
 
 open_paren_at_EOL(
-        100, 200, 300, 400)
+    100, 200, 300, 400)
 
 open_paren_not_at_EOL(100,
                       (200,
@@ -31,7 +40,7 @@ open_paren_not_at_EOL(100,
                       400)
 
 open_paren_at_EOL(
-        100, 200, 300, 400)
+    100, 200, 300, 400)
 
 open_paren_not_at_EOL(100,
                       (200,
@@ -39,7 +48,7 @@ open_paren_not_at_EOL(100,
                       400)
 
 open_paren_at_EOL(
-        100, 200, 300, 400)
+    100, 200, 300, 400)
 
 open_paren_not_at_EOL(100,
                       (200,
@@ -47,7 +56,7 @@ open_paren_not_at_EOL(100,
                       400)
 
 open_paren_at_EOL(
-        100, 200, 300, 400)
+    100, 200, 300, 400)
 
 open_paren_not_at_EOL(100,
                       (200,
@@ -55,7 +64,7 @@ open_paren_not_at_EOL(100,
                       400)
 
 open_paren_at_EOL(
-        100, 200, 300, 400)
+    100, 200, 300, 400)
 
 open_paren_not_at_EOL(100,
                       (200,
@@ -63,7 +72,7 @@ open_paren_not_at_EOL(100,
                       400)
 
 open_paren_at_EOL(
-        100, 200, 300, 400)
+    100, 200, 300, 400)
 
 open_paren_not_at_EOL(100,
                       (200,
@@ -71,6 +80,6 @@ open_paren_not_at_EOL(100,
                       400)
 
 open_paren_at_EOL(
-        100, 200, 300, 400)
+    100, 200, 300, 400)
 
 # END_INDENT
