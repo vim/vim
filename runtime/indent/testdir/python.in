@@ -10,6 +10,7 @@ dict = {
 # END_INDENT
 
 # START_INDENT
+# INDENT_EXE let g:python_indent.open_paren = 'shiftwidth() * 2'
 # INDENT_EXE syntax match pythonFoldMarkers /{{{\d*/ contained containedin=pythonComment
 # xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx {{{1
 
