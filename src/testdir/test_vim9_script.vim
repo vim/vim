@@ -3274,7 +3274,7 @@ def Test_vim9_comment_not_compiled()
 
   v9.CheckScriptSuccess([
       'vim9script',
-      'new'
+      'new',
       'setline(1, ["# define pat", "last"])',
       ':$',
       'dsearch /pat/ #comment',
@@ -3283,7 +3283,7 @@ def Test_vim9_comment_not_compiled()
 
   v9.CheckScriptFailure([
       'vim9script',
-      'new'
+      'new',
       'setline(1, ["# define pat", "last"])',
       ':$',
       'dsearch /pat/#comment',

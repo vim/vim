@@ -440,22 +440,22 @@ def Test_missing_return()
                    '    echo "no return"',
                    '  else',
                    '    return 0',
-                   '  endif'
+                   '  endif',
                    'enddef'], 'E1027:')
   v9.CheckDefFailure(['def Missing(): number',
                    '  if g:cond',
                    '    return 1',
                    '  else',
                    '    echo "no return"',
-                   '  endif'
+                   '  endif',
                    'enddef'], 'E1027:')
   v9.CheckDefFailure(['def Missing(): number',
                    '  if g:cond',
                    '    return 1',
                    '  else',
                    '    return 2',
-                   '  endif'
-                   '  return 3'
+                   '  endif',
+                   '  return 3',
                    'enddef'], 'E1095:')
 enddef
 
@@ -1496,7 +1496,7 @@ enddef
 
 def Test_lambda_uses_assigned_var()
   v9.CheckDefSuccess([
-        'var x: any = "aaa"'
+        'var x: any = "aaa"',
         'x = filter(["bbb"], (_, v) => v =~ x)'])
 enddef
 

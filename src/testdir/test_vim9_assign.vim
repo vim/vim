@@ -2128,7 +2128,7 @@ def Test_var_declaration_fails()
                'floats', 'floot',
                'funcs', 'funk',
                'jobs', 'jop',
-               'lists', 'last'
+               'lists', 'last',
                'numbers', 'numbar',
                'strings', 'strung',
                'voids', 'viod']
@@ -2439,11 +2439,11 @@ def Test_unlet()
     ], 'E1105:', 2)
 
   v9.CheckDefExecFailure([
-    'g:dd = {"a": 1, 2: 2}'
+    'g:dd = {"a": 1, 2: 2}',
     'unlet g:dd[0z11]',
     ], 'E1029:', 2)
   v9.CheckDefExecFailure([
-    'g:str = "a string"'
+    'g:str = "a string"',
     'unlet g:str[0]',
     ], 'E1148: Cannot index a string', 2)
 
