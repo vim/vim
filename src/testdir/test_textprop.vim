@@ -161,7 +161,7 @@ func Test_prop_find()
     \ ]
 
   " Starting at line 5 col 1 this should find the prop at line 5 col 4.
-  call cursor(5,1)
+  call cursor(5, 1)
   let result = prop_find({'type': 'prop_name'}, 'f')
   call assert_equal(expected[2], result)
 
@@ -182,7 +182,7 @@ func Test_prop_find()
   " with skipstart set to false, if the start position is anywhere between the
   " start and end lines of a text prop (searching forward or backward), the
   " result should be the prop on the first line (the line with 'start' set to 1).
-  call cursor(3,1)
+  call cursor(3, 1)
   let result = prop_find({'type': 'prop_name'}, 'f')
   unlet result.length
   call assert_equal(expected[1], result)
@@ -230,12 +230,12 @@ func Test_prop_find()
   endwhile
 
   " Starting from line 6 col 1 search backwards for prop with id 10.
-  call cursor(6,1)
+  call cursor(6, 1)
   let result = prop_find({'id': 10, 'skipstart': 1}, 'b')
   call assert_equal(expected[0], result)
 
   " Starting from line 1 col 1 search forwards for prop with id 12.
-  call cursor(1,1)
+  call cursor(1, 1)
   let result = prop_find({'id': 12}, 'f')
   call assert_equal(expected[2], result)
 
@@ -423,6 +423,37 @@ func Test_prop_remove()
 
   call assert_fails("call prop_remove({'id': 11, 'both': 1})", 'E860:')
   call assert_fails("call prop_remove({'type': 'three', 'both': 1})", 'E860:')
+
+  call DeletePropTypes()
+  bwipe!
+
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  let props = Get_expected_props() " [whole, one, two, three]
+  call assert_equal(props, prop_list(1))
+
+  " remove one by types
+  call assert_equal(1, prop_remove({'types': ['one', 'two', 'three']}, 1))
+  unlet props[1] " [whole, two, three]
+  call assert_equal(props, prop_list(1))
+
+  " remove 'all' by types
+  call assert_equal(2, prop_remove({'types': ['three', 'whole'], 'all': 1}, 1))
+  unlet props[0] " [two, three]
+  unlet props[1] " [three]
+  call assert_equal(props, prop_list(1))
+
+  " remove none by types
+  call assert_equal(0, prop_remove({'types': ['three', 'whole'], 'all': 1}, 1))
+  call assert_equal(props, prop_list(1))
+
+  " no types
+  call assert_fails("call prop_remove({'types': []}, 1)", 'E968:')
+  call assert_fails("call prop_remove({'types': ['not_a_real_type']}, 1)", 'E971:')
+
+  " only one of types and type can be supplied
+  call assert_fails("call prop_remove({'type': 'one', 'types': ['three'], 'all': 1}, 1)", 'E1295:')
 
   call DeletePropTypes()
   bwipe!
@@ -1396,7 +1427,7 @@ endfunc
 func Test_textprop_invalid_highlight()
   call assert_fails("call prop_type_add('dni', {'highlight': 'DoesNotExist'})", 'E970:')
   new
-  call setline(1, ['asdf','asdf'])
+  call setline(1, ['asdf', 'asdf'])
   call prop_add(1, 1, {'length': 4, 'type': 'dni'})
   redraw
   bwipe!
@@ -2207,7 +2238,7 @@ func Test_prop_find_prev_on_same_line()
     call prop_add(1, col, #{type: 'misspell', length: 2})
   endfor
 
-  call cursor(1,18)
+  call cursor(1, 18)
   let expected = [
     \ #{lnum: 1, id: 0, col: 14, end: 1, type: 'misspell', type_bufnr: 0, length: 2, start: 1},
     \ #{lnum: 1, id: 0, col: 24, end: 1, type: 'misspell', type_bufnr: 0, length: 2, start: 1}
@@ -2310,7 +2341,7 @@ func Test_prop_insert_multiline()
   call assert_equal(lines, getline(1, '$'))
   let expected = [
       \ {'lnum': 1, 'id': 0, 'col': 4, 'type_bufnr': 0, 'end': 0, 'type': 'one',
-      \ 'length': 4 ,'start': 1},
+      \ 'length': 4 , 'start': 1},
       \ {'lnum': 2, 'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 0, 'type': 'one',
       \ 'length': 7, 'start': 0},
       \ {'lnum': 3, 'id': 0, 'col': 1, 'type_bufnr': 0, 'end': 0, 'type': 'one',
