@@ -426,6 +426,37 @@ func Test_prop_remove()
 
   call DeletePropTypes()
   bwipe!
+
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  let props = Get_expected_props() " [whole, one, two, three]
+  call assert_equal(props, prop_list(1))
+
+  " remove one by types
+  call assert_equal(1, prop_remove({'types': ['one','two','three']}, 1))
+  unlet props[1] " [whole, two, three]
+  call assert_equal(props, prop_list(1))
+
+  " remove 'all' by types
+  call assert_equal(2, prop_remove({'types': ['three', 'whole'], 'all': 1}, 1))
+  unlet props[0] " [two, three]
+  unlet props[1] " [three]
+  call assert_equal(props, prop_list(1))
+
+  " remove none by types
+  call assert_equal(0, prop_remove({'types': ['three', 'whole'], 'all': 1}, 1))
+  call assert_equal(props, prop_list(1))
+
+  " no types
+  call assert_fails("call prop_remove({'types': []}, 1)", 'E968:')
+  call assert_fails("call prop_remove({'types': ['not_a_real_type']}, 1)", 'E971:')
+
+  " only one of types and type can be supplied
+  call assert_fails("call prop_remove({'type': 'one', 'types': ['three'], 'all': 1}, 1)", 'E1295:')
+
+  call DeletePropTypes()
+  bwipe!
 endfunc
 
 def Test_prop_add_vim9()

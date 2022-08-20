@@ -1378,7 +1378,9 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     buf_T	*buf = curbuf;
     int		do_all;
     int		id = -MAXCOL;
-    int		type_id = -1;
+    int		type_id = -1;	    // for a single "type"
+    int		*type_ids = NULL;   // array, for a list of "types", allocated
+    int		num_type_ids = 0;   // number of elements in type_ids
     int		both;
     int		did_remove_text = FALSE;
 
@@ -1420,6 +1422,9 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
     if (dict_has_key(dict, "id"))
 	id = dict_get_number(dict, "id");
+
+    // if a specific type was supplied "type" - check that (and
+    // ignore "types". Otherwise check against the list of "types".
     if (dict_has_key(dict, "type"))
     {
 	char_u	    *name = dict_get_string(dict, "type", FALSE);
@@ -1429,17 +1434,47 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    return;
 	type_id = type->pt_id;
     }
+    if (dict_has_key(dict, "types"))
+    {
+	typval_T types;
+	listitem_T *li = NULL;
+
+	dict_get_tv(dict, "types", &types);
+	if (types.v_type == VAR_LIST && types.vval.v_list->lv_len > 0)
+	{
+	    type_ids = alloc( sizeof(int) * types.vval.v_list->lv_len );
+
+	    FOR_ALL_LIST_ITEMS(types.vval.v_list, li)
+	    {
+		proptype_T *prop_type;
+		if (li->li_tv.v_type != VAR_STRING)
+		    continue;
+
+		prop_type = lookup_prop_type(li->li_tv.vval.v_string, buf);
+
+		if (!prop_type)
+		    goto cleanup_prop_remove;
+
+		type_ids[ num_type_ids++ ] = prop_type->pt_id;
+	    }
+	}
+    }
     both = dict_get_bool(dict, "both", FALSE);
 
-    if (id == -MAXCOL && type_id == -1)
+    if (id == -MAXCOL && (type_id == -1 && num_type_ids == 0))
     {
 	emsg(_(e_need_at_least_one_of_id_or_type));
-	return;
+	goto cleanup_prop_remove;
     }
-    if (both && (id == -MAXCOL || type_id == -1))
+    if (both && (id == -MAXCOL || (type_id == -1 && num_type_ids == 0)))
     {
 	emsg(_(e_need_id_and_type_with_both));
-	return;
+	goto cleanup_prop_remove;
+    }
+    if (type_id != -1 && num_type_ids > 0)
+    {
+	emsg(_(e_cannot_have_both_type_and_types));
+	goto cleanup_prop_remove;
     }
 
     if (end == 0)
@@ -1464,10 +1499,29 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 		char_u *cur_prop = buf->b_ml.ml_line_ptr + len
 						    + idx * sizeof(textprop_T);
 		size_t	taillen;
+		int matches_id = 0;
+		int matches_type = 0;
 
 		mch_memmove(&textprop, cur_prop, sizeof(textprop_T));
-		if (both ? textprop.tp_id == id && textprop.tp_type == type_id
-			 : textprop.tp_id == id || textprop.tp_type == type_id)
+
+		matches_id = textprop.tp_id == id;
+		if (num_type_ids > 0)
+		{
+		    int idx2;
+		    for (idx2 = 0;
+			 !matches_type && idx2 < num_type_ids;
+			 ++ idx2)
+		    {
+			matches_type = textprop.tp_type == type_ids[idx2];
+		    }
+		}
+		else
+		{
+		    matches_type = textprop.tp_type == type_id;
+		}
+
+		if (both ? matches_id && matches_type
+			 : matches_id || matches_type)
 		{
 		    if (!(buf->b_ml.ml_flags & ML_LINE_DIRTY))
 		    {
@@ -1475,7 +1529,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 
 			// need to allocate the line to be able to change it
 			if (newptr == NULL)
-			    return;
+			    goto cleanup_prop_remove;
 			mch_memmove(newptr, buf->b_ml.ml_line_ptr,
 							buf->b_ml.ml_line_len);
 			if (buf->b_ml.ml_flags & ML_ALLOCATED)
@@ -1537,6 +1591,9 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			 && ((char_u **)gap->ga_data)[gap->ga_len - 1] == NULL)
 	    --gap->ga_len;
     }
+
+cleanup_prop_remove:
+    vim_free( type_ids );
 }
 
 /*
