@@ -722,8 +722,9 @@ ExpandOne(
 	findex = -1;			    // next p_wc gets first one
     }
 
-    // Concatenate all matching names
-    if (mode == WILD_ALL && xp->xp_numfiles > 0)
+    // Concatenate all matching names.  Unless interrupted, this can be slow
+    // and the result probably won't be used.
+    if (mode == WILD_ALL && xp->xp_numfiles > 0 && !got_int)
     {
 	len = 0;
 	for (i = 0; i < xp->xp_numfiles; ++i)
