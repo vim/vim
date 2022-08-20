@@ -2164,9 +2164,9 @@ def Test_return_type_wrong()
         'defcompile'], 'E1059:')
   delfunc! g:Func
 
-  v9.CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
+  v9.CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008: Missing <type> after list')
   delfunc! g:Func
-  v9.CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
+  v9.CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008: Missing <type> after dict')
   delfunc! g:Func
   v9.CheckScriptFailure(['def Func()', 'return 1'], 'E1057:')
   delfunc! g:Func
@@ -2183,7 +2183,7 @@ def Test_return_type_wrong()
 enddef
 
 def Test_arg_type_wrong()
-  v9.CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type>')
+  v9.CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type> after list')
   v9.CheckScriptFailure(['def Func4(...)', 'echo "a"', 'enddef'], 'E1055: Missing name after ...')
   v9.CheckScriptFailure(['def Func5(items:string)', 'echo "a"'], 'E1069:')
   v9.CheckScriptFailure(['def Func5(items)', 'echo "a"'], 'E1077:')

@@ -1591,7 +1591,7 @@ def Test_assignment_failure()
   v9.CheckDefFailure(['var name: number = feedkeys("0")'], 'expected number but got void')
 
   v9.CheckDefFailure(['var name: dict <number>'], 'E1068:')
-  v9.CheckDefFailure(['var name: dict<number'], 'E1009:')
+  v9.CheckDefFailure(['var name: dict<number'], 'E1009: Missing > after type: <number')
 
   assert_fails('s/^/\=g:Mess()/n', 'E794:')
   v9.CheckDefFailure(['var name: dict<number'], 'E1009:')
