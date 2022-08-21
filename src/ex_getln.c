@@ -2033,7 +2033,12 @@ getcmdline_int(
 	{
 	    if (nextwild(&xpc, WILD_EXPAND_KEEP, 0, firstc != '@') == OK)
 	    {
-		if (xpc.xp_numfiles > 1)
+		if (xpc.xp_numfiles > 1
+		    && ((!did_wild_list && (wim_flags[wim_index] & WIM_LIST))
+#ifdef FEAT_WILDMENU
+			    || p_wmnu)
+#endif
+			)
 		{
 #ifdef FEAT_WILDMENU
 		    // Trigger the popup menu when wildoptions=pum
