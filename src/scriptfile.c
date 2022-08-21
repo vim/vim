@@ -1933,6 +1933,36 @@ get_sourced_lnum(
 			? ((source_cookie_T *)cookie)->sourcing_lnum
 			: SOURCING_LNUM;
 }
+
+    void
+f_getscriptnames(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    int		i;
+    list_T	*l;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    l = rettv->vval.v_list;
+
+    for (i = 1; i <= script_items.ga_len; ++i)
+    {
+	scriptitem_T	*si = SCRIPT_ITEM(i);
+	dict_T		*d;
+
+	if (si->sn_name == NULL)
+	    continue;
+
+	if ((d = dict_alloc()) == NULL
+		|| list_append_dict(l, d) == FAIL
+		|| dict_add_string(d, "name", si->sn_name) == FAIL
+		|| dict_add_number(d, "sid", i) == FAIL
+		|| dict_add_bool(d, "autoload",
+				si->sn_state == SN_STATE_NOT_LOADED) == FAIL)
+	    return;
+    }
+}
+
 #endif
 
     static char_u *

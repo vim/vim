@@ -33,6 +33,7 @@ char_u *get_scriptname(scid_T id);
 void free_scriptnames(void);
 void free_autoload_scriptnames(void);
 linenr_T get_sourced_lnum(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
+void f_getscriptnames(typval_T *argvars, typval_T *rettv);
 char_u *getsourceline(int c, void *cookie, int indent, getline_opt_T options);
 int sourcing_a_script(exarg_T *eap);
 void ex_scriptencoding(exarg_T *eap);

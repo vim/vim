@@ -732,6 +732,8 @@ def Test_use_relative_autoload_import_in_mapping()
 
   source Xmapscript.vim
   assert_match('\d\+ A: .*XrelautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  assert_match('XrelautoloadExport.vim$', getscriptnames()[-1].name)
+  assert_true(getscriptnames()[-1].autoload)
   feedkeys("\<F3>", "xt")
   assert_equal(42, g:result)
 
