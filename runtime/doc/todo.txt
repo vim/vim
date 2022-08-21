@@ -41,8 +41,6 @@ browser use: https://github.com/vim/vim/issues/1234
 Text props: Add "padding" argument - only for when using "text" and {col} is
 zero.  Use tp_len field and n_attr_skip. #10906
 
-Graduate FEAT_TEXTOBJ ?
-
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
 - Check performance with callgrind and kcachegrind.

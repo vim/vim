@@ -2208,8 +2208,8 @@ EXTERN char e_failed_to_convert_returned_python_object_to_vim_value[]
 	INIT(= N_("E859: Failed to convert returned python object to a Vim value"));
 #endif
 #ifdef FEAT_PROP_POPUP
-EXTERN char e_need_id_and_type_with_both[]
-	INIT(= N_("E860: Need 'id' and 'type' with 'both'"));
+EXTERN char e_need_id_and_type_or_types_with_both[]
+	INIT(= N_("E860: Need 'id' and 'type' or 'types' with 'both'"));
 # ifdef FEAT_TERMINAL
 EXTERN char e_cannot_open_second_popup_with_terminal[]
 	INIT(= N_("E861: Cannot open a second popup with a terminal"));
@@ -2634,10 +2634,10 @@ EXTERN char e_str_is_used_as_argument[]
 	INIT(= N_("E1006: %s is used as an argument"));
 EXTERN char e_mandatory_argument_after_optional_argument[]
 	INIT(= N_("E1007: Mandatory argument after optional argument"));
-EXTERN char e_missing_type[]
-	INIT(= N_("E1008: Missing <type>"));
-EXTERN char e_missing_gt_after_type[]
-	INIT(= N_("E1009: Missing > after type"));
+EXTERN char e_missing_type_after_str[]
+	INIT(= N_("E1008: Missing <type> after %s"));
+EXTERN char e_missing_gt_after_type_str[]
+	INIT(= N_("E1009: Missing > after type: %s"));
 EXTERN char e_type_not_recognized_str[]
 	INIT(= N_("E1010: Type not recognized: %s"));
 EXTERN char e_name_too_long_str[]
@@ -3315,4 +3315,8 @@ EXTERN char e_cannot_use_negative_id_after_adding_textprop_with_text[]
 	INIT(= N_("E1293: Cannot use a negative id after adding a textprop with text"));
 EXTERN char e_can_only_use_text_align_when_column_is_zero[]
 	INIT(= N_("E1294: Can only use text_align when column is zero"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_specify_both_type_and_types[]
+	INIT(= N_("E1295: Cannot specify both 'type' and 'types'"));
 #endif

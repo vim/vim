@@ -6808,11 +6808,11 @@ nv_esc(cmdarg_T *cap)
 #endif
     }
 #ifdef FEAT_CMDWIN
-    else if (cmdwin_type != 0 && ex_normal_busy)
+    else if (cmdwin_type != 0 && ex_normal_busy && typebuf_was_empty)
     {
 	// When :normal runs out of characters while in the command line window
-	// vgetorpeek() will return ESC.  Exit the cmdline window to break the
-	// loop.
+	// vgetorpeek() will repeatedly return ESC.  Exit the cmdline window to
+	// break the loop.
 	cmdwin_result = K_IGNORE;
 	return;
     }

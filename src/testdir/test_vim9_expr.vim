@@ -1876,9 +1876,9 @@ def Test_expr7()
 
   if has('float')
     v9.CheckDefExecAndScriptFailure([
-          'g:one = 1.0'
-          'g:two = 2.0'
-          'echo g:one % g:two'
+          'g:one = 1.0',
+          'g:two = 2.0',
+          'echo g:one % g:two',
           ], 'E804', 3)
   endif
 
@@ -2490,6 +2490,7 @@ def Test_expr9_lambda()
 
   v9.CheckDefAndScriptSuccess(['var Fx = (a) => [0,', ' 1]'])
   v9.CheckDefAndScriptFailure(['var Fx = (a) => [0', ' 1]'], 'E696:', 2)
+  v9.CheckDefAndScriptFailure(['var l = [1 2]'], 'E696:', 1)
 
   # no error for existing script variable when checking for lambda
   lines =<< trim END

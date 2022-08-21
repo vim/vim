@@ -1206,6 +1206,10 @@ EXTERN typebuf_T typebuf		// typeahead buffer
 		    = {NULL, NULL, 0, 0, 0, 0, 0, 0, 0}
 #endif
 		    ;
+// Flag used to indicate that vgetorpeek() returned a char like Esc when the
+// :normal argument was exhausted.
+EXTERN int	typebuf_was_empty INIT(= FALSE);
+
 EXTERN int	ex_normal_busy INIT(= 0);   // recursiveness of ex_normal()
 #ifdef FEAT_EVAL
 EXTERN int	in_feedkeys INIT(= 0);	    // ex_normal_busy set in feedkeys()

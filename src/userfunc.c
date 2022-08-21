@@ -1372,7 +1372,6 @@ get_lambda_tv(
     char_u	*start, *end;
     int		*old_eval_lavars = eval_lavars_used;
     int		eval_lavars = FALSE;
-    char_u	*tofree1 = NULL;
     char_u	*tofree2 = NULL;
     int		equal_arrow = **arg == '(';
     int		white_error = FALSE;
@@ -1457,12 +1456,6 @@ get_lambda_tv(
     ret = skip_expr_concatenate(arg, &start, &end, evalarg);
     if (ret == FAIL)
 	goto errret;
-    if (evalarg != NULL)
-    {
-	// avoid that the expression gets freed when another line break follows
-	tofree1 = evalarg->eval_tofree;
-	evalarg->eval_tofree = NULL;
-    }
 
     if (!equal_arrow)
     {
@@ -1585,10 +1578,6 @@ get_lambda_tv(
 
 theend:
     eval_lavars_used = old_eval_lavars;
-    if (evalarg != NULL && evalarg->eval_tofree == NULL)
-	evalarg->eval_tofree = tofree1;
-    else
-	vim_free(tofree1);
     vim_free(tofree2);
     if (types_optional)
 	ga_clear_strings(&argtypes);
@@ -1607,10 +1596,6 @@ errret:
     }
     vim_free(fp);
     vim_free(pt);
-    if (evalarg != NULL && evalarg->eval_tofree == NULL)
-	evalarg->eval_tofree = tofree1;
-    else
-	vim_free(tofree1);
     vim_free(tofree2);
     eval_lavars_used = old_eval_lavars;
     return FAIL;

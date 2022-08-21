@@ -1560,6 +1560,19 @@ def Test_func_redefine_fails()
   v9.CheckScriptFailure(lines, 'E1073:')
 enddef
 
+def Test_lambda_split()
+  # this was using freed memory, because of the split expression
+  var lines =<< trim END
+      vim9script
+      try
+      0
+      0->(0
+        ->a.0(
+        ->u
+  END
+  v9.CheckScriptFailure(lines, 'E1050:')
+enddef
+
 def Test_fixed_size_list()
   # will be allocated as one piece of memory, check that changes work
   var l = [1, 2, 3, 4]
@@ -2095,6 +2108,19 @@ def Test_for_skipped_block()
     BuildDiagrams()
   END
   v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_skipped_redir()
+  var lines =<< trim END
+      def T()
+        if 0
+          redir =>l[0]
+          redir END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_for_loop()
@@ -3248,7 +3274,7 @@ def Test_vim9_comment_not_compiled()
 
   v9.CheckScriptSuccess([
       'vim9script',
-      'new'
+      'new',
       'setline(1, ["# define pat", "last"])',
       ':$',
       'dsearch /pat/ #comment',
@@ -3257,7 +3283,7 @@ def Test_vim9_comment_not_compiled()
 
   v9.CheckScriptFailure([
       'vim9script',
-      'new'
+      'new',
       'setline(1, ["# define pat", "last"])',
       ':$',
       'dsearch /pat/#comment',

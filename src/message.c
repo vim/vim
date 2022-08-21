@@ -831,6 +831,8 @@ iemsg(char *s)
 	emsg_core((char_u *)s);
 #if defined(ABORT_ON_INTERNAL_ERROR) && defined(FEAT_EVAL)
 	set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
+	msg_putchar('\n');  // avoid overwriting the error message
+	out_flush();
 	abort();
 #endif
     }
@@ -863,10 +865,12 @@ siemsg(const char *s, ...)
 	    va_end(ap);
 	    emsg_core(IObuff);
 	}
-    }
 # ifdef ABORT_ON_INTERNAL_ERROR
-    abort();
+	msg_putchar('\n');  // avoid overwriting the error message
+	out_flush();
+	abort();
 # endif
+    }
 }
 #endif
 

@@ -4399,8 +4399,11 @@ has({feature} [, {check}])
 
 has_key({dict}, {key})					*has_key()*
 		The result is a Number, which is TRUE if |Dictionary| {dict}
-		has an entry with key {key}.  FALSE otherwise. The {key}
-		argument is a string.
+		has an entry with key {key}.  FALSE otherwise.
+		The {key} argument is a string.  In |Vim9| script a number is
+		also accepted (and converted to a string) but no other types.
+		In legacy script the usual automatic conversion to string is
+		done.
 
 		Can also be used as a |method|: >
 			mydict->has_key(key)
