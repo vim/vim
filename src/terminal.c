@@ -4477,28 +4477,28 @@ url_decode(const char *src, const size_t len, char_u *dst)
  * "file://HOSTNAME/CURRENT/DIR"
  */
     static void
-sync_shell_dir(VTermStringFragment *frag)
+sync_shell_dir(garray_T *gap)
 {
-    int       offset = 7; // len of "file://" is 7
-    char      *pos = (char *)frag->str + offset;
+    int       offset = 7;  // len of "file://" is 7
+    char      *pos = (char *)gap->ga_data + offset;
     char_u    *new_dir;
 
     // remove HOSTNAME to get PWD
-    while (*pos != '/' && offset < (int)frag->len)
+    while (offset < (int)gap->ga_len && *pos != '/' )
     {
-	offset += 1;
-	pos += 1;
+	++offset;
+	++pos;
     }
 
-    if (offset >= (int)frag->len)
+    if (offset >= (int)gap->ga_len)
     {
 	semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
-								    frag->str);
+								 gap->ga_data);
 	return;
     }
 
-    new_dir = alloc(frag->len - offset + 1);
-    url_decode(pos, frag->len-offset, new_dir);
+    new_dir = alloc(gap->ga_len - offset + 1);
+    url_decode(pos, gap->ga_len-offset, new_dir);
     changedir_func(new_dir, TRUE, CDSCOPE_WINDOW);
     vim_free(new_dir);
 }
@@ -4518,13 +4518,7 @@ parse_osc(int command, VTermStringFragment frag, void *user)
     garray_T	*gap = &term->tl_osc_buf;
 
     // We recognize only OSC 5 1 ; {command} and OSC 7 ; {command}
-    if (p_asd && command == 7)
-    {
-	sync_shell_dir(&frag);
-	return 1;
-    }
-
-    if (command != 51)
+    if (command != 51 && (command != 7 || !p_asd))
 	return 0;
 
     // Concatenate what was received until the final piece is found.
@@ -4539,6 +4533,14 @@ parse_osc(int command, VTermStringFragment frag, void *user)
 	return 1;
 
     ((char *)gap->ga_data)[gap->ga_len] = 0;
+
+    if (command == 7)
+    {
+	sync_shell_dir(gap);
+	ga_clear(gap);
+	return 1;
+    }
+
     reader.js_buf = gap->ga_data;
     reader.js_fill = NULL;
     reader.js_used = 0;
