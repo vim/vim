@@ -367,7 +367,7 @@ void cmdline_pum_display(void)
  */
 int cmdline_pum_active(void)
 {
-    return p_wmnu && pum_visible() && compl_match_array != NULL;
+    return pum_visible() && compl_match_array != NULL;
 }
 
 /*
