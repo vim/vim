@@ -28,7 +28,9 @@
 #include <sys/errno.h>
 #include <stdlib.h>
 
+#ifdef FEAT_RELTIME
 #include <dispatch/dispatch.h>
+#endif
 
 #include "vim.h"
 #import <AppKit/AppKit.h>
