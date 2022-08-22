@@ -281,6 +281,7 @@ do_tag(
     char_u	*buf_ffname = curbuf->b_ffname;	    // name to use for
 						    // priority computation
     int		use_tfu = 1;
+    char_u	*tofree = NULL;
 
     // remember the matches for the last used tag
     static int		num_matches = 0;
@@ -630,7 +631,12 @@ do_tag(
 	 * When desired match not found yet, try to find it (and others).
 	 */
 	if (use_tagstack)
-	    name = tagstack[tagstackidx].tagname;
+	{
+	    // make a copy, the tagstack may change in 'tagfunc'
+	    name = vim_strsave(tagstack[tagstackidx].tagname);
+	    vim_free(tofree);
+	    tofree = name;
+	}
 #if defined(FEAT_QUICKFIX)
 	else if (g_do_tagpreview != 0)
 	    name = ptag_entry.tagname;
@@ -922,6 +928,7 @@ end_do_tag:
     g_do_tagpreview = 0;	// don't do tag preview next time
 # endif
 
+    vim_free(tofree);
 #ifdef FEAT_CSCOPE
     return jumped_to_tag;
 #else
