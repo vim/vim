@@ -600,8 +600,12 @@ EXTERN int	diff_need_scrollbind INIT(= FALSE);
 #endif
 
 // While redrawing the screen this flag is set.  It means the screen size
-// ('lines' and 'rows') must not be changed.
+// ('lines' and 'rows') must not be changed and prevents recursive updating.
 EXTERN int	updating_screen INIT(= FALSE);
+
+// While computing a statusline and the like we do not want any w_redr_type or
+// must_redraw to be set.
+EXTERN int	redraw_not_allowed INIT(= FALSE);
 
 #ifdef MESSAGE_QUEUE
 // While closing windows or buffers messages should not be handled to avoid

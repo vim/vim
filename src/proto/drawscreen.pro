@@ -13,6 +13,7 @@ void redraw_later(int type);
 void redraw_win_later(win_T *wp, int type);
 void redraw_later_clear(void);
 void redraw_all_later(int type);
+void set_must_redraw(int type);
 void redraw_curbuf_later(int type);
 void redraw_buf_later(buf_T *buf, int type);
 void redraw_buf_line_later(buf_T *buf, linenr_T lnum);

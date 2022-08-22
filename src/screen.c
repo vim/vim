@@ -2906,7 +2906,7 @@ give_up:
     screen_Rows = Rows;
     screen_Columns = Columns;
 
-    must_redraw = UPD_CLEAR;	// need to clear the screen later
+    set_must_redraw(UPD_CLEAR);	// need to clear the screen later
     if (doclear)
 	screenclear2();
 #ifdef FEAT_GUI

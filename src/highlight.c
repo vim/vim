@@ -939,7 +939,7 @@ highlight_set_ctermfg(int idx, int color, int is_normal_group)
 	if (!gui.in_use && !gui.starting)
 #endif
 	{
-	    must_redraw = UPD_CLEAR;
+	    set_must_redraw(UPD_CLEAR);
 	    if (termcap_active && color >= 0)
 		term_fg_color(color);
 	}
@@ -962,7 +962,7 @@ highlight_set_ctermbg(int idx, int color, int is_normal_group)
 	if (!gui.in_use && !gui.starting)
 #endif
 	{
-	    must_redraw = UPD_CLEAR;
+	    set_must_redraw(UPD_CLEAR);
 	    if (color >= 0)
 	    {
 		int dark = -1;
@@ -1005,7 +1005,7 @@ highlight_set_ctermul(int idx, int color, int is_normal_group)
 	if (!gui.in_use && !gui.starting)
 #endif
 	{
-	    must_redraw = UPD_CLEAR;
+	    set_must_redraw(UPD_CLEAR);
 	    if (termcap_active && color >= 0)
 		term_ul_color(color);
 	}
@@ -1919,7 +1919,7 @@ set_normal_colors(void)
 				 FALSE, TRUE, FALSE))
 	{
 	    gui_mch_new_colors();
-	    must_redraw = UPD_CLEAR;
+	    set_must_redraw(UPD_CLEAR);
 	}
 #  ifdef FEAT_GUI_X11
 	if (set_group_colors((char_u *)"Menu",
@@ -1929,7 +1929,7 @@ set_normal_colors(void)
 #   ifdef FEAT_MENU
 	    gui_mch_new_menu_colors();
 #   endif
-	    must_redraw = UPD_CLEAR;
+	    set_must_redraw(UPD_CLEAR);
 	}
 #   ifdef FEAT_BEVAL_GUI
 	if (set_group_colors((char_u *)"Tooltip",
@@ -1939,7 +1939,7 @@ set_normal_colors(void)
 #    ifdef FEAT_TOOLBAR
 	    gui_mch_new_tooltip_colors();
 #    endif
-	    must_redraw = UPD_CLEAR;
+	    set_must_redraw(UPD_CLEAR);
 	}
 #   endif
 	if (set_group_colors((char_u *)"Scrollbar",
@@ -1947,7 +1947,7 @@ set_normal_colors(void)
 			FALSE, FALSE, FALSE))
 	{
 	    gui_new_scrollbar_colors();
-	    must_redraw = UPD_CLEAR;
+	    set_must_redraw(UPD_CLEAR);
 	}
 #  endif
     }
@@ -1973,7 +1973,7 @@ set_normal_colors(void)
 		// color
 		cterm_normal_fg_gui_color = HL_TABLE()[idx].sg_gui_fg;
 		cterm_normal_bg_gui_color = HL_TABLE()[idx].sg_gui_bg;
-		must_redraw = UPD_CLEAR;
+		set_must_redraw(UPD_CLEAR);
 	    }
 	}
     }
@@ -2545,7 +2545,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 
 	clear_hl_tables();
 
-	must_redraw = UPD_CLEAR;
+	set_must_redraw(UPD_CLEAR);
 
 	for (i = 0; i < highlight_ga.ga_len; ++i)
 	    set_hl_attr(i);

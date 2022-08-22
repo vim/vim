@@ -7116,7 +7116,7 @@ do_exedit(
 #ifdef FEAT_GUI
 		hold_gui_events = 0;
 #endif
-		must_redraw = UPD_CLEAR;
+		set_must_redraw(UPD_CLEAR);
 		pending_exmode_active = TRUE;
 
 		main_loop(FALSE, TRUE);

@@ -3154,7 +3154,7 @@ redraw_win_later(
     win_T	*wp,
     int		type)
 {
-    if (!exiting && wp->w_redr_type < type)
+    if (!exiting && !redraw_not_allowed && wp->w_redr_type < type)
     {
 	wp->w_redr_type = type;
 	if (type >= UPD_NOT_VALID)
@@ -3186,7 +3186,17 @@ redraw_all_later(int type)
     FOR_ALL_WINDOWS(wp)
 	redraw_win_later(wp, type);
     // This may be needed when switching tabs.
-    if (must_redraw < type)
+    set_must_redraw(type);
+}
+
+/*
+ * Set "must_redraw" to "type" unless it already has a higher value
+ * or it is currently not allowed.
+ */
+    void
+set_must_redraw(int type)
+{
+    if (!redraw_not_allowed && must_redraw < type)
 	must_redraw = type;
 }
 

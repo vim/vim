@@ -559,7 +559,7 @@ changed_common(
 	    linenr_T last = lnume + xtra - 1;  // last line after the change
 #endif
 	    // Mark this window to be redrawn later.
-	    if (wp->w_redr_type < UPD_VALID)
+	    if (!redraw_not_allowed && wp->w_redr_type < UPD_VALID)
 		wp->w_redr_type = UPD_VALID;
 
 	    // Check if a change in the buffer has invalidated the cached
@@ -671,8 +671,7 @@ changed_common(
 
     // Call update_screen() later, which checks out what needs to be redrawn,
     // since it notices b_mod_set and then uses b_mod_*.
-    if (must_redraw < UPD_VALID)
-	must_redraw = UPD_VALID;
+    set_must_redraw(UPD_VALID);
 
     // when the cursor line is changed always trigger CursorMoved
     if (lnum <= curwin->w_cursor.lnum

@@ -686,7 +686,7 @@ vim_main2(void)
 			&& !gui.in_use
 #endif
 					)
-	must_redraw = UPD_CLEAR;
+	set_must_redraw(UPD_CLEAR);
     else
     {
 	screenclear();			// clear screen

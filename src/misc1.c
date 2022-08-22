@@ -413,10 +413,8 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
     clear_chartabsize_arg(&cts);
     col = (int)cts.cts_vcol;
 
-    /*
-     * If list mode is on, then the '$' at the end of the line may take up one
-     * extra column.
-     */
+    // If list mode is on, then the '$' at the end of the line may take up one
+    // extra column.
     if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
 	col += 1;
 
@@ -585,8 +583,7 @@ check_status(buf_T *buf)
 	if (wp->w_buffer == buf && wp->w_status_height)
 	{
 	    wp->w_redr_status = TRUE;
-	    if (must_redraw < UPD_VALID)
-		must_redraw = UPD_VALID;
+	    set_must_redraw(UPD_VALID);
 	}
 }
 
