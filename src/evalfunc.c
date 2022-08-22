@@ -1935,6 +1935,8 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_getreginfo},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
+    {"getscriptinfo",	0, 0, 0,	    NULL,
+			ret_list_dict_any,  f_getscriptinfo},
     {"gettabinfo",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_dict_any,  f_gettabinfo},
     {"gettabvar",	2, 3, FEARG_1,	    arg3_number_string_any,
