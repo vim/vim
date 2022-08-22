@@ -9,7 +9,7 @@
 
 /*
  * drawline.c: Functions for drawing window lines on the screen.
- * This is the middle level, drawscreen. is the higher level and screen.c the
+ * This is the middle level, drawscreen.c is the higher level and screen.c the
  * lower level.
  */
 
@@ -339,6 +339,11 @@ text_prop_compare(const void *s1, const void *s2)
     // same priority, one that starts first wins
     if (col1 != col2)
 	return col1 < col2 ? 1 : -1;
+
+    // for a property with text the id can be used as tie breaker
+    if (tp1->tp_id < 0)
+	return tp1->tp_id > tp2->tp_id ? 1 : -1;
+
     return 0;
 }
 #endif
