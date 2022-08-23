@@ -162,32 +162,20 @@ estack_sfile(estack_arg_T which UNUSED)
     // instead.
     if (which == ESTACK_SCRIPT)
     {
-	entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
 	// Walk the stack backwards, starting from the current frame.
 	for (idx = exestack.ga_len - 1; idx >= 0; --idx, --entry)
 	{
-	    if (entry->es_type == ETYPE_UFUNC)
+	    if (entry->es_type == ETYPE_UFUNC || entry->es_type == ETYPE_AUCMD)
 	    {
-		sctx_T *def_ctx = &entry->es_info.ufunc->uf_script_ctx;
+		sctx_T *def_ctx = entry->es_type == ETYPE_UFUNC
+				      ? &entry->es_info.ufunc->uf_script_ctx
+				      : acp_script_ctx(entry->es_info.aucmd);
 
-		if (def_ctx->sc_sid > 0)
-		    return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
-		else
-		    return NULL;
-	    }
-	    else if (entry->es_type == ETYPE_AUCMD)
-	    {
-		sctx_T *def_ctx = acp_script_ctx(entry->es_info.aucmd);
-
-		if (def_ctx->sc_sid > 0)
-		    return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
-		else
-		    return NULL;
+		return def_ctx->sc_sid > 0
+		   ? vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name) : NULL;
 	    }
 	    else if (entry->es_type == ETYPE_SCRIPT)
-	    {
 		return vim_strsave(entry->es_name);
-	    }
 	}
 	return NULL;
     }
