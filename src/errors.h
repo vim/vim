@@ -1218,6 +1218,8 @@ EXTERN char e_pattern_not_found_str[]
 	INIT(= N_("E486: Pattern not found: %s"));
 EXTERN char e_argument_must_be_positive[]
 	INIT(= N_("E487: Argument must be positive"));
+EXTERN char e_argument_must_be_positive_str[]
+	INIT(= N_("E487: Argument must be positive: %s"));
 EXTERN char e_trailing_characters[]
 	INIT(= N_("E488: Trailing characters"));
 EXTERN char e_trailing_characters_str[]
@@ -3319,4 +3321,6 @@ EXTERN char e_can_only_use_text_align_when_column_is_zero[]
 #ifdef FEAT_PROP_POPUP
 EXTERN char e_cannot_specify_both_type_and_types[]
 	INIT(= N_("E1295: Cannot specify both 'type' and 'types'"));
+EXTERN char e_can_only_use_left_padding_when_column_is_zero[]
+	INIT(= N_("E1296: Can only use left padding when column is zero"));
 #endif

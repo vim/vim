@@ -171,6 +171,7 @@ prop_add_one(
 	char_u		*type_name,
 	int		id,
 	char_u		*text_arg,
+	int		text_padding_left,
 	int		text_flags,
 	linenr_T	start_lnum,
 	linenr_T	end_lnum,
@@ -264,7 +265,10 @@ prop_add_one(
 	{
 	    length = 1;		// text is placed on one character
 	    if (col == 0)
+	    {
 		col = MAXCOL;	// after the line
+		length += text_padding_left;
+	    }
 	}
 
 	// Allocate the new line with space for the new property.
@@ -390,7 +394,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	    emsg(_(e_invalid_argument));
 	    return;
 	}
-	if (prop_add_one(buf, type_name, id, NULL, 0, start_lnum, end_lnum,
+	if (prop_add_one(buf, type_name, id, NULL, 0, 0, start_lnum, end_lnum,
 						start_col, end_col) == FAIL)
 	    return;
     }
@@ -428,6 +432,7 @@ prop_add_common(
     buf_T	*buf = default_buf;
     int		id = 0;
     char_u	*text = NULL;
+    int		text_padding_left = 0;
     int		flags = 0;
 
     if (dict == NULL || !dict_has_key(dict, "type"))
@@ -507,9 +512,20 @@ prop_add_common(
 	    }
 	}
 
+	if (dict_has_key(dict, "text_padding_left"))
+	{
+	    text_padding_left = dict_get_number(dict, "text_padding_left");
+	    if (text_padding_left < 0)
+	    {
+		semsg(_(e_argument_must_be_positive_str), "text_padding_left");
+		goto theend;
+	    }
+	}
+
 	if (dict_has_key(dict, "text_wrap"))
 	{
 	    char_u *p = dict_get_string(dict, "text_wrap", FALSE);
+
 	    if (p == NULL)
 		goto theend;
 	    if (STRCMP(p, "wrap") == 0)
@@ -529,6 +545,11 @@ prop_add_common(
 	semsg(_(e_invalid_column_number_nr), (long)start_col);
 	goto theend;
     }
+    if (start_col > 0 && text_padding_left > 0)
+    {
+	emsg(_(e_can_only_use_left_padding_when_column_is_zero));
+	goto theend;
+    }
 
     if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
 	goto theend;
@@ -546,7 +567,7 @@ prop_add_common(
     // correctly set.
     buf->b_has_textprop = TRUE;  // this is never reset
 
-    prop_add_one(buf, type_name, id, text, flags,
+    prop_add_one(buf, type_name, id, text, text_padding_left, flags,
 				    start_lnum, end_lnum, start_col, end_col);
     text = NULL;
 
@@ -653,6 +674,91 @@ count_props(linenr_T lnum, int only_starting, int last_line)
 	    --result;
     }
     return result;
+}
+
+static textprop_T	*text_prop_compare_props;
+static buf_T		*text_prop_compare_buf;
+
+/*
+ * Function passed to qsort() to sort text properties.
+ * Return 1 if "s1" has priority over "s2", -1 if the other way around, zero if
+ * both have the same priority.
+ */
+    static int
+text_prop_compare(const void *s1, const void *s2)
+{
+    int  idx1, idx2;
+    textprop_T	*tp1, *tp2;
+    proptype_T  *pt1, *pt2;
+    colnr_T col1, col2;
+
+    idx1 = *(int *)s1;
+    idx2 = *(int *)s2;
+    tp1 = &text_prop_compare_props[idx1];
+    tp2 = &text_prop_compare_props[idx2];
+    col1 = tp1->tp_col;
+    col2 = tp2->tp_col;
+    if (col1 == MAXCOL && col2 == MAXCOL)
+    {
+	int flags1 = 0;
+	int flags2 = 0;
+
+	// both props add text are after the line, order on 0: after (default),
+	// 1: right, 2: below (comes last)
+	if (tp1->tp_flags & TP_FLAG_ALIGN_RIGHT)
+	    flags1 = 1;
+	if (tp1->tp_flags & TP_FLAG_ALIGN_BELOW)
+	    flags1 = 2;
+	if (tp2->tp_flags & TP_FLAG_ALIGN_RIGHT)
+	    flags2 = 1;
+	if (tp2->tp_flags & TP_FLAG_ALIGN_BELOW)
+	    flags2 = 2;
+	if (flags1 != flags2)
+	    return flags1 < flags2 ? 1 : -1;
+    }
+
+    // property that inserts text has priority over one that doesn't
+    if ((tp1->tp_id < 0) != (tp2->tp_id < 0))
+	return tp1->tp_id < 0 ? 1 : -1;
+
+    // check highest priority, defined by the type
+    pt1 = text_prop_type_by_id(text_prop_compare_buf, tp1->tp_type);
+    pt2 = text_prop_type_by_id(text_prop_compare_buf, tp2->tp_type);
+    if (pt1 != pt2)
+    {
+	if (pt1 == NULL)
+	    return -1;
+	if (pt2 == NULL)
+	    return 1;
+	if (pt1->pt_priority != pt2->pt_priority)
+	    return pt1->pt_priority > pt2->pt_priority ? 1 : -1;
+    }
+
+    // same priority, one that starts first wins
+    if (col1 != col2)
+	return col1 < col2 ? 1 : -1;
+
+    // for a property with text the id can be used as tie breaker
+    if (tp1->tp_id < 0)
+	return tp1->tp_id > tp2->tp_id ? 1 : -1;
+
+    return 0;
+}
+
+/*
+ * Sort "count" text properties using an array if indexes "idxs" into the list
+ * of text props "props" for buffer "buf".
+ */
+    void
+sort_text_props(
+	buf_T	    *buf,
+	textprop_T  *props,
+	int	    *idxs,
+	int	    count)
+{
+    text_prop_compare_buf = buf;
+    text_prop_compare_props = props;
+    qsort((void *)idxs, (size_t)count, sizeof(int), text_prop_compare);
 }
 
 /*

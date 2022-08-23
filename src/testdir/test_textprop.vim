@@ -3041,4 +3041,54 @@ func Test_insert_text_list_mode()
   call delete('XscriptPropsListMode')
 endfunc
 
+func Test_insert_text_with_padding()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['Some text to add virtual text to.',
+                  'second line',
+                  'Another line with some text to make the wrap.'])
+      prop_type_add('theprop', {highlight: 'DiffChange'})
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'after',
+          text_align: 'after',
+          text_padding_left: 3,
+      })
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'right aligned',
+          text_align: 'right',
+          text_padding_left: 5,
+      })
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'below the line',
+          text_align: 'below',
+          text_padding_left: 4,
+      })
+      prop_add(3, 0, {
+          type: 'theprop',
+          text: 'rightmost',
+          text_align: 'right',
+          text_padding_left: 6,
+          text_wrap: 'wrap',
+      })
+  END
+  call writefile(lines, 'XscriptPropsPadded')
+  let buf = RunVimInTerminal('-S XscriptPropsPadded', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_text_with_padding_1', {})
+
+  call term_sendkeys(buf, "ggixxxxxxxxxx\<Esc>")
+  call term_sendkeys(buf, "3Gix\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_text_with_padding_2', {})
+
+  call term_sendkeys(buf, "ggix\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_text_with_padding_3', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsPadded')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

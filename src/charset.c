@@ -957,26 +957,26 @@ init_chartabsize_arg(
 #ifdef FEAT_PROP_POPUP
     if (lnum > 0)
     {
-	char_u *prop_start;
+	char_u	*prop_start;
+	int	count;
 
-	cts->cts_text_prop_count = get_text_props(wp->w_buffer, lnum,
-							  &prop_start, FALSE);
-	if (cts->cts_text_prop_count > 0)
+	count = get_text_props(wp->w_buffer, lnum, &prop_start, FALSE);
+	cts->cts_text_prop_count = count;
+	if (count > 0)
 	{
 	    // Make a copy of the properties, so that they are properly
-	    // aligned.
-	    cts->cts_text_props = ALLOC_MULT(textprop_T,
-						    cts->cts_text_prop_count);
+	    // aligned.  Make it twice as long for the sorting below.
+	    cts->cts_text_props = ALLOC_MULT(textprop_T, count * 2);
 	    if (cts->cts_text_props == NULL)
 		cts->cts_text_prop_count = 0;
 	    else
 	    {
-		int i;
+		int	i;
 
-		mch_memmove(cts->cts_text_props, prop_start,
-			       cts->cts_text_prop_count * sizeof(textprop_T));
-		for (i = 0; i < cts->cts_text_prop_count; ++i)
-		    if (cts->cts_text_props[i].tp_id < 0)
+		mch_memmove(cts->cts_text_props + count, prop_start,
+						   count * sizeof(textprop_T));
+		for (i = 0; i < count; ++i)
+		    if (cts->cts_text_props[i + count].tp_id < 0)
 		    {
 			cts->cts_has_prop_with_text = TRUE;
 			break;
@@ -986,6 +986,27 @@ init_chartabsize_arg(
 		    // won't use the text properties, free them
 		    VIM_CLEAR(cts->cts_text_props);
 		    cts->cts_text_prop_count = 0;
+		}
+		else
+		{
+		    int	    *text_prop_idxs;
+
+		    // Need to sort the array to get any truncation right.
+		    // Do the sorting in the second part of the array, then
+		    // move the sorted props to the first part of the array.
+		    text_prop_idxs = ALLOC_MULT(int, count);
+		    if (text_prop_idxs != NULL)
+		    {
+			for (i = 0; i < count; ++i)
+			    text_prop_idxs[i] = i + count;
+			sort_text_props(curbuf, cts->cts_text_props,
+							text_prop_idxs, count);
+			// Here we want the reverse order.
+			for (i = 0; i < count; ++i)
+			    cts->cts_text_props[count - i - 1] =
+					cts->cts_text_props[text_prop_idxs[i]];
+			vim_free(text_prop_idxs);
+		    }
 		}
 	    }
 	}
@@ -1159,6 +1180,11 @@ win_lbr_chartabsize(
 	int	    col = (int)(s - line);
 	garray_T    *gap = &wp->w_buffer->b_textprop_text;
 
+	// The "$" for 'list' mode will go between the EOL and
+	// the text prop, account for that.
+	if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
+	    ++vcol;
+
 	for (i = 0; i < cts->cts_text_prop_count; ++i)
 	{
 	    textprop_T *tp = cts->cts_text_props + i;
@@ -1176,46 +1202,21 @@ win_lbr_chartabsize(
 
 		if (p != NULL)
 		{
-		    int	cells = vim_strsize(p);
+		    int	cells;
 
 		    if (tp->tp_col == MAXCOL)
 		    {
-			int below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
-			int right = (tp->tp_flags & TP_FLAG_ALIGN_RIGHT);
-			int wrap = (tp->tp_flags & TP_FLAG_WRAP);
-			int len = (int)STRLEN(p);
-			int n_used = len;
+			int n_extra = (int)STRLEN(p);
 
-			// The "$" for 'list' mode will go between the EOL and
-			// the text prop, account for that.
-			if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
-			    ++vcol;
-
-			// Keep in sync with where textprop_size_after_trunc()
-			// is called in win_line().
-			if (!wrap)
-			{
-			    added = wp->w_width - (vcol + size) % wp->w_width;
-			    cells = textprop_size_after_trunc(wp,
-						     below, added, p, &n_used);
-			}
-			if (below)
-			    cells += wp->w_width - (vcol + size) % wp->w_width;
-			else if (right)
-			{
-			    len = wp->w_width - vcol % wp->w_width;
-			    if (len > cells + size)
-				// add the padding for right-alignment
-				cells = len - size;
-			    else if (len == 0)
-				// padding to right-align in the next line
-				cells += cells > wp->w_width ? 0
-							  :wp->w_width - cells;
-			}
+			cells = text_prop_position(wp, tp,
+					    (vcol + size) % wp->w_width,
+						     &n_extra, &p, NULL, NULL);
 #ifdef FEAT_LINEBREAK
 			no_sbr = TRUE;  // don't use 'showbreak' now
 #endif
 		    }
+		    else
+			cells = vim_strsize(p);
 		    cts->cts_cur_text_width += cells;
 		    cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
 		    size += cells;
@@ -1231,6 +1232,8 @@ win_lbr_chartabsize(
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
 		break;
 	}
+	if (wp->w_p_list && wp->w_lcs_chars.eol != NUL)
+	    --vcol;
     }
 # endif
 

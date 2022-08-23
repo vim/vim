@@ -6,6 +6,7 @@ int prop_add_common(linenr_T start_lnum, colnr_T start_col, dict_T *dict, buf_T 
 int get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change);
 int prop_count_below(buf_T *buf, linenr_T lnum);
 int count_props(linenr_T lnum, int only_starting, int last_line);
+void sort_text_props(buf_T *buf, textprop_T *props, int *idxs, int count);
 int find_visible_prop(win_T *wp, int type_id, int id, textprop_T *prop, linenr_T *found_lnum);
 void add_text_props(linenr_T lnum, textprop_T *text_props, int text_prop_count);
 proptype_T *text_prop_type_by_id(buf_T *buf, int id);
