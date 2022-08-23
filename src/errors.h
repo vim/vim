@@ -2054,7 +2054,7 @@ EXTERN char e_cannot_use_percent_with_float[]
 EXTERN char e_using_float_as_number[]
 	INIT(= N_("E805: Using a Float as a Number"));
 EXTERN char e_using_float_as_string[]
-	INIT(= N_("E806: Using Float as a String"));
+	INIT(= N_("E806: Using a Float as a String"));
 #endif
 #ifdef FEAT_FLOAT
 EXTERN char e_expected_float_argument_for_printf[]
