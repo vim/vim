@@ -2083,7 +2083,7 @@ set_ctrl_x_mode(int c)
 	    ctrl_x_mode = CTRL_X_FILES;
 	    break;
 	case Ctrl_K:
-	    // complete words from a dictinoary
+	    // complete words from a dictionary
 	    ctrl_x_mode = CTRL_X_DICTIONARY;
 	    break;
 	case Ctrl_R:
