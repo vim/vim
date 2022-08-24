@@ -1775,6 +1775,7 @@ almosttheend:
 	apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp, FALSE, curbuf);
 
 theend:
+#ifdef FEAT_EVAL
     if (sid > 0 && ret_sid != NULL
 	    && fname_not_fixed != NULL && fname_exp != NULL)
     {
@@ -1786,6 +1787,7 @@ theend:
 	if (SCRIPT_ID_VALID(not_fixed_sid) && not_fixed_sid != sid)
 	    SCRIPT_ITEM(not_fixed_sid)->sn_sourced_sid = sid;
     }
+#endif
 
     vim_free(fname_not_fixed);
     vim_free(fname_exp);
