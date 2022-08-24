@@ -332,7 +332,8 @@ g8			Print the hex values of the bytes used in the
    *+ARP*		Amiga only: ARP support included
 B  *+arabic*		|Arabic| language support
 B  *+autochdir*		support 'autochdir' option
-T  *+autocmd*		|:autocmd|, automatic commands
+T  *+autocmd*		|:autocmd|, automatic commands.  Always enabled since
+			8.0.1564
 H  *+autoservername*	Automatically enable |clientserver|
 m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
 			compiling with supported GUI (Motif, GTK, GUI) and

@@ -360,11 +360,16 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		{props} is a dictionary with these fields:
 		   id		remove text properties with this ID
 		   type		remove text properties with this type name
-		   both		"id" and "type" must both match
+		   types	remove text properties with type names in this
+				List
+		   both		"id" and "type"/"types" must both match
 		   bufnr	use this buffer instead of the current one
 		   all		when TRUE remove all matching text properties,
 				not just the first one
-		A property matches when either "id" or "type" matches.
+		Only one of "type" and "types" may be supplied. *E1295*
+
+		A property matches when either "id" or one of the supplied
+		types matches.
 		If buffer "bufnr" does not exist you get an error message.
 		If buffer "bufnr" is not loaded then nothing happens.
 

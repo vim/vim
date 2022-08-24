@@ -1349,7 +1349,7 @@ Various:					*various-functions*
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
 	getpid()		get process ID of Vim
-	getscriptinfo()	get list of sourced vim scripts
+	getscriptinfo()		get list of sourced vim scripts
 	getimstatus()		check if IME status is active
 	interrupt()		interrupt script execution
 	windowsversion()	get MS-Windows version

@@ -7881,7 +7881,7 @@ msgid "E850: Invalid register name"
 msgstr "E850: Nom de registre invalide"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Utilisation d'un Flottant comme une Chaîne"
 
 #, c-format

@@ -58,7 +58,7 @@ execute the installer from it.
 When installing "Visual Studio Community 2015 with Update 3" or "Visual C++
 Build Tools for Visual Studio 2015 with Update 3" make sure to
 select "custom" and check "Windows XP Support for C++" and all checkboxes
-under "Universal Windows App Development Tools".  Or whatevern they are called
+under "Universal Windows App Development Tools".  Or whatever they are called
 now.
 
 

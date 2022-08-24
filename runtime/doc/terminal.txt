@@ -1022,8 +1022,10 @@ create a security problem.
 						*terminal-autoshelldir*
 This can be used to pass the current directory from a shell to Vim.
 Put this in your .vimrc: >
-	def g:Tapi_lcd(_, args: string)
-	    execute 'silent lcd ' .. args
+	def g:Tapi_lcd(_, path: string)
+	    if isdirectory(path)
+                execute 'silent lcd ' .. fnameescape(path)
+            endif
 	enddef
 <
 And, in a bash init file: >

@@ -1823,7 +1823,7 @@ defined.  This does not apply to autoload imports, see the next section.
 
 
 Importing an autoload script ~
-							*vim9-autoload*
+					*vim9-autoload* *import-autoload*
 For optimal startup speed, loading scripts should be postponed until they are
 actually needed.  Using the autoload mechanism is recommended:
 							*E1264*

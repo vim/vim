@@ -6580,7 +6580,7 @@ msgstr "E804: Невозможно использовать '%' с числом с плавающей точкой"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Использование числа с плавающей точкой вместо целого"
 
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Использование числа с плавающей точкой вместо строки"
 
 msgid "E807: Expected Float argument for printf()"

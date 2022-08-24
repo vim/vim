@@ -38,9 +38,6 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Text props: Add "padding" argument - only for when using "text" and {col} is
-zero.  Use tp_len field and n_attr_skip. #10906
-
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
 - Check performance with callgrind and kcachegrind.
@@ -243,6 +240,9 @@ MS-Windows: did path modifier :p:8 stop working?  #8600
 
 Version of getchar() that does not move the cursor - #10603 Use a separate
 argument for the new flag.
+
+Add "lastline" entry to 'fillchars' to specify a character instead of '@'.
+#10963
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 

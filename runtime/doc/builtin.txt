@@ -4101,8 +4101,9 @@ getscriptinfo()						*getscriptinfo()*
 				yet (see |import-autoload|).
 		    name	vim script file name.
 		    sid		script ID |<SID>|.
-		    sourced	if this script is an alias this is the script
-				ID of the actually sourced script, otherwise zero
+		    sourced	script ID of the actually sourced script that
+				this script name links to, if any, otherwise
+				zero
 
 gettabinfo([{tabnr}])					*gettabinfo()*
 		If {tabnr} is not specified, then information about all the
@@ -7440,8 +7441,10 @@ search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 		starts in column zero and then matches before the cursor are
 		skipped.  When the 'c' flag is present in 'cpo' the next
 		search starts after the match.  Without the 'c' flag the next
-		search starts one column further.  This matters for
-		overlapping matches.
+		search starts one column after the start of the match.  This
+		matters for overlapping matches.  See |cpo-c|.  You can also
+		insert "\ze" to change where the match ends, see  |/\ze|.
+
 		When searching backwards and the 'z' flag is given then the
 		search starts in column zero, thus no match in the current
 		line will be found (unless wrapping around the end of the
