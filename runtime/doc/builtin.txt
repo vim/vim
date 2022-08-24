@@ -253,7 +253,7 @@ getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
 getregtype([{regname}])		String	type of a register
-getscriptinfo()		List	list of sourced scripts
+getscriptinfo()			List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
 gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
@@ -4089,17 +4089,20 @@ getregtype([{regname}])					*getregtype()*
 		Can also be used as a |method|: >
 			GetRegname()->getregtype()
 
-getscriptinfo()					*getscriptinfo()*
+getscriptinfo()						*getscriptinfo()*
 		Returns a |List| with information about all the sourced Vim
-		scripts in the order they were sourced. (|:scriptinfo|)
+		scripts in the order they were sourced, like what
+		`:scriptnames` shows.
 
 		Each item in the returned List is a |Dict| with the following
 		items:
 		    autoload	set to TRUE for a script that was used with
-				|import autoload| but was not actually sourced
-				yet.
+				`import autoload` but was not actually sourced
+				yet (see |import-autoload|).
 		    name	vim script file name.
 		    sid		script ID |<SID>|.
+		    sourced	if this script is an alias this is the script
+				ID of the actually sourced script, otherwise zero
 
 gettabinfo([{tabnr}])					*gettabinfo()*
 		If {tabnr} is not specified, then information about all the

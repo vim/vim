@@ -1850,12 +1850,18 @@ typedef struct {
 #define IMP_FLAGS_AUTOLOAD	4   // script still needs to be loaded
 
 /*
- * Info about an already sourced scripts.
+ * Info about an encoutered script.
+ * When sn_state has the SN_STATE_NOT_LOADED is has not been sourced yet.
  */
 typedef struct
 {
     char_u	*sn_name;	    // full path of script file
     int		sn_script_seq;	    // latest sctx_T sc_seq value
+
+    // When non-zero the script ID of the actually sourced script.  Used if a
+    // script is used by a name which has a symlink, we list both names, but
+    // only the linked-to script is actually sourced.
+    int		sn_sourced_sid;
 
     // "sn_vars" stores the s: variables currently valid.  When leaving a block
     // variables local to that block are removed.

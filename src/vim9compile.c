@@ -610,7 +610,7 @@ find_imported(char_u *name, size_t len, int load)
     ret = find_imported_in_script(name, len, current_sctx.sc_sid);
     if (ret != NULL && load && (ret->imp_flags & IMP_FLAGS_AUTOLOAD))
     {
-	scid_T	dummy;
+	scid_T	actual_sid = 0;
 	int	save_emsg_off = emsg_off;
 
 	// "emsg_off" will be set when evaluating an expression silently, but
@@ -621,7 +621,11 @@ find_imported(char_u *name, size_t len, int load)
 	// script found before but not loaded yet
 	ret->imp_flags &= ~IMP_FLAGS_AUTOLOAD;
 	(void)do_source(SCRIPT_ITEM(ret->imp_sid)->sn_name, FALSE,
-							    DOSO_NONE, &dummy);
+						       DOSO_NONE, &actual_sid);
+	// If the script is a symlink it may be sourced with another name, may
+	// need to adjust the script ID for that.
+	if (actual_sid != 0)
+	    ret->imp_sid = actual_sid;
 
 	emsg_off = save_emsg_off;
     }

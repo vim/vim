@@ -2906,5 +2906,50 @@ def Test_vim9_autoload_error()
   v9.CheckScriptFailure(lines, 'E461: Illegal variable name: foo#bar', 2)
 enddef
 
+def Test_vim9_import_symlink()
+  if !has('unix')
+    CheckUnix
+  else
+    mkdir('Xto/plugin', 'p')
+    var lines =<< trim END
+        vim9script
+        import autoload 'bar.vim'
+        g:resultFunc = bar.Func()
+        g:resultValue = bar.value
+    END
+    writefile(lines, 'Xto/plugin/foo.vim')
+
+    mkdir('Xto/autoload', 'p')
+    lines =<< trim END
+        vim9script
+        export def Func(): string
+          return 'func'
+        enddef
+        export var value = 'val'
+    END
+    writefile(lines, 'Xto/autoload/bar.vim')
+
+    var save_rtp = &rtp
+    &rtp = getcwd() .. '/Xfrom'
+    system('ln -s ' .. getcwd() .. '/Xto Xfrom')
+
+    source Xfrom/plugin/foo.vim
+    assert_equal('func', g:resultFunc)
+    assert_equal('val', g:resultValue)
+
+    var infoTo = getscriptinfo()->filter((_, v) => v.name =~ 'Xto/autoload/bar')
+    var infoFrom = getscriptinfo()->filter((_, v) => v.name =~ 'Xfrom/autoload/bar')
+    assert_equal(1, len(infoTo))
+    assert_equal(1, len(infoFrom))
+    assert_equal(infoTo[0].sid, infoFrom[0].sourced)
+
+    unlet g:resultFunc
+    unlet g:resultValue
+    &rtp = save_rtp
+    delete('Xto', 'rf')
+    delete('Xfrom', 'rf')
+  endif
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

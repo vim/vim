@@ -1357,6 +1357,7 @@ do_source_ext(
 {
     source_cookie_T	    cookie;
     char_u		    *p;
+    char_u		    *fname_not_fixed = NULL;
     char_u		    *fname_exp;
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
@@ -1389,13 +1390,12 @@ do_source_ext(
     }
     else
     {
-	p = expand_env_save(fname);
-	if (p == NULL)
-	    return retval;
-	fname_exp = fix_fname(p);
-	vim_free(p);
+	fname_not_fixed = expand_env_save(fname);
+	if (fname_not_fixed == NULL)
+	    goto theend;
+	fname_exp = fix_fname(fname_not_fixed);
 	if (fname_exp == NULL)
-	    return retval;
+	    goto theend;
 	if (mch_isdir(fname_exp))
 	{
 	    smsg(_("Cannot source a directory: \"%s\""), fname);
@@ -1602,14 +1602,15 @@ do_source_ext(
 	int error = OK;
 
 	// It's new, generate a new SID and initialize the scriptitem.
-	current_sctx.sc_sid = get_new_scriptitem(&error);
+	sid = get_new_scriptitem(&error);
+	current_sctx.sc_sid = sid;
 	if (error == FAIL)
 	    goto almosttheend;
-	si = SCRIPT_ITEM(current_sctx.sc_sid);
+	si = SCRIPT_ITEM(sid);
 	si->sn_name = fname_exp;
 	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 	if (ret_sid != NULL)
-	    *ret_sid = current_sctx.sc_sid;
+	    *ret_sid = sid;
 
 	// Remember the "is_vimrc" flag for when the file is sourced again.
 	si->sn_is_vimrc = is_vimrc;
@@ -1668,7 +1669,7 @@ do_source_ext(
     if (do_profiling == PROF_YES)
     {
 	// Get "si" again, "script_items" may have been reallocated.
-	si = SCRIPT_ITEM(current_sctx.sc_sid);
+	si = SCRIPT_ITEM(sid);
 	if (si->sn_prof_on)
 	{
 	    profile_end(&si->sn_pr_start);
@@ -1719,7 +1720,7 @@ almosttheend:
     // If "sn_save_cpo" is set that means we encountered "vim9script": restore
     // 'cpoptions', unless in the main .vimrc file.
     // Get "si" again, "script_items" may have been reallocated.
-    si = SCRIPT_ITEM(current_sctx.sc_sid);
+    si = SCRIPT_ITEM(sid);
     if (si->sn_save_cpo != NULL && si->sn_is_vimrc == DOSO_NONE)
     {
 	if (STRCMP(p_cpo, CPO_VIM) != 0)
@@ -1774,6 +1775,19 @@ almosttheend:
 	apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp, FALSE, curbuf);
 
 theend:
+    if (sid > 0 && ret_sid != NULL
+	    && fname_not_fixed != NULL && fname_exp != NULL)
+    {
+	int not_fixed_sid = find_script_by_name(fname_not_fixed);
+
+	// If "fname_not_fixed" is a symlink then we source the linked file.
+	// If the original name is in the script list we add the ID of the
+	// script that was actually sourced.
+	if (SCRIPT_ID_VALID(not_fixed_sid) && not_fixed_sid != sid)
+	    SCRIPT_ITEM(not_fixed_sid)->sn_sourced_sid = sid;
+    }
+
+    vim_free(fname_not_fixed);
     vim_free(fname_exp);
     sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 #ifdef FEAT_EVAL
@@ -1787,7 +1801,7 @@ do_source(
     char_u	*fname,
     int		check_other,	    // check for .vimrc and _vimrc
     int		is_vimrc,	    // DOSO_ value
-    int		*ret_sid UNUSED)
+    int		*ret_sid)
 {
     return do_source_ext(fname, check_other, is_vimrc, ret_sid, NULL, FALSE);
 }
@@ -1828,9 +1842,16 @@ ex_scriptnames(exarg_T *eap)
 
 	if (si->sn_name != NULL)
 	{
+	    char sourced_buf[20];
+
 	    home_replace(NULL, si->sn_name, NameBuff, MAXPATHL, TRUE);
-	    vim_snprintf((char *)IObuff, IOSIZE, "%3d%s: %s",
+	    if (si->sn_sourced_sid > 0)
+		vim_snprintf(sourced_buf, 20, "->%d", si->sn_sourced_sid);
+	    else
+		sourced_buf[0] = NUL;
+	    vim_snprintf((char *)IObuff, IOSIZE, "%3d%s%s: %s",
 		    i,
+		    sourced_buf,
 		    si->sn_state == SN_STATE_NOT_LOADED ? " A" : "",
 		    NameBuff);
 	    if (!message_filtered(IObuff))
@@ -1946,6 +1967,7 @@ f_getscriptinfo(typval_T *argvars UNUSED, typval_T *rettv)
 		|| list_append_dict(l, d) == FAIL
 		|| dict_add_string(d, "name", si->sn_name) == FAIL
 		|| dict_add_number(d, "sid", i) == FAIL
+		|| dict_add_number(d, "sourced", si->sn_sourced_sid) == FAIL
 		|| dict_add_bool(d, "autoload",
 				si->sn_state == SN_STATE_NOT_LOADED) == FAIL)
 	    return;

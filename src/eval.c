@@ -1039,6 +1039,7 @@ get_lval(
 	    ufunc_T *ufunc;
 	    type_T *type;
 
+	    import_check_sourced_sid(&import->imp_sid);
 	    lp->ll_sid = import->imp_sid;
 	    lp->ll_name = skipwhite(p + 1);
 	    p = find_name_end(lp->ll_name, NULL, NULL, fne_flags);
