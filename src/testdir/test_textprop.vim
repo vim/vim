@@ -3091,4 +3091,40 @@ func Test_insert_text_with_padding()
   call delete('XscriptPropsPadded')
 endfunc
 
+func Test_insert_text_change_arg()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['SetErrorCode( 10, 20 )', 'second line'])
+      prop_type_add('param', {highlight: 'DiffChange', start_incl: 1})
+      prop_type_add('padd', {highlight: 'NonText', start_incl: 1})
+      prop_add(1, 15, {
+          type: 'param',
+          text: 'id:',
+      })
+      prop_add(1, 15, {
+          type: 'padd',
+          text: '-',
+      })
+      prop_add(1, 19, {
+          type: 'param',
+          text: 'id:',
+      })
+      prop_add(1, 19, {
+          type: 'padd',
+          text: '-',
+      })
+  END
+  call writefile(lines, 'XscriptPropsChange')
+  let buf = RunVimInTerminal('-S XscriptPropsChange', #{rows: 5, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_text_change_arg_1', {})
+
+  call term_sendkeys(buf, "ggf1cw1234\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_text_change_arg_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptPropsChange')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

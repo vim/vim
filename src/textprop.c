@@ -2127,7 +2127,8 @@ adjust_prop(
 	else
 	    prop->tp_col += added;
     }
-    else if (prop->tp_len > 0 && prop->tp_col + prop->tp_len > col)
+    else if (prop->tp_len > 0 && prop->tp_col + prop->tp_len > col
+	    && prop->tp_id >= 0)  // don't change length for virtual text
     {
 	int after = col - added - (prop->tp_col - 1 + prop->tp_len);
 
