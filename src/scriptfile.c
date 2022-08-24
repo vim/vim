@@ -1358,14 +1358,14 @@ do_source_ext(
     source_cookie_T	    cookie;
     char_u		    *p;
     char_u		    *fname_not_fixed = NULL;
-    char_u		    *fname_exp;
+    char_u		    *fname_exp = NULL;
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
     sctx_T		    save_current_sctx;
 #ifdef FEAT_EVAL
     funccal_entry_T	    funccalp_entry;
     int			    save_debug_break_level = debug_break_level;
-    int			    sid;
+    int			    sid = -1;
     scriptitem_T	    *si = NULL;
     int			    save_estack_compiling = estack_compiling;
     ESTACK_CHECK_DECLARATION
