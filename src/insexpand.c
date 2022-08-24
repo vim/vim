@@ -1495,7 +1495,7 @@ theend:
  * skipping the word at 'skip_word'.  Returns OK on success.
  */
     static int
-thesarurs_add_words_in_line(
+thesaurus_add_words_in_line(
 	char_u	*fname,
 	char_u	**buf_arg,
 	int	dir,
@@ -1598,7 +1598,7 @@ ins_compl_files(
 		{
 		    // For a thesaurus, add all the words in the line
 		    ptr = buf;
-		    add_r = thesarurs_add_words_in_line(files[i], &ptr, *dir,
+		    add_r = thesaurus_add_words_in_line(files[i], &ptr, *dir,
 							regmatch->startp[0]);
 		}
 		if (add_r == OK)
