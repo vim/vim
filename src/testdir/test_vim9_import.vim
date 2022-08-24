@@ -2942,6 +2942,11 @@ def Test_vim9_import_symlink()
     assert_equal(1, len(infoTo))
     assert_equal(1, len(infoFrom))
     assert_equal(infoTo[0].sid, infoFrom[0].sourced)
+    var output: string
+    redir => output
+    scriptnames
+    redir END
+    assert_match(infoFrom[0].sid .. '->' .. infoFrom[0].sourced .. '.*Xfrom', output)
 
     unlet g:resultFunc
     unlet g:resultValue
