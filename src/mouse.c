@@ -471,74 +471,77 @@ do_mouse(
 
     start_visual.lnum = 0;
 
-    // Check for clicking in the tab page line.
-    if (mouse_row == 0 && firstwin->w_winrow > 0)
+    if (TabPageIdxs != NULL)  // only when initialized
     {
-	if (is_drag)
+	// Check for clicking in the tab page line.
+	if (mouse_row == 0 && firstwin->w_winrow > 0)
 	{
-	    if (in_tab_line)
+	    if (is_drag)
 	    {
-		c1 = TabPageIdxs[mouse_col];
-		tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
-								? c1 - 1 : c1);
+		if (in_tab_line)
+		{
+		    c1 = TabPageIdxs[mouse_col];
+		    tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
+								    ? c1 - 1 : c1);
+		}
+		return FALSE;
 	    }
+
+	    // click in a tab selects that tab page
+	    if (is_click
+# ifdef FEAT_CMDWIN
+		    && cmdwin_type == 0
+# endif
+		    && mouse_col < Columns)
+	    {
+		in_tab_line = TRUE;
+		c1 = TabPageIdxs[mouse_col];
+		if (c1 >= 0)
+		{
+		    if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
+		    {
+			// double click opens new page
+			end_visual_mode_keep_button();
+			tabpage_new();
+			tabpage_move(c1 == 0 ? 9999 : c1 - 1);
+		    }
+		    else
+		    {
+			// Go to specified tab page, or next one if not clicking
+			// on a label.
+			goto_tabpage(c1);
+
+			// It's like clicking on the status line of a window.
+			if (curwin != old_curwin)
+			    end_visual_mode_keep_button();
+		    }
+		}
+		else
+		{
+		    tabpage_T	*tp;
+
+		    // Close the current or specified tab page.
+		    if (c1 == -999)
+			tp = curtab;
+		    else
+			tp = find_tabpage(-c1);
+		    if (tp == curtab)
+		    {
+			if (first_tabpage->tp_next != NULL)
+			    tabpage_close(FALSE);
+		    }
+		    else if (tp != NULL)
+			tabpage_close_other(tp, FALSE);
+		}
+	    }
+	    return TRUE;
+	}
+	else if (is_drag && in_tab_line)
+	{
+	    c1 = TabPageIdxs[mouse_col];
+	    tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
 	    return FALSE;
 	}
-
-	// click in a tab selects that tab page
-	if (is_click
-# ifdef FEAT_CMDWIN
-		&& cmdwin_type == 0
-# endif
-		&& mouse_col < Columns)
-	{
-	    in_tab_line = TRUE;
-	    c1 = TabPageIdxs[mouse_col];
-	    if (c1 >= 0)
-	    {
-		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
-		{
-		    // double click opens new page
-		    end_visual_mode_keep_button();
-		    tabpage_new();
-		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
-		}
-		else
-		{
-		    // Go to specified tab page, or next one if not clicking
-		    // on a label.
-		    goto_tabpage(c1);
-
-		    // It's like clicking on the status line of a window.
-		    if (curwin != old_curwin)
-			end_visual_mode_keep_button();
-		}
-	    }
-	    else
-	    {
-		tabpage_T	*tp;
-
-		// Close the current or specified tab page.
-		if (c1 == -999)
-		    tp = curtab;
-		else
-		    tp = find_tabpage(-c1);
-		if (tp == curtab)
-		{
-		    if (first_tabpage->tp_next != NULL)
-			tabpage_close(FALSE);
-		}
-		else if (tp != NULL)
-		    tabpage_close_other(tp, FALSE);
-	    }
-	}
-	return TRUE;
-    }
-    else if (is_drag && in_tab_line)
-    {
-	c1 = TabPageIdxs[mouse_col];
-	tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
-	return FALSE;
     }
 
     // When 'mousemodel' is "popup" or "popup_setpos", translate mouse events:
