@@ -1605,9 +1605,7 @@ EXTERN int netbeansSuppressNoLines INIT(= 0); // skip "No lines in buffer"
 EXTERN char top_bot_msg[]   INIT(= N_("search hit TOP, continuing at BOTTOM"));
 EXTERN char bot_top_msg[]   INIT(= N_("search hit BOTTOM, continuing at TOP"));
 
-#ifdef FEAT_EVAL
 EXTERN char line_msg[]	    INIT(= N_(" line "));
-#endif
 
 #ifdef FEAT_CRYPT
 EXTERN char need_key_msg[]  INIT(= N_("Need encryption key for \"%s\""));
