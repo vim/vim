@@ -220,7 +220,10 @@ open_buffer(
     // mark cursor position as being invalid
     curwin->w_valid = 0;
 
+    // Read the file if there is one.
     if (curbuf->b_ffname != NULL
+	    && !bt_quickfix(curbuf)
+	    && !bt_nofilename(curbuf)
 #ifdef FEAT_NETBEANS_INTG
 	    && netbeansReadFile
 #endif
