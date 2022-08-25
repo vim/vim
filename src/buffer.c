@@ -222,7 +222,9 @@ open_buffer(
 
     // Read the file if there is one.
     if (curbuf->b_ffname != NULL
+#ifdef FEAT_QUICKFIX
 	    && !bt_quickfix(curbuf)
+#endif
 	    && !bt_nofilename(curbuf)
 #ifdef FEAT_NETBEANS_INTG
 	    && netbeansReadFile
