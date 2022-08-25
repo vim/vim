@@ -11,12 +11,21 @@ func Test_missing_attr()
   hi Mine term=reverse cterm=inverse
   call assert_equal('1', synIDattr(hlID("Mine"), "reverse", 'term'))
   call assert_equal('1', synIDattr(hlID("Mine"), "inverse", 'cterm'))
+
   hi Mine term=underline cterm=standout gui=undercurl
   call assert_equal('1', synIDattr(hlID("Mine"), "underline", 'term'))
   call assert_equal('1', synIDattr(hlID("Mine"), "standout", 'cterm'))
   call assert_equal('1', synIDattr("Mine"->hlID(), "undercurl", 'gui'))
-  hi Mine gui=strikethrough
+
+  hi Mine term=underdouble cterm=underdotted gui=underdashed
+  call assert_equal('1', synIDattr(hlID("Mine"), "underdouble", 'term'))
+  call assert_equal('1', synIDattr(hlID("Mine"), "underdotted", 'cterm'))
+  call assert_equal('1', synIDattr("Mine"->hlID(), "underdashed", 'gui'))
+
+  hi Mine term=nocombine gui=strikethrough
   call assert_equal('1', synIDattr(hlID("Mine"), "strikethrough", 'gui'))
+  call assert_equal('1', synIDattr(hlID("Mine"), "nocombine", 'term'))
+  call assert_equal('', synIDattr(hlID("Mine"), "nocombine", 'gui'))
   hi Mine term=NONE cterm=NONE gui=NONE
   call assert_equal('', synIDattr(hlID("Mine"), "bold", 'term'))
   call assert_equal('', synIDattr(hlID("Mine"), "italic", 'cterm'))

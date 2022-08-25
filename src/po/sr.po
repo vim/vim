@@ -3398,8 +3398,8 @@ msgstr "откуцајте  :q<Ентер>               за излаз        
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "откуцајте  :help<Ентер>  или  <F1> за директну помоћ"
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "откуцајте  :help version8<Ентер>   за инфо о верзији"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "откуцајте  :help version9<Ентер>   за инфо о верзији"
 
 msgid "Running in Vi compatible mode"
 msgstr "Рад у Vi компатибилном режиму"
@@ -6000,7 +6000,7 @@ msgstr "E804: ’%’ не може да се користи са Покретн
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Покретни се користи као Број"
 
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Коришћење Покретни као Стринг"
 
 msgid "E807: Expected Float argument for printf()"

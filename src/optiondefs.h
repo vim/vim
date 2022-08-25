@@ -108,9 +108,7 @@
 #endif
 #define PV_PATH		OPT_BOTH(OPT_BUF(BV_PATH))
 #define PV_PI		OPT_BUF(BV_PI)
-#ifdef FEAT_TEXTOBJ
-# define PV_QE		OPT_BUF(BV_QE)
-#endif
+#define PV_QE		OPT_BUF(BV_QE)
 #define PV_RO		OPT_BUF(BV_RO)
 #define PV_SI		OPT_BUF(BV_SI)
 #define PV_SN		OPT_BUF(BV_SN)
@@ -182,6 +180,7 @@
 # define PV_LBR		OPT_WIN(WV_LBR)
 #endif
 #define PV_LCS		OPT_BOTH(OPT_WIN(WV_LCS))
+#define PV_FCS		OPT_BOTH(OPT_WIN(WV_FCS))
 #define PV_NU		OPT_WIN(WV_NU)
 #define PV_RNU		OPT_WIN(WV_RNU)
 #define PV_VE		OPT_BOTH(OPT_WIN(WV_VE))
@@ -947,7 +946,7 @@ static struct vimoption options[] =
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
     {"fillchars",   "fcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_fcs, PV_NONE,
+			    (char_u *)&p_fcs, PV_FCS,
 			    {(char_u *)"vert:|,fold:-,eob:~", (char_u *)0L}
 			    SCTX_INIT},
     {"fixendofline",  "fixeol", P_BOOL|P_VI_DEF|P_RSTAT,
@@ -2008,14 +2007,8 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
-#ifdef FEAT_TEXTOBJ
 			    (char_u *)&p_qe, PV_QE,
-			    {(char_u *)"\\", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCTX_INIT},
+			    {(char_u *)"\\", (char_u *)0L} SCTX_INIT},
     {"readonly",    "ro",   P_BOOL|P_VI_DEF|P_RSTAT|P_NOGLOB,
 			    (char_u *)&p_ro, PV_RO,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
@@ -2893,9 +2886,9 @@ static struct vimoption options[] =
     p_term("t_BD", T_BD)
     p_term("t_cd", T_CD)
     p_term("t_ce", T_CE)
+    p_term("t_Ce", T_UCE)
     p_term("t_cl", T_CL)
     p_term("t_cm", T_CM)
-    p_term("t_Ce", T_UCE)
     p_term("t_Co", T_CCO)
     p_term("t_CS", T_CCS)
     p_term("t_Cs", T_UCS)
@@ -2905,6 +2898,8 @@ static struct vimoption options[] =
     p_term("t_db", T_DB)
     p_term("t_DL", T_CDL)
     p_term("t_dl", T_DL)
+    p_term("t_ds", T_DS)
+    p_term("t_Ds", T_CDS)
     p_term("t_EC", T_CEC)
     p_term("t_EI", T_CEI)
     p_term("t_fs", T_FS)
@@ -2952,6 +2947,7 @@ static struct vimoption options[] =
     p_term("t_u7", T_U7)
     p_term("t_ue", T_UE)
     p_term("t_us", T_US)
+    p_term("t_Us", T_USS)
     p_term("t_ut", T_UT)
     p_term("t_vb", T_VB)
     p_term("t_ve", T_VE)

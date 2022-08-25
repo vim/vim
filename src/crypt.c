@@ -73,6 +73,10 @@ typedef struct {
 							char_u *p2, int last);
 } cryptmethod_T;
 
+static int crypt_sodium_init(cryptstate_T *state, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
+static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
+static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
+
 // index is method_nr of cryptstate_T, CRYPT_M_*
 static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
     // PK_Zip; very weak
@@ -850,7 +854,7 @@ crypt_append_msg(
     }
 }
 
-    int
+    static int
 crypt_sodium_init(
     cryptstate_T	*state UNUSED,
     char_u		*key UNUSED,
@@ -1030,7 +1034,7 @@ fail:
  * Encrypt "from[len]" into "to[len]".
  * "from" and "to" can be equal to encrypt in place.
  */
-    long
+    static long
 crypt_sodium_buffer_encode(
     cryptstate_T *state UNUSED,
     char_u	*from UNUSED,
@@ -1080,7 +1084,7 @@ crypt_sodium_buffer_encode(
  * Decrypt "from[len]" into "to[len]".
  * "from" and "to" can be equal to encrypt in place.
  */
-    long
+    static long
 crypt_sodium_buffer_decode(
     cryptstate_T *state UNUSED,
     char_u	*from UNUSED,

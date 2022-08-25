@@ -13,6 +13,8 @@ func TearDown()
   call delete('Xtest.utf-8.add.spl')
   call delete('Xtest.utf-8.spl')
   call delete('Xtest.utf-8.sug')
+  " set 'encoding' to clear the word list
+  set encoding=utf-8
 endfunc
 
 let g:test_data_aff1 = [
@@ -484,7 +486,6 @@ let g:test_data_aff_sal = [
       \ ]
 
 func LoadAffAndDic(aff_contents, dic_contents)
-  set enc=utf-8
   set spellfile=
   call writefile(a:aff_contents, "Xtest.aff")
   call writefile(a:dic_contents, "Xtest.dic")
@@ -759,6 +760,7 @@ func Test_spell_sal_and_addition()
   call assert_equal("elequint", FirstSpellWord())
   call assert_equal("elekwint", SecondSpellWord())
 
+  bwipe!
   set spellfile=
   set spl&
 endfunc
@@ -779,7 +781,12 @@ func Test_no_crash_with_weird_text()
       
   END
   call setline(1, lines)
-  exe "%norm \<C-v>ez=>\<C-v>wzG"
+  try
+    exe "%norm \<C-v>ez=>\<C-v>wzG"
+  catch /E1280:/
+    let caught = 'yes'
+  endtry
+  call assert_equal('yes', caught)
 
   bwipe!
 endfunc
@@ -797,8 +804,6 @@ func Test_word_index()
   sil norm z=
 
   bwipe!
-  " clear the word list
-  set enc=utf-8
   call delete('Xtmpfile')
 endfunc
 
@@ -811,7 +816,14 @@ func Test_check_empty_line()
   sil! norm P]svc
   norm P]s
 
-  " TODO: should we clear the word list?
+  bwipe!
+endfunc
+
+func Test_spell_suggest_too_long()
+  " this was creating a word longer than MAXWLEN
+  new
+  call setline(1, 'a' .. repeat("\u0333", 150))
+  norm! z=
   bwipe!
 endfunc
 

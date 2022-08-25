@@ -20,6 +20,9 @@ environment variables.  When you use the Makefile in this directory that will
 be done for you.  This does NOT work with gettext 0.10.36.  Don't use it, get
 0.10.37.
 
+Have a look at these helper scripts, they may be useful for you:
+https://github.com/adaext/vim-menutrans-helper
+
 
 ON MS-WINDOWS
 

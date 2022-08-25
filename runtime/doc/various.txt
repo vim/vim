@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2022 May 21
+*various.txt*   For Vim version 9.0.  Last change: 2022 Jun 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -332,7 +332,8 @@ g8			Print the hex values of the bytes used in the
    *+ARP*		Amiga only: ARP support included
 B  *+arabic*		|Arabic| language support
 B  *+autochdir*		support 'autochdir' option
-T  *+autocmd*		|:autocmd|, automatic commands
+T  *+autocmd*		|:autocmd|, automatic commands.  Always enabled since
+			8.0.1564
 H  *+autoservername*	Automatically enable |clientserver|
 m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
 			compiling with supported GUI (Motif, GTK, GUI) and
@@ -411,7 +412,8 @@ T  *+mouse*		Mouse handling |mouse-using|
 N  *+mouseshape*	|'mouseshape'|
 B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
-m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency |/dyn|
+m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency
+			|/dyn|
 N  *+mouse_jsbterm*	JSB mouse handling |jsbterm-mouse|
 B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
 N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
@@ -469,7 +471,7 @@ m  *+terminal*		Support for terminal window |terminal|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
 B  *+termguicolors*	24-bit color in xterm-compatible terminals support
-N  *+textobjects*	|text-objects| selection
+T  *+textobjects*	|text-objects| selection. Always enabled since 9.0.0222.
 N  *+textprop*		|text-properties|
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function
@@ -558,7 +560,10 @@ N  *+X11*		Unix only: can restore window title |X11|
 			initialized to an empty string.  After the redirection
 			starts, if the variable is removed or locked or the
 			variable type is changed, then further command output
-			messages will cause errors.
+			messages will cause errors.  When using a local
+			variable (l:var in a function or s:var in a script)
+			and another `:redir` causes the current one to end,
+			the scope might be different and the assignment fails.
 			In Vim9 script: the variable must have been declared
 			as a string.
 			The variable will remain empty until redirection ends.

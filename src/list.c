@@ -1762,7 +1762,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     }
 
     vimlist_remove(l, item, item2);
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     rl = rettv->vval.v_list;

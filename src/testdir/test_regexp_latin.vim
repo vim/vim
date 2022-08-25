@@ -1101,17 +1101,44 @@ func Test_using_two_engines_pattern()
   call setline(1, ['foobar=0', 'foobar=1', 'foobar=2'])
   " \%#= at the end of the pattern
   for i in range(0, 2)
-    call cursor( (i+1), 7) 
-    call assert_fails("%s/foobar\\%#=" .. i, 'E1281:')
+    for j in range(0, 2)
+      exe "set re=" .. i
+      call cursor(j + 1, 7)
+      call assert_fails("%s/foobar\\%#=" .. j, 'E1281:')
+    endfor
   endfor
+  set re=0
 
   " \%#= at the start of the pattern
   for i in range(0, 2)
-    call cursor( (i+1), 7) 
+    call cursor(i + 1, 7)
     exe ":%s/\\%#=" .. i .. "foobar=" .. i .. "/xx"
   endfor
   call assert_equal(['xx', 'xx', 'xx'], getline(1, '$'))
   bwipe!
 endfunc
+
+func Test_recursive_substitute_expr()
+  new
+  func Repl()
+    s
+  endfunc
+  silent! s/\%')/~\=Repl()
+
+  bwipe!
+  delfunc Repl
+endfunc
+
+def Test_compare_columns()
+  # this was using a line below the last line
+  enew
+  setline(1, ['', ''])
+  prop_type_add('name', {highlight: 'ErrorMsg'})
+  prop_add(1, 1, {length: 1, type: 'name'})
+  search('\%#=1\%>.l\n.*\%<2v', 'nW')
+  search('\%#=2\%>.l\n.*\%<2v', 'nW')
+  bwipe!
+  prop_type_delete('name')
+enddef
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -142,6 +142,42 @@ def Test_cmdmod_execute()
   END
   v9.CheckScriptSuccess(lines)
   delfunc g:TheFunc
+
+  # vim9cmd execute(cmd) executes code in vim9 script context
+  lines =<< trim END
+    vim9cmd execute("g:vim9executetest = 'bar'")
+    call assert_equal('bar', g:vim9executetest)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vim9executetest
+
+  lines =<< trim END
+    vim9cmd execute(["g:vim9executetest1 = 'baz'", "g:vim9executetest2 = 'foo'"])
+    call assert_equal('baz', g:vim9executetest1)
+    call assert_equal('foo', g:vim9executetest2)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vim9executetest1
+  unlet g:vim9executetest2
+
+  # legacy call execute(cmd) executes code in vim script context
+  lines =<< trim END
+    vim9script
+    legacy call execute("let g:vim9executetest = 'bar'")
+    assert_equal('bar', g:vim9executetest)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vim9executetest
+
+  lines =<< trim END
+    vim9script
+    legacy call execute(["let g:vim9executetest1 = 'baz'", "let g:vim9executetest2 = 'foo'"])
+    assert_equal('baz', g:vim9executetest1)
+    assert_equal('foo', g:vim9executetest2)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:vim9executetest1
+  unlet g:vim9executetest2
 enddef
 
 def Test_edit_wildcards()
@@ -989,23 +1025,23 @@ enddef
 
 def Test_bar_line_continuation()
   var lines =<< trim END
-      au BufNewFile Xfile g:readFile = 1
+      au BufNewFile XveryNewFile g:readFile = 1
           | g:readExtra = 2
       g:readFile = 0
       g:readExtra = 0
-      edit Xfile
+      edit XveryNewFile
       assert_equal(1, g:readFile)
       assert_equal(2, g:readExtra)
       bwipe!
       au! BufNewFile
 
-      au BufNewFile Xfile g:readFile = 1
+      au BufNewFile XveryNewFile g:readFile = 1
           | g:readExtra = 2
           | g:readMore = 3
       g:readFile = 0
       g:readExtra = 0
       g:readMore = 0
-      edit Xfile
+      edit XveryNewFile
       assert_equal(1, g:readFile)
       assert_equal(2, g:readExtra)
       assert_equal(3, g:readMore)
@@ -1701,6 +1737,22 @@ def Test_lockvar()
       UnLockIt()
   END
   v9.CheckScriptFailure(lines, 'E46', 1)
+
+  lines =<< trim END
+      def _()
+        lockv
+      enddef
+      defcomp
+  END
+  v9.CheckScriptFailure(lines, 'E179', 1)
+
+  lines =<< trim END
+      def T()
+        unlet
+      enddef
+      defcomp
+  END
+  v9.CheckScriptFailure(lines, 'E179', 1)
 enddef
 
 def Test_substitute_expr()

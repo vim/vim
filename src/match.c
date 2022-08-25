@@ -39,7 +39,7 @@ match_add(
     matchitem_T	*m;
     int		hlg_id;
     regprog_T	*regprog = NULL;
-    int		rtype = SOME_VALID;
+    int		rtype = UPD_SOME_VALID;
 
     if (*grp == NUL || (pat != NULL && *pat == NUL))
 	return -1;
@@ -192,7 +192,7 @@ match_add(
 	    }
 	    m->pos.toplnum = toplnum;
 	    m->pos.botlnum = botlnum;
-	    rtype = VALID;
+	    rtype = UPD_VALID;
 	}
     }
 
@@ -228,7 +228,7 @@ match_delete(win_T *wp, int id, int perr)
 {
     matchitem_T	*cur = wp->w_match_head;
     matchitem_T	*prev = cur;
-    int		rtype = SOME_VALID;
+    int		rtype = UPD_SOME_VALID;
 
     if (id < 1)
     {
@@ -269,7 +269,7 @@ match_delete(win_T *wp, int id, int perr)
 	    wp->w_buffer->b_mod_bot = cur->pos.botlnum;
 	    wp->w_buffer->b_mod_xlines = 0;
 	}
-	rtype = VALID;
+	rtype = UPD_VALID;
     }
     vim_free(cur);
     redraw_win_later(wp, rtype);
@@ -292,7 +292,7 @@ clear_matches(win_T *wp)
 	vim_free(wp->w_match_head);
 	wp->w_match_head = m;
     }
-    redraw_win_later(wp, SOME_VALID);
+    redraw_win_later(wp, UPD_SOME_VALID);
 }
 
 /*
@@ -961,8 +961,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
     }
 
     if (dict_has_key(tv->vval.v_dict, "conceal"))
-	*conceal_char = dict_get_string(tv->vval.v_dict,
-						   (char_u *)"conceal", FALSE);
+	*conceal_char = dict_get_string(tv->vval.v_dict, "conceal", FALSE);
 
     if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) != NULL)
     {
@@ -1161,16 +1160,16 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		}
 	    }
 
-	    group = dict_get_string(d, (char_u *)"group", TRUE);
-	    priority = (int)dict_get_number(d, (char_u *)"priority");
-	    id = (int)dict_get_number(d, (char_u *)"id");
+	    group = dict_get_string(d, "group", TRUE);
+	    priority = (int)dict_get_number(d, "priority");
+	    id = (int)dict_get_number(d, "id");
 	    conceal = dict_has_key(d, "conceal")
-			      ? dict_get_string(d, (char_u *)"conceal", TRUE)
+			      ? dict_get_string(d, "conceal", TRUE)
 			      : NULL;
 	    if (i == 0)
 	    {
 		match_add(win, group,
-		    dict_get_string(d, (char_u *)"pattern", FALSE),
+		    dict_get_string(d, "pattern", FALSE),
 		    priority, id, NULL, conceal);
 	    }
 	    else

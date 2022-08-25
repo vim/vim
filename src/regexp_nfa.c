@@ -4237,6 +4237,29 @@ sub_equal(regsub_T *sub1, regsub_T *sub2)
     return TRUE;
 }
 
+#ifdef FEAT_RELTIME
+/*
+ * Check if we are past the time limit, if there is one.
+ */
+    static int
+nfa_did_time_out(void)
+{
+    if (*timeout_flag)
+    {
+	if (nfa_timed_out != NULL)
+	{
+# ifdef FEAT_JOB_CHANNEL
+	    if (!*nfa_timed_out)
+		ch_log(NULL, "NFA regexp timed out");
+# endif
+	    *nfa_timed_out = TRUE;
+	}
+	return TRUE;
+    }
+    return FALSE;
+}
+#endif
+
 #ifdef ENABLE_LOG
     static void
 open_debug_log(int result)
@@ -4451,7 +4474,7 @@ state_in_list(
 /*
  * Add "state" and possibly what follows to state list ".".
  * Returns "subs_arg", possibly copied into temp_subs.
- * Returns NULL when recursiveness is too deep.
+ * Returns NULL when recursiveness is too deep or timed out.
  */
     static regsubs_T *
 addstate(
@@ -4479,6 +4502,11 @@ addstate(
     int			did_print = FALSE;
 #endif
     static int		depth = 0;
+
+#ifdef FEAT_RELTIME
+    if (nfa_did_time_out())
+	return NULL;
+#endif
 
     // This function is called recursively.  When the depth is too much we run
     // out of stack and crash, limit recursiveness here.
@@ -5643,24 +5671,6 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
     return 0L;
 }
 
-#ifdef FEAT_RELTIME
-/*
- * Check if we are past the time limit, if there is one.
- * To reduce overhead, only check one in "count" times.
- */
-    static int
-nfa_did_time_out(void)
-{
-    if (*timeout_flag)
-    {
-	if (nfa_timed_out != NULL)
-	    *nfa_timed_out = TRUE;
-	return TRUE;
-    }
-    return FALSE;
-}
-#endif
-
 /*
  * Main matching routine.
  *
@@ -5708,7 +5718,6 @@ nfa_regmatch(
     if (got_int)
 	return FALSE;
 #ifdef FEAT_RELTIME
-    // Check relatively often here, since this is the toplevel matching.
     if (nfa_did_time_out())
 	return FALSE;
 #endif
@@ -6765,8 +6774,16 @@ nfa_regmatch(
 			result = col > t->state->val * ts;
 		    }
 		    if (!result)
-			result = nfa_re_num_cmp(t->state->val, op,
-				(long_u)win_linetabsize(wp, rex.line, col) + 1);
+		    {
+			linenr_T    lnum = rex.reg_firstlnum + rex.lnum;
+			long_u	    vcol = 0;
+
+			if (lnum > 0
+				   && lnum <= wp->w_buffer->b_ml.ml_line_count)
+			    vcol = (long_u)win_linetabsize(wp, lnum,
+								rex.line, col);
+			result = nfa_re_num_cmp(t->state->val, op, vcol + 1);
+		    }
 		    if (result)
 		    {
 			add_here = TRUE;
@@ -7109,7 +7126,6 @@ nextchar:
 	if (got_int)
 	    break;
 #ifdef FEAT_RELTIME
-	// Check for timeout once in a twenty times to avoid overhead.
 	if (nfa_did_time_out())
 	    break;
 #endif

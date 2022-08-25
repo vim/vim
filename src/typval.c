@@ -2090,7 +2090,19 @@ eval_string(char_u **arg, typval_T *rettv, int evaluate, int interpolate)
 	    // to 9 characters (6 for the char and 3 for a modifier):
 	    // reserve space for 5 extra.
 	    if (*p == '<')
+	    {
+		int		modifiers = 0;
+		int		flags = FSK_KEYCODE | FSK_IN_STRING;
+
 		extra += 5;
+
+		// Skip to the '>' to avoid using '{' inside for string
+		// interpolation.
+		if (p[1] != '*')
+		    flags |= FSK_SIMPLIFY;
+		if (find_special_key(&p, &modifiers, flags, NULL) != 0)
+		    --p;  // leave "p" on the ">"
+	    }
 	}
 	else if (interpolate && (*p == '{' || *p == '}'))
 	{

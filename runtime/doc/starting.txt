@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2022 Jun 14
+*starting.txt*  For Vim version 9.0.  Last change: 2022 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -348,7 +348,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Start logging and write entries to {filename}.
 		This works like calling `ch_logfile({filename}, 'ao')` very
 		early during startup.
-		{only available with the +channel feature}
+		{only available with the |+channel| feature}
 
 							*-D*
 -D		Debugging.  Go to debugging mode when executing the first

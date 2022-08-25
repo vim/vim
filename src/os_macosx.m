@@ -28,7 +28,9 @@
 #include <sys/errno.h>
 #include <stdlib.h>
 
+#ifdef FEAT_RELTIME
 #include <dispatch/dispatch.h>
+#endif
 
 #include "vim.h"
 #import <AppKit/AppKit.h>
@@ -370,7 +372,6 @@ timer_settime(
  * Disabled because it is not currently used, but an implemented provided
  * for completeness and possible future use.
  */
-#if 0
     int
 timer_delete(timer_t timerid)
 {
@@ -380,7 +381,6 @@ timer_delete(timer_t timerid)
 
     return 0;
 }
-#endif
 
 #endif /* FEAT_RELTIME */
 

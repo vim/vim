@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 8.2.  Last change: 2022 Mar 02
+*uganda.txt*    For Vim version 9.0.  Last change: 2022 Mar 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

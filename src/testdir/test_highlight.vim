@@ -888,8 +888,8 @@ endfunc
 
 " Test for setting various 'term' attributes
 func Test_highlight_term_attr()
-  hi HlGrp3 term=bold,underline,undercurl,strikethrough,reverse,italic,standout
-  call assert_equal('hi HlGrp3          term=bold,standout,underline,undercurl,italic,reverse,strikethrough', HighlightArgs('HlGrp3'))
+  hi HlGrp3 term=bold,underline,undercurl,underdouble,underdotted,underdashed,strikethrough,reverse,italic,standout
+  call assert_equal('hi HlGrp3          term=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,strikethrough', HighlightArgs('HlGrp3'))
   hi HlGrp3 term=NONE
   call assert_equal('hi HlGrp3          cleared', HighlightArgs('HlGrp3'))
   hi clear
@@ -1174,12 +1174,14 @@ func Test_hlset()
   " Test for setting all the 'term', 'cterm' and 'gui' attributes of a
   " highlight group
   let lines =<< trim END
-    VAR attr = {'bold': v:true, 'underline': v:true, 'undercurl': v:true,
+    VAR attr = {'bold': v:true, 'underline': v:true,
+                \ 'undercurl': v:true, 'underdouble': v:true,
+                \ 'underdotted': v:true, 'underdashed': v:true,
                 \ 'strikethrough': v:true, 'reverse': v:true, 'italic': v:true,
                 \ 'standout': v:true, 'nocombine': v:true}
     call hlset([{'name': 'myhlg2', 'term': attr, 'cterm': attr, 'gui': attr}])
     VAR id2 = hlID('myhlg2')
-    VAR expected = "myhlg2 xxx term=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough cterm=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough gui=bold,standout,underline,undercurl,italic,reverse,nocombine,strikethrough"
+    VAR expected = "myhlg2 xxx term=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough cterm=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough gui=bold,standout,underline,undercurl,underdouble,underdotted,underdashed,italic,reverse,nocombine,strikethrough"
     VAR output = execute('highlight myhlg2')
     LET output = output->split("\n")->join()->substitute('\s\+', ' ', 'g')
     call assert_equal(expected, output)

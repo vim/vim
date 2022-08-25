@@ -253,7 +253,7 @@ save_re_pat(int idx, char_u *pat, int magic)
 #ifdef FEAT_SEARCH_EXTRA
 	// If 'hlsearch' set and search pat changed: need redraw.
 	if (p_hls)
-	    redraw_all_later(SOME_VALID);
+	    redraw_all_later(UPD_SOME_VALID);
 	set_no_hlsearch(FALSE);
 #endif
     }
@@ -577,7 +577,7 @@ set_last_search_pat(
 # ifdef FEAT_SEARCH_EXTRA
     // If 'hlsearch' set and search pat changed: need redraw.
     if (p_hls && idx == last_idx && !no_hlsearch)
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
 # endif
 }
 #endif
@@ -674,10 +674,10 @@ searchit(
 	stop_lnum = extra_arg->sa_stop_lnum;
 #ifdef FEAT_RELTIME
 	if (extra_arg->sa_tm > 0)
-	{
 	    init_regexp_timeout(extra_arg->sa_tm);
-	    timed_out = &extra_arg->sa_timed_out;
-	}
+	// Also set the pointer when sa_tm is zero, the caller may have set the
+	// timeout.
+	timed_out = &extra_arg->sa_timed_out;
 #endif
     }
 
@@ -1105,9 +1105,10 @@ searchit(
     }
     while (--count > 0 && found);   // stop after count matches or no match
 
-#   ifdef FEAT_RELTIME
-    disable_regexp_timeout();
-#   endif
+#ifdef FEAT_RELTIME
+    if (extra_arg != NULL && extra_arg->sa_tm > 0)
+	disable_regexp_timeout();
+#endif
     vim_regfree(regmatch.regprog);
 
     if (!found)		    // did not find it
@@ -1283,7 +1284,7 @@ do_search(
      */
     if (no_hlsearch && !(options & SEARCH_KEEP))
     {
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
 	set_no_hlsearch(FALSE);
     }
 #endif
@@ -2058,7 +2059,6 @@ find_mps_values(
  * "oap" is only used to set oap->motion_type for a linewise motion, it can be
  * NULL
  */
-
     pos_T *
 findmatchlimit(
     oparg_T	*oap,
@@ -2800,7 +2800,7 @@ showmatch(
 	    if (dollar_vcol >= 0 && dollar_vcol == curwin->w_virtcol)
 		dollar_vcol = -1;
 	    ++curwin->w_virtcol;	// do display ')' just before "$"
-	    update_screen(VALID);	// show the new char first
+	    update_screen(UPD_VALID);	// show the new char first
 
 	    save_dollar_vcol = dollar_vcol;
 #ifdef CURSOR_SHAPE
@@ -3056,7 +3056,7 @@ current_search(
     // end are still the same, and the selection needs to be owned
     clip_star.vmode = NUL;
 #endif
-    redraw_curbuf_later(INVERTED);
+    redraw_curbuf_later(UPD_INVERTED);
     showmode();
 
     return OK;
@@ -3877,7 +3877,7 @@ search_line:
 		{
 		    // Return cursor to where we were
 		    validate_cursor();
-		    redraw_later(VALID);
+		    redraw_later(UPD_VALID);
 		    win_enter(curwin_save, TRUE);
 		}
 # ifdef FEAT_PROP_POPUP
@@ -4115,7 +4115,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 	    if (error)
 		return;
 	}
-	recompute = dict_get_bool(dict, (char_u *)"recompute", recompute);
+	recompute = dict_get_bool(dict, "recompute", recompute);
 	di = dict_find(dict, (char_u *)"pattern", -1);
 	if (di != NULL)
 	{
@@ -4645,7 +4645,8 @@ fuzzy_match_in_list(
 	    // For a dict, either use the specified key to lookup the string or
 	    // use the specified callback function to get the string.
 	    if (key != NULL)
-		itemstr = dict_get_string(li->li_tv.vval.v_dict, key, FALSE);
+		itemstr = dict_get_string(li->li_tv.vval.v_dict,
+							   (char *)key, FALSE);
 	    else
 	    {
 		typval_T	argv[2];
@@ -4843,7 +4844,8 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		return;
 	    }
 	}
-	else if ((di = dict_find(d, (char_u *)"limit", -1)) != NULL)
+
+	if ((di = dict_find(d, (char_u *)"limit", -1)) != NULL)
 	{
 	    if (di->di_tv.v_type != VAR_NUMBER)
 	    {
@@ -4859,7 +4861,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 
     // get the fuzzy matches
     ret = rettv_list_alloc(rettv);
-    if (ret != OK)
+    if (ret == FAIL)
 	goto done;
     if (retmatchpos)
     {

@@ -38,6 +38,26 @@ func Test_window_cmd_cmdwin_with_vsp()
   set ls&vim
 endfunc
 
+func Test_cmdheight_not_changed()
+  set cmdheight=2
+  set winminheight=0
+  augroup Maximize
+    autocmd WinEnter * wincmd _
+  augroup END
+  split
+  tabnew
+  tabfirst
+  call assert_equal(2, &cmdheight)
+
+  tabonly!
+  only
+  set winminwidth& cmdheight&
+  augroup Maximize
+    au!
+  augroup END
+  augroup! Maximize
+endfunc
+
 " Test for jumping to windows
 func Test_window_jump()
   new
@@ -1481,9 +1501,12 @@ func Test_win_move_statusline()
     call assert_equal(h0, winheight(0))
     call assert_equal(1, &cmdheight)
   endfor
+  " supports cmdheight=0
+  set cmdheight=0
   call assert_true(win_move_statusline(0, 1))
-  call assert_equal(h0, winheight(0))
-  call assert_equal(1, &cmdheight)
+  call assert_equal(h0 + 1, winheight(0))
+  call assert_equal(0, &cmdheight)
+  set cmdheight&
   " check win_move_statusline from bottom window on top window ID
   let id = win_getid(1)
   for offset in range(5)

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2022 May 26
+*change.txt*    For Vim version 9.0.  Last change: 2022 May 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -801,6 +801,8 @@ Otherwise it works on whole lines anyway.
 When the {string} starts with "\=" it is evaluated as an expression, see
 |sub-replace-expression|.  You can use that for complex replacement or special
 characters.
+
+The substitution is limited in recursion to 4 levels. *E1290*
 
 Otherwise these characters in {string} have a special meaning:
 								*:s%*

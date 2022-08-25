@@ -73,7 +73,7 @@ static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
 
 #ifdef HAVE_TGETENT
-static char *tgetent_error(char_u *, char_u *);
+static char *invoke_tgetent(char_u *, char_u *);
 
 /*
  * Here is our own prototype for tgetstr(), any prototypes from the include
@@ -1187,6 +1187,9 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_US,	"[US]"},
     {(int)KS_UCE,	"[UCE]"},
     {(int)KS_UCS,	"[UCS]"},
+    {(int)KS_USS,	"[USS]"},
+    {(int)KS_DS,	"[DS]"},
+    {(int)KS_CDS,	"[CDS]"},
     {(int)KS_STE,	"[STE]"},
     {(int)KS_STS,	"[STS]"},
     {(int)KS_MS,	"[MS]"},
@@ -1470,7 +1473,7 @@ f_terminalprops(typval_T *argvars UNUSED, typval_T *rettv)
     int i;
 # endif
 
-    if (rettv_dict_alloc(rettv) != OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
 # ifdef FEAT_TERMRESPONSE
     for (i = 0; i < TPR_COUNT; ++i)
@@ -1625,12 +1628,12 @@ may_adjust_color_count(int val)
 	init_highlight(TRUE, FALSE);
 # ifdef DEBUG_TERMRESPONSE
 	{
-	    int r = redraw_asap(CLEAR);
+	    int r = redraw_asap(UPD_CLEAR);
 
 	    log_tr("Received t_Co, redraw_asap(): %d", r);
 	}
 # else
-	redraw_asap(CLEAR);
+	redraw_asap(UPD_CLEAR);
 # endif
     }
 }
@@ -1669,6 +1672,7 @@ get_term_entries(int *height, int *width)
 			{KS_MD, "md"}, {KS_SE, "se"}, {KS_SO, "so"},
 			{KS_CZH,"ZH"}, {KS_CZR,"ZR"}, {KS_UE, "ue"},
 			{KS_US, "us"}, {KS_UCE, "Ce"}, {KS_UCS, "Cs"},
+			{KS_USS, "Us"}, {KS_DS, "ds"}, {KS_CDS, "Ds"},
 			{KS_STE,"Te"}, {KS_STS,"Ts"},
 			{KS_CM, "cm"}, {KS_SR, "sr"},
 			{KS_CRI,"RI"}, {KS_VB, "vb"}, {KS_KS, "ks"},
@@ -1876,7 +1880,7 @@ set_termname(char_u *term)
 	     * If the external termcap does not have a matching entry, try the
 	     * builtin ones.
 	     */
-	    if ((error_msg = tgetent_error(tbuf, term)) == NULL)
+	    if ((error_msg = invoke_tgetent(tbuf, term)) == NULL)
 	    {
 		if (!termcap_cleared)
 		{
@@ -2204,7 +2208,7 @@ free_cur_term()
  * Return error message if it fails, NULL if it's OK.
  */
     static char *
-tgetent_error(char_u *tbuf, char_u *term)
+invoke_tgetent(char_u *tbuf, char_u *term)
 {
     int	    i;
 
@@ -2266,7 +2270,7 @@ getlinecol(
 {
     char_u	tbuf[TBUFSZ];
 
-    if (T_NAME != NULL && *T_NAME != NUL && tgetent_error(tbuf, T_NAME) == NULL)
+    if (T_NAME != NULL && *T_NAME != NUL && invoke_tgetent(tbuf, T_NAME) == NULL)
     {
 	if (*cp == 0)
 	    *cp = tgetnum("co");
@@ -2365,7 +2369,7 @@ add_termcap_entry(char_u *name, int force)
 	 * Search in external termcap
 	 */
 	{
-	    error_msg = tgetent_error(tbuf, term);
+	    error_msg = invoke_tgetent(tbuf, term);
 	    if (error_msg == NULL)
 	    {
 		string = TGETSTR((char *)name, &tp);
@@ -3366,6 +3370,12 @@ check_shellsize(void)
     if (Rows < min_rows())	// need room for one window and command line
 	Rows = min_rows();
     limit_screen_size();
+
+    // make sure these values are not invalid
+    if (cmdline_row >= Rows)
+	cmdline_row = Rows - 1;
+    if (msg_row >= Rows)
+	msg_row = Rows - 1;
 }
 
 /*
@@ -3541,7 +3551,7 @@ set_shellsize(int width, int height, int mustset)
 		do_check_scrollbind(TRUE);
 	    if (State & MODE_CMDLINE)
 	    {
-		update_screen(NOT_VALID);
+		update_screen(UPD_NOT_VALID);
 		redrawcmdline();
 	    }
 	    else
@@ -3549,10 +3559,10 @@ set_shellsize(int width, int height, int mustset)
 		update_topline();
 		if (pum_visible())
 		{
-		    redraw_later(NOT_VALID);
+		    redraw_later(UPD_NOT_VALID);
 		    ins_compl_show_pum();
 		}
-		update_screen(NOT_VALID);
+		update_screen(UPD_NOT_VALID);
 		if (redrawing())
 		    setcursor();
 	    }
@@ -3910,8 +3920,8 @@ log_tr(const char *fmt, ...)
     now = start;
     profile_end(&now);
     fprintf(fd_tr, "%s: %s ", profile_msg(&now),
-					must_redraw == NOT_VALID ? "NV"
-					: must_redraw == CLEAR ? "CL" : "  ");
+				must_redraw == UPD_NOT_VALID ? "NV"
+				     : must_redraw == UPD_CLEAR ? "CL" : "  ");
     va_start(ap, fmt);
     vfprintf(fd_tr, fmt, ap);
     va_end(ap);
@@ -4614,12 +4624,12 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 	    set_option_value_give_err((char_u *)"ambw", 0L, (char_u *)aw, 0);
 # ifdef DEBUG_TERMRESPONSE
 	    {
-		int r = redraw_asap(CLEAR);
+		int r = redraw_asap(UPD_CLEAR);
 
 		log_tr("set 'ambiwidth', redraw_asap(): %d", r);
 	    }
 # else
-	    redraw_asap(CLEAR);
+	    redraw_asap(UPD_CLEAR);
 # endif
 # ifdef FEAT_EVAL
 	    set_vim_var_string(VV_TERMU7RESP, tp, csi_len);
@@ -5157,7 +5167,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 			    set_option_value_give_err((char_u *)"bg",
 						  0L, (char_u *)new_bg_val, 0);
 			    reset_option_was_set((char_u *)"bg");
-			    redraw_asap(CLEAR);
+			    redraw_asap(UPD_CLEAR);
 			}
 		    }
 # ifdef FEAT_TERMINAL
@@ -5383,6 +5393,7 @@ check_termcode(
 	if (*tp == ESC && !p_ek && (State & MODE_INSERT))
 	    continue;
 
+	tp[len] = NUL;
 	key_name[0] = NUL;	// no key name found yet
 	key_name[1] = NUL;	// no key name found yet
 	modifiers = 0;		// no modifiers yet

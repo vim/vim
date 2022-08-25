@@ -3584,8 +3584,8 @@ msgstr "終了するには           :q<Enter>              "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "オンラインヘルプは     :help<Enter> か <F1>   "
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "バージョン情報は       :help version8<Enter>  "
+msgid "type  :help version9<Enter>   for version info"
+msgstr "バージョン情報は       :help version9<Enter>  "
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi互換モードで動作中"
@@ -6585,7 +6585,7 @@ msgid "E805: Using a Float as a Number"
 msgstr "E805: 浮動小数点数を数値として扱っています"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: 浮動小数点数を文字列として扱っています"
 
 msgid "E807: Expected Float argument for printf()"

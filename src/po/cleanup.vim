@@ -22,6 +22,9 @@ silent g/^msgstr"/s//msgstr "/
 silent g/^msgid"/s//msgid "/
 silent g/^msgstr ""\(\n"\)\@!/?^msgid?,.s/^/#\~ /
 
+" Comments only useful for the translator
+silent g/^#\. /d
+
 " clean up empty lines
 silent g/^\n\n\n/.d
 silent! %s/\n\+\%$//

@@ -55,6 +55,9 @@ enum SpecialKey
     KS_US,	// underscore (underline) mode
     KS_UCE,	// exit undercurl mode
     KS_UCS,	// undercurl mode
+    KS_USS,	// double underline mode
+    KS_DS,	// dotted underline mode
+    KS_CDS,	// dashed underline mode
     KS_STE,	// exit strikethrough mode
     KS_STS,	// strikethrough mode
     KS_MS,	// save to move cur in reverse mode
@@ -160,6 +163,9 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_US	(TERM_STR(KS_US))	// underscore (underline) mode
 #define T_UCE	(TERM_STR(KS_UCE))	// exit undercurl mode
 #define T_UCS	(TERM_STR(KS_UCS))	// undercurl mode
+#define T_USS	(TERM_STR(KS_USS))	// double underline mode
+#define T_DS	(TERM_STR(KS_DS))	// dotted underline mode
+#define T_CDS	(TERM_STR(KS_CDS))	// dashed underline mode
 #define T_STE	(TERM_STR(KS_STE))	// exit strikethrough mode
 #define T_STS	(TERM_STR(KS_STS))	// strikethrough mode
 #define T_MS	(TERM_STR(KS_MS))	// save to move cur in reverse mode

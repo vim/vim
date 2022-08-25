@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2022 Jun 09
+*terminal.txt*	For Vim version 9.0.  Last change: 2022 Jun 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1019,6 +1019,38 @@ A trick to have Vim send this escape sequence: >
 
 Rationale: Why not allow for any command or expression?  Because that might
 create a security problem.
+						*terminal-autoshelldir*
+This can be used to pass the current directory from a shell to Vim.
+Put this in your .vimrc: >
+	def g:Tapi_lcd(_, path: string)
+	    if isdirectory(path)
+                execute 'silent lcd ' .. fnameescape(path)
+            endif
+	enddef
+<
+And, in a bash init file: >
+        if [[ -n "$VIM_TERMINAL" ]]; then
+            PROMPT_COMMAND='_vim_sync_PWD'
+            function _vim_sync_PWD() {
+              printf '\033]51;["call", "Tapi_lcd", "%q"]\007' "$PWD"
+            }
+        fi
+<
+Or, for zsh: >
+	if [[ -n "$VIM_TERMINAL" ]]; then
+	    autoload -Uz add-zsh-hook
+	    add-zsh-hook -Uz chpwd _vim_sync_PWD
+	    function _vim_sync_PWD() {
+		printf '\033]51;["call", "Tapi_lcd", "%q"]\007' "$PWD"
+	    }
+	fi
+<
+Or, for fish: >
+	if test -n "$VIM_TERMINAL"
+	    function _vim_sync_PWD --on-variable=PWD
+		printf '\033]51;["call", "Tapi_lcd", "%s"]\007' "$PWD"
+	    end
+	end
 
 
 Using the client-server feature ~
@@ -1415,7 +1447,7 @@ the "disasm_window_height" entry can be used to set the window height: >
 	let g:termdebug_config['disasm_window_height'] = 15
 or, if there is no g:termdebug_config: >
 	let g:termdebug_disasm_window = 15
-Any value greater than 1 will set the Asm window height to that value: >
+Any value greater than 1 will set the Asm window height to that value.
 
 Communication ~
 						*termdebug-communication*
@@ -1469,7 +1501,7 @@ get this error:
 Then your gdb is too old.
 
 
-Colors~
+Colors ~
 						*hl-debugPC* *hl-debugBreakpoint*
 The color of the signs can be adjusted with these highlight groups:
 - debugPC		the current position
@@ -1484,7 +1516,8 @@ When 'background' is "dark":
   hi debugBreakpoint term=reverse ctermbg=red guibg=red
 
 
-Shortcuts						*termdebug_shortcuts*
+Shortcuts ~
+							*termdebug_shortcuts*
 
 You can define your own shortcuts (mappings) to control gdb, that can work in
 any window, using the TermDebugSendCommand() function.  Example: >
@@ -1492,7 +1525,8 @@ any window, using the TermDebugSendCommand() function.  Example: >
 The argument is the gdb command.
 
 
-Popup menu						*termdebug_popup*
+Popup menu ~
+							*termdebug_popup*
 
 By default the Termdebug plugin sets 'mousemodel' to "popup_setpos" and adds
 these entries to the popup menu:
@@ -1505,7 +1539,8 @@ or if there is no g:termdebug_config: >
 	let g:termdebug_popup = 0
 
 
-Vim window width						*termdebug_wide*
+Vim window width ~
+							*termdebug_wide*
 
 To change the width of the Vim window when debugging starts and use a vertical
 split: >

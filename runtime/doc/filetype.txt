@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.2.  Last change: 2022 Apr 09
+*filetype.txt*  For Vim version 9.0.  Last change: 2022 Apr 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -143,7 +143,8 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.asp		g:filetype_asp	|ft-aspvbs-syntax| |ft-aspperl-syntax|
 	*.bas		g:filetype_bas	|ft-basic-syntax|
 	*.cfg		g:filetype_cfg
-	*.csh		g:filetype_csh  |ft-csh-syntax|
+	*.cls		g:filetype_cls
+	*.csh		g:filetype_csh	|ft-csh-syntax|
 	*.dat		g:filetype_dat
 	*.frm		g:filetype_frm	|ft-form-syntax|
 	*.fs		g:filetype_fs	|ft-forth-syntax|
@@ -156,6 +157,7 @@ variables can be used to overrule the filetype used for certain extensions:
 	*.pp		g:filetype_pp	|ft-pascal-syntax|
 	*.prg		g:filetype_prg
 	*.r		g:filetype_r
+	*.sig		g:filetype_sig
 	*.sql		g:filetype_sql	|ft-sql-syntax|
 	*.src		g:filetype_src
 	*.sys		g:filetype_sys
@@ -554,11 +556,29 @@ For further discussion of fortran_have_tabs and the method used for the
 detection of source format see |ft-fortran-syntax|.
 
 
+FREEBASIC						*ft-freebasic-plugin*
+
+This plugin aims to treat the four FreeBASIC dialects, "fb", "qb", "fblite"
+and "deprecated", as distinct languages.
+
+The dialect will be set to the first name found in g:freebasic_forcelang, any
+#lang directive or $lang metacommand in the file being edited, or finally
+g:freebasic_lang.  These global variables conceptually map to the fbc options
+-forcelang and -lang.  If no dialect is explicitly specified "fb" will be
+used.
+
+For example, to set the dialect to a default of "fblite" but still allow for
+any #lang directive overrides, use the following command: >
+
+     let g:freebasic_lang = "fblite"
+
+
 GIT COMMIT                                              *ft-gitcommit-plugin*
 
 One command, :DiffGitCached, is provided to show a diff of the current commit
 in the preview window.  It is equivalent to calling "git diff --cached" plus
 any arguments given to the command.
+
 
 GPROF							*ft-gprof-plugin*
 
@@ -568,6 +588,7 @@ to the details of that function in the call graph.
 
 The mapping can be disabled with: >
 	let g:no_gprof_maps = 1
+
 
 MAIL							*ft-mail-plugin*
 
@@ -642,15 +663,15 @@ manpages and follows linked manpages on hitting CTRL-]).
 
 For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)
 
-	export MANPAGER="vim -M +MANPAGER -"
+	export MANPAGER="vim +MANPAGER --not-a-term -"
 
 For (t)csh, add to the config file
 
-	setenv MANPAGER "vim -M +MANPAGER -"
+	setenv MANPAGER "vim +MANPAGER --not-a-term -"
 
 For fish, add to the config file
 
-	set -x MANPAGER "vim -M +MANPAGER -"
+	set -x MANPAGER "vim +MANPAGER --not-a-term -"
 
 
 MARKDOWN                                                *ft-markdown-plugin*

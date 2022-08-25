@@ -1692,7 +1692,7 @@ WaitForChar(long msec, int ignore_input)
 		{
 		    // The screen is now messed up, must redraw the command
 		    // line and later all the windows.
-		    redraw_all_later(CLEAR);
+		    redraw_all_later(UPD_CLEAR);
 		    compute_cmdrow();
 		    redrawcmd();
 		}
@@ -6483,7 +6483,7 @@ mch_write(
 	// sequence may be inserted asynchronously.
 	if (len < 0)
 	{
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
 	    return;
 	}
 
@@ -8334,9 +8334,9 @@ static int      timer_active = FALSE;
  * deleted. Ping-ponging between the two flags prevents this causing 'fake'
  * timeouts.
  */
-static int      timeout_flags[2];
-static int      flag_idx = 0;
-static int      *timeout_flag = &timeout_flags[0];
+static sig_atomic_t timeout_flags[2];
+static int	    timeout_flag_idx = 0;
+static sig_atomic_t *timeout_flag = &timeout_flags[0];
 
 
     static void CALLBACK
@@ -8378,12 +8378,12 @@ stop_timeout(void)
  * This function is not expected to fail, but if it does it still returns a
  * valid flag pointer; the flag will remain stuck at zero.
  */
-    const int *
+    volatile sig_atomic_t *
 start_timeout(long msec)
 {
     BOOL ret;
 
-    timeout_flag = &timeout_flags[flag_idx];
+    timeout_flag = &timeout_flags[timeout_flag_idx];
 
     stop_timeout();
     ret = CreateTimerQueueTimer(
@@ -8395,7 +8395,7 @@ start_timeout(long msec)
     }
     else
     {
-	flag_idx = (flag_idx + 1) % 2;
+	timeout_flag_idx = (timeout_flag_idx + 1) % 2;
 	timer_active = TRUE;
 	*timeout_flag = FALSE;
     }

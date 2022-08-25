@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Apr 11
+" Last Change:	2022 Aug 4
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -16,7 +16,7 @@ set cpo&vim
 
 if !exists('*VimFtpluginUndo')
   func VimFtpluginUndo()
-    setl fo< isk< com< tw< commentstring<
+    setl fo< isk< com< tw< commentstring< include< define<
     if exists('b:did_add_maps')
       silent! nunmap <buffer> [[
       silent! vunmap <buffer> [[
@@ -59,6 +59,11 @@ else
   setlocal commentstring=\"%s
 endif
 
+" set 'include' to recognize import commands
+setlocal include=\\v^\\s*import\\s*(autoload)?
+
+" set 'define' to recognize export commands
+setlocal define=\\v^\\s*export\\s*(def\|const\|var\|final)
 
 " Format comments to be up to 78 characters long
 if &tw == 0
@@ -105,7 +110,7 @@ if exists("loaded_matchit")
   " - set spl=de,en
   " - au! FileType javascript syntax region foldBraces start=/{/ end=/}/ …
   let b:match_skip = 'synIDattr(synID(line("."),col("."),1),"name")
-        \ =~? "comment\\|string\\|vimSynReg\\|vimSet"'
+        \ =~? "comment\\|string\\|vimLetHereDoc\\|vimSynReg\\|vimSet"'
 endif
 
 let &cpo = s:cpo_save

@@ -988,7 +988,7 @@ ex_rubydo(exarg_T *eap)
 	    }
 	}
 	check_cursor();
-	update_curbuf(NOT_VALID);
+	update_curbuf(UPD_NOT_VALID);
     }
 }
 
@@ -1195,7 +1195,7 @@ vim_message(VALUE self UNUSED, VALUE str)
 vim_set_option(VALUE self UNUSED, VALUE str)
 {
     do_set((char_u *)StringValuePtr(str), 0);
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
     return Qnil;
 }
 
@@ -1492,7 +1492,7 @@ set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 	aucmd_restbuf(&aco);
 	// Careful: autocommands may have made "buf" invalid!
 
-	update_curbuf(NOT_VALID);
+	update_curbuf(UPD_NOT_VALID);
     }
     else
     {
@@ -1538,7 +1538,7 @@ buffer_delete(VALUE self, VALUE num)
 	aucmd_restbuf(&aco);
 	// Careful: autocommands may have made "buf" invalid!
 
-	update_curbuf(NOT_VALID);
+	update_curbuf(UPD_NOT_VALID);
     }
     else
     {
@@ -1579,7 +1579,7 @@ buffer_append(VALUE self, VALUE num, VALUE str)
 	aucmd_restbuf(&aco);
 	// Careful: autocommands may have made "buf" invalid!
 
-	update_curbuf(NOT_VALID);
+	update_curbuf(UPD_NOT_VALID);
     }
     else
     {
@@ -1774,7 +1774,7 @@ window_set_cursor(VALUE self, VALUE pos)
     win->w_cursor.col = NUM2UINT(col);
     win->w_set_curswant = TRUE;
     check_cursor();		    // put cursor on an existing line
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
     return Qnil;
 }
 

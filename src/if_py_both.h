@@ -697,7 +697,7 @@ VimCommand(PyObject *self UNUSED, PyObject *string)
 
     VimTryStart();
     do_cmdline_cmd(cmd);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
 
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
@@ -4067,7 +4067,7 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 	// When column is out of range silently correct it.
 	check_cursor_col_win(self->win);
 
-	update_screen(VALID);
+	update_screen(UPD_VALID);
 	return 0;
     }
     else if (strcmp(name, "height") == 0)
@@ -4745,7 +4745,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 
 	vim_free(str);
 	restore_win_for_buf(&switchwin, &save_curbuf);
-	update_screen(VALID);
+	update_screen(UPD_VALID);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -4816,7 +4816,7 @@ InsertBufferLines(buf_T *buf, PyInt n, PyObject *lines, PyInt *len_change)
 	PyMem_Free(array);
 	restore_win_for_buf(&switchwin, &save_curbuf);
 
-	update_screen(VALID);
+	update_screen(UPD_VALID);
 
 	if (VimTryEnd())
 	    return FAIL;
@@ -5825,7 +5825,7 @@ out:
     if (status)
 	return;
     check_cursor();
-    update_curbuf(NOT_VALID);
+    update_curbuf(UPD_NOT_VALID);
 }
 
     static void

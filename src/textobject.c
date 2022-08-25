@@ -614,7 +614,6 @@ skip_chars(int cclass, int dir)
     return FALSE;
 }
 
-#if defined(FEAT_TEXTOBJ) || defined(PROTO)
 /*
  * Go back to the start of the word or the start of white space
  */
@@ -740,7 +739,7 @@ current_word(
 	{
 	    // should do something when inclusive == FALSE !
 	    VIsual = start_pos;
-	    redraw_curbuf_later(INVERTED);	// update the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// update the inversion
 	}
 	else
 	{
@@ -1010,7 +1009,7 @@ extend:
 	VIsual = start_pos;
 	VIsual_mode = 'v';
 	redraw_cmdline = TRUE;		// show mode later
-	redraw_curbuf_later(INVERTED);	// update the inversion
+	redraw_curbuf_later(UPD_INVERTED);	// update the inversion
     }
     else
     {
@@ -1167,7 +1166,7 @@ current_block(
 	    inc(&curwin->w_cursor);	// include the line break
 	VIsual = start_pos;
 	VIsual_mode = 'v';
-	redraw_curbuf_later(INVERTED);	// update the inversion
+	redraw_curbuf_later(UPD_INVERTED);	// update the inversion
 	showmode();
     }
     else
@@ -1189,6 +1188,7 @@ current_block(
     return OK;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if the cursor is on a "<aaa>" tag.  Ignore "<aaa/>".
  * When "end_tag" is TRUE return TRUE if the cursor is on "</aaa>".
@@ -1447,7 +1447,7 @@ again:
 	    inc_cursor();
 	VIsual = start_pos;
 	VIsual_mode = 'v';
-	redraw_curbuf_later(INVERTED);	// update the inversion
+	redraw_curbuf_later(UPD_INVERTED);	// update the inversion
 	showmode();
     }
     else
@@ -1470,6 +1470,7 @@ theend:
     p_ws = save_p_ws;
     return retval;
 }
+#endif
 
     int
 current_par(
@@ -1630,7 +1631,7 @@ extend:
 	    VIsual.col = 0;
 	}
 	VIsual_mode = 'V';
-	redraw_curbuf_later(INVERTED);	// update the inversion
+	redraw_curbuf_later(UPD_INVERTED);	// update the inversion
 	showmode();
     }
     else
@@ -1798,11 +1799,17 @@ current_quote(
 
 	// Find out if we have a quote in the selection.
 	while (i <= col_end)
+	{
+	    // check for going over the end of the line, which can happen if
+	    // the line was changed after the Visual area was selected.
+	    if (line[i] == NUL)
+		break;
 	    if (line[i++] == quotechar)
 	    {
 		selected_quote = TRUE;
 		break;
 	    }
+	}
     }
 
     if (!vis_empty && line[col_start] == quotechar)
@@ -1927,7 +1934,7 @@ current_quote(
 				|| line[VIsual.col - 1] != quotechar)))))
 	{
 	    VIsual = curwin->w_cursor;
-	    redraw_curbuf_later(INVERTED);
+	    redraw_curbuf_later(UPD_INVERTED);
 	}
     }
     else
@@ -1995,5 +2002,3 @@ abort_search:
     }
     return FALSE;
 }
-
-#endif // FEAT_TEXTOBJ

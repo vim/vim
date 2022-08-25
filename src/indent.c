@@ -797,7 +797,8 @@ set_indent(
 	    // the old indent, when decreasing indent it behaves like spaces
 	    // were deleted at the new indent.
 	    adjust_prop_columns(curwin->w_cursor.lnum,
-			  added > 0 ? old_offset : (colnr_T)ind_len, added, 0);
+				  added > 0 ? old_offset : (colnr_T)ind_len,
+				  added, APC_INDENT);
 	}
 #endif
 	retval = TRUE;
@@ -924,7 +925,8 @@ get_breakindent_win(
 {
     static int	    prev_indent = 0;	// cached indent value
     static long	    prev_ts     = 0L;	// cached tabstop value
-    static char_u   *prev_line = NULL;	// cached pointer to line
+    static int	    prev_fnum   = 0;	// cached buffer number
+    static char_u   *prev_line  = NULL;	// cached copy of "line"
     static varnumber_T prev_tick = 0;   // changedtick of cached value
 # ifdef FEAT_VARTABS
     static int      *prev_vts = NULL;   // cached vartabs values
@@ -941,21 +943,28 @@ get_breakindent_win(
 						? number_width(wp) + 1 : 0);
 
     // used cached indent, unless
-    // - line pointer changed
+    // - buffer changed
     // - 'tabstop' changed
+    // - buffer was changed
     // - 'briopt_list changed' changed or
     // - 'formatlistpattern' changed
-    if (prev_line != line || prev_ts != wp->w_buffer->b_p_ts
+    // - line changed
+    // - 'vartabs' changed
+    if (prev_fnum != wp->w_buffer->b_fnum
+	    || prev_ts != wp->w_buffer->b_p_ts
 	    || prev_tick != CHANGEDTICK(wp->w_buffer)
 	    || prev_listopt != wp->w_briopt_list
-	    || (prev_flp == NULL
-		|| (STRCMP(prev_flp, get_flp_value(wp->w_buffer)) != 0))
+	    || prev_flp == NULL
+	    || STRCMP(prev_flp, get_flp_value(wp->w_buffer)) != 0
+	    || prev_line == NULL || STRCMP(prev_line, line) != 0
 # ifdef FEAT_VARTABS
 	    || prev_vts != wp->w_buffer->b_p_vts_array
 # endif
 	)
     {
-	prev_line = line;
+	prev_fnum = wp->w_buffer->b_fnum;
+	vim_free(prev_line);
+	prev_line = vim_strsave(line);
 	prev_ts = wp->w_buffer->b_p_ts;
 	prev_tick = CHANGEDTICK(wp->w_buffer);
 # ifdef FEAT_VARTABS
@@ -1124,7 +1133,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
 		oap->is_VIsual ? start_lnum + oap->line_count :
 		last_changed + 1, 0L);
     else if (oap->is_VIsual)
-	redraw_curbuf_later(INVERTED);
+	redraw_curbuf_later(UPD_INVERTED);
 
     if (oap->line_count > p_report)
     {
@@ -1342,26 +1351,28 @@ change_indent(
 	new_cursor_col = curwin->w_cursor.col;
     else
     {
+	chartabsize_T cts;
+
 	// Compute the screen column where the cursor should be.
 	vcol = get_indent() - vcol;
 	curwin->w_virtcol = (colnr_T)((vcol < 0) ? 0 : vcol);
 
 	// Advance the cursor until we reach the right screen column.
-	vcol = last_vcol = 0;
-	new_cursor_col = -1;
+	last_vcol = 0;
 	ptr = ml_get_curline();
-	while (vcol <= (int)curwin->w_virtcol)
+	init_chartabsize_arg(&cts, curwin, 0, 0, ptr, ptr);
+	while (cts.cts_vcol <= (int)curwin->w_virtcol)
 	{
-	    last_vcol = vcol;
-	    if (has_mbyte && new_cursor_col >= 0)
-		new_cursor_col += (*mb_ptr2len)(ptr + new_cursor_col);
-	    else
-		++new_cursor_col;
-	    if (ptr[new_cursor_col] == NUL)
+	    last_vcol = cts.cts_vcol;
+	    if (cts.cts_vcol > 0)
+		MB_PTR_ADV(cts.cts_ptr);
+	    if (*cts.cts_ptr == NUL)
 		break;
-	    vcol += lbr_chartabsize(ptr, ptr + new_cursor_col, (colnr_T)vcol);
+	    cts.cts_vcol += lbr_chartabsize(&cts);
 	}
 	vcol = last_vcol;
+	new_cursor_col = cts.cts_ptr - cts.cts_line;
+	clear_chartabsize_arg(&cts);
 
 	// May need to insert spaces to be able to position the cursor on
 	// the right screen column.
@@ -1613,6 +1624,20 @@ copy_indent(int size, char_u *src)
 }
 
 /*
+ * Give a "resulting text too long" error and maybe set got_int.
+ */
+    static void
+emsg_text_too_long(void)
+{
+    emsg(_(e_resulting_text_too_long));
+#ifdef FEAT_EVAL
+    // when not inside a try/catch set got_int to break out of any loop
+    if (trylevel == 0)
+#endif
+	got_int = TRUE;
+}
+
+/*
  * ":retab".
  */
     void
@@ -1749,7 +1774,7 @@ ex_retab(exarg_T *eap)
 			new_len = old_len - col + start_col + len + 1;
 			if (new_len <= 0 || new_len >= MAXCOL)
 			{
-			    emsg(_(e_resulting_text_too_long));
+			    emsg_text_too_long();
 			    break;
 			}
 			new_line = alloc(new_len);
@@ -1780,9 +1805,7 @@ ex_retab(exarg_T *eap)
 	    vcol += chartabsize(ptr + col, (colnr_T)vcol);
 	    if (vcol >= MAXCOL)
 	    {
-		emsg(_(e_resulting_text_too_long));
-		// set got_int to break out of any loop
-		got_int = TRUE;
+		emsg_text_too_long();
 		break;
 	    }
 	    if (has_mbyte)
@@ -1808,10 +1831,10 @@ ex_retab(exarg_T *eap)
 	&& tabstop_eq(curbuf->b_p_vts_array, new_vts_array))
 	; // not changed
     else
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
 #else
     if (curbuf->b_p_ts != new_ts)
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
 #endif
     if (first_line != 0)
 	changed_lines(first_line, 0, last_line + 1, 0L);
@@ -2017,6 +2040,8 @@ get_lisp_indent(void)
 			    }
 			}
 		    }
+		    if (*that == NUL)
+			break;
 		}
 		if (*that == '(' || *that == '[')
 		    ++parencount;
@@ -2042,14 +2067,18 @@ get_lisp_indent(void)
 		amount = 2;
 	    else
 	    {
-		char_u *line = that;
+		char_u		*line = that;
+		chartabsize_T	cts;
 
-		amount = 0;
-		while (*that && col)
+		init_chartabsize_arg(&cts, curwin, pos->lnum, 0, line, line);
+		while (*cts.cts_ptr != NUL && col > 0)
 		{
-		    amount += lbr_chartabsize_adv(line, &that, (colnr_T)amount);
+		    cts.cts_vcol += lbr_chartabsize_adv(&cts);
 		    col--;
 		}
+		amount = cts.cts_vcol;
+		that = cts.cts_ptr;
+		clear_chartabsize_arg(&cts);
 
 		// Some keywords require "body" indenting rules (the
 		// non-standard-lisp ones are Scheme special forms):
@@ -2062,15 +2091,23 @@ get_lisp_indent(void)
 		    amount += 2;
 		else
 		{
-		    that++;
-		    amount++;
+		    if (*that != NUL)
+		    {
+			that++;
+			amount++;
+		    }
 		    firsttry = amount;
 
-		    while (VIM_ISWHITE(*that))
+		    init_chartabsize_arg(&cts, curwin, (colnr_T)(that - line),
+							   amount, line, that);
+		    while (VIM_ISWHITE(*cts.cts_ptr))
 		    {
-			amount += lbr_chartabsize(line, that, (colnr_T)amount);
-			++that;
+			cts.cts_vcol += lbr_chartabsize(&cts);
+			++cts.cts_ptr;
 		    }
+		    that = cts.cts_ptr;
+		    amount = cts.cts_vcol;
+		    clear_chartabsize_arg(&cts);
 
 		    if (*that && *that != ';') // not a comment line
 		    {
@@ -2082,42 +2119,47 @@ get_lisp_indent(void)
 			parencount = 0;
 			quotecount = 0;
 
+			init_chartabsize_arg(&cts, curwin,
+				   (colnr_T)(that - line), amount, line, that);
 			if (vi_lisp
 				|| (*that != '"'
 				    && *that != '\''
 				    && *that != '#'
 				    && (*that < '0' || *that > '9')))
 			{
-			    while (*that
-				    && (!VIM_ISWHITE(*that)
+			    while (*cts.cts_ptr
+				    && (!VIM_ISWHITE(*cts.cts_ptr)
 					|| quotecount
 					|| parencount)
-				    && (!((*that == '(' || *that == '[')
+				    && (!((*cts.cts_ptr == '('
+							|| *cts.cts_ptr == '[')
 					    && !quotecount
 					    && !parencount
 					    && vi_lisp)))
 			    {
-				if (*that == '"')
+				if (*cts.cts_ptr == '"')
 				    quotecount = !quotecount;
-				if ((*that == '(' || *that == '[')
+				if ((*cts.cts_ptr == '(' || *cts.cts_ptr == '[')
 							       && !quotecount)
 				    ++parencount;
-				if ((*that == ')' || *that == ']')
+				if ((*cts.cts_ptr == ')' || *cts.cts_ptr == ']')
 							       && !quotecount)
 				    --parencount;
-				if (*that == '\\' && *(that+1) != NUL)
-				    amount += lbr_chartabsize_adv(
-						line, &that, (colnr_T)amount);
-				amount += lbr_chartabsize_adv(
-						line, &that, (colnr_T)amount);
+				if (*cts.cts_ptr == '\\'
+						    && *(cts.cts_ptr+1) != NUL)
+				    cts.cts_vcol += lbr_chartabsize_adv(&cts);
+				cts.cts_vcol += lbr_chartabsize_adv(&cts);
 			    }
 			}
-			while (VIM_ISWHITE(*that))
+			while (VIM_ISWHITE(*cts.cts_ptr))
 			{
-			    amount += lbr_chartabsize(
-						 line, that, (colnr_T)amount);
-			    that++;
+			    cts.cts_vcol += lbr_chartabsize(&cts);
+			    ++cts.cts_ptr;
 			}
+			that = cts.cts_ptr;
+			amount = cts.cts_vcol;
+			clear_chartabsize_arg(&cts);
+
 			if (!*that || *that == ';')
 			    amount = firsttry;
 		    }

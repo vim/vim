@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.2.  Last change: 2022 Apr 06
+*insert.txt*    For Vim version 9.0.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -388,10 +388,10 @@ CTRL-G CTRL-J	cursor one line down, insert start column    *i_CTRL-G_CTRL-J*
 CTRL-O		execute one command, return to Insert mode   *i_CTRL-O*
 CTRL-\ CTRL-O	like CTRL-O but don't move the cursor	     *i_CTRL-\_CTRL-O*
 CTRL-L		when 'insertmode' is set: go to Normal mode  *i_CTRL-L*
-CTRL-G u	break undo sequence, start new change	     *i_CTRL-G_u*
-CTRL-G U	don't break undo with next left/right cursor *i_CTRL-G_U*
-		movement, if the cursor stays within the
-		same line
+CTRL-G u	close undo sequence, start new change	     *i_CTRL-G_u*
+CTRL-G U	don't start a new undo block with the next   *i_CTRL-G_U*
+		left/right cursor movement, if the cursor
+		stays within the same line
 -----------------------------------------------------------------------
 
 Note: If the cursor keys take you out of Insert mode, check the 'noesckeys'
@@ -428,8 +428,8 @@ that, with CTRL-O u.  Another example: >
 
 	:inoremap <CR> <C-]><C-G>u<CR>
 
-This breaks undo at each line break.  It also expands abbreviations before
-this.
+This starts a new undo block at each line break.  It also expands
+abbreviations before this.
 
 An example for using CTRL-G U: >
 
@@ -443,9 +443,9 @@ An example for using CTRL-G U: >
 	inoremap <expr> <End> repeat('<C-G>U<Right>', col('$') - col('.'))
 	inoremap ( ()<C-G>U<Left>
 
-This makes it possible to use the cursor keys in Insert mode, without breaking
-the undo sequence and therefore using |.| (redo) will work as expected.
-Also entering a text like (with the "(" mapping from above):
+This makes it possible to use the cursor keys in Insert mode, without starting
+a new undo block and therefore using |.| (redo) will work as expected.  Also
+entering a text like (with the "(" mapping from above):
 
    Lorem ipsum (dolor
 

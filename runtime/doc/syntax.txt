@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2022 Jun 10
+*syntax.txt*	For Vim version 9.0.  Last change: 2022 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1693,6 +1693,21 @@ because Fortran90 has no reserved words.
 
 For further information related to fortran, see |ft-fortran-indent| and
 |ft-fortran-plugin|.
+
+FREEBASIC				*freebasic.vim* *ft-freebasic-syntax*
+
+FreeBASIC files will be highlighted differently for each of the four available
+dialects, "fb", "qb", "fblite" and "deprecated".  See |ft-freebasic-plugin|
+for how to select the correct dialect.
+
+Highlighting is further configurable via the following variables.
+
+Variable			Highlight ~
+*freebasic_no_comment_fold*	disable multiline comment folding
+*freebasic_operators*		non-alpha operators
+*freebasic_space_errors*	trailing white space and spaces before a <Tab>
+*freebasic_type_suffixes*	QuickBASIC style type suffixes
+
 
 
 FVWM CONFIGURATION FILES			*fvwm.vim* *ft-fvwm-syntax*
@@ -4890,6 +4905,7 @@ Before the color scheme will be loaded all default color list scripts
 autocommand event is triggered.  After the color scheme has been loaded the
 |ColorScheme| autocommand event is triggered.
 
+						*colorscheme-override*
 If a color scheme is almost right, you can add modifications on top of it by
 using the |ColorScheme| autocommand.  For example, to remove the background
 color (can make it transparent in some terminals): >
@@ -5002,14 +5018,18 @@ the same syntax file on all terminals, and use the optimal highlighting.
 1. highlight arguments for normal terminals
 
 					*bold* *underline* *undercurl*
-					*inverse* *italic* *standout*
-					*nocombine* *strikethrough*
+					*underdouble* *underdotted*
+					*underdashed* *inverse* *italic*
+					*standout* *nocombine* *strikethrough*
 term={attr-list}			*attr-list* *highlight-term* *E418*
 	attr-list is a comma-separated list (without spaces) of the
 	following items (in any order):
 		bold
 		underline
 		undercurl	not always available
+		underdouble	not always available
+		underdotted	not always available
+		underdashed	not always available
 		strikethrough	not always available
 		reverse
 		inverse		same as reverse
@@ -5020,6 +5040,7 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 
 	Note that "bold" can be used here and by using a bold font.  They
 	have the same effect.
+							*underline-codes*
 	"undercurl" is a curly underline.  When "undercurl" is not possible
 	then "underline" is used.  In general "undercurl" and "strikethrough"
 	are only available in the GUI and some terminals.  The color is set
@@ -5027,6 +5048,17 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 	termcap entries to make undercurl work in a terminal: >
 	    let &t_Cs = "\e[4:3m"
 	    let &t_Ce = "\e[4:0m"
+
+<	"underdouble" is a double underline, "underdotted" is a dotted
+	underline and "underdashed" is a dashed underline.  These are only
+	supported by some terminals.  If your terminal supports them you may
+	have to specify the codes like this: >
+	    let &t_Us = "\e[4:2m"
+	    let &t_ds = "\e[4:4m"
+	    let &t_Ds = "\e[4:5m"
+<	They are reset with |t_Ce|, the same as curly underline (undercurl).
+	When t_Us, t_ds or t_Ds is not set then underline will be used as a
+	fallback.
 
 
 start={term-list}				*highlight-start* *E422*

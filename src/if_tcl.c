@@ -221,12 +221,13 @@ tcl_runtime_link_init(char *libname, int verbose)
     for (i = 0; tcl_funcname_table[i].ptr; ++i)
     {
 	if (!(*tcl_funcname_table[i].ptr = symbol_from_dll(hTclLib,
-			tcl_funcname_table[i].name)))
+						  tcl_funcname_table[i].name)))
 	{
 	    close_dll(hTclLib);
 	    hTclLib = NULL;
 	    if (verbose)
-		semsg(_(e_could_not_load_library_function_str), tcl_funcname_table[i].name);
+		semsg(_(e_could_not_load_library_function_str),
+						   tcl_funcname_table[i].name);
 	    return FAIL;
 	}
     }
@@ -263,11 +264,13 @@ tcl_enabled(int verbose)
     {
 	Tcl_Interp *interp;
 
+	// Note: the library will allocate memory to store the executable name,
+	// which will be reported as possibly leaked by valgrind.
 	dll_Tcl_FindExecutable(find_executable_arg);
 
 	if ((interp = dll_Tcl_CreateInterp()) != NULL)
 	{
-	    if (Tcl_InitStubs(interp, DYNAMIC_TCL_VER, 0))
+	    if (Tcl_InitStubs(interp, DYNAMIC_TCL_VER, 0) != NULL)
 	    {
 		Tcl_DeleteInterp(interp);
 		stubs_initialized = TRUE;
@@ -280,6 +283,9 @@ tcl_enabled(int verbose)
 #endif
 
 #if defined(EXITFREE) || defined(PROTO)
+/*
+ * Called once when exiting.
+ */
     void
 vim_tcl_finalize(void)
 {
@@ -645,7 +651,8 @@ bufselfcmd(
 			err = TCL_ERROR;
 		}
 	    }
-	    else {  // objc == 3
+	    else
+	    {  // objc == 3
 		line = (char *)ml_get_buf(buf, (linenr_T)val1, FALSE);
 		Tcl_SetResult(interp, line, TCL_VOLATILE);
 	    }
@@ -924,13 +931,13 @@ bufselfcmd(
     }
 
     if (flags & FL_UPDATE_CURBUF)
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
     curbuf = savebuf;
     curwin = savewin;
     if (flags & FL_ADJUST_CURSOR)
 	check_cursor();
     if (flags & (FL_UPDATE_SCREEN | FL_UPDATE_CURBUF))
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 
     return err;
 }
@@ -1084,7 +1091,8 @@ winselfcmd(
 		if (err != TCL_OK)
 		    break;
 	    }
-	    else {  // objc == 4
+	    else
+	    {  // objc == 4
 		err = tclgetlinenum(interp, objv[2], &val1, win->w_buffer);
 		if (err != TCL_OK)
 		    break;
@@ -1107,7 +1115,7 @@ winselfcmd(
     curwin = savewin;
     curbuf = savebuf;
     if (flags & FL_UPDATE_SCREEN)
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 
     return err;
 }
@@ -1123,7 +1131,7 @@ commandcmd(
     int		err;
 
     err = tcldoexcommand(interp, objc, objv, 1);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return err;
 }
 
@@ -1137,7 +1145,7 @@ optioncmd(
     int		err;
 
     err = tclsetoption(interp, objc, objv, 1);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return err;
 }
 

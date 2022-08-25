@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2022 Apr 16
+*editing.txt*   For Vim version 9.0.  Last change: 2022 Apr 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1225,7 +1225,7 @@ Examples: >
 
 If you want to always use ":confirm", set the 'confirm' option.
 
-			*:browse* *:bro* *E338*
+							*:browse* *:bro* *E338*
 :bro[wse] {command}	Open a file selection dialog for an argument to
 			{command}.  At present this works for |:e|, |:w|,
 			|:wall|, |:wq|, |:wqall|, |:x|, |:xall|, |:exit|,

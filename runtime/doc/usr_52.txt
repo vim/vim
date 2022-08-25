@@ -1,4 +1,4 @@
-*usr_52.txt*	For Vim version 8.2.  Last change: 2022 Jun 04
+*usr_52.txt*	For Vim version 9.0.  Last change: 2022 Jun 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -183,7 +183,7 @@ it a bit simpler.  The idea is that you call a function with a special name.
 That function is then in an autoload script.  We will call that one script a
 library script.
 
-The autoload mechanism is based on a funtion name that has "#" characters: >
+The autoload mechanism is based on a function name that has "#" characters: >
 
 	mylib#myfunction(arg)
 

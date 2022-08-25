@@ -4,7 +4,6 @@ char_u *highlight_group_name(int id);
 int highlight_link_id(int id);
 void init_highlight(int both, int reset);
 int load_colors(char_u *name);
-int lookup_color(int idx, int foreground, int *boldp);
 void do_highlight(char_u *line, int forceit, int init);
 void free_highlight(void);
 void restore_cterm_colors(void);

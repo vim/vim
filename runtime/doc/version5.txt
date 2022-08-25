@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 8.2.  Last change: 2022 Apr 06
+*version5.txt*  For Vim version 9.0.  Last change: 2022 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3262,7 +3262,7 @@ Files can be encrypted when writing and decrypted when reading.  Added the
 on patch from Mohsin Ahmed)
 
 When reading a file, there is an automatic detection whether it has been
-crypted.  Vim will then prompt for the key.
+encrypted.  Vim will then prompt for the key.
 
 Note that the encryption method is not compatible with Vi.  The encryption is
 not unbreakable.  This allows it to be exported from the US.
@@ -7622,7 +7622,7 @@ argument was fixed.
 Previously released patches for Vim 5.7:
 
 Patch 5.7.001
-Problem:    When the current buffer is crypted, and another modified buffer
+Problem:    When the current buffer is encrypted, and another modified buffer
 	    isn't, ":wall" will encrypt the other buffer.
 Solution:   In buf_write() use "buf" instead of "curbuf" to check for the
 	    crypt key.

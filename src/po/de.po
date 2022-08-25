@@ -3650,8 +3650,8 @@ msgstr "Tippe  :q<Enter>                zum Beenden               "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "Tippe  :help<Enter>  oder <F1>  für Online Hilfe          "
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "Tippe  :help version8<Enter>    für Versions-Informationen"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "Tippe  :help version9<Enter>    für Versions-Informationen"
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi kompatible Einstellung"
@@ -6692,7 +6692,7 @@ msgid "E805: Using a Float as a Number"
 msgstr "E805: Benutze Float als Nummer"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Float als String benutzt"
 
 msgid "E807: Expected Float argument for printf()"

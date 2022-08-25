@@ -3578,8 +3578,8 @@ msgstr "çıkmak için            :q<Enter>              "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "yardım belgeleri için  :help<Enter> veya <F1> "
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "sürüm bilgisi için     :help version8<Enter>  "
+msgid "type  :help version9<Enter>   for version info"
+msgstr "sürüm bilgisi için     :help version9<Enter>  "
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi uyumlu kipte çalışıyor"
@@ -6464,7 +6464,7 @@ msgstr "E804: Bir kayan noktalı değer ile '%' kullanılamaz"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Bir Kayan Noktalı Değer, Sayı yerine kullanılıyor"
 
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Kayan Noktalı Değer, bir Dizi yerine kullanılıyor"
 
 msgid "E807: Expected Float argument for printf()"

@@ -65,6 +65,9 @@ func s:term_vim.start(...) abort
   let self.job = term_getjob(self.buf)
   call WaitFor({-> job_status(self.job) ==# 'run'})
   let self.pid = job_info(self.job).process
+
+  " running an external command may fail once in a while
+  let g:test_is_flaky = 1
 endfunc
 
 func s:term_vim.stop() abort

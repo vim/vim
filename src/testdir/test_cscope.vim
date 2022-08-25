@@ -244,10 +244,13 @@ func Test_cscopeWithCscopeConnections()
     call assert_equal('', a)
 
     " Test: 'csprg' option
-    call assert_equal('cscope', &csprg)
-    set csprg=doesnotexist
-    call assert_fails('cscope add Xcscope2.out', 'E262:')
-    set csprg=cscope
+    " Skip this with valgrind, it causes spurious leak reports
+    if !RunningWithValgrind()
+      call assert_equal('cscope', &csprg)
+      set csprg=doesnotexist
+      call assert_fails('cscope add Xcscope2.out', 'E262:')
+      set csprg=cscope
+    endif
 
     " Test: multiple cscope connections
     cscope add Xcscope.out

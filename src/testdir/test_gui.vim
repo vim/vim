@@ -118,9 +118,8 @@ func Test_quoteplus()
 
   let test_call     = 'Can you hear me?'
   let test_response = 'Yes, I can.'
-  let vim_exe = GetVimCommand()
-  let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
-        \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
+  let testee = 'VIMRUNTIME=' .. $VIMRUNTIME .. '; export VIMRUNTIME;'
+        \ .. GetVimCommand() .. ' --noplugin --not-a-term -c ''%s'''
   " Ignore the "failed to create input context" error.
   let cmd = 'call test_ignore_error("E285") | '
         \ . 'gui -f | '
@@ -1344,8 +1343,6 @@ endfunc
 
 " Test for dropping files into a window in GUI
 func DropFilesInCmdLine()
-  CheckFeature drop_file
-
   call feedkeys(":\"", 'L')
   let d = #{files: ['a.c', 'b.c'], row: &lines, col: 1, modifiers: 0}
   call test_gui_event('dropfiles', d)
@@ -1586,6 +1583,111 @@ func Test_gui_CTRL_SHIFT_V()
   call feedkeys(":let g:str = '\<*C-S-V>\<*C-S-I>\<*C-S-V>\<*C-S-@>'\<CR>", 'tx')
   call assert_equal('<C-S-I><C-S-@>', g:str)
   unlet g:str
+endfunc
+
+func Test_gui_dialog_file()
+  let lines =<< trim END
+    file Xfile
+    normal axxx
+    confirm qa
+  END
+  call writefile(lines, 'Xlines')
+  let prefix = '!'
+  if has('win32')
+    let prefix = '!start '
+  endif
+  execute prefix .. GetVimCommand() .. ' -g -f --clean --gui-dialog-file Xdialog -S Xlines'
+
+  call WaitForAssert({-> assert_true(filereadable('Xdialog'))})
+  call assert_match('Question: Save changes to "Xfile"?', readfile('Xdialog')->join('<NL>'))
+
+  call delete('Xdialog')
+  call delete('Xfile')
+  call delete('Xlines')
+endfunc
+
+" Test for sending low level key presses
+func SendKeys(keylist)
+  for k in a:keylist
+    call test_gui_event("sendevent", #{event: "keydown", keycode: k})
+  endfor
+  for k in reverse(a:keylist)
+    call test_gui_event("sendevent", #{event: "keyup", keycode: k})
+  endfor
+endfunc
+
+func Test_gui_lowlevel_keyevent()
+  CheckMSWindows
+  new
+
+  " Test for <Ctrl-A> to <Ctrl-Z> keys
+  for kc in range(65, 90)
+    call SendKeys([0x11, kc])
+    let ch = getcharstr()
+    call assert_equal(nr2char(kc - 64), ch)
+  endfor
+
+  " Test for the various Ctrl and Shift key combinations.
+  let keytests = [
+    \ [[0x10, 0x21], "\<S-Pageup>", 2],
+    \ [[0x11, 0x21], "\<C-Pageup>", 4],
+    \ [[0x10, 0x22], "\<S-PageDown>", 2],
+    \ [[0x11, 0x22], "\<C-PageDown>", 4],
+    \ [[0x10, 0x23], "\<S-End>", 0],
+    \ [[0x11, 0x23], "\<C-End>", 0],
+    \ [[0x10, 0x24], "\<S-Home>", 0],
+    \ [[0x11, 0x24], "\<C-Home>", 0],
+    \ [[0x10, 0x25], "\<S-Left>", 0],
+    \ [[0x11, 0x25], "\<C-Left>", 0],
+    \ [[0x10, 0x26], "\<S-Up>", 0],
+    \ [[0x11, 0x26], "\<C-Up>", 4],
+    \ [[0x10, 0x27], "\<S-Right>", 0],
+    \ [[0x11, 0x27], "\<C-Right>", 0],
+    \ [[0x10, 0x28], "\<S-Down>", 0],
+    \ [[0x11, 0x28], "\<C-Down>", 4],
+    \ [[0x11, 0x30], "\<C-0>", 4],
+    \ [[0x11, 0x31], "\<C-1>", 4],
+    \ [[0x11, 0x32], "\<C-2>", 4],
+    \ [[0x11, 0x33], "\<C-3>", 4],
+    \ [[0x11, 0x34], "\<C-4>", 4],
+    \ [[0x11, 0x35], "\<C-5>", 4],
+    \ [[0x11, 0x36], "\<C-^>", 0],
+    \ [[0x11, 0x37], "\<C-7>", 4],
+    \ [[0x11, 0x38], "\<C-8>", 4],
+    \ [[0x11, 0x39], "\<C-9>", 4],
+    \ [[0x11, 0x60], "\<C-0>", 4],
+    \ [[0x11, 0x61], "\<C-1>", 4],
+    \ [[0x11, 0x62], "\<C-2>", 4],
+    \ [[0x11, 0x63], "\<C-3>", 4],
+    \ [[0x11, 0x64], "\<C-4>", 4],
+    \ [[0x11, 0x65], "\<C-5>", 4],
+    \ [[0x11, 0x66], "\<C-6>", 4],
+    \ [[0x11, 0x67], "\<C-7>", 4],
+    \ [[0x11, 0x68], "\<C-8>", 4],
+    \ [[0x11, 0x69], "\<C-9>", 4],
+    \ [[0x11, 0x6A], "\<C-*>", 4],
+    \ [[0x11, 0x6B], "\<C-+>", 4],
+    \ [[0x11, 0x6D], "\<C-->", 4],
+    \ [[0x11, 0x70], "\<C-F1>", 4],
+    \ [[0x11, 0x71], "\<C-F2>", 4],
+    \ [[0x11, 0x72], "\<C-F3>", 4],
+    \ [[0x11, 0x73], "\<C-F4>", 4],
+    \ [[0x11, 0x74], "\<C-F5>", 4],
+    \ [[0x11, 0x75], "\<C-F6>", 4],
+    \ [[0x11, 0x76], "\<C-F7>", 4],
+    \ [[0x11, 0x77], "\<C-F8>", 4],
+    \ [[0x11, 0x78], "\<C-F9>", 4],
+    \ ]
+
+  for [kcodes, kstr, kmod] in keytests
+    call SendKeys(kcodes)
+    let ch = getcharstr()
+    let mod = getcharmod()
+    call assert_equal(kstr, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod)
+  endfor
+
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

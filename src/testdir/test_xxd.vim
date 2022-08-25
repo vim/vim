@@ -219,6 +219,53 @@ func Test_xxd()
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
   endfor
 
+  " Test 17: Print C include with custom variable name
+  let s:test += 1
+  call writefile(['TESTabcd09'], 'XXDfile')
+  for arg in ['-nvarName', '-n varName', '-name varName']
+    %d
+    exe '0r! ' . s:xxd_cmd . ' -i ' . arg . ' XXDfile'
+    $d
+    let expected =<< trim [CODE]
+      unsigned char varName[] = {
+        0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
+      };
+      unsigned int varName_len = 11;
+    [CODE]
+  
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
+
+  " using "-n name" reading from stdin
+  %d
+  exe '0r! ' . s:xxd_cmd . ' -i < XXDfile -n StdIn'
+  $d
+  let expected =<< trim [CODE]
+    unsigned char StdIn[] = {
+      0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
+    };
+    unsigned int StdIn_len = 11;
+  [CODE]
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
+
+  " Test 18: Print C include: custom variable names can be capitalized
+  let s:test += 1
+  for arg in ['-C', '-capitalize']
+    call writefile(['TESTabcd09'], 'XXDfile')
+    %d
+    exe '0r! ' . s:xxd_cmd . ' -i ' . arg . ' -n varName XXDfile'
+    $d
+    let expected =<< trim [CODE]
+      unsigned char VARNAME[] = {
+        0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
+      };
+      unsigned int VARNAME_LEN = 11;
+    [CODE]
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
+
+
   %d
   bwipe!
   call delete('XXDfile')

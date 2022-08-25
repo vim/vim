@@ -653,7 +653,7 @@ msgid "E731: using Dictionary as a String"
 msgstr "E731: Dictionary gebruiken als een String"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Float gebruiken als een String"
 
 #, c-format
@@ -5402,8 +5402,8 @@ msgstr "typ :q<Enter> om te stoppen"
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "typ :help<Enter> of <F1> voor on-line hulp"
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "typ :help version8<Enter> voor versieinformatie"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "typ :help version9<Enter> voor versieinformatie"
 
 msgid "Running in Vi compatible mode"
 msgstr "wordt uitgevoerd in Vi compatible-modus"

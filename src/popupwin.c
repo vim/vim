@@ -406,7 +406,7 @@ popup_handle_scrollbar_click(win_T *wp, int row, int col)
 		}
 	    }
 	    popup_set_firstline(wp);
-	    redraw_win_later(wp, NOT_VALID);
+	    redraw_win_later(wp, UPD_NOT_VALID);
 	}
     }
 }
@@ -433,7 +433,7 @@ popup_add_timeout(win_T *wp, int time)
     static poppos_T
 get_pos_entry(dict_T *d, int give_error)
 {
-    char_u  *str = dict_get_string(d, (char_u *)"pos", FALSE);
+    char_u  *str = dict_get_string(d, "pos", FALSE);
     int	    nr;
 
     if (str == NULL)
@@ -458,13 +458,13 @@ apply_move_options(win_T *wp, dict_T *d)
     char_u	*str;
     dictitem_T	*di;
 
-    if ((nr = dict_get_number_def(d, (char_u *)"minwidth", -1)) >= 0)
+    if ((nr = dict_get_number_def(d, "minwidth", -1)) >= 0)
 	wp->w_minwidth = nr;
-    if ((nr = dict_get_number_def(d, (char_u *)"minheight", -1)) >= 0)
+    if ((nr = dict_get_number_def(d, "minheight", -1)) >= 0)
 	wp->w_minheight = nr;
-    if ((nr = dict_get_number_def(d, (char_u *)"maxwidth", -1)) >= 0)
+    if ((nr = dict_get_number_def(d, "maxwidth", -1)) >= 0)
 	wp->w_maxwidth = nr;
-    if ((nr = dict_get_number_def(d, (char_u *)"maxheight", -1)) >= 0)
+    if ((nr = dict_get_number_def(d, "maxheight", -1)) >= 0)
 	wp->w_maxheight = nr;
 
     nr = popup_options_one(d, (char_u *)"line");
@@ -475,7 +475,7 @@ apply_move_options(win_T *wp, dict_T *d)
 	wp->w_wantcol = nr;
 
 
-    nr = dict_get_bool(d, (char_u *)"fixed", -1);
+    nr = dict_get_bool(d, "fixed", -1);
     if (nr != -1)
 	wp->w_popup_fixed = nr != 0;
 
@@ -486,7 +486,7 @@ apply_move_options(win_T *wp, dict_T *d)
 	    wp->w_popup_pos = ppt;
     }
 
-    str = dict_get_string(d, (char_u *)"textprop", FALSE);
+    str = dict_get_string(d, "textprop", FALSE);
     if (str != NULL)
     {
 	wp->w_popup_prop_type = 0;
@@ -513,7 +513,7 @@ apply_move_options(win_T *wp, dict_T *d)
 
     di = dict_find(d, (char_u *)"textpropid", -1);
     if (di != NULL)
-	wp->w_popup_prop_id = dict_get_number(d, (char_u *)"textpropid");
+	wp->w_popup_prop_id = dict_get_number(d, "textpropid");
 }
 
 /*
@@ -674,7 +674,7 @@ popup_highlight_curline(win_T *wp)
 
 	sign_place(&sign_id, (char_u *)"PopUpMenu", sign_name,
 			       wp->w_buffer, wp->w_cursor.lnum, SIGN_DEF_PRIO);
-	redraw_win_later(wp, NOT_VALID);
+	redraw_win_later(wp, UPD_NOT_VALID);
     }
     else
 	sign_undefine_by_name(sign_name, FALSE);
@@ -696,27 +696,27 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"firstline", -1);
     if (di != NULL)
     {
-	wp->w_firstline = dict_get_number(dict, (char_u *)"firstline");
+	wp->w_firstline = dict_get_number(dict, "firstline");
 	if (wp->w_firstline < 0)
 	    wp->w_firstline = -1;
     }
 
-    nr = dict_get_bool(dict, (char_u *)"scrollbar", -1);
+    nr = dict_get_bool(dict, "scrollbar", -1);
     if (nr != -1)
 	wp->w_want_scrollbar = nr;
 
-    str = dict_get_string(dict, (char_u *)"title", FALSE);
+    str = dict_get_string(dict, "title", FALSE);
     if (str != NULL)
     {
 	vim_free(wp->w_popup_title);
 	wp->w_popup_title = vim_strsave(str);
     }
 
-    nr = dict_get_bool(dict, (char_u *)"wrap", -1);
+    nr = dict_get_bool(dict, "wrap", -1);
     if (nr != -1)
 	wp->w_p_wrap = nr != 0;
 
-    nr = dict_get_bool(dict, (char_u *)"drag", -1);
+    nr = dict_get_bool(dict, "drag", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -724,7 +724,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	else
 	    wp->w_popup_flags &= ~POPF_DRAG;
     }
-    nr = dict_get_bool(dict, (char_u *)"dragall", -1);
+    nr = dict_get_bool(dict, "dragall", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -733,7 +733,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_DRAGALL;
     }
 
-    nr = dict_get_bool(dict, (char_u *)"posinvert", -1);
+    nr = dict_get_bool(dict, "posinvert", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -742,7 +742,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_POSINVERT;
     }
 
-    nr = dict_get_bool(dict, (char_u *)"resize", -1);
+    nr = dict_get_bool(dict, "resize", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -775,7 +775,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    semsg(_(e_invalid_value_for_argument_str_str), "close", tv_get_string(&di->di_tv));
     }
 
-    str = dict_get_string(dict, (char_u *)"highlight", FALSE);
+    str = dict_get_string(dict, "highlight", FALSE);
     if (str != NULL)
     {
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
@@ -861,7 +861,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"zindex", -1);
     if (di != NULL)
     {
-	wp->w_zindex = dict_get_number(dict, (char_u *)"zindex");
+	wp->w_zindex = dict_get_number(dict, "zindex");
 	if (wp->w_zindex < 1)
 	    wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
 	if (wp->w_zindex > 32000)
@@ -903,7 +903,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 
 #if defined(FEAT_TIMERS)
     // Add timer to close the popup after some time.
-    nr = dict_get_number(dict, (char_u *)"time");
+    nr = dict_get_number(dict, "time");
     if (nr > 0)
 	popup_add_timeout(wp, nr);
 #endif
@@ -922,7 +922,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	handle_moved_argument(wp, di, TRUE);
     }
 
-    nr = dict_get_bool(dict, (char_u *)"cursorline", -1);
+    nr = dict_get_bool(dict, "cursorline", -1);
     if (nr != -1)
     {
 	if (nr != 0)
@@ -942,7 +942,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    set_callback(&wp->w_filter_cb, &callback);
 	}
     }
-    nr = dict_get_bool(dict, (char_u *)"mapping", -1);
+    nr = dict_get_bool(dict, "mapping", -1);
     if (nr != -1)
     {
 	if (nr)
@@ -951,7 +951,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_MAPPING;
     }
 
-    str = dict_get_string(dict, (char_u *)"filtermode", FALSE);
+    str = dict_get_string(dict, "filtermode", FALSE);
     if (str != NULL)
     {
 	if (STRCMP(str, "a") == 0)
@@ -990,7 +990,7 @@ apply_options(win_T *wp, dict_T *dict, int create)
 
     apply_general_options(wp, dict);
 
-    nr = dict_get_bool(dict, (char_u *)"hidden", FALSE);
+    nr = dict_get_bool(dict, "hidden", FALSE);
     if (nr > 0)
 	wp->w_popup_flags |= POPF_HIDDEN | POPF_HIDDEN_FORCE;
 
@@ -1051,8 +1051,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 	    return;
 	}
 	dict = li->li_tv.vval.v_dict;
-	p = dict == NULL ? NULL
-			      : dict_get_string(dict, (char_u *)"text", FALSE);
+	p = dict == NULL ? NULL : dict_get_string(dict, "text", FALSE);
 	ml_append_buf(buf, lnum++,
 			       p == NULL ? (char_u *)"" : p, (colnr_T)0, TRUE);
     }
@@ -1086,9 +1085,9 @@ add_popup_dicts(buf_T *buf, list_T *l)
 		    dict = pli->li_tv.vval.v_dict;
 		    if (dict != NULL)
 		    {
-			int col = dict_get_number(dict, (char_u *)"col");
+			int col = dict_get_number(dict, "col");
 
-			prop_add_common( lnum, col, dict, buf, NULL);
+			prop_add_common(lnum, col, dict, buf, NULL);
 		    }
 		}
 	    }
@@ -1224,7 +1223,7 @@ popup_adjust_position(win_T *wp)
 	    {
 		wp->w_popup_flags |= POPF_HIDDEN;
 		if (win_valid(wp->w_popup_prop_win))
-		    redraw_win_later(wp->w_popup_prop_win, SOME_VALID);
+		    redraw_win_later(wp->w_popup_prop_win, UPD_SOME_VALID);
 	    }
 	    return;
 	}
@@ -1372,7 +1371,7 @@ popup_adjust_position(win_T *wp)
 	// "margin_width" is added to "len" where it matters.
 	if (wp->w_width < maxwidth)
 	    wp->w_width = maxwidth;
-	len = win_linetabsize(wp, ml_get_buf(wp->w_buffer, lnum, FALSE),
+	len = win_linetabsize(wp, lnum, ml_get_buf(wp->w_buffer, lnum, FALSE),
 							      (colnr_T)MAXCOL);
 	wp->w_width = w_width;
 
@@ -1637,7 +1636,7 @@ popup_adjust_position(win_T *wp)
 	    || org_width != wp->w_width
 	    || org_height != wp->w_height)
     {
-	redraw_win_later(wp, NOT_VALID);
+	redraw_win_later(wp, UPD_NOT_VALID);
 	if (wp->w_popup_flags & POPF_ON_CMDLINE)
 	    clear_cmdline = TRUE;
 	popup_mask_refresh = TRUE;
@@ -1975,7 +1974,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     if (d != NULL)
     {
 	if (dict_has_key(d, "tabpage"))
-	    tabnr = (int)dict_get_number(d, (char_u *)"tabpage");
+	    tabnr = (int)dict_get_number(d, "tabpage");
 	else if (type == TYPE_NOTIFICATION)
 	    tabnr = -1;  // notifications are global by default
 	else
@@ -2212,7 +2211,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     wp->w_vsep_width = 0;
 
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     popup_mask_refresh = TRUE;
 
 #ifdef FEAT_TERMINAL
@@ -2641,7 +2640,7 @@ popup_hide(win_T *wp)
     {
 	wp->w_popup_flags |= POPF_HIDDEN;
 	// Do not decrement b_nwindows, we still reference the buffer.
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(UPD_NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
 }
@@ -2673,7 +2672,7 @@ popup_show(win_T *wp)
     if ((wp->w_popup_flags & POPF_HIDDEN) != 0)
     {
 	wp->w_popup_flags &= ~POPF_HIDDEN;
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(UPD_NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
 }
@@ -2726,7 +2725,7 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 	else
 	{
 	    popup_set_buffer_text(wp->w_buffer, argvars[1]);
-	    redraw_win_later(wp, NOT_VALID);
+	    redraw_win_later(wp, UPD_NOT_VALID);
 	    popup_adjust_position(wp);
 	}
     }
@@ -2741,7 +2740,7 @@ popup_free(win_T *wp)
 	clear_cmdline = TRUE;
     win_free_popup(wp);
 
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     popup_mask_refresh = TRUE;
 }
 
@@ -2920,7 +2919,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     apply_options(wp, dict, FALSE);
 
     if (old_firstline != wp->w_firstline)
-	redraw_win_later(wp, NOT_VALID);
+	redraw_win_later(wp, UPD_NOT_VALID);
     popup_adjust_position(wp);
 }
 
@@ -2983,7 +2982,7 @@ f_popup_list(typval_T *argvars UNUSED, typval_T *rettv)
     win_T	*wp;
     tabpage_T	*tp;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
     FOR_ALL_POPUPWINS(wp)
 	list_append_number(rettv->vval.v_list, wp->w_id);
@@ -3676,9 +3675,9 @@ may_update_popup_mask(int type)
     int		redrawing_all_win;
 
     // Need to recompute when switching tabs.
-    // Also recompute when the type is CLEAR or NOT_VALID, something basic
-    // (such as the screen size) must have changed.
-    if (popup_mask_tab != curtab || type >= NOT_VALID)
+    // Also recompute when the type is UPD_CLEAR or UPD_NOT_VALID, something
+    // basic (such as the screen size) must have changed.
+    if (popup_mask_tab != curtab || type >= UPD_NOT_VALID)
     {
 	popup_mask_refresh = TRUE;
 	redraw_all_popups = TRUE;
@@ -3710,7 +3709,7 @@ may_update_popup_mask(int type)
     // compare with "popup_mask" to see what changed.
     redrawing_all_win = TRUE;
     FOR_ALL_WINDOWS(wp)
-	if (wp->w_redr_type < SOME_VALID)
+	if (wp->w_redr_type < UPD_SOME_VALID)
 	    redrawing_all_win = FALSE;
     if (redrawing_all_win)
 	mask = popup_mask;
@@ -3797,7 +3796,7 @@ may_update_popup_mask(int type)
 #if defined(FEAT_TERMINAL)
 			    // A terminal window needs to be redrawn.
 			    if (bt_terminal(wp->w_buffer))
-				redraw_win_later(wp, NOT_VALID);
+				redraw_win_later(wp, UPD_NOT_VALID);
 			    else
 #endif
 			    {
@@ -4455,7 +4454,7 @@ popup_set_title(win_T *wp)
 	if (wp->w_popup_title != NULL)
 	    vim_snprintf((char *)wp->w_popup_title, len, " %s ",
 							wp->w_buffer->b_fname);
-	redraw_win_later(wp, VALID);
+	redraw_win_later(wp, UPD_VALID);
     }
 }
 

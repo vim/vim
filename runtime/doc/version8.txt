@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2022 Feb 26
+*version8.txt*  For Vim version 9.0.  Last change: 2022 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -370,8 +370,8 @@ New autocommand events: ~
 |OptionSet|		after setting any option
 |TabClosed|		after closing a tab page
 |TabNew|		after creating a new tab page
-|TextChangedI|		after a change was made to the text in Insert mode
 |TextChanged|		after a change was made to the text in Normal mode
+|TextChangedI|		after a change was made to the text in Insert mode
 |WinNew|		after creating a new window
 
 
@@ -18427,7 +18427,7 @@ Problem:    When 'wrapscan' is off "gn" does not select the whole pattern when
 Solution:   Check if the search fails. (Christian Brabandt, closes #1683)
 Files:      src/search.c, src/testdir/test_gn.vim
 
-Patch 8.0.0628 (after 8.0.0626
+Patch 8.0.0628 (after 8.0.0626)
 Problem:    Cursor disappears after silent mapping. (Ramel Eshed)
 Solution:   Do restore the cursor when it was changed, but don't change it in
             the first place for a silent mapping.

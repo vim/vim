@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2022 May 24
+*autocmd.txt*   For Vim version 9.0.  Last change: 2022 May 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1275,7 +1275,7 @@ User				Never executed automatically.  To be used for
 				    if exists('#User#MyEvent')
 					doautocmd User MyEvent
 				    endif
-
+<
 							*SigUSR1*
 SigUSR1				After the SIGUSR1 signal has been detected.
 				Could be used if other ways of notifying Vim

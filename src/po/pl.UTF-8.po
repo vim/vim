@@ -429,7 +429,7 @@ msgid "E461: Illegal variable name: %s"
 msgstr "E461: Niedozwolona nazwa zmiennej: %s"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Użycie Zmiennoprzecinkowej jako Łańcucha"
 
 msgid "E687: Less targets than List items"
@@ -6168,8 +6168,8 @@ msgstr "wprowadź :q<Enter>                zakończenie programu   "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "wprowadź :help<Enter>  lub  <F1>  pomoc na bieżąco       "
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "wprowadź :help version8<Enter>    dla informacji o wersji"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "wprowadź :help version9<Enter>    dla informacji o wersji"
 
 msgid "Running in Vi compatible mode"
 msgstr "Działam w trybie zgodności z Vi"

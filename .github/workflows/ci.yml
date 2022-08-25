@@ -172,7 +172,7 @@ jobs:
           sudo bash ci/setup-xvfb.sh
 
       - name: Cache snd-dummy
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ env.SND_DUMMY_DIR }}
           key: linux-${{ env.LINUX_VERSION }}-snd-dummy
@@ -448,7 +448,7 @@ jobs:
           echo %WINPTY_URL%>> urls.txt
 
       - name: Cache downloaded files
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: downloads
           key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}

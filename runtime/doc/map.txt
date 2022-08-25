@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2022 Jun 02
+*map.txt*       For Vim version 9.0.  Last change: 2022 Jun 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -177,7 +177,7 @@ Because it tries to unmap "@@ ", including the white space before the command
 separator "|".  Other examples with trailing white space: >
 	unmap @@ 
 	unmap @@     # Vim9 script comment
-	unmap @@     " legacy comment
+	unmap @@     " legacy script comment
 
 An error will be issued, which is very hard to identify, because the ending
 whitespace character in `unmap @@ ` is not visible.
@@ -185,8 +185,8 @@ whitespace character in `unmap @@ ` is not visible.
 A generic solution is to put the command separator "|" right after the mapped
 keys.  After that white space and a comment may follow: >
 
-	unmap @@|    # Vim9 scriptcomment
-	unmap @@|    " legacy scriptcomment
+	unmap @@|    # Vim9 script comment
+	unmap @@|    " legacy script comment
 
 
 1.2 SPECIAL ARGUMENTS					*:map-arguments*
@@ -195,7 +195,8 @@ keys.  After that white space and a comment may follow: >
 "<unique>" can be used in any order.  They must appear right after the
 command, before any other arguments.
 
-			*:map-local* *:map-<buffer>* *:map-buffer* *E224* *E225*
+				    *:map-local* *:map-<buffer>* *:map-buffer*
+				    *E224* *E225*
 If the first argument to one of these commands is "<buffer>" the mapping will
 be effective in the current buffer only.  Example: >
 	:map <buffer>  ,w  /[.,;]<CR>
@@ -373,15 +374,17 @@ command: it is executed as if an (unrestricted) |autocommand| was invoked.
 <ScriptCmd> is like <Cmd> but sets the context to the script the mapping was
 defined in, for the duration of the command execution.  This is especially
 useful for |Vim9| script.  It also works to access an import, which is useful
-in a plugin using an autoload script: >
+in a plugin using a, possibly autoloaded, script: >
 	vim9script
 	import autoload 'implementation.vim' as impl
 	nnoremap <F4> <ScriptCmd>impl.DoTheWork()<CR>
-
+<
 No matter where <F4> is typed, the "impl" import will be found in the script
-context of where the mapping was defined.  And since it's an autoload import,
-the "implementation.vim" script will only be loaded once <F4> is typed, not
-when the mapping is defined.
+context of where the mapping was defined.  When it's an autoload import, as in
+the example, the "implementation.vim" script will only be loaded once <F4> is
+typed, not when the mapping is defined.
+
+Without <ScriptCmd> using "s:impl" would result in "E121: Undefined variable".
 
 Note:
 - Because <Cmd> and <ScriptCmd> avoid mode-changes it does not trigger
@@ -394,8 +397,6 @@ Note:
   mapping is recursive.
 - In Visual mode  you can use `line('v')` and `col('v')` to get one end of the
   Visual area, the cursor is at the other end.
-- In Select mode, |:map| and |:vmap| command mappings are executed in
-  Visual mode.  Use |:smap| to handle Select mode differently.
 
 							*E1255* *E1136*
 <Cmd> and <ScriptCmd> commands must terminate, that is, they must be followed
@@ -681,19 +682,22 @@ two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then or
 otherwise it would be impossible to type the á character.
 
 					*<Leader>* *mapleader*
-To define a mapping which uses the "mapleader" variable, the special string
-"<Leader>" can be used.  It is replaced with the string value of "mapleader".
-If "mapleader" is not set or empty, a backslash is used instead.  Example: >
-	:map <Leader>A  oanother line<Esc>
+To define a mapping which uses the "g:mapleader" variable, the special string
+"<Leader>" can be used.  It is replaced with the string value of
+"g:mapleader".  If "g:mapleader" is not set or empty, a backslash is used
+instead.  Example: >
+	map <Leader>A  oanother line<Esc>
 Works like: >
-	:map \A  oanother line<Esc>
-But after: >
-	:let mapleader = ","
+	map \A  oanother line<Esc>
+But after (legacy script): >
+	let mapleader = ","
+Or (Vim9 script): >
+	g:mapleader = ","
 It works like: >
-	:map ,A  oanother line<Esc>
+	map ,A  oanother line<Esc>
 
-Note that the value of "mapleader" is used at the moment the mapping is
-defined.  Changing "mapleader" after that has no effect for already defined
+Note that the value of "g:mapleader" is used at the moment the mapping is
+defined.  Changing "g:mapleader" after that has no effect for already defined
 mappings.
 
 					*<LocalLeader>* *maplocalleader*
@@ -1722,10 +1726,10 @@ The valid escape sequences are
 		nothing. Supported modifiers are |:aboveleft|, |:belowright|,
 		|:botright|, |:browse|, |:confirm|, |:hide|, |:keepalt|,
 		|:keepjumps|, |:keepmarks|, |:keeppatterns|, |:leftabove|,
-		|:lockmarks|, |:noswapfile| |:rightbelow|, |:silent|, |:tab|,
-		|:topleft|, |:verbose|, and |:vertical|.
-		Note that these are not yet supported: |:noautocmd|,
-		|:sandbox| and |:unsilent|.
+		|:lockmarks|, |:noautocmd|, |:noswapfile| |:rightbelow|,
+		|:sandbox|, |:silent|, |:tab|, |:topleft|, |:unsilent|,
+		|:verbose|, and |:vertical|.
+		Note that |:filter| is not supported.
 		Examples: >
 		    command! -nargs=+ -complete=file MyEdit
 				\ for f in expand(<q-args>, 0, 1) |

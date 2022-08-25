@@ -92,6 +92,12 @@ free_locals(cctx_T *cctx)
     int
 check_vim9_unlet(char_u *name)
 {
+    if (*name == NUL)
+    {
+	semsg(_(e_argument_required_for_str), "unlet");
+	return FAIL;
+    }
+
     if (name[1] != ':' || vim_strchr((char_u *)"gwtb", *name) == NULL)
     {
 	// "unlet s:var" is allowed in legacy script.
@@ -188,9 +194,16 @@ compile_lock_unlock(
     size_t	len;
     char_u	*buf;
     isntype_T	isn = ISN_EXEC;
+    char	*cmd = eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar";
 
     if (cctx->ctx_skip == SKIP_YES)
 	return OK;
+
+    if (*p == NUL)
+    {
+	semsg(_(e_argument_required_for_str), cmd);
+	return FAIL;
+    }
 
     // Cannot use :lockvar and :unlockvar on local variables.
     if (p[1] != ':')
@@ -223,8 +236,6 @@ compile_lock_unlock(
 	ret = FAIL;
     else
     {
-	char *cmd = eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar";
-
 	if (deep < 0)
 	    vim_snprintf((char *)buf, len, "%s! %s", cmd, p);
 	else

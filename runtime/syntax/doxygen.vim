@@ -120,7 +120,7 @@ try
 
 " end=+\(\n\s*\*\=\s*\([@\\]\([npcbea]\>\|em\>\|ref\>\|link\>\|f\$\|[$\\&<>#]\)\@!\)\|\s*$\)\@=+
 "syn region doxygenBriefLine contained start=+\<\k+ skip=+^\s*\(\*/\@!\s*\)\=\(\<\|[@\\]\<\([npcbea]\>\|em\>\|ref\|link\>\>\|f\$\|[$\\&<>#]\)\|[^ \t\\@*]\)+ end=+^+ contains=doxygenContinueCommentWhite,doxygenSmallSpecial,@doxygenHtmlGroup,doxygenTODO,doxygenHyperLink,doxygenHashLink,@Spell  skipwhite keepend matchgroup=xxx
-syn region doxygenBriefLine contained start=+\<\k+ skip=+^\s*\(\*/\@!\s*\)\=\(\<\|[@\\]\<\([npcbea]\>\|em\>\|ref\|link\>\>\|f\$\|[$\\&<>#]\)\|[^ \t\\@*]\)+ end=+^+  skipwhite keepend matchgroup=xxx
+syn region doxygenBriefLine contained start=+\<\k+ skip=+^\s*\(\*/\@!\s*\)\=\(\<\|[@\\]\<\([npcbea]\>\|em\>\|ref\|link\>\>\|f\$\|[$\\&<>#]\)\|[^ \t\\@*]\)+ end=+^+  skipwhite keepend matchgroup=xxx contains=@Spell
 " syn region doxygenBriefLine matchgroup=xxxy contained start=+\<\k.\++ skip=+^\s*\k+ end=+end+  skipwhite keepend
 "doxygenFindBriefSpecial,
   "" syn region doxygenSpecialMultilineDesc  start=+.\++ contained contains=doxygenSpecialContinueCommentWhite,doxygenSmallSpecial,doxygenHyperLink,doxygenHashLink,@doxygenHtmlGroup,@Spell  skipwhite keepend
@@ -498,12 +498,16 @@ endif
 
     syn match doxygenLeadingWhite +\(^\s*\*\)\@<=\s*+ contained
 
-    " This is still a proposal, but won't do any harm.
-    aug doxygengroup
-    au!
-    au Syntax UserColor_reset nested call s:Doxygen_Hilights_Base()
-    au Syntax UserColor_{on,reset,enable} nested call s:Doxygen_Hilights()
-    aug END
+    " This is still a proposal, but it is probably fine.  However, it doesn't
+    " work when 'syntax' is set in a modeline, catch the security error.
+    try
+      aug doxygengroup
+        au!
+        au Syntax UserColor_reset nested call s:Doxygen_Hilights_Base()
+        au Syntax UserColor_{on,reset,enable} nested call s:Doxygen_Hilights()
+      aug END
+    catch /E12:/
+    endtry
 
 
     SynLink doxygenBody                   Comment

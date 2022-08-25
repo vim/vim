@@ -995,7 +995,7 @@ func Test_using_old_sub()
     ~
     s/
   endfunc
-  silent!  s/\%')/\=Repl()
+  silent! s/\%')/\=Repl()
 
   delfunc Repl
   bwipe!
@@ -1061,6 +1061,19 @@ func Test_sub_open_cmdline_win()
 
   call delete('Xscript')
   call delete('Xresult')
+endfunc
+
+" This was editing a script file from the expression
+func Test_sub_edit_scriptfile()
+  new
+  norm o0000000000000000000000000000000000000000000000000000
+  func EditScript()
+    silent! scr! Xfile
+  endfunc
+  s/\%')/\=EditScript()
+
+  delfunc EditScript
+  bwipe!
 endfunc
 
 " Test for the 2-letter and 3-letter :substitute commands
@@ -1344,6 +1357,16 @@ func Test_substitute_short_cmd()
   sIe
 
   bw!
+endfunc
+
+" This should be done last to reveal a memory leak when vim_regsub_both() is
+" called to evaluate an expression but it is not used in a second call.
+func Test_z_substitute_expr_leak()
+  func SubExpr()
+    ~n
+  endfunc
+  silent! s/\%')/\=SubExpr()
+  delfunc SubExpr
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

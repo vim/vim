@@ -84,8 +84,8 @@ indenttest:
 #    To do all this you need the Unix archive and compiled binaries.
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
-MAJOR = 8
-MINOR = 2
+MAJOR = 9
+MINOR = 0
 
 # CHECKLIST for creating a new version:
 #
@@ -110,7 +110,7 @@ MINOR = 2
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).
 # - Check for missing options in runtime/optwin.vim et al. (with check.vim).
 # - Do "make menu" to update the runtime/synmenu.vim file.
-# - Add remarks for changes to runtime/doc/version8.txt.
+# - Add remarks for changes to runtime/doc/version9.txt.
 # - Check that runtime/doc/help.txt doesn't contain entries in "LOCAL
 #   ADDITIONS".
 # - In runtime/doc run "make" and "make html" to check for errors.
@@ -144,7 +144,7 @@ MINOR = 2
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
-#   This creates the directory vim/vim82 and puts all files in there.
+#   This creates the directory vim/vim90 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
@@ -202,7 +202,7 @@ MINOR = 2
 #   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
 #   gvimext64.dll can be obtained from:
 #   https://github.com/vim/vim-win32-installer/releases
-#	It is part of gvim_8.2.*_x64.zip as vim/vim82/GvimExt/gvimext64.dll.
+#	It is part of gvim_9.0.*_x64.zip as vim/vim90/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:
@@ -414,6 +414,7 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
 	tar cf - \
 		$(SRC_ALL) \
 		$(SRC_DOS) \
+		$(SRC_DOS_BIN) \
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS_UNIX) \
 		runtime/doc/uganda.nsis.txt \
@@ -423,9 +424,6 @@ dossrc: dist no_title.vim dist/$(COMMENT_SRC) \
 	rmdir dist/vim/$(VIMRTDIR)/runtime
 	# This file needs to be in dos fileformat for NSIS.
 	$(VIM) -e -X -u no_title.vim -c ":set tx|wq" dist/vim/$(VIMRTDIR)/doc/uganda.nsis.txt
-	tar cf - \
-		$(SRC_DOS_BIN) \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
 	cd dist && zip -9 -rD -z vim$(VERSION)src.zip vim <$(COMMENT_SRC)
 
 runtime/doc/uganda.nsis.txt: runtime/doc/uganda.txt

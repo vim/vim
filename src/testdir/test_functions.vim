@@ -40,6 +40,9 @@ func Test_has()
   " Will we ever have patch 9999?
   let ver = 'patch-' .. v:version / 100 .. '.' .. v:version % 100 .. '.9999'
   call assert_equal(0, has(ver))
+
+  " There actually isn't a patch 9.0.0, but this is more consistent.
+  call assert_equal(1, has('patch-9.0.0'))
 endfunc
 
 func Test_empty()
@@ -2364,6 +2367,13 @@ func Test_bufadd_bufload()
   call assert_equal(1, bufexists(buf2))
   exe 'bwipe ' .. buf2
   call assert_equal(0, bufexists(buf2))
+
+  " when 'buftype' is "nofile" then bufload() does not read the file
+  bwipe! XotherName
+  let buf = bufadd('XotherName')
+  call setbufvar(buf, '&bt', 'nofile')
+  call bufload(buf)
+  call assert_equal([''], getbufline(buf, 1, '$'))
 
   bwipe someName
   bwipe XotherName

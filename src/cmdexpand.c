@@ -367,7 +367,7 @@ void cmdline_pum_display(void)
  */
 int cmdline_pum_active(void)
 {
-    return p_wmnu && pum_visible() && compl_match_array != NULL;
+    return pum_visible() && compl_match_array != NULL;
 }
 
 /*
@@ -722,8 +722,9 @@ ExpandOne(
 	findex = -1;			    // next p_wc gets first one
     }
 
-    // Concatenate all matching names
-    if (mode == WILD_ALL && xp->xp_numfiles > 0)
+    // Concatenate all matching names.  Unless interrupted, this can be slow
+    // and the result probably won't be used.
+    if (mode == WILD_ALL && xp->xp_numfiles > 0 && !got_int)
     {
 	len = 0;
 	for (i = 0; i < xp->xp_numfiles; ++i)
@@ -1305,8 +1306,10 @@ set_cmd_index(char_u *cmd, exarg_T *eap, expand_T *xp, int *complp)
 	eap->cmdidx = excmd_get_cmdidx(cmd, len);
 
 	// User defined commands support alphanumeric characters.
-	// Also when doing fuzzy expansion, support alphanumeric characters.
-	if ((cmd[0] >= 'A' && cmd[0] <= 'Z') || (fuzzy && *p != NUL))
+	// Also when doing fuzzy expansion for non-shell commands, support
+	// alphanumeric characters.
+	if ((cmd[0] >= 'A' && cmd[0] <= 'Z')
+		|| (fuzzy && eap->cmdidx != CMD_bang && *p != NUL))
 	    while (ASCII_ISALNUM(*p) || *p == '*')	// Allow * wild card
 		++p;
     }
@@ -3652,7 +3655,7 @@ wildmenu_cleanup(cmdline_info_T *cclp)
 	p_ls = save_p_ls;
 	p_wmh = save_p_wmh;
 	last_status(FALSE);
-	update_screen(VALID);	// redraw the screen NOW
+	update_screen(UPD_VALID);	// redraw the screen NOW
 	redrawcmd();
 	save_p_ls = -1;
     }
@@ -3754,7 +3757,7 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     else
        pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
 
-    if ((rettv_list_alloc(rettv) != FAIL) && (pat != NULL))
+    if (rettv_list_alloc(rettv) == OK && pat != NULL)
     {
 	int	i;
 

@@ -497,7 +497,7 @@ msgid "E461: Illegal variable name: %s"
 msgstr "E461: 비정상적인 변수 명: %s"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Float를 String으로 사용"
 
 msgid "E687: Less targets than List items"
@@ -6288,8 +6288,8 @@ msgstr "끝내려면                   :q<엔터>               입력"
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "온라인 도움말을 보려면     :help<엔터> 또는 <F1>  입력"
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "판 정보를 보려면           :help version8<엔터>   입력"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "판 정보를 보려면           :help version9<엔터>   입력"
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi 호환 상태로 실행중입니다"

@@ -524,29 +524,32 @@ ins_compl_accept_char(int c)
 
 /*
  * Get the completed text by inferring the case of the originally typed text.
+ * If the result is in allocated memory "tofree" is set to it.
  */
     static char_u *
 ins_compl_infercase_gettext(
 	char_u	*str,
-	int	actual_len,
-	int	actual_compl_length,
-	int	min_len)
+	int	char_len,
+	int	compl_char_len,
+	int	min_len,
+	char_u  **tofree)
 {
     int		*wca;			// Wide character array.
     char_u	*p;
     int		i, c;
     int		has_lower = FALSE;
     int		was_letter = FALSE;
+    garray_T	gap;
 
     IObuff[0] = NUL;
 
     // Allocate wide character array for the completion and fill it.
-    wca = ALLOC_MULT(int, actual_len);
+    wca = ALLOC_MULT(int, char_len);
     if (wca == NULL)
 	return IObuff;
 
     p = str;
-    for (i = 0; i < actual_len; ++i)
+    for (i = 0; i < char_len; ++i)
 	if (has_mbyte)
 	    wca[i] = mb_ptr2char_adv(&p);
 	else
@@ -566,7 +569,7 @@ ins_compl_infercase_gettext(
 	    if (MB_ISUPPER(wca[i]))
 	    {
 		// Rule 1 is satisfied.
-		for (i = actual_compl_length; i < actual_len; ++i)
+		for (i = compl_char_len; i < char_len; ++i)
 		    wca[i] = MB_TOLOWER(wca[i]);
 		break;
 	    }
@@ -587,7 +590,7 @@ ins_compl_infercase_gettext(
 	    if (was_letter && MB_ISUPPER(c) && MB_ISLOWER(wca[i]))
 	    {
 		// Rule 2 is satisfied.
-		for (i = actual_compl_length; i < actual_len; ++i)
+		for (i = compl_char_len; i < char_len; ++i)
 		    wca[i] = MB_TOUPPER(wca[i]);
 		break;
 	    }
@@ -610,20 +613,53 @@ ins_compl_infercase_gettext(
     }
 
     // Generate encoding specific output from wide character array.
-    // Multi-byte characters can occupy up to five bytes more than
-    // ASCII characters, and we also need one byte for NUL, so stay
-    // six bytes away from the edge of IObuff.
     p = IObuff;
     i = 0;
-    while (i < actual_len && (p - IObuff + 6) < IOSIZE)
-	if (has_mbyte)
+    ga_init2(&gap, 1, 500);
+    while (i < char_len)
+    {
+	if (gap.ga_data != NULL)
+	{
+	    if (ga_grow(&gap, 10) == FAIL)
+	    {
+		ga_clear(&gap);
+		return (char_u *)"[failed]";
+	    }
+	    p = (char_u *)gap.ga_data + gap.ga_len;
+	    if (has_mbyte)
+		gap.ga_len += (*mb_char2bytes)(wca[i++], p);
+	    else
+	    {
+		*p = wca[i++];
+		++gap.ga_len;
+	    }
+	}
+	else if ((p - IObuff) + 6 >= IOSIZE)
+	{
+	    // Multi-byte characters can occupy up to five bytes more than
+	    // ASCII characters, and we also need one byte for NUL, so when
+	    // getting to six bytes from the edge of IObuff switch to using a
+	    // growarray.  Add the character in the next round.
+	    if (ga_grow(&gap, IOSIZE) == FAIL)
+		return (char_u *)"[failed]";
+	    *p = NUL;
+	    STRCPY(gap.ga_data, IObuff);
+	    gap.ga_len = (int)STRLEN(IObuff);
+	}
+	else if (has_mbyte)
 	    p += (*mb_char2bytes)(wca[i++], p);
 	else
 	    *(p++) = wca[i++];
-    *p = NUL;
-
+    }
     vim_free(wca);
 
+    if (gap.ga_data != NULL)
+    {
+	*tofree = gap.ga_data;
+	return gap.ga_data;
+    }
+
+    *p = NUL;
     return IObuff;
 }
 
@@ -644,10 +680,12 @@ ins_compl_add_infercase(
 {
     char_u	*str = str_arg;
     char_u	*p;
-    int		actual_len;		// Take multi-byte characters
-    int		actual_compl_length;	// into account.
+    int		char_len;		// count multi-byte characters
+    int		compl_char_len;
     int		min_len;
     int		flags = 0;
+    int		res;
+    char_u	*tofree = NULL;
 
     if (p_ic && curbuf->b_p_inf && len > 0)
     {
@@ -657,44 +695,45 @@ ins_compl_add_infercase(
 	if (has_mbyte)
 	{
 	    p = str;
-	    actual_len = 0;
+	    char_len = 0;
 	    while (*p != NUL)
 	    {
 		MB_PTR_ADV(p);
-		++actual_len;
+		++char_len;
 	    }
 	}
 	else
-	    actual_len = len;
+	    char_len = len;
 
 	// Find actual length of original text.
 	if (has_mbyte)
 	{
 	    p = compl_orig_text;
-	    actual_compl_length = 0;
+	    compl_char_len = 0;
 	    while (*p != NUL)
 	    {
 		MB_PTR_ADV(p);
-		++actual_compl_length;
+		++compl_char_len;
 	    }
 	}
 	else
-	    actual_compl_length = compl_length;
+	    compl_char_len = compl_length;
 
-	// "actual_len" may be smaller than "actual_compl_length" when using
+	// "char_len" may be smaller than "compl_char_len" when using
 	// thesaurus, only use the minimum when comparing.
-	min_len = actual_len < actual_compl_length
-					   ? actual_len : actual_compl_length;
+	min_len = char_len < compl_char_len ? char_len : compl_char_len;
 
-	str = ins_compl_infercase_gettext(str, actual_len, actual_compl_length,
-								min_len);
+	str = ins_compl_infercase_gettext(str, char_len,
+					  compl_char_len, min_len, &tofree);
     }
     if (cont_s_ipos)
 	flags |= CP_CONT_S_IPOS;
     if (icase)
 	flags |= CP_ICASE;
 
-    return ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE);
+    res = ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE);
+    vim_free(tofree);
+    return res;
 }
 
 /*
@@ -748,7 +787,8 @@ ins_compl_add(
 	{
 	    if (!match_at_original_text(match)
 		    && STRNCMP(match->cp_str, str, len) == 0
-		    && match->cp_str[len] == NUL)
+		    && ((int)STRLEN(match->cp_str) <= len
+						 || match->cp_str[len] == NUL))
 		return NOTDONE;
 	    match = match->cp_next;
 	} while (match != NULL && !is_first_match(match));
@@ -1455,7 +1495,7 @@ theend:
  * skipping the word at 'skip_word'.  Returns OK on success.
  */
     static int
-thesarurs_add_words_in_line(
+thesaurus_add_words_in_line(
 	char_u	*fname,
 	char_u	**buf_arg,
 	int	dir,
@@ -1558,7 +1598,7 @@ ins_compl_files(
 		{
 		    // For a thesaurus, add all the words in the line
 		    ptr = buf;
-		    add_r = thesarurs_add_words_in_line(files[i], &ptr, *dir,
+		    add_r = thesaurus_add_words_in_line(files[i], &ptr, *dir,
 							regmatch->startp[0]);
 		}
 		if (add_r == OK)
@@ -2043,7 +2083,7 @@ set_ctrl_x_mode(int c)
 	    ctrl_x_mode = CTRL_X_FILES;
 	    break;
 	case Ctrl_K:
-	    // complete words from a dictinoary
+	    // complete words from a dictionary
 	    ctrl_x_mode = CTRL_X_DICTIONARY;
 	    break;
 	case Ctrl_R:
@@ -2209,11 +2249,21 @@ ins_compl_stop(int c, int prev_mode, int retval)
     // but only do this, if the Popup is still visible
     if (c == Ctrl_E)
     {
+	char_u *p = NULL;
+
 	ins_compl_delete();
 	if (compl_leader != NULL)
-	    ins_bytes(compl_leader + get_compl_len());
+	    p = compl_leader;
 	else if (compl_first_match != NULL)
-	    ins_bytes(compl_orig_text + get_compl_len());
+	    p = compl_orig_text;
+	if (p != NULL)
+	{
+	    int	    compl_len = get_compl_len();
+	    int	    len = (int)STRLEN(p);
+
+	    if (len > compl_len)
+		ins_bytes_len(p + compl_len, len - compl_len);
+	}
 	retval = TRUE;
     }
 
@@ -2717,25 +2767,21 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {
-	word = dict_get_string(tv->vval.v_dict, (char_u *)"word", FALSE);
-	cptext[CPT_ABBR] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"abbr", FALSE);
-	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"menu", FALSE);
-	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"kind", FALSE);
-	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"info", FALSE);
-	dict_get_tv(tv->vval.v_dict, (char_u *)"user_data", &user_data);
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL
-			&& dict_get_number(tv->vval.v_dict, (char_u *)"icase"))
+	word = dict_get_string(tv->vval.v_dict, "word", FALSE);
+	cptext[CPT_ABBR] = dict_get_string(tv->vval.v_dict, "abbr", FALSE);
+	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict, "menu", FALSE);
+	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict, "kind", FALSE);
+	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
+	dict_get_tv(tv->vval.v_dict, "user_data", &user_data);
+	if (dict_get_string(tv->vval.v_dict, "icase", FALSE) != NULL
+				  && dict_get_number(tv->vval.v_dict, "icase"))
 	    flags |= CP_ICASE;
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
-	    dup = dict_get_number(tv->vval.v_dict, (char_u *)"dup");
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"empty", FALSE) != NULL)
-	    empty = dict_get_number(tv->vval.v_dict, (char_u *)"empty");
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"equal", FALSE) != NULL
-			&& dict_get_number(tv->vval.v_dict, (char_u *)"equal"))
+	if (dict_get_string(tv->vval.v_dict, "dup", FALSE) != NULL)
+	    dup = dict_get_number(tv->vval.v_dict, "dup");
+	if (dict_get_string(tv->vval.v_dict, "empty", FALSE) != NULL)
+	    empty = dict_get_number(tv->vval.v_dict, "empty");
+	if (dict_get_string(tv->vval.v_dict, "equal", FALSE) != NULL
+				  && dict_get_number(tv->vval.v_dict, "equal"))
 	    flags |= CP_EQUAL;
     }
     else
@@ -3089,7 +3135,7 @@ f_complete_info(typval_T *argvars, typval_T *rettv)
 {
     list_T	*what_list = NULL;
 
-    if (rettv_dict_alloc(rettv) != OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_opt_list_arg(argvars, 0) == FAIL)
@@ -3455,7 +3501,7 @@ ins_comp_get_next_word_or_line(
     {
 	char_u	*tmp_ptr = ptr;
 
-	if (compl_status_adding())
+	if (compl_status_adding() && compl_length <= (int)STRLEN(tmp_ptr))
 	{
 	    tmp_ptr += compl_length;
 	    // Skip if already inside a word.

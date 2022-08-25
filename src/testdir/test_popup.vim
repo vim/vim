@@ -984,6 +984,25 @@ func Test_menu_only_exists_in_terminal()
   endtry
 endfunc
 
+" This used to crash before patch 8.1.1424
+func Test_popup_delete_when_shown()
+  CheckFeature menu
+  CheckNotGui
+
+  func Func()
+    popup Foo
+    return "\<Ignore>"
+  endfunc
+
+  nmenu Foo.Bar :
+  nnoremap <expr> <F2> Func()
+  call feedkeys("\<F2>\<F2>\<Esc>", 'xt')
+
+  delfunc Func
+  nunmenu Foo.Bar
+  nunmap <F2>
+endfunc
+
 func Test_popup_complete_info_01()
   new
   inoremap <buffer><F5> <C-R>=complete_info().mode<CR>
@@ -1177,13 +1196,12 @@ func Test_pum_rightleft()
   END
   call writefile(lines, 'Xtest1')
   let buf = RunVimInTerminal('--cmd "set rightleft" Xtest1', {})
-  call term_wait(buf)
   call term_sendkeys(buf, "Go\<C-P>")
   call VerifyScreenDump(buf, 'Test_pum_rightleft_01', {'rows': 8})
   call term_sendkeys(buf, "\<C-P>\<C-Y>")
-  call term_wait(buf)
+  call TermWait(buf, 30)
   redraw!
-  call assert_match('\s*miv', Screenline(5))
+  call WaitForAssert({-> assert_match('\s*miv', Screenline(5))})
 
   " Test for expanding tabs to spaces in the popup menu
   let lines =<< trim END
@@ -1193,15 +1211,15 @@ func Test_pum_rightleft()
   END
   call writefile(lines, 'Xtest2')
   call term_sendkeys(buf, "\<Esc>:e! Xtest2\<CR>")
-  call term_wait(buf)
+  call TermWait(buf, 30)
   call term_sendkeys(buf, "Goone\<C-X>\<C-L>")
-  call term_wait(buf)
+  call TermWait(buf, 30)
   redraw!
   call VerifyScreenDump(buf, 'Test_pum_rightleft_02', {'rows': 7})
   call term_sendkeys(buf, "\<C-Y>")
-  call term_wait(buf)
+  call TermWait(buf, 30)
   redraw!
-  call assert_match('\s*eerht     eno', Screenline(4))
+  call WaitForAssert({-> assert_match('\s*eerht     eno', Screenline(4))})
 
   call StopVimInTerminal(buf)
   call delete('Xtest1')
@@ -1218,15 +1236,15 @@ func Test_pum_scrollbar()
   END
   call writefile(lines, 'Xtest1')
   let buf = RunVimInTerminal('--cmd "set pumheight=2" Xtest1', {})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "Go\<C-P>\<C-P>\<C-P>")
   call VerifyScreenDump(buf, 'Test_pum_scrollbar_01', {'rows': 7})
   call term_sendkeys(buf, "\<C-E>\<Esc>dd")
-  call term_wait(buf)
+  call TermWait(buf)
 
   if has('rightleft')
     call term_sendkeys(buf, ":set rightleft\<CR>")
-    call term_wait(buf)
+    call TermWait(buf)
     call term_sendkeys(buf, "Go\<C-P>\<C-P>\<C-P>")
     call VerifyScreenDump(buf, 'Test_pum_scrollbar_02', {'rows': 7})
   endif

@@ -757,6 +757,7 @@ func Test_terminal_write_stdin()
   " TODO: enable once writing to stdin works on MS-Windows
   CheckNotMSWindows
   CheckExecutable wc
+  let g:test_is_flaky = 1
 
   call setline(1, ['one', 'two', 'three'])
   %term wc
@@ -775,6 +776,7 @@ endfunc
 
 func Test_terminal_eof_arg()
   call CheckPython(s:python)
+  let g:test_is_flaky = 1
 
   call setline(1, ['print("hello")'])
   exe '1term ++eof=exit(123) ' .. s:python
@@ -793,6 +795,7 @@ endfunc
 func Test_terminal_eof_arg_win32_ctrl_z()
   CheckMSWindows
   call CheckPython(s:python)
+  let g:test_is_flaky = 1
 
   call setline(1, ['print("hello")'])
   exe '1term ++eof=<C-Z> ' .. s:python
@@ -803,8 +806,9 @@ endfunc
 
 func Test_terminal_duplicate_eof_arg()
   call CheckPython(s:python)
+  let g:test_is_flaky = 1
 
-  " Check the last specified ++eof arg is used and should not memory leak.
+  " Check the last specified ++eof arg is used and does not leak memory.
   new
   call setline(1, ['print("hello")'])
   exe '1term ++eof=<C-Z> ++eof=exit(123) ' .. s:python
@@ -1222,7 +1226,7 @@ func Test_terminal_qall_prompt()
   let buf = RunVimInTerminal('', {})
 
   " the shell may set the window title, we don't want that here
-  call term_sendkeys(buf, ":test_override('vterm_title', 1)\<CR>")
+  call term_sendkeys(buf, ":call test_override('vterm_title', 1)\<CR>")
 
   " Open a terminal window and wait for the prompt to appear
   call term_sendkeys(buf, ":term\<CR>")

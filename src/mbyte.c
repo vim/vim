@@ -1077,24 +1077,28 @@ dbcs_char2bytes(int c, char_u *buf)
 }
 
 /*
- * mb_ptr2len() function pointer.
- * Get byte length of character at "*p" but stop at a NUL.
- * For UTF-8 this includes following composing characters.
- * Returns 0 when *p is NUL.
+ * Get byte length of character at "*p".  Returns zero when "*p" is NUL.
+ * Used for mb_ptr2len() when 'encoding' latin.
  */
     int
 latin_ptr2len(char_u *p)
 {
- return MB_BYTE2LEN(*p);
+    return *p == NUL ? 0 : 1;
 }
 
+/*
+ * Get byte length of character at "*p".  Returns zero when "*p" is NUL.
+ * Used for mb_ptr2len() when 'encoding' DBCS.
+ */
     static int
-dbcs_ptr2len(
-    char_u	*p)
+dbcs_ptr2len(char_u *p)
 {
     int		len;
 
-    // Check if second byte is not missing.
+    if (*p == NUL)
+	return 0;
+
+    // if the second byte is missing the length is 1
     len = MB_BYTE2LEN(*p);
     if (len == 2 && p[1] == NUL)
 	len = 1;
@@ -2105,6 +2109,7 @@ utf_ptr2len_len(char_u *p, int size)
 /*
  * Return the number of bytes the UTF-8 encoding of the character at "p" takes.
  * This includes following composing characters.
+ * Returns zero for NUL.
  */
     int
 utfc_ptr2len(char_u *p)
@@ -4229,8 +4234,7 @@ theend:
 #if defined(FEAT_GUI_GTK) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Return TRUE if string "s" is a valid utf-8 string.
- * When "end" is NULL stop at the first NUL.
- * When "end" is positive stop there.
+ * When "end" is NULL stop at the first NUL.  Otherwise stop at "end".
  */
     int
 utf_valid_string(char_u *s, char_u *end)
@@ -5529,6 +5533,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     cw_interval_T   *table;
     cw_interval_T   *cw_table_save;
     size_t	    cw_table_size_save;
+    char	    *error = NULL;
 
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
@@ -5645,32 +5650,16 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     cw_table = table;
     cw_table_size = l->lv_len;
 
-    // Check that the new value does not conflict with 'fillchars' or
-    // 'listchars'.
-    if (set_chars_option(curwin, &p_fcs) != NULL)
+    // Check that the new value does not conflict with 'listchars' or
+    // 'fillchars'.
+    error = check_chars_options();
+    if (error != NULL)
     {
-	emsg(_(e_conflicts_with_value_of_fillchars));
+	emsg(_(error));
 	cw_table = cw_table_save;
 	cw_table_size = cw_table_size_save;
 	vim_free(table);
 	return;
-    }
-    else
-    {
-	tabpage_T	*tp;
-	win_T	*wp;
-
-	FOR_ALL_TAB_WINDOWS(tp, wp)
-	{
-	    if (set_chars_option(wp, &wp->w_p_lcs) != NULL)
-	    {
-		emsg((e_conflicts_with_value_of_listchars));
-		cw_table = cw_table_save;
-		cw_table_size = cw_table_size_save;
-		vim_free(table);
-		return;
-	    }
-	}
     }
 
     vim_free(cw_table_save);

@@ -1484,7 +1484,7 @@ f_getmarklist(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf = NULL;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script() && check_for_opt_buffer_arg(argvars, 0) == FAIL)

@@ -14,7 +14,6 @@ int get_spellword(list_T *list, char_u **pp);
 void prepare_vimvar(int idx, typval_T *save_tv);
 void restore_vimvar(int idx, typval_T *save_tv);
 char_u *eval_one_expr_in_str(char_u *p, garray_T *gap, int evaluate);
-char_u *eval_all_expr_in_str(char_u *str);
 list_T *heredoc_get(exarg_T *eap, char_u *cmd, int script_get, int vim9compile);
 void ex_var(exarg_T *eap);
 void ex_let(exarg_T *eap);

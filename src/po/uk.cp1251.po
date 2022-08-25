@@ -3671,8 +3671,8 @@ msgstr ":q<Enter>                 вихід з Vim              "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr ":help<Enter> або <F1>     перегляд допомоги        "
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr ":help version8<Enter>     інформація про версію    "
+msgid "type  :help version9<Enter>   for version info"
+msgstr ":help version9<Enter>     інформація про версію    "
 
 msgid "Running in Vi compatible mode"
 msgstr "Ви працюєте в режимі сумісному з Vi"
@@ -6731,7 +6731,7 @@ msgid "E805: Using a Float as a Number"
 msgstr "E805: Float вжито як Number"
 
 # msgstr "E373: "
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Float вжито як String"
 
 msgid "E807: Expected Float argument for printf()"

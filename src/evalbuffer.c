@@ -680,7 +680,7 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
     int		sel_bufloaded = FALSE;
     int		sel_bufmodified = FALSE;
 
-    if (rettv_list_alloc(rettv) != OK)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
     if (in_vim9script()
@@ -695,9 +695,9 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
 	if (sel_d != NULL)
 	{
 	    filtered = TRUE;
-	    sel_buflisted = dict_get_bool(sel_d, (char_u *)"buflisted", FALSE);
-	    sel_bufloaded = dict_get_bool(sel_d, (char_u *)"bufloaded", FALSE);
-	    sel_bufmodified = dict_get_bool(sel_d, (char_u *)"bufmodified",
+	    sel_buflisted = dict_get_bool(sel_d, "buflisted", FALSE);
+	    sel_bufloaded = dict_get_bool(sel_d, "bufloaded", FALSE);
+	    sel_bufmodified = dict_get_bool(sel_d, "bufmodified",
 									FALSE);
 	}
     }

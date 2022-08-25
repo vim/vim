@@ -6432,8 +6432,8 @@ msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "tajpu  :help<Enenklavo>  aŭ  <F1> por aliri la helpon  "
 
 # DP: atentu al la spacetoj: ĉiuj ĉenoj devas havi la saman longon
-msgid "type  :help version8<Enter>   for version info"
-msgstr "tajpu  :help version8<Enenklavo>  por informo de versio"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "tajpu  :help version9<Enenklavo>  por informo de versio"
 
 msgid "Running in Vi compatible mode"
 msgstr "Ruliĝas en reĝimo kongrua kun Vi"
@@ -8173,7 +8173,7 @@ msgid "E850: Invalid register name"
 msgstr "E850: Nevalida nomo de reĝistro"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: uzo de Glitpunktnombro kiel Ĉeno"
 
 #, c-format

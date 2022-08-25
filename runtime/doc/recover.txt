@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 8.2.  Last change: 2020 Aug 15
+*recover.txt*   For Vim version 9.0.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

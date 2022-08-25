@@ -531,6 +531,7 @@ msg_source(int attr)
 	return;
     recursive = TRUE;
 
+    msg_scroll = TRUE;  // this will take more than one line
     ++no_wait_return;
     p = get_emsg_source();
     if (p != NULL)
@@ -746,7 +747,6 @@ emsg_core(char_u *s)
     }
 
     emsg_on_display = TRUE;	// remember there is an error message
-    ++msg_scroll;		// don't overwrite a previous message
     attr = HL_ATTR(HLF_E);	// set highlight mode for error messages
     if (msg_scrolled != 0)
 	need_wait_return = TRUE;    // needed in case emsg() is called after
@@ -759,6 +759,7 @@ emsg_core(char_u *s)
 #endif
     /*
      * Display name and line number for the source of the error.
+     * Sets "msg_scroll".
      */
     msg_source(attr);
 
@@ -830,6 +831,8 @@ iemsg(char *s)
 	emsg_core((char_u *)s);
 #if defined(ABORT_ON_INTERNAL_ERROR) && defined(FEAT_EVAL)
 	set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
+	msg_putchar('\n');  // avoid overwriting the error message
+	out_flush();
 	abort();
 #endif
     }
@@ -862,10 +865,12 @@ siemsg(const char *s, ...)
 	    va_end(ap);
 	    emsg_core(IObuff);
 	}
-    }
 # ifdef ABORT_ON_INTERNAL_ERROR
-    abort();
+	msg_putchar('\n');  // avoid overwriting the error message
+	out_flush();
+	abort();
 # endif
+    }
 }
 #endif
 
@@ -949,9 +954,11 @@ msg_may_trunc(int force, char_u *s)
     int		n;
     int		room;
 
+    // If something unexpected happened "room" may be negative, check for that
+    // just in case.
     room = (int)(Rows - cmdline_row - 1) * Columns + sc_col - 1;
-    if ((force || (shortmess(SHM_TRUNC) && !exmode_active))
-	    && (n = (int)STRLEN(s) - room) > 0)
+    if (room > 0 && (force || (shortmess(SHM_TRUNC) && !exmode_active))
+	    && (n = (int)STRLEN(s) - room) > 0 && p_ch > 0)
     {
 	if (has_mbyte)
 	{
@@ -1136,7 +1143,7 @@ wait_return(int redraw)
     FILE	*save_scriptout;
 
     if (redraw == TRUE)
-	must_redraw = CLEAR;
+	set_must_redraw(UPD_CLEAR);
 
     // If using ":silent cmd", don't wait for a return.  Also don't set
     // need_wait_return to do it later.
@@ -1360,7 +1367,7 @@ wait_return(int redraw)
 	    && (redraw == TRUE || (msg_scrolled != 0 && redraw != -1)))
     {
 	starttermcap();		    // start termcap before redrawing
-	redraw_later(VALID);
+	redraw_later(UPD_VALID);
     }
 }
 
@@ -1428,7 +1435,7 @@ msg_start(void)
     }
 
 #ifdef FEAT_EVAL
-    if (need_clr_eos)
+    if (need_clr_eos || p_ch == 0)
     {
 	// Halfway an ":echo" command and getting an (error) message: clear
 	// any text from the command.
@@ -1446,7 +1453,7 @@ msg_start(void)
 #endif
 	    0;
     }
-    else if (msg_didout)		    // start message on next line
+    else if (msg_didout || p_ch == 0)	    // start message on next line
     {
 	msg_putchar('\n');
 	did_return = TRUE;
@@ -1818,8 +1825,8 @@ str2special(
 	    *sp = str + 1;
     }
     else
-	// single-byte character or illegal byte
-	*sp = str + 1;
+	// single-byte character, NUL or illegal byte
+	*sp = str + (*str == NUL ? 0 : 1);
 
     // Make special keys and C0 control characters in <> form, also <M-Space>.
     // Use <Space> only for lhs of a mapping.
@@ -1881,7 +1888,8 @@ msg_prt_line(char_u *s, int list)
 		--trail;
 	}
 	// find end of leading whitespace
-	if (curwin->w_lcs_chars.lead || curwin->w_lcs_chars.leadmultispace != NULL)
+	if (curwin->w_lcs_chars.lead
+				 || curwin->w_lcs_chars.leadmultispace != NULL)
 	{
 	    lead = s;
 	    while (VIM_ISWHITE(lead[0]))
@@ -1920,8 +1928,9 @@ msg_prt_line(char_u *s, int list)
 		    && (mb_ptr2char(s) == 160
 			|| mb_ptr2char(s) == 0x202f))
 	    {
-		mb_char2bytes(curwin->w_lcs_chars.nbsp, buf);
-		buf[(*mb_ptr2len)(buf)] = NUL;
+		int len = mb_char2bytes(curwin->w_lcs_chars.nbsp, buf);
+
+		buf[len] = NUL;
 	    }
 	    else
 	    {
@@ -2481,8 +2490,7 @@ inc_msg_scrolled(void)
     }
 #endif
     ++msg_scrolled;
-    if (must_redraw < VALID)
-	must_redraw = VALID;
+    set_must_redraw(UPD_VALID);
 }
 
 /*
@@ -2531,6 +2539,7 @@ store_sb_text(
 	    || do_clear_sb_text == SB_CLEAR_CMDLINE_DONE)
     {
 	clear_sb_text(do_clear_sb_text == SB_CLEAR_ALL);
+	msg_sb_eol();  // prevent messages from overlapping
 	do_clear_sb_text = SB_CLEAR_NONE;
     }
 
@@ -2575,17 +2584,53 @@ may_clear_sb_text(void)
 }
 
 /*
- * Starting to edit the command line, do not clear messages now.
+ * Starting to edit the command line: do not clear messages now.
  */
     void
 sb_text_start_cmdline(void)
 {
-    do_clear_sb_text = SB_CLEAR_CMDLINE_BUSY;
-    msg_sb_eol();
+    if (do_clear_sb_text == SB_CLEAR_CMDLINE_BUSY)
+	// Invoking command line recursively: the previous-level command line
+	// doesn't need to be remembered as it will be redrawn when returning
+	// to that level.
+	sb_text_restart_cmdline();
+    else
+    {
+	msg_sb_eol();
+	do_clear_sb_text = SB_CLEAR_CMDLINE_BUSY;
+    }
 }
 
 /*
- * Ending to edit the command line.  Clear old lines but the last one later.
+ * Redrawing the command line: clear the last unfinished line.
+ */
+    void
+sb_text_restart_cmdline(void)
+{
+    msgchunk_T *tofree;
+
+    // Needed when returning from nested command line.
+    do_clear_sb_text = SB_CLEAR_CMDLINE_BUSY;
+
+    if (last_msgchunk == NULL || last_msgchunk->sb_eol)
+	// No unfinished line: don't clear anything.
+	return;
+
+    tofree = msg_sb_start(last_msgchunk);
+    last_msgchunk = tofree->sb_prev;
+    if (last_msgchunk != NULL)
+	last_msgchunk->sb_next = NULL;
+    while (tofree != NULL)
+    {
+	msgchunk_T *tofree_next = tofree->sb_next;
+
+	vim_free(tofree);
+	tofree = tofree_next;
+    }
+}
+
+/*
+ * Ending to edit the command line: clear old lines but the last one later.
  */
     void
 sb_text_end_cmdline(void)
@@ -2610,7 +2655,7 @@ clear_sb_text(int all)
     {
 	if (last_msgchunk == NULL)
 	    return;
-	lastp = &last_msgchunk->sb_prev;
+	lastp = &msg_sb_start(last_msgchunk)->sb_prev;
     }
 
     while (*lastp != NULL)
@@ -3419,7 +3464,7 @@ msg_clr_eos_force(void)
 		out_str(T_CE);	// clear to end of line
 	}
     }
-    else
+    else if (p_ch > 0)
     {
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)

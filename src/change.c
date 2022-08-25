@@ -172,9 +172,9 @@ check_recorded_changes(
 	FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
 	{
 	    prev_lnum = (linenr_T)dict_get_number(
-				      li->li_tv.vval.v_dict, (char_u *)"lnum");
+						li->li_tv.vval.v_dict, "lnum");
 	    prev_lnume = (linenr_T)dict_get_number(
-				       li->li_tv.vval.v_dict, (char_u *)"end");
+						 li->li_tv.vval.v_dict, "end");
 	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	    {
 		// the current change is going to make the line number in
@@ -384,13 +384,13 @@ invoke_listeners(buf_T *buf)
     {
 	varnumber_T lnum;
 
-	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"lnum");
+	lnum = dict_get_number(li->li_tv.vval.v_dict, "lnum");
 	if (start > lnum)
 	    start = lnum;
-	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"end");
+	lnum = dict_get_number(li->li_tv.vval.v_dict, "end");
 	if (end < lnum)
 	    end = lnum;
-	added += dict_get_number(li->li_tv.vval.v_dict, (char_u *)"added");
+	added += dict_get_number(li->li_tv.vval.v_dict, "added");
     }
     argv[1].v_type = VAR_NUMBER;
     argv[1].vval.v_number = start;
@@ -559,8 +559,8 @@ changed_common(
 	    linenr_T last = lnume + xtra - 1;  // last line after the change
 #endif
 	    // Mark this window to be redrawn later.
-	    if (wp->w_redr_type < VALID)
-		wp->w_redr_type = VALID;
+	    if (!redraw_not_allowed && wp->w_redr_type < UPD_VALID)
+		wp->w_redr_type = UPD_VALID;
 
 	    // Check if a change in the buffer has invalidated the cached
 	    // values for the cursor.
@@ -648,18 +648,18 @@ changed_common(
 	    if (wp->w_p_rnu && xtra != 0)
 	    {
 		wp->w_last_cursor_lnum_rnu = 0;
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 	    }
 #ifdef FEAT_SYN_HL
 	    // Cursor line highlighting probably need to be updated with
-	    // "VALID" if it's below the change.
+	    // "UPD_VALID" if it's below the change.
 	    // If the cursor line is inside the change we need to redraw more.
 	    if (wp->w_p_cul)
 	    {
 		if (xtra == 0)
-		    redraw_win_later(wp, VALID);
+		    redraw_win_later(wp, UPD_VALID);
 		else if (lnum <= wp->w_last_cursorline)
-		    redraw_win_later(wp, SOME_VALID);
+		    redraw_win_later(wp, UPD_SOME_VALID);
 	    }
 #endif
 	}
@@ -671,8 +671,7 @@ changed_common(
 
     // Call update_screen() later, which checks out what needs to be redrawn,
     // since it notices b_mod_set and then uses b_mod_*.
-    if (must_redraw < VALID)
-	must_redraw = VALID;
+    set_must_redraw(UPD_VALID);
 
     // when the cursor line is changed always trigger CursorMoved
     if (lnum <= curwin->w_cursor.lnum
@@ -724,7 +723,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_diff && wp != curwin)
 	    {
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 		wlnum = diff_lnum_win(lnum, wp);
 		if (wlnum > 0)
 		    changedOneline(wp->w_buffer, wlnum);
@@ -801,6 +800,7 @@ deleted_lines_mark(linenr_T lnum, long count)
 
 /*
  * Marks the area to be redrawn after a change.
+ * Consider also calling changed_line_display_buf().
  */
     void
 changed_lines_buf(
@@ -868,7 +868,7 @@ changed_lines(
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_diff && wp != curwin)
 	    {
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 		wlnum = diff_lnum_win(lnum, wp);
 		if (wlnum > 0)
 		    changed_lines_buf(wp->w_buffer, wlnum,
@@ -1298,7 +1298,7 @@ del_bytes(
 	// fixpos is TRUE, we don't want to end up positioned at the NUL,
 	// unless "restart_edit" is set or 'virtualedit' contains "onemore".
 	if (col > 0 && fixpos && restart_edit == 0
-					      && (get_ve_flags() & VE_ONEMORE) == 0)
+					 && (get_ve_flags() & VE_ONEMORE) == 0)
 	{
 	    --curwin->w_cursor.col;
 	    curwin->w_cursor.coladd = 0;
@@ -1535,13 +1535,17 @@ open_line(
 			    {
 				// End of C comment, indent should line up
 				// with the line containing the start of
-				// the comment
+				// the comment.
 				curwin->w_cursor.col = (colnr_T)(p - ptr);
 				if ((pos = findmatch(NULL, NUL)) != NULL)
 				{
 				    curwin->w_cursor.lnum = pos->lnum;
 				    newindent = get_indent();
+				    break;
 				}
+				// this may make "ptr" invalid, get it again
+				ptr = ml_get(curwin->w_cursor.lnum);
+				p = ptr + curwin->w_cursor.col;
 			    }
 			}
 		    }

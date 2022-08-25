@@ -492,7 +492,7 @@ msgid "E461: Illegal variable name: %s"
 msgstr "E461: Nome ilegal para variável: %s"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Float usado como String"
 
 msgid "E687: Less targets than List items"
@@ -6339,8 +6339,8 @@ msgstr "digite  :q<Enter>             para sair          "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "digite  :help<Enter> ou <F1>  para ajuda on-line "
 
-msgid "type  :help version8<Enter>   for version info"
-msgstr "digite  :help version8<Enter> para info da versão"
+msgid "type  :help version9<Enter>   for version info"
+msgstr "digite  :help version9<Enter> para info da versão"
 
 msgid "Running in Vi compatible mode"
 msgstr "Executando no modo compatível com Vi"

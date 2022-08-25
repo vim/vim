@@ -175,7 +175,8 @@ static void sig_winch SIGPROTOARG;
 #endif
 #if defined(SIGTSTP)
 static void sig_tstp SIGPROTOARG;
-// volatile because it is used in signal handler sig_tstp() and sigcont_handler().
+// volatile because it is used in signal handler sig_tstp() and
+// sigcont_handler().
 static volatile sig_atomic_t in_mch_suspend = FALSE;
 #endif
 #if defined(SIGINT)
@@ -1227,7 +1228,7 @@ sigcont_handler SIGDEFARG(sigarg)
 	// back to a sane mode. We should redraw, but we can't really do that
 	// in a signal handler, do a redraw later.
 	after_sigcont();
-	redraw_later(CLEAR);
+	redraw_later(UPD_CLEAR);
 	cursor_on_force();
 	out_flush();
     }
@@ -4521,7 +4522,10 @@ mch_call_shell_terminal(
     // restore curwin/curbuf and a few other things
     aucmd_restbuf(&aco);
 
-    wait_return(TRUE);
+    // only require pressing Enter when redrawing, to avoid that system() gets
+    // the hit-enter prompt even though it didn't output anything.
+    if (!RedrawingDisabled)
+	wait_return(TRUE);
     do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
 
 theend:
@@ -8247,13 +8251,13 @@ xsmp_close(void)
 #endif // USE_XSMP
 
 #if defined(FEAT_RELTIME) || defined(PROTO)
-# if defined(HAVE_TIMER_CREATE)
+# if defined(HAVE_TIMER_CREATE) || defined(PROTO)
 /*
  * Implement timeout with timer_create() and timer_settime().
  */
-static int	timeout_flag = FALSE;
-static timer_t	timer_id;
-static int	timer_created = FALSE;
+static volatile sig_atomic_t timeout_flag = FALSE;
+static timer_t		     timer_id;
+static int		     timer_created = FALSE;
 
 /*
  * Callback for when the timer expires.
@@ -8296,7 +8300,7 @@ stop_timeout(void)
  * This function is not expected to fail, but if it does it will still return a
  * valid flag pointer; the flag will remain stuck as FALSE .
  */
-    const int *
+    volatile sig_atomic_t *
 start_timeout(long msec)
 {
     struct itimerspec interval = {
@@ -8307,7 +8311,6 @@ start_timeout(long msec)
     // This is really the caller's responsibility, but let's make sure the
     // previous timer has been stopped.
     stop_timeout();
-    timeout_flag = FALSE;
 
     if (!timer_created)
     {
@@ -8324,6 +8327,10 @@ start_timeout(long msec)
 	timer_created = TRUE;
     }
 
+# ifdef FEAT_JOB_CHANNEL
+    ch_log(NULL, "setting timeout timer to %d sec %ld nsec",
+	       (int)interval.it_value.tv_sec, (long)interval.it_value.tv_nsec);
+# endif
     ret = timer_settime(timer_id, 0, &interval, NULL);
     if (ret < 0)
 	semsg(_(e_could_not_set_timeout_str), strerror(errno));
@@ -8331,17 +8338,29 @@ start_timeout(long msec)
     return &timeout_flag;
 }
 
-# else
+/*
+ * To be used before fork/exec: delete any created timer.
+ */
+    void
+delete_timer(void)
+{
+    if (timer_created)
+    {
+	timer_delete(timer_id);
+	timer_created = FALSE;
+    }
+}
+
+# else // HAVE_TIMER_CREATE
 
 /*
  * Implement timeout with setitimer()
  */
-static struct itimerval prev_interval;
-static struct sigaction prev_sigaction;
-static int		timeout_flag         = FALSE;
-static int		timer_active         = FALSE;
-static int		timer_handler_active = FALSE;
-static int		alarm_pending        = FALSE;
+static struct sigaction		prev_sigaction;
+static volatile sig_atomic_t	timeout_flag         = FALSE;
+static int			timer_active         = FALSE;
+static int			timer_handler_active = FALSE;
+static volatile sig_atomic_t	alarm_pending        = FALSE;
 
 /*
  * Handle SIGALRM for a timeout.
@@ -8367,7 +8386,7 @@ stop_timeout(void)
     if (timer_active)
     {
 	timer_active = FALSE;
-	ret = setitimer(ITIMER_REAL, &disarm, &prev_interval);
+	ret = setitimer(ITIMER_REAL, &disarm, NULL);
 	if (ret < 0)
 	    // Should only get here as a result of coding errors.
 	    semsg(_(e_could_not_clear_timeout_str), strerror(errno));
@@ -8382,7 +8401,7 @@ stop_timeout(void)
 	    semsg(_(e_could_not_reset_handler_for_timeout_str),
 							      strerror(errno));
     }
-    timeout_flag = 0;
+    timeout_flag = FALSE;
 }
 
 /*
@@ -8396,7 +8415,7 @@ stop_timeout(void)
  * This function is not expected to fail, but if it does it will still return a
  * valid flag pointer; the flag will remain stuck as FALSE .
  */
-    const int *
+    volatile sig_atomic_t *
 start_timeout(long msec)
 {
     struct itimerval	interval = {
@@ -8445,7 +8464,7 @@ start_timeout(long msec)
     timer_handler_active = TRUE;
 
     // Set up the interval timer once the alarm handler is in place.
-    ret = setitimer(ITIMER_REAL, &interval, &prev_interval);
+    ret = setitimer(ITIMER_REAL, &interval, NULL);
     if (ret < 0)
     {
 	// Should only get here as a result of coding errors.

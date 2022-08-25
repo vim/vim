@@ -32,6 +32,7 @@ static funccall_T *previous_funccal = NULL;
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 static void func_clear(ufunc_T *fp, int force);
 static int func_free(ufunc_T *fp, int force);
+static char_u *untrans_function_name(char_u *name);
 
     void
 func_init()
@@ -1371,7 +1372,6 @@ get_lambda_tv(
     char_u	*start, *end;
     int		*old_eval_lavars = eval_lavars_used;
     int		eval_lavars = FALSE;
-    char_u	*tofree1 = NULL;
     char_u	*tofree2 = NULL;
     int		equal_arrow = **arg == '(';
     int		white_error = FALSE;
@@ -1456,12 +1456,6 @@ get_lambda_tv(
     ret = skip_expr_concatenate(arg, &start, &end, evalarg);
     if (ret == FAIL)
 	goto errret;
-    if (evalarg != NULL)
-    {
-	// avoid that the expression gets freed when another line break follows
-	tofree1 = evalarg->eval_tofree;
-	evalarg->eval_tofree = NULL;
-    }
 
     if (!equal_arrow)
     {
@@ -1584,10 +1578,6 @@ get_lambda_tv(
 
 theend:
     eval_lavars_used = old_eval_lavars;
-    if (evalarg != NULL && evalarg->eval_tofree == NULL)
-	evalarg->eval_tofree = tofree1;
-    else
-	vim_free(tofree1);
     vim_free(tofree2);
     if (types_optional)
 	ga_clear_strings(&argtypes);
@@ -1606,10 +1596,6 @@ errret:
     }
     vim_free(fp);
     vim_free(pt);
-    if (evalarg != NULL && evalarg->eval_tofree == NULL)
-	evalarg->eval_tofree = tofree1;
-    else
-	vim_free(tofree1);
     vim_free(tofree2);
     eval_lavars_used = old_eval_lavars;
     return FAIL;
@@ -3021,6 +3007,15 @@ call_user_func_check(
 {
     int error;
 
+#ifdef FEAT_LUA
+    if (fp->uf_flags & FC_CFUNC)
+    {
+	cfunc_T cb = fp->uf_cb;
+
+	return (*cb)(argcount, argvars, rettv, fp->uf_cb_state);
+    }
+#endif
+
     if (fp->uf_flags & FC_RANGE && funcexe->fe_doesrange != NULL)
 	*funcexe->fe_doesrange = TRUE;
     error = check_user_func_argcount(fp, argcount);
@@ -3584,14 +3579,6 @@ call_func(
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
 		error = FCERR_DELETED;
-#ifdef FEAT_LUA
-	    else if (fp != NULL && (fp->uf_flags & FC_CFUNC))
-	    {
-		cfunc_T cb = fp->uf_cb;
-
-		error = (*cb)(argcount, argvars, rettv, fp->uf_cb_state);
-	    }
-#endif
 	    else if (fp != NULL)
 	    {
 		if (funcexe->fe_argv_func != NULL)
@@ -3993,12 +3980,10 @@ trans_function_name(
     {
 	if (!vim9_local)
 	{
-	    if (vim9script && lead == 2 && !ASCII_ISUPPER(*lv.ll_name))
+	    if (vim9script && lead == 2 && !ASCII_ISUPPER(*lv.ll_name)
+						   && current_script_is_vim9())
 	    {
-		semsg(_(vim9script
-			   ? e_function_name_must_start_with_capital_str
-			   : e_function_name_must_start_with_capital_or_s_str),
-									start);
+		semsg(_(e_function_name_must_start_with_capital_str), start);
 		goto theend;
 	    }
 	    lead = 3;
@@ -4072,7 +4057,7 @@ theend:
  * This can be used to first search for a script-local function and fall back
  * to the global function if not found.
  */
-    char_u *
+    static char_u *
 untrans_function_name(char_u *name)
 {
     char_u *p;

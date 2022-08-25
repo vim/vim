@@ -364,6 +364,8 @@ endfunc
 
 " Test for expression breakpoint set using ":breakadd expr <expr>"
 func Test_Debugger_breakadd_expr()
+  CheckCWD
+
   let lines =<< trim END
     let g:Xtest_var += 1
   END
@@ -408,7 +410,7 @@ def Test_Debugger_breakadd_vim9_expr()
 
   # Start Vim in a terminal
   var buf = g:RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
-  call g:TermWait(buf)
+  call g:TermWait(buf, g:RunningWithValgrind() ? 1000 : 50)
 
   # Despite the failure the functions are defined
   g:RunDbgCmd(buf, ':function g:EarlyFunc',
@@ -434,7 +436,7 @@ def Test_Debugger_break_at_return()
 
   # Start Vim in a terminal
   var buf = g:RunVimInTerminal('-S Xtest.vim', {wait_for_ruler: 0})
-  call g:TermWait(buf)
+  call g:TermWait(buf, g:RunningWithValgrind() ? 1000 : 50)
 
   g:RunDbgCmd(buf, ':call GetNum()',
      ['line 1: return 1  + 2  + 3'], {match: 'pattern'})

@@ -92,7 +92,7 @@ internal_format(
 	int	did_do_comment = FALSE;
 
 	virtcol = get_nolist_virtcol()
-		+ char2cells(c != NUL ? c : gchar_cursor());
+				   + char2cells(c != NUL ? c : gchar_cursor());
 	if (virtcol <= (colnr_T)textwidth)
 	    break;
 
@@ -461,7 +461,7 @@ internal_format(
     if (!format_only && haveto_redraw)
     {
 	update_topline();
-	redraw_curbuf_later(VALID);
+	redraw_curbuf_later(UPD_VALID);
     }
 }
 
@@ -840,7 +840,7 @@ op_format(
 
     if (oap->is_VIsual)
 	// When there is no change: need to remove the Visual selection
-	redraw_curbuf_later(INVERTED);
+	redraw_curbuf_later(UPD_INVERTED);
 
     if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	// Set '[ mark at the start of the formatted area
@@ -903,7 +903,7 @@ op_formatexpr(oparg_T *oap)
 {
     if (oap->is_VIsual)
 	// When there is no change: need to remove the Visual selection
-	redraw_curbuf_later(INVERTED);
+	redraw_curbuf_later(UPD_INVERTED);
 
     if (fex_format(oap->start.lnum, oap->line_count, NUL) != 0)
 	// As documented: when 'formatexpr' returns non-zero fall back to
@@ -1189,7 +1189,7 @@ format_lines(
 		    {
 			(void)del_bytes(indent, FALSE, FALSE);
 			mark_col_adjust(curwin->w_cursor.lnum,
-					       (colnr_T)0, 0L, (long)-indent, 0);
+					     (colnr_T)0, 0L, (long)-indent, 0);
 		    }
 		}
 		curwin->w_cursor.lnum--;

@@ -363,9 +363,19 @@ get_user_commands(expand_T *xp UNUSED, int idx)
 
     if (idx < buf->b_ucmds.ga_len)
 	return USER_CMD_GA(&buf->b_ucmds, idx)->uc_name;
+
     idx -= buf->b_ucmds.ga_len;
     if (idx < ucmds.ga_len)
-	return USER_CMD(idx)->uc_name;
+    {
+	int	i;
+	char_u  *name = USER_CMD(idx)->uc_name;
+
+	for (i = 0; i < buf->b_ucmds.ga_len; ++i)
+	    if (STRCMP(name, USER_CMD_GA(&buf->b_ucmds, i)->uc_name) == 0)
+		// global command is overruled by buffer-local one
+		return (char_u *)"";
+	return name;
+    }
     return NULL;
 }
 
@@ -1492,10 +1502,23 @@ produce_cmdmods(char_u *buf, cmdmod_T *cmod, int quote)
 			(cmod->cmod_flags & CMOD_ERRSILENT) ? "silent!"
 						      : "silent", &multi_mods);
     // :verbose
-    if (p_verbose > 0)
-	result += add_cmd_modifier(buf, "verbose", &multi_mods);
+    if (cmod->cmod_verbose > 0)
+    {
+	int verbose_value = cmod->cmod_verbose - 1;
+
+	if (verbose_value == 1)
+	    result += add_cmd_modifier(buf, "verbose", &multi_mods);
+	else
+	{
+	    char verbose_buf[NUMBUFLEN];
+
+	    sprintf(verbose_buf, "%dverbose", verbose_value);
+	    result += add_cmd_modifier(buf, verbose_buf, &multi_mods);
+	}
+    }
     // flags from cmod->cmod_split
     result += add_win_cmd_modifers(buf, cmod, &multi_mods);
+
     if (quote && buf != NULL)
     {
 	buf += result - 2;

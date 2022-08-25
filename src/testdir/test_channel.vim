@@ -528,7 +528,7 @@ func Test_connect_waittime()
     call ch_close(handle)
   else
     let elapsed = reltime(start)
-    call assert_true(reltimefloat(elapsed) < 1.0)
+    call assert_inrange(0.0, 1.0, reltimefloat(elapsed))
   endif
 
   " We intend to use a socket that doesn't exist and wait for half a second
@@ -1201,19 +1201,22 @@ func Test_pipe_null()
     call job_stop(job)
   endtry
 
-  let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'out_io': 'null', 'err_io': 'out'})
-  call assert_equal("run", job_status(job))
-  call job_stop(job)
+  " This causes spurious leak errors with valgrind.
+  if !RunningWithValgrind()
+    let job = job_start(s:python . " test_channel_pipe.py something",
+          \ {'out_io': 'null', 'err_io': 'out'})
+    call assert_equal("run", job_status(job))
+    call job_stop(job)
 
-  let job = job_start(s:python . " test_channel_pipe.py something",
-	\ {'in_io': 'null', 'out_io': 'null', 'err_io': 'null'})
-  call assert_equal("run", job_status(job))
-  call assert_equal('channel fail', string(job_getchannel(job)))
-  call assert_equal('fail', ch_status(job))
-  call assert_equal('no process', string(test_null_job()))
-  call assert_equal('channel fail', string(test_null_channel()))
-  call job_stop(job)
+    let job = job_start(s:python . " test_channel_pipe.py something",
+          \ {'in_io': 'null', 'out_io': 'null', 'err_io': 'null'})
+    call assert_equal("run", job_status(job))
+    call assert_equal('channel fail', string(job_getchannel(job)))
+    call assert_equal('fail', ch_status(job))
+    call assert_equal('no process', string(test_null_job()))
+    call assert_equal('channel fail', string(test_null_channel()))
+    call job_stop(job)
+  endif
 endfunc
 
 func Test_pipe_to_buffer_raw()
@@ -1634,8 +1637,7 @@ func Test_exit_callback_interval()
   let g:exit_cb_val.process = job_info(job).process
   call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
   let elapsed = reltimefloat(g:exit_cb_val.end)
-  call assert_true(elapsed > 0.5)
-  call assert_true(elapsed < 1.0)
+  call assert_inrange(0.5, 1.0, elapsed)
 
   " case: unreferenced job, using timer
   if !has('timers')
@@ -1761,19 +1763,21 @@ func Test_job_start_fails()
   call assert_fails("call job_start('ls',
         \ {'err_io' : 'buffer', 'err_buf' : -1})", 'E475:')
 
+  let cmd = has('win32') ? "cmd /c dir" : "ls"
+
   set nomodifiable
-  call assert_fails("call job_start('cmd /c dir',
+  call assert_fails("call job_start(cmd,
         \ {'out_io' : 'buffer', 'out_buf' :" .. bufnr() .. "})", 'E21:')
-  call assert_fails("call job_start('cmd /c dir',
+  call assert_fails("call job_start(cmd,
         \ {'err_io' : 'buffer', 'err_buf' :" .. bufnr() .. "})", 'E21:')
   set modifiable
 
-  call assert_fails("call job_start('ls', {'in_io' : 'buffer'})", 'E915:')
+  call assert_fails("call job_start(cmd, {'in_io' : 'buffer'})", 'E915:')
 
   edit! XXX
   let bnum = bufnr()
   enew
-  call assert_fails("call job_start('ls',
+  call assert_fails("call job_start(cmd,
         \ {'in_io' : 'buffer', 'in_buf' : bnum})", 'E918:')
 
   " Empty job tests
@@ -1788,6 +1792,9 @@ func Test_job_start_fails()
 endfunc
 
 func Test_job_stop_immediately()
+  " With valgrind this causes spurious leak reports
+  CheckNotValgrind
+
   let g:job = job_start([s:python, '-c', 'import time;time.sleep(10)'])
   try
     eval g:job->job_stop()

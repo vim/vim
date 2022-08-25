@@ -1,4 +1,4 @@
-*usr_50.txt*	For Vim version 8.2.  Last change: 2022 Jun 03
+*usr_50.txt*	For Vim version 9.0.  Last change: 2022 Jun 20
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -6,7 +6,7 @@
 
 
 |50.1|	Exceptions
-|50.2|    Function with variable number of arguments
+|50.2|	Function with variable number of arguments
 |50.3|	Restoring the view
 
      Next chapter: |usr_51.txt|  Create a plugin
@@ -104,7 +104,7 @@ You can call it like this: >
 
 	Show('Title', 'one', 'two', 'three')
 <	start is Title  Arg 0 is one  Arg 1 is two  Arg 2 is three ~
-	
+
 This uses the `echohl` command to specify the highlighting used for the
 following `echo` command.  `echohl None` stops it again.  The `echon` command
 works like `echo`, but doesn't output a line break.
@@ -116,26 +116,13 @@ we'll explain that further down.
 ==============================================================================
 *50.3*	Restoring the view
 
-Sometimes you want to make a change and go back to where the cursor was.
-Restoring the relative position would also be nice, so that the same line
-appears at the top of the window.
+Sometimes you want to jump around, make a change and then go back to the same
+position and view.  For example to change something in the file header.  This
+can be done with two functions: >
 
-This example yanks the current line, puts it above the first line in the file
-and then restores the view: >
-
-	map ,p ma"aYHmbgg"aP`bzt`a
-
-What this does: >
-	ma"aYHmbgg"aP`bzt`a
-<	ma			set mark a at cursor position
-	  "aY			yank current line into register a
-	     Hmb		go to top line in window and set mark b there
-		gg		go to first line in file
-		  "aP		put the yanked line above it
-		     `b		go back to top line in display
-		       zt	position the text in the window as before
-			 `a	go back to saved cursor position
-
+	var view = winsaveview()
+	# Move around, make changes
+	winrestview(view)
 
 ==============================================================================
 
