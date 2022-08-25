@@ -5651,7 +5651,7 @@ bt_normal(buf_T *buf)
  * Return TRUE if "buf" is the quickfix buffer.
  */
     int
-bt_quickfix(buf_T *buf)
+bt_quickfix(buf_T *buf UNUSED)
 {
 #ifdef FEAT_QUICKFIX
     return buf != NULL && buf->b_p_bt[0] == 'q';
@@ -5664,7 +5664,7 @@ bt_quickfix(buf_T *buf)
  * Return TRUE if "buf" is a terminal buffer.
  */
     int
-bt_terminal(buf_T *buf)
+bt_terminal(buf_T *buf UNUSED)
 {
 #if defined(FEAT_TERMINAL)
     return buf != NULL && buf->b_p_bt[0] == 't';
