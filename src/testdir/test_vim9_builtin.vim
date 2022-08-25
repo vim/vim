@@ -1896,6 +1896,10 @@ def Test_getregtype()
   getregtype('')->assert_equal("\<C-V>4")
 enddef
 
+def Test_getscriptinfo()
+  v9.CheckDefAndScriptFailure(['getscriptinfo("x")'], ['E1013: Argument 1: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 1'])
+enddef
+
 def Test_gettabinfo()
   v9.CheckDefAndScriptFailure(['gettabinfo("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef

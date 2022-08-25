@@ -1946,16 +1946,34 @@ get_sourced_lnum(
 			: SOURCING_LNUM;
 }
 
+/*
+ * getscriptinfo() function
+ */
     void
-f_getscriptinfo(typval_T *argvars UNUSED, typval_T *rettv)
+f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 {
     int		i;
     list_T	*l;
+    char_u	*pat = NULL;
+    regmatch_T	regmatch;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
+    if (check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
     l = rettv->vval.v_list;
+
+    regmatch.regprog = NULL;
+    regmatch.rm_ic = p_ic;
+
+    if (argvars[0].v_type == VAR_DICT)
+    {
+	pat = dict_get_string(argvars[0].vval.v_dict, "name", TRUE);
+	if (pat != NULL)
+	    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    }
 
     for (i = 1; i <= script_items.ga_len; ++i)
     {
@@ -1965,15 +1983,23 @@ f_getscriptinfo(typval_T *argvars UNUSED, typval_T *rettv)
 	if (si->sn_name == NULL)
 	    continue;
 
+	if (pat != NULL && regmatch.regprog != NULL
+		&& !vim_regexec(&regmatch, si->sn_name, (colnr_T)0))
+	    continue;
+
 	if ((d = dict_alloc()) == NULL
 		|| list_append_dict(l, d) == FAIL
 		|| dict_add_string(d, "name", si->sn_name) == FAIL
 		|| dict_add_number(d, "sid", i) == FAIL
 		|| dict_add_number(d, "sourced", si->sn_sourced_sid) == FAIL
+		|| dict_add_number(d, "version", si->sn_version) == FAIL
 		|| dict_add_bool(d, "autoload",
 				si->sn_state == SN_STATE_NOT_LOADED) == FAIL)
 	    return;
     }
+
+    vim_regfree(regmatch.regprog);
+    vim_free(pat);
 }
 
 #endif
