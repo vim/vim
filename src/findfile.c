@@ -709,14 +709,10 @@ vim_findfile(void *search_ctx_arg)
     char_u	*path_end = NULL;
 #endif
     ff_stack_T	*stackp;
-#if defined(FEAT_SEARCHPATH) || defined(FEAT_PATH_EXTRA)
     int		len;
-#endif
     int		i;
     char_u	*p;
-#ifdef FEAT_SEARCHPATH
     char_u	*suf;
-#endif
     ff_search_ctx_T *search_ctx;
 
     if (search_ctx_arg == NULL)
@@ -995,14 +991,12 @@ vim_findfile(void *search_ctx_arg)
 			 * Try without extra suffix and then with suffixes
 			 * from 'suffixesadd'.
 			 */
-#ifdef FEAT_SEARCHPATH
 			len = (int)STRLEN(file_path);
 			if (search_ctx->ffsc_tagfile)
 			    suf = (char_u *)"";
 			else
 			    suf = curbuf->b_p_sua;
 			for (;;)
-#endif
 			{
 			    // if file exists and we didn't already find it
 			    if ((path_with_url(file_path)
@@ -1072,13 +1066,11 @@ vim_findfile(void *search_ctx_arg)
 				return file_path;
 			    }
 
-#ifdef FEAT_SEARCHPATH
 			    // Not found or found already, try next suffix.
 			    if (*suf == NUL)
 				break;
 			    copy_option_part(&suf, file_path + len,
 							 MAXPATHL - len, ",");
-#endif
 			}
 		    }
 		}
@@ -1633,7 +1625,6 @@ ff_path_in_stoplist(char_u *path, int path_len, char_u **stopdirs_v)
 }
 #endif
 
-#if defined(FEAT_SEARCHPATH) || defined(PROTO)
 /*
  * Find the file name "ptr[len]" in the path.  Also finds directory names.
  *
@@ -2636,7 +2627,6 @@ expand_in_path(
     return gap->ga_len;
 }
 
-#endif // FEAT_SEARCHPATH
 
 /*
  * Converts a file name into a canonical form. It simplifies a file name into

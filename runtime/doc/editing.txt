@@ -247,8 +247,6 @@ If you want to keep the changed buffer without saving it, switch on the
 							*:fin* *:find*
 :fin[d][!] [++opt] [+cmd] {file}
 			Find {file} in 'path' and then |:edit| it.
-			{not available when the |+file_in_path| feature was
-			disabled at compile time}
 
 :{count}fin[d][!] [++opt] [+cmd] {file}
 			Just like ":find", but use the {count} match in
@@ -322,8 +320,6 @@ CTRL-^			Edit the alternate file.  Mostly the alternate file is
 			For Unix the '~' character is expanded, like in
 			"~user/file".  Environment variables are expanded too
 			|expand-env|.
-			{not available when the |+file_in_path| feature was
-			disabled at compile time}
 
 							*v_gf*
 {Visual}[count]gf	Same as "gf", but the highlighted text is used as the

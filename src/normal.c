@@ -4049,7 +4049,6 @@ nv_down(cmdarg_T *cap)
     }
 }
 
-#ifdef FEAT_SEARCHPATH
 /*
  * Grab the file name under the cursor and edit it.
  */
@@ -4092,7 +4091,6 @@ nv_gotofile(cmdarg_T *cap)
     else
 	clearop(cap->oap);
 }
-#endif
 
 /*
  * <End> command: to end of current line or last line.
@@ -4439,12 +4437,10 @@ nv_brackets(cmdarg_T *cap)
     old_pos = curwin->w_cursor;
     curwin->w_cursor.coladd = 0;    // TODO: don't do this for an error.
 
-#ifdef FEAT_SEARCHPATH
     // "[f" or "]f" : Edit file under the cursor (same as "gf")
     if (cap->nchar == 'f')
 	nv_gotofile(cap);
     else
-#endif
 
 #ifdef FEAT_FIND_ID
     // Find the occurrence(s) of the identifier or define under cursor
@@ -6079,14 +6075,12 @@ nv_g_cmd(cmdarg_T *cap)
 	    invoke_edit(cap, FALSE, 'g', FALSE);
 	break;
 
-#ifdef FEAT_SEARCHPATH
     // "gf": goto file, edit file under cursor
     // "]f" and "[f": can also be used.
     case 'f':
     case 'F':
 	nv_gotofile(cap);
 	break;
-#endif
 
     // "g'm" and "g`m": jump to mark without setting pcmark
     case '\'':

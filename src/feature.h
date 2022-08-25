@@ -97,6 +97,7 @@
  * These features used to be optional but are now always enabled:
  * +windows		Multiple windows.  Without this there is no help
  *			window and no status lines.
+ * +autocmd		Automatic commands
  * +vertsplit		Vertically split windows.
  * +cmdhist		Command line history.
  * +localmap		Mappings and abbreviations local to a buffer.
@@ -115,6 +116,7 @@
  * +cindent		C code indenting (From Eric Fischer).
  * +smartindent		smart C code indenting when the 'si' option is set.
  * +textobjects		Text objects: "vaw", "das", etc.
+ * +file_in_path	"gf" and "<cfile>" commands.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -202,19 +204,10 @@
 #endif
 
 /*
- * +file_in_path	"gf" and "<cfile>" commands.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_SEARCHPATH
-#endif
-
-/*
  * +find_in_path	"[I" ":isearch" "^W^I", ":checkpath", etc.
  */
 #ifdef FEAT_NORMAL
-# ifdef FEAT_SEARCHPATH	// FEAT_SEARCHPATH is required
-#  define FEAT_FIND_ID
-# endif
+# define FEAT_FIND_ID
 #endif
 
 /*
@@ -324,7 +317,6 @@
 
 /*
  * +diff		Displaying diffs in a nice way.
- *			Requires +windows and +autocmd.
  *			Can be enabled in autoconf already.
  */
 #if defined(FEAT_NORMAL) && !defined(FEAT_DIFF)
@@ -380,14 +372,14 @@
 
 /*
  * +syntax		syntax highlighting.  When using this, it's a good
- *			idea to have +autocmd and +eval too.
+ *			idea to have +eval too.
  */
 #if defined(FEAT_NORMAL) || defined(PROTO)
 # define FEAT_SYN_HL
 #endif
 
 /*
- * +conceal		'conceal' option.  Needs syntax highlighting
+ * +conceal		'conceal' option.  Depends on syntax highlighting
  *			as this is how the concealed text is defined.
  */
 #if defined(FEAT_BIG) && defined(FEAT_SYN_HL)

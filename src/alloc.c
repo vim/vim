@@ -158,10 +158,10 @@ alloc(size_t size)
     void *
 alloc_id(size_t size, alloc_id_T id UNUSED)
 {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (alloc_fail_id == id && alloc_does_fail(size))
 	return NULL;
-#endif
+# endif
     return lalloc(size, TRUE);
 }
 #endif
@@ -425,9 +425,7 @@ free_all_mem(void)
     }
 
     free_titles();
-# if defined(FEAT_SEARCHPATH)
     free_findfile();
-# endif
 
     // Obviously named calls.
     free_all_autocmds();

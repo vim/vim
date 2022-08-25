@@ -253,9 +253,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_s.b_p_spl);
     check_string_option(&buf->b_s.b_p_spo);
 #endif
-#ifdef FEAT_SEARCHPATH
     check_string_option(&buf->b_p_sua);
-#endif
     check_string_option(&buf->b_p_cink);
     check_string_option(&buf->b_p_cino);
     check_string_option(&buf->b_p_cinsd);

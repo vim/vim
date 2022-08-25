@@ -2736,8 +2736,6 @@ finddir({name} [, {path} [, {count}]])				*finddir()*
 		Returns an empty string if the directory is not found.
 
 		This is quite similar to the ex-command `:find`.
-		{only available when compiled with the |+file_in_path|
-		feature}
 
 		Can also be used as a |method|: >
 			GetName()->finddir()
@@ -10532,7 +10530,8 @@ ex_extra		|+ex_extra| (always true)
 extra_search		Compiled with support for |'incsearch'| and
 			|'hlsearch'|
 farsi			Support for Farsi was removed |farsi|.
-file_in_path		Compiled with support for |gf| and |<cfile>|
+file_in_path		Compiled with support for |gf| and |<cfile>| (always
+			true)
 filterpipe		When 'shelltemp' is off pipes are used for shell
 			read/write/filter commands
 find_in_path		Compiled with support for include file searches
