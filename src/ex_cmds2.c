@@ -27,10 +27,8 @@ autowrite(buf_T *buf, int forceit)
     bufref_T	bufref;
 
     if (!(p_aw || p_awa) || !p_write
-#ifdef FEAT_QUICKFIX
 	    // never autowrite a "nofile" or "nowrite" buffer
 	    || bt_dontwrite(buf)
-#endif
 	    || (!forceit && buf->b_p_ro) || buf->b_ffname == NULL)
 	return FAIL;
     set_bufref(&bufref, buf);

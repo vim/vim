@@ -1677,12 +1677,7 @@ append_redir(
 						  (char *)opt, (char *)fname);
     }
     else
-	vim_snprintf((char *)end, (size_t)(buflen - (end - buf)),
-#ifdef FEAT_QUICKFIX
-		" %s %s",
-#else
-		" %s%s",	// " > %s" causes problems on Amiga
-#endif
+	vim_snprintf((char *)end, (size_t)(buflen - (end - buf)), " %s %s",
 		(char *)opt, (char *)fname);
 }
 
@@ -1947,11 +1942,7 @@ do_write(exarg_T *eap)
      * and a file name is required.
      * "nofile" and "nowrite" buffers cannot be written implicitly either.
      */
-    if (!other && (
-#ifdef FEAT_QUICKFIX
-		bt_dontwrite_msg(curbuf) ||
-#endif
-		check_fname() == FAIL
+    if (!other && (bt_dontwrite_msg(curbuf) || check_fname() == FAIL
 #ifdef UNIX
 		|| check_writable(curbuf->b_ffname) == FAIL
 #endif

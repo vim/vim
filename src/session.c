@@ -148,11 +148,8 @@ ses_do_win(win_T *wp)
 	    && term_should_restore(wp->w_buffer);
 #endif
     if (wp->w_buffer->b_fname == NULL
-#ifdef FEAT_QUICKFIX
 	    // When 'buftype' is "nofile" can't restore the window contents.
-	    || bt_nofilename(wp->w_buffer)
-#endif
-       )
+	    || bt_nofilename(wp->w_buffer))
 	return (ssop_flags & SSOP_BLANK);
     if (bt_help(wp->w_buffer))
 	return (ssop_flags & SSOP_HELP);
@@ -374,10 +371,7 @@ put_view(
 # endif
 	// Load the file.
 	else if (wp->w_buffer->b_ffname != NULL
-# ifdef FEAT_QUICKFIX
-		&& !bt_nofilename(wp->w_buffer)
-# endif
-		)
+		&& !bt_nofilename(wp->w_buffer))
 	{
 	    // Editing a file in this buffer: use ":edit file".
 	    // This may have side effects! (e.g., compressed or network file).
@@ -708,11 +702,9 @@ makeopens(
     {
 	if (!(only_save_windows && buf->b_nwindows == 0)
 		&& !(buf->b_help && !(ssop_flags & SSOP_HELP))
-#ifdef FEAT_TERMINAL
 		// Skip terminal buffers: finished ones are not useful, others
 		// will be resurrected and result in a new buffer.
 		&& !bt_terminal(buf)
-#endif
 		&& buf->b_fname != NULL
 		&& buf->b_p_bl)
 	{
@@ -818,10 +810,7 @@ makeopens(
 	    if (ses_do_win(wp)
 		    && wp->w_buffer->b_ffname != NULL
 		    && !bt_help(wp->w_buffer)
-#ifdef FEAT_QUICKFIX
-		    && !bt_nofilename(wp->w_buffer)
-#endif
-		    )
+		    && !bt_nofilename(wp->w_buffer))
 	    {
 		if (need_tabnext && put_line(fd, "tabnext") == FAIL)
 		    goto fail;

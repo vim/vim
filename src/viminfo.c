@@ -434,12 +434,8 @@ write_viminfo_bufferlist(FILE *fp)
     {
 	if (buf->b_fname == NULL
 		|| !buf->b_p_bl
-#ifdef FEAT_QUICKFIX
 		|| bt_quickfix(buf)
-#endif
-#ifdef FEAT_TERMINAL
 		|| bt_terminal(buf)
-#endif
 		|| removable(buf->b_ffname))
 	    continue;
 
@@ -1994,11 +1990,7 @@ write_buffer_marks(buf_T *buf, FILE *fp_out)
     static int
 skip_for_viminfo(buf_T *buf)
 {
-    return
-#ifdef FEAT_TERMINAL
-	    bt_terminal(buf) ||
-#endif
-	    removable(buf->b_ffname);
+    return bt_terminal(buf) || removable(buf->b_ffname);
 }
 
 /*

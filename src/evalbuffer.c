@@ -93,11 +93,7 @@ find_buffer(typval_T *avar)
 	    // buffer, these don't use the full path.
 	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_fname != NULL
-			&& (path_with_url(buf->b_fname)
-#ifdef FEAT_QUICKFIX
-			    || bt_nofilename(buf)
-#endif
-			   )
+			&& (path_with_url(buf->b_fname) || bt_nofilename(buf))
 			&& STRCMP(buf->b_fname, avar->vval.v_string) == 0)
 		    break;
 	}

@@ -172,12 +172,10 @@ do_window(
     case 's':
 		CHECK_CMDWIN;
 		reset_VIsual_and_resel();	// stop Visual mode
-#ifdef FEAT_QUICKFIX
 		// When splitting the quickfix window open a new buffer in it,
 		// don't replicate the quickfix buffer.
 		if (bt_quickfix(curbuf))
 		    goto newwindow;
-#endif
 #ifdef FEAT_GUI
 		need_mouse_correct = TRUE;
 #endif
@@ -189,12 +187,10 @@ do_window(
     case 'v':
 		CHECK_CMDWIN;
 		reset_VIsual_and_resel();	// stop Visual mode
-#ifdef FEAT_QUICKFIX
 		// When splitting the quickfix window open a new buffer in it,
 		// don't replicate the quickfix buffer.
 		if (bt_quickfix(curbuf))
 		    goto newwindow;
-#endif
 #ifdef FEAT_GUI
 		need_mouse_correct = TRUE;
 #endif
@@ -228,9 +224,7 @@ do_window(
     case 'n':
 		CHECK_CMDWIN;
 		reset_VIsual_and_resel();	// stop Visual mode
-#ifdef FEAT_QUICKFIX
 newwindow:
-#endif
 		if (Prenum)
 		    // window height
 		    vim_snprintf((char *)cbuf, sizeof(cbuf) - 5, "%ld", Prenum);

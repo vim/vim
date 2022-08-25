@@ -514,9 +514,7 @@ readfile(
 		    // Create a swap file now, so that other Vims are warned
 		    // that we are editing this file.  Don't do this for a
 		    // "nofile" or "nowrite" buffer type.
-#ifdef FEAT_QUICKFIX
 		    if (!bt_dontwrite(curbuf))
-#endif
 		    {
 			check_need_swap(newfile);
 			// SwapExists autocommand may mess things up
@@ -595,9 +593,7 @@ readfile(
     // Create a swap file now, so that other Vims are warned that we are
     // editing this file.
     // Don't do this for a "nofile" or "nowrite" buffer type.
-#ifdef FEAT_QUICKFIX
     if (!bt_dontwrite(curbuf))
-#endif
     {
 	check_need_swap(newfile);
 	if (!read_stdin && (curbuf != old_curbuf
@@ -3407,9 +3403,7 @@ shorten_buf_fname(buf_T *buf, char_u *dirname, int force)
     char_u	*p;
 
     if (buf->b_fname != NULL
-#ifdef FEAT_QUICKFIX
 	    && !bt_nofilename(buf)
-#endif
 	    && !path_with_url(buf->b_fname)
 	    && (force
 		|| buf->b_sfname == NULL

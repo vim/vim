@@ -954,9 +954,9 @@ EXTERN char e_at_bottom_of_quickfix_stack[]
 	INIT(= N_("E380: At bottom of quickfix stack"));
 EXTERN char e_at_top_of_quickfix_stack[]
 	INIT(= N_("E381: At top of quickfix stack"));
+#endif
 EXTERN char e_cannot_write_buftype_option_is_set[]
 	INIT(= N_("E382: Cannot write, 'buftype' option is set"));
-#endif
 EXTERN char e_invalid_search_string_str[]
 	INIT(= N_("E383: Invalid search string: %s"));
 EXTERN char e_search_hit_top_without_match_for_str[]

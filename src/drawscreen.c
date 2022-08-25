@@ -482,11 +482,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    len += (int)STRLEN(p + len);
 	}
 #endif
-	if (bufIsChanged(wp->w_buffer)
-#ifdef FEAT_TERMINAL
-		&& !bt_terminal(wp->w_buffer)
-#endif
-		)
+	if (bufIsChanged(wp->w_buffer) && !bt_terminal(wp->w_buffer))
 	{
 	    vim_snprintf((char *)p + len, MAXPATHL - len, "%s", "[+]");
 	    len += (int)STRLEN(p + len);

@@ -742,9 +742,7 @@ buf_write(
 	    && reset_changed
 	    && whole
 	    && buf == curbuf
-#ifdef FEAT_QUICKFIX
 	    && !bt_nofilename(buf)
-#endif
 	    && !filtering
 	    && (!append || vim_strchr(p_cpo, CPO_FNAMEAPP) != NULL)
 	    && vim_strchr(p_cpo, CPO_FNAMEW) != NULL)
@@ -813,11 +811,9 @@ buf_write(
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEAPPENDCMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
-#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
-#endif
 		    apply_autocmds_exarg(EVENT_FILEAPPENDPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }
@@ -846,11 +842,9 @@ buf_write(
 	    }
 	    else
 	    {
-#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
-#endif
 		    apply_autocmds_exarg(EVENT_BUFWRITEPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }
@@ -860,11 +854,9 @@ buf_write(
 	    if (!(did_cmd = apply_autocmds_exarg(EVENT_FILEWRITECMD,
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
-#ifdef FEAT_QUICKFIX
 		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
-#endif
 		    apply_autocmds_exarg(EVENT_FILEWRITEPRE,
 					  sfname, sfname, FALSE, curbuf, eap);
 	    }

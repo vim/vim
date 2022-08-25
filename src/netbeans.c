@@ -2152,10 +2152,7 @@ nb_do_cmd(
 		if (p_write
 			&& !buf->bufp->b_p_ro
 			&& buf->bufp->b_ffname != NULL
-#ifdef FEAT_QUICKFIX
-			&& !bt_dontwrite(buf->bufp)
-#endif
-			)
+			&& !bt_dontwrite(buf->bufp))
 		{
 		    bufref_T bufref;
 
