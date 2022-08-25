@@ -3398,11 +3398,7 @@ get_tagfname(
 	    buf[0] = NUL;
 	    (void)copy_option_part(&tnp->tn_np, buf, MAXPATHL - 1, " ,");
 
-#ifdef FEAT_PATH_EXTRA
 	    r_ptr = vim_findfile_stopdir(buf);
-#else
-	    r_ptr = NULL;
-#endif
 	    // move the filename one char forward and truncate the
 	    // filepath with a NUL
 	    filename = gettail(buf);

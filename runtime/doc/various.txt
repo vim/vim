@@ -432,7 +432,8 @@ T  *+num64*		64-bit Number support |Number|
 			check the actual size of a Number.
 m  *+ole*		Win32 GUI only: |ole-interface|
 N  *+packages*		Loading |packages|
-N  *+path_extra*	Up/downwards search in 'path' and 'tags'
+T  *+path_extra*	Up/downwards search in 'path' and 'tags'  Always
+			enabled since 9.0.0270
 m  *+perl*		Perl interface |perl|
 m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
 N  *+persistent_undo*	Persistent undo |undo-persistence|

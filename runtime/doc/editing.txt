@@ -1703,8 +1703,6 @@ problem goes away the next day.
 ==============================================================================
 11. File Searching					*file-searching*
 
-{not available when compiled without the |+path_extra| feature}
-
 The file searching is currently used for the 'path', 'cdpath' and 'tags'
 options, for |finddir()| and |findfile()|.  Other commands use |wildcards|
 which is slightly different.

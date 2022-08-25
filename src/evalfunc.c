@@ -5954,13 +5954,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"path_extra",
-#ifdef FEAT_PATH_EXTRA
-		1
-#else
-		0
-#endif
-		},
+	{"path_extra", 1},
 	{"perl",
 #if defined(FEAT_PERL) && !defined(DYNAMIC_PERL)
 		1

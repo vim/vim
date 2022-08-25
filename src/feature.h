@@ -117,6 +117,7 @@
  * +smartindent		smart C code indenting when the 'si' option is set.
  * +textobjects		Text objects: "vaw", "das", etc.
  * +file_in_path	"gf" and "<cfile>" commands.
+ * +path_extra		up/downwards searching in 'path' and 'tags'.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -208,13 +209,6 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_FIND_ID
-#endif
-
-/*
- * +path_extra		up/downwards searching in 'path' and 'tags'.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_PATH_EXTRA
 #endif
 
 /*
