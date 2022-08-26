@@ -1136,10 +1136,8 @@ buf_write(
 
     // If 'backupskip' is not empty, don't make a backup for some files.
     dobackup = (p_wb || p_bk || *p_pm != NUL);
-#ifdef FEAT_WILDIGN
     if (dobackup && *p_bsk != NUL && match_file_list(p_bsk, sfname, ffname))
 	dobackup = FALSE;
-#endif
 
     // Save the value of got_int and reset it.  We don't want a previous
     // interruption cancel writing, only hitting CTRL-C while writing should

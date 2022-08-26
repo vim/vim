@@ -490,7 +490,7 @@ T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|
 T  *+vreplace*		|gR| and |gr|
    *+vtp*		on MS-Windows console: support for 'termguicolors'
-N  *+wildignore*	|'wildignore'|
+T  *+wildignore*	|'wildignore'|  Always enabled since 9.0.0278
 N  *+wildmenu*		|'wildmenu'|
 T  *+windows*		more than one window; Always enabled since 8.0.1118.
 m  *+writebackup*	|'writebackup'| is default on

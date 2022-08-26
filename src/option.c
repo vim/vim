@@ -126,17 +126,16 @@ set_init_1(int clean_arg)
 	set_string_default_esc("sh", p, TRUE);
 #endif
 
-#ifdef FEAT_WILDIGN
     /*
      * Set the default for 'backupskip' to include environment variables for
      * temp files.
      */
     {
-# ifdef UNIX
+#ifdef UNIX
 	static char	*(names[4]) = {"", "TMPDIR", "TEMP", "TMP"};
-# else
+#else
 	static char	*(names[3]) = {"TMPDIR", "TEMP", "TMP"};
-# endif
+#endif
 	int		len;
 	garray_T	ga;
 	int		mustfree;
@@ -148,15 +147,15 @@ set_init_1(int clean_arg)
 	for (n = 0; n < (long)ARRAY_LENGTH(names); ++n)
 	{
 	    mustfree = FALSE;
-# ifdef UNIX
+#ifdef UNIX
 	    if (*names[n] == NUL)
-#  ifdef MACOS_X
+# ifdef MACOS_X
 		p = (char_u *)"/private/tmp";
-#  else
+# else
 		p = (char_u *)"/tmp";
-#  endif
-	    else
 # endif
+	    else
+#endif
 		p = vim_getenv((char_u *)names[n], &mustfree);
 	    if (p != NULL && *p != NUL)
 	    {
@@ -186,7 +185,6 @@ set_init_1(int clean_arg)
 	    vim_free(ga.ga_data);
 	}
     }
-#endif
 
     /*
      * 'maxmemtot' and 'maxmem' may have to be adjusted for available memory

@@ -118,6 +118,7 @@
  * +textobjects		Text objects: "vaw", "das", etc.
  * +file_in_path	"gf" and "<cfile>" commands.
  * +path_extra		up/downwards searching in 'path' and 'tags'.
+ * +wildignore		'wildignore' and 'backupskip' options
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -285,7 +286,7 @@
 /*
  * +timers		timer_start()
  */
-#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(MSWIN) || defined(VMS) )
+#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(MSWIN) || defined(VMS))
 # define FEAT_TIMERS
 #endif
 
@@ -335,14 +336,6 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_BYTEOFF
-#endif
-
-/*
- * +wildignore		'wildignore' and 'backupskip' options
- *			Needed for Unix to make "crontab -e" work.
- */
-#if defined(FEAT_NORMAL) || defined(UNIX)
-# define FEAT_WILDIGN
 #endif
 
 /*

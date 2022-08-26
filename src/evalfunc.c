@@ -6260,13 +6260,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"wildignore",
-#ifdef FEAT_WILDIGN
-		1
-#else
-		0
-#endif
-		},
+	{"wildignore", 1},
 	{"wildmenu",
 #ifdef FEAT_WILDMENU
 		1
