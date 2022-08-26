@@ -4715,7 +4715,8 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	}
 
 	// libvterm sends 0;100;0
-	if (version == 100 && arg[0] == 0 && arg[2] == 0)
+	// Konsole sends 0;115;0 and works the same way
+	if ((version == 100 || version == 115) && arg[0] == 0 && arg[2] == 0)
 	{
 	    // If run from Vim $COLORS is set to the number of
 	    // colors the terminal supports.  Otherwise assume

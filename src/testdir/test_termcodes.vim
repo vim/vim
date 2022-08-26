@@ -1664,17 +1664,10 @@ func Test_xx02_iTerm2_response()
   call test_override('term_props', 0)
 endfunc
 
-" This checks the libvterm version response.
-" This must be after other tests, because it has side effects to xterm
-" properties.
-func Test_xx03_libvterm_response()
-  " Termresponse is only parsed when t_RV is not empty.
-  set t_RV=x
-  call test_override('term_props', 1)
-
+func Run_libvterm_konsole_response(code)
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
-  let seq = "\<Esc>[>0;100;0c"
+  let seq = "\<Esc>[>0;" .. a:code .. ";0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
@@ -1685,6 +1678,20 @@ func Test_xx03_libvterm_response()
         \ underline_rgb: 'u',
         \ mouse: 's'
         \ }, terminalprops())
+endfunc
+
+" This checks the libvterm version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx03_libvterm_konsole_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+  call test_override('term_props', 1)
+
+  " libvterm
+  call Run_libvterm_konsole_response(100)
+  " Konsole
+  call Run_libvterm_konsole_response(115)
 
   set t_RV=
   call test_override('term_props', 0)
