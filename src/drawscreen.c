@@ -3084,19 +3084,16 @@ redraw_after_callback(int call_update_screen, int do_message)
     }
     else if (State & MODE_CMDLINE)
     {
-#ifdef FEAT_WILDMENU
 	if (pum_visible())
 	    cmdline_pum_display();
-#endif
+
 	// Don't redraw when in prompt_for_number().
 	if (cmdline_row > 0)
 	{
 	    // Redrawing only works when the screen didn't scroll. Don't clear
 	    // wildmenu entries.
 	    if (msg_scrolled == 0
-#ifdef FEAT_WILDMENU
 		    && wild_menu_showing == 0
-#endif
 		    && call_update_screen)
 		update_screen(0);
 
@@ -3241,12 +3238,10 @@ redraw_buf_and_status_later(buf_T *buf, int type)
 {
     win_T	*wp;
 
-#ifdef FEAT_WILDMENU
     if (wild_menu_showing != 0)
 	// Don't redraw while the command line completion is displayed, it
 	// would disappear.
 	return;
-#endif
     FOR_ALL_WINDOWS(wp)
     {
 	if (wp->w_buffer == buf)
@@ -3305,7 +3300,6 @@ redraw_statuslines(void)
 	draw_tabline();
 }
 
-#if defined(FEAT_WILDMENU) || defined(PROTO)
 /*
  * Redraw all status lines at the bottom of frame "frp".
  */
@@ -3327,7 +3321,6 @@ win_redraw_last_status(frame_T *frp)
 	win_redraw_last_status(frp);
     }
 }
-#endif
 
 /*
  * Changed something in the current window, at buffer line "lnum", that

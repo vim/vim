@@ -6261,13 +6261,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"wildignore", 1},
-	{"wildmenu",
-#ifdef FEAT_WILDMENU
-		1
-#else
-		0
-#endif
-		},
+	{"wildmenu", 1},
 	{"windows", 1},
 	{"winaltkeys",
 #ifdef FEAT_WAK
@@ -10600,10 +10594,8 @@ f_visualmode(typval_T *argvars, typval_T *rettv)
     static void
 f_wildmenumode(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_WILDMENU
     if (wild_menu_showing || ((State & MODE_CMDLINE) && cmdline_pum_active()))
 	rettv->vval.v_number = 1;
-#endif
 }
 
 /*

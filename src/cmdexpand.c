@@ -26,7 +26,6 @@ static int	ExpandUserDefined(char_u *pat, expand_T *xp, regmatch_T *regmatch, ch
 static int	ExpandUserList(expand_T *xp, char_u ***matches, int *numMatches);
 #endif
 
-#ifdef FEAT_WILDMENU
 // "compl_match_array" points the currently displayed list of entries in the
 // popup menu.  It is NULL when there is no popup menu.
 static pumitem_T *compl_match_array = NULL;
@@ -34,7 +33,6 @@ static int compl_match_arraysize;
 // First column in cmdline of the matched item for completion.
 static int compl_startcol;
 static int compl_selected;
-#endif
 
 #define SHOW_FILE_TEXT(m) (showtail ? sm_gettail(matches[m]) : matches[m])
 
@@ -305,8 +303,6 @@ nextwild(
     return OK;
 }
 
-#if defined(FEAT_WILDMENU) || defined(PROTO)
-
 /*
  * Create and display a cmdline completion popup menu with items from
  * 'matches'.
@@ -405,7 +401,6 @@ int cmdline_compl_startcol(void)
 {
     return compl_startcol;
 }
-#endif
 
 /*
  * Get the next or prev cmdline completion match. The index of the match is set
@@ -488,7 +483,6 @@ get_next_or_prev_match(
 	else
 	    findex = -1;
     }
-#ifdef FEAT_WILDMENU
     if (compl_match_array)
     {
 	compl_selected = findex;
@@ -497,7 +491,6 @@ get_next_or_prev_match(
     else if (p_wmnu)
 	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files,
 		findex, cmd_showtail);
-#endif
     *p_findex = findex;
 
     if (findex == -1)
@@ -902,16 +895,12 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 	showtail = cmd_showtail;
     }
 
-#ifdef FEAT_WILDMENU
     if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
 	// cmdline completion popup menu (with wildoptions=pum)
 	return cmdline_pum_create(ccline, xp, matches, numMatches, showtail);
-#endif
 
-#ifdef FEAT_WILDMENU
     if (!wildmenu)
     {
-#endif
 	msg_didany = FALSE;		// lines_left will be set
 	msg_start();			// prepare for paging
 	msg_putchar('\n');
@@ -919,16 +908,12 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 	cmdline_row = msg_row;
 	msg_didany = FALSE;		// lines_left will be set again
 	msg_start();			// prepare for paging
-#ifdef FEAT_WILDMENU
     }
-#endif
 
     if (got_int)
 	got_int = FALSE;	// only int. the completion, not the cmd line
-#ifdef FEAT_WILDMENU
     else if (wildmenu)
 	win_redr_status_matches(xp, numMatches, matches, -1, showtail);
-#endif
     else
     {
 	// find the length of the longest file name
@@ -3378,8 +3363,6 @@ globpath(
     vim_free(buf);
 }
 
-#ifdef FEAT_WILDMENU
-
 /*
  * Translate some keys pressed when 'wildmenu' is used.
  */
@@ -3392,7 +3375,6 @@ wildmenu_translate_key(
 {
     int c = key;
 
-#ifdef FEAT_WILDMENU
     if (cmdline_pum_active())
     {
 	// When the popup menu is used for cmdline completion:
@@ -3409,7 +3391,6 @@ wildmenu_translate_key(
 	    default:	  break;
 	}
     }
-#endif
 
     if (did_wild_list)
     {
@@ -3669,7 +3650,6 @@ wildmenu_cleanup(cmdline_info_T *cclp)
     if (cclp->input_fn)
 	RedrawingDisabled = old_RedrawingDisabled;
 }
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*

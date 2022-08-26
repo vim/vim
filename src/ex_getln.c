@@ -920,17 +920,10 @@ cmdline_wildchar_complete(
 	if (xp->xp_numfiles > 1
 		&& !*did_wild_list
 		&& ((wim_flags[wim_index] & WIM_LIST)
-#ifdef FEAT_WILDMENU
-		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)
-#endif
-		    ))
+		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)))
 	{
-#ifdef FEAT_WILDMENU
 	    (void)showmatches(xp,
 		    p_wmnu && ((wim_flags[wim_index] & WIM_LIST) == 0));
-#else
-	    (void)showmatches(xp, FALSE);
-#endif
 	    redrawcmd();
 	    *did_wild_list = TRUE;
 	}
@@ -958,9 +951,7 @@ cmdline_wildchar_complete(
 	    (void)vpeekc();	// remove <C-C> from input stream
 	    got_int = FALSE;	// don't abandon the command line
 	    (void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
-#ifdef FEAT_WILDMENU
 	    xp->xp_context = EXPAND_NOTHING;
-#endif
 	    *wim_index_p = wim_index;
 	    return CMDLINE_CHANGED;
 	}
@@ -975,29 +966,20 @@ cmdline_wildchar_complete(
 	    if (wim_flags[0] == WIM_LONGEST && ccline.cmdpos == j)
 		wim_index = 1;
 	    if ((wim_flags[wim_index] & WIM_LIST)
-#ifdef FEAT_WILDMENU
-		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)
-#endif
-	       )
+		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0))
 	    {
 		if (!(wim_flags[0] & WIM_LONGEST))
 		{
-#ifdef FEAT_WILDMENU
 		    int p_wmnu_save = p_wmnu;
+
 		    p_wmnu = 0;
-#endif
+
 		    // remove match
 		    nextwild(xp, WILD_PREV, 0, escape);
-#ifdef FEAT_WILDMENU
 		    p_wmnu = p_wmnu_save;
-#endif
 		}
-#ifdef FEAT_WILDMENU
 		(void)showmatches(xp, p_wmnu
 			&& ((wim_flags[wim_index] & WIM_LIST) == 0));
-#else
-		(void)showmatches(xp, FALSE);
-#endif
 		redrawcmd();
 		*did_wild_list = TRUE;
 		if (wim_flags[wim_index] & WIM_LONGEST)
@@ -1008,10 +990,8 @@ cmdline_wildchar_complete(
 	    else
 		vim_beep(BO_WILD);
 	}
-#ifdef FEAT_WILDMENU
 	else if (xp->xp_numfiles == -1)
 	    xp->xp_context = EXPAND_NOTHING;
-#endif
     }
     if (wim_index < 3)
 	++wim_index;
@@ -1895,7 +1875,6 @@ getcmdline_int(
 	if (c != p_wc && c == K_S_TAB && xpc.xp_numfiles > 0)
 	    c = Ctrl_P;
 
-#ifdef FEAT_WILDMENU
 	if (p_wmnu)
 	    c = wildmenu_translate_key(&ccline, c, &xpc, did_wild_list);
 
@@ -1913,7 +1892,6 @@ getcmdline_int(
 		c = Ctrl_E;
 	    }
 	}
-#endif
 
 	// The wildmenu is cleared if the pressed key is not used for
 	// navigating the wild menu (i.e. the key is not 'wildchar' or
@@ -1922,36 +1900,26 @@ getcmdline_int(
 	// also used to navigate the menu.
 	end_wildmenu = (!(c == p_wc && KeyTyped) && c != p_wcm
 		&& c != Ctrl_N && c != Ctrl_P && c != Ctrl_A && c != Ctrl_L);
-#ifdef FEAT_WILDMENU
 	end_wildmenu = end_wildmenu && (!cmdline_pum_active() ||
 			    (c != K_PAGEDOWN && c != K_PAGEUP
 			     && c != K_KPAGEDOWN && c != K_KPAGEUP));
-#endif
 
 	// free expanded names when finished walking through matches
 	if (end_wildmenu)
 	{
-#ifdef FEAT_WILDMENU
 	    if (cmdline_pum_active())
 		cmdline_pum_remove();
-#endif
 	    if (xpc.xp_numfiles != -1)
 		(void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
 	    did_wild_list = FALSE;
-#ifdef FEAT_WILDMENU
 	    if (!p_wmnu || (c != K_UP && c != K_DOWN))
-#endif
 		xpc.xp_context = EXPAND_NOTHING;
 	    wim_index = 0;
-#ifdef FEAT_WILDMENU
 	    wildmenu_cleanup(&ccline);
-#endif
 	}
 
-#ifdef FEAT_WILDMENU
 	if (p_wmnu)
 	    c = wildmenu_process_key(&ccline, c, &xpc);
-#endif
 
 	// CTRL-\ CTRL-N goes to Normal mode, CTRL-\ CTRL-G goes to Insert
 	// mode when 'insertmode' is set, CTRL-\ e prompts for an expression.
@@ -2035,18 +2003,11 @@ getcmdline_int(
 	    {
 		if (xpc.xp_numfiles > 1
 		    && ((!did_wild_list && (wim_flags[wim_index] & WIM_LIST))
-#ifdef FEAT_WILDMENU
-			    || p_wmnu
-#endif
-		       ))
+			    || p_wmnu))
 		{
-#ifdef FEAT_WILDMENU
 		    // Trigger the popup menu when wildoptions=pum
 		    showmatches(&xpc, p_wmnu
 			    && ((wim_flags[wim_index] & WIM_LIST) == 0));
-#else
-		    (void)showmatches(&xpc, FALSE);
-#endif
 		}
 		if (nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK
 			&& nextwild(&xpc, WILD_PREV, 0, firstc != '@') == OK)
@@ -2318,12 +2279,11 @@ getcmdline_int(
 		goto cmdline_not_changed;
 
 	case Ctrl_A:	    // all matches
-#ifdef FEAT_WILDMENU
 		if (cmdline_pum_active())
 		    // As Ctrl-A completes all the matches, close the popup
 		    // menu (if present)
 		    cmdline_pum_cleanup(&ccline);
-#endif
+
 		if (nextwild(&xpc, WILD_ALL, 0, firstc != '@') == FAIL)
 		    break;
 		xpc.xp_context = EXPAND_NOTHING;
@@ -2359,7 +2319,6 @@ getcmdline_int(
 	case K_KPAGEUP:
 	case K_PAGEDOWN:
 	case K_KPAGEDOWN:
-#ifdef FEAT_WILDMENU
 		if (cmdline_pum_active()
 			&& (c == K_PAGEUP || c == K_PAGEDOWN ||
 			    c == K_KPAGEUP || c == K_KPAGEDOWN))
@@ -2374,7 +2333,6 @@ getcmdline_int(
 		    goto cmdline_not_changed;
 		}
 		else
-#endif
 		{
 		    res = cmdline_browse_history(c, firstc, &lookfor, histype,
 			    &hiscnt, &xpc);

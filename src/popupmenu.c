@@ -234,12 +234,10 @@ pum_display(
 	max_width = pum_base_width;
 
 	// Calculate column
-#ifdef FEAT_WILDMENU
 	if (State == MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    cursor_col = cmdline_compl_startcol();
 	else
-#endif
 #ifdef FEAT_RIGHTLEFT
 	if (right_left)
 	    cursor_col = curwin->w_wincol + curwin->w_width

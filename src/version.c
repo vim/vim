@@ -656,11 +656,7 @@ static char *(features[]) =
 # endif
 #endif
 	"+wildignore",
-#ifdef FEAT_WILDMENU
 	"+wildmenu",
-#else
-	"-wildmenu",
-#endif
 	"+windows",
 #ifdef FEAT_WRITEBACKUP
 	"+writebackup",
@@ -719,6 +715,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    279,
 /**/
     278,
 /**/

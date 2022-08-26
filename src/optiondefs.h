@@ -2758,11 +2758,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_wic, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"wildmenu",    "wmnu", P_BOOL|P_VI_DEF,
-#ifdef FEAT_WILDMENU
 			    (char_u *)&p_wmnu, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"wildmode",    "wim",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_wim, PV_NONE,

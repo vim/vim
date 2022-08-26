@@ -876,7 +876,6 @@ draw_vsep_win(win_T *wp, int row)
     }
 }
 
-#ifdef FEAT_WILDMENU
 static int skip_status_match_char(expand_T *xp, char_u *s);
 
 /*
@@ -1144,7 +1143,6 @@ win_redr_status_matches(
     win_redraw_last_status(topframe);
     vim_free(buf);
 }
-#endif
 
 /*
  * Return TRUE if the status line of window "wp" is connected to the status

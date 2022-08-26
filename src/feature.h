@@ -119,6 +119,7 @@
  * +file_in_path	"gf" and "<cfile>" commands.
  * +path_extra		up/downwards searching in 'path' and 'tags'.
  * +wildignore		'wildignore' and 'backupskip' options
+ * +wildmenu		'wildmenu' option
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -336,13 +337,6 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_BYTEOFF
-#endif
-
-/*
- * +wildmenu		'wildmenu' option
- */
-#if defined(FEAT_NORMAL)
-# define FEAT_WILDMENU
 #endif
 
 /*
