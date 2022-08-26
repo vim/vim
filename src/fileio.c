@@ -108,6 +108,7 @@ filemess(
  * READ_STDIN	read from stdin instead of a file
  * READ_BUFFER	read from curbuf instead of a file (converting after reading
  *		stdin)
+ * READ_NOFILE	do not read a file, only trigger BufReadCmd
  * READ_DUMMY	read into a dummy buffer (to check if file contents changed)
  * READ_KEEP_UNDO  don't clear undo info or read it from a file
  * READ_FIFO	read from fifo/socket instead of a file
@@ -309,6 +310,9 @@ readfile(
 #endif
 
 	curbuf->b_op_start = orig_start;
+
+	if (flags & READ_NOFILE)
+	    return FAIL;
     }
 
     if ((shortmess(SHM_OVER) || curbuf->b_help) && p_verbose == 0)

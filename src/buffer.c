@@ -167,8 +167,9 @@ buffer_ensure_loaded(buf_T *buf)
 open_buffer(
     int		read_stdin,	    // read file from stdin
     exarg_T	*eap,		    // for forced 'ff' and 'fenc' or NULL
-    int		flags)		    // extra flags for readfile()
+    int		flags_arg)	    // extra flags for readfile()
 {
+    int		flags = flags_arg;
     int		retval = OK;
     bufref_T	old_curbuf;
 #ifdef FEAT_SYN_HL
@@ -220,10 +221,13 @@ open_buffer(
     // mark cursor position as being invalid
     curwin->w_valid = 0;
 
+    // A buffer without an actual file should not use the buffer name to read a
+    // file.
+    if (bt_quickfix(curbuf) || bt_nofilename(curbuf))
+	flags |= READ_NOFILE;
+
     // Read the file if there is one.
     if (curbuf->b_ffname != NULL
-	    && !bt_quickfix(curbuf)
-	    && !bt_nofilename(curbuf)
 #ifdef FEAT_NETBEANS_INTG
 	    && netbeansReadFile
 #endif
