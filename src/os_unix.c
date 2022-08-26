@@ -959,7 +959,7 @@ static volatile sig_atomic_t lc_signal;
 
 // TRUE when lc_jump_env is valid.
 // Volatile because it is used in signal handler deathtrap().
-static volatile sig_atomic_t lc_active INIT(= FALSE);
+static volatile sig_atomic_t lc_active = FALSE;
 
 /*
  * A simplistic version of setjmp() that only allows one level of using.
