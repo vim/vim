@@ -59,7 +59,7 @@ static int	empty_pattern_magic(char_u *pat, size_t len, magic_T magic_val);
 #ifdef FEAT_CMDWIN
 static int	open_cmdwin(void);
 
-static int	cedit_key INIT(= -1);	// key value of 'cedit' option
+static int	cedit_key = -1;	// key value of 'cedit' option
 #endif
 
 
