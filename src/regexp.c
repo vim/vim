@@ -51,17 +51,32 @@ toggle_Magic(int x)
 }
 
 #ifdef FEAT_RELTIME
+static int timeout_nesting = 0;
+
+/*
+ * Start a timer that will cause the regexp to abort after "msec".
+ * This doesn't work well recursively.  In case it happens anyway, the first
+ * set timeout will prevail, nested ones are ignored.
+ * The caller must make sure there is a matching disable_regexp_timeout() call!
+ */
     void
 init_regexp_timeout(long msec)
 {
-    timeout_flag = start_timeout(msec);
+    if (timeout_nesting == 0)
+	timeout_flag = start_timeout(msec);
+    ++timeout_nesting;
 }
 
     void
 disable_regexp_timeout(void)
 {
-    stop_timeout();
-    timeout_flag = &dummy_timeout_flag;
+    if (timeout_nesting == 0)
+	iemsg("disable_regexp_timeout() called without active timer");
+    else if (--timeout_nesting == 0)
+    {
+	stop_timeout();
+	timeout_flag = &dummy_timeout_flag;
+    }
 }
 #endif
 

@@ -9176,7 +9176,8 @@ do_searchpair(
 
 theend:
 #ifdef FEAT_RELTIME
-    disable_regexp_timeout();
+    if (time_limit > 0)
+	disable_regexp_timeout();
 #endif
     vim_free(pat2);
     vim_free(pat3);
