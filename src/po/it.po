@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-16 21:37+0200\n"
-"PO-Revision-Date: 2022-06-16 23:00+0100\n"
+"POT-Creation-Date: 2022-08-25 09:28+0200\n"
+"PO-Revision-Date: 2022-08-25 10:10+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -384,7 +384,6 @@ msgstr ""
 "\n"
 "\tImpostata l'ultima volta da "
 
-#.
 msgid "&Ok"
 msgstr "&OK"
 
@@ -2841,7 +2840,6 @@ msgstr "Compressi %s: %ld di %ld nodi; ne restano %ld (%ld%%)"
 msgid "Reading back spell file..."
 msgstr "Rilettura file ortografico..."
 
-#.
 msgid "Performing soundfolding..."
 msgstr "Eseguo soundfolding..."
 
@@ -5088,6 +5086,9 @@ msgstr "E486: Espressione non trovata: %s"
 msgid "E487: Argument must be positive"
 msgstr "E487: L'argomento dev'essere positivo"
 
+msgid "E487: Argument must be positive: %s"
+msgstr "E487: L'argomento dev'essere positivo: %s"
+
 msgid "E488: Trailing characters"
 msgstr "E488: Caratteri in più alla fine"
 
@@ -6168,8 +6169,8 @@ msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr ""
 "E859: Conversione non riuscita dell'oggetto python risultato a un valore vim"
 
-msgid "E860: Need 'id' and 'type' with 'both'"
-msgstr "E860: Servono 'id' e 'type' specificando 'both'"
+msgid "E860: Need 'id' and 'type' or 'types' with 'both'"
+msgstr "E860: Servono 'id' e 'type' o 'types' specificando 'both'"
 
 msgid "E861: Cannot open a second popup with a terminal"
 msgstr "E861: Non posso aprire una seconda finestra dinamica con un terminale"
@@ -6667,11 +6668,11 @@ msgstr "E1006: %s è usato come argomento"
 msgid "E1007: Mandatory argument after optional argument"
 msgstr "E1007: Argomento obbligatorio dopo un argomento opzionale"
 
-msgid "E1008: Missing <type>"
-msgstr "E1008: Manca <type>"
+msgid "E1008: Missing <type> after %s"
+msgstr "E1008: Manca <type> dopo %s"
 
-msgid "E1009: Missing > after type"
-msgstr "E1009: Manca > dopo tipo"
+msgid "E1009: Missing > after type: %s"
+msgstr "E1009: Manca > dopo 'type': %s"
 
 msgid "E1010: Type not recognized: %s"
 msgstr "E1010: Tipo non riconosciuto: %s"
@@ -7556,10 +7557,32 @@ msgstr "E1288: Non riesco ad annullare il gestore del timeout: %s"
 msgid "E1289: Could not check for pending SIGALRM: %s"
 msgstr "E1289: Non riesco a controllare se in attesa di SIGALRM: %s"
 
+msgid "E1290: substitute nesting too deep"
+msgstr "E1290: nidificazione della sostituzione troppo estesa"
+
+msgid "E1291: Invalid argument: %ld"
+msgstr "E1291: Argomento non valido: %ld"
+
+msgid "E1292: Command-line window is already open"
+msgstr "E1292: Finestra della riga-di-comando già aperta"
+
+msgid "E1293: Cannot use a negative id after adding a textprop with text"
+msgstr "E1293: Non posso usare un id negativo dopo aver aggiunto del testo "
+"a una 'textprop'"
+
+msgid "E1294: Can only use text_align when column is zero"
+msgstr "E1294: Si può usare 'text_align' solo quando la colonna è zero"
+
+msgid "E1295: Cannot specify both 'type' and 'types'"
+msgstr "E1295: Non si può specificare sia 'type' che 'types'"
+
+msgid "E1296: Can only use left padding when column is zero"
+msgstr "E1296: Si può usare il riempimento a sinistra solo quando la colonna "
+"è zero"
+
 msgid "--No lines in buffer--"
 msgstr "--File vuoto--"
 
-#.
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "raggiunta la CIMA nella ricerca, continuo dal FONDO"
 
@@ -7857,9 +7880,6 @@ msgstr "Edita file di testo"
 
 msgid "Text;editor;"
 msgstr "Testo;editor;"
-
-msgid "gvim"
-msgstr "gvim"
 
 msgid "Vim"
 msgstr "Vim"

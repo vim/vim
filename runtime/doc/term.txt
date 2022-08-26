@@ -46,7 +46,7 @@ TERMCAP defined.
 A number of builtin terminals are available.  Since patch 9.0.0280 there is no
 difference between Vim versions.  You can see a list of available builtin
 terminals in the error message you get for `:set term=xxx` (when not running
-the GUI).  Also see |+builtin_terms|.
+the GUI).  Also see |++builtin_terms|.
 
 If the termcap code is included Vim will try to get the strings for the
 terminal you are using from the termcap file and the builtin termcaps.  Both

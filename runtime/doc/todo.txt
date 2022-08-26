@@ -38,6 +38,8 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+*.sil detection with FTsil() (lacygoill, Aug 25)
+
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
 - Check performance with callgrind and kcachegrind.
@@ -181,6 +183,10 @@ Patches considered for including:
 - Add "-n" option to xxd. #10599  needs a test
 - allow for nesting of timeout, sketch in #10595
 - Add setcmdline()  #10869
+
+Cleanup:
+- Remove OLD_DIGRAPHS ?
+- Remove FEAT_FOOTER ?
 
 Add 'splitscroll'  #10682  Useful?  Any trouble? Null Chilly says it's OK.
     suggestion: names instead of numbers for the option value
