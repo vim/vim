@@ -50,12 +50,6 @@ jobs:
           echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
           ) >> $GITHUB_ENV
 
-      - name: Set up system
-        run: |
-          # Setup lua5.3 manually since its package doesn't provide alternative.
-          # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
-          sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
-
       - name: Configure
         run: |
           ./configure --with-features=huge ${CONFOPT} --enable-fail-if-missing
