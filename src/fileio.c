@@ -312,7 +312,9 @@ readfile(
 	curbuf->b_op_start = orig_start;
 
 	if (flags & READ_NOFILE)
-	    return NOTDONE;  // so that BufEnter can be triggered
+	    // Return NOTDONE here so that BufEnter can be triggered,
+	    // and memline operations on startup do not fail.
+	    return NOTDONE;
     }
 
     if ((shortmess(SHM_OVER) || curbuf->b_help) && p_verbose == 0)
