@@ -134,15 +134,7 @@ static char *(features[]) =
 #else
 	"-browse",
 #endif
-#ifdef NO_BUILTIN_TCAPS
-	"-builtin_terms",
-#endif
-#ifdef SOME_BUILTIN_TCAPS
-	"+builtin_terms",
-#endif
-#ifdef ALL_BUILTIN_TCAPS
 	"++builtin_terms",
-#endif
 #ifdef FEAT_BYTEOFF
 	"+byte_offset",
 #else
@@ -715,6 +707,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    280,
 /**/
     279,
 /**/

@@ -223,7 +223,6 @@ static int initial_cursor_blink = FALSE;
  */
 static struct builtin_term builtin_termcaps[] =
 {
-
 #if defined(FEAT_GUI)
 /*
  * GUI pseudo term-cap.
@@ -276,9 +275,6 @@ static struct builtin_term builtin_termcaps[] =
 	// in check_termcode()
 #endif
 
-#ifndef NO_BUILTIN_TCAPS
-
-# if defined(AMIGA) || defined(ALL_BUILTIN_TCAPS)
 /*
  * Amiga console window, default for Amiga
  */
@@ -376,71 +372,7 @@ static struct builtin_term builtin_termcaps[] =
     {TERMCAP2KEY('#', '2'), "\233\065\064~"},	// shifted home key
     {TERMCAP2KEY('#', '3'), "\233\065\060~"},	// shifted insert key
     {TERMCAP2KEY('*', '7'), "\233\065\065~"},	// shifted end key
-# endif
 
-# ifdef ALL_BUILTIN_TCAPS
-/*
- * almost standard ANSI terminal
- */
-    {(int)KS_CE,	"\033[K"},
-    {(int)KS_CD,	"\033[J"},
-    {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
-    {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
-    {(int)KS_CAL,	"\033[%dL"},
-#  endif
-    {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
-    {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
-    {(int)KS_CDL,	"\033[%dM"},
-#  endif
-    {(int)KS_CL,	"\033[H\033[2J"},
-#ifdef notyet
-    {(int)KS_VI,	"[VI]"}, // cursor invisible, VT320: CSI ? 25 l
-    {(int)KS_VE,	"[VE]"}, // cursor visible, VT320: CSI ? 25 h
-#endif
-    {(int)KS_ME,	"\033[m"},	// normal mode
-    {(int)KS_MR,	"\033[7m"},	// reverse
-    {(int)KS_MD,	"\033[1m"},	// bold
-    {(int)KS_SO,	"\033[31m"},	// standout mode: red
-    {(int)KS_SE,	"\033[m"},	// standout end
-    {(int)KS_CZH,	"\033[35m"},	// italic: purple
-    {(int)KS_CZR,	"\033[m"},	// italic end
-    {(int)KS_US,	"\033[4m"},	// underscore mode
-    {(int)KS_UE,	"\033[m"},	// underscore end
-    {(int)KS_CCO,	"8"},		// allow 8 colors
-#  ifdef TERMINFO
-    {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
-    {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
-#  else
-    {(int)KS_CAB,	"\033[4%dm"},	// set background color
-    {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
-#  endif
-    {(int)KS_OP,	"\033[m"},	// reset colors
-    {(int)KS_MS,	"y"},		// safe to move cur in reverse mode
-    {(int)KS_UT,	"y"},		// guessed
-    {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
-    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
-    {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-    {(int)KS_SR,	"\033M"},
-#  ifdef TERMINFO
-    {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
-    {(int)KS_CRI,	"\033[%dC"},
-#  endif
-
-    {K_UP,		"\033[A"},
-    {K_DOWN,		"\033[B"},
-    {K_LEFT,		"\033[D"},
-    {K_RIGHT,		"\033[C"},
-# endif
-
-# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS)
 /*
  * standard ANSI terminal, default for unix
  */
@@ -474,9 +406,7 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CRI,	"\033[%dC"},
 #  endif
-# endif
 
-# if defined(ALL_BUILTIN_TCAPS)
 /*
  * These codes are valid when nansi.sys or equivalent has been installed.
  * Function keys on a PC are preceded with a NUL. These are converted into
@@ -555,9 +485,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_END,		"\316O"},
     {K_PAGEDOWN,	"\316Q"},
     {K_PAGEUP,		"\316I"},
-# endif
 
-# if defined(MSWIN) || defined(ALL_BUILTIN_TCAPS)
 /*
  * These codes are valid for the Win32 Console .  The entries that start with
  * ESC | are translated into console calls in os_win32.c.  The function keys
@@ -689,9 +617,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_K9,		"\316\376"},
     {K_BS,		"\316x"},
     {K_S_BS,		"\316y"},
-# endif
 
-# if defined(VMS) || defined(ALL_BUILTIN_TCAPS)
 /*
  * VT320 is working as an ANSI terminal compatible DEC terminal.
  * (it covers VT1x0, VT2x0 and VT3x0 up to VT320 on VMS as well)
@@ -791,9 +717,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_K8,		"\033Ox"},	// keypad 8
     {K_K9,		"\033Oy"},	// keypad 9
     {K_BS,		"\x7f"},	// for some reason 0177 doesn't work
-# endif
 
-# if defined(ALL_BUILTIN_TCAPS)
 /*
  * Ordinary vt52
  */
@@ -818,9 +742,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_F3,		"\033R"},
     {(int)KS_CL,	"\033H\033J"},
     {(int)KS_MS,	"y"},
-# endif
 
-# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS)
     {(int)KS_NAME,	"xterm"},
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
@@ -1012,9 +934,7 @@ static struct builtin_term builtin_termcaps[] =
     {TERMCAP2KEY('F', 'P'), "\033[56;*~"}, // F35
     {TERMCAP2KEY('F', 'Q'), "\033[57;*~"}, // F36
     {TERMCAP2KEY('F', 'R'), "\033[58;*~"}, // F37
-# endif
 
-# if defined(UNIX) || defined(ALL_BUILTIN_TCAPS)
 /*
  * iris-ansi for Silicon Graphics machines.
  */
@@ -1128,9 +1048,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_END,		"\033[146q"},
     {K_PAGEUP,		"\033[150q"},
     {K_PAGEDOWN,	"\033[154q"},
-# endif
 
-# if defined(DEBUG) || defined(ALL_BUILTIN_TCAPS)
 /*
  * for debugging
  */
@@ -1316,9 +1234,6 @@ static struct builtin_term builtin_termcaps[] =
     {K_K7,		"[K7]"},
     {K_K8,		"[K8]"},
     {K_K9,		"[K9]"},
-# endif
-
-#endif // NO_BUILTIN_TCAPS
 
 /*
  * The most minimal terminal: only clear screen and cursor positioning

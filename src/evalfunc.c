@@ -5469,20 +5469,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"builtin_terms",
-#if defined(SOME_BUILTIN_TCAPS) || defined(ALL_BUILTIN_TCAPS)
-		1
-#else
-		0
-#endif
-		},
-	{"all_builtin_terms",
-#if defined(ALL_BUILTIN_TCAPS)
-		1
-#else
-		0
-#endif
-		},
+	{"builtin_terms", 1},
+	{"all_builtin_terms", 1},
 	{"browsefilter",
 #if defined(FEAT_BROWSE) && (defined(USE_FILE_CHOOSER) \
 	|| defined(FEAT_GUI_MSWIN) \

@@ -43,15 +43,10 @@ On non-Unix systems a termcap is only available if Vim was compiled with
 TERMCAP defined.
 
 					*builtin-terms* *builtin_terms*
-Which builtin terminals are available depends on a few defines in feature.h,
-which need to be set at compile time:
-    define		output of ":version"	terminals builtin	~
-NO_BUILTIN_TCAPS	-builtin_terms		none
-SOME_BUILTIN_TCAPS	+builtin_terms		most common ones (default)
-ALL_BUILTIN_TCAPS	++builtin_terms		all available
-
-You can see a list of available builtin terminals with ":set term=xxx" (when
-not running the GUI).  Also see |+builtin_terms|.
+A number of builtin terminals are available.  Since patch 9.0.0280 there is no
+difference between Vim versions.  You can see a list of available builtin
+terminals in the error message you get for `:set term=xxx` (when not running
+the GUI).  Also see |+builtin_terms|.
 
 If the termcap code is included Vim will try to get the strings for the
 terminal you are using from the termcap file and the builtin termcaps.  Both

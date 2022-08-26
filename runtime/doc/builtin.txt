@@ -10491,7 +10491,8 @@ use: `if exists('+shellslash')`
 
 
 acl			Compiled with |ACL| support.
-all_builtin_terms	Compiled with all builtin terminals enabled.
+all_builtin_terms	Compiled with all builtin terminals enabled. (always
+			true)
 amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
@@ -10505,7 +10506,7 @@ browse			Compiled with |:browse| support, and browse() will
 			work.
 browsefilter		Compiled with support for |browsefilter|.
 bsd			Compiled on an OS in the BSD family (excluding macOS).
-builtin_terms		Compiled with some builtin terminals.
+builtin_terms		Compiled with some builtin terminals. (always true)
 byte_offset		Compiled with support for 'o' in 'statusline'
 channel			Compiled with support for |channel| and |job|
 cindent			Compiled with 'cindent' support. (always true)
