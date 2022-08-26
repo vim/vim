@@ -2016,18 +2016,14 @@ get_env_name(
     expand_T	*xp UNUSED,
     int		idx)
 {
-# if defined(AMIGA)
-    /*
-     * No environ[] on the Amiga.
-     */
+#if defined(AMIGA)
+    // No environ[] on the Amiga.
     return NULL;
-# else
+#else
 # ifndef __WIN32__
     // Borland C++ 5.2 has this in a header file.
     extern char		**environ;
 # endif
-# define ENVNAMELEN 100
-    static char_u	name[ENVNAMELEN];
     char_u		*str;
     int			n;
 
@@ -2035,15 +2031,15 @@ get_env_name(
     if (str == NULL)
 	return NULL;
 
-    for (n = 0; n < ENVNAMELEN - 1; ++n)
+    for (n = 0; n < EXPAND_BUF_LEN - 1; ++n)
     {
 	if (str[n] == '=' || str[n] == NUL)
 	    break;
-	name[n] = str[n];
+	xp->xp_buf[n] = str[n];
     }
-    name[n] = NUL;
-    return name;
-# endif
+    xp->xp_buf[n] = NUL;
+    return xp->xp_buf;
+#endif
 }
 
 /*

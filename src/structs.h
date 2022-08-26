@@ -598,6 +598,8 @@ typedef struct expand
     int		xp_col;			// cursor position in line
     char_u	**xp_files;		// list of files
     char_u	*xp_line;		// text being completed
+#define EXPAND_BUF_LEN 256
+    char_u	xp_buf[EXPAND_BUF_LEN];	// buffer for returned match
 } expand_T;
 
 /*

@@ -6420,11 +6420,8 @@ set_context_in_syntax_cmd(expand_T *xp, char_u *arg)
  * expansion.
  */
     char_u *
-get_syntax_name(expand_T *xp UNUSED, int idx)
+get_syntax_name(expand_T *xp, int idx)
 {
-#define CBUFFER_LEN 256
-    static char_u	cbuffer[CBUFFER_LEN]; // TODO: better solution
-
     switch (expand_what)
     {
 	case EXP_SUBCMD:
@@ -6452,9 +6449,9 @@ get_syntax_name(expand_T *xp UNUSED, int idx)
 	{
 	    if (idx < curwin->w_s->b_syn_clusters.ga_len)
 	    {
-		vim_snprintf((char *)cbuffer, CBUFFER_LEN, "@%s",
+		vim_snprintf((char *)xp->xp_buf, EXPAND_BUF_LEN, "@%s",
 					 SYN_CLSTR(curwin->w_s)[idx].scl_name);
-		return cbuffer;
+		return xp->xp_buf;
 	    }
 	    else
 		return NULL;
