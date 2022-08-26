@@ -3613,16 +3613,20 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
  * Free expanded names when finished walking through the matches
  */
     void
-wildmenu_cleanup(cmdline_info_T *cclp)
+wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 {
     int skt = KeyTyped;
+#ifdef FEAT_EVAL
     int old_RedrawingDisabled = RedrawingDisabled;
+#endif
 
     if (!p_wmnu || wild_menu_showing == 0)
 	return;
 
+#ifdef FEAT_EVAL
     if (cclp->input_fn)
 	RedrawingDisabled = 0;
+#endif
 
     if (wild_menu_showing == WM_SCROLLED)
     {
@@ -3647,8 +3651,10 @@ wildmenu_cleanup(cmdline_info_T *cclp)
     }
     KeyTyped = skt;
     wild_menu_showing = 0;
+#ifdef FEAT_EVAL
     if (cclp->input_fn)
 	RedrawingDisabled = old_RedrawingDisabled;
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
