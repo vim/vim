@@ -4099,24 +4099,39 @@ getscriptinfo([{opts})					*getscriptinfo()*
 		scripts in the order they were sourced, like what
 		`:scriptnames` shows.
 
+		The optional Dict argument {opts} supports the following
+		optional items:
+		    name	script name match pattern. If specified,
+				information about scripts with name
+				that match the pattern "name" are returned.
+		    sid		script ID |<SID>|.  If specified, only
+				information about the script with ID "sid" is
+				returned.
+
 		Each item in the returned List is a |Dict| with the following
 		items:
 		    autoload	set to TRUE for a script that was used with
 				`import autoload` but was not actually sourced
 				yet (see |import-autoload|).
+		    functions   List of script-local function names defined in
+				the script.  Present only when a particular
+				script is specified using the "sid" item in
+				{opts}.
 		    name	vim script file name.
 		    sid		script ID |<SID>|.
 		    sourced	script ID of the actually sourced script that
 				this script name links to, if any, otherwise
 				zero
+		    variables   a dictionary with the script-local variables.
+				Present only when the a particular script is
+				specified using the "sid" item in {opts}.
+				Note that the value of a script-local variable
+				cannot be changed using this dictionary.
 		    version	vimscript version (|scriptversion|)
 
-		The optional Dict argument {opts} supports the following
-		items:
-		    name	script name match pattern. If specified,
-				information about scripts with name
-				that match the pattern "name" are returned.
-
+		Example: >
+			:echo getscriptinfo({'name': 'myscript'})
+<
 gettabinfo([{tabnr}])					*gettabinfo()*
 		If {tabnr} is not specified, then information about all the
 		tab pages is returned as a |List|. Each List item is a

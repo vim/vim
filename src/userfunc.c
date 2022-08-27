@@ -40,7 +40,6 @@ func_init()
     hash_init(&func_hashtab);
 }
 
-#if defined(FEAT_PROFILE) || defined(PROTO)
 /*
  * Return the function hash table
  */
@@ -49,7 +48,6 @@ func_tbl_get(void)
 {
     return &func_hashtab;
 }
-#endif
 
 /*
  * Get one function argument.
