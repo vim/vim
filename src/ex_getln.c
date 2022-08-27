@@ -4267,21 +4267,27 @@ set_cmdline_pos(
     void
 f_setcmdline(typval_T *argvars, typval_T *rettv)
 {
+    int pos = -1;
+
     if (argvars[0].v_type != VAR_STRING)
     {
 	emsg(_(e_invalid_argument));
 	return;
     }
 
-    int pos = -1;
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	int error = FALSE;
 
 	pos = (int)tv_get_number_chk(&argvars[1], &error) - 1;
-	if (error || pos < 0)
+	if (error)
 	{
-	    rettv->vval.v_number = 1;
+	    emsg(_(e_invalid_argument));
+	    return;
+	}
+	else if (pos < 0)
+	{
+	    emsg(_(e_argument_must_be_positive));
 	    return;
 	}
     }
