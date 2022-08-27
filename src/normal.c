@@ -3187,6 +3187,13 @@ nv_colon(cmdarg_T *cap)
 	    }
 	}
 
+#ifdef HAS_MESSAGE_WINDOW
+	// hide any popup notification messages when entering the command line,
+	// otherwise it may be obscured
+	if (KeyTyped && use_message_window() && popup_message_win_visible())
+	    popup_hide_message_win();
+#endif
+
 	// When typing, don't type below an old message
 	if (KeyTyped)
 	    compute_cmdrow();

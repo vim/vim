@@ -400,6 +400,10 @@ func Test_x_cmdheight_zero()
   if using_popupwin
     redraw
     call assert_equal('test echo', Screenline(&lines))
+    " check popup cleared when entering command line
+    call feedkeys( ':', 'xt' )
+    redraw
+    call assert_equal('~', Screenline(&lines))
   else
     call assert_equal(116, screenchar(&lines, 1))
   endif
