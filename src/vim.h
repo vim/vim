@@ -725,7 +725,6 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #endif
 #define FAIL			0
 #define NOTDONE			2   // not OK or FAIL but skipped
-#define ABORT			3   // abort the operation
 
 // flags for b_flags
 #define BF_RECOVERED	0x01	// buffer has been recovered
