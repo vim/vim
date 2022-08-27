@@ -1064,6 +1064,13 @@
 # define FEAT_PROP_POPUP
 #endif
 
+/*
+ * +message_window	use a popup for messages when 'cmdheight' is zero
+ */
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TIMERS)
+# define HAS_MESSAGE_WINDOW
+#endif
+
 #if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
 // Can limit syntax highlight time to 'redrawtime'.
 # define SYN_TIME_LIMIT 1

@@ -392,18 +392,31 @@ func Test_cmdheight_zero()
   set cmdheight=0
   set showcmd
   redraw!
+  let using_popupwin = has('timers') && has('popupwin')
 
   echo 'test echo'
-  call assert_equal(116, screenchar(&lines, 1))
+  if using_popupwin
+    redraw
+    call assert_equal('test echo', Screenline(&lines))
+  else
+    call assert_equal(116, screenchar(&lines, 1))
+  endif
   redraw!
 
   echomsg 'test echomsg'
-  call assert_equal(116, screenchar(&lines, 1))
+  if using_popupwin
+    redraw
+    call assert_equal('test echomsg', Screenline(&lines))
+  else
+    call assert_equal(116, screenchar(&lines, 1))
+  endif
   redraw!
 
-  call feedkeys(":ls\<CR>", "xt")
-  call assert_equal(':ls', Screenline(&lines - 1))
-  redraw!
+  if !using_popupwin
+    call feedkeys(":ls\<CR>", "xt")
+    call assert_equal(':ls', Screenline(&lines))
+    redraw!
+  endif
 
   let char = getchar(0)
   call assert_match(char, 0)
@@ -420,6 +433,9 @@ func Test_cmdheight_zero()
   call assert_equal('otherstring', getline(1))
 
   call feedkeys("g\<C-g>", "xt")
+  if using_popupwin
+    redraw
+  endif
   call assert_match(
         \ 'Col 1 of 11; Line 1 of 1; Word 1 of 1',
         \ Screenline(&lines))

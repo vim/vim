@@ -4211,10 +4211,10 @@ showmode(void)
     int		nwr_save;
     int		sub_attr;
 
-    do_mode = ((p_smd && msg_silent == 0)
+    do_mode = p_smd && msg_silent == 0 && p_ch > 0
 	    && ((State & MODE_INSERT)
 		|| restart_edit != NUL
-		|| VIsual_active));
+		|| VIsual_active);
     if (do_mode || reg_recording != 0)
     {
 	if (skip_showmode())

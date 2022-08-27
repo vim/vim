@@ -1789,9 +1789,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	page can have a different value.
 
 	When 'cmdheight' is zero, there is no command-line unless it is being
-	used.  Some informative messages will not be displayed, any other
-	messages will cause the |hit-enter| prompt.  Expect some other
-	unexpected behavior too.
+	used.  Informative messages will be displayed in a popup notification
+	window at the bottom if the window, using the MessageWindow highlight
+	group {only if compiled with the +popupwin and +timers features},
+	otherwise they will not be displayed.  Other messages will cause the
+	|hit-enter| prompt.  Expect some other unexpected behavior too.
 
 						*'cmdwinheight'* *'cwh'*
 'cmdwinheight' 'cwh'	number	(default 7)
