@@ -3274,7 +3274,7 @@ func Test_setcmdline()
 
     let caught = 'no'
     try
-      setcmdline(a:text, -1)
+      call setcmdline(a:text, -1)
     catch /E487:/
       let caught = 'yes'
     endtry
