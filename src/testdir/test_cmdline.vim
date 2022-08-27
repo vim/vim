@@ -3272,7 +3272,13 @@ func Test_setcmdline()
     call assert_equal(a:text, getcmdline())
     call assert_equal(a:pos, getcmdpos())
 
-    call assert_equal(1, setcmdline(a:text, -1))
+    let caught = 'no'
+    try
+      setcmdline(a:text, -1)
+    catch /E487:/
+      let caught = 'yes'
+    endtry
+    call assert_equal('yes', caught)
     return ''
   endfunc
 
