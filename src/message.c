@@ -1459,6 +1459,7 @@ msg_start(void)
     }
 #endif
 
+#ifdef HAS_MESSAGE_WINDOW
     if (use_message_window())
     {
 	if (popup_message_win_visible() && msg_col > 0)
@@ -1472,7 +1473,9 @@ msg_start(void)
 	}
 	msg_col = 0;
     }
-    else if (!msg_scroll && full_screen)	// overwrite last message
+    else
+#endif
+	if (!msg_scroll && full_screen)	// overwrite last message
     {
 	msg_row = cmdline_row;
 	msg_col =
@@ -2302,8 +2305,8 @@ msg_puts_display(
     int		sb_col = msg_col;
     int		wrap;
     int		did_last_char;
-    int		where = PUT_APPEND;
 #ifdef HAS_MESSAGE_WINDOW
+    int		where = PUT_APPEND;
     win_T	*msg_win = NULL;
     linenr_T    lnum = 1;
 
@@ -2513,7 +2516,9 @@ msg_puts_display(
 	else if (*s == '\r')	    // go to column 0
 	{
 	    msg_col = 0;
+#ifdef HAS_MESSAGE_WINDOW
 	    where = PUT_TRUNC;
+#endif
 	}
 	else if (*s == '\b')	    // go to previous char
 	{
