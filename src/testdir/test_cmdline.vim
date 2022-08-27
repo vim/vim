@@ -3279,6 +3279,23 @@ func Test_setcmdline()
       let caught = 'yes'
     endtry
     call assert_equal('yes', caught)
+
+    let caught = 'no'
+    try
+      call setcmdline({}, 0)
+    catch /E474:/
+      let caught = 'yes'
+    endtry
+    call assert_equal('yes', caught)
+
+    let caught = 'no'
+    try
+      call setcmdline(a:text, {})
+    catch /E474:/
+      let caught = 'yes'
+    endtry
+    call assert_equal('yes', caught)
+
     return ''
   endfunc
 
