@@ -387,7 +387,9 @@ func Test_fileinfo_after_echo()
   call delete('b.txt')
 endfunc
 
-func Test_cmdheight_zero()
+" FIXME: running this last as it seems to cause
+" Test_mapping_at_hit_return_prompt() to faile
+func Test_x_cmdheight_zero()
   enew
   set cmdheight=0
   set showcmd
