@@ -2237,20 +2237,41 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
     static void
 put_msg_win(win_T *wp, int where, char_u *t_s, char_u *end, linenr_T lnum)
 {
-    int	    c = *end;
+    char_u  *p;
 
-    *end = NUL;
     if (where == PUT_BELOW)
-	ml_append_buf(wp->w_buffer, lnum, t_s, (colnr_T)0, FALSE);
+    {
+	if (*end != NUL)
+	{
+	    p = vim_strnsave(t_s, end - t_s);
+	    if (p == NULL)
+		return;
+	}
+	else
+	    p = t_s;
+	ml_append_buf(wp->w_buffer, lnum, p, (colnr_T)0, FALSE);
+	if (p != t_s)
+	    vim_free(p);
+    }
     else
     {
 	char_u *newp;
 
 	curbuf = wp->w_buffer;
 	if (where == PUT_APPEND)
+	{
 	    newp = concat_str(ml_get(lnum), t_s);
+	    if (newp == NULL)
+		return;
+	    if (*end != NUL)
+		newp[STRLEN(ml_get(lnum)) + (end - t_s)] = NUL;
+	}
 	else
+	{
 	    newp = vim_strnsave(t_s, end - t_s);
+	    if (newp == NULL)
+		return;
+	}
 	ml_replace(lnum, newp, FALSE);
 	curbuf = curwin->w_buffer;
     }
@@ -2258,8 +2279,6 @@ put_msg_win(win_T *wp, int where, char_u *t_s, char_u *end, linenr_T lnum)
 
     // set msg_col so that a newline is written if needed
     msg_col = STRLEN(t_s);
-
-    *end = c;
 }
 #endif
 
