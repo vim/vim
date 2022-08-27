@@ -1307,11 +1307,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"imdisable",   "imd",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_imdisable, PV_NONE,
-#ifdef __sgi
-			    {(char_u *)TRUE, (char_u *)0L}
-#else
 			    {(char_u *)FALSE, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"iminsert",    "imi",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_iminsert, PV_IMI,
