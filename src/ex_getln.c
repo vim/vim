@@ -4213,7 +4213,8 @@ f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
 
 // Set the command line str to "str".
 // Returns 1 when failed, 0 when OK.
-int set_cmdline_str(const char *str, int pos)
+    int
+set_cmdline_str(const char *str, int pos)
 {
     cmdline_info_T *p = get_ccline_ptr();
     int cmdline_type;
@@ -4263,7 +4264,8 @@ set_cmdline_pos(
 }
 
 // "setcmdline()" function
-    void f_setcmdline(typval_T *argvars, typval_T *rettv)
+    void
+f_setcmdline(typval_T *argvars, typval_T *rettv)
 {
     if (argvars[0].v_type != VAR_STRING)
     {
