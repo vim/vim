@@ -252,7 +252,7 @@ static xsmp_config_T xsmp;
 /*
  * I have seen
  *  extern char *_sys_siglist[NSIG];
- * on Irix, Linux, NetBSD and Solaris. It contains a nice list of strings
+ * on Linux, NetBSD and Solaris. It contains a nice list of strings
  * that describe the signals. That is nearly what we want here.  But
  * autoconf does only check for sys_siglist (without the underscore), I
  * do not want to change everything today.... jw.
@@ -959,7 +959,7 @@ static volatile sig_atomic_t lc_signal;
 
 // TRUE when lc_jump_env is valid.
 // Volatile because it is used in signal handler deathtrap().
-static volatile sig_atomic_t lc_active INIT(= FALSE);
+static volatile sig_atomic_t lc_active = FALSE;
 
 /*
  * A simplistic version of setjmp() that only allows one level of using.

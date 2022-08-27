@@ -942,7 +942,6 @@ findfilendir(
     typval_T	*rettv,
     int		find_what UNUSED)
 {
-#ifdef FEAT_SEARCHPATH
     char_u	*fname;
     char_u	*fresult = NULL;
     char_u	*path = *curbuf->b_p_path == NUL ? p_path : curbuf->b_p_path;
@@ -951,7 +950,6 @@ findfilendir(
     int		count = 1;
     int		first = TRUE;
     int		error = FALSE;
-#endif
 
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
@@ -962,7 +960,6 @@ findfilendir(
 		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
 
-#ifdef FEAT_SEARCHPATH
     fname = tv_get_string(&argvars[0]);
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -1006,7 +1003,6 @@ findfilendir(
 
     if (rettv->v_type == VAR_STRING)
 	rettv->vval.v_string = fresult;
-#endif
 }
 
 /*
@@ -3140,7 +3136,6 @@ expand_wildcards(
     if ((flags & EW_KEEPALL) || retval == FAIL)
 	return retval;
 
-#ifdef FEAT_WILDIGN
     /*
      * Remove names that match 'wildignore'.
      */
@@ -3176,12 +3171,12 @@ expand_wildcards(
 	    return FAIL;
 	}
     }
-#endif
 
     /*
      * Move the names where 'suffixes' match to the end.
+     * Skip when interrupted, the result probably won't be used.
      */
-    if (*num_files > 1)
+    if (*num_files > 1 && !got_int)
     {
 	non_suf_match = 0;
 	for (i = 0; i < *num_files; ++i)
@@ -3719,7 +3714,7 @@ unix_expandpath(
     // Find all matching entries
     if (dirp != NULL)
     {
-	for (;;)
+	while (!got_int)
 	{
 	    dp = readdir(dirp);
 	    if (dp == NULL)
@@ -3789,8 +3784,10 @@ unix_expandpath(
     vim_free(buf);
     vim_regfree(regmatch.regprog);
 
+    // When interrupted the matches probably won't be used and sorting can be
+    // slow, thus skip it.
     matches = gap->ga_len - start_len;
-    if (matches > 0)
+    if (matches > 0 && !got_int)
 	qsort(((char_u **)gap->ga_data) + start_len, matches,
 						   sizeof(char_u *), pstrcmp);
     return matches;
@@ -3876,9 +3873,7 @@ gen_expand_wildcards(
     static int		recursive = FALSE;
     int			add_pat;
     int			retval = OK;
-#if defined(FEAT_SEARCHPATH)
     int			did_expand_in_path = FALSE;
-#endif
 
     /*
      * expand_env() is called to expand things like "~user".  If this fails,
@@ -3918,7 +3913,7 @@ gen_expand_wildcards(
      */
     ga_init2(&ga, sizeof(char_u *), 30);
 
-    for (i = 0; i < num_pat; ++i)
+    for (i = 0; i < num_pat && !got_int; ++i)
     {
 	add_pat = -1;
 	p = pat[i];
@@ -3968,7 +3963,6 @@ gen_expand_wildcards(
 	     */
 	    if (mch_has_exp_wildcard(p) || (flags & EW_ICASE))
 	    {
-#if defined(FEAT_SEARCHPATH)
 		if ((flags & EW_PATH)
 			&& !mch_isFullName(p)
 			&& !(p[0] == '.'
@@ -3984,7 +3978,6 @@ gen_expand_wildcards(
 		    did_expand_in_path = TRUE;
 		}
 		else
-#endif
 		    add_pat = mch_expandpath(&ga, p, flags);
 	    }
 	}
@@ -4004,10 +3997,8 @@ gen_expand_wildcards(
 		vim_free(t);
 	}
 
-#if defined(FEAT_SEARCHPATH)
 	if (did_expand_in_path && ga.ga_len > 0 && (flags & EW_PATH))
 	    uniquefy_paths(&ga, p);
-#endif
 	if (p != pat[i])
 	    vim_free(p);
     }
@@ -4080,10 +4071,8 @@ addfile(
     /*
      * Append a slash or backslash after directory names if none is present.
      */
-#ifndef DONT_ADD_PATHSEP_TO_DIR
     if (isdir && (flags & EW_ADDSLASH))
 	add_pathsep(p);
-#endif
     ((char_u **)gap->ga_data)[gap->ga_len++] = p;
 }
 

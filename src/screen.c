@@ -876,7 +876,6 @@ draw_vsep_win(win_T *wp, int row)
     }
 }
 
-#ifdef FEAT_WILDMENU
 static int skip_status_match_char(expand_T *xp, char_u *s);
 
 /*
@@ -1144,7 +1143,6 @@ win_redr_status_matches(
     win_redraw_last_status(topframe);
     vim_free(buf);
 }
-#endif
 
 /*
  * Return TRUE if the status line of window "wp" is connected to the status
@@ -2906,7 +2904,7 @@ give_up:
     screen_Rows = Rows;
     screen_Columns = Columns;
 
-    must_redraw = UPD_CLEAR;	// need to clear the screen later
+    set_must_redraw(UPD_CLEAR);	// need to clear the screen later
     if (doclear)
 	screenclear2();
 #ifdef FEAT_GUI
@@ -4213,10 +4211,10 @@ showmode(void)
     int		nwr_save;
     int		sub_attr;
 
-    do_mode = ((p_smd && msg_silent == 0)
+    do_mode = p_smd && msg_silent == 0 && p_ch > 0
 	    && ((State & MODE_INSERT)
 		|| restart_edit != NUL
-		|| VIsual_active));
+		|| VIsual_active);
     if (do_mode || reg_recording != 0)
     {
 	if (skip_showmode())

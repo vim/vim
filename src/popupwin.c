@@ -412,15 +412,20 @@ popup_handle_scrollbar_click(win_T *wp, int row, int col)
 }
 
 #if defined(FEAT_TIMERS)
+/*
+ * Add a timer to "wp" with "time".
+ * If "close" is true use popup_close(), otherwise popup_hide().
+ */
     static void
-popup_add_timeout(win_T *wp, int time)
+popup_add_timeout(win_T *wp, int time, int close)
 {
     char_u	    cbbuf[50];
     char_u	    *ptr = cbbuf;
     typval_T	    tv;
 
     vim_snprintf((char *)cbbuf, sizeof(cbbuf),
-				       "(_) => popup_close(%d)", wp->w_id);
+		close ? "(_) => popup_close(%d)" : "(_) => popup_hide(%d)",
+		wp->w_id);
     if (get_lambda_tv_and_compile(&ptr, &tv, FALSE, &EVALARG_EVALUATE) == OK)
     {
 	wp->w_popup_timer = create_timer(time, 0);
@@ -669,7 +674,8 @@ popup_highlight_curline(win_T *wp)
 
 	    if (syn_name2id((char_u *)linehl) == 0)
 		linehl = "PmenuSel";
-	    sign_define_by_name(sign_name, NULL, (char_u *)linehl, NULL, NULL, NULL, NULL);
+	    sign_define_by_name(sign_name, NULL, (char_u *)linehl,
+						       NULL, NULL, NULL, NULL);
 	}
 
 	sign_place(&sign_id, (char_u *)"PopUpMenu", sign_name,
@@ -905,7 +911,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     // Add timer to close the popup after some time.
     nr = dict_get_number(dict, "time");
     if (nr > 0)
-	popup_add_timeout(wp, nr);
+	popup_add_timeout(wp, nr, TRUE);
 #endif
 
     di = dict_find(dict, (char_u *)"moved", -1);
@@ -1289,6 +1295,9 @@ popup_adjust_position(win_T *wp)
 	    if (wp->w_winrow >= Rows)
 		wp->w_winrow = Rows - 1;
 	}
+	if (wp->w_popup_pos == POPPOS_BOTTOM)
+	    // assume that each buffer line takes one screen line
+	    wp->w_winrow = MAX(Rows - wp->w_buffer->b_ml.ml_line_count - 1, 0);
 
 	if (!use_wantcol)
 	    center_hor = TRUE;
@@ -1649,11 +1658,21 @@ typedef enum
     TYPE_ATCURSOR,
     TYPE_BEVAL,
     TYPE_NOTIFICATION,
+    TYPE_MESSAGE_WIN,	// similar to TYPE_NOTIFICATION
     TYPE_DIALOG,
     TYPE_MENU,
     TYPE_PREVIEW,	// preview window
     TYPE_INFO		// popup menu info
 } create_type_T;
+
+/*
+ * Return TRUE if "type" is TYPE_NOTIFICATION or TYPE_MESSAGE_WIN.
+ */
+    static int
+popup_is_notification(create_type_T type)
+{
+    return type == TYPE_NOTIFICATION || type == TYPE_MESSAGE_WIN;
+}
 
 /*
  * Make "buf" empty and set the contents to "text".
@@ -1914,6 +1933,21 @@ popup_terminal_exists(void)
 #endif
 
 /*
+ * Set the color for a notification window.
+ */
+    static void
+popup_update_color(win_T *wp, create_type_T type)
+{
+    char    *hiname = type == TYPE_MESSAGE_WIN
+				       ? "MessageWindow" : "PopupNotification";
+    int		nr = syn_name2id((char_u *)hiname);
+
+    set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+		(char_u *)(nr == 0 ? "WarningMsg" : hiname),
+		OPT_FREE|OPT_LOCAL, 0);
+}
+
+/*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
  * etc.
@@ -1928,7 +1962,6 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     int		new_buffer;
     buf_T	*buf = NULL;
     dict_T	*d = NULL;
-    int		nr;
     int		i;
 
     if (argvars != NULL)
@@ -1975,7 +2008,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     {
 	if (dict_has_key(d, "tabpage"))
 	    tabnr = (int)dict_get_number(d, "tabpage");
-	else if (type == TYPE_NOTIFICATION)
+	else if (popup_is_notification(type))
 	    tabnr = -1;  // notifications are global by default
 	else
 	    tabnr = 0;
@@ -2101,7 +2134,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     wp->w_zindex = POPUPWIN_DEFAULT_ZINDEX;
     wp->w_popup_close = POPCLOSE_NONE;
 
-    if (type == TYPE_NOTIFICATION)
+    if (popup_is_notification(type))
     {
 	win_T  *twp, *nextwin;
 	int	height = buf->b_ml.ml_line_count + 3;
@@ -2140,10 +2173,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_popup_padding[1] = 1;
 	wp->w_popup_padding[3] = 1;
 
-	nr = syn_name2id((char_u *)"PopupNotification");
-	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
-		(char_u *)(nr == 0 ? "WarningMsg" : "PopupNotification"),
-		OPT_FREE|OPT_LOCAL, 0);
+	popup_update_color(wp, type);
     }
 
     if (type == TYPE_DIALOG || type == TYPE_MENU)
@@ -2203,8 +2233,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	apply_options(wp, d, TRUE);
 
 #ifdef FEAT_TIMERS
-    if (type == TYPE_NOTIFICATION && wp->w_popup_timer == NULL)
-	popup_add_timeout(wp, 3000);
+    if (popup_is_notification(type) && wp->w_popup_timer == NULL)
+	popup_add_timeout(wp, 3000, type == TYPE_NOTIFICATION);
 #endif
 
     popup_adjust_position(wp);
@@ -4406,6 +4436,86 @@ popup_close_info(void)
     if (wp != NULL)
 	popup_close_with_retval(wp, -1);
 }
+#endif
+
+#if defined(HAS_MESSAGE_WINDOW) || defined(PROTO)
+
+// Window used for messages when 'winheight' is zero.
+static win_T *message_win = NULL;
+
+/*
+ * Get the message window.
+ * Returns NULL if something failed.
+ */
+    win_T *
+popup_get_message_win(void)
+{
+    if (message_win == NULL)
+    {
+	int i;
+
+	message_win = popup_create(NULL, NULL, TYPE_MESSAGE_WIN);
+
+	if (message_win == NULL)
+	    return NULL;
+
+	// use the full screen width
+	message_win->w_width = Columns;
+
+	// position at bottom of screen
+	message_win->w_popup_pos = POPPOS_BOTTOM;
+	message_win->w_wantcol = 1;
+	message_win->w_minwidth = 9999;
+
+	// no padding, border at the top
+	for (i = 0; i < 4; ++i)
+	    message_win->w_popup_padding[i] = 0;
+	for (i = 1; i < 4; ++i)
+	    message_win->w_popup_border[i] = 0;
+
+	if (message_win->w_popup_timer != NULL)
+	    message_win->w_popup_timer->tr_keep = TRUE;
+    }
+    return message_win;
+}
+
+/*
+ * If the message window is not visible: show it
+ * If the message window is visible: reset the timeout
+ */
+    void
+popup_show_message_win(void)
+{
+    if (message_win != NULL)
+    {
+	if ((message_win->w_popup_flags & POPF_HIDDEN) != 0)
+	{
+	    // the highlight may have changed.
+	    popup_update_color(message_win, TYPE_MESSAGE_WIN);
+	    popup_show(message_win);
+	}
+	else if (message_win->w_popup_timer != NULL)
+	    timer_start(message_win->w_popup_timer);
+    }
+}
+
+    int
+popup_message_win_visible(void)
+{
+    return message_win != NULL
+	&& (message_win->w_popup_flags & POPF_HIDDEN) == 0;
+}
+
+/*
+ * If the message window is visible: hide it.
+ */
+    void
+popup_hide_message_win(void)
+{
+    if (message_win != NULL)
+	popup_hide(message_win);
+}
+
 #endif
 
 /*

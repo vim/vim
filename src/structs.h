@@ -598,6 +598,8 @@ typedef struct expand
     int		xp_col;			// cursor position in line
     char_u	**xp_files;		// list of files
     char_u	*xp_line;		// text being completed
+#define EXPAND_BUF_LEN 256
+    char_u	xp_buf[EXPAND_BUF_LEN];	// buffer for returned match
 } expand_T;
 
 /*
@@ -800,7 +802,8 @@ typedef struct memline
 typedef struct textprop_S
 {
     colnr_T	tp_col;		// start column (one based, in bytes)
-    colnr_T	tp_len;		// length in bytes
+    colnr_T	tp_len;		// length in bytes, when tp_id is negative used
+				// for left padding plus one
     int		tp_id;		// identifier
     int		tp_type;	// property type
     int		tp_flags;	// TP_FLAG_ values
@@ -1849,12 +1852,18 @@ typedef struct {
 #define IMP_FLAGS_AUTOLOAD	4   // script still needs to be loaded
 
 /*
- * Info about an already sourced scripts.
+ * Info about an encoutered script.
+ * When sn_state has the SN_STATE_NOT_LOADED is has not been sourced yet.
  */
 typedef struct
 {
     char_u	*sn_name;	    // full path of script file
     int		sn_script_seq;	    // latest sctx_T sc_seq value
+
+    // When non-zero the script ID of the actually sourced script.  Used if a
+    // script is used by a name which has a symlink, we list both names, but
+    // only the linked-to script is actually sourced.
+    int		sn_sourced_sid;
 
     // "sn_vars" stores the s: variables currently valid.  When leaving a block
     // variables local to that block are removed.
@@ -2560,6 +2569,7 @@ struct timer_S
     proftime_T	tr_due;		    // when the callback is to be invoked
     char	tr_firing;	    // when TRUE callback is being called
     char	tr_paused;	    // when TRUE callback is not invoked
+    char	tr_keep;	    // when TRUE keep timer after it fired
     int		tr_repeat;	    // number of times to repeat, -1 forever
     long	tr_interval;	    // msec
     callback_T	tr_callback;
@@ -2596,6 +2606,7 @@ typedef enum {
     POPPOS_BOTRIGHT,
     POPPOS_TOPRIGHT,
     POPPOS_CENTER,
+    POPPOS_BOTTOM,	// bottom of popup at bottom of screen
     POPPOS_NONE
 } poppos_T;
 
@@ -2966,9 +2977,7 @@ struct file_buffer
     int		b_p_si;		// 'smartindent'
     long	b_p_sts;	// 'softtabstop'
     long	b_p_sts_nopaste; // b_p_sts saved for paste mode
-#ifdef FEAT_SEARCHPATH
     char_u	*b_p_sua;	// 'suffixesadd'
-#endif
     int		b_p_swf;	// 'swapfile'
 #ifdef FEAT_SYN_HL
     long	b_p_smc;	// 'synmaxcol'

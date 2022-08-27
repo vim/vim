@@ -464,8 +464,18 @@ create_timer(long msec, int repeat)
 	timer->tr_repeat = repeat - 1;
     timer->tr_interval = msec;
 
-    profile_setlimit(msec, &timer->tr_due);
+    timer_start(timer);
     return timer;
+}
+
+/*
+ * (Re)start a timer.
+ */
+    void
+timer_start(timer_T *timer)
+{
+    profile_setlimit(timer->tr_interval, &timer->tr_due);
+    timer->tr_paused = FALSE;
 }
 
 /*
@@ -603,8 +613,13 @@ check_due_timer(void)
 	    else
 	    {
 		this_due = -1;
-		remove_timer(timer);
-		free_timer(timer);
+		if (timer->tr_keep)
+		    timer->tr_paused = TRUE;
+		else
+		{
+		    remove_timer(timer);
+		    free_timer(timer);
+		}
 	    }
 	}
 	if (this_due > 0 && (next_due == -1 || next_due > this_due))
@@ -826,6 +841,7 @@ f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
     else
     {
 	int	paused = (int)tv_get_bool(&argvars[1]);
+
 	timer = find_timer((int)tv_get_number(&argvars[0]));
 	if (timer != NULL)
 	    timer->tr_paused = paused;

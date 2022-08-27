@@ -134,15 +134,7 @@ static char *(features[]) =
 #else
 	"-browse",
 #endif
-#ifdef NO_BUILTIN_TCAPS
-	"-builtin_terms",
-#endif
-#ifdef SOME_BUILTIN_TCAPS
-	"+builtin_terms",
-#endif
-#ifdef ALL_BUILTIN_TCAPS
 	"++builtin_terms",
-#endif
 #ifdef FEAT_BYTEOFF
 	"+byte_offset",
 #else
@@ -246,11 +238,7 @@ static char *(features[]) =
 	"-extra_search",
 #endif
 	"-farsi",
-#ifdef FEAT_SEARCHPATH
 	"+file_in_path",
-#else
-	"-file_in_path",
-#endif
 #ifdef FEAT_FIND_ID
 	"+find_in_path",
 #else
@@ -452,11 +440,7 @@ static char *(features[]) =
 #else
 	"-packages",
 #endif
-#ifdef FEAT_PATH_EXTRA
 	"+path_extra",
-#else
-	"-path_extra",
-#endif
 #ifdef FEAT_PERL
 # ifdef DYNAMIC_PERL
 	"+perl/dyn",
@@ -663,16 +647,8 @@ static char *(features[]) =
 	"-vtp",
 # endif
 #endif
-#ifdef FEAT_WILDIGN
 	"+wildignore",
-#else
-	"-wildignore",
-#endif
-#ifdef FEAT_WILDMENU
 	"+wildmenu",
-#else
-	"-wildmenu",
-#endif
 	"+windows",
 #ifdef FEAT_WRITEBACKUP
 	"+writebackup",
@@ -731,6 +707,138 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    292,
+/**/
+    291,
+/**/
+    290,
+/**/
+    289,
+/**/
+    288,
+/**/
+    287,
+/**/
+    286,
+/**/
+    285,
+/**/
+    284,
+/**/
+    283,
+/**/
+    282,
+/**/
+    281,
+/**/
+    280,
+/**/
+    279,
+/**/
+    278,
+/**/
+    277,
+/**/
+    276,
+/**/
+    275,
+/**/
+    274,
+/**/
+    273,
+/**/
+    272,
+/**/
+    271,
+/**/
+    270,
+/**/
+    269,
+/**/
+    268,
+/**/
+    267,
+/**/
+    266,
+/**/
+    265,
+/**/
+    264,
+/**/
+    263,
+/**/
+    262,
+/**/
+    261,
+/**/
+    260,
+/**/
+    259,
+/**/
+    258,
+/**/
+    257,
+/**/
+    256,
+/**/
+    255,
+/**/
+    254,
+/**/
+    253,
+/**/
+    252,
+/**/
+    251,
+/**/
+    250,
+/**/
+    249,
+/**/
+    248,
+/**/
+    247,
+/**/
+    246,
+/**/
+    245,
+/**/
+    244,
+/**/
+    243,
+/**/
+    242,
+/**/
+    241,
+/**/
+    240,
+/**/
+    239,
+/**/
+    238,
+/**/
+    237,
+/**/
+    236,
+/**/
+    235,
+/**/
+    234,
+/**/
+    233,
+/**/
+    232,
+/**/
+    231,
+/**/
+    230,
+/**/
+    229,
+/**/
+    228,
+/**/
+    227,
 /**/
     226,
 /**/

@@ -697,6 +697,20 @@ ex_import(exarg_T *eap)
 }
 
 /*
+ * When a script is a symlink it may be imported with one name and sourced
+ * under another name.  Adjust the import script ID if needed.
+ * "*sid" must be a valid script ID.
+ */
+    void
+import_check_sourced_sid(int *sid)
+{
+    scriptitem_T *script = SCRIPT_ITEM(*sid);
+
+    if (script->sn_sourced_sid > 0)
+	*sid = script->sn_sourced_sid;
+}
+
+/*
  * Find an exported item in "sid" matching "name".
  * Either "cctx" or "cstack" is NULL.
  * When it is a variable return the index.

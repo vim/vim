@@ -914,7 +914,6 @@ get_spec_reg(
 		emsg(_(e_no_inserted_text_yet));
 	    return TRUE;
 
-#ifdef FEAT_SEARCHPATH
 	case Ctrl_F:		// Filename under cursor
 	case Ctrl_P:		// Path under cursor, expand via "path"
 	    if (!errmsg)
@@ -923,7 +922,6 @@ get_spec_reg(
 			    | (regname == Ctrl_P ? FNAME_EXP : 0), 1L, NULL);
 	    *allocated = TRUE;
 	    return TRUE;
-#endif
 
 	case Ctrl_W:		// word under cursor
 	case Ctrl_A:		// WORD (mnemonic All) under cursor
@@ -2586,10 +2584,8 @@ get_reg_type(int regname, long *reglen)
 	case ':':		// last command line
 	case '/':		// last search-pattern
 	case '.':		// last inserted text
-# ifdef FEAT_SEARCHPATH
 	case Ctrl_F:		// Filename under cursor
 	case Ctrl_P:		// Path under cursor, expand via "path"
-# endif
 	case Ctrl_W:		// word under cursor
 	case Ctrl_A:		// WORD (mnemonic All) under cursor
 	case '_':		// black hole: always empty

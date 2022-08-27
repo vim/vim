@@ -2368,6 +2368,24 @@ func Test_bufadd_bufload()
   exe 'bwipe ' .. buf2
   call assert_equal(0, bufexists(buf2))
 
+  " When 'buftype' is "nofile" then bufload() does not read the file.
+  " Other values too.
+  for val in [['nofile', 0],
+            \ ['nowrite', 1],
+            \ ['acwrite', 1],
+            \ ['quickfix', 0],
+            \ ['help', 1],
+            \ ['terminal', 0],
+            \ ['prompt', 0],
+            \ ['popup', 0],
+            \ ]
+    bwipe! XotherName
+    let buf = bufadd('XotherName')
+    call setbufvar(buf, '&bt', val[0])
+    call bufload(buf)
+    call assert_equal(val[1] ? ['some', 'text'] : [''], getbufline(buf, 1, '$'), val[0])
+  endfor
+
   bwipe someName
   bwipe XotherName
   call assert_equal(0, bufexists('someName'))

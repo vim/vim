@@ -136,10 +136,8 @@ do_window(
 {
     long	Prenum1;
     win_T	*wp;
-#if defined(FEAT_SEARCHPATH) || defined(FEAT_FIND_ID)
     char_u	*ptr;
     linenr_T    lnum = -1;
-#endif
 #ifdef FEAT_FIND_ID
     int		type = FIND_DEFINE;
     int		len;
@@ -172,12 +170,10 @@ do_window(
     case 's':
 		CHECK_CMDWIN;
 		reset_VIsual_and_resel();	// stop Visual mode
-#ifdef FEAT_QUICKFIX
 		// When splitting the quickfix window open a new buffer in it,
 		// don't replicate the quickfix buffer.
 		if (bt_quickfix(curbuf))
 		    goto newwindow;
-#endif
 #ifdef FEAT_GUI
 		need_mouse_correct = TRUE;
 #endif
@@ -189,12 +185,10 @@ do_window(
     case 'v':
 		CHECK_CMDWIN;
 		reset_VIsual_and_resel();	// stop Visual mode
-#ifdef FEAT_QUICKFIX
 		// When splitting the quickfix window open a new buffer in it,
 		// don't replicate the quickfix buffer.
 		if (bt_quickfix(curbuf))
 		    goto newwindow;
-#endif
 #ifdef FEAT_GUI
 		need_mouse_correct = TRUE;
 #endif
@@ -228,9 +222,7 @@ do_window(
     case 'n':
 		CHECK_CMDWIN;
 		reset_VIsual_and_resel();	// stop Visual mode
-#ifdef FEAT_QUICKFIX
 newwindow:
-#endif
 		if (Prenum)
 		    // window height
 		    vim_snprintf((char *)cbuf, sizeof(cbuf) - 5, "%ld", Prenum);
@@ -527,7 +519,6 @@ newwindow:
 		do_nv_ident(Ctrl_RSB, NUL);
 		break;
 
-#ifdef FEAT_SEARCHPATH
 // edit file name under cursor in a new window
     case 'f':
     case 'F':
@@ -540,9 +531,9 @@ wingotofile:
 		{
 		    tabpage_T	*oldtab = curtab;
 		    win_T	*oldwin = curwin;
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 		    need_mouse_correct = TRUE;
-# endif
+#endif
 		    setpcmark();
 		    if (win_split(0, 0) == OK)
 		    {
@@ -565,7 +556,6 @@ wingotofile:
 		    vim_free(ptr);
 		}
 		break;
-#endif
 
 #ifdef FEAT_FIND_ID
 // Go to the first occurrence of the identifier under cursor along path in a
@@ -643,13 +633,12 @@ wingotofile:
 			do_nv_ident('g', xchar);
 			break;
 
-#ifdef FEAT_SEARCHPATH
 		    case 'f':	    // CTRL-W gf: "gf" in a new tab page
 		    case 'F':	    // CTRL-W gF: "gF" in a new tab page
 			cmdmod.cmod_tab = tabpage_index(curtab) + 1;
 			nchar = xchar;
 			goto wingotofile;
-#endif
+
 		    case 't':	    // CTRL-W gt: go to next tab page
 			goto_tabpage((int)Prenum);
 			break;
@@ -719,11 +708,9 @@ get_wincmd_addr_type(char_u *arg, exarg_T *eap)
 #if defined(FEAT_QUICKFIX)
     case '}':
 #endif
-#ifdef FEAT_SEARCHPATH
     case 'f':
     case 'F':
     case Ctrl_F:
-#endif
 #ifdef FEAT_FIND_ID
     case 'i':
     case Ctrl_I:

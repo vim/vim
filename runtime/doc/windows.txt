@@ -183,6 +183,8 @@ CTRL-W v						*CTRL-W_v*
 		3. 'eadirection' isn't "ver", and
 		4. one of the other windows is wider than the current or new
 		   window.
+		If N was given make the new window N columns wide, if
+		possible.
 		Note: In other places CTRL-Q does the same as CTRL-V, but here
 		it doesn't!
 
@@ -841,30 +843,22 @@ CTRL-W CTRL-F	Split current window in two.  Edit file name under cursor.
 		If the name is a hypertext link that looks like
 		"type://machine/path", only "/path" is used.
 		If a count is given, the count'th matching file is edited.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 CTRL-W F						*CTRL-W_F*
 		Split current window in two.  Edit file name under cursor and
 		jump to the line number following the file name. See |gF| for
 		details on how the line number is obtained.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 CTRL-W gf						*CTRL-W_gf*
 		Open a new tab page and edit the file name under the cursor.
 		Like "tab split" and "gf", but the new tab page isn't created
 		if the file does not exist.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 CTRL-W gF						*CTRL-W_gF*
 		Open a new tab page and edit the file name under the cursor
 		and jump to the line number following the file name.  Like
 		"tab split" and "gF", but the new tab page isn't created if
 		the file does not exist.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 CTRL-W gt						*CTRL-W_gt*
 		Go to next tab page, same as `gt`.

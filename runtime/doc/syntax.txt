@@ -4905,6 +4905,7 @@ Before the color scheme will be loaded all default color list scripts
 autocommand event is triggered.  After the color scheme has been loaded the
 |ColorScheme| autocommand event is triggered.
 
+						*colorscheme-override*
 If a color scheme is almost right, you can add modifications on top of it by
 using the |ColorScheme| autocommand.  For example, to remove the background
 color (can make it transparent in some terminals): >

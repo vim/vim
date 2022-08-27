@@ -6691,7 +6691,7 @@ msgstr "E804: No se puede usar '%' con \"Float\""
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Usando \"Float\" como un \"Number\""
 
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Usando \"Float\" como \"String\""
 
 msgid "E807: Expected Float argument for printf()"

@@ -2028,7 +2028,7 @@ listdigraphs(int use_headers)
 
     // clear screen, because some digraphs may be wrong, in which case we
     // messed up ScreenLines
-    must_redraw = UPD_CLEAR;
+    set_must_redraw(UPD_CLEAR);
 }
 
     static void

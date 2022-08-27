@@ -55,8 +55,6 @@ static int	getargopt(exarg_T *eap);
 # define qf_history		ex_ni
 # define ex_helpgrep		ex_ni
 # define ex_vimgrep		ex_ni
-#endif
-#if !defined(FEAT_QUICKFIX)
 # define ex_cclose		ex_ni
 # define ex_copen		ex_ni
 # define ex_cwindow		ex_ni
@@ -6680,9 +6678,7 @@ ex_wrongmodifier(exarg_T *eap)
 ex_splitview(exarg_T *eap)
 {
     win_T	*old_curwin = curwin;
-#if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
     char_u	*fname = NULL;
-#endif
 #ifdef FEAT_BROWSE
     char_u	dot_path[] = ".";
     int		save_cmod_flags = cmdmod.cmod_flags;
@@ -6710,7 +6706,6 @@ ex_splitview(exarg_T *eap)
     }
 #endif
 
-#ifdef FEAT_SEARCHPATH
     if (eap->cmdidx == CMD_sfind || eap->cmdidx == CMD_tabfind)
     {
 	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
@@ -6720,11 +6715,7 @@ ex_splitview(exarg_T *eap)
 	eap->arg = fname;
     }
 # ifdef FEAT_BROWSE
-    else
-# endif
-#endif
-#ifdef FEAT_BROWSE
-    if ((cmdmod.cmod_flags & CMOD_BROWSE)
+    else if ((cmdmod.cmod_flags & CMOD_BROWSE)
 	    && eap->cmdidx != CMD_vnew
 	    && eap->cmdidx != CMD_new)
     {
@@ -6788,10 +6779,8 @@ ex_splitview(exarg_T *eap)
     cmdmod.cmod_flags = save_cmod_flags;
 # endif
 
-# if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
 theend:
     vim_free(fname);
-# endif
 }
 
 /*
@@ -6982,7 +6971,6 @@ ex_resize(exarg_T *eap)
     static void
 ex_find(exarg_T *eap)
 {
-#ifdef FEAT_SEARCHPATH
     char_u	*fname;
     int		count;
 
@@ -7004,12 +6992,9 @@ ex_find(exarg_T *eap)
     if (fname != NULL)
     {
 	eap->arg = fname;
-#endif
 	do_exedit(eap, NULL);
-#ifdef FEAT_SEARCHPATH
 	vim_free(fname);
     }
-#endif
 }
 
 /*
@@ -7116,7 +7101,7 @@ do_exedit(
 #ifdef FEAT_GUI
 		hold_gui_events = 0;
 #endif
-		must_redraw = UPD_CLEAR;
+		set_must_redraw(UPD_CLEAR);
 		pending_exmode_active = TRUE;
 
 		main_loop(FALSE, TRUE);
@@ -9275,7 +9260,6 @@ eval_vars(
 		}
 		break;
 
-#ifdef FEAT_SEARCHPATH
 	case SPEC_CFILE:	// file name under cursor
 		result = file_name_at_cursor(FNAME_MESS|FNAME_HYP, 1L, NULL);
 		if (result == NULL)
@@ -9285,7 +9269,6 @@ eval_vars(
 		}
 		resultbuf = result;	    // remember allocated string
 		break;
-#endif
 
 	case SPEC_AFILE:	// file name for autocommand
 		result = autocmd_fname;

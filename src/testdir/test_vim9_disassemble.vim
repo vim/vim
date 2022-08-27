@@ -2106,7 +2106,7 @@ def Test_disassemble_compare()
              '  var aDict = {x: 2}',
              floatDecl,
              '  if ' .. case[0],
-             '    echo 42'
+             '    echo 42',
              '  endif',
              'enddef'], 'Xdisassemble')
     source Xdisassemble
@@ -2163,7 +2163,7 @@ def Test_disassemble_compare_const()
   for case in cases
     writefile(['def TestCase' .. nr .. '()',
              '  if ' .. case[0],
-             '    echo 42'
+             '    echo 42',
              '  endif',
              'enddef'], 'Xdisassemble')
     source Xdisassemble

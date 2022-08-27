@@ -497,7 +497,7 @@ msgid "E461: Illegal variable name: %s"
 msgstr "E461: 비정상적인 변수 명: %s"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Float를 String으로 사용"
 
 msgid "E687: Less targets than List items"

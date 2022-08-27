@@ -123,9 +123,7 @@
 # define PV_SPO		OPT_BUF(BV_SPO)
 #endif
 #define PV_STS		OPT_BUF(BV_STS)
-#ifdef FEAT_SEARCHPATH
-# define PV_SUA		OPT_BUF(BV_SUA)
-#endif
+#define PV_SUA		OPT_BUF(BV_SUA)
 #define PV_SW		OPT_BUF(BV_SW)
 #define PV_SWF		OPT_BUF(BV_SWF)
 #ifdef FEAT_EVAL
@@ -429,13 +427,8 @@ static struct vimoption options[] =
 #endif
 					    (char_u *)0L} SCTX_INIT},
     {"backupskip",  "bsk",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-#ifdef FEAT_WILDIGN
 			    (char_u *)&p_bsk, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"balloondelay","bdlay",P_NUM|P_VI_DEF,
 #ifdef FEAT_BEVAL
@@ -546,13 +539,8 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L}
 			    SCTX_INIT},
     {"cdpath",	    "cd",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE|P_COMMA|P_NODUP,
-#ifdef FEAT_SEARCHPATH
 			    (char_u *)&p_cdpath, PV_NONE,
 			    {(char_u *)",,", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"cedit",	    NULL,   P_STRING,
 #ifdef FEAT_CMDWIN
@@ -1319,11 +1307,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"imdisable",   "imd",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_imdisable, PV_NONE,
-#ifdef __sgi
-			    {(char_u *)TRUE, (char_u *)0L}
-#else
 			    {(char_u *)FALSE, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"iminsert",    "imi",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_iminsert, PV_IMI,
@@ -2380,13 +2364,8 @@ static struct vimoption options[] =
 			    {(char_u *)".bak,~,.o,.h,.info,.swp,.obj",
 				(char_u *)0L} SCTX_INIT},
     {"suffixesadd", "sua",  P_STRING|P_VI_DEF|P_ALLOCED|P_ONECOMMA|P_NODUP,
-#ifdef FEAT_SEARCHPATH
 			    (char_u *)&p_sua, PV_SUA,
 			    {(char_u *)"", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"swapfile",    "swf",  P_BOOL|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_swf, PV_SWF,
@@ -2769,21 +2748,13 @@ static struct vimoption options[] =
 			    (char_u *)&p_wcm, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
     {"wildignore",  "wig",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
-#ifdef FEAT_WILDIGN
 			    (char_u *)&p_wig, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"wildignorecase", "wic", P_BOOL|P_VI_DEF,
 			    (char_u *)&p_wic, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"wildmenu",    "wmnu", P_BOOL|P_VI_DEF,
-#ifdef FEAT_WILDMENU
 			    (char_u *)&p_wmnu, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"wildmode",    "wim",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_wim, PV_NONE,

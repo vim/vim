@@ -732,8 +732,15 @@ def Test_use_relative_autoload_import_in_mapping()
 
   source Xmapscript.vim
   assert_match('\d\+ A: .*XrelautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  var l = getscriptinfo()
+  assert_match('XrelautoloadExport.vim$', l[-1].name)
+  assert_true(l[-1].autoload)
   feedkeys("\<F3>", "xt")
   assert_equal(42, g:result)
+  l = getscriptinfo({name: 'XrelautoloadExport'})
+  assert_true(len(l) == 1)
+  assert_match('XrelautoloadExport.vim$', l[0].name)
+  assert_false(l[0].autoload)
 
   unlet g:result
   delete('XrelautoloadExport.vim')
@@ -2902,6 +2909,56 @@ def Test_vim9_autoload_error()
     var foo#bar = 'asdf'
   END
   v9.CheckScriptFailure(lines, 'E461: Illegal variable name: foo#bar', 2)
+enddef
+
+def Test_vim9_import_symlink()
+  if !has('unix')
+    CheckUnix
+  else
+    mkdir('Xto/plugin', 'p')
+    var lines =<< trim END
+        vim9script
+        import autoload 'bar.vim'
+        g:resultFunc = bar.Func()
+        g:resultValue = bar.value
+    END
+    writefile(lines, 'Xto/plugin/foo.vim')
+
+    mkdir('Xto/autoload', 'p')
+    lines =<< trim END
+        vim9script
+        export def Func(): string
+          return 'func'
+        enddef
+        export var value = 'val'
+    END
+    writefile(lines, 'Xto/autoload/bar.vim')
+
+    var save_rtp = &rtp
+    &rtp = getcwd() .. '/Xfrom'
+    system('ln -s ' .. getcwd() .. '/Xto Xfrom')
+
+    source Xfrom/plugin/foo.vim
+    assert_equal('func', g:resultFunc)
+    assert_equal('val', g:resultValue)
+
+    var infoTo = getscriptinfo()->filter((_, v) => v.name =~ 'Xto/autoload/bar')
+    var infoFrom = getscriptinfo()->filter((_, v) => v.name =~ 'Xfrom/autoload/bar')
+    assert_equal(1, len(infoTo))
+    assert_equal(1, len(infoFrom))
+    assert_equal(infoTo[0].sid, infoFrom[0].sourced)
+    var output: string
+    redir => output
+    scriptnames
+    redir END
+    assert_match(infoFrom[0].sid .. '->' .. infoFrom[0].sourced .. '.*Xfrom', output)
+
+    unlet g:resultFunc
+    unlet g:resultValue
+    &rtp = save_rtp
+    delete('Xto', 'rf')
+    delete('Xfrom', 'rf')
+  endif
 enddef
 
 

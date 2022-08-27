@@ -253,6 +253,7 @@ getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
 getregtype([{regname}])		String	type of a register
+getscriptinfo([{opts}])		List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
 gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
@@ -504,6 +505,7 @@ setbufvar({buf}, {varname}, {val})
 setcellwidths({list})		none	set character cell width overrides
 setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		Dict	set character search from {dict}
+setcmdline({str} [, {pos}])	Number	set command-line
 setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
 setenv({name}, {val})		none	set environment variable
@@ -1178,7 +1180,8 @@ browsedir({title}, {initdir})
 		browsing is not possible, an empty string is returned.
 
 bufadd({name})						*bufadd()*
-		Add a buffer to the buffer list with String {name}.
+		Add a buffer to the buffer list with name {name} (must be a
+		String).
 		If a buffer for file {name} already exists, return that buffer
 		number.  Otherwise return the buffer number of the newly
 		created buffer.  When {name} is an empty string then a new
@@ -1231,7 +1234,8 @@ bufload({buf})						*bufload()*
 		Ensure the buffer {buf} is loaded.  When the buffer name
 		refers to an existing file then the file is read.  Otherwise
 		the buffer will be empty.  If the buffer was already loaded
-		then there is no change.
+		then there is no change.  If the buffer is not related to a
+		file the no file is read (e.g., when 'buftype' is "nofile").
 		If there is an existing swap file for the file of the buffer,
 		there will be no dialog, the buffer will be loaded anyway.
 		The {buf} argument is used like with |bufexists()|.
@@ -2733,8 +2737,6 @@ finddir({name} [, {path} [, {count}]])				*finddir()*
 		Returns an empty string if the directory is not found.
 
 		This is quite similar to the ex-command `:find`.
-		{only available when compiled with the |+file_in_path|
-		feature}
 
 		Can also be used as a |method|: >
 			GetName()->finddir()
@@ -3424,7 +3426,8 @@ getcmdcompltype()					*getcmdcompltype()*
 		Only works when the command line is being edited, thus
 		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
 		See |:command-completion| for the return string.
-		Also see |getcmdtype()|, |setcmdpos()| and |getcmdline()|.
+		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()| and
+		|setcmdline()|.
 		Returns an empty string when completion is not defined.
 
 getcmdline()						*getcmdline()*
@@ -3433,7 +3436,8 @@ getcmdline()						*getcmdline()*
 		|c_CTRL-R_=|.
 		Example: >
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
-<		Also see |getcmdtype()|, |getcmdpos()| and |setcmdpos()|.
+<		Also see |getcmdtype()|, |getcmdpos()|, |setcmdpos()| and
+		|setcmdline()|.
 		Returns an empty string when entering a password or using
 		|inputsecret()|.
 
@@ -3443,7 +3447,8 @@ getcmdpos()						*getcmdpos()*
 		Only works when editing the command line, thus requires use of
 		|c_CTRL-\_e| or |c_CTRL-R_=| or an expression mapping.
 		Returns 0 otherwise.
-		Also see |getcmdtype()|, |setcmdpos()| and |getcmdline()|.
+		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()| and
+		|setcmdline()|.
 
 getcmdscreenpos()					*getcmdscreenpos()*
 		Return the screen position of the cursor in the command line
@@ -3452,7 +3457,8 @@ getcmdscreenpos()					*getcmdscreenpos()*
 		Only works when editing the command line, thus requires use of
 		|c_CTRL-\_e| or |c_CTRL-R_=| or an expression mapping.
 		Returns 0 otherwise.
-		Also see |getcmdpos()|, |setcmdpos()|.
+		Also see |getcmdpos()|, |setcmdpos()|, |getcmdline()| and
+		|setcmdline()|.
 
 getcmdtype()						*getcmdtype()*
 		Return the current command-line type. Possible return values
@@ -4088,6 +4094,29 @@ getregtype([{regname}])					*getregtype()*
 		Can also be used as a |method|: >
 			GetRegname()->getregtype()
 
+getscriptinfo([{opts})					*getscriptinfo()*
+		Returns a |List| with information about all the sourced Vim
+		scripts in the order they were sourced, like what
+		`:scriptnames` shows.
+
+		Each item in the returned List is a |Dict| with the following
+		items:
+		    autoload	set to TRUE for a script that was used with
+				`import autoload` but was not actually sourced
+				yet (see |import-autoload|).
+		    name	vim script file name.
+		    sid		script ID |<SID>|.
+		    sourced	script ID of the actually sourced script that
+				this script name links to, if any, otherwise
+				zero
+		    version	vimscript version (|scriptversion|)
+
+		The optional Dict argument {opts} supports the following
+		items:
+		    name	script name match pattern. If specified,
+				information about scripts with name
+				that match the pattern "name" are returned.
+
 gettabinfo([{tabnr}])					*gettabinfo()*
 		If {tabnr} is not specified, then information about all the
 		tab pages is returned as a |List|. Each List item is a
@@ -4399,8 +4428,11 @@ has({feature} [, {check}])
 
 has_key({dict}, {key})					*has_key()*
 		The result is a Number, which is TRUE if |Dictionary| {dict}
-		has an entry with key {key}.  FALSE otherwise. The {key}
-		argument is a string.
+		has an entry with key {key}.  FALSE otherwise.
+		The {key} argument is a string.  In |Vim9| script a number is
+		also accepted (and converted to a string) but no other types.
+		In legacy script the usual automatic conversion to string is
+		done.
 
 		Can also be used as a |method|: >
 			mydict->has_key(key)
@@ -7421,8 +7453,10 @@ search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 		starts in column zero and then matches before the cursor are
 		skipped.  When the 'c' flag is present in 'cpo' the next
 		search starts after the match.  Without the 'c' flag the next
-		search starts one column further.  This matters for
-		overlapping matches.
+		search starts one column after the start of the match.  This
+		matters for overlapping matches.  See |cpo-c|.  You can also
+		insert "\ze" to change where the match ends, see  |/\ze|.
+
 		When searching backwards and the 'z' flag is given then the
 		search starts in column zero, thus no match in the current
 		line will be found (unless wrapping around the end of the
@@ -7896,6 +7930,16 @@ setcharsearch({dict})					*setcharsearch()*
 		Can also be used as a |method|: >
 			SavedSearch()->setcharsearch()
 
+setcmdline({str} [, {pos}])					*setcmdline()*
+		Set the command line to {str} and set the cursor position to
+		{pos}.
+		If {pos} is omitted, the cursor is positioned after the text.
+		Returns 0 when successful, 1 when not editing the command
+		line.
+
+		Can also be used as a |method|: >
+			GetText()->setcmdline()
+
 setcmdpos({pos})					*setcmdpos()*
 		Set the cursor position in the command line to byte position
 		{pos}.  The first position is 1.
@@ -7908,8 +7952,8 @@ setcmdpos({pos})					*setcmdpos()*
 		before inserting the resulting text.
 		When the number is too big the cursor is put at the end of the
 		line.  A number smaller than one has undefined results.
-		Returns FALSE when successful, TRUE when not editing the
-		command line.
+		Returns 0 when successful, 1 when not editing the command
+		line.
 
 		Can also be used as a |method|: >
 			GetPos()->setcmdpos()
@@ -10462,7 +10506,8 @@ use: `if exists('+shellslash')`
 
 
 acl			Compiled with |ACL| support.
-all_builtin_terms	Compiled with all builtin terminals enabled.
+all_builtin_terms	Compiled with all builtin terminals enabled. (always
+			true)
 amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
@@ -10476,7 +10521,7 @@ browse			Compiled with |:browse| support, and browse() will
 			work.
 browsefilter		Compiled with support for |browsefilter|.
 bsd			Compiled on an OS in the BSD family (excluding macOS).
-builtin_terms		Compiled with some builtin terminals.
+builtin_terms		Compiled with some builtin terminals. (always true)
 byte_offset		Compiled with support for 'o' in 'statusline'
 channel			Compiled with support for |channel| and |job|
 cindent			Compiled with 'cindent' support. (always true)
@@ -10508,7 +10553,8 @@ ex_extra		|+ex_extra| (always true)
 extra_search		Compiled with support for |'incsearch'| and
 			|'hlsearch'|
 farsi			Support for Farsi was removed |farsi|.
-file_in_path		Compiled with support for |gf| and |<cfile>|
+file_in_path		Compiled with support for |gf| and |<cfile>| (always
+			true)
 filterpipe		When 'shelltemp' is off pipes are used for shell
 			read/write/filter commands
 find_in_path		Compiled with support for include file searches

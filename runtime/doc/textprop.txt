@@ -126,6 +126,7 @@ prop_add({lnum}, {col}, {props})
 		If {col} is invalid an error is given. *E964*
 
 		{props} is a dictionary with these fields:
+		   type		name of the text property type
 		   length	length of text in bytes, can only be used
 				for a property that does not continue in
 				another line; can be zero
@@ -142,9 +143,10 @@ prop_add({lnum}, {col}, {props})
 				automatically to a negative number; otherwise
 				zero is used
 		   text		text to be displayed before {col}, or after the
-				line if {col} is zero
+				line if {col} is zero; prepend and/or append
+				spaces for padding with highlighting
 		   					*E1294*
-		   text_align	when "text" is present and {col} is zero
+		   text_align	when "text" is present and {col} is zero;
 				specifies where to display the text:
 				   after   after the end of the line
 				   right   right aligned in the window (unless
@@ -152,14 +154,20 @@ prop_add({lnum}, {col}, {props})
 					   line)
 				   below   in the next screen line
 				When omitted "after" is used.  Only one
-				"right" property can fit in earch line.
+				"right" property can fit in each line, if
+				there are two ore more these will go in a
+				separate line (still right aligned).
+		   text_padding_left				*E1296*
+				used when "text" is present and {col} is zero;
+				padding between the end of the text line
+				(leftmost column for "below") and the virtual
+				text, not highlighted
 		   text_wrap	when "text" is present and {col} is zero,
 				specifies what happens if the text doesn't
 				fit:
 				   wrap      wrap the text to the next line
 				   truncate  truncate the text to make it fit
 		   		When omitted "truncate" is used.
-		   type		name of the text property type
 		All fields except "type" are optional.
 
 		It is an error when both "length" and "end_lnum" or "end_col"
@@ -352,11 +360,16 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		{props} is a dictionary with these fields:
 		   id		remove text properties with this ID
 		   type		remove text properties with this type name
-		   both		"id" and "type" must both match
+		   types	remove text properties with type names in this
+				List
+		   both		"id" and "type"/"types" must both match
 		   bufnr	use this buffer instead of the current one
 		   all		when TRUE remove all matching text properties,
 				not just the first one
-		A property matches when either "id" or "type" matches.
+		Only one of "type" and "types" may be supplied. *E1295*
+
+		A property matches when either "id" or one of the supplied
+		types matches.
 		If buffer "bufnr" does not exist you get an error message.
 		If buffer "bufnr" is not loaded then nothing happens.
 

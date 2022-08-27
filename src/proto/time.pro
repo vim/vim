@@ -9,6 +9,7 @@ void f_strftime(typval_T *argvars, typval_T *rettv);
 void f_strptime(typval_T *argvars, typval_T *rettv);
 long proftime_time_left(proftime_T *due, proftime_T *now);
 timer_T *create_timer(long msec, int repeat);
+void timer_start(timer_T *timer);
 long check_due_timer(void);
 void stop_timer(timer_T *timer);
 int set_ref_in_timer(int copyID);

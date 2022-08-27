@@ -2399,15 +2399,12 @@ update_mouseshape(int shape_idx)
 
 
 /*
- * Change directory to "new_dir".  If FEAT_SEARCHPATH is defined, search
- * 'cdpath' for relative directory names, otherwise just mch_chdir().
+ * Change directory to "new_dir".  Search 'cdpath' for relative directory
+ * names, otherwise just mch_chdir().
  */
     int
 vim_chdir(char_u *new_dir)
 {
-#ifndef FEAT_SEARCHPATH
-    return mch_chdir((char *)new_dir);
-#else
     char_u	*dir_name;
     int		r;
 
@@ -2418,7 +2415,6 @@ vim_chdir(char_u *new_dir)
     r = mch_chdir((char *)dir_name);
     vim_free(dir_name);
     return r;
-#endif
 }
 
 /*

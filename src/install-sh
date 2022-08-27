@@ -332,7 +332,7 @@ do
             then
               if test -z "$dir_arg" || {
                    # Check for POSIX incompatibilities with -m.
-                   # HP-UX 11.23 and IRIX 6.5 mkdir -m -p sets group- or
+                   # HP-UX 11.23 mkdir -m -p sets group- or
                    # other-writable bit of parent directory when it shouldn't.
                    # FreeBSD 6.1 mkdir -m -p sets mode of existing directory.
                    ls_ld_tmpdir=`ls -ld "$tmpdir"`

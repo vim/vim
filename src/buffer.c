@@ -48,7 +48,7 @@ static int	value_changed(char_u *str, char_u **last);
 static int	append_arg_number(win_T *wp, char_u *buf, int buflen, int add_file);
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
-static void	clear_wininfo(buf_T *buf);
+static int	bt_nofileread(buf_T *buf);
 
 #ifdef UNIX
 # define dev_T dev_t
@@ -167,8 +167,9 @@ buffer_ensure_loaded(buf_T *buf)
 open_buffer(
     int		read_stdin,	    // read file from stdin
     exarg_T	*eap,		    // for forced 'ff' and 'fenc' or NULL
-    int		flags)		    // extra flags for readfile()
+    int		flags_arg)	    // extra flags for readfile()
 {
+    int		flags = flags_arg;
     int		retval = OK;
     bufref_T	old_curbuf;
 #ifdef FEAT_SYN_HL
@@ -220,6 +221,12 @@ open_buffer(
     // mark cursor position as being invalid
     curwin->w_valid = 0;
 
+    // A buffer without an actual file should not use the buffer name to read a
+    // file.
+    if (bt_nofileread(curbuf))
+	flags |= READ_NOFILE;
+
+    // Read the file if there is one.
     if (curbuf->b_ffname != NULL
 #ifdef FEAT_NETBEANS_INTG
 	    && netbeansReadFile
@@ -971,6 +978,22 @@ init_changedtick(buf_T *buf)
 }
 
 /*
+ * Free the b_wininfo list for buffer "buf".
+ */
+    static void
+clear_wininfo(buf_T *buf)
+{
+    wininfo_T	*wip;
+
+    while (buf->b_wininfo != NULL)
+    {
+	wip = buf->b_wininfo;
+	buf->b_wininfo = wip->wi_next;
+	free_wininfo(wip);
+    }
+}
+
+/*
  * Free stuff in the buffer for ":bdel" and when wiping out the buffer.
  */
     static void
@@ -1026,22 +1049,6 @@ free_wininfo(wininfo_T *wip)
 #endif
     }
     vim_free(wip);
-}
-
-/*
- * Free the b_wininfo list for buffer "buf".
- */
-    static void
-clear_wininfo(buf_T *buf)
-{
-    wininfo_T	*wip;
-
-    while (buf->b_wininfo != NULL)
-    {
-	wip = buf->b_wininfo;
-	buf->b_wininfo = wip->wi_next;
-	free_wininfo(wip);
-    }
 }
 
 /*
@@ -1323,11 +1330,7 @@ do_buffer_ext(
 	return FAIL;
     }
 #ifdef FEAT_PROP_POPUP
-    if ((flags & DOBUF_NOPOPUP) && bt_popup(buf)
-# ifdef FEAT_TERMINAL
-				&& !bt_terminal(buf)
-#endif
-       )
+    if ((flags & DOBUF_NOPOPUP) && bt_popup(buf) && !bt_terminal(buf))
 	return OK;
 #endif
 
@@ -1440,11 +1443,7 @@ do_buffer_ext(
 		{
 		    // Skip current and unlisted bufs.  Also skip a quickfix
 		    // buffer, it might be deleted soon.
-		    if (buf == curbuf || !buf->b_p_bl
-#if defined(FEAT_QUICKFIX)
-			    || bt_quickfix(buf)
-#endif
-			    )
+		    if (buf == curbuf || !buf->b_p_bl || bt_quickfix(buf))
 			buf = NULL;
 		    else if (buf->b_ml.ml_mfp == NULL)
 		    {
@@ -1482,10 +1481,7 @@ do_buffer_ext(
 		}
 		// in non-help buffer, try to skip help buffers, and vv
 		if (buf->b_help == curbuf->b_help && buf->b_p_bl
-#if defined(FEAT_QUICKFIX)
-			    && !bt_quickfix(buf)
-#endif
-			   )
+			    && !bt_quickfix(buf))
 		{
 		    if (buf->b_ml.ml_mfp != NULL)   // found loaded buffer
 			break;
@@ -1503,11 +1499,7 @@ do_buffer_ext(
 	if (buf == NULL)	// No loaded buffer, find listed one
 	{
 	    FOR_ALL_BUFFERS(buf)
-		if (buf->b_p_bl && buf != curbuf
-#if defined(FEAT_QUICKFIX)
-			    && !bt_quickfix(buf)
-#endif
-		       )
+		if (buf->b_p_bl && buf != curbuf && !bt_quickfix(buf))
 		    break;
 	}
 	if (buf == NULL)	// Still no buffer, just take one
@@ -1516,10 +1508,8 @@ do_buffer_ext(
 		buf = curbuf->b_next;
 	    else
 		buf = curbuf->b_prev;
-#if defined(FEAT_QUICKFIX)
 	    if (bt_quickfix(buf))
 		buf = NULL;
-#endif
 	}
     }
 
@@ -1982,9 +1972,7 @@ curbuf_reusable(void)
 	&& curbuf->b_ffname == NULL
 	&& curbuf->b_nwindows <= 1
 	&& (curbuf->b_ml.ml_mfp == NULL || BUFEMPTY())
-#if defined(FEAT_QUICKFIX)
 	&& !bt_quickfix(curbuf)
-#endif
 	&& !curbufIsChanged());
 }
 
@@ -2340,9 +2328,7 @@ free_buf_options(
     clear_string_option(&buf->b_s.b_p_spl);
     clear_string_option(&buf->b_s.b_p_spo);
 #endif
-#ifdef FEAT_SEARCHPATH
     clear_string_option(&buf->b_p_sua);
-#endif
     clear_string_option(&buf->b_p_ft);
     clear_string_option(&buf->b_p_cink);
     clear_string_option(&buf->b_p_cino);
@@ -3782,15 +3768,9 @@ fileinfo(
     vim_snprintf_add(buffer, IOSIZE, "\"%s%s%s%s%s%s",
 	    curbufIsChanged() ? (shortmess(SHM_MOD)
 					  ?  " [+]" : _(" [Modified]")) : " ",
-	    (curbuf->b_flags & BF_NOTEDITED)
-#ifdef FEAT_QUICKFIX
-		    && !bt_dontwrite(curbuf)
-#endif
+	    (curbuf->b_flags & BF_NOTEDITED) && !bt_dontwrite(curbuf)
 					? _("[Not edited]") : "",
-	    (curbuf->b_flags & BF_NEW)
-#ifdef FEAT_QUICKFIX
-		    && !bt_dontwrite(curbuf)
-#endif
+	    (curbuf->b_flags & BF_NEW) && !bt_dontwrite(curbuf)
 					   ? new_file_message() : "",
 	    (curbuf->b_flags & BF_READERR) ? _("[Read errors]") : "",
 	    curbuf->b_p_ro ? (shortmess(SHM_RO) ? _("[RO]")
@@ -4228,9 +4208,14 @@ build_stl_str_hl(
     char_u	win_tmp[TMPLEN];
     char_u	*usefmt = fmt;
     stl_hlrec_T *sp;
-    int		save_must_redraw = must_redraw;
-    int		save_redr_type = curwin->w_redr_type;
+    int		save_redraw_not_allowed = redraw_not_allowed;
     int		save_KeyTyped = KeyTyped;
+
+    // When inside update_screen() we do not want redrawing a statusline,
+    // ruler, title, etc. to trigger another redraw, it may cause an endless
+    // loop.
+    if (updating_screen)
+	redraw_not_allowed = TRUE;
 
     if (stl_items == NULL)
     {
@@ -4968,11 +4953,11 @@ build_stl_str_hl(
 	else
 	    stl_items[curitem].stl_type = Empty;
 
+	if (num >= 0 || (!itemisflag && str != NULL && *str != NUL))
+	    prevchar_isflag = FALSE;	    // Item not NULL, but not a flag
+					    //
 	if (opt == STL_VIM_EXPR)
 	    vim_free(str);
-
-	if (num >= 0 || (!itemisflag && str && *str))
-	    prevchar_isflag = FALSE;	    // Item not NULL, but not a flag
 	curitem++;
     }
     *p = NUL;
@@ -5125,13 +5110,7 @@ build_stl_str_hl(
 	sp->userhl = 0;
     }
 
-    // When inside update_screen we do not want redrawing a statusline, ruler,
-    // title, etc. to trigger another redraw, it may cause an endless loop.
-    if (updating_screen)
-    {
-	must_redraw = save_must_redraw;
-	curwin->w_redr_type = save_redr_type;
-    }
+    redraw_not_allowed = save_redraw_not_allowed;
 
     // A user function may reset KeyTyped, restore it.
     KeyTyped = save_KeyTyped;
@@ -5672,27 +5651,31 @@ bt_normal(buf_T *buf)
     return buf != NULL && buf->b_p_bt[0] == NUL;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Return TRUE if "buf" is the quickfix buffer.
  */
     int
-bt_quickfix(buf_T *buf)
+bt_quickfix(buf_T *buf UNUSED)
 {
+#ifdef FEAT_QUICKFIX
     return buf != NULL && buf->b_p_bt[0] == 'q';
-}
+#else
+    return FALSE;
 #endif
+}
 
-#if defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Return TRUE if "buf" is a terminal buffer.
  */
     int
-bt_terminal(buf_T *buf)
+bt_terminal(buf_T *buf UNUSED)
 {
+#if defined(FEAT_TERMINAL)
     return buf != NULL && buf->b_p_bt[0] == 't';
-}
+#else
+    return FALSE;
 #endif
+}
 
 /*
  * Return TRUE if "buf" is a help buffer.
@@ -5726,7 +5709,8 @@ bt_popup(buf_T *buf)
 
 /*
  * Return TRUE if "buf" is a "nofile", "acwrite", "terminal" or "prompt"
- * buffer.  This means the buffer name is not a file name.
+ * buffer.  This means the buffer name may not be a file name, at least not for
+ * writing the buffer.
  */
     int
 bt_nofilename(buf_T *buf)
@@ -5734,6 +5718,19 @@ bt_nofilename(buf_T *buf)
     return buf != NULL && ((buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f')
 	    || buf->b_p_bt[0] == 'a'
 	    || buf->b_p_bt[0] == 't'
+	    || buf->b_p_bt[0] == 'p');
+}
+
+/*
+ * Return TRUE if "buf" is a "nofile", "quickfix", "terminal" or "prompt"
+ * buffer.  This means the buffer is not to be read from a file.
+ */
+    static int
+bt_nofileread(buf_T *buf)
+{
+    return buf != NULL && ((buf->b_p_bt[0] == 'n' && buf->b_p_bt[2] == 'f')
+	    || buf->b_p_bt[0] == 't'
+	    || buf->b_p_bt[0] == 'q'
 	    || buf->b_p_bt[0] == 'p');
 }
 
@@ -5760,7 +5757,6 @@ bt_dontwrite(buf_T *buf)
 		 || buf->b_p_bt[0] == 'p');
 }
 
-#if defined(FEAT_QUICKFIX) || defined(PROTO)
     int
 bt_dontwrite_msg(buf_T *buf)
 {
@@ -5771,7 +5767,6 @@ bt_dontwrite_msg(buf_T *buf)
     }
     return FALSE;
 }
-#endif
 
 /*
  * Return TRUE if the buffer should be hidden, according to 'hidden', ":hide"
