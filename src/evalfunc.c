@@ -2369,6 +2369,8 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setcharpos},
     {"setcharsearch",	1, 1, FEARG_1,	    arg1_dict_any,
 			ret_void,	    f_setcharsearch},
+    {"setcmdline",	1, 2, FEARG_1,	    arg2_string_number,
+			ret_number_bool,    f_setcmdline},
     {"setcmdpos",	1, 1, FEARG_1,	    arg1_number,
 			ret_number_bool,    f_setcmdpos},
     {"setcursorcharpos", 1, 3, FEARG_1,	    arg13_cursor,
@@ -3607,7 +3609,6 @@ f_debugbreak(typval_T *argvars, typval_T *rettv)
 f_deepcopy(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T	noref = 0;
-    int		copyID;
 
     if (in_vim9script()
 	    && (check_for_opt_bool_arg(argvars, 1) == FAIL))
@@ -3618,10 +3619,8 @@ f_deepcopy(typval_T *argvars, typval_T *rettv)
     if (noref < 0 || noref > 1)
 	semsg(_(e_using_number_as_bool_nr), noref);
     else
-    {
-	copyID = get_copyID();
-	item_copy(&argvars[0], rettv, TRUE, TRUE, noref == 0 ? copyID : 0);
-    }
+	item_copy(&argvars[0], rettv, TRUE, TRUE,
+						noref == 0 ? get_copyID() : 0);
 }
 
 /*

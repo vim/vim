@@ -3657,6 +3657,12 @@ def Test_setcharsearch()
   assert_equal(d, getcharsearch())
 enddef
 
+def Test_setcmdline()
+  v9.CheckDefAndScriptSuccess(['setcmdline("ls", 2)'])
+  v9.CheckDefAndScriptFailure(['setcmdline(123)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E928: String required'])
+  v9.CheckDefAndScriptFailure(['setcmdline("ls", "x")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1030: Using a String as a Number'])
+enddef
+
 def Test_setcmdpos()
   v9.CheckDefAndScriptFailure(['setcmdpos("x")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
 enddef

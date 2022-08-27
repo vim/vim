@@ -4211,6 +4211,35 @@ f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = get_cmdline_screen_pos() + 1;
 }
 
+// Set the command line str to "str".
+// Returns 1 when failed, 0 when OK.
+    int
+set_cmdline_str(char_u *str, int pos)
+{
+    cmdline_info_T  *p = get_ccline_ptr();
+    int		    cmdline_type;
+    int		    len;
+
+    if (p == NULL)
+	return 1;
+
+    len = (int)STRLEN(str);
+    realloc_cmdbuff(len + 1);
+    p->cmdlen = len;
+    STRCPY(p->cmdbuff, str);
+
+    p->cmdpos = pos < 0 || pos > p->cmdlen ? p->cmdlen : pos;
+    new_cmdpos = p->cmdpos;
+
+    redrawcmd();
+
+    // Trigger CmdlineChanged autocommands.
+    cmdline_type = ccline.cmdfirstc == NUL ? '-' : ccline.cmdfirstc;
+    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+
+    return 0;
+}
+
 /*
  * Set the command line byte position to "pos".  Zero is the first position.
  * Only works when the command line is being edited.
@@ -4232,6 +4261,35 @@ set_cmdline_pos(
     else
 	new_cmdpos = pos;
     return 0;
+}
+
+// "setcmdline()" function
+    void
+f_setcmdline(typval_T *argvars, typval_T *rettv)
+{
+    int pos = -1;
+
+    if (argvars[0].v_type != VAR_STRING || argvars[0].vval.v_string == NULL)
+    {
+	emsg(_(e_string_required));
+	return;
+    }
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	int error = FALSE;
+
+	pos = (int)tv_get_number_chk(&argvars[1], &error) - 1;
+	if (error)
+	    return;
+	if (pos < 0)
+	{
+	    emsg(_(e_argument_must_be_positive));
+	    return;
+	}
+    }
+
+    rettv->vval.v_number = set_cmdline_str(argvars[0].vval.v_string, pos);
 }
 
 /*
