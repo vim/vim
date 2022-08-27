@@ -3291,7 +3291,7 @@ func Test_setcmdline()
     let caught = 'no'
     try
       call setcmdline(a:text, {})
-    catch /E474:/
+    catch /E728:/
       let caught = 'yes'
     endtry
     call assert_equal('yes', caught)
