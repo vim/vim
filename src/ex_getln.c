@@ -4272,11 +4272,9 @@ f_setcmdline(typval_T *argvars, typval_T *rettv)
 {
     int pos = -1;
 
-    if (argvars[0].v_type != VAR_STRING || argvars[0].vval.v_string == NULL)
-    {
-	emsg(_(e_string_required));
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_opt_number_arg(argvars, 1) == FAIL)
 	return;
-    }
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
