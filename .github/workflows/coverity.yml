@@ -10,6 +10,7 @@ jobs:
 
     env:
       CC: gcc
+      CFLAGS: -Wno-error=deprecated-declarations
       DEBIAN_FRONTEND: noninteractive
 
     steps:
