@@ -1430,9 +1430,12 @@ func Test_gui_drop_files()
   %bw!
   %argdelete
   call delete('Xdir1', 'rf')
+
   " drop files in the command line. The GUI drop files adds the file names to
   " the low level input buffer. So need to use a cmdline map and feedkeys()
   " with 'Lx!' to process it in this function itself.
+  " This sometimes fails, e.g. when using valgrind.
+  let g:test_is_flaky = 1
   cnoremap <expr> <buffer> <F4> DropFilesInCmdLine()
   call feedkeys(":\"\<F4>\<CR>", 'xt')
   call feedkeys('k', 'Lx!')
