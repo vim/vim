@@ -8370,9 +8370,14 @@ ex_redraw(exarg_T *eap)
     // After drawing the statusline screen_attr may still be set.
     screen_stop_highlight();
 
-    // Reset msg_didout, so that a message that's there is overwritten.
-    msg_didout = FALSE;
-    msg_col = 0;
+#ifdef HAS_MESSAGE_WINDOW
+    if (!use_message_window())  // append messages in the message window
+#endif
+    {
+	// Reset msg_didout, so that a message that's there is overwritten.
+	msg_didout = FALSE;
+	msg_col = 0;
+    }
 
     // No need to wait after an intentional redraw.
     need_wait_return = FALSE;

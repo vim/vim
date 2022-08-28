@@ -478,6 +478,13 @@ func Test_cmdheight_zero_dump()
       set cmdheight=0
       set showmode
       call setline(1, 'some text')
+      func ShowMessages()
+        echomsg 'some text'
+        sleep 100m
+        echomsg 'some more text'
+        sleep 2500m
+        echomsg 'even more text'
+      endfunc
   END
   call writefile(lines, 'XtestCmdheight')
   let buf = RunVimInTerminal('-S XtestCmdheight', #{rows: 6})
@@ -500,6 +507,14 @@ func Test_cmdheight_zero_dump()
   " file write message is one line
   call term_sendkeys(buf, ":w XsomeText\<CR>")
   call VerifyScreenDump(buf, 'Test_cmdheight_zero_5', {})
+
+  call term_sendkeys(buf, ":call popup_clear()\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdheight_zero_6', {})
+
+  call term_sendkeys(buf, ":call ShowMessages()\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdheight_zero_7', {})
+  sleep 2
+  call VerifyScreenDump(buf, 'Test_cmdheight_zero_8', {})
 
   " clean up
   call StopVimInTerminal(buf)
