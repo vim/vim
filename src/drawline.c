@@ -302,6 +302,7 @@ text_prop_position(
     int	    padding = tp->tp_col == MAXCOL && tp->tp_len > 1
 				  ? tp->tp_len - 1 : 0;
     int	    col_with_padding = vcol + (below ? 0 : padding);
+    int	    col_off = 0;
     int	    room = wp->w_width - col_with_padding;
     int	    added = room;
     int	    n_used = *n_extra;
@@ -324,7 +325,8 @@ text_prop_position(
 	    if (right && (wrap || room < PROP_TEXT_MIN_CELLS))
 	    {
 		// right-align on next line instead of wrapping if possible
-		added = wp->w_width - strsize + room;
+		col_off = win_col_off(wp) + win_col_off2(wp);
+		added = wp->w_width - col_off - strsize + room;
 		if (added < 0)
 		    added = 0;
 		else
@@ -386,7 +388,7 @@ text_prop_position(
 		*p_extra = l;
 		*n_extra = n_used + added + padding;
 		*n_attr = mb_charlen(*p_extra);
-		*n_attr_skip = added + padding;
+		*n_attr_skip = added + padding + col_off;
 	    }
 	}
     }

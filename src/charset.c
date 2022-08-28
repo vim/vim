@@ -1187,7 +1187,8 @@ win_lbr_chartabsize(
 
 	for (i = 0; i < cts->cts_text_prop_count; ++i)
 	{
-	    textprop_T *tp = cts->cts_text_props + i;
+	    textprop_T	*tp = cts->cts_text_props + i;
+	    int		col_off = win_col_off(wp);
 
 	    // Watch out for the text being deleted.  "cts_text_props" is a
 	    // copy, the text prop may actually have been removed from the line.
@@ -1209,7 +1210,7 @@ win_lbr_chartabsize(
 			int n_extra = (int)STRLEN(p);
 
 			cells = text_prop_position(wp, tp,
-					    (vcol + size) % wp->w_width,
+			     (vcol + size) % (wp->w_width - col_off) + col_off,
 						     &n_extra, &p, NULL, NULL);
 #ifdef FEAT_LINEBREAK
 			no_sbr = TRUE;  // don't use 'showbreak' now
