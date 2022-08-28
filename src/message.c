@@ -750,8 +750,12 @@ emsg_core(char_u *s)
 #endif
     }
 
-    emsg_on_display = TRUE;	// remember there is an error message
-    attr = HL_ATTR(HLF_E);	// set highlight mode for error messages
+#ifdef HAS_MESSAGE_WINDOW
+    if (!use_message_window())
+#endif
+	emsg_on_display = TRUE;	    // remember there is an error message
+
+    attr = HL_ATTR(HLF_E);	    // set highlight mode for error messages
     if (msg_scrolled != 0)
 	need_wait_return = TRUE;    // needed in case emsg() is called after
 				    // wait_return has reset need_wait_return
