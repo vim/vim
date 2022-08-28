@@ -741,6 +741,7 @@ def Test_use_relative_autoload_import_in_mapping()
   assert_true(len(l) == 1)
   assert_match('XrelautoloadExport.vim$', l[0].name)
   assert_false(l[0].autoload)
+  assert_equal(999999, l[0].version)
 
   unlet g:result
   delete('XrelautoloadExport.vim')

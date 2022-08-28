@@ -4099,24 +4099,42 @@ getscriptinfo([{opts})					*getscriptinfo()*
 		scripts in the order they were sourced, like what
 		`:scriptnames` shows.
 
+		The optional Dict argument {opts} supports the following
+		optional items:
+		    name	Script name match pattern. If specified,
+				and "sid" is not specified, information about
+				scripts with name that match the pattern
+				"name" are returned.
+		    sid		Script ID |<SID>|.  If specified, only
+				information about the script with ID "sid" is
+				returned and "name" is ignored.
+
 		Each item in the returned List is a |Dict| with the following
 		items:
-		    autoload	set to TRUE for a script that was used with
+		    autoload	Set to TRUE for a script that was used with
 				`import autoload` but was not actually sourced
 				yet (see |import-autoload|).
-		    name	vim script file name.
-		    sid		script ID |<SID>|.
-		    sourced	script ID of the actually sourced script that
+		    functions   List of script-local function names defined in
+				the script.  Present only when a particular
+				script is specified using the "sid" item in
+				{opts}.
+		    name	Vim script file name.
+		    sid		Script ID |<SID>|.
+		    sourced	Script ID of the actually sourced script that
 				this script name links to, if any, otherwise
 				zero
-		    version	vimscript version (|scriptversion|)
+		    variables   A dictionary with the script-local variables.
+				Present only when the a particular script is
+				specified using the "sid" item in {opts}.
+				Note that this is a copy, the value of
+				script-local variables cannot be changed using
+				this dictionary.
+		    version	Vimscript version (|scriptversion|)
 
-		The optional Dict argument {opts} supports the following
-		items:
-		    name	script name match pattern. If specified,
-				information about scripts with name
-				that match the pattern "name" are returned.
-
+		Examples: >
+			:echo getscriptinfo({'name': 'myscript'})
+			:echo getscriptinfo({'sid': 15}).variables
+<
 gettabinfo([{tabnr}])					*gettabinfo()*
 		If {tabnr} is not specified, then information about all the
 		tab pages is returned as a |List|. Each List item is a

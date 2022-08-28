@@ -1947,6 +1947,53 @@ get_sourced_lnum(
 }
 
 /*
+ * Return a List of script-local functions defined in the script with id
+ * 'sid'.
+ */
+    static list_T *
+get_script_local_funcs(scid_T sid)
+{
+    hashtab_T	*functbl;
+    hashitem_T	*hi;
+    long_u	todo;
+    list_T	*l;
+
+    l = list_alloc();
+    if (l == NULL)
+	return NULL;
+
+    // Iterate through all the functions in the global function hash table
+    // looking for functions with script ID 'sid'.
+    functbl = func_tbl_get();
+    todo = functbl->ht_used;
+    for (hi = functbl->ht_array; todo > 0; ++hi)
+    {
+	ufunc_T	*fp;
+
+	if (HASHITEM_EMPTY(hi))
+	    continue;
+
+	--todo;
+	fp = HI2UF(hi);
+
+	// Add active functions with script id == 'sid'
+	if (!(fp->uf_flags & FC_DEAD) && (fp->uf_script_ctx.sc_sid == sid))
+	{
+	    char_u	*name;
+
+	    if (fp->uf_name_exp != NULL)
+		name = fp->uf_name_exp;
+	    else
+		name = fp->uf_name;
+
+	    list_append_string(l, name, -1);
+	}
+    }
+
+    return l;
+}
+
+/*
  * getscriptinfo() function
  */
     void
@@ -1956,6 +2003,8 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
     list_T	*l;
     char_u	*pat = NULL;
     regmatch_T	regmatch;
+    int		filterpat = FALSE;
+    scid_T	sid = -1;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
@@ -1970,9 +2019,15 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type == VAR_DICT)
     {
-	pat = dict_get_string(argvars[0].vval.v_dict, "name", TRUE);
-	if (pat != NULL)
-	    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+	sid = dict_get_number_def(argvars[0].vval.v_dict, "sid", -1);
+	if (sid == -1)
+	{
+	    pat = dict_get_string(argvars[0].vval.v_dict, "name", TRUE);
+	    if (pat != NULL)
+		regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+	    if (regmatch.regprog != NULL)
+		filterpat = TRUE;
+	}
     }
 
     for (i = 1; i <= script_items.ga_len; ++i)
@@ -1983,8 +2038,10 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 	if (si->sn_name == NULL)
 	    continue;
 
-	if (pat != NULL && regmatch.regprog != NULL
-		&& !vim_regexec(&regmatch, si->sn_name, (colnr_T)0))
+	if (filterpat && !vim_regexec(&regmatch, si->sn_name, (colnr_T)0))
+	    continue;
+
+	if (sid != -1 && sid != i)
 	    continue;
 
 	if ((d = dict_alloc()) == NULL
@@ -1996,6 +2053,22 @@ f_getscriptinfo(typval_T *argvars, typval_T *rettv)
 		|| dict_add_bool(d, "autoload",
 				si->sn_state == SN_STATE_NOT_LOADED) == FAIL)
 	    return;
+
+	// When a filter pattern is specified to return information about only
+	// specific script(s), also add the script-local variables and
+	// functions.
+	if (sid != -1)
+	{
+	    dict_T	*var_dict;
+
+	    var_dict = dict_copy(&si->sn_vars->sv_dict, TRUE, TRUE,
+								get_copyID());
+	    if (var_dict == NULL
+		    || dict_add_dict(d, "variables", var_dict) == FAIL
+		    || dict_add_list(d, "functions",
+					get_script_local_funcs(sid)) == FAIL)
+		return;
+	}
     }
 
     vim_regfree(regmatch.regprog);
