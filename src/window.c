@@ -2806,6 +2806,7 @@ may_trigger_winscrolled(void)
 
     if (wp->w_last_topline != wp->w_topline
 	    || wp->w_last_leftcol != wp->w_leftcol
+	    || wp->w_last_skipcol != wp->w_skipcol
 	    || wp->w_last_width != wp->w_width
 	    || wp->w_last_height != wp->w_height)
     {
@@ -2820,6 +2821,7 @@ may_trigger_winscrolled(void)
 	{
 	    wp->w_last_topline = wp->w_topline;
 	    wp->w_last_leftcol = wp->w_leftcol;
+	    wp->w_last_skipcol = wp->w_skipcol;
 	    wp->w_last_width = wp->w_width;
 	    wp->w_last_height = wp->w_height;
 	}
