@@ -6603,6 +6603,11 @@ command_height(void)
     // Recompute window positions.
     if (frp != lastwin->w_frame)
 	(void)win_comp_pos();
+
+#ifdef HAS_MESSAGE_WINDOW
+    if (p_ch > 0)
+	popup_close_message_win();
+#endif
 }
 
 /*

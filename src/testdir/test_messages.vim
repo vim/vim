@@ -471,4 +471,32 @@ func Test_cmdheight_zero()
   redraw
 endfunc
 
+func Test_cmdheight_zero_dump()
+  CheckScreendump
+
+  let lines =<< trim END
+      set cmdheight=0
+      set showmode
+      call setline(1, 'some text')
+  END
+  call writefile(lines, 'XtestCmdheight')
+  let buf = RunVimInTerminal('-S XtestCmdheight', #{rows: 6})
+  " The "-- INSERT --" indicator should not be visible.
+  call term_sendkeys(buf, "i")
+  call VerifyScreenDump(buf, 'Test_cmdheight_zero_1', {})
+
+  " The "-- VISUAL --" indicator should not be visible.
+  call term_sendkeys(buf, "\<Esc>vw")
+  call VerifyScreenDump(buf, 'Test_cmdheight_zero_2', {})
+
+  " Echo'd text is in a popup window
+  call term_sendkeys(buf, "\<Esc>:echo 'message window'\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdheight_zero_3', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestCmdheight')
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
