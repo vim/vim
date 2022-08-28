@@ -831,8 +831,9 @@ after_updating_screen(int may_resize_shell UNUSED)
     handle_any_postponed_drop();
 #endif
 
-    // in case it was changed in dont_use_message_window()
-    cmdline_row = Rows - p_ch;
+    if (p_ch == 0)
+	// in case it was changed in dont_use_message_window()
+	cmdline_row = Rows;
 }
 
 /*
