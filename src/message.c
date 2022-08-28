@@ -1077,6 +1077,7 @@ ex_messages(exarg_T *eap)
     }
 
     msg_hist_off = TRUE;
+    dont_use_message_window();
 
     p = first_msg_hist;
     if (eap->addr_count != 0)
