@@ -1603,6 +1603,9 @@ getcmdline_int(
 	made_cmdheight_nonzero = TRUE;
 	lastwin->w_p_so = 0;
 	set_option_value((char_u *)"ch", 1L, NULL, 0);
+#ifdef HAS_MESSAGE_WINDOW
+	popup_hide_message_win();
+#endif
 	update_screen(UPD_VALID);                 // redraw the screen NOW
 	made_cmdheight_nonzero = FALSE;
 	lastwin->w_p_so = save_so;
