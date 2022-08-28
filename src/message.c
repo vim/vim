@@ -2281,7 +2281,7 @@ put_msg_win(win_T *wp, int where, char_u *t_s, char_u *end, linenr_T lnum)
     redraw_win_later(wp, UPD_NOT_VALID);
 
     // set msg_col so that a newline is written if needed
-    msg_col = STRLEN(t_s);
+    msg_col = (int)STRLEN(t_s);
 }
 #endif
 
