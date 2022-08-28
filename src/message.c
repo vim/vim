@@ -206,7 +206,11 @@ msg_strtrunc(
 			       && !exmode_active && msg_silent == 0) || force)
     {
 	len = vim_strsize(s);
-	if (msg_scrolled != 0)
+	if (msg_scrolled != 0
+#ifdef HAS_MESSAGE_WINDOW
+		|| use_message_window()
+#endif
+		)
 	    // Use all the columns.
 	    room = (int)(Rows - msg_row) * Columns - 1;
 	else
@@ -3719,7 +3723,11 @@ msg_end(void)
     void
 msg_check(void)
 {
-    if (msg_row == Rows - 1 && msg_col >= sc_col)
+    if (msg_row == Rows - 1 && msg_col >= sc_col
+#ifdef HAS_MESSAGE_WINDOW
+		&& !use_message_window()
+#endif
+	    )
     {
 	need_wait_return = TRUE;
 	redraw_cmdline = TRUE;

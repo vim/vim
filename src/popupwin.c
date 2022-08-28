@@ -4501,7 +4501,7 @@ popup_show_message_win(void)
 	    popup_update_color(message_win, TYPE_MESSAGE_WIN);
 	    popup_show(message_win);
 	}
-	else if (message_win->w_popup_timer != NULL)
+	if (message_win->w_popup_timer != NULL)
 	    timer_start(message_win->w_popup_timer);
     }
 }

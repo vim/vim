@@ -493,9 +493,29 @@ func Test_cmdheight_zero_dump()
   call term_sendkeys(buf, "\<Esc>:echo 'message window'\<CR>")
   call VerifyScreenDump(buf, 'Test_cmdheight_zero_3', {})
 
+  " Message for CTRL-C is in the popup window
+  "call term_sendkeys(buf, ":call popup_clear()\<CR>")
+  call term_sendkeys(buf, "\<C-C>")
+  call VerifyScreenDump(buf, 'Test_cmdheight_zero_4', {})
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestCmdheight')
+endfunc
+
+func Test_cmdheight_zero_shell()
+  CheckUnix
+
+  set cmdheight=0
+  set nomore
+  call setline(1, 'foo!')
+  silent !echo <cWORD> > Xfile.out
+  call assert_equal(['foo!'], readfile('Xfile.out'))
+  call delete('Xfile.out')
+  redraw!
+
+  set more&
+  set cmdheight&
 endfunc
 
 
