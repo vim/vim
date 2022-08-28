@@ -830,6 +830,9 @@ after_updating_screen(int may_resize_shell UNUSED)
     // handle the drop now.
     handle_any_postponed_drop();
 #endif
+
+    // in case it was changed in dont_use_message_window()
+    cmdline_row = Rows - p_ch;
 }
 
 /*
@@ -2426,7 +2429,8 @@ win_update(win_T *wp)
 			    if (wp->w_lines_valid > wp->w_height)
 				wp->w_lines_valid = wp->w_height;
 			    for (i = wp->w_lines_valid; i - j >= idx; --i)
-				wp->w_lines[i] = wp->w_lines[i - j];
+				if (i < Rows)
+				    wp->w_lines[i] = wp->w_lines[i - j];
 
 			    // The w_lines[] entries for inserted lines are
 			    // now invalid, but wl_size may be used above.
