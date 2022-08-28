@@ -6822,7 +6822,7 @@ nv_esc(cmdarg_T *cap)
     else if (no_reason)
     {
 #ifdef HAS_MESSAGE_WINDOW
-	if (popup_message_win_visible())
+	if (!cap->arg && popup_message_win_visible())
 	    popup_hide_message_win();
 	else
 #endif
