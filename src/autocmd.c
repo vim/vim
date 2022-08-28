@@ -1249,6 +1249,7 @@ do_autocmd_event(
 		{
 		    curwin->w_last_topline = curwin->w_topline;
 		    curwin->w_last_leftcol = curwin->w_leftcol;
+		    curwin->w_last_skipcol = curwin->w_skipcol;
 		    curwin->w_last_width = curwin->w_width;
 		    curwin->w_last_height = curwin->w_height;
 		}
