@@ -24,6 +24,7 @@ void wait_return(int redraw);
 void set_keep_msg(char_u *s, int attr);
 void set_keep_msg_from_hist(void);
 int use_message_window(void);
+void dont_use_message_window(void);
 void msg_start(void);
 void msg_starthere(void);
 void msg_putchar(int c);

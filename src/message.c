@@ -1444,6 +1444,19 @@ use_message_window(void)
 }
 
 /*
+ * Do not use the message window for the next message(s).
+ * Used when giving a prompt.
+ */
+    void
+dont_use_message_window(void)
+{
+#ifdef HAS_MESSAGE_WINDOW
+    popup_hide_message_win();
+    cmdline_row = Rows - 1;
+#endif
+}
+
+/*
  * Prepare for outputting characters in the command line.
  */
     void
@@ -4073,6 +4086,7 @@ do_dialog(
     }
 #endif
 
+    dont_use_message_window();
     oldState = State;
     State = MODE_CONFIRM;
     setmouse();
