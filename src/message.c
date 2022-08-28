@@ -1470,10 +1470,12 @@ msg_start(void)
 #ifdef HAS_MESSAGE_WINDOW
     if (use_message_window())
     {
-	if (popup_message_win_visible() && msg_col > 0)
+	if (popup_message_win_visible() && msg_col > 0
+					       && (msg_scroll || !full_screen))
 	{
 	    win_T *wp = popup_get_message_win();
 
+	    // start a new line
 	    curbuf = wp->w_buffer;
 	    ml_append(wp->w_buffer->b_ml.ml_line_count,
 					      (char_u *)"", (colnr_T)0, FALSE);

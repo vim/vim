@@ -494,13 +494,17 @@ func Test_cmdheight_zero_dump()
   call VerifyScreenDump(buf, 'Test_cmdheight_zero_3', {})
 
   " Message for CTRL-C is in the popup window
-  "call term_sendkeys(buf, ":call popup_clear()\<CR>")
   call term_sendkeys(buf, "\<C-C>")
   call VerifyScreenDump(buf, 'Test_cmdheight_zero_4', {})
+
+  " file write message is one line
+  call term_sendkeys(buf, ":w XsomeText\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdheight_zero_5', {})
 
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestCmdheight')
+  call delete('XsomeText')
 endfunc
 
 func Test_cmdheight_zero_shell()
