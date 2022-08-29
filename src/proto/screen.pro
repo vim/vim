@@ -31,6 +31,7 @@ int screen_valid(int doclear);
 void screenalloc(int doclear);
 void free_screenlines(void);
 void screenclear(void);
+void redraw_as_cleared(void);
 void line_was_clobbered(int screen_lnum);
 int can_clear(char_u *p);
 void screen_start(void);

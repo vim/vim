@@ -1938,6 +1938,20 @@ popup_terminal_exists(void)
 #endif
 
 /*
+ * Mark all popup windows in the current tab and global for redrawing.
+ */
+    void
+popup_redraw_all(void)
+{
+    win_T	*wp;
+
+    FOR_ALL_POPUPWINS(wp)
+	wp->w_redr_type = UPD_NOT_VALID;
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	wp->w_redr_type = UPD_NOT_VALID;
+}
+
+/*
  * Set the color for a notification window.
  */
     static void

@@ -173,13 +173,19 @@ update_screen(int type_arg)
 	if (type != UPD_CLEAR)
 	{
 	    if (msg_scrolled > Rows - 5)	    // redrawing is faster
+	    {
 		type = UPD_NOT_VALID;
+		redraw_as_cleared();
+	    }
 	    else
 	    {
 		check_for_delay(FALSE);
 		if (screen_ins_lines(0, 0, msg_scrolled, (int)Rows, 0, NULL)
 								       == FAIL)
+		{
 		    type = UPD_NOT_VALID;
+		    redraw_as_cleared();
+		}
 		FOR_ALL_WINDOWS(wp)
 		{
 		    if (wp->w_winrow < msg_scrolled)

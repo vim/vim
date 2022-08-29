@@ -15,6 +15,7 @@ int parse_previewpopup(win_T *wp);
 int parse_completepopup(win_T *wp);
 void popup_set_wantpos_cursor(win_T *wp, int width, dict_T *d);
 void popup_set_wantpos_rowcol(win_T *wp, int row, int col);
+void popup_redraw_all(void);
 void f_popup_clear(typval_T *argvars, typval_T *rettv);
 void f_popup_create(typval_T *argvars, typval_T *rettv);
 void f_popup_atcursor(typval_T *argvars, typval_T *rettv);

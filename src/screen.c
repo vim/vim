@@ -49,7 +49,7 @@
 static int	screen_attr = 0;
 
 static void screen_char_2(unsigned off, int row, int col);
-static void screenclear2(void);
+static void screenclear2(int doclear);
 static void lineclear(unsigned off, int width, int attr);
 static void lineinvalid(unsigned off, int width);
 static int win_do_lines(win_T *wp, int row, int line_count, int mayclear, int del, int clear_attr);
@@ -2906,7 +2906,7 @@ give_up:
 
     set_must_redraw(UPD_CLEAR);	// need to clear the screen later
     if (doclear)
-	screenclear2();
+	screenclear2(TRUE);
 #ifdef FEAT_GUI
     else if (gui.in_use
 	    && !gui.starting
@@ -2969,16 +2969,30 @@ free_screenlines(void)
 #endif
 }
 
+/*
+ * Clear the screen.
+ * May delay if there is something the user should read.
+ * Allocated the screen for resizing if needed.
+ */
     void
 screenclear(void)
 {
     check_for_delay(FALSE);
     screenalloc(FALSE);	    // allocate screen buffers if size changed
-    screenclear2();	    // clear the screen
+    screenclear2(TRUE);	    // clear the screen
+}
+
+/*
+ * Do not clear the screen but mark everything for redraw.
+ */
+    void
+redraw_as_cleared(void)
+{
+    screenclear2(FALSE);
 }
 
     static void
-screenclear2(void)
+screenclear2(int doclear)
 {
     int	    i;
 
@@ -3007,7 +3021,7 @@ screenclear2(void)
 	LineWraps[i] = FALSE;
     }
 
-    if (can_clear(T_CL))
+    if (doclear && can_clear(T_CL))
     {
 	out_str(T_CL);		// clear the display
 	clear_cmdline = FALSE;
@@ -3023,7 +3037,10 @@ screenclear2(void)
 
     screen_cleared = TRUE;	// can use contents of ScreenLines now
 
-    win_rest_invalid(firstwin);
+    win_rest_invalid(firstwin);	// redraw all regular windows
+#ifdef FEAT_PROP_POPUP
+    popup_redraw_all();		// redraw all popup windows
+#endif
     redraw_cmdline = TRUE;
     redraw_tabline = TRUE;
     if (must_redraw == UPD_CLEAR)	// no need to clear again
