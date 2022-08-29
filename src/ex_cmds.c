@@ -1011,6 +1011,7 @@ do_bang(
     if (addr_count == 0)		// :!
     {
 	// echo the command
+	dont_use_message_window();
 	msg_start();
 	msg_putchar(':');
 	msg_putchar('!');

@@ -1472,7 +1472,7 @@ msg_start(void)
     }
 
 #ifdef FEAT_EVAL
-    if (need_clr_eos || p_ch == 0)
+    if (need_clr_eos || use_message_window())
     {
 	// Halfway an ":echo" command and getting an (error) message: clear
 	// any text from the command.
@@ -1508,8 +1508,9 @@ msg_start(void)
 #endif
 	    0;
     }
-    else if (msg_didout || p_ch == 0)	    // start message on next line
+    else if (msg_didout || use_message_window())
     {
+	// start message on next line
 	msg_putchar('\n');
 	did_return = TRUE;
 	if (exmode_active != EXMODE_NORMAL)
