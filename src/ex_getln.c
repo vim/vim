@@ -3872,6 +3872,8 @@ redrawcmdprompt(void)
     void
 redrawcmd(void)
 {
+    int save_in_echowindow = in_echowindow;
+
     if (cmd_silent)
 	return;
 
@@ -3882,6 +3884,9 @@ redrawcmd(void)
 	msg_clr_eos();
 	return;
     }
+
+    // Do not put this in the message window.
+    in_echowindow = FALSE;
 
     sb_text_restart_cmdline();
     msg_start();
@@ -3906,6 +3911,8 @@ redrawcmd(void)
     // Typing ':' at the more prompt may set skip_redraw.  We don't want this
     // in cmdline mode
     skip_redraw = FALSE;
+
+    in_echowindow = save_in_echowindow;
 }
 
     void

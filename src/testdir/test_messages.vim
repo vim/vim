@@ -537,5 +537,30 @@ func Test_cmdheight_zero_shell()
   set cmdheight&
 endfunc
 
+func Test_echowindow()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, 'some text')
+      func ShowMessage(arg)
+        echowindow a:arg
+      endfunc
+      echowindow 'first line'
+  END
+  call writefile(lines, 'XtestEchowindow')
+  let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_echowindow_1', {})
+
+  call term_sendkeys(buf, ":call ShowMessage('second line')\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_2', {})
+
+  call term_sendkeys(buf, ":call popup_clear()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_3', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestEchowindow')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

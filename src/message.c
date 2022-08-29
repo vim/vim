@@ -1438,7 +1438,8 @@ use_message_window(void)
 #ifdef HAS_MESSAGE_WINDOW
     // TRUE if there is no command line showing ('cmdheight' is zero and not
     // already editing or showing a message) use a popup window for messages.
-    return p_ch == 0 && cmdline_row >= Rows;
+    // Also when using ":echowindow".
+    return (p_ch == 0 && cmdline_row >= Rows) || in_echowindow;
 #else
     return FALSE;
 #endif
@@ -1484,8 +1485,9 @@ msg_start(void)
 #ifdef HAS_MESSAGE_WINDOW
     if (use_message_window())
     {
-	if (popup_message_win_visible() && msg_col > 0
-					       && (msg_scroll || !full_screen))
+	if (popup_message_win_visible()
+		    && ((msg_col > 0 && (msg_scroll || !full_screen))
+			|| in_echowindow))
 	{
 	    win_T *wp = popup_get_message_win();
 

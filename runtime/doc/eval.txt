@@ -3821,6 +3821,16 @@ text...
 		:echomsg "It's a Zizzer Zazzer Zuzz, as you can plainly see."
 <			See |:echo-redraw| to avoid the message disappearing
 			when the screen is redrawn.
+
+					*:echow* *:echowin* *:echowindow*
+:echow[indow] {expr1} ..
+			Like |:echomsg| but when the messages popup window is
+			available the message is displayed there.  This means
+			it will show for three seconds and avoid a
+			|hit-enter| prompt.
+			The message window is available when Vim was compiled
+			with the +timer and the +popupwin features.
+
 							*:echoe* *:echoerr*
 :echoe[rr] {expr1} ..	Echo the expression(s) as an error message, saving the
 			message in the |message-history|.  When used in a

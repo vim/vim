@@ -236,6 +236,7 @@ EXTERN int	uncaught_emsg;		    // number of times emsg() was
 EXTERN int	did_emsg_syntax;	    // did_emsg set because of a
 					    // syntax error
 EXTERN int	called_emsg;		    // always incremented by emsg()
+EXTERN int	in_echowindow;		    // executing ":echowindow"
 EXTERN int	ex_exitval INIT(= 0);	    // exit value for ex mode
 EXTERN int	emsg_on_display INIT(= FALSE);	// there is an error message
 EXTERN int	rc_did_emsg INIT(= FALSE);  // vim_regcomp() called emsg()
