@@ -441,29 +441,29 @@ func Test_ins_completeslash()
   set noshellslash
 
   set completeslash=
-  exe "normal oXd\<C-X>\<C-F>"
+  exe "normal oXcp\<C-X>\<C-F>"
   call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=backslash
-  exe "normal oXd\<C-X>\<C-F>"
+  exe "normal oXcp\<C-X>\<C-F>"
   call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=slash
-  exe "normal oXd\<C-X>\<C-F>"
+  exe "normal oXcp\<C-X>\<C-F>"
   call assert_equal('Xcpldir/', getline('.'))
 
   set shellslash
 
   set completeslash=
-  exe "normal oXd\<C-X>\<C-F>"
+  exe "normal oXcp\<C-X>\<C-F>"
   call assert_equal('Xcpldir/', getline('.'))
 
   set completeslash=backslash
-  exe "normal oXd\<C-X>\<C-F>"
+  exe "normal oXcp\<C-X>\<C-F>"
   call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=slash
-  exe "normal oXd\<C-X>\<C-F>"
+  exe "normal oXcp\<C-X>\<C-F>"
   call assert_equal('Xcpldir/', getline('.'))
   %bw!
   call delete('Xcpldir', 'rf')
