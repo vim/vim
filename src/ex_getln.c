@@ -4211,9 +4211,7 @@ f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
 {
     cmdline_info_T *p = get_ccline_ptr();
 
-    rettv->vval.v_number = 0;
-    if (p != NULL)
-	rettv->vval.v_number = p->cmdpos + 1;
+    rettv->vval.v_number = p != NULL ? p->cmdpos + 1 : 0;
 }
 
 /*
@@ -4224,9 +4222,7 @@ f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
 {
     cmdline_info_T *p = get_ccline_ptr();
 
-    rettv->vval.v_number = 0;
-    if (p != NULL)
-	rettv->vval.v_number = p->cmdspos + 1;
+    rettv->vval.v_number = p != NULL ? p->cmdspos + 1 : 0;
 }
 
 // Set the command line str to "str".
