@@ -879,7 +879,7 @@ do_cmdline(
 		    , in_vim9script() ? GETLINE_CONCAT_CONTBAR
 					       : GETLINE_CONCAT_CONT)) == NULL)
 	    {
-		// Don't call wait_return for aborted command line.  The NULL
+		// Don't call wait_return() for aborted command line.  The NULL
 		// returned for the end of a sourced file or executed function
 		// doesn't do this.
 		if (KeyTyped && !(flags & DOCMD_REPEAT))
@@ -1355,7 +1355,7 @@ do_cmdline(
 	else if (need_wait_return)
 	{
 	    /*
-	     * The msg_start() above clears msg_didout. The wait_return we do
+	     * The msg_start() above clears msg_didout. The wait_return() we do
 	     * here should not overwrite the command that may be shown before
 	     * doing that.
 	     */

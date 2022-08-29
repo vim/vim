@@ -651,7 +651,7 @@ vim_main2(void)
 
     /*
      * When done something that is not allowed or given an error message call
-     * wait_return.  This must be done before starttermcap(), because it may
+     * wait_return().  This must be done before starttermcap(), because it may
      * switch to another screen. It must be done after settmode(TMODE_RAW),
      * because we want to react on a single key stroke.
      * Call settmode and starttermcap here, so the T_KS and T_TI may be
@@ -1226,7 +1226,7 @@ main_loop(
 	    did_check_timestamps = FALSE;
 	    if (need_check_timestamps)
 		check_timestamps(FALSE);
-	    if (need_wait_return)	// if wait_return still needed ...
+	    if (need_wait_return)	// if wait_return() still needed ...
 		wait_return(FALSE);	// ... call it now
 	    if (need_start_insertmode && goto_im() && !VIsual_active)
 	    {

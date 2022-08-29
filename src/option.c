@@ -2184,7 +2184,7 @@ skip:
 	    // make sure all characters are printable
 	    trans_characters(IObuff, IOSIZE);
 
-	    ++no_wait_return;		// wait_return done later
+	    ++no_wait_return;		// wait_return() done later
 	    emsg((char *)IObuff);	// show error highlighted
 	    --no_wait_return;
 

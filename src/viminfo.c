@@ -3095,7 +3095,7 @@ write_viminfo(char_u *file, int forceit)
 	{
 	    int	tt = msg_didany;
 
-	    // avoid a wait_return for this message, it's annoying
+	    // avoid a wait_return() for this message, it's annoying
 	    semsg(_(e_viminfo_file_is_not_writable_str), fname);
 	    msg_didany = tt;
 	    fclose(fp_in);
