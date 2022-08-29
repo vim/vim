@@ -375,22 +375,22 @@ func Test_resolve_win32()
 
   " test for shortcut file
   if executable('cscript')
-    new Xresfile
+    new Xfile
     wq
     let lines =<< trim END
 	Set fs = CreateObject("Scripting.FileSystemObject")
 	Set ws = WScript.CreateObject("WScript.Shell")
 	Set shortcut = ws.CreateShortcut("Xlink.lnk")
-	shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xresfile")
+	shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")
 	shortcut.Save
     END
     call writefile(lines, 'link.vbs')
     silent !cscript link.vbs
     call delete('link.vbs')
-    call assert_equal(s:normalize_fname(getcwd() . '\Xresfile'), s:normalize_fname(resolve('./Xlink.lnk')))
-    call delete('Xresfile')
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call delete('Xfile')
 
-    call assert_equal(s:normalize_fname(getcwd() . '\Xresfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
     call delete('Xlink.lnk')
   else
     echomsg 'skipped test for shortcut file'
@@ -398,51 +398,52 @@ func Test_resolve_win32()
 
   " remove files
   call delete('Xlink')
-  call delete('Xresfile')
+  call delete('Xdir', 'd')
+  call delete('Xfile')
 
   " test for symbolic link to a file
-  new Xslinkfile
+  new Xfile
   wq
-  call assert_equal('Xslinkfile', resolve('Xslinkfile'))
-  silent !mklink Xlink Xslinkfile
+  call assert_equal('Xfile', resolve('Xfile'))
+  silent !mklink Xlink Xfile
   if !v:shell_error
-    call assert_equal(s:normalize_fname(getcwd() . '\Xslinkfile'), s:normalize_fname(resolve('./Xlink')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
     call delete('Xlink')
   else
     echomsg 'skipped test for symbolic link to a file'
   endif
-  call delete('Xslinkfile')
+  call delete('Xfile')
 
   " test for junction to a directory
-  call mkdir('Xjuncdir')
-  silent !mklink /J Xlink Xjuncdir
+  call mkdir('Xdir')
+  silent !mklink /J Xlink Xdir
   if !v:shell_error
-    call assert_equal(s:normalize_fname(getcwd() . '\Xjuncdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
 
-    call delete('Xjuncdir', 'd')
+    call delete('Xdir', 'd')
 
     " test for junction already removed
     call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
     call delete('Xlink')
   else
     echomsg 'skipped test for junction to a directory'
-    call delete('Xjuncdir', 'd')
+    call delete('Xdir', 'd')
   endif
 
   " test for symbolic link to a directory
-  call mkdir('Xjuncdir')
-  silent !mklink /D Xlink Xjuncdir
+  call mkdir('Xdir')
+  silent !mklink /D Xlink Xdir
   if !v:shell_error
-    call assert_equal(s:normalize_fname(getcwd() . '\Xjuncdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
 
-    call delete('Xjuncdir', 'd')
+    call delete('Xdir', 'd')
 
     " test for symbolic link already removed
     call assert_equal(s:normalize_fname(getcwd() . '\Xlink'), s:normalize_fname(resolve(getcwd() . '/Xlink')))
     call delete('Xlink')
   else
     echomsg 'skipped test for symbolic link to a directory'
-    call delete('Xjuncdir', 'd')
+    call delete('Xdir', 'd')
   endif
 
   " test for buffer name
@@ -460,20 +461,20 @@ func Test_resolve_win32()
   call delete('Xfile')
 
   " test for reparse point
-  call mkdir('Xparsedir')
-  call assert_equal('Xdir', resolve('Xparsedir'))
-  silent !mklink /D Xdirlink Xparsedir
+  call mkdir('Xdir')
+  call assert_equal('Xdir', resolve('Xdir'))
+  silent !mklink /D Xdirlink Xdir
   if !v:shell_error
-    w Xparsedir/text.txt
-    call assert_equal('Xparsedir/text.txt', resolve('Xparsedir/text.txt'))
-    call assert_equal(s:normalize_fname(getcwd() . '\Xparsedir\text.txt'), s:normalize_fname(resolve('Xdirlink\text.txt')))
-    call assert_equal(s:normalize_fname(getcwd() . '\Xparsedir'), s:normalize_fname(resolve('Xdirlink')))
+    w Xdir/text.txt
+    call assert_equal('Xdir/text.txt', resolve('Xdir/text.txt'))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir\text.txt'), s:normalize_fname(resolve('Xdirlink\text.txt')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve('Xdirlink')))
     call delete('Xdirlink')
   else
     echomsg 'skipped test for reparse point'
   endif
 
-  call delete('Xparsedir', 'rf')
+  call delete('Xdir', 'rf')
 endfunc
 
 func Test_simplify()
