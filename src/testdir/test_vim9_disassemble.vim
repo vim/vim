@@ -315,14 +315,14 @@ def s:ScriptFuncPush()
 enddef
 
 def Test_disassemble_push()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xdisdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xdisdir'
 
   var lines =<< trim END
       vim9script
   END
-  writefile(lines, 'Xdir/autoload/autoscript.vim')
+  writefile(lines, 'Xdisdir/autoload/autoscript.vim')
 
   lines =<< trim END
       vim9script
@@ -342,7 +342,7 @@ def Test_disassemble_push()
   END
   v9.CheckScriptSuccess(lines)
 
-  delete('Xdir', 'rf')
+  delete('Xdisdir', 'rf')
   &rtp = save_rtp
 enddef
 

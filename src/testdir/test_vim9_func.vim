@@ -41,7 +41,7 @@ def TestCompilingError()
 enddef
 
 def TestCompilingErrorInTry()
-  var dir = 'Xdir/autoload'
+  var dir = 'Xcompdir/autoload'
   mkdir(dir, 'p')
 
   var lines =<< trim END
@@ -61,7 +61,7 @@ def TestCompilingErrorInTry()
       catch /nothing/
       endtry
   END
-  lines[1] = 'set rtp=' .. getcwd() .. '/Xdir'
+  lines[1] = 'set rtp=' .. getcwd() .. '/Xcompdir'
   writefile(lines, 'XTest_compile_error')
 
   var buf = g:RunVimInTerminal('-S XTest_compile_error', {rows: 10, wait_for_ruler: 0})
@@ -71,7 +71,7 @@ def TestCompilingErrorInTry()
   # clean up
   g:StopVimInTerminal(buf)
   delete('XTest_compile_error')
-  delete('Xdir', 'rf')
+  delete('Xcompdir', 'rf')
 enddef
 
 def Test_comment_error()
@@ -170,7 +170,7 @@ def Test_wrong_function_name()
 enddef
 
 def Test_autoload_name_mismatch()
-  var dir = 'Xdir/autoload'
+  var dir = 'Xnamedir/autoload'
   mkdir(dir, 'p')
 
   var lines =<< trim END
@@ -183,18 +183,18 @@ def Test_autoload_name_mismatch()
   writefile(lines, dir .. '/script.vim')
 
   var save_rtp = &rtp
-  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  exe 'set rtp=' .. getcwd() .. '/Xnamedir'
   lines =<< trim END
       call script#Function()
   END
   v9.CheckScriptFailure(lines, 'E117:', 1)
 
   &rtp = save_rtp
-  delete(dir, 'rf')
+  delete('Xnamdir', 'rf')
 enddef
 
 def Test_autoload_names()
-  var dir = 'Xdir/autoload'
+  var dir = 'Xandir/autoload'
   mkdir(dir, 'p')
 
   var lines =<< trim END
@@ -206,7 +206,7 @@ def Test_autoload_names()
   writefile(lines, dir .. '/foobar.vim')
 
   var save_rtp = &rtp
-  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  exe 'set rtp=' .. getcwd() .. '/Xandir'
 
   lines =<< trim END
       assert_equal('yes', foobar#function())
@@ -218,11 +218,11 @@ def Test_autoload_names()
   v9.CheckDefAndScriptSuccess(lines)
 
   &rtp = save_rtp
-  delete(dir, 'rf')
+  delete('Xandir', 'rf')
 enddef
 
 def Test_autoload_error_in_script()
-  var dir = 'Xdir/autoload'
+  var dir = 'Xaedir/autoload'
   mkdir(dir, 'p')
 
   var lines =<< trim END
@@ -234,7 +234,7 @@ def Test_autoload_error_in_script()
   writefile(lines, dir .. '/scripterror.vim')
 
   var save_rtp = &rtp
-  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  exe 'set rtp=' .. getcwd() .. '/Xaedir'
 
   g:called_function = 'no'
   # The error in the autoload script cannot be checked with assert_fails(), use
@@ -264,7 +264,7 @@ def Test_autoload_error_in_script()
   assert_equal('yes', g:called_function)
 
   &rtp = save_rtp
-  delete(dir, 'rf')
+  delete('Xaedir', 'rf')
 enddef
 
 def s:CallRecursive(n: number): number

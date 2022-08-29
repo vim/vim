@@ -4390,7 +4390,7 @@ func Xvimgrep_autocmd_cd(cchar)
     autocmd BufRead * silent cd %:p:h
   augroup END
 
-  10Xvimgrep /vim/ Xdir/**
+  10Xvimgrep /vim/ Xgrepdir/**
   let l = g:Xgetlist()
   call assert_equal('f1.txt', bufname(l[0].bufnr))
   call assert_equal('f2.txt', fnamemodify(bufname(l[2].bufnr), ':t'))
@@ -4403,14 +4403,14 @@ func Xvimgrep_autocmd_cd(cchar)
 endfunc
 
 func Test_vimgrep_autocmd_cd()
-  call mkdir('Xdir/a', 'p')
-  call mkdir('Xdir/b', 'p')
-  call writefile(['a_L1_vim', 'a_L2_vim'], 'Xdir/a/f1.txt')
-  call writefile(['b_L1_vim', 'b_L2_vim'], 'Xdir/b/f2.txt')
+  call mkdir('Xgrepdir/a', 'p')
+  call mkdir('Xgrepdir/b', 'p')
+  call writefile(['a_L1_vim', 'a_L2_vim'], 'Xgrepdir/a/f1.txt')
+  call writefile(['b_L1_vim', 'b_L2_vim'], 'Xgrepdir/b/f2.txt')
   call Xvimgrep_autocmd_cd('c')
   call Xvimgrep_autocmd_cd('l')
   %bwipe
-  call delete('Xdir', 'rf')
+  call delete('Xgrepdir', 'rf')
 endfunc
 
 " The following test used to crash Vim

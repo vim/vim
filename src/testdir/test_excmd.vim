@@ -489,9 +489,9 @@ func Test_redir_cmd()
 
   if has('unix')
     " Redirecting to a directory name
-    call mkdir('Xdir')
-    call assert_fails('redir > Xdir', 'E17:')
-    call delete('Xdir', 'd')
+    call mkdir('Xredir')
+    call assert_fails('redir > Xredir', 'E17:')
+    call delete('Xredir', 'd')
   endif
 
   " Test for redirecting to a register

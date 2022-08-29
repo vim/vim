@@ -251,9 +251,9 @@ func Test_write_errors()
  
   " Try to overwrite a directory
   if has('unix')
-    call mkdir('Xdir1')
-    call assert_fails('write Xdir1', 'E17:')
-    call delete('Xdir1', 'd')
+    call mkdir('Xwerdir1')
+    call assert_fails('write Xwerdir1', 'E17:')
+    call delete('Xwerdir1', 'd')
   endif
 
   " Test for :wall for a buffer with no name
@@ -479,20 +479,20 @@ func Test_write_readonly_dir()
   " Root can do it too.
   CheckNotRoot
 
-  call mkdir('Xdir/')
-  call writefile(['one'], 'Xdir/Xfile1')
-  call setfperm('Xdir', 'r-xr--r--')
+  call mkdir('Xrodir/')
+  call writefile(['one'], 'Xrodir/Xfile1')
+  call setfperm('Xrodir', 'r-xr--r--')
   " try to create a new file in the directory
-  new Xdir/Xfile2
+  new Xrodir/Xfile2
   call setline(1, 'two')
   call assert_fails('write', 'E212:')
   " try to create a backup file in the directory
-  edit! Xdir/Xfile1
-  set backupdir=./Xdir backupskip=
+  edit! Xrodir/Xfile1
+  set backupdir=./Xrodir backupskip=
   set patchmode=.orig
   call assert_fails('write', 'E509:')
-  call setfperm('Xdir', 'rwxr--r--')
-  call delete('Xdir', 'rf')
+  call setfperm('Xrodir', 'rwxr--r--')
+  call delete('Xrodir', 'rf')
   set backupdir& backupskip& patchmode&
 endfunc
 

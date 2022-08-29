@@ -630,12 +630,12 @@ func Test_terminal_cwd()
     CheckExecutable pwd
     let cmd = 'pwd'
   endif
-  call mkdir('Xdir')
-  let buf = term_start(cmd, {'cwd': 'Xdir'})
-  call WaitForAssert({-> assert_equal('Xdir', fnamemodify(getline(1), ":t"))})
+  call mkdir('Xtermdir')
+  let buf = term_start(cmd, {'cwd': 'Xtermdir'})
+  call WaitForAssert({-> assert_equal('Xtermdir', fnamemodify(getline(1), ":t"))})
 
   exe buf . 'bwipe'
-  call delete('Xdir', 'rf')
+  call delete('Xtermdir', 'rf')
 endfunc
 
 func Test_terminal_cwd_failure()

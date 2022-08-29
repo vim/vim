@@ -1064,13 +1064,13 @@ func Test_exrc()
     call writefile(v:errors, 'Xtestout')
     qall
   [CODE]
-  call mkdir('Xdir')
-  call writefile(['let exrc_found=37'], 'Xdir/.exrc')
-  call writefile(after, 'Xdir/Xafter')
-  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "cd Xdir" --cmd "set enc=utf8 exrc secure"'
+  call mkdir('Xrcdir')
+  call writefile(['let exrc_found=37'], 'Xrcdir/.exrc')
+  call writefile(after, 'Xrcdir/Xafter')
+  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "cd Xrcdir" --cmd "set enc=utf8 exrc secure"'
   exe "silent !" . cmd
-  call assert_equal([], readfile('Xdir/Xtestout'))
-  call delete('Xdir', 'rf')
+  call assert_equal([], readfile('Xrcdir/Xtestout'))
+  call delete('Xrcdir', 'rf')
 endfunc
 
 " Test for starting Vim with a non-terminal as input/output
@@ -1125,10 +1125,10 @@ func Test_w_arg()
   " Test for failing to open the script output file. This test works only when
   " the language is English.
   if v:lang == "C" || v:lang =~ '^[Ee]n'
-    call mkdir("Xdir")
-    let m = system(GetVimCommand() .. " -w Xdir")
-    call assert_equal("Cannot open for script output: \"Xdir\"\n", m)
-    call delete("Xdir", 'rf')
+    call mkdir("Xargdir")
+    let m = system(GetVimCommand() .. " -w Xargdir")
+    call assert_equal("Cannot open for script output: \"Xargdir\"\n", m)
+    call delete("Xargdir", 'rf')
   endif
 
   " A number argument sets the 'window' option

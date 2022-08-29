@@ -83,38 +83,38 @@ func Test_complete_list()
 endfunc
 
 func Test_complete_wildmenu()
-  call mkdir('Xdir1/Xdir2', 'p')
-  call writefile(['testfile1'], 'Xdir1/Xtestfile1')
-  call writefile(['testfile2'], 'Xdir1/Xtestfile2')
-  call writefile(['testfile3'], 'Xdir1/Xdir2/Xtestfile3')
-  call writefile(['testfile3'], 'Xdir1/Xdir2/Xtestfile4')
+  call mkdir('Xwilddir1/Xdir2', 'p')
+  call writefile(['testfile1'], 'Xwilddir1/Xtestfile1')
+  call writefile(['testfile2'], 'Xwilddir1/Xtestfile2')
+  call writefile(['testfile3'], 'Xwilddir1/Xdir2/Xtestfile3')
+  call writefile(['testfile3'], 'Xwilddir1/Xdir2/Xtestfile4')
   set wildmenu
 
   " Pressing <Tab> completes, and moves to next files when pressing again.
-  call feedkeys(":e Xdir1/\<Tab>\<Tab>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/\<Tab>\<Tab>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
-  call feedkeys(":e Xdir1/\<Tab>\<Tab>\<Tab>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/\<Tab>\<Tab>\<Tab>\<CR>", 'tx')
   call assert_equal('testfile2', getline(1))
 
   " <S-Tab> is like <Tab> but begin with the last match and then go to
   " previous.
-  call feedkeys(":e Xdir1/Xtest\<S-Tab>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/Xtest\<S-Tab>\<CR>", 'tx')
   call assert_equal('testfile2', getline(1))
-  call feedkeys(":e Xdir1/Xtest\<S-Tab>\<S-Tab>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/Xtest\<S-Tab>\<S-Tab>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
 
   " <Left>/<Right> to move to previous/next file.
-  call feedkeys(":e Xdir1/\<Tab>\<Right>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/\<Tab>\<Right>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
-  call feedkeys(":e Xdir1/\<Tab>\<Right>\<Right>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/\<Tab>\<Right>\<Right>\<CR>", 'tx')
   call assert_equal('testfile2', getline(1))
-  call feedkeys(":e Xdir1/\<Tab>\<Right>\<Right>\<Left>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/\<Tab>\<Right>\<Right>\<Left>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
 
   " <Up>/<Down> to go up/down directories.
-  call feedkeys(":e Xdir1/\<Tab>\<Down>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/\<Tab>\<Down>\<CR>", 'tx')
   call assert_equal('testfile3', getline(1))
-  call feedkeys(":e Xdir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
+  call feedkeys(":e Xwilddir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
 
   " this fails in some Unix GUIs, not sure why
@@ -124,9 +124,9 @@ func Test_complete_wildmenu()
     set wildcharm=<C-Z>
     cnoremap <C-J> <Down><C-Z>
     cnoremap <C-K> <Up><C-Z>
-    call feedkeys(":e Xdir1/\<Tab>\<C-J>\<CR>", 'tx')
+    call feedkeys(":e Xwilddir1/\<Tab>\<C-J>\<CR>", 'tx')
     call assert_equal('testfile3', getline(1))
-    call feedkeys(":e Xdir1/\<Tab>\<C-J>\<C-K>\<CR>", 'tx')
+    call feedkeys(":e Xwilddir1/\<Tab>\<C-J>\<C-K>\<CR>", 'tx')
     call assert_equal('testfile1', getline(1))
     set wildcharm=0
     cunmap <C-J>
@@ -135,21 +135,21 @@ func Test_complete_wildmenu()
 
   " Test for canceling the wild menu by adding a character
   redrawstatus
-  call feedkeys(":e Xdir1/\<Tab>x\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"e Xdir1/Xdir2/x', @:)
+  call feedkeys(":e Xwilddir1/\<Tab>x\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xwilddir1/Xdir2/x', @:)
 
   " Completion using a relative path
-  cd Xdir1/Xdir2
+  cd Xwilddir1/Xdir2
   call feedkeys(":e ../\<Tab>\<Right>\<Down>\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"e Xtestfile3 Xtestfile4', @:)
   cd -
 
   " test for wildmenumode()
   cnoremap <expr> <F2> wildmenumode()
-  call feedkeys(":cd Xdir\<Tab>\<F2>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"cd Xdir1/0', @:)
-  call feedkeys(":e Xdir1/\<Tab>\<F2>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"e Xdir1/Xdir2/1', @:)
+  call feedkeys(":cd Xwilddir\<Tab>\<F2>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"cd Xwilddir1/0', @:)
+  call feedkeys(":e Xwilddir1/\<Tab>\<F2>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"e Xwilddir1/Xdir2/1', @:)
   cunmap <F2>
 
   " Test for canceling the wild menu by pressing <PageDown> or <PageUp>.
@@ -162,7 +162,7 @@ func Test_complete_wildmenu()
 
   " cleanup
   %bwipe
-  call delete('Xdir1', 'rf')
+  call delete('Xwilddir1', 'rf')
   set nowildmenu
 endfunc
 
@@ -1930,18 +1930,18 @@ endfunc
 func Test_wildmenu_dirstack()
   CheckUnix
   %bw!
-  call mkdir('Xdir1/dir2/dir3/dir4', 'p')
-  call writefile([], 'Xdir1/file1_1.txt')
-  call writefile([], 'Xdir1/file1_2.txt')
-  call writefile([], 'Xdir1/dir2/file2_1.txt')
-  call writefile([], 'Xdir1/dir2/file2_2.txt')
-  call writefile([], 'Xdir1/dir2/dir3/file3_1.txt')
-  call writefile([], 'Xdir1/dir2/dir3/file3_2.txt')
-  call writefile([], 'Xdir1/dir2/dir3/dir4/file4_1.txt')
-  call writefile([], 'Xdir1/dir2/dir3/dir4/file4_2.txt')
+  call mkdir('Xwildmenu/dir2/dir3/dir4', 'p')
+  call writefile([], 'Xwildmenu/file1_1.txt')
+  call writefile([], 'Xwildmenu/file1_2.txt')
+  call writefile([], 'Xwildmenu/dir2/file2_1.txt')
+  call writefile([], 'Xwildmenu/dir2/file2_2.txt')
+  call writefile([], 'Xwildmenu/dir2/dir3/file3_1.txt')
+  call writefile([], 'Xwildmenu/dir2/dir3/file3_2.txt')
+  call writefile([], 'Xwildmenu/dir2/dir3/dir4/file4_1.txt')
+  call writefile([], 'Xwildmenu/dir2/dir3/dir4/file4_2.txt')
   set wildmenu
 
-  cd Xdir1/dir2/dir3/dir4
+  cd Xwildmenu/dir2/dir3/dir4
   call feedkeys(":e \<Tab>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"e file4_1.txt', @:)
   call feedkeys(":e \<Tab>\<Up>\<C-B>\"\<CR>", 'xt')
@@ -1955,10 +1955,10 @@ func Test_wildmenu_dirstack()
   call feedkeys(":e \<Tab>\<Up>\<Up>\<Down>\<Down>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"e ../../dir3/dir4/file4_1.txt', @:)
   cd -
-  call feedkeys(":e Xdir1/\<Tab>\<Down>\<Down>\<Down>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"e Xdir1/dir2/dir3/dir4/file4_1.txt', @:)
+  call feedkeys(":e Xwildmenu/\<Tab>\<Down>\<Down>\<Down>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xwildmenu/dir2/dir3/dir4/file4_1.txt', @:)
 
-  call delete('Xdir1', 'rf')
+  call delete('Xwildmenu', 'rf')
   set wildmenu&
 endfunc
 

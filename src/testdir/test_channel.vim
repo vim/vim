@@ -2281,9 +2281,9 @@ func Test_zz_ch_log()
   let text = readfile('Xlog')
   call assert_match("hello there", text[1])
   call assert_match("%s%s", text[2])
-  call mkdir("Xdir1")
-  call assert_fails("call ch_logfile('Xdir1')", 'E484:')
-  cal delete("Xdir1", 'd')
+  call mkdir("Xchlogdir1")
+  call assert_fails("call ch_logfile('Xchlogdir1')", 'E484:')
+  cal delete("Xchlogdir1", 'd')
   call delete('Xlog')
 endfunc
 

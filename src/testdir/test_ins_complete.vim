@@ -9,8 +9,8 @@ func Test_ins_complete()
   edit test_ins_complete.vim
   " The files in the current directory interferes with the files
   " used by this test. So use a separate directory for the test.
-  call mkdir('Xdir')
-  cd Xdir
+  call mkdir('Xcpldir')
+  cd Xcpldir
 
   set ff=unix
   call writefile(["test11\t36Gepeto\t/Tag/",
@@ -105,7 +105,7 @@ func Test_ins_complete()
   call delete('Xtestdata')
   set cpt& cot& def& tags& tagbsearch& hidden&
   cd ..
-  call delete('Xdir', 'rf')
+  call delete('Xcpldir', 'rf')
 endfunc
 
 func Test_ins_complete_invalid_byte()
@@ -433,7 +433,7 @@ endfunc
 func Test_ins_completeslash()
   CheckMSWindows
 
-  call mkdir('Xdir')
+  call mkdir('Xcpldir')
   let orig_shellslash = &shellslash
   set cpt&
   new
@@ -442,31 +442,31 @@ func Test_ins_completeslash()
 
   set completeslash=
   exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=backslash
   exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=slash
   exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  call assert_equal('Xcpldir/', getline('.'))
 
   set shellslash
 
   set completeslash=
   exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  call assert_equal('Xcpldir/', getline('.'))
 
   set completeslash=backslash
   exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=slash
   exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  call assert_equal('Xcpldir/', getline('.'))
   %bw!
-  call delete('Xdir', 'rf')
+  call delete('Xcpldir', 'rf')
 
   set noshellslash
   set completeslash=slash

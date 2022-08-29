@@ -3586,13 +3586,13 @@ def Run_test_no_redraw_when_restoring_cpo()
     export def Func()
     enddef
   END
-  mkdir('Xdir/autoload', 'p')
-  writefile(lines, 'Xdir/autoload/script.vim')
+  mkdir('Xnordir/autoload', 'p')
+  writefile(lines, 'Xnordir/autoload/script.vim')
 
   lines =<< trim END
       vim9script
       set cpo+=M
-      exe 'set rtp^=' .. getcwd() .. '/Xdir'
+      exe 'set rtp^=' .. getcwd() .. '/Xnordir'
       au CmdlineEnter : ++once timer_start(0, (_) => script#Func())
       setline(1, 'some text')
   END
@@ -3605,7 +3605,7 @@ def Run_test_no_redraw_when_restoring_cpo()
   term_sendkeys(buf, "\<Esc>u")
   g:StopVimInTerminal(buf)
   delete('XTest_redraw_cpo')
-  delete('Xdir', 'rf')
+  delete('Xnordir', 'rf')
 enddef
 
 func Test_reject_declaration()
