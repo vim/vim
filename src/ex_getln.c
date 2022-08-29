@@ -4213,20 +4213,7 @@ f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
 
     rettv->vval.v_number = 0;
     if (p != NULL)
-    rettv->vval.v_number = p->cmdpos + 1;
-}
-
-/*
- * Get the command line cursor screen position.
- */
-    static int
-get_cmdline_screen_pos(void)
-{
-    cmdline_info_T *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return -1;
-    return p->cmdspos;
+	rettv->vval.v_number = p->cmdpos + 1;
 }
 
 /*
@@ -4235,12 +4222,16 @@ get_cmdline_screen_pos(void)
     void
 f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    rettv->vval.v_number = get_cmdline_screen_pos() + 1;
+    cmdline_info_T *p = get_ccline_ptr();
+
+    rettv->vval.v_number = 0;
+    if (p != NULL)
+	rettv->vval.v_number = p->cmdspos + 1;
 }
 
 // Set the command line str to "str".
 // Returns 1 when failed, 0 when OK.
-    int
+    static int
 set_cmdline_str(char_u *str, int pos)
 {
     cmdline_info_T  *p = get_ccline_ptr();
