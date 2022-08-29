@@ -56,10 +56,10 @@ func Test_acd_win_execute()
   set acd
   call test_autochdir()
 
-  call mkdir('Xfile')
+  call mkdir('XacdDir')
   let winid = win_getid()
-  new Xfile/file
-  call assert_match('testdir.Xfile$', getcwd())
+  new XacdDir/file
+  call assert_match('testdir.XacdDir$', getcwd())
   cd ..
   call assert_match('testdir$', getcwd())
   call win_execute(winid, 'echo')
@@ -68,7 +68,7 @@ func Test_acd_win_execute()
   bwipe!
   set noacd
   call chdir(cwd)
-  call delete('Xfile', 'rf')
+  call delete('XacdDir', 'rf')
 endfunc
 
 func Test_verbose_pwd()
