@@ -4114,6 +4114,30 @@ get_ccline_ptr(void)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN)
+/*
+ * Get the current command-line type.
+ * Returns ':' or '/' or '?' or '@' or '>' or '-'
+ * Only works when the command line is being edited.
+ * Returns NUL when something is wrong.
+ */
+    static int
+get_cmdline_type(void)
+{
+    cmdline_info_T *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return NUL;
+    if (p->cmdfirstc == NUL)
+	return
+# ifdef FEAT_EVAL
+	    (p->input_fn) ? '@' :
+# endif
+	    '-';
+    return p->cmdfirstc;
+}
+#endif
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Get the current command line in allocated memory.
@@ -4220,7 +4244,6 @@ f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
 set_cmdline_str(char_u *str, int pos)
 {
     cmdline_info_T  *p = get_ccline_ptr();
-    int		    cmdline_type;
     int		    len;
 
     if (p == NULL)
@@ -4237,8 +4260,7 @@ set_cmdline_str(char_u *str, int pos)
     redrawcmd();
 
     // Trigger CmdlineChanged autocommands.
-    cmdline_type = ccline.cmdfirstc == NUL ? '-' : ccline.cmdfirstc;
-    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+    trigger_cmd_autocmd(get_cmdline_type(), EVENT_CMDLINECHANGED);
 
     return 0;
 }
@@ -4307,30 +4329,6 @@ f_setcmdpos(typval_T *argvars, typval_T *rettv)
     pos = (int)tv_get_number(&argvars[0]) - 1;
     if (pos >= 0)
 	rettv->vval.v_number = set_cmdline_pos(pos);
-}
-#endif
-
-#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN)
-/*
- * Get the current command-line type.
- * Returns ':' or '/' or '?' or '@' or '>' or '-'
- * Only works when the command line is being edited.
- * Returns NUL when something is wrong.
- */
-    static int
-get_cmdline_type(void)
-{
-    cmdline_info_T *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return NUL;
-    if (p->cmdfirstc == NUL)
-	return
-# ifdef FEAT_EVAL
-	    (p->input_fn) ? '@' :
-# endif
-	    '-';
-    return p->cmdfirstc;
 }
 #endif
 
