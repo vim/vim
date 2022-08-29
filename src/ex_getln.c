@@ -4225,6 +4225,21 @@ f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = p != NULL ? p->cmdspos + 1 : 0;
 }
 
+/*
+ * "getcmdtype()" function
+ */
+    void
+f_getcmdtype(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = alloc(2);
+    if (rettv->vval.v_string != NULL)
+    {
+	rettv->vval.v_string[0] = get_cmdline_type();
+	rettv->vval.v_string[1] = NUL;
+    }
+}
+
 // Set the command line str to "str".
 // Returns 1 when failed, 0 when OK.
     static int
@@ -4317,24 +4332,6 @@ f_setcmdpos(typval_T *argvars, typval_T *rettv)
     if (pos >= 0)
 	rettv->vval.v_number = set_cmdline_pos(pos);
 }
-#endif
-
-#if defined(FEAT_EVAL) || defined(PROTO)
-/*
- * "getcmdtype()" function
- */
-    void
-f_getcmdtype(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = alloc(2);
-    if (rettv->vval.v_string != NULL)
-    {
-	rettv->vval.v_string[0] = get_cmdline_type();
-	rettv->vval.v_string[1] = NUL;
-    }
-}
-
 #endif
 
 /*
