@@ -170,38 +170,41 @@ update_screen(int type_arg)
     if (msg_scrolled)
     {
 	clear_cmdline = TRUE;
-	if (msg_scrolled > Rows - 5)	    // clearing is faster
-	    type = UPD_CLEAR;
-	else if (type != UPD_CLEAR)
+	if (type != UPD_CLEAR)
 	{
-	    check_for_delay(FALSE);
-	    if (screen_ins_lines(0, 0, msg_scrolled, (int)Rows, 0, NULL)
-								       == FAIL)
-		type = UPD_CLEAR;
-	    FOR_ALL_WINDOWS(wp)
+	    if (msg_scrolled > Rows - 5)	    // redrawing is faster
+		type = UPD_NOT_VALID;
+	    else
 	    {
-		if (wp->w_winrow < msg_scrolled)
+		check_for_delay(FALSE);
+		if (screen_ins_lines(0, 0, msg_scrolled, (int)Rows, 0, NULL)
+								       == FAIL)
+		    type = UPD_NOT_VALID;
+		FOR_ALL_WINDOWS(wp)
 		{
-		    if (W_WINROW(wp) + wp->w_height > msg_scrolled
-			    && wp->w_redr_type < UPD_REDRAW_TOP
-			    && wp->w_lines_valid > 0
-			    && wp->w_topline == wp->w_lines[0].wl_lnum)
+		    if (wp->w_winrow < msg_scrolled)
 		    {
-			wp->w_upd_rows = msg_scrolled - W_WINROW(wp);
-			wp->w_redr_type = UPD_REDRAW_TOP;
-		    }
-		    else
-		    {
-			wp->w_redr_type = UPD_NOT_VALID;
-			if (W_WINROW(wp) + wp->w_height + wp->w_status_height
-							       <= msg_scrolled)
-			    wp->w_redr_status = TRUE;
+			if (W_WINROW(wp) + wp->w_height > msg_scrolled
+				&& wp->w_redr_type < UPD_REDRAW_TOP
+				&& wp->w_lines_valid > 0
+				&& wp->w_topline == wp->w_lines[0].wl_lnum)
+			{
+			    wp->w_upd_rows = msg_scrolled - W_WINROW(wp);
+			    wp->w_redr_type = UPD_REDRAW_TOP;
+			}
+			else
+			{
+			    wp->w_redr_type = UPD_NOT_VALID;
+			    if (W_WINROW(wp) + wp->w_height
+					 + wp->w_status_height <= msg_scrolled)
+				wp->w_redr_status = TRUE;
+			}
 		    }
 		}
+		if (!no_update)
+		    redraw_cmdline = TRUE;
+		redraw_tabline = TRUE;
 	    }
-	    if (!no_update)
-		redraw_cmdline = TRUE;
-	    redraw_tabline = TRUE;
 	}
 	msg_scrolled = 0;
 	need_wait_return = FALSE;

@@ -2582,7 +2582,7 @@ theend:
 	    made_cmdheight_nonzero = TRUE;
 	    set_option_value((char_u *)"ch", 0L, NULL, 0);
 	    // Redraw is needed for command line completion
-	    redraw_all_later(UPD_CLEAR);
+	    redraw_all_later(UPD_NOT_VALID);
 	    made_cmdheight_nonzero = FALSE;
 	}
 
