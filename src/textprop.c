@@ -149,11 +149,8 @@ f_prop_add(typval_T *argvars, typval_T *rettv)
 
     start_lnum = tv_get_number(&argvars[0]);
     start_col = tv_get_number(&argvars[1]);
-    if (argvars[2].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_dict_arg(argvars, 2) == FAIL)
 	return;
-    }
 
     rettv->vval.v_number = prop_add_common(start_lnum, start_col,
 				 argvars[2].vval.v_dict, curbuf, &argvars[2]);
@@ -1045,11 +1042,8 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_string_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_nonnull_dict_arg(argvars, 0) == FAIL)
 	return;
-    }
     dict = argvars[0].vval.v_dict;
 
     if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
@@ -1396,11 +1390,8 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
     {
 	dict_T *d;
 
-	if (argvars[1].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 1) == FAIL)
 	    return;
-	}
 	d = argvars[1].vval.v_dict;
 
 	if (get_bufnr_from_arg(&argvars[1], &buf) == FAIL)
@@ -1499,11 +1490,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
 
-    if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
-    {
-	emsg(_(e_invalid_argument));
+    if (check_for_nonnull_dict_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {

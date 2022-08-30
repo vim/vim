@@ -1009,11 +1009,8 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 	dict_T      *d;
 	dictitem_T  *di;
 
-	if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
-	{
-	    emsg(_(e_invalid_argument));
+	if (check_for_nonnull_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
 
 	d = argvars[2].vval.v_dict;
 	if (dict_get_bool(d, "vertical", FALSE))
@@ -1227,50 +1224,45 @@ f_winrestview(typval_T *argvars, typval_T *rettv UNUSED)
 {
     dict_T	*dict;
 
-    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+    if (check_for_nonnull_dict_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_DICT
-	    || (dict = argvars[0].vval.v_dict) == NULL)
-	emsg(_(e_invalid_argument));
-    else
+    dict = argvars[0].vval.v_dict;
+    if (dict_has_key(dict, "lnum"))
+	curwin->w_cursor.lnum = (linenr_T)dict_get_number(dict, "lnum");
+    if (dict_has_key(dict, "col"))
+	curwin->w_cursor.col = (colnr_T)dict_get_number(dict, "col");
+    if (dict_has_key(dict, "coladd"))
+	curwin->w_cursor.coladd = (colnr_T)dict_get_number(dict, "coladd");
+    if (dict_has_key(dict, "curswant"))
     {
-	if (dict_has_key(dict, "lnum"))
-	    curwin->w_cursor.lnum = (linenr_T)dict_get_number(dict, "lnum");
-	if (dict_has_key(dict, "col"))
-	    curwin->w_cursor.col = (colnr_T)dict_get_number(dict, "col");
-	if (dict_has_key(dict, "coladd"))
-	    curwin->w_cursor.coladd = (colnr_T)dict_get_number(dict, "coladd");
-	if (dict_has_key(dict, "curswant"))
-	{
-	    curwin->w_curswant = (colnr_T)dict_get_number(dict, "curswant");
-	    curwin->w_set_curswant = FALSE;
-	}
-
-	if (dict_has_key(dict, "topline"))
-	    set_topline(curwin, (linenr_T)dict_get_number(dict, "topline"));
-#ifdef FEAT_DIFF
-	if (dict_has_key(dict, "topfill"))
-	    curwin->w_topfill = (int)dict_get_number(dict, "topfill");
-#endif
-	if (dict_has_key(dict, "leftcol"))
-	    curwin->w_leftcol = (colnr_T)dict_get_number(dict, "leftcol");
-	if (dict_has_key(dict, "skipcol"))
-	    curwin->w_skipcol = (colnr_T)dict_get_number(dict, "skipcol");
-
-	check_cursor();
-	win_new_height(curwin, curwin->w_height);
-	win_new_width(curwin, curwin->w_width);
-	changed_window_setting();
-
-	if (curwin->w_topline <= 0)
-	    curwin->w_topline = 1;
-	if (curwin->w_topline > curbuf->b_ml.ml_line_count)
-	    curwin->w_topline = curbuf->b_ml.ml_line_count;
-#ifdef FEAT_DIFF
-	check_topfill(curwin, TRUE);
-#endif
+	curwin->w_curswant = (colnr_T)dict_get_number(dict, "curswant");
+	curwin->w_set_curswant = FALSE;
     }
+
+    if (dict_has_key(dict, "topline"))
+	set_topline(curwin, (linenr_T)dict_get_number(dict, "topline"));
+#ifdef FEAT_DIFF
+    if (dict_has_key(dict, "topfill"))
+	curwin->w_topfill = (int)dict_get_number(dict, "topfill");
+#endif
+    if (dict_has_key(dict, "leftcol"))
+	curwin->w_leftcol = (colnr_T)dict_get_number(dict, "leftcol");
+    if (dict_has_key(dict, "skipcol"))
+	curwin->w_skipcol = (colnr_T)dict_get_number(dict, "skipcol");
+
+    check_cursor();
+    win_new_height(curwin, curwin->w_height);
+    win_new_width(curwin, curwin->w_width);
+    changed_window_setting();
+
+    if (curwin->w_topline <= 0)
+	curwin->w_topline = 1;
+    if (curwin->w_topline > curbuf->b_ml.ml_line_count)
+	curwin->w_topline = curbuf->b_ml.ml_line_count;
+#ifdef FEAT_DIFF
+    check_topfill(curwin, TRUE);
+#endif
 }
 
 /*

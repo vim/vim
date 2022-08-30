@@ -2236,11 +2236,8 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	// optional third argument: {dict}
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return FAIL;
-	}
 	info->item_compare_selfdict = argvars[2].vval.v_dict;
     }
 

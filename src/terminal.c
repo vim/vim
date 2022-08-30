@@ -4989,11 +4989,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	dict_T *d;
 
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
 	d = argvars[2].vval.v_dict;
 	if (d != NULL)
 	{

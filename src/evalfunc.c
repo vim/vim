@@ -3277,11 +3277,9 @@ f_call(typval_T *argvars, typval_T *rettv)
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
+
 	selfdict = argvars[2].vval.v_dict;
     }
 
@@ -4501,9 +4499,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		arg_idx = 1;
 	    if (dict_idx > 0)
 	    {
-		if (argvars[dict_idx].v_type != VAR_DICT)
+		if (check_for_dict_arg(argvars, dict_idx) == FAIL)
 		{
-		    emsg(_(e_expected_dict));
 		    vim_free(name);
 		    goto theend;
 		}
@@ -9291,14 +9288,8 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
     dictitem_T	*di;
     char_u	*csearch;
 
-    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+    if (check_for_dict_arg(argvars, 0) == FAIL)
 	return;
-
-    if (argvars[0].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
-	return;
-    }
 
     if ((d = argvars[0].vval.v_dict) != NULL)
     {
@@ -9637,11 +9628,8 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
 	return;
 
     // second argument: dict with items to set in the tag stack
-    if (argvars[1].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_dict_arg(argvars, 1) == FAIL)
 	return;
-    }
     d = argvars[1].vval.v_dict;
     if (d == NULL)
 	return;

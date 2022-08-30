@@ -533,6 +533,23 @@ check_for_dict_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a non-NULL dict.
+ */
+    int
+check_for_nonnull_dict_arg(typval_T *args, int idx)
+{
+    if (check_for_dict_arg(args, idx) == FAIL)
+	return FAIL;
+
+    if (args[idx].vval.v_dict == NULL)
+    {
+	semsg(_(e_non_null_dict_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Check for an optional dict argument at 'idx'
  */
     int
@@ -1179,7 +1196,7 @@ typval_compare(
 
     if (type_is && tv1->v_type != tv2->v_type)
     {
-	// For "is" a different type always means FALSE, for "notis"
+	// For "is" a different type always means FALSE, for "isnot"
 	// it means TRUE.
 	n1 = (type == EXPR_ISNOT);
     }

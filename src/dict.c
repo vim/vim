@@ -1578,11 +1578,9 @@ f_has_key(typval_T *argvars, typval_T *rettv)
 		|| check_for_string_or_number_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_dict_arg(argvars, 0) == FAIL)
 	return;
-    }
+
     if (argvars[0].vval.v_dict == NULL)
 	return;
 
