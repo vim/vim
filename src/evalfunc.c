@@ -2029,7 +2029,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_islocked},
     {"isnan",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number_bool,    MATH_FUNC(f_isnan)},
-    {"items",		1, 1, FEARG_1,	    arg1_dict_any,
+    {"items",		1, 1, FEARG_1,	    arg1_list_or_dict,
 			ret_list_items,	    f_items},
     {"job_getchannel",	1, 1, FEARG_1,	    arg1_job,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},

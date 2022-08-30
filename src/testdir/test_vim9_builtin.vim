@@ -2244,10 +2244,14 @@ def Test_islocked()
 enddef
 
 def Test_items()
-  v9.CheckDefFailure(['[]->items()'], 'E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>')
+  v9.CheckDefFailure(['"x"->items()'], 'E1013: Argument 1: type mismatch, expected list<any> but got string')
   assert_equal([['a', 10], ['b', 20]], {'a': 10, 'b': 20}->items())
   assert_equal([], {}->items())
   assert_equal(['x', 'x'], {'a': 10, 'b': 20}->items()->map((_, _) => 'x'))
+
+  assert_equal([[0, 'a'], [1, 'b']], ['a', 'b']->items())
+  assert_equal([], []->items())
+  assert_equal([], test_null_list()->items())
 enddef
 
 def Test_job_getchannel()

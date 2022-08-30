@@ -1053,6 +1053,38 @@ f_flattennew(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "items(list)" function
+ * Caller must have already checked that argvars[0] is a List.
+ */
+    void
+list2items(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l = argvars[0].vval.v_list;
+    listitem_T	*li;
+    varnumber_T	idx;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (l == NULL)
+	return;  // empty list behaves like an empty list
+
+    // TODO: would be more efficient to not materialize the argument
+    CHECK_LIST_MATERIALIZE(l);
+    for (idx = 0, li = l->lv_first; li != NULL; li = li->li_next, ++idx)
+    {
+	list_T	    *l2 = list_alloc();
+
+	if (l2 == NULL)
+	    break;
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL
+		|| list_append_number(l2, idx) == FAIL
+		|| list_append_tv(l2, &li->li_tv) == FAIL)
+	    break;
+    }
+}
+
+/*
  * Extend "l1" with "l2".  "l1" must not be NULL.
  * If "bef" is NULL append at the end, otherwise insert before this item.
  * Returns FAIL when out of memory.

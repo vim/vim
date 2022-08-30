@@ -1440,14 +1440,17 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     dictitem_remove(d, di);
 }
 
+typedef enum {
+    DICT2LIST_KEYS,
+    DICT2LIST_VALUES,
+    DICT2LIST_ITEMS,
+} dict2list_T;
+
 /*
- * Turn a dict into a list:
- * "what" == 0: list of keys
- * "what" == 1: list of values
- * "what" == 2: list of items
+ * Turn a dict into a list.
  */
     static void
-dict_list(typval_T *argvars, typval_T *rettv, int what)
+dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 {
     list_T	*l2;
     dictitem_T	*di;
@@ -1460,16 +1463,13 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+    if ((what == DICT2LIST_ITEMS
+		? check_for_list_or_dict_arg(argvars, 0)
+		: check_for_dict_arg(argvars, 0)) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
-	return;
-    }
-
-    if ((d = argvars[0].vval.v_dict) == NULL)
+    d = argvars[0].vval.v_dict;
+    if (d == NULL)
 	// empty dict behaves like an empty dict
 	return;
 
@@ -1486,14 +1486,14 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 		break;
 	    list_append(rettv->vval.v_list, li);
 
-	    if (what == 0)
+	    if (what == DICT2LIST_KEYS)
 	    {
 		// keys()
 		li->li_tv.v_type = VAR_STRING;
 		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_string = vim_strsave(di->di_key);
 	    }
-	    else if (what == 1)
+	    else if (what == DICT2LIST_VALUES)
 	    {
 		// values()
 		copy_tv(&di->di_tv, &li->li_tv);
@@ -1533,7 +1533,10 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
     void
 f_items(typval_T *argvars, typval_T *rettv)
 {
-    dict_list(argvars, rettv, 2);
+    if (argvars[0].v_type == VAR_LIST)
+	list2items(argvars, rettv);
+    else
+	dict2list(argvars, rettv, DICT2LIST_ITEMS);
 }
 
 /*
@@ -1542,7 +1545,7 @@ f_items(typval_T *argvars, typval_T *rettv)
     void
 f_keys(typval_T *argvars, typval_T *rettv)
 {
-    dict_list(argvars, rettv, 0);
+    dict2list(argvars, rettv, DICT2LIST_KEYS);
 }
 
 /*
@@ -1551,7 +1554,7 @@ f_keys(typval_T *argvars, typval_T *rettv)
     void
 f_values(typval_T *argvars, typval_T *rettv)
 {
-    dict_list(argvars, rettv, 1);
+    dict2list(argvars, rettv, DICT2LIST_VALUES);
 }
 
 /*
