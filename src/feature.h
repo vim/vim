@@ -149,12 +149,9 @@
  * +digraphs		Digraphs.
  *			In insert mode and on the command line you will be
  *			able to use digraphs. The CTRL-K command will work.
- *			Define OLD_DIGRAPHS to get digraphs compatible with
- *			Vim 5.x.  The new ones are from RFC 1345.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_DIGRAPHS
-// #define OLD_DIGRAPHS
 #endif
 
 /*

@@ -741,11 +741,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #CC = c89 -O +Onolimit +ESlit -D_HPUX_SOURCE
 #CC = c89 -O +Onolimit +ESlit +e -D_HPUX_SOURCE
 
-### (2) For HP-UX: Enable the use of a different set of digraphs.  Use this
-###	when the default (ISO) digraphs look completely wrong.
-###	After changing this do "touch digraph.c; make".
-#EXTRA_DEFS = -DHPUX_DIGRAPHS
-
 ### (2) For HP-UX: 9.04 cpp default macro definition table of 128000 bytes
 ###	is too small to compile many routines.	It produces too much defining
 ###	and no space errors.
