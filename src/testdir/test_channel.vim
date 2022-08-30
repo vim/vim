@@ -1509,7 +1509,7 @@ func Test_open_fail()
   call assert_fails("let ch = ch_open('noserver')", 'E475:')
   echo ch
   let d = ch
-  call assert_fails("let ch = ch_open('noserver', 10)", 'E474:')
+  call assert_fails("let ch = ch_open('noserver', 10)", 'E1206:')
   call assert_fails("let ch = ch_open('localhost:-1')", 'E475:')
   call assert_fails("let ch = ch_open('localhost:65537')", 'E475:')
   call assert_fails("let ch = ch_open('localhost:8765', {'timeout' : -1})",

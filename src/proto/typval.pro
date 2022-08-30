@@ -22,6 +22,7 @@ int check_for_blob_arg(typval_T *args, int idx);
 int check_for_list_arg(typval_T *args, int idx);
 int check_for_opt_list_arg(typval_T *args, int idx);
 int check_for_dict_arg(typval_T *args, int idx);
+int check_for_nonnull_dict_arg(typval_T *args, int idx);
 int check_for_opt_dict_arg(typval_T *args, int idx);
 int check_for_chan_or_job_arg(typval_T *args, int idx);
 int check_for_opt_chan_or_job_arg(typval_T *args, int idx);

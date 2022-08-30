@@ -3318,3 +3318,5 @@ EXTERN char e_cannot_specify_both_type_and_types[]
 EXTERN char e_can_only_use_left_padding_when_column_is_zero[]
 	INIT(= N_("E1296: Can only use left padding when column is zero"));
 #endif
+EXTERN char e_non_null_dict_required_for_argument_nr[]
+	INIT(= N_("E1297: Non-NULL Dictionary required for argument %d"));

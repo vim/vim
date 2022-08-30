@@ -403,7 +403,7 @@ func Test_getsettagstack()
   " Error cases
   call assert_equal({}, gettagstack(100))
   call assert_equal(-1, settagstack(100, {'items' : []}))
-  call assert_fails('call settagstack(1, [1, 10])', 'E715:')
+  call assert_fails('call settagstack(1, [1, 10])', 'E1206:')
   call assert_fails("call settagstack(1, {'items' : 10})", 'E714:')
   call assert_fails("call settagstack(1, {'items' : []}, 10)", 'E928:')
   call assert_fails("call settagstack(1, {'items' : []}, 'b')", 'E962:')

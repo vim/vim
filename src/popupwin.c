@@ -2016,11 +2016,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    emsg(_(e_buffer_number_text_or_list_required));
 	    return NULL;
 	}
-	if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	    return NULL;
-	}
 	d = argvars[1].vval.v_dict;
     }
 
@@ -2928,11 +2925,8 @@ f_popup_move(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp == NULL)
 	return;  // invalid {id}
 
-    if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	return;
-    }
     dict = argvars[1].vval.v_dict;
 
     apply_move_options(wp, dict);
@@ -2963,11 +2957,8 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     if (wp == NULL)
 	return;  // invalid {id}
 
-    if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	return;
-    }
     dict = argvars[1].vval.v_dict;
     old_firstline = wp->w_firstline;
 

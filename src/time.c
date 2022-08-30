@@ -872,12 +872,10 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
     msec = (long)tv_get_number(&argvars[0]);
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	if (argvars[2].v_type != VAR_DICT
-				   || (dict = argvars[2].vval.v_dict) == NULL)
-	{
-	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
+	if (check_for_nonnull_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
+
+	dict = argvars[2].vval.v_dict;
 	if (dict_has_key(dict, "repeat"))
 	    repeat = dict_get_number(dict, "repeat");
     }

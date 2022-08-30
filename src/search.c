@@ -4095,11 +4095,8 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 	listitem_T	*li;
 	int		error = FALSE;
 
-	if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_nonnull_dict_arg(argvars, 0) == FAIL)
 	    return;
-	}
 	dict = argvars[0].vval.v_dict;
 	di = dict_find(dict, (char_u *)"timeout", -1);
 	if (di != NULL)
@@ -4815,11 +4812,8 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	dict_T		*d;
 	dictitem_T	*di;
 
-	if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_nonnull_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
 
 	// To search a dict, either a callback function or a key can be
 	// specified.

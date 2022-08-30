@@ -1392,11 +1392,8 @@ channel_open_func(typval_T *argvars)
 
     address = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN
-	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
-    {
-	emsg(_(e_invalid_argument));
+	    && check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	return NULL;
-    }
 
     if (*address == NUL)
     {
@@ -4601,11 +4598,9 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	if (rettv_dict_alloc(rettv) == FAIL)
 	    return;
 
-	if (argvars[1].v_type != VAR_DICT)
-	{
-	    semsg(_(e_dict_required_for_argument_nr), 2);
+	if (check_for_dict_arg(argvars, 1) == FAIL)
 	    return;
-	}
+
 	d = argvars[1].vval.v_dict;
 	di = dict_find(d, (char_u *)"id", -1);
 	if (di != NULL && di->di_tv.v_type != VAR_NUMBER)
