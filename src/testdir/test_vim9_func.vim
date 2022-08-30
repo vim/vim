@@ -190,7 +190,7 @@ def Test_autoload_name_mismatch()
   v9.CheckScriptFailure(lines, 'E117:', 1)
 
   &rtp = save_rtp
-  delete('Xnamdir', 'rf')
+  delete('Xnamedir', 'rf')
 enddef
 
 def Test_autoload_names()
