@@ -799,7 +799,7 @@ enddef
 def Test_count()
   count('ABC ABC ABC', 'b', true)->assert_equal(3)
   count('ABC ABC ABC', 'b', false)->assert_equal(0)
-  v9.CheckDefAndScriptFailure(['count(10, 1)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1225: String, List or Dictionary required for argument 1'])
+  v9.CheckDefAndScriptFailure(['count(10, 1)'], 'E1225: String, List or Dictionary required for argument 1')
   v9.CheckDefAndScriptFailure(['count("a", [1], 2)'], ['E1013: Argument 3: type mismatch, expected bool but got number', 'E1212: Bool required for argument 3'])
   v9.CheckDefAndScriptFailure(['count("a", [1], 0, "b")'], ['E1013: Argument 4: type mismatch, expected number but got string', 'E1210: Number required for argument 4'])
   count([1, 2, 2, 3], 2)->assert_equal(2)
@@ -2244,7 +2244,7 @@ def Test_islocked()
 enddef
 
 def Test_items()
-  v9.CheckDefFailure(['"x"->items()'], 'E1013: Argument 1: type mismatch, expected list<any> but got string')
+  v9.CheckDefFailure(['123->items()'], 'E1225:')
   assert_equal([['a', 10], ['b', 20]], {'a': 10, 'b': 20}->items())
   assert_equal([], {}->items())
   assert_equal(['x', 'x'], {'a': 10, 'b': 20}->items()->map((_, _) => 'x'))
@@ -2252,6 +2252,10 @@ def Test_items()
   assert_equal([[0, 'a'], [1, 'b']], ['a', 'b']->items())
   assert_equal([], []->items())
   assert_equal([], test_null_list()->items())
+
+  assert_equal([[0, 'a'], [1, '웃'], [2, 'ć']], 'a웃ć'->items())
+  assert_equal([], ''->items())
+  assert_equal([], test_null_string()->items())
 enddef
 
 def Test_job_getchannel()

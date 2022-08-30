@@ -1456,7 +1456,6 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
     dictitem_T	*di;
     hashitem_T	*hi;
     listitem_T	*li;
-    listitem_T	*li2;
     dict_T	*d;
     int		todo;
 
@@ -1464,7 +1463,7 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 	return;
 
     if ((what == DICT2LIST_ITEMS
-		? check_for_list_or_dict_arg(argvars, 0)
+		? check_for_string_or_list_or_dict_arg(argvars, 0)
 		: check_for_dict_arg(argvars, 0)) == FAIL)
 	return;
 
@@ -1509,19 +1508,9 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 		    break;
 		++l2->lv_refcount;
 
-		li2 = listitem_alloc();
-		if (li2 == NULL)
+		if (list_append_string(l2, di->di_key, -1) == FAIL
+			|| list_append_tv(l2, &di->di_tv) == FAIL)
 		    break;
-		list_append(l2, li2);
-		li2->li_tv.v_type = VAR_STRING;
-		li2->li_tv.v_lock = 0;
-		li2->li_tv.vval.v_string = vim_strsave(di->di_key);
-
-		li2 = listitem_alloc();
-		if (li2 == NULL)
-		    break;
-		list_append(l2, li2);
-		copy_tv(&di->di_tv, &li2->li_tv);
 	    }
 	}
     }
@@ -1533,7 +1522,9 @@ dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
     void
 f_items(typval_T *argvars, typval_T *rettv)
 {
-    if (argvars[0].v_type == VAR_LIST)
+    if (argvars[0].v_type == VAR_STRING)
+	string2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_LIST)
 	list2items(argvars, rettv);
     else
 	dict2list(argvars, rettv, DICT2LIST_ITEMS);

@@ -1065,9 +1065,8 @@ list2items(typval_T *argvars, typval_T *rettv)
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
-
     if (l == NULL)
-	return;  // empty list behaves like an empty list
+	return;  // null list behaves like an empty list
 
     // TODO: would be more efficient to not materialize the argument
     CHECK_LIST_MATERIALIZE(l);
@@ -1081,6 +1080,39 @@ list2items(typval_T *argvars, typval_T *rettv)
 		|| list_append_number(l2, idx) == FAIL
 		|| list_append_tv(l2, &li->li_tv) == FAIL)
 	    break;
+    }
+}
+
+/*
+ * "items(string)" function
+ * Caller must have already checked that argvars[0] is a String.
+ */
+    void
+string2items(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p = argvars[0].vval.v_string;
+    varnumber_T idx;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (p == NULL)
+	return;  // null string behaves like an empty string
+
+    for (idx = 0; *p != NUL; ++idx)
+    {
+	int	    len = mb_ptr2len(p);
+	list_T	    *l2;
+
+	if (len == 0)
+	    break;
+	l2 = list_alloc();
+	if (l2 == NULL)
+	    break;
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL
+		|| list_append_number(l2, idx) == FAIL
+		|| list_append_string(l2, p, len) == FAIL)
+	    break;
+	p += len;
     }
 }
 
