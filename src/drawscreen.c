@@ -839,10 +839,6 @@ after_updating_screen(int may_resize_shell UNUSED)
     // handle the drop now.
     handle_any_postponed_drop();
 #endif
-
-    if (p_ch == 0)
-	// in case it was changed in dont_use_message_window()
-	cmdline_row = Rows;
 }
 
 /*
