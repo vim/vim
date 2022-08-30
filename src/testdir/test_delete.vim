@@ -3,14 +3,14 @@
 source check.vim
 
 func Test_file_delete()
-  split Xfile
+  split Xfdelfile
   call setline(1, ['a', 'b'])
   wq
-  call assert_equal(['a', 'b'], readfile('Xfile'))
-  call assert_equal(0, delete('Xfile'))
-  call assert_fails('call readfile("Xfile")', 'E484:')
-  call assert_equal(-1, delete('Xfile'))
-  bwipe Xfile
+  call assert_equal(['a', 'b'], readfile('Xfdelfile'))
+  call assert_equal(0, delete('Xfdelfile'))
+  call assert_fails('call readfile("Xfdelfile")', 'E484:')
+  call assert_equal(-1, delete('Xfdelfile'))
+  bwipe Xfdelfile
 endfunc
 
 func Test_dir_delete()
@@ -44,15 +44,15 @@ endfunc
 
 func Test_symlink_delete()
   CheckUnix
-  split Xfile
+  split Xslfile
   call setline(1, ['a', 'b'])
   wq
-  silent !ln -s Xfile Xdellink
+  silent !ln -s Xslfile Xdellink
   " Delete the link, not the file
   call assert_equal(0, delete('Xdellink'))
   call assert_equal(-1, delete('Xdellink'))
-  call assert_equal(0, delete('Xfile'))
-  bwipe Xfile
+  call assert_equal(0, delete('Xslfile'))
+  bwipe Xslfile
 endfunc
 
 func Test_symlink_dir_delete()

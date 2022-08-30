@@ -1035,14 +1035,14 @@ func Test_cmdline_complete_various()
   call assert_equal("\"sI \<C-A>", @:)
 
   " completion for :write command
-  call mkdir('Xdir')
-  call writefile(['one'], 'Xdir/Xfile1')
+  call mkdir('Xcwdir')
+  call writefile(['one'], 'Xcwdir/Xfile1')
   let save_cwd = getcwd()
-  cd Xdir
+  cd Xcwdir
   call feedkeys(":w >> \<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"w >> Xfile1", @:)
   call chdir(save_cwd)
-  call delete('Xdir', 'rf')
+  call delete('Xcwdir', 'rf')
 
   " completion for :w ! and :r ! commands
   call feedkeys(":w !invalid_xyz_cmd\<C-A>\<C-B>\"\<CR>", 'xt')
@@ -1121,12 +1121,12 @@ func Test_cmdline_complete_various()
   call assert_equal("\"doautocmd BufNew,BufEnter", @:)
 
   " completion of file name in :doautocmd
-  call writefile([], 'Xfile1')
-  call writefile([], 'Xfile2')
-  call feedkeys(":doautocmd BufEnter Xfi\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"doautocmd BufEnter Xfile1 Xfile2", @:)
-  call delete('Xfile1')
-  call delete('Xfile2')
+  call writefile([], 'Xvarfile1')
+  call writefile([], 'Xvarfile2')
+  call feedkeys(":doautocmd BufEnter Xvarfi\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"doautocmd BufEnter Xvarfile1 Xvarfile2", @:)
+  call delete('Xvarfile1')
+  call delete('Xvarfile2')
 
   " completion for the :augroup command
   augroup XTest.test
@@ -1603,17 +1603,17 @@ endfunc
 
 " Test for using ~ for home directory in cmdline completion matches
 func Test_cmdline_expand_home()
-  call mkdir('Xdir')
-  call writefile([], 'Xdir/Xfile1')
-  call writefile([], 'Xdir/Xfile2')
-  cd Xdir
+  call mkdir('Xexpdir')
+  call writefile([], 'Xexpdir/Xfile1')
+  call writefile([], 'Xexpdir/Xfile2')
+  cd Xexpdir
   let save_HOME = $HOME
   let $HOME = getcwd()
   call feedkeys(":e ~/\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"e ~/Xfile1 ~/Xfile2', @:)
   let $HOME = save_HOME
   cd ..
-  call delete('Xdir', 'rf')
+  call delete('Xexpdir', 'rf')
 endfunc
 
 " Test for using CTRL-\ CTRL-G in the command line to go back to normal mode
@@ -1734,15 +1734,15 @@ func Test_wildmode()
 endfunc
 
 func Test_custom_complete_autoload()
-  call mkdir('Xdir/autoload', 'p')
+  call mkdir('Xcustdir/autoload', 'p')
   let save_rtp = &rtp
-  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  exe 'set rtp=' .. getcwd() .. '/Xcustdir'
   let lines =<< trim END
       func vim8#Complete(a, c, p)
         return "oneA\noneB\noneC"
       endfunc
   END
-  call writefile(lines, 'Xdir/autoload/vim8.vim')
+  call writefile(lines, 'Xcustdir/autoload/vim8.vim')
 
   command -nargs=1 -complete=custom,vim8#Complete MyCmd
   set nowildmenu
@@ -1753,7 +1753,7 @@ func Test_custom_complete_autoload()
   let &rtp = save_rtp
   set wildmode& wildmenu&
   delcommand MyCmd
-  call delete('Xdir', 'rf')
+  call delete('Xcustdir', 'rf')
 endfunc
 
 " Test for interrupting the command-line completion
@@ -2038,31 +2038,31 @@ endfunc
 
 " Test for the 'suffixes' option
 func Test_suffixes_opt()
-  call writefile([], 'Xfile')
-  call writefile([], 'Xfile.c')
-  call writefile([], 'Xfile.o')
+  call writefile([], 'Xsuffile')
+  call writefile([], 'Xsuffile.c')
+  call writefile([], 'Xsuffile.o')
   set suffixes=
-  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"e Xfile Xfile.c Xfile.o', @:)
-  call feedkeys(":e Xfi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"e Xfile.c', @:)
+  call feedkeys(":e Xsuffi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xsuffile Xsuffile.c Xsuffile.o', @:)
+  call feedkeys(":e Xsuffi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xsuffile.c', @:)
   set suffixes=.c
-  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"e Xfile Xfile.o Xfile.c', @:)
-  call feedkeys(":e Xfi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"e Xfile.o', @:)
+  call feedkeys(":e Xsuffi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xsuffile Xsuffile.o Xsuffile.c', @:)
+  call feedkeys(":e Xsuffi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xsuffile.o', @:)
   set suffixes=,,
-  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"e Xfile.c Xfile.o Xfile', @:)
-  call feedkeys(":e Xfi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"e Xfile.o', @:)
+  call feedkeys(":e Xsuffi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xsuffile.c Xsuffile.o Xsuffile', @:)
+  call feedkeys(":e Xsuffi*\<Tab>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xsuffile.o', @:)
   set suffixes&
   " Test for getcompletion() with different patterns
-  call assert_equal(['Xfile', 'Xfile.c', 'Xfile.o'], getcompletion('Xfile', 'file'))
-  call assert_equal(['Xfile'], getcompletion('Xfile$', 'file'))
-  call delete('Xfile')
-  call delete('Xfile.c')
-  call delete('Xfile.o')
+  call assert_equal(['Xsuffile', 'Xsuffile.c', 'Xsuffile.o'], getcompletion('Xsuffile', 'file'))
+  call assert_equal(['Xsuffile'], getcompletion('Xsuffile$', 'file'))
+  call delete('Xsuffile')
+  call delete('Xsuffile.c')
+  call delete('Xsuffile.o')
 endfunc
 
 " Test for using a popup menu for the command line completion matches
@@ -2162,12 +2162,12 @@ func Test_wildmenu_pum()
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_13', {})
 
   " Directory name completion
-  call mkdir('Xdir/XdirA/XdirB', 'p')
-  call writefile([], 'Xdir/XfileA')
-  call writefile([], 'Xdir/XdirA/XfileB')
-  call writefile([], 'Xdir/XdirA/XdirB/XfileC')
+  call mkdir('Xnamedir/XdirA/XdirB', 'p')
+  call writefile([], 'Xnamedir/XfileA')
+  call writefile([], 'Xnamedir/XdirA/XfileB')
+  call writefile([], 'Xnamedir/XdirA/XdirB/XfileC')
 
-  call term_sendkeys(buf, "\<C-U>e Xdi\<Tab>\<Tab>")
+  call term_sendkeys(buf, "\<C-U>e Xnamedi\<Tab>\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_14', {})
 
   " Pressing <Right> on a directory name should go into that directory
@@ -2242,13 +2242,13 @@ func Test_wildmenu_pum()
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_31', {})
 
   " Tests a directory name contained full-width characters.
-  call mkdir('Xdir/あいう', 'p')
-  call writefile([], 'Xdir/あいう/abc')
-  call writefile([], 'Xdir/あいう/xyz')
-  call writefile([], 'Xdir/あいう/123')
+  call mkdir('Xnamedir/あいう', 'p')
+  call writefile([], 'Xnamedir/あいう/abc')
+  call writefile([], 'Xnamedir/あいう/xyz')
+  call writefile([], 'Xnamedir/あいう/123')
 
   call term_sendkeys(buf, "\<C-U>set wildmode&\<CR>")
-  call term_sendkeys(buf, ":\<C-U>e Xdir/あいう/\<Tab>")
+  call term_sendkeys(buf, ":\<C-U>e Xnamedir/あいう/\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_32', {})
 
   " Pressing <C-A> when the popup menu is displayed should list all the
@@ -2270,7 +2270,7 @@ func Test_wildmenu_pum()
 
   " After using <C-A> to expand all the filename matches, pressing <Up>
   " should not open the popup menu again.
-  call term_sendkeys(buf, "\<C-E>\<C-U>:cd Xdir/XdirA\<CR>")
+  call term_sendkeys(buf, "\<C-E>\<C-U>:cd Xnamedir/XdirA\<CR>")
   call term_sendkeys(buf, ":e \<Tab>\<C-A>\<Up>")
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_36', {})
   call term_sendkeys(buf, "\<C-E>\<C-U>:cd -\<CR>")
@@ -2331,7 +2331,7 @@ func Test_wildmenu_pum()
   call term_sendkeys(buf, "\<C-U>\<CR>")
   call StopVimInTerminal(buf)
   call delete('Xtest')
-  call delete('Xdir', 'rf')
+  call delete('Xnamedir', 'rf')
 endfunc
 
 " Test for wildmenumode() with the cmdline popup menu
