@@ -2261,7 +2261,7 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 #ifdef HAS_MESSAGE_WINDOW
 
 /*
- * Put text "t_s" until "s" in the message window.
+ * Put text "t_s" until "end" in the message window.
  * "where" specifies where to put the text.
  */
     static void
@@ -2308,7 +2308,7 @@ put_msg_win(win_T *wp, int where, char_u *t_s, char_u *end, linenr_T lnum)
     redraw_win_later(wp, UPD_NOT_VALID);
 
     // set msg_col so that a newline is written if needed
-    msg_col = (int)STRLEN(t_s);
+    msg_col += (int)(end - t_s);
 }
 #endif
 
