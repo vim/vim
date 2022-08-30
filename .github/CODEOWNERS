@@ -120,6 +120,8 @@ runtime/ftplugin/fpcmake.vim		@dkearns
 runtime/ftplugin/freebasic.vim		@dkearns
 runtime/ftplugin/fstab.vim		@rid9
 runtime/ftplugin/gdb.vim		@xeyownt
+runtime/ftplugin/gdscript.vim		@habamax
+runtime/ftplugin/gdshader.vim		@habamax
 runtime/ftplugin/git.vim		@tpope
 runtime/ftplugin/gitcommit.vim		@tpope
 runtime/ftplugin/gitconfig.vim		@tpope
@@ -211,6 +213,7 @@ runtime/indent/eterm.vim		@dkearns
 runtime/indent/falcon.vim		@steveno
 runtime/indent/framescript.vim		@dkearns
 runtime/indent/freebasic.vim		@dkearns
+runtime/indent/gdscript.vim		@habamax
 runtime/indent/gitconfig.vim		@tpope
 runtime/indent/gitolite.vim		@sitaramc
 runtime/indent/go.vim			@dbarnett
@@ -314,6 +317,9 @@ runtime/syntax/forth.vim		@jkotlinski
 runtime/syntax/fpcmake.vim		@dkearns
 runtime/syntax/freebasic.vim		@dkearns
 runtime/syntax/fstab.vim		@rid9
+runtime/syntax/gdresource.vim		@habamax
+runtime/syntax/gdscript.vim		@habamax
+runtime/syntax/gdshader.vim		@habamax
 runtime/syntax/git.vim			@tpope
 runtime/syntax/gitcommit.vim		@tpope
 runtime/syntax/gitconfig.vim		@tpope
@@ -326,7 +332,7 @@ runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/haml.vim			@tpope
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
-runtime/syntax/html.vim		@dkearns
+runtime/syntax/html.vim			@dkearns
 runtime/syntax/i3config.vim		@hiqua
 runtime/syntax/icon.vim			@dkearns
 runtime/syntax/indent.vim		@dkearns

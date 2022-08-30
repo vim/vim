@@ -2469,6 +2469,9 @@ $quote	eval.txt	/*$quote*
 :echom	eval.txt	/*:echom*
 :echomsg	eval.txt	/*:echomsg*
 :echon	eval.txt	/*:echon*
+:echow	eval.txt	/*:echow*
+:echowin	eval.txt	/*:echowin*
+:echowindow	eval.txt	/*:echowindow*
 :edit	editing.txt	/*:edit*
 :edit!	editing.txt	/*:edit!*
 :edit!_f	editing.txt	/*:edit!_f*
@@ -4324,6 +4327,7 @@ E1293	textprop.txt	/*E1293*
 E1294	textprop.txt	/*E1294*
 E1295	textprop.txt	/*E1295*
 E1296	textprop.txt	/*E1296*
+E1297	vim9.txt	/*E1297*
 E13	message.txt	/*E13*
 E131	eval.txt	/*E131*
 E132	eval.txt	/*E132*
@@ -7735,6 +7739,7 @@ hl-LineNrAbove	syntax.txt	/*hl-LineNrAbove*
 hl-LineNrBelow	syntax.txt	/*hl-LineNrBelow*
 hl-MatchParen	syntax.txt	/*hl-MatchParen*
 hl-Menu	syntax.txt	/*hl-Menu*
+hl-MessageWindow	syntax.txt	/*hl-MessageWindow*
 hl-ModeMsg	syntax.txt	/*hl-ModeMsg*
 hl-MoreMsg	syntax.txt	/*hl-MoreMsg*
 hl-NonText	syntax.txt	/*hl-NonText*
@@ -7743,6 +7748,7 @@ hl-Pmenu	syntax.txt	/*hl-Pmenu*
 hl-PmenuSbar	syntax.txt	/*hl-PmenuSbar*
 hl-PmenuSel	syntax.txt	/*hl-PmenuSel*
 hl-PmenuThumb	syntax.txt	/*hl-PmenuThumb*
+hl-PopupNotification	syntax.txt	/*hl-PopupNotification*
 hl-Question	syntax.txt	/*hl-Question*
 hl-QuickFixLine	syntax.txt	/*hl-QuickFixLine*
 hl-Scrollbar	syntax.txt	/*hl-Scrollbar*
@@ -9432,6 +9438,7 @@ setbufvar()	builtin.txt	/*setbufvar()*
 setcellwidths()	builtin.txt	/*setcellwidths()*
 setcharpos()	builtin.txt	/*setcharpos()*
 setcharsearch()	builtin.txt	/*setcharsearch()*
+setcmdline()	builtin.txt	/*setcmdline()*
 setcmdpos()	builtin.txt	/*setcmdpos()*
 setcursorcharpos()	builtin.txt	/*setcursorcharpos()*
 setenv()	builtin.txt	/*setenv()*

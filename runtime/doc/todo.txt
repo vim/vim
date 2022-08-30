@@ -38,7 +38,12 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+cmdheight=0:
+- :g/pattern should not use message window  #11012
+
 *.sil detection with FTsil() (lacygoill, Aug 25)
+
+Avoid using "Xfile" and "Xdir" in tests, use specific names.
 
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
@@ -178,19 +183,10 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Patches considered for including:
-- use int instead of char_ for index  #10818  needs a test
-- Add "-n" option to xxd. #10599  needs a test
-- allow for nesting of timeout, sketch in #10595
-- Add setcmdline()  #10869
-
 Cleanup:
-- Remove OLD_DIGRAPHS ?
 - Remove FEAT_FOOTER ?
 
-Add 'splitscroll'  #10682  Useful?  Any trouble? Null Chilly says it's OK.
-    suggestion: names instead of numbers for the option value
-    problem depending on whether window is focused or not
+Add 'splitscroll'  #10682  Useful?  Any remaining trouble?
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
 - try using autoconf 2.71 and fix all "obsolete" warnings
@@ -881,9 +877,6 @@ The ++ options for the :edit command are also useful on the Vim command line.
 
 Overlong utf-8 sequence is displayed wrong. (Harm te Hennepe, 2017 Sep 14,
 #2089)  Patch with possible solution by Björn Linse.
-
-The change list index is local to a buffer, but it doesn't make sense using it
-for another buffer.  (lacygoill) Copy w_changelistidx to wininfo_S and back.
 
 X11: Putting more than about 262040 characters of text on the clipboard and
 pasting it in another Vim doesn't work.  (Dominique Pelle, 2008 Aug 21-23)

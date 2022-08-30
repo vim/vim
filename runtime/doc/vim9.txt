@@ -1618,7 +1618,7 @@ type, it can not be used in Vim9 script.
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
 			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1253*
-			 *E1256*
+			 *E1256* *E1297*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 

@@ -3608,6 +3608,9 @@ text...
 			iterate over.  Unlike with |List|, modifying the
 			|Blob| does not affect the iteration.
 
+			When {object} is a |String| each item is a string with
+			one character, plus any combining characters.
+
 			In |Vim9| script `:endfor` cannot be shortened, to
 			improve script readability.
 
@@ -3827,7 +3830,9 @@ text...
 			Like |:echomsg| but when the messages popup window is
 			available the message is displayed there.  This means
 			it will show for three seconds and avoid a
-			|hit-enter| prompt.
+			|hit-enter| prompt.  If you want to hide it before
+			that, press Esc in Normal mode (when it would
+			otherwise beep).
 			The message window is available when Vim was compiled
 			with the +timer and the +popupwin features.
 
