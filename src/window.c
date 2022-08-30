@@ -5693,11 +5693,7 @@ frame_setheight(frame_T *curfrp, int height)
     {
 	// topframe: can only change the command line height
 	if (height > ROWS_AVAIL)
-	    // If height is greater than the available space, try to create
-	    // space for the frame by reducing 'cmdheight' if possible, while
-	    // making sure `cmdheight` doesn't go below 1.
-	    height = MIN((p_ch > 0 ? ROWS_AVAIL + (p_ch - 1)
-							: ROWS_AVAIL), height);
+            height = ROWS_AVAIL;
 	if (height > 0)
 	    frame_new_height(curfrp, height, FALSE, FALSE);
     }
