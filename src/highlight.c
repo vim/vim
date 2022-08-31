@@ -507,7 +507,9 @@ load_colors(char_u *name)
 	sprintf((char *)buf, "colors/%s.vim", name);
 	retval = source_runtime(buf, DIP_START + DIP_OPT);
 	vim_free(buf);
-	apply_autocmds(EVENT_COLORSCHEME, name, curbuf->b_fname, FALSE, curbuf);
+	if (retval == OK)
+	    apply_autocmds(EVENT_COLORSCHEME, name, curbuf->b_fname,
+								FALSE, curbuf);
     }
     recursive = FALSE;
 

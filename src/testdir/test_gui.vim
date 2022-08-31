@@ -36,8 +36,12 @@ func Test_colorscheme()
   let g:color_count = 0
   augroup TestColors
     au!
-    au ColorScheme * let g:color_count += 1| let g:after_colors = g:color_count
-    au ColorSchemePre * let g:color_count += 1 |let g:before_colors = g:color_count
+    au ColorScheme * let g:color_count += 1
+                 \ | let g:after_colors = g:color_count
+                 \ | let g:color_after = expand('<amatch>')
+    au ColorSchemePre * let g:color_count += 1
+                    \ | let g:before_colors = g:color_count
+                    \ | let g:color_pre = expand('<amatch>')
   augroup END
 
   colorscheme torte
@@ -45,6 +49,8 @@ func Test_colorscheme()
   call assert_equal('dark', &background)
   call assert_equal(1, g:before_colors)
   call assert_equal(2, g:after_colors)
+  call assert_equal('torte', g:color_pre)
+  call assert_equal('torte', g:color_after)
   call assert_equal("\ntorte", execute('colorscheme'))
 
   let a = substitute(execute('hi Search'), "\n\\s\\+", ' ', 'g')
@@ -53,6 +59,8 @@ func Test_colorscheme()
   call assert_match("\nSearch         xxx term=reverse ", a)
 
   call assert_fails('colorscheme does_not_exist', 'E185:')
+  call assert_equal('does_not_exist', g:color_pre)
+  call assert_equal('torte', g:color_after)
 
   exec 'colorscheme' colorscheme_saved
   augroup TestColors
