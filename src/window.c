@@ -434,12 +434,16 @@ newwindow:
 			| ((nchar == 'H' || nchar == 'K') ? WSP_TOP : WSP_BOT));
 		break;
 
-// make all windows the same height
+// make all windows the same width and/or height
     case '=':
+		{
+		    int mod = cmdmod.cmod_split & (WSP_VERT | WSP_HOR);
 #ifdef FEAT_GUI
-		need_mouse_correct = TRUE;
+		    need_mouse_correct = TRUE;
 #endif
-		win_equal(NULL, FALSE, 'b');
+		    win_equal(NULL, FALSE,
+			   mod == WSP_VERT ? 'v' : mod == WSP_HOR ? 'h' : 'b');
+		}
 		break;
 
 // increase current window height
