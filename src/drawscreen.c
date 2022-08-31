@@ -654,8 +654,8 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
     int		off = 0;
     int		width;
 
-    // If 'ruler' off or messages area disabled, don't do anything
-    if (!p_ru || (wp->w_status_height == 0 && p_ch == 0))
+    // If 'ruler' off don't do anything
+    if (!p_ru)
 	return;
 
     /*
@@ -676,7 +676,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	return;
 
 #ifdef FEAT_STL_OPT
-    if (*p_ruf && p_ch > 0)
+    if (*p_ruf)
     {
 	int	called_emsg_before = called_emsg;
 
@@ -1814,13 +1814,9 @@ win_update(win_T *wp)
 
 			    // Move the entries that were scrolled, disable
 			    // the entries for the lines to be redrawn.
-			    // Avoid using a wrong index when 'cmdheight' is
-			    // zero and wp->w_height == Rows.
 			    if ((wp->w_lines_valid += j) > wp->w_height)
 				wp->w_lines_valid = wp->w_height;
-			    for (idx = wp->w_lines_valid >= wp->w_height
-				    ? wp->w_height - 1 : wp->w_lines_valid;
-							   idx - j >= 0; idx--)
+			    for (idx = wp->w_lines_valid; idx - j >= 0; idx--)
 				wp->w_lines[idx] = wp->w_lines[idx - j];
 			    while (idx >= 0)
 				wp->w_lines[idx--].wl_valid = FALSE;
@@ -2420,8 +2416,7 @@ win_update(win_T *wp)
 			    if (wp->w_lines_valid > wp->w_height)
 				wp->w_lines_valid = wp->w_height;
 			    for (i = wp->w_lines_valid; i - j >= idx; --i)
-				if (i < Rows)
-				    wp->w_lines[i] = wp->w_lines[i - j];
+				wp->w_lines[i] = wp->w_lines[i - j];
 
 			    // The w_lines[] entries for inserted lines are
 			    // now invalid, but wl_size may be used above.
@@ -2502,8 +2497,7 @@ win_update(win_T *wp)
 	    // Past end of the window or end of the screen. Note that after
 	    // resizing wp->w_height may be end up too big. That's a problem
 	    // elsewhere, but prevent a crash here.
-	    if (row > wp->w_height
-		    || row + wp->w_winrow >= (p_ch > 0 ? Rows : Rows + 1))
+	    if (row > wp->w_height || row + wp->w_winrow >= Rows)
 	    {
 		// we may need the size of that too long line later on
 		if (dollar_vcol == -1)
@@ -2557,7 +2551,7 @@ win_update(win_T *wp)
 
 	// Safety check: if any of the wl_size values is wrong we might go over
 	// the end of w_lines[].
-	if (idx >= (p_ch > 0 ? Rows : Rows + 1))
+	if (idx >= Rows)
 	    break;
     }
 
@@ -2945,8 +2939,7 @@ redraw_asap(int type)
     redraw_later(type);
     if (msg_scrolled
 	    || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
-	    || exiting
-	    || p_ch == 0)
+	    || exiting)
 	return ret;
 
     // Allocate space to save the text displayed in the command line area.

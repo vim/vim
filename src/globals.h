@@ -1734,6 +1734,3 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 // While executing a regexp and set to OPTION_MAGIC_ON or OPTION_MAGIC_OFF this
 // overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.
 EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
-
-// Set when 'cmdheight' is changed from zero to one temporarily.
-EXTERN int made_cmdheight_nonzero INIT(= FALSE);

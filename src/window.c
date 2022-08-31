@@ -992,8 +992,6 @@ win_split_ins(
 	needed = wmh1 + STATUS_HEIGHT;
 	if (flags & WSP_ROOM)
 	    needed += p_wh - wmh1;
-	if (p_ch == 0)
-	    needed += 1;  // Adjust for cmdheight=0.
 	if (flags & (WSP_BOT | WSP_TOP))
 	{
 	    minheight = frame_minheight(topframe, NOWIN) + need_status;
@@ -5693,8 +5691,6 @@ frame_setheight(frame_T *curfrp, int height)
     {
 	// topframe: can only change the command line height
 	if (height > ROWS_AVAIL)
-	    // If height is greater than the available space, try to create
-	    // space for the frame by reducing 'cmdheight' if possible.
 	    height = ROWS_AVAIL;
 	if (height > 0)
 	    frame_new_height(curfrp, height, FALSE, FALSE);
@@ -6026,7 +6022,7 @@ win_setminheight(void)
     while (p_wmh > 0)
     {
 	room = Rows - p_ch;
-	needed = min_rows();
+	needed = min_rows() - 1;  // 1 was added for the cmdline
 	if (room >= needed)
 	    break;
 	--p_wmh;
@@ -6076,12 +6072,6 @@ win_drag_status_line(win_T *dragwin, int offset)
     int		row;
     int		up;	// if TRUE, drag status line up, otherwise down
     int		n;
-    static int	p_ch_was_zero = FALSE;
-
-    // If the user explicitly set 'cmdheight' to zero, then allow for dragging
-    // the status line making it zero again.
-    if (p_ch == 0)
-	p_ch_was_zero = TRUE;
 
     fr = dragwin->w_frame;
     curfr = fr;
@@ -6138,10 +6128,10 @@ win_drag_status_line(win_T *dragwin, int offset)
 	 * Only dragging the last status line can reduce p_ch.
 	 */
 	room = Rows - cmdline_row;
-	if (curfr->fr_next != NULL)
-	    room -= p_ch;
-	else if (!p_ch_was_zero)
+	if (curfr->fr_next == NULL)
 	    --room;
+	else
+	    room -= p_ch;
 	if (room < 0)
 	    room = 0;
 	// sum up the room of frames below of the current one
@@ -6191,8 +6181,9 @@ win_drag_status_line(win_T *dragwin, int offset)
     row = win_comp_pos();
     screen_fill(row, cmdline_row, 0, (int)Columns, ' ', ' ', 0);
     cmdline_row = row;
-    p_ch = MAX(Rows - cmdline_row, p_ch_was_zero ? 0 : 1);
+    p_ch = MAX(Rows - cmdline_row, 1);
     curtab->tp_ch_used = p_ch;
+
     redraw_all_later(UPD_SOME_VALID);
     showmode();
 }
@@ -6355,8 +6346,7 @@ win_new_height(win_T *wp, int height)
 
     // There is no point in adjusting the scroll position when exiting.  Some
     // values might be invalid.
-    // Skip scroll_to_fraction() when 'cmdheight' was set to one from zero.
-    if (!exiting && !made_cmdheight_nonzero)
+    if (!exiting)
 	scroll_to_fraction(wp, prev_height);
 }
 
@@ -6603,11 +6593,6 @@ command_height(void)
     // Recompute window positions.
     if (frp != lastwin->w_frame)
 	(void)win_comp_pos();
-
-#ifdef HAS_MESSAGE_WINDOW
-    if (p_ch > 0)
-	popup_close_message_win();
-#endif
 }
 
 /*
@@ -6743,8 +6728,7 @@ min_rows(void)
 	    total = n;
     }
     total += tabline_height();
-    if (p_ch > 0)
-	total += 1;		// count the room for the command line
+    total += 1;		// count the room for the command line
     return total;
 }
 

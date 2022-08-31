@@ -208,7 +208,7 @@ msg_strtrunc(
 	len = vim_strsize(s);
 	if (msg_scrolled != 0
 #ifdef HAS_MESSAGE_WINDOW
-		|| use_message_window()
+		|| in_echowindow
 #endif
 		)
 	    // Use all the columns.
@@ -751,7 +751,7 @@ emsg_core(char_u *s)
     }
 
 #ifdef HAS_MESSAGE_WINDOW
-    if (!use_message_window())
+    if (!in_echowindow)
 #endif
 	emsg_on_display = TRUE;	    // remember there is an error message
 
@@ -966,7 +966,7 @@ msg_may_trunc(int force, char_u *s)
     // negative.
     room = (int)(Rows - cmdline_row - 1) * Columns + sc_col - 1;
     if (room > 0 && (force || (shortmess(SHM_TRUNC) && !exmode_active))
-	    && (n = (int)STRLEN(s) - room) > 0 && p_ch > 0)
+	    && (n = (int)STRLEN(s) - room) > 0)
     {
 	if (has_mbyte)
 	{
@@ -1077,7 +1077,6 @@ ex_messages(exarg_T *eap)
     }
 
     msg_hist_off = TRUE;
-    dont_use_message_window();
 
     p = first_msg_hist;
     if (eap->addr_count != 0)
@@ -1430,35 +1429,6 @@ set_keep_msg_from_hist(void)
 #endif
 
 /*
- * Return TRUE when the message popup window should be used.
- */
-    int
-use_message_window(void)
-{
-#ifdef HAS_MESSAGE_WINDOW
-    // TRUE if there is no command line showing ('cmdheight' is zero and not
-    // already editing or showing a message) use a popup window for messages.
-    // Also when using ":echowindow".
-    return (p_ch == 0 && cmdline_row >= Rows) || in_echowindow;
-#else
-    return FALSE;
-#endif
-}
-
-/*
- * Do not use the message window for the next message(s).
- * Used when giving a prompt.
- */
-    void
-dont_use_message_window(void)
-{
-#ifdef HAS_MESSAGE_WINDOW
-    popup_hide_message_win();
-    cmdline_row = Rows - 1;
-#endif
-}
-
-/*
  * Prepare for outputting characters in the command line.
  */
     void
@@ -1473,7 +1443,7 @@ msg_start(void)
     }
 
 #ifdef FEAT_EVAL
-    if (need_clr_eos || use_message_window())
+    if (need_clr_eos || in_echowindow)
     {
 	// Halfway an ":echo" command and getting an (error) message: clear
 	// any text from the command.
@@ -1483,7 +1453,7 @@ msg_start(void)
 #endif
 
 #ifdef HAS_MESSAGE_WINDOW
-    if (use_message_window())
+    if (in_echowindow)
     {
 	if (popup_message_win_visible()
 		    && ((msg_col > 0 && (msg_scroll || !full_screen))
@@ -1510,7 +1480,7 @@ msg_start(void)
 #endif
 	    0;
     }
-    else if (msg_didout || use_message_window())
+    else if (msg_didout || in_echowindow)
     {
 	// start message on next line
 	msg_putchar('\n');
@@ -2259,7 +2229,6 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 #define PUT_BELOW 2		// add below "lnum"
 				//
 #ifdef HAS_MESSAGE_WINDOW
-
 /*
  * Put text "t_s" until "end" in the message window.
  * "where" specifies where to put the text.
@@ -2337,7 +2306,7 @@ msg_puts_display(
     win_T	*msg_win = NULL;
     linenr_T    lnum = 1;
 
-    if (use_message_window())
+    if (in_echowindow)
     {
 	msg_win = popup_get_message_win();
 
@@ -2651,7 +2620,7 @@ message_filtered(char_u *msg)
 msg_scroll_up(void)
 {
 #ifdef HAS_MESSAGE_WINDOW
-    if (use_message_window())
+    if (in_echowindow)
 	return;
 #endif
 #ifdef FEAT_GUI
@@ -3687,7 +3656,7 @@ msg_clr_eos_force(void)
 		out_str(T_CE);	// clear to end of line
 	}
     }
-    else if (p_ch > 0)
+    else
     {
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl)
@@ -3748,7 +3717,7 @@ msg_check(void)
 {
     if (msg_row == Rows - 1 && msg_col >= sc_col
 #ifdef HAS_MESSAGE_WINDOW
-		&& !use_message_window()
+		&& !in_echowindow
 #endif
 	    )
     {
@@ -4090,7 +4059,6 @@ do_dialog(
     }
 #endif
 
-    dont_use_message_window();
     oldState = State;
     State = MODE_CONFIRM;
     setmouse();

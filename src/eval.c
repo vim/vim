@@ -6832,17 +6832,18 @@ ex_execute(exarg_T *eap)
     if (eap->skip)
 	--emsg_skip;
 #ifdef HAS_MESSAGE_WINDOW
-    if (use_message_window() && eap->cmdidx != CMD_execute)
+    if (eap->cmdidx == CMD_echowindow)
     {
 	// show the message window now
 	ex_redraw(eap);
 
 	// do not overwrite messages
+	// TODO: only for message window
 	msg_didout = TRUE;
 	if (msg_col == 0)
 	    msg_col = 1;
+	in_echowindow = FALSE;
     }
-    in_echowindow = FALSE;
 #endif
     set_nextcmd(eap, arg);
 }

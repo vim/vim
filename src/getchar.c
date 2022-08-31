@@ -2096,10 +2096,6 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     --no_mapping;
     --allow_keys;
 
-    // redraw the screen after getchar()
-    if (p_ch == 0)
-	update_screen(UPD_NOT_VALID);
-
     set_vim_var_nr(VV_MOUSE_WIN, 0);
     set_vim_var_nr(VV_MOUSE_WINID, 0);
     set_vim_var_nr(VV_MOUSE_LNUM, 0);

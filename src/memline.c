@@ -4640,7 +4640,6 @@ attention_message(
     stat_T	st;
     time_t	swap_mtime;
 
-    dont_use_message_window();
     ++no_wait_return;
     (void)emsg(_(e_attention));
     msg_puts(_("\nFound a swap file by the name \""));

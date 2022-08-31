@@ -1429,7 +1429,6 @@ do_highlight(
     // If no argument, list current highlighting.
     if (!init && ends_excmd2(line - 1, line))
     {
-	dont_use_message_window();
 	for (i = 1; i <= highlight_ga.ga_len && !got_int; ++i)
 	    // TODO: only call when the group has attributes set
 	    highlight_list_one((int)i);

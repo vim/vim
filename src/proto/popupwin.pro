@@ -67,7 +67,6 @@ win_T *popup_get_message_win(void);
 void popup_show_message_win(void);
 int popup_message_win_visible(void);
 void popup_hide_message_win(void);
-void popup_close_message_win(void);
 int popup_win_closed(win_T *win);
 void popup_set_title(win_T *wp);
 void popup_update_preview_title(void);

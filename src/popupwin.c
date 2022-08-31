@@ -29,7 +29,7 @@ static poppos_entry_T poppos_entries[] = {
 };
 
 #ifdef HAS_MESSAGE_WINDOW
-// Window used for messages when 'winheight' is zero.
+// Window used for ":echowindow"
 static win_T *message_win = NULL;
 #endif
 
@@ -4527,16 +4527,6 @@ popup_hide_message_win(void)
 {
     if (message_win != NULL)
 	popup_hide(message_win);
-}
-
-/*
- * If the message window exists: close it.
- */
-    void
-popup_close_message_win(void)
-{
-    if (message_win != NULL)
-	popup_close(message_win->w_id, TRUE);
 }
 
 #endif
