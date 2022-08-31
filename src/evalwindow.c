@@ -261,7 +261,7 @@ find_tabwin(
 }
 
 /*
- * Get the layout of the given tab page for winlayout().
+ * Get the layout of the given tab page for winlayout() and add it to "l".
  */
     static void
 get_framelayout(frame_T *fr, list_T *l, int outer)
@@ -281,7 +281,11 @@ get_framelayout(frame_T *fr, list_T *l, int outer)
 	fr_list = list_alloc();
 	if (fr_list == NULL)
 	    return;
-	list_append_list(l, fr_list);
+	if (list_append_list(l, fr_list) == FAIL)
+	{
+	    vim_free(fr_list);
+	    return;
+	}
     }
 
     if (fr->fr_layout == FR_LEAF)
@@ -300,7 +304,12 @@ get_framelayout(frame_T *fr, list_T *l, int outer)
 	win_list = list_alloc();
 	if (win_list == NULL)
 	    return;
-	list_append_list(fr_list, win_list);
+	if (list_append_list(fr_list, win_list) == FAIL)
+	{
+	    vim_free(win_list);
+	    return;
+	}
+
 	child = fr->fr_child;
 	while (child != NULL)
 	{

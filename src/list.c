@@ -1076,8 +1076,12 @@ list2items(typval_T *argvars, typval_T *rettv)
 
 	if (l2 == NULL)
 	    break;
-	if (list_append_list(rettv->vval.v_list, l2) == FAIL
-		|| list_append_number(l2, idx) == FAIL
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    break;
+	}
+	if (list_append_number(l2, idx) == FAIL
 		|| list_append_tv(l2, &li->li_tv) == FAIL)
 	    break;
     }
@@ -1108,8 +1112,12 @@ string2items(typval_T *argvars, typval_T *rettv)
 	l2 = list_alloc();
 	if (l2 == NULL)
 	    break;
-	if (list_append_list(rettv->vval.v_list, l2) == FAIL
-		|| list_append_number(l2, idx) == FAIL
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    break;
+	}
+	if (list_append_number(l2, idx) == FAIL
 		|| list_append_string(l2, p, len) == FAIL)
 	    break;
 	p += len;

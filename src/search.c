@@ -4748,8 +4748,7 @@ fuzzy_match_in_list(
 		if (items[i].score == SCORE_NONE)
 		    break;
 		if (items[i].lmatchpos != NULL
-			&& list_append_list(retlist, items[i].lmatchpos)
-								== FAIL)
+		      && list_append_list(retlist, items[i].lmatchpos) == FAIL)
 		    goto done;
 	    }
 
@@ -4869,17 +4868,26 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	if (l == NULL)
 	    goto done;
 	if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	{
+	    vim_free(l);
 	    goto done;
+	}
 	l = list_alloc();
 	if (l == NULL)
 	    goto done;
 	if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	{
+	    vim_free(l);
 	    goto done;
+	}
 	l = list_alloc();
 	if (l == NULL)
 	    goto done;
 	if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	{
+	    vim_free(l);
 	    goto done;
+	}
     }
 
     fuzzy_match_in_list(argvars[0].vval.v_list, tv_get_string(&argvars[1]),

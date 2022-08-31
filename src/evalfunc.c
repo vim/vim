@@ -4811,9 +4811,12 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
     l = list_alloc();
     if (l == NULL)
 	return;
-
     if (list_append_list(rettv->vval.v_list, l) == FAIL)
+    {
+	vim_free(l);
 	return;
+    }
+
     /*
      * The current window change list index tracks only the position for the
      * current buffer. For other buffers use the stored index for the current
@@ -5045,9 +5048,12 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
     l = list_alloc();
     if (l == NULL)
 	return;
-
     if (list_append_list(rettv->vval.v_list, l) == FAIL)
+    {
+	vim_free(l);
 	return;
+    }
+
     list_append_number(rettv->vval.v_list, (varnumber_T)wp->w_jumplistidx);
 
     for (i = 0; i < wp->w_jumplistlen; ++i)
