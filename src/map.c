@@ -2658,7 +2658,10 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
     orig_rhs = rhs;
-    rhs = replace_termcodes(rhs, &arg_buf,
+    if (STRICMP(rhs, "<nop>") == 0)	// "<Nop>" means nothing
+	rhs = (char_u *)"";
+    else
+	rhs = replace_termcodes(rhs, &arg_buf,
 					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
     noremap = dict_get_number(d, "noremap") ? REMAP_NONE: 0;
