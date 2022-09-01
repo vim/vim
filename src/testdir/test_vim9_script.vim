@@ -2011,6 +2011,13 @@ def Test_echoconsole_cmd()
   # output goes anywhere
 enddef
 
+def Test_echowindow_cmd()
+  var local = 'local'
+  echowindow 'something' local # comment
+  # output goes in message window
+  popup_clear()
+enddef
+
 def Test_for_outside_of_function()
   var lines =<< trim END
     vim9script

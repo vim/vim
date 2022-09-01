@@ -3251,10 +3251,13 @@ compile_def_function(
 
 	    case CMD_echo:
 	    case CMD_echon:
-	    case CMD_execute:
-	    case CMD_echomsg:
-	    case CMD_echoerr:
 	    case CMD_echoconsole:
+	    case CMD_echoerr:
+	    case CMD_echomsg:
+#ifdef HAS_MESSAGE_WINDOW
+	    case CMD_echowindow:
+#endif
+	    case CMD_execute:
 		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
 		    break;
 

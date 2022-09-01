@@ -2274,6 +2274,8 @@ def s:Echomsg()
   echomsg 'some' 'message'
   echoconsole 'nothing'
   echoerr 'went' .. 'wrong'
+  var local = 'window'
+  echowin 'in' local
 enddef
 
 def Test_disassemble_echomsg()
@@ -2289,7 +2291,14 @@ def Test_disassemble_echomsg()
         "echoerr 'went' .. 'wrong'\\_s*" ..
         '\d PUSHS "wentwrong"\_s*' ..
         '\d ECHOERR 1\_s*' ..
-        '\d RETURN void',
+        "var local = 'window'\\_s*" ..
+        '\d\+ PUSHS "window"\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        "echowin 'in' local\\_s*" ..
+        '\d\+ PUSHS "in"\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ ECHOWINDOW 2\_s*' ..
+        '\d\+ RETURN void',
         res)
 enddef
 

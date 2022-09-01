@@ -55,6 +55,7 @@ void ex_cd(exarg_T *eap);
 void do_sleep(long msec, int hide_cursor);
 void ex_may_print(exarg_T *eap);
 void ex_redraw(exarg_T *eap);
+void redraw_cmd(int clear);
 int vim_mkdir_emsg(char_u *name, int prot);
 FILE *open_exfile(char_u *fname, int forceit, char *mode);
 void update_topline_cursor(void);

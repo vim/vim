@@ -1735,6 +1735,10 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 	    generate_MULT_EXPR(cctx, ISN_EXECUTE, count);
 	else if (cmdidx == CMD_echomsg)
 	    generate_MULT_EXPR(cctx, ISN_ECHOMSG, count);
+#ifdef HAS_MESSAGE_WINDOW
+	else if (cmdidx == CMD_echowindow)
+	    generate_MULT_EXPR(cctx, ISN_ECHOWINDOW, count);
+#endif
 	else if (cmdidx == CMD_echoconsole)
 	    generate_MULT_EXPR(cctx, ISN_ECHOCONSOLE, count);
 	else

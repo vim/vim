@@ -2858,10 +2858,12 @@ exec_instructions(ectx_T *ectx)
 
 	    // :execute {string} ...
 	    // :echomsg {string} ...
+	    // :echowindow {string} ...
 	    // :echoconsole {string} ...
 	    // :echoerr {string} ...
 	    case ISN_EXECUTE:
 	    case ISN_ECHOMSG:
+	    case ISN_ECHOWINDOW:
 	    case ISN_ECHOCONSOLE:
 	    case ISN_ECHOERR:
 		{
@@ -2932,6 +2934,14 @@ exec_instructions(ectx_T *ectx)
 				msg_attr(ga.ga_data, echo_attr);
 				out_flush();
 			    }
+#ifdef HAS_MESSAGE_WINDOW
+			    else if (iptr->isn_type == ISN_ECHOWINDOW)
+			    {
+				start_echowindow();
+				msg_attr(ga.ga_data, echo_attr);
+				end_echowindow();
+			    }
+#endif
 			    else if (iptr->isn_type == ISN_ECHOCONSOLE)
 			    {
 				ui_write(ga.ga_data, (int)STRLEN(ga.ga_data),
@@ -5568,6 +5578,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_ECHOMSG:
 		smsg("%s%4d ECHOMSG %lld", pfx, current,
+					  (varnumber_T)(iptr->isn_arg.number));
+		break;
+	    case ISN_ECHOWINDOW:
+		smsg("%s%4d ECHOWINDOW %lld", pfx, current,
 					  (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOCONSOLE:

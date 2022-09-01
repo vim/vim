@@ -4529,6 +4529,31 @@ popup_hide_message_win(void)
 	popup_hide(message_win);
 }
 
+/*
+ * Invoked before outputting a message for ":echowindow".
+ */
+    void
+start_echowindow(void)
+{
+    in_echowindow = TRUE;
+}
+
+/*
+ * Invoked after outputting a message for ":echowindow".
+ */
+    void
+end_echowindow(void)
+{
+    // show the message window now
+    redraw_cmd(FALSE);
+
+    // do not overwrite messages
+    // TODO: only for message window
+    msg_didout = TRUE;
+    if (msg_col == 0)
+	msg_col = 1;
+    in_echowindow = FALSE;
+}
 #endif
 
 /*

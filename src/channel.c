@@ -2731,12 +2731,8 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     }
     else if (STRCMP(cmd, "redraw") == 0)
     {
-	exarg_T ea;
-
 	ch_log(channel, "redraw");
-	CLEAR_FIELD(ea);
-	ea.forceit = *arg != NUL;
-	ex_redraw(&ea);
+	redraw_cmd(*arg != NUL);
 	showruler(FALSE);
 	setcursor();
 	out_flush_cursor(TRUE, FALSE);

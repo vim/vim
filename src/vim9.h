@@ -25,6 +25,7 @@ typedef enum {
     ISN_EXECUTE,    // :execute with isn_arg.number items on top of stack
     ISN_ECHOMSG,    // :echomsg with isn_arg.number items on top of stack
     ISN_ECHOCONSOLE, // :echoconsole with isn_arg.number items on top of stack
+    ISN_ECHOWINDOW, // :echowindow with isn_arg.number items on top of stack
     ISN_ECHOERR,    // :echoerr with isn_arg.number items on top of stack
     ISN_RANGE,	    // compute range from isn_arg.string, push to stack
     ISN_SUBSTITUTE, // :s command with expression
