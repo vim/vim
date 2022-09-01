@@ -1212,13 +1212,20 @@ endfunc
 
 " Move the mouse to the top-left in preparation for mouse events
 func PrepareForMouseEvent(args)
-  call extend(a:args, #{row: 1, col:1})
+  call extend(a:args, #{row: 1, col: 1})
   call test_gui_event('mouse', a:args)
+  let g:eventlist = []
   call feedkeys('', 'Lx!')
-  " on MS-Windows the event may have a slight delay
-  if has('win32')
-    sleep 20m
-  endif
+
+  " Wait a bit for the event.  I may not come if the mouse didn't move, wait up
+  " to 100 msec.
+  for n in range(10)
+    if len(g:eventlist) > 0
+      break
+    endif
+    sleep 10m
+  endfor
+  let g:eventlist = []
 endfunc
 
 func MouseWasMoved()
@@ -1229,7 +1236,7 @@ endfunc
 func Test_gui_mouse_move_event()
   let args = #{move: 1, button: 0, multiclick: 0, modifiers: 0}
 
-  " by default, does not generate mouse move events
+  " by default, no mouse move events are generated
   set mousemev&
   call assert_false(&mousemev)
 
@@ -1238,7 +1245,6 @@ func Test_gui_mouse_move_event()
 
   " start at mouse pos (1,1), clear counter
   call PrepareForMouseEvent(args)
-  let g:eventlist = []
 
   call extend(args, #{row: 3, col: 30, cell: v:true})
   call test_gui_event('mouse', args)
@@ -1248,13 +1254,12 @@ func Test_gui_mouse_move_event()
   call test_gui_event('mouse', args)
   call feedkeys('', 'Lx!')
 
-  " no events since mousemev off
+  " no events since 'mousemev' is off
   call assert_equal([], g:eventlist)
 
   " turn on mouse events and try the same thing
   set mousemev
   call PrepareForMouseEvent(args)
-  let g:eventlist = []
 
   call extend(args, #{row: 3, col: 30, cell: v:true})
   call test_gui_event('mouse', args)
@@ -1274,7 +1279,6 @@ func Test_gui_mouse_move_event()
   " wiggle the mouse around within a screen cell, shouldn't trigger events
   call extend(args, #{cell: v:false})
   call PrepareForMouseEvent(args)
-  let g:eventlist = []
 
   call extend(args, #{row: 1, col: 2, cell: v:false})
   call test_gui_event('mouse', args)
