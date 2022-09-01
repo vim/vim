@@ -1356,6 +1356,8 @@ popup_adjust_position(win_T *wp)
 
     if (wp->w_maxheight > 0)
 	maxheight = wp->w_maxheight;
+    else if (wp->w_popup_pos == POPPOS_BOTTOM)
+	maxheight = cmdline_row - 1;
 
     // start at the desired first line
     if (wp->w_firstline > 0)
@@ -4479,6 +4481,7 @@ popup_get_message_win(void)
 	message_win->w_popup_pos = POPPOS_BOTTOM;
 	message_win->w_wantcol = 1;
 	message_win->w_minwidth = 9999;
+	message_win->w_firstline = -1;
 
 	// no padding, border at the top
 	for (i = 0; i < 4; ++i)

@@ -396,6 +396,11 @@ func Test_echowindow()
         echowindow a:arg
       endfunc
       echowindow 'first line'
+      func ManyMessages()
+        for n in range(20)
+          echowindow 'line' n
+        endfor
+      endfunc
   END
   call writefile(lines, 'XtestEchowindow')
   let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
@@ -406,6 +411,9 @@ func Test_echowindow()
 
   call term_sendkeys(buf, ":call popup_clear()\<CR>")
   call VerifyScreenDump(buf, 'Test_echowindow_3', {})
+
+  call term_sendkeys(buf, ":call ManyMessages()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_4', {})
 
   " clean up
   call StopVimInTerminal(buf)
