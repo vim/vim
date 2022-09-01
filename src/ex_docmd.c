@@ -2455,6 +2455,7 @@ do_one_cmd(
 	    case CMD_final:
 	    case CMD_help:
 	    case CMD_hide:
+	    case CMD_horizontal:
 	    case CMD_ijump:
 	    case CMD_ilist:
 	    case CMD_isearch:

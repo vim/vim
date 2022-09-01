@@ -1443,6 +1443,9 @@ add_win_cmd_modifers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
     // :vertical
     if (cmod->cmod_split & WSP_VERT)
 	result += add_cmd_modifier(buf, "vertical", multi_mods);
+    // :horizontal
+    if (cmod->cmod_split & WSP_HOR)
+	result += add_cmd_modifier(buf, "horizontal", multi_mods);
     return result;
 }
 
