@@ -2245,6 +2245,7 @@ delete_instr(isn_T *isn)
 	case ISN_ECHOCONSOLE:
 	case ISN_ECHOERR:
 	case ISN_ECHOMSG:
+	case ISN_ECHOWINDOW:
 	case ISN_ENDTRY:
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
