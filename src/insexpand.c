@@ -2930,9 +2930,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     if (!undo_allowed())
 	return;
 
-    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-	emsg(_(e_invalid_argument));
-    else
+    if (check_for_nonnull_list_arg(argvars, 1) != FAIL)
     {
 	startcol = (int)tv_get_number_chk(&argvars[0], NULL);
 	if (startcol > 0)
@@ -3143,11 +3141,8 @@ f_complete_info(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	if (argvars[0].v_type != VAR_LIST)
-	{
-	    emsg(_(e_list_required));
+	if (check_for_list_arg(argvars, 0) == FAIL)
 	    return;
-	}
 	what_list = argvars[0].vval.v_list;
     }
     get_complete_info(what_list, rettv->vval.v_dict);

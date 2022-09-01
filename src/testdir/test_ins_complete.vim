@@ -673,14 +673,14 @@ func Test_complete_func_error()
   func ListColors()
     call complete(col('.'), "blue")
   endfunc
-  call assert_fails('exe "normal i\<C-R>=ListColors()\<CR>"', 'E474:')
+  call assert_fails('exe "normal i\<C-R>=ListColors()\<CR>"', 'E1211:')
   func ListMonths()
     call complete(col('.'), test_null_list())
   endfunc
-  call assert_fails('exe "normal i\<C-R>=ListMonths()\<CR>"', 'E474:')
+  call assert_fails('exe "normal i\<C-R>=ListMonths()\<CR>"', 'E1298:')
   delfunc ListColors
   delfunc ListMonths
-  call assert_fails('call complete_info({})', 'E714:')
+  call assert_fails('call complete_info({})', 'E1211:')
   call assert_equal([], complete_info(['items']).items)
 endfunc
 

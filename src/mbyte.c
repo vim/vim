@@ -5535,14 +5535,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     size_t	    cw_table_size_save;
     char	    *error = NULL;
 
-    if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
+    if (check_for_nonnull_list_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_LIST || argvars[0].vval.v_list == NULL)
-    {
-	emsg(_(e_list_required));
-	return;
-    }
     l = argvars[0].vval.v_list;
     if (l->lv_len == 0)
     {

@@ -381,7 +381,7 @@ func Test_prop_add_list()
   call assert_fails('call prop_add_list(#{type: "one"}, [[2, 2, 2, 2], [3, 20, 3, 22]])', 'E964:')
   call assert_fails('eval #{type: "one"}->prop_add_list([[2, 2, 2, 2], [3, 20, 3, 22]])', 'E964:')
   call assert_fails('call prop_add_list(test_null_dict(), [[2, 2, 2]])', 'E965:')
-  call assert_fails('call prop_add_list(#{type: "one"}, test_null_list())', 'E714:')
+  call assert_fails('call prop_add_list(#{type: "one"}, test_null_list())', 'E1298:')
   call assert_fails('call prop_add_list(#{type: "one"}, [test_null_list()])', 'E714:')
   call DeletePropTypes()
   bw!
