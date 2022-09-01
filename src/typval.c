@@ -509,6 +509,23 @@ check_for_list_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a non-NULL list.
+ */
+    int
+check_for_nonnull_list_arg(typval_T *args, int idx)
+{
+    if (check_for_list_arg(args, idx) == FAIL)
+	return FAIL;
+
+    if (args[idx].vval.v_list == NULL)
+    {
+	semsg(_(e_non_null_list_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Check for an optional list argument at 'idx'
  */
     int

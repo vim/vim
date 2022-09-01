@@ -2660,11 +2660,8 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     // Process the List of sign attributes
     FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
@@ -2888,11 +2885,8 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
     {

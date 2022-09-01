@@ -3235,11 +3235,8 @@ f_call(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
 	return;
 
-    if (argvars[1].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 1) == FAIL)
 	return;
-    }
     if (argvars[1].vval.v_list == NULL)
 	return;
 

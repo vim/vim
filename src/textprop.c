@@ -348,11 +348,8 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	    || check_for_list_arg(argvars, 1) == FAIL)
 	return;
 
-    if (argvars[1].vval.v_list == NULL)
-    {
-	emsg(_(e_list_required));
+    if (check_for_nonnull_list_arg(argvars, 1) == FAIL)
 	return;
-    }
 
     dict = argvars[0].vval.v_dict;
     if (dict == NULL || !dict_has_key(dict, "type"))

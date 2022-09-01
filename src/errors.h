@@ -3320,3 +3320,5 @@ EXTERN char e_can_only_use_left_padding_when_column_is_zero[]
 #endif
 EXTERN char e_non_null_dict_required_for_argument_nr[]
 	INIT(= N_("E1297: Non-NULL Dictionary required for argument %d"));
+EXTERN char e_non_null_list_required_for_argument_nr[]
+	INIT(= N_("E1298: Non-NULL List required for argument %d"));

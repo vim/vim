@@ -1603,19 +1603,20 @@ readdir_checkitem(void *context, void *item)
     return checkitem_common(context, name, NULL);
 }
 
+/*
+ * Process the keys in the Dict argument to the readdir() and readdirex()
+ * functions.  Assumes the Dict argument is the 3rd argument.
+ */
     static int
-readdirex_dict_arg(typval_T *tv, int *cmp)
+readdirex_dict_arg(typval_T *argvars, int *cmp)
 {
     char_u     *compare;
 
-    if (tv->v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_nonnull_dict_arg(argvars, 2) == FAIL)
 	return FAIL;
-    }
 
-    if (dict_has_key(tv->vval.v_dict, "sort"))
-	compare = dict_get_string(tv->vval.v_dict, "sort", FALSE);
+    if (dict_has_key(argvars[2].vval.v_dict, "sort"))
+	compare = dict_get_string(argvars[2].vval.v_dict, "sort", FALSE);
     else
     {
 	semsg(_(e_dictionary_key_str_required), "sort");
@@ -1660,7 +1661,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     expr = &argvars[1];
 
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
-	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	    readdirex_dict_arg(argvars, &sort) == FAIL)
 	return;
 
     ret = readdir_core(&ga, path, FALSE, (void *)expr,
@@ -1713,7 +1714,7 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
     expr = &argvars[1];
 
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
-	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	    readdirex_dict_arg(argvars, &sort) == FAIL)
 	return;
 
     ret = readdir_core(&ga, path, TRUE, (void *)expr,

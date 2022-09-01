@@ -1087,11 +1087,8 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 		|| check_for_opt_number_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
     win = get_optional_window(argvars, 1);
     if (win == NULL)
 	return;

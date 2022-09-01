@@ -2244,9 +2244,12 @@ func Test_readdir_sort()
   exe "lang collate" collate
 
   " 5) Errors
-  call assert_fails('call readdir(dir, 1, 1)', 'E715:')
+  call assert_fails('call readdir(dir, 1, 1)', 'E1206:')
   call assert_fails('call readdir(dir, 1, #{sorta: 1})')
+  call assert_fails('call readdir(dir, 1, test_null_dict())', 'E1297:')
+  call assert_fails('call readdirex(dir, 1, 1)', 'E1206:')
   call assert_fails('call readdirex(dir, 1, #{sorta: 1})')
+  call assert_fails('call readdirex(dir, 1, test_null_dict())', 'E1297:')
 
   " 6) ignore other values in dict
   let files = readdir(dir, '1', #{sort: 'c'})
@@ -2285,7 +2288,7 @@ endfunc
 func Test_call()
   call assert_equal(3, call('len', [123]))
   call assert_equal(3, 'len'->call([123]))
-  call assert_fails("call call('len', 123)", 'E714:')
+  call assert_fails("call call('len', 123)", 'E1211:')
   call assert_equal(0, call('', []))
   call assert_equal(0, call('len', test_null_list()))
 
@@ -2580,7 +2583,7 @@ func Test_range()
 
   " list2str()
   call assert_equal('ABC', list2str(range(65, 67)))
-  call assert_fails('let s = list2str(5)', 'E474:')
+  call assert_fails('let s = list2str(5)', 'E1211:')
 
   " lock()
   let thelist = range(5)
