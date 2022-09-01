@@ -1397,7 +1397,6 @@ scrollbackline_pos_in_buf(term_T *term, int row, linenr_T *lnum, int *start_col,
     int         calc_col = 0;
     int         i;
 
-    row = row + term->tl_scrollback_scrolled;
     if (row < 0 || row >= term->tl_scrollback.ga_len)
 	return;
 
@@ -2446,7 +2445,7 @@ term_enter_normal_mode(void)
     // terminal.
     lnum = term->tl_buffer_scrolled + 1 + term->tl_cursor_pos.row;
     col = term->tl_cursor_pos.col;
-    scrollbackline_pos_in_buf(term, term->tl_cursor_pos.row, &lnum, &col, NULL);
+    scrollbackline_pos_in_buf(term, term->tl_cursor_pos.row + term->tl_scrollback_scrolled, &lnum, &col, NULL);
 
     curwin->w_cursor.lnum = lnum;
     check_cursor();
@@ -6472,7 +6471,7 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
 	int	  offset = 0;
 	sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data + term->tl_scrollback_scrolled + row;
 
-	scrollbackline_pos_in_buf(term, row, &lnum, NULL, &offset);
+	scrollbackline_pos_in_buf(term, row + term->tl_scrollback_scrolled, &lnum, NULL, &offset);
 
 	// vterm is finished, get the text from the buffer
 	if (lnum > 0 && lnum <= buf->b_ml.ml_line_count)
@@ -6737,7 +6736,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	linenr_T  lnum = 0;
 	int	  offset = 0;
 
-	scrollbackline_pos_in_buf(term, pos.row, &lnum, NULL, &offset);
+	scrollbackline_pos_in_buf(term, sb_row, &lnum, NULL, &offset);
 
 	if (sb_row >= term->tl_scrollback.ga_len || lnum <= 0 || lnum > buf->b_ml.ml_line_count)
 	    return;
