@@ -878,6 +878,23 @@ export def FTsig()
   endif
 enddef
 
+# This function checks the first 100 lines of files matching "*.sil" to
+# resolve detection between Swift Intermediate Language and SILE.
+export def FTsil()
+  for lnum in range(1, [line('$'), 100]->min())
+    var line: string = getline(lnum)
+    if line =~ '^\s*[\\%]'
+      setf sile
+      return
+    elseif line =~ '^\s*\S'
+      setf sil
+      return
+    endif
+  endfor
+  # no clue, default to "sil"
+  setf sil
+enddef
+
 export def FTsys()
   if exists("g:filetype_sys")
     exe "setf " .. g:filetype_sys
