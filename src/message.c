@@ -1443,7 +1443,7 @@ msg_start(void)
     }
 
 #ifdef FEAT_EVAL
-    if (need_clr_eos || in_echowindow)
+    if (need_clr_eos)
     {
 	// Halfway an ":echo" command and getting an (error) message: clear
 	// any text from the command.
@@ -3646,6 +3646,10 @@ msg_clr_eos(void)
     void
 msg_clr_eos_force(void)
 {
+#ifdef HAS_MESSAGE_WINDOW
+    if (in_echowindow)
+	return;  // messages go into a popup
+#endif
     if (msg_use_printf())
     {
 	if (full_screen)	// only when termcap codes are valid
