@@ -1,11 +1,11 @@
 " Vim syntax file
-" Language:	Lua 4.0, Lua 5.0, Lua 5.1 and Lua 5.2
-" Maintainer:	Marcus Aurelius Farias <masserahguard-lua 'at' yahoo com>
-" First Author:	Carlos Augusto Teixeira Mendes <cmendes 'at' inf puc-rio br>
-" Last Change:	2022 Mar 31
-" Options:	lua_version = 4 or 5
-"		lua_subversion = 0 (4.0, 5.0) or 1 (5.1) or 2 (5.2)
-"		default 5.2
+" Language:     Lua 4.0, Lua 5.0, Lua 5.1 and Lua 5.2
+" Maintainer:   Marcus Aurelius Farias <masserahguard-lua 'at' yahoo com>
+" First Author: Carlos Augusto Teixeira Mendes <cmendes 'at' inf puc-rio br>
+" Last Change:  2022 Mar 31
+" Options:      lua_version = 4 or 5
+"               lua_subversion = 0 (4.0, 5.0) or 1 (5.1) or 2 (5.2)
+"               default 5.2
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -333,29 +333,29 @@ endif
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
 
-hi def link luaStatement		Statement
-hi def link luaRepeat		Repeat
-hi def link luaFor			Repeat
-hi def link luaString		String
-hi def link luaString2		String
-hi def link luaStringDelimiter	luaString
-hi def link luaNumber		Number
-hi def link luaOperator		Operator
-hi def link luaIn			Operator
-hi def link luaConstant		Constant
-hi def link luaCond		Conditional
-hi def link luaElse		Conditional
-hi def link luaFunction		Function
-hi def link luaComment		Comment
-hi def link luaCommentDelimiter	luaComment
-hi def link luaTodo		Todo
-hi def link luaTable		Structure
-hi def link luaError		Error
-hi def link luaParenError		Error
-hi def link luaBraceError		Error
-hi def link luaSpecial		SpecialChar
-hi def link luaFunc		Identifier
-hi def link luaLabel		Label
+hi def link luaStatement        Statement
+hi def link luaRepeat           Repeat
+hi def link luaFor              Repeat
+hi def link luaString           String
+hi def link luaString2          String
+hi def link luaStringDelimiter  luaString
+hi def link luaNumber           Number
+hi def link luaOperator         Operator
+hi def link luaIn               Operator
+hi def link luaConstant         Constant
+hi def link luaCond             Conditional
+hi def link luaElse             Conditional
+hi def link luaFunction         Function
+hi def link luaComment          Comment
+hi def link luaCommentDelimiter luaComment
+hi def link luaTodo             Todo
+hi def link luaTable            Structure
+hi def link luaError            Error
+hi def link luaParenError       Error
+hi def link luaBraceError       Error
+hi def link luaSpecial          SpecialChar
+hi def link luaFunc             Identifier
+hi def link luaLabel            Label
 
 
 let b:current_syntax = "lua"
