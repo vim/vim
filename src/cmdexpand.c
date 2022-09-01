@@ -1776,6 +1776,7 @@ set_context_by_cmdname(
 	case CMD_folddoclosed:
 	case CMD_folddoopen:
 	case CMD_hide:
+	case CMD_horizontal:
 	case CMD_keepalt:
 	case CMD_keepjumps:
 	case CMD_keepmarks:
