@@ -612,6 +612,8 @@ win_line(
     proptype_T  *text_prop_type = NULL;
     int		extra_for_textprop = FALSE; // wlv.n_extra set for textprop
     int		text_prop_attr = 0;
+    int		text_prop_attr_comb = 0;  // text_prop_attr combined with
+					  // syntax_attr
     int		text_prop_id = 0;	// active property ID
     int		text_prop_flags = 0;
     int		text_prop_follows = FALSE;  // another text prop to display
@@ -1676,7 +1678,7 @@ win_line(
 			--pi;
 # ifdef FEAT_LINEBREAK
 			// not exactly right but should work in most cases
-			if (in_linebreak && syntax_attr == text_prop_attr)
+			if (in_linebreak && syntax_attr == text_prop_attr_comb)
 			    syntax_attr = 0;
 # endif
 		    }
@@ -1716,6 +1718,7 @@ win_line(
 		if (wlv.n_extra == 0 || !extra_for_textprop)
 		{
 		    text_prop_attr = 0;
+		    text_prop_attr_comb = 0;
 		    text_prop_flags = 0;
 		    text_prop_type = NULL;
 		    text_prop_id = 0;
@@ -1789,6 +1792,7 @@ win_line(
 			    saved_search_attr = search_attr;
 			    search_attr = 0;	// restore when n_extra is zero
 			    text_prop_attr = 0;
+			    text_prop_attr_comb = 0;
 			    if (*ptr == NUL)
 				// don't combine char attr after EOL
 				text_prop_flags &= ~PT_FLAG_COMBINE;
@@ -1974,6 +1978,7 @@ win_line(
 		    syntax_attr = hl_combine_attr(syntax_attr, text_prop_attr);
 		else
 		    syntax_attr = text_prop_attr;
+		text_prop_attr_comb = syntax_attr;
 	    }
 # endif
 #endif

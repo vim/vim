@@ -1925,12 +1925,21 @@ func Test_prop_in_linebreak()
   let lines =<< trim END
     set breakindent linebreak breakat+=]
     call printf('%s]%s', repeat('x', 50), repeat('x', 70))->setline(1)
-    call prop_type_add('test', #{highlight: 'ErrorMsg'})
+    call prop_type_add('test', #{highlight: 'MatchParen'})
     call prop_add(1, 51, #{length: 1, type: 'test'})
+    func AddMatch()
+      syntax on
+      syntax match xTest /.*/
+      hi link xTest Comment
+      set signcolumn=yes
+    endfunc
   END
   call writefile(lines, 'XscriptPropLinebreak')
   let buf = RunVimInTerminal('-S XscriptPropLinebreak', #{rows: 10})
-  call VerifyScreenDump(buf, 'Test_prop_linebreak', {})
+  call VerifyScreenDump(buf, 'Test_prop_linebreak_1', {})
+
+  call term_sendkeys(buf, ":call AddMatch()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_linebreak_2', {})
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropLinebreak')
