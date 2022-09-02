@@ -3088,17 +3088,22 @@ expand_wildcards_eval(
     int		ret = FAIL;
     char_u	*eval_pat = NULL;
     char_u	*exp_pat = *pat;
-    char      *ignored_msg;
+    char	*ignored_msg;
     int		usedlen;
+    int		is_cur_alt_file = *exp_pat == '%' || *exp_pat == '#';
+    int		star_follows = FALSE;
 
-    if (*exp_pat == '%' || *exp_pat == '#' || *exp_pat == '<')
+    if (is_cur_alt_file || *exp_pat == '<')
     {
 	++emsg_off;
 	eval_pat = eval_vars(exp_pat, exp_pat, &usedlen,
 					       NULL, &ignored_msg, NULL, TRUE);
 	--emsg_off;
 	if (eval_pat != NULL)
+	{
+	    star_follows = STRCMP(exp_pat + usedlen, "*") == 0;
 	    exp_pat = concat_str(eval_pat, exp_pat + usedlen);
+	}
     }
 
     if (exp_pat != NULL)
@@ -3106,6 +3111,20 @@ expand_wildcards_eval(
 
     if (eval_pat != NULL)
     {
+	if (*num_file == 0 && is_cur_alt_file && star_follows)
+	{
+	    // Expanding "%" or "#" and the file does not exist: Add the
+	    // pattern anyway (without the star) so that this works for remote
+	    // files and non-file buffer names.
+	    *file = ALLOC_ONE(char_u *);
+	    if (*file != NULL)
+	    {
+		**file = eval_pat;
+		eval_pat = NULL;
+		*num_file = 1;
+		ret = OK;
+	    }
+	}
 	vim_free(exp_pat);
 	vim_free(eval_pat);
     }
