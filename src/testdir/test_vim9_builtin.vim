@@ -1961,9 +1961,9 @@ enddef
 
 def Test_gettext()
   v9.CheckDefAndScriptFailure(['gettext(10)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  v9.CheckDefExecAndScriptFailure(['gettext("")'], 'E475: Invalid argument')
+  v9.CheckDefExecAndScriptFailure(['gettext("")'], 'E1175: Non-empty string required for argument 1')
   assert_equal('abc', gettext("abc"))
-  assert_fails('gettext("")', 'E475:')
+  assert_fails('gettext("")', 'E1175:')
 enddef
 
 def Test_getwininfo()

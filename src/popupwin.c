@@ -2769,9 +2769,7 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
     wp = find_popup_win(id);
     if (wp != NULL)
     {
-	if (argvars[1].v_type != VAR_STRING && argvars[1].v_type != VAR_LIST)
-	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
-	else
+	if (check_for_string_or_list_arg(argvars, 1) != FAIL)
 	{
 	    popup_set_buffer_text(wp->w_buffer, argvars[1]);
 	    redraw_win_later(wp, UPD_NOT_VALID);

@@ -805,19 +805,14 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+    if (check_for_opt_number_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	if (argvars[0].v_type != VAR_NUMBER)
-	    emsg(_(e_number_expected));
-	else
-	{
-	    timer = find_timer((int)tv_get_number(&argvars[0]));
-	    if (timer != NULL)
-		add_timer_info(rettv, timer);
-	}
+	timer = find_timer((int)tv_get_number(&argvars[0]));
+	if (timer != NULL)
+	    add_timer_info(rettv, timer);
     }
     else
 	add_timer_info_all(rettv);
@@ -909,14 +904,9 @@ f_timer_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
     timer_T *timer;
 
-    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+    if (check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_NUMBER)
-    {
-	emsg(_(e_number_expected));
-	return;
-    }
     timer = find_timer((int)tv_get_number(&argvars[0]));
     if (timer != NULL)
 	stop_timer(timer);

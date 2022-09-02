@@ -960,11 +960,8 @@ string_reduce(
 	    return;
 	p += STRLEN(rettv->vval.v_string);
     }
-    else if (argvars[2].v_type != VAR_STRING)
-    {
-	semsg(_(e_string_expected_for_argument_nr), 3);
+    else if (check_for_string_arg(argvars, 2) == FAIL)
 	return;
-    }
     else
 	copy_tv(&argvars[2], rettv);
 
@@ -1047,20 +1044,10 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
+    if ((check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL
 		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
 	return;
-
-    if (argvars[0].v_type != VAR_STRING || argvars[1].v_type != VAR_NUMBER
-	    || (argvars[2].v_type != VAR_UNKNOWN
-					   && argvars[2].v_type != VAR_NUMBER
-					   && argvars[2].v_type != VAR_BOOL))
-    {
-	emsg(_(e_invalid_argument));
-	return;
-    }
 
     str = tv_get_string_chk(&argvars[0]);
     idx = tv_get_number_chk(&argvars[1], NULL);
@@ -1783,11 +1770,8 @@ f_trim(typval_T *argvars, typval_T *rettv)
     if (head == NULL)
 	return;
 
-    if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_STRING)
-    {
-	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
+    if (check_for_opt_string_arg(argvars, 1) == FAIL)
 	return;
-    }
 
     if (argvars[1].v_type == VAR_STRING)
     {

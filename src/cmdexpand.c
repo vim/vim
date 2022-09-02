@@ -3679,11 +3679,8 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	return;
 
     pat = tv_get_string(&argvars[0]);
-    if (argvars[1].v_type != VAR_STRING)
-    {
-	semsg(_(e_invalid_argument_str), "type must be a string");
+    if (check_for_string_arg(argvars, 1) == FAIL)
 	return;
-    }
     type = tv_get_string(&argvars[1]);
 
     if (argvars[2].v_type != VAR_UNKNOWN)

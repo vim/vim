@@ -2849,23 +2849,12 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
+    if ((check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_STRING)
-    {
-	emsg(_(e_invalid_argument));
-	return;
-    }
-
     if (argvars[1].v_type != VAR_UNKNOWN)
-    {
-	if (check_for_dict_arg(argvars, 1) == FAIL)
-	    return;
 	dict = argvars[1].vval.v_dict;
-    }
 
     rettv->vval.v_number = sign_unplace_from_dict(&argvars[0], dict);
 }
