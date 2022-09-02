@@ -848,7 +848,7 @@ func Test_breakindent20_list()
   let lines = s:screen_lines2(1, 6, 20)
   call s:compare_lines(expect, lines)
 
-  " check breakindent works if breakindntopt=list:-1
+  " check breakindent works if breakindentopt=list:-1
   " for a non list content
   %delete _
   call setline(1, ['  Congress shall make no law',
