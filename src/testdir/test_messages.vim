@@ -420,5 +420,25 @@ func Test_echowindow()
   call delete('XtestEchowindow')
 endfunc
 
+" messages window should not be used while evaluating the :echowin argument
+func Test_echowin_eval()
+  CheckScreendump
+
+  let lines =<< trim END
+      func ShowMessage()
+        echo 123
+        return 'test'
+      endfunc
+      echowindow ShowMessage()
+  END
+  call writefile(lines, 'XtestEchowindow')
+  let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_echowin_eval', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestEchowindow')
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
