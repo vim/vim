@@ -970,20 +970,17 @@ f_test_feedinput(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_test_getvalue(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    char_u *name;
+
+    if (check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_STRING)
-	emsg(_(e_invalid_argument));
-    else
-    {
-	char_u *name = tv_get_string(&argvars[0]);
+    name = tv_get_string(&argvars[0]);
 
-	if (STRCMP(name, (char_u *)"need_fileinfo") == 0)
-	    rettv->vval.v_number = need_fileinfo;
-	else
-	    semsg(_(e_invalid_argument_str), name);
-    }
+    if (STRCMP(name, (char_u *)"need_fileinfo") == 0)
+	rettv->vval.v_number = need_fileinfo;
+    else
+	semsg(_(e_invalid_argument_str), name);
 }
 
 /*
@@ -994,17 +991,12 @@ f_test_option_not_set(typval_T *argvars, typval_T *rettv UNUSED)
 {
     char_u *name = (char_u *)"";
 
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_STRING)
-	emsg(_(e_invalid_argument));
-    else
-    {
-	name = tv_get_string(&argvars[0]);
-	if (reset_option_was_set(name) == FAIL)
-	    semsg(_(e_invalid_argument_str), name);
-    }
+    name = tv_get_string(&argvars[0]);
+    if (reset_option_was_set(name) == FAIL)
+	semsg(_(e_invalid_argument_str), name);
 }
 
 /*
@@ -1017,77 +1009,70 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
     int     val;
     static int save_starting = -1;
 
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_number_arg(argvars, 1) == FAIL))
+    if (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_number_arg(argvars, 1) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_STRING
-	    || (argvars[1].v_type) != VAR_NUMBER)
-	emsg(_(e_invalid_argument));
-    else
-    {
-	name = tv_get_string(&argvars[0]);
-	val = (int)tv_get_number(&argvars[1]);
+    name = tv_get_string(&argvars[0]);
+    val = (int)tv_get_number(&argvars[1]);
 
-	if (STRCMP(name, (char_u *)"redraw") == 0)
-	    disable_redraw_for_testing = val;
-	else if (STRCMP(name, (char_u *)"redraw_flag") == 0)
-	    ignore_redraw_flag_for_testing = val;
-	else if (STRCMP(name, (char_u *)"char_avail") == 0)
-	    disable_char_avail_for_testing = val;
-	else if (STRCMP(name, (char_u *)"starting") == 0)
+    if (STRCMP(name, (char_u *)"redraw") == 0)
+	disable_redraw_for_testing = val;
+    else if (STRCMP(name, (char_u *)"redraw_flag") == 0)
+	ignore_redraw_flag_for_testing = val;
+    else if (STRCMP(name, (char_u *)"char_avail") == 0)
+	disable_char_avail_for_testing = val;
+    else if (STRCMP(name, (char_u *)"starting") == 0)
+    {
+	if (val)
 	{
-	    if (val)
-	    {
-		if (save_starting < 0)
-		    save_starting = starting;
-		starting = 0;
-	    }
-	    else
-	    {
-		starting = save_starting;
-		save_starting = -1;
-	    }
-	}
-	else if (STRCMP(name, (char_u *)"nfa_fail") == 0)
-	    nfa_fail_for_testing = val;
-	else if (STRCMP(name, (char_u *)"no_query_mouse") == 0)
-	    no_query_mouse_for_testing = val;
-	else if (STRCMP(name, (char_u *)"no_wait_return") == 0)
-	    no_wait_return = val;
-	else if (STRCMP(name, (char_u *)"ui_delay") == 0)
-	    ui_delay_for_testing = val;
-	else if (STRCMP(name, (char_u *)"term_props") == 0)
-	    reset_term_props_on_termresponse = val;
-	else if (STRCMP(name, (char_u *)"vterm_title") == 0)
-	    disable_vterm_title_for_testing = val;
-	else if (STRCMP(name, (char_u *)"uptime") == 0)
-	    override_sysinfo_uptime = val;
-	else if (STRCMP(name, (char_u *)"alloc_lines") == 0)
-	    ml_get_alloc_lines = val;
-	else if (STRCMP(name, (char_u *)"autoload") == 0)
-	    override_autoload = val;
-	else if (STRCMP(name, (char_u *)"ALL") == 0)
-	{
-	    disable_char_avail_for_testing = FALSE;
-	    disable_redraw_for_testing = FALSE;
-	    ignore_redraw_flag_for_testing = FALSE;
-	    nfa_fail_for_testing = FALSE;
-	    no_query_mouse_for_testing = FALSE;
-	    ui_delay_for_testing = 0;
-	    reset_term_props_on_termresponse = FALSE;
-	    override_sysinfo_uptime = -1;
-	    // ml_get_alloc_lines is not reset by "ALL"
-	    if (save_starting >= 0)
-	    {
-		starting = save_starting;
-		save_starting = -1;
-	    }
+	    if (save_starting < 0)
+		save_starting = starting;
+	    starting = 0;
 	}
 	else
-	    semsg(_(e_invalid_argument_str), name);
+	{
+	    starting = save_starting;
+	    save_starting = -1;
+	}
     }
+    else if (STRCMP(name, (char_u *)"nfa_fail") == 0)
+	nfa_fail_for_testing = val;
+    else if (STRCMP(name, (char_u *)"no_query_mouse") == 0)
+	no_query_mouse_for_testing = val;
+    else if (STRCMP(name, (char_u *)"no_wait_return") == 0)
+	no_wait_return = val;
+    else if (STRCMP(name, (char_u *)"ui_delay") == 0)
+	ui_delay_for_testing = val;
+    else if (STRCMP(name, (char_u *)"term_props") == 0)
+	reset_term_props_on_termresponse = val;
+    else if (STRCMP(name, (char_u *)"vterm_title") == 0)
+	disable_vterm_title_for_testing = val;
+    else if (STRCMP(name, (char_u *)"uptime") == 0)
+	override_sysinfo_uptime = val;
+    else if (STRCMP(name, (char_u *)"alloc_lines") == 0)
+	ml_get_alloc_lines = val;
+    else if (STRCMP(name, (char_u *)"autoload") == 0)
+	override_autoload = val;
+    else if (STRCMP(name, (char_u *)"ALL") == 0)
+    {
+	disable_char_avail_for_testing = FALSE;
+	disable_redraw_for_testing = FALSE;
+	ignore_redraw_flag_for_testing = FALSE;
+	nfa_fail_for_testing = FALSE;
+	no_query_mouse_for_testing = FALSE;
+	ui_delay_for_testing = 0;
+	reset_term_props_on_termresponse = FALSE;
+	override_sysinfo_uptime = -1;
+	// ml_get_alloc_lines is not reset by "ALL"
+	if (save_starting >= 0)
+	{
+	    starting = save_starting;
+	    save_starting = -1;
+	}
+    }
+    else
+	semsg(_(e_invalid_argument_str), name);
 }
 
 /*
@@ -1184,13 +1169,10 @@ f_test_garbagecollect_soon(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_test_ignore_error(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_STRING)
-	emsg(_(e_invalid_argument));
-    else
-	ignore_error_for_testing(tv_get_string(&argvars[0]));
+    ignore_error_for_testing(tv_get_string(&argvars[0]));
 }
 
     void
@@ -1271,7 +1253,7 @@ f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_NUMBER || (argvars[1].v_type) != VAR_NUMBER)
+    if (argvars[0].v_type != VAR_NUMBER || argvars[1].v_type != VAR_NUMBER)
     {
 	emsg(_(e_invalid_argument));
 	return;

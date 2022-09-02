@@ -667,11 +667,8 @@ blob_reduce(
 	initial.vval.v_number = blob_get(b, 0);
 	i = 1;
     }
-    else if (argvars[2].v_type != VAR_NUMBER)
-    {
-	emsg(_(e_number_expected));
+    else if (check_for_number_arg(argvars, 2) == FAIL)
 	return;
-    }
     else
     {
 	initial = argvars[2];
