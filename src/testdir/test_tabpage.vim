@@ -768,14 +768,14 @@ endfunc
 func Test_tabpage_close_on_switch()
   tabnew
   tabnew
-  edit Xfile
+  edit Xtabfile
   augroup T2
     au!
-    au BufLeave Xfile 1tabclose
+    au BufLeave Xtabfile 1tabclose
   augroup END
   tabfirst
   call assert_equal(2, tabpagenr())
-  call assert_equal('Xfile', @%)
+  call assert_equal('Xtabfile', @%)
   augroup T2
     au!
   augroup END

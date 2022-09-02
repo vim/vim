@@ -35,9 +35,9 @@ func Test_mkdir_p()
     call assert_report('mkdir(..., "p") failed for an existing directory')
   endtry
   " 'p' doesn't suppress real errors
-  call writefile([], 'Xfile')
-  call assert_fails('call mkdir("Xfile", "p")', 'E739:')
-  call delete('Xfile')
+  call writefile([], 'Xmkdirfile')
+  call assert_fails('call mkdir("Xmkdirfile", "p")', 'E739:')
+  call delete('Xmkdirfile')
   call delete('Xmkdir', 'rf')
   call assert_equal(0, mkdir(test_null_string()))
   call assert_fails('call mkdir([])', 'E730:')

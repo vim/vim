@@ -883,7 +883,7 @@ func Test_write()
   new
   call setline(1, ['L1'])
   set nowrite
-  call assert_fails('write Xfile', 'E142:')
+  call assert_fails('write Xwrfile', 'E142:')
   set write
   close!
 endfunc

@@ -2211,7 +2211,7 @@ def Test_script_local_in_legacy()
   END
   v9.CheckScriptFailure(lines, 'E476:', 1)
 
-  edit! Xfile
+  edit! Xslfile
   lines =<< trim END
       var edit: bool
       legacy edit

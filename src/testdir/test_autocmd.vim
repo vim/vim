@@ -3062,7 +3062,7 @@ func Test_BufDelete_changebuf()
   augroup END
   let save_cpo = &cpo
   set cpo+=f
-  call assert_fails('r Xfile', ['E812:', 'E484:'])
+  call assert_fails('r Xchangebuf', ['E812:', 'E484:'])
   call assert_equal('somefile', @%)
   let &cpo = save_cpo
   augroup TestAuCmd

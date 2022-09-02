@@ -968,11 +968,11 @@ def Test_cnext_works_in_catch()
   var lines =<< trim END
       vim9script
       au BufEnter * eval 1 + 2
-      writefile(['text'], 'Xfile1')
-      writefile(['text'], 'Xfile2')
+      writefile(['text'], 'Xcncfile1')
+      writefile(['text'], 'Xcncfile2')
       var items = [
-          {lnum: 1, filename: 'Xfile1', valid: true},
-          {lnum: 1, filename: 'Xfile2', valid: true}
+          {lnum: 1, filename: 'Xcncfile1', valid: true},
+          {lnum: 1, filename: 'Xcncfile2', valid: true}
         ]
       setqflist([], ' ', {items: items})
       cwindow
@@ -988,17 +988,17 @@ def Test_cnext_works_in_catch()
 
       CnextOrCfirst()
       CnextOrCfirst()
-      writefile([getqflist({idx: 0}).idx], 'Xresult')
+      writefile([getqflist({idx: 0}).idx], 'Xcncresult')
       qall
   END
   writefile(lines, 'XCatchCnext')
   g:RunVim([], [], '--clean -S XCatchCnext')
-  assert_equal(['1'], readfile('Xresult'))
+  assert_equal(['1'], readfile('Xcncresult'))
 
-  delete('Xfile1')
-  delete('Xfile2')
+  delete('Xcncfile1')
+  delete('Xcncfile2')
   delete('XCatchCnext')
-  delete('Xresult')
+  delete('Xcncresult')
 enddef
 
 def Test_throw_skipped()
@@ -2708,7 +2708,7 @@ def Test_vim9_comment()
       '#{something',
       ], 'E1170:')
 
-  split Xfile
+  split Xv9cfile
   v9.CheckScriptSuccess([
       'vim9script',
       'edit #something',
@@ -3544,20 +3544,20 @@ def Test_restoring_cpo()
     mkdir('Xhome')
     var lines =<< trim END
         vim9script
-        writefile(['before: ' .. &cpo], 'Xresult')
+        writefile(['before: ' .. &cpo], 'Xrporesult')
         set cpo+=M
-        writefile(['after: ' .. &cpo], 'Xresult', 'a')
+        writefile(['after: ' .. &cpo], 'Xrporesult', 'a')
     END
     writefile(lines, 'Xhome/.vimrc')
 
     lines =<< trim END
-        call writefile(['later: ' .. &cpo], 'Xresult', 'a')
+        call writefile(['later: ' .. &cpo], 'Xrporesult', 'a')
     END
     writefile(lines, 'Xlegacy')
 
     lines =<< trim END
         vim9script
-        call writefile(['vim9: ' .. &cpo], 'Xresult', 'a')
+        call writefile(['vim9: ' .. &cpo], 'Xrporesult', 'a')
         qa
     END
     writefile(lines, 'Xvim9')
@@ -3570,13 +3570,13 @@ def Test_restoring_cpo()
         'before: aABceFs',
         'after: aABceFsM',
         'later: aABceFsM',
-        'vim9: aABceFs'], readfile('Xresult'))
+        'vim9: aABceFs'], readfile('Xrporesult'))
 
     $HOME = save_HOME
     delete('Xhome', 'rf')
     delete('Xlegacy')
     delete('Xvim9')
-    delete('Xresult')
+    delete('Xrporesult')
   endif
 enddef
 

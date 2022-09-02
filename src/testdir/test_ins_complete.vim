@@ -1226,14 +1226,14 @@ func Test_complete_unreadable_thesaurus_file()
   CheckUnix
   CheckNotRoot
 
-  call writefile(['about', 'above'], 'Xfile')
-  call setfperm('Xfile', '---r--r--')
+  call writefile(['about', 'above'], 'Xunrfile')
+  call setfperm('Xunrfile', '---r--r--')
   new
   set complete=sXfile
   exe "normal! ia\<C-P>"
   call assert_equal('a', getline(1))
   bw!
-  call delete('Xfile')
+  call delete('Xunrfile')
   set complete&
 endfunc
 

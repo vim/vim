@@ -1709,14 +1709,14 @@ endfunc
 func Test_normal20_exmode()
   " Reading from redirected file doesn't work on MS-Windows
   CheckNotMSWindows
-  call writefile(['1a', 'foo', 'bar', '.', 'w! Xfile2', 'q!'], 'Xscript')
-  call writefile(['1', '2'], 'Xfile')
-  call system(GetVimCommand() .. ' -e -s < Xscript Xfile')
-  let a=readfile('Xfile2')
+  call writefile(['1a', 'foo', 'bar', '.', 'w! Xn20file2', 'q!'], 'Xn20script')
+  call writefile(['1', '2'], 'Xn20file')
+  call system(GetVimCommand() .. ' -e -s < Xn20script Xn20file')
+  let a=readfile('Xn20file2')
   call assert_equal(['1', 'foo', 'bar', '2'], a)
 
   " clean up
-  for file in ['Xfile', 'Xfile2', 'Xscript']
+  for file in ['Xn20file', 'Xn20file2', 'Xn20script']
     call delete(file)
   endfor
   bw!
@@ -1758,22 +1758,22 @@ func Test_normal22_zet()
   " Test for ZZ
   " let shell = &shell
   " let &shell = 'sh'
-  call writefile(['1', '2'], 'Xfile')
+  call writefile(['1', '2'], 'Xn22file')
   let args = ' -N -i NONE --noplugins -X --not-a-term'
-  call system(GetVimCommand() .. args .. ' -c "%d" -c ":norm! ZZ" Xfile')
-  let a = readfile('Xfile')
+  call system(GetVimCommand() .. args .. ' -c "%d" -c ":norm! ZZ" Xn22file')
+  let a = readfile('Xn22file')
   call assert_equal([], a)
   " Test for ZQ
-  call writefile(['1', '2'], 'Xfile')
-  call system(GetVimCommand() . args . ' -c "%d" -c ":norm! ZQ" Xfile')
-  let a = readfile('Xfile')
+  call writefile(['1', '2'], 'Xn22file')
+  call system(GetVimCommand() . args . ' -c "%d" -c ":norm! ZQ" Xn22file')
+  let a = readfile('Xn22file')
   call assert_equal(['1', '2'], a)
 
   " Unsupported Z command
   call assert_beeps('normal! ZW')
 
   " clean up
-  for file in ['Xfile']
+  for file in ['Xn22file']
     call delete(file)
   endfor
   " let &shell = shell

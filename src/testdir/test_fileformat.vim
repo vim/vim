@@ -22,16 +22,16 @@ endfunc
 func Test_fileformat_autocommand()
   let filecnt = ["", "foobar\<CR>", "eins\<CR>", "\<CR>", "zwei\<CR>", "drei", "vier", "fünf", ""]
   let ffs = &ffs
-  call writefile(filecnt, 'Xfile', 'b')
-  au BufReadPre Xfile set ffs=dos ff=dos
-  new Xfile
+  call writefile(filecnt, 'Xffafile', 'b')
+  au BufReadPre Xffafile set ffs=dos ff=dos
+  new Xffafile
   call assert_equal('dos', &l:ff)
   call assert_equal('dos', &ffs)
 
   " cleanup
-  call delete('Xfile')
+  call delete('Xffafile')
   let &ffs = ffs
-  au! BufReadPre Xfile
+  au! BufReadPre Xffafile
   bw!
 endfunc
 
@@ -314,14 +314,14 @@ endfunc
 " used as the 'fileformat'.
 func Test_fileformat_on_startup()
   let after =<< trim END
-    call writefile([&fileformat], 'Xfile', 'a')
+    call writefile([&fileformat], 'Xonsfile', 'a')
     quit
   END
   call RunVim(["set ffs=dos,unix,mac"], after, '')
   call RunVim(["set ffs=mac,dos,unix"], after, '')
   call RunVim(["set ffs=unix,mac,dos"], after, '')
-  call assert_equal(['dos', 'mac', 'unix'], readfile('Xfile'))
-  call delete('Xfile')
+  call assert_equal(['dos', 'mac', 'unix'], readfile('Xonsfile'))
+  call delete('Xonsfile')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

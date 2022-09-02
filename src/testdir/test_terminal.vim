@@ -641,10 +641,10 @@ endfunc
 func Test_terminal_cwd_failure()
   " Case 1: Provided directory is not actually a directory.  Attempt to make
   " the file executable as well.
-  call writefile([], 'Xfile')
-  call setfperm('Xfile', 'rwx------')
-  call assert_fails("call term_start(&shell, {'cwd': 'Xfile'})", 'E475:')
-  call delete('Xfile')
+  call writefile([], 'Xtcfile')
+  call setfperm('Xftcile', 'rwx------')
+  call assert_fails("call term_start(&shell, {'cwd': 'Xftcile'})", 'E475:')
+  call delete('Xftcile')
 
   " Case 2: Directory does not exist.
   call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')
@@ -878,12 +878,12 @@ endfunc
 func Test_terminal_redir_file()
   let g:test_is_flaky = 1
   let cmd = Get_cat_123_cmd()
-  let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xfile'})
+  let buf = term_start(cmd, {'out_io': 'file', 'out_name': 'Xtrfile'})
   call TermWait(buf)
   " ConPTY may precede escape sequence. There are things that are not so.
   if !has('conpty')
-    call WaitForAssert({-> assert_notequal(0, len(readfile("Xfile")))})
-    call assert_match('123', readfile('Xfile')[0])
+    call WaitForAssert({-> assert_notequal(0, len(readfile("Xtrfile")))})
+    call assert_match('123', readfile('Xtrfile')[0])
   endif
   let g:job = term_getjob(buf)
   call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
@@ -894,18 +894,18 @@ func Test_terminal_redir_file()
     " Just wait for a moment.
     sleep 50m
   endif
-  call delete('Xfile')
+  call delete('Xtrfile')
   bwipe
 
   if has('unix')
-    call writefile(['one line'], 'Xfile')
-    let buf = term_start('cat', {'in_io': 'file', 'in_name': 'Xfile'})
+    call writefile(['one line'], 'Xtrfile')
+    let buf = term_start('cat', {'in_io': 'file', 'in_name': 'Xtrfile'})
     call TermWait(buf)
     call WaitForAssert({-> assert_equal('one line', term_getline(buf, 1))})
     let g:job = term_getjob(buf)
     call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
     bwipe
-    call delete('Xfile')
+    call delete('Xtrfile')
   endif
 endfunc
 

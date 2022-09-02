@@ -350,13 +350,13 @@ endfunc
 
 " Some options cannot be set from the modeline when 'diff' option is set
 func Test_modeline_diff_buffer()
-  call writefile(['vim: diff foldmethod=marker wrap'], 'Xfile')
+  call writefile(['vim: diff foldmethod=marker wrap'], 'Xmdifile')
   set foldmethod& nowrap
-  new Xfile
+  new Xmdifile
   call assert_equal('manual', &foldmethod)
   call assert_false(&wrap)
   set wrap&
-  call delete('Xfile')
+  call delete('Xmdifile')
   bw
 endfunc
 

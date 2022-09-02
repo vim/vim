@@ -4104,7 +4104,7 @@ endfunc
 
 
 func Test_popup_setoptions_other_tab()
-  new Xfile
+  new Xpotfile
   let winid = win_getid()
   call setline(1, 'some text')
   call prop_type_add('textprop', {})
@@ -4116,7 +4116,7 @@ func Test_popup_setoptions_other_tab()
 
   tabclose
   call popup_close(id)
-  bwipe! Xfile
+  bwipe! Xpotfile
   call prop_type_delete('textprop')
 endfunc
 

@@ -1414,13 +1414,13 @@ def Test_import_in_charconvert()
   END
   v9.CheckScriptSuccess(lines)
 
-  writefile(['one', 'two'], 'Xfile')
-  new Xfile
-  write ++enc=ucase Xfile1
-  assert_equal(['ONE', 'TWO'], readfile('Xfile1'))
+  writefile(['one', 'two'], 'Xiicfile')
+  new Xiicfile
+  write ++enc=ucase Xiicfile1
+  assert_equal(['ONE', 'TWO'], readfile('Xiicfile1'))
 
-  delete('Xfile')
-  delete('Xfile1')
+  delete('Xiicfile')
+  delete('Xiicfile1')
   delete('Xconvert.vim')
   bwipe!
   set charconvert&

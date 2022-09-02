@@ -49,38 +49,38 @@ endfunc
 func Test_gF()
   new
   call setline(1, ['111', '222', '333', '444'])
-  w! Xfile
+  w! Xgffile
   close
   new
   set isfname-=:
-  call setline(1, ['one', 'Xfile:3', 'three'])
+  call setline(1, ['one', 'Xgffile:3', 'three'])
   2
   call assert_fails('normal gF', 'E37:')
   call assert_equal(2, getcurpos()[1])
-  w! Xfile2
+  w! Xgffile2
   normal gF
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(3, getcurpos()[1])
 
   enew!
-  call setline(1, ['one', 'the Xfile line 2, and more', 'three'])
-  w! Xfile2
+  call setline(1, ['one', 'the Xgffile line 2, and more', 'three'])
+  w! Xgffile2
   normal 2GfX
   normal gF
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(2, getcurpos()[1])
 
   " jumping to the file/line with CTRL-W_F
   %bw!
   edit Xfile1
-  call setline(1, ['one', 'Xfile:4', 'three'])
+  call setline(1, ['one', 'Xgffile:4', 'three'])
   exe "normal 2G\<C-W>F"
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(4, getcurpos()[1])
 
   set isfname&
-  call delete('Xfile')
-  call delete('Xfile2')
+  call delete('Xgffile')
+  call delete('Xgffile2')
   %bw!
 endfunc
 

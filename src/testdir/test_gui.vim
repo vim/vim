@@ -1602,7 +1602,7 @@ endfunc
 
 func Test_gui_dialog_file()
   let lines =<< trim END
-    file Xfile
+    file Xdialfile
     normal axxx
     confirm qa
   END
@@ -1614,10 +1614,10 @@ func Test_gui_dialog_file()
   execute prefix .. GetVimCommand() .. ' -g -f --clean --gui-dialog-file Xdialog -S Xlines'
 
   call WaitForAssert({-> assert_true(filereadable('Xdialog'))})
-  call assert_match('Question: Save changes to "Xfile"?', readfile('Xdialog')->join('<NL>'))
+  call assert_match('Question: Save changes to "Xdialfile"?', readfile('Xdialog')->join('<NL>'))
 
   call delete('Xdialog')
-  call delete('Xfile')
+  call delete('Xdialfile')
   call delete('Xlines')
 endfunc
 

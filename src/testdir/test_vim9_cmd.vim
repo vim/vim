@@ -931,11 +931,11 @@ func Test_command_modifier_confirm()
   let lines =<< trim END
     call setline(1, 'changed')
     def Getout()
-      confirm write Xfile
+      confirm write Xcmodfile
     enddef
   END
   call writefile(lines, 'Xconfirmscript')
-  call writefile(['empty'], 'Xfile')
+  call writefile(['empty'], 'Xcmodfile')
   let buf = RunVimInTerminal('-S Xconfirmscript', {'rows': 8})
   call term_sendkeys(buf, ":call Getout()\n")
   call WaitForAssert({-> assert_match('(Y)es, \[N\]o: ', term_getline(buf, 8))}, 1000)
@@ -945,9 +945,9 @@ func Test_command_modifier_confirm()
   call TermWait(buf)
   call StopVimInTerminal(buf)
 
-  call assert_equal(['changed'], readfile('Xfile'))
-  call delete('Xfile')
-  call delete('.Xfile.swp')  " in case Vim was killed
+  call assert_equal(['changed'], readfile('Xcmodfile'))
+  call delete('Xcmodfile')
+  call delete('.Xcmodfile.swp')  " in case Vim was killed
   call delete('Xconfirmscript')
 endfunc
 
@@ -1065,13 +1065,13 @@ def Test_command_modifier_other()
   edit Xsomefile
   bwipe!
 
-  au BufNewFile Xfile g:readFile = 1
+  au BufNewFile Xcmofile g:readFile = 1
   g:readFile = 0
-  edit Xfile
+  edit Xcmofile
   assert_equal(1, g:readFile)
   bwipe!
   g:readFile = 0
-  noautocmd edit Xfile
+  noautocmd edit Xcmofile
   assert_equal(0, g:readFile)
   au! BufNewFile
   unlet g:readFile
@@ -1407,7 +1407,7 @@ def Test_star_command()
 enddef
 
 def Test_cmd_argument_without_colon()
-  new Xfile
+  new Xawcfile
   setline(1, ['a', 'b', 'c', 'd'])
   write
   edit +3 %
@@ -1415,7 +1415,7 @@ def Test_cmd_argument_without_colon()
   edit +/a %
   assert_equal(1, getcurpos()[1])
   bwipe
-  delete('Xfile')
+  delete('Xawcfile')
 enddef
 
 def Test_ambiguous_user_cmd()
@@ -1882,7 +1882,7 @@ def Test_redir_to_var()
       var text: string
       redir => text
         echo 'hello'
-        redir > Xfile
+        redir > Xnopfile
       redir END
   END
   v9.CheckDefFailure(lines, 'E1092:')
@@ -2025,10 +2025,10 @@ enddef
 " Test for the 'previewpopup' option
 def Test_previewpopup()
   set previewpopup=height:10,width:60
-  pedit Xfile
+  pedit Xppfile
   var id = popup_findpreview()
   assert_notequal(id, 0)
-  assert_match('Xfile', popup_getoptions(id).title)
+  assert_match('Xppfile', popup_getoptions(id).title)
   popup_clear()
   set previewpopup&
 enddef

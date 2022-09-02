@@ -1472,7 +1472,7 @@ endfunc
 func Test_visual_area_adjusted_when_hiding()
   " The Visual area ended after the end of the line after :hide
   call setline(1, 'xxx')
-  vsplit Xfile
+  vsplit Xvaafile
   call setline(1, 'xxxxxxxx')
   norm! $o
   hid

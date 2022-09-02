@@ -14,15 +14,15 @@ endfunc
 
 func Test_conf_type()
   filetype on
-  call writefile(['# some comment', 'must be conf'], 'Xfile')
+  call writefile(['# some comment', 'must be conf'], 'Xconffile')
   augroup filetypedetect
     au BufNewFile,BufRead *	call assert_equal(0, did_filetype())
   augroup END
-  split Xfile
+  split Xconffile
   call assert_equal('conf', &filetype)
 
   bwipe!
-  call delete('Xfile')
+  call delete('Xconffile')
   filetype off
 endfunc
 
@@ -30,15 +30,15 @@ func Test_other_type()
   filetype on
   augroup filetypedetect
     au BufNewFile,BufRead *	call assert_equal(0, did_filetype())
-    au BufNewFile,BufRead Xfile	setf testfile
+    au BufNewFile,BufRead Xotherfile	setf testfile
     au BufNewFile,BufRead *	call assert_equal(1, did_filetype())
   augroup END
-  call writefile(['# some comment', 'must be conf'], 'Xfile')
-  split Xfile
+  call writefile(['# some comment', 'must be conf'], 'Xotherfile')
+  split Xotherfile
   call assert_equal('testfile', &filetype)
 
   bwipe!
-  call delete('Xfile')
+  call delete('Xotherfile')
   filetype off
 endfunc
 
