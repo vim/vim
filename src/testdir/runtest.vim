@@ -465,7 +465,7 @@ for g:testfunc in sort(s:tests)
   " A test can set g:test_is_flaky to retry running the test.
   let g:test_is_flaky = 0
 
-  let starttime = strftime("%T")
+  let starttime = strftime("%H:%M:%S")
   call RunTheTest(g:testfunc)
 
   " Repeat a flaky test.  Give up when:
@@ -499,7 +499,7 @@ for g:testfunc in sort(s:tests)
       let v:errors = []
       let g:run_nr += 1
 
-      let starttime = strftime("%T")
+      let starttime = strftime("%H:%M:%S")
       call RunTheTest(g:testfunc)
 
       if len(v:errors) == 0
