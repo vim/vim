@@ -4384,7 +4384,11 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 	    }
 
 	    if ((dict = dict_alloc()) == NULL)
+	    {
 		ret = FAIL;
+		vim_free(matches[i]);
+		break;
+	    }
 	    if (list_append_dict(list, dict) == FAIL)
 		ret = FAIL;
 
