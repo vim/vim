@@ -245,7 +245,7 @@ func RunTheTest(test)
 
   " Check for and close any stray popup windows.
   if has('popupwin')
-    call assert_equal([], popup_list())
+    call assert_equal([], popup_list(), 'Popup is still present')
     call popup_clear(1)
   endif
 

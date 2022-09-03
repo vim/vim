@@ -252,7 +252,7 @@ static xsmp_config_T xsmp;
 /*
  * I have seen
  *  extern char *_sys_siglist[NSIG];
- * on Irix, Linux, NetBSD and Solaris. It contains a nice list of strings
+ * on Linux, NetBSD and Solaris. It contains a nice list of strings
  * that describe the signals. That is nearly what we want here.  But
  * autoconf does only check for sys_siglist (without the underscore), I
  * do not want to change everything today.... jw.
@@ -959,7 +959,7 @@ static volatile sig_atomic_t lc_signal;
 
 // TRUE when lc_jump_env is valid.
 // Volatile because it is used in signal handler deathtrap().
-static volatile sig_atomic_t lc_active INIT(= FALSE);
+static volatile sig_atomic_t lc_active = FALSE;
 
 /*
  * A simplistic version of setjmp() that only allows one level of using.
@@ -1228,7 +1228,7 @@ sigcont_handler SIGDEFARG(sigarg)
 	// back to a sane mode. We should redraw, but we can't really do that
 	// in a signal handler, do a redraw later.
 	after_sigcont();
-	redraw_later(CLEAR);
+	redraw_later(UPD_CLEAR);
 	cursor_on_force();
 	out_flush();
     }
@@ -4522,7 +4522,10 @@ mch_call_shell_terminal(
     // restore curwin/curbuf and a few other things
     aucmd_restbuf(&aco);
 
-    wait_return(TRUE);
+    // only require pressing Enter when redrawing, to avoid that system() gets
+    // the hit-enter prompt even though it didn't output anything.
+    if (!RedrawingDisabled)
+	wait_return(TRUE);
     do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
 
 theend:

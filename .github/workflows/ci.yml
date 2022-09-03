@@ -14,14 +14,14 @@ concurrency:
 
 jobs:
   linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     env:
       CC: ${{ matrix.compiler }}
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
-      CFLAGS: -Wno-error=deprecated-declarations
+      CFLAGS: -Wno-deprecated-declarations
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
@@ -167,11 +167,6 @@ jobs:
             # Use llvm-cov instead of gcov when compiler is clang.
             ln -fs /usr/bin/llvm-cov ${HOME}/bin/gcov
           fi
-          # Setup lua5.3 manually since its package doesn't provide alternative.
-          # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
-          if [[ ${CONFOPT} =~ luainterp ]]; then
-            sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
-          fi
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
@@ -268,7 +263,7 @@ jobs:
           done
 
   # coveralls:
-  #   runs-on: ubuntu-18.04
+  #   runs-on: ubuntu-20.04
   #
   #   needs: linux
   #   if: always() && github.event_name != 'pull_request'

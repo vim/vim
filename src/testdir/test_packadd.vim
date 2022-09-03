@@ -3,7 +3,7 @@
 source check.vim
 
 func SetUp()
-  let s:topdir = getcwd() . '/Xdir'
+  let s:topdir = getcwd() . '/Xppdir'
   exe 'set packpath=' . s:topdir
   let s:plugdir = s:topdir . '/pack/mine/opt/mytest'
 endfunc
@@ -51,9 +51,9 @@ func Test_packadd()
   call assert_equal(77, g:plugin_also_works)
   call assert_equal(17, g:ftdetect_works)
   call assert_true(len(&rtp) > len(rtp))
-  call assert_match('/testdir/Xdir/pack/mine/opt/mytest\($\|,\)', &rtp)
+  call assert_match('/testdir/Xppdir/pack/mine/opt/mytest\($\|,\)', &rtp)
 
-  let new_after = match(&rtp, '/testdir/Xdir/pack/mine/opt/mytest/after,')
+  let new_after = match(&rtp, '/testdir/Xppdir/pack/mine/opt/mytest/after,')
   let forwarded = substitute(first_after_entry, '\\', '[/\\\\]', 'g')
   let old_after = match(&rtp, ',' . forwarded . '\>')
   call assert_true(new_after > 0, 'rtp is ' . &rtp)
@@ -67,7 +67,7 @@ func Test_packadd()
 
   " Check the path of 'myte' is added
   call assert_true(len(&rtp) > len(rtp))
-  call assert_match('/testdir/Xdir/pack/mine/opt/myte\($\|,\)', &rtp)
+  call assert_match('/testdir/Xppdir/pack/mine/opt/myte\($\|,\)', &rtp)
 
   " Check exception
   call assert_fails("packadd directorynotfound", 'E919:')
@@ -89,7 +89,7 @@ func Test_packadd_start()
 
   call assert_equal(24, g:plugin_works)
   call assert_true(len(&rtp) > len(rtp))
-  call assert_match('/testdir/Xdir/pack/mine/start/other\($\|,\)', &rtp)
+  call assert_match('/testdir/Xppdir/pack/mine/start/other\($\|,\)', &rtp)
 endfunc
 
 func Test_packadd_noload()
@@ -106,7 +106,7 @@ func Test_packadd_noload()
   packadd! mytest
 
   call assert_true(len(&rtp) > len(rtp))
-  call assert_match('testdir/Xdir/pack/mine/opt/mytest\($\|,\)', &rtp)
+  call assert_match('testdir/Xppdir/pack/mine/opt/mytest\($\|,\)', &rtp)
   call assert_equal(0, g:plugin_works)
 
   " check the path is not added twice

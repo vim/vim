@@ -464,8 +464,18 @@ create_timer(long msec, int repeat)
 	timer->tr_repeat = repeat - 1;
     timer->tr_interval = msec;
 
-    profile_setlimit(msec, &timer->tr_due);
+    timer_start(timer);
     return timer;
+}
+
+/*
+ * (Re)start a timer.
+ */
+    void
+timer_start(timer_T *timer)
+{
+    profile_setlimit(timer->tr_interval, &timer->tr_due);
+    timer->tr_paused = FALSE;
 }
 
 /*
@@ -603,8 +613,13 @@ check_due_timer(void)
 	    else
 	    {
 		this_due = -1;
-		remove_timer(timer);
-		free_timer(timer);
+		if (timer->tr_keep)
+		    timer->tr_paused = TRUE;
+		else
+		{
+		    remove_timer(timer);
+		    free_timer(timer);
+		}
 	    }
 	}
 	if (this_due > 0 && (next_due == -1 || next_due > this_due))
@@ -790,19 +805,14 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if (in_vim9script() && check_for_opt_number_arg(argvars, 0) == FAIL)
+    if (check_for_opt_number_arg(argvars, 0) == FAIL)
 	return;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	if (argvars[0].v_type != VAR_NUMBER)
-	    emsg(_(e_number_expected));
-	else
-	{
-	    timer = find_timer((int)tv_get_number(&argvars[0]));
-	    if (timer != NULL)
-		add_timer_info(rettv, timer);
-	}
+	timer = find_timer((int)tv_get_number(&argvars[0]));
+	if (timer != NULL)
+	    add_timer_info(rettv, timer);
     }
     else
 	add_timer_info_all(rettv);
@@ -826,6 +836,7 @@ f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
     else
     {
 	int	paused = (int)tv_get_bool(&argvars[1]);
+
 	timer = find_timer((int)tv_get_number(&argvars[0]));
 	if (timer != NULL)
 	    timer->tr_paused = paused;
@@ -856,14 +867,12 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
     msec = (long)tv_get_number(&argvars[0]);
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	if (argvars[2].v_type != VAR_DICT
-				   || (dict = argvars[2].vval.v_dict) == NULL)
-	{
-	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[2]));
+	if (check_for_nonnull_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
+
+	dict = argvars[2].vval.v_dict;
 	if (dict_has_key(dict, "repeat"))
-	    repeat = dict_get_number(dict, (char_u *)"repeat");
+	    repeat = dict_get_number(dict, "repeat");
     }
 
     callback = get_callback(&argvars[1]);
@@ -895,14 +904,9 @@ f_timer_stop(typval_T *argvars, typval_T *rettv UNUSED)
 {
     timer_T *timer;
 
-    if (in_vim9script() && check_for_number_arg(argvars, 0) == FAIL)
+    if (check_for_number_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_NUMBER)
-    {
-	emsg(_(e_number_expected));
-	return;
-    }
     timer = find_timer((int)tv_get_number(&argvars[0]));
     if (timer != NULL)
 	stop_timer(timer);

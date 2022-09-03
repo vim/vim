@@ -1392,11 +1392,8 @@ channel_open_func(typval_T *argvars)
 
     address = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN
-	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
-    {
-	emsg(_(e_invalid_argument));
+	    && check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	return NULL;
-    }
 
     if (*address == NUL)
     {
@@ -2734,12 +2731,8 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     }
     else if (STRCMP(cmd, "redraw") == 0)
     {
-	exarg_T ea;
-
 	ch_log(channel, "redraw");
-	CLEAR_FIELD(ea);
-	ea.forceit = *arg != NUL;
-	ex_redraw(&ea);
+	redraw_cmd(*arg != NUL);
 	showruler(FALSE);
 	setcursor();
 	out_flush_cursor(TRUE, FALSE);
@@ -2930,7 +2923,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 		}
 	    }
 	}
-	redraw_buf_and_status_later(buffer, VALID);
+	redraw_buf_and_status_later(buffer, UPD_VALID);
 	channel_need_redraw = TRUE;
     }
 
@@ -4601,11 +4594,9 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	if (rettv_dict_alloc(rettv) == FAIL)
 	    return;
 
-	if (argvars[1].v_type != VAR_DICT)
-	{
-	    semsg(_(e_dict_required_for_argument_nr), 2);
+	if (check_for_dict_arg(argvars, 1) == FAIL)
 	    return;
-	}
+
 	d = argvars[1].vval.v_dict;
 	di = dict_find(d, (char_u *)"id", -1);
 	if (di != NULL && di->di_tv.v_type != VAR_NUMBER)

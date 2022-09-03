@@ -592,15 +592,17 @@ spell_suggest(int count)
 	msg_scroll = TRUE;
 	for (i = 0; i < sug.su_ga.ga_len; ++i)
 	{
+	    int el;
+
 	    stp = &SUG(sug.su_ga, i);
 
 	    // The suggested word may replace only part of the bad word, add
-	    // the not replaced part.
+	    // the not replaced part.  But only when it's not getting too long.
 	    vim_strncpy(wcopy, stp->st_word, MAXWLEN);
-	    if (sug.su_badlen > stp->st_orglen)
+	    el = sug.su_badlen - stp->st_orglen;
+	    if (el > 0 && stp->st_wordlen + el <= MAXWLEN)
 		vim_strncpy(wcopy + stp->st_wordlen,
-					       sug.su_badptr + stp->st_orglen,
-					      sug.su_badlen - stp->st_orglen);
+					   sug.su_badptr + stp->st_orglen, el);
 	    vim_snprintf((char *)IObuff, IOSIZE, "%2d", i + 1);
 #ifdef FEAT_RIGHTLEFT
 	    if (cmdmsg_rl)

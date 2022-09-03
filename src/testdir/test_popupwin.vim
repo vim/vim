@@ -1035,7 +1035,7 @@ endfunc
 func Test_popup_invalid_arguments()
   call assert_fails('call popup_create(666, {})', 'E86:')
   call popup_clear()
-  call assert_fails('call popup_create("text", "none")', 'E715:')
+  call assert_fails('call popup_create("text", "none")', 'E1206:')
   call popup_clear()
   call assert_fails('call popup_create(test_null_string(), {})', 'E450:')
   call assert_fails('call popup_create(test_null_list(), {})', 'E450:')
@@ -1309,8 +1309,8 @@ func Test_popup_move()
   let line = join(map(range(1, 6), 'screenstring(1, v:val)'), '')
   call assert_equal('hworld', line)
 
-  call assert_fails('call popup_move(winid, [])', 'E715:')
-  call assert_fails('call popup_move(winid, test_null_dict())', 'E715:')
+  call assert_fails('call popup_move(winid, [])', 'E1206:')
+  call assert_fails('call popup_move(winid, test_null_dict())', 'E1297:')
 
   call popup_close(winid)
 
@@ -2577,8 +2577,8 @@ func Test_set_get_options()
   call assert_equal(1, options.drag)
   call assert_equal('Another', options.highlight)
 
-  call assert_fails('call popup_setoptions(winid, [])', 'E715:')
-  call assert_fails('call popup_setoptions(winid, test_null_dict())', 'E715:')
+  call assert_fails('call popup_setoptions(winid, [])', 'E1206:')
+  call assert_fails('call popup_setoptions(winid, test_null_dict())', 'E1297:')
 
   call popup_close(winid)
   call assert_equal(0, popup_setoptions(winid, options.wrap))
@@ -4104,7 +4104,7 @@ endfunc
 
 
 func Test_popup_setoptions_other_tab()
-  new Xfile
+  new Xpotfile
   let winid = win_getid()
   call setline(1, 'some text')
   call prop_type_add('textprop', {})
@@ -4116,7 +4116,7 @@ func Test_popup_setoptions_other_tab()
 
   tabclose
   call popup_close(id)
-  bwipe! Xfile
+  bwipe! Xpotfile
   call prop_type_delete('textprop')
 endfunc
 

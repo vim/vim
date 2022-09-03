@@ -2231,10 +2231,14 @@ gui_x11_create_blank_mouse(void)
 {
     Pixmap blank_pixmap = XCreatePixmap(gui.dpy, gui.wid, 1, 1, 1);
     GC gc = XCreateGC(gui.dpy, blank_pixmap, (unsigned long)0, (XGCValues*)0);
-    XDrawPoint(gui.dpy, blank_pixmap, gc, 0, 0);
-    XFreeGC(gui.dpy, gc);
+
+    if (gc != NULL)
+    {
+	XDrawPoint(gui.dpy, blank_pixmap, gc, 0, 0);
+	XFreeGC(gui.dpy, gc);
+    }
     return XCreatePixmapCursor(gui.dpy, blank_pixmap, blank_pixmap,
-	    (XColor*)&gui.norm_pixel, (XColor*)&gui.norm_pixel, 0, 0);
+		     (XColor*)&gui.norm_pixel, (XColor*)&gui.norm_pixel, 0, 0);
 }
 
 /*

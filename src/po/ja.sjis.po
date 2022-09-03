@@ -6585,7 +6585,7 @@ msgid "E805: Using a Float as a Number"
 msgstr "E805: •‚“®¬”“_”‚ğ”’l‚Æ‚µ‚Äˆµ‚Á‚Ä‚¢‚Ü‚·"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: •‚“®¬”“_”‚ğ•¶š—ñ‚Æ‚µ‚Äˆµ‚Á‚Ä‚¢‚Ü‚·"
 
 msgid "E807: Expected Float argument for printf()"

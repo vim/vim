@@ -434,12 +434,8 @@ write_viminfo_bufferlist(FILE *fp)
     {
 	if (buf->b_fname == NULL
 		|| !buf->b_p_bl
-#ifdef FEAT_QUICKFIX
 		|| bt_quickfix(buf)
-#endif
-#ifdef FEAT_TERMINAL
 		|| bt_terminal(buf)
-#endif
 		|| removable(buf->b_ffname))
 	    continue;
 
@@ -1994,11 +1990,7 @@ write_buffer_marks(buf_T *buf, FILE *fp_out)
     static int
 skip_for_viminfo(buf_T *buf)
 {
-    return
-#ifdef FEAT_TERMINAL
-	    bt_terminal(buf) ||
-#endif
-	    removable(buf->b_ffname);
+    return bt_terminal(buf) || removable(buf->b_ffname);
 }
 
 /*
@@ -3103,7 +3095,7 @@ write_viminfo(char_u *file, int forceit)
 	{
 	    int	tt = msg_didany;
 
-	    // avoid a wait_return for this message, it's annoying
+	    // avoid a wait_return() for this message, it's annoying
 	    semsg(_(e_viminfo_file_is_not_writable_str), fname);
 	    msg_didany = tt;
 	    fclose(fp_in);

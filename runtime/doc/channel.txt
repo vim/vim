@@ -27,6 +27,7 @@ The Netbeans interface also uses a channel. |netbeans|
 14. Using a prompt buffer		|prompt-buffer|
 15. Language Server Protocol		|language-server-protocol|
 
+							*E1277*
 {only when compiled with the |+channel| feature for channel stuff}
 	You can check this with: `has('channel')`
 {only when compiled with the |+job| feature for job stuff}

@@ -172,6 +172,9 @@ au BufNewFile,BufRead *.asm,*.[sS],*.[aA],*.mac,*.lst	call dist#ft#FTasm()
 " Assembly - Macro (VAX)
 au BufNewFile,BufRead *.mar			setf vmasm
 
+" Astro
+au BufNewFile,BufRead *.astro			setf astro
+
 " Atlas
 au BufNewFile,BufRead *.atl,*.as		setf atlas
 
@@ -259,7 +262,7 @@ au BufNewFile,BufRead *.bb,*.bbappend,*.bbclass,*/build/conf/*.conf,*/meta{-*,}/
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 
 " BSDL
-au BufNewFile,BufRead *bsd,*.bsdl		setf bsdl
+au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
 " Bazel (http://bazel.io)
 autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE	setf bzl
@@ -693,7 +696,10 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 au BufNewFile,BufRead *.gd			setf gdscript
 
 " Godot resource
-au BufRead,BufNewFile *.tscn,*.tres			setf gdresource
+au BufRead,BufNewFile *.tscn,*.tres		setf gdresource
+
+" Godot shader
+au BufRead,BufNewFile *.gdshader,*.shader	setf gdshader
 
 " Gedcom
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
@@ -859,9 +865,13 @@ au BufNewFile,BufRead *.hb			setf hb
 " Httest
 au BufNewFile,BufRead *.htt,*.htb		setf httest
 
-" i3 (and sway)
-au BufNewFile,BufRead */i3/config,*/sway/config		setf i3config
-au BufNewFile,BufRead */.i3/config,*/.sway/config	setf i3config
+" i3
+au BufNewFile,BufRead */i3/config		setf i3config
+au BufNewFile,BufRead */.i3/config  	setf i3config
+
+" sway
+au BufNewFile,BufRead */sway/config		setf swayconfig
+au BufNewFile,BufRead */.sway/config	setf swayconfig
 
 " Icon
 au BufNewFile,BufRead *.icn			setf icon
@@ -1156,6 +1166,7 @@ au BufNewFile,BufRead *.mf			setf mf
 
 " MetaPost
 au BufNewFile,BufRead *.mp			setf mp
+au BufNewFile,BufRead *.mpxl,*.mpiv,*.mpvi	let b:mp_metafun = 1 | setf mp
 
 " MGL
 au BufNewFile,BufRead *.mgl			setf mgl
@@ -1527,6 +1538,9 @@ au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 " QL
 au BufRead,BufNewFile *.ql,*.qll		setf ql
 
+" Quarto
+au BufRead,BufNewFile *.qmd     setf quarto
+
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
 
@@ -1808,7 +1822,7 @@ au BufNewFile,BufRead *.score			setf slrnsc
 au BufNewFile,BufRead *.st			setf st
 
 " Smalltalk (and Rexx, TeX, and Visual Basic)
-au BufNewFile,BufRead *.cls                     call dist#ft#FTcls()
+au BufNewFile,BufRead *.cls			call dist#ft#FTcls()
 
 " Smarty templates
 au BufNewFile,BufRead *.tpl			setf smarty
@@ -1915,8 +1929,8 @@ au BufNewFile,BufRead *.cm			setf voscm
 au BufNewFile,BufRead *.swift			setf swift
 au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
 
-" Swift Intermediate Language
-au BufNewFile,BufRead *.sil			setf sil
+" Swift Intermediate Language or SILE
+au BufNewFile,BufRead *.sil			call dist#ft#FTsil()
 
 " Sysctl
 au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
@@ -1982,8 +1996,8 @@ au BufRead,BufNewFile *.ttl
 " Terminfo
 au BufNewFile,BufRead *.ti			setf terminfo
 
-" Terraform
-au BufRead,BufNewFile *.tfvars			setf terraform
+" Terraform variables
+au BufRead,BufNewFile *.tfvars			setf terraform-vars
 
 " TeX
 au BufNewFile,BufRead *.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex
@@ -2079,6 +2093,11 @@ au BufNewFile,BufRead */.config/upstart/*.override	       setf upstart
 
 " Vala
 au BufNewFile,BufRead *.vala			setf vala
+
+" VDM
+au BufRead,BufNewFile *.vdmpp,*.vpp		setf vdmpp
+au BufRead,BufNewFile *.vdmrt			setf vdmrt
+au BufRead,BufNewFile *.vdmsl,*.vdm		setf vdmsl
 
 " Vera
 au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera

@@ -879,6 +879,7 @@ skip_type(char_u *start, int optional)
 /*
  * Parse the member type: "<type>" and return "type" with the member set.
  * Use "type_gap" if a new type needs to be added.
+ * "info" is extra information for an error message.
  * Returns NULL in case of failure.
  */
     static type_T *
@@ -886,8 +887,10 @@ parse_type_member(
 	char_u	    **arg,
 	type_T	    *type,
 	garray_T    *type_gap,
-	int	    give_error)
+	int	    give_error,
+	char	    *info)
 {
+    char_u  *arg_start = *arg;
     type_T  *member_type;
     int	    prev_called_emsg = called_emsg;
 
@@ -898,7 +901,7 @@ parse_type_member(
 	    if (*skipwhite(*arg) == '<')
 		semsg(_(e_no_white_space_allowed_before_str_str), "<", *arg);
 	    else
-		emsg(_(e_missing_type));
+		semsg(_(e_missing_type_after_str), info);
 	}
 	return NULL;
     }
@@ -912,7 +915,7 @@ parse_type_member(
     if (**arg != '>' && called_emsg == prev_called_emsg)
     {
 	if (give_error)
-	    emsg(_(e_missing_gt_after_type));
+	    semsg(_(e_missing_gt_after_type_str), arg_start);
 	return NULL;
     }
     ++*arg;
@@ -971,7 +974,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	    {
 		*arg += len;
 		return parse_type_member(arg, &t_dict_any,
-							 type_gap, give_error);
+						 type_gap, give_error, "dict");
 	    }
 	    break;
 	case 'f':
@@ -1115,7 +1118,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	    {
 		*arg += len;
 		return parse_type_member(arg, &t_list_any,
-							 type_gap, give_error);
+						 type_gap, give_error, "list");
 	    }
 	    break;
 	case 'n':

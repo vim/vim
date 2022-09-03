@@ -8,7 +8,7 @@
  */
 
 /*
- * vim9cmds.c: Dealing with compiled function expressions
+ * vim9expr.c: Dealing with compiled function expressions
  */
 
 #define USING_FLOAT_STUFF
@@ -451,8 +451,7 @@ compile_load(
 			      vim_free(name);
 			      return FAIL;
 			  }
-			  if (is_expr && ASCII_ISUPPER(*name)
-					     && find_func(name, FALSE) != NULL)
+			  if (is_expr && find_func(name, FALSE) != NULL)
 			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
@@ -976,6 +975,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     int		count = 0;
     int		is_const;
     int		is_all_const = TRUE;	// reset when non-const encountered
+    int		must_end = FALSE;
 
     for (;;)
     {
@@ -994,6 +994,11 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    ++p;
 	    break;
 	}
+	if (must_end)
+	{
+	    semsg(_(e_missing_comma_in_list_str), p);
+	    return FAIL;
+	}
 	if (compile_expr0_ext(&p, cctx, &is_const) == FAIL)
 	    return FAIL;
 	if (!is_const)
@@ -1008,6 +1013,8 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		return FAIL;
 	    }
 	}
+	else
+	    must_end = TRUE;
 	whitep = p;
 	p = skipwhite(p);
     }

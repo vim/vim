@@ -128,7 +128,6 @@ coladvance2(
 {
     colnr_T	wcol = wcol_arg;
     int		idx;
-    char_u	*ptr;
     char_u	*line;
     colnr_T	col = 0;
     int		csize = 0;
@@ -158,6 +157,7 @@ coladvance2(
     else
     {
 	int width = curwin->w_width - win_col_off(curwin);
+	chartabsize_T cts;
 
 	if (finetune
 		&& curwin->w_p_wrap
@@ -180,19 +180,22 @@ coladvance2(
 	    }
 	}
 
-	ptr = line;
-	while (col <= wcol && *ptr != NUL)
+	init_chartabsize_arg(&cts, curwin, pos->lnum, 0, line, line);
+	while (cts.cts_vcol <= wcol && *cts.cts_ptr != NUL)
 	{
 	    // Count a tab for what it's worth (if list mode not on)
 #ifdef FEAT_LINEBREAK
-	    csize = win_lbr_chartabsize(curwin, line, ptr, col, &head);
-	    MB_PTR_ADV(ptr);
+	    csize = win_lbr_chartabsize(&cts, &head);
+	    MB_PTR_ADV(cts.cts_ptr);
 #else
-	    csize = lbr_chartabsize_adv(line, &ptr, col);
+	    csize = lbr_chartabsize_adv(&cts);
 #endif
-	    col += csize;
+	    cts.cts_vcol += csize;
 	}
-	idx = (int)(ptr - line);
+	col = cts.cts_vcol;
+	idx = (int)(cts.cts_ptr - line);
+	clear_chartabsize_arg(&cts);
+
 	/*
 	 * Handle all the special cases.  The virtual_active() check
 	 * is needed to ensure that a virtual position off the end of
@@ -647,7 +650,6 @@ check_visual_pos(void)
     }
 }
 
-#if defined(FEAT_TEXTOBJ) || defined(PROTO)
 /*
  * Make sure curwin->w_cursor is not on the NUL at the end of the line.
  * Allow it when in Visual mode and 'selection' is not "old".
@@ -660,7 +662,6 @@ adjust_cursor_col(void)
 	    && gchar_cursor() == NUL)
 	--curwin->w_cursor.col;
 }
-#endif
 
 /*
  * When curwin->w_leftcol has changed, adjust the cursor position.
@@ -716,7 +717,7 @@ leftcol_changed(void)
 
     if (retval)
 	curwin->w_set_curswant = TRUE;
-    redraw_later(NOT_VALID);
+    redraw_later(UPD_NOT_VALID);
     return retval;
 }
 
@@ -2398,15 +2399,12 @@ update_mouseshape(int shape_idx)
 
 
 /*
- * Change directory to "new_dir".  If FEAT_SEARCHPATH is defined, search
- * 'cdpath' for relative directory names, otherwise just mch_chdir().
+ * Change directory to "new_dir".  Search 'cdpath' for relative directory
+ * names, otherwise just mch_chdir().
  */
     int
 vim_chdir(char_u *new_dir)
 {
-#ifndef FEAT_SEARCHPATH
-    return mch_chdir((char *)new_dir);
-#else
     char_u	*dir_name;
     int		r;
 
@@ -2417,7 +2415,6 @@ vim_chdir(char_u *new_dir)
     r = mch_chdir((char *)dir_name);
     vim_free(dir_name);
     return r;
-#endif
 }
 
 /*

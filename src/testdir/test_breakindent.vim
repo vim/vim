@@ -818,7 +818,7 @@ func Test_breakindent20_list()
 
   " check formatlistpat indent with different list level
   " showbreak and sbr
-  setl briopt=min:5,sbr,list:-1,shift:2
+  setl briopt=min:5,sbr,list:-1
   setl showbreak=>
   redraw!
   let expect = [
@@ -831,6 +831,44 @@ func Test_breakindent20_list()
 	\ ]
   let lines = s:screen_lines2(1, 6, 20)
   call s:compare_lines(expect, lines)
+
+  " check formatlistpat indent with different list level
+  " showbreak sbr and shift
+  setl briopt=min:5,sbr,list:-1,shift:2
+  setl showbreak=>
+  redraw!
+  let expect = [
+	\ "* Congress shall    ",
+	\ ">   make no law     ",
+	\ "*** Congress shall  ",
+	\ ">     make no law   ",
+	\ "**** Congress shall ",
+	\ ">      make no law  ",
+	\ ]
+  let lines = s:screen_lines2(1, 6, 20)
+  call s:compare_lines(expect, lines)
+
+  " check breakindent works if breakindentopt=list:-1
+  " for a non list content
+  %delete _
+  call setline(1, ['  Congress shall make no law',
+        \ '    Congress shall make no law',
+        \ '     Congress shall make no law'])
+  norm! 1gg
+  setl briopt=min:5,list:-1
+  setl showbreak=
+  redraw!
+  let expect = [
+	\ "  Congress shall    ",
+	\ "  make no law       ",
+	\ "    Congress shall  ",
+	\ "    make no law     ",
+	\ "     Congress shall ",
+	\ "     make no law    ",
+	\ ]
+  let lines = s:screen_lines2(1, 6, 20)
+  call s:compare_lines(expect, lines)
+
   call s:close_windows('set breakindent& briopt& linebreak& list& listchars& showbreak&')
 endfunc
 

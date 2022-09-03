@@ -363,9 +363,19 @@ get_user_commands(expand_T *xp UNUSED, int idx)
 
     if (idx < buf->b_ucmds.ga_len)
 	return USER_CMD_GA(&buf->b_ucmds, idx)->uc_name;
+
     idx -= buf->b_ucmds.ga_len;
     if (idx < ucmds.ga_len)
-	return USER_CMD(idx)->uc_name;
+    {
+	int	i;
+	char_u  *name = USER_CMD(idx)->uc_name;
+
+	for (i = 0; i < buf->b_ucmds.ga_len; ++i)
+	    if (STRCMP(name, USER_CMD_GA(&buf->b_ucmds, i)->uc_name) == 0)
+		// global command is overruled by buffer-local one
+		return (char_u *)"";
+	return name;
+    }
     return NULL;
 }
 
@@ -1433,6 +1443,9 @@ add_win_cmd_modifers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
     // :vertical
     if (cmod->cmod_split & WSP_VERT)
 	result += add_cmd_modifier(buf, "vertical", multi_mods);
+    // :horizontal
+    if (cmod->cmod_split & WSP_HOR)
+	result += add_cmd_modifier(buf, "horizontal", multi_mods);
     return result;
 }
 

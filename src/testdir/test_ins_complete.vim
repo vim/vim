@@ -9,8 +9,8 @@ func Test_ins_complete()
   edit test_ins_complete.vim
   " The files in the current directory interferes with the files
   " used by this test. So use a separate directory for the test.
-  call mkdir('Xdir')
-  cd Xdir
+  call mkdir('Xcpldir')
+  cd Xcpldir
 
   set ff=unix
   call writefile(["test11\t36Gepeto\t/Tag/",
@@ -105,7 +105,7 @@ func Test_ins_complete()
   call delete('Xtestdata')
   set cpt& cot& def& tags& tagbsearch& hidden&
   cd ..
-  call delete('Xdir', 'rf')
+  call delete('Xcpldir', 'rf')
 endfunc
 
 func Test_ins_complete_invalid_byte()
@@ -387,6 +387,19 @@ func Test_CompleteDone_undo()
   au! CompleteDone
 endfunc
 
+func Test_CompleteDone_modify()
+  let value = {
+        \ 'word': '',
+        \ 'abbr': '',
+        \ 'menu': '',
+        \ 'info': '',
+        \ 'kind': '',
+        \ 'user_data': '',
+        \ }
+  let v:completed_item = value
+  call assert_equal(value, v:completed_item)
+endfunc
+
 func CompleteTest(findstart, query)
   if a:findstart
     return col('.')
@@ -420,7 +433,7 @@ endfunc
 func Test_ins_completeslash()
   CheckMSWindows
 
-  call mkdir('Xdir')
+  call mkdir('Xcpldir')
   let orig_shellslash = &shellslash
   set cpt&
   new
@@ -428,32 +441,32 @@ func Test_ins_completeslash()
   set noshellslash
 
   set completeslash=
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=backslash
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=slash
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir/', getline('.'))
 
   set shellslash
 
   set completeslash=
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir/', getline('.'))
 
   set completeslash=backslash
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=slash
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir/', getline('.'))
   %bw!
-  call delete('Xdir', 'rf')
+  call delete('Xcpldir', 'rf')
 
   set noshellslash
   set completeslash=slash
@@ -660,14 +673,14 @@ func Test_complete_func_error()
   func ListColors()
     call complete(col('.'), "blue")
   endfunc
-  call assert_fails('exe "normal i\<C-R>=ListColors()\<CR>"', 'E474:')
+  call assert_fails('exe "normal i\<C-R>=ListColors()\<CR>"', 'E1211:')
   func ListMonths()
     call complete(col('.'), test_null_list())
   endfunc
-  call assert_fails('exe "normal i\<C-R>=ListMonths()\<CR>"', 'E474:')
+  call assert_fails('exe "normal i\<C-R>=ListMonths()\<CR>"', 'E1298:')
   delfunc ListColors
   delfunc ListMonths
-  call assert_fails('call complete_info({})', 'E714:')
+  call assert_fails('call complete_info({})', 'E1211:')
   call assert_equal([], complete_info(['items']).items)
 endfunc
 
@@ -1213,14 +1226,14 @@ func Test_complete_unreadable_thesaurus_file()
   CheckUnix
   CheckNotRoot
 
-  call writefile(['about', 'above'], 'Xfile')
-  call setfperm('Xfile', '---r--r--')
+  call writefile(['about', 'above'], 'Xunrfile')
+  call setfperm('Xunrfile', '---r--r--')
   new
   set complete=sXfile
   exe "normal! ia\<C-P>"
   call assert_equal('a', getline(1))
   bw!
-  call delete('Xfile')
+  call delete('Xunrfile')
   set complete&
 endfunc
 
@@ -2108,6 +2121,13 @@ func Test_infercase_very_long_line()
   exe "normal 2Go\<C-X>\<C-L>\<Esc>"
   call assert_equal(longLine, getline(3))
 
+  " check that the too long text is NUL terminated
+  %del
+  norm o
+  norm 1987ax
+  exec "norm ox\<C-X>\<C-L>"
+  call assert_equal(repeat('x', 1987), getline(3))
+
   bwipe!
   set noic noinfercase
 endfunc
@@ -2122,5 +2142,13 @@ func Test_ins_complete_add()
   bwipe!
 endfunc
 
+func Test_ins_complete_end_of_line()
+  " this was reading past the end of the line
+  new  
+  norm 8oý 
+  sil! norm o
+
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -176,7 +176,8 @@ not_in_vim9(exarg_T *eap)
 }
 
 /*
- * Give an error message if "p" points at "#{" and return TRUE.
+ * Return TRUE if "p" points at "#{", not "#{{".
+ * Give an error message if not done already.
  * This avoids that using a legacy style #{} dictionary leads to difficult to
  * understand errors.
  */
@@ -185,7 +186,8 @@ vim9_bad_comment(char_u *p)
 {
     if (p[0] == '#' && p[1] == '{' && p[2] != '{')
     {
-	emsg(_(e_cannot_use_hash_curly_to_start_comment));
+	if (!did_emsg)
+	    emsg(_(e_cannot_use_hash_curly_to_start_comment));
 	return TRUE;
     }
     return FALSE;
@@ -194,12 +196,17 @@ vim9_bad_comment(char_u *p)
 
 /*
  * Return TRUE if "p" points at a "#" not followed by one '{'.
+ * Gives an error for using "#{", not for "#{{".
  * Does not check for white space.
  */
     int
 vim9_comment_start(char_u *p)
 {
+#ifdef FEAT_EVAL
+    return p[0] == '#' && !vim9_bad_comment(p);
+#else
     return p[0] == '#' && (p[1] != '{' || p[2] == '{');
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -687,6 +694,20 @@ ex_import(exarg_T *eap)
     if (cmd_end != NULL)
 	set_nextcmd(eap, cmd_end);
     clear_evalarg(&evalarg, eap);
+}
+
+/*
+ * When a script is a symlink it may be imported with one name and sourced
+ * under another name.  Adjust the import script ID if needed.
+ * "*sid" must be a valid script ID.
+ */
+    void
+import_check_sourced_sid(int *sid)
+{
+    scriptitem_T *script = SCRIPT_ITEM(*sid);
+
+    if (script->sn_sourced_sid > 0)
+	*sid = script->sn_sourced_sid;
 }
 
 /*

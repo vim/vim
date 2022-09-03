@@ -1759,7 +1759,7 @@ spell_reload_one(
 	    if (spell_load_file(fname, NULL, slang, FALSE) == NULL)
 		// reloading failed, clear the language
 		slang_clear(slang);
-	    redraw_all_later(SOME_VALID);
+	    redraw_all_later(UPD_SOME_VALID);
 	    didit = TRUE;
 	}
     }
@@ -5585,10 +5585,12 @@ sug_filltree(spellinfo_T *spin, slang_T *slang)
 
     /*
      * Go through the whole case-folded tree, soundfold each word and put it
-     * in the trie.
+     * in the trie.  Bail out if the tree is empty.
      */
     byts = slang->sl_fbyts;
     idxs = slang->sl_fidxs;
+    if (byts == NULL || idxs == NULL)
+	return FAIL;
 
     arridx[0] = 0;
     curi[0] = 1;
@@ -6367,7 +6369,7 @@ spell_add_word(
 	if (buf != NULL)
 	    buf_reload(buf, buf->b_orig_mode, FALSE);
 
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
     }
     vim_free(fnamebuf);
 }

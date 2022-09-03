@@ -12,26 +12,26 @@ endfunction
 
 func Test_edit_bad()
   " Test loading a utf8 file with bad utf8 sequences.
-  call writefile(["[\xff][\xc0][\xe2\x89\xf0][\xc2\xc2]"], "Xfile")
+  call writefile(["[\xff][\xc0][\xe2\x89\xf0][\xc2\xc2]"], "Xbadfile")
   new
 
   " Without ++bad=..., the default behavior is like ++bad=?
-  e! ++enc=utf8 Xfile
+  e! ++enc=utf8 Xbadfile
   call assert_equal('[?][?][???][??]', getline(1))
 
-  e! ++encoding=utf8 ++bad=_ Xfile
+  e! ++encoding=utf8 ++bad=_ Xbadfile
   call assert_equal('[_][_][___][__]', getline(1))
 
-  e! ++enc=utf8 ++bad=drop Xfile
+  e! ++enc=utf8 ++bad=drop Xbadfile
   call assert_equal('[][][][]', getline(1))
 
-  e! ++enc=utf8 ++bad=keep Xfile
+  e! ++enc=utf8 ++bad=keep Xbadfile
   call assert_equal("[\xff][\xc0][\xe2\x89\xf0][\xc2\xc2]", getline(1))
 
-  call assert_fails('e! ++enc=utf8 ++bad=foo Xfile', 'E474:')
+  call assert_fails('e! ++enc=utf8 ++bad=foo Xbadfile', 'E474:')
 
   bw!
-  call delete('Xfile')
+  call delete('Xbadfile')
 endfunc
 
 " Test for ++bin and ++nobin arguments

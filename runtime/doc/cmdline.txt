@@ -199,9 +199,6 @@ CTRL-R CTRL-L				*c_CTRL-R_CTRL-L* *c_<C-R>_<C-L>*
 		currently displayed match is used.  With CTRL-W the part of
 		the word that was already typed is not inserted again.
 
-		CTRL-F and CTRL-P: {only when |+file_in_path| feature is
-		included}
-
 					*c_CTRL-R_CTRL-R* *c_<C-R>_<C-R>*
 					*c_CTRL-R_CTRL-O* *c_<C-R>_<C-O>*
 CTRL-R CTRL-R {register CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
@@ -1147,6 +1144,8 @@ character that indicates the type of command-line being edited, see
 
 Vim will be in Normal mode when the editor is opened, except when 'insertmode'
 is set.
+								*E1292*
+Once a command-line window is open it is not possible to open another one.
 
 The height of the window is specified with 'cmdwinheight' (or smaller if there
 is no room).  The window is always full width and is positioned just above the

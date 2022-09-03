@@ -4516,11 +4516,11 @@ gui_do_scroll(void)
 #endif
 	    )
     {
-	int type = VALID;
+	int type = UPD_VALID;
 
 	if (pum_visible())
 	{
-	    type = NOT_VALID;
+	    type = UPD_NOT_VALID;
 	    wp->w_lines_valid = 0;
 	}
 
@@ -5527,7 +5527,7 @@ drop_callback(void *cookie)
     }
 
     // Update the screen display
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
 # ifdef FEAT_MENU
     gui_update_menus(0);
 # endif

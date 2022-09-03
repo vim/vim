@@ -183,6 +183,8 @@ CTRL-W v						*CTRL-W_v*
 		3. 'eadirection' isn't "ver", and
 		4. one of the other windows is wider than the current or new
 		   window.
+		If N was given make the new window N columns wide, if
+		possible.
 		Note: In other places CTRL-Q does the same as CTRL-V, but here
 		it doesn't!
 
@@ -254,8 +256,15 @@ and 'winminwidth' are relevant.
 						*:vert* *:vertical*
 :vert[ical] {cmd}
 		Execute {cmd}.  If it contains a command that splits a window,
-		it will be split vertically.
+		it will be split vertically.  For `vertical wincmd =` windows
+		will be equialized only vertically.
 		Doesn't work for |:execute| and |:normal|.
+
+						*:hor* *:horizontal*
+:hor[izontal] {cmd}
+		Execute {cmd}.  Currently only makes a difference for
+		`horizontal wincmd =`, which will equal windows only
+		horizontally.
 
 :lefta[bove] {cmd}				*:lefta* *:leftabove*
 :abo[veleft] {cmd}				*:abo* *:aboveleft*
@@ -551,6 +560,10 @@ CTRL-W =	Make all windows (almost) equally high and wide, but use
 		'winheight' and 'winwidth' for the current window.
 		Windows with 'winfixheight' set keep their height and windows
 		with 'winfixwidth' set keep their width.
+		To equalize only vertically (make window equally high) use
+		`vertical wincmd =`
+		To equalize only horizontally (make window equally wide) use
+		`horizontal wincmd =`
 
 :res[ize] -N					*:res* *:resize* *CTRL-W_-*
 CTRL-W -	Decrease current window height by N (default 1).
@@ -841,30 +854,22 @@ CTRL-W CTRL-F	Split current window in two.  Edit file name under cursor.
 		If the name is a hypertext link that looks like
 		"type://machine/path", only "/path" is used.
 		If a count is given, the count'th matching file is edited.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 CTRL-W F						*CTRL-W_F*
 		Split current window in two.  Edit file name under cursor and
 		jump to the line number following the file name. See |gF| for
 		details on how the line number is obtained.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 CTRL-W gf						*CTRL-W_gf*
 		Open a new tab page and edit the file name under the cursor.
 		Like "tab split" and "gf", but the new tab page isn't created
 		if the file does not exist.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 CTRL-W gF						*CTRL-W_gF*
 		Open a new tab page and edit the file name under the cursor
 		and jump to the line number following the file name.  Like
 		"tab split" and "gF", but the new tab page isn't created if
 		the file does not exist.
-		{not available when the |+file_in_path| feature was disabled
-		at compile time}
 
 CTRL-W gt						*CTRL-W_gt*
 		Go to next tab page, same as `gt`.

@@ -198,6 +198,26 @@ func Test_list_range_assign()
   call v9.CheckDefAndScriptFailure(lines, 'E1012:', 2)
 endfunc
 
+func Test_list_items()
+  let r = []
+  let l = ['a', 'b', 'c']
+  for [idx, val] in items(l)
+    call extend(r, [[idx, val]])
+  endfor
+  call assert_equal([[0, 'a'], [1, 'b'], [2, 'c']], r)
+
+  call assert_fails('call items(3)', 'E1225:')
+endfunc
+
+func Test_string_items()
+  let r = []
+  let s = 'ábツ'
+  for [idx, val] in items(s)
+    call extend(r, [[idx, val]])
+  endfor
+  call assert_equal([[0, 'á'], [1, 'b'], [2, 'ツ']], r)
+endfunc
+
 " Test removing items in list
 func Test_list_func_remove()
   let lines =<< trim END
@@ -548,7 +568,7 @@ func Test_dict_deepcopy()
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
-  call assert_fails("call deepcopy([1, 2], 2)", 'E1023:')
+  call assert_fails("call deepcopy([1, 2], 2)", 'E1212:')
 endfunc
 
 " Locked variables
@@ -961,7 +981,7 @@ func Test_reverse_sort_uniq()
 
   call assert_fails('call reverse("")', 'E899:')
   call assert_fails('call uniq([1, 2], {x, y -> []})', 'E745:')
-  call assert_fails("call sort([1, 2], function('min'), 1)", "E715:")
+  call assert_fails("call sort([1, 2], function('min'), 1)", "E1206:")
   call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")
   call assert_fails("call sort([1, 2], function('min'))", "E118:")
 
@@ -1024,16 +1044,16 @@ func Test_reduce()
   call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E1098:')
   call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E1098:')
   call assert_fails("call reduce([1, 2], 'Xdoes_not_exist')", 'E117:')
-  call assert_fails("echo reduce(0z01, { acc, val -> 2 * acc + val }, '')", 'E39:')
+  call assert_fails("echo reduce(0z01, { acc, val -> 2 * acc + val }, '')", 'E1210:')
 
   call assert_fails("vim9 reduce(0, (acc, val) => (acc .. val), '')", 'E1252:')
   call assert_fails("vim9 reduce({}, (acc, val) => (acc .. val), '')", 'E1252:')
   call assert_fails("vim9 reduce(0.1, (acc, val) => (acc .. val), '')", 'E1252:')
   call assert_fails("vim9 reduce(function('tr'), (acc, val) => (acc .. val), '')", 'E1252:')
-  call assert_fails("call reduce('', { acc, val -> acc + val }, 1)", 'E1253:')
-  call assert_fails("call reduce('', { acc, val -> acc + val }, {})", 'E1253:')
-  call assert_fails("call reduce('', { acc, val -> acc + val }, 0.1)", 'E1253:')
-  call assert_fails("call reduce('', { acc, val -> acc + val }, function('tr'))", 'E1253:')
+  call assert_fails("call reduce('', { acc, val -> acc + val }, 1)", 'E1174:')
+  call assert_fails("call reduce('', { acc, val -> acc + val }, {})", 'E1174:')
+  call assert_fails("call reduce('', { acc, val -> acc + val }, 0.1)", 'E1174:')
+  call assert_fails("call reduce('', { acc, val -> acc + val }, function('tr'))", 'E1174:')
   call assert_fails("call reduce('abc', { a, v -> a10}, '')", 'E121:')
   call assert_fails("call reduce(0z0102, { a, v -> a10}, 1)", 'E121:')
   call assert_fails("call reduce([1, 2], { a, v -> a10}, '')", 'E121:')
@@ -1444,6 +1464,57 @@ func Test_null_dict()
   lockvar d
   call assert_equal(1, islocked('d'))
   unlockvar d
+endfunc
+
+" Test for the indexof() function
+func Test_indexof()
+  let l = [#{color: 'red'}, #{color: 'blue'}, #{color: 'green'}]
+  call assert_equal(0, indexof(l, {i, v -> v.color == 'red'}))
+  call assert_equal(2, indexof(l, {i, v -> v.color == 'green'}))
+  call assert_equal(-1, indexof(l, {i, v -> v.color == 'grey'}))
+  call assert_equal(1, indexof(l, "v:val.color == 'blue'"))
+  call assert_equal(-1, indexof(l, "v:val.color == 'cyan'"))
+
+  let l = [#{n: 10}, #{n: 10}, #{n: 20}]
+  call assert_equal(0, indexof(l, "v:val.n == 10", #{startidx: 0}))
+  call assert_equal(1, indexof(l, "v:val.n == 10", #{startidx: -2}))
+  call assert_equal(-1, indexof(l, "v:val.n == 10", #{startidx: 4}))
+  call assert_equal(-1, indexof(l, "v:val.n == 10", #{startidx: -4}))
+  call assert_equal(0, indexof(l, "v:val.n == 10", test_null_dict()))
+
+  let s = ["a", "b", "c"]
+  call assert_equal(2, indexof(s, {_, v -> v == 'c'}))
+  call assert_equal(-1, indexof(s, {_, v -> v == 'd'}))
+  call assert_equal(-1, indexof(s, {_, v -> "v == 'd'"}))
+
+  call assert_equal(-1, indexof([], {i, v -> v == 'a'}))
+  call assert_equal(-1, indexof([1, 2, 3], {_, v -> "v == 2"}))
+  call assert_equal(-1, indexof(test_null_list(), {i, v -> v == 'a'}))
+  call assert_equal(-1, indexof(l, test_null_string()))
+  call assert_equal(-1, indexof(l, test_null_function()))
+
+  " failure cases
+  call assert_fails('let i = indexof(l, "v:val == ''cyan''")', 'E735:')
+  call assert_fails('let i = indexof(l, "color == ''cyan''")', 'E121:')
+  call assert_fails('let i = indexof(l, {})', 'E1256:')
+  call assert_fails('let i = indexof({}, "v:val == 2")', 'E1226:')
+  call assert_fails('let i = indexof([], "v:val == 2", [])', 'E1206:')
+
+  func TestIdx(k, v)
+    return a:v.n == 20
+  endfunc
+  call assert_equal(2, indexof(l, function("TestIdx")))
+  delfunc TestIdx
+  func TestIdx(k, v)
+    return {}
+  endfunc
+  call assert_fails('let i = indexof(l, function("TestIdx"))', 'E728:')
+  delfunc TestIdx
+  func TestIdx(k, v)
+    throw "IdxError"
+  endfunc
+  call assert_fails('let i = indexof(l, function("TestIdx"))', 'E605:')
+  delfunc TestIdx
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

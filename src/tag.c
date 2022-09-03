@@ -281,6 +281,7 @@ do_tag(
     char_u	*buf_ffname = curbuf->b_ffname;	    // name to use for
 						    // priority computation
     int		use_tfu = 1;
+    char_u	*tofree = NULL;
 
     // remember the matches for the last used tag
     static int		num_matches = 0;
@@ -630,7 +631,12 @@ do_tag(
 	 * When desired match not found yet, try to find it (and others).
 	 */
 	if (use_tagstack)
-	    name = tagstack[tagstackidx].tagname;
+	{
+	    // make a copy, the tagstack may change in 'tagfunc'
+	    name = vim_strsave(tagstack[tagstackidx].tagname);
+	    vim_free(tofree);
+	    tofree = name;
+	}
 #if defined(FEAT_QUICKFIX)
 	else if (g_do_tagpreview != 0)
 	    name = ptag_entry.tagname;
@@ -922,6 +928,7 @@ end_do_tag:
     g_do_tagpreview = 0;	// don't do tag preview next time
 # endif
 
+    vim_free(tofree);
 #ifdef FEAT_CSCOPE
     return jumped_to_tag;
 #else
@@ -3391,11 +3398,7 @@ get_tagfname(
 	    buf[0] = NUL;
 	    (void)copy_option_part(&tnp->tn_np, buf, MAXPATHL - 1, " ,");
 
-#ifdef FEAT_PATH_EXTRA
 	    r_ptr = vim_findfile_stopdir(buf);
-#else
-	    r_ptr = NULL;
-#endif
 	    // move the filename one char forward and truncate the
 	    // filepath with a NUL
 	    filename = gettail(buf);
@@ -4024,7 +4027,7 @@ jumpto_tag(
 	{
 	    // Return cursor to where we were
 	    validate_cursor();
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    win_enter(curwin_save, TRUE);
 	}
 #endif
@@ -4589,17 +4592,16 @@ tagstack_push_items(win_T *wp, list_T *l)
 	    continue;
 	if (list2fpos(&di->di_tv, &mark, &fnum, NULL, FALSE) != OK)
 	    continue;
-	if ((tagname =
-		dict_get_string(itemdict, (char_u *)"tagname", TRUE)) == NULL)
+	if ((tagname = dict_get_string(itemdict, "tagname", TRUE)) == NULL)
 	    continue;
 
 	if (mark.col > 0)
 	    mark.col--;
 	tagstack_push_item(wp, tagname,
-		(int)dict_get_number(itemdict, (char_u *)"bufnr"),
-		(int)dict_get_number(itemdict, (char_u *)"matchnr") - 1,
+		(int)dict_get_number(itemdict, "bufnr"),
+		(int)dict_get_number(itemdict, "matchnr") - 1,
 		mark, fnum,
-		dict_get_string(itemdict, (char_u *)"user_data", TRUE));
+		dict_get_string(itemdict, "user_data", TRUE));
     }
 }
 

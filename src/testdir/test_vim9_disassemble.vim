@@ -315,14 +315,14 @@ def s:ScriptFuncPush()
 enddef
 
 def Test_disassemble_push()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xdisdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xdisdir'
 
   var lines =<< trim END
       vim9script
   END
-  writefile(lines, 'Xdir/autoload/autoscript.vim')
+  writefile(lines, 'Xdisdir/autoload/autoscript.vim')
 
   lines =<< trim END
       vim9script
@@ -342,7 +342,7 @@ def Test_disassemble_push()
   END
   v9.CheckScriptSuccess(lines)
 
-  delete('Xdir', 'rf')
+  delete('Xdisdir', 'rf')
   &rtp = save_rtp
 enddef
 
@@ -2106,7 +2106,7 @@ def Test_disassemble_compare()
              '  var aDict = {x: 2}',
              floatDecl,
              '  if ' .. case[0],
-             '    echo 42'
+             '    echo 42',
              '  endif',
              'enddef'], 'Xdisassemble')
     source Xdisassemble
@@ -2163,7 +2163,7 @@ def Test_disassemble_compare_const()
   for case in cases
     writefile(['def TestCase' .. nr .. '()',
              '  if ' .. case[0],
-             '    echo 42'
+             '    echo 42',
              '  endif',
              'enddef'], 'Xdisassemble')
     source Xdisassemble
@@ -2274,6 +2274,8 @@ def s:Echomsg()
   echomsg 'some' 'message'
   echoconsole 'nothing'
   echoerr 'went' .. 'wrong'
+  var local = 'window'
+  echowin 'in' local
 enddef
 
 def Test_disassemble_echomsg()
@@ -2289,7 +2291,14 @@ def Test_disassemble_echomsg()
         "echoerr 'went' .. 'wrong'\\_s*" ..
         '\d PUSHS "wentwrong"\_s*' ..
         '\d ECHOERR 1\_s*' ..
-        '\d RETURN void',
+        "var local = 'window'\\_s*" ..
+        '\d\+ PUSHS "window"\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        "echowin 'in' local\\_s*" ..
+        '\d\+ PUSHS "in"\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ ECHOWINDOW 2\_s*' ..
+        '\d\+ RETURN void',
         res)
 enddef
 

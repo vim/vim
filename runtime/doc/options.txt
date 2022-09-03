@@ -799,7 +799,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, Vim will change the current working directory whenever you
 	open a file, switch buffers, delete a buffer or open/close a window.
 	It will change to the directory containing the file which was opened
-	or selected.
+	or selected.  When a buffer has no name it also has no directory, thus
+	the current directory won't change when navigating to it.
 	Note: When this option is on some plugins may not work.
 
 			*'autoshelldir'* *'asd'* *'noautoshelldir'* *'noasd'*
@@ -808,8 +809,33 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, Vim will change the current working directory whenever you
 	change the directory of the shell running in a terminal window. You
 	need proper setting-up, so whenever the shell's pwd changes an OSC 7
-	escape sequence will be emitted. For example, on Linux, you can source
-	/etc/profile.d/vte.sh in your shell profile if you use bash or zsh.
+	escape sequence will be emitted.  For example, on Linux, you can
+	source /etc/profile.d/vte.sh in your shell profile if you use bash or
+	zsh.  For bash this should work (put it in a bash init file): >
+		if [[ -n "$VIM_TERMINAL" ]]; then
+		    PROMPT_COMMAND='_vim_sync_PWD'
+		    function _vim_sync_PWD() {
+			printf '\033]7;file://%s\033\\' "$PWD"
+		    }
+		fi
+<
+	Or, in a zsh init file: >
+		if [[ -n "$VIM_TERMINAL" ]]; then
+		    autoload -Uz add-zsh-hook
+		    add-zsh-hook -Uz chpwd _vim_sync_PWD
+		    function _vim_sync_PWD() {
+			printf '\033]7;file://%s\033\\' "$PWD"
+		    }
+		fi
+<
+	In a fish init file: >
+		if test -n "$VIM_TERMINAL"
+		    function _vim_sync_PWD --on-variable=PWD
+			printf '\033]7;file://%s\033\\' "$PWD"
+		    end
+		end
+<
+	You can find an alternative method at |terminal-autoshelldir|.
 	When the parsing of the OSC sequence fails you get *E1179* .
 
 				*'arabic'* *'arab'* *'noarabic'* *'noarab'*
@@ -1151,8 +1177,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 				 Unix: "/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*"
 				 Mac: "/private/tmp/*,$TMPDIR/*,$TMP/*,$TEMP/*")
 			global
-			{not available when compiled without the |+wildignore|
-			feature}
 	A list of file patterns.  When one of the patterns matches with the
 	name of the file which is written, no backup file is created.  Both
 	the specified file name and the full path name of the file are used.
@@ -1533,8 +1557,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cdpath'* *'cd'* *E344* *E346*
 'cdpath' 'cd'		string	(default: equivalent to $CDPATH or ",,")
 			global
-			{not available when compiled without the
-			|+file_in_path| feature}
 	This is a list of directories which will be searched when using the
 	|:cd|, |:tcd| and |:lcd| commands, provided that the directory being
 	searched for has a relative path, not an absolute part starting with
@@ -1760,9 +1782,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'cmdheight'* *'ch'*
 'cmdheight' 'ch'	number	(default 1)
-			global
-	Number of screen lines to use for the command-line.  Helps avoiding
-	|hit-enter| prompts.
+			global or local to tab page
+	Number of screen lines to use for the command-line.  A larger value
+	helps avoiding |hit-enter| prompts.
 	The value of this option is stored with the tab page, so that each tab
 	page can have a different value.
 
@@ -4843,7 +4865,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	help.  (Note that previously setting the global option to the empty
 	value did this, which is now deprecated.)
 	When the first character is ":", the command is invoked as a Vim
-	Ex command prefixed with [count].
+	Ex command with [count] added as an argument if it is not zero.
 	When "man", "man -s" or an Ex command is used, Vim will automatically
 	translate a count for the "K" command and pass it as the first
 	argument.  For "man -s" the "-s" is removed when there is no count.
@@ -5024,8 +5046,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'lispwords'* *'lw'*
 'lispwords' 'lw'	string	(default is very long)
 			global or local to buffer |global-local|
-	Comma-separated list of words that influence the Lisp indenting.
-	|'lisp'|
+	Comma-separated list of words that influence the Lisp indenting when
+	enabled with the |'lisp'| option.
 
 						*'list'* *'nolist'*
 'list'			boolean	(default off)
@@ -5920,7 +5942,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  "http://www.vim.org" will make ":find index.html" work.
 	- Search upwards and downwards in a directory tree using "*", "**" and
 	  ";".  See |file-searching| for info and syntax.
-	  {not available when compiled without the |+path_extra| feature}
 	- Careful with '\' characters, type two to get one in the option: >
 		:set path=.,c:\\include
 <	  Or just use '/' instead: >
@@ -6448,7 +6469,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Each window has its own ruler.  If a window has a status line, the
 	ruler is shown there.  Otherwise it is shown in the last line of the
 	screen.  If the statusline is given by 'statusline' (i.e. not empty),
-	this option takes precedence over 'ruler' and 'rulerformat'
+	this option takes precedence over 'ruler' and 'rulerformat'.
 	If the number of characters displayed is different from the number of
 	bytes in the text (e.g., for a TAB or a multibyte character), both
 	the text column (byte number) and the screen column are shown,
@@ -7320,6 +7341,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Name of the word list file where words are added for the |zg| and |zw|
 	commands.  It must end in ".{encoding}.add".  You need to include the
 	path, otherwise the file is placed in the current directory.
+	The path may include characters from 'isfname', space, comma and '@'.
 								*E765*
 	It may also be a comma-separated list of names.  A count before the
 	|zg| and |zw| commands can be used to access each.  This allows using
@@ -7690,8 +7712,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'suffixesadd'* *'sua'*
 'suffixesadd' 'sua'	string	(default "")
 			local to buffer
-			{not available when compiled without the
-			|+file_in_path| feature}
 	Comma-separated list of suffixes, which are used when searching for a
 	file for the "gf", "[I", etc. commands.  Example: >
 		:set suffixesadd=.java
@@ -7969,8 +7989,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	a directory tree.  See |file-searching|.  E.g., "/lib/**/tags" will
 	find all files named "tags" below "/lib".  The filename itself cannot
 	contain wildcards, it is used as-is.  E.g., "/lib/**/tags?" will find
-	files called "tags?".  {not available when compiled without the
-	|+path_extra| feature}
+	files called "tags?".
 	The |tagfiles()| function can be used to get a list of the file names
 	actually used.
 	If Vim was compiled with the |+emacs_tags| feature, Emacs-style tag
@@ -8994,8 +9013,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wildignore'* *'wig'*
 'wildignore' 'wig'	string	(default "")
 			global
-			{not available when compiled without the |+wildignore|
-			feature}
 	A list of file patterns.  A file that matches with one of these
 	patterns is ignored when expanding |wildcards|, completing file or
 	directory names, and influences the result of |expand()|, |glob()| and
@@ -9021,13 +9038,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 				*'wildmenu'* *'wmnu'* *'nowildmenu'* *'nowmnu'*
 'wildmenu' 'wmnu'	boolean	(default off, set in |defaults.vim|)
 			global
-			{not available if compiled without the |+wildmenu|
-			feature}
 	When 'wildmenu' is on, command-line completion operates in an enhanced
 	mode.  On pressing 'wildchar' (usually <Tab>) to invoke completion,
-	the possible matches are shown just above the command line, with the
-	first match highlighted (overwriting the status line, if there is
-	one).  This is the behavior without "pum" in 'wildoptions'.
+	the possible matches are shown.
+	When 'wildoptions' contains "pum", then the completion matches are
+	shown in a popup menu.  Otherwise they are displayed just above the
+	command line, with the first match highlighted (overwriting the status
+	line, if there is one).
 	Keys that show the previous/next match, such as <Tab> or
 	CTRL-P/CTRL-N, cause the highlight to move to the appropriate match.
 	When 'wildmode' is used, "wildmenu" mode is used where "full" is
@@ -9036,8 +9053,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If there are more matches than can fit in the line, a ">" is shown on
 	the right and/or a "<" is shown on the left.  The status line scrolls
 	as needed.
-	When 'wildoptions' contains "pum", then the completion matches are
-	shown in a popup menu.
 	The "wildmenu" mode is abandoned when a key is hit that is not used
 	for selecting a completion.
 	While the "wildmenu" is active, not using the popup menu, the
@@ -9126,8 +9141,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'wildoptions'* *'wop'*
 'wildoptions' 'wop'	string	(default "")
 			global
-			{not available when compiled without the |+wildignore|
-			feature}
 	A list of words that change how |cmdline-completion| is done.
 	The following values are supported:
 	  fuzzy		Use |fuzzy-matching| to find completion matches. When

@@ -2436,7 +2436,7 @@ handle_mapping(
     int		local_State = get_real_state();
     int		is_plug_map = FALSE;
 
-    // If typehead starts with <Plug> then remap, even for a "noremap" mapping.
+    // If typeahead starts with <Plug> then remap, even for a "noremap" mapping.
     if (typebuf.tb_len >= 3
 	    && typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
 	    && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
@@ -3052,7 +3052,10 @@ vgetorpeek(int advance)
     ++vgetc_busy;
 
     if (advance)
+    {
 	KeyStuffed = FALSE;
+	typebuf_was_empty = FALSE;
+    }
 
     init_typebuf();
     start_stuff();
@@ -3210,7 +3213,7 @@ vgetorpeek(int advance)
 			&& (c = inchar(typebuf.tb_buf + typebuf.tb_off
 					       + typebuf.tb_len, 3, 25L)) == 0)
 		{
-		    colnr_T	col = 0, vcol;
+		    colnr_T	col = 0;
 		    char_u	*ptr;
 
 		    if (mode_displayed)
@@ -3242,24 +3245,30 @@ vgetorpeek(int advance)
 			{
 			    if (did_ai)
 			    {
+				chartabsize_T cts;
+
 				/*
 				 * We are expecting to truncate the trailing
 				 * white-space, so find the last non-white
 				 * character -- webb
 				 */
-				col = vcol = curwin->w_wcol = 0;
+				curwin->w_wcol = 0;
 				ptr = ml_get_curline();
-				while (col < curwin->w_cursor.col)
+				init_chartabsize_arg(&cts, curwin,
+					  curwin->w_cursor.lnum, 0, ptr, ptr);
+				while (cts.cts_ptr < ptr + curwin->w_cursor.col)
 				{
-				    if (!VIM_ISWHITE(ptr[col]))
-					curwin->w_wcol = vcol;
-				    vcol += lbr_chartabsize(ptr, ptr + col,
-							       vcol);
+				    if (!VIM_ISWHITE(*cts.cts_ptr))
+					curwin->w_wcol = cts.cts_vcol;
+				    cts.cts_vcol += lbr_chartabsize(&cts);
 				    if (has_mbyte)
-					col += (*mb_ptr2len)(ptr + col);
+					cts.cts_ptr +=
+						   (*mb_ptr2len)(cts.cts_ptr);
 				    else
-					++col;
+					++cts.cts_ptr;
 				}
+				clear_chartabsize_arg(&cts);
+
 				curwin->w_wrow = curwin->w_cline_row
 					   + curwin->w_wcol / curwin->w_width;
 				curwin->w_wcol %= curwin->w_width;
@@ -3351,6 +3360,10 @@ vgetorpeek(int advance)
 #ifdef FEAT_CMDWIN
 		    tc = c;
 #endif
+		    // set a flag to indicate this wasn't a normal char
+		    if (advance)
+			typebuf_was_empty = TRUE;
+
 		    // return from main_loop()
 		    if (pending_exmode_active)
 			exmode_active = EXMODE_NORMAL;

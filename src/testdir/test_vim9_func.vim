@@ -41,7 +41,7 @@ def TestCompilingError()
 enddef
 
 def TestCompilingErrorInTry()
-  var dir = 'Xdir/autoload'
+  var dir = 'Xcompdir/autoload'
   mkdir(dir, 'p')
 
   var lines =<< trim END
@@ -61,7 +61,7 @@ def TestCompilingErrorInTry()
       catch /nothing/
       endtry
   END
-  lines[1] = 'set rtp=' .. getcwd() .. '/Xdir'
+  lines[1] = 'set rtp=' .. getcwd() .. '/Xcompdir'
   writefile(lines, 'XTest_compile_error')
 
   var buf = g:RunVimInTerminal('-S XTest_compile_error', {rows: 10, wait_for_ruler: 0})
@@ -71,7 +71,11 @@ def TestCompilingErrorInTry()
   # clean up
   g:StopVimInTerminal(buf)
   delete('XTest_compile_error')
-  delete('Xdir', 'rf')
+  delete('Xcompdir', 'rf')
+enddef
+
+def Test_comment_error()
+  v9.CheckDefFailure(['#{ comment'], 'E1170:')
 enddef
 
 def Test_compile_error_in_called_function()
@@ -166,7 +170,7 @@ def Test_wrong_function_name()
 enddef
 
 def Test_autoload_name_mismatch()
-  var dir = 'Xdir/autoload'
+  var dir = 'Xnamedir/autoload'
   mkdir(dir, 'p')
 
   var lines =<< trim END
@@ -179,18 +183,18 @@ def Test_autoload_name_mismatch()
   writefile(lines, dir .. '/script.vim')
 
   var save_rtp = &rtp
-  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  exe 'set rtp=' .. getcwd() .. '/Xnamedir'
   lines =<< trim END
       call script#Function()
   END
   v9.CheckScriptFailure(lines, 'E117:', 1)
 
   &rtp = save_rtp
-  delete(dir, 'rf')
+  delete('Xnamedir', 'rf')
 enddef
 
 def Test_autoload_names()
-  var dir = 'Xdir/autoload'
+  var dir = 'Xandir/autoload'
   mkdir(dir, 'p')
 
   var lines =<< trim END
@@ -202,7 +206,7 @@ def Test_autoload_names()
   writefile(lines, dir .. '/foobar.vim')
 
   var save_rtp = &rtp
-  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  exe 'set rtp=' .. getcwd() .. '/Xandir'
 
   lines =<< trim END
       assert_equal('yes', foobar#function())
@@ -214,11 +218,11 @@ def Test_autoload_names()
   v9.CheckDefAndScriptSuccess(lines)
 
   &rtp = save_rtp
-  delete(dir, 'rf')
+  delete('Xandir', 'rf')
 enddef
 
 def Test_autoload_error_in_script()
-  var dir = 'Xdir/autoload'
+  var dir = 'Xaedir/autoload'
   mkdir(dir, 'p')
 
   var lines =<< trim END
@@ -230,7 +234,7 @@ def Test_autoload_error_in_script()
   writefile(lines, dir .. '/scripterror.vim')
 
   var save_rtp = &rtp
-  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  exe 'set rtp=' .. getcwd() .. '/Xaedir'
 
   g:called_function = 'no'
   # The error in the autoload script cannot be checked with assert_fails(), use
@@ -260,7 +264,7 @@ def Test_autoload_error_in_script()
   assert_equal('yes', g:called_function)
 
   &rtp = save_rtp
-  delete(dir, 'rf')
+  delete('Xaedir', 'rf')
 enddef
 
 def s:CallRecursive(n: number): number
@@ -436,22 +440,22 @@ def Test_missing_return()
                    '    echo "no return"',
                    '  else',
                    '    return 0',
-                   '  endif'
+                   '  endif',
                    'enddef'], 'E1027:')
   v9.CheckDefFailure(['def Missing(): number',
                    '  if g:cond',
                    '    return 1',
                    '  else',
                    '    echo "no return"',
-                   '  endif'
+                   '  endif',
                    'enddef'], 'E1027:')
   v9.CheckDefFailure(['def Missing(): number',
                    '  if g:cond',
                    '    return 1',
                    '  else',
                    '    return 2',
-                   '  endif'
-                   '  return 3'
+                   '  endif',
+                   '  return 3',
                    'enddef'], 'E1095:')
 enddef
 
@@ -905,6 +909,18 @@ def Test_nested_function()
       defcompile
   END
   v9.CheckScriptFailure(lines, 'E1173: Text found after enddef: burp', 3)
+enddef
+
+def Test_nested_function_fails()
+  var lines =<< trim END
+      def T()
+        def Func(g: string):string
+        enddef
+        Func()
+      enddef
+      silent! defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E1069:')
 enddef
 
 def Test_not_nested_function()
@@ -1480,7 +1496,7 @@ enddef
 
 def Test_lambda_uses_assigned_var()
   v9.CheckDefSuccess([
-        'var x: any = "aaa"'
+        'var x: any = "aaa"',
         'x = filter(["bbb"], (_, v) => v =~ x)'])
 enddef
 
@@ -1953,6 +1969,45 @@ def Test_call_funcref()
     g:listarg->assert_equal([1, 2, 3])
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    function s:func(num)
+      return a:num * 2
+    endfunction
+
+    def s:CallFuncref()
+      var Funcref = function('s:func')
+      Funcref(3)->assert_equal(6)
+    enddef
+    call s:CallFuncref()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    function s:func(num)
+      return a:num * 2
+    endfunction
+
+    def s:CallFuncref()
+      var Funcref = function(s:func)
+      Funcref(3)->assert_equal(6)
+    enddef
+    call s:CallFuncref()
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    function s:func(num)
+      return a:num * 2
+    endfunction
+
+    def s:CallFuncref()
+      var Funcref = s:func
+      Funcref(3)->assert_equal(6)
+    enddef
+    call s:CallFuncref()
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 let SomeFunc = function('len')
@@ -2109,9 +2164,9 @@ def Test_return_type_wrong()
         'defcompile'], 'E1059:')
   delfunc! g:Func
 
-  v9.CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
+  v9.CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008: Missing <type> after list')
   delfunc! g:Func
-  v9.CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
+  v9.CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008: Missing <type> after dict')
   delfunc! g:Func
   v9.CheckScriptFailure(['def Func()', 'return 1'], 'E1057:')
   delfunc! g:Func
@@ -2128,7 +2183,7 @@ def Test_return_type_wrong()
 enddef
 
 def Test_arg_type_wrong()
-  v9.CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type>')
+  v9.CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type> after list')
   v9.CheckScriptFailure(['def Func4(...)', 'echo "a"', 'enddef'], 'E1055: Missing name after ...')
   v9.CheckScriptFailure(['def Func5(items:string)', 'echo "a"'], 'E1069:')
   v9.CheckScriptFailure(['def Func5(items)', 'echo "a"'], 'E1077:')
@@ -4203,6 +4258,18 @@ def Test_multiple_funcref()
       X(1)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_cexpr_errmsg_line_number()
+  var lines =<< trim END
+      vim9script
+      def Func()
+        var qfl = {}
+        cexpr qfl
+      enddef
+      Func()
+  END
+  v9.CheckScriptFailure(lines, 'E777', 2)
 enddef
 
 " The following messes up syntax highlight, keep near the end.

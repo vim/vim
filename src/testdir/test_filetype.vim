@@ -14,15 +14,15 @@ endfunc
 
 func Test_conf_type()
   filetype on
-  call writefile(['# some comment', 'must be conf'], 'Xfile')
+  call writefile(['# some comment', 'must be conf'], 'Xconffile')
   augroup filetypedetect
     au BufNewFile,BufRead *	call assert_equal(0, did_filetype())
   augroup END
-  split Xfile
+  split Xconffile
   call assert_equal('conf', &filetype)
 
   bwipe!
-  call delete('Xfile')
+  call delete('Xconffile')
   filetype off
 endfunc
 
@@ -30,20 +30,22 @@ func Test_other_type()
   filetype on
   augroup filetypedetect
     au BufNewFile,BufRead *	call assert_equal(0, did_filetype())
-    au BufNewFile,BufRead Xfile	setf testfile
+    au BufNewFile,BufRead Xotherfile	setf testfile
     au BufNewFile,BufRead *	call assert_equal(1, did_filetype())
   augroup END
-  call writefile(['# some comment', 'must be conf'], 'Xfile')
-  split Xfile
+  call writefile(['# some comment', 'must be conf'], 'Xotherfile')
+  split Xotherfile
   call assert_equal('testfile', &filetype)
 
   bwipe!
-  call delete('Xfile')
+  call delete('Xotherfile')
   filetype off
 endfunc
 
 " Filetypes detected just from matching the file name.
+" First one is checking that these files have no filetype.
 let s:filename_checks = {
+    \ 'none': ['bsd', 'some-bsd'],
     \ '8th': ['file.8th'],
     \ 'a2ps': ['/etc/a2ps.cfg', '/etc/a2ps/file.cfg', 'a2psrc', '.a2psrc', 'any/etc/a2ps.cfg', 'any/etc/a2ps/file.cfg'],
     \ 'a65': ['file.a65'],
@@ -69,6 +71,7 @@ let s:filename_checks = {
     \ 'asciidoc': ['file.asciidoc', 'file.adoc'],
     \ 'asn': ['file.asn', 'file.asn1'],
     \ 'asterisk': ['asterisk/file.conf', 'asterisk/file.conf-file', 'some-asterisk/file.conf', 'some-asterisk/file.conf-file'],
+    \ 'astro': ['file.astro'],
     \ 'atlas': ['file.atl', 'file.as'],
     \ 'autohotkey': ['file.ahk'],
     \ 'autoit': ['file.au3'],
@@ -85,7 +88,7 @@ let s:filename_checks = {
     \ 'bindzone': ['named.root', '/bind/db.file', '/named/db.file', 'any/bind/db.file', 'any/named/db.file'],
     \ 'bitbake': ['file.bb', 'file.bbappend', 'file.bbclass', 'build/conf/local.conf', 'meta/conf/layer.conf', 'build/conf/bbappend.conf', 'meta-layer/conf/distro/foo.conf'],
     \ 'blank': ['file.bl'],
-    \ 'bsdl': ['file.bsd', 'file.bsdl', 'bsd', 'some-bsd'],
+    \ 'bsdl': ['file.bsd', 'file.bsdl'],
     \ 'bst': ['file.bst'],
     \ 'bzl': ['file.bazel', 'file.bzl', 'WORKSPACE'],
     \ 'bzr': ['bzr_log.any', 'bzr_log.file'],
@@ -206,6 +209,7 @@ let s:filename_checks = {
     \ 'gdmo': ['file.mo', 'file.gdmo'],
     \ 'gdresource': ['file.tscn', 'file.tres'],
     \ 'gdscript': ['file.gd'],
+    \ 'gdshader': ['file.gdshader', 'file.shader'],
     \ 'gedcom': ['file.ged', 'lltxxxxx.txt', '/tmp/lltmp', '/tmp/lltmp-file', 'any/tmp/lltmp', 'any/tmp/lltmp-file'],
     \ 'gemtext': ['file.gmi', 'file.gemini'],
     \ 'gift': ['file.gift'],
@@ -359,7 +363,7 @@ let s:filename_checks = {
     \ 'monk': ['file.isc', 'file.monk', 'file.ssc', 'file.tsc'],
     \ 'moo': ['file.moo'],
     \ 'moonscript': ['file.moon'],
-    \ 'mp': ['file.mp'],
+    \ 'mp': ['file.mp', 'file.mpxl', 'file.mpiv', 'file.mpvi'],
     \ 'mplayerconf': ['mplayer.conf', '/.mplayer/config', 'any/.mplayer/config'],
     \ 'mrxvtrc': ['mrxvtrc', '.mrxvtrc'],
     \ 'msidl': ['file.odl', 'file.mof'],
@@ -440,6 +444,7 @@ let s:filename_checks = {
     \ 'python': ['file.py', 'file.pyw', '.pythonstartup', '.pythonrc', 'file.ptl', 'file.pyi', 'SConstruct'],
     \ 'ql': ['file.ql', 'file.qll'],
     \ 'quake': ['anybaseq2/file.cfg', 'anyid1/file.cfg', 'quake3/file.cfg', 'baseq2/file.cfg', 'id1/file.cfg', 'quake1/file.cfg', 'some-baseq2/file.cfg', 'some-id1/file.cfg', 'some-quake1/file.cfg'],
+    \ 'quarto': ['file.qmd'],
     \ 'r': ['file.r'],
     \ 'radiance': ['file.rad', 'file.mat'],
     \ 'raku': ['file.pm6', 'file.p6', 'file.t6', 'file.pod6', 'file.raku', 'file.rakumod', 'file.rakudoc', 'file.rakutest'],
@@ -533,6 +538,7 @@ let s:filename_checks = {
     \ 'svelte': ['file.svelte'],
     \ 'svg': ['file.svg'],
     \ 'svn': ['svn-commitfile.tmp', 'svn-commit-file.tmp', 'svn-commit.tmp'],
+    \ 'swayconfig': ['/home/user/.sway/config', '/home/user/.config/sway/config', '/etc/sway/config', '/etc/xdg/sway/config'],
     \ 'swift': ['file.swift'],
     \ 'swiftgyb': ['file.swift.gyb'],
     \ 'sysctl': ['/etc/sysctl.conf', '/etc/sysctl.d/file.conf', 'any/etc/sysctl.conf', 'any/etc/sysctl.d/file.conf'],
@@ -547,7 +553,7 @@ let s:filename_checks = {
     \ 'template': ['file.tmpl'],
     \ 'teraterm': ['file.ttl'],
     \ 'terminfo': ['file.ti'],
-    \ 'terraform': ['file.tfvars'],
+    \ 'terraform-vars': ['file.tfvars'],
     \ 'tex': ['file.latex', 'file.sty', 'file.dtx', 'file.ltx', 'file.bbl'],
     \ 'texinfo': ['file.texinfo', 'file.texi', 'file.txi'],
     \ 'texmf': ['texmf.cnf'],
@@ -584,6 +590,9 @@ let s:filename_checks = {
     \ 'usw2kagtlog': ['usw2kagt.log', 'USW2KAGT.LOG', 'usw2kagt.file.log', 'USW2KAGT.FILE.LOG', 'file.usw2kagt.log', 'FILE.USW2KAGT.LOG'],
     \ 'vala': ['file.vala'],
     \ 'vb': ['file.sba', 'file.vb', 'file.vbs', 'file.dsm', 'file.ctl'],
+    \ 'vdmpp': ['file.vpp', 'file.vdmpp'],
+    \ 'vdmrt': ['file.vdmrt'],
+    \ 'vdmsl': ['file.vdm', 'file.vdmsl'],
     \ 'vera': ['file.vr', 'file.vri', 'file.vrh'],
     \ 'verilog': ['file.v'],
     \ 'verilogams': ['file.va', 'file.vams'],
@@ -648,7 +657,8 @@ func CheckItems(checks)
       if &filetype == '' && &readonly
 	" File exists but not able to edit it (permission denied)
       else
-	call assert_equal(ft, &filetype, 'with file name: ' . names[i])
+        let expected = ft == 'none' ? '' : ft
+	call assert_equal(expected, &filetype, 'with file name: ' . names[i])
       endif
       bwipe!
     endfor
@@ -1817,6 +1827,44 @@ func Test_sig_file()
   filetype off
 endfunc
 
+" Test dist#ft#FTsil()
+func Test_sil_file()
+  filetype on
+
+  split Xfile.sil
+  call assert_equal('sil', &filetype)
+  bwipe!
+
+  let lines =<< trim END
+  // valid
+  let protoErasedPathA = \ABCProtocol.a
+
+  // also valid
+  let protoErasedPathA =
+          \ABCProtocol.a
+  END
+  call writefile(lines, 'Xfile.sil')
+
+  split Xfile.sil
+  call assert_equal('sil', &filetype)
+  bwipe!
+
+  " SILE
+
+  call writefile(['% some comment'], 'Xfile.sil')
+  split Xfile.sil
+  call assert_equal('sile', &filetype)
+  bwipe!
+
+  call writefile(['\begin[papersize=a6]{document}foo\end{document}'], 'Xfile.sil')
+  split Xfile.sil
+  call assert_equal('sile', &filetype)
+  bwipe!
+
+  call delete('Xfile.sil')
+  filetype off
+endfunc
+
 func Test_inc_file()
   filetype on
 
@@ -1857,6 +1905,31 @@ func Test_inc_file()
 
   " bitbake
   call writefile(['require foo'], 'Xfile.inc')
+  split Xfile.inc
+  call assert_equal('bitbake', &filetype)
+  bwipe!
+
+  call writefile(['S = "${WORKDIR}"'], 'Xfile.inc')
+  split Xfile.inc
+  call assert_equal('bitbake', &filetype)
+  bwipe!
+
+  call writefile(['DEPENDS:append = " somedep"'], 'Xfile.inc')
+  split Xfile.inc
+  call assert_equal('bitbake', &filetype)
+  bwipe!
+
+  call writefile(['MACHINE ??= "qemu"'], 'Xfile.inc')
+  split Xfile.inc
+  call assert_equal('bitbake', &filetype)
+  bwipe!
+
+  call writefile(['PROVIDES := "test"'], 'Xfile.inc')
+  split Xfile.inc
+  call assert_equal('bitbake', &filetype)
+  bwipe!
+
+  call writefile(['RDEPENDS_${PN} += "bar"'], 'Xfile.inc')
   split Xfile.inc
   call assert_equal('bitbake', &filetype)
   bwipe!

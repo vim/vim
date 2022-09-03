@@ -49,38 +49,38 @@ endfunc
 func Test_gF()
   new
   call setline(1, ['111', '222', '333', '444'])
-  w! Xfile
+  w! Xgffile
   close
   new
   set isfname-=:
-  call setline(1, ['one', 'Xfile:3', 'three'])
+  call setline(1, ['one', 'Xgffile:3', 'three'])
   2
   call assert_fails('normal gF', 'E37:')
   call assert_equal(2, getcurpos()[1])
-  w! Xfile2
+  w! Xgffile2
   normal gF
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(3, getcurpos()[1])
 
   enew!
-  call setline(1, ['one', 'the Xfile line 2, and more', 'three'])
-  w! Xfile2
+  call setline(1, ['one', 'the Xgffile line 2, and more', 'three'])
+  w! Xgffile2
   normal 2GfX
   normal gF
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(2, getcurpos()[1])
 
   " jumping to the file/line with CTRL-W_F
   %bw!
   edit Xfile1
-  call setline(1, ['one', 'Xfile:4', 'three'])
+  call setline(1, ['one', 'Xgffile:4', 'three'])
   exe "normal 2G\<C-W>F"
-  call assert_equal('Xfile', bufname('%'))
+  call assert_equal('Xgffile', bufname('%'))
   call assert_equal(4, getcurpos()[1])
 
   set isfname&
-  call delete('Xfile')
-  call delete('Xfile2')
+  call delete('Xgffile')
+  call delete('Xgffile2')
   %bw!
 endfunc
 
@@ -138,7 +138,7 @@ func Test_gf_visual()
   call assert_equal('Xtest_gf_visual', bufname('%'))
   call assert_equal(3, getcurpos()[1])
 
-  " do not include the NUL at the end 
+  " do not include the NUL at the end
   call writefile(['x'], 'X')
   let save_enc = &enc
   for enc in ['latin1', 'utf-8']
@@ -248,6 +248,29 @@ func Test_includeexpr_scriptlocal_func()
   set includeexpr&
   delfunc s:IncludeFunc
   bw!
+endfunc
+
+" Check that expanding directories can handle more than 255 entries.
+func Test_gf_subdirs_wildcard()
+  let cwd = getcwd()
+  let dir = 'Xtestgf_dir'
+  call mkdir(dir)
+  call chdir(dir)
+  for i in range(300)
+    call mkdir(i)
+    call writefile([], i .. '/' .. i, 'S')
+  endfor
+  set path=./**
+
+  new | only
+  call setline(1, '99')
+  w! Xtest1
+  normal gf
+  call assert_equal('99', fnamemodify(bufname(''), ":t"))
+
+  call chdir(cwd)
+  call delete(dir, 'rf')
+  set path&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -48,6 +48,7 @@ void msg_puts_attr(char *s, int attr);
 int message_filtered(char_u *msg);
 void may_clear_sb_text(void);
 void sb_text_start_cmdline(void);
+void sb_text_restart_cmdline(void);
 void sb_text_end_cmdline(void);
 void clear_sb_text(int all);
 void show_sb_text(void);

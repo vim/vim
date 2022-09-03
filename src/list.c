@@ -1053,6 +1053,78 @@ f_flattennew(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "items(list)" function
+ * Caller must have already checked that argvars[0] is a List.
+ */
+    void
+list2items(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l = argvars[0].vval.v_list;
+    listitem_T	*li;
+    varnumber_T	idx;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (l == NULL)
+	return;  // null list behaves like an empty list
+
+    // TODO: would be more efficient to not materialize the argument
+    CHECK_LIST_MATERIALIZE(l);
+    for (idx = 0, li = l->lv_first; li != NULL; li = li->li_next, ++idx)
+    {
+	list_T	    *l2 = list_alloc();
+
+	if (l2 == NULL)
+	    break;
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    break;
+	}
+	if (list_append_number(l2, idx) == FAIL
+		|| list_append_tv(l2, &li->li_tv) == FAIL)
+	    break;
+    }
+}
+
+/*
+ * "items(string)" function
+ * Caller must have already checked that argvars[0] is a String.
+ */
+    void
+string2items(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p = argvars[0].vval.v_string;
+    varnumber_T idx;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (p == NULL)
+	return;  // null string behaves like an empty string
+
+    for (idx = 0; *p != NUL; ++idx)
+    {
+	int	    len = mb_ptr2len(p);
+	list_T	    *l2;
+
+	if (len == 0)
+	    break;
+	l2 = list_alloc();
+	if (l2 == NULL)
+	    break;
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    break;
+	}
+	if (list_append_number(l2, idx) == FAIL
+		|| list_append_string(l2, p, len) == FAIL)
+	    break;
+	p += len;
+    }
+}
+
+/*
  * Extend "l1" with "l2".  "l1" must not be NULL.
  * If "bef" is NULL append at the end, otherwise insert before this item.
  * Returns FAIL when out of memory.
@@ -1447,11 +1519,8 @@ f_join(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_string_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     if (argvars[0].vval.v_list == NULL)
 	return;
@@ -1656,11 +1725,8 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_invalid_argument));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     l = argvars[0].vval.v_list;
     if (l == NULL)
@@ -2172,11 +2238,8 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	// optional third argument: {dict}
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return FAIL;
-	}
 	info->item_compare_selfdict = argvars[2].vval.v_dict;
     }
 

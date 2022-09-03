@@ -65,7 +65,9 @@ func Test_pastetoggle()
   let &pastetoggle = str
   call assert_equal(str, &pastetoggle)
   call assert_equal("\n  pastetoggle=" .. strtrans(str), execute('set pastetoggle?'))
+
   unlet str
+  set pastetoggle&
 endfunc
 
 func Test_wildchar()
@@ -464,9 +466,17 @@ func Test_set_errors()
   call assert_fails('set sessionoptions=curdir,sesdir', 'E474:')
   call assert_fails('set foldmarker={{{,', 'E474:')
   call assert_fails('set sessionoptions=sesdir,curdir', 'E474:')
-  call assert_fails('set listchars=trail:· ambiwidth=double', 'E834:')
+  setlocal listchars=trail:·
+  call assert_fails('set ambiwidth=double', 'E834:')
+  setlocal listchars=trail:-
+  setglobal listchars=trail:·
+  call assert_fails('set ambiwidth=double', 'E834:')
   set listchars&
-  call assert_fails('set fillchars=stl:· ambiwidth=double', 'E835:')
+  setlocal fillchars=stl:·
+  call assert_fails('set ambiwidth=double', 'E835:')
+  setlocal fillchars=stl:-
+  setglobal fillchars=stl:·
+  call assert_fails('set ambiwidth=double', 'E835:')
   set fillchars&
   call assert_fails('set fileencoding=latin1,utf-8', 'E474:')
   set nomodifiable
@@ -873,7 +883,7 @@ func Test_write()
   new
   call setline(1, ['L1'])
   set nowrite
-  call assert_fails('write Xfile', 'E142:')
+  call assert_fails('write Xwrfile', 'E142:')
   set write
   close!
 endfunc
@@ -899,7 +909,6 @@ endfunc
 func Test_rightleftcmd()
   CheckFeature rightleft
   set rightleft
-  set rightleftcmd
 
   let g:l = []
   func AddPos()
@@ -908,6 +917,13 @@ func Test_rightleftcmd()
   endfunc
   cmap <expr> <F2> AddPos()
 
+  set rightleftcmd=
+  call feedkeys("/\<F2>abc\<Right>\<F2>\<Left>\<Left>\<F2>" ..
+        \ "\<Right>\<F2>\<Esc>", 'xt')
+  call assert_equal([2, 5, 3, 4], g:l)
+
+  let g:l = []
+  set rightleftcmd=search
   call feedkeys("/\<F2>abc\<Left>\<F2>\<Right>\<Right>\<F2>" ..
         \ "\<Left>\<F2>\<Esc>", 'xt')
   call assert_equal([&co - 1, &co - 4, &co - 2, &co - 3], g:l)
@@ -918,17 +934,21 @@ func Test_rightleftcmd()
   set rightleft&
 endfunc
 
-" Test for the "debug" option
+" Test for the 'debug' option
 func Test_debug_option()
+  " redraw to avoid matching previous messages
+  redraw
   set debug=beep
   exe "normal \<C-c>"
   call assert_equal('Beep!', Screenline(&lines))
+  call assert_equal('line    4:', Screenline(&lines - 1))
+  " only match the final colon in the line that shows the source
+  call assert_match(':$', Screenline(&lines - 2))
   set debug&
 endfunc
 
 " Test for the default CDPATH option
 func Test_opt_default_cdpath()
-  CheckFeature file_in_path
   let after =<< trim [CODE]
     call assert_equal(',/path/to/dir1,/path/to/dir2', &cdpath)
     call writefile(v:errors, 'Xtestout')

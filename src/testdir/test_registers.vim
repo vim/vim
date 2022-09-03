@@ -411,6 +411,36 @@ func Test_clipboard_regs()
   bwipe!
 endfunc
 
+" Test unnamed for both clipboard registers (* and +)
+func Test_clipboard_regs_both_unnamed()
+  CheckNotGui
+  CheckFeature clipboard_working
+  CheckTwoClipboards
+
+  let @* = 'xxx'
+  let @+ = 'xxx'
+
+  new
+
+  set clipboard=unnamed,unnamedplus
+  call setline(1, ['foo', 'bar'])
+
+  " op_yank copies to both
+  :1
+  :normal yw
+  call assert_equal('foo', getreg('*'))
+  call assert_equal('foo', getreg('+'))
+
+  " op_delete only copies to '+'
+  :2
+  :normal dw
+  call assert_equal('foo', getreg('*'))
+  call assert_equal('bar', getreg('+'))
+
+  set clipboard&vim
+  bwipe!
+endfunc
+
 " Test for restarting the current mode (insert or virtual replace) after
 " executing the contents of a register
 func Test_put_reg_restart_mode()

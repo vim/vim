@@ -424,7 +424,7 @@ endfunc
 " terminal.
 func Test_autoindent_remove_indent()
   CheckRunVimInTerminal
-  let buf = RunVimInTerminal('-N Xfile', {'rows': 6, 'cols' : 20})
+  let buf = RunVimInTerminal('-N Xarifile', {'rows': 6, 'cols' : 20})
   call TermWait(buf)
   call term_sendkeys(buf, ":set autoindent\n")
   " leaving insert mode in a new line with indent added by autoindent, should
@@ -442,8 +442,8 @@ func Test_autoindent_remove_indent()
   call term_sendkeys(buf, ":w\n")
   call TermWait(buf)
   call StopVimInTerminal(buf)
-  call assert_equal(["\tfoo", '', repeat('x', 20)], readfile('Xfile'))
-  call delete('Xfile')
+  call assert_equal(["\tfoo", '', repeat('x', 20)], readfile('Xarifile'))
+  call delete('Xarifile')
 endfunc
 
 func Test_edit_CR()
@@ -1492,7 +1492,7 @@ func Test_edit_complete_very_long_name()
   " Long directory names only work on Unix.
   CheckUnix
 
-  let dirname = getcwd() . "/Xdir"
+  let dirname = getcwd() . "/Xlongdir"
   let longdirname = dirname . repeat('/' . repeat('d', 255), 4)
   try
     call mkdir(longdirname, 'p')
@@ -1530,7 +1530,7 @@ func Test_edit_complete_very_long_name()
   let longfilename = longdirname . '/' . repeat('a', 255)
   call writefile(['Totum', 'Table'], longfilename)
   new
-  exe "next Xfile " . longfilename
+  exe "next Xnofile " . longfilename
   exe "normal iT\<C-N>"
 
   bwipe!
@@ -1729,7 +1729,7 @@ endfunc
 " Test for editing a directory
 func Test_edit_is_a_directory()
   CheckEnglish
-  let dirname = getcwd() . "/Xdir"
+  let dirname = getcwd() . "/Xeditdir"
   call mkdir(dirname, 'p')
 
   new
@@ -1754,19 +1754,19 @@ endfunc
 " Test for editing a file using invalid file encoding
 func Test_edit_invalid_encoding()
   CheckEnglish
-  call writefile([], 'Xfile')
+  call writefile([], 'Xinvfile')
   redir => msg
-  new ++enc=axbyc Xfile
+  new ++enc=axbyc Xinvfile
   redir END
   call assert_match('\[NOT converted\]', msg)
-  call delete('Xfile')
+  call delete('Xinvfile')
   close!
 endfunc
 
 " Test for the "charconvert" option
 func Test_edit_charconvert()
   CheckEnglish
-  call writefile(['one', 'two'], 'Xfile')
+  call writefile(['one', 'two'], 'Xccfile')
 
   " set 'charconvert' to a non-existing function
   set charconvert=NonExitingFunc()
@@ -1774,7 +1774,7 @@ func Test_edit_charconvert()
   let caught_e117 = v:false
   try
     redir => msg
-    edit ++enc=axbyc Xfile
+    edit ++enc=axbyc Xccfile
   catch /E117:/
     let caught_e117 = v:true
   finally
@@ -1792,7 +1792,7 @@ func Test_edit_charconvert()
   set charconvert=Cconv1()
   new
   redir => msg
-  edit ++enc=axbyc Xfile
+  edit ++enc=axbyc Xccfile
   redir END
   call assert_equal(['one', 'two'], getline(1, '$'))
   call assert_match("can't read output of 'charconvert'", msg)
@@ -1807,10 +1807,10 @@ func Test_edit_charconvert()
     call writefile(data, v:fname_out)
   endfunc
   set charconvert=Cconv2()
-  new Xfile
-  write ++enc=ucase Xfile1
-  call assert_equal(['ONE', 'TWO'], readfile('Xfile1'))
-  call delete('Xfile1')
+  new Xccfile
+  write ++enc=ucase Xccfile1
+  call assert_equal(['ONE', 'TWO'], readfile('Xccfile1'))
+  call delete('Xccfile1')
   close!
   delfunc Cconv2
   set charconvert&
@@ -1821,13 +1821,13 @@ func Test_edit_charconvert()
   endfunc
   set charconvert=Cconv3()
   new
-  call assert_fails('edit ++enc=lcase Xfile', 'E202:')
+  call assert_fails('edit ++enc=lcase Xccfile', 'E202:')
   call assert_equal([''], getline(1, '$'))
   close!
   delfunc Cconv3
   set charconvert&
 
-  call delete('Xfile')
+  call delete('Xccfile')
 endfunc
 
 " Test for editing a file without read permission
@@ -1835,17 +1835,17 @@ func Test_edit_file_no_read_perm()
   CheckUnix
   CheckNotRoot
 
-  call writefile(['one', 'two'], 'Xfile')
-  call setfperm('Xfile', '-w-------')
+  call writefile(['one', 'two'], 'Xnrpfile')
+  call setfperm('Xnrpfile', '-w-------')
   new
   redir => msg
-  edit Xfile
+  edit Xnrpfile
   redir END
   call assert_equal(1, &readonly)
   call assert_equal([''], getline(1, '$'))
   call assert_match('\[Permission Denied\]', msg)
   close!
-  call delete('Xfile')
+  call delete('Xnrpfile')
 endfunc
 
 " Using :edit without leaving 'insertmode' should not cause Insert mode to be
@@ -2031,97 +2031,6 @@ func Test_edit_put_CTRL_E()
   call assert_equal(['r', 'r'], getline(1, 2))
   bwipe!
   set encoding=utf-8
-endfunc
-
-" Test for ModeChanged pattern
-func Test_mode_changes()
-  let g:index = 0
-  let g:mode_seq = ['n', 'i', 'n', 'v', 'V', 'i', 'ix', 'i', 'ic', 'i', 'n', 'no', 'n', 'V', 'v', 's', 'n']
-  func! TestMode()
-    call assert_equal(g:mode_seq[g:index], get(v:event, "old_mode"))
-    call assert_equal(g:mode_seq[g:index + 1], get(v:event, "new_mode"))
-    call assert_equal(mode(1), get(v:event, "new_mode"))
-    let g:index += 1
-  endfunc
-
-  au ModeChanged * :call TestMode()
-  let g:n_to_any = 0
-  au ModeChanged n:* let g:n_to_any += 1
-  call feedkeys("i\<esc>vVca\<CR>\<C-X>\<C-L>\<esc>ggdG", 'tnix')
-
-  let g:V_to_v = 0
-  au ModeChanged V:v let g:V_to_v += 1
-  call feedkeys("Vv\<C-G>\<esc>", 'tnix')
-  call assert_equal(len(filter(g:mode_seq[1:], {idx, val -> val == 'n'})), g:n_to_any)
-  call assert_equal(1, g:V_to_v)
-  call assert_equal(len(g:mode_seq) - 1, g:index)
-
-  let g:n_to_i = 0
-  au ModeChanged n:i let g:n_to_i += 1
-  let g:n_to_niI = 0
-  au ModeChanged i:niI let g:n_to_niI += 1
-  let g:niI_to_i = 0
-  au ModeChanged niI:i let g:niI_to_i += 1
-  let g:nany_to_i = 0
-  au ModeChanged n*:i let g:nany_to_i += 1
-  let g:i_to_n = 0
-  au ModeChanged i:n let g:i_to_n += 1
-  let g:nori_to_any = 0
-  au ModeChanged [ni]:* let g:nori_to_any += 1
-  let g:i_to_any = 0
-  au ModeChanged i:* let g:i_to_any += 1
-  let g:index = 0
-  let g:mode_seq = ['n', 'i', 'niI', 'i', 'n']
-  call feedkeys("a\<C-O>l\<esc>", 'tnix')
-  call assert_equal(len(g:mode_seq) - 1, g:index)
-  call assert_equal(1, g:n_to_i)
-  call assert_equal(1, g:n_to_niI)
-  call assert_equal(1, g:niI_to_i)
-  call assert_equal(2, g:nany_to_i)
-  call assert_equal(1, g:i_to_n)
-  call assert_equal(2, g:i_to_any)
-  call assert_equal(3, g:nori_to_any)
-
-  if has('terminal')
-    let g:mode_seq += ['c', 'n', 't', 'nt', 'c', 'nt', 'n']
-    call feedkeys(":term\<CR>\<C-W>N:bd!\<CR>", 'tnix')
-    call assert_equal(len(g:mode_seq) - 1, g:index)
-    call assert_equal(1, g:n_to_i)
-    call assert_equal(1, g:n_to_niI)
-    call assert_equal(1, g:niI_to_i)
-    call assert_equal(2, g:nany_to_i)
-    call assert_equal(1, g:i_to_n)
-    call assert_equal(2, g:i_to_any)
-    call assert_equal(5, g:nori_to_any)
-  endif
-
-  au! ModeChanged
-  delfunc TestMode
-  unlet! g:mode_seq
-  unlet! g:index
-  unlet! g:n_to_any
-  unlet! g:V_to_v
-  unlet! g:n_to_i
-  unlet! g:n_to_niI
-  unlet! g:niI_to_i
-  unlet! g:nany_to_i
-  unlet! g:i_to_n
-  unlet! g:nori_to_any
-  unlet! g:i_to_any
-endfunc
-
-func Test_recursive_ModeChanged()
-  au! ModeChanged * norm 0u
-  sil! norm 
-  au! ModeChanged
-endfunc
-
-func Test_ModeChanged_starts_visual()
-  " This was triggering ModeChanged before setting VIsual, causing a crash.
-  au! ModeChanged * norm 0u
-  sil! norm 
-
-  au! ModeChanged
 endfunc
 
 " Test toggling of input method. See :help i_CTRL-^

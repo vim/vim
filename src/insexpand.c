@@ -642,6 +642,7 @@ ins_compl_infercase_gettext(
 	    // growarray.  Add the character in the next round.
 	    if (ga_grow(&gap, IOSIZE) == FAIL)
 		return (char_u *)"[failed]";
+	    *p = NUL;
 	    STRCPY(gap.ga_data, IObuff);
 	    gap.ga_len = (int)STRLEN(IObuff);
 	}
@@ -1494,7 +1495,7 @@ theend:
  * skipping the word at 'skip_word'.  Returns OK on success.
  */
     static int
-thesarurs_add_words_in_line(
+thesaurus_add_words_in_line(
 	char_u	*fname,
 	char_u	**buf_arg,
 	int	dir,
@@ -1597,7 +1598,7 @@ ins_compl_files(
 		{
 		    // For a thesaurus, add all the words in the line
 		    ptr = buf;
-		    add_r = thesarurs_add_words_in_line(files[i], &ptr, *dir,
+		    add_r = thesaurus_add_words_in_line(files[i], &ptr, *dir,
 							regmatch->startp[0]);
 		}
 		if (add_r == OK)
@@ -2082,7 +2083,7 @@ set_ctrl_x_mode(int c)
 	    ctrl_x_mode = CTRL_X_FILES;
 	    break;
 	case Ctrl_K:
-	    // complete words from a dictinoary
+	    // complete words from a dictionary
 	    ctrl_x_mode = CTRL_X_DICTIONARY;
 	    break;
 	case Ctrl_R:
@@ -2766,25 +2767,21 @@ ins_compl_add_tv(typval_T *tv, int dir, int fast)
     user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {
-	word = dict_get_string(tv->vval.v_dict, (char_u *)"word", FALSE);
-	cptext[CPT_ABBR] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"abbr", FALSE);
-	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"menu", FALSE);
-	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"kind", FALSE);
-	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"info", FALSE);
-	dict_get_tv(tv->vval.v_dict, (char_u *)"user_data", &user_data);
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL
-			&& dict_get_number(tv->vval.v_dict, (char_u *)"icase"))
+	word = dict_get_string(tv->vval.v_dict, "word", FALSE);
+	cptext[CPT_ABBR] = dict_get_string(tv->vval.v_dict, "abbr", FALSE);
+	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict, "menu", FALSE);
+	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict, "kind", FALSE);
+	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict, "info", FALSE);
+	dict_get_tv(tv->vval.v_dict, "user_data", &user_data);
+	if (dict_get_string(tv->vval.v_dict, "icase", FALSE) != NULL
+				  && dict_get_number(tv->vval.v_dict, "icase"))
 	    flags |= CP_ICASE;
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
-	    dup = dict_get_number(tv->vval.v_dict, (char_u *)"dup");
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"empty", FALSE) != NULL)
-	    empty = dict_get_number(tv->vval.v_dict, (char_u *)"empty");
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"equal", FALSE) != NULL
-			&& dict_get_number(tv->vval.v_dict, (char_u *)"equal"))
+	if (dict_get_string(tv->vval.v_dict, "dup", FALSE) != NULL)
+	    dup = dict_get_number(tv->vval.v_dict, "dup");
+	if (dict_get_string(tv->vval.v_dict, "empty", FALSE) != NULL)
+	    empty = dict_get_number(tv->vval.v_dict, "empty");
+	if (dict_get_string(tv->vval.v_dict, "equal", FALSE) != NULL
+				  && dict_get_number(tv->vval.v_dict, "equal"))
 	    flags |= CP_EQUAL;
     }
     else
@@ -2933,9 +2930,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     if (!undo_allowed())
 	return;
 
-    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-	emsg(_(e_invalid_argument));
-    else
+    if (check_for_nonnull_list_arg(argvars, 1) != FAIL)
     {
 	startcol = (int)tv_get_number_chk(&argvars[0], NULL);
 	if (startcol > 0)
@@ -3146,11 +3141,8 @@ f_complete_info(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	if (argvars[0].v_type != VAR_LIST)
-	{
-	    emsg(_(e_list_required));
+	if (check_for_list_arg(argvars, 0) == FAIL)
 	    return;
-	}
 	what_list = argvars[0].vval.v_list;
     }
     get_complete_info(what_list, rettv->vval.v_dict);
@@ -3504,7 +3496,7 @@ ins_comp_get_next_word_or_line(
     {
 	char_u	*tmp_ptr = ptr;
 
-	if (compl_status_adding())
+	if (compl_status_adding() && compl_length <= (int)STRLEN(tmp_ptr))
 	{
 	    tmp_ptr += compl_length;
 	    // Skip if already inside a word.

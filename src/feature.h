@@ -97,6 +97,7 @@
  * These features used to be optional but are now always enabled:
  * +windows		Multiple windows.  Without this there is no help
  *			window and no status lines.
+ * +autocmd		Automatic commands
  * +vertsplit		Vertically split windows.
  * +cmdhist		Command line history.
  * +localmap		Mappings and abbreviations local to a buffer.
@@ -114,6 +115,12 @@
  * +lispindent		lisp indenting (From Eric Fischer).
  * +cindent		C code indenting (From Eric Fischer).
  * +smartindent		smart C code indenting when the 'si' option is set.
+ * +textobjects		Text objects: "vaw", "das", etc.
+ * +file_in_path	"gf" and "<cfile>" commands.
+ * +path_extra		up/downwards searching in 'path' and 'tags'.
+ * +wildignore		'wildignore' and 'backupskip' options
+ * +wildmenu		'wildmenu' option
+ * +builtin_terms	all builtin termcap entries included
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -142,12 +149,9 @@
  * +digraphs		Digraphs.
  *			In insert mode and on the command line you will be
  *			able to use digraphs. The CTRL-K command will work.
- *			Define OLD_DIGRAPHS to get digraphs compatible with
- *			Vim 5.x.  The new ones are from RFC 1345.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_DIGRAPHS
-// #define OLD_DIGRAPHS
 #endif
 
 /*
@@ -201,26 +205,10 @@
 #endif
 
 /*
- * +file_in_path	"gf" and "<cfile>" commands.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_SEARCHPATH
-#endif
-
-/*
  * +find_in_path	"[I" ":isearch" "^W^I", ":checkpath", etc.
  */
 #ifdef FEAT_NORMAL
-# ifdef FEAT_SEARCHPATH	// FEAT_SEARCHPATH is required
-#  define FEAT_FIND_ID
-# endif
-#endif
-
-/*
- * +path_extra		up/downwards searching in 'path' and 'tags'.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_PATH_EXTRA
+# define FEAT_FIND_ID
 #endif
 
 /*
@@ -297,15 +285,8 @@
 /*
  * +timers		timer_start()
  */
-#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(MSWIN) || defined(VMS) )
+#if defined(FEAT_RELTIME) && (defined(UNIX) || defined(MSWIN) || defined(VMS))
 # define FEAT_TIMERS
-#endif
-
-/*
- * +textobjects		Text objects: "vaw", "das", etc.
- */
-#if defined(FEAT_NORMAL) && defined(FEAT_EVAL)
-# define FEAT_TEXTOBJ
 #endif
 
 /*
@@ -330,7 +311,6 @@
 
 /*
  * +diff		Displaying diffs in a nice way.
- *			Requires +windows and +autocmd.
  *			Can be enabled in autoconf already.
  */
 #if defined(FEAT_NORMAL) && !defined(FEAT_DIFF)
@@ -358,21 +338,6 @@
 #endif
 
 /*
- * +wildignore		'wildignore' and 'backupskip' options
- *			Needed for Unix to make "crontab -e" work.
- */
-#if defined(FEAT_NORMAL) || defined(UNIX)
-# define FEAT_WILDIGN
-#endif
-
-/*
- * +wildmenu		'wildmenu' option
- */
-#if defined(FEAT_NORMAL)
-# define FEAT_WILDMENU
-#endif
-
-/*
  * +viminfo		reading/writing the viminfo file. Takes about 8Kbyte
  *			of code.
  * VIMINFO_FILE		Location of user .viminfo file (should start with $).
@@ -386,14 +351,14 @@
 
 /*
  * +syntax		syntax highlighting.  When using this, it's a good
- *			idea to have +autocmd and +eval too.
+ *			idea to have +eval too.
  */
 #if defined(FEAT_NORMAL) || defined(PROTO)
 # define FEAT_SYN_HL
 #endif
 
 /*
- * +conceal		'conceal' option.  Needs syntax highlighting
+ * +conceal		'conceal' option.  Depends on syntax highlighting
  *			as this is how the concealed text is defined.
  */
 #if defined(FEAT_BIG) && defined(FEAT_SYN_HL)
@@ -408,37 +373,17 @@
 #endif
 
 /*
- * +builtin_terms	Choose one out of the following four:
- *
- * NO_BUILTIN_TCAPS	Do not include any builtin termcap entries (used only
- *			with HAVE_TGETENT defined).
- *
- * (nothing)		Machine specific termcap entries will be included.
- *
- * SOME_BUILTIN_TCAPS	Include most useful builtin termcap entries (used only
- *			with NO_BUILTIN_TCAPS not defined).
- *			This is the default.
- *
- * ALL_BUILTIN_TCAPS	Include all builtin termcap entries
- *			(used only with NO_BUILTIN_TCAPS not defined).
- */
-#ifdef HAVE_TGETENT
-// #define NO_BUILTIN_TCAPS
-#endif
-
-#if !defined(NO_BUILTIN_TCAPS)
-# ifdef FEAT_BIG
-#  define ALL_BUILTIN_TCAPS
-# else
-#  define SOME_BUILTIN_TCAPS		// default
-# endif
-#endif
-
-/*
- * +cryptv		Encryption (by Mohsin Ahmed <mosh@sasi.com>).
+ * +cryptv		Encryption (originally by Mohsin Ahmed <mosh@sasi.com>).
  */
 #if defined(FEAT_NORMAL) && !defined(FEAT_CRYPT) || defined(PROTO)
 # define FEAT_CRYPT
+#endif
+
+/*
+ * libsodium - add cryptography support
+ */
+#if defined(HAVE_SODIUM) && defined(FEAT_BIG)
+# define FEAT_SODIUM
 #endif
 
 /*
@@ -545,13 +490,6 @@
 #endif
 #if defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
 # define FEAT_SOUND_CANBERRA
-#endif
-
-/*
- * libsodium - add cryptography support
- */
-#if defined(HAVE_SODIUM) && defined(FEAT_BIG)
-# define FEAT_SODIUM
 #endif
 
 // There are two ways to use XPM.
@@ -1121,6 +1059,13 @@
  */
 #if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
 # define FEAT_PROP_POPUP
+#endif
+
+/*
+ * +message_window	use a popup for messages when 'cmdheight' is zero
+ */
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TIMERS)
+# define HAS_MESSAGE_WINDOW
 #endif
 
 #if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)

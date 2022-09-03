@@ -99,15 +99,15 @@ static char *(history_names[]) =
     char_u *
 get_history_arg(expand_T *xp UNUSED, int idx)
 {
-    static char_u compl[2] = { NUL, NUL };
-    char *short_names = ":=@>?/";
-    int short_names_count = (int)STRLEN(short_names);
-    int history_name_count = ARRAY_LENGTH(history_names) - 1;
+    char    *short_names = ":=@>?/";
+    int	    short_names_count = (int)STRLEN(short_names);
+    int	    history_name_count = ARRAY_LENGTH(history_names) - 1;
 
     if (idx < short_names_count)
     {
-	compl[0] = (char_u)short_names[idx];
-	return compl;
+	xp->xp_buf[0] = (char_u)short_names[idx];
+	xp->xp_buf[1] = NUL;
+	return xp->xp_buf;
     }
     if (idx < short_names_count + history_name_count)
 	return (char_u *)history_names[idx - short_names_count];

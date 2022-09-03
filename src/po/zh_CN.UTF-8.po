@@ -6428,7 +6428,7 @@ msgstr "E804: 不能对浮点数使用 '%'"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: 将浮点数作整数使用"
 
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: 将浮点数作字符串使用"
 
 msgid "E807: Expected Float argument for printf()"

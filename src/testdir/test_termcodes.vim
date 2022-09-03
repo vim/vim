@@ -1664,17 +1664,10 @@ func Test_xx02_iTerm2_response()
   call test_override('term_props', 0)
 endfunc
 
-" This checks the libvterm version response.
-" This must be after other tests, because it has side effects to xterm
-" properties.
-func Test_xx03_libvterm_response()
-  " Termresponse is only parsed when t_RV is not empty.
-  set t_RV=x
-  call test_override('term_props', 1)
-
+func Run_libvterm_konsole_response(code)
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
-  let seq = "\<Esc>[>0;100;0c"
+  let seq = "\<Esc>[>0;" .. a:code .. ";0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
@@ -1685,6 +1678,20 @@ func Test_xx03_libvterm_response()
         \ underline_rgb: 'u',
         \ mouse: 's'
         \ }, terminalprops())
+endfunc
+
+" This checks the libvterm version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx03_libvterm_konsole_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+  call test_override('term_props', 1)
+
+  " libvterm
+  call Run_libvterm_konsole_response(100)
+  " Konsole
+  call Run_libvterm_konsole_response(115)
 
   set t_RV=
   call test_override('term_props', 0)
@@ -2435,29 +2442,6 @@ func Test_terminal_builtin_without_gui()
   call map(output, {_, val -> trim(val)})
   call assert_equal(-1, index(output, 'builtin_gui'))
   call assert_notequal(-1, index(output, 'builtin_dumb'))
-endfunc
-
-func Test_simplify_ctrl_at()
-  " feeding unsimplified CTRL-@ should still trigger i_CTRL-@
-  call feedkeys("ifoo\<Esc>A\<*C-@>x", 'xt')
-  call assert_equal('foofo', getline(1))
-  bw!
-endfunc
-
-func Test_simplify_noremap()
-  call feedkeys("i\<*C-M>", 'nx')
-  call assert_equal('', getline(1))
-  call assert_equal([0, 2, 1, 0, 1], getcurpos())
-  bw!
-endfunc
-
-func Test_simplify_timedout()
-  inoremap <C-M>a b
-  call feedkeys("i\<*C-M>", 'xt')
-  call assert_equal('', getline(1))
-  call assert_equal([0, 2, 1, 0, 1], getcurpos())
-  iunmap <C-M>a
-  bw!
 endfunc
 
 

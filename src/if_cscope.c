@@ -2474,7 +2474,7 @@ cs_show(exarg_T *eap UNUSED)
 	}
     }
 
-    wait_return(TRUE);
+    wait_return(FALSE);
     return CSCOPE_SUCCESS;
 }
 

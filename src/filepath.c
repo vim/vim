@@ -942,7 +942,6 @@ findfilendir(
     typval_T	*rettv,
     int		find_what UNUSED)
 {
-#ifdef FEAT_SEARCHPATH
     char_u	*fname;
     char_u	*fresult = NULL;
     char_u	*path = *curbuf->b_p_path == NUL ? p_path : curbuf->b_p_path;
@@ -951,7 +950,6 @@ findfilendir(
     int		count = 1;
     int		first = TRUE;
     int		error = FALSE;
-#endif
 
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
@@ -962,7 +960,6 @@ findfilendir(
 		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
 
-#ifdef FEAT_SEARCHPATH
     fname = tv_get_string(&argvars[0]);
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -1006,7 +1003,6 @@ findfilendir(
 
     if (rettv->v_type == VAR_STRING)
 	rettv->vval.v_string = fresult;
-#endif
 }
 
 /*
@@ -1607,19 +1603,20 @@ readdir_checkitem(void *context, void *item)
     return checkitem_common(context, name, NULL);
 }
 
+/*
+ * Process the keys in the Dict argument to the readdir() and readdirex()
+ * functions.  Assumes the Dict argument is the 3rd argument.
+ */
     static int
-readdirex_dict_arg(typval_T *tv, int *cmp)
+readdirex_dict_arg(typval_T *argvars, int *cmp)
 {
     char_u     *compare;
 
-    if (tv->v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_nonnull_dict_arg(argvars, 2) == FAIL)
 	return FAIL;
-    }
 
-    if (dict_has_key(tv->vval.v_dict, "sort"))
-	compare = dict_get_string(tv->vval.v_dict, (char_u *)"sort", FALSE);
+    if (dict_has_key(argvars[2].vval.v_dict, "sort"))
+	compare = dict_get_string(argvars[2].vval.v_dict, "sort", FALSE);
     else
     {
 	semsg(_(e_dictionary_key_str_required), "sort");
@@ -1664,7 +1661,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     expr = &argvars[1];
 
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
-	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	    readdirex_dict_arg(argvars, &sort) == FAIL)
 	return;
 
     ret = readdir_core(&ga, path, FALSE, (void *)expr,
@@ -1717,7 +1714,7 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
     expr = &argvars[1];
 
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
-	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	    readdirex_dict_arg(argvars, &sort) == FAIL)
 	return;
 
     ret = readdir_core(&ga, path, TRUE, (void *)expr,
@@ -3091,17 +3088,22 @@ expand_wildcards_eval(
     int		ret = FAIL;
     char_u	*eval_pat = NULL;
     char_u	*exp_pat = *pat;
-    char      *ignored_msg;
+    char	*ignored_msg;
     int		usedlen;
+    int		is_cur_alt_file = *exp_pat == '%' || *exp_pat == '#';
+    int		star_follows = FALSE;
 
-    if (*exp_pat == '%' || *exp_pat == '#' || *exp_pat == '<')
+    if (is_cur_alt_file || *exp_pat == '<')
     {
 	++emsg_off;
 	eval_pat = eval_vars(exp_pat, exp_pat, &usedlen,
 					       NULL, &ignored_msg, NULL, TRUE);
 	--emsg_off;
 	if (eval_pat != NULL)
+	{
+	    star_follows = STRCMP(exp_pat + usedlen, "*") == 0;
 	    exp_pat = concat_str(eval_pat, exp_pat + usedlen);
+	}
     }
 
     if (exp_pat != NULL)
@@ -3109,6 +3111,20 @@ expand_wildcards_eval(
 
     if (eval_pat != NULL)
     {
+	if (*num_file == 0 && is_cur_alt_file && star_follows)
+	{
+	    // Expanding "%" or "#" and the file does not exist: Add the
+	    // pattern anyway (without the star) so that this works for remote
+	    // files and non-file buffer names.
+	    *file = ALLOC_ONE(char_u *);
+	    if (*file != NULL)
+	    {
+		**file = eval_pat;
+		eval_pat = NULL;
+		*num_file = 1;
+		ret = OK;
+	    }
+	}
 	vim_free(exp_pat);
 	vim_free(eval_pat);
     }
@@ -3140,7 +3156,6 @@ expand_wildcards(
     if ((flags & EW_KEEPALL) || retval == FAIL)
 	return retval;
 
-#ifdef FEAT_WILDIGN
     /*
      * Remove names that match 'wildignore'.
      */
@@ -3176,12 +3191,12 @@ expand_wildcards(
 	    return FAIL;
 	}
     }
-#endif
 
     /*
      * Move the names where 'suffixes' match to the end.
+     * Skip when interrupted, the result probably won't be used.
      */
-    if (*num_files > 1)
+    if (*num_files > 1 && !got_int)
     {
 	non_suf_match = 0;
 	for (i = 0; i < *num_files; ++i)
@@ -3719,7 +3734,7 @@ unix_expandpath(
     // Find all matching entries
     if (dirp != NULL)
     {
-	for (;;)
+	while (!got_int)
 	{
 	    dp = readdir(dirp);
 	    if (dp == NULL)
@@ -3789,8 +3804,10 @@ unix_expandpath(
     vim_free(buf);
     vim_regfree(regmatch.regprog);
 
+    // When interrupted the matches probably won't be used and sorting can be
+    // slow, thus skip it.
     matches = gap->ga_len - start_len;
-    if (matches > 0)
+    if (matches > 0 && !got_int)
 	qsort(((char_u **)gap->ga_data) + start_len, matches,
 						   sizeof(char_u *), pstrcmp);
     return matches;
@@ -3876,9 +3893,7 @@ gen_expand_wildcards(
     static int		recursive = FALSE;
     int			add_pat;
     int			retval = OK;
-#if defined(FEAT_SEARCHPATH)
     int			did_expand_in_path = FALSE;
-#endif
 
     /*
      * expand_env() is called to expand things like "~user".  If this fails,
@@ -3918,7 +3933,7 @@ gen_expand_wildcards(
      */
     ga_init2(&ga, sizeof(char_u *), 30);
 
-    for (i = 0; i < num_pat; ++i)
+    for (i = 0; i < num_pat && !got_int; ++i)
     {
 	add_pat = -1;
 	p = pat[i];
@@ -3968,7 +3983,6 @@ gen_expand_wildcards(
 	     */
 	    if (mch_has_exp_wildcard(p) || (flags & EW_ICASE))
 	    {
-#if defined(FEAT_SEARCHPATH)
 		if ((flags & EW_PATH)
 			&& !mch_isFullName(p)
 			&& !(p[0] == '.'
@@ -3984,7 +3998,6 @@ gen_expand_wildcards(
 		    did_expand_in_path = TRUE;
 		}
 		else
-#endif
 		    add_pat = mch_expandpath(&ga, p, flags);
 	    }
 	}
@@ -4004,10 +4017,8 @@ gen_expand_wildcards(
 		vim_free(t);
 	}
 
-#if defined(FEAT_SEARCHPATH)
 	if (did_expand_in_path && ga.ga_len > 0 && (flags & EW_PATH))
 	    uniquefy_paths(&ga, p);
-#endif
 	if (p != pat[i])
 	    vim_free(p);
     }
@@ -4080,10 +4091,8 @@ addfile(
     /*
      * Append a slash or backslash after directory names if none is present.
      */
-#ifndef DONT_ADD_PATHSEP_TO_DIR
     if (isdir && (flags & EW_ADDSLASH))
 	add_pathsep(p);
-#endif
     ((char_u **)gap->ga_data)[gap->ga_len++] = p;
 }
 

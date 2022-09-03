@@ -348,7 +348,7 @@ export def FTidl()
   setf idl
 enddef
 
-# Distinguish between "default" and Cproto prototype file. */
+# Distinguish between "default", Prolog and Cproto prototype file.
 export def ProtoCheck(default: string)
   # Cproto files have a comment in the first line and a function prototype in
   # the second line, it always ends in ";".  Indent files may also have
@@ -358,7 +358,14 @@ export def ProtoCheck(default: string)
   if getline(2) =~ '.;$'
     setf cpp
   else
-    exe 'setf ' .. default
+    # recognize Prolog by specific text in the first non-empty line
+    # require a blank after the '%' because Perl uses "%list" and "%translate"
+    var l = getline(nextnonblank(1))
+    if l =~ '\<prolog\>' || l =~ '^\s*\(%\+\(\s\|$\)\|/\*\)' || l =~ ':-'
+      setf prolog
+    else
+      exe 'setf ' .. default
+    endif
   endif
 enddef
 
@@ -519,7 +526,7 @@ export def FTinc()
     # headers so assume POV-Ray
     elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? ft_pascal_keywords
       setf pascal
-    elseif lines =~# '\<\%(require\|inherit\)\>' || lines =~# '\w\+ = '
+    elseif lines =~# '\<\%(require\|inherit\)\>' || lines =~# '[A-Z][A-Za-z0-9_:${}]*\s\+\%(??\|[?:+]\)\?= '
       setf bitbake
     else
       FTasmsyntax()
@@ -869,6 +876,23 @@ export def FTsig()
   elseif line =~ sml_comment || line =~# sml_keyword
     setf sml
   endif
+enddef
+
+# This function checks the first 100 lines of files matching "*.sil" to
+# resolve detection between Swift Intermediate Language and SILE.
+export def FTsil()
+  for lnum in range(1, [line('$'), 100]->min())
+    var line: string = getline(lnum)
+    if line =~ '^\s*[\\%]'
+      setf sile
+      return
+    elseif line =~ '^\s*\S'
+      setf sil
+      return
+    endif
+  endfor
+  # no clue, default to "sil"
+  setf sil
 enddef
 
 export def FTsys()

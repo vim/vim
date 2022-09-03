@@ -429,7 +429,7 @@ msgid "E461: Illegal variable name: %s"
 msgstr "E461: Niedozwolona nazwa zmiennej: %s"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: U¿ycie Zmiennoprzecinkowej jako £añcucha"
 
 msgid "E687: Less targets than List items"
