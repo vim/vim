@@ -642,9 +642,9 @@ func Test_terminal_cwd_failure()
   " Case 1: Provided directory is not actually a directory.  Attempt to make
   " the file executable as well.
   call writefile([], 'Xtcfile')
-  call setfperm('Xftcile', 'rwx------')
-  call assert_fails("call term_start(&shell, {'cwd': 'Xftcile'})", 'E475:')
-  call delete('Xftcile')
+  call setfperm('Xtcfile', 'rwx------')
+  call assert_fails("call term_start(&shell, {'cwd': 'Xtcfile'})", 'E475:')
+  call delete('Xtcfile')
 
   " Case 2: Directory does not exist.
   call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')
