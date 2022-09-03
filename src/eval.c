@@ -694,7 +694,7 @@ deref_function_name(
 {
     typval_T	ref;
     char_u	*name = *arg;
-    int		save_flags;
+    int		save_flags = 0;
 
     ref.v_type = VAR_UNKNOWN;
     if (evalarg != NULL)
