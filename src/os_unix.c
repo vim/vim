@@ -5021,7 +5021,6 @@ mch_call_shell_fork(
 				{
 				    // finished all the lines, close pipe
 				    close(toshell_fd);
-				    toshell_fd = -1;
 				    break;
 				}
 				lp = ml_get(lnum);
@@ -5399,7 +5398,7 @@ finished:
 	     * child already exited.
 	     */
 	    if (wait_pid != pid)
-		wait_pid = wait4pid(pid, &status);
+		(void)wait4pid(pid, &status);
 
 # ifdef FEAT_GUI
 	    // Close slave side of pty.  Only do this after the child has
@@ -6495,7 +6494,7 @@ select_eintr:
 #ifdef FEAT_JOB_CHANNEL
 	// also call when ret == 0, we may be polling a keep-open channel
 	if (ret >= 0)
-	    ret = channel_select_check(ret, &rfds, &wfds);
+	    (void)channel_select_check(ret, &rfds, &wfds);
 #endif
 
 #endif // HAVE_SELECT

@@ -514,10 +514,8 @@ generate_2BOOL(cctx_T *cctx, int invert, int offset)
     int
 generate_COND2BOOL(cctx_T *cctx)
 {
-    isn_T	*isn;
-
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_COND2BOOL)) == NULL)
+    if (generate_instr(cctx, ISN_COND2BOOL) == NULL)
 	return FAIL;
 
     // type becomes bool
@@ -741,13 +739,9 @@ generate_PUSHS(cctx_T *cctx, char_u **str)
     int
 generate_PUSHCHANNEL(cctx_T *cctx)
 {
-#ifdef FEAT_JOB_CHANNEL
-    isn_T	*isn;
-#endif
-
     RETURN_OK_IF_SKIP(cctx);
 #ifdef FEAT_JOB_CHANNEL
-    if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel) == NULL)
 	return FAIL;
     return OK;
 #else
@@ -762,13 +756,9 @@ generate_PUSHCHANNEL(cctx_T *cctx)
     int
 generate_PUSHJOB(cctx_T *cctx)
 {
-#ifdef FEAT_JOB_CHANNEL
-    isn_T	*isn;
-#endif
-
     RETURN_OK_IF_SKIP(cctx);
 #ifdef FEAT_JOB_CHANNEL
-    if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_job)) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHJOB, &t_job) == NULL)
 	return FAIL;
     return OK;
 #else
@@ -1067,10 +1057,8 @@ generate_UNLET(cctx_T *cctx, isntype_T isn_type, char_u *name, int forceit)
     int
 generate_LOCKCONST(cctx_T *cctx)
 {
-    isn_T	*isn;
-
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_LOCKCONST)) == NULL)
+    if (generate_instr(cctx, ISN_LOCKCONST) == NULL)
 	return FAIL;
     return OK;
 }

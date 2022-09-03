@@ -3121,8 +3121,10 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 				      ? compl_curr_match->cp_number - 1 : -1);
     }
 
-    // TODO
-    // if (ret == OK && (what_flag & CI_WHAT_INSERTED))
+    if (ret == OK && (what_flag & CI_WHAT_INSERTED))
+    {
+	// TODO
+    }
 }
 
 /*

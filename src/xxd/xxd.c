@@ -782,7 +782,6 @@ main(int argc, char *argv[])
 	}
 
       p = 0;
-      c = 0;
       while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
 	{
 	  FPRINTF_OR_DIE((fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",

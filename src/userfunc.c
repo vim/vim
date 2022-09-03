@@ -312,7 +312,6 @@ get_function_args(
 		// find the end of the expression (doesn't evaluate it)
 		any_default = TRUE;
 		p = skipwhite(p) + 1;
-		whitep = p;
 		p = skipwhite(p);
 		expr = p;
 		if (eval1(&p, &rettv, NULL) != FAIL)
