@@ -1454,6 +1454,28 @@ def Run_Test_import_in_spellsuggest_expr()
   set nospell spellsuggest& verbose=0
 enddef
 
+def Test_import_in_lambda_method()
+  var lines =<< trim END
+      vim9script
+      export def Retarg(e: any): any
+        return e
+      enddef
+  END
+  writefile(lines, 'XexportRetarg.vim')
+  lines =<< trim END
+      vim9script
+      import './XexportRetarg.vim'
+      def Lambda(): string
+        var F = (x) => x->XexportRetarg.Retarg()
+        return F('arg')
+      enddef
+      assert_equal('arg', Lambda())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delete('XexportRetarg.vim')
+enddef
+
 def Test_export_shadows_global_function()
   mkdir('Xglobdir/autoload', 'p')
   var save_rtp = &rtp

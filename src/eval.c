@@ -694,8 +694,15 @@ deref_function_name(
 {
     typval_T	ref;
     char_u	*name = *arg;
+    int		save_flags;
 
     ref.v_type = VAR_UNKNOWN;
+    if (evalarg != NULL)
+    {
+	// need to evaluate this to get an import, like in "a.Func"
+	save_flags = evalarg->eval_flags;
+	evalarg->eval_flags |= EVAL_EVALUATE;
+    }
     if (eval9(arg, &ref, evalarg, FALSE) == FAIL)
     {
 	dictitem_T	*v;
@@ -703,7 +710,10 @@ deref_function_name(
 	// If <SID>VarName was used it would not be found, try another way.
 	v = find_var_also_in_script(name, NULL, FALSE);
 	if (v == NULL)
-	    return NULL;
+	{
+	    name = NULL;
+	    goto theend;
+	}
 	copy_tv(&v->di_tv, &ref);
     }
     if (*skipwhite(*arg) != NUL)
@@ -739,7 +749,11 @@ deref_function_name(
 	    semsg(_(e_not_callable_type_str), name);
 	name = NULL;
     }
+
+theend:
     clear_tv(&ref);
+    if (evalarg != NULL)
+	evalarg->eval_flags = save_flags;
     return name;
 }
 
@@ -4080,7 +4094,7 @@ eval9(
     // Handle following '[', '(' and '.' for expr[expr], expr.name,
     // expr(expr), expr->name(expr)
     if (ret == OK)
-	ret = handle_subscript(arg, name_start, rettv, evalarg, TRUE);
+	ret = handle_subscript(arg, name_start, rettv, evalarg, evaluate);
 
     /*
      * Apply logical NOT and unary '-', from right to left, ignore '+'.
@@ -4349,7 +4363,7 @@ eval_method(
     rettv->v_type = VAR_UNKNOWN;
 
     name = *arg;
-    len = get_name_len(arg, &alias, evaluate, TRUE);
+    len = get_name_len(arg, &alias, evaluate, evaluate);
     if (alias != NULL)
 	name = alias;
 
