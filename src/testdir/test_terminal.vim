@@ -2441,4 +2441,19 @@ func Test_term_TextChangedT_close()
   augroup END
 endfunc
 
+func Test_terminal_unwraps()
+  let width = &columns
+  let buf = term_start("seq -s + " .. width)
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+
+  let l = term_getline(buf, 2)
+  call assert_notequal('', l)
+
+  call TermWait(buf)
+  let lines = line('$')
+  call assert_equal(1, lines)
+
+  exe buf . 'bwipe!'
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
