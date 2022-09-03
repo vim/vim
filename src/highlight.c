@@ -4515,7 +4515,7 @@ hlg_add_or_update(dict_T *dict)
 # endif
     p = add_attr_and_value(p, (char_u *)" guifg=", 7, guifg);
     p = add_attr_and_value(p, (char_u *)" guibg=", 7, guibg);
-    p = add_attr_and_value(p, (char_u *)" guisp=", 7, guisp);
+    (void)add_attr_and_value(p, (char_u *)" guisp=", 7, guisp);
 
     do_highlight(hlsetBuf, forceit, FALSE);
 

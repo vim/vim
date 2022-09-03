@@ -2243,9 +2243,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			r = compile_expr0_ext(&p, cctx, &is_const);
 			if (lhs.lhs_new_local)
 			    ++cctx->ctx_locals.ga_len;
-			if (r == FAIL)
-			    goto theend;
 		    }
+		    if (r == FAIL)
+			goto theend;
 		}
 		else if (semicolon && var_idx == var_count - 1)
 		{

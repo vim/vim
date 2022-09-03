@@ -54,7 +54,7 @@ string2float(
     if (skip_quotes && vim_strchr((char_u *)s, '\'') != NULL)
     {
 	char_u	    buf[100];
-	char_u	    *p = buf;
+	char_u	    *p;
 	int	    quotes = 0;
 
 	vim_strncpy(buf, (char_u *)s, 99);

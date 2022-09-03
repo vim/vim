@@ -4368,7 +4368,12 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
     {
 	for (i = 0; i < num_matches; ++i)
 	{
-	    parse_match(matches[i], &tp);
+	    if (parse_match(matches[i], &tp) == FAIL)
+	    {
+		vim_free(matches[i]);
+		continue;
+	    }
+
 	    is_static = test_for_static(&tp);
 
 	    // Skip pseudo-tag lines.
