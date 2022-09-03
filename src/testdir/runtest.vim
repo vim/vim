@@ -465,6 +465,7 @@ for g:testfunc in sort(s:tests)
   " A test can set g:test_is_flaky to retry running the test.
   let g:test_is_flaky = 0
 
+  let starttime = strftime("%T")
   call RunTheTest(g:testfunc)
 
   " Repeat a flaky test.  Give up when:
@@ -475,10 +476,10 @@ for g:testfunc in sort(s:tests)
         \ && $TEST_NO_RETRY == ''
         \ && g:test_is_flaky
     while 1
-      call add(s:messages, 'Found errors in ' . g:testfunc . ':')
+      call add(s:messages, 'Found errors in ' .. g:testfunc .. ':')
       call extend(s:messages, v:errors)
 
-      call add(total_errors, 'Run ' . g:run_nr . ':')
+      call add(total_errors, starttime .. ' Run ' .. g:run_nr .. ':')
       call extend(total_errors, v:errors)
 
       if g:run_nr >= 5 || prev_error == v:errors[0]
@@ -498,6 +499,7 @@ for g:testfunc in sort(s:tests)
       let v:errors = []
       let g:run_nr += 1
 
+      let starttime = strftime("%T")
       call RunTheTest(g:testfunc)
 
       if len(v:errors) == 0
