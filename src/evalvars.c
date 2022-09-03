@@ -1089,7 +1089,6 @@ ex_let(exarg_T *eap)
 		{
 		    // +=, /=, etc. require an existing variable
 		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
-		    i = FAIL;
 		}
 		else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{
@@ -1112,7 +1111,6 @@ ex_let(exarg_T *eap)
 		vim_strncpy(op, expr - len, len);
 		semsg(_(e_white_space_required_before_and_after_str_at_str),
 								   op, argend);
-		i = FAIL;
 	    }
 
 	    if (eap->skip)

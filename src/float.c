@@ -54,12 +54,11 @@ string2float(
     if (skip_quotes && vim_strchr((char_u *)s, '\'') != NULL)
     {
 	char_u	    buf[100];
-	char_u	    *p = buf;
+	char_u	    *p;
 	int	    quotes = 0;
 
 	vim_strncpy(buf, (char_u *)s, 99);
-	p = buf;
-	for (;;)
+	for (p = buf; ; p = skipdigits(p))
 	{
 	    // remove single quotes between digits, not in the exponent
 	    if (*p == '\'')
@@ -69,7 +68,6 @@ string2float(
 	    }
 	    if (!vim_isdigit(*p))
 		break;
-	    p = skipdigits(p);
 	}
 	s = (char *)buf;
 	f = strtod(s, &s);

@@ -5617,7 +5617,6 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     // Store the items in the new table.
-    item = 0;
     for (item = 0; item < l->lv_len; ++item)
     {
 	listitem_T	*lili = ptrs[item];
