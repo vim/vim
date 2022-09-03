@@ -616,7 +616,7 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	case VAR_FUNC:
 	    if (tv->vval.v_string != NULL)
 		iemsg("non-null function constant not supported");
-	    generate_PUSHFUNC(cctx, NULL, &t_func_unknown);
+	    generate_PUSHFUNC(cctx, NULL, &t_func_unknown, TRUE);
 	    break;
 	case VAR_PARTIAL:
 	    if (tv->vval.v_partial != NULL)
@@ -796,9 +796,11 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
 
 /*
  * Generate an ISN_PUSHFUNC instruction with name "name".
+ * When "may_prefix" is TRUE prefix "g:" unless "name" is script-local or
+ * autoload.
  */
     int
-generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
+generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type, int may_prefix)
 {
     isn_T	*isn;
     char_u	*funcname;
@@ -808,7 +810,8 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
 	return FAIL;
     if (name == NULL)
 	funcname = NULL;
-    else if (*name == K_SPECIAL				    // script-local
+    else if (!may_prefix
+	    || *name == K_SPECIAL			    // script-local
 	    || vim_strchr(name, AUTOLOAD_CHAR) != NULL)	    // autoload
 	funcname = vim_strsave(name);
     else
@@ -1679,6 +1682,22 @@ generate_PCALL(
 }
 
 /*
+ * Generate an ISN_DEFER instruction.
+ */
+    int
+generate_DEFER(cctx_T *cctx, int var_idx, int argcount)
+{
+    isn_T *isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr_drop(cctx, ISN_DEFER, argcount + 1)) == NULL)
+	return FAIL;
+    isn->isn_arg.defer.defer_var_idx = var_idx;
+    isn->isn_arg.defer.defer_argcount = argcount;
+    return OK;
+}
+
+/*
  * Generate an ISN_STRINGMEMBER instruction.
  */
     int
@@ -2240,6 +2259,7 @@ delete_instr(isn_T *isn)
 	case ISN_CONCAT:
 	case ISN_COND2BOOL:
 	case ISN_DEBUG:
+	case ISN_DEFER:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOCONSOLE:
@@ -2296,21 +2316,21 @@ delete_instr(isn_T *isn)
 	case ISN_STOREINDEX:
 	case ISN_STORENR:
 	case ISN_SOURCE:
-    case ISN_STOREOUTER:
-    case ISN_STORERANGE:
-    case ISN_STOREREG:
-    case ISN_STOREV:
-    case ISN_STRINDEX:
-    case ISN_STRSLICE:
-    case ISN_THROW:
-    case ISN_TRYCONT:
-    case ISN_UNLETINDEX:
-    case ISN_UNLETRANGE:
-    case ISN_UNPACK:
-    case ISN_USEDICT:
+	case ISN_STOREOUTER:
+	case ISN_STORERANGE:
+	case ISN_STOREREG:
+	case ISN_STOREV:
+	case ISN_STRINDEX:
+	case ISN_STRSLICE:
+	case ISN_THROW:
+	case ISN_TRYCONT:
+	case ISN_UNLETINDEX:
+	case ISN_UNLETRANGE:
+	case ISN_UNPACK:
+	case ISN_USEDICT:
 	// nothing allocated
 	break;
-}
+    }
 }
 
     void

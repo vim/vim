@@ -58,6 +58,7 @@ void func_ptr_unref(ufunc_T *fp);
 void func_ref(char_u *name);
 void func_ptr_ref(ufunc_T *fp);
 void ex_return(exarg_T *eap);
+void handle_defer(void);
 void ex_call(exarg_T *eap);
 int do_return(exarg_T *eap, int reanimate, int is_cmd, void *rettv);
 void discard_pending_return(void *rettv);

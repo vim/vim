@@ -2373,7 +2373,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			r = generate_PUSHBLOB(cctx, blob_alloc());
 			break;
 		    case VAR_FUNC:
-			r = generate_PUSHFUNC(cctx, NULL, &t_func_void);
+			r = generate_PUSHFUNC(cctx, NULL, &t_func_void, TRUE);
 			break;
 		    case VAR_LIST:
 			r = generate_NEWLIST(cctx, 0, FALSE);
@@ -2748,6 +2748,7 @@ compile_def_function(
 	    // Was compiled in this mode before: Free old instructions.
 	    delete_def_function_contents(dfunc, FALSE);
 	ga_clear_strings(&dfunc->df_var_names);
+	dfunc->df_defer_var_idx = 0;
     }
     else
     {
@@ -3247,6 +3248,10 @@ compile_def_function(
 
 	    case CMD_eval:
 		    line = compile_eval(p, &cctx);
+		    break;
+
+	    case CMD_defer:
+		    line = compile_defer(p, &cctx);
 		    break;
 
 	    case CMD_echo:

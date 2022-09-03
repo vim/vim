@@ -113,6 +113,7 @@ typedef enum {
     ISN_FUNCREF,    // push a function ref to dfunc isn_arg.funcref
     ISN_NEWFUNC,    // create a global function from a lambda function
     ISN_DEF,	    // list functions
+    ISN_DEFER,	    // :defer  argument count is isn_arg.number
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
@@ -419,6 +420,12 @@ typedef struct {
     int		dbg_break_lnum;	    // first line to break after
 } debug_T;
 
+// arguments to ISN_DEFER
+typedef struct {
+    int		defer_var_idx;	    // local variable index for defer list
+    int		defer_argcount;	    // number of arguments
+} deferins_T;
+
 /*
  * Instruction
  */
@@ -468,6 +475,7 @@ struct isn_S {
 	tobool_T	    tobool;
 	getitem_T	    getitem;
 	debug_T		    debug;
+	deferins_T	    defer;
     } isn_arg;
 };
 
@@ -498,6 +506,9 @@ struct dfunc_S {
 
     int		df_varcount;	    // number of local variables
     int		df_has_closure;	    // one if a closure was created
+    int		df_defer_var_idx;   // index of local variable that has a list
+				    // of deferred function calls; zero if not
+				    // set
 };
 
 // Number of entries used by stack frame for a function call.
@@ -734,6 +745,15 @@ struct cctx_S {
     lhs_T	ctx_redir_lhs;	    // LHS for ":redir => var", valid when
 				    // lhs_name is not NULL
 };
+
+/*
+ * List of special functions for "compile_arguments()".
+ */
+typedef enum {
+    CA_NOT_SPECIAL,
+    CA_SEARCHPAIR,	    // {skip} in searchpair() and searchpairpos()
+    CA_SUBSTITUTE,	    // {sub} in substitute(), when prefixed with \=
+} ca_special_T;
 
 // flags for typval2type()
 #define TVTT_DO_MEMBER	    1

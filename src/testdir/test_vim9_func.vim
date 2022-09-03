@@ -4272,6 +4272,36 @@ def Test_cexpr_errmsg_line_number()
   v9.CheckScriptFailure(lines, 'E777', 2)
 enddef
 
+def AddDefer(s: string)
+  g:deferred->extend([s])
+enddef
+
+def DeferTwo()
+  g:deferred->extend(['in Two'])
+  for n in range(3)
+    defer g:AddDefer('two' .. n)
+  endfor
+  g:deferred->extend(['end Two'])
+enddef
+
+def DeferOne()
+  g:deferred->extend(['in One'])
+  defer g:AddDefer('one')
+  g:DeferTwo()
+  g:deferred->extend(['end One'])
+
+  writefile(['text'], 'XdeferFile')
+  defer delete('XdeferFile')
+enddef
+
+def Test_defer()
+  g:deferred = []
+  g:DeferOne()
+  assert_equal(['in One', 'in Two', 'end Two', 'two2', 'two1', 'two0', 'end One', 'one'], g:deferred)
+  unlet g:deferred
+  assert_equal('', glob('XdeferFile'))
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()

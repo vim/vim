@@ -2900,4 +2900,19 @@ def Test_disassemble_bitshift()
                '10 RETURN void', instr)
 enddef
 
+def s:OneDefer()
+  defer delete("file")
+enddef
+
+def Test_disassemble_defer()
+  var instr = execute('disassemble s:OneDefer')
+  assert_match('OneDefer\_s*' ..
+        'defer delete("file")\_s*' ..
+        '\d PUSHFUNC "delete"\_s*' ..
+        '\d PUSHS "file"\_s*' ..
+        '\d DEFER 1 args\_s*' ..
+        '\d RETURN\_s*',
+        instr)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

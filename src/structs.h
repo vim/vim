@@ -1753,6 +1753,7 @@ struct funccall_S
     linenr_T	breakpoint;	// next line with breakpoint or zero
     int		dbg_tick;	// debug_tick when breakpoint was set
     int		level;		// top nesting level of executed function
+    garray_T	fc_defer;	// functions to be called on return
 #ifdef FEAT_PROFILE
     proftime_T	prof_child;	// time spent in a child
 #endif
@@ -1766,6 +1767,14 @@ struct funccall_S
     garray_T	fc_funcs;	// list of ufunc_T* which keep a reference to
 				// "func"
 };
+
+// structure used as item in "fc_defer"
+typedef struct
+{
+    char_u	*dr_name;	// function name, allocated
+    typval_T	dr_argvars[MAX_FUNC_ARGS + 1];
+    int		dr_argcount;
+} defer_T;
 
 /*
  * Struct used by trans_function_name()
@@ -2850,7 +2859,7 @@ struct file_buffer
     int		b_u_synced;	// entry lists are synced
     long	b_u_seq_last;	// last used undo sequence number
     long	b_u_save_nr_last; // counter for last file write
-    long	b_u_seq_cur;	// hu_seq of header below which we are now
+    long	b_u_seq_cur;	// uh_seq of header below which we are now
     time_T	b_u_time_cur;	// uh_time of header below which we are now
     long	b_u_save_nr_cur; // file write nr after which we are now
 

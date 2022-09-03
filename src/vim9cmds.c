@@ -1654,6 +1654,9 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
     return p;
 }
 
+/*
+ * Compile an expression or function call.
+ */
     char_u *
 compile_eval(char_u *arg, cctx_T *cctx)
 {
@@ -1679,6 +1682,67 @@ compile_eval(char_u *arg, cctx_T *cctx)
     generate_instr_drop(cctx, ISN_DROP, 1);
 
     return skipwhite(p);
+}
+
+/*
+ * Compile "defer func(arg)".
+ */
+    char_u *
+compile_defer(char_u *arg_start, cctx_T *cctx)
+{
+    char_u	*p;
+    char_u	*arg = arg_start;
+    int		argcount = 0;
+    dfunc_T	*dfunc;
+    type_T	*type;
+    int		func_idx;
+
+    // Get a funcref for the function name.
+    // TODO: better way to find the "(".
+    p = vim_strchr(arg, '(');
+    if (p == NULL)
+    {
+	semsg(_(e_missing_parenthesis_str), arg);
+	return NULL;
+    }
+    *p = NUL;
+    func_idx = find_internal_func(arg);
+    if (func_idx >= 0)
+	// TODO: better type
+	generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
+							   &t_func_any, FALSE);
+    else if (compile_expr0(&arg, cctx) == FAIL)
+	return NULL;
+    *p = '(';
+
+    // check for function type
+    type = get_type_on_stack(cctx, 0);
+    if (type->tt_type != VAR_FUNC)
+    {
+	emsg(_(e_function_name_required));
+	return NULL;
+    }
+
+    // compile the arguments
+    arg = skipwhite(p + 1);
+    if (compile_arguments(&arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
+	return NULL;
+
+    // TODO: check argument count with "type"
+
+    dfunc = ((dfunc_T *)def_functions.ga_data) + cctx->ctx_ufunc->uf_dfunc_idx;
+    if (dfunc->df_defer_var_idx == 0)
+    {
+	lvar_T *lvar = reserve_local(cctx, (char_u *)"@defer@", 7,
+							    TRUE, &t_list_any);
+	if (lvar == NULL)
+	    return NULL;
+	dfunc->df_defer_var_idx = lvar->lv_idx + 1;
+    }
+    if (generate_DEFER(cctx, dfunc->df_defer_var_idx - 1, argcount) == FAIL)
+	return NULL;
+
+    return skipwhite(arg);
 }
 
 /*

@@ -101,8 +101,14 @@ struct ectx_S {
 static garray_T profile_info_ga = {0, 0, sizeof(profinfo_T), 20, NULL};
 #endif
 
+// Get pointer to item in the stack.
+#define STACK_TV(idx) (((typval_T *)ectx->ec_stack.ga_data) + idx)
+
 // Get pointer to item relative to the bottom of the stack, -1 is the last one.
 #define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + (idx))
+
+// Get pointer to a local variable on the stack.  Negative for arguments.
+#define STACK_TV_VAR(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx + STACK_FRAME_SIZE + idx)
 
     void
 to_string_error(vartype_T vartype)
@@ -610,9 +616,6 @@ call_dfunc(
     return OK;
 }
 
-// Get pointer to item in the stack.
-#define STACK_TV(idx) (((typval_T *)ectx->ec_stack.ga_data) + idx)
-
 // Double linked list of funcstack_T in use.
 static funcstack_T *first_funcstack = NULL;
 
@@ -843,6 +846,89 @@ set_ref_in_funcstacks(int copyID)
 }
 
 /*
+ * Handle ISN_DEFER.  Stack has a function reference and "argcount" arguments.
+ * The local variable that lists deferred functions is "var_idx".
+ * Returns OK or FAIL.
+ */
+    static int
+add_defer_func(int var_idx, int argcount, ectx_T *ectx)
+{
+    typval_T	*defer_tv = STACK_TV_VAR(var_idx);
+    list_T	*defer_l;
+    typval_T	*func_tv;
+    list_T	*l;
+    int		i;
+    typval_T	listval;
+
+    if (defer_tv->v_type != VAR_LIST)
+    {
+	// first one, allocate the list
+	if (rettv_list_alloc(defer_tv) == FAIL)
+	    return FAIL;
+    }
+    defer_l = defer_tv->vval.v_list;
+
+    l = list_alloc_with_items(argcount + 1);
+    if (l == NULL)
+	return FAIL;
+    listval.v_type = VAR_LIST;
+    listval.vval.v_list = l;
+    listval.v_lock = 0;
+    if (list_insert_tv(defer_l, &listval,
+			   defer_l == NULL ? NULL : defer_l->lv_first) == FAIL)
+    {
+	vim_free(l);
+	return FAIL;
+    }
+
+    func_tv = STACK_TV_BOT(-argcount - 1);
+    // TODO: check type is a funcref
+    list_set_item(l, 0, func_tv);
+
+    for (i = 1; i <= argcount; ++i)
+	list_set_item(l, i, STACK_TV_BOT(-argcount + i - 1));
+    ectx->ec_stack.ga_len -= argcount + 1;
+    return OK;
+}
+
+/*
+ * Invoked when returning from a function: Invoke any deferred calls.
+ */
+    static void
+invoke_defer_funcs(ectx_T *ectx)
+{
+    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							  + ectx->ec_dfunc_idx;
+    typval_T	*defer_tv = STACK_TV_VAR(dfunc->df_defer_var_idx - 1);
+    listitem_T	*li;
+
+    if (defer_tv->v_type != VAR_LIST)
+	return;	 // no function added
+    for (li = defer_tv->vval.v_list->lv_first; li != NULL; li = li->li_next)
+    {
+	list_T	    *l = li->li_tv.vval.v_list;
+	typval_T    rettv;
+	typval_T    argvars[MAX_FUNC_ARGS];
+	int	    i;
+	listitem_T  *arg_li = l->lv_first;
+	funcexe_T   funcexe;
+
+	for (i = 0; i < l->lv_len - 1; ++i)
+	{
+	    arg_li = arg_li->li_next;
+	    argvars[i] = arg_li->li_tv;
+	}
+
+	CLEAR_FIELD(funcexe);
+	funcexe.fe_evaluate = TRUE;
+	rettv.v_type = VAR_UNKNOWN;
+	(void)call_func(l->lv_first->li_tv.vval.v_string, -1,
+				     &rettv, l->lv_len - 1, argvars, &funcexe);
+	clear_tv(&rettv);
+    }
+}
+
+/*
  * Return from the current function.
  */
     static int
@@ -875,6 +961,9 @@ func_return(ectx_T *ectx)
 	}
     }
 #endif
+
+    if (dfunc->df_defer_var_idx > 0)
+	invoke_defer_funcs(ectx);
 
     // No check for uf_refcount being zero, cannot think of a way that would
     // happen.
@@ -948,8 +1037,6 @@ func_return(ectx_T *ectx)
     --ex_nesting_level;
     return OK;
 }
-
-#undef STACK_TV
 
 /*
  * Prepare arguments and rettv for calling a builtin or user function.
@@ -1731,16 +1818,6 @@ typedef struct subs_expr_S {
     isn_T	*subs_instr;
     int		subs_status;
 } subs_expr_T;
-
-// Get pointer to item in the stack.
-#define STACK_TV(idx) (((typval_T *)ectx->ec_stack.ga_data) + idx)
-
-// Get pointer to item at the bottom of the stack, -1 is the bottom.
-#undef STACK_TV_BOT
-#define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + idx)
-
-// Get pointer to a local variable on the stack.  Negative for arguments.
-#define STACK_TV_VAR(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx + STACK_FRAME_SIZE + idx)
 
 // Set when calling do_debug().
 static ectx_T	*debug_context = NULL;
@@ -3670,6 +3747,13 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    // :defer func(arg)
+	    case ISN_DEFER:
+		if (add_defer_func(iptr->isn_arg.defer.defer_var_idx,
+			     iptr->isn_arg.defer.defer_argcount, ectx) == FAIL)
+		    goto on_error;
+		break;
+
 	    // return from a :def function call without a value
 	    case ISN_RETURN_VOID:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
@@ -5024,6 +5108,14 @@ on_fatal_error:
 done:
     ret = OK;
 theend:
+    {
+	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							  + ectx->ec_dfunc_idx;
+
+	if (dfunc->df_defer_var_idx > 0)
+	    invoke_defer_funcs(ectx);
+    }
+
     dict_stack_clear(dict_stack_len_at_start);
     ectx->ec_trylevel_at_start = save_trylevel_at_start;
     return ret;
@@ -5902,6 +5994,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_PCALL_END:
 		smsg("%s%4d PCALL end", pfx, current);
+		break;
+	    case ISN_DEFER:
+		smsg("%s%4d DEFER %d args", pfx, current,
+				      (int)iptr->isn_arg.defer.defer_argcount);
 		break;
 	    case ISN_RETURN:
 		smsg("%s%4d RETURN", pfx, current);

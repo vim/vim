@@ -1728,44 +1728,36 @@ emsg_funcname(char *ermsg, char_u *name)
 }
 
 /*
- * Allocate a variable for the result of a function.
- * Return OK or FAIL.
+ * Get function arguments at "*arg" and advance it.
+ * Return them in "*argvars[MAX_FUNC_ARGS + 1]" and the count in "argcount".
  */
-    int
-get_func_tv(
-    char_u	*name,		// name of the function
-    int		len,		// length of "name" or -1 to use strlen()
-    typval_T	*rettv,
-    char_u	**arg,		// argument, pointing to the '('
-    evalarg_T	*evalarg,	// for line continuation
-    funcexe_T	*funcexe)	// various values
+    static int
+get_func_arguments(
+	char_u	    **arg,
+	evalarg_T   *evalarg,
+	int	    partial_argc,
+	typval_T    *argvars,
+	int	    *argcount)
 {
-    char_u	*argp;
+    char_u	*argp = *arg;
     int		ret = OK;
-    typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
-    int		argcount = 0;		// number of arguments found
     int		vim9script = in_vim9script();
     int		evaluate = evalarg == NULL
 			       ? FALSE : (evalarg->eval_flags & EVAL_EVALUATE);
 
-    /*
-     * Get the arguments.
-     */
-    argp = *arg;
-    while (argcount < MAX_FUNC_ARGS - (funcexe->fe_partial == NULL ? 0
-					       : funcexe->fe_partial->pt_argc))
+    while (*argcount < MAX_FUNC_ARGS - partial_argc)
     {
 	// skip the '(' or ',' and possibly line breaks
 	argp = skipwhite_and_linebreak(argp + 1, evalarg);
 
 	if (*argp == ')' || *argp == ',' || *argp == NUL)
 	    break;
-	if (eval1(&argp, &argvars[argcount], evalarg) == FAIL)
+	if (eval1(&argp, &argvars[*argcount], evalarg) == FAIL)
 	{
 	    ret = FAIL;
 	    break;
 	}
-	++argcount;
+	++*argcount;
 	// The comma should come right after the argument, but this wasn't
 	// checked previously, thus only enforce it in Vim9 script.
 	if (vim9script)
@@ -1791,11 +1783,41 @@ get_func_tv(
 	    break;
 	}
     }
+
     argp = skipwhite_and_linebreak(argp, evalarg);
     if (*argp == ')')
 	++argp;
     else
 	ret = FAIL;
+    *arg = argp;
+    return ret;
+}
+
+/*
+ * Call a function and put the result in "rettv".
+ * Return OK or FAIL.
+ */
+    int
+get_func_tv(
+    char_u	*name,		// name of the function
+    int		len,		// length of "name" or -1 to use strlen()
+    typval_T	*rettv,
+    char_u	**arg,		// argument, pointing to the '('
+    evalarg_T	*evalarg,	// for line continuation
+    funcexe_T	*funcexe)	// various values
+{
+    char_u	*argp;
+    int		ret = OK;
+    typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
+    int		argcount = 0;			// number of arguments found
+    int		vim9script = in_vim9script();
+    int		evaluate = evalarg == NULL
+			       ? FALSE : (evalarg->eval_flags & EVAL_EVALUATE);
+
+    argp = *arg;
+    ret = get_func_arguments(&argp, evalarg,
+	    (funcexe->fe_partial == NULL ? 0 : funcexe->fe_partial->pt_argc),
+							   argvars, &argcount);
 
     if (ret == OK)
     {
@@ -2883,6 +2905,9 @@ call_user_func(
 	// call do_cmdline() to execute the lines
 	do_cmdline(NULL, get_func_line, (void *)fc,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
+
+    // Invoke functions added with ":defer".
+    handle_defer();
 
     --RedrawingDisabled;
 
@@ -5457,8 +5482,164 @@ ex_return(exarg_T *eap)
     clear_evalarg(&evalarg, eap);
 }
 
+    static int
+ex_call_inner(
+	exarg_T	    *eap,
+	char_u	    *name,
+	char_u	    **arg,
+	char_u	    *startarg,
+	funcexe_T  *funcexe_init,
+	evalarg_T   *evalarg)
+{
+    linenr_T	lnum;
+    int		doesrange;
+    typval_T	rettv;
+    int		failed = FALSE;
+
+    /*
+     * When skipping, evaluate the function once, to find the end of the
+     * arguments.
+     * When the function takes a range, this is discovered after the first
+     * call, and the loop is broken.
+     */
+    if (eap->skip)
+    {
+	++emsg_skip;
+	lnum = eap->line2;	// do it once, also with an invalid range
+    }
+    else
+	lnum = eap->line1;
+    for ( ; lnum <= eap->line2; ++lnum)
+    {
+	funcexe_T funcexe;
+
+	if (!eap->skip && eap->addr_count > 0)
+	{
+	    if (lnum > curbuf->b_ml.ml_line_count)
+	    {
+		// If the function deleted lines or switched to another buffer
+		// the line number may become invalid.
+		emsg(_(e_invalid_range));
+		break;
+	    }
+	    curwin->w_cursor.lnum = lnum;
+	    curwin->w_cursor.col = 0;
+	    curwin->w_cursor.coladd = 0;
+	}
+	*arg = startarg;
+
+	funcexe = *funcexe_init;
+	funcexe.fe_doesrange = &doesrange;
+	rettv.v_type = VAR_UNKNOWN;	// clear_tv() uses this
+	if (get_func_tv(name, -1, &rettv, arg, evalarg, &funcexe) == FAIL)
+	{
+	    failed = TRUE;
+	    break;
+	}
+	if (has_watchexpr())
+	    dbg_check_breakpoint(eap);
+
+	// Handle a function returning a Funcref, Dictionary or List.
+	if (handle_subscript(arg, NULL, &rettv,
+			   eap->skip ? NULL : &EVALARG_EVALUATE, TRUE) == FAIL)
+	{
+	    failed = TRUE;
+	    break;
+	}
+
+	clear_tv(&rettv);
+	if (doesrange || eap->skip)
+	    break;
+
+	// Stop when immediately aborting on error, or when an interrupt
+	// occurred or an exception was thrown but not caught.
+	// get_func_tv() returned OK, so that the check for trailing
+	// characters below is executed.
+	if (aborting())
+	    break;
+    }
+    if (eap->skip)
+	--emsg_skip;
+    return failed;
+}
+
+/*
+ * Core part of ":defer func(arg)".  "arg" points to the "(" and is advanced.
+ * Returns FAIL or OK.
+ */
+    static int
+ex_defer_inner(char_u *name, char_u **arg, evalarg_T *evalarg)
+{
+    typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
+    int		argcount = 0;			// number of arguments found
+    defer_T	*dr;
+    int		ret = FAIL;
+    char_u	*saved_name;
+
+    if (current_funccal == NULL)
+    {
+	semsg(_(e_str_not_inside_function), "defer");
+	return FAIL;
+    }
+    if (get_func_arguments(arg, evalarg, FALSE, argvars, &argcount) == FAIL)
+	goto theend;
+    saved_name = vim_strsave(name);
+    if (saved_name == NULL)
+	goto theend;
+
+    if (current_funccal->fc_defer.ga_itemsize == 0)
+	ga_init2(&current_funccal->fc_defer, sizeof(defer_T), 10);
+    if (ga_grow(&current_funccal->fc_defer, 1) == FAIL)
+	goto theend;
+    dr = ((defer_T *)current_funccal->fc_defer.ga_data)
+					  + current_funccal->fc_defer.ga_len++;
+    dr->dr_name = saved_name;
+    dr->dr_argcount = argcount;
+    while (argcount > 0)
+    {
+	--argcount;
+	dr->dr_argvars[argcount] = argvars[argcount];
+    }
+    ret = OK;
+
+theend:
+    while (--argcount >= 0)
+	clear_tv(&argvars[argcount]);
+    return ret;
+}
+
+/*
+ * Invoked after a functions has finished: invoke ":defer" functions.
+ */
+    void
+handle_defer(void)
+{
+    int	    idx;
+
+    for (idx = current_funccal->fc_defer.ga_len - 1; idx >= 0; --idx)
+    {
+	funcexe_T   funcexe;
+	typval_T    rettv;
+	defer_T	    *dr = ((defer_T *)current_funccal->fc_defer.ga_data) + idx;
+	int	    i;
+
+	CLEAR_FIELD(funcexe);
+	funcexe.fe_evaluate = TRUE;
+
+	rettv.v_type = VAR_UNKNOWN;	// clear_tv() uses this
+	call_func(dr->dr_name, -1, &rettv,
+				    dr->dr_argcount, dr->dr_argvars, &funcexe);
+	clear_tv(&rettv);
+	vim_free(dr->dr_name);
+	for (i = dr->dr_argcount - 1; i >= 0; --i)
+	    clear_tv(&dr->dr_argvars[i]);
+    }
+    ga_clear(&current_funccal->fc_defer);
+}
+
 /*
  * ":1,25call func(arg1, arg2)"	function call.
+ * ":defer func(arg1, arg2)"    deferred function call.
  */
     void
 ex_call(exarg_T *eap)
@@ -5468,9 +5649,6 @@ ex_call(exarg_T *eap)
     char_u	*name;
     char_u	*tofree;
     int		len;
-    typval_T	rettv;
-    linenr_T	lnum;
-    int		doesrange;
     int		failed = FALSE;
     funcdict_T	fudi;
     partial_T	*partial = NULL;
@@ -5482,6 +5660,8 @@ ex_call(exarg_T *eap)
     fill_evalarg_from_eap(&evalarg, eap, eap->skip);
     if (eap->skip)
     {
+	typval_T	rettv;
+
 	// trans_function_name() doesn't work well when skipping, use eval0()
 	// instead to skip to any following command, e.g. for:
 	//   :if 0 | call dict.foo().bar() | endif
@@ -5531,82 +5711,29 @@ ex_call(exarg_T *eap)
 	goto end;
     }
 
-    /*
-     * When skipping, evaluate the function once, to find the end of the
-     * arguments.
-     * When the function takes a range, this is discovered after the first
-     * call, and the loop is broken.
-     */
-    if (eap->skip)
+    if (eap->cmdidx == CMD_defer)
     {
-	++emsg_skip;
-	lnum = eap->line2;	// do it once, also with an invalid range
+	arg = startarg;
+	failed = ex_defer_inner(name, &arg, &evalarg) == FAIL;
     }
     else
-	lnum = eap->line1;
-    for ( ; lnum <= eap->line2; ++lnum)
     {
 	funcexe_T funcexe;
 
-	if (!eap->skip && eap->addr_count > 0)
-	{
-	    if (lnum > curbuf->b_ml.ml_line_count)
-	    {
-		// If the function deleted lines or switched to another buffer
-		// the line number may become invalid.
-		emsg(_(e_invalid_range));
-		break;
-	    }
-	    curwin->w_cursor.lnum = lnum;
-	    curwin->w_cursor.col = 0;
-	    curwin->w_cursor.coladd = 0;
-	}
-	arg = startarg;
-
 	CLEAR_FIELD(funcexe);
-	funcexe.fe_firstline = eap->line1;
-	funcexe.fe_lastline = eap->line2;
-	funcexe.fe_doesrange = &doesrange;
-	funcexe.fe_evaluate = !eap->skip;
+	funcexe.fe_check_type = type;
 	funcexe.fe_partial = partial;
 	funcexe.fe_selfdict = fudi.fd_dict;
-	funcexe.fe_check_type = type;
+	funcexe.fe_firstline = eap->line1;
+	funcexe.fe_lastline = eap->line2;
 	funcexe.fe_found_var = found_var;
-	rettv.v_type = VAR_UNKNOWN;	// clear_tv() uses this
-	if (get_func_tv(name, -1, &rettv, &arg, &evalarg, &funcexe) == FAIL)
-	{
-	    failed = TRUE;
-	    break;
-	}
-	if (has_watchexpr())
-	    dbg_check_breakpoint(eap);
-
-	// Handle a function returning a Funcref, Dictionary or List.
-	if (handle_subscript(&arg, NULL, &rettv,
-			   eap->skip ? NULL : &EVALARG_EVALUATE, TRUE) == FAIL)
-	{
-	    failed = TRUE;
-	    break;
-	}
-
-	clear_tv(&rettv);
-	if (doesrange || eap->skip)
-	    break;
-
-	// Stop when immediately aborting on error, or when an interrupt
-	// occurred or an exception was thrown but not caught.
-	// get_func_tv() returned OK, so that the check for trailing
-	// characters below is executed.
-	if (aborting())
-	    break;
+	funcexe.fe_evaluate = !eap->skip;
+	failed = ex_call_inner(eap, name, &arg, startarg, &funcexe, &evalarg);
     }
-    if (eap->skip)
-	--emsg_skip;
 
     // When inside :try we need to check for following "| catch" or "| endtry".
     // Not when there was an error, but do check if an exception was thrown.
-    if ((!aborting() || did_throw)
-				  && (!failed || eap->cstack->cs_trylevel > 0))
+    if ((!aborting() || did_throw) && (!failed || eap->cstack->cs_trylevel > 0))
     {
 	// Check for trailing illegal characters and a following command.
 	arg = skipwhite(arg);
