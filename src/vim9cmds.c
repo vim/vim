@@ -1706,27 +1706,6 @@ get_defer_var_idx(cctx_T *cctx)
 }
 
 /*
- * Get the local variable index for deferred function calls.
- * Reserve it when not done already.
- * Returns zero for failure.
- */
-    int
-get_defer_var_idx(cctx_T *cctx)
-{
-    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
-					       + cctx->ctx_ufunc->uf_dfunc_idx;
-    if (dfunc->df_defer_var_idx == 0)
-    {
-	lvar_T *lvar = reserve_local(cctx, (char_u *)"@defer@", 7,
-							    TRUE, &t_list_any);
-	if (lvar == NULL)
-	    return 0;
-	dfunc->df_defer_var_idx = lvar->lv_idx + 1;
-    }
-    return dfunc->df_defer_var_idx;
-}
-
-/*
  * Compile "defer func(arg)".
  */
     char_u *
