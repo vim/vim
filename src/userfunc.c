@@ -1728,6 +1728,7 @@ emsg_funcname(char *ermsg, char_u *name)
 /*
  * Get function arguments at "*arg" and advance it.
  * Return them in "*argvars[MAX_FUNC_ARGS + 1]" and the count in "argcount".
+ * On failure FAIL is returned but the "argvars[argcount]" are still set.
  */
     static int
 get_func_arguments(
@@ -5570,9 +5571,6 @@ ex_defer_inner(char_u *name, char_u **arg, evalarg_T *evalarg)
 {
     typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
     int		argcount = 0;			// number of arguments found
-    defer_T	*dr;
-    int		ret = FAIL;
-    char_u	*saved_name;
 
     if (current_funccal == NULL)
     {
@@ -5580,23 +5578,51 @@ ex_defer_inner(char_u *name, char_u **arg, evalarg_T *evalarg)
 	return FAIL;
     }
     if (get_func_arguments(arg, evalarg, FALSE, argvars, &argcount) == FAIL)
-	goto theend;
-    saved_name = vim_strsave(name);
+    {
+	while (--argcount >= 0)
+	    clear_tv(&argvars[argcount]);
+	return FAIL;
+    }
+    return add_defer(name, argcount, argvars);
+}
+
+/*
+ * Add a deferred call for "name" with arguments "argvars[argcount]".
+ * Consumes "argvars[]".
+ * Caller must check that in_def_function() returns TRUE or current_funccal is
+ * not NULL.
+ * Returns OK or FAIL.
+ */
+    int
+add_defer(char_u *name, int argcount_arg, typval_T *argvars)
+{
+    char_u	*saved_name = vim_strsave(name);
+    int		argcount = argcount_arg;
+    defer_T	*dr;
+    int		ret = FAIL;
+
     if (saved_name == NULL)
 	goto theend;
-
-    if (current_funccal->fc_defer.ga_itemsize == 0)
-	ga_init2(&current_funccal->fc_defer, sizeof(defer_T), 10);
-    if (ga_grow(&current_funccal->fc_defer, 1) == FAIL)
-	goto theend;
-    dr = ((defer_T *)current_funccal->fc_defer.ga_data)
-					  + current_funccal->fc_defer.ga_len++;
-    dr->dr_name = saved_name;
-    dr->dr_argcount = argcount;
-    while (argcount > 0)
+    if (in_def_function())
     {
-	--argcount;
-	dr->dr_argvars[argcount] = argvars[argcount];
+	if (add_defer_function(saved_name, argcount, argvars) == OK)
+	    argcount = 0;
+    }
+    else
+    {
+	if (current_funccal->fc_defer.ga_itemsize == 0)
+	    ga_init2(&current_funccal->fc_defer, sizeof(defer_T), 10);
+	if (ga_grow(&current_funccal->fc_defer, 1) == FAIL)
+	    goto theend;
+	dr = ((defer_T *)current_funccal->fc_defer.ga_data)
+					  + current_funccal->fc_defer.ga_len++;
+	dr->dr_name = saved_name;
+	dr->dr_argcount = argcount;
+	while (argcount > 0)
+	{
+	    --argcount;
+	    dr->dr_argvars[argcount] = argvars[argcount];
+	}
     }
     ret = OK;
 

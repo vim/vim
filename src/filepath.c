@@ -2232,6 +2232,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 {
     int		binary = FALSE;
     int		append = FALSE;
+    int		defer = FALSE;
 #ifdef HAVE_FSYNC
     int		do_fsync = p_fs;
 #endif
@@ -2285,6 +2286,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	    binary = TRUE;
 	if (vim_strchr(arg2, 'a') != NULL)
 	    append = TRUE;
+	if (vim_strchr(arg2, 'D') != NULL)
+	    defer = TRUE;
 #ifdef HAVE_FSYNC
 	if (vim_strchr(arg2, 's') != NULL)
 	    do_fsync = TRUE;
@@ -2297,37 +2300,59 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     if (fname == NULL)
 	return;
 
+    if (defer && !in_def_function() && get_current_funccal() == NULL)
+    {
+	semsg(_(e_str_not_inside_function), "defer");
+	return;
+    }
+
     // Always open the file in binary mode, library functions have a mind of
     // their own about CR-LF conversion.
     if (*fname == NUL || (fd = mch_fopen((char *)fname,
 				      append ? APPENDBIN : WRITEBIN)) == NULL)
     {
-	semsg(_(e_cant_create_file_str), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	semsg(_(e_cant_create_file_str),
+			       *fname == NUL ? (char_u *)_("<empty>") : fname);
 	ret = -1;
-    }
-    else if (blob)
-    {
-	if (write_blob(fd, blob) == FAIL)
-	    ret = -1;
-#ifdef HAVE_FSYNC
-	else if (do_fsync)
-	    // Ignore the error, the user wouldn't know what to do about it.
-	    // May happen for a device.
-	    vim_ignored = vim_fsync(fileno(fd));
-#endif
-	fclose(fd);
     }
     else
     {
-	if (write_list(fd, list, binary) == FAIL)
-	    ret = -1;
+	if (defer)
+	{
+	    typval_T tv;
+
+	    tv.v_type = VAR_STRING;
+	    tv.v_lock = 0;
+	    tv.vval.v_string = vim_strsave(fname);
+	    if (tv.vval.v_string == NULL
+		    || add_defer((char_u *)"delete", 1, &tv) == FAIL)
+	    {
+		ret = -1;
+		fclose(fd);
+		(void)mch_remove(fname);
+	    }
+	}
+
+	if (ret == 0)
+	{
+	    if (blob)
+	    {
+		if (write_blob(fd, blob) == FAIL)
+		    ret = -1;
+	    }
+	    else
+	    {
+		if (write_list(fd, list, binary) == FAIL)
+		    ret = -1;
+	    }
 #ifdef HAVE_FSYNC
-	else if (do_fsync)
-	    // Ignore the error, the user wouldn't know what to do about it.
-	    // May happen for a device.
-	    vim_ignored = vim_fsync(fileno(fd));
+	    if (ret == 0 && do_fsync)
+		// Ignore the error, the user wouldn't know what to do about
+		// it.  May happen for a device.
+		vim_ignored = vim_fsync(fileno(fd));
 #endif
-	fclose(fd);
+	    fclose(fd);
+	}
     }
 
     rettv->vval.v_number = ret;

@@ -933,6 +933,23 @@ func Test_write_binary_file()
   call delete('Xwbfile3')
 endfunc
 
+func DoWriteDefer()
+  call writefile(['some text'], 'XdeferDelete', 'D')
+  call assert_equal(['some text'], readfile('XdeferDelete'))
+endfunc
+
+def DefWriteDefer()
+  writefile(['some text'], 'XdefdeferDelete', 'D')
+  assert_equal(['some text'], readfile('XdefdeferDelete'))
+enddef
+
+func Test_write_with_deferred_delete()
+  call DoWriteDefer()
+  call assert_equal('', glob('XdeferDelete'))
+  call DefWriteDefer()
+  call assert_equal('', glob('XdefdeferDelete'))
+endfunc
+
 " Check that buffer is written before triggering QuitPre
 func Test_wq_quitpre_autocommand()
   edit Xsomefile

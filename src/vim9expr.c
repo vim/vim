@@ -833,6 +833,14 @@ compile_call(
 		}
 	    }
 
+	    if (STRCMP(name, "writefile") == 0 && argcount > 2)
+	    {
+		// May have the "D" flag, reserve a variable for a deferred
+		// function call.
+		if (get_defer_var_idx(cctx) == 0)
+		    idx = -1;
+	    }
+
 	    if (idx >= 0)
 		res = generate_BCALL(cctx, idx, argcount, argcount_init == 1);
 	}

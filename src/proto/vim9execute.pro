@@ -3,6 +3,8 @@ void to_string_error(vartype_T vartype);
 void update_has_breakpoint(ufunc_T *ufunc);
 void funcstack_check_refcount(funcstack_T *funcstack);
 int set_ref_in_funcstacks(int copyID);
+int in_def_function(void);
+int add_defer_function(char_u *name, int argcount, typval_T *argvars);
 char_u *char_from_string(char_u *str, varnumber_T index);
 char_u *string_slice(char_u *str, varnumber_T first, varnumber_T last, int exclusive);
 int fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx);
