@@ -862,7 +862,7 @@ add_defer_func(int var_idx, int argcount, ectx_T *ectx)
 
     if (defer_tv->v_type != VAR_LIST)
     {
-	// first one, allocate the list
+	// first time, allocate the list
 	if (rettv_list_alloc(defer_tv) == FAIL)
 	    return FAIL;
     }
@@ -874,8 +874,7 @@ add_defer_func(int var_idx, int argcount, ectx_T *ectx)
     listval.v_type = VAR_LIST;
     listval.vval.v_list = l;
     listval.v_lock = 0;
-    if (list_insert_tv(defer_l, &listval,
-			   defer_l == NULL ? NULL : defer_l->lv_first) == FAIL)
+    if (list_insert_tv(defer_l, &listval, defer_l->lv_first) == FAIL)
     {
 	vim_free(l);
 	return FAIL;
