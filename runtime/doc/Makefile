@@ -115,6 +115,7 @@ DOCS = \
 	todo.txt \
 	uganda.txt \
 	undo.txt \
+	userfunc.txt \
 	usr_01.txt \
 	usr_02.txt \
 	usr_03.txt \
@@ -265,6 +266,7 @@ HTMLS = \
 	todo.html \
 	uganda.html \
 	undo.html \
+	userfunc.html \
 	usr_01.html \
 	usr_02.html \
 	usr_03.html \

@@ -141,6 +141,7 @@ Advanced editing ~
 |autocmd.txt|	automatically executing commands on an event
 |eval.txt|	expression evaluation, conditional commands
 |builtin.txt|	builtin functions
+|userfunc.txt|	defining user functions
 |channel.txt|	Jobs, Channels, inter-process communication
 |fold.txt|	hide (fold) ranges of lines
 
