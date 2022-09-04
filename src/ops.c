@@ -1344,7 +1344,6 @@ op_tilde(oparg_T *oap)
 		    pos.col = 0;
 		    pos.lnum++;
 		}
-		ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
 		count = oap->end.col - pos.col + 1;
 		netbeans_removed(curbuf, pos.lnum, pos.col, (long)count);
 		// get the line again, it may have been flushed

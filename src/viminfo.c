@@ -2324,7 +2324,7 @@ copy_viminfo_marks(
 		    // Read the next line.  If it has the "*" mark compare the
 		    // time stamps.  Write entries from "buflist" that are
 		    // newer.
-		    if (!(eof = viminfo_readline(virp)) && line[0] == TAB)
+		    if (!viminfo_readline(virp) && line[0] == TAB)
 		    {
 			did_read_line = TRUE;
 			if (line[1] == '*')
