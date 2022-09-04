@@ -97,7 +97,7 @@ endfunc
 func Test_argadd_empty_curbuf()
   new
   let curbuf = bufnr('%')
-  call writefile(['test', 'Xargadd'], 'Xargadd')
+  call writefile(['test', 'Xargadd'], 'Xargadd', 'D')
   " must not re-use the current buffer.
   argadd Xargadd
   call assert_equal(curbuf, bufnr('%'))
@@ -108,7 +108,6 @@ func Test_argadd_empty_curbuf()
   call assert_equal('Xargadd', '%'->bufname())
   call assert_equal(2, line('$'))
 
-  call delete('Xargadd')
   %argd
   bwipe!
 endfunc
@@ -506,9 +505,9 @@ endfunc
 " Test for autocommand that redefines the argument list, when doing ":all".
 func Test_arglist_autocmd()
   autocmd BufReadPost Xxx2 next Xxx2 Xxx1
-  call writefile(['test file Xxx1'], 'Xxx1')
-  call writefile(['test file Xxx2'], 'Xxx2')
-  call writefile(['test file Xxx3'], 'Xxx3')
+  call writefile(['test file Xxx1'], 'Xxx1', 'D')
+  call writefile(['test file Xxx2'], 'Xxx2', 'D')
+  call writefile(['test file Xxx3'], 'Xxx3', 'D')
 
   new
   " redefine arglist; go to Xxx1
@@ -524,18 +523,14 @@ func Test_arglist_autocmd()
 
   autocmd! BufReadPost Xxx2
   enew! | only
-  call delete('Xxx1')
-  call delete('Xxx2')
-  call delete('Xxx3')
   argdelete Xxx*
   bwipe! Xxx1 Xxx2 Xxx3
 endfunc
 
 func Test_arg_all_expand()
-  call writefile(['test file Xxx1'], 'Xx x')
+  call writefile(['test file Xxx1'], 'Xx x', 'D')
   next notexist Xx\ x runtest.vim
   call assert_equal('notexist Xx\ x runtest.vim', expand('##'))
-  call delete('Xx x')
 endfunc
 
 func Test_large_arg()
