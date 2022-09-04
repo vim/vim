@@ -3,6 +3,7 @@ vim9script
 # Vim filetype plugin file
 # Language: gdscript (Godot game engine scripting language)
 # Maintainer: Maxim Kim <habamax@gmail.com>
+# Website: https://github.com/habamax/vim-gdscript
 
 if exists("b:did_ftplugin") | finish | endif
 
@@ -49,5 +50,5 @@ enddef
 
 nnoremap <silent><buffer>   ]] <scriptcmd>NextSection(false, v:count1)<CR>
 nnoremap <silent><buffer>   [[ <scriptcmd>NextSection(true, v:count1)<CR>
-xmap <silent><buffer><expr> ]] "\<esc>" .. v:count1 .. ']]m>gv'
-xmap <silent><buffer><expr> [[ "\<esc>" .. v:count1 .. '[[m>gv'
+xmap <buffer><expr> ]] $'<C-\><C-N>{v:count1}]]m>gv'
+xmap <buffer><expr> [[ $'<C-\><C-N>{v:count1}[[m>gv'
