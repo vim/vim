@@ -127,6 +127,8 @@
  *			Support was removed in 8.1.1093.
  * +farsi		Farsi (Persian language) Keymap support.
  *			Removed in patch 8.1.0932
+ * +footer		Motif only: Add a message area at the bottom of the
+ *			main window area.
  */
 
 /*
@@ -1131,14 +1133,6 @@
 # if !defined(FEAT_MENU)
 #  define FEAT_MENU
 # endif
-#endif
-
-#if 0
-/*
- * +footer		Motif only: Add a message area at the bottom of the
- *			main window area.
- */
-# define FEAT_FOOTER
 #endif
 
 /*

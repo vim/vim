@@ -5650,13 +5650,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"footer",
-#ifdef FEAT_FOOTER
-		1
-#else
-		0
-#endif
-		},
+	{"footer", 0},
 	{"fork",
 #if !defined(USE_SYSTEM) && defined(UNIX)
 		1

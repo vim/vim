@@ -254,12 +254,8 @@ static char *(features[]) =
 #else
 	"-folding",
 #endif
-#ifdef FEAT_FOOTER
-	"+footer",
-#else
 	"-footer",
-#endif
-	    // only interesting on Unix systems
+	// only interesting on Unix systems
 #if !defined(USE_SYSTEM) && defined(UNIX)
 	"+fork()",
 #endif
@@ -707,6 +703,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    375,
 /**/
     374,
 /**/
