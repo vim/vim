@@ -841,7 +841,7 @@ read_cnt_string(FILE *fd, int cnt_bytes, int *cntp)
 read_region_section(FILE *fd, slang_T *lp, int len)
 {
     int		i;
-    int		c;
+    int		c = 0;
 
     if (len > MAXREGIONS * 2)
 	return SP_FORMERROR;
