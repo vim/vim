@@ -75,8 +75,8 @@ func Test_writefile_fails_conversion()
   call assert_match('CONVERSION ERROR', output)
   let output = execute('write! ++enc=ucs-2 Xwfcfile')
   call assert_match('CONVERSION ERROR', output)
-  call delete('Xfilz~')
-  call delete('Xfily~')
+  call delete('Xwfcfilz~')
+  call delete('Xwfcfily~')
   %bw!
 
   call delete('Xwfcfile')
