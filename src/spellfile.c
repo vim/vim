@@ -404,7 +404,7 @@ spell_load_file(
      * <HEADER>: <fileID>
      */
     for (i = 0; i < VIMSPELLMAGICL; ++i)
-	buf[i] = (unsigned)getc(fd);			// <fileID>
+	buf[i] = c = getc(fd);		// <fileID>
     if (STRNCMP(buf, VIMSPELLMAGIC, VIMSPELLMAGICL) != 0)
     {
 	emsg(_(e_this_does_not_look_like_spell_file));
@@ -700,7 +700,7 @@ suggest_load_files(void)
 	     * <SUGHEADER>: <fileID> <versionnr> <timestamp>
 	     */
 	    for (i = 0; i < VIMSUGMAGICL; ++i)
-		buf[i] = (unsigned)getc(fd);		// <fileID>
+		buf[i] = c = getc(fd);			// <fileID>
 	    if (STRNCMP(buf, VIMSUGMAGIC, VIMSUGMAGICL) != 0)
 	    {
 		semsg(_(e_this_does_not_look_like_sug_file_str),
@@ -841,13 +841,14 @@ read_cnt_string(FILE *fd, int cnt_bytes, int *cntp)
 read_region_section(FILE *fd, slang_T *lp, int len)
 {
     int		i;
+    int		c;
 
     if (len > MAXREGIONS * 2)
 	return SP_FORMERROR;
     for (i = 0; i < len; ++i)
-	lp->sl_regions[i] = (unsigned)getc(fd);		// <regionname>
+	lp->sl_regions[i] = c = getc(fd);	// <regionname>
     lp->sl_regions[len] = NUL;
-    return 0;
+    return c == EOF ? SP_TRUNCERROR : 0;
 }
 
 /*
@@ -898,6 +899,7 @@ read_prefcond_section(FILE *fd, slang_T *lp)
     int		cnt;
     int		i;
     int		n;
+    int		c;
     char_u	*p;
     char_u	buf[MAXWLEN + 1];
 
@@ -925,7 +927,9 @@ read_prefcond_section(FILE *fd, slang_T *lp)
 	    buf[0] = '^';	    // always match at one position only
 	    p = buf + 1;
 	    while (n-- > 0)
-		*p++ = (unsigned)getc(fd);		// <condstr>
+		*p++ = c = getc(fd);		    // <condstr>
+	    if (c == EOF)
+		break;
 	    *p = NUL;
 	    lp->sl_prefprog[i] = vim_regcomp(buf, RE_MAGIC + RE_STRING);
 	}
@@ -1063,7 +1067,7 @@ read_sal_section(FILE *fd, slang_T *slang)
 	    // store the char we got while checking for end of sm_lead
 	    *p++ = c;
 	for (++i; i < ccnt; ++i)
-	    *p++ = (unsigned)getc(fd);			// <salfrom>
+	    *p++ = c = getc(fd);		// <salfrom>
 	*p++ = NUL;
 
 	// <saltolen> <salto>
