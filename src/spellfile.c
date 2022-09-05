@@ -404,7 +404,7 @@ spell_load_file(
      * <HEADER>: <fileID>
      */
     for (i = 0; i < VIMSPELLMAGICL; ++i)
-	buf[i] = c = getc(fd);		// <fileID>
+	buf[i] = (c = getc(fd)) == EOF ? 0 : c;		// <fileID>
     if (STRNCMP(buf, VIMSPELLMAGIC, VIMSPELLMAGICL) != 0)
     {
 	emsg(_(e_this_does_not_look_like_spell_file));
@@ -700,7 +700,7 @@ suggest_load_files(void)
 	     * <SUGHEADER>: <fileID> <versionnr> <timestamp>
 	     */
 	    for (i = 0; i < VIMSUGMAGICL; ++i)
-		buf[i] = c = getc(fd);			// <fileID>
+		buf[i] = (c = getc(fd)) == EOF ? 0 : c;	// <fileID>
 	    if (STRNCMP(buf, VIMSUGMAGIC, VIMSUGMAGICL) != 0)
 	    {
 		semsg(_(e_this_does_not_look_like_sug_file_str),
