@@ -2356,7 +2356,7 @@ check_simplify_modifier(int max_offset)
 	if (offset + 3 >= typebuf.tb_len)
 	    break;
 	tp = typebuf.tb_buf + typebuf.tb_off + offset;
-	if (tp[0] == K_SPECIAL && tp[1] == KS_MODIFIER)
+	if ((tp[0] == K_SPECIAL || tp[0] == CSI) && tp[1] == KS_MODIFIER)
 	{
 	    // A modifier was not used for a mapping, apply it to ASCII keys.
 	    // Shift would already have been applied.
