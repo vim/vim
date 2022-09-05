@@ -3326,3 +3326,7 @@ EXTERN char e_non_null_list_required_for_argument_nr[]
 #endif
 EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
 	INIT(= N_("E1299: Window unexpectedly closed while searching for tags"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
+	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
+#endif

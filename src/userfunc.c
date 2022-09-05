@@ -5567,17 +5567,42 @@ ex_call_inner(
  * Returns FAIL or OK.
  */
     static int
-ex_defer_inner(char_u *name, char_u **arg, evalarg_T *evalarg)
+ex_defer_inner(
+	char_u	    *name,
+	char_u	    **arg,
+	partial_T   *partial,
+	evalarg_T   *evalarg)
 {
     typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
+    int		partial_argc = 0;		// number of partial arguments
     int		argcount = 0;			// number of arguments found
+    int		r;
 
     if (current_funccal == NULL)
     {
 	semsg(_(e_str_not_inside_function), "defer");
 	return FAIL;
     }
-    if (get_func_arguments(arg, evalarg, FALSE, argvars, &argcount) == FAIL)
+    if (partial != NULL)
+    {
+	if (partial->pt_dict != NULL)
+	{
+	    emsg(_(e_cannot_use_partial_with_dictionary_for_defer));
+	    return FAIL;
+	}
+	if (partial->pt_argc > 0)
+	{
+	    int i;
+
+	    partial_argc = partial->pt_argc;
+	    for (i = 0; i < partial_argc; ++i)
+		copy_tv(&partial->pt_argv[i], &argvars[i]);
+	}
+    }
+    r = get_func_arguments(arg, evalarg, FALSE,
+					    argvars + partial_argc, &argcount);
+    argcount += partial_argc;
+    if (r == FAIL)
     {
 	while (--argcount >= 0)
 	    clear_tv(&argvars[argcount]);
@@ -5738,7 +5763,7 @@ ex_call(exarg_T *eap)
     if (eap->cmdidx == CMD_defer)
     {
 	arg = startarg;
-	failed = ex_defer_inner(name, &arg, &evalarg) == FAIL;
+	failed = ex_defer_inner(name, &arg, partial, &evalarg) == FAIL;
     }
     else
     {
