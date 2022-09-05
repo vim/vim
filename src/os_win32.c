@@ -8197,19 +8197,19 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	if (!USE_WT)
-	{
-	    guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
-						    : default_console_color_bg;
-	    cterm_normal_bg_gui_color = guibg;
-	    ctermbg = ctermbg < 0 ? 0 : ctermbg;
-	}
-	else
+	if (USE_WT)
 	{
 	    cterm_normal_bg_gui_color = guibg =
 			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
 	    if (ctermbg < 0)
 		ctermbg = 0;
+	}
+	else
+	{
+	    guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
+						    : default_console_color_bg;
+	    cterm_normal_bg_gui_color = guibg;
+	    ctermbg = ctermbg < 0 ? 0 : ctermbg;
 	}
     }
 
