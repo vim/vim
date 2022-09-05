@@ -937,21 +937,22 @@ add_defer_function(char_u *name, int argcount, typval_T *argvars)
     if (dfunc->df_defer_var_idx == 0)
     {
 	iemsg("df_defer_var_idx is zero");
-	vim_free(func_tv.vval.v_string);
+	vim_free(name);
 	return FAIL;
     }
-    func_tv.v_type = VAR_FUNC;
-    func_tv.v_lock = 0;
-    func_tv.vval.v_string = name;
 
     l = add_defer_item(dfunc->df_defer_var_idx - 1, 1, current_ectx);
     if (l == NULL)
     {
-	vim_free(func_tv.vval.v_string);
+	vim_free(name);
 	return FAIL;
     }
 
+    func_tv.v_type = VAR_FUNC;
+    func_tv.v_lock = 0;
+    func_tv.vval.v_string = name;
     list_set_item(l, 0, &func_tv);
+
     for (i = 0; i < argcount; ++i)
 	list_set_item(l, i + 1, argvars + i);
     return OK;
