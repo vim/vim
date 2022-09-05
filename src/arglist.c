@@ -105,25 +105,25 @@ alist_expand(int *fnum_list, int fnum_len)
     char_u	*save_p_su = p_su;
     int		i;
 
+    old_arg_files = ALLOC_MULT(char_u *, GARGCOUNT);
+    if (old_arg_files == NULL)
+	return;
+
     // Don't use 'suffixes' here.  This should work like the shell did the
     // expansion.  Also, the vimrc file isn't read yet, thus the user
     // can't set the options.
     p_su = empty_option;
-    old_arg_files = ALLOC_MULT(char_u *, GARGCOUNT);
-    if (old_arg_files != NULL)
+    for (i = 0; i < GARGCOUNT; ++i)
+	old_arg_files[i] = vim_strsave(GARGLIST[i].ae_fname);
+    old_arg_count = GARGCOUNT;
+    if (expand_wildcards(old_arg_count, old_arg_files,
+		&new_arg_file_count, &new_arg_files,
+		EW_FILE|EW_NOTFOUND|EW_ADDSLASH|EW_NOERROR) == OK
+	    && new_arg_file_count > 0)
     {
-	for (i = 0; i < GARGCOUNT; ++i)
-	    old_arg_files[i] = vim_strsave(GARGLIST[i].ae_fname);
-	old_arg_count = GARGCOUNT;
-	if (expand_wildcards(old_arg_count, old_arg_files,
-		    &new_arg_file_count, &new_arg_files,
-		    EW_FILE|EW_NOTFOUND|EW_ADDSLASH|EW_NOERROR) == OK
-		&& new_arg_file_count > 0)
-	{
-	    alist_set(&global_alist, new_arg_file_count, new_arg_files,
-						   TRUE, fnum_list, fnum_len);
-	    FreeWild(old_arg_count, old_arg_files);
-	}
+	alist_set(&global_alist, new_arg_file_count, new_arg_files,
+		TRUE, fnum_list, fnum_len);
+	FreeWild(old_arg_count, old_arg_files);
     }
     p_su = save_p_su;
 }
@@ -384,6 +384,57 @@ alist_add_list(
 }
 
 /*
+ * Delete the file names in 'alist_ga' from the argument list.
+ */
+    static void
+arglist_del_files(garray_T *alist_ga)
+{
+    regmatch_T	regmatch;
+    int		didone;
+    int		i;
+    char_u	*p;
+    int		match;
+
+    // Delete the items: use each item as a regexp and find a match in the
+    // argument list.
+    regmatch.rm_ic = p_fic;	// ignore case when 'fileignorecase' is set
+    for (i = 0; i < alist_ga->ga_len && !got_int; ++i)
+    {
+	p = ((char_u **)alist_ga->ga_data)[i];
+	p = file_pat_to_reg_pat(p, NULL, NULL, FALSE);
+	if (p == NULL)
+	    break;
+	regmatch.regprog = vim_regcomp(p, magic_isset() ? RE_MAGIC : 0);
+	if (regmatch.regprog == NULL)
+	{
+	    vim_free(p);
+	    break;
+	}
+
+	didone = FALSE;
+	for (match = 0; match < ARGCOUNT; ++match)
+	    if (vim_regexec(&regmatch, alist_name(&ARGLIST[match]),
+			(colnr_T)0))
+	    {
+		didone = TRUE;
+		vim_free(ARGLIST[match].ae_fname);
+		mch_memmove(ARGLIST + match, ARGLIST + match + 1,
+			(ARGCOUNT - match - 1) * sizeof(aentry_T));
+		--ALIST(curwin)->al_ga.ga_len;
+		if (curwin->w_arg_idx > match)
+		    --curwin->w_arg_idx;
+		--match;
+	    }
+
+	vim_regfree(regmatch.regprog);
+	vim_free(p);
+	if (!didone)
+	    semsg(_(e_no_match_str_2), ((char_u **)alist_ga->ga_data)[i]);
+    }
+    ga_clear(alist_ga);
+}
+
+/*
  * "what" == AL_SET: Redefine the argument list to 'str'.
  * "what" == AL_ADD: add files in 'str' to the argument list after "after".
  * "what" == AL_DEL: remove files in 'str' from the argument list.
@@ -401,8 +452,6 @@ do_arglist(
     int		exp_count;
     char_u	**exp_files;
     int		i;
-    char_u	*p;
-    int		match;
     int		arg_escaped = TRUE;
 
     if (check_arglist_locked() == FAIL)
@@ -422,48 +471,7 @@ do_arglist(
 	return FAIL;
 
     if (what == AL_DEL)
-    {
-	regmatch_T	regmatch;
-	int		didone;
-
-	// Delete the items: use each item as a regexp and find a match in the
-	// argument list.
-	regmatch.rm_ic = p_fic;	// ignore case when 'fileignorecase' is set
-	for (i = 0; i < new_ga.ga_len && !got_int; ++i)
-	{
-	    p = ((char_u **)new_ga.ga_data)[i];
-	    p = file_pat_to_reg_pat(p, NULL, NULL, FALSE);
-	    if (p == NULL)
-		break;
-	    regmatch.regprog = vim_regcomp(p, magic_isset() ? RE_MAGIC : 0);
-	    if (regmatch.regprog == NULL)
-	    {
-		vim_free(p);
-		break;
-	    }
-
-	    didone = FALSE;
-	    for (match = 0; match < ARGCOUNT; ++match)
-		if (vim_regexec(&regmatch, alist_name(&ARGLIST[match]),
-								  (colnr_T)0))
-		{
-		    didone = TRUE;
-		    vim_free(ARGLIST[match].ae_fname);
-		    mch_memmove(ARGLIST + match, ARGLIST + match + 1,
-			    (ARGCOUNT - match - 1) * sizeof(aentry_T));
-		    --ALIST(curwin)->al_ga.ga_len;
-		    if (curwin->w_arg_idx > match)
-			--curwin->w_arg_idx;
-		    --match;
-		}
-
-	    vim_regfree(regmatch.regprog);
-	    vim_free(p);
-	    if (!didone)
-		semsg(_(e_no_match_str_2), ((char_u **)new_ga.ga_data)[i]);
-	}
-	ga_clear(&new_ga);
-    }
+	arglist_del_files(&new_ga);
     else
     {
 	i = expand_wildcards(new_ga.ga_len, (char_u **)new_ga.ga_data,
@@ -576,39 +584,42 @@ ex_args(exarg_T *eap)
     }
     else if (eap->cmdidx == CMD_args)
     {
+	char_u **items;
+
 	// ":args": list arguments.
-	if (ARGCOUNT > 0)
-	{
-	    char_u **items = ALLOC_MULT(char_u *, ARGCOUNT);
+	if (ARGCOUNT <= 0)
+	    return;
 
-	    if (items != NULL)
-	    {
-		// Overwrite the command, for a short list there is no
-		// scrolling required and no wait_return().
-		gotocmdline(TRUE);
+	items = ALLOC_MULT(char_u *, ARGCOUNT);
+	if (items == NULL)
+	    return;
 
-		for (i = 0; i < ARGCOUNT; ++i)
-		    items[i] = alist_name(&ARGLIST[i]);
-		list_in_columns(items, ARGCOUNT, curwin->w_arg_idx);
-		vim_free(items);
-	    }
-	}
+	// Overwrite the command, for a short list there is no scrolling
+	// required and no wait_return().
+	gotocmdline(TRUE);
+
+	for (i = 0; i < ARGCOUNT; ++i)
+	    items[i] = alist_name(&ARGLIST[i]);
+	list_in_columns(items, ARGCOUNT, curwin->w_arg_idx);
+	vim_free(items);
     }
     else if (eap->cmdidx == CMD_arglocal)
     {
 	garray_T	*gap = &curwin->w_alist->al_ga;
 
 	// ":argslocal": make a local copy of the global argument list.
-	if (GA_GROW_OK(gap, GARGCOUNT))
-	    for (i = 0; i < GARGCOUNT; ++i)
-		if (GARGLIST[i].ae_fname != NULL)
-		{
-		    AARGLIST(curwin->w_alist)[gap->ga_len].ae_fname =
-					    vim_strsave(GARGLIST[i].ae_fname);
-		    AARGLIST(curwin->w_alist)[gap->ga_len].ae_fnum =
-							  GARGLIST[i].ae_fnum;
-		    ++gap->ga_len;
-		}
+	if (GA_GROW_FAILS(gap, GARGCOUNT))
+	    return;
+
+	for (i = 0; i < GARGCOUNT; ++i)
+	    if (GARGLIST[i].ae_fname != NULL)
+	    {
+		AARGLIST(curwin->w_alist)[gap->ga_len].ae_fname =
+		    vim_strsave(GARGLIST[i].ae_fname);
+		AARGLIST(curwin->w_alist)[gap->ga_len].ae_fnum =
+		    GARGLIST[i].ae_fnum;
+		++gap->ga_len;
+	    }
     }
 }
 
@@ -1374,40 +1385,41 @@ f_argv(typval_T *argvars, typval_T *rettv)
 		    && check_for_opt_number_arg(argvars, 1) == FAIL)))
 	return;
 
-    if (argvars[0].v_type != VAR_UNKNOWN)
+    if (argvars[0].v_type == VAR_UNKNOWN)
     {
-	if (argvars[1].v_type == VAR_UNKNOWN)
-	{
-	    arglist = ARGLIST;
-	    argcount = ARGCOUNT;
-	}
-	else if (argvars[1].v_type == VAR_NUMBER
-					   && tv_get_number(&argvars[1]) == -1)
-	{
-	    arglist = GARGLIST;
-	    argcount = GARGCOUNT;
-	}
-	else
-	{
-	    win_T	*wp = find_win_by_nr_or_id(&argvars[1]);
+	get_arglist_as_rettv(ARGLIST, ARGCOUNT, rettv);
+	return;
+    }
 
-	    if (wp != NULL)
-	    {
-		// Use the argument list of the specified window
-		arglist = WARGLIST(wp);
-		argcount = WARGCOUNT(wp);
-	    }
-	}
-
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = NULL;
-	idx = tv_get_number_chk(&argvars[0], NULL);
-	if (arglist != NULL && idx >= 0 && idx < argcount)
-	    rettv->vval.v_string = vim_strsave(alist_name(&arglist[idx]));
-	else if (idx == -1)
-	    get_arglist_as_rettv(arglist, argcount, rettv);
+    if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	arglist = ARGLIST;
+	argcount = ARGCOUNT;
+    }
+    else if (argvars[1].v_type == VAR_NUMBER
+	    && tv_get_number(&argvars[1]) == -1)
+    {
+	arglist = GARGLIST;
+	argcount = GARGCOUNT;
     }
     else
-	get_arglist_as_rettv(ARGLIST, ARGCOUNT, rettv);
+    {
+	win_T	*wp = find_win_by_nr_or_id(&argvars[1]);
+
+	if (wp != NULL)
+	{
+	    // Use the argument list of the specified window
+	    arglist = WARGLIST(wp);
+	    argcount = WARGCOUNT(wp);
+	}
+    }
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+    idx = tv_get_number_chk(&argvars[0], NULL);
+    if (arglist != NULL && idx >= 0 && idx < argcount)
+	rettv->vval.v_string = vim_strsave(alist_name(&arglist[idx]));
+    else if (idx == -1)
+	get_arglist_as_rettv(arglist, argcount, rettv);
 }
 #endif
