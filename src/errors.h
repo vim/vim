@@ -3324,3 +3324,5 @@ EXTERN char e_non_null_dict_required_for_argument_nr[]
 EXTERN char e_non_null_list_required_for_argument_nr[]
 	INIT(= N_("E1298: Non-NULL List required for argument %d"));
 #endif
+EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
+	INIT(= N_("E1299: Window unexpectedly closed while searching for tags"));
