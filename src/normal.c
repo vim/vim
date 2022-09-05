@@ -1466,6 +1466,13 @@ prep_redo_num2(
     int	    cmd5)
 {
     ResetRedobuff();
+
+#ifdef FEAT_EVAL
+    // Put info about a mapping in the redo buffer, so that "." will use the
+    // same script context.
+    may_add_last_used_map_to_redobuff();
+#endif
+
     if (regname != 0)	// yank from specified buffer
     {
 	AppendCharToRedobuff('"');

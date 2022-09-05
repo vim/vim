@@ -1529,6 +1529,35 @@ func Test_map_script_cmd_survives_unmap()
   autocmd! CmdlineEnter
 endfunc
 
+func Test_map_script_cmd_redo()
+  call mkdir('Xmapcmd')
+  let lines =<< trim END
+      vim9script
+      import autoload './script.vim'
+      onoremap <F3> <ScriptCmd>script.Func()<CR>
+  END
+  call writefile(lines, 'Xmapcmd/plugin.vim')
+
+  let lines =<< trim END
+      vim9script
+      export def Func()
+        normal! dd
+      enddef
+  END
+  call writefile(lines, 'Xmapcmd/script.vim')
+  new
+  call setline(1, ['one', 'two', 'three', 'four'])
+  nnoremap j j
+  source Xmapcmd/plugin.vim
+  call feedkeys("d\<F3>j.", 'xt')
+  call assert_equal(['two', 'four'], getline(1, '$'))
+
+  ounmap <F3>
+  nunmap j
+  call delete('Xmapcmd', 'rf')
+  bwipe!
+endfunc
+
 " Test for using <script> with a map to remap characters in rhs
 func Test_script_local_remap()
   new
