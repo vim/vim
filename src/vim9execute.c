@@ -5080,12 +5080,12 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PROF_END:
 		{
 #ifdef FEAT_PROFILE
-		    funccall_T cookie;
-		    ufunc_T	    *cur_ufunc =
+		    funccall_T	cookie;
+		    ufunc_T	*cur_ufunc =
 				    (((dfunc_T *)def_functions.ga_data)
 					       + ectx->ec_dfunc_idx)->df_ufunc;
 
-		    cookie.func = cur_ufunc;
+		    cookie.fc_func = cur_ufunc;
 		    if (iptr->isn_type == ISN_PROF_START)
 		    {
 			func_line_start(&cookie, iptr->isn_lnum);
