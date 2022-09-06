@@ -1580,6 +1580,12 @@ func Test_gui_findrepl()
   call test_gui_event('findrepl', args)
   call assert_equal(['ONE two ONE', 'Twoo ONE two ONEo'], getline(1, '$'))
 
+  " Replace all instances with sub-replace specials
+  call cursor(1, 1)
+  let args = #{find_text: 'ONE', repl_text: '&~&', flags: 0x4, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['&~& two &~&', 'Twoo &~& two &~&o'], getline(1, '$'))
+
   " Invalid arguments
   call assert_false(test_gui_event('findrepl', {}))
   let args = #{repl_text: 'a', flags: 1, forward: 1}
