@@ -5360,8 +5360,10 @@ gui_do_findrepl(
     if (type == FRD_REPLACEALL)
     {
 	ga_concat(&ga, (char_u *)"/");
-	// escape slash and backslash
-	p = vim_strsave_escaped(repl_text, (char_u *)"/\\");
+	// Escape slash and backslash.
+	// Also escape tilde and ampersand if 'magic' is set.
+	p = vim_strsave_escaped(repl_text,
+				p_magic ? (char_u *)"/\\~&" : (char_u *)"/\\");
 	if (p != NULL)
 	    ga_concat(&ga, p);
 	vim_free(p);

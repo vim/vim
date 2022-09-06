@@ -1583,6 +1583,11 @@ getout(int exitval)
     if (!is_not_a_term_or_gui())
 	windgoto((int)Rows - 1, 0);
 
+#ifdef FEAT_EVAL
+    // Invoked all deferred functions in the function stack.
+    invoke_all_defer();
+#endif
+
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
     // Optionally print hashtable efficiency.
     hash_debug_results();

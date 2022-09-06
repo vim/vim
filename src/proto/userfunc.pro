@@ -59,7 +59,7 @@ void func_ref(char_u *name);
 void func_ptr_ref(ufunc_T *fp);
 void ex_return(exarg_T *eap);
 int add_defer(char_u *name, int argcount_arg, typval_T *argvars);
-void handle_defer(void);
+void invoke_all_defer(void);
 void ex_call(exarg_T *eap);
 int do_return(exarg_T *eap, int reanimate, int is_cmd, void *rettv);
 void discard_pending_return(void *rettv);
