@@ -21,11 +21,13 @@ jobs:
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
-      CFLAGS: -Wno-deprecated-declarations
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
       DEBIAN_FRONTEND: noninteractive
+      
+      if: matrix.compiler == 'gcc'
+      CFLAGS: -Wno-deprecated-declarations
 
     strategy:
       fail-fast: false
