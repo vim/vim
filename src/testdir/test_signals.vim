@@ -130,6 +130,7 @@ func Test_signal_TSTP()
   " After TSTP the file is not saved (same function as ^Z)
   exe 'silent !kill -s TSTP ' .. pid_vim
   call WaitForAssert({-> assert_true(filereadable('.Xsig_TERM.swp'))})
+  sleep 100m
 
   " We resume after the suspend.  Sleep a bit for the signal to take effect,
   " also when running under valgrind. 
