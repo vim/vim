@@ -3589,6 +3589,32 @@ channel_free_all(void)
 // Buffer size for reading incoming messages.
 #define MAXMSGSIZE 4096
 
+/*
+ * Check if there are remaining data that should be written.
+ */
+    static int
+is_channel_write_remaining(chanpart_T *in_part)
+{
+    if (in_part->ch_writeque.wq_next != NULL)
+	return 1;
+    if (in_part->ch_bufref.br_buf != NULL)
+    {
+	buf_T *buf = in_part->ch_bufref.br_buf;
+	if (in_part->ch_buf_append)
+	{
+	    if (in_part->ch_buf_bot < buf->b_ml.ml_line_count)
+		return 1;
+	}
+	else
+	{
+	    if (in_part->ch_buf_top <= in_part->ch_buf_bot
+		    && in_part->ch_buf_top <= buf->b_ml.ml_line_count)
+		return 1;
+	}
+    }
+    return 0;
+}
+
 #if defined(HAVE_SELECT)
 /*
  * Add write fds where we are waiting for writing to be possible.
@@ -3604,8 +3630,7 @@ channel_fill_wfds(int maxfd_arg, fd_set *wfds)
 	chanpart_T  *in_part = &ch->ch_part[PART_IN];
 
 	if (in_part->ch_fd != INVALID_FD
-		&& (in_part->ch_bufref.br_buf != NULL
-		    || in_part->ch_writeque.wq_next != NULL))
+		&& is_channel_write_remaining(in_part))
 	{
 	    FD_SET((int)in_part->ch_fd, wfds);
 	    if ((int)in_part->ch_fd >= maxfd)
@@ -3629,8 +3654,7 @@ channel_fill_poll_write(int nfd_in, struct pollfd *fds)
 	chanpart_T  *in_part = &ch->ch_part[PART_IN];
 
 	if (in_part->ch_fd != INVALID_FD
-		&& (in_part->ch_bufref.br_buf != NULL
-		    || in_part->ch_writeque.wq_next != NULL))
+		&& is_channel_write_remaining(in_part))
 	{
 	    in_part->ch_poll_idx = nfd;
 	    fds[nfd].fd = in_part->ch_fd;
@@ -3865,8 +3889,6 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	// Store the read message in the queue.
 	channel_save(channel, part, buf, len, FALSE, "RECV ");
 	readlen += len;
-	if (len < MAXMSGSIZE)
-	    break;	// did read everything that's available
     }
 
     // Reading a disconnection (readlen == 0), or an error.
