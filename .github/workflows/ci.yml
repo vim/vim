@@ -26,7 +26,7 @@ jobs:
       DISPLAY: ':99'
       DEBIAN_FRONTEND: noninteractive
       
-      if: matrix.compiler == 'gcc'
+      if: ${{ matrix.compiler == 'gcc' }}; then
       CFLAGS: -Wno-deprecated-declarations
 
     strategy:
