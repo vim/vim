@@ -134,8 +134,6 @@ extern void perror __P((char *));
 # endif
 #endif
 
-extern long int strtol();
-extern long int ftell();
 
 char version[] = "xxd 2022-01-14 by Juergen Weigert et al.";
 #ifdef WIN32
