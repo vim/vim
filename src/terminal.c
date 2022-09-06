@@ -4406,7 +4406,8 @@ term_get_attr(win_T *wp, linenr_T lnum, int col)
     int         sb_line = -1;
     int         sb_col;
 
-    bufline_pos_in_scrollback(term, lnum, col, &sb_line, &sb_col);
+    if (term->tl_scrollback.ga_len)
+	bufline_pos_in_scrollback(term, lnum, col, &sb_line, &sb_col);
 
     if (sb_line < 0)
 	cellattr = &term->tl_default_color;
