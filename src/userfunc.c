@@ -33,6 +33,7 @@ static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 static void func_clear(ufunc_T *fp, int force);
 static int func_free(ufunc_T *fp, int force);
 static char_u *untrans_function_name(char_u *name);
+static void handle_defer_one(funccall_T *funccal);
 
     void
 func_init()
@@ -2651,7 +2652,8 @@ call_user_func(
 	    profile_may_start_func(&profile_info, fp, caller);
 #endif
 	sticky_cmdmod_flags = 0;
-	call_def_function(fp, argcount, argvars, funcexe->fe_partial, rettv);
+	call_def_function(fp, argcount, argvars, funcexe->fe_partial,
+								    fc, rettv);
 	funcdepth_decrement();
 #ifdef FEAT_PROFILE
 	if (do_profiling == PROF_YES && (fp->uf_profiling
@@ -2906,7 +2908,7 @@ call_user_func(
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
 
     // Invoke functions added with ":defer".
-    handle_defer();
+    handle_defer_one(current_funccal);
 
     --RedrawingDisabled;
 
@@ -5660,16 +5662,16 @@ theend:
 /*
  * Invoked after a functions has finished: invoke ":defer" functions.
  */
-    void
-handle_defer(void)
+    static void
+handle_defer_one(funccall_T *funccal)
 {
     int	    idx;
 
-    for (idx = current_funccal->fc_defer.ga_len - 1; idx >= 0; --idx)
+    for (idx = funccal->fc_defer.ga_len - 1; idx >= 0; --idx)
     {
 	funcexe_T   funcexe;
 	typval_T    rettv;
-	defer_T	    *dr = ((defer_T *)current_funccal->fc_defer.ga_data) + idx;
+	defer_T	    *dr = ((defer_T *)funccal->fc_defer.ga_data) + idx;
 	int	    i;
 
 	CLEAR_FIELD(funcexe);
@@ -5683,7 +5685,29 @@ handle_defer(void)
 	for (i = dr->dr_argcount - 1; i >= 0; --i)
 	    clear_tv(&dr->dr_argvars[i]);
     }
-    ga_clear(&current_funccal->fc_defer);
+    ga_clear(&funccal->fc_defer);
+}
+
+/*
+ * Called when exiting: call all defer functions.
+ */
+    void
+invoke_all_defer(void)
+{
+    funccall_T *funccal;
+
+    for (funccal = current_funccal; funccal != NULL; funccal = funccal->caller)
+	if (funccal->fc_ectx != NULL)
+	{
+	    // :def function
+	    unwind_def_callstack(funccal->fc_ectx);
+	    may_invoke_defer_funcs(funccal->fc_ectx);
+	}
+	else
+	{
+	    // legacy function
+	    handle_defer_one(funccal);
+	}
 }
 
 /*

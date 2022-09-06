@@ -1753,7 +1753,11 @@ struct funccall_S
     linenr_T	breakpoint;	// next line with breakpoint or zero
     int		dbg_tick;	// debug_tick when breakpoint was set
     int		level;		// top nesting level of executed function
+
     garray_T	fc_defer;	// functions to be called on return
+    ectx_T	*fc_ectx;	// execution context for :def function, NULL
+				// otherwise
+
 #ifdef FEAT_PROFILE
     proftime_T	prof_child;	// time spent in a child
 #endif
