@@ -2593,6 +2593,7 @@ call_user_func(
     dict_T	*selfdict)	// Dictionary for "self"
 {
     sctx_T	save_current_sctx;
+    ectx_T	*save_current_ectx;
     int		using_sandbox = FALSE;
     int		save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     funccall_T	*fc;
@@ -2669,9 +2670,9 @@ call_user_func(
     islambda = fp->uf_flags & FC_LAMBDA;
 
     /*
-     * Note about using fc->fc_fixvar[]: This is an array of FIXVAR_CNT variables
-     * with names up to VAR_SHORT_LEN long.  This avoids having to alloc/free
-     * each argument variable and saves a lot of time.
+     * Note about using fc->fc_fixvar[]: This is an array of FIXVAR_CNT
+     * variables with names up to VAR_SHORT_LEN long.  This avoids having to
+     * alloc/free each argument variable and saves a lot of time.
      */
     /*
      * Init l: variables.
@@ -2885,6 +2886,11 @@ call_user_func(
     // "legacy" does not apply to commands in the function
     sticky_cmdmod_flags = 0;
 
+    // If called from a compiled :def function the execution context must be
+    // hidden, any deferred functions need to be added to the function being
+    // executed here.
+    save_current_ectx = clear_currrent_ectx();
+
     save_current_sctx = current_sctx;
     current_sctx = fp->uf_script_ctx;
     save_did_emsg = did_emsg;
@@ -2974,6 +2980,8 @@ call_user_func(
     ESTACK_CHECK_NOW
     estack_pop();
     current_sctx = save_current_sctx;
+    restore_current_ectx(save_current_ectx);
+
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
 	script_prof_restore(&profile_info.pi_wait_start);

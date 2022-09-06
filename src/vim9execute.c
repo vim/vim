@@ -860,6 +860,27 @@ in_def_function(void)
 }
 
 /*
+ * Clear "current_ectx" and return the previous value.  To be used when calling
+ * a user function.
+ */
+    ectx_T *
+clear_currrent_ectx(void)
+{
+    ectx_T *r = current_ectx;
+
+    current_ectx = NULL;
+    return r;
+}
+
+    void
+restore_current_ectx(ectx_T *ectx)
+{
+    if (current_ectx != NULL)
+	iemsg("Restoring current_ectx while it is not NULL");
+    current_ectx = ectx;
+}
+
+/*
  * Add an entry for a deferred function call to the currently executing
  * function.
  * Return the list or NULL when failed.
@@ -5335,7 +5356,7 @@ call_def_function(
     if (idx < 0)
     {
 	semsg(NGETTEXT(e_one_argument_too_few, e_nr_arguments_too_few,
-			-idx), -idx);
+								  -idx), -idx);
 	goto failed_early;
     }
 

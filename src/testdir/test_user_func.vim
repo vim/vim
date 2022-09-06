@@ -625,5 +625,37 @@ func Test_defer_quitall()
   call assert_false(filereadable('XQuitallTwo'))
 endfunc
 
+func FuncIndex(idx, val)
+  call writefile([a:idx .. ': ' .. a:val], 'Xentry' .. a:idx, 'D')
+  return a:val == 'c'
+endfunc
+
+def DefIndex(idx: number, val: string): bool
+  call writefile([idx .. ': ' .. val], 'Xentry' .. idx, 'D')
+  return val == 'c'
+enddef
+
+def Test_defer_in_funcref()
+  assert_equal(2, indexof(['a', 'b', 'c'], function('g:FuncIndex')))
+  assert_false(filereadable('Xentry0'))
+  assert_false(filereadable('Xentry1'))
+  assert_false(filereadable('Xentry2'))
+
+  assert_equal(2, indexof(['a', 'b', 'c'], g:DefIndex))
+  assert_false(filereadable('Xentry0'))
+  assert_false(filereadable('Xentry1'))
+  assert_false(filereadable('Xentry2'))
+
+  assert_equal(2, indexof(['a', 'b', 'c'], function('g:DefIndex')))
+  assert_false(filereadable('Xentry0'))
+  assert_false(filereadable('Xentry1'))
+  assert_false(filereadable('Xentry2'))
+
+  assert_equal(2, indexof(['a', 'b', 'c'], funcref(g:DefIndex)))
+  assert_false(filereadable('Xentry0'))
+  assert_false(filereadable('Xentry1'))
+  assert_false(filereadable('Xentry2'))
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab
