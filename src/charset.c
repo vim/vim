@@ -779,7 +779,7 @@ win_linetabsize(win_T *wp, char_u *line, colnr_T len)
 {
     chartabsize_T cts;
 
-    init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+    init_chartabsize_arg(&cts, wp, 0, line, line);
     win_linetabsize_cts(&cts, len);
     clear_chartabsize_arg(&cts);
     return (int)cts.cts_vcol;
@@ -937,7 +937,6 @@ vim_isprintc_strict(int c)
 /*
  * Prepare the structure passed to chartabsize functions.
  * "line" is the start of the line, "ptr" is the first relevant character.
- * When "lnum" is zero do not use text properties that insert text.
  */
     void
 init_chartabsize_arg(
@@ -953,12 +952,12 @@ init_chartabsize_arg(
     cts->cts_line = line;
     cts->cts_ptr = ptr;
 #ifdef FEAT_PROP_POPUP
-    if (lnum > 0)
+    if (wp > 0)
     {
 	char_u	*prop_start;
 	int	count;
 
-	count = get_text_props(wp->w_buffer, lnum, &prop_start, FALSE);
+	count = get_text_props(wp->w_buffer, &prop_start, FALSE);
 	cts->cts_text_prop_count = count;
 	if (count > 0)
 	{
@@ -1458,7 +1457,7 @@ getvcol(
 #endif
 
     vcol = 0;
-    line = ptr = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
+    line = ptr = ml_get_buf(wp->w_buffer, FALSE);
     if (pos->col == MAXCOL)
 	posptr = NULL;  // continue until the NUL
     else
@@ -1478,7 +1477,7 @@ getvcol(
 	    posptr -= (*mb_head_off)(line, posptr);
     }
 
-    init_chartabsize_arg(&cts, wp, pos->lnum, 0, line, line);
+    init_chartabsize_arg(&cts, wp, 0, line, line);
 
     /*
      * This function is used very often, do some speed optimizations.
@@ -1646,7 +1645,7 @@ getvvcol(
 	coladd = pos->coladd;
 	endadd = 0;
 	// Cannot put the cursor on part of a wide character.
-	ptr = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
+	ptr = ml_get_buf(wp->w_buffer, FALSE);
 	if (pos->col < (colnr_T)STRLEN(ptr))
 	{
 	    int c = (*mb_ptr2char)(ptr + pos->col);
