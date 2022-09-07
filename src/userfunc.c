@@ -2653,7 +2653,7 @@ call_user_func(
 	    profile_may_start_func(&profile_info, fp, caller);
 #endif
 	sticky_cmdmod_flags = 0;
-	call_def_function(fp, argcount, argvars, funcexe->fe_partial,
+	call_def_function(fp, argcount, argvars, 0, funcexe->fe_partial,
 								    fc, rettv);
 	funcdepth_decrement();
 #ifdef FEAT_PROFILE

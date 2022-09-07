@@ -5272,16 +5272,21 @@ call_def_function(
     ufunc_T	*ufunc,
     int		argc_arg,	// nr of arguments
     typval_T	*argv,		// arguments
+    int		flags,		// DEF_ flags
     partial_T	*partial,	// optional partial for context
     funccall_T	*funccal,
     typval_T	*rettv)		// return value
 {
     ectx_T	ectx;		// execution context
     int		argc = argc_arg;
+    int		partial_argc = partial == NULL
+				  || (flags & DEF_USE_PT_ARGV) == 0
+							? 0 : partial->pt_argc;
+    int		total_argc = argc + partial_argc;
     typval_T	*tv;
     int		idx;
     int		ret = FAIL;
-    int		defcount = ufunc->uf_args.ga_len - argc;
+    int		defcount = ufunc->uf_args.ga_len - total_argc;
     sctx_T	save_current_sctx = current_sctx;
     int		did_emsg_before = did_emsg_cumul + did_emsg;
     int		save_suppress_errthrow = suppress_errthrow;
@@ -5345,14 +5350,14 @@ call_def_function(
     ectx.ec_did_emsg_before = did_emsg_before;
     ++ex_nesting_level;
 
-    idx = argc - ufunc->uf_args.ga_len;
+    idx = total_argc - ufunc->uf_args.ga_len;
     if (idx > 0 && ufunc->uf_va_name == NULL)
     {
 	semsg(NGETTEXT(e_one_argument_too_many, e_nr_arguments_too_many,
-			idx), idx);
+								    idx), idx);
 	goto failed_early;
     }
-    idx = argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
+    idx = total_argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
     if (idx < 0)
     {
 	semsg(NGETTEXT(e_one_argument_too_few, e_nr_arguments_too_few,
@@ -5360,15 +5365,19 @@ call_def_function(
 	goto failed_early;
     }
 
-    // Put arguments on the stack, but no more than what the function expects.
-    // A lambda can be called with more arguments than it uses.
-    for (idx = 0; idx < argc
+    // Put values from the partial and arguments on the stack, but no more than
+    // what the function expects.  A lambda can be called with more arguments
+    // than it uses.
+    for (idx = 0; idx < total_argc
 	    && (ufunc->uf_va_name != NULL || idx < ufunc->uf_args.ga_len);
 									 ++idx)
     {
+	int argv_idx = idx - partial_argc;
+
+	tv = idx < partial_argc ? partial->pt_argv + idx : argv + argv_idx;
 	if (idx >= ufunc->uf_args.ga_len - ufunc->uf_def_args.ga_len
-		&& argv[idx].v_type == VAR_SPECIAL
-		&& argv[idx].vval.v_number == VVAL_NONE)
+		&& tv->v_type == VAR_SPECIAL
+		&& tv->vval.v_number == VVAL_NONE)
 	{
 	    // Use the default value.
 	    STACK_TV_BOT(0)->v_type = VAR_UNKNOWN;
@@ -5377,10 +5386,10 @@ call_def_function(
 	{
 	    if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
 		    && check_typval_arg_type(
-			ufunc->uf_arg_types[idx], &argv[idx],
-							NULL, idx + 1) == FAIL)
+			ufunc->uf_arg_types[idx], tv,
+						   NULL, argv_idx + 1) == FAIL)
 		goto failed_early;
-	    copy_tv(&argv[idx], STACK_TV_BOT(0));
+	    copy_tv(tv, STACK_TV_BOT(0));
 	}
 	++ectx.ec_stack.ga_len;
     }

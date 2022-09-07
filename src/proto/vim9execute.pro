@@ -15,7 +15,7 @@ typval_T *lookup_debug_var(char_u *name);
 int may_break_in_function(ufunc_T *ufunc);
 int exe_typval_instr(typval_T *tv, typval_T *rettv);
 char_u *exe_substitute_instr(void);
-int call_def_function(ufunc_T *ufunc, int argc_arg, typval_T *argv, partial_T *partial, funccall_T *funccal, typval_T *rettv);
+int call_def_function(ufunc_T *ufunc, int argc_arg, typval_T *argv, int flags, partial_T *partial, funccall_T *funccal, typval_T *rettv);
 void unwind_def_callstack(ectx_T *ectx);
 void may_invoke_defer_funcs(ectx_T *ectx);
 void set_context_in_disassemble_cmd(expand_T *xp, char_u *arg);
