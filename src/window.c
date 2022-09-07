@@ -2712,6 +2712,13 @@ win_close(win_T *win, int free_buf)
 	// using the window.
 	check_cursor();
     }
+
+    /*
+     * If last window has a status line now and we don't want one,
+     * remove the status line.
+     */
+    last_status(FALSE);
+
     if (p_ea && (*p_ead == 'b' || *p_ead == dir))
 	// If the frame of the closed window contains the new current window,
 	// only resize that frame.  Otherwise resize all windows.
@@ -2740,12 +2747,6 @@ win_close(win_T *win, int free_buf)
     if (!did_decrement)
 	--dont_parse_messages;
 #endif
-
-    /*
-     * If last window has a status line now and we don't want one,
-     * remove the status line.
-     */
-    last_status(FALSE);
 
     // After closing the help window, try restoring the window layout from
     // before it was opened.

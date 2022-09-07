@@ -1617,4 +1617,17 @@ func Test_window_alloc_failure()
   tabonly
 endfunc
 
+func Test_win_equal_last_status()
+  set lines=20
+  set splitbelow
+  set laststatus=0
+
+  split | split | quit
+  call assert_equal(winheight(1), winheight(2))
+
+  set lines&
+  set splitbelow&
+  set laststatus&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
