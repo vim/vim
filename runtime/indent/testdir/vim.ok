@@ -38,8 +38,8 @@ let t = [
 
 def Func()
     var d = dd
-		->extend({
-    })
+	->extend({
+	})
     eval 0
 enddef
 
@@ -69,7 +69,7 @@ let list = [
 let list = [
     'one',
     'two',
-    ]
+]
 echo
 
 " END_INDENT
