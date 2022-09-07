@@ -8649,6 +8649,7 @@ test_gui_w32_sendevent(dict_T *args)
 	inputs[0].ki.wVk = vkCode;
 	if (STRICMP(event, "keyup") == 0)
 	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	(void)SetForegroundWindow(s_hwnd);
 	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
     }
     else
