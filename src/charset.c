@@ -950,7 +950,6 @@ init_chartabsize_arg(
 {
     CLEAR_POINTER(cts);
     cts->cts_win = wp;
-    cts->cts_lnum = lnum;
     cts->cts_vcol = col;
     cts->cts_line = line;
     cts->cts_ptr = ptr;

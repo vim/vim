@@ -4599,7 +4599,6 @@ typedef struct {
 // Argument for lbr_chartabsize().
 typedef struct {
     win_T	*cts_win;
-    linenr_T	cts_lnum;	    // zero when not using text properties
     char_u	*cts_line;	    // start of the line
     char_u	*cts_ptr;	    // current position in line
 #ifdef FEAT_PROP_POPUP
