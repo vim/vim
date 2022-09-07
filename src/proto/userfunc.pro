@@ -60,6 +60,7 @@ void func_ptr_unref(ufunc_T *fp);
 void func_ref(char_u *name);
 void func_ptr_ref(ufunc_T *fp);
 void ex_return(exarg_T *eap);
+int can_add_defer(void);
 int add_defer(char_u *name, int argcount_arg, typval_T *argvars);
 void invoke_all_defer(void);
 void ex_call(exarg_T *eap);

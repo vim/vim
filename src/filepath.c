@@ -1428,10 +1428,12 @@ f_isabsolutepath(typval_T *argvars, typval_T *rettv)
 /*
  * Create the directory in which "dir" is located, and higher levels when
  * needed.
+ * Set "created" to the full name of the first created directory.  It will be
+ * NULL until that happens.
  * Return OK or FAIL.
  */
     static int
-mkdir_recurse(char_u *dir, int prot)
+mkdir_recurse(char_u *dir, int prot, char_u **created)
 {
     char_u	*p;
     char_u	*updir;
@@ -1449,8 +1451,12 @@ mkdir_recurse(char_u *dir, int prot)
 	return FAIL;
     if (mch_isdir(updir))
 	r = OK;
-    else if (mkdir_recurse(updir, prot) == OK)
+    else if (mkdir_recurse(updir, prot, created) == OK)
+    {
 	r = vim_mkdir_emsg(updir, prot);
+	if (r == OK && created != NULL && *created == NULL)
+	    *created = FullName_save(updir, FALSE);
+    }
     vim_free(updir);
     return r;
 }
@@ -1464,6 +1470,9 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
     char_u	*dir;
     char_u	buf[NUMBUFLEN];
     int		prot = 0755;
+    int		defer = FALSE;
+    int		defer_recurse = FALSE;
+    char_u	*created = NULL;
 
     rettv->vval.v_number = FAIL;
     if (check_restricted() || check_secure())
@@ -1486,13 +1495,21 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
+	char_u *arg2;
+
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
 	    prot = (int)tv_get_number_chk(&argvars[2], NULL);
 	    if (prot == -1)
 		return;
 	}
-	if (STRCMP(tv_get_string(&argvars[1]), "p") == 0)
+	arg2 = tv_get_string(&argvars[1]);
+	defer = vim_strchr(arg2, 'D') != NULL;
+	defer_recurse = vim_strchr(arg2, 'R') != NULL;
+	if ((defer || defer_recurse) && !can_add_defer())
+	    return;
+
+	if (vim_strchr(arg2, 'p') != NULL)
 	{
 	    if (mch_isdir(dir))
 	    {
@@ -1500,10 +1517,33 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 		rettv->vval.v_number = OK;
 		return;
 	    }
-	    mkdir_recurse(dir, prot);
+	    mkdir_recurse(dir, prot, defer || defer_recurse ? &created : NULL);
 	}
     }
     rettv->vval.v_number = vim_mkdir_emsg(dir, prot);
+
+    // Handle "D" and "R": deferred deletion of the created directory.
+    if (rettv->vval.v_number == OK
+				&& created == NULL && (defer || defer_recurse))
+	created = FullName_save(dir, FALSE);
+    if (created != NULL)
+    {
+	typval_T tv[2];
+
+	tv[0].v_type = VAR_STRING;
+	tv[0].v_lock = 0;
+	tv[0].vval.v_string = created;
+	tv[1].v_type = VAR_STRING;
+	tv[1].v_lock = 0;
+	tv[1].vval.v_string = vim_strsave(
+				       (char_u *)(defer_recurse ? "rf" : "d"));
+	if (tv[0].vval.v_string == NULL || tv[1].vval.v_string == NULL
+		|| add_defer((char_u *)"delete", 2, tv) == FAIL)
+	{
+	    vim_free(tv[0].vval.v_string);
+	    vim_free(tv[1].vval.v_string);
+	}
+    }
 }
 
 /*
@@ -2300,11 +2340,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     if (fname == NULL)
 	return;
 
-    if (defer && !in_def_function() && get_current_funccal() == NULL)
-    {
-	semsg(_(e_str_not_inside_function), "defer");
+    if (defer && !can_add_defer())
 	return;
-    }
 
     // Always open the file in binary mode, library functions have a mind of
     // their own about CR-LF conversion.
@@ -2323,7 +2360,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 
 	    tv.v_type = VAR_STRING;
 	    tv.v_lock = 0;
-	    tv.vval.v_string = vim_strsave(fname);
+	    tv.vval.v_string = FullName_save(fname, FALSE);
 	    if (tv.vval.v_string == NULL
 		    || add_defer((char_u *)"delete", 1, &tv) == FAIL)
 	    {

@@ -5650,6 +5650,21 @@ ex_defer_inner(
 }
 
 /*
+ * Return TRUE if currently inside a function call.
+ * Give an error message and return FALSE when not.
+ */
+    int
+can_add_defer(void)
+{
+    if (!in_def_function() && get_current_funccal() == NULL)
+    {
+	semsg(_(e_str_not_inside_function), "defer");
+	return FALSE;
+    }
+    return TRUE;
+}
+
+/*
  * Add a deferred call for "name" with arguments "argvars[argcount]".
  * Consumes "argvars[]".
  * Caller must check that in_def_function() returns TRUE or current_funccal is
