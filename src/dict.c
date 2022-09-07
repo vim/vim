@@ -917,6 +917,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     // first item.
     // But {} is an empty Dictionary.
     if (!vim9script
+	    && !literal
 	    && *curly_expr != '}'
 	    && eval1(&curly_expr, &tv, NULL) == OK
 	    && *skipwhite(curly_expr) == '}')
