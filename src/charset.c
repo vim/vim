@@ -775,7 +775,7 @@ linetabsize_col(int startcol, char_u *s)
  * Like linetabsize(), but for a given window instead of the current one.
  */
     int
-win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len)
+win_linetabsize(win_T *wp, char_u *line, colnr_T len)
 {
     chartabsize_T cts;
 
@@ -943,7 +943,6 @@ vim_isprintc_strict(int c)
 init_chartabsize_arg(
 	chartabsize_T	*cts,
 	win_T		*wp,
-	linenr_T	lnum,
 	colnr_T		col,
 	char_u		*line,
 	char_u		*ptr)
