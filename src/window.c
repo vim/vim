@@ -25,7 +25,7 @@ static frame_T *win_altframe(win_T *win, tabpage_T *tp);
 static tabpage_T *alt_tabpage(void);
 static win_T *frame2win(frame_T *frp);
 static int frame_has_win(frame_T *frp, win_T *wp);
-static void win_fix_scroll(win_T *next_curwin, int close);
+static void win_fix_scroll(int close);
 static void win_fix_cursor(win_T *wp, int curnormal);
 static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
 static int frame_fixed_height(frame_T *frp);
@@ -1348,7 +1348,7 @@ win_split_ins(
     }
 
     if (!p_spsc)
-	win_fix_scroll(wp, FALSE);
+	win_fix_scroll(FALSE);
 
     /*
      * make the new window the current window
@@ -2739,7 +2739,7 @@ win_close(win_T *win, int free_buf)
     else
 	win_comp_pos();
     if (!p_spsc)
-	win_fix_scroll(wp, TRUE);
+	win_fix_scroll(TRUE);
     if (close_curwin)
     {
 	// Pass WEE_ALLOW_PARSE_MESSAGES to decrement dont_parse_messages
@@ -4944,7 +4944,7 @@ win_enter_ext(win_T *wp, int flags)
 	curwin->w_cursor.coladd = 0;
     if (p_spsc) // assume cursor position needs updating.
 	changed_line_abv_curs();
-    else if (!(flags & WEE_TRIGGER_NEW_AUTOCMDS))
+    else
 	win_fix_cursor(wp, FALSE);
 
     // Now it is OK to parse messages again, which may be needed in
@@ -5470,7 +5470,7 @@ shell_new_rows(void)
     // that doesn't result in the right height, forget about that option.
     frame_new_height(topframe, h, FALSE, TRUE);
     if (!p_spsc)
-	win_fix_scroll(curwin, FALSE);
+	win_fix_scroll(FALSE);
     if (!frame_check_height(topframe, h))
 	frame_new_height(topframe, h, FALSE, FALSE);
 
@@ -6346,7 +6346,7 @@ set_fraction(win_T *wp)
  * with some offset(row-wise scrolling/smoothscroll).
  */
     static void
-win_fix_scroll(win_T *next_curwin, int close)
+win_fix_scroll(int close)
 {
     int      ls_offset = (p_ls == 1 && win_count() == 2) ? 2 : 1;
     win_T    *wp;
@@ -6382,8 +6382,6 @@ win_fix_scroll(win_T *next_curwin, int close)
 	    // or if currently not in normal/cmdline mode.
 	    if (wp == curwin && !(get_real_state() & (MODE_NORMAL|MODE_CMDLINE)))
 		win_fix_cursor(wp, TRUE);
-	    else if (wp == next_curwin)
-		win_fix_cursor(wp, FALSE);
 	}
 	wp->w_prev_height = wp->w_height;
 	wp->w_prev_winrow = wp->w_winrow;
