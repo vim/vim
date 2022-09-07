@@ -943,7 +943,7 @@ vim_isprintc_strict(int c)
 init_chartabsize_arg(
 	chartabsize_T	*cts,
 	win_T		*wp,
-	linenr_T	lnum,
+	linenr_T	lnum UNUSED,
 	colnr_T		col,
 	char_u		*line,
 	char_u		*ptr)
