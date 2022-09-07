@@ -1631,5 +1631,73 @@ func Test_win_equal_last_status()
   set laststatus&
 endfunc
 
+" Ensure no scrolling happens with 'nosplitscroll' with and without a
+" winbar, tabline, for each possible value of 'laststatus', 'scrolloff',
+" and regardless of the cursor position.
+func Test_splitscroll_with_splits()
+  let save_lines = &lines
+  set nosplitscroll
+  set nowrap | redraw!
+  set lines=80 | redraw!
+  let gui = has("gui_running")
+  for winbar in [0, 1]
+    for sb in [0, 1]
+      for tab in [0, 1]
+        for so in [0, 5]
+          for ls in range(0, 2)
+            for pos in ["H", "M", "L"]
+              let tabline = (gui ? 0 : (tab ? 1 : 0))
+              let winbar_sb = (sb ? winbar : 0)
+              execute 'set scrolloff=' . so | redraw!
+              execute 'set laststatus=' . ls | redrawstatus!
+              execute 'set ' . (sb ? 'splitbelow' : 'nosplitbelow')
+              execute tab ? 'tabnew' : '' | redraw!
+              execute winbar ? 'nnoremenu 1.10 WinBar.Test :echo' : '' | redraw!
+              call setline(1, range(1, 256))
+              execute 'norm gg' . pos
+              vsplit | quit | redraw!
+              call assert_equal(line("w0"), 1)
+              split | redraw! | wincmd k
+              call assert_equal(line("w0"), 1)
+              vsplit | split | redraw! | 4wincmd w
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              1wincmd w | quit | wincmd l | split
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              wincmd j
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              2wincmd w | only | redraw! | 5split | redraw! | wincmd k
+              call assert_equal(line("w0"), 1)
+              wincmd j
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              quit | vsplit | wincmd l
+              call assert_equal(line("w0"), 1)
+              wincmd h
+              call assert_equal(line("w0"), 1)
+              quit | split | split | quit
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              1wincmd w | only | copen | wincmd k
+              call assert_equal(line("w0"), 1)
+              1wincmd w | only | redraw!
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline)
+              above copen | wincmd j
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline)
+              only!
+            endfor
+          endfor
+        endfor
+        tabonly! | redraw!
+      endfor
+    endfor
+  endfor
+  tabnew | tabonly!
+
+  %bwipeout!
+  set wrap&
+  let &lines = save_lines
+  set scrolloff&
+  set splitbelow&
+  set laststatus&
+  set splitscroll&
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -974,7 +974,8 @@ curs_columns(
     /*
      * First make sure that w_topline is valid (after moving the cursor).
      */
-    update_topline();
+    if (p_spsc)
+	update_topline();
 
     /*
      * Next make sure that w_cline_row is valid.
