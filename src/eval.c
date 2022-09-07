@@ -263,10 +263,17 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	if (partial->pt_func != NULL
 			  && partial->pt_func->uf_def_status != UF_NOT_COMPILED)
 	{
+	    funccall_T	*fc = create_funccal(partial->pt_func, rettv);
+	    int		r;
+
+	    if (fc == NULL)
+		return FAIL;
+
 	    // Shortcut to call a compiled function without overhead.
-	    // FIXME: should create a funccal and link it in current_funccal.
-	    if (call_def_function(partial->pt_func, argc, argv,
-				DEF_USE_PT_ARGV, partial, NULL, rettv) == FAIL)
+	    r = call_def_function(partial->pt_func, argc, argv,
+					  DEF_USE_PT_ARGV, partial, fc, rettv);
+	    remove_funccal();
+	    if (r == FAIL)
 		return FAIL;
 	}
 	else
