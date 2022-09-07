@@ -3444,7 +3444,7 @@ regmatch(
 		linenr_T    lnum = rex.reg_firstlnum + rex.lnum;
 		long_u	    vcol = 0;
 
-		if (lnum > 0 && lnum <= wp->w_buffer->b_ml.ml_line_count)
+		if (lnum >= 0 && lnum <= wp->w_buffer->b_ml.ml_line_count)
 		    vcol = (long_u)win_linetabsize(wp, lnum, rex.line,
 					      (colnr_T)(rex.input - rex.line));
 		if (!re_num_cmp(vcol + 1, scan))
