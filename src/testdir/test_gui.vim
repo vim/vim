@@ -1607,12 +1607,13 @@ func Test_gui_CTRL_SHIFT_V()
 endfunc
 
 func Test_gui_dialog_file()
+  call delete('Xdialfile')
   let lines =<< trim END
     file Xdialfile
     normal axxx
     confirm qa
   END
-  call writefile(lines, 'Xlines')
+  call writefile(lines, 'Xlines', 'D')
   let prefix = '!'
   if has('win32')
     let prefix = '!start '
@@ -1624,7 +1625,6 @@ func Test_gui_dialog_file()
 
   call delete('Xdialog')
   call delete('Xdialfile')
-  call delete('Xlines')
 endfunc
 
 " Test for sending low level key presses
