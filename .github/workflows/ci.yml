@@ -94,12 +94,12 @@ jobs:
         if:  matrix.compiler == 'gcc'
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-      - name: Install gcc
+      - name: Install gcc-12
         if:  matrix.compiler == 'gcc'
         run: |
-          brew install gcc
-          sudo update-alternatives --install /usr/bin/gcc gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-* 100
-          sudo update-alternatives --set gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-*
+          brew install gcc@12
+          sudo update-alternatives --install /usr/bin/gcc gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-12 100
+          sudo update-alternatives --set gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-12
 
       - name: Install clang-15
         if: matrix.compiler == 'clang'
