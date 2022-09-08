@@ -375,6 +375,7 @@ endfunc
 func Test_buffer_scheme()
   CheckMSWindows
 
+  set noswapfile
   set noshellslash
   %bwipe!
   let bufnames = [
@@ -397,6 +398,7 @@ func Test_buffer_scheme()
   endfor
 
   set shellslash&
+  set swapfile&
 endfunc
 
 " this was using a NULL pointer after failing to use the pattern
