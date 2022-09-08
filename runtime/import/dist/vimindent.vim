@@ -68,7 +68,7 @@ const LINE_CONTINUATION_AT_START: string = '^\s*\%('
   .. '\|' .. '[#"]\\ '
   .. '\|' .. OPERATOR
   .. '\|' .. '->\s*\h'
-  .. '\|' .. '\.\h' # dict member
+  .. '\|' .. '\.\h'  # dict member
   .. '\|' .. '|'
   # TODO: `}` at the start of a line is not necessarily a continuation line.
   # Could be the end of a block.
@@ -388,7 +388,7 @@ enddef
 
 def InCommentOrString(lnum = line('.'), col = col('.')): bool #{{{2
   if !has('syntax_items')
-    if getline(lnum) =~ '^\s*#'
+    if getline(lnum) =~ COMMENT
       return true
     endif
     return false
