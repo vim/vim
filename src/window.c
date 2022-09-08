@@ -6362,10 +6362,11 @@ win_fix_scroll()
 	    // Determine botline needed to avoid scrolling and set cursor.
 	    if (wp->w_winrow != wp->w_prev_winrow)
 	    {
-		wp->w_cursor.lnum = MIN(wp->w_botline - 1
-					+ (wp->w_winrow - wp->w_prev_winrow)
-					+ (wp->w_height - wp->w_prev_height),
-					wp->w_buffer->b_ml.ml_line_count);
+		wp->w_cursor.lnum = MIN(wp->w_buffer->b_ml.ml_line_count,
+			wp->w_botline - 1 + (wp->w_prev_height ?
+			+ (wp->w_winrow - wp->w_prev_winrow)
+			+ (wp->w_height - wp->w_prev_height)
+			: -WINBAR_HEIGHT(wp)));
 		// Bring the new cursor position to the bottom of the screen.
 		wp->w_fraction = FRACTION_MULT;
 		scroll_to_fraction(wp, wp->w_prev_height);
