@@ -27,6 +27,15 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
   .. '\|' .. '\%(\s\|^\):\%(\s\|$\)'
 # }}}2
 
+# COMMENT {{{2
+
+# Technically, `"\s` is wrong.
+# In Vim9, a string might appear at the start of the line.
+# To be sure, we should also inspect the syntax.
+# But in practice, `"\s` at the start of a line is unlikely to be anything other
+# than a legacy comment.
+const COMMENT: string = '^\s*\%(#\|"\\\=\s\)'
+
 # KEY_IN_LITERAL_DICT {{{2
 
 const KEY_IN_LITERAL_DICT: string = '^\s*\%(\w\|-\)\+:\%(\s\|$\)'
@@ -179,7 +188,10 @@ export def Expr(): number #{{{2
 
   var base_ind: number
 
-  if line_B.text =~ IS_SINGLE_OPEN_BRACKET
+  if line_A.text =~ COMMENT && line_B.text =~ COMMENT
+    return indent(line_B.lnum)
+
+  elseif line_B.text =~ IS_SINGLE_OPEN_BRACKET
     return indent(line_B.lnum) + shiftwidth()
 
   elseif line_A.text =~ STARTS_WITH_CLOSING_BRACKET
