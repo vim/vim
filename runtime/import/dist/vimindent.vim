@@ -15,8 +15,7 @@ var cmds: list<string>
 # `LINE_CONTINUATION_AT_END`.
 const CURLY_BLOCK: string = '^\s*{\s*$'
   .. '\|' .. '^.*\s=>\s\+{\s*$'
-  .. '\|' .. '^\%(\s*\|.*|\s*\)com\%[mand].*\s{\s*$'
-  .. '\|' .. '^\%(\s*\|.*|\s*\)au\%[tocmd].*\s{\s*$'
+  .. '\|' ..  '^\%(\s*\|.*|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\s{\s*$'
 
 # OPERATOR {{{2
 
@@ -126,21 +125,20 @@ const STARTS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
 
 # ENDS_BLOCK {{{2
 
-# Shortest non-ambiguous end of block commands.
 cmds =<< trim END
-  endif
-  else
-  elseif
-  endfor
-  endwhile
-  endtry
-  catch
-  finally
+  en\%[dif]
+  el\%[se]
+  elseif\=
+  endfor\=
+  endw\%[hile]
+  endt\%[ry]
+  cat\%[ch]
+  fina\|finally\=
   enddef
-  endfu
+  endfu\%[nction]
   aug\%[roup]\s\+[eE][nN][dD]
 END
-const ENDS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)'
+const ENDS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
 
 # CLOSING_BRACKET {{{2
 
@@ -385,8 +383,7 @@ def IsBlock(lnum: number): bool #{{{2
     return true
   endif
 
-  return line =~ '=>\s\+{\s*$'
-    || line =~ '^\%(\s*\|.*|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\s{\s*$'
+  return line =~ CURLY_BLOCK
 enddef
 
 def InCommentOrString(lnum = line('.'), col = col('.')): bool #{{{2
