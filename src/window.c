@@ -26,7 +26,7 @@ static tabpage_T *alt_tabpage(void);
 static win_T *frame2win(frame_T *frp);
 static int frame_has_win(frame_T *frp, win_T *wp);
 static void win_fix_scroll(void);
-static void win_fix_cursor(win_T *wp, int curnormal);
+static void win_fix_cursor(int normal);
 static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
 static int frame_fixed_height(frame_T *frp);
 static int frame_fixed_width(frame_T *frp);
@@ -4945,7 +4945,7 @@ win_enter_ext(win_T *wp, int flags)
     if (p_spsc) // assume cursor position needs updating.
 	changed_line_abv_curs();
     else
-	win_fix_cursor(wp, FALSE);
+	win_fix_cursor(TRUE);
 
     // Now it is OK to parse messages again, which may be needed in
     // autocommands.
@@ -6358,13 +6358,13 @@ win_fix_scroll()
 	if (wp->w_height != wp->w_prev_height
 		&& wp->w_height < wp->w_buffer->b_ml.ml_line_count)
 	{
-	    lnum = wp->w_cursor.lnum;
 	    // Determine botline needed to avoid scrolling and set cursor.
 	    if (wp->w_winrow != wp->w_prev_winrow)
 	    {
+		lnum = wp->w_cursor.lnum;
 		wp->w_cursor.lnum = MIN(wp->w_buffer->b_ml.ml_line_count,
 			wp->w_botline - 1 + (wp->w_prev_height ?
-			+ (wp->w_winrow - wp->w_prev_winrow)
+			(wp->w_winrow - wp->w_prev_winrow)
 			+ (wp->w_height - wp->w_prev_height)
 			: -WINBAR_HEIGHT(wp)));
 		// Bring the new cursor position to the bottom of the screen.
@@ -6374,10 +6374,9 @@ win_fix_scroll()
 	    }
 	    invalidate_botline_win(wp);
 	    validate_botline_win(wp);
-	    // Ensure cursor position is valid for the current window to be
-	    // or if currently not in normal/cmdline mode.
+	    // Ensure cursor position is valid if currently not in normal mode.
 	    if (wp == curwin && !(get_real_state() & (MODE_NORMAL|MODE_CMDLINE)))
-		win_fix_cursor(wp, TRUE);
+		win_fix_cursor(FALSE);
 	}
 	wp->w_prev_height = wp->w_height;
 	wp->w_prev_winrow = wp->w_winrow;
@@ -6390,11 +6389,10 @@ win_fix_scroll()
  * If we are not in normal mode, scroll to make valid instead.
  */
     static void
-win_fix_cursor(win_T *wp, int normal)
+win_fix_cursor(int normal)
 {
+    win_T    *wp = curwin;
     long     so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
-    win_T    *cw = curwin;
-    buf_T    *cb = curbuf;
     linenr_T nlnum = 0;
 
     if (wp->w_buffer->b_ml.ml_line_count < wp->w_height)
@@ -6411,19 +6409,15 @@ win_fix_cursor(win_T *wp, int normal)
     if (nlnum)
     {
 	if (normal)
+	{
+	    setmark('\'');		// save cursor position
+	    wp->w_cursor.lnum = nlnum;  // change to avoid scrolling
+	    curs_columns(TRUE);		// validate w_wrow
+	}
+	else
 	{   // Ensure cursor stays visible if we are not in normal mode.
 	    wp->w_fraction = FRACTION_MULT;
 	    scroll_to_fraction(wp, wp->w_prev_height);
-	}
-	else
-	{
-	    curwin = wp;
-	    curbuf = wp->w_buffer;
-	    setmark('\'');		// save cursor position
-	    curwin = cw;
-	    curbuf = cb;
-	    wp->w_cursor.lnum = nlnum;  // change to avoid scrolling
-	    curs_columns(TRUE);         // validate w_wrow
 	}
     }
 }
