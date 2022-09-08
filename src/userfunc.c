@@ -5608,6 +5608,7 @@ ex_call_inner(
 ex_defer_inner(
 	char_u	    *name,
 	char_u	    **arg,
+	type_T	    *type,
 	partial_T   *partial,
 	evalarg_T   *evalarg)
 {
@@ -5640,6 +5641,44 @@ ex_defer_inner(
     r = get_func_arguments(arg, evalarg, FALSE,
 					    argvars + partial_argc, &argcount);
     argcount += partial_argc;
+
+    if (r == OK)
+    {
+	if (type != NULL)
+	{
+	    // Check that the arguments are OK for the types of the funcref.
+	    r = check_argument_types(type, argvars, argcount, NULL, name);
+	}
+	else if (builtin_function(name, -1))
+	{
+	    int idx = find_internal_func(name);
+
+	    if (idx < 0)
+	    {
+		emsg_funcname(e_unknown_function_str, name);
+		r = FAIL;
+	    }
+	    else if (check_internal_func(idx, argcount) == -1)
+		r = FAIL;
+	}
+	else
+	{
+	    ufunc_T *ufunc = find_func(name, FALSE);
+
+	    // we tolerate an unknown function here, it might be defined later
+	    if (ufunc != NULL)
+	    {
+		int error = check_user_func_argcount(ufunc, argcount);
+
+		if (error != FCERR_UNKNOWN)
+		{
+		    user_func_error(error, name, NULL);
+		    r = FAIL;
+		}
+	    }
+	}
+    }
+
     if (r == FAIL)
     {
 	while (--argcount >= 0)
@@ -5839,7 +5878,7 @@ ex_call(exarg_T *eap)
     if (eap->cmdidx == CMD_defer)
     {
 	arg = startarg;
-	failed = ex_defer_inner(name, &arg, partial, &evalarg) == FAIL;
+	failed = ex_defer_inner(name, &arg, type, partial, &evalarg) == FAIL;
     }
     else
     {
