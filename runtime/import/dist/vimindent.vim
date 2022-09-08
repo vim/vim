@@ -383,8 +383,7 @@ def IsBlock(lnum: number): bool #{{{2
   endif
 
   return line =~ '=>\s\+{\s*$'
-    || line =~ '^\%(\s*\|.*|\s*\)com\%[mand].*\s{\s*$'
-    || line =~ '^\%(\s*\|.*|\s*\)au\%[tocmd].*\s{\s*$'
+    || line =~ '^\%(\s*\|.*|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\s{\s*$'
 enddef
 
 def InCommentOrString(lnum = line('.'), col = col('.')): bool #{{{2
