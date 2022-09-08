@@ -81,7 +81,7 @@ jobs:
               python-dev \
               python3-dev \
               liblua5.3-dev \
-              lua5.3 \
+              lua5.3-dev \
               ruby-dev \
               tcl-dev \
               cscope \
@@ -94,12 +94,12 @@ jobs:
         if:  matrix.compiler == 'gcc'
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-      - name: Install gcc-12
+      - name: Install gcc
         if:  matrix.compiler == 'gcc'
         run: |
-          brew install gcc@12
-          sudo update-alternatives --install /usr/bin/gcc gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-12 100
-          sudo update-alternatives --set gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-12
+          brew install gcc
+          sudo update-alternatives --install /usr/bin/gcc gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-* 100
+          sudo update-alternatives --set gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-*
 
       - name: Install clang-15
         if: matrix.compiler == 'clang'
