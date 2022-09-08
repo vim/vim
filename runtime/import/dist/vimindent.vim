@@ -288,12 +288,11 @@ def HereDocIndent(line: string): number #{{{2
     return ind
   endif
 
-  # right after a heredoc declaration
-  if v:lnum == b:vimindent_heredoc.startlnum + 1
+  # first non-empty line after a heredoc declaration
+  if !b:vimindent_heredoc->has_key('startindent')
     b:vimindent_heredoc.startindent = indent(b:vimindent_heredoc.startlnum)
   endif
 
-  # in the middle of a heredoc
   return b:vimindent_heredoc.startindent + shiftwidth()
 enddef
 # }}}1
