@@ -388,10 +388,7 @@ enddef
 
 def InCommentOrString(lnum = line('.'), col = col('.')): bool #{{{2
   if !has('syntax_items')
-    if getline(lnum) =~ COMMENT
-      return true
-    endif
-    return false
+    return getline(lnum) =~ COMMENT
   endif
 
   for synID: number in synstack(lnum, col)
