@@ -96,8 +96,7 @@ const STARTS_WITH_BACKSLASH: string = '^\s*\\'
 # DECLARES_HEREDOC {{{2
 
 const DECLARES_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
-          .. '\s=<<\s\+\%(trim\s\)\=\s*'
-  .. '\|' .. '\s=<<\s\+\%(.*\<eval\>\)\@=\%(\%(trim\|eval\)\s\)\{1,2}\s*'
+  .. '\s=<<\s\+\%(\%(trim\|eval\)\s\)\{1,2}\s*'
   .. '\)\zs\L\S*$'
 
 # STARTS_BLOCK {{{2
