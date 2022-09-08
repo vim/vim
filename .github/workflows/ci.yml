@@ -98,8 +98,7 @@ jobs:
         if:  matrix.compiler == 'gcc'
         run: |
           brew install gcc@12
-          sudo update-alternatives --install /usr/bin/gcc gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-12 100
-          sudo update-alternatives --set gcc /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-12
+          sudo ln -s /home/linuxbrew/.linuxbrew/Cellar/gcc/*/bin/gcc-12 /usr/bin/gcc
 
       - name: Install clang-15
         if: matrix.compiler == 'clang'
@@ -169,11 +168,6 @@ jobs:
           if [[ ${CC} = clang ]]; then
             # Use llvm-cov instead of gcov when compiler is clang.
             ln -fs /usr/bin/llvm-cov ${HOME}/bin/gcov
-          fi
-          # Setup lua5.3 manually since its package doesn't provide alternative.
-          # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
-          if [[ ${CONFOPT} =~ luainterp ]]; then
-            sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 100
           fi
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
