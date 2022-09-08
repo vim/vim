@@ -167,7 +167,6 @@ export def Expr(): number #{{{2
   if line_A.text =~ DECLARES_HEREDOC
     b:vimindent_heredoc = {
       startlnum: v:lnum,
-      startindent: indent(v:lnum),
       endmarker: line_A.text->matchstr(DECLARES_HEREDOC),
     }
     autocmd_add([{
