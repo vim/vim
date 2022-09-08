@@ -25,7 +25,7 @@ static frame_T *win_altframe(win_T *win, tabpage_T *tp);
 static tabpage_T *alt_tabpage(void);
 static win_T *frame2win(frame_T *frp);
 static int frame_has_win(frame_T *frp, win_T *wp);
-static void win_fix_scroll(void);
+static void win_fix_scroll(int resize);
 static void win_fix_cursor(int normal);
 static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
 static int frame_fixed_height(frame_T *frp);
@@ -1325,6 +1325,8 @@ win_split_ins(
 	win_equal(wp, TRUE,
 		(flags & WSP_VERT) ? (dir == 'v' ? 'b' : 'h')
 		: dir == 'h' ? 'b' : 'v');
+    else if (!p_spsc)
+	win_fix_scroll(FALSE);
 
     // Don't change the window height/width to 'winheight' / 'winwidth' if a
     // size was given.
@@ -1346,9 +1348,6 @@ win_split_ins(
 	if (size != 0)
 	    p_wh = size;
     }
-
-    if (!p_spsc)
-	win_fix_scroll();
 
     /*
      * make the new window the current window
@@ -1926,6 +1925,8 @@ win_equal(
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
 		      topframe, dir, 0, tabline_height(),
 					   (int)Columns, topframe->fr_height);
+    if (!p_spsc)
+	win_fix_scroll(TRUE);
 }
 
 /*
@@ -2737,9 +2738,11 @@ win_close(win_T *win, int free_buf)
 	// only resize that frame.  Otherwise resize all windows.
 	win_equal(curwin, curwin->w_frame->fr_parent == win_frame, dir);
     else
+    {
 	win_comp_pos();
-    if (!p_spsc)
-	win_fix_scroll();
+        if (!p_spsc)
+	    win_fix_scroll(FALSE);
+    }
     if (close_curwin)
     {
 	// Pass WEE_ALLOW_PARSE_MESSAGES to decrement dont_parse_messages
@@ -5469,14 +5472,15 @@ shell_new_rows(void)
     // First try setting the heights of windows with 'winfixheight'.  If
     // that doesn't result in the right height, forget about that option.
     frame_new_height(topframe, h, FALSE, TRUE);
-    if (!p_spsc)
-	win_fix_scroll();
     if (!frame_check_height(topframe, h))
 	frame_new_height(topframe, h, FALSE, FALSE);
 
     (void)win_comp_pos();		// recompute w_winrow and w_wincol
     compute_cmdrow();
     curtab->tp_ch_used = p_ch;
+
+    if (!p_spsc)
+	win_fix_scroll(TRUE);
 
 #if 0
     // Disabled: don't want making the screen smaller make a window larger.
@@ -5681,6 +5685,9 @@ win_setheight_win(int height, win_T *win)
     cmdline_row = row;
     msg_row = row;
     msg_col = 0;
+
+    if (!p_spsc)
+	win_fix_scroll(TRUE);
 
     redraw_all_later(UPD_NOT_VALID);
 }
@@ -6210,6 +6217,9 @@ win_drag_status_line(win_T *dragwin, int offset)
     p_ch = MAX(Rows - cmdline_row, 1);
     curtab->tp_ch_used = p_ch;
 
+    if (!p_spsc)
+	win_fix_scroll(TRUE);
+
     redraw_all_later(UPD_SOME_VALID);
     showmode();
 }
@@ -6346,7 +6356,7 @@ set_fraction(win_T *wp)
  * with some offset(row-wise scrolling/smoothscroll).
  */
     static void
-win_fix_scroll()
+win_fix_scroll(int resize)
 {
     win_T    *wp;
     linenr_T lnum;
@@ -6374,13 +6384,15 @@ win_fix_scroll()
 	    }
 	    invalidate_botline_win(wp);
 	    validate_botline_win(wp);
-	    // Ensure cursor position is valid if currently not in normal mode.
-	    if (wp == curwin && !(get_real_state() & (MODE_NORMAL|MODE_CMDLINE)))
-		win_fix_cursor(FALSE);
 	}
 	wp->w_prev_height = wp->w_height;
 	wp->w_prev_winrow = wp->w_winrow;
     }
+    // Ensure cursor is valid when not in normal mode or when resized.
+    if (!(get_real_state() & (MODE_NORMAL|MODE_CMDLINE)))
+	win_fix_cursor(FALSE);
+    else if (resize)
+	win_fix_cursor(TRUE);
 }
 
 /*
@@ -6391,6 +6403,7 @@ win_fix_scroll()
     static void
 win_fix_cursor(int normal)
 {
+    int      top = FALSE;
     win_T    *wp = curwin;
     long     so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
     linenr_T nlnum = 0;
@@ -6401,7 +6414,7 @@ win_fix_cursor(int normal)
     so = MIN(wp->w_height / 2, so);
     // Check if cursor position is above topline or below botline.
     if (wp->w_cursor.lnum < (wp->w_topline + so) && wp->w_topline != 1)
-	nlnum = MIN(wp->w_topline + so, wp->w_buffer->b_ml.ml_line_count);
+	top = nlnum = MIN(wp->w_topline + so, wp->w_buffer->b_ml.ml_line_count);
     else if (wp->w_cursor.lnum > (wp->w_botline - so - 1)
 	    && (wp->w_botline - wp->w_buffer->b_ml.ml_line_count) != 1)
 	nlnum = MAX(wp->w_botline - so - 1, 1);
@@ -6411,12 +6424,12 @@ win_fix_cursor(int normal)
 	if (normal)
 	{
 	    setmark('\'');		// save cursor position
-	    wp->w_cursor.lnum = nlnum;  // change to avoid scrolling
+	    wp->w_cursor.lnum = nlnum;	// change to avoid scrolling
 	    curs_columns(TRUE);		// validate w_wrow
 	}
 	else
 	{   // Ensure cursor stays visible if we are not in normal mode.
-	    wp->w_fraction = FRACTION_MULT;
+	    wp->w_fraction = top ? 0 : FRACTION_MULT;
 	    scroll_to_fraction(wp, wp->w_prev_height);
 	}
     }

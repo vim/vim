@@ -1636,9 +1636,11 @@ endfunc
 " and regardless of the cursor position.
 func Test_splitscroll_with_splits()
   let save_lines = &lines
+  let save_mouse = &mouse
+  set nowrap
+  set mouse=a
+  set lines=80
   set nosplitscroll
-  set nowrap | redraw!
-  set lines=80 | redraw!
   let gui = has("gui_running")
   for winbar in [0, 1]
     for sb in [0, 1]
@@ -1659,6 +1661,23 @@ func Test_splitscroll_with_splits()
               call assert_equal(line("w0"), 1)
               split | redraw! | wincmd k
               call assert_equal(line("w0"), 1)
+              resize +5
+              call assert_equal(line("w0"), 1)
+              wincmd j
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              call test_setmouse(win_screenpos(0)[0] - 1, 1)
+              call feedkeys("\<LeftMouse>", 'xt')
+              call test_setmouse(win_screenpos(0)[0] - 5, 1)
+              call feedkeys("\<LeftDrag>", 'xt')
+              call feedkeys("\<LeftRelease>", 'xt')
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              set lines=40 | redraw!
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              wincmd =
+              call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
+              wincmd k
+              call assert_equal(line("w0"), 1)
+              set lines=80
               vsplit | split | redraw! | 4wincmd w
               call assert_equal(line("w0"), win_screenpos(0)[0] - tabline - winbar_sb)
               1wincmd w | quit | wincmd l | split
@@ -1694,6 +1713,7 @@ func Test_splitscroll_with_splits()
   %bwipeout!
   set wrap&
   let &lines = save_lines
+  let &mouse = save_mouse
   set scrolloff&
   set splitbelow&
   set laststatus&
