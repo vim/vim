@@ -4174,5 +4174,28 @@ func Test_bufdel_skips_popupwin_buffer()
     call popup_close(id)
 endfunc
 
+func Test_term_popup_bufline()
+  " very specific situation where a non-existing buffer line is used, leading
+  " to an ml_get error
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      &scrolloff = 5
+      term_start('seq 1 5', {term_finish: 'open'})
+      timer_start(50, (_) => {
+	  set cpoptions&vim
+	  var buf = popup_create([], {})->winbufnr()
+	  appendbufline(buf, 0, range(5))
+      })
+  END
+  call writefile(lines, 'XtestTermPopup', 'D')
+  let buf = RunVimInTerminal('-S XtestTermPopup', #{rows: 15})
+  call VerifyScreenDump(buf, 'Test_term_popup_bufline', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2
