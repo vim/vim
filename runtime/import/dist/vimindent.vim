@@ -183,7 +183,7 @@ export def Expr(): number #{{{2
     return indent(line_B.lnum) + shiftwidth()
 
   elseif line_A.text =~ STARTS_WITH_CLOSING_BRACKET
-    var open_bracket: number = MatchingOpenBracket(line_A.text)
+    var open_bracket: number = MatchingOpenBracket(line_A)
     if open_bracket <= 0
       return -1
     endif
@@ -205,7 +205,7 @@ export def Expr(): number #{{{2
 
   elseif line_A.text->IsFirstLineOfCommand(line_B)
     line_A.isfirst = true
-    var [cmd: string, lnum: number] = FirstLinePreviousCommand(line_B.text, line_B.lnum)
+    var [cmd: string, lnum: number] = line_B->FirstLinePreviousCommand()
     line_B = {text: cmd, lnum: lnum}
 
     base_ind = indent(lnum)
@@ -251,7 +251,7 @@ def Offset( #{{{2
     # Do it twice for a line continuation in the block header itself, so that we
     # can easily distinguish the  end of the block header from  the start of the
     # block body.
-    elseif line_B.text->HasLineContinuationAtEnd(line_B.lnum)
+    elseif line_B->HasLineContinuationAtEnd()
         && !line_A.isfirst
         || line_A.text =~ LINE_CONTINUATION_AT_START
       return 2 * shiftwidth()
@@ -262,7 +262,7 @@ def Offset( #{{{2
   # increase indentation of  a line if it's the continuation  of a command which
   # started on a previous line
   elseif !line_A.isfirst
-      && (line_B.text->HasLineContinuationAtEnd(line_B.lnum)
+      && (line_B->HasLineContinuationAtEnd()
       || line_A.text =~ LINE_CONTINUATION_AT_START)
     return shiftwidth()
   endif
@@ -305,45 +305,40 @@ def GetBlockStartKeyword(line: string): string #{{{2
   return kwd
 enddef
 
-def MatchingOpenBracket(line: string, lnum = 0): number #{{{2
-  var end: string = line->matchstr(CLOSING_BRACKET)
+def MatchingOpenBracket(line: dict<any>): number #{{{2
+  var end: string = line.text->matchstr(CLOSING_BRACKET)
   var start: string = {']': '[', '}': '{', ')': '('}[end]
-
-  if lnum > 0
-    cursor(lnum, 1)
-  endif
-
+  cursor(line.lnum, 1)
   return FindStart(start, '', end)
 enddef
 
-def FirstLinePreviousCommand(line: string, lnum: number): list<any> #{{{2
-  var this_line: string = line
-  var this_lnum: number = lnum
+def FirstLinePreviousCommand(line: dict<any>): list<any> #{{{2
+  var text: string = line.text
+  var lnum: number = line.lnum
 
-  while this_lnum > 1
-    var line_above: string = getline(this_lnum - 1)
+  while lnum > 1
+    var line_above: string = getline(lnum - 1)
 
-    if this_line =~ STARTS_WITH_CLOSING_BRACKET
-      var n: number = MatchingOpenBracket(this_line, this_lnum)
+    if text =~ STARTS_WITH_CLOSING_BRACKET
+      var n: number = MatchingOpenBracket({text: text, lnum: lnum})
 
-      if n <= 0
-          || this_line =~ '^\s*}' && IsBlock(n)
+      if n <= 0 || text =~ '^\s*}' && IsBlock(n)
         break
       endif
 
-      this_lnum = n
-      this_line = getline(this_lnum)
+      lnum = n
+      text = getline(lnum)
       continue
 
-    elseif this_line->IsFirstLineOfCommand({text: line_above, lnum: this_lnum - 1})
+    elseif text->IsFirstLineOfCommand({text: line_above, lnum: lnum - 1})
       break
     endif
 
-    --this_lnum
-    this_line = line_above
+    --lnum
+    text = line_above
   endwhile
 
-  return [this_line, this_lnum]
+  return [text, lnum]
 enddef
 
 def ClosesBlock(line_A: dict<any>, line_B: dict<any>): bool #{{{2
@@ -359,15 +354,15 @@ def ClosesBlock(line_A: dict<any>, line_B: dict<any>): bool #{{{2
   return block_end < line_B.lnum
 enddef
 
-def HasLineContinuationAtEnd(line: string, lnum: number): bool #{{{2
-  var col: number = line->matchend(LINE_CONTINUATION_AT_END)
-  return col >= 0 && !InCommentOrString(lnum, col)
+def HasLineContinuationAtEnd(line: dict<any>): bool #{{{2
+  var col: number = line.text->matchend(LINE_CONTINUATION_AT_END)
+  return col >= 0 && !InCommentOrString(line.lnum, col)
 enddef
 
 def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool #{{{2
   return line_A !~ KEY_IN_LITERAL_DICT
     && line_A !~ LINE_CONTINUATION_AT_START
-    && !line_B.text->HasLineContinuationAtEnd(line_B.lnum)
+    && !line_B->HasLineContinuationAtEnd()
 enddef
 
 def IsBlock(lnum: number): bool #{{{2
