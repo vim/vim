@@ -312,33 +312,32 @@ def MatchingOpenBracket(line: dict<any>): number #{{{2
   return FindStart(start, '', end)
 enddef
 
-def FirstLinePreviousCommand(line: dict<any>): list<any> #{{{2
-  var text: string = line.text
-  var lnum: number = line.lnum
+def FirstLinePreviousCommand(line_A: dict<any>): list<any> #{{{2
+  var line_B: dict<any> = line_A
 
-  while lnum > 1
-    var line_above: string = getline(lnum - 1)
+  while line_B.lnum > 1
+    var line_above: string = getline(line_B.lnum - 1)
 
-    if text =~ STARTS_WITH_CLOSING_BRACKET
-      var n: number = MatchingOpenBracket({text: text, lnum: lnum})
+    if line_B.text =~ STARTS_WITH_CLOSING_BRACKET
+      var n: number = MatchingOpenBracket(line_B)
 
-      if n <= 0 || text =~ '^\s*}' && IsBlock(n)
+      if n <= 0 || line_B.text =~ '^\s*}' && IsBlock(n)
         break
       endif
 
-      lnum = n
-      text = getline(lnum)
+      line_B.lnum = n
+      line_B.text = getline(line_B.lnum)
       continue
 
-    elseif text->IsFirstLineOfCommand({text: line_above, lnum: lnum - 1})
+    elseif line_B.text->IsFirstLineOfCommand({text: line_above, lnum: line_B.lnum - 1})
       break
     endif
 
-    --lnum
-    text = line_above
+    --line_B.lnum
+    line_B.text = line_above
   endwhile
 
-  return [text, lnum]
+  return [line_B.text, line_B.lnum]
 enddef
 
 def ClosesBlock(line_A: dict<any>, line_B: dict<any>): bool #{{{2
