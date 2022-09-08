@@ -459,6 +459,7 @@ cmdsrv_main(
 			break;
 # endif
 		    j = atoi((char *)p);
+		    vim_free(p);
 		    if (j >= 0 && j < numFiles)
 		    {
 # ifdef FEAT_GUI_MSWIN
