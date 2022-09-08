@@ -166,7 +166,7 @@ export def Expr(): number #{{{2
   # at the start of a heredoc
   if line_A.text =~ DECLARES_HEREDOC
     b:vimindent_heredoc = {
-      lnum: v:lnum,
+      startlnum: v:lnum,
       startindent: indent(v:lnum),
       endmarker: line_A.text->matchstr(DECLARES_HEREDOC),
     }
@@ -287,10 +287,15 @@ def HereDocIndent(line: string): number #{{{2
     var ind: number = b:vimindent_heredoc.startindent
     unlet! b:vimindent_heredoc
     return ind
-  # inside a heredoc
-  else
-    return b:vimindent_heredoc.startindent + shiftwidth()
   endif
+
+  # right after a heredoc declaration
+  if v:lnum == b:vimindent_heredoc.startlnum + 1
+    b:vimindent_heredoc.startindent = indent(b:vimindent_heredoc.startlnum)
+  endif
+
+  # in the middle of a heredoc
+  return b:vimindent_heredoc.startindent + shiftwidth()
 enddef
 # }}}1
 # Util {{{1
