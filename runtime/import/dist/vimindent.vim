@@ -23,7 +23,7 @@ const CURLY_BLOCK: string = '^\s*{\s*$'
 const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%([=!]=\|[<>]=\=\|[=!]\~\|is\|isnot\)[?#]\=\)\%(\s\|$\)\@=\%(\s*[|<]\)\@!'
   # assignment operators
   .. '\|' .. '\s\%([-+*/%]\|\.\.\)\==\%(\s\|$\)\@='
-  # support `:` when used inside conditional `?:` operator
+  # support `:` when used inside conditional operator `?:`
   .. '\|' .. '\%(\s\|^\):\%(\s\|$\)'
 # }}}2
 
@@ -229,7 +229,7 @@ enddef
 
 def g:GetVimIndent(): number #{{{2
 # for backward compatibility
-  return Expr(v:lnum)
+  return Expr()
 enddef
 # }}}1
 # Core {{{1
