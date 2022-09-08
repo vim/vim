@@ -294,15 +294,15 @@ def FindStart( #{{{2
 enddef
 
 def GetBlockStartKeyword(line: string): string #{{{2
-    var kwd: string = line->matchstr('\l\+')
-    if kwd =~ '^aug'
-      kwd = 'augroup'
-    elseif kwd =~ '^fu'
-      kwd = 'function'
-    elseif kwd =~ '^endfu'
-      kwd = 'endfunction'
-    endif
-    return kwd
+  var kwd: string = line->matchstr('\l\+')
+  if kwd =~ '^aug'
+    kwd = 'augroup'
+  elseif kwd =~ '^fu'
+    kwd = 'function'
+  elseif kwd =~ '^endfu'
+    kwd = 'endfunction'
+  endif
+  return kwd
 enddef
 
 def MatchingOpenBracket(line: string, lnum = 0): number #{{{2
@@ -347,16 +347,16 @@ def FirstLinePreviousCommand(line: string, lnum: number): list<any> #{{{2
 enddef
 
 def ClosesBlock(line_A: dict<any>, line_B: dict<any>): bool #{{{2
-    var kwd: string = GetBlockStartKeyword(line_A.text)
-    if !START_MIDDLE_END->has_key(kwd)
-      return false
-    endif
+  var kwd: string = GetBlockStartKeyword(line_A.text)
+  if !START_MIDDLE_END->has_key(kwd)
+    return false
+  endif
 
-    var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
-    var block_end: number = searchpair(start, middle, end,
-      'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
+  var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
+  var block_end: number = searchpair(start, middle, end,
+    'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
 
-    return block_end < line_B.lnum
+  return block_end < line_B.lnum
 enddef
 
 def HasLineContinuationAtEnd(line: string, lnum: number): bool #{{{2
