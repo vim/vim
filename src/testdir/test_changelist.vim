@@ -64,8 +64,8 @@ func Test_getchangelist()
   call assert_equal([], 10->getchangelist())
   call assert_equal([[], 0], getchangelist())
 
-  call writefile(['line1', 'line2', 'line3'], 'Xclistfile1.txt')
-  call writefile(['line1', 'line2', 'line3'], 'Xclistfile2.txt')
+  call writefile(['line1', 'line2', 'line3'], 'Xclistfile1.txt', 'D')
+  call writefile(['line1', 'line2', 'line3'], 'Xclistfile2.txt', 'D')
 
   edit Xclistfile1.txt
   let buf_1 = bufnr()
@@ -100,8 +100,6 @@ func Test_getchangelist()
 	      \ getchangelist(buf_2))
 
   bwipe!
-  call delete('Xclistfile1.txt')
-  call delete('Xclistfile2.txt')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

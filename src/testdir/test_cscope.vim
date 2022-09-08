@@ -300,7 +300,7 @@ endfunc
 
 " Test ":cs add {dir}"  (add the {dir}/cscope.out database)
 func Test_cscope_add_dir()
-  call mkdir('Xcscopedir', 'p')
+  call mkdir('Xcscopedir', 'pD')
 
   " Cscope doesn't handle symlinks, so this needs to be resolved in case a
   " shadow directory is being used.
@@ -318,8 +318,6 @@ func Test_cscope_add_dir()
   cs kill -1
   call delete('Xcscopedir/cscope.out')
   call assert_fails('cs add Xcscopedir', 'E563:')
-
-  call delete('Xcscopedir', 'd')
 endfunc
 
 func Test_cscopequickfix()

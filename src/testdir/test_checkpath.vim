@@ -2,7 +2,7 @@
 
 " Test for 'include' without \zs or \ze
 func Test_checkpath1()
-  call mkdir("Xcheckdir1/dir2", "p")
+  call mkdir("Xcheckdir1/dir2", "pR")
   call writefile(['#include    "bar.a"'], 'Xcheckdir1/dir2/foo.a')
   call writefile(['#include    "baz.a"'], 'Xcheckdir1/dir2/bar.a')
   call writefile(['#include    "foo.a"'], 'Xcheckdir1/dir2/baz.a')
@@ -23,7 +23,6 @@ func Test_checkpath1()
 
   enew
   call delete("./Xbase.a")
-  call delete("Xcheckdir1", "rf")
   set path&
 endfunc
 
@@ -33,11 +32,11 @@ endfunc
 
 " Test for 'include' with \zs and \ze
 func Test_checkpath2()
-  call mkdir("Xcheckdir2/dir2", "p")
+  call mkdir("Xcheckdir2/dir2", "pR")
   call writefile(['%inc    /bar/'], 'Xcheckdir2/dir2/foo.b')
   call writefile(['%inc    /baz/'], 'Xcheckdir2/dir2/bar.b')
   call writefile(['%inc    /foo/'], 'Xcheckdir2/dir2/baz.b')
-  call writefile(['%inc    /foo/'], 'Xbase.b')
+  call writefile(['%inc    /foo/'], 'Xbase.b', 'D')
 
   let &include='^\s*%inc\s*/\zs[^/]\+\ze'
   let &includeexpr='DotsToSlashes()'
@@ -56,8 +55,6 @@ func Test_checkpath2()
 	      \ '      foo  (Already listed)'], res)
 
   enew
-  call delete("./Xbase.b")
-  call delete("Xcheckdir2", "rf")
   set path&
   set include&
   set includeexpr&
@@ -72,12 +69,12 @@ endfunc
 
 " Test for 'include' with \zs and no \ze
 func Test_checkpath3()
-  call mkdir("Xcheckdir3/dir2", "p")
+  call mkdir("Xcheckdir3/dir2", "pR")
   call writefile(['%inc    bar.c'], 'Xcheckdir3/dir2/foo.c')
   call writefile(['%inc    baz.c'], 'Xcheckdir3/dir2/bar.c')
   call writefile(['%inc    foo.c'], 'Xcheckdir3/dir2/baz.c')
   call writefile(['%inc    foo.c'], 'Xcheckdir3/dir2/FALSE.c')
-  call writefile(['%inc    FALSE.c foo.c'], 'Xbase.c')
+  call writefile(['%inc    FALSE.c foo.c'], 'Xbase.c', 'D')
 
   let &include='^\s*%inc\s*\%([[:upper:]][^[:space:]]*\s\+\)\?\zs\S\+\ze'
   let &includeexpr='StripNewlineChar()'
@@ -96,8 +93,6 @@ func Test_checkpath3()
 	      \ '      foo.c  (Already listed)'], res)
 
   enew
-  call delete("./Xbase.c")
-  call delete("Xcheckdir3", "rf")
   set path&
   set include&
   set includeexpr&

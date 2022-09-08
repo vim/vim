@@ -70,7 +70,7 @@ func Test_cmdwin_restore()
     call setline(1, range(30))
     2split
   [SCRIPT]
-  call writefile(lines, 'XTest_restore')
+  call writefile(lines, 'XTest_restore', 'D')
 
   let buf = RunVimInTerminal('-S XTest_restore', {'rows': 12})
   call TermWait(buf, 50)
@@ -90,7 +90,6 @@ func Test_cmdwin_restore()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_restore')
 endfunc
 
 func Test_cmdwin_no_terminal()
@@ -186,7 +185,7 @@ func Test_cmdwin_interrupted()
   let lines =<< trim [SCRIPT]
     au WinNew * smile
   [SCRIPT]
-  call writefile(lines, 'XTest_cmdwin')
+  call writefile(lines, 'XTest_cmdwin', 'D')
 
   let buf = RunVimInTerminal('-S XTest_cmdwin', {'rows': 18})
   " open cmdwin
@@ -201,7 +200,6 @@ func Test_cmdwin_interrupted()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_cmdwin')
 endfunc
 
 " Test for recursively getting multiple command line inputs
