@@ -25,7 +25,7 @@ static frame_T *win_altframe(win_T *win, tabpage_T *tp);
 static tabpage_T *alt_tabpage(void);
 static win_T *frame2win(frame_T *frp);
 static int frame_has_win(frame_T *frp, win_T *wp);
-static void win_fix_scroll(int close);
+static void win_fix_scroll(void);
 static void win_fix_cursor(win_T *wp, int curnormal);
 static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
 static int frame_fixed_height(frame_T *frp);
@@ -1348,7 +1348,7 @@ win_split_ins(
     }
 
     if (!p_spsc)
-	win_fix_scroll(FALSE);
+	win_fix_scroll();
 
     /*
      * make the new window the current window
@@ -2739,7 +2739,7 @@ win_close(win_T *win, int free_buf)
     else
 	win_comp_pos();
     if (!p_spsc)
-	win_fix_scroll(TRUE);
+	win_fix_scroll();
     if (close_curwin)
     {
 	// Pass WEE_ALLOW_PARSE_MESSAGES to decrement dont_parse_messages
@@ -5470,7 +5470,7 @@ shell_new_rows(void)
     // that doesn't result in the right height, forget about that option.
     frame_new_height(topframe, h, FALSE, TRUE);
     if (!p_spsc)
-	win_fix_scroll(FALSE);
+	win_fix_scroll();
     if (!frame_check_height(topframe, h))
 	frame_new_height(topframe, h, FALSE, FALSE);
 
@@ -6346,9 +6346,8 @@ set_fraction(win_T *wp)
  * with some offset(row-wise scrolling/smoothscroll).
  */
     static void
-win_fix_scroll(int close)
+win_fix_scroll()
 {
-    int      ls_offset = (p_ls == 1 && win_count() == 2) ? 2 : 1;
     win_T    *wp;
     linenr_T lnum;
 
@@ -6360,17 +6359,13 @@ win_fix_scroll(int close)
 		&& wp->w_height < wp->w_buffer->b_ml.ml_line_count)
 	{
 	    lnum = wp->w_cursor.lnum;
-	    // Determine botline needed to avoid scrolling and set cursor that.
+	    // Determine botline needed to avoid scrolling and set cursor.
 	    if (wp->w_winrow != wp->w_prev_winrow)
-	    { // For bottom windows, keep the same botline except for 'ls' == 1.
-		if (!close && ((wp->w_winrow + VISIBLE_HEIGHT(wp)
-					+ wp->w_status_height) == cmdline_row))
-		    wp->w_cursor.lnum = wp->w_botline - ls_offset;
-		else // Otherwise determine based on winrow and height.
-		    wp->w_cursor.lnum = MIN(wp->w_botline - 1
-					    + (wp->w_winrow - wp->w_prev_winrow)
-					    + (wp->w_height - wp->w_prev_height),
-					    wp->w_buffer->b_ml.ml_line_count);
+	    {
+		wp->w_cursor.lnum = MIN(wp->w_botline - 1
+					+ (wp->w_winrow - wp->w_prev_winrow)
+					+ (wp->w_height - wp->w_prev_height),
+					wp->w_buffer->b_ml.ml_line_count);
 		// Bring the new cursor position to the bottom of the screen.
 		wp->w_fraction = FRACTION_MULT;
 		scroll_to_fraction(wp, wp->w_prev_height);
