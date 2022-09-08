@@ -872,6 +872,7 @@ arg_repeat1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    || type->tt_type == VAR_UNKNOWN
 	    || type->tt_type == VAR_STRING
 	    || type->tt_type == VAR_NUMBER
+	    || type->tt_type == VAR_BLOB
 	    || type->tt_type == VAR_LIST)
 	return OK;
 
@@ -8406,7 +8407,7 @@ f_repeat(typval_T *argvars, typval_T *rettv)
     int		i;
 
     if (in_vim9script()
-	    && (check_for_string_or_number_or_list_arg(argvars, 0) == FAIL
+	    && (check_for_string_or_number_or_list_or_blob_arg(argvars, 0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
@@ -8418,6 +8419,32 @@ f_repeat(typval_T *argvars, typval_T *rettv)
 		if (list_extend(rettv->vval.v_list,
 					argvars[0].vval.v_list, NULL) == FAIL)
 		    break;
+    }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	if (rettv_blob_alloc(rettv) == FAIL || argvars[0].vval.v_blob == NULL)
+	    return;
+
+	slen = argvars[0].vval.v_blob->bv_ga.ga_len;
+	len = slen * n;
+	if (len <= 0)
+	    return;
+
+	if (ga_grow(&rettv->vval.v_blob->bv_ga, len) == FAIL)
+	    return;
+
+	rettv->vval.v_blob->bv_ga.ga_len = len;
+
+	for (i = 0; i < slen; ++i)
+	    if (blob_get(argvars[0].vval.v_blob, i) != 0)
+		break;
+
+	if (i == slen)
+	    // No need to copy since all bytes are already zero
+	    return;
+
+	for (i = 0; i < n; ++i)
+	    blob_set_range(rettv->vval.v_blob, i * slen, (i + 1) * slen - 1, argvars);
     }
     else
     {

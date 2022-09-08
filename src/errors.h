@@ -3329,4 +3329,6 @@ EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
 #ifdef FEAT_EVAL
 EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
 	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
+EXTERN char e_string_number_list_or_blob_required_for_argument_nr[]
+	INIT(= N_("EXXXX: String, Number, List or Blob required for argument %d"));
 #endif
