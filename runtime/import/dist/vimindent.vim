@@ -238,7 +238,7 @@ export def Expr(): number # {{{2
 enddef
 
 def g:GetVimIndent(): number # {{{2
-# for backward compatibility
+  # for backward compatibility
   return Expr()
 enddef
 # }}}1
@@ -256,11 +256,12 @@ def Offset( # {{{2
 
   # increase indentation inside a block
   elseif line_B.text =~ STARTS_BLOCK || line_B.text =~ CURLY_BLOCK
-    if line_B->ClosesBlock(line_A)
+    # But don't indent if the line starting the block also closes it.
+    if line_B->AlsoClosesBlock()
       return 0
-    # Do it twice for a line continuation in the block header itself, so that we
-    # can easily distinguish the  end of the block header from  the start of the
-    # block body.
+    # Indent twice for  a line continuation in the block  header itself, so that
+    # we can easily  distinguish the end of  the block header from  the start of
+    # the block body.
     elseif line_B->HasLineContinuationAtEnd()
         && !line_A.isfirst
         || line_A.text =~ LINE_CONTINUATION_AT_START
@@ -365,7 +366,11 @@ def FirstLinePreviousCommand(line_A: dict<any>): list<any> # {{{2
   return [line_B.text, line_B.lnum]
 enddef
 
-def ClosesBlock(line_B: dict<any>, line_A: dict<any>): bool # {{{2
+def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
+  # We know that `line_B` opens a block.
+  # Let's see if it also closes that block.
+  # It does if  we can't find the block  end after where we are  (which is right
+  # below `line_B`).
   var kwd: string = GetBlockStartKeyword(line_B.text)
   if !START_MIDDLE_END->has_key(kwd)
     return false
@@ -375,7 +380,7 @@ def ClosesBlock(line_B: dict<any>, line_A: dict<any>): bool # {{{2
   var block_end: number = searchpair(start, middle, end,
     'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
 
-  return block_end < line_A.lnum
+  return block_end <= 0
 enddef
 
 def HasLineContinuationAtEnd(line: dict<any>): bool # {{{2
