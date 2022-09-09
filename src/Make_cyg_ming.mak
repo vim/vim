@@ -87,10 +87,9 @@ POSTSCRIPT=no
 # Set to yes to enable OLE support.
 OLE=no
 
-# Set the default $(WINVER).  Use 0x0501 to make it work with WinXP.
+# Set the default $(WINVER).  Use 0x0601 to make it work with Windows 7.
 ifndef WINVER
-# WINVER = 0x0501
-WINVER = 0x0600
+WINVER = 0x0601
 endif
 
 # Set to yes to enable Cscope support.
