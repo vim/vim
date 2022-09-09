@@ -2534,6 +2534,12 @@ def Test_repeat_return_type()
   res->assert_equal(3)
 
   res = 0
+  for n in repeat(0z01, 3)->blob2list()
+    res += n
+  endfor
+  res->assert_equal(3)
+
+  res = 0
   for n in add([1, 2], 3)
     res += n
   endfor
