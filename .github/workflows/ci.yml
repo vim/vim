@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     env:
       CC: ${{ matrix.compiler }}
@@ -90,13 +90,13 @@ jobs:
           fi
           sudo apt update && sudo apt install -y "${PKGS[@]}"
 
-      - name: Install gcc-11
+      - name: Install gcc-12
         if:  matrix.compiler == 'gcc'
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-          sudo apt install -y gcc-11
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
-          sudo update-alternatives --set gcc /usr/bin/gcc-11
+          sudo apt install -y gcc-12
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-12
 
       - name: Install clang-15
         if: matrix.compiler == 'clang'
