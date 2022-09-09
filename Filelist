@@ -171,7 +171,6 @@ SRC_ALL =	\
 		src/viminfo.c \
 		src/winclip.c \
 		src/window.c \
-		src/tee/tee.c \
 		src/xxd/xxd.c \
 		src/testdir/gen_opt_test.vim \
 		src/testdir/README.txt \
@@ -487,7 +486,6 @@ SRC_UNIX =	\
 		src/vimtutor \
 		src/gvimtutor \
 		src/which.sh \
-		src/tee/Makefile \
 		src/xxd/Makefile \
 
 # source files for both DOS and Unix
@@ -570,6 +568,7 @@ SRC_DOS =	\
 		src/proto/os_win32.pro \
 		src/proto/os_mswin.pro \
 		src/testdir/Make_dos.mak \
+		src/testdir/Make_mvc.mak \
 		src/testdir/Make_ming.mak \
 		src/testdir/dos.vim \
 		src/uninstall.c \
@@ -578,7 +577,10 @@ SRC_DOS =	\
 		src/vimrun.c \
 		src/xpm_w32.c \
 		src/xpm_w32.h \
+		src/tee/Make_ming.mak \
 		src/tee/Make_mvc.mak \
+		src/tee/Makefile \
+		src/tee/tee.c \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
@@ -945,9 +947,6 @@ EXTRA =		\
 		README_extra.txt \
 		src/VisVim/VisVim.dll \
 		runtime/vimlogo.xpm \
-		src/tee/Makefile \
-		src/tee/Make_mvc.mak \
-		src/tee/tee.c \
 
 # files in READMEdir that are included from the top dir
 IN_README_DIR = \

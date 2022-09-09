@@ -1400,7 +1400,7 @@ tee/tee.exe: tee/tee.c
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	cd GvimExt
-	$(MAKE) /NOLOGO -f Makefile $(MAKEFLAGS_GVIMEXT)
+	$(MAKE) /NOLOGO -f Make_mvc.mak $(MAKEFLAGS_GVIMEXT)
 	cd ..
 
 
@@ -1441,7 +1441,7 @@ clean: testclean
 	$(MAKE) /NOLOGO -f Make_mvc.mak clean
 	cd ..
 	cd GvimExt
-	$(MAKE) /NOLOGO -f Makefile clean
+	$(MAKE) /NOLOGO -f Make_mvc.mak clean
 	cd ..
 
 # Run vim script to generate the Ex command lookup table.
@@ -1463,27 +1463,27 @@ nvcmdidxs: nv_cmds.h
 
 test:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_dos.mak
+	$(MAKE) /NOLOGO -f Make_mvc.mak
 	cd ..
 
 testgvim testgui:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\gvim
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\gvim
 	cd ..
 
 testtiny:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_dos.mak tiny
+	$(MAKE) /NOLOGO -f Make_mvc.mak tiny
 	cd ..
 
 testgvimtiny:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_dos.mak tiny VIMPROG=..\gvim
+	$(MAKE) /NOLOGO -f Make_mvc.mak tiny VIMPROG=..\gvim
 	cd ..
 
 testclean:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_dos.mak clean
+	$(MAKE) /NOLOGO -f Make_mvc.mak clean
 	cd ..
 
 # Run individual OLD style test.
@@ -1491,8 +1491,8 @@ testclean:
 $(SCRIPTS_TINY):
 	cd testdir
 	- if exist $@.out del $@.out
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $@.out
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) $@.out
 	@ if exist test.log ( type test.log & exit /b 1 )
 	cd ..
 
@@ -1501,9 +1501,9 @@ $(SCRIPTS_TINY):
 $(NEW_TESTS):
 	cd testdir
 	- if exist $@.res del $@.res
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $@.res
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) report
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) $@.res
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) report
 	cd ..
 
 # Run Vim9 tests.
@@ -1511,9 +1511,9 @@ $(NEW_TESTS):
 test_vim9:
 	cd testdir
 	-del test_vim9_*.res
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $(TEST_VIM9_RES)
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) report
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) $(TEST_VIM9_RES)
+	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) report
 	cd ..
 
 ###########################################################################
