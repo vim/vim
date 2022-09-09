@@ -162,7 +162,7 @@ export def Expr(): number # {{{2
     b:vimindent_heredoc = {
       startlnum: v:lnum,
       endmarker: line_A.text->matchstr(DECLARES_HEREDOC),
-      trim: line_A.text =~ '.*\strim\s\+\L\S*$',
+      trim: line_A.text =~ '.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*$',
     }
     autocmd_add([{
       cmd: 'unlet! b:vimindent_heredoc',
