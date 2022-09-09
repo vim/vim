@@ -107,7 +107,7 @@ const DECLARES_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
 # issues much  later in the  code of the  current script (sometimes,  the syntax
 # highlighting plugin fails  to correctly recognize a heredoc which  is far away
 # and/or not displayed because inside a fold).
-#}}}
+# }}}
 cmds =<< trim END
   if
   else
@@ -153,7 +153,7 @@ const STARTS_WITH_CLOSING_BRACKET: string = '^\s*[]})]'
 const IS_SINGLE_OPEN_BRACKET: string = '^\s*[[{(]\s*$'
 # }}}1
 # Interface {{{1
-export def Expr(): number #{{{2
+export def Expr(): number # {{{2
   var line_A: dict<any> = {text: getline(v:lnum), lnum: v:lnum}
   var line_B: dict<any>
 
@@ -237,13 +237,13 @@ export def Expr(): number #{{{2
   return [ind, 0]->max()
 enddef
 
-def g:GetVimIndent(): number #{{{2
+def g:GetVimIndent(): number # {{{2
 # for backward compatibility
   return Expr()
 enddef
 # }}}1
 # Core {{{1
-def Offset( #{{{2
+def Offset( # {{{2
     # we indent this line ...
     line_A: dict<any>,
     # ... relatively to this line
@@ -280,7 +280,7 @@ def Offset( #{{{2
   return 0
 enddef
 
-def HereDocIndent(line: string): number #{{{2
+def HereDocIndent(line: string): number # {{{2
   # at the end of a heredoc
   if line =~ $'^\s*{b:vimindent_heredoc.endmarker}$'
     # `END` must be at the very start of the line if the heredoc is not trimmed
@@ -308,7 +308,7 @@ def HereDocIndent(line: string): number #{{{2
 enddef
 # }}}1
 # Util {{{1
-def FindStart( #{{{2
+def FindStart( # {{{2
     start: string,
     middle: string,
     end: string,
@@ -318,7 +318,7 @@ def FindStart( #{{{2
     'bnW', (): bool => InCommentOrString(), 0, TIMEOUT)
 enddef
 
-def GetBlockStartKeyword(line: string): string #{{{2
+def GetBlockStartKeyword(line: string): string # {{{2
   var kwd: string = line->matchstr('\l\+')
   if kwd =~ '^aug'
     kwd = 'augroup'
@@ -330,14 +330,14 @@ def GetBlockStartKeyword(line: string): string #{{{2
   return kwd
 enddef
 
-def MatchingOpenBracket(line: dict<any>): number #{{{2
+def MatchingOpenBracket(line: dict<any>): number # {{{2
   var end: string = line.text->matchstr(CLOSING_BRACKET)
   var start: string = {']': '[', '}': '{', ')': '('}[end]
   cursor(line.lnum, 1)
   return FindStart(start, '', end)
 enddef
 
-def FirstLinePreviousCommand(line_A: dict<any>): list<any> #{{{2
+def FirstLinePreviousCommand(line_A: dict<any>): list<any> # {{{2
   var line_B: dict<any> = line_A
 
   while line_B.lnum > 1
@@ -365,7 +365,7 @@ def FirstLinePreviousCommand(line_A: dict<any>): list<any> #{{{2
   return [line_B.text, line_B.lnum]
 enddef
 
-def ClosesBlock(line_B: dict<any>, line_A: dict<any>): bool #{{{2
+def ClosesBlock(line_B: dict<any>, line_A: dict<any>): bool # {{{2
   var kwd: string = GetBlockStartKeyword(line_B.text)
   if !START_MIDDLE_END->has_key(kwd)
     return false
@@ -378,18 +378,18 @@ def ClosesBlock(line_B: dict<any>, line_A: dict<any>): bool #{{{2
   return block_end < line_A.lnum
 enddef
 
-def HasLineContinuationAtEnd(line: dict<any>): bool #{{{2
+def HasLineContinuationAtEnd(line: dict<any>): bool # {{{2
   var col: number = line.text->matchend(LINE_CONTINUATION_AT_END)
   return col >= 0 && !InCommentOrString(line.lnum, col)
 enddef
 
-def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool #{{{2
+def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
   return line_A !~ KEY_IN_LITERAL_DICT
     && line_A !~ LINE_CONTINUATION_AT_START
     && !line_B->HasLineContinuationAtEnd()
 enddef
 
-def IsBlock(lnum: number): bool #{{{2
+def IsBlock(lnum: number): bool # {{{2
   var line: string = getline(lnum)
   if line =~ '^\s*{\s*$'
       && prevnonblank(lnum - 1)->getline() !~ LINE_CONTINUATION_AT_END
@@ -399,7 +399,7 @@ def IsBlock(lnum: number): bool #{{{2
   return line =~ CURLY_BLOCK
 enddef
 
-def InCommentOrString(lnum = line('.'), col = col('.')): bool #{{{2
+def InCommentOrString(lnum = line('.'), col = col('.')): bool # {{{2
   if !has('syntax_items')
     return getline(lnum) =~ COMMENT
   endif
