@@ -598,6 +598,8 @@ typedef struct expand
     int		xp_col;			// cursor position in line
     char_u	**xp_files;		// list of files
     char_u	*xp_line;		// text being completed
+#define EXPAND_BUF_LEN 256
+    char_u	xp_buf[EXPAND_BUF_LEN];	// buffer for returned match
 } expand_T;
 
 /*
@@ -800,14 +802,26 @@ typedef struct memline
 typedef struct textprop_S
 {
     colnr_T	tp_col;		// start column (one based, in bytes)
-    colnr_T	tp_len;		// length in bytes
+    colnr_T	tp_len;		// length in bytes, when tp_id is negative used
+				// for left padding plus one
     int		tp_id;		// identifier
     int		tp_type;	// property type
     int		tp_flags;	// TP_FLAG_ values
 } textprop_T;
 
-#define TP_FLAG_CONT_NEXT	1	// property continues in next line
-#define TP_FLAG_CONT_PREV	2	// property was continued from prev line
+#define TP_FLAG_CONT_NEXT	0x1	// property continues in next line
+#define TP_FLAG_CONT_PREV	0x2	// property was continued from prev line
+
+// without these text is placed after the end of the line
+#define TP_FLAG_ALIGN_RIGHT	0x10	// virtual text is right-aligned
+#define TP_FLAG_ALIGN_BELOW	0x20	// virtual text on next screen line
+
+#define TP_FLAG_WRAP		0x40	// virtual text wraps - when missing
+					// text is truncated
+#define TP_FLAG_START_INCL	0x80	// "start_incl" copied from proptype
+
+#define PROP_TEXT_MIN_CELLS	4	// minimun number of cells to use for
+					// the text, even when truncating
 
 /*
  * Structure defining a property type.
@@ -825,6 +839,7 @@ typedef struct proptype_S
 #define PT_FLAG_INS_START_INCL	1	// insert at start included in property
 #define PT_FLAG_INS_END_INCL	2	// insert at end included in property
 #define PT_FLAG_COMBINE		4	// combine with syntax highlight
+#define PT_FLAG_OVERRIDE	8	// override any highlight
 
 // Sign group
 typedef struct signgroup_S
@@ -1720,37 +1735,50 @@ typedef struct
  */
 struct funccall_S
 {
-    ufunc_T	*func;		// function being called
-    int		linenr;		// next line to be executed
-    int		returned;	// ":return" used
+    ufunc_T	*fc_func;	// function being called
+    int		fc_linenr;	// next line to be executed
+    int		fc_returned;	// ":return" used
     struct			// fixed variables for arguments
     {
 	dictitem_T	var;		// variable (without room for name)
 	char_u	room[VAR_SHORT_LEN];	// room for the name
-    } fixvar[FIXVAR_CNT];
-    dict_T	l_vars;		// l: local function variables
-    dictitem_T	l_vars_var;	// variable for l: scope
-    dict_T	l_avars;	// a: argument variables
-    dictitem_T	l_avars_var;	// variable for a: scope
-    list_T	l_varlist;	// list for a:000
-    listitem_T	l_listitems[MAX_FUNC_ARGS];	// listitems for a:000
-    typval_T	*rettv;		// return value
-    linenr_T	breakpoint;	// next line with breakpoint or zero
-    int		dbg_tick;	// debug_tick when breakpoint was set
-    int		level;		// top nesting level of executed function
+    } fc_fixvar[FIXVAR_CNT];
+    dict_T	fc_l_vars;	// l: local function variables
+    dictitem_T	fc_l_vars_var;	// variable for l: scope
+    dict_T	fc_l_avars;	// a: argument variables
+    dictitem_T	fc_l_avars_var;	// variable for a: scope
+    list_T	fc_l_varlist;	// list for a:000
+    listitem_T	fc_l_listitems[MAX_FUNC_ARGS];	// listitems for a:000
+    typval_T	*fc_rettv;	// return value
+    linenr_T	fc_breakpoint;	// next line with breakpoint or zero
+    int		fc_dbg_tick;	// debug_tick when breakpoint was set
+    int		fc_level;	// top nesting level of executed function
+
+    garray_T	fc_defer;	// functions to be called on return
+    ectx_T	*fc_ectx;	// execution context for :def function, NULL
+				// otherwise
+
 #ifdef FEAT_PROFILE
-    proftime_T	prof_child;	// time spent in a child
+    proftime_T	fc_prof_child;	// time spent in a child
 #endif
-    funccall_T	*caller;	// calling function or NULL; or next funccal in
+    funccall_T	*fc_caller;	// calling function or NULL; or next funccal in
 				// list pointed to by previous_funccal.
 
     // for closure
     int		fc_refcount;	// number of user functions that reference this
 				// funccal
     int		fc_copyID;	// for garbage collection
-    garray_T	fc_funcs;	// list of ufunc_T* which keep a reference to
+    garray_T	fc_ufuncs;	// list of ufunc_T* which keep a reference to
 				// "func"
 };
+
+// structure used as item in "fc_defer"
+typedef struct
+{
+    char_u	*dr_name;	// function name, allocated
+    typval_T	dr_argvars[MAX_FUNC_ARGS + 1];
+    int		dr_argcount;
+} defer_T;
 
 /*
  * Struct used by trans_function_name()
@@ -1837,12 +1865,18 @@ typedef struct {
 #define IMP_FLAGS_AUTOLOAD	4   // script still needs to be loaded
 
 /*
- * Info about an already sourced scripts.
+ * Info about an encoutered script.
+ * When sn_state has the SN_STATE_NOT_LOADED is has not been sourced yet.
  */
 typedef struct
 {
     char_u	*sn_name;	    // full path of script file
     int		sn_script_seq;	    // latest sctx_T sc_seq value
+
+    // When non-zero the script ID of the actually sourced script.  Used if a
+    // script is used by a name which has a symlink, we list both names, but
+    // only the linked-to script is actually sourced.
+    int		sn_sourced_sid;
 
     // "sn_vars" stores the s: variables currently valid.  When leaving a block
     // variables local to that block are removed.
@@ -2548,6 +2582,7 @@ struct timer_S
     proftime_T	tr_due;		    // when the callback is to be invoked
     char	tr_firing;	    // when TRUE callback is being called
     char	tr_paused;	    // when TRUE callback is not invoked
+    char	tr_keep;	    // when TRUE keep timer after it fired
     int		tr_repeat;	    // number of times to repeat, -1 forever
     long	tr_interval;	    // msec
     callback_T	tr_callback;
@@ -2584,6 +2619,7 @@ typedef enum {
     POPPOS_BOTRIGHT,
     POPPOS_TOPRIGHT,
     POPPOS_CENTER,
+    POPPOS_BOTTOM,	// bottom of popup just above the command line
     POPPOS_NONE
 } poppos_T;
 
@@ -2827,7 +2863,7 @@ struct file_buffer
     int		b_u_synced;	// entry lists are synced
     long	b_u_seq_last;	// last used undo sequence number
     long	b_u_save_nr_last; // counter for last file write
-    long	b_u_seq_cur;	// hu_seq of header below which we are now
+    long	b_u_seq_cur;	// uh_seq of header below which we are now
     time_T	b_u_time_cur;	// uh_time of header below which we are now
     long	b_u_save_nr_cur; // file write nr after which we are now
 
@@ -2947,18 +2983,14 @@ struct file_buffer
     int		b_p_ma;		// 'modifiable'
     char_u	*b_p_nf;	// 'nrformats'
     int		b_p_pi;		// 'preserveindent'
-#ifdef FEAT_TEXTOBJ
     char_u	*b_p_qe;	// 'quoteescape'
-#endif
     int		b_p_ro;		// 'readonly'
     long	b_p_sw;		// 'shiftwidth'
     int		b_p_sn;		// 'shortname'
     int		b_p_si;		// 'smartindent'
     long	b_p_sts;	// 'softtabstop'
     long	b_p_sts_nopaste; // b_p_sts saved for paste mode
-#ifdef FEAT_SEARCHPATH
     char_u	*b_p_sua;	// 'suffixesadd'
-#endif
     int		b_p_swf;	// 'swapfile'
 #ifdef FEAT_SYN_HL
     long	b_p_smc;	// 'synmaxcol'
@@ -3074,6 +3106,8 @@ struct file_buffer
 #ifdef FEAT_PROP_POPUP
     int		b_has_textprop;	// TRUE when text props were added
     hashtab_T	*b_proptypes;	// text property types local to buffer
+    proptype_T	**b_proparray;	// entries of b_proptypes sorted on tp_id
+    garray_T	b_textprop_text; // stores text for props, index by (-id - 1)
 #endif
 
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
@@ -3521,9 +3555,10 @@ struct window_S
 				    // window
 #endif
 
-    // four fields that are only used when there is a WinScrolled autocommand
+    // five fields that are only used when there is a WinScrolled autocommand
     linenr_T	w_last_topline;	    // last known value for w_topline
     colnr_T	w_last_leftcol;	    // last known value for w_leftcol
+    colnr_T	w_last_skipcol;	    // last known value for w_skipcol
     int		w_last_width;	    // last known value for w_width
     int		w_last_height;	    // last known value for w_height
 
@@ -3684,7 +3719,7 @@ struct window_S
 
     int		w_redr_type;	    // type of redraw to be performed on win
     int		w_upd_rows;	    // number of window lines to update when
-				    // w_redr_type is REDRAW_TOP
+				    // w_redr_type is UPD_REDRAW_TOP
     linenr_T	w_redraw_top;	    // when != 0: first line needing redraw
     linenr_T	w_redraw_bot;	    // when != 0: last line needing redraw
     int		w_redr_status;	    // if TRUE status line must be redrawn
@@ -4560,3 +4595,21 @@ typedef struct {
     char_u	*str;
     int		score;
 } fuzmatch_str_T;
+
+// Argument for lbr_chartabsize().
+typedef struct {
+    win_T	*cts_win;
+    char_u	*cts_line;	    // start of the line
+    char_u	*cts_ptr;	    // current position in line
+#ifdef FEAT_PROP_POPUP
+    int		cts_text_prop_count;	// number of text props; when zero
+					// cts_text_props is not used
+    textprop_T	*cts_text_props;	// text props (allocated)
+    char	cts_has_prop_with_text; // TRUE if if a property inserts text
+    int         cts_cur_text_width;     // width of current inserted text
+    int		cts_with_trailing;	// include size of trailing props with
+					// last character
+    int		cts_start_incl;		// prop has true "start_incl" arg
+#endif
+    int		cts_vcol;	    // virtual column at current position
+} chartabsize_T;

@@ -415,11 +415,11 @@ func Test_terminal_does_not_truncate_last_newlines()
   \ ]
 
   for c in contents
-    call writefile(c, 'Xfile')
+    call writefile(c, 'Xdntfile')
     if has('win32')
-      term cmd /c type Xfile
+      term cmd /c type Xdntfile
     else
-      term cat Xfile
+      term cat Xdntfile
     endif
     let bnr = bufnr('$')
     call assert_equal('terminal', getbufvar(bnr, '&buftype'))
@@ -429,7 +429,7 @@ func Test_terminal_does_not_truncate_last_newlines()
     quit
   endfor
 
-  call delete('Xfile')
+  call delete('Xdntfile')
 endfunc
 
 func GetDummyCmd()

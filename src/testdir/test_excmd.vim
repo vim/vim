@@ -83,23 +83,23 @@ endfunc
 
 " Test for the :drop command
 func Test_drop_cmd()
-  call writefile(['L1', 'L2'], 'Xfile')
+  call writefile(['L1', 'L2'], 'Xdropfile')
   enew | only
-  drop Xfile
+  drop Xdropfile
   call assert_equal('L2', getline(2))
   " Test for switching to an existing window
   below new
-  drop Xfile
+  drop Xdropfile
   call assert_equal(1, winnr())
   " Test for splitting the current window
   enew | only
   set modified
-  drop Xfile
+  drop Xdropfile
   call assert_equal(2, winnr('$'))
   " Check for setting the argument list
-  call assert_equal(['Xfile'], argv())
+  call assert_equal(['Xdropfile'], argv())
   enew | only!
-  call delete('Xfile')
+  call delete('Xdropfile')
 endfunc
 
 " Test for the :append command
@@ -489,9 +489,9 @@ func Test_redir_cmd()
 
   if has('unix')
     " Redirecting to a directory name
-    call mkdir('Xdir')
-    call assert_fails('redir > Xdir', 'E17:')
-    call delete('Xdir', 'd')
+    call mkdir('Xredir')
+    call assert_fails('redir > Xredir', 'E17:')
+    call delete('Xredir', 'd')
   endif
 
   " Test for redirecting to a register
@@ -509,10 +509,10 @@ func Test_redir_cmd_readonly()
   CheckNotRoot
 
   " Redirecting to a read-only file
-  call writefile([], 'Xfile')
-  call setfperm('Xfile', 'r--r--r--')
-  call assert_fails('redir! > Xfile', 'E190:')
-  call delete('Xfile')
+  call writefile([], 'Xredirfile')
+  call setfperm('Xredirfile', 'r--r--r--')
+  call assert_fails('redir! > Xredirfile', 'E190:')
+  call delete('Xredirfile')
 endfunc
 
 " Test for the :filetype command
@@ -532,21 +532,21 @@ endfunc
 
 " Test for the :read command
 func Test_read_cmd()
-  call writefile(['one'], 'Xfile')
+  call writefile(['one'], 'Xcmdfile')
   new
   call assert_fails('read', 'E32:')
-  edit Xfile
+  edit Xcmdfile
   read
   call assert_equal(['one', 'one'], getline(1, '$'))
   close!
   new
-  read Xfile
+  read Xcmdfile
   call assert_equal(['', 'one'], getline(1, '$'))
   call deletebufline('', 1, '$')
-  call feedkeys("Qr Xfile\<CR>visual\<CR>", 'xt')
+  call feedkeys("Qr Xcmdfile\<CR>visual\<CR>", 'xt')
   call assert_equal(['one'], getline(1, '$'))
   close!
-  call delete('Xfile')
+  call delete('Xcmdfile')
 endfunc
 
 " Test for running Ex commands when text is locked.
@@ -633,9 +633,9 @@ func Sandbox_tests()
   endif
   call assert_fails("let $TESTVAR=1", 'E48:')
   call assert_fails("call feedkeys('ivim')", 'E48:')
-  call assert_fails("source! Xfile", 'E48:')
-  call assert_fails("call delete('Xfile')", 'E48:')
-  call assert_fails("call writefile([], 'Xfile')", 'E48:')
+  call assert_fails("source! Xsomefile", 'E48:')
+  call assert_fails("call delete('Xthatfile')", 'E48:')
+  call assert_fails("call writefile([], 'Xanotherfile')", 'E48:')
   call assert_fails('!ls', 'E48:')
   call assert_fails('shell', 'E48:')
   call assert_fails('stop', 'E48:')
@@ -660,7 +660,7 @@ func Sandbox_tests()
   if has('terminal')
     call assert_fails('terminal', 'E48:')
     call assert_fails('call term_start("vim")', 'E48:')
-    call assert_fails('call term_dumpwrite(1, "Xfile")', 'E48:')
+    call assert_fails('call term_dumpwrite(1, "Xdumpfile")', 'E48:')
   endif
   if has('channel')
     call assert_fails("call ch_logfile('chlog')", 'E48:')
@@ -722,6 +722,22 @@ func Test_using_zero_in_range()
   new
   norm o00
   silent!  0;s/\%')
+  bwipe!
+endfunc
+
+" Test :write after changing name with :file and loading it with :edit
+func Test_write_after_rename()
+  call writefile(['text'], 'Xafterfile')
+
+  enew
+  file Xafterfile
+  call assert_fails('write', 'E13: File exists (add ! to override)')
+
+  " works OK after ":edit"
+  edit
+  write
+
+  call delete('Xafterfile')
   bwipe!
 endfunc
 

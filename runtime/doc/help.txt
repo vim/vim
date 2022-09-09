@@ -26,6 +26,7 @@ Get specific help:  It is possible to go directly to whatever you want help
 		      Option			  '	   :help 'textwidth'
 		      Regular expression	  /	   :help /[
 		    See |help-summary| for more contexts and an explanation.
+		    See |notation| for an explanation of the help syntax.
 
   Search for help:  Type ":help word", then hit CTRL-D to see matching
 		    help entries for "word".
@@ -140,6 +141,7 @@ Advanced editing ~
 |autocmd.txt|	automatically executing commands on an event
 |eval.txt|	expression evaluation, conditional commands
 |builtin.txt|	builtin functions
+|userfunc.txt|	defining user functions
 |channel.txt|	Jobs, Channels, inter-process communication
 |fold.txt|	hide (fold) ranges of lines
 

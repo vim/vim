@@ -8,7 +8,7 @@
  */
 
 /*
- * vim9cmds.c: Dealing with compiled function expressions
+ * vim9expr.c: Dealing with compiled function expressions
  */
 
 #define USING_FLOAT_STUFF
@@ -313,7 +313,7 @@ compile_load_scriptvar(
 		// name.  If a '(' follows it must be a function.  Otherwise we
 		// don't know, it can be "script.Func".
 		if (cc == '(' || paren_follows_after_expr)
-		    res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
+		    res = generate_PUSHFUNC(cctx, auto_name, &t_func_any, TRUE);
 		else
 		    res = generate_AUTOLOAD(cctx, auto_name, &t_any);
 		vim_free(auto_name);
@@ -329,7 +329,7 @@ compile_load_scriptvar(
 		    char_u sid_name[MAX_FUNC_NAME_LEN];
 
 		    func_name_with_sid(exp_name, import->imp_sid, sid_name);
-		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any);
+		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any, TRUE);
 		}
 		else
 		    res = generate_OLDSCRIPT(cctx, ISN_LOADEXPORT, exp_name,
@@ -353,7 +353,7 @@ compile_load_scriptvar(
 	    if (ufunc != NULL)
 	    {
 		// function call or function reference
-		generate_PUSHFUNC(cctx, ufunc->uf_name, NULL);
+		generate_PUSHFUNC(cctx, ufunc->uf_name, NULL, TRUE);
 		return OK;
 	    }
 	    return FAIL;
@@ -387,7 +387,7 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
     if (func_needs_compiling(ufunc, compile_type)
 	      && compile_def_function(ufunc, TRUE, compile_type, NULL) == FAIL)
 	return FAIL;
-    return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type);
+    return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type, TRUE);
 }
 
 /*
@@ -451,8 +451,7 @@ compile_load(
 			      vim_free(name);
 			      return FAIL;
 			  }
-			  if (is_expr && ASCII_ISUPPER(*name)
-					     && find_func(name, FALSE) != NULL)
+			  if (is_expr && find_func(name, FALSE) != NULL)
 			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
@@ -611,19 +610,10 @@ compile_string(isn_T *isn, cctx_T *cctx, int str_offset)
 }
 
 /*
- * List of special functions for "compile_arguments".
- */
-typedef enum {
-    CA_NOT_SPECIAL,
-    CA_SEARCHPAIR,	    // {skip} in searchpair() and searchpairpos()
-    CA_SUBSTITUTE,	    // {sub} in substitute(), when prefixed with \=
-} ca_special_T;
-
-/*
  * Compile the argument expressions.
  * "arg" points to just after the "(" and is advanced to after the ")"
  */
-    static int
+    int
 compile_arguments(
 	char_u	     **arg,
 	cctx_T	     *cctx,
@@ -843,6 +833,14 @@ compile_call(
 		}
 	    }
 
+	    if (STRCMP(name, "writefile") == 0 && argcount > 2)
+	    {
+		// May have the "D" flag, reserve a variable for a deferred
+		// function call.
+		if (get_defer_var_idx(cctx) == 0)
+		    idx = -1;
+	    }
+
 	    if (idx >= 0)
 		res = generate_BCALL(cctx, idx, argcount, argcount_init == 1);
 	}
@@ -976,6 +974,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     int		count = 0;
     int		is_const;
     int		is_all_const = TRUE;	// reset when non-const encountered
+    int		must_end = FALSE;
 
     for (;;)
     {
@@ -994,6 +993,11 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    ++p;
 	    break;
 	}
+	if (must_end)
+	{
+	    semsg(_(e_missing_comma_in_list_str), p);
+	    return FAIL;
+	}
 	if (compile_expr0_ext(&p, cctx, &is_const) == FAIL)
 	    return FAIL;
 	if (!is_const)
@@ -1008,6 +1012,8 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		return FAIL;
 	    }
 	}
+	else
+	    must_end = TRUE;
 	whitep = p;
 	p = skipwhite(p);
     }

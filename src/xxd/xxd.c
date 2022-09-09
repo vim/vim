@@ -134,9 +134,6 @@ extern void perror __P((char *));
 # endif
 #endif
 
-extern long int strtol();
-extern long int ftell();
-
 char version[] = "xxd 2022-01-14 by Juergen Weigert et al.";
 #ifdef WIN32
 char osver[] = " (Win32)";
@@ -782,7 +779,6 @@ main(int argc, char *argv[])
 	}
 
       p = 0;
-      c = 0;
       while ((length < 0 || p < length) && (c = getc_or_die(fp)) != EOF)
 	{
 	  FPRINTF_OR_DIE((fpo, (hexx == hexxa) ? "%s0x%02x" : "%s0X%02X",

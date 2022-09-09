@@ -79,6 +79,7 @@ static void f_hlID(typval_T *argvars, typval_T *rettv);
 static void f_hlexists(typval_T *argvars, typval_T *rettv);
 static void f_hostname(typval_T *argvars, typval_T *rettv);
 static void f_index(typval_T *argvars, typval_T *rettv);
+static void f_indexof(typval_T *argvars, typval_T *rettv);
 static void f_input(typval_T *argvars, typval_T *rettv);
 static void f_inputdialog(typval_T *argvars, typval_T *rettv);
 static void f_inputlist(typval_T *argvars, typval_T *rettv);
@@ -901,7 +902,7 @@ arg_slice1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
  * or any)
  */
     static int
-arg_count1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
+arg_string_or_list_or_dict(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 {
     if (type->tt_type == VAR_ANY
 	    || type->tt_type == VAR_UNKNOWN
@@ -910,7 +911,8 @@ arg_count1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    || type->tt_type == VAR_DICT)
 	return OK;
 
-    arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+    semsg(_(e_string_list_or_dict_required_for_argument_nr),
+							 context->arg_idx + 1);
     return FAIL;
 }
 
@@ -949,6 +951,7 @@ static argcheck_T arg1_list_number[] = {arg_list_number};
 static argcheck_T arg1_list_or_blob[] = {arg_list_or_blob};
 static argcheck_T arg1_list_or_dict[] = {arg_list_or_dict};
 static argcheck_T arg1_list_string[] = {arg_list_string};
+static argcheck_T arg1_string_or_list_or_dict[] = {arg_string_or_list_or_dict};
 static argcheck_T arg1_lnum[] = {arg_lnum};
 static argcheck_T arg1_number[] = {arg_number};
 static argcheck_T arg1_string[] = {arg_string};
@@ -1027,7 +1030,7 @@ static argcheck_T arg34_assert_inrange[] = {arg_float_or_nr, arg_float_or_nr, ar
 static argcheck_T arg4_browse[] = {arg_bool, arg_string, arg_string, arg_string};
 static argcheck_T arg23_chanexpr[] = {arg_chan_or_job, NULL, arg_dict_any};
 static argcheck_T arg23_chanraw[] = {arg_chan_or_job, arg_string_or_blob, arg_dict_any};
-static argcheck_T arg24_count[] = {arg_count1, NULL, arg_bool, arg_number};
+static argcheck_T arg24_count[] = {arg_string_or_list_or_dict, NULL, arg_bool, arg_number};
 static argcheck_T arg13_cursor[] = {arg_cursor1, arg_number, arg_number};
 static argcheck_T arg12_deepcopy[] = {NULL, arg_bool};
 static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
@@ -1037,6 +1040,7 @@ static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, NULL};
 static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg25_globpath[] = {arg_string, arg_string, arg_bool, arg_bool, arg_bool};
 static argcheck_T arg24_index[] = {arg_list_or_blob, arg_item_of_prev, arg_number, arg_bool};
+static argcheck_T arg23_index[] = {arg_list_or_blob, arg_filter_func, arg_dict_any};
 static argcheck_T arg23_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
 static argcheck_T arg1_len[] = {arg_len1};
 static argcheck_T arg3_libcall[] = {arg_string, arg_string, arg_string_or_nr};
@@ -1933,6 +1937,8 @@ static funcentry_T global_functions[] =
 			ret_dict_any,	    f_getreginfo},
     {"getregtype",	0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_getregtype},
+    {"getscriptinfo",	0, 1, 0,	    arg1_dict_any,
+			ret_list_dict_any,  f_getscriptinfo},
     {"gettabinfo",	0, 1, FEARG_1,	    arg1_number,
 			ret_list_dict_any,  f_gettabinfo},
     {"gettabvar",	2, 3, FEARG_1,	    arg3_number_string_any,
@@ -1995,6 +2001,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_indent},
     {"index",		2, 4, FEARG_1,	    arg24_index,
 			ret_number,	    f_index},
+    {"indexof",		2, 3, FEARG_1,	    arg23_index,
+			ret_number,	    f_indexof},
     {"input",		1, 3, FEARG_1,	    arg3_string,
 			ret_string,	    f_input},
     {"inputdialog",	1, 3, FEARG_1,	    arg3_string,
@@ -2023,7 +2031,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_islocked},
     {"isnan",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_number_bool,    MATH_FUNC(f_isnan)},
-    {"items",		1, 1, FEARG_1,	    arg1_dict_any,
+    {"items",		1, 1, FEARG_1,	    arg1_string_or_list_or_dict,
 			ret_list_items,	    f_items},
     {"job_getchannel",	1, 1, FEARG_1,	    arg1_job,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},
@@ -2218,7 +2226,7 @@ static funcentry_T global_functions[] =
     {"prompt_setprompt", 2, 2, FEARG_1,	    arg2_buffer_string,
 			ret_void,	    JOB_FUNC(f_prompt_setprompt)},
     {"prop_add",	3, 3, FEARG_1,	    arg3_number_number_dict,
-			ret_void,	    PROP_FUNC(f_prop_add)},
+			ret_number,	    PROP_FUNC(f_prop_add)},
     {"prop_add_list",	2, 2, FEARG_1,	    arg2_dict_any_list_any,
 			ret_void,	    PROP_FUNC(f_prop_add_list)},
     {"prop_clear",	1, 3, FEARG_1,	    arg3_number_number_dict,
@@ -2363,6 +2371,8 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_setcharpos},
     {"setcharsearch",	1, 1, FEARG_1,	    arg1_dict_any,
 			ret_void,	    f_setcharsearch},
+    {"setcmdline",	1, 2, FEARG_1,	    arg2_string_number,
+			ret_number_bool,    f_setcmdline},
     {"setcmdpos",	1, 1, FEARG_1,	    arg1_number,
 			ret_number_bool,    f_setcmdpos},
     {"setcursorcharpos", 1, 3, FEARG_1,	    arg13_cursor,
@@ -3225,11 +3235,8 @@ f_call(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_dict_arg(argvars, 2) == FAIL))
 	return;
 
-    if (argvars[1].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 1) == FAIL)
 	return;
-    }
     if (argvars[1].vval.v_list == NULL)
 	return;
 
@@ -3267,11 +3274,9 @@ f_call(typval_T *argvars, typval_T *rettv)
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
+
 	selfdict = argvars[2].vval.v_dict;
     }
 
@@ -3601,21 +3606,14 @@ f_debugbreak(typval_T *argvars, typval_T *rettv)
 f_deepcopy(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T	noref = 0;
-    int		copyID;
 
-    if (in_vim9script()
-	    && (check_for_opt_bool_arg(argvars, 1) == FAIL))
+    if (check_for_opt_bool_arg(argvars, 1) == FAIL)
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
 	noref = tv_get_bool_chk(&argvars[1], NULL);
-    if (noref < 0 || noref > 1)
-	semsg(_(e_using_number_as_bool_nr), noref);
-    else
-    {
-	copyID = get_copyID();
-	item_copy(&argvars[0], rettv, TRUE, TRUE, noref == 0 ? copyID : 0);
-    }
+
+    item_copy(&argvars[0], rettv, TRUE, TRUE, noref == 0 ? get_copyID() : 0);
 }
 
 /*
@@ -3929,6 +3927,7 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     int		save_redir_off = redir_off;
     garray_T	save_ga;
     int		save_msg_col = msg_col;
+    int		save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     int		echo_output = FALSE;
 
     rettv->vval.v_string = NULL;
@@ -3985,6 +3984,9 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     if (!echo_output)
 	msg_col = 0;  // prevent leading spaces
 
+    // For "legacy call execute('cmd')" and "vim9cmd execute('cmd')" apply the
+    // command modifiers to "cmd".
+    sticky_cmdmod_flags = cmdmod.cmod_flags & (CMOD_LEGACY | CMOD_VIM9CMD);
     if (cmd != NULL)
 	do_cmdline_cmd(cmd);
     else
@@ -3997,6 +3999,7 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
 		      DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT|DOCMD_KEYTYPED);
 	--list->lv_refcount;
     }
+    sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 
     // Need to append a NUL to the result.
     if (ga_grow(&redir_execute_ga, 1) == OK)
@@ -4217,8 +4220,7 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[1].v_type == VAR_DICT
-	    && dict_get_bool(argvars[1].vval.v_dict, (char_u *)"errmsg",
-								VVAL_FALSE))
+		&& dict_get_bool(argvars[1].vval.v_dict, "errmsg", VVAL_FALSE))
 	emsgoff = FALSE;
 
     rettv->v_type = VAR_STRING;
@@ -4490,9 +4492,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		arg_idx = 1;
 	    if (dict_idx > 0)
 	    {
-		if (argvars[dict_idx].v_type != VAR_DICT)
+		if (check_for_dict_arg(argvars, dict_idx) == FAIL)
 		{
-		    emsg(_(e_expected_dict));
 		    vim_free(name);
 		    goto theend;
 		}
@@ -4803,9 +4804,12 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
     l = list_alloc();
     if (l == NULL)
 	return;
-
     if (list_append_list(rettv->vval.v_list, l) == FAIL)
+    {
+	vim_free(l);
 	return;
+    }
+
     /*
      * The current window change list index tracks only the position for the
      * current buffer. For other buffers use the stored index for the current
@@ -5037,9 +5041,12 @@ f_getjumplist(typval_T *argvars, typval_T *rettv)
     l = list_alloc();
     if (l == NULL)
 	return;
-
     if (list_append_list(rettv->vval.v_list, l) == FAIL)
+    {
+	vim_free(l);
 	return;
+    }
+
     list_append_number(rettv->vval.v_list, (varnumber_T)wp->w_jumplistidx);
 
     for (i = 0; i < wp->w_jumplistlen; ++i)
@@ -5246,21 +5253,11 @@ f_gettagstack(typval_T *argvars, typval_T *rettv)
     static void
 f_gettext(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (check_for_nonempty_string_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_STRING
-	    || argvars[0].vval.v_string == NULL
-	    || *argvars[0].vval.v_string == NUL)
-    {
-	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
-    }
-    else
-    {
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = vim_strsave(
-					(char_u *)_(argvars[0].vval.v_string));
-    }
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = vim_strsave((char_u *)_(argvars[0].vval.v_string));
 }
 
 // for VIM_VERSION_ defines
@@ -5459,20 +5456,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"builtin_terms",
-#if defined(SOME_BUILTIN_TCAPS) || defined(ALL_BUILTIN_TCAPS)
-		1
-#else
-		0
-#endif
-		},
-	{"all_builtin_terms",
-#if defined(ALL_BUILTIN_TCAPS)
-		1
-#else
-		0
-#endif
-		},
+	{"builtin_terms", 1},
+	{"all_builtin_terms", 1},
 	{"browsefilter",
 #if defined(FEAT_BROWSE) && (defined(USE_FILE_CHOOSER) \
 	|| defined(FEAT_GUI_MSWIN) \
@@ -5636,13 +5621,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"file_in_path",
-#ifdef FEAT_SEARCHPATH
-		1
-#else
-		0
-#endif
-		},
+	{"file_in_path", 1},
 	{"filterpipe",
 #if defined(FEAT_FILTERPIPE) && !defined(VIMDLL)
 		1
@@ -5671,13 +5650,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"footer",
-#ifdef FEAT_FOOTER
-		1
-#else
-		0
-#endif
-		},
+	{"footer", 0},
 	{"fork",
 #if !defined(USE_SYSTEM) && defined(UNIX)
 		1
@@ -5950,13 +5923,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"path_extra",
-#ifdef FEAT_PATH_EXTRA
-		1
-#else
-		0
-#endif
-		},
+	{"path_extra", 1},
 	{"perl",
 #if defined(FEAT_PERL) && !defined(DYNAMIC_PERL)
 		1
@@ -6192,13 +6159,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"textobjects",
-#ifdef FEAT_TEXTOBJ
-		1
-#else
-		0
-#endif
-		},
+	{"textobjects", 1},
 	{"textprop",
 #ifdef FEAT_PROP_POPUP
 		1
@@ -6268,20 +6229,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"wildignore",
-#ifdef FEAT_WILDIGN
-		1
-#else
-		0
-#endif
-		},
-	{"wildmenu",
-#ifdef FEAT_WILDMENU
-		1
-#else
-		0
-#endif
-		},
+	{"wildignore", 1},
+	{"wildmenu", 1},
 	{"windows", 1},
 	{"winaltkeys",
 #ifdef FEAT_WAK
@@ -6459,19 +6408,26 @@ f_has(typval_T *argvars, typval_T *rettv)
 	    x = TRUE;
 	    if (name[5] == '-'
 		    && STRLEN(name) >= 11
-		    && vim_isdigit(name[6])
-		    && vim_isdigit(name[8])
-		    && vim_isdigit(name[10]))
+		    && (name[6] >= '1' && name[6] <= '9'))
 	    {
-		int major = atoi((char *)name + 6);
-		int minor = atoi((char *)name + 8);
+		char	*end;
+		int	major, minor;
 
-		// Expect "patch-9.9.01234".
-		n = (major < VIM_VERSION_MAJOR
-		     || (major == VIM_VERSION_MAJOR
-			 && (minor < VIM_VERSION_MINOR
-			     || (minor == VIM_VERSION_MINOR
-				 && has_patch(atoi((char *)name + 10))))));
+		// This works for patch-8.1.2, patch-9.0.3, patch-10.0.4, etc.
+		// Not for patch-9.10.5.
+		major = (int)strtoul((char *)name + 6, &end, 10);
+		if (*end == '.' && vim_isdigit(end[1])
+			&& end[2] == '.' && vim_isdigit(end[3]))
+		{
+		    minor = atoi(end + 1);
+
+		    // Expect "patch-9.9.01234".
+		    n = (major < VIM_VERSION_MAJOR
+			 || (major == VIM_VERSION_MAJOR
+			     && (minor < VIM_VERSION_MINOR
+				 || (minor == VIM_VERSION_MINOR
+				     && has_patch(atoi(end + 3))))));
+		}
 	    }
 	    else if (isdigit(name[5]))
 		n = has_patch(atoi((char *)name + 5));
@@ -6776,6 +6732,159 @@ f_index(typval_T *argvars, typval_T *rettv)
 		break;
 	    }
     }
+}
+
+/*
+ * Evaluate 'expr' with the v:key and v:val arguments and return the result.
+ * The expression is expected to return a boolean value.  The caller should set
+ * the VV_KEY and VV_VAL vim variables before calling this function.
+ */
+    static int
+indexof_eval_expr(typval_T *expr)
+{
+    typval_T	argv[3];
+    typval_T	newtv;
+    varnumber_T	found;
+    int		error = FALSE;
+
+    argv[0] = *get_vim_var_tv(VV_KEY);
+    argv[1] = *get_vim_var_tv(VV_VAL);
+    newtv.v_type = VAR_UNKNOWN;
+
+    if (eval_expr_typval(expr, argv, 2, &newtv) == FAIL)
+	return FALSE;
+
+    found = tv_get_bool_chk(&newtv, &error);
+    clear_tv(&newtv);
+
+    return error ? FALSE : found;
+}
+
+/*
+ * Evaluate 'expr' for each byte in the Blob 'b' starting with the byte at
+ * 'startidx' and return the index of the byte where 'expr' is TRUE.  Returns
+ * -1 if 'expr' doesn't evaluate to TRUE for any of the bytes.
+ */
+    static int
+indexof_blob(blob_T *b, long startidx, typval_T *expr)
+{
+    long	idx = 0;
+
+    if (b == NULL)
+	return -1;
+
+    if (startidx < 0)
+    {
+	// negative index: index from the last byte
+	startidx = blob_len(b) + startidx;
+	if (startidx < 0)
+	    startidx = 0;
+    }
+
+    set_vim_var_type(VV_KEY, VAR_NUMBER);
+    set_vim_var_type(VV_VAL, VAR_NUMBER);
+
+    for (idx = startidx; idx < blob_len(b); ++idx)
+    {
+	set_vim_var_nr(VV_KEY, idx);
+	set_vim_var_nr(VV_VAL, blob_get(b, idx));
+
+	if (indexof_eval_expr(expr))
+	    return idx;
+    }
+
+    return -1;
+}
+
+/*
+ * Evaluate 'expr' for each item in the List 'l' starting with the item at
+ * 'startidx' and return the index of the item where 'expr' is TRUE.  Returns
+ * -1 if 'expr' doesn't evaluate to TRUE for any of the items.
+ */
+    static int
+indexof_list(list_T *l, long startidx, typval_T *expr)
+{
+    listitem_T	*item;
+    long	idx = 0;
+    int		found;
+
+    if (l == NULL)
+	return -1;
+
+    CHECK_LIST_MATERIALIZE(l);
+
+    if (startidx == 0)
+	item = l->lv_first;
+    else
+    {
+	// Start at specified item.  Use the cached index that list_find()
+	// sets, so that a negative number also works.
+	item = list_find(l, startidx);
+	if (item != NULL)
+	    idx = l->lv_u.mat.lv_idx;
+    }
+
+    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+    for ( ; item != NULL; item = item->li_next, ++idx)
+    {
+	set_vim_var_nr(VV_KEY, idx);
+	copy_tv(&item->li_tv, get_vim_var_tv(VV_VAL));
+
+	found = indexof_eval_expr(expr);
+	clear_tv(get_vim_var_tv(VV_VAL));
+
+	if (found)
+	    return idx;
+    }
+
+    return -1;
+}
+
+/*
+ * "indexof()" function
+ */
+    static void
+f_indexof(typval_T *argvars, typval_T *rettv)
+{
+    long	startidx = 0;
+    typval_T	save_val;
+    typval_T	save_key;
+    int		save_did_emsg;
+
+    rettv->vval.v_number = -1;
+
+    if (check_for_list_or_blob_arg(argvars, 0) == FAIL
+	    || check_for_string_or_func_arg(argvars, 1) == FAIL
+	    || check_for_opt_dict_arg(argvars, 2) == FAIL)
+	return;
+
+    if ((argvars[1].v_type == VAR_STRING && argvars[1].vval.v_string == NULL)
+	    || (argvars[1].v_type == VAR_FUNC
+		&& argvars[1].vval.v_partial == NULL))
+	return;
+
+    if (argvars[2].v_type == VAR_DICT)
+	startidx = dict_get_number_def(argvars[2].vval.v_dict, "startidx", 0);
+
+    prepare_vimvar(VV_VAL, &save_val);
+    prepare_vimvar(VV_KEY, &save_key);
+
+    // We reset "did_emsg" to be able to detect whether an error occurred
+    // during evaluation of the expression.
+    save_did_emsg = did_emsg;
+    did_emsg = FALSE;
+
+    if (argvars[0].v_type == VAR_BLOB)
+	rettv->vval.v_number = indexof_blob(argvars[0].vval.v_blob, startidx,
+								&argvars[1]);
+    else
+	rettv->vval.v_number = indexof_list(argvars[0].vval.v_list, startidx,
+								&argvars[1]);
+
+    restore_vimvar(VV_KEY, &save_key);
+    restore_vimvar(VV_VAL, &save_val);
+    did_emsg |= save_did_emsg;
 }
 
 static int inputsecret_flag = 0;
@@ -9048,7 +9157,8 @@ do_searchpair(
 
 theend:
 #ifdef FEAT_RELTIME
-    disable_regexp_timeout();
+    if (time_limit > 0)
+	disable_regexp_timeout();
 #endif
     vim_free(pat2);
     vim_free(pat3);
@@ -9161,18 +9271,12 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
     dictitem_T	*di;
     char_u	*csearch;
 
-    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+    if (check_for_dict_arg(argvars, 0) == FAIL)
 	return;
-
-    if (argvars[0].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
-	return;
-    }
 
     if ((d = argvars[0].vval.v_dict) != NULL)
     {
-	csearch = dict_get_string(d, (char_u *)"char", FALSE);
+	csearch = dict_get_string(d, "char", FALSE);
 	if (csearch != NULL)
 	{
 	    if (enc_utf8)
@@ -9368,7 +9472,7 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 	if (di != NULL)
 	    regcontents = &di->di_tv;
 
-	stropt = dict_get_string(d, (char_u *)"regtype", FALSE);
+	stropt = dict_get_string(d, "regtype", FALSE);
 	if (stropt != NULL)
 	{
 	    int ret = get_yank_type(&stropt, &yank_type, &block_len);
@@ -9382,14 +9486,14 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 
 	if (regname == '"')
 	{
-	    stropt = dict_get_string(d, (char_u *)"points_to", FALSE);
+	    stropt = dict_get_string(d, "points_to", FALSE);
 	    if (stropt != NULL)
 	    {
 		pointreg = *stropt;
 		regname = pointreg;
 	    }
 	}
-	else if (dict_get_bool(d, (char_u *)"isunnamed", -1) > 0)
+	else if (dict_get_bool(d, "isunnamed", -1) > 0)
 	    pointreg = regname;
     }
     else
@@ -9507,11 +9611,8 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
 	return;
 
     // second argument: dict with items to set in the tag stack
-    if (argvars[1].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_dict_arg(argvars, 1) == FAIL)
 	return;
-    }
     d = argvars[1].vval.v_dict;
     if (d == NULL)
 	return;
@@ -9520,7 +9621,9 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
     // default is to replace the stack.
     if (argvars[2].v_type == VAR_UNKNOWN)
 	action = 'r';
-    else if (argvars[2].v_type == VAR_STRING)
+    else if (check_for_string_arg(argvars, 2) == FAIL)
+	return;
+    else
     {
 	char_u	*actstr;
 	actstr = tv_get_string_chk(&argvars[2]);
@@ -9534,11 +9637,6 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
 	    semsg(_(e_invalid_action_str_2), actstr);
 	    return;
 	}
-    }
-    else
-    {
-	emsg(_(e_string_required));
-	return;
     }
 
     if (set_tagstack(wp, d, action) == OK)
@@ -10084,8 +10182,11 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 		    p = highlight_has_attr(id, HL_ITALIC, modec);
 		break;
 
-	case 'n':					// name
-		p = get_highlight_name_ext(NULL, id - 1, FALSE);
+	case 'n':					
+		if (TOLOWER_ASC(what[1]) == 'o')	// nocombine
+		    p = highlight_has_attr(id, HL_NOCOMBINE, modec);
+		else					// name
+		    p = get_highlight_name_ext(NULL, id - 1, FALSE);
 		break;
 
 	case 'r':					// reverse
@@ -10451,10 +10552,8 @@ f_visualmode(typval_T *argvars, typval_T *rettv)
     static void
 f_wildmenumode(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_WILDMENU
     if (wild_menu_showing || ((State & MODE_CMDLINE) && cmdline_pum_active()))
 	rettv->vval.v_number = 1;
-#endif
 }
 
 /*

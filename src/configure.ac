@@ -3807,12 +3807,14 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 dnl Check for timer_create. It probably requires the 'rt' library.
 dnl Run the program to find out if timer_create(CLOCK_MONOTONIC) actually
 dnl works, on Solaris timer_create() exists but fails at runtime.
-AC_MSG_CHECKING([for timer_create])
-save_LIBS="$LIBS"
-LIBS="$LIBS -lrt"
+AC_CACHE_CHECK([for timer_create without -lrt], [vim_cv_timer_create], [
 AC_RUN_IFELSE([AC_LANG_PROGRAM([
-#include<signal.h>
-#include<time.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#include <signal.h>
+#include <time.h>
 static void set_flag(union sigval sv) {}
 ], [
   struct timespec ts;
@@ -3824,24 +3826,50 @@ static void set_flag(union sigval sv) {}
   if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
     exit(1);  // cannot create a monotonic timer
   ])],
-  AC_MSG_RESULT(yes; with -lrt); AC_DEFINE(HAVE_TIMER_CREATE),
-  LIBS="$save_LIBS"
-  AC_RUN_IFELSE([AC_LANG_PROGRAM([
-#include<signal.h>
-#include<time.h>
-static void set_flag(union sigval sv) {}
-    ], [
-    struct timespec ts;
-    struct sigevent action = {0};
-    timer_t timer_id;
+  vim_cv_timer_create=yes,
+  vim_cv_timer_create=no,
+  AC_MSG_WARN([failed to build test program; if cross-compiling please set 'vim_cv_timer_create'])
+  )])
 
-    action.sigev_notify = SIGEV_THREAD;
-    action.sigev_notify_function = set_flag;
-    if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
-      exit(1);  // cannot create a monotonic timer
-    ])],
-    AC_MSG_RESULT(yes); AC_DEFINE(HAVE_TIMER_CREATE),
-    AC_MSG_RESULT(no)))
+dnl If the previous failed, check for timer_create() and linking with -lrt.
+if test "x$vim_cv_timer_create" = "xno" ; then
+  save_LIBS="$LIBS"
+  LIBS="$LIBS -lrt"
+  AC_CACHE_CHECK([for timer_create with -lrt], [vim_cv_timer_create_with_lrt], [
+    AC_RUN_IFELSE([AC_LANG_PROGRAM([
+    #if STDC_HEADERS
+    # include <stdlib.h>
+    # include <stddef.h>
+    #endif
+    #include <signal.h>
+    #include <time.h>
+    static void set_flag(union sigval sv) {}
+    ], [
+      struct timespec ts;
+      struct sigevent action = {0};
+      timer_t timer_id;
+
+      action.sigev_notify = SIGEV_THREAD;
+      action.sigev_notify_function = set_flag;
+      if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
+	exit(1);  // cannot create a monotonic timer
+      ])],
+      vim_cv_timer_create_with_lrt=yes,
+      vim_cv_timer_create_with_lrt=no,
+      AC_MSG_WARN([failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'])
+    )])
+  LIBS="$save_LIBS"
+else
+  vim_cv_timer_create_with_lrt=no
+fi
+
+if test "x$vim_cv_timer_create" = "xyes" ; then
+  AC_DEFINE(HAVE_TIMER_CREATE)
+fi
+if test "x$vim_cv_timer_create_with_lrt" = "xyes" ; then
+  AC_DEFINE(HAVE_TIMER_CREATE)
+  LIBS="$LIBS -lrt"
+fi
 
 AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_slash],
   [

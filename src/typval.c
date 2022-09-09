@@ -509,6 +509,23 @@ check_for_list_arg(typval_T *args, int idx)
 }
 
 /*
+ * Give an error and return FAIL unless "args[idx]" is a non-NULL list.
+ */
+    int
+check_for_nonnull_list_arg(typval_T *args, int idx)
+{
+    if (check_for_list_arg(args, idx) == FAIL)
+	return FAIL;
+
+    if (args[idx].vval.v_list == NULL)
+    {
+	semsg(_(e_non_null_list_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Check for an optional list argument at 'idx'
  */
     int
@@ -527,6 +544,23 @@ check_for_dict_arg(typval_T *args, int idx)
     if (args[idx].v_type != VAR_DICT)
     {
 	semsg(_(e_dict_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a non-NULL dict.
+ */
+    int
+check_for_nonnull_dict_arg(typval_T *args, int idx)
+{
+    if (check_for_dict_arg(args, idx) == FAIL)
+	return FAIL;
+
+    if (args[idx].vval.v_dict == NULL)
+    {
+	semsg(_(e_non_null_dict_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
@@ -1179,7 +1213,7 @@ typval_compare(
 
     if (type_is && tv1->v_type != tv2->v_type)
     {
-	// For "is" a different type always means FALSE, for "notis"
+	// For "is" a different type always means FALSE, for "isnot"
 	// it means TRUE.
 	n1 = (type == EXPR_ISNOT);
     }
@@ -2090,7 +2124,19 @@ eval_string(char_u **arg, typval_T *rettv, int evaluate, int interpolate)
 	    // to 9 characters (6 for the char and 3 for a modifier):
 	    // reserve space for 5 extra.
 	    if (*p == '<')
+	    {
+		int		modifiers = 0;
+		int		flags = FSK_KEYCODE | FSK_IN_STRING;
+
 		extra += 5;
+
+		// Skip to the '>' to avoid using '{' inside for string
+		// interpolation.
+		if (p[1] != '*')
+		    flags |= FSK_SIMPLIFY;
+		if (find_special_key(&p, &modifiers, flags, NULL) != 0)
+		    --p;  // leave "p" on the ">"
+	    }
 	}
 	else if (interpolate && (*p == '{' || *p == '}'))
 	{

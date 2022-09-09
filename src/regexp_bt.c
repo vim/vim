@@ -3439,10 +3439,19 @@ regmatch(
 	    break;
 
 	  case RE_VCOL:
-	    if (!re_num_cmp((long_u)win_linetabsize(
-			    rex.reg_win == NULL ? curwin : rex.reg_win,
-			    rex.line, (colnr_T)(rex.input - rex.line)) + 1, scan))
-		status = RA_NOMATCH;
+	    {
+		win_T	    *wp = rex.reg_win == NULL ? curwin : rex.reg_win;
+		linenr_T    lnum = REG_MULTI ? rex.reg_firstlnum + rex.lnum : 1;
+		long_u	    vcol;
+
+		if (REG_MULTI && (lnum <= 0
+				   || lnum > wp->w_buffer->b_ml.ml_line_count))
+		    lnum = 1;
+		vcol = (long_u)win_linetabsize(wp, lnum, rex.line,
+					      (colnr_T)(rex.input - rex.line));
+		if (!re_num_cmp(vcol + 1, scan))
+		    status = RA_NOMATCH;
+	    }
 	    break;
 
 	  case BOW:	// \<word; rex.input points to w

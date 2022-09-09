@@ -100,11 +100,7 @@ changed(void)
 
 	// Create a swap file if that is wanted.
 	// Don't do this for "nofile" and "nowrite" buffer types.
-	if (curbuf->b_may_swap
-#ifdef FEAT_QUICKFIX
-		&& !bt_dontwrite(curbuf)
-#endif
-		)
+	if (curbuf->b_may_swap && !bt_dontwrite(curbuf))
 	{
 	    int save_need_wait_return = need_wait_return;
 
@@ -172,9 +168,9 @@ check_recorded_changes(
 	FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
 	{
 	    prev_lnum = (linenr_T)dict_get_number(
-				      li->li_tv.vval.v_dict, (char_u *)"lnum");
+						li->li_tv.vval.v_dict, "lnum");
 	    prev_lnume = (linenr_T)dict_get_number(
-				       li->li_tv.vval.v_dict, (char_u *)"end");
+						 li->li_tv.vval.v_dict, "end");
 	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	    {
 		// the current change is going to make the line number in
@@ -366,6 +362,7 @@ invoke_listeners(buf_T *buf)
     int		save_updating_screen = updating_screen;
     static int	recursive = FALSE;
     listener_T	*next;
+    listener_T	*prev;
 
     if (buf->b_recorded_changes == NULL  // nothing changed
 	    || buf->b_listener == NULL   // no listeners
@@ -384,13 +381,13 @@ invoke_listeners(buf_T *buf)
     {
 	varnumber_T lnum;
 
-	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"lnum");
+	lnum = dict_get_number(li->li_tv.vval.v_dict, "lnum");
 	if (start > lnum)
 	    start = lnum;
-	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"end");
+	lnum = dict_get_number(li->li_tv.vval.v_dict, "end");
 	if (end < lnum)
 	    end = lnum;
-	added += dict_get_number(li->li_tv.vval.v_dict, (char_u *)"added");
+	added += dict_get_number(li->li_tv.vval.v_dict, "added");
     }
     argv[1].v_type = VAR_NUMBER;
     argv[1].vval.v_number = start;
@@ -410,10 +407,9 @@ invoke_listeners(buf_T *buf)
     }
 
     // If f_listener_remove() was called may have to remove a listener now.
+    prev = NULL;
     for (lnr = buf->b_listener; lnr != NULL; lnr = next)
     {
-	listener_T	*prev = NULL;
-
 	next = lnr->lr_next;
 	if (lnr->lr_id == 0)
 	    remove_listener(buf, lnr, prev);
@@ -559,8 +555,8 @@ changed_common(
 	    linenr_T last = lnume + xtra - 1;  // last line after the change
 #endif
 	    // Mark this window to be redrawn later.
-	    if (wp->w_redr_type < VALID)
-		wp->w_redr_type = VALID;
+	    if (!redraw_not_allowed && wp->w_redr_type < UPD_VALID)
+		wp->w_redr_type = UPD_VALID;
 
 	    // Check if a change in the buffer has invalidated the cached
 	    // values for the cursor.
@@ -648,18 +644,18 @@ changed_common(
 	    if (wp->w_p_rnu && xtra != 0)
 	    {
 		wp->w_last_cursor_lnum_rnu = 0;
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 	    }
 #ifdef FEAT_SYN_HL
 	    // Cursor line highlighting probably need to be updated with
-	    // "VALID" if it's below the change.
+	    // "UPD_VALID" if it's below the change.
 	    // If the cursor line is inside the change we need to redraw more.
 	    if (wp->w_p_cul)
 	    {
 		if (xtra == 0)
-		    redraw_win_later(wp, VALID);
+		    redraw_win_later(wp, UPD_VALID);
 		else if (lnum <= wp->w_last_cursorline)
-		    redraw_win_later(wp, SOME_VALID);
+		    redraw_win_later(wp, UPD_SOME_VALID);
 	    }
 #endif
 	}
@@ -671,8 +667,7 @@ changed_common(
 
     // Call update_screen() later, which checks out what needs to be redrawn,
     // since it notices b_mod_set and then uses b_mod_*.
-    if (must_redraw < VALID)
-	must_redraw = VALID;
+    set_must_redraw(UPD_VALID);
 
     // when the cursor line is changed always trigger CursorMoved
     if (lnum <= curwin->w_cursor.lnum
@@ -724,7 +719,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_diff && wp != curwin)
 	    {
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 		wlnum = diff_lnum_win(lnum, wp);
 		if (wlnum > 0)
 		    changedOneline(wp->w_buffer, wlnum);
@@ -801,6 +796,7 @@ deleted_lines_mark(linenr_T lnum, long count)
 
 /*
  * Marks the area to be redrawn after a change.
+ * Consider also calling changed_line_display_buf().
  */
     void
 changed_lines_buf(
@@ -868,7 +864,7 @@ changed_lines(
 	FOR_ALL_WINDOWS(wp)
 	    if (wp->w_p_diff && wp != curwin)
 	    {
-		redraw_win_later(wp, VALID);
+		redraw_win_later(wp, UPD_VALID);
 		wlnum = diff_lnum_win(lnum, wp);
 		if (wlnum > 0)
 		    changed_lines_buf(wp->w_buffer, wlnum,
@@ -1298,7 +1294,7 @@ del_bytes(
 	// fixpos is TRUE, we don't want to end up positioned at the NUL,
 	// unless "restart_edit" is set or 'virtualedit' contains "onemore".
 	if (col > 0 && fixpos && restart_edit == 0
-					      && (get_ve_flags() & VE_ONEMORE) == 0)
+					 && (get_ve_flags() & VE_ONEMORE) == 0)
 	{
 	    --curwin->w_cursor.col;
 	    curwin->w_cursor.coladd = 0;

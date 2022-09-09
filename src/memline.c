@@ -822,7 +822,7 @@ ml_open_file(buf_T *buf)
 
     if (*p_dir != NUL && mfp->mf_fname == NULL)
     {
-	need_wait_return = TRUE;	// call wait_return later
+	need_wait_return = TRUE;	// call wait_return() later
 	++no_wait_return;
 	(void)semsg(_(e_unable_to_open_swap_file_for_str_recovery_impossible),
 		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname);
@@ -1763,7 +1763,7 @@ ml_recover(int checkext)
 	set_option_value_give_err((char_u *)"key", 0L, buf->b_p_key, OPT_LOCAL);
     }
 #endif
-    redraw_curbuf_later(NOT_VALID);
+    redraw_curbuf_later(UPD_NOT_VALID);
 
 theend:
     vim_free(fname_used);
@@ -2821,6 +2821,9 @@ ml_append_int(
     infoptr_T	*ip;
 #ifdef FEAT_PROP_POPUP
     char_u	*tofree = NULL;
+# ifdef FEAT_BYTEOFF
+    colnr_T	text_len = 0;	// text len with NUL without text properties
+# endif
 #endif
     int		ret = FAIL;
 
@@ -2831,7 +2834,19 @@ ml_append_int(
 	lowest_marked = lnum + 1;
 
     if (len == 0)
+    {
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_BYTEOFF)
+	text_len = len;
+#endif
+    }
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_BYTEOFF)
+    else if (curbuf->b_has_textprop)
+	// "len" may include text properties, get the length of the text.
+	text_len = (colnr_T)STRLEN(line) + 1;
+    else
+	text_len = len;
+#endif
 
 #ifdef FEAT_PROP_POPUP
     if (curbuf->b_has_textprop && lnum > 0
@@ -3059,8 +3074,6 @@ ml_append_int(
 	 */
 	if (lines_moved)
 	{
-	    /*
-	     */
 	    dp_right->db_txt_start -= data_moved;
 	    dp_right->db_free -= total_moved;
 	    mch_memmove((char *)dp_right + dp_right->db_txt_start,
@@ -3292,13 +3305,14 @@ ml_append_int(
     }
 
 #ifdef FEAT_BYTEOFF
-# ifdef FEAT_PROP_POPUP
-    if (curbuf->b_has_textprop)
-	// only use the space needed for the text, ignore properties
-	len = (colnr_T)STRLEN(line) + 1;
-# endif
     // The line was inserted below 'lnum'
-    ml_updatechunk(buf, lnum + 1, (long)len, ML_CHNK_ADDLINE);
+    ml_updatechunk(buf, lnum + 1,
+# ifdef FEAT_PROP_POPUP
+	    (long)text_len
+# else
+	    (long)len
+# endif
+	    , ML_CHNK_ADDLINE);
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
@@ -3417,7 +3431,7 @@ ml_append_buf(
  * Do not use it after calling ml_replace().
  *
  * Check: The caller of this function should probably also call
- * changed_lines(), unless update_screen(NOT_VALID) is used.
+ * changed_lines(), unless update_screen(UPD_NOT_VALID) is used.
  *
  * return FAIL for failure, OK otherwise
  */
@@ -3651,7 +3665,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
     int		ret = FAIL;
 #ifdef FEAT_PROP_POPUP
     char_u	*textprop_save = NULL;
-    int		textprop_save_len = 0;
+    long	textprop_len = 0;
 #endif
 
     if (lowest_marked && lowest_marked > lnum)
@@ -3707,18 +3721,17 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 	netbeans_removed(buf, lnum, 0, line_size);
 #endif
 #ifdef FEAT_PROP_POPUP
-    // If there are text properties, make a copy, so that we can update
-    // properties in preceding and following lines.
-    if (buf->b_has_textprop && !(flags & (ML_DEL_UNDO | ML_DEL_NOPROP)))
+    // If there are text properties compute their byte length.
+    // if needed make a copy, so that we can update properties in preceding and
+    // following lines.
+    if (buf->b_has_textprop)
     {
 	size_t	textlen = STRLEN((char_u *)dp + line_start) + 1;
 
-	if ((long)textlen < line_size)
-	{
-	    textprop_save_len = line_size - (int)textlen;
+	textprop_len = line_size - (long)textlen;
+	if (!(flags & (ML_DEL_UNDO | ML_DEL_NOPROP)) && textprop_len > 0)
 	    textprop_save = vim_memsave((char_u *)dp + line_start + textlen,
-							  textprop_save_len);
-	}
+								 textprop_len);
     }
 #endif
 
@@ -3804,9 +3817,9 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int flags)
 #ifdef FEAT_BYTEOFF
     ml_updatechunk(buf, lnum, line_size
 # ifdef FEAT_PROP_POPUP
-					- textprop_save_len
+					- textprop_len
 # endif
-							    , ML_CHNK_DELLINE);
+						    , ML_CHNK_DELLINE);
 #endif
     ret = OK;
 
@@ -3817,10 +3830,10 @@ theend:
 	// Adjust text properties in the line above and below.
 	if (lnum > 1)
 	    adjust_text_props_for_delete(buf, lnum - 1, textprop_save,
-						      textprop_save_len, TRUE);
+						      (int)textprop_len, TRUE);
 	if (lnum <= buf->b_ml.ml_line_count)
 	    adjust_text_props_for_delete(buf, lnum, textprop_save,
-						     textprop_save_len, FALSE);
+						     (int)textprop_len, FALSE);
     }
     vim_free(textprop_save);
 #endif
@@ -5130,7 +5143,7 @@ findswapname(
 
 			// pretend screen didn't scroll, need redraw anyway
 			msg_scrolled = 0;
-			redraw_all_later(NOT_VALID);
+			redraw_all_later(UPD_NOT_VALID);
 		    }
 #endif
 
@@ -5668,7 +5681,8 @@ ml_updatechunk(
 		    // the text prop info would also be counted.  Go over the
 		    // lines.
 		    for (i = end_idx; i < idx; ++i)
-			size += (int)STRLEN((char_u *)dp + (dp->db_index[i] & DB_INDEX_MASK)) + 1;
+			size += (int)STRLEN((char_u *)dp
+				      + (dp->db_index[i] & DB_INDEX_MASK)) + 1;
 		}
 		else
 #endif
@@ -5677,7 +5691,8 @@ ml_updatechunk(
 			text_end = dp->db_txt_end;
 		    else
 			text_end = ((dp->db_index[idx - 1]) & DB_INDEX_MASK);
-		    size += text_end - ((dp->db_index[end_idx]) & DB_INDEX_MASK);
+		    size += text_end
+				   - ((dp->db_index[end_idx]) & DB_INDEX_MASK);
 		}
 	    }
 	    buf->b_ml.ml_chunksize[curix].mlcs_numlines = linecnt;
@@ -5733,9 +5748,9 @@ ml_updatechunk(
     {
 	curchnk->mlcs_numlines--;
 	ml_upd_lastbuf = NULL;   // Force recalc of curix & curline
-	if (curix < (buf->b_ml.ml_usedchunks - 1)
-		&& (curchnk->mlcs_numlines + curchnk[1].mlcs_numlines)
-		   <= MLCS_MINL)
+	if (curix < buf->b_ml.ml_usedchunks - 1
+		&& curchnk->mlcs_numlines + curchnk[1].mlcs_numlines
+								  <= MLCS_MINL)
 	{
 	    curix++;
 	    curchnk = buf->b_ml.ml_chunksize + curix;
@@ -5748,8 +5763,8 @@ ml_updatechunk(
 	    return;
 	}
 	else if (curix == 0 || (curchnk->mlcs_numlines > 10
-		    && (curchnk->mlcs_numlines + curchnk[-1].mlcs_numlines)
-		       > MLCS_MINL))
+		    && curchnk->mlcs_numlines + curchnk[-1].mlcs_numlines
+								  > MLCS_MINL))
 	{
 	    return;
 	}
@@ -5759,12 +5774,10 @@ ml_updatechunk(
 	curchnk[-1].mlcs_totalsize += curchnk->mlcs_totalsize;
 	buf->b_ml.ml_usedchunks--;
 	if (curix < buf->b_ml.ml_usedchunks)
-	{
 	    mch_memmove(buf->b_ml.ml_chunksize + curix,
 			buf->b_ml.ml_chunksize + curix + 1,
 			(buf->b_ml.ml_usedchunks - curix) *
 			sizeof(chunksize_T));
-	}
 	return;
     }
     ml_upd_lastbuf = buf;

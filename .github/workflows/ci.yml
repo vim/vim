@@ -14,14 +14,14 @@ concurrency:
 
 jobs:
   linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
 
     env:
       CC: ${{ matrix.compiler }}
       TEST: test
       SRCDIR: ./src
       LEAK_CFLAGS: -DEXITFREE
-      CFLAGS: -Wno-error=deprecated-declarations
+      CFLAGS: -Wno-deprecated-declarations
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
@@ -98,17 +98,17 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
           sudo update-alternatives --set gcc /usr/bin/gcc-11
 
-      - name: Install clang-14
+      - name: Install clang-15
         if: matrix.compiler == 'clang'
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-14 main"
-          sudo apt install -y clang-14 llvm-14
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
-          sudo update-alternatives --set clang /usr/bin/clang-14
-          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-14 100
-          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-14 100
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-15 main"
+          sudo apt install -y clang-15 llvm-15
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-15 100
+          sudo update-alternatives --set clang /usr/bin/clang-15
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-15 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-15 100
 
       - name: Set up environment
         run: |
@@ -166,11 +166,6 @@ jobs:
           if [[ ${CC} = clang ]]; then
             # Use llvm-cov instead of gcov when compiler is clang.
             ln -fs /usr/bin/llvm-cov ${HOME}/bin/gcov
-          fi
-          # Setup lua5.3 manually since its package doesn't provide alternative.
-          # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
-          if [[ ${CONFOPT} =~ luainterp ]]; then
-            sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
           fi
           sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
           sudo usermod -a -G audio "${USER}"
@@ -268,7 +263,7 @@ jobs:
           done
 
   # coveralls:
-  #   runs-on: ubuntu-18.04
+  #   runs-on: ubuntu-20.04
   #
   #   needs: linux
   #   if: always() && github.event_name != 'pull_request'
@@ -568,11 +563,11 @@ jobs:
           call "%VCVARSALL%" ${{ matrix.vcarch }}
 
           echo %COL_GREEN%Start testing Vim in background.%COL_RESET%
-          start cmd /c "cd src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
+          start cmd /c "cd src2\testdir & nmake -nologo -f Make_mvc.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
           cd src\testdir
-          nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
+          nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
 
       - name: Show the result of testing Vim
         shell: cmd
@@ -595,7 +590,7 @@ jobs:
           echo %COL_GREEN%The result of testing Vim:%COL_RESET%
           cd src2\testdir
           if exist messages type messages
-          nmake -nologo -f Make_dos.mak report VIMPROG=..\..\src\vim || exit 1
+          nmake -nologo -f Make_mvc.mak report VIMPROG=..\..\src\vim || exit 1
 
           if "%timeout%"=="1" (
             echo %COL_RED%Timed out.%COL_RESET%

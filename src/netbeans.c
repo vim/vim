@@ -116,7 +116,7 @@ netbeans_close(void)
     // remove all signs and update the screen after gutter removal
     coloncmd(":sign unplace *");
     changed_window_setting();
-    update_screen(CLEAR);
+    update_screen(UPD_CLEAR);
     setcursor();
     cursor_on();
     out_flush_cursor(TRUE, FALSE);
@@ -1835,9 +1835,9 @@ nb_do_cmd(
 	    }
 
 	    // gui_update_cursor(TRUE, FALSE);
-	    // update_curbuf(NOT_VALID);
+	    // update_curbuf(UPD_NOT_VALID);
 	    update_topline();		// scroll to show the line
-	    update_screen(VALID);
+	    update_screen(UPD_VALID);
 	    setcursor();
 	    cursor_on();
 	    out_flush_cursor(TRUE, FALSE);
@@ -2027,7 +2027,7 @@ nb_do_cmd(
 	    args = (char_u *)cp;
 	    coloncmd(":sign unplace %d buffer=%d",
 		     serNum, buf->bufp->b_fnum);
-	    redraw_buf_later(buf->bufp, NOT_VALID);
+	    redraw_buf_later(buf->bufp, UPD_NOT_VALID);
 #endif
 // =====================================================================
 	}
@@ -2113,7 +2113,7 @@ nb_do_cmd(
 			}
 		    }
 #endif
-		    redraw_buf_later(buf->bufp, NOT_VALID);
+		    redraw_buf_later(buf->bufp, UPD_NOT_VALID);
 		}
 	    }
 // =====================================================================
@@ -2152,10 +2152,7 @@ nb_do_cmd(
 		if (p_write
 			&& !buf->bufp->b_p_ro
 			&& buf->bufp->b_ffname != NULL
-#ifdef FEAT_QUICKFIX
-			&& !bt_dontwrite(buf->bufp)
-#endif
-			)
+			&& !bt_dontwrite(buf->bufp))
 		{
 		    bufref_T bufref;
 
@@ -2223,7 +2220,7 @@ nb_do_cmd(
      */
     if (buf != NULL && buf->initDone && do_update)
     {
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 	setcursor();
 	cursor_on();
 	out_flush_cursor(TRUE, FALSE);
@@ -2528,7 +2525,7 @@ netbeans_open(char *params, int doabort)
 
     // update the screen after having added the gutter
     changed_window_setting();
-    update_screen(CLEAR);
+    update_screen(UPD_CLEAR);
     setcursor();
     cursor_on();
     out_flush_cursor(TRUE, FALSE);

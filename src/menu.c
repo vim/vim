@@ -299,7 +299,7 @@ ex_menu(
     root_menu_ptr = get_root_menu(menu_path);
     if (root_menu_ptr == &curwin->w_winbar)
 	// Assume the window toolbar menu will change.
-	redraw_later(NOT_VALID);
+	redraw_later(UPD_NOT_VALID);
 
     if (enable != MAYBE)
     {

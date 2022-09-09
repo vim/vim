@@ -263,8 +263,17 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	if (partial->pt_func != NULL
 			  && partial->pt_func->uf_def_status != UF_NOT_COMPILED)
 	{
-	    if (call_def_function(partial->pt_func, argc, argv,
-						       partial, rettv) == FAIL)
+	    funccall_T	*fc = create_funccal(partial->pt_func, rettv);
+	    int		r;
+
+	    if (fc == NULL)
+		return FAIL;
+
+	    // Shortcut to call a compiled function without overhead.
+	    r = call_def_function(partial->pt_func, argc, argv,
+					  DEF_USE_PT_ARGV, partial, fc, rettv);
+	    remove_funccal();
+	    if (r == FAIL)
 		return FAIL;
 	}
 	else
@@ -354,6 +363,63 @@ eval_to_string_skip(
 }
 
 /*
+ * Initialize "evalarg" for use.
+ */
+    void
+init_evalarg(evalarg_T *evalarg)
+{
+    CLEAR_POINTER(evalarg);
+    ga_init2(&evalarg->eval_tofree_ga, sizeof(char_u *), 20);
+}
+
+/*
+ * If "evalarg->eval_tofree" is not NULL free it later.
+ * Caller is expected to overwrite "evalarg->eval_tofree" next.
+ */
+    static void
+free_eval_tofree_later(evalarg_T *evalarg)
+{
+    if (evalarg->eval_tofree != NULL)
+    {
+	if (ga_grow(&evalarg->eval_tofree_ga, 1) == OK)
+	    ((char_u **)evalarg->eval_tofree_ga.ga_data)
+		[evalarg->eval_tofree_ga.ga_len++]
+		= evalarg->eval_tofree;
+	else
+	    vim_free(evalarg->eval_tofree);
+    }
+}
+
+/*
+ * After using "evalarg" filled from "eap": free the memory.
+ */
+    void
+clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
+{
+    if (evalarg != NULL)
+    {
+	if (evalarg->eval_tofree != NULL)
+	{
+	    if (eap != NULL)
+	    {
+		// We may need to keep the original command line, e.g. for
+		// ":let" it has the variable names.  But we may also need the
+		// new one, "nextcmd" points into it.  Keep both.
+		vim_free(eap->cmdline_tofree);
+		eap->cmdline_tofree = *eap->cmdlinep;
+		*eap->cmdlinep = evalarg->eval_tofree;
+	    }
+	    else
+		vim_free(evalarg->eval_tofree);
+	    evalarg->eval_tofree = NULL;
+	}
+
+	ga_clear_strings(&evalarg->eval_tofree_ga);
+	VIM_CLEAR(evalarg->eval_tofree_lambda);
+    }
+}
+
+/*
  * Skip over an expression at "*pp".
  * Return FAIL for an error, OK otherwise.
  */
@@ -435,8 +501,8 @@ skip_expr_concatenate(
 		// Do not free the first line, the caller can still use it.
 		*((char_u **)gap->ga_data) = NULL;
 		// Do not free the last line, "arg" points into it, free it
-		// later.
-		vim_free(evalarg->eval_tofree);
+		// later.  Also free "eval_tofree" later if needed.
+		free_eval_tofree_later(evalarg);
 		evalarg->eval_tofree =
 				    ((char_u **)gap->ga_data)[gap->ga_len - 1];
 		((char_u **)gap->ga_data)[gap->ga_len - 1] = NULL;
@@ -637,8 +703,15 @@ deref_function_name(
 {
     typval_T	ref;
     char_u	*name = *arg;
+    int		save_flags = 0;
 
     ref.v_type = VAR_UNKNOWN;
+    if (evalarg != NULL)
+    {
+	// need to evaluate this to get an import, like in "a.Func"
+	save_flags = evalarg->eval_flags;
+	evalarg->eval_flags |= EVAL_EVALUATE;
+    }
     if (eval9(arg, &ref, evalarg, FALSE) == FAIL)
     {
 	dictitem_T	*v;
@@ -646,7 +719,10 @@ deref_function_name(
 	// If <SID>VarName was used it would not be found, try another way.
 	v = find_var_also_in_script(name, NULL, FALSE);
 	if (v == NULL)
-	    return NULL;
+	{
+	    name = NULL;
+	    goto theend;
+	}
 	copy_tv(&v->di_tv, &ref);
     }
     if (*skipwhite(*arg) != NUL)
@@ -682,7 +758,11 @@ deref_function_name(
 	    semsg(_(e_not_callable_type_str), name);
 	name = NULL;
     }
+
+theend:
     clear_tv(&ref);
+    if (evalarg != NULL)
+	evalarg->eval_flags = save_flags;
     return name;
 }
 
@@ -982,6 +1062,7 @@ get_lval(
 	    ufunc_T *ufunc;
 	    type_T *type;
 
+	    import_check_sourced_sid(&import->imp_sid);
 	    lp->ll_sid = import->imp_sid;
 	    lp->ll_name = skipwhite(p + 1);
 	    p = find_name_end(lp->ll_name, NULL, NULL, fne_flags);
@@ -2020,7 +2101,8 @@ set_context_for_expression(
     if ((cmdidx == CMD_execute
 		|| cmdidx == CMD_echo
 		|| cmdidx == CMD_echon
-		|| cmdidx == CMD_echomsg)
+		|| cmdidx == CMD_echomsg
+		|| cmdidx == CMD_echowindow)
 	    && xp->xp_context == EXPAND_EXPRESSION)
     {
 	for (;;)
@@ -2274,7 +2356,7 @@ eval_next_line(char_u *arg, evalarg_T *evalarg)
     }
     else if (evalarg->eval_cookie != NULL)
     {
-	vim_free(evalarg->eval_tofree);
+	free_eval_tofree_later(evalarg);
 	evalarg->eval_tofree = line;
     }
 
@@ -2299,45 +2381,6 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
     if (getnext)
 	return eval_next_line(arg, evalarg);
     return p;
-}
-
-/*
- * Initialize "evalarg" for use.
- */
-    void
-init_evalarg(evalarg_T *evalarg)
-{
-    CLEAR_POINTER(evalarg);
-    ga_init2(&evalarg->eval_tofree_ga, sizeof(char_u *), 20);
-}
-
-/*
- * After using "evalarg" filled from "eap": free the memory.
- */
-    void
-clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
-{
-    if (evalarg != NULL)
-    {
-	if (evalarg->eval_tofree != NULL)
-	{
-	    if (eap != NULL)
-	    {
-		// We may need to keep the original command line, e.g. for
-		// ":let" it has the variable names.  But we may also need the
-		// new one, "nextcmd" points into it.  Keep both.
-		vim_free(eap->cmdline_tofree);
-		eap->cmdline_tofree = *eap->cmdlinep;
-		*eap->cmdlinep = evalarg->eval_tofree;
-	    }
-	    else
-		vim_free(evalarg->eval_tofree);
-	    evalarg->eval_tofree = NULL;
-	}
-
-	ga_clear_strings(&evalarg->eval_tofree_ga);
-	VIM_CLEAR(evalarg->eval_tofree_lambda);
-    }
 }
 
 /*
@@ -4060,7 +4103,7 @@ eval9(
     // Handle following '[', '(' and '.' for expr[expr], expr.name,
     // expr(expr), expr->name(expr)
     if (ret == OK)
-	ret = handle_subscript(arg, name_start, rettv, evalarg, TRUE);
+	ret = handle_subscript(arg, name_start, rettv, evalarg, evaluate);
 
     /*
      * Apply logical NOT and unary '-', from right to left, ignore '+'.
@@ -4329,7 +4372,7 @@ eval_method(
     rettv->v_type = VAR_UNKNOWN;
 
     name = *arg;
-    len = get_name_len(arg, &alias, evaluate, TRUE);
+    len = get_name_len(arg, &alias, evaluate, evaluate);
     if (alias != NULL)
 	name = alias;
 
@@ -6690,6 +6733,7 @@ get_echo_attr(void)
 /*
  * ":execute expr1 ..."	execute the result of an expression.
  * ":echomsg expr1 ..."	Print a message
+ * ":echowindow expr1 ..." Print a message in the messages window
  * ":echoerr expr1 ..."	Print an error
  * ":echoconsole expr1 ..." Print a message on stdout
  * Each gets spaces around each argument and a newline at the end for
@@ -6761,7 +6805,9 @@ ex_execute(exarg_T *eap)
 	// use the first line of continuation lines for messages
 	SOURCING_LNUM = start_lnum;
 
-	if (eap->cmdidx == CMD_echomsg || eap->cmdidx == CMD_echoerr)
+	if (eap->cmdidx == CMD_echomsg
+		|| eap->cmdidx == CMD_echowindow
+		|| eap->cmdidx == CMD_echoerr)
 	{
 	    // Mark the already saved text as finishing the line, so that what
 	    // follows is displayed on a new line when scrolling back at the
@@ -6773,6 +6819,16 @@ ex_execute(exarg_T *eap)
 	{
 	    msg_attr(ga.ga_data, echo_attr);
 	    out_flush();
+	}
+	else if (eap->cmdidx == CMD_echowindow)
+	{
+#ifdef HAS_MESSAGE_WINDOW
+	    start_echowindow();
+#endif
+	    msg_attr(ga.ga_data, echo_attr);
+#ifdef HAS_MESSAGE_WINDOW
+	    end_echowindow();
+#endif
 	}
 	else if (eap->cmdidx == CMD_echoconsole)
 	{
@@ -6805,7 +6861,6 @@ ex_execute(exarg_T *eap)
 
     if (eap->skip)
 	--emsg_skip;
-
     set_nextcmd(eap, arg);
 }
 

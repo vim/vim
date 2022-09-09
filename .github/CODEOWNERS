@@ -98,6 +98,7 @@ runtime/doc/pi_tar.txt			@cecamp
 runtime/doc/pi_vimball.txt		@cecamp
 runtime/doc/pi_zip.txt			@cecamp
 runtime/doc/ps1.txt			@heaths
+runtime/ftplugin/abaqus.vim		@costerwi
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
@@ -107,14 +108,20 @@ runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
+runtime/ftplugin/desktop.vim		@e-kwsm
 runtime/ftplugin/dosbatch.vim		@mrdubya
 runtime/ftplugin/eiffel.vim		@dkearns
+runtime/ftplugin/expect.vim		@dkearns
 runtime/ftplugin/erlang.vim		@hcs42
 runtime/ftplugin/eruby.vim		@tpope @dkearns
+runtime/ftplugin/fennel.vim		@gpanders
 runtime/ftplugin/fetchmail.vim		@dkearns
 runtime/ftplugin/fpcmake.vim		@dkearns
 runtime/ftplugin/freebasic.vim		@dkearns
 runtime/ftplugin/fstab.vim		@rid9
+runtime/ftplugin/gdb.vim		@xeyownt
+runtime/ftplugin/gdscript.vim		@habamax
+runtime/ftplugin/gdshader.vim		@habamax
 runtime/ftplugin/git.vim		@tpope
 runtime/ftplugin/gitcommit.vim		@tpope
 runtime/ftplugin/gitconfig.vim		@tpope
@@ -124,6 +131,7 @@ runtime/ftplugin/go.vim			@dbarnett
 runtime/ftplugin/gprof.vim		@dpelle
 runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hgcommit.vim		@k-takata
+runtime/ftplugin/html.vim		@dkearns
 runtime/ftplugin/i3config.vim		@hiqua
 runtime/ftplugin/icon.vim		@dkearns
 runtime/ftplugin/indent.vim		@dkearns
@@ -169,6 +177,7 @@ runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/sdoc.vim		@gpanders
 runtime/ftplugin/solution.vim		@dkearns
 runtime/ftplugin/spec.vim		@ignatenkobrain
+runtime/ftplugin/swayconfig.vim		@jamespeapen
 runtime/ftplugin/systemverilog.vim	@Kocha
 runtime/ftplugin/tap.vim		@petdance
 runtime/ftplugin/tcsh.vim		@dkearns
@@ -204,6 +213,7 @@ runtime/indent/eterm.vim		@dkearns
 runtime/indent/falcon.vim		@steveno
 runtime/indent/framescript.vim		@dkearns
 runtime/indent/freebasic.vim		@dkearns
+runtime/indent/gdscript.vim		@habamax
 runtime/indent/gitconfig.vim		@tpope
 runtime/indent/gitolite.vim		@sitaramc
 runtime/indent/go.vim			@dbarnett
@@ -261,6 +271,7 @@ runtime/plugin/netrwPlugin.vim		@cecamp
 runtime/plugin/tarPlugin.vim		@cecamp
 runtime/plugin/vimballPlugin.vim	@cecamp
 runtime/plugin/zipPlugin.vim		@cecamp
+runtime/syntax/abaqus.vim		@costerwi
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/amiga.vim		@cecamp
 runtime/syntax/arduino.vim		@johshoff
@@ -297,13 +308,18 @@ runtime/syntax/eiffel.vim		@jocelyn
 runtime/syntax/elmfilt.vim		@cecamp
 runtime/syntax/erlang.vim		@hcs42
 runtime/syntax/eruby.vim		@tpope @dkearns
+runtime/syntax/expect.vim		@dkearns
 runtime/syntax/exports.vim		@cecamp
 runtime/syntax/falcon.vim		@steveno
+runtime/syntax/fennel.vim		@gpanders
 runtime/syntax/fetchmail.vim		@dkearns
 runtime/syntax/forth.vim		@jkotlinski
 runtime/syntax/fpcmake.vim		@dkearns
 runtime/syntax/freebasic.vim		@dkearns
 runtime/syntax/fstab.vim		@rid9
+runtime/syntax/gdresource.vim		@habamax
+runtime/syntax/gdscript.vim		@habamax
+runtime/syntax/gdshader.vim		@habamax
 runtime/syntax/git.vim			@tpope
 runtime/syntax/gitcommit.vim		@tpope
 runtime/syntax/gitconfig.vim		@tpope
@@ -316,6 +332,7 @@ runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/haml.vim			@tpope
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
+runtime/syntax/html.vim			@dkearns
 runtime/syntax/i3config.vim		@hiqua
 runtime/syntax/icon.vim			@dkearns
 runtime/syntax/indent.vim		@dkearns
@@ -387,6 +404,7 @@ runtime/syntax/sshconfig.vim		@Jakuje
 runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/sudoers.vim		@e-kwsm
 runtime/syntax/svn.vim			@hdima
+runtime/syntax/swayconfig.vim       @jamespeapen
 runtime/syntax/systemverilog.vim	@Kocha
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/tap.vim			@petdance

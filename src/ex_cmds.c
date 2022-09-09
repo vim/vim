@@ -1150,7 +1150,8 @@ do_filter(
 #if defined(FEAT_EVAL)
 	if (!aborting())
 #endif
-	    (void)semsg(_(e_cant_create_file_str), itmp);	// will call wait_return
+	    // will call wait_return()
+	    (void)semsg(_(e_cant_create_file_str), itmp);
 	goto filterend;
     }
     if (curbuf != old_curbuf)
@@ -1184,7 +1185,7 @@ do_filter(
 	    vim_free(cmd_buf);
 	    goto error;
 	}
-	redraw_curbuf_later(VALID);
+	redraw_curbuf_later(UPD_VALID);
     }
     read_linecount = curbuf->b_ml.ml_line_count;
 
@@ -1677,12 +1678,7 @@ append_redir(
 						  (char *)opt, (char *)fname);
     }
     else
-	vim_snprintf((char *)end, (size_t)(buflen - (end - buf)),
-#ifdef FEAT_QUICKFIX
-		" %s %s",
-#else
-		" %s%s",	// " > %s" causes problems on Amiga
-#endif
+	vim_snprintf((char *)end, (size_t)(buflen - (end - buf)), " %s %s",
 		(char *)opt, (char *)fname);
 }
 
@@ -1947,11 +1943,7 @@ do_write(exarg_T *eap)
      * and a file name is required.
      * "nofile" and "nowrite" buffers cannot be written implicitly either.
      */
-    if (!other && (
-#ifdef FEAT_QUICKFIX
-		bt_dontwrite_msg(curbuf) ||
-#endif
-		check_fname() == FAIL
+    if (!other && (bt_dontwrite_msg(curbuf) || check_fname() == FAIL
 #ifdef UNIX
 		|| check_writable(curbuf->b_ffname) == FAIL
 #endif
@@ -2101,12 +2093,17 @@ check_overwrite(
     /*
      * Write to another file or b_flags set or not writing the whole file:
      * overwriting only allowed with '!'.
+     * If "other" is FALSE and bt_nofilename(buf) is TRUE, this must be
+     * writing an "acwrite" buffer to the same file as its b_ffname, and
+     * buf_write() will only allow writing with BufWriteCmd autocommands,
+     * so there is no need for an overwrite check.
      */
     if (       (other
-		|| (buf->b_flags & BF_NOTEDITED)
-		|| ((buf->b_flags & BF_NEW)
-		    && vim_strchr(p_cpo, CPO_OVERNEW) == NULL)
-		|| (buf->b_flags & BF_READERR))
+		|| (!bt_nofilename(buf)
+		    && ((buf->b_flags & BF_NOTEDITED)
+			|| ((buf->b_flags & BF_NEW)
+			    && vim_strchr(p_cpo, CPO_OVERNEW) == NULL)
+			|| (buf->b_flags & BF_READERR))))
 	    && !p_wa
 	    && vim_fexists(ffname))
     {
@@ -2973,6 +2970,11 @@ do_ecmd(
     // Assume success now
     retval = OK;
 
+    // If the file name was changed, reset the not-edit flag so that ":write"
+    // works.
+    if (!other_file)
+	curbuf->b_flags &= ~BF_NOTEDITED;
+
     /*
      * Check if we are editing the w_arg_idx file in the argument list.
      */
@@ -3179,7 +3181,7 @@ do_ecmd(
 	update_topline();
 	curwin->w_scbind_pos = curwin->w_topline;
 	*so_ptr = n;
-	redraw_curbuf_later(NOT_VALID);	// redraw this buffer later
+	redraw_curbuf_later(UPD_NOT_VALID);	// redraw this buffer later
     }
 
     if (p_im && (State & MODE_INSERT) == 0)
@@ -3703,6 +3705,9 @@ ex_substitute(exarg_T *eap)
     int		save_ma = 0;
     int		save_sandbox = 0;
 #endif
+#ifdef FEAT_PROP_POPUP
+    textprop_T	*text_props = NULL;
+#endif
 
     cmd = eap->arg;
     if (!global_busy)
@@ -4035,6 +4040,7 @@ ex_substitute(exarg_T *eap)
 #ifdef FEAT_PROP_POPUP
 	    int		apc_flags = APC_SAVE_FOR_UNDO | APC_SUBSTITUTE;
 	    colnr_T	total_added =  0;
+	    int		text_prop_count = 0;
 #endif
 
 	    /*
@@ -4306,9 +4312,9 @@ ex_substitute(exarg_T *eap)
 
 			    update_topline();
 			    validate_cursor();
-			    update_screen(SOME_VALID);
+			    update_screen(UPD_SOME_VALID);
 			    highlight_match = FALSE;
-			    redraw_later(SOME_VALID);
+			    redraw_later(UPD_SOME_VALID);
 
 #ifdef FEAT_FOLDING
 			    curwin->w_p_fen = save_p_fen;
@@ -4321,7 +4327,7 @@ ex_substitute(exarg_T *eap)
 							// needed
 			    msg_no_more = TRUE;
 			    // write message same highlighting as for
-			    // wait_return
+			    // wait_return()
 			    smsg_attr(HL_ATTR(HLF_R),
 				_("replace with %s (y/n/a/q/l/^E/^Y)?"), sub);
 			    msg_no_more = FALSE;
@@ -4487,8 +4493,59 @@ ex_substitute(exarg_T *eap)
 		}
 		else
 		{
-		    p1 = ml_get(sub_firstlnum + nmatch - 1);
+		    linenr_T	lastlnum = sub_firstlnum + nmatch - 1;
+#ifdef FEAT_PROP_POPUP
+		    if (curbuf->b_has_textprop)
+		    {
+			char_u	*prop_start;
+
+			// Props in the first line may be shortened or deleted
+			if (adjust_prop_columns(lnum,
+					total_added + regmatch.startpos[0].col,
+						       -MAXCOL, apc_flags))
+			    apc_flags &= ~APC_SAVE_FOR_UNDO;
+			total_added -= (colnr_T)STRLEN(
+				     sub_firstline + regmatch.startpos[0].col);
+
+			// Props in the last line may be moved or deleted
+			if (adjust_prop_columns(lastlnum,
+					0, -regmatch.endpos[0].col, apc_flags))
+			    // When text properties are changed, need to save
+			    // for undo first, unless done already.
+			    apc_flags &= ~APC_SAVE_FOR_UNDO;
+
+			// Copy the text props of the last line, they will be
+			// later appended to the changed line.
+			text_prop_count = get_text_props(curbuf, lastlnum,
+							   &prop_start, FALSE);
+			if (text_prop_count > 0)
+			{
+			    // TODO: what when we already did this?
+			    vim_free(text_props);
+			    text_props = ALLOC_MULT(textprop_T,
+							      text_prop_count);
+			    if (text_props != NULL)
+			    {
+				int pi;
+
+				mch_memmove(text_props, prop_start,
+					 text_prop_count * sizeof(textprop_T));
+				// After joining the text prop columns will
+				// increase.
+				for (pi = 0; pi < text_prop_count; ++pi)
+				    text_props[pi].tp_col +=
+					 regmatch.startpos[0].col + sublen - 1;
+			    }
+			}
+		    }
+#endif
+		    p1 = ml_get(lastlnum);
 		    nmatch_tl += nmatch - 1;
+#ifdef FEAT_PROP_POPUP
+		    if (curbuf->b_has_textprop)
+			total_added += (colnr_T)STRLEN(
+						  p1 + regmatch.endpos[0].col);
+#endif
 		}
 		copy_len = regmatch.startpos[0].col - copycol;
 		needed_len = copy_len + ((unsigned)STRLEN(p1)
@@ -4694,7 +4751,10 @@ skip:
 			if (u_savesub(lnum) != OK)
 			    break;
 			ml_replace(lnum, new_start, TRUE);
-
+#ifdef FEAT_PROP_POPUP
+			if (text_props != NULL)
+			    add_text_props(lnum, text_props, text_prop_count);
+#endif
 			if (nmatch_tl > 0)
 			{
 			    /*
@@ -4778,6 +4838,10 @@ skip:
 
 outofmem:
     vim_free(sub_firstline); // may have to free allocated copy of the line
+
+#ifdef FEAT_PROP_POPUP
+    vim_free(text_props);
+#endif
 
     // ":s/pat//n" doesn't move the cursor
     if (subflags.do_count)
@@ -5190,7 +5254,7 @@ prepare_tagpreview(
 		    popup_hide(wp);
 		// When the popup moves or resizes it may reveal part of
 		// another window.  TODO: can this be done more efficiently?
-		redraw_all_later(NOT_VALID);
+		redraw_all_later(UPD_NOT_VALID);
 	    }
 	}
 	else

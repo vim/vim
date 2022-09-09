@@ -306,9 +306,9 @@ func Test_q_arg()
   call writefile(lines, 'Xbadfile.c')
 
   let after =<< trim [CODE]
-    call writefile([&errorfile, string(getpos("."))], "Xtestout")
+    call writefile([&errorfile, string(getpos("."))], "XtestoutQarg")
     copen
-    w >> Xtestout
+    w >> XtestoutQarg
     qall
   [CODE]
 
@@ -316,30 +316,30 @@ func Test_q_arg()
   call assert_equal('errors.err', &errorfile)
   call writefile(["Xbadfile.c:4:12: error: expected ';' before '}' token"], 'errors.err')
   if RunVim([], after, '-q')
-    let lines = readfile('Xtestout')
+    let lines = readfile('XtestoutQarg')
     call assert_equal(['errors.err',
 	\              '[0, 4, 12, 0]',
 	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
 	\             lines)
   endif
-  call delete('Xtestout')
+  call delete('XtestoutQarg')
   call delete('errors.err')
 
-  " Test with explicit argument '-q Xerrors' (with space).
-  call writefile(["Xbadfile.c:4:12: error: expected ';' before '}' token"], 'Xerrors')
-  if RunVim([], after, '-q Xerrors')
-    let lines = readfile('Xtestout')
-    call assert_equal(['Xerrors',
+  " Test with explicit argument '-q XerrorsQarg' (with space).
+  call writefile(["Xbadfile.c:4:12: error: expected ';' before '}' token"], 'XerrorsQarg')
+  if RunVim([], after, '-q XerrorsQarg')
+    let lines = readfile('XtestoutQarg')
+    call assert_equal(['XerrorsQarg',
 	\              '[0, 4, 12, 0]',
 	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
 	\             lines)
   endif
-  call delete('Xtestout')
+  call delete('XtestoutQarg')
 
-  " Test with explicit argument '-qXerrors' (without space).
-  if RunVim([], after, '-qXerrors')
-    let lines = readfile('Xtestout')
-    call assert_equal(['Xerrors',
+  " Test with explicit argument '-qXerrorsQarg' (without space).
+  if RunVim([], after, '-qXerrorsQarg')
+    let lines = readfile('XtestoutQarg')
+    call assert_equal(['XerrorsQarg',
 	\              '[0, 4, 12, 0]',
 	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
 	\             lines)
@@ -350,8 +350,8 @@ func Test_q_arg()
   call assert_equal(3, v:shell_error)
 
   call delete('Xbadfile.c')
-  call delete('Xtestout')
-  call delete('Xerrors')
+  call delete('XtestoutQarg')
+  call delete('XerrorsQarg')
 endfunc
 
 " Test the -V[N]{filename} argument to set the 'verbose' option to N
@@ -1064,13 +1064,13 @@ func Test_exrc()
     call writefile(v:errors, 'Xtestout')
     qall
   [CODE]
-  call mkdir('Xdir')
-  call writefile(['let exrc_found=37'], 'Xdir/.exrc')
-  call writefile(after, 'Xdir/Xafter')
-  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "cd Xdir" --cmd "set enc=utf8 exrc secure"'
+  call mkdir('Xrcdir')
+  call writefile(['let exrc_found=37'], 'Xrcdir/.exrc')
+  call writefile(after, 'Xrcdir/Xafter')
+  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "cd Xrcdir" --cmd "set enc=utf8 exrc secure"'
   exe "silent !" . cmd
-  call assert_equal([], readfile('Xdir/Xtestout'))
-  call delete('Xdir', 'rf')
+  call assert_equal([], readfile('Xrcdir/Xtestout'))
+  call delete('Xrcdir', 'rf')
 endfunc
 
 " Test for starting Vim with a non-terminal as input/output
@@ -1125,10 +1125,10 @@ func Test_w_arg()
   " Test for failing to open the script output file. This test works only when
   " the language is English.
   if v:lang == "C" || v:lang =~ '^[Ee]n'
-    call mkdir("Xdir")
-    let m = system(GetVimCommand() .. " -w Xdir")
-    call assert_equal("Cannot open for script output: \"Xdir\"\n", m)
-    call delete("Xdir", 'rf')
+    call mkdir("Xargdir")
+    let m = system(GetVimCommand() .. " -w Xargdir")
+    call assert_equal("Cannot open for script output: \"Xargdir\"\n", m)
+    call delete("Xargdir", 'rf')
   endif
 
   " A number argument sets the 'window' option

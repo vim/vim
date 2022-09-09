@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim_ru\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-29 13:47+0300\n"
-"PO-Revision-Date: 2022-07-06 17:23+0300\n"
+"POT-Creation-Date: 2022-07-24 18:31+0300\n"
+"PO-Revision-Date: 2022-07-24 18:35+0300\n"
 "Last-Translator: Matvey Tarasov <matthewtarasov@yandex.ru>\n"
 "Language-Team: \n"
 "Language: Russian\n"
@@ -47,7 +47,7 @@ msgstr "--Удалено--"
 
 #, c-format
 msgid "auto-removing autocommand: %s <buffer=%d>"
-msgstr "авто-удаление автокоманды: %s <буфер=%d>"
+msgstr "автоудаление автокоманды: %s <буфер=%d>"
 
 msgid "W19: Deleting augroup that is still in use"
 msgstr "W19: Удаление ещё используемой группы автокоманд"
@@ -65,7 +65,7 @@ msgstr "Нет подходящих автокоманд: %s"
 
 #, c-format
 msgid "%s Autocommands for \"%s\""
-msgstr "%s Автокоманды для \"%s\""
+msgstr "%s автокоманда для шаблона \"%s\""
 
 #, c-format
 msgid "Executing %s"
@@ -104,9 +104,9 @@ msgstr[2] "Удалено %d буферов"
 #, c-format
 msgid "%d buffer wiped out"
 msgid_plural "%d buffers wiped out"
-msgstr[0] "Очищен %d буфер"
-msgstr[1] "Очищено %d буфера"
-msgstr[2] "Очищено %d буферов"
+msgstr[0] "Стёрт %d буфер"
+msgstr[1] "Стёрто %d буфера"
+msgstr[2] "Стёрто %d буферов"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Предупреждение: переполнение списка имён файлов"
@@ -163,7 +163,7 @@ msgid "Top"
 msgstr "Наверху"
 
 msgid "[Prompt]"
-msgstr "[Уведомление]"
+msgstr "[Запрос]"
 
 msgid "[Popup]"
 msgstr "[Всплывающий]"
@@ -194,7 +194,7 @@ msgid "[NOT converted]"
 msgstr "[БЕЗ преобразований]"
 
 msgid "[converted]"
-msgstr "[перекодировано]"
+msgstr "[преобразовано]"
 
 msgid "[Device]"
 msgstr "[Устройство]"
@@ -231,14 +231,14 @@ msgid ": Send failed.\n"
 msgstr ": Отправка не удалась.\n"
 
 msgid ": Send failed. Trying to execute locally\n"
-msgstr ": Отправка не удалась. Попытка местного выполнения\n"
+msgstr ": Отправка не удалась. Попытка выполнить локально\n"
 
 #, c-format
 msgid "%d of %d edited"
 msgstr "отредактировано %d из %d"
 
 msgid "No display: Send expression failed.\n"
-msgstr "Нет дисплея: отправка выражения не удалась.\n"
+msgstr "Нет дисплея, отправка выражения не удалась.\n"
 
 msgid ": Send expression failed.\n"
 msgstr ": Отправка выражения не удалась.\n"
@@ -303,10 +303,10 @@ msgstr "максимальный фрейм: %d"
 
 #, c-format
 msgid "Breakpoint in \"%s%s\" line %ld"
-msgstr "Точка остановки в \"%s%s\" стр. %ld"
+msgstr "Точка останова в \"%s%s\" стр. %ld"
 
 msgid "No breakpoints defined"
-msgstr "Точки остановки не определены"
+msgstr "Точки останова не определены"
 
 #, c-format
 msgid "%3d  %s %s  line %ld"
@@ -327,37 +327,37 @@ msgid "Patch file"
 msgstr "Файл-заплатка"
 
 msgid "Custom"
-msgstr "Специальные"
+msgstr "Частная область"
 
 msgid "Latin supplement"
-msgstr "Латынь дополненная"
+msgstr "Дополнение к латинице"
 
 msgid "Greek and Coptic"
-msgstr "Греческий и Коптский"
+msgstr "Греческое и коптское письмо"
 
 msgid "Cyrillic"
 msgstr "Кириллица"
 
 msgid "Hebrew"
-msgstr "Иврит"
+msgstr "Еврейское письмо"
 
 msgid "Arabic"
-msgstr "Арабский"
+msgstr "Арабское письмо"
 
 msgid "Latin extended"
-msgstr "Латынь расширенная"
+msgstr "Расширенная латиница"
 
 msgid "Greek extended"
-msgstr "Греческий расширенный"
+msgstr "Расширенное греческое письмо"
 
 msgid "Punctuation"
-msgstr "Пунктуация"
+msgstr "Основная пунктуация"
 
 msgid "Super- and subscripts"
-msgstr "Над- и подстрочные"
+msgstr "Надстрочные и подстрочные знаки"
 
 msgid "Currency"
-msgstr "Валюта"
+msgstr "Знаки валют"
 
 msgid "Other"
 msgstr "Прочее"
@@ -372,7 +372,7 @@ msgid "Mathematical operators"
 msgstr "Математические операторы"
 
 msgid "Technical"
-msgstr "Техника"
+msgstr "Разные технические знаки"
 
 msgid "Box drawing"
 msgstr "Псевдографика"
@@ -384,13 +384,13 @@ msgid "Geometric shapes"
 msgstr "Геометрические фигуры"
 
 msgid "Symbols"
-msgstr "Символы"
+msgstr "Разные символы"
 
 msgid "Dingbats"
-msgstr "Орнамент"
+msgstr "Декоративные символы"
 
 msgid "CJK symbols and punctuation"
-msgstr "Китайские, Японские и Корейские символы и пунктуация"
+msgstr "Китайские, корейские и японские символы и пунктуация"
 
 msgid "Hiragana"
 msgstr "Хирагана"
@@ -399,7 +399,7 @@ msgid "Katakana"
 msgstr "Катакана"
 
 msgid "Bopomofo"
-msgstr "Чжуинь (бопомофо)"
+msgstr "Чжуинь фухао (бопомофо)"
 
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr "Недостаточно памяти для установки ссылок — сборка мусора прекращена!"
@@ -647,7 +647,7 @@ msgstr "Обработка исключительной ситуации: %s"
 
 #, c-format
 msgid "%s made pending"
-msgstr "%s выполняет ожидание"
+msgstr "%s приостановлено"
 
 #, c-format
 msgid "%s resumed"
@@ -703,7 +703,7 @@ msgid "[fifo]"
 msgstr "[fifo]"
 
 msgid "[socket]"
-msgstr "[гнездо]"
+msgstr "[сокет]"
 
 msgid "[character special]"
 msgstr "[специальный символьный]"
@@ -726,7 +726,7 @@ msgid "[READ ERRORS]"
 msgstr "[ОШИБКИ ЧТЕНИЯ]"
 
 msgid "Can't find temp file for conversion"
-msgstr "Временный файл для перекодирования не найден"
+msgstr "Временный файл для преобразования не найден"
 
 msgid "Conversion with 'charconvert' failed"
 msgstr "Преобразование с помощью 'charconvert' не выполнено"
@@ -794,8 +794,8 @@ msgstr "См. \":help W11\" для дополнительной информации."
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr ""
-"W16: Предупреждение: режим доступа к файлу \"%s\" был изменён после начала "
-"редактирования"
+"W16: Предупреждение: режим доступа к файлу \"%s\" был изменён после "
+"начала редактирования"
 
 msgid "See \":help W16\" for more info."
 msgstr "См. \":help W16\" для дополнительной информации."
@@ -1091,7 +1091,7 @@ msgid "Show this message"
 msgstr "Показать это сообщение"
 
 msgid "Kill a connection"
-msgstr "Убить соединение"
+msgstr "Разорвать соединение"
 
 msgid "Reinit all connections"
 msgstr "Заново инициализировать все соединения"
@@ -1264,7 +1264,7 @@ msgid "unknown vimOption"
 msgstr "неизвестная vimOption"
 
 msgid "keyboard interrupt"
-msgstr "клавиатурное прерывание"
+msgstr "прервано с клавиатуры"
 
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "невозможно создать команду буфера или окна: объект в процессе удаления"
@@ -1449,11 +1449,10 @@ msgid "netbeans is not supported with this GUI\n"
 msgstr "NetBeans не поддерживается с этим графическим интерфейсом\n"
 
 msgid "'-nb' cannot be used: not enabled at compile time\n"
-msgstr "Невозможно использовать '-nb': не включено при компиляции\n"
+msgstr "Невозможно использовать '-nb': выключено при компиляции\n"
 
 msgid "This Vim was not compiled with the diff feature."
-msgstr ""
-"Данный Vim был скомпилирован с выключенной особенностью просмотра отличий."
+msgstr "Эта версия Vim была собрана без особенности просмотра отличий."
 
 msgid "Attempt to open script file again: \""
 msgstr "Попытка повторного открытия файла сценария: \""
@@ -1552,7 +1551,7 @@ msgid "-g\t\t\tRun using GUI (like \"gvim\")"
 msgstr "-g\t\t\tЗапустить с графическим интерфейсом (как \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
-msgstr "-f  или --nofork\tВ активной задаче: Не выполнять fork при запуске GUI"
+msgstr "-f  или --nofork\tВ активной задаче: не выполнять fork при запуске GUI"
 
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tРежим Vi (как \"vi\")"
@@ -1624,10 +1623,10 @@ msgid "-dev <device>\t\tUse <device> for I/O"
 msgstr "-dev <устройство>\t\tИспользовать для I/O указанное <устройство>"
 
 msgid "-A\t\t\tStart in Arabic mode"
-msgstr "-A\t\t\tЗапуск в Арабском режиме"
+msgstr "-A\t\t\tЗапуск с поддержкой арабского языка"
 
 msgid "-H\t\t\tStart in Hebrew mode"
-msgstr "-H\t\t\tЗапуск в режиме \"Иврит\""
+msgstr "-H\t\t\tЗапуск с поддержкой иврита"
 
 msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <терминал>\tНазначить указанный тип <терминала>"
@@ -1653,13 +1652,13 @@ msgstr "--noplugin\t\tНе загружать сценарии модулей"
 # \n\t\t.. для умещения в 80 столбцов
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
 msgstr ""
-"-p[N]\t\tОткрыть N вкладок (по умолчанию: по одной\n"
+"-p[N]\t\tОткрыть N вкладок (по умолчанию по одной\n"
 "\t\t\t\tна каждый файл)"
 
 # \n\t\t.. для умещения в 80 столбцов
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr ""
-"-o[N]\t\tОткрыть N окон (по умолчанию: по одному\n"
+"-o[N]\t\tОткрыть N окон (по умолчанию по одному\n"
 "\t\t\t\tна каждый файл)"
 
 msgid "-O[N]\t\tLike -o but split vertically"
@@ -1699,10 +1698,10 @@ msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tРедактирование зашифрованных файлов"
 
 msgid "-display <display>\tConnect Vim to this particular X-server"
-msgstr "-display <экран>\tПодсоединить Vim к указанному X-серверу"
+msgstr "-display <дисплей>\tСоединить Vim с указанным X-сервером"
 
 msgid "-X\t\t\tDo not connect to X server"
-msgstr "-X\t\t\tНе выполнять соединение с сервером X"
+msgstr "-X\t\t\tНе выполнять соединение с X-сервером"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <файлы>\tПо возможности редактировать <файлы> на сервере Vim"
@@ -1732,14 +1731,15 @@ msgid "--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"
 msgstr "--remote-expr <выраж>\tВычислить <выраж> на сервере Vim и напечатать"
 
 msgid "--serverlist\t\tList available Vim server names and exit"
-msgstr "--serverlist\t\tПоказать список имён серверов Vim и завершить работу"
+msgstr "--serverlist\t\tПоказать список серверов Vim и завершить работу"
 
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr ""
-"--servername <имя>\tОтправить на/стать сервером Vim с указанным <именем>"
+"--servername <имя>\tОтправить на сервер или стать сервером Vim\n"
+"\t\t\t\tс указанным <именем>"
 
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
-msgstr "--startuptime <файл>\tЗаписать временную метку о запуске в <файл>"
+msgstr "--startuptime <файл>\tЗаписать временные метки запуска в <файл>"
 
 msgid "--log <file>\tStart logging to <file> early"
 msgstr ""
@@ -1984,14 +1984,14 @@ msgid "and run diff with the original file to check for changes)"
 msgstr "файлом при помощи программы diff)"
 
 msgid "Recovery completed. Buffer contents equals file contents."
-msgstr "Восстановление завершено. Содержимое буферов и файлов эквивалентно."
+msgstr "Восстановление завершено. Содержимое буфера и файла эквивалентно."
 
 msgid ""
 "\n"
 "You may want to delete the .swp file now."
 msgstr ""
 "\n"
-"Вероятно, сейчас вы захотите удалить файл .swp."
+"Файл .swp теперь можно удалить."
 
 msgid ""
 "\n"
@@ -2304,7 +2304,7 @@ msgstr "Би-би!"
 
 #, c-format
 msgid "Calling shell to execute: \"%s\""
-msgstr "Вызов оболочки для исполнения: \"%s\""
+msgstr "Вызов оболочки для выполнения \"%s\""
 
 msgid "Warning: terminal cannot highlight"
 msgstr "Предупреждение: терминал не может выполнять подсветку"
@@ -2381,7 +2381,8 @@ msgstr "(+%lld с учётом BOM)"
 
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
 msgstr ""
-"W17: Арабский требует использования UTF-8, введите ':set encoding=utf-8'"
+"W17: Арабский язык поддерживается только с UTF-8, введите "
+"':set encoding=utf-8'"
 
 msgid ""
 "\n"
@@ -2532,7 +2533,7 @@ msgid ""
 "Cannot create pipes\n"
 msgstr ""
 "\n"
-"Невозможно создать трубы\n"
+"Невозможно создать конвейер\n"
 
 msgid ""
 "\n"
@@ -2695,10 +2696,10 @@ msgid " (vreplace)"
 msgstr " (виртуальная замена)"
 
 msgid " Hebrew"
-msgstr " Иврит"
+msgstr " иврит"
 
 msgid " Arabic"
-msgstr " Арабский"
+msgstr " арабский"
 
 msgid " (paste)"
 msgstr " (вклейка)"
@@ -3113,7 +3114,7 @@ msgid "Estimated runtime memory use: %d bytes"
 msgstr "Оценка использования памяти при выполнении: %d байтов"
 
 msgid "Warning: both compounding and NOBREAK specified"
-msgstr "Предупреждение: флаги \"составной\" и NOBREAK указаны вместе"
+msgstr "Предупреждение: правило для составных слов указано вместе с NOBREAK"
 
 #, c-format
 msgid "Writing spell file %s..."
@@ -3511,7 +3512,7 @@ msgid ""
 "Compiled "
 msgstr ""
 "\n"
-"Скомпилировано: "
+"Скомпилировано"
 
 msgid "by "
 msgstr " "
@@ -3751,7 +3752,7 @@ msgid ""
 "# Bar lines, copied verbatim:\n"
 msgstr ""
 "\n"
-"# Строк с '|', точно скопировано:\n"
+"# Строки с '|' скопированы дословно:\n"
 
 #, c-format
 msgid "%sviminfo: %s in line: "
@@ -3944,10 +3945,10 @@ msgstr ""
 "компиляции"
 
 msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
-msgstr "E26: Иврит выключен при компиляции\n"
+msgstr "E26: Поддержка иврита выключена при компиляции\n"
 
 msgid "E27: Farsi support has been removed\n"
-msgstr "E27: Поддержка Персидского была удалена\n"
+msgstr "E27: Поддержка персидского языка была удалена\n"
 
 #, c-format
 msgid "E28: No such highlight group name: %s"
@@ -4052,7 +4053,7 @@ msgstr "E59: Недопустимый символ после %s@"
 
 #, c-format
 msgid "E60: Too many complex %s{...}s"
-msgstr "E60: Слишком много сложных конструкций %s{...}"
+msgstr "E60: Чересчур много сложных квантификаторов %s{...}"
 
 #, c-format
 msgid "E61: Nested %s*"
@@ -4076,7 +4077,7 @@ msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( не может быть использовано здесь"
 
 msgid "E67: \\z1 - \\z9 not allowed here"
-msgstr "E67: \\z1 и т.п. не могут быть использованы здесь"
+msgstr "E67: \\z1 и т.п. здесь не разрешены"
 
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Недопустимый символ после \\z"
@@ -4133,7 +4134,7 @@ msgid "E84: No modified buffer found"
 msgstr "E84: Изменённых буферов не обнаружено"
 
 msgid "E85: There is no listed buffer"
-msgstr "E85: Буферы в списке отсутствуют"
+msgstr "E85: Список буферов пуст"
 
 #, c-format
 msgid "E86: Buffer %ld does not exist"
@@ -4154,7 +4155,7 @@ msgid "E90: Cannot unload last buffer"
 msgstr "E90: Невозможно выгрузить из памяти последний буфер"
 
 msgid "E91: 'shell' option is empty"
-msgstr "E91: Значением опции 'shell' является пустая строка"
+msgstr "E91: Значение опции 'shell' не задано"
 
 #, c-format
 msgid "E92: Buffer %d not found"
@@ -4338,7 +4339,7 @@ msgstr "E142: Файл не сохранён: запись отключена опцией 'write'"
 
 #, c-format
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
-msgstr "E143: Автокоманды неожиданно убили новый буфер %s"
+msgstr "E143: Автокоманды неожиданно удалили новый буфер %s"
 
 msgid "E144: Non-numeric argument to :z"
 msgstr "E144: Параметр команды :z должен быть числом"
@@ -4405,7 +4406,7 @@ msgstr "E160: Неизвестная команда значка %s"
 
 #, c-format
 msgid "E161: Breakpoint not found: %s"
-msgstr "E161: Точка остановки не найдена: %s"
+msgstr "E161: Точка останова не найдена: %s"
 
 #, c-format
 msgid "E162: No write since last change for buffer \"%s\""
@@ -4421,7 +4422,7 @@ msgid "E165: Cannot go beyond last file"
 msgstr "E165: Это последний файл"
 
 msgid "E166: Can't open linked file for writing"
-msgstr "E166: Невозможно открыть файл по ссылке для записи"
+msgstr "E166: Файл по ссылке не доступен для записи"
 
 msgid "E167: :scriptencoding used outside of a sourced file"
 msgstr "E167: Команда :scriptencoding используется вне файла сценария"
@@ -4547,7 +4548,7 @@ msgid "E201: *ReadPre autocommands must not change current buffer"
 msgstr "E201: Автокоманды *ReadPre не должны изменять активный буфер"
 
 msgid "E202: Conversion made file unreadable!"
-msgstr "E202: В результате преобразования файл стал нечитаемым!"
+msgstr "E202: В результате преобразования файл стал нечитаем!"
 
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
 msgstr ""
@@ -4586,7 +4587,7 @@ msgstr "E212: Невозможно открыть файл для записи"
 
 msgid "E213: Cannot convert (add ! to write without conversion)"
 msgstr ""
-"E213: Перекодировка невозможна (добавьте ! для записи без перекодировки)"
+"E213: Преобразование невозможно (добавьте ! для записи без преобразования)"
 
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Временный файл для записи не найден"
@@ -4718,7 +4719,7 @@ msgid "E248: Failed to send command to the destination program"
 msgstr "E248: Не удалась отправка команды в другую программу"
 
 msgid "E249: Window layout changed unexpectedly"
-msgstr "E249: Неожиданно изменилось расположение окна"
+msgstr "E249: Неожиданно изменилось расположение окон"
 
 #, c-format
 msgid "E250: Fonts for the following charsets are missing in fontset %s:"
@@ -4726,8 +4727,7 @@ msgstr "E250: В наборе шрифтов %s отсутствуют шрифты для следующих кодировок:"
 
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr ""
-"E251: Неправильно сформировано значение данного процесса VIM в реестре. "
-"Удалено!"
+"E251: Неправильно сформировано значение процесса VIM в реестре. Удалено!"
 
 #, c-format
 msgid "E252: Fontset name: %s - Font '%s' is not fixed-width"
@@ -4763,7 +4763,7 @@ msgstr "E261: Соединение с cscope %s не обнаружено"
 
 #, c-format
 msgid "E262: Error reading cscope connection %d"
-msgstr "E262: Ошибка чтения соединения cscope %d"
+msgstr "E262: Ошибка чтения из cscope, соединение %d"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
@@ -4826,8 +4826,8 @@ msgid ""
 "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
 "org"
 msgstr ""
-"E280: КРИТИЧЕСКАЯ ОШИБКА TCL: повреждён список ссылок?! Сообщите об этом по "
-"адресу vim-dev@vim.org"
+"E280: КРИТИЧЕСКАЯ ОШИБКА TCL: возможно, повреждён список ссылок. "
+"Пожалуйста, сообщите об этом по адресу vim-dev@vim.org"
 
 #, c-format
 msgid "E282: Cannot read from \"%s\""
@@ -5005,7 +5005,7 @@ msgid "E327: Part of menu-item path is not sub-menu"
 msgstr "E327: Компонент пути к элементу меню не является подменю"
 
 msgid "E328: Menu only exists in another mode"
-msgstr "E328: Меню в этом режиме не существует"
+msgstr "E328: Меню существует только в другом режиме"
 
 #, c-format
 msgid "E329: No menu \"%s\""
@@ -5131,7 +5131,7 @@ msgstr "E363: Шаблон использует больше памяти, чем 'maxmempattern'"
 
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
-msgstr "E364: Неудачный вызов функции \"%s()\" из библиотеки"
+msgstr "E364: Неудачный вызов \"%s()\" из сторонней библиотеки"
 
 msgid "E365: Failed to print PostScript file"
 msgstr "E365: Не удалось выполнить печать файла PostScript"
@@ -5195,7 +5195,7 @@ msgstr "E381: Наверху стека быстрых исправлений"
 
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr ""
-"E382: Запись невозможна: значение опции 'buftype' не является пустой строкой"
+"E382: Запись невозможна: опция 'buftype' не пуста"
 
 #, c-format
 msgid "E383: Invalid search string: %s"
@@ -5310,7 +5310,7 @@ msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Слишком много параметров: \":highlight link %s\""
 
 msgid "E414: Group has settings, highlight link ignored"
-msgstr "E414: У группы есть настройки — highlight link игнорируется"
+msgstr "E414: У группы есть настройки, highlight link игнорируется"
 
 #, c-format
 msgid "E415: Unexpected equal sign: %s"
@@ -5336,7 +5336,7 @@ msgstr "E420: Неизвестный цвет фона"
 
 #, c-format
 msgid "E421: Color name or number not recognized: %s"
-msgstr "E421: Имя или номер цвета не известно: %s"
+msgstr "E421: Имя или номер цвета неизвестно: %s"
 
 #, c-format
 msgid "E422: Terminal code too long: %s"
@@ -5440,7 +5440,7 @@ msgid "E451: Expected }: %s"
 msgstr "E451: Ожидалась скобка }: %s"
 
 msgid "E452: Double ; in list of variables"
-msgstr "E452: Двойная ; в списке переменных"
+msgstr "E452: Две точки с запятой в списке переменных"
 
 msgid "E453: UL color unknown"
 msgstr "E453: Неизвестный цвет подчёркивания"
@@ -5465,7 +5465,7 @@ msgstr "E457: Невозможно прочитать файл ресурсов PostScript \"%s\""
 
 msgid "E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr ""
-"E458: Невозможно выделить запись в таблице цвета — некоторые цвета могут "
+"E458: Невозможно выделить запись в таблице цветов — некоторые цвета могут "
 "отображаться неправильно"
 
 msgid "E459: Cannot go back to previous directory"
@@ -5507,7 +5507,7 @@ msgstr ""
 
 #, c-format
 msgid "E469: Invalid cscopequickfix flag %c for %c"
-msgstr "E469: Неправильный флаг cscopequickfix %c для %c"
+msgstr "E469: Неправильный флаг cscopequickfix %c после %c"
 
 msgid "E470: Command aborted"
 msgstr "E470: Выполнение команды прервано"
@@ -5627,7 +5627,7 @@ msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
 msgstr "E499: Пустое имя файла для '%' или '#' работает только c \":p:h\""
 
 msgid "E500: Evaluates to an empty string"
-msgstr "E500: Результатом выражения является пустая строка"
+msgstr "E500: Результатом является пустая строка"
 
 msgid "E501: At end-of-file"
 msgstr "E501: В конце файла"
@@ -5675,7 +5675,7 @@ msgid "E511: NetBeans already connected"
 msgstr "E511: Уже соединён с NetBeans"
 
 msgid "E512: Close failed"
-msgstr "E512: Операция закрытия не удалась"
+msgstr "E512: Не удалось закрыть файл"
 
 msgid "E513: Write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
@@ -5687,7 +5687,7 @@ msgid ""
 "E513: Write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Ошибка записи, преобразование не удалось на строке %ld (очистите "
+"E513: Ошибка записи, преобразование не удалось в строке %ld (очистите "
 "'fenc', чтобы обойти)"
 
 msgid "E514: Write error (file system full?)"
@@ -5700,7 +5700,7 @@ msgid "E516: No buffers were deleted"
 msgstr "E516: Ни один буфер не был удалён"
 
 msgid "E517: No buffers were wiped out"
-msgstr "E517: Ни один буфер не был очищен"
+msgstr "E517: Ни один буфер не был стёрт"
 
 msgid "E518: Unknown option"
 msgstr "E518: Неизвестная опция"
@@ -5719,7 +5719,7 @@ msgid "E521: Number required: &%s = '%s'"
 msgstr "E521: Требуется указать число: &%s = '%s'"
 
 msgid "E522: Not found in termcap"
-msgstr "E522: Не обнаружено в termcap"
+msgstr "E522: Не найдено в termcap"
 
 msgid "E523: Not allowed here"
 msgstr "E523: Здесь не разрешено"
@@ -5778,7 +5778,7 @@ msgid "E539: Illegal character <%s>"
 msgstr "E539: Недопустимый символ <%s>"
 
 msgid "E540: Unclosed expression sequence"
-msgstr "E540: Незакрытая последовательность выражения"
+msgstr "E540: Незакрытое выражение"
 
 msgid "E542: Unbalanced groups"
 msgstr "E542: Несбалансированные группы"
@@ -5857,7 +5857,7 @@ msgid "E565: Not allowed to change text or change window"
 msgstr "E565: Не разрешается изменять текст либо переходить в другое окно"
 
 msgid "E566: Could not create cscope pipes"
-msgstr "E566: Невозможно создать трубу для cscope"
+msgstr "E566: Не удалось создать конвейерное подключение к cscope"
 
 msgid "E567: No cscope connections"
 msgstr "E567: Соединений с cscope не создано"
@@ -6034,7 +6034,7 @@ msgid "E621: \"%s\" resource file has wrong version"
 msgstr "E621: Файл ресурсов \"%s\" неизвестной версии"
 
 msgid "E622: Could not fork for cscope"
-msgstr "E622: Невозможно выполнить fork() для cscope"
+msgstr "E622: Не удалось выполнить fork() для cscope"
 
 msgid "E623: Could not spawn cscope process"
 msgstr "E623: Не удалось запустить процесс cscope"
@@ -6089,7 +6089,7 @@ msgid "E663: At end of changelist"
 msgstr "E663: В конце списка изменений"
 
 msgid "E664: Changelist is empty"
-msgstr "E664: Список изменений пустой"
+msgstr "E664: Список изменений пуст"
 
 msgid "E665: Cannot start GUI, no valid font found"
 msgstr ""
@@ -6105,7 +6105,8 @@ msgstr "E667: Не удалось выполнить вызов fsync()"
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
 msgstr ""
-"E668: Неправильный режим доступа к информации о соединении с NetBeans: \"%s\""
+"E668: Файл информации о соединениях NetBeans имеет неправильный режим "
+"доступа: \"%s\""
 
 msgid "E669: Unprintable character in group name"
 msgstr "E669: Непечатный символ в имени группы"
@@ -6169,10 +6170,10 @@ msgid "E686: Argument of %s must be a List"
 msgstr "E686: Параметр %s должен быть списком"
 
 msgid "E687: Less targets than List items"
-msgstr "E687: Целей меньше, чем элементов списка"
+msgstr "E687: Целей меньше, чем элементов в списке"
 
 msgid "E688: More targets than List items"
-msgstr "E688: Целей больше, чем элементов списка"
+msgstr "E688: Целей больше, чем элементов в списке"
 
 msgid "E689: Can only index a List, Dictionary or Blob"
 msgstr "E689: Индексировать можно только список, словарь или блоб"
@@ -6234,7 +6235,7 @@ msgid "E707: Function name conflicts with variable: %s"
 msgstr "E707: Имя функции конфликтует с переменной: %s"
 
 msgid "E708: [:] must come last"
-msgstr "E708: [:] должно идти последним"
+msgstr "E708: [:] должно идти после переменной"
 
 msgid "E709: [:] requires a List or Blob value"
 msgstr "E709: [:] требует указания списка или блоба"
@@ -6330,7 +6331,7 @@ msgstr "E736: Недопустимая операция для словаря"
 
 #, c-format
 msgid "E737: Key already exists: %s"
-msgstr "E737: Ключ уже существует: %s"
+msgstr "E737: Ключ %s уже существует"
 
 #, c-format
 msgid "E738: Can't list variables for %s"
@@ -6380,13 +6381,13 @@ msgid "E748: No previously used register"
 msgstr "E748: Нет предыдущего использованного регистра"
 
 msgid "E749: Empty buffer"
-msgstr "E749: Пустой буфер"
+msgstr "E749: Буфер пуст"
 
 msgid "E750: First use \":profile start {fname}\""
 msgstr "E750: В первый раз используйте \":profile start {имя-файла}\""
 
 msgid "E751: Output file name must not have region name"
-msgstr "E751: Имя выходного файла не должно содержать названия региона"
+msgstr "E751: Имя выходного файла не должно содержать название региона"
 
 msgid "E752: No previous spell replacement"
 msgstr "E752: Нет предыдущей замены правописания"
@@ -6464,7 +6465,7 @@ msgid "E773: Symlink loop for \"%s\""
 msgstr "E773: Петля символьных ссылок для \"%s\""
 
 msgid "E774: 'operatorfunc' is empty"
-msgstr "E774: Значением опции 'operatorfunc' является пустая строка"
+msgstr "E774: Значение опции 'operatorfunc' не задано"
 
 msgid "E775: Eval feature not available"
 msgstr "E775: Особенность +eval недоступна"
@@ -6551,14 +6552,14 @@ msgstr "E797: Буфер удалён при выполнении автокоманды SpellFileMissing"
 
 #, c-format
 msgid "E798: ID is reserved for \":match\": %d"
-msgstr "E798: Идентификатор зарезервирован для \":match\": %d"
+msgstr "E798: Идентификатор зарезервирован за \":match\": %d"
 
 #, c-format
 msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
 msgstr "E799: Неверный идентификатор: %d (должен быть больше или равен 1)"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
-msgstr "E800: Арабский выключен при компиляции\n"
+msgstr "E800: Поддержка арабского языка выключена при компиляции\n"
 
 #, c-format
 msgid "E801: ID already taken: %d"
@@ -6579,7 +6580,7 @@ msgstr "E804: Невозможно использовать '%' с числом с плавающей точкой"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Использование числа с плавающей точкой вместо целого"
 
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Использование числа с плавающей точкой вместо строки"
 
 msgid "E807: Expected Float argument for printf()"
@@ -6687,10 +6688,10 @@ msgid "E835: Conflicts with value of 'fillchars'"
 msgstr "E835: Конфликтует со значением 'fillchars'"
 
 msgid "E836: This Vim cannot execute :python after using :py3"
-msgstr "E836: Данный Vim не может выполнить :python после использования :py3"
+msgstr "E836: В этой версии Vim нельзя выполнить :python после :py3"
 
 msgid "E837: This Vim cannot execute :py3 after using :python"
-msgstr "E837: Данный Vim не может выполнить :py3 после использования :python"
+msgstr "E837: В этой версии Vim нельзя выполнить :py3 после :python"
 
 msgid "E838: NetBeans is not supported with this GUI"
 msgstr "E838: NetBeans не поддерживается с этим графическим интерфейсом"
@@ -6700,7 +6701,7 @@ msgstr "E840: Функция автодополнения удалила текст"
 
 msgid "E841: Reserved name, cannot be used for user defined command"
 msgstr ""
-"E841: Зарезервированное имя не может использоваться для команд пользователя"
+"E841: Имя зарезервировано и не может использоваться для команды пользователя"
 
 msgid "E842: No line number to use for \"<slnum>\""
 msgstr "E842: Нет номера строки для замены \"<slnum>\""
@@ -6743,7 +6744,7 @@ msgid "E854: Path too long for completion"
 msgstr "E854: Слишком большой путь для автодополнения"
 
 msgid "E855: Autocommands caused command to abort"
-msgstr "E855: Автокоманды вызвали прекращение команды"
+msgstr "E855: Выполнение команды прервано из-за автокоманд"
 
 msgid ""
 "E856: \"assert_fails()\" second argument must be a string or a list with one "
@@ -6937,10 +6938,10 @@ msgid "E903: Received command with non-string argument"
 msgstr "E903: Получена команда с нестроковым параметром"
 
 msgid "E904: Last argument for expr/call must be a number"
-msgstr "E904: Последний параметр для выражения или вызова должен быть числом"
+msgstr "E904: Последний параметр команды expr или call должен быть числом"
 
 msgid "E904: Third argument for call must be a list"
-msgstr "E904: Третий параметр для вызова должен быть списком"
+msgstr "E904: Третий параметр команды call должен быть списком"
 
 #, c-format
 msgid "E905: Received unknown command: %s"
@@ -6968,8 +6969,8 @@ msgstr "E911: Использование задания вместо числа с плавающей точкой"
 
 msgid "E912: Cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
 msgstr ""
-"E912: Невозможно использовать ch_evalexpr() или ch_sendexpr() с каналом nl "
-"или raw"
+"E912: Невозможно использовать ch_evalexpr() или ch_sendexpr() с каналом NL "
+"либо RAW"
 
 msgid "E913: Using a Channel as a Number"
 msgstr "E913: Использование канала вместо числа"
@@ -6978,7 +6979,9 @@ msgid "E914: Using a Channel as a Float"
 msgstr "E914: Использование канала вместо числа с плавающей точкой"
 
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
-msgstr "E915: Буфер in_io требует установленного in_buf или in_name"
+msgstr ""
+"E915: Если in_io равно \"buffer\", то нужно также установить "
+"in_buf либо in_name"
 
 msgid "E916: Not a valid job"
 msgstr "E916: Недопустимое задание"
@@ -6996,7 +6999,8 @@ msgid "E919: Directory not found in '%s': \"%s\""
 msgstr "E919: Каталог не найден в '%s': \"%s\""
 
 msgid "E920: _io file requires _name to be set"
-msgstr "E920: Файл _io требует установленного _name"
+msgstr ""
+"E920: Если _io равно \"file\", то нужно также установить _name"
 
 msgid "E921: Invalid callback argument"
 msgstr "E921: Недопустимый параметр обратного вызова"
@@ -7079,7 +7083,7 @@ msgid "E944: Reverse range in character class"
 msgstr "E944: Обратный диапазон в символьном классе"
 
 msgid "E945: Range too large in character class"
-msgstr "E945: Диапазон слишком велик в символьном классе"
+msgstr "E945: Слишком большой диапазон в символьном классе"
 
 msgid "E946: Cannot make a terminal with running job modifiable"
 msgstr "E946: Терминал с запущенным заданием нельзя сделать изменяемым"
@@ -7178,7 +7182,7 @@ msgstr "E972: Неверное количество байтов в значении блоба"
 
 msgid "E973: Blob literal should have an even number of hex characters"
 msgstr ""
-"E973: Блоб-литерал должен иметь чётное количество шестнадцатеричных символов"
+"E973: Блоб-литерал должен иметь чётное количество шестнадцатеричных разрядов"
 
 msgid "E974: Using a Blob as a Number"
 msgstr "E974: Использование блоба вместо числа"
@@ -7226,7 +7230,7 @@ msgstr "E987: Неправильное возвращаемое значение из tagfunc"
 
 msgid "E988: GUI cannot be used. Cannot execute gvim.exe."
 msgstr ""
-"E988: Графический интерфейс не может быть использован. Невозможно выполнить "
+"E988: Графический интерфейс не может быть задействован. Сбой при запуске "
 "gvim.exe"
 
 msgid "E989: Non-default argument follows default argument"
@@ -7555,8 +7559,8 @@ msgstr "E1075: Пространство имён не поддерживается: %s"
 
 msgid "E1076: This Vim is not compiled with float support"
 msgstr ""
-"E1076: Данный Vim был скомпилирован без поддержки вычислений с плавающей "
-"точкой"
+"E1076: Эта версия Vim была собрана без поддержки вычислений "
+"с плавающей точкой"
 
 #, c-format
 msgid "E1077: Missing argument type for %s"
@@ -7568,7 +7572,7 @@ msgstr ""
 "\"++nested\"?"
 
 msgid "E1079: Cannot declare a variable on the command line"
-msgstr "E1079: Нельзя объявить переменную в командной строке"
+msgstr "E1079: Переменную нельзя объявить в командной строке"
 
 msgid "E1080: Invalid assignment"
 msgstr "E1080: Неправильный оператор присваивания"
@@ -7982,7 +7986,7 @@ msgid "E1192: Empty function name"
 msgstr "E1192: Пустое имя функции"
 
 msgid "E1193: cryptmethod xchacha20 not built into this Vim"
-msgstr "E1193: Алгоритм шифрования xchacha20 недоступен в данном Vim"
+msgstr "E1193: Алгоритм шифрования xchacha20 недоступен в этой версии Vim"
 
 msgid "E1194: Cannot encrypt header, not enough space"
 msgstr "E1194: Невозможно зашифровать заголовок из-за нехватки памяти"
@@ -8350,6 +8354,10 @@ msgstr "E1289: Невозможно проверить наличие ожидающих сигналов SIGALRM: %s"
 msgid "E1290: substitute nesting too deep"
 msgstr "E1290: Слишком глубоко вложенная замена в подстановке"
 
+#, c-format
+msgid "E1291: Invalid argument: %ld"
+msgstr "E1291: Недопустимый параметр: %ld"
+
 msgid "--No lines in buffer--"
 msgstr "-- Нет строк в буфере --"
 
@@ -8552,7 +8560,7 @@ msgid "failed to rename buffer"
 msgstr "Невозможно переименовать буфер"
 
 msgid "mark name must be a single character"
-msgstr "Название отметки должно быть одним символом"
+msgstr "Имя отметки должно состоять из одного символа"
 
 #, c-format
 msgid "expected vim.Buffer object, but got %s"
@@ -8608,7 +8616,7 @@ msgid ""
 msgstr ""
 "Ошибка при установке перехватчика пути: sys.path_hooks не является списком\n"
 "Следует сделать следующее:\n"
-"— Добавить vim.path_hook  в sys.path_hooks\n"
+"— Добавить vim.path_hook в sys.path_hooks\n"
 "— Добавить vim.VIM_SPECIAL_PATH в sys.path\n"
 
 msgid ""
@@ -8725,18 +8733,18 @@ msgid "use Insert mode as the default mode"
 msgstr "сделать режим Вставки режимом по умолчанию"
 
 msgid "paste mode, insert typed text literally"
-msgstr "режим вклейки — напечатанный текст вставляется буквально"
+msgstr "режим вклейки: напечатанный текст вставляется буквально"
 
 msgid "key sequence to toggle paste mode"
 msgstr "последовательность клавиш для переключения режима вклейки"
 
 msgid "list of directories used for runtime files and plugins"
 msgstr ""
-"список каталогов с файлами среды исполнения и дополнительными\n"
+"список каталогов с файлами среды выполнения и дополнительными\n"
 "модулями"
 
 msgid "list of directories used for plugin packages"
-msgstr "список каталогов с комплектами модулей"
+msgstr "список каталогов с пакетами модулей"
 
 msgid "name of the main help file"
 msgstr "имя основного файла помощи"
@@ -8757,7 +8765,7 @@ msgstr ""
 "непробельный символ строки"
 
 msgid "nroff macro names that separate paragraphs"
-msgstr "макросы nroff, отделяющие параграфы"
+msgstr "макросы nroff, отделяющие абзацы"
 
 msgid "nroff macro names that separate sections"
 msgstr "макросы nroff, отделяющие разделы"
@@ -8793,7 +8801,7 @@ msgid "ignore case when using a search pattern"
 msgstr "игнорировать регистр букв при поиске по шаблону"
 
 msgid "override 'ignorecase' when pattern has upper case characters"
-msgstr "отменить 'ignorecase', если в шаблоне есть прописные буквы"
+msgstr "отменить 'ignorecase', если в шаблоне есть заглавные буквы"
 
 msgid "what method to use for changing case of letters"
 msgstr "способ изменения регистра букв"
@@ -9234,7 +9242,7 @@ msgid "list of font names to be used for double-wide characters"
 msgstr "список шрифтов для символов двойной ширины"
 
 msgid "use smooth, antialiased fonts"
-msgstr "использовать сглаженные шрифты"
+msgstr "использовать шрифты со сглаживанием"
 
 msgid "list of flags that specify how the GUI works"
 msgstr "список флагов для настройки граф. интерфейса"
@@ -9248,7 +9256,7 @@ msgid "size of toolbar icons"
 msgstr "размер иконок панели инструментов"
 
 msgid "room (in pixels) left above/below the window"
-msgstr "пространство (в пикселах) сверху или снизу от окна"
+msgstr "пространство в пикселах сверху или снизу от окна"
 
 msgid "list of ASCII characters that can be combined into complex shapes"
 msgstr ""
@@ -9256,7 +9264,7 @@ msgstr ""
 "составные фигуры"
 
 msgid "options for text rendering"
-msgstr "опции для отрисовки текста"
+msgstr "опции отрисовки текста"
 
 msgid "use a pseudo-tty for I/O to external commands"
 msgstr "использовать псевдотерминал для ввода-вывода внешних команд"
@@ -9317,13 +9325,13 @@ msgstr "кодировка файла PostScript, созданного командой :hardcopy"
 
 msgid "the CJK character set to be used for CJK output from :hardcopy"
 msgstr ""
-"набор символов китайского, японского или корейского языков для\n"
+"набор символов китайского, корейского или японского языков для\n"
 "вывода командой :hardcopy"
 
 msgid "list of font names to be used for CJK output from :hardcopy"
 msgstr ""
-"список шрифтов для вывода символов китайского, японского или\n"
-"корейского языков командой :hardcopy"
+"список шрифтов для вывода символов китайского, корейского или\n"
+"японского языков командой :hardcopy"
 
 msgid "messages and info"
 msgstr "информация и сообщения"
@@ -9375,7 +9383,8 @@ msgid "do not ring the bell for these reasons"
 msgstr "не звенеть из-за этих причин"
 
 msgid "list of preferred languages for finding help"
-msgstr "список предпочтительных языков для поиска справки"
+msgstr ""
+"список предпочтительных языков для поиска во встроенной справке"
 
 msgid "selecting text"
 msgstr "выделение текста"
@@ -9436,7 +9445,7 @@ msgid "margin from the right in which to break a line"
 msgstr "поле справа, в котором строка будет перенесена автоматически"
 
 msgid "specifies what <BS>, CTRL-W, etc. can do in Insert mode"
-msgstr "что <BS>, CTRL-W и т.п. может делать в режиме Вставки"
+msgstr "что <BS>, CTRL-W и т.п. могут делать в режиме Вставки"
 
 msgid "definition of what comment lines look like"
 msgstr "как выглядят строки комментариев"
@@ -9749,14 +9758,13 @@ msgstr ""
 
 msgid "keep oldest version of a file; specifies file name extension"
 msgstr ""
-"сохранять самую старую версию файла; указывает расширение имени\n"
-"файла"
+"сохранить первую версию файла; указывает расширение имени файла"
 
 msgid "forcibly sync the file to disk after writing it"
 msgstr "принудительная синхронизация после записи файла на диск"
 
 msgid "use 8.3 file names"
-msgstr "использовать имена файлов 8.3"
+msgstr "использовать имена файлов в формате 8.3"
 
 msgid "encryption method for file writing: zip, blowfish or blowfish2"
 msgstr "метод шифрования при записи файла: zip, blowfish или blowfish2"
@@ -9856,7 +9864,7 @@ msgid "used to redirect command output to a file"
 msgstr "используется для перенаправления вывода команды в файл"
 
 msgid "use a temp file for shell commands instead of using a pipe"
-msgstr "использовать для команд оболочки временный файл, а не трубу"
+msgstr "использовать для команд оболочки временный файл, а не конвейер"
 
 msgid "program used for \"=\" command"
 msgstr "программа, используемая командой \"=\""
@@ -9888,7 +9896,7 @@ msgid "string used to put the output of \":make\" in the error file"
 msgstr "строка для перенаправления вывода \":make\" в файл ошибок"
 
 msgid "name of the errorfile for the 'makeprg' command"
-msgstr "имя файла ошибок для команды 'makeprg'"
+msgstr "имя файла ошибок для 'makeprg'"
 
 msgid "program used for the \":grep\" command"
 msgstr "программа, используемая командой \":grep\""
@@ -9980,9 +9988,7 @@ msgid "apply 'langmap' to mapped characters"
 msgstr "применять 'langmap' к привязанным символам"
 
 msgid "when set never use IM; overrules following IM options"
-msgstr ""
-"если установлено, то метод ввода никогда не используется;\n"
-"отменяет нижеследующие опции"
+msgstr "заблокировать метод ввода, сбросить нижеследующие опции"
 
 msgid "in Insert mode: 1: use :lmap; 2: use IM; 0: neither"
 msgstr ""

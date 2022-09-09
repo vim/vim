@@ -925,7 +925,7 @@ cmd_is_name_only(char_u *arg)
 	}
 	else if (*p == '$')
 	    ++p;
-	get_name_len(&p, &alias, FALSE, FALSE);
+	(void)get_name_len(&p, &alias, FALSE, FALSE);
     }
     name_only = ends_excmd2(arg, skipwhite(p));
     vim_free(alias);

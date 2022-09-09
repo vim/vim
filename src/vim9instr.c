@@ -514,10 +514,8 @@ generate_2BOOL(cctx_T *cctx, int invert, int offset)
     int
 generate_COND2BOOL(cctx_T *cctx)
 {
-    isn_T	*isn;
-
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_COND2BOOL)) == NULL)
+    if (generate_instr(cctx, ISN_COND2BOOL) == NULL)
 	return FAIL;
 
     // type becomes bool
@@ -616,7 +614,7 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	case VAR_FUNC:
 	    if (tv->vval.v_string != NULL)
 		iemsg("non-null function constant not supported");
-	    generate_PUSHFUNC(cctx, NULL, &t_func_unknown);
+	    generate_PUSHFUNC(cctx, NULL, &t_func_unknown, TRUE);
 	    break;
 	case VAR_PARTIAL:
 	    if (tv->vval.v_partial != NULL)
@@ -741,13 +739,9 @@ generate_PUSHS(cctx_T *cctx, char_u **str)
     int
 generate_PUSHCHANNEL(cctx_T *cctx)
 {
-#ifdef FEAT_JOB_CHANNEL
-    isn_T	*isn;
-#endif
-
     RETURN_OK_IF_SKIP(cctx);
 #ifdef FEAT_JOB_CHANNEL
-    if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel) == NULL)
 	return FAIL;
     return OK;
 #else
@@ -762,13 +756,9 @@ generate_PUSHCHANNEL(cctx_T *cctx)
     int
 generate_PUSHJOB(cctx_T *cctx)
 {
-#ifdef FEAT_JOB_CHANNEL
-    isn_T	*isn;
-#endif
-
     RETURN_OK_IF_SKIP(cctx);
 #ifdef FEAT_JOB_CHANNEL
-    if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_job)) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHJOB, &t_job) == NULL)
 	return FAIL;
     return OK;
 #else
@@ -796,9 +786,11 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
 
 /*
  * Generate an ISN_PUSHFUNC instruction with name "name".
+ * When "may_prefix" is TRUE prefix "g:" unless "name" is script-local or
+ * autoload.
  */
     int
-generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
+generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type, int may_prefix)
 {
     isn_T	*isn;
     char_u	*funcname;
@@ -808,7 +800,8 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
 	return FAIL;
     if (name == NULL)
 	funcname = NULL;
-    else if (*name == K_SPECIAL				    // script-local
+    else if (!may_prefix
+	    || *name == K_SPECIAL			    // script-local
 	    || vim_strchr(name, AUTOLOAD_CHAR) != NULL)	    // autoload
 	funcname = vim_strsave(name);
     else
@@ -1064,10 +1057,8 @@ generate_UNLET(cctx_T *cctx, isntype_T isn_type, char_u *name, int forceit)
     int
 generate_LOCKCONST(cctx_T *cctx)
 {
-    isn_T	*isn;
-
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_LOCKCONST)) == NULL)
+    if (generate_instr(cctx, ISN_LOCKCONST) == NULL)
 	return FAIL;
     return OK;
 }
@@ -1338,6 +1329,65 @@ generate_TRYCONT(cctx_T *cctx, int levels, int where)
     return OK;
 }
 
+/*
+ * Check "argount" arguments and their types on the type stack.
+ * Give an error and return FAIL if something is wrong.
+ * When "method_call" is NULL no code is generated.
+ */
+    int
+check_internal_func_args(
+	cctx_T	*cctx,
+	int	func_idx,
+	int	argcount,
+	int	method_call,
+	type2_T **argtypes,
+	type2_T *shuffled_argtypes)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    int		argoff = check_internal_func(func_idx, argcount);
+
+    if (argoff < 0)
+	return FAIL;
+
+    if (method_call && argoff > 1)
+    {
+	isn_T	*isn = generate_instr(cctx, ISN_SHUFFLE);
+
+	if (isn  == NULL)
+	    return FAIL;
+	isn->isn_arg.shuffle.shfl_item = argcount;
+	isn->isn_arg.shuffle.shfl_up = argoff - 1;
+    }
+
+    if (argcount > 0)
+    {
+	type2_T	*typep = ((type2_T *)stack->ga_data) + stack->ga_len - argcount;
+
+	// Check the types of the arguments.
+	if (method_call && argoff > 1)
+	{
+	    int i;
+
+	    for (i = 0; i < argcount; ++i)
+		shuffled_argtypes[i] = (i < argoff - 1)
+				    ? typep[i + 1]
+				    : (i == argoff - 1) ? typep[0] : typep[i];
+	    *argtypes = shuffled_argtypes;
+	}
+	else
+	{
+	    int i;
+
+	    for (i = 0; i < argcount; ++i)
+		shuffled_argtypes[i] = typep[i];
+	    *argtypes = shuffled_argtypes;
+	}
+	if (internal_func_check_arg_types(*argtypes, func_idx, argcount,
+								 cctx) == FAIL)
+	    return FAIL;
+    }
+    return OK;
+}
 
 /*
  * Generate an ISN_BCALL instruction.
@@ -1349,8 +1399,6 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
-    int		argoff;
-    type2_T	*typep;
     type2_T	*argtypes = NULL;
     type2_T	shuffled_argtypes[MAX_FUNC_ARGS];
     type2_T	*maptype = NULL;
@@ -1358,46 +1406,13 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     type_T	*decl_type;
 
     RETURN_OK_IF_SKIP(cctx);
-    argoff = check_internal_func(func_idx, argcount);
-    if (argoff < 0)
+
+    if (check_internal_func_args(cctx, func_idx, argcount, method_call,
+					 &argtypes, shuffled_argtypes) == FAIL)
 	return FAIL;
 
-    if (method_call && argoff > 1)
-    {
-	if ((isn = generate_instr(cctx, ISN_SHUFFLE)) == NULL)
-	    return FAIL;
-	isn->isn_arg.shuffle.shfl_item = argcount;
-	isn->isn_arg.shuffle.shfl_up = argoff - 1;
-    }
-
-    if (argcount > 0)
-    {
-	// Check the types of the arguments.
-	typep = ((type2_T *)stack->ga_data) + stack->ga_len - argcount;
-	if (method_call && argoff > 1)
-	{
-	    int i;
-
-	    for (i = 0; i < argcount; ++i)
-		shuffled_argtypes[i] = (i < argoff - 1)
-			    ? typep[i + 1]
-				  : (i == argoff - 1) ? typep[0] : typep[i];
-	    argtypes = shuffled_argtypes;
-	}
-	else
-	{
-	    int i;
-
-	    for (i = 0; i < argcount; ++i)
-		shuffled_argtypes[i] = typep[i];
-	    argtypes = shuffled_argtypes;
-	}
-	if (internal_func_check_arg_types(argtypes, func_idx, argcount,
-								 cctx) == FAIL)
-	    return FAIL;
-	if (internal_func_is_map(func_idx))
-	    maptype = argtypes;
-    }
+    if (internal_func_is_map(func_idx))
+	maptype = argtypes;
 
     if ((isn = generate_instr(cctx, ISN_BCALL)) == NULL)
 	return FAIL;
@@ -1587,6 +1602,61 @@ generate_UCALL(cctx_T *cctx, char_u *name, int argcount)
 }
 
 /*
+ * Check the arguments of function "type" against the types on the stack.
+ * Returns OK or FAIL;
+ */
+    int
+check_func_args_from_type(
+	cctx_T	*cctx,
+	type_T	*type,
+	int	argcount,
+	int	at_top,
+	char_u	*name)
+{
+    if (type->tt_argcount != -1)
+    {
+	int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
+
+	if (argcount < type->tt_min_argcount - varargs)
+	{
+	    emsg_funcname(e_not_enough_arguments_for_function_str, name);
+	    return FAIL;
+	}
+	if (!varargs && argcount > type->tt_argcount)
+	{
+	    emsg_funcname(e_too_many_arguments_for_function_str, name);
+	    return FAIL;
+	}
+	if (type->tt_args != NULL)
+	{
+	    int i;
+
+	    for (i = 0; i < argcount; ++i)
+	    {
+		int	offset = -argcount + i - (at_top ? 0 : 1);
+		type_T	*actual = get_type_on_stack(cctx, -1 - offset);
+		type_T	*expected;
+
+		if (varargs && i >= type->tt_argcount - 1)
+		    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
+		else if (i >= type->tt_min_argcount
+					     && actual->tt_type == VAR_SPECIAL)
+		    expected = &t_any;
+		else
+		    expected = type->tt_args[i];
+		if (need_type(actual, expected, offset, i + 1,
+						    cctx, TRUE, FALSE) == FAIL)
+		{
+		    arg_type_mismatch(expected, actual, i + 1);
+		    return FAIL;
+		}
+	    }
+	}
+    }
+
+    return OK;
+}
+/*
  * Generate an ISN_PCALL instruction.
  * "type" is the type of the FuncRef.
  */
@@ -1607,47 +1677,9 @@ generate_PCALL(
 	ret_type = &t_any;
     else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
     {
-	if (type->tt_argcount != -1)
-	{
-	    int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
+	if (check_func_args_from_type(cctx, type, argcount, at_top, name) == FAIL)
+	    return FAIL;
 
-	    if (argcount < type->tt_min_argcount - varargs)
-	    {
-		emsg_funcname(e_not_enough_arguments_for_function_str, name);
-		return FAIL;
-	    }
-	    if (!varargs && argcount > type->tt_argcount)
-	    {
-		emsg_funcname(e_too_many_arguments_for_function_str, name);
-		return FAIL;
-	    }
-	    if (type->tt_args != NULL)
-	    {
-		int i;
-
-		for (i = 0; i < argcount; ++i)
-		{
-		    int	    offset = -argcount + i - (at_top ? 0 : 1);
-		    type_T *actual = get_type_on_stack(cctx, -1 - offset);
-		    type_T *expected;
-
-		    if (varargs && i >= type->tt_argcount - 1)
-			expected = type->tt_args[
-					     type->tt_argcount - 1]->tt_member;
-		    else if (i >= type->tt_min_argcount
-					     && actual->tt_type == VAR_SPECIAL)
-			expected = &t_any;
-		    else
-			expected = type->tt_args[i];
-		    if (need_type(actual, expected, offset, i + 1,
-						    cctx, TRUE, FALSE) == FAIL)
-		    {
-			arg_type_mismatch(expected, actual, i + 1);
-			return FAIL;
-		    }
-		}
-	    }
-	}
 	ret_type = type->tt_member;
 	if (ret_type == &t_unknown)
 	    // return type not known yet, use a runtime check
@@ -1675,6 +1707,22 @@ generate_PCALL(
     if (at_top && generate_instr(cctx, ISN_PCALL_END) == NULL)
 	return FAIL;
 
+    return OK;
+}
+
+/*
+ * Generate an ISN_DEFER instruction.
+ */
+    int
+generate_DEFER(cctx_T *cctx, int var_idx, int argcount)
+{
+    isn_T *isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr_drop(cctx, ISN_DEFER, argcount + 1)) == NULL)
+	return FAIL;
+    isn->isn_arg.defer.defer_var_idx = var_idx;
+    isn->isn_arg.defer.defer_argcount = argcount;
     return OK;
 }
 
@@ -2240,11 +2288,13 @@ delete_instr(isn_T *isn)
 	case ISN_CONCAT:
 	case ISN_COND2BOOL:
 	case ISN_DEBUG:
+	case ISN_DEFER:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOCONSOLE:
 	case ISN_ECHOERR:
 	case ISN_ECHOMSG:
+	case ISN_ECHOWINDOW:
 	case ISN_ENDTRY:
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
@@ -2295,21 +2345,21 @@ delete_instr(isn_T *isn)
 	case ISN_STOREINDEX:
 	case ISN_STORENR:
 	case ISN_SOURCE:
-    case ISN_STOREOUTER:
-    case ISN_STORERANGE:
-    case ISN_STOREREG:
-    case ISN_STOREV:
-    case ISN_STRINDEX:
-    case ISN_STRSLICE:
-    case ISN_THROW:
-    case ISN_TRYCONT:
-    case ISN_UNLETINDEX:
-    case ISN_UNLETRANGE:
-    case ISN_UNPACK:
-    case ISN_USEDICT:
+	case ISN_STOREOUTER:
+	case ISN_STORERANGE:
+	case ISN_STOREREG:
+	case ISN_STOREV:
+	case ISN_STRINDEX:
+	case ISN_STRSLICE:
+	case ISN_THROW:
+	case ISN_TRYCONT:
+	case ISN_UNLETINDEX:
+	case ISN_UNLETRANGE:
+	case ISN_UNPACK:
+	case ISN_USEDICT:
 	// nothing allocated
 	break;
-}
+    }
 }
 
     void

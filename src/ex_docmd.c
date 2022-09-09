@@ -55,8 +55,6 @@ static int	getargopt(exarg_T *eap);
 # define qf_history		ex_ni
 # define ex_helpgrep		ex_ni
 # define ex_vimgrep		ex_ni
-#endif
-#if !defined(FEAT_QUICKFIX)
 # define ex_cclose		ex_ni
 # define ex_copen		ex_ni
 # define ex_cwindow		ex_ni
@@ -551,7 +549,7 @@ do_exmode(
 #endif
     --RedrawingDisabled;
     --no_wait_return;
-    update_screen(CLEAR);
+    update_screen(UPD_CLEAR);
     need_wait_return = FALSE;
     msg_scroll = save_msg_scroll;
 }
@@ -881,7 +879,7 @@ do_cmdline(
 		    , in_vim9script() ? GETLINE_CONCAT_CONTBAR
 					       : GETLINE_CONCAT_CONT)) == NULL)
 	    {
-		// Don't call wait_return for aborted command line.  The NULL
+		// Don't call wait_return() for aborted command line.  The NULL
 		// returned for the end of a sourced file or executed function
 		// doesn't do this.
 		if (KeyTyped && !(flags & DOCMD_REPEAT))
@@ -1070,7 +1068,7 @@ do_cmdline(
 
 		    // Check for the next breakpoint at or after the ":while"
 		    // or ":for".
-		    if (breakpoint != NULL)
+		    if (breakpoint != NULL && lines_ga.ga_len > current_line)
 		    {
 			*breakpoint = dbg_find_breakpoint(
 			       getline_equal(fgetline, cookie, getsourceline),
@@ -1357,7 +1355,7 @@ do_cmdline(
 	else if (need_wait_return)
 	{
 	    /*
-	     * The msg_start() above clears msg_didout. The wait_return we do
+	     * The msg_start() above clears msg_didout. The wait_return() we do
 	     * here should not overwrite the command that may be shown before
 	     * doing that.
 	     */
@@ -2457,6 +2455,7 @@ do_one_cmd(
 	    case CMD_final:
 	    case CMD_help:
 	    case CMD_hide:
+	    case CMD_horizontal:
 	    case CMD_ijump:
 	    case CMD_ilist:
 	    case CMD_isearch:
@@ -2842,8 +2841,16 @@ parse_command_modifiers(
 		if (eap->nextcmd != NULL)
 		    ++eap->nextcmd;
 	    }
-	    if (vim9script && has_cmdmod(cmod, FALSE))
-		*errormsg = _(e_command_modifier_without_command);
+	    if (vim9script)
+	    {
+		if (has_cmdmod(cmod, FALSE))
+		    *errormsg = _(e_command_modifier_without_command);
+#ifdef FEAT_EVAL
+		if (eap->cmd[0] == '#' && eap->cmd[1] == '{'
+							 && eap->cmd[2] != '{')
+		    *errormsg = _(e_cannot_use_hash_curly_to_start_comment);
+#endif
+	    }
 	    return FAIL;
 	}
 	if (*eap->cmd == NUL)
@@ -2881,7 +2888,7 @@ parse_command_modifiers(
 
 	switch (*p)
 	{
-	    // When adding an entry, also modify cmd_exists().
+	    // When adding an entry, also modify cmdmods[].
 	    case 'a':	if (!checkforcmd_noparen(&eap->cmd, "aboveleft", 3))
 			    break;
 			cmod->cmod_split |= WSP_ABOVE;
@@ -2981,8 +2988,13 @@ parse_command_modifiers(
 			    continue;
 			}
 
+	    case 'h':	if (checkforcmd_noparen(&eap->cmd, "horizontal", 3))
+			{
+			    cmod->cmod_split |= WSP_HOR;
+			    continue;
+			}
 			// ":hide" and ":hide | cmd" are not modifiers
-	    case 'h':	if (p != eap->cmd || !checkforcmd_noparen(&p, "hide", 3)
+			if (p != eap->cmd || !checkforcmd_noparen(&p, "hide", 3)
 					       || *p == NUL || ends_excmd(*p))
 			    break;
 			eap->cmd = p;
@@ -3946,11 +3958,13 @@ static struct cmdmod
     {"confirm", 4, FALSE},
     {"filter", 4, FALSE},
     {"hide", 3, FALSE},
+    {"horizontal", 3, FALSE},
     {"keepalt", 5, FALSE},
     {"keepjumps", 5, FALSE},
     {"keepmarks", 3, FALSE},
     {"keeppatterns", 5, FALSE},
     {"leftabove", 5, FALSE},
+    {"legacy", 3, FALSE},
     {"lockmarks", 3, FALSE},
     {"noautocmd", 3, FALSE},
     {"noswapfile", 3, FALSE},
@@ -3962,6 +3976,7 @@ static struct cmdmod
     {"unsilent", 3, FALSE},
     {"verbose", 4, TRUE},
     {"vertical", 4, FALSE},
+    {"vim9cmd", 4, FALSE},
 };
 
 /*
@@ -5769,7 +5784,7 @@ ex_colorscheme(exarg_T *eap)
     else if (has_vtp_working())
     {
 	// background color change requires clear + redraw
-	update_screen(CLEAR);
+	update_screen(UPD_CLEAR);
 	redrawcmd();
     }
 #endif
@@ -6672,9 +6687,7 @@ ex_wrongmodifier(exarg_T *eap)
 ex_splitview(exarg_T *eap)
 {
     win_T	*old_curwin = curwin;
-#if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
     char_u	*fname = NULL;
-#endif
 #ifdef FEAT_BROWSE
     char_u	dot_path[] = ".";
     int		save_cmod_flags = cmdmod.cmod_flags;
@@ -6702,7 +6715,6 @@ ex_splitview(exarg_T *eap)
     }
 #endif
 
-#ifdef FEAT_SEARCHPATH
     if (eap->cmdidx == CMD_sfind || eap->cmdidx == CMD_tabfind)
     {
 	fname = find_file_in_path(eap->arg, (int)STRLEN(eap->arg),
@@ -6712,11 +6724,7 @@ ex_splitview(exarg_T *eap)
 	eap->arg = fname;
     }
 # ifdef FEAT_BROWSE
-    else
-# endif
-#endif
-#ifdef FEAT_BROWSE
-    if ((cmdmod.cmod_flags & CMOD_BROWSE)
+    else if ((cmdmod.cmod_flags & CMOD_BROWSE)
 	    && eap->cmdidx != CMD_vnew
 	    && eap->cmdidx != CMD_new)
     {
@@ -6780,10 +6788,8 @@ ex_splitview(exarg_T *eap)
     cmdmod.cmod_flags = save_cmod_flags;
 # endif
 
-# if defined(FEAT_SEARCHPATH) || defined(FEAT_BROWSE)
 theend:
     vim_free(fname);
-# endif
 }
 
 /*
@@ -6974,7 +6980,6 @@ ex_resize(exarg_T *eap)
     static void
 ex_find(exarg_T *eap)
 {
-#ifdef FEAT_SEARCHPATH
     char_u	*fname;
     int		count;
 
@@ -6996,12 +7001,9 @@ ex_find(exarg_T *eap)
     if (fname != NULL)
     {
 	eap->arg = fname;
-#endif
 	do_exedit(eap, NULL);
-#ifdef FEAT_SEARCHPATH
 	vim_free(fname);
     }
-#endif
 }
 
 /*
@@ -7108,7 +7110,7 @@ do_exedit(
 #ifdef FEAT_GUI
 		hold_gui_events = 0;
 #endif
-		must_redraw = CLEAR;
+		set_must_redraw(UPD_CLEAR);
 		pending_exmode_active = TRUE;
 
 		main_loop(FALSE, TRUE);
@@ -7334,7 +7336,7 @@ ex_syncbind(exarg_T *eap UNUSED)
 	    else
 		scrolldown(-y, TRUE);
 	    curwin->w_scbind_pos = topline;
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    cursor_correct();
 	    curwin->w_redr_status = TRUE;
 	}
@@ -7430,7 +7432,7 @@ ex_read(exarg_T *eap)
 		    deleted_lines_mark(lnum, 1L);
 		}
 	    }
-	    redraw_curbuf_later(VALID);
+	    redraw_curbuf_later(UPD_VALID);
 	}
     }
 }
@@ -8350,10 +8352,19 @@ ex_redir(exarg_T *eap)
 }
 
 /*
- * ":redraw": force redraw
+ * ":redraw": force redraw, with clear for ":redraw!".
  */
     void
 ex_redraw(exarg_T *eap)
+{
+    redraw_cmd(eap->forceit);
+}
+
+/*
+ * ":redraw": force redraw, with clear if "clear" is TRUE.
+ */
+    void
+redraw_cmd(int clear)
 {
     int		r = RedrawingDisabled;
     int		p = p_lz;
@@ -8362,7 +8373,7 @@ ex_redraw(exarg_T *eap)
     p_lz = FALSE;
     validate_cursor();
     update_topline();
-    update_screen(eap->forceit ? CLEAR : VIsual_active ? INVERTED : 0);
+    update_screen(clear ? UPD_CLEAR : VIsual_active ? UPD_INVERTED : 0);
     if (need_maketitle)
 	maketitle();
 #if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
@@ -8406,7 +8417,7 @@ ex_redrawstatus(exarg_T *eap UNUSED)
 	status_redraw_all();
     else
 	status_redraw_curbuf();
-    update_screen(VIsual_active ? INVERTED : 0);
+    update_screen(VIsual_active ? UPD_INVERTED : 0);
     RedrawingDisabled = r;
     p_lz = p;
     out_flush();
@@ -8929,7 +8940,7 @@ ex_pedit(exarg_T *eap)
     {
 	// Return cursor to where we were
 	validate_cursor();
-	redraw_later(VALID);
+	redraw_later(UPD_VALID);
 	win_enter(curwin_save, TRUE);
     }
 # ifdef FEAT_PROP_POPUP
@@ -9267,7 +9278,6 @@ eval_vars(
 		}
 		break;
 
-#ifdef FEAT_SEARCHPATH
 	case SPEC_CFILE:	// file name under cursor
 		result = file_name_at_cursor(FNAME_MESS|FNAME_HYP, 1L, NULL);
 		if (result == NULL)
@@ -9277,7 +9287,6 @@ eval_vars(
 		}
 		resultbuf = result;	    // remember allocated string
 		break;
-#endif
 
 	case SPEC_AFILE:	// file name for autocommand
 		result = autocmd_fname;
@@ -9677,7 +9686,7 @@ set_no_hlsearch(int flag)
 ex_nohlsearch(exarg_T *eap UNUSED)
 {
     set_no_hlsearch(TRUE);
-    redraw_all_later(SOME_VALID);
+    redraw_all_later(UPD_SOME_VALID);
 }
 #endif
 

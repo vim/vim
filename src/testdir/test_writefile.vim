@@ -18,7 +18,7 @@ func Test_writefile()
   call assert_equal("vimmers", l[4])
   call delete(f)
 
-  call assert_fails('call writefile("text", "Xfile")', 'E475: Invalid argument: writefile() first argument must be a List or a Blob')
+  call assert_fails('call writefile("text", "Xwffile")', 'E475: Invalid argument: writefile() first argument must be a List or a Blob')
 endfunc
 
 func Test_writefile_ignore_regexp_error()
@@ -27,17 +27,17 @@ func Test_writefile_ignore_regexp_error()
 endfunc
 
 func Test_writefile_fails_gently()
-  call assert_fails('call writefile(["test"], "Xfile", [])', 'E730:')
-  call assert_false(filereadable("Xfile"))
-  call delete("Xfile")
+  call assert_fails('call writefile(["test"], "Xwffile", [])', 'E730:')
+  call assert_false(filereadable("Xwffile"))
+  call delete("Xwffile")
 
-  call assert_fails('call writefile(["test", [], [], [], "tset"], "Xfile")', 'E730:')
-  call assert_false(filereadable("Xfile"))
-  call delete("Xfile")
+  call assert_fails('call writefile(["test", [], [], [], "tset"], "Xwffile")', 'E730:')
+  call assert_false(filereadable("Xwffile"))
+  call delete("Xwffile")
 
-  call assert_fails('call writefile([], "Xfile", [])', 'E730:')
-  call assert_false(filereadable("Xfile"))
-  call delete("Xfile")
+  call assert_fails('call writefile([], "Xwffile", [])', 'E730:')
+  call assert_false(filereadable("Xwffile"))
+  call delete("Xwffile")
 
   call assert_fails('call writefile([], [])', 'E730:')
 endfunc
@@ -52,35 +52,35 @@ func Test_writefile_fails_conversion()
   set nobackup nowritebackup backupdir=. backupskip=
   new
   let contents = ["line one", "line two"]
-  call writefile(contents, 'Xfile')
-  edit Xfile
+  call writefile(contents, 'Xwfcfile')
+  edit Xwfcfile
   call setline(1, ["first line", "cannot convert \u010b", "third line"])
   call assert_fails('write ++enc=cp932', 'E513:')
-  call assert_equal(contents, readfile('Xfile'))
+  call assert_equal(contents, readfile('Xwfcfile'))
 
   " With 'backupcopy' set, if there is a conversion error, the backup file is
   " still created.
   set backupcopy=yes writebackup& backup&
-  call delete('Xfile' .. &backupext)
+  call delete('Xwfcfile' .. &backupext)
   call assert_fails('write ++enc=cp932', 'E513:')
-  call assert_equal(contents, readfile('Xfile'))
-  call assert_equal(contents, readfile('Xfile' .. &backupext))
+  call assert_equal(contents, readfile('Xwfcfile'))
+  call assert_equal(contents, readfile('Xwfcfile' .. &backupext))
   set backupcopy&
   %bw!
 
   " Conversion error during write
   new
   call setline(1, ["\U10000000"])
-  let output = execute('write! ++enc=utf-16 Xfile')
+  let output = execute('write! ++enc=utf-16 Xwfcfile')
   call assert_match('CONVERSION ERROR', output)
-  let output = execute('write! ++enc=ucs-2 Xfile')
+  let output = execute('write! ++enc=ucs-2 Xwfcfile')
   call assert_match('CONVERSION ERROR', output)
-  call delete('Xfilz~')
-  call delete('Xfily~')
+  call delete('Xwfcfilz~')
+  call delete('Xwfcfily~')
   %bw!
 
-  call delete('Xfile')
-  call delete('Xfile' .. &backupext)
+  call delete('Xwfcfile')
+  call delete('Xwfcfile' .. &backupext)
   bwipe!
   set backup& writebackup& backupdir&vim backupskip&vim
 endfunc
@@ -94,16 +94,16 @@ func Test_writefile_fails_conversion2()
   " but then the backup file must remain
   set nobackup writebackup backupdir=. backupskip=
   let contents = ["line one", "line two"]
-  call writefile(contents, 'Xfile_conversion_err')
-  edit Xfile_conversion_err
+  call writefile(contents, 'Xwf2file_conversion_err')
+  edit Xwf2file_conversion_err
   call setline(1, ["first line", "cannot convert \u010b", "third line"])
   set fileencoding=latin1
   let output = execute('write')
   call assert_match('CONVERSION ERROR', output)
-  call assert_equal(contents, readfile('Xfile_conversion_err~'))
+  call assert_equal(contents, readfile('Xwf2file_conversion_err~'))
 
-  call delete('Xfile_conversion_err')
-  call delete('Xfile_conversion_err~')
+  call delete('Xwf2file_conversion_err')
+  call delete('Xwf2file_conversion_err~')
   bwipe!
   set backup& writebackup& backupdir&vim backupskip&vim
 endfunc
@@ -117,7 +117,7 @@ func Test_write_quit_split()
   augroup testgroup
     autocmd BufWritePre * split
   augroup END
-  e! Xfile
+  e! Xwqsfile
   call setline(1, 'nothing')
   wq
 
@@ -130,13 +130,13 @@ func Test_write_quit_split()
     unlet g:flag
   endif
   au! testgroup
-  bwipe Xfile
-  call delete('Xfile')
+  bwipe Xwqsfile
+  call delete('Xwqsfile')
 endfunc
 
 func Test_nowrite_quit_split()
   " Prevent exiting by opening a help window.
-  e! Xfile
+  e! Xnqsfile
   help
   wincmd w
   exe winnr() . 'q'
@@ -149,7 +149,7 @@ func Test_nowrite_quit_split()
     call assert_equal(1, g:flag)
     unlet g:flag
   endif
-  bwipe Xfile
+  bwipe Xnqsfile
 endfunc
 
 func Test_writefile_sync_arg()
@@ -213,23 +213,23 @@ func Test_write_pipe_to_cmd()
   CheckUnix
   new
   call setline(1, ['L1', 'L2', 'L3', 'L4'])
-  2,3w !cat > Xfile
-  call assert_equal(['L2', 'L3'], readfile('Xfile'))
+  2,3w !cat > Xptfile
+  call assert_equal(['L2', 'L3'], readfile('Xptfile'))
   close!
-  call delete('Xfile')
+  call delete('Xptfile')
 endfunc
 
 " Test for :saveas
 func Test_saveas()
   call assert_fails('saveas', 'E471:')
-  call writefile(['L1'], 'Xfile')
-  new Xfile
+  call writefile(['L1'], 'Xsafile')
+  new Xsafile
   new
   call setline(1, ['L1'])
-  call assert_fails('saveas Xfile', 'E139:')
+  call assert_fails('saveas Xsafile', 'E139:')
   close!
   enew | only
-  call delete('Xfile')
+  call delete('Xsafile')
 
   " :saveas should detect and set the file type.
   syntax on
@@ -242,8 +242,8 @@ endfunc
 
 func Test_write_errors()
   " Test for writing partial buffer
-  call writefile(['L1', 'L2', 'L3'], 'Xfile')
-  new Xfile
+  call writefile(['L1', 'L2', 'L3'], 'Xwefile')
+  new Xwefile
   call assert_fails('1,2write', 'E140:')
   close!
 
@@ -251,9 +251,9 @@ func Test_write_errors()
  
   " Try to overwrite a directory
   if has('unix')
-    call mkdir('Xdir1')
-    call assert_fails('write Xdir1', 'E17:')
-    call delete('Xdir1', 'd')
+    call mkdir('Xwerdir1')
+    call assert_fails('write Xwerdir1', 'E17:')
+    call delete('Xwerdir1', 'd')
   endif
 
   " Test for :wall for a buffer with no name
@@ -263,24 +263,24 @@ func Test_write_errors()
   enew!
 
   " Test for writing a 'readonly' file
-  new Xfile
+  new Xwefile
   set readonly
   call assert_fails('write', 'E45:')
   close
 
   " Test for writing to a read-only file
-  new Xfile
-  call setfperm('Xfile', 'r--r--r--')
+  new Xwefile
+  call setfperm('Xwefile', 'r--r--r--')
   call assert_fails('write', 'E505:')
-  call setfperm('Xfile', 'rw-rw-rw-')
+  call setfperm('Xwefile', 'rw-rw-rw-')
   close
 
-  call delete('Xfile')
+  call delete('Xwefile')
 
-  call writefile(test_null_list(), 'Xfile')
-  call assert_false(filereadable('Xfile'))
-  call writefile(test_null_blob(), 'Xfile')
-  call assert_false(filereadable('Xfile'))
+  call writefile(test_null_list(), 'Xwefile')
+  call assert_false(filereadable('Xwefile'))
+  call writefile(test_null_blob(), 'Xwefile')
+  call assert_false(filereadable('Xwefile'))
   call assert_fails('call writefile([], "")', 'E482:')
 
   " very long file name
@@ -305,9 +305,9 @@ func Test_write_file_mtime()
   CheckRunVimInTerminal
 
   " First read the file into a buffer
-  call writefile(["Line1", "Line2"], 'Xfile')
-  let old_ftime = getftime('Xfile')
-  let buf = RunVimInTerminal('Xfile', #{rows : 10})
+  call writefile(["Line1", "Line2"], 'Xwfmfile')
+  let old_ftime = getftime('Xwfmfile')
+  let buf = RunVimInTerminal('Xwfmfile', #{rows : 10})
   call TermWait(buf)
   call term_sendkeys(buf, ":set noswapfile\<CR>")
   call TermWait(buf)
@@ -316,12 +316,12 @@ func Test_write_file_mtime()
   " different. Note that on Linux/Unix, the file is considered modified
   " outside, only if the difference is 2 seconds or more
   sleep 1
-  call writefile(["Line3", "Line4"], 'Xfile')
-  let new_ftime = getftime('Xfile')
+  call writefile(["Line3", "Line4"], 'Xwfmfile')
+  let new_ftime = getftime('Xwfmfile')
   while new_ftime - old_ftime < 2
     sleep 100m
-    call writefile(["Line3", "Line4"], 'Xfile')
-    let new_ftime = getftime('Xfile')
+    call writefile(["Line3", "Line4"], 'Xwfmfile')
+    let new_ftime = getftime('Xwfmfile')
   endwhile
 
   " Try to overwrite the file and check for the prompt
@@ -332,24 +332,24 @@ func Test_write_file_mtime()
         \ term_getline(buf, 10))
   call term_sendkeys(buf, "n\<CR>")
   call TermWait(buf)
-  call assert_equal(new_ftime, getftime('Xfile'))
+  call assert_equal(new_ftime, getftime('Xwfmfile'))
   call term_sendkeys(buf, ":w\<CR>")
   call TermWait(buf)
   call term_sendkeys(buf, "y\<CR>")
   call TermWait(buf)
-  call WaitForAssert({-> assert_equal('Line2', readfile('Xfile')[1])})
+  call WaitForAssert({-> assert_equal('Line2', readfile('Xwfmfile')[1])})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xfile')
+  call delete('Xwfmfile')
 endfunc
 
 " Test for an autocmd unloading a buffer during a write command
 func Test_write_autocmd_unloadbuf_lockmark()
   augroup WriteTest
-    autocmd BufWritePre Xfile enew | write
+    autocmd BufWritePre Xwaufile enew | write
   augroup END
-  e Xfile
+  e Xwaufile
   call assert_fails('lockmarks write', ['E32:', 'E203:'])
   augroup WriteTest
     au!
@@ -359,7 +359,7 @@ endfunc
 
 " Test for writing a buffer with 'acwrite' but without autocmds
 func Test_write_acwrite_error()
-  new Xfile
+  new Xwaefile
   call setline(1, ['line1', 'line2', 'line3'])
   set buftype=acwrite
   call assert_fails('write', 'E676:')
@@ -370,35 +370,35 @@ endfunc
 
 " Test for adding and removing lines from an autocmd when writing a buffer
 func Test_write_autocmd_add_remove_lines()
-  new Xfile
+  new Xwaafile
   call setline(1, ['aaa', 'bbb', 'ccc', 'ddd'])
 
   " Autocmd deleting lines from the file when writing a partial file
   augroup WriteTest2
     au!
-    autocmd FileWritePre Xfile 1,2d
+    autocmd FileWritePre Xwaafile 1,2d
   augroup END
   call assert_fails('2,3w!', 'E204:')
 
   " Autocmd adding lines to a file when writing a partial file
   augroup WriteTest2
     au!
-    autocmd FileWritePre Xfile call append(0, ['xxx', 'yyy'])
+    autocmd FileWritePre Xwaafile call append(0, ['xxx', 'yyy'])
   augroup END
   %d
   call setline(1, ['aaa', 'bbb', 'ccc', 'ddd'])
   1,2w!
-  call assert_equal(['xxx', 'yyy', 'aaa', 'bbb'], readfile('Xfile'))
+  call assert_equal(['xxx', 'yyy', 'aaa', 'bbb'], readfile('Xwaafile'))
 
   " Autocmd deleting lines from the file when writing the whole file
   augroup WriteTest2
     au!
-    autocmd BufWritePre Xfile 1,2d
+    autocmd BufWritePre Xwaafile 1,2d
   augroup END
   %d
   call setline(1, ['aaa', 'bbb', 'ccc', 'ddd'])
   w
-  call assert_equal(['ccc', 'ddd'], readfile('Xfile'))
+  call assert_equal(['ccc', 'ddd'], readfile('Xwaafile'))
 
   augroup WriteTest2
     au!
@@ -406,14 +406,14 @@ func Test_write_autocmd_add_remove_lines()
   augroup! WriteTest2
 
   close!
-  call delete('Xfile')
+  call delete('Xwaafile')
 endfunc
 
 " Test for writing to a readonly file
 func Test_write_readonly()
-  call writefile([], 'Xfile')
-  call setfperm('Xfile', "r--------")
-  edit Xfile
+  call writefile([], 'Xwrofile')
+  call setfperm('Xwrofile', "r--------")
+  edit Xwrofile
   set noreadonly backupskip=
   call assert_fails('write', 'E505:')
   let save_cpo = &cpo
@@ -422,11 +422,11 @@ func Test_write_readonly()
   let &cpo = save_cpo
   call setline(1, ['line1'])
   write!
-  call assert_equal(['line1'], readfile('Xfile'))
+  call assert_equal(['line1'], readfile('Xwrofile'))
 
   " Auto-saving a readonly file should fail with 'autowriteall'
   %bw!
-  e Xfile
+  e Xwrofile
   set noreadonly autowriteall
   call setline(1, ['aaaa'])
   call assert_fails('n', 'E505:')
@@ -436,39 +436,39 @@ func Test_write_readonly()
   set autowriteall&
 
   set backupskip&
-  call delete('Xfile')
+  call delete('Xwrofile')
   %bw!
 endfunc
 
 " Test for 'patchmode'
 func Test_patchmode()
-  call writefile(['one'], 'Xfile')
+  call writefile(['one'], 'Xpafile')
   set patchmode=.orig nobackup backupskip= writebackup
-  new Xfile
+  new Xpafile
   call setline(1, 'two')
   " first write should create the .orig file
   write
-  call assert_equal(['one'], readfile('Xfile.orig'))
+  call assert_equal(['one'], readfile('Xpafile.orig'))
   call setline(1, 'three')
   " subsequent writes should not create/modify the .orig file
   write
-  call assert_equal(['one'], readfile('Xfile.orig'))
+  call assert_equal(['one'], readfile('Xpafile.orig'))
 
   " use 'patchmode' with 'nobackup' and 'nowritebackup' to create an empty
   " original file
-  call delete('Xfile')
-  call delete('Xfile.orig')
+  call delete('Xpafile')
+  call delete('Xpafile.orig')
   %bw!
   set patchmode=.orig nobackup nowritebackup
-  edit Xfile
+  edit Xpafile
   call setline(1, ['xxx'])
   write
-  call assert_equal(['xxx'], readfile('Xfile'))
-  call assert_equal([], readfile('Xfile.orig'))
+  call assert_equal(['xxx'], readfile('Xpafile'))
+  call assert_equal([], readfile('Xpafile.orig'))
 
   set patchmode& backup& backupskip& writebackup&
-  call delete('Xfile')
-  call delete('Xfile.orig')
+  call delete('Xpafile')
+  call delete('Xpafile.orig')
 endfunc
 
 " Test for writing to a file in a readonly directory
@@ -479,20 +479,20 @@ func Test_write_readonly_dir()
   " Root can do it too.
   CheckNotRoot
 
-  call mkdir('Xdir/')
-  call writefile(['one'], 'Xdir/Xfile1')
-  call setfperm('Xdir', 'r-xr--r--')
+  call mkdir('Xrodir/')
+  call writefile(['one'], 'Xrodir/Xfile1')
+  call setfperm('Xrodir', 'r-xr--r--')
   " try to create a new file in the directory
-  new Xdir/Xfile2
+  new Xrodir/Xfile2
   call setline(1, 'two')
   call assert_fails('write', 'E212:')
   " try to create a backup file in the directory
-  edit! Xdir/Xfile1
-  set backupdir=./Xdir backupskip=
+  edit! Xrodir/Xfile1
+  set backupdir=./Xrodir backupskip=
   set patchmode=.orig
   call assert_fails('write', 'E509:')
-  call setfperm('Xdir', 'rwxr--r--')
-  call delete('Xdir', 'rf')
+  call setfperm('Xrodir', 'rwxr--r--')
+  call delete('Xrodir', 'rf')
   set backupdir& backupskip& patchmode&
 endfunc
 
@@ -500,7 +500,7 @@ endfunc
 func Test_write_invalid_encoding()
   new
   call setline(1, 'abc')
-  call assert_fails('write ++enc=axbyc Xfile', 'E213:')
+  call assert_fails('write ++enc=axbyc Xiefile', 'E213:')
   close!
 endfunc
 
@@ -515,101 +515,101 @@ func Test_write_file_encoding()
     2 cp1251 text: Äëÿ Vim version 6.2.  Ïîñëåäíåå èçìåíåíèå: 1970 Jan 01
     3 cp866 text: „«ï Vim version 6.2.  ®á«¥¤­¥¥ ¨§¬¥­¥­¨¥: 1970 Jan 01
   END
-  call writefile(text, 'Xfile')
-  edit Xfile
+  call writefile(text, 'Xwfefile')
+  edit Xwfefile
 
   " write tests:
   " combine three values for 'encoding' with three values for 'fileencoding'
   " also write files for read tests
   call cursor(1, 1)
   set encoding=utf-8
-  .w! ++enc=utf-8 Xtest
-  .w ++enc=cp1251 >> Xtest
-  .w ++enc=cp866 >> Xtest
+  .w! ++enc=utf-8 Xwfetest
+  .w ++enc=cp1251 >> Xwfetest
+  .w ++enc=cp866 >> Xwfetest
   .w! ++enc=utf-8 Xutf8
   let expected =<< trim END
     1 utf-8 text: Ð”Ð»Ñ Vim version 6.2.  ÐŸÐ¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ: 1970 Jan 01
     1 utf-8 text: Äëÿ Vim version 6.2.  Ïîñëåäíåå èçìåíåíèå: 1970 Jan 01
     1 utf-8 text: „«ï Vim version 6.2.  ®á«¥¤­¥¥ ¨§¬¥­¥­¨¥: 1970 Jan 01
   END
-  call assert_equal(expected, readfile('Xtest'))
+  call assert_equal(expected, readfile('Xwfetest'))
 
   call cursor(2, 1)
   set encoding=cp1251
-  .w! ++enc=utf-8 Xtest
-  .w ++enc=cp1251 >> Xtest
-  .w ++enc=cp866 >> Xtest
+  .w! ++enc=utf-8 Xwfetest
+  .w ++enc=cp1251 >> Xwfetest
+  .w ++enc=cp866 >> Xwfetest
   .w! ++enc=cp1251 Xcp1251
   let expected =<< trim END
     2 cp1251 text: Ð”Ð»Ñ Vim version 6.2.  ÐŸÐ¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ: 1970 Jan 01
     2 cp1251 text: Äëÿ Vim version 6.2.  Ïîñëåäíåå èçìåíåíèå: 1970 Jan 01
     2 cp1251 text: „«ï Vim version 6.2.  ®á«¥¤­¥¥ ¨§¬¥­¥­¨¥: 1970 Jan 01
   END
-  call assert_equal(expected, readfile('Xtest'))
+  call assert_equal(expected, readfile('Xwfetest'))
 
   call cursor(3, 1)
   set encoding=cp866
-  .w! ++enc=utf-8 Xtest
-  .w ++enc=cp1251 >> Xtest
-  .w ++enc=cp866 >> Xtest
+  .w! ++enc=utf-8 Xwfetest
+  .w ++enc=cp1251 >> Xwfetest
+  .w ++enc=cp866 >> Xwfetest
   .w! ++enc=cp866 Xcp866
   let expected =<< trim END
     3 cp866 text: Ð”Ð»Ñ Vim version 6.2.  ÐŸÐ¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ: 1970 Jan 01
     3 cp866 text: Äëÿ Vim version 6.2.  Ïîñëåäíåå èçìåíåíèå: 1970 Jan 01
     3 cp866 text: „«ï Vim version 6.2.  ®á«¥¤­¥¥ ¨§¬¥­¥­¨¥: 1970 Jan 01
   END
-  call assert_equal(expected, readfile('Xtest'))
+  call assert_equal(expected, readfile('Xwfetest'))
 
   " read three 'fileencoding's with utf-8 'encoding'
   set encoding=utf-8 fencs=utf-8,cp1251
   e Xutf8
-  .w! ++enc=utf-8 Xtest
+  .w! ++enc=utf-8 Xwfetest
   e Xcp1251
-  .w ++enc=utf-8 >> Xtest
+  .w ++enc=utf-8 >> Xwfetest
   set fencs=utf-8,cp866
   e Xcp866
-  .w ++enc=utf-8 >> Xtest
+  .w ++enc=utf-8 >> Xwfetest
   let expected =<< trim END
     1 utf-8 text: Ð”Ð»Ñ Vim version 6.2.  ÐŸÐ¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ: 1970 Jan 01
     2 cp1251 text: Ð”Ð»Ñ Vim version 6.2.  ÐŸÐ¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ: 1970 Jan 01
     3 cp866 text: Ð”Ð»Ñ Vim version 6.2.  ÐŸÐ¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ: 1970 Jan 01
   END
-  call assert_equal(expected, readfile('Xtest'))
+  call assert_equal(expected, readfile('Xwfetest'))
 
   " read three 'fileencoding's with cp1251 'encoding'
   set encoding=utf-8 fencs=utf-8,cp1251
   e Xutf8
-  .w! ++enc=cp1251 Xtest
+  .w! ++enc=cp1251 Xwfetest
   e Xcp1251
-  .w ++enc=cp1251 >> Xtest
+  .w ++enc=cp1251 >> Xwfetest
   set fencs=utf-8,cp866
   e Xcp866
-  .w ++enc=cp1251 >> Xtest
+  .w ++enc=cp1251 >> Xwfetest
   let expected =<< trim END
     1 utf-8 text: Äëÿ Vim version 6.2.  Ïîñëåäíåå èçìåíåíèå: 1970 Jan 01
     2 cp1251 text: Äëÿ Vim version 6.2.  Ïîñëåäíåå èçìåíåíèå: 1970 Jan 01
     3 cp866 text: Äëÿ Vim version 6.2.  Ïîñëåäíåå èçìåíåíèå: 1970 Jan 01
   END
-  call assert_equal(expected, readfile('Xtest'))
+  call assert_equal(expected, readfile('Xwfetest'))
 
   " read three 'fileencoding's with cp866 'encoding'
   set encoding=cp866 fencs=utf-8,cp1251
   e Xutf8
-  .w! ++enc=cp866 Xtest
+  .w! ++enc=cp866 Xwfetest
   e Xcp1251
-  .w ++enc=cp866 >> Xtest
+  .w ++enc=cp866 >> Xwfetest
   set fencs=utf-8,cp866
   e Xcp866
-  .w ++enc=cp866 >> Xtest
+  .w ++enc=cp866 >> Xwfetest
   let expected =<< trim END
     1 utf-8 text: „«ï Vim version 6.2.  ®á«¥¤­¥¥ ¨§¬¥­¥­¨¥: 1970 Jan 01
     2 cp1251 text: „«ï Vim version 6.2.  ®á«¥¤­¥¥ ¨§¬¥­¥­¨¥: 1970 Jan 01
     3 cp866 text: „«ï Vim version 6.2.  ®á«¥¤­¥¥ ¨§¬¥­¥­¨¥: 1970 Jan 01
   END
-  call assert_equal(expected, readfile('Xtest'))
+  call assert_equal(expected, readfile('Xwfetest'))
 
-  call delete('Xfile')
-  call delete('Xtest')
+  call delete('Xwfefile')
+  call delete('Xwfetest')
   call delete('Xutf8')
   call delete('Xcp1251')
   call delete('Xcp866')
@@ -635,114 +635,114 @@ func Test_readwrite_file_with_bom()
   set cpoptions+=S
 
   " Check that editing a latin1 file doesn't see a BOM
-  call writefile(["\xFE\xFElatin-1"], 'Xtest1')
-  edit Xtest1
+  call writefile(["\xFE\xFElatin-1"], 'Xrwtest1')
+  edit Xrwtest1
   call assert_equal('latin1', &fileencoding)
   call assert_equal(0, &bomb)
   set fenc=latin1
-  write Xfile2
-  call assert_equal(["\xFE\xFElatin-1", ''], readfile('Xfile2', 'b'))
+  write Xrwfile2
+  call assert_equal(["\xFE\xFElatin-1", ''], readfile('Xrwfile2', 'b'))
   set bomb fenc=latin1
-  write Xtest3
-  call assert_equal(["\xFE\xFElatin-1", ''], readfile('Xtest3', 'b'))
+  write Xrwtest3
+  call assert_equal(["\xFE\xFElatin-1", ''], readfile('Xrwtest3', 'b'))
   set bomb&
 
   " Check utf-8 BOM
   %bw!
-  call writefile([utf8_bom .. "utf-8"], 'Xtest1')
-  edit! Xtest1
+  call writefile([utf8_bom .. "utf-8"], 'Xrwtest1')
+  edit! Xrwtest1
   call assert_equal('utf-8', &fileencoding)
   call assert_equal(1, &bomb)
   call assert_equal('utf-8', getline(1))
   set fenc=latin1
-  write! Xfile2
-  call assert_equal(['utf-8', ''], readfile('Xfile2', 'b'))
+  write! Xrwfile2
+  call assert_equal(['utf-8', ''], readfile('Xrwfile2', 'b'))
   set fenc=utf-8
-  w! Xtest3
-  call assert_equal([utf8_bom .. "utf-8", ''], readfile('Xtest3', 'b'))
+  w! Xrwtest3
+  call assert_equal([utf8_bom .. "utf-8", ''], readfile('Xrwtest3', 'b'))
 
   " Check utf-8 with an error (will fall back to latin-1)
   %bw!
-  call writefile([utf8_bom .. "utf-8\x80err"], 'Xtest1')
-  edit! Xtest1
+  call writefile([utf8_bom .. "utf-8\x80err"], 'Xrwtest1')
+  edit! Xrwtest1
   call assert_equal('latin1', &fileencoding)
   call assert_equal(0, &bomb)
   call assert_equal("\xC3\xAF\xC2\xBB\xC2\xBFutf-8\xC2\x80err", getline(1))
   set fenc=latin1
-  write! Xfile2
-  call assert_equal([utf8_bom .. "utf-8\x80err", ''], readfile('Xfile2', 'b'))
+  write! Xrwfile2
+  call assert_equal([utf8_bom .. "utf-8\x80err", ''], readfile('Xrwfile2', 'b'))
   set fenc=utf-8
-  w! Xtest3
+  w! Xrwtest3
   call assert_equal(["\xC3\xAF\xC2\xBB\xC2\xBFutf-8\xC2\x80err", ''],
-        \ readfile('Xtest3', 'b'))
+        \ readfile('Xrwtest3', 'b'))
 
   " Check ucs-2 BOM
   %bw!
-  call writefile([utf16be_bom .. "\nu\nc\ns\n-\n2\n"], 'Xtest1')
-  edit! Xtest1
+  call writefile([utf16be_bom .. "\nu\nc\ns\n-\n2\n"], 'Xrwtest1')
+  edit! Xrwtest1
   call assert_equal('utf-16', &fileencoding)
   call assert_equal(1, &bomb)
   call assert_equal('ucs-2', getline(1))
   set fenc=latin1
-  write! Xfile2
-  call assert_equal(["ucs-2", ''], readfile('Xfile2', 'b'))
+  write! Xrwfile2
+  call assert_equal(["ucs-2", ''], readfile('Xrwfile2', 'b'))
   set fenc=ucs-2
-  w! Xtest3
+  w! Xrwtest3
   call assert_equal([utf16be_bom .. "\nu\nc\ns\n-\n2\n", ''],
-        \ readfile('Xtest3', 'b'))
+        \ readfile('Xrwtest3', 'b'))
 
   " Check ucs-2le BOM
   %bw!
-  call writefile([utf16le_bom .. "u\nc\ns\n-\n2\nl\ne\n"], 'Xtest1')
+  call writefile([utf16le_bom .. "u\nc\ns\n-\n2\nl\ne\n"], 'Xrwtest1')
   " Need to add a NUL byte after the NL byte
-  call writefile(0z00, 'Xtest1', 'a')
-  edit! Xtest1
+  call writefile(0z00, 'Xrwtest1', 'a')
+  edit! Xrwtest1
   call assert_equal('utf-16le', &fileencoding)
   call assert_equal(1, &bomb)
   call assert_equal('ucs-2le', getline(1))
   set fenc=latin1
-  write! Xfile2
-  call assert_equal(["ucs-2le", ''], readfile('Xfile2', 'b'))
+  write! Xrwfile2
+  call assert_equal(["ucs-2le", ''], readfile('Xrwfile2', 'b'))
   set fenc=ucs-2le
-  w! Xtest3
+  w! Xrwtest3
   call assert_equal([utf16le_bom .. "u\nc\ns\n-\n2\nl\ne\n", "\n"],
-        \ readfile('Xtest3', 'b'))
+        \ readfile('Xrwtest3', 'b'))
 
   " Check ucs-4 BOM
   %bw!
-  call writefile([utf32be_bom .. "\n\n\nu\n\n\nc\n\n\ns\n\n\n-\n\n\n4\n\n\n"], 'Xtest1')
-  edit! Xtest1
+  call writefile([utf32be_bom .. "\n\n\nu\n\n\nc\n\n\ns\n\n\n-\n\n\n4\n\n\n"], 'Xrwtest1')
+  edit! Xrwtest1
   call assert_equal('ucs-4', &fileencoding)
   call assert_equal(1, &bomb)
   call assert_equal('ucs-4', getline(1))
   set fenc=latin1
-  write! Xfile2
-  call assert_equal(["ucs-4", ''], readfile('Xfile2', 'b'))
+  write! Xrwfile2
+  call assert_equal(["ucs-4", ''], readfile('Xrwfile2', 'b'))
   set fenc=ucs-4
-  w! Xtest3
-  call assert_equal([utf32be_bom .. "\n\n\nu\n\n\nc\n\n\ns\n\n\n-\n\n\n4\n\n\n", ''], readfile('Xtest3', 'b'))
+  w! Xrwtest3
+  call assert_equal([utf32be_bom .. "\n\n\nu\n\n\nc\n\n\ns\n\n\n-\n\n\n4\n\n\n", ''], readfile('Xrwtest3', 'b'))
 
   " Check ucs-4le BOM
   %bw!
-  call writefile([utf32le_bom .. "u\n\n\nc\n\n\ns\n\n\n-\n\n\n4\n\n\nl\n\n\ne\n\n\n"], 'Xtest1')
+  call writefile([utf32le_bom .. "u\n\n\nc\n\n\ns\n\n\n-\n\n\n4\n\n\nl\n\n\ne\n\n\n"], 'Xrwtest1')
   " Need to add three NUL bytes after the NL byte
-  call writefile(0z000000, 'Xtest1', 'a')
-  edit! Xtest1
+  call writefile(0z000000, 'Xrwtest1', 'a')
+  edit! Xrwtest1
   call assert_equal('ucs-4le', &fileencoding)
   call assert_equal(1, &bomb)
   call assert_equal('ucs-4le', getline(1))
   set fenc=latin1
-  write! Xfile2
-  call assert_equal(["ucs-4le", ''], readfile('Xfile2', 'b'))
+  write! Xrwfile2
+  call assert_equal(["ucs-4le", ''], readfile('Xrwfile2', 'b'))
   set fenc=ucs-4le
-  w! Xtest3
-  call assert_equal([utf32le_bom .. "u\n\n\nc\n\n\ns\n\n\n-\n\n\n4\n\n\nl\n\n\ne\n\n\n", "\n\n\n"], readfile('Xtest3', 'b'))
+  w! Xrwtest3
+  call assert_equal([utf32le_bom .. "u\n\n\nc\n\n\ns\n\n\n-\n\n\n4\n\n\nl\n\n\ne\n\n\n", "\n\n\n"], readfile('Xrwtest3', 'b'))
 
   set cpoptions-=S
   let &fileencoding = save_fileencoding
-  call delete('Xtest1')
-  call delete('Xfile2')
-  call delete('Xtest3')
+  call delete('Xrwtest1')
+  call delete('Xrwfile2')
+  call delete('Xrwtest3')
   %bw!
 endfunc
 
@@ -773,83 +773,83 @@ func Test_backupcopy()
   " With the default 'backupcopy' setting, saving a symbolic link file
   " should not break the link.
   set backupcopy&
-  call writefile(['1111'], 'Xfile1')
-  silent !ln -s Xfile1 Xfile2
-  new Xfile2
+  call writefile(['1111'], 'Xbcfile1')
+  silent !ln -s Xbcfile1 Xbcfile2
+  new Xbcfile2
   call setline(1, ['2222'])
   write
   close
-  call assert_equal(['2222'], readfile('Xfile1'))
-  call assert_equal('Xfile1', resolve('Xfile2'))
-  call assert_equal('link', getftype('Xfile2'))
-  call delete('Xfile1')
-  call delete('Xfile2')
+  call assert_equal(['2222'], readfile('Xbcfile1'))
+  call assert_equal('Xbcfile1', resolve('Xbcfile2'))
+  call assert_equal('link', getftype('Xbcfile2'))
+  call delete('Xbcfile1')
+  call delete('Xbcfile2')
 
   " With the 'backupcopy' set to 'breaksymlink', saving a symbolic link file
   " should break the link.
   set backupcopy=yes,breaksymlink
-  call writefile(['1111'], 'Xfile1')
-  silent !ln -s Xfile1 Xfile2
-  new Xfile2
+  call writefile(['1111'], 'Xbcfile1')
+  silent !ln -s Xbcfile1 Xbcfile2
+  new Xbcfile2
   call setline(1, ['2222'])
   write
   close
-  call assert_equal(['1111'], readfile('Xfile1'))
-  call assert_equal(['2222'], readfile('Xfile2'))
-  call assert_equal('Xfile2', resolve('Xfile2'))
-  call assert_equal('file', getftype('Xfile2'))
-  call delete('Xfile1')
-  call delete('Xfile2')
+  call assert_equal(['1111'], readfile('Xbcfile1'))
+  call assert_equal(['2222'], readfile('Xbcfile2'))
+  call assert_equal('Xbcfile2', resolve('Xbcfile2'))
+  call assert_equal('file', getftype('Xbcfile2'))
+  call delete('Xbcfile1')
+  call delete('Xbcfile2')
   set backupcopy&
 
   " With the default 'backupcopy' setting, saving a hard link file
   " should not break the link.
   set backupcopy&
-  call writefile(['1111'], 'Xfile1')
-  silent !ln Xfile1 Xfile2
-  new Xfile2
+  call writefile(['1111'], 'Xbcfile1')
+  silent !ln Xbcfile1 Xbcfile2
+  new Xbcfile2
   call setline(1, ['2222'])
   write
   close
-  call assert_equal(['2222'], readfile('Xfile1'))
-  call delete('Xfile1')
-  call delete('Xfile2')
+  call assert_equal(['2222'], readfile('Xbcfile1'))
+  call delete('Xbcfile1')
+  call delete('Xbcfile2')
 
   " With the 'backupcopy' set to 'breaksymlink', saving a hard link file
   " should break the link.
   set backupcopy=yes,breakhardlink
-  call writefile(['1111'], 'Xfile1')
-  silent !ln Xfile1 Xfile2
-  new Xfile2
+  call writefile(['1111'], 'Xbcfile1')
+  silent !ln Xbcfile1 Xbcfile2
+  new Xbcfile2
   call setline(1, ['2222'])
   write
-  call assert_equal(['1111'], readfile('Xfile1'))
-  call assert_equal(['2222'], readfile('Xfile2'))
-  call delete('Xfile1')
-  call delete('Xfile2')
+  call assert_equal(['1111'], readfile('Xbcfile1'))
+  call assert_equal(['2222'], readfile('Xbcfile2'))
+  call delete('Xbcfile1')
+  call delete('Xbcfile2')
 
   " If a backup file is already present, then a slightly modified filename
   " should be used as the backup file. Try with 'backupcopy' set to 'yes' and
   " 'no'.
   %bw
-  call writefile(['aaaa'], 'Xfile')
-  call writefile(['bbbb'], 'Xfile.bak')
+  call writefile(['aaaa'], 'Xbcfile')
+  call writefile(['bbbb'], 'Xbcfile.bak')
   set backupcopy=yes backupext=.bak
-  new Xfile
+  new Xbcfile
   call setline(1, ['cccc'])
   write
   close
-  call assert_equal(['cccc'], readfile('Xfile'))
-  call assert_equal(['bbbb'], readfile('Xfile.bak'))
+  call assert_equal(['cccc'], readfile('Xbcfile'))
+  call assert_equal(['bbbb'], readfile('Xbcfile.bak'))
   set backupcopy=no backupext=.bak
-  new Xfile
+  new Xbcfile
   call setline(1, ['dddd'])
   write
   close
-  call assert_equal(['dddd'], readfile('Xfile'))
-  call assert_equal(['bbbb'], readfile('Xfile.bak'))
-  call delete('Xfile')
-  call delete('Xfile.bak')
+  call assert_equal(['dddd'], readfile('Xbcfile'))
+  call assert_equal(['bbbb'], readfile('Xbcfile.bak'))
+  call delete('Xbcfile')
+  call delete('Xbcfile.bak')
 
   " Write to a device file (in Unix-like systems) which cannot be backed up.
   if has('unix')
@@ -880,10 +880,10 @@ endfunc
 func Test_write_utf16()
   new
   call setline(1, ["\U00010001"])
-  write ++enc=utf-16 Xfile
+  write ++enc=utf-16 Xw16file
   bw!
-  call assert_equal(0zD800DC01, readfile('Xfile', 'B')[0:3])
-  call delete('Xfile')
+  call assert_equal(0zD800DC01, readfile('Xw16file', 'B')[0:3])
+  call delete('Xw16file')
 endfunc
 
 " Test for trying to save a backup file when the backup file is a symbolic
@@ -893,24 +893,24 @@ func Test_write_backup_symlink()
   call mkdir('Xbackup')
   let save_backupdir = &backupdir
   set backupdir=.,./Xbackup
-  call writefile(['1111'], 'Xfile')
-  silent !ln -s Xfile Xfile.bak
+  call writefile(['1111'], 'Xwbsfile')
+  silent !ln -s Xwbsfile Xwbsfile.bak
 
-  new Xfile
+  new Xwbsfile
   set backup backupcopy=yes backupext=.bak
   write
-  call assert_equal('link', getftype('Xfile.bak'))
-  call assert_equal('Xfile', resolve('Xfile.bak'))
+  call assert_equal('link', getftype('Xwbsfile.bak'))
+  call assert_equal('Xwbsfile', resolve('Xwbsfile.bak'))
   " backup file should be created in the 'backup' directory
   if !has('bsd')
     " This check fails on FreeBSD
-    call assert_true(filereadable('./Xbackup/Xfile.bak'))
+    call assert_true(filereadable('./Xbackup/Xwbsfile.bak'))
   endif
   set backup& backupcopy& backupext&
   %bw
 
-  call delete('Xfile')
-  call delete('Xfile.bak')
+  call delete('Xwbsfile')
+  call delete('Xwbsfile.bak')
   call delete('Xbackup', 'rf')
   let &backupdir = save_backupdir
 endfunc
@@ -918,19 +918,49 @@ endfunc
 " Test for ':write ++bin' and ':write ++nobin'
 func Test_write_binary_file()
   " create a file without an eol/eof character
-  call writefile(0z616161, 'Xfile1', 'b')
-  new Xfile1
-  write ++bin Xfile2
-  write ++nobin Xfile3
-  call assert_equal(0z616161, readblob('Xfile2'))
+  call writefile(0z616161, 'Xwbfile1', 'b')
+  new Xwbfile1
+  write ++bin Xwbfile2
+  write ++nobin Xwbfile3
+  call assert_equal(0z616161, readblob('Xwbfile2'))
   if has('win32')
-    call assert_equal(0z6161610D.0A, readblob('Xfile3'))
+    call assert_equal(0z6161610D.0A, readblob('Xwbfile3'))
   else
-    call assert_equal(0z6161610A, readblob('Xfile3'))
+    call assert_equal(0z6161610A, readblob('Xwbfile3'))
   endif
-  call delete('Xfile1')
-  call delete('Xfile2')
-  call delete('Xfile3')
+  call delete('Xwbfile1')
+  call delete('Xwbfile2')
+  call delete('Xwbfile3')
+endfunc
+
+func DoWriteDefer()
+  call writefile(['some text'], 'XdeferDelete', 'D')
+  call assert_equal(['some text'], readfile('XdeferDelete'))
+endfunc
+
+def DefWriteDefer()
+  writefile(['some text'], 'XdefdeferDelete', 'D')
+  assert_equal(['some text'], readfile('XdefdeferDelete'))
+enddef
+
+func Test_write_with_deferred_delete()
+  call DoWriteDefer()
+  call assert_equal('', glob('XdeferDelete'))
+  call DefWriteDefer()
+  call assert_equal('', glob('XdefdeferDelete'))
+endfunc
+
+func DoWriteFile()
+  call writefile(['text'], 'Xthefile', 'D')
+  cd ..
+endfunc
+
+func Test_write_defer_delete_chdir()
+  let dir = getcwd()
+  call DoWriteFile()
+  call assert_notequal(dir, getcwd())
+  call chdir(dir)
+  call assert_equal('', glob('Xthefile'))
 endfunc
 
 " Check that buffer is written before triggering QuitPre

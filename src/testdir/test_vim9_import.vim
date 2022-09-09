@@ -732,8 +732,16 @@ def Test_use_relative_autoload_import_in_mapping()
 
   source Xmapscript.vim
   assert_match('\d\+ A: .*XrelautoloadExport.vim', execute('scriptnames')->split("\n")[-1])
+  var l = getscriptinfo()
+  assert_match('XrelautoloadExport.vim$', l[-1].name)
+  assert_true(l[-1].autoload)
   feedkeys("\<F3>", "xt")
   assert_equal(42, g:result)
+  l = getscriptinfo({name: 'XrelautoloadExport'})
+  assert_true(len(l) == 1)
+  assert_match('XrelautoloadExport.vim$', l[0].name)
+  assert_false(l[0].autoload)
+  assert_equal(999999, l[0].version)
 
   unlet g:result
   delete('XrelautoloadExport.vim')
@@ -758,10 +766,10 @@ def Test_use_autoload_import_in_mapping()
         g:result = 49
       enddef
   END
-  mkdir('Xdir/autoload', 'p')
-  writefile(lines, 'Xdir/autoload/XautoloadExport.vim')
+  mkdir('Ximpdir/autoload', 'p')
+  writefile(lines, 'Ximpdir/autoload/XautoloadExport.vim')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Ximpdir'
 
   lines =<< trim END
       vim9script
@@ -778,7 +786,7 @@ def Test_use_autoload_import_in_mapping()
   unlet g:result
   delete('Xmapscript.vim')
   nunmap <F3>
-  delete('Xdir', 'rf')
+  delete('Ximpdir', 'rf')
   &rtp = save_rtp
 enddef
 
@@ -830,9 +838,9 @@ def Test_use_import_with_funcref_in_command_completion()
 enddef
 
 def Test_use_autoload_import_in_insert_completion()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xinsdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xinsdir'
 
   var lines =<< trim END
       vim9script
@@ -849,7 +857,7 @@ def Test_use_autoload_import_in_insert_completion()
       enddef
       g:completion_loaded = 'yes'
   END
-  writefile(lines, 'Xdir/autoload/completion.vim')
+  writefile(lines, 'Xinsdir/autoload/completion.vim')
 
   new
   lines =<< trim END
@@ -866,22 +874,22 @@ def Test_use_autoload_import_in_insert_completion()
 
   set thesaurusfunc=
   bwipe!
-  delete('Xdir', 'rf')
+  delete('Xinsdir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_use_autoload_import_partial_in_opfunc()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xpartdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xpartdir'
 
   var lines =<< trim END
       vim9script
-      export def Opfunc(..._)
+      export def Opfunc1(..._)
         g:opfunc_called = 'yes'
       enddef
   END
-  writefile(lines, 'Xdir/autoload/opfunc.vim')
+  writefile(lines, 'Xpartdir/autoload/opfunc.vim')
 
   new
   lines =<< trim END
@@ -889,7 +897,7 @@ def Test_use_autoload_import_partial_in_opfunc()
       import autoload 'opfunc.vim'
       nnoremap <expr> <F3> TheFunc()
       def TheFunc(): string
-        &operatorfunc = function('opfunc.Opfunc', [0])
+        &operatorfunc = function('opfunc.Opfunc1', [0])
         return 'g@'
       enddef
       feedkeys("\<F3>l", 'xt')
@@ -899,23 +907,23 @@ def Test_use_autoload_import_partial_in_opfunc()
 
   set opfunc=
   bwipe!
-  delete('Xdir', 'rf')
+  delete('Xpartdir', 'rf')
   nunmap <F3>
   &rtp = save_rtp
 enddef
 
 def Test_set_opfunc_to_autoload_func_directly()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xdirdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xdirdir'
 
   var lines =<< trim END
       vim9script
-      export def Opfunc(..._)
+      export def Opfunc2(..._)
         g:opfunc_called = 'yes'
       enddef
   END
-  writefile(lines, 'Xdir/autoload/opfunc.vim')
+  writefile(lines, 'Xdirdir/autoload/opfunc.vim')
 
   new
   lines =<< trim END
@@ -923,7 +931,7 @@ def Test_set_opfunc_to_autoload_func_directly()
       import autoload 'opfunc.vim'
       nnoremap <expr> <F3> TheFunc()
       def TheFunc(): string
-        &operatorfunc = opfunc.Opfunc
+        &operatorfunc = opfunc.Opfunc2
         return 'g@'
       enddef
       feedkeys("\<F3>l", 'xt')
@@ -933,15 +941,15 @@ def Test_set_opfunc_to_autoload_func_directly()
 
   set opfunc=
   bwipe!
-  delete('Xdir', 'rf')
+  delete('Xdirdir', 'rf')
   nunmap <F3>
   &rtp = save_rtp
 enddef
 
 def Test_use_autoload_import_in_fold_expression()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xfolddir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xfolddir'
 
   var lines =<< trim END
       vim9script
@@ -953,7 +961,7 @@ def Test_use_autoload_import_in_fold_expression()
       enddef
       g:fold_loaded = 'yes'
   END
-  writefile(lines, 'Xdir/autoload/fold.vim')
+  writefile(lines, 'Xfolddir/autoload/fold.vim')
 
   lines =<< trim END
       vim9script
@@ -977,7 +985,7 @@ def Test_use_autoload_import_in_fold_expression()
 
   set foldexpr= foldtext& foldmethod& debug=
   bwipe!
-  delete('Xdir', 'rf')
+  delete('Xfolddir', 'rf')
   &rtp = save_rtp
 enddef
 
@@ -1192,7 +1200,7 @@ def Test_autoload_import_deleted()
   END
   v9.CheckScriptFailure(lines, 'E484:')
 
-  delete('Xdir', 'rf')
+  delete('Xa.vim')
 enddef
 
 func Test_import_in_diffexpr()
@@ -1406,13 +1414,13 @@ def Test_import_in_charconvert()
   END
   v9.CheckScriptSuccess(lines)
 
-  writefile(['one', 'two'], 'Xfile')
-  new Xfile
-  write ++enc=ucase Xfile1
-  assert_equal(['ONE', 'TWO'], readfile('Xfile1'))
+  writefile(['one', 'two'], 'Xiicfile')
+  new Xiicfile
+  write ++enc=ucase Xiicfile1
+  assert_equal(['ONE', 'TWO'], readfile('Xiicfile1'))
 
-  delete('Xfile')
-  delete('Xfile1')
+  delete('Xiicfile')
+  delete('Xiicfile1')
   delete('Xconvert.vim')
   bwipe!
   set charconvert&
@@ -1446,10 +1454,32 @@ def Run_Test_import_in_spellsuggest_expr()
   set nospell spellsuggest& verbose=0
 enddef
 
+def Test_import_in_lambda_method()
+  var lines =<< trim END
+      vim9script
+      export def Retarg(e: any): any
+        return e
+      enddef
+  END
+  writefile(lines, 'XexportRetarg.vim')
+  lines =<< trim END
+      vim9script
+      import './XexportRetarg.vim'
+      def Lambda(): string
+        var F = (x) => x->XexportRetarg.Retarg()
+        return F('arg')
+      enddef
+      assert_equal('arg', Lambda())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  delete('XexportRetarg.vim')
+enddef
+
 def Test_export_shadows_global_function()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xglobdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xglobdir'
 
   var lines =<< trim END
       vim9script
@@ -1457,7 +1487,7 @@ def Test_export_shadows_global_function()
         return 'Shadow()'
       enddef
   END
-  writefile(lines, 'Xdir/autoload/shadow.vim')
+  writefile(lines, 'Xglobdir/autoload/shadow.vim')
 
   lines =<< trim END
       vim9script
@@ -1473,7 +1503,7 @@ def Test_export_shadows_global_function()
 
   delfunc g:Shadow
   bwipe!
-  delete('Xdir', 'rf')
+  delete('Xglobdir', 'rf')
   &rtp = save_rtp
 enddef
 
@@ -2170,10 +2200,10 @@ def Test_vim9_autoload_full_name()
      enddef
   END
 
-  mkdir('Xdir/autoload', 'p')
-  writefile(lines, 'Xdir/autoload/some.vim')
+  mkdir('Xfulldir/autoload', 'p')
+  writefile(lines, 'Xfulldir/autoload/some.vim')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xfulldir'
 
   assert_equal('test', g:some#Gettest())
   assert_equal('name', g:some#name)
@@ -2190,17 +2220,17 @@ def Test_vim9_autoload_full_name()
        return 'other'
      enddef
   END
-  writefile(lines, 'Xdir/autoload/Other.vim')
+  writefile(lines, 'Xfulldir/autoload/Other.vim')
   assert_equal('other', g:Other#GetOther())
 
-  delete('Xdir', 'rf')
+  delete('Xfulldir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_vim9script_autoload()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xaldir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xaldir'
 
   # when the path has "/autoload/" prefix is not needed
   var lines =<< trim END
@@ -2224,7 +2254,7 @@ def Test_vim9script_autoload()
      export final fname = 'final'
      export const cname = 'const'
   END
-  writefile(lines, 'Xdir/autoload/prefixed.vim')
+  writefile(lines, 'Xaldir/autoload/prefixed.vim')
 
   g:prefixed_loaded = 0
   g:expected_loaded = 0
@@ -2258,14 +2288,14 @@ def Test_vim9script_autoload()
 
   unlet g:prefixed_loaded
   unlet g:expected_loaded
-  delete('Xdir', 'rf')
+  delete('Xaldir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_import_autoload_not_exported()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xnimdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xnimdir'
 
   # error when using an item that is not exported from an autoload script
   var exportLines =<< trim END
@@ -2275,7 +2305,7 @@ def Test_import_autoload_not_exported()
         echo 'nop'
       enddef
   END
-  writefile(exportLines, 'Xdir/autoload/notExport1.vim')
+  writefile(exportLines, 'Xnimdir/autoload/notExport1.vim')
 
   var lines =<< trim END
       vim9script
@@ -2321,7 +2351,7 @@ def Test_import_autoload_not_exported()
 
   # using a :def function we use a different autoload script every time so that
   # the function is compiled without the script loaded
-  writefile(exportLines, 'Xdir/autoload/notExport2.vim')
+  writefile(exportLines, 'Xnimdir/autoload/notExport2.vim')
   lines =<< trim END
       vim9script
       import autoload 'notExport2.vim'
@@ -2332,7 +2362,7 @@ def Test_import_autoload_not_exported()
   END
   v9.CheckScriptFailure(lines, 'E1048: Item not found in script: notExport2#notFound')
 
-  writefile(exportLines, 'Xdir/autoload/notExport3.vim')
+  writefile(exportLines, 'Xnimdir/autoload/notExport3.vim')
   lines =<< trim END
       vim9script
       import autoload 'notExport3.vim'
@@ -2344,7 +2374,7 @@ def Test_import_autoload_not_exported()
   # don't get E1049 because it is too complicated to figure out
   v9.CheckScriptFailure(lines, 'E1048: Item not found in script: notExport3#notExported')
 
-  writefile(exportLines, 'Xdir/autoload/notExport4.vim')
+  writefile(exportLines, 'Xnimdir/autoload/notExport4.vim')
   lines =<< trim END
       vim9script
       import autoload 'notExport4.vim'
@@ -2355,7 +2385,7 @@ def Test_import_autoload_not_exported()
   END
   v9.CheckScriptFailure(lines, 'E117: Unknown function: notExport4#NotFunc')
 
-  writefile(exportLines, 'Xdir/autoload/notExport5.vim')
+  writefile(exportLines, 'Xnimdir/autoload/notExport5.vim')
   lines =<< trim END
       vim9script
       import autoload 'notExport5.vim'
@@ -2366,7 +2396,7 @@ def Test_import_autoload_not_exported()
   END
   v9.CheckScriptFailure(lines, 'E117: Unknown function: notExport5#NotExport')
 
-  writefile(exportLines, 'Xdir/autoload/notExport6.vim')
+  writefile(exportLines, 'Xnimdir/autoload/notExport6.vim')
   lines =<< trim END
       vim9script
       import autoload 'notExport6.vim'
@@ -2377,7 +2407,7 @@ def Test_import_autoload_not_exported()
   END
   v9.CheckScriptFailure(lines, 'E117: Unknown function: notExport6#NotFunc')
 
-  writefile(exportLines, 'Xdir/autoload/notExport7.vim')
+  writefile(exportLines, 'Xnimdir/autoload/notExport7.vim')
   lines =<< trim END
       vim9script
       import autoload 'notExport7.vim'
@@ -2388,14 +2418,14 @@ def Test_import_autoload_not_exported()
   END
   v9.CheckScriptFailure(lines, 'E117: Unknown function: notExport7#NotExport')
 
-  delete('Xdir', 'rf')
+  delete('Xnimdir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_vim9script_autoload_call()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xcalldir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xcalldir'
 
   var lines =<< trim END
      vim9script
@@ -2408,7 +2438,7 @@ def Test_vim9script_autoload_call()
        g:result = 'other'
      enddef
   END
-  writefile(lines, 'Xdir/autoload/another.vim')
+  writefile(lines, 'Xcalldir/autoload/another.vim')
 
   lines =<< trim END
       vim9script
@@ -2432,14 +2462,14 @@ def Test_vim9script_autoload_call()
   v9.CheckScriptSuccess(lines)
 
   unlet g:result
-  delete('Xdir', 'rf')
+  delete('Xcalldir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_vim9script_noclear_autoload()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xnocdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xnocdir'
 
   var lines =<< trim END
       vim9script
@@ -2448,7 +2478,7 @@ def Test_vim9script_noclear_autoload()
       enddef
       g:double_loaded = 'yes'
   END
-  writefile(lines, 'Xdir/autoload/double.vim')
+  writefile(lines, 'Xnocdir/autoload/double.vim')
 
   lines =<< trim END
       vim9script noclear
@@ -2474,12 +2504,12 @@ def Test_vim9script_noclear_autoload()
   unlet g:double_loaded
   unlet g:script_loaded
   unlet g:result
-  delete('Xdir', 'rf')
+  delete('Xnocdir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_vim9script_autoload_duplicate()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xdupdir/autoload', 'p')
 
   var lines =<< trim END
      vim9script
@@ -2490,8 +2520,8 @@ def Test_vim9script_autoload_duplicate()
      def Func()
      enddef
   END
-  writefile(lines, 'Xdir/autoload/dupfunc.vim')
-  assert_fails('source Xdir/autoload/dupfunc.vim', 'E1073:')
+  writefile(lines, 'Xdupdir/autoload/dupfunc.vim')
+  assert_fails('source Xdupdir/autoload/dupfunc.vim', 'E1073:')
 
   lines =<< trim END
      vim9script
@@ -2502,8 +2532,8 @@ def Test_vim9script_autoload_duplicate()
      export def Func()
      enddef
   END
-  writefile(lines, 'Xdir/autoload/dup2func.vim')
-  assert_fails('source Xdir/autoload/dup2func.vim', 'E1073:')
+  writefile(lines, 'Xdupdir/autoload/dup2func.vim')
+  assert_fails('source Xdupdir/autoload/dup2func.vim', 'E1073:')
 
   lines =<< trim END
      vim9script
@@ -2513,8 +2543,8 @@ def Test_vim9script_autoload_duplicate()
 
      export var Func = 'asdf'
   END
-  writefile(lines, 'Xdir/autoload/dup3func.vim')
-  assert_fails('source Xdir/autoload/dup3func.vim', 'E1041: Redefining script item: "Func"')
+  writefile(lines, 'Xdupdir/autoload/dup3func.vim')
+  assert_fails('source Xdupdir/autoload/dup3func.vim', 'E1041: Redefining script item: "Func"')
 
   lines =<< trim END
      vim9script
@@ -2524,8 +2554,8 @@ def Test_vim9script_autoload_duplicate()
      def Func()
      enddef
   END
-  writefile(lines, 'Xdir/autoload/dup4func.vim')
-  assert_fails('source Xdir/autoload/dup4func.vim', 'E707:')
+  writefile(lines, 'Xdupdir/autoload/dup4func.vim')
+  assert_fails('source Xdupdir/autoload/dup4func.vim', 'E707:')
 
   lines =<< trim END
      vim9script
@@ -2535,8 +2565,8 @@ def Test_vim9script_autoload_duplicate()
      export def Func()
      enddef
   END
-  writefile(lines, 'Xdir/autoload/dup5func.vim')
-  assert_fails('source Xdir/autoload/dup5func.vim', 'E707:')
+  writefile(lines, 'Xdupdir/autoload/dup5func.vim')
+  assert_fails('source Xdupdir/autoload/dup5func.vim', 'E707:')
 
   lines =<< trim END
      vim9script
@@ -2546,14 +2576,14 @@ def Test_vim9script_autoload_duplicate()
 
      var Func = 'asdf'
   END
-  writefile(lines, 'Xdir/autoload/dup6func.vim')
-  assert_fails('source Xdir/autoload/dup6func.vim', 'E1041: Redefining script item: "Func"')
+  writefile(lines, 'Xdupdir/autoload/dup6func.vim')
+  assert_fails('source Xdupdir/autoload/dup6func.vim', 'E1041: Redefining script item: "Func"')
 
-  delete('Xdir', 'rf')
+  delete('Xdupdir', 'rf')
 enddef
 
 def Test_autoload_missing_function_name()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xmisdir/autoload', 'p')
 
   var lines =<< trim END
      vim9script
@@ -2561,10 +2591,10 @@ def Test_autoload_missing_function_name()
      def loadme#()
      enddef
   END
-  writefile(lines, 'Xdir/autoload/loadme.vim')
-  assert_fails('source Xdir/autoload/loadme.vim', 'E129:')
+  writefile(lines, 'Xmisdir/autoload/loadme.vim')
+  assert_fails('source Xmisdir/autoload/loadme.vim', 'E129:')
 
-  delete('Xdir', 'rf')
+  delete('Xmisdir', 'rf')
 enddef
 
 def Test_autoload_name_wrong()
@@ -2576,22 +2606,22 @@ def Test_autoload_name_wrong()
   v9.CheckScriptFailure(lines, 'E746:')
   delete('Xscriptname.vim')
 
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xwrodir/autoload', 'p')
   lines =<< trim END
      vim9script
      def somescript#Func()
      enddef
   END
-  writefile(lines, 'Xdir/autoload/somescript.vim')
-  assert_fails('source Xdir/autoload/somescript.vim', 'E1263:')
+  writefile(lines, 'Xwrodir/autoload/somescript.vim')
+  assert_fails('source Xwrodir/autoload/somescript.vim', 'E1263:')
 
-  delete('Xdir', 'rf')
+  delete('Xwrodir', 'rf')
 enddef
 
 def Test_import_autoload_postponed()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xpostdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xpostdir'
 
   var lines =<< trim END
       vim9script
@@ -2602,7 +2632,7 @@ def Test_import_autoload_postponed()
         return 'bla'
       enddef
   END
-  writefile(lines, 'Xdir/autoload/postponed.vim')
+  writefile(lines, 'Xpostdir/autoload/postponed.vim')
 
   lines =<< trim END
       vim9script
@@ -2620,14 +2650,14 @@ def Test_import_autoload_postponed()
   assert_equal('true', g:loaded_postponed)
 
   unlet g:loaded_postponed
-  delete('Xdir', 'rf')
+  delete('Xpostdir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_import_autoload_override()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xoverdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xoverdir'
   test_override('autoload', 1)
 
   var lines =<< trim END
@@ -2639,7 +2669,7 @@ def Test_import_autoload_override()
         return 'bla'
       enddef
   END
-  writefile(lines, 'Xdir/autoload/override.vim')
+  writefile(lines, 'Xoverdir/autoload/override.vim')
 
   lines =<< trim END
       vim9script
@@ -2656,14 +2686,14 @@ def Test_import_autoload_override()
 
   test_override('autoload', 0)
   unlet g:loaded_override
-  delete('Xdir', 'rf')
+  delete('Xoverdir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_autoload_mapping()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xmapdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xmapdir'
 
   var lines =<< trim END
       vim9script
@@ -2677,7 +2707,7 @@ def Test_autoload_mapping()
         g:doit_called = 'yes'
       enddef
   END
-  writefile(lines, 'Xdir/autoload/toggle.vim')
+  writefile(lines, 'Xmapdir/autoload/toggle.vim')
 
   lines =<< trim END
       vim9script
@@ -2708,7 +2738,7 @@ def Test_autoload_mapping()
   nunmap yy
   unlet g:toggle_loaded
   unlet g:toggle_called
-  delete('Xdir', 'rf')
+  delete('Xmapdir', 'rf')
   &rtp = save_rtp
 enddef
 
@@ -2766,9 +2796,9 @@ enddef
 
 " test disassembling an auto-loaded function starting with "debug"
 def Test_vim9_autoload_disass()
-  mkdir('Xdir/autoload', 'p')
+  mkdir('Xdasdir/autoload', 'p')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xdasdir'
 
   var lines =<< trim END
      vim9script
@@ -2776,7 +2806,7 @@ def Test_vim9_autoload_disass()
        return 'debug'
      enddef
   END
-  writefile(lines, 'Xdir/autoload/debugit.vim')
+  writefile(lines, 'Xdasdir/autoload/debugit.vim')
 
   lines =<< trim END
      vim9script
@@ -2784,7 +2814,7 @@ def Test_vim9_autoload_disass()
        return 'profile'
      enddef
   END
-  writefile(lines, 'Xdir/autoload/profileit.vim')
+  writefile(lines, 'Xdasdir/autoload/profileit.vim')
 
   lines =<< trim END
     vim9script
@@ -2795,7 +2825,7 @@ def Test_vim9_autoload_disass()
   END
   v9.CheckScriptSuccess(lines)
 
-  delete('Xdir', 'rf')
+  delete('Xdasdir', 'rf')
   &rtp = save_rtp
 enddef
 
@@ -2808,10 +2838,10 @@ def Test_vim9_aucmd_autoload()
      enddef
   END
 
-  mkdir('Xdir/autoload', 'p')
-  writefile(lines, 'Xdir/autoload/foo.vim')
+  mkdir('Xauldir/autoload', 'p')
+  writefile(lines, 'Xauldir/autoload/foo.vim')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xauldir'
   augroup test
     autocmd TextYankPost * call foo#Test()
   augroup END
@@ -2821,7 +2851,7 @@ def Test_vim9_aucmd_autoload()
   augroup test
     autocmd!
   augroup END
-  delete('Xdir', 'rf')
+  delete('Xauldir', 'rf')
   &rtp = save_rtp
 enddef
 
@@ -2834,10 +2864,10 @@ def Test_vim9_autoload_case_sensitive()
      enddef
   END
 
-  mkdir('Xdir/autoload', 'p')
-  writefile(lines, 'Xdir/autoload/CaseSensitive.vim')
+  mkdir('Xcasedir/autoload', 'p')
+  writefile(lines, 'Xcasedir/autoload/CaseSensitive.vim')
   var save_rtp = &rtp
-  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  exe 'set rtp^=' .. getcwd() .. '/Xcasedir'
 
   lines =<< trim END
       vim9script
@@ -2855,7 +2885,7 @@ def Test_vim9_autoload_case_sensitive()
     v9.CheckScriptFailure(lines, 'E1262:')
   endif
 
-  delete('Xdir', 'rf')
+  delete('Xcasedir', 'rf')
   &rtp = save_rtp
 enddef
 
@@ -2902,6 +2932,56 @@ def Test_vim9_autoload_error()
     var foo#bar = 'asdf'
   END
   v9.CheckScriptFailure(lines, 'E461: Illegal variable name: foo#bar', 2)
+enddef
+
+def Test_vim9_import_symlink()
+  if !has('unix')
+    CheckUnix
+  else
+    mkdir('Xto/plugin', 'p')
+    var lines =<< trim END
+        vim9script
+        import autoload 'bar.vim'
+        g:resultFunc = bar.Func()
+        g:resultValue = bar.value
+    END
+    writefile(lines, 'Xto/plugin/foo.vim')
+
+    mkdir('Xto/autoload', 'p')
+    lines =<< trim END
+        vim9script
+        export def Func(): string
+          return 'func'
+        enddef
+        export var value = 'val'
+    END
+    writefile(lines, 'Xto/autoload/bar.vim')
+
+    var save_rtp = &rtp
+    &rtp = getcwd() .. '/Xfrom'
+    system('ln -s ' .. getcwd() .. '/Xto Xfrom')
+
+    source Xfrom/plugin/foo.vim
+    assert_equal('func', g:resultFunc)
+    assert_equal('val', g:resultValue)
+
+    var infoTo = getscriptinfo()->filter((_, v) => v.name =~ 'Xto/autoload/bar')
+    var infoFrom = getscriptinfo()->filter((_, v) => v.name =~ 'Xfrom/autoload/bar')
+    assert_equal(1, len(infoTo))
+    assert_equal(1, len(infoFrom))
+    assert_equal(infoTo[0].sid, infoFrom[0].sourced)
+    var output: string
+    redir => output
+    scriptnames
+    redir END
+    assert_match(infoFrom[0].sid .. '->' .. infoFrom[0].sourced .. '.*Xfrom', output)
+
+    unlet g:resultFunc
+    unlet g:resultValue
+    &rtp = save_rtp
+    delete('Xto', 'rf')
+    delete('Xfrom', 'rf')
+  endif
 enddef
 
 

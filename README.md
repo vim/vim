@@ -128,6 +128,8 @@ If you would like to help making Vim better, see the
 
 ## Information ##
 
+If you are on macOS, you can use [Macvim](https://macvim-dev.github.io/macvim/).
+
 The latest news about Vim can be found on the Vim home page:
 	https://www.vim.org/
 
@@ -150,8 +152,3 @@ Send any other comments, patches, flowers and suggestions to:
 
 
 This is `README.md` for version 9.0 of Vim: Vi IMproved.
-
-
-## Translations of this README ##
-
-[Korean](https://github.com/cjw1359/opensource/blob/master/Vim/README_ko.md)

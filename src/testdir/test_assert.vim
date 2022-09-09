@@ -89,12 +89,12 @@ func Test_assert_equalfile()
   call remove(v:errors, 0)
 
   let goodtext = ["one", "two", "three"]
-  call writefile(goodtext, 'Xone')
+  call writefile(goodtext, 'Xone', 'D')
   call assert_equal(1, 'Xone'->assert_equalfile('xyzxyz'))
   call assert_match("E485: Can't read file xyzxyz", v:errors[0])
   call remove(v:errors, 0)
 
-  call writefile(goodtext, 'Xtwo')
+  call writefile(goodtext, 'Xtwo', 'D')
   call assert_equal(0, assert_equalfile('Xone', 'Xtwo'))
 
   call writefile([goodtext[0]], 'Xone')
@@ -124,9 +124,6 @@ func Test_assert_equalfile()
   call assert_equal(1, assert_equalfile('Xone', 'Xtwo', 'a message'))
   call assert_match("a message: difference at byte 234, line 1 after", v:errors[0])
   call remove(v:errors, 0)
-
-  call delete('Xone')
-  call delete('Xtwo')
 endfunc
 
 func Test_assert_notequal()
@@ -279,6 +276,21 @@ func Test_assert_fail_fails()
   call assert_match("E1222: String or List required for argument 2", exp)
 
   try
+    call assert_equal(0, assert_fails('xxx', [#{one: 1}]))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E731: Using a Dictionary as a String", exp)
+
+  let exp = ''
+  try
+    call assert_equal(0, assert_fails('xxx', ['E492', #{one: 1}]))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E731: Using a Dictionary as a String", exp)
+
+  try
     call assert_equal(1, assert_fails('xxx', 'E492', '', 'burp'))
   catch
     let exp = v:exception
@@ -291,6 +303,10 @@ func Test_assert_fail_fails()
     let exp = v:exception
   endtry
   call assert_match("E1174: String required for argument 5", exp)
+
+  call assert_equal(1, assert_fails('c0', ['', '\(.\)\1']))
+  call assert_match("Expected '\\\\\\\\(.\\\\\\\\)\\\\\\\\1' but got 'E939: Positive count required: c0': c0", v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_assert_fails_in_try_block()
@@ -364,7 +380,7 @@ func Test_override()
   eval 1->test_override('redraw')
   call test_override('ALL', 0)
   call assert_fails("call test_override('xxx', 1)", 'E475:')
-  call assert_fails("call test_override('redraw', 'yes')", 'E474:')
+  call assert_fails("call test_override('redraw', 'yes')", 'E1210:')
 endfunc
 
 func Test_mouse_position()

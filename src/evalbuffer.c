@@ -93,11 +93,7 @@ find_buffer(typval_T *avar)
 	    // buffer, these don't use the full path.
 	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_fname != NULL
-			&& (path_with_url(buf->b_fname)
-#ifdef FEAT_QUICKFIX
-			    || bt_nofilename(buf)
-#endif
-			   )
+			&& (path_with_url(buf->b_fname) || bt_nofilename(buf))
 			&& STRCMP(buf->b_fname, avar->vval.v_string) == 0)
 		    break;
 	}
@@ -258,7 +254,11 @@ set_buffer_lines(
 		    && wp->w_cursor.lnum > append_lnum)
 		wp->w_cursor.lnum += added;
 	check_cursor_col();
-	update_topline();
+
+	// Only update the window view if w_buffer matches curbuf, otherwise
+	// the computations will be wrong.
+	if (curwin->w_buffer == curbuf)
+	    update_topline();
     }
 
 done:
@@ -695,9 +695,9 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
 	if (sel_d != NULL)
 	{
 	    filtered = TRUE;
-	    sel_buflisted = dict_get_bool(sel_d, (char_u *)"buflisted", FALSE);
-	    sel_bufloaded = dict_get_bool(sel_d, (char_u *)"bufloaded", FALSE);
-	    sel_bufmodified = dict_get_bool(sel_d, (char_u *)"bufmodified",
+	    sel_buflisted = dict_get_bool(sel_d, "buflisted", FALSE);
+	    sel_bufloaded = dict_get_bool(sel_d, "bufloaded", FALSE);
+	    sel_bufmodified = dict_get_bool(sel_d, "bufmodified",
 									FALSE);
 	}
     }

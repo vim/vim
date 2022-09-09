@@ -111,7 +111,7 @@ static struct vimvar
     {VV_NAME("oldfiles",	 VAR_LIST), &t_list_string, 0},
     {VV_NAME("windowid",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("progpath",	 VAR_STRING), NULL, VV_RO},
-    {VV_NAME("completed_item",	 VAR_DICT), &t_dict_string, VV_RO},
+    {VV_NAME("completed_item",	 VAR_DICT), &t_dict_string, 0},
     {VV_NAME("option_new",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("option_old",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("option_oldlocal",	 VAR_STRING), NULL, VV_RO},
@@ -1089,7 +1089,6 @@ ex_let(exarg_T *eap)
 		{
 		    // +=, /=, etc. require an existing variable
 		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
-		    i = FAIL;
 		}
 		else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{
@@ -1112,7 +1111,6 @@ ex_let(exarg_T *eap)
 		vim_strncpy(op, expr - len, len);
 		semsg(_(e_white_space_required_before_and_after_str_at_str),
 								   op, argend);
-		i = FAIL;
 	    }
 
 	    if (eap->skip)
@@ -2953,6 +2951,7 @@ eval_variable(
 	    {
 		if (rettv != NULL)
 		{
+		    // special value that is used in handle_subscript()
 		    rettv->v_type = VAR_ANY;
 		    rettv->vval.v_number = sid != 0 ? sid : import->imp_sid;
 		}
@@ -3392,7 +3391,8 @@ find_var_ht(char_u *name, char_u **varname)
     if (*name == 'v')				// v: variable
 	return &vimvarht;
     if (get_current_funccal() != NULL
-	       && get_current_funccal()->func->uf_def_status == UF_NOT_COMPILED)
+	       && get_current_funccal()->fc_func->uf_def_status
+							    == UF_NOT_COMPILED)
     {
 	// a: and l: are only used in functions defined with ":function"
 	if (*name == 'a')			// a: function argument
@@ -3827,7 +3827,7 @@ set_var_const(
 		else if (STRCMP(varname, "hlsearch") == 0)
 		{
 		    no_hlsearch = !di->di_tv.vval.v_number;
-		    redraw_all_later(SOME_VALID);
+		    redraw_all_later(UPD_SOME_VALID);
 		}
 #endif
 		goto failed;
@@ -4011,10 +4011,12 @@ var_wrong_func_name(
 {
     // Allow for w: b: s: and t:.  In Vim9 script s: is not allowed, because
     // the name can be used without the s: prefix.
+    // Allow autoload variable.
     if (!((vim_strchr((char_u *)"wbt", name[0]) != NULL
 		    || (!in_vim9script() && name[0] == 's')) && name[1] == ':')
 	    && !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
-						     ? name[2] : name[0]))
+						     ? name[2] : name[0])
+	    && vim_strchr(name, '#') == NULL)
     {
 	semsg(_(e_funcref_variable_name_must_start_with_capital_str), name);
 	return TRUE;
@@ -4098,6 +4100,7 @@ get_var_from(
     int		done = FALSE;
     switchwin_T	switchwin;
     int		need_switch_win;
+    int		do_change_curbuf = buf != NULL && htname == 'b';
 
     ++emsg_off;
 
@@ -4112,7 +4115,7 @@ get_var_from(
 	// autocommands get blocked.
 	// If we have a buffer reference avoid the switching, we're saving and
 	// restoring curbuf directly.
-	need_switch_win = !(tp == curtab && win == curwin) || (buf != NULL);
+	need_switch_win = !(tp == curtab && win == curwin) && !do_change_curbuf;
 	if (!need_switch_win || switch_win(&switchwin, win, tp, TRUE) == OK)
 	{
 	    // Handle options. There are no tab-local options.
@@ -4121,12 +4124,12 @@ get_var_from(
 		buf_T	*save_curbuf = curbuf;
 
 		// Change curbuf so the option is read from the correct buffer.
-		if (buf != NULL && htname == 'b')
+		if (do_change_curbuf)
 		    curbuf = buf;
 
 		if (varname[1] == NUL)
 		{
-		    // get all window-local options in a dict
+		    // get all window-local or buffer-local options in a dict
 		    dict_T	*opts = get_winbuf_options(htname == 'b');
 
 		    if (opts != NULL)
@@ -4222,6 +4225,11 @@ set_option_from_tv(char_u *varname, typval_T *varp)
 
     if (varp->v_type == VAR_BOOL)
     {
+	if (is_string_option(varname))
+	{
+	    emsg(_(e_string_required));
+	    return;
+	}
 	numval = (long)varp->vval.v_number;
 	strval = (char_u *)"0";  // avoid using "false"
     }

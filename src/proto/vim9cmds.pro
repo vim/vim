@@ -21,6 +21,8 @@ char_u *compile_finally(char_u *arg, cctx_T *cctx);
 char_u *compile_endtry(char_u *arg, cctx_T *cctx);
 char_u *compile_throw(char_u *arg, cctx_T *cctx);
 char_u *compile_eval(char_u *arg, cctx_T *cctx);
+int get_defer_var_idx(cctx_T *cctx);
+char_u *compile_defer(char_u *arg_start, cctx_T *cctx);
 char_u *compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx);
 char_u *compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx);
 char_u *compile_exec(char_u *line_arg, exarg_T *eap, cctx_T *cctx);

@@ -1286,7 +1286,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	ch_log(term->tl_job->jv_channel, "updating screen");
 	if (buffer == curbuf && (State & MODE_CMDLINE) == 0)
 	{
-	    update_screen(VALID_NO_UPDATE);
+	    update_screen(UPD_VALID_NO_UPDATE);
 	    // update_screen() can be slow, check the terminal wasn't closed
 	    // already
 	    if (buffer == curbuf && curbuf->b_term != NULL)
@@ -2017,7 +2017,7 @@ may_move_terminal_to_buffer(term_T *term, int redraw)
 		    if (wp->w_topline < min_topline)
 			wp->w_topline = min_topline;
 		}
-		redraw_win_later(wp, NOT_VALID);
+		redraw_win_later(wp, UPD_NOT_VALID);
 	    }
 	}
     }
@@ -2136,10 +2136,10 @@ term_enter_job_mode()
 
     if (term->tl_channel_closed)
 	cleanup_vterm(term);
-    redraw_buf_and_status_later(curbuf, NOT_VALID);
+    redraw_buf_and_status_later(curbuf, UPD_NOT_VALID);
 #ifdef FEAT_PROP_POPUP
     if (WIN_IS_POPUP(curwin))
-	redraw_later(NOT_VALID);
+	redraw_later(UPD_NOT_VALID);
 #endif
 }
 
@@ -3015,7 +3015,7 @@ handle_damage(VTermRect rect, void *user)
     term->tl_dirty_row_start = MIN(term->tl_dirty_row_start, rect.start_row);
     term->tl_dirty_row_end = MAX(term->tl_dirty_row_end, rect.end_row);
     set_dirty_snapshot(term);
-    redraw_buf_later(term->tl_buffer, SOME_VALID);
+    redraw_buf_later(term->tl_buffer, UPD_SOME_VALID);
     return 1;
 }
 
@@ -3068,7 +3068,7 @@ handle_moverect(VTermRect dest, VTermRect src, void *user)
 
     // Note sure if the scrolling will work correctly, let's do a complete
     // redraw later.
-    redraw_buf_later(term->tl_buffer, NOT_VALID);
+    redraw_buf_later(term->tl_buffer, UPD_NOT_VALID);
     return 1;
 }
 
@@ -3222,7 +3222,7 @@ handle_resize(int rows, int cols, void *user)
 		win_setwidth_win(cols, wp);
 	    }
 	}
-	redraw_buf_later(term->tl_buffer, NOT_VALID);
+	redraw_buf_later(term->tl_buffer, UPD_NOT_VALID);
     }
     return 1;
 }
@@ -3511,7 +3511,7 @@ term_after_channel_closed(term_T *term)
 	    ch_log(NULL, "terminal job finished");
     }
 
-    redraw_buf_and_status_later(term->tl_buffer, NOT_VALID);
+    redraw_buf_and_status_later(term->tl_buffer, UPD_NOT_VALID);
     return FALSE;
 }
 
@@ -3816,9 +3816,9 @@ term_update_window(win_T *wp)
     screen = vterm_obtain_screen(vterm);
     state = vterm_obtain_state(vterm);
 
-    // We use NOT_VALID on a resize or scroll, redraw everything then.  With
-    // SOME_VALID only redraw what was marked dirty.
-    if (wp->w_redr_type > SOME_VALID)
+    // We use UPD_NOT_VALID on a resize or scroll, redraw everything then.
+    // With UPD_SOME_VALID only redraw what was marked dirty.
+    if (wp->w_redr_type > UPD_SOME_VALID)
     {
 	term->tl_dirty_row_start = 0;
 	term->tl_dirty_row_end = MAX_ROW;
@@ -3955,7 +3955,7 @@ term_change_in_curbuf(void)
     if (term_is_finished(curbuf) && term->tl_scrollback.ga_len > 0)
     {
 	free_scrollback(term);
-	redraw_buf_later(term->tl_buffer, NOT_VALID);
+	redraw_buf_later(term->tl_buffer, UPD_NOT_VALID);
 
 	// The buffer is now like a normal buffer, it cannot be easily
 	// abandoned when changed.
@@ -4338,9 +4338,9 @@ handle_drop_command(listitem_T *item)
 	dict_T *dict = opt_item->li_tv.vval.v_dict;
 	char_u *p;
 
-	p = dict_get_string(dict, (char_u *)"ff", FALSE);
+	p = dict_get_string(dict, "ff", FALSE);
 	if (p == NULL)
-	    p = dict_get_string(dict, (char_u *)"fileformat", FALSE);
+	    p = dict_get_string(dict, "fileformat", FALSE);
 	if (p != NULL)
 	{
 	    if (check_ff_value(p) == FAIL)
@@ -4348,9 +4348,9 @@ handle_drop_command(listitem_T *item)
 	    else
 		ea.force_ff = *p;
 	}
-	p = dict_get_string(dict, (char_u *)"enc", FALSE);
+	p = dict_get_string(dict, "enc", FALSE);
 	if (p == NULL)
-	    p = dict_get_string(dict, (char_u *)"encoding", FALSE);
+	    p = dict_get_string(dict, "encoding", FALSE);
 	if (p != NULL)
 	{
 	    ea.cmd = alloc(STRLEN(p) + 12);
@@ -4362,7 +4362,7 @@ handle_drop_command(listitem_T *item)
 	    }
 	}
 
-	p = dict_get_string(dict, (char_u *)"bad", FALSE);
+	p = dict_get_string(dict, "bad", FALSE);
 	if (p != NULL)
 	    get_bad_opt(p, &ea);
 
@@ -4477,28 +4477,28 @@ url_decode(const char *src, const size_t len, char_u *dst)
  * "file://HOSTNAME/CURRENT/DIR"
  */
     static void
-sync_shell_dir(VTermStringFragment *frag)
+sync_shell_dir(garray_T *gap)
 {
-    int       offset = 7; // len of "file://" is 7
-    char      *pos = (char *)frag->str + offset;
+    int       offset = 7;  // len of "file://" is 7
+    char      *pos = (char *)gap->ga_data + offset;
     char_u    *new_dir;
 
     // remove HOSTNAME to get PWD
-    while (*pos != '/' && offset < (int)frag->len)
+    while (offset < (int)gap->ga_len && *pos != '/' )
     {
-	offset += 1;
-	pos += 1;
+	++offset;
+	++pos;
     }
 
-    if (offset >= (int)frag->len)
+    if (offset >= (int)gap->ga_len)
     {
 	semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
-								    frag->str);
+								 gap->ga_data);
 	return;
     }
 
-    new_dir = alloc(frag->len - offset + 1);
-    url_decode(pos, frag->len-offset, new_dir);
+    new_dir = alloc(gap->ga_len - offset + 1);
+    url_decode(pos, gap->ga_len-offset, new_dir);
     changedir_func(new_dir, TRUE, CDSCOPE_WINDOW);
     vim_free(new_dir);
 }
@@ -4518,13 +4518,7 @@ parse_osc(int command, VTermStringFragment frag, void *user)
     garray_T	*gap = &term->tl_osc_buf;
 
     // We recognize only OSC 5 1 ; {command} and OSC 7 ; {command}
-    if (p_asd && command == 7)
-    {
-	sync_shell_dir(&frag);
-	return 1;
-    }
-
-    if (command != 51)
+    if (command != 51 && (command != 7 || !p_asd))
 	return 0;
 
     // Concatenate what was received until the final piece is found.
@@ -4539,6 +4533,14 @@ parse_osc(int command, VTermStringFragment frag, void *user)
 	return 1;
 
     ((char *)gap->ga_data)[gap->ga_len] = 0;
+
+    if (command == 7)
+    {
+	sync_shell_dir(gap);
+	ga_clear(gap);
+	return 1;
+    }
+
     reader.js_buf = gap->ga_data;
     reader.js_fill = NULL;
     reader.js_used = 0;
@@ -4987,16 +4989,13 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	dict_T *d;
 
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
 	d = argvars[2].vval.v_dict;
 	if (d != NULL)
 	{
-	    max_height = dict_get_number(d, (char_u *)"rows");
-	    max_width = dict_get_number(d, (char_u *)"columns");
+	    max_height = dict_get_number(d, "rows");
+	    max_width = dict_get_number(d, "columns");
 	}
     }
 
@@ -5538,7 +5537,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	    while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
 		ml_delete((linenr_T)1);
 	    free_scrollback(curbuf->b_term);
-	    redraw_later(NOT_VALID);
+	    redraw_later(UPD_NOT_VALID);
 	}
     }
     else
@@ -5831,7 +5830,7 @@ term_swap_diff()
     term->tl_top_diff_rows = bot_rows;
     term->tl_bot_diff_rows = top_rows;
 
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
     return OK;
 }
 
@@ -6463,11 +6462,9 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
     if (term->tl_vterm == NULL)
 	return;
 
-    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-    {
-	emsg(_(e_list_required));
+    if (check_for_nonnull_list_arg(argvars, 1) == FAIL)
 	return;
-    }
+
     if (argvars[1].vval.v_list->lv_first == &range_list_item
 	    || argvars[1].vval.v_list->lv_len != 16)
     {

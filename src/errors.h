@@ -849,11 +849,8 @@ EXTERN char e_internal_error_lalloc_zero[]
 	INIT(= N_("E341: Internal error: lalloc(0, )"));
 EXTERN char e_out_of_memory_allocating_nr_bytes[]
 	INIT(= N_("E342: Out of memory!  (allocating %lu bytes)"));
-#ifdef FEAT_PATH_EXTRA
 EXTERN char e_invalid_path_number_must_be_at_end_of_path_or_be_followed_by_str[]
 	INIT(= N_("E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."));
-#endif
-#ifdef FEAT_SEARCHPATH
 EXTERN char e_cant_find_directory_str_in_cdpath[]
 	INIT(= N_("E344: Can't find directory \"%s\" in cdpath"));
 EXTERN char e_cant_find_file_str_in_path[]
@@ -862,7 +859,6 @@ EXTERN char e_no_more_directory_str_found_in_cdpath[]
 	INIT(= N_("E346: No more directory \"%s\" found in cdpath"));
 EXTERN char e_no_more_file_str_found_in_path[]
 	INIT(= N_("E347: No more file \"%s\" found in path"));
-#endif
 EXTERN char e_no_string_under_cursor[]
 	INIT(= N_("E348: No string under cursor"));
 EXTERN char e_no_identifier_under_cursor[]
@@ -954,9 +950,9 @@ EXTERN char e_at_bottom_of_quickfix_stack[]
 	INIT(= N_("E380: At bottom of quickfix stack"));
 EXTERN char e_at_top_of_quickfix_stack[]
 	INIT(= N_("E381: At top of quickfix stack"));
+#endif
 EXTERN char e_cannot_write_buftype_option_is_set[]
 	INIT(= N_("E382: Cannot write, 'buftype' option is set"));
-#endif
 EXTERN char e_invalid_search_string_str[]
 	INIT(= N_("E383: Invalid search string: %s"));
 EXTERN char e_search_hit_top_without_match_for_str[]
@@ -1090,12 +1086,10 @@ EXTERN char e_cannot_close_last_window[]
 	INIT(= N_("E444: Cannot close last window"));
 EXTERN char e_other_window_contains_changes[]
 	INIT(= N_("E445: Other window contains changes"));
-#ifdef FEAT_SEARCHPATH
 EXTERN char e_no_file_name_under_cursor[]
 	INIT(= N_("E446: No file name under cursor"));
 EXTERN char e_cant_find_file_str_in_path_2[]
 	INIT(= N_("E447: Can't find file \"%s\" in path"));
-#endif
 #ifdef USING_LOAD_LIBRARY
 EXTERN char e_could_not_load_library_function_str[]
 	INIT(= N_("E448: Could not load library function %s"));
@@ -1218,6 +1212,8 @@ EXTERN char e_pattern_not_found_str[]
 	INIT(= N_("E486: Pattern not found: %s"));
 EXTERN char e_argument_must_be_positive[]
 	INIT(= N_("E487: Argument must be positive"));
+EXTERN char e_argument_must_be_positive_str[]
+	INIT(= N_("E487: Argument must be positive: %s"));
 EXTERN char e_trailing_characters[]
 	INIT(= N_("E488: Trailing characters"));
 EXTERN char e_trailing_characters_str[]
@@ -2052,7 +2048,7 @@ EXTERN char e_cannot_use_percent_with_float[]
 EXTERN char e_using_float_as_number[]
 	INIT(= N_("E805: Using a Float as a Number"));
 EXTERN char e_using_float_as_string[]
-	INIT(= N_("E806: Using Float as a String"));
+	INIT(= N_("E806: Using a Float as a String"));
 #endif
 #ifdef FEAT_FLOAT
 EXTERN char e_expected_float_argument_for_printf[]
@@ -2208,8 +2204,8 @@ EXTERN char e_failed_to_convert_returned_python_object_to_vim_value[]
 	INIT(= N_("E859: Failed to convert returned python object to a Vim value"));
 #endif
 #ifdef FEAT_PROP_POPUP
-EXTERN char e_need_id_and_type_with_both[]
-	INIT(= N_("E860: Need 'id' and 'type' with 'both'"));
+EXTERN char e_need_id_and_type_or_types_with_both[]
+	INIT(= N_("E860: Need 'id' and 'type' or 'types' with 'both'"));
 # ifdef FEAT_TERMINAL
 EXTERN char e_cannot_open_second_popup_with_terminal[]
 	INIT(= N_("E861: Cannot open a second popup with a terminal"));
@@ -2634,10 +2630,10 @@ EXTERN char e_str_is_used_as_argument[]
 	INIT(= N_("E1006: %s is used as an argument"));
 EXTERN char e_mandatory_argument_after_optional_argument[]
 	INIT(= N_("E1007: Mandatory argument after optional argument"));
-EXTERN char e_missing_type[]
-	INIT(= N_("E1008: Missing <type>"));
-EXTERN char e_missing_gt_after_type[]
-	INIT(= N_("E1009: Missing > after type"));
+EXTERN char e_missing_type_after_str[]
+	INIT(= N_("E1008: Missing <type> after %s"));
+EXTERN char e_missing_gt_after_type_str[]
+	INIT(= N_("E1009: Missing > after type: %s"));
 EXTERN char e_type_not_recognized_str[]
 	INIT(= N_("E1010: Type not recognized: %s"));
 EXTERN char e_name_too_long_str[]
@@ -3303,4 +3299,34 @@ EXTERN char e_could_not_check_for_pending_sigalrm_str[]
 #ifdef FEAT_EVAL
 EXTERN char e_substitute_nesting_too_deep[]
 	INIT(= N_("E1290: substitute nesting too deep"));
+EXTERN char e_invalid_argument_nr[]
+	INIT(= N_("E1291: Invalid argument: %ld"));
+#endif
+#ifdef FEAT_CMDWIN
+EXTERN char e_cmdline_window_already_open[]
+	INIT(= N_("E1292: Command-line window is already open"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_use_negative_id_after_adding_textprop_with_text[]
+	INIT(= N_("E1293: Cannot use a negative id after adding a textprop with text"));
+EXTERN char e_can_only_use_text_align_when_column_is_zero[]
+	INIT(= N_("E1294: Can only use text_align when column is zero"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_specify_both_type_and_types[]
+	INIT(= N_("E1295: Cannot specify both 'type' and 'types'"));
+EXTERN char e_can_only_use_left_padding_when_column_is_zero[]
+	INIT(= N_("E1296: Can only use left padding when column is zero"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_non_null_dict_required_for_argument_nr[]
+	INIT(= N_("E1297: Non-NULL Dictionary required for argument %d"));
+EXTERN char e_non_null_list_required_for_argument_nr[]
+	INIT(= N_("E1298: Non-NULL List required for argument %d"));
+#endif
+EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
+	INIT(= N_("E1299: Window unexpectedly closed while searching for tags"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
+	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
 #endif

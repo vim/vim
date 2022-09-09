@@ -651,7 +651,8 @@ bufselfcmd(
 			err = TCL_ERROR;
 		}
 	    }
-	    else {  // objc == 3
+	    else
+	    {  // objc == 3
 		line = (char *)ml_get_buf(buf, (linenr_T)val1, FALSE);
 		Tcl_SetResult(interp, line, TCL_VOLATILE);
 	    }
@@ -930,13 +931,13 @@ bufselfcmd(
     }
 
     if (flags & FL_UPDATE_CURBUF)
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
     curbuf = savebuf;
     curwin = savewin;
     if (flags & FL_ADJUST_CURSOR)
 	check_cursor();
     if (flags & (FL_UPDATE_SCREEN | FL_UPDATE_CURBUF))
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 
     return err;
 }
@@ -1090,7 +1091,8 @@ winselfcmd(
 		if (err != TCL_OK)
 		    break;
 	    }
-	    else {  // objc == 4
+	    else
+	    {  // objc == 4
 		err = tclgetlinenum(interp, objv[2], &val1, win->w_buffer);
 		if (err != TCL_OK)
 		    break;
@@ -1113,7 +1115,7 @@ winselfcmd(
     curwin = savewin;
     curbuf = savebuf;
     if (flags & FL_UPDATE_SCREEN)
-	update_screen(NOT_VALID);
+	update_screen(UPD_NOT_VALID);
 
     return err;
 }
@@ -1129,7 +1131,7 @@ commandcmd(
     int		err;
 
     err = tcldoexcommand(interp, objc, objv, 1);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return err;
 }
 
@@ -1143,7 +1145,7 @@ optioncmd(
     int		err;
 
     err = tclsetoption(interp, objc, objv, 1);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return err;
 }
 

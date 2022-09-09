@@ -137,9 +137,9 @@ func Test_indent_fold_with_read()
     call assert_equal(1, foldlevel(n))
   endfor
 
-  call writefile(["a", "", "\<Tab>a"], 'Xfile')
+  call writefile(["a", "", "\<Tab>a"], 'Xinfofile')
   foldopen
-  2read Xfile
+  2read Xinfofile
   %foldclose
   call assert_equal(1, foldlevel(1))
   call assert_equal(2, foldclosedend(1))
@@ -150,7 +150,7 @@ func Test_indent_fold_with_read()
 
   bwipe!
   set foldmethod&
-  call delete('Xfile')
+  call delete('Xinfofile')
 endfunc
 
 func Test_combining_folds_indent()
@@ -216,8 +216,8 @@ func Test_update_folds_expr_read()
   set foldexpr=s:TestFoldExpr(v:lnum)
   2
   foldopen
-  call writefile(['b', 'b', 'a', 'a', 'd', 'a', 'a', 'c'], 'Xfile')
-  read Xfile
+  call writefile(['b', 'b', 'a', 'a', 'd', 'a', 'a', 'c'], 'Xupfofile')
+  read Xupfofile
   %foldclose
   call assert_equal(2, foldclosedend(1))
   call assert_equal(0, foldlevel(3))
@@ -226,7 +226,7 @@ func Test_update_folds_expr_read()
   call assert_equal(10, foldclosedend(7))
   call assert_equal(14, foldclosedend(11))
 
-  call delete('Xfile')
+  call delete('Xupfofile')
   bwipe!
   set foldmethod& foldexpr&
 endfunc

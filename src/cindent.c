@@ -2267,7 +2267,8 @@ get_c_indent(void)
 			}
 			// If the start comment string doesn't match with the
 			// start of the comment, skip this entry.  XXX
-			else if (STRNCMP(ml_get(comment_pos->lnum) + comment_pos->col,
+			else if (STRNCMP(ml_get(comment_pos->lnum)
+							    + comment_pos->col,
 					     lead_start, lead_start_len) != 0)
 			    continue;
 		    }
@@ -3717,7 +3718,7 @@ term_again:
 	// Are we at the start of a cpp base class declaration or
 	// constructor initialization?  XXX
 	n = FALSE;
-	if (curbuf->b_ind_cpp_baseclass != 0 && theline[0] != '{')
+	if (curbuf->b_ind_cpp_baseclass != 0)
 	{
 	    n = cin_is_cpp_baseclass(&cache_cpp_baseclass);
 	    l = ml_get_curline();

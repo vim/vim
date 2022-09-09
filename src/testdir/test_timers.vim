@@ -116,7 +116,7 @@ func Test_timer_info()
   call timer_stop(id)
   call assert_equal([], timer_info(id))
 
-  call assert_fails('call timer_info("abc")', 'E39:')
+  call assert_fails('call timer_info("abc")', 'E1210:')
 
   " check repeat count inside the callback
   let g:timer_repeat = []
@@ -265,9 +265,9 @@ func Test_timer_errors()
   sleep 50m
   call assert_equal(3, g:call_count)
 
-  call assert_fails('call timer_start(100, "MyHandler", "abc")', 'E475:')
+  call assert_fails('call timer_start(100, "MyHandler", "abc")', 'E1206:')
   call assert_fails('call timer_start(100, [])', 'E921:')
-  call assert_fails('call timer_stop("abc")', 'E39:')
+  call assert_fails('call timer_stop("abc")', 'E1210:')
 endfunc
 
 func FuncWithCaughtError(timer)
@@ -369,7 +369,7 @@ endfunc
 
 " Test that the garbage collector isn't triggered if a timer callback invokes
 " vgetc().
-func Test_timer_nocatch_garbage_collect()
+func Test_nocatch_timer_garbage_collect()
   " 'uptimetime. must be bigger than the timer timeout
   set ut=200
   call test_garbagecollect_soon()

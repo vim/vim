@@ -579,19 +579,19 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #endif
 
 /*
- * flags for update_screen()
- * The higher the value, the higher the priority
+ * Flags for update_screen().
+ * The higher the value, the higher the priority.
  */
-#define VALID_NO_UPDATE		 5  // no new changes, keep the command line if
+#define UPD_VALID_NO_UPDATE	 5  // no new changes, keep the command line if
 				    // possible
-#define VALID			10  // buffer not changed, or changes marked
+#define UPD_VALID		10  // buffer not changed, or changes marked
 				    // with b_mod_*
-#define INVERTED		20  // redisplay inverted part that changed
-#define INVERTED_ALL		25  // redisplay whole inverted part
-#define REDRAW_TOP		30  // display first w_upd_rows screen lines
-#define SOME_VALID		35  // like NOT_VALID but may scroll
-#define NOT_VALID		40  // buffer needs complete redraw
-#define CLEAR			50  // screen messed up, clear it
+#define UPD_INVERTED		20  // redisplay inverted part that changed
+#define UPD_INVERTED_ALL	25  // redisplay whole inverted part
+#define UPD_REDRAW_TOP		30  // display first w_upd_rows screen lines
+#define UPD_SOME_VALID		35  // like UPD_NOT_VALID but may scroll
+#define UPD_NOT_VALID		40  // buffer needs complete redraw
+#define UPD_CLEAR		50  // screen messed up, clear it
 
 // flags for screen_line()
 #define SLF_RIGHTLEFT	1
@@ -1006,6 +1006,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define READ_KEEP_UNDO	0x20	// keep undo info
 #define READ_FIFO	0x40	// read from fifo or socket
 #define READ_NOWINENTER 0x80	// do not trigger BufWinEnter
+#define READ_NOFILE	0x100	// do not read a file, do trigger BufReadCmd
 
 // Values for change_indent()
 #define INDENT_SET	1	// set indent
@@ -1208,14 +1209,15 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 /*
  * arguments for win_split()
  */
-#define WSP_ROOM	1	// require enough room
-#define WSP_VERT	2	// split vertically
-#define WSP_TOP		4	// window at top-left of shell
-#define WSP_BOT		8	// window at bottom-right of shell
-#define WSP_HELP	16	// creating the help window
-#define WSP_BELOW	32	// put new window below/right
-#define WSP_ABOVE	64	// put new window above/left
-#define WSP_NEWLOC	128	// don't copy location list
+#define WSP_ROOM	0x01	// require enough room
+#define WSP_VERT	0x02	// split/equalize vertically
+#define WSP_HOR		0x04	// equalize horizontally
+#define WSP_TOP		0x08	// window at top-left of shell
+#define WSP_BOT		0x10	// window at bottom-right of shell
+#define WSP_HELP	0x20	// creating the help window
+#define WSP_BELOW	0x40	// put new window below/right
+#define WSP_ABOVE	0x80	// put new window above/left
+#define WSP_NEWLOC	0x100	// don't copy location list
 
 /*
  * arguments for gui_set_shellsize()
@@ -2778,6 +2780,7 @@ long elapsed(DWORD start_tick);
 // Flags for adjust_prop_columns()
 #define APC_SAVE_FOR_UNDO	1   // call u_savesub() before making changes
 #define APC_SUBSTITUTE		2   // text is replaced, not inserted
+#define APC_INDENT		4   // changing indent
 
 #define CLIP_ZINDEX 32000
 
@@ -2819,7 +2822,7 @@ long elapsed(DWORD start_tick);
 #define UC_BUFFER	1	// -buffer: local to current buffer
 #define UC_VIM9		2	// {} argument: Vim9 syntax.
 
-// flags used by vim_strsave_escaped()
+// flags used by vim_strsave_fnameescape()
 #define VSE_NONE	0
 #define VSE_SHELL	1	// escape for a shell command
 #define VSE_BUFFER	2	// escape for a ":buffer" command
@@ -2829,4 +2832,5 @@ long elapsed(DWORD start_tick);
 #define FFED_NO_GLOBAL	2	// only check for script-local functions
 
 #define MAX_LSHIFT_BITS (varnumber_T)((sizeof(uvarnumber_T) * 8) - 1)
+
 #endif // VIM__H

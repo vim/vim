@@ -35,13 +35,22 @@ func Test_version()
   call assert_true(has('patch-6.9.999'))
   call assert_true(has('patch-7.1.999'))
   call assert_true(has('patch-7.4.123'))
+  call assert_true(has('patch-7.4.123 ')) " Traling space can be allowed.
 
   call assert_false(has('patch-7'))
   call assert_false(has('patch-7.4'))
   call assert_false(has('patch-7.4.'))
   call assert_false(has('patch-9.1.0'))
   call assert_false(has('patch-9.9.1'))
+
   call assert_false(has('patch-abc'))
+  call assert_false(has('patchabc'))
+
+  call assert_false(has('patch-8x001'))
+  call assert_false(has('patch-9X0X0'))
+  call assert_false(has('patch-9-0-0'))
+  call assert_false(has('patch-09.0.0'))
+  call assert_false(has('patch-9.00.0'))
 endfunc
 
 func Test_op_ternary()
@@ -104,7 +113,7 @@ func Test_dict()
   END
   call v9.CheckLegacyAndVim9Success(lines)
 
-  call v9.CheckLegacyAndVim9Failure(["VAR i = has_key([], 'a')"], ['E715:', 'E1013:', 'E1206:'])
+  call v9.CheckLegacyAndVim9Failure(["VAR i = has_key([], 'a')"], ['E1206:', 'E1013:', 'E1206:'])
 endfunc
 
 func Test_strgetchar()

@@ -43,15 +43,10 @@ On non-Unix systems a termcap is only available if Vim was compiled with
 TERMCAP defined.
 
 					*builtin-terms* *builtin_terms*
-Which builtin terminals are available depends on a few defines in feature.h,
-which need to be set at compile time:
-    define		output of ":version"	terminals builtin	~
-NO_BUILTIN_TCAPS	-builtin_terms		none
-SOME_BUILTIN_TCAPS	+builtin_terms		most common ones (default)
-ALL_BUILTIN_TCAPS	++builtin_terms		all available
-
-You can see a list of available builtin terminals with ":set term=xxx" (when
-not running the GUI).  Also see |+builtin_terms|.
+A number of builtin terminals are available.  Since patch 9.0.0280 there is no
+difference between Vim versions.  You can see a list of available builtin
+terminals in the error message you get for `:set term=xxx` (when not running
+the GUI).  Also see |++builtin_terms|.
 
 If the termcap code is included Vim will try to get the strings for the
 terminal you are using from the termcap file and the builtin termcaps.  Both
@@ -648,6 +643,18 @@ Example for an xterm, this changes the color of the cursor: >
     endif
 NOTE: When Vim exits the shape for Normal mode will remain.  The shape from
 before Vim started will not be restored.
+
+For Windows Terminal you can use something like this: >
+    " Note: This should be set after `set termguicolors` or `set t_Co=256`.
+    if &term =~ 'xterm' || &term == 'win32'
+	" Use DECSCUSR escape sequences
+	let &t_SI = "\e[5 q"    " blink bar
+	let &t_SR = "\e[3 q"    " blink underline
+	let &t_EI = "\e[1 q"    " blink block
+	let &t_ti ..= "\e[1 q"   " blink block
+	let &t_te ..= "\e[0 q"   " default (depends on terminal, normally blink block)
+    endif
+
 {not available when compiled without the |+cursorshape| feature}
 
 							*termcap-title*

@@ -471,74 +471,77 @@ do_mouse(
 
     start_visual.lnum = 0;
 
-    // Check for clicking in the tab page line.
-    if (mouse_row == 0 && firstwin->w_winrow > 0)
+    if (TabPageIdxs != NULL)  // only when initialized
     {
-	if (is_drag)
+	// Check for clicking in the tab page line.
+	if (mouse_row == 0 && firstwin->w_winrow > 0)
 	{
-	    if (in_tab_line)
+	    if (is_drag)
 	    {
-		c1 = TabPageIdxs[mouse_col];
-		tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
-								? c1 - 1 : c1);
+		if (in_tab_line)
+		{
+		    c1 = TabPageIdxs[mouse_col];
+		    tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
+								    ? c1 - 1 : c1);
+		}
+		return FALSE;
 	    }
+
+	    // click in a tab selects that tab page
+	    if (is_click
+# ifdef FEAT_CMDWIN
+		    && cmdwin_type == 0
+# endif
+		    && mouse_col < Columns)
+	    {
+		in_tab_line = TRUE;
+		c1 = TabPageIdxs[mouse_col];
+		if (c1 >= 0)
+		{
+		    if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
+		    {
+			// double click opens new page
+			end_visual_mode_keep_button();
+			tabpage_new();
+			tabpage_move(c1 == 0 ? 9999 : c1 - 1);
+		    }
+		    else
+		    {
+			// Go to specified tab page, or next one if not clicking
+			// on a label.
+			goto_tabpage(c1);
+
+			// It's like clicking on the status line of a window.
+			if (curwin != old_curwin)
+			    end_visual_mode_keep_button();
+		    }
+		}
+		else
+		{
+		    tabpage_T	*tp;
+
+		    // Close the current or specified tab page.
+		    if (c1 == -999)
+			tp = curtab;
+		    else
+			tp = find_tabpage(-c1);
+		    if (tp == curtab)
+		    {
+			if (first_tabpage->tp_next != NULL)
+			    tabpage_close(FALSE);
+		    }
+		    else if (tp != NULL)
+			tabpage_close_other(tp, FALSE);
+		}
+	    }
+	    return TRUE;
+	}
+	else if (is_drag && in_tab_line)
+	{
+	    c1 = TabPageIdxs[mouse_col];
+	    tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
 	    return FALSE;
 	}
-
-	// click in a tab selects that tab page
-	if (is_click
-# ifdef FEAT_CMDWIN
-		&& cmdwin_type == 0
-# endif
-		&& mouse_col < Columns)
-	{
-	    in_tab_line = TRUE;
-	    c1 = TabPageIdxs[mouse_col];
-	    if (c1 >= 0)
-	    {
-		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
-		{
-		    // double click opens new page
-		    end_visual_mode_keep_button();
-		    tabpage_new();
-		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
-		}
-		else
-		{
-		    // Go to specified tab page, or next one if not clicking
-		    // on a label.
-		    goto_tabpage(c1);
-
-		    // It's like clicking on the status line of a window.
-		    if (curwin != old_curwin)
-			end_visual_mode_keep_button();
-		}
-	    }
-	    else
-	    {
-		tabpage_T	*tp;
-
-		// Close the current or specified tab page.
-		if (c1 == -999)
-		    tp = curtab;
-		else
-		    tp = find_tabpage(-c1);
-		if (tp == curtab)
-		{
-		    if (first_tabpage->tp_next != NULL)
-			tabpage_close(FALSE);
-		}
-		else if (tp != NULL)
-		    tabpage_close_other(tp, FALSE);
-	    }
-	}
-	return TRUE;
-    }
-    else if (is_drag && in_tab_line)
-    {
-	c1 = TabPageIdxs[mouse_col];
-	tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
-	return FALSE;
     }
 
     // When 'mousemodel' is "popup" or "popup_setpos", translate mouse events:
@@ -624,7 +627,7 @@ do_mouse(
 	    if (jump_flags)
 	    {
 		jump_flags = jump_to_mouse(jump_flags, NULL, which_button);
-		update_curbuf(VIsual_active ? INVERTED : VALID);
+		update_curbuf(VIsual_active ? UPD_INVERTED : UPD_VALID);
 		setcursor();
 		out_flush();    // Update before showing popup menu
 	    }
@@ -1027,7 +1030,7 @@ do_mouse(
 	    curwin->w_set_curswant = TRUE;
 	}
 	if (is_click)
-	    redraw_curbuf_later(INVERTED);	// update the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// update the inversion
     }
     else if (VIsual_active && !old_active)
     {
@@ -1164,7 +1167,7 @@ ins_mousescroll(int dir)
     // overlapped by the popup menu.
     if (pum_visible() && did_scroll)
     {
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(UPD_NOT_VALID);
 	ins_compl_show_pum();
     }
 
@@ -1597,7 +1600,7 @@ retnomove:
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
 	    end_visual_mode_keep_button();
-	    redraw_curbuf_later(INVERTED);	// delete the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// delete the inversion
 	}
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
 	// Continue a modeless selection in another window.
@@ -1738,7 +1741,7 @@ retnomove:
 			&& (flags & MOUSE_MAY_STOP_VIS))))
 	{
 	    end_visual_mode_keep_button();
-	    redraw_curbuf_later(INVERTED);	// delete the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// delete the inversion
 	}
 #ifdef FEAT_CMDWIN
 	if (cmdwin_type != 0 && wp != curwin)
@@ -1842,7 +1845,7 @@ retnomove:
 	if (flags & MOUSE_MAY_STOP_VIS)
 	{
 	    end_visual_mode_keep_button();
-	    redraw_curbuf_later(INVERTED);	// delete the inversion
+	    redraw_curbuf_later(UPD_INVERTED);	// delete the inversion
 	}
 
 #if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
@@ -1904,7 +1907,7 @@ retnomove:
 #endif
 	    curwin->w_valid &=
 		      ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    row = 0;
 	}
 	else if (row >= curwin->w_height)
@@ -1942,7 +1945,7 @@ retnomove:
 #ifdef FEAT_DIFF
 	    check_topfill(curwin, FALSE);
 #endif
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	    curwin->w_valid &=
 		      ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
 	    row = curwin->w_height - 1;
@@ -1967,7 +1970,8 @@ retnomove:
 
 	// Only use ScreenCols[] after the window was redrawn.  Mainly matters
 	// for tests, a user would not click before redrawing.
-	if (curwin->w_redr_type <= VALID_NO_UPDATE)
+	// Do not use when 'virtualedit' is active.
+	if (curwin->w_redr_type <= UPD_VALID_NO_UPDATE && !virtual_active())
 	    col_from_screen = ScreenCols[off];
 #ifdef FEAT_FOLDING
 	// Remember the character under the mouse, it might be a '-' or '+' in
@@ -2403,7 +2407,7 @@ check_termcode_mouse(
 	    // Apparently 0x23 and 0x24 are used by rxvt scroll wheel.
 	    // And 0x40 and 0x41 are used by some xterm emulator.
 	    wheel_code = mouse_code - (mouse_code >= 0x40 ? 0x40 : 0x23)
-		+ MOUSEWHEEL_LOW;
+							      + MOUSEWHEEL_LOW;
 	}
 #   endif
 
@@ -2788,8 +2792,10 @@ check_termcode_mouse(
 	    is_drag = TRUE;
 	current_button = held_button;
     }
-    else if (wheel_code == 0)
+    else
     {
+      if (wheel_code == 0)
+      {
 # ifdef CHECK_DOUBLE_CLICK
 #  ifdef FEAT_MOUSE_GPM
 	/*
@@ -2849,7 +2855,8 @@ check_termcode_mouse(
 	orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
 # endif
 	is_click = TRUE;
-	orig_mouse_code = mouse_code;
+      }
+      orig_mouse_code = mouse_code;
     }
     if (!is_drag)
 	held_button = mouse_code & MOUSE_CLICK_MASK;
@@ -3101,18 +3108,20 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
     int
 vcol2col(win_T *wp, linenr_T lnum, int vcol)
 {
-    // try to advance to the specified column
-    int		count = 0;
-    char_u	*ptr;
-    char_u	*line;
+    char_u	    *line;
+    chartabsize_T   cts;
 
-    line = ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    while (count < vcol && *ptr != NUL)
+    // try to advance to the specified column
+    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    init_chartabsize_arg(&cts, wp, lnum, 0, line, line);
+    while (cts.cts_vcol < vcol && *cts.cts_ptr != NUL)
     {
-	count += win_lbr_chartabsize(wp, line, ptr, count, NULL);
-	MB_PTR_ADV(ptr);
+	cts.cts_vcol += win_lbr_chartabsize(&cts, NULL);
+	MB_PTR_ADV(cts.cts_ptr);
     }
-    return (int)(ptr - line);
+    clear_chartabsize_arg(&cts);
+
+    return (int)(cts.cts_ptr - line);
 }
 #endif
 

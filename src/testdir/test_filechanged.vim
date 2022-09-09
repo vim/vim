@@ -253,15 +253,15 @@ endfunc
 
 " Test for editing a new buffer from a FileChangedShell autocmd
 func Test_FileChangedShell_newbuf()
-  call writefile(['one', 'two'], 'Xfile')
-  new Xfile
+  call writefile(['one', 'two'], 'Xchfile')
+  new Xchfile
   augroup testnewbuf
     autocmd FileChangedShell * enew
   augroup END
-  call writefile(['red'], 'Xfile')
+  call writefile(['red'], 'Xchfile')
   call assert_fails('checktime', 'E811:')
   au! testnewbuf
-  call delete('Xfile')
+  call delete('Xchfile')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

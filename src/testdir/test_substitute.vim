@@ -141,7 +141,7 @@ endfunc
 
 func Test_substitute_repeat()
   " This caused an invalid memory access.
-  split Xfile
+  split Xsubfile
   s/^/x
   call feedkeys("Qsc\<CR>y", 'tx')
   bwipe!
@@ -1068,7 +1068,7 @@ func Test_sub_edit_scriptfile()
   new
   norm o0000000000000000000000000000000000000000000000000000
   func EditScript()
-    silent! scr! Xfile
+    silent! scr! Xsedfile
   endfunc
   s/\%')/\=EditScript()
 

@@ -1472,13 +1472,33 @@ endfunc
 func Test_visual_area_adjusted_when_hiding()
   " The Visual area ended after the end of the line after :hide
   call setline(1, 'xxx')
-  vsplit Xfile
+  vsplit Xvaafile
   call setline(1, 'xxxxxxxx')
   norm! $o
   hid
   norm! zW
   bwipe!
   bwipe!
+endfunc
+
+func Test_switch_buffer_ends_visual_mode()
+  enew
+  call setline(1, 'foo')
+  set hidden
+  set virtualedit=all
+  let buf1 = bufnr()
+  enew
+  let buf2 = bufnr()
+  call setline(1, ['', '', '', ''])
+  call cursor(4, 5)
+  call feedkeys("\<C-V>3k4h", 'xt')
+  exe 'buffer' buf1
+  call assert_equal('n', mode())
+
+  set nohidden
+  set virtualedit=
+  bwipe!
+  exe 'bwipe!' buf2
 endfunc
 
 

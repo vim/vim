@@ -1392,11 +1392,8 @@ channel_open_func(typval_T *argvars)
 
     address = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN
-	 && (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL))
-    {
-	emsg(_(e_invalid_argument));
+	    && check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 	return NULL;
-    }
 
     if (*address == NUL)
     {
@@ -2734,12 +2731,8 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
     }
     else if (STRCMP(cmd, "redraw") == 0)
     {
-	exarg_T ea;
-
 	ch_log(channel, "redraw");
-	CLEAR_FIELD(ea);
-	ea.forceit = *arg != NUL;
-	ex_redraw(&ea);
+	redraw_cmd(*arg != NUL);
 	showruler(FALSE);
 	setcursor();
 	out_flush_cursor(TRUE, FALSE);
@@ -2930,7 +2923,7 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 		}
 	    }
 	}
-	redraw_buf_and_status_later(buffer, VALID);
+	redraw_buf_and_status_later(buffer, UPD_VALID);
 	channel_need_redraw = TRUE;
     }
 
@@ -3596,6 +3589,24 @@ channel_free_all(void)
 // Buffer size for reading incoming messages.
 #define MAXMSGSIZE 4096
 
+/*
+ * Check if there are remaining data that should be written for "in_part".
+ */
+    static int
+is_channel_write_remaining(chanpart_T *in_part)
+{
+    buf_T *buf = in_part->ch_bufref.br_buf;
+
+    if (in_part->ch_writeque.wq_next != NULL)
+	return TRUE;
+    if (buf == NULL)
+	return FALSE;
+    return in_part->ch_buf_append
+	    ? (in_part->ch_buf_bot < buf->b_ml.ml_line_count)
+	    : (in_part->ch_buf_top <= in_part->ch_buf_bot
+			    && in_part->ch_buf_top <= buf->b_ml.ml_line_count);
+}
+
 #if defined(HAVE_SELECT)
 /*
  * Add write fds where we are waiting for writing to be possible.
@@ -3611,8 +3622,7 @@ channel_fill_wfds(int maxfd_arg, fd_set *wfds)
 	chanpart_T  *in_part = &ch->ch_part[PART_IN];
 
 	if (in_part->ch_fd != INVALID_FD
-		&& (in_part->ch_bufref.br_buf != NULL
-		    || in_part->ch_writeque.wq_next != NULL))
+		&& is_channel_write_remaining(in_part))
 	{
 	    FD_SET((int)in_part->ch_fd, wfds);
 	    if ((int)in_part->ch_fd >= maxfd)
@@ -3636,8 +3646,7 @@ channel_fill_poll_write(int nfd_in, struct pollfd *fds)
 	chanpart_T  *in_part = &ch->ch_part[PART_IN];
 
 	if (in_part->ch_fd != INVALID_FD
-		&& (in_part->ch_bufref.br_buf != NULL
-		    || in_part->ch_writeque.wq_next != NULL))
+		&& is_channel_write_remaining(in_part))
 	{
 	    in_part->ch_poll_idx = nfd;
 	    fds[nfd].fd = in_part->ch_fd;
@@ -3872,8 +3881,6 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
 	// Store the read message in the queue.
 	channel_save(channel, part, buf, len, FALSE, "RECV ");
 	readlen += len;
-	if (len < MAXMSGSIZE)
-	    break;	// did read everything that's available
     }
 
     // Reading a disconnection (readlen == 0), or an error.
@@ -4601,11 +4608,9 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 	if (rettv_dict_alloc(rettv) == FAIL)
 	    return;
 
-	if (argvars[1].v_type != VAR_DICT)
-	{
-	    semsg(_(e_dict_required_for_argument_nr), 2);
+	if (check_for_dict_arg(argvars, 1) == FAIL)
 	    return;
-	}
+
 	d = argvars[1].vval.v_dict;
 	di = dict_find(d, (char_u *)"id", -1);
 	if (di != NULL && di->di_tv.v_type != VAR_NUMBER)

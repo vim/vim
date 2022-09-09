@@ -52,11 +52,14 @@ needed to target Windows XP.  But not older Windows versions (95, 98), see
 
 We do not provide download links, since Microsoft keeps changing them.  You
 can search for "Visual Studio Community 2015", for example.  You will need to
-create a Microsoft account (it's free).
+create a Microsoft account (it's free).  You need to download the "DVD", and
+execute the installer from it.
 
-When installing "Visual Studio Community 2015 with Update 3" make sure to
+When installing "Visual Studio Community 2015 with Update 3" or "Visual C++
+Build Tools for Visual Studio 2015 with Update 3" make sure to
 select "custom" and check "Windows XP Support for C++" and all checkboxes
-under "Universal Windows App Development Tools"
+under "Universal Windows App Development Tools".  Or whatever they are called
+now.
 
 
 Visual Studio

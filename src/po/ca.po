@@ -6637,7 +6637,7 @@ msgid "E805: Using a Float as a Number"
 msgstr "E805: Ús de Float com a Number"
 
 # semblant a eval.c:7120 i següents
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Ús de Float com a String"
 
 msgid "E807: Expected Float argument for printf()"

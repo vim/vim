@@ -253,7 +253,7 @@ save_re_pat(int idx, char_u *pat, int magic)
 #ifdef FEAT_SEARCH_EXTRA
 	// If 'hlsearch' set and search pat changed: need redraw.
 	if (p_hls)
-	    redraw_all_later(SOME_VALID);
+	    redraw_all_later(UPD_SOME_VALID);
 	set_no_hlsearch(FALSE);
 #endif
     }
@@ -577,7 +577,7 @@ set_last_search_pat(
 # ifdef FEAT_SEARCH_EXTRA
     // If 'hlsearch' set and search pat changed: need redraw.
     if (p_hls && idx == last_idx && !no_hlsearch)
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
 # endif
 }
 #endif
@@ -764,7 +764,7 @@ searchit(
 		col = at_first_line && (options & SEARCH_COL) ? pos->col
 								 : (colnr_T)0;
 		nmatched = vim_regexec_multi(&regmatch, win, buf,
-					     lnum, col, timed_out);
+							 lnum, col, timed_out);
 		// vim_regexec_multi() may clear "regprog"
 		if (regmatch.regprog == NULL)
 		    break;
@@ -1072,11 +1072,11 @@ searchit(
 	     * twice.
 	     */
 	    if (!p_ws || stop_lnum != 0 || got_int
-			        || called_emsg > called_emsg_before || *timed_out
+			      || called_emsg > called_emsg_before || *timed_out
 #ifdef FEAT_SEARCH_EXTRA
-				|| break_loop
+			      || break_loop
 #endif
-				|| found || loop)
+			      || found || loop)
 		break;
 
 	    /*
@@ -1284,7 +1284,7 @@ do_search(
      */
     if (no_hlsearch && !(options & SEARCH_KEEP))
     {
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
 	set_no_hlsearch(FALSE);
     }
 #endif
@@ -2800,7 +2800,7 @@ showmatch(
 	    if (dollar_vcol >= 0 && dollar_vcol == curwin->w_virtcol)
 		dollar_vcol = -1;
 	    ++curwin->w_virtcol;	// do display ')' just before "$"
-	    update_screen(VALID);	// show the new char first
+	    update_screen(UPD_VALID);	// show the new char first
 
 	    save_dollar_vcol = dollar_vcol;
 #ifdef CURSOR_SHAPE
@@ -3056,7 +3056,7 @@ current_search(
     // end are still the same, and the selection needs to be owned
     clip_star.vmode = NUL;
 #endif
-    redraw_curbuf_later(INVERTED);
+    redraw_curbuf_later(UPD_INVERTED);
     showmode();
 
     return OK;
@@ -3877,7 +3877,7 @@ search_line:
 		{
 		    // Return cursor to where we were
 		    validate_cursor();
-		    redraw_later(VALID);
+		    redraw_later(UPD_VALID);
 		    win_enter(curwin_save, TRUE);
 		}
 # ifdef FEAT_PROP_POPUP
@@ -4095,11 +4095,8 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 	listitem_T	*li;
 	int		error = FALSE;
 
-	if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_nonnull_dict_arg(argvars, 0) == FAIL)
 	    return;
-	}
 	dict = argvars[0].vval.v_dict;
 	di = dict_find(dict, (char_u *)"timeout", -1);
 	if (di != NULL)
@@ -4115,7 +4112,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 	    if (error)
 		return;
 	}
-	recompute = dict_get_bool(dict, (char_u *)"recompute", recompute);
+	recompute = dict_get_bool(dict, "recompute", recompute);
 	di = dict_find(dict, (char_u *)"pattern", -1);
 	if (di != NULL)
 	{
@@ -4645,7 +4642,8 @@ fuzzy_match_in_list(
 	    // For a dict, either use the specified key to lookup the string or
 	    // use the specified callback function to get the string.
 	    if (key != NULL)
-		itemstr = dict_get_string(li->li_tv.vval.v_dict, key, FALSE);
+		itemstr = dict_get_string(li->li_tv.vval.v_dict,
+							   (char *)key, FALSE);
 	    else
 	    {
 		typval_T	argv[2];
@@ -4750,8 +4748,7 @@ fuzzy_match_in_list(
 		if (items[i].score == SCORE_NONE)
 		    break;
 		if (items[i].lmatchpos != NULL
-			&& list_append_list(retlist, items[i].lmatchpos)
-								== FAIL)
+		      && list_append_list(retlist, items[i].lmatchpos) == FAIL)
 		    goto done;
 	    }
 
@@ -4814,11 +4811,8 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	dict_T		*d;
 	dictitem_T	*di;
 
-	if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_nonnull_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
 
 	// To search a dict, either a callback function or a key can be
 	// specified.
@@ -4874,17 +4868,26 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 	if (l == NULL)
 	    goto done;
 	if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	{
+	    vim_free(l);
 	    goto done;
+	}
 	l = list_alloc();
 	if (l == NULL)
 	    goto done;
 	if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	{
+	    vim_free(l);
 	    goto done;
+	}
 	l = list_alloc();
 	if (l == NULL)
 	    goto done;
 	if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	{
+	    vim_free(l);
 	    goto done;
+	}
     }
 
     fuzzy_match_in_list(argvars[0].vval.v_list, tv_get_string(&argvars[1]),

@@ -101,8 +101,14 @@ struct ectx_S {
 static garray_T profile_info_ga = {0, 0, sizeof(profinfo_T), 20, NULL};
 #endif
 
+// Get pointer to item in the stack.
+#define STACK_TV(idx) (((typval_T *)ectx->ec_stack.ga_data) + idx)
+
 // Get pointer to item relative to the bottom of the stack, -1 is the last one.
 #define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + (idx))
+
+// Get pointer to a local variable on the stack.  Negative for arguments.
+#define STACK_TV_VAR(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx + STACK_FRAME_SIZE + idx)
 
     void
 to_string_error(vartype_T vartype)
@@ -610,9 +616,6 @@ call_dfunc(
     return OK;
 }
 
-// Get pointer to item in the stack.
-#define STACK_TV(idx) (((typval_T *)ectx->ec_stack.ga_data) + idx)
-
 // Double linked list of funcstack_T in use.
 static funcstack_T *first_funcstack = NULL;
 
@@ -842,6 +845,177 @@ set_ref_in_funcstacks(int copyID)
     return FALSE;
 }
 
+// Ugly static to avoid passing the execution context around through many
+// layers.
+static ectx_T *current_ectx = NULL;
+
+/*
+ * Return TRUE if currently executing a :def function.
+ * Can be used by builtin functions only.
+ */
+    int
+in_def_function(void)
+{
+    return current_ectx != NULL;
+}
+
+/*
+ * Clear "current_ectx" and return the previous value.  To be used when calling
+ * a user function.
+ */
+    ectx_T *
+clear_currrent_ectx(void)
+{
+    ectx_T *r = current_ectx;
+
+    current_ectx = NULL;
+    return r;
+}
+
+    void
+restore_current_ectx(ectx_T *ectx)
+{
+    if (current_ectx != NULL)
+	iemsg("Restoring current_ectx while it is not NULL");
+    current_ectx = ectx;
+}
+
+/*
+ * Add an entry for a deferred function call to the currently executing
+ * function.
+ * Return the list or NULL when failed.
+ */
+    static list_T *
+add_defer_item(int var_idx, int argcount, ectx_T *ectx)
+{
+    typval_T	*defer_tv = STACK_TV_VAR(var_idx);
+    list_T	*defer_l;
+    list_T	*l;
+    typval_T	listval;
+
+    if (defer_tv->v_type != VAR_LIST)
+    {
+	// first time, allocate the list
+	if (rettv_list_alloc(defer_tv) == FAIL)
+	    return NULL;
+    }
+    defer_l = defer_tv->vval.v_list;
+
+    l = list_alloc_with_items(argcount + 1);
+    if (l == NULL)
+	return NULL;
+    listval.v_type = VAR_LIST;
+    listval.vval.v_list = l;
+    listval.v_lock = 0;
+    if (list_insert_tv(defer_l, &listval, defer_l->lv_first) == FAIL)
+    {
+	vim_free(l);
+	return NULL;
+    }
+
+    return l;
+}
+
+/*
+ * Handle ISN_DEFER.  Stack has a function reference and "argcount" arguments.
+ * The local variable that lists deferred functions is "var_idx".
+ * Returns OK or FAIL.
+ */
+    static int
+defer_command(int var_idx, int argcount, ectx_T *ectx)
+{
+    list_T	*l = add_defer_item(var_idx, argcount, ectx);
+    int		i;
+    typval_T	*func_tv;
+
+    if (l == NULL)
+	return FAIL;
+
+    func_tv = STACK_TV_BOT(-argcount - 1);
+    // TODO: check type is a funcref
+    list_set_item(l, 0, func_tv);
+
+    for (i = 1; i <= argcount; ++i)
+	list_set_item(l, i, STACK_TV_BOT(-argcount + i - 1));
+    ectx->ec_stack.ga_len -= argcount + 1;
+    return OK;
+}
+
+/*
+ * Add a deferred function "name" with one argument "arg_tv".
+ * Consumes "name", also on failure.
+ * Only to be called when in_def_function() returns TRUE.
+ */
+    int
+add_defer_function(char_u *name, int argcount, typval_T *argvars)
+{
+    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+						  + current_ectx->ec_dfunc_idx;
+    list_T	*l;
+    typval_T	func_tv;
+    int		i;
+
+    if (dfunc->df_defer_var_idx == 0)
+    {
+	iemsg("df_defer_var_idx is zero");
+	vim_free(name);
+	return FAIL;
+    }
+
+    l = add_defer_item(dfunc->df_defer_var_idx - 1, 1, current_ectx);
+    if (l == NULL)
+    {
+	vim_free(name);
+	return FAIL;
+    }
+
+    func_tv.v_type = VAR_FUNC;
+    func_tv.v_lock = 0;
+    func_tv.vval.v_string = name;
+    list_set_item(l, 0, &func_tv);
+
+    for (i = 0; i < argcount; ++i)
+	list_set_item(l, i + 1, argvars + i);
+    return OK;
+}
+
+/*
+ * Invoked when returning from a function: Invoke any deferred calls.
+ */
+    static void
+invoke_defer_funcs(ectx_T *ectx)
+{
+    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							  + ectx->ec_dfunc_idx;
+    typval_T	*defer_tv = STACK_TV_VAR(dfunc->df_defer_var_idx - 1);
+    listitem_T	*li;
+
+    if (defer_tv->v_type != VAR_LIST)
+	return;	 // no function added
+    for (li = defer_tv->vval.v_list->lv_first; li != NULL; li = li->li_next)
+    {
+	list_T	    *l = li->li_tv.vval.v_list;
+	typval_T    rettv;
+	typval_T    argvars[MAX_FUNC_ARGS];
+	int	    i;
+	listitem_T  *arg_li = l->lv_first;
+	funcexe_T   funcexe;
+
+	for (i = 0; i < l->lv_len - 1; ++i)
+	{
+	    arg_li = arg_li->li_next;
+	    argvars[i] = arg_li->li_tv;
+	}
+
+	CLEAR_FIELD(funcexe);
+	funcexe.fe_evaluate = TRUE;
+	rettv.v_type = VAR_UNKNOWN;
+	(void)call_func(l->lv_first->li_tv.vval.v_string, -1,
+				     &rettv, l->lv_len - 1, argvars, &funcexe);
+	clear_tv(&rettv);
+    }
+}
+
 /*
  * Return from the current function.
  */
@@ -875,6 +1049,9 @@ func_return(ectx_T *ectx)
 	}
     }
 #endif
+
+    if (dfunc->df_defer_var_idx > 0)
+	invoke_defer_funcs(ectx);
 
     // No check for uf_refcount being zero, cannot think of a way that would
     // happen.
@@ -949,8 +1126,6 @@ func_return(ectx_T *ectx)
     return OK;
 }
 
-#undef STACK_TV
-
 /*
  * Prepare arguments and rettv for calling a builtin or user function.
  */
@@ -981,10 +1156,6 @@ call_prepare(int argcount, typval_T *argvars, ectx_T *ectx)
 
     return OK;
 }
-
-// Ugly global to avoid passing the execution context around through many
-// layers.
-static ectx_T *current_ectx = NULL;
 
 /*
  * Call a builtin function by index.
@@ -1731,16 +1902,6 @@ typedef struct subs_expr_S {
     isn_T	*subs_instr;
     int		subs_status;
 } subs_expr_T;
-
-// Get pointer to item in the stack.
-#define STACK_TV(idx) (((typval_T *)ectx->ec_stack.ga_data) + idx)
-
-// Get pointer to item at the bottom of the stack, -1 is the bottom.
-#undef STACK_TV_BOT
-#define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + idx)
-
-// Get pointer to a local variable on the stack.  Negative for arguments.
-#define STACK_TV_VAR(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx + STACK_FRAME_SIZE + idx)
 
 // Set when calling do_debug().
 static ectx_T	*debug_context = NULL;
@@ -2858,10 +3019,12 @@ exec_instructions(ectx_T *ectx)
 
 	    // :execute {string} ...
 	    // :echomsg {string} ...
+	    // :echowindow {string} ...
 	    // :echoconsole {string} ...
 	    // :echoerr {string} ...
 	    case ISN_EXECUTE:
 	    case ISN_ECHOMSG:
+	    case ISN_ECHOWINDOW:
 	    case ISN_ECHOCONSOLE:
 	    case ISN_ECHOERR:
 		{
@@ -2932,6 +3095,14 @@ exec_instructions(ectx_T *ectx)
 				msg_attr(ga.ga_data, echo_attr);
 				out_flush();
 			    }
+#ifdef HAS_MESSAGE_WINDOW
+			    else if (iptr->isn_type == ISN_ECHOWINDOW)
+			    {
+				start_echowindow();
+				msg_attr(ga.ga_data, echo_attr);
+				end_echowindow();
+			    }
+#endif
 			    else if (iptr->isn_type == ISN_ECHOCONSOLE)
 			    {
 				ui_write(ga.ga_data, (int)STRLEN(ga.ga_data),
@@ -3658,6 +3829,13 @@ exec_instructions(ectx_T *ectx)
 							   ectx, iptr) == FAIL)
 			goto on_error;
 		}
+		break;
+
+	    // :defer func(arg)
+	    case ISN_DEFER:
+		if (defer_command(iptr->isn_arg.defer.defer_var_idx,
+			     iptr->isn_arg.defer.defer_argcount, ectx) == FAIL)
+		    goto on_error;
 		break;
 
 	    // return from a :def function call without a value
@@ -4923,12 +5101,12 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PROF_END:
 		{
 #ifdef FEAT_PROFILE
-		    funccall_T cookie;
-		    ufunc_T	    *cur_ufunc =
+		    funccall_T	cookie;
+		    ufunc_T	*cur_ufunc =
 				    (((dfunc_T *)def_functions.ga_data)
 					       + ectx->ec_dfunc_idx)->df_ufunc;
 
-		    cookie.func = cur_ufunc;
+		    cookie.fc_func = cur_ufunc;
 		    if (iptr->isn_type == ISN_PROF_START)
 		    {
 			func_line_start(&cookie, iptr->isn_lnum);
@@ -5014,13 +5192,15 @@ on_fatal_error:
 done:
     ret = OK;
 theend:
+    may_invoke_defer_funcs(ectx);
+
     dict_stack_clear(dict_stack_len_at_start);
     ectx->ec_trylevel_at_start = save_trylevel_at_start;
     return ret;
 }
 
 /*
- * Execute the instructions from a VAR_INSTR typeval and put the result in
+ * Execute the instructions from a VAR_INSTR typval and put the result in
  * "rettv".
  * Return OK or FAIL.
  */
@@ -5092,15 +5272,21 @@ call_def_function(
     ufunc_T	*ufunc,
     int		argc_arg,	// nr of arguments
     typval_T	*argv,		// arguments
+    int		flags,		// DEF_ flags
     partial_T	*partial,	// optional partial for context
+    funccall_T	*funccal,
     typval_T	*rettv)		// return value
 {
     ectx_T	ectx;		// execution context
     int		argc = argc_arg;
+    int		partial_argc = partial == NULL
+				  || (flags & DEF_USE_PT_ARGV) == 0
+							? 0 : partial->pt_argc;
+    int		total_argc = argc + partial_argc;
     typval_T	*tv;
     int		idx;
     int		ret = FAIL;
-    int		defcount = ufunc->uf_args.ga_len - argc;
+    int		defcount = ufunc->uf_args.ga_len - total_argc;
     sctx_T	save_current_sctx = current_sctx;
     int		did_emsg_before = did_emsg_cumul + did_emsg;
     int		save_suppress_errthrow = suppress_errthrow;
@@ -5164,30 +5350,34 @@ call_def_function(
     ectx.ec_did_emsg_before = did_emsg_before;
     ++ex_nesting_level;
 
-    idx = argc - ufunc->uf_args.ga_len;
+    idx = total_argc - ufunc->uf_args.ga_len;
     if (idx > 0 && ufunc->uf_va_name == NULL)
     {
 	semsg(NGETTEXT(e_one_argument_too_many, e_nr_arguments_too_many,
-			idx), idx);
+								    idx), idx);
 	goto failed_early;
     }
-    idx = argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
+    idx = total_argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
     if (idx < 0)
     {
 	semsg(NGETTEXT(e_one_argument_too_few, e_nr_arguments_too_few,
-			-idx), -idx);
+								  -idx), -idx);
 	goto failed_early;
     }
 
-    // Put arguments on the stack, but no more than what the function expects.
-    // A lambda can be called with more arguments than it uses.
-    for (idx = 0; idx < argc
+    // Put values from the partial and arguments on the stack, but no more than
+    // what the function expects.  A lambda can be called with more arguments
+    // than it uses.
+    for (idx = 0; idx < total_argc
 	    && (ufunc->uf_va_name != NULL || idx < ufunc->uf_args.ga_len);
 									 ++idx)
     {
+	int argv_idx = idx - partial_argc;
+
+	tv = idx < partial_argc ? partial->pt_argv + idx : argv + argv_idx;
 	if (idx >= ufunc->uf_args.ga_len - ufunc->uf_def_args.ga_len
-		&& argv[idx].v_type == VAR_SPECIAL
-		&& argv[idx].vval.v_number == VVAL_NONE)
+		&& tv->v_type == VAR_SPECIAL
+		&& tv->vval.v_number == VVAL_NONE)
 	{
 	    // Use the default value.
 	    STACK_TV_BOT(0)->v_type = VAR_UNKNOWN;
@@ -5196,10 +5386,10 @@ call_def_function(
 	{
 	    if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
 		    && check_typval_arg_type(
-			ufunc->uf_arg_types[idx], &argv[idx],
-							NULL, idx + 1) == FAIL)
+			ufunc->uf_arg_types[idx], tv,
+						   NULL, argv_idx + 1) == FAIL)
 		goto failed_early;
-	    copy_tv(&argv[idx], STACK_TV_BOT(0));
+	    copy_tv(tv, STACK_TV_BOT(0));
 	}
 	++ectx.ec_stack.ga_len;
     }
@@ -5329,6 +5519,10 @@ call_def_function(
 	ectx.ec_instr = INSTRUCTIONS(dfunc);
     }
 
+    // Store the execution context in funccal, used by invoke_all_defer().
+    if (funccal != NULL)
+	funccal->fc_ectx = &ectx;
+
     // Following errors are in the function, not the caller.
     // Commands behave like vim9script.
     estack_push_ufunc(ufunc, 1);
@@ -5372,8 +5566,7 @@ call_def_function(
     }
 
     // When failed need to unwind the call stack.
-    while (ectx.ec_frame_idx != ectx.ec_initial_frame_idx)
-	func_return(&ectx);
+    unwind_def_callstack(&ectx);
 
     // Deal with any remaining closures, they may be in use somewhere.
     if (ectx.ec_funcrefs.ga_len > 0)
@@ -5436,6 +5629,30 @@ failed_early:
 						   printable_func_name(ufunc));
     funcdepth_restore(orig_funcdepth);
     return ret;
+}
+
+/*
+ * Called when a def function has finished (possibly failed).
+ * Invoke all the function returns to clean up and invoke deferred functions,
+ * except the toplevel one.
+ */
+    void
+unwind_def_callstack(ectx_T *ectx)
+{
+    while (ectx->ec_frame_idx != ectx->ec_initial_frame_idx)
+	func_return(ectx);
+}
+
+/*
+ * Invoke any deffered functions for the top function in "ectx".
+ */
+    void
+may_invoke_defer_funcs(ectx_T *ectx)
+{
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
+
+    if (dfunc->df_defer_var_idx > 0)
+	invoke_defer_funcs(ectx);
 }
 
 /*
@@ -5568,6 +5785,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_ECHOMSG:
 		smsg("%s%4d ECHOMSG %lld", pfx, current,
+					  (varnumber_T)(iptr->isn_arg.number));
+		break;
+	    case ISN_ECHOWINDOW:
+		smsg("%s%4d ECHOWINDOW %lld", pfx, current,
 					  (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOCONSOLE:
@@ -5888,6 +6109,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_PCALL_END:
 		smsg("%s%4d PCALL end", pfx, current);
+		break;
+	    case ISN_DEFER:
+		smsg("%s%4d DEFER %d args", pfx, current,
+				      (int)iptr->isn_arg.defer.defer_argcount);
 		break;
 	    case ISN_RETURN:
 		smsg("%s%4d RETURN", pfx, current);

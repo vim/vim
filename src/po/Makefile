@@ -220,7 +220,9 @@ vim.desktop: vim.desktop.in $(POFILES)
 	if command -v desktop-file-validate; then desktop-file-validate tmp_vim.desktop; fi
 	mv tmp_vim.desktop vim.desktop
 
-gvim.desktop: gvim.desktop.in $(POFILES)
+# The dependency on vim.desktop is only to avoid the two targets are build at
+# the same time, which causes a race for the LINGUAS file.
+gvim.desktop: gvim.desktop.in $(POFILES) vim.desktop
 	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o tmp_gvim.desktop
 	rm -f LINGUAS

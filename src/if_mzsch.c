@@ -1631,7 +1631,7 @@ vim_command(void *data, int argc, Scheme_Object **argv)
 
     // may be use do_cmdline_cmd?
     do_cmdline(BYTE_STRING_VALUE(cmd), NULL, NULL, DOCMD_NOWAIT|DOCMD_VERBOSE);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
 
     MZ_GC_UNREG();
     raise_if_error();
@@ -1836,7 +1836,7 @@ set_option(void *data, int argc, Scheme_Object **argv)
     MZ_GC_UNREG();
     do_set(command, scope);
     vim_free(command);
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
     curbuf = save_curb;
     curwin = save_curw;
     raise_if_error();
@@ -2106,7 +2106,7 @@ set_cursor(void *data, int argc, Scheme_Object **argv)
     win->win->w_cursor.lnum = lnum;
     win->win->w_cursor.col = col;
     win->win->w_set_curswant = TRUE;
-    update_screen(VALID);
+    update_screen(UPD_VALID);
 
     raise_if_error();
     return scheme_void;
@@ -2781,7 +2781,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	}
 
 	curbuf = savebuf;
-	update_screen(VALID);
+	update_screen(UPD_VALID);
 
 	MZ_GC_UNREG();
 	raise_if_error();
@@ -2841,7 +2841,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	free_array(array);
 	MZ_GC_UNREG();
 	curbuf = savebuf;
-	update_screen(VALID);
+	update_screen(UPD_VALID);
     }
 
     MZ_GC_UNREG();

@@ -126,17 +126,16 @@ set_init_1(int clean_arg)
 	set_string_default_esc("sh", p, TRUE);
 #endif
 
-#ifdef FEAT_WILDIGN
     /*
      * Set the default for 'backupskip' to include environment variables for
      * temp files.
      */
     {
-# ifdef UNIX
+#ifdef UNIX
 	static char	*(names[4]) = {"", "TMPDIR", "TEMP", "TMP"};
-# else
+#else
 	static char	*(names[3]) = {"TMPDIR", "TEMP", "TMP"};
-# endif
+#endif
 	int		len;
 	garray_T	ga;
 	int		mustfree;
@@ -148,15 +147,15 @@ set_init_1(int clean_arg)
 	for (n = 0; n < (long)ARRAY_LENGTH(names); ++n)
 	{
 	    mustfree = FALSE;
-# ifdef UNIX
+#ifdef UNIX
 	    if (*names[n] == NUL)
-#  ifdef MACOS_X
+# ifdef MACOS_X
 		p = (char_u *)"/private/tmp";
-#  else
+# else
 		p = (char_u *)"/tmp";
-#  endif
-	    else
 # endif
+	    else
+#endif
 		p = vim_getenv((char_u *)names[n], &mustfree);
 	    if (p != NULL && *p != NUL)
 	    {
@@ -186,7 +185,6 @@ set_init_1(int clean_arg)
 	    vim_free(ga.ga_data);
 	}
     }
-#endif
 
     /*
      * 'maxmemtot' and 'maxmem' may have to be adjusted for available memory
@@ -220,7 +218,6 @@ set_init_1(int clean_arg)
 	}
     }
 
-#ifdef FEAT_SEARCHPATH
     {
 	char_u	*cdpath;
 	char_u	*buf;
@@ -262,7 +259,6 @@ set_init_1(int clean_arg)
 		vim_free(cdpath);
 	}
     }
-#endif
 
 #if defined(FEAT_POSTSCRIPT) && \
 	(defined(MSWIN) || defined(VMS) || defined(MAC) || defined(hpux))
@@ -1278,7 +1274,7 @@ do_set(
 		set_options_default(OPT_FREE | opt_flags);
 		didset_options();
 		didset_options2();
-		redraw_all_later(CLEAR);
+		redraw_all_later(UPD_CLEAR);
 	    }
 	    else
 	    {
@@ -1716,8 +1712,6 @@ do_set(
 #endif
 			unsigned  newlen;
 			int	  comma;
-			int	  new_value_alloced;	// new string option
-							// was allocated
 
 			// When using ":set opt=val" for a global option
 			// with a local value the local value will be
@@ -1785,13 +1779,11 @@ do_set(
 				    s = newval;
 				newval = vim_strsave(s);
 			    }
-			    new_value_alloced = TRUE;
 			}
 			else if (nextchar == '<')	// set to global val
 			{
 			    newval = vim_strsave(*(char_u **)get_varp_scope(
 					     &(options[opt_idx]), OPT_GLOBAL));
-			    new_value_alloced = TRUE;
 			}
 			else
 			{
@@ -2060,7 +2052,6 @@ do_set(
 
 			    if (save_arg != NULL)   // number for 'whichwrap'
 				arg = save_arg;
-			    new_value_alloced = TRUE;
 			}
 
 			/*
@@ -2109,8 +2100,7 @@ do_set(
 			    // 'syntax' or 'filetype' autocommands may be
 			    // triggered that can cause havoc.
 			    errmsg = did_set_string_option(
-				    opt_idx, (char_u **)varp,
-				    new_value_alloced, oldval, errbuf,
+				    opt_idx, (char_u **)varp, oldval, errbuf,
 				    opt_flags, &value_checked);
 
 			    secure = secure_saved;
@@ -2153,7 +2143,7 @@ do_set(
 			}
 			if (full_screen)
 			    ttest(FALSE);
-			redraw_all_later(CLEAR);
+			redraw_all_later(UPD_CLEAR);
 		    }
 		}
 
@@ -2194,7 +2184,7 @@ skip:
 	    // make sure all characters are printable
 	    trans_characters(IObuff, IOSIZE);
 
-	    ++no_wait_return;		// wait_return done later
+	    ++no_wait_return;		// wait_return() done later
 	    emsg((char *)IObuff);	// show error highlighted
 	    --no_wait_return;
 
@@ -2929,7 +2919,7 @@ set_bool_option(
     // when 'ignorecase' is set or reset and 'hlsearch' is set, redraw
     else if ((int *)varp == &p_ic && p_hls)
     {
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(UPD_SOME_VALID);
     }
 
 #ifdef FEAT_SEARCH_EXTRA
@@ -3212,7 +3202,7 @@ set_bool_option(
 	// 'relativenumber' option is toggled, then don't refresh the screen
 	// (optimization).
 	if (!(curwin->w_p_nu && ((int *)varp == &curwin->w_p_rnu)))
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
     }
 #endif
 
@@ -3855,13 +3845,13 @@ check_redraw(long_u flags)
     if ((flags & P_RBUF) || (flags & P_RWIN) || all)
 	changed_window_setting();
     if (flags & P_RBUF)
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
     if (flags & P_RWINONLY)
-	redraw_later(NOT_VALID);
+	redraw_later(UPD_NOT_VALID);
     if (doclear)
-	redraw_all_later(CLEAR);
+	redraw_all_later(UPD_CLEAR);
     else if (all)
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(UPD_NOT_VALID);
 }
 
 /*
@@ -4354,7 +4344,7 @@ set_option_value(
 	    add_termcode(key_name, string, FALSE);
 	    if (full_screen)
 		ttest(FALSE);
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
 	    return NULL;
 	}
 
@@ -4475,6 +4465,20 @@ is_option_allocated(char *name)
     int idx = findoption((char_u *)name);
 
     return idx >= 0 && (options[idx].flags & P_ALLOCED);
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return TRUE if "name" is a string option.
+ * Returns FALSE if option "name" does not exist.
+ */
+    int
+is_string_option(char_u *name)
+{
+    int idx = findoption(name);
+
+    return idx >= 0 && (options[idx].flags & P_STRING);
 }
 #endif
 
@@ -5205,12 +5209,12 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_LCS:
 	    clear_string_option(&((win_T *)from)->w_p_lcs);
 	    set_chars_option((win_T *)from, &((win_T *)from)->w_p_lcs, TRUE);
-	    redraw_later(NOT_VALID);
+	    redraw_later(UPD_NOT_VALID);
 	    break;
 	case PV_FCS:
 	    clear_string_option(&((win_T *)from)->w_p_fcs);
 	    set_chars_option((win_T *)from, &((win_T *)from)->w_p_fcs, TRUE);
-	    redraw_later(NOT_VALID);
+	    redraw_later(UPD_NOT_VALID);
 	    break;
 	case PV_VE:
 	    clear_string_option(&((win_T *)from)->w_p_ve);
@@ -5506,16 +5510,12 @@ get_varp(struct vimoption *p)
 	case PV_MOD:	return (char_u *)&(curbuf->b_changed);
 	case PV_NF:	return (char_u *)&(curbuf->b_p_nf);
 	case PV_PI:	return (char_u *)&(curbuf->b_p_pi);
-#ifdef FEAT_TEXTOBJ
 	case PV_QE:	return (char_u *)&(curbuf->b_p_qe);
-#endif
 	case PV_RO:	return (char_u *)&(curbuf->b_p_ro);
 	case PV_SI:	return (char_u *)&(curbuf->b_p_si);
 	case PV_SN:	return (char_u *)&(curbuf->b_p_sn);
 	case PV_STS:	return (char_u *)&(curbuf->b_p_sts);
-#ifdef FEAT_SEARCHPATH
 	case PV_SUA:	return (char_u *)&(curbuf->b_p_sua);
-#endif
 	case PV_SWF:	return (char_u *)&(curbuf->b_p_swf);
 #ifdef FEAT_SYN_HL
 	case PV_SMC:	return (char_u *)&(curbuf->b_p_smc);
@@ -6074,10 +6074,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_key = vim_strsave(p_key);
 	    COPY_OPT_SCTX(buf, BV_KEY);
 #endif
-#ifdef FEAT_SEARCHPATH
 	    buf->b_p_sua = vim_strsave(p_sua);
 	    COPY_OPT_SCTX(buf, BV_SUA);
-#endif
 #ifdef FEAT_KEYMAP
 	    buf->b_p_keymap = vim_strsave(p_keymap);
 	    COPY_OPT_SCTX(buf, BV_KMAP);
@@ -6124,10 +6122,8 @@ buf_copy_options(buf_T *buf, int flags)
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_tsrfu = empty_option;
 #endif
-#ifdef FEAT_TEXTOBJ
 	    buf->b_p_qe = vim_strsave(p_qe);
 	    COPY_OPT_SCTX(buf, BV_QE);
-#endif
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
 	    buf->b_p_bexpr = empty_option;
 #endif
@@ -6376,20 +6372,14 @@ set_context_in_set_cmd(
 		|| p == (char_u *)&p_path
 		|| p == (char_u *)&p_pp
 		|| p == (char_u *)&p_rtp
-#ifdef FEAT_SEARCHPATH
 		|| p == (char_u *)&p_cdpath
-#endif
 #ifdef FEAT_SESSION
 		|| p == (char_u *)&p_vdir
 #endif
 		)
 	{
 	    xp->xp_context = EXPAND_DIRECTORIES;
-	    if (p == (char_u *)&p_path
-#ifdef FEAT_SEARCHPATH
-		    || p == (char_u *)&p_cdpath
-#endif
-		   )
+	    if (p == (char_u *)&p_path || p == (char_u *)&p_cdpath)
 		xp->xp_backslash = XP_BS_THREE;
 	    else
 		xp->xp_backslash = XP_BS_ONE;

@@ -31,6 +31,8 @@ DOCS = \
 	filetype.txt \
 	fold.txt \
 	ft_ada.txt \
+	ft_context.txt \
+	ft_mp.txt \
 	ft_ps1.txt \
 	ft_raku.txt \
 	ft_rust.txt \
@@ -113,6 +115,7 @@ DOCS = \
 	todo.txt \
 	uganda.txt \
 	undo.txt \
+	userfunc.txt \
 	usr_01.txt \
 	usr_02.txt \
 	usr_03.txt \
@@ -180,6 +183,8 @@ HTMLS = \
 	filetype.html \
 	fold.html \
 	ft_ada.html \
+	ft_context.html \
+	ft_mp.html \
 	ft_ps1.html \
 	ft_raku.html \
 	ft_rust.html \
@@ -261,6 +266,7 @@ HTMLS = \
 	todo.html \
 	uganda.html \
 	undo.html \
+	userfunc.html \
 	usr_01.html \
 	usr_02.html \
 	usr_03.html \

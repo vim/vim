@@ -31,6 +31,7 @@ int screen_valid(int doclear);
 void screenalloc(int doclear);
 void free_screenlines(void);
 void screenclear(void);
+void redraw_as_cleared(void);
 void line_was_clobbered(int screen_lnum);
 int can_clear(char_u *p);
 void screen_start(void);
@@ -56,4 +57,5 @@ int number_width(win_T *wp);
 int screen_screencol(void);
 int screen_screenrow(void);
 char *set_chars_option(win_T *wp, char_u **varp, int apply);
+char *check_chars_options(void);
 /* vim: set ft=c : */

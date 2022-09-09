@@ -389,4 +389,29 @@ func Test_tagfunc_callback()
   %bw!
 endfunc
 
+func Test_tagfunc_wipes_buffer()
+  func g:Tag0unc0(t,f,o)
+   bwipe
+  endfunc
+  set tagfunc=g:Tag0unc0
+  new
+  cal assert_fails('tag 0', 'E987:')
+
+  delfunc g:Tag0unc0
+  set tagfunc=
+endfunc
+
+func Test_tagfunc_closes_window()
+  split any
+  func MytagfuncClose(pat, flags, info)
+    close
+    return [{'name' : 'mytag', 'filename' : 'Xtest', 'cmd' : '1'}]
+  endfunc
+  set tagfunc=MytagfuncClose
+  call assert_fails('tag xyz', 'E1299:')
+
+  set tagfunc=
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

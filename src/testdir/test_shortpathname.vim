@@ -19,12 +19,22 @@ endfunc
 func Test_ColonEight()
   let save_dir = getcwd()
 
-  " This could change for CygWin to //cygdrive/c
+  " This could change for CygWin to //cygdrive/c .
   let dir1 = 'c:/x.x.y'
-  if filereadable(dir1) || isdirectory(dir1)
-    call assert_report("Fatal: '" . dir1 . "' exists, cannot run test")
-    return
-  endif
+  let trycount = 5
+  while 1
+    if !filereadable(dir1) && !isdirectory(dir1)
+      break
+    endif
+    if trycount == 1
+      call assert_report("Fatal: '" . dir1 . "' exists, cannot run this test")
+      return
+    endif
+    " When tests run in parallel the directory may exist, wait a bit until it
+    " is gone.
+    sleep 5
+    let trycount -= 1
+  endwhile
 
   let file1 = dir1 . '/zz.y.txt'
   let nofile1 = dir1 . '/z.y.txt'

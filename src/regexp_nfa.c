@@ -6774,8 +6774,18 @@ nfa_regmatch(
 			result = col > t->state->val * ts;
 		    }
 		    if (!result)
-			result = nfa_re_num_cmp(t->state->val, op,
-				(long_u)win_linetabsize(wp, rex.line, col) + 1);
+		    {
+			linenr_T    lnum = REG_MULTI
+					    ? rex.reg_firstlnum + rex.lnum : 1;
+			long_u	    vcol;
+
+			if (REG_MULTI && (lnum <= 0
+				   || lnum > wp->w_buffer->b_ml.ml_line_count))
+			    lnum = 1;
+			vcol = (long_u)win_linetabsize(wp, lnum,
+								rex.line, col);
+			result = nfa_re_num_cmp(t->state->val, op, vcol + 1);
+		    }
 		    if (result)
 		    {
 			add_here = TRUE;

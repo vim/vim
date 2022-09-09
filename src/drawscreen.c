@@ -28,7 +28,7 @@
  *
  * Commands that scroll a window change w_topline and must call
  * check_cursor() to move the cursor into the visible part of the window, and
- * call redraw_later(VALID) to have the window displayed by update_screen()
+ * call redraw_later(UPD_VALID) to have the window displayed by update_screen()
  * later.
  *
  * Commands that change text in the buffer must call changed_bytes() or
@@ -40,23 +40,23 @@
  *
  * Commands that change how a window is displayed (e.g., setting 'list') or
  * invalidate the contents of a window in another way (e.g., change fold
- * settings), must call redraw_later(NOT_VALID) to have the whole window
+ * settings), must call redraw_later(UPD_NOT_VALID) to have the whole window
  * redisplayed by update_screen() later.
  *
  * Commands that change how a buffer is displayed (e.g., setting 'tabstop')
- * must call redraw_curbuf_later(NOT_VALID) to have all the windows for the
+ * must call redraw_curbuf_later(UPD_NOT_VALID) to have all the windows for the
  * buffer redisplayed by update_screen() later.
  *
  * Commands that change highlighting and possibly cause a scroll too must call
- * redraw_later(SOME_VALID) to update the whole window but still use scrolling
- * to avoid redrawing everything.  But the length of displayed lines must not
- * change, use NOT_VALID then.
+ * redraw_later(UPD_SOME_VALID) to update the whole window but still use
+ * scrolling to avoid redrawing everything.  But the length of displayed lines
+ * must not change, use UPD_NOT_VALID then.
  *
- * Commands that move the window position must call redraw_later(NOT_VALID).
+ * Commands that move the window position must call redraw_later(UPD_NOT_VALID).
  * TODO: should minimize redrawing by scrolling when possible.
  *
  * Commands that change everything (e.g., resizing the screen) must call
- * redraw_all_later(NOT_VALID) or redraw_all_later(CLEAR).
+ * redraw_all_later(UPD_NOT_VALID) or redraw_all_later(UPD_CLEAR).
  *
  * Things that are handled indirectly:
  * - When messages scroll the screen up, msg_scrolled will be set and
@@ -99,7 +99,7 @@ update_screen(int type_arg)
     if (!screen_valid(TRUE))
 	return FAIL;
 
-    if (type == VALID_NO_UPDATE)
+    if (type == UPD_VALID_NO_UPDATE)
     {
 	no_update = TRUE;
 	type = 0;
@@ -134,12 +134,12 @@ update_screen(int type_arg)
     }
 
     // May need to update w_lines[].
-    if (curwin->w_lines_valid == 0 && type < NOT_VALID
+    if (curwin->w_lines_valid == 0 && type < UPD_NOT_VALID
 #ifdef FEAT_TERMINAL
 	    && !term_do_update_window(curwin)
 #endif
 		)
-	type = NOT_VALID;
+	type = UPD_NOT_VALID;
 
     // Postpone the redrawing when it's not needed and when being called
     // recursively.
@@ -147,7 +147,7 @@ update_screen(int type_arg)
     {
 	redraw_later(type);		// remember type for next time
 	must_redraw = type;
-	if (type > INVERTED_ALL)
+	if (type > UPD_INVERTED_ALL)
 	    curwin->w_lines_valid = 0;	// don't use w_lines[].wl_size now
 	return FAIL;
     }
@@ -170,38 +170,47 @@ update_screen(int type_arg)
     if (msg_scrolled)
     {
 	clear_cmdline = TRUE;
-	if (msg_scrolled > Rows - 5)	    // clearing is faster
-	    type = CLEAR;
-	else if (type != CLEAR)
+	if (type != UPD_CLEAR)
 	{
-	    check_for_delay(FALSE);
-	    if (screen_ins_lines(0, 0, msg_scrolled, (int)Rows, 0, NULL)
-								       == FAIL)
-		type = CLEAR;
-	    FOR_ALL_WINDOWS(wp)
+	    if (msg_scrolled > Rows - 5)	    // redrawing is faster
 	    {
-		if (wp->w_winrow < msg_scrolled)
+		type = UPD_NOT_VALID;
+		redraw_as_cleared();
+	    }
+	    else
+	    {
+		check_for_delay(FALSE);
+		if (screen_ins_lines(0, 0, msg_scrolled, (int)Rows, 0, NULL)
+								       == FAIL)
 		{
-		    if (W_WINROW(wp) + wp->w_height > msg_scrolled
-			    && wp->w_redr_type < REDRAW_TOP
-			    && wp->w_lines_valid > 0
-			    && wp->w_topline == wp->w_lines[0].wl_lnum)
+		    type = UPD_NOT_VALID;
+		    redraw_as_cleared();
+		}
+		FOR_ALL_WINDOWS(wp)
+		{
+		    if (wp->w_winrow < msg_scrolled)
 		    {
-			wp->w_upd_rows = msg_scrolled - W_WINROW(wp);
-			wp->w_redr_type = REDRAW_TOP;
-		    }
-		    else
-		    {
-			wp->w_redr_type = NOT_VALID;
-			if (W_WINROW(wp) + wp->w_height + wp->w_status_height
-							       <= msg_scrolled)
-			    wp->w_redr_status = TRUE;
+			if (W_WINROW(wp) + wp->w_height > msg_scrolled
+				&& wp->w_redr_type < UPD_REDRAW_TOP
+				&& wp->w_lines_valid > 0
+				&& wp->w_topline == wp->w_lines[0].wl_lnum)
+			{
+			    wp->w_upd_rows = msg_scrolled - W_WINROW(wp);
+			    wp->w_redr_type = UPD_REDRAW_TOP;
+			}
+			else
+			{
+			    wp->w_redr_type = UPD_NOT_VALID;
+			    if (W_WINROW(wp) + wp->w_height
+					 + wp->w_status_height <= msg_scrolled)
+				wp->w_redr_status = TRUE;
+			}
 		    }
 		}
+		if (!no_update)
+		    redraw_cmdline = TRUE;
+		redraw_tabline = TRUE;
 	    }
-	    if (!no_update)
-		redraw_cmdline = TRUE;
-	    redraw_tabline = TRUE;
 	}
 	msg_scrolled = 0;
 	need_wait_return = FALSE;
@@ -214,10 +223,10 @@ update_screen(int type_arg)
     if (need_highlight_changed)
 	highlight_changed();
 
-    if (type == CLEAR)		// first clear screen
+    if (type == UPD_CLEAR)		// first clear screen
     {
 	screenclear();		// will reset clear_cmdline
-	type = NOT_VALID;
+	type = UPD_NOT_VALID;
 	// must_redraw may be set indirectly, avoid another redraw later
 	must_redraw = 0;
     }
@@ -228,24 +237,24 @@ update_screen(int type_arg)
 #ifdef FEAT_LINEBREAK
     // Force redraw when width of 'number' or 'relativenumber' column
     // changes.
-    if (curwin->w_redr_type < NOT_VALID
+    if (curwin->w_redr_type < UPD_NOT_VALID
 	   && curwin->w_nrwidth != ((curwin->w_p_nu || curwin->w_p_rnu)
 				    ? number_width(curwin) : 0))
-	curwin->w_redr_type = NOT_VALID;
+	curwin->w_redr_type = UPD_NOT_VALID;
 #endif
 
     // Only start redrawing if there is really something to do.
-    if (type == INVERTED)
+    if (type == UPD_INVERTED)
 	update_curswant();
     if (curwin->w_redr_type < type
-	    && !((type == VALID
+	    && !((type == UPD_VALID
 		    && curwin->w_lines[0].wl_valid
 #ifdef FEAT_DIFF
 		    && curwin->w_topfill == curwin->w_old_topfill
 		    && curwin->w_botfill == curwin->w_old_botfill
 #endif
 		    && curwin->w_topline == curwin->w_lines[0].wl_lnum)
-		|| (type == INVERTED
+		|| (type == UPD_INVERTED
 		    && VIsual_active
 		    && curwin->w_old_cursor_lnum == curwin->w_cursor.lnum
 		    && curwin->w_old_visual_mode == VIsual_mode
@@ -255,7 +264,7 @@ update_screen(int type_arg)
 	curwin->w_redr_type = type;
 
     // Redraw the tab pages line if needed.
-    if (redraw_tabline || type >= NOT_VALID)
+    if (redraw_tabline || type >= UPD_NOT_VALID)
 	draw_tabline();
 
 #ifdef FEAT_SYN_HL
@@ -482,11 +491,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    len += (int)STRLEN(p + len);
 	}
 #endif
-	if (bufIsChanged(wp->w_buffer)
-#ifdef FEAT_TERMINAL
-		&& !bt_terminal(wp->w_buffer)
-#endif
-		)
+	if (bufIsChanged(wp->w_buffer) && !bt_terminal(wp->w_buffer))
 	{
 	    vim_snprintf((char *)p + len, MAXPATHL - len, "%s", "[+]");
 	    len += (int)STRLEN(p + len);
@@ -649,7 +654,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
     int		off = 0;
     int		width;
 
-    // If 'ruler' off or redrawing disabled, don't do anything
+    // If 'ruler' off don't do anything
     if (!p_ru)
 	return;
 
@@ -1408,12 +1413,13 @@ fold_line(
  *
  * How the window is redrawn depends on wp->w_redr_type.  Each type also
  * implies the one below it.
- * NOT_VALID	redraw the whole window
- * SOME_VALID	redraw the whole window but do scroll when possible
- * REDRAW_TOP	redraw the top w_upd_rows window lines, otherwise like VALID
- * INVERTED	redraw the changed part of the Visual area
- * INVERTED_ALL	redraw the whole Visual area
- * VALID	1. scroll up/down to adjust for a changed w_topline
+ * UPD_NOT_VALID	redraw the whole window
+ * UPD_SOME_VALID	redraw the whole window but do scroll when possible
+ * UPD_REDRAW_TOP	redraw the top w_upd_rows window lines, otherwise like
+ *			UPD_VALID
+ * UPD_INVERTED		redraw the changed part of the Visual area
+ * UPD_INVERTED_ALL	redraw the whole Visual area
+ * UPD_VALID	1. scroll up/down to adjust for a changed w_topline
  *		2. update lines at the top when scrolled down
  *		3. redraw changed text:
  *		   - if wp->w_buffer->b_mod_set set, update lines between
@@ -1500,7 +1506,7 @@ win_update(win_T *wp)
 
     type = wp->w_redr_type;
 
-    if (type == NOT_VALID)
+    if (type == UPD_NOT_VALID)
     {
 	wp->w_redr_status = TRUE;
 	wp->w_lines_valid = 0;
@@ -1552,7 +1558,7 @@ win_update(win_T *wp)
     i = (wp->w_p_nu || wp->w_p_rnu) ? number_width(wp) : 0;
     if (wp->w_nrwidth != i)
     {
-	type = NOT_VALID;
+	type = UPD_NOT_VALID;
 	wp->w_nrwidth = i;
     }
     else
@@ -1563,7 +1569,7 @@ win_update(win_T *wp)
 	// When there are both inserted/deleted lines and specific lines to be
 	// redrawn, w_redraw_top and w_redraw_bot may be invalid, just redraw
 	// everything (only happens when redrawing is off for while).
-	type = NOT_VALID;
+	type = UPD_NOT_VALID;
     }
     else
     {
@@ -1705,7 +1711,7 @@ win_update(win_T *wp)
 
     // When only displaying the lines at the top, set top_end.  Used when
     // window has scrolled down for msg_scrolled.
-    if (type == REDRAW_TOP)
+    if (type == UPD_REDRAW_TOP)
     {
 	j = 0;
 	for (i = 0; i < wp->w_lines_valid; ++i)
@@ -1719,10 +1725,10 @@ win_update(win_T *wp)
 	}
 	if (top_end == 0)
 	    // not found (cannot happen?): redraw everything
-	    type = NOT_VALID;
+	    type = UPD_NOT_VALID;
 	else
-	    // top area defined, the rest is VALID
-	    type = VALID;
+	    // top area defined, the rest is UPD_VALID
+	    type = UPD_VALID;
     }
 
     // Trick: we want to avoid clearing the screen twice.  screenclear() will
@@ -1738,8 +1744,8 @@ win_update(win_T *wp)
     // 2: wp->w_topline is below wp->w_lines[0].wl_lnum: may scroll up
     // 3: wp->w_topline is wp->w_lines[0].wl_lnum: find first entry in
     //    w_lines[] that needs updating.
-    if ((type == VALID || type == SOME_VALID
-				  || type == INVERTED || type == INVERTED_ALL)
+    if ((type == UPD_VALID || type == UPD_SOME_VALID
+			   || type == UPD_INVERTED || type == UPD_INVERTED_ALL)
 #ifdef FEAT_DIFF
 	    && !wp->w_botfill && !wp->w_old_botfill
 #endif
@@ -1916,57 +1922,42 @@ win_update(win_T *wp)
 	    }
 	}
 
-	// When starting redraw in the first line, redraw all lines.  When
-	// there is only one window it's probably faster to clear the screen
-	// first.
+	// When starting redraw in the first line, redraw all lines.
 	if (mid_start == 0)
-	{
 	    mid_end = wp->w_height;
-	    if (ONE_WINDOW && !WIN_IS_POPUP(wp))
-	    {
-		// Clear the screen when it was not done by win_del_lines() or
-		// win_ins_lines() above, "screen_cleared" is FALSE or MAYBE
-		// then.
-		if (screen_cleared != TRUE)
-		    screenclear();
-		// The screen was cleared, redraw the tab pages line.
-		if (redraw_tabline)
-		    draw_tabline();
-	    }
-	}
 
 	// When win_del_lines() or win_ins_lines() caused the screen to be
 	// cleared (only happens for the first window) or when screenclear()
 	// was called directly above, "must_redraw" will have been set to
-	// NOT_VALID, need to reset it here to avoid redrawing twice.
+	// UPD_NOT_VALID, need to reset it here to avoid redrawing twice.
 	if (screen_cleared == TRUE)
 	    must_redraw = 0;
     }
     else
     {
-	// Not VALID or INVERTED: redraw all lines.
+	// Not UPD_VALID or UPD_INVERTED: redraw all lines.
 	mid_start = 0;
 	mid_end = wp->w_height;
     }
 
-    if (type == SOME_VALID)
+    if (type == UPD_SOME_VALID)
     {
-	// SOME_VALID: redraw all lines.
+	// UPD_SOME_VALID: redraw all lines.
 	mid_start = 0;
 	mid_end = wp->w_height;
-	type = NOT_VALID;
+	type = UPD_NOT_VALID;
     }
 
     // check if we are updating or removing the inverted part
     if ((VIsual_active && buf == curwin->w_buffer)
-	    || (wp->w_old_cursor_lnum != 0 && type != NOT_VALID))
+	    || (wp->w_old_cursor_lnum != 0 && type != UPD_NOT_VALID))
     {
 	linenr_T    from, to;
 
 	if (VIsual_active)
 	{
 	    if (VIsual_mode != wp->w_old_visual_mode
-		|| type == INVERTED_ALL)
+		|| type == UPD_INVERTED_ALL)
 	    {
 		// If the type of Visual selection changed, redraw the whole
 		// selection.  Also when the ownership of the X selection is
@@ -2946,8 +2937,9 @@ redraw_asap(int type)
     schar_T	*screenline2 = NULL;	// copy from ScreenLines2[]
 
     redraw_later(type);
-    if (msg_scrolled || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
-								    || exiting)
+    if (msg_scrolled
+	    || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
+	    || exiting)
 	return ret;
 
     // Allocate space to save the text displayed in the command line area.
@@ -3080,19 +3072,16 @@ redraw_after_callback(int call_update_screen, int do_message)
     }
     else if (State & MODE_CMDLINE)
     {
-#ifdef FEAT_WILDMENU
 	if (pum_visible())
 	    cmdline_pum_display();
-#endif
+
 	// Don't redraw when in prompt_for_number().
 	if (cmdline_row > 0)
 	{
 	    // Redrawing only works when the screen didn't scroll. Don't clear
 	    // wildmenu entries.
 	    if (msg_scrolled == 0
-#ifdef FEAT_WILDMENU
 		    && wild_menu_showing == 0
-#endif
 		    && call_update_screen)
 		update_screen(0);
 
@@ -3107,7 +3096,7 @@ redraw_after_callback(int call_update_screen, int do_message)
 	validate_cursor();
 
 	// keep the command line if possible
-	update_screen(VALID_NO_UPDATE);
+	update_screen(UPD_VALID_NO_UPDATE);
 	setcursor();
 
 	if (msg_scrolled == 0)
@@ -3133,7 +3122,7 @@ redraw_after_callback(int call_update_screen, int do_message)
 /*
  * Redraw the current window later, with update_screen(type).
  * Set must_redraw only if not already set to a higher value.
- * E.g. if must_redraw is CLEAR, type NOT_VALID will do nothing.
+ * E.g. if must_redraw is UPD_CLEAR, type UPD_NOT_VALID will do nothing.
  */
     void
 redraw_later(int type)
@@ -3146,10 +3135,10 @@ redraw_win_later(
     win_T	*wp,
     int		type)
 {
-    if (!exiting && wp->w_redr_type < type)
+    if (!exiting && !redraw_not_allowed && wp->w_redr_type < type)
     {
 	wp->w_redr_type = type;
-	if (type >= NOT_VALID)
+	if (type >= UPD_NOT_VALID)
 	    wp->w_lines_valid = 0;
 	if (must_redraw < type)	// must_redraw is the maximum of all windows
 	    must_redraw = type;
@@ -3163,12 +3152,12 @@ redraw_win_later(
     void
 redraw_later_clear(void)
 {
-    redraw_all_later(CLEAR);
+    redraw_all_later(UPD_CLEAR);
     reset_screen_attr();
 }
 
 /*
- * Mark all windows to be redrawn later.
+ * Mark all windows to be redrawn later.  Except popup windows.
  */
     void
 redraw_all_later(int type)
@@ -3178,7 +3167,31 @@ redraw_all_later(int type)
     FOR_ALL_WINDOWS(wp)
 	redraw_win_later(wp, type);
     // This may be needed when switching tabs.
-    if (must_redraw < type)
+    set_must_redraw(type);
+}
+
+#if 0  // not actually used yet, it probably should
+/*
+ * Mark all windows, including popup windows, to be redrawn.
+ */
+    void
+redraw_all_windows_later(int type)
+{
+    redraw_all_later(type);
+#ifdef FEAT_PROP_POPUP
+    popup_redraw_all();		// redraw all popup windows
+#endif
+}
+#endif
+
+/*
+ * Set "must_redraw" to "type" unless it already has a higher value
+ * or it is currently not allowed.
+ */
+    void
+set_must_redraw(int type)
+{
+    if (!redraw_not_allowed && must_redraw < type)
 	must_redraw = type;
 }
 
@@ -3227,12 +3240,10 @@ redraw_buf_and_status_later(buf_T *buf, int type)
 {
     win_T	*wp;
 
-#ifdef FEAT_WILDMENU
     if (wild_menu_showing != 0)
 	// Don't redraw while the command line completion is displayed, it
 	// would disappear.
 	return;
-#endif
     FOR_ALL_WINDOWS(wp)
     {
 	if (wp->w_buffer == buf)
@@ -3256,7 +3267,7 @@ status_redraw_all(void)
 	if (wp->w_status_height)
 	{
 	    wp->w_redr_status = TRUE;
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	}
 }
 
@@ -3272,7 +3283,7 @@ status_redraw_curbuf(void)
 	if (wp->w_status_height != 0 && wp->w_buffer == curbuf)
 	{
 	    wp->w_redr_status = TRUE;
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	}
 }
 
@@ -3291,7 +3302,6 @@ redraw_statuslines(void)
 	draw_tabline();
 }
 
-#if defined(FEAT_WILDMENU) || defined(PROTO)
 /*
  * Redraw all status lines at the bottom of frame "frp".
  */
@@ -3313,7 +3323,6 @@ win_redraw_last_status(frame_T *frp)
 	win_redraw_last_status(frp);
     }
 }
-#endif
 
 /*
  * Changed something in the current window, at buffer line "lnum", that
@@ -3332,5 +3341,5 @@ redrawWinline(
 	wp->w_redraw_top = lnum;
     if (wp->w_redraw_bot == 0 || wp->w_redraw_bot < lnum)
 	wp->w_redraw_bot = lnum;
-    redraw_win_later(wp, VALID);
+    redraw_win_later(wp, UPD_VALID);
 }

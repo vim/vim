@@ -85,6 +85,7 @@ static int	last_recorded_len = 0;	// number of last recorded chars
 
 #ifdef FEAT_EVAL
 mapblock_T	*last_used_map = NULL;
+int		last_used_sid = -1;
 #endif
 
 static int	read_readbuf(buffheader_T *buf, int advance);
@@ -837,6 +838,22 @@ start_redo(long count, int old_redo)
 
     c = read_redo(FALSE, old_redo);
 
+#ifdef FEAT_EVAL
+    if (c == K_SID)
+    {
+	// Copy the <SID>{sid}; sequence
+	add_char_buff(&readbuf2, c);
+	for (;;)
+	{
+	    c = read_redo(FALSE, old_redo);
+	    add_char_buff(&readbuf2, c);
+	    if (!isdigit(c))
+		break;
+	}
+	c = read_redo(FALSE, old_redo);
+    }
+#endif
+
     // copy the buffer name, if present
     if (c == '"')
     {
@@ -876,7 +893,7 @@ start_redo(long count, int old_redo)
 	add_num_buff(&readbuf2, count);
     }
 
-    // copy from the redo buffer into the stuff buffer
+    // copy the rest from the redo buffer into the stuff buffer
     add_char_buff(&readbuf2, c);
     copy_redo(old_redo);
     return OK;
@@ -1796,7 +1813,21 @@ vgetc(void)
 		if (c == K_CSI)
 		    c = CSI;
 #endif
+#ifdef FEAT_EVAL
+		if (c == K_SID)
+		{
+		    int	    j;
+
+		    // Handle <SID>{sid};  Do up to 20 digits for safety.
+		    last_used_sid = 0;
+		    for (j = 0; j < 20 && isdigit(c = vgetorpeek(TRUE)); ++j)
+			last_used_sid = last_used_sid * 10 + (c - '0');
+		    last_used_map = NULL;
+		    continue;
+		}
+#endif
 	    }
+
 	    // a keypad or special function key was not mapped, use it like
 	    // its ASCII equivalent
 	    switch (c)
@@ -2356,7 +2387,7 @@ check_simplify_modifier(int max_offset)
 	if (offset + 3 >= typebuf.tb_len)
 	    break;
 	tp = typebuf.tb_buf + typebuf.tb_off + offset;
-	if (tp[0] == K_SPECIAL && tp[1] == KS_MODIFIER)
+	if ((tp[0] == K_SPECIAL || tp[0] == CSI) && tp[1] == KS_MODIFIER)
 	{
 	    // A modifier was not used for a mapping, apply it to ASCII keys.
 	    // Shift would already have been applied.
@@ -2436,7 +2467,7 @@ handle_mapping(
     int		local_State = get_real_state();
     int		is_plug_map = FALSE;
 
-    // If typehead starts with <Plug> then remap, even for a "noremap" mapping.
+    // If typeahead starts with <Plug> then remap, even for a "noremap" mapping.
     if (typebuf.tb_len >= 3
 	    && typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
 	    && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
@@ -2922,6 +2953,10 @@ handle_mapping(
 	{
 	    int noremap;
 
+#ifdef FEAT_EVAL
+	    last_used_map = mp;
+	    last_used_sid = -1;
+#endif
 	    if (save_m_noremap != REMAP_YES)
 		noremap = save_m_noremap;
 	    else if (
@@ -2940,7 +2975,6 @@ handle_mapping(
 #ifdef FEAT_EVAL
 	    if (save_m_expr)
 		vim_free(map_str);
-	    last_used_map = mp;
 #endif
 	}
 #ifdef FEAT_EVAL
@@ -3052,7 +3086,10 @@ vgetorpeek(int advance)
     ++vgetc_busy;
 
     if (advance)
+    {
 	KeyStuffed = FALSE;
+	typebuf_was_empty = FALSE;
+    }
 
     init_typebuf();
     start_stuff();
@@ -3210,7 +3247,7 @@ vgetorpeek(int advance)
 			&& (c = inchar(typebuf.tb_buf + typebuf.tb_off
 					       + typebuf.tb_len, 3, 25L)) == 0)
 		{
-		    colnr_T	col = 0, vcol;
+		    colnr_T	col = 0;
 		    char_u	*ptr;
 
 		    if (mode_displayed)
@@ -3242,24 +3279,30 @@ vgetorpeek(int advance)
 			{
 			    if (did_ai)
 			    {
+				chartabsize_T cts;
+
 				/*
 				 * We are expecting to truncate the trailing
 				 * white-space, so find the last non-white
 				 * character -- webb
 				 */
-				col = vcol = curwin->w_wcol = 0;
+				curwin->w_wcol = 0;
 				ptr = ml_get_curline();
-				while (col < curwin->w_cursor.col)
+				init_chartabsize_arg(&cts, curwin,
+					  curwin->w_cursor.lnum, 0, ptr, ptr);
+				while (cts.cts_ptr < ptr + curwin->w_cursor.col)
 				{
-				    if (!VIM_ISWHITE(ptr[col]))
-					curwin->w_wcol = vcol;
-				    vcol += lbr_chartabsize(ptr, ptr + col,
-							       vcol);
+				    if (!VIM_ISWHITE(*cts.cts_ptr))
+					curwin->w_wcol = cts.cts_vcol;
+				    cts.cts_vcol += lbr_chartabsize(&cts);
 				    if (has_mbyte)
-					col += (*mb_ptr2len)(ptr + col);
+					cts.cts_ptr +=
+						   (*mb_ptr2len)(cts.cts_ptr);
 				    else
-					++col;
+					++cts.cts_ptr;
 				}
+				clear_chartabsize_arg(&cts);
+
 				curwin->w_wrow = curwin->w_cline_row
 					   + curwin->w_wcol / curwin->w_width;
 				curwin->w_wcol %= curwin->w_width;
@@ -3351,6 +3394,10 @@ vgetorpeek(int advance)
 #ifdef FEAT_CMDWIN
 		    tc = c;
 #endif
+		    // set a flag to indicate this wasn't a normal char
+		    if (advance)
+			typebuf_was_empty = TRUE;
+
 		    // return from main_loop()
 		    if (pending_exmode_active)
 			exmode_active = EXMODE_NORMAL;
@@ -3883,6 +3930,29 @@ getcmdkeycmd(
     return (char_u *)line_ga.ga_data;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * If there was a mapping put info about it in the redo buffer, so that "."
+ * will use the same script context.  We only need the SID.
+ */
+    void
+may_add_last_used_map_to_redobuff(void)
+{
+    char_u buf[3 + 20];
+
+    if (last_used_map == NULL || last_used_map->m_script_ctx.sc_sid < 0)
+	return;
+
+    // <K_SID>{nr};
+    buf[0] = K_SPECIAL;
+    buf[1] = KS_EXTRA;
+    buf[2] = KE_SID;
+    vim_snprintf((char *)buf + 3, 20, "%d;",
+					   last_used_map->m_script_ctx.sc_sid);
+    add_buff(&redobuff, buf, -1L);
+}
+#endif
+
     int
 do_cmdkey_command(int key UNUSED, int flags)
 {
@@ -3890,10 +3960,18 @@ do_cmdkey_command(int key UNUSED, int flags)
 #ifdef FEAT_EVAL
     sctx_T  save_current_sctx = {-1, 0, 0, 0};
 
-    if (key == K_SCRIPT_COMMAND && last_used_map != NULL)
+    if (key == K_SCRIPT_COMMAND
+		  && (last_used_map != NULL || SCRIPT_ID_VALID(last_used_sid)))
     {
 	save_current_sctx = current_sctx;
-	current_sctx = last_used_map->m_script_ctx;
+	if (last_used_map != NULL)
+	    current_sctx = last_used_map->m_script_ctx;
+	else
+	{
+	    current_sctx.sc_sid = last_used_sid;
+	    current_sctx.sc_lnum = 0;
+	    current_sctx.sc_version = SCRIPT_ITEM(last_used_sid)->sn_version;
+	}
     }
 #endif
 
@@ -3912,6 +3990,9 @@ do_cmdkey_command(int key UNUSED, int flags)
 reset_last_used_map(mapblock_T *mp)
 {
     if (last_used_map == mp)
+    {
 	last_used_map = NULL;
+	last_used_sid = -1;
+    }
 }
 #endif

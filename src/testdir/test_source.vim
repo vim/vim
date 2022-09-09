@@ -63,10 +63,10 @@ endfunc
 
 " When sourcing a vim script, shebang should be ignored.
 func Test_source_ignore_shebang()
-  call writefile(['#!./xyzabc', 'let g:val=369'], 'Xfile.vim')
-  source Xfile.vim
+  call writefile(['#!./xyzabc', 'let g:val=369'], 'Xsisfile.vim')
+  source Xsisfile.vim
   call assert_equal(g:val, 369)
-  call delete('Xfile.vim')
+  call delete('Xsisfile.vim')
 endfunc
 
 " Test for expanding <sfile> in an autocmd and for <slnum> and <sflnum>
@@ -480,12 +480,12 @@ func Test_source_buffer_vim9()
 
      augroup Test
        au!
-       au BufNewFile Xfile g:readFile = 1
+       au BufNewFile Xsubfile g:readFile = 1
              | g:readExtra = 2
      augroup END
      g:readFile = 0
      g:readExtra = 0
-     new Xfile
+     new Xsubfile
      bwipe!
      augroup Test
        au!

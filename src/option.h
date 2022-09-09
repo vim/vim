@@ -451,9 +451,7 @@ EXTERN unsigned	bo_flags;
 #define BO_TERM		0x40000
 #define BO_WILD		0x80000
 
-#ifdef FEAT_WILDIGN
 EXTERN char_u	*p_bsk;		// 'backupskip'
-#endif
 #ifdef FEAT_CRYPT
 EXTERN char_u	*p_cm;		// 'cryptmethod'
 #endif
@@ -780,9 +778,7 @@ EXTERN char_u	*p_pex;		// 'patchexpr'
 #endif
 EXTERN char_u	*p_pm;		// 'patchmode'
 EXTERN char_u	*p_path;	// 'path'
-#ifdef FEAT_SEARCHPATH
 EXTERN char_u	*p_cdpath;	// 'cdpath'
-#endif
 #if defined(DYNAMIC_PERL)
 EXTERN char_u	*p_perldll;	// 'perldll'
 #endif
@@ -802,9 +798,7 @@ EXTERN char_u	*p_pyhome;	// 'pythonhome'
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 EXTERN long	p_pyx;		// 'pyxversion'
 #endif
-#ifdef FEAT_TEXTOBJ
 EXTERN char_u	*p_qe;		// 'quoteescape'
-#endif
 EXTERN int	p_ro;		// 'readonly'
 #ifdef FEAT_RELTIME
 EXTERN long	p_rdt;		// 'redrawtime'
@@ -910,9 +904,7 @@ EXTERN int	p_si;		// 'smartindent'
 EXTERN int	p_sta;		// 'smarttab'
 EXTERN long	p_sts;		// 'softtabstop'
 EXTERN int	p_sb;		// 'splitbelow'
-#if defined(FEAT_SEARCHPATH)
 EXTERN char_u	*p_sua;		// 'suffixesadd'
-#endif
 EXTERN int	p_swf;		// 'swapfile'
 #ifdef FEAT_SYN_HL
 EXTERN long	p_smc;		// 'synmaxcol'
@@ -1067,18 +1059,14 @@ EXTERN long	p_window;	// 'window'
 #define FEAT_WAK
 EXTERN char_u	*p_wak;		// 'winaltkeys'
 #endif
-#ifdef FEAT_WILDIGN
 EXTERN char_u	*p_wig;		// 'wildignore'
-#endif
 EXTERN int	p_wiv;		// 'weirdinvert'
 EXTERN char_u	*p_ww;		// 'whichwrap'
 EXTERN long	p_wc;		// 'wildchar'
 EXTERN long	p_wcm;		// 'wildcharm'
 EXTERN int	p_wic;		// 'wildignorecase'
 EXTERN char_u	*p_wim;		// 'wildmode'
-#ifdef FEAT_WILDMENU
 EXTERN int	p_wmnu;		// 'wildmenu'
-#endif
 EXTERN long	p_wh;		// 'winheight'
 EXTERN long	p_wmh;		// 'winminheight'
 EXTERN long	p_wmw;		// 'winminwidth'
@@ -1183,9 +1171,7 @@ enum
 #endif
     , BV_PATH
     , BV_PI
-#ifdef FEAT_TEXTOBJ
     , BV_QE
-#endif
     , BV_RO
     , BV_SI
     , BV_SN
@@ -1200,9 +1186,7 @@ enum
     , BV_SPO
 #endif
     , BV_STS
-#ifdef FEAT_SEARCHPATH
     , BV_SUA
-#endif
     , BV_SW
     , BV_SWF
 #ifdef FEAT_EVAL

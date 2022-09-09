@@ -1,117 +1,115 @@
-" Vim filetype plugin file
-" Language:           ConTeXt typesetting engine
-" Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
-" Former Maintainers: Nikolai Weibull <now@bitwi.se>
-" Latest Revision:    2021 Oct 15
+vim9script
+
+# Vim filetype plugin file
+# Language:           ConTeXt typesetting engine
+# Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
+# Former Maintainers: Nikolai Weibull <now@bitwi.se>
+# Latest Revision:    2022 Aug 12
 
 if exists("b:did_ftplugin")
   finish
 endif
-let b:did_ftplugin = 1
 
-let s:cpo_save = &cpo
-set cpo&vim
+import autoload '../autoload/context.vim'
+
+b:did_ftplugin = 1
 
 if !exists('current_compiler')
   compiler context
 endif
 
-let b:undo_ftplugin = "setl com< cms< def< inc< sua< fo< ofu<"
+b:undo_ftplugin = "setl com< cms< def< inc< sua< fo< ofu<"
 
-setlocal comments=b:%D,b:%C,b:%M,:% commentstring=%\ %s formatoptions+=tjcroql2
-if get(b:, 'context_metapost', get(g:, 'context_metapost', 1))
-  setlocal omnifunc=contextcomplete#Complete
-  let g:omni_syntax_group_include_context = 'mf\w\+,mp\w\+'
-  let g:omni_syntax_group_exclude_context = 'mfTodoComment'
+setlocal comments=b:%D,b:%C,b:%M,:%
+setlocal commentstring=%\ %s
+setlocal formatoptions+=tjcroql2
+setlocal omnifunc=context.Complete
+setlocal suffixesadd=.tex,.mkxl,.mkvi,.mkiv,.mkii
+
+&l:define = '\\\%([egx]\|char\|mathchar\|count\|dimen\|muskip\|skip\|toks\)\='
+..          'def\|\\font\|\\\%(future\)\=let'
+..          '\|\\new\%(count\|dimen\|skip\|muskip\|box\|toks\|read\|write'
+..          '\|fam\|insert\|if\)'
+
+&l:include = '^\s*\\\%(input\|component\|product\|project\|environment\)'
+
+if exists("g:loaded_matchit") && !exists("b:match_words")
+  b:match_ignorecase = 0
+  b:match_skip = 'r:\\\@<!\%(\\\\\)*%'
+  b:match_words = '(:),\[:],{:},\\(:\\),\\\[:\\],\\start\(\a\+\):\\stop\1'
+  b:undo_ftplugin ..= "| unlet! b:match_ignorecase b:match_words b:match_skip"
 endif
 
-let &l:define='\\\%([egx]\|char\|mathchar\|count\|dimen\|muskip\|skip\|toks\)\='
-        \ .     'def\|\\font\|\\\%(future\)\=let'
-        \ . '\|\\new\%(count\|dimen\|skip\|muskip\|box\|toks\|read\|write'
-        \ .     '\|fam\|insert\|if\)'
+if !get(g:, 'no_context_maps', 0) && !get(g:, 'no_plugin_maps', 0)
+  const context_regex = {
+    'beginsection': '\\\%(start\)\=\%(\%(sub\)*section\|\%(sub\)*subject\|chapter\|part\|component\|product\|title\)\>',
+    'endsection':   '\\\%(stop\)\=\%(\%(sub\)*section\|\%(sub\)*subject\|chapter\|part\|component\|product\|title\)\>',
+    'beginblock':   '\\\%(start\|setup\|define\)',
+    'endblock':     '\\\%(stop\|setup\|define\)',
+    }
 
-let &l:include = '^\s*\\\%(input\|component\|product\|project\|environment\)'
+  def UndoMap(mapping: string, modes: string)
+    for mode in modes
+      b:undo_ftplugin ..= printf(" | silent! execute '%sunmap <buffer> %s'", mode, mapping)
+    endfor
+  enddef
 
-setlocal suffixesadd=.tex
+  def MoveAround(count: number, what: string, flags: string)
+    search(context_regex[what], flags .. 's')  # 's' sets previous context mark
+    var i = 2
+    while i <= count
+      search(context_regex[what], flags)
+      i += 1
+    endwhile
+  enddef
 
-if exists("loaded_matchit") && !exists("b:match_words")
-  let b:match_ignorecase = 0
-  let b:match_skip = 'r:\\\@<!\%(\\\\\)*%'
-  let b:match_words = '(:),\[:],{:},\\(:\\),\\\[:\\],' .
-        \ '\\start\(\a\+\):\\stop\1'
-  let b:undo_ftplugin .= " | unlet! b:match_ignorecase b:match_words b:match_skip"
-endif
+  # Macros to move around
+  nnoremap <silent><buffer> [[ <scriptcmd>MoveAround(v:count1, "beginsection", "bW")<cr>
+  vnoremap <silent><buffer> [[ <scriptcmd>MoveAround(v:count1, "beginsection", "bW")<cr>
+  nnoremap <silent><buffer> ]] <scriptcmd>MoveAround(v:count1, "beginsection", "W") <cr>
+  vnoremap <silent><buffer> ]] <scriptcmd>MoveAround(v:count1, "beginsection", "W") <cr>
+  nnoremap <silent><buffer> [] <scriptcmd>MoveAround(v:count1, "endsection",   "bW")<cr>
+  vnoremap <silent><buffer> [] <scriptcmd>MoveAround(v:count1, "endsection",   "bW")<cr>
+  nnoremap <silent><buffer> ][ <scriptcmd>MoveAround(v:count1, "endsection",   "W") <cr>
+  vnoremap <silent><buffer> ][ <scriptcmd>MoveAround(v:count1, "endsection",   "W") <cr>
+  nnoremap <silent><buffer> [{ <scriptcmd>MoveAround(v:count1, "beginblock",   "bW")<cr>
+  vnoremap <silent><buffer> [{ <scriptcmd>MoveAround(v:count1, "beginblock",   "bW")<cr>
+  nnoremap <silent><buffer> ]} <scriptcmd>MoveAround(v:count1, "endblock",     "W") <cr>
+  vnoremap <silent><buffer> ]} <scriptcmd>MoveAround(v:count1, "endblock",     "W") <cr>
 
-let s:context_regex = {
-      \ 'beginsection' : '\\\%(start\)\=\%(\%(sub\)*section\|\%(sub\)*subject\|chapter\|part\|component\|product\|title\)\>',
-      \ 'endsection'   : '\\\%(stop\)\=\%(\%(sub\)*section\|\%(sub\)*subject\|chapter\|part\|component\|product\|title\)\>',
-      \ 'beginblock'   : '\\\%(start\|setup\|define\)',
-      \ 'endblock'     : '\\\%(stop\|setup\|define\)'
-      \ }
+  for mapping in ['[[', ']]', '[]', '][', '[{', ']}']
+    UndoMap(mapping, 'nv')
+  endfor
 
-function! s:move_around(count, what, flags, visual)
-  if a:visual
-    exe "normal! gv"
-  endif
-  call search(s:context_regex[a:what], a:flags.'s') " 's' sets previous context mark
-  call map(range(2, a:count), 'search(s:context_regex[a:what], a:flags)')
-endfunction
+  # Other useful mappings
+  const tp_regex = '?^$\|^\s*\\\(item\|start\|stop\|blank\|\%(sub\)*section\|chapter\|\%(sub\)*subject\|title\|part\)'
 
-if !exists("no_plugin_maps") && !exists("no_context_maps")
-  " Move around macros.
-  nnoremap <silent><buffer> [[ :<C-U>call <SID>move_around(v:count1, "beginsection", "bW", v:false) <CR>
-  vnoremap <silent><buffer> [[ :<C-U>call <SID>move_around(v:count1, "beginsection", "bW", v:true)  <CR>
-  nnoremap <silent><buffer> ]] :<C-U>call <SID>move_around(v:count1, "beginsection", "W",  v:false) <CR>
-  vnoremap <silent><buffer> ]] :<C-U>call <SID>move_around(v:count1, "beginsection", "W",  v:true)  <CR>
-  nnoremap <silent><buffer> [] :<C-U>call <SID>move_around(v:count1, "endsection",   "bW", v:false) <CR>
-  vnoremap <silent><buffer> [] :<C-U>call <SID>move_around(v:count1, "endsection",   "bW", v:true)  <CR>
-  nnoremap <silent><buffer> ][ :<C-U>call <SID>move_around(v:count1, "endsection",   "W",  v:false) <CR>
-  vnoremap <silent><buffer> ][ :<C-U>call <SID>move_around(v:count1, "endsection",   "W",  v:true)  <CR>
-  nnoremap <silent><buffer> [{ :<C-U>call <SID>move_around(v:count1, "beginblock",   "bW", v:false) <CR>
-  vnoremap <silent><buffer> [{ :<C-U>call <SID>move_around(v:count1, "beginblock",   "bW", v:true)  <CR>
-  nnoremap <silent><buffer> ]} :<C-U>call <SID>move_around(v:count1, "endblock",     "W",  v:false) <CR>
-  vnoremap <silent><buffer> ]} :<C-U>call <SID>move_around(v:count1, "endblock",     "W",  v:true)  <CR>
-
-  let b:undo_ftplugin .= " | sil! exe 'nunmap <buffer> [[' | sil! exe 'vunmap <buffer> [['" .
-	\                " | sil! exe 'nunmap <buffer> ]]' | sil! exe 'vunmap <buffer> ]]'" .
-	\                " | sil! exe 'nunmap <buffer> []' | sil! exe 'vunmap <buffer> []'" .
-	\                " | sil! exe 'nunmap <buffer> ][' | sil! exe 'vunmap <buffer> ]['" .
-	\                " | sil! exe 'nunmap <buffer> [{' | sil! exe 'vunmap <buffer> [{'" .
-	\                " | sil! exe 'nunmap <buffer> ]}' | sil! exe 'vunmap <buffer> ]}'"
-end
-
-" Other useful mappings
-if get(g:, 'context_mappings', 1)
-  let s:tp_regex = '?^$\|^\s*\\\(item\|start\|stop\|blank\|\%(sub\)*section\|chapter\|\%(sub\)*subject\|title\|part\)'
-
-  fun! s:tp()
-    call cursor(search(s:tp_regex, 'bcW') + 1, 1)
+  def TeXPar()
+    cursor(search(tp_regex, 'bcW') + 1, 1)
     normal! V
-    call cursor(search(s:tp_regex, 'W') - 1, 1)
-  endf
+    cursor(search(tp_regex, 'W') - 1, 1)
+  enddef
 
-  if !exists("no_plugin_maps") && !exists("no_context_maps")
-    " Reflow paragraphs with commands like gqtp ("gq TeX paragraph")
-    onoremap <silent><buffer> tp :<c-u>call <sid>tp()<cr>
-    " Select TeX paragraph
-    vnoremap <silent><buffer> tp <esc>:<c-u>call <sid>tp()<cr>
+  # Reflow paragraphs with mappings like gqtp ("gq TeX paragraph")
+  onoremap <silent><buffer> tp <scriptcmd>TeXPar()<cr>
+  # Select TeX paragraph
+  vnoremap <silent><buffer> tp <scriptcmd>TeXPar()<cr>
 
-    " $...$ text object
-    onoremap <silent><buffer> i$ :<c-u>normal! T$vt$<cr>
-    onoremap <silent><buffer> a$ :<c-u>normal! F$vf$<cr>
-    vnoremap <buffer> i$ T$ot$
-    vnoremap <buffer> a$ F$of$
+  # $...$ text object
+  onoremap <silent><buffer> i$ <scriptcmd>normal! T$vt$<cr>
+  onoremap <silent><buffer> a$ <scriptcmd>normal! F$vf$<cr>
+  vnoremap <buffer> i$ T$ot$
+  vnoremap <buffer> a$ F$of$
 
-    let b:undo_ftplugin .= " | sil! exe 'ounmap <buffer> tp' | sil! exe 'vunmap <buffer> tp'" .
-	  \                " | sil! exe 'ounmap <buffer> i$' | sil! exe 'vunmap <buffer> i$'" .
-	  \                " | sil! exe 'ounmap <buffer> a$' | sil! exe 'vunmap <buffer> a$'"
-    endif
+  for mapping in ['tp', 'i$', 'a$']
+    UndoMap(mapping, 'ov')
+  endfor
 endif
 
-" Commands for asynchronous typesetting
-command! -buffer -nargs=? -complete=file ConTeXt          call context#typeset(<q-args>)
-command!         -nargs=0                ConTeXtJobStatus call context#job_status()
-command!         -nargs=0                ConTeXtStopJobs  call context#stop_jobs()
+# Commands for asynchronous typesetting
+command! -buffer -nargs=? -complete=buffer ConTeXt          context.Typeset(<q-args>)
+command! -buffer -nargs=0                  ConTeXtLog       context.Log('%')
+command!         -nargs=0                  ConTeXtJobStatus context.JobStatus()
+command!         -nargs=0                  ConTeXtStopJobs  context.StopJobs()
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
+# vim: sw=2 fdm=marker

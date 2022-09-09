@@ -897,7 +897,6 @@ get_spec_reg(
 		emsg(_(e_no_inserted_text_yet));
 	    return TRUE;
 
-#ifdef FEAT_SEARCHPATH
 	case Ctrl_F:		// Filename under cursor
 	case Ctrl_P:		// Path under cursor, expand via "path"
 	    if (!errmsg)
@@ -906,7 +905,6 @@ get_spec_reg(
 			    | (regname == Ctrl_P ? FNAME_EXP : 0), 1L, NULL);
 	    *allocated = TRUE;
 	    return TRUE;
-#endif
 
 	case Ctrl_W:		// word under cursor
 	case Ctrl_A:		// WORD (mnemonic All) under cursor
@@ -1409,7 +1407,8 @@ op_yank(oparg_T *oap, int deleting, int mess)
 # ifdef FEAT_X11
     // If we were yanking to the '+' register, send result to selection.
     // Also copy to the '*' register, in case auto-select is off.  But not when
-    // 'clipboard' has "unnamedplus" and not "unnamed".
+    // 'clipboard' has "unnamedplus" and not "unnamed"; and not when
+    // deleting and both "unnamedplus" and "unnamed".
     if (clip_plus.available
 	    && (curr == &(y_regs[PLUS_REGISTER])
 		|| (!deleting && oap->regname == 0
@@ -1425,6 +1424,8 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	if (!clip_isautosel_star()
 		&& !clip_isautosel_plus()
 		&& !((clip_unnamed | clip_unnamed_saved) == CLIP_UNNAMED_PLUS)
+		&& !(deleting && (clip_unnamed | clip_unnamed_saved)
+					 == (CLIP_UNNAMED | CLIP_UNNAMED_PLUS))
 		&& !did_star
 		&& curr == &(y_regs[PLUS_REGISTER]))
 	{
@@ -1820,8 +1821,9 @@ do_put(
 	bd.textcol = 0;
 	for (i = 0; i < y_size; ++i)
 	{
-	    int spaces = 0;
-	    char shortline;
+	    int		    spaces = 0;
+	    char	    shortline;
+	    chartabsize_T   cts;
 
 	    bd.startspaces = 0;
 	    bd.endspaces = 0;
@@ -1839,13 +1841,19 @@ do_put(
 	    // get the old line and advance to the position to insert at
 	    oldp = ml_get_curline();
 	    oldlen = (int)STRLEN(oldp);
-	    for (ptr = oldp; vcol < col && *ptr; )
+	    init_chartabsize_arg(&cts, curwin, curwin->w_cursor.lnum, 0,
+								  oldp, oldp);
+
+	    while (cts.cts_vcol < col && *cts.cts_ptr != NUL)
 	    {
 		// Count a tab for what it's worth (if list mode not on)
-		incr = lbr_chartabsize_adv(oldp, &ptr, vcol);
-		vcol += incr;
+		incr = lbr_chartabsize_adv(&cts);
+		cts.cts_vcol += incr;
 	    }
+	    vcol = cts.cts_vcol;
+	    ptr = cts.cts_ptr;
 	    bd.textcol = (colnr_T)(ptr - oldp);
+	    clear_chartabsize_arg(&cts);
 
 	    shortline = (vcol < col) || (vcol == col && !*ptr) ;
 
@@ -1876,8 +1884,15 @@ do_put(
 		// calculate number of spaces required to fill right side of
 		// block
 		spaces = y_width + 1;
+		init_chartabsize_arg(&cts, curwin, 0, 0,
+						      y_array[i], y_array[i]);
 		for (j = 0; j < yanklen; j++)
-		    spaces -= lbr_chartabsize(NULL, &y_array[i][j], 0);
+		{
+		    spaces -= lbr_chartabsize(&cts);
+		    ++cts.cts_ptr;
+		    cts.cts_vcol = 0;
+		}
+		clear_chartabsize_arg(&cts);
 		if (spaces < 0)
 		    spaces = 0;
 	    }
@@ -2065,10 +2080,14 @@ do_put(
 			ptr += yanklen;
 		    }
 		    STRMOVE(ptr, oldp + col);
-		    ml_replace(lnum, newp, FALSE);
 
 		    // compute the byte offset for the last character
 		    first_byte_off = mb_head_off(newp, ptr - 1);
+
+		    // Note: this may free "newp"
+		    ml_replace(lnum, newp, FALSE);
+
+		    inserted_bytes(lnum, col, totlen);
 
 		    // Place cursor on last putted char.
 		    if (lnum == curwin->w_cursor.lnum)
@@ -2094,7 +2113,6 @@ do_put(
 		++curwin->w_cursor.col;
 	    else
 		curwin->w_cursor.col -= first_byte_off;
-	    changed_bytes(lnum, col);
 	}
 	else
 	{
@@ -2549,10 +2567,8 @@ get_reg_type(int regname, long *reglen)
 	case ':':		// last command line
 	case '/':		// last search-pattern
 	case '.':		// last inserted text
-# ifdef FEAT_SEARCHPATH
 	case Ctrl_F:		// Filename under cursor
 	case Ctrl_P:		// Path under cursor, expand via "path"
-# endif
 	case Ctrl_W:		// word under cursor
 	case Ctrl_A:		// WORD (mnemonic All) under cursor
 	case '_':		// black hole: always empty
