@@ -316,7 +316,7 @@ def HereDocIndent(line: string): number # {{{2
     # That is, if  we can find at  least one line in the  body whose indentation
     # level was equal (or lower) than the declaration.
     var end: number = search($'^\s*{b:vimindent_heredoc.endmarker}$', 'nW')
-    var should_indent_more: bool = getline(v:lnum, end - 1)
+    var should_indent_more: bool = range(v:lnum, end - 1)
       ->map((_, lnum: number) => indent(lnum))
       ->indexof((_, ind: number) => ind <= old_startindent) >= 0
     if should_indent_more
@@ -343,15 +343,15 @@ enddef
 
 def GetBlockStartKeyword(line: string): string # {{{2
   var kwd: string = line->matchstr('\l\+')
-  if kwd =~ '^aug'
-    kwd = 'augroup'
-  elseif kwd =~ '^fu'
-    kwd = 'function'
-  elseif kwd =~ '^endfu'
-    kwd = 'endfunction'
-  endif
-  return kwd
+  # Need to call `fullcommand()` from legacy context:
+  #     :vim9cmd echo fullcommand('end')
+  #     E1065: Command cannot be shortened: end
+  return FullCommand(kwd)
 enddef
+
+function FullCommand(kwd)
+  return fullcommand(a:kwd)
+endfunction
 
 def MatchingOpenBracket(line: dict<any>): number # {{{2
   var end: string = line.text->matchstr(CLOSING_BRACKET)
