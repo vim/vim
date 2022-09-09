@@ -59,7 +59,8 @@ const START_MIDDLE_END: dict<list<string>> = {
   function: ['fu\%[nction]', '', 'endf\%[unction]'],
   endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
   augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
-}->map((_, kwds: list<string>) => kwds->map((_, kwd: string) => kwd->printf('\C\<\%%(%s\)\>')))
+}->map((_, kwds: list<string>) => kwds->map((_, kwd: string) => $'\%(^\||\)\s*\%({kwd->printf('\C\<\%%(%s\)\>')}\)'))
+# }->map((_, kwds: list<string>) => kwds->map((_, kwd: string) => kwd->printf('\C\<\%%(%s\)\>')))
 
 # LINE_CONTINUATION_AT_START {{{2
 
