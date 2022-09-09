@@ -95,7 +95,7 @@ const STARTS_WITH_BACKSLASH: string = '^\s*\\'
 # DECLARES_HEREDOC {{{2
 
 const DECLARES_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
-  .. '\s=<<\s\+\%(\%(trim\|eval\)\s\)\{1,2}\s*'
+  .. '\s=<<\s\+\%(\%(trim\|eval\)\s\)\{,2}\s*'
   .. '\)\zs\L\S*$'
 
 # STARTS_BLOCK {{{2
@@ -154,10 +154,6 @@ const IS_SINGLE_OPEN_BRACKET: string = '^\s*[[{(]\s*$'
 # }}}1
 # Interface {{{1
 export def Expr(): number #{{{2
-  if v:lnum == 1
-    return 0
-  endif
-
   var line_A: dict<any> = {text: getline(v:lnum), lnum: v:lnum}
   var line_B: dict<any>
 
@@ -166,6 +162,7 @@ export def Expr(): number #{{{2
     b:vimindent_heredoc = {
       startlnum: v:lnum,
       endmarker: line_A.text->matchstr(DECLARES_HEREDOC),
+      trim: line_A.text =~ '.*\strim\s\+\L\S*$',
     }
     autocmd_add([{
       cmd: 'unlet! b:vimindent_heredoc',
@@ -175,8 +172,14 @@ export def Expr(): number #{{{2
       pattern: '*:n',
       replace: true,
     }])
-  elseif exists('b:vimindent_heredoc') && !empty(b:vimindent_heredoc)
+  elseif exists('b:vimindent_heredoc')
     return line_A.text->HereDocIndent()
+  endif
+
+  # Don't move this block before the heredoc code.
+  # A heredoc might be assigned on the very first line.
+  if v:lnum == 1
+    return 0
   endif
 
   line_B.lnum = prevnonblank(v:lnum - 1)
@@ -281,9 +284,20 @@ enddef
 def HereDocIndent(line: string): number #{{{2
   # at the end of a heredoc
   if line =~ $'^\s*{b:vimindent_heredoc.endmarker}$'
+    # `END` must be at the very start of the line if the heredoc is not trimmed
+    if !b:vimindent_heredoc.trim
+      return 0
+    endif
+
     var ind: number = b:vimindent_heredoc.startindent
     unlet! b:vimindent_heredoc
     return ind
+  endif
+
+  # In a non-trimmed heredoc, all of leading whitespace is semantic.
+  # Leave it alone.
+  if !b:vimindent_heredoc.trim
+    return -1
   endif
 
   # first non-empty line after a heredoc declaration
