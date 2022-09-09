@@ -8444,7 +8444,7 @@ f_repeat(typval_T *argvars, typval_T *rettv)
 	    return;
 
 	for (i = 0; i < n; ++i)
-	    blob_set_range(rettv->vval.v_blob, i * slen, (i + 1) * slen - 1, argvars);
+	    blob_set_range(rettv->vval.v_blob, (long)i * slen, ((long)i + 1) * slen - 1, argvars);
     }
     else
     {
