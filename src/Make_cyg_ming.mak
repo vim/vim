@@ -1149,7 +1149,7 @@ xxd/xxd.exe: xxd/xxd.c
 	$(MAKE) -C xxd -f Make_ming.mak CC='$(CC)'
 
 tee/tee.exe: tee/tee.c
-	$(MAKE) -C tee CC='$(CC)'
+	$(MAKE) -C tee -f Make_ming.mak CC='$(CC)'
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE) CXX='$(CXX)' STATIC_STDCPLUS=$(STATIC_STDCPLUS)
@@ -1176,7 +1176,7 @@ ifdef MZSCHEME
 endif
 	$(MAKE) -C GvimExt -f Make_ming.mak clean
 	$(MAKE) -C xxd -f Make_ming.mak clean
-	$(MAKE) -C tee clean
+	$(MAKE) -C tee -f Make_ming.mak clean
 
 # Run vim script to generate the Ex command lookup table.
 # This only needs to be run when a command name has been added or changed.
