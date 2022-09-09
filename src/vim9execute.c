@@ -1716,6 +1716,12 @@ get_script_svar(scriptref_T *sref, int dfunc_idx)
 	return NULL;
     }
     sv = ((svar_T *)si->sn_var_vals.ga_data) + sref->sref_idx;
+    if (sv->sv_name == NULL)
+    {
+	if (dfunc != NULL)
+	    emsg(_(e_script_variable_was_deleted));
+	return NULL;
+    }
     if (!equal_type(sv->sv_type, sref->sref_type, 0))
     {
 	if (dfunc != NULL)

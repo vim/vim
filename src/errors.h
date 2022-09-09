@@ -3331,4 +3331,6 @@ EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
 	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
 EXTERN char e_string_number_list_or_blob_required_for_argument_nr[]
 	INIT(= N_("E1301: String, Number, List or Blob required for argument %d"));
+EXTERN char e_script_variable_was_deleted[]
+	INIT(= N_("E1302: Script variable was deleted"));
 #endif

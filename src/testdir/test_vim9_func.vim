@@ -2943,6 +2943,30 @@ def Test_nested_closure_fails()
   v9.CheckScriptFailure(lines, 'E1012:')
 enddef
 
+def Run_Test_closure_in_for_loop_fails()
+  var lines =<< trim END
+    vim9script
+    for n in [0]
+        timer_start(10, (_) => {
+            echo n
+        })
+    endfor
+  END
+  writefile(lines, 'XTest_closure_fails', 'D')
+
+  # Check that an error shows
+  var buf = g:RunVimInTerminal('-S XTest_closure_fails', {'rows': 6})
+  g:VerifyScreenDump(buf, 'Test_vim9_closure_fails', {})
+
+  # clean up
+  g:StopVimInTerminal(buf)
+enddef
+
+func Test_closure_in_for_loop_fails()
+  CheckScreendump
+  call Run_Test_closure_in_for_loop_fails()
+endfunc
+
 def Test_global_closure()
   var lines =<< trim END
       vim9script
@@ -3321,7 +3345,7 @@ def Run_Test_silent_echo()
     enddef
     defcompile
   END
-  writefile(lines, 'XTest_silent_echo')
+  writefile(lines, 'XTest_silent_echo', 'D')
 
   # Check that the balloon shows up after a mouse move
   var buf = g:RunVimInTerminal('-S XTest_silent_echo', {'rows': 6})
@@ -3330,7 +3354,6 @@ def Run_Test_silent_echo()
 
   # clean up
   g:StopVimInTerminal(buf)
-  delete('XTest_silent_echo')
 enddef
 
 def SilentlyError()
