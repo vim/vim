@@ -3329,12 +3329,14 @@ def Test_rename()
 enddef
 
 def Test_repeat()
-  v9.CheckDefAndScriptFailure(['repeat(1.1, 2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1224: String, Number or List required for argument 1'])
-  v9.CheckDefAndScriptFailure(['repeat({a: 10}, 2)'], ['E1013: Argument 1: type mismatch, expected string but got dict<', 'E1224: String, Number or List required for argument 1'])
+  v9.CheckDefAndScriptFailure(['repeat(1.1, 2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'EXXXX: String, Number, List or Blob required for argument 1'])
+  v9.CheckDefAndScriptFailure(['repeat({a: 10}, 2)'], ['E1013: Argument 1: type mismatch, expected string but got dict<', 'EXXXX: String, Number, List or Blob required for argument 1'])
   var lines =<< trim END
       assert_equal('aaa', repeat('a', 3))
       assert_equal('111', repeat(1, 3))
       assert_equal([1, 1, 1], repeat([1], 3))
+      assert_equal(0z000102000102000102, repeat(0z000102, 3))
+      assert_equal(0z000000, repeat(0z00, 3))
       var s = '-'
       s ..= repeat(5, 3)
       assert_equal('-555', s)
