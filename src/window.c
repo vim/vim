@@ -1414,8 +1414,8 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
     if (!p_spsc)
     {
 	newp->w_botline = oldp->w_botline;
-	newp->w_prev_height = oldp->w_height;
-	newp->w_prev_winrow = oldp->w_winrow + WINBAR_HEIGHT(oldp);
+	newp->w_prev_height = oldp->w_height - WINBAR_HEIGHT(oldp);
+	newp->w_prev_winrow = oldp->w_winrow + 2 * WINBAR_HEIGHT(oldp);
     }
 
     // copy tagstack and folds
