@@ -161,9 +161,11 @@ export def Expr(): number # {{{2
   if line_A.text =~ DECLARES_HEREDOC
     b:vimindent_heredoc = {
       startlnum: v:lnum,
+      startindent: indent(v:lnum),
       endmarker: line_A.text->matchstr(DECLARES_HEREDOC),
       trim: line_A.text =~ '.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*$',
     }
+    # invalidate the cache so that it's not used for the next `=` normal command
     autocmd_add([{
       cmd: 'unlet! b:vimindent_heredoc',
       event: 'ModeChanged',
@@ -290,6 +292,7 @@ def HereDocIndent(line: string): number # {{{2
     endif
 
     var ind: number = b:vimindent_heredoc.startindent
+    # invalidate the cache so that it's not used for the next heredoc
     unlet! b:vimindent_heredoc
     return ind
   endif
@@ -300,12 +303,31 @@ def HereDocIndent(line: string): number # {{{2
     return -1
   endif
 
-  # first non-empty line after a heredoc declaration
-  if !b:vimindent_heredoc->has_key('startindent')
-    b:vimindent_heredoc.startindent = indent(b:vimindent_heredoc.startlnum)
+  # To preserve relative line indentations in  the body of a trimmed heredoc, we
+  # need to  compute the  offset which was  applied to the  indent level  of the
+  # declaration line.
+  var offset: number
+  if !b:vimindent_heredoc->has_key('offset')
+    var old_startindent: number = b:vimindent_heredoc.startindent
+    var new_startindent: number = indent(b:vimindent_heredoc.startlnum)
+    offset = new_startindent - old_startindent
+
+    # Indent the body relatively to the declaration when it makes sense.
+    # That is, if  we can find at  least one line in the  body whose indentation
+    # level was equal (or lower) than the declaration.
+    var end: number = search($'^\s*{b:vimindent_heredoc.endmarker}$', 'nW')
+    var should_indent_more: bool = getline(v:lnum, end - 1)
+      ->map((_, lnum: number) => indent(lnum))
+      ->indexof((_, ind: number) => ind <= old_startindent) >= 0
+    if should_indent_more
+      offset += shiftwidth()
+    endif
+
+    b:vimindent_heredoc.offset = offset
+    b:vimindent_heredoc.startindent = new_startindent
   endif
 
-  return b:vimindent_heredoc.startindent + shiftwidth()
+  return b:vimindent_heredoc.startindent + b:vimindent_heredoc.offset
 enddef
 # }}}1
 # Util {{{1
