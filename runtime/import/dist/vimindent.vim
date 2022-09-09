@@ -218,7 +218,6 @@ export def Expr(): number #{{{2
     line_A.isfirst = true
     var [cmd: string, lnum: number] = line_B->FirstLinePreviousCommand()
     line_B = {text: cmd, lnum: lnum}
-
     base_ind = indent(lnum)
 
   else
@@ -366,8 +365,8 @@ def FirstLinePreviousCommand(line_A: dict<any>): list<any> #{{{2
   return [line_B.text, line_B.lnum]
 enddef
 
-def ClosesBlock(line_A: dict<any>, line_B: dict<any>): bool #{{{2
-  var kwd: string = GetBlockStartKeyword(line_A.text)
+def ClosesBlock(line_B: dict<any>, line_A: dict<any>): bool #{{{2
+  var kwd: string = GetBlockStartKeyword(line_B.text)
   if !START_MIDDLE_END->has_key(kwd)
     return false
   endif
@@ -376,7 +375,7 @@ def ClosesBlock(line_A: dict<any>, line_B: dict<any>): bool #{{{2
   var block_end: number = searchpair(start, middle, end,
     'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
 
-  return block_end < line_B.lnum
+  return block_end < line_A.lnum
 enddef
 
 def HasLineContinuationAtEnd(line: dict<any>): bool #{{{2
