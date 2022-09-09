@@ -90,7 +90,7 @@ const LINE_CONTINUATION_AT_END: string = '\%('
 
 # STARTS_WITH_BACKSLASH {{{2
 
-const STARTS_WITH_BACKSLASH: string = '^\s*\\'
+const STARTS_WITH_BACKSLASH: string = '^\s*\%(\\\|"\\\s\)'
 
 # DECLARES_HEREDOC {{{2
 
