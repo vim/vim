@@ -4545,6 +4545,8 @@ start_echowindow(void)
     void
 end_echowindow(void)
 {
+    in_echowindow = FALSE;
+
     // show the message window now
     redraw_cmd(FALSE);
 
@@ -4553,7 +4555,6 @@ end_echowindow(void)
     msg_didout = TRUE;
     if (msg_col == 0)
 	msg_col = 1;
-    in_echowindow = FALSE;
 }
 #endif
 

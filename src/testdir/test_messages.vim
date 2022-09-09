@@ -440,5 +440,25 @@ func Test_echowin_eval()
   call delete('XtestEchowindow')
 endfunc
 
+" messages window should not be used for showing the mode
+func Test_echowin_showmode()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one', 'two'])
+      timer_start(100, (_) => {
+           echowin 'echo window'
+         })
+      normal V
+  END
+  call writefile(lines, 'XtestEchowinMode', 'D')
+  let buf = RunVimInTerminal('-S XtestEchowinMode', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_echowin_showmode', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
