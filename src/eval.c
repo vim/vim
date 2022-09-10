@@ -1121,7 +1121,7 @@ get_lval(
     var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
-	int r;
+	int r = OK;
 
 	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT)
 	{
