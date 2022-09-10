@@ -479,10 +479,6 @@ jobs:
           )
           goto :eof
 
-      #- name: Copy src directory to src2
-      #  shell: cmd
-      #  run: xcopy src src2\ /E > nul
-
       - name: Build (MSVC)
         if: matrix.toolchain == 'msvc'
         shell: cmd
@@ -506,10 +502,6 @@ jobs:
               FEATURES=${{ matrix.features }} ^
               GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }}
           )
-          @rem if not exist vim%BITS%.dll (
-          @rem   echo %COL_RED%Build failure.%COL_RESET%
-          @rem   exit 1
-          @rem )
 
       - name: Build (MinGW)
         if: matrix.toolchain == 'mingw'
@@ -567,11 +559,6 @@ jobs:
       #    name: vim${{ matrix.bits }}-${{ matrix.toolchain }}
       #    path: ./artifacts
 
-      #- name: Copy gcov data files to src2
-      #  if: matrix.coverage
-      #  shell: msys2 {0}
-      #  run: find src -name '*.gcno' | tar -c -T - | tar -x -C src2 --strip-components 1
-
       - name: Test and show the result of testing gVim
         if: matrix.GUI == 'yes' || matrix.VIMDLL == 'yes'
         shell: cmd
@@ -579,9 +566,6 @@ jobs:
         run: |
           PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
           call "%VCVARSALL%" %VCARCH%
-
-          @rem echo %COL_GREEN%Start testing Vim in background.%COL_RESET%
-          @rem start cmd /c "cd src2\testdir & nmake -nologo -f Make_mvc.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
           cd src\testdir
@@ -610,48 +594,16 @@ jobs:
             nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
           )
 
-        #  echo %COL_GREEN%Wait for Vim tests to finish.%COL_RESET%
-        #  cd src2\testdir
-        #  :: Wait about 10 minutes.
-        #  for /L %%i in (1,1,60) do (
-        #    if exist done.txt goto exitloop
-        #    timeout 10 > NUL 2>&1
-        #    if ERRORLEVEL 1 ping -n 11 localhost > NUL
-        #  )
-        #  set timeout=1
-        #  :exitloop
-
-        #  echo %COL_GREEN%The result of testing Vim:%COL_RESET%
-        #  cd src2\testdir
-        #  if exist messages type messages
-        #  nmake -nologo -f Make_mvc.mak report VIMPROG=..\..\src\vim || exit 1
-
-        #  if "%timeout%"=="1" (
-        #    echo %COL_RED%Timed out.%COL_RESET%
-        #    exit 1
-        #  )
-
       - name: Generate gcov files
         if: matrix.coverage
         shell: msys2 {0}
         run: |
           cd src
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
-          #cd ../src2
-          #find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
-      #- name: Codecov (gVim)
       - name: Codecov
         if: matrix.coverage
         uses: codecov/codecov-action@v3.1.0
         with:
           directory: src
-          #flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}
-
-      #- name: Codecov (Vim)
-      #  if: matrix.coverage
-      #  uses: codecov/codecov-action@v3.1.0
-      #  with:
-      #    directory: src2
-      #    flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}
