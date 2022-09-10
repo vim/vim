@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Jun 27
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,17 +38,14 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Use :defer command:
+    - Use "D" flag of writefile() and mkdir() in tests.
+	(testdir/test_c*.vim done)
+
 When using :echomessage do use msg_row and msg_col, but save and restore.
-How to test any failure?
+How to test any failure?  If nothing fails perhaps it's OK alrady.
 
-Improve :defer command:
-    - Use "D" flag of writefile() in tests.
-    - test "defer func()->funcouter()" fails (or use "funcouter")
-    - test "defer func().arg" fails
-    - test partial fails
-    - check arguments at :defer command
-    - Also when function does "qa!" or "cq"?
-
+Drop Windows XP?  #11089
 
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
@@ -277,6 +274,7 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 Also, z= in German on a long word can take a very long time, but CTRL-C to
 interrupt does not work. Where to add ui_breakcheck()?
 New English spell files also have very slow suggestions.
+French spell files don't work correctly.  #4916
 
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558
@@ -2648,6 +2646,11 @@ Better 'rightleft' or BIDI support:
 
 
 Spell checking:
+-   List of common misspellings in English:
+    https://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings/For_machines
+    German:
+    https://de.wikipedia.org/wiki/Wikipedia:Liste_von_Tippfehlern/F%C3%BCr_Maschinen
+    There are other languages.
 -   [s does not find missing capital at start of the line.  #10838
     Probably because the dot at the end of the previous line isn't seen.
 -   When 'cursorline' is set and the first word should have SpellCap
