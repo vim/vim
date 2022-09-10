@@ -497,6 +497,8 @@ prop_add_common(
 	    }
 	    if (STRCMP(p, "right") == 0)
 		flags |= TP_FLAG_ALIGN_RIGHT;
+	    else if (STRCMP(p, "above") == 0)
+		flags |= TP_FLAG_ALIGN_ABOVE;
 	    else if (STRCMP(p, "below") == 0)
 		flags |= TP_FLAG_ALIGN_BELOW;
 	    else if (STRCMP(p, "after") != 0)
@@ -673,6 +675,21 @@ count_props(linenr_T lnum, int only_starting, int last_line)
 static textprop_T	*text_prop_compare_props;
 static buf_T		*text_prop_compare_buf;
 
+/* Score for sorting on position of the text property: 0: above,
+ * 1: after (default), 2: right, 3: below (comes last)
+ */
+    static int
+text_prop_order(int flags)
+{
+    if (flags & TP_FLAG_ALIGN_ABOVE)
+	return 0;
+    if (flags & TP_FLAG_ALIGN_RIGHT)
+	return 2;
+    if (flags & TP_FLAG_ALIGN_BELOW)
+	return 3;
+    return 1;
+}
+
 /*
  * Function passed to qsort() to sort text properties.
  * Return 1 if "s1" has priority over "s2", -1 if the other way around, zero if
@@ -694,21 +711,13 @@ text_prop_compare(const void *s1, const void *s2)
     col2 = tp2->tp_col;
     if (col1 == MAXCOL && col2 == MAXCOL)
     {
-	int flags1 = 0;
-	int flags2 = 0;
+	int order1 = text_prop_order(tp1->tp_flags);
+	int order2 = text_prop_order(tp2->tp_flags);
 
-	// both props add text are after the line, order on 0: after (default),
-	// 1: right, 2: below (comes last)
-	if (tp1->tp_flags & TP_FLAG_ALIGN_RIGHT)
-	    flags1 = 1;
-	if (tp1->tp_flags & TP_FLAG_ALIGN_BELOW)
-	    flags1 = 2;
-	if (tp2->tp_flags & TP_FLAG_ALIGN_RIGHT)
-	    flags2 = 1;
-	if (tp2->tp_flags & TP_FLAG_ALIGN_BELOW)
-	    flags2 = 2;
-	if (flags1 != flags2)
-	    return flags1 < flags2 ? 1 : -1;
+	// both props add text before or after the line, sort on order where it
+	// is added
+	if (order1 != order2)
+	    return order1 < order2 ? 1 : -1;
     }
 
     // property that inserts text has priority over one that doesn't

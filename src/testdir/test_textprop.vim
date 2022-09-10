@@ -2848,6 +2848,26 @@ func Test_props_with_text_below_nowrap()
   call delete('XscriptPropsBelowNowrap')
 endfunc
 
+func Test_props_with_text_above()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['one two', 'three four', 'five six'])
+      call prop_type_add('above1', #{highlight: 'Search'})
+      call prop_type_add('above2', #{highlight: 'DiffChange'})
+      call prop_add(1, 0, #{type: 'above1', text: 'first thing above', text_align: 'above'})
+      call prop_add(1, 0, #{type: 'above2', text: 'second thing above', text_align: 'above'})
+      call prop_add(3, 0, #{type: 'above1', text: 'another thing', text_align: 'above'})
+
+      normal gglllj
+  END
+  call writefile(lines, 'XscriptPropsWithTextAbove', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsWithTextAbove', #{rows: 9, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_props_with_text_override()
   CheckRunVimInTerminal
 

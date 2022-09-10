@@ -85,7 +85,7 @@ getviscol2(colnr_T col, colnr_T coladd UNUSED)
 }
 
 /*
- * Try to advance the Cursor to the specified screen column.
+ * Try to advance the Cursor to the specified screen column "wantcol".
  * If virtual editing: fine tune the cursor position.
  * Note that all virtual positions off the end of a line should share
  * a curwin->w_cursor.col value (n.b. this is equal to STRLEN(line)),
@@ -94,29 +94,30 @@ getviscol2(colnr_T col, colnr_T coladd UNUSED)
  * return OK if desired column is reached, FAIL if not
  */
     int
-coladvance(colnr_T wcol)
+coladvance(colnr_T wantcol)
 {
-    int rc = getvpos(&curwin->w_cursor, wcol);
+    int rc = getvpos(&curwin->w_cursor, wantcol);
 
-    if (wcol == MAXCOL || rc == FAIL)
+    if (wantcol == MAXCOL || rc == FAIL)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else if (*ml_get_cursor() != TAB)
     {
 	// Virtcol is valid when not on a TAB
 	curwin->w_valid |= VALID_VIRTCOL;
-	curwin->w_virtcol = wcol;
+	curwin->w_virtcol = wantcol;
     }
     return rc;
 }
 
 /*
- * Return in "pos" the position of the cursor advanced to screen column "wcol".
+ * Return in "pos" the position of the cursor advanced to screen column
+ * "wantcol".
  * return OK if desired column is reached, FAIL if not
  */
     int
-getvpos(pos_T *pos, colnr_T wcol)
+getvpos(pos_T *pos, colnr_T wantcol)
 {
-    return coladvance2(pos, FALSE, virtual_active(), wcol);
+    return coladvance2(pos, FALSE, virtual_active(), wantcol);
 }
 
     static int
@@ -156,8 +157,8 @@ coladvance2(
     }
     else
     {
-	int width = curwin->w_width - win_col_off(curwin);
-	chartabsize_T cts;
+	int		width = curwin->w_width - win_col_off(curwin);
+	chartabsize_T	cts;
 
 	if (finetune
 		&& curwin->w_p_wrap
@@ -183,6 +184,9 @@ coladvance2(
 	init_chartabsize_arg(&cts, curwin, pos->lnum, 0, line, line);
 	while (cts.cts_vcol <= wcol && *cts.cts_ptr != NUL)
 	{
+#ifdef FEAT_PROP_POPUP
+	    int at_start = cts.cts_ptr == cts.cts_line;
+#endif
 	    // Count a tab for what it's worth (if list mode not on)
 #ifdef FEAT_LINEBREAK
 	    csize = win_lbr_chartabsize(&cts, &head);
@@ -191,6 +195,11 @@ coladvance2(
 	    csize = lbr_chartabsize_adv(&cts);
 #endif
 	    cts.cts_vcol += csize;
+#ifdef FEAT_PROP_POPUP
+	    if (at_start)
+		// do not count the columns for virtual text above
+		cts.cts_vcol -= cts.cts_first_char;
+#endif
 	}
 	col = cts.cts_vcol;
 	idx = (int)(cts.cts_ptr - line);
@@ -2400,7 +2409,7 @@ update_mouseshape(int shape_idx)
 
 /*
  * Change directory to "new_dir".  Search 'cdpath' for relative directory
- * names, otherwise just mch_chdir().
+ * names.
  */
     int
 vim_chdir(char_u *new_dir)

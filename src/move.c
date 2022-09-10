@@ -476,7 +476,11 @@ update_curswant(void)
     if (curwin->w_set_curswant)
     {
 	validate_virtcol();
-	curwin->w_curswant = curwin->w_virtcol;
+	curwin->w_curswant = curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+				- curwin->w_virtcol_first_char
+#endif
+				;
 	curwin->w_set_curswant = FALSE;
     }
 }
@@ -835,6 +839,9 @@ validate_virtcol_win(win_T *wp)
     check_cursor_moved(wp);
     if (!(wp->w_valid & VALID_VIRTCOL))
     {
+#ifdef FEAT_PROP_POPUP
+	wp->w_virtcol_first_char = 0;
+#endif
 	getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
 #ifdef FEAT_SYN_HL
 	redraw_for_cursorcolumn(wp);
@@ -981,6 +988,11 @@ curs_columns(
      */
     if (!(curwin->w_valid & VALID_CROW))
 	curs_rows(curwin);
+
+#ifdef FEAT_PROP_POPUP
+    // will be set by getvvcol() but not reset
+    curwin->w_virtcol_first_char = 0;
+#endif
 
     /*
      * Compute the number of virtual columns.

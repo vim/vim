@@ -813,12 +813,13 @@ typedef struct textprop_S
 #define TP_FLAG_CONT_PREV	0x2	// property was continued from prev line
 
 // without these text is placed after the end of the line
-#define TP_FLAG_ALIGN_RIGHT	0x10	// virtual text is right-aligned
-#define TP_FLAG_ALIGN_BELOW	0x20	// virtual text on next screen line
+#define TP_FLAG_ALIGN_RIGHT	0x010	// virtual text is right-aligned
+#define TP_FLAG_ALIGN_ABOVE	0x020	// virtual text above the line
+#define TP_FLAG_ALIGN_BELOW	0x040	// virtual text on next screen line
 
-#define TP_FLAG_WRAP		0x40	// virtual text wraps - when missing
+#define TP_FLAG_WRAP		0x080	// virtual text wraps - when missing
 					// text is truncated
-#define TP_FLAG_START_INCL	0x80	// "start_incl" copied from proptype
+#define TP_FLAG_START_INCL	0x100	// "start_incl" copied from proptype
 
 #define PROP_TEXT_MIN_CELLS	4	// minimun number of cells to use for
 					// the text, even when truncating
@@ -3678,6 +3679,11 @@ struct window_S
 				    // more than one screen line or when
 				    // w_leftcol is non-zero
 
+#ifdef FEAT_PROP_POPUP
+    colnr_T	w_virtcol_first_char;	// offset for w_virtcol when there are
+					// virtual text properties above the
+					// line
+#endif
     /*
      * w_wrow and w_wcol specify the cursor position in the window.
      * This is related to positions in the window, not in the display or
@@ -4607,6 +4613,7 @@ typedef struct {
     textprop_T	*cts_text_props;	// text props (allocated)
     char	cts_has_prop_with_text; // TRUE if if a property inserts text
     int         cts_cur_text_width;     // width of current inserted text
+    int         cts_first_char;		// width text props above the line
     int		cts_with_trailing;	// include size of trailing props with
 					// last character
     int		cts_start_incl;		// prop has true "start_incl" arg
