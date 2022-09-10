@@ -2865,6 +2865,11 @@ func Test_props_with_text_above()
   let buf = RunVimInTerminal('-S XscriptPropsWithTextAbove', #{rows: 9, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_1', {})
 
+  call term_sendkeys(buf, "ggI")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_2', {})
+  call term_sendkeys(buf, "inserted \<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_3', {})
+
   call StopVimInTerminal(buf)
 endfunc
 

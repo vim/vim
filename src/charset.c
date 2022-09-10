@@ -1576,6 +1576,9 @@ getvcol(
 	    if (((State & MODE_INSERT) == 0 || cts.cts_start_incl) && !on_NUL)
 		// cursor is after inserted text, unless on the NUL
 		vcol += cts.cts_cur_text_width;
+	    else
+		// insertion also happens after the "above" virtual text
+		vcol += cts.cts_first_char;
 #endif
 	    *cursor = vcol + head;	    // cursor at start
 	}
