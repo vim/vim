@@ -312,13 +312,14 @@ def HereDocIndent(line: string): number # {{{2
     var new_startindent: number = indent(b:vimindent_heredoc.startlnum)
     offset = new_startindent - old_startindent
 
-    # Indent the body relatively to the declaration when it makes sense.
-    # That is, if  we can find at  least one line in the  body whose indentation
-    # level was equal (or lower) than the declaration.
+    # If all the non-empty lines in  the body have a higher indentation relative
+    # to the declaration, there is no need to indent them more.
+    # But if  at least one of  them does have  the same indentation level  (or a
+    # lower one), then we want to indent it further (and the whole block with it).
     var end: number = search($'^\s*{b:vimindent_heredoc.endmarker}$', 'nW')
     var should_indent_more: bool = range(v:lnum, end - 1)
-      ->map((_, lnum: number) => indent(lnum))
-      ->indexof((_, ind: number) => ind <= old_startindent) >= 0
+      ->map((_, lnum: number): list<number> => [lnum, indent(lnum)])
+      ->indexof((_, l: list<number>) => l[0]->getline() != '' && l[1] <= old_startindent) >= 0
     if should_indent_more
       offset += shiftwidth()
     endif
@@ -327,7 +328,7 @@ def HereDocIndent(line: string): number # {{{2
     b:vimindent_heredoc.startindent = new_startindent
   endif
 
-  return b:vimindent_heredoc.startindent + b:vimindent_heredoc.offset
+  return [0, indent(v:lnum) + b:vimindent_heredoc.offset]->max()
 enddef
 # }}}1
 # Util {{{1
