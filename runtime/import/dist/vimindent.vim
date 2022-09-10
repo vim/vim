@@ -184,7 +184,7 @@ export def Expr(): number # {{{2
     return 0
   endif
 
-  line_B.lnum = prevnonblank(v:lnum - 1)
+  line_B.lnum = PrevCodeLine(v:lnum)
   line_B.text = getline(line_B.lnum)
 
   var base_ind: number
@@ -227,7 +227,7 @@ export def Expr(): number # {{{2
     base_ind = indent(line_B.lnum)
 
     var line_C: dict<any>
-    line_C.lnum = prevnonblank(line_B.lnum - 1)
+    line_C.lnum = PrevCodeLine(line_B.lnum)
     line_C.text = getline(line_C.lnum)
 
     if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
@@ -336,6 +336,20 @@ def HereDocIndent(line: string): number # {{{2
 enddef
 # }}}1
 # Util {{{1
+def PrevCodeLine(lnum: number): number # {{{2
+  var n: number = prevnonblank(lnum - 1)
+  var line: string = getline(n)
+  while line =~ COMMENT && n > 1
+    n = prevnonblank(n - 1)
+    line = getline(n)
+  endwhile
+  # If we get back to the first line, we return 1 no matter what; even if it's a
+  # commented line.   That should not  cause an issue  though.  We just  want to
+  # avoid a  commented line above which  there is a  line of code which  is more
+  # relevant.  There is nothing above the first line.
+  return n
+enddef
+
 def FindStart( # {{{2
     start: string,
     middle: string,
@@ -424,7 +438,7 @@ enddef
 def IsBlock(lnum: number): bool # {{{2
   var line: string = getline(lnum)
   if line =~ '^\s*{\s*$'
-      && prevnonblank(lnum - 1)->getline() !~ LINE_CONTINUATION_AT_END
+      && PrevCodeLine(lnum)->getline() !~ LINE_CONTINUATION_AT_END
     return true
   endif
 
