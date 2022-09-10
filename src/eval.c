@@ -1121,6 +1121,8 @@ get_lval(
     var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
+	int r;
+
 	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT)
 	{
 	    if (!quiet)
@@ -1136,12 +1138,14 @@ get_lval(
 	    return NULL;
 	}
 
-	// a NULL list/blob works like an empty list/blob, allocate one now.
+	// A NULL list/blob works like an empty list/blob, allocate one now.
 	if (lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
-	    rettv_list_alloc(lp->ll_tv);
+	    r = rettv_list_alloc(lp->ll_tv);
 	else if (lp->ll_tv->v_type == VAR_BLOB
 					     && lp->ll_tv->vval.v_blob == NULL)
-	    rettv_blob_alloc(lp->ll_tv);
+	    r = rettv_blob_alloc(lp->ll_tv);
+	if (r == FAIL)
+	    return NULL;
 
 	if (lp->ll_range)
 	{
