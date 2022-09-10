@@ -92,9 +92,9 @@ const LINE_CONTINUATION_AT_END: string = '\%('
 
 const STARTS_WITH_BACKSLASH: string = '^\s*\%(\\\|"\\\s\)'
 
-# DECLARES_HEREDOC {{{2
+# ASSIGNS_HEREDOC {{{2
 
-const DECLARES_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
+const ASSIGNS_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
   .. '\s=<<\s\+\%(\%(trim\|eval\)\s\)\{,2}\s*'
   .. '\)\zs\L\S*$'
 
@@ -158,11 +158,11 @@ export def Expr(): number # {{{2
   var line_B: dict<any>
 
   # at the start of a heredoc
-  if line_A.text =~ DECLARES_HEREDOC
+  if line_A.text =~ ASSIGNS_HEREDOC
     b:vimindent_heredoc = {
       startlnum: v:lnum,
       startindent: indent(v:lnum),
-      endmarker: line_A.text->matchstr(DECLARES_HEREDOC),
+      endmarker: line_A.text->matchstr(ASSIGNS_HEREDOC),
       trim: line_A.text =~ '.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*$',
     }
     # invalidate the cache so that it's not used for the next `=` normal command
@@ -303,9 +303,12 @@ def HereDocIndent(line: string): number # {{{2
     return -1
   endif
 
-  # To preserve relative line indentations in  the body of a trimmed heredoc, we
-  # need to  compute the  offset which was  applied to the  indent level  of the
-  # declaration line.
+  # In a trimmed heredoc, *some* of the leading whitespace is semantic.
+  # We want to preserve  it, so we can't just indent  relative to the assignment
+  # line.  That's because we're dealing with data, not with code.
+  # Instead, we need  to compute by how  much the indent of  the assignment line
+  # was increased  or decreased.   Then, we  need to apply  that same  change to
+  # every line inside the body.
   var offset: number
   if !b:vimindent_heredoc->has_key('offset')
     var old_startindent: number = b:vimindent_heredoc.startindent
@@ -313,12 +316,14 @@ def HereDocIndent(line: string): number # {{{2
     offset = new_startindent - old_startindent
 
     # If all the non-empty lines in  the body have a higher indentation relative
-    # to the declaration, there is no need to indent them more.
+    # to the assignment, there is no need to indent them more.
     # But if  at least one of  them does have  the same indentation level  (or a
     # lower one), then we want to indent it further (and the whole block with it).
+    # This way,  we can clearly distinguish  the heredoc block from  the rest of
+    # the code.
     var end: number = search($'^\s*{b:vimindent_heredoc.endmarker}$', 'nW')
     var should_indent_more: bool = range(v:lnum, end - 1)
-      ->indexof((_, lnum: number): bool => getline(lnum) != '' && indent(lnum) <= old_startindent) >= 0
+      ->indexof((_, lnum: number): bool => indent(lnum) <= old_startindent && getline(lnum) != '') >= 0
     if should_indent_more
       offset += shiftwidth()
     endif
