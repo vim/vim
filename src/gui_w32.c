@@ -198,9 +198,7 @@ gui_mch_set_rendering_options(char_u *s)
 # ifndef __MINGW32__
 #  include <shellapi.h>
 # endif
-# if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL_GUI) || defined(FEAT_GUI_TABLINE)
-#  include <commctrl.h>
-# endif
+# include <commctrl.h>
 # include <windowsx.h>
 
 #endif // PROTO

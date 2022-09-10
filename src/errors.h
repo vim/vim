@@ -2011,11 +2011,11 @@ EXTERN char e_cannot_delete_variable[]
 	INIT(= N_("E795: Cannot delete variable"));
 EXTERN char e_cannot_delete_variable_str[]
 	INIT(= N_("E795: Cannot delete variable %s"));
+#endif
+#ifdef MSWIN
 	// E796
-# ifdef MSWIN
 EXTERN char e_writing_to_device_disabled_with_opendevice_option[]
 	INIT(= N_("writing to device disabled with 'opendevice' option"));
-# endif
 #endif
 #ifdef FEAT_SPELL
 EXTERN char e_spellfilemising_autocommand_deleted_buffer[]
