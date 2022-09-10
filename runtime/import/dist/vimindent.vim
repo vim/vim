@@ -35,6 +35,20 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
 # than a legacy comment.
 const COMMENT: string = '^\s*\%(#\|"\\\=\s\)'
 
+# NOT_COMMENTABLE {{{2
+
+# Statements for which writing a comment does not make sense.
+const NOT_COMMENTABLE: string = '^\s*\%('
+  .. 'en\%[dif]'
+  .. '\|' .. 'endfor\='
+  .. '\|' .. 'endw\%[hile]'
+  .. '\|' .. 'endt\%[ry]'
+  .. '\|' .. 'enddef'
+  .. '\|' .. 'endfu\%[nction]'
+  .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
+  .. '\|' .. '[]})]'
+  .. '\)\s*\%(|\|$\)'
+
 # KEY_IN_LITERAL_DICT {{{2
 
 const KEY_IN_LITERAL_DICT: string = '^\s*\%(\w\|-\)\+:\%(\s\|$\)'
@@ -128,17 +142,19 @@ const STARTS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
 cmds =<< trim END
   en\%[dif]
   el\%[se]
-  elseif\=
   endfor\=
   endw\%[hile]
   endt\%[ry]
-  cat\%[ch]
   fina\|finally\=
   enddef
   endfu\%[nction]
   aug\%[roup]\s\+[eE][nN][dD]
 END
-const ENDS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
+
+var delim: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
+const ENDS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\s*\%(|\|$\)'
+  .. $'\|^\s*cat\%[ch]\s*\%(|\|$\|\({delim}\).*\1\)'
+  .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
 
 # CLOSING_BRACKET {{{2
 
@@ -153,15 +169,15 @@ const STARTS_WITH_CLOSING_BRACKET: string = '^\s*[]})]'
 const IS_SINGLE_OPEN_BRACKET: string = '^\s*[[{(]\s*$'
 # }}}1
 # Interface {{{1
-export def Expr(): number # {{{2
-  var line_A: dict<any> = {text: getline(v:lnum), lnum: v:lnum}
+export def Expr(lnum: number): number # {{{2
+  var line_A: dict<any> = {text: getline(lnum), lnum: lnum}
   var line_B: dict<any>
 
   # at the start of a heredoc
   if line_A.text =~ ASSIGNS_HEREDOC
     b:vimindent_heredoc = {
-      startlnum: v:lnum,
-      startindent: indent(v:lnum),
+      startlnum: lnum,
+      startindent: indent(lnum),
       endmarker: line_A.text->matchstr(ASSIGNS_HEREDOC),
       trim: line_A.text =~ '.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*$',
     }
@@ -180,19 +196,19 @@ export def Expr(): number # {{{2
 
   # Don't move this block before the heredoc code.
   # A heredoc might be assigned on the very first line.
-  if v:lnum == 1
+  if lnum == 1
     return 0
   endif
 
-  line_B.lnum = PrevCodeLine(v:lnum)
-  line_B.text = getline(line_B.lnum)
+  if line_A.text =~ COMMENT
+    return CommentIndent()
+  endif
 
   var base_ind: number
 
-  if line_A.text =~ COMMENT && line_B.text =~ COMMENT
-    return indent(line_B.lnum)
+  line_B = PrevCodeLine(lnum)
 
-  elseif line_B.text =~ IS_SINGLE_OPEN_BRACKET
+  if line_B.text =~ IS_SINGLE_OPEN_BRACKET
     return indent(line_B.lnum) + shiftwidth()
 
   elseif line_A.text =~ STARTS_WITH_CLOSING_BRACKET
@@ -218,17 +234,15 @@ export def Expr(): number # {{{2
 
   elseif line_A.text->IsFirstLineOfCommand(line_B)
     line_A.isfirst = true
-    var [cmd: string, lnum: number] = line_B->FirstLinePreviousCommand()
-    line_B = {text: cmd, lnum: lnum}
-    base_ind = indent(lnum)
+    var [cmd: string, n: number] = line_B->FirstLinePreviousCommand()
+    line_B = {text: cmd, lnum: n}
+    base_ind = indent(n)
 
   else
     line_A.isfirst = false
     base_ind = indent(line_B.lnum)
 
-    var line_C: dict<any>
-    line_C.lnum = PrevCodeLine(line_B.lnum)
-    line_C.text = getline(line_C.lnum)
+    var line_C: dict<any> = PrevCodeLine(line_B.lnum)
 
     if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
       return base_ind
@@ -241,7 +255,7 @@ enddef
 
 def g:GetVimIndent(): number # {{{2
   # for backward compatibility
-  return Expr()
+  return Expr(v:lnum)
 enddef
 # }}}1
 # Core {{{1
@@ -334,9 +348,30 @@ def HereDocIndent(line: string): number # {{{2
 
   return [0, indent(v:lnum) + b:vimindent_heredoc.offset]->max()
 enddef
+
+def CommentIndent(): number # {{{2
+  var line_B: dict<any>
+  line_B.lnum = prevnonblank(v:lnum - 1)
+  line_B.text = getline(line_B.lnum)
+  if line_B.text =~ COMMENT
+    return indent(line_B.lnum)
+  endif
+
+  var next: number = NextCodeLine()
+  if next == 0
+    return 0
+  endif
+  var ind: number = next->Expr()
+  unlet! b:vimindent_heredoc
+  if getline(next) =~ NOT_COMMENTABLE
+    return ind + shiftwidth()
+  else
+    return ind
+  endif
+enddef
 # }}}1
 # Util {{{1
-def PrevCodeLine(lnum: number): number # {{{2
+def PrevCodeLine(lnum: number): dict<any> # {{{2
   var n: number = prevnonblank(lnum - 1)
   var line: string = getline(n)
   while line =~ COMMENT && n > 1
@@ -347,7 +382,23 @@ def PrevCodeLine(lnum: number): number # {{{2
   # commented line.   That should not  cause an issue  though.  We just  want to
   # avoid a  commented line above which  there is a  line of code which  is more
   # relevant.  There is nothing above the first line.
-  return n
+  return {lnum: n, text: line}
+enddef
+
+def NextCodeLine(): number #{{{2
+  var last: number = line('$')
+  if v:lnum == last
+    return 0
+  endif
+
+  var lnum: number = v:lnum + 1
+  while lnum <= last
+    if getline(lnum) !~ COMMENT
+      return lnum
+    endif
+    ++lnum
+  endwhile
+  return 0
 enddef
 
 def FindStart( # {{{2
@@ -385,7 +436,11 @@ def FirstLinePreviousCommand(line_A: dict<any>): list<any> # {{{2
   while line_B.lnum > 1
     var line_above: string = getline(line_B.lnum - 1)
 
-    if line_B.text =~ STARTS_WITH_CLOSING_BRACKET
+    if line_B.text =~ COMMENT
+      # A commented line can't be the first line of a command.
+      # Skip it.
+
+    elseif line_B.text =~ STARTS_WITH_CLOSING_BRACKET
       var n: number = MatchingOpenBracket(line_B)
 
       if n <= 0 || line_B.text =~ '^\s*}' && IsBlock(n)
@@ -430,7 +485,8 @@ def HasLineContinuationAtEnd(line: dict<any>): bool # {{{2
 enddef
 
 def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
-  return line_A !~ KEY_IN_LITERAL_DICT
+  return line_A !~ COMMENT
+    && line_A !~ KEY_IN_LITERAL_DICT
     && line_A !~ LINE_CONTINUATION_AT_START
     && !line_B->HasLineContinuationAtEnd()
 enddef
@@ -438,7 +494,7 @@ enddef
 def IsBlock(lnum: number): bool # {{{2
   var line: string = getline(lnum)
   if line =~ '^\s*{\s*$'
-      && PrevCodeLine(lnum)->getline() !~ LINE_CONTINUATION_AT_END
+      && PrevCodeLine(lnum).lnum->getline() !~ LINE_CONTINUATION_AT_END
     return true
   endif
 

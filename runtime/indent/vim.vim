@@ -15,7 +15,7 @@ b:undo_indent = 'setlocal indentkeys< indentexpr<'
 
 import 'dist/vimindent.vim'
 
-setlocal indentexpr=vimindent.Expr()
+setlocal indentexpr=vimindent.Expr(v:lnum)
 setlocal indentkeys+==endif,=enddef,=endfu,=endfor,=endwh,=endtry,=},=else,=cat,=finall,=END,0\\
 'setlocal indentkeys+=0=\"\\\ ,0=#\\\ '->execute()
 setlocal indentkeys-=0#
