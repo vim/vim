@@ -35,20 +35,6 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
 # than a legacy comment.
 const COMMENT: string = '^\s*\%(#\|"\\\=\s\)'
 
-# NOT_COMMENTABLE {{{2
-
-# Statements for which writing a comment does not make sense.
-const NOT_COMMENTABLE: string = '^\s*\%('
-  .. 'en\%[dif]'
-  .. '\|' .. 'endfor\='
-  .. '\|' .. 'endw\%[hile]'
-  .. '\|' .. 'endt\%[ry]'
-  .. '\|' .. 'enddef'
-  .. '\|' .. 'endfu\%[nction]'
-  .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
-  .. '\|' .. '[]})]'
-  .. '\)\s*\%(|\|$\)'
-
 # KEY_IN_LITERAL_DICT {{{2
 
 const KEY_IN_LITERAL_DICT: string = '^\s*\%(\w\|-\)\+:\%(\s\|$\)'
@@ -137,7 +123,7 @@ cmds =<< trim END
 END
 const STARTS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
 
-# ENDS_BLOCK {{{2
+# ENDS_BLOCK_OR_CLAUSE {{{2
 
 cmds =<< trim END
   en\%[dif]
@@ -152,9 +138,22 @@ cmds =<< trim END
 END
 
 var delim: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
-const ENDS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\s*\%(|\|$\)'
+const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. '\)\s*\%(|\|$\)'
   .. $'\|^\s*cat\%[ch]\s*\%(|\|$\|\({delim}\).*\1\)'
   .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
+
+# ENDS_BLOCK {{{2
+
+const ENDS_BLOCK: string = '^\s*\%('
+  .. 'en\%[dif]'
+  .. '\|' .. 'endfor\='
+  .. '\|' .. 'endw\%[hile]'
+  .. '\|' .. 'endt\%[ry]'
+  .. '\|' .. 'enddef'
+  .. '\|' .. 'endfu\%[nction]'
+  .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
+  .. '\|' .. '[]})]'
+  .. '\)\s*\%(|\|$\)'
 
 # CLOSING_BRACKET {{{2
 
@@ -163,6 +162,10 @@ const CLOSING_BRACKET: string = '[]})]'
 # STARTS_WITH_CLOSING_BRACKET {{{2
 
 const STARTS_WITH_CLOSING_BRACKET: string = '^\s*[]})]'
+
+# ENDS_WITH_CLOSING_BRACKET {{{2
+
+const ENDS_WITH_CLOSING_BRACKET: string = '[[{(]\s*$'
 
 # IS_SINGLE_OPEN_BRACKET {{{2
 
@@ -222,8 +225,11 @@ export def Expr(lnum: number): number # {{{2
       return indent(open_bracket)
     endif
 
-  elseif line_A.text =~ ENDS_BLOCK
+  elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
     var kwd: string = GetBlockStartKeyword(line_A.text)
+    if !START_MIDDLE_END->has_key(kwd)
+      return -1
+    endif
     var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
     var block_start = FindStart(start, middle, end)
     if block_start > 0
@@ -245,6 +251,10 @@ export def Expr(lnum: number): number # {{{2
     var line_C: dict<any> = PrevCodeLine(line_B.lnum)
 
     if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
+      # could be the start of a multiline nested list/dictionary
+      if line_B.text =~ ENDS_WITH_CLOSING_BRACKET
+        return base_ind + shiftwidth()
+      endif
       return base_ind
     endif
   endif
@@ -362,8 +372,12 @@ def CommentIndent(): number # {{{2
     return 0
   endif
   var ind: number = next->Expr()
+  # The previous `Expr()` might have set `b:vimindent_heredoc`.
+  # Setting  the variable  too early  can cause  issues (e.g.  when indenting  2
+  # commented lines above  a heredoc).  Let's make sure the  variable is not set
+  # too early.
   unlet! b:vimindent_heredoc
-  if getline(next) =~ NOT_COMMENTABLE
+  if getline(next) =~ ENDS_BLOCK
     return ind + shiftwidth()
   else
     return ind
