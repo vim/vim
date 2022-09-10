@@ -575,7 +575,7 @@ jobs:
       - name: Test and show the result of testing gVim
         if: matrix.GUI == 'yes' || matrix.VIMDLL == 'yes'
         shell: cmd
-        timeout-minutes: 20
+        timeout-minutes: 15
         run: |
           PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
           call "%VCVARSALL%" %VCARCH%
@@ -595,7 +595,7 @@ jobs:
       - name: Test and show the result of testing Vim
         if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
         shell: cmd
-        timeout-minutes: 20
+        timeout-minutes: 15
         run: |
           PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
           call "%VCVARSALL%" %VCARCH%
