@@ -318,8 +318,7 @@ def HereDocIndent(line: string): number # {{{2
     # lower one), then we want to indent it further (and the whole block with it).
     var end: number = search($'^\s*{b:vimindent_heredoc.endmarker}$', 'nW')
     var should_indent_more: bool = range(v:lnum, end - 1)
-      ->map((_, lnum: number): list<number> => [lnum, indent(lnum)])
-      ->indexof((_, l: list<number>) => l[0]->getline() != '' && l[1] <= old_startindent) >= 0
+      ->indexof((_, lnum: number): bool => getline(lnum) != '' && indent(lnum) <= old_startindent) >= 0
     if should_indent_more
       offset += shiftwidth()
     endif
