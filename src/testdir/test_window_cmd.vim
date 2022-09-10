@@ -1735,10 +1735,10 @@ func Test_splitscroll_with_splits()
               " No scroll when opening cmdwin
               only | norm ggLq:
               call assert_equal(1, line("w0"))
-              norm L
 
               " Scroll when cursor becomes invalid in insert mode
-              call feedkeys("ic\<Esc>:q\<CR>", "xt")
+              norm Lic
+              wincmd k | only
               call assert_notequal(1, line("w0"))
 
               " No scroll when topline not equal to 1
