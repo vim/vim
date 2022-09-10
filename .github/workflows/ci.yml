@@ -541,9 +541,11 @@ jobs:
         run: |
           PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
           if "${{ matrix.GUI }}"=="yes" (
-            start /wait gvim -u NONE -i NONE -c "redir >> version.txt | ver | q" || exit 1
-            start /wait gvim -u NONE -i NONE -c "redir >> version.txt | so ..\ci\if_ver-1.vim | q"
-            start /wait gvim -u NONE -i NONE -c "redir >> version.txt | so ..\ci\if_ver-2.vim | q"
+            start /wait src\gvim -u NONE -i NONE -c "redir > version.txt | ver | q" || exit 1
+            type version.txt
+            echo.
+            start /wait src\gvim -u NONE -i NONE -c "redir! > version.txt | so ci\if_ver-1.vim | q"
+            start /wait src\gvim -u NONE -i NONE -c "redir >> version.txt | so ci\if_ver-2.vim | q"
             type version.txt
             del version.txt
           ) else (
