@@ -2579,6 +2579,8 @@ au BufNewFile,BufRead *.txt
 	\|   setf text
 	\| endif
 
+" Blueprint markup files
+au BufNewFile,BufRead *.blp		setf blueprint
 
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.
