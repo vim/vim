@@ -119,9 +119,9 @@ END
 " END_INDENT
 
 " START_INDENT
-  if v:true
-    echo 0
-    end
+if v:true
+echo 0
+end
 " END_INDENT
 
 " START_INDENT
@@ -296,16 +296,16 @@ enddef
 
 " START_INDENT
 echo {
-    a: 0,
-    # b
-    # c
+a: 0,
+# b
+# c
 }
 " END_INDENT
 
 " START_INDENT
 echo search(
-    # comment
-    '1'
-    .. '2'
+# comment
+'1'
+.. '2'
 )
 " END_INDENT
