@@ -287,3 +287,19 @@ def Func()
     }
 enddef
 " END_INDENT
+
+" START_INDENT
+echo {
+    a: 0,
+    # b
+    # c
+}
+" END_INDENT
+
+" START_INDENT
+echo search(
+    # comment
+    '1'
+    .. '2'
+)
+" END_INDENT
