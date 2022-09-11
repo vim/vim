@@ -14,8 +14,8 @@ var cmds: list<string>
 # operator.   This  can  cause  an   issue  whenever  we  use  `CURLY_BLOCK`  or
 # `ENDS_WITH_LINE_CONTINUATION`.
 const CURLY_BLOCK: string = '^\s*{\s*$'
-  .. '\|' .. '^.*\s=>\s\+{\s*$'
-  .. '\|' ..  '^\%(\s*\|.*|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\s{\s*$'
+  .. '\|' .. '^.*\zs\s=>\s\+{\s*$'
+  .. '\|' ..  '^\%(\s*\|.*|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{\s*$'
 
 # OPERATOR {{{2
 
@@ -85,7 +85,7 @@ const ENDS_WITH_LINE_CONTINUATION: string = '\%('
   # `{` is ambiguous.
   # It can be the start of a dictionary or a block.
   # We only want to match the former.
-  .. '\|' .. $'^\%({CURLY_BLOCK}\)\@!.*{{'
+  .. '\|' .. $'^\%({CURLY_BLOCK}\)\@!.*\zs{{'
   .. '\)\s*\%(\s#.*\)\=$'
 
 # STARTS_WITH_BACKSLASH {{{2
@@ -413,7 +413,8 @@ def NextCodeLine(): number # {{{2
 
   var lnum: number = v:lnum + 1
   while lnum <= last
-    if getline(lnum) !~ COMMENT
+    var line: string = getline(lnum)
+    if line != '' && line !~ COMMENT
       return lnum
     endif
     ++lnum
