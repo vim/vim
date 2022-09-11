@@ -12,7 +12,7 @@ var cmds: list<string>
 # TODO: `{` alone on a line is not necessarily the start of a block.
 # It  could be  a dictionary  if the  previous line  ends with  a binary/ternary
 # operator.   This  can  cause  an   issue  whenever  we  use  `CURLY_BLOCK`  or
-# `LINE_CONTINUATION_AT_END`.
+# `ENDS_WITH_LINE_CONTINUATION`.
 const CURLY_BLOCK: string = '^\s*{\s*$'
   .. '\|' .. '^.*\s=>\s\+{\s*$'
   .. '\|' ..  '^\%(\s*\|.*|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\s{\s*$'
@@ -61,9 +61,9 @@ const START_MIDDLE_END: dict<list<string>> = {
   augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
 }->map((_, kwds: list<string>) => kwds->map((_, kwd: string) => $'\%(^\||\)\s*\%({kwd->printf('\C\<\%%(%s\)\>')}\)'))
 
-# LINE_CONTINUATION_AT_START {{{2
+# STARTS_WITH_LINE_CONTINUATION {{{2
 
-const LINE_CONTINUATION_AT_START: string = '^\s*\%('
+const STARTS_WITH_LINE_CONTINUATION: string = '^\s*\%('
   .. '\\'
   .. '\|' .. '[#"]\\ '
   .. '\|' .. OPERATOR
@@ -75,9 +75,9 @@ const LINE_CONTINUATION_AT_START: string = '^\s*\%('
   .. '\|' .. '[]})]'
   .. '\)'
 
-# LINE_CONTINUATION_AT_END {{{2
+# ENDS_WITH_LINE_CONTINUATION {{{2
 
-const LINE_CONTINUATION_AT_END: string = '\%('
+const ENDS_WITH_LINE_CONTINUATION: string = '\%('
   .. ','
   .. '\|' .. OPERATOR
   .. '\|' .. '\s=>'
@@ -234,7 +234,7 @@ export def Expr(lnum: number): number # {{{2
     endif
 
   elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
-      && !line_B->HasLineContinuationAtEnd()
+      && !line_B->EndsWithLineContinuation()
     var kwd: string = GetBlockStartKeyword(line_A.text)
     if !START_MIDDLE_END->has_key(kwd)
       return -1
@@ -262,7 +262,7 @@ export def Expr(lnum: number): number # {{{2
     var line_C: dict<any> = PrevCodeLine(line_B.lnum)
     if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
       # indent items in multiline nested list/dictionary
-      if line_B.text =~ ENDS_WITH_OPENING_BRACKET
+      if line_B->EndsWithOpeningBracket()
         return base_ind + shiftwidth()
       endif
       return base_ind
@@ -287,16 +287,16 @@ def Offset( # {{{2
     ): number
 
   # increase indentation inside a block
-  if line_B.text =~ STARTS_BLOCK || line_B.text =~ CURLY_BLOCK
+  if line_B.text =~ STARTS_BLOCK || line_B->EndsWithCurlBlock()
     # But don't indent if the line starting the block also closes it.
     if line_B->AlsoClosesBlock()
       return 0
     # Indent twice for  a line continuation in the block  header itself, so that
     # we can easily  distinguish the end of  the block header from  the start of
     # the block body.
-    elseif line_B->HasLineContinuationAtEnd()
+    elseif line_B->EndsWithLineContinuation()
         && !line_A.isfirst
-        || line_A.text =~ LINE_CONTINUATION_AT_START
+        || line_A.text =~ STARTS_WITH_LINE_CONTINUATION
       return 2 * shiftwidth()
     else
       return shiftwidth()
@@ -305,8 +305,8 @@ def Offset( # {{{2
   # increase indentation of  a line if it's the continuation  of a command which
   # started on a previous line
   elseif !line_A.isfirst
-      && (line_B->HasLineContinuationAtEnd()
-      || line_A.text =~ LINE_CONTINUATION_AT_START)
+      && (line_B->EndsWithLineContinuation()
+      || line_A.text =~ STARTS_WITH_LINE_CONTINUATION)
     return shiftwidth()
   endif
 
@@ -499,11 +499,22 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
   return block_end <= 0
 enddef
 
-def HasLineContinuationAtEnd(line: dict<any>): bool # {{{2
+def EndsWithLineContinuation(line: dict<any>): bool # {{{2
+  return NonCommentedMatchAtEnd(line, ENDS_WITH_LINE_CONTINUATION)
+enddef
+
+def EndsWithCurlBlock(line: dict<any>): bool # {{{2
+  return NonCommentedMatchAtEnd(line, CURLY_BLOCK)
+enddef
+
+def EndsWithOpeningBracket(line: dict<any>): bool # {{{2
+  return NonCommentedMatchAtEnd(line, ENDS_WITH_OPENING_BRACKET)
+enddef
+
+def NonCommentedMatchAtEnd(line: dict<any>, pat: string): bool # {{{2
   var pos: list<number> = getcurpos()
   cursor(line.lnum, 1)
-  var match_lnum: number = search(LINE_CONTINUATION_AT_END,
-      'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
+  var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
   setpos('.', pos)
   return match_lnum > 0
 enddef
@@ -511,17 +522,17 @@ enddef
 def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
   return line_A !~ COMMENT
     && line_A !~ KEY_IN_LITERAL_DICT
-    && line_A !~ LINE_CONTINUATION_AT_START
-    && !line_B->HasLineContinuationAtEnd()
+    && line_A !~ STARTS_WITH_LINE_CONTINUATION
+    && !line_B->EndsWithLineContinuation()
 enddef
 
 def IsBlock(lnum: number): bool # {{{2
   var line: string = getline(lnum)
-  if line =~ '^\s*{\s*$' && !PrevCodeLine(lnum)->HasLineContinuationAtEnd()
+  if line =~ '^\s*{\s*$' && !PrevCodeLine(lnum)->EndsWithLineContinuation()
     return true
   endif
 
-  return line =~ CURLY_BLOCK
+  return {text: line, lnum: lnum}->EndsWithCurlBlock()
 enddef
 
 def InCommentOrString(lnum = line('.'), col = col('.')): bool # {{{2
