@@ -41,19 +41,20 @@ const KEY_IN_LITERAL_DICT: string = '^\s*\%(\w\|-\)\+:\%(\s\|$\)'
 
 # START_MIDDLE_END {{{2
 
+# Remember that keywords can be abbreviated in legacy Vim script.
 const START_MIDDLE_END: dict<list<string>> = {
-  if: ['if', 'else\|elseif', 'endif'],
-  else: ['if', 'else\|elseif', 'endif'],
-  elseif: ['if', 'else\|elseif', 'endif'],
-  endif: ['if', 'else\|elseif', 'endif'],
-  for: ['for', '', 'endfor'],
-  endfor: ['for', '', 'endfor'],
-  while: ['while', '', 'endwhile'],
-  endwhile: ['while', '', 'endwhile'],
-  try: ['try', 'catch\|finally', 'endtry'],
-  catch: ['try', 'catch\|finally', 'endtry'],
-  finally: ['try', 'catch\|finally', 'endtry'],
-  endtry: ['try', 'catch\|finally', 'endtry'],
+  if: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+  else: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+  elseif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+  endif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+  for: ['for', '', 'endfor\='],
+  endfor: ['for', '', 'endfor\='],
+  while: ['wh\%[ile]', '', 'endw\%[hile]'],
+  endwhile: ['wh\%[ile]', '', 'endw\%[hile]'],
+  try: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
+  catch: ['try', 'cat\%[ch]\|finally\=', 'endt\%[ry]'],
+  finally: ['try', 'cat\%[ch]\|finally\=', 'endt\%[ry]'],
+  endtry: ['try', 'cat\%[ch]\|finally\=', 'endt\%[ry]'],
   def: ['def', '', 'enddef'],
   enddef: ['def', '', 'enddef'],
   function: ['fu\%[nction]', '', 'endf\%[unction]'],
@@ -110,13 +111,13 @@ const ASSIGNS_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
 # }}}
 cmds =<< trim END
   if
-  else
-  elseif
+  el\%[se]
+  elseif\=
   for
-  while
+  wh\%[ile]
   try
-  catch
-  finally
+  cat\%[ch]
+  fina\|finally\=
   fu\%[nction]\%x28\@!
   \%(export\s\+\)\=def
   aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
@@ -137,9 +138,10 @@ cmds =<< trim END
   aug\%[roup]\s\+[eE][nN][dD]
 END
 
-var delim: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
+# delimiter around `:catch` pattern (typically a slash)
+var delimiter: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
 const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. '\)\s*\%(|\|$\)'
-  .. $'\|^\s*cat\%[ch]\s*\%(|\|$\|\({delim}\).*\1\)'
+  .. $'\|^\s*cat\%[ch]\%(\s\+\({delimiter}\).*\1\)\=\s*\%(|\|$\)'
   .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
 
 # ENDS_BLOCK {{{2
@@ -248,6 +250,15 @@ export def Expr(lnum: number): number # {{{2
     line_A.isfirst = false
     base_ind = indent(line_B.lnum)
 
+    # to be backward compatible
+    if line_A.text =~ '^\s*\\'
+      if line_B.text =~ '^\s*\\'
+        return indent(line_B.lnum)
+      else
+        return base_ind + get(g:, 'vim_indent_cont', shiftwidth() * 3)
+      endif
+    endif
+
     var line_C: dict<any> = PrevCodeLine(line_B.lnum)
 
     if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
@@ -276,12 +287,8 @@ def Offset( # {{{2
     line_B: dict<any>,
     ): number
 
-  # to be backward compatible
-  if line_A.text =~ STARTS_WITH_BACKSLASH
-    return get(g:, 'vim_indent_cont', shiftwidth() * 3)
-
   # increase indentation inside a block
-  elseif line_B.text =~ STARTS_BLOCK || line_B.text =~ CURLY_BLOCK
+  if line_B.text =~ STARTS_BLOCK || line_B.text =~ CURLY_BLOCK
     # But don't indent if the line starting the block also closes it.
     if line_B->AlsoClosesBlock()
       return 0
