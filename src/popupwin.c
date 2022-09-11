@@ -1301,9 +1301,14 @@ popup_adjust_position(win_T *wp)
 		wp->w_winrow = Rows - 1;
 	}
 	if (wp->w_popup_pos == POPPOS_BOTTOM)
-	    // assume that each buffer line takes one screen line
+	{
+	    // Assume that each buffer line takes one screen line, and one line
+	    // for the top border.  First make sure cmdline_row is valid,
+	    // calling update_screen() will set it only later.
+	    compute_cmdrow();
 	    wp->w_winrow = MAX(cmdline_row
 				    - wp->w_buffer->b_ml.ml_line_count - 1, 0);
+	}
 
 	if (!use_wantcol)
 	    center_hor = TRUE;
