@@ -6261,7 +6261,7 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
     };
     cairo_t * const cr = cairo_create(gui.surface);
 
-    set_cairo_source_rgba_from_color(cr, gui.norm_pixel ^ gui.back_pixel);
+    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
 # if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1,9,2)
     cairo_set_operator(cr, CAIRO_OPERATOR_DIFFERENCE);
 # else
