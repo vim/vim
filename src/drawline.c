@@ -350,7 +350,7 @@ text_prop_position(
 	if (above)
 	{
 	    before = 0;
-	    after = wp->w_width - cells;
+	    after = wp->w_width - cells - win_col_off(wp) - padding;
 	}
 	else
 	{
@@ -436,6 +436,8 @@ text_prop_position(
 		*p_extra = l;
 		*n_extra = n_used + before + after + padding;
 		*n_attr = mb_charlen(*p_extra);
+		if (above)
+		    *n_attr -= padding;
 		*n_attr_skip = before + padding + col_off;
 	    }
 	}
@@ -1858,8 +1860,8 @@ win_line(
 				dont_use_showbreak = TRUE;
 			    }
 #endif
-			    if ((right || above || below || !wrap || padding > 0)
-							    && wp->w_width > 2)
+			    if ((right || above || below || !wrap
+					    || padding > 0) && wp->w_width > 2)
 			    {
 				char_u	*prev_p_extra = wlv.p_extra;
 				int	start_line;

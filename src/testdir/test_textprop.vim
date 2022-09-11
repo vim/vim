@@ -2857,7 +2857,7 @@ func Test_props_with_text_above()
       call prop_type_add('above2', #{highlight: 'DiffChange'})
       call prop_add(1, 0, #{type: 'above1', text: 'first thing above', text_align: 'above'})
       call prop_add(1, 0, #{type: 'above2', text: 'second thing above', text_align: 'above'})
-      call prop_add(3, 0, #{type: 'above1', text: 'another thing', text_align: 'above'})
+      call prop_add(3, 0, #{type: 'above1', text: 'another thing', text_align: 'above', text_padding_left: 3})
 
       normal gglllj
   END
@@ -2869,6 +2869,9 @@ func Test_props_with_text_above()
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_2', {})
   call term_sendkeys(buf, "inserted \<Esc>")
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_3', {})
+
+  call term_sendkeys(buf, ":set number signcolumn=yes\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_4', {})
 
   call StopVimInTerminal(buf)
 endfunc
