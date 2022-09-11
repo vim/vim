@@ -6405,7 +6405,7 @@ win_fix_cursor(int normal)
 {
     int      top = FALSE;
     win_T    *wp = curwin;
-    long     so = wp->w_p_so < 0 ? p_so : wp->w_p_so;
+    long     so = get_scrolloff_value();
     linenr_T nlnum = 0;
 
     if (wp->w_buffer->b_ml.ml_line_count < wp->w_height)
@@ -6422,7 +6422,10 @@ win_fix_cursor(int normal)
     if (nlnum)
     {
 	if (normal)
-	{
+	{   // Make sure cursor is closer to topline than botline.
+	    if (so == wp->w_height / 2
+		    && nlnum - wp->w_topline > wp->w_botline - 1 - nlnum)
+		nlnum--;
 	    setmark('\'');		// save cursor position
 	    wp->w_cursor.lnum = nlnum;	// change to avoid scrolling
 	    curs_columns(TRUE);		// validate w_wrow

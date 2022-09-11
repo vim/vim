@@ -1635,8 +1635,6 @@ endfunc
 " winbar, tabline, for each possible value of 'laststatus', 'scrolloff',
 " 'equalalways', and regardless of the cursor position.
 func Test_splitscroll_with_splits()
-  let save_lines = &lines
-  set lines=60
   set nowrap
   set nosplitscroll
   let gui = has("gui_running")
@@ -1697,16 +1695,12 @@ func Test_splitscroll_with_splits()
               call assert_equal(1, line("w0"))
 
               " No scroll in windows split multiple times
-              if ea || !so " Windows too small to guarantee no scroll with 'scrolloff'
-                vsplit | split | 4wincmd w
-                call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-                1wincmd w | quit | wincmd l | split
-                call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-                wincmd j
-                call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              else
-                vsplit
-              endif
+              vsplit | split | 4wincmd w
+              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+              1wincmd w | quit | wincmd l | split
+              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+              wincmd j
+              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
               " No scroll in small window
               2wincmd w | only | 5split | wincmd k
@@ -1759,7 +1753,6 @@ func Test_splitscroll_with_splits()
   tabnew | tabonly! | %bwipeout!
   iunmap c
   set wrap&
-  let &lines = save_lines
   set scrolloff&
   set splitbelow&
   set laststatus&
