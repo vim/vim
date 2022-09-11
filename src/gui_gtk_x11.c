@@ -6281,13 +6281,9 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
     if (gui.drawarea->window == NULL)
 	return;
 
-    values.foreground.pixel = gui.norm_pixel ^ gui.back_pixel;
-    values.background.pixel = gui.norm_pixel ^ gui.back_pixel;
-    values.function = GDK_XOR;
+    values.function = GDK_INVERT;
     invert_gc = gdk_gc_new_with_values(gui.drawarea->window,
 				       &values,
-				       GDK_GC_FOREGROUND |
-				       GDK_GC_BACKGROUND |
 				       GDK_GC_FUNCTION);
     gdk_gc_set_exposures(invert_gc, gui.visibility !=
 						   GDK_VISIBILITY_UNOBSCURED);
