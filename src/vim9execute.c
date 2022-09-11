@@ -932,11 +932,17 @@ defer_command(int var_idx, int argcount, ectx_T *ectx)
 	return FAIL;
 
     func_tv = STACK_TV_BOT(-argcount - 1);
-    // TODO: check type is a funcref
+    if (func_tv->v_type != VAR_FUNC && func_tv->v_type != VAR_PARTIAL)
+    {
+	semsg(_(e_expected_str_but_got_str),
+		"function or partial",
+		vartype_name(func_tv->v_type));
+	return FAIL;
+    }
     list_set_item(l, 0, func_tv);
 
-    for (i = 1; i <= argcount; ++i)
-	list_set_item(l, i, STACK_TV_BOT(-argcount + i - 1));
+    for (i = 0; i < argcount; ++i)
+	list_set_item(l, i + 1, STACK_TV_BOT(-argcount + i));
     ectx->ec_stack.ga_len -= argcount + 1;
     return OK;
 }
@@ -962,7 +968,7 @@ add_defer_function(char_u *name, int argcount, typval_T *argvars)
 	return FAIL;
     }
 
-    l = add_defer_item(dfunc->df_defer_var_idx - 1, 1, current_ectx);
+    l = add_defer_item(dfunc->df_defer_var_idx - 1, argcount, current_ectx);
     if (l == NULL)
     {
 	vim_free(name);

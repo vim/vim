@@ -833,10 +833,11 @@ compile_call(
 		}
 	    }
 
-	    if (STRCMP(name, "writefile") == 0 && argcount > 2)
+	    if ((STRCMP(name, "writefile") == 0 && argcount > 2)
+		    || (STRCMP(name, "mkdir") == 0 && argcount > 1))
 	    {
-		// May have the "D" flag, reserve a variable for a deferred
-		// function call.
+		// May have the "D" or "R" flag, reserve a variable for a
+		// deferred function call.
 		if (get_defer_var_idx(cctx) == 0)
 		    idx = -1;
 	    }
