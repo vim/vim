@@ -309,3 +309,12 @@ echo search(
 .. '2'
 )
 " END_INDENT
+
+" START_INDENT
+if true
+var v = (      # trailing "(" starts line continuation
+3 + 4      # nothing special
+)              # end of expression indicates continued line
+var x: number  # needs to align with previous "var"
+endif
+" END_INDENT
