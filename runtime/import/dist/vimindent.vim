@@ -164,9 +164,9 @@ const CLOSING_BRACKET: string = '[]})]'
 
 const STARTS_WITH_CLOSING_BRACKET: string = '^\s*[]})]'
 
-# ENDS_WITH_CLOSING_BRACKET {{{2
+# ENDS_WITH_OPENING_BRACKET {{{2
 
-const ENDS_WITH_CLOSING_BRACKET: string = '[[{(]\s*$'
+const ENDS_WITH_OPENING_BRACKET: string = '[[{(]\s*$'
 
 # IS_SINGLE_OPEN_BRACKET {{{2
 
@@ -262,7 +262,7 @@ export def Expr(lnum: number): number # {{{2
     var line_C: dict<any> = PrevCodeLine(line_B.lnum)
     if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
       # indent items in multiline nested list/dictionary
-      if line_B.text =~ ENDS_WITH_CLOSING_BRACKET
+      if line_B.text =~ ENDS_WITH_OPENING_BRACKET
         return base_ind + shiftwidth()
       endif
       return base_ind
