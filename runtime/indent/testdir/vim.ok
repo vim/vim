@@ -119,6 +119,12 @@ END
 " END_INDENT
 
 " START_INDENT
+if v:true
+    echo 0
+end
+" END_INDENT
+
+" START_INDENT
 var result = Func(
     arg1,
     arg2
