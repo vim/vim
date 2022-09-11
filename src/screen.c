@@ -3038,18 +3038,18 @@ screenclear2(int doclear)
     screen_cleared = TRUE;	// can use contents of ScreenLines now
 
     win_rest_invalid(firstwin);	// redraw all regular windows
-#ifdef FEAT_PROP_POPUP
-    popup_redraw_all();		// redraw all popup windows
-#endif
     redraw_cmdline = TRUE;
     redraw_tabline = TRUE;
     if (must_redraw == UPD_CLEAR)	// no need to clear again
 	must_redraw = UPD_NOT_VALID;
+    msg_scrolled = 0;		// compute_cmdrow() uses this
     compute_cmdrow();
+#ifdef FEAT_PROP_POPUP
+    popup_redraw_all();		// redraw all popup windows
+#endif
     msg_row = cmdline_row;	// put cursor on last line for messages
     msg_col = 0;
     screen_start();		// don't know where cursor is now
-    msg_scrolled = 0;		// can't scroll back
     msg_didany = FALSE;
     msg_didout = FALSE;
 }

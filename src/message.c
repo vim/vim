@@ -1157,6 +1157,10 @@ wait_return(int redraw)
     // need_wait_return to do it later.
     if (msg_silent != 0)
 	return;
+#ifdef HAS_MESSAGE_WINDOW
+    if (in_echowindow)
+	return;
+#endif
 
     /*
      * When inside vgetc(), we can't wait for a typed character at all.

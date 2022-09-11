@@ -31,6 +31,13 @@ static poppos_entry_T poppos_entries[] = {
 #ifdef HAS_MESSAGE_WINDOW
 // Window used for ":echowindow"
 static win_T *message_win = NULL;
+
+// Flag set when a message is added to the message window, timer is started
+// when the message window is drawn.  This might be after pressing Enter at the
+// hit-enter prompt.
+static int    start_message_win_timer = FALSE;
+
+static void may_start_message_win_timer(win_T *wp);
 #endif
 
 static void popup_adjust_position(win_T *wp);
@@ -4268,6 +4275,11 @@ update_popups(void (*win_update)(win_T *wp))
 
 	// Back to the normal zindex.
 	screen_zindex = 0;
+
+#ifdef HAS_MESSAGE_WINDOW
+	// if this was the message window popup may start the timer now
+	may_start_message_win_timer(wp);
+#endif
     }
 
 #if defined(FEAT_SEARCH_EXTRA)
@@ -4513,8 +4525,18 @@ popup_show_message_win(void)
 	    popup_update_color(message_win, TYPE_MESSAGE_WIN);
 	    popup_show(message_win);
 	}
+	start_message_win_timer = TRUE;
+    }
+}
+
+    static void
+may_start_message_win_timer(win_T *wp)
+{
+    if (wp == message_win && start_message_win_timer)
+    {
 	if (message_win->w_popup_timer != NULL)
 	    timer_start(message_win->w_popup_timer);
+	start_message_win_timer = FALSE;
     }
 }
 
@@ -4552,8 +4574,9 @@ end_echowindow(void)
 {
     in_echowindow = FALSE;
 
-    // show the message window now
-    redraw_cmd(FALSE);
+    if ((State & MODE_HITRETURN) == 0)
+	// show the message window now
+	redraw_cmd(FALSE);
 
     // do not overwrite messages
     // TODO: only for message window

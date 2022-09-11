@@ -3890,7 +3890,8 @@ redrawcmd(void)
     void
 compute_cmdrow(void)
 {
-    if (exmode_active || msg_scrolled != 0)
+    // ignore "msg_scrolled" in update_screen(), it will be reset soon.
+    if (exmode_active || (msg_scrolled != 0 && !updating_screen))
 	cmdline_row = Rows - 1;
     else
 	cmdline_row = W_WINROW(lastwin) + lastwin->w_height
