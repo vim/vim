@@ -41,7 +41,6 @@ const KEY_IN_LITERAL_DICT: string = '^\s*\%(\w\|-\)\+:\%(\s\|$\)'
 
 # START_MIDDLE_END {{{2
 
-# Remember that keywords can be abbreviated in legacy Vim script.
 const START_MIDDLE_END: dict<list<string>> = {
   if: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
   else: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
@@ -91,7 +90,7 @@ const LINE_CONTINUATION_AT_END: string = '\%('
 
 # STARTS_WITH_BACKSLASH {{{2
 
-const STARTS_WITH_BACKSLASH: string = '^\s*\%(\\\|"\\\s\)'
+const STARTS_WITH_BACKSLASH: string = '^\s*\%(\\\|[#"]\\ \)'
 
 # ASSIGNS_HEREDOC {{{2
 
@@ -175,7 +174,9 @@ const IS_SINGLE_OPEN_BRACKET: string = '^\s*[[{(]\s*$'
 # }}}1
 # Interface {{{1
 export def Expr(lnum: number): number # {{{2
+  # line which is indented
   var line_A: dict<any> = {text: getline(lnum), lnum: lnum}
+  # line above, on which we'll base the indent of line A
   var line_B: dict<any>
 
   # at the start of a heredoc
@@ -209,8 +210,6 @@ export def Expr(lnum: number): number # {{{2
     return CommentIndent()
   endif
 
-  var base_ind: number
-
   line_B = PrevCodeLine(lnum)
 
   if line_B.text =~ IS_SINGLE_OPEN_BRACKET
@@ -227,7 +226,15 @@ export def Expr(lnum: number): number # {{{2
       return indent(open_bracket)
     endif
 
+  elseif line_A.text =~ STARTS_WITH_BACKSLASH
+    if line_B.text =~ STARTS_WITH_BACKSLASH
+      return indent(line_B.lnum)
+    else
+      return indent(line_B.lnum) + get(g:, 'vim_indent_cont', shiftwidth() * 3)
+    endif
+
   elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
+      && line_B.text !~ LINE_CONTINUATION_AT_END
     var kwd: string = GetBlockStartKeyword(line_A.text)
     if !START_MIDDLE_END->has_key(kwd)
       return -1
@@ -239,8 +246,10 @@ export def Expr(lnum: number): number # {{{2
     else
       return -1
     endif
+  endif
 
-  elseif line_A.text->IsFirstLineOfCommand(line_B)
+  var base_ind: number
+  if line_A.text->IsFirstLineOfCommand(line_B)
     line_A.isfirst = true
     var [cmd: string, n: number] = line_B->FirstLinePreviousCommand()
     line_B = {text: cmd, lnum: n}
@@ -250,19 +259,9 @@ export def Expr(lnum: number): number # {{{2
     line_A.isfirst = false
     base_ind = indent(line_B.lnum)
 
-    # to be backward compatible
-    if line_A.text =~ '^\s*\\'
-      if line_B.text =~ '^\s*\\'
-        return indent(line_B.lnum)
-      else
-        return base_ind + get(g:, 'vim_indent_cont', shiftwidth() * 3)
-      endif
-    endif
-
     var line_C: dict<any> = PrevCodeLine(line_B.lnum)
-
     if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
-      # could be the start of a multiline nested list/dictionary
+      # indent items in multiline nested list/dictionary
       if line_B.text =~ ENDS_WITH_CLOSING_BRACKET
         return base_ind + shiftwidth()
       endif
