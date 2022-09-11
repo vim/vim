@@ -11,6 +11,9 @@ freebsd_task:
     - name: FreeBSD 12.3
       freebsd_instance:
         image_family: freebsd-12-3
+      env:
+        # FIXME: The following test is disabled for now.
+        TEST_SKIP_PAT: Test_closure_in_for_loop_fails
   only_if: $CIRRUS_TAG == ''
   timeout_in: 20m
   install_script:
