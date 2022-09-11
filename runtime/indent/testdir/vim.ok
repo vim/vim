@@ -84,8 +84,8 @@ endfunc
 " START_INDENT
 " INDENT_NEXT  next-line
 func Some()
-     " next-line
-     let f = x
+    " next-line
+    let f = x
 endfunc
 " END_INDENT
 
@@ -99,6 +99,12 @@ endfunc
 
 " START_INDENT
 let a =<< END
+nothing
+END
+" END_INDENT
+
+" START_INDENT
+let a =<< trim END
     nothing
 END
 " END_INDENT
@@ -110,4 +116,174 @@ let a=<< trim END
       blah
       blah this-line
 END
+" END_INDENT
+
+" START_INDENT
+var result = Func(
+    arg1,
+    arg2
+)
+" END_INDENT
+
+" START_INDENT
+var result = Func(arg1,
+    arg2)
+" END_INDENT
+
+" START_INDENT
+filter(list, (k, v) =>
+    v > 0)
+" END_INDENT
+
+" START_INDENT
+filter(list, (k, v) => {
+    const x = get(list, k, 0)
+    return x > 0
+})
+" END_INDENT
+
+" START_INDENT
+if x > 0
+    filter(list, (k, v) => {
+	const x = get(list, k, 0)
+	return x > 0
+    })
+endif
+" END_INDENT
+
+" START_INDENT
+{
+    var temp = 'temp'
+}
+" END_INDENT
+
+" START_INDENT
+var text = lead
+    .. middle
+    .. end
+" END_INDENT
+
+" START_INDENT
+var text = lead ..
+    middle ..
+    end
+" END_INDENT
+
+" START_INDENT
+var total = start +
+    end -
+    correction
+" END_INDENT
+
+" START_INDENT
+var result = start
+:+ print
+" END_INDENT
+
+" START_INDENT
+var result = positive
+    ? PosFunc(arg)
+    : NegFunc(arg)
+" END_INDENT
+
+" START_INDENT
+var result = GetBuilder()
+    ->BuilderSetWidth(333)
+    ->BuilderSetHeight(777)
+    ->BuilderBuild()
+" END_INDENT
+
+" START_INDENT
+var result = MyDict
+    .member
+" END_INDENT
+
+" START_INDENT
+autocmd BufNewFile *.match if condition
+    |   echo 'match'
+    | endif
+" END_INDENT
+
+" START_INDENT
+set cpo+=C
+var lines =<< trim END
+    | this works
+END
+set cpo-=C
+" END_INDENT
+
+" START_INDENT
+syn region Text
+	    \ start='foo'
+	    #\ comment
+	    \ end='bar'
+" END_INDENT
+
+" START_INDENT
+au CursorHold * echom 'BEFORE bar'
+    #\ some comment
+    | echom 'AFTER bar'
+" END_INDENT
+
+" START_INDENT
+def MyFunc(text: string,
+	separator = '-'
+	): string
+enddef
+" END_INDENT
+
+" START_INDENT
+def MyFunc(
+	text: string,
+	separator = '-'
+	): string
+enddef
+" END_INDENT
+
+" START_INDENT
+[var1, var2] =
+    Func()
+" END_INDENT
+
+" START_INDENT
+const list = ['one',
+    'two']
+" END_INDENT
+
+" START_INDENT
+const list = [
+    'one',
+    'two',
+]
+" END_INDENT
+
+" START_INDENT
+const dict = {one: 1,
+    two: 2
+}
+" END_INDENT
+
+" START_INDENT
+const dict = {
+    one: 1,
+    two: 2
+}
+" END_INDENT
+
+" START_INDENT
+if true
+    const dict =
+	{
+	    one: 1,
+	    two: 2
+	}
+endif
+" END_INDENT
+
+" START_INDENT
+def Func()
+    return {
+	one: 1
+    }
+enddef
 " END_INDENT
