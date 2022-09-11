@@ -56,6 +56,7 @@ DOCS = \
 	if_tcl.txt \
 	indent.txt \
 	index.txt \
+	indexing.txt \
 	insert.txt \
 	intro.txt \
 	map.txt \

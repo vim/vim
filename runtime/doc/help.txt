@@ -144,6 +144,7 @@ Advanced editing ~
 |userfunc.txt|	defining user functions
 |channel.txt|	Jobs, Channels, inter-process communication
 |fold.txt|	hide (fold) ranges of lines
+|indexing.txt|	indexing into strings/buffers/windows
 
 Special issues ~
 |testing.txt|	testing Vim and Vim scripts
