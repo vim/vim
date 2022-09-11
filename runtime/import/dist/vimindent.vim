@@ -86,7 +86,7 @@ const LINE_CONTINUATION_AT_END: string = '\%('
   # It can be the start of a dictionary or a block.
   # We only want to match the former.
   .. '\|' .. $'^\%({CURLY_BLOCK}\)\@!.*{{'
-  .. '\)\s*$'
+  .. '\)\s*\%(\s#.*\)\=$'
 
 # STARTS_WITH_BACKSLASH {{{2
 
@@ -234,7 +234,7 @@ export def Expr(lnum: number): number # {{{2
     endif
 
   elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
-      && line_B.text !~ LINE_CONTINUATION_AT_END
+      && !line_B->HasLineContinuationAtEnd()
     var kwd: string = GetBlockStartKeyword(line_A.text)
     if !START_MIDDLE_END->has_key(kwd)
       return -1
@@ -405,7 +405,7 @@ def PrevCodeLine(lnum: number): dict<any> # {{{2
   return {lnum: n, text: line}
 enddef
 
-def NextCodeLine(): number #{{{2
+def NextCodeLine(): number # {{{2
   var last: number = line('$')
   if v:lnum == last
     return 0
@@ -500,8 +500,12 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
 enddef
 
 def HasLineContinuationAtEnd(line: dict<any>): bool # {{{2
-  var col: number = line.text->matchend(LINE_CONTINUATION_AT_END)
-  return col >= 0 && !InCommentOrString(line.lnum, col)
+  var pos: list<number> = getcurpos()
+  cursor(line.lnum, 1)
+  var match_lnum: number = search(LINE_CONTINUATION_AT_END,
+      'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
+  setpos('.', pos)
+  return match_lnum > 0
 enddef
 
 def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
@@ -513,8 +517,7 @@ enddef
 
 def IsBlock(lnum: number): bool # {{{2
   var line: string = getline(lnum)
-  if line =~ '^\s*{\s*$'
-      && PrevCodeLine(lnum).lnum->getline() !~ LINE_CONTINUATION_AT_END
+  if line =~ '^\s*{\s*$' && !PrevCodeLine(lnum)->HasLineContinuationAtEnd()
     return true
   endif
 
