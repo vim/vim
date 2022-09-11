@@ -1031,12 +1031,16 @@ get_lval(
 	    {
 		char_u	    *tp = skipwhite(p + 1);
 
+		if (is_scoped_variable(name))
+		{
+		    semsg(_(e_cannot_use_type_with_this_variable_str), name);
+		    return NULL;
+		}
 		if (tp == p + 1 && !quiet)
 		{
 		    semsg(_(e_white_space_required_after_str_str), ":", p);
 		    return NULL;
 		}
-
 		if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 		{
 		    semsg(_(e_using_type_not_in_script_context_str), p);

@@ -1936,7 +1936,7 @@ def Test_var_not_cmd()
   var lines =<< trim END
       g:notexist:cmd
   END
-  v9.CheckDefAndScriptFailure(lines, ['E488: Trailing characters: :cmd', 'E121: Undefined variable: g:notexist'], 1)
+  v9.CheckDefAndScriptFailure(lines, ['E1016: Cannot declare a global variable: g:notexist', "E1069: White space required after ':'"], 1)
 
   lines =<< trim END
       g-pat-cmd
@@ -1950,7 +1950,7 @@ def Test_var_not_cmd()
   lines =<< trim END
       s:notexist:repl
   END
-  v9.CheckDefAndScriptFailure(lines, ['E488: Trailing characters: :repl', 'E1268:'], 1)
+  v9.CheckDefAndScriptFailure(lines, ['E1101: Cannot declare a script variable in a function: s:notexist', "E1069: White space required after ':'"], 1)
 
   lines =<< trim END
       notexist:repl

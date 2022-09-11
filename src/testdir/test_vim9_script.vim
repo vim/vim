@@ -4241,13 +4241,12 @@ func Test_misplaced_type()
 endfunc
 
 def Run_Test_misplaced_type()
-  writefile(['let g:somevar = "asdf"'], 'XTest_misplaced_type')
+  writefile(['let g:somevar = "asdf"'], 'XTest_misplaced_type', 'D')
   var buf = g:RunVimInTerminal('-S XTest_misplaced_type', {'rows': 6})
-  term_sendkeys(buf, ":vim9cmd echo islocked('g:somevar: string')\<CR>")
+  term_sendkeys(buf, ":vim9cmd echo islocked('somevar: string')\<CR>")
   g:VerifyScreenDump(buf, 'Test_misplaced_type', {})
 
   g:StopVimInTerminal(buf)
-  delete('XTest_misplaced_type')
 enddef
 
 " Ensure echo doesn't crash when stringifying empty variables.

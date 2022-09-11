@@ -3761,11 +3761,11 @@ find_ex_command(
 		}
 	    }
 
-	    // Recognize using a type for a w:, b:, t: or g: variable:
+	    // Recognize trying to use a type for a w:, b:, t: or g: variable:
 	    // "w:varname: number = 123".
 	    if (eap->cmd[1] == ':' && *p == ':')
 	    {
-		eap->cmdidx = CMD_eval;
+		eap->cmdidx = CMD_var;
 		return eap->cmd;
 	    }
 	}

@@ -1597,13 +1597,31 @@ def Test_assignment_failure()
   v9.CheckDefFailure(['var name: dict<number'], 'E1009:')
 
   v9.CheckDefFailure(['w:foo: number = 10'],
-                  'E488: Trailing characters: : number = 1')
+                  'E1016: Cannot declare a window variable: w:foo')
   v9.CheckDefFailure(['t:foo: bool = true'],
-                  'E488: Trailing characters: : bool = true')
+                  'E1016: Cannot declare a tab variable: t:foo')
   v9.CheckDefFailure(['b:foo: string = "x"'],
-                  'E488: Trailing characters: : string = "x"')
+                  'E1016: Cannot declare a buffer variable: b:foo')
   v9.CheckDefFailure(['g:foo: number = 123'],
-                  'E488: Trailing characters: : number = 123')
+                  'E1016: Cannot declare a global variable: g:foo')
+
+  v9.CheckScriptFailure(['vim9script', 'w:foo: number = 123'],
+                  'E1304: Cannot use type with this variable: w:foo:')
+  v9.CheckScriptFailure(['vim9script', 't:foo: number = 123'],
+                  'E1304: Cannot use type with this variable: t:foo:')
+  v9.CheckScriptFailure(['vim9script', 'b:foo: number = 123'],
+                  'E1304: Cannot use type with this variable: b:foo:')
+  v9.CheckScriptFailure(['vim9script', 'g:foo: number = 123'],
+                  'E1304: Cannot use type with this variable: g:foo:')
+
+  v9.CheckScriptFailure(['vim9script', 'const w:FOO: number = 123'],
+                  'E1304: Cannot use type with this variable: w:FOO:')
+  v9.CheckScriptFailure(['vim9script', 'const t:FOO: number = 123'],
+                  'E1304: Cannot use type with this variable: t:FOO:')
+  v9.CheckScriptFailure(['vim9script', 'const b:FOO: number = 123'],
+                  'E1304: Cannot use type with this variable: b:FOO:')
+  v9.CheckScriptFailure(['vim9script', 'const g:FOO: number = 123'],
+                  'E1304: Cannot use type with this variable: g:FOO:')
 enddef
 
 def Test_assign_list()
@@ -1959,8 +1977,6 @@ def Test_var_declaration()
     FLIST[0] = 11
     assert_equal([11], FLIST)
 
-    const g:FOO: number = 321
-    assert_equal(321, g:FOO)
     const g:FOOS = 'gfoos'
     assert_equal('gfoos', g:FOOS)
     final g:FLIST = [2]
@@ -1975,8 +1991,6 @@ def Test_var_declaration()
     assert_equal(123, g:globConst)
     assert_true(islocked('g:globConst'))
 
-    const w:FOO: number = 46
-    assert_equal(46, w:FOO)
     const w:FOOS = 'wfoos'
     assert_equal('wfoos', w:FOOS)
     final w:FLIST = [3]
@@ -2015,10 +2029,8 @@ def Test_var_declaration()
   unlet g:var_prefixed
   unlet g:other_var
   unlet g:globConst
-  unlet g:FOO
   unlet g:FOOS
   unlet g:FLIST
-  unlet w:FOO
   unlet w:FOOS
   unlet w:FLIST
 enddef

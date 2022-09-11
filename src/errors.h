@@ -3335,4 +3335,6 @@ EXTERN char e_script_variable_was_deleted[]
 	INIT(= N_("E1302: Script variable was deleted"));
 EXTERN char e_custom_list_completion_function_does_not_return_list_but_str[]
 	INIT(= N_("E1303: Custom list completion function does not return a List but a %s"));
+EXTERN char e_cannot_use_type_with_this_variable_str[]
+	INIT(= N_("E1304: Cannot use type with this variable: %s"));
 #endif
