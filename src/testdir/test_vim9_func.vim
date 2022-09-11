@@ -2939,7 +2939,7 @@ def Run_Test_closure_in_for_loop_fails()
   writefile(lines, 'XTest_closure_fails', 'D')
 
   # Check that an error shows
-  var buf = g:RunVimInTerminal('-S XTest_closure_fails', {'rows': 6})
+  var buf = g:RunVimInTerminal('-S XTest_closure_fails', {rows: 6, wait_for_ruler: 0})
   g:VerifyScreenDump(buf, 'Test_vim9_closure_fails', {})
 
   # clean up
