@@ -874,11 +874,11 @@ au BufNewFile,BufRead *.htt,*.htb		setf httest
 
 " i3
 au BufNewFile,BufRead */i3/config		setf i3config
-au BufNewFile,BufRead */.i3/config  	setf i3config
+au BufNewFile,BufRead */.i3/config		setf i3config
 
 " sway
 au BufNewFile,BufRead */sway/config		setf swayconfig
-au BufNewFile,BufRead */.sway/config	setf swayconfig
+au BufNewFile,BufRead */.sway/config		setf swayconfig
 
 " Icon
 au BufNewFile,BufRead *.icn			setf icon
@@ -2579,6 +2579,8 @@ au BufNewFile,BufRead *.txt
 	\|   setf text
 	\| endif
 
+" Blueprint markup files
+au BufNewFile,BufRead *.blp			setf blueprint
 
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.
