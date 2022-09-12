@@ -436,6 +436,7 @@ ex_menu(
 		--curwin->w_height;
 	    curwin->w_winbar_height = h;
 	}
+	curwin->w_prev_height = curwin->w_height;
     }
 
 theend:
