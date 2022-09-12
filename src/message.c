@@ -1759,7 +1759,7 @@ msg_outtrans_special(
 	    ++str;
 	}
 	else
-	    text = (char *)str2special(&str, from);
+	    text = (char *)str2special(&str, from, FALSE);
 	if (text[0] != NUL && text[1] == NUL)
 	    // single-byte character or illegal byte
 	    text = (char *)transchar_byte((char_u)text[0]);
@@ -1782,14 +1782,16 @@ msg_outtrans_special(
     char_u *
 str2special_save(
     char_u  *str,
-    int	    is_lhs)  // TRUE for lhs, FALSE for rhs
+    int	    replace_spaces,	// TRUE to replace " " with "<Space>".
+				// used for the lhs of mapping and keytrans().
+    int	    replace_lt)		// TRUE to replace "<" with "<lt>".
 {
     garray_T	ga;
     char_u	*p = str;
 
     ga_init2(&ga, 1, 40);
     while (*p != NUL)
-	ga_concat(&ga, str2special(&p, is_lhs));
+	ga_concat(&ga, str2special(&p, replace_spaces, replace_lt));
     ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
 }
@@ -1804,7 +1806,9 @@ str2special_save(
     char_u *
 str2special(
     char_u	**sp,
-    int		from)	// TRUE for lhs of mapping
+    int		replace_spaces,	// TRUE to replace " " with "<Space>".
+				// used for the lhs of mapping and keytrans().
+    int		replace_lt)	// TRUE to replace "<" with "<lt>".
 {
     int			c;
     static char_u	buf[7];
@@ -1861,8 +1865,10 @@ str2special(
 	*sp = str + (*str == NUL ? 0 : 1);
 
     // Make special keys and C0 control characters in <> form, also <M-Space>.
-    // Use <Space> only for lhs of a mapping.
-    if (special || c < ' ' || (from && c == ' '))
+    if (special
+	|| c < ' '
+	|| (replace_spaces && c == ' ')
+	|| (replace_lt && c == '<'))
 	return get_special_key_name(c, modifiers);
     buf[0] = c;
     buf[1] = NUL;
@@ -1880,7 +1886,7 @@ str2specialbuf(char_u *sp, char_u *buf, int len)
     *buf = NUL;
     while (*sp)
     {
-	s = str2special(&sp, FALSE);
+	s = str2special(&sp, FALSE, FALSE);
 	if ((int)(STRLEN(s) + STRLEN(buf)) < len)
 	    STRCAT(buf, s);
     }

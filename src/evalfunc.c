@@ -89,6 +89,7 @@ static void f_inputsecret(typval_T *argvars, typval_T *rettv);
 static void f_interrupt(typval_T *argvars, typval_T *rettv);
 static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
+static void f_keytrans(typval_T *argvars, typval_T *rettv);
 static void f_last_buffer_nr(typval_T *argvars, typval_T *rettv);
 static void f_libcall(typval_T *argvars, typval_T *rettv);
 static void f_libcallnr(typval_T *argvars, typval_T *rettv);
@@ -2058,6 +2059,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_json_encode},
     {"keys",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_string,    f_keys},
+    {"keytrans",	1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_keytrans},
     {"last_buffer_nr",	0, 0, 0,	    NULL,	// obsolete
 			ret_number,	    f_last_buffer_nr},
     {"len",		1, 1, FEARG_1,	    arg1_len,
@@ -7133,6 +7136,24 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     }
 
     clear_lval(&lv);
+}
+
+/*
+ * "keytrans()" function
+ */
+    static void
+f_keytrans(typval_T *argvars, typval_T *rettv)
+{
+    char_u *escaped;
+
+    rettv->v_type = VAR_STRING;
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || argvars[0].vval.v_string == NULL)
+	return;
+    // Need to escape K_SPECIAL and CSI for mb_unescape().
+    escaped = vim_strsave_escape_csi(argvars[0].vval.v_string);
+    rettv->vval.v_string = str2special_save(escaped, TRUE, TRUE);
+    vim_free(escaped);
 }
 
 /*
