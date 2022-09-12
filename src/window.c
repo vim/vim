@@ -7094,6 +7094,8 @@ restore_snapshot(
 	win_comp_pos();
 	if (wp != NULL && close_curwin)
 	    win_goto(wp);
+	if (!p_spsc)
+	    win_fix_scroll(FALSE);
 	redraw_all_later(UPD_NOT_VALID);
     }
     clear_snapshot(curtab, idx);
