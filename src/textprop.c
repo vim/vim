@@ -608,12 +608,12 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 }
 
 /*
- * Return the number of text properties with "below" alignment in line "lnum".
- * A "right" aligned property also goes below after a "below" or other "right"
- * aligned property.
+ * Return the number of text properties with "above" or "below" alignment in
+ * line "lnum".  A "right" aligned property also goes below after a "below" or
+ * other "right" aligned property.
  */
     int
-prop_count_below(buf_T *buf, linenr_T lnum)
+prop_count_above_below(buf_T *buf, linenr_T lnum)
 {
     char_u	*props;
     int		count = get_text_props(buf, lnum, &props, FALSE);
@@ -634,6 +634,11 @@ prop_count_below(buf_T *buf, linenr_T lnum)
 				     && (prop.tp_flags & TP_FLAG_ALIGN_RIGHT)))
 	    {
 		next_right_goes_below = TRUE;
+		++result;
+	    }
+	    else if (prop.tp_flags & TP_FLAG_ALIGN_ABOVE)
+	    {
+		next_right_goes_below = FALSE;
 		++result;
 	    }
 	    else if (prop.tp_flags & TP_FLAG_ALIGN_RIGHT)

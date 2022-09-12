@@ -2873,6 +2873,9 @@ func Test_props_with_text_above()
   call term_sendkeys(buf, ":set number signcolumn=yes\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_4', {})
 
+  call term_sendkeys(buf, ":set nowrap\<CR>gg$j")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_5', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
