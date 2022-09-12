@@ -2317,7 +2317,7 @@ mapblock2dict(
 	int	    buffer_local,   // false if not buffer local mapping
 	int	    abbr)	    // true if abbreviation
 {
-    char_u	    *lhs = str2special_save(mp->m_keys, TRUE);
+    char_u	    *lhs = str2special_save(mp->m_keys, TRUE, FALSE);
     char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
 
     dict_add_string(dict, "lhs", lhs);
@@ -2409,7 +2409,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	    if (*rhs == NUL)
 		rettv->vval.v_string = vim_strsave((char_u *)"<Nop>");
 	    else
-		rettv->vval.v_string = str2special_save(rhs, FALSE);
+		rettv->vval.v_string = str2special_save(rhs, FALSE, FALSE);
 	}
 
     }
@@ -2478,7 +2478,7 @@ f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
 		keys_buf = NULL;
 		did_simplify = FALSE;
 
-		lhs = str2special_save(mp->m_keys, TRUE);
+		lhs = str2special_save(mp->m_keys, TRUE, FALSE);
 		(void)replace_termcodes(lhs, &keys_buf, flags, &did_simplify);
 		vim_free(lhs);
 

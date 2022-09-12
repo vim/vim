@@ -2890,7 +2890,7 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 			*menu->strings[bit] == NUL
 				? (char_u *)"<Nop>"
 				: (tofree = str2special_save(
-						  menu->strings[bit], FALSE)));
+					menu->strings[bit], FALSE, FALSE)));
 		vim_free(tofree);
 	    }
 	    if (status == OK)
