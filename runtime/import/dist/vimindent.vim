@@ -287,7 +287,7 @@ def Offset( # {{{2
     ): number
 
   # increase indentation inside a block
-  if line_B.text =~ STARTS_BLOCK || line_B->EndsWithCurlBlock()
+  if line_B.text =~ STARTS_BLOCK || line_B->EndsWithCurlyBlock()
     # But don't indent if the line starting the block also closes it.
     if line_B->AlsoClosesBlock()
       return 0
@@ -504,7 +504,7 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
   return NonCommentedMatchAtEnd(line, LINE_CONTINUATION_AT_END)
 enddef
 
-def EndsWithCurlBlock(line: dict<any>): bool # {{{2
+def EndsWithCurlyBlock(line: dict<any>): bool # {{{2
   return NonCommentedMatchAtEnd(line, CURLY_BLOCK)
 enddef
 
@@ -533,7 +533,7 @@ def IsBlock(lnum: number): bool # {{{2
     return true
   endif
 
-  return {text: line, lnum: lnum}->EndsWithCurlBlock()
+  return {text: line, lnum: lnum}->EndsWithCurlyBlock()
 enddef
 
 def InCommentOrString(lnum = line('.'), col = col('.')): bool # {{{2
