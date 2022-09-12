@@ -670,6 +670,7 @@ win_line(
     int		text_prop_follows = FALSE;  // another text prop to display
     int		saved_search_attr = 0;	// search_attr to be used when n_extra
 					// goes to zero
+    int		saved_area_attr = 0;	// idem for area_attr
 #endif
 #ifdef FEAT_SPELL
     int		has_spell = FALSE;	// this buffer has spell checking
@@ -1846,8 +1847,12 @@ win_line(
 			    extra_for_textprop = TRUE;
 			    extra_attr = used_attr;
 			    n_attr = mb_charlen(p);
+			    // restore search_attr and area_attr when n_extra
+			    // is down to zero
 			    saved_search_attr = search_attr;
-			    search_attr = 0;	// restore when n_extra is zero
+			    saved_area_attr = area_attr;
+			    search_attr = 0;
+			    area_attr = 0;
 			    text_prop_attr = 0;
 			    text_prop_attr_comb = 0;
 			    if (*ptr == NUL)
@@ -2203,6 +2208,8 @@ win_line(
 		in_linebreak = FALSE;
 		if (search_attr == 0)
 		    search_attr = saved_search_attr;
+		if (area_attr == 0 && *ptr != NUL)
+		    area_attr = saved_area_attr;
 	    }
 #endif
 	}

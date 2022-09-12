@@ -2855,11 +2855,15 @@ func Test_props_with_text_above()
       call setline(1, ['one two', 'three four', 'five six'])
       call prop_type_add('above1', #{highlight: 'Search'})
       call prop_type_add('above2', #{highlight: 'DiffChange'})
+      call prop_type_add('below', #{highlight: 'DiffAdd'})
       call prop_add(1, 0, #{type: 'above1', text: 'first thing above', text_align: 'above'})
       call prop_add(1, 0, #{type: 'above2', text: 'second thing above', text_align: 'above'})
       call prop_add(3, 0, #{type: 'above1', text: 'another thing', text_align: 'above', text_padding_left: 3})
 
       normal gglllj
+      func AddPropBelow()
+        call prop_add(1, 0, #{type: 'below', text: 'below', text_align: 'below'})
+      endfunc
   END
   call writefile(lines, 'XscriptPropsWithTextAbove', 'D')
   let buf = RunVimInTerminal('-S XscriptPropsWithTextAbove', #{rows: 9, cols: 60})
@@ -2875,6 +2879,12 @@ func Test_props_with_text_above()
 
   call term_sendkeys(buf, ":set nowrap\<CR>gg$j")
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_5', {})
+
+  call term_sendkeys(buf, ":call AddPropBelow()\<CR>")
+  call term_sendkeys(buf, "ggve")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_6', {})
+  call term_sendkeys(buf, "V")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_7', {})
 
   call StopVimInTerminal(buf)
 endfunc

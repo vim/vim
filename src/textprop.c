@@ -232,8 +232,9 @@ prop_add_one(
 
     for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
     {
-	colnr_T col;	// start column
-	long	length;	// in bytes
+	colnr_T col;	    // start column use in tp_col
+	colnr_T sort_col;   // column where it appears
+	long	length;	    // in bytes
 
 	// Fetch the line to get the ml_line_len field updated.
 	proplen = get_text_props(buf, lnum, &props, TRUE);
@@ -248,6 +249,7 @@ prop_add_one(
 	    semsg(_(e_invalid_column_number_nr), (long)start_col);
 	    goto theend;
 	}
+	sort_col = col;
 
 	if (lnum == end_lnum)
 	    length = end_col - col;
@@ -263,7 +265,9 @@ prop_add_one(
 	    length = 1;		// text is placed on one character
 	    if (col == 0)
 	    {
-		col = MAXCOL;	// after the line
+		col = MAXCOL;	// before or after the line
+		if ((text_flags & TP_FLAG_ALIGN_ABOVE) == 0)
+		    sort_col = MAXCOL;
 		length += text_padding_left;
 	    }
 	}
@@ -280,9 +284,15 @@ prop_add_one(
 	// the text, we need to copy them as bytes before using it as a struct.
 	for (i = 0; i < proplen; ++i)
 	{
+	    colnr_T prop_col;
+
 	    mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
 							   sizeof(textprop_T));
-	    if (tmp_prop.tp_col >= col)
+	    // col is MAXCOL when the text goes above or after the line, when
+	    // above we should use column zero for sorting
+	    prop_col = (tmp_prop.tp_flags & TP_FLAG_ALIGN_ABOVE)
+				? 0 : tmp_prop.tp_col;
+	    if (prop_col >= sort_col)
 		break;
 	}
 	newprops = newtext + textlen;
