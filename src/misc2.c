@@ -1540,7 +1540,8 @@ may_adjust_key_for_ctrl(int modifiers, int key)
  * When Ctrl is also used <C-H> and <C-S-H> are different, but <C-S-{> should
  * be <C-{>.  Same for <C-S-}> and <C-S-|>.
  * Also for <A-S-a> and <M-S-a>.
- * This includes all printable ASCII characters except numbers and a-z.
+ * This includes all printable ASCII characters except a-z.
+ * Digits are included because with AZERTY the Shift key is used to get them.
  */
     int
 may_remove_shift_modifier(int modifiers, int key)
@@ -1550,6 +1551,7 @@ may_remove_shift_modifier(int modifiers, int key)
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
 	    && ((key >= '!' && key <= '/')
 		|| (key >= ':' && key <= 'Z')
+		|| vim_isdigit(key)
 		|| (key >= '[' && key <= '`')
 		|| (key >= '{' && key <= '~')))
 	return modifiers & ~MOD_MASK_SHIFT;
