@@ -1744,13 +1744,6 @@ mch_print_set_fg(long_u fgcol)
 #  include <shlobj.h>
 # endif
 
-typedef BOOL (WINAPI *pfnGetFinalPathNameByHandleW)(
-	HANDLE	hFile,
-	LPWSTR	lpszFilePath,
-	DWORD	cchFilePath,
-	DWORD	dwFlags);
-static pfnGetFinalPathNameByHandleW pGetFinalPathNameByHandleW = NULL;
-
 # define is_path_sep(c)	    ((c) == L'\\' || (c) == L'/')
 
     static int
@@ -1792,20 +1785,6 @@ resolve_reparse_point(char_u *fname)
     WCHAR	    *p, *wp;
     char_u	    *rfname = NULL;
     WCHAR	    *buff = NULL;
-    static BOOL	    loaded = FALSE;
-
-    if (pGetFinalPathNameByHandleW == NULL)
-    {
-	HMODULE hmod = GetModuleHandle("kernel32.dll");
-
-	if (loaded == TRUE)
-	    return NULL;
-	pGetFinalPathNameByHandleW = (pfnGetFinalPathNameByHandleW)
-		GetProcAddress(hmod, "GetFinalPathNameByHandleW");
-	loaded = TRUE;
-	if (pGetFinalPathNameByHandleW == NULL)
-	    return NULL;
-    }
 
     p = enc_to_utf16(fname, NULL);
     if (p == NULL)
@@ -1824,13 +1803,13 @@ resolve_reparse_point(char_u *fname)
     if (h == INVALID_HANDLE_VALUE)
 	goto fail;
 
-    size = pGetFinalPathNameByHandleW(h, NULL, 0, 0);
+    size = GetFinalPathNameByHandleW(h, NULL, 0, 0);
     if (size == 0)
 	goto fail;
     buff = ALLOC_MULT(WCHAR, size);
     if (buff == NULL)
 	goto fail;
-    if (pGetFinalPathNameByHandleW(h, buff, size, 0) == 0)
+    if (GetFinalPathNameByHandleW(h, buff, size, 0) == 0)
 	goto fail;
 
     if (wcsncmp(buff, L"\\\\?\\UNC\\", 8) == 0)
