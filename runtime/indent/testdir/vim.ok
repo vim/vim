@@ -318,3 +318,12 @@ if true
     var x: number  # needs to align with previous "var"
 endif
 " END_INDENT
+
+" START_INDENT
+def Func() # {{{
+    # comment
+    if true
+	return
+    endif
+enddef
+" END_INDENT

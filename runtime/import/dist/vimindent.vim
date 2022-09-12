@@ -12,7 +12,7 @@ var cmds: list<string>
 # TODO: `{` alone on a line is not necessarily the start of a block.
 # It  could be  a dictionary  if the  previous line  ends with  a binary/ternary
 # operator.   This  can  cause  an   issue  whenever  we  use  `CURLY_BLOCK`  or
-# `ENDS_WITH_LINE_CONTINUATION`.
+# `LINE_CONTINUATION_AT_END`.
 const CURLY_BLOCK: string = '^\s*{\s*$'
   .. '\|' .. '^.*\zs\s=>\s\+{\s*$'
   .. '\|' ..  '^\%(\s*\|.*|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{\s*$'
@@ -75,9 +75,9 @@ const STARTS_WITH_LINE_CONTINUATION: string = '^\s*\%('
   .. '\|' .. '[]})]'
   .. '\)'
 
-# ENDS_WITH_LINE_CONTINUATION {{{2
+# LINE_CONTINUATION_AT_END {{{2
 
-const ENDS_WITH_LINE_CONTINUATION: string = '\%('
+const LINE_CONTINUATION_AT_END: string = '\%('
   .. ','
   .. '\|' .. OPERATOR
   .. '\|' .. '\s=>'
@@ -164,9 +164,9 @@ const CLOSING_BRACKET: string = '[]})]'
 
 const STARTS_WITH_CLOSING_BRACKET: string = '^\s*[]})]'
 
-# ENDS_WITH_OPENING_BRACKET {{{2
+# OPENING_BRACKET_AT_END {{{2
 
-const ENDS_WITH_OPENING_BRACKET: string = '[[{(]\s*$'
+const OPENING_BRACKET_AT_END: string = '[[{(]\s*$'
 
 # IS_SINGLE_OPEN_BRACKET {{{2
 
@@ -501,7 +501,7 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
 enddef
 
 def EndsWithLineContinuation(line: dict<any>): bool # {{{2
-  return NonCommentedMatchAtEnd(line, ENDS_WITH_LINE_CONTINUATION)
+  return NonCommentedMatchAtEnd(line, LINE_CONTINUATION_AT_END)
 enddef
 
 def EndsWithCurlBlock(line: dict<any>): bool # {{{2
@@ -509,7 +509,7 @@ def EndsWithCurlBlock(line: dict<any>): bool # {{{2
 enddef
 
 def EndsWithOpeningBracket(line: dict<any>): bool # {{{2
-  return NonCommentedMatchAtEnd(line, ENDS_WITH_OPENING_BRACKET)
+  return NonCommentedMatchAtEnd(line, OPENING_BRACKET_AT_END)
 enddef
 
 def NonCommentedMatchAtEnd(line: dict<any>, pat: string): bool # {{{2
