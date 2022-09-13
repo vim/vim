@@ -376,7 +376,7 @@ enddef
 " END_INDENT
 
 " START_INDENT
-var heredoc =<< trim eval ENDD
+var heredoc =<< trim ENDD
 var nested_heredoc =<< trim END
 END
 ENDD
