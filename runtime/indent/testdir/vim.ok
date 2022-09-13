@@ -327,3 +327,10 @@ def Func() # {{{
     endif
 enddef
 " END_INDENT
+
+" START_INDENT
+echo {
+    key:
+	'value',
+}
+" END_INDENT

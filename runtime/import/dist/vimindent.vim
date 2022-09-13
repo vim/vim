@@ -35,9 +35,9 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
 # than a legacy comment.
 const COMMENT: string = '^\s*\%(#\|"\\\=\s\)'
 
-# KEY_IN_LITERAL_DICT {{{2
+# DICT_KEY_OR_FUNC_PARAM {{{2
 
-const KEY_IN_LITERAL_DICT: string = '^\s*\%(\w\|-\)\+:\%(\s\|$\)'
+const DICT_KEY_OR_FUNC_PARAM: string = '^\s*\%(\%(\w\|-\)\+\|\[[^]]\+\]\):\%(\s\|$\)'
 
 # START_MIDDLE_END {{{2
 
@@ -231,6 +231,24 @@ export def Expr(lnum: number): number # {{{2
       return indent(line_B.lnum)
     else
       return indent(line_B.lnum) + get(g:, 'vim_indent_cont', shiftwidth() * 3)
+    endif
+
+  elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
+      || line_B.text =~ DICT_KEY_OR_FUNC_PARAM
+    var start: number = FindStart('(', '', ')')
+    # function param
+    if start > 0 && getline(start) =~ '^\s*def\>'
+      return indent(start) + 2 * shiftwidth()
+    # dictionary key
+    else
+      start = FindStart('{', '', '}')
+      var offset: number
+      if line_A.text =~ DICT_KEY_OR_FUNC_PARAM
+        offset = shiftwidth()
+      else
+        offset = 2 * shiftwidth()
+      endif
+      return indent(start) + offset
     endif
 
   elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
@@ -522,7 +540,8 @@ enddef
 
 def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
   return line_A !~ COMMENT
-    && line_A !~ KEY_IN_LITERAL_DICT
+    && line_A !~ DICT_KEY_OR_FUNC_PARAM
+    && line_B.text !~ DICT_KEY_OR_FUNC_PARAM
     && line_A !~ STARTS_WITH_LINE_CONTINUATION
     && !line_B->EndsWithLineContinuation()
 enddef
