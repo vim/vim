@@ -341,3 +341,9 @@ var id = time
 n = 0
 })
 " END_INDENT
+
+" START_INDENT
+augroup Name
+autocmd!
+augroup END
+" END_INDENT

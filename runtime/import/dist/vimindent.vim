@@ -59,7 +59,8 @@ const START_MIDDLE_END: dict<list<string>> = {
   function: ['fu\%[nction]', '', 'endf\%[unction]'],
   endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
   augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
-}->map((_, kwds: list<string>) => kwds->map((_, kwd: string) => $'\%(^\||\)\s*\%({kwd->printf('\C\<\%%(%s\)\>')}\)'))
+}->map((_, kwds: list<string>) =>
+  kwds->map((_, kwd: string) => kwd == '' ? '' : $'\%(^\||\)\s*\%({kwd->printf('\C\<\%%(%s\)\>')}\)'))
 
 # STARTS_WITH_LINE_CONTINUATION {{{2
 
@@ -171,7 +172,6 @@ const STARTS_FUNCTION: string = '^\s*def\>'
 # OPENING_BRACKET_AT_END {{{2
 
 const OPENING_BRACKET_AT_END: string = '[[{(]\s*$'
-
 # }}}1
 # Interface {{{1
 export def Expr(lnum: number): number # {{{2
@@ -468,8 +468,15 @@ def FindEnd( # {{{2
     end: string,
     ): number
 
-  return searchpair(start->escape('[]'), middle, end->escape('[]'),
-    'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
+  var s: string = start
+  var e: string = end
+  if start == '[' || start == ']'
+    s = s->escape('[]')
+  endif
+  if end == '[' || end == ']'
+    e = e->escape('[]')
+  endif
+  return searchpair(s, middle, e, 'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
 enddef
 
 def GetBlockStartKeyword(line: string): string # {{{2
