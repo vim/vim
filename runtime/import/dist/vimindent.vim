@@ -181,7 +181,7 @@ export def Expr(lnum: number): number # {{{2
   var line_B: dict<any>
 
   # at the start of a heredoc
-  if line_A.text =~ ASSIGNS_HEREDOC
+  if line_A.text =~ ASSIGNS_HEREDOC && !exists('b:vimindent_heredoc')
     b:vimindent_heredoc = {
       startlnum: lnum,
       startindent: indent(lnum),
