@@ -2264,6 +2264,7 @@ adjust_props_for_split(
 	proptype_T *pt;
 	int	    start_incl, end_incl;
 	int	    cont_prev, cont_next;
+	int	    prop_col;
 
 	// copy the prop to an aligned structure
 	mch_memmove(&prop, props + i * sizeof(textprop_T), sizeof(textprop_T));
@@ -2271,9 +2272,13 @@ adjust_props_for_split(
 	pt = text_prop_type_by_id(curbuf, prop.tp_type);
 	start_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL));
 	end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
-	cont_prev = prop.tp_col != MAXCOL && prop.tp_col + !start_incl <= kept;
-	cont_next = prop.tp_col != MAXCOL
-			   && skipped <= prop.tp_col + prop.tp_len - !end_incl;
+
+	// a text prop "above" behaves like it is on the first text column
+	prop_col = (prop.tp_flags & TP_FLAG_ALIGN_ABOVE) ? 1 : prop.tp_col;
+
+	cont_prev = prop_col != MAXCOL && prop_col + !start_incl <= kept;
+	cont_next = prop_col != MAXCOL
+			      && skipped <= prop_col + prop.tp_len - !end_incl;
 	// when a prop has text it is never copied
 	if (prop.tp_id < 0 && cont_next)
 	    cont_prev = FALSE;
@@ -2292,8 +2297,7 @@ adjust_props_for_split(
 
 	// Only add the property to the next line if the length is bigger than
 	// zero.
-	if ((cont_next || prop.tp_col == MAXCOL)
-						&& ga_grow(&nextprop, 1) == OK)
+	if ((cont_next || prop_col == MAXCOL) && ga_grow(&nextprop, 1) == OK)
 	{
 	    textprop_T *p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
 

@@ -2886,6 +2886,9 @@ func Test_props_with_text_above()
   call term_sendkeys(buf, "V")
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_7', {})
 
+  call term_sendkeys(buf, "\<Esc>ls\<CR>\<Esc>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_8', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
