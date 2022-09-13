@@ -1230,15 +1230,18 @@ ex_while(exarg_T *eap)
 	    {
 		scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
 		int		i;
+		int		first;
 		int		func_defined = cstack->cs_flags[cstack->cs_idx]
 								& CSF_FUNC_DEF;
 
 		// Any variables defined in the previous round are no longer
 		// visible.  Keep the first one for ":for", it is the loop
 		// variable that we reuse every time around.
-		for (i = cstack->cs_script_var_len[cstack->cs_idx]
+		// Do this backwards, so that vars defined in a later round are
+		// found first.
+		first = cstack->cs_script_var_len[cstack->cs_idx]
 					  + (eap->cmdidx == CMD_while ? 0 : 1);
-					       i < si->sn_var_vals.ga_len; ++i)
+		for (i = si->sn_var_vals.ga_len - 1; i >= first; --i)
 		{
 		    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
 
@@ -1250,6 +1253,12 @@ ex_while(exarg_T *eap)
 			// still exists, from sn_vars.
 			hide_script_var(si, i, func_defined);
 		}
+
+		// Start a new block ID, so that variables defined inside the
+		// loop are created new and not shared with the previous loop.
+		// Matters when used in a closure.
+		cstack->cs_block_id[cstack->cs_idx] = ++si->sn_last_block_id;
+		si->sn_current_block_id = si->sn_last_block_id;
 	    }
 	}
 	cstack->cs_flags[cstack->cs_idx] =
