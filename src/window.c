@@ -6384,6 +6384,7 @@ win_fix_scroll(int resize)
 	    invalidate_botline_win(wp);
 	    validate_botline_win(wp);
 	}
+	win_comp_scroll(wp);
 	wp->w_prev_height = wp->w_height;
 	wp->w_prev_winrow = wp->w_winrow;
     }

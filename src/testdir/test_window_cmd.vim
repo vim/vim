@@ -1668,6 +1668,7 @@ func Test_splitscroll_with_splits()
               execute 'norm gg' . pos
               split | redraw | wincmd k
               call assert_equal(1, line("w0"))
+              call assert_equal(&scroll, winheight(0) / 2)
               wincmd j
               call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
