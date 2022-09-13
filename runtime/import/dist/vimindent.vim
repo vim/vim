@@ -2,7 +2,7 @@ vim9script
 
 # Config {{{1
 
-const TIMEOUT: number = 50
+const TIMEOUT: number = 100
 
 # Init {{{1
 # These items must come first; we use them to define the next constants.
