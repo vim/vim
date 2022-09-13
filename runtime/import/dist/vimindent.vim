@@ -500,13 +500,9 @@ def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{2
   var line_B: dict<any> = line
 
   while line_B.lnum > 1
-    var line_above: string = getline(line_B.lnum - 1)
+    var line_above: dict<any> = PrevCodeLine(line_B.lnum)
 
-    if line_B.text =~ COMMENT
-      # A commented line can't be the first line of a command.
-      # Skip it.
-
-    elseif line_B.text =~ STARTS_WITH_CLOSING_BRACKET
+    if line_B.text =~ STARTS_WITH_CLOSING_BRACKET
       var n: number = MatchingOpenBracket(line_B)
 
       if n <= 0
@@ -517,12 +513,11 @@ def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{2
       line_B.text = getline(line_B.lnum)
       continue
 
-    elseif line_B.text->IsFirstLineOfCommand({text: line_above, lnum: line_B.lnum - 1})
+    elseif line_B.text->IsFirstLineOfCommand(line_above)
       break
     endif
 
-    --line_B.lnum
-    line_B.text = line_above
+    line_B = line_above
   endwhile
 
   return [line_B.text, line_B.lnum]

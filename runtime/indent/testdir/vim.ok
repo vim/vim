@@ -347,3 +347,12 @@ augroup Name
     autocmd!
 augroup END
 " END_INDENT
+
+" START_INDENT
+var n =
+    # comment
+    1
+    + 2
+
+var s = ''
+" END_INDENT
