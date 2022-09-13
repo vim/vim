@@ -91,6 +91,10 @@ const STARTS_WITH_LINE_CONTINUATION: string = '^\s*\%('
   .. '\|' .. '[]})]'
   .. '\)'
 
+# STARTS_WITH_RANGE {{{2
+
+const STARTS_WITH_RANGE: string = '^\s*:\S'
+
 # LINE_CONTINUATION_AT_END {{{2
 
 const LINE_CONTINUATION_AT_END: string = '\%('
@@ -573,6 +577,11 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
 enddef
 
 def EndsWithLineContinuation(line: dict<any>): bool # {{{2
+  # Don't conflate the visual mark `<` with a comparison operator.
+  # Same pitfall with the change mark `[` and the start of a list.
+  if line.text =~ 'mark\s\+[[<]\s*$'
+    return false
+  endif
   return NonCommentedMatchAtEnd(line, LINE_CONTINUATION_AT_END)
 enddef
 
@@ -602,11 +611,17 @@ def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
 enddef
 
 def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
-  return line_A !~ COMMENT
+  if line_A =~ STARTS_WITH_RANGE
+    return true
+  endif
+
+  var line_A_is_good: bool = line_A !~ COMMENT
     && line_A !~ DICT_KEY_OR_FUNC_PARAM
-    && line_B.text !~ DICT_KEY_OR_FUNC_PARAM
     && line_A !~ STARTS_WITH_LINE_CONTINUATION
-    && !line_B->EndsWithLineContinuation()
+  var line_B_is_good: bool = (line_B.text !~ DICT_KEY_OR_FUNC_PARAM
+    && !line_B->EndsWithLineContinuation())
+
+  return line_A_is_good && line_B_is_good
 enddef
 
 def IsBlock(lnum: number): bool # {{{2
