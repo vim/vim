@@ -279,7 +279,7 @@ export def Expr(lnum: number): number # {{{2
     base_ind = indent(n)
 
     if line_B->EndsWithCurlyBlock()
-        && line_A->ButThisLineIsNotInThisBlock(line_B.lnum)
+        && line_A->IsNotInThisBlock(line_B.lnum)
       return base_ind
     endif
 
@@ -564,7 +564,7 @@ def NonCommentedMatchAtEnd(line: dict<any>, pat: string): bool # {{{2
   return match_lnum > 0
 enddef
 
-def ButThisLineIsNotInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
+def IsNotInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
   var pos: list<number> = getcurpos()
   cursor(lnum, [lnum, '$']->col())
   var end: number = FindEnd('{', '', '}')
