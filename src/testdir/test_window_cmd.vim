@@ -1646,6 +1646,7 @@ func Test_splitscroll_with_splits()
           for so in [0, 5]
             for ls in range(0, 2)
               for pos in ["H", "M", "L"]
+              tabnew | tabonly! | redraw
               let tabline = (gui ? 0 : (tab ? 1 : 0))
               let winbar_sb = (sb ? winbar : 0)
               execute 'set scrolloff=' . so
@@ -1655,17 +1656,23 @@ func Test_splitscroll_with_splits()
               execute tab ? 'tabnew' : ''
               execute winbar ? 'nnoremenu 1.10 WinBar.Test :echo' : ''
               call setline(1, range(1, 256))
-              execute 'norm gg' . pos
-              " No scroll for vertical split and quit
-              vsplit | quit
-              call assert_equal(1, line("w0"))
+              " No scroll for restore_snapshot
+              norm G
+              try
+                copen | close | colder
+              catch /E380/
+              endtry
+              call assert_equal(257 - winheight(0), line("w0"))
 
-              " No scroll for horizontal split
-              split | redraw! | wincmd k
+              " No scroll for firstwin horizontal split
+              execute 'norm gg' . pos
+              split | redraw | wincmd k
               call assert_equal(1, line("w0"))
+              wincmd j
+              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
               " No scroll when resizing windows
-              resize +2
+              wincmd k | resize +2
               call assert_equal(1, line("w0"))
               wincmd j
               call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
@@ -1715,7 +1722,7 @@ func Test_splitscroll_with_splits()
               call assert_equal(1, line("w0"))
 
               " No scroll in windows split and quit multiple times
-              quit | split | split | quit
+              quit | redraw | split | redraw | split | redraw | quit | redraw
               call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
               " No scroll for new buffer
@@ -1740,11 +1747,9 @@ func Test_splitscroll_with_splits()
               call assert_equal(6, line("w0"))
               wincmd j
               call assert_equal(5 + win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              only
               endfor
             endfor
           endfor
-          tabonly!
         endfor
       endfor
     endfor
