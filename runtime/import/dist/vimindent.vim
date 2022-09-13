@@ -38,6 +38,8 @@ const COMMENT: string = '^\s*\%(#\|"\\\=\s\)'
 # DICT_KEY_OR_FUNC_PARAM {{{2
 
 const DICT_KEY_OR_FUNC_PARAM: string = '^\s*\%('
+  .. '\%(\.\.\.\)\=\h[a-zA-Z0-9_]*'
+  .. '\|'
   .. '\%(\w\|-\)\+'
   .. '\|'
   .. '"[^"]*"'
@@ -176,7 +178,7 @@ const STARTS_WITH_CLOSING_BRACKET: string = '^\s*[]})]'
 
 # STARTS_FUNCTION {{{2
 
-const STARTS_FUNCTION: string = '^\s*def\>'
+const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>'
 
 # OPENING_BRACKET_AT_END {{{2
 
