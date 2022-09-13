@@ -2930,8 +2930,10 @@ enddef
 def Run_Test_closure_in_for_loop_fails()
   var lines =<< trim END
     vim9script
+    redraw
     for n in [0]
-        timer_start(10, (_) => {
+        # time should be enough for startup to finish
+        timer_start(200, (_) => {
             echo n
         })
     endfor
@@ -2940,7 +2942,7 @@ def Run_Test_closure_in_for_loop_fails()
 
   # Check that an error shows
   var buf = g:RunVimInTerminal('-S XTest_closure_fails', {rows: 6, wait_for_ruler: 0})
-  g:VerifyScreenDump(buf, 'Test_vim9_closure_fails', {})
+  g:VerifyScreenDump(buf, 'Test_vim9_closure_fails', {wait: 3000})
 
   # clean up
   g:StopVimInTerminal(buf)

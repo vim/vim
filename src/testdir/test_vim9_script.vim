@@ -2259,7 +2259,21 @@ def Test_for_loop()
 enddef
 
 def Test_for_loop_with_closure()
+  # using the loop variable in a closure results in the last used value
   var lines =<< trim END
+      var flist: list<func>
+      for i in range(5)
+        flist[i] = () => i
+      endfor
+      for i in range(5)
+        assert_equal(4, flist[i]())
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # using a local variable set to the loop variable in a closure results in the
+  # value at that moment
+  lines =<< trim END
       var flist: list<func>
       for i in range(5)
         var inloop = i

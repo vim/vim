@@ -1208,6 +1208,7 @@ ex_while(exarg_T *eap)
     int		skip;
     int		result;
     cstack_T	*cstack = eap->cstack;
+    int		prev_cs_flags = 0;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
 	eap->errmsg = _(e_while_for_nesting_too_deep);
@@ -1261,6 +1262,7 @@ ex_while(exarg_T *eap)
 		si->sn_current_block_id = si->sn_last_block_id;
 	    }
 	}
+	prev_cs_flags = cstack->cs_flags[cstack->cs_idx];
 	cstack->cs_flags[cstack->cs_idx] =
 			       eap->cmdidx == CMD_while ? CSF_WHILE : CSF_FOR;
 
@@ -1279,7 +1281,7 @@ ex_while(exarg_T *eap)
 	}
 	else
 	{
-	    void	*fi;
+	    forinfo_T	*fi;
 	    evalarg_T	evalarg;
 
 	    /*
@@ -1313,9 +1315,18 @@ ex_while(exarg_T *eap)
 		result = next_for_item(fi, eap->arg);
 	    else
 		result = FALSE;
+	    if (fi != NULL)
+		// OR all the cs_flags together, if a function was defined in
+		// any round then the loop variable may have been used.
+		fi->fi_cs_flags |= prev_cs_flags;
 
 	    if (!result)
 	    {
+		// If a function was defined in any round then set the
+		// CSF_FUNC_DEF flag now, so that it's seen by leave_block().
+		if (fi != NULL && (fi->fi_cs_flags & CSF_FUNC_DEF))
+		    cstack->cs_flags[cstack->cs_idx] |= CSF_FUNC_DEF;
+
 		free_for_info(fi);
 		cstack->cs_forinfo[cstack->cs_idx] = NULL;
 	    }

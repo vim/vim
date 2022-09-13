@@ -29,22 +29,6 @@
  */
 static int current_copyID = 0;
 
-/*
- * Info used by a ":for" loop.
- */
-typedef struct
-{
-    int		fi_semicolon;	// TRUE if ending in '; var]'
-    int		fi_varcount;	// nr of variables in the list
-    int		fi_break_count;	// nr of line breaks encountered
-    listwatch_T	fi_lw;		// keep an eye on the item used.
-    list_T	*fi_list;	// list being used
-    int		fi_bi;		// index of blob
-    blob_T	*fi_blob;	// blob being used
-    char_u	*fi_string;	// copy of string being used
-    int		fi_byte_idx;	// byte index in fi_string
-} forinfo_T;
-
 static int eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
@@ -1914,7 +1898,8 @@ next_for_item(void *fi_void, char_u *arg)
 			 ? (ASSIGN_FINAL
 			     // first round: error if variable exists
 			     | (fi->fi_bi == 0 ? 0 : ASSIGN_DECL)
-			     | ASSIGN_NO_MEMBER_TYPE)
+			     | ASSIGN_NO_MEMBER_TYPE
+			     | ASSIGN_UPDATE_BLOCK_ID)
 			 : 0);
     listitem_T	*item;
     int		skip_assign = in_vim9script() && arg[0] == '_'

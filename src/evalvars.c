@@ -3851,6 +3851,14 @@ set_var_const(
 	}
 
 	clear_tv(&di->di_tv);
+
+	if ((flags & ASSIGN_UPDATE_BLOCK_ID)
+				       && SCRIPT_ID_VALID(current_sctx.sc_sid))
+	{
+	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+	    update_script_var_block_id(name, si->sn_current_block_id);
+	}
     }
     else
     {

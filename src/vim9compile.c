@@ -183,6 +183,9 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 
     if (cctx == NULL)
     {
+	if (cstack == NULL)
+	    return NULL;
+
 	// Not in a function scope, find variable with block ID equal to or
 	// smaller than the current block id.  Use "cstack" to go up the block
 	// scopes.
@@ -217,6 +220,23 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 
     // Not found, variable was not visible.
     return NULL;
+}
+
+/*
+ * If "name" can be found in the current script set it's "block_id".
+ */
+    void
+update_script_var_block_id(char_u *name, int block_id)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    hashitem_T	    *hi;
+    sallvar_T	    *sav;
+
+    hi = hash_find(&si->sn_all_vars.dv_hashtab, name);
+    if (HASHITEM_EMPTY(hi))
+	return;
+    sav = HI2SAV(hi);
+    sav->sav_block_id = block_id;
 }
 
 /*
