@@ -363,3 +363,12 @@ var nested_heredoc =<< trim END
 END
 ENDD
 " END_INDENT
+
+" START_INDENT
+var keys = {
+J: 'j',
+"\<Home>": '1G',
+"\<End>": 'G',
+z: 'zz'
+}
+" END_INDENT

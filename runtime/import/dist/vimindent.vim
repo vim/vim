@@ -37,7 +37,16 @@ const COMMENT: string = '^\s*\%(#\|"\\\=\s\)'
 
 # DICT_KEY_OR_FUNC_PARAM {{{2
 
-const DICT_KEY_OR_FUNC_PARAM: string = '^\s*\%(\%(\w\|-\)\+\|\[[^]]\+\]\):\%(\s\|$\)'
+const DICT_KEY_OR_FUNC_PARAM: string = '^\s*\%('
+  .. '\%(\w\|-\)\+'
+  .. '\|'
+  .. '"[^"]*"'
+  .. '\|'
+  .. "'[^']*'"
+  .. '\|'
+  .. '\[[^]]\+\]'
+  .. '\)'
+  .. ':\%(\s\|$\)'
 
 # START_MIDDLE_END {{{2
 
@@ -184,7 +193,7 @@ export def Expr(lnum: number): number # {{{2
   if line_A.text =~ ASSIGNS_HEREDOC && !exists('b:vimindent_heredoc')
     b:vimindent_heredoc = {
       startlnum: lnum,
-      startindent: indent(lnum),
+      startindent: Indent(lnum),
       endmarker: line_A.text->matchstr(ASSIGNS_HEREDOC),
       trim: line_A.text =~ '.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*$',
     }
@@ -214,7 +223,7 @@ export def Expr(lnum: number): number # {{{2
   line_B = PrevCodeLine(lnum)
 
   if line_B.text =~ CURLY_BLOCK
-    return indent(line_B.lnum) + shiftwidth()
+    return Indent(line_B.lnum) + shiftwidth()
 
   elseif line_A.text =~ STARTS_WITH_CLOSING_BRACKET
     var open_bracket: number = MatchingOpenBracket(line_A)
@@ -222,16 +231,16 @@ export def Expr(lnum: number): number # {{{2
       return -1
     endif
     if getline(open_bracket) =~ STARTS_BLOCK
-      return indent(open_bracket) + 2 * shiftwidth()
+      return Indent(open_bracket) + 2 * shiftwidth()
     else
-      return indent(open_bracket)
+      return Indent(open_bracket)
     endif
 
   elseif line_A.text =~ STARTS_WITH_BACKSLASH
     if line_B.text =~ STARTS_WITH_BACKSLASH
-      return indent(line_B.lnum)
+      return Indent(line_B.lnum)
     else
-      return indent(line_B.lnum) + get(g:, 'vim_indent_cont', shiftwidth() * 3)
+      return Indent(line_B.lnum) + get(g:, 'vim_indent_cont', shiftwidth() * 3)
     endif
 
   elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
@@ -239,7 +248,7 @@ export def Expr(lnum: number): number # {{{2
     var start: number = FindStart('(', '', ')')
     # function param
     if start > 0 && getline(start) =~ STARTS_FUNCTION
-      return indent(start) + 2 * shiftwidth()
+      return Indent(start) + 2 * shiftwidth()
     # dictionary key
     else
       start = FindStart('{', '', '}')
@@ -253,7 +262,7 @@ export def Expr(lnum: number): number # {{{2
         # value relative to the key.
         offset = 2 * shiftwidth()
       endif
-      return indent(start) + offset
+      return Indent(start) + offset
     endif
 
   elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
@@ -265,7 +274,7 @@ export def Expr(lnum: number): number # {{{2
     var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
     var block_start = FindStart(start, middle, end)
     if block_start > 0
-      return indent(block_start)
+      return Indent(block_start)
     else
       return -1
     endif
@@ -276,7 +285,7 @@ export def Expr(lnum: number): number # {{{2
     line_A.isfirst = true
     var [cmd: string, n: number] = line_B->FirstLinePreviousCommand()
     line_B = {text: cmd, lnum: n}
-    base_ind = indent(n)
+    base_ind = Indent(n)
 
     if line_B->EndsWithCurlyBlock()
         && !line_A->IsInThisBlock(line_B.lnum)
@@ -285,7 +294,7 @@ export def Expr(lnum: number): number # {{{2
 
   else
     line_A.isfirst = false
-    base_ind = indent(line_B.lnum)
+    base_ind = Indent(line_B.lnum)
 
     var line_C: dict<any> = PrevCodeLine(line_B.lnum)
     if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
@@ -370,7 +379,7 @@ def HereDocIndent(line: string): number # {{{2
   var offset: number
   if !b:vimindent_heredoc->has_key('offset')
     var old_startindent: number = b:vimindent_heredoc.startindent
-    var new_startindent: number = indent(b:vimindent_heredoc.startlnum)
+    var new_startindent: number = Indent(b:vimindent_heredoc.startlnum)
     offset = new_startindent - old_startindent
 
     # If all the non-empty lines in  the body have a higher indentation relative
@@ -381,7 +390,7 @@ def HereDocIndent(line: string): number # {{{2
     # the code.
     var end: number = search($'^\s*{b:vimindent_heredoc.endmarker}$', 'nW')
     var should_indent_more: bool = range(v:lnum, end - 1)
-      ->indexof((_, lnum: number): bool => indent(lnum) <= old_startindent && getline(lnum) != '') >= 0
+      ->indexof((_, lnum: number): bool => Indent(lnum) <= old_startindent && getline(lnum) != '') >= 0
     if should_indent_more
       offset += shiftwidth()
     endif
@@ -390,7 +399,7 @@ def HereDocIndent(line: string): number # {{{2
     b:vimindent_heredoc.startindent = new_startindent
   endif
 
-  return [0, indent(v:lnum) + b:vimindent_heredoc.offset]->max()
+  return [0, Indent(v:lnum) + b:vimindent_heredoc.offset]->max()
 enddef
 
 def CommentIndent(): number # {{{2
@@ -398,7 +407,7 @@ def CommentIndent(): number # {{{2
   line_B.lnum = prevnonblank(v:lnum - 1)
   line_B.text = getline(line_B.lnum)
   if line_B.text =~ COMMENT
-    return indent(line_B.lnum)
+    return Indent(line_B.lnum)
   endif
 
   var next: number = NextCodeLine()
@@ -419,6 +428,13 @@ def CommentIndent(): number # {{{2
 enddef
 # }}}1
 # Util {{{1
+def Indent(lnum: number): number # {{{2
+  if lnum <= 0
+    return 0
+  endif
+  return indent(lnum)
+enddef
+
 def PrevCodeLine(lnum: number): dict<any> # {{{2
   var n: number = prevnonblank(lnum - 1)
   var line: string = getline(n)
@@ -456,14 +472,22 @@ def FindStart( # {{{2
     end: string,
     ): number
 
-  return searchpair(start->escape('[]'), middle, end->escape('[]'),
-    'bnW', (): bool => InCommentOrString(), 0, TIMEOUT)
+  return Find(start, middle, end, 'bnW')
 enddef
 
 def FindEnd( # {{{2
     start: string,
     middle: string,
     end: string,
+    ): number
+  return Find(start, middle, end, 'nW')
+enddef
+
+def Find( # {{{2
+    start: string,
+    middle: string,
+    end: string,
+    flags: string,
     ): number
 
   var s: string = start
@@ -474,7 +498,7 @@ def FindEnd( # {{{2
   if end == '[' || end == ']'
     e = e->escape('[]')
   endif
-  return searchpair(s, middle, e, 'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
+  return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), 0, TIMEOUT)
 enddef
 
 def GetBlockStartKeyword(line: string): string # {{{2
