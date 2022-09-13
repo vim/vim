@@ -156,10 +156,6 @@ const ENDS_BLOCK: string = '^\s*\%('
   .. '\|' .. '[]})]'
   .. '\)\s*\%(|\|$\)'
 
-# CURLY_BLOCK_IN_LAMBDA {{{2
-
-const CURLY_BLOCK_IN_LAMBDA: string = '\s=>\s\+{\s*$'
-
 # CLOSING_BRACKET {{{2
 
 const CLOSING_BRACKET: string = '[]})]'
@@ -176,9 +172,6 @@ const STARTS_FUNCTION: string = '^\s*def\>'
 
 const OPENING_BRACKET_AT_END: string = '[[{(]\s*$'
 
-# IS_SINGLE_OPEN_BRACKET {{{2
-
-const IS_SINGLE_OPEN_BRACKET: string = '^\s*[[{(]\s*$'
 # }}}1
 # Interface {{{1
 export def Expr(lnum: number): number # {{{2
@@ -220,7 +213,7 @@ export def Expr(lnum: number): number # {{{2
 
   line_B = PrevCodeLine(lnum)
 
-  if line_B.text =~ IS_SINGLE_OPEN_BRACKET
+  if line_B.text =~ CURLY_BLOCK
     return indent(line_B.lnum) + shiftwidth()
 
   elseif line_A.text =~ STARTS_WITH_CLOSING_BRACKET
@@ -284,6 +277,13 @@ export def Expr(lnum: number): number # {{{2
     var [cmd: string, n: number] = line_B->FirstLinePreviousCommand()
     line_B = {text: cmd, lnum: n}
     base_ind = indent(n)
+
+    if line_B->EndsWithCurlyBlock()
+      cursor(line_B.lnum, col([line_B.lnum, '$']))
+      if FindEnd('{', '', '}') < line_A.lnum
+        return base_ind
+      endif
+    endif
 
   else
     line_A.isfirst = false
@@ -462,6 +462,16 @@ def FindStart( # {{{2
     'bnW', (): bool => InCommentOrString(), 0, TIMEOUT)
 enddef
 
+def FindEnd( # {{{2
+    start: string,
+    middle: string,
+    end: string,
+    ): number
+
+  return searchpair(start->escape('[]'), middle, end->escape('[]'),
+    'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
+enddef
+
 def GetBlockStartKeyword(line: string): string # {{{2
   var kwd: string = line->matchstr('\l\+')
   # Need to call `fullcommand()` from legacy context:
@@ -491,13 +501,10 @@ def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{2
       # A commented line can't be the first line of a command.
       # Skip it.
 
-    elseif line_B.text =~ CURLY_BLOCK_IN_LAMBDA
-      break
-
     elseif line_B.text =~ STARTS_WITH_CLOSING_BRACKET
       var n: number = MatchingOpenBracket(line_B)
 
-      if n <= 0 || line_B.text =~ '^\s*}' && IsBlock(n)
+      if n <= 0
         break
       endif
 
@@ -527,8 +534,7 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
   endif
 
   var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
-  var block_end: number = searchpair(start, middle, end,
-    'nW', (): bool => InCommentOrString(), 0, TIMEOUT)
+  var block_end: number = FindEnd(start, middle, end)
 
   return block_end <= 0
 enddef
