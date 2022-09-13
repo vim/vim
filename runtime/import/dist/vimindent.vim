@@ -485,8 +485,9 @@ def FindEnd( # {{{2
     start: string,
     middle: string,
     end: string,
+    stopline = 0,
     ): number
-  return Find(start, middle, end, 'nW')
+  return Find(start, middle, end, 'nW', stopline)
 enddef
 
 def Find( # {{{2
@@ -494,6 +495,7 @@ def Find( # {{{2
     middle: string,
     end: string,
     flags: string,
+    stopline = 0,
     ): number
 
   var s: string = start
@@ -504,7 +506,7 @@ def Find( # {{{2
   if end == '[' || end == ']'
     e = e->escape('[]')
   endif
-  return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), 0, TIMEOUT)
+  return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
 enddef
 
 def GetBlockStartKeyword(line: string): string # {{{2
@@ -564,9 +566,12 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
   endif
 
   var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
-  var block_end: number = FindEnd(start, middle, end)
+  var pos: list<number> = getcurpos()
+  cursor(line_B.lnum, 1)
+  var block_end: number = FindEnd(start, middle, end, line_B.lnum)
+  setpos('.', pos)
 
-  return block_end <= 0
+  return block_end > 0
 enddef
 
 def EndsWithLineContinuation(line: dict<any>): bool # {{{2

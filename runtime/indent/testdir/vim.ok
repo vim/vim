@@ -387,3 +387,9 @@ if true
 else  " comment
 endif
 " END_INDENT
+
+" START_INDENT
+if true | echo 'one' | endif
+if true | echo 'two' | endif
+if true | echo 'three' | endif
+" END_INDENT
