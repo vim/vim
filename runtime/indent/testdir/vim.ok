@@ -381,3 +381,9 @@ var heredoc =<< trim ENDD
     END
 ENDD
 " END_INDENT
+
+" START_INDENT
+if true
+else  " comment
+endif
+" END_INDENT

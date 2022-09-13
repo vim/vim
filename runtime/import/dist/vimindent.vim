@@ -24,6 +24,10 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
   .. '\|' .. '\s\%([-+*/%]\|\.\.\)\==\%(\s\|$\)\@='
   # support `:` when used inside conditional operator `?:`
   .. '\|' .. '\%(\s\|^\):\%(\s\|$\)'
+
+# INLINE_COMMENT {{{2
+
+const INLINE_COMMENT: string = '\%(#\|"\\\=\s\).*$'
 # }}}2
 
 # COMMENT {{{2
@@ -33,7 +37,7 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
 # To be sure, we should also inspect the syntax.
 # But in practice, `"\s` at the start of a line is unlikely to be anything other
 # than a legacy comment.
-const COMMENT: string = '^\s*\%(#\|"\\\=\s\)'
+const COMMENT: string = $'^\s*{INLINE_COMMENT}'
 
 # DICT_KEY_OR_FUNC_PARAM {{{2
 
@@ -151,8 +155,8 @@ END
 
 # delimiter around `:catch` pattern (typically a slash)
 var delimiter: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
-const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. '\)\s*\%(|\|$\)'
-  .. $'\|^\s*cat\%[ch]\%(\s\+\({delimiter}\).*\1\)\=\s*\%(|\|$\)'
+const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\)\s*\%(|\|$\|{INLINE_COMMENT}\)'
+  .. $'\|^\s*cat\%[ch]\%(\s\+\({delimiter}\).*\1\)\=\s*\%(|\|$\|{INLINE_COMMENT}\)'
   .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
 
 # ENDS_BLOCK {{{2
@@ -166,7 +170,7 @@ const ENDS_BLOCK: string = '^\s*\%('
   .. '\|' .. 'endfu\%[nction]'
   .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
   .. '\|' .. '[]})]'
-  .. '\)\s*\%(|\|$\)'
+  .. $'\)\s*\%(|\|$\|{INLINE_COMMENT}\)'
 
 # CLOSING_BRACKET {{{2
 
