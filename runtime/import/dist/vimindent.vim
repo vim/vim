@@ -558,8 +558,6 @@ enddef
 def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
   # We know that `line_B` opens a block.
   # Let's see if it also closes that block.
-  # It does if  we can't find the block  end after where we are  (which is right
-  # below `line_B`).
   var kwd: string = GetBlockStartKeyword(line_B.text)
   if !START_MIDDLE_END->has_key(kwd)
     return false
