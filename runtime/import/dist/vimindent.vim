@@ -156,6 +156,10 @@ const ENDS_BLOCK: string = '^\s*\%('
   .. '\|' .. '[]})]'
   .. '\)\s*\%(|\|$\)'
 
+# CURLY_BLOCK_IN_LAMBDA {{{2
+
+const CURLY_BLOCK_IN_LAMBDA: string = '\s=>\s\+{\s*$'
+
 # CLOSING_BRACKET {{{2
 
 const CLOSING_BRACKET: string = '[]})]'
@@ -163,6 +167,10 @@ const CLOSING_BRACKET: string = '[]})]'
 # STARTS_WITH_CLOSING_BRACKET {{{2
 
 const STARTS_WITH_CLOSING_BRACKET: string = '^\s*[]})]'
+
+# STARTS_FUNCTION {{{2
+
+const STARTS_FUNCTION: string = '^\s*def\>'
 
 # OPENING_BRACKET_AT_END {{{2
 
@@ -237,15 +245,19 @@ export def Expr(lnum: number): number # {{{2
       || line_B.text =~ DICT_KEY_OR_FUNC_PARAM
     var start: number = FindStart('(', '', ')')
     # function param
-    if start > 0 && getline(start) =~ '^\s*def\>'
+    if start > 0 && getline(start) =~ STARTS_FUNCTION
       return indent(start) + 2 * shiftwidth()
     # dictionary key
     else
       start = FindStart('{', '', '}')
       var offset: number
       if line_A.text =~ DICT_KEY_OR_FUNC_PARAM
+        # indent a dictionary key at the start of a line
         offset = shiftwidth()
       else
+        # Indent a dictionary value at the start of a line twice.
+        # Once for  the key relative  to the  dictionary start, another  for the
+        # value relative to the key.
         offset = 2 * shiftwidth()
       endif
       return indent(start) + offset
@@ -469,8 +481,8 @@ def MatchingOpenBracket(line: dict<any>): number # {{{2
   return FindStart(start, '', end)
 enddef
 
-def FirstLinePreviousCommand(line_A: dict<any>): list<any> # {{{2
-  var line_B: dict<any> = line_A
+def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{2
+  var line_B: dict<any> = line
 
   while line_B.lnum > 1
     var line_above: string = getline(line_B.lnum - 1)
@@ -478,6 +490,9 @@ def FirstLinePreviousCommand(line_A: dict<any>): list<any> # {{{2
     if line_B.text =~ COMMENT
       # A commented line can't be the first line of a command.
       # Skip it.
+
+    elseif line_B.text =~ CURLY_BLOCK_IN_LAMBDA
+      break
 
     elseif line_B.text =~ STARTS_WITH_CLOSING_BRACKET
       var n: number = MatchingOpenBracket(line_B)

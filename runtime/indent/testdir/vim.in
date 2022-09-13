@@ -334,3 +334,10 @@ key:
 'value',
 }
 " END_INDENT
+
+" START_INDENT
+var id = time
+->timer_start((_) => {
+n = 0
+})
+" END_INDENT
