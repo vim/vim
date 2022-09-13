@@ -135,9 +135,14 @@ do_debug(char_u *cmd)
 	    ignore_script = TRUE;
 	}
 
+	// don't debug any function call, e.g. from an expresion mapping
+	n = debug_break_level;
+	debug_break_level = -1;
+
 	vim_free(cmdline);
 	cmdline = getcmdline_prompt('>', NULL, 0, EXPAND_NOTHING, NULL);
 
+	debug_break_level = n;
 	if (typeahead_saved)
 	{
 	    restore_typeahead(&typeaheadbuf, TRUE);
