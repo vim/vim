@@ -279,10 +279,8 @@ export def Expr(lnum: number): number # {{{2
     base_ind = indent(n)
 
     if line_B->EndsWithCurlyBlock()
-      cursor(line_B.lnum, col([line_B.lnum, '$']))
-      if FindEnd('{', '', '}') < line_A.lnum
-        return base_ind
-      endif
+        && line_A->ButThisLineIsNotInThisBlock(line_B.lnum)
+      return base_ind
     endif
 
   else
@@ -564,6 +562,15 @@ def NonCommentedMatchAtEnd(line: dict<any>, pat: string): bool # {{{2
   var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
   setpos('.', pos)
   return match_lnum > 0
+enddef
+
+def ButThisLineIsNotInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
+  var pos: list<number> = getcurpos()
+  cursor(lnum, [lnum, '$']->col())
+  var end: number = FindEnd('{', '', '}')
+  setpos('.', pos)
+
+  return end < line_A.lnum
 enddef
 
 def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
