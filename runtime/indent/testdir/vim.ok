@@ -403,6 +403,11 @@ endif
 " END_INDENT
 
 " START_INDENT
+substitute/pat /rep /
+echo
+" END_INDENT
+
+" START_INDENT
 try
     echo 1
 catch /pat /  # comment

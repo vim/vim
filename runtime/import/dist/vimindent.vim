@@ -598,7 +598,17 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
   #                    that's not an arithmetic operator
   #                    v
   #     catch /pattern /
-  if line.text =~ $'\<catch\s\+\({PATTERN_DELIMITER}\)[^\1]*\1\s*\%($\|{INLINE_COMMENT}\)'
+  #
+  # TODO: We might still miss some corner cases:{{{
+  #
+  #                          conflated with arithmetic division
+  #                          v
+  #     substitute/pat / rep /
+  #         echo
+  #     ^--^
+  #      ✘
+  #}}}
+  if line.text =~ $'\s\+\({PATTERN_DELIMITER}\)\S\@=[^\1]*\1\s*\%($\|{INLINE_COMMENT}\)'
     return false
   endif
 
