@@ -28,6 +28,11 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
 # INLINE_COMMENT {{{2
 
 const INLINE_COMMENT: string = '\%(#\|"\\\=\s\).*$'
+
+# PATTERN_DELIMITER {{{2
+
+# pattern delimiter (typically a slash)
+const PATTERN_DELIMITER: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
 # }}}2
 
 # COMMENT {{{2
@@ -157,10 +162,8 @@ cmds =<< trim END
   aug\%[roup]\s\+[eE][nN][dD]
 END
 
-# delimiter around `:catch` pattern (typically a slash)
-var delimiter: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
 const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\)\s*\%(|\|$\|{INLINE_COMMENT}\)'
-  .. $'\|^\s*cat\%[ch]\%(\s\+\({delimiter}\).*\1\)\=\s*\%(|\|$\|{INLINE_COMMENT}\)'
+  .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\=\s*\%(|\|$\|{INLINE_COMMENT}\)'
   .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
 
 # ENDS_BLOCK {{{2
@@ -595,7 +598,7 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
   #                    that's not an arithmetic operator
   #                    v
   #     catch /pattern /
-  if line.text =~ $'\<catch\s\+\({delimiter}\)[^\1]*\1\s*$'
+  if line.text =~ $'\<catch\s\+\({PATTERN_DELIMITER}\)[^\1]*\1\s*$'
     return false
   endif
 
