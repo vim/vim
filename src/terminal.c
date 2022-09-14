@@ -1389,11 +1389,11 @@ update_cursor(term_T *term, int redraw)
  * Find the location of a scrollbackline in the buffer
  */
     void
-scrollbackline_pos_in_buf(term_T *term, int row, linenr_T *lnum, int *start_col, int *start_pos)
+scrollbackline_pos_in_buf(term_T *term, int row, linenr_T *lnum, int *start_col, size_t *start_pos)
 {
     sb_line_T	*lines = (sb_line_T *)term->tl_scrollback.ga_data;
     linenr_T    calc_lnum = term->tl_buffer_scrolled;
-    int         calc_pos = 0;
+    size_t      calc_pos = 0;
     int         calc_col = 0;
     int         i;
 
@@ -6469,7 +6469,7 @@ f_term_getline(typval_T *argvars, typval_T *rettv)
     if (term->tl_vterm == NULL)
     {
 	linenr_T  lnum = 0;
-	int	  offset = 0;
+	size_t	  offset = 0;
 	sb_line_T *line = (sb_line_T *)term->tl_scrollback.ga_data + term->tl_scrollback_scrolled + row;
 
 	scrollbackline_pos_in_buf(term, row + term->tl_scrollback_scrolled, &lnum, NULL, &offset);
@@ -6735,7 +6735,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
     {
 	int	  sb_row = term->tl_scrollback_scrolled + pos.row;
 	linenr_T  lnum = 0;
-	int	  offset = 0;
+	size_t	  offset = 0;
 
 	scrollbackline_pos_in_buf(term, sb_row, &lnum, NULL, &offset);
 
