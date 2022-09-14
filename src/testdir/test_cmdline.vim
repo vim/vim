@@ -2149,7 +2149,7 @@ func Test_wildmenu_pum()
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_13', {})
 
   " Directory name completion
-  call mkdir('Xnamedir/XdirA/XdirB', 'p')
+  call mkdir('Xnamedir/XdirA/XdirB', 'pR')
   call writefile([], 'Xnamedir/XfileA')
   call writefile([], 'Xnamedir/XdirA/XfileB')
   call writefile([], 'Xnamedir/XdirA/XdirB/XfileC')
