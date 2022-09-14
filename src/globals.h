@@ -755,6 +755,9 @@ EXTERN int	popup_visible INIT(= FALSE);
 EXTERN int	popup_uses_mouse_move INIT(= FALSE);
 
 EXTERN int	text_prop_frozen INIT(= 0);
+
+// when TRUE computing the cursor position ignores text properties.
+EXTERN int	ignore_text_props INIT(= FALSE);
 #endif
 
 // When set the popup menu will redraw soon using the pum_win_ values. Do not

@@ -954,7 +954,7 @@ init_chartabsize_arg(
     cts->cts_line = line;
     cts->cts_ptr = ptr;
 #ifdef FEAT_PROP_POPUP
-    if (lnum > 0)
+    if (lnum > 0 && !ignore_text_props)
     {
 	char_u	*prop_start;
 	int	count;
