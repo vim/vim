@@ -414,3 +414,9 @@ catch /pat /  # comment
 echo 2
 endtry
 " END_INDENT
+
+" START_INDENT
+def Func()
+Cmd %
+enddef
+" END_INDENT
