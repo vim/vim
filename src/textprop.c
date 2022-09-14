@@ -2232,13 +2232,15 @@ adjust_prop_columns(
  * "lnum_top" is the top line.
  * "kept" is the number of bytes kept in the first line, while
  * "deleted" is the number of bytes deleted.
+ * "at_eol" is true if the split is after the end of the line.
  */
     void
 adjust_props_for_split(
-	linenr_T lnum_props,
-	linenr_T lnum_top,
-	int kept,
-	int deleted)
+	linenr_T    lnum_props,
+	linenr_T    lnum_top,
+	int	    kept,
+	int	    deleted,
+	int	    at_eol)
 {
     char_u	*props;
     int		count;
@@ -2276,9 +2278,16 @@ adjust_props_for_split(
 	// a text prop "above" behaves like it is on the first text column
 	prop_col = (prop.tp_flags & TP_FLAG_ALIGN_ABOVE) ? 1 : prop.tp_col;
 
-	cont_prev = prop_col != MAXCOL && prop_col + !start_incl <= kept;
-	cont_next = prop_col != MAXCOL
-			      && skipped <= prop_col + prop.tp_len - !end_incl;
+	if (prop_col == MAXCOL)
+	{
+	    cont_prev = at_eol;
+	    cont_next = !at_eol;
+	}
+	else
+	{
+	    cont_prev = prop_col + !start_incl <= kept;
+	    cont_next = skipped <= prop_col + prop.tp_len - !end_incl;
+	}
 	// when a prop has text it is never copied
 	if (prop.tp_id < 0 && cont_next)
 	    cont_prev = FALSE;
@@ -2297,7 +2306,7 @@ adjust_props_for_split(
 
 	// Only add the property to the next line if the length is bigger than
 	// zero.
-	if ((cont_next || prop_col == MAXCOL) && ga_grow(&nextprop, 1) == OK)
+	if (cont_next && ga_grow(&nextprop, 1) == OK)
 	{
 	    textprop_T *p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
 

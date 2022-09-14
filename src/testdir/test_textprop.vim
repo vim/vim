@@ -2908,6 +2908,29 @@ func Test_prop_above_with_indent()
   call prop_type_delete('indented')
 endfunc
 
+func Test_prop_below_split_line()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one one one', 'two two two', 'three three three'])
+      prop_type_add('test', {highlight: 'ModeMsg'})
+      prop_add(2, 0, {
+          text:  '└─ Virtual text below the 2nd line',
+          type: 'test',
+          text_align: 'below',
+          text_padding_left: 3
+      })
+  END
+  call writefile(lines, 'XscriptPropBelowSpitLine', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropBelowSpitLine', #{rows: 8})
+  call term_sendkeys(buf, "2GA\<CR>xx")
+  call VerifyScreenDump(buf, 'Test_prop_below_split_line_1', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_props_with_text_override()
   CheckRunVimInTerminal
 
@@ -2920,7 +2943,7 @@ func Test_props_with_text_override()
       hi CursorLine cterm=underline ctermbg=lightgrey
       set cursorline
   END
-  call writefile(lines, 'XscriptPropsOverride')
+  call writefile(lines, 'XscriptPropsOverride', 'D')
   let buf = RunVimInTerminal('-S XscriptPropsOverride', #{rows: 6, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_override_1', {})
 
@@ -2929,7 +2952,6 @@ func Test_props_with_text_override()
   call VerifyScreenDump(buf, 'Test_prop_with_text_override_2', {})
 
   call StopVimInTerminal(buf)
-  call delete('XscriptPropsOverride')
 endfunc
 
 func Test_props_with_text_CursorMoved()
