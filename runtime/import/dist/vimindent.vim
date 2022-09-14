@@ -592,6 +592,13 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     return false
   endif
 
+  #                    that's not an arithmetic operator
+  #                    v
+  #     catch /pattern /
+  if line.text =~ $'catch\s\+\({delimiter}\)[^\1]*\1\s*$'
+    return false
+  endif
+
   return NonCommentedMatchAtEnd(line, LINE_CONTINUATION_AT_END)
 enddef
 
