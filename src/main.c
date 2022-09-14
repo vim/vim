@@ -375,6 +375,7 @@ main
      * Set the default values for the options that use Rows and Columns.
      */
     ui_get_shellsize();		// inits Rows and Columns
+    win_init_size();
 #ifdef FEAT_DIFF
     // Set the 'diff' option now, so that it can be checked for in a .vimrc
     // file.  There is no buffer yet though.
@@ -539,9 +540,9 @@ vim_main2(void)
 	// don't have them.
 	if (!gui.in_use && params.evim_mode)
 	    mch_exit(1);
+	firstwin->w_prev_height = firstwin->w_height; // may have changed
     }
 #endif
-    win_init_size();
 
 #ifdef FEAT_VIMINFO
     /*
