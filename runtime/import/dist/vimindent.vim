@@ -612,6 +612,23 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     return false
   endif
 
+  # `%` at the end of a line is tricky.
+  # It might be the modulo operator or the current file (e.g. `edit %`).
+  # Let's assume it's the latter.
+  if line.text =~ $'%\s*\%($\|{INLINE_COMMENT}\)'
+    return false
+  endif
+
+  if line.text =~ $'|\s*[nvxso]unmap\s\+\%(<buffer>\s\+\)\='
+    return false
+  endif
+
+  # TODO:
+  #     nunmap <buffer> (
+  #         nunmap <buffer> )
+  #     ^--^
+  #      ✘
+
   return NonCommentedMatchAtEnd(line, LINE_CONTINUATION_AT_END)
 enddef
 
