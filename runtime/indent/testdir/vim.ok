@@ -405,7 +405,7 @@ endif
 " START_INDENT
 try
     echo 1
-catch /pat /
+catch /pat /  # comment
     echo 2
 endtry
 " END_INDENT
