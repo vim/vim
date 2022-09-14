@@ -6408,7 +6408,8 @@ win_fix_cursor(int normal)
     long     so = get_scrolloff_value();
     linenr_T nlnum = 0;
 
-    if (wp->w_buffer->b_ml.ml_line_count < wp->w_height)
+    if (wp->w_buffer->b_ml.ml_line_count < wp->w_height
+	    || skip_win_fix_cursor)
 	return;
 
     so = MIN(wp->w_height / 2, so);
