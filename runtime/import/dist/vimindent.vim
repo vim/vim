@@ -625,18 +625,18 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
   #     ^--^
   #      ✘
 
-  return NonCommentedMatchAtEnd(line, LINE_CONTINUATION_AT_END)
+  return NonCommentedMatch(line, LINE_CONTINUATION_AT_END)
 enddef
 
 def EndsWithCurlyBlock(line: dict<any>): bool # {{{2
-  return NonCommentedMatchAtEnd(line, CURLY_BLOCK)
+  return NonCommentedMatch(line, CURLY_BLOCK)
 enddef
 
 def EndsWithOpeningBracket(line: dict<any>): bool # {{{2
-  return NonCommentedMatchAtEnd(line, OPENING_BRACKET_AT_END)
+  return NonCommentedMatch(line, OPENING_BRACKET_AT_END)
 enddef
 
-def NonCommentedMatchAtEnd(line: dict<any>, pat: string): bool # {{{2
+def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
   var pos: list<number> = getcurpos()
   cursor(line.lnum, 1)
   var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
