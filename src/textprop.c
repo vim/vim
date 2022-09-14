@@ -2289,7 +2289,7 @@ adjust_props_for_split(
 
 	    *p = prop;
 	    ++prevprop.ga_len;
-	    if (p->tp_col + p->tp_len >= kept)
+	    if (p->tp_col != MAXCOL && p->tp_col + p->tp_len >= kept)
 		p->tp_len = kept - p->tp_col;
 	    if (cont_next)
 		p->tp_flags |= TP_FLAG_CONT_NEXT;
