@@ -577,11 +577,21 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
 enddef
 
 def EndsWithLineContinuation(line: dict<any>): bool # {{{2
-  # Don't conflate the visual mark `<` with a comparison operator.
-  # Same pitfall with the change mark `[` and the start of a list.
-  if line.text =~ 'mark\s\+[[<]\s*$'
+  # Technically, that's wrong.  A  line might start with a range  and end with a
+  # line continuation symbol.  But it's unlikely.  And it's useful to assume the
+  # opposite because it  prevents us from conflating a mark  with an operator or
+  # the start of a list:
+  #
+  #              not a comparison operator
+  #              v
+  #     :'< mark <
+  #     :'< mark [
+  #              ^
+  #              not the start of a list
+  if line.text =~ STARTS_WITH_RANGE
     return false
   endif
+
   return NonCommentedMatchAtEnd(line, LINE_CONTINUATION_AT_END)
 enddef
 
@@ -618,8 +628,8 @@ def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
   var line_A_is_good: bool = line_A !~ COMMENT
     && line_A !~ DICT_KEY_OR_FUNC_PARAM
     && line_A !~ STARTS_WITH_LINE_CONTINUATION
-  var line_B_is_good: bool = (line_B.text !~ DICT_KEY_OR_FUNC_PARAM
-    && !line_B->EndsWithLineContinuation())
+  var line_B_is_good: bool = line_B.text !~ DICT_KEY_OR_FUNC_PARAM
+    && !line_B->EndsWithLineContinuation()
 
   return line_A_is_good && line_B_is_good
 enddef
