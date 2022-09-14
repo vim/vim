@@ -4405,6 +4405,7 @@ open_cmdwin(void)
     int			save_restart_edit = restart_edit;
     int			save_State = State;
     int			save_exmode = exmode_active;
+    int			save_p_spsc;
 #ifdef FEAT_RIGHTLEFT
     int			save_cmdmsg_rl = cmdmsg_rl;
 #endif
@@ -4643,7 +4644,11 @@ open_cmdwin(void)
 	// First go back to the original window.
 	wp = curwin;
 	set_bufref(&bufref, curbuf);
+
+	save_p_spsc = p_spsc;
+	p_spsc = 1;
 	win_goto(old_curwin);
+	p_spsc = save_p_spsc;
 
 	// win_goto() may trigger an autocommand that already closes the
 	// cmdline window.

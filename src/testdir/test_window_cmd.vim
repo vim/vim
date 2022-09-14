@@ -1734,9 +1734,13 @@ func Test_splitscroll_with_splits()
               above copen | wincmd j
               call assert_equal(win_screenpos(0)[0] - tabline, line("w0"))
 
-              " No scroll when opening cmdwin
-              only | norm ggLq:
+              " No scroll when opening cmdwin, and no cursor move when closing
+              " cmdwin.
+              only | norm ggL
+              let curpos = getcurpos()
+              norm q:
               call assert_equal(1, line("w0"))
+              call assert_equal(curpos, getcurpos())
 
               " Scroll when cursor becomes invalid in insert mode
               norm Lic
