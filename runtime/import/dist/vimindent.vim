@@ -619,10 +619,6 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     return false
   endif
 
-  if line.text =~ $'|\s*[nvxso]unmap\s\+\%(<buffer>\s\+\)\='
-    return false
-  endif
-
   # TODO:
   #     nunmap <buffer> (
   #         nunmap <buffer> )
