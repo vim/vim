@@ -1530,6 +1530,13 @@ def Test_fullcommand()
   assert_equal('scriptnames', fullcommand('scr'))
   assert_equal('', fullcommand('scg'))
   fullcommand('')->assert_equal('')
+
+  assert_equal('', fullcommand('en'))
+  legacy call assert_equal('endif', fullcommand('en'))
+  assert_equal('endif', fullcommand('en', 0))
+  legacy call assert_equal('endif', fullcommand('en', 0))
+  assert_equal('', fullcommand('en', 1))
+  legacy call assert_equal('', fullcommand('en', 1))
 enddef
 
 def Test_funcref()
