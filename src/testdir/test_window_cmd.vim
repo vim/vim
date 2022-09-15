@@ -1770,4 +1770,30 @@ func Test_splitscroll_with_splits()
   set splitscroll&
 endfunc
 
+function Test_nosplitscroll_cmdwin_cursor_position()
+  set nosplitscroll
+  call setline(1, range(&lines))
+
+  " No scroll when cursor is at near bottom of window and cusor position
+  " recompution (done by line('w0') in this test) happens while in cmdwin.
+  normal! G
+  let firstline = line('w0')
+  autocmd CmdwinEnter * ++once autocmd WinEnter * ++once call line('w0')
+  execute "normal! q:\<C-w>q"
+  redraw!
+  call assert_equal(firstline, line('w0'))
+
+  " User script can change cursor position successfully while in cmdwin and it
+  " shouldn't be changed when closing cmdwin.
+  execute "normal! Gq:\<Cmd>call win_execute(winnr('#')->win_getid(), 'call cursor(1, 1)')\<CR>\<C-w>q"
+  call assert_equal(1, line('.'))
+  call assert_equal(1, col('.'))
+
+  execute "normal! Gq:\<Cmd>autocmd WinEnter * ++once call cursor(1, 1)\<CR>\<C-w>q"
+  call assert_equal(1, line('.'))
+  call assert_equal(1, col('.'))
+
+  %bwipeout!
+  set splitscroll&
+endfunction
 " vim: shiftwidth=2 sts=2 expandtab
