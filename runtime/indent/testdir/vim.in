@@ -498,3 +498,12 @@ endif
 nunmap <buffer> (
 nunmap <buffer> )
 " END_INDENT
+
+" START_INDENT
+def Func(
+s: string,
+n = 1,
+m = 2
+)
+enddef
+" END_INDENT

@@ -75,6 +75,13 @@ const DICT_KEY_OR_FUNC_PARAM: string = '^\s*\%('
     .. '\)'
     .. ':\%(\s\|$\)'
 
+# OPTIONAL_FUNC_PARAM {{{2
+
+const OPTIONAL_FUNC_PARAM: string = '^\s*\%('
+    .. '\%(\.\.\.\)\=\h[a-zA-Z0-9_]*'
+    .. '\)'
+    .. '\s\+=\s\+.*,\s*$'
+
 # START_MIDDLE_END {{{2
 
 const START_MIDDLE_END: dict<list<string>> = {
@@ -282,6 +289,9 @@ export def Expr(lnum: number): number # {{{2
     elseif line_B.text =~ $'{CLOSING_BRACKET},\s*$'
         var open_bracket: number = line_B->MatchingOpenBracket()
         return open_bracket->Indent()
+
+    elseif line_B.text =~ OPTIONAL_FUNC_PARAM
+        return line_B.lnum->Indent()
 
     elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
             && line_B.text =~ DICT_KEY_OR_FUNC_PARAM
