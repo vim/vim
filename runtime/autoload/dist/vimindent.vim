@@ -462,7 +462,7 @@ enddef
 
 def Indent(lnum: number): number # {{{2
     if lnum <= 0
-        return 0
+        return -1
     endif
     return indent(lnum)
 enddef
