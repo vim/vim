@@ -493,3 +493,8 @@ echo
 endif
 endif
 " END_INDENT
+
+" START_INDENT
+nunmap <buffer> (
+nunmap <buffer> )
+" END_INDENT

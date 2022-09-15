@@ -667,11 +667,14 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
         return false
     endif
 
-    # TODO:
+    # At the end of a mapping, any character might appear; e.g. a paren:
+    #
     #     nunmap <buffer> (
-    #         nunmap <buffer> )
-    #     ^--^
-    #      ✘
+    #
+    # Don't conflate this with a line continuation symbol.
+    if line.text =~ $'map\s.*<\%(SID\|CR\|buffer\|expr\|nowait\|script\|silent\|special\|unique\)>'
+        return false
+    endif
 
     return NonCommentedMatch(line, LINE_CONTINUATION_AT_EOL)
 enddef
