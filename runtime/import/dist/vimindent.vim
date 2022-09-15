@@ -616,7 +616,7 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
   #     ^--^
   #      ✘
   # }}}
-  if line.text =~ $'\s\+\({PATTERN_DELIMITER}\)\S\@=[^\1]*\1\s*\%($\|{INLINE_COMMENT}\)'
+  if line.text =~ $'\s\+\({PATTERN_DELIMITER}\)\S\@=.\{{-}}\1\s*\%($\|{INLINE_COMMENT}\)'
     return false
   endif
 
