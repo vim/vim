@@ -1,5 +1,9 @@
 vim9script
 
+# Language:     Vim script
+# Maintainer:   github user lacygoill
+# Last Change:  2022 Sep 15
+
 # Config {{{1
 
 const TIMEOUT: number = 100
