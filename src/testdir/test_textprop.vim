@@ -3181,6 +3181,9 @@ func Test_insert_text_with_padding()
   call term_sendkeys(buf, "ggix\<Esc>")
   call VerifyScreenDump(buf, 'Test_prop_text_with_padding_3', {})
 
+  call term_sendkeys(buf, ":set list\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_text_with_padding_4', {})
+
   call StopVimInTerminal(buf)
   call delete('XscriptPropsPadded')
 endfunc
