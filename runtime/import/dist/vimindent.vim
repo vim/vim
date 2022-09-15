@@ -204,21 +204,7 @@ export def Expr(lnum: number): number # {{{2
 
   # at the start of a heredoc
   if line_A.text =~ ASSIGNS_HEREDOC && !exists('b:vimindent_heredoc')
-    b:vimindent_heredoc = {
-      startlnum: lnum,
-      startindent: Indent(lnum),
-      endmarker: line_A.text->matchstr(ASSIGNS_HEREDOC),
-      trim: line_A.text =~ '.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*$',
-    }
-    # invalidate the cache so that it's not used for the next `=` normal command
-    autocmd_add([{
-      cmd: 'unlet! b:vimindent_heredoc',
-      event: 'ModeChanged',
-      group: 'VimIndentHereDoc',
-      once: true,
-      pattern: '*:n',
-      replace: true,
-    }])
+    CacheHeredoc(line_A.text, lnum)
   elseif exists('b:vimindent_heredoc')
     return line_A.text->HereDocIndent()
   endif
@@ -441,6 +427,24 @@ def CommentIndent(): number # {{{2
 enddef
 # }}}1
 # Util {{{1
+def CacheHeredoc(line: string, lnum: number) # {{{2
+  b:vimindent_heredoc = {
+    startlnum: lnum,
+    startindent: Indent(lnum),
+    endmarker: line->matchstr(ASSIGNS_HEREDOC),
+    trim: line =~ '.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*$',
+  }
+  # invalidate the cache so that it's not used for the next `=` normal command
+  autocmd_add([{
+    cmd: 'unlet! b:vimindent_heredoc',
+    event: 'ModeChanged',
+    group: 'VimIndentHereDoc',
+    once: true,
+    pattern: '*:n',
+    replace: true,
+  }])
+enddef
+
 def Indent(lnum: number): number # {{{2
   if lnum <= 0
     return 0
@@ -607,7 +611,7 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
   #         echo
   #     ^--^
   #      ✘
-  #}}}
+  # }}}
   if line.text =~ $'\s\+\({PATTERN_DELIMITER}\)\S\@=[^\1]*\1\s*\%($\|{INLINE_COMMENT}\)'
     return false
   endif
