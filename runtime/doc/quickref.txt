@@ -919,7 +919,7 @@ Short explanation of each option:		*option-list*
 'spellsuggest'	  'sps'     method(s) used to suggest spelling corrections
 'splitbelow'	  'sb'	    new window from split is below the current one
 'splitright'	  'spr'     new window is put right of the current one
-'splitscroll'	  'spsc'    determines scroll behavior when splitting windows
+'splitscroll'	  'spsc'    determines scroll behavior for split windows
 'startofline'	  'sol'     commands move cursor to first non-blank in line
 'statusline'	  'stl'     custom format for the status line
 'suffixes'	  'su'	    suffixes that are ignored with multiple match

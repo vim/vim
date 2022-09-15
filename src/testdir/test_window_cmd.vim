@@ -1638,126 +1638,113 @@ func Test_splitscroll_with_splits()
   set nowrap
   set nosplitscroll
   let gui = has("gui_running")
-  inoremap c <cmd>:copen<CR>
-  for winbar in [0, 1]
-    for sb in [0, 1]
-      for ea in [0, 1]
-        for tab in [0, 1]
-          for so in [0, 5]
-            for ls in range(0, 2)
-              for pos in ["H", "M", "L"]
-              tabnew | tabonly! | redraw
-              let tabline = (gui ? 0 : (tab ? 1 : 0))
-              let winbar_sb = (sb ? winbar : 0)
-              execute 'set scrolloff=' . so
-              execute 'set laststatus=' . ls
-              execute 'set ' . (ea ? 'equalalways' : 'noequalalways')
-              execute 'set ' . (sb ? 'splitbelow' : 'nosplitbelow')
-              execute tab ? 'tabnew' : ''
-              execute winbar ? 'nnoremenu 1.10 WinBar.Test :echo' : ''
-              call setline(1, range(1, 256))
-              " No scroll for restore_snapshot
-              norm G
-              try
-                copen | close | colder
-              catch /E380/
-              endtry
-              call assert_equal(257 - winheight(0), line("w0"))
+  inoremap <expr> c "<cmd>copen<bar>wincmd k<CR>"
+  for run in range(0, 10)
+    tabnew | tabonly! | redraw    
+    let tabline = (gui ? 0 : ((run % 5) ? 1 : 0))
+    let winbar_sb = (run % 2) && (run % 3)
+    execute 'set scrolloff=' . !(run % 3) ? 0 : run
+    execute 'set laststatus=' . (run % 3)
+    execute 'set ' . ((run % 2) ? 'equalalways' : 'noequalalways')
+    execute 'set ' . ((run % 3) ? 'splitbelow' : 'nosplitbelow')
+    execute (run % 5) ? 'tabnew' : ''
+    execute (run % 2) ? 'nnoremenu 1.10 WinBar.Test :echo' : ''
+    let pos = !(run % 3) ? 'H' : ((run % 2) ? 'M' : 'L')
+    call setline(1, range(1, 256))
+    " No scroll for restore_snapshot
+    norm G
+    try
+      copen | close | colder
+    catch /E380/
+    endtry
+    call assert_equal(257 - winheight(0), line("w0"))
 
-              " No scroll for firstwin horizontal split
-              execute 'norm gg' . pos
-              split | redraw | wincmd k
-              call assert_equal(1, line("w0"))
-              call assert_equal(&scroll, winheight(0) / 2)
-              wincmd j
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    " No scroll for firstwin horizontal split
+    execute 'norm gg' . pos
+    split | redraw | wincmd k
+    call assert_equal(1, line("w0"))
+    call assert_equal(&scroll, winheight(0) / 2)
+    wincmd j
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
-              " No scroll when resizing windows
-              wincmd k | resize +2
-              call assert_equal(1, line("w0"))
-              wincmd j
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    " No scroll when resizing windows
+    wincmd k | resize +2
+    call assert_equal(1, line("w0"))
+    wincmd j
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
-              " No scroll when dragging statusline
-              call win_move_statusline(1, -3)
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              wincmd k
-              call assert_equal(1, line("w0"))
+    " No scroll when dragging statusline
+    call win_move_statusline(1, -3)
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    wincmd k
+    call assert_equal(1, line("w0"))
 
-              " No scroll when changing shellsize
-              set lines+=2
-              call assert_equal(1, line("w0"))
-              wincmd j
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              set lines-=2
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              wincmd k
-              call assert_equal(1, line("w0"))
+    " No scroll when changing shellsize
+    set lines+=2
+    call assert_equal(1, line("w0"))
+    wincmd j
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    set lines-=2
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    wincmd k
+    call assert_equal(1, line("w0"))
 
-              " No scroll when equalizing windows
-              wincmd =
-              call assert_equal(1, line("w0"))
-              wincmd j
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              wincmd k
-              call assert_equal(1, line("w0"))
+    " No scroll when equalizing windows
+    wincmd =
+    call assert_equal(1, line("w0"))
+    wincmd j
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    wincmd k
+    call assert_equal(1, line("w0"))
 
-              " No scroll in windows split multiple times
-              vsplit | split | 4wincmd w
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              1wincmd w | quit | wincmd l | split
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              wincmd j
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    " No scroll in windows split multiple times
+    vsplit | split | 4wincmd w
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    1wincmd w | quit | wincmd l | split
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    wincmd j
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
-              " No scroll in small window
-              2wincmd w | only | 5split | wincmd k
-              call assert_equal(1, line("w0"))
-              wincmd j
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    " No scroll in small window
+    2wincmd w | only | 5split | wincmd k
+    call assert_equal(1, line("w0"))
+    wincmd j
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
-              " No scroll for vertical split
-              quit | vsplit | wincmd l
-              call assert_equal(1, line("w0"))
-              wincmd h
-              call assert_equal(1, line("w0"))
+    " No scroll for vertical split
+    quit | vsplit | wincmd l
+    call assert_equal(1, line("w0"))
+    wincmd h
+    call assert_equal(1, line("w0"))
 
-              " No scroll in windows split and quit multiple times
-              quit | redraw | split | redraw | split | redraw | quit | redraw
-              call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
+    " No scroll in windows split and quit multiple times
+    quit | redraw | split | redraw | split | redraw | quit | redraw
+    call assert_equal(win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
 
-              " No scroll for new buffer
-              1wincmd w | only | copen | wincmd k
-              call assert_equal(1, line("w0"))
-              only
-              call assert_equal(1, line("w0"))
-              above copen | wincmd j
-              call assert_equal(win_screenpos(0)[0] - tabline, line("w0"))
+    " No scroll for new buffer
+    1wincmd w | only | copen | wincmd k
+    call assert_equal(1, line("w0"))
+    only
+    call assert_equal(1, line("w0"))
+    above copen | wincmd j
+    call assert_equal(win_screenpos(0)[0] - tabline, line("w0"))
 
-              " No scroll when opening cmdwin, and no cursor move when closing
-              " cmdwin.
-              only | norm ggL
-              let curpos = getcurpos()
-              norm q:
-              call assert_equal(1, line("w0"))
-              call assert_equal(curpos, getcurpos())
+    " No scroll when opening cmdwin, and no cursor move when closing cmdwin.
+    only | norm ggL
+    let curpos = getcurpos()
+    norm q:
+    call assert_equal(1, line("w0"))
+    call assert_equal(curpos, getcurpos())
 
-              " Scroll when cursor becomes invalid in insert mode
-              norm Lic
-              wincmd k | only
-              call assert_notequal(1, line("w0"))
+    " Scroll when cursor becomes invalid in insert mode
+    norm Lic
+    call assert_equal(curpos, getcurpos())
 
-              " No scroll when topline not equal to 1
-              execute "norm gg5\<C-e>" | split | wincmd k
-              call assert_equal(6, line("w0"))
-              wincmd j
-              call assert_equal(5 + win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
-              endfor
-            endfor
-          endfor
-        endfor
-      endfor
-    endfor
+    " No scroll when topline not equal to 1
+    only | execute "norm gg5\<C-e>" | split | wincmd k
+    call assert_equal(6, line("w0"))
+    wincmd j
+    call assert_equal(5 + win_screenpos(0)[0] - tabline - winbar_sb, line("w0"))
   endfor
 
   tabnew | tabonly! | %bwipeout!
