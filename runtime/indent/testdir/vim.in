@@ -467,3 +467,18 @@ e: 'xxx',
 f: 'yyy'}, {
 }]
 " END_INDENT
+
+" START_INDENT
+var d = {
+a: {
+b: {
+c: [{
+d: 'e',
+f: 'g',
+h: 'i'
+}],
+j: 'k',
+},
+},
+}
+" END_INDENT
