@@ -19,7 +19,7 @@ var cmds: list<string>
 # `LINE_CONTINUATION_AT_END`.
 const CURLY_BLOCK: string = '^\s*{\s*$'
     .. '\|' .. '^.*\zs\s=>\s\+{\s*$'
-    .. '\|' ..  '^\%(\s*\|.*[^|]|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{\s*$'
+    .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{\s*$'
 
 # OPERATOR {{{2
 
