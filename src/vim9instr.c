@@ -1284,6 +1284,27 @@ generate_JUMP(cctx_T *cctx, jumpwhen_T when, int where)
 }
 
 /*
+ * Generate an ISN_WHILE instruction.  Similar to ISN_JUMP for :while
+ */
+    int
+generate_WHILE(cctx_T *cctx, int funcref_idx)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_WHILE)) == NULL)
+	return FAIL;
+    isn->isn_arg.whileloop.while_funcref_idx = funcref_idx;
+    isn->isn_arg.whileloop.while_end = 0;  // filled in later
+
+    if (stack->ga_len > 0)
+	--stack->ga_len;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_JUMP_IF_ARG_SET instruction.
  */
     int
@@ -1312,6 +1333,25 @@ generate_FOR(cctx_T *cctx, int loop_idx)
     // type doesn't matter, will be stored next
     return push_type_stack(cctx, &t_any);
 }
+
+    int
+generate_ENDLOOP(
+	cctx_T	*cctx,
+	int	funcref_idx,
+	int	prev_local_count)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_ENDLOOP)) == NULL)
+	return FAIL;
+    isn->isn_arg.endloop.end_funcref_idx = funcref_idx;
+    isn->isn_arg.endloop.end_var_idx = prev_local_count;
+    isn->isn_arg.endloop.end_var_count =
+				    cctx->ctx_locals.ga_len - prev_local_count;
+    return OK;
+}
+
 /*
  * Generate an ISN_TRYCONT instruction.
  */
@@ -2295,6 +2335,7 @@ delete_instr(isn_T *isn)
 	case ISN_ECHOERR:
 	case ISN_ECHOMSG:
 	case ISN_ECHOWINDOW:
+	case ISN_ENDLOOP:
 	case ISN_ENDTRY:
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
@@ -2341,10 +2382,10 @@ delete_instr(isn_T *isn)
 	case ISN_RETURN_VOID:
 	case ISN_SHUFFLE:
 	case ISN_SLICE:
+	case ISN_SOURCE:
 	case ISN_STORE:
 	case ISN_STOREINDEX:
 	case ISN_STORENR:
-	case ISN_SOURCE:
 	case ISN_STOREOUTER:
 	case ISN_STORERANGE:
 	case ISN_STOREREG:
@@ -2357,6 +2398,7 @@ delete_instr(isn_T *isn)
 	case ISN_UNLETRANGE:
 	case ISN_UNPACK:
 	case ISN_USEDICT:
+	case ISN_WHILE:
 	// nothing allocated
 	break;
     }

@@ -3449,8 +3449,14 @@ nextline:
 	}
 	dfunc->df_varcount = dfunc->df_var_names.ga_len;
 	dfunc->df_has_closure = cctx.ctx_has_closure;
+
 	if (cctx.ctx_outer_used)
+	{
 	    ufunc->uf_flags |= FC_CLOSURE;
+	    if (outer_cctx != NULL)
+		++outer_cctx->ctx_closure_count;
+	}
+
 	ufunc->uf_def_status = UF_COMPILED;
     }
 

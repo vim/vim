@@ -1466,17 +1466,20 @@ def Test_disassemble_for_loop()
         '\d NEWLIST size 0\_s*' ..
         '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
+
         'for i in range(3)\_s*' ..
         '\d STORE -1 in $1\_s*' ..
         '\d PUSHNR 3\_s*' ..
         '\d BCALL range(argc 1)\_s*' ..
         '\d FOR $1 -> \d\+\_s*' ..
-        '\d STORE $2\_s*' ..
+        '\d STORE $3\_s*' ..
+
         'res->add(i)\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d LOAD $2\_s*' ..
+        '\d LOAD $3\_s*' ..
         '\d\+ LISTAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
+
         'endfor\_s*' ..
         '\d\+ JUMP -> \d\+\_s*' ..
         '\d\+ DROP',
@@ -1498,21 +1501,25 @@ def Test_disassemble_for_loop_eval()
         'var res = ""\_s*' ..
         '\d PUSHS ""\_s*' ..
         '\d STORE $0\_s*' ..
+
         'for str in eval(''\["one", "two"\]'')\_s*' ..
         '\d STORE -1 in $1\_s*' ..
         '\d PUSHS "\["one", "two"\]"\_s*' ..
         '\d BCALL eval(argc 1)\_s*' ..
         '\d FOR $1 -> \d\+\_s*' ..
-        '\d STORE $2\_s*' ..
+        '\d STORE $3\_s*' ..
+
         'res ..= str\_s*' ..
         '\d\+ LOAD $0\_s*' ..
-        '\d\+ LOAD $2\_s*' ..
+        '\d\+ LOAD $3\_s*' ..
         '\d 2STRING_ANY stack\[-1\]\_s*' ..
         '\d\+ CONCAT size 2\_s*' ..
         '\d\+ STORE $0\_s*' ..
+
         'endfor\_s*' ..
         '\d\+ JUMP -> 5\_s*' ..
         '\d\+ DROP\_s*' ..
+
         'return res\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ RETURN',
@@ -1539,12 +1546,14 @@ def Test_disassemble_for_loop_unpack()
         '\d\+ NEWLIST size 2\_s*' ..
         '\d\+ FOR $0 -> 16\_s*' ..
         '\d\+ UNPACK 2\_s*' ..
-        '\d\+ STORE $1\_s*' ..
         '\d\+ STORE $2\_s*' ..
+        '\d\+ STORE $3\_s*' ..
+
         'echo x1 x2\_s*' ..
-        '\d\+ LOAD $1\_s*' ..
         '\d\+ LOAD $2\_s*' ..
+        '\d\+ LOAD $3\_s*' ..
         '\d\+ ECHO 2\_s*' ..
+
         'endfor\_s*' ..
         '\d\+ JUMP -> 8\_s*' ..
         '\d\+ DROP\_s*' ..
@@ -1576,32 +1585,43 @@ def Test_disassemble_for_loop_continue()
         '2 PUSHNR 2\_s*' ..
         '3 NEWLIST size 2\_s*' ..
         '4 FOR $0 -> 22\_s*' ..
-        '5 STORE $1\_s*' ..
+        '5 STORE $2\_s*' ..
+
         'try\_s*' ..
         '6 TRY catch -> 17, endtry -> 20\_s*' ..
+
         'echo "ok"\_s*' ..
         '7 PUSHS "ok"\_s*' ..
         '8 ECHO 1\_s*' ..
+
         'try\_s*' ..
         '9 TRY catch -> 13, endtry -> 15\_s*' ..
+
         'echo "deeper"\_s*' ..
         '10 PUSHS "deeper"\_s*' ..
         '11 ECHO 1\_s*' ..
+
         'catch\_s*' ..
         '12 JUMP -> 15\_s*' ..
         '13 CATCH\_s*' ..
+
         'continue\_s*' ..
         '14 TRY-CONTINUE 2 levels -> 4\_s*' ..
+
         'endtry\_s*' ..
         '15 ENDTRY\_s*' ..
+
         'catch\_s*' ..
         '16 JUMP -> 20\_s*' ..
         '17 CATCH\_s*' ..
+
         'echo "not ok"\_s*' ..
         '18 PUSHS "not ok"\_s*' ..
         '19 ECHO 1\_s*' ..
+
         'endtry\_s*' ..
         '20 ENDTRY\_s*' ..
+
         'endfor\_s*' ..
         '21 JUMP -> 4\_s*' ..
         '\d\+ DROP\_s*' ..
@@ -2478,7 +2498,8 @@ def Test_silent_for()
         '\d NEWLIST size 1\_s*' ..
         '\d CMDMOD_REV\_s*' ..
         '5 FOR $0 -> 8\_s*' ..
-        '\d STORE $1\_s*' ..
+        '\d STORE $2\_s*' ..
+
         'endfor\_s*' ..
         '\d JUMP -> 5\_s*' ..
         '8 DROP\_s*' ..
@@ -2499,7 +2520,7 @@ def Test_silent_while()
         '\d LOADG g:not\_s*' ..
         '\d COND2BOOL\_s*' ..
         '\d CMDMOD_REV\_s*' ..
-        '\d JUMP_IF_FALSE -> 6\_s*' ..
+        '\d WHILE $0 -> 6\_s*' ..
 
         'endwhile\_s*' ..
         '\d JUMP -> 0\_s*' ..
@@ -2691,17 +2712,17 @@ def Test_debug_for()
           '4 STORE -1 in $0\_s*' ..
           '5 PUSHNR 0\_s*' ..
           '6 NEWLIST size 1\_s*' ..
-          '7 DEBUG line 2-2 varcount 2\_s*' ..
+          '7 DEBUG line 2-2 varcount 3\_s*' ..
           '8 FOR $0 -> 15\_s*' ..
-          '9 STORE $1\_s*' ..
+          '9 STORE $2\_s*' ..
 
           'echo a\_s*' ..
-          '10 DEBUG line 3-3 varcount 2\_s*' ..
-          '11 LOAD $1\_s*' ..
+          '10 DEBUG line 3-3 varcount 3\_s*' ..
+          '11 LOAD $2\_s*' ..
           '12 ECHO 1\_s*' ..
 
           'endfor\_s*' ..
-          '13 DEBUG line 4-4 varcount 2\_s*' ..
+          '13 DEBUG line 4-4 varcount 3\_s*' ..
           '14 JUMP -> 7\_s*' ..
           '15 DROP\_s*' ..
           '16 RETURN void*',
