@@ -137,32 +137,32 @@ const ASSIGNS_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
 # and/or not displayed because inside a fold).
 # }}}
 cmds =<< trim END
-  if
-  el\%[se]
-  elseif\=
-  for
-  wh\%[ile]
-  try
-  cat\%[ch]
-  fina\|finally\=
-  fu\%[nction]\%x28\@!
-  \%(export\s\+\)\=def
-  aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
+    if
+    el\%[se]
+    elseif\=
+    for
+    wh\%[ile]
+    try
+    cat\%[ch]
+    fina\|finally\=
+    fu\%[nction]\%x28\@!
+    \%(export\s\+\)\=def
+    aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
 END
 const STARTS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
 
 # ENDS_BLOCK_OR_CLAUSE {{{2
 
 cmds =<< trim END
-  en\%[dif]
-  el\%[se]
-  endfor\=
-  endw\%[hile]
-  endt\%[ry]
-  fina\|finally\=
-  enddef
-  endfu\%[nction]
-  aug\%[roup]\s\+[eE][nN][dD]
+    en\%[dif]
+    el\%[se]
+    endfor\=
+    endw\%[hile]
+    endt\%[ry]
+    fina\|finally\=
+    enddef
+    endfu\%[nction]
+    aug\%[roup]\s\+[eE][nN][dD]
 END
 
 const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\)\s*\%(|\|$\|{INLINE_COMMENT}\)'
