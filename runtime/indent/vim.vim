@@ -13,7 +13,7 @@ endif
 b:did_indent = true
 b:undo_indent = 'setlocal indentkeys< indentexpr<'
 
-import 'dist/vimindent.vim'
+import autoload 'dist/vimindent.vim'
 
 setlocal indentexpr=vimindent.Expr(v:lnum)
 setlocal indentkeys+==endif,=enddef,=endfu,=endfor,=endwh,=endtry,=},=else,=cat,=finall,=END,0\\
