@@ -482,3 +482,14 @@ var d = {
     },
 }
 " END_INDENT
+
+" START_INDENT
+if true
+    var end: any
+    if true
+	end = 0
+    elseif true
+	echo
+    endif
+endif
+" END_INDENT
