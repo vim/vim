@@ -402,13 +402,14 @@ def HereDocIndent(line: string): number # {{{2
     if line =~ $'^\s*{b:vimindent_heredoc.endmarker}$'
         # `END` must be at the very start of the line if the heredoc is not trimmed
         if !b:vimindent_heredoc.trim
+            unlet! b:vimindent_heredoc
             return 0
+        else
+            var ind: number = b:vimindent_heredoc.startindent
+            # invalidate the cache so that it's not used for the next heredoc
+            unlet! b:vimindent_heredoc
+            return ind
         endif
-
-        var ind: number = b:vimindent_heredoc.startindent
-        # invalidate the cache so that it's not used for the next heredoc
-        unlet! b:vimindent_heredoc
-        return ind
     endif
 
     # In a non-trimmed heredoc, all of leading whitespace is semantic.

@@ -507,3 +507,13 @@ m = 2
 )
 enddef
 " END_INDENT
+
+" START_INDENT
+var h =<< END
+text
+END
+
+def Func()
+echo
+enddef
+" END_INDENT
