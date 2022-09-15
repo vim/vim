@@ -249,8 +249,25 @@ export def Expr(lnum: number): number # {{{2
             return Indent(line_B.lnum) + get(g:, 'vim_indent_cont', shiftwidth() * 3)
         endif
 
+    elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
+            && !line_B->EndsWithLineContinuation()
+        var kwd: string = GetBlockStartKeyword(line_A.text)
+        if !START_MIDDLE_END->has_key(kwd)
+            return -1
+        endif
+        var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
+        var block_start = FindStart(start, middle, end)
+        if block_start > 0
+            return Indent(block_start)
+        else
+            return -1
+        endif
+
     elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
             || line_B.text =~ DICT_KEY_OR_FUNC_PARAM
+        if line_B.text =~ DICT_KEY_OR_FUNC_PARAM
+            cursor(line_B.lnum, 1)
+        endif
         var start: number = FindStart('(', '', ')')
         # function param
         if start > 0 && getline(start) =~ STARTS_FUNCTION
@@ -270,24 +287,10 @@ export def Expr(lnum: number): number # {{{2
             endif
             return Indent(start) + offset
         endif
-
-    elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
-            && !line_B->EndsWithLineContinuation()
-        var kwd: string = GetBlockStartKeyword(line_A.text)
-        if !START_MIDDLE_END->has_key(kwd)
-            return -1
-        endif
-        var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
-        var block_start = FindStart(start, middle, end)
-        if block_start > 0
-            return Indent(block_start)
-        else
-            return -1
-        endif
     endif
 
     var base_ind: number
-    if line_A.text->IsFirstLineOfCommand(line_B)
+    if line_A->IsFirstLineOfCommand(line_B)
         line_A.isfirst = true
         var [cmd: string, n: number] = line_B->FirstLinePreviousCommand()
         line_B = {text: cmd, lnum: n}
@@ -303,7 +306,7 @@ export def Expr(lnum: number): number # {{{2
         base_ind = Indent(line_B.lnum)
 
         var line_C: dict<any> = PrevCodeLine(line_B.lnum)
-        if !line_B.text->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
+        if !line_B->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
             # indent items in multiline nested list/dictionary
             if line_B->EndsWithOpeningBracket()
                 return base_ind + shiftwidth()
@@ -563,7 +566,7 @@ def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{2
             line_B.text = getline(line_B.lnum)
             continue
 
-        elseif line_B.text->IsFirstLineOfCommand(line_above)
+        elseif line_B->IsFirstLineOfCommand(line_above)
             break
         endif
 
@@ -661,25 +664,30 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     return match_lnum > 0
 enddef
 
-def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
+def IsInThisBlock(line: dict<any>, lnum: number): bool # {{{2
     var pos: list<number> = getcurpos()
     cursor(lnum, [lnum, '$']->col())
     var end: number = FindEnd('{', '', '}')
     setpos('.', pos)
 
-    return line_A.lnum <= end
+    return line.lnum <= end
 enddef
 
-def IsFirstLineOfCommand(line_A: string, line_B: dict<any>): bool # {{{2
-    if line_A =~ STARTS_WITH_RANGE
+def IsFirstLineOfCommand(line_A: dict<any>, line_B: dict<any>): bool # {{{2
+    if line_A.text =~ STARTS_WITH_RANGE
         return true
     endif
 
-    var line_A_is_good: bool = line_A !~ COMMENT
-        && line_A !~ DICT_KEY_OR_FUNC_PARAM
-        && line_A !~ STARTS_WITH_LINE_CONTINUATION
-    var line_B_is_good: bool = line_B.text !~ DICT_KEY_OR_FUNC_PARAM
-        && !line_B->EndsWithLineContinuation()
+    if line_B.text =~ DICT_KEY_OR_FUNC_PARAM
+            && !line_A->IsInThisBlock(line_B.lnum)
+        return true
+    endif
+
+    var line_A_is_good: bool = line_A.text !~ COMMENT
+        && line_A.text !~ DICT_KEY_OR_FUNC_PARAM
+        && line_A.text !~ STARTS_WITH_LINE_CONTINUATION
+
+    var line_B_is_good: bool = !line_B->EndsWithLineContinuation()
 
     return line_A_is_good && line_B_is_good
 enddef
