@@ -1853,7 +1853,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_foldtextresult},
     {"foreground",	0, 0, 0,	    NULL,
 			ret_void,	    f_foreground},
-    {"fullcommand",	1, 1, FEARG_1,	    arg1_string,
+    {"fullcommand",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_string,	    f_fullcommand},
     {"funcref",		1, 3, FEARG_1,	    arg3_any_list_dict,
 			ret_func_unknown,   f_funcref},
