@@ -16,7 +16,7 @@ var cmds: list<string>
 # TODO: `{` alone on a line is not necessarily the start of a block.
 # It  could be  a dictionary  if the  previous line  ends with  a binary/ternary
 # operator.   This  can  cause  an   issue  whenever  we  use  `CURLY_BLOCK`  or
-# `LINE_CONTINUATION_AT_END`.
+# `LINE_CONTINUATION_AT_EOL`.
 const CURLY_BLOCK: string = '^\s*{\s*$'
     .. '\|' .. '^.*\zs\s=>\s\+{\s*$'
     .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{\s*$'
@@ -35,11 +35,16 @@ const INLINE_COMMENT: string = '\%(#\|"\\\=\s\).*$'
 
 # PATTERN_DELIMITER {{{2
 
-const PATTERN_DELIMITER: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
+# A better regex would be:
+#
+#     [^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!
+#
+# But sometimes, it can be too costly and cause `E363` to be given.
+const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
 
-# END_OF_LINE_OR_COMMAND {{{2
+# EOL_OR_COMMAND {{{2
 
-const END_OF_LINE_OR_COMMAND: string = $'\s*\%(||\@!\|$\|{INLINE_COMMENT}\)'
+const EOL_OR_COMMAND: string = $'\s*\%(||\@!\|$\|{INLINE_COMMENT}\)'
 
 # CLOSING_BRACKET {{{2
 
@@ -111,9 +116,9 @@ const STARTS_WITH_LINE_CONTINUATION: string = '^\s*\%('
 
 const STARTS_WITH_RANGE: string = '^\s*:\S'
 
-# LINE_CONTINUATION_AT_END {{{2
+# LINE_CONTINUATION_AT_EOL {{{2
 
-const LINE_CONTINUATION_AT_END: string = '\%('
+const LINE_CONTINUATION_AT_EOL: string = '\%('
     .. ','
     .. '\|' .. OPERATOR
     .. '\|' .. '\s=>'
@@ -173,8 +178,8 @@ cmds =<< trim END
     aug\%[roup]\s\+[eE][nN][dD]
 END
 
-const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\){END_OF_LINE_OR_COMMAND}'
-    .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_LINE_OR_COMMAND}'
+const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\){EOL_OR_COMMAND}'
+    .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={EOL_OR_COMMAND}'
     .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
 
 # ENDS_BLOCK {{{2
@@ -188,7 +193,7 @@ const ENDS_BLOCK: string = '^\s*\%('
     .. '\|' .. 'endfu\%[nction]'
     .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
     .. '\|' .. $'{CLOSING_BRACKET}'
-    .. $'\){END_OF_LINE_OR_COMMAND}'
+    .. $'\){EOL_OR_COMMAND}'
 
 # STARTS_WITH_CLOSING_BRACKET {{{2
 
@@ -198,9 +203,13 @@ const STARTS_WITH_CLOSING_BRACKET: string = $'^\s*{CLOSING_BRACKET}'
 
 const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>'
 
-# OPENING_BRACKET_AT_END {{{2
+# OPENING_BRACKET_AT_EOL {{{2
 
-const OPENING_BRACKET_AT_END: string = '[[{(]\s*$'
+const OPENING_BRACKET_AT_EOL: string = '[[{(]\s*$'
+
+# CLOSING_BRACKETS_THEN_COMMA_AT_EOL {{{2
+
+const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,\s*$'
 # }}}1
 # Interface {{{1
 export def Expr(lnum: number): number # {{{2
@@ -261,7 +270,7 @@ export def Expr(lnum: number): number # {{{2
         cursor(line_A.lnum, 1)
 
         var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
-        var block_start = FindStart(start, middle, end)
+        var block_start = SearchPairStart(start, middle, end)
         if block_start > 0
             return Indent(block_start)
         else
@@ -269,26 +278,24 @@ export def Expr(lnum: number): number # {{{2
         endif
 
     elseif line_B.text =~ $'{CLOSING_BRACKET},\s*$'
-        var col: number = line_B.text->matchstrpos($'{CLOSING_BRACKET},\s*$')[1]
-        var open_bracket: number = MatchingOpenBracket(line_B, col)
+        var open_bracket: number = line_B->MatchingOpenBracket()
         return open_bracket->Indent()
 
     elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
             && line_B.text =~ DICT_KEY_OR_FUNC_PARAM
+            && (line_A.text =~ '},\s*{\s*$'
+            || line_B.text =~ '},\s*{\s*$')
         return Indent(line_B.lnum)
 
     elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
             || line_B.text =~ DICT_KEY_OR_FUNC_PARAM
-        if line_B.text =~ DICT_KEY_OR_FUNC_PARAM
-            cursor(line_B.lnum, 1)
-        endif
-        var start: number = FindStart('(', '', ')')
+        var start: number = SearchPairStart('(', '', ')')
         # function param
         if start > 0 && getline(start) =~ STARTS_FUNCTION
             return Indent(start) + 2 * shiftwidth()
         # dictionary key
         else
-            start = FindStart('{', '', '}')
+            start = SearchPairStart('{', '', '}')
             if start <= 0
                 return -1
             endif
@@ -512,25 +519,24 @@ def NextCodeLine(): number # {{{2
     return 0
 enddef
 
-def FindStart( # {{{2
+def SearchPairStart( # {{{2
         start: string,
         middle: string,
         end: string,
         ): number
-
-    return Find(start, middle, end, 'bnW')
+    return SearchPair(start, middle, end, 'bnW')
 enddef
 
-def FindEnd( # {{{2
+def SearchPairEnd( # {{{2
         start: string,
         middle: string,
         end: string,
         stopline = 0,
         ): number
-    return Find(start, middle, end, 'nW', stopline)
+    return SearchPair(start, middle, end, 'nW', stopline)
 enddef
 
-def Find( # {{{2
+def SearchPair( # {{{2
         start: string,
         middle: string,
         end: string,
@@ -551,21 +557,22 @@ enddef
 
 def GetBlockStartKeyword(line: string): string # {{{2
     var kwd: string = line->matchstr('\l\+')
-    # Need to call `fullcommand()` from legacy context:
-    #     :vim9cmd echo fullcommand('end')
-    #     E1065: Command cannot be shortened: end
-    return FullCommand(kwd)
+    return fullcommand(kwd, false)
 enddef
 
-function FullCommand(kwd)
-    return fullcommand(a:kwd)
-endfunction
+def MatchingOpenBracket(line: dict<any>): number # {{{2
+    var end: string
+    if line.text =~ CLOSING_BRACKETS_THEN_COMMA_AT_EOL
+        end = line.text->matchstr(CLOSING_BRACKETS_THEN_COMMA_AT_EOL)[0]
+        cursor(line.lnum, 1)
+        search(CLOSING_BRACKETS_THEN_COMMA_AT_EOL, 'cW', line.lnum)
+    else
+        end = line.text->matchstr(CLOSING_BRACKET)
+        cursor(line.lnum, 1)
+    endif
 
-def MatchingOpenBracket(line: dict<any>, col = 0): number # {{{2
-    var end: string = line.text->matchstr(CLOSING_BRACKET)
     var start: string = {']': '[', '}': '{', ')': '('}[end]
-    cursor(line.lnum, col + 1)
-    return FindStart(start, '', end)
+    return SearchPairStart(start, '', end)
 enddef
 
 def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{2
@@ -606,7 +613,7 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
     var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
     var pos: list<number> = getcurpos()
     cursor(line_B.lnum, 1)
-    var block_end: number = FindEnd(start, middle, end, line_B.lnum)
+    var block_end: number = SearchPairEnd(start, middle, end, line_B.lnum)
     setpos('.', pos)
 
     return block_end > 0
@@ -645,10 +652,7 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     # And  usually, the  first occurrence  is  in the  middle of  a sequence  of
     # non-whitespace characters.  If we can find  such a `/`, we assume that the
     # trailing `/` is not an operator.
-    # Warning: Don't use `PATTERN_DELIMITER`.  Too costly.
-    # Sometimes, it gives `E363`.
-    var delim: string = '[/]'
-    if line.text =~ $'\%(\S*\({delim}\)\S\+\|\S\+\({delim}\)\S*\)'
+    if line.text =~ $'\%(\S*\({PATTERN_DELIMITER}\)\S\+\|\S\+\({PATTERN_DELIMITER}\)\S*\)'
             # `\1` is the pattern delimiter
             .. $'\s\+\1\s*\%($\|{INLINE_COMMENT}\)'
         return false
@@ -667,7 +671,7 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     #     ^--^
     #      ✘
 
-    return NonCommentedMatch(line, LINE_CONTINUATION_AT_END)
+    return NonCommentedMatch(line, LINE_CONTINUATION_AT_EOL)
 enddef
 
 def EndsWithCurlyBlock(line: dict<any>): bool # {{{2
@@ -675,7 +679,7 @@ def EndsWithCurlyBlock(line: dict<any>): bool # {{{2
 enddef
 
 def EndsWithOpeningBracket(line: dict<any>): bool # {{{2
-    return NonCommentedMatch(line, OPENING_BRACKET_AT_END)
+    return NonCommentedMatch(line, OPENING_BRACKET_AT_EOL)
 enddef
 
 def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
@@ -689,7 +693,7 @@ enddef
 def IsInThisBlock(line: dict<any>, lnum: number): bool # {{{2
     var pos: list<number> = getcurpos()
     cursor(lnum, [lnum, '$']->col())
-    var end: number = FindEnd('{', '', '}')
+    var end: number = SearchPairEnd('{', '', '}')
     setpos('.', pos)
 
     return line.lnum <= end
