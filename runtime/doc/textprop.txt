@@ -153,6 +153,7 @@ prop_add({lnum}, {col}, {props})
 					   the text wraps to the next screen
 					   line)
 				   below   in the next screen line
+				   above   just above the line
 				When omitted "after" is used.  Only one
 				"right" property can fit in each line, if
 				there are two ore more these will go in a

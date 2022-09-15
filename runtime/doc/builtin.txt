@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2022 Jun 27
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -325,6 +325,8 @@ js_encode({expr})		String	encode JS style JSON
 json_decode({string})		any	decode JSON
 json_encode({expr})		String	encode JSON
 keys({dict})			List	keys in {dict}
+keytrans({string})		String	translate internal keycodes to a form
+					that can be used by |:map|
 len({expr})			Number	the length of {expr}
 libcall({lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
 libcallnr({lib}, {func}, {arg})	Number	idem, but return a Number
@@ -471,7 +473,8 @@ remove({blob}, {idx} [, {end}])	Number/Blob
 					remove bytes {idx}-{end} from {blob}
 remove({dict}, {key})		any	remove entry {key} from {dict}
 rename({from}, {to})		Number	rename (move) file from {from} to {to}
-repeat({expr}, {count})		String	repeat {expr} {count} times
+repeat({expr}, {count})		List/Blob/String
+					repeat {expr} {count} times
 resolve({filename})		String	get filename a shortcut points to
 reverse({list})			List	reverse {list} in-place
 round({expr})			Float	round off {expr}
@@ -5204,6 +5207,16 @@ keys({dict})						*keys()*
 		Can also be used as a |method|: >
 			mydict->keys()
 
+keytrans({string})					*keytrans()*
+		Turn the internal byte representation of keys into a form that
+		can be used for |:map|.  E.g. >
+			:let xx = "\<C-Home>"
+			:echo keytrans(xx)
+<			<C-Home>
+
+		Can also be used as a |method|: >
+			"\<C-Home>"->keytrans()
+
 <							*len()* *E701*
 len({expr})	The result is a Number, which is the length of the argument.
 		When {expr} is a String or a Number the length in bytes is
@@ -7294,8 +7307,8 @@ repeat({expr}, {count})					*repeat()*
 		result.  Example: >
 			:let separator = repeat('-', 80)
 <		When {count} is zero or negative the result is empty.
-		When {expr} is a |List| the result is {expr} concatenated
-		{count} times.  Example: >
+		When {expr} is a |List| or a |Blob| the result is {expr}
+		concatenated {count} times.  Example: >
 			:let longlist = repeat(['a', 'b'], 3)
 <		Results in ['a', 'b', 'a', 'b', 'a', 'b'].
 

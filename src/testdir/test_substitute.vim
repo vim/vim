@@ -2,6 +2,7 @@
 
 source shared.vim
 source check.vim
+source screendump.vim
 
 func Test_multiline_subst()
   enew!
@@ -682,6 +683,21 @@ func Test_sub_cmd_9()
 
   delfunc Foo
   bw!
+endfunc
+
+func Test_sub_highlight_zero_match()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    call setline(1, ['one', 'two', 'three'])
+  END
+  call writefile(lines, 'XscriptSubHighlight', 'D')
+  let buf = RunVimInTerminal('-S XscriptSubHighlight', #{rows: 8, cols: 60})
+  call term_sendkeys(buf, ":%s/^/   /c\<CR>")
+  call VerifyScreenDump(buf, 'Test_sub_highlight_zer_match_1', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_nocatch_sub_failure_handling()

@@ -278,10 +278,15 @@ compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
 }
 
 /*
- * generate a jump to the ":endif"/":endfor"/":endwhile"/":finally"/":endtry".
+ * Generate a jump to the ":endif"/":endfor"/":endwhile"/":finally"/":endtry".
+ * "funcref_idx" is used for JUMP_WHILE_FALSE
  */
     static int
-compile_jump_to_end(endlabel_T **el, jumpwhen_T when, cctx_T *cctx)
+compile_jump_to_end(
+	endlabel_T  **el,
+	jumpwhen_T  when,
+	int	    funcref_idx,
+	cctx_T	    *cctx)
 {
     garray_T	*instr = &cctx->ctx_instr;
     endlabel_T  *endlabel = ALLOC_CLEAR_ONE(endlabel_T);
@@ -292,7 +297,10 @@ compile_jump_to_end(endlabel_T **el, jumpwhen_T when, cctx_T *cctx)
     *el = endlabel;
     endlabel->el_end_label = instr->ga_len;
 
-    generate_JUMP(cctx, when, 0);
+    if (when == JUMP_WHILE_FALSE)
+	generate_WHILE(cctx, funcref_idx);
+    else
+	generate_JUMP(cctx, when, 0);
     return OK;
 }
 
@@ -564,7 +572,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	}
 
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
-						    JUMP_ALWAYS, cctx) == FAIL)
+						 JUMP_ALWAYS, 0, cctx) == FAIL)
 	    return NULL;
 	// previous "if" or "elseif" jumps here
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
@@ -695,7 +703,7 @@ compile_else(char_u *arg, cctx_T *cctx)
 	{
 	    if (!cctx->ctx_had_return
 		    && compile_jump_to_end(&scope->se_u.se_if.is_end_label,
-						    JUMP_ALWAYS, cctx) == FAIL)
+						 JUMP_ALWAYS, 0, cctx) == FAIL)
 		return NULL;
 	}
 
@@ -771,16 +779,17 @@ compile_endif(char_u *arg, cctx_T *cctx)
  * Compile "for var in expr":
  *
  * Produces instructions:
- *       PUSHNR -1
- *       STORE loop-idx		Set index to -1
- *       EVAL expr		result of "expr" on top of stack
+ *       STORE -1 in loop-idx	Set index to -1
+ *       EVAL expr		Result of "expr" on top of stack
  * top:  FOR loop-idx, end	Increment index, use list on bottom of stack
  *				- if beyond end, jump to "end"
  *				- otherwise get item from list and push it
+ *				- store ec_funcrefs in var "loop-idx" + 1
  *       STORE var		Store item in "var"
  *       ... body ...
- *       JUMP top		Jump back to repeat
- * end:	 DROP			Drop the result of "expr"
+ *       ENDLOOP funcref-idx off count	Only if closure uses local var
+ *       JUMP top			Jump back to repeat
+ * end:	 DROP				Drop the result of "expr"
  *
  * Compile "for [var1, var2] in expr" - as above, but instead of "STORE var":
  *	 UNPACK 2		Split item in 2
@@ -801,7 +810,9 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     size_t	varlen;
     garray_T	*instr = &cctx->ctx_instr;
     scope_T	*scope;
+    forscope_T	*forscope;
     lvar_T	*loop_lvar;	// loop iteration variable
+    lvar_T	*funcref_lvar;
     lvar_T	*var_lvar;	// variable for "var"
     type_T	*vartype;
     type_T	*item_type = &t_any;
@@ -845,17 +856,27 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     scope = new_scope(cctx, FOR_SCOPE);
     if (scope == NULL)
 	return NULL;
+    forscope = &scope->se_u.se_for;
 
     // Reserve a variable to store the loop iteration counter and initialize it
     // to -1.
     loop_lvar = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
     if (loop_lvar == NULL)
     {
-	// out of memory
 	drop_scope(cctx);
-	return NULL;
+	return NULL;  // out of memory
     }
     generate_STORENR(cctx, loop_lvar->lv_idx, -1);
+
+    // Reserve a variable to store ec_funcrefs.ga_len, used in ISN_ENDLOOP.
+    // The variable index is always the loop var index plus one.
+    // It is not used when no closures are encountered, we don't know yet.
+    funcref_lvar = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
+    if (funcref_lvar == NULL)
+    {
+	drop_scope(cctx);
+	return NULL;  // out of memory
+    }
 
     // compile "expr", it remains on the stack until "endfor"
     arg = p;
@@ -901,7 +922,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	generate_undo_cmdmods(cctx);
 
 	// "for_end" is set when ":endfor" is found
-	scope->se_u.se_for.fs_top_label = current_instr_idx(cctx);
+	forscope->fs_top_label = current_instr_idx(cctx);
 
 	if (cctx->ctx_compile_type == CT_DEBUG)
 	{
@@ -1019,6 +1040,11 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    arg = skipwhite(p);
 	    vim_free(name);
 	}
+
+	forscope->fs_funcref_idx = funcref_lvar->lv_idx;
+	// remember the number of variables and closures, used in :endfor
+	forscope->fs_local_count = cctx->ctx_locals.ga_len;
+	forscope->fs_closure_count = cctx->ctx_closure_count;
     }
 
     return arg_end;
@@ -1027,6 +1053,23 @@ failed:
     vim_free(name);
     drop_scope(cctx);
     return NULL;
+}
+
+/*
+ * At :endfor and :endwhile: Generate an ISN_ENDLOOP instruction if any
+ * variable was declared that could be used by a new closure.
+ */
+    static int
+compile_loop_end(
+	int	prev_local_count,
+	int	prev_closure_count,
+	int	funcref_idx,
+	cctx_T	*cctx)
+{
+    if (cctx->ctx_locals.ga_len > prev_local_count
+	    && cctx->ctx_closure_count > prev_closure_count)
+	return generate_ENDLOOP(cctx, funcref_idx, prev_local_count);
+    return OK;
 }
 
 /*
@@ -1052,6 +1095,14 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     cctx->ctx_scope = scope->se_outer;
     if (cctx->ctx_skip != SKIP_YES)
     {
+	// Handle the case that any local variables were declared that might be
+	// used in a closure.
+	if (compile_loop_end(forscope->fs_local_count,
+				forscope->fs_closure_count,
+				forscope->fs_funcref_idx,
+				cctx) == FAIL)
+	    return NULL;
+
 	unwind_locals(cctx, scope->se_local_count);
 
 	// At end of ":for" scope jump back to the FOR instruction.
@@ -1080,25 +1131,42 @@ compile_endfor(char_u *arg, cctx_T *cctx)
  * compile "while expr"
  *
  * Produces instructions:
- * top:  EVAL expr		Push result of "expr"
- *       JUMP_IF_FALSE end	jump if false
- *       ... body ...
- *       JUMP top		Jump back to repeat
+ * top:  EVAL expr			Push result of "expr"
+ *	 WHILE funcref-idx  end		Jump if false
+ *	 ... body ...
+ *       ENDLOOP funcref-idx off count	only if closure uses local var
+ *	 JUMP top			Jump back to repeat
  * end:
  *
  */
     char_u *
 compile_while(char_u *arg, cctx_T *cctx)
 {
-    char_u	*p = arg;
-    scope_T	*scope;
+    char_u	    *p = arg;
+    scope_T	    *scope;
+    whilescope_T    *whilescope;
+    lvar_T	    *funcref_lvar;
 
     scope = new_scope(cctx, WHILE_SCOPE);
     if (scope == NULL)
 	return NULL;
+    whilescope = &scope->se_u.se_while;
 
     // "endwhile" jumps back here, one before when profiling or using cmdmods
-    scope->se_u.se_while.ws_top_label = current_instr_idx(cctx);
+    whilescope->ws_top_label = current_instr_idx(cctx);
+
+    // Reserve a variable to store ec_funcrefs.ga_len, used in ISN_ENDLOOP.
+    // It is not used when no closures are encountered, we don't know yet.
+    funcref_lvar = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
+    if (funcref_lvar == NULL)
+    {
+	drop_scope(cctx);
+	return NULL;  // out of memory
+    }
+    whilescope->ws_funcref_idx = funcref_lvar->lv_idx;
+    // remember the number of variables and closures, used in :endwhile
+    whilescope->ws_local_count = cctx->ctx_locals.ga_len;
+    whilescope->ws_closure_count = cctx->ctx_closure_count;
 
     // compile "expr"
     if (compile_expr0(&p, cctx) == FAIL)
@@ -1119,8 +1187,8 @@ compile_while(char_u *arg, cctx_T *cctx)
 	generate_undo_cmdmods(cctx);
 
 	// "while_end" is set when ":endwhile" is found
-	if (compile_jump_to_end(&scope->se_u.se_while.ws_end_label,
-						  JUMP_IF_FALSE, cctx) == FAIL)
+	if (compile_jump_to_end(&whilescope->ws_end_label,
+			 JUMP_WHILE_FALSE, funcref_lvar->lv_idx, cctx) == FAIL)
 	    return FAIL;
     }
 
@@ -1146,6 +1214,16 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
     cctx->ctx_scope = scope->se_outer;
     if (cctx->ctx_skip != SKIP_YES)
     {
+	whilescope_T	*whilescope = &scope->se_u.se_while;
+
+	// Handle the case that any local variables were declared that might be
+	// used in a closure.
+	if (compile_loop_end(whilescope->ws_local_count,
+				whilescope->ws_closure_count,
+				whilescope->ws_funcref_idx,
+				cctx) == FAIL)
+	    return NULL;
+
 	unwind_locals(cctx, scope->se_local_count);
 
 #ifdef FEAT_PROFILE
@@ -1250,7 +1328,7 @@ compile_break(char_u *arg, cctx_T *cctx)
 
     // Jump to the end of the FOR or WHILE loop.  The instruction index will be
     // filled in later.
-    if (compile_jump_to_end(el, JUMP_ALWAYS, cctx) == FAIL)
+    if (compile_jump_to_end(el, JUMP_ALWAYS, 0, cctx) == FAIL)
 	return FAIL;
 
     return arg;
@@ -1397,7 +1475,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 #endif
 	// Jump from end of previous block to :finally or :endtry
 	if (compile_jump_to_end(&scope->se_u.se_try.ts_end_label,
-						    JUMP_ALWAYS, cctx) == FAIL)
+						 JUMP_ALWAYS, 0, cctx) == FAIL)
 	    return NULL;
 
 	// End :try or :catch scope: set value in ISN_TRY instruction

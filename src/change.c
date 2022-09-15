@@ -1404,11 +1404,18 @@ open_line(
     int		vreplace_mode;
     int		did_append;		// appended a new line
     int		saved_pi = curbuf->b_p_pi; // copy of preserveindent setting
+#ifdef FEAT_PROP_POPUP
+    int		at_eol;			// cursor after last character
+#endif
 
     // make a copy of the current line so we can mess with it
     saved_line = vim_strsave(ml_get_curline());
     if (saved_line == NULL)	    // out of memory!
 	return FALSE;
+
+#ifdef FEAT_PROP_POPUP
+    at_eol = curwin->w_cursor.col >= (int)STRLEN(saved_line);
+#endif
 
     if (State & VREPLACE_FLAG)
     {
@@ -2133,7 +2140,7 @@ open_line(
 	if ((State & MODE_INSERT) && (State & VREPLACE_FLAG) == 0)
 	    // Properties after the split move to the next line.
 	    adjust_props_for_split(curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-		    curwin->w_cursor.col + 1, 0);
+		    curwin->w_cursor.col + 1, 0, at_eol);
 #endif
     }
     else

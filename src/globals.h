@@ -755,6 +755,9 @@ EXTERN int	popup_visible INIT(= FALSE);
 EXTERN int	popup_uses_mouse_move INIT(= FALSE);
 
 EXTERN int	text_prop_frozen INIT(= 0);
+
+// when TRUE computing the cursor position ignores text properties.
+EXTERN int	ignore_text_props INIT(= FALSE);
 #endif
 
 // When set the popup menu will redraw soon using the pum_win_ values. Do not
@@ -1734,3 +1737,8 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 // While executing a regexp and set to OPTION_MAGIC_ON or OPTION_MAGIC_OFF this
 // overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.
 EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
+
+#ifdef FEAT_CMDWIN
+// Skip win_fix_cursor() call for 'nosplitscroll' when cmdwin is closed.
+EXTERN int skip_win_fix_cursor INIT(= FALSE);
+#endif

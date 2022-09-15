@@ -1208,6 +1208,7 @@ ex_while(exarg_T *eap)
     int		skip;
     int		result;
     cstack_T	*cstack = eap->cstack;
+    int		prev_cs_flags = 0;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
 	eap->errmsg = _(e_while_for_nesting_too_deep);
@@ -1230,15 +1231,18 @@ ex_while(exarg_T *eap)
 	    {
 		scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
 		int		i;
+		int		first;
 		int		func_defined = cstack->cs_flags[cstack->cs_idx]
 								& CSF_FUNC_DEF;
 
 		// Any variables defined in the previous round are no longer
 		// visible.  Keep the first one for ":for", it is the loop
 		// variable that we reuse every time around.
-		for (i = cstack->cs_script_var_len[cstack->cs_idx]
+		// Do this backwards, so that vars defined in a later round are
+		// found first.
+		first = cstack->cs_script_var_len[cstack->cs_idx]
 					  + (eap->cmdidx == CMD_while ? 0 : 1);
-					       i < si->sn_var_vals.ga_len; ++i)
+		for (i = si->sn_var_vals.ga_len - 1; i >= first; --i)
 		{
 		    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
 
@@ -1250,8 +1254,15 @@ ex_while(exarg_T *eap)
 			// still exists, from sn_vars.
 			hide_script_var(si, i, func_defined);
 		}
+
+		// Start a new block ID, so that variables defined inside the
+		// loop are created new and not shared with the previous loop.
+		// Matters when used in a closure.
+		cstack->cs_block_id[cstack->cs_idx] = ++si->sn_last_block_id;
+		si->sn_current_block_id = si->sn_last_block_id;
 	    }
 	}
+	prev_cs_flags = cstack->cs_flags[cstack->cs_idx];
 	cstack->cs_flags[cstack->cs_idx] =
 			       eap->cmdidx == CMD_while ? CSF_WHILE : CSF_FOR;
 
@@ -1270,7 +1281,7 @@ ex_while(exarg_T *eap)
 	}
 	else
 	{
-	    void	*fi;
+	    forinfo_T	*fi;
 	    evalarg_T	evalarg;
 
 	    /*
@@ -1304,9 +1315,18 @@ ex_while(exarg_T *eap)
 		result = next_for_item(fi, eap->arg);
 	    else
 		result = FALSE;
+	    if (fi != NULL)
+		// OR all the cs_flags together, if a function was defined in
+		// any round then the loop variable may have been used.
+		fi->fi_cs_flags |= prev_cs_flags;
 
 	    if (!result)
 	    {
+		// If a function was defined in any round then set the
+		// CSF_FUNC_DEF flag now, so that it's seen by leave_block().
+		if (fi != NULL && (fi->fi_cs_flags & CSF_FUNC_DEF))
+		    cstack->cs_flags[cstack->cs_idx] |= CSF_FUNC_DEF;
+
 		free_for_info(fi);
 		cstack->cs_forinfo[cstack->cs_idx] = NULL;
 	    }

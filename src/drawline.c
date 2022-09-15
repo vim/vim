@@ -279,6 +279,38 @@ get_sign_display_info(
 
 #if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
+ * Return the cell size of virtual text after truncation.
+ */
+    static int
+textprop_size_after_trunc(
+	win_T	*wp,
+	int	flags,	    // TP_FLAG_ALIGN_*
+	int	added,
+	char_u	*text,
+	int	*n_used_ptr)
+{
+    int	space = (flags & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_ABOVE))
+							 ? wp->w_width : added;
+    int len = (int)STRLEN(text);
+    int strsize = 0;
+    int n_used;
+
+    // if the remaining size is to small wrap anyway and use the next line
+    if (space < PROP_TEXT_MIN_CELLS)
+	space += wp->w_width;
+    for (n_used = 0; n_used < len; n_used += (*mb_ptr2len)(text + n_used))
+    {
+	int clen = ptr2cells(text + n_used);
+
+	if (strsize + clen > space)
+	    break;
+	strsize += clen;
+    }
+    *n_used_ptr = n_used;
+    return strsize;
+}
+
+/*
  * Take care of padding, right-align and truncation of virtual text after a
  * line.
  * if "n_attr" is not NULL then "n_extra" and "p_extra" are adjusted for any
@@ -297,6 +329,7 @@ text_prop_position(
 	int	    *n_attr_skip)   // cells to skip attr, NULL if not used
 {
     int	    right = (tp->tp_flags & TP_FLAG_ALIGN_RIGHT);
+    int	    above = (tp->tp_flags & TP_FLAG_ALIGN_ABOVE);
     int	    below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
     int	    wrap = (tp->tp_flags & TP_FLAG_WRAP);
     int	    padding = tp->tp_col == MAXCOL && tp->tp_len > 1
@@ -304,36 +337,45 @@ text_prop_position(
     int	    col_with_padding = vcol + (below ? 0 : padding);
     int	    col_off = 0;
     int	    room = wp->w_width - col_with_padding;
-    int	    added = room;
+    int	    before = room;	// spaces before the text
+    int	    after = 0;		// spaces after the text
     int	    n_used = *n_extra;
     char_u  *l = NULL;
     int	    strsize = vim_strsize(*p_extra);
-    int	    cells = wrap ? strsize
-	      : textprop_size_after_trunc(wp, below, added, *p_extra, &n_used);
+    int	    cells = wrap ? strsize : textprop_size_after_trunc(wp,
+				      tp->tp_flags, before, *p_extra, &n_used);
 
-    if (wrap || right || below || padding > 0 || n_used < *n_extra)
+    if (wrap || right || above || below || padding > 0 || n_used < *n_extra)
     {
-	// Right-align: fill with spaces
-	if (right)
-	    added -= cells;
-	if (added < 0
-		|| !(right || below)
-		|| (below
-		    ? (col_with_padding == 0 || !wp->w_p_wrap)
-		    : (n_used < *n_extra)))
+	if (above)
 	{
-	    if (right && (wrap || room < PROP_TEXT_MIN_CELLS))
+	    before = 0;
+	    after = wp->w_width - cells - win_col_off(wp) - padding;
+	}
+	else
+	{
+	    // Right-align: fill with before
+	    if (right)
+		before -= cells;
+	    if (before < 0
+		    || !(right || below)
+		    || (below
+			? (col_with_padding == 0 || !wp->w_p_wrap)
+			: (n_used < *n_extra)))
 	    {
-		// right-align on next line instead of wrapping if possible
-		col_off = win_col_off(wp) + win_col_off2(wp);
-		added = wp->w_width - col_off - strsize + room;
-		if (added < 0)
-		    added = 0;
+		if (right && (wrap || room < PROP_TEXT_MIN_CELLS))
+		{
+		    // right-align on next line instead of wrapping if possible
+		    col_off = win_col_off(wp) + win_col_off2(wp);
+		    before = wp->w_width - col_off - strsize + room;
+		    if (before < 0)
+			before = 0;
+		    else
+			n_used = *n_extra;
+		}
 		else
-		    n_used = *n_extra;
+		    before = 0;
 	    }
-	    else
-		added = 0;
 	}
 
 	// With 'nowrap' add one to show the "extends" character if needed (it
@@ -346,15 +388,15 @@ text_prop_position(
 
 	// add 1 for NUL, 2 for when '…' is used
 	if (n_attr != NULL)
-	    l = alloc(n_used + added + padding + 3);
+	    l = alloc(n_used + before + after + padding + 3);
 	if (n_attr == NULL || l != NULL)
 	{
 	    int off = 0;
 
 	    if (n_attr != NULL)
 	    {
-		vim_memset(l, ' ', added);
-		off += added;
+		vim_memset(l, ' ', before);
+		off += before;
 		if (padding > 0)
 		{
 		    vim_memset(l + off, ' ', padding);
@@ -365,8 +407,8 @@ text_prop_position(
 	    }
 	    else
 	    {
-		off = added + padding + n_used;
-		cells += added + padding;
+		off = before + after + padding + n_used;
+		cells += before + after + padding;
 	    }
 	    if (n_attr != NULL)
 	    {
@@ -385,10 +427,18 @@ text_prop_position(
 			// change last character to '>'
 			*lp = '>';
 		}
+		else if (after > 0)
+		{
+		    vim_memset(l + off, ' ', after);
+		    l[off + after] = NUL;
+		}
+
 		*p_extra = l;
-		*n_extra = n_used + added + padding;
+		*n_extra = n_used + before + after + padding;
 		*n_attr = mb_charlen(*p_extra);
-		*n_attr_skip = added + padding + col_off;
+		if (above)
+		    *n_attr -= padding;
+		*n_attr_skip = before + padding + col_off;
 	    }
 	}
     }
@@ -616,9 +666,11 @@ win_line(
 					  // syntax_attr
     int		text_prop_id = 0;	// active property ID
     int		text_prop_flags = 0;
+    int		text_prop_above = FALSE;  // first doing virtual text above
     int		text_prop_follows = FALSE;  // another text prop to display
     int		saved_search_attr = 0;	// search_attr to be used when n_extra
 					// goes to zero
+    int		saved_area_attr = 0;	// idem for area_attr
 #endif
 #ifdef FEAT_SPELL
     int		has_spell = FALSE;	// this buffer has spell checking
@@ -1694,11 +1746,14 @@ win_line(
 		// text prop can show.
 		while (text_prop_next < text_prop_count
 			   && (text_props[text_prop_next].tp_col == MAXCOL
-			      ? (*ptr == NUL
+			      ? ((*ptr == NUL
 				  && (wp->w_p_wrap
 				      || wlv.row == startrow
 				      || (text_props[text_prop_next].tp_flags
 						       & TP_FLAG_ALIGN_BELOW)))
+			       || (bcol == 0 &&
+				      (text_props[text_prop_next].tp_flags
+						       & TP_FLAG_ALIGN_ABOVE)))
 			      : bcol >= text_props[text_prop_next].tp_col - 1))
 		{
 		    if (text_props[text_prop_next].tp_col == MAXCOL
@@ -1731,6 +1786,7 @@ win_line(
 
 		    // Sort the properties on priority and/or starting last.
 		    // Then combine the attributes, highest priority last.
+		    text_prop_above = FALSE;
 		    text_prop_follows = FALSE;
 		    sort_text_props(wp->w_buffer, text_props,
 					    text_prop_idxs, text_props_active);
@@ -1764,6 +1820,8 @@ win_line(
 			char_u	    *p = ((char_u **)wp->w_buffer
 						   ->b_textprop_text.ga_data)[
 							   -text_prop_id - 1];
+			int	    above = (tp->tp_flags
+							& TP_FLAG_ALIGN_ABOVE);
 
 			// reset the ID in the copy to avoid it being used
 			// again
@@ -1789,27 +1847,28 @@ win_line(
 			    extra_for_textprop = TRUE;
 			    extra_attr = used_attr;
 			    n_attr = mb_charlen(p);
+			    // restore search_attr and area_attr when n_extra
+			    // is down to zero
 			    saved_search_attr = search_attr;
-			    search_attr = 0;	// restore when n_extra is zero
+			    saved_area_attr = area_attr;
+			    search_attr = 0;
+			    area_attr = 0;
 			    text_prop_attr = 0;
 			    text_prop_attr_comb = 0;
 			    if (*ptr == NUL)
 				// don't combine char attr after EOL
 				text_prop_flags &= ~PT_FLAG_COMBINE;
 #ifdef FEAT_LINEBREAK
-			    if (below || right || !wrap)
+			    if (above || below || right || !wrap)
 			    {
 				// no 'showbreak' before "below" text property
-				// or after "right" text property
+				// or after "above" or "right" text property
 				need_showbreak = FALSE;
 				dont_use_showbreak = TRUE;
 			    }
 #endif
-			    // Keep in sync with where
-			    // textprop_size_after_trunc() is called in
-			    // win_lbr_chartabsize().
-			    if ((right || below || !wrap || padding > 0)
-							    && wp->w_width > 2)
+			    if ((right || above || below || !wrap
+					    || padding > 0) && wp->w_width > 2)
 			    {
 				char_u	*prev_p_extra = wlv.p_extra;
 				int	start_line;
@@ -1850,6 +1909,9 @@ win_line(
 
 			// If another text prop follows the condition below at
 			// the last window column must know.
+			// If this is an "above" text prop and 'nowrap' the we
+			// must wrap anyway.
+			text_prop_above = above;
 			text_prop_follows = other_tpi != -1;
 		    }
 		}
@@ -2146,6 +2208,8 @@ win_line(
 		in_linebreak = FALSE;
 		if (search_attr == 0)
 		    search_attr = saved_search_attr;
+		if (area_attr == 0 && *ptr != NUL)
+		    area_attr = saved_area_attr;
 	    }
 #endif
 	}
@@ -3529,7 +3593,7 @@ win_line(
 		    || filler_todo > 0
 #endif
 #ifdef FEAT_PROP_POPUP
-		    || text_prop_follows
+		    || text_prop_above || text_prop_follows
 #endif
 		    || (wp->w_p_list && wp->w_lcs_chars.eol != NUL
 						&& wlv.p_extra != at_end_str)
@@ -3556,12 +3620,12 @@ win_line(
 			&& filler_todo <= 0
 #endif
 #ifdef FEAT_PROP_POPUP
-			&& !text_prop_follows
+			&& !text_prop_above && !text_prop_follows
 #endif
 		    ) || lcs_eol_one == -1)
 		break;
 #ifdef FEAT_PROP_POPUP
-	    if (!wp->w_p_wrap && text_prop_follows)
+	    if (!wp->w_p_wrap && text_prop_follows && !text_prop_above)
 	    {
 		// do not output more of the line, only the "below" prop
 		ptr += STRLEN(ptr);
@@ -3595,7 +3659,7 @@ win_line(
 		     && filler_todo <= 0
 #endif
 #ifdef FEAT_PROP_POPUP
-		     && !text_prop_follows
+		     && !text_prop_above && !text_prop_follows
 #endif
 		     && wp->w_width == Columns)
 	    {

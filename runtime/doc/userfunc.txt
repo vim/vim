@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.0.  Last change: 2022 Jun 17
+*userfunc.txt*	For Vim version 9.0.  Last change: 2022 Sep 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -23,7 +23,7 @@ commands can be executed with the |:normal| command.
 
 The function name must start with an uppercase letter, to avoid confusion with
 builtin functions.  To prevent from using the same name in different scripts
-make them script-local.  If you do use a global function the avoid obvious,
+make them script-local.  If you do use a global function then avoid obvious,
 short names.  A good habit is to start the function name with the name of the
 script, e.g., "HTMLcolor()".
 
@@ -427,7 +427,8 @@ GetArg()->TheFunc()` does not work, it may work in a later version.
 
 Errors are reported but do not cause aborting execution of deferred functions.
 
-No range is accepted.
+No range is accepted.  The function can be a partial with extra arguments, but
+not with a dictionary. *E1300*
 
 ==============================================================================
 

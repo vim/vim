@@ -476,7 +476,11 @@ update_curswant(void)
     if (curwin->w_set_curswant)
     {
 	validate_virtcol();
-	curwin->w_curswant = curwin->w_virtcol;
+	curwin->w_curswant = curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+				- curwin->w_virtcol_first_char
+#endif
+				;
 	curwin->w_set_curswant = FALSE;
     }
 }
@@ -835,6 +839,9 @@ validate_virtcol_win(win_T *wp)
     check_cursor_moved(wp);
     if (!(wp->w_valid & VALID_VIRTCOL))
     {
+#ifdef FEAT_PROP_POPUP
+	wp->w_virtcol_first_char = 0;
+#endif
 	getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
 #ifdef FEAT_SYN_HL
 	redraw_for_cursorcolumn(wp);
@@ -974,13 +981,19 @@ curs_columns(
     /*
      * First make sure that w_topline is valid (after moving the cursor).
      */
-    update_topline();
+    if (p_spsc)
+	update_topline();
 
     /*
      * Next make sure that w_cline_row is valid.
      */
     if (!(curwin->w_valid & VALID_CROW))
 	curs_rows(curwin);
+
+#ifdef FEAT_PROP_POPUP
+    // will be set by getvvcol() but not reset
+    curwin->w_virtcol_first_char = 0;
+#endif
 
     /*
      * Compute the number of virtual columns.
@@ -1055,6 +1068,19 @@ curs_columns(
 #endif
 	    )
     {
+#ifdef FEAT_PROP_POPUP
+	if (curwin->w_virtcol_first_char > 0)
+	{
+	    int cols = (curwin->w_width - extra);
+	    int rows = cols > 0 ? curwin->w_virtcol_first_char / cols : 1;
+
+	    // each "above" text prop shifts the text one row down
+	    curwin->w_wrow += rows;
+	    curwin->w_wcol -= rows * cols;
+	    endcol -= rows * cols;
+	    curwin->w_cline_height = rows + 1;
+	}
+#endif
 	/*
 	 * If Cursor is left of the screen, scroll rightwards.
 	 * If Cursor is right of the screen, scroll leftwards

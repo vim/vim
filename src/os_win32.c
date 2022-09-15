@@ -2834,7 +2834,11 @@ SaveConsoleTitleAndIcon(void)
 	return;
 
     // Extract the first icon contained in the Vim executable.
-    if (mch_icon_load((HANDLE *)&g_hVimIcon) == FAIL || g_hVimIcon == NULL)
+    if (
+# ifdef FEAT_LIBCALL
+	    mch_icon_load((HANDLE *)&g_hVimIcon) == FAIL ||
+# endif
+	    g_hVimIcon == NULL)
 	g_hVimIcon = ExtractIcon(NULL, (LPCSTR)exe_name, 0);
     if (g_hVimIcon != NULL)
 	g_fCanChangeIcon = TRUE;

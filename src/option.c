@@ -3994,7 +3994,8 @@ get_option_value(
 	if (stringval != NULL)
 	{
 	    if ((char_u **)varp == &p_pt)	// 'pastetoggle'
-		*stringval = str2special_save(*(char_u **)(varp), FALSE);
+		*stringval = str2special_save(*(char_u **)(varp), FALSE,
+									FALSE);
 #ifdef FEAT_CRYPT
 	    // never return the value of the crypt key
 	    else if ((char_u **)varp == &curbuf->b_p_key
@@ -4879,7 +4880,7 @@ put_setstring(
 	{
 	    s = *valuep;
 	    while (*s != NUL)
-		if (put_escstr(fd, str2special(&s, FALSE), 2) == FAIL)
+		if (put_escstr(fd, str2special(&s, FALSE, FALSE), 2) == FAIL)
 		    return FAIL;
 	}
 	// expand the option value, replace $HOME by ~

@@ -4308,6 +4308,10 @@ ex_substitute(exarg_T *eap)
 						  - regmatch.startpos[0].lnum;
 			    search_match_endcol = regmatch.endpos[0].col
 								 + len_change;
+			    if (search_match_lines == 0
+						   && search_match_endcol == 0)
+				// highlight at least one character for /^/
+				search_match_endcol = 1;
 			    highlight_match = TRUE;
 
 			    update_topline();
@@ -4680,7 +4684,8 @@ ex_substitute(exarg_T *eap)
 				last_line = lnum + 1;
 			    }
 #ifdef FEAT_PROP_POPUP
-			    adjust_props_for_split(lnum + 1, lnum, plen, 1);
+			    adjust_props_for_split(lnum + 1, lnum,
+							       plen, 1, FALSE);
 #endif
 			    // all line numbers increase
 			    ++sub_firstlnum;

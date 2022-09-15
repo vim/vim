@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Jul 5
+" Last Change:	2022 Sep 09
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -721,12 +721,15 @@ au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 if !empty($XDG_CONFIG_HOME)
   au BufNewFile,BufRead $XDG_CONFIG_HOME/git/config		setf gitconfig
   au BufNewFile,BufRead $XDG_CONFIG_HOME/git/attributes		setf gitattributes
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/git/ignore		setf gitignore
 endif
 au BufNewFile,BufRead .gitattributes,*.git/info/attributes	setf gitattributes
-au BufNewFile,BufRead */.config/git/attributes  		setf gitattributes
-au BufNewFile,BufRead */etc/gitattributes  			setf gitattributes
-au BufNewFile,BufRead git-rebase-todo		setf gitrebase
-au BufRead,BufNewFile .gitsendemail.msg.??????	setf gitsendemail
+au BufNewFile,BufRead */.config/git/attributes			setf gitattributes
+au BufNewFile,BufRead */etc/gitattributes			setf gitattributes
+au BufNewFile,BufRead .gitignore,*.git/info/exclude		setf gitignore
+au BufNewFile,BufRead */.config/git/ignore			setf gitignore
+au BufNewFile,BufRead git-rebase-todo				setf gitrebase
+au BufRead,BufNewFile .gitsendemail.msg.??????			setf gitsendemail
 au BufNewFile,BufRead *.git/*
       \ if getline(1) =~# '^\x\{40,\}\>\|^ref: ' |
       \   setf git |
@@ -871,11 +874,11 @@ au BufNewFile,BufRead *.htt,*.htb		setf httest
 
 " i3
 au BufNewFile,BufRead */i3/config		setf i3config
-au BufNewFile,BufRead */.i3/config  	setf i3config
+au BufNewFile,BufRead */.i3/config		setf i3config
 
 " sway
 au BufNewFile,BufRead */sway/config		setf swayconfig
-au BufNewFile,BufRead */.sway/config	setf swayconfig
+au BufNewFile,BufRead */.sway/config		setf swayconfig
 
 " Icon
 au BufNewFile,BufRead *.icn			setf icon
@@ -1719,6 +1722,9 @@ au BufNewFile,BufRead *.sdl,*.pr		setf sdl
 
 " sed
 au BufNewFile,BufRead *.sed			setf sed
+
+" SubRip
+au BufNewFile,BufRead *.srt			setf srt
 
 " svelte
 au BufNewFile,BufRead *.svelte			setf svelte
@@ -2576,6 +2582,8 @@ au BufNewFile,BufRead *.txt
 	\|   setf text
 	\| endif
 
+" Blueprint markup files
+au BufNewFile,BufRead *.blp			setf blueprint
 
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.

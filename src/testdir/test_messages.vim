@@ -401,6 +401,28 @@ func Test_echowindow()
           echowindow 'line' n
         endfor
       endfunc
+
+      def TwoMessages()
+        popup_clear()
+        set cmdheight=2
+        redraw
+        timer_start(100, (_) => {
+            echowin 'message'
+          })
+        echo 'one'
+        echo 'two'
+      enddef
+
+      def ThreeMessages()
+        popup_clear()
+        redraw
+        timer_start(100, (_) => {
+            echowin 'later message'
+          })
+        echo 'one'
+        echo 'two'
+        echo 'three'
+      enddef
   END
   call writefile(lines, 'XtestEchowindow')
   let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
@@ -414,6 +436,16 @@ func Test_echowindow()
 
   call term_sendkeys(buf, ":call ManyMessages()\<CR>")
   call VerifyScreenDump(buf, 'Test_echowindow_4', {})
+
+  call term_sendkeys(buf, ":call TwoMessages()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_5', {})
+
+  call term_sendkeys(buf, ":call ThreeMessages()\<CR>")
+  sleep 120m
+  call VerifyScreenDump(buf, 'Test_echowindow_6', {})
+
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_7', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -438,6 +470,26 @@ func Test_echowin_eval()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestEchowindow')
+endfunc
+
+" messages window should not be used for showing the mode
+func Test_echowin_showmode()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one', 'two'])
+      timer_start(100, (_) => {
+           echowin 'echo window'
+         })
+      normal V
+  END
+  call writefile(lines, 'XtestEchowinMode', 'D')
+  let buf = RunVimInTerminal('-S XtestEchowinMode', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_echowin_showmode', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 

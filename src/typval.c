@@ -410,7 +410,7 @@ check_for_nonempty_string_arg(typval_T *args, int idx)
 check_for_opt_string_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_string_arg(args, idx) != FAIL);
+	    || check_for_string_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 /*
@@ -434,7 +434,7 @@ check_for_number_arg(typval_T *args, int idx)
 check_for_opt_number_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_number_arg(args, idx) != FAIL);
+	    || check_for_number_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 /*
@@ -532,7 +532,7 @@ check_for_nonnull_list_arg(typval_T *args, int idx)
 check_for_opt_list_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_list_arg(args, idx) != FAIL);
+	    || check_for_list_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 /*
@@ -573,7 +573,7 @@ check_for_nonnull_dict_arg(typval_T *args, int idx)
 check_for_opt_dict_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_dict_arg(args, idx) != FAIL);
+	    || check_for_dict_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
@@ -599,7 +599,7 @@ check_for_chan_or_job_arg(typval_T *args, int idx)
 check_for_opt_chan_or_job_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_chan_or_job_arg(args, idx) != FAIL);
+	    || check_for_chan_or_job_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 /*
@@ -623,7 +623,7 @@ check_for_job_arg(typval_T *args, int idx)
 check_for_opt_job_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_job_arg(args, idx) != FAIL);
+	    || check_for_job_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 #endif
 
@@ -649,7 +649,7 @@ check_for_string_or_number_arg(typval_T *args, int idx)
 check_for_opt_string_or_number_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_string_or_number_arg(args, idx) != FAIL);
+	    || check_for_string_or_number_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 /*
@@ -669,7 +669,7 @@ check_for_buffer_arg(typval_T *args, int idx)
 check_for_opt_buffer_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_buffer_arg(args, idx));
+	    || check_for_buffer_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 /*
@@ -689,7 +689,7 @@ check_for_lnum_arg(typval_T *args, int idx)
 check_for_opt_lnum_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_lnum_arg(args, idx));
+	    || check_for_lnum_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
@@ -746,7 +746,7 @@ check_for_string_or_list_or_blob_arg(typval_T *args, int idx)
 check_for_opt_string_or_list_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_string_or_list_arg(args, idx));
+	    || check_for_string_or_list_arg(args, idx) != FAIL) ? OK : FAIL;
 }
 
 /*
@@ -788,7 +788,26 @@ check_for_string_or_number_or_list_arg(typval_T *args, int idx)
 check_for_opt_string_or_number_or_list_arg(typval_T *args, int idx)
 {
     return (args[idx].v_type == VAR_UNKNOWN
-	    || check_for_string_or_number_or_list_arg(args, idx) != FAIL);
+	    || check_for_string_or_number_or_list_arg(args, idx)
+							!= FAIL) ? OK : FAIL;
+}
+
+/*
+ * Give an error and return FAIL unless "args[idx]" is a string or a number
+ * or a list or a blob.
+ */
+    int
+check_for_string_or_number_or_list_or_blob_arg(typval_T *args, int idx)
+{
+    if (args[idx].v_type != VAR_STRING
+	    && args[idx].v_type != VAR_NUMBER
+	    && args[idx].v_type != VAR_LIST
+	    && args[idx].v_type != VAR_BLOB)
+    {
+	semsg(_(e_string_number_list_or_blob_required_for_argument_nr), idx + 1);
+	return FAIL;
+    }
+    return OK;
 }
 
 /*

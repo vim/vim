@@ -540,6 +540,7 @@ vim_main2(void)
 	// don't have them.
 	if (!gui.in_use && params.evim_mode)
 	    mch_exit(1);
+	firstwin->w_prev_height = firstwin->w_height; // may have changed
     }
 #endif
 

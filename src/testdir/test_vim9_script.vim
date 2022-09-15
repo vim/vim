@@ -2259,17 +2259,33 @@ def Test_for_loop()
 enddef
 
 def Test_for_loop_with_closure()
+  # using the loop variable in a closure results in the last used value
   var lines =<< trim END
       var flist: list<func>
       for i in range(5)
-        var inloop = i
-        flist[i] = () => inloop
+        flist[i] = () => i
       endfor
       for i in range(5)
         assert_equal(4, flist[i]())
       endfor
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # using a local variable set to the loop variable in a closure results in the
+  # value at that moment
+  lines =<< trim END
+      var flist: list<func>
+      for i in range(5)
+        var inloop = i
+        flist[i] = () => inloop
+      endfor
+      for i in range(5)
+        assert_equal(i, flist[i]())
+      endfor
+  END
+  # FIXME
+  # v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckScriptSuccess(['vim9script'] + lines)
 
   lines =<< trim END
       var flist: list<func>
@@ -2280,10 +2296,12 @@ def Test_for_loop_with_closure()
             }
       endfor
       for i in range(5)
-        assert_equal(4, flist[i]())
+        assert_equal(i, flist[i]())
       endfor
   END
-  v9.CheckDefAndScriptSuccess(lines)
+  # FIXME
+  # v9.CheckDefAndScriptSuccess(lines)
+  v9.CheckScriptSuccess(['vim9script'] + lines)
 enddef
 
 def Test_for_loop_fails()
@@ -4241,13 +4259,12 @@ func Test_misplaced_type()
 endfunc
 
 def Run_Test_misplaced_type()
-  writefile(['let g:somevar = "asdf"'], 'XTest_misplaced_type')
+  writefile(['let g:somevar = "asdf"'], 'XTest_misplaced_type', 'D')
   var buf = g:RunVimInTerminal('-S XTest_misplaced_type', {'rows': 6})
-  term_sendkeys(buf, ":vim9cmd echo islocked('g:somevar: string')\<CR>")
+  term_sendkeys(buf, ":vim9cmd echo islocked('somevar: string')\<CR>")
   g:VerifyScreenDump(buf, 'Test_misplaced_type', {})
 
   g:StopVimInTerminal(buf)
-  delete('XTest_misplaced_type')
 enddef
 
 " Ensure echo doesn't crash when stringifying empty variables.

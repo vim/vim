@@ -1639,6 +1639,9 @@ do_source_ext(
 	}
     }
 # endif
+#else
+    // Keep the sourcing name/lnum, for recursive calls.
+    estack_push(ETYPE_SCRIPT, fname_exp, 0);
 #endif
 
     cookie.conv.vc_type = CONV_NONE;		// no conversion

@@ -4332,7 +4332,10 @@ E1295	textprop.txt	/*E1295*
 E1296	textprop.txt	/*E1296*
 E1297	vim9.txt	/*E1297*
 E1298	vim9.txt	/*E1298*
+E1299	tagsrch.txt	/*E1299*
 E13	message.txt	/*E13*
+E1300	userfunc.txt	/*E1300*
+E1302	eval.txt	/*E1302*
 E131	userfunc.txt	/*E131*
 E132	userfunc.txt	/*E132*
 E133	userfunc.txt	/*E133*

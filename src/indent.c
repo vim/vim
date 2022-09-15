@@ -1289,6 +1289,9 @@ change_indent(
     // for the following tricks we don't want list mode
     save_p_list = curwin->w_p_list;
     curwin->w_p_list = FALSE;
+#ifdef FEAT_PROP_POPUP
+    ignore_text_props = TRUE;
+#endif
     vc = getvcol_nolist(&curwin->w_cursor);
     vcol = vc;
 
@@ -1440,6 +1443,9 @@ change_indent(
 	    ++start_col;
 	}
     }
+#ifdef FEAT_PROP_POPUP
+    ignore_text_props = FALSE;
+#endif
 
     // For MODE_VREPLACE state, we also have to fix the replace stack.  In this
     // case it is always possible because we backspace over the whole line and

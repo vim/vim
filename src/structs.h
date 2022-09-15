@@ -813,12 +813,13 @@ typedef struct textprop_S
 #define TP_FLAG_CONT_PREV	0x2	// property was continued from prev line
 
 // without these text is placed after the end of the line
-#define TP_FLAG_ALIGN_RIGHT	0x10	// virtual text is right-aligned
-#define TP_FLAG_ALIGN_BELOW	0x20	// virtual text on next screen line
+#define TP_FLAG_ALIGN_RIGHT	0x010	// virtual text is right-aligned
+#define TP_FLAG_ALIGN_ABOVE	0x020	// virtual text above the line
+#define TP_FLAG_ALIGN_BELOW	0x040	// virtual text on next screen line
 
-#define TP_FLAG_WRAP		0x40	// virtual text wraps - when missing
+#define TP_FLAG_WRAP		0x080	// virtual text wraps - when missing
 					// text is truncated
-#define TP_FLAG_START_INCL	0x80	// "start_incl" copied from proptype
+#define TP_FLAG_START_INCL	0x100	// "start_incl" copied from proptype
 
 #define PROP_TEXT_MIN_CELLS	4	// minimun number of cells to use for
 					// the text, even when truncating
@@ -1625,6 +1626,23 @@ typedef enum {
 typedef struct svar_S svar_T;
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Info used by a ":for" loop.
+ */
+typedef struct
+{
+    int		fi_semicolon;	// TRUE if ending in '; var]'
+    int		fi_varcount;	// nr of variables in the list
+    int		fi_break_count;	// nr of line breaks encountered
+    listwatch_T	fi_lw;		// keep an eye on the item used.
+    list_T	*fi_list;	// list being used
+    int		fi_bi;		// index of blob
+    blob_T	*fi_blob;	// blob being used
+    char_u	*fi_string;	// copy of string being used
+    int		fi_byte_idx;	// byte index in fi_string
+    int		fi_cs_flags;	// cs_flags or'ed together
+} forinfo_T;
+
 typedef struct funccall_S funccall_T;
 
 // values used for "uf_def_status"
@@ -3569,6 +3587,8 @@ struct window_S
     int		w_winrow;	    // first row of window in screen
     int		w_height;	    // number of rows in window, excluding
 				    // status/command/winbar line(s)
+    int		w_prev_winrow;	    // previous winrow used for 'splitscroll'
+    int		w_prev_height;	    // previous height used for 'splitscroll'
 
     int		w_status_height;    // number of status lines (0 or 1)
     int		w_wincol;	    // Leftmost column of window in screen.
@@ -3678,6 +3698,11 @@ struct window_S
 				    // more than one screen line or when
 				    // w_leftcol is non-zero
 
+#ifdef FEAT_PROP_POPUP
+    colnr_T	w_virtcol_first_char;	// offset for w_virtcol when there are
+					// virtual text properties above the
+					// line
+#endif
     /*
      * w_wrow and w_wcol specify the cursor position in the window.
      * This is related to positions in the window, not in the display or
@@ -4607,6 +4632,7 @@ typedef struct {
     textprop_T	*cts_text_props;	// text props (allocated)
     char	cts_has_prop_with_text; // TRUE if if a property inserts text
     int         cts_cur_text_width;     // width of current inserted text
+    int         cts_first_char;		// width text props above the line
     int		cts_with_trailing;	// include size of trailing props with
 					// last character
     int		cts_start_incl;		// prop has true "start_incl" arg
