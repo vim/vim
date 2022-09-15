@@ -420,3 +420,9 @@ def Func()
 Cmd %
 enddef
 " END_INDENT
+
+" START_INDENT
+if end == 'xxx' || end == 'yyy'
+echo
+endif
+" END_INDENT

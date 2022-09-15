@@ -36,6 +36,10 @@ const INLINE_COMMENT: string = '\%(#\|"\\\=\s\).*$'
 # PATTERN_DELIMITER {{{2
 
 const PATTERN_DELIMITER: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
+
+# END_OF_LINE_OR_COMMAND {{{2
+
+const END_OF_LINE_OR_COMMAND: string = $'\s*\%(|\|$\|{INLINE_COMMENT}\)'
 # }}}2
 
 # COMMENT {{{2
@@ -83,7 +87,7 @@ const START_MIDDLE_END: dict<list<string>> = {
     endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
     augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
 }->map((_, kwds: list<string>) =>
-kwds->map((_, kwd: string) => kwd == '' ? '' : $'\%(^\||\)\s*\%({kwd->printf('\C\<\%%(%s\)\>')}\)'))
+kwds->map((_, kwd: string) => kwd == '' ? '' : $'\%(^\|[^|]|\)\s*\%({kwd->printf('\C\<\%%(%s\)\>')}\)'))
 
 # STARTS_WITH_LINE_CONTINUATION {{{2
 
@@ -165,8 +169,8 @@ cmds =<< trim END
     aug\%[roup]\s\+[eE][nN][dD]
 END
 
-const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\)\s*\%(|\|$\|{INLINE_COMMENT}\)'
-    .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\=\s*\%(|\|$\|{INLINE_COMMENT}\)'
+const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\){END_OF_LINE_OR_COMMAND}'
+    .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_LINE_OR_COMMAND}'
     .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
 
 # ENDS_BLOCK {{{2
@@ -180,7 +184,7 @@ const ENDS_BLOCK: string = '^\s*\%('
     .. '\|' .. 'endfu\%[nction]'
     .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
     .. '\|' .. '[]})]'
-    .. $'\)\s*\%(|\|$\|{INLINE_COMMENT}\)'
+    .. $'\){END_OF_LINE_OR_COMMAND}'
 
 # CLOSING_BRACKET {{{2
 
