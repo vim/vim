@@ -434,3 +434,12 @@ line: 2})
 endif
 setwinvar(id, 'name', 3)
 " END_INDENT
+
+" START_INDENT
+var d = [
+{a: 'x',
+b: 'y'},
+FuncA(),
+FuncB(),
+]
+" END_INDENT

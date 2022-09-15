@@ -263,6 +263,11 @@ export def Expr(lnum: number): number # {{{2
             return -1
         endif
 
+    elseif line_B.text =~ $'{CLOSING_BRACKET}\ze,\s*$'
+        var col: number = line_B.text->matchstrpos($'{CLOSING_BRACKET}\ze,\s*$')[2]
+        var open_bracket: number = MatchingOpenBracket(line_B, col)
+        return open_bracket->Indent()
+
     elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
             || line_B.text =~ DICT_KEY_OR_FUNC_PARAM
         if line_B.text =~ DICT_KEY_OR_FUNC_PARAM
@@ -542,10 +547,10 @@ function FullCommand(kwd)
     return fullcommand(a:kwd)
 endfunction
 
-def MatchingOpenBracket(line: dict<any>): number # {{{2
+def MatchingOpenBracket(line: dict<any>, col = 1): number # {{{2
     var end: string = line.text->matchstr(CLOSING_BRACKET)
     var start: string = {']': '[', '}': '{', ')': '('}[end]
-    cursor(line.lnum, 1)
+    cursor(line.lnum, col)
     return FindStart(start, '', end)
 enddef
 
