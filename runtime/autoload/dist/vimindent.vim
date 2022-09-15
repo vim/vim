@@ -285,6 +285,10 @@ export def Expr(lnum: number): number # {{{2
         # dictionary key
         else
             start = FindStart('{', '', '}')
+            if start <= 0
+                return -1
+            endif
+
             var offset: number
             if line_A.text =~ DICT_KEY_OR_FUNC_PARAM
                 # indent a dictionary key at the start of a line
@@ -319,6 +323,7 @@ export def Expr(lnum: number): number # {{{2
         if !line_B->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
             # indent items in multiline nested list/dictionary
             if line_B->EndsWithOpeningBracket()
+                    && line_B.text !~ '],\s*[\s*$'
                 return base_ind + shiftwidth()
             endif
             return base_ind
