@@ -255,6 +255,11 @@ export def Expr(lnum: number): number # {{{2
         if !START_MIDDLE_END->has_key(kwd)
             return -1
         endif
+
+        # If the cursor  is after the match  for the end pattern,  we won't find
+        # the start of the block.  Let's make sure that doesn't happen.
+        cursor(line_A.lnum, 1)
+
         var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
         var block_start = FindStart(start, middle, end)
         if block_start > 0
@@ -631,7 +636,10 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     # And  usually, the  first occurrence  is  in the  middle of  a sequence  of
     # non-whitespace characters.  If we can find  such a `/`, we assume that the
     # trailing `/` is not an operator.
-    if line.text =~ $'\%(\S*\({PATTERN_DELIMITER}\)\S\+\|\S\+\({PATTERN_DELIMITER}\)\S*\)'
+    # Warning: Don't use `PATTERN_DELIMITER`.  Too costly.
+    # Sometimes, it gives `E363`.
+    var delim: string = '[/]'
+    if line.text =~ $'\%(\S*\({delim}\)\S\+\|\S\+\({delim}\)\S*\)'
             # `\1` is the pattern delimiter
             .. $'\s\+\1\s*\%($\|{INLINE_COMMENT}\)'
         return false
