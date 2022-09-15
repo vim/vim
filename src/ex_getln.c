@@ -4405,7 +4405,6 @@ open_cmdwin(void)
     int			save_restart_edit = restart_edit;
     int			save_State = State;
     int			save_exmode = exmode_active;
-    int			save_p_spsc;
 #ifdef FEAT_RIGHTLEFT
     int			save_cmdmsg_rl = cmdmsg_rl;
 #endif
@@ -4645,10 +4644,8 @@ open_cmdwin(void)
 	wp = curwin;
 	set_bufref(&bufref, curbuf);
 
-	save_p_spsc = p_spsc;
-	p_spsc = TRUE;
+	skip_win_fix_cursor = TRUE;
 	win_goto(old_curwin);
-	p_spsc = save_p_spsc;
 
 	// win_goto() may trigger an autocommand that already closes the
 	// cmdline window.
@@ -4662,6 +4659,7 @@ open_cmdwin(void)
 
 	// Restore window sizes.
 	win_size_restore(&winsizes);
+	skip_win_fix_cursor = FALSE;
     }
 
     ga_clear(&winsizes);

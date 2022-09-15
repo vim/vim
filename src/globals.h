@@ -1737,3 +1737,8 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 // While executing a regexp and set to OPTION_MAGIC_ON or OPTION_MAGIC_OFF this
 // overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.
 EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
+
+#ifdef FEAT_CMDWIN
+// Skip win_fix_cursor() call for 'nosplitscroll' when cmdwin is closed.
+EXTERN int skip_win_fix_cursor INIT(= FALSE);
+#endif

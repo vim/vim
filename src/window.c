@@ -6410,6 +6410,10 @@ win_fix_cursor(int normal)
 
     if (wp->w_buffer->b_ml.ml_line_count < wp->w_height)
 	return;
+#ifdef FEAT_CMDWIN
+    if (skip_win_fix_cursor)
+	return;
+#endif
 
     so = MIN(wp->w_height / 2, so);
     // Check if cursor position is above topline or below botline.
