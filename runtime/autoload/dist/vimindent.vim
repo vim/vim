@@ -274,6 +274,10 @@ export def Expr(lnum: number): number # {{{2
         return open_bracket->Indent()
 
     elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
+            && line_B.text =~ DICT_KEY_OR_FUNC_PARAM
+        return Indent(line_B.lnum)
+
+    elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
             || line_B.text =~ DICT_KEY_OR_FUNC_PARAM
         if line_B.text =~ DICT_KEY_OR_FUNC_PARAM
             cursor(line_B.lnum, 1)

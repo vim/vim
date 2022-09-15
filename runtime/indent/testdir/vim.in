@@ -456,3 +456,14 @@ var ll = [[
     8,
     9]]
 " END_INDENT
+
+" START_INDENT
+var ld = [{
+a: 'xxx',
+b: 'yyy'}, {
+c: 'xxx',
+d: 'yyy'}, {
+e: 'xxx',
+f: 'yyy'}, {
+}]
+" END_INDENT
