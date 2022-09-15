@@ -19,7 +19,7 @@ var cmds: list<string>
 # `LINE_CONTINUATION_AT_END`.
 const CURLY_BLOCK: string = '^\s*{\s*$'
     .. '\|' .. '^.*\zs\s=>\s\+{\s*$'
-    .. '\|' ..  '^\%(\s*\|.*|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{\s*$'
+    .. '\|' ..  '^\%(\s*\|.*[^|]|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{\s*$'
 
 # OPERATOR {{{2
 
@@ -39,7 +39,7 @@ const PATTERN_DELIMITER: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)
 
 # END_OF_LINE_OR_COMMAND {{{2
 
-const END_OF_LINE_OR_COMMAND: string = $'\s*\%(|\|$\|{INLINE_COMMENT}\)'
+const END_OF_LINE_OR_COMMAND: string = $'\s*\%(||\@!\|$\|{INLINE_COMMENT}\)'
 # }}}2
 
 # COMMENT {{{2
