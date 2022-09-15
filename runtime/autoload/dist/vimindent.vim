@@ -83,7 +83,7 @@ const START_MIDDLE_END: dict<list<string>> = {
     endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
     augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
 }->map((_, kwds: list<string>) =>
-kwds->map((_, kwd: string) => kwd == '' ? '' : $'\%(^\||\)\s*\%({kwd->printf('\C\<\%%(%s\)\>')}\)'))
+kwds->map((_, kwd: string) => kwd == '' ? '' : $'\%(^\||\)\s*\%({kwd->printf($'\C\<\%%(%s\)\s*\%(|\|$\|{INLINE_COMMENT}\)')}\)'))
 
 # STARTS_WITH_LINE_CONTINUATION {{{2
 
@@ -518,9 +518,9 @@ def Find( # {{{2
         s = s->escape('[]')
     endif
     if end == '[' || end == ']'
-    e = e->escape('[]')
-  endif
-  return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
+        e = e->escape('[]')
+    endif
+    return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
 enddef
 
 def GetBlockStartKeyword(line: string): string # {{{2
