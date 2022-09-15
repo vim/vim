@@ -615,7 +615,13 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     #     ^--^
     #      ✘
     # }}}
-    if line.text =~ $'\s\+\({PATTERN_DELIMITER}\)\S\@=.\{{-}}\1\s*\%($\|{INLINE_COMMENT}\)'
+    # When `/` is used as a pattern delimiter, it's always present twice.
+    # And  usually, the  first occurrence  is  in the  middle of  a sequence  of
+    # non-whitespace characters.  If we can find  such a `/`, we assume that the
+    # trailing `/` is not an operator.
+    if line.text =~ $'\%(\S*\({PATTERN_DELIMITER}\)\S\+\|\S\+\({PATTERN_DELIMITER}\)\S*\)'
+            # `\1` is the pattern delimiter
+            .. $'\s\+\1\s*\%($\|{INLINE_COMMENT}\)'
         return false
     endif
 
