@@ -40,6 +40,10 @@ const PATTERN_DELIMITER: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)
 # END_OF_LINE_OR_COMMAND {{{2
 
 const END_OF_LINE_OR_COMMAND: string = $'\s*\%(||\@!\|$\|{INLINE_COMMENT}\)'
+
+# CLOSING_BRACKET {{{2
+
+const CLOSING_BRACKET: string = '[]})]'
 # }}}2
 
 # COMMENT {{{2
@@ -100,7 +104,7 @@ const STARTS_WITH_LINE_CONTINUATION: string = '^\s*\%('
     .. '\|' .. '|'
     # TODO: `}` at the start of a line is not necessarily a continuation line.
     # Could be the end of a block.
-    .. '\|' .. '[]})]'
+    .. '\|' .. $'{CLOSING_BRACKET}'
     .. '\)'
 
 # STARTS_WITH_RANGE {{{2
@@ -183,16 +187,12 @@ const ENDS_BLOCK: string = '^\s*\%('
     .. '\|' .. 'enddef'
     .. '\|' .. 'endfu\%[nction]'
     .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
-    .. '\|' .. '[]})]'
+    .. '\|' .. $'{CLOSING_BRACKET}'
     .. $'\){END_OF_LINE_OR_COMMAND}'
-
-# CLOSING_BRACKET {{{2
-
-const CLOSING_BRACKET: string = '[]})]'
 
 # STARTS_WITH_CLOSING_BRACKET {{{2
 
-const STARTS_WITH_CLOSING_BRACKET: string = '^\s*[]})]'
+const STARTS_WITH_CLOSING_BRACKET: string = $'^\s*{CLOSING_BRACKET}'
 
 # STARTS_FUNCTION {{{2
 
@@ -263,8 +263,8 @@ export def Expr(lnum: number): number # {{{2
             return -1
         endif
 
-    elseif line_B.text =~ $'{CLOSING_BRACKET}\ze,\s*$'
-        var col: number = line_B.text->matchstrpos($'{CLOSING_BRACKET}\ze,\s*$')[2]
+    elseif line_B.text =~ $'{CLOSING_BRACKET},\s*$'
+        var col: number = line_B.text->matchstrpos($'{CLOSING_BRACKET},\s*$')[1]
         var open_bracket: number = MatchingOpenBracket(line_B, col)
         return open_bracket->Indent()
 
@@ -547,10 +547,10 @@ function FullCommand(kwd)
     return fullcommand(a:kwd)
 endfunction
 
-def MatchingOpenBracket(line: dict<any>, col = 1): number # {{{2
+def MatchingOpenBracket(line: dict<any>, col = 0): number # {{{2
     var end: string = line.text->matchstr(CLOSING_BRACKET)
     var start: string = {']': '[', '}': '{', ')': '('}[end]
-    cursor(line.lnum, col)
+    cursor(line.lnum, col + 1)
     return FindStart(start, '', end)
 enddef
 
