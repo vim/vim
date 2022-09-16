@@ -2,6 +2,7 @@
 void redraw_for_cursorline(win_T *wp);
 void update_topline_redraw(void);
 void update_topline(void);
+void update_curswant_force(void);
 void update_curswant(void);
 void check_cursor_moved(win_T *wp);
 void changed_window_setting(void);
