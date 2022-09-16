@@ -271,6 +271,20 @@ export def Expr(lnum: number): number # {{{2
     # function start.  We can't always rely on the cache for this.  For example,
     # there is no cache if we just press `==` on the line below the header.
     if line_B.text =~ ')'
+            # This is  way too costly  to do that on  every line with  a closing
+            # paren  (because  of `synstack()`).   It's  mostly  useful when  we
+            # indent the line  below the function header; let's do  it only once
+            # per indent command.
+            && !exists('b:did_indent_a_line')
+        b:did_indent_a_line = true
+        autocmd_add([{
+            cmd: 'unlet! b:did_indent_a_line',
+            event: 'ModeChanged',
+            group: '__VimIndent__',
+            once: true,
+            pattern: '*:n',
+            replace: true,
+        }])
         var pos: list<number> = getcurpos()
         cursor(line_B.lnum, 1)
         var start: number = SearchPairStart('(', '', ')')
