@@ -1824,7 +1824,7 @@ fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, ufunc_T *fp)
     char_u	*s;
     typval_T	*listarg = argv + argskip;
 
-    if (!fp->uf_varargs && fp->uf_args.ga_len <= argskip)
+    if (!has_varargs(fp) && fp->uf_args.ga_len <= argskip)
 	// called function doesn't take a submatches argument
 	return argskip;
 
