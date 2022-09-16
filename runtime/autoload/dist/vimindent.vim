@@ -277,14 +277,7 @@ export def Expr(lnum: number): number # {{{2
             # per indent command.
             && !exists('b:did_indent_a_line')
         b:did_indent_a_line = true
-        autocmd_add([{
-            cmd: 'unlet! b:did_indent_a_line',
-            event: 'ModeChanged',
-            group: '__VimIndent__',
-            once: true,
-            pattern: '*:n',
-            replace: true,
-        }])
+        RegisterCacheInvalidation()
         var pos: list<number> = getcurpos()
         cursor(line_B.lnum, 1)
         var start: number = SearchPairStart('(', '', ')')
@@ -564,7 +557,7 @@ enddef
 def RegisterCacheInvalidation() # {{{2
     # invalidate the cache so that it's not used for the next `=` normal command
     autocmd_add([{
-        cmd: 'unlet! b:vimindent',
+        cmd: 'unlet! b:vimindent b:did_indent_a_line',
         event: 'ModeChanged',
         group: '__VimIndent__',
         once: true,
