@@ -20,6 +20,11 @@
 # include <float.h>
 #endif
 
+// When not generating protos this is included in proto.h
+#ifdef PROTO
+# include "vim9.h"
+#endif
+
 /*
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
  * be easily freed later.
