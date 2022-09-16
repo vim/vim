@@ -551,3 +551,11 @@ return false
 endif
 enddef
 " END_INDENT
+
+" START_INDENT
+def Func(
+n: number)
+#
+echo
+enddef
+" END_INDENT

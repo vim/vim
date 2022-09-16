@@ -232,14 +232,22 @@ export def Expr(lnum: number): number # {{{2
         return ind
     endif
 
-    # Don't move this block before the heredoc code.
+    # Don't move this block before the heredoc one.
     # A heredoc might be assigned on the very first line.
+    # And if it is, we need to cache some info.
     if line_A.lnum == 1
         return 0
     endif
 
     if line_A.text !~ '\S'
         return -1
+    endif
+
+    # Don't move this block after the function header one.
+    # Otherwise, we  might clear the cache  too early if the  line following the
+    # header is a comment.
+    if line_A.text =~ COMMENT
+        return CommentIndent()
     endif
 
     if line_A.text->AtStartOf('FuncHeader')
@@ -256,11 +264,21 @@ export def Expr(lnum: number): number # {{{2
         endif
     endif
 
-    if line_A.text =~ COMMENT
-        return CommentIndent()
-    endif
-
     line_B = PrevCodeLine(line_A.lnum)
+
+    # If the previous  line contains a closing  paren, it might be the  end of a
+    # function header.  If it is, we need  to compute the indent relative to the
+    # function start.  We can't always rely on the cache for this.  For example,
+    # there is no cache if we just press `==` on the line below the header.
+    if line_B.text =~ ')'
+        var pos: list<number> = getcurpos()
+        cursor(line_B.lnum, 1)
+        var start: number = SearchPairStart('(', '', ')')
+        if start > 0 && start->getline() =~ $'^\s*{FUNC_START}'
+            return start->Indent() + shiftwidth()
+        endif
+        setpos('.', pos)
+    endif
 
     if line_B.text =~ STARTS_CURLY_BLOCK
         return Indent(line_B.lnum) + shiftwidth()
@@ -475,12 +493,16 @@ def CommentIndent(): number # {{{2
     if next == 0
         return 0
     endif
+    var vimindent_save: dict<any> = get(b:, 'vimindent', {})
     var ind: number = next->Expr()
-    # The previous `Expr()` might have set `b:vimindent`.
-    # Setting  the variable  too early  can cause  issues (e.g.  when indenting  2
-    # commented lines above  a heredoc).  Let's make sure the  variable is not set
-    # too early.
-    unlet! b:vimindent
+    # The previous `Expr()` might have set or deleted `b:vimindent`.
+    # This could  cause issues (e.g.  when indenting  2 commented lines  above a
+    # heredoc).  Let's make sure the state of the variable is not altered.
+    if vimindent_save->empty()
+        unlet! b:vimindent
+    else
+        b:vimindent = vimindent_save
+    endif
     if getline(next) =~ ENDS_BLOCK
         return ind + shiftwidth()
     else
