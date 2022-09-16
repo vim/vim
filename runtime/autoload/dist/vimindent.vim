@@ -697,6 +697,11 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
         return false
     endif
 
+    # `:help cd-`
+    if line.text =~ '[lt]\=cd!\=\s\+-\s*$'
+        return false
+    endif
+
     return NonCommentedMatch(line, LINE_CONTINUATION_AT_EOL)
 enddef
 

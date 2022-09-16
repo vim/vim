@@ -526,3 +526,12 @@ END
 echo
 enddef
 " END_INDENT
+
+" START_INDENT
+def Foo()
+lcd -
+enddef
+def Bar()
+echo
+enddef
+" END_INDENT
