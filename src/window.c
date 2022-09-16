@@ -6403,7 +6403,6 @@ win_fix_scroll(int resize)
     static void
 win_fix_cursor(int normal)
 {
-    int      top = FALSE;
     win_T    *wp = curwin;
     long     so = get_scrolloff_value();
     linenr_T nlnum = 0;
@@ -6418,7 +6417,7 @@ win_fix_cursor(int normal)
     so = MIN(wp->w_height / 2, so);
     // Check if cursor position is above topline or below botline.
     if (wp->w_cursor.lnum < (wp->w_topline + so) && wp->w_topline != 1)
-	top = nlnum = MIN(wp->w_topline + so, wp->w_buffer->b_ml.ml_line_count);
+	nlnum = MIN(wp->w_topline + so, wp->w_buffer->b_ml.ml_line_count);
     else if (wp->w_cursor.lnum > (wp->w_botline - so - 1)
 	    && (wp->w_botline - wp->w_buffer->b_ml.ml_line_count) != 1)
 	nlnum = MAX(wp->w_botline - so - 1, 1);
@@ -6436,7 +6435,11 @@ win_fix_cursor(int normal)
 	}
 	else
 	{   // Ensure cursor stays visible if we are not in normal mode.
-	    wp->w_fraction = top ? 0 : FRACTION_MULT;
+	    wp->w_fraction = 0.5 * FRACTION_MULT;
+	    // Make sure cursor is closer to topline than botline.
+	    if (so == wp->w_height / 2
+			  && nlnum - wp->w_topline > wp->w_botline - 1 - nlnum)
+		wp->w_fraction++;
 	    scroll_to_fraction(wp, wp->w_prev_height);
 	}
     }
