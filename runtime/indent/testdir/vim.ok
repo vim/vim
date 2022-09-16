@@ -559,3 +559,12 @@ def Func(
     echo
 enddef
 " END_INDENT
+
+" START_INDENT
+" INDENT_AT  this-line
+def Func(
+	n: number)
+    #
+    echo  # this-line
+enddef
+" END_INDENT
