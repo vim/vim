@@ -523,7 +523,7 @@ def Func()
     var h =<< END
 text
 END
-    echo
+    echo 'test'
 enddef
 " END_INDENT
 
@@ -541,4 +541,13 @@ if true
     n = Func(1, 2,
 	3)
 endif
+" END_INDENT
+
+" START_INDENT
+def Func(s: string,
+	n: number): bool
+    if true
+	return false
+    endif
+enddef
 " END_INDENT
