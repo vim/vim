@@ -230,7 +230,7 @@ export def Expr(lnum: number): number # {{{2
     # at the start of a heredoc
     if line_A.text =~ ASSIGNS_HEREDOC && !exists('b:vimindent_heredoc')
         CacheHeredoc(line_A.text, lnum)
-    elseif exists('b:vimindent_heredoc')
+    elseif exists('b:vimindent_heredoc') && !b:vimindent_heredoc->has_key('finished')
         return line_A.text->HereDocIndent()
     endif
 
@@ -392,6 +392,12 @@ def Offset( # {{{2
             && (line_B->EndsWithLineContinuation()
             || line_A.text =~ STARTS_WITH_LINE_CONTINUATION)
         return shiftwidth()
+
+    elseif exists('b:vimindent_heredoc')
+            && b:vimindent_heredoc->has_key('finished')
+        var offset: number = b:vimindent_heredoc.startlnum->Indent()
+        unlet! b:vimindent_heredoc
+        return offset
     endif
 
     return 0
@@ -402,7 +408,11 @@ def HereDocIndent(line: string): number # {{{2
     if line =~ $'^\s*{b:vimindent_heredoc.endmarker}$'
         # `END` must be at the very start of the line if the heredoc is not trimmed
         if !b:vimindent_heredoc.trim
-            unlet! b:vimindent_heredoc
+            # We can't invalidate the cache just yet.
+            # The indent of `END` is meaningless;  it's always 0.  The next line
+            # will need to be indented relative to the start of the heredoc.  It
+            # must know where it starts; it needs the cache.
+            b:vimindent_heredoc.finished = true
             return 0
         else
             var ind: number = b:vimindent_heredoc.startindent

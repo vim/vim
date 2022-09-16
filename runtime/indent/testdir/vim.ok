@@ -517,3 +517,12 @@ def Func()
     echo
 enddef
 " END_INDENT
+
+" START_INDENT
+def Func()
+    var h =<< END
+text
+END
+    echo
+enddef
+" END_INDENT
