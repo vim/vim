@@ -746,6 +746,27 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     #                    v
     #     catch /pattern /
     #
+    # When `/` is used as a pattern delimiter, it's always present twice.
+    # And  usually, the  first occurrence  is  in the  middle of  a sequence  of
+    # non-whitespace characters.  If we can find  such a `/`, we assume that the
+    # trailing `/` is not an operator.
+    # Warning: Here, don't use a too complex pattern.{{{
+    #
+    # In particular, avoid backreferences.
+    # For example, this would be too costly:
+    #
+    #     if line.text =~ $'\%(\S*\({PATTERN_DELIMITER}\)\S\+\|\S\+\({PATTERN_DELIMITER}\)\S*\)'
+    #             .. $'\s\+\1\s*\%($\|{INLINE_COMMENT}\)'
+    #
+    # Sometimes, it could even give `E363`.
+    #}}}
+    var delim: string = line.text
+        ->matchstr($'\s\+\zs{PATTERN_DELIMITER}\ze\s*\%($\|{INLINE_COMMENT}\)')
+    if !delim->empty()
+            && line.text =~ $'\%(\S*\V{delim}\m\S\+\|\S\+\V{delim}\m\S*\)'
+            .. $'\s\+\V{delim}\m\s*\%($\|{INLINE_COMMENT}\)'
+        return false
+    endif
     # TODO: We might still miss some corner cases:{{{
     #
     #                          conflated with arithmetic division
@@ -754,16 +775,15 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     #         echo
     #     ^--^
     #      ✘
+    #
+    # A better way to handle all these corner cases, would be to inspect the top
+    # of the syntax stack:
+    #
+    #     :echo synID('.', col('.'), v:false)->synIDattr('name')
+    #
+    # Unfortunately, the legacy syntax plugin is not accurate enough.
+    # For example, it doesn't highlight a slash as an operator.
     # }}}
-    # When `/` is used as a pattern delimiter, it's always present twice.
-    # And  usually, the  first occurrence  is  in the  middle of  a sequence  of
-    # non-whitespace characters.  If we can find  such a `/`, we assume that the
-    # trailing `/` is not an operator.
-    if line.text =~ $'\%(\S*\({PATTERN_DELIMITER}\)\S\+\|\S\+\({PATTERN_DELIMITER}\)\S*\)'
-            # `\1` is the pattern delimiter
-            .. $'\s\+\1\s*\%($\|{INLINE_COMMENT}\)'
-        return false
-    endif
 
     # `%` at the end of a line is tricky.
     # It might be the modulo operator or the current file (e.g. `edit %`).
@@ -783,6 +803,13 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
 
     # `:help cd-`
     if line.text =~ '[lt]\=cd!\=\s\+-\s*$'
+        return false
+    endif
+
+    #             not a comparison operator
+    #             vv
+    #     normal! ==
+    if line.text =~ '\<norm\%[al]!\=\s*\S\+$'
         return false
     endif
 

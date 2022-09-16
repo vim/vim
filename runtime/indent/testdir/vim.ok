@@ -568,3 +568,11 @@ def Func(
     echo  # this-line
 enddef
 " END_INDENT
+
+" START_INDENT
+if true
+    if true
+	normal! ==
+    endif
+endif
+" END_INDENT
