@@ -3644,7 +3644,7 @@ call_func(
 		if (funcexe->fe_argv_func != NULL)
 		    // postponed filling in the arguments, do it now
 		    argcount = funcexe->fe_argv_func(argcount, argvars,
-					       argv_clear, fp->uf_args.ga_len);
+					       argv_clear, fp);
 
 		if (funcexe->fe_basetv != NULL)
 		{
