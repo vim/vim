@@ -75,9 +75,9 @@ const DICT_KEY_OR_FUNC_PARAM: string = '^\s*\%('
     .. '\)'
     .. ':\%(\s\|$\)'
 
-# OPTIONAL_FUNC_PARAM {{{2
+# MAYBE_OPTIONAL_FUNC_PARAM {{{2
 
-const OPTIONAL_FUNC_PARAM: string = '^\s*\%('
+const MAYBE_OPTIONAL_FUNC_PARAM: string = '^\s*\%('
     .. '\%(\.\.\.\)\=\h[a-zA-Z0-9_]*'
     .. '\)'
     .. '\s\+=\s\+.*,\s*$'
@@ -290,7 +290,8 @@ export def Expr(lnum: number): number # {{{2
         var open_bracket: number = line_B->MatchingOpenBracket()
         return open_bracket->Indent()
 
-    elseif line_B.text =~ OPTIONAL_FUNC_PARAM
+    elseif line_B.text =~ MAYBE_OPTIONAL_FUNC_PARAM
+            && line_B.lnum->SearchFuncHeaderStart() > 0
         return line_B.lnum->Indent()
 
     elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
@@ -301,9 +302,9 @@ export def Expr(lnum: number): number # {{{2
 
     elseif line_A.text =~ DICT_KEY_OR_FUNC_PARAM
             || line_B.text =~ DICT_KEY_OR_FUNC_PARAM
-        var start: number = SearchPairStart('(', '', ')')
+        var start: number = lnum->SearchFuncHeaderStart()
         # function param
-        if start > 0 && getline(start) =~ STARTS_FUNCTION
+        if start > 0
             return Indent(start) + 2 * shiftwidth()
         # dictionary key
         else
@@ -576,6 +577,18 @@ def SearchPair( # {{{2
         e = e->escape('[]')
     endif
     return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
+enddef
+
+def SearchFuncHeaderStart(lnum: number): number # {{{2
+    var pos: list<number> = getcurpos()
+    cursor(lnum, 1)
+    var start: number = SearchPairStart('(', '', ')')
+    setpos('.', pos)
+    if start > 0 && getline(start) =~ STARTS_FUNCTION
+        return start
+    else
+        return -1
+    endif
 enddef
 
 def GetBlockStartKeyword(line: string): string # {{{2

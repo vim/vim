@@ -535,3 +535,10 @@ def Bar()
 echo
 enddef
 " END_INDENT
+
+" START_INDENT
+if true
+n = Func(1, 2,
+3)
+endif
+" END_INDENT
