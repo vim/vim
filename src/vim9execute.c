@@ -673,6 +673,9 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
     if (closure_count == 0)
 	return OK;  // no funcrefs created
 
+    // Compute "top": the first entry in the stack used by the function.
+    // This is the first argument (after that comes the stack frame and then
+    // the local variables).
     argcount = ufunc_argcount(dfunc->df_ufunc);
     top = ectx->ec_frame_idx - argcount;
 
@@ -740,6 +743,7 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    else
 		copy_tv(tv, stack + idx);
 	}
+	// Skip the stack frame.
 	// Move the local variables.
 	for (idx = 0; idx < dfunc->df_varcount; ++idx)
 	{
@@ -770,10 +774,17 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 							- closure_count + idx];
 	    if (pt->pt_refcount > 1)
 	    {
+		int	prev_frame_idx = pt->pt_outer.out_frame_idx;
+
 		++funcstack->fs_refcount;
 		pt->pt_funcstack = funcstack;
 		pt->pt_outer.out_stack = &funcstack->fs_ga;
 		pt->pt_outer.out_frame_idx = ectx->ec_frame_idx - top;
+
+		// TODO: drop this, should be done at ISN_ENDLOOP
+		pt->pt_outer.out_loop_stack = &funcstack->fs_ga;
+		pt->pt_outer.out_loop_var_idx -=
+				   prev_frame_idx - pt->pt_outer.out_frame_idx;
 	    }
 	}
     }
@@ -1814,7 +1825,12 @@ call_eval_func(
  * needed, especially when it is used as a closure.
  */
     int
-fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
+fill_partial_and_closure(
+	partial_T   *pt,
+	ufunc_T	    *ufunc,
+	short	    loop_var_idx,
+	short	    loop_var_count,
+	ectx_T	    *ectx)
 {
     pt->pt_func = ufunc;
     pt->pt_refcount = 1;
@@ -1839,6 +1855,14 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
 	    }
 	}
 
+	// The closure may need to find variables defined inside a loop.  A
+	// new reference is made every time, ISN_ENDLOOP will check if they
+	// are actually used.
+	pt->pt_outer.out_loop_stack = &ectx->ec_stack;
+	pt->pt_outer.out_loop_var_idx = ectx->ec_frame_idx + STACK_FRAME_SIZE
+								+ loop_var_idx;
+	pt->pt_outer.out_loop_var_count = loop_var_count;
+
 	// If the function currently executing returns and the closure is still
 	// being referenced, we need to make a copy of the context (arguments
 	// and local variables) so that the closure can use it later.
@@ -1853,8 +1877,8 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
 	++(((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx
 		       + STACK_FRAME_SIZE + dfunc->df_varcount)->vval.v_number;
 
-	((partial_T **)ectx->ec_funcrefs.ga_data)
-			       [ectx->ec_funcrefs.ga_len] = pt;
+	((partial_T **)ectx->ec_funcrefs.ga_data)[ectx->ec_funcrefs.ga_len]
+									  = pt;
 	++pt->pt_refcount;
 	++ectx->ec_funcrefs.ga_len;
     }
@@ -3610,9 +3634,15 @@ exec_instructions(ectx_T *ectx)
 			    iemsg("LOADOUTER depth more than scope levels");
 			goto theend;
 		    }
-		    tv = ((typval_T *)outer->out_stack->ga_data)
-				    + outer->out_frame_idx + STACK_FRAME_SIZE
-				    + iptr->isn_arg.outer.outer_idx;
+		    if (depth == OUTER_LOOP_DEPTH)
+			// variable declared in loop
+			tv = ((typval_T *)outer->out_loop_stack->ga_data)
+					    + outer->out_loop_var_idx
+					    + iptr->isn_arg.outer.outer_idx;
+		    else
+			tv = ((typval_T *)outer->out_stack->ga_data)
+				      + outer->out_frame_idx + STACK_FRAME_SIZE
+				      + iptr->isn_arg.outer.outer_idx;
 		    if (iptr->isn_type == ISN_LOADOUTER)
 		    {
 			if (GA_GROW_FAILS(&ectx->ec_stack, 1))
@@ -3913,9 +3943,10 @@ exec_instructions(ectx_T *ectx)
 	    // push a partial, a reference to a compiled function
 	    case ISN_FUNCREF:
 		{
-		    partial_T   *pt = ALLOC_CLEAR_ONE(partial_T);
-		    ufunc_T	*ufunc;
-		    funcref_T	*funcref = &iptr->isn_arg.funcref;
+		    partial_T	    *pt = ALLOC_CLEAR_ONE(partial_T);
+		    ufunc_T	    *ufunc;
+		    funcref_T	    *funcref = &iptr->isn_arg.funcref;
+		    funcref_extra_T *extra = funcref->fr_extra;
 
 		    if (pt == NULL)
 			goto theend;
@@ -3924,7 +3955,7 @@ exec_instructions(ectx_T *ectx)
 			vim_free(pt);
 			goto theend;
 		    }
-		    if (funcref->fr_func_name == NULL)
+		    if (extra == NULL || extra->fre_func_name == NULL)
 		    {
 			dfunc_T	*pt_dfunc = ((dfunc_T *)def_functions.ga_data)
 						       + funcref->fr_dfunc_idx;
@@ -3932,16 +3963,17 @@ exec_instructions(ectx_T *ectx)
 			ufunc = pt_dfunc->df_ufunc;
 		    }
 		    else
-		    {
-			ufunc = find_func(funcref->fr_func_name, FALSE);
-		    }
+			ufunc = find_func(extra->fre_func_name, FALSE);
 		    if (ufunc == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			iemsg("ufunc unexpectedly NULL for FUNCREF");
 			goto theend;
 		    }
-		    if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
+		    if (fill_partial_and_closure(pt, ufunc,
+				extra == NULL ? 0 : extra->fre_loop_var_idx,
+				extra == NULL ? 0 : extra->fre_loop_var_count,
+								 ectx) == FAIL)
 			goto theend;
 		    tv = STACK_TV_BOT(0);
 		    ++ectx->ec_stack.ga_len;
@@ -3954,10 +3986,11 @@ exec_instructions(ectx_T *ectx)
 	    // Create a global function from a lambda.
 	    case ISN_NEWFUNC:
 		{
-		    newfunc_T	*newfunc = &iptr->isn_arg.newfunc;
+		    newfuncarg_T    *arg = iptr->isn_arg.newfunc.nf_arg;
 
-		    if (copy_func(newfunc->nf_lambda, newfunc->nf_global,
-								 ectx) == FAIL)
+		    if (copy_lambda_to_global_func(arg->nfa_lambda,
+					arg->nfa_global, arg->nfa_loop_var_idx,
+					arg->nfa_loop_var_count, ectx) == FAIL)
 			goto theend;
 		}
 		break;
@@ -5520,7 +5553,7 @@ call_def_function(
 	ufunc_T *base_ufunc = dfunc->df_ufunc;
 
 	// "uf_partial" is on the ufunc that "df_ufunc" points to, as is done
-	// by copy_func().
+	// by copy_lambda_to_global_func().
 	if (partial != NULL || base_ufunc->uf_partial != NULL)
 	{
 	    ectx.ec_outer_ref = ALLOC_CLEAR_ONE(outer_ref_T);
@@ -5880,15 +5913,20 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_LOADOUTER:
 		{
-		    if (iptr->isn_arg.outer.outer_idx < 0)
+		    isn_outer_T *outer = &iptr->isn_arg.outer;
+
+		    if (outer->outer_idx < 0)
 			smsg("%s%4d LOADOUTER level %d arg[%d]", pfx, current,
-				iptr->isn_arg.outer.outer_depth,
-				iptr->isn_arg.outer.outer_idx
+				outer->outer_depth,
+				outer->outer_idx
 							  + STACK_FRAME_SIZE);
+		    else if (outer->outer_depth == OUTER_LOOP_DEPTH)
+			smsg("%s%4d LOADOUTER level 1 $%d in loop",
+					       pfx, current, outer->outer_idx);
 		    else
 			smsg("%s%4d LOADOUTER level %d $%d", pfx, current,
-					      iptr->isn_arg.outer.outer_depth,
-					      iptr->isn_arg.outer.outer_idx);
+					      outer->outer_depth,
+					      outer->outer_idx);
 		}
 		break;
 	    case ISN_LOADV:
@@ -5971,9 +6009,16 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 							 iptr->isn_arg.number);
 		break;
 	    case ISN_STOREOUTER:
-		smsg("%s%4d STOREOUTER level %d $%d", pfx, current,
-			iptr->isn_arg.outer.outer_depth,
-			iptr->isn_arg.outer.outer_idx);
+		{
+		    isn_outer_T *outer = &iptr->isn_arg.outer;
+
+		    if (outer->outer_depth == OUTER_LOOP_DEPTH)
+			smsg("%s%4d STOREOUTER level 1 $%d in loop",
+				pfx, current, outer->outer_idx);
+		    else
+			smsg("%s%4d STOREOUTER level %d $%d", pfx, current,
+				outer->outer_depth, outer->outer_idx);
+		}
 		break;
 	    case ISN_STOREV:
 		smsg("%s%4d STOREV v:%s", pfx, current,
@@ -6190,27 +6235,41 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_FUNCREF:
 		{
-		    funcref_T	*funcref = &iptr->isn_arg.funcref;
-		    char_u	*name;
+		    funcref_T		*funcref = &iptr->isn_arg.funcref;
+		    funcref_extra_T	*extra = funcref->fr_extra;
+		    char_u		*name;
 
-		    if (funcref->fr_func_name == NULL)
+		    if (extra == NULL || extra->fre_func_name == NULL)
 		    {
 			dfunc_T	*df = ((dfunc_T *)def_functions.ga_data)
 						       + funcref->fr_dfunc_idx;
 			name = df->df_ufunc->uf_name;
 		    }
 		    else
-			name = funcref->fr_func_name;
-		    smsg("%s%4d FUNCREF %s", pfx, current, name);
+			name = extra->fre_func_name;
+		    if (extra == NULL || extra->fre_loop_var_count == 0)
+			smsg("%s%4d FUNCREF %s", pfx, current, name);
+		    else
+			smsg("%s%4d FUNCREF %s var $%d - $%d", pfx, current,
+				name,
+				extra->fre_loop_var_idx,
+				extra->fre_loop_var_idx
+					      + extra->fre_loop_var_count - 1);
 		}
 		break;
 
 	    case ISN_NEWFUNC:
 		{
-		    newfunc_T	*newfunc = &iptr->isn_arg.newfunc;
+		    newfuncarg_T	*arg = iptr->isn_arg.newfunc.nf_arg;
 
-		    smsg("%s%4d NEWFUNC %s %s", pfx, current,
-				       newfunc->nf_lambda, newfunc->nf_global);
+		    if (arg->nfa_loop_var_count == 0)
+			smsg("%s%4d NEWFUNC %s %s", pfx, current,
+					     arg->nfa_lambda, arg->nfa_global);
+		    else
+			smsg("%s%4d NEWFUNC %s %s var $%d - $%d", pfx, current,
+			  arg->nfa_lambda, arg->nfa_global,
+			  arg->nfa_loop_var_idx,
+			  arg->nfa_loop_var_idx + arg->nfa_loop_var_count - 1);
 		}
 		break;
 

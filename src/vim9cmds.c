@@ -1246,6 +1246,49 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 }
 
 /*
+ * Get the current information about variables declared inside a loop.
+ * Returns zero if there are none, otherwise the count.
+ * "loop_var_idx" is then set to the index of the first variable.
+ */
+    short
+get_loop_var_info(cctx_T *cctx, short *loop_var_idx)
+{
+    scope_T	*scope = cctx->ctx_scope;
+    int		start_local_count;
+
+    while (scope != NULL && scope->se_type != WHILE_SCOPE
+						&& scope->se_type != FOR_SCOPE)
+	scope = scope->se_outer;
+    if (scope == NULL)
+	return 0;
+
+    if (scope->se_type == WHILE_SCOPE)
+	start_local_count = scope->se_u.se_while.ws_local_count;
+    else
+	start_local_count = scope->se_u.se_for.fs_local_count;
+    if (cctx->ctx_locals.ga_len > start_local_count)
+    {
+	*loop_var_idx = (short)start_local_count;
+	return (short)(cctx->ctx_locals.ga_len - start_local_count);
+    }
+    return 0;
+}
+
+/*
+ * Get the index of the first variable in a loop, if any.
+ * Returns -1 if none.
+ */
+    int
+get_loop_var_idx(cctx_T *cctx)
+{
+    short loop_var_idx;
+
+    if (get_loop_var_info(cctx, &loop_var_idx) > 0)
+	return loop_var_idx;
+    return -1;
+}
+
+/*
  * compile "continue"
  */
     char_u *

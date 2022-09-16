@@ -916,15 +916,25 @@ generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name)
  * Generate an ISN_STOREOUTER instruction.
  */
     static int
-generate_STOREOUTER(cctx_T *cctx, int idx, int level)
+generate_STOREOUTER(cctx_T *cctx, int idx, int level, int loop_idx)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_drop(cctx, ISN_STOREOUTER, 1)) == NULL)
 	return FAIL;
-    isn->isn_arg.outer.outer_idx = idx;
-    isn->isn_arg.outer.outer_depth = level;
+    if (level == 1 && loop_idx >= 0 && idx >= loop_idx)
+    {
+	// Store a variable defined in a loop.  A copy will be made at the end
+	// of the loop.  TODO: how about deeper nesting?
+	isn->isn_arg.outer.outer_idx = idx - loop_idx;
+	isn->isn_arg.outer.outer_depth = OUTER_LOOP_DEPTH;
+    }
+    else
+    {
+	isn->isn_arg.outer.outer_idx = idx;
+	isn->isn_arg.outer.outer_depth = level;
+    }
 
     return OK;
 }
@@ -999,6 +1009,7 @@ generate_LOADOUTER(
 	cctx_T	    *cctx,
 	int	    idx,
 	int	    nesting,
+	int	    loop_idx,
 	type_T	    *type)
 {
     isn_T	*isn;
@@ -1006,8 +1017,18 @@ generate_LOADOUTER(
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_type2(cctx, ISN_LOADOUTER, type, type)) == NULL)
 	return FAIL;
-    isn->isn_arg.outer.outer_idx = idx;
-    isn->isn_arg.outer.outer_depth = nesting;
+    if (nesting == 1 && loop_idx >= 0 && idx >= loop_idx)
+    {
+	// Load a variable defined in a loop.  A copy will be made at the end
+	// of the loop.  TODO: how about deeper nesting?
+	isn->isn_arg.outer.outer_idx = idx - loop_idx;
+	isn->isn_arg.outer.outer_depth = OUTER_LOOP_DEPTH;
+    }
+    else
+    {
+	isn->isn_arg.outer.outer_idx = idx;
+	isn->isn_arg.outer.outer_depth = nesting;
+    }
 
     return OK;
 }
@@ -1186,20 +1207,39 @@ generate_NEWDICT(cctx_T *cctx, int count, int use_null)
 /*
  * Generate an ISN_FUNCREF instruction.
  * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
+ * If variables were declared inside a loop "loop_var_idx" is the index of the
+ * first one and "loop_var_count" the number of variables declared.
  */
     int
-generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc, isn_T **isnp)
+generate_FUNCREF(
+	cctx_T	    *cctx,
+	ufunc_T	    *ufunc,
+	isn_T	    **isnp)
 {
-    isn_T	*isn;
-    type_T	*type;
+    isn_T	    *isn;
+    type_T	    *type;
+    funcref_extra_T *extra;
+    short	    loop_var_idx;
+    short	    loop_var_count;
 
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
     if (isnp != NULL)
 	*isnp = isn;
+
+    loop_var_count = get_loop_var_info(cctx, &loop_var_idx);
+    if (ufunc->uf_def_status == UF_NOT_COMPILED || loop_var_count > 0)
+    {
+	extra = ALLOC_CLEAR_ONE(funcref_extra_T);
+	if (extra == NULL)
+	    return FAIL;
+	isn->isn_arg.funcref.fr_extra = extra;
+	extra->fre_loop_var_idx = loop_var_idx;
+	extra->fre_loop_var_count = loop_var_count;
+    }
     if (ufunc->uf_def_status == UF_NOT_COMPILED)
-	isn->isn_arg.funcref.fr_func_name = vim_strsave(ufunc->uf_name);
+	extra->fre_func_name = vim_strsave(ufunc->uf_name);
     else
 	isn->isn_arg.funcref.fr_dfunc_idx = ufunc->uf_dfunc_idx;
     cctx->ctx_has_closure = 1;
@@ -1221,7 +1261,12 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc, isn_T **isnp)
  * consumed.
  */
     int
-generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name)
+generate_NEWFUNC(
+	cctx_T	*cctx,
+	char_u	*lambda_name,
+	char_u	*func_name,
+	short	loop_var_idx,
+	short	loop_var_count)
 {
     isn_T	*isn;
     int		ret = OK;
@@ -1232,9 +1277,19 @@ generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name)
 	    ret = FAIL;
 	else
 	{
-	    isn->isn_arg.newfunc.nf_lambda = lambda_name;
-	    isn->isn_arg.newfunc.nf_global = func_name;
-	    return OK;
+	    newfuncarg_T *arg = ALLOC_CLEAR_ONE(newfuncarg_T);
+
+	    if (arg == NULL)
+		ret = FAIL;
+	    else
+	    {
+		isn->isn_arg.newfunc.nf_arg = arg;
+		arg->nfa_lambda = lambda_name;
+		arg->nfa_global = func_name;
+		arg->nfa_loop_var_idx = loop_var_idx;
+		arg->nfa_loop_var_count = loop_var_count;
+		return OK;
+	    }
 	}
     }
     vim_free(lambda_name);
@@ -2123,7 +2178,7 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
 	}
 	else if (lhs->lhs_lvar->lv_from_outer > 0)
 	    generate_STOREOUTER(cctx, lhs->lhs_lvar->lv_idx,
-						 lhs->lhs_lvar->lv_from_outer);
+		     lhs->lhs_lvar->lv_from_outer, lhs->lhs_lvar->lv_loop_idx);
 	else
 	    generate_STORE(cctx, ISN_STORE, lhs->lhs_lvar->lv_idx, NULL);
     }
@@ -2226,22 +2281,28 @@ delete_instr(isn_T *isn)
 
 	case ISN_FUNCREF:
 	    {
-		if (isn->isn_arg.funcref.fr_func_name == NULL)
+		funcref_T	*funcref = &isn->isn_arg.funcref;
+		funcref_extra_T *extra = funcref->fr_extra;
+
+		if (extra == NULL || extra->fre_func_name == NULL)
 		{
 		    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-			+ isn->isn_arg.funcref.fr_dfunc_idx;
+						       + funcref->fr_dfunc_idx;
 		    ufunc_T *ufunc = dfunc->df_ufunc;
 
 		    if (ufunc != NULL && func_name_refcount(ufunc->uf_name))
 			func_ptr_unref(ufunc);
 		}
-		else
+		if (extra != NULL)
 		{
-		    char_u *name = isn->isn_arg.funcref.fr_func_name;
+		    char_u *name = extra->fre_func_name;
 
 		    if (name != NULL)
+		    {
 			func_unref(name);
-		    vim_free(isn->isn_arg.funcref.fr_func_name);
+			vim_free(name);
+		    }
+		    vim_free(extra);
 		}
 	    }
 	    break;
@@ -2259,17 +2320,23 @@ delete_instr(isn_T *isn)
 
 	case ISN_NEWFUNC:
 	    {
-		char_u  *lambda = isn->isn_arg.newfunc.nf_lambda;
-		ufunc_T *ufunc = find_func_even_dead(lambda, FFED_IS_GLOBAL);
+		newfuncarg_T *arg = isn->isn_arg.newfunc.nf_arg;
 
-		if (ufunc != NULL)
+		if (arg != NULL)
 		{
-		    unlink_def_function(ufunc);
-		    func_ptr_unref(ufunc);
-		}
+		    ufunc_T *ufunc = find_func_even_dead(
+					      arg->nfa_lambda, FFED_IS_GLOBAL);
 
-		vim_free(lambda);
-		vim_free(isn->isn_arg.newfunc.nf_global);
+		    if (ufunc != NULL)
+		    {
+			unlink_def_function(ufunc);
+			func_ptr_unref(ufunc);
+		    }
+
+		    vim_free(arg->nfa_lambda);
+		    vim_free(arg->nfa_global);
+		    vim_free(arg);
+		}
 	    }
 	    break;
 
