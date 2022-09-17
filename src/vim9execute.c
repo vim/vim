@@ -797,16 +797,19 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
  * funcstack may be the only reference to the partials in the local variables.
  * Go over all of them, the funcref and can be freed if all partials
  * referencing the funcstack have a reference count of one.
+ * Returns TRUE if the funcstack is freed, the partial referencing it will then
+ * also have been freed.
  */
-    void
+    int
 funcstack_check_refcount(funcstack_T *funcstack)
 {
-    int		    i;
-    garray_T	    *gap = &funcstack->fs_ga;
-    int		    done = 0;
+    int		i;
+    garray_T	*gap = &funcstack->fs_ga;
+    int		done = 0;
+    typval_T	*stack;
 
     if (funcstack->fs_refcount > funcstack->fs_min_refcount)
-	return;
+	return FALSE;
     for (i = funcstack->fs_var_offset; i < gap->ga_len; ++i)
     {
 	typval_T *tv = ((typval_T *)gap->ga_data) + i;
@@ -816,18 +819,20 @@ funcstack_check_refcount(funcstack_T *funcstack)
 		&& tv->vval.v_partial->pt_refcount == 1)
 	    ++done;
     }
-    if (done == funcstack->fs_min_refcount)
-    {
-	typval_T	*stack = gap->ga_data;
+    if (done != funcstack->fs_min_refcount)
+	return FALSE;
 
-	// All partials referencing the funcstack have a reference count of
-	// one, thus the funcstack is no longer of use.
-	for (i = 0; i < gap->ga_len; ++i)
-	    clear_tv(stack + i);
-	vim_free(stack);
-	remove_funcstack_from_list(funcstack);
-	vim_free(funcstack);
-    }
+    stack = gap->ga_data;
+
+    // All partials referencing the funcstack have a reference count of
+    // one, thus the funcstack is no longer of use.
+    for (i = 0; i < gap->ga_len; ++i)
+	clear_tv(stack + i);
+    vim_free(stack);
+    remove_funcstack_from_list(funcstack);
+    vim_free(funcstack);
+
+    return TRUE;
 }
 
 /*

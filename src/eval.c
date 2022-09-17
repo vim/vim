@@ -4876,6 +4876,8 @@ partial_unref(partial_T *pt)
 {
     if (pt != NULL)
     {
+	int	done = FALSE;
+
 	if (--pt->pt_refcount <= 0)
 	    partial_free(pt);
 
@@ -4883,9 +4885,12 @@ partial_unref(partial_T *pt)
 	// only reference and can be freed if no other partials reference it.
 	else if (pt->pt_refcount == 1)
 	{
+	    // careful: if the funcstack is freed it may contain this partial
+	    // and it gets freed as well
 	    if (pt->pt_funcstack != NULL)
-		funcstack_check_refcount(pt->pt_funcstack);
-	    if (pt->pt_loopvars != NULL)
+		done = funcstack_check_refcount(pt->pt_funcstack);
+
+	    if (!done && pt->pt_loopvars != NULL)
 		loopvars_check_refcount(pt->pt_loopvars);
 	}
     }

@@ -1,7 +1,7 @@
 /* vim9execute.c */
 void to_string_error(vartype_T vartype);
 void update_has_breakpoint(ufunc_T *ufunc);
-void funcstack_check_refcount(funcstack_T *funcstack);
+int funcstack_check_refcount(funcstack_T *funcstack);
 int set_ref_in_funcstacks(int copyID);
 int in_def_function(void);
 ectx_T *clear_currrent_ectx(void);
