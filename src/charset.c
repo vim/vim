@@ -1280,6 +1280,9 @@ win_lbr_chartabsize(
 
 	numberextra = numberwidth;
 	vcol += numberextra + mb_added;
+#ifdef FEAT_PROP_POPUP
+	vcol -= wp->w_virtcol_first_char;
+#endif
 	if (vcol >= (colnr_T)wp->w_width)
 	{
 	    vcol -= wp->w_width;

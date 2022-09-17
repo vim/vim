@@ -2874,6 +2874,11 @@ func Test_props_with_text_above()
   call term_sendkeys(buf, "g0")
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_1b', {})
 
+  call term_sendkeys(buf, ":set showbreak=>>\<CR>")
+  call term_sendkeys(buf, "ggll")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_1c', {})
+  call term_sendkeys(buf, ":set showbreak=\<CR>")
+
   call term_sendkeys(buf, "ggI")
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_2', {})
   call term_sendkeys(buf, "inserted \<Esc>")
