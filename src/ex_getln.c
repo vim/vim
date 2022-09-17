@@ -1587,6 +1587,7 @@ getcmdline_int(
 #endif
     expand_T	xpc;
     long	*b_im_ptr = NULL;
+    buf_T	*b_im_ptr_buf = NULL;	// buffer where b_im_ptr is valid
     cmdline_info_T save_ccline;
     int		did_save_ccline = FALSE;
     int		cmdline_type;
@@ -1683,6 +1684,7 @@ getcmdline_int(
 	    b_im_ptr = &curbuf->b_p_iminsert;
 	else
 	    b_im_ptr = &curbuf->b_p_imsearch;
+	b_im_ptr_buf = curbuf;
 	if (*b_im_ptr == B_IMODE_LMAP)
 	    State |= MODE_LANGMAP;
 #ifdef HAVE_INPUT_METHOD
@@ -2034,7 +2036,8 @@ getcmdline_int(
 		goto cmdline_not_changed;
 
 	case Ctrl_HAT:
-		cmdline_toggle_langmap(b_im_ptr);
+		cmdline_toggle_langmap(
+				    buf_valid(b_im_ptr_buf) ? b_im_ptr : NULL);
 		goto cmdline_not_changed;
 
 //	case '@':   only in very old vi
@@ -2544,7 +2547,8 @@ returncmd:
 #endif
 
 #ifdef HAVE_INPUT_METHOD
-    if (b_im_ptr != NULL && *b_im_ptr != B_IMODE_LMAP)
+    if (b_im_ptr != NULL && buf_valid(b_im_ptr_buf)
+						  && *b_im_ptr != B_IMODE_LMAP)
 	im_save_status(b_im_ptr);
     im_set_active(FALSE);
 #endif
