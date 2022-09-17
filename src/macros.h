@@ -261,7 +261,7 @@
 # define MESSAGE_QUEUE
 #endif
 
-#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
+#if defined(FEAT_EVAL)
 # include <float.h>
 # if defined(HAVE_MATH_H)
    // for isnan() and isinf()

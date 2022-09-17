@@ -54,7 +54,6 @@ Number		A 32 or 64 bit signed number.  |expr-number|
 		Examples:  -123  0x10  0177  0o177 0b1011
 
 Float		A floating point number. |floating-point-format| *Float*
-		{only when compiled with the |+float| feature} *E1076*
 		Examples: 123.456  1.15e-6  -1.1e3
 
 String		A NUL terminated string of 8-bit unsigned characters (bytes).
@@ -1441,7 +1440,6 @@ digits are ignored.
 {exp} is the exponent, power of 10.
 Only a decimal point is accepted, not a comma.  No matter what the current
 locale is.
-{only when compiled with the |+float| feature}
 
 Examples:
 	123.456

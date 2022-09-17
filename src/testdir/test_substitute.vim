@@ -464,8 +464,6 @@ func Test_substitute_partial()
 endfunc
 
 func Test_substitute_float()
-  CheckFeature float
-
   call assert_equal('number 1.23', substitute('number ', '$', { -> 1.23 }, ''))
   vim9 assert_equal('number 1.23', substitute('number ', '$', () => 1.23, ''))
 endfunc

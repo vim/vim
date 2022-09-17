@@ -469,9 +469,7 @@ struct isn_S {
 	varnumber_T	    number;
 	blob_T		    *blob;
 	vartype_T	    vartype;
-#ifdef FEAT_FLOAT
 	float_T		    fnumber;
-#endif
 	channel_T	    *channel;
 	job_T		    *job;
 	partial_T	    *partial;

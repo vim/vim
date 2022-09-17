@@ -208,9 +208,7 @@ generate_add_instr(
 		      vartype == VAR_NUMBER ? ISN_OPNR
 		    : vartype == VAR_LIST ? ISN_ADDLIST
 		    : vartype == VAR_BLOB ? ISN_ADDBLOB
-#ifdef FEAT_FLOAT
 		    : vartype == VAR_FLOAT ? ISN_OPFLOAT
-#endif
 		    : ISN_OPANY, 1);
 
     if (vartype != VAR_LIST && vartype != VAR_BLOB
@@ -251,9 +249,7 @@ operator_type(type_T *type1, type_T *type2)
     if (type1->tt_type == type2->tt_type
 	    && (type1->tt_type == VAR_NUMBER
 		|| type1->tt_type == VAR_LIST
-#ifdef FEAT_FLOAT
 		|| type1->tt_type == VAR_FLOAT
-#endif
 		|| type1->tt_type == VAR_BLOB))
 	return type1->tt_type;
     return VAR_ANY;
@@ -293,10 +289,8 @@ generate_two_op(cctx_T *cctx, char_u *op)
 		      return FAIL;
 		  if (vartype == VAR_NUMBER)
 		      isn = generate_instr_drop(cctx, ISN_OPNR, 1);
-#ifdef FEAT_FLOAT
 		  else if (vartype == VAR_FLOAT)
 		      isn = generate_instr_drop(cctx, ISN_OPFLOAT, 1);
-#endif
 		  else
 		      isn = generate_instr_drop(cctx, ISN_OPANY, 1);
 		  if (isn != NULL)
@@ -326,12 +320,10 @@ generate_two_op(cctx_T *cctx, char_u *op)
     {
 	type_T *type = &t_any;
 
-#ifdef FEAT_FLOAT
 	// float+number and number+float results in float
 	if ((type1->tt_type == VAR_NUMBER || type1->tt_type == VAR_FLOAT)
-		&& (type2->tt_type == VAR_NUMBER || type2->tt_type == VAR_FLOAT))
+	      && (type2->tt_type == VAR_NUMBER || type2->tt_type == VAR_FLOAT))
 	    type = &t_float;
-#endif
 	set_type_on_stack(cctx, type, 0);
     }
 
@@ -580,11 +572,9 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	case VAR_NUMBER:
 	    generate_PUSHNR(cctx, tv->vval.v_number);
 	    break;
-#ifdef FEAT_FLOAT
 	case VAR_FLOAT:
 	    generate_PUSHF(cctx, tv->vval.v_float);
 	    break;
-#endif
 	case VAR_BLOB:
 	    generate_PUSHBLOB(cctx, tv->vval.v_blob);
 	    tv->vval.v_blob = NULL;
@@ -688,7 +678,6 @@ generate_PUSHSPEC(cctx_T *cctx, varnumber_T number)
     return OK;
 }
 
-#if defined(FEAT_FLOAT) || defined(PROTO)
 /*
  * Generate an ISN_PUSHF instruction.
  */
@@ -704,7 +693,6 @@ generate_PUSHF(cctx_T *cctx, float_T fnumber)
 
     return OK;
 }
-#endif
 
 /*
  * Generate an ISN_PUSHS instruction.

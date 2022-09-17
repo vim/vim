@@ -309,9 +309,7 @@ def s:ScriptFuncPush()
   var localbool = true
   var localspec = v:none
   var localblob = 0z1234
-  if has('float')
-    var localfloat = 1.234
-  endif
+  var localfloat = 1.234
 enddef
 
 def Test_disassemble_push()
@@ -1742,13 +1740,11 @@ def s:Computing()
   anyres = g:number / 7
   anyres = g:number % 7
 
-  if has('float')
-    var fl = 3.0
-    var flres = fl + 7.0
-    flres = fl - 7.0
-    flres = fl * 7.0
-    flres = fl / 7.0
-  endif
+  var fl = 3.0
+  var flres = fl + 7.0
+  flres = fl - 7.0
+  flres = fl * 7.0
+  flres = fl / 7.0
 enddef
 
 def Test_disassemble_computing()
@@ -1783,24 +1779,22 @@ def Test_disassemble_computing()
         'anyres = g:number % 7.*' ..
         '\d OPANY %.*',
         instr)
-  if has('float')
-    assert_match('Computing.*' ..
-        'var fl = 3.0.*' ..
-        '\d PUSHF 3.0.*' ..
-        '\d STORE $3.*' ..
-        'var flres = fl + 7.0.*' ..
-        '\d LOAD $3.*' ..
-        '\d PUSHF 7.0.*' ..
-        '\d OPFLOAT +.*' ..
-        '\d STORE $4.*' ..
-        'flres = fl - 7.0.*' ..
-        '\d OPFLOAT -.*' ..
-        'flres = fl \* 7.0.*' ..
-        '\d OPFLOAT \*.*' ..
-        'flres = fl / 7.0.*' ..
-        '\d OPFLOAT /.*',
-        instr)
-  endif
+  assert_match('Computing.*' ..
+      'var fl = 3.0.*' ..
+      '\d PUSHF 3.0.*' ..
+      '\d STORE $3.*' ..
+      'var flres = fl + 7.0.*' ..
+      '\d LOAD $3.*' ..
+      '\d PUSHF 7.0.*' ..
+      '\d OPFLOAT +.*' ..
+      '\d STORE $4.*' ..
+      'flres = fl - 7.0.*' ..
+      '\d OPFLOAT -.*' ..
+      'flres = fl \* 7.0.*' ..
+      '\d OPFLOAT \*.*' ..
+      'flres = fl / 7.0.*' ..
+      '\d OPFLOAT /.*',
+      instr)
 enddef
 
 def s:AddListBlob()
@@ -2178,19 +2172,17 @@ def Test_disassemble_compare()
         ['77 isnot g:xx', 'COMPAREANY isnot'],
         ]
   var floatDecl = ''
-  if has('float')
-    cases->extend([
-        ['1.1 == aFloat', 'COMPAREFLOAT =='],
-        ['1.1 != aFloat', 'COMPAREFLOAT !='],
-        ['1.1 > aFloat', 'COMPAREFLOAT >'],
-        ['1.1 < aFloat', 'COMPAREFLOAT <'],
-        ['1.1 >= aFloat', 'COMPAREFLOAT >='],
-        ['1.1 <= aFloat', 'COMPAREFLOAT <='],
-        ['1.1 =~ aFloat', 'COMPAREFLOAT =\~'],
-        ['1.1 !~ aFloat', 'COMPAREFLOAT !\~'],
-        ])
-    floatDecl = 'var aFloat = 2.2'
-  endif
+  cases->extend([
+      ['1.1 == aFloat', 'COMPAREFLOAT =='],
+      ['1.1 != aFloat', 'COMPAREFLOAT !='],
+      ['1.1 > aFloat', 'COMPAREFLOAT >'],
+      ['1.1 < aFloat', 'COMPAREFLOAT <'],
+      ['1.1 >= aFloat', 'COMPAREFLOAT >='],
+      ['1.1 <= aFloat', 'COMPAREFLOAT <='],
+      ['1.1 =~ aFloat', 'COMPAREFLOAT =\~'],
+      ['1.1 !~ aFloat', 'COMPAREFLOAT !\~'],
+      ])
+  floatDecl = 'var aFloat = 2.2'
 
   var nr = 1
   for case in cases

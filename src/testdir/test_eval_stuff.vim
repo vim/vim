@@ -240,11 +240,9 @@ func Test_string_concatenation()
   let a..=b
   call assert_equal('ab', a)
 
-  if has('float')
-    let a = 'A'
-    let b = 1.234
-    call assert_equal('A1.234', a .. b)
-  endif
+  let a = 'A'
+  let b = 1.234
+  call assert_equal('A1.234', a .. b)
 endfunc
 
 " Test fix for issue #4507
@@ -266,10 +264,8 @@ func Test_string_concat_scriptversion2()
   call assert_fails('let a .= b', 'E985:')
   call assert_fails('let vers = 1.2.3', 'E488:')
 
-  if has('float')
-    let f = .5
-    call assert_equal(0.5, f)
-  endif
+  let f = .5
+  call assert_equal(0.5, f)
 endfunc
 
 scriptversion 1
@@ -283,9 +279,7 @@ func Test_string_concat_scriptversion1()
   let vers = 1.2.3
   call assert_equal('123', vers)
 
-  if has('float')
-    call assert_fails('let f = .5', 'E15:')
-  endif
+  call assert_fails('let f = .5', 'E15:')
 endfunc
 
 scriptversion 3

@@ -221,20 +221,19 @@ f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 # endif
 }
 
-# ifdef FEAT_FLOAT
 /*
  * "reltimefloat()" function
  */
     void
 f_reltimefloat(typval_T *argvars UNUSED, typval_T *rettv)
 {
-#  ifdef FEAT_RELTIME
+# ifdef FEAT_RELTIME
     proftime_T	tm;
-#  endif
+# endif
 
     rettv->v_type = VAR_FLOAT;
     rettv->vval.v_float = 0;
-#  ifdef FEAT_RELTIME
+# ifdef FEAT_RELTIME
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
 
@@ -242,9 +241,8 @@ f_reltimefloat(typval_T *argvars UNUSED, typval_T *rettv)
 	rettv->vval.v_float = profile_float(&tm);
     else if (in_vim9script())
 	emsg(_(e_invalid_argument));
-#  endif
-}
 # endif
+}
 
 /*
  * "reltimestr()" function

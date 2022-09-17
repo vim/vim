@@ -286,16 +286,14 @@ endfunc
 " Test vim.eval() with various types.
 func Test_python3_vim_val()
   call assert_equal("\n8",             execute('py3 print(vim.eval("3+5"))'))
-  if has('float')
-    call assert_equal("\n3.140000",    execute('py3 print(vim.eval("1.01+2.13"))'))
-    call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
-    call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
-    call assert_equal("\n-0.000000",   execute('py3 print(vim.eval("0.0/(-1.0/0.0)"))'))
-    " Commented out: output of infinity and nan depend on platforms.
-    " call assert_equal("\ninf",         execute('py3 print(vim.eval("1.0/0.0"))'))
-    " call assert_equal("\n-inf",        execute('py3 print(vim.eval("-1.0/0.0"))'))
-    " call assert_equal("\n-nan",        execute('py3 print(vim.eval("0.0/0.0"))'))
-  endif
+  call assert_equal("\n3.140000",    execute('py3 print(vim.eval("1.01+2.13"))'))
+  call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
+  call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
+  call assert_equal("\n-0.000000",   execute('py3 print(vim.eval("0.0/(-1.0/0.0)"))'))
+  " Commented out: output of infinity and nan depend on platforms.
+  " call assert_equal("\ninf",         execute('py3 print(vim.eval("1.0/0.0"))'))
+  " call assert_equal("\n-inf",        execute('py3 print(vim.eval("-1.0/0.0"))'))
+  " call assert_equal("\n-nan",        execute('py3 print(vim.eval("0.0/0.0"))'))
   call assert_equal("\nabc",           execute('py3 print(vim.eval("\"abc\""))'))
   call assert_equal("\n['1', '2']",    execute('py3 print(vim.eval("[1, 2]"))'))
   call assert_equal("\n{'1': '2'}",    execute('py3 print(vim.eval("{1:2}"))'))
@@ -879,7 +877,6 @@ func Test_python3_function_call()
 endfunc
 
 func Test_python3_float()
-  CheckFeature float
   let l = [0.0]
   py3 l = vim.bindeval('l')
   py3 l.extend([0.0])
@@ -982,9 +979,7 @@ func Test_python3_pyeval()
   py3 v = vim.eval('test_null_function()')
   call assert_equal(v:none, py3eval('v'))
 
-  if has('float')
-    call assert_equal(0.0, py3eval('0.0'))
-  endif
+  call assert_equal(0.0, py3eval('0.0'))
 
   " Evaluate an invalid values
   call AssertException(['let v = py3eval(''"\0"'')'], 'E859:')

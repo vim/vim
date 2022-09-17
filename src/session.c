@@ -577,7 +577,6 @@ store_session_globals(FILE *fd)
 		}
 		vim_free(p);
 	    }
-#ifdef FEAT_FLOAT
 	    else if (this_var->di_tv.v_type == VAR_FLOAT
 		    && var_flavour(this_var->di_key) == VAR_FLAVOUR_SESSION)
 	    {
@@ -594,7 +593,6 @@ store_session_globals(FILE *fd)
 			|| put_eol(fd) == FAIL)
 		    return FAIL;
 	    }
-#endif
 	}
     }
     return OK;

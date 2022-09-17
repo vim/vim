@@ -985,14 +985,8 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	case 'f':
 	    if (len == 5 && STRNCMP(*arg, "float", len) == 0)
 	    {
-#ifdef FEAT_FLOAT
 		*arg += len;
 		return &t_float;
-#else
-		if (give_error)
-		    emsg(_(e_this_vim_is_not_compiled_with_float_support));
-		return NULL;
-#endif
 	    }
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
 	    {

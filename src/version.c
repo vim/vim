@@ -244,11 +244,7 @@ static char *(features[]) =
 #else
 	"-find_in_path",
 #endif
-#ifdef FEAT_FLOAT
 	"+float",
-#else
-	"-float",
-#endif
 #ifdef FEAT_FOLDING
 	"+folding",
 #else
@@ -703,6 +699,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    491,
 /**/
     490,
 /**/
