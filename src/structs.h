@@ -2077,7 +2077,6 @@ typedef struct {
  * defined in that function.
  */
 typedef struct funcstack_S funcstack_T;
-
 struct funcstack_S
 {
     funcstack_T *fs_next;	// linked list at "first_funcstack"
@@ -2092,7 +2091,23 @@ struct funcstack_S
 
     int		fs_refcount;	// nr of closures referencing this funcstack
     int		fs_min_refcount; // nr of closures on this funcstack
-    int		fs_copyID;	// for garray_T collection
+    int		fs_copyID;	// for garbage collection
+};
+
+/*
+ * Structure to hold the variables declared in a loop that are possiblly used
+ * in a closure.
+ */
+typedef struct loopvars_S loopvars_T;
+struct loopvars_S
+{
+    loopvars_T *lvs_next;	// linked list at "first_loopvars"
+    loopvars_T *lvs_prev;
+
+    garray_T	lvs_ga;		// contains the variables
+    int		lvs_refcount;	// nr of closures referencing this loopvars
+    int		lvs_min_refcount; // nr of closures on this loopvars
+    int		lvs_copyID;	// for garbage collection
 };
 
 typedef struct outer_S outer_T;
@@ -2128,6 +2143,8 @@ struct partial_S
 
     funcstack_T	*pt_funcstack;	// copy of stack, used after context
 				// function returns
+    loopvars_T	*pt_loopvars;	// copy of loop variables, used after loop
+				// block ends
 
     typval_T	*pt_argv;	// arguments in allocated array
     int		pt_argc;	// number of arguments

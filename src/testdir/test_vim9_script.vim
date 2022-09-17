@@ -2285,9 +2285,7 @@ def Test_for_loop_with_closure()
         assert_equal(i, flist[i]())
       endfor
   END
-  # FIXME
-  # v9.CheckDefAndScriptSuccess(lines)
-  v9.CheckScriptSuccess(['vim9script'] + lines)
+  v9.CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
       var flist: list<func>
@@ -2301,9 +2299,7 @@ def Test_for_loop_with_closure()
         assert_equal(i, flist[i]())
       endfor
   END
-  # FIXME
-  # v9.CheckDefAndScriptSuccess(lines)
-  v9.CheckScriptSuccess(['vim9script'] + lines)
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_for_loop_fails()

@@ -13,6 +13,8 @@ int fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, short loop_var_idx, 
 int may_load_script(int sid, int *loaded);
 typval_T *lookup_debug_var(char_u *name);
 int may_break_in_function(ufunc_T *ufunc);
+void loopvars_check_refcount(loopvars_T *loopvars);
+int set_ref_in_loopvars(int copyID);
 int exe_typval_instr(typval_T *tv, typval_T *rettv);
 char_u *exe_substitute_instr(void);
 int call_def_function(ufunc_T *ufunc, int argc_arg, typval_T *argv, int flags, partial_T *partial, funccall_T *funccal, typval_T *rettv);

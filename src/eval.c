@@ -4857,6 +4857,12 @@ partial_free(partial_T *pt)
 	--pt->pt_funcstack->fs_refcount;
 	funcstack_check_refcount(pt->pt_funcstack);
     }
+    // Similarly for loop variables.
+    if (pt->pt_loopvars != NULL)
+    {
+	--pt->pt_loopvars->lvs_refcount;
+	loopvars_check_refcount(pt->pt_loopvars);
+    }
 
     vim_free(pt);
 }
@@ -4875,8 +4881,13 @@ partial_unref(partial_T *pt)
 
 	// If the reference count goes down to one, the funcstack may be the
 	// only reference and can be freed if no other partials reference it.
-	else if (pt->pt_refcount == 1 && pt->pt_funcstack != NULL)
-	    funcstack_check_refcount(pt->pt_funcstack);
+	else if (pt->pt_refcount == 1)
+	{
+	    if (pt->pt_funcstack != NULL)
+		funcstack_check_refcount(pt->pt_funcstack);
+	    if (pt->pt_loopvars != NULL)
+		loopvars_check_refcount(pt->pt_loopvars);
+	}
     }
 }
 
@@ -5015,6 +5026,9 @@ garbage_collect(int testing)
 
     // funcstacks keep variables for closures
     abort = abort || set_ref_in_funcstacks(copyID);
+
+    // loopvars keep variables for loop blocks
+    abort = abort || set_ref_in_loopvars(copyID);
 
     // v: vars
     abort = abort || garbage_collect_vimvars(copyID);
@@ -5379,6 +5393,7 @@ set_ref_in_item(
 		abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
 							ht_stack, list_stack);
 	    // pt_funcstack is handled in set_ref_in_funcstacks()
+	    // pt_loopvars is handled in set_ref_in_loopvars()
 	}
     }
 #ifdef FEAT_JOB_CHANNEL

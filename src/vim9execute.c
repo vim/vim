@@ -774,17 +774,10 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 							- closure_count + idx];
 	    if (pt->pt_refcount > 1)
 	    {
-		int	prev_frame_idx = pt->pt_outer.out_frame_idx;
-
 		++funcstack->fs_refcount;
 		pt->pt_funcstack = funcstack;
 		pt->pt_outer.out_stack = &funcstack->fs_ga;
 		pt->pt_outer.out_frame_idx = ectx->ec_frame_idx - top;
-
-		// TODO: drop this, should be done at ISN_ENDLOOP
-		pt->pt_outer.out_loop_stack = &funcstack->fs_ga;
-		pt->pt_outer.out_loop_var_idx -=
-				   prev_frame_idx - pt->pt_outer.out_frame_idx;
 	    }
 	}
     }
@@ -2622,14 +2615,185 @@ execute_for(isn_T *iptr, ectx_T *ectx)
 }
 
 /*
+ * Code for handling variables declared inside a loop and used in a closure.
+ * This is very similar to what is done with funcstack_T.  The difference is
+ * that the funcstack_T has the scope of a function, while a loopvars_T has the
+ * scope of the block inside a loop and each loop may have its own.
+ */
+
+// Double linked list of loopvars_T in use.
+static loopvars_T *first_loopvars = NULL;
+
+    static void
+add_loopvars_to_list(loopvars_T *loopvars)
+{
+	// Link in list of loopvarss.
+    if (first_loopvars != NULL)
+	first_loopvars->lvs_prev = loopvars;
+    loopvars->lvs_next = first_loopvars;
+    loopvars->lvs_prev = NULL;
+    first_loopvars = loopvars;
+}
+
+    static void
+remove_loopvars_from_list(loopvars_T *loopvars)
+{
+    if (loopvars->lvs_prev == NULL)
+	first_loopvars = loopvars->lvs_next;
+    else
+	loopvars->lvs_prev->lvs_next = loopvars->lvs_next;
+    if (loopvars->lvs_next != NULL)
+	loopvars->lvs_next->lvs_prev = loopvars->lvs_prev;
+}
+
+/*
  * End of a for or while loop: Handle any variables used by a closure.
  */
     static int
-execute_endloop(isn_T *iptr UNUSED, ectx_T *ectx UNUSED)
+execute_endloop(isn_T *iptr, ectx_T *ectx)
 {
-    // TODO
+    endloop_T	*endloop = &iptr->isn_arg.endloop;
+    typval_T	*tv_refcount = STACK_TV_VAR(endloop->end_funcref_idx);
+    int		prev_closure_count = tv_refcount->vval.v_number;
+    garray_T	*gap = &ectx->ec_funcrefs;
+    int		closure_in_use = FALSE;
+    loopvars_T  *loopvars;
+    typval_T    *stack;
+    int		idx;
+
+    // Check if any created closure is still being referenced.
+    for (idx = prev_closure_count; idx < gap->ga_len; ++idx)
+    {
+	partial_T   *pt = ((partial_T **)gap->ga_data)[idx];
+
+	if (pt->pt_refcount > 1)
+	{
+	    int refcount = pt->pt_refcount;
+	    int i;
+
+	    // A Reference in a variable inside the loop doesn't count, it gets
+	    // unreferenced at the end of the loop.
+	    for (i = 0; i < endloop->end_var_count; ++i)
+	    {
+		typval_T *stv = STACK_TV_VAR(endloop->end_var_idx + i);
+
+		if (stv->v_type == VAR_PARTIAL && pt == stv->vval.v_partial)
+		    --refcount;
+	    }
+	    if (refcount > 1)
+	    {
+		closure_in_use = TRUE;
+		break;
+	    }
+	}
+    }
+
+    // If no function reference were created since the start of the loop block
+    // or it is no longer referenced there is nothing to do.
+    if (!closure_in_use)
+	return OK;
+
+    // A closure is using variables declared inside the loop.
+    // Move them to the called function.
+    loopvars = ALLOC_CLEAR_ONE(loopvars_T);
+    if (loopvars == NULL)
+	return FAIL;
+
+    loopvars->lvs_ga.ga_len = endloop->end_var_count;
+    stack = ALLOC_CLEAR_MULT(typval_T, loopvars->lvs_ga.ga_len);
+    loopvars->lvs_ga.ga_data = stack;
+    if (stack == NULL)
+    {
+	vim_free(loopvars);
+	return FAIL;
+    }
+    add_loopvars_to_list(loopvars);
+
+    // Move the variable values.
+    for (idx = 0; idx < endloop->end_var_count; ++idx)
+    {
+	typval_T *tv = STACK_TV_VAR(endloop->end_var_idx + idx);
+
+	*(stack + idx) = *tv;
+	tv->v_type = VAR_UNKNOWN;
+    }
+
+    for (idx = prev_closure_count; idx < gap->ga_len; ++idx)
+    {
+	partial_T   *pt = ((partial_T **)gap->ga_data)[idx];
+
+	if (pt->pt_refcount > 1)
+	{
+	    ++loopvars->lvs_refcount;
+	    pt->pt_loopvars = loopvars;
+
+	    pt->pt_outer.out_loop_stack = &loopvars->lvs_ga;
+	    pt->pt_outer.out_loop_var_idx -= ectx->ec_frame_idx
+				     + STACK_FRAME_SIZE + endloop->end_var_idx;
+	}
+    }
 
     return OK;
+}
+
+/*
+ * Called when a partial is freed or its reference count goes down to one.  The
+ * loopvars may be the only reference to the partials in the local variables.
+ * Go over all of them, the funcref and can be freed if all partials
+ * referencing the loopvars have a reference count of one.
+ */
+    void
+loopvars_check_refcount(loopvars_T *loopvars)
+{
+    int		    i;
+    garray_T	    *gap = &loopvars->lvs_ga;
+    int		    done = 0;
+
+    if (loopvars->lvs_refcount > loopvars->lvs_min_refcount)
+	return;
+    for (i = 0; i < gap->ga_len; ++i)
+    {
+	typval_T *tv = ((typval_T *)gap->ga_data) + i;
+
+	if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
+		&& tv->vval.v_partial->pt_loopvars == loopvars
+		&& tv->vval.v_partial->pt_refcount == 1)
+	    ++done;
+    }
+    if (done == loopvars->lvs_min_refcount)
+    {
+	typval_T	*stack = gap->ga_data;
+
+	// All partials referencing the loopvars have a reference count of
+	// one, thus the loopvars is no longer of use.
+	for (i = 0; i < gap->ga_len; ++i)
+	    clear_tv(stack + i);
+	vim_free(stack);
+	remove_loopvars_from_list(loopvars);
+	vim_free(loopvars);
+    }
+}
+
+/*
+ * For garbage collecting: set references in all variables referenced by
+ * all loopvars.
+ */
+    int
+set_ref_in_loopvars(int copyID)
+{
+    loopvars_T *loopvars;
+
+    for (loopvars = first_loopvars; loopvars != NULL;
+						 loopvars = loopvars->lvs_next)
+    {
+	typval_T    *stack = loopvars->lvs_ga.ga_data;
+	int	    i;
+
+	for (i = 0; i < loopvars->lvs_ga.ga_len; ++i)
+	    if (set_ref_in_item(stack + i, copyID, NULL, NULL))
+		return TRUE;  // abort
+    }
+    return FALSE;
 }
 
 /*
@@ -3609,7 +3773,7 @@ exec_instructions(ectx_T *ectx)
 		    goto on_error;
 		break;
 
-	    // load or store variable or argument from outer scope
+	    // Load or store variable or argument from outer scope.
 	    case ISN_LOADOUTER:
 	    case ISN_STOREOUTER:
 		{
@@ -3635,11 +3799,14 @@ exec_instructions(ectx_T *ectx)
 			goto theend;
 		    }
 		    if (depth == OUTER_LOOP_DEPTH)
-			// variable declared in loop
+			// Variable declared in loop.  May be copied if the
+			// loop block has already ended.
 			tv = ((typval_T *)outer->out_loop_stack->ga_data)
 					    + outer->out_loop_var_idx
 					    + iptr->isn_arg.outer.outer_idx;
 		    else
+			// Variable declared in a function.  May be copied if
+			// the function has already returned.
 			tv = ((typval_T *)outer->out_stack->ga_data)
 				      + outer->out_frame_idx + STACK_FRAME_SIZE
 				      + iptr->isn_arg.outer.outer_idx;
@@ -5563,7 +5730,7 @@ call_def_function(
 	    {
 		outer_T *outer = get_pt_outer(partial);
 
-		if (outer->out_stack == NULL)
+		if (outer->out_stack == NULL && outer->out_loop_stack == NULL)
 		{
 		    if (current_ectx != NULL)
 		    {
@@ -5572,7 +5739,7 @@ call_def_function(
 			    ectx.ec_outer_ref->or_outer =
 					  current_ectx->ec_outer_ref->or_outer;
 		    }
-		    // Should there be an error here?
+		    // else: should there be an error here?
 		}
 		else
 		{
