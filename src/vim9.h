@@ -625,15 +625,20 @@ typedef struct {
     endlabel_T	*is_end_label;	    // instructions to set end label
 } ifscope_T;
 
+// info used by :for and :while needed for ENDLOOP
+typedef struct {
+    int	    li_local_count;	    // ctx_locals.ga_len at loop start
+    int	    li_closure_count;	    // ctx_closure_count at loop start
+    int	    li_funcref_idx;	    // index of var that holds funcref count
+} loop_info_T;
+
 /*
  * info specific for the scope of :while
  */
 typedef struct {
     int		ws_top_label;	    // instruction idx at WHILE
     endlabel_T	*ws_end_label;	    // instructions to set end
-    int		ws_funcref_idx;	    // index of var that holds funcref count
-    int		ws_local_count;	    // ctx_locals.ga_len at :while
-    int		ws_closure_count;   // ctx_closure_count at :while
+    loop_info_T ws_loop_info;	    // info for LOOPEND
 } whilescope_T;
 
 /*
@@ -642,9 +647,7 @@ typedef struct {
 typedef struct {
     int		fs_top_label;	    // instruction idx at FOR
     endlabel_T	*fs_end_label;	    // break instructions
-    int		fs_funcref_idx;	    // index of var that holds funcref count
-    int		fs_local_count;	    // ctx_locals.ga_len at :for
-    int		fs_closure_count;   // ctx_closure_count at :for
+    loop_info_T	fs_loop_info;	    // info for LOOPEND
 } forscope_T;
 
 /*

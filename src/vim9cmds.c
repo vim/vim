@@ -776,6 +776,17 @@ compile_endif(char_u *arg, cctx_T *cctx)
 }
 
 /*
+ * Save the info needed for ENDLOOP.  Used by :for and :while.
+ */
+    static void
+compile_fill_loop_info(loop_info_T *loop_info, int funcref_idx, cctx_T *cctx)
+{
+    loop_info->li_funcref_idx = funcref_idx;
+    loop_info->li_local_count = cctx->ctx_locals.ga_len;
+    loop_info->li_closure_count = cctx->ctx_closure_count;
+}
+
+/*
  * Compile "for var in expr":
  *
  * Produces instructions:
@@ -1041,10 +1052,9 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    vim_free(name);
 	}
 
-	forscope->fs_funcref_idx = funcref_lvar->lv_idx;
-	// remember the number of variables and closures, used in :endfor
-	forscope->fs_local_count = cctx->ctx_locals.ga_len;
-	forscope->fs_closure_count = cctx->ctx_closure_count;
+	// remember the number of variables and closures, used for ENDLOOP
+	compile_fill_loop_info(&forscope->fs_loop_info,
+						   funcref_lvar->lv_idx, cctx);
     }
 
     return arg_end;
@@ -1056,19 +1066,17 @@ failed:
 }
 
 /*
- * At :endfor and :endwhile: Generate an ISN_ENDLOOP instruction if any
- * variable was declared that could be used by a new closure.
+ * Used when ending a loop of :for and :while: Generate an ISN_ENDLOOP
+ * instruction if any variable was declared that could be used by a new
+ * closure.
  */
     static int
-compile_loop_end(
-	int	prev_local_count,
-	int	prev_closure_count,
-	int	funcref_idx,
-	cctx_T	*cctx)
+compile_loop_end(loop_info_T *loop_info, cctx_T *cctx)
 {
-    if (cctx->ctx_locals.ga_len > prev_local_count
-	    && cctx->ctx_closure_count > prev_closure_count)
-	return generate_ENDLOOP(cctx, funcref_idx, prev_local_count);
+    if (cctx->ctx_locals.ga_len > loop_info->li_local_count
+	    && cctx->ctx_closure_count > loop_info->li_closure_count)
+	return generate_ENDLOOP(cctx, loop_info->li_funcref_idx,
+						    loop_info->li_local_count);
     return OK;
 }
 
@@ -1097,10 +1105,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     {
 	// Handle the case that any local variables were declared that might be
 	// used in a closure.
-	if (compile_loop_end(forscope->fs_local_count,
-				forscope->fs_closure_count,
-				forscope->fs_funcref_idx,
-				cctx) == FAIL)
+	if (compile_loop_end(&forscope->fs_loop_info, cctx) == FAIL)
 	    return NULL;
 
 	unwind_locals(cctx, scope->se_local_count);
@@ -1163,10 +1168,10 @@ compile_while(char_u *arg, cctx_T *cctx)
 	drop_scope(cctx);
 	return NULL;  // out of memory
     }
-    whilescope->ws_funcref_idx = funcref_lvar->lv_idx;
-    // remember the number of variables and closures, used in :endwhile
-    whilescope->ws_local_count = cctx->ctx_locals.ga_len;
-    whilescope->ws_closure_count = cctx->ctx_closure_count;
+
+    // remember the number of variables and closures, used for ENDLOOP
+    compile_fill_loop_info(&whilescope->ws_loop_info,
+						   funcref_lvar->lv_idx, cctx);
 
     // compile "expr"
     if (compile_expr0(&p, cctx) == FAIL)
@@ -1218,10 +1223,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 
 	// Handle the case that any local variables were declared that might be
 	// used in a closure.
-	if (compile_loop_end(whilescope->ws_local_count,
-				whilescope->ws_closure_count,
-				whilescope->ws_funcref_idx,
-				cctx) == FAIL)
+	if (compile_loop_end(&whilescope->ws_loop_info, cctx) == FAIL)
 	    return NULL;
 
 	unwind_locals(cctx, scope->se_local_count);
@@ -1263,9 +1265,9 @@ get_loop_var_info(cctx_T *cctx, short *loop_var_idx)
 	return 0;
 
     if (scope->se_type == WHILE_SCOPE)
-	start_local_count = scope->se_u.se_while.ws_local_count;
+	start_local_count = scope->se_u.se_while.ws_loop_info.li_local_count;
     else
-	start_local_count = scope->se_u.se_for.fs_local_count;
+	start_local_count = scope->se_u.se_for.fs_loop_info.li_local_count;
     if (cctx->ctx_locals.ga_len > start_local_count)
     {
 	*loop_var_idx = (short)start_local_count;
@@ -1289,37 +1291,67 @@ get_loop_var_idx(cctx_T *cctx)
 }
 
 /*
- * compile "continue"
+ * Common for :break, :continue and :return
  */
-    char_u *
-compile_continue(char_u *arg, cctx_T *cctx)
+    static int
+compile_find_scope(
+	int	    *loop_label,    // where to jump to or NULL
+	endlabel_T  ***el,	    // end label or NULL
+	int	    *try_scopes,    // :try scopes encountered or NULL
+	char	    *error,	    // error to use when no scope found
+	cctx_T	    *cctx)
 {
     scope_T	*scope = cctx->ctx_scope;
-    int		try_scopes = 0;
-    int		loop_label;
 
     for (;;)
     {
 	if (scope == NULL)
 	{
-	    emsg(_(e_continue_without_while_or_for));
-	    return NULL;
+	    if (error != NULL)
+		emsg(_(error));
+	    return FAIL;
 	}
 	if (scope->se_type == FOR_SCOPE)
 	{
-	    loop_label = scope->se_u.se_for.fs_top_label;
+	    if (compile_loop_end(&scope->se_u.se_for.fs_loop_info, cctx)
+								       == FAIL)
+		return FAIL;
+	    if (loop_label != NULL)
+		*loop_label = scope->se_u.se_for.fs_top_label;
+	    if (el != NULL)
+		*el = &scope->se_u.se_for.fs_end_label;
 	    break;
 	}
 	if (scope->se_type == WHILE_SCOPE)
 	{
-	    loop_label = scope->se_u.se_while.ws_top_label;
+	    if (compile_loop_end(&scope->se_u.se_while.ws_loop_info, cctx)
+								       == FAIL)
+		return FAIL;
+	    if (loop_label != NULL)
+		*loop_label = scope->se_u.se_while.ws_top_label;
+	    if (el != NULL)
+		*el = &scope->se_u.se_while.ws_end_label;
 	    break;
 	}
-	if (scope->se_type == TRY_SCOPE)
-	    ++try_scopes;
+	if (try_scopes != NULL && scope->se_type == TRY_SCOPE)
+	    ++*try_scopes;
 	scope = scope->se_outer;
     }
+    return OK;
+}
 
+/*
+ * compile "continue"
+ */
+    char_u *
+compile_continue(char_u *arg, cctx_T *cctx)
+{
+    int		try_scopes = 0;
+    int		loop_label;
+
+    if (compile_find_scope(&loop_label, NULL, &try_scopes,
+				e_continue_without_while_or_for, cctx) == FAIL)
+	return NULL;
     if (try_scopes > 0)
 	// Inside one or more try/catch blocks we first need to jump to the
 	// "finally" or "endtry" to cleanup.
@@ -1337,31 +1369,12 @@ compile_continue(char_u *arg, cctx_T *cctx)
     char_u *
 compile_break(char_u *arg, cctx_T *cctx)
 {
-    scope_T	*scope = cctx->ctx_scope;
     int		try_scopes = 0;
     endlabel_T	**el;
 
-    for (;;)
-    {
-	if (scope == NULL)
-	{
-	    emsg(_(e_break_without_while_or_for));
-	    return NULL;
-	}
-	if (scope->se_type == FOR_SCOPE)
-	{
-	    el = &scope->se_u.se_for.fs_end_label;
-	    break;
-	}
-	if (scope->se_type == WHILE_SCOPE)
-	{
-	    el = &scope->se_u.se_while.ws_end_label;
-	    break;
-	}
-	if (scope->se_type == TRY_SCOPE)
-	    ++try_scopes;
-	scope = scope->se_outer;
-    }
+    if (compile_find_scope(NULL, &el, &try_scopes,
+				   e_break_without_while_or_for, cctx) == FAIL)
+	return NULL;
 
     if (try_scopes > 0)
 	// Inside one or more try/catch blocks we first need to jump to the
@@ -2511,6 +2524,9 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	// No argument, return zero.
 	generate_PUSHNR(cctx, 0);
     }
+
+    // may need ENDLOOP when inside a :for or :while loop
+    if (compile_find_scope(NULL, NULL, NULL, NULL, cctx) == FAIL)
 
     // Undo any command modifiers.
     generate_undo_cmdmods(cctx);
