@@ -239,9 +239,13 @@ export def Expr(lnum: number): number # {{{2
         return 0
     endif
 
-    if line_A.text !~ '\S'
-        return -1
-    endif
+    # Don't do that:
+    #     if line_A.text !~ '\S'
+    #         return -1
+    #     endif
+    # It would prevent  a line from being automatically indented  when using the
+    # normal command `o`.
+    # TODO: Can we write a test for this?
 
     # Don't move this block after the function header one.
     # Otherwise, we  might clear the cache  too early if the  line following the
@@ -266,10 +270,10 @@ export def Expr(lnum: number): number # {{{2
 
     line_B = PrevCodeLine(line_A.lnum)
 
-    # If the previous  line contains a closing  paren, it might be the  end of a
-    # function header.  If it is, we need  to compute the indent relative to the
-    # function start.  We can't always rely on the cache for this.  For example,
-    # there is no cache if we just press `==` on the line below the header.
+    # Problem: If  we press  `==`  below a  function header  which  is split  on
+    # multiple lines, the expression returns -1.
+    # Solution: Find the  start of the  function header, and indent  relative to
+    # the latter.
     if line_B.text =~ ')'
             # This is  way too costly  to do that on  every line with  a closing
             # paren  (because  of `synstack()`).   It's  mostly  useful when  we
@@ -287,10 +291,7 @@ export def Expr(lnum: number): number # {{{2
         setpos('.', pos)
     endif
 
-    if line_B.text =~ STARTS_CURLY_BLOCK
-        return Indent(line_B.lnum) + shiftwidth()
-
-    elseif line_A.text =~ STARTS_WITH_CLOSING_BRACKET
+    if line_A.text =~ STARTS_WITH_CLOSING_BRACKET
         var open_bracket: number = MatchingOpenBracket(line_A)
         if open_bracket <= 0
             return -1
@@ -300,6 +301,13 @@ export def Expr(lnum: number): number # {{{2
         else
             return Indent(open_bracket)
         endif
+
+    elseif line_B.text =~ STARTS_CURLY_BLOCK
+        return Indent(line_B.lnum) + shiftwidth()
+
+    elseif line_B.text =~ $'{CLOSING_BRACKET},\s*$'
+        var open_bracket: number = line_B->MatchingOpenBracket()
+        return open_bracket->Indent()
 
     elseif line_A.text =~ STARTS_WITH_BACKSLASH
         if line_B.text =~ STARTS_WITH_BACKSLASH
@@ -326,10 +334,6 @@ export def Expr(lnum: number): number # {{{2
         else
             return -1
         endif
-
-    elseif line_B.text =~ $'{CLOSING_BRACKET},\s*$'
-        var open_bracket: number = line_B->MatchingOpenBracket()
-        return open_bracket->Indent()
 
     elseif line_A.text =~ DICT_KEY
             && line_B.text =~ DICT_KEY
