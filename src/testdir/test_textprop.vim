@@ -2578,13 +2578,22 @@ func Test_prop_inserts_text_highlight()
   call delete('XscriptPropsWithHighlight')
 endfunc
 
+func Test_prop_add_with_text_fails()
+  call prop_type_add('failing', #{highlight: 'ErrorMsg'})
+  call assert_fails("call prop_add(1, 0, #{type: 'failing', text: 'X', end_lnum: 1})", 'E1305:')
+  call assert_fails("call prop_add(1, 0, #{type: 'failing', text: 'X', end_col: 1})", 'E1305:')
+  call assert_fails("call prop_add(1, 0, #{type: 'failing', text: 'X', length: 1})", 'E1305:')
+
+  call prop_type_delete('failing')
+endfunc
+
 func Test_props_with_text_right_align_twice()
   CheckRunVimInTerminal
 
   let lines =<< trim END
       call setline(1, ["some text some text some text some text", 'line two'])
-      call prop_type_add('MyErrorText', #{ highlight: 'ErrorMsg'})
-      call prop_type_add('MyPadding', #{ highlight: 'DiffChange'})
+      call prop_type_add('MyErrorText', #{highlight: 'ErrorMsg'})
+      call prop_type_add('MyPadding', #{highlight: 'DiffChange'})
       call prop_add(1, 0, #{type: 'MyPadding', text: ' nothing here', text_wrap: 'wrap'})
       call prop_add(1, 0, #{type: 'MyErrorText', text: 'Some error', text_wrap: 'wrap', text_align: 'right'})
       call prop_add(1, 0, #{type: 'MyErrorText', text: 'Another error', text_wrap: 'wrap', text_align: 'right'})

@@ -3338,3 +3338,7 @@ EXTERN char e_custom_list_completion_function_does_not_return_list_but_str[]
 EXTERN char e_cannot_use_type_with_this_variable_str[]
 	INIT(= N_("E1304: Cannot use type with this variable: %s"));
 #endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_use_length_endcol_and_endlnum_with_text[]
+	INIT(= N_("E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""));
+#endif
