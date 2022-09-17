@@ -1789,4 +1789,34 @@ function Test_nosplitscroll_cmdwin_cursor_position()
   %bwipeout!
   set splitscroll&
 endfunction
+
+" No scroll when aucmd_win is opened.
+function Test_nosplitscroll_aucmdwin()
+  set nosplitscroll
+
+  call setline(1, range(1, &lines))
+  norm Gzz
+  let top = line('w0')
+  call setbufvar(bufnr("test", 1) , '&buftype', 'nofile')
+  call assert_equal(top, line('w0'))
+
+  %bwipeout!
+  set splitscroll&
+endfunc
+
+" No scroll when help is closed and buffer line count < window height.
+function Test_nosplitscroll_helpwin()
+  set nosplitscroll
+  set splitbelow
+
+  call setline(1, range(&lines - 10))
+  norm G
+  let top = line('w0')
+  help | quit
+  call assert_equal(top, line('w0'))
+
+  set splitbelow&
+  set splitscroll&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

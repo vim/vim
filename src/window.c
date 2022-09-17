@@ -1325,7 +1325,7 @@ win_split_ins(
 	win_equal(wp, TRUE,
 		(flags & WSP_VERT) ? (dir == 'v' ? 'b' : 'h')
 		: dir == 'h' ? 'b' : 'v');
-    else if (!p_spsc)
+    else if (!p_spsc && wp != aucmd_win)
 	win_fix_scroll(FALSE);
 
     // Don't change the window height/width to 'winheight' / 'winwidth' if a
@@ -1925,7 +1925,7 @@ win_equal(
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
 		      topframe, dir, 0, tabline_height(),
 					   (int)Columns, topframe->fr_height);
-    if (!p_spsc)
+    if (!p_spsc && next_curwin != aucmd_win)
 	win_fix_scroll(TRUE);
 }
 
@@ -6366,8 +6366,7 @@ win_fix_scroll(int resize)
     {
 	// Skip when window height has not changed or when
 	// buffer has less lines than the window height.
-	if (wp->w_height != wp->w_prev_height
-		&& wp->w_height < wp->w_buffer->b_ml.ml_line_count)
+	if (wp->w_height != wp->w_prev_height)
 	{
 	    // Determine botline needed to avoid scrolling and set cursor.
 	    if (wp->w_winrow != wp->w_prev_winrow)
@@ -7102,8 +7101,6 @@ restore_snapshot(
 	win_comp_pos();
 	if (wp != NULL && close_curwin)
 	    win_goto(wp);
-	if (!p_spsc)
-	    win_fix_scroll(FALSE);
 	redraw_all_later(UPD_NOT_VALID);
     }
     clear_snapshot(curtab, idx);
