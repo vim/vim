@@ -322,12 +322,12 @@ export def Expr(lnum: number): number # {{{2
             # leader (only `" `).  Unfortunately, some people don't  put a space
             # after their comment leader...
             && line_A.text !~ '^"'
-            && line_A.text !~ STARTS_CURLY_BLOCK
 
         line_A->CacheBracketBlock()
     endif
 
     if line_A.lnum->IsInside('BracketBlock')
+            && !b:vimindent.block_stack[0].is_curly_block
         for block: dict<any> in b:vimindent.block_stack
             # We might ask for the indent of the start of the innermost block.{{{
             #
@@ -692,8 +692,18 @@ def CacheBracketBlock(line_A: dict<any>) # {{{2
         }
     endif
 
+    var is_dict: bool
+    var is_curly_block: bool
+    if opening_bracket == '{'
+        if line_A.text =~ STARTS_CURLY_BLOCK
+            [is_dict, is_curly_block] = [false, true]
+        else
+            [is_dict, is_curly_block] = [true, false]
+        endif
+    endif
     b:vimindent.block_stack->insert({
-        is_dict: opening_bracket == '{' && line_A.text !~ STARTS_CURLY_BLOCK,
+        is_dict: is_dict,
+        is_curly_block: is_curly_block,
         startline: line_A.text,
         startlnum: line_A.lnum,
         endlnum: endlnum,

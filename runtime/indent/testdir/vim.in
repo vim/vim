@@ -634,3 +634,16 @@ pdf: $'pdftotext -nopgbrk -layout -q -eol unix {fname} -',
 rtf: 'unrtf --text',
 }
 " END_INDENT
+
+" START_INDENT
+const ptybuf: number = term_start(&shell, {
+hidden: true,
+exit_cb: (_, _) => {
+if true
+close
+else
+help
+endif
+}
+})
+" END_INDENT
