@@ -606,7 +606,15 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
 
     if block.startline =~ ',' .. END_OF_LINE
             || block.startline =~ '[[{(]\+' .. END_OF_LINE
-            # TODO: Is that reliable?
+            # FIXME: That's not always correct.{{{
+            #
+            # For example, it breaks that snippet:
+            #
+            #     prop_add(1, col('.'), {
+            #     length: 2,
+            #     type: 'test'
+            #     })
+            #}}}
             && block.startline !~ '[]})],\s\+[[{(]'
         ind += shiftwidth()
     endif
@@ -659,14 +667,11 @@ enddef
 def CacheBracketBlock(line_A: dict<any>) # {{{2
     var pos: list<number> = getcurpos()
     cursor(line_A.lnum, [line_A.lnum, '$']->col())
-    var open_col: number = searchpos('[[{(]', 'bcW',
-        line_A.lnum, TIMEOUT, (): bool => InCommentOrString())[1]
-    var opening_bracket: string = line_A.text->matchstr($'\%{open_col}c.')
-
-    if opening_bracket == ''
+    if search('[[{(]', 'bcW', line_A.lnum, TIMEOUT, (): bool => InCommentOrString()) <= 0
         return
     endif
 
+    var opening_bracket: string = line_A.text->matchstr($'\%.c.')
     var closing_bracket: string = {'[': ']', '{': '}', '(': ')'}[opening_bracket]
     var endlnum: number = SearchPair(opening_bracket, '', closing_bracket, 'nW')
     setpos('.', pos)
