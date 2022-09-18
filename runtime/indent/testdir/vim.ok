@@ -151,7 +151,7 @@ filter(list, (k, v) => {
 " START_INDENT
 if x > 0
     filter(list, (k, v) => {
-	const x = get(list, k, 0)
+	const x = get(list, k, 1)
 	return x > 0
     })
 endif
@@ -575,4 +575,15 @@ if true
 	normal! ==
     endif
 endif
+" END_INDENT
+
+" START_INDENT
+var d = {
+    a: () => true,
+    b: () => true
+	&& true
+	&& Foo(),
+    c: () => Bar(),
+    e: () => Baz(),
+}
 " END_INDENT

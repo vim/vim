@@ -11,15 +11,29 @@ const TIMEOUT: number = 100
 # Init {{{1
 # These items must come first; we use them to define the next constants.
 var cmds: list<string>
+# INLINE_COMMENT {{{2
+
+const INLINE_COMMENT: string = '\%(\s#\|"\\\=\s\).*$'
+
+# END_OF_COMMAND {{{2
+
+const END_OF_COMMAND: string = $'\s*\%($\|||\@!\|{INLINE_COMMENT}\)'
+
+# END_OF_LINE {{{2
+
+const END_OF_LINE: string = $'\s*\%($\|{INLINE_COMMENT}\)'
+
 # STARTS_CURLY_BLOCK {{{2
 
 # TODO: `{` alone on a line is not necessarily the start of a block.
 # It  could be  a dictionary  if the  previous line  ends with  a binary/ternary
 # operator.  This  can cause  an issue whenever  we use  `STARTS_CURLY_BLOCK` or
 # `LINE_CONTINUATION_AT_EOL`.
-const STARTS_CURLY_BLOCK: string = '^\s*{\s*$'
-    .. '\|' .. '^.*\zs\s=>\s\+{\s*$'
-    .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{\s*$'
+const STARTS_CURLY_BLOCK: string = '\%('
+    .. '^\s*{'
+    .. '\|' .. '^.*\zs\s=>\s\+{'
+    .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{'
+    .. '\)' .. END_OF_COMMAND
 
 # OPERATOR {{{2
 
@@ -28,10 +42,6 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
     .. '\|' .. '\s\%([-+*/%]\|\.\.\)\==\%(\s\|$\)\@='
     # support `:` when used inside conditional operator `?:`
     .. '\|' .. '\%(\s\|^\):\%(\s\|$\)'
-
-# INLINE_COMMENT {{{2
-
-const INLINE_COMMENT: string = '\%(#\|"\\\=\s\).*$'
 
 # PATTERN_DELIMITER {{{2
 
@@ -42,10 +52,6 @@ const INLINE_COMMENT: string = '\%(#\|"\\\=\s\).*$'
 # But sometimes, it can be too costly and cause `E363` to be given.
 const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
 
-# EOL_OR_COMMAND {{{2
-
-const EOL_OR_COMMAND: string = $'\s*\%(||\@!\|$\|{INLINE_COMMENT}\)'
-
 # CLOSING_BRACKET {{{2
 
 const CLOSING_BRACKET: string = '[]})]'
@@ -53,12 +59,24 @@ const CLOSING_BRACKET: string = '[]})]'
 
 # COMMENT {{{2
 
-# Technically, `"\s` is wrong.
+# Technically, `"\s` is wrong.{{{
+#
 # In Vim9, a string might appear at the start of the line.
 # To be sure, we should also inspect the syntax.
 # But in practice, `"\s` at the start of a line is unlikely to be anything other
 # than a legacy comment.
-const COMMENT: string = $'^\s*{INLINE_COMMENT}'
+#}}}
+# We can't use `INLINE_COMMENT` here. {{{
+#
+#     const COMMENT: string = $'^\s*{INLINE_COMMENT}'
+#                                    ^------------^
+#                                          ✘
+#
+# Because  `INLINE_COMMENT` asserts  the  presence of  a  whitespace before  the
+# comment leader.  This assertion is not satisfied for a comment starting at the
+# start of the line.
+#}}}
+const COMMENT: string = '^\s*\%(#\|"\\\=\s\).*$'
 
 # DICT_KEY {{{2
 
@@ -127,6 +145,10 @@ const LINE_CONTINUATION_AT_EOL: string = '\%('
     .. '\|' .. OPERATOR
     .. '\|' .. '\s=>'
     .. '\|' .. '[[(]'
+    # TODO: This is to support a dictionary key.
+    # Do we need to match the key more accurately?
+    # If so, refactor every occurrence of `\S:` in this script.
+    .. '\|' .. '\S:'
     # `{` is ambiguous.
     # It can be the start of a dictionary or a block.
     # We only want to match the former.
@@ -141,9 +163,9 @@ const STARTS_WITH_BACKSLASH: string = '^\s*\%(\\\|[#"]\\ \)'
 
 const ASSIGNS_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
     .. '\s=<<\s\+\%(\%(trim\|eval\)\s\)\{,2}\s*'
-    .. '\)\zs\L\S*$'
+    .. $'\)\zs\L\S*{END_OF_LINE}'
 
-# STARTS_BLOCK {{{2
+# STARTS_NAMED_BLOCK {{{2
 
 # All of these will be used at the start of a line (or after a bar).
 # NOTE: Don't replace `\%x28` with `(`.{{{
@@ -166,7 +188,7 @@ cmds =<< trim END
     \%(export\s\+\)\=def
     aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
 END
-const STARTS_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
+const STARTS_NAMED_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
 
 # ENDS_BLOCK_OR_CLAUSE {{{2
 
@@ -182,8 +204,8 @@ cmds =<< trim END
     aug\%[roup]\s\+[eE][nN][dD]
 END
 
-const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\){EOL_OR_COMMAND}'
-    .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={EOL_OR_COMMAND}'
+const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\){END_OF_COMMAND}'
+    .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_COMMAND}'
     .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
 
 # ENDS_BLOCK {{{2
@@ -197,7 +219,7 @@ const ENDS_BLOCK: string = '^\s*\%('
     .. '\|' .. 'endfu\%[nction]'
     .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
     .. '\|' .. $'{CLOSING_BRACKET}'
-    .. $'\){EOL_OR_COMMAND}'
+    .. $'\){END_OF_COMMAND}'
 
 # STARTS_WITH_CLOSING_BRACKET {{{2
 
@@ -209,11 +231,11 @@ const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>'
 
 # OPENING_BRACKET_AT_EOL {{{2
 
-const OPENING_BRACKET_AT_EOL: string = '[[{(]\s*$'
+const OPENING_BRACKET_AT_EOL: string = '[[{(]' .. END_OF_LINE
 
 # CLOSING_BRACKETS_THEN_COMMA_AT_EOL {{{2
 
-const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,\s*$'
+const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,{END_OF_LINE}'
 # }}}1
 # Interface {{{1
 export def Expr(lnum: number): number # {{{2
@@ -232,26 +254,20 @@ export def Expr(lnum: number): number # {{{2
         return ind
     endif
 
-    # Don't move this block before the heredoc one.
-    # A heredoc might be assigned on the very first line.
-    # And if it is, we need to cache some info.
-    if line_A.lnum == 1
-        return 0
-    endif
-
-    # Don't do that:
-    #     if line_A.text !~ '\S'
-    #         return -1
-    #     endif
-    # It would prevent  a line from being automatically indented  when using the
-    # normal command `o`.
-    # TODO: Can we write a test for this?
-
     # Don't move this block after the function header one.
     # Otherwise, we  might clear the cache  too early if the  line following the
     # header is a comment.
     if line_A.text =~ COMMENT
         return CommentIndent()
+    endif
+
+    line_B = PrevCodeLine(line_A.lnum)
+    if line_A.text =~ STARTS_WITH_BACKSLASH
+        if line_B.text =~ STARTS_WITH_BACKSLASH
+            return Indent(line_B.lnum)
+        else
+            return Indent(line_B.lnum) + get(g:, 'vim_indent_cont', shiftwidth() * 3)
+        endif
     endif
 
     if line_A.text->AtStartOf('FuncHeader')
@@ -261,14 +277,12 @@ export def Expr(lnum: number): number # {{{2
     elseif line_A.lnum->IsRightBelow('FuncHeader')
         var startindent: number = b:vimindent.startindent
         unlet! b:vimindent
-        if line_A.text =~ '^\s*enddef\>\s*\%(||\@!\|$\)'
+        if line_A.text =~ $'^\s*enddef\>{END_OF_COMMAND}'
             return startindent
         else
             return startindent + shiftwidth()
         endif
     endif
-
-    line_B = PrevCodeLine(line_A.lnum)
 
     # Problem: If  we press  `==`  below a  function header  which  is split  on
     # multiple lines, the expression returns -1.
@@ -291,30 +305,81 @@ export def Expr(lnum: number): number # {{{2
         setpos('.', pos)
     endif
 
-    if line_A.text =~ STARTS_WITH_CLOSING_BRACKET
-        var open_bracket: number = MatchingOpenBracket(line_A)
-        if open_bracket <= 0
+    if exists('b:vimindent')
+            && b:vimindent->has_key('is_BracketBlock')
+        PopBracketBlockStack(line_A)
+    endif
+
+    # We also match a trailing colon, for a dict which is split after a key.
+    if (line_A->EndsWithOpeningBracket() || line_A->NonCommentedMatch($'\%(,\|\S:\){END_OF_LINE}'))
+            # We ignore bracket  blocks while we're indenting  a function header
+            # because it makes  the logic simpler.  It might mean  that we don't
+            # indent  correctly  a multiline  bracket  block  inside a  function
+            # header, but that's  a corner case for which it  doesn't seem worth
+            # making the code more complex.
+            && (!exists('b:vimindent') || b:vimindent->has_key('is_BracketBlock'))
+            # We need  this check  because we  don't consider  `"` as  a comment
+            # leader (only `" `).  Unfortunately, some people don't  put a space
+            # after their comment leader...
+            && line_A.text !~ '^"'
+            && line_A.text !~ STARTS_CURLY_BLOCK
+
+        line_A->CacheBracketBlock()
+    endif
+
+    if line_A.lnum->IsInside('BracketBlock')
+        for block: dict<any> in b:vimindent.block_stack
+            # We might ask for the indent of the start of the innermost block.{{{
+            #
+            # But the result is only meaningful if we're *after* that start.
+            # In particular,  if we're  *on* the  start, we  don't know  its correct
+            # indentation  yet; there  is  no  reason to  assume  that whatever  its
+            # current indent happens to be is correct.
+            #}}}
+            if line_A.lnum > block.startlnum
+                return BracketBlockIndent(line_A, block)
+            endif
+        endfor
+    endif
+
+    # Don't move this block before the heredoc one.{{{
+    #
+    # A heredoc might be assigned on the very first line.
+    # And if it is, we need to cache some info.
+    #}}}
+    # Don't move it before the function header and bracket block ones either.{{{
+    #
+    # You could, because these blocks of code deal with construct which can only
+    # appear  in a  Vim9  script.  And  in  a  Vim9 script,  the  first line  is
+    # `vim9script`.  Or  maybe some legacy code/comment  (see `:help vim9-mix`).
+    # But you  can't find a  Vim9 function header or  Vim9 bracket block  on the
+    # first line.
+    #
+    # Anyway, even if you could, don't.  First, it would be inconsistent.
+    # Second, it  could give unexpected results  while we're trying to  fix some
+    # failing test.
+    #}}}
+    if line_A.lnum == 1
+        return 0
+    endif
+
+    # Don't do that:
+    #     if line_A.text !~ '\S'
+    #         return -1
+    #     endif
+    # It would prevent  a line from being automatically indented  when using the
+    # normal command `o`.
+    # TODO: Can we write a test for this?
+
+    if line_A.text =~ '^\s*}'
+        var start_curly_block: number = MatchingOpenBracket(line_A)
+        if start_curly_block <= 0
             return -1
         endif
-        if getline(open_bracket) =~ STARTS_BLOCK
-            return Indent(open_bracket) + 2 * shiftwidth()
-        else
-            return Indent(open_bracket)
-        endif
+        return Indent(start_curly_block)
 
     elseif line_B.text =~ STARTS_CURLY_BLOCK
         return Indent(line_B.lnum) + shiftwidth()
-
-    elseif line_B.text =~ $'{CLOSING_BRACKET},\s*$'
-        var open_bracket: number = line_B->MatchingOpenBracket()
-        return open_bracket->Indent()
-
-    elseif line_A.text =~ STARTS_WITH_BACKSLASH
-        if line_B.text =~ STARTS_WITH_BACKSLASH
-            return Indent(line_B.lnum)
-        else
-            return Indent(line_B.lnum) + get(g:, 'vim_indent_cont', shiftwidth() * 3)
-        endif
 
     elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
             && !line_B->EndsWithLineContinuation()
@@ -334,31 +399,6 @@ export def Expr(lnum: number): number # {{{2
         else
             return -1
         endif
-
-    elseif line_A.text =~ DICT_KEY
-            && line_B.text =~ DICT_KEY
-            && (line_A.text =~ '},\s*{\s*$'
-            || line_B.text =~ '},\s*{\s*$')
-        return Indent(line_B.lnum)
-
-    elseif line_A.text =~ DICT_KEY
-            || line_B.text =~ DICT_KEY
-        var start: number = SearchPairStart('{', '', '}')
-        if start <= 0
-            return -1
-        endif
-
-        var offset: number
-        if line_A.text =~ DICT_KEY
-            # indent a dictionary key at the start of a line
-            offset = shiftwidth()
-        else
-            # Indent a dictionary value at the start of a line twice.
-            # Once for  the key relative  to the  dictionary start, another  for the
-            # value relative to the key.
-            offset = 2 * shiftwidth()
-        endif
-        return Indent(start) + offset
     endif
 
     var base_ind: number
@@ -379,11 +419,6 @@ export def Expr(lnum: number): number # {{{2
 
         var line_C: dict<any> = PrevCodeLine(line_B.lnum)
         if !line_B->IsFirstLineOfCommand(line_C) || line_C.lnum <= 0
-            # indent items in multiline nested list/dictionary
-            if line_B->EndsWithOpeningBracket()
-                    && line_B.text !~ '],\s*[\s*$'
-                return base_ind + shiftwidth()
-            endif
             return base_ind
         endif
     endif
@@ -406,17 +441,10 @@ def Offset( # {{{2
         ): number
 
     # increase indentation inside a block
-    if line_B.text =~ STARTS_BLOCK || line_B->EndsWithCurlyBlock()
+    if line_B.text =~ STARTS_NAMED_BLOCK || line_B->EndsWithCurlyBlock()
         # But don't indent if the line starting the block also closes it.
         if line_B->AlsoClosesBlock()
             return 0
-        # Indent twice for  a line continuation in the block  header itself, so that
-        # we can easily  distinguish the end of  the block header from  the start of
-        # the block body.
-        elseif line_B->EndsWithLineContinuation()
-                && !line_A.isfirst
-                || line_A.text =~ STARTS_WITH_LINE_CONTINUATION
-            return 2 * shiftwidth()
         else
             return shiftwidth()
         endif
@@ -432,9 +460,9 @@ def Offset( # {{{2
     return 0
 enddef
 
-def HereDocIndent(line: string): number # {{{2
+def HereDocIndent(line_A: string): number # {{{2
     # at the end of a heredoc
-    if line =~ $'^\s*{b:vimindent.endmarker}$'
+    if line_A =~ $'^\s*{b:vimindent.endmarker}$'
         # `END` must be at the very start of the line if the heredoc is not trimmed
         if !b:vimindent.is_trimmed
             # We can't invalidate the cache just yet.
@@ -504,7 +532,7 @@ def CommentIndent(): number # {{{2
     if next == 0
         return 0
     endif
-    var vimindent_save: dict<any> = get(b:, 'vimindent', {})
+    var vimindent_save: dict<any> = get(b:, 'vimindent', {})->deepcopy()
     var ind: number = next->Expr()
     # The previous `Expr()` might have set or deleted `b:vimindent`.
     # This could  cause issues (e.g.  when indenting  2 commented lines  above a
@@ -521,19 +549,83 @@ def CommentIndent(): number # {{{2
     endif
 enddef
 
-def CacheHeredoc(line: dict<any>) # {{{2
-    var endmarker: string = line.text->matchstr(ASSIGNS_HEREDOC)
+def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
+    # TODO: Here is an idea of algorithm for the indentation of bracket blocks.{{{
+    #
+    # After the first line of the outermost bracket block, indent 1 level (always).
+    # On subsequent lines, add 1 level iff  the line contains only a single open
+    # bracket, or a single sequence of open brackets (no other character).
+    # And  maybe if  the open  bracket(s)  is/are preceded  by a  dict key  (and
+    # nothing else).
+    #
+    # Exception: If a  line contains only a  single closing bracket (or  maybe a
+    # single sequence of  closing brackets?), and the matching  bracket is alone
+    # on a line, indent the closing bracket like the opening one.
+    # What if the matching (opening) bracket is not alone on a line?
+    # What if a line contains a closing bracket, but it's not alone?
+    #}}}
+    # TODO: What if there are several opening brackets on the same line?{{{
+    #
+    # Should we iterate  over all opening brackets on  the line, and
+    # push a dict info on the stack for each *un*closed one.
+    # Right now, we just push a  single dict info for the *last*
+    # unclosed open bracket.
+    #
+    #              what about this one?
+    #              v
+    #     var ll = [[
+    #         1], [
+    #         2]]
+    #
+    # How does  our code  work without pushing  a dict  info for
+    # every unclosed bracket?
+    #}}}
+    if !block->has_key('startindent')
+        block.startindent = block.startlnum->Indent()
+    endif
+
+    if line_A.text =~ $'^\s*{CLOSING_BRACKET}'
+        var ind: number = block.startlnum->Indent()
+        if b:vimindent.is_on_named_block_line
+            ind += 2 * shiftwidth()
+        endif
+        return ind
+    endif
+
+    var ind: number = block.startindent
+    if b:vimindent.is_on_named_block_line
+        ind += shiftwidth()
+    endif
+
+    if block.startline =~ ',' .. END_OF_LINE
+            || block.startline =~ '[[{(]\+' .. END_OF_LINE
+            # TODO: Is that reliable?
+            && block.startline !~ '],\s\+['
+            && block.startline !~ '},\s\+{'
+        ind += shiftwidth()
+    endif
+
+    if block.is_dict
+            && line_A.text !~ DICT_KEY
+        ind += shiftwidth()
+    endif
+
+    return ind
+enddef
+
+def CacheHeredoc(line_A: dict<any>) # {{{2
+    var endmarker: string = line_A.text->matchstr(ASSIGNS_HEREDOC)
     var endlnum: number = search($'^\s*{endmarker}$', 'nW')
-    var is_trimmed: bool = line.text =~ '.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*$'
+    var is_trimmed: bool = line_A.text =~ $'.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*{END_OF_LINE}'
     b:vimindent = {
         is_HereDoc: true,
-        startlnum: line.lnum,
+        startlnum: line_A.lnum,
         endlnum: endlnum,
         endmarker: endmarker,
         is_trimmed: is_trimmed,
     }
     if is_trimmed
-        b:vimindent.startindent = Indent(line.lnum)
+        b:vimindent.startindent = Indent(line_A.lnum)
     endif
     RegisterCacheInvalidation()
 enddef
@@ -558,6 +650,48 @@ def CacheFuncHeader(startlnum: number) # {{{2
     RegisterCacheInvalidation()
 enddef
 
+def CacheBracketBlock(line_A: dict<any>) # {{{2
+    var opening_bracket: string
+    var col_bracket: number
+    if line_A.text =~ $'\%(,\|\S:\){END_OF_LINE}'
+        [opening_bracket, _, col_bracket] = line_A.text
+            ->matchstrpos('[[{(]\ze[^[{(]*\%(,\|\S:\)' .. END_OF_LINE)
+    else
+        [opening_bracket, _, col_bracket] = line_A.text
+            ->matchstrpos('[[{(]\ze' .. END_OF_LINE)
+    endif
+
+    if opening_bracket == ''
+        return
+    endif
+
+    var closing_bracket: string = {'[': ']', '{': '}', '(': ')'}[opening_bracket]
+    var pos: list<number> = getcurpos()
+    cursor(line_A.lnum, col_bracket)
+    var endlnum: number = SearchPair(opening_bracket, '', closing_bracket, 'nW')
+    setpos('.', pos)
+    if endlnum <= line_A.lnum
+        return
+    endif
+
+    if !exists('b:vimindent')
+        b:vimindent = {
+            is_BracketBlock: true,
+            is_on_named_block_line: line_A.text =~ STARTS_NAMED_BLOCK,
+            block_stack: [],
+        }
+    endif
+
+    b:vimindent.block_stack->insert({
+        is_dict: opening_bracket == '{' && line_A.text !~ STARTS_CURLY_BLOCK,
+        startline: line_A.text,
+        startlnum: line_A.lnum,
+        endlnum: endlnum,
+    })
+
+    RegisterCacheInvalidation()
+enddef
+
 def RegisterCacheInvalidation() # {{{2
     # invalidate the cache so that it's not used for the next `=` normal command
     autocmd_add([{
@@ -569,21 +703,39 @@ def RegisterCacheInvalidation() # {{{2
         replace: true,
     }])
 enddef
+
+def PopBracketBlockStack(line_A: dict<any>) # {{{2
+    var stack: list<dict<any>> = b:vimindent.block_stack
+    stack->filter((_, block: dict<any>): bool => line_A.lnum <= block.endlnum)
+    if stack->empty()
+        unlet! b:vimindent
+    endif
+enddef
 # }}}1
 # Util {{{1
-def AtStartOf(line: string, syntax: string): bool # {{{2
+def AtStartOf(line_A: string, syntax: string): bool # {{{2
     var pat: string = {
         HereDoc: ASSIGNS_HEREDOC,
         FuncHeader: $'^\s*{FUNC_START}'
     }[syntax]
-    return line =~ pat && !exists('b:vimindent')
+    return line_A =~ pat && !exists('b:vimindent')
 enddef
 
 def IsInside(lnum: number, syntax: string): bool # {{{2
-    var key: string = $'is_{syntax}'
-    return exists('b:vimindent')
-        && b:vimindent->has_key(key)
-        && lnum <= b:vimindent.endlnum
+    if !exists('b:vimindent')
+            || !b:vimindent->has_key($'is_{syntax}')
+        return false
+    endif
+
+    if syntax == 'BracketBlock'
+        if !b:vimindent->has_key('block_stack')
+                || b:vimindent.block_stack->empty()
+            return false
+        endif
+        return lnum <= b:vimindent.block_stack[0].endlnum
+    endif
+
+    return lnum <= b:vimindent.endlnum
 enddef
 
 def IsRightBelow(lnum: number, syntax: string): bool # {{{2
@@ -594,7 +746,14 @@ enddef
 
 def Indent(lnum: number): number # {{{2
     if lnum <= 0
-        return -1
+        # Don't  return `-1`.  It could cause `Expr()` to return a non-multiple of `'shiftwidth'`.{{{
+        #
+        # It would be  OK if we were always returning  `Indent()` directly.  But
+        # we  don't.  Most  of  the  time, we  include  it  in some  computation
+        # like  `Indent(...) + shiftwidth()`.   If  `'shiftwidth'` is  `4`,  and
+        # `Indent()` returns `-1`, `Expr()` will end up returning `3`.
+        #}}}
+        return 0
     endif
     return indent(lnum)
 enddef
@@ -730,7 +889,25 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
     return block_end > 0
 enddef
 
-def EndsWithLineContinuation(line: dict<any>): bool # {{{2
+def EndsWithLineContinuation(line_B: dict<any>): bool # {{{2
+    return NonCommentedMatch(line_B, LINE_CONTINUATION_AT_EOL)
+enddef
+
+def EndsWithCurlyBlock(line_B: dict<any>): bool # {{{2
+    return NonCommentedMatch(line_B, STARTS_CURLY_BLOCK)
+enddef
+
+def EndsWithOpeningBracket(line: dict<any>): bool # {{{2
+    return NonCommentedMatch(line, OPENING_BRACKET_AT_EOL)
+enddef
+
+def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
+    # Could happen if there is no code above us, and we're not on the 1st line.
+    # In that case, `PrevCodeLine()` returns `{lnum: 0, line: ''}`.
+    if line.lnum == 0
+        return false
+    endif
+
     # Technically, that's wrong.  A  line might start with a range  and end with a
     # line continuation symbol.  But it's unlikely.  And it's useful to assume the
     # opposite because it  prevents us from conflating a mark  with an operator or
@@ -760,15 +937,15 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     # For example, this would be too costly:
     #
     #     if line.text =~ $'\%(\S*\({PATTERN_DELIMITER}\)\S\+\|\S\+\({PATTERN_DELIMITER}\)\S*\)'
-    #             .. $'\s\+\1\s*\%($\|{INLINE_COMMENT}\)'
+    #             .. $'\s\+\1{END_OF_COMMAND}'
     #
     # Sometimes, it could even give `E363`.
     #}}}
     var delim: string = line.text
-        ->matchstr($'\s\+\zs{PATTERN_DELIMITER}\ze\s*\%($\|{INLINE_COMMENT}\)')
+        ->matchstr($'\s\+\zs{PATTERN_DELIMITER}\ze{END_OF_COMMAND}')
     if !delim->empty()
             && line.text =~ $'\%(\S*\V{delim}\m\S\+\|\S\+\V{delim}\m\S*\)'
-            .. $'\s\+\V{delim}\m\s*\%($\|{INLINE_COMMENT}\)'
+            .. $'\s\+\V{delim}\m{END_OF_COMMAND}'
         return false
     endif
     # TODO: We might still miss some corner cases:{{{
@@ -792,7 +969,12 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
     # `%` at the end of a line is tricky.
     # It might be the modulo operator or the current file (e.g. `edit %`).
     # Let's assume it's the latter.
-    if line.text =~ $'%\s*\%($\|{INLINE_COMMENT}\)'
+    if line.text =~ $'%{END_OF_COMMAND}'
+        return false
+    endif
+
+    # `:help cd-`
+    if line.text =~ $'[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
         return false
     endif
 
@@ -805,11 +987,6 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
         return false
     endif
 
-    # `:help cd-`
-    if line.text =~ '[lt]\=cd!\=\s\+-\s*$'
-        return false
-    endif
-
     #             not a comparison operator
     #             vv
     #     normal! ==
@@ -817,18 +994,6 @@ def EndsWithLineContinuation(line: dict<any>): bool # {{{2
         return false
     endif
 
-    return NonCommentedMatch(line, LINE_CONTINUATION_AT_EOL)
-enddef
-
-def EndsWithCurlyBlock(line: dict<any>): bool # {{{2
-    return NonCommentedMatch(line, STARTS_CURLY_BLOCK)
-enddef
-
-def EndsWithOpeningBracket(line: dict<any>): bool # {{{2
-    return NonCommentedMatch(line, OPENING_BRACKET_AT_EOL)
-enddef
-
-def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     var pos: list<number> = getcurpos()
     cursor(line.lnum, 1)
     var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
@@ -836,41 +1001,47 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     return match_lnum > 0
 enddef
 
-def IsInThisBlock(line: dict<any>, lnum: number): bool # {{{2
+def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
     var pos: list<number> = getcurpos()
     cursor(lnum, [lnum, '$']->col())
     var end: number = SearchPairEnd('{', '', '}')
     setpos('.', pos)
 
-    return line.lnum <= end
+    return line_A.lnum <= end
 enddef
 
-def IsFirstLineOfCommand(line_A: dict<any>, line_B: dict<any>): bool # {{{2
-    if line_A.text =~ STARTS_WITH_RANGE
+def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{2
+    if line_1.text =~ STARTS_WITH_RANGE
         return true
     endif
 
-    if line_B.text =~ DICT_KEY
-            && !line_A->IsInThisBlock(line_B.lnum)
+    if line_2.text =~ DICT_KEY
+            && !line_1->IsInThisBlock(line_2.lnum)
         return true
     endif
 
-    var line_A_is_good: bool = line_A.text !~ COMMENT
-        && line_A.text !~ DICT_KEY
-        && line_A.text !~ STARTS_WITH_LINE_CONTINUATION
+    var line_1_is_good: bool = line_1.text !~ COMMENT
+        && line_1.text !~ DICT_KEY
+        && line_1.text !~ STARTS_WITH_LINE_CONTINUATION
 
-    var line_B_is_good: bool = !line_B->EndsWithLineContinuation()
+    var line_2_is_good: bool = !line_2->EndsWithLineContinuation()
 
-    return line_A_is_good && line_B_is_good
+    return line_1_is_good && line_2_is_good
 enddef
 
-def InCommentOrString(lnum = line('.'), col = col('.')): bool # {{{2
-    if !has('syntax_items')
-        return getline(lnum) =~ COMMENT
+def InCommentOrString(): bool # {{{2
+    var line: string = getline('.')
+    # TODO: We might be able to optimize  more, by asserting that the pattern is
+    # not after a comment leader, nor after  a quote.  This assumes that we pass
+    # the pattern to this function.  If we  look for a pair of patterns, I think
+    # we only need to pass the one  which matches in the direction we're looking
+    # for.
+    if line !~ '\s#\s' && line !~ '["'']'
+        return false
     endif
 
-    for synID: number in synstack(lnum, col)
-        if synIDattr(synID, 'name') =~ '\ccomment\|string\|heredoc'
+    for synID: number in synstack('.', col('.'))
+        if synIDattr(synID, 'name') =~ '\ccomment\|string'
             return true
         endif
     endfor
