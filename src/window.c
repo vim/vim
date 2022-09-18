@@ -4478,6 +4478,7 @@ goto_tabpage_tp(
     // Don't repeat a message in another tab page.
     set_keep_msg(NULL, 0);
 
+    skip_win_fix_scroll = TRUE;
     if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer,
 					trigger_leave_autocmds) == OK)
     {
@@ -4488,6 +4489,7 @@ goto_tabpage_tp(
 	    enter_tabpage(curtab, curbuf, trigger_enter_autocmds,
 		    trigger_leave_autocmds);
     }
+    skip_win_fix_scroll = FALSE;
 }
 
 /*
@@ -5481,7 +5483,7 @@ shell_new_rows(void)
     compute_cmdrow();
     curtab->tp_ch_used = p_ch;
 
-    if (!p_spsc)
+    if (!p_spsc && !skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
 
 #if 0
