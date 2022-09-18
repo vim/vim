@@ -2394,6 +2394,7 @@ expand_cmdline(
 
 /*
  * Expand file or directory names.
+ * Returns OK or FAIL.
  */
     static int
 expand_files_and_dirs(
