@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 9.0.  Last change: 2022 May 24
+*os_win32.txt*  For Vim version 9.0.  Last change: 2022 Sep 18
 
 
 		  VIM REFERENCE MANUAL    by George Reilly

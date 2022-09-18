@@ -718,7 +718,9 @@ $quote	eval.txt	/*$quote*
 'nospell'	options.txt	/*'nospell'*
 'nosplitbelow'	options.txt	/*'nosplitbelow'*
 'nosplitright'	options.txt	/*'nosplitright'*
+'nosplitscroll'	options.txt	/*'nosplitscroll'*
 'nospr'	options.txt	/*'nospr'*
+'nospsc'	options.txt	/*'nospsc'*
 'nosr'	options.txt	/*'nosr'*
 'nossl'	options.txt	/*'nossl'*
 'nosta'	options.txt	/*'nosta'*
@@ -952,9 +954,11 @@ $quote	eval.txt	/*$quote*
 'spl'	options.txt	/*'spl'*
 'splitbelow'	options.txt	/*'splitbelow'*
 'splitright'	options.txt	/*'splitright'*
+'splitscroll'	options.txt	/*'splitscroll'*
 'spo'	options.txt	/*'spo'*
 'spr'	options.txt	/*'spr'*
 'sps'	options.txt	/*'sps'*
+'spsc'	options.txt	/*'spsc'*
 'sr'	options.txt	/*'sr'*
 'srr'	options.txt	/*'srr'*
 'ss'	options.txt	/*'ss'*
@@ -4087,7 +4091,6 @@ E1072	eval.txt	/*E1072*
 E1073	vim9.txt	/*E1073*
 E1074	vim9.txt	/*E1074*
 E1075	vim9.txt	/*E1075*
-E1076	eval.txt	/*E1076*
 E1077	vim9.txt	/*E1077*
 E1078	autocmd.txt	/*E1078*
 E1079	vim9.txt	/*E1079*
@@ -4335,7 +4338,11 @@ E1298	vim9.txt	/*E1298*
 E1299	tagsrch.txt	/*E1299*
 E13	message.txt	/*E13*
 E1300	userfunc.txt	/*E1300*
+E1301	vim9.txt	/*E1301*
 E1302	eval.txt	/*E1302*
+E1303	map.txt	/*E1303*
+E1304	vim9.txt	/*E1304*
+E1305	textprop.txt	/*E1305*
 E131	userfunc.txt	/*E131*
 E132	userfunc.txt	/*E132*
 E133	userfunc.txt	/*E133*
@@ -5922,6 +5929,7 @@ blob-modification	eval.txt	/*blob-modification*
 blob2list()	builtin.txt	/*blob2list()*
 blockwise-examples	visual.txt	/*blockwise-examples*
 blockwise-operators	visual.txt	/*blockwise-operators*
+blockwise-put	change.txt	/*blockwise-put*
 blockwise-register	change.txt	/*blockwise-register*
 blockwise-visual	visual.txt	/*blockwise-visual*
 blowfish	options.txt	/*blowfish*
@@ -8122,6 +8130,7 @@ keypad-page-up	intro.txt	/*keypad-page-up*
 keypad-plus	intro.txt	/*keypad-plus*
 keypad-point	intro.txt	/*keypad-point*
 keys()	builtin.txt	/*keys()*
+keytrans()	builtin.txt	/*keytrans()*
 known-bugs	todo.txt	/*known-bugs*
 l	motion.txt	/*l*
 l:	eval.txt	/*l:*
@@ -10714,6 +10723,7 @@ vim9-literal-dict	vim9.txt	/*vim9-literal-dict*
 vim9-mix	vim9.txt	/*vim9-mix*
 vim9-namespace	vim9.txt	/*vim9-namespace*
 vim9-no-dict-function	vim9.txt	/*vim9-no-dict-function*
+vim9-no-shorten	vim9.txt	/*vim9-no-shorten*
 vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-reload	vim9.txt	/*vim9-reload*
 vim9-s-namespace	vim9.txt	/*vim9-s-namespace*
