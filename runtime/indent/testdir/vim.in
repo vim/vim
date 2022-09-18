@@ -587,3 +587,26 @@ c: () => Bar(),
 e: () => Baz(),
 }
 " END_INDENT
+
+" START_INDENT
+def Select(Cont: func(func(any)), Pred: func(any): bool): func(func(any))
+return (Emit: func(any)) => {
+Cont((t: any) => {
+if Pred(t)
+Emit(t)
+endif
+})
+}
+enddef
+" END_INDENT
+
+" START_INDENT
+g:lightline = {
+'active': {
+'left': [ [ 'mode', 'paste' ], [ 'readonly', 'relativepath', 'modified' ] ],
+},
+'inactive': {
+'left': [ [ 'readonly', 'relativepath', 'modified' ] ],
+}
+}
+" END_INDENT
