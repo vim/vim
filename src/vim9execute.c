@@ -200,6 +200,7 @@ exe_newlist(int count, ectx_T *ectx)
     tv = STACK_TV_BOT(-1);
     tv->v_type = VAR_LIST;
     tv->vval.v_list = list;
+    tv->v_lock = 0;
     if (list != NULL)
 	++list->lv_refcount;
     return OK;

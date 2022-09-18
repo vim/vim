@@ -2023,6 +2023,13 @@ def Test_var_declaration()
   unlet w:FLIST
 enddef
 
+def Test_create_list_after_const()
+  const a = 1
+  g:ll = []
+  assert_equal(0, islocked('g:ll'))
+  unlet g:ll
+enddef
+
 def Test_var_declaration_fails()
   var lines =<< trim END
     vim9script
