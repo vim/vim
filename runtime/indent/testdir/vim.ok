@@ -622,3 +622,15 @@ else
     &l:linebreak = true
 endif
 " END_INDENT
+
+" START_INDENT
+var ext2cmd: dict<string> = {
+    doc: $'antiword {fname}',
+    docx: $'pandoc --from=docx --to=markdown {fname}',
+    epub: $'pandoc --from=epub --to=markdown {fname}',
+    odp: $'odt2txt {fname}',
+    odt: $'odt2txt {fname}',
+    pdf: $'pdftotext -nopgbrk -layout -q -eol unix {fname} -',
+    rtf: 'unrtf --text',
+}
+" END_INDENT

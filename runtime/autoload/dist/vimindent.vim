@@ -675,6 +675,9 @@ def CacheBracketBlock(line_A: dict<any>) # {{{2
     var closing_bracket: string = {'[': ']', '{': '}', '(': ')'}[opening_bracket]
     var pos: list<number> = getcurpos()
     cursor(line_A.lnum, col_bracket)
+    if InCommentOrString()
+        return
+    endif
     var endlnum: number = SearchPair(opening_bracket, '', closing_bracket, 'nW')
     setpos('.', pos)
     if endlnum <= line_A.lnum
