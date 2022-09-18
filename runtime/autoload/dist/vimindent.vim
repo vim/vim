@@ -657,26 +657,17 @@ def CacheFuncHeader(startlnum: number) # {{{2
 enddef
 
 def CacheBracketBlock(line_A: dict<any>) # {{{2
-    var opening_bracket: string
-    var col_bracket: number
-    if line_A.text =~ $'\%(,\|\S:\){END_OF_LINE}'
-        [opening_bracket, _, col_bracket] = line_A.text
-            ->matchstrpos('[[{(]\ze[^[{(]*\%(,\|\S:\)' .. END_OF_LINE)
-    else
-        [opening_bracket, _, col_bracket] = line_A.text
-            ->matchstrpos('[[{(]\ze' .. END_OF_LINE)
-    endif
+    var pos: list<number> = getcurpos()
+    cursor(line_A.lnum, [line_A.lnum, '$']->col())
+    var open_col: number = searchpos('[[{(]', 'bcW',
+        line_A.lnum, TIMEOUT, (): bool => InCommentOrString())[1]
+    var opening_bracket: string = line_A.text->matchstr($'\%{open_col}c.')
 
     if opening_bracket == ''
         return
     endif
 
     var closing_bracket: string = {'[': ']', '{': '}', '(': ')'}[opening_bracket]
-    var pos: list<number> = getcurpos()
-    cursor(line_A.lnum, col_bracket)
-    if InCommentOrString()
-        return
-    endif
     var endlnum: number = SearchPair(opening_bracket, '', closing_bracket, 'nW')
     setpos('.', pos)
     if endlnum <= line_A.lnum

@@ -656,3 +656,10 @@ a: 0,
 b: 0,
 }
 " END_INDENT
+
+" START_INDENT
+echo printf('%s () %s',
+1,
+2
+)
+" END_INDENT
