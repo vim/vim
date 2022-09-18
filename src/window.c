@@ -6362,6 +6362,7 @@ win_fix_scroll(int resize)
     win_T    *wp;
     linenr_T lnum;
 
+    skip_update_topline = TRUE;  // avoid flicker in curs_rows()
     FOR_ALL_WINDOWS(wp)
     {
 	// Skip when window height has not changed or when
@@ -6387,6 +6388,7 @@ win_fix_scroll(int resize)
 	wp->w_prev_height = wp->w_height;
 	wp->w_prev_winrow = wp->w_winrow;
     }
+    skip_update_topline = FALSE;
     // Ensure cursor is valid when not in normal mode or when resized.
     if (!(get_real_state() & (MODE_NORMAL|MODE_CMDLINE)))
 	win_fix_cursor(FALSE);
