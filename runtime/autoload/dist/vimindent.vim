@@ -607,8 +607,7 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
     if block.startline =~ ',' .. END_OF_LINE
             || block.startline =~ '[[{(]\+' .. END_OF_LINE
             # TODO: Is that reliable?
-            && block.startline !~ '],\s\+['
-            && block.startline !~ '},\s\+{'
+            && block.startline !~ '[]})],\s\+[[{(]'
         ind += shiftwidth()
     endif
 
@@ -1056,7 +1055,7 @@ def InCommentOrString(): bool # {{{2
     # the pattern to this function.  If we  look for a pair of patterns, I think
     # we only need to pass the one  which matches in the direction we're looking
     # for.
-    if line !~ '\s#' && line !~ '["'']'
+    if line !~ '^\s*[#"]' && line !~ '\s[#"]' && line !~ '["'']'
         return false
     endif
 

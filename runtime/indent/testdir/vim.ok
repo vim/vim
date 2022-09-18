@@ -647,3 +647,12 @@ const ptybuf: number = term_start(&shell, {
     }
 })
 " END_INDENT
+
+" START_INDENT
+var d = {
+    a: 0,
+    # a ' quote {{{
+    #}}}
+    b: 0,
+}
+" END_INDENT
