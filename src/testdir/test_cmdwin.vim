@@ -73,7 +73,6 @@ func Test_cmdwin_restore()
   call writefile(lines, 'XTest_restore', 'D')
 
   let buf = RunVimInTerminal('-S XTest_restore', {'rows': 12})
-  call TermWait(buf, 50)
   call term_sendkeys(buf, "q:")
   call VerifyScreenDump(buf, 'Test_cmdwin_restore_1', {})
 
@@ -93,15 +92,29 @@ func Test_cmdwin_restore()
 endfunc
 
 func Test_cmdwin_no_terminal()
-  CheckFeature terminal
-  CheckNotMSWindows
+  CheckScreendump
 
   let buf = RunVimInTerminal('', {'rows': 12})
-  call TermWait(buf, 50)
   call term_sendkeys(buf, ":set cmdheight=2\<CR>")
   call term_sendkeys(buf, "q:")
   call term_sendkeys(buf, ":let buf = term_start(['/bin/echo'], #{hidden: 1})\<CR>")
   call VerifyScreenDump(buf, 'Test_cmdwin_no_terminal', {})
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_cmdwin_wrong_command()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', {'rows': 12})
+  call term_sendkeys(buf, "q:")
+  call term_sendkeys(buf, "als\<Esc>")
+  call term_sendkeys(buf, "\<C-W>k")
+  call VerifyScreenDump(buf, 'Test_cmdwin_wrong_command_1', {})
+
+  call term_sendkeys(buf, "\<C-C>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_wrong_command_2', {})
+
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
 endfunc

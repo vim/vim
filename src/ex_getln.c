@@ -4631,13 +4631,11 @@ open_cmdwin(void)
 	    ccline.cmdlen = (int)STRLEN(ccline.cmdbuff);
 	    ccline.cmdbufflen = ccline.cmdlen + 1;
 	    ccline.cmdpos = curwin->w_cursor.col;
-	    if (ccline.cmdpos > ccline.cmdlen)
+	    // If the cursor is on the last character, it probably should be
+	    // after it.
+	    if (ccline.cmdpos == ccline.cmdlen - 1
+		    || ccline.cmdpos > ccline.cmdlen)
 		ccline.cmdpos = ccline.cmdlen;
-	    if (cmdwin_result == K_IGNORE)
-	    {
-		set_cmdspos_cursor();
-		redrawcmd();
-	    }
 	}
 
 # ifdef FEAT_CONCEAL
@@ -4664,6 +4662,15 @@ open_cmdwin(void)
 	// Restore window sizes.
 	win_size_restore(&winsizes);
 	skip_win_fix_cursor = FALSE;
+
+	if (cmdwin_result == K_IGNORE)
+	{
+	    // It can be confusing that the cmdwin still shows, redraw the
+	    // screen.
+	    update_screen(UPD_VALID);
+	    set_cmdspos_cursor();
+	    redrawcmd();
+	}
     }
 
     ga_clear(&winsizes);
