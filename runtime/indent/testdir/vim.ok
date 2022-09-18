@@ -610,3 +610,15 @@ g:lightline = {
     }
 }
 " END_INDENT
+
+" START_INDENT
+if getline(1, 10)
+	->map((_, v: string): number => strcharlen(v))
+	->max() > 1'000
+    &l:breakindent = false
+    &l:linebreak = false
+else
+    &l:breakindent = true
+    &l:linebreak = true
+endif
+" END_INDENT

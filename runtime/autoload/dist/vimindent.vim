@@ -445,6 +445,13 @@ def Offset( # {{{2
         # But don't indent if the line starting the block also closes it.
         if line_B->AlsoClosesBlock()
             return 0
+        # Indent twice for  a line continuation in the block  header itself, so that
+        # we can easily  distinguish the end of  the block header from  the start of
+        # the block body.
+        elseif line_B->EndsWithLineContinuation()
+                && !line_A.isfirst
+                || line_A.text =~ STARTS_WITH_LINE_CONTINUATION
+            return 2 * shiftwidth()
         else
             return shiftwidth()
         endif
@@ -1036,7 +1043,7 @@ def InCommentOrString(): bool # {{{2
     # the pattern to this function.  If we  look for a pair of patterns, I think
     # we only need to pass the one  which matches in the direction we're looking
     # for.
-    if line !~ '\s#\s' && line !~ '["'']'
+    if line !~ '\s#' && line !~ '["'']'
         return false
     endif
 
