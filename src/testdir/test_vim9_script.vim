@@ -2300,6 +2300,32 @@ def Test_for_loop_with_closure()
       endfor
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # Also works for a nested loop
+  lines =<< trim END
+      var flist: list<func>
+      var n = 0
+      for i in range(3)
+        var ii = i
+        for a in ['a', 'b', 'c']
+          var aa = a
+          flist[n] = () => ii .. aa
+          ++n
+        endfor
+      endfor
+
+      n = 0
+      for i in range(3)
+        for a in ['a', 'b', 'c']
+          assert_equal(i .. a, flist[n]())
+          ++n
+        endfor
+      endfor
+  END
+  v9.CheckScriptSuccess(['vim9script'] + lines)
+  # FIXME: not yet right for :def
+  lines[14] = 'assert_equal(2 .. a, flist[n]())'
+  v9.CheckDefSuccess(lines)
 enddef
 
 def Test_for_loop_fails()

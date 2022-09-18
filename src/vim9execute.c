@@ -2671,7 +2671,7 @@ execute_endloop(isn_T *iptr, ectx_T *ectx)
     {
 	partial_T   *pt = ((partial_T **)gap->ga_data)[idx];
 
-	if (pt->pt_refcount > 1)
+	if (pt->pt_refcount > 1 && pt->pt_loopvars == NULL)
 	{
 	    int refcount = pt->pt_refcount;
 	    int i;
@@ -2727,7 +2727,7 @@ execute_endloop(isn_T *iptr, ectx_T *ectx)
     {
 	partial_T   *pt = ((partial_T **)gap->ga_data)[idx];
 
-	if (pt->pt_refcount > 1)
+	if (pt->pt_refcount > 1 && pt->pt_loopvars == NULL)
 	{
 	    ++loopvars->lvs_refcount;
 	    pt->pt_loopvars = loopvars;
