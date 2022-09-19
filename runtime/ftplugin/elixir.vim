@@ -29,3 +29,6 @@ setlocal commentstring=#\ %s
 
 let b:block_begin = '\<\(do$\|fn\>\)'
 let b:block_end = '\<end\>'
+
+let &cpo = s:save_cpo
+unlet s:save_cpo
