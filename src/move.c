@@ -991,7 +991,7 @@ curs_columns(
     /*
      * First make sure that w_topline is valid (after moving the cursor).
      */
-    if (p_spsc)
+    if (!skip_update_topline)
 	update_topline();
 
     /*

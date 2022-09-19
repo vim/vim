@@ -1742,3 +1742,7 @@ EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
 // Skip win_fix_cursor() call for 'nosplitscroll' when cmdwin is closed.
 EXTERN int skip_win_fix_cursor INIT(= FALSE);
 #endif
+// Skip win_fix_scroll() call for 'nosplitscroll' when closing tab page.
+EXTERN int skip_win_fix_scroll INIT(= FALSE);
+// Skip update_topline() call while executing win_fix_scroll().
+EXTERN int skip_update_topline INIT(= FALSE);

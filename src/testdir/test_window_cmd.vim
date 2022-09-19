@@ -1631,10 +1631,11 @@ func Test_win_equal_last_status()
   set laststatus&
 endfunc
 
-" Ensure no scrolling happens with 'nosplitscroll' with and without a
-" winbar, tabline, for each possible value of 'laststatus', 'scrolloff',
+" Ensure no scrolling happens with 'nosplitscroll' for a sequence of
+" split operations for various options: with and without a winbar,
+" tabline, for each possible value of 'laststatus', 'scrolloff',
 " 'equalalways', and regardless of the cursor position.
-func Test_splitscroll_with_splits()
+func Test_nosplitscroll_options()
   set nowrap
   set nosplitscroll
 
@@ -1648,7 +1649,7 @@ func Test_splitscroll_with_splits()
     tabnew | tabonly! | redraw    
     let tabline = (gui ? 0 : ((run % 5) ? 1 : 0))
     let winbar_sb = (run % 2) && (run % 3)
-    execute 'set scrolloff=' . !(run % 3) ? 0 : run
+    execute 'set scrolloff=' . (!(run % 4) ? 0 : run)
     execute 'set laststatus=' . (run % 3)
     execute 'set ' . ((run % 2) ? 'equalalways' : 'noequalalways')
     execute 'set ' . ((run % 3) ? 'splitbelow' : 'nosplitbelow')
@@ -1790,31 +1791,28 @@ function Test_nosplitscroll_cmdwin_cursor_position()
   set splitscroll&
 endfunction
 
-" No scroll when aucmd_win is opened.
-function Test_nosplitscroll_aucmdwin()
+function Test_nosplitscroll_misc()
   set nosplitscroll
+  set splitbelow
 
   call setline(1, range(1, &lines))
   norm Gzz
   let top = line('w0')
+  " No scroll when aucmd_win is opened
   call setbufvar(bufnr("test", 1) , '&buftype', 'nofile')
   call assert_equal(top, line('w0'))
-
-  %bwipeout!
-  set splitscroll&
-endfunc
-
-" No scroll when help is closed and buffer line count < window height.
-function Test_nosplitscroll_helpwin()
-  set nosplitscroll
-  set splitbelow
-
-  call setline(1, range(&lines - 10))
+  " No scroll when tab is changed/closed
+  tab help | close
+  call assert_equal(top, line('w0'))
+  " No scroll when help is closed and buffer line count < window height
+  norm ggdG
+  call setline(1, range(1, &lines - 10))
   norm G
   let top = line('w0')
   help | quit
   call assert_equal(top, line('w0'))
 
+  %bwipeout!
   set splitbelow&
   set splitscroll&
 endfunc

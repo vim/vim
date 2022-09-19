@@ -4478,6 +4478,7 @@ goto_tabpage_tp(
     // Don't repeat a message in another tab page.
     set_keep_msg(NULL, 0);
 
+    skip_win_fix_scroll = TRUE;
     if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer,
 					trigger_leave_autocmds) == OK)
     {
@@ -4488,6 +4489,7 @@ goto_tabpage_tp(
 	    enter_tabpage(curtab, curbuf, trigger_enter_autocmds,
 		    trigger_leave_autocmds);
     }
+    skip_win_fix_scroll = FALSE;
 }
 
 /*
@@ -5481,7 +5483,7 @@ shell_new_rows(void)
     compute_cmdrow();
     curtab->tp_ch_used = p_ch;
 
-    if (!p_spsc)
+    if (!p_spsc && !skip_win_fix_scroll)
 	win_fix_scroll(TRUE);
 
 #if 0
@@ -6362,10 +6364,10 @@ win_fix_scroll(int resize)
     win_T    *wp;
     linenr_T lnum;
 
+    skip_update_topline = TRUE;  // avoid scrolling in curs_rows()
     FOR_ALL_WINDOWS(wp)
     {
-	// Skip when window height has not changed or when
-	// buffer has less lines than the window height.
+	// Skip when window height has not changed.
 	if (wp->w_height != wp->w_prev_height)
 	{
 	    // Determine botline needed to avoid scrolling and set cursor.
@@ -6387,8 +6389,9 @@ win_fix_scroll(int resize)
 	wp->w_prev_height = wp->w_height;
 	wp->w_prev_winrow = wp->w_winrow;
     }
+    skip_update_topline = FALSE;
     // Ensure cursor is valid when not in normal mode or when resized.
-    if (!(get_real_state() & (MODE_NORMAL|MODE_CMDLINE)))
+    if (!(get_real_state() & (MODE_NORMAL|MODE_CMDLINE|MODE_TERMINAL)))
 	win_fix_cursor(FALSE);
     else if (resize)
 	win_fix_cursor(TRUE);
@@ -6435,11 +6438,8 @@ win_fix_cursor(int normal)
 	else
 	{   // Ensure cursor stays visible if we are not in normal mode.
 	    wp->w_fraction = 0.5 * FRACTION_MULT;
-	    // Make sure cursor is closer to topline than botline.
-	    if (so == wp->w_height / 2
-			  && nlnum - wp->w_topline > wp->w_botline - 1 - nlnum)
-		wp->w_fraction++;
 	    scroll_to_fraction(wp, wp->w_prev_height);
+	    validate_botline_win(curwin);
 	}
     }
 }
