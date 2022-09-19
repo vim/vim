@@ -52,22 +52,20 @@ def Test_vim9cmd()
   END
   v9.CheckScriptFailure(lines, 'E115:')
 
-  if has('float')
-    lines =<< trim END
-        vim9script
-        echo .10
-    END
-    v9.CheckScriptSuccess(lines)
-    lines =<< trim END
-        vim9cmd echo .10
-    END
-    v9.CheckScriptSuccess(lines)
-    lines =<< trim END
-        vim9script
-        legacy echo .10
-    END
-    v9.CheckScriptFailure(lines, 'E15:')
-  endif
+  lines =<< trim END
+      vim9script
+      echo .10
+  END
+  v9.CheckScriptSuccess(lines)
+  lines =<< trim END
+      vim9cmd echo .10
+  END
+  v9.CheckScriptSuccess(lines)
+  lines =<< trim END
+      vim9script
+      legacy echo .10
+  END
+  v9.CheckScriptFailure(lines, 'E15:')
 
   echo v:version
   assert_fails('vim9cmd echo version', 'E121:')

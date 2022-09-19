@@ -121,6 +121,7 @@
  * +wildignore		'wildignore' and 'backupskip' options
  * +wildmenu		'wildmenu' option
  * +builtin_terms	all builtin termcap entries included
+ * +float		Floating point variables.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -251,13 +252,9 @@
 /*
  * +eval		Built-in script language and expression evaluation,
  *			":let", ":if", etc.
- * +float		Floating point variables.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
-# if defined(HAVE_FLOAT_FUNCS) || defined(MSWIN) || defined(MACOS_X)
-#  define FEAT_FLOAT
-# endif
 #endif
 
 #ifdef FEAT_EVAL

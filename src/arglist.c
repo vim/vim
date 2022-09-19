@@ -982,7 +982,8 @@ arg_all_close_unused_windows(arg_all_state_T *aall)
 		{
 		    if (i < aall->alist->al_ga.ga_len
 			    && (AARGLIST(aall->alist)[i].ae_fnum == buf->b_fnum
-				|| fullpathcmp(alist_name(&AARGLIST(aall->alist)[i]),
+				|| fullpathcmp(alist_name(
+						    &AARGLIST(aall->alist)[i]),
 					buf->b_ffname, TRUE, TRUE) & FPC_SAME))
 		    {
 			int weight = 1;
@@ -1000,7 +1001,8 @@ arg_all_close_unused_windows(arg_all_state_T *aall)
 			    if (i == 0)
 			    {
 				if (aall->new_curwin != NULL)
-				    aall->new_curwin->w_arg_idx = aall->opened_len;
+				    aall->new_curwin->w_arg_idx =
+							      aall->opened_len;
 				aall->new_curwin = wp;
 				aall->new_curtab = curtab;
 			    }

@@ -669,9 +669,7 @@ func Test_blob_lock()
 endfunc
 
 func Test_blob_sort()
-  if has('float')
-    call v9.CheckLegacyAndVim9Failure(['call sort([1.0, 0z11], "f")'], 'E975:')
-  endif
+  call v9.CheckLegacyAndVim9Failure(['call sort([1.0, 0z11], "f")'], 'E975:')
   call v9.CheckLegacyAndVim9Failure(['call sort([11, 0z11], "N")'], 'E974:')
 endfunc
 

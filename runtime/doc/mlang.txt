@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 9.0.  Last change: 2020 Aug 15
+*mlang.txt*     For Vim version 9.0.  Last change: 2022 Sep 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -82,9 +82,9 @@ use of "-" and "_".
 			characters. This sets $LC_COLLATE.
 			Without an argument all are set, and additionally
 			$LANG is set.
-			When compiled with the |+float| feature the LC_NUMERIC
-			value will always be set to "C", so that floating
-			point numbers use '.' as the decimal point.
+			If available the LC_NUMERIC value will always be set
+			to "C", so that floating point numbers use '.' as the
+			decimal point.
 			This will make a difference for items that depend on
 			the language (some messages, time and date format).
 			Not fully supported on all systems

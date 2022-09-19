@@ -1325,7 +1325,7 @@ win_split_ins(
 	win_equal(wp, TRUE,
 		(flags & WSP_VERT) ? (dir == 'v' ? 'b' : 'h')
 		: dir == 'h' ? 'b' : 'v');
-    else if (!p_spsc)
+    else if (!p_spsc && wp != aucmd_win)
 	win_fix_scroll(FALSE);
 
     // Don't change the window height/width to 'winheight' / 'winwidth' if a
@@ -1925,7 +1925,7 @@ win_equal(
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
 		      topframe, dir, 0, tabline_height(),
 					   (int)Columns, topframe->fr_height);
-    if (!p_spsc)
+    if (!p_spsc && next_curwin != aucmd_win)
 	win_fix_scroll(TRUE);
 }
 
@@ -6366,8 +6366,7 @@ win_fix_scroll(int resize)
     {
 	// Skip when window height has not changed or when
 	// buffer has less lines than the window height.
-	if (wp->w_height != wp->w_prev_height
-		&& wp->w_height < wp->w_buffer->b_ml.ml_line_count)
+	if (wp->w_height != wp->w_prev_height)
 	{
 	    // Determine botline needed to avoid scrolling and set cursor.
 	    if (wp->w_winrow != wp->w_prev_winrow)
@@ -6403,7 +6402,6 @@ win_fix_scroll(int resize)
     static void
 win_fix_cursor(int normal)
 {
-    int      top = FALSE;
     win_T    *wp = curwin;
     long     so = get_scrolloff_value();
     linenr_T nlnum = 0;
@@ -6418,7 +6416,7 @@ win_fix_cursor(int normal)
     so = MIN(wp->w_height / 2, so);
     // Check if cursor position is above topline or below botline.
     if (wp->w_cursor.lnum < (wp->w_topline + so) && wp->w_topline != 1)
-	top = nlnum = MIN(wp->w_topline + so, wp->w_buffer->b_ml.ml_line_count);
+	nlnum = MIN(wp->w_topline + so, wp->w_buffer->b_ml.ml_line_count);
     else if (wp->w_cursor.lnum > (wp->w_botline - so - 1)
 	    && (wp->w_botline - wp->w_buffer->b_ml.ml_line_count) != 1)
 	nlnum = MAX(wp->w_botline - so - 1, 1);
@@ -6436,7 +6434,11 @@ win_fix_cursor(int normal)
 	}
 	else
 	{   // Ensure cursor stays visible if we are not in normal mode.
-	    wp->w_fraction = top ? 0 : FRACTION_MULT;
+	    wp->w_fraction = 0.5 * FRACTION_MULT;
+	    // Make sure cursor is closer to topline than botline.
+	    if (so == wp->w_height / 2
+			  && nlnum - wp->w_topline > wp->w_botline - 1 - nlnum)
+		wp->w_fraction++;
 	    scroll_to_fraction(wp, wp->w_prev_height);
 	}
     }
@@ -7099,8 +7101,6 @@ restore_snapshot(
 	win_comp_pos();
 	if (wp != NULL && close_curwin)
 	    win_goto(wp);
-	if (!p_spsc)
-	    win_fix_scroll(FALSE);
 	redraw_all_later(UPD_NOT_VALID);
     }
     clear_snapshot(curtab, idx);

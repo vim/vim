@@ -12,7 +12,7 @@ this, then you will get the default behavior as is documented, which should
 be fine for most people.
 
 This document assumes that you are building Vim for Win32 or later (Windows
-XP/2003/Vista/7/8/10).  There are also instructions for pre-XP systems, but
+7/8/10/11).  There are also instructions for pre-Vista and pre-XP systems, but
 they might no longer work.
 
 The recommended way is to build a 32 bit Vim, also on 64 bit systems.  You can
@@ -42,9 +42,9 @@ Contents:
 
 
 The currently recommended way (that means it has been verified to work) is
-using the "Visual Studio Community 2015" installation.  This includes the SDK
-needed to target Windows XP.  But not older Windows versions (95, 98), see
-"OLDER VERSIONS" below for that.
+using the "Visual Studio Community 2015" installation.  This doesn't include
+the SDK for older Windows versions (95, 98), see "OLDER VERSIONS" below for
+that.
 
 
 1. Microsoft Visual C++
@@ -57,16 +57,17 @@ execute the installer from it.
 
 When installing "Visual Studio Community 2015 with Update 3" or "Visual C++
 Build Tools for Visual Studio 2015 with Update 3" make sure to
-select "custom" and check "Windows XP Support for C++" and all checkboxes
-under "Universal Windows App Development Tools".  Or whatever they are called
-now.
+select "custom" and check all checkboxes under "Universal Windows App
+Development Tools".  Or whatever they are called now.
+(If you still want to target Windows XP, check also "Windows XP Support for
+C++".  Note that this is no longer supported.)
 
 
 Visual Studio
 -------------
 
-Building with Visual Studio (VS2010, VS2012, VS2013, VS2015, VS2017 and VS2019)
-is straightforward.
+Building with Visual Studio (VS2010, VS2012, VS2013, VS2015, VS2017, VS2019
+and VS2022) is straightforward.
 
 To build Vim from the command line with MSVC, use Make_mvc.mak.
 Visual Studio installed a batch file called vcvars32.bat, which you must
@@ -103,6 +104,9 @@ Vim with Make_mvc.mak.
 
 Targeting Windows XP with MSVC 2012 and later      *new-msvc-windows-xp*
 ---------------------------------------------
+
+(The support for pre-Vista was removed in patch 9.0.0xxx.  If you want to
+target Windows XP, use the source code before that.)
 
 Beginning with Visual C++ 2012, Microsoft changed the behavior of LINK.EXE
 so that it targets Windows 6.0 (Vista) by default.  In order to override
@@ -141,9 +145,6 @@ compiler by using the "x64" option:
 The following Visual C++ team blog can serve as a reference page:
     http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx
 
-VC 2019 dropped support for targeting Windows XP.  If you want a binary that
-targeting Windows XP, use VC 2017 or earlier.
-
 
 Cross compile support for Windows on ARM64
 ------------------------------------------
@@ -156,7 +157,7 @@ The ARM64 support was provided by Leendert van Doorn.
 
 OLDER VERSIONS
 
-The minimal supported version is Windows XP. Building with older compilers
+The minimal supported version is Windows 7. Building with older compilers
 might still work, but these instructions might be outdated.
 
 If you need the executable to run on Windows 98 or ME, use the 2005 one
@@ -774,12 +775,12 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
       nmake -f Make_mvc.mak
           RUBY=C:\Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
           RUBY_MSVCRT_NAME=msvcrt
-          WINVER=0x501
+          WINVER=0x601
 
     For 64-bit version, replace RUBY=C:\Ruby24 with RUBY=C:\Ruby24-x64.
 
     If you set WINVER explicitly, it must be set to >=0x500, when building
-    with Ruby 2.1 or later.  (Default is 0x501.)
+    with Ruby 2.1 or later.  (Default is 0x601.)
     When using this trick, you also need to set RUBY_MSVCRT_NAME to msvcrt
     which is used for the Ruby's DLL name.
 
@@ -790,11 +791,11 @@ After you install RubyInstaller, just type this (as one line):
 
     mingw32-make -f Make_ming.mak
         RUBY=C:/Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
-        WINVER=0x600
+        WINVER=0x601
 
 For 64-bit version, replace RUBY=C:/Ruby24 with RUBY=C:/Ruby24-x64.
 If you set WINVER explicitly, it must be set to >=0x500, when building with
-Ruby 2.1 or later.  (Default is 0x600.)
+Ruby 2.1 or later.  (Default is 0x601.)
 
 
 

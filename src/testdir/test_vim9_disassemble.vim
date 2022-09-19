@@ -309,9 +309,7 @@ def s:ScriptFuncPush()
   var localbool = true
   var localspec = v:none
   var localblob = 0z1234
-  if has('float')
-    var localfloat = 1.234
-  endif
+  var localfloat = 1.234
 enddef
 
 def Test_disassemble_push()
@@ -974,6 +972,85 @@ def Test_disassemble_closure_arg()
         '\d CONCAT size 2\_s*' ..
         '\d RETURN',
          lres)
+enddef
+
+def s:ClosureInLoop()
+  for i in range(5)
+    var ii = i
+    continue
+    break
+    if g:val
+      return
+    endif
+    g:Ref = () => ii
+    continue
+    break
+    if g:val
+      return
+    endif
+  endfor
+enddef
+
+" Mainly check that ENDLOOP is only produced after a closure was created.
+def Test_disassemble_closure_in_loop()
+  var res = execute('disass s:ClosureInLoop')
+  assert_match('<SNR>\d\+_ClosureInLoop\_s*' ..
+        'for i in range(5)\_s*' ..
+        '\d\+ STORE -1 in $0\_s*' ..
+        '\d\+ PUSHNR 5\_s*' ..
+        '\d\+ BCALL range(argc 1)\_s*' ..
+        '\d\+ FOR $0 -> \d\+\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+
+        'var ii = i\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ STORE $3\_s*' ..
+
+        'continue\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+
+        'break\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+
+        'if g:val\_s*' ..
+        '\d\+ LOADG g:val\_s*' ..
+        '\d\+ COND2BOOL\_s*' ..
+        '\d\+ JUMP_IF_FALSE -> \d\+\_s*' ..
+
+        '  return\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN\_s*' ..
+
+        'endif\_s*' ..
+        'g:Ref = () => ii\_s*' ..
+        '\d\+ FUNCREF <lambda>4 var $3 - $3\_s*' ..
+        '\d\+ STOREG g:Ref\_s*' ..
+
+        'continue\_s*' ..
+        '\d\+ ENDLOOP $1 save $3 - $3\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+
+        'break\_s*' ..
+        '\d\+ ENDLOOP $1 save $3 - $3\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+
+         'if g:val\_s*' ..
+        '\d\+ LOADG g:val\_s*' ..
+        '\d\+ COND2BOOL\_s*' ..
+        '\d\+ JUMP_IF_FALSE -> \d\+\_s*' ..
+
+        '  return\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ ENDLOOP $1 save $3 - $3\_s*' ..
+        '\d\+ RETURN\_s*' ..
+
+        'endif\_s*' ..
+        'endfor\_s*' ..
+        '\d\+ ENDLOOP $1 save $3 - $3\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+        '\d\+ DROP\_s*' ..
+        '\d\+ RETURN void',
+        res)
 enddef
 
 def EchoArg(arg: string): string
@@ -1663,13 +1740,11 @@ def s:Computing()
   anyres = g:number / 7
   anyres = g:number % 7
 
-  if has('float')
-    var fl = 3.0
-    var flres = fl + 7.0
-    flres = fl - 7.0
-    flres = fl * 7.0
-    flres = fl / 7.0
-  endif
+  var fl = 3.0
+  var flres = fl + 7.0
+  flres = fl - 7.0
+  flres = fl * 7.0
+  flres = fl / 7.0
 enddef
 
 def Test_disassemble_computing()
@@ -1704,24 +1779,22 @@ def Test_disassemble_computing()
         'anyres = g:number % 7.*' ..
         '\d OPANY %.*',
         instr)
-  if has('float')
-    assert_match('Computing.*' ..
-        'var fl = 3.0.*' ..
-        '\d PUSHF 3.0.*' ..
-        '\d STORE $3.*' ..
-        'var flres = fl + 7.0.*' ..
-        '\d LOAD $3.*' ..
-        '\d PUSHF 7.0.*' ..
-        '\d OPFLOAT +.*' ..
-        '\d STORE $4.*' ..
-        'flres = fl - 7.0.*' ..
-        '\d OPFLOAT -.*' ..
-        'flres = fl \* 7.0.*' ..
-        '\d OPFLOAT \*.*' ..
-        'flres = fl / 7.0.*' ..
-        '\d OPFLOAT /.*',
-        instr)
-  endif
+  assert_match('Computing.*' ..
+      'var fl = 3.0.*' ..
+      '\d PUSHF 3.0.*' ..
+      '\d STORE $3.*' ..
+      'var flres = fl + 7.0.*' ..
+      '\d LOAD $3.*' ..
+      '\d PUSHF 7.0.*' ..
+      '\d OPFLOAT +.*' ..
+      '\d STORE $4.*' ..
+      'flres = fl - 7.0.*' ..
+      '\d OPFLOAT -.*' ..
+      'flres = fl \* 7.0.*' ..
+      '\d OPFLOAT \*.*' ..
+      'flres = fl / 7.0.*' ..
+      '\d OPFLOAT /.*',
+      instr)
 enddef
 
 def s:AddListBlob()
@@ -2099,19 +2172,17 @@ def Test_disassemble_compare()
         ['77 isnot g:xx', 'COMPAREANY isnot'],
         ]
   var floatDecl = ''
-  if has('float')
-    cases->extend([
-        ['1.1 == aFloat', 'COMPAREFLOAT =='],
-        ['1.1 != aFloat', 'COMPAREFLOAT !='],
-        ['1.1 > aFloat', 'COMPAREFLOAT >'],
-        ['1.1 < aFloat', 'COMPAREFLOAT <'],
-        ['1.1 >= aFloat', 'COMPAREFLOAT >='],
-        ['1.1 <= aFloat', 'COMPAREFLOAT <='],
-        ['1.1 =~ aFloat', 'COMPAREFLOAT =\~'],
-        ['1.1 !~ aFloat', 'COMPAREFLOAT !\~'],
-        ])
-    floatDecl = 'var aFloat = 2.2'
-  endif
+  cases->extend([
+      ['1.1 == aFloat', 'COMPAREFLOAT =='],
+      ['1.1 != aFloat', 'COMPAREFLOAT !='],
+      ['1.1 > aFloat', 'COMPAREFLOAT >'],
+      ['1.1 < aFloat', 'COMPAREFLOAT <'],
+      ['1.1 >= aFloat', 'COMPAREFLOAT >='],
+      ['1.1 <= aFloat', 'COMPAREFLOAT <='],
+      ['1.1 =~ aFloat', 'COMPAREFLOAT =\~'],
+      ['1.1 !~ aFloat', 'COMPAREFLOAT !\~'],
+      ])
+  floatDecl = 'var aFloat = 2.2'
 
   var nr = 1
   for case in cases

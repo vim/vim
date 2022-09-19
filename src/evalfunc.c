@@ -1512,12 +1512,7 @@ typedef struct
 #define FEARG_3    3	    // base is the third argument
 #define FEARG_4    4	    // base is the fourth argument
 
-#ifdef FEAT_FLOAT
-# define FLOAT_FUNC(name) name
-#else
-# define FLOAT_FUNC(name) NULL
-#endif
-#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
+#if defined(HAVE_MATH_H)
 # define MATH_FUNC(name) name
 #else
 # define MATH_FUNC(name) NULL
@@ -1556,9 +1551,9 @@ typedef struct
 static funcentry_T global_functions[] =
 {
     {"abs",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_any,	    FLOAT_FUNC(f_abs)},
+			ret_any,	    f_abs},
     {"acos",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_acos)},
+			ret_float,	    f_acos},
     {"add",		2, 2, FEARG_1,	    arg2_listblob_item,
 			ret_first_arg,	    f_add},
     {"and",		2, 2, FEARG_1,	    arg2_number,
@@ -1576,7 +1571,7 @@ static funcentry_T global_functions[] =
     {"argv",		0, 2, 0,	    arg2_number,
 			ret_argv,	    f_argv},
     {"asin",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_asin)},
+			ret_float,	    f_asin},
     {"assert_beeps",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_assert_beeps},
     {"assert_equal",	2, 3, FEARG_2,	    NULL,
@@ -1604,9 +1599,9 @@ static funcentry_T global_functions[] =
     {"assert_true",	1, 2, FEARG_1,	    NULL,
 			ret_number_bool,    f_assert_true},
     {"atan",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_atan)},
+			ret_float,	    f_atan},
     {"atan2",		2, 2, FEARG_1,	    arg2_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_atan2)},
+			ret_float,	    f_atan2},
     {"autocmd_add",	1, 1, FEARG_1,	    arg1_list_any,
 			ret_number_bool,    f_autocmd_add},
     {"autocmd_delete",	1, 1, FEARG_1,	    arg1_list_any,
@@ -1676,7 +1671,7 @@ static funcentry_T global_functions[] =
     {"call",		2, 3, FEARG_1,	    arg3_any_list_dict,
 			ret_any,	    f_call},
     {"ceil",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_ceil)},
+			ret_float,	    f_ceil},
     {"ch_canread",	1, 1, FEARG_1,	    arg1_chan_or_job,
 			ret_number_bool,    JOB_FUNC(f_ch_canread)},
     {"ch_close",	1, 1, FEARG_1,	    arg1_chan_or_job,
@@ -1744,9 +1739,9 @@ static funcentry_T global_functions[] =
     {"copy",		1, 1, FEARG_1,	    NULL,
 			ret_copy,	    f_copy},
     {"cos",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_cos)},
+			ret_float,	    f_cos},
     {"cosh",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_cosh)},
+			ret_float,	    f_cosh},
     {"count",		2, 4, FEARG_1,	    arg24_count,
 			ret_number,	    f_count},
     {"cscope_connection",0,3, 0,	    arg3_number_string_string,
@@ -1804,7 +1799,7 @@ static funcentry_T global_functions[] =
     {"exists_compiled",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_exists_compiled},
     {"exp",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_exp)},
+			ret_float,	    f_exp},
     {"expand",		1, 3, FEARG_1,	    arg3_string_bool_bool,
 			ret_any,	    f_expand},
     {"expandcmd",	1, 2, FEARG_1,	    arg2_string_dict,
@@ -1832,11 +1827,11 @@ static funcentry_T global_functions[] =
     {"flattennew",	1, 2, FEARG_1,	    arg2_list_any_number,
 			ret_list_any,	    f_flattennew},
     {"float2nr",	1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_number,	    FLOAT_FUNC(f_float2nr)},
+			ret_number,	    f_float2nr},
     {"floor",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_floor)},
+			ret_float,	    f_floor},
     {"fmod",		2, 2, FEARG_1,	    arg2_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_fmod)},
+			ret_float,	    f_fmod},
     {"fnameescape",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_fnameescape},
     {"fnamemodify",	2, 2, FEARG_1,	    arg2_string,
@@ -1853,7 +1848,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_foldtextresult},
     {"foreground",	0, 0, 0,	    NULL,
 			ret_void,	    f_foreground},
-    {"fullcommand",	1, 1, FEARG_1,	    arg1_string,
+    {"fullcommand",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_string,	    f_fullcommand},
     {"funcref",		1, 3, FEARG_1,	    arg3_any_list_dict,
 			ret_func_unknown,   f_funcref},
@@ -2088,9 +2083,9 @@ static funcentry_T global_functions[] =
     {"localtime",	0, 0, 0,	    NULL,
 			ret_number,	    f_localtime},
     {"log",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_log)},
+			ret_float,	    f_log},
     {"log10",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_log10)},
+			ret_float,	    f_log10},
     {"luaeval",		1, 2, FEARG_1,	    arg2_string_any,
 			ret_any,
 #ifdef FEAT_LUA
@@ -2216,7 +2211,7 @@ static funcentry_T global_functions[] =
     {"popup_show",	1, 1, FEARG_1,	    arg1_number,
 			ret_void,	    PROP_FUNC(f_popup_show)},
     {"pow",		2, 2, FEARG_1,	    arg2_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_pow)},
+			ret_float,	    f_pow},
     {"prevnonblank",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_prevnonblank},
     {"printf",		1, 19, FEARG_2,	    arg119_printf,
@@ -2300,7 +2295,7 @@ static funcentry_T global_functions[] =
     {"reltime",		0, 2, FEARG_1,	    arg2_list_number,
 			ret_list_any,	    f_reltime},
     {"reltimefloat",	1, 1, FEARG_1,	    arg1_list_number,
-			ret_float,	    FLOAT_FUNC(f_reltimefloat)},
+			ret_float,	    f_reltimefloat},
     {"reltimestr",	1, 1, FEARG_1,	    arg1_list_number,
 			ret_string,	    f_reltimestr},
     {"remote_expr",	2, 4, FEARG_1,	    arg24_remote_expr,
@@ -2326,7 +2321,7 @@ static funcentry_T global_functions[] =
     {"reverse",		1, 1, FEARG_1,	    arg1_list_or_blob,
 			ret_first_arg,	    f_reverse},
     {"round",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_round)},
+			ret_float,	    f_round},
     {"rubyeval",	1, 1, FEARG_1,	    arg1_string,
 			ret_any,
 #ifdef FEAT_RUBY
@@ -2438,9 +2433,9 @@ static funcentry_T global_functions[] =
     {"simplify",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_simplify},
     {"sin",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_sin)},
+			ret_float,	    f_sin},
     {"sinh",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_sinh)},
+			ret_float,	    f_sinh},
     {"slice",		2, 3, FEARG_1,	    arg23_slice,
 			ret_slice,	    f_slice},
     {"sort",		1, 3, FEARG_1,	    arg13_sortuniq,
@@ -2462,13 +2457,13 @@ static funcentry_T global_functions[] =
     {"split",		1, 3, FEARG_1,	    arg3_string_string_bool,
 			ret_list_string,    f_split},
     {"sqrt",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_sqrt)},
+			ret_float,	    f_sqrt},
     {"srand",		0, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_srand},
     {"state",		0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_state},
     {"str2float",	1, 2, FEARG_1,	    arg2_string_bool,
-			ret_float,	    FLOAT_FUNC(f_str2float)},
+			ret_float,	    f_str2float},
     {"str2list",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_list_number,    f_str2list},
     {"str2nr",		1, 3, FEARG_1,	    arg3_string_number_bool,
@@ -2546,9 +2541,9 @@ static funcentry_T global_functions[] =
     {"taglist",		1, 2, FEARG_1,	    arg2_string,
 			ret_list_dict_any,  f_taglist},
     {"tan",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_tan)},
+			ret_float,	    f_tan},
     {"tanh",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_tanh)},
+			ret_float,	    f_tanh},
     {"tempname",	0, 0, 0,	    NULL,
 			ret_string,	    f_tempname},
     {"term_dumpdiff",	2, 3, FEARG_1,	    arg3_string_string_dict,
@@ -2680,7 +2675,7 @@ static funcentry_T global_functions[] =
     {"trim",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_trunc)},
+			ret_float,	    f_trunc},
     {"type",		1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_type},
     {"typename",	1, 1, FEARG_1,	    NULL,
@@ -3670,10 +3665,8 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    n = argvars[0].vval.v_number == 0;
 	    break;
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 	    n = argvars[0].vval.v_float == 0.0;
 	    break;
-#endif
 	case VAR_LIST:
 	    n = argvars[0].vval.v_list == NULL
 					|| argvars[0].vval.v_list->lv_len == 0;
@@ -5644,13 +5637,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"float",
-#ifdef FEAT_FLOAT
-		1
-#else
-		0
-#endif
-		},
+	{"float", 1},
 	{"folding",
 #ifdef FEAT_FOLDING
 		1

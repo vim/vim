@@ -488,6 +488,14 @@ prop_add_common(
 
     if (dict_has_key(dict, "text"))
     {
+	if (dict_has_key(dict, "length")
+		|| dict_has_key(dict, "end_col")
+		|| dict_has_key(dict, "end_lnum"))
+	{
+	    emsg(_(e_cannot_use_length_endcol_and_endlnum_with_text));
+	    goto theend;
+	}
+
 	text = dict_get_string(dict, "text", TRUE);
 	if (text == NULL)
 	    goto theend;

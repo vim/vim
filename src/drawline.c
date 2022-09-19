@@ -1888,6 +1888,11 @@ win_line(
 				    p_extra_free2 = wlv.p_extra;
 				}
 
+				if (lcs_eol_one < 0 && wlv.col
+					       + wlv.n_extra - 2 > wp->w_width)
+				    // don't bail out at end of line
+				    lcs_eol_one = 0;
+
 				// When 'wrap' is off then for "below" we need
 				// to start a new line explictly.
 				if (start_line)

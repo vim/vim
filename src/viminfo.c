@@ -1225,9 +1225,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 	    switch (*tab)
 	    {
 		case 'S': type = VAR_STRING; break;
-#ifdef FEAT_FLOAT
 		case 'F': type = VAR_FLOAT; break;
-#endif
 		case 'D': type = VAR_DICT; break;
 		case 'L': type = VAR_LIST; break;
 		case 'B': type = VAR_BLOB; break;
@@ -1242,10 +1240,8 @@ read_viminfo_varlist(vir_T *virp, int writing)
 			|| type == VAR_LIST || type == VAR_BLOB)
 		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
-#ifdef FEAT_FLOAT
 		else if (type == VAR_FLOAT)
 		    (void)string2float(tab + 1, &tv.vval.v_float, FALSE);
-#endif
 		else
 		{
 		    tv.vval.v_number = atol((char *)tab + 1);

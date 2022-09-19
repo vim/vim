@@ -1817,14 +1817,14 @@ static regsubmatch_T rsm;  // can only be used when can_f_submatch is TRUE
  * call_func() by vim_regsub_both().
  */
     static int
-fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, int argcount)
+fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, ufunc_T *fp)
 {
     listitem_T	*li;
     int		i;
     char_u	*s;
     typval_T	*listarg = argv + argskip;
 
-    if (argcount == argskip)
+    if (!has_varargs(fp) && fp->uf_args.ga_len <= argskip)
 	// called function doesn't take a submatches argument
 	return argskip;
 

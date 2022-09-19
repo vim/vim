@@ -87,10 +87,9 @@ POSTSCRIPT=no
 # Set to yes to enable OLE support.
 OLE=no
 
-# Set the default $(WINVER).  Use 0x0501 to make it work with WinXP.
+# Set the default $(WINVER).  Use 0x0601 to make it work with Windows 7.
 ifndef WINVER
-# WINVER = 0x0501
-WINVER = 0x0600
+WINVER = 0x0601
 endif
 
 # Set to yes to enable Cscope support.
@@ -1321,7 +1320,7 @@ ifeq (16, $(RUBY))
 endif
 
 $(OUTDIR)/iscygpty.o:	iscygpty.c $(CUI_INCL)
-	$(CC) -c $(CFLAGS) iscygpty.c -o $(OUTDIR)/iscygpty.o -U_WIN32_WINNT -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
+	$(CC) -c $(CFLAGS) iscygpty.c -o $@
 
 $(OUTDIR)/main.o:	main.c $(INCL) $(CUI_INCL)
 	$(CC) -c $(CFLAGS) main.c -o $@

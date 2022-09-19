@@ -17,7 +17,7 @@ EXTERN char e_backslash_should_be_followed_by[]
 	INIT(= N_("E10: \\ should be followed by /, ? or &"));
 #ifdef FEAT_CMDWIN
 EXTERN char e_invalid_in_cmdline_window[]
-	INIT(= N_("E11: Invalid in command-line window; <CR> executes, CTRL-C quits"));
+	INIT(= N_("E11: Invalid in command-line window; :q<CR> closes the window"));
 #endif
 EXTERN char e_command_not_allowed_from_vimrc_in_current_dir_or_tag_search[]
 	INIT(= N_("E12: Command not allowed from exrc/vimrc in current dir or tag search"));
@@ -895,7 +895,7 @@ EXTERN char e_cannot_execute_shell_with_f_option[]
 	INIT(= N_("E360: Cannot execute shell with -f option"));
 #endif
 // E361 unused
-#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
+#if defined(FEAT_EVAL)
 EXTERN char e_using_boolean_value_as_float[]
 	INIT(= N_("E362: Using a boolean value as a Float"));
 #endif
@@ -2044,17 +2044,13 @@ EXTERN char e_cannot_use_percent_with_float[]
 	// xgettext:no-c-format
 	INIT(= N_("E804: Cannot use '%' with Float"));
 #endif
-#ifdef FEAT_FLOAT
 EXTERN char e_using_float_as_number[]
 	INIT(= N_("E805: Using a Float as a Number"));
 EXTERN char e_using_float_as_string[]
 	INIT(= N_("E806: Using a Float as a String"));
-#endif
-#ifdef FEAT_FLOAT
 EXTERN char e_expected_float_argument_for_printf[]
 	INIT(= N_("E807: Expected Float argument for printf()"));
-#endif
-#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
+#if defined(FEAT_EVAL)
 EXTERN char e_number_or_float_required[]
 	INIT(= N_("E808: Number or Float required"));
 #endif
@@ -2290,7 +2286,6 @@ EXTERN char e_number_required[]
 EXTERN char e_trailing_char_after_rsb_str_str[]
 	INIT(= N_("E890: Trailing char after ']': %s]%s"));
 #endif
-#ifdef FEAT_FLOAT
 EXTERN char e_using_funcref_as_float[]
 	INIT(= N_("E891: Using a Funcref as a Float"));
 EXTERN char e_using_string_as_float[]
@@ -2299,7 +2294,6 @@ EXTERN char e_using_list_as_float[]
 	INIT(= N_("E893: Using a List as a Float"));
 EXTERN char e_using_dictionary_as_float[]
 	INIT(= N_("E894: Using a Dictionary as a Float"));
-#endif
 #ifdef FEAT_MZSCHEME
 EXTERN char e_sorry_this_command_is_disabled_the_mzscheme_racket_base_module_could_not_be_loaded[]
 	INIT(= N_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
@@ -2340,10 +2334,8 @@ EXTERN char e_received_unknown_command_str[]
 EXTERN char e_not_an_open_channel[]
 	INIT(= N_("E906: Not an open channel"));
 #endif
-#ifdef FEAT_FLOAT
 EXTERN char e_using_special_value_as_float[]
 	INIT(= N_("E907: Using a special value as a Float"));
-#endif
 #ifdef FEAT_EVAL
 EXTERN char e_using_invalid_value_as_string_str[]
 	INIT(= N_("E908: Using an invalid value as a String: %s"));
@@ -2537,10 +2529,8 @@ EXTERN char e_blob_literal_should_have_an_even_number_of_hex_characters[]
 	INIT(= N_("E973: Blob literal should have an even number of hex characters"));
 EXTERN char e_using_blob_as_number[]
 	INIT(= N_("E974: Using a Blob as a Number"));
-# ifdef FEAT_FLOAT
 EXTERN char e_using_blob_as_float[]
 	INIT(= N_("E975: Using a Blob as a Float"));
-# endif
 EXTERN char e_using_blob_as_string[]
 	INIT(= N_("E976: Using a Blob as a String"));
 EXTERN char e_can_only_compare_blob_with_blob[]
@@ -2775,10 +2765,7 @@ EXTERN char e_no_white_space_allowed_after_dot[]
 	INIT(= N_("E1074: No white space allowed after dot"));
 EXTERN char e_namespace_not_supported_str[]
 	INIT(= N_("E1075: Namespace not supported: %s"));
-# ifndef FEAT_FLOAT
-EXTERN char e_this_vim_is_not_compiled_with_float_support[]
-	INIT(= N_("E1076: This Vim is not compiled with float support"));
-# endif
+// E1076 was deleted
 EXTERN char e_missing_argument_type_for_str[]
 	INIT(= N_("E1077: Missing argument type for %s"));
 #endif
@@ -3337,4 +3324,8 @@ EXTERN char e_custom_list_completion_function_does_not_return_list_but_str[]
 	INIT(= N_("E1303: Custom list completion function does not return a List but a %s"));
 EXTERN char e_cannot_use_type_with_this_variable_str[]
 	INIT(= N_("E1304: Cannot use type with this variable: %s"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_use_length_endcol_and_endlnum_with_text[]
+	INIT(= N_("E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""));
 #endif

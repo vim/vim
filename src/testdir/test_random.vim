@@ -26,9 +26,7 @@ func Test_Rand()
   call assert_equal(1001954530, rand())
   call test_srand_seed()
 
-  if has('float')
-    call assert_fails('echo srand(1.2)', 'E805:')
-  endif
+  call assert_fails('echo srand(1.2)', 'E805:')
   call assert_fails('echo srand([1])', 'E745:')
   call assert_fails('echo rand("burp")', 'E475:')
   call assert_fails('echo rand([1, 2, 3])', 'E730:')

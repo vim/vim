@@ -129,11 +129,9 @@ func MakeBadFunc()
 endfunc
 
 func Test_default_arg()
-  if has('float')
-    call assert_equal(1.0, Log(10))
-    call assert_equal(log(10), Log(10, exp(1)))
-    call assert_fails("call Log(1,2,3)", 'E118:')
-  endif
+  call assert_equal(1.0, Log(10))
+  call assert_equal(log(10), Log(10, exp(1)))
+  call assert_fails("call Log(1,2,3)", 'E118:')
 
   let res = Args(1)
   call assert_equal(res.mandatory, 1)

@@ -31,7 +31,7 @@ int generate_CHECKLEN(cctx_T *cctx, int min_len, int more_OK);
 int generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name);
 int generate_STORENR(cctx_T *cctx, int idx, varnumber_T value);
 int generate_LOAD(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name, type_T *type);
-int generate_LOADOUTER(cctx_T *cctx, int idx, int nesting, type_T *type);
+int generate_LOADOUTER(cctx_T *cctx, int idx, int nesting, int loop_idx, type_T *type);
 int generate_LOADV(cctx_T *cctx, char_u *name);
 int generate_UNLET(cctx_T *cctx, isntype_T isn_type, char_u *name, int forceit);
 int generate_LOCKCONST(cctx_T *cctx);
@@ -40,7 +40,7 @@ int generate_VIM9SCRIPT(cctx_T *cctx, isntype_T isn_type, int sid, int idx, type
 int generate_NEWLIST(cctx_T *cctx, int count, int use_null);
 int generate_NEWDICT(cctx_T *cctx, int count, int use_null);
 int generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc, isn_T **isnp);
-int generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name);
+int generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name, short loop_var_idx, short loop_var_count);
 int generate_DEF(cctx_T *cctx, char_u *name, size_t len);
 int generate_JUMP(cctx_T *cctx, jumpwhen_T when, int where);
 int generate_WHILE(cctx_T *cctx, int funcref_idx);

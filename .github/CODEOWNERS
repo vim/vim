@@ -198,6 +198,7 @@ runtime/ftplugin/toml.vim		@averms
 runtime/ftplugin/tt2html.vim		@petdance
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
+runtime/ftplugin/vdf.vim		@ObserverOfTime
 runtime/ftplugin/wast.vim		@rhysd
 runtime/ftplugin/wget.vim		@dkearns
 runtime/ftplugin/wget2.vim		@dkearns
@@ -361,6 +362,7 @@ runtime/syntax/less.vim			@genoma
 runtime/syntax/lex.vim			@cecamp
 runtime/syntax/liquid.vim		@tpope
 runtime/syntax/lisp.vim			@cecamp
+runtime/syntax/lyrics.vim		@ObserverOfTime
 runtime/syntax/lynx.vim			@dkearns
 runtime/syntax/m3build.vim		@dkearns
 runtime/syntax/m3quake.vim		@dkearns
@@ -415,6 +417,7 @@ runtime/syntax/sdoc.vim			@gpanders
 runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
 runtime/syntax/spec.vim			@ignatenkobrain
+runtime/syntax/srt.vim			@ObserverOfTime
 runtime/syntax/sqloracle.vim		@chrisbra
 runtime/syntax/squirrel.vim		@zenmatic
 runtime/syntax/sshconfig.vim		@Jakuje
@@ -437,6 +440,7 @@ runtime/syntax/tt2js.vim		@petdance
 runtime/syntax/typescript.vim		@HerringtonDarkholme
 runtime/syntax/typescriptcommon.vim	@HerringtonDarkholme
 runtime/syntax/typescriptreact.vim	@HerringtonDarkholme
+runtime/syntax/vdf.vim			@ObserverOfTime
 runtime/syntax/vim.vim			@cecamp
 runtime/syntax/vroom.vim		@dbarnett
 runtime/syntax/wast.vim			@rhysd

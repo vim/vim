@@ -787,7 +787,6 @@ assert_inrange(typval_T *argvars)
     char	msg[200];
     char_u	numbuf[NUMBUFLEN];
 
-#ifdef FEAT_FLOAT
     if (argvars[0].v_type == VAR_FLOAT
 	    || argvars[1].v_type == VAR_FLOAT
 	    || argvars[2].v_type == VAR_FLOAT)
@@ -816,7 +815,6 @@ assert_inrange(typval_T *argvars)
 	}
     }
     else
-#endif
     {
 	varnumber_T	lower = tv_get_number_chk(&argvars[0], &error);
 	varnumber_T	upper = tv_get_number_chk(&argvars[1], &error);

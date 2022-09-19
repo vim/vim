@@ -69,11 +69,9 @@ def Test_abs()
   assert_equal(2, abs(-2))
   assert_equal(3, abs(3))
   v9.CheckDefAndScriptFailure(['abs("text")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
-  if has('float')
-    assert_equal(0, abs(0))
-    assert_equal(2.0, abs(-2.0))
-    assert_equal(3.0, abs(3.0))
-  endif
+  assert_equal(0, abs(0))
+  assert_equal(2.0, abs(-2.0))
+  assert_equal(3.0, abs(3.0))
 enddef
 
 def Test_add()
@@ -1283,8 +1281,6 @@ enddef
 
 " Test for float functions argument type
 def Test_float_funcs_args()
-  CheckFeature float
-
   # acos()
   v9.CheckDefAndScriptFailure(['acos("a")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1219: Float or Number required for argument 1'])
   assert_equal('1.570796', string(acos(0.0)))
@@ -1530,6 +1526,13 @@ def Test_fullcommand()
   assert_equal('scriptnames', fullcommand('scr'))
   assert_equal('', fullcommand('scg'))
   fullcommand('')->assert_equal('')
+
+  assert_equal('', fullcommand('en'))
+  legacy call assert_equal('endif', fullcommand('en'))
+  assert_equal('endif', fullcommand('en', 0))
+  legacy call assert_equal('endif', fullcommand('en', 0))
+  assert_equal('', fullcommand('en', 1))
+  legacy call assert_equal('', fullcommand('en', 1))
 enddef
 
 def Test_funcref()
@@ -4057,15 +4060,11 @@ def Test_state()
 enddef
 
 def Test_str2float()
-  if !has('float')
-    CheckFeature float
-  else
-    str2float("1.00")->assert_equal(1.00)
-    str2float("2e-2")->assert_equal(0.02)
-    str2float('')->assert_equal(0.0)
+  str2float("1.00")->assert_equal(1.00)
+  str2float("2e-2")->assert_equal(0.02)
+  str2float('')->assert_equal(0.0)
 
-    v9.CheckDefAndScriptFailure(['str2float(123)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
-  endif
+  v9.CheckDefAndScriptFailure(['str2float(123)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1174: String required for argument 1'])
 enddef
 
 def Test_str2list()
@@ -4578,9 +4577,7 @@ def Test_trim()
 enddef
 
 def Test_typename()
-  if has('float')
-    assert_equal('func([unknown], [unknown]): float', typename(function('pow')))
-  endif
+  assert_equal('func([unknown], [unknown]): float', typename(function('pow')))
   assert_equal('func(...): unknown', test_null_partial()->typename())
   assert_equal('list<unknown>', test_null_list()->typename())
   assert_equal('dict<unknown>', test_null_dict()->typename())

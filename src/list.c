@@ -1876,9 +1876,7 @@ typedef struct
     int		item_compare_lc;
     int		item_compare_numeric;
     int		item_compare_numbers;
-#ifdef FEAT_FLOAT
     int		item_compare_float;
-#endif
     char_u	*item_compare_func;
     partial_T	*item_compare_partial;
     dict_T	*item_compare_selfdict;
@@ -1915,7 +1913,6 @@ item_compare(const void *s1, const void *s2)
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
     }
 
-#ifdef FEAT_FLOAT
     if (sortinfo->item_compare_float)
     {
 	float_T	v1 = tv_get_float(tv1);
@@ -1923,7 +1920,6 @@ item_compare(const void *s1, const void *s2)
 
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
     }
-#endif
 
     // tv2string() puts quotes around a string and allocates memory.  Don't do
     // that for string variables. Use a single quote when comparing with a
@@ -2160,9 +2156,7 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
     info->item_compare_lc = FALSE;
     info->item_compare_numeric = FALSE;
     info->item_compare_numbers = FALSE;
-#ifdef FEAT_FLOAT
     info->item_compare_float = FALSE;
-#endif
     info->item_compare_func = NULL;
     info->item_compare_partial = NULL;
     info->item_compare_selfdict = NULL;
@@ -2215,13 +2209,11 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
 		info->item_compare_func = NULL;
 		info->item_compare_numbers = TRUE;
 	    }
-#ifdef FEAT_FLOAT
 	    else if (STRCMP(info->item_compare_func, "f") == 0)
 	    {
 		info->item_compare_func = NULL;
 		info->item_compare_float = TRUE;
 	    }
-#endif
 	    else if (STRCMP(info->item_compare_func, "i") == 0)
 	    {
 		info->item_compare_func = NULL;

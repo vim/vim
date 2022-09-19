@@ -283,11 +283,11 @@ func RunTheTest(test)
   if has('reltime')
     let message ..= repeat(' ', 50 - len(message))
     let time = reltime(func_start)
-    if has('float') && reltimefloat(time) > 0.1
+    if reltimefloat(time) > 0.1
       let message = s:t_bold .. message
     endif
     let message ..= ' in ' .. reltimestr(time) .. ' seconds'
-    if has('float') && reltimefloat(time) > 0.1
+    if reltimefloat(time) > 0.1
       let message ..= s:t_normal
     endif
   endif

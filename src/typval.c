@@ -136,10 +136,8 @@ clear_tv(typval_T *varp)
 		varp->vval.v_number = 0;
 		break;
 	    case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 		varp->vval.v_float = 0.0;
 		break;
-#endif
 	    case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
 		job_unref(varp->vval.v_job);
@@ -190,10 +188,8 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    }
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 	    emsg(_(e_using_float_as_number));
 	    break;
-#endif
 	case VAR_FUNC:
 	case VAR_PARTIAL:
 	    emsg(_(e_using_funcref_as_number));
@@ -296,7 +292,6 @@ tv_get_bool_chk(typval_T *varp, int *denote)
     return tv_get_bool_or_number_chk(varp, denote, TRUE);
 }
 
-#if defined(FEAT_FLOAT) || defined(PROTO)
     static float_T
 tv_get_float_chk(typval_T *varp, int *error)
 {
@@ -357,7 +352,6 @@ tv_get_float(typval_T *varp)
 {
     return tv_get_float_chk(varp, NULL);
 }
-#endif
 
 /*
  * Give an error and return FAIL unless "args[idx]" is unknown
@@ -1007,7 +1001,6 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    emsg(_(e_using_dictionary_as_string));
 	    break;
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 	    if (strict)
 	    {
 		emsg(_(e_using_float_as_string));
@@ -1015,7 +1008,6 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    }
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%g", varp->vval.v_float);
 	    return buf;
-#endif
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
 		return varp->vval.v_string;
@@ -1136,10 +1128,8 @@ copy_tv(typval_T *from, typval_T *to)
 	    to->vval.v_number = from->vval.v_number;
 	    break;
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 	    to->vval.v_float = from->vval.v_float;
 	    break;
-#endif
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
 	    to->vval.v_job = from->vval.v_job;
@@ -1289,7 +1279,6 @@ typval_compare(
 	n1 = res;
     }
 
-#ifdef FEAT_FLOAT
     // If one of the two variables is a float, compare as a float.
     // When using "=~" or "!~", always compare as string.
     else if ((tv1->v_type == VAR_FLOAT || tv2->v_type == VAR_FLOAT)
@@ -1322,7 +1311,6 @@ typval_compare(
 	    default:  break;  // avoid gcc warning
 	}
     }
-#endif
 
     // If one of the two variables is a number, compare as a number.
     // When using "=~" or "!~", always compare as string.
@@ -1489,11 +1477,9 @@ typval_compare_null(typval_T *tv1, typval_T *tv2)
 	    case VAR_NUMBER: if (!in_vim9script())
 				 return tv->vval.v_number == 0;
 			     break;
-#ifdef FEAT_FLOAT
 	    case VAR_FLOAT: if (!in_vim9script())
 				 return tv->vval.v_float == 0.0;
 			     break;
-#endif
 	    default: break;
 	}
     }
@@ -1870,9 +1856,7 @@ tv_equal(
 	    return ((ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2)) == 0);
 
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 	    return tv1->vval.v_float == tv2->vval.v_float;
-#endif
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
 	    return tv1->vval.v_job == tv2->vval.v_job;
@@ -2005,7 +1989,6 @@ eval_number(
 {
     int		len;
     int		skip_quotes = !in_old_script(4);
-#ifdef FEAT_FLOAT
     char_u	*p;
     int		get_float = FALSE;
 
@@ -2062,7 +2045,6 @@ eval_number(
 	}
     }
     else
-#endif
     if (**arg == '0' && ((*arg)[1] == 'z' || (*arg)[1] == 'Z'))
     {
 	char_u  *bp;

@@ -14,7 +14,7 @@
 
 #include "vim.h"
 
-#if (defined(FEAT_EVAL) && defined(FEAT_FLOAT)) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(PROTO)
 
 #ifdef VMS
 # include <float.h>

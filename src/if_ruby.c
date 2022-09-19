@@ -1221,12 +1221,10 @@ vim_to_ruby(typval_T *tv)
     {
 	result = INT2NUM(tv->vval.v_number);
     }
-# ifdef FEAT_FLOAT
     else if (tv->v_type == VAR_FLOAT)
     {
 	result = rb_float_new(tv->vval.v_float);
     }
-# endif
     else if (tv->v_type == VAR_LIST)
     {
 	list_T      *list = tv->vval.v_list;
@@ -1932,12 +1930,10 @@ ruby_convert_to_vim_value(VALUE val, typval_T *rettv)
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = (varnumber_T)NUM2LONG(val);
 	    break;
-#ifdef FEAT_FLOAT
 	case T_FLOAT:
 	    rettv->v_type = VAR_FLOAT;
 	    rettv->vval.v_float = (float_T)NUM2DBL(val);
 	    break;
-#endif
 	default:
 	    val = rb_obj_as_string(val);
 	    // FALLTHROUGH

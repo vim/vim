@@ -525,9 +525,7 @@ typval2string(typval_T *tv, int convert)
 {
     garray_T	ga;
     char_u	*retval;
-#ifdef FEAT_FLOAT
     char_u	numbuf[NUMBUFLEN];
-#endif
 
     if (convert && tv->v_type == VAR_LIST)
     {
@@ -541,13 +539,11 @@ typval2string(typval_T *tv, int convert)
 	ga_append(&ga, NUL);
 	retval = (char_u *)ga.ga_data;
     }
-#ifdef FEAT_FLOAT
     else if (convert && tv->v_type == VAR_FLOAT)
     {
 	vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv->vval.v_float);
 	retval = vim_strsave(numbuf);
     }
-#endif
     else
 	retval = vim_strsave(tv_get_string(tv));
     return retval;
@@ -1683,7 +1679,6 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 		{
 		    // nr += nr , nr -= nr , nr *=nr , nr /= nr , nr %= nr
 		    n = tv_get_number(tv1);
-#ifdef FEAT_FLOAT
 		    if (tv2->v_type == VAR_FLOAT)
 		    {
 			float_T f = n;
@@ -1702,7 +1697,6 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 			tv1->vval.v_float = f;
 		    }
 		    else
-#endif
 		    {
 			switch (*op)
 			{
@@ -1734,7 +1728,6 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 		return failed ? FAIL : OK;
 
 	    case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 		{
 		    float_T f;
 
@@ -1755,7 +1748,6 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 			case '/': tv1->vval.v_float /= f; break;
 		    }
 		}
-#endif
 		return OK;
 	}
     }
@@ -3238,9 +3230,7 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	}
 	if ((op != '+' || (rettv->v_type != VAR_LIST
 						 && rettv->v_type != VAR_BLOB))
-#ifdef FEAT_FLOAT
 		&& (op == '.' || rettv->v_type != VAR_FLOAT)
-#endif
 		&& evaluate)
 	{
 	    int		error = FALSE;
@@ -3293,14 +3283,12 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 			|| var2.v_type == VAR_JOB))
 		    semsg(_(e_using_invalid_value_as_string_str),
 						   vartype_name(var2.v_type));
-#ifdef FEAT_FLOAT
 		else if (vim9script && var2.v_type == VAR_FLOAT)
 		{
 		    vim_snprintf((char *)buf2, NUMBUFLEN, "%g",
 							    var2.vval.v_float);
 		    s2 = buf2;
 		}
-#endif
 		else
 		    s2 = tv_get_string_buf_chk(&var2, buf2);
 		if (s2 == NULL)		// type error ?
@@ -3327,8 +3315,7 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    {
 		int		error = FALSE;
 		varnumber_T	n1, n2;
-#ifdef FEAT_FLOAT
-		float_T	    f1 = 0, f2 = 0;
+		float_T		f1 = 0, f2 = 0;
 
 		if (rettv->v_type == VAR_FLOAT)
 		{
@@ -3336,7 +3323,6 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		    n1 = 0;
 		}
 		else
-#endif
 		{
 		    n1 = tv_get_number_chk(rettv, &error);
 		    if (error)
@@ -3349,19 +3335,15 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 			clear_tv(&var2);
 			return FAIL;
 		    }
-#ifdef FEAT_FLOAT
 		    if (var2.v_type == VAR_FLOAT)
 			f1 = n1;
-#endif
 		}
-#ifdef FEAT_FLOAT
 		if (var2.v_type == VAR_FLOAT)
 		{
 		    f2 = var2.vval.v_float;
 		    n2 = 0;
 		}
 		else
-#endif
 		{
 		    n2 = tv_get_number_chk(&var2, &error);
 		    if (error)
@@ -3370,14 +3352,11 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 			clear_tv(&var2);
 			return FAIL;
 		    }
-#ifdef FEAT_FLOAT
 		    if (rettv->v_type == VAR_FLOAT)
 			f2 = n2;
-#endif
 		}
 		clear_tv(rettv);
 
-#ifdef FEAT_FLOAT
 		// If there is a float on either side the result is a float.
 		if (rettv->v_type == VAR_FLOAT || var2.v_type == VAR_FLOAT)
 		{
@@ -3389,7 +3368,6 @@ eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		    rettv->vval.v_float = f1;
 		}
 		else
-#endif
 		{
 		    if (op == '+')
 			n1 = n1 + n2;
@@ -3423,9 +3401,7 @@ eval7(
     evalarg_T	*evalarg,
     int		want_string)  // after "." operator
 {
-#ifdef FEAT_FLOAT
     int	    use_float = FALSE;
-#endif
 
     /*
      * Get the first expression.
@@ -3444,9 +3420,7 @@ eval7(
 	char_u	    *p;
 	int	    op;
 	varnumber_T n1, n2;
-#ifdef FEAT_FLOAT
 	float_T	    f1, f2;
-#endif
 	int	    error;
 
 	// "*=", "/=" and "%=" are assignments
@@ -3469,14 +3443,11 @@ eval7(
 	    *arg = p;
 	}
 
-#ifdef FEAT_FLOAT
 	f1 = 0;
 	f2 = 0;
-#endif
 	error = FALSE;
 	if (evaluate)
 	{
-#ifdef FEAT_FLOAT
 	    if (rettv->v_type == VAR_FLOAT)
 	    {
 		f1 = rettv->vval.v_float;
@@ -3484,7 +3455,6 @@ eval7(
 		n1 = 0;
 	    }
 	    else
-#endif
 		n1 = tv_get_number_chk(rettv, &error);
 	    clear_tv(rettv);
 	    if (error)
@@ -3508,7 +3478,6 @@ eval7(
 
 	if (evaluate)
 	{
-#ifdef FEAT_FLOAT
 	    if (var2.v_type == VAR_FLOAT)
 	    {
 		if (!use_float)
@@ -3520,30 +3489,26 @@ eval7(
 		n2 = 0;
 	    }
 	    else
-#endif
 	    {
 		n2 = tv_get_number_chk(&var2, &error);
 		clear_tv(&var2);
 		if (error)
 		    return FAIL;
-#ifdef FEAT_FLOAT
 		if (use_float)
 		    f2 = n2;
-#endif
 	    }
 
 	    /*
 	     * Compute the result.
 	     * When either side is a float the result is a float.
 	     */
-#ifdef FEAT_FLOAT
 	    if (use_float)
 	    {
 		if (op == '*')
 		    f1 = f1 * f2;
 		else if (op == '/')
 		{
-# ifdef VMS
+#ifdef VMS
 		    // VMS crashes on divide by zero, work around it
 		    if (f2 == 0.0)
 		    {
@@ -3556,11 +3521,11 @@ eval7(
 		    }
 		    else
 			f1 = f1 / f2;
-# else
+#else
 		    // We rely on the floating point library to handle divide
 		    // by zero to result in "inf" and not a crash.
 		    f1 = f1 / f2;
-# endif
+#endif
 		}
 		else
 		{
@@ -3571,7 +3536,6 @@ eval7(
 		rettv->vval.v_float = f1;
 	    }
 	    else
-#endif
 	    {
 		int	    failed = FALSE;
 
@@ -3858,11 +3822,7 @@ eval9(
 	return FAIL;
     end_leader = *arg;
 
-    if (**arg == '.' && (!isdigit(*(*arg + 1))
-#ifdef FEAT_FLOAT
-	    || in_old_script(2)
-#endif
-	    ))
+    if (**arg == '.' && (!isdigit(*(*arg + 1)) || in_old_script(2)))
     {
 	semsg(_(e_invalid_expression_str), *arg);
 	++*arg;
@@ -4129,13 +4089,11 @@ eval9_leader(
     varnumber_T val = 0;
     vartype_T	type = rettv->v_type;
     int		vim9script = in_vim9script();
-#ifdef FEAT_FLOAT
     float_T	    f = 0.0;
 
     if (rettv->v_type == VAR_FLOAT)
 	f = rettv->vval.v_float;
     else
-#endif
     {
 	while (VIM_ISWHITE(end_leader[-1]))
 	    --end_leader;
@@ -4161,7 +4119,6 @@ eval9_leader(
 		    ++end_leader;
 		    break;
 		}
-#ifdef FEAT_FLOAT
 		if (rettv->v_type == VAR_FLOAT)
 		{
 		    if (vim9script)
@@ -4173,7 +4130,6 @@ eval9_leader(
 			f = !f;
 		}
 		else
-#endif
 		{
 		    val = !val;
 		    type = VAR_BOOL;
@@ -4181,25 +4137,21 @@ eval9_leader(
 	    }
 	    else if (*end_leader == '-')
 	    {
-#ifdef FEAT_FLOAT
 		if (rettv->v_type == VAR_FLOAT)
 		    f = -f;
 		else
-#endif
 		{
 		    val = -val;
 		    type = VAR_NUMBER;
 		}
 	    }
 	}
-#ifdef FEAT_FLOAT
 	if (rettv->v_type == VAR_FLOAT)
 	{
 	    clear_tv(rettv);
 	    rettv->vval.v_float = f;
 	}
 	else
-#endif
 	{
 	    clear_tv(rettv);
 	    if (vim9script)
@@ -4500,7 +4452,6 @@ eval_index(
 	{
 	    int error = FALSE;
 
-#ifdef FEAT_FLOAT
 	    // allow for indexing with float
 	    if (vim9script && rettv->v_type == VAR_DICT
 						   && var1.v_type == VAR_FLOAT)
@@ -4508,7 +4459,7 @@ eval_index(
 		var1.vval.v_string = typval_tostring(&var1, TRUE);
 		var1.v_type = VAR_STRING;
 	    }
-#endif
+
 	    if (vim9script && rettv->v_type == VAR_LIST)
 		tv_get_number_chk(&var1, &error);
 	    else
@@ -4599,11 +4550,9 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 		emsg(_(e_cannot_index_a_funcref));
 	    return FAIL;
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 	    if (verbose)
 		emsg(_(e_using_float_as_string));
 	    return FAIL;
-#endif
 	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_JOB:
@@ -4857,6 +4806,12 @@ partial_free(partial_T *pt)
 	--pt->pt_funcstack->fs_refcount;
 	funcstack_check_refcount(pt->pt_funcstack);
     }
+    // Similarly for loop variables.
+    if (pt->pt_loopvars != NULL)
+    {
+	--pt->pt_loopvars->lvs_refcount;
+	loopvars_check_refcount(pt->pt_loopvars);
+    }
 
     vim_free(pt);
 }
@@ -4870,13 +4825,23 @@ partial_unref(partial_T *pt)
 {
     if (pt != NULL)
     {
+	int	done = FALSE;
+
 	if (--pt->pt_refcount <= 0)
 	    partial_free(pt);
 
 	// If the reference count goes down to one, the funcstack may be the
 	// only reference and can be freed if no other partials reference it.
-	else if (pt->pt_refcount == 1 && pt->pt_funcstack != NULL)
-	    funcstack_check_refcount(pt->pt_funcstack);
+	else if (pt->pt_refcount == 1)
+	{
+	    // careful: if the funcstack is freed it may contain this partial
+	    // and it gets freed as well
+	    if (pt->pt_funcstack != NULL)
+		done = funcstack_check_refcount(pt->pt_funcstack);
+
+	    if (!done && pt->pt_loopvars != NULL)
+		loopvars_check_refcount(pt->pt_loopvars);
+	}
     }
 }
 
@@ -5015,6 +4980,9 @@ garbage_collect(int testing)
 
     // funcstacks keep variables for closures
     abort = abort || set_ref_in_funcstacks(copyID);
+
+    // loopvars keep variables for loop blocks
+    abort = abort || set_ref_in_loopvars(copyID);
 
     // v: vars
     abort = abort || garbage_collect_vimvars(copyID);
@@ -5379,6 +5347,7 @@ set_ref_in_item(
 		abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
 							ht_stack, list_stack);
 	    // pt_funcstack is handled in set_ref_in_funcstacks()
+	    // pt_loopvars is handled in set_ref_in_loopvars()
 	}
     }
 #ifdef FEAT_JOB_CHANNEL
@@ -5676,12 +5645,10 @@ echo_string_core(
 	    break;
 
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 	    *tofree = NULL;
 	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv->vval.v_float);
 	    r = numbuf;
 	    break;
-#endif
 
 	case VAR_BOOL:
 	case VAR_SPECIAL:

@@ -11,6 +11,8 @@ char_u *compile_for(char_u *arg_start, cctx_T *cctx);
 char_u *compile_endfor(char_u *arg, cctx_T *cctx);
 char_u *compile_while(char_u *arg, cctx_T *cctx);
 char_u *compile_endwhile(char_u *arg, cctx_T *cctx);
+short get_loop_var_info(cctx_T *cctx, short *loop_var_idx);
+int get_loop_var_idx(cctx_T *cctx);
 char_u *compile_continue(char_u *arg, cctx_T *cctx);
 char_u *compile_break(char_u *arg, cctx_T *cctx);
 char_u *compile_block(char_u *arg, cctx_T *cctx);

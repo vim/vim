@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 9.0.  Last change: 2022 Apr 03
+*intro.txt*     For Vim version 9.0.  Last change: 2022 Sep 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -532,6 +532,10 @@ For mapping, abbreviation and menu commands you can then copy-paste the
 examples and use them directly.  Or type them literally, including the '<' and
 '>' characters.  This does NOT work for other commands, like ":set" and
 ":autocmd"!
+
+The notation can be used in a double quoted strings, using "\<" at the start,
+e.g. "\<C-Space>".  This results in a special key code.  To convert this back
+to readable text use `keytrans()`.
 
 ==============================================================================
 5. Modes, introduction				*vim-modes-intro* *vim-modes*

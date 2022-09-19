@@ -3598,7 +3598,7 @@ gui_mch_init(void)
     {
 	gnome_program_init(VIMPACKAGE, VIM_VERSION_SHORT,
 			   LIBGNOMEUI_MODULE, gui_argc, gui_argv, NULL);
-# if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
+# if defined(LC_NUMERIC)
 	{
 	    char *p = setlocale(LC_NUMERIC, NULL);
 

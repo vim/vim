@@ -96,9 +96,7 @@ def Test_assignment()
 
     # calling job_start() is in test_vim9_fails.vim, it causes leak reports
   endif
-  if has('float')
-    var float1: float = 3.4
-  endif
+  var float1: float = 3.4
   var Funky1: func
   var Funky2: func = function('len')
   var Party2: func = funcref('g:Test_syntax')
@@ -147,17 +145,15 @@ def Test_assignment()
   &ts %= 4
   assert_equal(2, &ts)
 
-  if has('float')
-    var f100: float = 100.0
-    f100 /= 5
-    assert_equal(20.0, f100)
+  var f100: float = 100.0
+  f100 /= 5
+  assert_equal(20.0, f100)
 
-    var f200: float = 200.0
-    f200 /= 5.0
-    assert_equal(40.0, f200)
+  var f200: float = 200.0
+  f200 /= 5.0
+  assert_equal(40.0, f200)
 
-    v9.CheckDefFailure(['var nr: number = 200', 'nr /= 5.0'], 'E1012:')
-  endif
+  v9.CheckDefFailure(['var nr: number = 200', 'nr /= 5.0'], 'E1012:')
 
   lines =<< trim END
     &ts = 6
@@ -227,11 +223,9 @@ def Test_assignment()
   g:inc_counter += 1
   assert_equal(2, g:inc_counter)
 
-  if has('float')
-    var f: float
-    f += 1
-    assert_equal(1.0, f)
-  endif
+  var f: float
+  f += 1
+  assert_equal(1.0, f)
 
   $SOME_ENV_VAR ..= 'more'
   assert_equal('somemore', $SOME_ENV_VAR)
@@ -250,20 +244,16 @@ def Test_assignment()
 enddef
 
 def Test_float_and_number()
-  if !has('float')
-    MissingFeature float
-  else
-    var lines =<< trim END
-         var f: float
-         f += 2
-         f -= 1
-         assert_equal(1.0, f)
-         ++f
-         --f
-         assert_equal(1.0, f)
-    END
-    v9.CheckDefAndScriptSuccess(lines)
-  endif
+  var lines =<< trim END
+       var f: float
+       f += 2
+       f -= 1
+       assert_equal(1.0, f)
+       ++f
+       --f
+       assert_equal(1.0, f)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 let g:someNumber = 43
@@ -1314,10 +1304,8 @@ def Test_assignment_default()
   var thenumber: number
   assert_equal(0, thenumber)
 
-  if has('float')
-    var thefloat: float
-    assert_equal(0.0, thefloat)
-  endif
+  var thefloat: float
+  assert_equal(0.0, thefloat)
 
   var thestring: string
   assert_equal('', thestring)
@@ -2033,6 +2021,13 @@ def Test_var_declaration()
   unlet g:FLIST
   unlet w:FOOS
   unlet w:FLIST
+enddef
+
+def Test_create_list_after_const()
+  const a = 1
+  g:ll = []
+  assert_equal(0, islocked('g:ll'))
+  unlet g:ll
 enddef
 
 def Test_var_declaration_fails()

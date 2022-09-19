@@ -774,7 +774,7 @@ WaitForReply(void *p)
 /*
  * Wait for replies from id (win)
  * When "timeout" is non-zero wait up to this many seconds.
- * Return 0 and the malloc'ed string when a reply is available.
+ * Return 0 and the allocated string in "*str" when a reply is available.
  * Return -1 if the window becomes invalid while waiting.
  */
     int

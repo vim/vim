@@ -1189,11 +1189,9 @@ perl_to_vim(SV *sv, typval_T *rettv)
 	case SVt_NULL:
 	    break;
 	case SVt_NV:	/* float */
-#ifdef FEAT_FLOAT
 	    rettv->v_type	= VAR_FLOAT;
 	    rettv->vval.v_float = SvNV(sv);
 	    break;
-#endif
 	case SVt_IV:	/* integer */
 	    if (!SvROK(sv)) { /* references should be string */
 		rettv->vval.v_number = SvIV(sv);

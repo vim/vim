@@ -2578,13 +2578,22 @@ func Test_prop_inserts_text_highlight()
   call delete('XscriptPropsWithHighlight')
 endfunc
 
+func Test_prop_add_with_text_fails()
+  call prop_type_add('failing', #{highlight: 'ErrorMsg'})
+  call assert_fails("call prop_add(1, 0, #{type: 'failing', text: 'X', end_lnum: 1})", 'E1305:')
+  call assert_fails("call prop_add(1, 0, #{type: 'failing', text: 'X', end_col: 1})", 'E1305:')
+  call assert_fails("call prop_add(1, 0, #{type: 'failing', text: 'X', length: 1})", 'E1305:')
+
+  call prop_type_delete('failing')
+endfunc
+
 func Test_props_with_text_right_align_twice()
   CheckRunVimInTerminal
 
   let lines =<< trim END
       call setline(1, ["some text some text some text some text", 'line two'])
-      call prop_type_add('MyErrorText', #{ highlight: 'ErrorMsg'})
-      call prop_type_add('MyPadding', #{ highlight: 'DiffChange'})
+      call prop_type_add('MyErrorText', #{highlight: 'ErrorMsg'})
+      call prop_type_add('MyPadding', #{highlight: 'DiffChange'})
       call prop_add(1, 0, #{type: 'MyPadding', text: ' nothing here', text_wrap: 'wrap'})
       call prop_add(1, 0, #{type: 'MyErrorText', text: 'Some error', text_wrap: 'wrap', text_align: 'right'})
       call prop_add(1, 0, #{type: 'MyErrorText', text: 'Another error', text_wrap: 'wrap', text_align: 'right'})
@@ -2868,6 +2877,16 @@ func Test_props_with_text_above()
   call writefile(lines, 'XscriptPropsWithTextAbove', 'D')
   let buf = RunVimInTerminal('-S XscriptPropsWithTextAbove', #{rows: 9, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_1', {})
+
+  call term_sendkeys(buf, "ggg$")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_1a', {})
+  call term_sendkeys(buf, "g0")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_1b', {})
+
+  call term_sendkeys(buf, ":set showbreak=>>\<CR>")
+  call term_sendkeys(buf, "ggll")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_1c', {})
+  call term_sendkeys(buf, ":set showbreak=\<CR>")
 
   call term_sendkeys(buf, "ggI")
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_2', {})
@@ -3180,6 +3199,9 @@ func Test_insert_text_with_padding()
 
   call term_sendkeys(buf, "ggix\<Esc>")
   call VerifyScreenDump(buf, 'Test_prop_text_with_padding_3', {})
+
+  call term_sendkeys(buf, ":set list\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_text_with_padding_4', {})
 
   call StopVimInTerminal(buf)
   call delete('XscriptPropsPadded')
