@@ -54,7 +54,9 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
 	    {
 		*lvar = *lvp;
 		lvar->lv_from_outer = 0;
-		lvar->lv_loop_idx = get_loop_var_idx(cctx);
+		// If the variable was declared inside a loop set
+		// lvar->lv_loop_idx and lvar->lv_loop_depth.
+		get_loop_var_idx(cctx, idx, lvar);
 	    }
 	    return OK;
 	}
@@ -955,8 +957,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     // recursive call.
     if (is_global)
     {
-	// TODO: loop variable index and count
-	r = generate_NEWFUNC(cctx, lambda_name, func_name, 0, 0);
+	r = generate_NEWFUNC(cctx, lambda_name, func_name);
 	func_name = NULL;
 	lambda_name = NULL;
     }
@@ -1195,7 +1196,7 @@ generate_loadvar(
 	    {
 		if (lvar->lv_from_outer > 0)
 		    generate_LOADOUTER(cctx, lvar->lv_idx, lvar->lv_from_outer,
-						      lvar->lv_loop_idx, type);
+				 lvar->lv_loop_depth, lvar->lv_loop_idx, type);
 		else
 		    generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
 	    }
