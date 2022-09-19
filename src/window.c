@@ -6364,11 +6364,10 @@ win_fix_scroll(int resize)
     win_T    *wp;
     linenr_T lnum;
 
-    skip_update_topline = TRUE;  // avoid flicker in curs_rows()
+    skip_update_topline = TRUE;  // avoid scrolling in curs_rows()
     FOR_ALL_WINDOWS(wp)
     {
-	// Skip when window height has not changed or when
-	// buffer has less lines than the window height.
+	// Skip when window height has not changed.
 	if (wp->w_height != wp->w_prev_height)
 	{
 	    // Determine botline needed to avoid scrolling and set cursor.
@@ -6442,7 +6441,7 @@ win_fix_cursor(int normal)
 	    // Make sure cursor is closer to topline than botline.
 	    if (so == wp->w_height / 2
 			  && nlnum - wp->w_topline > wp->w_botline - 1 - nlnum)
-		wp->w_fraction++;
+		wp->w_fraction--;
 	    scroll_to_fraction(wp, wp->w_prev_height);
 	}
     }
