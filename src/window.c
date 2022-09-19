@@ -6438,11 +6438,8 @@ win_fix_cursor(int normal)
 	else
 	{   // Ensure cursor stays visible if we are not in normal mode.
 	    wp->w_fraction = 0.5 * FRACTION_MULT;
-	    // Make sure cursor is closer to topline than botline.
-	    if (so == wp->w_height / 2
-			  && nlnum - wp->w_topline > wp->w_botline - 1 - nlnum)
-		wp->w_fraction--;
 	    scroll_to_fraction(wp, wp->w_prev_height);
+	    validate_botline_win(curwin);
 	}
     }
 }
