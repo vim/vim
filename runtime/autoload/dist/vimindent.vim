@@ -671,7 +671,7 @@ def CacheBracketBlock(line_A: dict<any>) # {{{2
         return
     endif
 
-    var opening_bracket: string = line_A.text->matchstr($'\%.c.')
+    var opening_bracket: string = line_A.text->matchstr('\%.c.')
     var closing_bracket: string = {'[': ']', '{': '}', '(': ')'}[opening_bracket]
     var endlnum: number = SearchPair(opening_bracket, '', closing_bracket, 'nW')
     setpos('.', pos)
