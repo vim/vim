@@ -2322,10 +2322,46 @@ def Test_for_loop_with_closure()
         endfor
       endfor
   END
-  v9.CheckScriptSuccess(['vim9script'] + lines)
-  # FIXME: not yet right for :def
-  lines[14] = 'assert_equal(2 .. a, flist[n]())'
-  v9.CheckDefSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_define_global_closure_in_loops()
+  var lines =<< trim END
+      vim9script
+
+      def Func()
+        for i in range(3)
+          var ii = i
+          for a in ['a', 'b', 'c']
+            var aa = a
+            if ii == 0 && aa == 'a'
+              def g:Global_0a(): string
+                return ii .. aa
+              enddef
+            endif
+            if ii == 1 && aa == 'b'
+              def g:Global_1b(): string
+                return ii .. aa
+              enddef
+            endif
+            if ii == 2 && aa == 'c'
+              def g:Global_2c(): string
+                return ii .. aa
+              enddef
+            endif
+          endfor
+        endfor
+      enddef
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal("0a", g:Global_0a())
+  assert_equal("1b", g:Global_1b())
+  assert_equal("2c", g:Global_2c())
+
+  delfunc g:Global_0a
+  delfunc g:Global_1b
+  delfunc g:Global_2c
 enddef
 
 def Test_for_loop_fails()
@@ -2418,6 +2454,32 @@ def Test_for_loop_fails()
       endfor
   END
   v9.CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
+
+  lines =<< trim END
+      for a in range(3)
+        while a > 3
+          for b in range(2)
+            while b < 0
+              for c in range(5)
+                while c > 6
+                  while c < 0
+                    for d in range(1)
+                      for e in range(3)
+                        while e > 3
+                        endwhile
+                      endfor
+                    endfor
+                  endwhile
+                endwhile
+              endfor
+            endwhile
+          endfor
+        endwhile
+      endfor
+  END
+  v9.CheckDefSuccess(lines)
+
+  v9.CheckDefFailure(['for x in range(3)'] + lines + ['endfor'], 'E1306:')
 enddef
 
 def Test_for_loop_script_var()

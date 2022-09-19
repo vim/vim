@@ -2453,11 +2453,10 @@ func_clear_free(ufunc_T *fp, int force)
  */
     int
 copy_lambda_to_global_func(
-	char_u	*lambda,
-	char_u	*global,
-	short	loop_var_idx,
-	short	loop_var_count,
-	ectx_T	*ectx)
+	char_u		*lambda,
+	char_u		*global,
+	loopvarinfo_T	*loopvarinfo,
+	ectx_T		*ectx)
 {
     ufunc_T *ufunc = find_func_even_dead(lambda, FFED_IS_GLOBAL);
     ufunc_T *fp = NULL;
@@ -2524,14 +2523,12 @@ copy_lambda_to_global_func(
 
 	if (pt == NULL)
 	    goto failed;
-	if (fill_partial_and_closure(pt, ufunc, loop_var_idx, loop_var_count,
-								 ectx) == FAIL)
+	if (fill_partial_and_closure(pt, ufunc, loopvarinfo, ectx) == FAIL)
 	{
 	    vim_free(pt);
 	    goto failed;
 	}
 	ufunc->uf_partial = pt;
-	--pt->pt_refcount;  // not actually referenced here
     }
 
     return OK;

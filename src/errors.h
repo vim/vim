@@ -3329,3 +3329,7 @@ EXTERN char e_cannot_use_type_with_this_variable_str[]
 EXTERN char e_cannot_use_length_endcol_and_endlnum_with_text[]
 	INIT(= N_("E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_loop_nesting_too_deep[]
+	INIT(= N_("E1306: Loop nesting too deep"));
+#endif

@@ -4807,11 +4807,12 @@ partial_free(partial_T *pt)
 	funcstack_check_refcount(pt->pt_funcstack);
     }
     // Similarly for loop variables.
-    if (pt->pt_loopvars != NULL)
-    {
-	--pt->pt_loopvars->lvs_refcount;
-	loopvars_check_refcount(pt->pt_loopvars);
-    }
+    for (i = 0; i < MAX_LOOP_DEPTH; ++i)
+	if (pt->pt_loopvars[i] != NULL)
+	{
+	    --pt->pt_loopvars[i]->lvs_refcount;
+	    loopvars_check_refcount(pt->pt_loopvars[i]);
+	}
 
     vim_free(pt);
 }
@@ -4839,8 +4840,15 @@ partial_unref(partial_T *pt)
 	    if (pt->pt_funcstack != NULL)
 		done = funcstack_check_refcount(pt->pt_funcstack);
 
-	    if (!done && pt->pt_loopvars != NULL)
-		loopvars_check_refcount(pt->pt_loopvars);
+	    if (!done)
+	    {
+		int	depth;
+
+		for (depth = 0; depth < MAX_LOOP_DEPTH; ++depth)
+		    if (pt->pt_loopvars[depth] != NULL
+			    && loopvars_check_refcount(pt->pt_loopvars[depth]))
+		    break;
+	    }
 	}
     }
 }

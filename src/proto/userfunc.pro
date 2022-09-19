@@ -16,7 +16,7 @@ int func_is_global(ufunc_T *ufunc);
 int func_requires_g_prefix(ufunc_T *ufunc);
 int func_name_refcount(char_u *name);
 void func_clear_free(ufunc_T *fp, int force);
-int copy_lambda_to_global_func(char_u *lambda, char_u *global, short loop_var_idx, short loop_var_count, ectx_T *ectx);
+int copy_lambda_to_global_func(char_u *lambda, char_u *global, loopvarinfo_T *loopvarinfo, ectx_T *ectx);
 int funcdepth_increment(void);
 void funcdepth_decrement(void);
 int funcdepth_get(void);
