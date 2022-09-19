@@ -6,7 +6,24 @@ vim9script
 
 # Config {{{1
 
-const TIMEOUT: number = 100
+const TIMEOUT: number = get(g:, 'vim_indent', {})
+    ->get('searchpair_timeout', 100)
+
+def IndentMoreInBracketBlock(): number # {{{2
+    if get(g:, 'vim_indent', {})
+            ->get('more_in_bracket_block', false)
+        return shiftwidth()
+    else
+        return 0
+    endif
+enddef
+
+def IndentMoreContinuationLine(): number # {{{2
+    return get(g:, 'vim_indent', {})
+        # We inspect `g:vim_indent_cont` to stay backward compatible.
+        ->get('continuation_line', get(g:, 'vim_indent_cont', shiftwidth() * 3))
+enddef
+# }}}2
 
 # Init {{{1
 # These items must come first; we use them to define the next constants.
@@ -266,7 +283,7 @@ export def Expr(lnum: number): number # {{{2
         if line_B.text =~ STARTS_WITH_BACKSLASH
             return Indent(line_B.lnum)
         else
-            return Indent(line_B.lnum) + get(g:, 'vim_indent_cont', shiftwidth() * 3)
+            return Indent(line_B.lnum) + IndentMoreContinuationLine()
         endif
     endif
 
@@ -376,10 +393,10 @@ export def Expr(lnum: number): number # {{{2
         if start_curly_block <= 0
             return -1
         endif
-        return Indent(start_curly_block)
+        return Indent(start_curly_block) + IndentMoreInBracketBlock()
 
     elseif line_B.text =~ STARTS_CURLY_BLOCK
-        return Indent(line_B.lnum) + shiftwidth()
+        return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
 
     elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
             && !line_B->EndsWithLineContinuation()
@@ -596,7 +613,7 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
         if b:vimindent.is_on_named_block_line
             ind += 2 * shiftwidth()
         endif
-        return ind
+        return ind + IndentMoreInBracketBlock()
     endif
 
     var ind: number = block.startindent
@@ -616,7 +633,7 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
             #     })
             #}}}
             && block.startline !~ '[]})],\s\+[[{(]'
-        ind += shiftwidth()
+        ind += shiftwidth() + IndentMoreInBracketBlock()
     endif
 
     if block.is_dict

@@ -601,6 +601,23 @@ enddef
 " END_INDENT
 
 " START_INDENT
+" INDENT_EXE let g:vim_indent = {'more_in_bracket_block': v:true}
+def Select(Cont: func(func(any)), Pred: func(any): bool): func(func(any))
+return (Emit: func(any)) => {
+Cont((t: any) => {
+if Pred(t)
+Emit(t)
+endif
+})
+}
+enddef
+" END_INDENT
+
+" START_INDENT
+" INDENT_EXE unlet! g:vim_indent
+" END_INDENT
+
+" START_INDENT
 g:lightline = {
 'active': {
 'left': [ [ 'mode', 'paste' ], [ 'readonly', 'relativepath', 'modified' ] ],
