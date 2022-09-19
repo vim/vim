@@ -29,3 +29,5 @@ setlocal commentstring=#\ %s
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
+
+let b:undo_ftplugin = 'setlocal sw< sts< et< isk< com< cms<'
