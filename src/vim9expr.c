@@ -496,6 +496,7 @@ compile_load(
 	int	    idx;
 	int	    gen_load = FALSE;
 	int	    gen_load_outer = 0;
+	int	    outer_loop_depth = -1;
 	int	    outer_loop_idx = -1;
 
 	name = vim_strnsave(*arg, end - *arg);
@@ -521,6 +522,7 @@ compile_load(
 	    {
 		type = lvar.lv_type;
 		idx = lvar.lv_idx;
+		outer_loop_depth = lvar.lv_loop_depth;
 		outer_loop_idx = lvar.lv_loop_idx;
 		if (lvar.lv_from_outer != 0)
 		    gen_load_outer = lvar.lv_from_outer;
@@ -546,8 +548,8 @@ compile_load(
 	    res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
 	if (gen_load_outer > 0)
 	{
-	    res = generate_LOADOUTER(cctx, idx,
-					 gen_load_outer, outer_loop_idx, type);
+	    res = generate_LOADOUTER(cctx, idx, gen_load_outer,
+				       outer_loop_depth, outer_loop_idx, type);
 	    cctx->ctx_outer_used = TRUE;
 	}
     }

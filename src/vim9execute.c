@@ -5955,13 +5955,13 @@ printable_loopvarinfo(loopvarinfo_T *lvi)
 	if (ga_grow(&ga, 50) == FAIL)
 	    break;
 	if (lvi->lvi_loop[depth].var_idx == 0)
-	    STRCPY(ga.ga_data + ga.ga_len, " -");
+	    STRCPY((char *)ga.ga_data + ga.ga_len, " -");
 	else
-	    vim_snprintf(ga.ga_data + ga.ga_len, 50, " $%d-$%d",
+	    vim_snprintf((char *)ga.ga_data + ga.ga_len, 50, " $%d-$%d",
 			    lvi->lvi_loop[depth].var_idx,
 			    lvi->lvi_loop[depth].var_idx
 					 + lvi->lvi_loop[depth].var_count - 1);
-	ga.ga_len = STRLEN(ga.ga_data);
+	ga.ga_len = (int)STRLEN(ga.ga_data);
     }
     return ga.ga_data;
 }
