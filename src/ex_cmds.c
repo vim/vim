@@ -2651,8 +2651,13 @@ do_ecmd(
 		// with the current window.
 		newbuf = buflist_new(ffname, sfname, tlnum,
 						    BLN_LISTED | BLN_NOCURWIN);
-		if (newbuf != NULL && (flags & ECMD_ALTBUF))
-		    curwin->w_alt_fnum = newbuf->b_fnum;
+		if (newbuf != NULL)
+		{
+		    if (flags & ECMD_ALTBUF)
+			curwin->w_alt_fnum = newbuf->b_fnum;
+		    if (tlnum > 0)
+			newbuf->b_last_cursor.lnum = tlnum;
+		}
 		goto theend;
 	    }
 	    buf = buflist_new(ffname, sfname, 0L,

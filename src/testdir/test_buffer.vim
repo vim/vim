@@ -361,6 +361,13 @@ func Test_badd_options()
   close
   close
   bwipe! SomeNewBuffer
+
+  badd +3 XbaddFile
+  call writefile(range(6), 'XbaddFile', 'D')
+  buf XbaddFile
+  call assert_equal([0, 3, 1, 0], getpos('.'))
+
+  bwipe! XbaddFile
 endfunc
 
 func Test_balt()
