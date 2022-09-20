@@ -391,6 +391,7 @@ handle_lnum_col(
 #endif
     }
 }
+
 #if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Return the cell size of virtual text after truncation.
@@ -1530,7 +1531,13 @@ win_line(
 	    {
 		// Show the line number, if desired.
 		wlv.draw_state = WL_NR;
-		handle_lnum_col(wp, &wlv, sign_present, num_attr);
+		handle_lnum_col(wp, &wlv,
+#ifdef FEAT_SIGNS
+					    sign_present, num_attr
+#else
+					    0, 0
+#endif
+					    );
 	    }
 
 #ifdef FEAT_LINEBREAK
