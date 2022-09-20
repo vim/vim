@@ -250,6 +250,10 @@ const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>'
 
 const OPENING_BRACKET_AT_EOL: string = '[[{(]' .. END_OF_LINE
 
+# COMMA_OR_DICT_KEY_AT_EOL {{{2
+
+const COMMA_OR_DICT_KEY_AT_EOL: string = $'\%(,\|\S:\){END_OF_LINE}'
+
 # CLOSING_BRACKETS_THEN_COMMA_AT_EOL {{{2
 
 const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,{END_OF_LINE}'
@@ -318,18 +322,7 @@ export def Expr(lnum: number): number # {{{2
     endif
 
     # We also match a trailing colon, for a dict which is split after a key.
-    if (line_A->EndsWithOpeningBracket() || line_A->NonCommentedMatch($'\%(,\|\S:\){END_OF_LINE}'))
-            # We ignore bracket  blocks while we're indenting  a function header
-            # because it makes  the logic simpler.  It might mean  that we don't
-            # indent  correctly  a multiline  bracket  block  inside a  function
-            # header, but that's  a corner case for which it  doesn't seem worth
-            # making the code more complex.
-            && (!exists('b:vimindent') || b:vimindent->has_key('is_BracketBlock'))
-            # We need  this check  because we  don't consider  `"` as  a comment
-            # leader (only `" `).  Unfortunately, some people don't  put a space
-            # after their comment leader...
-            && line_A.text !~ '^"'
-
+    if line_A->IsInBracketBlock()
         line_A->CacheBracketBlock()
     endif
 
@@ -378,15 +371,15 @@ export def Expr(lnum: number): number # {{{2
     # normal command `o`.
     # TODO: Can we write a test for this?
 
-    if line_A.text =~ '^\s*}'
+    if line_B.text =~ STARTS_CURLY_BLOCK
+        return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
+
+    elseif line_A.text =~ '^\s*}'
         var start_curly_block: number = MatchingOpenBracket(line_A)
         if start_curly_block <= 0
             return -1
         endif
         return Indent(start_curly_block) + IndentMoreInBracketBlock()
-
-    elseif line_B.text =~ STARTS_CURLY_BLOCK
-        return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
 
     elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
             && !line_B->EndsWithLineContinuation()
@@ -613,7 +606,7 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
 
     if block.startline =~ ',' .. END_OF_LINE
             || block.startline =~ '[[{(]\+' .. END_OF_LINE
-            # TODO: Is that reliable?.
+            # TODO: Is that reliable?
             && block.startline !~ '[]}],\s\+[[{]'
         ind += shiftwidth() + IndentMoreInBracketBlock()
     endif
@@ -937,6 +930,10 @@ def EndsWithOpeningBracket(line: dict<any>): bool # {{{2
     return NonCommentedMatch(line, OPENING_BRACKET_AT_EOL)
 enddef
 
+def EndsWithCommaOrDictKey(line_A: dict<any>): bool # {{{2
+    return NonCommentedMatch(line_A, COMMA_OR_DICT_KEY_AT_EOL)
+enddef
+
 def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     # Could happen if there is no code above us, and we're not on the 1st line.
     # In that case, `PrevCodeLine()` returns `{lnum: 0, line: ''}`.
@@ -1035,6 +1032,23 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
     setpos('.', pos)
     return match_lnum > 0
+enddef
+
+def IsInBracketBlock(line_A: dict<any>): bool # {{{2
+    # We ignore bracket  blocks while we're indenting a  function header because
+    # it makes the logic simpler.  It  might mean that we don't indent correctly
+    # a multiline  bracket block inside a  function header, but that's  a corner
+    # case for which it doesn't seem worth making the code more complex.
+    if exists('b:vimindent') && !b:vimindent->has_key('is_BracketBlock')
+            # We need  this check  because we  don't consider  `"` as  a comment
+            # leader (only `" `).  Unfortunately, some people don't  put a space
+            # after their comment leader...
+            || line_A.text =~ '^"'
+        return false
+    endif
+
+    return line_A->EndsWithOpeningBracket()
+        || line_A->EndsWithCommaOrDictKey()
 enddef
 
 def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
