@@ -411,7 +411,7 @@ export def Expr(lnum: number): number # {{{2
 
     elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
             && !line_B->EndsWithLineContinuation()
-        var kwd: string = GetBlockStartKeyword(line_A.text)
+        var kwd: string = BlockStartKeyword(line_A.text)
         if !START_MIDDLE_END->has_key(kwd)
             return -1
         endif
@@ -770,7 +770,8 @@ def PopBracketBlockStack(line_A: dict<any>) # {{{2
 enddef
 # }}}1
 # Util {{{1
-def AtStartOf(line_A: string, syntax: string): bool # {{{2
+# Tests {{{2
+def AtStartOf(line_A: string, syntax: string): bool # {{{3
     var pat: string = {
         HereDoc: ASSIGNS_HEREDOC,
         FuncHeader: STARTS_FUNCTION
@@ -778,7 +779,7 @@ def AtStartOf(line_A: string, syntax: string): bool # {{{2
     return line_A =~ pat && !exists('b:vimindent')
 enddef
 
-def IsInside(lnum: number, syntax: string): bool # {{{2
+def IsInside(lnum: number, syntax: string): bool # {{{3
     if !exists('b:vimindent')
             || !b:vimindent->has_key($'is_{syntax}')
         return false
@@ -795,144 +796,78 @@ def IsInside(lnum: number, syntax: string): bool # {{{2
     return lnum <= b:vimindent.endlnum
 enddef
 
-def IsRightBelow(lnum: number, syntax: string): bool # {{{2
+def IsRightBelow(lnum: number, syntax: string): bool # {{{3
     return exists('b:vimindent')
         && b:vimindent->has_key($'is_{syntax}')
         && lnum > b:vimindent.endlnum
 enddef
 
-def Indent(lnum: number): number # {{{2
-    if lnum <= 0
-        # Don't  return `-1`.  It could cause `Expr()` to return a non-multiple of `'shiftwidth'`.{{{
-        #
-        # It would be  OK if we were always returning  `Indent()` directly.  But
-        # we  don't.  Most  of  the  time, we  include  it  in some  computation
-        # like  `Indent(...) + shiftwidth()`.   If  `'shiftwidth'` is  `4`,  and
-        # `Indent()` returns `-1`, `Expr()` will end up returning `3`.
-        #}}}
-        return 0
-    endif
-    return indent(lnum)
-enddef
-
-def PrevCodeLine(lnum: number): dict<any> # {{{2
-    var n: number = prevnonblank(lnum - 1)
-    var line: string = getline(n)
-    while line =~ COMMENT && n > 1
-        n = prevnonblank(n - 1)
-        line = getline(n)
-    endwhile
-    # If we get back to the first line, we return 1 no matter what; even if it's a
-    # commented line.   That should not  cause an issue  though.  We just  want to
-    # avoid a  commented line above which  there is a  line of code which  is more
-    # relevant.  There is nothing above the first line.
-    return {lnum: n, text: line}
-enddef
-
-def NextCodeLine(): number # {{{2
-    var last: number = line('$')
-    if v:lnum == last
-        return 0
+def IsInBracketBlock(line_A: dict<any>): bool # {{{3
+    # We ignore bracket  blocks while we're indenting a  function header because
+    # it makes the logic simpler.  It  might mean that we don't indent correctly
+    # a multiline  bracket block inside a  function header, but that's  a corner
+    # case for which it doesn't seem worth making the code more complex.
+    if exists('b:vimindent')
+            && !b:vimindent->has_key('is_BracketBlock')
+        return false
     endif
 
-    var lnum: number = v:lnum + 1
-    while lnum <= last
-        var line: string = getline(lnum)
-        if line != '' && line !~ COMMENT
-            return lnum
+    return line_A->EndsWithOpeningBracket()
+        || line_A->EndsWithCommaOrDictKey()
+enddef
+
+def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{3
+    var pos: list<number> = getcurpos()
+    cursor(lnum, [lnum, '$']->col())
+    var end: number = SearchPairEnd('{', '', '}')
+    setpos('.', pos)
+
+    return line_A.lnum <= end
+enddef
+
+def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{3
+    if line_1.text =~ RANGE_AT_SOL
+        return true
+    endif
+
+    if line_2.text =~ DICT_KEY
+            && !line_1->IsInThisBlock(line_2.lnum)
+        return true
+    endif
+
+    var line_1_is_good: bool = line_1.text !~ COMMENT
+        && line_1.text !~ DICT_KEY
+        && line_1.text !~ LINE_CONTINUATION_AT_SOL
+
+    var line_2_is_good: bool = !line_2->EndsWithLineContinuation()
+
+    return line_1_is_good && line_2_is_good
+enddef
+
+def InCommentOrString(): bool # {{{3
+    var line: string = getline('.')
+    # TODO: We might be able to optimize  more, by asserting that the pattern is
+    # not after a comment leader, nor after  a quote.  This assumes that we pass
+    # the pattern to this function.  If we  look for a pair of patterns, I think
+    # we only need to pass the one  which matches in the direction we're looking
+    # for.
+    if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ QUOTE
+        return false
+    endif
+
+    for synID: number in synstack('.', col('.'))
+        if synIDattr(synID, 'name') =~ '\ccomment\|string'
+            return true
         endif
-        ++lnum
-    endwhile
-    return 0
+    endfor
+
+    return false
 enddef
 
-def SearchPairStart( # {{{2
-        start: string,
-        middle: string,
-        end: string,
-        ): number
-    return SearchPair(start, middle, end, 'bnW')
-enddef
-
-def SearchPairEnd( # {{{2
-        start: string,
-        middle: string,
-        end: string,
-        stopline = 0,
-        ): number
-    return SearchPair(start, middle, end, 'nW', stopline)
-enddef
-
-def SearchPair( # {{{2
-        start: string,
-        middle: string,
-        end: string,
-        flags: string,
-        stopline = 0,
-        ): number
-
-    var s: string = start
-    var e: string = end
-    if start == '[' || start == ']'
-        s = s->escape('[]')
-    endif
-    if end == '[' || end == ']'
-        e = e->escape('[]')
-    endif
-    return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
-enddef
-
-def GetBlockStartKeyword(line: string): string # {{{2
-    var kwd: string = line->matchstr('\l\+')
-    return fullcommand(kwd, false)
-enddef
-
-def MatchingOpenBracket(line: dict<any>): number # {{{2
-    var end: string
-    if line.text =~ CLOSING_BRACKETS_THEN_COMMA_AT_EOL
-        end = line.text->matchstr(CLOSING_BRACKETS_THEN_COMMA_AT_EOL)[0]
-        cursor(line.lnum, 1)
-        search(CLOSING_BRACKETS_THEN_COMMA_AT_EOL, 'cW', line.lnum)
-    else
-        end = line.text->matchstr(CLOSING_BRACKET)
-        cursor(line.lnum, 1)
-    endif
-
-    var start: string = {']': '[', '}': '{', ')': '('}[end]
-    return SearchPairStart(start, '', end)
-enddef
-
-def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{2
-    var line_B: dict<any> = line
-
-    while line_B.lnum > 1
-        var line_above: dict<any> = PrevCodeLine(line_B.lnum)
-
-        if line_B.text =~ CLOSING_BRACKET_AT_SOL
-            var n: number = MatchingOpenBracket(line_B)
-
-            if n <= 0
-                break
-            endif
-
-            line_B.lnum = n
-            line_B.text = getline(line_B.lnum)
-            continue
-
-        elseif line_B->IsFirstLineOfCommand(line_above)
-            break
-        endif
-
-        line_B = line_above
-    endwhile
-
-    return [line_B.text, line_B.lnum]
-enddef
-
-def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
+def AlsoClosesBlock(line_B: dict<any>): bool # {{{3
     # We know that `line_B` opens a block.
     # Let's see if it also closes that block.
-    var kwd: string = GetBlockStartKeyword(line_B.text)
+    var kwd: string = BlockStartKeyword(line_B.text)
     if !START_MIDDLE_END->has_key(kwd)
         return false
     endif
@@ -946,23 +881,23 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{2
     return block_end > 0
 enddef
 
-def EndsWithLineContinuation(line_B: dict<any>): bool # {{{2
+def EndsWithLineContinuation(line_B: dict<any>): bool # {{{3
     return NonCommentedMatch(line_B, LINE_CONTINUATION_AT_EOL)
 enddef
 
-def EndsWithCurlyBlock(line_B: dict<any>): bool # {{{2
+def EndsWithCurlyBlock(line_B: dict<any>): bool # {{{3
     return NonCommentedMatch(line_B, STARTS_CURLY_BLOCK)
 enddef
 
-def EndsWithOpeningBracket(line: dict<any>): bool # {{{2
+def EndsWithOpeningBracket(line: dict<any>): bool # {{{3
     return NonCommentedMatch(line, OPENING_BRACKET_AT_EOL)
 enddef
 
-def EndsWithCommaOrDictKey(line_A: dict<any>): bool # {{{2
+def EndsWithCommaOrDictKey(line_A: dict<any>): bool # {{{3
     return NonCommentedMatch(line_A, COMMA_OR_DICT_KEY_AT_EOL)
 enddef
 
-def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
+def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
     # Could happen if there is no code above us, and we're not on the 1st line.
     # In that case, `PrevCodeLine()` returns `{lnum: 0, line: ''}`.
     if line.lnum == 0
@@ -1063,66 +998,133 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     return match_lnum > 0
 enddef
 
-def IsInBracketBlock(line_A: dict<any>): bool # {{{2
-    # We ignore bracket  blocks while we're indenting a  function header because
-    # it makes the logic simpler.  It  might mean that we don't indent correctly
-    # a multiline  bracket block inside a  function header, but that's  a corner
-    # case for which it doesn't seem worth making the code more complex.
-    if exists('b:vimindent')
-            && !b:vimindent->has_key('is_BracketBlock')
-        return false
+# Get {{{2
+def Indent(lnum: number): number # {{{3
+    if lnum <= 0
+        # Don't  return `-1`.  It could cause `Expr()` to return a non-multiple of `'shiftwidth'`.{{{
+        #
+        # It would be  OK if we were always returning  `Indent()` directly.  But
+        # we  don't.  Most  of  the  time, we  include  it  in some  computation
+        # like  `Indent(...) + shiftwidth()`.   If  `'shiftwidth'` is  `4`,  and
+        # `Indent()` returns `-1`, `Expr()` will end up returning `3`.
+        #}}}
+        return 0
     endif
-
-    return line_A->EndsWithOpeningBracket()
-        || line_A->EndsWithCommaOrDictKey()
+    return indent(lnum)
 enddef
 
-def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
-    var pos: list<number> = getcurpos()
-    cursor(lnum, [lnum, '$']->col())
-    var end: number = SearchPairEnd('{', '', '}')
-    setpos('.', pos)
-
-    return line_A.lnum <= end
+def BlockStartKeyword(line: string): string # {{{3
+    var kwd: string = line->matchstr('\l\+')
+    return fullcommand(kwd, false)
 enddef
 
-def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{2
-    if line_1.text =~ RANGE_AT_SOL
-        return true
+def MatchingOpenBracket(line: dict<any>): number # {{{3
+    var end: string
+    if line.text =~ CLOSING_BRACKETS_THEN_COMMA_AT_EOL
+        end = line.text->matchstr(CLOSING_BRACKETS_THEN_COMMA_AT_EOL)[0]
+        cursor(line.lnum, 1)
+        search(CLOSING_BRACKETS_THEN_COMMA_AT_EOL, 'cW', line.lnum)
+    else
+        end = line.text->matchstr(CLOSING_BRACKET)
+        cursor(line.lnum, 1)
     endif
 
-    if line_2.text =~ DICT_KEY
-            && !line_1->IsInThisBlock(line_2.lnum)
-        return true
-    endif
-
-    var line_1_is_good: bool = line_1.text !~ COMMENT
-        && line_1.text !~ DICT_KEY
-        && line_1.text !~ LINE_CONTINUATION_AT_SOL
-
-    var line_2_is_good: bool = !line_2->EndsWithLineContinuation()
-
-    return line_1_is_good && line_2_is_good
+    var start: string = {']': '[', '}': '{', ')': '('}[end]
+    return SearchPairStart(start, '', end)
 enddef
 
-def InCommentOrString(): bool # {{{2
-    var line: string = getline('.')
-    # TODO: We might be able to optimize  more, by asserting that the pattern is
-    # not after a comment leader, nor after  a quote.  This assumes that we pass
-    # the pattern to this function.  If we  look for a pair of patterns, I think
-    # we only need to pass the one  which matches in the direction we're looking
-    # for.
-    if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ QUOTE
-        return false
-    endif
+def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{3
+    var line_B: dict<any> = line
 
-    for synID: number in synstack('.', col('.'))
-        if synIDattr(synID, 'name') =~ '\ccomment\|string'
-            return true
+    while line_B.lnum > 1
+        var line_above: dict<any> = PrevCodeLine(line_B.lnum)
+
+        if line_B.text =~ CLOSING_BRACKET_AT_SOL
+            var n: number = MatchingOpenBracket(line_B)
+
+            if n <= 0
+                break
+            endif
+
+            line_B.lnum = n
+            line_B.text = getline(line_B.lnum)
+            continue
+
+        elseif line_B->IsFirstLineOfCommand(line_above)
+            break
         endif
-    endfor
 
-    return false
+        line_B = line_above
+    endwhile
+
+    return [line_B.text, line_B.lnum]
+enddef
+
+def PrevCodeLine(lnum: number): dict<any> # {{{3
+    var n: number = prevnonblank(lnum - 1)
+    var line: string = getline(n)
+    while line =~ COMMENT && n > 1
+        n = prevnonblank(n - 1)
+        line = getline(n)
+    endwhile
+    # If we get back to the first line, we return 1 no matter what; even if it's a
+    # commented line.   That should not  cause an issue  though.  We just  want to
+    # avoid a  commented line above which  there is a  line of code which  is more
+    # relevant.  There is nothing above the first line.
+    return {lnum: n, text: line}
+enddef
+
+def NextCodeLine(): number # {{{3
+    var last: number = line('$')
+    if v:lnum == last
+        return 0
+    endif
+
+    var lnum: number = v:lnum + 1
+    while lnum <= last
+        var line: string = getline(lnum)
+        if line != '' && line !~ COMMENT
+            return lnum
+        endif
+        ++lnum
+    endwhile
+    return 0
+enddef
+
+def SearchPair( # {{{3
+        start: string,
+        middle: string,
+        end: string,
+        flags: string,
+        stopline = 0,
+        ): number
+
+    var s: string = start
+    var e: string = end
+    if start == '[' || start == ']'
+        s = s->escape('[]')
+    endif
+    if end == '[' || end == ']'
+        e = e->escape('[]')
+    endif
+    return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
+enddef
+
+def SearchPairStart( # {{{3
+        start: string,
+        middle: string,
+        end: string,
+        ): number
+    return SearchPair(start, middle, end, 'bnW')
+enddef
+
+def SearchPairEnd( # {{{3
+        start: string,
+        middle: string,
+        end: string,
+        stopline = 0,
+        ): number
+    return SearchPair(start, middle, end, 'nW', stopline)
 enddef
 # }}}1
 # vim:sw=4
