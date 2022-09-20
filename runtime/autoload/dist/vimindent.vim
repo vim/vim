@@ -26,58 +26,20 @@ enddef
 # }}}2
 
 # Init {{{1
-# These items must come first; we use them to define the next constants.
 var cmds: list<string>
-# INLINE_COMMENT {{{2
+# Tokens {{{2
+# CLOSING_BRACKET {{{3
+
+const CLOSING_BRACKET: string = '[]})]'
+
+# INLINE_COMMENT {{{3
 
 # Technically, `\s` is wrong.
 # In  legacy, it  is not  required for  an inline  comment to  be preceded  by a
 # whitespace.  But in practice, it should be.
 const INLINE_COMMENT: string = '\s[#"]'
 
-# END_OF_COMMAND {{{2
-
-const END_OF_COMMAND: string = $'\s*\%($\|||\@!\|{INLINE_COMMENT}\)'
-
-# END_OF_LINE {{{2
-
-const END_OF_LINE: string = $'\s*\%($\|{INLINE_COMMENT}\)'
-
-# STARTS_CURLY_BLOCK {{{2
-
-# TODO: `{` alone on a line is not necessarily the start of a block.
-# It  could be  a dictionary  if the  previous line  ends with  a binary/ternary
-# operator.  This  can cause  an issue whenever  we use  `STARTS_CURLY_BLOCK` or
-# `LINE_CONTINUATION_AT_EOL`.
-const STARTS_CURLY_BLOCK: string = '\%('
-    .. '^\s*{'
-    .. '\|' .. '^.*\zs\s=>\s\+{'
-    .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{'
-    .. '\)' .. END_OF_COMMAND
-
-# OPERATOR {{{2
-
-const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%([=!]=\|[<>]=\=\|[=!]\~\|is\|isnot\)[?#]\=\)\%(\s\|$\)\@=\%(\s*[|<]\)\@!'
-    # assignment operators
-    .. '\|' .. '\s\%([-+*/%]\|\.\.\)\==\%(\s\|$\)\@='
-    # support `:` when used inside conditional operator `?:`
-    .. '\|' .. '\%(\s\|^\):\%(\s\|$\)'
-
-# PATTERN_DELIMITER {{{2
-
-# A better regex would be:
-#
-#     [^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!
-#
-# But sometimes, it can be too costly and cause `E363` to be given.
-const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
-
-# CLOSING_BRACKET {{{2
-
-const CLOSING_BRACKET: string = '[]})]'
-# }}}2
-
-# COMMENT {{{2
+# COMMENT {{{3
 
 # Technically, `"\s` is wrong.{{{
 #
@@ -98,7 +60,7 @@ const CLOSING_BRACKET: string = '[]})]'
 #}}}
 const COMMENT: string = '^\s*\%(#\|"\\\=\s\).*$'
 
-# DICT_KEY {{{2
+# DICT_KEY {{{3
 
 const DICT_KEY: string = '^\s*\%('
     .. '\%(\w\|-\)\+'
@@ -111,11 +73,36 @@ const DICT_KEY: string = '^\s*\%('
     .. '\)'
     .. ':\%(\s\|$\)'
 
-# FUNC_START {{{2
+# END_OF_COMMAND {{{3
+
+const END_OF_COMMAND: string = $'\s*\%($\|||\@!\|{INLINE_COMMENT}\)'
+
+# END_OF_LINE {{{3
+
+const END_OF_LINE: string = $'\s*\%($\|{INLINE_COMMENT}\)'
+
+# FUNC_START {{{3
 
 const FUNC_START: string = '\%(export\s\+\)\=def'
 
-# START_MIDDLE_END {{{2
+# OPERATOR {{{3
+
+const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%([=!]=\|[<>]=\=\|[=!]\~\|is\|isnot\)[?#]\=\)\%(\s\|$\)\@=\%(\s*[|<]\)\@!'
+    # assignment operators
+    .. '\|' .. '\s\%([-+*/%]\|\.\.\)\==\%(\s\|$\)\@='
+    # support `:` when used inside conditional operator `?:`
+    .. '\|' .. '\%(\s\|^\):\%(\s\|$\)'
+
+# PATTERN_DELIMITER {{{3
+
+# A better regex would be:
+#
+#     [^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!
+#
+# But sometimes, it can be too costly and cause `E363` to be given.
+const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
+
+# START_MIDDLE_END {{{3
 
 const START_MIDDLE_END: dict<list<string>> = {
     if: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
@@ -139,53 +126,58 @@ const START_MIDDLE_END: dict<list<string>> = {
 kwds->map((_, kwd: string) => kwd == ''
 ? ''
 : $'\%(^\|[^|]|\)\s*\%({printf('\C\<\%%(%s\)\>\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
-
-# STARTS_WITH_LINE_CONTINUATION {{{2
-
-const STARTS_WITH_LINE_CONTINUATION: string = '^\s*\%('
-    .. '\\'
-    .. '\|' .. '[#"]\\ '
-    .. '\|' .. OPERATOR
-    .. '\|' .. '->\s*\h'
-    .. '\|' .. '\.\h'  # dict member
-    .. '\|' .. '|'
-    # TODO: `}` at the start of a line is not necessarily a continuation line.
-    # Could be the end of a block.
-    .. '\|' .. $'{CLOSING_BRACKET}'
-    .. '\)'
-
-# STARTS_WITH_RANGE {{{2
-
-const STARTS_WITH_RANGE: string = '^\s*:\S'
-
-# LINE_CONTINUATION_AT_EOL {{{2
-
-const LINE_CONTINUATION_AT_EOL: string = '\%('
-    .. ','
-    .. '\|' .. OPERATOR
-    .. '\|' .. '\s=>'
-    .. '\|' .. '[[(]'
-    # TODO: This is to support a dictionary key.
-    # Do we need to match the key more accurately?
-    # If so, refactor every occurrence of `\S:` in this script.
-    .. '\|' .. '\S:'
-    # `{` is ambiguous.
-    # It can be the start of a dictionary or a block.
-    # We only want to match the former.
-    .. '\|' .. $'^\%({STARTS_CURLY_BLOCK}\)\@!.*\zs{{'
-    .. '\)\s*\%(\s#.*\)\=$'
-
-# STARTS_WITH_BACKSLASH {{{2
-
-const STARTS_WITH_BACKSLASH: string = '^\s*\%(\\\|[#"]\\ \)'
-
-# ASSIGNS_HEREDOC {{{2
+# }}}2
+# Syntaxes {{{2
+# ASSIGNS_HEREDOC {{{3
 
 const ASSIGNS_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
     .. '\s=<<\s\+\%(\%(trim\|eval\)\s\)\{,2}\s*'
     .. $'\)\zs\L\S*{END_OF_LINE}'
 
-# STARTS_NAMED_BLOCK {{{2
+# ENDS_BLOCK {{{3
+
+const ENDS_BLOCK: string = '^\s*\%('
+    .. 'en\%[dif]'
+    .. '\|' .. 'endfor\='
+    .. '\|' .. 'endw\%[hile]'
+    .. '\|' .. 'endt\%[ry]'
+    .. '\|' .. 'enddef'
+    .. '\|' .. 'endfu\%[nction]'
+    .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
+    .. '\|' .. $'{CLOSING_BRACKET}'
+    .. $'\){END_OF_COMMAND}'
+
+# ENDS_BLOCK_OR_CLAUSE {{{3
+
+cmds =<< trim END
+    en\%[dif]
+    el\%[se]
+    endfor\=
+    endw\%[hile]
+    endt\%[ry]
+    fina\|finally\=
+    enddef
+    endfu\%[nction]
+    aug\%[roup]\s\+[eE][nN][dD]
+END
+
+const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\){END_OF_COMMAND}'
+    .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_COMMAND}'
+    .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
+
+# STARTS_CURLY_BLOCK {{{3
+
+# TODO: `{` alone on a line is not necessarily the start of a block.
+# It  could be  a dictionary  if the  previous line  ends with  a binary/ternary
+# operator.  This  can cause  an issue whenever  we use  `STARTS_CURLY_BLOCK` or
+# `LINE_CONTINUATION_AT_EOL`.
+const STARTS_CURLY_BLOCK: string = '\%('
+    .. '^\s*{'
+    .. '\|' .. '^.*\zs\s=>\s\+{'
+    .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{'
+    .. '\)' .. END_OF_COMMAND
+
+# STARTS_NAMED_BLOCK {{{3
 
 # All of these will be used at the start of a line (or after a bar).
 # NOTE: Don't replace `\%x28` with `(`.{{{
@@ -209,57 +201,62 @@ cmds =<< trim END
     aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
 END
 const STARTS_NAMED_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
+# }}}2
+# SOL/EOL {{{2
+# BACKSLASH_AT_SOL {{{3
 
-# ENDS_BLOCK_OR_CLAUSE {{{2
+const BACKSLASH_AT_SOL: string = '^\s*\%(\\\|[#"]\\ \)'
 
-cmds =<< trim END
-    en\%[dif]
-    el\%[se]
-    endfor\=
-    endw\%[hile]
-    endt\%[ry]
-    fina\|finally\=
-    enddef
-    endfu\%[nction]
-    aug\%[roup]\s\+[eE][nN][dD]
-END
-
-const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\){END_OF_COMMAND}'
-    .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_COMMAND}'
-    .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
-
-# ENDS_BLOCK {{{2
-
-const ENDS_BLOCK: string = '^\s*\%('
-    .. 'en\%[dif]'
-    .. '\|' .. 'endfor\='
-    .. '\|' .. 'endw\%[hile]'
-    .. '\|' .. 'endt\%[ry]'
-    .. '\|' .. 'enddef'
-    .. '\|' .. 'endfu\%[nction]'
-    .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
-    .. '\|' .. $'{CLOSING_BRACKET}'
-    .. $'\){END_OF_COMMAND}'
-
-# STARTS_WITH_CLOSING_BRACKET {{{2
-
-const STARTS_WITH_CLOSING_BRACKET: string = $'^\s*{CLOSING_BRACKET}'
-
-# STARTS_FUNCTION {{{2
-
-const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>'
-
-# OPENING_BRACKET_AT_EOL {{{2
+# OPENING_BRACKET_AT_EOL {{{3
 
 const OPENING_BRACKET_AT_EOL: string = '[[{(]' .. END_OF_LINE
 
-# COMMA_OR_DICT_KEY_AT_EOL {{{2
+# CLOSING_BRACKET_AT_SOL {{{3
+
+const CLOSING_BRACKET_AT_SOL: string = $'^\s*{CLOSING_BRACKET}'
+
+# CLOSING_BRACKETS_THEN_COMMA_AT_EOL {{{3
+
+const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,{END_OF_LINE}'
+
+# COMMA_OR_DICT_KEY_AT_EOL {{{3
 
 const COMMA_OR_DICT_KEY_AT_EOL: string = $'\%(,\|\S:\){END_OF_LINE}'
 
-# CLOSING_BRACKETS_THEN_COMMA_AT_EOL {{{2
+# LINE_CONTINUATION_AT_SOL {{{3
 
-const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,{END_OF_LINE}'
+const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
+    .. '\\'
+    .. '\|' .. '[#"]\\ '
+    .. '\|' .. OPERATOR
+    .. '\|' .. '->\s*\h'
+    .. '\|' .. '\.\h'  # dict member
+    .. '\|' .. '|'
+    # TODO: `}` at the start of a line is not necessarily a continuation line.
+    # Could be the end of a block.
+    .. '\|' .. $'{CLOSING_BRACKET}'
+    .. '\)'
+
+# LINE_CONTINUATION_AT_EOL {{{3
+
+const LINE_CONTINUATION_AT_EOL: string = '\%('
+    .. ','
+    .. '\|' .. OPERATOR
+    .. '\|' .. '\s=>'
+    .. '\|' .. '[[(]'
+    # TODO: This is to support a dictionary key.
+    # Do we need to match the key more accurately?
+    # If so, refactor every occurrence of `\S:` in this script.
+    .. '\|' .. '\S:'
+    # `{` is ambiguous.
+    # It can be the start of a dictionary or a block.
+    # We only want to match the former.
+    .. '\|' .. $'^\%({STARTS_CURLY_BLOCK}\)\@!.*\zs{{'
+    .. '\)\s*\%(\s#.*\)\=$'
+
+# RANGE_AT_SOL {{{3
+
+const RANGE_AT_SOL: string = '^\s*:\S'
 # }}}1
 # Interface {{{1
 export def Expr(lnum: number): number # {{{2
@@ -286,8 +283,8 @@ export def Expr(lnum: number): number # {{{2
     endif
 
     line_B = PrevCodeLine(line_A.lnum)
-    if line_A.text =~ STARTS_WITH_BACKSLASH
-        if line_B.text =~ STARTS_WITH_BACKSLASH
+    if line_A.text =~ BACKSLASH_AT_SOL
+        if line_B.text =~ BACKSLASH_AT_SOL
             return Indent(line_B.lnum)
         else
             return Indent(line_B.lnum) + IndentMoreContinuationLine()
@@ -453,7 +450,7 @@ def Offset( # {{{2
         # the block body.
         elseif line_B->EndsWithLineContinuation()
                 && !line_A.isfirst
-                || line_A.text =~ STARTS_WITH_LINE_CONTINUATION
+                || line_A.text =~ LINE_CONTINUATION_AT_SOL
             return 2 * shiftwidth()
         else
             return shiftwidth()
@@ -463,7 +460,7 @@ def Offset( # {{{2
     # started on a previous line
     elseif !line_A.isfirst
             && (line_B->EndsWithLineContinuation()
-            || line_A.text =~ STARTS_WITH_LINE_CONTINUATION)
+            || line_A.text =~ LINE_CONTINUATION_AT_SOL)
         return shiftwidth()
     endif
 
@@ -883,7 +880,7 @@ def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{2
     while line_B.lnum > 1
         var line_above: dict<any> = PrevCodeLine(line_B.lnum)
 
-        if line_B.text =~ STARTS_WITH_CLOSING_BRACKET
+        if line_B.text =~ CLOSING_BRACKET_AT_SOL
             var n: number = MatchingOpenBracket(line_B)
 
             if n <= 0
@@ -955,7 +952,7 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     #     :'< mark [
     #              ^
     #              not the start of a list
-    if line.text =~ STARTS_WITH_RANGE
+    if line.text =~ RANGE_AT_SOL
         return false
     endif
 
@@ -1061,7 +1058,7 @@ def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{2
 enddef
 
 def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{2
-    if line_1.text =~ STARTS_WITH_RANGE
+    if line_1.text =~ RANGE_AT_SOL
         return true
     endif
 
@@ -1072,7 +1069,7 @@ def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{2
 
     var line_1_is_good: bool = line_1.text !~ COMMENT
         && line_1.text !~ DICT_KEY
-        && line_1.text !~ STARTS_WITH_LINE_CONTINUATION
+        && line_1.text !~ LINE_CONTINUATION_AT_SOL
 
     var line_2_is_good: bool = !line_2->EndsWithLineContinuation()
 
