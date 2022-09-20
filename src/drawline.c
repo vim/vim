@@ -376,6 +376,9 @@ text_prop_position(
 		else
 		    before = 0;
 	    }
+	    else if (below && before > 0)
+		// include 'number' column et al.
+		col_off = win_col_off(wp) + win_col_off2(wp);
 	}
 
 	// With 'nowrap' add one to show the "extends" character if needed (it
