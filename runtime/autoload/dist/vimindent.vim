@@ -49,9 +49,9 @@ const CHARACTER_UNDER_CURSOR: string = '\%.c.'
 # `synstack()`).
 const INLINE_COMMENT: string = '\s[#"]\s'
 
-# VIM9_INLINE_COMMENT {{{3
+# INLINE_VIM9_COMMENT {{{3
 
-const VIM9_INLINE_COMMENT: string = '\s#'
+const INLINE_VIM9_COMMENT: string = '\s#'
 
 # COMMENT {{{3
 
@@ -95,7 +95,7 @@ const END_OF_LINE: string = $'\s*\%($\|{INLINE_COMMENT}\)'
 
 # END_OF_VIM9_LINE {{{3
 
-const END_OF_VIM9_LINE: string = $'\s*\%($\|{VIM9_INLINE_COMMENT}\)'
+const END_OF_VIM9_LINE: string = $'\s*\%($\|{INLINE_VIM9_COMMENT}\)'
 
 # OPERATOR {{{3
 
