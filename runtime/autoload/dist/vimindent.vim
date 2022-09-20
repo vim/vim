@@ -91,7 +91,11 @@ const END_OF_COMMAND: string = $'\s*\%($\|||\@!\|{INLINE_COMMENT}\)'
 
 # END_OF_LINE {{{3
 
-const END_OF_LINE: string = $'\s*\%($\|{VIM9_INLINE_COMMENT}\)'
+const END_OF_LINE: string = $'\s*\%($\|{INLINE_COMMENT}\)'
+
+# END_OF_VIM9_LINE {{{3
+
+const END_OF_VIM9_LINE: string = $'\s*\%($\|{VIM9_INLINE_COMMENT}\)'
 
 # OPERATOR {{{3
 
@@ -238,44 +242,26 @@ const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>'
 
 const ENDS_FUNCTION: string = $'^\s*enddef\>{END_OF_COMMAND}'
 # }}}2
-# SOL/EOL {{{2
-# BACKSLASH_AT_SOL {{{3
-
-const BACKSLASH_AT_SOL: string = '^\s*\%(\\\|[#"]\\ \)'
-
+# EOL {{{2
 # OPENING_BRACKET_AT_EOL {{{3
 
-const OPENING_BRACKET_AT_EOL: string = $'{OPENING_BRACKET}{END_OF_LINE}'
-
-# CLOSING_BRACKET_AT_SOL {{{3
-
-const CLOSING_BRACKET_AT_SOL: string = $'^\s*{CLOSING_BRACKET}'
+const OPENING_BRACKET_AT_EOL: string = $'{OPENING_BRACKET}{END_OF_VIM9_LINE}'
 
 # CLOSING_BRACKETS_THEN_COMMA_AT_EOL {{{3
 
-const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,{END_OF_LINE}'
+const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,{END_OF_VIM9_LINE}'
+
+# COMMA_AT_EOL {{{3
+
+const COMMA_AT_EOL: string = $',{END_OF_VIM9_LINE}'
 
 # COMMA_OR_DICT_KEY_AT_EOL {{{3
 
-const COMMA_OR_DICT_KEY_AT_EOL: string = $'\%(,\|\S:\){END_OF_LINE}'
+const COMMA_OR_DICT_KEY_AT_EOL: string = $'\%(,\|\S:\){END_OF_VIM9_LINE}'
 
 # LAMBDA_ARROW_AT_EOL {{{3
 
-const LAMBDA_ARROW_AT_EOL: string = $'\s=>{END_OF_LINE}'
-
-# LINE_CONTINUATION_AT_SOL {{{3
-
-const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
-    .. '\\'
-    .. '\|' .. '[#"]\\ '
-    .. '\|' .. OPERATOR
-    .. '\|' .. '->\s*\h'
-    .. '\|' .. '\.\h'  # dict member
-    .. '\|' .. '|'
-    # TODO: `}` at the start of a line is not necessarily a continuation line.
-    # Could be the end of a block.
-    .. '\|' .. $'{CLOSING_BRACKET}'
-    .. '\)'
+const LAMBDA_ARROW_AT_EOL: string = $'\s=>{END_OF_VIM9_LINE}'
 
 # LINE_CONTINUATION_AT_EOL {{{3
 
@@ -293,6 +279,29 @@ const LINE_CONTINUATION_AT_EOL: string = '\%('
     # We only want to match the former.
     .. '\|' .. $'^\%({STARTS_CURLY_BLOCK}\)\@!.*\zs{{'
     .. '\)\s*\%(\s#.*\)\=$'
+# }}}2
+# SOL {{{2
+# BACKSLASH_AT_SOL {{{3
+
+const BACKSLASH_AT_SOL: string = '^\s*\%(\\\|[#"]\\ \)'
+
+# CLOSING_BRACKET_AT_SOL {{{3
+
+const CLOSING_BRACKET_AT_SOL: string = $'^\s*{CLOSING_BRACKET}'
+
+# LINE_CONTINUATION_AT_SOL {{{3
+
+const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
+    .. '\\'
+    .. '\|' .. '[#"]\\ '
+    .. '\|' .. OPERATOR
+    .. '\|' .. '->\s*\h'
+    .. '\|' .. '\.\h'  # dict member
+    .. '\|' .. '|'
+    # TODO: `}` at the start of a line is not necessarily a continuation line.
+    # Could be the end of a block.
+    .. '\|' .. $'{CLOSING_BRACKET}'
+    .. '\)'
 
 # RANGE_AT_SOL {{{3
 
@@ -648,7 +657,7 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
         ind += shiftwidth()
     endif
 
-    if block.startline =~ $',{END_OF_LINE}'
+    if block.startline =~ COMMA_AT_EOL
             || block.startline =~ LAMBDA_ARROW_AT_EOL
             || (block.startline =~ OPENING_BRACKET_AT_EOL
             # TODO: Is that reliable?
