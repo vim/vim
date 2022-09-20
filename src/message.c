@@ -535,11 +535,11 @@ msg_source(int attr)
 	return;
     recursive = TRUE;
 
-    msg_scroll = TRUE;  // this will take more than one line
     ++no_wait_return;
     p = get_emsg_source();
     if (p != NULL)
     {
+	msg_scroll = TRUE;  // this will take more than one line
 	msg_attr((char *)p, attr);
 	vim_free(p);
     }
@@ -767,8 +767,8 @@ emsg_core(char_u *s)
 #endif
     /*
      * Display name and line number for the source of the error.
-     * Sets "msg_scroll".
      */
+    msg_scroll = TRUE;
     msg_source(attr);
 
     /*
