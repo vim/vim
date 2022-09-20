@@ -1715,8 +1715,8 @@ EXTERN char e_printmbcharset_cannot_be_empty_with_multi_byte_encoding[]
 EXTERN char e_no_default_font_specified_for_multi_byte_printing[]
 	INIT(= N_("E675: No default font specified for multi-byte printing."));
 #endif
-EXTERN char e_no_matching_autocommands_for_acwrite_buffer[]
-	INIT(= N_("E676: No matching autocommands for acwrite buffer"));
+EXTERN char e_no_matching_autocommands_for_buftype_str_buffer[]
+	INIT(= N_("E676: No matching autocommands for buftype=%s buffer"));
 #ifdef FEAT_SYN_HL
 EXTERN char e_error_writing_temp_file[]
 	INIT(= N_("E677: Error writing temp file"));
