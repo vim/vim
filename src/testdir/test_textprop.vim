@@ -2925,6 +2925,9 @@ func Test_prop_below_split_line()
   call term_sendkeys(buf, "\<Esc>:set number\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_below_split_line_2', {})
 
+  call term_sendkeys(buf, ":set nowrap\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_below_split_line_3', {})
+
   call StopVimInTerminal(buf)
 endfunc
 

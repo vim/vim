@@ -335,7 +335,6 @@ text_prop_position(
     int	    padding = tp->tp_col == MAXCOL && tp->tp_len > 1
 				  ? tp->tp_len - 1 : 0;
     int	    col_with_padding = vcol + (below ? 0 : padding);
-    int	    col_off = 0;
     int	    room = wp->w_width - col_with_padding;
     int	    before = room;	// spaces before the text
     int	    after = 0;		// spaces after the text
@@ -347,6 +346,9 @@ text_prop_position(
 
     if (wrap || right || above || below || padding > 0 || n_used < *n_extra)
     {
+	int	    col_off = win_col_off(wp) + win_col_off2(wp);
+	int	    skip_add = 0;
+
 	if (above)
 	{
 	    before = 0;
@@ -366,19 +368,19 @@ text_prop_position(
 		if (right && (wrap || room < PROP_TEXT_MIN_CELLS))
 		{
 		    // right-align on next line instead of wrapping if possible
-		    col_off = win_col_off(wp) + win_col_off2(wp);
 		    before = wp->w_width - col_off - strsize + room;
 		    if (before < 0)
 			before = 0;
 		    else
 			n_used = *n_extra;
+		    skip_add = col_off;
 		}
 		else
 		    before = 0;
 	    }
 	    else if (below && before > 0)
 		// include 'number' column et al.
-		col_off = win_col_off(wp) + win_col_off2(wp);
+		skip_add = col_off;
 	}
 
 	// With 'nowrap' add one to show the "extends" character if needed (it
@@ -388,6 +390,8 @@ text_prop_position(
 		&& wp->w_lcs_chars.ext != NUL
 		&& wp->w_p_list)
 	    ++n_used;
+	if (!wp->w_p_wrap && below && padding > 0)
+	    skip_add = col_off;
 
 	// add 1 for NUL, 2 for when '…' is used
 	if (n_attr != NULL)
@@ -441,7 +445,7 @@ text_prop_position(
 		*n_attr = mb_charlen(*p_extra);
 		if (above)
 		    *n_attr -= padding + after;
-		*n_attr_skip = before + padding + col_off;
+		*n_attr_skip = before + padding + skip_add;
 	    }
 	}
     }
