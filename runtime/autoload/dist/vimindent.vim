@@ -306,20 +306,10 @@ export def Expr(lnum: number): number # {{{2
     # Solution: Find the  start of the  function header, and indent  relative to
     # the latter.
     if line_B.text =~ ')'
-            # This is  way too costly  to do that on  every line with  a closing
-            # paren  (because  of `synstack()`).   It's  mostly  useful when  we
-            # indent the line  below the function header; let's do  it only once
-            # per indent command.
-            && !exists('b:did_indent_a_line')
-        b:did_indent_a_line = true
-        RegisterCacheInvalidation()
-        var pos: list<number> = getcurpos()
-        cursor(line_B.lnum, 1)
-        var start: number = SearchPairStart('(', '', ')')
-        if start > 0 && start->getline() =~ $'^\s*{FUNC_START}'
-            return start->Indent() + shiftwidth()
+        var ind: number = IndentLineBelowFuncHeader(line_B)
+        if ind >= 0
+            return ind
         endif
-        setpos('.', pos)
     endif
 
     if exists('b:vimindent')
@@ -726,6 +716,28 @@ def RegisterCacheInvalidation() # {{{2
         pattern: '*:n',
         replace: true,
     }])
+enddef
+
+def IndentLineBelowFuncHeader(line_B: dict<any>): number # {{{2
+    # This is  way too  costly to  do that on  every line  with a  closing paren
+    # (because of  `synstack()`).  It's  mostly useful when  we indent  the line
+    # below the function header; let's do it only once per indent command.
+    if exists('b:did_indent_a_line')
+        return -1
+    endif
+
+    b:did_indent_a_line = true
+    RegisterCacheInvalidation()
+
+    var pos: list<number> = getcurpos()
+    cursor(line_B.lnum, 1)
+    var start: number = SearchPairStart('(', '', ')')
+    if start > 0 && start->getline() =~ $'^\s*{FUNC_START}'
+        return start->Indent() + shiftwidth()
+    endif
+    setpos('.', pos)
+
+    return -1
 enddef
 
 def PopBracketBlockStack(line_A: dict<any>) # {{{2
