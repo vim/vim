@@ -30,7 +30,10 @@ enddef
 var cmds: list<string>
 # INLINE_COMMENT {{{2
 
-const INLINE_COMMENT: string = '\%(\s#\|"\\\=\s\).*$'
+# Technically, `\s` is wrong.
+# In  legacy, it  is not  required for  an inline  comment to  be preceded  by a
+# whitespace.  But in practice, it should be.
+const INLINE_COMMENT: string = '\s[#"]'
 
 # END_OF_COMMAND {{{2
 
@@ -604,8 +607,8 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
         ind += shiftwidth()
     endif
 
-    if block.startline =~ ',' .. END_OF_LINE
-            || block.startline =~ '[[{(]\+' .. END_OF_LINE
+    if block.startline =~ $',{END_OF_LINE}'
+            || block.startline =~ OPENING_BRACKET_AT_EOL
             # TODO: Is that reliable?
             && block.startline !~ '[]}],\s\+[[{]'
         ind += shiftwidth() + IndentMoreInBracketBlock()
@@ -1039,11 +1042,8 @@ def IsInBracketBlock(line_A: dict<any>): bool # {{{2
     # it makes the logic simpler.  It  might mean that we don't indent correctly
     # a multiline  bracket block inside a  function header, but that's  a corner
     # case for which it doesn't seem worth making the code more complex.
-    if exists('b:vimindent') && !b:vimindent->has_key('is_BracketBlock')
-            # We need  this check  because we  don't consider  `"` as  a comment
-            # leader (only `" `).  Unfortunately, some people don't  put a space
-            # after their comment leader...
-            || line_A.text =~ '^"'
+    if exists('b:vimindent')
+            && !b:vimindent->has_key('is_BracketBlock')
         return false
     endif
 
@@ -1086,7 +1086,7 @@ def InCommentOrString(): bool # {{{2
     # the pattern to this function.  If we  look for a pair of patterns, I think
     # we only need to pass the one  which matches in the direction we're looking
     # for.
-    if line !~ '^\s*[#"]' && line !~ '\s[#"]' && line !~ '["'']'
+    if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ '["'']'
         return false
     endif
 
