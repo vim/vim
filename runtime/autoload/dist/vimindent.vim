@@ -156,7 +156,7 @@ const CD_COMMAND: string = $'[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
 
 # MAPPING_COMMAND {{{3
 
-const MAPPING_COMMAND: string = $'map\s.*<\%(SID\|CR\|buffer\|expr\|nowait\|script\|silent\|special\|unique\)>'
+const MAPPING_COMMAND: string = 'map\s.*<\%(SID\|CR\|buffer\|expr\|nowait\|script\|silent\|special\|unique\)>'
 
 # NORMAL_COMMAND {{{3
 
