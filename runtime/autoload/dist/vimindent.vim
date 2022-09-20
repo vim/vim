@@ -623,16 +623,8 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
 
     if block.startline =~ ',' .. END_OF_LINE
             || block.startline =~ '[[{(]\+' .. END_OF_LINE
-            # FIXME: That's not always correct.{{{
-            #
-            # For example, it breaks that snippet:
-            #
-            #     prop_add(1, col('.'), {
-            #     length: 2,
-            #     type: 'test'
-            #     })
-            #}}}
-            && block.startline !~ '[]})],\s\+[[{(]'
+            # TODO: Is that reliable?.
+            && block.startline !~ '[]}],\s\+[[{]'
         ind += shiftwidth() + IndentMoreInBracketBlock()
     endif
 

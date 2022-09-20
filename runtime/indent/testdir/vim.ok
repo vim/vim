@@ -680,3 +680,10 @@ echo printf('%s () %s',
     2
 )
 " END_INDENT
+
+" START_INDENT
+prop_add(1, col('.'), {
+    length: 2,
+    type: 'test'
+})
+" END_INDENT
