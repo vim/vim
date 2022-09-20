@@ -81,10 +81,6 @@ const END_OF_COMMAND: string = $'\s*\%($\|||\@!\|{INLINE_COMMENT}\)'
 
 const END_OF_LINE: string = $'\s*\%($\|{INLINE_COMMENT}\)'
 
-# FUNC_START {{{3
-
-const FUNC_START: string = '\%(export\s\+\)\=def'
-
 # OPERATOR {{{3
 
 const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%([=!]=\|[<>]=\=\|[=!]\~\|is\|isnot\)[?#]\=\)\%(\s\|$\)\@=\%(\s*[|<]\)\@!'
@@ -117,8 +113,8 @@ const START_MIDDLE_END: dict<list<string>> = {
     catch: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
     finally: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
     endtry: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    def: [$'{FUNC_START}', '', 'enddef'],
-    enddef: [$'{FUNC_START}', '', 'enddef'],
+    def: ['\%(export\s\+\)\=def', '', 'enddef'],
+    enddef: ['\%(export\s\+\)\=def', '', 'enddef'],
     function: ['fu\%[nction]', '', 'endf\%[unction]'],
     endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
     augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
@@ -201,6 +197,14 @@ cmds =<< trim END
     aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
 END
 const STARTS_NAMED_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
+
+# STARTS_FUNCTION {{{3
+
+const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>'
+
+# ENDS_FUNCTION {{{3
+
+const ENDS_FUNCTION: string = $'^\s*enddef\>{END_OF_COMMAND}'
 # }}}2
 # SOL/EOL {{{2
 # BACKSLASH_AT_SOL {{{3
@@ -298,7 +302,7 @@ export def Expr(lnum: number): number # {{{2
     elseif line_A.lnum->IsRightBelow('FuncHeader')
         var startindent: number = b:vimindent.startindent
         unlet! b:vimindent
-        if line_A.text =~ $'^\s*enddef\>{END_OF_COMMAND}'
+        if line_A.text =~ ENDS_FUNCTION
             return startindent
         else
             return startindent + shiftwidth()
@@ -725,7 +729,7 @@ def IndentLineBelowFuncHeader(line_B: dict<any>): number # {{{2
     var pos: list<number> = getcurpos()
     cursor(line_B.lnum, 1)
     var start: number = SearchPairStart('(', '', ')')
-    if start > 0 && start->getline() =~ $'^\s*{FUNC_START}'
+    if start > 0 && start->getline() =~ STARTS_FUNCTION
         return start->Indent() + shiftwidth()
     endif
     setpos('.', pos)
@@ -745,7 +749,7 @@ enddef
 def AtStartOf(line_A: string, syntax: string): bool # {{{2
     var pat: string = {
         HereDoc: ASSIGNS_HEREDOC,
-        FuncHeader: $'^\s*{FUNC_START}'
+        FuncHeader: STARTS_FUNCTION
     }[syntax]
     return line_A =~ pat && !exists('b:vimindent')
 enddef
