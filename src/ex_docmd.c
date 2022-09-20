@@ -8431,12 +8431,15 @@ ex_redrawstatus(exarg_T *eap UNUSED)
 	status_redraw_all();
     else
 	status_redraw_curbuf();
-    if (msg_scrolled)
+    if (msg_scrolled && (State & MODE_CMDLINE))
 	return;  // redraw later
 
     RedrawingDisabled = 0;
     p_lz = FALSE;
-    update_screen(VIsual_active ? UPD_INVERTED : 0);
+    if (State & MODE_CMDLINE)
+	redraw_statuslines();
+    else
+	update_screen(VIsual_active ? UPD_INVERTED : 0);
     RedrawingDisabled = r;
     p_lz = p;
     out_flush();
