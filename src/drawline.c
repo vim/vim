@@ -292,7 +292,7 @@ handle_lnum_col(
 	win_T		*wp,
 	winlinevars_T	*wlv,
 	int		sign_present UNUSED,
-	int		num_attr)
+	int		num_attr UNUSED)
 {
     if ((wp->w_p_nu || wp->w_p_rnu)
 	    && (wlv->row == wlv->startrow + wlv->filler_lines
