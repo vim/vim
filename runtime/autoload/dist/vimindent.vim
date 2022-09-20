@@ -255,6 +255,10 @@ const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,{END_OF
 
 const COMMA_OR_DICT_KEY_AT_EOL: string = $'\%(,\|\S:\){END_OF_LINE}'
 
+# LAMBDA_ARROW_AT_EOL {{{3
+
+const LAMBDA_ARROW_AT_EOL: string = $'\s=>{END_OF_LINE}'
+
 # LINE_CONTINUATION_AT_SOL {{{3
 
 const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
@@ -337,11 +341,16 @@ export def Expr(lnum: number): number # {{{2
         endif
     endif
 
-    # Problem: If  we press  `==`  below a  function header  which  is split  on
-    # multiple lines, the expression returns -1.
+    # Problem: If we press `==` on the line right below the start of a multiline
+    # lambda (split after its arrow `=>`), the indent is not correct.
+    # Solution: Indent relative to the line above.
+    if line_B.text =~ LAMBDA_ARROW_AT_EOL
+        return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
+
+    # Similar issue right below a multiline function header.
     # Solution: Find the  start of the  function header, and indent  relative to
     # the latter.
-    if line_B.text =~ ')'
+    elseif line_B.text =~ ')'
         var ind: number = IndentLineBelowFuncHeader(line_B)
         if ind >= 0
             return ind
@@ -636,9 +645,10 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
     endif
 
     if block.startline =~ $',{END_OF_LINE}'
-            || block.startline =~ OPENING_BRACKET_AT_EOL
+            || block.startline =~ LAMBDA_ARROW_AT_EOL
+            || (block.startline =~ OPENING_BRACKET_AT_EOL
             # TODO: Is that reliable?
-            && block.startline !~ '[]}],\s\+[[{]'
+            && block.startline !~ '[]}],\s\+[[{]')
         ind += shiftwidth() + IndentMoreInBracketBlock()
     endif
 
@@ -768,248 +778,6 @@ def RemoveStaleBracketBlocks(line_A: dict<any>) # {{{2
 enddef
 # }}}1
 # Util {{{1
-# Tests {{{2
-def AtStartOf(line_A: dict<any>, syntax: string): bool # {{{3
-    if syntax == 'BracketBlock'
-        return AtStartOfBracketBlock(line_A)
-    endif
-
-    var pat: string = {
-        HereDoc: ASSIGNS_HEREDOC,
-        FuncHeader: STARTS_FUNCTION
-    }[syntax]
-    return line_A.text =~ pat && !exists('b:vimindent')
-enddef
-
-def AtStartOfBracketBlock(line_A: dict<any>): bool # {{{3
-    # We  ignore bracket  blocks  while we're  indenting  a function  header
-    # because  it makes  the logic  simpler.  It  might mean  that we  don't
-    # indent correctly a  multiline bracket block inside  a function header,
-    # but that's  a corner case for  which it doesn't seem  worth making the
-    # code more complex.
-    if exists('b:vimindent')
-            && !b:vimindent->has_key('is_BracketBlock')
-        return false
-    endif
-
-    var pos: list<number> = getcurpos()
-    cursor(line_A.lnum, [line_A.lnum, '$']->col())
-    if search(OPENING_BRACKET, 'bcW', line_A.lnum, TIMEOUT, (): bool => InCommentOrString()) <= 0
-        setpos('.', pos)
-        return false
-    endif
-    # Don't restore the cursor position.
-    # It needs to be on a bracket for `CacheBracketBlock()` to work as intended.
-
-    return line_A->EndsWithOpeningBracket()
-        || line_A->EndsWithCommaOrDictKey()
-enddef
-
-def IsInside(lnum: number, syntax: string): bool # {{{3
-    if !exists('b:vimindent')
-            || !b:vimindent->has_key($'is_{syntax}')
-        return false
-    endif
-
-    if syntax == 'BracketBlock'
-        if !b:vimindent->has_key('block_stack')
-                || b:vimindent.block_stack->empty()
-            return false
-        endif
-        return lnum <= b:vimindent.block_stack[0].endlnum
-    endif
-
-    return lnum <= b:vimindent.endlnum
-enddef
-
-def IsRightBelow(lnum: number, syntax: string): bool # {{{3
-    return exists('b:vimindent')
-        && b:vimindent->has_key($'is_{syntax}')
-        && lnum > b:vimindent.endlnum
-enddef
-
-def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{3
-    var pos: list<number> = getcurpos()
-    cursor(lnum, [lnum, '$']->col())
-    var end: number = SearchPairEnd('{', '', '}')
-    setpos('.', pos)
-
-    return line_A.lnum <= end
-enddef
-
-def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{3
-    if line_1.text =~ RANGE_AT_SOL
-        return true
-    endif
-
-    if line_2.text =~ DICT_KEY
-            && !line_1->IsInThisBlock(line_2.lnum)
-        return true
-    endif
-
-    var line_1_is_good: bool = line_1.text !~ COMMENT
-        && line_1.text !~ DICT_KEY
-        && line_1.text !~ LINE_CONTINUATION_AT_SOL
-
-    var line_2_is_good: bool = !line_2->EndsWithLineContinuation()
-
-    return line_1_is_good && line_2_is_good
-enddef
-
-def InCommentOrString(): bool # {{{3
-    var line: string = getline('.')
-    # TODO: We might be able to optimize  more, by asserting that the pattern is
-    # not after a comment leader, nor after  a quote.  This assumes that we pass
-    # the pattern to this function.  If we  look for a pair of patterns, I think
-    # we only need to pass the one  which matches in the direction we're looking
-    # for.
-    if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ QUOTE
-        return false
-    endif
-
-    for synID: number in synstack('.', col('.'))
-        if synIDattr(synID, 'name') =~ '\ccomment\|string'
-            return true
-        endif
-    endfor
-
-    return false
-enddef
-
-def AlsoClosesBlock(line_B: dict<any>): bool # {{{3
-    # We know that `line_B` opens a block.
-    # Let's see if it also closes that block.
-    var kwd: string = BlockStartKeyword(line_B.text)
-    if !START_MIDDLE_END->has_key(kwd)
-        return false
-    endif
-
-    var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
-    var pos: list<number> = getcurpos()
-    cursor(line_B.lnum, 1)
-    var block_end: number = SearchPairEnd(start, middle, end, line_B.lnum)
-    setpos('.', pos)
-
-    return block_end > 0
-enddef
-
-def EndsWithLineContinuation(line_B: dict<any>): bool # {{{3
-    return NonCommentedMatch(line_B, LINE_CONTINUATION_AT_EOL)
-enddef
-
-def EndsWithCurlyBlock(line_B: dict<any>): bool # {{{3
-    return NonCommentedMatch(line_B, STARTS_CURLY_BLOCK)
-enddef
-
-def EndsWithOpeningBracket(line: dict<any>): bool # {{{3
-    return NonCommentedMatch(line, OPENING_BRACKET_AT_EOL)
-enddef
-
-def EndsWithCommaOrDictKey(line_A: dict<any>): bool # {{{3
-    return NonCommentedMatch(line_A, COMMA_OR_DICT_KEY_AT_EOL)
-enddef
-
-def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
-    # Could happen if there is no code above us, and we're not on the 1st line.
-    # In that case, `PrevCodeLine()` returns `{lnum: 0, line: ''}`.
-    if line.lnum == 0
-        return false
-    endif
-
-    # Technically, that's wrong.  A  line might start with a range  and end with a
-    # line continuation symbol.  But it's unlikely.  And it's useful to assume the
-    # opposite because it  prevents us from conflating a mark  with an operator or
-    # the start of a list:
-    #
-    #              not a comparison operator
-    #              v
-    #     :'< mark <
-    #     :'< mark [
-    #              ^
-    #              not the start of a list
-    if line.text =~ RANGE_AT_SOL
-        return false
-    endif
-
-    #                    that's not an arithmetic operator
-    #                    v
-    #     catch /pattern /
-    #
-    # When `/` is used as a pattern delimiter, it's always present twice.
-    # And  usually, the  first occurrence  is  in the  middle of  a sequence  of
-    # non-whitespace characters.  If we can find  such a `/`, we assume that the
-    # trailing `/` is not an operator.
-    # Warning: Here, don't use a too complex pattern.{{{
-    #
-    # In particular, avoid backreferences.
-    # For example, this would be too costly:
-    #
-    #     if line.text =~ $'\%(\S*\({PATTERN_DELIMITER}\)\S\+\|\S\+\({PATTERN_DELIMITER}\)\S*\)'
-    #             .. $'\s\+\1{END_OF_COMMAND}'
-    #
-    # Sometimes, it could even give `E363`.
-    #}}}
-    var delim: string = line.text
-        ->matchstr($'\s\+\zs{PATTERN_DELIMITER}\ze{END_OF_COMMAND}')
-    if !delim->empty()
-        delim = $'\V{delim}\m'
-        if line.text =~ $'\%(\S*{delim}\S\+\|\S\+{delim}\S*\)\s\+{delim}{END_OF_COMMAND}'
-            return false
-        endif
-    endif
-    # TODO: We might still miss some corner cases:{{{
-    #
-    #                          conflated with arithmetic division
-    #                          v
-    #     substitute/pat / rep /
-    #         echo
-    #     ^--^
-    #      ✘
-    #
-    # A better way to handle all these corner cases, would be to inspect the top
-    # of the syntax stack:
-    #
-    #     :echo synID('.', col('.'), v:false)->synIDattr('name')
-    #
-    # Unfortunately, the legacy syntax plugin is not accurate enough.
-    # For example, it doesn't highlight a slash as an operator.
-    # }}}
-
-    # `%` at the end of a line is tricky.
-    # It might be the modulo operator or the current file (e.g. `edit %`).
-    # Let's assume it's the latter.
-    if line.text =~ $'%{END_OF_COMMAND}'
-        return false
-    endif
-
-    # `:help cd-`
-    if line.text =~ CD_COMMAND
-        return false
-    endif
-
-    # At the end of a mapping, any character might appear; e.g. a paren:
-    #
-    #     nunmap <buffer> (
-    #
-    # Don't conflate this with a line continuation symbol.
-    if line.text =~ MAPPING_COMMAND
-        return false
-    endif
-
-    #             not a comparison operator
-    #             vv
-    #     normal! ==
-    if line.text =~ NORMAL_COMMAND
-        return false
-    endif
-
-    var pos: list<number> = getcurpos()
-    cursor(line.lnum, 1)
-    var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
-    setpos('.', pos)
-    return match_lnum > 0
-enddef
-
 # Get {{{2
 def Indent(lnum: number): number # {{{3
     if lnum <= 0
@@ -1137,6 +905,254 @@ def SearchPairEnd( # {{{3
         stopline = 0,
         ): number
     return SearchPair(start, middle, end, 'nW', stopline)
+enddef
+# }}}2
+# Tests {{{2
+def AtStartOf(line_A: dict<any>, syntax: string): bool # {{{3
+    if syntax == 'BracketBlock'
+        return AtStartOfBracketBlock(line_A)
+    endif
+
+    var pat: string = {
+        HereDoc: ASSIGNS_HEREDOC,
+        FuncHeader: STARTS_FUNCTION
+    }[syntax]
+    return line_A.text =~ pat && !exists('b:vimindent')
+enddef
+
+def AtStartOfBracketBlock(line_A: dict<any>): bool # {{{3
+    # We  ignore bracket  blocks  while we're  indenting  a function  header
+    # because  it makes  the logic  simpler.  It  might mean  that we  don't
+    # indent correctly a  multiline bracket block inside  a function header,
+    # but that's  a corner case for  which it doesn't seem  worth making the
+    # code more complex.
+    if exists('b:vimindent')
+            && !b:vimindent->has_key('is_BracketBlock')
+        return false
+    endif
+
+    var pos: list<number> = getcurpos()
+    cursor(line_A.lnum, [line_A.lnum, '$']->col())
+
+    if SearchPair(OPENING_BRACKET, '', CLOSING_BRACKET, 'bcW', line_A.lnum) <= 0
+        setpos('.', pos)
+        return false
+    endif
+    # Don't restore the cursor position.
+    # It needs to be on a bracket for `CacheBracketBlock()` to work as intended.
+
+    return line_A->EndsWithOpeningBracket()
+        || line_A->EndsWithCommaOrDictKey()
+        || line_A->EndsWithLambdaArrow()
+enddef
+
+def IsInside(lnum: number, syntax: string): bool # {{{3
+    if !exists('b:vimindent')
+            || !b:vimindent->has_key($'is_{syntax}')
+        return false
+    endif
+
+    if syntax == 'BracketBlock'
+        if !b:vimindent->has_key('block_stack')
+                || b:vimindent.block_stack->empty()
+            return false
+        endif
+        return lnum <= b:vimindent.block_stack[0].endlnum
+    endif
+
+    return lnum <= b:vimindent.endlnum
+enddef
+
+def IsRightBelow(lnum: number, syntax: string): bool # {{{3
+    return exists('b:vimindent')
+        && b:vimindent->has_key($'is_{syntax}')
+        && lnum > b:vimindent.endlnum
+enddef
+
+def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{3
+    var pos: list<number> = getcurpos()
+    cursor(lnum, [lnum, '$']->col())
+    var end: number = SearchPairEnd('{', '', '}')
+    setpos('.', pos)
+
+    return line_A.lnum <= end
+enddef
+
+def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{3
+    if line_1.text =~ RANGE_AT_SOL
+        return true
+    endif
+
+    if line_2.text =~ DICT_KEY
+            && !line_1->IsInThisBlock(line_2.lnum)
+        return true
+    endif
+
+    var line_1_is_good: bool = line_1.text !~ COMMENT
+        && line_1.text !~ DICT_KEY
+        && line_1.text !~ LINE_CONTINUATION_AT_SOL
+
+    var line_2_is_good: bool = !line_2->EndsWithLineContinuation()
+
+    return line_1_is_good && line_2_is_good
+enddef
+
+def InCommentOrString(): bool # {{{3
+    var line: string = getline('.')
+    # TODO: We might be able to optimize  more, by asserting that the pattern is
+    # not after a comment leader, nor after  a quote.  This assumes that we pass
+    # the pattern to this function.  If we  look for a pair of patterns, I think
+    # we only need to pass the one  which matches in the direction we're looking
+    # for.
+    if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ QUOTE
+        return false
+    endif
+
+    for synID: number in synstack('.', col('.'))
+        if synIDattr(synID, 'name') =~ '\ccomment\|string'
+            return true
+        endif
+    endfor
+
+    return false
+enddef
+
+def AlsoClosesBlock(line_B: dict<any>): bool # {{{3
+    # We know that `line_B` opens a block.
+    # Let's see if it also closes that block.
+    var kwd: string = BlockStartKeyword(line_B.text)
+    if !START_MIDDLE_END->has_key(kwd)
+        return false
+    endif
+
+    var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
+    var pos: list<number> = getcurpos()
+    cursor(line_B.lnum, 1)
+    var block_end: number = SearchPairEnd(start, middle, end, line_B.lnum)
+    setpos('.', pos)
+
+    return block_end > 0
+enddef
+
+def EndsWithCommaOrDictKey(line_A: dict<any>): bool # {{{3
+    return NonCommentedMatch(line_A, COMMA_OR_DICT_KEY_AT_EOL)
+enddef
+
+def EndsWithCurlyBlock(line_B: dict<any>): bool # {{{3
+    return NonCommentedMatch(line_B, STARTS_CURLY_BLOCK)
+enddef
+
+def EndsWithLambdaArrow(line_A: dict<any>): bool # {{{3
+    return NonCommentedMatch(line_A, LAMBDA_ARROW_AT_EOL)
+enddef
+
+def EndsWithLineContinuation(line_B: dict<any>): bool # {{{3
+    return NonCommentedMatch(line_B, LINE_CONTINUATION_AT_EOL)
+enddef
+
+def EndsWithOpeningBracket(line: dict<any>): bool # {{{3
+    return NonCommentedMatch(line, OPENING_BRACKET_AT_EOL)
+enddef
+
+def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
+    # Could happen if there is no code above us, and we're not on the 1st line.
+    # In that case, `PrevCodeLine()` returns `{lnum: 0, line: ''}`.
+    if line.lnum == 0
+        return false
+    endif
+
+    # Technically, that's wrong.  A  line might start with a range  and end with a
+    # line continuation symbol.  But it's unlikely.  And it's useful to assume the
+    # opposite because it  prevents us from conflating a mark  with an operator or
+    # the start of a list:
+    #
+    #              not a comparison operator
+    #              v
+    #     :'< mark <
+    #     :'< mark [
+    #              ^
+    #              not the start of a list
+    if line.text =~ RANGE_AT_SOL
+        return false
+    endif
+
+    #                    that's not an arithmetic operator
+    #                    v
+    #     catch /pattern /
+    #
+    # When `/` is used as a pattern delimiter, it's always present twice.
+    # And  usually, the  first occurrence  is  in the  middle of  a sequence  of
+    # non-whitespace characters.  If we can find  such a `/`, we assume that the
+    # trailing `/` is not an operator.
+    # Warning: Here, don't use a too complex pattern.{{{
+    #
+    # In particular, avoid backreferences.
+    # For example, this would be too costly:
+    #
+    #     if line.text =~ $'\%(\S*\({PATTERN_DELIMITER}\)\S\+\|\S\+\({PATTERN_DELIMITER}\)\S*\)'
+    #             .. $'\s\+\1{END_OF_COMMAND}'
+    #
+    # Sometimes, it could even give `E363`.
+    #}}}
+    var delim: string = line.text
+        ->matchstr($'\s\+\zs{PATTERN_DELIMITER}\ze{END_OF_COMMAND}')
+    if !delim->empty()
+        delim = $'\V{delim}\m'
+        if line.text =~ $'\%(\S*{delim}\S\+\|\S\+{delim}\S*\)\s\+{delim}{END_OF_COMMAND}'
+            return false
+        endif
+    endif
+    # TODO: We might still miss some corner cases:{{{
+    #
+    #                          conflated with arithmetic division
+    #                          v
+    #     substitute/pat / rep /
+    #         echo
+    #     ^--^
+    #      ✘
+    #
+    # A better way to handle all these corner cases, would be to inspect the top
+    # of the syntax stack:
+    #
+    #     :echo synID('.', col('.'), v:false)->synIDattr('name')
+    #
+    # Unfortunately, the legacy syntax plugin is not accurate enough.
+    # For example, it doesn't highlight a slash as an operator.
+    # }}}
+
+    # `%` at the end of a line is tricky.
+    # It might be the modulo operator or the current file (e.g. `edit %`).
+    # Let's assume it's the latter.
+    if line.text =~ $'%{END_OF_COMMAND}'
+        return false
+    endif
+
+    # `:help cd-`
+    if line.text =~ CD_COMMAND
+        return false
+    endif
+
+    # At the end of a mapping, any character might appear; e.g. a paren:
+    #
+    #     nunmap <buffer> (
+    #
+    # Don't conflate this with a line continuation symbol.
+    if line.text =~ MAPPING_COMMAND
+        return false
+    endif
+
+    #             not a comparison operator
+    #             vv
+    #     normal! ==
+    if line.text =~ NORMAL_COMMAND
+        return false
+    endif
+
+    var pos: list<number> = getcurpos()
+    cursor(line.lnum, 1)
+    var match_lnum: number = search(pat, 'cnW', line.lnum, TIMEOUT, (): bool => InCommentOrString())
+    setpos('.', pos)
+    return match_lnum > 0
 enddef
 # }}}1
 # vim:sw=4
