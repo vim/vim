@@ -197,6 +197,10 @@ const STARTS_CURLY_BLOCK: string = '\%('
     .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{'
     .. '\)' .. END_OF_COMMAND
 
+# ENDS_CURLY_BLOCK {{{3
+
+const ENDS_CURLY_BLOCK: string = '^\s*}'
+
 # STARTS_NAMED_BLOCK {{{3
 
 # All of these will be used at the start of a line (or after a bar).
@@ -293,7 +297,7 @@ export def Expr(lnum: number): number # {{{2
     # line above, on which we'll base the indent of line A
     var line_B: dict<any>
 
-    if line_A.text->AtStartOf('HereDoc')
+    if line_A->AtStartOf('HereDoc')
         line_A->CacheHeredoc()
     elseif line_A.lnum->IsInside('HereDoc')
         return line_A.text->HereDocIndent()
@@ -319,7 +323,7 @@ export def Expr(lnum: number): number # {{{2
         endif
     endif
 
-    if line_A.text->AtStartOf('FuncHeader')
+    if line_A->AtStartOf('FuncHeader')
         line_A.lnum->CacheFuncHeader()
     elseif line_A.lnum->IsInside('FuncHeader')
         return b:vimindent.startindent + 2 * shiftwidth()
@@ -346,11 +350,10 @@ export def Expr(lnum: number): number # {{{2
 
     if exists('b:vimindent')
             && b:vimindent->has_key('is_BracketBlock')
-        PopBracketBlockStack(line_A)
+        RemoveStaleBracketBlocks(line_A)
     endif
 
-    # We also match a trailing colon, for a dict which is split after a key.
-    if line_A->IsInBracketBlock()
+    if line_A->AtStartOf('BracketBlock')
         line_A->CacheBracketBlock()
     endif
 
@@ -402,7 +405,7 @@ export def Expr(lnum: number): number # {{{2
     if line_B.text =~ STARTS_CURLY_BLOCK
         return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
 
-    elseif line_A.text =~ '^\s*}'
+    elseif line_A.text =~ ENDS_CURLY_BLOCK
         var start_curly_block: number = MatchingOpenBracket(line_A)
         if start_curly_block <= 0
             return -1
@@ -686,11 +689,6 @@ enddef
 
 def CacheBracketBlock(line_A: dict<any>) # {{{2
     var pos: list<number> = getcurpos()
-    cursor(line_A.lnum, [line_A.lnum, '$']->col())
-    if search(OPENING_BRACKET, 'bcW', line_A.lnum, TIMEOUT, (): bool => InCommentOrString()) <= 0
-        return
-    endif
-
     var opening: string = line_A.text->matchstr(CHARACTER_UNDER_CURSOR)
     var closing: string = {'[': ']', '{': '}', '(': ')'}[opening]
     var endlnum: number = SearchPair(opening, '', closing, 'nW')
@@ -761,7 +759,7 @@ def IndentLineBelowFuncHeader(line_B: dict<any>): number # {{{2
     return -1
 enddef
 
-def PopBracketBlockStack(line_A: dict<any>) # {{{2
+def RemoveStaleBracketBlocks(line_A: dict<any>) # {{{2
     var stack: list<dict<any>> = b:vimindent.block_stack
     stack->filter((_, block: dict<any>): bool => line_A.lnum <= block.endlnum)
     if stack->empty()
@@ -771,12 +769,40 @@ enddef
 # }}}1
 # Util {{{1
 # Tests {{{2
-def AtStartOf(line_A: string, syntax: string): bool # {{{3
+def AtStartOf(line_A: dict<any>, syntax: string): bool # {{{3
+    if syntax == 'BracketBlock'
+        return AtStartOfBracketBlock(line_A)
+    endif
+
     var pat: string = {
         HereDoc: ASSIGNS_HEREDOC,
         FuncHeader: STARTS_FUNCTION
     }[syntax]
-    return line_A =~ pat && !exists('b:vimindent')
+    return line_A.text =~ pat && !exists('b:vimindent')
+enddef
+
+def AtStartOfBracketBlock(line_A: dict<any>): bool # {{{3
+    # We  ignore bracket  blocks  while we're  indenting  a function  header
+    # because  it makes  the logic  simpler.  It  might mean  that we  don't
+    # indent correctly a  multiline bracket block inside  a function header,
+    # but that's  a corner case for  which it doesn't seem  worth making the
+    # code more complex.
+    if exists('b:vimindent')
+            && !b:vimindent->has_key('is_BracketBlock')
+        return false
+    endif
+
+    var pos: list<number> = getcurpos()
+    cursor(line_A.lnum, [line_A.lnum, '$']->col())
+    if search(OPENING_BRACKET, 'bcW', line_A.lnum, TIMEOUT, (): bool => InCommentOrString()) <= 0
+        setpos('.', pos)
+        return false
+    endif
+    # Don't restore the cursor position.
+    # It needs to be on a bracket for `CacheBracketBlock()` to work as intended.
+
+    return line_A->EndsWithOpeningBracket()
+        || line_A->EndsWithCommaOrDictKey()
 enddef
 
 def IsInside(lnum: number, syntax: string): bool # {{{3
@@ -800,20 +826,6 @@ def IsRightBelow(lnum: number, syntax: string): bool # {{{3
     return exists('b:vimindent')
         && b:vimindent->has_key($'is_{syntax}')
         && lnum > b:vimindent.endlnum
-enddef
-
-def IsInBracketBlock(line_A: dict<any>): bool # {{{3
-    # We ignore bracket  blocks while we're indenting a  function header because
-    # it makes the logic simpler.  It  might mean that we don't indent correctly
-    # a multiline  bracket block inside a  function header, but that's  a corner
-    # case for which it doesn't seem worth making the code more complex.
-    if exists('b:vimindent')
-            && !b:vimindent->has_key('is_BracketBlock')
-        return false
-    endif
-
-    return line_A->EndsWithOpeningBracket()
-        || line_A->EndsWithCommaOrDictKey()
 enddef
 
 def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{3
