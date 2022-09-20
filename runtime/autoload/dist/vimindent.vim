@@ -28,9 +28,17 @@ enddef
 # Init {{{1
 var cmds: list<string>
 # Tokens {{{2
+# OPENING_BRACKET {{{3
+
+const OPENING_BRACKET: string = '[[{(]'
+
 # CLOSING_BRACKET {{{3
 
 const CLOSING_BRACKET: string = '[]})]'
+
+# CHARACTER_UNDER_CURSOR {{{3
+
+const CHARACTER_UNDER_CURSOR: string = '\%.c.'
 
 # INLINE_COMMENT {{{3
 
@@ -98,6 +106,10 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
 # But sometimes, it can be too costly and cause `E363` to be given.
 const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
 
+# QUOTE {{{3
+
+const QUOTE: string = '["'']'
+
 # START_MIDDLE_END {{{3
 
 const START_MIDDLE_END: dict<list<string>> = {
@@ -129,6 +141,18 @@ kwds->map((_, kwd: string) => kwd == ''
 const ASSIGNS_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
     .. '\s=<<\s\+\%(\%(trim\|eval\)\s\)\{,2}\s*'
     .. $'\)\zs\L\S*{END_OF_LINE}'
+
+# CD_COMMAND {{{3
+
+const CD_COMMAND: string = $'[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
+
+# MAPPING_COMMAND {{{3
+
+const MAPPING_COMMAND: string = $'map\s.*<\%(SID\|CR\|buffer\|expr\|nowait\|script\|silent\|special\|unique\)>'
+
+# NORMAL_COMMAND {{{3
+
+const NORMAL_COMMAND: string = '\<norm\%[al]!\=\s*\S\+$'
 
 # ENDS_BLOCK {{{3
 
@@ -213,7 +237,7 @@ const BACKSLASH_AT_SOL: string = '^\s*\%(\\\|[#"]\\ \)'
 
 # OPENING_BRACKET_AT_EOL {{{3
 
-const OPENING_BRACKET_AT_EOL: string = '[[{(]' .. END_OF_LINE
+const OPENING_BRACKET_AT_EOL: string = $'{OPENING_BRACKET}{END_OF_LINE}'
 
 # CLOSING_BRACKET_AT_SOL {{{3
 
@@ -595,7 +619,7 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
         block.startindent = block.startlnum->Indent()
     endif
 
-    if line_A.text =~ $'^\s*{CLOSING_BRACKET}'
+    if line_A.text =~ CLOSING_BRACKET_AT_SOL
         var ind: number = block.startlnum->Indent()
         if b:vimindent.is_on_named_block_line
             ind += 2 * shiftwidth()
@@ -663,13 +687,13 @@ enddef
 def CacheBracketBlock(line_A: dict<any>) # {{{2
     var pos: list<number> = getcurpos()
     cursor(line_A.lnum, [line_A.lnum, '$']->col())
-    if search('[[{(]', 'bcW', line_A.lnum, TIMEOUT, (): bool => InCommentOrString()) <= 0
+    if search(OPENING_BRACKET, 'bcW', line_A.lnum, TIMEOUT, (): bool => InCommentOrString()) <= 0
         return
     endif
 
-    var opening_bracket: string = line_A.text->matchstr('\%.c.')
-    var closing_bracket: string = {'[': ']', '{': '}', '(': ')'}[opening_bracket]
-    var endlnum: number = SearchPair(opening_bracket, '', closing_bracket, 'nW')
+    var opening: string = line_A.text->matchstr(CHARACTER_UNDER_CURSOR)
+    var closing: string = {'[': ']', '{': '}', '(': ')'}[opening]
+    var endlnum: number = SearchPair(opening, '', closing, 'nW')
     setpos('.', pos)
     if endlnum <= line_A.lnum
         return
@@ -685,7 +709,7 @@ def CacheBracketBlock(line_A: dict<any>) # {{{2
 
     var is_dict: bool
     var is_curly_block: bool
-    if opening_bracket == '{'
+    if opening == '{'
         if line_A.text =~ STARTS_CURLY_BLOCK
             [is_dict, is_curly_block] = [false, true]
         else
@@ -981,9 +1005,10 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     var delim: string = line.text
         ->matchstr($'\s\+\zs{PATTERN_DELIMITER}\ze{END_OF_COMMAND}')
     if !delim->empty()
-            && line.text =~ $'\%(\S*\V{delim}\m\S\+\|\S\+\V{delim}\m\S*\)'
-            .. $'\s\+\V{delim}\m{END_OF_COMMAND}'
-        return false
+        delim = $'\V{delim}\m'
+        if line.text =~ $'\%(\S*{delim}\S\+\|\S\+{delim}\S*\)\s\+{delim}{END_OF_COMMAND}'
+            return false
+        endif
     endif
     # TODO: We might still miss some corner cases:{{{
     #
@@ -1011,7 +1036,7 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     endif
 
     # `:help cd-`
-    if line.text =~ $'[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
+    if line.text =~ CD_COMMAND
         return false
     endif
 
@@ -1020,14 +1045,14 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{2
     #     nunmap <buffer> (
     #
     # Don't conflate this with a line continuation symbol.
-    if line.text =~ $'map\s.*<\%(SID\|CR\|buffer\|expr\|nowait\|script\|silent\|special\|unique\)>'
+    if line.text =~ MAPPING_COMMAND
         return false
     endif
 
     #             not a comparison operator
     #             vv
     #     normal! ==
-    if line.text =~ '\<norm\%[al]!\=\s*\S\+$'
+    if line.text =~ NORMAL_COMMAND
         return false
     endif
 
@@ -1087,7 +1112,7 @@ def InCommentOrString(): bool # {{{2
     # the pattern to this function.  If we  look for a pair of patterns, I think
     # we only need to pass the one  which matches in the direction we're looking
     # for.
-    if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ '["'']'
+    if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ QUOTE
         return false
     endif
 
