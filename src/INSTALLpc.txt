@@ -60,18 +60,22 @@ Build Tools for Visual Studio 2015 with Update 3" make sure to
 select "custom" and check all checkboxes under "Universal Windows App
 Development Tools".  Or whatever they are called now.
 (If you still want to target Windows XP, check also "Windows XP Support for
-C++".  Note that this is no longer supported.)
+C++".  Note that with the current source code this is no longer supported, you
+will have to check out an older version).
 
 
 Visual Studio
 -------------
 
-Building with Visual Studio (VS2010, VS2012, VS2013, VS2015, VS2017, VS2019
-and VS2022) is straightforward.
+Building with Visual Studio (VS2015, VS2017, VS2019 and VS2022) is
+straightforward.  Older versions probably don't work.
+
+Visual Studio installed a batch file called vcvars32.bat, which you must
+run to set up paths for nmake and MSVC.  We provide a batch file
+"msvc2015.bat" for this.  You may need to edit it if you didn't instal Visual
+Studio in the standard location.
 
 To build Vim from the command line with MSVC, use Make_mvc.mak.
-Visual Studio installed a batch file called vcvars32.bat, which you must
-run to set up paths for nmake and MSVC.
 
 nmake -f Make_mvc.mak		console   Win32 SDK or Microsoft Visual C++
 nmake -f Make_mvc.mak GUI=yes	GUI	  Microsoft Visual C++
@@ -88,24 +92,13 @@ to the parameters you pass to Make_mvc.mak.
 See the specific files for comments and options.
 
 These files have been supplied by George V. Reilly, Ben Singer, Ken Scott and
-Ron Aaron; they have been tested.
+Ron Aaron; they have been tested.  But several things changed after that...
 
 
-Visual C++ 2010 Express Edition       *msvc-2010-express*
--------------------------------
-
-Visual C++ 2010 Express Edition can be downloaded for free from:
-    http://www.microsoft.com/express/vc/Default.aspx
-This includes the IDE and the debugger.
-
-To set the environment execute the msvc2010.bat script.  You can then build
-Vim with Make_mvc.mak.
-
-
-Targeting Windows XP with MSVC 2012 and later      *new-msvc-windows-xp*
+Targeting Windows XP with MSVC 2015 and later      *new-msvc-windows-xp*
 ---------------------------------------------
 
-(The support for pre-Vista was removed in patch 9.0.0xxx.  If you want to
+(The support for pre-Vista was removed in patch 9.0.0496.  If you want to
 target Windows XP, use the source code before that.)
 
 Beginning with Visual C++ 2012, Microsoft changed the behavior of LINK.EXE
@@ -157,42 +150,13 @@ The ARM64 support was provided by Leendert van Doorn.
 
 OLDER VERSIONS
 
-The minimal supported version is Windows 7. Building with older compilers
-might still work, but these instructions might be outdated.
+The minimal supported version is Windows 7. Building with compilers
+older than 2015 most likely doesn't work.  Since MSVC 2015 can be obtained for
+free there is no point in supporting older versions.
 
 If you need the executable to run on Windows 98 or ME, use the 2005 one
-|msvc-2005-express|, and use the source code before 8.0.0029.
-
-
-Visual C++ 2005 Express Edition       *msvc-2005-express*
--------------------------------
-
-NOTE: this most likely does not work
-
-Visual C++ 2005 Express Edition can be downloaded for free from:
-    http://msdn.microsoft.com/vstudio/express/visualC/default.aspx
-This includes the IDE and the debugger. You will also need
-|ms-platform-sdk|. You can build Vim with Make_mvc.mak.
-
-Instructions for integrating the Platform SDK into VC Express:
-    http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/default.aspx
-
-
-Visual C++ 2008 Express Edition       *msvc-2008-express*
--------------------------------
-
-NOTE: this most likely does not work
-
-Visual C++ 2008 Express Edition can be downloaded for free from:
-    http://www.microsoft.com/express/downloads/
-This includes the IDE and the debugger.
-
-To set the environment execute the msvc2008.bat script.  You can then build
-Vim with Make_mvc.mak.
-
-For building 64 bit binaries you also need to install the SDK:
-"Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1"
-You don't need the examples and documentation.
+|msvc-2005-express|, and use the source code before 8.0.0029.  See the
+src/INSTALLpc.txt file for instructions.
 
 
 2. MSYS2 with MinGW

@@ -538,8 +538,6 @@ SRC_DOS =	\
 		tools/rename.bat \
 		src/bigvim.bat \
 		src/bigvim64.bat \
-		src/msvc2008.bat \
-		src/msvc2010.bat \
 		src/msvc2015.bat \
 		src/msys32.bat \
 		src/msys64.bat \
