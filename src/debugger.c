@@ -87,6 +87,7 @@ do_debug(char_u *cmd)
     msg_silent = FALSE;		// display messages
     emsg_silent = FALSE;	// display error messages
     redir_off = TRUE;		// don't redirect debug commands
+    save_timeout_for_debugging();   // disable  regexp timeout flag
 
     State = MODE_NORMAL;
     debug_mode = TRUE;
@@ -293,6 +294,7 @@ do_debug(char_u *cmd)
     redraw_all_later(UPD_NOT_VALID);
     need_wait_return = FALSE;
     msg_scroll = save_msg_scroll;
+    restore_timeout_for_debugging();
     lines_left = Rows - 1;
     State = save_State;
     debug_mode = FALSE;
