@@ -440,7 +440,7 @@ text_prop_position(
 		*n_extra = n_used + before + after + padding;
 		*n_attr = mb_charlen(*p_extra);
 		if (above)
-		    *n_attr -= padding;
+		    *n_attr -= padding + after;
 		*n_attr_skip = before + padding + col_off;
 	    }
 	}
