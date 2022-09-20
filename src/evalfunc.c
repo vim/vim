@@ -2877,7 +2877,6 @@ internal_func_check_arg_types(
 	cctx_T	*cctx)
 {
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
-    int		i;
 
     if (argchecks != NULL)
     {
@@ -2886,7 +2885,7 @@ internal_func_check_arg_types(
 	context.arg_count = argcount;
 	context.arg_types = types;
 	context.arg_cctx = cctx;
-	for (i = 0; i < argcount; ++i)
+	for (int i = 0; i < argcount; ++i)
 	    if (argchecks[i] != NULL)
 	    {
 		context.arg_idx = i;
@@ -3010,7 +3009,6 @@ call_internal_method(
 	typval_T    *rettv,
 	typval_T    *basetv)
 {
-    int		i;
     int		fi;
     typval_T	argv[MAX_FUNC_ARGS + 1];
 
@@ -3029,7 +3027,7 @@ call_internal_method(
 	// base value goes second
 	argv[0] = argvars[0];
 	argv[1] = *basetv;
-	for (i = 1; i < argcount; ++i)
+	for (int i = 1; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else if (global_functions[fi].f_argtype == FEARG_3)
@@ -3038,7 +3036,7 @@ call_internal_method(
 	argv[0] = argvars[0];
 	argv[1] = argvars[1];
 	argv[2] = *basetv;
-	for (i = 2; i < argcount; ++i)
+	for (int i = 2; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else if (global_functions[fi].f_argtype == FEARG_4)
@@ -3048,14 +3046,14 @@ call_internal_method(
 	argv[1] = argvars[1];
 	argv[2] = argvars[2];
 	argv[3] = *basetv;
-	for (i = 3; i < argcount; ++i)
+	for (int i = 3; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else
     {
 	// FEARG_1: base value goes first
 	argv[0] = *basetv;
-	for (i = 0; i < argcount; ++i)
+	for (int i = 0; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     argv[argcount + 1].v_type = VAR_UNKNOWN;
@@ -3162,10 +3160,9 @@ f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 	    pumitem_T	*array;
 	    int		size = split_message(msg, &array);
-	    int		i;
 
 	    // Skip the first and last item, they are always empty.
-	    for (i = 1; i < size - 1; ++i)
+	    for (int i = 1; i < size - 1; ++i)
 		list_append_string(rettv->vval.v_list, array[i].pum_text, -1);
 	    while (size > 0)
 		vim_free(array[--size].pum_text);
@@ -4183,10 +4180,8 @@ f_expand(typval_T *argvars, typval_T *rettv)
 							   options, WILD_ALL);
 	    else if (rettv_list_alloc(rettv) == OK)
 	    {
-		int i;
-
 		ExpandOne(&xpc, s, NULL, options, WILD_ALL_KEEP);
-		for (i = 0; i < xpc.xp_numfiles; i++)
+		for (int i = 0; i < xpc.xp_numfiles; i++)
 		    list_append_string(rettv->vval.v_list, xpc.xp_files[i], -1);
 		ExpandCleanup(&xpc);
 	    }
@@ -4301,10 +4296,9 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (lowlevel)
 	    {
 #ifdef USE_INPUT_BUF
-		int idx;
 		int len = (int)STRLEN(keys);
 
-		for (idx = 0; idx < len; ++idx)
+		for (int idx = 0; idx < len; ++idx)
 		{
 		    // if a CTRL-C was typed, set got_int, similar to what
 		    // happens in fill_input_buf()
