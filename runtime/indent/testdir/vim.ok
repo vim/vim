@@ -687,3 +687,8 @@ prop_add(1, col('.'), {
     type: 'test'
 })
 " END_INDENT
+
+" START_INDENT
+echo (() => " string starting with space")()
+echo
+" END_INDENT

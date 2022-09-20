@@ -42,20 +42,24 @@ const CHARACTER_UNDER_CURSOR: string = '\%.c.'
 
 # INLINE_COMMENT {{{3
 
-# Technically, `\s` is wrong.
-# In  legacy, it  is not  required for  an inline  comment to  be preceded  by a
-# whitespace.  But in practice, it should be.
-const INLINE_COMMENT: string = '\s[#"]'
+# TODO: It is not required for an inline comment to be surrounded by whitespace.
+# But it might help against false positives.
+# To be more reliable, we should inspect the syntax, and only require whitespace
+# before  the `#`  comment leader.   But that  might be  too costly  (because of
+# `synstack()`).
+const INLINE_COMMENT: string = '\s[#"]\s'
+
+# VIM9_INLINE_COMMENT {{{3
+
+const VIM9_INLINE_COMMENT: string = '\s#'
 
 # COMMENT {{{3
 
-# Technically, `"\s` is wrong.{{{
+# TODO: Technically, `"\s` is wrong.
 #
-# In Vim9, a string might appear at the start of the line.
+# First, whitespace is not required.
+# Second, in Vim9, a string might appear at the start of the line.
 # To be sure, we should also inspect the syntax.
-# But in practice, `"\s` at the start of a line is unlikely to be anything other
-# than a legacy comment.
-#}}}
 # We can't use `INLINE_COMMENT` here. {{{
 #
 #     const COMMENT: string = $'^\s*{INLINE_COMMENT}'
@@ -87,7 +91,7 @@ const END_OF_COMMAND: string = $'\s*\%($\|||\@!\|{INLINE_COMMENT}\)'
 
 # END_OF_LINE {{{3
 
-const END_OF_LINE: string = $'\s*\%($\|{INLINE_COMMENT}\)'
+const END_OF_LINE: string = $'\s*\%($\|{VIM9_INLINE_COMMENT}\)'
 
 # OPERATOR {{{3
 
