@@ -750,6 +750,17 @@ endif
 
 " START_INDENT
 def Func()
-    sort :^.*[\/]:
+sort :^.*[\/]:
+enddef
+" END_INDENT
+
+" START_INDENT
+def Func()
+d = {
+}
+hd =<< trim END
+['
+]'
+END
 enddef
 " END_INDENT

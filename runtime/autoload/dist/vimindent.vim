@@ -930,7 +930,8 @@ def AtStartOf(line_A: dict<any>, syntax: string): bool # {{{3
         HereDoc: ASSIGNS_HEREDOC,
         FuncHeader: STARTS_FUNCTION
     }[syntax]
-    return line_A.text =~ pat && !exists('b:vimindent')
+    return line_A.text =~ pat
+        && (!exists('b:vimindent') || !b:vimindent->has_key('is_HereDoc'))
 enddef
 
 def AtStartOfBracketBlock(line_A: dict<any>): bool # {{{3

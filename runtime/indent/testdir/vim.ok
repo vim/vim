@@ -753,3 +753,14 @@ def Func()
     sort :^.*[\/]:
 enddef
 " END_INDENT
+
+" START_INDENT
+def Func()
+    d = {
+    }
+    hd =<< trim END
+	['
+	]'
+    END
+enddef
+" END_INDENT
