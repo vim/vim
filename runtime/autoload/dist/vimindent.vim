@@ -157,7 +157,7 @@ const START_MIDDLE_END: dict<list<string>> = {
 }->map((_, kwds: list<string>) =>
 kwds->map((_, kwd: string) => kwd == ''
 ? ''
-: $'\%(^\|[^|]|\)\s*\%({printf('\C\<\%%(%s\)\>\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
+: $'\%(^\|[^|\\]|\)\s*\%({printf('\C\<\%%(%s\)\>\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
 # }}}2
 # Syntaxes {{{2
 # ASSIGNS_HEREDOC {{{3

@@ -728,3 +728,11 @@ menu: AbbrevRhs(v.rhs)->stridx('expand_') >= 0
 :    AbbrevRhs(v.rhs)
 }))
 " END_INDENT
+
+" START_INDENT
+def Func()
+if true
+vimgrep /^\C\s*\%(fu\%[nction]\|def\)\s\+/ file
+endif
+enddef
+" END_INDENT
