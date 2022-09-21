@@ -117,6 +117,9 @@ typedef struct {
     int		need_showbreak;	    // overlong line, skipping first x chars
     int		dont_use_showbreak; // do not use 'showbreak'
 #endif
+#ifdef FEAT_PROP_POPUP
+    int		text_prop_above_count;
+#endif
 
     // TRUE when 'cursorlineopt' has "screenline" and cursor is in this line
     int		cul_screenline;
@@ -357,56 +360,62 @@ handle_lnum_col(
 #endif
 	{
 	  // Draw the line number (empty space after wrapping).
-	  if (wlv->row == wlv->startrow + wlv->filler_lines)
-	  {
-	    long num;
-	    char *fmt = "%*ld ";
-
-	    if (wp->w_p_nu && !wp->w_p_rnu)
-		// 'number' + 'norelativenumber'
-		num = (long)wlv->lnum;
-	    else
-	    {
-		// 'relativenumber', don't use negative numbers
-		num = labs((long)get_cursor_rel_lnum(wp, wlv->lnum));
-		if (num == 0 && wp->w_p_nu && wp->w_p_rnu)
-		{
-		    // 'number' + 'relativenumber'
-		    num = wlv->lnum;
-		    fmt = "%-*ld ";
-		}
-	    }
-
-	    sprintf((char *)wlv->extra, fmt, number_width(wp), num);
-	    if (wp->w_skipcol > 0)
-		for (wlv->p_extra = wlv->extra; *wlv->p_extra == ' ';
-								++wlv->p_extra)
-		    *wlv->p_extra = '-';
-#ifdef FEAT_RIGHTLEFT
-	    if (wp->w_p_rl)		    // reverse line numbers
-	    {
-		char_u	*p1, *p2;
-		int	t;
-
-		// like rl_mirror(), but keep the space at the end
-		p2 = skipwhite(wlv->extra);
-		p2 = skiptowhite(p2) - 1;
-		for (p1 = skipwhite(wlv->extra); p1 < p2; ++p1, --p2)
-		{
-		    t = *p1;
-		    *p1 = *p2;
-		    *p2 = t;
-		}
-	    }
+	  // When there are text properties above the line put the line number
+	  // below them.
+	  if (wlv->row == wlv->startrow + wlv->filler_lines
+#ifdef FEAT_PROP_POPUP
+		  + wlv->text_prop_above_count
 #endif
-	    wlv->p_extra = wlv->extra;
-	    wlv->c_extra = NUL;
-	    wlv->c_final = NUL;
+		  )
+	  {
+	      long num;
+	      char *fmt = "%*ld ";
+
+	      if (wp->w_p_nu && !wp->w_p_rnu)
+		  // 'number' + 'norelativenumber'
+		  num = (long)wlv->lnum;
+	      else
+	      {
+		  // 'relativenumber', don't use negative numbers
+		  num = labs((long)get_cursor_rel_lnum(wp, wlv->lnum));
+		  if (num == 0 && wp->w_p_nu && wp->w_p_rnu)
+		  {
+		      // 'number' + 'relativenumber'
+		      num = wlv->lnum;
+		      fmt = "%-*ld ";
+		  }
+	      }
+
+	      sprintf((char *)wlv->extra, fmt, number_width(wp), num);
+	      if (wp->w_skipcol > 0)
+		  for (wlv->p_extra = wlv->extra; *wlv->p_extra == ' ';
+			  ++wlv->p_extra)
+		      *wlv->p_extra = '-';
+#ifdef FEAT_RIGHTLEFT
+	      if (wp->w_p_rl)		    // reverse line numbers
+	      {
+		  char_u    *p1, *p2;
+		  int	    t;
+
+		  // like rl_mirror(), but keep the space at the end
+		  p2 = skipwhite(wlv->extra);
+		  p2 = skiptowhite(p2) - 1;
+		  for (p1 = skipwhite(wlv->extra); p1 < p2; ++p1, --p2)
+		  {
+		      t = *p1;
+		      *p1 = *p2;
+		      *p2 = t;
+		  }
+	      }
+#endif
+	      wlv->p_extra = wlv->extra;
+	      wlv->c_extra = NUL;
+	      wlv->c_final = NUL;
 	  }
 	  else
 	  {
-	    wlv->c_extra = ' ';
-	    wlv->c_final = NUL;
+	      wlv->c_extra = ' ';
+	      wlv->c_final = NUL;
 	  }
 	  wlv->n_extra = number_width(wp) + 1;
 	  wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_N));
@@ -1610,8 +1619,14 @@ win_line(
 	    if (text_prop_idxs == NULL)
 		VIM_CLEAR(text_props);
 
-	    area_highlighting = TRUE;
-	    extra_check = TRUE;
+	    if (text_props != NULL)
+	    {
+		area_highlighting = TRUE;
+		extra_check = TRUE;
+		for (int i = 0; i < text_prop_count; ++i)
+		    if (text_props[i].tp_flags & TP_FLAG_ALIGN_ABOVE)
+			++wlv.text_prop_above_count;
+	    }
 	}
     }
 #endif
