@@ -842,21 +842,23 @@ def FirstLinePreviousCommand(line: dict<any>): dict<any> # {{{3
 enddef
 
 def PrevCodeLine(lnum: number): dict<any> # {{{3
-    if getline(lnum) =~ '^\s*END$'
+    var line: string = getline(lnum)
+    if line =~ '^\s*[A-Z]\+$'
+        var endmarker: string = line->matchstr('[A-Z]\+')
         var pos: list<number> = getcurpos()
         cursor(lnum, 1)
         var n: number = search(ASSIGNS_HEREDOC, 'bnW')
         setpos('.', pos)
         if n > 0
-            var line: string = getline(n)
-            if line =~ $'{HEREDOC_OPERATOR}\s\+END'
+            line = getline(n)
+            if line =~ $'{HEREDOC_OPERATOR}\s\+{endmarker}'
                 return {lnum: n, text: line}
             endif
         endif
     endif
 
     var n: number = prevnonblank(lnum - 1)
-    var line: string = getline(n)
+    line = getline(n)
     while line =~ COMMENT && n > 1
         n = prevnonblank(n - 1)
         line = getline(n)
