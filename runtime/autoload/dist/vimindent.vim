@@ -267,7 +267,7 @@ const COMMA_AT_EOL: string = $',{END_OF_VIM9_LINE}'
 
 # COMMA_OR_DICT_KEY_AT_EOL {{{3
 
-const COMMA_OR_DICT_KEY_AT_EOL: string = $'\%(,\|\S:\){END_OF_VIM9_LINE}'
+const COMMA_OR_DICT_KEY_AT_EOL: string = $'\%(,\|{DICT_KEY}\){END_OF_VIM9_LINE}'
 
 # LAMBDA_ARROW_AT_EOL {{{3
 
