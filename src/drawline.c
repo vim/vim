@@ -103,6 +103,9 @@ typedef struct {
     int		win_attr;	// background for the whole window, except
 				// margins and "~" lines.
     int		wcr_attr;	// attributes from 'wincolor'
+#ifdef FEAT_SYN_HL
+    int		cul_attr;	// set when 'cursorline' active
+#endif
 
     int		screen_line_flags;  // flags for screen_line()
 
@@ -110,6 +113,7 @@ typedef struct {
     int		tocol;		// end of inverting
 
 #ifdef FEAT_LINEBREAK
+    long	vcol_sbr;	    // virtual column after showbreak
     int		need_showbreak;	    // overlong line, skipping first x chars
     int		dont_use_showbreak; // do not use 'showbreak'
 #endif
@@ -122,10 +126,9 @@ typedef struct {
     int		n_extra;	// number of extra bytes
     char_u	*p_extra;	// string of extra chars, plus NUL, only used
 				// when c_extra and c_final are NUL
+    char_u	*p_extra_free;  // p_extra buffer that needs to be freed
     int		c_extra;	// extra chars, all the same
     int		c_final;	// final char, mandatory if set
-
-    char_u	*p_extra_free;  // p_extra buffer that needs to be freed
 
     // saved "extra" items for when draw_state becomes WL_LINE (again)
     int		saved_n_extra;
@@ -491,6 +494,62 @@ handle_breakindent(win_T *wp, winlinevars_T *wlv)
 }
 #endif
 
+#if defined(FEAT_LINEBREAK) || defined(FEAT_DIFF)
+    static void
+handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
+{
+# ifdef FEAT_DIFF
+    if (wlv->filler_todo > 0)
+    {
+	// Draw "deleted" diff line(s).
+	if (char2cells(wp->w_fill_chars.diff) > 1)
+	{
+	    wlv->c_extra = '-';
+	    wlv->c_final = NUL;
+	}
+	else
+	{
+	    wlv->c_extra = wp->w_fill_chars.diff;
+	    wlv->c_final = NUL;
+	}
+#  ifdef FEAT_RIGHTLEFT
+	if (wp->w_p_rl)
+	    wlv->n_extra = wlv->col + 1;
+	else
+#  endif
+	    wlv->n_extra = wp->w_width - wlv->col;
+	wlv->char_attr = HL_ATTR(HLF_DED);
+    }
+# endif
+
+# ifdef FEAT_LINEBREAK
+    char_u *sbr = get_showbreak_value(wp);
+    if (*sbr != NUL && wlv->need_showbreak)
+    {
+	// Draw 'showbreak' at the start of each broken line.
+	wlv->p_extra = sbr;
+	wlv->c_extra = NUL;
+	wlv->c_final = NUL;
+	wlv->n_extra = (int)STRLEN(sbr);
+	if (wp->w_skipcol == 0 || !wp->w_p_wrap)
+	    wlv->need_showbreak = FALSE;
+	wlv->vcol_sbr = wlv->vcol + MB_CHARLEN(sbr);
+	// Correct end of highlighted area for 'showbreak',
+	// required when 'linebreak' is also set.
+	if (wlv->tocol == wlv->vcol)
+	    wlv->tocol += wlv->n_extra;
+	// combine 'showbreak' with 'wincolor'
+	wlv->char_attr = hl_combine_attr(wlv->win_attr, HL_ATTR(HLF_AT));
+#  ifdef FEAT_SYN_HL
+	// combine 'showbreak' with 'cursorline'
+	if (wlv->cul_attr != 0)
+	    wlv->char_attr = hl_combine_attr(wlv->char_attr, wlv->cul_attr);
+#  endif
+    }
+# endif
+}
+#endif
+
 #if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Return the cell size of virtual text after truncation.
@@ -802,6 +861,25 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 }
 
 /*
+ * Called when wlv->draw_state is set to WL_LINE.
+ */
+    static void
+win_line_continue(winlinevars_T *wlv)
+{
+    if (wlv->saved_n_extra > 0)
+    {
+	// Continue item from end of wrapped line.
+	wlv->n_extra = wlv->saved_n_extra;
+	wlv->c_extra = wlv->saved_c_extra;
+	wlv->c_final = wlv->saved_c_final;
+	wlv->p_extra = wlv->saved_p_extra;
+	wlv->char_attr = wlv->saved_char_attr;
+    }
+    else
+	wlv->char_attr = wlv->win_attr;
+}
+
+/*
  * Display line "lnum" of window 'wp' on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
  * wp->w_virtcol needs to be valid.
@@ -820,9 +898,6 @@ win_line(
     winlinevars_T	wlv;		// variables passed between functions
 
     int		c = 0;			// init for GCC
-#ifdef FEAT_LINEBREAK
-    long	vcol_sbr = -1;		// virtual column after showbreak
-#endif
     long	vcol_prev = -1;		// "wlv.vcol" of previous character
     char_u	*line;			// current line
     char_u	*ptr;			// current position in "line"
@@ -937,9 +1012,8 @@ win_line(
 #ifdef FEAT_TERMINAL
     int		get_term_attr = FALSE;
 #endif
-#ifdef FEAT_SYN_HL
-    int		cul_attr = 0;		// set when 'cursorline' active
 
+#ifdef FEAT_SYN_HL
     // margin columns for the screen line, needed for when 'cursorlineopt'
     // contains "screenline"
     int		left_curline_col = 0;
@@ -988,6 +1062,9 @@ win_line(
     wlv.screen_row = wlv.row + W_WINROW(wp);
     wlv.fromcol = -10;
     wlv.tocol = MAXCOL;
+#ifdef FEAT_LINEBREAK
+    wlv.vcol_sbr = -1;
+#endif
 
     if (!number_only)
     {
@@ -1481,16 +1558,16 @@ win_line(
 	    // 'cursorlineopt'.  Otherwise it's done later.
 	    if (!wlv.cul_screenline)
 	    {
-		cul_attr = HL_ATTR(HLF_CUL);
+		wlv.cul_attr = HL_ATTR(HLF_CUL);
 # ifdef FEAT_SIGNS
 		// Combine the 'cursorline' and sign highlighting, depending on
 		// the sign priority.
 		if (sign_present && wlv.sattr.sat_linehl > 0)
 		{
 		    if (wlv.sattr.sat_priority >= 100)
-			line_attr = hl_combine_attr(cul_attr, line_attr);
+			line_attr = hl_combine_attr(wlv.cul_attr, line_attr);
 		    else
-			line_attr = hl_combine_attr(line_attr, cul_attr);
+			line_attr = hl_combine_attr(line_attr, wlv.cul_attr);
 		}
 		else
 # endif
@@ -1498,9 +1575,9 @@ win_line(
 		    // let the line attribute overrule 'cursorline', otherwise
 		    // it disappears when both have background set;
 		    // 'cursorline' can use underline or bold to make it show
-		    line_attr = hl_combine_attr(cul_attr, line_attr);
+		    line_attr = hl_combine_attr(wlv.cul_attr, line_attr);
 # else
-		    line_attr = cul_attr;
+		    line_attr = wlv.cul_attr;
 # endif
 	    }
 	    else
@@ -1558,11 +1635,10 @@ win_line(
 #ifdef FEAT_SYN_HL
 	    if (wlv.cul_screenline)
 	    {
-		cul_attr = 0;
+		wlv.cul_attr = 0;
 		line_attr = line_attr_save;
 	    }
 #endif
-
 #ifdef FEAT_CMDWIN
 	    if (wlv.draw_state == WL_CMDLINE - 1 && wlv.n_extra == 0)
 	    {
@@ -1578,7 +1654,6 @@ win_line(
 		}
 	    }
 #endif
-
 #ifdef FEAT_FOLDING
 	    if (wlv.draw_state == WL_FOLD - 1 && wlv.n_extra == 0)
 	    {
@@ -1586,7 +1661,6 @@ win_line(
 		handle_foldcolumn(wp, &wlv);
 	    }
 #endif
-
 #ifdef FEAT_SIGNS
 	    if (wlv.draw_state == WL_SIGN - 1 && wlv.n_extra == 0)
 	    {
@@ -1596,103 +1670,39 @@ win_line(
 		    get_sign_display_info(FALSE, wp, &wlv);
 	    }
 #endif
-
 	    if (wlv.draw_state == WL_NR - 1 && wlv.n_extra == 0)
 	    {
 		// Show the line number, if desired.
 		wlv.draw_state = WL_NR;
 		handle_lnum_col(wp, &wlv, sign_present, num_attr);
 	    }
-
 #ifdef FEAT_LINEBREAK
 	    // Check if 'breakindent' applies and show it.
 	    // May change wlv.draw_state to WL_BRI or WL_BRI - 1.
 	    if (wlv.n_extra == 0)
 		handle_breakindent(wp, &wlv);
 #endif
-
 #if defined(FEAT_LINEBREAK) || defined(FEAT_DIFF)
 	    if (wlv.draw_state == WL_SBR - 1 && wlv.n_extra == 0)
 	    {
-		char_u *sbr;
-
 		wlv.draw_state = WL_SBR;
-# ifdef FEAT_DIFF
-		if (wlv.filler_todo > 0)
-		{
-		    // Draw "deleted" diff line(s).
-		    if (char2cells(wp->w_fill_chars.diff) > 1)
-		    {
-			wlv.c_extra = '-';
-			wlv.c_final = NUL;
-		    }
-		    else
-		    {
-			wlv.c_extra = wp->w_fill_chars.diff;
-			wlv.c_final = NUL;
-		    }
-#  ifdef FEAT_RIGHTLEFT
-		    if (wp->w_p_rl)
-			wlv.n_extra = wlv.col + 1;
-		    else
-#  endif
-			wlv.n_extra = wp->w_width - wlv.col;
-		    wlv.char_attr = HL_ATTR(HLF_DED);
-		}
-# endif
-# ifdef FEAT_LINEBREAK
-		sbr = get_showbreak_value(wp);
-		if (*sbr != NUL && wlv.need_showbreak)
-		{
-		    // Draw 'showbreak' at the start of each broken line.
-		    wlv.p_extra = sbr;
-		    wlv.c_extra = NUL;
-		    wlv.c_final = NUL;
-		    wlv.n_extra = (int)STRLEN(sbr);
-		    if (wp->w_skipcol == 0 || !wp->w_p_wrap)
-			wlv.need_showbreak = FALSE;
-		    vcol_sbr = wlv.vcol + MB_CHARLEN(sbr);
-		    // Correct end of highlighted area for 'showbreak',
-		    // required when 'linebreak' is also set.
-		    if (wlv.tocol == wlv.vcol)
-			wlv.tocol += wlv.n_extra;
-		    // combine 'showbreak' with 'wincolor'
-		    wlv.char_attr = hl_combine_attr(wlv.win_attr,
-							      HL_ATTR(HLF_AT));
-#  ifdef FEAT_SYN_HL
-		    // combine 'showbreak' with 'cursorline'
-		    if (cul_attr != 0)
-			wlv.char_attr = hl_combine_attr(wlv.char_attr,
-								     cul_attr);
-#  endif
-		}
-# endif
+		handle_showbreak_and_filler(wp, &wlv);
 	    }
 #endif
-
 	    if (wlv.draw_state == WL_LINE - 1 && wlv.n_extra == 0)
 	    {
 		wlv.draw_state = WL_LINE;
-		if (wlv.saved_n_extra)
-		{
-		    // Continue item from end of wrapped line.
-		    wlv.n_extra = wlv.saved_n_extra;
-		    wlv.c_extra = wlv.saved_c_extra;
-		    wlv.c_final = wlv.saved_c_final;
-		    wlv.p_extra = wlv.saved_p_extra;
-		    wlv.char_attr = wlv.saved_char_attr;
-		}
-		else
-		    wlv.char_attr = wlv.win_attr;
+		win_line_continue(&wlv);  // use wlv.saved_ values
 	    }
 	}
+
 #ifdef FEAT_SYN_HL
 	if (wlv.cul_screenline && wlv.draw_state == WL_LINE
 		&& wlv.vcol >= left_curline_col
 		&& wlv.vcol < right_curline_col)
 	{
-	    cul_attr = HL_ATTR(HLF_CUL);
-	    line_attr = cul_attr;
+	    wlv.cul_attr = HL_ATTR(HLF_CUL);
+	    line_attr = wlv.cul_attr;
 	}
 #endif
 
@@ -2226,8 +2236,9 @@ win_line(
 			mb_utf8 = FALSE;
 			multi_attr = HL_ATTR(HLF_AT);
 #ifdef FEAT_SYN_HL
-			if (cul_attr)
-			    multi_attr = hl_combine_attr(multi_attr, cul_attr);
+			if (wlv.cul_attr)
+			    multi_attr = hl_combine_attr(
+						     multi_attr, wlv.cul_attr);
 #endif
 			multi_attr = hl_combine_attr(wlv.win_attr, multi_attr);
 
@@ -2565,7 +2576,7 @@ win_line(
 
 		    // We have just drawn the showbreak value, no need to add
 		    // space for it again.
-		    if (wlv.vcol == vcol_sbr)
+		    if (wlv.vcol == wlv.vcol_sbr)
 		    {
 			wlv.n_extra -= MB_CHARLEN(get_showbreak_value(wp));
 			if (wlv.n_extra < 0)
@@ -2710,7 +2721,7 @@ win_line(
 
 		    // only adjust the tab_len, when at the first column
 		    // after the showbreak value was drawn
-		    if (*sbr != NUL && wlv.vcol == vcol_sbr && wp->w_p_wrap)
+		    if (*sbr != NUL && wlv.vcol == wlv.vcol_sbr && wp->w_p_wrap)
 			vcol_adjusted = wlv.vcol - MB_CHARLEN(sbr);
 #endif
 		    // tab amount depends on current column
