@@ -1630,7 +1630,7 @@ typedef struct svar_S svar_T;
 typedef struct
 {
     int		fi_semicolon;	// TRUE if ending in '; var]'
-    int		fi_varcount;	// nr of variables in the list
+    int		fi_varcount;	// nr of variables in [] or zero
     int		fi_break_count;	// nr of line breaks encountered
     listwatch_T	fi_lw;		// keep an eye on the item used.
     list_T	*fi_list;	// list being used

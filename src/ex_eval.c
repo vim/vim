@@ -1240,8 +1240,14 @@ ex_while(exarg_T *eap)
 		// variable that we reuse every time around.
 		// Do this backwards, so that vars defined in a later round are
 		// found first.
-		first = cstack->cs_script_var_len[cstack->cs_idx]
-					  + (eap->cmdidx == CMD_while ? 0 : 1);
+		first = cstack->cs_script_var_len[cstack->cs_idx];
+		if (eap->cmdidx == CMD_for)
+		{
+		    forinfo_T	*fi = cstack->cs_forinfo[cstack->cs_idx];
+
+		    first += fi == NULL || fi->fi_varcount == 0
+							 ? 1 : fi->fi_varcount;
+		}
 		for (i = si->sn_var_vals.ga_len - 1; i >= first; --i)
 		{
 		    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;

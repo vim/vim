@@ -1315,8 +1315,8 @@ skip_var_list(
 	}
 	return p + 1;
     }
-    else
-	return skip_var_one(arg, include_type);
+ 
+    return skip_var_one(arg, include_type);
 }
 
 /*

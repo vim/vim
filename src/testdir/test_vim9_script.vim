@@ -2323,6 +2323,27 @@ def Test_for_loop_with_closure()
       endfor
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # using two loop variables
+  lines =<< trim END
+      var lv_list: list<func>
+      var copy_list: list<func>
+      for [idx, c] in items('word')
+        var lidx = idx
+        var lc = c
+        lv_list[idx] = () => {
+              return idx .. c
+            }
+        copy_list[idx] = () => {
+              return lidx .. lc
+            }
+      endfor
+      for [i, c] in items('word')
+        assert_equal(3 .. 'd', lv_list[i]())
+        assert_equal(i .. c, copy_list[i]())
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_define_global_closure_in_loops()
