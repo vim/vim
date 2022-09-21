@@ -1023,18 +1023,6 @@ def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{3
 enddef
 
 def InCommentOrString(): bool # {{{3
-    var line: string = getline('.')
-    # TODO: We might be able to optimize  more, by asserting that the pattern is
-    # not after a comment leader, nor after  a quote.  This assumes that we pass
-    # the pattern to this function.  If we  look for a pair of patterns, I think
-    # we only need to pass the one  which matches in the direction we're looking
-    # for.
-    # TODO: What if we find a match in a heredoc, on a line without quotes nor a
-    # comment leader?
-    if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ QUOTE
-        return false
-    endif
-
     for synID: number in synstack('.', col('.'))
         if synIDattr(synID, 'name') =~ '\ccomment\|string\|heredoc'
             return true

@@ -764,3 +764,16 @@ def Func()
     END
 enddef
 " END_INDENT
+
+" START_INDENT
+def Func()
+    if true
+	var hd =<< trim END
+	    if get(b:, 'current_syntax', '')
+	    endif
+	END
+    elseif true
+	echo
+    endif
+enddef
+" END_INDENT
