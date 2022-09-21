@@ -124,7 +124,9 @@ typedef struct {
     int		saved_c_final;
     int		saved_char_attr;
 
-    char_u	extra[21];		// "%ld " and 'fdc' must fit in here
+    char_u	extra[NUMBUFLEN + MB_MAXBYTES];
+				// "%ld " and 'fdc' must fit in here, as well
+				// any text sign
 
 #ifdef FEAT_DIFF
     hlf_T	diff_hlf;	// type of diff highlighting
@@ -259,13 +261,13 @@ get_sign_display_info(
 		{
 		    if (nrcol)
 		    {
-			int n, width = number_width(wp) - 2;
+			int width = number_width(wp) - 2;
+			int n;
 
 			for (n = 0; n < width; n++)
 			    wlv->extra[n] = ' ';
-			wlv->extra[n] = 0;
-			STRCAT(wlv->extra, wlv->p_extra);
-			STRCAT(wlv->extra, " ");
+			vim_snprintf((char *)wlv->extra + n,
+				  sizeof(wlv->extra) - n, "%s ", wlv->p_extra);
 			wlv->p_extra = wlv->extra;
 		    }
 		    wlv->c_extra = NUL;
