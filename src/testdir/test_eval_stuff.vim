@@ -25,7 +25,7 @@ func Test_nocatch_restore_silent_emsg()
 endfunc
 
 func Test_mkdir_p()
-  call mkdir('Xmkdir/nested', 'p')
+  call mkdir('Xmkdir/nested', 'pR')
   call assert_true(isdirectory('Xmkdir/nested'))
   try
     " Trying to make existing directories doesn't error
@@ -35,10 +35,9 @@ func Test_mkdir_p()
     call assert_report('mkdir(..., "p") failed for an existing directory')
   endtry
   " 'p' doesn't suppress real errors
-  call writefile([], 'Xmkdirfile')
+  call writefile([], 'Xmkdirfile', 'D')
   call assert_fails('call mkdir("Xmkdirfile", "p")', 'E739:')
-  call delete('Xmkdirfile')
-  call delete('Xmkdir', 'rf')
+
   call assert_equal(0, mkdir(test_null_string()))
   call assert_fails('call mkdir([])', 'E730:')
   call assert_fails('call mkdir("abc", [], [])', 'E745:')
@@ -160,11 +159,9 @@ func Test_for_invalid_line_count()
       111111111111111111111111 for line in ['one']
       endfor
   END
-  call writefile(lines, 'XinvalidFor')
+  call writefile(lines, 'XinvalidFor', 'D')
   " only test that this doesn't crash
   call RunVim([], [], '-u NONE -e -s -S XinvalidFor -c qa')
-
-  call delete('XinvalidFor')
 endfunc
 
 func Test_readfile_binary()
@@ -186,10 +183,9 @@ func Test_readfile_binary()
 endfunc
 
 func Test_readfile_binary_empty()
-  call writefile([], 'Xempty-file')
+  call writefile([], 'Xempty-file', 'D')
   " This used to compare uninitialized memory in Vim <= 8.2.4065
   call assert_equal([''], readfile('Xempty-file', 'b'))
-  call delete('Xempty-file')
 endfunc
 
 func Test_readfile_bom()
@@ -199,10 +195,9 @@ func Test_readfile_bom()
 endfunc
 
 func Test_readfile_max()
-  call writefile(range(1, 4), 'XReadfile_max')
+  call writefile(range(1, 4), 'XReadfile_max', 'D')
   call assert_equal(['1', '2'], readfile('XReadfile_max', '', 2))
   call assert_equal(['3', '4'], readfile('XReadfile_max', '', -2))
-  call delete('XReadfile_max')
 endfunc
 
 func Test_let_errmsg()
@@ -336,9 +331,8 @@ func Test_vvar_scriptversion1()
 endfunc
 
 func Test_scriptversion_fail()
-  call writefile(['scriptversion 9'], 'Xversionscript')
+  call writefile(['scriptversion 9'], 'Xversionscript', 'D')
   call assert_fails('source Xversionscript', 'E999:')
-  call delete('Xversionscript')
 endfunc
 
 func Test_execute_cmd_with_null()
