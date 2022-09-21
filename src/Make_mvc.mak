@@ -1,7 +1,6 @@
 # Makefile for Vim on Win32 (Windows 7/8/10/11) and Win64, using the Microsoft
-# Visual C++ compilers. Known to work with VC10 (VS2010), VC11 (VS2012), VC12
-# (VS2013), VC14 (VS2015), VC14.1 (VS2017), VC14.2 (VS2019) and VC14.3
-# (VS2022).
+# Visual C++ compilers. Known to work with VC14 (VS2015), VC14.1 (VS2017),
+# VC14.2 (VS2019) and VC14.3 (VS2022).
 #
 # To build using other Windows compilers, see INSTALLpc.txt
 #
