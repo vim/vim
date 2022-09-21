@@ -777,3 +777,10 @@ def Func()
     endif
 enddef
 " END_INDENT
+
+" START_INDENT
+# test for control-flow keyword followed by commented fold marker {{{
+if true
+    echo
+endif #}}}
+" END_INDENT

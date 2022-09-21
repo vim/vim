@@ -59,7 +59,7 @@ const CHARACTER_UNDER_CURSOR: string = '\%.c.'
 # To be more reliable, we should inspect the syntax, and only require whitespace
 # before  the `#`  comment leader.   But that  might be  too costly  (because of
 # `synstack()`).
-const INLINE_COMMENT: string = '\s[#"]\s'
+const INLINE_COMMENT: string = '\s[#"]\%(\s\|[{}]\{3}\)'
 
 # INLINE_VIM9_COMMENT {{{3
 
