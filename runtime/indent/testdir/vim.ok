@@ -736,3 +736,14 @@ def Func()
     endif
 enddef
 " END_INDENT
+
+" START_INDENT
+setlocal iskeyword+=[
+cword = expand('<cword>')
+" END_INDENT
+
+" START_INDENT
+silent if true
+    echo
+endif
+" END_INDENT

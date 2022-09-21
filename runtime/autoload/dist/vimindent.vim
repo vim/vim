@@ -157,7 +157,7 @@ const START_MIDDLE_END: dict<list<string>> = {
 }->map((_, kwds: list<string>) =>
 kwds->map((_, kwd: string) => kwd == ''
 ? ''
-: $'\%(^\|[^|\\]|\)\s*\%({printf('\C\<\%%(%s\)\>\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
+: $'\%(^\|[^|\\]|\|sil\%[ent]\)\s*\%({printf('\C\<\%%(%s\)\>\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
 # }}}2
 # Syntaxes {{{2
 # ASSIGNS_HEREDOC {{{3
@@ -242,7 +242,7 @@ cmds =<< trim END
     \%(export\s\+\)\=def
     aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
 END
-const STARTS_NAMED_BLOCK: string = '^\s*\%(' .. cmds->join('\|') .. '\)\>'
+const STARTS_NAMED_BLOCK: string = '^\s*\%(sil\%[ent]\s\+\)\=\%(' .. cmds->join('\|') .. '\)\>'
 
 # STARTS_FUNCTION {{{3
 
@@ -279,7 +279,7 @@ const LINE_CONTINUATION_AT_EOL: string = '\%('
     .. ','
     .. '\|' .. OPERATOR
     .. '\|' .. '\s=>'
-    .. '\|' .. '[[(]'
+    .. '\|' .. '[^=]\zs[[(]'
     # TODO: This is to support a dictionary key.
     # Do we need to match the key more accurately?
     # If so, refactor every occurrence of `\S:` in this script.
