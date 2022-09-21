@@ -688,10 +688,6 @@ LIBC = $(LIBC) libcmtd.lib
 
 !endif # DEBUG
 
-!if "$(CL)" == "/D_USING_V110_SDK71_"
-RCFLAGS = $(RCFLAGS) /D_USING_V110_SDK71_
-!endif
-
 # Visual Studio 2005 has 'deprecated' many of the standard CRT functions
 CFLAGS_DEPR = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
