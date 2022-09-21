@@ -155,9 +155,9 @@ const START_MIDDLE_END: dict<list<string>> = {
     endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
     augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
 }->map((_, kwds: list<string>) =>
-kwds->map((_, kwd: string) => kwd == ''
-? ''
-: $'\%(^\|[^|\\]\@1<=|\|\<sil\%[ent]\)\s*\%({printf('\C\<\%%(%s\)\>\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
+    kwds->map((_, kwd: string) => kwd == ''
+    ? ''
+    : $'\%(^\|[^|\\]\@1<=|\|\<sil\%[ent]\)\s*\%({printf('\C\<\%%(%s\)\>:\@!\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
 # }}}2
 # Syntaxes {{{2
 # ASSIGNS_HEREDOC {{{3
@@ -242,15 +242,15 @@ cmds =<< trim END
     \%(export\s\+\)\=def
     aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
 END
-const STARTS_NAMED_BLOCK: string = '^\s*\%(sil\%[ent]\s\+\)\=\%(' .. cmds->join('\|') .. '\)\>'
+const STARTS_NAMED_BLOCK: string = '^\s*\%(sil\%[ent]\s\+\)\=\%(' .. cmds->join('\|') .. '\)\>:\@!'
 
 # STARTS_FUNCTION {{{3
 
-const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>'
+const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>:\@!'
 
 # ENDS_FUNCTION {{{3
 
-const ENDS_FUNCTION: string = $'^\s*enddef\>{END_OF_COMMAND}'
+const ENDS_FUNCTION: string = $'^\s*enddef\>:\@!{END_OF_COMMAND}'
 # }}}2
 # EOL {{{2
 # OPENING_BRACKET_AT_EOL {{{3
