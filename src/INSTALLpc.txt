@@ -70,10 +70,15 @@ Visual Studio
 Building with Visual Studio (VS2015, VS2017, VS2019 and VS2022) is
 straightforward.  Older versions probably don't work.
 
-Visual Studio installed a batch file called vcvars32.bat, which you must
+Visual Studio installed a batch file called vcvarsall.bat, which you must
 run to set up paths for nmake and MSVC.  We provide a batch file
 "msvc2015.bat" for this.  You may need to edit it if you didn't instal Visual
 Studio in the standard location.
+If you use VS2017 or later, you can use "msvc-latest.bat" (or "msvc2017.bat"
+and so on for the specific version).  You must specify the architecture (e.g.
+"x86", "x64", etc.) as the first argument when you use this.  If you use VS2017
+Express, you must use "x86_amd64" instead of "x64" for targeting the x64
+platform.
 
 To build Vim from the command line with MSVC, use Make_mvc.mak.
 
