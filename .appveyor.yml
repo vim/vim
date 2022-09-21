@@ -15,11 +15,8 @@ matrix:
   fast_finish: true
 
 before_build:
-  # Use Windows SDK 7.1 (= MSVC 2010)
-  - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 /release'
-  # Visual Studio 2015 compiler tools
+  # Use Visual Studio 2015 compiler tools (default is 2012)
   - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64'
-  - 'set INCLUDE=%INCLUDE%C:\Program Files (x86)\Windows Kits\8.1\Include\um'
 
 build_script:
   - ci/appveyor.bat
