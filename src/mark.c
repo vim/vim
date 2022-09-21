@@ -221,17 +221,19 @@ movemark(int count)
 	    fname2fnum(jmp);
 	if (jmp->fmark.fnum != curbuf->b_fnum)
 	{
-	    // jump to other file
-	    if (buflist_findnr(jmp->fmark.fnum) == NULL)
+	    // Make a copy, an autocommand may make "jmp" invalid.
+	    fmark_T fmark = jmp->fmark;
+
+	    // jump to the file with the mark
+	    if (buflist_findnr(fmark.fnum) == NULL)
 	    {					     // Skip this one ..
 		count += count < 0 ? -1 : 1;
 		continue;
 	    }
-	    if (buflist_getfile(jmp->fmark.fnum, jmp->fmark.mark.lnum,
-							    0, FALSE) == FAIL)
+	    if (buflist_getfile(fmark.fnum, fmark.mark.lnum, 0, FALSE) == FAIL)
 		return (pos_T *)NULL;
 	    // Set lnum again, autocommands my have changed it
-	    curwin->w_cursor = jmp->fmark.mark;
+	    curwin->w_cursor = fmark.mark;
 	    pos = (pos_T *)-1;
 	}
 	else
