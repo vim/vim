@@ -784,3 +784,8 @@ if true
     echo
 endif #}}}
 " END_INDENT
+
+" START_INDENT
+if winsz == 0|let winsz= ""|endif
+exe "noswapfile ".winsz."wincmd s"
+" END_INDENT
