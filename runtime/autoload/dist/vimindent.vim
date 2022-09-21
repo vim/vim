@@ -36,6 +36,18 @@ const OPENING_BRACKET: string = '[[{(]'
 
 const CLOSING_BRACKET: string = '[]})]'
 
+# NON_BRACKET {{{3
+
+const NON_BRACKET: string = '[^[\]{}()]'
+
+# LIST_OR_DICT_CLOSING_BRACKET {{{3
+
+const LIST_OR_DICT_CLOSING_BRACKET: string = '[]}]'
+
+# LIST_OR_DICT_OPENING_BRACKET {{{3
+
+const LIST_OR_DICT_OPENING_BRACKET: string = '[[{]'
+
 # CHARACTER_UNDER_CURSOR {{{3
 
 const CHARACTER_UNDER_CURSOR: string = '\%.c.'
@@ -105,6 +117,10 @@ const OPERATOR: string = '\%(^\|\s\)\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%(
     # support `:` when used inside conditional operator `?:`
     .. '\|' .. '\%(\s\|^\):\%(\s\|$\)'
 
+# HEREDOC_OPERATOR {{{3
+
+const HEREDOC_OPERATOR: string = '\s=<<\s\@=\%(\s\+\%(trim\|eval\)\)\{,2}'
+
 # PATTERN_DELIMITER {{{3
 
 # A better regex would be:
@@ -146,9 +162,7 @@ kwds->map((_, kwd: string) => kwd == ''
 # Syntaxes {{{2
 # ASSIGNS_HEREDOC {{{3
 
-const ASSIGNS_HEREDOC: string = '^\%(\s*\%(#\|"\s\)\)\@!.*\%('
-    .. '\s=<<\s\+\%(\%(trim\|eval\)\s\)\{,2}\s*'
-    .. $'\)\zs\L\S*{END_OF_LINE}'
+const ASSIGNS_HEREDOC: string = $'^\%({COMMENT}\)\@!.*\%({HEREDOC_OPERATOR}\)\s\+\zs\L\S*{END_OF_LINE}'
 
 # CD_COMMAND {{{3
 
@@ -204,10 +218,6 @@ const STARTS_CURLY_BLOCK: string = '\%('
     .. '\|' .. '^.*\zs\s=>\s\+{'
     .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{'
     .. '\)' .. END_OF_COMMAND
-
-# ENDS_CURLY_BLOCK {{{3
-
-const ENDS_CURLY_BLOCK: string = '^\s*}'
 
 # STARTS_NAMED_BLOCK {{{3
 
@@ -354,45 +364,38 @@ export def Expr(lnum: number): number # {{{2
         endif
     endif
 
-    # Problem: If we press `==` on the line right below the start of a multiline
-    # lambda (split after its arrow `=>`), the indent is not correct.
-    # Solution: Indent relative to the line above.
-    if line_B.text =~ LAMBDA_ARROW_AT_EOL
-        return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
-
-    # Similar issue right below a multiline function header.
-    # Solution: Find the  start of the  function header, and indent  relative to
-    # the latter.
-    elseif line_B.text =~ ')'
-        var ind: number = IndentLineBelowFuncHeader(line_B)
-        if ind >= 0
-            return ind
-        endif
-    endif
-
+    var past_bracket_block: dict<any>
     if exists('b:vimindent')
             && b:vimindent->has_key('is_BracketBlock')
-        RemoveStaleBracketBlocks(line_A)
+        past_bracket_block = RemovePastBracketBlock(line_A)
     endif
-
     if line_A->AtStartOf('BracketBlock')
         line_A->CacheBracketBlock()
     endif
-
     if line_A.lnum->IsInside('BracketBlock')
             && !b:vimindent.block_stack[0].is_curly_block
         for block: dict<any> in b:vimindent.block_stack
-            # We might ask for the indent of the start of the innermost block.{{{
+            # Can't call `BracketBlockIndent()` before we're indenting a line *after* the start of the block.{{{
             #
-            # But the result is only meaningful if we're *after* that start.
-            # In particular,  if we're  *on* the  start, we  don't know  its correct
-            # indentation  yet; there  is  no  reason to  assume  that whatever  its
-            # current indent happens to be is correct.
+            # That's because it might need  the correct indentation of the start
+            # of the block.   But if we're still *on* the  start, we haven't yet
+            # computed that indentation.
             #}}}
             if line_A.lnum > block.startlnum
                 return BracketBlockIndent(line_A, block)
             endif
         endfor
+    endif
+    if line_A.text->ContinuesBelowBracketBlock(line_B.text, past_bracket_block)
+            && line_A.text !~ CLOSING_BRACKET_AT_SOL
+        return past_bracket_block.startindent
+    endif
+
+    # Problem: If we press `==` on the line right below the start of a multiline
+    # lambda (split after its arrow `=>`), the indent is not correct.
+    # Solution: Indent relative to the line above.
+    if line_B.text =~ LAMBDA_ARROW_AT_EOL
+        return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
     endif
 
     # Don't move this block before the heredoc one.{{{
@@ -427,12 +430,12 @@ export def Expr(lnum: number): number # {{{2
     if line_B.text =~ STARTS_CURLY_BLOCK
         return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
 
-    elseif line_A.text =~ ENDS_CURLY_BLOCK
-        var start_curly_block: number = MatchingOpenBracket(line_A)
-        if start_curly_block <= 0
+    elseif line_A.text =~ CLOSING_BRACKET_AT_SOL
+        var start: number = MatchingOpenBracket(line_A)
+        if start <= 0
             return -1
         endif
-        return Indent(start_curly_block) + IndentMoreInBracketBlock()
+        return Indent(start) + IndentMoreInBracketBlock()
 
     elseif line_A.text =~ ENDS_BLOCK_OR_CLAUSE
             && !line_B->EndsWithLineContinuation()
@@ -457,9 +460,8 @@ export def Expr(lnum: number): number # {{{2
     var base_ind: number
     if line_A->IsFirstLineOfCommand(line_B)
         line_A.isfirst = true
-        var [cmd: string, n: number] = line_B->FirstLinePreviousCommand()
-        line_B = {text: cmd, lnum: n}
-        base_ind = Indent(n)
+        line_B = line_B->FirstLinePreviousCommand()
+        base_ind = Indent(line_B.lnum)
 
         if line_B->EndsWithCurlyBlock()
                 && !line_A->IsInThisBlock(line_B.lnum)
@@ -644,25 +646,26 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
         block.startindent = block.startlnum->Indent()
     endif
 
+    var ind: number = block.startindent
+
     if line_A.text =~ CLOSING_BRACKET_AT_SOL
-        var ind: number = block.startlnum->Indent()
         if b:vimindent.is_on_named_block_line
             ind += 2 * shiftwidth()
         endif
         return ind + IndentMoreInBracketBlock()
     endif
 
-    var ind: number = block.startindent
-    if b:vimindent.is_on_named_block_line
-        ind += shiftwidth()
-    endif
-
     if block.startline =~ COMMA_AT_EOL
             || block.startline =~ LAMBDA_ARROW_AT_EOL
             || (block.startline =~ OPENING_BRACKET_AT_EOL
             # TODO: Is that reliable?
-            && block.startline !~ '[]}],\s\+[[{]')
+            && block.startline !~
+            $'^\s*{NON_BRACKET}\+{LIST_OR_DICT_CLOSING_BRACKET},\s\+{LIST_OR_DICT_OPENING_BRACKET}')
         ind += shiftwidth() + IndentMoreInBracketBlock()
+    endif
+
+    if b:vimindent.is_on_named_block_line
+        ind += shiftwidth()
     endif
 
     if block.is_dict
@@ -751,7 +754,7 @@ enddef
 def RegisterCacheInvalidation() # {{{2
     # invalidate the cache so that it's not used for the next `=` normal command
     autocmd_add([{
-        cmd: 'unlet! b:vimindent b:did_indent_a_line',
+        cmd: 'unlet! b:vimindent',
         event: 'ModeChanged',
         group: '__VimIndent__',
         once: true,
@@ -760,34 +763,19 @@ def RegisterCacheInvalidation() # {{{2
     }])
 enddef
 
-def IndentLineBelowFuncHeader(line_B: dict<any>): number # {{{2
-    # This is  way too  costly to  do that on  every line  with a  closing paren
-    # (because of  `synstack()`).  It's  mostly useful when  we indent  the line
-    # below the function header; let's do it only once per indent command.
-    if exists('b:did_indent_a_line')
-        return -1
-    endif
-
-    b:did_indent_a_line = true
-    RegisterCacheInvalidation()
-
-    var pos: list<number> = getcurpos()
-    cursor(line_B.lnum, 1)
-    var start: number = SearchPairStart('(', '', ')')
-    if start > 0 && start->getline() =~ STARTS_FUNCTION
-        return start->Indent() + shiftwidth()
-    endif
-    setpos('.', pos)
-
-    return -1
-enddef
-
-def RemoveStaleBracketBlocks(line_A: dict<any>) # {{{2
+def RemovePastBracketBlock(line_A: dict<any>): dict<any> # {{{2
     var stack: list<dict<any>> = b:vimindent.block_stack
+
+    var removed: dict<any>
+    if line_A.lnum > stack[0].endlnum
+        removed = stack[0]
+    endif
+
     stack->filter((_, block: dict<any>): bool => line_A.lnum <= block.endlnum)
     if stack->empty()
         unlet! b:vimindent
     endif
+    return removed
 enddef
 # }}}1
 # Util {{{1
@@ -826,11 +814,11 @@ def MatchingOpenBracket(line: dict<any>): number # {{{3
     return SearchPairStart(start, '', end)
 enddef
 
-def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{3
+def FirstLinePreviousCommand(line: dict<any>): dict<any> # {{{3
     var line_B: dict<any> = line
 
     while line_B.lnum > 1
-        var line_above: dict<any> = PrevCodeLine(line_B.lnum)
+        var code_line_above: dict<any> = PrevCodeLine(line_B.lnum)
 
         if line_B.text =~ CLOSING_BRACKET_AT_SOL
             var n: number = MatchingOpenBracket(line_B)
@@ -843,17 +831,30 @@ def FirstLinePreviousCommand(line: dict<any>): list<any> # {{{3
             line_B.text = getline(line_B.lnum)
             continue
 
-        elseif line_B->IsFirstLineOfCommand(line_above)
+        elseif line_B->IsFirstLineOfCommand(code_line_above)
             break
         endif
 
-        line_B = line_above
+        line_B = code_line_above
     endwhile
 
-    return [line_B.text, line_B.lnum]
+    return line_B
 enddef
 
 def PrevCodeLine(lnum: number): dict<any> # {{{3
+    if getline(lnum) =~ '^\s*END$'
+        var pos: list<number> = getcurpos()
+        cursor(lnum, 1)
+        var n: number = search(ASSIGNS_HEREDOC, 'bnW')
+        setpos('.', pos)
+        if n > 0
+            var line: string = getline(n)
+            if line =~ $'{HEREDOC_OPERATOR}\s\+END'
+                return {lnum: n, text: line}
+            endif
+        endif
+    endif
+
     var n: number = prevnonblank(lnum - 1)
     var line: string = getline(n)
     while line =~ COMMENT && n > 1
@@ -959,6 +960,17 @@ def AtStartOfBracketBlock(line_A: dict<any>): bool # {{{3
         || line_A->EndsWithLambdaArrow()
 enddef
 
+def ContinuesBelowBracketBlock( # {{{3
+        line_A: string,
+        line_B: string,
+        block: dict<any>
+        ): bool
+
+    return !block->empty()
+        && (line_A =~ LINE_CONTINUATION_AT_SOL
+        || line_B =~ LINE_CONTINUATION_AT_EOL)
+enddef
+
 def IsInside(lnum: number, syntax: string): bool # {{{3
     if !exists('b:vimindent')
             || !b:vimindent->has_key($'is_{syntax}')
@@ -1017,12 +1029,14 @@ def InCommentOrString(): bool # {{{3
     # the pattern to this function.  If we  look for a pair of patterns, I think
     # we only need to pass the one  which matches in the direction we're looking
     # for.
+    # TODO: What if we find a match in a heredoc, on a line without quotes nor a
+    # comment leader?
     if line !~ COMMENT && line !~ INLINE_COMMENT && line !~ QUOTE
         return false
     endif
 
     for synID: number in synstack('.', col('.'))
-        if synIDattr(synID, 'name') =~ '\ccomment\|string'
+        if synIDattr(synID, 'name') =~ '\ccomment\|string\|heredoc'
             return true
         endif
     endfor
