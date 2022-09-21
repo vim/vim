@@ -280,10 +280,7 @@ const LINE_CONTINUATION_AT_EOL: string = '\%('
     .. '\|' .. OPERATOR
     .. '\|' .. '\s=>'
     .. '\|' .. '[^=]\zs[[(]'
-    # TODO: This is to support a dictionary key.
-    # Do we need to match the key more accurately?
-    # If so, refactor every occurrence of `\S:` in this script.
-    .. '\|' .. '\S:'
+    .. '\|' .. DICT_KEY
     # `{` is ambiguous.
     # It can be the start of a dictionary or a block.
     # We only want to match the former.

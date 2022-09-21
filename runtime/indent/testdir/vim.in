@@ -747,3 +747,9 @@ silent if true
 echo
 endif
 " END_INDENT
+
+" START_INDENT
+def Func()
+    sort :^.*[\/]:
+enddef
+" END_INDENT
