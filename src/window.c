@@ -6360,7 +6360,7 @@ win_fix_scroll(int resize)
     win_T    *wp;
     linenr_T lnum;
 
-    skip_update_topline = TRUE;  // avoid scrolling in curs_rows()
+    skip_update_topline = TRUE;  // avoid scrolling in curs_columns()
     FOR_ALL_WINDOWS(wp)
     {
 	// Skip when window height has not changed.
@@ -6378,6 +6378,8 @@ win_fix_scroll(int resize)
 		scroll_to_fraction(wp, wp->w_prev_height);
 		wp->w_cursor.lnum = lnum;
 	    }
+	    else if (wp == curwin)
+		wp->w_valid &= ~VALID_CROW;
 	    invalidate_botline_win(wp);
 	    validate_botline_win(wp);
 	}
