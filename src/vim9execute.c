@@ -380,7 +380,7 @@ get_pt_outer(partial_T *pt)
  * Call compiled function "cdf_idx" from compiled code.
  * This adds a stack frame and sets the instruction pointer to the start of the
  * called function.
- * If "pt" is not null use "pt->pt_outer" for ec_outer_ref->or_outer.
+ * If "pt_arg" is not NULL use "pt_arg->pt_outer" for ec_outer_ref->or_outer.
  *
  * Stack has:
  * - current arguments (already there)
@@ -394,7 +394,7 @@ get_pt_outer(partial_T *pt)
     static int
 call_dfunc(
 	int		cdf_idx,
-	partial_T	*pt,
+	partial_T	*pt_arg,
 	int		argcount_arg,
 	ectx_T		*ectx)
 {
@@ -543,27 +543,21 @@ call_dfunc(
     STACK_TV_BOT(STACK_FRAME_IDX_OFF)->vval.v_number = ectx->ec_frame_idx;
     ectx->ec_frame_idx = ectx->ec_stack.ga_len;
 
-    // Initialize local variables
-    for (idx = 0; idx < dfunc->df_varcount; ++idx)
+    // Initialize all local variables to number zero.  Also initialize the
+    // variable that counts how many closures were created.  This is used in
+    // handle_closure_in_use().
+    int initcount = dfunc->df_varcount + (dfunc->df_has_closure ? 1 : 0);
+    for (idx = 0; idx < initcount; ++idx)
     {
 	typval_T *tv = STACK_TV_BOT(STACK_FRAME_SIZE + idx);
 
 	tv->v_type = VAR_NUMBER;
 	tv->vval.v_number = 0;
     }
-    if (dfunc->df_has_closure)
-    {
-	typval_T *tv = STACK_TV_BOT(STACK_FRAME_SIZE + dfunc->df_varcount);
-
-	// Initialize the variable that counts how many closures were created.
-	// This is used in handle_closure_in_use().
-	tv->v_type = VAR_NUMBER;
-	tv->vval.v_number = 0;
-    }
     ectx->ec_stack.ga_len += STACK_FRAME_SIZE + varcount;
 
-    if (pt != NULL || ufunc->uf_partial != NULL
-					     || (ufunc->uf_flags & FC_CLOSURE))
+    partial_T *pt = pt_arg != NULL ? pt_arg : ufunc->uf_partial;
+    if (pt != NULL || (ufunc->uf_flags & FC_CLOSURE))
     {
 	outer_ref_T *ref = ALLOC_CLEAR_ONE(outer_ref_T);
 
@@ -574,12 +568,6 @@ call_dfunc(
 	    ref->or_outer = get_pt_outer(pt);
 	    ++pt->pt_refcount;
 	    ref->or_partial = pt;
-	}
-	else if (ufunc->uf_partial != NULL)
-	{
-	    ref->or_outer = get_pt_outer(ufunc->uf_partial);
-	    ++ufunc->uf_partial->pt_refcount;
-	    ref->or_partial = ufunc->uf_partial;
 	}
 	else
 	{
@@ -5832,7 +5820,9 @@ call_def_function(
     ectx.ec_where.wt_index = 0;
     ectx.ec_where.wt_variable = FALSE;
 
-    // Execute the instructions until done.
+    /*
+     * Execute the instructions until done.
+     */
     ret = exec_instructions(&ectx);
     if (ret == OK)
     {
