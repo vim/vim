@@ -18,10 +18,16 @@ def IndentMoreInBracketBlock(): number # {{{2
     endif
 enddef
 
-def IndentMoreContinuationLine(): number # {{{2
-    return get(g:, 'vim_indent', {})
+def IndentMoreLineContinuation(): number # {{{2
+    var n: any = get(g:, 'vim_indent', {})
         # We inspect `g:vim_indent_cont` to stay backward compatible.
-        ->get('continuation_line', get(g:, 'vim_indent_cont', shiftwidth() * 3))
+        ->get('line_continuation', get(g:, 'vim_indent_cont', shiftwidth() * 3))
+
+    if n->typename() == 'string'
+        return n->eval()
+    else
+        return n
+    endif
 enddef
 # }}}2
 
@@ -337,7 +343,7 @@ const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
     .. '\|' .. '->\s*\h'
     .. '\|' .. '\.\h'  # dict member
     .. '\|' .. '|'
-    # TODO: `}` at the start of a line is not necessarily a continuation line.
+    # TODO: `}` at the start of a line is not necessarily a line continuation.
     # Could be the end of a block.
     .. '\|' .. $'{CLOSING_BRACKET}'
     .. '\)'
@@ -375,7 +381,7 @@ export def Expr(lnum: number): number # {{{2
         if line_B.text =~ BACKSLASH_AT_SOL
             return Indent(line_B.lnum)
         else
-            return Indent(line_B.lnum) + IndentMoreContinuationLine()
+            return Indent(line_B.lnum) + IndentMoreLineContinuation()
         endif
     endif
 
@@ -644,36 +650,6 @@ def CommentIndent(): number # {{{2
 enddef
 
 def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
-    # TODO: Here is an idea of algorithm for the indentation of bracket blocks.{{{
-    #
-    # After the first line of the outermost bracket block, indent 1 level (always).
-    # On subsequent lines, add 1 level iff  the line contains only a single open
-    # bracket, or a single sequence of open brackets (no other character).
-    # And  maybe if  the open  bracket(s)  is/are preceded  by a  dict key  (and
-    # nothing else).
-    #
-    # Exception: If a  line contains only a  single closing bracket (or  maybe a
-    # single sequence of  closing brackets?), and the matching  bracket is alone
-    # on a line, indent the closing bracket like the opening one.
-    # What if the matching (opening) bracket is not alone on a line?
-    # What if a line contains a closing bracket, but it's not alone?
-    #}}}
-    # TODO: What if there are several opening brackets on the same line?{{{
-    #
-    # Should we iterate  over all opening brackets on  the line, and
-    # push a dict info on the stack for each *un*closed one.
-    # Right now, we just push a  single dict info for the *last*
-    # unclosed open bracket.
-    #
-    #              what about this one?
-    #              v
-    #     var ll = [[
-    #         1], [
-    #         2]]
-    #
-    # How does  our code  work without pushing  a dict  info for
-    # every unclosed bracket?
-    #}}}
     if !block->has_key('startindent')
         block.startindent = block.startlnum->Indent()
     endif
@@ -1125,6 +1101,7 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
         return false
     endif
 
+    # In `argdelete *`, `*` is not a multiplication operator.
     if line.text =~ '\<argd\%[elete]\s\+\*\s*$'
         return false
     endif
