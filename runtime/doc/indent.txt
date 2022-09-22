@@ -1229,22 +1229,23 @@ comments will be indented according to the correctly indented code.
 VIM							*ft-vim-indent*
 							*g:vim_indent*
 Vim scripts indentation can be configured with the `g:vim_indent` dictionary
-variable.  It supports 2 keys, `continuation_line` and `more_in_bracket_block`.
-The former expects a number which will be added to the indent level of a
-continuation line starting with a backslash, and defaults to
-`shiftwidth() * 3`.
-The latter expects a boolean value; when on, an extra `shiftwidth()` is added
-inside blocks surrounded with brackets.  It defaults to `v:false`.
+variable.  It supports 2 keys, `line_continuation` and `more_in_bracket_block`.
+`line_continuation` expects a number which will be added to the indent level of
+a continuation line starting with a backslash, and defaults to
+`shiftwidth() * 3`.  It also accepts a string, which is evaluated at runtime.
+`more_in_bracket_block` expects a boolean value; when on, an extra
+`shiftwidth()` is added inside blocks surrounded with brackets.  It defaults to
+`v:false`.
 
 Example of configuration:
 
 	let g:vim_indent = #{
-	    \ continuation_line: shiftwidth() * 3,
+	    \ line_continuation: shiftwidth() * 3,
 	    \ more_in_bracket_block: v:false,
 	    \ }
 
 							*g:vim_indent_cont*
-This variable is equivalent to `g:vim_indent.continuation_line`.
+This variable is equivalent to `g:vim_indent.line_continuation`.
 It's supported for backward compatibility.
 
 
