@@ -173,7 +173,7 @@ const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%(' .. patt
 
 # MAPPING_COMMAND {{{3
 
-const MAPPING_COMMAND: string = '\%(\<sil\%[ent]!\=\s\+\)\=[nvxsoilct]\=\%(nore\|un\)map\>'
+const MAPPING_COMMAND: string = '\%(\<sil\%[ent]!\=\s\+\)\=[nvxsoilct]\=\%(nore\|un\)map!\=\s'
 
 # NORMAL_COMMAND {{{3
 
