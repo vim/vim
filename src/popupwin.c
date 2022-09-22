@@ -4557,6 +4557,13 @@ popup_hide_message_win(void)
 	popup_hide(message_win);
 }
 
+// Values saved in start_echowindow() and restored in end_echowindow()
+static int save_msg_didout = FALSE;
+static int save_msg_col = 0;
+// Values saved in end_echowindow() and restored in start_echowindow()
+static int ew_msg_didout = FALSE;
+static int ew_msg_col = 0;
+
 /*
  * Invoked before outputting a message for ":echowindow".
  */
@@ -4564,6 +4571,10 @@ popup_hide_message_win(void)
 start_echowindow(void)
 {
     in_echowindow = TRUE;
+    save_msg_didout = msg_didout;
+    save_msg_col = msg_col;
+    msg_didout = ew_msg_didout;
+    msg_col = ew_msg_col;
 }
 
 /*
@@ -4579,10 +4590,10 @@ end_echowindow(void)
 	redraw_cmd(FALSE);
 
     // do not overwrite messages
-    // TODO: only for message window
-    msg_didout = TRUE;
-    if (msg_col == 0)
-	msg_col = 1;
+    ew_msg_didout = TRUE;
+    ew_msg_col = msg_col == 0 ? 1 : msg_col;
+    msg_didout = save_msg_didout;
+    msg_col = save_msg_col;
 }
 #endif
 
