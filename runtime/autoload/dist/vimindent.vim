@@ -411,6 +411,7 @@ export def Expr(lnum: number): number # {{{2
             # computed that indentation.
             #}}}
             if line_A.lnum > block.startlnum
+                    && !block.is_curly_block
                 return BracketBlockIndent(line_A, block)
             endif
         endfor

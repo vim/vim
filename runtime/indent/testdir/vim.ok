@@ -843,3 +843,12 @@ for [opening: string, closing: string]
     pairs[closing] = [escape(opening, '[]'), escape(closing, '[]'), 'bnW', 'w0']
 endfor
 " END_INDENT
+
+" START_INDENT
+{
+    echo []
+	+ []
+	+ [{a: 1,
+	    b: 2}]
+}
+" END_INDENT
