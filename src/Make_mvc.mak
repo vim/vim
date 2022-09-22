@@ -1254,11 +1254,9 @@ $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 
 $(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
 	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe $(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
-	if exist $(GVIM).exe.manifest mt.exe -nologo -manifest $(GVIM).exe.manifest -updateresource:$(GVIM).exe;1
 
 $(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
 	$(LINK) $(LINKARGS1) /subsystem:$(SUBSYSTEM_CON) -out:$(VIM).exe $(EXEOBJC) $(VIMDLLBASE).lib $(LIBC)
-	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
 
 !else
 
@@ -1273,7 +1271,6 @@ $(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ)
 $(TCL_OBJ) $(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ)
 $(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 <<
-	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
 
 !endif
 
