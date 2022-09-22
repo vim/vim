@@ -807,3 +807,15 @@ if true
 	->len()
 endif
 " END_INDENT
+
+" START_INDENT
+function Func()
+if true
+if true
+if true | echo com | endif
+if true | echo com | endif
+endif
+else
+endif
+endfunction
+" END_INDENT

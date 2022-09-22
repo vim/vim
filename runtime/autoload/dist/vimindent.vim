@@ -28,6 +28,10 @@ enddef
 # Init {{{1
 var patterns: list<string>
 # Tokens {{{2
+# BAR_SEPARATION {{{3
+
+const BAR_SEPARATION: string = '[^|\\]\@1<=|'
+
 # OPENING_BRACKET {{{3
 
 const OPENING_BRACKET: string = '[[{(]'
@@ -146,20 +150,20 @@ const CD_COMMAND: string = $'[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
 # HIGHER_ORDER_COMMAND {{{3
 
 patterns =<< trim eval END
-    argdo!\=
-    bufdo!\=
-    cdo!\=
-    folddoc\%[losed]
-    foldd\%[oopen]
-    ldo\=!\=
-    tabdo\=
-    windo
-    au\%[tocmd].*
-    com\%[mand].*
+    argdo\>!\=
+    bufdo\>!\=
+    cdo\>!\=
+    folddoc\%[losed]\>
+    foldd\%[oopen]\>
+    ldo\=\>!\=
+    tabdo\=\>
+    windo\>
+    au\%[tocmd]\>.*
+    com\%[mand]\>.*
     g\%[lobal]!\={PATTERN_DELIMITER}.*
     v\%[global]!\={PATTERN_DELIMITER}.*
 END
-const HIGHER_ORDER_COMMAND: string = '\<\%(' .. patterns->join('\|') .. '\):\@!'
+const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%(' .. patterns->join('\|') .. '\):\@!'
 
 # MAPPING_COMMAND {{{3
 
@@ -221,7 +225,7 @@ const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. patterns->join('\|') .. $'\){E
 const STARTS_CURLY_BLOCK: string = '\%('
     .. '^\s*{'
     .. '\|' .. '^.*\zs\s=>\s\+{'
-    .. '\|' ..  '^\%(\s*\|.*|\@1<!|\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{'
+    .. '\|' ..  $'^\%(\s*\|.*{BAR_SEPARATION}\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{{'
     .. '\)' .. END_OF_COMMAND
 
 # STARTS_NAMED_BLOCK {{{3
@@ -280,7 +284,7 @@ const START_MIDDLE_END: dict<list<string>> = {
 }->map((_, kwds: list<string>) =>
     kwds->map((_, kwd: string) => kwd == ''
     ? ''
-    : $'\%(^\|[^|\\]\@1<=|\|\<sil\%[ent]\|{HIGHER_ORDER_COMMAND}\)\s*'
+    : $'\%(^\|{BAR_SEPARATION}\|\<sil\%[ent]\|{HIGHER_ORDER_COMMAND}\)\s*'
     .. $'\%({printf('\C\<\%%(%s\)\>:\@!\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
 # }}}2
 # EOL {{{2
