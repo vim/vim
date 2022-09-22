@@ -35,11 +35,11 @@ macos_task:
   timeout_in: 20m
   install_script:
     - brew update
-    - brew install gettext libtool
+    - brew install gettext libtool xterm
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
-    - ./configure --with-features=tiny
+    - ./configure --with-features=${FEATURES}
     - make -j${NPROC}
   test_script:
     - src/vim --version
-    - make test
+    - TERM=xterm make test
