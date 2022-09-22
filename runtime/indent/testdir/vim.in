@@ -1,7 +1,6 @@
 " vim: set ft=vim sw=4 :
 
 " START_INDENT
-
 func Some()
 let x = 1
 endfunc
@@ -28,12 +27,11 @@ let t = [
 \  ]
 
 def Func()
-  var d = dd
-	->extend({
-	})
-  eval 0
+var d = dd
+->extend({
+})
+eval 0
 enddef
-
 " END_INDENT
 
 " START_INDENT
@@ -350,19 +348,19 @@ var s = ''
 
 " START_INDENT
 var keys = {
-    J: 'j',
-    "\<Home>": '1G',
-    "\<End>": 'G',
-    z: 'zz'
+J: 'j',
+"\<Home>": '1G',
+"\<End>": 'G',
+z: 'zz'
 }
 " END_INDENT
 
 " START_INDENT
 export def Func(
-	n: number,
-	s: string,
-	...l: list<bool>
-	)
+n: number,
+s: string,
+...l: list<bool>
+)
 enddef
 " END_INDENT
 
@@ -437,15 +435,15 @@ FuncB(),
 
 " START_INDENT
 var ll = [[
-    1,
-    2,
-    3], [
-    4,
-    5,
-    6], [
-    7,
-    8,
-    9]]
+1,
+2,
+3], [
+4,
+5,
+6], [
+7,
+8,
+9]]
 " END_INDENT
 
 " START_INDENT
@@ -807,8 +805,8 @@ endif
 
 " START_INDENT
 if true
-    echo ' =<< trim END'
-	->len()
+echo ' =<< trim END'
+->len()
 endif
 " END_INDENT
 
@@ -838,10 +836,10 @@ endfunction
 var matchpairs: string = &matchpairs
 var pairs: dict<list<string>>
 for [opening: string, closing: string]
-	in matchpairs
-	->split(',')
-	->map((_, v: string): list<string> => split(v, ':'))
-    pairs[opening] = [escape(opening, '[]'), escape(closing, '[]'),  'nW', 'w$']
-    pairs[closing] = [escape(opening, '[]'), escape(closing, '[]'), 'bnW', 'w0']
+in matchpairs
+->split(',')
+->map((_, v: string): list<string> => split(v, ':'))
+pairs[opening] = [escape(opening, '[]'), escape(closing, '[]'),  'nW', 'w$']
+pairs[closing] = [escape(opening, '[]'), escape(closing, '[]'), 'bnW', 'w0']
 endfor
 " END_INDENT

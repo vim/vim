@@ -1,7 +1,6 @@
 " vim: set ft=vim sw=4 :
 
 " START_INDENT
-
 func Some()
     let x = 1
 endfunc
@@ -33,7 +32,6 @@ def Func()
 	})
     eval 0
 enddef
-
 " END_INDENT
 
 " START_INDENT
