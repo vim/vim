@@ -12,13 +12,16 @@ SCRIPTSOURCE = ../../runtime
 # Comment out this line to see the verbose output of tests.
 #
 # Catches SwapExists to avoid hanging at the ATTENTION prompt.
-REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C LANG=C LANGUAGE=C awk '/Executing Test_/{match($$0, "Executing Test_[^\\)]*\\)"); print substr($$0, RSTART, RLENGTH) "\r"; fflush()}'
+REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C LANG=C LANGUAGE=C awk '/Executing Test_/{match($$0, "(took .*; now )?Executing Test_[^\\)]*\\)"); print substr($$0, RSTART, RLENGTH) "\r"; fflush()}'
 
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 #   The output goes into a file "valgrind.testN"
 #   Vim should be compiled with EXITFREE to avoid false warnings.
 #   This will make testing about 10 times as slow.
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=35 --log-file=valgrind.$*
+
+# To execute one test, e.g. in gdb, use something like this:
+# run -f -u unix.vim --gui-dialog-file guidialog -U NONE --noplugin --not-a-term -S runtest.vim test_name.vim
 
 default: nongui
 
