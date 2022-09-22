@@ -1246,7 +1246,7 @@ Example of configuration:
 	let g:vim_indent = #{
 	    \ line_continuation: shiftwidth() * 3,
 	    \ more_in_bracket_block: v:false,
-            \ searchpair_timeout: 100,
+	    \ searchpair_timeout: 100,
 	    \ }
 
 							*g:vim_indent_cont*
