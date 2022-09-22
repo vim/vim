@@ -932,15 +932,14 @@ string_filter_map(
 }
 
 /*
- * reduce() String argvars[0] using the function 'funcname' with arguments in
- * 'funcexe' starting with the initial value argvars[2] and return the result
- * in 'rettv'.
+ * Implementation of reduce() for String "argvars[0]" using the function "expr"
+ * starting with the optional initial value "argvars[2]" and return the result
+ * in "rettv".
  */
     void
 string_reduce(
 	typval_T	*argvars,
-	char_u		*func_name,
-	funcexe_T	*funcexe,
+	typval_T	*expr,
 	typval_T	*rettv)
 {
     char_u	*p = tv_get_string(&argvars[0]);
@@ -971,7 +970,9 @@ string_reduce(
 	if (copy_first_char_to_tv(p, &argv[1]) == FAIL)
 	    break;
 	len = (int)STRLEN(argv[1].vval.v_string);
-	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+
+	r = eval_expr_typval(expr, argv, 2, rettv);
+
 	clear_tv(&argv[0]);
 	clear_tv(&argv[1]);
 	if (r == FAIL || called_emsg != called_emsg_start)
