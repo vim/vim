@@ -2126,6 +2126,7 @@ struct outer_S {
 				    // out_loop_stack
 	short	 var_count;	    // number of variables defined in a loop
     } out_loop[MAX_LOOP_DEPTH];
+    int		out_loop_size;	    // nr of used entries in out_loop[]
 };
 
 struct partial_S

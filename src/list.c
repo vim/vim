@@ -2999,15 +2999,14 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * reduce() List argvars[0] using the function 'funcname' with arguments in
- * 'funcexe' starting with the initial value argvars[2] and return the result
- * in 'rettv'.
+ * Implementation of reduce() for list "argvars[0]", using the function "expr"
+ * starting with the optional initial value argvars[2] and return the result in
+ * "rettv".
  */
     static void
 list_reduce(
 	typval_T	*argvars,
-	char_u		*func_name,
-	funcexe_T	*funcexe,
+	typval_T	*expr,
 	typval_T	*rettv)
 {
     list_T	*l = argvars[0].vval.v_list;
@@ -3049,7 +3048,9 @@ list_reduce(
 	argv[0] = *rettv;
 	argv[1] = li->li_tv;
 	rettv->v_type = VAR_UNKNOWN;
-	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+
+	r = eval_expr_typval(expr, argv, 2, rettv);
+
 	clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    break;
@@ -3066,8 +3067,6 @@ list_reduce(
 f_reduce(typval_T *argvars, typval_T *rettv)
 {
     char_u	*func_name;
-    partial_T   *partial = NULL;
-    funcexe_T	funcexe;
 
     if (in_vim9script()
 		   && check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
@@ -3084,10 +3083,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
     else if (argvars[1].v_type == VAR_PARTIAL)
-    {
-	partial = argvars[1].vval.v_partial;
-	func_name = partial_name(partial);
-    }
+	func_name = partial_name(argvars[1].vval.v_partial);
     else
 	func_name = tv_get_string(&argvars[1]);
     if (func_name == NULL || *func_name == NUL)
@@ -3096,16 +3092,12 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    CLEAR_FIELD(funcexe);
-    funcexe.fe_evaluate = TRUE;
-    funcexe.fe_partial = partial;
-
     if (argvars[0].v_type == VAR_LIST)
-	list_reduce(argvars, func_name, &funcexe, rettv);
+	list_reduce(argvars, &argvars[1], rettv);
     else if (argvars[0].v_type == VAR_STRING)
-	string_reduce(argvars, func_name, &funcexe, rettv);
+	string_reduce(argvars, &argvars[1], rettv);
     else
-	blob_reduce(argvars, func_name, &funcexe, rettv);
+	blob_reduce(argvars, &argvars[1], rettv);
 }
 
 #endif // defined(FEAT_EVAL)
