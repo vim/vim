@@ -183,12 +183,13 @@ func Test_win_execute_on_startup()
       silent tabedit Xfile3
       autocmd VimEnter * win_execute(id, 'close')
   END
-  call writefile(lines, 'XwinExecute', 'D')
+  call writefile(lines, 'XwinExecute')
   let buf = RunVimInTerminal('-p Xfile1 -Nu XwinExecute', {})
 
   " this was crashing on exit with EXITFREE defined
   call StopVimInTerminal(buf)
 
+  call delete('XwinExecute')
   call delete('Xfile1')
 endfunc
 

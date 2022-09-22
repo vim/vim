@@ -56,13 +56,14 @@ func Test_expand_sfile_and_stack()
     " comment here
     let g:stack_value = expand('<stack>')
   END
-  call writefile(lines, 'Xstack', 'D')
+  call writefile(lines, 'Xstack')
   source Xstack
   call assert_match('\<Xstack\[2\]$', g:stack_value)
   unlet g:stack_value
+  call delete('Xstack')
 
   if exists('+shellslash')
-    call mkdir('Xshellslash', 'R')
+    call mkdir('Xshellslash')
     let lines =<< trim END
       let g:stack1 = expand('<stack>')
       set noshellslash
@@ -82,6 +83,7 @@ func Test_expand_sfile_and_stack()
       unlet g:stack2
       unlet g:stack3
     endfor
+    call delete('Xshellslash', 'rf')
   endif
 endfunc
 

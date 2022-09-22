@@ -137,13 +137,14 @@ func Test_source_sfile()
     :call writefile(v:errors, 'Xresult')
     :qall!
   [SCRIPT]
-  call writefile(lines, 'Xscript', 'D')
+  call writefile(lines, 'Xscript')
   if RunVim([], [], '--clean -s Xscript')
     call assert_equal([
           \ 'E1274: No script file name to substitute for "<script>"',
           \ 'E498: No :source file name to substitute for "<sfile>"'],
           \ readfile('Xresult'))
   endif
+  call delete('Xscript')
   call delete('Xresult')
 endfunc
 
@@ -196,9 +197,9 @@ func Test_expand_script_source()
     au User * call extend(g:au_level, [expand('<script>:t')])
   [SCRIPT]
 
-  call writefile(lines0, 'Xscript0', 'D')
-  call writefile(lines1, 'Xscript1', 'D')
-  call writefile(lines2, 'Xscript2', 'D')
+  call writefile(lines0, 'Xscript0')
+  call writefile(lines1, 'Xscript1')
+  call writefile(lines2, 'Xscript2')
 
   " Check the expansion of <script> at different levels.
   let g:script_level = []
@@ -219,6 +220,10 @@ func Test_expand_script_source()
   delfunc F0
   delfunc F1
   delfunc F2
+
+  call delete('Xscript0')
+  call delete('Xscript1')
+  call delete('Xscript2')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

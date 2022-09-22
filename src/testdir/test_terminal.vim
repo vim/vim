@@ -630,9 +630,7 @@ func Test_terminal_cwd()
   endif
   call mkdir('Xtermdir')
   let buf = term_start(cmd, {'cwd': 'Xtermdir'})
-  " if the path is very long it may be split over two lines, join them
-  " together
-  call WaitForAssert({-> assert_equal('Xtermdir', fnamemodify(getline(1) .. getline(2), ":t"))})
+  call WaitForAssert({-> assert_equal('Xtermdir', fnamemodify(getline(1), ":t"))})
 
   exe buf . 'bwipe'
   call delete('Xtermdir', 'rf')

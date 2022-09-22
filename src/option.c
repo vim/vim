@@ -1220,7 +1220,7 @@ typedef enum {
 do_set_string(
 	int	    opt_idx,
 	int	    opt_flags,
-	char_u	    **argp,
+	char_u	    **arg,
 	int	    nextchar,
 	set_op_T    op_arg,
 	int	    flags,
@@ -1230,7 +1230,6 @@ do_set_string(
 	int	    *value_checked,
 	char	    **errmsg)
 {
-    char_u	*arg = *argp;
     set_op_T    op = op_arg;
     char_u	*varp = varp_arg;
     char_u	*save_arg = NULL;
@@ -1318,18 +1317,18 @@ do_set_string(
     }
     else
     {
-	++arg;	// jump to after the '=' or ':'
+	++*arg;	// jump to after the '=' or ':'
 
 	/*
 	 * Set 'keywordprg' to ":help" if an empty
 	 * value was passed to :set by the user.
 	 * Misuse errbuf[] for the resulting string.
 	 */
-	if (varp == (char_u *)&p_kp && (*arg == NUL || *arg == ' '))
+	if (varp == (char_u *)&p_kp && (**arg == NUL || **arg == ' '))
 	{
 	    STRCPY(errbuf, ":help");
-	    save_arg = arg;
-	    arg = (char_u *)errbuf;
+	    save_arg = *arg;
+	    *arg = (char_u *)errbuf;
 	}
 	/*
 	 * Convert 'backspace' number to string, for
@@ -1369,10 +1368,10 @@ do_set_string(
 	 * Convert 'whichwrap' number to string, for backwards compatibility
 	 * with Vim 3.0.
 	 */
-	else if (varp == (char_u *)&p_ww && VIM_ISDIGIT(*arg))
+	else if (varp == (char_u *)&p_ww && VIM_ISDIGIT(**arg))
 	{
 	    *whichwrap = NUL;
-	    int i = getdigits(&arg);
+	    int i = getdigits(arg);
 	    if (i & 1)
 		STRCAT(whichwrap, "b,");
 	    if (i & 2)
@@ -1385,16 +1384,16 @@ do_set_string(
 		STRCAT(whichwrap, "[,],");
 	    if (*whichwrap != NUL)	// remove trailing ,
 		whichwrap[STRLEN(whichwrap) - 1] = NUL;
-	    save_arg = arg;
-	    arg = (char_u *)whichwrap;
+	    save_arg = *arg;
+	    *arg = (char_u *)whichwrap;
 	}
 	/*
 	 * Remove '>' before 'dir' and 'bdir', for backwards compatibility with
 	 * version 3.0
 	 */
-	else if (*arg == '>' && (varp == (char_u *)&p_dir
+	else if (  **arg == '>' && (varp == (char_u *)&p_dir
 						 || varp == (char_u *)&p_bdir))
-	    ++arg;
+	    ++*arg;
 
 	/*
 	 * Copy the new string into allocated memory.
@@ -1402,7 +1401,7 @@ do_set_string(
 	 * backslashes.
 	 */
 	// get a bit too much
-	newlen = (unsigned)STRLEN(arg) + 1;
+	newlen = (unsigned)STRLEN(*arg) + 1;
 	if (op != OP_NONE)
 	    newlen += (unsigned)STRLEN(origval) + 1;
 	newval = alloc(newlen);
@@ -1417,29 +1416,29 @@ do_set_string(
 	 * but do remove it for "\\\\machine\\path".
 	 * The reverse is found in ExpandOldSetting().
 	 */
-	while (*arg && !VIM_ISWHITE(*arg))
+	while (**arg && !VIM_ISWHITE(**arg))
 	{
 	    int i;
 
-	    if (*arg == '\\' && arg[1] != NUL
+	    if (**arg == '\\' && (*arg)[1] != NUL
 #ifdef BACKSLASH_IN_FILENAME
 		    && !((flags & P_EXPAND)
-			    && vim_isfilec(arg[1])
-			    && !VIM_ISWHITE(arg[1])
-			    && (arg[1] != '\\'
-					|| (s == newval && arg[2] != '\\')))
+			    && vim_isfilec((*arg)[1])
+			    && !VIM_ISWHITE((*arg)[1])
+			    && ((*arg)[1] != '\\'
+					|| (s == newval && (*arg)[2] != '\\')))
 #endif
 						)
-		++arg;	// remove backslash
-	    if (has_mbyte && (i = (*mb_ptr2len)(arg)) > 1)
+		++*arg;	// remove backslash
+	    if (has_mbyte && (i = (*mb_ptr2len)(*arg)) > 1)
 	    {
 		// copy multibyte char
-		mch_memmove(s, arg, (size_t)i);
-		arg += i;
+		mch_memmove(s, *arg, (size_t)i);
+		*arg += i;
 		s += i;
 	    }
 	    else
-		*s++ = *arg++;
+		*s++ = *(*arg)++;
 	}
 	*s = NUL;
 
@@ -1566,7 +1565,7 @@ do_set_string(
 	}
 
 	if (save_arg != NULL)   // number for 'whichwrap'
-	    arg = save_arg;
+	    *arg = save_arg;
     }
 
     /*
@@ -1628,7 +1627,6 @@ do_set_string(
     vim_free(saved_newval);
 #endif
 
-    *argp = arg;
     return *errmsg == NULL ? OK : FAIL;
 }
 
