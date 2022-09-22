@@ -800,3 +800,10 @@ if true
     endif
 endif
 " END_INDENT
+
+" START_INDENT
+if true
+    echo ' =<< trim END'
+	->len()
+endif
+" END_INDENT

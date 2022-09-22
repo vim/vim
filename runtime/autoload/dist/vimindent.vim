@@ -137,7 +137,7 @@ const QUOTE: string = '["'']'
 # Syntaxes {{{2
 # ASSIGNS_HEREDOC {{{3
 
-const ASSIGNS_HEREDOC: string = $'^\%({COMMENT}\)\@!.*\%({HEREDOC_OPERATOR}\)\s\+\zs\L\S*{END_OF_LINE}'
+const ASSIGNS_HEREDOC: string = $'^\%({COMMENT}\)\@!.*\%({HEREDOC_OPERATOR}\)\s\+\zs[A-Z]\+{END_OF_LINE}'
 
 # CD_COMMAND {{{3
 
@@ -707,7 +707,7 @@ enddef
 def CacheHeredoc(line_A: dict<any>) # {{{2
     var endmarker: string = line_A.text->matchstr(ASSIGNS_HEREDOC)
     var endlnum: number = search($'^\s*{endmarker}$', 'nW')
-    var is_trimmed: bool = line_A.text =~ $'.*\s\%(trim\%(\s\+eval\)\=\)\s\+\L\S*{END_OF_LINE}'
+    var is_trimmed: bool = line_A.text =~ $'.*\s\%(trim\%(\s\+eval\)\=\)\s\+[A-Z]\+{END_OF_LINE}'
     b:vimindent = {
         is_HereDoc: true,
         startlnum: line_A.lnum,
