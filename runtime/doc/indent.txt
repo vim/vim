@@ -1229,19 +1229,24 @@ comments will be indented according to the correctly indented code.
 VIM							*ft-vim-indent*
 							*g:vim_indent*
 Vim scripts indentation can be configured with the `g:vim_indent` dictionary
-variable.  It supports 2 keys, `line_continuation` and `more_in_bracket_block`.
+variable.  It supports 3 keys, `line_continuation`, `more_in_bracket_block`,
+and `searchpair_timeout`.
 `line_continuation` expects a number which will be added to the indent level of
 a continuation line starting with a backslash, and defaults to
 `shiftwidth() * 3`.  It also accepts a string, which is evaluated at runtime.
 `more_in_bracket_block` expects a boolean value; when on, an extra
 `shiftwidth()` is added inside blocks surrounded with brackets.  It defaults to
 `v:false`.
+`searchpair_timeout` expects a number which will be passed to `searchpair()` as
+a timeout.  Increasing the value might give more accurate results, but cause
+the indentation to take more time.  It defaults to 100 (milliseconds).
 
 Example of configuration:
 
 	let g:vim_indent = #{
 	    \ line_continuation: shiftwidth() * 3,
 	    \ more_in_bracket_block: v:false,
+            \ searchpair_timeout: 100,
 	    \ }
 
 							*g:vim_indent_cont*
