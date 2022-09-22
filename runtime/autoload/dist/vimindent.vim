@@ -133,31 +133,6 @@ const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
 # QUOTE {{{3
 
 const QUOTE: string = '["'']'
-
-# START_MIDDLE_END {{{3
-
-const START_MIDDLE_END: dict<list<string>> = {
-    if: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
-    else: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
-    elseif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
-    endif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
-    for: ['for', '', 'endfor\='],
-    endfor: ['for', '', 'endfor\='],
-    while: ['wh\%[ile]', '', 'endw\%[hile]'],
-    endwhile: ['wh\%[ile]', '', 'endw\%[hile]'],
-    try: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    catch: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    finally: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    endtry: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    def: ['\%(export\s\+\)\=def', '', 'enddef'],
-    enddef: ['\%(export\s\+\)\=def', '', 'enddef'],
-    function: ['fu\%[nction]', '', 'endf\%[unction]'],
-    endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
-    augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
-}->map((_, kwds: list<string>) =>
-    kwds->map((_, kwd: string) => kwd == ''
-    ? ''
-    : $'\%(^\|[^|\\]\@1<=|\|\<sil\%[ent]\)\s*\%({printf('\C\<\%%(%s\)\>:\@!\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
 # }}}2
 # Syntaxes {{{2
 # ASSIGNS_HEREDOC {{{3
@@ -167,6 +142,20 @@ const ASSIGNS_HEREDOC: string = $'^\%({COMMENT}\)\@!.*\%({HEREDOC_OPERATOR}\)\s\
 # CD_COMMAND {{{3
 
 const CD_COMMAND: string = $'[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
+
+# DO_COMMAND {{{3
+
+cmds =<< trim END
+    argdo!\=
+    bufdo!\=
+    cdo!\=
+    folddoc\%[losed]
+    foldd\%[oopen]
+    ldo\=!\=
+    tabdo\=
+    windo
+END
+const DO_COMMAND: string = '\%(' .. cmds->join('\|') .. '\):\@!'
 
 # MAPPING_COMMAND {{{3
 
@@ -251,6 +240,32 @@ const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>:\@!'
 # ENDS_FUNCTION {{{3
 
 const ENDS_FUNCTION: string = $'^\s*enddef\>:\@!{END_OF_COMMAND}'
+
+# START_MIDDLE_END {{{3
+
+const START_MIDDLE_END: dict<list<string>> = {
+    if: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+    else: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+    elseif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+    endif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+    for: ['for', '', 'endfor\='],
+    endfor: ['for', '', 'endfor\='],
+    while: ['wh\%[ile]', '', 'endw\%[hile]'],
+    endwhile: ['wh\%[ile]', '', 'endw\%[hile]'],
+    try: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
+    catch: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
+    finally: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
+    endtry: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
+    def: ['\%(export\s\+\)\=def', '', 'enddef'],
+    enddef: ['\%(export\s\+\)\=def', '', 'enddef'],
+    function: ['fu\%[nction]', '', 'endf\%[unction]'],
+    endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
+    augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
+}->map((_, kwds: list<string>) =>
+    kwds->map((_, kwd: string) => kwd == ''
+    ? ''
+    : $'\%(^\|[^|\\]\@1<=|\|\<sil\%[ent]\|{DO_COMMAND}\)\s*'
+    .. $'\%({printf('\C\<\%%(%s\)\>:\@!\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
 # }}}2
 # EOL {{{2
 # OPENING_BRACKET_AT_EOL {{{3
