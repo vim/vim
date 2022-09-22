@@ -266,12 +266,14 @@ LINK = link
 !endif
 
 !if $(MSVCVER) < 1900
-MSVC_MAJOR = ($(MSVCVER) / 100 - 6)
-MSVCRT_VER = ($(MSVCVER) / 10 - 60)
-!else
+! message *** ERROR
+! message Unsupported MSVC version.
+! message Please use Visual C++ 2015 or later.
+! error Make aborted.
+!endif
+
 MSVC_MAJOR = ($(MSVCVER) / 100 - 5)
 MSVCRT_VER = ($(MSVCVER) / 100 * 10 - 50)
-!endif
 
 # Calculate MSVC_FULL.
 !if [echo MSVC_FULL=_MSC_FULL_VER> msvcfullver.c && $(CC) /EP msvcfullver.c > msvcfullver.~ 2> nul]
@@ -293,14 +295,8 @@ MSVCRT_VER = ($(MSVCVER) / 100 * 10 - 50)
 ! endif
 !endif
 
-# Base name of the msvcrXX.dll
-!if $(MSVCRT_VER) <= 60
-MSVCRT_NAME = msvcrt
-!elseif $(MSVCRT_VER) <= 130
-MSVCRT_NAME = msvcr$(MSVCRT_VER)
-!else
+# Base name of the msvcrXX.dll (vcruntimeXXX.dll)
 MSVCRT_NAME = vcruntime$(MSVCRT_VER)
-!endif
 
 ### Set the default $(WINVER) to make it work with Windows 7
 !ifndef WINVER
@@ -309,11 +305,6 @@ WINVER = 0x0601
 
 # Use multiprocess build
 USE_MP = yes
-
-#>>>>> path of the compiler and linker; name of include and lib directories
-# PATH = c:\msvc20\bin;$(PATH)
-# INCLUDE = c:\msvc20\include
-# LIB = c:\msvc20\lib
 
 !if "$(FEATURES)"==""
 FEATURES = HUGE
@@ -461,13 +452,7 @@ XPM = no
 # See the xpm directory for more information.
 XPM_OBJ   = $(OBJDIR)/xpm_w32.obj
 XPM_DEFS  = -DFEAT_XPM_W32
-!  if $(MSVC_MAJOR) >= 14
-# VC14 cannot use a library built by VC12 or earlier, because VC14 uses
-# Universal CRT.
 XPM_LIB   = $(XPM)\lib-vc14\libXpm.lib
-!  else
-XPM_LIB   = $(XPM)\lib\libXpm.lib
-!  endif
 XPM_INC	  = -I $(XPM)\include -I $(XPM)\..\include
 ! endif
 !endif # GUI
@@ -482,10 +467,7 @@ SOUND_LIB	= winmm.lib
 !if "$(CHANNEL)" == "yes"
 CHANNEL_PRO	= proto/job.pro proto/channel.pro
 CHANNEL_OBJ	= $(OBJDIR)/job.obj $(OBJDIR)/channel.obj
-CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL -DFEAT_IPV6
-! if $(WINVER) >= 0x600
-CHANNEL_DEFS	= $(CHANNEL_DEFS) -DHAVE_INET_NTOP
-! endif
+CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL -DFEAT_IPV6 -DHAVE_INET_NTOP
 
 NETBEANS_LIB	= WSock32.lib Ws2_32.lib
 !endif
@@ -507,10 +489,11 @@ CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 #VIMRCLOC = somewhere
 #VIMRUNTIMEDIR = somewhere
 
-CFLAGS = -c /W3 /GF /nologo -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
+CFLAGS = -c /W3 /GF /nologo -I. -Iproto -DHAVE_PATHDEF -DWIN32 -DHAVE_STDINT_H \
 		$(CSCOPE_DEFS) $(TERM_DEFS) $(SOUND_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
 		$(NBDEBUG_DEFS) $(XPM_DEFS) $(SOD_DEFS) $(SOD_INC) \
-		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
+		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
+		/source-charset:utf-8
 
 #>>>>> end of choices
 ###########################################################################
@@ -543,49 +526,15 @@ CPUNR = sse2
 # Convert processor ID to MVC-compatible number
 # IA32/SSE/SSE2 are only supported on x86
 !if "$(ASSEMBLY_ARCHITECTURE)" == "i386" && ("$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
-# VC<11 generates fp87 code by default
-! if $(MSVC_MAJOR) < 11
-CPUARG =
-# VC>=11 needs explicit instructions to generate fp87 code
-! else
 CPUARG = /arch:IA32
-! endif
 !elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse"
 CPUARG = /arch:SSE
 !elseif "$(ASSEMBLY_ARCHITECTURE)" == "i386" && "$(CPUNR)" == "sse2"
 CPUARG = /arch:SSE2
 !elseif "$(CPUNR)" == "avx"
-# AVX is only supported by VC 10 and up
-! if $(MSVC_MAJOR) < 10
-!  message AVX Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
-!  if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
-!   message Falling back to SSE2
-CPUARG = /arch:SSE2
-!  else
-CPUARG =
-!  endif
-! else
 CPUARG = /arch:AVX
-! endif
 !elseif "$(CPUNR)" == "avx2"
-# AVX is only supported by VC 10 and up
-! if $(MSVC_MAJOR) < 10
-!  message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)
-!  if "$(ASSEMBLY_ARCHITECTURE)" == "i386"
-!   message Falling back to SSE2
-CPUARG = /arch:SSE2
-!  else
-CPUARG =
-!  endif
-# AVX2 is only supported by VC 12U2 and up
-# 180030501 is the full version number for Visual Studio 2013/VC 12 Update 2
-! elseif $(MSVC_FULL) < 180030501
-!  message AVX2 Instruction Set is not supported by Visual C++ v$(MSVC_MAJOR)-$(MSVC_FULL)
-!  message Falling back to AVX
-CPUARG = /arch:AVX
-! else
 CPUARG = /arch:AVX2
-! endif
 !endif
 
 # Pass CPUARG to GvimExt, to avoid using version-dependent defaults
@@ -606,38 +555,19 @@ VIMDLLBASE = $(VIMDLLBASE)d
 LIBC =
 DEBUGINFO = /Zi
 
-# Don't use /nodefaultlib on MSVC 14
-!if $(MSVC_MAJOR) >= 14
-NODEFAULTLIB =
-!else
-NODEFAULTLIB = /nodefaultlib
-!endif
-
-# Specify source code charset to suppress warning C4819 on non-English
-# environment. Only available from MSVC 14.
-!if $(MSVC_MAJOR) >= 14
-CFLAGS = $(CFLAGS) /source-charset:utf-8
-!endif
-
-# Use multiprocess build on MSVC 10
-!if ("$(USE_MP)" == "yes") && ($(MSVC_MAJOR) >= 10)
+# Use multiprocess build.
+!if "$(USE_MP)" == "yes"
 CFLAGS = $(CFLAGS) /MP
 !endif
 
-# VC10 or later has stdint.h.
-!if $(MSVC_MAJOR) >= 10
-CFLAGS = $(CFLAGS) -DHAVE_STDINT_H
-!endif
-
-# Static code analysis generally available starting with VS2012 (VC11) or
-# Windows SDK 7.1 (VC10)
-!if ("$(ANALYZE)" == "yes") && ($(MSVC_MAJOR) >= 10)
+# Use static code analysis
+!if "$(ANALYZE)" == "yes"
 CFLAGS = $(CFLAGS) /analyze
 !endif
 
 # Address Sanitizer (ASAN) generally available starting with VS2019 version
 # 16.9
-!if ("$(ASAN)" == "yes") && ($(MSVC_MAJOR) >= 14)
+!if ("$(ASAN)" == "yes") && ($(MSVC_FULL) >= 192829913)
 CFLAGS = $(CFLAGS) /fsanitize=address
 !endif
 
@@ -1088,13 +1018,7 @@ PERL_VER = 524
 ! endif
 ! message Perl requested (version $(PERL_VER)) - root dir is "$(PERL)"
 ! if "$(DYNAMIC_PERL)" == "yes"
-!  if $(PERL_VER) >= 56
-!   message Perl DLL will be loaded dynamically
-!  else
-!   message Dynamic loading is not supported for Perl versions earlier than 5.6.0
-!   message Reverting to static loading...
-!   undef DYNAMIC_PERL
-!  endif
+!  message Perl DLL will be loaded dynamically
 ! endif
 
 # Is Perl installed in architecture-specific directories?
@@ -1105,16 +1029,12 @@ PERL_ARCH = \MSWin32-x86
 PERL_INCDIR = $(PERL)\Lib$(PERL_ARCH)\Core
 
 # Version-dependent stuff
-! if $(PERL_VER) == 55
-PERL_LIB = $(PERL_INCDIR)\perl.lib
-! else
 PERL_DLL = perl$(PERL_VER).dll
-!  if exist($(PERL_INCDIR)\perl$(PERL_VER).lib)
+! if exist($(PERL_INCDIR)\perl$(PERL_VER).lib)
 PERL_LIB = $(PERL_INCDIR)\perl$(PERL_VER).lib
-!  else
+! else
 # For ActivePerl 5.18 and later
 PERL_LIB = $(PERL_INCDIR)\libperl$(PERL_VER).a
-!  endif
 ! endif
 
 CFLAGS = $(CFLAGS) -DFEAT_PERL -DPERL_IMPLICIT_CONTEXT -DPERL_IMPLICIT_SYS
@@ -1127,11 +1047,6 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PERL -DDYNAMIC_PERL_DLL=\"$(PERL_DLL)\"
 
 PERL_EXE = $(PERL)\Bin$(PERL_ARCH)\perl
 PERL_INC = /I $(PERL_INCDIR)
-! if $(MSVC_MAJOR) <= 11
-# ActivePerl 5.20+ requires stdbool.h but VC2012 or earlier doesn't have it.
-# Use a stub stdbool.h.
-PERL_INC = $(PERL_INC) /I if_perl_msvc
-! endif
 PERL_OBJ = $(OUTDIR)\if_perl.obj $(OUTDIR)\if_perlsfio.obj
 XSUBPP = $(PERL)\lib\ExtUtils\xsubpp
 ! if exist($(XSUBPP))
@@ -1169,9 +1084,9 @@ RUBY_PLATFORM = i386-mswin32
 !   else # CPU
 RUBY_PLATFORM = x64-mswin64
 !   endif # CPU
-!   if $(MSVCRT_VER) >= 70 && $(RUBY_VER) > 19
+!   if $(RUBY_VER) > 19
 RUBY_PLATFORM = $(RUBY_PLATFORM)_$(MSVCRT_VER)
-!   endif # MSVCRT_VER
+!   endif # RUBY_VER
 !  endif # RUBY_PLATFORM
 
 !  ifndef RUBY_INSTALL_NAME
@@ -1263,7 +1178,7 @@ CFLAGS_OUTDIR=$(CFLAGS) /Fo$(OUTDIR)/
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
 
 LINKARGS1 = /nologo
-LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) \
+LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB) \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
 		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(SOD_LIB) $(LINK_PDB)
 
@@ -1296,7 +1211,7 @@ LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 ! endif
 !endif
 
-!if $(MSVC_MAJOR) >= 11 && "$(CPU)" == "AMD64" && "$(GUI)" == "yes"
+!if "$(CPU)" == "AMD64" && "$(GUI)" == "yes"
 # This option is required for VC2012 or later so that 64-bit gvim can
 # accept D&D from 32-bit applications.  NOTE: This disables 64-bit ASLR,
 # therefore the security level becomes as same as VC2010.

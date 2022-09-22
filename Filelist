@@ -555,7 +555,6 @@ SRC_DOS =	\
 		src/if_ole.cpp \
 		src/if_ole.h \
 		src/if_ole.idl \
-		src/if_perl_msvc/stdbool.h \
 		src/iscygpty.c \
 		src/iscygpty.h \
 		src/iid_ole.c \
@@ -624,10 +623,8 @@ SRC_DOS_BIN =	\
 		src/xpm/include/*.h \
 		src/xpm/x64/lib-vc14/libXpm.lib \
 		src/xpm/x64/lib/libXpm.a \
-		src/xpm/x64/lib/libXpm.lib \
 		src/xpm/x86/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
-		src/xpm/x86/lib/libXpm.lib \
 		runtime/bitmaps/vim.ico \
 		nsis/icons.zip \
 
