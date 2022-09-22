@@ -167,19 +167,7 @@ const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%(' .. patt
 
 # MAPPING_COMMAND {{{3
 
-patterns =<< trim END
-    CR
-    Plug
-    SID
-    buffer
-    expr
-    nowait
-    script
-    silent
-    special
-    unique
-END
-const MAPPING_COMMAND: string = $'noremap\|map\s.*<\c\%({patterns->join('\|')}\)\C>'
+const MAPPING_COMMAND: string = $'\%(\<sil\%[ent]!\=\s\+\)\=\%([nvxsoilct]\=\%(nore\|un\)map\>\)'
 
 # NORMAL_COMMAND {{{3
 

@@ -490,6 +490,8 @@ nunmap <buffer> (
 nunmap <buffer> )
 inoremap [ {
 inoremap ] }
+silent! xunmap i{
+silent! xunmap a{
 " END_INDENT
 
 " START_INDENT
