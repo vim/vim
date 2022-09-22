@@ -2340,7 +2340,6 @@ close_windows(
 {
     win_T	*wp;
     tabpage_T   *tp, *nexttp;
-    int		h = tabline_height();
     int		count = tabpage_index(NULL);
 
     ++RedrawingDisabled;
@@ -2384,10 +2383,6 @@ close_windows(
 
     if (count != tabpage_index(NULL))
 	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
-
-    redraw_tabline = TRUE;
-    if (h != tabline_height())
-	shell_new_rows();
 }
 
 /*
@@ -2446,18 +2441,11 @@ close_last_window_tabpage(
 	 * that below.
 	 */
 	goto_tabpage_tp(alt_tabpage(), FALSE, TRUE);
-	redraw_tabline = TRUE;
 
 	// Safety check: Autocommands may have closed the window when jumping
 	// to the other tab page.
 	if (valid_tabpage(prev_curtab) && prev_curtab->tp_firstwin == win)
-	{
-	    int	    h = tabline_height();
-
 	    win_close_othertab(win, free_buf, prev_curtab);
-	    if (h != tabline_height())
-		shell_new_rows();
-	}
 #ifdef FEAT_JOB_CHANNEL
 	entering_window(curwin);
 #endif
@@ -2909,6 +2897,8 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
     // When closing the last window in a tab page remove the tab page.
     if (tp->tp_firstwin == tp->tp_lastwin)
     {
+	int	h = tabline_height();
+
 	if (tp == first_tabpage)
 	    first_tabpage = tp->tp_next;
 	else
@@ -2924,6 +2914,9 @@ win_close_othertab(win_T *win, int free_buf, tabpage_T *tp)
 	    ptp->tp_next = tp->tp_next;
 	}
 	free_tp = TRUE;
+	redraw_tabline = TRUE;
+	if (h != tabline_height())
+	    shell_new_rows();
     }
 
     // Free the memory used for the window.
