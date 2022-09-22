@@ -163,7 +163,19 @@ const HIGHER_ORDER_COMMAND: string = '\<\%(' .. cmds->join('\|') .. '\):\@!'
 
 # MAPPING_COMMAND {{{3
 
-const MAPPING_COMMAND: string = 'map\s.*<\%(SID\|CR\|buffer\|expr\|nowait\|script\|silent\|special\|unique\)>'
+cmds =<< trim END
+    CR
+    Plug
+    SID
+    buffer
+    expr
+    nowait
+    script
+    silent
+    special
+    unique
+END
+const MAPPING_COMMAND: string = $'map\s.*<\c\%({cmds->join('\|')}\)\C>'
 
 # NORMAL_COMMAND {{{3
 
