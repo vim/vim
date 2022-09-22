@@ -143,9 +143,9 @@ const ASSIGNS_HEREDOC: string = $'^\%({COMMENT}\)\@!.*\%({HEREDOC_OPERATOR}\)\s\
 
 const CD_COMMAND: string = $'[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
 
-# DO_COMMAND {{{3
+# HIGHER_ORDER_COMMAND {{{3
 
-cmds =<< trim END
+cmds =<< trim eval END
     argdo!\=
     bufdo!\=
     cdo!\=
@@ -154,8 +154,12 @@ cmds =<< trim END
     ldo\=!\=
     tabdo\=
     windo
+    au\%[tocmd].*
+    com\%[mand].*
+    g\%[lobal]!{PATTERN_DELIMITER}.*
+    v\%[global]!{PATTERN_DELIMITER}.*
 END
-const DO_COMMAND: string = '\%(' .. cmds->join('\|') .. '\):\@!'
+const HIGHER_ORDER_COMMAND: string = '\%(' .. cmds->join('\|') .. '\):\@!'
 
 # MAPPING_COMMAND {{{3
 
@@ -264,7 +268,7 @@ const START_MIDDLE_END: dict<list<string>> = {
 }->map((_, kwds: list<string>) =>
     kwds->map((_, kwd: string) => kwd == ''
     ? ''
-    : $'\%(^\|[^|\\]\@1<=|\|\<sil\%[ent]\|{DO_COMMAND}\)\s*'
+    : $'\%(^\|[^|\\]\@1<=|\|\<sil\%[ent]\|{HIGHER_ORDER_COMMAND}\)\s*'
     .. $'\%({printf('\C\<\%%(%s\)\>:\@!\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
 # }}}2
 # EOL {{{2

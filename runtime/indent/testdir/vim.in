@@ -794,6 +794,9 @@ exe "noswapfile ".winsz."wincmd s"
 if true
 if true
 windo if true | echo | endif
+augroup Name
+autocmd WinLeave * if true | eval 1 + 2 | endif
+augroup END
 endif
 endif
 " END_INDENT
