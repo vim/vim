@@ -179,7 +179,7 @@ patterns =<< trim END
     special
     unique
 END
-const MAPPING_COMMAND: string = $'map\s.*<\c\%({patterns->join('\|')}\)\C>'
+const MAPPING_COMMAND: string = $'noremap\|map\s.*<\c\%({patterns->join('\|')}\)\C>'
 
 # NORMAL_COMMAND {{{3
 

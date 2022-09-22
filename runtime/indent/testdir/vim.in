@@ -488,6 +488,8 @@ endif
 " START_INDENT
 nunmap <buffer> (
 nunmap <buffer> )
+inoremap [ {
+inoremap ] }
 " END_INDENT
 
 " START_INDENT
