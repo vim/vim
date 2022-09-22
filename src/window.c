@@ -2656,7 +2656,9 @@ win_close(win_T *win, int free_buf)
 						      && win->w_buffer == NULL)
     {
 	// Need to close the window anyway, since the buffer is NULL.
+	block_autocmds();
 	win_close_othertab(win, FALSE, prev_curtab);
+	unblock_autocmds();
 	return FAIL;
     }
 
