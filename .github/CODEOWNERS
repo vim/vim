@@ -57,6 +57,7 @@ runtime/compiler/gawk.vim		@dkearns
 runtime/compiler/gjs.vim		@dkearns
 runtime/compiler/go.vim			@dbarnett
 runtime/compiler/haml.vim		@tpope
+runtime/compiler/hare.vim		@rsaihe
 runtime/compiler/icon.vim		@dkearns
 runtime/compiler/javac.vim		@dkearns
 runtime/compiler/jest.vim		@dkearns
@@ -137,6 +138,7 @@ runtime/ftplugin/gitsendemail.vim	@tpope
 runtime/ftplugin/go.vim			@dbarnett
 runtime/ftplugin/gprof.vim		@dpelle
 runtime/ftplugin/haml.vim		@tpope
+runtime/ftplugin/hare.vim		@rsaihe
 runtime/ftplugin/hgcommit.vim		@k-takata
 runtime/ftplugin/html.vim		@dkearns
 runtime/ftplugin/i3config.vim		@hiqua
@@ -230,6 +232,7 @@ runtime/indent/gitconfig.vim		@tpope
 runtime/indent/gitolite.vim		@sitaramc
 runtime/indent/go.vim			@dbarnett
 runtime/indent/haml.vim			@tpope
+runtime/indent/hare.vim			@rsaihe
 runtime/indent/idlang.vim		@dkearns
 runtime/indent/j.vim			@glts
 runtime/indent/java.vim			@xuhdev
@@ -346,6 +349,7 @@ runtime/syntax/godoc.vim		@dbarnett
 runtime/syntax/gprof.vim		@dpelle
 runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/haml.vim			@tpope
+runtime/syntax/hare.vim			@rsaihe
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
 runtime/syntax/html.vim			@dkearns
