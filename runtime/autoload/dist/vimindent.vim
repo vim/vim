@@ -26,7 +26,7 @@ enddef
 # }}}2
 
 # Init {{{1
-var cmds: list<string>
+var heredoc: list<string>
 # Tokens {{{2
 # OPENING_BRACKET {{{3
 
@@ -145,7 +145,7 @@ const CD_COMMAND: string = $'[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
 
 # HIGHER_ORDER_COMMAND {{{3
 
-cmds =<< trim eval END
+heredoc =<< trim eval END
     argdo!\=
     bufdo!\=
     cdo!\=
@@ -159,11 +159,11 @@ cmds =<< trim eval END
     g\%[lobal]!\={PATTERN_DELIMITER}.*
     v\%[global]!\={PATTERN_DELIMITER}.*
 END
-const HIGHER_ORDER_COMMAND: string = '\<\%(' .. cmds->join('\|') .. '\):\@!'
+const HIGHER_ORDER_COMMAND: string = '\<\%(' .. heredoc->join('\|') .. '\):\@!'
 
 # MAPPING_COMMAND {{{3
 
-cmds =<< trim END
+heredoc =<< trim END
     CR
     Plug
     SID
@@ -175,7 +175,7 @@ cmds =<< trim END
     special
     unique
 END
-const MAPPING_COMMAND: string = $'map\s.*<\c\%({cmds->join('\|')}\)\C>'
+const MAPPING_COMMAND: string = $'map\s.*<\c\%({heredoc->join('\|')}\)\C>'
 
 # NORMAL_COMMAND {{{3
 
@@ -196,7 +196,7 @@ const ENDS_BLOCK: string = '^\s*\%('
 
 # ENDS_BLOCK_OR_CLAUSE {{{3
 
-cmds =<< trim END
+heredoc =<< trim END
     en\%[dif]
     el\%[se]
     endfor\=
@@ -208,7 +208,7 @@ cmds =<< trim END
     aug\%[roup]\s\+[eE][nN][dD]
 END
 
-const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. cmds->join('\|') .. $'\){END_OF_COMMAND}'
+const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. heredoc->join('\|') .. $'\){END_OF_COMMAND}'
     .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_COMMAND}'
     .. $'\|^\s*elseif\=\s\+\%({OPERATOR}\)\@!'
 
@@ -234,7 +234,7 @@ const STARTS_CURLY_BLOCK: string = '\%('
 # highlighting plugin fails  to correctly recognize a heredoc which  is far away
 # and/or not displayed because inside a fold).
 # }}}
-cmds =<< trim END
+heredoc =<< trim END
     if
     el\%[se]
     elseif\=
@@ -247,7 +247,7 @@ cmds =<< trim END
     \%(export\s\+\)\=def
     aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
 END
-const STARTS_NAMED_BLOCK: string = '^\s*\%(sil\%[ent]\s\+\)\=\%(' .. cmds->join('\|') .. '\)\>:\@!'
+const STARTS_NAMED_BLOCK: string = '^\s*\%(sil\%[ent]\s\+\)\=\%(' .. heredoc->join('\|') .. '\)\>:\@!'
 
 # STARTS_FUNCTION {{{3
 
