@@ -1125,6 +1125,10 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
         return false
     endif
 
+    if line.text =~ '\<argd\%[elete]\s\+\*\s*$'
+        return false
+    endif
+
     # Technically, that's wrong.  A  line might start with a range  and end with a
     # line continuation symbol.  But it's unlikely.  And it's useful to assume the
     # opposite because it  prevents us from conflating a mark  with an operator or

@@ -852,3 +852,8 @@ echo []
 b: 2}]
 }
 " END_INDENT
+
+" START_INDENT
+silent! argdel *
+edit file
+" END_INDENT
