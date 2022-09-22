@@ -1323,13 +1323,11 @@ do_set_string(
 	/*
 	 * Set 'keywordprg' to ":help" if an empty
 	 * value was passed to :set by the user.
-	 * Misuse errbuf[] for the resulting string.
 	 */
 	if (varp == (char_u *)&p_kp && (*arg == NUL || *arg == ' '))
 	{
-	    STRCPY(errbuf, ":help");
 	    save_arg = arg;
-	    arg = (char_u *)errbuf;
+	    arg = (char_u *)":help";
 	}
 	/*
 	 * Convert 'backspace' number to string, for
@@ -1417,7 +1415,7 @@ do_set_string(
 	 * but do remove it for "\\\\machine\\path".
 	 * The reverse is found in ExpandOldSetting().
 	 */
-	while (*arg && !VIM_ISWHITE(*arg))
+	while (*arg != NUL && !VIM_ISWHITE(*arg))
 	{
 	    int i;
 
@@ -1427,7 +1425,7 @@ do_set_string(
 			    && vim_isfilec(arg[1])
 			    && !VIM_ISWHITE(arg[1])
 			    && (arg[1] != '\\'
-					|| (s == newval && arg[2] != '\\')))
+					   || (s == newval && arg[2] != '\\')))
 #endif
 						)
 		++arg;	// remove backslash
@@ -1565,8 +1563,8 @@ do_set_string(
 	    }
 	}
 
-	if (save_arg != NULL)   // number for 'whichwrap'
-	    arg = save_arg;
+	if (save_arg != NULL)
+	    arg = save_arg;  // arg was temporarily changed, restore it
     }
 
     /*
