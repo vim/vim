@@ -536,6 +536,7 @@ def Offset( # {{{2
                 && !line_A.isfirst
                 || line_A.text =~ LINE_CONTINUATION_AT_SOL
                 && line_A.text !~ PLUS_MINUS_COMMAND
+                || line_A.text->Is_IN_KeywordForLoop(line_B.text)
             return 2 * shiftwidth()
         else
             return shiftwidth()
@@ -1037,6 +1038,10 @@ def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{3
 enddef
 
 def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{3
+    if line_1.text->Is_IN_KeywordForLoop(line_2.text)
+        return false
+    endif
+
     if line_1.text =~ RANGE_AT_SOL
             || line_1.text =~ PLUS_MINUS_COMMAND
         return true
@@ -1054,6 +1059,11 @@ def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{3
     var line_2_is_good: bool = !line_2->EndsWithLineContinuation()
 
     return line_1_is_good && line_2_is_good
+enddef
+
+def Is_IN_KeywordForLoop(line_1: string, line_2: string): bool # {{{3
+    return line_2 =~ '^\s*for\s'
+        && line_1 =~ '^\s*in\s'
 enddef
 
 def InCommentOrString(): bool # {{{3

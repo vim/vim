@@ -833,3 +833,15 @@ echo
 endif
 endfunction
 " END_INDENT
+
+" START_INDENT
+var matchpairs: string = &matchpairs
+var pairs: dict<list<string>>
+for [opening: string, closing: string]
+	in matchpairs
+	->split(',')
+	->map((_, v: string): list<string> => split(v, ':'))
+    pairs[opening] = [escape(opening, '[]'), escape(closing, '[]'),  'nW', 'w$']
+    pairs[closing] = [escape(opening, '[]'), escape(closing, '[]'), 'bnW', 'w0']
+endfor
+" END_INDENT
