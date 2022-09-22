@@ -156,10 +156,10 @@ cmds =<< trim eval END
     windo
     au\%[tocmd].*
     com\%[mand].*
-    g\%[lobal]!{PATTERN_DELIMITER}.*
-    v\%[global]!{PATTERN_DELIMITER}.*
+    g\%[lobal]!\={PATTERN_DELIMITER}.*
+    v\%[global]!\={PATTERN_DELIMITER}.*
 END
-const HIGHER_ORDER_COMMAND: string = '\%(' .. cmds->join('\|') .. '\):\@!'
+const HIGHER_ORDER_COMMAND: string = '\<\%(' .. cmds->join('\|') .. '\):\@!'
 
 # MAPPING_COMMAND {{{3
 
