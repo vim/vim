@@ -193,7 +193,7 @@ const ENDS_BLOCK: string = '^\s*\%('
     .. '\|' .. 'endw\%[hile]'
     .. '\|' .. 'endt\%[ry]'
     .. '\|' .. 'enddef'
-    .. '\|' .. 'endfu\%[nction]'
+    .. '\|' .. 'endf\%[unction]'
     .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
     .. '\|' .. $'{CLOSING_BRACKET}'
     .. $'\){END_OF_COMMAND}'
@@ -208,7 +208,7 @@ patterns =<< trim END
     endt\%[ry]
     fina\|finally\=
     enddef
-    endfu\%[nction]
+    endf\%[unction]
     aug\%[roup]\s\+[eE][nN][dD]
 END
 
