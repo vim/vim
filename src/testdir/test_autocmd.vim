@@ -527,9 +527,12 @@ func Test_WinClosed_switch_tab()
     autocmd WinClosed * tabprev | bwipe!
   augroup END
   close
+  " Check that the tabline has been fully removed
+  call assert_equal([1, 1], win_screenpos(0))
 
   autocmd! test-WinClosed
   augroup! test-WinClosed
+  %bwipe!
 endfunc
 
 func s:AddAnAutocmd()
