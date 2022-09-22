@@ -42,4 +42,4 @@ macos_task:
     - make -j${NPROC}
   test_script:
     - src/vim --version
-    - make -j1 test
+    - make test
