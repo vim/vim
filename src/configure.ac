@@ -1990,7 +1990,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   AC_PATH_PROG(vi_cv_path_ruby, $RUBY_CMD)
   if test "X$vi_cv_path_ruby" != "X"; then
     AC_MSG_CHECKING(Ruby version)
-    if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
+    if $vi_cv_path_ruby -e 'RUBY_VERSION >= "1.9.1" or exit 1' >/dev/null 2>/dev/null; then
       AC_MSG_RESULT(OK)
       AC_MSG_CHECKING(Ruby rbconfig)
       ruby_rbconfig="RbConfig"
@@ -2009,7 +2009,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
         fi
         rubyversion=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['ruby_version']].gsub(/\./, '')[[0,2]]"`
 	if test "X$rubyversion" = "X"; then
-	  rubyversion=`$vi_cv_path_ruby -e "print ((VERSION rescue RUBY_VERSION)).gsub(/\./, '')[[0,2]]"`
+	  rubyversion=`$vi_cv_path_ruby -e "print RUBY_VERSION.gsub(/\./, '')[[0,2]]"`
 	fi
         RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
 	rubylibs=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['LIBS']]"`
@@ -2062,7 +2062,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	AC_MSG_RESULT(not found; disabling Ruby)
       fi
     else
-      AC_MSG_RESULT(too old; need Ruby version 1.6.0 or later)
+      AC_MSG_RESULT(too old; need Ruby version 1.9.1 or later)
     fi
   fi
 

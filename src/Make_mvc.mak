@@ -86,7 +86,7 @@
 #	  RUBY=[Path to Ruby directory]
 #	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
 #	  RUBY_VER=[Ruby version, eg 19, 22] (default is 22)
-#	  RUBY_API_VER_LONG=[Ruby API version, eg 1.8, 1.9.1, 2.2.0]
+#	  RUBY_API_VER_LONG=[Ruby API version, eg 1.9.1, 2.2.0]
 #	  		    (default is 2.2.0)
 #	    You must set RUBY_API_VER_LONG when change RUBY_VER.
 #	    Note: If you use Ruby 1.9.3, set as follows:
@@ -1076,54 +1076,35 @@ RUBY_API_VER_LONG = $(RUBY_VER_LONG)
 RUBY_API_VER = $(RUBY_API_VER_LONG:.=)
 ! endif
 
-! if $(RUBY_VER) >= 18
-
-!  ifndef RUBY_PLATFORM
-!   if "$(CPU)" == "i386"
+! ifndef RUBY_PLATFORM
+!  if "$(CPU)" == "i386"
 RUBY_PLATFORM = i386-mswin32
-!   else # CPU
+!  else # CPU
 RUBY_PLATFORM = x64-mswin64
-!   endif # CPU
-!   if $(RUBY_VER) > 19
+!  endif # CPU
 RUBY_PLATFORM = $(RUBY_PLATFORM)_$(MSVCRT_VER)
-!   endif # RUBY_VER
-!  endif # RUBY_PLATFORM
+! endif # RUBY_PLATFORM
 
-!  ifndef RUBY_INSTALL_NAME
-!   ifndef RUBY_MSVCRT_NAME
+! ifndef RUBY_INSTALL_NAME
+!  ifndef RUBY_MSVCRT_NAME
 # Base name of msvcrXX.dll which is used by ruby's dll.
 RUBY_MSVCRT_NAME = $(MSVCRT_NAME)
-!   endif # RUBY_MSVCRT_NAME
-!   if "$(CPU)" == "i386"
+!  endif # RUBY_MSVCRT_NAME
+!  if "$(CPU)" == "i386"
 RUBY_INSTALL_NAME = $(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
-!   else # CPU
-!    if EXIST($(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw-ucrt)
+!  else # CPU
+!   if EXIST($(RUBY)/lib/ruby/$(RUBY_API_VER_LONG)/x64-mingw-ucrt)
 RUBY_INSTALL_NAME = x64-ucrt-ruby$(RUBY_API_VER)
-!    else
+!   else
 RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
-!    endif
-!   endif # CPU
-!  endif # RUBY_INSTALL_NAME
-
-! else # $(RUBY_VER) >= 18
-
-!  ifndef RUBY_PLATFORM
-RUBY_PLATFORM = i586-mswin32
-!  endif
-!  ifndef RUBY_INSTALL_NAME
-RUBY_INSTALL_NAME = mswin32-ruby$(RUBY_API_VER)
-!  endif
-
-! endif # $(RUBY_VER) >= 18
+!   endif
+!  endif # CPU
+! endif # RUBY_INSTALL_NAME
 
 ! message Ruby requested (version $(RUBY_VER)) - root dir is "$(RUBY)"
 CFLAGS = $(CFLAGS) -DFEAT_RUBY
 RUBY_OBJ = $(OUTDIR)\if_ruby.obj
-! if $(RUBY_VER) >= 19
 RUBY_INC = /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
-! else
-RUBY_INC = /I "$(RUBY)\lib\ruby\$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
-! endif
 RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
 # Do we want to load Ruby dynamically?
 ! if "$(DYNAMIC_RUBY)" == "yes"
