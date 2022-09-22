@@ -815,6 +815,7 @@ func Test_shortmess_F2()
   call assert_match('file2', execute('bn', ''))
   bwipe
   bwipe
+  call assert_fails('call test_getvalue("abc")', 'E475:')
 endfunc
 
 func Test_local_scrolloff()

@@ -7216,6 +7216,14 @@ func Test_refcount()
     call d.Func()
     unlet d
     delfunc DictFunc
+
+    call assert_equal(-1, test_refcount(test_null_job()))
+    call assert_equal(-1, test_refcount(test_null_channel()))
+    call assert_equal(-1, test_refcount(test_null_function()))
+    call assert_equal(-1, test_refcount(test_null_partial()))
+    call assert_equal(-1, test_refcount(test_null_blob()))
+    call assert_equal(-1, test_refcount(test_null_list()))
+    call assert_equal(-1, test_refcount(test_null_dict()))
 endfunc
 
 " Test for missing :endif, :endfor, :endwhile and :endtry           {{{1
