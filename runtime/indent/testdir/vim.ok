@@ -819,3 +819,13 @@ function Func()
     endif
 endfunction
 " END_INDENT
+
+" START_INDENT
+function Func()
+    if v:true
+	+
+	echo
+	-
+    endif
+endfunction
+" END_INDENT

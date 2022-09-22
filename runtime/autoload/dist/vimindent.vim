@@ -185,6 +185,15 @@ const MAPPING_COMMAND: string = $'map\s.*<\c\%({patterns->join('\|')}\)\C>'
 
 const NORMAL_COMMAND: string = '\<norm\%[al]!\=\s*\S\+$'
 
+# PLUS_MINUS_COMMAND {{{3
+
+# In legacy, the `:+` and `:-` commands are not required to be preceded by a colon.
+# As a result, when `+` or `-` is alone on a line, there is ambiguity.
+# It might be an operator or a command.
+# To not break the indentation in legacy scripts, we might need to consider such
+# lines as commands.
+const PLUS_MINUS_COMMAND: string = '^\s*[+-]\s*$'
+
 # ENDS_BLOCK {{{3
 
 const ENDS_BLOCK: string = '^\s*\%('
@@ -538,6 +547,7 @@ def Offset( # {{{2
         elseif line_B->EndsWithLineContinuation()
                 && !line_A.isfirst
                 || line_A.text =~ LINE_CONTINUATION_AT_SOL
+                && line_A.text !~ PLUS_MINUS_COMMAND
             return 2 * shiftwidth()
         else
             return shiftwidth()
@@ -1040,6 +1050,7 @@ enddef
 
 def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{3
     if line_1.text =~ RANGE_AT_SOL
+            || line_1.text =~ PLUS_MINUS_COMMAND
         return true
     endif
 
@@ -1108,6 +1119,10 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
     # Could happen if there is no code above us, and we're not on the 1st line.
     # In that case, `PrevCodeLine()` returns `{lnum: 0, line: ''}`.
     if line.lnum == 0
+        return false
+    endif
+
+    if line.text =~ PLUS_MINUS_COMMAND
         return false
     endif
 
