@@ -1868,7 +1868,10 @@ fill_partial_and_closure(
 		pt->pt_outer.out_loop[depth].var_count =
 					    lvi->lvi_loop[depth].var_count;
 	    }
+	    pt->pt_outer.out_loop_size = lvi->lvi_depth;
 	}
+	else
+	    pt->pt_outer.out_loop_size = 0;
 
 	// If the function currently executing returns and the closure is still
 	// being referenced, we need to make a copy of the context (arguments
@@ -5739,14 +5742,10 @@ call_def_function(
 	    if (partial != NULL)
 	    {
 		outer_T *outer = get_pt_outer(partial);
-		int	depth;
-		void	*ptr = outer->out_stack;
 
-		// see if any stack was set
-		for (depth = 0; ptr == NULL && depth < MAX_LOOP_DEPTH; ++depth)
-		    ptr = outer->out_loop[depth].stack;
-		if (ptr == NULL)
+		if (outer->out_stack == NULL && outer->out_loop_size == 0)
 		{
+		    // no stack was set
 		    if (current_ectx != NULL)
 		    {
 			if (current_ectx->ec_outer_ref != NULL
