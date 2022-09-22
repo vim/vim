@@ -1166,6 +1166,7 @@ lambda_function_body(
 	garray_T    *default_args,
 	char_u	    *ret_type)
 {
+    char_u	*start = *arg;
     int		evaluate = (evalarg->eval_flags & EVAL_EVALUATE);
     garray_T	*gap = &evalarg->eval_ga;
     garray_T	*freegap = &evalarg->eval_freega;
@@ -1179,9 +1180,10 @@ lambda_function_body(
     int		lnum_save = -1;
     linenr_T	sourcing_lnum_top = SOURCING_LNUM;
 
-    if (!ends_excmd2(*arg, skipwhite(*arg + 1)))
+    *arg = skipwhite(*arg + 1);
+    if (**arg == '|' || !ends_excmd2(start, *arg))
     {
-	semsg(_(e_trailing_characters_str), *arg + 1);
+	semsg(_(e_trailing_characters_str), *arg);
 	return FAIL;
     }
 
