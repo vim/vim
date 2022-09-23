@@ -2998,6 +2998,8 @@ endfunc
 " Tests for SigUSR1 autocmd event, which is only available on posix systems.
 func Test_autocmd_sigusr1()
   CheckUnix
+  " FIXME: should this work on MacOS M1?
+  CheckNotMacM1
   CheckExecutable /bin/kill
 
   let g:sigusr1_passed = 0
