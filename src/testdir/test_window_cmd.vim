@@ -1,6 +1,7 @@
 " Tests for window cmd (:wincmd, :split, :vsplit, :resize and etc...)
 
 source check.vim
+source screendump.vim
 
 func Test_window_cmd_ls0_with_split()
   set ls=0
@@ -1815,6 +1816,36 @@ function Test_nosplitscroll_misc()
   %bwipeout!
   set splitbelow&
   set splitscroll&
+endfunc
+
+function Test_nosplitscroll_callback()
+  CheckScreendump
+  let lines =<< trim END
+    set nosplitscroll
+    call setline(1, range(&lines))
+    function WincmdCb(a, b)
+      split | wincmd p
+    endfunction
+    function TermCb(a, b)
+      close | split
+    endfunction
+    nnoremap t <cmd>call popup_create(term_start(&shell, { 'hidden': 1, 'exit_cb': 'TermCb' }), {})<CR>
+    nnoremap j <cmd>call job_start([&shell, &shellcmdflag, "echo"], { 'exit_cb': 'WincmdCb' })<CR>
+  END
+  call writefile(lines, 'XTestNosplitscrollCallback', 'D')
+  let buf = RunVimInTerminal('-S XTestNosplitscrollCallback', #{rows: 8})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_nosplitscroll_callback_1', {})
+
+  call term_sendkeys(buf, ":quit\<CR>Htexit\<CR>")
+  call VerifyScreenDump(buf, 'Test_nosplitscroll_callback_2', {})
+
+  call term_sendkeys(buf, ":set sb\<CR>:quit\<CR>Gj")
+  call VerifyScreenDump(buf, 'Test_nosplitscroll_callback_3', {})
+
+  call term_sendkeys(buf, ":quit\<CR>Gtexit\<CR>")
+  call VerifyScreenDump(buf, 'Test_nosplitscroll_callback_4', {})
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
