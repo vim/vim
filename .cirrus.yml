@@ -11,8 +11,6 @@ freebsd_task:
     - name: FreeBSD 12.3
       freebsd_instance:
         image_family: freebsd-12-3
-  only_if: $CIRRUS_TAG == ''
-  timeout_in: 20m
   install_script:
     - pkg update -f
     - pkg install -y gettext
@@ -31,8 +29,6 @@ macos_task:
   name: macOS m1
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
-  only_if: $CIRRUS_TAG == ''
-  timeout_in: 20m
   install_script:
     - brew update
     - brew install gettext libtool
