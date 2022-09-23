@@ -400,6 +400,7 @@ clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
 		    // need to keep it around.
 		    --etga->ga_len;
 		    *eap->cmdlinep = ((char_u **)etga->ga_data)[etga->ga_len];
+		    vim_free(evalarg->eval_tofree);
 		}
 		else
 		    *eap->cmdlinep = evalarg->eval_tofree;
