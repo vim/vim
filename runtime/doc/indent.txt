@@ -1238,8 +1238,8 @@ a continuation line starting with a backslash, and defaults to
 `shiftwidth()` is added inside blocks surrounded with brackets.  It defaults to
 `v:false`.
 `searchpair_timeout` expects a number which will be passed to `searchpair()` as
-a timeout.  Increasing the value might give more accurate results, but cause
-the indentation to take more time.  It defaults to 100 (milliseconds).
+a timeout.  Increasing the value might give more accurate results, but also
+causes the indentation to take more time.  It defaults to 100 (milliseconds).
 
 Example of configuration:
 
