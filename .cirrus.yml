@@ -37,7 +37,7 @@ macos_task:
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
     - ./configure --with-features=${FEATURES} --disable-channel --disable-messages
-    - make -j${NPROC}
+    - make -j${NPROC} CC=clang
   test_script:
     - src/vim --version
     - make test
