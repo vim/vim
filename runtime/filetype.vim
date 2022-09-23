@@ -1275,6 +1275,9 @@ au BufNewFile,BufRead .netrc			setf netrc
 " Nginx
 au BufNewFile,BufRead *.nginx,nginx*.conf,*nginx.conf,*/etc/nginx/*,*/usr/local/nginx/conf/*,*/nginx/*.conf			setf nginx
 
+" Nim file
+au BufNewFile,BufRead *.nim			setf nim
+
 " Ninja file
 au BufNewFile,BufRead *.ninja			setf ninja
 
