@@ -74,7 +74,16 @@ if &lines < 24 || &columns < 80
 endif
 
 if has('reltime')
-  let s:start_time = reltime()
+  let s:run_start_time = reltime()
+
+  if !filereadable('starttime')
+    " first test, store the overall test starting time
+    let s:test_start_time = localtime()
+    call writefile([string(s:test_start_time)], 'starttime')
+  else
+    " second or later test, read the overall test starting time
+    let s:test_start_time = readfile('starttime')[0]->str2nr()
+  endif
 endif
 
 " Always use forward slashes.
@@ -173,12 +182,14 @@ function GetAllocId(name)
   return lnum - top - 1
 endfunc
 
-let g:func_start = reltime()
+if has('reltime')
+  let g:func_start = reltime()
+endif
 
 func RunTheTest(test)
   let prefix = ''
   if has('reltime')
-    let prefix = 'took ' .. reltimestr(reltime(g:func_start)) .. '; now '
+    let prefix = strftime('%M:%S', localtime() - s:test_start_time) .. ' '
     let g:func_start = reltime()
   endif
   echoconsole prefix .. 'Executing ' .. a:test
@@ -377,7 +388,7 @@ func FinishTesting()
   endif
   if s:done > 0 && has('reltime')
     let message = s:t_bold .. message .. repeat(' ', 40 - len(message))
-    let message ..= ' in ' .. reltimestr(reltime(s:start_time)) .. ' seconds'
+    let message ..= ' in ' .. reltimestr(reltime(s:run_start_time)) .. ' seconds'
     let message ..= s:t_normal
   endif
   echo message

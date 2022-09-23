@@ -35,6 +35,7 @@ report:
 	@if exist test.log ( copy /y test.log test_result.log > nul ) \
 		else ( echo No failures reported > test_result.log )
 	$(VIMPROG) -u NONE $(COMMON_ARGS) -S summarize.vim messages
+	-if exist starttime del starttime
 	@echo.
 	@echo Test results:
 	@cmd /c type test_result.log
@@ -48,6 +49,7 @@ $(NEW_TESTS):
 	-if exist $@.res del $@.res
 	-if exist test.log del test.log
 	-if exist messages del messages
+	-if exist starttime del starttime
 	@$(MAKE) -nologo -f Make_mvc.mak $@.res VIMPROG=$(VIMPROG)
 	@type messages
 	@if exist test.log exit 1
@@ -71,6 +73,7 @@ clean:
 	-if exist test.log del test.log
 	-if exist test_result.log del test_result.log
 	-if exist messages del messages
+	-if exist starttime del starttime
 	-if exist benchmark.out del benchmark.out
 	-if exist opt_test.vim del opt_test.vim
 	-if exist guidialog del guidialog
@@ -80,6 +83,7 @@ nolog:
 	-if exist test.log del test.log
 	-if exist test_result.log del test_result.log
 	-if exist messages del messages
+	-if exist starttime del starttime
 
 
 # Tiny tests.  Works even without the +eval feature.
