@@ -2956,6 +2956,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When neither "lastline" nor "truncate" is included, a last line that
 	doesn't fit is replaced with "@" lines.
 
+	The "@" can be changed by setting lastline in 'fillchars', and is
+	highlighted with |hl-NonText|.
+
 						*'eadirection'* *'ead'*
 'eadirection' 'ead'	string	(default "both")
 			global
@@ -3420,6 +3423,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  foldsep	'|'		open fold middle character
 	  diff		'-'		deleted lines of the 'diff' option
 	  eob		'~'		empty lines below the end of a buffer
+	  lastline	'@'		'display' contains lastline/truncate
 
 	Any one that is omitted will fall back to the default.  For "stl" and
 	"stlnc" the space will be used when there is highlighting, '^' or '='
@@ -3442,6 +3446,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  fold		Folded			|hl-Folded|
 	  diff		DiffDelete		|hl-DiffDelete|
 	  eob		EndOfBuffer		|hl-EndOfBuffer|
+	  lastline	NonText			|hl-NonText|
 
 		*'fixendofline'* *'fixeol'* *'nofixendofline'* *'nofixeol'*
 'fixendofline' 'fixeol'	boolean	(default on)

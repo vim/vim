@@ -416,5 +416,31 @@ func Test_display_lastline()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_display_lastline_euro()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, ['aaa', 'b'->repeat(100)])
+      set display=truncate
+      set fillchars=lastline:€
+      vsplit
+      100wincmd <
+  END
+  call writefile(lines, 'XdispLastline', 'D')
+  let buf = RunVimInTerminal('-S XdispLastline', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_display_lastline_1_euro', {})
+
+  call term_sendkeys(buf, ":set display=lastline\<CR>")
+  call VerifyScreenDump(buf, 'Test_display_lastline_2_euro', {})
+
+  call term_sendkeys(buf, ":100wincmd >\<CR>")
+  call VerifyScreenDump(buf, 'Test_display_lastline_3_euro', {})
+
+  call term_sendkeys(buf, ":set display=truncate\<CR>")
+  call VerifyScreenDump(buf, 'Test_display_lastline_4_euro', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -233,9 +233,6 @@ MS-Windows: did path modifier :p:8 stop working?  #8600
 Version of getchar() that does not move the cursor - #10603 Use a separate
 argument for the new flag.
 
-Add "lastline" entry to 'fillchars' to specify a character instead of '@'.
-#10963
-
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
 Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
