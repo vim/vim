@@ -522,10 +522,12 @@ compile_load(
 	    {
 		type = lvar.lv_type;
 		idx = lvar.lv_idx;
-		outer_loop_depth = lvar.lv_loop_depth;
-		outer_loop_idx = lvar.lv_loop_idx;
 		if (lvar.lv_from_outer != 0)
+		{
 		    gen_load_outer = lvar.lv_from_outer;
+		    outer_loop_depth = lvar.lv_loop_depth;
+		    outer_loop_idx = lvar.lv_loop_idx;
+		}
 		else
 		    gen_load = TRUE;
 	    }
@@ -1096,6 +1098,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 
 	*arg = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum]
 									 + off;
+	evalarg.eval_using_cmdline = FALSE;
     }
 
     clear_evalarg(&evalarg, NULL);
