@@ -184,7 +184,7 @@ syn keyword i3ConfigBlockKeyword mode bar height colors i3bar_command status_com
 syn region i3ConfigBlock start=+.*s\?{$+ end=+^}$+ contains=i3ConfigBlockKeyword,i3ConfigString,i3ConfigBind,i3ConfigComment,i3ConfigFont,i3ConfigBoolean,i3ConfigNumber,i3ConfigOperator,i3ConfigModifier,i3ConfigParen,i3ConfigColor,i3ConfigVariable,i3ConfigVariableModifier transparent keepend extend
 
 " Line continuation
-syn region i3ConfigLineCont start=/^.*\\$/ end=/^[^\\]*$/ contains=i3ConfigBlockKeyword,i3ConfigString,i3ConfigBind,i3ConfigComment,i3ConfigFont,i3ConfigBoolean,i3ConfigColor,i3ConfigVariable transparent keepend extend
+syn region i3ConfigLineCont start=/^.*\\$/ end=/^$/ end=/[^\\]$/ contains=i3ConfigBlockKeyword,i3ConfigString,i3ConfigBind,i3ConfigComment,i3ConfigFont,i3ConfigBoolean,i3ConfigColor,i3ConfigVariable keepend extend
 
 " Define the highlighting.
 hi def link i3ConfigCommand                         Function
