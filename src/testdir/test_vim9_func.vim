@@ -3532,34 +3532,6 @@ def Test_partial_null_function()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
-" Using "idx" from a legacy global function does not work.
-" This caused a crash when called from legacy context.
-func Test_partial_call_fails()
-  let lines =<< trim END
-      vim9script
-
-      var l = ['a', 'b', 'c']
-      def Iter(container: any): any
-        var idx = -1
-        var obj = {state: container}
-        def g:NextItem__(self: dict<any>): any
-          ++idx
-          return self.state[idx]
-        enddef
-        obj.__next__ = function('g:NextItem__', [obj])
-        return obj
-      enddef
-
-      var it = Iter(l)
-      echo it.__next__()
-  END
-  call writefile(lines, 'XpartialCall', 'D')
-  try
-    source XpartialCall
-  catch /E1248:/
-  endtry
-endfunc
-
 def Test_cmd_modifier()
   tab echo '0'
   v9.CheckDefFailure(['5tab echo 3'], 'E16:')
