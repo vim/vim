@@ -153,6 +153,8 @@ static int	  compl_no_insert = FALSE;	// FALSE: select & insert
 						// TRUE: noinsert
 static int	  compl_no_select = FALSE;	// FALSE: select & insert
 						// TRUE: noselect
+static int	  compl_longest = FALSE;	// FALSE: insert full match
+						// TRUE: insert longest prefix
 
 // Selected one of the matches.  When FALSE the match was edited or using the
 // longest common string.
@@ -1042,10 +1044,13 @@ completeopt_was_set(void)
 {
     compl_no_insert = FALSE;
     compl_no_select = FALSE;
+    compl_longest = FALSE;
     if (strstr((char *)p_cot, "noselect") != NULL)
 	compl_no_select = TRUE;
     if (strstr((char *)p_cot, "noinsert") != NULL)
 	compl_no_insert = TRUE;
+    if (strstr((char *)p_cot, "longest") != NULL)
+	compl_longest = TRUE;
 }
 
 
@@ -2383,7 +2388,7 @@ ins_compl_prep(int c)
     if (ctrl_x_mode_not_defined_yet()
 			   || (ctrl_x_mode_normal() && !compl_started))
     {
-	compl_get_longest = (strstr((char *)p_cot, "longest") != NULL);
+	compl_get_longest = compl_longest;
 	compl_used_match = TRUE;
 
     }
@@ -2864,6 +2869,7 @@ set_completion(colnr_T startcol, list_T *list)
 	ins_compl_prep(' ');
     ins_compl_clear();
     ins_compl_free();
+    compl_get_longest = compl_longest;
 
     compl_direction = FORWARD;
     if (startcol > curwin->w_cursor.col)
@@ -2888,10 +2894,11 @@ set_completion(colnr_T startcol, list_T *list)
     compl_cont_status = 0;
 
     compl_curr_match = compl_first_match;
-    if (compl_no_insert || compl_no_select)
+    int no_select = compl_no_select || compl_longest;
+    if (compl_no_insert || no_select)
     {
 	ins_complete(K_DOWN, FALSE);
-	if (compl_no_select)
+	if (no_select)
 	    // Down/Up has no real effect.
 	    ins_complete(K_UP, FALSE);
     }
