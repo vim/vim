@@ -6380,7 +6380,8 @@ handle_subscript(
 	    **arg = NUL;
 
 	    idx = find_exported(rettv->vval.v_number, exp_name, &ufunc, &type,
-			    evalarg->eval_cctx, evalarg->eval_cstack, verbose);
+		       evalarg == NULL ? NULL : evalarg->eval_cctx,
+		       evalarg == NULL ? NULL : evalarg->eval_cstack, verbose);
 	    **arg = cc;
 
 	    if (idx < 0 && ufunc == NULL)
