@@ -40,4 +40,4 @@ macos_task:
     - make -j${NPROC} CC=clang
   test_script:
     - src/vim --version
-    - make test
+    - make CC=clang test
