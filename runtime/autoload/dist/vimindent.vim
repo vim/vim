@@ -198,7 +198,7 @@ const ENDS_BLOCK: string = '^\s*\%('
     .. '\|' .. 'enddef'
     .. '\|' .. 'endf\%[unction]'
     .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
-    .. '\|' .. $'{CLOSING_BRACKET}'
+    .. '\|' .. CLOSING_BRACKET
     .. $'\){END_OF_COMMAND}'
 
 # ENDS_BLOCK_OR_CLAUSE {{{3
@@ -345,7 +345,7 @@ const LINE_CONTINUATION_AT_SOL: string = '^\s*\%('
     .. '\|' .. '|'
     # TODO: `}` at the start of a line is not necessarily a line continuation.
     # Could be the end of a block.
-    .. '\|' .. $'{CLOSING_BRACKET}'
+    .. '\|' .. CLOSING_BRACKET
     .. '\)'
 
 # RANGE_AT_SOL {{{3
@@ -1102,6 +1102,7 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
     endif
 
     # In `argdelete *`, `*` is not a multiplication operator.
+    # TODO: Other commands can accept `*` as an argument.  Handle them too.
     if line.text =~ '\<argd\%[elete]\s\+\*\s*$'
         return false
     endif
