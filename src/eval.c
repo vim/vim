@@ -400,6 +400,7 @@ clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
 		    // need to keep it around.
 		    --etga->ga_len;
 		    *eap->cmdlinep = ((char_u **)etga->ga_data)[etga->ga_len];
+		    vim_free(evalarg->eval_tofree);
 		}
 		else
 		    *eap->cmdlinep = evalarg->eval_tofree;
@@ -6379,7 +6380,8 @@ handle_subscript(
 	    **arg = NUL;
 
 	    idx = find_exported(rettv->vval.v_number, exp_name, &ufunc, &type,
-			    evalarg->eval_cctx, evalarg->eval_cstack, verbose);
+		       evalarg == NULL ? NULL : evalarg->eval_cctx,
+		       evalarg == NULL ? NULL : evalarg->eval_cstack, verbose);
 	    **arg = cc;
 
 	    if (idx < 0 && ufunc == NULL)

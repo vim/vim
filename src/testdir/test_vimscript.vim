@@ -7217,8 +7217,10 @@ func Test_refcount()
     unlet d
     delfunc DictFunc
 
-    call assert_equal(-1, test_refcount(test_null_job()))
-    call assert_equal(-1, test_refcount(test_null_channel()))
+    if has('channel')
+      call assert_equal(-1, test_refcount(test_null_job()))
+      call assert_equal(-1, test_refcount(test_null_channel()))
+    endif
     call assert_equal(-1, test_refcount(test_null_function()))
     call assert_equal(-1, test_refcount(test_null_partial()))
     call assert_equal(-1, test_refcount(test_null_blob()))

@@ -1109,6 +1109,29 @@ func Test_not_a_term()
   call delete('Xvimout')
 endfunc
 
+" Test quitting with CTRL-C when output is redirected.
+func Test_redirect_Ctrl_C()
+  CheckUnix
+  CheckNotGui
+  CheckRunVimInTerminal
+
+  let buf = Run_shell_in_terminal({})
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+
+  call term_sendkeys(buf, GetVimProg() .. " | grep word\<CR>")
+  call WaitForAssert({-> assert_match("Output is not to a terminal", getline(1, 4)->join())})
+  " wait for the hard coded delay, otherwise the CTRL-C interrupts startup
+  sleep 2
+  call term_sendkeys(buf, "\<C-C>")
+  sleep 100m
+  call term_sendkeys(buf, "exit\<CR>")
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
+
+  exe buf . 'bwipe!'
+  unlet g:job
+endfunc
+
 
 " Test for the "-w scriptout" argument
 func Test_w_arg()

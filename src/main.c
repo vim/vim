@@ -1008,7 +1008,7 @@ common_init(mparm_T *paramp)
  * Return TRUE when the --not-a-term argument was found.
  */
     int
-is_not_a_term()
+is_not_a_term(void)
 {
     return params.not_a_term;
 }
@@ -1016,8 +1016,8 @@ is_not_a_term()
 /*
  * Return TRUE when the --not-a-term argument was found or the GUI is in use.
  */
-    static int
-is_not_a_term_or_gui()
+    int
+is_not_a_term_or_gui(void)
 {
     return params.not_a_term
 #ifdef FEAT_GUI

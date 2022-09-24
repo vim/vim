@@ -4520,7 +4520,7 @@ enddef
 def Test_timer_info()
   v9.CheckDefAndScriptFailure(['timer_info("id")'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   assert_equal([], timer_info(100))
-  assert_equal([], timer_info())
+  assert_equal([], timer_info()->filter((_, t) => t.callback->string() !~ 'TestTimeout'))
 enddef
 
 def Test_timer_pause()

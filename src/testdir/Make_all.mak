@@ -7,6 +7,9 @@
 NO_PLUGINS = --noplugin --not-a-term
 NO_INITS = -U NONE $(NO_PLUGINS)
 
+# File to delete when testing starts
+CLEANUP_FILES = test.log messages starttime
+
 # Tests for tiny and small builds.
 SCRIPTS_TINY = \
 	test20 \
