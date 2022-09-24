@@ -2490,7 +2490,8 @@ ins_compl_next_buf(buf_T *buf, int flag)
 
     if (flag == 'w')		// just windows
     {
-	if (buf == curbuf || wp == NULL)  // first call for this flag/expansion
+	if (buf == curbuf || !win_valid(wp))
+	    // first call for this flag/expansion or window was closed
 	    wp = curwin;
 	while ((wp = (wp->w_next != NULL ? wp->w_next : firstwin)) != curwin
 		&& wp->w_buffer->b_scanned)
@@ -3188,9 +3189,10 @@ enum
  */
 typedef struct
 {
-    char_u	*e_cpt;			// current entry in 'complete'
+    char_u	*e_cpt_copy;		// copy of 'complete'
+    char_u	*e_cpt;			// current entry in "e_cpt_copy"
     buf_T	*ins_buf;		// buffer being scanned
-    pos_T	*cur_match_pos;			// current match position
+    pos_T	*cur_match_pos;		// current match position
     pos_T	prev_match_pos;		// previous match position
     int		set_match_pos;		// save first_match_pos/last_match_pos
     pos_T	first_match_pos;	// first match position
@@ -3257,7 +3259,8 @@ process_next_cpt_value(
 	st->set_match_pos = TRUE;
     }
     else if (vim_strchr((char_u *)"buwU", *st->e_cpt) != NULL
-	    && (st->ins_buf = ins_compl_next_buf(st->ins_buf, *st->e_cpt)) != curbuf)
+	    && (st->ins_buf = ins_compl_next_buf(
+					   st->ins_buf, *st->e_cpt)) != curbuf)
     {
 	// Scan a buffer, but not the current one.
 	if (st->ins_buf->b_ml.ml_mfp != NULL)   // loaded buffer
@@ -3756,19 +3759,30 @@ get_next_completion_match(int type, ins_compl_next_state_T *st, pos_T *ini)
     static int
 ins_compl_get_exp(pos_T *ini)
 {
-    static ins_compl_next_state_T st;
+    static ins_compl_next_state_T   st;
+    static int			    st_cleared = FALSE;
     int		i;
     int		found_new_match;
     int		type = ctrl_x_mode;
 
     if (!compl_started)
     {
-	FOR_ALL_BUFFERS(st.ins_buf)
-	    st.ins_buf->b_scanned = 0;
+	buf_T *buf;
+
+	FOR_ALL_BUFFERS(buf)
+	    buf->b_scanned = 0;
+	if (!st_cleared)
+	{
+	    CLEAR_FIELD(st);
+	    st_cleared = TRUE;
+	}
 	st.found_all = FALSE;
 	st.ins_buf = curbuf;
-	st.e_cpt = (compl_cont_status & CONT_LOCAL)
-					    ? (char_u *)"." : curbuf->b_p_cpt;
+	vim_free(st.e_cpt_copy);
+	// Make a copy of 'complete', if case the buffer is wiped out.
+	st.e_cpt_copy = vim_strsave((compl_cont_status & CONT_LOCAL)
+					    ? (char_u *)"." : curbuf->b_p_cpt);
+	st.e_cpt = st.e_cpt_copy == NULL ? (char_u *)"" : st.e_cpt_copy;
 	st.last_match_pos = st.first_match_pos = *ini;
     }
     else if (st.ins_buf != curbuf && !buf_valid(st.ins_buf))
@@ -4112,6 +4126,7 @@ ins_compl_next(
     int	    todo = count;
     int	    advance;
     int	    started = compl_started;
+    buf_T   *orig_curbuf = curbuf;
 
     // When user complete function return -1 for findstart which is next
     // time of 'always', compl_shown_match become NULL.
@@ -4143,6 +4158,13 @@ ins_compl_next(
     if (find_next_completion_match(allow_get_expansion, todo, advance,
 							&num_matches) == -1)
 	return -1;
+
+    if (curbuf != orig_curbuf)
+    {
+	// In case some completion function switched buffer, don't want to
+	// insert the completion elsewhere.
+	return -1;
+    }
 
     // Insert the text of the new completion, or the compl_leader.
     if (compl_no_insert && !started)
