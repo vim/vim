@@ -37,7 +37,7 @@ macos_task:
     - brew install gettext libtool
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
-    - ./configure --with-features=${FEATURES} --disable-channel
+    - ./configure --with-features=${FEATURES}
     - make -j${NPROC} CC=clang
   test_script:
     - src/vim --version
