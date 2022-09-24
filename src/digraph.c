@@ -1596,7 +1596,7 @@ getexactdigraph(int char1, int char2, int meta_char)
     if (retval == 0)
     {
 	dp = digraphdefault;
-	for (i = 0; dp->char1 != 0; ++i)
+	while (dp->char1 != 0)
 	{
 	    if ((int)dp->char1 == char1 && (int)dp->char2 == char2)
 	    {
@@ -1773,7 +1773,7 @@ listdigraphs(int use_headers)
     msg_putchar('\n');
 
     dp = digraphdefault;
-    for (i = 0; dp->char1 != NUL && !got_int; ++i)
+    while (dp->char1 != NUL && !got_int)
     {
 #if defined(USE_UNICODE_DIGRAPHS)
 	digr_T tmp;
@@ -1876,7 +1876,7 @@ digraph_getlist_common(int list_all, typval_T *rettv)
     if (list_all)
     {
 	dp = digraphdefault;
-	for (i = 0; dp->char1 != NUL && !got_int; ++i)
+	while (dp->char1 != NUL && !got_int)
 	{
 #ifdef USE_UNICODE_DIGRAPHS
 	    digr_T tmp;
