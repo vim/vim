@@ -6793,11 +6793,8 @@ nv_esc(cmdarg_T *cap)
 		&& !VIsual_active
 		&& no_reason)
 	{
-	    int	out_redir = !stdout_isatty
-#ifdef FEAT_GUI
-				&& !gui.in_use
-#endif
-				;
+	    int	out_redir = !stdout_isatty && !is_not_a_term_or_gui();
+
 	    // The user may accidentally do "vim file | grep word" and then
 	    // CTRL-C doesn't show anything.  With a changed buffer give the
 	    // message on stderr.  Without any changes might as well exit.
