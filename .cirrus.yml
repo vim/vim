@@ -32,6 +32,7 @@ macos_task:
     image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
   timeout_in: 20m
   install_script:
+    - uname -a
     - brew update
     - brew install gettext libtool
   build_script:
