@@ -1881,7 +1881,7 @@ eval_fname_sid(char_u *p)
  * In a script change <SID>name() and s:name() to K_SNR 123_name().
  * Change <SNR>123_name() to K_SNR 123_name().
  * Use "fname_buf[FLEN_FIXED + 1]" when it fits, otherwise allocate memory
- * (slow).
+ * and set "tofree".
  */
     char_u *
 fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
@@ -1891,43 +1891,41 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
     int		i;
 
     llen = eval_fname_script(name);
-    if (llen > 0)
+    if (llen == 0)
+	return name;  // no prefix
+
+    fname_buf[0] = K_SPECIAL;
+    fname_buf[1] = KS_EXTRA;
+    fname_buf[2] = (int)KE_SNR;
+    i = 3;
+    if (eval_fname_sid(name))	// "<SID>" or "s:"
     {
-	fname_buf[0] = K_SPECIAL;
-	fname_buf[1] = KS_EXTRA;
-	fname_buf[2] = (int)KE_SNR;
-	i = 3;
-	if (eval_fname_sid(name))	// "<SID>" or "s:"
-	{
-	    if (current_sctx.sc_sid <= 0)
-		*error = FCERR_SCRIPT;
-	    else
-	    {
-		sprintf((char *)fname_buf + 3, "%ld_",
-						    (long)current_sctx.sc_sid);
-		i = (int)STRLEN(fname_buf);
-	    }
-	}
-	if (i + STRLEN(name + llen) < FLEN_FIXED)
-	{
-	    STRCPY(fname_buf + i, name + llen);
-	    fname = fname_buf;
-	}
+	if (current_sctx.sc_sid <= 0)
+	    *error = FCERR_SCRIPT;
 	else
 	{
-	    fname = alloc(i + STRLEN(name + llen) + 1);
-	    if (fname == NULL)
-		*error = FCERR_OTHER;
-	    else
-	    {
-		*tofree = fname;
-		mch_memmove(fname, fname_buf, (size_t)i);
-		STRCPY(fname + i, name + llen);
-	    }
+	    sprintf((char *)fname_buf + 3, "%ld_",
+						(long)current_sctx.sc_sid);
+	    i = (int)STRLEN(fname_buf);
 	}
     }
+    if (i + STRLEN(name + llen) < FLEN_FIXED)
+    {
+	STRCPY(fname_buf + i, name + llen);
+	fname = fname_buf;
+    }
     else
-	fname = name;
+    {
+	fname = alloc(i + STRLEN(name + llen) + 1);
+	if (fname == NULL)
+	    *error = FCERR_OTHER;
+	else
+	{
+	    *tofree = fname;
+	    mch_memmove(fname, fname_buf, (size_t)i);
+	    STRCPY(fname + i, name + llen);
+	}
+    }
     return fname;
 }
 
