@@ -6793,10 +6793,33 @@ nv_esc(cmdarg_T *cap)
 		&& !VIsual_active
 		&& no_reason)
 	{
+	    int	out_redir = !stdout_isatty
+#ifdef FEAT_GUI
+				&& !gui.in_use
+#endif
+				;
+	    // The user may accidentally do "vim file | grep word" and then
+	    // CTRL-C doesn't show anything.  With a changed buffer give the
+	    // message on stderr.  Without any changes might as well exit.
 	    if (anyBufIsChanged())
-		msg(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
+	    {
+		char *ms = _("Type  :qa!  and press <Enter> to abandon all changes and exit Vim");
+
+		if (out_redir)
+		    mch_errmsg(ms);
+		else
+		    msg(ms);
+	    }
 	    else
-		msg(_("Type  :qa  and press <Enter> to exit Vim"));
+	    {
+		if (out_redir)
+		{
+		    got_int = FALSE;
+		    do_cmdline_cmd((char_u *)"qa");
+		}
+		else
+		    msg(_("Type  :qa  and press <Enter> to exit Vim"));
+	    }
 	}
 
 	if (restart_edit != 0)
