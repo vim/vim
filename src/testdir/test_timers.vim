@@ -381,7 +381,12 @@ endfunc
 " vgetc().
 func Test_nocatch_timer_garbage_collect()
   " FIXME: why does this fail only on MacOS M1?
-  CheckNotMacM1
+  try 
+    CheckNotMacM1
+  catch /Skipped/
+    let g:skipped_reason = v:exception
+    return
+  endtry
 
   " 'uptimetime. must be bigger than the timer timeout
   set ut=200
