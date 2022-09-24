@@ -1720,6 +1720,8 @@ vgetc(void)
 	{
 	    int did_inc = FALSE;
 
+	    // No mapping after modifier has been read, using an input method
+	    // and when a popup window has disabled mapping.
 	    if (mod_mask
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 		    || im_is_preediting()
@@ -1729,10 +1731,10 @@ vgetc(void)
 #endif
 		    )
 	    {
-		// no mapping after modifier has been read
 		++no_mapping;
 		++allow_keys;
-		did_inc = TRUE;	// mod_mask may change value
+		// mod_mask value may change, remember we did the increment
+		did_inc = TRUE;
 	    }
 	    c = vgetorpeek(TRUE);
 	    if (did_inc)
@@ -1988,9 +1990,10 @@ safe_vgetc(void)
 /*
  * Like safe_vgetc(), but loop to handle K_IGNORE.
  * Also ignore scrollbar events.
+ * Does not handle bracketed paste - do not use the result for commands.
  */
-    int
-plain_vgetc(void)
+    static int
+plain_vgetc_nopaste(void)
 {
     int c;
 
@@ -1999,6 +2002,17 @@ plain_vgetc(void)
     while (c == K_IGNORE
 	    || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR
 	    || c == K_MOUSEMOVE);
+    return c;
+}
+
+/*
+ * Like safe_vgetc(), but loop to handle K_IGNORE.
+ * Also ignore scrollbar events.
+ */
+    int
+plain_vgetc(void)
+{
+    int c = plain_vgetc_nopaste();
 
     if (c == K_PS)
 	// Only handle the first pasted character.  Drop the rest, since we
@@ -2107,7 +2121,7 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     {
 	if (argvars[0].v_type == VAR_UNKNOWN)
 	    // getchar(): blocking wait.
-	    n = plain_vgetc();
+	    n = plain_vgetc_nopaste();
 	else if (tv_get_bool_chk(&argvars[0], &error))
 	    // getchar(1): only check if char avail
 	    n = vpeekc_any();
