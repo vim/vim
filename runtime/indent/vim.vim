@@ -1,9 +1,9 @@
-vim9script noclear
+vim9script
 
 # Vim indent file
 # Language:	Vim script
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Sep 15
+# Last Change:	2022 Sep 24
 
 # Only load this indent file when no other was loaded.
 if exists('b:did_indent')

@@ -2,7 +2,7 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2022 Sep 15
+# Last Change:  2022 Sep 24
 
 # Config {{{1
 
@@ -295,10 +295,6 @@ const START_MIDDLE_END: dict<list<string>> = {
 
 const OPENING_BRACKET_AT_EOL: string = $'{OPENING_BRACKET}{END_OF_VIM9_LINE}'
 
-# CLOSING_BRACKETS_THEN_COMMA_AT_EOL {{{3
-
-const CLOSING_BRACKETS_THEN_COMMA_AT_EOL: string = $'{CLOSING_BRACKET}\+,{END_OF_VIM9_LINE}'
-
 # COMMA_AT_EOL {{{3
 
 const COMMA_AT_EOL: string = $',{END_OF_VIM9_LINE}'
@@ -422,7 +418,7 @@ export def Expr(lnum: number): number # {{{2
             endif
         endfor
     endif
-    if line_A.text->ContinuesBelowBracketBlock(line_B.text, past_bracket_block)
+    if line_A.text->ContinuesBelowBracketBlock(line_B, past_bracket_block)
             && line_A.text !~ CLOSING_BRACKET_AT_SOL
         return past_bracket_block.startindent
     endif
@@ -430,7 +426,7 @@ export def Expr(lnum: number): number # {{{2
     # Problem: If we press `==` on the line right below the start of a multiline
     # lambda (split after its arrow `=>`), the indent is not correct.
     # Solution: Indent relative to the line above.
-    if line_B.text =~ LAMBDA_ARROW_AT_EOL
+    if line_B->EndsWithLambdaArrow()
         return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
     endif
 
@@ -663,9 +659,13 @@ def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
         return ind + IndentMoreInBracketBlock()
     endif
 
-    if block.startline =~ COMMA_AT_EOL
-            || block.startline =~ LAMBDA_ARROW_AT_EOL
-            || (block.startline =~ OPENING_BRACKET_AT_EOL
+    var startline: dict<any> = {
+        text: block.startline,
+        lnum: block.startlnum
+    }
+    if startline->EndsWithComma()
+            || startline->EndsWithLambdaArrow()
+            || (startline->EndsWithOpeningBracket()
             # TODO: Is that reliable?
             && block.startline !~
             $'^\s*{NON_BRACKET}\+{LIST_OR_DICT_CLOSING_BRACKET},\s\+{LIST_OR_DICT_OPENING_BRACKET}')
@@ -808,17 +808,9 @@ def BlockStartKeyword(line: string): string # {{{3
 enddef
 
 def MatchingOpenBracket(line: dict<any>): number # {{{3
-    var end: string
-    if line.text =~ CLOSING_BRACKETS_THEN_COMMA_AT_EOL
-        end = line.text->matchstr(CLOSING_BRACKETS_THEN_COMMA_AT_EOL)[0]
-        cursor(line.lnum, 1)
-        search(CLOSING_BRACKETS_THEN_COMMA_AT_EOL, 'cW', line.lnum)
-    else
-        end = line.text->matchstr(CLOSING_BRACKET)
-        cursor(line.lnum, 1)
-    endif
-
+    var end: string = line.text->matchstr(CLOSING_BRACKET)
     var start: string = {']': '[', '}': '{', ')': '('}[end]
+    cursor(line.lnum, 1)
     return SearchPairStart(start, '', end)
 enddef
 
@@ -931,7 +923,7 @@ def SearchPairEnd( # {{{3
     return SearchPair(start, middle, end, 'nW', stopline)
 enddef
 # }}}2
-# Tests {{{2
+# Test {{{2
 def AtStartOf(line_A: dict<any>, syntax: string): bool # {{{3
     if syntax == 'BracketBlock'
         return AtStartOfBracketBlock(line_A)
@@ -973,13 +965,13 @@ enddef
 
 def ContinuesBelowBracketBlock( # {{{3
         line_A: string,
-        line_B: string,
+        line_B: dict<any>,
         block: dict<any>
         ): bool
 
     return !block->empty()
         && (line_A =~ LINE_CONTINUATION_AT_SOL
-        || line_B =~ LINE_CONTINUATION_AT_EOL)
+        || line_B->EndsWithLineContinuation())
 enddef
 
 def IsInside(lnum: number, syntax: string): bool # {{{3
@@ -1068,6 +1060,10 @@ def AlsoClosesBlock(line_B: dict<any>): bool # {{{3
     setpos('.', pos)
 
     return block_end > 0
+enddef
+
+def EndsWithComma(line: dict<any>): bool # {{{3
+    return NonCommentedMatch(line, COMMA_AT_EOL)
 enddef
 
 def EndsWithCommaOrDictKey(line_A: dict<any>): bool # {{{3
