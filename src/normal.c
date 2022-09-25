@@ -1466,6 +1466,13 @@ prep_redo_num2(
     int	    cmd5)
 {
     ResetRedobuff();
+
+#ifdef FEAT_EVAL
+    // Put info about a mapping in the redo buffer, so that "." will use the
+    // same script context.
+    may_add_last_used_map_to_redobuff();
+#endif
+
     if (regname != 0)	// yank from specified buffer
     {
 	AppendCharToRedobuff('"');
@@ -5484,9 +5491,8 @@ nv_visual(cmdarg_T *cap)
 	    {
 		if (resel_VIsual_line_count <= 1)
 		{
-		    validate_virtcol();
-		    curwin->w_curswant = curwin->w_virtcol
-					+ resel_VIsual_vcol * cap->count0 - 1;
+		    update_curswant_force();
+		    curwin->w_curswant += resel_VIsual_vcol * cap->count0 - 1;
 		}
 		else
 		    curwin->w_curswant = resel_VIsual_vcol;
@@ -5499,9 +5505,8 @@ nv_visual(cmdarg_T *cap)
 	    }
 	    else if (VIsual_mode == Ctrl_V)
 	    {
-		validate_virtcol();
-		curwin->w_curswant = curwin->w_virtcol
-					+ resel_VIsual_vcol * cap->count0 - 1;
+		update_curswant_force();
+		curwin->w_curswant += + resel_VIsual_vcol * cap->count0 - 1;
 		coladvance(curwin->w_curswant);
 	    }
 	    else
@@ -5728,13 +5733,19 @@ nv_g_home_m_cmd(cmdarg_T *cap)
     cap->oap->inclusive = FALSE;
     if (curwin->w_p_wrap && curwin->w_width != 0)
     {
-	int		width1 = curwin->w_width - curwin_col_off();
-	int		width2 = width1 + curwin_col_off2();
+	int	width1 = curwin->w_width - curwin_col_off();
+	int	width2 = width1 + curwin_col_off2();
+	int	virtcol;
 
 	validate_virtcol();
+	virtcol = curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+	    - curwin->w_virtcol_first_char
+#endif
+	    ;
 	i = 0;
-	if (curwin->w_virtcol >= (colnr_T)width1 && width2 > 0)
-	    i = (curwin->w_virtcol - width1) / width2 * width2 + width1;
+	if (virtcol >= (colnr_T)width1 && width2 > 0)
+	    i = (virtcol - width1) / width2 * width2 + width1;
     }
     else
 	i = curwin->w_leftcol;
@@ -5808,24 +5819,32 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 	{
 	    int		width1 = curwin->w_width - col_off;
 	    int		width2 = width1 + curwin_col_off2();
+	    int		virtcol;
 
 	    validate_virtcol();
+	    virtcol = curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+		- curwin->w_virtcol_first_char
+#endif
+		;
 	    i = width1 - 1;
-	    if (curwin->w_virtcol >= (colnr_T)width1)
-		i += ((curwin->w_virtcol - width1) / width2 + 1)
+	    if (virtcol >= (colnr_T)width1)
+		i += ((virtcol - width1) / width2 + 1)
 		    * width2;
 	    coladvance((colnr_T)i);
 
 	    // Make sure we stick in this column.
-	    validate_virtcol();
-	    curwin->w_curswant = curwin->w_virtcol;
-	    curwin->w_set_curswant = FALSE;
+	    update_curswant_force();
 	    if (curwin->w_cursor.col > 0 && curwin->w_p_wrap)
 	    {
 		// Check for landing on a character that got split at
 		// the end of the line.  We do not want to advance to
 		// the next screen line.
-		if (curwin->w_virtcol > (colnr_T)i)
+		if (curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+			- curwin->w_virtcol_first_char
+#endif
+						> (colnr_T)i)
 		    --curwin->w_cursor.col;
 	    }
 	}
@@ -5853,9 +5872,7 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 	}
 
 	// Make sure we stick in this column.
-	validate_virtcol();
-	curwin->w_curswant = curwin->w_virtcol;
-	curwin->w_set_curswant = FALSE;
+	update_curswant_force();
     }
 }
 
@@ -6776,10 +6793,30 @@ nv_esc(cmdarg_T *cap)
 		&& !VIsual_active
 		&& no_reason)
 	{
+	    int	out_redir = !stdout_isatty && !is_not_a_term_or_gui();
+
+	    // The user may accidentally do "vim file | grep word" and then
+	    // CTRL-C doesn't show anything.  With a changed buffer give the
+	    // message on stderr.  Without any changes might as well exit.
 	    if (anyBufIsChanged())
-		msg(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
+	    {
+		char *ms = _("Type  :qa!  and press <Enter> to abandon all changes and exit Vim");
+
+		if (out_redir)
+		    mch_errmsg(ms);
+		else
+		    msg(ms);
+	    }
 	    else
-		msg(_("Type  :qa  and press <Enter> to exit Vim"));
+	    {
+		if (out_redir)
+		{
+		    got_int = FALSE;
+		    do_cmdline_cmd((char_u *)"qa");
+		}
+		else
+		    msg(_("Type  :qa  and press <Enter> to exit Vim"));
+	    }
 	}
 
 	if (restart_edit != 0)

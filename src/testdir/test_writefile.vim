@@ -75,8 +75,8 @@ func Test_writefile_fails_conversion()
   call assert_match('CONVERSION ERROR', output)
   let output = execute('write! ++enc=ucs-2 Xwfcfile')
   call assert_match('CONVERSION ERROR', output)
-  call delete('Xfilz~')
-  call delete('Xfily~')
+  call delete('Xwfcfilz~')
+  call delete('Xwfcfily~')
   %bw!
 
   call delete('Xwfcfile')
@@ -238,6 +238,12 @@ func Test_saveas()
   syntax off
   %bw!
   call delete('Xsaveas.pl')
+
+  " :saveas fails for "nofile" buffer
+  set buftype=nofile
+  call assert_fails('saveas Xsafile', 'E676: No matching autocommands for buftype=nofile buffer')
+
+  bwipe!
 endfunc
 
 func Test_write_errors()
@@ -931,6 +937,36 @@ func Test_write_binary_file()
   call delete('Xwbfile1')
   call delete('Xwbfile2')
   call delete('Xwbfile3')
+endfunc
+
+func DoWriteDefer()
+  call writefile(['some text'], 'XdeferDelete', 'D')
+  call assert_equal(['some text'], readfile('XdeferDelete'))
+endfunc
+
+def DefWriteDefer()
+  writefile(['some text'], 'XdefdeferDelete', 'D')
+  assert_equal(['some text'], readfile('XdefdeferDelete'))
+enddef
+
+func Test_write_with_deferred_delete()
+  call DoWriteDefer()
+  call assert_equal('', glob('XdeferDelete'))
+  call DefWriteDefer()
+  call assert_equal('', glob('XdefdeferDelete'))
+endfunc
+
+func DoWriteFile()
+  call writefile(['text'], 'Xthefile', 'D')
+  cd ..
+endfunc
+
+func Test_write_defer_delete_chdir()
+  let dir = getcwd()
+  call DoWriteFile()
+  call assert_notequal(dir, getcwd())
+  call chdir(dir)
+  call assert_equal('', glob('Xthefile'))
 endfunc
 
 " Check that buffer is written before triggering QuitPre

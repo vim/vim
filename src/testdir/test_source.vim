@@ -665,5 +665,22 @@ func Test_source_buffer_long_line()
   call delete('Xtest.vim')
 endfunc
 
+func Test_source_buffer_with_NUL_char()
+  " This was trying to use a line below the buffer.
+  let lines =<< trim END
+      if !exists('g:loaded')
+        let g:loaded = 1
+        source
+      endif
+  END
+  " Can't have a NL in heredoc
+  let lines += ["silent! vim9 echo [0 \<NL> ? 'a' : 'b']"]
+  call writefile(lines, 'XsourceNul', '')
+  edit XsourceNul
+  source
+
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

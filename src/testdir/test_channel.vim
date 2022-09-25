@@ -714,7 +714,7 @@ func Stop_g_job()
 endfunc
 
 func Test_nl_read_file()
-  call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput')
+  call writefile(['echo something', 'echoerr wrong', 'double this'], 'Xinput', 'D')
   let g:job = job_start(s:python . " test_channel_pipe.py",
 	\ {'in_io': 'file', 'in_name': 'Xinput'})
   call assert_equal("run", job_status(g:job))
@@ -726,7 +726,6 @@ func Test_nl_read_file()
     call assert_equal("AND this", ch_readraw(handle))
   finally
     call Stop_g_job()
-    call delete('Xinput')
   endtry
   call assert_fails("echo ch_read(test_null_channel(), {'callback' : 'abc'})", 'E475:')
 endfunc
@@ -1161,14 +1160,13 @@ func Test_write_to_buffer_and_scroll()
       endif
       call job_start(cmd, #{out_io: 'buffer', out_name: 'Xscrollbuffer'})
   END
-  call writefile(lines, 'XtestBufferScroll')
+  call writefile(lines, 'XtestBufferScroll', 'D')
   let buf = RunVimInTerminal('-S XtestBufferScroll', #{rows: 10})
   call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_job_buffer_scroll_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestBufferScroll')
 endfunc
 
 func Test_pipe_null()
@@ -1635,7 +1633,12 @@ func Test_exit_callback_interval()
   let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
   let job = [s:python, '-c', 'import time;time.sleep(0.5)']->job_start({'exit_cb': 'MyExitTimeCb'})
   let g:exit_cb_val.process = job_info(job).process
-  call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
+  try
+    call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
+  catch
+    call add(v:errors, "Job status: " .. string(job->job_info()))
+    throw v:exception
+  endtry
   let elapsed = reltimefloat(g:exit_cb_val.end)
   call assert_inrange(0.5, 1.0, elapsed)
 
@@ -1966,8 +1969,10 @@ func Test_env()
     let cmd = [&shell, &shellcmdflag, 'echo $FOO']
   endif
   call assert_fails('call job_start(cmd, {"env": 1})', 'E475:')
-  call job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'env': {'FOO': 'bar'}})
-  call WaitForAssert({-> assert_equal("bar", g:envstr)})
+  let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'env': {'FOO': 'bar'}})
+  if WaitForAssert({-> assert_equal("bar", g:envstr)}, 500) != 0
+    call add(v:errors, "Job status: " .. string(job->job_info()))
+  endif
   unlet g:envstr
 endfunc
 
@@ -1984,8 +1989,13 @@ func Test_cwd()
   let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'cwd': expect})
   try
     call WaitForAssert({-> assert_notequal("", g:envstr)})
+    " There may be a trailing slash or not, ignore it
     let expect = substitute(expect, '[/\\]$', '', '')
     let g:envstr = substitute(g:envstr, '[/\\]$', '', '')
+    " on CI there can be /private prefix or not, ignore it
+    if $CI != '' && stridx(expect, '/private/') == 0
+      let expect = expect[8:]
+    endif
     if $CI != '' && stridx(g:envstr, '/private/') == 0
       let g:envstr = g:envstr[8:]
     endif
@@ -2029,7 +2039,12 @@ func s:test_list_args(cmd, out, remove_lf)
   try
     let g:out = ''
     let job = job_start([s:python, '-c', a:cmd], {'callback': {ch, msg -> execute('let g:out .= msg')}, 'out_mode': 'raw'})
-    call WaitFor('"" != g:out')
+    try
+      call WaitFor('"" != g:out')
+    catch
+      call add(v:errors, "Job status: " .. string(job->job_info()))
+      throw v:exception
+    endtry
     if has('win32')
       let g:out = substitute(g:out, '\r', '', 'g')
     endif
@@ -2178,7 +2193,7 @@ endfunc
 func Test_job_tty_in_out()
   CheckUnix
 
-  call writefile(['test'], 'Xtestin')
+  call writefile(['test'], 'Xtestin', 'D')
   let in_opts = [{},
         \ {'in_io': 'null'},
         \ {'in_io': 'file', 'in_name': 'Xtestin'}]
@@ -2220,7 +2235,6 @@ func Test_job_tty_in_out()
     call WaitForAssert({-> assert_equal('dead', job_status(job))})
   endfor
 
-  call delete('Xtestin')
   call delete('Xtestout')
   call delete('Xtesterr')
 endfunc
@@ -2281,9 +2295,9 @@ func Test_zz_ch_log()
   let text = readfile('Xlog')
   call assert_match("hello there", text[1])
   call assert_match("%s%s", text[2])
-  call mkdir("Xchlogdir1")
+  call mkdir("Xchlogdir1", 'D')
   call assert_fails("call ch_logfile('Xchlogdir1')", 'E484:')
-  cal delete("Xchlogdir1", 'd')
+
   call delete('Xlog')
 endfunc
 

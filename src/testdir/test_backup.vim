@@ -78,11 +78,11 @@ endfunc
 " Test for using a non-existing directory as a backup directory
 func Test_non_existing_backupdir()
   set backupdir=./non_existing_dir backupskip=
-  call writefile(['line1'], 'Xbackupdir')
+  call writefile(['line1'], 'Xbackupdir', 'D')
   new Xbackupdir
   call assert_fails('write', 'E510:')
+
   set backupdir&vim backupskip&vim
-  call delete('Xbackupdir')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

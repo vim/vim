@@ -85,6 +85,7 @@ static int	last_recorded_len = 0;	// number of last recorded chars
 
 #ifdef FEAT_EVAL
 mapblock_T	*last_used_map = NULL;
+int		last_used_sid = -1;
 #endif
 
 static int	read_readbuf(buffheader_T *buf, int advance);
@@ -837,6 +838,22 @@ start_redo(long count, int old_redo)
 
     c = read_redo(FALSE, old_redo);
 
+#ifdef FEAT_EVAL
+    if (c == K_SID)
+    {
+	// Copy the <SID>{sid}; sequence
+	add_char_buff(&readbuf2, c);
+	for (;;)
+	{
+	    c = read_redo(FALSE, old_redo);
+	    add_char_buff(&readbuf2, c);
+	    if (!isdigit(c))
+		break;
+	}
+	c = read_redo(FALSE, old_redo);
+    }
+#endif
+
     // copy the buffer name, if present
     if (c == '"')
     {
@@ -876,7 +893,7 @@ start_redo(long count, int old_redo)
 	add_num_buff(&readbuf2, count);
     }
 
-    // copy from the redo buffer into the stuff buffer
+    // copy the rest from the redo buffer into the stuff buffer
     add_char_buff(&readbuf2, c);
     copy_redo(old_redo);
     return OK;
@@ -1703,6 +1720,8 @@ vgetc(void)
 	{
 	    int did_inc = FALSE;
 
+	    // No mapping after modifier has been read, using an input method
+	    // and when a popup window has disabled mapping.
 	    if (mod_mask
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 		    || im_is_preediting()
@@ -1712,10 +1731,10 @@ vgetc(void)
 #endif
 		    )
 	    {
-		// no mapping after modifier has been read
 		++no_mapping;
 		++allow_keys;
-		did_inc = TRUE;	// mod_mask may change value
+		// mod_mask value may change, remember we did the increment
+		did_inc = TRUE;
 	    }
 	    c = vgetorpeek(TRUE);
 	    if (did_inc)
@@ -1796,7 +1815,21 @@ vgetc(void)
 		if (c == K_CSI)
 		    c = CSI;
 #endif
+#ifdef FEAT_EVAL
+		if (c == K_SID)
+		{
+		    int	    j;
+
+		    // Handle <SID>{sid};  Do up to 20 digits for safety.
+		    last_used_sid = 0;
+		    for (j = 0; j < 20 && isdigit(c = vgetorpeek(TRUE)); ++j)
+			last_used_sid = last_used_sid * 10 + (c - '0');
+		    last_used_map = NULL;
+		    continue;
+		}
+#endif
 	    }
+
 	    // a keypad or special function key was not mapped, use it like
 	    // its ASCII equivalent
 	    switch (c)
@@ -1957,9 +1990,10 @@ safe_vgetc(void)
 /*
  * Like safe_vgetc(), but loop to handle K_IGNORE.
  * Also ignore scrollbar events.
+ * Does not handle bracketed paste - do not use the result for commands.
  */
-    int
-plain_vgetc(void)
+    static int
+plain_vgetc_nopaste(void)
 {
     int c;
 
@@ -1968,6 +2002,17 @@ plain_vgetc(void)
     while (c == K_IGNORE
 	    || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR
 	    || c == K_MOUSEMOVE);
+    return c;
+}
+
+/*
+ * Like safe_vgetc(), but loop to handle K_IGNORE.
+ * Also ignore scrollbar events.
+ */
+    int
+plain_vgetc(void)
+{
+    int c = plain_vgetc_nopaste();
 
     if (c == K_PS)
 	// Only handle the first pasted character.  Drop the rest, since we
@@ -2076,7 +2121,7 @@ getchar_common(typval_T *argvars, typval_T *rettv)
     {
 	if (argvars[0].v_type == VAR_UNKNOWN)
 	    // getchar(): blocking wait.
-	    n = plain_vgetc();
+	    n = plain_vgetc_nopaste();
 	else if (tv_get_bool_chk(&argvars[0], &error))
 	    // getchar(1): only check if char avail
 	    n = vpeekc_any();
@@ -2356,7 +2401,7 @@ check_simplify_modifier(int max_offset)
 	if (offset + 3 >= typebuf.tb_len)
 	    break;
 	tp = typebuf.tb_buf + typebuf.tb_off + offset;
-	if (tp[0] == K_SPECIAL && tp[1] == KS_MODIFIER)
+	if ((tp[0] == K_SPECIAL || tp[0] == CSI) && tp[1] == KS_MODIFIER)
 	{
 	    // A modifier was not used for a mapping, apply it to ASCII keys.
 	    // Shift would already have been applied.
@@ -2922,6 +2967,10 @@ handle_mapping(
 	{
 	    int noremap;
 
+#ifdef FEAT_EVAL
+	    last_used_map = mp;
+	    last_used_sid = -1;
+#endif
 	    if (save_m_noremap != REMAP_YES)
 		noremap = save_m_noremap;
 	    else if (
@@ -2940,7 +2989,6 @@ handle_mapping(
 #ifdef FEAT_EVAL
 	    if (save_m_expr)
 		vim_free(map_str);
-	    last_used_map = mp;
 #endif
 	}
 #ifdef FEAT_EVAL
@@ -3896,6 +3944,29 @@ getcmdkeycmd(
     return (char_u *)line_ga.ga_data;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * If there was a mapping put info about it in the redo buffer, so that "."
+ * will use the same script context.  We only need the SID.
+ */
+    void
+may_add_last_used_map_to_redobuff(void)
+{
+    char_u buf[3 + 20];
+
+    if (last_used_map == NULL || last_used_map->m_script_ctx.sc_sid < 0)
+	return;
+
+    // <K_SID>{nr};
+    buf[0] = K_SPECIAL;
+    buf[1] = KS_EXTRA;
+    buf[2] = KE_SID;
+    vim_snprintf((char *)buf + 3, 20, "%d;",
+					   last_used_map->m_script_ctx.sc_sid);
+    add_buff(&redobuff, buf, -1L);
+}
+#endif
+
     int
 do_cmdkey_command(int key UNUSED, int flags)
 {
@@ -3903,10 +3974,18 @@ do_cmdkey_command(int key UNUSED, int flags)
 #ifdef FEAT_EVAL
     sctx_T  save_current_sctx = {-1, 0, 0, 0};
 
-    if (key == K_SCRIPT_COMMAND && last_used_map != NULL)
+    if (key == K_SCRIPT_COMMAND
+		  && (last_used_map != NULL || SCRIPT_ID_VALID(last_used_sid)))
     {
 	save_current_sctx = current_sctx;
-	current_sctx = last_used_map->m_script_ctx;
+	if (last_used_map != NULL)
+	    current_sctx = last_used_map->m_script_ctx;
+	else
+	{
+	    current_sctx.sc_sid = last_used_sid;
+	    current_sctx.sc_lnum = 0;
+	    current_sctx.sc_version = SCRIPT_ITEM(last_used_sid)->sn_version;
+	}
     }
 #endif
 
@@ -3925,6 +4004,9 @@ do_cmdkey_command(int key UNUSED, int flags)
 reset_last_used_map(mapblock_T *mp)
 {
     if (last_used_map == mp)
+    {
 	last_used_map = NULL;
+	last_used_sid = -1;
+    }
 }
 #endif

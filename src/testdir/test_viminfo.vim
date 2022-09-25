@@ -722,6 +722,7 @@ func Test_viminfo_file_mark_unloaded_buf()
 endfunc
 
 func Test_viminfo_oldfiles()
+  set noswapfile
   let v:oldfiles = []
   let lines = [
 	\ '# comment line',
@@ -765,6 +766,7 @@ func Test_viminfo_oldfiles()
   call assert_equal("/tmp/another.txt", expand("%"))
   bwipe
   delmark E
+  set swapfile&
 endfunc
 
 " Test for storing and restoring buffer list in 'viminfo'

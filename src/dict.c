@@ -911,13 +911,15 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     int		vim9script = in_vim9script();
     int		had_comma;
 
-    // First check if it's not a curly-braces thing: {expr}.
+    // First check if it's not a curly-braces expression: {expr}.
     // Must do this without evaluating, otherwise a function may be called
     // twice.  Unfortunately this means we need to call eval1() twice for the
     // first item.
-    // But {} is an empty Dictionary.
+    // "{}" is an empty Dictionary.
+    // "#{abc}" is never a curly-braces expression.
     if (!vim9script
 	    && *curly_expr != '}'
+	    && !literal
 	    && eval1(&curly_expr, &tv, NULL) == OK
 	    && *skipwhite(curly_expr) == '}')
 	return NOTDONE;
@@ -982,13 +984,11 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	}
 	if (evaluate)
 	{
-#ifdef FEAT_FLOAT
 	    if (tvkey.v_type == VAR_FLOAT)
 	    {
 		tvkey.vval.v_string = typval_tostring(&tvkey, TRUE);
 		tvkey.v_type = VAR_STRING;
 	    }
-#endif
 	    key = tv_get_string_buf_chk(&tvkey, buf);
 	    if (key == NULL)
 	    {

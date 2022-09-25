@@ -163,11 +163,7 @@ func Test_perleval()
   call assert_equal(0, perleval('0'))
   call assert_equal(2, perleval('2'))
   call assert_equal(-2, perleval('-2'))
-  if has('float')
-    call assert_equal(2.5, perleval('2.5'))
-  else
-    call assert_equal(2, perleval('2.5'))
-  end
+  call assert_equal(2.5, perleval('2.5'))
 
   sandbox call assert_equal(2, perleval('2'))
 

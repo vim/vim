@@ -616,6 +616,11 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     in_assert_fails = TRUE;
 
     do_cmdline_cmd(cmd);
+
+    // reset here for any errors reported below
+    trylevel = save_trylevel;
+    suppress_errthrow = FALSE;
+
     if (called_emsg == called_emsg_before)
     {
 	prepare_assert_error(&ga);
@@ -654,6 +659,8 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	    CHECK_LIST_MATERIALIZE(list);
 	    tv = &list->lv_first->li_tv;
 	    expected = tv_get_string_buf_chk(tv, buf);
+	    if (expected == NULL)
+		goto theend;
 	    if (!pattern_match(expected, actual, FALSE))
 	    {
 		error_found = TRUE;
@@ -667,6 +674,8 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 		{
 		    tv = &list->lv_u.mat.lv_last->li_tv;
 		    expected = tv_get_string_buf_chk(tv, buf);
+		    if (expected == NULL)
+			goto theend;
 		    if (!pattern_match(expected, actual, FALSE))
 		    {
 			error_found = TRUE;
@@ -778,7 +787,6 @@ assert_inrange(typval_T *argvars)
     char	msg[200];
     char_u	numbuf[NUMBUFLEN];
 
-#ifdef FEAT_FLOAT
     if (argvars[0].v_type == VAR_FLOAT
 	    || argvars[1].v_type == VAR_FLOAT
 	    || argvars[2].v_type == VAR_FLOAT)
@@ -807,7 +815,6 @@ assert_inrange(typval_T *argvars)
 	}
     }
     else
-#endif
     {
 	varnumber_T	lower = tv_get_number_chk(&argvars[0], &error);
 	varnumber_T	upper = tv_get_number_chk(&argvars[1], &error);

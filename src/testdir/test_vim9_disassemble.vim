@@ -309,9 +309,7 @@ def s:ScriptFuncPush()
   var localbool = true
   var localspec = v:none
   var localblob = 0z1234
-  if has('float')
-    var localfloat = 1.234
-  endif
+  var localfloat = 1.234
 enddef
 
 def Test_disassemble_push()
@@ -976,6 +974,85 @@ def Test_disassemble_closure_arg()
          lres)
 enddef
 
+def s:ClosureInLoop()
+  for i in range(5)
+    var ii = i
+    continue
+    break
+    if g:val
+      return
+    endif
+    g:Ref = () => ii
+    continue
+    break
+    if g:val
+      return
+    endif
+  endfor
+enddef
+
+" Mainly check that ENDLOOP is only produced after a closure was created.
+def Test_disassemble_closure_in_loop()
+  var res = execute('disass s:ClosureInLoop')
+  assert_match('<SNR>\d\+_ClosureInLoop\_s*' ..
+        'for i in range(5)\_s*' ..
+        '\d\+ STORE -1 in $0\_s*' ..
+        '\d\+ PUSHNR 5\_s*' ..
+        '\d\+ BCALL range(argc 1)\_s*' ..
+        '\d\+ FOR $0 -> \d\+\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+
+        'var ii = i\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ STORE $3\_s*' ..
+
+        'continue\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+
+        'break\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+
+        'if g:val\_s*' ..
+        '\d\+ LOADG g:val\_s*' ..
+        '\d\+ COND2BOOL\_s*' ..
+        '\d\+ JUMP_IF_FALSE -> \d\+\_s*' ..
+
+        '  return\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN\_s*' ..
+
+        'endif\_s*' ..
+        'g:Ref = () => ii\_s*' ..
+        '\d\+ FUNCREF <lambda>4 vars  $3-$3\_s*' ..
+        '\d\+ STOREG g:Ref\_s*' ..
+
+        'continue\_s*' ..
+        '\d\+ ENDLOOP ref $1 save $3-$3 depth 0\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+
+        'break\_s*' ..
+        '\d\+ ENDLOOP ref $1 save $3-$3 depth 0\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+
+         'if g:val\_s*' ..
+        '\d\+ LOADG g:val\_s*' ..
+        '\d\+ COND2BOOL\_s*' ..
+        '\d\+ JUMP_IF_FALSE -> \d\+\_s*' ..
+
+        '  return\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ ENDLOOP ref $1 save $3-$3 depth 0\_s*' ..
+        '\d\+ RETURN\_s*' ..
+
+        'endif\_s*' ..
+        'endfor\_s*' ..
+        '\d\+ ENDLOOP ref $1 save $3-$3 depth 0\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+        '\d\+ DROP\_s*' ..
+        '\d\+ RETURN void',
+        res)
+enddef
+
 def EchoArg(arg: string): string
   return arg
 enddef
@@ -1466,17 +1543,20 @@ def Test_disassemble_for_loop()
         '\d NEWLIST size 0\_s*' ..
         '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
+
         'for i in range(3)\_s*' ..
         '\d STORE -1 in $1\_s*' ..
         '\d PUSHNR 3\_s*' ..
         '\d BCALL range(argc 1)\_s*' ..
         '\d FOR $1 -> \d\+\_s*' ..
-        '\d STORE $2\_s*' ..
+        '\d STORE $3\_s*' ..
+
         'res->add(i)\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d LOAD $2\_s*' ..
+        '\d LOAD $3\_s*' ..
         '\d\+ LISTAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
+
         'endfor\_s*' ..
         '\d\+ JUMP -> \d\+\_s*' ..
         '\d\+ DROP',
@@ -1498,21 +1578,25 @@ def Test_disassemble_for_loop_eval()
         'var res = ""\_s*' ..
         '\d PUSHS ""\_s*' ..
         '\d STORE $0\_s*' ..
+
         'for str in eval(''\["one", "two"\]'')\_s*' ..
         '\d STORE -1 in $1\_s*' ..
         '\d PUSHS "\["one", "two"\]"\_s*' ..
         '\d BCALL eval(argc 1)\_s*' ..
         '\d FOR $1 -> \d\+\_s*' ..
-        '\d STORE $2\_s*' ..
+        '\d STORE $3\_s*' ..
+
         'res ..= str\_s*' ..
         '\d\+ LOAD $0\_s*' ..
-        '\d\+ LOAD $2\_s*' ..
+        '\d\+ LOAD $3\_s*' ..
         '\d 2STRING_ANY stack\[-1\]\_s*' ..
         '\d\+ CONCAT size 2\_s*' ..
         '\d\+ STORE $0\_s*' ..
+
         'endfor\_s*' ..
         '\d\+ JUMP -> 5\_s*' ..
         '\d\+ DROP\_s*' ..
+
         'return res\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ RETURN',
@@ -1539,12 +1623,14 @@ def Test_disassemble_for_loop_unpack()
         '\d\+ NEWLIST size 2\_s*' ..
         '\d\+ FOR $0 -> 16\_s*' ..
         '\d\+ UNPACK 2\_s*' ..
-        '\d\+ STORE $1\_s*' ..
         '\d\+ STORE $2\_s*' ..
+        '\d\+ STORE $3\_s*' ..
+
         'echo x1 x2\_s*' ..
-        '\d\+ LOAD $1\_s*' ..
         '\d\+ LOAD $2\_s*' ..
+        '\d\+ LOAD $3\_s*' ..
         '\d\+ ECHO 2\_s*' ..
+
         'endfor\_s*' ..
         '\d\+ JUMP -> 8\_s*' ..
         '\d\+ DROP\_s*' ..
@@ -1576,32 +1662,43 @@ def Test_disassemble_for_loop_continue()
         '2 PUSHNR 2\_s*' ..
         '3 NEWLIST size 2\_s*' ..
         '4 FOR $0 -> 22\_s*' ..
-        '5 STORE $1\_s*' ..
+        '5 STORE $2\_s*' ..
+
         'try\_s*' ..
         '6 TRY catch -> 17, endtry -> 20\_s*' ..
+
         'echo "ok"\_s*' ..
         '7 PUSHS "ok"\_s*' ..
         '8 ECHO 1\_s*' ..
+
         'try\_s*' ..
         '9 TRY catch -> 13, endtry -> 15\_s*' ..
+
         'echo "deeper"\_s*' ..
         '10 PUSHS "deeper"\_s*' ..
         '11 ECHO 1\_s*' ..
+
         'catch\_s*' ..
         '12 JUMP -> 15\_s*' ..
         '13 CATCH\_s*' ..
+
         'continue\_s*' ..
         '14 TRY-CONTINUE 2 levels -> 4\_s*' ..
+
         'endtry\_s*' ..
         '15 ENDTRY\_s*' ..
+
         'catch\_s*' ..
         '16 JUMP -> 20\_s*' ..
         '17 CATCH\_s*' ..
+
         'echo "not ok"\_s*' ..
         '18 PUSHS "not ok"\_s*' ..
         '19 ECHO 1\_s*' ..
+
         'endtry\_s*' ..
         '20 ENDTRY\_s*' ..
+
         'endfor\_s*' ..
         '21 JUMP -> 4\_s*' ..
         '\d\+ DROP\_s*' ..
@@ -1643,13 +1740,11 @@ def s:Computing()
   anyres = g:number / 7
   anyres = g:number % 7
 
-  if has('float')
-    var fl = 3.0
-    var flres = fl + 7.0
-    flres = fl - 7.0
-    flres = fl * 7.0
-    flres = fl / 7.0
-  endif
+  var fl = 3.0
+  var flres = fl + 7.0
+  flres = fl - 7.0
+  flres = fl * 7.0
+  flres = fl / 7.0
 enddef
 
 def Test_disassemble_computing()
@@ -1684,24 +1779,22 @@ def Test_disassemble_computing()
         'anyres = g:number % 7.*' ..
         '\d OPANY %.*',
         instr)
-  if has('float')
-    assert_match('Computing.*' ..
-        'var fl = 3.0.*' ..
-        '\d PUSHF 3.0.*' ..
-        '\d STORE $3.*' ..
-        'var flres = fl + 7.0.*' ..
-        '\d LOAD $3.*' ..
-        '\d PUSHF 7.0.*' ..
-        '\d OPFLOAT +.*' ..
-        '\d STORE $4.*' ..
-        'flres = fl - 7.0.*' ..
-        '\d OPFLOAT -.*' ..
-        'flres = fl \* 7.0.*' ..
-        '\d OPFLOAT \*.*' ..
-        'flres = fl / 7.0.*' ..
-        '\d OPFLOAT /.*',
-        instr)
-  endif
+  assert_match('Computing.*' ..
+      'var fl = 3.0.*' ..
+      '\d PUSHF 3.0.*' ..
+      '\d STORE $3.*' ..
+      'var flres = fl + 7.0.*' ..
+      '\d LOAD $3.*' ..
+      '\d PUSHF 7.0.*' ..
+      '\d OPFLOAT +.*' ..
+      '\d STORE $4.*' ..
+      'flres = fl - 7.0.*' ..
+      '\d OPFLOAT -.*' ..
+      'flres = fl \* 7.0.*' ..
+      '\d OPFLOAT \*.*' ..
+      'flres = fl / 7.0.*' ..
+      '\d OPFLOAT /.*',
+      instr)
 enddef
 
 def s:AddListBlob()
@@ -2079,19 +2172,17 @@ def Test_disassemble_compare()
         ['77 isnot g:xx', 'COMPAREANY isnot'],
         ]
   var floatDecl = ''
-  if has('float')
-    cases->extend([
-        ['1.1 == aFloat', 'COMPAREFLOAT =='],
-        ['1.1 != aFloat', 'COMPAREFLOAT !='],
-        ['1.1 > aFloat', 'COMPAREFLOAT >'],
-        ['1.1 < aFloat', 'COMPAREFLOAT <'],
-        ['1.1 >= aFloat', 'COMPAREFLOAT >='],
-        ['1.1 <= aFloat', 'COMPAREFLOAT <='],
-        ['1.1 =~ aFloat', 'COMPAREFLOAT =\~'],
-        ['1.1 !~ aFloat', 'COMPAREFLOAT !\~'],
-        ])
-    floatDecl = 'var aFloat = 2.2'
-  endif
+  cases->extend([
+      ['1.1 == aFloat', 'COMPAREFLOAT =='],
+      ['1.1 != aFloat', 'COMPAREFLOAT !='],
+      ['1.1 > aFloat', 'COMPAREFLOAT >'],
+      ['1.1 < aFloat', 'COMPAREFLOAT <'],
+      ['1.1 >= aFloat', 'COMPAREFLOAT >='],
+      ['1.1 <= aFloat', 'COMPAREFLOAT <='],
+      ['1.1 =~ aFloat', 'COMPAREFLOAT =\~'],
+      ['1.1 !~ aFloat', 'COMPAREFLOAT !\~'],
+      ])
+  floatDecl = 'var aFloat = 2.2'
 
   var nr = 1
   for case in cases
@@ -2478,7 +2569,8 @@ def Test_silent_for()
         '\d NEWLIST size 1\_s*' ..
         '\d CMDMOD_REV\_s*' ..
         '5 FOR $0 -> 8\_s*' ..
-        '\d STORE $1\_s*' ..
+        '\d STORE $2\_s*' ..
+
         'endfor\_s*' ..
         '\d JUMP -> 5\_s*' ..
         '8 DROP\_s*' ..
@@ -2499,7 +2591,7 @@ def Test_silent_while()
         '\d LOADG g:not\_s*' ..
         '\d COND2BOOL\_s*' ..
         '\d CMDMOD_REV\_s*' ..
-        '\d JUMP_IF_FALSE -> 6\_s*' ..
+        '\d WHILE $0 -> 6\_s*' ..
 
         'endwhile\_s*' ..
         '\d JUMP -> 0\_s*' ..
@@ -2691,17 +2783,17 @@ def Test_debug_for()
           '4 STORE -1 in $0\_s*' ..
           '5 PUSHNR 0\_s*' ..
           '6 NEWLIST size 1\_s*' ..
-          '7 DEBUG line 2-2 varcount 2\_s*' ..
+          '7 DEBUG line 2-2 varcount 3\_s*' ..
           '8 FOR $0 -> 15\_s*' ..
-          '9 STORE $1\_s*' ..
+          '9 STORE $2\_s*' ..
 
           'echo a\_s*' ..
-          '10 DEBUG line 3-3 varcount 2\_s*' ..
-          '11 LOAD $1\_s*' ..
+          '10 DEBUG line 3-3 varcount 3\_s*' ..
+          '11 LOAD $2\_s*' ..
           '12 ECHO 1\_s*' ..
 
           'endfor\_s*' ..
-          '13 DEBUG line 4-4 varcount 2\_s*' ..
+          '13 DEBUG line 4-4 varcount 3\_s*' ..
           '14 JUMP -> 7\_s*' ..
           '15 DROP\_s*' ..
           '16 RETURN void*',
@@ -2898,6 +2990,21 @@ def Test_disassemble_bitshift()
                '8 OPNR <<\_s*' ..
                '9 STORE $3\_s*' ..
                '10 RETURN void', instr)
+enddef
+
+def s:OneDefer()
+  defer delete("file")
+enddef
+
+def Test_disassemble_defer()
+  var instr = execute('disassemble s:OneDefer')
+  assert_match('OneDefer\_s*' ..
+        'defer delete("file")\_s*' ..
+        '\d PUSHFUNC "delete"\_s*' ..
+        '\d PUSHS "file"\_s*' ..
+        '\d DEFER 1 args\_s*' ..
+        '\d RETURN\_s*',
+        instr)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

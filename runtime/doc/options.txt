@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2022 Jun 27
+*options.txt*	For Vim version 9.0.  Last change: 2022 Sep 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7498,6 +7498,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	When on, splitting a window will put the new window right of the
 	current one. |:vsplit|
+
+			*'splitscroll'* *'spsc'* *'nosplitscroll'* *'nospsc'*
+'splitscroll' 'spsc'	boolean	(default on)
+			global
+	The value of this option determines the scroll behavior when opening,
+	closing or resizing horizontal splits. When "on", splitting a window
+	horizontally will keep the same relative cursor position in the old and
+	new window, as well windows that are resized. When "off", scrolling
+	will be avoided to stabilize the window content. Instead, the cursor
+	position will be changed when necessary. In this case, the jumplist
+	will be populated with the previous cursor position. Scrolling cannot
+	be guaranteed to be avoided when 'wrap' is enabled.
 
 			   *'startofline'* *'sol'* *'nostartofline'* *'nosol'*
 'startofline' 'sol'	boolean	(default on)

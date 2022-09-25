@@ -72,7 +72,7 @@ Command line completion in a popup menu ~
 Before there was the 'wildmenu' option, which uses the space of one line above
 the statusline to show matches.  Only a few matches fit there.
 
-Now a popup menu can be used by setting "wildoptions' to "pum".  This allows
+Now a popup menu can be used by setting 'wildoptions' to "pum".  This allows
 for showing many more matches.  This requires redrawing more of the display,
 but since computers are fast enough that is not a problem.
 
@@ -336,7 +336,7 @@ Hide cursor when sleeping using |:sleep!|.
 Add "multispace" to 'listchars' to show two or more spaces no matter where
 they appear.  Add "leadmultispace" to 'listchars' to show two or more leading
 spaces.  Add "lead" to 'listchars' to set the character used to show leading
-spaces.  Support specifying a character using the hexdecimal notation in
+spaces.  Support specifying a character using the hexadecimal notation in
 'listchars' (\x, \u and \U).
 
 Make 'listchars', 'virtualedit' and 'thesaurusfunc' global-local options.
@@ -28248,7 +28248,7 @@ Files:      runtime/doc/repeat.txt, src/scriptfile.c, src/vim9script.c,
             src/proto/vim9script.pro, src/testdir/test_source.vim
 
 Patch 8.2.4608
-Problem:    getcompletion() does not work properly when 'wildoptions
+Problem:    getcompletion() does not work properly when 'wildoptions'
             contains "fuzzy".
 Solution:   Do not use addstar(). (Yegappan Lakshmanan, closes #9992,
             closes #9986)

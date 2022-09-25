@@ -335,6 +335,11 @@ func Test_insert_expr()
 endfunc
 
 func Test_undofile_earlier()
+  if has('win32')
+    " FIXME: This test is flaky on MS-Windows.
+    let g:test_is_flaky = 1
+  endif
+
   " Issue #1254
   " create undofile with timestamps older than Vim startup time.
   let t0 = localtime() - 43200

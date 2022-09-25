@@ -96,9 +96,7 @@ def Test_assignment()
 
     # calling job_start() is in test_vim9_fails.vim, it causes leak reports
   endif
-  if has('float')
-    var float1: float = 3.4
-  endif
+  var float1: float = 3.4
   var Funky1: func
   var Funky2: func = function('len')
   var Party2: func = funcref('g:Test_syntax')
@@ -147,17 +145,15 @@ def Test_assignment()
   &ts %= 4
   assert_equal(2, &ts)
 
-  if has('float')
-    var f100: float = 100.0
-    f100 /= 5
-    assert_equal(20.0, f100)
+  var f100: float = 100.0
+  f100 /= 5
+  assert_equal(20.0, f100)
 
-    var f200: float = 200.0
-    f200 /= 5.0
-    assert_equal(40.0, f200)
+  var f200: float = 200.0
+  f200 /= 5.0
+  assert_equal(40.0, f200)
 
-    v9.CheckDefFailure(['var nr: number = 200', 'nr /= 5.0'], 'E1012:')
-  endif
+  v9.CheckDefFailure(['var nr: number = 200', 'nr /= 5.0'], 'E1012:')
 
   lines =<< trim END
     &ts = 6
@@ -227,11 +223,9 @@ def Test_assignment()
   g:inc_counter += 1
   assert_equal(2, g:inc_counter)
 
-  if has('float')
-    var f: float
-    f += 1
-    assert_equal(1.0, f)
-  endif
+  var f: float
+  f += 1
+  assert_equal(1.0, f)
 
   $SOME_ENV_VAR ..= 'more'
   assert_equal('somemore', $SOME_ENV_VAR)
@@ -250,20 +244,16 @@ def Test_assignment()
 enddef
 
 def Test_float_and_number()
-  if !has('float')
-    MissingFeature float
-  else
-    var lines =<< trim END
-         var f: float
-         f += 2
-         f -= 1
-         assert_equal(1.0, f)
-         ++f
-         --f
-         assert_equal(1.0, f)
-    END
-    v9.CheckDefAndScriptSuccess(lines)
-  endif
+  var lines =<< trim END
+       var f: float
+       f += 2
+       f -= 1
+       assert_equal(1.0, f)
+       ++f
+       --f
+       assert_equal(1.0, f)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 let g:someNumber = 43
@@ -1314,10 +1304,8 @@ def Test_assignment_default()
   var thenumber: number
   assert_equal(0, thenumber)
 
-  if has('float')
-    var thefloat: float
-    assert_equal(0.0, thefloat)
-  endif
+  var thefloat: float
+  assert_equal(0.0, thefloat)
 
   var thestring: string
   assert_equal('', thestring)
@@ -1597,13 +1585,31 @@ def Test_assignment_failure()
   v9.CheckDefFailure(['var name: dict<number'], 'E1009:')
 
   v9.CheckDefFailure(['w:foo: number = 10'],
-                  'E488: Trailing characters: : number = 1')
+                  'E1016: Cannot declare a window variable: w:foo')
   v9.CheckDefFailure(['t:foo: bool = true'],
-                  'E488: Trailing characters: : bool = true')
+                  'E1016: Cannot declare a tab variable: t:foo')
   v9.CheckDefFailure(['b:foo: string = "x"'],
-                  'E488: Trailing characters: : string = "x"')
+                  'E1016: Cannot declare a buffer variable: b:foo')
   v9.CheckDefFailure(['g:foo: number = 123'],
-                  'E488: Trailing characters: : number = 123')
+                  'E1016: Cannot declare a global variable: g:foo')
+
+  v9.CheckScriptFailure(['vim9script', 'w:foo: number = 123'],
+                  'E1304: Cannot use type with this variable: w:foo:')
+  v9.CheckScriptFailure(['vim9script', 't:foo: number = 123'],
+                  'E1304: Cannot use type with this variable: t:foo:')
+  v9.CheckScriptFailure(['vim9script', 'b:foo: number = 123'],
+                  'E1304: Cannot use type with this variable: b:foo:')
+  v9.CheckScriptFailure(['vim9script', 'g:foo: number = 123'],
+                  'E1304: Cannot use type with this variable: g:foo:')
+
+  v9.CheckScriptFailure(['vim9script', 'const w:FOO: number = 123'],
+                  'E1304: Cannot use type with this variable: w:FOO:')
+  v9.CheckScriptFailure(['vim9script', 'const t:FOO: number = 123'],
+                  'E1304: Cannot use type with this variable: t:FOO:')
+  v9.CheckScriptFailure(['vim9script', 'const b:FOO: number = 123'],
+                  'E1304: Cannot use type with this variable: b:FOO:')
+  v9.CheckScriptFailure(['vim9script', 'const g:FOO: number = 123'],
+                  'E1304: Cannot use type with this variable: g:FOO:')
 enddef
 
 def Test_assign_list()
@@ -1959,8 +1965,6 @@ def Test_var_declaration()
     FLIST[0] = 11
     assert_equal([11], FLIST)
 
-    const g:FOO: number = 321
-    assert_equal(321, g:FOO)
     const g:FOOS = 'gfoos'
     assert_equal('gfoos', g:FOOS)
     final g:FLIST = [2]
@@ -1975,8 +1979,6 @@ def Test_var_declaration()
     assert_equal(123, g:globConst)
     assert_true(islocked('g:globConst'))
 
-    const w:FOO: number = 46
-    assert_equal(46, w:FOO)
     const w:FOOS = 'wfoos'
     assert_equal('wfoos', w:FOOS)
     final w:FLIST = [3]
@@ -2015,12 +2017,17 @@ def Test_var_declaration()
   unlet g:var_prefixed
   unlet g:other_var
   unlet g:globConst
-  unlet g:FOO
   unlet g:FOOS
   unlet g:FLIST
-  unlet w:FOO
   unlet w:FOOS
   unlet w:FLIST
+enddef
+
+def Test_create_list_after_const()
+  const a = 1
+  g:ll = []
+  assert_equal(0, islocked('g:ll'))
+  unlet g:ll
 enddef
 
 def Test_var_declaration_fails()

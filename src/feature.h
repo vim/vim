@@ -121,12 +121,15 @@
  * +wildignore		'wildignore' and 'backupskip' options
  * +wildmenu		'wildmenu' option
  * +builtin_terms	all builtin termcap entries included
+ * +float		Floating point variables.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
  *			Support was removed in 8.1.1093.
  * +farsi		Farsi (Persian language) Keymap support.
  *			Removed in patch 8.1.0932
+ * +footer		Motif only: Add a message area at the bottom of the
+ *			main window area.
  */
 
 /*
@@ -249,13 +252,9 @@
 /*
  * +eval		Built-in script language and expression evaluation,
  *			":let", ":if", etc.
- * +float		Floating point variables.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
-# if defined(HAVE_FLOAT_FUNCS) || defined(MSWIN) || defined(MACOS_X)
-#  define FEAT_FLOAT
-# endif
 #endif
 
 #ifdef FEAT_EVAL
@@ -1131,14 +1130,6 @@
 # if !defined(FEAT_MENU)
 #  define FEAT_MENU
 # endif
-#endif
-
-#if 0
-/*
- * +footer		Motif only: Add a message area at the bottom of the
- *			main window area.
- */
-# define FEAT_FOOTER
 #endif
 
 /*

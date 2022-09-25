@@ -89,6 +89,7 @@ static void f_inputsecret(typval_T *argvars, typval_T *rettv);
 static void f_interrupt(typval_T *argvars, typval_T *rettv);
 static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
+static void f_keytrans(typval_T *argvars, typval_T *rettv);
 static void f_last_buffer_nr(typval_T *argvars, typval_T *rettv);
 static void f_libcall(typval_T *argvars, typval_T *rettv);
 static void f_libcallnr(typval_T *argvars, typval_T *rettv);
@@ -872,6 +873,7 @@ arg_repeat1(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	    || type->tt_type == VAR_UNKNOWN
 	    || type->tt_type == VAR_STRING
 	    || type->tt_type == VAR_NUMBER
+	    || type->tt_type == VAR_BLOB
 	    || type->tt_type == VAR_LIST)
 	return OK;
 
@@ -1510,12 +1512,7 @@ typedef struct
 #define FEARG_3    3	    // base is the third argument
 #define FEARG_4    4	    // base is the fourth argument
 
-#ifdef FEAT_FLOAT
-# define FLOAT_FUNC(name) name
-#else
-# define FLOAT_FUNC(name) NULL
-#endif
-#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
+#if defined(HAVE_MATH_H)
 # define MATH_FUNC(name) name
 #else
 # define MATH_FUNC(name) NULL
@@ -1554,9 +1551,9 @@ typedef struct
 static funcentry_T global_functions[] =
 {
     {"abs",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_any,	    FLOAT_FUNC(f_abs)},
+			ret_any,	    f_abs},
     {"acos",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_acos)},
+			ret_float,	    f_acos},
     {"add",		2, 2, FEARG_1,	    arg2_listblob_item,
 			ret_first_arg,	    f_add},
     {"and",		2, 2, FEARG_1,	    arg2_number,
@@ -1574,7 +1571,7 @@ static funcentry_T global_functions[] =
     {"argv",		0, 2, 0,	    arg2_number,
 			ret_argv,	    f_argv},
     {"asin",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_asin)},
+			ret_float,	    f_asin},
     {"assert_beeps",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_assert_beeps},
     {"assert_equal",	2, 3, FEARG_2,	    NULL,
@@ -1602,9 +1599,9 @@ static funcentry_T global_functions[] =
     {"assert_true",	1, 2, FEARG_1,	    NULL,
 			ret_number_bool,    f_assert_true},
     {"atan",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_atan)},
+			ret_float,	    f_atan},
     {"atan2",		2, 2, FEARG_1,	    arg2_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_atan2)},
+			ret_float,	    f_atan2},
     {"autocmd_add",	1, 1, FEARG_1,	    arg1_list_any,
 			ret_number_bool,    f_autocmd_add},
     {"autocmd_delete",	1, 1, FEARG_1,	    arg1_list_any,
@@ -1674,7 +1671,7 @@ static funcentry_T global_functions[] =
     {"call",		2, 3, FEARG_1,	    arg3_any_list_dict,
 			ret_any,	    f_call},
     {"ceil",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_ceil)},
+			ret_float,	    f_ceil},
     {"ch_canread",	1, 1, FEARG_1,	    arg1_chan_or_job,
 			ret_number_bool,    JOB_FUNC(f_ch_canread)},
     {"ch_close",	1, 1, FEARG_1,	    arg1_chan_or_job,
@@ -1742,9 +1739,9 @@ static funcentry_T global_functions[] =
     {"copy",		1, 1, FEARG_1,	    NULL,
 			ret_copy,	    f_copy},
     {"cos",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_cos)},
+			ret_float,	    f_cos},
     {"cosh",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_cosh)},
+			ret_float,	    f_cosh},
     {"count",		2, 4, FEARG_1,	    arg24_count,
 			ret_number,	    f_count},
     {"cscope_connection",0,3, 0,	    arg3_number_string_string,
@@ -1802,7 +1799,7 @@ static funcentry_T global_functions[] =
     {"exists_compiled",	1, 1, FEARG_1,	    arg1_string,
 			ret_number_bool,    f_exists_compiled},
     {"exp",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_exp)},
+			ret_float,	    f_exp},
     {"expand",		1, 3, FEARG_1,	    arg3_string_bool_bool,
 			ret_any,	    f_expand},
     {"expandcmd",	1, 2, FEARG_1,	    arg2_string_dict,
@@ -1830,11 +1827,11 @@ static funcentry_T global_functions[] =
     {"flattennew",	1, 2, FEARG_1,	    arg2_list_any_number,
 			ret_list_any,	    f_flattennew},
     {"float2nr",	1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_number,	    FLOAT_FUNC(f_float2nr)},
+			ret_number,	    f_float2nr},
     {"floor",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_floor)},
+			ret_float,	    f_floor},
     {"fmod",		2, 2, FEARG_1,	    arg2_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_fmod)},
+			ret_float,	    f_fmod},
     {"fnameescape",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_fnameescape},
     {"fnamemodify",	2, 2, FEARG_1,	    arg2_string,
@@ -1851,7 +1848,7 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_foldtextresult},
     {"foreground",	0, 0, 0,	    NULL,
 			ret_void,	    f_foreground},
-    {"fullcommand",	1, 1, FEARG_1,	    arg1_string,
+    {"fullcommand",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_string,	    f_fullcommand},
     {"funcref",		1, 3, FEARG_1,	    arg3_any_list_dict,
 			ret_func_unknown,   f_funcref},
@@ -2057,6 +2054,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_json_encode},
     {"keys",		1, 1, FEARG_1,	    arg1_dict_any,
 			ret_list_string,    f_keys},
+    {"keytrans",	1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_keytrans},
     {"last_buffer_nr",	0, 0, 0,	    NULL,	// obsolete
 			ret_number,	    f_last_buffer_nr},
     {"len",		1, 1, FEARG_1,	    arg1_len,
@@ -2084,9 +2083,9 @@ static funcentry_T global_functions[] =
     {"localtime",	0, 0, 0,	    NULL,
 			ret_number,	    f_localtime},
     {"log",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_log)},
+			ret_float,	    f_log},
     {"log10",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_log10)},
+			ret_float,	    f_log10},
     {"luaeval",		1, 2, FEARG_1,	    arg2_string_any,
 			ret_any,
 #ifdef FEAT_LUA
@@ -2212,7 +2211,7 @@ static funcentry_T global_functions[] =
     {"popup_show",	1, 1, FEARG_1,	    arg1_number,
 			ret_void,	    PROP_FUNC(f_popup_show)},
     {"pow",		2, 2, FEARG_1,	    arg2_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_pow)},
+			ret_float,	    f_pow},
     {"prevnonblank",	1, 1, FEARG_1,	    arg1_lnum,
 			ret_number,	    f_prevnonblank},
     {"printf",		1, 19, FEARG_2,	    arg119_printf,
@@ -2296,7 +2295,7 @@ static funcentry_T global_functions[] =
     {"reltime",		0, 2, FEARG_1,	    arg2_list_number,
 			ret_list_any,	    f_reltime},
     {"reltimefloat",	1, 1, FEARG_1,	    arg1_list_number,
-			ret_float,	    FLOAT_FUNC(f_reltimefloat)},
+			ret_float,	    f_reltimefloat},
     {"reltimestr",	1, 1, FEARG_1,	    arg1_list_number,
 			ret_string,	    f_reltimestr},
     {"remote_expr",	2, 4, FEARG_1,	    arg24_remote_expr,
@@ -2322,7 +2321,7 @@ static funcentry_T global_functions[] =
     {"reverse",		1, 1, FEARG_1,	    arg1_list_or_blob,
 			ret_first_arg,	    f_reverse},
     {"round",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_round)},
+			ret_float,	    f_round},
     {"rubyeval",	1, 1, FEARG_1,	    arg1_string,
 			ret_any,
 #ifdef FEAT_RUBY
@@ -2434,9 +2433,9 @@ static funcentry_T global_functions[] =
     {"simplify",	1, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_simplify},
     {"sin",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_sin)},
+			ret_float,	    f_sin},
     {"sinh",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_sinh)},
+			ret_float,	    f_sinh},
     {"slice",		2, 3, FEARG_1,	    arg23_slice,
 			ret_slice,	    f_slice},
     {"sort",		1, 3, FEARG_1,	    arg13_sortuniq,
@@ -2458,13 +2457,13 @@ static funcentry_T global_functions[] =
     {"split",		1, 3, FEARG_1,	    arg3_string_string_bool,
 			ret_list_string,    f_split},
     {"sqrt",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_sqrt)},
+			ret_float,	    f_sqrt},
     {"srand",		0, 1, FEARG_1,	    arg1_number,
 			ret_list_number,    f_srand},
     {"state",		0, 1, FEARG_1,	    arg1_string,
 			ret_string,	    f_state},
     {"str2float",	1, 2, FEARG_1,	    arg2_string_bool,
-			ret_float,	    FLOAT_FUNC(f_str2float)},
+			ret_float,	    f_str2float},
     {"str2list",	1, 2, FEARG_1,	    arg2_string_bool,
 			ret_list_number,    f_str2list},
     {"str2nr",		1, 3, FEARG_1,	    arg3_string_number_bool,
@@ -2542,9 +2541,9 @@ static funcentry_T global_functions[] =
     {"taglist",		1, 2, FEARG_1,	    arg2_string,
 			ret_list_dict_any,  f_taglist},
     {"tan",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_tan)},
+			ret_float,	    f_tan},
     {"tanh",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_tanh)},
+			ret_float,	    f_tanh},
     {"tempname",	0, 0, 0,	    NULL,
 			ret_string,	    f_tempname},
     {"term_dumpdiff",	2, 3, FEARG_1,	    arg3_string_string_dict,
@@ -2676,7 +2675,7 @@ static funcentry_T global_functions[] =
     {"trim",		1, 3, FEARG_1,	    arg3_string_string_number,
 			ret_string,	    f_trim},
     {"trunc",		1, 1, FEARG_1,	    arg1_float_or_nr,
-			ret_float,	    FLOAT_FUNC(f_trunc)},
+			ret_float,	    f_trunc},
     {"type",		1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_type},
     {"typename",	1, 1, FEARG_1,	    NULL,
@@ -2878,7 +2877,6 @@ internal_func_check_arg_types(
 	cctx_T	*cctx)
 {
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
-    int		i;
 
     if (argchecks != NULL)
     {
@@ -2887,7 +2885,7 @@ internal_func_check_arg_types(
 	context.arg_count = argcount;
 	context.arg_types = types;
 	context.arg_cctx = cctx;
-	for (i = 0; i < argcount; ++i)
+	for (int i = 0; i < argcount; ++i)
 	    if (argchecks[i] != NULL)
 	    {
 		context.arg_idx = i;
@@ -3011,7 +3009,6 @@ call_internal_method(
 	typval_T    *rettv,
 	typval_T    *basetv)
 {
-    int		i;
     int		fi;
     typval_T	argv[MAX_FUNC_ARGS + 1];
 
@@ -3030,7 +3027,7 @@ call_internal_method(
 	// base value goes second
 	argv[0] = argvars[0];
 	argv[1] = *basetv;
-	for (i = 1; i < argcount; ++i)
+	for (int i = 1; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else if (global_functions[fi].f_argtype == FEARG_3)
@@ -3039,7 +3036,7 @@ call_internal_method(
 	argv[0] = argvars[0];
 	argv[1] = argvars[1];
 	argv[2] = *basetv;
-	for (i = 2; i < argcount; ++i)
+	for (int i = 2; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else if (global_functions[fi].f_argtype == FEARG_4)
@@ -3049,14 +3046,14 @@ call_internal_method(
 	argv[1] = argvars[1];
 	argv[2] = argvars[2];
 	argv[3] = *basetv;
-	for (i = 3; i < argcount; ++i)
+	for (int i = 3; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else
     {
 	// FEARG_1: base value goes first
 	argv[0] = *basetv;
-	for (i = 0; i < argcount; ++i)
+	for (int i = 0; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     argv[argcount + 1].v_type = VAR_UNKNOWN;
@@ -3163,10 +3160,9 @@ f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 	    pumitem_T	*array;
 	    int		size = split_message(msg, &array);
-	    int		i;
 
 	    // Skip the first and last item, they are always empty.
-	    for (i = 1; i < size - 1; ++i)
+	    for (int i = 1; i < size - 1; ++i)
 		list_append_string(rettv->vval.v_list, array[i].pum_text, -1);
 	    while (size > 0)
 		vim_free(array[--size].pum_text);
@@ -3666,10 +3662,8 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    n = argvars[0].vval.v_number == 0;
 	    break;
 	case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 	    n = argvars[0].vval.v_float == 0.0;
 	    break;
-#endif
 	case VAR_LIST:
 	    n = argvars[0].vval.v_list == NULL
 					|| argvars[0].vval.v_list->lv_len == 0;
@@ -4186,10 +4180,8 @@ f_expand(typval_T *argvars, typval_T *rettv)
 							   options, WILD_ALL);
 	    else if (rettv_list_alloc(rettv) == OK)
 	    {
-		int i;
-
 		ExpandOne(&xpc, s, NULL, options, WILD_ALL_KEEP);
-		for (i = 0; i < xpc.xp_numfiles; i++)
+		for (int i = 0; i < xpc.xp_numfiles; i++)
 		    list_append_string(rettv->vval.v_list, xpc.xp_files[i], -1);
 		ExpandCleanup(&xpc);
 	    }
@@ -4304,10 +4296,9 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (lowlevel)
 	    {
 #ifdef USE_INPUT_BUF
-		int idx;
 		int len = (int)STRLEN(keys);
 
-		for (idx = 0; idx < len; ++idx)
+		for (int idx = 0; idx < len; ++idx)
 		{
 		    // if a CTRL-C was typed, set got_int, similar to what
 		    // happens in fill_input_buf()
@@ -4400,6 +4391,10 @@ f_foreground(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 #endif
 }
 
+/*
+ * "function()" function
+ * "funcref()" function
+ */
     static void
 common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 {
@@ -5636,13 +5631,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"float",
-#ifdef FEAT_FLOAT
-		1
-#else
-		0
-#endif
-		},
+	{"float", 1},
 	{"folding",
 #ifdef FEAT_FOLDING
 		1
@@ -5650,13 +5639,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"footer",
-#ifdef FEAT_FOOTER
-		1
-#else
-		0
-#endif
-		},
+	{"footer", 0},
 	{"fork",
 #if !defined(USE_SYSTEM) && defined(UNIX)
 		1
@@ -7137,6 +7120,24 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "keytrans()" function
+ */
+    static void
+f_keytrans(typval_T *argvars, typval_T *rettv)
+{
+    char_u *escaped;
+
+    rettv->v_type = VAR_STRING;
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || argvars[0].vval.v_string == NULL)
+	return;
+    // Need to escape K_SPECIAL and CSI for mb_unescape().
+    escaped = vim_strsave_escape_csi(argvars[0].vval.v_string);
+    rettv->vval.v_string = str2special_save(escaped, TRUE, TRUE);
+    vim_free(escaped);
+}
+
+/*
  * "last_buffer_nr()" function.
  */
     static void
@@ -8405,18 +8406,19 @@ f_rename(typval_T *argvars, typval_T *rettv)
 f_repeat(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
-    int		n;
+    varnumber_T	n;
     int		slen;
     int		len;
     char_u	*r;
     int		i;
 
     if (in_vim9script()
-	    && (check_for_string_or_number_or_list_arg(argvars, 0) == FAIL
+	    && (check_for_string_or_number_or_list_or_blob_arg(argvars, 0)
+		    == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL))
 	return;
 
-    n = (int)tv_get_number(&argvars[1]);
+    n = tv_get_number(&argvars[1]);
     if (argvars[0].v_type == VAR_LIST)
     {
 	if (rettv_list_alloc(rettv) == OK && argvars[0].vval.v_list != NULL)
@@ -8424,6 +8426,35 @@ f_repeat(typval_T *argvars, typval_T *rettv)
 		if (list_extend(rettv->vval.v_list,
 					argvars[0].vval.v_list, NULL) == FAIL)
 		    break;
+    }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	if (rettv_blob_alloc(rettv) == FAIL
+		|| argvars[0].vval.v_blob == NULL
+		|| n <= 0)
+	    return;
+
+	slen = argvars[0].vval.v_blob->bv_ga.ga_len;
+	len = (int)slen * n;
+	if (len <= 0)
+	    return;
+
+	if (ga_grow(&rettv->vval.v_blob->bv_ga, len) == FAIL)
+	    return;
+
+	rettv->vval.v_blob->bv_ga.ga_len = len;
+
+	for (i = 0; i < slen; ++i)
+	    if (blob_get(argvars[0].vval.v_blob, i) != 0)
+		break;
+
+	if (i == slen)
+	    // No need to copy since all bytes are already zero
+	    return;
+
+	for (i = 0; i < n; ++i)
+	    blob_set_range(rettv->vval.v_blob,
+		    (long)i * slen, ((long)i + 1) * slen - 1, argvars);
     }
     else
     {

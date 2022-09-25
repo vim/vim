@@ -22,7 +22,7 @@ void blob_add(typval_T *argvars, typval_T *rettv);
 void blob_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
 void blob_filter_map(blob_T *blob_arg, filtermap_T filtermap, typval_T *expr, typval_T *rettv);
 void blob_insert_func(typval_T *argvars, typval_T *rettv);
-void blob_reduce(typval_T *argvars, char_u *func_name, funcexe_T *funcexe, typval_T *rettv);
+void blob_reduce(typval_T *argvars, typval_T *expr, typval_T *rettv);
 void blob_reverse(blob_T *b, typval_T *rettv);
 void f_blob2list(typval_T *argvars, typval_T *rettv);
 void f_list2blob(typval_T *argvars, typval_T *rettv);

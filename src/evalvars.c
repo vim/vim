@@ -603,6 +603,18 @@ list_script_vars(int *first)
 }
 
 /*
+ * Return TRUE if "name" starts with "g:", "w:", "t:" or "b:".
+ * But only when an identifier character follows.
+ */
+    int
+is_scoped_variable(char_u *name)
+{
+    return vim_strchr((char_u *)"gwbt", name[0]) != NULL
+	&& name[1] == ':'
+	&& eval_isnamec(name[2]);
+}
+
+/*
  * Evaluate one Vim expression {expr} in string "p" and append the
  * resulting string to "gap".  "p" points to the opening "{".
  * When "evaluate" is FALSE only skip over the expression.
@@ -1089,7 +1101,6 @@ ex_let(exarg_T *eap)
 		{
 		    // +=, /=, etc. require an existing variable
 		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
-		    i = FAIL;
 		}
 		else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{
@@ -1112,7 +1123,6 @@ ex_let(exarg_T *eap)
 		vim_strncpy(op, expr - len, len);
 		semsg(_(e_white_space_required_before_and_after_str_at_str),
 								   op, argend);
-		i = FAIL;
 	    }
 
 	    if (eap->skip)
@@ -1305,8 +1315,8 @@ skip_var_list(
 	}
 	return p + 1;
     }
-    else
-	return skip_var_one(arg, include_type);
+ 
+    return skip_var_one(arg, include_type);
 }
 
 /*
@@ -3393,7 +3403,8 @@ find_var_ht(char_u *name, char_u **varname)
     if (*name == 'v')				// v: variable
 	return &vimvarht;
     if (get_current_funccal() != NULL
-	       && get_current_funccal()->func->uf_def_status == UF_NOT_COMPILED)
+	       && get_current_funccal()->fc_func->uf_def_status
+							    == UF_NOT_COMPILED)
     {
 	// a: and l: are only used in functions defined with ":function"
 	if (*name == 'a')			// a: function argument
@@ -3680,8 +3691,7 @@ set_var_const(
 	vim9_declare_error(name);
 	goto failed;
     }
-    if ((flags & ASSIGN_FOR_LOOP) && name[1] == ':'
-			      && vim_strchr((char_u *)"gwbt", name[0]) != NULL)
+    if ((flags & ASSIGN_FOR_LOOP) && is_scoped_variable(name))
 	// Do not make g:var, w:var, b:var or t:var final.
 	flags &= ~ASSIGN_FINAL;
 
@@ -3841,6 +3851,14 @@ set_var_const(
 	}
 
 	clear_tv(&di->di_tv);
+
+	if ((flags & ASSIGN_UPDATE_BLOCK_ID)
+				       && SCRIPT_ID_VALID(current_sctx.sc_sid))
+	{
+	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+	    update_script_var_block_id(name, si->sn_current_block_id);
+	}
     }
     else
     {

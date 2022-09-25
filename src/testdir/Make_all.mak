@@ -7,6 +7,9 @@
 NO_PLUGINS = --noplugin --not-a-term
 NO_INITS = -U NONE $(NO_PLUGINS)
 
+# File to delete when testing starts
+CLEANUP_FILES = test.log messages starttime
+
 # Tests for tiny and small builds.
 SCRIPTS_TINY = \
 	test20 \
@@ -87,6 +90,7 @@ NEW_TESTS = \
 	test_clientserver \
 	test_close_count \
 	test_cmdline \
+	test_cmdmods \
 	test_cmdwin \
 	test_command_count \
 	test_comments \
@@ -346,6 +350,7 @@ NEW_TESTS_RES = \
 	test_clientserver.res \
 	test_close_count.res \
 	test_cmdline.res \
+	test_cmdmods.res \
 	test_cmdwin.res \
 	test_command_count.res \
 	test_comments.res \

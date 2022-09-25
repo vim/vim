@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Jul 5
+" Last Change:	2022 Sep 11
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -299,6 +299,9 @@ au BufNewFile,BufRead cfengine.conf		setf cfengine
 " ChaiScript
 au BufRead,BufNewFile *.chai			setf chaiscript
 
+" Chatito
+au BufNewFile,BufRead *.chatito			setf chatito
+
 " Comshare Dimension Definition Language
 au BufNewFile,BufRead *.cdl			setf cdl
 
@@ -447,6 +450,9 @@ endif
 
 " Lynx config files
 au BufNewFile,BufRead lynx.cfg			setf lynx
+
+" LyRiCs
+au BufNewFile,BufRead *.lrc			setf lyrics
 
 " Modula-3 configuration language (must be before *.cfg and *makefile)
 au BufNewFile,BufRead *.quake,cm3.cfg		setf m3quake
@@ -720,9 +726,16 @@ au BufNewFile,BufRead *.git/worktrees/*/config.worktree		setf gitconfig
 au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 if !empty($XDG_CONFIG_HOME)
   au BufNewFile,BufRead $XDG_CONFIG_HOME/git/config		setf gitconfig
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/git/attributes		setf gitattributes
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/git/ignore		setf gitignore
 endif
-au BufNewFile,BufRead git-rebase-todo		setf gitrebase
-au BufRead,BufNewFile .gitsendemail.msg.??????	setf gitsendemail
+au BufNewFile,BufRead .gitattributes,*.git/info/attributes	setf gitattributes
+au BufNewFile,BufRead */.config/git/attributes			setf gitattributes
+au BufNewFile,BufRead */etc/gitattributes			setf gitattributes
+au BufNewFile,BufRead .gitignore,*.git/info/exclude		setf gitignore
+au BufNewFile,BufRead */.config/git/ignore			setf gitignore
+au BufNewFile,BufRead git-rebase-todo				setf gitrebase
+au BufRead,BufNewFile .gitsendemail.msg.??????			setf gitsendemail
 au BufNewFile,BufRead *.git/*
       \ if getline(1) =~# '^\x\{40,\}\>\|^ref: ' |
       \   setf git |
@@ -831,6 +844,9 @@ au BufNewFile,BufRead *.hex,*.h32		setf hex
 " Hjson
 au BufNewFile,BufRead *.hjson			setf hjson
 
+" HLS Playlist (or another form of playlist)
+au BufNewFile,BufRead *.m3u,*.m3u8		setf hlsplaylist
+
 " Hollywood
 au BufRead,BufNewFile *.hws			setf hollywood
 
@@ -867,11 +883,11 @@ au BufNewFile,BufRead *.htt,*.htb		setf httest
 
 " i3
 au BufNewFile,BufRead */i3/config		setf i3config
-au BufNewFile,BufRead */.i3/config  	setf i3config
+au BufNewFile,BufRead */.i3/config		setf i3config
 
 " sway
 au BufNewFile,BufRead */sway/config		setf swayconfig
-au BufNewFile,BufRead */.sway/config	setf swayconfig
+au BufNewFile,BufRead */.sway/config		setf swayconfig
 
 " Icon
 au BufNewFile,BufRead *.icn			setf icon
@@ -940,7 +956,7 @@ au BufNewFile,BufRead *.java,*.jav		setf java
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
 " JavaScript, ECMAScript, ES module script, CommonJS script
-au BufNewFile,BufRead *.js,*.javascript,*.es,*.mjs,*.cjs   setf javascript
+au BufNewFile,BufRead *.js,*.jsm,*.javascript,*.es,*.mjs,*.cjs   setf javascript
 
 " JavaScript with React
 au BufNewFile,BufRead *.jsx			setf javascriptreact
@@ -977,6 +993,9 @@ au BufNewFile,BufRead .babelrc,.eslintrc,.prettierrc,.firebaserc  setf json
 
 " JSONC
 au BufNewFile,BufRead *.jsonc			setf jsonc
+
+" Jsonnet
+au BufNewFile,BufRead *.jsonnet,*.libjsonnet	setf jsonnet
 
 " Julia
 au BufNewFile,BufRead *.jl			setf julia
@@ -1259,6 +1278,9 @@ au BufNewFile,BufRead .netrc			setf netrc
 " Nginx
 au BufNewFile,BufRead *.nginx,nginx*.conf,*nginx.conf,*/etc/nginx/*,*/usr/local/nginx/conf/*,*/nginx/*.conf			setf nginx
 
+" Nim file
+au BufNewFile,BufRead *.nim,*.nims,*.nimble	setf nim
+
 " Ninja file
 au BufNewFile,BufRead *.ninja			setf ninja
 
@@ -1316,7 +1338,7 @@ au BufNewFile,BufRead *.or				setf openroad
 au BufNewFile,BufRead *.[Oo][Pp][Ll]			setf opl
 
 " OpenSCAD
-au BufNewFile,BufRead *.scad				setf openscad		
+au BufNewFile,BufRead *.scad				setf openscad
 
 " Oracle config file
 au BufNewFile,BufRead *.ora				setf ora
@@ -1391,7 +1413,8 @@ au BufNewFile,BufRead *.pod			setf pod
 " Also Phtml (was used for PHP 2 in the past).
 " Also .ctp for Cake template file.
 " Also .phpt for php tests.
-au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp,*.phpt	setf php
+" Also .theme for Drupal theme files.
+au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp,*.phpt,*.theme	setf php
 
 " PHP config
 au BufNewFile,BufRead php.ini-*			setf dosini
@@ -1711,6 +1734,9 @@ au BufNewFile,BufRead *.sdl,*.pr		setf sdl
 
 " sed
 au BufNewFile,BufRead *.sed			setf sed
+
+" SubRip
+au BufNewFile,BufRead *.srt			setf srt
 
 " svelte
 au BufNewFile,BufRead *.svelte			setf svelte
@@ -2093,6 +2119,9 @@ au BufNewFile,BufRead */.config/upstart/*.override	       setf upstart
 
 " Vala
 au BufNewFile,BufRead *.vala			setf vala
+
+" VDF
+au BufNewFile,BufRead *.vdf			setf vdf
 
 " VDM
 au BufRead,BufNewFile *.vdmpp,*.vpp		setf vdmpp
@@ -2568,6 +2597,8 @@ au BufNewFile,BufRead *.txt
 	\|   setf text
 	\| endif
 
+" Blueprint markup files
+au BufNewFile,BufRead *.blp			setf blueprint
 
 " Use the filetype detect plugins.  They may overrule any of the previously
 " detected filetypes.

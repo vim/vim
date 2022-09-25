@@ -254,7 +254,11 @@ set_buffer_lines(
 		    && wp->w_cursor.lnum > append_lnum)
 		wp->w_cursor.lnum += added;
 	check_cursor_col();
-	update_topline();
+
+	// Only update the window view if w_buffer matches curbuf, otherwise
+	// the computations will be wrong.
+	if (curwin->w_buffer == curbuf)
+	    update_topline();
     }
 
 done:

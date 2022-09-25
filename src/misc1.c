@@ -377,8 +377,8 @@ plines_win_nofill(
     if (!wp->w_p_wrap)
 	lines = 1
 #ifdef FEAT_PROP_POPUP
-	    // add a line for each "below" aligned text property
-		    + prop_count_below(wp->w_buffer, lnum)
+	    // add a line for each "above" and "below" aligned text property
+	    + prop_count_above_below(wp->w_buffer, lnum)
 #endif
 	;
     else

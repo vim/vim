@@ -198,9 +198,7 @@ gui_mch_set_rendering_options(char_u *s)
 # ifndef __MINGW32__
 #  include <shellapi.h>
 # endif
-# if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL_GUI) || defined(FEAT_GUI_TABLINE)
-#  include <commctrl.h>
-# endif
+# include <commctrl.h>
 # include <windowsx.h>
 
 #endif // PROTO
@@ -8663,6 +8661,7 @@ test_gui_w32_sendevent(dict_T *args)
 	inputs[0].ki.wVk = vkCode;
 	if (STRICMP(event, "keyup") == 0)
 	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	(void)SetForegroundWindow(s_hwnd);
 	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
     }
     else

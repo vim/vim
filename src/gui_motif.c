@@ -75,9 +75,6 @@ static Widget	tabLine;
 static Widget	tabLine_menu = 0;
 static int	showing_tabline = 0;
 #endif
-#ifdef FEAT_FOOTER
-static Widget footer;
-#endif
 #ifdef FEAT_MENU
 # if (XmVersion >= 1002)
 // remember the last set value for the tearoff item
@@ -87,10 +84,6 @@ static Widget menuBar;
 #endif
 
 #ifdef FEAT_TOOLBAR
-# ifdef FEAT_FOOTER
-static void toolbarbutton_enter_cb(Widget, XtPointer, XEvent *, Boolean *);
-static void toolbarbutton_leave_cb(Widget, XtPointer, XEvent *, Boolean *);
-# endif
 static void reset_focus(void);
 #endif
 
@@ -573,25 +566,6 @@ gui_x11_create_widgets(void)
 	XmNhighlightThickness, 0,
 	XmNshadowThickness, 0,
 	NULL);
-
-#ifdef FEAT_FOOTER
-    /*
-     * Create the Footer.
-     */
-    footer = XtVaCreateWidget("footer",
-	xmLabelGadgetClass, vimForm,
-	XmNalignment, XmALIGNMENT_BEGINNING,
-	XmNmarginHeight, 0,
-	XmNmarginWidth, 0,
-	XmNtraversalOn, False,
-	XmNrecomputeSize, False,
-	XmNleftAttachment, XmATTACH_FORM,
-	XmNleftOffset, 5,
-	XmNrightAttachment, XmATTACH_FORM,
-	XmNbottomAttachment, XmATTACH_FORM,
-	NULL);
-    gui_mch_set_footer((char_u *) "");
-#endif
 
     /*
      * Install the callbacks.
@@ -1315,12 +1289,6 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	    {
 		XtAddCallback(menu->id,
 			XmNactivateCallback, gui_x11_menu_cb, menu);
-# ifdef FEAT_FOOTER
-		XtAddEventHandler(menu->id, EnterWindowMask, False,
-			toolbarbutton_enter_cb, menu);
-		XtAddEventHandler(menu->id, LeaveWindowMask, False,
-			toolbarbutton_leave_cb, menu);
-# endif
 	    }
 	}
 	else
@@ -2855,58 +2823,6 @@ gui_mch_dialog(
 }
 #endif // FEAT_GUI_DIALOG
 
-#if defined(FEAT_FOOTER) || defined(PROTO)
-
-    static int
-gui_mch_compute_footer_height(void)
-{
-    Dimension	height;		    // total Toolbar height
-    Dimension	top;		    // XmNmarginTop
-    Dimension	bottom;		    // XmNmarginBottom
-    Dimension	shadow;		    // XmNshadowThickness
-
-    XtVaGetValues(footer,
-	    XmNheight, &height,
-	    XmNmarginTop, &top,
-	    XmNmarginBottom, &bottom,
-	    XmNshadowThickness, &shadow,
-	    NULL);
-
-    return (int) height + top + bottom + (shadow << 1);
-}
-
-    void
-gui_mch_enable_footer(int showit)
-{
-    if (showit)
-    {
-	gui.footer_height = gui_mch_compute_footer_height();
-	XtManageChild(footer);
-    }
-    else
-    {
-	gui.footer_height = 0;
-	XtUnmanageChild(footer);
-    }
-    XtVaSetValues(textAreaForm, XmNbottomOffset, gui.footer_height, NULL);
-}
-
-    void
-gui_mch_set_footer(char_u *s)
-{
-    XmString	xms;
-
-    xms = XmStringCreate((char *)s, STRING_TAG);
-    if (xms != NULL)
-    {
-	XtVaSetValues(footer, XmNlabelString, xms, NULL);
-	XmStringFree(xms);
-    }
-}
-
-#endif
-
-
 #if defined(FEAT_TOOLBAR) || defined(PROTO)
     void
 gui_mch_show_toolbar(int showit)
@@ -3131,39 +3047,6 @@ motif_get_toolbar_colors(
 	    XmNhighlightColor, hsp,
 	    NULL);
 }
-
-# ifdef FEAT_FOOTER
-/*
- * The next toolbar enter/leave callbacks should really do balloon help.  But
- * I have to use footer help for backwards compatibility.  Hopefully both will
- * get implemented and the user will have a choice.
- */
-    static void
-toolbarbutton_enter_cb(
-    Widget	w UNUSED,
-    XtPointer	client_data,
-    XEvent	*event UNUSED,
-    Boolean	*cont UNUSED)
-{
-    vimmenu_T	*menu = (vimmenu_T *) client_data;
-
-    if (menu->strings[MENU_INDEX_TIP] != NULL)
-    {
-	if (vim_strchr(p_go, GO_FOOTER) != NULL)
-	    gui_mch_set_footer(menu->strings[MENU_INDEX_TIP]);
-    }
-}
-
-    static void
-toolbarbutton_leave_cb(
-    Widget	w UNUSED,
-    XtPointer	client_data UNUSED,
-    XEvent	*event UNUSED,
-    Boolean	*cont UNUSED)
-{
-    gui_mch_set_footer((char_u *) "");
-}
-# endif
 #endif
 
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)

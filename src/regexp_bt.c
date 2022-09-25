@@ -3441,11 +3441,13 @@ regmatch(
 	  case RE_VCOL:
 	    {
 		win_T	    *wp = rex.reg_win == NULL ? curwin : rex.reg_win;
-		linenr_T    lnum = rex.reg_firstlnum + rex.lnum;
-		long_u	    vcol = 0;
+		linenr_T    lnum = REG_MULTI ? rex.reg_firstlnum + rex.lnum : 1;
+		long_u	    vcol;
 
-		if (lnum > 0 && lnum <= wp->w_buffer->b_ml.ml_line_count)
-		    vcol = (long_u)win_linetabsize(wp, lnum, rex.line,
+		if (REG_MULTI && (lnum <= 0
+				   || lnum > wp->w_buffer->b_ml.ml_line_count))
+		    lnum = 1;
+		vcol = (long_u)win_linetabsize(wp, lnum, rex.line,
 					      (colnr_T)(rex.input - rex.line));
 		if (!re_num_cmp(vcol + 1, scan))
 		    status = RA_NOMATCH;

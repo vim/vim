@@ -1,6 +1,7 @@
 /* vim9compile.c */
 int lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx);
 int arg_exists(char_u *name, size_t len, int *idxp, type_T **type, int *gen_load_outer, cctx_T *cctx);
+void update_script_var_block_id(char_u *name, int block_id);
 int script_is_vim9(void);
 int script_var_exists(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack);
 int check_defined(char_u *p, size_t len, cctx_T *cctx, cstack_T *cstack, int is_arg);

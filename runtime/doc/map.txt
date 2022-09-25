@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2022 Jun 18
+*map.txt*       For Vim version 9.0.  Last change: 2022 Sep 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1583,7 +1583,7 @@ completion candidates as the return value.
 
 For the "custom" argument, the function should return the completion
 candidates one per line in a newline separated string.
-
+							*E1303*
 For the "customlist" argument, the function should return the completion
 candidates as a Vim List.  Non-string items in the list are ignored.
 

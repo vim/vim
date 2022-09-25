@@ -1580,6 +1580,12 @@ func Test_gui_findrepl()
   call test_gui_event('findrepl', args)
   call assert_equal(['ONE two ONE', 'Twoo ONE two ONEo'], getline(1, '$'))
 
+  " Replace all instances with sub-replace specials
+  call cursor(1, 1)
+  let args = #{find_text: 'ONE', repl_text: '&~&', flags: 0x4, forward: 1}
+  call test_gui_event('findrepl', args)
+  call assert_equal(['&~& two &~&', 'Twoo &~& two &~&o'], getline(1, '$'))
+
   " Invalid arguments
   call assert_false(test_gui_event('findrepl', {}))
   let args = #{repl_text: 'a', flags: 1, forward: 1}
@@ -1601,12 +1607,15 @@ func Test_gui_CTRL_SHIFT_V()
 endfunc
 
 func Test_gui_dialog_file()
+  " make sure the file does not exist, otherwise a dialog makes Vim hang
+  call delete('Xdialfile')
+
   let lines =<< trim END
     file Xdialfile
     normal axxx
     confirm qa
   END
-  call writefile(lines, 'Xlines')
+  call writefile(lines, 'Xlines', 'D')
   let prefix = '!'
   if has('win32')
     let prefix = '!start '
@@ -1618,7 +1627,6 @@ func Test_gui_dialog_file()
 
   call delete('Xdialog')
   call delete('Xdialfile')
-  call delete('Xlines')
 endfunc
 
 " Test for sending low level key presses
@@ -1643,63 +1651,91 @@ func Test_gui_lowlevel_keyevent()
   endfor
 
   " Test for the various Ctrl and Shift key combinations.
+  " Refer to the following page for the virtual key codes:
+  " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
   let keytests = [
-    \ [[0x10, 0x21], "\<S-Pageup>", 2],
-    \ [[0x11, 0x21], "\<C-Pageup>", 4],
-    \ [[0x10, 0x22], "\<S-PageDown>", 2],
-    \ [[0x11, 0x22], "\<C-PageDown>", 4],
-    \ [[0x10, 0x23], "\<S-End>", 0],
-    \ [[0x11, 0x23], "\<C-End>", 0],
-    \ [[0x10, 0x24], "\<S-Home>", 0],
-    \ [[0x11, 0x24], "\<C-Home>", 0],
-    \ [[0x10, 0x25], "\<S-Left>", 0],
-    \ [[0x11, 0x25], "\<C-Left>", 0],
-    \ [[0x10, 0x26], "\<S-Up>", 0],
-    \ [[0x11, 0x26], "\<C-Up>", 4],
-    \ [[0x10, 0x27], "\<S-Right>", 0],
-    \ [[0x11, 0x27], "\<C-Right>", 0],
-    \ [[0x10, 0x28], "\<S-Down>", 0],
-    \ [[0x11, 0x28], "\<C-Down>", 4],
-    \ [[0x11, 0x30], "\<C-0>", 4],
-    \ [[0x11, 0x31], "\<C-1>", 4],
-    \ [[0x11, 0x32], "\<C-2>", 4],
-    \ [[0x11, 0x33], "\<C-3>", 4],
-    \ [[0x11, 0x34], "\<C-4>", 4],
-    \ [[0x11, 0x35], "\<C-5>", 4],
-    \ [[0x11, 0x36], "\<C-^>", 0],
-    \ [[0x11, 0x37], "\<C-7>", 4],
-    \ [[0x11, 0x38], "\<C-8>", 4],
-    \ [[0x11, 0x39], "\<C-9>", 4],
-    \ [[0x11, 0x60], "\<C-0>", 4],
-    \ [[0x11, 0x61], "\<C-1>", 4],
-    \ [[0x11, 0x62], "\<C-2>", 4],
-    \ [[0x11, 0x63], "\<C-3>", 4],
-    \ [[0x11, 0x64], "\<C-4>", 4],
-    \ [[0x11, 0x65], "\<C-5>", 4],
-    \ [[0x11, 0x66], "\<C-6>", 4],
-    \ [[0x11, 0x67], "\<C-7>", 4],
-    \ [[0x11, 0x68], "\<C-8>", 4],
-    \ [[0x11, 0x69], "\<C-9>", 4],
-    \ [[0x11, 0x6A], "\<C-*>", 4],
-    \ [[0x11, 0x6B], "\<C-+>", 4],
-    \ [[0x11, 0x6D], "\<C-->", 4],
-    \ [[0x11, 0x70], "\<C-F1>", 4],
-    \ [[0x11, 0x71], "\<C-F2>", 4],
-    \ [[0x11, 0x72], "\<C-F3>", 4],
-    \ [[0x11, 0x73], "\<C-F4>", 4],
-    \ [[0x11, 0x74], "\<C-F5>", 4],
-    \ [[0x11, 0x75], "\<C-F6>", 4],
-    \ [[0x11, 0x76], "\<C-F7>", 4],
-    \ [[0x11, 0x77], "\<C-F8>", 4],
-    \ [[0x11, 0x78], "\<C-F9>", 4],
+    \ [[0x10, 0x21], "S-Pageup", 2],
+    \ [[0xA0, 0x21], "S-Pageup", 2],
+    \ [[0xA1, 0x21], "S-Pageup", 2],
+    \ [[0x11, 0x21], "C-Pageup", 4],
+    \ [[0xA2, 0x21], "C-Pageup", 4],
+    \ [[0xA3, 0x21], "C-Pageup", 4],
+    \ [[0x11, 0x10, 0x21], "C-S-Pageup", 6],
+    \ [[0x10, 0x22], "S-PageDown", 2],
+    \ [[0xA0, 0x22], "S-PageDown", 2],
+    \ [[0xA1, 0x22], "S-PageDown", 2],
+    \ [[0x11, 0x22], "C-PageDown", 4],
+    \ [[0xA2, 0x22], "C-PageDown", 4],
+    \ [[0xA3, 0x22], "C-PageDown", 4],
+    \ [[0x11, 0x10, 0x22], "C-S-PageDown", 6],
+    \ [[0x10, 0x23], "S-End", 0],
+    \ [[0x11, 0x23], "C-End", 0],
+    \ [[0x11, 0x10, 0x23], "C-S-End", 4],
+    \ [[0x10, 0x24], "S-Home", 0],
+    \ [[0x11, 0x24], "C-Home", 0],
+    \ [[0x11, 0x10, 0x24], "C-S-Home", 4],
+    \ [[0x10, 0x25], "S-Left", 0],
+    \ [[0x11, 0x25], "C-Left", 0],
+    \ [[0x11, 0x10, 0x25], "C-S-Left", 4],
+    \ [[0x10, 0x26], "S-Up", 0],
+    \ [[0x11, 0x26], "C-Up", 4],
+    \ [[0x11, 0x10, 0x26], "C-S-Up", 4],
+    \ [[0x10, 0x27], "S-Right", 0],
+    \ [[0x11, 0x27], "C-Right", 0],
+    \ [[0x11, 0x10, 0x27], "C-S-Right", 4],
+    \ [[0x10, 0x28], "S-Down", 0],
+    \ [[0x11, 0x28], "C-Down", 4],
+    \ [[0x11, 0x10, 0x28], "C-S-Down", 4],
+    \ [[0x11, 0x30], "C-0", 4],
+    \ [[0x11, 0x31], "C-1", 4],
+    \ [[0x11, 0x32], "C-2", 4],
+    \ [[0x11, 0x33], "C-3", 4],
+    \ [[0x11, 0x34], "C-4", 4],
+    \ [[0x11, 0x35], "C-5", 4],
+    \ [[0x11, 0x36], "C-^", 0],
+    \ [[0x11, 0x37], "C-7", 4],
+    \ [[0x11, 0x38], "C-8", 4],
+    \ [[0x11, 0x39], "C-9", 4],
+    \ [[0x11, 0x60], "C-0", 4],
+    \ [[0x11, 0x61], "C-1", 4],
+    \ [[0x11, 0x62], "C-2", 4],
+    \ [[0x11, 0x63], "C-3", 4],
+    \ [[0x11, 0x64], "C-4", 4],
+    \ [[0x11, 0x65], "C-5", 4],
+    \ [[0x11, 0x66], "C-6", 4],
+    \ [[0x11, 0x67], "C-7", 4],
+    \ [[0x11, 0x68], "C-8", 4],
+    \ [[0x11, 0x69], "C-9", 4],
+    \ [[0x11, 0x6A], "C-*", 4],
+    \ [[0x11, 0x6B], "C-+", 4],
+    \ [[0x11, 0x6D], "C--", 4],
+    \ [[0x11, 0x70], "C-F1", 4],
+    \ [[0x11, 0x10, 0x70], "C-S-F1", 4],
+    \ [[0x11, 0x71], "C-F2", 4],
+    \ [[0x11, 0x10, 0x71], "C-S-F2", 4],
+    \ [[0x11, 0x72], "C-F3", 4],
+    \ [[0x11, 0x10, 0x72], "C-S-F3", 4],
+    \ [[0x11, 0x73], "C-F4", 4],
+    \ [[0x11, 0x10, 0x73], "C-S-F4", 4],
+    \ [[0x11, 0x74], "C-F5", 4],
+    \ [[0x11, 0x10, 0x74], "C-S-F5", 4],
+    \ [[0x11, 0x75], "C-F6", 4],
+    \ [[0x11, 0x10, 0x75], "C-S-F6", 4],
+    \ [[0x11, 0x76], "C-F7", 4],
+    \ [[0x11, 0x10, 0x76], "C-S-F7", 4],
+    \ [[0x11, 0x77], "C-F8", 4],
+    \ [[0x11, 0x10, 0x77], "C-S-F8", 4],
+    \ [[0x11, 0x78], "C-F9", 4],
+    \ [[0x11, 0x10, 0x78], "C-S-F9", 4],
     \ ]
 
   for [kcodes, kstr, kmod] in keytests
     call SendKeys(kcodes)
     let ch = getcharstr()
     let mod = getcharmod()
-    call assert_equal(kstr, ch, $"key = {kstr}")
-    call assert_equal(kmod, mod)
+    let keycode = eval('"\<' .. kstr .. '>"')
+    call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"key = {kstr}")
   endfor
 
   bw!

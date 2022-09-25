@@ -3,6 +3,7 @@ vim9script
 # Vim filetype plugin file
 # Language: gdscript (Godot game engine scripting language)
 # Maintainer: Maxim Kim <habamax@gmail.com>
+# Website: https://github.com/habamax/vim-gdscript
 
 if exists("b:did_ftplugin") | finish | endif
 
@@ -40,14 +41,19 @@ def GDScriptFoldLevel(): string
 enddef
 
 
-# Next/Previous section
-def NextSection(back: bool, cnt: number)
-    for n in range(cnt)
-        search('^\s*func\s', back ? 'bW' : 'W')
-    endfor
-enddef
+if !exists("g:no_plugin_maps")
+    # Next/Previous section
+    def NextSection(back: bool, cnt: number)
+        for n in range(cnt)
+            search('^\s*func\s', back ? 'bW' : 'W')
+        endfor
+    enddef
 
-nnoremap <silent><buffer>   ]] <scriptcmd>NextSection(false, v:count1)<CR>
-nnoremap <silent><buffer>   [[ <scriptcmd>NextSection(true, v:count1)<CR>
-xmap <silent><buffer><expr> ]] "\<esc>" .. v:count1 .. ']]m>gv'
-xmap <silent><buffer><expr> [[ "\<esc>" .. v:count1 .. '[[m>gv'
+    nnoremap <silent><buffer> ]] <scriptcmd>NextSection(false, v:count1)<CR>
+    nnoremap <silent><buffer> [[ <scriptcmd>NextSection(true, v:count1)<CR>
+    xmap <buffer><expr> ]] $'<C-\><C-N>{v:count1}]]m>gv'
+    xmap <buffer><expr> [[ $'<C-\><C-N>{v:count1}[[m>gv'
+    b:undo_ftplugin ..=
+          \    " | silent exe 'unmap <buffer> [['"
+          \ .. " | silent exe 'unmap <buffer> ]]'"
+endif

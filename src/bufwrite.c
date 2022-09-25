@@ -888,7 +888,8 @@ buf_write(
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (nofile_err)
-		emsg(_(e_no_matching_autocommands_for_acwrite_buffer));
+		semsg(_(e_no_matching_autocommands_for_buftype_str_buffer),
+							       curbuf->b_p_bt);
 
 	    if (nofile_err
 #ifdef FEAT_EVAL

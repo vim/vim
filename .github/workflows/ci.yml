@@ -98,17 +98,17 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
           sudo update-alternatives --set gcc /usr/bin/gcc-11
 
-      - name: Install clang-14
+      - name: Install clang-15
         if: matrix.compiler == 'clang'
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-14 main"
-          sudo apt install -y clang-14 llvm-14
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100
-          sudo update-alternatives --set clang /usr/bin/clang-14
-          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-14 100
-          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-14 100
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-15 main"
+          sudo apt install -y clang-15 llvm-15
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-15 100
+          sudo update-alternatives --set clang /usr/bin/clang-15
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-15 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-15 100
 
       - name: Set up environment
         run: |
@@ -250,7 +250,7 @@ jobs:
 
       - name: Codecov
         if: matrix.coverage
-        uses: codecov/codecov-action@v3.1.0
+        uses: codecov/codecov-action@v3.1.1
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
 
@@ -382,35 +382,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        toolchain: [msvc, mingw]
-        arch: [x64, x86]
-        features: [HUGE, NORMAL]
         include:
-          - arch: x64
-            vcarch: amd64
-            warch: x64
-            bits: 64
-            msystem: MINGW64
-            cygreg: registry
-            pyreg: ""
-          - arch: x86
-            vcarch: x86
-            warch: ia32
-            bits: 32
-            msystem: MINGW32
-            cygreg: registry32
-            pyreg: "-32"
-          - toolchain: mingw
-            arch: x64
-            features: HUGE
-            coverage: yes
-        exclude:
-          - toolchain: msvc
-            arch: x64
-            features: NORMAL
-          - toolchain: mingw
-            arch: x86
-            features: NORMAL
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: no,  arch: x64 }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: yes, arch: x86, coverage: yes }
+          - { features: HUGE,   toolchain: msvc,  VIMDLL: no,  GUI: yes, arch: x86 }
+          - { features: HUGE,   toolchain: mingw, VIMDLL: yes, GUI: no,  arch: x64, coverage: yes }
+          - { features: NORMAL, toolchain: msvc,  VIMDLL: yes, GUI: no,  arch: x86 }
+          - { features: NORMAL, toolchain: mingw, VIMDLL: no,  GUI: yes, arch: x64 }
+          - { features: TINY,   toolchain: msvc,  VIMDLL: yes, GUI: yes, arch: x64 }
+          - { features: TINY,   toolchain: mingw, VIMDLL: no,  GUI: no,  arch: x86 }
 
     steps:
       - name: Initialize
@@ -418,13 +398,32 @@ jobs:
         shell: bash
         run: |
           git config --global core.autocrlf input
-          echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
-          if [ "${{ matrix.arch }}" = "x86" ]; then
-            choco install python2 --forcex86
+
+          if [ "${{ matrix.arch }}" = "x64" ]; then
+            cygreg=registry
+            pyreg=
+            echo "VCARCH=amd64" >> $GITHUB_ENV
+            echo "WARCH=x64" >> $GITHUB_ENV
+            echo "BITS=64" >> $GITHUB_ENV
+            echo "MSYSTEM=MINGW64" >> $GITHUB_ENV
           else
-            choco install python2
+            cygreg=registry32
+            pyreg=-32
+            echo "VCARCH=x86" >> $GITHUB_ENV
+            echo "WARCH=ia32" >> $GITHUB_ENV
+            echo "BITS=32" >> $GITHUB_ENV
+            echo "MSYSTEM=MINGW32" >> $GITHUB_ENV
           fi
-          python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
+
+          echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
+          if [ "${{ matrix.features }}" != "TINY" ]; then
+            if [ "${{ matrix.arch }}" = "x86" ]; then
+              choco install python2 --forcex86
+            else
+              choco install python2
+            fi
+          fi
+          python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
@@ -434,7 +433,7 @@ jobs:
           install: tar
           pacboy: >-
             make:p gcc:p
-          msystem: ${{ matrix.msystem }}
+          msystem: ${{ env.MSYSTEM }}
           release: false
 
       - name: Checkout repository from github
@@ -451,7 +450,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: downloads
-          key: ${{ runner.os }}-${{ matrix.bits }}-${{ hashFiles('urls.txt') }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('urls.txt') }}
 
       - name: Download dependencies
         shell: cmd
@@ -460,14 +459,14 @@ jobs:
           if not exist downloads mkdir downloads
 
           echo %COL_GREEN%Download Lua%COL_RESET%
-          call :downloadfile %LUA${{ matrix.bits }}_URL% downloads\lua.zip
+          call :downloadfile %LUA${{ env.BITS }}_URL% downloads\lua.zip
           7z x downloads\lua.zip -o%LUA_DIR% > nul || exit 1
 
           echo %COL_GREEN%Download winpty%COL_RESET%
           call :downloadfile %WINPTY_URL% downloads\winpty.zip
           7z x -y downloads\winpty.zip -oD:\winpty > nul || exit 1
-          copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty.dll        src\winpty${{ matrix.bits }}.dll
-          copy /Y D:\winpty\${{ matrix.warch }}\bin\winpty-agent.exe  src\
+          copy /Y D:\winpty\%WARCH%\bin\winpty.dll        src\winpty%BITS%.dll
+          copy /Y D:\winpty\%WARCH%\bin\winpty-agent.exe  src\
 
           goto :eof
 
@@ -482,31 +481,28 @@ jobs:
           )
           goto :eof
 
-      - name: Copy src directory to src2
-        shell: cmd
-        run: xcopy src src2\ /E > nul
-
       - name: Build (MSVC)
         if: matrix.toolchain == 'msvc'
         shell: cmd
         run: |
-          call "%VCVARSALL%" ${{ matrix.vcarch }}
+          call "%VCVARSALL%" %VCARCH%
           cd src
+          if "${{ matrix.VIMDLL }}"=="yes" (
+            set GUI=yes
+          ) else (
+            set GUI=${{ matrix.GUI }}
+          )
           if "${{ matrix.features }}"=="HUGE" (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
-              GUI=yes IME=yes ICONV=yes VIMDLL=yes ^
+              GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
               DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
           ) else (
             nmake -nologo -f Make_mvc.mak ^
               FEATURES=${{ matrix.features }} ^
-              GUI=yes IME=yes ICONV=yes VIMDLL=yes
-          )
-          if not exist vim${{ matrix.bits }}.dll (
-            echo %COL_RED%Build failure.%COL_RESET%
-            exit 1
+              GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }}
           )
 
       - name: Build (MinGW)
@@ -514,10 +510,15 @@ jobs:
         shell: msys2 {0}
         run: |
           cd src
+          if [ "${{ matrix.VIMDLL }}" = "yes" ]; then
+            GUI=yes
+          else
+            GUI=${{ matrix.GUI }}
+          fi
           if [ "${{ matrix.features }}" = "HUGE" ]; then
             mingw32-make -f Make_ming.mak -j2 \
               FEATURES=${{ matrix.features }} \
-              GUI=yes IME=yes ICONV=yes VIMDLL=yes \
+              GUI=$GUI IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} \
               DYNAMIC_LUA=yes LUA=${LUA_DIR_SLASH} \
               DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
@@ -525,17 +526,27 @@ jobs:
           else
             mingw32-make -f Make_ming.mak -j2 \
               FEATURES=${{ matrix.features }} \
-              GUI=yes IME=yes ICONV=yes VIMDLL=yes \
+              GUI=$GUI IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} \
               STATIC_STDCPLUS=yes
           fi
 
       - name: Check version
         shell: cmd
         run: |
-          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
-          src\vim --version || exit 1
-          src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
-          src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          if "${{ matrix.GUI }}"=="yes" (
+            start /wait src\gvim -u NONE -i NONE -c "redir > version.txt | ver | q" || exit 1
+            type version.txt
+            echo.
+            start /wait src\gvim -u NONE -i NONE -c "redir! > version.txt | so ci\if_ver-1.vim | q"
+            start /wait src\gvim -u NONE -i NONE -c "redir >> version.txt | so ci\if_ver-2.vim | q"
+            type version.txt
+            del version.txt
+          ) else (
+            src\vim --version || exit 1
+            src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+            src\vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+          )
 
       #- name: Prepare Artifact
       #  shell: cmd
@@ -550,51 +561,39 @@ jobs:
       #    name: vim${{ matrix.bits }}-${{ matrix.toolchain }}
       #    path: ./artifacts
 
-      - name: Copy gcov data files to src2
-        if: matrix.coverage
-        shell: msys2 {0}
-        run: find src -name '*.gcno' | tar -c -T - | tar -x -C src2 --strip-components 1
-
       - name: Test and show the result of testing gVim
+        if: matrix.GUI == 'yes' || matrix.VIMDLL == 'yes'
         shell: cmd
-        timeout-minutes: 20
+        timeout-minutes: 15
         run: |
-          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
-          call "%VCVARSALL%" ${{ matrix.vcarch }}
-
-          echo %COL_GREEN%Start testing Vim in background.%COL_RESET%
-          start cmd /c "cd src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          call "%VCVARSALL%" %VCARCH%
 
           echo %COL_GREEN%Test gVim:%COL_RESET%
           cd src\testdir
-          nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
-
-      - name: Show the result of testing Vim
-        shell: cmd
-        timeout-minutes: 20
-        run: |
-          PATH %LUA_DIR%;C:\msys64\${{ matrix.msystem }}\bin;%PATH%;%PYTHON3_DIR%
-          call "%VCVARSALL%" ${{ matrix.vcarch }}
-
-          echo %COL_GREEN%Wait for Vim tests to finish.%COL_RESET%
-          cd src2\testdir
-          :: Wait about 10 minutes.
-          for /L %%i in (1,1,60) do (
-            if exist done.txt goto exitloop
-            timeout 10 > NUL 2>&1
-            if ERRORLEVEL 1 ping -n 11 localhost > NUL
+          if "${{ matrix.GUI }}"=="yes" (
+            nmake -nologo -f Make_mvc.mak VIMPROG=..\gvim || exit 1
+          ) else (
+            @rem Run only tiny tests.
+            nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\gvim  || exit 1
           )
-          set timeout=1
-          :exitloop
 
-          echo %COL_GREEN%The result of testing Vim:%COL_RESET%
-          cd src2\testdir
-          if exist messages type messages
-          nmake -nologo -f Make_dos.mak report VIMPROG=..\..\src\vim || exit 1
+      - name: Test and show the result of testing Vim
+        if: matrix.GUI == 'no' || matrix.VIMDLL == 'yes'
+        shell: cmd
+        timeout-minutes: 15
+        run: |
+          PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
+          call "%VCVARSALL%" %VCARCH%
 
-          if "%timeout%"=="1" (
-            echo %COL_RED%Timed out.%COL_RESET%
-            exit 1
+          echo %COL_GREEN%Test Vim:%COL_RESET%
+          cd src\testdir
+          nmake -nologo -f Make_mvc.mak clean
+          if "${{ matrix.GUI }}"=="no" (
+            nmake -nologo -f Make_mvc.mak VIMPROG=..\vim || exit 1
+          ) else (
+            @rem Run only tiny tests.
+            nmake -nologo -f Make_mvc.mak tiny VIMPROG=..\vim  || exit 1
           )
 
       - name: Generate gcov files
@@ -603,19 +602,10 @@ jobs:
         run: |
           cd src
           find . -type f -name '*.gcno' -exec gcov -pb {} + || true
-          cd ../src2
-          find . -type f -name '*.gcno' -exec gcov -pb {} + || true
 
-      - name: Codecov (gVim)
+      - name: Codecov
         if: matrix.coverage
-        uses: codecov/codecov-action@v3.1.0
+        uses: codecov/codecov-action@v3.1.1
         with:
           directory: src
-          flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}-gui
-
-      - name: Codecov (Vim)
-        if: matrix.coverage
-        uses: codecov/codecov-action@v3.1.0
-        with:
-          directory: src2
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}

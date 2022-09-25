@@ -478,9 +478,7 @@ func Test_terminal_size()
 
   call assert_fails("call term_start(cmd, {'term_rows': -1})", 'E475:')
   call assert_fails("call term_start(cmd, {'term_rows': 1001})", 'E475:')
-  if has('float')
-    call assert_fails("call term_start(cmd, {'term_rows': 10.0})", 'E805:')
-  endif
+  call assert_fails("call term_start(cmd, {'term_rows': 10.0})", 'E805:')
 
   call delete('Xtext')
 endfunc
@@ -632,7 +630,9 @@ func Test_terminal_cwd()
   endif
   call mkdir('Xtermdir')
   let buf = term_start(cmd, {'cwd': 'Xtermdir'})
-  call WaitForAssert({-> assert_equal('Xtermdir', fnamemodify(getline(1), ":t"))})
+  " if the path is very long it may be split over two lines, join them
+  " together
+  call WaitForAssert({-> assert_equal('Xtermdir', fnamemodify(getline(1) .. getline(2), ":t"))})
 
   exe buf . 'bwipe'
   call delete('Xtermdir', 'rf')
@@ -642,9 +642,9 @@ func Test_terminal_cwd_failure()
   " Case 1: Provided directory is not actually a directory.  Attempt to make
   " the file executable as well.
   call writefile([], 'Xtcfile')
-  call setfperm('Xftcile', 'rwx------')
-  call assert_fails("call term_start(&shell, {'cwd': 'Xftcile'})", 'E475:')
-  call delete('Xftcile')
+  call setfperm('Xtcfile', 'rwx------')
+  call assert_fails("call term_start(&shell, {'cwd': 'Xtcfile'})", 'E475:')
+  call delete('Xtcfile')
 
   " Case 2: Directory does not exist.
   call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')

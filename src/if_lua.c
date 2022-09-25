@@ -559,11 +559,9 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_NUMBER:
 	    lua_pushinteger(L, (int) tv->vval.v_number);
 	    break;
-#ifdef FEAT_FLOAT
 	case VAR_FLOAT:
 	    lua_pushnumber(L, (lua_Number) tv->vval.v_float);
 	    break;
-#endif
 	case VAR_LIST:
 	    luaV_pushlist(L, tv->vval.v_list);
 	    break;
@@ -619,7 +617,6 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    tv->vval.v_string = vim_strsave((char_u *) lua_tostring(L, pos));
 	    break;
 	case LUA_TNUMBER:
-#ifdef FEAT_FLOAT
 	{
 	    const lua_Number n = lua_tonumber(L, pos);
 
@@ -635,10 +632,6 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		tv->vval.v_number = (varnumber_T)n;
 	    }
 	}
-#else
-	    tv->v_type = VAR_NUMBER;
-	    tv->vval.v_number = (varnumber_T) lua_tointeger(L, pos);
-#endif
 	    break;
 	case LUA_TFUNCTION:
 	{
