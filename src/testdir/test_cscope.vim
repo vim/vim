@@ -241,15 +241,11 @@ func Test_cscopeWithCscopeConnections()
     let a = execute('cscope kill -1')
     call assert_equal('', a)
 
-    " Test: 'csprg' option
-    " Skip this with valgrind, it causes spurious leak reports
-    " FIXME: this causes failures when timers are used
-    if !RunningWithValgrind() && 0
-      call assert_equal('cscope', &csprg)
-      set csprg=doesnotexist
-      call assert_fails('cscope add Xcscope2.out', 'E262:')
-      set csprg=cscope
-    endif
+    " Test: 'csprg' option invalid command
+    call assert_equal('cscope', &csprg)
+    set csprg=doesnotexist
+    call assert_fails('cscope add Xcscope2.out', 'E609:')
+    set csprg=cscope
 
     " Test: multiple cscope connections
     cscope add Xcscope.out
