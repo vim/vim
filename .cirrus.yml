@@ -19,6 +19,7 @@ freebsd_task:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
     - ./configure --with-features=${FEATURES}
     - make -j${NPROC}
+  patch_script: "sudo sed -z 's/let buf = RunVimInTerminal('', {'rows': 6})/let buf = RunVimInTerminal('', {'rows': 10})/g' src/testdir/test_messages.vim"
   test_script:
     - src/vim --version
       # run tests as user "cirrus" instead of root
