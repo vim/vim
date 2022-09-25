@@ -162,32 +162,21 @@ estack_sfile(estack_arg_T which UNUSED)
     // instead.
     if (which == ESTACK_SCRIPT)
     {
-	entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
 	// Walk the stack backwards, starting from the current frame.
 	for (idx = exestack.ga_len - 1; idx >= 0; --idx, --entry)
 	{
-	    if (entry->es_type == ETYPE_UFUNC)
+	    if (entry->es_type == ETYPE_UFUNC || entry->es_type == ETYPE_AUCMD)
 	    {
-		sctx_T *def_ctx = &entry->es_info.ufunc->uf_script_ctx;
+		sctx_T *def_ctx = entry->es_type == ETYPE_UFUNC
+				      ? &entry->es_info.ufunc->uf_script_ctx
+				      : acp_script_ctx(entry->es_info.aucmd);
 
-		if (def_ctx->sc_sid > 0)
-		    return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
-		else
-		    return NULL;
-	    }
-	    else if (entry->es_type == ETYPE_AUCMD)
-	    {
-		sctx_T *def_ctx = acp_script_ctx(entry->es_info.aucmd);
-
-		if (def_ctx->sc_sid > 0)
-		    return vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name);
-		else
-		    return NULL;
+		return def_ctx->sc_sid > 0
+			   ? vim_strsave(SCRIPT_ITEM(def_ctx->sc_sid)->sn_name)
+			   : NULL;
 	    }
 	    else if (entry->es_type == ETYPE_SCRIPT)
-	    {
 		return vim_strsave(entry->es_name);
-	    }
 	}
 	return NULL;
     }
@@ -1368,16 +1357,18 @@ do_source_ext(
 {
     source_cookie_T	    cookie;
     char_u		    *p;
-    char_u		    *fname_exp;
+    char_u		    *fname_not_fixed = NULL;
+    char_u		    *fname_exp = NULL;
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
     sctx_T		    save_current_sctx;
 #ifdef FEAT_EVAL
     funccal_entry_T	    funccalp_entry;
     int			    save_debug_break_level = debug_break_level;
-    int			    sid;
+    int			    sid = -1;
     scriptitem_T	    *si = NULL;
     int			    save_estack_compiling = estack_compiling;
+    ESTACK_CHECK_DECLARATION
 #endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
@@ -1388,7 +1379,6 @@ do_source_ext(
 #endif
     int			    save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     int			    trigger_source_post = FALSE;
-    ESTACK_CHECK_DECLARATION
 
     CLEAR_FIELD(cookie);
     if (fname == NULL)
@@ -1400,13 +1390,12 @@ do_source_ext(
     }
     else
     {
-	p = expand_env_save(fname);
-	if (p == NULL)
-	    return retval;
-	fname_exp = fix_fname(p);
-	vim_free(p);
+	fname_not_fixed = expand_env_save(fname);
+	if (fname_not_fixed == NULL)
+	    goto theend;
+	fname_exp = fix_fname(fname_not_fixed);
 	if (fname_exp == NULL)
-	    return retval;
+	    goto theend;
 	if (mch_isdir(fname_exp))
 	{
 	    smsg(_("Cannot source a directory: \"%s\""), fname);
@@ -1534,10 +1523,6 @@ do_source_ext(
     cookie.level = ex_nesting_level;
 #endif
 
-    // Keep the sourcing name/lnum, for recursive calls.
-    estack_push(ETYPE_SCRIPT, fname_exp, 0);
-    ESTACK_CHECK_SETUP
-
 #ifdef STARTUPTIME
     if (time_fd != NULL)
 	time_push(&tv_rel, &tv_start);
@@ -1617,18 +1602,23 @@ do_source_ext(
 	int error = OK;
 
 	// It's new, generate a new SID and initialize the scriptitem.
-	current_sctx.sc_sid = get_new_scriptitem(&error);
+	sid = get_new_scriptitem(&error);
+	current_sctx.sc_sid = sid;
 	if (error == FAIL)
 	    goto almosttheend;
-	si = SCRIPT_ITEM(current_sctx.sc_sid);
+	si = SCRIPT_ITEM(sid);
 	si->sn_name = fname_exp;
 	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 	if (ret_sid != NULL)
-	    *ret_sid = current_sctx.sc_sid;
+	    *ret_sid = sid;
 
 	// Remember the "is_vimrc" flag for when the file is sourced again.
 	si->sn_is_vimrc = is_vimrc;
     }
+
+    // Keep the sourcing name/lnum, for recursive calls.
+    estack_push(ETYPE_SCRIPT, si->sn_name, 0);
+    ESTACK_CHECK_SETUP
 
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -1649,6 +1639,9 @@ do_source_ext(
 	}
     }
 # endif
+#else
+    // Keep the sourcing name/lnum, for recursive calls.
+    estack_push(ETYPE_SCRIPT, fname_exp, 0);
 #endif
 
     cookie.conv.vc_type = CONV_NONE;		// no conversion
@@ -1679,7 +1672,7 @@ do_source_ext(
     if (do_profiling == PROF_YES)
     {
 	// Get "si" again, "script_items" may have been reallocated.
-	si = SCRIPT_ITEM(current_sctx.sc_sid);
+	si = SCRIPT_ITEM(sid);
 	if (si->sn_prof_on)
 	{
 	    profile_end(&si->sn_pr_start);
@@ -1693,7 +1686,9 @@ do_source_ext(
 
     if (got_int)
 	emsg(_(e_interrupted));
+#ifdef FEAT_EVAL
     ESTACK_CHECK_NOW
+#endif
     estack_pop();
     if (p_verbose > 1)
     {
@@ -1728,7 +1723,7 @@ almosttheend:
     // If "sn_save_cpo" is set that means we encountered "vim9script": restore
     // 'cpoptions', unless in the main .vimrc file.
     // Get "si" again, "script_items" may have been reallocated.
-    si = SCRIPT_ITEM(current_sctx.sc_sid);
+    si = SCRIPT_ITEM(sid);
     if (si->sn_save_cpo != NULL && si->sn_is_vimrc == DOSO_NONE)
     {
 	if (STRCMP(p_cpo, CPO_VIM) != 0)
@@ -1783,6 +1778,21 @@ almosttheend:
 	apply_autocmds(EVENT_SOURCEPOST, fname_exp, fname_exp, FALSE, curbuf);
 
 theend:
+#ifdef FEAT_EVAL
+    if (sid > 0 && ret_sid != NULL
+	    && fname_not_fixed != NULL && fname_exp != NULL)
+    {
+	int not_fixed_sid = find_script_by_name(fname_not_fixed);
+
+	// If "fname_not_fixed" is a symlink then we source the linked file.
+	// If the original name is in the script list we add the ID of the
+	// script that was actually sourced.
+	if (SCRIPT_ID_VALID(not_fixed_sid) && not_fixed_sid != sid)
+	    SCRIPT_ITEM(not_fixed_sid)->sn_sourced_sid = sid;
+    }
+#endif
+
+    vim_free(fname_not_fixed);
     vim_free(fname_exp);
     sticky_cmdmod_flags = save_sticky_cmdmod_flags;
 #ifdef FEAT_EVAL
@@ -1796,7 +1806,7 @@ do_source(
     char_u	*fname,
     int		check_other,	    // check for .vimrc and _vimrc
     int		is_vimrc,	    // DOSO_ value
-    int		*ret_sid UNUSED)
+    int		*ret_sid)
 {
     return do_source_ext(fname, check_other, is_vimrc, ret_sid, NULL, FALSE);
 }
@@ -1837,9 +1847,16 @@ ex_scriptnames(exarg_T *eap)
 
 	if (si->sn_name != NULL)
 	{
+	    char sourced_buf[20];
+
 	    home_replace(NULL, si->sn_name, NameBuff, MAXPATHL, TRUE);
-	    vim_snprintf((char *)IObuff, IOSIZE, "%3d%s: %s",
+	    if (si->sn_sourced_sid > 0)
+		vim_snprintf(sourced_buf, 20, "->%d", si->sn_sourced_sid);
+	    else
+		sourced_buf[0] = NUL;
+	    vim_snprintf((char *)IObuff, IOSIZE, "%3d%s%s: %s",
 		    i,
+		    sourced_buf,
 		    si->sn_state == SN_STATE_NOT_LOADED ? " A" : "",
 		    NameBuff);
 	    if (!message_filtered(IObuff))
@@ -1931,6 +1948,136 @@ get_sourced_lnum(
 			? ((source_cookie_T *)cookie)->sourcing_lnum
 			: SOURCING_LNUM;
 }
+
+/*
+ * Return a List of script-local functions defined in the script with id
+ * 'sid'.
+ */
+    static list_T *
+get_script_local_funcs(scid_T sid)
+{
+    hashtab_T	*functbl;
+    hashitem_T	*hi;
+    long_u	todo;
+    list_T	*l;
+
+    l = list_alloc();
+    if (l == NULL)
+	return NULL;
+
+    // Iterate through all the functions in the global function hash table
+    // looking for functions with script ID 'sid'.
+    functbl = func_tbl_get();
+    todo = functbl->ht_used;
+    for (hi = functbl->ht_array; todo > 0; ++hi)
+    {
+	ufunc_T	*fp;
+
+	if (HASHITEM_EMPTY(hi))
+	    continue;
+
+	--todo;
+	fp = HI2UF(hi);
+
+	// Add active functions with script id == 'sid'
+	if (!(fp->uf_flags & FC_DEAD) && (fp->uf_script_ctx.sc_sid == sid))
+	{
+	    char_u	*name;
+
+	    if (fp->uf_name_exp != NULL)
+		name = fp->uf_name_exp;
+	    else
+		name = fp->uf_name;
+
+	    list_append_string(l, name, -1);
+	}
+    }
+
+    return l;
+}
+
+/*
+ * getscriptinfo() function
+ */
+    void
+f_getscriptinfo(typval_T *argvars, typval_T *rettv)
+{
+    int		i;
+    list_T	*l;
+    char_u	*pat = NULL;
+    regmatch_T	regmatch;
+    int		filterpat = FALSE;
+    scid_T	sid = -1;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    l = rettv->vval.v_list;
+
+    regmatch.regprog = NULL;
+    regmatch.rm_ic = p_ic;
+
+    if (argvars[0].v_type == VAR_DICT)
+    {
+	sid = dict_get_number_def(argvars[0].vval.v_dict, "sid", -1);
+	if (sid == -1)
+	{
+	    pat = dict_get_string(argvars[0].vval.v_dict, "name", TRUE);
+	    if (pat != NULL)
+		regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+	    if (regmatch.regprog != NULL)
+		filterpat = TRUE;
+	}
+    }
+
+    for (i = 1; i <= script_items.ga_len; ++i)
+    {
+	scriptitem_T	*si = SCRIPT_ITEM(i);
+	dict_T		*d;
+
+	if (si->sn_name == NULL)
+	    continue;
+
+	if (filterpat && !vim_regexec(&regmatch, si->sn_name, (colnr_T)0))
+	    continue;
+
+	if (sid != -1 && sid != i)
+	    continue;
+
+	if ((d = dict_alloc()) == NULL
+		|| list_append_dict(l, d) == FAIL
+		|| dict_add_string(d, "name", si->sn_name) == FAIL
+		|| dict_add_number(d, "sid", i) == FAIL
+		|| dict_add_number(d, "sourced", si->sn_sourced_sid) == FAIL
+		|| dict_add_number(d, "version", si->sn_version) == FAIL
+		|| dict_add_bool(d, "autoload",
+				si->sn_state == SN_STATE_NOT_LOADED) == FAIL)
+	    return;
+
+	// When a filter pattern is specified to return information about only
+	// specific script(s), also add the script-local variables and
+	// functions.
+	if (sid != -1)
+	{
+	    dict_T	*var_dict;
+
+	    var_dict = dict_copy(&si->sn_vars->sv_dict, TRUE, TRUE,
+								get_copyID());
+	    if (var_dict == NULL
+		    || dict_add_dict(d, "variables", var_dict) == FAIL
+		    || dict_add_list(d, "functions",
+					get_script_local_funcs(sid)) == FAIL)
+		return;
+	}
+    }
+
+    vim_regfree(regmatch.regprog);
+    vim_free(pat);
+}
+
 #endif
 
     static char_u *

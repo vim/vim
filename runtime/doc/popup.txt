@@ -591,7 +591,7 @@ POPUP_CREATE() ARGUMENTS			 *popup_create-arguments*
 
 The first argument of |popup_create()| (and the second argument to
 |popup_settext()|) specifies the text to be displayed, and optionally text
-properties.  It is in one of four forms:
+properties.  It is in one of four forms:  *E1284*
 - a buffer number
 - a string
 - a list of strings

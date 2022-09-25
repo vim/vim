@@ -540,6 +540,7 @@ vim_main2(void)
 	// don't have them.
 	if (!gui.in_use && params.evim_mode)
 	    mch_exit(1);
+	firstwin->w_prev_height = firstwin->w_height; // may have changed
     }
 #endif
 
@@ -651,7 +652,7 @@ vim_main2(void)
 
     /*
      * When done something that is not allowed or given an error message call
-     * wait_return.  This must be done before starttermcap(), because it may
+     * wait_return().  This must be done before starttermcap(), because it may
      * switch to another screen. It must be done after settmode(TMODE_RAW),
      * because we want to react on a single key stroke.
      * Call settmode and starttermcap here, so the T_KS and T_TI may be
@@ -686,7 +687,7 @@ vim_main2(void)
 			&& !gui.in_use
 #endif
 					)
-	must_redraw = CLEAR;
+	set_must_redraw(UPD_CLEAR);
     else
     {
 	screenclear();			// clear screen
@@ -788,7 +789,7 @@ vim_main2(void)
 #endif
 
     RedrawingDisabled = 0;
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     no_wait_return = FALSE;
 
     // 'autochdir' has been postponed
@@ -1007,7 +1008,7 @@ common_init(mparm_T *paramp)
  * Return TRUE when the --not-a-term argument was found.
  */
     int
-is_not_a_term()
+is_not_a_term(void)
 {
     return params.not_a_term;
 }
@@ -1015,8 +1016,8 @@ is_not_a_term()
 /*
  * Return TRUE when the --not-a-term argument was found or the GUI is in use.
  */
-    static int
-is_not_a_term_or_gui()
+    int
+is_not_a_term_or_gui(void)
 {
     return params.not_a_term
 #ifdef FEAT_GUI
@@ -1226,7 +1227,7 @@ main_loop(
 	    did_check_timestamps = FALSE;
 	    if (need_check_timestamps)
 		check_timestamps(FALSE);
-	    if (need_wait_return)	// if wait_return still needed ...
+	    if (need_wait_return)	// if wait_return() still needed ...
 		wait_return(FALSE);	// ... call it now
 	    if (need_start_insertmode && goto_im() && !VIsual_active)
 	    {
@@ -1412,7 +1413,7 @@ main_loop(
 	    validate_cursor();
 
 	    if (VIsual_active)
-		update_curbuf(INVERTED); // update inverted part
+		update_curbuf(UPD_INVERTED); // update inverted part
 	    else if (must_redraw)
 	    {
 		mch_disable_flush();	// Stop issuing gui_mch_flush().
@@ -1582,6 +1583,11 @@ getout(int exitval)
     // Position the cursor on the last screen line, below all the text
     if (!is_not_a_term_or_gui())
 	windgoto((int)Rows - 1, 0);
+
+#ifdef FEAT_EVAL
+    // Invoked all deferred functions in the function stack.
+    invoke_all_defer();
+#endif
 
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
     // Optionally print hashtable efficiency.

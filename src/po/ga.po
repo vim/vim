@@ -6684,7 +6684,7 @@ msgstr "E804: Ní féidir '%' a úsáid le Snámhphointe"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Snámhphointe á úsáid mar Uimhir"
 
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Snámhphointe á úsáid mar Theaghrán"
 
 msgid "E807: Expected Float argument for printf()"

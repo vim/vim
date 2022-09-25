@@ -52,6 +52,7 @@ void parse_queued_messages(void);
 void vungetc(int c);
 int fix_input_buffer(char_u *buf, int len);
 int input_available(void);
+void may_add_last_used_map_to_redobuff(void);
 int do_cmdkey_command(int key, int flags);
 void reset_last_used_map(mapblock_T *mp);
 /* vim: set ft=c : */

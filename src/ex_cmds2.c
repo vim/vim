@@ -27,10 +27,8 @@ autowrite(buf_T *buf, int forceit)
     bufref_T	bufref;
 
     if (!(p_aw || p_awa) || !p_write
-#ifdef FEAT_QUICKFIX
 	    // never autowrite a "nofile" or "nowrite" buffer
 	    || bt_dontwrite(buf)
-#endif
 	    || (!forceit && buf->b_p_ro) || buf->b_ffname == NULL)
 	return FAIL;
     set_bufref(&bufref, buf);
@@ -350,7 +348,7 @@ check_changed_any(
     if (!(p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)))
 #endif
     {
-	// There must be a wait_return for this message, do_buffer()
+	// There must be a wait_return() for this message, do_buffer()
 	// may cause a redraw.  But wait_return() is a no-op when vgetc()
 	// is busy (Quit used from window menu), then make sure we don't
 	// cause a scroll up.

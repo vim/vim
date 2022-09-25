@@ -103,7 +103,7 @@ zuW							*zuG* *zuW*
 zuG			Undo |zW| and |zG|, remove the word from the internal
 			word list.  Count used as with |zg|.
 
-							*:spe* *:spellgood*
+						*:spe* *:spellgood* *E1280*
 :[count]spe[llgood] {word}
 			Add {word} as a good word to 'spellfile', like with
 			|zg|.  Without count the first name is used, with a
@@ -1600,7 +1600,7 @@ CHECKCOMPOUNDTRIPLE  (Hunspell)			*spell-CHECKCOMPOUNDTRIPLE*
 		Forbid three identical characters when compounding.  Not
 		supported.
 
-CHECKSHARPS  (Hunspell))			*spell-CHECKSHARPS*
+CHECKSHARPS  (Hunspell)				*spell-CHECKSHARPS*
 		SS letter pair in uppercased (German) words may be upper case
 		sharp s (ß). Not supported.
 

@@ -1,7 +1,7 @@
 " Menu Translations:	Slovak
 " Translated By:	Martin Lacko <lacko@host.sk>
 " Last Change:		2020 Apr 23
-" Original translations
+" Generated from menu_slovak_slovak_republic.1250.vim, DO NOT EDIT
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

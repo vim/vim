@@ -10,7 +10,6 @@ func Test_skip_lua()
 endfunc
 
 CheckFeature lua
-CheckFeature float
 
 " Depending on the lua version, the error messages are different.
 let [s:major, s:minor, s:patch] = luaeval('vim.lua_version')->split('\.')->map({-> str2nr(v:val)})

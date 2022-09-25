@@ -8,7 +8,7 @@
  */
 
 /*
- * vim9cmds.c: Dealing with compiled function expressions
+ * vim9expr.c: Dealing with compiled function expressions
  */
 
 #define USING_FLOAT_STUFF
@@ -313,7 +313,7 @@ compile_load_scriptvar(
 		// name.  If a '(' follows it must be a function.  Otherwise we
 		// don't know, it can be "script.Func".
 		if (cc == '(' || paren_follows_after_expr)
-		    res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
+		    res = generate_PUSHFUNC(cctx, auto_name, &t_func_any, TRUE);
 		else
 		    res = generate_AUTOLOAD(cctx, auto_name, &t_any);
 		vim_free(auto_name);
@@ -329,7 +329,7 @@ compile_load_scriptvar(
 		    char_u sid_name[MAX_FUNC_NAME_LEN];
 
 		    func_name_with_sid(exp_name, import->imp_sid, sid_name);
-		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any);
+		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any, TRUE);
 		}
 		else
 		    res = generate_OLDSCRIPT(cctx, ISN_LOADEXPORT, exp_name,
@@ -353,7 +353,7 @@ compile_load_scriptvar(
 	    if (ufunc != NULL)
 	    {
 		// function call or function reference
-		generate_PUSHFUNC(cctx, ufunc->uf_name, NULL);
+		generate_PUSHFUNC(cctx, ufunc->uf_name, NULL, TRUE);
 		return OK;
 	    }
 	    return FAIL;
@@ -387,7 +387,7 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
     if (func_needs_compiling(ufunc, compile_type)
 	      && compile_def_function(ufunc, TRUE, compile_type, NULL) == FAIL)
 	return FAIL;
-    return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type);
+    return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type, TRUE);
 }
 
 /*
@@ -451,8 +451,7 @@ compile_load(
 			      vim_free(name);
 			      return FAIL;
 			  }
-			  if (is_expr && ASCII_ISUPPER(*name)
-					     && find_func(name, FALSE) != NULL)
+			  if (is_expr && find_func(name, FALSE) != NULL)
 			      res = generate_funcref(cctx, name, FALSE);
 			  else
 			      res = compile_load_scriptvar(cctx, name,
@@ -497,6 +496,8 @@ compile_load(
 	int	    idx;
 	int	    gen_load = FALSE;
 	int	    gen_load_outer = 0;
+	int	    outer_loop_depth = -1;
+	int	    outer_loop_idx = -1;
 
 	name = vim_strnsave(*arg, end - *arg);
 	if (name == NULL)
@@ -522,7 +523,11 @@ compile_load(
 		type = lvar.lv_type;
 		idx = lvar.lv_idx;
 		if (lvar.lv_from_outer != 0)
+		{
 		    gen_load_outer = lvar.lv_from_outer;
+		    outer_loop_depth = lvar.lv_loop_depth;
+		    outer_loop_idx = lvar.lv_loop_idx;
+		}
 		else
 		    gen_load = TRUE;
 	    }
@@ -545,7 +550,8 @@ compile_load(
 	    res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
 	if (gen_load_outer > 0)
 	{
-	    res = generate_LOADOUTER(cctx, idx, gen_load_outer, type);
+	    res = generate_LOADOUTER(cctx, idx, gen_load_outer,
+				       outer_loop_depth, outer_loop_idx, type);
 	    cctx->ctx_outer_used = TRUE;
 	}
     }
@@ -611,19 +617,10 @@ compile_string(isn_T *isn, cctx_T *cctx, int str_offset)
 }
 
 /*
- * List of special functions for "compile_arguments".
- */
-typedef enum {
-    CA_NOT_SPECIAL,
-    CA_SEARCHPAIR,	    // {skip} in searchpair() and searchpairpos()
-    CA_SUBSTITUTE,	    // {sub} in substitute(), when prefixed with \=
-} ca_special_T;
-
-/*
  * Compile the argument expressions.
  * "arg" points to just after the "(" and is advanced to after the ")"
  */
-    static int
+    int
 compile_arguments(
 	char_u	     **arg,
 	cctx_T	     *cctx,
@@ -843,6 +840,15 @@ compile_call(
 		}
 	    }
 
+	    if ((STRCMP(name, "writefile") == 0 && argcount > 2)
+		    || (STRCMP(name, "mkdir") == 0 && argcount > 1))
+	    {
+		// May have the "D" or "R" flag, reserve a variable for a
+		// deferred function call.
+		if (get_defer_var_idx(cctx) == 0)
+		    idx = -1;
+	    }
+
 	    if (idx >= 0)
 		res = generate_BCALL(cctx, idx, argcount, argcount_init == 1);
 	}
@@ -976,6 +982,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     int		count = 0;
     int		is_const;
     int		is_all_const = TRUE;	// reset when non-const encountered
+    int		must_end = FALSE;
 
     for (;;)
     {
@@ -994,6 +1001,11 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    ++p;
 	    break;
 	}
+	if (must_end)
+	{
+	    semsg(_(e_missing_comma_in_list_str), p);
+	    return FAIL;
+	}
 	if (compile_expr0_ext(&p, cctx, &is_const) == FAIL)
 	    return FAIL;
 	if (!is_const)
@@ -1008,6 +1020,8 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		return FAIL;
 	    }
 	}
+	else
+	    must_end = TRUE;
 	whitep = p;
 	p = skipwhite(p);
     }
@@ -1084,6 +1098,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 
 	*arg = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum]
 									 + off;
+	evalarg.eval_using_cmdline = FALSE;
     }
 
     clear_evalarg(&evalarg, NULL);
@@ -1478,14 +1493,12 @@ apply_leader(typval_T *rettv, int numeric_only, char_u *start, char_u **end)
 	if (*p == '-' || *p == '+')
 	{
 	    // only '-' has an effect, for '+' we only check the type
-#ifdef FEAT_FLOAT
 	    if (rettv->v_type == VAR_FLOAT)
 	    {
 		if (*p == '-')
 		    rettv->vval.v_float = -rettv->vval.v_float;
 	    }
 	    else
-#endif
 	    {
 		varnumber_T	val;
 		int		error = FALSE;

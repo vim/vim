@@ -57,26 +57,26 @@ func Test_expandcmd()
   unlet $FOO
 
   new
-  edit Xfile1
-  call assert_equal('e Xfile1', expandcmd('e %'))
-  edit Xfile2
-  edit Xfile1
-  call assert_equal('e Xfile2', 'e #'->expandcmd())
-  edit Xfile2
-  edit Xfile3
-  edit Xfile4
-  let bnum = bufnr('Xfile2')
-  call assert_equal('e Xfile2', expandcmd('e #' . bnum))
+  edit Xpandfile1
+  call assert_equal('e Xpandfile1', expandcmd('e %'))
+  edit Xpandfile2
+  edit Xpandfile1
+  call assert_equal('e Xpandfile2', 'e #'->expandcmd())
+  edit Xpandfile2
+  edit Xpandfile3
+  edit Xpandfile4
+  let bnum = bufnr('Xpandfile2')
+  call assert_equal('e Xpandfile2', expandcmd('e #' . bnum))
   call setline('.', 'Vim!@#')
   call assert_equal('e Vim', expandcmd('e <cword>'))
   call assert_equal('e Vim!@#', expandcmd('e <cWORD>'))
   enew!
-  edit Xfile.java
-  call assert_equal('e Xfile.py', expandcmd('e %:r.py'))
+  edit Xpandfile.java
+  call assert_equal('e Xpandfile.py', expandcmd('e %:r.py'))
   call assert_equal('make abc.java', expandcmd('make abc.%:e'))
-  call assert_equal('make Xabc.java', expandcmd('make %:s?file?abc?'))
+  call assert_equal('make Xabc.java', expandcmd('make %:s?pandfile?abc?'))
   edit a1a2a3.rb
-  call assert_equal('make b1b2b3.rb a1a2a3 Xfile.o', expandcmd('make %:gs?a?b? %< #<.o'))
+  call assert_equal('make b1b2b3.rb a1a2a3 Xpandfile.o', expandcmd('make %:gs?a?b? %< #<.o'))
 
   call assert_equal('make <afile>', expandcmd("make <afile>"))
   call assert_equal('make <amatch>', expandcmd("make <amatch>"))
@@ -137,14 +137,13 @@ func Test_source_sfile()
     :call writefile(v:errors, 'Xresult')
     :qall!
   [SCRIPT]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   if RunVim([], [], '--clean -s Xscript')
     call assert_equal([
           \ 'E1274: No script file name to substitute for "<script>"',
           \ 'E498: No :source file name to substitute for "<sfile>"'],
           \ readfile('Xresult'))
   endif
-  call delete('Xscript')
   call delete('Xresult')
 endfunc
 
@@ -197,9 +196,9 @@ func Test_expand_script_source()
     au User * call extend(g:au_level, [expand('<script>:t')])
   [SCRIPT]
 
-  call writefile(lines0, 'Xscript0')
-  call writefile(lines1, 'Xscript1')
-  call writefile(lines2, 'Xscript2')
+  call writefile(lines0, 'Xscript0', 'D')
+  call writefile(lines1, 'Xscript1', 'D')
+  call writefile(lines2, 'Xscript2', 'D')
 
   " Check the expansion of <script> at different levels.
   let g:script_level = []
@@ -220,10 +219,6 @@ func Test_expand_script_source()
   delfunc F0
   delfunc F1
   delfunc F2
-
-  call delete('Xscript0')
-  call delete('Xscript1')
-  call delete('Xscript2')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

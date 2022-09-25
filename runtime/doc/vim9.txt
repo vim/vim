@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Jun 25
+*vim9.txt*	For Vim version 9.0.  Last change: 2022 Sep 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -107,7 +107,7 @@ script and `:def` functions; details are below:
 	`:t`
   	`:xit`
 - Some commands, especially those used for flow control, cannot be shortened.
-  E.g., `:throw` cannot be written as `:th`. *E839*
+  E.g., `:throw` cannot be written as `:th`.  *vim9-no-shorten*
 - You cannot use curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that
@@ -281,7 +281,7 @@ start with an upper case letter even when using the "s:" prefix.  In legacy
 script "s:funcref" could be used, because it could not be referred to with
 "funcref".  In Vim9 script it can, therefore "s:Funcref" must be used to avoid
 that the name interferes with builtin functions.
-							*vim9-s-namespace*
+						*vim9-s-namespace* *E1268*
 The use of the "s:" prefix is not supported at the Vim9 script level.  All
 functions and variables without a prefix are script-local.
 
@@ -857,6 +857,8 @@ No curly braces expansion ~
 Command modifiers are not ignored ~
 								*E1176*
 Using a command modifier for a command that does not use it gives an error.
+								*E1082*
+Also, using a command modifier without a following command is now an error.
 
 
 Dictionary literals ~
@@ -910,6 +912,12 @@ Comparators ~
 
 The 'ignorecase' option is not used for comparators that use strings.
 Thus "=~" works like "=~#".
+
+"is" and "isnot" (|expr-is| and |expr-isnot|) when used on strings now return
+false.  In legacy script they just compare the strings, in |Vim9| script they
+check identity, and strings are copied when used, thus two strings are never
+the same (this might change some day if strings are not copied but reference
+counted).
 
 
 Abort after error ~
@@ -1234,6 +1242,9 @@ variables can be accessed without the "s:" prefix.  They must be defined
 before the function is compiled.  If the script the function is defined in is
 legacy script, then script-local variables must be accessed with the "s:"
 prefix if they do not exist at the time of compiling.
+							*E1269*
+Script-local variables in a |Vim9| script must be declared at the script
+level.  They cannot be created in a function, also not in a legacy function.
 
 						*:defc* *:defcompile*
 :defc[ompile]		Compile functions defined in the current script that
@@ -1300,7 +1311,7 @@ Make sure to define the breakpoint before compiling the outer function.
 The "inloop" variable will exist only once, all closures put in the list refer
 to the same instance, which in the end will have the value 4.  This is
 efficient, also when looping many times.  If you do want a separate context
-for each closure call a function to define it: >
+for each closure, call a function to define it: >
 	def GetClosure(i: number): func
 	  var infunc = i
 	  return () => infunc
@@ -1315,6 +1326,29 @@ for each closure call a function to define it: >
 
 In some situations, especially when calling a Vim9 closure from legacy
 context, the evaluation will fail.  *E1248*
+
+Note that at the script level the loop variable will be invalid after the
+loop, also when used in a closure that is called later, e.g. with a timer.
+This will generate error |E1302|: >
+	for n in range(4)
+	    timer_start(500 * n, (_) => {
+	          echowin n
+	       })
+	endfor
+
+You need to use a block and define a variable there, and use that one in the
+closure: >
+	for n in range(4)
+	{
+	   var nr = n
+	   timer_start(500 * n, (_) => {
+	          echowin nr
+	      })
+	}
+	endfor
+
+Using `echowindow` is useful in a timer, the messages go into a popup and will
+not interfere with what the user is doing when it triggers.
 
 
 Converting a function from legacy to Vim9 ~
@@ -1492,6 +1526,8 @@ value is not actually changed.  If you need to change the type, e.g. to change
 it to a string, use the |string()| function.  Or use |str2nr()| to convert a
 string to a number.
 
+If a type is given where it is not expected you can get *E1272* .
+
 
 Type inference ~
 							*type-inference*
@@ -1605,7 +1641,7 @@ type, it can not be used in Vim9 script.
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
 			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1253*
-			 *E1256*
+			 *E1256* *E1297* *E1298* *E1301*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 
@@ -1647,7 +1683,7 @@ deleted.
 
 In Vim9 script the global "g:" namespace can still be used as before.  And the
 "w:", "b:" and "t:" namespaces.  These have in common that variables are not
-declared and they can be deleted.
+declared, have no specific type and they can be deleted.  *E1304*
 
 A side effect of `:vim9script` is that the 'cpoptions' option is set to the
 Vim default value, like with: >
@@ -1696,8 +1732,8 @@ be exported. {not implemented yet: class, interface}
 
 
 Import ~
-					*:import* *:imp* *E1094* *E1047* *E1262*
-					*E1048* *E1049* *E1053* *E1071* *E1236*
+				*:import* *:imp* *E1094* *E1047* *E1262*
+				*E1048* *E1049* *E1053* *E1071* *E1088* *E1236*
 The exported items can be imported in another script. The import syntax has
 two forms. The simple form: >
 	import {filename}
@@ -1766,7 +1802,7 @@ line, there can be no line break: >
 		name   # Error!
 	echo that
 		.name  # Error!
-
+<						*import-map*
 When you've imported a function from one script into a vim9 script you can
 refer to the imported function in a mapping by prefixing it with |<SID>|: >
 	noremap <silent> ,a :call <SID>name.Function()<CR>
@@ -1788,7 +1824,7 @@ And using the "as name" form: >
 	import "otherfile.vim9script" as that
 	call s:that.OtherFunc()
 
-However, the namespace cannot be resolved on it's own: >
+However, the namespace cannot be resolved on its own: >
 	import "that.vim"
 	echo s:that
 	" ERROR: E1060: Expected dot after name: s:that
@@ -1810,7 +1846,7 @@ defined.  This does not apply to autoload imports, see the next section.
 
 
 Importing an autoload script ~
-							*vim9-autoload*
+					*vim9-autoload* *import-autoload*
 For optimal startup speed, loading scripts should be postponed until they are
 actually needed.  Using the autoload mechanism is recommended:
 							*E1264*

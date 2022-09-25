@@ -9,8 +9,8 @@ func Test_ins_complete()
   edit test_ins_complete.vim
   " The files in the current directory interferes with the files
   " used by this test. So use a separate directory for the test.
-  call mkdir('Xdir')
-  cd Xdir
+  call mkdir('Xcpldir')
+  cd Xcpldir
 
   set ff=unix
   call writefile(["test11\t36Gepeto\t/Tag/",
@@ -105,7 +105,7 @@ func Test_ins_complete()
   call delete('Xtestdata')
   set cpt& cot& def& tags& tagbsearch& hidden&
   cd ..
-  call delete('Xdir', 'rf')
+  call delete('Xcpldir', 'rf')
 endfunc
 
 func Test_ins_complete_invalid_byte()
@@ -387,6 +387,19 @@ func Test_CompleteDone_undo()
   au! CompleteDone
 endfunc
 
+func Test_CompleteDone_modify()
+  let value = {
+        \ 'word': '',
+        \ 'abbr': '',
+        \ 'menu': '',
+        \ 'info': '',
+        \ 'kind': '',
+        \ 'user_data': '',
+        \ }
+  let v:completed_item = value
+  call assert_equal(value, v:completed_item)
+endfunc
+
 func CompleteTest(findstart, query)
   if a:findstart
     return col('.')
@@ -420,7 +433,7 @@ endfunc
 func Test_ins_completeslash()
   CheckMSWindows
 
-  call mkdir('Xdir')
+  call mkdir('Xcpldir')
   let orig_shellslash = &shellslash
   set cpt&
   new
@@ -428,32 +441,32 @@ func Test_ins_completeslash()
   set noshellslash
 
   set completeslash=
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=backslash
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=slash
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir/', getline('.'))
 
   set shellslash
 
   set completeslash=
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir/', getline('.'))
 
   set completeslash=backslash
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir\', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir\', getline('.'))
 
   set completeslash=slash
-  exe "normal oXd\<C-X>\<C-F>"
-  call assert_equal('Xdir/', getline('.'))
+  exe "normal oXcp\<C-X>\<C-F>"
+  call assert_equal('Xcpldir/', getline('.'))
   %bw!
-  call delete('Xdir', 'rf')
+  call delete('Xcpldir', 'rf')
 
   set noshellslash
   set completeslash=slash
@@ -534,9 +547,8 @@ func Test_pum_with_preview_win()
 
   call writefile(lines, 'Xpreviewscript')
   let buf = RunVimInTerminal('-S Xpreviewscript', #{rows: 12})
-  call TermWait(buf, 50)
   call term_sendkeys(buf, "Gi\<C-X>\<C-O>")
-  call TermWait(buf, 100)
+  call TermWait(buf, 200)
   call term_sendkeys(buf, "\<C-N>")
   call VerifyScreenDump(buf, 'Test_pum_with_preview_win', {})
 
@@ -660,14 +672,14 @@ func Test_complete_func_error()
   func ListColors()
     call complete(col('.'), "blue")
   endfunc
-  call assert_fails('exe "normal i\<C-R>=ListColors()\<CR>"', 'E474:')
+  call assert_fails('exe "normal i\<C-R>=ListColors()\<CR>"', 'E1211:')
   func ListMonths()
     call complete(col('.'), test_null_list())
   endfunc
-  call assert_fails('exe "normal i\<C-R>=ListMonths()\<CR>"', 'E474:')
+  call assert_fails('exe "normal i\<C-R>=ListMonths()\<CR>"', 'E1298:')
   delfunc ListColors
   delfunc ListMonths
-  call assert_fails('call complete_info({})', 'E714:')
+  call assert_fails('call complete_info({})', 'E1211:')
   call assert_equal([], complete_info(['items']).items)
 endfunc
 
@@ -685,6 +697,27 @@ func Test_recursive_complete_func()
   delfunc ListColors
   bw!
 endfunc
+
+" Test for using complete() with completeopt+=longest
+func Test_complete_with_longest()
+  new
+  inoremap <buffer> <f3> <cmd>call complete(1, ["iaax", "iaay", "iaaz"])<cr>
+
+  " default: insert first match
+  set completeopt&
+  call setline(1, ['i'])
+  exe "normal Aa\<f3>\<esc>"
+  call assert_equal('iaax', getline(1))
+
+  " with longest: insert longest prefix
+  set completeopt+=longest
+  call setline(1, ['i'])
+  exe "normal Aa\<f3>\<esc>"
+  call assert_equal('iaa', getline(1))
+  set completeopt&
+  bwipe!
+endfunc
+
 
 " Test for completing words following a completed word in a line
 func Test_complete_wrapscan()
@@ -1213,14 +1246,14 @@ func Test_complete_unreadable_thesaurus_file()
   CheckUnix
   CheckNotRoot
 
-  call writefile(['about', 'above'], 'Xfile')
-  call setfperm('Xfile', '---r--r--')
+  call writefile(['about', 'above'], 'Xunrfile')
+  call setfperm('Xunrfile', '---r--r--')
   new
   set complete=sXfile
   exe "normal! ia\<C-P>"
   call assert_equal('a', getline(1))
   bw!
-  call delete('Xfile')
+  call delete('Xunrfile')
   set complete&
 endfunc
 
@@ -1239,7 +1272,7 @@ endfunc
 " A mapping is not used for the key after CTRL-X.
 func Test_no_mapping_for_ctrl_x_key()
   new
-  inoremap <C-K> <Cmd>let was_mapped = 'yes'<CR>
+  inoremap <buffer> <C-K> <Cmd>let was_mapped = 'yes'<CR>
   setlocal dictionary=README.txt
   call feedkeys("aexam\<C-X>\<C-K> ", 'xt')
   call assert_equal('example ', getline(1))
@@ -2108,6 +2141,13 @@ func Test_infercase_very_long_line()
   exe "normal 2Go\<C-X>\<C-L>\<Esc>"
   call assert_equal(longLine, getline(3))
 
+  " check that the too long text is NUL terminated
+  %del
+  norm o
+  norm 1987ax
+  exec "norm ox\<C-X>\<C-L>"
+  call assert_equal(repeat('x', 1987), getline(3))
+
   bwipe!
   set noic noinfercase
 endfunc
@@ -2118,6 +2158,31 @@ func Test_ins_complete_add()
   norm o
   norm 7o
   sil! norm o
+
+  bwipe!
+endfunc
+
+func Test_ins_complete_end_of_line()
+  " this was reading past the end of the line
+  new  
+  norm 8oý 
+  sil! norm o
+
+  bwipe!
+endfunc
+
+func s:Tagfunc(t,f,o)
+  bwipe!
+  return []
+endfunc
+
+" This was using freed memory, since 'complete' was in a wiped out buffer.
+" Also using a window that was closed.
+func Test_tagfunc_wipes_out_buffer()
+  new
+  set complete=.,t,w,b,u,i
+  se tagfunc=s:Tagfunc
+  sil norm i
 
   bwipe!
 endfunc

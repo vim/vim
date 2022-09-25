@@ -26,7 +26,6 @@ static int	ExpandUserDefined(char_u *pat, expand_T *xp, regmatch_T *regmatch, ch
 static int	ExpandUserList(expand_T *xp, char_u ***matches, int *numMatches);
 #endif
 
-#ifdef FEAT_WILDMENU
 // "compl_match_array" points the currently displayed list of entries in the
 // popup menu.  It is NULL when there is no popup menu.
 static pumitem_T *compl_match_array = NULL;
@@ -34,7 +33,6 @@ static int compl_match_arraysize;
 // First column in cmdline of the matched item for completion.
 static int compl_startcol;
 static int compl_selected;
-#endif
 
 #define SHOW_FILE_TEXT(m) (showtail ? sm_gettail(matches[m]) : matches[m])
 
@@ -305,8 +303,6 @@ nextwild(
     return OK;
 }
 
-#if defined(FEAT_WILDMENU) || defined(PROTO)
-
 /*
  * Create and display a cmdline completion popup menu with items from
  * 'matches'.
@@ -367,7 +363,7 @@ void cmdline_pum_display(void)
  */
 int cmdline_pum_active(void)
 {
-    return p_wmnu && pum_visible() && compl_match_array != NULL;
+    return pum_visible() && compl_match_array != NULL;
 }
 
 /*
@@ -405,7 +401,6 @@ int cmdline_compl_startcol(void)
 {
     return compl_startcol;
 }
-#endif
 
 /*
  * Get the next or prev cmdline completion match. The index of the match is set
@@ -488,7 +483,6 @@ get_next_or_prev_match(
 	else
 	    findex = -1;
     }
-#ifdef FEAT_WILDMENU
     if (compl_match_array)
     {
 	compl_selected = findex;
@@ -497,7 +491,6 @@ get_next_or_prev_match(
     else if (p_wmnu)
 	win_redr_status_matches(xp, xp->xp_numfiles, xp->xp_files,
 		findex, cmd_showtail);
-#endif
     *p_findex = findex;
 
     if (findex == -1)
@@ -722,8 +715,9 @@ ExpandOne(
 	findex = -1;			    // next p_wc gets first one
     }
 
-    // Concatenate all matching names
-    if (mode == WILD_ALL && xp->xp_numfiles > 0)
+    // Concatenate all matching names.  Unless interrupted, this can be slow
+    // and the result probably won't be used.
+    if (mode == WILD_ALL && xp->xp_numfiles > 0 && !got_int)
     {
 	len = 0;
 	for (i = 0; i < xp->xp_numfiles; ++i)
@@ -901,16 +895,12 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 	showtail = cmd_showtail;
     }
 
-#ifdef FEAT_WILDMENU
     if (wildmenu && vim_strchr(p_wop, WOP_PUM) != NULL)
 	// cmdline completion popup menu (with wildoptions=pum)
 	return cmdline_pum_create(ccline, xp, matches, numMatches, showtail);
-#endif
 
-#ifdef FEAT_WILDMENU
     if (!wildmenu)
     {
-#endif
 	msg_didany = FALSE;		// lines_left will be set
 	msg_start();			// prepare for paging
 	msg_putchar('\n');
@@ -918,16 +908,12 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 	cmdline_row = msg_row;
 	msg_didany = FALSE;		// lines_left will be set again
 	msg_start();			// prepare for paging
-#ifdef FEAT_WILDMENU
     }
-#endif
 
     if (got_int)
 	got_int = FALSE;	// only int. the completion, not the cmd line
-#ifdef FEAT_WILDMENU
     else if (wildmenu)
 	win_redr_status_matches(xp, numMatches, matches, -1, showtail);
-#endif
     else
     {
 	// find the length of the longest file name
@@ -1305,8 +1291,10 @@ set_cmd_index(char_u *cmd, exarg_T *eap, expand_T *xp, int *complp)
 	eap->cmdidx = excmd_get_cmdidx(cmd, len);
 
 	// User defined commands support alphanumeric characters.
-	// Also when doing fuzzy expansion, support alphanumeric characters.
-	if ((cmd[0] >= 'A' && cmd[0] <= 'Z') || (fuzzy && *p != NUL))
+	// Also when doing fuzzy expansion for non-shell commands, support
+	// alphanumeric characters.
+	if ((cmd[0] >= 'A' && cmd[0] <= 'Z')
+		|| (fuzzy && eap->cmdidx != CMD_bang && *p != NUL))
 	    while (ASCII_ISALNUM(*p) || *p == '*')	// Allow * wild card
 		++p;
     }
@@ -1788,6 +1776,7 @@ set_context_by_cmdname(
 	case CMD_folddoclosed:
 	case CMD_folddoopen:
 	case CMD_hide:
+	case CMD_horizontal:
 	case CMD_keepalt:
 	case CMD_keepjumps:
 	case CMD_keepmarks:
@@ -2405,6 +2394,7 @@ expand_cmdline(
 
 /*
  * Expand file or directory names.
+ * Returns OK or FAIL.
  */
     static int
 expand_files_and_dirs(
@@ -3375,8 +3365,6 @@ globpath(
     vim_free(buf);
 }
 
-#ifdef FEAT_WILDMENU
-
 /*
  * Translate some keys pressed when 'wildmenu' is used.
  */
@@ -3389,7 +3377,6 @@ wildmenu_translate_key(
 {
     int c = key;
 
-#ifdef FEAT_WILDMENU
     if (cmdline_pum_active())
     {
 	// When the popup menu is used for cmdline completion:
@@ -3406,7 +3393,6 @@ wildmenu_translate_key(
 	    default:	  break;
 	}
     }
-#endif
 
     if (did_wild_list)
     {
@@ -3629,16 +3615,20 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
  * Free expanded names when finished walking through the matches
  */
     void
-wildmenu_cleanup(cmdline_info_T *cclp)
+wildmenu_cleanup(cmdline_info_T *cclp UNUSED)
 {
     int skt = KeyTyped;
+#ifdef FEAT_EVAL
     int old_RedrawingDisabled = RedrawingDisabled;
+#endif
 
     if (!p_wmnu || wild_menu_showing == 0)
 	return;
 
+#ifdef FEAT_EVAL
     if (cclp->input_fn)
 	RedrawingDisabled = 0;
+#endif
 
     if (wild_menu_showing == WM_SCROLLED)
     {
@@ -3652,7 +3642,7 @@ wildmenu_cleanup(cmdline_info_T *cclp)
 	p_ls = save_p_ls;
 	p_wmh = save_p_wmh;
 	last_status(FALSE);
-	update_screen(VALID);	// redraw the screen NOW
+	update_screen(UPD_VALID);	// redraw the screen NOW
 	redrawcmd();
 	save_p_ls = -1;
     }
@@ -3663,10 +3653,11 @@ wildmenu_cleanup(cmdline_info_T *cclp)
     }
     KeyTyped = skt;
     wild_menu_showing = 0;
+#ifdef FEAT_EVAL
     if (cclp->input_fn)
 	RedrawingDisabled = old_RedrawingDisabled;
-}
 #endif
+}
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
@@ -3689,11 +3680,8 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	return;
 
     pat = tv_get_string(&argvars[0]);
-    if (argvars[1].v_type != VAR_STRING)
-    {
-	semsg(_(e_invalid_argument_str), "type must be a string");
+    if (check_for_string_arg(argvars, 1) == FAIL)
 	return;
-    }
     type = tv_get_string(&argvars[1]);
 
     if (argvars[2].v_type != VAR_UNKNOWN)

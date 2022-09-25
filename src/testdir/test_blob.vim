@@ -669,9 +669,7 @@ func Test_blob_lock()
 endfunc
 
 func Test_blob_sort()
-  if has('float')
-    call v9.CheckLegacyAndVim9Failure(['call sort([1.0, 0z11], "f")'], 'E975:')
-  endif
+  call v9.CheckLegacyAndVim9Failure(['call sort([1.0, 0z11], "f")'], 'E975:')
   call v9.CheckLegacyAndVim9Failure(['call sort([11, 0z11], "N")'], 'E974:')
 endfunc
 
@@ -725,6 +723,18 @@ func Test_blob2string()
   call assert_equal(v, string(b))
 endfunc
 
+func Test_blob_repeat()
+  call assert_equal(0z, repeat(0z00, 0))
+  call assert_equal(0z00, repeat(0z00, 1))
+  call assert_equal(0z0000, repeat(0z00, 2))
+  call assert_equal(0z00000000, repeat(0z0000, 2))
+
+  call assert_equal(0z, repeat(0z12, 0))
+  call assert_equal(0z, repeat(0z1234, 0))
+  call assert_equal(0z1234, repeat(0z1234, 1))
+  call assert_equal(0z12341234, repeat(0z1234, 2))
+endfunc
+
 " Test for blob allocation failure
 func Test_blob_alloc_failure()
   " blob variable
@@ -762,6 +772,33 @@ func Test_blob_alloc_failure()
   call test_alloc_fail(GetAllocId('blob_alloc'), 0, 0)
   call assert_fails('let x = readblob("test_blob.vim")', 'E342:')
   call assert_equal(0, x)
+endfunc
+
+" Test for the indexof() function
+func Test_indexof()
+  let b = 0zdeadbeef
+  call assert_equal(0, indexof(b, {i, v -> v == 0xde}))
+  call assert_equal(3, indexof(b, {i, v -> v == 0xef}))
+  call assert_equal(-1, indexof(b, {i, v -> v == 0x1}))
+  call assert_equal(1, indexof(b, "v:val == 0xad"))
+  call assert_equal(-1, indexof(b, "v:val == 0xff"))
+  call assert_equal(-1, indexof(b, {_, v -> "v == 0xad"}))
+
+  call assert_equal(-1, indexof(0z, "v:val == 0x0"))
+  call assert_equal(-1, indexof(test_null_blob(), "v:val == 0xde"))
+  call assert_equal(-1, indexof(b, test_null_string()))
+  call assert_equal(-1, indexof(b, test_null_function()))
+
+  let b = 0z01020102
+  call assert_equal(1, indexof(b, "v:val == 0x02", #{startidx: 0}))
+  call assert_equal(2, indexof(b, "v:val == 0x01", #{startidx: -2}))
+  call assert_equal(-1, indexof(b, "v:val == 0x01", #{startidx: 5}))
+  call assert_equal(0, indexof(b, "v:val == 0x01", #{startidx: -5}))
+  call assert_equal(0, indexof(b, "v:val == 0x01", test_null_dict()))
+
+  " failure cases
+  call assert_fails('let i = indexof(b, "val == 0xde")', 'E121:')
+  call assert_fails('let i = indexof(b, {})', 'E1256:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

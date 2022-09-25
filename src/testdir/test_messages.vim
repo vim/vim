@@ -74,9 +74,7 @@ func Test_echomsg()
   call assert_equal("\n[1, 2, []]", execute(':echomsg [1, 2, test_null_list()]'))
   call assert_equal("\n{}", execute(':echomsg {}'))
   call assert_equal("\n{'a': 1, 'b': 2}", execute(':echomsg {"a": 1, "b": 2}'))
-  if has('float')
-    call assert_equal("\n1.23", execute(':echomsg 1.23'))
-  endif
+  call assert_equal("\n1.23", execute(':echomsg 1.23'))
   call assert_match("function('<lambda>\\d*')", execute(':echomsg {-> 1234}'))
 endfunc
 
@@ -86,9 +84,7 @@ func Test_echoerr()
   call assert_equal("\n12345 IgNoRe", execute(':echoerr 12345 "IgNoRe"'))
   call assert_equal("\n[1, 2, 'IgNoRe']", execute(':echoerr [1, 2, "IgNoRe"]'))
   call assert_equal("\n{'IgNoRe': 2, 'a': 1}", execute(':echoerr {"a": 1, "IgNoRe": 2}'))
-  if has('float')
-    call assert_equal("\n1.23 IgNoRe", execute(':echoerr 1.23 "IgNoRe"'))
-  endif
+  call assert_equal("\n1.23 IgNoRe", execute(':echoerr 1.23 "IgNoRe"'))
   eval '<lambda>'->test_ignore_error()
   call assert_match("function('<lambda>\\d*')", execute(':echoerr {-> 1234}'))
   call test_ignore_error('RESET')
@@ -170,13 +166,47 @@ func Test_echospace()
   set ruler& showcmd&
 endfunc
 
+func Test_warning_scroll()
+  CheckRunVimInTerminal
+  let lines =<< trim END
+      call test_override('ui_delay', 50)
+      set noruler
+      set readonly
+      undo
+  END
+  call writefile(lines, 'XTestWarningScroll', 'D')
+  let buf = RunVimInTerminal('', #{rows: 8})
+
+  " When the warning comes from a script, messages are scrolled so that the
+  " stacktrace is visible.
+  call term_sendkeys(buf, ":source XTestWarningScroll\n")
+  " only match the final colon in the line that shows the source
+  call WaitForAssert({-> assert_match(':$', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('line    4:W10: Warning: Changing a readonly file', term_getline(buf, 6))})
+  call WaitForAssert({-> assert_equal('Already at oldest change', term_getline(buf, 7))})
+  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 8))})
+  call term_sendkeys(buf, "\n")
+
+  " When the warning does not come from a script, messages are not scrolled.
+  call term_sendkeys(buf, ":enew\n")
+  call term_sendkeys(buf, ":set readonly\n")
+  call term_sendkeys(buf, 'u')
+  call WaitForAssert({-> assert_equal('W10: Warning: Changing a readonly file', term_getline(buf, 8))})
+  call WaitForAssert({-> assert_equal('Already at oldest change', term_getline(buf, 8))})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 " Test more-prompt (see :help more-prompt).
 func Test_message_more()
   CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
   call term_sendkeys(buf, ":call setline(1, range(1, 100))\n")
 
-  call term_sendkeys(buf, ":%p#\n")
+  call term_sendkeys(buf, ":%pfoo\<C-H>\<C-H>\<C-H>#")
+  call WaitForAssert({-> assert_equal(':%p#', term_getline(buf, 6))})
+  call term_sendkeys(buf, "\n")
   call WaitForAssert({-> assert_equal('  5 5', term_getline(buf, 5))})
   call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
 
@@ -233,7 +263,8 @@ func Test_message_more()
 
   " Up all the way with 'g'.
   call term_sendkeys(buf, 'g')
-  call WaitForAssert({-> assert_equal('  5 5', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('  4 4', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal(':%p#', term_getline(buf, 1))})
   call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
 
   " All the way down. Pressing f should do nothing but pressing
@@ -249,6 +280,13 @@ func Test_message_more()
   " Pressing g< shows the previous command output.
   call term_sendkeys(buf, 'g<')
   call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
+
+  " A command line that doesn't print text is appended to scrollback,
+  " even if it invokes a nested command line.
+  call term_sendkeys(buf, ":\<C-R>=':'\<CR>:\<CR>g<")
+  call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 4))})
+  call WaitForAssert({-> assert_equal(':::', term_getline(buf, 5))})
   call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
 
   call term_sendkeys(buf, ":%p#\n")
@@ -327,14 +365,14 @@ func Test_quit_long_message()
   let content =<< trim END
     echom range(9999)->join("\x01")
   END
-  call writefile(content, 'Xtest_quit_message')
-  let buf = RunVimInTerminal('-S Xtest_quit_message', #{rows: 6})
+  call writefile(content, 'Xtest_quit_message', 'D')
+  let buf = RunVimInTerminal('-S Xtest_quit_message', #{rows: 10, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('^-- More --', term_getline(buf, 10))})
   call term_sendkeys(buf, "q")
   call VerifyScreenDump(buf, 'Test_quit_long_message', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_quit_message')
 endfunc
 
 " this was missing a terminating NUL
@@ -376,5 +414,111 @@ func Test_fileinfo_after_echo()
   call delete('Xtest_fileinfo_after_echo')
   call delete('b.txt')
 endfunc
+
+func Test_echowindow()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, 'some text')
+      func ShowMessage(arg)
+        echowindow a:arg
+      endfunc
+      echowindow 'first line'
+      func ManyMessages()
+        for n in range(20)
+          echowindow 'line' n
+        endfor
+      endfunc
+
+      def TwoMessages()
+        popup_clear()
+        set cmdheight=2
+        redraw
+        timer_start(100, (_) => {
+            echowin 'message'
+          })
+        echo 'one'
+        echo 'two'
+      enddef
+
+      def ThreeMessages()
+        popup_clear()
+        redraw
+        timer_start(100, (_) => {
+            echowin 'later message'
+          })
+        echo 'one'
+        echo 'two'
+        echo 'three'
+      enddef
+  END
+  call writefile(lines, 'XtestEchowindow')
+  let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_echowindow_1', {})
+
+  call term_sendkeys(buf, ":call ShowMessage('second line')\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_2', {})
+
+  call term_sendkeys(buf, ":call popup_clear()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_3', {})
+
+  call term_sendkeys(buf, ":call ManyMessages()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_4', {})
+
+  call term_sendkeys(buf, ":call TwoMessages()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_5', {})
+
+  call term_sendkeys(buf, ":call ThreeMessages()\<CR>")
+  sleep 120m
+  call VerifyScreenDump(buf, 'Test_echowindow_6', {})
+
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_7', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestEchowindow')
+endfunc
+
+" messages window should not be used while evaluating the :echowin argument
+func Test_echowin_eval()
+  CheckScreendump
+
+  let lines =<< trim END
+      func ShowMessage()
+        echo 123
+        return 'test'
+      endfunc
+      echowindow ShowMessage()
+  END
+  call writefile(lines, 'XtestEchowindow')
+  let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_echowin_eval', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestEchowindow')
+endfunc
+
+" messages window should not be used for showing the mode
+func Test_echowin_showmode()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one', 'two'])
+      timer_start(100, (_) => {
+           echowin 'echo window'
+         })
+      normal V
+  END
+  call writefile(lines, 'XtestEchowinMode', 'D')
+  let buf = RunVimInTerminal('-S XtestEchowinMode', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_echowin_showmode', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

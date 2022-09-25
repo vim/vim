@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2022 Jun 27
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Sep 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -195,7 +195,7 @@ foldlevel({lnum})		Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
 foldtextresult({lnum})		String	text for closed fold at {lnum}
 foreground()			Number	bring the Vim window to the foreground
-fullcommand({name})		String	get full command from {name}
+fullcommand({name} [, {vim9}])	String	get full command from {name}
 funcref({name} [, {arglist}] [, {dict}])
 				Funcref	reference to function {name}
 function({name} [, {arglist}] [, {dict}])
@@ -253,6 +253,7 @@ getreg([{regname} [, 1 [, {list}]]])
 				String or List   contents of a register
 getreginfo([{regname}])		Dict	information about a register
 getregtype([{regname}])		String	type of a register
+getscriptinfo([{opts}])		List	list of sourced scripts
 gettabinfo([{expr}])		List	list of tab pages
 gettabvar({nr}, {varname} [, {def}])
 				any	variable {varname} in tab {nr} or {def}
@@ -291,9 +292,11 @@ iconv({expr}, {from}, {to})	String	convert encoding of {expr}
 indent({lnum})			Number	indent of line {lnum}
 index({object}, {expr} [, {start} [, {ic}]])
 				Number	index in {object} where {expr} appears
+indexof({object}, {expr} [, {opts}]])
+				Number	index in {object} where {expr} is true
 input({prompt} [, {text} [, {completion}]])
 				String	get input from the user
-inputdialog({prompt} [, {text} [, {completion}]])
+inputdialog({prompt} [, {text} [, {cancelreturn}]])
 				String	like input() but in a GUI dialog
 inputlist({textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
@@ -322,6 +325,8 @@ js_encode({expr})		String	encode JS style JSON
 json_decode({string})		any	decode JSON
 json_encode({expr})		String	encode JSON
 keys({dict})			List	keys in {dict}
+keytrans({string})		String	translate internal keycodes to a form
+					that can be used by |:map|
 len({expr})			Number	the length of {expr}
 libcall({lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
 libcallnr({lib}, {func}, {arg})	Number	idem, but return a Number
@@ -468,7 +473,8 @@ remove({blob}, {idx} [, {end}])	Number/Blob
 					remove bytes {idx}-{end} from {blob}
 remove({dict}, {key})		any	remove entry {key} from {dict}
 rename({from}, {to})		Number	rename (move) file from {from} to {to}
-repeat({expr}, {count})		String	repeat {expr} {count} times
+repeat({expr}, {count})		List/Blob/String
+					repeat {expr} {count} times
 resolve({filename})		String	get filename a shortcut points to
 reverse({list})			List	reverse {list} in-place
 round({expr})			Float	round off {expr}
@@ -502,6 +508,7 @@ setbufvar({buf}, {varname}, {val})
 setcellwidths({list})		none	set character cell width overrides
 setcharpos({expr}, {list})	Number	set the {expr} position to {list}
 setcharsearch({dict})		Dict	set character search from {dict}
+setcmdline({str} [, {pos}])	Number	set command-line
 setcmdpos({pos})		Number	set cursor position in command-line
 setcursorcharpos({list})	Number	move cursor to position in {list}
 setenv({name}, {val})		none	set environment variable
@@ -746,8 +753,6 @@ abs({expr})							*abs()*
 		Can also be used as a |method|: >
 			Compute()->abs()
 
-<		{only available when compiled with the |+float| feature}
-
 
 acos({expr})							*acos()*
 		Return the arc cosine of {expr} measured in radians, as a
@@ -762,8 +767,6 @@ acos({expr})							*acos()*
 
 		Can also be used as a |method|: >
 			Compute()->acos()
-
-<		{only available when compiled with the |+float| feature}
 
 
 add({object}, {expr})					*add()*
@@ -897,8 +900,6 @@ asin({expr})						*asin()*
 
 		Can also be used as a |method|: >
 			Compute()->asin()
-<
-		{only available when compiled with the |+float| feature}
 
 
 assert_ functions are documented here: |assert-functions-details|
@@ -918,8 +919,6 @@ atan({expr})						*atan()*
 
 		Can also be used as a |method|: >
 			Compute()->atan()
-<
-		{only available when compiled with the |+float| feature}
 
 
 atan2({expr1}, {expr2})					*atan2()*
@@ -936,8 +935,6 @@ atan2({expr1}, {expr2})					*atan2()*
 
 		Can also be used as a |method|: >
 			Compute()->atan2(1)
-<
-		{only available when compiled with the |+float| feature}
 
 
 autocmd_add({acmds})					*autocmd_add()*
@@ -1149,7 +1146,7 @@ blob2list({blob})					*blob2list()*
 
 		Can also be used as a |method|: >
 			GetBlob()->blob2list()
-
+<
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
 		Put up a file requester.  This only works when "has("browse")"
@@ -1176,7 +1173,8 @@ browsedir({title}, {initdir})
 		browsing is not possible, an empty string is returned.
 
 bufadd({name})						*bufadd()*
-		Add a buffer to the buffer list with String {name}.
+		Add a buffer to the buffer list with name {name} (must be a
+		String).
 		If a buffer for file {name} already exists, return that buffer
 		number.  Otherwise return the buffer number of the newly
 		created buffer.  When {name} is an empty string then a new
@@ -1229,7 +1227,8 @@ bufload({buf})						*bufload()*
 		Ensure the buffer {buf} is loaded.  When the buffer name
 		refers to an existing file then the file is read.  Otherwise
 		the buffer will be empty.  If the buffer was already loaded
-		then there is no change.
+		then there is no change.  If the buffer is not related to a
+		file the no file is read (e.g., when 'buftype' is "nofile").
 		If there is an existing swap file for the file of the buffer,
 		there will be no dialog, the buffer will be loaded anyway.
 		The {buf} argument is used like with |bufexists()|.
@@ -1419,8 +1418,6 @@ ceil({expr})							*ceil()*
 
 		Can also be used as a |method|: >
 			Compute()->ceil()
-<
-		{only available when compiled with the |+float| feature}
 
 
 ch_ functions are documented here: |channel-functions-details|
@@ -1665,7 +1662,7 @@ complete_info([{what}])				*complete_info()*
 				typed text only, or the last completion after
 				no item is selected when using the <Up> or
 				<Down> keys)
-		   inserted	Inserted string. [NOT IMPLEMENT YET]
+		   inserted	Inserted string. [NOT IMPLEMENTED YET]
 
 							*complete_info_mode*
 		mode values are:
@@ -1792,8 +1789,6 @@ cos({expr})						*cos()*
 
 		Can also be used as a |method|: >
 			Compute()->cos()
-<
-		{only available when compiled with the |+float| feature}
 
 
 cosh({expr})						*cosh()*
@@ -1809,8 +1804,6 @@ cosh({expr})						*cosh()*
 
 		Can also be used as a |method|: >
 			Compute()->cosh()
-<
-		{only available when compiled with the |+float| feature}
 
 
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
@@ -2316,7 +2309,9 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 					To check for a supported command
 					always check the return value to be 2.
 			:2match		The |:2match| command.
-			:3match		The |:3match| command.
+			:3match		The |:3match| command (but you
+					probably should not use it, it is
+					reserved for internal usage)
 			#event		autocommand defined for this event
 			#event#pattern	autocommand defined for this event and
 					pattern (the pattern is taken
@@ -2394,8 +2389,6 @@ exp({expr})							*exp()*
 
 		Can also be used as a |method|: >
 			Compute()->exp()
-<
-		{only available when compiled with the |+float| feature}
 
 
 expand({string} [, {nosuf} [, {list}]])				*expand()*
@@ -2729,8 +2722,6 @@ finddir({name} [, {path} [, {count}]])				*finddir()*
 		Returns an empty string if the directory is not found.
 
 		This is quite similar to the ex-command `:find`.
-		{only available when compiled with the |+file_in_path|
-		feature}
 
 		Can also be used as a |method|: >
 			GetName()->finddir()
@@ -2798,8 +2789,6 @@ float2nr({expr})					*float2nr()*
 
 		Can also be used as a |method|: >
 			Compute()->float2nr()
-<
-		{only available when compiled with the |+float| feature}
 
 
 floor({expr})							*floor()*
@@ -2817,8 +2806,6 @@ floor({expr})							*floor()*
 
 		Can also be used as a |method|: >
 			Compute()->floor()
-<
-		{only available when compiled with the |+float| feature}
 
 
 fmod({expr1}, {expr2})					*fmod()*
@@ -2839,8 +2826,6 @@ fmod({expr1}, {expr2})					*fmod()*
 
 		Can also be used as a |method|: >
 			Compute()->fmod(1.22)
-<
-		{only available when compiled with |+float| feature}
 
 
 fnameescape({string})					*fnameescape()*
@@ -2958,14 +2943,20 @@ foreground()	Move the Vim window to the foreground.  Useful when sent from
 		{only in the Win32, Motif and GTK GUI versions and the
 		Win32 console version}
 
-fullcommand({name})						*fullcommand()*
+fullcommand({name} [, {vim9}])				*fullcommand()*
 		Get the full command name from a short abbreviated command
 		name; see |20.2| for details on command abbreviations.
 
 		The string argument {name} may start with a `:` and can
 		include a [range], these are skipped and not returned.
-		Returns an empty string if a command doesn't exist or if it's
-		ambiguous (for user-defined commands).
+		Returns an empty string if a command doesn't exist, if it's
+		ambiguous (for user-defined commands) or cannot be shortened
+		this way. |vim9-no-shorten|
+
+		Without the {vim9} argument uses the current script version.
+		If {vim9} is present and FALSE then legacy script rules are
+		used.  When {vim9} is present and TRUE then Vim9 rules are
+		used, e.g. "en" is not a short form of "endif".
 
 		For example `fullcommand('s')`, `fullcommand('sub')`,
 		`fullcommand(':%substitute')` all return "substitute".
@@ -3032,10 +3023,10 @@ function({name} [, {arglist}] [, {dict}])
 		Funcref.  The extra arguments are appended to the list of
 		arguments.  Example: >
 			func Callback(arg1, arg2, name)
-			...
+			"...
 			let Func = function('Callback', ['one'])
 			let Func2 = function(Func, ['two'])
-			...
+			"...
 			call Func2('name')
 <		Invokes the function as with: >
 			call Callback('one', 'two', 'name')
@@ -3045,22 +3036,23 @@ function({name} [, {arglist}] [, {dict}])
 			function Callback() dict
 			   echo "called for " .. self.name
 			endfunction
-			...
+			"...
 			let context = {"name": "example"}
 			let Func = function('Callback', context)
-			...
+			"...
 			call Func()	" will echo: called for example
 <		The use of function() is not needed when there are no extra
-		arguments, these two are equivalent: >
+		arguments, these two are equivalent, if Callback() is defined
+		as context.Callback(): >
 			let Func = function('Callback', context)
 			let Func = context.Callback
 
 <		The argument list and the Dictionary can be combined: >
 			function Callback(arg1, count) dict
-			...
+			"...
 			let context = {"name": "example"}
 			let Func = function('Callback', ['one'], context)
-			...
+			"...
 			call Func(500)
 <		Invokes the function as with: >
 			call context.Callback('one', 500)
@@ -3420,7 +3412,8 @@ getcmdcompltype()					*getcmdcompltype()*
 		Only works when the command line is being edited, thus
 		requires use of |c_CTRL-\_e| or |c_CTRL-R_=|.
 		See |:command-completion| for the return string.
-		Also see |getcmdtype()|, |setcmdpos()| and |getcmdline()|.
+		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()| and
+		|setcmdline()|.
 		Returns an empty string when completion is not defined.
 
 getcmdline()						*getcmdline()*
@@ -3429,7 +3422,8 @@ getcmdline()						*getcmdline()*
 		|c_CTRL-R_=|.
 		Example: >
 			:cmap <F7> <C-\>eescape(getcmdline(), ' \')<CR>
-<		Also see |getcmdtype()|, |getcmdpos()| and |setcmdpos()|.
+<		Also see |getcmdtype()|, |getcmdpos()|, |setcmdpos()| and
+		|setcmdline()|.
 		Returns an empty string when entering a password or using
 		|inputsecret()|.
 
@@ -3439,7 +3433,8 @@ getcmdpos()						*getcmdpos()*
 		Only works when editing the command line, thus requires use of
 		|c_CTRL-\_e| or |c_CTRL-R_=| or an expression mapping.
 		Returns 0 otherwise.
-		Also see |getcmdtype()|, |setcmdpos()| and |getcmdline()|.
+		Also see |getcmdtype()|, |setcmdpos()|, |getcmdline()| and
+		|setcmdline()|.
 
 getcmdscreenpos()					*getcmdscreenpos()*
 		Return the screen position of the cursor in the command line
@@ -3448,7 +3443,8 @@ getcmdscreenpos()					*getcmdscreenpos()*
 		Only works when editing the command line, thus requires use of
 		|c_CTRL-\_e| or |c_CTRL-R_=| or an expression mapping.
 		Returns 0 otherwise.
-		Also see |getcmdpos()|, |setcmdpos()|.
+		Also see |getcmdpos()|, |setcmdpos()|, |getcmdline()| and
+		|setcmdline()|.
 
 getcmdtype()						*getcmdtype()*
 		Return the current command-line type. Possible return values
@@ -4084,6 +4080,47 @@ getregtype([{regname}])					*getregtype()*
 		Can also be used as a |method|: >
 			GetRegname()->getregtype()
 
+getscriptinfo([{opts})					*getscriptinfo()*
+		Returns a |List| with information about all the sourced Vim
+		scripts in the order they were sourced, like what
+		`:scriptnames` shows.
+
+		The optional Dict argument {opts} supports the following
+		optional items:
+		    name	Script name match pattern. If specified,
+				and "sid" is not specified, information about
+				scripts with name that match the pattern
+				"name" are returned.
+		    sid		Script ID |<SID>|.  If specified, only
+				information about the script with ID "sid" is
+				returned and "name" is ignored.
+
+		Each item in the returned List is a |Dict| with the following
+		items:
+		    autoload	Set to TRUE for a script that was used with
+				`import autoload` but was not actually sourced
+				yet (see |import-autoload|).
+		    functions   List of script-local function names defined in
+				the script.  Present only when a particular
+				script is specified using the "sid" item in
+				{opts}.
+		    name	Vim script file name.
+		    sid		Script ID |<SID>|.
+		    sourced	Script ID of the actually sourced script that
+				this script name links to, if any, otherwise
+				zero
+		    variables   A dictionary with the script-local variables.
+				Present only when the a particular script is
+				specified using the "sid" item in {opts}.
+				Note that this is a copy, the value of
+				script-local variables cannot be changed using
+				this dictionary.
+		    version	Vimscript version (|scriptversion|)
+
+		Examples: >
+			:echo getscriptinfo({'name': 'myscript'})
+			:echo getscriptinfo({'sid': 15}).variables
+<
 gettabinfo([{tabnr}])					*gettabinfo()*
 		If {tabnr} is not specified, then information about all the
 		tab pages is returned as a |List|. Each List item is a
@@ -4395,8 +4432,11 @@ has({feature} [, {check}])
 
 has_key({dict}, {key})					*has_key()*
 		The result is a Number, which is TRUE if |Dictionary| {dict}
-		has an entry with key {key}.  FALSE otherwise. The {key}
-		argument is a string.
+		has an entry with key {key}.  FALSE otherwise.
+		The {key} argument is a string.  In |Vim9| script a number is
+		also accepted (and converted to a string) but no other types.
+		In legacy script the usual automatic conversion to string is
+		done.
 
 		Can also be used as a |method|: >
 			mydict->has_key(key)
@@ -4728,19 +4768,25 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 			GetLnum()->indent()
 
 index({object}, {expr} [, {start} [, {ic}]])			*index()*
+		Find {expr} in {object} and return its index.  See
+		|indexof()| for using a lambda to select the item.
+
 		If {object} is a |List| return the lowest index where the item
 		has a value equal to {expr}.  There is no automatic
 		conversion, so the String "4" is different from the Number 4.
 		And the number 4 is different from the Float 4.0.  The value
-		of 'ignorecase' is not used here, case always matters.
+		of 'ignorecase' is not used here, case matters as indicated by
+		the {ic} argument.
 
 		If {object} is |Blob| return the lowest index where the byte
 		value is equal to {expr}.
 
 		If {start} is given then start looking at the item with index
 		{start} (may be negative for an item relative to the end).
+
 		When {ic} is given and it is |TRUE|, ignore case.  Otherwise
 		case must match.
+
 		-1 is returned when {expr} is not found in {object}.
 		Example: >
 			:let idx = index(words, "the")
@@ -4748,6 +4794,47 @@ index({object}, {expr} [, {start} [, {ic}]])			*index()*
 
 <		Can also be used as a |method|: >
 			GetObject()->index(what)
+
+indexof({object}, {expr} [, {opts}])			*indexof()*
+		Returns the index of an item in {object} where {expr} is
+		v:true.  {object} must be a |List| or a |Blob|.
+
+		If {object} is a |List|, evaluate {expr} for each item in the
+		List until the expression is v:true and return the index of
+		this item.
+
+		If {object} is a |Blob| evaluate {expr} for each byte in the
+		Blob until the expression is v:true and return the index of
+		this byte.
+
+		{expr} must be a |string| or |Funcref|.
+
+		If {expr} is a |string|: If {object} is a |List|, inside
+		{expr} |v:key| has the index of the current List item and
+		|v:val| has the value of the item.  If {object} is a |Blob|,
+		inside {expr} |v:key| has the index of the current byte and
+		|v:val| has the byte value.
+
+		If {expr} is a |Funcref| it must take two arguments:
+			1. the key or the index of the current item.
+			2. the value of the current item.
+		The function must return |TRUE| if the item is found and the
+		search should stop.
+
+		The optional argument {opts} is a Dict and supports the
+		following items:
+		    startidx	start evaluating {expr} at the item with this
+				index; may be negative for an item relative to
+				the end
+		Returns -1 when {expr} evaluates to v:false for all the items.
+		Example: >
+			:let l = [#{n: 10}, #{n: 20}, #{n: 30}]
+			:echo indexof(l, "v:val.n == 20")
+			:echo indexof(l, {i, v -> v.n == 30})
+			:echo indexof(l, "v:val.n == 20", #{startidx: 1})
+
+<		Can also be used as a |method|: >
+			mylist->indexof(expr)
 
 input({prompt} [, {text} [, {completion}]])		*input()*
 		The result is a String, which is whatever the user typed on
@@ -4939,8 +5026,6 @@ isinf({expr})						*isinf()*
 
 		Can also be used as a |method|: >
 			Compute()->isinf()
-<
-		{only available when compiled with the |+float| feature}
 
 islocked({expr})					*islocked()* *E786*
 		The result is a Number, which is |TRUE| when {expr} is the
@@ -4969,8 +5054,6 @@ isnan({expr})						*isnan()*
 
 		Can also be used as a |method|: >
 			Compute()->isnan()
-<
-		{only available when compiled with the |+float| feature}
 
 items({dict})						*items()*
 		Return a |List| with all the key-value pairs of {dict}.  Each
@@ -5101,6 +5184,16 @@ keys({dict})						*keys()*
 
 		Can also be used as a |method|: >
 			mydict->keys()
+
+keytrans({string})					*keytrans()*
+		Turn the internal byte representation of keys into a form that
+		can be used for |:map|.  E.g. >
+			:let xx = "\<C-Home>"
+			:echo keytrans(xx)
+<			<C-Home>
+
+		Can also be used as a |method|: >
+			"\<C-Home>"->keytrans()
 
 <							*len()* *E701*
 len({expr})	The result is a Number, which is the length of the argument.
@@ -5389,8 +5482,6 @@ log({expr})						*log()*
 
 		Can also be used as a |method|: >
 			Compute()->log()
-<
-		{only available when compiled with the |+float| feature}
 
 
 log10({expr})						*log10()*
@@ -5405,8 +5496,6 @@ log10({expr})						*log10()*
 
 		Can also be used as a |method|: >
 			Compute()->log10()
-<
-		{only available when compiled with the |+float| feature}
 
 luaeval({expr} [, {expr}])					*luaeval()*
 		Evaluate Lua expression {expr} and return its result converted
@@ -5414,8 +5503,7 @@ luaeval({expr} [, {expr}])					*luaeval()*
 		argument accessible as _A inside first {expr}.
 		Strings are returned as they are.
 		Boolean objects are converted to numbers.
-		Numbers are converted to |Float| values if vim was compiled
-		with |+float| and to numbers otherwise.
+		Numbers are converted to |Float| values.
 		Dictionaries and lists obtained by vim.eval() are returned
 		as-is.
 		Other objects are returned as zero without any errors.
@@ -5773,8 +5861,10 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 		message will appear and the match will not be added.  An ID
 		is specified as a positive integer (zero excluded).  IDs 1, 2
 		and 3 are reserved for |:match|, |:2match| and |:3match|,
-		respectively.  If the {id} argument is not specified or -1,
-		|matchadd()| automatically chooses a free ID.
+		respectively.  3 is reserved for use by the |matchparen|
+		plugin.
+		If the {id} argument is not specified or -1, |matchadd()|
+		automatically chooses a free ID.
 
 		The optional {dict} argument allows for further custom
 		values. Currently this is used to specify a match specific
@@ -6135,8 +6225,26 @@ min({expr})	Return the minimum value of all items in {expr}. Example:  >
 mkdir({name} [, {path} [, {prot}]])
 		Create directory {name}.
 
-		If {path} is "p" then intermediate directories are created as
-		necessary.  Otherwise it must be "".
+		If {path} contains "p" then intermediate directories are
+		created as necessary.  Otherwise it must be "".
+
+		If {path} contains "D" then {name} is deleted at the end of
+		the current function, as with: >
+			defer delete({name}, 'd')
+<
+		If {path} contains "R" then {name} is deleted recursively at
+		the end of the current function, as with: >
+			defer delete({name}, 'rf')
+<		Note that when {name} has more than one part and "p" is used
+		some directories may already exist.  Only the first one that
+		is created and what it contains is scheduled to be deleted.
+		E.g. when using: >
+			call mkdir('subdir/tmp/autoload', 'pR')
+<		and "subdir" already exists then "subdir/tmp" will be
+		scheduled for deletion, like with: >
+			defer delete('subdir/tmp', 'rf')
+<		Note that if scheduling the defer fails the directory is not
+		deleted.  This should only happen when out of memory.
 
 		If {prot} is given it is used to set the protection bits of
 		the new directory.  The default is 0o755 (rwxr-xr-x: r/w for
@@ -6342,8 +6450,6 @@ pow({x}, {y})						*pow()*
 
 		Can also be used as a |method|: >
 			Compute()->pow(3)
-<
-		{only available when compiled with the |+float| feature}
 
 prevnonblank({lnum})					*prevnonblank()*
 		Return the line number of the first line at or above {lnum}
@@ -7172,8 +7278,8 @@ repeat({expr}, {count})					*repeat()*
 		result.  Example: >
 			:let separator = repeat('-', 80)
 <		When {count} is zero or negative the result is empty.
-		When {expr} is a |List| the result is {expr} concatenated
-		{count} times.  Example: >
+		When {expr} is a |List| or a |Blob| the result is {expr}
+		concatenated {count} times.  Example: >
 			:let longlist = repeat(['a', 'b'], 3)
 <		Results in ['a', 'b', 'a', 'b', 'a', 'b'].
 
@@ -7225,8 +7331,6 @@ round({expr})							*round()*
 
 		Can also be used as a |method|: >
 			Compute()->round()
-<
-		{only available when compiled with the |+float| feature}
 
 rubyeval({expr})					*rubyeval()*
 		Evaluate Ruby expression {expr} and return its result
@@ -7368,8 +7472,10 @@ search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 		starts in column zero and then matches before the cursor are
 		skipped.  When the 'c' flag is present in 'cpo' the next
 		search starts after the match.  Without the 'c' flag the next
-		search starts one column further.  This matters for
-		overlapping matches.
+		search starts one column after the start of the match.  This
+		matters for overlapping matches.  See |cpo-c|.  You can also
+		insert "\ze" to change where the match ends, see  |/\ze|.
+
 		When searching backwards and the 'z' flag is given then the
 		search starts in column zero, thus no match in the current
 		line will be found (unless wrapping around the end of the
@@ -7383,7 +7489,7 @@ search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 <		When {stopline} is used and it is not zero this also implies
 		that the search does not wrap around the end of the file.
 		A zero value is equal to not giving the argument.
-
+				*E1285* *E1286* *E1287* *E1288* *E1289*
 		When the {timeout} argument is given the search stops when
 		more than this many milliseconds have passed.  Thus when
 		{timeout} is 500 the search stops after half a second.
@@ -7475,7 +7581,7 @@ searchcount([{options}])					*searchcount()*
 			" to 1)
 			let result = searchcount()
 <
-		The function is useful to add the count to |statusline|: >
+		The function is useful to add the count to 'statusline': >
 			function! LastSearchCount() abort
 			  let result = searchcount(#{recompute: 0})
 			  if empty(result)
@@ -7843,6 +7949,16 @@ setcharsearch({dict})					*setcharsearch()*
 		Can also be used as a |method|: >
 			SavedSearch()->setcharsearch()
 
+setcmdline({str} [, {pos}])					*setcmdline()*
+		Set the command line to {str} and set the cursor position to
+		{pos}.
+		If {pos} is omitted, the cursor is positioned after the text.
+		Returns 0 when successful, 1 when not editing the command
+		line.
+
+		Can also be used as a |method|: >
+			GetText()->setcmdline()
+
 setcmdpos({pos})					*setcmdpos()*
 		Set the cursor position in the command line to byte position
 		{pos}.  The first position is 1.
@@ -7855,8 +7971,8 @@ setcmdpos({pos})					*setcmdpos()*
 		before inserting the resulting text.
 		When the number is too big the cursor is put at the end of the
 		line.  A number smaller than one has undefined results.
-		Returns FALSE when successful, TRUE when not editing the
-		command line.
+		Returns 0 when successful, 1 when not editing the command
+		line.
 
 		Can also be used as a |method|: >
 			GetPos()->setcmdpos()
@@ -8383,8 +8499,6 @@ sin({expr})						*sin()*
 
 		Can also be used as a |method|: >
 			Compute()->sin()
-<
-		{only available when compiled with the |+float| feature}
 
 
 sinh({expr})						*sinh()*
@@ -8400,8 +8514,6 @@ sinh({expr})						*sinh()*
 
 		Can also be used as a |method|: >
 			Compute()->sinh()
-<
-		{only available when compiled with the |+float| feature}
 
 
 slice({expr}, {start} [, {end}])			*slice()*
@@ -8668,8 +8780,6 @@ sqrt({expr})						*sqrt()*
 
 		Can also be used as a |method|: >
 			Compute()->sqrt()
-<
-		{only available when compiled with the |+float| feature}
 
 
 srand([{expr}])						*srand()*
@@ -8743,8 +8853,6 @@ str2float({string} [, {quoted}])				*str2float()*
 
 		Can also be used as a |method|: >
 			let f = text->substitute(',', '', 'g')->str2float()
-<
-		{only available when compiled with the |+float| feature}
 
 str2list({string} [, {utf8}])					*str2list()*
 		Return a list containing the number values which represent
@@ -9229,6 +9337,7 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		"underline"	"1" if underlined
 		"undercurl"	"1" if undercurled
 		"strike"	"1" if strikethrough
+		"nocombine"	"1" if nocombine
 
 		Returns an empty string on error.
 
@@ -9489,8 +9598,6 @@ tan({expr})						*tan()*
 
 		Can also be used as a |method|: >
 			Compute()->tan()
-<
-		{only available when compiled with the |+float| feature}
 
 
 tanh({expr})						*tanh()*
@@ -9506,8 +9613,6 @@ tanh({expr})						*tanh()*
 
 		Can also be used as a |method|: >
 			Compute()->tanh()
-<
-		{only available when compiled with the |+float| feature}
 
 
 tempname()					*tempname()* *temp-file-name*
@@ -9743,8 +9848,6 @@ trunc({expr})							*trunc()*
 		Can also be used as a |method|: >
 			Compute()->trunc()
 <
-		{only available when compiled with the |+float| feature}
-
 							*type()*
 type({expr})	The result is a Number representing the type of {expr}.
 		Instead of using the number directly, it is better to use the
@@ -10332,34 +10435,43 @@ writefile({object}, {fname} [, {flags}])
 		When {object} is a |List| write it to file {fname}.  Each list
 		item is separated with a NL.  Each list item must be a String
 		or Number.
-		When {flags} contains "b" then binary mode is used: There will
-		not be a NL after the last list item.  An empty item at the
-		end does cause the last line in the file to end in a NL.
-
-		When {object} is a |Blob| write the bytes to file {fname}
-		unmodified.
-
-		When {flags} contains "a" then append mode is used, lines are
-		appended to the file: >
-			:call writefile(["foo"], "event.log", "a")
-			:call writefile(["bar"], "event.log", "a")
-<
-		When {flags} contains "s" then fsync() is called after writing
-		the file.  This flushes the file to disk, if possible.  This
-		takes more time but avoids losing the file if the system
-		crashes.
-		When {flags} does not contain "S" or "s" then fsync() is
-		called if the 'fsync' option is set.
-		When {flags} contains "S" then fsync() is not called, even
-		when 'fsync' is set.
-
 		All NL characters are replaced with a NUL character.
 		Inserting CR characters needs to be done before passing {list}
 		to writefile().
+
+		When {object} is a |Blob| write the bytes to file {fname}
+		unmodified, also when binary mode is not specified.
+
+		{flags} must be a String.  These characters are recognized:
+
+		'b'  Binary mode is used: There will not be a NL after the
+		     last list item.  An empty item at the end does cause the
+		     last line in the file to end in a NL.
+
+		'a'  Append mode is used, lines are appended to the file: >
+			:call writefile(["foo"], "event.log", "a")
+			:call writefile(["bar"], "event.log", "a")
+<
+		'D'  Delete the file when the current function ends.  This
+		     works like: >
+		     	:defer delete({fname})
+<		     Fails when not in a function.  Also see |:defer|.
+
+		's'  fsync() is called after writing the file.  This flushes
+		     the file to disk, if possible.  This takes more time but
+		     avoids losing the file if the system crashes.
+
+		'S'  fsync() is not called, even when 'fsync' is set.
+
+		     When {flags} does not contain "S" or "s" then fsync() is
+		     called if the 'fsync' option is set.
+
 		An existing file is overwritten, if possible.
+
 		When the write fails -1 is returned, otherwise 0.  There is an
 		error message if the file can't be created or when writing
 		fails.
+
 		Also see |readfile()|.
 		To copy a file byte for byte: >
 			:let fl = readfile("foo", "b")
@@ -10408,7 +10520,8 @@ use: `if exists('+shellslash')`
 
 
 acl			Compiled with |ACL| support.
-all_builtin_terms	Compiled with all builtin terminals enabled.
+all_builtin_terms	Compiled with all builtin terminals enabled. (always
+			true)
 amiga			Amiga version of Vim.
 arabic			Compiled with Arabic support |Arabic|.
 arp			Compiled with ARP support (Amiga).
@@ -10422,7 +10535,7 @@ browse			Compiled with |:browse| support, and browse() will
 			work.
 browsefilter		Compiled with support for |browsefilter|.
 bsd			Compiled on an OS in the BSD family (excluding macOS).
-builtin_terms		Compiled with some builtin terminals.
+builtin_terms		Compiled with some builtin terminals. (always true)
 byte_offset		Compiled with support for 'o' in 'statusline'
 channel			Compiled with support for |channel| and |job|
 cindent			Compiled with 'cindent' support. (always true)
@@ -10454,7 +10567,8 @@ ex_extra		|+ex_extra| (always true)
 extra_search		Compiled with support for |'incsearch'| and
 			|'hlsearch'|
 farsi			Support for Farsi was removed |farsi|.
-file_in_path		Compiled with support for |gf| and |<cfile>|
+file_in_path		Compiled with support for |gf| and |<cfile>| (always
+			true)
 filterpipe		When 'shelltemp' is off pipes are used for shell
 			read/write/filter commands
 find_in_path		Compiled with support for include file searches

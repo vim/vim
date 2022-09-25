@@ -49,7 +49,7 @@
 static int	screen_attr = 0;
 
 static void screen_char_2(unsigned off, int row, int col);
-static void screenclear2(void);
+static void screenclear2(int doclear);
 static void lineclear(unsigned off, int width, int attr);
 static void lineinvalid(unsigned off, int width);
 static int win_do_lines(win_T *wp, int row, int line_count, int mayclear, int del, int clear_attr);
@@ -876,7 +876,6 @@ draw_vsep_win(win_T *wp, int row)
     }
 }
 
-#ifdef FEAT_WILDMENU
 static int skip_status_match_char(expand_T *xp, char_u *s);
 
 /*
@@ -1144,7 +1143,6 @@ win_redr_status_matches(
     win_redraw_last_status(topframe);
     vim_free(buf);
 }
-#endif
 
 /*
  * Return TRUE if the status line of window "wp" is connected to the status
@@ -1571,21 +1569,18 @@ screen_puts_len(
 	// check if this is the first byte of a multibyte
 	if (has_mbyte)
 	{
-	    if (enc_utf8 && len > 0)
-		mbyte_blen = utfc_ptr2len_len(ptr, (int)((text + len) - ptr));
-	    else
-		mbyte_blen = (*mb_ptr2len)(ptr);
+	    mbyte_blen = enc_utf8 && len > 0
+			     ? utfc_ptr2len_len(ptr, (int)((text + len) - ptr))
+			     : (*mb_ptr2len)(ptr);
 	    if (enc_dbcs == DBCS_JPNU && c == 0x8e)
 		mbyte_cells = 1;
 	    else if (enc_dbcs != 0)
 		mbyte_cells = mbyte_blen;
 	    else	// enc_utf8
 	    {
-		if (len >= 0)
-		    u8c = utfc_ptr2char_len(ptr, u8cc,
-						   (int)((text + len) - ptr));
-		else
-		    u8c = utfc_ptr2char(ptr, u8cc);
+		u8c = len >= 0
+		      ? utfc_ptr2char_len(ptr, u8cc, (int)((text + len) - ptr))
+		      : utfc_ptr2char(ptr, u8cc);
 		mbyte_cells = utf_char2cells(u8c);
 #ifdef FEAT_ARABIC
 		if (p_arshape && !p_tbidi && ARABIC_CHAR(u8c))
@@ -1599,8 +1594,10 @@ screen_puts_len(
 		    }
 		    else
 		    {
-			nc = utfc_ptr2char_len(ptr + mbyte_blen, pcc,
-				      (int)((text + len) - ptr - mbyte_blen));
+			nc = len >= 0
+				 ? utfc_ptr2char_len(ptr + mbyte_blen, pcc,
+					(int)((text + len) - ptr - mbyte_blen))
+				 : utfc_ptr2char(ptr + mbyte_blen, pcc);
 			nc1 = pcc[0];
 		    }
 		    pc = prev_c;
@@ -2711,7 +2708,9 @@ retry:
     if (enc_dbcs == DBCS_JPNU)
 	new_ScreenLines2 = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
     new_ScreenAttrs = LALLOC_MULT(sattr_T, (Rows + 1) * Columns);
-    new_ScreenCols = LALLOC_MULT(colnr_T, (Rows + 1) * Columns);
+    // Clear ScreenCols to avoid a warning for unitialized memory in
+    // jump_to_mouse().
+    new_ScreenCols = LALLOC_CLEAR_MULT(colnr_T, (Rows + 1) * Columns);
     new_LineOffset = LALLOC_MULT(unsigned, Rows);
     new_LineWraps = LALLOC_MULT(char_u, Rows);
     new_TabPageIdxs = LALLOC_MULT(short, Columns);
@@ -2907,9 +2906,9 @@ give_up:
     screen_Rows = Rows;
     screen_Columns = Columns;
 
-    must_redraw = CLEAR;	// need to clear the screen later
+    set_must_redraw(UPD_CLEAR);	// need to clear the screen later
     if (doclear)
-	screenclear2();
+	screenclear2(TRUE);
 #ifdef FEAT_GUI
     else if (gui.in_use
 	    && !gui.starting
@@ -2972,16 +2971,30 @@ free_screenlines(void)
 #endif
 }
 
+/*
+ * Clear the screen.
+ * May delay if there is something the user should read.
+ * Allocated the screen for resizing if needed.
+ */
     void
 screenclear(void)
 {
     check_for_delay(FALSE);
     screenalloc(FALSE);	    // allocate screen buffers if size changed
-    screenclear2();	    // clear the screen
+    screenclear2(TRUE);	    // clear the screen
+}
+
+/*
+ * Do not clear the screen but mark everything for redraw.
+ */
+    void
+redraw_as_cleared(void)
+{
+    screenclear2(FALSE);
 }
 
     static void
-screenclear2(void)
+screenclear2(int doclear)
 {
     int	    i;
 
@@ -3010,7 +3023,7 @@ screenclear2(void)
 	LineWraps[i] = FALSE;
     }
 
-    if (can_clear(T_CL))
+    if (doclear && can_clear(T_CL))
     {
 	out_str(T_CL);		// clear the display
 	clear_cmdline = FALSE;
@@ -3026,16 +3039,19 @@ screenclear2(void)
 
     screen_cleared = TRUE;	// can use contents of ScreenLines now
 
-    win_rest_invalid(firstwin);
+    win_rest_invalid(firstwin);	// redraw all regular windows
     redraw_cmdline = TRUE;
     redraw_tabline = TRUE;
-    if (must_redraw == CLEAR)	// no need to clear again
-	must_redraw = NOT_VALID;
+    if (must_redraw == UPD_CLEAR)	// no need to clear again
+	must_redraw = UPD_NOT_VALID;
+    msg_scrolled = 0;		// compute_cmdrow() uses this
     compute_cmdrow();
+#ifdef FEAT_PROP_POPUP
+    popup_redraw_all();		// redraw all popup windows
+#endif
     msg_row = cmdline_row;	// put cursor on last line for messages
     msg_col = 0;
     screen_start();		// don't know where cursor is now
-    msg_scrolled = 0;		// can't scroll back
     msg_didany = FALSE;
     msg_didout = FALSE;
 }
@@ -3653,7 +3669,7 @@ win_rest_invalid(win_T *wp)
 {
     while (wp != NULL)
     {
-	redraw_win_later(wp, NOT_VALID);
+	redraw_win_later(wp, UPD_NOT_VALID);
 	wp->w_redr_status = TRUE;
 	wp = wp->w_next;
     }
@@ -4214,10 +4230,10 @@ showmode(void)
     int		nwr_save;
     int		sub_attr;
 
-    do_mode = ((p_smd && msg_silent == 0)
+    do_mode = p_smd && msg_silent == 0
 	    && ((State & MODE_INSERT)
 		|| restart_edit != NUL
-		|| VIsual_active));
+		|| VIsual_active);
     if (do_mode || reg_recording != 0)
     {
 	if (skip_showmode())
@@ -5155,4 +5171,29 @@ set_chars_option(win_T *wp, char_u **varp, int apply)
     }
 
     return NULL;	// no error
+}
+
+/*
+ * Check all global and local values of 'listchars' and 'fillchars'.
+ * Return an untranslated error messages if any of them is invalid, NULL
+ * otherwise.
+ */
+    char *
+check_chars_options(void)
+{
+    tabpage_T   *tp;
+    win_T	    *wp;
+
+    if (set_chars_option(curwin, &p_lcs, FALSE) != NULL)
+	return e_conflicts_with_value_of_listchars;
+    if (set_chars_option(curwin, &p_fcs, FALSE) != NULL)
+	return e_conflicts_with_value_of_fillchars;
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+    {
+	if (set_chars_option(wp, &wp->w_p_lcs, FALSE) != NULL)
+	    return e_conflicts_with_value_of_listchars;
+	if (set_chars_option(wp, &wp->w_p_fcs, FALSE) != NULL)
+	    return e_conflicts_with_value_of_fillchars;
+    }
+    return NULL;
 }

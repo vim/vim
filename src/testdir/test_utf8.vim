@@ -168,7 +168,7 @@ func Test_setcellwidths()
 
   call setcellwidths([])
 
-  call assert_fails('call setcellwidths(1)', 'E714:')
+  call assert_fails('call setcellwidths(1)', 'E1211:')
 
   call assert_fails('call setcellwidths([1, 2, 0])', 'E1109:')
 

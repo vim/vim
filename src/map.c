@@ -2317,7 +2317,7 @@ mapblock2dict(
 	int	    buffer_local,   // false if not buffer local mapping
 	int	    abbr)	    // true if abbreviation
 {
-    char_u	    *lhs = str2special_save(mp->m_keys, TRUE);
+    char_u	    *lhs = str2special_save(mp->m_keys, TRUE, FALSE);
     char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
 
     dict_add_string(dict, "lhs", lhs);
@@ -2409,7 +2409,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	    if (*rhs == NUL)
 		rettv->vval.v_string = vim_strsave((char_u *)"<Nop>");
 	    else
-		rettv->vval.v_string = str2special_save(rhs, FALSE);
+		rettv->vval.v_string = str2special_save(rhs, FALSE, FALSE);
 	}
 
     }
@@ -2478,7 +2478,7 @@ f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
 		keys_buf = NULL;
 		did_simplify = FALSE;
 
-		lhs = str2special_save(mp->m_keys, TRUE);
+		lhs = str2special_save(mp->m_keys, TRUE, FALSE);
 		(void)replace_termcodes(lhs, &keys_buf, flags, &did_simplify);
 		vim_free(lhs);
 
@@ -2582,7 +2582,6 @@ get_map_mode_string(char_u *mode_string, int abbr)
     void
 f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    char_u	*keys_buf = NULL;
     char_u	*which;
     int		mode;
     char_u	buf[NUMBUFLEN];
@@ -2621,8 +2620,8 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     if (dict_only)
     {
 	d = argvars[0].vval.v_dict;
-	which = dict_get_string(d, (char_u *)"mode", FALSE);
-	is_abbr = dict_get_bool(d, (char_u *)"abbr", -1);
+	which = dict_get_string(d, "mode", FALSE);
+	is_abbr = dict_get_bool(d, "abbr", -1);
 	if (which == NULL || is_abbr < 0)
 	{
 	    emsg(_(e_entries_missing_in_mapset_dict_argument));
@@ -2636,11 +2635,8 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	    return;
 	is_abbr = (int)tv_get_bool(&argvars[1]);
 
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
 	d = argvars[2].vval.v_dict;
     }
     mode = get_map_mode_string(which, is_abbr);
@@ -2652,29 +2648,32 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 
 
     // Get the values in the same order as above in get_maparg().
-    lhs = dict_get_string(d, (char_u *)"lhs", FALSE);
-    lhsraw = dict_get_string(d, (char_u *)"lhsraw", FALSE);
-    lhsrawalt = dict_get_string(d, (char_u *)"lhsrawalt", FALSE);
-    rhs = dict_get_string(d, (char_u *)"rhs", FALSE);
+    lhs = dict_get_string(d, "lhs", FALSE);
+    lhsraw = dict_get_string(d, "lhsraw", FALSE);
+    lhsrawalt = dict_get_string(d, "lhsrawalt", FALSE);
+    rhs = dict_get_string(d, "rhs", FALSE);
     if (lhs == NULL || lhsraw == NULL || rhs == NULL)
     {
 	emsg(_(e_entries_missing_in_mapset_dict_argument));
 	return;
     }
     orig_rhs = rhs;
-    rhs = replace_termcodes(rhs, &arg_buf,
+    if (STRICMP(rhs, "<nop>") == 0)	// "<Nop>" means nothing
+	rhs = (char_u *)"";
+    else
+	rhs = replace_termcodes(rhs, &arg_buf,
 					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
-    noremap = dict_get_number(d, (char_u *)"noremap") ? REMAP_NONE: 0;
-    if (dict_get_number(d, (char_u *)"script") != 0)
+    noremap = dict_get_number(d, "noremap") ? REMAP_NONE: 0;
+    if (dict_get_number(d, "script") != 0)
 	noremap = REMAP_SCRIPT;
-    expr = dict_get_number(d, (char_u *)"expr") != 0;
-    silent = dict_get_number(d, (char_u *)"silent") != 0;
-    sid = dict_get_number(d, (char_u *)"sid");
-    scriptversion = dict_get_number(d, (char_u *)"scriptversion");
-    lnum = dict_get_number(d, (char_u *)"lnum");
-    buffer = dict_get_number(d, (char_u *)"buffer");
-    nowait = dict_get_number(d, (char_u *)"nowait") != 0;
+    expr = dict_get_number(d, "expr") != 0;
+    silent = dict_get_number(d, "silent") != 0;
+    sid = dict_get_number(d, "sid");
+    scriptversion = dict_get_number(d, "scriptversion");
+    lnum = dict_get_number(d, "lnum");
+    buffer = dict_get_number(d, "buffer");
+    nowait = dict_get_number(d, "nowait") != 0;
     // mode from the dict is not used
 
     if (buffer)
@@ -2707,7 +2706,6 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	(void)map_add(map_table, abbr_table, lhsrawalt, rhs, orig_rhs, noremap,
 		nowait, silent, mode, is_abbr, expr, sid, scriptversion,
 								      lnum, 1);
-    vim_free(keys_buf);
     vim_free(arg_buf);
 }
 #endif

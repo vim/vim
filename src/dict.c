@@ -662,11 +662,11 @@ dict_has_key(dict_T *d, char *key)
  * Returns FAIL if the entry doesn't exist or out of memory.
  */
     int
-dict_get_tv(dict_T *d, char_u *key, typval_T *rettv)
+dict_get_tv(dict_T *d, char *key, typval_T *rettv)
 {
     dictitem_T	*di;
 
-    di = dict_find(d, key, -1);
+    di = dict_find(d, (char_u *)key, -1);
     if (di == NULL)
 	return FAIL;
     copy_tv(&di->di_tv, rettv);
@@ -680,12 +680,12 @@ dict_get_tv(dict_T *d, char_u *key, typval_T *rettv)
  * Returns NULL if the entry doesn't exist or out of memory.
  */
     char_u *
-dict_get_string(dict_T *d, char_u *key, int save)
+dict_get_string(dict_T *d, char *key, int save)
 {
     dictitem_T	*di;
     char_u	*s;
 
-    di = dict_find(d, key, -1);
+    di = dict_find(d, (char_u *)key, -1);
     if (di == NULL)
 	return NULL;
     s = tv_get_string(&di->di_tv);
@@ -699,7 +699,7 @@ dict_get_string(dict_T *d, char_u *key, int save)
  * Returns 0 if the entry doesn't exist.
  */
     varnumber_T
-dict_get_number(dict_T *d, char_u *key)
+dict_get_number(dict_T *d, char *key)
 {
     return dict_get_number_def(d, key, 0);
 }
@@ -709,11 +709,11 @@ dict_get_number(dict_T *d, char_u *key)
  * Returns "def" if the entry doesn't exist.
  */
     varnumber_T
-dict_get_number_def(dict_T *d, char_u *key, int def)
+dict_get_number_def(dict_T *d, char *key, int def)
 {
     dictitem_T	*di;
 
-    di = dict_find(d, key, -1);
+    di = dict_find(d, (char_u *)key, -1);
     if (di == NULL)
 	return def;
     return tv_get_number(&di->di_tv);
@@ -745,11 +745,11 @@ dict_get_number_check(dict_T *d, char_u *key)
  * Returns "def" if the entry doesn't exist.
  */
     varnumber_T
-dict_get_bool(dict_T *d, char_u *key, int def)
+dict_get_bool(dict_T *d, char *key, int def)
 {
     dictitem_T	*di;
 
-    di = dict_find(d, key, -1);
+    di = dict_find(d, (char_u *)key, -1);
     if (di == NULL)
 	return def;
     return tv_get_bool(&di->di_tv);
@@ -911,13 +911,15 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     int		vim9script = in_vim9script();
     int		had_comma;
 
-    // First check if it's not a curly-braces thing: {expr}.
+    // First check if it's not a curly-braces expression: {expr}.
     // Must do this without evaluating, otherwise a function may be called
     // twice.  Unfortunately this means we need to call eval1() twice for the
     // first item.
-    // But {} is an empty Dictionary.
+    // "{}" is an empty Dictionary.
+    // "#{abc}" is never a curly-braces expression.
     if (!vim9script
 	    && *curly_expr != '}'
+	    && !literal
 	    && eval1(&curly_expr, &tv, NULL) == OK
 	    && *skipwhite(curly_expr) == '}')
 	return NOTDONE;
@@ -982,13 +984,11 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	}
 	if (evaluate)
 	{
-#ifdef FEAT_FLOAT
 	    if (tvkey.v_type == VAR_FLOAT)
 	    {
 		tvkey.vval.v_string = typval_tostring(&tvkey, TRUE);
 		tvkey.v_type = VAR_STRING;
 	    }
-#endif
 	    key = tv_get_string_buf_chk(&tvkey, buf);
 	    if (key == NULL)
 	    {
@@ -1440,36 +1440,35 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     dictitem_remove(d, di);
 }
 
+typedef enum {
+    DICT2LIST_KEYS,
+    DICT2LIST_VALUES,
+    DICT2LIST_ITEMS,
+} dict2list_T;
+
 /*
- * Turn a dict into a list:
- * "what" == 0: list of keys
- * "what" == 1: list of values
- * "what" == 2: list of items
+ * Turn a dict into a list.
  */
     static void
-dict_list(typval_T *argvars, typval_T *rettv, int what)
+dict2list(typval_T *argvars, typval_T *rettv, dict2list_T what)
 {
     list_T	*l2;
     dictitem_T	*di;
     hashitem_T	*hi;
     listitem_T	*li;
-    listitem_T	*li2;
     dict_T	*d;
     int		todo;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if (in_vim9script() && check_for_dict_arg(argvars, 0) == FAIL)
+    if ((what == DICT2LIST_ITEMS
+		? check_for_string_or_list_or_dict_arg(argvars, 0)
+		: check_for_dict_arg(argvars, 0)) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
-	return;
-    }
-
-    if ((d = argvars[0].vval.v_dict) == NULL)
+    d = argvars[0].vval.v_dict;
+    if (d == NULL)
 	// empty dict behaves like an empty dict
 	return;
 
@@ -1486,14 +1485,14 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 		break;
 	    list_append(rettv->vval.v_list, li);
 
-	    if (what == 0)
+	    if (what == DICT2LIST_KEYS)
 	    {
 		// keys()
 		li->li_tv.v_type = VAR_STRING;
 		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_string = vim_strsave(di->di_key);
 	    }
-	    else if (what == 1)
+	    else if (what == DICT2LIST_VALUES)
 	    {
 		// values()
 		copy_tv(&di->di_tv, &li->li_tv);
@@ -1509,19 +1508,9 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 		    break;
 		++l2->lv_refcount;
 
-		li2 = listitem_alloc();
-		if (li2 == NULL)
+		if (list_append_string(l2, di->di_key, -1) == FAIL
+			|| list_append_tv(l2, &di->di_tv) == FAIL)
 		    break;
-		list_append(l2, li2);
-		li2->li_tv.v_type = VAR_STRING;
-		li2->li_tv.v_lock = 0;
-		li2->li_tv.vval.v_string = vim_strsave(di->di_key);
-
-		li2 = listitem_alloc();
-		if (li2 == NULL)
-		    break;
-		list_append(l2, li2);
-		copy_tv(&di->di_tv, &li2->li_tv);
 	    }
 	}
     }
@@ -1533,7 +1522,12 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
     void
 f_items(typval_T *argvars, typval_T *rettv)
 {
-    dict_list(argvars, rettv, 2);
+    if (argvars[0].v_type == VAR_STRING)
+	string2items(argvars, rettv);
+    else if (argvars[0].v_type == VAR_LIST)
+	list2items(argvars, rettv);
+    else
+	dict2list(argvars, rettv, DICT2LIST_ITEMS);
 }
 
 /*
@@ -1542,7 +1536,7 @@ f_items(typval_T *argvars, typval_T *rettv)
     void
 f_keys(typval_T *argvars, typval_T *rettv)
 {
-    dict_list(argvars, rettv, 0);
+    dict2list(argvars, rettv, DICT2LIST_KEYS);
 }
 
 /*
@@ -1551,7 +1545,7 @@ f_keys(typval_T *argvars, typval_T *rettv)
     void
 f_values(typval_T *argvars, typval_T *rettv)
 {
-    dict_list(argvars, rettv, 1);
+    dict2list(argvars, rettv, DICT2LIST_VALUES);
 }
 
 /*
@@ -1584,11 +1578,9 @@ f_has_key(typval_T *argvars, typval_T *rettv)
 		|| check_for_string_or_number_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_dict_arg(argvars, 0) == FAIL)
 	return;
-    }
+
     if (argvars[0].vval.v_dict == NULL)
 	return;
 

@@ -7639,7 +7639,7 @@ fi
   if test "X$vi_cv_path_ruby" != "X"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Ruby version" >&5
 $as_echo_n "checking Ruby version... " >&6; }
-    if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
+    if $vi_cv_path_ruby -e 'RUBY_VERSION >= "1.9.1" or exit 1' >/dev/null 2>/dev/null; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: OK" >&5
 $as_echo "OK" >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking Ruby rbconfig" >&5
@@ -7663,7 +7663,7 @@ $as_echo "$rubyhdrdir" >&6; }
         fi
         rubyversion=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['ruby_version'].gsub(/\./, '')[0,2]"`
 	if test "X$rubyversion" = "X"; then
-	  rubyversion=`$vi_cv_path_ruby -e "print ((VERSION rescue RUBY_VERSION)).gsub(/\./, '')[0,2]"`
+	  rubyversion=`$vi_cv_path_ruby -e "print RUBY_VERSION.gsub(/\./, '')[0,2]"`
 	fi
         RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
 	rubylibs=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['LIBS']"`
@@ -7715,8 +7715,8 @@ $as_echo "$rubyhdrdir" >&6; }
 $as_echo "not found; disabling Ruby" >&6; }
       fi
     else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: too old; need Ruby version 1.6.0 or later" >&5
-$as_echo "too old; need Ruby version 1.6.0 or later" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: too old; need Ruby version 1.9.1 or later" >&5
+$as_echo "too old; need Ruby version 1.9.1 or later" >&6; }
     fi
   fi
 
@@ -13037,21 +13037,26 @@ $as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for timer_create" >&5
-$as_echo_n "checking for timer_create... " >&6; }
-save_LIBS="$LIBS"
-LIBS="$LIBS -lrt"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for timer_create without -lrt" >&5
+$as_echo_n "checking for timer_create without -lrt... " >&6; }
+if ${vim_cv_timer_create+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
 if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create'" >&5
+$as_echo "$as_me: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create'" >&2;}
+
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-#include<signal.h>
-#include<time.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#include <signal.h>
+#include <time.h>
 static void set_flag(union sigval sv) {}
 
 int
@@ -13072,58 +13077,86 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes; with -lrt" >&5
-$as_echo "yes; with -lrt" >&6; }; $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
-
+  vim_cv_timer_create=yes
 else
-  LIBS="$save_LIBS"
-  if test "$cross_compiling" = yes; then :
-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "cannot run test program while cross compiling
-See \`config.log' for more details" "$LINENO" 5; }
+  vim_cv_timer_create=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create" >&5
+$as_echo "$vim_cv_timer_create" >&6; }
+
+if test "x$vim_cv_timer_create" = "xno" ; then
+  save_LIBS="$LIBS"
+  LIBS="$LIBS -lrt"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for timer_create with -lrt" >&5
+$as_echo_n "checking for timer_create with -lrt... " >&6; }
+if ${vim_cv_timer_create_with_lrt+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    if test "$cross_compiling" = yes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'" >&5
+$as_echo "$as_me: WARNING: failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'" >&2;}
+
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-#include<signal.h>
-#include<time.h>
-static void set_flag(union sigval sv) {}
+    #if STDC_HEADERS
+    # include <stdlib.h>
+    # include <stddef.h>
+    #endif
+    #include <signal.h>
+    #include <time.h>
+    static void set_flag(union sigval sv) {}
 
 int
 main ()
 {
 
-    struct timespec ts;
-    struct sigevent action = {0};
-    timer_t timer_id;
+      struct timespec ts;
+      struct sigevent action = {0};
+      timer_t timer_id;
 
-    action.sigev_notify = SIGEV_THREAD;
-    action.sigev_notify_function = set_flag;
-    if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
-      exit(1);  // cannot create a monotonic timer
+      action.sigev_notify = SIGEV_THREAD;
+      action.sigev_notify_function = set_flag;
+      if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
+	exit(1);  // cannot create a monotonic timer
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }; $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
-
+  vim_cv_timer_create_with_lrt=yes
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+  vim_cv_timer_create_with_lrt=no
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
 fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_timer_create_with_lrt" >&5
+$as_echo "$vim_cv_timer_create_with_lrt" >&6; }
+  LIBS="$save_LIBS"
+else
+  vim_cv_timer_create_with_lrt=no
 fi
 
+if test "x$vim_cv_timer_create" = "xyes" ; then
+  $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
+
+fi
+if test "x$vim_cv_timer_create_with_lrt" = "xyes" ; then
+  $as_echo "#define HAVE_TIMER_CREATE 1" >>confdefs.h
+
+  LIBS="$LIBS -lrt"
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether stat() ignores a trailing slash" >&5
 $as_echo_n "checking whether stat() ignores a trailing slash... " >&6; }
@@ -13346,48 +13379,6 @@ _ACEOF
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtod() and other floating point functions" >&5
-$as_echo_n "checking for strtod() and other floating point functions... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_MATH_H
-# include <math.h>
-#endif
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-
-int
-main ()
-{
-char *s; double d;
-    d = strtod("1.1", &s);
-    d = fabs(1.11);
-    d = ceil(1.11);
-    d = floor(1.11);
-    d = log10(1.11);
-    d = pow(1.11, 2.22);
-    d = sqrt(1.11);
-    d = sin(1.11);
-    d = cos(1.11);
-    d = atan(1.11);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }; $as_echo "#define HAVE_FLOAT_FUNCS 1" >>confdefs.h
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isinf()" >&5
 $as_echo_n "checking for isinf()... " >&6; }

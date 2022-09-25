@@ -213,6 +213,7 @@ static int g_color_index_bg = 0;
 static int g_color_index_fg = 7;
 
 # ifdef FEAT_TERMGUICOLORS
+static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
 # endif
 
@@ -241,27 +242,6 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
-
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-// Dynamic loading for portability
-typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
-{
-    ULONG cbSize;
-    COORD dwSize;
-    COORD dwCursorPosition;
-    WORD wAttributes;
-    SMALL_RECT srWindow;
-    COORD dwMaximumWindowSize;
-    WORD wPopupAttributes;
-    BOOL bFullscreenSupported;
-    COLORREF ColorTable[16];
-} DYN_CONSOLE_SCREEN_BUFFER_INFOEX, *PDYN_CONSOLE_SCREEN_BUFFER_INFOEX;
-typedef BOOL (WINAPI *PfnGetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
-static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx;
-typedef BOOL (WINAPI *PfnSetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
-static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx;
-static BOOL has_csbiex = FALSE;
-#endif
 
 /*
  * Get version number including build number
@@ -1527,13 +1507,27 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    CONSOLE_CURSOR_INFO ConsoleCursorInfo;
-    ConsoleCursorInfo.dwSize = thickness;
-    ConsoleCursorInfo.bVisible = s_cursor_visible;
+    if (USE_VTP || USE_WT)
+    {
+	if (*T_CSI == NUL)
+	{
+	    // If 't_SI' is not set, use the default cursor styles.
+	    if (thickness < 50)
+		vtp_printf("\033[3 q");	// underline
+	    else
+		vtp_printf("\033[0 q");	// default
+	}
+    }
+    else
+    {
+	CONSOLE_CURSOR_INFO ConsoleCursorInfo;
+	ConsoleCursorInfo.dwSize = thickness;
+	ConsoleCursorInfo.bVisible = s_cursor_visible;
 
-    SetConsoleCursorInfo(g_hConOut, &ConsoleCursorInfo);
-    if (s_cursor_visible)
-	SetConsoleCursorPosition(g_hConOut, g_coord);
+	SetConsoleCursorInfo(g_hConOut, &ConsoleCursorInfo);
+	if (s_cursor_visible)
+	    SetConsoleCursorPosition(g_hConOut, g_coord);
+    }
 }
 
     void
@@ -1692,7 +1686,7 @@ WaitForChar(long msec, int ignore_input)
 		{
 		    // The screen is now messed up, must redraw the command
 		    // line and later all the windows.
-		    redraw_all_later(CLEAR);
+		    redraw_all_later(UPD_CLEAR);
 		    compute_cmdrow();
 		    redrawcmd();
 		}
@@ -2819,7 +2813,11 @@ SaveConsoleTitleAndIcon(void)
 	return;
 
     // Extract the first icon contained in the Vim executable.
-    if (mch_icon_load((HANDLE *)&g_hVimIcon) == FAIL || g_hVimIcon == NULL)
+    if (
+# ifdef FEAT_LIBCALL
+	    mch_icon_load((HANDLE *)&g_hVimIcon) == FAIL ||
+# endif
+	    g_hVimIcon == NULL)
 	g_hVimIcon = ExtractIcon(NULL, (LPCSTR)exe_name, 0);
     if (g_hVimIcon != NULL)
 	g_fCanChangeIcon = TRUE;
@@ -6483,7 +6481,7 @@ mch_write(
 	// sequence may be inserted asynchronously.
 	if (len < 0)
 	{
-	    redraw_all_later(CLEAR);
+	    redraw_all_later(UPD_CLEAR);
 	    return;
 	}
 
@@ -6768,6 +6766,21 @@ notsgr:
 		fputc('\n', fdDump);
 	    }
 # endif
+	}
+	else if (s[0] == ESC && len >= 3-1 && s[1] == '[')
+	{
+	    int l = 2;
+
+	    if (isdigit(s[l]))
+		l++;
+	    if (s[l] == ' ' && s[l + 1] == 'q')
+	    {
+		// DECSCUSR (cursor style) sequences
+		if (USE_VTP || USE_WT)
+		    vtp_printf("%.*s", l + 2, s);   // Pass through
+		s += l + 2;
+		len -= l + 1;
+	    }
 	}
 	else
 	{
@@ -7848,36 +7861,26 @@ vtp_flag_init(void)
     static void
 vtp_init(void)
 {
-    HMODULE hKerneldll;
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 # ifdef FEAT_TERMGUICOLORS
     COLORREF fg;
 # endif
 
-    // Use functions supported from Vista
-    hKerneldll = GetModuleHandle("kernel32.dll");
-    if (hKerneldll != NULL)
-    {
-	pGetConsoleScreenBufferInfoEx =
-		(PfnGetConsoleScreenBufferInfoEx)GetProcAddress(
-		hKerneldll, "GetConsoleScreenBufferInfoEx");
-	pSetConsoleScreenBufferInfoEx =
-		(PfnSetConsoleScreenBufferInfoEx)GetProcAddress(
-		hKerneldll, "SetConsoleScreenBufferInfoEx");
-	if (pGetConsoleScreenBufferInfoEx != NULL
-		&& pSetConsoleScreenBufferInfoEx != NULL)
-	    has_csbiex = TRUE;
-    }
-
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
     save_console_bg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_bg];
     save_console_fg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_fg];
     store_console_bg_rgb = save_console_bg_rgb;
     store_console_fg_rgb = save_console_fg_rgb;
 
 # ifdef FEAT_TERMGUICOLORS
+    if (!USE_WT)
+    {
+	COLORREF bg;
+	bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
+	bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
+	default_console_color_bg = bg;
+    }
     fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     default_console_color_fg = fg;
@@ -7945,7 +7948,7 @@ vtp_sgr_bulks(
     if (argc == 0)
     {
 	sgrfgr = sgrbgr = -1;
-	vtp_printf("033[m");
+	vtp_printf("\033[m");
 	return;
     }
 
@@ -8093,7 +8096,7 @@ ctermtoxterm(
 set_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
     guicolor_T	fg, bg;
     int		ctermfg, ctermbg;
 
@@ -8113,8 +8116,7 @@ set_console_color_rgb(void)
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
@@ -8123,8 +8125,7 @@ set_console_color_rgb(void)
     store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
     csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8160,11 +8161,20 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	cterm_normal_bg_gui_color = guibg =
+	if (USE_WT)
+	{
+	    cterm_normal_bg_gui_color = guibg =
 			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
-
-	if (ctermbg < 0)
-	    ctermbg = 0;
+	    if (ctermbg < 0)
+		ctermbg = 0;
+	}
+	else
+	{
+	    guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
+						    : default_console_color_bg;
+	    cterm_normal_bg_gui_color = guibg;
+	    ctermbg = ctermbg < 0 ? 0 : ctermbg;
+	}
     }
 
     *cterm_fg = ctermfg;
@@ -8181,22 +8191,20 @@ get_default_console_color(
 reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
     if (USE_WT)
 	return;
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
     csbi.ColorTable[g_color_index_bg] = (COLORREF)store_console_bg_rgb;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)store_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8207,19 +8215,17 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
     csbi.ColorTable[g_color_index_bg] = (COLORREF)save_console_bg_rgb;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)save_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 

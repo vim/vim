@@ -234,12 +234,10 @@ pum_display(
 	max_width = pum_base_width;
 
 	// Calculate column
-#ifdef FEAT_WILDMENU
 	if (State == MODE_CMDLINE)
 	    // cmdline completion popup menu
 	    cursor_col = cmdline_compl_startcol();
 	else
-#endif
 #ifdef FEAT_RIGHTLEFT
 	if (right_left)
 	    cursor_col = curwin->w_wincol + curwin->w_width
@@ -943,7 +941,7 @@ pum_set_selected(int n, int repeat UNUSED)
 		    {
 			pum_position_info_popup(curwin);
 			if (win_valid(curwin_save))
-			    redraw_win_later(curwin_save, SOME_VALID);
+			    redraw_win_later(curwin_save, UPD_SOME_VALID);
 		    }
 # endif
 		    if ((curwin != curwin_save && win_valid(curwin_save))
@@ -963,7 +961,7 @@ pum_set_selected(int n, int repeat UNUSED)
 
 			// Return cursor to where we were
 			validate_cursor();
-			redraw_later(SOME_VALID);
+			redraw_later(UPD_SOME_VALID);
 
 			// When the preview window was resized we need to
 			// update the view on the buffer.  Only go back to
@@ -1048,7 +1046,7 @@ pum_set_selected(int n, int repeat UNUSED)
 pum_undisplay(void)
 {
     pum_array = NULL;
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(UPD_NOT_VALID);
     redraw_tabline = TRUE;
     status_redraw_all();
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
@@ -1549,8 +1547,8 @@ pum_show_popupmenu(vimmenu_T *menu)
 
 	c = vgetc();
 
-	// Bail out when typing Esc, CTRL-C or some callback closed the popup
-	// menu.
+	// Bail out when typing Esc, CTRL-C or some callback or <expr> mapping
+	// closed the popup menu.
 	if (c == ESC || c == Ctrl_C || pum_array == NULL)
 	    break;
 	else if (c == CAR || c == NL)

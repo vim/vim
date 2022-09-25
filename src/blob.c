@@ -638,15 +638,14 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * reduce() Blob argvars[0] using the function 'funcname' with arguments in
- * 'funcexe' starting with the initial value argvars[2] and return the result
- * in 'rettv'.
+ * Implementaion of reduce() for Blob "argvars[0]" using the function "expr"
+ * starting with the optional initial value "argvars[2]" and return the result
+ * in "rettv".
  */
     void
 blob_reduce(
 	typval_T	*argvars,
-	char_u		*func_name,
-	funcexe_T	*funcexe,
+	typval_T	*expr,
 	typval_T	*rettv)
 {
     blob_T	*b = argvars[0].vval.v_blob;
@@ -667,11 +666,8 @@ blob_reduce(
 	initial.vval.v_number = blob_get(b, 0);
 	i = 1;
     }
-    else if (argvars[2].v_type != VAR_NUMBER)
-    {
-	emsg(_(e_number_expected));
+    else if (check_for_number_arg(argvars, 2) == FAIL)
 	return;
-    }
     else
     {
 	initial = argvars[2];
@@ -687,7 +683,9 @@ blob_reduce(
 	argv[0] = *rettv;
 	argv[1].v_type = VAR_NUMBER;
 	argv[1].vval.v_number = blob_get(b, i);
-	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+
+	r = eval_expr_typval(expr, argv, 2, rettv);
+
 	clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    return;

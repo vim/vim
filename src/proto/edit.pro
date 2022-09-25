@@ -5,7 +5,7 @@ void ins_redraw(int ready);
 void edit_putchar(int c, int highlight);
 void set_insstart(linenr_T lnum, int col);
 void edit_unputchar(void);
-void display_dollar(colnr_T col);
+void display_dollar(colnr_T col_arg);
 void undisplay_dollar(void);
 void truncate_spaces(char_u *line);
 void backspace_until_column(int col);

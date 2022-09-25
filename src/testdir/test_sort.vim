@@ -62,7 +62,6 @@ func Test_sort_numbers()
 endfunc
 
 func Test_sort_float()
-  CheckFeature float
   call assert_equal([0.28, 3, 13.5], sort([13.5, 0.28, 3], 'f'))
 endfunc
 
@@ -72,8 +71,6 @@ func Test_sort_nested()
 endfunc
 
 func Test_sort_default()
-  CheckFeature float
-
   " docs say omitted, empty or zero argument sorts on string representation.
   call assert_equal(['2', 'A', 'AA', 'a', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"]))
   call assert_equal(['2', 'A', 'AA', 'a', 1, 3.3], sort([3.3, 1, "2", "A", "a", "AA"], ''))
@@ -1336,34 +1333,32 @@ func Test_sort_cmd()
           \ ]
     endif
   endif
-  if has('float')
-    let tests += [
-          \ {
-          \    'name' : 'float',
-          \    'cmd' : 'sort f',
-          \    'input' : [
-          \	'1.234',
-          \	'0.88',
-          \	'  +  123.456',
-          \	'1.15e-6',
-          \	'-1.1e3',
-          \	'-1.01e3',
-          \	'',
-          \	''
-          \    ],
-          \    'expected' : [
-          \	'',
-          \	'',
-          \	'-1.1e3',
-          \	'-1.01e3',
-          \	'1.15e-6',
-          \	'0.88',
-          \	'1.234',
-          \	'  +  123.456'
-          \    ]
-          \ },
-          \ ]
-  endif
+  let tests += [
+        \ {
+        \    'name' : 'float',
+        \    'cmd' : 'sort f',
+        \    'input' : [
+        \	'1.234',
+        \	'0.88',
+        \	'  +  123.456',
+        \	'1.15e-6',
+        \	'-1.1e3',
+        \	'-1.01e3',
+        \	'',
+        \	''
+        \    ],
+        \    'expected' : [
+        \	'',
+        \	'',
+        \	'-1.1e3',
+        \	'-1.01e3',
+        \	'1.15e-6',
+        \	'0.88',
+        \	'1.234',
+        \	'  +  123.456'
+        \    ]
+        \ },
+        \ ]
 
   for t in tests
     enew!

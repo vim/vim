@@ -87,17 +87,17 @@ vim_mem_profile_dump(void)
     j = 0;
     for (i = 0; i < MEM_SIZES - 1; i++)
     {
-	if (mem_allocs[i] || mem_frees[i])
+	if (mem_allocs[i] == 0 && mem_frees[i] == 0)
+	    continue;
+
+	if (mem_frees[i] > mem_allocs[i])
+	    printf("\r\n%s", _("ERROR: "));
+	printf("[%4d / %4lu-%-4lu] ", i + 1, mem_allocs[i], mem_frees[i]);
+	j++;
+	if (j > 3)
 	{
-	    if (mem_frees[i] > mem_allocs[i])
-		printf("\r\n%s", _("ERROR: "));
-	    printf("[%4d / %4lu-%-4lu] ", i + 1, mem_allocs[i], mem_frees[i]);
-	    j++;
-	    if (j > 3)
-	    {
-		j = 0;
-		printf("\r\n");
-	    }
+	    j = 0;
+	    printf("\r\n");
 	}
     }
 
@@ -158,10 +158,10 @@ alloc(size_t size)
     void *
 alloc_id(size_t size, alloc_id_T id UNUSED)
 {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     if (alloc_fail_id == id && alloc_does_fail(size))
 	return NULL;
-#endif
+# endif
     return lalloc(size, TRUE);
 }
 #endif
@@ -332,22 +332,22 @@ mem_realloc(void *ptr, size_t size)
     void
 do_outofmem_msg(size_t size)
 {
-    if (!did_outofmem_msg)
-    {
-	// Don't hide this message
-	emsg_silent = 0;
+    if (did_outofmem_msg)
+	return;
 
-	// Must come first to avoid coming back here when printing the error
-	// message fails, e.g. when setting v:errmsg.
-	did_outofmem_msg = TRUE;
+    // Don't hide this message
+    emsg_silent = 0;
 
-	semsg(_(e_out_of_memory_allocating_nr_bytes), (long_u)size);
+    // Must come first to avoid coming back here when printing the error
+    // message fails, e.g. when setting v:errmsg.
+    did_outofmem_msg = TRUE;
 
-	if (starting == NO_SCREEN)
-	    // Not even finished with initializations and already out of
-	    // memory?  Then nothing is going to work, exit.
-	    mch_exit(123);
-    }
+    semsg(_(e_out_of_memory_allocating_nr_bytes), (long_u)size);
+
+    if (starting == NO_SCREEN)
+	// Not even finished with initializations and already out of
+	// memory?  Then nothing is going to work, exit.
+	mch_exit(123);
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -425,9 +425,7 @@ free_all_mem(void)
     }
 
     free_titles();
-# if defined(FEAT_SEARCHPATH)
     free_findfile();
-# endif
 
     // Obviously named calls.
     free_all_autocmds();
@@ -782,20 +780,20 @@ ga_concat_strings(garray_T *gap, char *sep)
 	len += (int)STRLEN(((char_u **)(gap->ga_data))[i]) + sep_len;
 
     s = alloc(len + 1);
-    if (s != NULL)
+    if (s == NULL)
+	return NULL;
+
+    *s = NUL;
+    p = s;
+    for (i = 0; i < gap->ga_len; ++i)
     {
-	*s = NUL;
-	p = s;
-	for (i = 0; i < gap->ga_len; ++i)
+	if (p != s)
 	{
-	    if (p != s)
-	    {
-		STRCPY(p, sep);
-		p += sep_len;
-	    }
-	    STRCPY(p, ((char_u **)(gap->ga_data))[i]);
-	    p += STRLEN(p);
+	    STRCPY(p, sep);
+	    p += sep_len;
 	}
+	STRCPY(p, ((char_u **)(gap->ga_data))[i]);
+	p += STRLEN(p);
     }
     return s;
 }

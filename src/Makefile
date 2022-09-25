@@ -169,7 +169,6 @@
 #AIX 4.2.1	      cc				5.2k (C) Will Fiveash
 #AIX 4.3.3.12	      xic 3.6.6				5.6  (5) David R. Favor
 #A/UX 3.1.1	      gcc	     +X11		4.0  (6) Jim Jagielski
-#BeOS PR	      mwcc DR3				5.0n (T) Olaf Seibert
 #BSDI 2.1 (x86)       shlicc2 gcc-2.6.3 -X11 X11R6	4.5  (1) Jos Backus
 #BSD/OS 3.0 (x86)     gcc gcc-2.7.2.1 -X11 X11R6	4.6c (1) Jos Backus
 #CX/UX 6.2	      cc	     +X11 +GUI_Mofif	5.4  (V) Kipp E. Howard
@@ -177,10 +176,6 @@
 #DG/UX 5.4R4.20       gcc 2.7.2      GUI		5.0s (H) Rocky Olive
 #HP-UX (most)	      c89 cc				5.1  (2) Bram Moolenaar
 #HP-UX_9.04	      cc	     +X11 +Motif	5.0  (2) Carton Lao
-#Irix 6.3 (O2)	      cc	     ?			4.5  (L) Edouard Poor
-#Irix 6.4	      cc	     ?			5.0m (S) Rick Sayre
-#Irix 6.5	      cc	     ?			6.0  (S) David Harrison
-#Irix 64 bit						4.5  (K) Jon Wright
 #Linux 2.0	      gcc-2.7.2      Infomagic Motif	4.3  (3) Ronald Rietman
 #NEC UP4800 UNIX_SV 4.2MP  cc	     +X11R6 Motif	4.6b (Q) Lennart Schultz
 #NetBSD 1.0A	      gcc-2.4.5      -X11 -GUI		3.21 (X) Juergen Weigert
@@ -240,8 +235,6 @@
 # (P)  For SuperUX 6.2 on NEC SX-4 see a few lines below to uncomment.
 # (Q)  For UNIXSVR 4.2MP on NEC UP4800 see below for lines to uncomment.
 # (R)  For Solaris 2.5 (or 2.5.1) with gcc > 2.5.6, uncomment line below.
-# (S)  For Irix 6.x with MipsPro compiler, use -OPT:Olimit.  See line below.
-# (T)  See ../doc/os_beos.txt.
 # (U)  Must uncomment CONF_OPT_PYTHON option below to disable Python
 #      detection, since the configure script runs into an error when it
 #      detects Python (probably because of the bash shell).
@@ -748,11 +741,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #CC = c89 -O +Onolimit +ESlit -D_HPUX_SOURCE
 #CC = c89 -O +Onolimit +ESlit +e -D_HPUX_SOURCE
 
-### (2) For HP-UX: Enable the use of a different set of digraphs.  Use this
-###	when the default (ISO) digraphs look completely wrong.
-###	After changing this do "touch digraph.c; make".
-#EXTRA_DEFS = -DHPUX_DIGRAPHS
-
 ### (2) For HP-UX: 9.04 cpp default macro definition table of 128000 bytes
 ###	is too small to compile many routines.	It produces too much defining
 ###	and no space errors.
@@ -886,51 +874,6 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 #XROOT = /usr/necccs
 #CONF_OPT_X = --x-include=$(XROOT)/include --x-libraries=$(XROOT)/lib/X11R6
 #EXTRA_LIBS = -lsocket -lgen
-
-### Irix 4.0 & 5.2 (Silicon Graphics Machines, __sgi will be defined)
-# Not needed for Irix 5.3, Ives Aerts reported
-#EXTRA_LIBS = -lmalloc -lc_s
-# Irix 4.0, when regexp and regcmp cannot be found when linking:
-#EXTRA_LIBS = -lmalloc -lc_s -lPW
-
-### (S) Irix 6.x (MipsPro compiler): Uses different Olimit flag:
-# Note:	This newer option style is used with the MipsPro compilers ONLY if
-#	you are compiling an "n32" or "64" ABI binary (use either a -n32
-#	flag or a -64 flag for CFLAGS).  If you explicitly use a -o32 flag,
-#	then the CFLAGS option format will be the typical style (i.e.
-#	-Olimit 3000).
-#CFLAGS = -OPT:Olimit=3000 -O
-
-### (S) Irix 6.5 with MipsPro C compiler.  Try this as a test to see new
-#	compiler features!  Beware, the optimization is EXTREMELY thorough
-#	and takes quite a long time.
-# Note: See the note above.  Here, the -mips3 option automatically
-#	enables either the "n32" or "64" ABI, depending on what machine you
-#	are compiling on (n32 is explicitly enabled here, just to make sure).
-#CFLAGS = -OPT:Olimit=3500 -O -n32 -mips3 -IPA:aggr_cprop=ON -INLINE:dfe=ON:list=ON:must=screen_char,out_char,ui_write,out_flush
-#LDFLAGS= -OPT:Olimit=3500 -O -n32 -mips3 -IPA:aggr_cprop=ON -INLINE:dfe=ON:list=ON:must=screen_char,out_char,ui_write,out_flush
-
-### (K) for SGI Irix machines with 64 bit pointers ("uname -s" says IRIX64)
-###	Suggested by Jon Wright <jon@gate.sinica.edu.tw>.
-###	Tested on R8000 IRIX6.1 Power Indigo2.
-###	Check /etc/compiler.defaults for your compiler settings.
-# either (for 64 bit pointers) uncomment the following line
-#GUI_LIB_LOC = -L/usr/lib64
-# then
-# 1) make config
-# 2) edit auto/config.mk and delete the -lelf entry in the LIBS line
-# 3) make
-#
-# or (for 32bit pointers) uncomment the following line
-#EXTRA_DEFS = -n32
-#GUI_LIB_LOC = -L/usr/lib32
-# then
-# 1) make config
-# 2) edit auto/config.mk, add -n32 to LDFLAGS
-# 3) make
-#
-#Alternatively: use -o32 instead of -n32.
-###
 
 ### (C)  On SCO Unix v3.2.5 (and probably other versions) the termcap library,
 ###	 which is found by configure, doesn't work correctly.  Symptom is the
@@ -2378,9 +2321,11 @@ INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
 # Install most of the runtime files
 installruntime: installrtbase installmacros installpack installtutor installspell
 
-# install the help files; first adjust the contents for the final location
+# Install the help files; first adjust the contents for the final location.
+# Also install most of the other runtime files.
 installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
-		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
+		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) \
+		$(DEST_SYN) $(DEST_SYN)/shared $(DEST_IND) \
 		$(DEST_FTP) $(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
 		$(DEST_IMPORT) $(DEST_IMPORT)/dist \
 		$(DEST_PLUG) $(DEST_TUTOR) $(DEST_SPELL) $(DEST_COMP)
@@ -2451,6 +2396,8 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 # install the syntax files
 	cd $(SYNSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_SYN)
 	cd $(DEST_SYN); chmod $(HELPMOD) *.vim README.txt
+	cd $(SYNSOURCE)/shared; $(INSTALL_DATA) *.vim README.txt $(DEST_SYN)/shared
+	cd $(DEST_SYN)/shared; chmod $(HELPMOD) *.vim README.txt
 # install the indent files
 	cd $(INDSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_IND)
 	cd $(DEST_IND); chmod $(HELPMOD) *.vim README.txt
@@ -2696,7 +2643,8 @@ $(HELPSOURCE)/vim.1 $(MACROSOURCE) $(TOOLSSOURCE):
 
 $(DESTDIR)$(exec_prefix) $(DEST_BIN) \
 		$(DEST_VIM) $(DEST_RT) $(DEST_HELP) \
-		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) $(DEST_FTP) \
+		$(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_SYN)/shared \
+		$(DEST_IND) $(DEST_FTP) \
 		$(DEST_LANG) $(DEST_KMAP) $(DEST_COMP) $(DEST_MACRO) \
 		$(DEST_PACK) $(DEST_TOOLS) $(DEST_TUTOR) $(DEST_SPELL) \
 		$(DEST_AUTO) $(DEST_AUTO)/dist $(DEST_AUTO)/xml \
@@ -2872,6 +2820,7 @@ uninstall_runtime:
 	-rm -f $(DEST_COL)/*.vim $(DEST_COL)/README.txt
 	-rm -rf $(DEST_COL)/tools
 	-rm -rf $(DEST_COL)/lists
+	-rm -f $(DEST_SYN)/shared/*.vim $(DEST_SYN)/shared/README.txt
 	-rm -f $(DEST_SYN)/*.vim $(DEST_SYN)/README.txt
 	-rm -f $(DEST_IND)/*.vim $(DEST_IND)/README.txt
 	-rm -rf $(DEST_MACRO)
@@ -2883,7 +2832,8 @@ uninstall_runtime:
 	-rm -rf $(DEST_KMAP)
 	-rm -rf $(DEST_COMP)
 	-rm -f $(DEST_PRINT)/*.ps
-	-rmdir $(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND)
+	-rmdir $(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN)/shared
+	-rmdir $(DEST_SYN) $(DEST_IND)
 	-rm -rf $(DEST_FTP)/*.vim $(DEST_FTP)/README.txt $(DEST_FTP)/logtalk.dict
 	-rm -f $(DEST_AUTO)/*.vim $(DEST_AUTO)/README.txt
 	-rm -f $(DEST_AUTO)/dist/*.vim $(DEST_AUTO)/xml/*.vim
@@ -4241,7 +4191,7 @@ objects/vim9type.o: vim9type.c vim.h protodef.h auto/config.h feature.h os_unix.
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h alloc.h ex_cmds.h spell.h proto.h \
- globals.h errors.h
+ globals.h errors.h vim9.h
 objects/viminfo.o: viminfo.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h termdefs.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h libvterm/include/vterm.h \

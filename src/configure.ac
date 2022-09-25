@@ -1990,7 +1990,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   AC_PATH_PROG(vi_cv_path_ruby, $RUBY_CMD)
   if test "X$vi_cv_path_ruby" != "X"; then
     AC_MSG_CHECKING(Ruby version)
-    if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
+    if $vi_cv_path_ruby -e 'RUBY_VERSION >= "1.9.1" or exit 1' >/dev/null 2>/dev/null; then
       AC_MSG_RESULT(OK)
       AC_MSG_CHECKING(Ruby rbconfig)
       ruby_rbconfig="RbConfig"
@@ -2009,7 +2009,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
         fi
         rubyversion=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['ruby_version']].gsub(/\./, '')[[0,2]]"`
 	if test "X$rubyversion" = "X"; then
-	  rubyversion=`$vi_cv_path_ruby -e "print ((VERSION rescue RUBY_VERSION)).gsub(/\./, '')[[0,2]]"`
+	  rubyversion=`$vi_cv_path_ruby -e "print RUBY_VERSION.gsub(/\./, '')[[0,2]]"`
 	fi
         RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
 	rubylibs=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['LIBS']]"`
@@ -2062,7 +2062,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	AC_MSG_RESULT(not found; disabling Ruby)
       fi
     else
-      AC_MSG_RESULT(too old; need Ruby version 1.6.0 or later)
+      AC_MSG_RESULT(too old; need Ruby version 1.9.1 or later)
     fi
   fi
 
@@ -3807,12 +3807,14 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 dnl Check for timer_create. It probably requires the 'rt' library.
 dnl Run the program to find out if timer_create(CLOCK_MONOTONIC) actually
 dnl works, on Solaris timer_create() exists but fails at runtime.
-AC_MSG_CHECKING([for timer_create])
-save_LIBS="$LIBS"
-LIBS="$LIBS -lrt"
+AC_CACHE_CHECK([for timer_create without -lrt], [vim_cv_timer_create], [
 AC_RUN_IFELSE([AC_LANG_PROGRAM([
-#include<signal.h>
-#include<time.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#include <signal.h>
+#include <time.h>
 static void set_flag(union sigval sv) {}
 ], [
   struct timespec ts;
@@ -3824,24 +3826,50 @@ static void set_flag(union sigval sv) {}
   if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
     exit(1);  // cannot create a monotonic timer
   ])],
-  AC_MSG_RESULT(yes; with -lrt); AC_DEFINE(HAVE_TIMER_CREATE),
-  LIBS="$save_LIBS"
-  AC_RUN_IFELSE([AC_LANG_PROGRAM([
-#include<signal.h>
-#include<time.h>
-static void set_flag(union sigval sv) {}
-    ], [
-    struct timespec ts;
-    struct sigevent action = {0};
-    timer_t timer_id;
+  vim_cv_timer_create=yes,
+  vim_cv_timer_create=no,
+  AC_MSG_WARN([failed to build test program; if cross-compiling please set 'vim_cv_timer_create'])
+  )])
 
-    action.sigev_notify = SIGEV_THREAD;
-    action.sigev_notify_function = set_flag;
-    if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
-      exit(1);  // cannot create a monotonic timer
-    ])],
-    AC_MSG_RESULT(yes); AC_DEFINE(HAVE_TIMER_CREATE),
-    AC_MSG_RESULT(no)))
+dnl If the previous failed, check for timer_create() and linking with -lrt.
+if test "x$vim_cv_timer_create" = "xno" ; then
+  save_LIBS="$LIBS"
+  LIBS="$LIBS -lrt"
+  AC_CACHE_CHECK([for timer_create with -lrt], [vim_cv_timer_create_with_lrt], [
+    AC_RUN_IFELSE([AC_LANG_PROGRAM([
+    #if STDC_HEADERS
+    # include <stdlib.h>
+    # include <stddef.h>
+    #endif
+    #include <signal.h>
+    #include <time.h>
+    static void set_flag(union sigval sv) {}
+    ], [
+      struct timespec ts;
+      struct sigevent action = {0};
+      timer_t timer_id;
+
+      action.sigev_notify = SIGEV_THREAD;
+      action.sigev_notify_function = set_flag;
+      if (timer_create(CLOCK_MONOTONIC, &action, &timer_id) < 0)
+	exit(1);  // cannot create a monotonic timer
+      ])],
+      vim_cv_timer_create_with_lrt=yes,
+      vim_cv_timer_create_with_lrt=no,
+      AC_MSG_WARN([failed to build test program; if cross-compiling please set 'vim_cv_timer_create_with_lrt'])
+    )])
+  LIBS="$save_LIBS"
+else
+  vim_cv_timer_create_with_lrt=no
+fi
+
+if test "x$vim_cv_timer_create" = "xyes" ; then
+  AC_DEFINE(HAVE_TIMER_CREATE)
+fi
+if test "x$vim_cv_timer_create_with_lrt" = "xyes" ; then
+  AC_DEFINE(HAVE_TIMER_CREATE)
+  LIBS="$LIBS -lrt"
+fi
 
 AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_slash],
   [
@@ -3924,32 +3952,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_NL_LANGINFO_CODESET),
 	AC_MSG_RESULT(no))
 
-dnl Need various functions for floating point support.  Only enable
-dnl floating point when they are all present.
+dnl Floating point support may require the "m" library
 AC_CHECK_LIB(m, strtod)
-AC_MSG_CHECKING([for strtod() and other floating point functions])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([
-#ifdef HAVE_MATH_H
-# include <math.h>
-#endif
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-], [char *s; double d;
-    d = strtod("1.1", &s);
-    d = fabs(1.11);
-    d = ceil(1.11);
-    d = floor(1.11);
-    d = log10(1.11);
-    d = pow(1.11, 2.22);
-    d = sqrt(1.11);
-    d = sin(1.11);
-    d = cos(1.11);
-    d = atan(1.11);
-    ])],
-	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FLOAT_FUNCS),
-	AC_MSG_RESULT(no))
 
 dnl isinf() and isnan() need to include header files and may need -lm.
 AC_MSG_CHECKING([for isinf()])

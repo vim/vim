@@ -41,7 +41,7 @@ func Test_expand_sfile_and_stack()
   call assert_match('test_expand_func\.vim$', s:sfile)
   let expected = 'script .*testdir/runtest.vim\[\d\+\]\.\.function RunTheTest\[\d\+\]\.\.Test_expand_sfile_and_stack'
   call assert_match(expected .. '$', expand('<sfile>'))
-  call assert_match(expected .. '\[4\]' , expand('<stack>'))
+  call assert_match(expected .. '\[4\]$' , expand('<stack>'))
 
   " Call in script-local function
   call assert_match('script .*testdir/runtest.vim\[\d\+\]\.\.function RunTheTest\[\d\+\]\.\.Test_expand_sfile_and_stack\[7\]\.\.<SNR>\d\+_expand_sfile$', s:expand_sfile())
@@ -56,10 +56,33 @@ func Test_expand_sfile_and_stack()
     " comment here
     let g:stack_value = expand('<stack>')
   END
-  call writefile(lines, 'Xstack')
+  call writefile(lines, 'Xstack', 'D')
   source Xstack
   call assert_match('\<Xstack\[2\]$', g:stack_value)
-  call delete('Xstack')
+  unlet g:stack_value
+
+  if exists('+shellslash')
+    call mkdir('Xshellslash', 'R')
+    let lines =<< trim END
+      let g:stack1 = expand('<stack>')
+      set noshellslash
+      let g:stack2 = expand('<stack>')
+      set shellslash
+      let g:stack3 = expand('<stack>')
+    END
+    call writefile(lines, 'Xshellslash/Xstack')
+    " Test that changing 'shellslash' always affects the result of expand()
+    " when sourcing a script multiple times.
+    for i in range(2)
+      source Xshellslash/Xstack
+      call assert_match('\<Xshellslash/Xstack\[1\]$', g:stack1)
+      call assert_match('\<Xshellslash\\Xstack\[3\]$', g:stack2)
+      call assert_match('\<Xshellslash/Xstack\[5\]$', g:stack3)
+      unlet g:stack1
+      unlet g:stack2
+      unlet g:stack3
+    endfor
+  endif
 endfunc
 
 func Test_expand_slnum()

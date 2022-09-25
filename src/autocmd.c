@@ -320,26 +320,26 @@ show_autocmd(AutoPat *ap, event_T event)
 
     for (ac = ap->cmds; ac != NULL; ac = ac->next)
     {
-	if (ac->cmd != NULL)		// skip removed commands
-	{
-	    if (msg_col >= 14)
-		msg_putchar('\n');
-	    msg_col = 14;
-	    if (got_int)
-		return;
-	    msg_outtrans(ac->cmd);
+	if (ac->cmd == NULL)		// skip removed commands
+	    continue;
+
+	if (msg_col >= 14)
+	    msg_putchar('\n');
+	msg_col = 14;
+	if (got_int)
+	    return;
+	msg_outtrans(ac->cmd);
 #ifdef FEAT_EVAL
-	    if (p_verbose > 0)
-		last_set_msg(ac->script_ctx);
+	if (p_verbose > 0)
+	    last_set_msg(ac->script_ctx);
 #endif
+	if (got_int)
+	    return;
+	if (ac->next != NULL)
+	{
+	    msg_putchar('\n');
 	    if (got_int)
 		return;
-	    if (ac->next != NULL)
-	    {
-		msg_putchar('\n');
-		if (got_int)
-		    return;
-	    }
 	}
     }
 }
@@ -492,21 +492,21 @@ au_new_group(char_u *name)
     int		i;
 
     i = au_find_group(name);
-    if (i == AUGROUP_ERROR)	// the group doesn't exist yet, add it
-    {
-	// First try using a free entry.
-	for (i = 0; i < augroups.ga_len; ++i)
-	    if (AUGROUP_NAME(i) == NULL)
-		break;
-	if (i == augroups.ga_len && ga_grow(&augroups, 1) == FAIL)
-	    return AUGROUP_ERROR;
+    if (i != AUGROUP_ERROR)
+	return i;
 
-	AUGROUP_NAME(i) = vim_strsave(name);
+    // the group doesn't exist yet, add it.  First try using a free entry.
+    for (i = 0; i < augroups.ga_len; ++i)
 	if (AUGROUP_NAME(i) == NULL)
-	    return AUGROUP_ERROR;
-	if (i == augroups.ga_len)
-	    ++augroups.ga_len;
-    }
+	    break;
+    if (i == augroups.ga_len && ga_grow(&augroups, 1) == FAIL)
+	return AUGROUP_ERROR;
+
+    AUGROUP_NAME(i) = vim_strsave(name);
+    if (AUGROUP_NAME(i) == NULL)
+	return AUGROUP_ERROR;
+    if (i == augroups.ga_len)
+	++augroups.ga_len;
 
     return i;
 }
@@ -514,37 +514,41 @@ au_new_group(char_u *name)
     static void
 au_del_group(char_u *name)
 {
-    int	    i;
+    int		i;
+    event_T	event;
+    AutoPat	*ap;
+    int		in_use = FALSE;
+
 
     i = au_find_group(name);
     if (i == AUGROUP_ERROR)	// the group doesn't exist
-	semsg(_(e_no_such_group_str), name);
-    else if (i == current_augroup)
-	emsg(_(e_cannot_delete_current_group));
-    else
     {
-	event_T	event;
-	AutoPat	*ap;
-	int	in_use = FALSE;
-
-	for (event = (event_T)0; (int)event < NUM_EVENTS;
-					    event = (event_T)((int)event + 1))
-	{
-	    FOR_ALL_AUTOCMD_PATTERNS(event, ap)
-		if (ap->group == i && ap->pat != NULL)
-		{
-		    give_warning((char_u *)_("W19: Deleting augroup that is still in use"), TRUE);
-		    in_use = TRUE;
-		    event = NUM_EVENTS;
-		    break;
-		}
-	}
-	vim_free(AUGROUP_NAME(i));
-	if (in_use)
-	    AUGROUP_NAME(i) = get_deleted_augroup();
-	else
-	    AUGROUP_NAME(i) = NULL;
+	semsg(_(e_no_such_group_str), name);
+	return;
     }
+    if (i == current_augroup)
+    {
+	emsg(_(e_cannot_delete_current_group));
+	return;
+    }
+
+    for (event = (event_T)0; (int)event < NUM_EVENTS;
+	    event = (event_T)((int)event + 1))
+    {
+	FOR_ALL_AUTOCMD_PATTERNS(event, ap)
+	    if (ap->group == i && ap->pat != NULL)
+	    {
+		give_warning((char_u *)_("W19: Deleting augroup that is still in use"), TRUE);
+		in_use = TRUE;
+		event = NUM_EVENTS;
+		break;
+	    }
+    }
+    vim_free(AUGROUP_NAME(i));
+    if (in_use)
+	AUGROUP_NAME(i) = get_deleted_augroup();
+    else
+	AUGROUP_NAME(i) = NULL;
 }
 
 /*
@@ -768,20 +772,23 @@ au_event_disable(char *what)
     char_u	*save_ei;
 
     save_ei = vim_strsave(p_ei);
-    if (save_ei != NULL)
+    if (save_ei == NULL)
+	return NULL;
+
+    new_ei = vim_strnsave(p_ei, STRLEN(p_ei) + STRLEN(what));
+    if (new_ei == NULL)
     {
-	new_ei = vim_strnsave(p_ei, STRLEN(p_ei) + STRLEN(what));
-	if (new_ei != NULL)
-	{
-	    if (*what == ',' && *p_ei == NUL)
-		STRCPY(new_ei, what + 1);
-	    else
-		STRCAT(new_ei, what);
-	    set_string_option_direct((char_u *)"ei", -1, new_ei,
-							  OPT_FREE, SID_NONE);
-	    vim_free(new_ei);
-	}
+	vim_free(save_ei);
+	return NULL;
     }
+
+    if (*what == ',' && *p_ei == NUL)
+	STRCPY(new_ei, what + 1);
+    else
+	STRCAT(new_ei, what);
+    set_string_option_direct((char_u *)"ei", -1, new_ei,
+	    OPT_FREE, SID_NONE);
+    vim_free(new_ei);
     return save_ei;
 }
 
@@ -908,48 +915,48 @@ do_autocmd(exarg_T *eap, char_u *arg_in, int forceit)
 	cmd = skipwhite(cmd);
 	for (i = 0; i < 2; i++)
 	{
-	    if (*cmd != NUL)
+	    if (*cmd == NUL)
+		continue;
+
+	    // Check for "++once" flag.
+	    if (STRNCMP(cmd, "++once", 6) == 0 && VIM_ISWHITE(cmd[6]))
 	    {
-		// Check for "++once" flag.
-		if (STRNCMP(cmd, "++once", 6) == 0 && VIM_ISWHITE(cmd[6]))
-		{
-		    if (once)
-			semsg(_(e_duplicate_argument_str), "++once");
-		    once = TRUE;
-		    cmd = skipwhite(cmd + 6);
-		}
+		if (once)
+		    semsg(_(e_duplicate_argument_str), "++once");
+		once = TRUE;
+		cmd = skipwhite(cmd + 6);
+	    }
 
-		// Check for "++nested" flag.
-		if ((STRNCMP(cmd, "++nested", 8) == 0 && VIM_ISWHITE(cmd[8])))
+	    // Check for "++nested" flag.
+	    if ((STRNCMP(cmd, "++nested", 8) == 0 && VIM_ISWHITE(cmd[8])))
+	    {
+		if (nested)
 		{
-		    if (nested)
-		    {
-			semsg(_(e_duplicate_argument_str), "++nested");
-			return;
-		    }
-		    nested = TRUE;
-		    cmd = skipwhite(cmd + 8);
+		    semsg(_(e_duplicate_argument_str), "++nested");
+		    return;
 		}
+		nested = TRUE;
+		cmd = skipwhite(cmd + 8);
+	    }
 
-		// Check for the old "nested" flag in legacy script.
-		if (STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6]))
+	    // Check for the old "nested" flag in legacy script.
+	    if (STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6]))
+	    {
+		if (in_vim9script())
 		{
-		    if (in_vim9script())
-		    {
-			// If there ever is a :nested command this error should
-			// be removed and "nested" accepted as the start of the
-			// command.
-			emsg(_(e_invalid_command_nested_did_you_mean_plusplus_nested));
-			return;
-		    }
-		    if (nested)
-		    {
-			semsg(_(e_duplicate_argument_str), "nested");
-			return;
-		    }
-		    nested = TRUE;
-		    cmd = skipwhite(cmd + 6);
+		    // If there ever is a :nested command this error should
+		    // be removed and "nested" accepted as the start of the
+		    // command.
+		    emsg(_(e_invalid_command_nested_did_you_mean_plusplus_nested));
+		    return;
 		}
+		if (nested)
+		{
+		    semsg(_(e_duplicate_argument_str), "nested");
+		    return;
+		}
+		nested = TRUE;
+		cmd = skipwhite(cmd + 6);
 	    }
 	}
 
@@ -1249,6 +1256,7 @@ do_autocmd_event(
 		{
 		    curwin->w_last_topline = curwin->w_topline;
 		    curwin->w_last_leftcol = curwin->w_leftcol;
+		    curwin->w_last_skipcol = curwin->w_skipcol;
 		    curwin->w_last_width = curwin->w_width;
 		    curwin->w_last_height = curwin->w_height;
 		}
@@ -1406,30 +1414,30 @@ ex_doautoall(exarg_T *eap)
     FOR_ALL_BUFFERS(buf)
     {
 	// Only do loaded buffers and skip the current buffer, it's done last.
-	if (buf->b_ml.ml_mfp != NULL && buf != curbuf)
+	if (buf->b_ml.ml_mfp == NULL || buf == curbuf)
+	    continue;
+
+	// find a window for this buffer and save some values
+	aucmd_prepbuf(&aco, buf);
+	set_bufref(&bufref, buf);
+
+	// execute the autocommands for this buffer
+	retval = do_doautocmd(arg, FALSE, &did_aucmd);
+
+	if (call_do_modelines && did_aucmd)
+	    // Execute the modeline settings, but don't set window-local
+	    // options if we are using the current window for another
+	    // buffer.
+	    do_modelines(curwin == aucmd_win ? OPT_NOWIN : 0);
+
+	// restore the current window
+	aucmd_restbuf(&aco);
+
+	// stop if there is some error or buffer was deleted
+	if (retval == FAIL || !bufref_valid(&bufref))
 	{
-	    // find a window for this buffer and save some values
-	    aucmd_prepbuf(&aco, buf);
-	    set_bufref(&bufref, buf);
-
-	    // execute the autocommands for this buffer
-	    retval = do_doautocmd(arg, FALSE, &did_aucmd);
-
-	    if (call_do_modelines && did_aucmd)
-		// Execute the modeline settings, but don't set window-local
-		// options if we are using the current window for another
-		// buffer.
-		do_modelines(curwin == aucmd_win ? OPT_NOWIN : 0);
-
-	    // restore the current window
-	    aucmd_restbuf(&aco);
-
-	    // stop if there is some error or buffer was deleted
-	    if (retval == FAIL || !bufref_valid(&bufref))
-	    {
-		retval = FAIL;
-		break;
-	    }
+	    retval = FAIL;
+	    break;
 	}
     }
 
@@ -2209,9 +2217,13 @@ apply_autocmds_group(
 	    ap->last = FALSE;
 	ap->last = TRUE;
 
+	// Make sure cursor and topline are valid.  The first time the current
+	// values are saved, restored by reset_lnums().  When nested only the
+	// values are corrected when needed.
 	if (nesting == 1)
-	    // make sure cursor and topline are valid
 	    check_lnums(TRUE);
+	else
+	    check_lnums_nested(TRUE);
 
 	save_did_emsg = did_emsg;
 
@@ -2829,7 +2841,7 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	    }
 	}
 
-	group_name = dict_get_string(event_dict, (char_u *)"group", TRUE);
+	group_name = dict_get_string(event_dict, "group", TRUE);
 	if (group_name == NULL || *group_name == NUL)
 	    // if the autocmd group name is not specified, then use the current
 	    // autocmd group
@@ -2864,7 +2876,7 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 	{
 	    varnumber_T	bnum;
 
-	    bnum = dict_get_number_def(event_dict, (char_u *)"bufnr", -1);
+	    bnum = dict_get_number_def(event_dict, "bufnr", -1);
 	    if (bnum == -1)
 		continue;
 
@@ -2904,13 +2916,13 @@ autocmd_add_or_delete(typval_T *argvars, typval_T *rettv, int delete)
 		pat = (char_u *)"";
 	}
 
-	once = dict_get_bool(event_dict, (char_u *)"once", FALSE);
-	nested = dict_get_bool(event_dict, (char_u *)"nested", FALSE);
+	once = dict_get_bool(event_dict, "once", FALSE);
+	nested = dict_get_bool(event_dict, "nested", FALSE);
 	// if 'replace' is true, then remove all the commands associated with
 	// this autocmd event/group and add the new command.
-	replace = dict_get_bool(event_dict, (char_u *)"replace", FALSE);
+	replace = dict_get_bool(event_dict, "replace", FALSE);
 
-	cmd = dict_get_string(event_dict, (char_u *)"cmd", TRUE);
+	cmd = dict_get_string(event_dict, "cmd", TRUE);
 	if (cmd == NULL)
 	{
 	    if (delete)
@@ -3072,8 +3084,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	// return only the autocmds in the specified group
 	if (dict_has_key(argvars[0].vval.v_dict, "group"))
 	{
-	    name = dict_get_string(argvars[0].vval.v_dict,
-						      (char_u *)"group", TRUE);
+	    name = dict_get_string(argvars[0].vval.v_dict, "group", TRUE);
 	    if (name == NULL)
 		return;
 
@@ -3097,8 +3108,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	{
 	    int		i;
 
-	    name = dict_get_string(argvars[0].vval.v_dict,
-						      (char_u *)"event", TRUE);
+	    name = dict_get_string(argvars[0].vval.v_dict, "event", TRUE);
 	    if (name == NULL)
 		return;
 
@@ -3123,8 +3133,7 @@ f_autocmd_get(typval_T *argvars, typval_T *rettv)
 	// return only the autocmds for the specified pattern
 	if (dict_has_key(argvars[0].vval.v_dict, "pattern"))
 	{
-	    pat = dict_get_string(argvars[0].vval.v_dict,
-						    (char_u *)"pattern", TRUE);
+	    pat = dict_get_string(argvars[0].vval.v_dict, "pattern", TRUE);
 	    if (pat == NULL)
 		return;
 	}

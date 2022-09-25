@@ -53,6 +53,7 @@ func RunProfileFunc(command, declare, assign)
     \ . ' -c "qall!"')
   call assert_equal(0, v:shell_error)
 
+  sleep 50m
   let lines = readfile('Xprofile_func.log')
 
   " - Foo1() is called 3 times but should be reported as called twice

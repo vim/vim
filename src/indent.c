@@ -797,7 +797,8 @@ set_indent(
 	    // the old indent, when decreasing indent it behaves like spaces
 	    // were deleted at the new indent.
 	    adjust_prop_columns(curwin->w_cursor.lnum,
-			  added > 0 ? old_offset : (colnr_T)ind_len, added, 0);
+				  added > 0 ? old_offset : (colnr_T)ind_len,
+				  added, APC_INDENT);
 	}
 #endif
 	retval = TRUE;
@@ -997,7 +998,7 @@ get_breakindent_win(
 		    if (wp->w_briopt_list > 0)
 			prev_list = wp->w_briopt_list;
 		    else
-			prev_list = (*regmatch.endp - *regmatch.startp);
+			prev_indent = (*regmatch.endp - *regmatch.startp);
 		}
 		vim_regfree(regmatch.regprog);
 	    }
@@ -1016,13 +1017,8 @@ get_breakindent_win(
     bri += win_col_off2(wp);
 
     // add additional indent for numbered lists
-    if (wp->w_briopt_list != 0)
-    {
-	if (wp->w_briopt_list > 0)
-	    bri += prev_list;
-	else
-	    bri = prev_list;
-    }
+    if (wp->w_briopt_list > 0)
+	bri += prev_list;
 
     // indent minus the length of the showbreak string
     if (wp->w_briopt_sbr)
@@ -1132,7 +1128,7 @@ op_reindent(oparg_T *oap, int (*how)(void))
 		oap->is_VIsual ? start_lnum + oap->line_count :
 		last_changed + 1, 0L);
     else if (oap->is_VIsual)
-	redraw_curbuf_later(INVERTED);
+	redraw_curbuf_later(UPD_INVERTED);
 
     if (oap->line_count > p_report)
     {
@@ -1293,6 +1289,9 @@ change_indent(
     // for the following tricks we don't want list mode
     save_p_list = curwin->w_p_list;
     curwin->w_p_list = FALSE;
+#ifdef FEAT_PROP_POPUP
+    ignore_text_props = TRUE;
+#endif
     vc = getvcol_nolist(&curwin->w_cursor);
     vcol = vc;
 
@@ -1350,26 +1349,28 @@ change_indent(
 	new_cursor_col = curwin->w_cursor.col;
     else
     {
+	chartabsize_T cts;
+
 	// Compute the screen column where the cursor should be.
 	vcol = get_indent() - vcol;
 	curwin->w_virtcol = (colnr_T)((vcol < 0) ? 0 : vcol);
 
 	// Advance the cursor until we reach the right screen column.
-	vcol = last_vcol = 0;
-	new_cursor_col = -1;
+	last_vcol = 0;
 	ptr = ml_get_curline();
-	while (vcol <= (int)curwin->w_virtcol)
+	init_chartabsize_arg(&cts, curwin, 0, 0, ptr, ptr);
+	while (cts.cts_vcol <= (int)curwin->w_virtcol)
 	{
-	    last_vcol = vcol;
-	    if (has_mbyte && new_cursor_col >= 0)
-		new_cursor_col += (*mb_ptr2len)(ptr + new_cursor_col);
-	    else
-		++new_cursor_col;
-	    if (ptr[new_cursor_col] == NUL)
+	    last_vcol = cts.cts_vcol;
+	    if (cts.cts_vcol > 0)
+		MB_PTR_ADV(cts.cts_ptr);
+	    if (*cts.cts_ptr == NUL)
 		break;
-	    vcol += lbr_chartabsize(ptr, ptr + new_cursor_col, (colnr_T)vcol);
+	    cts.cts_vcol += lbr_chartabsize(&cts);
 	}
 	vcol = last_vcol;
+	new_cursor_col = cts.cts_ptr - cts.cts_line;
+	clear_chartabsize_arg(&cts);
 
 	// May need to insert spaces to be able to position the cursor on
 	// the right screen column.
@@ -1442,6 +1443,9 @@ change_indent(
 	    ++start_col;
 	}
     }
+#ifdef FEAT_PROP_POPUP
+    ignore_text_props = FALSE;
+#endif
 
     // For MODE_VREPLACE state, we also have to fix the replace stack.  In this
     // case it is always possible because we backspace over the whole line and
@@ -1828,10 +1832,10 @@ ex_retab(exarg_T *eap)
 	&& tabstop_eq(curbuf->b_p_vts_array, new_vts_array))
 	; // not changed
     else
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
 #else
     if (curbuf->b_p_ts != new_ts)
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(UPD_NOT_VALID);
 #endif
     if (first_line != 0)
 	changed_lines(first_line, 0, last_line + 1, 0L);
@@ -2064,14 +2068,18 @@ get_lisp_indent(void)
 		amount = 2;
 	    else
 	    {
-		char_u *line = that;
+		char_u		*line = that;
+		chartabsize_T	cts;
 
-		amount = 0;
-		while (*that && col)
+		init_chartabsize_arg(&cts, curwin, pos->lnum, 0, line, line);
+		while (*cts.cts_ptr != NUL && col > 0)
 		{
-		    amount += lbr_chartabsize_adv(line, &that, (colnr_T)amount);
+		    cts.cts_vcol += lbr_chartabsize_adv(&cts);
 		    col--;
 		}
+		amount = cts.cts_vcol;
+		that = cts.cts_ptr;
+		clear_chartabsize_arg(&cts);
 
 		// Some keywords require "body" indenting rules (the
 		// non-standard-lisp ones are Scheme special forms):
@@ -2091,11 +2099,16 @@ get_lisp_indent(void)
 		    }
 		    firsttry = amount;
 
-		    while (VIM_ISWHITE(*that))
+		    init_chartabsize_arg(&cts, curwin, (colnr_T)(that - line),
+							   amount, line, that);
+		    while (VIM_ISWHITE(*cts.cts_ptr))
 		    {
-			amount += lbr_chartabsize(line, that, (colnr_T)amount);
-			++that;
+			cts.cts_vcol += lbr_chartabsize(&cts);
+			++cts.cts_ptr;
 		    }
+		    that = cts.cts_ptr;
+		    amount = cts.cts_vcol;
+		    clear_chartabsize_arg(&cts);
 
 		    if (*that && *that != ';') // not a comment line
 		    {
@@ -2107,42 +2120,47 @@ get_lisp_indent(void)
 			parencount = 0;
 			quotecount = 0;
 
+			init_chartabsize_arg(&cts, curwin,
+				   (colnr_T)(that - line), amount, line, that);
 			if (vi_lisp
 				|| (*that != '"'
 				    && *that != '\''
 				    && *that != '#'
 				    && (*that < '0' || *that > '9')))
 			{
-			    while (*that
-				    && (!VIM_ISWHITE(*that)
+			    while (*cts.cts_ptr
+				    && (!VIM_ISWHITE(*cts.cts_ptr)
 					|| quotecount
 					|| parencount)
-				    && (!((*that == '(' || *that == '[')
+				    && (!((*cts.cts_ptr == '('
+							|| *cts.cts_ptr == '[')
 					    && !quotecount
 					    && !parencount
 					    && vi_lisp)))
 			    {
-				if (*that == '"')
+				if (*cts.cts_ptr == '"')
 				    quotecount = !quotecount;
-				if ((*that == '(' || *that == '[')
+				if ((*cts.cts_ptr == '(' || *cts.cts_ptr == '[')
 							       && !quotecount)
 				    ++parencount;
-				if ((*that == ')' || *that == ']')
+				if ((*cts.cts_ptr == ')' || *cts.cts_ptr == ']')
 							       && !quotecount)
 				    --parencount;
-				if (*that == '\\' && *(that+1) != NUL)
-				    amount += lbr_chartabsize_adv(
-						line, &that, (colnr_T)amount);
-				amount += lbr_chartabsize_adv(
-						line, &that, (colnr_T)amount);
+				if (*cts.cts_ptr == '\\'
+						    && *(cts.cts_ptr+1) != NUL)
+				    cts.cts_vcol += lbr_chartabsize_adv(&cts);
+				cts.cts_vcol += lbr_chartabsize_adv(&cts);
 			    }
 			}
-			while (VIM_ISWHITE(*that))
+			while (VIM_ISWHITE(*cts.cts_ptr))
 			{
-			    amount += lbr_chartabsize(
-						 line, that, (colnr_T)amount);
-			    that++;
+			    cts.cts_vcol += lbr_chartabsize(&cts);
+			    ++cts.cts_ptr;
 			}
+			that = cts.cts_ptr;
+			amount = cts.cts_vcol;
+			clear_chartabsize_arg(&cts);
+
 			if (!*that || *that == ';')
 			    amount = firsttry;
 		    }

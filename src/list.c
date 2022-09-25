@@ -1053,6 +1053,78 @@ f_flattennew(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "items(list)" function
+ * Caller must have already checked that argvars[0] is a List.
+ */
+    void
+list2items(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l = argvars[0].vval.v_list;
+    listitem_T	*li;
+    varnumber_T	idx;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (l == NULL)
+	return;  // null list behaves like an empty list
+
+    // TODO: would be more efficient to not materialize the argument
+    CHECK_LIST_MATERIALIZE(l);
+    for (idx = 0, li = l->lv_first; li != NULL; li = li->li_next, ++idx)
+    {
+	list_T	    *l2 = list_alloc();
+
+	if (l2 == NULL)
+	    break;
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    break;
+	}
+	if (list_append_number(l2, idx) == FAIL
+		|| list_append_tv(l2, &li->li_tv) == FAIL)
+	    break;
+    }
+}
+
+/*
+ * "items(string)" function
+ * Caller must have already checked that argvars[0] is a String.
+ */
+    void
+string2items(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p = argvars[0].vval.v_string;
+    varnumber_T idx;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (p == NULL)
+	return;  // null string behaves like an empty string
+
+    for (idx = 0; *p != NUL; ++idx)
+    {
+	int	    len = mb_ptr2len(p);
+	list_T	    *l2;
+
+	if (len == 0)
+	    break;
+	l2 = list_alloc();
+	if (l2 == NULL)
+	    break;
+	if (list_append_list(rettv->vval.v_list, l2) == FAIL)
+	{
+	    vim_free(l2);
+	    break;
+	}
+	if (list_append_number(l2, idx) == FAIL
+		|| list_append_string(l2, p, len) == FAIL)
+	    break;
+	p += len;
+    }
+}
+
+/*
  * Extend "l1" with "l2".  "l1" must not be NULL.
  * If "bef" is NULL append at the end, otherwise insert before this item.
  * Returns FAIL when out of memory.
@@ -1447,11 +1519,8 @@ f_join(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_string_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     if (argvars[0].vval.v_list == NULL)
 	return;
@@ -1656,11 +1725,8 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_bool_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_invalid_argument));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     l = argvars[0].vval.v_list;
     if (l == NULL)
@@ -1810,9 +1876,7 @@ typedef struct
     int		item_compare_lc;
     int		item_compare_numeric;
     int		item_compare_numbers;
-#ifdef FEAT_FLOAT
     int		item_compare_float;
-#endif
     char_u	*item_compare_func;
     partial_T	*item_compare_partial;
     dict_T	*item_compare_selfdict;
@@ -1849,7 +1913,6 @@ item_compare(const void *s1, const void *s2)
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
     }
 
-#ifdef FEAT_FLOAT
     if (sortinfo->item_compare_float)
     {
 	float_T	v1 = tv_get_float(tv1);
@@ -1857,7 +1920,6 @@ item_compare(const void *s1, const void *s2)
 
 	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
     }
-#endif
 
     // tv2string() puts quotes around a string and allocates memory.  Don't do
     // that for string variables. Use a single quote when comparing with a
@@ -2094,9 +2156,7 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
     info->item_compare_lc = FALSE;
     info->item_compare_numeric = FALSE;
     info->item_compare_numbers = FALSE;
-#ifdef FEAT_FLOAT
     info->item_compare_float = FALSE;
-#endif
     info->item_compare_func = NULL;
     info->item_compare_partial = NULL;
     info->item_compare_selfdict = NULL;
@@ -2149,13 +2209,11 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
 		info->item_compare_func = NULL;
 		info->item_compare_numbers = TRUE;
 	    }
-#ifdef FEAT_FLOAT
 	    else if (STRCMP(info->item_compare_func, "f") == 0)
 	    {
 		info->item_compare_func = NULL;
 		info->item_compare_float = TRUE;
 	    }
-#endif
 	    else if (STRCMP(info->item_compare_func, "i") == 0)
 	    {
 		info->item_compare_func = NULL;
@@ -2172,11 +2230,8 @@ parse_sort_uniq_args(typval_T *argvars, sortinfo_T *info)
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	// optional third argument: {dict}
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return FAIL;
-	}
 	info->item_compare_selfdict = argvars[2].vval.v_dict;
     }
 
@@ -2944,15 +2999,14 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * reduce() List argvars[0] using the function 'funcname' with arguments in
- * 'funcexe' starting with the initial value argvars[2] and return the result
- * in 'rettv'.
+ * Implementation of reduce() for list "argvars[0]", using the function "expr"
+ * starting with the optional initial value argvars[2] and return the result in
+ * "rettv".
  */
     static void
 list_reduce(
 	typval_T	*argvars,
-	char_u		*func_name,
-	funcexe_T	*funcexe,
+	typval_T	*expr,
 	typval_T	*rettv)
 {
     list_T	*l = argvars[0].vval.v_list;
@@ -2994,7 +3048,9 @@ list_reduce(
 	argv[0] = *rettv;
 	argv[1] = li->li_tv;
 	rettv->v_type = VAR_UNKNOWN;
-	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+
+	r = eval_expr_typval(expr, argv, 2, rettv);
+
 	clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    break;
@@ -3011,8 +3067,6 @@ list_reduce(
 f_reduce(typval_T *argvars, typval_T *rettv)
 {
     char_u	*func_name;
-    partial_T   *partial = NULL;
-    funcexe_T	funcexe;
 
     if (in_vim9script()
 		   && check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
@@ -3029,10 +3083,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
     else if (argvars[1].v_type == VAR_PARTIAL)
-    {
-	partial = argvars[1].vval.v_partial;
-	func_name = partial_name(partial);
-    }
+	func_name = partial_name(argvars[1].vval.v_partial);
     else
 	func_name = tv_get_string(&argvars[1]);
     if (func_name == NULL || *func_name == NUL)
@@ -3041,16 +3092,12 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    CLEAR_FIELD(funcexe);
-    funcexe.fe_evaluate = TRUE;
-    funcexe.fe_partial = partial;
-
     if (argvars[0].v_type == VAR_LIST)
-	list_reduce(argvars, func_name, &funcexe, rettv);
+	list_reduce(argvars, &argvars[1], rettv);
     else if (argvars[0].v_type == VAR_STRING)
-	string_reduce(argvars, func_name, &funcexe, rettv);
+	string_reduce(argvars, &argvars[1], rettv);
     else
-	blob_reduce(argvars, func_name, &funcexe, rettv);
+	blob_reduce(argvars, &argvars[1], rettv);
 }
 
 #endif // defined(FEAT_EVAL)

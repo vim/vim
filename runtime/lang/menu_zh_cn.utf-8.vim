@@ -1,7 +1,7 @@
 " Menu Translations:    Simplified Chinese
 " Maintainer:           Ada (Haowen) Yu <me@yuhaowen.com>
 " Previous Maintainer:  Shun Bai <baishunde@gmail.com>, Yuheng Xie <elephant@linux.net.cn>
-" Last Change:          2022 July 6
+" Last Change:          2022 July 9
 " Original translations
 "
 " Generated with the scripts from:
@@ -357,6 +357,7 @@ menutrans Vim\ help\ file Vim\ 帮助文件
 menutrans Vim\ script Vim\ 脚本
 menutrans Viminfo\ file Vim\ 信息文件
 menutrans Virata\ config Virata\ 配置文件
+menutrans Whitespace\ (add) 增加加亮空格
 " }}}
 
 " Netrw menu {{{1
@@ -462,25 +463,26 @@ menutrans Virata\ config Virata\ 配置文件
 " Shellmenu menu
 " Shellmenu menuitems {{{1
 " From shellmenu.vim
-menutrans Stmts 语句
+menutrans ShellMenu Shell\ 菜单
+menutrans Statements 语句
 menutrans Test 测试
-menutrans existence 存在
-menutrans existence\ -\ file 存在\ -\ 文件
-menutrans existence\ -\ file\ (not\ empty) 存在\ -\ 文件(非空)
-menutrans existence\ -\ directory 存在\ -\ 目录
-menutrans existence\ -\ executable 存在\ -\ 可执行
-menutrans existence\ -\ readable 存在\ -\ 可读
-menutrans existence\ -\ writable 存在\ -\ 可写
+menutrans Existence 存在
+menutrans Existence\ -\ file 存在\ -\ 文件
+menutrans Existence\ -\ file\ (not\ empty) 存在\ -\ 文件(非空)
+menutrans Existence\ -\ directory 存在\ -\ 目录
+menutrans Existence\ -\ executable 存在\ -\ 可执行
+menutrans Existence\ -\ readable 存在\ -\ 可读
+menutrans Existence\ -\ writable 存在\ -\ 可写
 menutrans String\ is\ empty 字符串为空
 menutrans String\ is\ not\ empty 字符串非空
-menutrans Strings\ is\ equal 字符串值相等
-menutrans Strings\ is\ not\ equal 字符串值不相等
-menutrans Values\ is\ greater\ than 值大于
-menutrans Values\ is\ greater\ equal 值大于等于
-menutrans Values\ is\ equal 值相等
-menutrans Values\ is\ not\ equal 值不相等
-menutrans Values\ is\ less\ than 值小于
-menutrans Values\ is\ less\ equal 值小于等于
+menutrans Strings\ are\ equal 字符串值相等
+menutrans Strings\ are\ not\ equal 字符串值不相等
+menutrans Value\ is\ greater\ than 值大于
+menutrans Value\ is\ greater\ equal 值大于等于
+menutrans Values\ are\ equal 值相等
+menutrans Values\ are\ not\ equal 值不相等
+menutrans Value\ is\ less\ than 值小于
+menutrans Value\ is\ less\ equal 值小于等于
 menutrans ParmSub 参数替换
 menutrans Substitute\ word\ if\ parm\ not\ set 如果参数没设置就替换该词
 menutrans Set\ parm\ to\ word\ if\ not\ set 参数未设置就设为该词
@@ -495,8 +497,11 @@ menutrans Return\ code\ of\ last\ command 返回前一条命令的代码
 menutrans Process\ number\ of\ this\ shell shell\ 自身进程号
 menutrans Process\ number\ of\ last\ background\ command 前一条后台命令的进程号
 menutrans Environ 环境变量
-menutrans exit\ when\ command\ returns\ non-zero\ exit\ code 当命令返回非零代码时退出
-menutrans Disable\ file\ name\ generation 禁用文件名生成
+menutrans Mark\ created\ or\ modified\ variables\ for\ export 标记修改的或者创建的变量为导出
+menutrans Exit\ when\ command\ returns\ non-zero\ status 当命令返回非零状态时退出
+menutrans Disable\ file\ name\ expansion 禁用文件名拓展
+menutrans Locate\ and\ remember\ commands\ when\ being\ looked\ up 当查询命令时定位并记住该命令
+menutrans All\ assignment\ statements\ are\ placed\ in\ the\ environment\ for\ a\ command 所有的赋值参数被放在命令的环境中
 menutrans Read\ commands\ but\ do\ not\ execute\ them 读命令但是不要执行
 menutrans Exit\ after\ reading\ and\ executing\ one\ command 读并执行一个命令之后退出
 menutrans Treat\ unset\ variables\ as\ an\ error\ when\ substituting 替换时把未设置命令视为错误

@@ -70,10 +70,9 @@ func Test_cmdwin_restore()
     call setline(1, range(30))
     2split
   [SCRIPT]
-  call writefile(lines, 'XTest_restore')
+  call writefile(lines, 'XTest_restore', 'D')
 
   let buf = RunVimInTerminal('-S XTest_restore', {'rows': 12})
-  call TermWait(buf, 50)
   call term_sendkeys(buf, "q:")
   call VerifyScreenDump(buf, 'Test_cmdwin_restore_1', {})
 
@@ -90,19 +89,32 @@ func Test_cmdwin_restore()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_restore')
 endfunc
 
 func Test_cmdwin_no_terminal()
-  CheckFeature terminal
-  CheckNotMSWindows
+  CheckScreendump
 
   let buf = RunVimInTerminal('', {'rows': 12})
-  call TermWait(buf, 50)
   call term_sendkeys(buf, ":set cmdheight=2\<CR>")
   call term_sendkeys(buf, "q:")
   call term_sendkeys(buf, ":let buf = term_start(['/bin/echo'], #{hidden: 1})\<CR>")
   call VerifyScreenDump(buf, 'Test_cmdwin_no_terminal', {})
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_cmdwin_wrong_command()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', {'rows': 12})
+  call term_sendkeys(buf, "q:")
+  call term_sendkeys(buf, "als\<Esc>")
+  call term_sendkeys(buf, "\<C-W>k")
+  call VerifyScreenDump(buf, 'Test_cmdwin_wrong_command_1', {})
+
+  call term_sendkeys(buf, "\<C-C>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_wrong_command_2', {})
+
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
 endfunc
@@ -186,7 +198,7 @@ func Test_cmdwin_interrupted()
   let lines =<< trim [SCRIPT]
     au WinNew * smile
   [SCRIPT]
-  call writefile(lines, 'XTest_cmdwin')
+  call writefile(lines, 'XTest_cmdwin', 'D')
 
   let buf = RunVimInTerminal('-S XTest_cmdwin', {'rows': 18})
   " open cmdwin
@@ -201,7 +213,6 @@ func Test_cmdwin_interrupted()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_cmdwin')
 endfunc
 
 " Test for recursively getting multiple command line inputs
@@ -354,6 +365,43 @@ func Test_cmdwin_ctrl_bsl()
   " Using CTRL-\ CTRL-N in cmd window should close the window
   call feedkeys("q:\<C-\>\<C-N>", 'xt')
   call assert_equal('', getcmdwintype())
+endfunc
+
+func Test_cant_open_cmdwin_in_cmdwin()
+  try
+    call feedkeys("q:q::q\<CR>", "x!")
+  catch
+    let caught = v:exception
+  endtry
+  call assert_match('E1292:', caught)
+endfunc
+
+func Test_cmdwin_virtual_edit()
+  enew!
+  set ve=all cpo+=$
+  silent normal q/s
+
+  set ve= cpo-=$
+endfunc
+
+" Check that a :normal command can be used to stop Visual mode without side
+" effects.
+func Test_normal_escape()
+  call feedkeys("q:i\" foo\<Esc>:normal! \<C-V>\<Esc>\<CR>:\" bar\<CR>", 'ntx')
+  call assert_equal('" bar', @:)
+endfunc
+
+" This was using a pointer to a freed buffer
+func Test_cmdwin_freed_buffer_ptr()
+  " this does not work on MS-Windows because renaming an open file fails
+  CheckNotMSWindows
+
+  au BufEnter * next 0| file 
+  edit 0
+  silent! norm q/
+
+  au! BufEnter
+  bwipe!
 endfunc
 
 

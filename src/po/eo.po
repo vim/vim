@@ -8173,7 +8173,7 @@ msgid "E850: Invalid register name"
 msgstr "E850: Nevalida nomo de reĝistro"
 
 # TODO: Capitalise first word of message?
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: uzo de Glitpunktnombro kiel Ĉeno"
 
 #, c-format

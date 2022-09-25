@@ -51,17 +51,60 @@ toggle_Magic(int x)
 }
 
 #ifdef FEAT_RELTIME
+static int timeout_nesting = 0;
+
+/*
+ * Start a timer that will cause the regexp to abort after "msec".
+ * This doesn't work well recursively.  In case it happens anyway, the first
+ * set timeout will prevail, nested ones are ignored.
+ * The caller must make sure there is a matching disable_regexp_timeout() call!
+ */
     void
 init_regexp_timeout(long msec)
 {
-    timeout_flag = start_timeout(msec);
+    if (timeout_nesting == 0)
+	timeout_flag = start_timeout(msec);
+    ++timeout_nesting;
 }
 
     void
 disable_regexp_timeout(void)
 {
-    stop_timeout();
+    if (timeout_nesting == 0)
+	iemsg("disable_regexp_timeout() called without active timer");
+    else if (--timeout_nesting == 0)
+    {
+	stop_timeout();
+	timeout_flag = &dummy_timeout_flag;
+    }
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+# ifdef FEAT_RELTIME
+static sig_atomic_t *saved_timeout_flag;
+# endif
+
+/*
+ * Used at the debug prompt: disable the timeout so that expression evaluation
+ * can used patterns.
+ * Must be followed by calling restore_timeout_for_debugging().
+ */
+    void
+save_timeout_for_debugging(void)
+{
+# ifdef FEAT_RELTIME
+    saved_timeout_flag = (sig_atomic_t *)timeout_flag;
     timeout_flag = &dummy_timeout_flag;
+# endif
+}
+
+    void
+restore_timeout_for_debugging(void)
+{
+# ifdef FEAT_RELTIME
+    timeout_flag = saved_timeout_flag;
+# endif
 }
 #endif
 
@@ -1303,7 +1346,7 @@ reg_match_visual(void)
 	rex.line = reg_getline(rex.lnum);
 	rex.input = rex.line + col;
 
-	cols = win_linetabsize(wp, rex.line, col);
+	cols = win_linetabsize(wp, rex.reg_firstlnum + rex.lnum, rex.line, col);
 	if (cols < start || cols > end - (*p_sel == 'e'))
 	    return FALSE;
     }
@@ -1641,7 +1684,11 @@ cstrchr(char_u *s, int c)
 	{
 	    if (enc_utf8 && c > 0x80)
 	    {
-		if (utf_fold(utf_ptr2char(p)) == cc)
+		int uc = utf_ptr2char(p);
+
+		// Do not match an illegal byte.  E.g. 0xff matches 0xc3 0xbf,
+		// not 0xff.
+		if ((uc < 0x80 || uc != *p) && utf_fold(uc) == cc)
 		    return p;
 	    }
 	    else if (*p == c || *p == cc)
@@ -1798,14 +1845,14 @@ static regsubmatch_T rsm;  // can only be used when can_f_submatch is TRUE
  * call_func() by vim_regsub_both().
  */
     static int
-fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, int argcount)
+fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, ufunc_T *fp)
 {
     listitem_T	*li;
     int		i;
     char_u	*s;
     typval_T	*listarg = argv + argskip;
 
-    if (argcount == argskip)
+    if (!has_varargs(fp) && fp->uf_args.ga_len <= argskip)
 	// called function doesn't take a submatches argument
 	return argskip;
 

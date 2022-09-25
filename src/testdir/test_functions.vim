@@ -54,14 +54,12 @@ func Test_empty()
   call assert_equal(0, empty(1))
   call assert_equal(0, empty(-1))
 
-  if has('float')
-    call assert_equal(1, empty(0.0))
-    call assert_equal(1, empty(-0.0))
-    call assert_equal(0, empty(1.0))
-    call assert_equal(0, empty(-1.0))
-    call assert_equal(0, empty(1.0/0.0))
-    call assert_equal(0, empty(0.0/0.0))
-  endif
+  call assert_equal(1, empty(0.0))
+  call assert_equal(1, empty(-0.0))
+  call assert_equal(0, empty(1.0))
+  call assert_equal(0, empty(-1.0))
+  call assert_equal(0, empty(1.0/0.0))
+  call assert_equal(0, empty(0.0/0.0))
 
   call assert_equal(1, empty([]))
   call assert_equal(0, empty(['a']))
@@ -90,9 +88,7 @@ endfunc
 
 func Test_test_void()
   call assert_fails('echo 1 == test_void()', 'E1031:')
-  if has('float')
-    call assert_fails('echo 1.0 == test_void()', 'E1031:')
-  endif
+  call assert_fails('echo 1.0 == test_void()', 'E1031:')
   call assert_fails('let x = json_encode(test_void())', 'E685:')
   call assert_fails('let x = copy(test_void())', 'E685:')
   call assert_fails('let x = copy([test_void()])', 'E1031:')
@@ -175,10 +171,8 @@ func Test_strwidth()
     call assert_fails('call strwidth({})', 'E731:')
   endfor
 
-  if has('float')
-    call assert_equal(3, strwidth(1.2))
-    call v9.CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal(3, strwidth(1.2))
+  call v9.CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
 
   set ambiwidth&
 endfunc
@@ -242,10 +236,8 @@ func Test_str2nr()
 
   call assert_fails('call str2nr([])', 'E730:')
   call assert_fails('call str2nr({->2})', 'E729:')
-  if has('float')
-    call assert_equal(1, str2nr(1.2))
-    call v9.CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal(1, str2nr(1.2))
+  call v9.CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   call assert_fails('call str2nr(10, [])', 'E745:')
 endfunc
 
@@ -347,9 +339,9 @@ func Test_resolve_unix()
   call delete('Xlink2')
   call delete('Xlink3')
 
-  silent !ln -s -f Xdir//Xfile Xlink
-  call assert_equal('Xdir/Xfile', resolve('Xlink'))
-  call delete('Xlink')
+  silent !ln -s -f Xresolvedir//Xfile Xresolvelink
+  call assert_equal('Xresolvedir/Xfile', resolve('Xresolvelink'))
+  call delete('Xresolvelink')
 
   silent !ln -s -f Xlink2/ Xlink1
   call assert_equal('Xlink2', 'Xlink1'->resolve())
@@ -375,22 +367,22 @@ func Test_resolve_win32()
 
   " test for shortcut file
   if executable('cscript')
-    new Xfile
+    new Xresfile
     wq
     let lines =<< trim END
 	Set fs = CreateObject("Scripting.FileSystemObject")
 	Set ws = WScript.CreateObject("WScript.Shell")
 	Set shortcut = ws.CreateShortcut("Xlink.lnk")
-	shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")
+	shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xresfile")
 	shortcut.Save
     END
     call writefile(lines, 'link.vbs')
     silent !cscript link.vbs
     call delete('link.vbs')
-    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
-    call delete('Xfile')
+    call assert_equal(s:normalize_fname(getcwd() . '\Xresfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call delete('Xresfile')
 
-    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xresfile'), s:normalize_fname(resolve('./Xlink.lnk')))
     call delete('Xlink.lnk')
   else
     echomsg 'skipped test for shortcut file'
@@ -399,20 +391,20 @@ func Test_resolve_win32()
   " remove files
   call delete('Xlink')
   call delete('Xdir', 'd')
-  call delete('Xfile')
+  call delete('Xresfile')
 
   " test for symbolic link to a file
-  new Xfile
+  new Xresfile
   wq
-  call assert_equal('Xfile', resolve('Xfile'))
-  silent !mklink Xlink Xfile
+  call assert_equal('Xresfile', resolve('Xresfile'))
+  silent !mklink Xlink Xresfile
   if !v:shell_error
-    call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xresfile'), s:normalize_fname(resolve('./Xlink')))
     call delete('Xlink')
   else
     echomsg 'skipped test for symbolic link to a file'
   endif
-  call delete('Xfile')
+  call delete('Xresfile')
 
   " test for junction to a directory
   call mkdir('Xdir')
@@ -447,9 +439,9 @@ func Test_resolve_win32()
   endif
 
   " test for buffer name
-  new Xfile
+  new Xbuffile
   wq
-  silent !mklink Xlink Xfile
+  silent !mklink Xlink Xbuffile
   if !v:shell_error
     edit Xlink
     call assert_equal('Xlink', bufname('%'))
@@ -458,7 +450,7 @@ func Test_resolve_win32()
   else
     echomsg 'skipped test for buffer name'
   endif
-  call delete('Xfile')
+  call delete('Xbuffile')
 
   " test for reparse point
   call mkdir('Xdir')
@@ -497,17 +489,15 @@ func Test_simplify()
   call assert_equal('./file',      simplify('dir/.././file'))
   call assert_equal('../dir',      simplify('./../dir'))
   call assert_equal('..',          simplify('../testdir/..'))
-  call mkdir('Xdir')
-  call assert_equal('.',           simplify('Xdir/../.'))
-  call delete('Xdir', 'd')
+  call mkdir('Xsimpdir')
+  call assert_equal('.',           simplify('Xsimpdir/../.'))
+  call delete('Xsimpdir', 'd')
 
   call assert_fails('call simplify({->0})', 'E729:')
   call assert_fails('call simplify([])', 'E730:')
   call assert_fails('call simplify({})', 'E731:')
-  if has('float')
-    call assert_equal('1.2', simplify(1.2))
-    call v9.CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal('1.2', simplify(1.2))
+  call v9.CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
 endfunc
 
 func Test_pathshorten()
@@ -1247,11 +1237,11 @@ func Test_charidx()
   call assert_equal(-1, charidx(a, 8, 1))
   call assert_equal(-1, charidx('', 0, 1))
 
-  call assert_fails('let x = charidx([], 1)', 'E474:')
-  call assert_fails('let x = charidx("abc", [])', 'E474:')
-  call assert_fails('let x = charidx("abc", 1, [])', 'E474:')
-  call assert_fails('let x = charidx("abc", 1, -1)', 'E1023:')
-  call assert_fails('let x = charidx("abc", 1, 2)', 'E1023:')
+  call assert_fails('let x = charidx([], 1)', 'E1174:')
+  call assert_fails('let x = charidx("abc", [])', 'E1210:')
+  call assert_fails('let x = charidx("abc", 1, [])', 'E1212:')
+  call assert_fails('let x = charidx("abc", 1, -1)', 'E1212:')
+  call assert_fails('let x = charidx("abc", 1, 2)', 'E1212:')
 endfunc
 
 func Test_count()
@@ -1336,9 +1326,9 @@ func Test_filewritable()
 
   call assert_equal(0, filewritable('doesnotexist'))
 
-  call mkdir('Xdir')
-  call assert_equal(2, filewritable('Xdir'))
-  call delete('Xdir', 'd')
+  call mkdir('Xwritedir')
+  call assert_equal(2, filewritable('Xwritedir'))
+  call delete('Xwritedir', 'd')
 
   call delete('Xfilewritable')
   bw!
@@ -1364,17 +1354,17 @@ func Test_Executable()
     bwipe
 
     " create "notepad.bat"
-    call mkdir('Xdir')
-    let notepadbat = fnamemodify('Xdir/notepad.bat', ':p')
+    call mkdir('Xnotedir')
+    let notepadbat = fnamemodify('Xnotedir/notepad.bat', ':p')
     call writefile([], notepadbat)
     new
     " check that the path and the pathext order is valid
-    lcd Xdir
+    lcd Xnotedir
     let [pathext, $PATHEXT] = [$PATHEXT, '.com;.exe;.bat;.cmd']
     call assert_equal(notepadbat, exepath('notepad'))
     let $PATHEXT = pathext
     bwipe
-    eval 'Xdir'->delete('rf')
+    eval 'Xnotedir'->delete('rf')
   elseif has('unix')
     call assert_equal(1, 'cat'->executable())
     call assert_equal(0, executable('nodogshere'))
@@ -1738,7 +1728,7 @@ func Test_trim()
   call assert_fails('eval trim("  vim  ", " ", [])', 'E745:')
   call assert_fails('eval trim("  vim  ", " ", -1)', 'E475:')
   call assert_fails('eval trim("  vim  ", " ", 3)', 'E475:')
-  call assert_fails('eval trim("  vim  ", 0)', 'E475:')
+  call assert_fails('eval trim("  vim  ", 0)', 'E1174:')
 
   let chars = join(map(range(1, 0x20) + [0xa0], {n -> n->nr2char()}), '')
   call assert_equal("x", trim(chars . "x" . chars))
@@ -2073,88 +2063,88 @@ func Test_platform_name()
 endfunc
 
 func Test_readdir()
-  call mkdir('Xdir')
-  call writefile([], 'Xdir/foo.txt')
-  call writefile([], 'Xdir/bar.txt')
-  call mkdir('Xdir/dir')
+  call mkdir('Xreaddir')
+  call writefile([], 'Xreaddir/foo.txt')
+  call writefile([], 'Xreaddir/bar.txt')
+  call mkdir('Xreaddir/dir')
 
   " All results
-  let files = readdir('Xdir')
+  let files = readdir('Xreaddir')
   call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
 
   " Only results containing "f"
-  let files = 'Xdir'->readdir({ x -> stridx(x, 'f') != -1 })
+  let files = 'Xreaddir'->readdir({ x -> stridx(x, 'f') != -1 })
   call assert_equal(['foo.txt'], sort(files))
 
   " Only .txt files
-  let files = readdir('Xdir', { x -> x =~ '.txt$' })
+  let files = readdir('Xreaddir', { x -> x =~ '.txt$' })
   call assert_equal(['bar.txt', 'foo.txt'], sort(files))
 
   " Only .txt files with string
-  let files = readdir('Xdir', 'v:val =~ ".txt$"')
+  let files = readdir('Xreaddir', 'v:val =~ ".txt$"')
   call assert_equal(['bar.txt', 'foo.txt'], sort(files))
 
   " Limit to 1 result.
   let l = []
-  let files = readdir('Xdir', {x -> len(add(l, x)) == 2 ? -1 : 1})
+  let files = readdir('Xreaddir', {x -> len(add(l, x)) == 2 ? -1 : 1})
   call assert_equal(1, len(files))
 
   " Nested readdir() must not crash
-  let files = readdir('Xdir', 'readdir("Xdir", "1") != []')
+  let files = readdir('Xreaddir', 'readdir("Xreaddir", "1") != []')
   call sort(files)->assert_equal(['bar.txt', 'dir', 'foo.txt'])
 
-  eval 'Xdir'->delete('rf')
+  eval 'Xreaddir'->delete('rf')
 endfunc
 
 func Test_readdirex()
-  call mkdir('Xdir')
-  call writefile(['foo'], 'Xdir/foo.txt')
-  call writefile(['barbar'], 'Xdir/bar.txt')
-  call mkdir('Xdir/dir')
+  call mkdir('Xexdir')
+  call writefile(['foo'], 'Xexdir/foo.txt')
+  call writefile(['barbar'], 'Xexdir/bar.txt')
+  call mkdir('Xexdir/dir')
 
   " All results
-  let files = readdirex('Xdir')->map({-> v:val.name})
+  let files = readdirex('Xexdir')->map({-> v:val.name})
   call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
-  let sizes = readdirex('Xdir')->map({-> v:val.size})
+  let sizes = readdirex('Xexdir')->map({-> v:val.size})
   call assert_equal([0, 4, 7], sort(sizes))
 
   " Only results containing "f"
-  let files = 'Xdir'->readdirex({ e -> stridx(e.name, 'f') != -1 })
+  let files = 'Xexdir'->readdirex({ e -> stridx(e.name, 'f') != -1 })
 			  \ ->map({-> v:val.name})
   call assert_equal(['foo.txt'], sort(files))
 
   " Only .txt files
-  let files = readdirex('Xdir', { e -> e.name =~ '.txt$' })
+  let files = readdirex('Xexdir', { e -> e.name =~ '.txt$' })
 			  \ ->map({-> v:val.name})
   call assert_equal(['bar.txt', 'foo.txt'], sort(files))
 
   " Only .txt files with string
-  let files = readdirex('Xdir', 'v:val.name =~ ".txt$"')
+  let files = readdirex('Xexdir', 'v:val.name =~ ".txt$"')
 			  \ ->map({-> v:val.name})
   call assert_equal(['bar.txt', 'foo.txt'], sort(files))
 
   " Limit to 1 result.
   let l = []
-  let files = readdirex('Xdir', {e -> len(add(l, e.name)) == 2 ? -1 : 1})
+  let files = readdirex('Xexdir', {e -> len(add(l, e.name)) == 2 ? -1 : 1})
 			  \ ->map({-> v:val.name})
   call assert_equal(1, len(files))
 
   " Nested readdirex() must not crash
-  let files = readdirex('Xdir', 'readdirex("Xdir", "1") != []')
+  let files = readdirex('Xexdir', 'readdirex("Xexdir", "1") != []')
 			  \ ->map({-> v:val.name})
   call sort(files)->assert_equal(['bar.txt', 'dir', 'foo.txt'])
 
   " report broken link correctly
   if has("unix")
-    call writefile([], 'Xdir/abc.txt')
-    call system("ln -s Xdir/abc.txt Xdir/link")
-    call delete('Xdir/abc.txt')
-    let files = readdirex('Xdir', 'readdirex("Xdir", "1") != []')
+    call writefile([], 'Xexdir/abc.txt')
+    call system("ln -s Xexdir/abc.txt Xexdir/link")
+    call delete('Xexdir/abc.txt')
+    let files = readdirex('Xexdir', 'readdirex("Xexdir", "1") != []')
 			  \ ->map({-> v:val.name .. '_' .. v:val.type})
     call sort(files)->assert_equal(
         \ ['bar.txt_file', 'dir_dir', 'foo.txt_file', 'link_link'])
   endif
-  eval 'Xdir'->delete('rf')
+  eval 'Xexdir'->delete('rf')
 
   call assert_fails('call readdirex("doesnotexist")', 'E484:')
 endfunc
@@ -2166,34 +2156,34 @@ func Test_readdirex_sort()
     throw 'Skipped: Test_readdirex_sort on systems that do not allow this using the default filesystem'
   endif
   let _collate = v:collate
-  call mkdir('Xdir2')
-  call writefile(['1'], 'Xdir2/README.txt')
-  call writefile(['2'], 'Xdir2/Readme.txt')
-  call writefile(['3'], 'Xdir2/readme.txt')
+  call mkdir('Xsortdir2')
+  call writefile(['1'], 'Xsortdir2/README.txt')
+  call writefile(['2'], 'Xsortdir2/Readme.txt')
+  call writefile(['3'], 'Xsortdir2/readme.txt')
 
   " 1) default
-  let files = readdirex('Xdir2')->map({-> v:val.name})
+  let files = readdirex('Xsortdir2')->map({-> v:val.name})
   let default = copy(files)
   call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], files, 'sort using default')
 
   " 2) no sorting
-  let files = readdirex('Xdir2', 1, #{sort: 'none'})->map({-> v:val.name})
+  let files = readdirex('Xsortdir2', 1, #{sort: 'none'})->map({-> v:val.name})
   let unsorted = copy(files)
   call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], sort(files), 'unsorted')
-  call assert_fails("call readdirex('Xdir2', 1, #{slort: 'none'})", 'E857: Dictionary key "sort" required')
+  call assert_fails("call readdirex('Xsortdir2', 1, #{slort: 'none'})", 'E857: Dictionary key "sort" required')
 
   " 3) sort by case (same as default)
-  let files = readdirex('Xdir2', 1, #{sort: 'case'})->map({-> v:val.name})
+  let files = readdirex('Xsortdir2', 1, #{sort: 'case'})->map({-> v:val.name})
   call assert_equal(default, files, 'sort by case')
 
   " 4) sort by ignoring case
-  let files = readdirex('Xdir2', 1, #{sort: 'icase'})->map({-> v:val.name})
+  let files = readdirex('Xsortdir2', 1, #{sort: 'icase'})->map({-> v:val.name})
   call assert_equal(unsorted->sort('i'), files, 'sort by icase')
 
   " 5) Default Collation
   let collate = v:collate
   lang collate C
-  let files = readdirex('Xdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
+  let files = readdirex('Xsortdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
   call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], files, 'sort by C collation')
 
   " 6) Collation de_DE
@@ -2201,20 +2191,20 @@ func Test_readdirex_sort()
   " available
   try
     lang collate de_DE
-    let files = readdirex('Xdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
+    let files = readdirex('Xsortdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
     call assert_equal(['readme.txt', 'Readme.txt', 'README.txt'], files, 'sort by de_DE collation')
   catch
     throw 'Skipped: de_DE collation is not available'
 
   finally
     exe 'lang collate' collate
-    eval 'Xdir2'->delete('rf')
+    eval 'Xsortdir2'->delete('rf')
   endtry
 endfunc
 
 func Test_readdir_sort()
   " some more cases for testing sorting for readdirex
-  let dir = 'Xdir3'
+  let dir = 'Xsortdir3'
   call mkdir(dir)
   call writefile(['1'], dir .. '/README.txt')
   call writefile(['2'], dir .. '/Readm.txt')
@@ -2244,9 +2234,12 @@ func Test_readdir_sort()
   exe "lang collate" collate
 
   " 5) Errors
-  call assert_fails('call readdir(dir, 1, 1)', 'E715:')
+  call assert_fails('call readdir(dir, 1, 1)', 'E1206:')
   call assert_fails('call readdir(dir, 1, #{sorta: 1})')
+  call assert_fails('call readdir(dir, 1, test_null_dict())', 'E1297:')
+  call assert_fails('call readdirex(dir, 1, 1)', 'E1206:')
   call assert_fails('call readdirex(dir, 1, #{sorta: 1})')
+  call assert_fails('call readdirex(dir, 1, test_null_dict())', 'E1297:')
 
   " 6) ignore other values in dict
   let files = readdir(dir, '1', #{sort: 'c'})
@@ -2259,33 +2252,33 @@ func Test_readdir_sort()
 endfunc
 
 func Test_delete_rf()
-  call mkdir('Xdir')
-  call writefile([], 'Xdir/foo.txt')
-  call writefile([], 'Xdir/bar.txt')
-  call mkdir('Xdir/[a-1]')  " issue #696
-  call writefile([], 'Xdir/[a-1]/foo.txt')
-  call writefile([], 'Xdir/[a-1]/bar.txt')
-  call assert_true(filereadable('Xdir/foo.txt'))
-  call assert_true('Xdir/[a-1]/foo.txt'->filereadable())
+  call mkdir('Xrfdir')
+  call writefile([], 'Xrfdir/foo.txt')
+  call writefile([], 'Xrfdir/bar.txt')
+  call mkdir('Xrfdir/[a-1]')  " issue #696
+  call writefile([], 'Xrfdir/[a-1]/foo.txt')
+  call writefile([], 'Xrfdir/[a-1]/bar.txt')
+  call assert_true(filereadable('Xrfdir/foo.txt'))
+  call assert_true('Xrfdir/[a-1]/foo.txt'->filereadable())
 
-  call assert_equal(0, delete('Xdir', 'rf'))
-  call assert_false(filereadable('Xdir/foo.txt'))
-  call assert_false(filereadable('Xdir/[a-1]/foo.txt'))
+  call assert_equal(0, delete('Xrfdir', 'rf'))
+  call assert_false(filereadable('Xrfdir/foo.txt'))
+  call assert_false(filereadable('Xrfdir/[a-1]/foo.txt'))
 
   if has('unix')
-    call mkdir('Xdir/Xdir2', 'p')
-    silent !chmod 555 Xdir
-    call assert_equal(-1, delete('Xdir/Xdir2', 'rf'))
-    call assert_equal(-1, delete('Xdir', 'rf'))
-    silent !chmod 755 Xdir
-    call assert_equal(0, delete('Xdir', 'rf'))
+    call mkdir('Xrfdir/Xdir2', 'p')
+    silent !chmod 555 Xrfdir
+    call assert_equal(-1, delete('Xrfdir/Xdir2', 'rf'))
+    call assert_equal(-1, delete('Xrfdir', 'rf'))
+    silent !chmod 755 Xrfdir
+    call assert_equal(0, delete('Xrfdir', 'rf'))
   endif
 endfunc
 
 func Test_call()
   call assert_equal(3, call('len', [123]))
   call assert_equal(3, 'len'->call([123]))
-  call assert_fails("call call('len', 123)", 'E714:')
+  call assert_fails("call call('len', 123)", 'E1211:')
   call assert_equal(0, call('', []))
   call assert_equal(0, call('len', test_null_list()))
 
@@ -2294,7 +2287,7 @@ func Test_call()
   endfunction
   let mydict = {'data': [0, 1, 2, 3], 'len': function("Mylen")}
   eval mydict.len->call([], mydict)->assert_equal(4)
-  call assert_fails("call call('Mylen', [], 0)", 'E715:')
+  call assert_fails("call call('Mylen', [], 0)", 'E1206:')
   call assert_fails('call foo', 'E107:')
 
   " These once caused a crash.
@@ -2367,6 +2360,24 @@ func Test_bufadd_bufload()
   call assert_equal(1, bufexists(buf2))
   exe 'bwipe ' .. buf2
   call assert_equal(0, bufexists(buf2))
+
+  " When 'buftype' is "nofile" then bufload() does not read the file.
+  " Other values too.
+  for val in [['nofile', 0],
+            \ ['nowrite', 1],
+            \ ['acwrite', 1],
+            \ ['quickfix', 0],
+            \ ['help', 1],
+            \ ['terminal', 0],
+            \ ['prompt', 0],
+            \ ['popup', 0],
+            \ ]
+    bwipe! XotherName
+    let buf = bufadd('XotherName')
+    call setbufvar(buf, '&bt', val[0])
+    call bufload(buf)
+    call assert_equal(val[1] ? ['some', 'text'] : [''], getbufline(buf, 1, '$'), val[0])
+  endfor
 
   bwipe someName
   bwipe XotherName
@@ -2562,7 +2573,7 @@ func Test_range()
 
   " list2str()
   call assert_equal('ABC', list2str(range(65, 67)))
-  call assert_fails('let s = list2str(5)', 'E474:')
+  call assert_fails('let s = list2str(5)', 'E1211:')
 
   " lock()
   let thelist = range(5)
@@ -2743,6 +2754,32 @@ func Test_eval()
   call assert_fails("call eval('5 a')", 'E488:')
 endfunc
 
+" Test for the keytrans() function
+func Test_keytrans()
+  call assert_equal('<Space>', keytrans(' '))
+  call assert_equal('<lt>', keytrans('<'))
+  call assert_equal('<lt>Tab>', keytrans('<Tab>'))
+  call assert_equal('<Tab>', keytrans("\<Tab>"))
+  call assert_equal('<C-V>', keytrans("\<C-V>"))
+  call assert_equal('<BS>', keytrans("\<BS>"))
+  call assert_equal('<Home>', keytrans("\<Home>"))
+  call assert_equal('<C-Home>', keytrans("\<C-Home>"))
+  call assert_equal('<M-Home>', keytrans("\<M-Home>"))
+  call assert_equal('<C-Space>', keytrans("\<C-Space>"))
+  call assert_equal('<M-Space>', keytrans("\<*M-Space>"))
+  call assert_equal('<M-x>', "\<*M-x>"->keytrans())
+  call assert_equal('<C-I>', "\<*C-I>"->keytrans())
+  call assert_equal('<S-3>', "\<*S-3>"->keytrans())
+  call assert_equal('π', 'π'->keytrans())
+  call assert_equal('<M-π>', "\<M-π>"->keytrans())
+  call assert_equal('ě', 'ě'->keytrans())
+  call assert_equal('<M-ě>', "\<M-ě>"->keytrans())
+  call assert_equal('', ''->keytrans())
+  call assert_equal('', test_null_string()->keytrans())
+  call assert_fails('call keytrans(1)', 'E1174:')
+  call assert_fails('call keytrans()', 'E119:')
+endfunc
+
 " Test for the nr2char() function
 func Test_nr2char()
   set encoding=latin1
@@ -2892,7 +2929,7 @@ endfunc
 
 " Test for gettext()
 func Test_gettext()
-  call assert_fails('call gettext(1)', 'E475:')
+  call assert_fails('call gettext(1)', 'E1174:')
 endfunc
 
 func Test_builtin_check()

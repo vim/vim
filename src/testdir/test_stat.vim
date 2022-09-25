@@ -171,7 +171,7 @@ func Test_getftype()
     return
   endif
 
-  silent !ln -s Xfile Xlink
+  silent !ln -s Xlinkfile Xlink
   call assert_equal('link', getftype('Xlink'))
   call delete('Xlink')
 

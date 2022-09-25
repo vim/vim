@@ -299,7 +299,7 @@ ex_menu(
     root_menu_ptr = get_root_menu(menu_path);
     if (root_menu_ptr == &curwin->w_winbar)
 	// Assume the window toolbar menu will change.
-	redraw_later(NOT_VALID);
+	redraw_later(UPD_NOT_VALID);
 
     if (enable != MAYBE)
     {
@@ -436,6 +436,7 @@ ex_menu(
 		--curwin->w_height;
 	    curwin->w_winbar_height = h;
 	}
+	curwin->w_prev_height = curwin->w_height;
     }
 
 theend:
@@ -2890,7 +2891,7 @@ menuitem_getinfo(char_u *menu_name, vimmenu_T *menu, int modes, dict_T *dict)
 			*menu->strings[bit] == NUL
 				? (char_u *)"<Nop>"
 				: (tofree = str2special_save(
-						  menu->strings[bit], FALSE)));
+					menu->strings[bit], FALSE, FALSE)));
 		vim_free(tofree);
 	    }
 	    if (status == OK)

@@ -81,11 +81,11 @@ func Test_setline_startup()
   if cmd == ''
     return
   endif
-  call writefile(['call setline(1, "Hello")', 'silent w Xtest', 'q!'], 'Xscript')
+  call writefile(['call setline(1, "Hello")', 'silent w Xtest', 'q!'], 'Xscript', 'D')
   call system(cmd)
+  sleep 50m
   call assert_equal(['Hello'], readfile('Xtest'))
 
-  call delete('Xscript')
   call delete('Xtest')
 endfunc
 
@@ -214,12 +214,11 @@ func Test_appendbufline_redraw()
     call deletebufline(buf, 1, '$')
     call appendbufline(buf, '$', 'Hello Vim world...')
   END
-  call writefile(lines, 'XscriptMatchCommon')
+  call writefile(lines, 'XscriptMatchCommon', 'D')
   let buf = RunVimInTerminal('-S XscriptMatchCommon', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_appendbufline_1', {})
 
   call StopVimInTerminal(buf)
-  call delete('XscriptMatchCommon')
 endfunc
 
 func Test_setbufline_select_mode()
@@ -253,6 +252,26 @@ func Test_deletebufline_select_mode()
 
   exe "bwipe! " .. bufnr
   bwipe!
+endfunc
+
+func Test_setbufline_startup_nofile()
+  let before =<< trim [CODE]
+    set shortmess+=F
+    file Xresult
+    set buftype=nofile
+    call setbufline('', 1, 'success')
+  [CODE]
+  let after =<< trim [CODE]
+    set buftype=
+    write
+    quit
+  [CODE]
+
+  if !RunVim(before, after, '--clean')
+    return
+  endif
+  call assert_equal(['success'], readfile('Xresult'))
+  call delete('Xresult')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

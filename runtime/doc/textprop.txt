@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.0.  Last change: 2021 Nov 23
+*textprop.txt*  For Vim version 9.0.  Last change: 2022 Sep 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -126,6 +126,7 @@ prop_add({lnum}, {col}, {props})
 		If {col} is invalid an error is given. *E964*
 
 		{props} is a dictionary with these fields:
+		   type		name of the text property type
 		   length	length of text in bytes, can only be used
 				for a property that does not continue in
 				another line; can be zero
@@ -137,8 +138,39 @@ prop_add({lnum}, {col}, {props})
 		   bufnr	buffer to add the property to; when omitted
 				the current buffer is used
 		   id		user defined ID for the property; must be a
-				number; when omitted zero is used
-		   type		name of the text property type
+				number, should be positive; when using "text"
+				then "id" must not be present and will be set
+				automatically to a negative number; otherwise
+				zero is used
+							*E1305*
+		   text		text to be displayed before {col}, or after the
+				line if {col} is zero; prepend and/or append
+				spaces for padding with highlighting; cannot
+				be used with "length", "end_lnum" and "end_col"
+		   					*E1294*
+		   text_align	when "text" is present and {col} is zero;
+				specifies where to display the text:
+				   after   after the end of the line
+				   right   right aligned in the window (unless
+					   the text wraps to the next screen
+					   line)
+				   below   in the next screen line
+				   above   just above the line
+				When omitted "after" is used.  Only one
+				"right" property can fit in each line, if
+				there are two or more these will go in a
+				separate line (still right aligned).
+		   text_padding_left				*E1296*
+				used when "text" is present and {col} is zero;
+				padding between the end of the text line
+				(leftmost column for "below") and the virtual
+				text, not highlighted
+		   text_wrap	when "text" is present and {col} is zero,
+				specifies what happens if the text doesn't
+				fit:
+				   wrap      wrap the text to the next line
+				   truncate  truncate the text to make it fit
+		   		When omitted "truncate" is used.
 		All fields except "type" are optional.
 
 		It is an error when both "length" and "end_lnum" or "end_col"
@@ -157,6 +189,30 @@ prop_add({lnum}, {col}, {props})
 		"type" will first be looked up in the buffer the property is
 		added to. When not found, the global property types are used.
 		If not found an error is given.
+							*virtual-text*
+		When "text" is used and the column is non-zero then this text
+		will be displayed at the start location of the text property
+		after the text.  The text of the buffer line will be shifted
+		to make room.  This is called "virtual text".
+		When the column is zero the virtual text will appear after the
+		buffer text.  The "text_align" and "text_wrap" arguments
+		determine how it is displayed.
+		The text will be displayed but it is not part of the actual
+		buffer line, the cursor cannot be placed on it.  A mouse click
+		in the text will move the cursor to the first character after
+		the text, or the last character of the line.
+		Any Tab and other control character in the text will be
+		changed to a space (Rationale: otherwise the size of the text
+		is difficult to compute).
+		A negative "id" will be chosen and is returned.  Once a
+		property with "text" has been added for a buffer then using a
+		negative "id" for any other property will give an error:
+		*E1293*
+		Make sure to use a highlight that makes clear to the user that
+		this is virtual text, otherwise it will be very confusing that
+		the text cannot be edited.
+		To separate the virtual text from the buffer text prepend
+		and/or append spaces to the "text" field.
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
@@ -180,6 +236,9 @@ prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
 		of the text where the property will be attached and the last
 		two items {end-lnum} and {end-col} specify the position just
 		after the text.
+
+		It is not possible to add a text property with a "text" field
+		here.
 
 		Example:
 			call prop_add_list(#{type: 'MyProp', id: 2},
@@ -304,11 +363,16 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		{props} is a dictionary with these fields:
 		   id		remove text properties with this ID
 		   type		remove text properties with this type name
-		   both		"id" and "type" must both match
+		   types	remove text properties with type names in this
+				List
+		   both		"id" and "type"/"types" must both match
 		   bufnr	use this buffer instead of the current one
 		   all		when TRUE remove all matching text properties,
 				not just the first one
-		A property matches when either "id" or "type" matches.
+		Only one of "type" and "types" may be supplied. *E1295*
+
+		A property matches when either "id" or one of the supplied
+		types matches.
 		If buffer "bufnr" does not exist you get an error message.
 		If buffer "bufnr" is not loaded then nothing happens.
 
@@ -334,6 +398,8 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 		   combine	when omitted or TRUE combine the highlight
 				with any syntax highlight; when FALSE syntax
 				highlight will not be used
+		   override	when TRUE the highlight overrides any other,
+				including 'cursorline' and Visual
 		   start_incl	when TRUE inserts at the start position will
 				be included in the text property
 		   end_incl	when TRUE inserts at the end position will be

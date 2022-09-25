@@ -434,12 +434,8 @@ write_viminfo_bufferlist(FILE *fp)
     {
 	if (buf->b_fname == NULL
 		|| !buf->b_p_bl
-#ifdef FEAT_QUICKFIX
 		|| bt_quickfix(buf)
-#endif
-#ifdef FEAT_TERMINAL
 		|| bt_terminal(buf)
-#endif
 		|| removable(buf->b_ffname))
 	    continue;
 
@@ -1229,9 +1225,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
 	    switch (*tab)
 	    {
 		case 'S': type = VAR_STRING; break;
-#ifdef FEAT_FLOAT
 		case 'F': type = VAR_FLOAT; break;
-#endif
 		case 'D': type = VAR_DICT; break;
 		case 'L': type = VAR_LIST; break;
 		case 'B': type = VAR_BLOB; break;
@@ -1246,10 +1240,8 @@ read_viminfo_varlist(vir_T *virp, int writing)
 			|| type == VAR_LIST || type == VAR_BLOB)
 		    tv.vval.v_string = viminfo_readstring(virp,
 				       (int)(tab - virp->vir_line + 1), TRUE);
-#ifdef FEAT_FLOAT
 		else if (type == VAR_FLOAT)
 		    (void)string2float(tab + 1, &tv.vval.v_float, FALSE);
-#endif
 		else
 		{
 		    tv.vval.v_number = atol((char *)tab + 1);
@@ -1994,11 +1986,7 @@ write_buffer_marks(buf_T *buf, FILE *fp_out)
     static int
 skip_for_viminfo(buf_T *buf)
 {
-    return
-#ifdef FEAT_TERMINAL
-	    bt_terminal(buf) ||
-#endif
-	    removable(buf->b_ffname);
+    return bt_terminal(buf) || removable(buf->b_ffname);
 }
 
 /*
@@ -2332,7 +2320,7 @@ copy_viminfo_marks(
 		    // Read the next line.  If it has the "*" mark compare the
 		    // time stamps.  Write entries from "buflist" that are
 		    // newer.
-		    if (!(eof = viminfo_readline(virp)) && line[0] == TAB)
+		    if (!viminfo_readline(virp) && line[0] == TAB)
 		    {
 			did_read_line = TRUE;
 			if (line[1] == '*')
@@ -3103,7 +3091,7 @@ write_viminfo(char_u *file, int forceit)
 	{
 	    int	tt = msg_didany;
 
-	    // avoid a wait_return for this message, it's annoying
+	    // avoid a wait_return() for this message, it's annoying
 	    semsg(_(e_viminfo_file_is_not_writable_str), fname);
 	    msg_didany = tt;
 	    fclose(fp_in);

@@ -103,6 +103,10 @@ function Test_cmdmods()
   call assert_equal('vertical', g:mods)
   vert MyCmd
   call assert_equal('vertical', g:mods)
+  horizontal MyCmd
+  call assert_equal('horizontal', g:mods)
+  hor MyCmd
+  call assert_equal('horizontal', g:mods)
 
   aboveleft belowright botright browse confirm hide keepalt keepjumps
 	      \ keepmarks keeppatterns lockmarks noautocmd noswapfile silent
@@ -662,7 +666,7 @@ func Test_usercmd_custom()
     return "a\nb\n"
   endfunc
   command -nargs=* -complete=customlist,T1 TCmd1
-  call feedkeys(":TCmd1 \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_fails('call feedkeys(":TCmd1 \<C-A>\<C-B>\"\<CR>", "xt")', 'E1303: Custom list completion function does not return a List but a string')
   call assert_equal('"TCmd1 ', @:)
   delcommand TCmd1
   delfunc T1
@@ -671,7 +675,7 @@ func Test_usercmd_custom()
     return {}
   endfunc
   command -nargs=* -complete=customlist,T2 TCmd2
-  call feedkeys(":TCmd2 \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_fails('call feedkeys(":TCmd2 \<C-A>\<C-B>\"\<CR>", "xt")', 'E1303: Custom list completion function does not return a List but a dict')
   call assert_equal('"TCmd2 ', @:)
   delcommand TCmd2
   delfunc T2

@@ -559,11 +559,9 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_NUMBER:
 	    lua_pushinteger(L, (int) tv->vval.v_number);
 	    break;
-#ifdef FEAT_FLOAT
 	case VAR_FLOAT:
 	    lua_pushnumber(L, (lua_Number) tv->vval.v_float);
 	    break;
-#endif
 	case VAR_LIST:
 	    luaV_pushlist(L, tv->vval.v_list);
 	    break;
@@ -619,7 +617,6 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    tv->vval.v_string = vim_strsave((char_u *) lua_tostring(L, pos));
 	    break;
 	case LUA_TNUMBER:
-#ifdef FEAT_FLOAT
 	{
 	    const lua_Number n = lua_tonumber(L, pos);
 
@@ -635,10 +632,6 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		tv->vval.v_number = (varnumber_T)n;
 	    }
 	}
-#else
-	    tv->v_type = VAR_NUMBER;
-	    tv->vval.v_number = (varnumber_T) lua_tointeger(L, pos);
-#endif
 	    break;
 	case LUA_TFUNCTION:
 	{
@@ -1501,7 +1494,8 @@ luaV_buffer_newindex(lua_State *L)
 	    curbuf = buf;
 	    luaL_error(L, "cannot replace line");
 	}
-	else changed_bytes(n, 0);
+	else
+	    changed_bytes(n, 0);
 	curbuf = buf;
 	if (b == curwin->w_buffer)
 	    check_cursor_col();
@@ -1542,7 +1536,7 @@ luaV_buffer_insert(lua_State *L)
     else
 	appended_lines_mark(n, 1L);
     curbuf = buf;
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return 0;
 }
 
@@ -1644,7 +1638,7 @@ luaV_window_newindex(lua_State *L)
 	if (v < 1 || v > w->w_buffer->b_ml.ml_line_count)
 	    luaL_error(L, "line out of range");
 	w->w_cursor.lnum = v;
-	update_screen(VALID);
+	update_screen(UPD_VALID);
     }
     else if (strncmp(s, "col", 3) == 0)
     {
@@ -1653,7 +1647,7 @@ luaV_window_newindex(lua_State *L)
 #endif
 	w->w_cursor.col = v - 1;
 	w->w_set_curswant = TRUE;
-	update_screen(VALID);
+	update_screen(UPD_VALID);
     }
     else if (strncmp(s, "width", 5) == 0)
     {
@@ -1913,7 +1907,7 @@ luaV_command(lua_State *L)
 
     execute_cmds_from_string(s);
     vim_free(s);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
     return 0;
 }
 
@@ -2660,7 +2654,7 @@ ex_luado(exarg_T *eap)
     }
     lua_pop(L, 1); // function
     check_cursor();
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
 }
 
     void

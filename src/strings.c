@@ -932,15 +932,14 @@ string_filter_map(
 }
 
 /*
- * reduce() String argvars[0] using the function 'funcname' with arguments in
- * 'funcexe' starting with the initial value argvars[2] and return the result
- * in 'rettv'.
+ * Implementation of reduce() for String "argvars[0]" using the function "expr"
+ * starting with the optional initial value "argvars[2]" and return the result
+ * in "rettv".
  */
     void
 string_reduce(
 	typval_T	*argvars,
-	char_u		*func_name,
-	funcexe_T	*funcexe,
+	typval_T	*expr,
 	typval_T	*rettv)
 {
     char_u	*p = tv_get_string(&argvars[0]);
@@ -960,11 +959,8 @@ string_reduce(
 	    return;
 	p += STRLEN(rettv->vval.v_string);
     }
-    else if (argvars[2].v_type != VAR_STRING)
-    {
-	semsg(_(e_string_expected_for_argument_nr), 3);
+    else if (check_for_string_arg(argvars, 2) == FAIL)
 	return;
-    }
     else
 	copy_tv(&argvars[2], rettv);
 
@@ -974,7 +970,9 @@ string_reduce(
 	if (copy_first_char_to_tv(p, &argv[1]) == FAIL)
 	    break;
 	len = (int)STRLEN(argv[1].vval.v_string);
-	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+
+	r = eval_expr_typval(expr, argv, 2, rettv);
+
 	clear_tv(&argv[0]);
 	clear_tv(&argv[1]);
 	if (r == FAIL || called_emsg != called_emsg_start)
@@ -1047,20 +1045,10 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
+    if ((check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_number_arg(argvars, 1) == FAIL
 		|| check_for_opt_bool_arg(argvars, 2) == FAIL))
 	return;
-
-    if (argvars[0].v_type != VAR_STRING || argvars[1].v_type != VAR_NUMBER
-	    || (argvars[2].v_type != VAR_UNKNOWN
-					   && argvars[2].v_type != VAR_NUMBER
-					   && argvars[2].v_type != VAR_BOOL))
-    {
-	emsg(_(e_invalid_argument));
-	return;
-    }
 
     str = tv_get_string_chk(&argvars[0]);
     idx = tv_get_number_chk(&argvars[1], NULL);
@@ -1783,11 +1771,8 @@ f_trim(typval_T *argvars, typval_T *rettv)
     if (head == NULL)
 	return;
 
-    if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_STRING)
-    {
-	semsg(_(e_invalid_argument_str), tv_get_string(&argvars[1]));
+    if (check_for_opt_string_arg(argvars, 1) == FAIL)
 	return;
-    }
 
     if (argvars[1].v_type == VAR_STRING)
     {
@@ -1911,7 +1896,6 @@ tv_str(typval_T *tvs, int *idxp, char_u **tofree)
     return s;
 }
 
-# ifdef FEAT_FLOAT
 /*
  * Get float argument from "idxp" entry in "tvs".  First entry is 1.
  */
@@ -1935,11 +1919,9 @@ tv_float(typval_T *tvs, int *idxp)
     }
     return f;
 }
-# endif
 
 #endif
 
-#ifdef FEAT_FLOAT
 /*
  * Return the representation of infinity for printf() function:
  * "-inf", "inf", "+inf", " inf", "-INF", "INF", "+INF" or " INF".
@@ -1961,7 +1943,6 @@ infinity_str(int positive,
 	idx += 4;
     return table[idx];
 }
-#endif
 
 /*
  * This code was included to provide a portable vsnprintf() and snprintf().
@@ -2095,13 +2076,9 @@ vim_vsnprintf_typval(
 	    char    length_modifier = '\0';
 
 	    // temporary buffer for simple numeric->string conversion
-# if defined(FEAT_FLOAT)
-#  define TMP_LEN 350	// On my system 1e308 is the biggest number possible.
+# define TMP_LEN 350	// On my system 1e308 is the biggest number possible.
 			// That sounds reasonable to use as the maximum
 			// printable.
-# else
-#  define TMP_LEN 66
-# endif
 	    char    tmp[TMP_LEN];
 
 	    // string address in case of string argument
@@ -2653,7 +2630,6 @@ vim_vsnprintf_typval(
 		    break;
 		}
 
-# ifdef FEAT_FLOAT
 	    case 'f':
 	    case 'F':
 	    case 'e':
@@ -2669,9 +2645,9 @@ vim_vsnprintf_typval(
 		    int		remove_trailing_zeroes = FALSE;
 
 		    f =
-#  if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 			tvs != NULL ? tv_float(tvs, &arg_idx) :
-#  endif
+# endif
 			    va_arg(ap, double);
 		    abs_f = f < 0 ? -f : f;
 
@@ -2688,11 +2664,11 @@ vim_vsnprintf_typval(
 		    }
 
 		    if ((fmt_spec == 'f' || fmt_spec == 'F') &&
-#  ifdef VAX
+# ifdef VAX
 			    abs_f > 1.0e38
-#  else
+# else
 			    abs_f > 1.0e307
-#  endif
+# endif
 			    )
 		    {
 			// Avoid a buffer overflow
@@ -2817,7 +2793,6 @@ vim_vsnprintf_typval(
 		    str_arg = tmp;
 		    break;
 		}
-# endif
 
 	    default:
 		// unrecognized conversion specifier, keep format string

@@ -288,8 +288,13 @@ edit(
     conceal_check_cursor_line(cursor_line_was_concealed);
 #endif
 
-    // need to position cursor again when on a TAB
-    if (gchar_cursor() == TAB)
+    // Need to position cursor again when on a TAB and when on a char with
+    // virtual text.
+    if (gchar_cursor() == TAB
+#ifdef FEAT_PROP_POPUP
+	    || curbuf->b_has_textprop
+#endif
+       )
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 
     /*
@@ -1741,8 +1746,9 @@ edit_unputchar(void)
  * Only works when cursor is in the line that changes.
  */
     void
-display_dollar(colnr_T col)
+display_dollar(colnr_T col_arg)
 {
+    colnr_T col = col_arg < 0 ? 0 : col_arg;
     colnr_T save_col;
 
     if (!redrawing())
@@ -3581,6 +3587,13 @@ ins_esc(
 
 #ifdef FEAT_SPELL
     check_spell_redraw();
+
+    // When text has been changed in this line, possibly the start of the next
+    // line may have SpellCap that should be removed or it needs to be
+    // displayed.  Schedule the next line for redrawing just in case.
+    if (spell_check_window(curwin)
+			 && curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
+	redrawWinline(curwin, curwin->w_cursor.lnum + 1);
 #endif
 
     temp = curwin->w_cursor.col;
@@ -3749,51 +3762,52 @@ ins_ctrl_(void)
     static int
 ins_start_select(int c)
 {
-    if (km_startsel)
-	switch (c)
-	{
-	    case K_KHOME:
-	    case K_KEND:
-	    case K_PAGEUP:
-	    case K_KPAGEUP:
-	    case K_PAGEDOWN:
-	    case K_KPAGEDOWN:
+    if (!km_startsel)
+	return FALSE;
+    switch (c)
+    {
+	case K_KHOME:
+	case K_KEND:
+	case K_PAGEUP:
+	case K_KPAGEUP:
+	case K_PAGEDOWN:
+	case K_KPAGEDOWN:
 # ifdef MACOS_X
-	    case K_LEFT:
-	    case K_RIGHT:
-	    case K_UP:
-	    case K_DOWN:
-	    case K_END:
-	    case K_HOME:
+	case K_LEFT:
+	case K_RIGHT:
+	case K_UP:
+	case K_DOWN:
+	case K_END:
+	case K_HOME:
 # endif
-		if (!(mod_mask & MOD_MASK_SHIFT))
-		    break;
-		// FALLTHROUGH
-	    case K_S_LEFT:
-	    case K_S_RIGHT:
-	    case K_S_UP:
-	    case K_S_DOWN:
-	    case K_S_END:
-	    case K_S_HOME:
-		// Start selection right away, the cursor can move with
-		// CTRL-O when beyond the end of the line.
-		start_selection();
+	    if (!(mod_mask & MOD_MASK_SHIFT))
+		break;
+	    // FALLTHROUGH
+	case K_S_LEFT:
+	case K_S_RIGHT:
+	case K_S_UP:
+	case K_S_DOWN:
+	case K_S_END:
+	case K_S_HOME:
+	    // Start selection right away, the cursor can move with CTRL-O when
+	    // beyond the end of the line.
+	    start_selection();
 
-		// Execute the key in (insert) Select mode.
-		stuffcharReadbuff(Ctrl_O);
-		if (mod_mask)
-		{
-		    char_u	    buf[4];
+	    // Execute the key in (insert) Select mode.
+	    stuffcharReadbuff(Ctrl_O);
+	    if (mod_mask)
+	    {
+		char_u	    buf[4];
 
-		    buf[0] = K_SPECIAL;
-		    buf[1] = KS_MODIFIER;
-		    buf[2] = mod_mask;
-		    buf[3] = NUL;
-		    stuffReadbuff(buf);
-		}
-		stuffcharReadbuff(c);
-		return TRUE;
-	}
+		buf[0] = K_SPECIAL;
+		buf[1] = KS_MODIFIER;
+		buf[2] = mod_mask;
+		buf[3] = NUL;
+		stuffReadbuff(buf);
+	    }
+	    stuffcharReadbuff(c);
+	    return TRUE;
+    }
     return FALSE;
 }
 
@@ -4695,7 +4709,7 @@ ins_up(
 		|| old_topfill != curwin->w_topfill
 #endif
 		)
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	start_arrow(&tpos);
 	can_cindent = TRUE;
     }
@@ -4752,7 +4766,7 @@ ins_down(
 		|| old_topfill != curwin->w_topfill
 #endif
 		)
-	    redraw_later(VALID);
+	    redraw_later(UPD_VALID);
 	start_arrow(&tpos);
 	can_cindent = TRUE;
     }
@@ -4905,6 +4919,8 @@ ins_tab(void)
 	colnr_T		want_vcol, vcol;
 	int		change_col = -1;
 	int		save_list = curwin->w_p_list;
+	char_u		*tab = (char_u *)"\t";
+	chartabsize_T	cts;
 
 	/*
 	 * Get the current line.  For MODE_VREPLACE state, don't make real
@@ -4950,12 +4966,14 @@ ins_tab(void)
 	getvcol(curwin, &fpos, &vcol, NULL, NULL);
 	getvcol(curwin, cursor, &want_vcol, NULL, NULL);
 
+	init_chartabsize_arg(&cts, curwin, 0, vcol, tab, tab);
+
 	// Use as many TABs as possible.  Beware of 'breakindent', 'showbreak'
 	// and 'linebreak' adding extra virtual columns.
 	while (VIM_ISWHITE(*ptr))
 	{
-	    i = lbr_chartabsize(NULL, (char_u *)"\t", vcol);
-	    if (vcol + i > want_vcol)
+	    i = lbr_chartabsize(&cts);
+	    if (cts.cts_vcol + i > want_vcol)
 		break;
 	    if (*ptr != TAB)
 	    {
@@ -4970,21 +4988,27 @@ ins_tab(void)
 	    }
 	    ++fpos.col;
 	    ++ptr;
-	    vcol += i;
+	    cts.cts_vcol += i;
 	}
+	vcol = cts.cts_vcol;
+	clear_chartabsize_arg(&cts);
 
 	if (change_col >= 0)
 	{
-	    int repl_off = 0;
-	    char_u *line = ptr;
+	    int		    repl_off = 0;
 
 	    // Skip over the spaces we need.
-	    while (vcol < want_vcol && *ptr == ' ')
+	    init_chartabsize_arg(&cts, curwin, 0, vcol, ptr, ptr);
+	    while (cts.cts_vcol < want_vcol && *cts.cts_ptr == ' ')
 	    {
-		vcol += lbr_chartabsize(line, ptr, vcol);
-		++ptr;
+		cts.cts_vcol += lbr_chartabsize(&cts);
+		++cts.cts_ptr;
 		++repl_off;
 	    }
+	    ptr = cts.cts_ptr;
+	    vcol = cts.cts_vcol;
+	    clear_chartabsize_arg(&cts);
+
 	    if (vcol > want_vcol)
 	    {
 		// Must have a char with 'showbreak' just before it.
@@ -5220,10 +5244,10 @@ ins_digraph(void)
     int
 ins_copychar(linenr_T lnum)
 {
-    int	    c;
-    int	    temp;
-    char_u  *ptr, *prev_ptr;
-    char_u  *line;
+    int		    c;
+    char_u	    *ptr, *prev_ptr;
+    char_u	    *line;
+    chartabsize_T   cts;
 
     if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
     {
@@ -5233,16 +5257,19 @@ ins_copychar(linenr_T lnum)
 
     // try to advance to the cursor column
     validate_virtcol();
-    temp = 0;
-    line = ptr = ml_get(lnum);
-    prev_ptr = ptr;
-    while ((colnr_T)temp < curwin->w_virtcol && *ptr != NUL)
+    line = ml_get(lnum);
+    prev_ptr = line;
+    init_chartabsize_arg(&cts, curwin, lnum, 0, line, line);
+    while (cts.cts_vcol < curwin->w_virtcol && *cts.cts_ptr != NUL)
     {
-	prev_ptr = ptr;
-	temp += lbr_chartabsize_adv(line, &ptr, (colnr_T)temp);
+	prev_ptr = cts.cts_ptr;
+	cts.cts_vcol += lbr_chartabsize_adv(&cts);
     }
-    if ((colnr_T)temp > curwin->w_virtcol)
+    if (cts.cts_vcol > curwin->w_virtcol)
 	ptr = prev_ptr;
+    else
+	ptr = cts.cts_ptr;
+    clear_chartabsize_arg(&cts);
 
     c = (*mb_ptr2char)(ptr);
     if (c == NUL)
@@ -5264,7 +5291,7 @@ ins_ctrl_ey(int tc)
 	    scrolldown_clamp();
 	else
 	    scrollup_clamp();
-	redraw_later(VALID);
+	redraw_later(UPD_VALID);
     }
     else
     {

@@ -1189,11 +1189,9 @@ perl_to_vim(SV *sv, typval_T *rettv)
 	case SVt_NULL:
 	    break;
 	case SVt_NV:	/* float */
-#ifdef FEAT_FLOAT
 	    rettv->v_type	= VAR_FLOAT;
 	    rettv->vval.v_float = SvNV(sv);
 	    break;
-#endif
 	case SVt_IV:	/* integer */
 	    if (!SvROK(sv)) { /* references should be string */
 		rettv->vval.v_number = SvIV(sv);
@@ -1460,7 +1458,7 @@ ex_perldo(exarg_T *eap)
     FREETMPS;
     LEAVE;
     check_cursor();
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
     if (!length)
 	return;
 
@@ -1584,7 +1582,7 @@ SetOption(line)
     PPCODE:
     if (line != NULL)
 	do_set((char_u *)line, 0);
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
 
 void
 DoCommand(line)
@@ -1777,7 +1775,7 @@ Cursor(win, ...)
       win->w_cursor.col = col;
       win->w_set_curswant = TRUE;
       check_cursor();		    /* put cursor on an existing line */
-      update_screen(NOT_VALID);
+      update_screen(UPD_NOT_VALID);
     }
 
 MODULE = VIM	    PACKAGE = VIBUF
@@ -1929,7 +1927,7 @@ Delete(vimbuf, ...)
 		    aucmd_restbuf(&aco);
 		    /* Careful: autocommands may have made "vimbuf" invalid! */
 
-		    update_curbuf(VALID);
+		    update_curbuf(UPD_VALID);
 		}
 	    }
 	}
@@ -1970,7 +1968,7 @@ Append(vimbuf, ...)
 		aucmd_restbuf(&aco);
 		/* Careful: autocommands may have made "vimbuf" invalid! */
 
-		update_curbuf(VALID);
+		update_curbuf(UPD_VALID);
 	    }
 	}
     }

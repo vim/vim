@@ -722,6 +722,7 @@ func Test_viminfo_file_mark_unloaded_buf()
 endfunc
 
 func Test_viminfo_oldfiles()
+  set noswapfile
   let v:oldfiles = []
   let lines = [
 	\ '# comment line',
@@ -765,6 +766,7 @@ func Test_viminfo_oldfiles()
   call assert_equal("/tmp/another.txt", expand("%"))
   bwipe
   delmark E
+  set swapfile&
 endfunc
 
 " Test for storing and restoring buffer list in 'viminfo'
@@ -962,10 +964,10 @@ func Test_viminfo_perm()
   call delete('Xviminfo')
 
   " Try to write the viminfo to a directory
-  call mkdir('Xdir')
-  call assert_fails('wviminfo Xdir', 'E137:')
-  call assert_fails('rviminfo Xdir', 'E195:')
-  call delete('Xdir', 'rf')
+  call mkdir('Xvifdir')
+  call assert_fails('wviminfo Xvifdir', 'E137:')
+  call assert_fails('rviminfo Xvifdir', 'E195:')
+  call delete('Xvifdir', 'rf')
 endfunc
 
 " Test for writing to an existing viminfo file merges the file marks

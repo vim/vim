@@ -1631,7 +1631,7 @@ vim_command(void *data, int argc, Scheme_Object **argv)
 
     // may be use do_cmdline_cmd?
     do_cmdline(BYTE_STRING_VALUE(cmd), NULL, NULL, DOCMD_NOWAIT|DOCMD_VERBOSE);
-    update_screen(VALID);
+    update_screen(UPD_VALID);
 
     MZ_GC_UNREG();
     raise_if_error();
@@ -1836,7 +1836,7 @@ set_option(void *data, int argc, Scheme_Object **argv)
     MZ_GC_UNREG();
     do_set(command, scope);
     vim_free(command);
-    update_screen(NOT_VALID);
+    update_screen(UPD_NOT_VALID);
     curbuf = save_curb;
     curwin = save_curw;
     raise_if_error();
@@ -2106,7 +2106,7 @@ set_cursor(void *data, int argc, Scheme_Object **argv)
     win->win->w_cursor.lnum = lnum;
     win->win->w_cursor.col = col;
     win->win->w_set_curswant = TRUE;
-    update_screen(VALID);
+    update_screen(UPD_VALID);
 
     raise_if_error();
     return scheme_void;
@@ -2781,7 +2781,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	}
 
 	curbuf = savebuf;
-	update_screen(VALID);
+	update_screen(UPD_VALID);
 
 	MZ_GC_UNREG();
 	raise_if_error();
@@ -2841,7 +2841,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	free_array(array);
 	MZ_GC_UNREG();
 	curbuf = savebuf;
-	update_screen(VALID);
+	update_screen(UPD_VALID);
     }
 
     MZ_GC_UNREG();
@@ -3009,13 +3009,11 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	result = scheme_make_integer((long)vim_value->vval.v_number);
 	MZ_GC_CHECK();
     }
-# ifdef FEAT_FLOAT
     else if (vim_value->v_type == VAR_FLOAT)
     {
 	result = scheme_make_double((double)vim_value->vval.v_float);
 	MZ_GC_CHECK();
     }
-# endif
     else if (vim_value->v_type == VAR_LIST)
     {
 	list_T		*list = vim_value->vval.v_list;
@@ -3208,13 +3206,11 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 	tv->v_type = VAR_BOOL;
 	tv->vval.v_number = SCHEME_TRUEP(obj);
     }
-# ifdef FEAT_FLOAT
     else if (SCHEME_DBLP(obj))
     {
 	tv->v_type = VAR_FLOAT;
 	tv->vval.v_float = SCHEME_DBL_VAL(obj);
     }
-# endif
     else if (SCHEME_BYTE_STRINGP(obj))
     {
 	tv->v_type = VAR_STRING;

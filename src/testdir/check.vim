@@ -111,6 +111,14 @@ func CheckNotBSD()
   endif
 endfunc
 
+" Command to check for not running on a MacOS M1 system.
+command CheckNotMacM1 call CheckNotMacM1()
+func CheckNotMacM1()
+  if has('mac') && system('uname -a') =~ '\<arm64\>'
+    throw 'Skipped: does not work on MacOS M1'
+  endif
+endfunc
+
 " Command to check that making screendumps is supported.
 " Caller must source screendump.vim
 command CheckScreendump call CheckScreendump()
@@ -230,6 +238,15 @@ command CheckX11BasedGui call CheckX11BasedGui()
 func CheckX11BasedGui()
   if !g:x11_based_gui
     throw 'Skipped: requires X11 based GUI'
+  endif
+endfunc
+
+" Command to check that there are two clipboards
+command CheckTwoClipboards call CheckTwoClipboards()
+func CheckTwoClipboards()
+  " avoid changing the clipboard here, only X11 supports both
+  if !has('X11')
+    throw 'Skipped: requires two clipboards'
   endif
 endfunc
 

@@ -29,6 +29,12 @@
 # include "gui_dwrite.h"
 #endif
 
+// values for "dead_key"
+#define DEAD_KEY_OFF			0	// no dead key
+#define DEAD_KEY_SET_DEFAULT		1	// dead key pressed
+#define DEAD_KEY_TRANSIENT_IN_ON_CHAR	2	// wait for next key press
+#define DEAD_KEY_SKIP_ON_CHAR		3	// skip next _OnChar()
+
 #if defined(FEAT_DIRECTX)
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
@@ -192,9 +198,7 @@ gui_mch_set_rendering_options(char_u *s)
 # ifndef __MINGW32__
 #  include <shellapi.h>
 # endif
-# if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL_GUI) || defined(FEAT_GUI_TABLINE)
-#  include <commctrl.h>
-# endif
+# include <commctrl.h>
 # include <windowsx.h>
 
 #endif // PROTO
@@ -533,7 +537,7 @@ static int	s_y_pending;
 static UINT	s_kFlags_pending;
 static UINT_PTR	s_wait_timer = 0;	  // Timer for get char from user
 static int	s_timed_out = FALSE;
-static int	dead_key = 0;		  // 0: no dead key, 1: dead key pressed
+static int	dead_key = DEAD_KEY_OFF;
 static UINT	surrogate_pending_ch = 0; // 0: no surrogate pending,
 					  // else a high surrogate
 
@@ -866,7 +870,13 @@ _OnChar(
     int		modifiers;
     int		ch = cch;   // special keys are negative
 
-    dead_key = 0;
+    if (dead_key == DEAD_KEY_SKIP_ON_CHAR)
+	return;
+
+    //  keep DEAD_KEY_TRANSIENT_IN_ON_CHAR value for later handling in
+    //  process_message()
+    if (dead_key != DEAD_KEY_TRANSIENT_IN_ON_CHAR)
+	dead_key = DEAD_KEY_OFF;
 
     modifiers = get_active_modifiers();
 
@@ -912,7 +922,7 @@ _OnSysChar(
     int		modifiers;
     int		ch = cch;   // special keys are negative
 
-    dead_key = 0;
+    dead_key = DEAD_KEY_OFF;
 
     // OK, we have a character key (given by ch) which was entered with the
     // ALT key pressed. Eg, if the user presses Alt-A, then ch == 'A'. Note
@@ -1844,14 +1854,14 @@ gui_mch_draw_part_cursor(
  * dead key's nominal character and re-post the original message.
  */
     static void
-outputDeadKey_rePost(MSG originalMsg)
+outputDeadKey_rePost_Ex(MSG originalMsg, int dead_key2set)
 {
     static MSG deadCharExpel;
 
-    if (!dead_key)
+    if (dead_key == DEAD_KEY_OFF)
 	return;
 
-    dead_key = 0;
+    dead_key = dead_key2set;
 
     // Make Windows generate the dead key's character
     deadCharExpel.message = originalMsg.message;
@@ -1863,6 +1873,15 @@ outputDeadKey_rePost(MSG originalMsg)
     // re-generate the current character free of the dead char influence
     PostMessage(originalMsg.hwnd, originalMsg.message, originalMsg.wParam,
 							  originalMsg.lParam);
+}
+
+/*
+ * Wrapper for outputDeadKey_rePost_Ex which always reset dead_key value.
+ */
+    static void
+outputDeadKey_rePost(MSG originalMsg)
+{
+    outputDeadKey_rePost_Ex(originalMsg, DEAD_KEY_OFF);
 }
 
 /*
@@ -1936,8 +1955,47 @@ process_message(void)
 	 *   for some reason TranslateMessage() do not trigger a call
 	 *   immediately to _OnChar() (or _OnSysChar()).
 	 */
-	if (dead_key)
+
+	/*
+	 * We are at the moment after WM_CHAR with DEAD_KEY_SKIP_ON_CHAR event
+	 * was handled by _WndProc, this keypress we want to process normally
+	 */
+	if (dead_key == DEAD_KEY_SKIP_ON_CHAR)
+	    dead_key = DEAD_KEY_OFF;
+
+	if (dead_key != DEAD_KEY_OFF)
 	{
+	    /*
+	     * Expell the dead key pressed with Ctrl in a special way.
+	     *
+	     * After dead key was pressed with Ctrl in some cases, ESC was
+	     * artificially injected and handled by _OnChar(), now we are
+	     * dealing with completely new key press from the user. If we don't
+	     * do anything, ToUnicode() call will interpret this vk+scan_code
+	     * under influence of "dead-modifier". To prevent this we translate
+	     * this message replacing current char from user with VK_SPACE,
+	     * which will cause WM_CHAR with dead_key's character itself. Using
+	     * DEAD_KEY_SKIP_ON_CHAR value of dead_char we force _OnChar() to
+	     * ignore this one WM_CHAR event completely. Afterwards (due to
+	     * usage of PostMessage), this procedure is scheduled to be called
+	     * again with user char and on next entry we will clean
+	     * DEAD_KEY_SKIP_ON_CHAR. We cannot use original
+	     * outputDeadKey_rePost() since we do not wish to reset dead_key
+	     * value.
+	     */
+	    if (dead_key == DEAD_KEY_TRANSIENT_IN_ON_CHAR)
+	    {
+		outputDeadKey_rePost_Ex(msg,
+				       /*dead_key2set=*/DEAD_KEY_SKIP_ON_CHAR);
+		return;
+	    }
+
+	    if (dead_key != DEAD_KEY_SET_DEFAULT)
+	    {
+		// should never happen - is there a way to make ASSERT here?
+		return;
+	    }
+
 	    /*
 	     * If a dead key was pressed and the user presses VK_SPACE,
 	     * VK_BACK, or VK_ESCAPE it means that he actually wants to deal
@@ -1952,7 +2010,7 @@ process_message(void)
 	     */
 	    if ((vk == VK_SPACE || vk == VK_BACK || vk == VK_ESCAPE))
 	    {
-		dead_key = 0;
+		dead_key = DEAD_KEY_OFF;
 		TranslateMessage(&msg);
 		return;
 	    }
@@ -1987,7 +2045,7 @@ process_message(void)
 	{
 	    // ignore VK_SPACE when ALT key pressed: system menu
 	    if (special_keys[i].key_sym == vk
-		    && (vk != VK_SPACE || !(GetKeyState(VK_LMENU) & 0x8000)))
+		    && (vk != VK_SPACE || !(GetKeyState(VK_MENU) & 0x8000)))
 	    {
 		/*
 		 * Behave as expected if we have a dead key and the special key
@@ -1995,7 +2053,8 @@ process_message(void)
 		 * character output (such as a NUMPAD printable character or
 		 * the TAB key, etc...).
 		 */
-		if (dead_key && (special_keys[i].vim_code0 == 'K'
+		if (dead_key == DEAD_KEY_SET_DEFAULT
+			&& (special_keys[i].vim_code0 == 'K'
 						|| vk == VK_TAB || vk == CAR))
 		{
 		    outputDeadKey_rePost(msg);
@@ -2081,10 +2140,28 @@ process_message(void)
 	    // If this is a dead key ToUnicode returns a negative value.
 	    len = ToUnicode(vk, scan_code, keyboard_state, ch, ARRAY_LENGTH(ch),
 		    0);
-	    dead_key = len < 0;
+	    if (len < 0)
+		dead_key = DEAD_KEY_SET_DEFAULT;
 
 	    if (len <= 0)
+	    {
+		if (   dead_key == DEAD_KEY_SET_DEFAULT
+		    && (GetKeyState(VK_CONTROL) & 0x8000)
+		    && (   (vk == 221 && scan_code == 26) // AZERTY CTRL+dead_circumflex
+			|| (vk == 220 && scan_code == 41) // QWERTZ CTRL+dead_circumflex
+		       )
+		   )
+		{
+		    // post WM_CHAR='[' - which will be interpreted with CTRL
+		    // stil hold as ESC
+		    PostMessageW(msg.hwnd, WM_CHAR, '[', msg.lParam);
+		    // ask _OnChar() to not touch this state, wait for next key
+		    // press and maintain knowledge that we are "poisoned" with
+		    // "dead state"
+		    dead_key = DEAD_KEY_TRANSIENT_IN_ON_CHAR;
+		}
 		return;
+	    }
 
 	    // Post the message as TranslateMessage would do.
 	    if (msg.message == WM_KEYDOWN)
@@ -8539,5 +8616,45 @@ netbeans_draw_multisign_indicator(int row)
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
     SetPixel(s_hdc, x+3, y++, gui.currFgColor);
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    int
+test_gui_w32_sendevent(dict_T *args)
+{
+    char_u	*event;
+    INPUT	inputs[1];
+
+    event = dict_get_string(args, "event", TRUE);
+    if (event == NULL)
+	return FALSE;
+
+    ZeroMemory(inputs, sizeof(inputs));
+
+    if (STRICMP(event, "keydown") == 0 || STRICMP(event, "keyup") == 0)
+    {
+	WORD	    vkCode;
+
+	vkCode = dict_get_number_def(args, "keycode", 0);
+	if (vkCode <= 0 || vkCode >= 0xFF)
+	{
+	    semsg(_(e_invalid_argument_nr), (long)vkCode);
+	    return FALSE;
+	}
+
+	inputs[0].type = INPUT_KEYBOARD;
+	inputs[0].ki.wVk = vkCode;
+	if (STRICMP(event, "keyup") == 0)
+	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	(void)SetForegroundWindow(s_hwnd);
+	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+    }
+    else
+	semsg(_(e_invalid_argument_str), event);
+
+    vim_free(event);
+
+    return TRUE;
 }
 #endif

@@ -2,6 +2,7 @@
 void redraw_for_cursorline(win_T *wp);
 void update_topline_redraw(void);
 void update_topline(void);
+void update_curswant_force(void);
 void update_curswant(void);
 void check_cursor_moved(win_T *wp);
 void changed_window_setting(void);
@@ -11,6 +12,7 @@ void changed_cline_bef_curs(void);
 void changed_cline_bef_curs_win(win_T *wp);
 void changed_line_abv_curs(void);
 void changed_line_abv_curs_win(win_T *wp);
+void changed_line_display_buf(buf_T *buf);
 void validate_botline(void);
 void validate_botline_win(win_T *wp);
 void invalidate_botline(void);

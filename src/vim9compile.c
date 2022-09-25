@@ -54,6 +54,9 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
 	    {
 		*lvar = *lvp;
 		lvar->lv_from_outer = 0;
+		// If the variable was declared inside a loop set
+		// lvar->lv_loop_idx and lvar->lv_loop_depth.
+		get_loop_var_idx(cctx, idx, lvar);
 	    }
 	    return OK;
 	}
@@ -183,6 +186,9 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 
     if (cctx == NULL)
     {
+	if (cstack == NULL)
+	    return NULL;
+
 	// Not in a function scope, find variable with block ID equal to or
 	// smaller than the current block id.  Use "cstack" to go up the block
 	// scopes.
@@ -217,6 +223,23 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 
     // Not found, variable was not visible.
     return NULL;
+}
+
+/*
+ * If "name" can be found in the current script set it's "block_id".
+ */
+    void
+update_script_var_block_id(char_u *name, int block_id)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    hashitem_T	    *hi;
+    sallvar_T	    *sav;
+
+    hi = hash_find(&si->sn_all_vars.dv_hashtab, name);
+    if (HASHITEM_EMPTY(hi))
+	return;
+    sav = HI2SAV(hi);
+    sav->sav_block_id = block_id;
 }
 
 /*
@@ -610,12 +633,24 @@ find_imported(char_u *name, size_t len, int load)
     ret = find_imported_in_script(name, len, current_sctx.sc_sid);
     if (ret != NULL && load && (ret->imp_flags & IMP_FLAGS_AUTOLOAD))
     {
-	scid_T dummy;
+	scid_T	actual_sid = 0;
+	int	save_emsg_off = emsg_off;
+
+	// "emsg_off" will be set when evaluating an expression silently, but
+	// we do want to know about errors in a script.  Also because it then
+	// aborts when an error is encountered.
+	emsg_off = FALSE;
 
 	// script found before but not loaded yet
 	ret->imp_flags &= ~IMP_FLAGS_AUTOLOAD;
 	(void)do_source(SCRIPT_ITEM(ret->imp_sid)->sn_name, FALSE,
-							    DOSO_NONE, &dummy);
+						       DOSO_NONE, &actual_sid);
+	// If the script is a symlink it may be sourced with another name, may
+	// need to adjust the script ID for that.
+	if (actual_sid != 0)
+	    ret->imp_sid = actual_sid;
+
+	emsg_off = save_emsg_off;
     }
     return ret;
 }
@@ -822,6 +857,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     int		r = FAIL;
     compiletype_T   compile_type;
     isn_T	*funcref_isn = NULL;
+    lvar_T	*lvar = NULL;
 
     if (eap->forceit)
     {
@@ -928,9 +964,8 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     else
     {
 	// Define a local variable for the function reference.
-	lvar_T	*lvar = reserve_local(cctx, func_name, name_end - name_start,
+	lvar = reserve_local(cctx, func_name, name_end - name_start,
 						    TRUE, ufunc->uf_func_type);
-
 	if (lvar == NULL)
 	    goto theend;
 	if (generate_FUNCREF(cctx, ufunc, &funcref_isn) == FAIL)
@@ -949,6 +984,9 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	    && compile_def_function(ufunc, TRUE, compile_type, cctx) == FAIL)
     {
 	func_ptr_unref(ufunc);
+	if (lvar != NULL)
+	    // Now the local variable can't be used.
+	    *lvar->lv_name = '/';  // impossible value
 	goto theend;
     }
 
@@ -1154,11 +1192,14 @@ generate_loadvar(
 	    generate_LOADV(cctx, name + 2);
 	    break;
 	case dest_local:
-	    if (lvar->lv_from_outer > 0)
-		generate_LOADOUTER(cctx, lvar->lv_idx, lvar->lv_from_outer,
-									 type);
-	    else
-		generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
+	    if (cctx->ctx_skip != SKIP_YES)
+	    {
+		if (lvar->lv_from_outer > 0)
+		    generate_LOADOUTER(cctx, lvar->lv_idx, lvar->lv_from_outer,
+				 lvar->lv_loop_depth, lvar->lv_loop_idx, type);
+		else
+		    generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
+	    }
 	    break;
 	case dest_expr:
 	    // list or dict value should already be on the stack.
@@ -1941,6 +1982,9 @@ compile_assign_unlet(
 	}
     }
 
+    if (cctx->ctx_skip == SKIP_YES)
+	return OK;
+
     // Load the dict or list.  On the stack we then have:
     // - value (for assignment, not for :unlet)
     // - index
@@ -2222,9 +2266,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			r = compile_expr0_ext(&p, cctx, &is_const);
 			if (lhs.lhs_new_local)
 			    ++cctx->ctx_locals.ga_len;
-			if (r == FAIL)
-			    goto theend;
 		    }
+		    if (r == FAIL)
+			goto theend;
 		}
 		else if (semicolon && var_idx == var_count - 1)
 		{
@@ -2341,9 +2385,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			r = generate_PUSHBOOL(cctx, VVAL_FALSE);
 			break;
 		    case VAR_FLOAT:
-#ifdef FEAT_FLOAT
 			r = generate_PUSHF(cctx, 0.0);
-#endif
 			break;
 		    case VAR_STRING:
 			r = generate_PUSHS(cctx, NULL);
@@ -2352,7 +2394,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			r = generate_PUSHBLOB(cctx, blob_alloc());
 			break;
 		    case VAR_FUNC:
-			r = generate_PUSHFUNC(cctx, NULL, &t_func_void);
+			r = generate_PUSHFUNC(cctx, NULL, &t_func_void, TRUE);
 			break;
 		    case VAR_LIST:
 			r = generate_NEWLIST(cctx, 0, FALSE);
@@ -2412,11 +2454,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		expected = lhs.lhs_member_type;
 		stacktype = get_type_on_stack(cctx, 0);
 		if (
-#ifdef FEAT_FLOAT
 		    // If variable is float operation with number is OK.
 		    !(expected == &t_float && (stacktype == &t_number
 			    || stacktype == &t_number_bool)) &&
-#endif
 		    need_type(stacktype, expected, -1, 0, cctx,
 							 FALSE, FALSE) == FAIL)
 		    goto theend;
@@ -2727,6 +2767,7 @@ compile_def_function(
 	    // Was compiled in this mode before: Free old instructions.
 	    delete_def_function_contents(dfunc, FALSE);
 	ga_clear_strings(&dfunc->df_var_names);
+	dfunc->df_defer_var_idx = 0;
     }
     else
     {
@@ -2891,7 +2932,9 @@ compile_def_function(
 
 	if (*ea.cmd == '#')
 	{
-	    // "#" starts a comment
+	    // "#" starts a comment, but "#{" is an error
+	    if (vim9_bad_comment(ea.cmd))
+		goto erret;
 	    line = (char_u *)"";
 	    continue;
 	}
@@ -3226,12 +3269,19 @@ compile_def_function(
 		    line = compile_eval(p, &cctx);
 		    break;
 
+	    case CMD_defer:
+		    line = compile_defer(p, &cctx);
+		    break;
+
 	    case CMD_echo:
 	    case CMD_echon:
-	    case CMD_execute:
-	    case CMD_echomsg:
-	    case CMD_echoerr:
 	    case CMD_echoconsole:
+	    case CMD_echoerr:
+	    case CMD_echomsg:
+#ifdef HAS_MESSAGE_WINDOW
+	    case CMD_echowindow:
+#endif
+	    case CMD_execute:
 		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
 		    break;
 
@@ -3398,8 +3448,14 @@ nextline:
 	}
 	dfunc->df_varcount = dfunc->df_var_names.ga_len;
 	dfunc->df_has_closure = cctx.ctx_has_closure;
+
 	if (cctx.ctx_outer_used)
+	{
 	    ufunc->uf_flags |= FC_CLOSURE;
+	    if (outer_cctx != NULL)
+		++outer_cctx->ctx_closure_count;
+	}
+
 	ufunc->uf_def_status = UF_COMPILED;
     }
 

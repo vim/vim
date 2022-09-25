@@ -1238,18 +1238,27 @@ spell_valid_case(
 }
 
 /*
- * Return TRUE if spell checking is not enabled.
+ * Return TRUE if spell checking is enabled for "wp".
+ */
+    int
+spell_check_window(win_T *wp)
+{
+    return wp->w_p_spell
+		&& *wp->w_s->b_p_spl != NUL
+		&& wp->w_s->b_langp.ga_len > 0
+		&& *(char **)(wp->w_s->b_langp.ga_data) != NULL;
+}
+
+/*
+ * Return TRUE and give an error if spell checking is not enabled.
  */
     static int
 no_spell_checking(win_T *wp)
 {
-    if (!wp->w_p_spell || *wp->w_s->b_p_spl == NUL
-					 || wp->w_s->b_langp.ga_len == 0)
-    {
-	emsg(_(e_spell_checking_is_not_possible));
-	return TRUE;
-    }
-    return FALSE;
+    if (spell_check_window(wp))
+	return FALSE;
+    emsg(_(e_spell_checking_is_not_possible));
+    return TRUE;
 }
 
 /*
@@ -2284,7 +2293,7 @@ did_set_spelllang(win_T *wp)
 		}
 	    }
     }
-    redraw_win_later(wp, NOT_VALID);
+    redraw_win_later(wp, UPD_NOT_VALID);
 
 theend:
     vim_free(spl_copy);
@@ -3854,7 +3863,7 @@ ex_spelldump(exarg_T *eap)
     if (curbuf->b_ml.ml_line_count > 1)
 	ml_delete(curbuf->b_ml.ml_line_count);
 
-    redraw_later(NOT_VALID);
+    redraw_later(UPD_NOT_VALID);
 }
 
 /*
@@ -4363,7 +4372,7 @@ valid_spellfile(char_u *val)
     char_u *s;
 
     for (s = val; *s != NUL; ++s)
-	if (!vim_isfilec(*s) && *s != ',' && *s != ' ')
+	if (!vim_is_fname_char(*s))
 	    return FALSE;
     return TRUE;
 }

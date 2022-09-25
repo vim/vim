@@ -6464,7 +6464,7 @@ msgstr "E804: Bir kayan noktalı değer ile '%' kullanılamaz"
 msgid "E805: Using a Float as a Number"
 msgstr "E805: Bir Kayan Noktalı Değer, Sayı yerine kullanılıyor"
 
-msgid "E806: Using Float as a String"
+msgid "E806: Using a Float as a String"
 msgstr "E806: Kayan Noktalı Değer, bir Dizi yerine kullanılıyor"
 
 msgid "E807: Expected Float argument for printf()"

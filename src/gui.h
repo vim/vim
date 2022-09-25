@@ -402,10 +402,6 @@ typedef struct Gui
     int		tabline_height;
 #endif
 
-#ifdef FEAT_FOOTER
-    int		footer_height;	    // height of the message footer
-#endif
-
 #if defined(FEAT_TOOLBAR) \
 	&& (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_MSWIN))
     int		toolbar_height;	    // height of the toolbar

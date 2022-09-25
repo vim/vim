@@ -68,7 +68,8 @@ ifeq ($(UNM),AROS)
 LDFLAGS = -DHAVE_FSYNC -ldebug
 else
 ifeq ($(UNM),MorphOS)
-LDFLAGS = -ldebug -noixemul
+CFLAGS += -noixemul
+LDFLAGS = -ldebug -lm -noixemul
 endif
 endif
 endif

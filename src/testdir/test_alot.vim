@@ -11,7 +11,6 @@ source test_ex_mode.vim
 source test_expand.vim
 source test_expand_dllpath.vim
 source test_expand_func.vim
-source test_feedkeys.vim
 source test_file_perm.vim
 source test_fnamemodify.vim
 source test_ga.vim

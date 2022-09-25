@@ -15,20 +15,20 @@ endfunc
 func Test_ptjump()
   CheckFeature quickfix
 
-  set tags=Xtags
+  set tags=Xpttags
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "one\tXfile\t1",
-        \ "three\tXfile\t3",
-        \ "two\tXfile\t2"],
-        \ 'Xtags')
-  call writefile(['one', 'two', 'three'], 'Xfile')
+        \ "one\tXptfile\t1",
+        \ "three\tXptfile\t3",
+        \ "two\tXptfile\t2"],
+        \ 'Xpttags')
+  call writefile(['one', 'two', 'three'], 'Xptfile')
 
   %bw!
   ptjump two
   call assert_equal(2, winnr())
   wincmd p
   call assert_equal(1, &previewwindow)
-  call assert_equal('Xfile', expand("%:p:t"))
+  call assert_equal('Xptfile', expand("%:p:t"))
   call assert_equal(2, line('.'))
   call assert_equal(2, winnr('$'))
   call assert_equal(1, winnr())
@@ -38,7 +38,7 @@ func Test_ptjump()
   call assert_equal(2, winnr())
   wincmd p
   call assert_equal(1, &previewwindow)
-  call assert_equal('Xfile', expand("%:p:t"))
+  call assert_equal('Xptfile', expand("%:p:t"))
   call assert_equal(3, line('.'))
   call assert_equal(2, winnr('$'))
   call assert_equal(1, winnr())
@@ -48,8 +48,8 @@ func Test_ptjump()
   call assert_equal(5, winheight(0))
   close
 
-  call delete('Xtags')
-  call delete('Xfile')
+  call delete('Xpttags')
+  call delete('Xptfile')
   set tags&
 endfunc
 
@@ -73,12 +73,12 @@ func Test_cancel_ptjump()
 endfunc
 
 func Test_static_tagjump()
-  set tags=Xtags
+  set tags=Xtjtags
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "one\tXfile1\t/^one/;\"\tf\tfile:\tsignature:(void)",
-        \ "word\tXfile2\tcmd2"],
-        \ 'Xtags')
-  new Xfile1
+        \ "one\tXtjfile1\t/^one/;\"\tf\tfile:\tsignature:(void)",
+        \ "word\tXtjfile2\tcmd2"],
+        \ 'Xtjtags')
+  new Xtjfile1
   call setline(1, ['empty', 'one()', 'empty'])
   write
   tag one
@@ -86,19 +86,19 @@ func Test_static_tagjump()
 
   bwipe!
   set tags&
-  call delete('Xtags')
-  call delete('Xfile1')
+  call delete('Xtjtags')
+  call delete('Xtjfile1')
 endfunc
 
 func Test_duplicate_tagjump()
-  set tags=Xtags
+  set tags=Xdttags
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "thesame\tXfile1\t1;\"\td\tfile:",
-        \ "thesame\tXfile1\t2;\"\td\tfile:",
-        \ "thesame\tXfile1\t3;\"\td\tfile:",
+        \ "thesame\tXdtfile1\t1;\"\td\tfile:",
+        \ "thesame\tXdtfile1\t2;\"\td\tfile:",
+        \ "thesame\tXdtfile1\t3;\"\td\tfile:",
         \ ],
-        \ 'Xtags')
-  new Xfile1
+        \ 'Xdttags')
+  new Xdtfile1
   call setline(1, ['thesame one', 'thesame two', 'thesame three'])
   write
   tag thesame
@@ -110,19 +110,19 @@ func Test_duplicate_tagjump()
 
   bwipe!
   set tags&
-  call delete('Xtags')
-  call delete('Xfile1')
+  call delete('Xdttags')
+  call delete('Xdtfile1')
 endfunc
 
 func Test_tagjump_switchbuf()
   CheckFeature quickfix
 
-  set tags=Xtags
+  set tags=Xswtags
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "second\tXfile1\t2",
-        \ "third\tXfile1\t3",],
-        \ 'Xtags')
-  call writefile(['first', 'second', 'third'], 'Xfile1')
+        \ "second\tXsbfile1\t2",
+        \ "third\tXsbfile1\t3",],
+        \ 'Xswtags')
+  call writefile(['first', 'second', 'third'], 'Xsbfile1')
 
   enew | only
   set switchbuf=
@@ -153,8 +153,8 @@ func Test_tagjump_switchbuf()
 
   tabclose!
   enew | only
-  call delete('Xfile1')
-  call delete('Xtags')
+  call delete('Xsbfile1')
+  call delete('Xswtags')
   set tags&
   set switchbuf&vim
 endfunc
@@ -205,14 +205,14 @@ func Test_tag_symbolic()
   call writefile([
         \ "SECTION_OFF	" . getcwd() . "/Xtest.dir/Xtest.c	/^#define  SECTION_OFF  3$/",
         \ '',
-        \ ], 'Xtags')
+        \ ], 'Xsymtags')
   call writefile(['#define  SECTION_OFF  3',
         \ '#define  NUM_SECTIONS 3'], 'Xtest.c')
 
   " Try jumping to a tag, but with a path that contains a symbolic link.  When
   " wrong, this will give the ATTENTION message.  The next space will then be
   " eaten by hit-return, instead of moving the cursor to 'd'.
-  set tags=Xtags
+  set tags=Xsymtags
   enew!
   call append(0, 'SECTION_OFF')
   call cursor(1,1)
@@ -223,7 +223,7 @@ func Test_tag_symbolic()
   set hidden&
   set tags&
   enew!
-  call delete('Xtags')
+  call delete('Xsymtags')
   call delete('Xtest.c')
   call delete("Xtest.dir", "rf")
   %bwipe!
@@ -263,12 +263,12 @@ func Test_tag_file_encoding()
   new
   let content = ['!_TAG_FILE_ENCODING	cp932	//',
         \ "\x82`\x82a\x82b	Xtags2.txt	/\x82`\x82a\x82b"]
-  call writefile(content, 'Xtags')
-  set tags=Xtags
+  call writefile(content, 'Xenctags')
+  set tags=Xenctags
   tag /.ＢＣ
   call assert_equal('Xtags2.txt', expand('%:t'))
   call assert_equal('ＡＢＣ', getline('.'))
-  call delete('Xtags')
+  call delete('Xenctags')
   close
 
   " case3:
@@ -280,12 +280,12 @@ func Test_tag_file_encoding()
       call add(contents, 'abc' .. i
             \ .. "	Xtags3.txt	/\x82`\x82a\x82b")
   endfor
-  call writefile(contents, 'Xtags')
-  set tags=Xtags
+  call writefile(contents, 'Xenctags')
+  set tags=Xenctags
   tag abc50
   call assert_equal('Xtags3.txt', expand('%:t'))
   call assert_equal('ＡＢＣ', getline('.'))
-  call delete('Xtags')
+  call delete('Xenctags')
   close
 
   set tags&
@@ -314,8 +314,8 @@ func Test_tagjump_etags()
         \ "Xmain.c,64",
         \ "void foo() {}\x7ffoo\x011,0",
         \ "int main(int argc, char **argv)\x7fmain\x012,14",
-	\ ], 'Xtags')
-  set tags=Xtags
+	\ ], 'Xtetags')
+  set tags=Xtetags
   ta foo
   call assert_equal('void foo() {}', getline('.'))
 
@@ -328,7 +328,7 @@ func Test_tagjump_etags()
         \ "Xnonexisting,include",
         \ "\x0c",
         \ "Xtags2,include"
-        \ ], 'Xtags')
+        \ ], 'Xtetags')
   call writefile([
         \ "\x0c",
         \ "Xmain.c,64",
@@ -343,7 +343,7 @@ func Test_tagjump_etags()
         \ "\x0c",
         \ "Xmain.c,8",
         \ "int main"
-        \ ], 'Xtags', 'b')
+        \ ], 'Xtetags', 'b')
   call assert_fails('tag foo', 'E426:')
 
   " invalid line number
@@ -351,7 +351,7 @@ func Test_tagjump_etags()
 	\ "\x0c",
         \ "Xmain.c,64",
         \ "void foo() {}\x7ffoo\x0abc,0",
-	\ ], 'Xtags')
+	\ ], 'Xtetags')
   call assert_fails('tag foo', 'E426:')
 
   " invalid tag name
@@ -359,7 +359,7 @@ func Test_tagjump_etags()
 	\ "\x0c",
         \ "Xmain.c,64",
         \ ";;;;\x7f1,0",
-	\ ], 'Xtags')
+	\ ], 'Xtetags')
   call assert_fails('tag foo', 'E431:')
 
   " end of file after a CTRL-L line
@@ -368,14 +368,14 @@ func Test_tagjump_etags()
         \ "Xmain.c,64",
         \ "void foo() {}\x7ffoo\x011,0",
 	\ "\x0c",
-	\ ], 'Xtags')
+	\ ], 'Xtetags')
   call assert_fails('tag main', 'E426:')
 
   " error in an included tags file
   call writefile([
         \ "\x0c",
         \ "Xtags2,include"
-        \ ], 'Xtags')
+        \ ], 'Xtetags')
   call writefile([
         \ "\x0c",
         \ "Xmain.c,64",
@@ -383,7 +383,7 @@ func Test_tagjump_etags()
         \ ], 'Xtags2')
   call assert_fails('tag foo', 'E431:')
 
-  call delete('Xtags')
+  call delete('Xtetags')
   call delete('Xtags2')
   call delete('Xmain.c')
   set tags&
@@ -392,9 +392,9 @@ endfunc
 
 " Test for getting and modifying the tag stack
 func Test_getsettagstack()
-  call writefile(['line1', 'line2', 'line3'], 'Xfile1')
-  call writefile(['line1', 'line2', 'line3'], 'Xfile2')
-  call writefile(['line1', 'line2', 'line3'], 'Xfile3')
+  call writefile(['line1', 'line2', 'line3'], 'Xstsfile1')
+  call writefile(['line1', 'line2', 'line3'], 'Xstsfile2')
+  call writefile(['line1', 'line2', 'line3'], 'Xstsfile3')
 
   enew | only
   call settagstack(1, {'items' : []})
@@ -403,18 +403,18 @@ func Test_getsettagstack()
   " Error cases
   call assert_equal({}, gettagstack(100))
   call assert_equal(-1, settagstack(100, {'items' : []}))
-  call assert_fails('call settagstack(1, [1, 10])', 'E715:')
+  call assert_fails('call settagstack(1, [1, 10])', 'E1206:')
   call assert_fails("call settagstack(1, {'items' : 10})", 'E714:')
-  call assert_fails("call settagstack(1, {'items' : []}, 10)", 'E928:')
+  call assert_fails("call settagstack(1, {'items' : []}, 10)", 'E1174:')
   call assert_fails("call settagstack(1, {'items' : []}, 'b')", 'E962:')
   call assert_equal(-1, settagstack(0, test_null_dict()))
 
-  set tags=Xtags
+  set tags=Xtsttags
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "one\tXfile1\t1",
-        \ "three\tXfile3\t3",
-        \ "two\tXfile2\t2"],
-        \ 'Xtags')
+        \ "one\tXstsfile1\t1",
+        \ "three\tXstsfile3\t3",
+        \ "two\tXstsfile2\t2"],
+        \ 'Xtsttags')
 
   let stk = []
   call add(stk, {'bufnr' : bufnr('%'), 'tagname' : 'one',
@@ -495,10 +495,10 @@ func Test_getsettagstack()
 
   " Tag with multiple matches
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "two\tXfile1\t1",
-        \ "two\tXfile2\t3",
-        \ "two\tXfile3\t2"],
-        \ 'Xtags')
+        \ "two\tXstsfile1\t1",
+        \ "two\tXstsfile2\t3",
+        \ "two\tXstsfile3\t2"],
+        \ 'Xtsttags')
   call settagstack(1, {'items' : []})
   tag two
   tnext
@@ -515,10 +515,10 @@ func Test_getsettagstack()
   call assert_fails('call gettagstack()', 'E342:')
 
   call settagstack(1, {'items' : []})
-  call delete('Xfile1')
-  call delete('Xfile2')
-  call delete('Xfile3')
-  call delete('Xtags')
+  call delete('Xstsfile1')
+  call delete('Xstsfile2')
+  call delete('Xstsfile3')
+  call delete('Xtsttags')
   set tags&
 endfunc
 
@@ -735,11 +735,11 @@ endfunc
 " Test for :ptag
 func Test_tag_preview()
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "second\tXfile1\t2",
-        \ "third\tXfile1\t3",],
+        \ "second\tXtpfile1\t2",
+        \ "third\tXtpfile1\t3",],
         \ 'Xtags')
   set tags=Xtags
-  call writefile(['first', 'second', 'third'], 'Xfile1')
+  call writefile(['first', 'second', 'third'], 'Xtpfile1')
 
   enew | only
   ptag third
@@ -766,7 +766,7 @@ func Test_tag_preview()
   pclose
   call assert_equal(1, winnr('$'))
 
-  call delete('Xfile1')
+  call delete('Xtpfile1')
   call delete('Xtags')
   set tags&
 endfunc
@@ -1453,24 +1453,24 @@ endfunc
 func Test_tag_length()
   set tags=Xtags
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
-        \ "tame\tXfile1\t1;",
-        \ "tape\tXfile2\t1;"], 'Xtags')
-  call writefile(['tame'], 'Xfile1')
-  call writefile(['tape'], 'Xfile2')
+        \ "tame\tXtlfile1\t1;",
+        \ "tape\tXtlfile2\t1;"], 'Xtags')
+  call writefile(['tame'], 'Xtlfile1')
+  call writefile(['tape'], 'Xtlfile2')
 
   " Jumping to the tag 'tape', should instead jump to 'tame'
   new
   set taglength=2
   tag tape
-  call assert_equal('Xfile1', @%)
+  call assert_equal('Xtlfile1', @%)
   " Tag search should jump to the right tag
   enew
   tag /^tape$
-  call assert_equal('Xfile2', @%)
+  call assert_equal('Xtlfile2', @%)
 
   call delete('Xtags')
-  call delete('Xfile1')
-  call delete('Xfile2')
+  call delete('Xtlfile1')
+  call delete('Xtlfile2')
   set tags& taglength&
 endfunc
 

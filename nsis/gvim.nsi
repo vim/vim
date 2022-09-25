@@ -366,11 +366,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMTOOLS}\winpty-agent.exe
 
 	SetOutPath $0\colors
-	File ${VIMRT}\colors\*.*
-	SetOutPath $0\colors\tools
-	File ${VIMRT}\colors\tools\*.*
-	SetOutPath $0\colors\lists
-	File ${VIMRT}\colors\lists\*.*
+	File /r ${VIMRT}\colors\*.*
 
 	SetOutPath $0\compiler
 	File ${VIMRT}\compiler\*.*
@@ -395,13 +391,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\plugin\*.*
 
 	SetOutPath $0\autoload
-	File ${VIMRT}\autoload\*.*
-
-	SetOutPath $0\autoload\dist
-	File ${VIMRT}\autoload\dist\*.*
-
-	SetOutPath $0\autoload\xml
-	File ${VIMRT}\autoload\xml\*.*
+	File /r ${VIMRT}\autoload\*.*
 
 	SetOutPath $0\import\dist
 	File ${VIMRT}\import\dist\*.*
@@ -410,7 +400,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMSRC}\vim.ico
 
 	SetOutPath $0\syntax
-	File ${VIMRT}\syntax\*.*
+	File /r ${VIMRT}\syntax\*.*
 
 	SetOutPath $0\spell
 	File ${VIMRT}\spell\*.txt

@@ -12,7 +12,7 @@ this, then you will get the default behavior as is documented, which should
 be fine for most people.
 
 This document assumes that you are building Vim for Win32 or later (Windows
-XP/2003/Vista/7/8/10).  There are also instructions for pre-XP systems, but
+7/8/10/11).  There are also instructions for pre-Vista and pre-XP systems, but
 they might no longer work.
 
 The recommended way is to build a 32 bit Vim, also on 64 bit systems.  You can
@@ -42,9 +42,9 @@ Contents:
 
 
 The currently recommended way (that means it has been verified to work) is
-using the "Visual Studio Community 2015" installation.  This includes the SDK
-needed to target Windows XP.  But not older Windows versions (95, 98), see
-"OLDER VERSIONS" below for that.
+using the "Visual Studio Community 2015" installation.  This doesn't include
+the SDK for older Windows versions (95, 98), see "OLDER VERSIONS" below for
+that.
 
 
 1. Microsoft Visual C++
@@ -52,22 +52,35 @@ needed to target Windows XP.  But not older Windows versions (95, 98), see
 
 We do not provide download links, since Microsoft keeps changing them.  You
 can search for "Visual Studio Community 2015", for example.  You will need to
-create a Microsoft account (it's free).
+create a Microsoft account (it's free).  You need to download the "DVD", and
+execute the installer from it.
 
-When installing "Visual Studio Community 2015 with Update 3" make sure to
-select "custom" and check "Windows XP Support for C++" and all checkboxes
-under "Universal Windows App Development Tools"
+When installing "Visual Studio Community 2015 with Update 3" or "Visual C++
+Build Tools for Visual Studio 2015 with Update 3" make sure to
+select "custom" and check all checkboxes under "Universal Windows App
+Development Tools".  Or whatever they are called now.
+(If you still want to target Windows XP, check also "Windows XP Support for
+C++".  Note that with the current source code this is no longer supported, you
+will have to check out an older version).
 
 
 Visual Studio
 -------------
 
-Building with Visual Studio (VS2010, VS2012, VS2013, VS2015, VS2017 and VS2019)
-is straightforward.
+Building with Visual Studio (VS2015, VS2017, VS2019 and VS2022) is
+straightforward.  Older versions probably don't work.
+
+Visual Studio installed a batch file called vcvarsall.bat, which you must
+run to set up paths for nmake and MSVC.  We provide a batch file
+"msvc2015.bat" for this.  You may need to edit it if you didn't instal Visual
+Studio in the standard location.
+If you use VS2017 or later, you can use "msvc-latest.bat" (or "msvc2017.bat"
+and so on for the specific version).  You must specify the architecture (e.g.
+"x86", "x64", etc.) as the first argument when you use this.  If you use VS2017
+Express, you must use "x86_amd64" instead of "x64" for targeting the x64
+platform.
 
 To build Vim from the command line with MSVC, use Make_mvc.mak.
-Visual Studio installed a batch file called vcvars32.bat, which you must
-run to set up paths for nmake and MSVC.
 
 nmake -f Make_mvc.mak		console   Win32 SDK or Microsoft Visual C++
 nmake -f Make_mvc.mak GUI=yes	GUI	  Microsoft Visual C++
@@ -84,22 +97,14 @@ to the parameters you pass to Make_mvc.mak.
 See the specific files for comments and options.
 
 These files have been supplied by George V. Reilly, Ben Singer, Ken Scott and
-Ron Aaron; they have been tested.
+Ron Aaron; they have been tested.  But several things changed after that...
 
 
-Visual C++ 2010 Express Edition       *msvc-2010-express*
--------------------------------
-
-Visual C++ 2010 Express Edition can be downloaded for free from:
-    http://www.microsoft.com/express/vc/Default.aspx
-This includes the IDE and the debugger.
-
-To set the environment execute the msvc2010.bat script.  You can then build
-Vim with Make_mvc.mak.
-
-
-Targeting Windows XP with MSVC 2012 and later      *new-msvc-windows-xp*
+Targeting Windows XP with MSVC 2015 and later      *new-msvc-windows-xp*
 ---------------------------------------------
+
+(The support for pre-Vista was removed in patch 9.0.0496.  If you want to
+target Windows XP, use the source code before that.)
 
 Beginning with Visual C++ 2012, Microsoft changed the behavior of LINK.EXE
 so that it targets Windows 6.0 (Vista) by default.  In order to override
@@ -138,9 +143,6 @@ compiler by using the "x64" option:
 The following Visual C++ team blog can serve as a reference page:
     http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx
 
-VC 2019 dropped support for targeting Windows XP.  If you want a binary that
-targeting Windows XP, use VC 2017 or earlier.
-
 
 Cross compile support for Windows on ARM64
 ------------------------------------------
@@ -153,42 +155,13 @@ The ARM64 support was provided by Leendert van Doorn.
 
 OLDER VERSIONS
 
-The minimal supported version is Windows XP. Building with older compilers
-might still work, but these instructions might be outdated.
+The minimal supported version is Windows 7. Building with compilers
+older than 2015 most likely doesn't work.  Since MSVC 2015 can be obtained for
+free there is no point in supporting older versions.
 
 If you need the executable to run on Windows 98 or ME, use the 2005 one
-|msvc-2005-express|, and use the source code before 8.0.0029.
-
-
-Visual C++ 2005 Express Edition       *msvc-2005-express*
--------------------------------
-
-NOTE: this most likely does not work
-
-Visual C++ 2005 Express Edition can be downloaded for free from:
-    http://msdn.microsoft.com/vstudio/express/visualC/default.aspx
-This includes the IDE and the debugger. You will also need
-|ms-platform-sdk|. You can build Vim with Make_mvc.mak.
-
-Instructions for integrating the Platform SDK into VC Express:
-    http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/default.aspx
-
-
-Visual C++ 2008 Express Edition       *msvc-2008-express*
--------------------------------
-
-NOTE: this most likely does not work
-
-Visual C++ 2008 Express Edition can be downloaded for free from:
-    http://www.microsoft.com/express/downloads/
-This includes the IDE and the debugger.
-
-To set the environment execute the msvc2008.bat script.  You can then build
-Vim with Make_mvc.mak.
-
-For building 64 bit binaries you also need to install the SDK:
-"Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1"
-You don't need the examples and documentation.
+|msvc-2005-express|, and use the source code before 8.0.0029.  See the
+src/INSTALLpc.txt file for instructions.
 
 
 2. MSYS2 with MinGW
@@ -771,12 +744,12 @@ config.h and Ruby's DLL name. Here are the steps for working around them:
       nmake -f Make_mvc.mak
           RUBY=C:\Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
           RUBY_MSVCRT_NAME=msvcrt
-          WINVER=0x501
+          WINVER=0x601
 
     For 64-bit version, replace RUBY=C:\Ruby24 with RUBY=C:\Ruby24-x64.
 
     If you set WINVER explicitly, it must be set to >=0x500, when building
-    with Ruby 2.1 or later.  (Default is 0x501.)
+    with Ruby 2.1 or later.  (Default is 0x601.)
     When using this trick, you also need to set RUBY_MSVCRT_NAME to msvcrt
     which is used for the Ruby's DLL name.
 
@@ -787,11 +760,11 @@ After you install RubyInstaller, just type this (as one line):
 
     mingw32-make -f Make_ming.mak
         RUBY=C:/Ruby24 DYNAMIC_RUBY=yes RUBY_VER=24 RUBY_API_VER_LONG=2.4.0
-        WINVER=0x600
+        WINVER=0x601
 
 For 64-bit version, replace RUBY=C:/Ruby24 with RUBY=C:/Ruby24-x64.
 If you set WINVER explicitly, it must be set to >=0x500, when building with
-Ruby 2.1 or later.  (Default is 0x600.)
+Ruby 2.1 or later.  (Default is 0x601.)
 
 
 

@@ -156,6 +156,7 @@ func Test_Ex_append_in_loop()
   call term_sendkeys(buf, "append\<CR>")
   call WaitForAssert({-> assert_match(':  append', term_getline(buf, 5))}, 1000)
   call term_sendkeys(buf, "\<C-C>")
+  " Wait for input to be flushed
   call term_wait(buf)
   call term_sendkeys(buf, "foo\<CR>")
   call WaitForAssert({-> assert_match('foo', term_getline(buf, 5))}, 1000)
@@ -236,13 +237,12 @@ func Test_ex_mode_with_global()
     call writefile(['done'], 'Xdidexmode')
     qall!
   END
-  call writefile(lines, 'Xexmodescript')
+  call writefile(lines, 'Xexmodescript', 'D')
   call assert_equal(1, RunVim([], [], '-e -s -S Xexmodescript'))
   call assert_equal(['done'], readfile('Xdidexmode'))
 
   call delete('logfile')
   call delete('Xdidexmode')
-  call delete('Xexmodescript')
 endfunc
 
 func Test_ex_mode_count_overflow()
@@ -256,12 +256,11 @@ func Test_ex_mode_count_overflow()
     call writefile(['done'], 'Xdidexmode')
     qall!
   END
-  call writefile(lines, 'Xexmodescript')
+  call writefile(lines, 'Xexmodescript', 'D')
   call assert_equal(1, RunVim([], [], '-e -s -S Xexmodescript -c qa'))
   call assert_equal(['done'], readfile('Xdidexmode'))
 
   call delete('Xdidexmode')
-  call delete('Xexmodescript')
 endfunc
 
 func Test_ex_mode_large_indent()
@@ -280,10 +279,8 @@ func Test_empty_command_visual_mode()
       0norm0V:
       :qall!
   END
-  call writefile(lines, 'Xexmodescript')
+  call writefile(lines, 'Xexmodescript', 'D')
   call assert_equal(1, RunVim([], [], '-u NONE -e -s -S Xexmodescript'))
-
-  call delete('Xexmodescript')
 
   " This may cause a dialog to be displayed for an empty command, ignore it.
   call delete('guidialogfile')
