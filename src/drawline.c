@@ -1125,10 +1125,7 @@ win_line(
 #endif
 
 #ifdef FEAT_SPELL
-	if (wp->w_p_spell
-		&& *wp->w_s->b_p_spl != NUL
-		&& wp->w_s->b_langp.ga_len > 0
-		&& *(char **)(wp->w_s->b_langp.ga_data) != NULL)
+	if (spell_check_window(wp))
 	{
 	    // Prepare for spell checking.
 	    has_spell = TRUE;
