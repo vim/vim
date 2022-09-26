@@ -2797,14 +2797,22 @@ cursor_up(
 	wp->w_cursor.lnum = lnum;
     }
 
-    // try to advance to the column we want to be at
-    if (wp == curwin)
-	coladvance(wp->w_curswant);
-
     if (upd_topline)
 	update_topline();	// make sure curwin->w_topline is valid
 
     return wp->w_cursor.lnum;
+}
+
+    linenr_T
+cursor_up_adv(
+    win_T	*wp,
+    long	n,
+    int		upd_topline)	    // When TRUE: update topline
+{
+    n = cursor_up(wp, n, upd_topline);
+    coladvance(wp->w_curswant);
+
+    return n;
 }
 
 /*
@@ -2858,14 +2866,22 @@ cursor_down(
 	wp->w_cursor.lnum = lnum;
     }
 
-    // try to advance to the column we want to be at
-    if (wp == curwin)
-	coladvance(wp->w_curswant);
-
     if (upd_topline)
 	update_topline();	// make sure curwin->w_topline is valid
 
     return wp->w_cursor.lnum;
+}
+
+    linenr_T
+cursor_down_adv(
+    win_T	*wp,
+    long	n,
+    int		upd_topline)	    // When TRUE: update topline
+{
+    n = cursor_down(wp, n, upd_topline);
+    coladvance(wp->w_curswant);
+
+    return n;
 }
 
 /*
@@ -4704,7 +4720,7 @@ ins_up(
 
     undisplay_dollar();
     tpos = curwin->w_cursor;
-    if (cursor_up(curwin, 1L, TRUE))
+    if (cursor_up_adv(curwin, 1L, TRUE))
     {
 	if (startcol)
 	    coladvance(getvcol_nolist(&Insstart));
@@ -4761,7 +4777,7 @@ ins_down(
 
     undisplay_dollar();
     tpos = curwin->w_cursor;
-    if (cursor_down(curwin, 1L, TRUE))
+    if (cursor_down_adv(curwin, 1L, TRUE))
     {
 	if (startcol)
 	    coladvance(getvcol_nolist(&Insstart));
