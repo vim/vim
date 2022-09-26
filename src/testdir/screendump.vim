@@ -13,16 +13,43 @@ if !has('terminal')
   finish
 endif
 
+" Read a dump file "fname" and if "filter" exists apply it to the text.
+def ReadAndFilter(fname: string, filter: string): list<string>
+  var contents = readfile(fname)
+
+  if filereadable(filter)
+    # do this in the bottom window so that the terminal window is unaffected
+    wincmd j
+    enew
+    setline(1, contents)
+    exe "source " .. filter
+    contents = getline(1, '$')
+    enew!
+    wincmd k
+    redraw
+  endif
+
+  return contents
+enddef
+
+
 " Verify that Vim running in terminal buffer "buf" matches the screen dump.
 " "options" is passed to term_dumpwrite().
 " Additionally, the "wait" entry can specify the maximum time to wait for the
 " screen dump to match in msec (default 1000 msec).
 " The file name used is "dumps/{filename}.dump".
+"
+" To ignore part of the dump, provide a "dumps/{filename}.vim" file with
+" Vim commands to be applied to both the reference and the current dump, so
+" that parts that are irrelevant are not used for the comparison.  The result
+" is NOT written, thus "term_dumpdiff()" shows the difference anyway.
+"
 " Optionally an extra argument can be passed which is prepended to the error
 " message.  Use this when using the same dump file with different options.
 " Returns non-zero when verification fails.
 func VerifyScreenDump(buf, filename, options, ...)
   let reference = 'dumps/' . a:filename . '.dump'
+  let filter = 'dumps/' . a:filename . '.vim'
   let testfile = 'failed/' . a:filename . '.dump'
 
   let max_loops = get(a:options, 'wait', 1000) / 10
@@ -37,6 +64,13 @@ func VerifyScreenDump(buf, filename, options, ...)
   " text and attributes only from the internal buffer.
   redraw
 
+  if filereadable(reference)
+    let refdump = ReadAndFilter(reference, filter)
+  else
+    " Must be a new screendump, always fail
+    let refdump = []
+  endif
+
   let did_mkdir = 0
   if !isdirectory('failed')
     let did_mkdir = 1
@@ -49,13 +83,7 @@ func VerifyScreenDump(buf, filename, options, ...)
     sleep 10m
     call delete(testfile)
     call term_dumpwrite(a:buf, testfile, a:options)
-    let testdump = readfile(testfile)
-    if filereadable(reference)
-      let refdump = readfile(reference)
-    else
-      " Must be a new screendump, always fail
-      let refdump = []
-    endif
+    let testdump = ReadAndFilter(testfile, filter)
     if refdump == testdump
       call delete(testfile)
       if did_mkdir

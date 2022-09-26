@@ -336,6 +336,40 @@ func Test_message_more_scrollback()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test verbose message before echo command
+func Test_echo_verbose_system()
+  CheckRunVimInTerminal
+  CheckUnix
+
+  let buf = RunVimInTerminal('', {'rows': 10})
+  call term_sendkeys(buf, ":4 verbose echo system('seq 20')\<CR>")
+  " Note that the screendump is filtered to remove the name of the temp file
+  call VerifyScreenDump(buf, 'Test_verbose_system_1', {})
+
+  " display a page and go back, results in exactly the same view
+  call term_sendkeys(buf, ' ')
+  call TermWait(buf)
+  call term_sendkeys(buf, 'b')
+  call VerifyScreenDump(buf, 'Test_verbose_system_1', {})
+
+  " do the same with 'cmdheight' set to 2
+  call term_sendkeys(buf, 'q')
+  call TermWait(buf)
+  call term_sendkeys(buf, ":set ch=2\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":4 verbose echo system('seq 20')\<CR>")
+  call VerifyScreenDump(buf, 'Test_verbose_system_2', {})
+
+  call term_sendkeys(buf, ' ')
+  call TermWait(buf)
+  call term_sendkeys(buf, 'b')
+  call VerifyScreenDump(buf, 'Test_verbose_system_2', {})
+
+  call term_sendkeys(buf, 'q')
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
 
 func Test_ask_yesno()
   CheckRunVimInTerminal

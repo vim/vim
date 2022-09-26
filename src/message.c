@@ -2602,7 +2602,8 @@ msg_puts_display(
     if (msg_win != NULL)
 	popup_show_message_win();
 #endif
-    if (p_more && !recurse)
+    // Store the text for scroll back, unless it's a newline by itself.
+    if (p_more && !recurse && !(s == sb_str + 1 && *sb_str == '\n'))
 	store_sb_text(&sb_str, s, attr, &sb_col, FALSE);
 
     msg_check();
