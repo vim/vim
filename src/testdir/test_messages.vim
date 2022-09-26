@@ -311,6 +311,32 @@ func Test_message_more()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test more-prompt scrollback
+func Test_message_more_scrollback()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set t_ut=
+      hi Normal ctermfg=15 ctermbg=0
+      for i in range(100)
+          echo i
+      endfor
+  END
+  call writefile(lines, 'XmoreScrollback', 'D')
+  let buf = RunVimInTerminal('-S XmoreScrollback', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_more_scrollback_1', {})
+
+  call term_sendkeys(buf, 'f')
+  call TermWait(buf)
+  call term_sendkeys(buf, 'b')
+  call VerifyScreenDump(buf, 'Test_more_scrollback_2', {})
+
+  call term_sendkeys(buf, 'q')
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+
 func Test_ask_yesno()
   CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
