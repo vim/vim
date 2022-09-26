@@ -2088,6 +2088,9 @@ au BufNewFile,BufReadPost *.ts
 	\   setf typescript |
 	\ endif
 
+" TypeScript (ES module, CommonJS)
+au BufNewFile,BufRead *.mts,*.cts		setf typescript
+
 " TypeScript with React
 au BufNewFile,BufRead *.tsx			setf typescriptreact
 
