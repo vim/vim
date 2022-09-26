@@ -3578,7 +3578,7 @@ objects/xpatience.o: xdiff/xpatience.c $(XDIFF_INCL)
 
 
 Makefile:
-	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
+	@echo 'The name of the makefile MUST be "Makefile" (with capital M)!!!!'
 
 
 ###############################################################################
