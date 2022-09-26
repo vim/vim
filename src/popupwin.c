@@ -2053,6 +2053,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    }
 	}
     }
+    else if (popup_is_notification(type))
+	tabnr = -1;  // show on all tabs
 
     // Create the window and buffer.
     wp = win_alloc_popup_win();

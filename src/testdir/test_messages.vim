@@ -311,6 +311,32 @@ func Test_message_more()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test more-prompt scrollback
+func Test_message_more_scrollback()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set t_ut=
+      hi Normal ctermfg=15 ctermbg=0
+      for i in range(100)
+          echo i
+      endfor
+  END
+  call writefile(lines, 'XmoreScrollback', 'D')
+  let buf = RunVimInTerminal('-S XmoreScrollback', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_more_scrollback_1', {})
+
+  call term_sendkeys(buf, 'f')
+  call TermWait(buf)
+  call term_sendkeys(buf, 'b')
+  call VerifyScreenDump(buf, 'Test_more_scrollback_2', {})
+
+  call term_sendkeys(buf, 'q')
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+
 func Test_ask_yesno()
   CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
@@ -365,15 +391,14 @@ func Test_quit_long_message()
   let content =<< trim END
     echom range(9999)->join("\x01")
   END
-  call writefile(content, 'Xtest_quit_message')
-  let buf = RunVimInTerminal('-S Xtest_quit_message', #{rows: 6, wait_for_ruler: 0})
-  call WaitForAssert({-> assert_match('^-- More --', term_getline(buf, 6))})
+  call writefile(content, 'Xtest_quit_message', 'D')
+  let buf = RunVimInTerminal('-S Xtest_quit_message', #{rows: 10, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('^-- More --', term_getline(buf, 10))})
   call term_sendkeys(buf, "q")
   call VerifyScreenDump(buf, 'Test_quit_long_message', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_quit_message')
 endfunc
 
 " this was missing a terminating NUL
@@ -475,6 +500,10 @@ func Test_echowindow()
 
   call term_sendkeys(buf, "\<CR>")
   call VerifyScreenDump(buf, 'Test_echowindow_7', {})
+
+  call term_sendkeys(buf, ":tabnew\<CR>")
+  call term_sendkeys(buf, ":echowin 'more'\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_8', {})
 
   " clean up
   call StopVimInTerminal(buf)

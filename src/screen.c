@@ -49,7 +49,7 @@
 static int	screen_attr = 0;
 
 static void screen_char_2(unsigned off, int row, int col);
-static void screenclear2(int doclear);
+static int screenclear2(int doclear);
 static void lineclear(unsigned off, int width, int attr);
 static void lineinvalid(unsigned off, int width);
 static int win_do_lines(win_T *wp, int row, int line_count, int mayclear, int del, int clear_attr);
@@ -2473,6 +2473,7 @@ screen_fill(
 		    || (enc_utf8 && (int)ScreenLinesUC[off]
 						       != (c >= 0x80 ? c : 0))
 		    || ScreenAttrs[off] != attr
+		    || must_redraw == UPD_CLEAR  // screen clear pending
 #if defined(FEAT_GUI) || defined(UNIX)
 		    || force_next
 #endif
@@ -2975,13 +2976,15 @@ free_screenlines(void)
  * Clear the screen.
  * May delay if there is something the user should read.
  * Allocated the screen for resizing if needed.
+ * Returns TRUE when the screen was actually claared, FALSE if all display
+ * cells were marked for updating.
  */
-    void
+    int
 screenclear(void)
 {
     check_for_delay(FALSE);
-    screenalloc(FALSE);	    // allocate screen buffers if size changed
-    screenclear2(TRUE);	    // clear the screen
+    screenalloc(FALSE);		    // allocate screen buffers if size changed
+    return screenclear2(TRUE);	    // clear the screen
 }
 
 /*
@@ -2993,17 +2996,18 @@ redraw_as_cleared(void)
     screenclear2(FALSE);
 }
 
-    static void
+    static int
 screenclear2(int doclear)
 {
     int	    i;
+    int	    did_clear = FALSE;
 
     if (starting == NO_SCREEN || ScreenLines == NULL
 #ifdef FEAT_GUI
 	    || (gui.in_use && gui.starting)
 #endif
 	    )
-	return;
+	return FALSE;
 
 #ifdef FEAT_GUI
     if (!gui.in_use)
@@ -3026,6 +3030,7 @@ screenclear2(int doclear)
     if (doclear && can_clear(T_CL))
     {
 	out_str(T_CL);		// clear the display
+	did_clear = TRUE;
 	clear_cmdline = FALSE;
 	mode_displayed = FALSE;
     }
@@ -3054,6 +3059,8 @@ screenclear2(int doclear)
     screen_start();		// don't know where cursor is now
     msg_didany = FALSE;
     msg_didout = FALSE;
+
+    return did_clear;
 }
 
 /*

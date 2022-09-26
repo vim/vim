@@ -2913,10 +2913,11 @@ msg_sb_eol(void)
 
 /*
  * Display a screen line from previously displayed text at row "row".
+ * When "clear_to_eol" is set clear the rest of the screen line.
  * Returns a pointer to the text for the next line (can be NULL).
  */
     static msgchunk_T *
-disp_sb_line(int row, msgchunk_T *smp)
+disp_sb_line(int row, msgchunk_T *smp, int clear_to_eol)
 {
     msgchunk_T	*mp = smp;
     char_u	*p;
@@ -2929,6 +2930,12 @@ disp_sb_line(int row, msgchunk_T *smp)
 	if (*p == '\n')	    // don't display the line break
 	    ++p;
 	msg_puts_display(p, -1, mp->sb_attr, TRUE);
+
+	// If clearing the screen did not work (e.g. because of a background
+	// color and t_ut isn't set) clear until the last column here.
+	if (clear_to_eol)
+	    screen_fill(row, row + 1, msg_col, (int)Columns, ' ', ' ', 0);
+
 	if (mp->sb_eol || mp->sb_next == NULL)
 	    break;
 	mp = mp->sb_next;
@@ -3279,15 +3286,16 @@ do_more_prompt(int typed_char)
 						     (int)Rows, 0, NULL) == OK)
 		    {
 			// display line at top
-			(void)disp_sb_line(0, mp);
+			(void)disp_sb_line(0, mp, FALSE);
 		    }
 		    else
 		    {
+			int did_clear = screenclear();
+
 			// redisplay all lines
-			screenclear();
 			for (i = 0; mp != NULL && i < Rows - 1; ++i)
 			{
-			    mp = disp_sb_line(i, mp);
+			    mp = disp_sb_line(i, mp, !did_clear);
 			    ++msg_scrolled;
 			}
 		    }
@@ -3304,7 +3312,7 @@ do_more_prompt(int typed_char)
 		    inc_msg_scrolled();
 		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
 						   (int)Columns, ' ', ' ', 0);
-		    mp_last = disp_sb_line((int)Rows - 2, mp_last);
+		    mp_last = disp_sb_line((int)Rows - 2, mp_last, FALSE);
 		    --toscroll;
 		}
 	    }
