@@ -1848,4 +1848,34 @@ function Test_nosplitscroll_callback()
   call VerifyScreenDump(buf, 'Test_nosplitscroll_callback_4', {})
 endfunc
 
+function Test_nosplitscroll_fold()
+CheckScreendump
+
+let lines =<< trim END
+  set nosplitscroll
+  set foldmethod=marker
+  set number
+  let line = 1
+  for n in range(1, &lines)
+    call setline(line, ['int FuncName() {/*{{{*/', 1, 2, 3, 4, 5, '}/*}}}*/',
+          \ 'after fold'])
+    let line += 8
+  endfor
+END
+  call writefile(lines, 'XTestNosplitscrollFold', 'D')
+  let buf = RunVimInTerminal('-S XTestNosplitscrollFold', #{rows: 10})
+
+  call term_sendkeys(buf, "L:wincmd s\<CR>")
+  call VerifyScreenDump(buf, 'Test_nosplitscroll_fold_1', {})
+
+  call term_sendkeys(buf, ":quit\<CR>")
+  call VerifyScreenDump(buf, 'Test_nosplitscroll_fold_2', {})
+
+  call term_sendkeys(buf, "H:below sp\<CR>")
+  call VerifyScreenDump(buf, 'Test_nosplitscroll_fold_3', {})
+
+  call term_sendkeys(buf, ":wincmd k\<CR>:quit\<CR>")
+  call VerifyScreenDump(buf, 'Test_nosplitscroll_fold_4', {})
+endfunction
+
 " vim: shiftwidth=2 sts=2 expandtab
