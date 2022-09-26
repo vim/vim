@@ -475,6 +475,10 @@ func Test_echowindow()
   call term_sendkeys(buf, "\<CR>")
   call VerifyScreenDump(buf, 'Test_echowindow_7', {})
 
+  call term_sendkeys(buf, ":tabnew\<CR>")
+  call term_sendkeys(buf, ":echowin 'more'\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_8', {})
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestEchowindow')
