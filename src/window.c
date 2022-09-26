@@ -27,9 +27,6 @@ static win_T *frame2win(frame_T *frp);
 static int frame_has_win(frame_T *frp, win_T *wp);
 static void win_fix_scroll(int resize);
 static void win_fix_cursor(int normal);
-#ifdef FEAT_FOLDING
-static linenr_T win_walk_fold(win_T *wp, linenr_T start, int steps, int down);
-#endif
 static void frame_new_height(frame_T *topfrp, int height, int topfirst, int wfh);
 static int frame_fixed_height(frame_T *frp);
 static int frame_fixed_width(frame_T *frp);
@@ -6375,13 +6372,11 @@ win_fix_scroll(int resize)
 		lnum = wp->w_cursor.lnum;
 		int diff = (wp->w_winrow - wp->w_prev_winrow)
 					    + (wp->w_height - wp->w_prev_height);
-#ifdef FEAT_FOLDING
-		if (hasAnyFolding(wp))
-		    win_walk_fold(wp, wp->w_botline - 1, abs(diff), diff > 0);
+		wp->w_cursor.lnum = wp->w_botline - 1;
+		if (diff > 0)
+		    cursor_down(wp, diff, FALSE);
 		else
-#endif
-		    wp->w_cursor.lnum = MIN(wp->w_buffer->b_ml.ml_line_count,
-					    wp->w_botline - 1 + diff);
+		    cursor_up(wp, abs(diff), FALSE);
 		// Bring the new cursor position to the bottom of the screen.
 		wp->w_fraction = FRACTION_MULT;
 		scroll_to_fraction(wp, wp->w_prev_height);
@@ -6413,9 +6408,6 @@ win_fix_scroll(int resize)
 win_fix_cursor(int normal)
 {
     win_T    *wp = curwin;
-#ifdef FEAT_FOLDING
-    int      fold = hasAnyFolding(wp);
-#endif
     long     so = get_scrolloff_value();
     linenr_T nlnum = 0;
     linenr_T lnum = wp->w_cursor.lnum;
@@ -6430,15 +6422,10 @@ win_fix_cursor(int normal)
 #endif
 
     so = MIN(wp->w_height / 2, so);
-    top = wp->w_topline + so;
-    bot = wp->w_botline - 1 - so;
-#ifdef FEAT_FOLDING
-    if (fold && so)
-    {
-	top = win_walk_fold(wp, wp->w_topline, so, TRUE);
-	bot = win_walk_fold(wp, wp->w_botline - 1, so, FALSE);
-    }
-#endif
+    wp->w_cursor.lnum = wp->w_topline;
+    top = cursor_down(wp, so, FALSE);
+    wp->w_cursor.lnum = wp->w_botline - 1;
+    bot = cursor_up(wp, so, FALSE);
 
     // Check if cursor position is above or below visible range.
     if (lnum > bot && (wp->w_botline - wp->w_buffer->b_ml.ml_line_count) != 1)
@@ -6464,36 +6451,6 @@ win_fix_cursor(int normal)
 	}
     }
 }
-
-/*
- * Walk cursor "steps" up or down from "start".  Return resulting cursor lnum.
- */
-#ifdef FEAT_FOLDING
-    static linenr_T
-win_walk_fold(win_T *wp, linenr_T start, int steps, int down)
-{
-    long       fold_len;
-    foldinfo_T foldinfo;
-
-    wp->w_cursor.lnum = start;
-
-    while (steps-- && wp->w_cursor.lnum > 1
-	    && wp->w_cursor.lnum < wp->w_buffer->b_ml.ml_line_count)
-    {
-	fold_len = foldedCount(wp, wp->w_cursor.lnum, &foldinfo);
-
-	if (down)
-	    wp->w_cursor.lnum += fold_len ? fold_len : 1;
-	else
-	{
-	    fold_len = fold_len ? foldedCount(wp, foldinfo.fi_lnum, NULL) : 1;
-	    wp->w_cursor.lnum -= fold_len;
-	}
-    }
-
-    return wp->w_cursor.lnum;
-}
-#endif
 
 /*
  * Set the height of a window.

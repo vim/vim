@@ -1871,7 +1871,7 @@ END
   call term_sendkeys(buf, ":quit\<CR>")
   call VerifyScreenDump(buf, 'Test_nosplitscroll_fold_2', {})
 
-  call term_sendkeys(buf, "H:below sp\<CR>")
+  call term_sendkeys(buf, "H:below split\<CR>")
   call VerifyScreenDump(buf, 'Test_nosplitscroll_fold_3', {})
 
   call term_sendkeys(buf, ":wincmd k\<CR>:quit\<CR>")

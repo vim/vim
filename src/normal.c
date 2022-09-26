@@ -2499,14 +2499,14 @@ scroll_redraw(int up, long count)
 	    if (up)
 	    {
 		if (curwin->w_cursor.lnum > prev_lnum
-			|| cursor_down(1L, FALSE) == FAIL)
+			|| cursor_down(curwin, 1L, FALSE) == FAIL)
 		    break;
 	    }
 	    else
 	    {
 		if (curwin->w_cursor.lnum < prev_lnum
 			|| prev_topline == 1L
-			|| cursor_up(1L, FALSE) == FAIL)
+			|| cursor_up(curwin, 1L, FALSE) == FAIL)
 		    break;
 	    }
 	    // Mark w_topline as valid, otherwise the screen jumps back at the
@@ -3999,7 +3999,7 @@ nv_up(cmdarg_T *cap)
     else
     {
 	cap->oap->motion_type = MLINE;
-	if (cursor_up(cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
+	if (cursor_up(curwin, cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
 	    clearopbeep(cap->oap);
 	else if (cap->arg)
 	    beginline(BL_WHITE | BL_FIX);
@@ -4045,7 +4045,8 @@ nv_down(cmdarg_T *cap)
 #endif
 	{
 	    cap->oap->motion_type = MLINE;
-	    if (cursor_down(cap->count1, cap->oap->op_type == OP_NOP) == FAIL)
+	    if (cursor_down(curwin, cap->count1,
+					cap->oap->op_type == OP_NOP) == FAIL)
 		clearopbeep(cap->oap);
 	    else if (cap->arg)
 		beginline(BL_WHITE | BL_FIX);
@@ -4125,8 +4126,8 @@ nv_dollar(cmdarg_T *cap)
     if (!virtual_active() || gchar_cursor() != NUL
 					       || cap->oap->op_type == OP_NOP)
 	curwin->w_curswant = MAXCOL;	// so we stay at the end
-    if (cursor_down((long)(cap->count1 - 1),
-					 cap->oap->op_type == OP_NOP) == FAIL)
+    if (cursor_down(curwin, (long)(cap->count1 - 1),
+					cap->oap->op_type == OP_NOP) == FAIL)
 	clearopbeep(cap->oap);
 #ifdef FEAT_FOLDING
     else if ((fdo_flags & FDO_HOR) && KeyTyped && cap->oap->op_type == OP_NOP)
@@ -5779,7 +5780,7 @@ nv_g_underscore_cmd(cmdarg_T *cap)
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = TRUE;
     curwin->w_curswant = MAXCOL;
-    if (cursor_down((long)(cap->count1 - 1),
+    if (cursor_down(curwin, (long)(cap->count1 - 1),
 					cap->oap->op_type == OP_NOP) == FAIL)
     {
 	clearopbeep(cap->oap);
@@ -5855,7 +5856,7 @@ nv_g_dollar_cmd(cmdarg_T *cap)
     {
 	if (cap->count1 > 1)
 	    // if it fails, let the cursor still move to the last char
-	    (void)cursor_down(cap->count1 - 1, FALSE);
+	    (void)cursor_down(curwin, cap->count1 - 1, FALSE);
 
 	i = curwin->w_leftcol + curwin->w_width - col_off - 1;
 	coladvance((colnr_T)i);
@@ -5988,7 +5989,7 @@ nv_g_cmd(cmdarg_T *cap)
 	if (!curwin->w_p_wrap)
 	{
 	    oap->motion_type = MLINE;
-	    i = cursor_down(cap->count1, oap->op_type == OP_NOP);
+	    i = cursor_down(curwin, cap->count1, oap->op_type == OP_NOP);
 	}
 	else
 	    i = nv_screengo(oap, FORWARD, cap->count1);
@@ -6002,7 +6003,7 @@ nv_g_cmd(cmdarg_T *cap)
 	if (!curwin->w_p_wrap)
 	{
 	    oap->motion_type = MLINE;
-	    i = cursor_up(cap->count1, oap->op_type == OP_NOP);
+	    i = cursor_up(curwin, cap->count1, oap->op_type == OP_NOP);
 	}
 	else
 	    i = nv_screengo(oap, BACKWARD, cap->count1);
@@ -6447,7 +6448,8 @@ set_op_var(int optype)
 nv_lineop(cmdarg_T *cap)
 {
     cap->oap->motion_type = MLINE;
-    if (cursor_down(cap->count1 - 1L, cap->oap->op_type == OP_NOP) == FAIL)
+    if (cursor_down(curwin, cap->count1 - 1L,
+					cap->oap->op_type == OP_NOP) == FAIL)
 	clearopbeep(cap->oap);
     else if (  (cap->oap->op_type == OP_DELETE // only with linewise motions
 		&& cap->oap->motion_force != 'v'

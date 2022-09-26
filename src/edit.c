@@ -2749,8 +2749,9 @@ oneleft(void)
     return OK;
 }
 
-    int
+    linenr_T
 cursor_up(
+    win_T	*wp,
     long	n,
     int		upd_topline)	    // When TRUE: update topline
 {
@@ -2758,7 +2759,7 @@ cursor_up(
 
     if (n > 0)
     {
-	lnum = curwin->w_cursor.lnum;
+	lnum = wp->w_cursor.lnum;
 	// This fails if the cursor is already in the first line or the count
 	// is larger than the line number and '-' is in 'cpoptions'
 	if (lnum <= 1 || (n >= lnum && vim_strchr(p_cpo, CPO_MINUS) != NULL))
@@ -2767,7 +2768,7 @@ cursor_up(
 	    lnum = 1;
 	else
 #ifdef FEAT_FOLDING
-	    if (hasAnyFolding(curwin))
+	    if (hasAnyFolding(wp))
 	{
 	    /*
 	     * Count each sequence of folded lines as one logical line.
@@ -2793,23 +2794,24 @@ cursor_up(
 	else
 #endif
 	    lnum -= n;
-	curwin->w_cursor.lnum = lnum;
+	wp->w_cursor.lnum = lnum;
     }
 
     // try to advance to the column we want to be at
-    coladvance(curwin->w_curswant);
+    coladvance(wp->w_curswant);
 
     if (upd_topline)
 	update_topline();	// make sure curwin->w_topline is valid
 
-    return OK;
+    return wp->w_cursor.lnum;
 }
 
 /*
  * Cursor down a number of logical lines.
  */
-    int
+    linenr_T
 cursor_down(
+    win_T	*wp,
     long	n,
     int		upd_topline)	    // When TRUE: update topline
 {
@@ -2817,22 +2819,22 @@ cursor_down(
 
     if (n > 0)
     {
-	lnum = curwin->w_cursor.lnum;
+	lnum = wp->w_cursor.lnum;
 #ifdef FEAT_FOLDING
 	// Move to last line of fold, will fail if it's the end-of-file.
 	(void)hasFolding(lnum, NULL, &lnum);
 #endif
 	// This fails if the cursor is already in the last line or would move
 	// beyond the last line and '-' is in 'cpoptions'
-	if (lnum >= curbuf->b_ml.ml_line_count
-		|| (lnum + n > curbuf->b_ml.ml_line_count
+	if (lnum >= wp->w_buffer->b_ml.ml_line_count
+		|| (lnum + n > wp->w_buffer->b_ml.ml_line_count
 		    && vim_strchr(p_cpo, CPO_MINUS) != NULL))
 	    return FAIL;
-	if (lnum + n >= curbuf->b_ml.ml_line_count)
-	    lnum = curbuf->b_ml.ml_line_count;
+	if (lnum + n >= wp->w_buffer->b_ml.ml_line_count)
+	    lnum = wp->w_buffer->b_ml.ml_line_count;
 	else
 #ifdef FEAT_FOLDING
-	if (hasAnyFolding(curwin))
+	if (hasAnyFolding(wp))
 	{
 	    linenr_T	last;
 
@@ -2843,25 +2845,25 @@ cursor_down(
 		    lnum = last + 1;
 		else
 		    ++lnum;
-		if (lnum >= curbuf->b_ml.ml_line_count)
+		if (lnum >= wp->w_buffer->b_ml.ml_line_count)
 		    break;
 	    }
-	    if (lnum > curbuf->b_ml.ml_line_count)
-		lnum = curbuf->b_ml.ml_line_count;
+	    if (lnum > wp->w_buffer->b_ml.ml_line_count)
+		lnum = wp->w_buffer->b_ml.ml_line_count;
 	}
 	else
 #endif
 	    lnum += n;
-	curwin->w_cursor.lnum = lnum;
+	wp->w_cursor.lnum = lnum;
     }
 
     // try to advance to the column we want to be at
-    coladvance(curwin->w_curswant);
+    coladvance(wp->w_curswant);
 
     if (upd_topline)
 	update_topline();	// make sure curwin->w_topline is valid
 
-    return OK;
+    return wp->w_cursor.lnum;
 }
 
 /*
@@ -4700,7 +4702,7 @@ ins_up(
 
     undisplay_dollar();
     tpos = curwin->w_cursor;
-    if (cursor_up(1L, TRUE) == OK)
+    if (cursor_up(curwin, 1L, TRUE))
     {
 	if (startcol)
 	    coladvance(getvcol_nolist(&Insstart));
@@ -4757,7 +4759,7 @@ ins_down(
 
     undisplay_dollar();
     tpos = curwin->w_cursor;
-    if (cursor_down(1L, TRUE) == OK)
+    if (cursor_down(curwin, 1L, TRUE))
     {
 	if (startcol)
 	    coladvance(getvcol_nolist(&Insstart));
