@@ -3345,6 +3345,12 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 		send_tabline_event(x < 50 ? -1 : 0);
 	    }
 	}
+	else if (bevent->button == 2)
+	{
+	    if (clicked_page != 0)
+		// Middle mouse click on tabpage label closes that tab.
+		send_tabline_menu_event(clicked_page, TABLINE_MENU_CLOSE);
+	}
     }
 
     // We didn't handle the event.

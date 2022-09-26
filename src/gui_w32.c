@@ -8094,6 +8094,20 @@ tabline_wndproc(
 		}
 		break;
 	    }
+	case WM_MBUTTONUP:
+	    {
+		TCHITTESTINFO htinfo;
+
+		htinfo.pt.x = GET_X_LPARAM(lParam);
+		htinfo.pt.y = GET_Y_LPARAM(lParam);
+		idx0 = TabCtrl_HitTest(hwnd, &htinfo);
+		if (idx0 != -1)
+		{
+		    idx0 += 1;
+		    send_tabline_menu_event(idx0, TABLINE_MENU_CLOSE);
+		}
+		break;
+	    }
 	default:
 	    break;
     }
