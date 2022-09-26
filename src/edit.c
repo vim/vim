@@ -2798,7 +2798,8 @@ cursor_up(
     }
 
     // try to advance to the column we want to be at
-    coladvance(wp->w_curswant);
+    if (wp == curwin)
+	coladvance(wp->w_curswant);
 
     if (upd_topline)
 	update_topline();	// make sure curwin->w_topline is valid
@@ -2858,7 +2859,8 @@ cursor_down(
     }
 
     // try to advance to the column we want to be at
-    coladvance(wp->w_curswant);
+    if (wp == curwin)
+	coladvance(wp->w_curswant);
 
     if (upd_topline)
 	update_topline();	// make sure curwin->w_topline is valid
