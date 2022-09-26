@@ -228,8 +228,15 @@ tabline_menu_cb(
 	return;
     }
 
-    if (event->button != Button3)
-	return;
+	else if(event->button == Button2)
+	{
+    XtVaGetValues(tabLine_menu, XmNuserData, &tab_idx, NULL);
+
+    send_tabline_menu_event((int)(long)tab_idx, (int)TABLINE_MENU_CLOSE);
+	}
+
+    else if (event->button == Button3)
+	{
 
     // When ignoring events don't show the menu.
     if (hold_gui_events
@@ -253,6 +260,7 @@ tabline_menu_cb(
     XtManageChildren(children, numChildren);
     XmMenuPosition(tabLine_menu, (XButtonPressedEvent *)e) ;
     XtManageChild(tabLine_menu);
+	}
 }
 
     static void
