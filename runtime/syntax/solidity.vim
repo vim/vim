@@ -170,3 +170,5 @@ hi def link solCommentTodo       Todo
 hi def link solNatSpec           Label
 hi def link solLineComment       Comment
 hi def link solComment           Comment
+
+let b:current_syntax = "solidity"
