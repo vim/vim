@@ -675,7 +675,7 @@ func Test_source_buffer_with_NUL_char()
   END
   " Can't have a NL in heredoc
   let lines += ["silent! vim9 echo [0 \<NL> ? 'a' : 'b']"]
-  call writefile(lines, 'XsourceNul', '')
+  call writefile(lines, 'XsourceNul', 'D')
   edit XsourceNul
   source
 
