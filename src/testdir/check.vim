@@ -111,6 +111,14 @@ func CheckNotBSD()
   endif
 endfunc
 
+" Command to check for not running on a MacOS
+command CheckNotMac call CheckNotMac()
+func CheckNotMac()
+  if has('mac')
+    throw 'Skipped: does not work on MacOS'
+  endif
+endfunc
+
 " Command to check for not running on a MacOS M1 system.
 command CheckNotMacM1 call CheckNotMacM1()
 func CheckNotMacM1()
