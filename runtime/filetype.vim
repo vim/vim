@@ -770,8 +770,8 @@ au BufNewFile,BufRead gitolite.conf		setf gitolite
 au BufNewFile,BufRead {,.}gitolite.rc,example.gitolite.rc	setf perl
 
 " Glimmer-flavored TypeScript and JavaScript
-au BufNewFile,BufRead *.gts	setf typescript.glimmer
-au BufNewFile,BufRead *.gjs	setf javascript.glimmer
+au BufNewFile,BufRead *.gts			setf typescript.glimmer
+au BufNewFile,BufRead *.gjs			setf javascript.glimmer
 
 " Gnuplot scripts
 au BufNewFile,BufRead *.gpi,.gnuplot		setf gnuplot
@@ -2086,13 +2086,16 @@ au BufNewFile,BufRead *.tsv			setf tsv
 " TWIG files
 au BufNewFile,BufReadPost *.twig		setf twig
 
-" Typescript or Qt translation file (which is XML)
+" TypeScript or Qt translation file (which is XML)
 au BufNewFile,BufReadPost *.ts
 	\ if getline(1) =~ '<?xml' |
 	\   setf xml |
 	\ else |
 	\   setf typescript |
 	\ endif
+
+" TypeScript module and common
+au BufNewFile,BufRead *.mts,*.cts		setf typescript
 
 " TypeScript with React
 au BufNewFile,BufRead *.tsx			setf typescriptreact
@@ -2285,7 +2288,7 @@ au BufNewFile,BufRead *.fsproj,*.fsproj.user	setf xml
 au BufNewFile,BufRead *.vbproj,*.vbproj.user	setf xml
 
 " Qt Linguist translation source and Qt User Interface Files are XML
-" However, for .ts Typescript is more common.
+" However, for .ts TypeScript is more common.
 au BufNewFile,BufRead *.ui			setf xml
 
 " TPM's are RDF-based descriptions of TeX packages (Nikolai Weibull)
