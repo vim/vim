@@ -6351,7 +6351,7 @@ set_fraction(win_T *wp)
 /*
  * Handle scroll position for 'nosplitscroll'.  Replaces scroll_to_fraction()
  * call from win_new_height().  Instead we iterate over all windows in a
- * tabpage and calculate the new scroll/cursor position.
+ * tabpage and calculate the new scroll position.
  * TODO: Ensure this also works with wrapped lines.
  * Requires topline to be able to be set to a bufferline with some
  * offset(row-wise scrolling/smoothscroll).
@@ -6359,8 +6359,9 @@ set_fraction(win_T *wp)
     static void
 win_fix_scroll(int resize)
 {
-    win_T    *wp;
-    linenr_T lnum;
+    int		diff;
+    win_T	*wp;
+    linenr_T	lnum;
 
     skip_update_topline = TRUE;  // avoid scrolling in curs_columns()
     FOR_ALL_WINDOWS(wp)
@@ -6368,13 +6369,18 @@ win_fix_scroll(int resize)
 	// Skip when window height has not changed.
 	if (wp->w_height != wp->w_prev_height)
 	{
-	    // Determine botline needed to avoid scrolling and set cursor.
+	    // If window has moved update botline to keep the same screenlines.
 	    if (wp->w_winrow != wp->w_prev_winrow)
 	    {
 		lnum = wp->w_cursor.lnum;
-		wp->w_cursor.lnum = MIN(wp->w_buffer->b_ml.ml_line_count,
-			wp->w_botline - 1 + (wp->w_winrow - wp->w_prev_winrow)
-					  + (wp->w_height - wp->w_prev_height));
+		diff = (wp->w_winrow - wp->w_prev_winrow)
+		     + (wp->w_height - wp->w_prev_height);
+		wp->w_cursor.lnum = wp->w_botline - 1;
+		//  Add difference in height and row to botline.
+		if (diff > 0)
+		    cursor_down_inner(wp, diff);
+		else
+		    cursor_up_inner(wp, -diff);
 		// Bring the new cursor position to the bottom of the screen.
 		wp->w_fraction = FRACTION_MULT;
 		scroll_to_fraction(wp, wp->w_prev_height);
@@ -6405,9 +6411,12 @@ win_fix_scroll(int resize)
     static void
 win_fix_cursor(int normal)
 {
-    win_T    *wp = curwin;
-    long     so = get_scrolloff_value();
-    linenr_T nlnum = 0;
+    long	so = get_scrolloff_value();
+    win_T	*wp = curwin;
+    linenr_T	nlnum = 0;
+    linenr_T    lnum = wp->w_cursor.lnum;
+    linenr_T    bot;
+    linenr_T    top;
 
     if (wp->w_buffer->b_ml.ml_line_count < wp->w_height)
 	return;
@@ -6415,28 +6424,30 @@ win_fix_cursor(int normal)
     if (skip_win_fix_cursor)
 	return;
 #endif
-
+    // Determine valid cursor range.
     so = MIN(wp->w_height / 2, so);
-    // Check if cursor position is above topline or below botline.
-    if (wp->w_cursor.lnum < (wp->w_topline + so) && wp->w_topline != 1)
-	nlnum = MIN(wp->w_topline + so, wp->w_buffer->b_ml.ml_line_count);
-    else if (wp->w_cursor.lnum > (wp->w_botline - so - 1)
-	    && (wp->w_botline - wp->w_buffer->b_ml.ml_line_count) != 1)
-	nlnum = MAX(wp->w_botline - so - 1, 1);
-    // If cursor was invalid scroll or change cursor.
-    if (nlnum)
+    wp->w_cursor.lnum = wp->w_topline;
+    top = cursor_down_inner(wp, so);
+    wp->w_cursor.lnum = wp->w_botline - 1;
+    bot = cursor_up_inner(wp, so);
+    // Check if cursor position is above or below valid cursor range.
+    if (lnum > bot && (wp->w_botline - wp->w_buffer->b_ml.ml_line_count) != 1)
+	nlnum = bot;
+    else if (lnum < top && wp->w_topline != 1)
+	nlnum = (so == wp->w_height / 2) ? bot : top;
+
+    wp->w_cursor.lnum = lnum;
+
+    if (nlnum)  // Cursor is invalid for current scroll position.
     {
-	if (normal)
-	{   // Make sure cursor is closer to topline than botline.
-	    if (so == wp->w_height / 2
-			  && nlnum - wp->w_topline > wp->w_botline - 1 - nlnum)
-		nlnum--;
-	    setmark('\'');		// save cursor position
-	    wp->w_cursor.lnum = nlnum;	// change to avoid scrolling
+	if (normal)  // Save to jumplist and set cursor to avoid scrolling.
+	{
+	    setmark('\'');
+	    wp->w_cursor.lnum = nlnum;
 	    curs_columns(TRUE);		// validate w_wrow
 	}
-	else
-	{   // Ensure cursor stays visible if we are not in normal mode.
+	else  // Scroll instead when not in normal mode.
+	{
 	    wp->w_fraction = 0.5 * FRACTION_MULT;
 	    scroll_to_fraction(wp, wp->w_prev_height);
 	    validate_botline_win(curwin);
