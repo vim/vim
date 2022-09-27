@@ -7,7 +7,6 @@
 " Additional contributors:
 "       Modified by thesis (https://github.com/thesis/vim-solidity/blob/main/indent/solidity.vim)
 
-
 if exists("b:current_syntax")
   finish
 endif
