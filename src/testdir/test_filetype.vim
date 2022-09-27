@@ -14,7 +14,7 @@ endfunc
 
 func Test_conf_type()
   filetype on
-  call writefile(['# some comment', 'must be conf'], 'Xconffile')
+  call writefile(['# some comment', 'must be conf'], 'Xconffile', 'D')
   augroup filetypedetect
     au BufNewFile,BufRead *	call assert_equal(0, did_filetype())
   augroup END
@@ -22,7 +22,6 @@ func Test_conf_type()
   call assert_equal('conf', &filetype)
 
   bwipe!
-  call delete('Xconffile')
   filetype off
 endfunc
 
@@ -33,12 +32,11 @@ func Test_other_type()
     au BufNewFile,BufRead Xotherfile	setf testfile
     au BufNewFile,BufRead *	call assert_equal(1, did_filetype())
   augroup END
-  call writefile(['# some comment', 'must be conf'], 'Xotherfile')
+  call writefile(['# some comment', 'must be conf'], 'Xotherfile', 'D')
   split Xotherfile
   call assert_equal('testfile', &filetype)
 
   bwipe!
-  call delete('Xotherfile')
   filetype off
 endfunc
 
@@ -761,13 +759,12 @@ func Run_script_detection(test_dict)
   filetype on
   for [ft, files] in items(a:test_dict)
     for file in files
-      call writefile(file, 'Xtest')
+      call writefile(file, 'Xtest', 'D')
       split Xtest
       call assert_equal(ft, &filetype, 'for text: ' . string(file))
       bwipe!
     endfor
   endfor
-  call delete('Xtest')
   filetype off
 endfunc
 
@@ -813,7 +810,7 @@ endfunc
 func Test_bas_file()
   filetype on
 
-  call writefile(['looks like BASIC'], 'Xfile.bas')
+  call writefile(['looks like BASIC'], 'Xfile.bas', 'D')
   split Xfile.bas
   call assert_equal('basic', &filetype)
   bwipe!
@@ -867,7 +864,6 @@ func Test_bas_file()
   call assert_equal('vb', &filetype)
   bwipe!
 
-  call delete('Xfile.bas')
   filetype off
 endfunc
 
@@ -876,7 +872,7 @@ func Test_cfg_file()
   filetype on
 
   " *.cfg defaults to cfg
-  call writefile(['looks like cfg'], 'cfgfile.cfg')
+  call writefile(['looks like cfg'], 'cfgfile.cfg', 'D')
   split cfgfile.cfg
   call assert_equal('cfg', &filetype)
 
@@ -905,7 +901,7 @@ endfunc
 func Test_d_file()
   filetype on
 
-  call writefile(['looks like D'], 'Xfile.d')
+  call writefile(['looks like D'], 'Xfile.d', 'D')
   split Xfile.d
   call assert_equal('d', &filetype)
   bwipe!
@@ -937,7 +933,6 @@ func Test_d_file()
 
   " clean up
   filetype off
-  call delete('Xfile.d')
 endfunc
 
 func Test_dat_file()
@@ -978,7 +973,7 @@ endfunc
 func Test_dep3patch_file()
   filetype on
 
-  call assert_true(mkdir('debian/patches', 'p'))
+  call assert_true(mkdir('debian/patches', 'pR'))
 
   " series files are not patches
   call writefile(['Description: some awesome patch'], 'debian/patches/series')
@@ -1011,14 +1006,12 @@ func Test_dep3patch_file()
   split debian/patches/baz
   call assert_notequal('dep3patch', &filetype)
   bwipe!
-
-  call delete('debian', 'rf')
 endfunc
 
 func Test_dsl_file()
   filetype on
 
-  call writefile(['  <!doctype dsssl-spec ['], 'dslfile.dsl')
+  call writefile(['  <!doctype dsssl-spec ['], 'dslfile.dsl', 'D')
   split dslfile.dsl
   call assert_equal('dsl', &filetype)
   bwipe!
@@ -1028,14 +1021,13 @@ func Test_dsl_file()
   call assert_equal('structurizr', &filetype)
   bwipe!
 
-  call delete('dslfile.dsl')
   filetype off
 endfunc
 
 func Test_ex_file()
   filetype on
 
-  call writefile(['arbitrary content'], 'Xfile.ex')
+  call writefile(['arbitrary content'], 'Xfile.ex', 'D')
   split Xfile.ex
   call assert_equal('elixir', &filetype)
   bwipe!
@@ -1065,31 +1057,30 @@ func Test_ex_file()
   call assert_equal('euphoria3', &filetype)
   bwipe!
 
-  call delete('Xfile.ex')
   filetype off
 endfunc
 
 func Test_foam_file()
   filetype on
-  call assert_true(mkdir('0', 'p'))
-  call assert_true(mkdir('0.orig', 'p'))
+  call assert_true(mkdir('0', 'pR'))
+  call assert_true(mkdir('0.orig', 'pR'))
 
-  call writefile(['FoamFile {', '    object something;'], 'Xfile1Dict')
+  call writefile(['FoamFile {', '    object something;'], 'Xfile1Dict', 'D')
   split Xfile1Dict
   call assert_equal('foam', &filetype)
   bwipe!
 
-  call writefile(['FoamFile {', '    object something;'], 'Xfile1Dict.something')
+  call writefile(['FoamFile {', '    object something;'], 'Xfile1Dict.something', 'D')
   split Xfile1Dict.something
   call assert_equal('foam', &filetype)
   bwipe!
 
-  call writefile(['FoamFile {', '    object something;'], 'XfileProperties')
+  call writefile(['FoamFile {', '    object something;'], 'XfileProperties', 'D')
   split XfileProperties
   call assert_equal('foam', &filetype)
   bwipe!
 
-  call writefile(['FoamFile {', '    object something;'], 'XfileProperties.something')
+  call writefile(['FoamFile {', '    object something;'], 'XfileProperties.something', 'D')
   split XfileProperties.something
   call assert_equal('foam', &filetype)
   bwipe!
@@ -1114,19 +1105,13 @@ func Test_foam_file()
   call assert_equal('foam', &filetype)
   bwipe!
 
-  call delete('0', 'rf')
-  call delete('0.orig', 'rf')
-  call delete('Xfile1Dict')
-  call delete('Xfile1Dict.something')
-  call delete('XfileProperties')
-  call delete('XfileProperties.something')
   filetype off
 endfunc
 
 func Test_frm_file()
   filetype on
 
-  call writefile(['looks like FORM'], 'Xfile.frm')
+  call writefile(['looks like FORM'], 'Xfile.frm', 'D')
   split Xfile.frm
   call assert_equal('form', &filetype)
   bwipe!
@@ -1146,14 +1131,13 @@ func Test_frm_file()
   call assert_equal('vb', &filetype)
   bwipe!
 
-  call delete('Xfile.frm')
   filetype off
 endfunc
 
 func Test_fs_file()
   filetype on
 
-  call writefile(['looks like F#'], 'Xfile.fs')
+  call writefile(['looks like F#'], 'Xfile.fs', 'D')
   split Xfile.fs
   call assert_equal('fsharp', &filetype)
   bwipe!
@@ -1199,14 +1183,13 @@ func Test_fs_file()
   call assert_equal('forth', &filetype)
   bwipe!
 
-  call delete('Xfile.fs')
   filetype off
 endfunc
 
 func Test_git_file()
   filetype on
 
-  call assert_true(mkdir('Xrepo.git', 'p'))
+  call assert_true(mkdir('Xrepo.git', 'pR'))
 
   call writefile([], 'Xrepo.git/HEAD')
   split Xrepo.git/HEAD
@@ -1228,14 +1211,13 @@ func Test_git_file()
   call assert_equal('git', &filetype)
   bwipe!
 
-  call delete('Xrepo.git', 'rf')
   filetype off
 endfunc
 
 func Test_hook_file()
   filetype on
 
-  call writefile(['[Trigger]', 'this is pacman config'], 'Xfile.hook')
+  call writefile(['[Trigger]', 'this is pacman config'], 'Xfile.hook', 'D')
   split Xfile.hook
   call assert_equal('conf', &filetype)
   bwipe!
@@ -1245,7 +1227,6 @@ func Test_hook_file()
   call assert_notequal('conf', &filetype)
   bwipe!
 
-  call delete('Xfile.hook')
   filetype off
 endfunc
 
@@ -1345,7 +1326,6 @@ func Test_m_file()
   call assert_equal('murphi', &filetype)
   bwipe!
 
-  call delete('Xfile.m')
   filetype off
 endfunc
 
@@ -1427,7 +1407,7 @@ endfunc
 func Test_patch_file()
   filetype on
 
-  call writefile([], 'Xfile.patch')
+  call writefile([], 'Xfile.patch', 'D')
   split Xfile.patch
   call assert_equal('diff', &filetype)
   bwipe!
@@ -1442,7 +1422,6 @@ func Test_patch_file()
   call assert_equal('gitsendemail', &filetype)
   bwipe!
 
-  call delete('Xfile.patch')
   filetype off
 endfunc
 
@@ -1454,19 +1433,18 @@ func Test_perl_file()
 
     use a
   END
-  call writefile(lines, "Xfile.t")
+  call writefile(lines, "Xfile.t", 'D')
   split Xfile.t
   call assert_equal('perl', &filetype)
   bwipe
 
-  call delete('Xfile.t')
   filetype off
 endfunc
 
 func Test_pp_file()
   filetype on
 
-  call writefile(['looks like puppet'], 'Xfile.pp')
+  call writefile(['looks like puppet'], 'Xfile.pp', 'D')
   split Xfile.pp
   call assert_equal('puppet', &filetype)
   bwipe!
@@ -1488,7 +1466,6 @@ func Test_pp_file()
   call assert_equal('pascal', &filetype)
   bwipe!
 
-  call delete('Xfile.pp')
   filetype off
 endfunc
 
@@ -1575,12 +1552,11 @@ endfunc
 func Test_scd_file()
   filetype on
 
-  call writefile(['ijq(1)'], 'srcfile.scd')
+  call writefile(['ijq(1)'], 'srcfile.scd', 'D')
   split srcfile.scd
   call assert_equal('scdoc', &filetype)
-  bwipe!
-  call delete('srcfile.scd')
 
+  bwipe!
   filetype off
 endfunc
 
@@ -1684,7 +1660,7 @@ endfunc
 func Test_tf_file()
   filetype on
 
-  call writefile([';;; TF MUD client is super duper cool'], 'Xfile.tf')
+  call writefile([';;; TF MUD client is super duper cool'], 'Xfile.tf', 'D')
   split Xfile.tf
   call assert_equal('tf', &filetype)
   bwipe!
@@ -1694,14 +1670,13 @@ func Test_tf_file()
   call assert_equal('terraform', &filetype)
   bwipe!
 
-  call delete('Xfile.tf')
   filetype off
 endfunc
 
 func Test_ts_file()
   filetype on
 
-  call writefile(['<?xml version="1.0" encoding="utf-8"?>'], 'Xfile.ts')
+  call writefile(['<?xml version="1.0" encoding="utf-8"?>'], 'Xfile.ts', 'D')
   split Xfile.ts
   call assert_equal('xml', &filetype)
   bwipe!
@@ -1711,14 +1686,13 @@ func Test_ts_file()
   call assert_equal('typescript', &filetype)
   bwipe!
 
-  call delete('Xfile.ts')
   filetype off
 endfunc
 
 func Test_ttl_file()
   filetype on
 
-  call writefile(['@base <http://example.org/> .'], 'Xfile.ttl')
+  call writefile(['@base <http://example.org/> .'], 'Xfile.ttl', 'D')
   split Xfile.ttl
   call assert_equal('turtle', &filetype)
   bwipe!
@@ -1728,26 +1702,24 @@ func Test_ttl_file()
   call assert_equal('teraterm', &filetype)
   bwipe!
 
-  call delete('Xfile.ttl')
   filetype off
 endfunc
 
 func Test_xpm_file()
   filetype on
 
-  call writefile(['this is XPM2'], 'file.xpm')
+  call writefile(['this is XPM2'], 'file.xpm', 'D')
   split file.xpm
   call assert_equal('xpm2', &filetype)
   bwipe!
 
-  call delete('file.xpm')
   filetype off
 endfunc
 
 func Test_cls_file()
   filetype on
 
-  call writefile(['looks like Smalltalk'], 'Xfile.cls')
+  call writefile(['looks like Smalltalk'], 'Xfile.cls', 'D')
   split Xfile.cls
   call assert_equal('st', &filetype)
   bwipe!
@@ -1781,14 +1753,13 @@ func Test_cls_file()
   call assert_equal('vb', &filetype)
   bwipe!
 
-  call delete('Xfile.cls')
   filetype off
 endfunc
 
 func Test_sig_file()
   filetype on
 
-  call writefile(['this is neither Lambda Prolog nor SML'], 'Xfile.sig')
+  call writefile(['this is neither Lambda Prolog nor SML'], 'Xfile.sig', 'D')
   split Xfile.sig
   call assert_equal('', &filetype)
   bwipe!
@@ -1835,7 +1806,6 @@ func Test_sig_file()
   call assert_equal('sml', &filetype)
   bwipe!
 
-  call delete('Xfile.sig')
   filetype off
 endfunc
 
@@ -1855,7 +1825,7 @@ func Test_sil_file()
   let protoErasedPathA =
           \ABCProtocol.a
   END
-  call writefile(lines, 'Xfile.sil')
+  call writefile(lines, 'Xfile.sil', 'D')
 
   split Xfile.sil
   call assert_equal('sil', &filetype)
@@ -1873,14 +1843,13 @@ func Test_sil_file()
   call assert_equal('sile', &filetype)
   bwipe!
 
-  call delete('Xfile.sil')
   filetype off
 endfunc
 
 func Test_inc_file()
   filetype on
 
-  call writefile(['this is the fallback'], 'Xfile.inc')
+  call writefile(['this is the fallback'], 'Xfile.inc', 'D')
   split Xfile.inc
   call assert_equal('pov', &filetype)
   bwipe!
@@ -1952,7 +1921,6 @@ func Test_inc_file()
   call assert_equal('foo', &filetype)
   bwipe!
 
-  call delete('Xfile.inc')
   filetype off
 endfunc
 
