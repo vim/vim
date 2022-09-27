@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Sep 18
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Sep 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,49 +38,21 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Closure created in for loop can use loop variable?  #11094
-    Nested loops do not work correctly yet.
-    Would need to save vars for each block separately.
-
-Virtual text:
-- Virtual text below: padding is highlighted when 'number' is set  #11138
-- Virtual text above: do not highlight until end of line?  #11138
-- 'number' should be below "above" virtual text?  Might be difficult to
-  implement.
-- Add highlight for the gap before/after virtual text above/below?
-- option to hide virtual text?
-
-Fail with valgrind: test_edit
-Found errors in Test_edit_insertmode_ex_edit():
-        Run 1, 01:19:51 - 01:20:01:
-        command line..script /home/mool/vim/vim90/src/testdir/runtest.vim[469]..function RunTheTest[44]..Test_edit_insertmode_ex_edit[13]..WaitForAssert[2]..<SNR>6_WaitForCommon[11]..<lambda>4 line 1: Pattern '^-- INSERT --\\s*$' does not match ''
-
 From test_global
         Found errors in Test_interrupt_global():
         Run 1, 02:16:22 - 02:16:27:
         command line..script /home/mool/vim/vim90/src/testdir/runtest.vim[469]..function RunTheTest[44]..Test_interrupt_global[13]..WaitForAssert[2]..<SNR>7_WaitForCommon[11]..<lambda>20 line 1: Pattern 'Interrupted' does not match 'Type  :qa!  and press...l changes and exit Vim           1,1           All'
         command line..script /home/mool/vim/vim90/src/testdir/runtest.vim[469]..function RunTheTest[44]..Test_interrupt_global[20]..WaitForAssert[2]..<SNR>7_WaitForCommon[11]..<lambda>21 line 1: Pattern 'Interrupted' does not match 'Entering Ex mode.  Type "visual" to go to Normal mode.'
 
-test_terminal3:
-Conditional jump or move depends on uninitialised value(s)
-==2819005==    at 0x2E9134: jump_to_mouse (mouse.c:2015)
-==2819005==    by 0x2E69E6: do_mouse (mouse.c:702)
-==2819005==    by 0x2E95C2: nv_mouse (mouse.c:2166)
-
-option_set():  "get a bit too much"
-    - refactor to separate function
-    - check for empty result
-
 Use :defer command:
     - Use "D" flag of writefile() and mkdir() in tests.
-	(testdir/test_c*.vim done)
+	(testdir/test_e*.vim done)
 
-When using :echomessage do use msg_row and msg_col, but save and restore.
-How to test any failure?  If nothing fails perhaps it's OK alrady.
-
-New Vim indent script: #11079  Not done yet.
+New Vim indent script: #11079  OK? 
 
 Further Vim9 improvements, possibly after launch:
+- For map(), reduce() and filter() use a specific implementation if the second
+  argument is a compiled function.  #11163
 - Use Vim9 for more runtime files.
 - Check performance with callgrind and kcachegrind.
     getline()/substitute()/setline() in #5632
@@ -228,6 +200,9 @@ reduced?
 
 Add BufDeletePost.  #11041
 
+Test property disappears when using CR twice in a row.  OK when some text was
+entered. (#11151)
+
 Add a string to the 'display' option ("smoothscroll" ?) to make CTRL-E and
 CTRL-Y scroll one screen line, also if this means the first line doesn't start
 with the first character (like what happens with a last line that doesn't
@@ -312,7 +287,9 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 Also, z= in German on a long word can take a very long time, but CTRL-C to
 interrupt does not work. Where to add ui_breakcheck()?
 New English spell files also have very slow suggestions.
+
 French spell files don't work correctly.  #4916
+    Make Vim understand the format somehow?
 
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558

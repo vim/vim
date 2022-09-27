@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.0.  Last change: 2020 Aug 15
+*develop.txt*   For Vim version 9.0.  Last change: 2022 Sep 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

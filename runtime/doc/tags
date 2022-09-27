@@ -302,6 +302,7 @@ $quote	eval.txt	/*$quote*
 'fs'	options.txt	/*'fs'*
 'fsync'	options.txt	/*'fsync'*
 'ft'	options.txt	/*'ft'*
+'g:context_extra_options'	ft_context.txt	/*'g:context_extra_options'*
 'g:context_ignore_makefile'	ft_context.txt	/*'g:context_ignore_makefile'*
 'g:context_include'	ft_context.txt	/*'g:context_include'*
 'g:mf_other_macros'	ft_mp.txt	/*'g:mf_other_macros'*
@@ -4343,6 +4344,7 @@ E1302	eval.txt	/*E1302*
 E1303	map.txt	/*E1303*
 E1304	vim9.txt	/*E1304*
 E1305	textprop.txt	/*E1305*
+E1306	vim9.txt	/*E1306*
 E131	userfunc.txt	/*E131*
 E132	userfunc.txt	/*E132*
 E133	userfunc.txt	/*E133*
@@ -6802,6 +6804,7 @@ extendnew()	builtin.txt	/*extendnew()*
 extension-removal	cmdline.txt	/*extension-removal*
 extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
+f-args-example	map.txt	/*f-args-example*
 false	vim9.txt	/*false*
 false-variable	eval.txt	/*false-variable*
 falsy	eval.txt	/*falsy*
@@ -7399,6 +7402,7 @@ g:tex_subscripts	syntax.txt	/*g:tex_subscripts*
 g:tex_superscripts	syntax.txt	/*g:tex_superscripts*
 g:tex_verbspell	syntax.txt	/*g:tex_verbspell*
 g:var	eval.txt	/*g:var*
+g:vim_indent	indent.txt	/*g:vim_indent*
 g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
 g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
@@ -9173,6 +9177,7 @@ pythonx	if_pyth.txt	/*pythonx*
 pythonx-directory	if_pyth.txt	/*pythonx-directory*
 pyxeval()	builtin.txt	/*pyxeval()*
 q	repeat.txt	/*q*
+q-args-example	map.txt	/*q-args-example*
 q/	cmdline.txt	/*q\/*
 q:	cmdline.txt	/*q:*
 q?	cmdline.txt	/*q?*

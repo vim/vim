@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.0.  Last change: 2022 Sep 17
+*various.txt*   For Vim version 9.0.  Last change: 2022 Sep 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,6 +29,8 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 			Useful to update the status line(s) when 'statusline'
 			includes an item that doesn't cause automatic
 			updating.
+			If the command line is being edited the redraw is
+			postponed until later.
 
 						*:redrawt* *:redrawtabline*
 :redrawt[abline]	Redraw the tabline.  Useful to update the tabline when

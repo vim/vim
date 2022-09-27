@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 9.0.  Last change: 2022 Apr 18
+*motion.txt*    For Vim version 9.0.  Last change: 2022 Sep 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1145,7 +1145,7 @@ g;			Go to [count] older position in change list.
 			(not a motion command)
 
 							*g,* *E663*
-g,			Go to [count] newer cursor position in change list.
+g,			Go to [count] newer position in change list.
 			Just like |g;| but in the opposite direction.
 			(not a motion command)
 

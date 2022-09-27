@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2022 Sep 09
+*options.txt*	For Vim version 9.0.  Last change: 2022 Sep 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1702,7 +1702,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	after that.  Therefore do not append an item with += but use ^= to
 	prepend, e.g.: >
 		set clipboard^=unnamed
-<	These names are recognized:
+<	When using the GUI see |'go-A'|.
+	These names are recognized:
 
 						*clipboard-unnamed*
 	unnamed		When included, Vim will use the clipboard register '*'
@@ -3977,6 +3978,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			 "a"		yes			yes
 			 "A"		 -			yes
 			 "aA"		yes			yes
+
+		When using a terminal see the 'clipboard' option.
 
 								*'go-c'*
 	  'c'	Use console dialogs instead of popup dialogs for simple
