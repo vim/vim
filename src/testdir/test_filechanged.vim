@@ -105,7 +105,7 @@ func Test_FileChangedShell_edit()
     au FileChangedShell Xchanged_r let g:reason = v:fcs_reason | let v:fcs_choice = 'reload'
   augroup END
   call assert_equal(&fileformat, 'unix')
-  call writefile(["line1\r", "line2\r"], 'Xchanged_r')
+  call writefile(["line1\r", "line2\r"], 'Xchanged_r', 'D')
   let g:reason = ''
   checktime
   call assert_equal('changed', g:reason)
@@ -134,7 +134,6 @@ func Test_FileChangedShell_edit()
   au! testreload
   bwipe!
   call delete(undofile('Xchanged_r'))
-  call delete('Xchanged_r')
 endfunc
 
 func Test_FileChangedShell_edit_dialog()
@@ -152,7 +151,7 @@ func Test_FileChangedShell_edit_dialog()
     au FileChangedShell Xchanged_r let g:reason = v:fcs_reason | let v:fcs_choice = 'ask'
   augroup END
   call assert_equal(&fileformat, 'unix')
-  call writefile(["line1\r", "line2\r"], 'Xchanged_r')
+  call writefile(["line1\r", "line2\r"], 'Xchanged_r', 'D')
   let g:reason = ''
   call feedkeys('L', 'L') " load file content only
   checktime
@@ -183,7 +182,6 @@ func Test_FileChangedShell_edit_dialog()
   au! testreload
   bwipe!
   call delete(undofile('Xchanged_r'))
-  call delete('Xchanged_r')
 endfunc
 
 func Test_file_changed_dialog()
@@ -241,27 +239,26 @@ func Test_file_changed_dialog()
   " File created after starting to edit it
   call delete('Xchanged_d')
   new Xchanged_d
-  call writefile(['one'], 'Xchanged_d')
+  call writefile(['one'], 'Xchanged_d', 'D')
   call feedkeys('L', 'L')
   checktime Xchanged_d
   call assert_equal(['one'], getline(1, '$'))
   close!
 
   bwipe!
-  call delete('Xchanged_d')
 endfunc
 
 " Test for editing a new buffer from a FileChangedShell autocmd
 func Test_FileChangedShell_newbuf()
-  call writefile(['one', 'two'], 'Xchfile')
+  call writefile(['one', 'two'], 'Xchfile', 'D')
   new Xchfile
   augroup testnewbuf
     autocmd FileChangedShell * enew
   augroup END
   call writefile(['red'], 'Xchfile')
   call assert_fails('checktime', 'E811:')
+
   au! testnewbuf
-  call delete('Xchfile')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

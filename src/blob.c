@@ -60,29 +60,31 @@ rettv_blob_set(typval_T *rettv, blob_T *b)
     int
 blob_copy(blob_T *from, typval_T *to)
 {
-    int	    ret = OK;
+    int		len;
 
     to->v_type = VAR_BLOB;
     to->v_lock = 0;
     if (from == NULL)
-	to->vval.v_blob = NULL;
-    else if (rettv_blob_alloc(to) == FAIL)
-	ret = FAIL;
-    else
     {
-	int  len = from->bv_ga.ga_len;
-
-	if (len > 0)
-	{
-	    to->vval.v_blob->bv_ga.ga_data =
-					 vim_memsave(from->bv_ga.ga_data, len);
-	    if (to->vval.v_blob->bv_ga.ga_data == NULL)
-		len = 0;
-	}
-	to->vval.v_blob->bv_ga.ga_len = len;
-	to->vval.v_blob->bv_ga.ga_maxlen = len;
+	to->vval.v_blob = NULL;
+	return OK;
     }
-    return ret;
+
+    if (rettv_blob_alloc(to) == FAIL)
+	return FAIL;
+
+    len = from->bv_ga.ga_len;
+    if (len > 0)
+    {
+	to->vval.v_blob->bv_ga.ga_data =
+	    vim_memsave(from->bv_ga.ga_data, len);
+	if (to->vval.v_blob->bv_ga.ga_data == NULL)
+	    len = 0;
+    }
+    to->vval.v_blob->bv_ga.ga_len = len;
+    to->vval.v_blob->bv_ga.ga_maxlen = len;
+
+    return OK;
 }
 
     void
@@ -280,6 +282,93 @@ failed:
     return NULL;
 }
 
+/*
+ * Returns a slice of 'blob' from index 'n1' to 'n2' in 'rettv'.  The length of
+ * the blob is 'len'.  Returns an empty blob if the indexes are out of range.
+ */
+    static int
+blob_slice(
+	blob_T		*blob,
+	long		len,
+	varnumber_T	n1,
+	varnumber_T	n2,
+	int		exclusive,
+	typval_T	*rettv)
+{
+    if (n1 < 0)
+    {
+	n1 = len + n1;
+	if (n1 < 0)
+	    n1 = 0;
+    }
+    if (n2 < 0)
+	n2 = len + n2;
+    else if (n2 >= len)
+	n2 = len - (exclusive ? 0 : 1);
+    if (exclusive)
+	--n2;
+    if (n1 >= len || n2 < 0 || n1 > n2)
+    {
+	clear_tv(rettv);
+	rettv->v_type = VAR_BLOB;
+	rettv->vval.v_blob = NULL;
+    }
+    else
+    {
+	blob_T  *new_blob = blob_alloc();
+	long    i;
+
+	if (new_blob != NULL)
+	{
+	    if (ga_grow(&new_blob->bv_ga, n2 - n1 + 1) == FAIL)
+	    {
+		blob_free(new_blob);
+		return FAIL;
+	    }
+	    new_blob->bv_ga.ga_len = n2 - n1 + 1;
+	    for (i = n1; i <= n2; i++)
+		blob_set(new_blob, i - n1, blob_get(blob, i));
+
+	    clear_tv(rettv);
+	    rettv_blob_set(rettv, new_blob);
+	}
+    }
+
+    return OK;
+}
+
+/*
+ * Return the byte value in 'blob' at index 'idx' in 'rettv'.  If the index is
+ * too big or negative that is an error.  The length of the blob is 'len'.
+ */
+    static int
+blob_index(
+	blob_T		*blob,
+	int		len,
+	varnumber_T	idx,
+	typval_T	*rettv)
+{
+    // The resulting variable is a byte value.
+    // If the index is too big or negative that is an error.
+    if (idx < 0)
+	idx = len + idx;
+    if (idx < len && idx >= 0)
+    {
+	int v = blob_get(blob, idx);
+
+	clear_tv(rettv);
+	rettv->v_type = VAR_NUMBER;
+	rettv->vval.v_number = v;
+    }
+    else
+    {
+	semsg(_(e_blob_index_out_of_range_nr), idx);
+	return FAIL;
+    }
+
+    return OK;
+}
+
     int
 blob_slice_or_index(
 	blob_T		*blob,
@@ -289,71 +378,12 @@ blob_slice_or_index(
 	int		exclusive,
 	typval_T	*rettv)
 {
-    long	    len = blob_len(blob);
+    long	len = blob_len(blob);
 
     if (is_range)
-    {
-	// The resulting variable is a sub-blob.  If the indexes
-	// are out of range the result is empty.
-	if (n1 < 0)
-	{
-	    n1 = len + n1;
-	    if (n1 < 0)
-		n1 = 0;
-	}
-	if (n2 < 0)
-	    n2 = len + n2;
-	else if (n2 >= len)
-	    n2 = len - (exclusive ? 0 : 1);
-	if (exclusive)
-	    --n2;
-	if (n1 >= len || n2 < 0 || n1 > n2)
-	{
-	    clear_tv(rettv);
-	    rettv->v_type = VAR_BLOB;
-	    rettv->vval.v_blob = NULL;
-	}
-	else
-	{
-	    blob_T  *new_blob = blob_alloc();
-	    long    i;
-
-	    if (new_blob != NULL)
-	    {
-		if (ga_grow(&new_blob->bv_ga, n2 - n1 + 1) == FAIL)
-		{
-		    blob_free(new_blob);
-		    return FAIL;
-		}
-		new_blob->bv_ga.ga_len = n2 - n1 + 1;
-		for (i = n1; i <= n2; i++)
-		    blob_set(new_blob, i - n1, blob_get(blob, i));
-
-		clear_tv(rettv);
-		rettv_blob_set(rettv, new_blob);
-	    }
-	}
-    }
+	return blob_slice(blob, len, n1, n2, exclusive, rettv);
     else
-    {
-	// The resulting variable is a byte value.
-	// If the index is too big or negative that is an error.
-	if (n1 < 0)
-	    n1 = len + n1;
-	if (n1 < len && n1 >= 0)
-	{
-	    int v = blob_get(blob, n1);
-
-	    clear_tv(rettv);
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = v;
-	}
-	else
-	{
-	    semsg(_(e_blob_index_out_of_range_nr), n1);
-	    return FAIL;
-	}
-    }
+	return blob_index(blob, len, n1, rettv);
     return OK;
 }
 

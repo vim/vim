@@ -57,6 +57,7 @@ runtime/compiler/gawk.vim		@dkearns
 runtime/compiler/gjs.vim		@dkearns
 runtime/compiler/go.vim			@dbarnett
 runtime/compiler/haml.vim		@tpope
+runtime/compiler/hare.vim		@rsaihe
 runtime/compiler/icon.vim		@dkearns
 runtime/compiler/javac.vim		@dkearns
 runtime/compiler/jest.vim		@dkearns
@@ -107,6 +108,7 @@ runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
 runtime/ftplugin/cfg.vim		@chrisbra
+runtime/ftplugin/chatito.vim		@ObserverOfTime
 runtime/ftplugin/clojure.vim		@axvr
 runtime/ftplugin/cs.vim			@nickspoons
 runtime/ftplugin/csh.vim		@dkearns
@@ -116,9 +118,9 @@ runtime/ftplugin/desktop.vim		@e-kwsm
 runtime/ftplugin/dosbatch.vim		@mrdubya
 runtime/ftplugin/eiffel.vim		@dkearns
 runtime/ftplugin/elixir.vim		@mhanberg
-runtime/ftplugin/expect.vim		@dkearns
 runtime/ftplugin/erlang.vim		@hcs42
 runtime/ftplugin/eruby.vim		@tpope @dkearns
+runtime/ftplugin/expect.vim		@dkearns
 runtime/ftplugin/fennel.vim		@gpanders
 runtime/ftplugin/fetchmail.vim		@dkearns
 runtime/ftplugin/fpcmake.vim		@dkearns
@@ -134,9 +136,11 @@ runtime/ftplugin/gitconfig.vim		@tpope
 runtime/ftplugin/gitignore.vim		@ObserverOfTime
 runtime/ftplugin/gitrebase.vim		@tpope
 runtime/ftplugin/gitsendemail.vim	@tpope
+runtime/ftplugin/gyp.vim		@ObserverOfTime
 runtime/ftplugin/go.vim			@dbarnett
 runtime/ftplugin/gprof.vim		@dpelle
 runtime/ftplugin/haml.vim		@tpope
+runtime/ftplugin/hare.vim		@rsaihe
 runtime/ftplugin/hgcommit.vim		@k-takata
 runtime/ftplugin/html.vim		@dkearns
 runtime/ftplugin/i3config.vim		@hiqua
@@ -208,6 +212,7 @@ runtime/ftplugin/zsh.vim		@chrisbra
 runtime/indent/basic.vim		@dkearns
 runtime/indent/bst.vim			@tpope
 runtime/indent/cdl.vim			@dkearns
+runtime/indent/chatito.vim		@ObserverOfTime
 runtime/indent/clojure.vim		@axvr
 runtime/indent/config.vim		@dkearns
 runtime/indent/cs.vim			@nickspoons
@@ -229,7 +234,9 @@ runtime/indent/gdscript.vim		@habamax
 runtime/indent/gitconfig.vim		@tpope
 runtime/indent/gitolite.vim		@sitaramc
 runtime/indent/go.vim			@dbarnett
+runtime/indent/gyp.vim			@ObserverOfTime
 runtime/indent/haml.vim			@tpope
+runtime/indent/hare.vim			@rsaihe
 runtime/indent/idlang.vim		@dkearns
 runtime/indent/j.vim			@glts
 runtime/indent/java.vim			@xuhdev
@@ -303,6 +310,7 @@ runtime/syntax/cabal.vim		@coot
 runtime/syntax/cabalconfig.vim		@coot
 runtime/syntax/cabalproject.vim		@coot
 runtime/syntax/cf.vim			@ernstvanderlinden
+runtime/syntax/chatito.vim		@ObserverOfTime
 runtime/syntax/clojure.vim		@axvr
 runtime/syntax/cs.vim			@nickspoons
 runtime/syntax/csh.vim			@cecamp
@@ -345,7 +353,9 @@ runtime/syntax/go.vim			@bhcleek
 runtime/syntax/godoc.vim		@dbarnett
 runtime/syntax/gprof.vim		@dpelle
 runtime/syntax/groff.vim		@jmarshall
+runtime/syntax/gyp.vim			@ObserverOfTime
 runtime/syntax/haml.vim			@tpope
+runtime/syntax/hare.vim			@rsaihe
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
 runtime/syntax/html.vim			@dkearns

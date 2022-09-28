@@ -22,14 +22,13 @@ endfunc
 func Test_fileformat_autocommand()
   let filecnt = ["", "foobar\<CR>", "eins\<CR>", "\<CR>", "zwei\<CR>", "drei", "vier", "fünf", ""]
   let ffs = &ffs
-  call writefile(filecnt, 'Xffafile', 'b')
+  call writefile(filecnt, 'Xffafile', 'bD')
   au BufReadPre Xffafile set ffs=dos ff=dos
   new Xffafile
   call assert_equal('dos', &l:ff)
   call assert_equal('dos', &ffs)
 
   " cleanup
-  call delete('Xffafile')
   let &ffs = ffs
   au! BufReadPre Xffafile
   bw!
@@ -65,11 +64,11 @@ endfun
 " Test for a lot of variations of the 'fileformats' option
 func Test_fileformats()
   " create three test files, one in each format
-  call writefile(['unix', 'unix'], 'XXUnix')
-  call writefile(["dos\r", "dos\r"], 'XXDos')
-  call writefile(["mac\rmac\r"], 'XXMac', 'b')
+  call writefile(['unix', 'unix'], 'XXUnix', 'D')
+  call writefile(["dos\r", "dos\r"], 'XXDos', 'D')
+  call writefile(["mac\rmac\r"], 'XXMac', 'bD')
   " create a file with no End Of Line
-  call writefile(["noeol"], 'XXEol', 'b')
+  call writefile(["noeol"], 'XXEol', 'bD')
   " create mixed format files
   call s:concat_files('XXUnix', 'XXDos', 'XXUxDs')
   call s:concat_files('XXUnix', 'XXMac', 'XXUxMac')
@@ -277,10 +276,6 @@ func Test_fileformats()
   " cleanup
   only
   %bwipe!
-  call delete('XXUnix')
-  call delete('XXDos')
-  call delete('XXMac')
-  call delete('XXEol')
   call delete('XXUxDs')
   call delete('XXUxMac')
   call delete('XXDosMac')
