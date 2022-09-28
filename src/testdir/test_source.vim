@@ -6,7 +6,7 @@ source view_util.vim
 func Test_source_autocmd()
   call writefile([
 	\ 'let did_source = 1',
-	\ ], 'Xsourced')
+	\ ], 'Xsourced', 'D')
   au SourcePre *source* let did_source_pre = 1
   au SourcePost *source* let did_source_post = 1
 
@@ -16,7 +16,6 @@ func Test_source_autocmd()
   call assert_equal(g:did_source_pre, 1)
   call assert_equal(g:did_source_post, 1)
 
-  call delete('Xsourced')
   au! SourcePre
   au! SourcePost
   unlet g:did_source
@@ -42,12 +41,11 @@ endfunc
 
 func Test_source_sandbox()
   new
-  call writefile(["Ohello\<Esc>"], 'Xsourcehello')
+  call writefile(["Ohello\<Esc>"], 'Xsourcehello', 'D')
   source! Xsourcehello | echo
   call assert_equal('hello', getline(1))
   call assert_fails('sandbox source! Xsourcehello', 'E48:')
   bwipe!
-  call delete('Xsourcehello')
 endfunc
 
 " When deleting a file and immediately creating a new one the inode may be
@@ -63,10 +61,9 @@ endfunc
 
 " When sourcing a vim script, shebang should be ignored.
 func Test_source_ignore_shebang()
-  call writefile(['#!./xyzabc', 'let g:val=369'], 'Xsisfile.vim')
+  call writefile(['#!./xyzabc', 'let g:val=369'], 'Xsisfile.vim', 'D')
   source Xsisfile.vim
   call assert_equal(g:val, 369)
-  call delete('Xsisfile.vim')
 endfunc
 
 " Test for expanding <sfile> in an autocmd and for <slnum> and <sflnum>
@@ -82,12 +79,11 @@ func Test_source_autocmd_sfile()
     let g:Sflnum = expand('<sflnum>')
     augroup! sfiletest
   [CODE]
-  call writefile(code, 'Xscript.vim')
+  call writefile(code, 'Xscript.vim', 'D')
   source Xscript.vim
   call assert_equal('Xscript.vim', g:Sfile)
   call assert_equal('7', g:Slnum)
   call assert_equal('8', g:Sflnum)
-  call delete('Xscript.vim')
 endfunc
 
 func Test_source_error()
@@ -105,14 +101,13 @@ endfunc
 " Test for sourcing a script recursively
 func Test_nested_script()
   CheckRunVimInTerminal
-  call writefile([':source! Xscript.vim', ''], 'Xscript.vim')
+  call writefile([':source! Xscript.vim', ''], 'Xscript.vim', 'D')
   let buf = RunVimInTerminal('', {'rows': 6})
   call term_wait(buf)
   call term_sendkeys(buf, ":set noruler\n")
   call term_sendkeys(buf, ":source! Xscript.vim\n")
   call term_wait(buf)
   call WaitForAssert({-> assert_match('E22: Scripts nested too deep\s*', term_getline(buf, 6))})
-  call delete('Xscript.vim')
   call StopVimInTerminal(buf)
 endfunc
 
@@ -285,14 +280,13 @@ func Test_source_buffer()
      let g:ScriptID3 = expand("<SID>")
      let g:Slnum3 = expand("<slnum>")
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   source Xscript
   call assert_true(g:ScriptID1 != g:ScriptID2)
   call assert_equal(g:ScriptID1, g:ScriptID3)
   call assert_equal('2', g:Slnum1)
   call assert_equal('1', g:Slnum2)
   call assert_equal('12', g:Slnum3)
-  call delete('Xscript')
 
   " test for sourcing a heredoc
   %d _
@@ -659,10 +653,9 @@ func Test_source_buffer_long_line()
       norm i0000000000000000000
       silent! so
   END
-  call writefile(lines, 'Xtest.vim')
+  call writefile(lines, 'Xtest.vim', 'D')
   source Xtest.vim
   bwipe!
-  call delete('Xtest.vim')
 endfunc
 
 func Test_source_buffer_with_NUL_char()
@@ -675,7 +668,7 @@ func Test_source_buffer_with_NUL_char()
   END
   " Can't have a NL in heredoc
   let lines += ["silent! vim9 echo [0 \<NL> ? 'a' : 'b']"]
-  call writefile(lines, 'XsourceNul', '')
+  call writefile(lines, 'XsourceNul', 'D')
   edit XsourceNul
   source
 
