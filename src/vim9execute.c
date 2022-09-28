@@ -710,7 +710,8 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    return FAIL;
 
 	funcstack->fs_var_offset = argcount + STACK_FRAME_SIZE;
-	funcstack->fs_ga.ga_len = funcstack->fs_var_offset + dfunc->df_varcount;
+	funcstack->fs_ga.ga_len = funcstack->fs_var_offset
+							  + dfunc->df_varcount;
 	stack = ALLOC_CLEAR_MULT(typval_T, funcstack->fs_ga.ga_len);
 	funcstack->fs_ga.ga_data = stack;
 	if (stack == NULL)
@@ -5881,7 +5882,11 @@ call_def_function(
 failed_early:
     // Free all arguments and local variables.
     for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
-	clear_tv(STACK_TV(idx));
+    {
+	tv = STACK_TV(idx);
+	if (tv->v_type != VAR_NUMBER && tv->v_type != VAR_UNKNOWN)
+	    clear_tv(tv);
+    }
     ex_nesting_level = orig_nesting_level;
 
     vim_free(ectx.ec_stack.ga_data);
@@ -6371,11 +6376,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_NEWLIST:
 		smsg("%s%4d NEWLIST size %lld", pfx, current,
-					    (varnumber_T)(iptr->isn_arg.number));
+					  (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_NEWDICT:
 		smsg("%s%4d NEWDICT size %lld", pfx, current,
-					    (varnumber_T)(iptr->isn_arg.number));
+					  (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_NEWPARTIAL:
 		smsg("%s%4d NEWPARTIAL", pfx, current);

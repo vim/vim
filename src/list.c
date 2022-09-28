@@ -3073,10 +3073,12 @@ list_reduce(
 
 	r = eval_expr_typval(expr, argv, 2, rettv);
 
-	clear_tv(&argv[0]);
+	if (argv[0].v_type != VAR_NUMBER && argv[0].v_type != VAR_UNKNOWN)
+	    clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    break;
 
+	// advance to the next item
 	if (range_list)
 	{
 	    range_val += l->lv_u.nonmat.lv_stride;
