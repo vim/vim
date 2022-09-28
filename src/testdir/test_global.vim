@@ -116,7 +116,7 @@ func Test_interrupt_global()
     cnoremap ; <Cmd>sleep 10<CR>
     call setline(1, repeat(['foo'], 5))
   END
-  call writefile(lines, 'Xtest_interrupt_global')
+  call writefile(lines, 'Xtest_interrupt_global', 'D')
   let buf = RunVimInTerminal('-S Xtest_interrupt_global', {'rows': 6})
 
   call term_sendkeys(buf, ":g/foo/norm :\<C-V>;\<CR>")
@@ -133,7 +133,6 @@ func Test_interrupt_global()
   call WaitForAssert({-> assert_match('Interrupted', term_getline(buf, 5))}, 1000)
 
   call StopVimInTerminal(buf)
-  call delete('Xtest_interrupt_global')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
