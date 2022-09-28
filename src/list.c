@@ -2377,9 +2377,8 @@ list_filter_map(
 	rettv->v_type = VAR_LIST;
 	rettv->vval.v_list = NULL;
     }
-    if (l == NULL
-	    || (filtermap == FILTERMAP_FILTER
-		&& value_check_lock(l->lv_lock, arg_errmsg, TRUE)))
+    if (l == NULL || (filtermap == FILTERMAP_FILTER
+			    && value_check_lock(l->lv_lock, arg_errmsg, TRUE)))
 	return;
 
     prev_lock = l->lv_lock;
@@ -3011,28 +3010,44 @@ list_reduce(
 {
     list_T	*l = argvars[0].vval.v_list;
     listitem_T  *li = NULL;
+    int		range_list;
+    int		range_idx = 0;
+    varnumber_T	range_val = 0;
     typval_T	initial;
     typval_T	argv[3];
     int		r;
     int		called_emsg_start = called_emsg;
     int		prev_locked;
 
-    if (l != NULL)
-	CHECK_LIST_MATERIALIZE(l);
+    // Using reduce on a range() uses "range_idx" and "range_val".
+    range_list = l != NULL && l->lv_first == &range_list_item;
+    if (range_list)
+	range_val = l->lv_u.nonmat.lv_start;
+
     if (argvars[2].v_type == VAR_UNKNOWN)
     {
-	if (l == NULL || l->lv_first == NULL)
+	if (l == NULL || l->lv_len == 0)
 	{
 	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "List");
 	    return;
 	}
-	initial = l->lv_first->li_tv;
-	li = l->lv_first->li_next;
+	if (range_list)
+	{
+	    initial.v_type = VAR_NUMBER;
+	    initial.vval.v_number = range_val;
+	    range_val += l->lv_u.nonmat.lv_stride;
+	    range_idx = 1;
+	}
+	else
+	{
+	    initial = l->lv_first->li_tv;
+	    li = l->lv_first->li_next;
+	}
     }
     else
     {
 	initial = argvars[2];
-	if (l != NULL)
+	if (l != NULL && !range_list)
 	    li = l->lv_first;
     }
     copy_tv(&initial, rettv);
@@ -3041,20 +3056,36 @@ list_reduce(
 	return;
 
     prev_locked = l->lv_lock;
-
     l->lv_lock = VAR_FIXED;  // disallow the list changing here
-    for ( ; li != NULL; li = li->li_next)
+
+    while (range_list ? range_idx < l->lv_len : li != NULL)
     {
 	argv[0] = *rettv;
-	argv[1] = li->li_tv;
 	rettv->v_type = VAR_UNKNOWN;
+
+	if (range_list)
+	{
+	    argv[1].v_type = VAR_NUMBER;
+	    argv[1].vval.v_number = range_val;
+	}
+	else
+	    argv[1] = li->li_tv;
 
 	r = eval_expr_typval(expr, argv, 2, rettv);
 
 	clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    break;
+
+	if (range_list)
+	{
+	    range_val += l->lv_u.nonmat.lv_stride;
+	    ++range_idx;
+	}
+	else
+	    li = li->li_next;
     }
+
     l->lv_lock = prev_locked;
 }
 
