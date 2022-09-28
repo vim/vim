@@ -2320,6 +2320,7 @@ filter_map_one(
 	typval_T	*tv,	    // original value
 	typval_T	*expr,	    // callback
 	filtermap_T	filtermap,
+	funccall_T	*fc,	    // from eval_expr_get_funccal()
 	typval_T	*newtv,	    // for map() and mapnew(): new value
 	int		*remp)	    // for filter(): remove flag
 {
@@ -2329,7 +2330,7 @@ filter_map_one(
     copy_tv(tv, get_vim_var_tv(VV_VAL));
     argv[0] = *get_vim_var_tv(VV_KEY);
     argv[1] = *get_vim_var_tv(VV_VAL);
-    if (eval_expr_typval(expr, argv, 2, newtv) == FAIL)
+    if (eval_expr_typval(expr, argv, 2, fc, newtv) == FAIL)
 	goto theend;
     if (filtermap == FILTERMAP_FILTER)
     {
@@ -2371,6 +2372,8 @@ list_filter_map(
     int		idx = 0;
     int		rem;
     listitem_T	*li, *nli;
+    typval_T	newtv;
+    funccall_T	*fc;
 
     if (filtermap == FILTERMAP_MAPNEW)
     {
@@ -2395,6 +2398,9 @@ list_filter_map(
     if (filtermap != FILTERMAP_FILTER && l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
 
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, &newtv);
+
     if (l->lv_first == &range_list_item)
     {
 	varnumber_T	val = l->lv_u.nonmat.lv_start;
@@ -2413,13 +2419,12 @@ list_filter_map(
 	for (idx = 0; idx < len; ++idx)
 	{
 	    typval_T tv;
-	    typval_T newtv;
 
 	    tv.v_type = VAR_NUMBER;
 	    tv.v_lock = 0;
 	    tv.vval.v_number = val;
 	    set_vim_var_nr(VV_KEY, idx);
-	    if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL)
+	    if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL)
 		break;
 	    if (did_emsg)
 	    {
@@ -2457,15 +2462,13 @@ list_filter_map(
 	// Materialized list: loop over the items
 	for (li = l->lv_first; li != NULL; li = nli)
 	{
-	    typval_T newtv;
-
 	    if (filtermap == FILTERMAP_MAP && value_check_lock(
 			li->li_tv.v_lock, arg_errmsg, TRUE))
 		break;
 	    nli = li->li_next;
 	    set_vim_var_nr(VV_KEY, idx);
-	    if (filter_map_one(&li->li_tv, expr, filtermap,
-			&newtv, &rem) == FAIL)
+	    if (filter_map_one(&li->li_tv, expr, filtermap, fc,
+							 &newtv, &rem) == FAIL)
 		break;
 	    if (did_emsg)
 	    {
@@ -2498,6 +2501,8 @@ list_filter_map(
     }
 
     l->lv_lock = prev_lock;
+    if (fc != NULL)
+	remove_funccal();
 }
 
 /*
@@ -3018,6 +3023,7 @@ list_reduce(
     int		r;
     int		called_emsg_start = called_emsg;
     int		prev_locked;
+    funccall_T	*fc;
 
     // Using reduce on a range() uses "range_idx" and "range_val".
     range_list = l != NULL && l->lv_first == &range_list_item;
@@ -3055,6 +3061,9 @@ list_reduce(
     if (l == NULL)
 	return;
 
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, rettv);
+
     prev_locked = l->lv_lock;
     l->lv_lock = VAR_FIXED;  // disallow the list changing here
 
@@ -3071,7 +3080,7 @@ list_reduce(
 	else
 	    argv[1] = li->li_tv;
 
-	r = eval_expr_typval(expr, argv, 2, rettv);
+	r = eval_expr_typval(expr, argv, 2, fc, rettv);
 
 	if (argv[0].v_type != VAR_NUMBER && argv[0].v_type != VAR_UNKNOWN)
 	    clear_tv(&argv[0]);
@@ -3087,6 +3096,9 @@ list_reduce(
 	else
 	    li = li->li_next;
     }
+
+    if (fc != NULL)
+	remove_funccal();
 
     l->lv_lock = prev_locked;
 }

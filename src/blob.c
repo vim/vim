@@ -559,6 +559,8 @@ blob_filter_map(
     blob_T	*b_ret;
     int		idx = 0;
     int		rem;
+    typval_T	newtv;
+    funccall_T	*fc;
 
     if (filtermap == FILTERMAP_MAPNEW)
     {
@@ -579,15 +581,16 @@ blob_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, &newtv);
+
     for (i = 0; i < b->bv_ga.ga_len; i++)
     {
-	typval_T newtv;
-
 	tv.v_type = VAR_NUMBER;
 	val = blob_get(b, i);
 	tv.vval.v_number = val;
 	set_vim_var_nr(VV_KEY, idx);
-	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
+	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
 		|| did_emsg)
 	    break;
 	if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
@@ -612,6 +615,9 @@ blob_filter_map(
 	}
 	++idx;
     }
+
+    if (fc != NULL)
+	remove_funccal();
 }
 
 /*
@@ -714,7 +720,7 @@ blob_reduce(
 	argv[1].v_type = VAR_NUMBER;
 	argv[1].vval.v_number = blob_get(b, i);
 
-	r = eval_expr_typval(expr, argv, 2, rettv);
+	r = eval_expr_typval(expr, argv, 2, NULL, rettv);
 
 	clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)

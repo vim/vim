@@ -882,6 +882,8 @@ string_filter_map(
     int		len = 0;
     int		idx = 0;
     int		rem;
+    typval_T	newtv;
+    funccall_T	*fc;
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
@@ -889,18 +891,19 @@ string_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, &newtv);
+
     ga_init2(&ga, sizeof(char), 80);
     for (p = str; *p != NUL; p += len)
     {
-	typval_T newtv;
-
 	if (copy_first_char_to_tv(p, &tv) == FAIL)
 	    break;
 	len = (int)STRLEN(tv.vval.v_string);
 
 	newtv.v_type = VAR_UNKNOWN;
 	set_vim_var_nr(VV_KEY, idx);
-	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
+	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
 		|| did_emsg)
 	{
 	    clear_tv(&newtv);
@@ -929,6 +932,8 @@ string_filter_map(
     }
     ga_append(&ga, NUL);
     rettv->vval.v_string = ga.ga_data;
+    if (fc != NULL)
+	remove_funccal();
 }
 
 /*
@@ -947,6 +952,7 @@ string_reduce(
     typval_T	argv[3];
     int		r;
     int		called_emsg_start = called_emsg;
+    funccall_T	*fc;
 
     if (argvars[2].v_type == VAR_UNKNOWN)
     {
@@ -964,6 +970,9 @@ string_reduce(
     else
 	copy_tv(&argvars[2], rettv);
 
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, rettv);
+
     for ( ; *p != NUL; p += len)
     {
 	argv[0] = *rettv;
@@ -971,13 +980,16 @@ string_reduce(
 	    break;
 	len = (int)STRLEN(argv[1].vval.v_string);
 
-	r = eval_expr_typval(expr, argv, 2, rettv);
+	r = eval_expr_typval(expr, argv, 2, fc, rettv);
 
 	clear_tv(&argv[0]);
 	clear_tv(&argv[1]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    return;
     }
+
+    if (fc != NULL)
+	remove_funccal();
 }
 
     static void

@@ -216,12 +216,39 @@ eval_expr_valid_arg(typval_T *tv)
 }
 
 /*
+ * When calling eval_expr_typval() many times we only need one funccall_T.
+ * Returns NULL when no funccall_T is to be used.
+ * When returning non-NULL remove_funccal() must be called later.
+ */
+    funccall_T *
+eval_expr_get_funccal(typval_T *expr, typval_T *rettv)
+{
+    if (expr->v_type != VAR_PARTIAL)
+	return NULL;
+
+    partial_T *partial = expr->vval.v_partial;
+    if (partial == NULL)
+	return NULL;
+    if (partial->pt_func == NULL
+	    || partial->pt_func->uf_def_status == UF_NOT_COMPILED)
+	return NULL;
+
+    return create_funccal(partial->pt_func, rettv);
+}
+
+/*
  * Evaluate an expression, which can be a function, partial or string.
  * Pass arguments "argv[argc]".
+ * "fc_arg" is from eval_expr_get_funccal() or NULL;
  * Return the result in "rettv" and OK or FAIL.
  */
     int
-eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
+eval_expr_typval(
+	typval_T    *expr,
+	typval_T    *argv,
+	int	    argc,
+	funccall_T  *fc_arg,
+	typval_T    *rettv)
 {
     char_u	*s;
     char_u	buf[NUMBUFLEN];
@@ -247,7 +274,8 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	if (partial->pt_func != NULL
 			  && partial->pt_func->uf_def_status != UF_NOT_COMPILED)
 	{
-	    funccall_T	*fc = create_funccal(partial->pt_func, rettv);
+	    funccall_T	*fc = fc_arg != NULL ? fc_arg
+				     : create_funccal(partial->pt_func, rettv);
 	    int		r;
 
 	    if (fc == NULL)
@@ -256,7 +284,8 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	    // Shortcut to call a compiled function with minimal overhead.
 	    r = call_def_function(partial->pt_func, argc, argv,
 					  DEF_USE_PT_ARGV, partial, fc, rettv);
-	    remove_funccal();
+	    if (fc_arg == NULL)
+		remove_funccal();
 	    if (r == FAIL)
 		return FAIL;
 	}
@@ -304,7 +333,7 @@ eval_expr_to_bool(typval_T *expr, int *error)
     typval_T	rettv;
     int		res;
 
-    if (eval_expr_typval(expr, NULL, 0, &rettv) == FAIL)
+    if (eval_expr_typval(expr, NULL, 0, NULL, &rettv) == FAIL)
     {
 	*error = TRUE;
 	return FALSE;

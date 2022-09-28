@@ -1315,6 +1315,8 @@ dict_filter_map(
     dictitem_T	*di;
     int		todo;
     int		rem;
+    typval_T	newtv;
+    funccall_T	*fc;
 
     if (filtermap == FILTERMAP_MAPNEW)
     {
@@ -1335,6 +1337,9 @@ dict_filter_map(
 	d_ret = rettv->vval.v_dict;
     }
 
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, &newtv);
+
     if (filtermap != FILTERMAP_FILTER && d->dv_lock == 0)
 	d->dv_lock = VAR_LOCKED;
     ht = &d->dv_hashtab;
@@ -1345,7 +1350,6 @@ dict_filter_map(
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    int		r;
-	    typval_T	newtv;
 
 	    --todo;
 	    di = HI2DI(hi);
@@ -1357,8 +1361,7 @@ dict_filter_map(
 		break;
 	    set_vim_var_string(VV_KEY, di->di_key, -1);
 	    newtv.v_type = VAR_UNKNOWN;
-	    r = filter_map_one(&di->di_tv, expr, filtermap,
-		    &newtv, &rem);
+	    r = filter_map_one(&di->di_tv, expr, filtermap, fc, &newtv, &rem);
 	    clear_tv(get_vim_var_tv(VV_KEY));
 	    if (r == FAIL || did_emsg)
 	    {
@@ -1398,6 +1401,8 @@ dict_filter_map(
     }
     hash_unlock(ht);
     d->dv_lock = prev_lock;
+    if (fc != NULL)
+	remove_funccal();
 }
 
 /*

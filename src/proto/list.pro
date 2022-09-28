@@ -52,7 +52,7 @@ void init_static_list(staticList10_T *sl);
 void f_list2str(typval_T *argvars, typval_T *rettv);
 void f_sort(typval_T *argvars, typval_T *rettv);
 void f_uniq(typval_T *argvars, typval_T *rettv);
-int filter_map_one(typval_T *tv, typval_T *expr, filtermap_T filtermap, typval_T *newtv, int *remp);
+int filter_map_one(typval_T *tv, typval_T *expr, filtermap_T filtermap, funccall_T *fc, typval_T *newtv, int *remp);
 void f_filter(typval_T *argvars, typval_T *rettv);
 void f_map(typval_T *argvars, typval_T *rettv);
 void f_mapnew(typval_T *argvars, typval_T *rettv);
