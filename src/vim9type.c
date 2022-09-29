@@ -45,6 +45,30 @@ get_type_ptr(garray_T *type_gap)
     return type;
 }
 
+/*
+ * Make a shallow copy of "type".
+ * When allocation fails returns "type".
+ */
+    type_T *
+copy_type(type_T *type, garray_T *type_gap)
+{
+    type_T *copy = get_type_ptr(type_gap);
+
+    if (copy == NULL)
+	return type;
+    *copy = *type;
+
+    if (type->tt_args != NULL)
+    {
+	copy->tt_args = ALLOC_MULT(type_T *, type->tt_argcount);
+	if (copy->tt_args != NULL)
+	    for (int i = 0; i < type->tt_argcount; ++i)
+		copy->tt_args[i] = type->tt_args[i];
+    }
+
+    return copy;
+}
+
     void
 clear_type_list(garray_T *gap)
 {

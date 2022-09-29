@@ -463,6 +463,29 @@ need_type(
 }
 
 /*
+ * Set type of variable "lvar" to "type".  If the variable is a constant then
+ * the type gets TTFLAG_CONST.
+ */
+    static void
+set_var_type(lvar_T *lvar, type_T *type_arg, cctx_T *cctx)
+{
+    type_T	*type = type_arg;
+
+    if (lvar->lv_const && (type->tt_flags & TTFLAG_CONST) == 0)
+    {
+	if (type->tt_flags & TTFLAG_STATIC)
+	    // entry in static_types[] is followed by const type
+	    type = type + 1;
+	else
+	{
+	    type = copy_type(type, cctx->ctx_type_list);
+	    type->tt_flags |= TTFLAG_CONST;
+	}
+    }
+    lvar->lv_type = type;
+}
+
+/*
  * Reserve space for a local variable.
  * Return the variable or NULL if it failed.
  */
@@ -497,7 +520,12 @@ reserve_local(
 
     lvar->lv_name = vim_strnsave(name, len == 0 ? STRLEN(name) : len);
     lvar->lv_const = isConst;
-    lvar->lv_type = type;
+    if (type == &t_unknown || type == &t_any)
+	// type not known yet, may be inferred from RHS
+	lvar->lv_type = type;
+    else
+	// may use TTFLAG_CONST
+	set_var_type(lvar, type, cctx);
 
     // Remember the name for debugging.
     if (GA_GROW_FAILS(&dfunc->df_var_names, 1))
@@ -2304,19 +2332,22 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			}
 			else
 			{
+			    type_T *type;
+
 			    // An empty list or dict has a &t_unknown member,
 			    // for a variable that implies &t_any.
 			    if (rhs_type == &t_list_empty)
-				lhs.lhs_lvar->lv_type = &t_list_any;
+				type = &t_list_any;
 			    else if (rhs_type == &t_dict_empty)
-				lhs.lhs_lvar->lv_type = &t_dict_any;
+				type = &t_dict_any;
 			    else if (rhs_type == &t_unknown)
-				lhs.lhs_lvar->lv_type = &t_any;
+				type = &t_any;
 			    else
 			    {
-				lhs.lhs_lvar->lv_type = rhs_type;
+				type = rhs_type;
 				inferred_type = rhs_type;
 			    }
+			    set_var_type(lhs.lhs_lvar, type, cctx);
 			}
 		    }
 		    else if (*op == '=')

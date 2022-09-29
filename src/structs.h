@@ -1445,10 +1445,10 @@ typedef struct {
     type_T	*type_decl;	    // declared type or equal to type_current
 } type2_T;
 
-#define TTFLAG_VARARGS	1	    // func args ends with "..."
-#define TTFLAG_OPTARG	2	    // func arg type with "?"
-#define TTFLAG_BOOL_OK	4	    // can be converted to bool
-#define TTFLAG_STATIC	8	    // one of the static types, e.g. t_any
+#define TTFLAG_VARARGS	0x01	    // func args ends with "..."
+#define TTFLAG_BOOL_OK	0x02	    // can be converted to bool
+#define TTFLAG_STATIC	0x04	    // one of the static types, e.g. t_any
+#define TTFLAG_CONST	0x08	    // cannot be changed
 
 /*
  * Structure to hold an internal variable without a name.

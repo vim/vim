@@ -222,6 +222,22 @@ check_arg_type(
 }
 
 /*
+ * Give an error if "type" is a constant.
+ */
+    int
+arg_type_modifiable(type_T *type, int arg_idx)
+{
+    char *tofree;
+
+    if ((type->tt_flags & TTFLAG_CONST) == 0)
+	return OK;
+    semsg(_(e_argument_nr_trying_to_modify_const_str),
+	    arg_idx, type_name(type, &tofree));
+    vim_free(tofree);
+    return FAIL;
+}
+
+/*
  * Check "type" is a float or a number.
  */
     static int
@@ -321,6 +337,20 @@ arg_list_or_blob(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	return OK;
     arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
     return FAIL;
+}
+
+/*
+ * Check "type" is a modifiable list of 'any' or a blob.
+ */
+    static int
+arg_list_or_blob_mod(
+	type_T	     *type,
+	type_T	     *decl_type,
+	argcontext_T *context)
+{
+    if (arg_list_or_blob(type, decl_type, context) == FAIL)
+	return FAIL;
+    return arg_type_modifiable(type, context->arg_idx + 1);
 }
 
 /*
@@ -465,6 +495,20 @@ arg_list_or_dict(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
 	return OK;
     arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
     return FAIL;
+}
+
+/*
+ * Check "type" is a list of 'any' or a dict of 'any'.  And modifiable.
+ */
+    static int
+arg_list_or_dict_mod(
+	type_T	     *type,
+	type_T	     *decl_type,
+	argcontext_T *context)
+{
+    if (arg_list_or_dict(type, decl_type, context) == FAIL)
+	return FAIL;
+    return arg_type_modifiable(type, context->arg_idx + 1);
 }
 
 /*
@@ -979,7 +1023,7 @@ static argcheck_T arg2_list_any_number[] = {arg_list_any, arg_number};
 static argcheck_T arg2_list_any_string[] = {arg_list_any, arg_string};
 static argcheck_T arg2_list_number[] = {arg_list_number, arg_list_number};
 static argcheck_T arg2_list_number_bool[] = {arg_list_number, arg_bool};
-static argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
+static argcheck_T arg2_listblobmod_item[] = {arg_list_or_blob_mod, arg_item_of_prev};
 static argcheck_T arg2_lnum[] = {arg_lnum, arg_lnum};
 static argcheck_T arg2_lnum_number[] = {arg_lnum, arg_number};
 static argcheck_T arg2_number[] = {arg_number, arg_number};
@@ -1036,7 +1080,7 @@ static argcheck_T arg24_count[] = {arg_string_or_list_or_dict, NULL, arg_bool, a
 static argcheck_T arg13_cursor[] = {arg_cursor1, arg_number, arg_number};
 static argcheck_T arg12_deepcopy[] = {NULL, arg_bool};
 static argcheck_T arg12_execute[] = {arg_string_or_list_string, arg_string};
-static argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
+static argcheck_T arg23_extend[] = {arg_list_or_dict_mod, arg_same_as_prev, arg_extend3};
 static argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
 static argcheck_T arg23_get[] = {arg_get1, arg_string_or_nr, NULL};
 static argcheck_T arg14_glob[] = {arg_string, arg_bool, arg_bool, arg_bool};
@@ -1554,7 +1598,7 @@ static funcentry_T global_functions[] =
 			ret_any,	    f_abs},
     {"acos",		1, 1, FEARG_1,	    arg1_float_or_nr,
 			ret_float,	    f_acos},
-    {"add",		2, 2, FEARG_1,	    arg2_listblob_item,
+    {"add",		2, 2, FEARG_1,	    arg2_listblobmod_item,
 			ret_first_arg,	    f_add},
     {"and",		2, 2, FEARG_1,	    arg2_number,
 			ret_number,	    f_and},

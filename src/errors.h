@@ -3332,4 +3332,6 @@ EXTERN char e_cannot_use_length_endcol_and_endlnum_with_text[]
 #ifdef FEAT_EVAL
 EXTERN char e_loop_nesting_too_deep[]
 	INIT(= N_("E1306: Loop nesting too deep"));
+EXTERN char e_argument_nr_trying_to_modify_const_str[]
+	INIT(= N_("E1307: Argument %d: Trying to modify a const %s"));
 #endif

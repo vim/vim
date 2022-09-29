@@ -184,6 +184,21 @@ def Test_add_list()
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got number', 3)
 enddef
 
+def Test_add_const()
+  var lines =<< trim END
+      const l = [1, 2]
+      add(l, 3)
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
+
+  lines =<< trim END
+      const b = 0z0102
+      add(b,  0z03)
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const blob')
+enddef
+
+
 def Test_and()
   v9.CheckDefAndScriptFailure(['and("x", 0x2)'], ['E1013: Argument 1: type mismatch, expected number but got string', 'E1210: Number required for argument 1'])
   v9.CheckDefAndScriptFailure(['and(0x1, "x")'], ['E1013: Argument 2: type mismatch, expected number but got string', 'E1210: Number required for argument 2'])
@@ -1179,6 +1194,29 @@ def Test_extend_with_error_function()
       Test()
   END
   v9.CheckScriptFailure(lines, 'E1001: Variable not found: m')
+enddef
+
+def Test_extend_const()
+  var lines =<< trim END
+      const l = [1, 2]
+      extend(l, [3])
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
+
+  lines =<< trim END
+      const d = {a: 1, b: 2}
+      extend(d, {c: 3})
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const dict<number>')
+
+  # item in a for loop is const
+  lines =<< trim END
+      var l: list<dict<any>> = [{n: 1}]
+      for item in l
+        item->extend({x: 2})
+      endfor
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const dict<any>')
 enddef
 
 def Test_extendnew()

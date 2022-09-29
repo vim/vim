@@ -2471,10 +2471,11 @@ def Test_for_loop_fails()
   lines =<< trim END
       var l: list<dict<any>> = [{n: 1}]
       for item: dict<number> in l
-        item->extend({s: ''})
+        var d = {s: ''}
+        d->extend(item)
       endfor
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<string> but got dict<number>')
 
   lines =<< trim END
       for a in range(3)
