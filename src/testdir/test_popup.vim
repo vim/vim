@@ -758,7 +758,7 @@ func Test_popup_and_previewwindow_dump()
     call setline(1, map(repeat(["ab"], 10), "v:val .. v:key"))
     exec "norm! G\<C-E>\<C-E>"
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   let buf = RunVimInTerminal('-S Xscript', {})
 
   " wait for the script to finish
@@ -772,7 +772,6 @@ func Test_popup_and_previewwindow_dump()
 
   call term_sendkeys(buf, "\<Esc>u")
   call StopVimInTerminal(buf)
-  call delete('Xscript')
 endfunc
 
 func Test_balloon_split()
@@ -829,7 +828,7 @@ func Test_popup_position()
     123456789_123456789_123456789_b
                 123
   END
-  call writefile(lines, 'Xtest')
+  call writefile(lines, 'Xtest', 'D')
   let buf = RunVimInTerminal('Xtest', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
 
@@ -860,7 +859,6 @@ func Test_popup_position()
   
   call term_sendkeys(buf, "\<Esc>u")
   call StopVimInTerminal(buf)
-  call delete('Xtest')
 endfunc
 
 func Test_popup_command()
@@ -883,14 +881,14 @@ func Test_popup_command()
       echomsg 'changed'
     endfunc
   END
-  call writefile(script, 'XtimerScript')
+  call writefile(script, 'XtimerScript', 'D')
 
   let lines =<< trim END
 	one two three four five
 	and one two Xthree four five
 	one more two three four five
   END
-  call writefile(lines, 'Xtest')
+  call writefile(lines, 'Xtest', 'D')
   let buf = RunVimInTerminal('-S XtimerScript Xtest', {})
   call term_sendkeys(buf, ":source $VIMRUNTIME/menu.vim\<CR>")
   call term_sendkeys(buf, "/X\<CR>:popup PopUp\<CR>")
@@ -917,8 +915,6 @@ func Test_popup_command()
   call VerifyScreenDump(buf, 'Test_popup_command_05', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xtest')
-  call delete('XtimerScript')
 endfunc
 
 func Test_popup_complete_backwards()
@@ -1013,7 +1009,7 @@ func Test_popup_complete_info_01()
   inoremap <buffer><F6> <C-R>=s:complTestEval()<CR>
   call writefile([
         \ 'dummy	dummy.txt	1',
-        \], 'Xdummy.txt')
+        \], 'Xdummy.txt', 'D')
   setlocal tags=Xdummy.txt
   setlocal dictionary=Xdummy.txt
   setlocal thesaurus=Xdummy.txt
@@ -1046,7 +1042,7 @@ func Test_popup_complete_info_01()
     call assert_equal(mode_name, getline('.'))
     %d
   endfor
-  call delete('Xdummy.txt')
+
   bwipe!
 endfunc
 
@@ -1194,7 +1190,7 @@ func Test_pum_rightleft()
     vim
     victory
   END
-  call writefile(lines, 'Xtest1')
+  call writefile(lines, 'Xtest1', 'D')
   let buf = RunVimInTerminal('--cmd "set rightleft" Xtest1', {})
   call term_sendkeys(buf, "Go\<C-P>")
   call VerifyScreenDump(buf, 'Test_pum_rightleft_01', {'rows': 8})
@@ -1209,7 +1205,7 @@ func Test_pum_rightleft()
     one	three
     four
   END
-  call writefile(lines, 'Xtest2')
+  call writefile(lines, 'Xtest2', 'D')
   call term_sendkeys(buf, "\<Esc>:e! Xtest2\<CR>")
   call TermWait(buf, 30)
   call term_sendkeys(buf, "Goone\<C-X>\<C-L>")
@@ -1222,8 +1218,6 @@ func Test_pum_rightleft()
   call WaitForAssert({-> assert_match('\s*eerht     eno', Screenline(4))})
 
   call StopVimInTerminal(buf)
-  call delete('Xtest1')
-  call delete('Xtest2')
 endfunc
 
 " Test for a popup menu with a scrollbar
@@ -1234,7 +1228,7 @@ func Test_pum_scrollbar()
     two
     three
   END
-  call writefile(lines, 'Xtest1')
+  call writefile(lines, 'Xtest1', 'D')
   let buf = RunVimInTerminal('--cmd "set pumheight=2" Xtest1', {})
   call TermWait(buf)
   call term_sendkeys(buf, "Go\<C-P>\<C-P>\<C-P>")
@@ -1250,7 +1244,6 @@ func Test_pum_scrollbar()
   endif
 
   call StopVimInTerminal(buf)
-  call delete('Xtest1')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

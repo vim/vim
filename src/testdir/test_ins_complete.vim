@@ -15,14 +15,14 @@ func Test_ins_complete()
   set ff=unix
   call writefile(["test11\t36Gepeto\t/Tag/",
 	      \ "asd\ttest11file\t36G",
-	      \ "Makefile\tto\trun"], 'Xtestfile')
+	      \ "Makefile\tto\trun"], 'Xtestfile', 'D')
   call writefile(['', 'start of testfile',
 	      \ 'ru',
 	      \ 'run1',
 	      \ 'run2',
 	      \ 'STARTTEST',
 	      \ 'ENDTEST',
-	      \ 'end of testfile'], 'Xtestdata')
+	      \ 'end of testfile'], 'Xtestdata', 'D')
   set ff&
 
   enew!
@@ -99,10 +99,8 @@ func Test_ins_complete()
   call assert_equal('asd', getline('.'))
 
   %bw!
-  call delete('Xtestfile')
   call delete('Xtest11.one')
   call delete('Xtest11.two')
-  call delete('Xtestdata')
   set cpt& cot& def& tags& tagbsearch& hidden&
   cd ..
   call delete('Xcpldir', 'rf')
@@ -111,13 +109,11 @@ endfunc
 func Test_ins_complete_invalid_byte()
   if has('unix') && executable('base64')
     " this weird command was causing an illegal memory access
-    call writefile(['bm9ybTlvMDCAMM4Dbw4OGA4ODg=='], 'Xinvalid64')
+    call writefile(['bm9ybTlvMDCAMM4Dbw4OGA4ODg=='], 'Xinvalid64', 'D')
     call system('base64 -d Xinvalid64 > Xinvalid')
-    call writefile(['qa!'], 'Xexit')
+    call writefile(['qa!'], 'Xexit', 'D')
     call RunVim([], [], " -i NONE -n -X -Z -e -m -s -S Xinvalid -S Xexit")
-    call delete('Xinvalid64')
     call delete('Xinvalid')
-    call delete('Xexit')
   endif
 endfunc
 
@@ -168,7 +164,7 @@ func Test_omni_autoload()
   let save_rtp = &rtp
   set rtp=Xruntime/some
   let dir = 'Xruntime/some/autoload'
-  call mkdir(dir, 'p')
+  call mkdir(dir, 'pR')
 
   let lines =<< trim END
       vim9script
@@ -190,7 +186,6 @@ func Test_omni_autoload()
   call feedkeys("i\<C-X>\<C-O>\<Esc>", 'xt')
 
   bwipe!
-  call delete('Xruntime', 'rf')
   set omnifunc=
   let &rtp = save_rtp
 endfunc
@@ -433,7 +428,7 @@ endfunc
 func Test_ins_completeslash()
   CheckMSWindows
 
-  call mkdir('Xcpldir')
+  call mkdir('Xcpldir', 'R')
   let orig_shellslash = &shellslash
   set cpt&
   new
@@ -466,7 +461,6 @@ func Test_ins_completeslash()
   exe "normal oXcp\<C-X>\<C-F>"
   call assert_equal('Xcpldir/', getline('.'))
   %bw!
-  call delete('Xcpldir', 'rf')
 
   set noshellslash
   set completeslash=slash
@@ -487,7 +481,7 @@ func Test_pum_stopped_by_timer()
     endfunc
   END
 
-  call writefile(lines, 'Xpumscript')
+  call writefile(lines, 'Xpumscript', 'D')
   let buf = RunVimInTerminal('-S Xpumscript', #{rows: 12})
   call term_sendkeys(buf, ":call StartCompl()\<CR>")
   call TermWait(buf, 200)
@@ -495,7 +489,6 @@ func Test_pum_stopped_by_timer()
   call VerifyScreenDump(buf, 'Test_pum_stopped_by_timer', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xpumscript')
 endfunc
 
 func Test_complete_stopinsert_startinsert()
@@ -520,7 +513,7 @@ func Test_pum_with_folds_two_tabs()
     call feedkeys("0fa", 'xt')
   END
 
-  call writefile(lines, 'Xpumscript')
+  call writefile(lines, 'Xpumscript', 'D')
   let buf = RunVimInTerminal('-S Xpumscript', #{rows: 10})
   call TermWait(buf, 50)
   call term_sendkeys(buf, "a\<C-N>")
@@ -528,7 +521,6 @@ func Test_pum_with_folds_two_tabs()
 
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
-  call delete('Xpumscript')
 endfunc
 
 func Test_pum_with_preview_win()
@@ -545,7 +537,7 @@ func Test_pum_with_preview_win()
       set completeopt+=longest
   END
 
-  call writefile(lines, 'Xpreviewscript')
+  call writefile(lines, 'Xpreviewscript', 'D')
   let buf = RunVimInTerminal('-S Xpreviewscript', #{rows: 12})
   call term_sendkeys(buf, "Gi\<C-X>\<C-O>")
   call TermWait(buf, 200)
@@ -554,7 +546,6 @@ func Test_pum_with_preview_win()
 
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
-  call delete('Xpreviewscript')
 endfunc
 
 func Test_scrollbar_on_wide_char()
@@ -566,13 +557,12 @@ func Test_scrollbar_on_wide_char()
                         \ '              呃呃呃'])
     call setline(5, range(10)->map({i, v -> 'aa' .. v .. 'bb'}))
   END
-  call writefile(lines, 'Xwidescript')
+  call writefile(lines, 'Xwidescript', 'D')
   let buf = RunVimInTerminal('-S Xwidescript', #{rows: 10})
   call term_sendkeys(buf, "A\<C-N>")
   call VerifyScreenDump(buf, 'Test_scrollbar_on_wide_char', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xwidescript')
 endfunc
 
 " Test for inserting the tag search pattern in insert mode
@@ -582,14 +572,14 @@ func Test_ins_compl_tag_sft()
         \ "first\tXfoo\t/^int first() {}$/",
         \ "second\tXfoo\t/^int second() {}$/",
         \ "third\tXfoo\t/^int third() {}$/"],
-        \ 'Xtags')
+        \ 'Xtags', 'D')
   set tags=Xtags
   let code =<< trim [CODE]
     int first() {}
     int second() {}
     int third() {}
   [CODE]
-  call writefile(code, 'Xfoo')
+  call writefile(code, 'Xfoo', 'D')
 
   enew
   set showfulltag
@@ -597,8 +587,6 @@ func Test_ins_compl_tag_sft()
   call assert_equal('int second() {}', getline(1))
   set noshowfulltag
 
-  call delete('Xtags')
-  call delete('Xfoo')
   set tags&
   %bwipe!
 endfunc
@@ -978,8 +966,8 @@ endfunc
 
 " Test for completing words from unloaded buffers
 func Test_complete_from_unloadedbuf()
-  call writefile(['abc'], "Xfile1")
-  call writefile(['def'], "Xfile2")
+  call writefile(['abc'], "Xfile1", 'D')
+  call writefile(['def'], "Xfile2", 'D')
   edit Xfile1
   edit Xfile2
   new | close
@@ -991,15 +979,14 @@ func Test_complete_from_unloadedbuf()
   call assert_equal('abc', getline(1))
   exe "normal! od\<C-P>"
   call assert_equal('def', getline(2))
+
   set complete&
   %bw!
-  call delete("Xfile1")
-  call delete("Xfile2")
 endfunc
 
 " Test for completing whole lines from unloaded buffers
 func Test_complete_wholeline_unloadedbuf()
-  call writefile(['a line1', 'a line2', 'a line3'], "Xfile1")
+  call writefile(['a line1', 'a line2', 'a line3'], "Xfile1", 'D')
   edit Xfile1
   enew
   set complete=u
@@ -1010,15 +997,15 @@ func Test_complete_wholeline_unloadedbuf()
   bdel Xfile1
   exe "normal! ia\<C-X>\<C-L>\<C-P>"
   call assert_equal('a', getline(1))
+
   set complete&
   %bw!
-  call delete("Xfile1")
 endfunc
 
 " Test for completing words from unlisted buffers
 func Test_complete_from_unlistedbuf()
-  call writefile(['abc'], "Xfile1")
-  call writefile(['def'], "Xfile2")
+  call writefile(['abc'], "Xfile1", 'D')
+  call writefile(['def'], "Xfile2", 'D')
   edit Xfile1
   edit Xfile2
   new | close
@@ -1029,15 +1016,14 @@ func Test_complete_from_unlistedbuf()
   call assert_equal('abc', getline(1))
   exe "normal! od\<C-P>"
   call assert_equal('def', getline(2))
+
   set complete&
   %bw!
-  call delete("Xfile1")
-  call delete("Xfile2")
 endfunc
 
 " Test for completing whole lines from unlisted buffers
 func Test_complete_wholeline_unlistedbuf()
-  call writefile(['a line1', 'a line2', 'a line3'], "Xfile1")
+  call writefile(['a line1', 'a line2', 'a line3'], "Xfile1", 'D')
   edit Xfile1
   enew
   set complete=U
@@ -1048,9 +1034,9 @@ func Test_complete_wholeline_unlistedbuf()
   bdel Xfile1
   exe "normal! ia\<C-X>\<C-L>\<C-P>"
   call assert_equal('a line2', getline(1))
+
   set complete&
   %bw!
-  call delete("Xfile1")
 endfunc
 
 " Test for adding a multibyte character using CTRL-L in completion mode
@@ -1246,14 +1232,14 @@ func Test_complete_unreadable_thesaurus_file()
   CheckUnix
   CheckNotRoot
 
-  call writefile(['about', 'above'], 'Xunrfile')
+  call writefile(['about', 'above'], 'Xunrfile', 'D')
   call setfperm('Xunrfile', '---r--r--')
   new
   set complete=sXfile
   exe "normal! ia\<C-P>"
   call assert_equal('a', getline(1))
+
   bw!
-  call delete('Xunrfile')
   set complete&
 endfunc
 
