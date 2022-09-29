@@ -299,7 +299,7 @@ func Test_normal06_formatprg()
   CheckNotMSWindows
 
   " uses sed to number non-empty lines
-  call writefile(['#!/bin/sh', 'sed ''/./=''|sed ''/./{', 'N', 's/\n/    /', '}'''], 'Xsed_format.sh')
+  call writefile(['#!/bin/sh', 'sed ''/./=''|sed ''/./{', 'N', 's/\n/    /', '}'''], 'Xsed_format.sh', 'D')
   call system('chmod +x ./Xsed_format.sh')
   let text = ['a', '', 'c', '', ' ', 'd', 'e']
   let expected = ['1    a', '', '3    c', '', '5     ', '6    d', '7    e']
@@ -330,7 +330,6 @@ func Test_normal06_formatprg()
   " clean up
   set formatprg=
   setlocal formatprg=
-  call delete('Xsed_format.sh')
 endfunc
 
 func Test_normal07_internalfmt()
@@ -702,11 +701,10 @@ func Test_opfunc_callback()
     call writefile([execute('messages')], 'Xtest.out')
     qall
   END
-  call writefile(cleanup, 'Xverify.vim')
+  call writefile(cleanup, 'Xverify.vim', 'D')
   call RunVim([], [], "-c \"set opfunc=s:abc\" -S Xverify.vim")
   call assert_match('E81: Using <SID> not in a', readfile('Xtest.out')[0])
   call delete('Xtest.out')
-  call delete('Xverify.vim')
 
   " cleanup
   set opfunc&
@@ -1292,11 +1290,10 @@ func Test_scroll_in_ex_mode()
       call writefile(['done'], 'Xdone')
       qa!
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   call assert_equal(1, RunVim([], [], '--clean -X -Z -e -s -S Xscript'))
   call assert_equal(['done'], readfile('Xdone'))
 
-  call delete('Xscript')
   call delete('Xdone')
 endfunc
 
@@ -1709,16 +1706,14 @@ endfunc
 func Test_normal20_exmode()
   " Reading from redirected file doesn't work on MS-Windows
   CheckNotMSWindows
-  call writefile(['1a', 'foo', 'bar', '.', 'w! Xn20file2', 'q!'], 'Xn20script')
-  call writefile(['1', '2'], 'Xn20file')
+  call writefile(['1a', 'foo', 'bar', '.', 'w! Xn20file2', 'q!'], 'Xn20script', 'D')
+  call writefile(['1', '2'], 'Xn20file', 'D')
   call system(GetVimCommand() .. ' -e -s < Xn20script Xn20file')
-  let a=readfile('Xn20file2')
+  let a = readfile('Xn20file2')
   call assert_equal(['1', 'foo', 'bar', '2'], a)
 
   " clean up
-  for file in ['Xn20file', 'Xn20file2', 'Xn20script']
-    call delete(file)
-  endfor
+  call delete('Xn20file2')
   bw!
 endfunc
 
@@ -1758,7 +1753,7 @@ func Test_normal22_zet()
   " Test for ZZ
   " let shell = &shell
   " let &shell = 'sh'
-  call writefile(['1', '2'], 'Xn22file')
+  call writefile(['1', '2'], 'Xn22file', 'D')
   let args = ' -N -i NONE --noplugins -X --not-a-term'
   call system(GetVimCommand() .. args .. ' -c "%d" -c ":norm! ZZ" Xn22file')
   let a = readfile('Xn22file')
@@ -1773,9 +1768,6 @@ func Test_normal22_zet()
   call assert_beeps('normal! ZW')
 
   " clean up
-  for file in ['Xn22file']
-    call delete(file)
-  endfor
   " let &shell = shell
 endfunc
 
@@ -3141,7 +3133,7 @@ func Test_normal51_FileChangedRO()
   CheckFeature autocmd
   " Don't sleep after the warning message.
   call test_settime(1)
-  call writefile(['foo'], 'Xreadonly.log')
+  call writefile(['foo'], 'Xreadonly.log', 'D')
   new Xreadonly.log
   setl ro
   au FileChangedRO <buffer> :call feedkeys("\<c-^>", 'tix')
@@ -3152,7 +3144,6 @@ func Test_normal51_FileChangedRO()
   " cleanup
   call test_settime(0)
   bw!
-  call delete("Xreadonly.log")
 endfunc
 
 func Test_normal52_rl()

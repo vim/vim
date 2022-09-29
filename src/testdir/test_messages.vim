@@ -103,7 +103,7 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
         set statusline=%!StatusLine()
         set laststatus=2
   END
-  call writefile(lines, testfile)
+  call writefile(lines, testfile, 'D')
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -117,8 +117,8 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
 
   call term_sendkeys(buf, ":qall!\<CR>")
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+
   exe buf . 'bwipe!'
-  call delete(testfile)
 endfunc
 
 func Test_mode_message_at_leaving_insert_with_esc_mapped()
@@ -131,7 +131,7 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
         set laststatus=2
         inoremap <Esc> <Esc>00
   END
-  call writefile(lines, testfile)
+  call writefile(lines, testfile, 'D')
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -145,8 +145,8 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
 
   call term_sendkeys(buf, ":qall!\<CR>")
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+
   exe buf . 'bwipe!'
-  call delete(testfile)
 endfunc
 
 func Test_echospace()
@@ -462,7 +462,7 @@ func Test_fileinfo_after_echo()
     autocmd CursorHold * buf b.txt | w | echo "'b' written"
   END
 
-  call writefile(content, 'Xtest_fileinfo_after_echo')
+  call writefile(content, 'Xtest_fileinfo_after_echo', 'D')
   let buf = RunVimInTerminal('-S Xtest_fileinfo_after_echo', #{rows: 6})
   call term_sendkeys(buf, ":set updatetime=50\<CR>")
   call term_sendkeys(buf, "0$")
@@ -472,7 +472,6 @@ func Test_fileinfo_after_echo()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_fileinfo_after_echo')
   call delete('b.txt')
 endfunc
 
@@ -513,7 +512,7 @@ func Test_echowindow()
         echo 'three'
       enddef
   END
-  call writefile(lines, 'XtestEchowindow')
+  call writefile(lines, 'XtestEchowindow', 'D')
   let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
   call VerifyScreenDump(buf, 'Test_echowindow_1', {})
 
@@ -542,7 +541,6 @@ func Test_echowindow()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestEchowindow')
 endfunc
 
 " messages window should not be used while evaluating the :echowin argument
@@ -556,13 +554,12 @@ func Test_echowin_eval()
       endfunc
       echowindow ShowMessage()
   END
-  call writefile(lines, 'XtestEchowindow')
+  call writefile(lines, 'XtestEchowindow', 'D')
   let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
   call VerifyScreenDump(buf, 'Test_echowin_eval', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestEchowindow')
 endfunc
 
 " messages window should not be used for showing the mode
