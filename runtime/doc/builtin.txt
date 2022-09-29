@@ -5918,8 +5918,6 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 		- A list with three numbers, e.g., [23, 11, 3]. As above, but
 		  the third number gives the length of the highlight in bytes.
 
-		The maximum number of positions in {pos} is 8.
-
 		Returns -1 on error.
 
 		Example: >

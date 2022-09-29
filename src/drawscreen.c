@@ -1614,13 +1614,13 @@ win_update(win_T *wp)
 
 		while (cur != NULL)
 		{
-		    if (cur->match.regprog != NULL
-					   && re_multiline(cur->match.regprog))
+		    if (cur->mit_match.regprog != NULL
+				       && re_multiline(cur->mit_match.regprog))
 		    {
 			top_to_mod = TRUE;
 			break;
 		    }
-		    cur = cur->next;
+		    cur = cur->mit_next;
 		}
 	    }
 #endif
