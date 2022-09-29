@@ -5143,8 +5143,7 @@ win_alloc(win_T *after UNUSED, int hidden UNUSED)
 #endif
     unblock_autocmds();
 #ifdef FEAT_SEARCH_EXTRA
-    new_wp->w_match_head = NULL;
-    new_wp->w_next_match_id = 4;
+    new_wp->w_next_match_id = 1000;  // up to 1000 can be picked by the user
 #endif
     return new_wp;
 }
