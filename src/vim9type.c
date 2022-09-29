@@ -58,13 +58,10 @@ copy_type(type_T *type, garray_T *type_gap)
 	return type;
     *copy = *type;
 
-    if (type->tt_args != NULL)
-    {
-	copy->tt_args = ALLOC_MULT(type_T *, type->tt_argcount);
-	if (copy->tt_args != NULL)
-	    for (int i = 0; i < type->tt_argcount; ++i)
-		copy->tt_args[i] = type->tt_args[i];
-    }
+    if (type->tt_args != NULL
+	   && func_type_add_arg_types(copy, type->tt_argcount, type_gap) == OK)
+	for (int i = 0; i < type->tt_argcount; ++i)
+	    copy->tt_args[i] = type->tt_args[i];
 
     return copy;
 }
