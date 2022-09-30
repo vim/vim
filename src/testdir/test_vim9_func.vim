@@ -4210,6 +4210,25 @@ def Test_numbered_function_reference()
   unlet g:mydict
 enddef
 
+def Test_numbered_function_call()
+  var lines =<< trim END
+      let s:legacyscript = {}
+      func s:legacyscript.Helper() abort
+        return "Success"
+      endfunc
+      let g:legacyscript = deepcopy(s:legacyscript)
+
+      let g:legacy_result = eval("g:legacyscript.Helper()")
+      vim9cmd g:vim9_result = eval("g:legacyscript.Helper()")
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal('Success', g:legacy_result)
+  assert_equal('Success', g:vim9_result)
+
+  unlet g:legacy_result
+  unlet g:vim9_result
+enddef
+
 def Test_go_beyond_end_of_cmd()
   # this was reading the byte after the end of the line
   var lines =<< trim END

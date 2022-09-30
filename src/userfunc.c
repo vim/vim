@@ -2095,7 +2095,8 @@ func_requires_g_prefix(ufunc_T *ufunc)
 {
     return ufunc->uf_name[0] != K_SPECIAL
 	    && (ufunc->uf_flags & FC_LAMBDA) == 0
-	    && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL;
+	    && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL
+	    && !isdigit(ufunc->uf_name[0]);
 }
 
 /*
