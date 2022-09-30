@@ -667,9 +667,10 @@ When the popup menu is displayed there are a few more special keys, see
 |popupmenu-keys|.
 
 Note: The keys that are valid in CTRL-X mode are not mapped.  This allows for
-":map ^F ^X^F" to work (where ^F is CTRL-F and ^X is CTRL-X).  The key that
-ends CTRL-X mode (any key that is not a valid CTRL-X mode command) is mapped.
-Also, when doing completion with 'complete' mappings apply as usual.
+":map <C-f> <C-x><C-f>" to work (where <C-f> is CTRL-F and <C-x> is CTRL-X).
+The key that ends CTRL-X mode (any key that is not a valid CTRL-X mode
+command) is mapped. Also, when doing completion with 'complete' mappings apply
+as usual.
 
 								*E565*
 Note: While completion is active Insert mode can't be used recursively and
@@ -678,10 +679,10 @@ will generate an E565 error.
 
 The following mappings are suggested to make typing the completion commands
 a bit easier (although they will hide other commands): >
-    :inoremap ^] ^X^]
-    :inoremap ^F ^X^F
-    :inoremap ^D ^X^D
-    :inoremap ^L ^X^L
+    :inoremap <C-]> <C-x><C-]>
+    :inoremap <C-f> <C-x><C-f>
+    :inoremap <C-d> <C-x><C-d<
+    :inoremap <C-l> <C-x><C-l>
 
 As a special case, typing CTRL-R to perform register insertion (see
 |i_CTRL-R|) will not exit CTRL-X mode.  This is primarily to allow the use of

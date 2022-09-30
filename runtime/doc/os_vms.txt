@@ -333,8 +333,8 @@ features, it is worth to choose non GUI executables.
 There are backspace/delete key inconsistencies with VMS.
 :fixdel doesn't do the trick, but the solution is: >
 
-	:inoremap ^? ^H		" for terminal mode
-	:inoremap <Del> ^H	" for gui mode
+	:inoremap <C-?> <C-h>	" for terminal mode
+	:inoremap <Del> <C-h>	" for gui mode
 
 Read more in ch: 8.6 (Terminal problems).
 (Bruce Hunsaker <BNHunsaker@chq.byu.edu> Vim 5.3)
