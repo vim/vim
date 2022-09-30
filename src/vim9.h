@@ -697,7 +697,9 @@ typedef struct {
     int		lv_loop_depth;	// depth for variable inside a loop or -1
     int		lv_loop_idx;	// index of first variable inside a loop or -1
     int		lv_from_outer;	// nesting level, using ctx_outer scope
-    int		lv_const;	// when TRUE cannot be assigned to
+    int		lv_const;	// ASSIGN_VAR (can be assigned to),
+				// ASSIGN_FINAL (no assignment) or ASSIGN_CONST
+				// (value cannot be changed)
     int		lv_arg;		// when TRUE this is an argument
 } lvar_T;
 

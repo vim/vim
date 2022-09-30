@@ -881,7 +881,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
     // Reserve a variable to store the loop iteration counter and initialize it
     // to -1.
-    loop_lvar = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
+    loop_lvar = reserve_local(cctx, (char_u *)"", 0, ASSIGN_VAR, &t_number);
     if (loop_lvar == NULL)
     {
 	drop_scope(cctx);
@@ -894,7 +894,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     // Reserve a variable to store ec_funcrefs.ga_len, used in ISN_ENDLOOP.
     // The variable index is always the loop var index plus one.
     // It is not used when no closures are encountered, we don't know yet.
-    funcref_lvar = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
+    funcref_lvar = reserve_local(cctx, (char_u *)"", 0, ASSIGN_VAR, &t_number);
     if (funcref_lvar == NULL)
     {
 	drop_scope(cctx);
@@ -1050,7 +1050,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 			&& need_type_where(item_type, lhs_type, -1,
 					    where, cctx, FALSE, FALSE) == FAIL)
 		    goto failed;
-		var_lvar = reserve_local(cctx, arg, varlen, TRUE, lhs_type);
+		var_lvar = reserve_local(cctx, arg, varlen, ASSIGN_CONST,
+								     lhs_type);
 		if (var_lvar == NULL)
 		    // out of memory or used as an argument
 		    goto failed;
@@ -1182,7 +1183,7 @@ compile_while(char_u *arg, cctx_T *cctx)
 
     // Reserve a variable to store ec_funcrefs.ga_len, used in ISN_ENDLOOP.
     // It is not used when no closures are encountered, we don't know yet.
-    funcref_lvar = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
+    funcref_lvar = reserve_local(cctx, (char_u *)"", 0, ASSIGN_VAR, &t_number);
     if (funcref_lvar == NULL)
     {
 	drop_scope(cctx);

@@ -2250,6 +2250,7 @@ typedef enum {
 } estack_arg_T;
 
 // Flags for assignment functions.
+#define ASSIGN_VAR	0     // ":var" (nothing special)
 #define ASSIGN_FINAL	0x01  // ":final"
 #define ASSIGN_CONST	0x02  // ":const"
 #define ASSIGN_NO_DECL	0x04  // "name = expr" without ":let"/":const"/":final"

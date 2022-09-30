@@ -192,6 +192,13 @@ def Test_add_const()
   v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
 
   lines =<< trim END
+      final l = [1, 2]
+      add(l, 3)
+      assert_equal([1, 2, 3], l)
+  END
+  v9.CheckDefSuccess(lines)
+
+  lines =<< trim END
       const b = 0z0102
       add(b,  0z03)
   END
@@ -1208,6 +1215,13 @@ def Test_extend_const()
       extend(d, {c: 3})
   END
   v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const dict<number>')
+
+  lines =<< trim END
+      final d = {a: 1, b: 2}
+      extend(d, {c: 3})
+      assert_equal({a: 1, b: 2, c: 3}, d)
+  END
+  v9.CheckDefSuccess(lines)
 
   # item in a for loop is const
   lines =<< trim END
