@@ -1528,6 +1528,20 @@ def Test_filter_missing_argument()
   res->assert_equal({aa: [1], ac: [3]})
 enddef
 
+def Test_filter_const()
+  var lines =<< trim END
+      const l = [1, 2, 3]
+      filter(l, 'v:val == 2')
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
+
+  lines =<< trim END
+      const d = {a: 1, b: 2}
+      filter(d, 'v:val == 2')
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const dict<number>')
+enddef
+
 def Test_foldclosed()
   v9.CheckDefAndScriptFailure(['foldclosed(function("min"))'], ['E1013: Argument 1: type mismatch, expected string but got func(...): unknown', 'E1220: String or Number required for argument 1'])
   v9.CheckDefExecAndScriptFailure(['foldclosed("")'], 'E1209: Invalid value for a line number')
@@ -2547,6 +2561,20 @@ def Test_map_failure()
   v9.CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got bool')
 enddef
 
+def Test_map_const()
+  var lines =<< trim END
+      const l = [1, 2, 3]
+      map(l, 'SomeFunc')
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
+
+  lines =<< trim END
+      const d = {a: 1, b: 2}
+      map(d, 'SomeFunc')
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const dict<number>')
+enddef
+
 def Test_map_function_arg()
   var lines =<< trim END
       def MapOne(i: number, v: string): string
@@ -3334,10 +3362,30 @@ def Test_remote_startserver()
   v9.CheckDefAndScriptFailure(['remote_startserver({})'], ['E1013: Argument 1: type mismatch, expected string but got dict<unknown>', 'E1174: String required for argument 1'])
 enddef
 
-def Test_remove_const_list()
+def Test_remove_literal_list()
   var l: list<number> = [1, 2, 3, 4]
   assert_equal([1, 2], remove(l, 0, 1))
   assert_equal([3, 4], l)
+enddef
+
+def Test_remove_const()
+  var lines =<< trim END
+      const l = [1, 2, 3, 4]
+      remove(l, 1)
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
+
+  lines =<< trim END
+      const d = {a: 1, b: 2}
+      remove(d, 'a')
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const dict<number>')
+
+  lines =<< trim END
+      const b = 0z010203
+      remove(b, 1)
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const blob')
 enddef
 
 def Test_remove()
@@ -3417,6 +3465,20 @@ def Test_reverse_return_type()
     res += n
   endfor
   res->assert_equal(6)
+enddef
+
+def Test_reverse_const()
+  var lines =<< trim END
+      const l = [1, 2, 3, 4]
+      reverse(l)
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
+
+  lines =<< trim END
+      const b = 0z010203
+      reverse(b)
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const blob')
 enddef
 
 def Test_rubyeval()
@@ -4053,6 +4115,14 @@ def Test_sort_argument()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_sort_const()
+  var lines =<< trim END
+      const l = [1, 2, 3, 4]
+      sort(l)
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
+enddef
+
 def Test_sort_compare_func_fails()
   v9.CheckDefAndScriptFailure(['sort("a")'], ['E1013: Argument 1: type mismatch, expected list<any> but got string', 'E1211: List required for argument 1'])
   v9.CheckDefAndScriptFailure(['sort([1], "", [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
@@ -4652,6 +4722,14 @@ def Test_uniq()
   v9.CheckDefAndScriptFailure(['uniq([1], "", [1])'], ['E1013: Argument 3: type mismatch, expected dict<any> but got list<number>', 'E1206: Dictionary required for argument 3'])
 
   v9.CheckDefFailure(['var l: list<number> = uniq(["a", "b"])'], 'E1012: Type mismatch; expected list<number> but got list<string>')
+enddef
+
+def Test_uniq_const()
+  var lines =<< trim END
+      const l = [1, 2, 3, 4]
+      uniq(l)
+  END
+  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const list<number>')
 enddef
 
 def Test_values()
