@@ -226,7 +226,7 @@ func Test_pastetoggle_timeout_no_typed_after_mapped()
     set ttimeoutlen=10000
     imap d a
   END
-  call writefile(lines, 'Xpastetoggle_no_typed_after_mapped.vim')
+  call writefile(lines, 'Xpastetoggle_no_typed_after_mapped.vim', 'D')
   let buf = RunVimInTerminal('-S Xpastetoggle_no_typed_after_mapped.vim', #{rows: 8})
   call TermWait(buf)
   call term_sendkeys(buf, ":call feedkeys('id', 't')\<CR>")
@@ -236,7 +236,6 @@ func Test_pastetoggle_timeout_no_typed_after_mapped()
   call WaitForAssert({-> assert_match('^-- INSERT --', term_getline(buf, 8))})
 
   call StopVimInTerminal(buf)
-  call delete('Xpastetoggle_no_typed_after_mapped.vim')
 endfunc
 
 func Test_pastetoggle_timeout_typed_after_mapped()
@@ -247,7 +246,7 @@ func Test_pastetoggle_timeout_typed_after_mapped()
     set ttimeoutlen=10000
     imap d a
   END
-  call writefile(lines, 'Xpastetoggle_typed_after_mapped.vim')
+  call writefile(lines, 'Xpastetoggle_typed_after_mapped.vim', 'D')
   let buf = RunVimInTerminal('-S Xpastetoggle_typed_after_mapped.vim', #{rows: 8})
   call TermWait(buf)
   call term_sendkeys(buf, ":call feedkeys('idb', 't')\<CR>")
@@ -257,7 +256,6 @@ func Test_pastetoggle_timeout_typed_after_mapped()
   call WaitForAssert({-> assert_match('^-- INSERT (paste) --', term_getline(buf, 8))})
 
   call StopVimInTerminal(buf)
-  call delete('Xpastetoggle_typed_after_mapped.vim')
 endfunc
 
 func Test_pastetoggle_timeout_typed_after_noremap()
@@ -268,7 +266,7 @@ func Test_pastetoggle_timeout_typed_after_noremap()
     set ttimeoutlen=10000
     inoremap d a
   END
-  call writefile(lines, 'Xpastetoggle_typed_after_noremap.vim')
+  call writefile(lines, 'Xpastetoggle_typed_after_noremap.vim', 'D')
   let buf = RunVimInTerminal('-S Xpastetoggle_typed_after_noremap.vim', #{rows: 8})
   call TermWait(buf)
   call term_sendkeys(buf, ":call feedkeys('idb', 't')\<CR>")
@@ -278,7 +276,6 @@ func Test_pastetoggle_timeout_typed_after_noremap()
   call WaitForAssert({-> assert_match('^-- INSERT (paste) --', term_getline(buf, 8))})
 
   call StopVimInTerminal(buf)
-  call delete('Xpastetoggle_typed_after_noremap.vim')
 endfunc
 
 " Test for restoring option values when 'paste' is disabled

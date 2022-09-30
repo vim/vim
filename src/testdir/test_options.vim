@@ -692,7 +692,7 @@ func Test_backupskip()
       call writefile(['errors:'] + v:errors, 'Xtestout')
       qall
   [CODE]
-  call writefile(after, 'Xafter')
+  call writefile(after, 'Xafter', 'D')
   let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
 
   let saveenv = {}
@@ -710,7 +710,6 @@ func Test_backupskip()
   endfor
 
   call delete('Xtestout')
-  call delete('Xafter')
 
   " Duplicates should be filtered out (option has P_NODUP)
   let backupskip = &backupskip
@@ -898,11 +897,10 @@ func Test_buftype()
 
   for val in ['', 'nofile', 'nowrite', 'acwrite', 'quickfix', 'help', 'terminal', 'prompt', 'popup']
     exe 'set buftype=' .. val
-    call writefile(['something'], 'XBuftype')
+    call writefile(['something'], 'XBuftype', 'D')
     call assert_fails('write XBuftype', 'E13:', 'with buftype=' .. val)
   endfor
 
-  call delete('XBuftype')
   bwipe!
 endfunc
 
@@ -1129,13 +1127,12 @@ func Test_opt_winminheight_term()
     below sp | wincmd _
     below sp
   END
-  call writefile(lines, 'Xwinminheight')
+  call writefile(lines, 'Xwinminheight', 'D')
   let buf = RunVimInTerminal('-S Xwinminheight', #{rows: 11})
   call term_sendkeys(buf, ":set wmh=1\n")
   call WaitForAssert({-> assert_match('E36: Not enough room', term_getline(buf, 11))})
 
   call StopVimInTerminal(buf)
-  call delete('Xwinminheight')
 endfunc
 
 func Test_opt_winminheight_term_tabs()
@@ -1150,13 +1147,12 @@ func Test_opt_winminheight_term_tabs()
     split
     tabnew
   END
-  call writefile(lines, 'Xwinminheight')
+  call writefile(lines, 'Xwinminheight', 'D')
   let buf = RunVimInTerminal('-S Xwinminheight', #{rows: 11})
   call term_sendkeys(buf, ":set wmh=1\n")
   call WaitForAssert({-> assert_match('E36: Not enough room', term_getline(buf, 11))})
 
   call StopVimInTerminal(buf)
-  call delete('Xwinminheight')
 endfunc
 
 " Test for the 'winminwidth' option
@@ -1185,15 +1181,14 @@ func Test_opt_reset_scroll()
     set scroll=2
     set laststatus=2
   [CODE]
-  call writefile(vimrc, 'Xscroll')
+  call writefile(vimrc, 'Xscroll', 'D')
   let buf = RunVimInTerminal('-S Xscroll', {'rows': 16, 'cols': 45})
   call term_sendkeys(buf, ":verbose set scroll?\n")
   call WaitForAssert({-> assert_match('Last set.*window size', term_getline(buf, 15))})
   call assert_match('^\s*scroll=7$', term_getline(buf, 14))
-  call StopVimInTerminal(buf)
 
   " clean up
-  call delete('Xscroll')
+  call StopVimInTerminal(buf)
 endfunc
 
 " Check that VIM_POSIX env variable influences default value of 'cpo' and 'shm'
