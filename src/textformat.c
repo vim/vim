@@ -938,7 +938,7 @@ fex_format(
     // Evaluate the function.
     if (use_sandbox)
 	++sandbox;
-    r = (int)eval_to_number(fex);
+    r = (int)eval_to_number(fex, TRUE);
     if (use_sandbox)
 	--sandbox;
 

@@ -2125,7 +2125,7 @@ vim_regsub_both(
 		// Execute instructions from ISN_SUBSTITUTE.
 		eval_result[nested] = exe_substitute_instr();
 	    else
-		eval_result[nested] = eval_to_string(source + 2, TRUE);
+		eval_result[nested] = eval_to_string(source + 2, TRUE, FALSE);
 	    --nesting;
 
 	    if (eval_result[nested] != NULL)

@@ -1711,7 +1711,7 @@ eval_map_expr(
     }
 
     // Note: the evaluation may make "mp" invalid.
-    p = eval_to_string(expr, FALSE);
+    p = eval_to_string(expr, FALSE, FALSE);
 
     --textlock;
     --ex_normal_lock;

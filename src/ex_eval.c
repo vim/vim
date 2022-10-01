@@ -1047,7 +1047,7 @@ ex_if(exarg_T *eap)
 	skip = did_emsg || got_int || did_throw || (cstack->cs_idx > 0
 		&& !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
 
-	result = eval_to_bool(eap->arg, &error, eap, skip);
+	result = eval_to_bool(eap->arg, &error, eap, skip, FALSE);
 
 	if (!skip && !error)
 	{
@@ -1176,7 +1176,7 @@ ex_else(exarg_T *eap)
 	if (skip && ends_excmd(*eap->arg))
 	    semsg(_(e_invalid_expression_str), eap->arg);
 	else
-	    result = eval_to_bool(eap->arg, &error, eap, skip);
+	    result = eval_to_bool(eap->arg, &error, eap, skip, FALSE);
 
 	// When throwing error exceptions, we want to throw always the first
 	// of several errors in a row.  This is what actually happens when
@@ -1283,7 +1283,7 @@ ex_while(exarg_T *eap)
 	    /*
 	     * ":while bool-expr"
 	     */
-	    result = eval_to_bool(eap->arg, &error, eap, skip);
+	    result = eval_to_bool(eap->arg, &error, eap, skip, FALSE);
 	}
 	else
 	{

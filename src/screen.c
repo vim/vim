@@ -1198,7 +1198,7 @@ get_keymap_str(
 	curwin = wp;
 	STRCPY(buf, "b:keymap_name");	// must be writable
 	++emsg_skip;
-	s = p = eval_to_string(buf, FALSE);
+	s = p = eval_to_string(buf, FALSE, FALSE);
 	--emsg_skip;
 	curbuf = old_curbuf;
 	curwin = old_curwin;
@@ -2976,7 +2976,7 @@ free_screenlines(void)
  * Clear the screen.
  * May delay if there is something the user should read.
  * Allocated the screen for resizing if needed.
- * Returns TRUE when the screen was actually claared, FALSE if all display
+ * Returns TRUE when the screen was actually cleared, FALSE if all display
  * cells were marked for updating.
  */
     int

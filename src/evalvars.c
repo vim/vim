@@ -380,7 +380,7 @@ eval_charconvert(
     if (ctx != NULL)
 	current_sctx = *ctx;
 
-    if (eval_to_bool(p_ccv, &err, NULL, FALSE))
+    if (eval_to_bool(p_ccv, &err, NULL, FALSE, TRUE))
 	err = TRUE;
 
     set_vim_var_string(VV_CC_FROM, NULL, -1);
@@ -408,7 +408,7 @@ eval_printexpr(char_u *fname, char_u *args)
     if (ctx != NULL)
 	current_sctx = *ctx;
 
-    if (eval_to_bool(p_pexpr, &err, NULL, FALSE))
+    if (eval_to_bool(p_pexpr, &err, NULL, FALSE, TRUE))
 	err = TRUE;
 
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
@@ -444,7 +444,7 @@ eval_diff(
 	current_sctx = *ctx;
 
     // errors are ignored
-    tv = eval_expr(p_dex, NULL);
+    tv = eval_expr_ext(p_dex, NULL, TRUE);
     free_tv(tv);
 
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
@@ -472,7 +472,7 @@ eval_patch(
 	current_sctx = *ctx;
 
     // errors are ignored
-    tv = eval_expr(p_pex, NULL);
+    tv = eval_expr_ext(p_pex, NULL, TRUE);
     free_tv(tv);
 
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
@@ -497,6 +497,7 @@ eval_spell_expr(char_u *badword, char_u *expr)
     char_u	*p = skipwhite(expr);
     sctx_T	saved_sctx = current_sctx;
     sctx_T	*ctx;
+    int		r;
 
     // Set "v:val" to the bad word.
     prepare_vimvar(VV_VAL, &save_val);
@@ -507,7 +508,10 @@ eval_spell_expr(char_u *badword, char_u *expr)
     if (ctx != NULL)
 	current_sctx = *ctx;
 
-    if (eval1(&p, &rettv, &EVALARG_EVALUATE) == OK)
+    r = may_call_simple_func(p, &rettv);
+    if (r == NOTDONE)
+	r = eval1(&p, &rettv, &EVALARG_EVALUATE);
+    if (r == OK)
     {
 	if (rettv.v_type != VAR_LIST)
 	    clear_tv(&rettv);
@@ -643,7 +647,7 @@ eval_one_expr_in_str(char_u *p, garray_T *gap, int evaluate)
     if (evaluate)
     {
 	*block_end = NUL;
-	expr_val = eval_to_string(block_start, TRUE);
+	expr_val = eval_to_string(block_start, TRUE, FALSE);
 	*block_end = '}';
 	if (expr_val == NULL)
 	    return NULL;

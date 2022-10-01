@@ -278,7 +278,7 @@ bexpr_eval(
 	current_sctx = curbuf->b_p_script_ctx[BV_BEXPR];
 
     vim_free(result);
-    result = eval_to_string(bexpr, TRUE);
+    result = eval_to_string(bexpr, TRUE, TRUE);
 
     // Remove one trailing newline, it is added when the result was a
     // list and it's hardly ever useful.  If the user really wants a
