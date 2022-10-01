@@ -97,6 +97,18 @@ func Test_shell_options()
       finally
         bwipe!
       endtry
+
+      " filter buffer contents through an external command
+      new
+      call setline(1, ['tom', 'sam', 'andy'])
+      try
+        %!sort
+        call assert_equal(['andy', 'sam', 'tom'], getline(1, '$'), e[0])
+      catch
+        call assert_report($'Failed to filter buffer contents, shell: {e[0]}, caught {v:exception}')
+      finally
+        bwipe!
+      endtry
     endif
   endfor
   set shell& shellcmdflag& shellpipe& shellquote&
