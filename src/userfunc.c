@@ -3447,12 +3447,12 @@ call_callback_retnr(
  * Nothing if "error" is FCERR_NONE.
  */
     void
-user_func_error(int error, char_u *name, funcexe_T *funcexe)
+user_func_error(int error, char_u *name, int found_var)
 {
     switch (error)
     {
 	case FCERR_UNKNOWN:
-		if (funcexe->fe_found_var)
+		if (found_var)
 		    emsg_funcname(e_not_callable_type_str, name);
 		else
 		    emsg_funcname(e_unknown_function_str, name);
@@ -3702,12 +3702,84 @@ theend:
      * cancelled due to an aborting error, an interrupt, or an exception.
      */
     if (!aborting())
-	user_func_error(error, (name != NULL) ? name : funcname, funcexe);
+	user_func_error(error, (name != NULL) ? name : funcname,
+							funcexe->fe_found_var);
 
     // clear the copies made from the partial
     while (argv_clear > 0)
 	clear_tv(&argv[--argv_clear + argv_base]);
 
+    vim_free(tofree);
+    vim_free(name);
+
+    return ret;
+}
+
+/*
+ * Call a function without arguments, partial or dict.
+ * This is like call_func() when the call is only "FuncName()".
+ * To be used by "expr" options.
+ * Returns NOTDONE when the function could not be found.
+ */
+    int
+call_simple_func(
+    char_u	*funcname,	// name of the function
+    int		len,		// length of "name" or -1 to use strlen()
+    typval_T	*rettv)		// return value goes here
+{
+    int		ret = FAIL;
+    int		error = FCERR_NONE;
+    char_u	fname_buf[FLEN_FIXED + 1];
+    char_u	*tofree = NULL;
+    char_u	*name;
+    char_u	*fname;
+    char_u	*rfname;
+    int		is_global = FALSE;
+    ufunc_T	*fp;
+
+    rettv->v_type = VAR_NUMBER;	// default rettv is number zero
+    rettv->vval.v_number = 0;
+
+    // Make a copy of the name, an option can be changed in the function.
+    name = vim_strnsave(funcname, len);
+    if (name == NULL)
+	return ret;
+
+    fname = fname_trans_sid(name, fname_buf, &tofree, &error);
+
+    // Skip "g:" before a function name.
+    if (fname[0] == 'g' && fname[1] == ':')
+    {
+	is_global = TRUE;
+	rfname = fname + 2;
+    }
+    else
+	rfname = fname;
+    fp = find_func(rfname, is_global);
+    if (fp != NULL && !is_global && in_vim9script()
+						 && func_requires_g_prefix(fp))
+	// In Vim9 script g: is required to find a global non-autoload
+	// function.
+	fp = NULL;
+    if (fp == NULL)
+	ret = NOTDONE;
+    else if (fp != NULL && (fp->uf_flags & FC_DELETED))
+	error = FCERR_DELETED;
+    else if (fp != NULL)
+    {
+	typval_T argvars[1];
+	funcexe_T	funcexe;
+
+	argvars[0].v_type = VAR_UNKNOWN;
+	CLEAR_FIELD(funcexe);
+	funcexe.fe_evaluate = TRUE;
+
+	error = call_user_func_check(fp, 0, argvars, rettv, &funcexe, NULL);
+	if (error == FCERR_NONE)
+	    ret = OK;
+    }
+
+    user_func_error(error, name, FALSE);
     vim_free(tofree);
     vim_free(name);
 
@@ -5676,7 +5748,7 @@ ex_defer_inner(
 
 		if (error != FCERR_UNKNOWN)
 		{
-		    user_func_error(error, name, NULL);
+		    user_func_error(error, name, FALSE);
 		    r = FAIL;
 		}
 	    }

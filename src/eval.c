@@ -899,13 +899,14 @@ eval_foldexpr(win_T *wp, int *cp)
 {
     char_u	*arg;
     typval_T	tv;
+    int		r = NOTDONE;
     varnumber_T	retval;
     char_u	*s;
     sctx_T	saved_sctx = current_sctx;
     int		use_sandbox = was_set_insecurely((char_u *)"foldexpr",
 								   OPT_LOCAL);
 
-    arg = wp->w_p_fde;
+    arg = skipwhite(wp->w_p_fde);
     current_sctx = wp->w_p_script_ctx[WV_FDE];
 
     ++emsg_off;
@@ -913,7 +914,21 @@ eval_foldexpr(win_T *wp, int *cp)
 	++sandbox;
     ++textlock;
     *cp = NUL;
-    if (eval0(arg, &tv, NULL, &EVALARG_EVALUATE) == FAIL)
+
+    // If the expression is "FuncName()" then we can skip a lot of overhead.
+    char_u *parens = (char_u *)strstr((char *)arg, "()");
+    if (parens != NULL && *skipwhite(parens + 2) == NUL)
+    {
+	char_u *p = STRNCMP(arg, "<SNR>", 5) == 0 ? skipdigits(arg + 5) : arg;
+
+	if (to_name_end(p, TRUE) == parens)
+	    r = call_simple_func(arg, (int)(parens - arg), &tv);
+    }
+
+    if (r == NOTDONE)
+	r = eval0(arg, &tv, NULL, &EVALARG_EVALUATE);
+
+    if (r == FAIL)
 	retval = 0;
     else
     {

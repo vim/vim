@@ -36,8 +36,9 @@ int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict
 int get_callback_depth(void);
 int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, typval_T *argvars);
 varnumber_T call_callback_retnr(callback_T *callback, int argcount, typval_T *argvars);
-void user_func_error(int error, char_u *name, funcexe_T *funcexe);
+void user_func_error(int error, char_u *name, int found_var);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, funcexe_T *funcexe);
+int call_simple_func(char_u *funcname, int len, typval_T *rettv);
 char_u *printable_func_name(ufunc_T *fp);
 char_u *trans_function_name(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial, type_T **type);
 char_u *get_scriptlocal_funcname(char_u *funcname);

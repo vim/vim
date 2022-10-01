@@ -1410,6 +1410,21 @@ to a Vim9 function:
 		'three'
 		]
 
+
+Calling a function in an expr option ~
+							*expr-option-function*
+A few options, such as 'foldexpr', are an expresison that is evaluated to get
+a value.  The evaluation can have quite a bit of overhead.  One way to
+minimize the overhead, and also to keep the option value very simple, is to
+defined a compiled function and set the option to call it without arguments.
+Example: >
+	vim9script
+	def MyFoldFunc(): any
+	   ... compute fold level for line v:lnum
+	   return level
+	enddef
+	set foldexpr=s:MyFoldFunc()
+
 ==============================================================================
 
 4. Types					*vim9-types*

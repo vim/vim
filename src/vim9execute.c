@@ -1267,7 +1267,8 @@ call_ufunc(
 
     if (error != FCERR_NONE)
     {
-	user_func_error(error, printable_func_name(ufunc), &funcexe);
+	user_func_error(error, printable_func_name(ufunc),
+							 funcexe.fe_found_var);
 	return FAIL;
     }
     if (did_emsg > did_emsg_before)
@@ -4244,7 +4245,7 @@ exec_instructions(ectx_T *ectx)
 		    if (jump)
 			ectx->ec_iidx = iptr->isn_arg.whileloop.while_end;
 
-		    // Store the current funccal count, may be used by
+		    // Store the current funcref count, may be used by
 		    // ISN_ENDLOOP later
 		    tv = STACK_TV_VAR(
 				    iptr->isn_arg.whileloop.while_funcref_idx);
