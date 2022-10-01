@@ -1906,7 +1906,7 @@ get_expr_indent(void)
     inde_copy = vim_strsave(curbuf->b_p_inde);
     if (inde_copy != NULL)
     {
-	indent = (int)eval_to_number(inde_copy);
+	indent = (int)eval_to_number(inde_copy, TRUE);
 	vim_free(inde_copy);
     }
 

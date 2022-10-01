@@ -961,12 +961,12 @@ err_closing:
 #endif
 	if (csinfo[i].ppath != NULL)
 	{
-	    len = STRLEN(cmd);
+	    len = (int)STRLEN(cmd);
 	    vim_snprintf(cmd + len, cmdlen - len, " -P%s", csinfo[i].ppath);
 	}
 	if (csinfo[i].flags != NULL)
 	{
-	    len = STRLEN(cmd);
+	    len = (int)STRLEN(cmd);
 	    vim_snprintf(cmd + len, cmdlen - len, " %s", csinfo[i].flags);
 	}
 # ifdef UNIX
