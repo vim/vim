@@ -2713,8 +2713,10 @@ EXTERN char e_item_not_found_in_script_str[]
 	INIT(= N_("E1048: Item not found in script: %s"));
 EXTERN char e_item_not_exported_in_script_str[]
 	INIT(= N_("E1049: Item not exported in script: %s"));
+#endif
 EXTERN char e_colon_required_before_range_str[]
 	INIT(= N_("E1050: Colon required before a range: %s"));
+#ifdef FEAT_EVAL
 EXTERN char e_wrong_argument_type_for_plus[]
 	INIT(= N_("E1051: Wrong argument type for +"));
 EXTERN char e_cannot_declare_an_option[]

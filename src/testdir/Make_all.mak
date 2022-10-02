@@ -12,6 +12,7 @@ CLEANUP_FILES = test.log messages starttime
 
 # Tests for tiny and small builds.
 SCRIPTS_TINY = \
+	test10 \
 	test20 \
 	test21 \
 	test22 \
@@ -22,6 +23,7 @@ SCRIPTS_TINY = \
 	test27
 
 SCRIPTS_TINY_OUT = \
+	test10.out \
 	test20.out \
 	test21.out \
 	test22.out \
