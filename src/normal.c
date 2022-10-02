@@ -2470,6 +2470,7 @@ nv_scroll_line(cmdarg_T *cap)
 scroll_redraw(int up, long count)
 {
     linenr_T	prev_topline = curwin->w_topline;
+    int		prev_skipcol = curwin->w_skipcol;
 #ifdef FEAT_DIFF
     int		prev_topfill = curwin->w_topfill;
 #endif
@@ -2491,6 +2492,7 @@ scroll_redraw(int up, long count)
 	// we get stuck at one position.  Don't move the cursor up if the
 	// first line of the buffer is already on the screen
 	while (curwin->w_topline == prev_topline
+		&& curwin->w_skipcol == prev_skipcol
 #ifdef FEAT_DIFF
 		&& curwin->w_topfill == prev_topfill
 #endif
