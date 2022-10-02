@@ -3362,6 +3362,45 @@ func Test_previewpopup()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_previewpopup_pum()
+  CheckScreendump
+  CheckFeature quickfix
+
+  let lines =<< trim END
+      let a = 3
+      let b = 1
+      echo a
+      echo b
+      call system('echo hello')
+      " the end
+  END
+  call writefile(lines, 'XpreviewText.vim', 'D')
+
+  let lines =<< trim END
+      call setline(1, ['one', 'two', 'three', 'other', 'once', 'only', 'off'])
+      set previewpopup=height:6,width:40
+      pedit XpreviewText.vim
+  END
+  call writefile(lines, 'XtestPreviewPum', 'D')
+  let buf = RunVimInTerminal('-S XtestPreviewPum', #{rows: 12})
+
+  call term_sendkeys(buf, "A o\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_preview_1', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_preview_2', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_preview_3', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_preview_4', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+endfunc
+
+
 func Get_popupmenu_lines()
   let lines =<< trim END
       set completeopt+=preview,popup
