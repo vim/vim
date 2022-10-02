@@ -541,7 +541,7 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	wlv->c_extra = NUL;
 	wlv->c_final = NUL;
 	wlv->n_extra = (int)STRLEN(sbr);
-	if ((wp->w_skipcol == 0 && wlv->startrow == 0) || !wp->w_p_wrap)
+	if (wp->w_skipcol == 0 || wlv->startrow != 0 || !wp->w_p_wrap)
 	    wlv->need_showbreak = FALSE;
 	wlv->vcol_sbr = wlv->vcol + MB_CHARLEN(sbr);
 	// Correct end of highlighted area for 'showbreak',
