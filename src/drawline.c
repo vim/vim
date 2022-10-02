@@ -387,7 +387,7 @@ handle_lnum_col(
 	      }
 
 	      sprintf((char *)wlv->extra, fmt, number_width(wp), num);
-	      if (wp->w_skipcol > 0)
+	      if (wp->w_skipcol > 0 && wlv->startrow == 0)
 		  for (wlv->p_extra = wlv->extra; *wlv->p_extra == ' ';
 			  ++wlv->p_extra)
 		      *wlv->p_extra = '-';
@@ -492,7 +492,8 @@ handle_breakindent(win_T *wp, winlinevars_T *wlv)
 		if (wlv->n_extra < 0)
 		    wlv->n_extra = 0;
 	    }
-	    if (wp->w_skipcol > 0 && wp->w_p_wrap && wp->w_briopt_sbr)
+	    if (wp->w_skipcol > 0 && wlv->startrow == 0
+					   && wp->w_p_wrap && wp->w_briopt_sbr)
 		wlv->need_showbreak = FALSE;
 	    // Correct end of highlighted area for 'breakindent',
 	    // required when 'linebreak' is also set.
@@ -540,7 +541,7 @@ handle_showbreak_and_filler(win_T *wp, winlinevars_T *wlv)
 	wlv->c_extra = NUL;
 	wlv->c_final = NUL;
 	wlv->n_extra = (int)STRLEN(sbr);
-	if (wp->w_skipcol == 0 || !wp->w_p_wrap)
+	if ((wp->w_skipcol == 0 && wlv->startrow == 0) || !wp->w_p_wrap)
 	    wlv->need_showbreak = FALSE;
 	wlv->vcol_sbr = wlv->vcol + MB_CHARLEN(sbr);
 	// Correct end of highlighted area for 'showbreak',
@@ -750,7 +751,7 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 
     // Highlight 'cursorcolumn' & 'colorcolumn' past end of the line.
     if (wp->w_p_wrap)
-	v = wp->w_skipcol;
+	v = wlv->startrow == 0 ? wp->w_skipcol : 0;
     else
 	v = wp->w_leftcol;
 
@@ -1411,7 +1412,7 @@ win_line(
     // 'nowrap' or 'wrap' and a single line that doesn't fit: Advance to the
     // first character to be displayed.
     if (wp->w_p_wrap)
-	v = wp->w_skipcol;
+	v = startrow == 0 ? wp->w_skipcol : 0;
     else
 	v = wp->w_leftcol;
     if (v > 0 && !number_only)
@@ -3219,9 +3220,8 @@ win_line(
 	// special character (via 'listchars' option "precedes:<char>".
 	if (lcs_prec_todo != NUL
 		&& wp->w_p_list
-		&& (wp->w_p_wrap ?
-		    (wp->w_skipcol > 0  && wlv.row == 0) :
-		    wp->w_leftcol > 0)
+		&& (wp->w_p_wrap ? (wp->w_skipcol > 0 && wlv.row == 0)
+				 : wp->w_leftcol > 0)
 #ifdef FEAT_DIFF
 		&& wlv.filler_todo <= 0
 #endif
