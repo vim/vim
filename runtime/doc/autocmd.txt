@@ -1361,9 +1361,11 @@ WinLeave			Before leaving a window.  If the window to be
 				Not used for ":qa" or ":q" when exiting Vim.
 
 							*WinNew*
-WinNew				When a new window was created.  Not done for
-				the first window, when Vim has just started.
-				Before a WinEnter event.
+WinNew				When a new window was created.  The pattern is
+				matched against the |window-ID|.  Both <amatch>
+				and <afile> are set to the |window-ID|.  Not
+				done for the first window, when Vim has just
+				started.  Before a WinEnter event.
 
 							*WinScrolled*
 WinScrolled			After scrolling the content of a window or

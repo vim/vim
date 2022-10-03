@@ -442,6 +442,57 @@ func Test_WinScrolled_long_wrapped()
   call WaitForAssert({-> assert_match('^3 ', term_getline(buf, 6))}, 1000)
 endfunc
 
+func Test_WinNew()
+  " Test that the pattern is matched against the new window's ID, and both
+  " <amatch> and <afile> are set to it.
+  new
+  " new window ID = the largest window id + 1
+  let expected_new_winid = gettabinfo()->reduce({acc, val -> max([acc] + val.windows)}, 0) + 1
+  let g:matched = v:false
+  augroup test-WinNew
+    autocmd!
+    execute 'autocmd WinNew' expected_new_winid 'let g:matched = v:true'
+    autocmd WinNew * let g:amatch = str2nr(expand('<amatch>'))
+    autocmd WinNew * let g:afile = str2nr(expand('<afile>'))
+  augroup END
+  split
+  call assert_true(g:matched)
+  call assert_equal(expected_new_winid, g:amatch)
+  call assert_equal(expected_new_winid, g:afile)
+
+  autocmd! test-WinNew
+  augroup! test-WinNew
+  unlet g:matched
+  unlet g:amatch
+  unlet g:afile
+endfunc
+
+" Test that WinNew is also triggered when opening a new tab page
+func Test_WinNew_new_tab()
+  " Test that the pattern is matched against the new window's ID, and both
+  " <amatch> and <afile> are set to it.
+  new
+  " new window ID = the largest window id + 1
+  let expected_new_winid = gettabinfo()->reduce({acc, val -> max([acc] + val.windows)}, 0) + 1
+  let g:matched = v:false
+  augroup test-WinNew
+    autocmd!
+    execute 'autocmd WinNew' expected_new_winid 'let g:matched = v:true'
+    autocmd WinNew * let g:amatch = str2nr(expand('<amatch>'))
+    autocmd WinNew * let g:afile = str2nr(expand('<afile>'))
+  augroup END
+  tabnew
+  call assert_true(g:matched)
+  call assert_equal(expected_new_winid, g:amatch)
+  call assert_equal(expected_new_winid, g:afile)
+
+  autocmd! test-WinNew
+  augroup! test-WinNew
+  unlet g:matched
+  unlet g:amatch
+  unlet g:afile
+endfunc
+
 func Test_WinClosed()
   " Test that the pattern is matched against the closed window's ID, and both
   " <amatch> and <afile> are set to it.

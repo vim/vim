@@ -4018,6 +4018,7 @@ win_new_tabpage(int after)
     tabpage_T	*prev_tp = curtab;
     tabpage_T	*newtp;
     int		n;
+    char_u	winid[NUMBUFLEN];
 
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -4086,7 +4087,8 @@ win_new_tabpage(int after)
 #endif
 
 	redraw_all_later(UPD_NOT_VALID);
-	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
+	vim_snprintf((char *)winid, sizeof(winid), "%d", curwin->w_id);
+	apply_autocmds(EVENT_WINNEW, winid, winid, FALSE, curbuf);
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_TABNEW, NULL, NULL, FALSE, curbuf);
 	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
@@ -4894,6 +4896,7 @@ win_enter_ext(win_T *wp, int flags)
     int		other_buffer = FALSE;
     int		curwin_invalid = (flags & WEE_CURWIN_INVALID);
     int		did_decrement = FALSE;
+    char_u	winid[NUMBUFLEN];
 
     if (wp == curwin && !curwin_invalid)	// nothing to do
 	return FALSE;
@@ -4967,9 +4970,12 @@ win_enter_ext(win_T *wp, int flags)
 #ifdef FEAT_JOB_CHANNEL
     entering_window(curwin);
 #endif
+    vim_snprintf((char *)winid, sizeof(winid), "%d", wp->w_id);
     // Careful: autocommands may close the window and make "wp" invalid
     if (flags & WEE_TRIGGER_NEW_AUTOCMDS)
-	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
+    {
+	apply_autocmds(EVENT_WINNEW, winid, winid, FALSE, curbuf);
+    }
     if (flags & WEE_TRIGGER_ENTER_AUTOCMDS)
     {
 	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
