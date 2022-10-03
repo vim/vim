@@ -740,6 +740,32 @@ text_prop_position(
 #endif
 
 /*
+ * Call screen_line() using values from "wlv".
+ * Also takes care of putting "<<<" on the first line for 'smoothscroll'.
+ */
+    static void
+wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
+{
+    if (wlv->row == 0 && wp->w_skipcol > 0)
+    {
+	int off = (int)(current_ScreenLine - ScreenLines);
+
+	for (int i = 0; i < 3; ++i)
+	{
+	    ScreenLines[off] = '<';
+	    if (enc_utf8)
+		ScreenLinesUC[off] = 0;
+	    ScreenAttrs[off] = HL_ATTR(HLF_AT);
+	    ++off;
+	}
+    }
+
+    screen_line(wp, wlv->screen_row, wp->w_wincol, wlv->col,
+		    negative_width ? -wp->w_width : wp->w_width,
+		    wlv->screen_line_flags);
+}
+
+/*
  * Called when finished with the line: draw the screen line and handle any
  * highlighting until the right of the window.
  */
@@ -820,8 +846,7 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
     }
 #endif
 
-    screen_line(wp, wlv->screen_row, wp->w_wincol, wlv->col,
-					  wp->w_width, wlv->screen_line_flags);
+    wlv_screen_line(wp, wlv, FALSE);
     ++wlv->row;
     ++wlv->screen_row;
 }
@@ -1730,8 +1755,7 @@ win_line(
 #endif
 		)
 	{
-	    screen_line(wp, wlv.screen_row, wp->w_wincol, wlv.col, -wp->w_width,
-							wlv.screen_line_flags);
+	    wlv_screen_line(wp, &wlv, TRUE);
 	    // Pretend we have finished updating the window.  Except when
 	    // 'cursorcolumn' is set.
 #ifdef FEAT_SYN_HL
@@ -3670,13 +3694,12 @@ win_line(
 		)
 	{
 #ifdef FEAT_CONCEAL
-	    screen_line(wp, wlv.screen_row, wp->w_wincol,
-			    wlv.col - wlv.boguscols,
-					  wp->w_width, wlv.screen_line_flags);
+	    wlv.col += wlv.boguscols;
+	    wlv_screen_line(wp, &wlv, FALSE);
+	    wlv.col -= wlv.boguscols;
 	    wlv.boguscols = 0;
 #else
-	    screen_line(wp, wlv.screen_row, wp->w_wincol, wlv.col,
-					  wp->w_width, wlv.screen_line_flags);
+	    screen_line(wp, &wlv, FALSE);
 #endif
 	    ++wlv.row;
 	    ++wlv.screen_row;
