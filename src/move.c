@@ -984,8 +984,8 @@ curwin_col_off(void)
 
 /*
  * Return the difference in column offset for the second screen line of a
- * wrapped line.  It's 8 if 'number' or 'relativenumber' is on and 'n' is in
- * 'cpoptions'.
+ * wrapped line.  It's positive if 'number' or 'relativenumber' is on and 'n'
+ * is in 'cpoptions'.
  */
     int
 win_col_off2(win_T *wp)
@@ -1463,7 +1463,7 @@ scrolldown(
     if (curwin->w_p_wrap && curwin->w_p_sms)
     {
 	width1 = curwin->w_width - curwin_col_off();
-	width2 = width1 - curwin_col_off2();
+	width2 = width1 + curwin_col_off2();
     }
 
 #ifdef FEAT_FOLDING
@@ -1601,24 +1601,31 @@ scrollup(
     long	line_count,
     int		byfold UNUSED)	// TRUE: count a closed fold as one line
 {
-#if defined(FEAT_FOLDING) || defined(FEAT_DIFF)
-    linenr_T	lnum;
+    int		do_smoothscroll = curwin->w_p_wrap && curwin->w_p_sms;
 
-    if (
+    if (do_smoothscroll
 # ifdef FEAT_FOLDING
-	    (byfold && hasAnyFolding(curwin))
-#  ifdef FEAT_DIFF
-	    ||
-#  endif
+	    || (byfold && hasAnyFolding(curwin))
 # endif
 # ifdef FEAT_DIFF
-	    curwin->w_p_diff
+	    || curwin->w_p_diff
 # endif
 	    )
     {
-	// count each sequence of folded lines as one logical line
-	lnum = curwin->w_topline;
-	while (line_count--)
+	int	    width1 = curwin->w_width - curwin_col_off();
+	int	    width2 = width1 + curwin_col_off2();
+	int	    size = 0;
+	linenr_T    prev_topline = curwin->w_topline;
+
+	if (do_smoothscroll)
+	    size = win_linetabsize(curwin, curwin->w_topline,
+				   ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+
+	// diff mode: first consume "topfill"
+	// 'smoothscroll': increase "w_skipcol" until it goes over the end of
+	// the line, then advance to the next line.
+	// folding: count each sequence of folded lines as one logical line.
+	for (int todo = line_count; todo > 0; --todo)
 	{
 # ifdef FEAT_DIFF
 	    if (curwin->w_topfill > 0)
@@ -1626,54 +1633,54 @@ scrollup(
 	    else
 # endif
 	    {
+		linenr_T lnum = curwin->w_topline;
+
 # ifdef FEAT_FOLDING
 		if (byfold)
+		    // for a closed fold: go to the last line in the fold
 		    (void)hasFolding(lnum, NULL, &lnum);
 # endif
-		if (lnum >= curbuf->b_ml.ml_line_count)
-		    break;
-		++lnum;
-# ifdef FEAT_DIFF
-		curwin->w_topfill = diff_check_fill(curwin, lnum);
-# endif
-	    }
-	}
-	// approximate w_botline
-	curwin->w_botline += lnum - curwin->w_topline;
-	curwin->w_topline = lnum;
-    }
-    else
-#endif
-    if (curwin->w_p_wrap && curwin->w_p_sms)
-    {
-	int off1 = curwin_col_off();
-	int off2 = off1 + curwin_col_off2();
-	int add;
-	int size = win_linetabsize(curwin, curwin->w_topline,
-				   ml_get(curwin->w_topline), (colnr_T)MAXCOL);
-	linenr_T prev_topline = curwin->w_topline;
-
-	// 'smoothscroll': increase "w_skipcol" until it goes over the end of
-	// the line, then advance to the next line.
-	for (int todo = line_count; todo > 0; --todo)
-	{
-	    add = curwin->w_width - (curwin->w_skipcol > 0 ? off2 : off1);
-	    curwin->w_skipcol += add;
-	    if (curwin->w_skipcol >= size)
-	    {
-		if (curwin->w_topline == curbuf->b_ml.ml_line_count)
+		if (lnum == curwin->w_topline
+					&& curwin->w_p_wrap && curwin->w_p_sms)
 		{
-		    curwin->w_skipcol -= add;
-		    break;
+		    // 'smoothscroll': increase "w_skipcol" until it goes over
+		    // the end of the line, then advance to the next line.
+		    int add = curwin->w_skipcol > 0 ? width2 : width1;
+		    curwin->w_skipcol += add;
+		    if (curwin->w_skipcol >= size)
+		    {
+			if (lnum == curbuf->b_ml.ml_line_count)
+			{
+			    // at the last screen line, can't scroll further
+			    curwin->w_skipcol -= add;
+			    break;
+			}
+			++lnum;
+		    }
 		}
-		++curwin->w_topline;
-		++curwin->w_botline;	// approximate w_botline
-		curwin->w_skipcol = 0;
-		if (todo > 1)
-		    size = win_linetabsize(curwin, curwin->w_topline,
-				   ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+		else
+		{
+		    if (lnum >= curbuf->b_ml.ml_line_count)
+			break;
+		    ++lnum;
+		}
+
+		if (lnum > curwin->w_topline)
+		{
+		    // approximate w_botline
+		    curwin->w_botline += lnum - curwin->w_topline;
+		    curwin->w_topline = lnum;
+# ifdef FEAT_DIFF
+		    curwin->w_topfill = diff_check_fill(curwin, lnum);
+# endif
+		    curwin->w_skipcol = 0;
+		    if (todo > 1 && do_smoothscroll)
+			size = win_linetabsize(curwin, curwin->w_topline,
+				ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+		}
 	    }
 	}
+
 	if (curwin->w_topline == prev_topline)
 	    // need to redraw even though w_topline didn't change
 	    redraw_later(UPD_NOT_VALID);
