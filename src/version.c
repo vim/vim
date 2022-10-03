@@ -69,7 +69,7 @@ init_longVersion(void)
 	size_t len = strlen(msg)
 		    + strlen(VIM_VERSION_LONG_ONLY)
 		    + strlen(VIM_VERSION_DATE_ONLY)
-		    + hp
+		    + 8 // For hp; should be more than enough.
 		    + strlen(date_time);
 
 	longVersion = alloc(len);
