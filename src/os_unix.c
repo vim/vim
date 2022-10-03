@@ -5106,7 +5106,7 @@ mch_call_shell_fork(
 			    }
 			}
 
-			term_replace_bs_del_keycode(ta_buf, ta_len, len);
+			len = term_replace_bs_del_keycode(ta_buf, ta_len, len);
 
 			/*
 			 * For pipes: echo the typed characters.

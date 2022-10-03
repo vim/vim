@@ -6733,11 +6733,13 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 #endif
 
 /*
- * Replace K_BS by <BS> and K_DEL by <DEL>
+ * Replace K_BS by <BS> and K_DEL by <DEL>.
+ * Returns "len" adjusted for replaced codes.
  */
-    void
-term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len)
+    int
+term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len_arg)
 {
+    int		len = len_arg;
     int		i;
     int		c;
 
@@ -6762,4 +6764,5 @@ term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len)
 	if (has_mbyte)
 	    i += (*mb_ptr2len_len)(ta_buf + i, ta_len + len - i) - 1;
     }
+    return len;
 }
