@@ -156,18 +156,11 @@ To avoid the message box that pops up to report the result, prepend "-silent":
 	gvim -silent -unregister
 
 ==============================================================================
-5. MS Visual Studio integration			*MSVisualStudio* *VisVim*
-
-The OLE version can be used to run Vim as the editor in Microsoft Visual
-Studio.  This is called "VisVim".  It is included in the archive that contains
-the OLE version.  The documentation can be found in the runtime directory, the
-README_VisVim.txt file.
-
+5. MS Visual Studio integration				*MSVisualStudio*
 
 Using Vim with Visual Studio .Net~
 
-With .Net you no longer really need VisVim, since .Net studio has support for
-external editors.  Follow these directions:
+.Net studio has support for external editors.  Follow these directions:
 
 In .Net Studio choose from the menu Tools->External Tools...
 Add

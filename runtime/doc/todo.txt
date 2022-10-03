@@ -3074,9 +3074,6 @@ Macintosh:
     line is too short.  Add a word in 'scrollopt' to allow moving the cursor
     to longer line that is visible.  A similar thing is done for the GUI when
     using the horizontal scrollbar.
-7   VisVim can only open one file.  Hard to solve: each opened file is passed
-    with a separate invocation, would need to use timestamps to know the
-    invocations belong together.
 8   When giving a ":bwipeout" command a file-changed dialog may popup for this
     buffer, which is pointless.  (Mike Williams)
 8   On MS-Windows ":make" doesn't show output while it is working.  Use the

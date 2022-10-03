@@ -121,11 +121,6 @@ LangString str_desc_plugin_vim      ${LANG_TRADCHINESE} \
     "在 Vim 安裝資料夾下建立(空的)插件資料夾結構，電腦上所有用戶都能使用安裝\
      在該資料夾里的擴展插件。"
 
-LangString str_section_vis_vim      ${LANG_TRADCHINESE} \
-    "安裝 VisVim 插件"
-LangString str_desc_vis_vim         ${LANG_TRADCHINESE} \
-    "VisVim 是用于與微軟 Microsoft Visual Studio 軟體進行整合的插件。"
-
 LangString str_section_nls          ${LANG_TRADCHINESE} \
     "安裝本地語言支持"
 LangString str_desc_nls             ${LANG_TRADCHINESE} \
