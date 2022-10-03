@@ -27,12 +27,27 @@ freebsd_task:
     - sudo -u cirrus make test
 
 macos_task:
-  name: macOS m1
+  name: macOS (arm64 gcc)
   macos_instance:
     image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
   timeout_in: 20m
   install_script:
-    - uname -a
+    - brew update
+    - brew install gettext libtool
+  build_script:
+    - NPROC=$(getconf _NPROCESSORS_ONLN)
+    - ./configure --with-features=${FEATURES}
+    - make -j${NPROC}
+  test_script:
+    - src/vim --version
+    - make test
+
+macos_task:
+  name: macOS (arm64 clang)
+  macos_instance:
+    image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
+  timeout_in: 20m
+  install_script:
     - brew update
     - brew install gettext libtool
   build_script:
