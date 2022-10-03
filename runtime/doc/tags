@@ -719,9 +719,7 @@ $quote	eval.txt	/*$quote*
 'nospell'	options.txt	/*'nospell'*
 'nosplitbelow'	options.txt	/*'nosplitbelow'*
 'nosplitright'	options.txt	/*'nosplitright'*
-'nosplitscroll'	options.txt	/*'nosplitscroll'*
 'nospr'	options.txt	/*'nospr'*
-'nospsc'	options.txt	/*'nospsc'*
 'nosr'	options.txt	/*'nosr'*
 'nossl'	options.txt	/*'nossl'*
 'nosta'	options.txt	/*'nosta'*
@@ -952,14 +950,14 @@ $quote	eval.txt	/*$quote*
 'spelloptions'	options.txt	/*'spelloptions'*
 'spellsuggest'	options.txt	/*'spellsuggest'*
 'spf'	options.txt	/*'spf'*
+'spk'	options.txt	/*'spk'*
 'spl'	options.txt	/*'spl'*
 'splitbelow'	options.txt	/*'splitbelow'*
+'splitkeep'	options.txt	/*'splitkeep'*
 'splitright'	options.txt	/*'splitright'*
-'splitscroll'	options.txt	/*'splitscroll'*
 'spo'	options.txt	/*'spo'*
 'spr'	options.txt	/*'spr'*
 'sps'	options.txt	/*'sps'*
-'spsc'	options.txt	/*'spsc'*
 'sr'	options.txt	/*'sr'*
 'srr'	options.txt	/*'srr'*
 'ss'	options.txt	/*'ss'*

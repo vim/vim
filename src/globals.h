@@ -1975,10 +1975,10 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
 
 #ifdef FEAT_CMDWIN
-// Skip win_fix_cursor() call for 'nosplitscroll' when cmdwin is closed.
+// Skip win_fix_cursor() call for 'splitkeep' when cmdwin is closed.
 EXTERN int skip_win_fix_cursor INIT(= FALSE);
 #endif
-// Skip win_fix_scroll() call for 'nosplitscroll' when closing tab page.
+// Skip win_fix_scroll() call for 'splitkeep' when closing tab page.
 EXTERN int skip_win_fix_scroll INIT(= FALSE);
 // Skip update_topline() call while executing win_fix_scroll().
 EXTERN int skip_update_topline INIT(= FALSE);
