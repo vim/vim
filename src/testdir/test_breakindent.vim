@@ -83,7 +83,7 @@ func Test_breakindent02_vartabs()
   CheckFeature vartabs
   " simple breakindent test with showbreak set
   call s:test_windows('setl briopt=min:0 sbr=>> vts=4')
-  let lines = s:screen_lines(line('.'),8)
+  let lines = s:screen_lines(line('.'), 8)
   let expect = [
 	\ "    abcd",
 	\ "    >>qr",
@@ -96,7 +96,7 @@ endfunc
 func Test_breakindent03()
   " simple breakindent test with showbreak set and briopt including sbr
   call s:test_windows('setl briopt=sbr,min:0 sbr=++')
-  let lines = s:screen_lines(line('.'),8)
+  let lines = s:screen_lines(line('.'), 8)
   let expect = [
 	\ "    abcd",
 	\ "++  qrst",
@@ -111,7 +111,7 @@ func Test_breakindent03_vartabs()
   " simple breakindent test with showbreak set and briopt including sbr
   CheckFeature vartabs
   call s:test_windows('setl briopt=sbr,min:0 sbr=++ vts=4')
-  let lines = s:screen_lines(line('.'),8)
+  let lines = s:screen_lines(line('.'), 8)
   let expect = [
 	\ "    abcd",
 	\ "++  qrst",
@@ -126,7 +126,7 @@ func Test_breakindent04()
   " breakindent set with min width 18
   set sbr=<<<
   call s:test_windows('setl sbr=NONE briopt=min:18')
-  let lines = s:screen_lines(line('.'),8)
+  let lines = s:screen_lines(line('.'), 8)
   let expect = [
 	\ "    abcd",
 	\ "  qrstuv",
@@ -142,7 +142,7 @@ func Test_breakindent04_vartabs()
   " breakindent set with min width 18
   CheckFeature vartabs
   call s:test_windows('setl sbr= briopt=min:18 vts=4')
-  let lines = s:screen_lines(line('.'),8)
+  let lines = s:screen_lines(line('.'), 8)
   let expect = [
 	\ "    abcd",
 	\ "  qrstuv",
@@ -549,7 +549,7 @@ func Test_breakindent16()
   redraw!
   let lines = s:screen_lines(1,10)
   let expect = [
-	\ "    789012",
+	\ "<<< 789012",
 	\ "    345678",
 	\ "    901234",
 	\ ]
@@ -575,7 +575,7 @@ func Test_breakindent16_vartabs()
   redraw!
   let lines = s:screen_lines(1,10)
   let expect = [
-	\ "    789012",
+	\ "<<< 789012",
 	\ "    345678",
 	\ "    901234",
 	\ ]
@@ -660,7 +660,7 @@ func Test_breakindent19_sbr_nextpage()
   norm! 5gj
   let lines = s:screen_lines(1, 20)
   let expect = [
-	\ ">aaaaaaaaaaaaaaaaaaa",
+	\ "<<<aaaaaaaaaaaaaaaaa",
 	\ ">aaaaaaaaaaaaaaaaaaa",
 	\ ">aaaaaaaaaaaaaaaaaaa",
 	\ ]
@@ -687,7 +687,7 @@ func Test_breakindent20_cpo_n_nextpage()
   redraw!
   let lines = s:screen_lines(1, 20)
   let expect = [
-	\ "--1 aaaaaaaaaaaaaaaa",
+	\ "<<< aaaaaaaaaaaaaaaa",
 	\ "    aaaaaaaaaaaaaaaa",
 	\ "    aaaaaaaaaaaaaaaa",
 	\ ]
@@ -706,7 +706,7 @@ func Test_breakindent20_cpo_n_nextpage()
   norm! 5gj
   let lines = s:screen_lines(1, 20)
   let expect = [
-	\ "--1   aaaaaaaaaaaaaa",
+	\ "<<<   aaaaaaaaaaaaaa",
 	\ "      aaaaaaaaaaaaaa",
 	\ "      aaaaaaaaaaaaaa",
 	\ ]
