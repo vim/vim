@@ -3699,7 +3699,7 @@ win_line(
 	    wlv.col -= wlv.boguscols;
 	    wlv.boguscols = 0;
 #else
-	    screen_line(wp, &wlv, FALSE);
+	    wlv_screen_line(wp, &wlv, FALSE);
 #endif
 	    ++wlv.row;
 	    ++wlv.screen_row;
