@@ -924,11 +924,11 @@ EXTERN char_u	*p_spo;		// 'spelloptions'
 EXTERN char_u	*p_sps;		// 'spellsuggest'
 #endif
 EXTERN int	p_spr;		// 'splitright'
-EXTERN int	p_spsc;		// 'splitscroll'
 EXTERN int	p_sol;		// 'startofline'
 EXTERN char_u	*p_su;		// 'suffixes'
 EXTERN char_u	*p_sws;		// 'swapsync'
 EXTERN char_u	*p_swb;		// 'switchbuf'
+EXTERN char_u	*p_spk;		// 'splitkeep'
 EXTERN unsigned	swb_flags;
 // Keep in sync with p_swb_values in optionstr.c
 #define SWB_USEOPEN		0x001

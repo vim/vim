@@ -46,6 +46,7 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
 #endif
 // Keep in sync with SWB_ flags in option.h
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
+static char *(p_spk_values[]) = {"cursor", "screen", "topline", NULL};
 static char *(p_tc_values[]) = {"followic", "ignore", "match", "followscs", "smart", NULL};
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
 static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL};
@@ -1683,6 +1684,13 @@ did_set_string_option(
 	    errmsg = e_invalid_argument;
     }
 
+    // 'splitkeep'
+    else if (varp == &p_spk)
+    {
+	if (check_opt_strings(p_spk, p_spk_values, FALSE) != OK)
+	    errmsg = e_invalid_argument;
+    }
+
     // 'debug'
     else if (varp == &p_debug)
     {
@@ -1722,7 +1730,7 @@ did_set_string_option(
 	int	is_spellfile = varp == &(curwin->w_s->b_p_spf);
 
 	if ((is_spellfile && !valid_spellfile(*varp))
-	    || (!is_spellfile && !valid_spelllang(*varp)))
+		|| (!is_spellfile && !valid_spelllang(*varp)))
 	    errmsg = e_invalid_argument;
 	else
 	    errmsg = did_set_spell_option(is_spellfile);

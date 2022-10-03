@@ -134,6 +134,7 @@ let test_values = {
       \ 'spelllang': [['', 'xxx', 'sr@latin'], ['not&lang', "that\\\rthere"]],
       \ 'spelloptions': [['', 'camel'], ['xxx']],
       \ 'spellsuggest': [['', 'best', 'double,33'], ['xxx']],
+      \ 'splitkeep': [['cursor', 'screen', 'topline'], ['xxx']],
       \ 'switchbuf': [['', 'useopen', 'split,newtab'], ['xxx']],
       \ 'tagcase': [['smart', 'match'], ['', 'xxx', 'smart,match']],
       \ 'term': [[], []],

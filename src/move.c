@@ -219,6 +219,10 @@ update_topline(void)
     long	*so_ptr = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
     int		save_so = *so_ptr;
 
+    // Cursor is updated instead when this is TRUE for 'splitkeep'.
+    if (skip_update_topline)
+	return;
+
     // If there is no valid screen and when the window height is zero just use
     // the cursor line.
     if (!screen_valid(TRUE) || curwin->w_height == 0)
@@ -1027,8 +1031,7 @@ curs_columns(
     /*
      * First make sure that w_topline is valid (after moving the cursor).
      */
-    if (!skip_update_topline)
-	update_topline();
+    update_topline();
 
     /*
      * Next make sure that w_cline_row is valid.

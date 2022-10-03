@@ -7518,23 +7518,27 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, splitting a window will put the new window below the current
 	one. |:split|
 
+			*'splitkeep'* *'spk'
+'splitkeep' 'spk'	string	(default "cursor")
+			global
+	The value of this option determines the scroll behavior when opening,
+	closing or resizing horizontal splits.
+
+	Possible values are:
+	  cursor	Keep the same relative cursor position.
+	  screen	Keep the text on the same screen line.
+	  topline	Keep the topline the same.
+
+	For the "screen" and "topline" values, the cursor position will be
+	changed when necessary. In this case, the jumplist will be populated
+	with the previous cursor position. For "screen", the text cannot always
+	be kept on the same screen line	when 'wrap' is enabled.
+
 			*'splitright'* *'spr'* *'nosplitright'* *'nospr'*
 'splitright' 'spr'	boolean	(default off)
 			global
 	When on, splitting a window will put the new window right of the
 	current one. |:vsplit|
-
-			*'splitscroll'* *'spsc'* *'nosplitscroll'* *'nospsc'*
-'splitscroll' 'spsc'	boolean	(default on)
-			global
-	The value of this option determines the scroll behavior when opening,
-	closing or resizing horizontal splits. When "on", splitting a window
-	horizontally will keep the same relative cursor position in the old and
-	new window, as well windows that are resized. When "off", scrolling
-	will be avoided to stabilize the window content. Instead, the cursor
-	position will be changed when necessary. In this case, the jumplist
-	will be populated with the previous cursor position. Scrolling cannot
-	be guaranteed to be avoided when 'wrap' is enabled.
 
 			   *'startofline'* *'sol'* *'nostartofline'* *'nosol'*
 'startofline' 'sol'	boolean	(default on)
