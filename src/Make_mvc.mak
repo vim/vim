@@ -16,7 +16,7 @@
 #
 #	!!!!  After changing any features do "nmake clean" first  !!!!
 #
-#	Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is HUGE)
+#	Feature Set: FEATURES=[SMALL, NORMAL, BIG, HUGE] (default is HUGE)
 #
 #   	Name to add to the version: MODIFIED_BY=[name of modifier]
 #
@@ -1124,7 +1124,7 @@ CFLAGS = $(CFLAGS) -DMSWINPS
 !endif # POSTSCRIPT
 
 #
-# FEATURES: TINY, SMALL, NORMAL, BIG or HUGE
+# FEATURES: SMALL, NORMAL, BIG or HUGE
 #
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 
@@ -1359,14 +1359,14 @@ testgvim testgui:
 	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\gvim
 	cd ..
 
-testtiny:
+testsmall:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_mvc.mak tiny
+	$(MAKE) /NOLOGO -f Make_mvc.mak small
 	cd ..
 
-testgvimtiny:
+testgvimsmall:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_mvc.mak tiny VIMPROG=..\gvim
+	$(MAKE) /NOLOGO -f Make_mvc.mak small VIMPROG=..\gvim
 	cd ..
 
 testclean:
@@ -1376,7 +1376,7 @@ testclean:
 
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
-$(SCRIPTS_TINY):
+$(SCRIPTS_SMALL):
 	cd testdir
 	- if exist $@.out del $@.out
 	$(MAKE) /NOLOGO -f Make_mvc.mak VIMPROG=..\$(VIMTESTTARGET) nolog

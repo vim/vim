@@ -50,9 +50,9 @@ ifeq ($(BUILD),small)
 CFLAGS += -DFEAT_SMALL
 else
 
-# Vim 'tiny' build
+# Vim 'tiny' build, alias for 'small'
 ifeq ($(BUILD),tiny)
-CFLAGS += -DFEAT_TINY
+CFLAGS += -DFEAT_SMALL
 endif
 endif
 endif

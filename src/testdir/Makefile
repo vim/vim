@@ -26,7 +26,7 @@ REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C L
 default: nongui
 
 # The list of tests is common to all systems.
-# This defines SCRIPTS_TINY_OUT, NEW_TESTS and NEW_TESTS_RES.
+# This defines SCRIPTS_SMALL_OUT, NEW_TESTS and NEW_TESTS_RES.
 include Make_all.mak
 
 # Explicit dependencies.
@@ -34,11 +34,11 @@ test_options.res test_alot.res: opt_test.vim
 
 .SUFFIXES: .in .out .res .vim
 
-nongui:	nolog tinytests newtests report
+nongui:	nolog smalltests newtests report
 
-gui:	nolog tinytests newtests report
+gui:	nolog smalltests newtests report
 
-tiny:	nolog tinytests report
+small:	nolog smalltests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -58,7 +58,7 @@ report:
 		else echo ALL DONE; \
 		fi"
 
-$(SCRIPTS_TINY_OUT) $(NEW_TESTS_RES): $(VIMPROG)
+$(SCRIPTS_SMALL_OUT) $(NEW_TESTS_RES): $(VIMPROG)
 
 
 # Execute an individual new style test, e.g.:
@@ -104,8 +104,8 @@ nolog:
 	-rm -f test_result.log $(CLEANUP_FILES)
 
 
-# Tiny tests.  Works even without the +eval feature.
-tinytests: $(SCRIPTS_TINY_OUT)
+# Small tests.  Works even without the +eval feature.
+smalltests: $(SCRIPTS_SMALL_OUT)
 
 .in.out:
 	-rm -rf $*.failed test.ok $(RM_ON_RUN)

@@ -24,7 +24,7 @@ include Make_all.mak
 # Explicit dependencies.
 test_options.res test_alot.res: opt_test.vim
 
-TEST_OUTFILES = $(SCRIPTS_TINY_OUT)
+TEST_OUTFILES = $(SCRIPTS_SMALL_OUT)
 DOSTMP = dostmp
 # Keep $(DOSTMP)/*.in
 .PRECIOUS: $(patsubst %.out, $(DOSTMP)/%.in, $(TEST_OUTFILES))
@@ -34,11 +34,11 @@ DOSTMP = dostmp
 # Add --gui-dialog-file to avoid getting stuck in a dialog.
 COMMON_ARGS = $(NO_INITS) --gui-dialog-file guidialog
 
-nongui:	nolog tinytests newtests report
+nongui:	nolog smalltests newtests report
 
-gui:	nolog tinytests newtests report
+gui:	nolog smalltests newtests report
 
-tiny:	nolog tinytests report
+small:	nolog smalltests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -98,8 +98,8 @@ nolog:
 	-@if exist starttime $(DEL) starttime
 
 
-# Tiny tests.  Works even without the +eval feature.
-tinytests: $(SCRIPTS_TINY_OUT)
+# Small tests.  Works even without the +eval feature.
+smalltests: $(SCRIPTS_SMALL_OUT)
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP)/%.in : %.in

@@ -28,8 +28,8 @@
 # Updated 2014 Oct 13.
 
 #>>>>> choose options:
-# FEATURES=[TINY | SMALL | NORMAL | BIG | HUGE]
-# Set to TINY to make minimal version (few features).
+# FEATURES=[SMALL | NORMAL | BIG | HUGE]
+# Set to SMALL to make minimal version (few features).
 FEATURES=HUGE
 
 # Set to yes for a debug build.

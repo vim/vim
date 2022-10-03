@@ -316,9 +316,6 @@
 /* Define if strings.h cannot be included when strings.h already is */
 #undef NO_STRINGS_WITH_STRING_H
 
-/* Define if you want tiny features. */
-#undef FEAT_TINY
-
 /* Define if you want small features. */
 #undef FEAT_SMALL
 

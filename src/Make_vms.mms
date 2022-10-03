@@ -27,7 +27,6 @@
 DECC = YES
 
 # Build model selection
-# TINY   - Almost no features enabled, not even multiple windows
 # SMALL  - Few features enabled, as basic as possible
 # NORMAL - A default selection of features enabled
 # BIG    - Many features enabled, as rich as possible. (default)

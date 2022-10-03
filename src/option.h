@@ -486,10 +486,8 @@ EXTERN char_u	*p_ccv;		// 'charconvert'
 #endif
 EXTERN int	p_cdh;		// 'cdhome'
 EXTERN char_u	*p_cino;	// 'cinoptions'
-#ifdef FEAT_CMDWIN
 EXTERN char_u	*p_cedit;	// 'cedit'
 EXTERN long	p_cwh;		// 'cmdwinheight'
-#endif
 #ifdef FEAT_CLIPBOARD
 EXTERN char_u	*p_cb;		// 'clipboard'
 #endif

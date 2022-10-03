@@ -2609,11 +2609,7 @@ show_tabline_popup_menu(void)
     POINT	    pt;
 
     // When ignoring events don't show the menu.
-    if (hold_gui_events
-# ifdef FEAT_CMDWIN
-	    || cmdwin_type != 0
-# endif
-       )
+    if (hold_gui_events || cmdwin_type != 0)
 	return;
 
     tab_pmenu = CreatePopupMenu();

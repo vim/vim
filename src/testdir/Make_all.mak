@@ -10,8 +10,8 @@ NO_INITS = -U NONE $(NO_PLUGINS)
 # File to delete when testing starts
 CLEANUP_FILES = test.log messages starttime
 
-# Tests for tiny and small builds.
-SCRIPTS_TINY = \
+# Tests for small builds.
+SCRIPTS_SMALL = \
 	test10 \
 	test20 \
 	test21 \
@@ -22,7 +22,7 @@ SCRIPTS_TINY = \
 	test26 \
 	test27
 
-SCRIPTS_TINY_OUT = \
+SCRIPTS_SMALL_OUT = \
 	test10.out \
 	test20.out \
 	test21.out \

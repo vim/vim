@@ -2739,12 +2739,11 @@ do_ecmd(
 	if (buf != curbuf)
 	{
 	    bufref_T	save_au_new_curbuf;
-#ifdef FEAT_CMDWIN
 	    int		save_cmdwin_type = cmdwin_type;
 
 	    // BufLeave applies to the old buffer.
 	    cmdwin_type = 0;
-#endif
+
 	    /*
 	     * Be careful: The autocommands may delete any buffer and change
 	     * the current buffer.
@@ -2760,9 +2759,7 @@ do_ecmd(
 	    save_au_new_curbuf = au_new_curbuf;
 	    set_bufref(&au_new_curbuf, buf);
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
-#ifdef FEAT_CMDWIN
 	    cmdwin_type = save_cmdwin_type;
-#endif
 	    if (!bufref_valid(&au_new_curbuf))
 	    {
 		// new buffer has been deleted

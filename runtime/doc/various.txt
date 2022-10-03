@@ -318,8 +318,7 @@ g8			Print the hex values of the bytes used in the
 			Here is an overview of the features.
 			The first column shows the smallest version in which
 			they are included:
-			   T	tiny (always)
-			   S	small
+			   S	small (always)
 			   N	normal
 			   B	big
 			   H	huge
@@ -334,7 +333,7 @@ g8			Print the hex values of the bytes used in the
    *+ARP*		Amiga only: ARP support included
 B  *+arabic*		|Arabic| language support
 B  *+autochdir*		support 'autochdir' option
-T  *+autocmd*		|:autocmd|, automatic commands.  Always enabled since
+S  *+autocmd*		|:autocmd|, automatic commands.  Always enabled since
 			8.0.1564
 H  *+autoservername*	Automatically enable |clientserver|
 m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
@@ -344,7 +343,7 @@ m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
 H  *+balloon_eval_term*	|balloon-eval| support in the terminal,
 			'balloonevalterm'
 N  *+browse*		|:browse| command
-T  *++builtin_terms*	maximal terminals builtin |builtin-terms| Always
+S  *++builtin_terms*	maximal terminals builtin |builtin-terms| Always
 			enabled since 9.0.0280
 N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 			and ":goto" commands.
@@ -353,15 +352,15 @@ m  *+channel*		inter process communication |channel|
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
-T  *+cmdline_compl*	command line completion |cmdline-completion|
-T  *+cmdline_hist*	command line history |cmdline-history|
+S  *+cmdline_compl*	command line completion |cmdline-completion|
+S  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
-S  *+cmdwin*		|cmdline-window| support
-T  *+comments*		|'comments'| support
+S  *+cmdwin*		|cmdline-window| support  Always enabled since 9.0.0652
+S  *+comments*		|'comments'| support
 B  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
 B  *+cscope*		|cscope| support
-T  *+cursorbind*	|'cursorbind'| support
+S  *+cursorbind*	|'cursorbind'| support
 m  *+cursorshape*	|termcap-cursor-shape| support
 m  *+debug*		Compiled for debugging.
 N  *+dialog_gui*	Support for |:confirm| with GUI dialog.
@@ -373,17 +372,17 @@ N  *+digraphs*		|digraphs| *E196*
    *+dnd*		Support for DnD into the "~ register |quote_~|.
 B  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
-T  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
+S  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
 N  *+extra_search*	|'hlsearch'| and |'incsearch'| options.
 -  *+farsi*		Removed: |farsi| language
-T  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|  Always enabled since
+S  *+file_in_path*	|gf|, |CTRL-W_f| and |<cfile>|  Always enabled since
 			9.0.265
 N  *+find_in_path*	include file searches: |[I|, |:isearch|,
 			|CTRL-W_CTRL-I|, |:checkpath|, etc.
 N  *+folding*		|folding|
    *+footer*		|gui-footer|
    *+fork*		Unix only: |fork| shell commands
-T  *+float*		Floating point support  Always enabled since 9.0.0491
+S  *+float*		Floating point support  Always enabled since 9.0.0491
 N  *+gettext*		message translations |multi-lang|
 -  *+GUI_Athena*	Unix only: Athena |GUI|
    *+GUI_neXtaw*	Unix only: neXtaw |GUI|
@@ -393,25 +392,25 @@ N  *+gettext*		message translations |multi-lang|
 m  *+hangul_input*	Hangul input support |hangul|
    *+iconv*		Compiled with the |iconv()| function
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
-T  *+insert_expand*	|insert_expand| Insert mode completion
+S  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+ipv6*		Support for IPv6 networking |channel|
 m  *+job*		starting and stopping jobs |job|
-T  *+jumplist*		|jumplist|; Always enabled since 8.2.3795
+S  *+jumplist*		|jumplist|; Always enabled since 8.2.3795
 B  *+keymap*		|'keymap'|
 N  *+lambda*		|lambda| and |closure|
 B  *+langmap*		|'langmap'|
 N  *+libcall*		|libcall()|
 N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
 t  *+lispindent*	|'lisp'|
-T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
+S  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
-T  *+localmap*		Support for mappings local to a buffer |:map-local|
+S  *+localmap*		Support for mappings local to a buffer |:map-local|
 m  *+lua*		|Lua| interface
 m  *+lua/dyn*		|Lua| interface |/dyn|
 N  *+menu*		|:menu|
 N  *+mksession*		|:mksession|
-T  *+modify_fname*	|filename-modifiers|
-T  *+mouse*		Mouse handling |mouse-using|
+S  *+modify_fname*	|filename-modifiers|
+S  *+mouse*		Mouse handling |mouse-using|
 N  *+mouseshape*	|'mouseshape'|
 B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
@@ -424,18 +423,18 @@ N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
 B  *+mouse_sgr*		Unix only: sgr mouse handling |sgr-mouse|
 B  *+mouse_urxvt*	Unix only: urxvt mouse handling |urxvt-mouse|
 N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
-T  *+multi_byte*	Unicode support, 16 and 32 bit characters |multibyte|
+S  *+multi_byte*	Unicode support, 16 and 32 bit characters |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
 N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
-T  *+num64*		64-bit Number support |Number|
+S  *+num64*		64-bit Number support |Number|
 			Always enabled since 8.2.0271, use v:numbersize to
 			check the actual size of a Number.
 m  *+ole*		Win32 GUI only: |ole-interface|
 N  *+packages*		Loading |packages|
-T  *+path_extra*	Up/downwards search in 'path' and 'tags'  Always
+S  *+path_extra*	Up/downwards search in 'path' and 'tags'  Always
 			enabled since 9.0.0270
 m  *+perl*		Perl interface |perl|
 m  *+perl/dyn*		Perl interface |perl-dynamic| |/dyn|
@@ -454,7 +453,7 @@ N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 B  *+rightleft*		Right to left typing |'rightleft'|
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
-T  *+scrollbind*	|'scrollbind'|
+S  *+scrollbind*	|'scrollbind'|
 B  *+signs*		|:sign|
 t  *+smartindent*	|'smartindent'|
 B  *+sodium*		compiled with libsodium for better encryption support
@@ -466,7 +465,7 @@ N  *+statusline*	Options 'statusline', 'rulerformat' and special
 -  *+sun_workshop*	Removed: |workshop|
 N  *+syntax*		Syntax highlighting |syntax|
    *+system()*		Unix only: opposite of |+fork|
-T  *+tag_binary*	binary searching in tags file |tag-binary-search|
+S  *+tag_binary*	binary searching in tags file |tag-binary-search|
 -  *+tag_old_static*	Removed; method for static tags |tag-old-static|
 -  *+tag_any_white*	Removed; was to allow any white space in tags files
 m  *+tcl*		Tcl interface |tcl|
@@ -475,27 +474,27 @@ m  *+terminal*		Support for terminal window |terminal|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
 B  *+termguicolors*	24-bit color in xterm-compatible terminals support
-T  *+textobjects*	|text-objects| selection. Always enabled since 9.0.0222.
+S  *+textobjects*	|text-objects| selection. Always enabled since 9.0.0222.
 N  *+textprop*		|text-properties|
    *+tgetent*		non-Unix only: able to use external termcap
 N  *+timers*		the |timer_start()| function
-T  *+title*		Setting the window 'title' and 'icon'; Always enabled
+S  *+title*		Setting the window 'title' and 'icon'; Always enabled
 N  *+toolbar*		|gui-toolbar|
-T  *+user_commands*	User-defined commands. |user-commands|
+S  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
 B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
-T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
+S  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
-T  *+vim9script*	|Vim9| script
+S  *+vim9script*	|Vim9| script
 N  *+viminfo*		|'viminfo'|
-T  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
-T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
-T  *+visualextra*	extra Visual mode commands |blockwise-operators|
-T  *+vreplace*		|gR| and |gr|
+S  *+virtualedit*	|'virtualedit'| Always enabled since 8.1.826.
+S  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
+S  *+visualextra*	extra Visual mode commands |blockwise-operators|
+S  *+vreplace*		|gR| and |gr|
    *+vtp*		on MS-Windows console: support for 'termguicolors'
-T  *+wildignore*	|'wildignore'|  Always enabled since 9.0.0278
-T  *+wildmenu*		|'wildmenu'||  Always enabled since 9.0.0279
-T  *+windows*		more than one window; Always enabled since 8.0.1118.
+S  *+wildignore*	|'wildignore'|  Always enabled since 9.0.0278
+S  *+wildmenu*		|'wildmenu'||  Always enabled since 9.0.0279
+S  *+windows*		more than one window; Always enabled since 8.0.1118.
 m  *+writebackup*	|'writebackup'| is default on
 m  *+xim*		X input method |xim|
    *+xfontset*		X fontset support |xfontset|

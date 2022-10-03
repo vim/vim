@@ -544,13 +544,8 @@ static struct vimoption options[] =
 			    {(char_u *)",,", (char_u *)0L}
 			    SCTX_INIT},
     {"cedit",	    NULL,   P_STRING,
-#ifdef FEAT_CMDWIN
 			    (char_u *)&p_cedit, PV_NONE,
 			    {(char_u *)"", (char_u *)CTRL_F_STR}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"charconvert",  "ccv", P_STRING|P_VI_DEF|P_SECURE,
 #if defined(FEAT_EVAL)
@@ -597,11 +592,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_ch, PV_NONE,
 			    {(char_u *)1L, (char_u *)0L} SCTX_INIT},
     {"cmdwinheight", "cwh", P_NUM|P_VI_DEF,
-#ifdef FEAT_CMDWIN
 			    (char_u *)&p_cwh, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)7L, (char_u *)0L} SCTX_INIT},
     {"colorcolumn", "cc",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_RWIN,
 #ifdef FEAT_SYN_HL

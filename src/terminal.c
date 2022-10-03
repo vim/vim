@@ -445,13 +445,11 @@ term_start(
 
     if (check_restricted() || check_secure())
 	return NULL;
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
 	emsg(_(e_cannot_open_terminal_from_command_line_window));
 	return NULL;
     }
-#endif
 
     if ((opt->jo_set & (JO_IN_IO + JO_OUT_IO + JO_ERR_IO))
 					 == (JO_IN_IO + JO_OUT_IO + JO_ERR_IO)

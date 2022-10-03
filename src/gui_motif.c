@@ -232,11 +232,7 @@ tabline_menu_cb(
 	return;
 
     // When ignoring events don't show the menu.
-    if (hold_gui_events
-# ifdef FEAT_CMDWIN
-	    || cmdwin_type != 0
-# endif
-       )
+    if (hold_gui_events || cmdwin_type != 0)
 	return;
 
     if (event->subwindow != None)

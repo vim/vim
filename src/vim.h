@@ -159,7 +159,7 @@
 
 /*
  * #defines for optionals and features
- * Also defines FEAT_TINY, FEAT_SMALL, etc. when FEAT_HUGE is defined.
+ * Also defines FEAT_SMALL, etc. when FEAT_HUGE is defined.
  */
 #include "feature.h"
 

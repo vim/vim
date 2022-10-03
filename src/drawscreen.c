@@ -1102,7 +1102,6 @@ fold_line(
 
     // 1. Add the cmdwin_type for the command-line window
     // Ignores 'rightleft', this window is never right-left.
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0 && wp == curwin)
     {
 	ScreenLines[off] = cmdwin_type;
@@ -1111,7 +1110,6 @@ fold_line(
 	    ScreenLinesUC[off] = 0;
 	++col;
     }
-#endif
 
 #ifdef FEAT_RIGHTLEFT
 # define RL_MEMSET(p, v, l) \

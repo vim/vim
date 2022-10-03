@@ -12,7 +12,7 @@ default: nongui
 # Explicit dependencies.
 test_options.res test_alot.res: opt_test.vim
 
-TEST_OUTFILES = $(SCRIPTS_TINY_OUT)
+TEST_OUTFILES = $(SCRIPTS_SMALL_OUT)
 DOSTMP = dostmp
 DOSTMP_OUTFILES = $(TEST_OUTFILES:test=dostmp\test)
 DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
@@ -22,11 +22,11 @@ DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 # Add --gui-dialog-file to avoid getting stuck in a dialog.
 COMMON_ARGS = $(NO_INITS) --gui-dialog-file guidialog
 
-nongui:	nolog tinytests newtests report
+nongui:	nolog smalltests newtests report
 
-gui:	nolog tinytests newtests report
+gui:	nolog smalltests newtests report
 
-tiny:	nolog tinytests report
+small:	nolog smalltests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -86,8 +86,8 @@ nolog:
 	-if exist starttime del starttime
 
 
-# Tiny tests.  Works even without the +eval feature.
-tinytests: $(SCRIPTS_TINY_OUT)
+# Small tests.  Works even without the +eval feature.
+smalltests: $(SCRIPTS_SMALL_OUT)
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP_INFILES): $(*B).in

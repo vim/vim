@@ -785,7 +785,6 @@ edit(
 	    // FALLTHROUGH
 
 	case Ctrl_C:	// End input mode
-#ifdef FEAT_CMDWIN
 	    if (c == Ctrl_C && cmdwin_type != 0)
 	    {
 		// Close the cmdline window.
@@ -794,7 +793,6 @@ edit(
 		nomove = TRUE;
 		goto doESCkey;
 	    }
-#endif
 #ifdef FEAT_JOB_CHANNEL
 	    if (c == Ctrl_C && bt_prompt(curbuf))
 	    {
@@ -1196,14 +1194,12 @@ doESCkey:
 		break;
 	    }
 #endif
-#ifdef FEAT_CMDWIN
 	    if (cmdwin_type != 0)
 	    {
 		// Execute the command in the cmdline window.
 		cmdwin_result = CAR;
 		goto doESCkey;
 	    }
-#endif
 #ifdef FEAT_JOB_CHANNEL
 	    if (bt_prompt(curbuf))
 	    {

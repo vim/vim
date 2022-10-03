@@ -2327,10 +2327,8 @@ list_version(void)
     msg_puts(_("\nBig version "));
 #elif defined(FEAT_NORMAL)
     msg_puts(_("\nNormal version "));
-#elif defined(FEAT_SMALL)
-    msg_puts(_("\nSmall version "));
 #else
-    msg_puts(_("\nTiny version "));
+    msg_puts(_("\nSmall version "));
 #endif
 #if !defined(FEAT_GUI)
     msg_puts(_("without GUI."));
