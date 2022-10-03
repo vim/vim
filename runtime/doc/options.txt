@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2022 Sep 27
+*options.txt*	For Vim version 9.0.  Last change: 2022 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2942,7 +2942,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'display' 'dy'		string	(default "", set to "truncate" in
 							       |defaults.vim|)
 			global
-	Change the way text is displayed.  This is comma-separated list of
+	Change the way text is displayed.  This is a comma-separated list of
 	flags:
 	lastline	When included, as much as possible of the last line
 			in a window will be displayed.  "@@@" is put in the
@@ -7307,8 +7307,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 	Scrolling works with screen lines.  When 'wrap' is set and the first
 	line in the window wraps part of it may not be visible, as if it is
-	above the window.
-	NOTE: only partly implemented, works with CTRL-E and CTRL-Y.
+	above the window. "<<<" is displayed at the start of the first line,
+	highlighted with |hl-NonText|.
+	NOTE: only partly implemented, currently works with CTRL-E, CTRL-Y
+	and scrolling with the mouse.
 
 					*'softtabstop'* *'sts'*
 'softtabstop' 'sts'	number	(default 0)

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2022 Sep 26
+*syntax.txt*	For Vim version 9.0.  Last change: 2022 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5376,10 +5376,11 @@ ModeMsg		'showmode' message (e.g., "-- INSERT --").
 							*hl-MoreMsg*
 MoreMsg		|more-prompt|
 							*hl-NonText*
-NonText		'@' at the end of the window, characters from 'showbreak'
-		and other characters that do not really exist in the text
-		(e.g., ">" displayed when a double-wide character doesn't
-		fit at the end of the line).
+NonText		'@' at the end of the window, "<<<" at the start of the window
+		for 'smoothscroll', characters from 'showbreak' and other
+		characters that do not really exist in the text, such as the
+		">" displayed when a double-wide character doesn't fit at the
+		end of the line.
 							*hl-Normal*
 Normal		Normal text.
 							*hl-Pmenu*

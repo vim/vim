@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2022 Sep 17
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Sep 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6,9 +6,10 @@
 
 Builtin functions				*builtin-functions*
 
-Note: Expression evaluation can be disabled at compile time.  If this has been
-done, the builtin functions are not available.  See |+eval| and
-|no-eval-feature|.
+Note: Expression evaluation can be disabled at compile time, the builtin
+functions are not available then.  See |+eval| and |no-eval-feature|.
+
+For functions grouped by what they are used for see |function-list|.
 
 1. Overview				|builtin-function-list|
 2. Details				|builtin-function-details|
@@ -7035,13 +7036,19 @@ reg_recording()						*reg_recording()*
 		Returns the single letter name of the register being recorded.
 		Returns an empty string when not recording.  See |q|.
 
-reltime([{start} [, {end}]])				*reltime()*
+reltime()
+reltime({start})
+reltime({start}, {end})					*reltime()*
 		Return an item that represents a time value.  The item is a
 		list with items that depend on the system.  In Vim 9 script
 		list<any> can be used.
 		The item can be passed to |reltimestr()| to convert it to a
-		string or |reltimefloat()| to convert to a Float.
-
+		string or |reltimefloat()| to convert to a Float.  For
+		example, to see the time spent in function Work(): >
+			var startTime = reltime()
+			Work()
+			echo startTime->reltime()->reltimestr()
+<
 		Without an argument reltime() returns the current time (the
 		representation is system-dependent, it can not be used as the
 		wall-clock time, see |localtime()| for that).
@@ -7162,8 +7169,8 @@ remote_peek({serverid} [, {retvar}])		*remote_peek()*
 		This function is not available in the |sandbox|.
 		{only available when compiled with the |+clientserver| feature}
 		Examples: >
-			:let repl = ""
-			:echo "PEEK: " .. remote_peek(id, "repl") .. ": " .. repl
+		   :let repl = ""
+		   :echo "PEEK: " .. remote_peek(id, "repl") .. ": " .. repl
 
 <		Can also be used as a |method|: >
 			ServerId()->remote_peek()
@@ -7223,7 +7230,8 @@ remote_startserver({name})
 
 <		{only available when compiled with the |+clientserver| feature}
 
-remove({list}, {idx} [, {end}])				*remove()*
+remove({list}, {idx})
+remove({list}, {idx}, {end})				*remove()*
 		Without {end}: Remove the item at {idx} from |List| {list} and
 		return the item.
 		With {end}: Remove items from {idx} to {end} (inclusive) and
@@ -7241,7 +7249,8 @@ remove({list}, {idx} [, {end}])				*remove()*
 		Can also be used as a |method|: >
 			mylist->remove(idx)
 
-remove({blob}, {idx} [, {end}])
+remove({blob}, {idx})
+remove({blob}, {idx}, {end})
 		Without {end}: Remove the byte at {idx} from |Blob| {blob} and
 		return the byte.
 		With {end}: Remove bytes from {idx} to {end} (inclusive) and

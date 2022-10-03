@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Sep 27
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,55 +38,40 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-From test_global
-        Found errors in Test_interrupt_global():
-        Run 1, 02:16:22 - 02:16:27:
-        command line..script /home/mool/vim/vim90/src/testdir/runtest.vim[469]..function RunTheTest[44]..Test_interrupt_global[13]..WaitForAssert[2]..<SNR>7_WaitForCommon[11]..<lambda>20 line 1: Pattern 'Interrupted' does not match 'Type  :qa!  and press...l changes and exit Vim           1,1           All'
-        command line..script /home/mool/vim/vim90/src/testdir/runtest.vim[469]..function RunTheTest[44]..Test_interrupt_global[20]..WaitForAssert[2]..<SNR>7_WaitForCommon[11]..<lambda>21 line 1: Pattern 'Interrupted' does not match 'Entering Ex mode.  Type "visual" to go to Normal mode.'
+'smoothscroll':
+- computing 'scrolloff' position row use w_skipcol
+
+Add a string to the 'display' option ("smoothscroll" ?) to make CTRL-E and
+CTRL-Y scroll one screen line, also if this means the first line doesn't start
+with the first character (like what happens with a last line that doesn't
+fit).  Display "<<<" at the start of the first visible line (like "@@@" is
+displayed in the last line). (Arseny Nasokin,  #5154)
+Neovim PR: https://github.com/neovim/neovim/pull/11014
 
 Use :defer command:
     - Use "D" flag of writefile() and mkdir() in tests.
-	(testdir/test_e*.vim done)
+	(testdir/test_p*.vim done)
 
-New Vim indent script: #11079  OK? 
+Fix for powershell: #11257
+
+Change boolean 'splitscroll' into string 'splitkeep'. #11258
+
 
 Further Vim9 improvements, possibly after launch:
-- For map(), reduce() and filter() use a specific implementation if the second
-  argument is a compiled function.  #11163
 - Use Vim9 for more runtime files.
-- Check performance with callgrind and kcachegrind.
-    getline()/substitute()/setline() in #5632
-- Better implementation for partial and tests for that.
-- when using "const" mark the variable type as const with TTFLAG_CONST, so
-  that an error is given at compile time when trying to change it.  E.g. for a
-  const list and trying to call add().
-- Compile options that are an expression, e.g. "expr:" in 'spellsuggest',
-  'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
-  'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
-  Give an error if compilation fails. (#7625)
-  Alternatively: Detect a compiled function call and skip the expression
-  evaluation.
-  Use the location where the option was set for deciding whether it's to be
-  evaluated in Vim9 script context.
 - implement :type
 - implement :enum
 - implement :class and :interface: See |vim9-classes|
-- For range: make table of first ASCII character with flag to quickly check if
-  it can be a Vim9 command. E.g. "+" can, but "." can't.
 - Inline call to map() and filter(), better type checking.
-- Make accessing varargs faster: arg[expr]
-	EVAL expr
-	LOADVARARG (varargs idx)
 - When evaluating constants for script variables, some functions could work:
     has(featureName), len(someString)
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
 Popup windows:
-- Preview popup not properly updated when it overlaps with completion menu.
-  (Yegappan Lakshmanan, 2021 May 22)
-- Scrollbar thumb sometimes not visible  #10492
 - Add a function to redraw a specific popup window.  Esp. to be used when
   editing the command line, when screen updating doesn't happen. (Shougo)
+  #10210  Probably need to update all popup windows (they may overlap)
+  If the display is scrolled need to redraw everything later.
 - Add a flag to make a popup window focusable?
     CTRL-W P cycle over any preview window or focusable popup, end up back in
 	     current window.
@@ -113,8 +98,6 @@ Popup windows:
     - put popup menu also in popup_mask?
 - Match does not have right BG color if line length equals popup width.
   (#5658)
-- Any other commands to disable in a popup window?
-  Use ERROR_IF_POPUP_WINDOW for these.
 - Figure out the size and position better if wrapping inserts indent
 
 'incsearch' with :s:
@@ -202,13 +185,6 @@ Add BufDeletePost.  #11041
 
 Test property disappears when using CR twice in a row.  OK when some text was
 entered. (#11151)
-
-Add a string to the 'display' option ("smoothscroll" ?) to make CTRL-E and
-CTRL-Y scroll one screen line, also if this means the first line doesn't start
-with the first character (like what happens with a last line that doesn't
-fit).  Display "<<<" at the start of the first visible line (like "@@@" is
-displayed in the last line). (Arseny Nasokin,  #5154)
-Neovim PR: https://github.com/neovim/neovim/pull/11014
 
 NFA regexp does not handle composing characters well: #10286
     [ɔ̃] matches both ɔ and ɔ̃
@@ -680,9 +656,6 @@ when possible. (Dylan Lloyd, #3973)
 
 Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 (#3692)
-
-matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
-19.
 
 Add something like 'fillchars' local to window, but allow for specifying a
 highlight name.  Esp. for the statusline.

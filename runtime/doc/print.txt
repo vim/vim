@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 9.0.  Last change: 2022 Jan 23
+*print.txt*     For Vim version 9.0.  Last change: 2022 Oct 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

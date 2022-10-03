@@ -857,3 +857,15 @@ b: 2}]
 silent! argdel *
 edit file
 " END_INDENT
+
+" START_INDENT
+def Foo()
+Bar(1,
+[]->filter((_, v) => {
+return true
+}),
+() => {
+echo
+})
+enddef
+" END_INDENT

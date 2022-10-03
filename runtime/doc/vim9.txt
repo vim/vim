@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Sep 19
+*vim9.txt*	For Vim version 9.0.  Last change: 2022 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -502,7 +502,7 @@ How constants work varies between languages.  Some consider a variable that
 can't be assigned another value a constant.  JavaScript is an example.  Others
 also make the value immutable, thus when a constant uses a list, the list
 cannot be changed.  In Vim9 we can use both.
-							*E1021*
+							*E1021* *E1307*
 `:const` is used for making both the variable and the value a constant.  Use
 this for composite structures that you want to make sure will not be modified.
 Example: >
@@ -1413,11 +1413,11 @@ to a Vim9 function:
 
 Calling a function in an expr option ~
 							*expr-option-function*
-A few options, such as 'foldexpr', are an expresison that is evaluated to get
-a value.  The evaluation can have quite a bit of overhead.  One way to
-minimize the overhead, and also to keep the option value very simple, is to
-defined a compiled function and set the option to call it without arguments.
-Example: >
+The value of a few options, such as 'foldexpr', is an expression that is
+evaluated to get a value.  The evaluation can have quite a bit of overhead.
+One way to minimize the overhead, and also to keep the option value very
+simple, is to define a compiled function and set the option to call it
+without arguments.  Example: >
 	vim9script
 	def MyFoldFunc(): any
 	   ... compute fold level for line v:lnum

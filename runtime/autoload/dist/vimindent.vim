@@ -4,6 +4,11 @@ vim9script
 # Maintainer:   github user lacygoill
 # Last Change:  2022 Sep 24
 
+# NOTE: Whenever you change the code, make sure the tests are still passing:
+#
+#     $ cd runtime/indent/
+#     $ make clean; make test || vimdiff testdir/vim.{fail,ok}
+
 # Config {{{1
 
 const TIMEOUT: number = get(g:, 'vim_indent', {})
@@ -293,7 +298,7 @@ const START_MIDDLE_END: dict<list<string>> = {
 # EOL {{{2
 # OPENING_BRACKET_AT_EOL {{{3
 
-const OPENING_BRACKET_AT_EOL: string = $'{OPENING_BRACKET}{END_OF_VIM9_LINE}'
+const OPENING_BRACKET_AT_EOL: string = OPENING_BRACKET .. END_OF_VIM9_LINE
 
 # COMMA_AT_EOL {{{3
 
@@ -404,16 +409,15 @@ export def Expr(lnum: number): number # {{{2
         line_A->CacheBracketBlock()
     endif
     if line_A.lnum->IsInside('BracketBlock')
-            && !b:vimindent.block_stack[0].is_curly_block
         for block: dict<any> in b:vimindent.block_stack
-            # Can't call `BracketBlockIndent()` before we're indenting a line *after* the start of the block.{{{
-            #
-            # That's because it might need  the correct indentation of the start
-            # of the block.   But if we're still *on* the  start, we haven't yet
-            # computed that indentation.
-            #}}}
-            if line_A.lnum > block.startlnum
-                    && !block.is_curly_block
+            if line_A.lnum <= block.startlnum
+                continue
+            endif
+            if !block->has_key('startindent')
+                block.startindent = Indent(block.startlnum)
+            endif
+            if !block.is_curly_block
+                    && !b:vimindent.block_stack[0].is_curly_block
                 return BracketBlockIndent(line_A, block)
             endif
         endfor
@@ -481,7 +485,7 @@ export def Expr(lnum: number): number # {{{2
         cursor(line_A.lnum, 1)
 
         var [start: string, middle: string, end: string] = START_MIDDLE_END[kwd]
-        var block_start = SearchPairStart(start, middle, end)
+        var block_start: number = SearchPairStart(start, middle, end)
         if block_start > 0
             return Indent(block_start)
         else
@@ -535,10 +539,10 @@ def Offset( # {{{2
         # Indent twice for  a line continuation in the block  header itself, so that
         # we can easily  distinguish the end of  the block header from  the start of
         # the block body.
-        elseif line_B->EndsWithLineContinuation()
-                && !line_A.isfirst
-                || line_A.text =~ LINE_CONTINUATION_AT_SOL
-                && line_A.text !~ PLUS_MINUS_COMMAND
+        elseif (line_B->EndsWithLineContinuation()
+                && !line_A.isfirst)
+                || (line_A.text =~ LINE_CONTINUATION_AT_SOL
+                && line_A.text !~ PLUS_MINUS_COMMAND)
                 || line_A.text->Is_IN_KeywordForLoop(line_B.text)
             return 2 * shiftwidth()
         else
@@ -646,10 +650,6 @@ def CommentIndent(): number # {{{2
 enddef
 
 def BracketBlockIndent(line_A: dict<any>, block: dict<any>): number # {{{2
-    if !block->has_key('startindent')
-        block.startindent = block.startlnum->Indent()
-    endif
-
     var ind: number = block.startindent
 
     if line_A.text =~ CLOSING_BRACKET_AT_SOL

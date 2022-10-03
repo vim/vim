@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 9.0.  Last change: 2022 Jan 22
+*diff.txt*      For Vim version 9.0.  Last change: 2022 Oct 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

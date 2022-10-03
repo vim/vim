@@ -714,14 +714,14 @@ $quote	eval.txt	/*$quote*
 'nosmartindent'	options.txt	/*'nosmartindent'*
 'nosmarttab'	options.txt	/*'nosmarttab'*
 'nosmd'	options.txt	/*'nosmd'*
+'nosmoothscroll'	options.txt	/*'nosmoothscroll'*
+'nosms'	options.txt	/*'nosms'*
 'nosn'	options.txt	/*'nosn'*
 'nosol'	options.txt	/*'nosol'*
 'nospell'	options.txt	/*'nospell'*
 'nosplitbelow'	options.txt	/*'nosplitbelow'*
 'nosplitright'	options.txt	/*'nosplitright'*
-'nosplitscroll'	options.txt	/*'nosplitscroll'*
 'nospr'	options.txt	/*'nospr'*
-'nospsc'	options.txt	/*'nospsc'*
 'nosr'	options.txt	/*'nosr'*
 'nossl'	options.txt	/*'nossl'*
 'nosta'	options.txt	/*'nosta'*
@@ -938,6 +938,8 @@ $quote	eval.txt	/*$quote*
 'smarttab'	options.txt	/*'smarttab'*
 'smc'	options.txt	/*'smc'*
 'smd'	options.txt	/*'smd'*
+'smoothscroll'	options.txt	/*'smoothscroll'*
+'sms'	options.txt	/*'sms'*
 'sn'	options.txt	/*'sn'*
 'so'	options.txt	/*'so'*
 'softtabstop'	options.txt	/*'softtabstop'*
@@ -954,12 +956,11 @@ $quote	eval.txt	/*$quote*
 'spf'	options.txt	/*'spf'*
 'spl'	options.txt	/*'spl'*
 'splitbelow'	options.txt	/*'splitbelow'*
+'splitkeep'	options.txt	/*'splitkeep'*
 'splitright'	options.txt	/*'splitright'*
-'splitscroll'	options.txt	/*'splitscroll'*
 'spo'	options.txt	/*'spo'*
 'spr'	options.txt	/*'spr'*
 'sps'	options.txt	/*'sps'*
-'spsc'	options.txt	/*'spsc'*
 'sr'	options.txt	/*'sr'*
 'srr'	options.txt	/*'srr'*
 'ss'	options.txt	/*'ss'*
@@ -4345,6 +4346,7 @@ E1303	map.txt	/*E1303*
 E1304	vim9.txt	/*E1304*
 E1305	textprop.txt	/*E1305*
 E1306	vim9.txt	/*E1306*
+E1307	vim9.txt	/*E1307*
 E131	userfunc.txt	/*E131*
 E132	userfunc.txt	/*E132*
 E133	userfunc.txt	/*E133*
@@ -6777,6 +6779,7 @@ expr-lambda	eval.txt	/*expr-lambda*
 expr-nesting	eval.txt	/*expr-nesting*
 expr-number	eval.txt	/*expr-number*
 expr-option	eval.txt	/*expr-option*
+expr-option-function	vim9.txt	/*expr-option-function*
 expr-quote	eval.txt	/*expr-quote*
 expr-register	eval.txt	/*expr-register*
 expr-star	eval.txt	/*expr-star*
