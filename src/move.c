@@ -50,7 +50,7 @@ adjust_plines_for_skipcol(win_T *wp, int n)
     {
 	++off;
 	int skip = wp->w_skipcol - width;
-	width -= win_col_off2(wp);
+	width += win_col_off2(wp);
 	while (skip >= width)
 	{
 	    ++off;

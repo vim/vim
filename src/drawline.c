@@ -347,8 +347,9 @@ handle_lnum_col(
 	int		num_attr UNUSED)
 {
     if ((wp->w_p_nu || wp->w_p_rnu)
-	    && (wlv->row == wlv->startrow + wlv->filler_lines
-			 || vim_strchr(p_cpo, CPO_NUMCOL) == NULL))
+	    && ((wlv->row == wlv->startrow + wlv->filler_lines
+		    && (wp->w_skipcol == 0 || wlv->row > wp->w_winrow))
+		|| vim_strchr(p_cpo, CPO_NUMCOL) == NULL))
     {
 #ifdef FEAT_SIGNS
 	// If 'signcolumn' is set to 'number' and a sign is present
