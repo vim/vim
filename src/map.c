@@ -1753,7 +1753,11 @@ vim_strsave_escape_csi(char_u *p)
 	d = res;
 	for (s = p; *s != NUL; )
 	{
-	    if (s[0] == K_SPECIAL && s[1] != NUL && s[2] != NUL)
+	    if ((s[0] == K_SPECIAL
+#ifdef FEAT_GUI
+		    || s[0] == CSI
+#endif
+		) && s[1] != NUL && s[2] != NUL)
 	    {
 		// Copy special key unmodified.
 		*d++ = *s++;
