@@ -484,7 +484,7 @@
 #endif
 
 /*
- * sound - currently only with libcanberra
+ * sound
  */
 #if !defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
 # define FEAT_SOUND

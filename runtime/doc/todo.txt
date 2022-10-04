@@ -450,8 +450,6 @@ find them. (Max Kukartsev, #6218)
 
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
-Sound: support on Mac?  Or does libcanberra work there?
-
 Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
 
 "--cleanFOO" does not result in an error. (#5537)
