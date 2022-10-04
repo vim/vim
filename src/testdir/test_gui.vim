@@ -1732,4 +1732,23 @@ func Test_gui_lowlevel_keyevent()
   bw!
 endfunc
 
+func Test_gui_macro_csi()
+  " Test for issue #11270
+  nnoremap <C-L> <Cmd>let g:triggered = 1<CR>
+  let @q = "\x9b\xfc\x04L"
+  norm @q
+  call assert_equal(1, g:triggered)
+  unlet g:triggered
+  nunmap <C-L>
+
+  " Test for issue #11057
+  inoremap <C-D>t bbb
+  call setline(1, "\t")
+  let @q = "i\x9b\xfc\x04D"
+  " The end of :normal is like a mapping timing out
+  norm @q
+  call assert_equal('', getline(1))
+  iunmap <C-D>t
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
