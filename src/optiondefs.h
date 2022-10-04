@@ -936,7 +936,8 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"fillchars",   "fcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_fcs, PV_FCS,
-			    {(char_u *)"vert:|,fold:-,eob:~", (char_u *)0L}
+			    {(char_u *)"vert:|,fold:-,eob:~,lastline:@",
+								  (char_u *)0L}
 			    SCTX_INIT},
     {"fixendofline",  "fixeol", P_BOOL|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_fixeol, PV_FIXEOL,

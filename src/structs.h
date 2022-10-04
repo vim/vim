@@ -3519,6 +3519,7 @@ typedef struct
     int	foldsep;
     int	diff;
     int	eob;
+    int	lastline;
 } fill_chars_T;
 
 /*

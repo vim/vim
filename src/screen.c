@@ -2511,7 +2511,7 @@ screen_fill(
 		    else
 			force_next = FALSE;
 		}
-#endif
+#endif // FEAT_GUI || defined(UNIX)
 		ScreenLines[off] = c;
 		if (enc_utf8)
 		{
@@ -4943,6 +4943,7 @@ set_chars_option(win_T *wp, char_u **varp, int apply)
 	{&fill_chars.foldsep,	"foldsep"},
 	{&fill_chars.diff,	"diff"},
 	{&fill_chars.eob,	"eob"},
+	{&fill_chars.lastline,	"lastline"},
     };
 
     static lcs_chars_T lcs_chars;
@@ -5022,6 +5023,7 @@ set_chars_option(win_T *wp, char_u **varp, int apply)
 		fill_chars.foldsep = '|';
 		fill_chars.diff = '-';
 		fill_chars.eob = '~';
+		fill_chars.lastline = '@';
 	    }
 	}
 	p = value;
