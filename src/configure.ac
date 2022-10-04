@@ -522,13 +522,15 @@ fi
 dnl Check user requested features.
 
 AC_MSG_CHECKING(--with-features argument)
-AC_ARG_WITH(features, [  --with-features=TYPE    tiny, normal, big or huge (default: huge)],
+AC_ARG_WITH(features, [  --with-features=TYPE    tiny, normal, or huge (default: huge)],
 	features="$withval"; AC_MSG_RESULT($features),
 	features="huge"; AC_MSG_RESULT(Defaulting to huge))
 
-dnl "small" is supported for backwards compatibility, now an alias for "tiny"
+dnl "small" and "big" are supported for backwards compatibility, now an alias
+dnl for "tiny" and "normal".
 case "$features" in
-  small) features="tiny" ;;
+  small) features="tiny"   ;;
+  big)   features="normal" ;;
 esac
 
 dovimdiff=""
@@ -536,8 +538,6 @@ dogvimdiff=""
 case "$features" in
   tiny)		AC_DEFINE(FEAT_TINY) ;;
   normal)	AC_DEFINE(FEAT_NORMAL) dovimdiff="installvimdiff";
-			dogvimdiff="installgvimdiff" ;;
-  big)		AC_DEFINE(FEAT_BIG) dovimdiff="installvimdiff";
 			dogvimdiff="installgvimdiff" ;;
   huge)		AC_DEFINE(FEAT_HUGE) dovimdiff="installvimdiff";
 			dogvimdiff="installgvimdiff" ;;
@@ -2266,7 +2266,7 @@ if test "$enable_multibyte" != "yes"; then
 		a problem with this, discuss on the Vim mailing list.])
 fi
 
-dnl Right-to-Left language support for Vim will be included with big features,
+dnl Right-to-Left language support for Vim will be included with normal features,
 dnl unless ENABLE_RIGHTLEFT is undefined.
 AC_MSG_CHECKING(--disable-rightleft argument)
 AC_ARG_ENABLE(rightleft,
@@ -2279,7 +2279,7 @@ else
 	AC_DEFINE(DISABLE_RIGHTLEFT)
 fi
 
-dnl Arabic language support for Vim will be included with big features,
+dnl Arabic language support for Vim will be included with normal features,
 dnl unless ENABLE_ARABIC is undefined.
 AC_MSG_CHECKING(--disable-arabic argument)
 AC_ARG_ENABLE(arabic,
@@ -3717,7 +3717,7 @@ AC_ARG_ENABLE(canberra,
 	, [enable_canberra="maybe"])
 
 if test "$enable_canberra" = "maybe"; then
-  if test "$features" = "big" -o "$features" = "huge"; then
+  if test "$features" = "normal" -o "$features" = "huge"; then
     AC_MSG_RESULT(Defaulting to yes)
     enable_canberra="yes"
   else
@@ -3763,7 +3763,7 @@ AC_ARG_ENABLE(libsodium,
 	, [enable_libsodium="maybe"])
 
 if test "$enable_libsodium" = "maybe"; then
-  if test "$features" = "big" -o "$features" = "huge"; then
+  if test "$features" = "normal" -o "$features" = "huge"; then
     AC_MSG_RESULT(Defaulting to yes)
     enable_libsodium="yes"
   else

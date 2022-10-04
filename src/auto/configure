@@ -1523,7 +1523,7 @@ Optional Packages:
   --with-view-name=NAME   what to call the View executable
   --with-global-runtime=DIR    global runtime directory in 'runtimepath', comma-separated for multiple directories
   --with-modified-by=NAME       name of who modified a release version
-  --with-features=TYPE    tiny, normal, big or huge (default: huge)
+  --with-features=TYPE    tiny, normal, or huge (default: huge)
   --with-compiledby=NAME  name to show in :version message
   --with-lua-prefix=PFX   Prefix where Lua is installed.
   --with-luajit           Link with LuaJIT instead of Lua.
@@ -5220,7 +5220,8 @@ fi
 
 
 case "$features" in
-  small) features="tiny" ;;
+  small) features="tiny"   ;;
+  big)   features="normal" ;;
 esac
 
 dovimdiff=""
@@ -5229,9 +5230,6 @@ case "$features" in
   tiny)		$as_echo "#define FEAT_TINY 1" >>confdefs.h
  ;;
   normal)	$as_echo "#define FEAT_NORMAL 1" >>confdefs.h
- dovimdiff="installvimdiff";
-			dogvimdiff="installgvimdiff" ;;
-  big)		$as_echo "#define FEAT_BIG 1" >>confdefs.h
  dovimdiff="installvimdiff";
 			dogvimdiff="installgvimdiff" ;;
   huge)		$as_echo "#define FEAT_HUGE 1" >>confdefs.h
@@ -12883,7 +12881,7 @@ fi
 
 
 if test "$enable_canberra" = "maybe"; then
-  if test "$features" = "big" -o "$features" = "huge"; then
+  if test "$features" = "normal" -o "$features" = "huge"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to yes" >&5
 $as_echo "Defaulting to yes" >&6; }
     enable_canberra="yes"
@@ -12957,7 +12955,7 @@ fi
 
 
 if test "$enable_libsodium" = "maybe"; then
-  if test "$features" = "big" -o "$features" = "huge"; then
+  if test "$features" = "normal" -o "$features" = "huge"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to yes" >&5
 $as_echo "Defaulting to yes" >&6; }
     enable_libsodium="yes"

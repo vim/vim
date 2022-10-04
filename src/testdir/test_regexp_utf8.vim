@@ -229,7 +229,7 @@ func Test_multibyte_chars()
   let tl = []
 
   " Multi-byte character tests. These will fail unless vim is compiled
-  " with Multibyte (FEAT_MBYTE) or BIG/HUGE features.
+  " with Multibyte (FEAT_MBYTE) or NORMAL/HUGE features.
   call add(tl, [2, '[[:alpha:][=a=]]\+', '879 aiaãâaiuvna ', 'aiaãâaiuvna'])
   call add(tl, [2, '[[=a=]]\+', 'ddaãâbcd', 'aãâ'])								" equivalence classes
   call add(tl, [2, '[^ม ]\+', 'มม oijasoifjos ifjoisj f osij j มมมมม abcd', 'oijasoifjos'])

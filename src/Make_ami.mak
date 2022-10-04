@@ -29,14 +29,6 @@ CFLAGS += \
 	-DFEAT_HUGE
 else
 
-# Vim 'big' build
-ifeq ($(BUILD),big)
-CFLAGS += \
-	-DFEAT_BROWSE \
-	-DFEAT_MOUSE \
-	-DFEAT_BIG
-else
-
 # Vim 'normal' build
 ifeq ($(BUILD),normal)
 CFLAGS +=\

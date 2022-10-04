@@ -182,9 +182,7 @@ Unix: COMPILING WITH MULTI-BYTE
 
 When you want to compile with the multi-byte features enabled, make sure you
 compile on a machine where the locale settings actually work, otherwise the
-configure tests may fail.  You need to compile with "big" features:
-
-    ./configure --with-features=big
+configure tests may fail.
 
 Unix: COMPILING ON LINUX
 

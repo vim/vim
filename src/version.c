@@ -2337,8 +2337,6 @@ list_version(void)
 
 #if defined(FEAT_HUGE)
     msg_puts(_("\nHuge version "));
-#elif defined(FEAT_BIG)
-    msg_puts(_("\nBig version "));
 #elif defined(FEAT_NORMAL)
     msg_puts(_("\nNormal version "));
 #else

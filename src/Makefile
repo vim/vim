@@ -482,7 +482,7 @@ CClink = $(CC)
 # MULTIBYTE - To edit multi-byte characters.
 # This is now always enabled.
 
-# When building with at least "big" features, right-left and Arabic
+# When building with at least "normal" features, right-left and Arabic
 # features are enabled.  Use this to disable them.
 #CONF_OPT_MULTIBYTE = --disable-rightleft --disable-arabic
 
@@ -518,7 +518,7 @@ CClink = $(CC)
 # though you have /dev/sysmouse and includes.
 #CONF_OPT_SYSMOUSE = --disable-sysmouse
 
-# libcanberra - For sound support.  Default is on for big features.
+# libcanberra - For sound support.  Default is on for normal features.
 # Uncomment one of the two to chose otherwise.
 # CONF_OPT_CANBERRA = --enable-canberra
 # CONF_OPT_CANBERRA = --disable-canberra
@@ -532,7 +532,6 @@ CClink = $(CC)
 # The default is "huge" for most systems.
 #CONF_OPT_FEAT = --with-features=tiny
 #CONF_OPT_FEAT = --with-features=normal
-#CONF_OPT_FEAT = --with-features=big
 #CONF_OPT_FEAT = --with-features=huge
 
 # COMPILED BY - For including a specific e-mail address for ":version".
