@@ -159,14 +159,12 @@
 
 /*
  * #defines for optionals and features
- * Also defines FEAT_TINY, FEAT_SMALL, etc. when FEAT_HUGE is defined.
+ * Also defines FEAT_TINY, FEAT_NORMAL, etc. when FEAT_HUGE is defined.
  */
 #include "feature.h"
 
-#if defined(MACOS_X_DARWIN)
-# if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
-#  define FEAT_CLIPBOARD
-# endif
+#if defined(MACOS_X_DARWIN) && !defined(FEAT_CLIPBOARD)
+# define FEAT_CLIPBOARD
 #endif
 
 // +x11 is only enabled when it's both available and wanted.

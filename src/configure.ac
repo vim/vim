@@ -522,15 +522,19 @@ fi
 dnl Check user requested features.
 
 AC_MSG_CHECKING(--with-features argument)
-AC_ARG_WITH(features, [  --with-features=TYPE    tiny, small, normal, big or huge (default: huge)],
+AC_ARG_WITH(features, [  --with-features=TYPE    tiny, normal, big or huge (default: huge)],
 	features="$withval"; AC_MSG_RESULT($features),
 	features="huge"; AC_MSG_RESULT(Defaulting to huge))
+
+dnl "small" is supported for backwards compatibility, now an alias for "tiny"
+case "$features" in
+  small) features="tiny" ;;
+esac
 
 dovimdiff=""
 dogvimdiff=""
 case "$features" in
   tiny)		AC_DEFINE(FEAT_TINY) ;;
-  small)	AC_DEFINE(FEAT_SMALL) ;;
   normal)	AC_DEFINE(FEAT_NORMAL) dovimdiff="installvimdiff";
 			dogvimdiff="installgvimdiff" ;;
   big)		AC_DEFINE(FEAT_BIG) dovimdiff="installvimdiff";
@@ -543,7 +547,7 @@ esac
 AC_SUBST(dovimdiff)
 AC_SUBST(dogvimdiff)
 
-if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+if test "x$features" = "xtiny"; then
   has_eval=no
 else
   has_eval=yes
@@ -577,7 +581,7 @@ else
 fi
 
 AC_MSG_CHECKING([diff feature])
-if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+if test "x$features" = "xtiny"; then
   AC_MSG_RESULT([disabled in $features version])
 else
   AC_MSG_RESULT(enabled)
@@ -595,7 +599,7 @@ AC_MSG_RESULT($enable_luainterp)
 
 if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Lua with tiny or small features])
+    AC_MSG_ERROR([cannot use Lua with tiny features])
   fi
 
   dnl -- find the lua executable
@@ -1082,7 +1086,7 @@ AC_ARG_ENABLE(perlinterp,
 AC_MSG_RESULT($enable_perlinterp)
 if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Perl with tiny or small features])
+    AC_MSG_ERROR([cannot use Perl with tiny features])
   fi
   AC_SUBST(vi_cv_path_perl)
   AC_PATH_PROG(vi_cv_path_perl, perl)
@@ -1231,7 +1235,7 @@ AC_ARG_ENABLE(pythoninterp,
 AC_MSG_RESULT($enable_pythoninterp)
 if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Python with tiny or small features])
+    AC_MSG_ERROR([cannot use Python with tiny features])
   fi
 
   dnl -- find the python executable
@@ -1466,7 +1470,7 @@ AC_ARG_ENABLE(python3interp,
 AC_MSG_RESULT($enable_python3interp)
 if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Python with tiny or small features])
+    AC_MSG_ERROR([cannot use Python with tiny features])
   fi
 
   dnl -- find the python3 executable
@@ -1979,7 +1983,7 @@ AC_ARG_ENABLE(rubyinterp,
 AC_MSG_RESULT($enable_rubyinterp)
 if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Ruby with tiny or small features])
+    AC_MSG_ERROR([cannot use Ruby with tiny features])
   fi
 
   AC_MSG_CHECKING(--with-ruby-command argument)
@@ -2092,7 +2096,7 @@ AC_ARG_ENABLE(netbeans,
 	, [enable_netbeans="yes"])
 if test "$enable_netbeans" = "yes"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_RESULT([cannot use NetBeans with tiny or small features])
+    AC_MSG_RESULT([cannot use NetBeans with tiny features])
     enable_netbeans="no"
   else
     AC_MSG_RESULT(no)
@@ -2107,7 +2111,7 @@ AC_ARG_ENABLE(channel,
 	, [enable_channel="yes"])
 if test "$enable_channel" = "yes"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_RESULT([cannot use channels with tiny or small features])
+    AC_MSG_RESULT([cannot use channels with tiny features])
     enable_channel="no"
   else
     AC_MSG_RESULT(no)
@@ -2215,7 +2219,7 @@ AC_ARG_ENABLE(terminal,
 	, [enable_terminal="auto"])
 if test "$enable_terminal" = "yes" || test "$enable_terminal" = "auto" -a "x$features" = "xhuge" ; then
   if test "$has_eval" = "no"; then
-    AC_MSG_RESULT([cannot use terminal emulator with tiny or small features])
+    AC_MSG_RESULT([cannot use terminal emulator with tiny features])
     enable_terminal="no"
   else
     if test "$enable_terminal" = "auto"; then
@@ -3722,7 +3726,7 @@ if test "$enable_canberra" = "maybe"; then
   fi
 else
   if test "$enable_canberra" = "yes" -a "$has_eval" = "no"; then
-    AC_MSG_RESULT([cannot use sound with tiny or small features])
+    AC_MSG_RESULT([cannot use sound with tiny features])
     enable_canberra="no"
   else
     AC_MSG_RESULT($enable_canberra)
@@ -4432,7 +4436,7 @@ if test "$enable_nls" = "yes"; then
     else
       AC_MSG_RESULT([msgfmt not found - disabled]);
     fi
-    if test $have_gettext = "yes" -a "x$features" != "xtiny" -a "x$features" != "xsmall"; then
+    if test $have_gettext = "yes" -a "x$features" != "xtiny"; then
       AC_DEFINE(HAVE_GETTEXT)
       MAKEMO=yes
       AC_SUBST(MAKEMO)

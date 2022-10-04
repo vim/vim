@@ -2811,8 +2811,6 @@ init_mappings(void)
 #endif
 }
 
-#if defined(MSWIN) || defined(FEAT_CMDWIN) || defined(MACOS_X) \
-							     || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".
  * When "nore" is TRUE use MAPTYPE_NOREMAP.
@@ -2833,7 +2831,6 @@ add_map(char_u *map, int mode, int nore)
     }
     p_cpo = cpo_save;
 }
-#endif
 
 #if defined(FEAT_LANGMAP) || defined(PROTO)
 /*

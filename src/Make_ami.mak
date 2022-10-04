@@ -45,9 +45,9 @@ CFLAGS +=\
 	-DFEAT_NORMAL
 else
 
-# Vim 'small' build
+# Vim 'small' build - now an alias for 'tiny'
 ifeq ($(BUILD),small)
-CFLAGS += -DFEAT_SMALL
+CFLAGS += -DFEAT_TINY
 else
 
 # Vim 'tiny' build

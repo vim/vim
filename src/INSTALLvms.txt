@@ -77,9 +77,7 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 
 	Parameter name	: MODEL
 	Description	: Build model selection
-	Options:	: TINY	  - Almost no features enabled, not even
-			  multiple windows
-			  SMALL   - Few features enabled, as basic as possible
+	Options:	: TINY	  - No optional features enabled
 			  NORMAL  - A default selection of features enabled
 			  BIG	  - Many features enabled, as rich as possible.
 			  (OpenVMS default)

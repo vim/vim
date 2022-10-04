@@ -31,23 +31,31 @@
  * Basic choices:
  * ==============
  *
- * +tiny		almost no features enabled, not even multiple windows
- * +small		as tiny plus cmdline window
- * +normal		A default selection of features enabled
- * +big			many features enabled, as rich as possible.
+ * +tiny		no optional features enabled, not even +eval
+ * +normal		a default selection of features enabled
+ * +big			many features enabled, except "expensive" ones
  * +huge		all possible features enabled.
  *
- * When +small is used, +tiny is also included.  +normal implies +small, etc.
+ * When +normal is used, +tiny is also included.  +big implies +normal, etc.
  */
+
+/*
+ * +small is now an alias for +tiny
+ */
+#if defined(FEAT_SMALL)
+# undef FEAT_SMALL
+# if !defined(FEAT_TINY)
+#  define FEAT_TINY
+# endif
+#endif
 
 /*
  * Uncomment one of these to override the default.  For unix use a configure
  * argument, see Makefile.
  */
-#if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
+#if !defined(FEAT_TINY) && !defined(FEAT_NORMAL) \
 	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
 // #define FEAT_TINY
-// #define FEAT_SMALL
 // #define FEAT_NORMAL
 // #define FEAT_BIG
 // #define FEAT_HUGE
@@ -59,7 +67,7 @@
  * Use +big for older systems: VMS and Amiga.
  * Otherwise use +normal
  */
-#if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
+#if !defined(FEAT_TINY) && !defined(FEAT_NORMAL) \
 	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
 # if defined(UNIX) || defined(MSWIN) || defined(MACOS_X)
 #  define FEAT_HUGE
@@ -82,9 +90,6 @@
 # define FEAT_NORMAL
 #endif
 #ifdef FEAT_NORMAL
-# define FEAT_SMALL
-#endif
-#ifdef FEAT_SMALL
 # define FEAT_TINY
 #endif
 
@@ -122,6 +127,7 @@
  * +wildmenu		'wildmenu' option
  * +builtin_terms	all builtin termcap entries included
  * +float		Floating point variables.
+ * +cmdwin		Command line window.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -136,10 +142,6 @@
  * Message history is fixed at 200 messages.
  */
 #define MAX_MSG_HIST_LEN 200
-
-#if defined(FEAT_SMALL)
-# define FEAT_CMDWIN
-#endif
 
 /*
  * +folding		Fold lines.
@@ -915,7 +917,7 @@
 # define FEAT_DND
 #endif
 
-#if defined(FEAT_GUI_MSWIN) && defined(FEAT_SMALL)
+#if defined(FEAT_GUI_MSWIN)
 # define MSWIN_FIND_REPLACE	// include code for find/replace dialog
 # define MSWIN_FR_BUFSIZE 256
 #endif

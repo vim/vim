@@ -16,7 +16,7 @@
 #
 #	!!!!  After changing any features do "nmake clean" first  !!!!
 #
-#	Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is HUGE)
+#	Feature Set: FEATURES=[TINY, NORMAL, BIG, HUGE] (default is HUGE)
 #
 #   	Name to add to the version: MODIFIED_BY=[name of modifier]
 #
@@ -1124,7 +1124,7 @@ CFLAGS = $(CFLAGS) -DMSWINPS
 !endif # POSTSCRIPT
 
 #
-# FEATURES: TINY, SMALL, NORMAL, BIG or HUGE
+# FEATURES: TINY, NORMAL, BIG or HUGE
 #
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 

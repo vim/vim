@@ -700,6 +700,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    657,
+/**/
     656,
 /**/
     655,
@@ -2337,8 +2339,6 @@ list_version(void)
     msg_puts(_("\nBig version "));
 #elif defined(FEAT_NORMAL)
     msg_puts(_("\nNormal version "));
-#elif defined(FEAT_SMALL)
-    msg_puts(_("\nSmall version "));
 #else
     msg_puts(_("\nTiny version "));
 #endif

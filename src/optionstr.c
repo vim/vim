@@ -1326,13 +1326,11 @@ did_set_string_option(
 	errmsg = set_chars_option(curwin, varp, TRUE);
     }
 
-#ifdef FEAT_CMDWIN
     // 'cedit'
     else if (varp == &p_cedit)
     {
 	errmsg = check_cedit();
     }
-#endif
 
     // 'verbosefile'
     else if (varp == &p_vfile)

@@ -5582,13 +5582,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 		},
 	{"cmdline_compl", 1},
 	{"cmdline_hist", 1},
-	{"cmdwin",
-#ifdef FEAT_CMDWIN
-		1
-#else
-		0
-#endif
-		},
+	{"cmdwin", 1},
 	{"comments", 1},
 	{"conceal",
 #ifdef FEAT_CONCEAL

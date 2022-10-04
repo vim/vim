@@ -156,11 +156,7 @@ typedef struct {
 
 // draw_state values for items that are drawn in sequence:
 #define WL_START	0		// nothing done yet, must be zero
-#ifdef FEAT_CMDWIN
-# define WL_CMDLINE	(WL_START + 1)	// cmdline window column
-#else
-# define WL_CMDLINE	WL_START
-#endif
+#define WL_CMDLINE	(WL_START + 1)	// cmdline window column
 #ifdef FEAT_FOLDING
 # define WL_FOLD	(WL_CMDLINE + 1)	// 'foldcolumn'
 #else
@@ -1678,7 +1674,6 @@ win_line(
 		line_attr = line_attr_save;
 	    }
 #endif
-#ifdef FEAT_CMDWIN
 	    if (wlv.draw_state == WL_CMDLINE - 1 && wlv.n_extra == 0)
 	    {
 		wlv.draw_state = WL_CMDLINE;
@@ -1692,7 +1687,6 @@ win_line(
 				hl_combine_attr(wlv.wcr_attr, HL_ATTR(HLF_AT));
 		}
 	    }
-#endif
 #ifdef FEAT_FOLDING
 	    if (wlv.draw_state == WL_FOLD - 1 && wlv.n_extra == 0)
 	    {

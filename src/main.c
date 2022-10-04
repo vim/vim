@@ -1216,11 +1216,7 @@ main_loop(
 #endif
 
     clear_oparg(&oa);
-    while (!cmdwin
-#ifdef FEAT_CMDWIN
-	    || cmdwin_result == 0
-#endif
-	    )
+    while (!cmdwin || cmdwin_result == 0)
     {
 	if (stuff_empty())
 	{

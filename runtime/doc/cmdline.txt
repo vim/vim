@@ -1124,7 +1124,6 @@ Also see |`=|.
 In the command-line window the command line can be edited just like editing
 text in any window.  It is a special kind of window, because you cannot leave
 it in a normal way.
-{not available when compiled without the |+cmdwin| feature}
 
 
 OPEN						*c_CTRL-F* *q:* *q/* *q?*

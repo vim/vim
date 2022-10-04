@@ -349,14 +349,14 @@ T  *++builtin_terms*	maximal terminals builtin |builtin-terms| Always
 N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 			and ":goto" commands.
 m  *+channel*		inter process communication |channel|
-6  *+cindent*		|'cindent'|, C indenting
+T  *+cindent*		|'cindent'|, C indenting; Always enabled
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 T  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
-S  *+cmdwin*		|cmdline-window| support
+T  *+cmdwin*		|cmdline-window| support; Always enabled since 9.0.0657
 T  *+comments*		|'comments'| support
 B  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|

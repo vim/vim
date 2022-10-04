@@ -4028,12 +4028,10 @@ nv_down(cmdarg_T *cap)
 #endif
     else
     {
-#ifdef FEAT_CMDWIN
 	// In the cmdline window a <CR> executes the command.
 	if (cmdwin_type != 0 && cap->cmdchar == CAR)
 	    cmdwin_result = CAR;
 	else
-#endif
 #ifdef FEAT_JOB_CHANNEL
 	// In a prompt buffer a <CR> in the last line invokes the callback.
 	if (bt_prompt(curbuf) && cap->cmdchar == CAR
@@ -6754,10 +6752,8 @@ nv_normal(cmdarg_T *cap)
 	if (restart_edit != 0 && mode_displayed)
 	    clear_cmdline = TRUE;		// unshow mode later
 	restart_edit = 0;
-#ifdef FEAT_CMDWIN
 	if (cmdwin_type != 0)
 	    cmdwin_result = Ctrl_C;
-#endif
 	if (VIsual_active)
 	{
 	    end_visual_mode();		// stop Visual
@@ -6788,12 +6784,8 @@ nv_esc(cmdarg_T *cap)
 
     if (cap->arg)		// TRUE for CTRL-C
     {
-	if (restart_edit == 0
-#ifdef FEAT_CMDWIN
-		&& cmdwin_type == 0
-#endif
-		&& !VIsual_active
-		&& no_reason)
+	if (restart_edit == 0 && cmdwin_type == 0
+						&& !VIsual_active && no_reason)
 	{
 	    int	out_redir = !stdout_isatty && !is_not_a_term_or_gui();
 
@@ -6828,16 +6820,13 @@ nv_esc(cmdarg_T *cap)
 	// set again below when halfway a mapping.
 	if (!p_im)
 	    restart_edit = 0;
-#ifdef FEAT_CMDWIN
 	if (cmdwin_type != 0)
 	{
 	    cmdwin_result = K_IGNORE;
 	    got_int = FALSE;	// don't stop executing autocommands et al.
 	    return;
 	}
-#endif
     }
-#ifdef FEAT_CMDWIN
     else if (cmdwin_type != 0 && ex_normal_busy && typebuf_was_empty)
     {
 	// When :normal runs out of characters while in the command line window
@@ -6846,7 +6835,6 @@ nv_esc(cmdarg_T *cap)
 	cmdwin_result = K_IGNORE;
 	return;
     }
-#endif
 
     if (VIsual_active)
     {
@@ -7178,7 +7166,6 @@ nv_record(cmdarg_T *cap)
     }
     else if (!checkclearop(cap->oap))
     {
-#ifdef FEAT_CMDWIN
 	if (cap->nchar == ':' || cap->nchar == '/' || cap->nchar == '?')
 	{
 	    if (cmdwin_type != 0)
@@ -7190,7 +7177,6 @@ nv_record(cmdarg_T *cap)
 	    stuffcharReadbuff(K_CMDWIN);
 	}
 	else
-#endif
 	    // (stop) recording into a named register, unless executing a
 	    // register
 	    if (reg_executing == 0 && do_record(cap->nchar) == FAIL)

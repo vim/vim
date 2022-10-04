@@ -3372,9 +3372,7 @@ vgetorpeek(int advance)
 
 		if (ex_normal_busy > 0)
 		{
-#ifdef FEAT_CMDWIN
 		    static int tc = 0;
-#endif
 
 		    // No typeahead left and inside ":normal".  Must return
 		    // something to avoid getting stuck.  When an incomplete
@@ -3398,16 +3396,11 @@ vgetorpeek(int advance)
 			c = K_CANCEL;
 #endif
 		    else if ((State & MODE_CMDLINE)
-#ifdef FEAT_CMDWIN
-			    || (cmdwin_type > 0 && tc == ESC)
-#endif
-			    )
+					     || (cmdwin_type > 0 && tc == ESC))
 			c = Ctrl_C;
 		    else
 			c = ESC;
-#ifdef FEAT_CMDWIN
 		    tc = c;
-#endif
 		    // set a flag to indicate this wasn't a normal char
 		    if (advance)
 			typebuf_was_empty = TRUE;

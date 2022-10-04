@@ -2083,14 +2083,12 @@ do_one_cmd(
 
 	if (!IS_USER_CMDIDX(ea.cmdidx))
 	{
-#ifdef FEAT_CMDWIN
 	    if (cmdwin_type != 0 && !(ea.argt & EX_CMDWIN))
 	    {
 		// Command not allowed in the command line window
 		errormsg = _(e_invalid_in_cmdline_window);
 		goto doend;
 	    }
-#endif
 	    if (text_locked() && !(ea.argt & EX_LOCK_OK))
 	    {
 		// Command not allowed when text is locked
@@ -5849,13 +5847,11 @@ ex_quit(exarg_T *eap)
 {
     win_T	*wp;
 
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
 	cmdwin_result = Ctrl_C;
 	return;
     }
-#endif
     // Don't quit while editing the command line.
     if (text_locked())
     {
@@ -5934,7 +5930,6 @@ ex_cquit(exarg_T *eap UNUSED)
     static void
 ex_quit_all(exarg_T *eap)
 {
-# ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
 	if (eap->forceit)
@@ -5943,7 +5938,6 @@ ex_quit_all(exarg_T *eap)
 	    cmdwin_result = K_XF2;
 	return;
     }
-# endif
 
     // Don't quit while editing the command line.
     if (text_locked())
@@ -5969,11 +5963,9 @@ ex_close(exarg_T *eap)
 {
     win_T	*win;
     int		winnr = 0;
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	cmdwin_result = Ctrl_C;
     else
-#endif
 	if (!text_locked() && !curbuf_locked())
 	{
 	    if (eap->addr_count == 0)
@@ -6189,33 +6181,30 @@ ex_tabclose(exarg_T *eap)
     tabpage_T	*tp;
     int		tab_number;
 
-# ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	cmdwin_result = K_IGNORE;
+    else if (first_tabpage->tp_next == NULL)
+	emsg(_(e_cannot_close_last_tab_page));
     else
-# endif
-	if (first_tabpage->tp_next == NULL)
-	    emsg(_(e_cannot_close_last_tab_page));
-	else
+    {
+	tab_number = get_tabpage_arg(eap);
+	if (eap->errmsg == NULL)
 	{
-	    tab_number = get_tabpage_arg(eap);
-	    if (eap->errmsg == NULL)
+	    tp = find_tabpage(tab_number);
+	    if (tp == NULL)
 	    {
-		tp = find_tabpage(tab_number);
-		if (tp == NULL)
-		{
-		    beep_flush();
-		    return;
-		}
-		if (tp != curtab)
-		{
-		    tabpage_close_other(tp, eap->forceit);
-		    return;
-		}
-		else if (!text_locked() && !curbuf_locked())
-		    tabpage_close(eap->forceit);
+		beep_flush();
+		return;
 	    }
+	    if (tp != curtab)
+	    {
+		tabpage_close_other(tp, eap->forceit);
+		return;
+	    }
+	    else if (!text_locked() && !curbuf_locked())
+		tabpage_close(eap->forceit);
 	}
+    }
 }
 
 /*
@@ -6228,38 +6217,35 @@ ex_tabonly(exarg_T *eap)
     int		done;
     int		tab_number;
 
-# ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	cmdwin_result = K_IGNORE;
+    else if (first_tabpage->tp_next == NULL)
+	msg(_("Already only one tab page"));
     else
-# endif
-	if (first_tabpage->tp_next == NULL)
-	    msg(_("Already only one tab page"));
-	else
+    {
+	tab_number = get_tabpage_arg(eap);
+	if (eap->errmsg == NULL)
 	{
-	    tab_number = get_tabpage_arg(eap);
-	    if (eap->errmsg == NULL)
+	    goto_tabpage(tab_number);
+	    // Repeat this up to a 1000 times, because autocommands may
+	    // mess up the lists.
+	    for (done = 0; done < 1000; ++done)
 	    {
-		goto_tabpage(tab_number);
-		// Repeat this up to a 1000 times, because autocommands may
-		// mess up the lists.
-		for (done = 0; done < 1000; ++done)
-		{
-		    FOR_ALL_TABPAGES(tp)
-			if (tp->tp_topframe != topframe)
-			{
-			    tabpage_close_other(tp, eap->forceit);
-			    // if we failed to close it quit
-			    if (valid_tabpage(tp))
-				done = 1000;
-			    // start over, "tp" is now invalid
-			    break;
-			}
-		    if (first_tabpage->tp_next == NULL)
+		FOR_ALL_TABPAGES(tp)
+		    if (tp->tp_topframe != topframe)
+		    {
+			tabpage_close_other(tp, eap->forceit);
+			// if we failed to close it quit
+			if (valid_tabpage(tp))
+			    done = 1000;
+			// start over, "tp" is now invalid
 			break;
-		}
+		    }
+		if (first_tabpage->tp_next == NULL)
+		    break;
 	    }
 	}
+    }
 }
 
 /*
@@ -6403,13 +6389,11 @@ ex_exit(exarg_T *eap)
     if (not_in_vim9(eap) == FAIL)
 	return;
 #endif
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
 	cmdwin_result = Ctrl_C;
 	return;
     }
-#endif
     // Don't quit while editing the command line.
     if (text_locked())
     {

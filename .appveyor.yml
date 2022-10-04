@@ -7,7 +7,6 @@ environment:
     - FEATURE: HUGE
 # disabled
 #    - FEATURE: TINY
-#    - FEATURE: SMALL
 #    - FEATURE: NORMAL
 #    - FEATURE: BIG
 

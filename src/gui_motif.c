@@ -228,15 +228,19 @@ tabline_menu_cb(
 	return;
     }
 
+    if (event->button == Button2)
+    {
+	// Middle mouse click on tabpage label closes that tab.
+	XtVaGetValues(tabLine_menu, XmNuserData, &tab_idx, NULL);
+	send_tabline_menu_event(tab_idx, (int)TABLINE_MENU_CLOSE);
+	return;
+    }
+
     if (event->button != Button3)
 	return;
 
     // When ignoring events don't show the menu.
-    if (hold_gui_events
-# ifdef FEAT_CMDWIN
-	    || cmdwin_type != 0
-# endif
-       )
+    if (hold_gui_events || cmdwin_type != 0)
 	return;
 
     if (event->subwindow != None)
