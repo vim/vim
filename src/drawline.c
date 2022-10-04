@@ -3689,9 +3689,9 @@ win_line(
 		)
 	{
 #ifdef FEAT_CONCEAL
-	    wlv.col += wlv.boguscols;
-	    wlv_screen_line(wp, &wlv, FALSE);
 	    wlv.col -= wlv.boguscols;
+	    wlv_screen_line(wp, &wlv, FALSE);
+	    wlv.col += wlv.boguscols;
 	    wlv.boguscols = 0;
 #else
 	    wlv_screen_line(wp, &wlv, FALSE);
