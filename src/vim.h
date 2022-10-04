@@ -163,7 +163,8 @@
  */
 #include "feature.h"
 
-#if defined(MACOS_X_DARWIN) && !defined(FEAT_CLIPBOARD)
+#if defined(MACOS_X_DARWIN) && defined(FEAT_NORMAL) \
+	&& !defined(FEAT_CLIPBOARD)
 # define FEAT_CLIPBOARD
 #endif
 
