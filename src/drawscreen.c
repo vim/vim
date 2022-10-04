@@ -2645,15 +2645,15 @@ win_update(win_T *wp)
 	{
 	    int		scr_row = W_WINROW(wp) + wp->w_height - 1;
 	    int		symbol  = wp->w_fill_chars.lastline;
-	    int		len;
+	    int		charlen;
 	    char_u	fillbuf[12];  // 2 characters of 6 bytes
 
-	    len =  mb_char2bytes(symbol, &fillbuf[0]);
-	    len += mb_char2bytes(symbol, &fillbuf[len]);
+	    charlen = mb_char2bytes(symbol, &fillbuf[0]);
+	    mb_char2bytes(symbol, &fillbuf[charlen]);
 
 	    // Last line isn't finished: Display "@@@" in the last screen line.
 	    screen_puts_len(fillbuf,
-			    wp->w_width > 2 ? len : wp->w_width,
+			    (wp->w_width > 2 ? 2 : wp->w_width) * charlen,
 			    scr_row, wp->w_wincol, HL_ATTR(HLF_AT));
 	    screen_fill(scr_row, scr_row + 1,
 		    (int)wp->w_wincol + 2, (int)W_ENDCOL(wp),
