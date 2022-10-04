@@ -6734,10 +6734,11 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 
 /*
  * Replace K_BS by <BS> and K_DEL by <DEL>.
+ * Include any modifiers into the key and drop them.
  * Returns "len" adjusted for replaced codes.
  */
     int
-term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len_arg)
+term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
 {
     int		len = len_arg;
     int		i;
@@ -6745,13 +6746,26 @@ term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len_arg)
 
     for (i = ta_len; i < ta_len + len; ++i)
     {
-	if (ta_buf[i] == CSI && len - i > 2)
+	if (ta_buf[i] == CSI && len - i > 3 && ta_buf[i + 1] == KS_MODIFIER)
+	{
+	    int modifiers = ta_buf[i + 2];
+	    int key = ta_buf[i + 3];
+
+	    // Try to use the modifier to modify the key.  In any case drop the
+	    // modifier.
+	    mch_memmove(ta_buf + i + 1, ta_buf + i + 4, (size_t)(len - i - 3));
+	    len -= 3;
+	    if (key < 0x80)
+		key = merge_modifyOtherKeys(key, &modifiers);
+	    ta_buf[i] = key;
+	}
+	else if (ta_buf[i] == CSI && len - i > 2)
 	{
 	    c = TERMCAP2KEY(ta_buf[i + 1], ta_buf[i + 2]);
 	    if (c == K_DEL || c == K_KDEL || c == K_BS)
 	    {
 		mch_memmove(ta_buf + i + 1, ta_buf + i + 3,
-			(size_t)(len - i - 2));
+							(size_t)(len - i - 2));
 		if (c == K_DEL || c == K_KDEL)
 		    ta_buf[i] = DEL;
 		else

@@ -4531,7 +4531,7 @@ mch_system_piped(char *cmd, int options)
 			}
 		    }
 
-		    len = term_replace_bs_del_keycode(ta_buf, ta_len, len);
+		    len = term_replace_keycodes(ta_buf, ta_len, len);
 
 		    /*
 		     * For pipes: echo the typed characters.  For a pty this

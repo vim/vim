@@ -5106,7 +5106,8 @@ mch_call_shell_fork(
 			    }
 			}
 
-			len = term_replace_bs_del_keycode(ta_buf, ta_len, len);
+			// Remove Vim-specific codes from the input.
+			len = term_replace_keycodes(ta_buf, ta_len, len);
 
 			/*
 			 * For pipes: echo the typed characters.
