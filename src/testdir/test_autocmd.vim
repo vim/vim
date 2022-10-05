@@ -2778,7 +2778,6 @@ endfunc
 
 func Test_autocmd_CmdWinEnter()
   CheckRunVimInTerminal
-  CheckFeature cmdwin
 
   let lines =<< trim END
     augroup vimHints | au! | augroup END
@@ -3418,19 +3417,17 @@ func Test_mode_changes()
     call assert_equal(5, g:nori_to_any)
   endif
 
-  if has('cmdwin')
-    let g:n_to_c = 0
-    au ModeChanged n:c let g:n_to_c += 1
-    let g:c_to_n = 0
-    au ModeChanged c:n let g:c_to_n += 1
-    let g:mode_seq += ['c', 'n', 'c', 'n']
-    call feedkeys("q:\<C-C>\<Esc>", 'tnix')
-    call assert_equal(len(g:mode_seq) - 1, g:index)
-    call assert_equal(2, g:n_to_c)
-    call assert_equal(2, g:c_to_n)
-    unlet g:n_to_c
-    unlet g:c_to_n
-  endif
+  let g:n_to_c = 0
+  au ModeChanged n:c let g:n_to_c += 1
+  let g:c_to_n = 0
+  au ModeChanged c:n let g:c_to_n += 1
+  let g:mode_seq += ['c', 'n', 'c', 'n']
+  call feedkeys("q:\<C-C>\<Esc>", 'tnix')
+  call assert_equal(len(g:mode_seq) - 1, g:index)
+  call assert_equal(2, g:n_to_c)
+  call assert_equal(2, g:c_to_n)
+  unlet g:n_to_c
+  unlet g:c_to_n
 
   au! ModeChanged
   delfunc TestMode

@@ -587,8 +587,6 @@ endfunc
 
 " Test for ":all" not working when in the cmdline window
 func Test_all_not_allowed_from_cmdwin()
-  CheckFeature cmdwin
-
   au BufEnter * all
   next x
   " Use try/catch here, somehow assert_fails() doesn't work on MS-Windows

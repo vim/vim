@@ -20,8 +20,6 @@ func Test_window_cmd_ls0_with_split()
 endfunc
 
 func Test_window_cmd_cmdwin_with_vsp()
-  CheckFeature cmdwin
-
   let efmt = 'Expected 0 but got %d (in ls=%d, %s window)'
   for v in range(0, 2)
     exec "set ls=" . v
