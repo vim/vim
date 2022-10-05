@@ -6356,7 +6356,8 @@ win_fix_scroll(int resize)
 	if (wp->w_height != wp->w_prev_height)
 	{
 	    // If window has moved update botline to keep the same screenlines.
-	    if (*p_spk == 's' && wp->w_winrow != wp->w_prev_winrow)
+	    if (*p_spk == 's' && wp->w_winrow != wp->w_prev_winrow
+		    && wp->w_buffer->b_ml.ml_line_count >= wp->w_botline - 1)
 	    {
 		lnum = wp->w_cursor.lnum;
 		diff = (wp->w_winrow - wp->w_prev_winrow)

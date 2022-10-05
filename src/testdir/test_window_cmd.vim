@@ -1807,6 +1807,13 @@ function Test_splitkeep_misc()
   let top = line('w0')
   help | quit
   call assert_equal(top, line('w0'))
+  " No error when resizing window in autocmd and buffer length changed
+  autocmd FileType qf exe "resize" line('$')
+  cexpr getline(1, '$')
+  copen
+  wincmd p
+  norm dd
+  cexpr getline(1, '$')
 
   %bwipeout!
   set splitbelow&
