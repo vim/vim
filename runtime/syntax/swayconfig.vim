@@ -2,7 +2,7 @@
 " Language: sway window manager config
 " Original Author: James Eapen <james.eapen@vai.org>
 " Maintainer: James Eapen <james.eapen@vai.org>
-" Version: 0.1.5
+" Version: 0.1.6
 " Reference version (jamespeapen/swayconfig.vim): 0.11.6
 " Last Change: 2022 Aug 08
 
@@ -23,9 +23,6 @@ scriptencoding utf-8
 
 " Error
 "syn match swayConfigError /.*/
-
-" Group mode/bar
-syn region swayConfigBlock start=+.*s\?{$+ end=+^}$+ contains=i3ConfigBlockKeyword,i3ConfigString,i3ConfigBind,i3ConfigInitializeKeyword,i3ConfigComment,i3ConfigFont,i3ConfigFocusWrappingType,i3ConfigColor,i3ConfigVariable,swayConfigInputKeyword,i3ConfigOutput transparent keepend extend
 
 " binding
 syn keyword swayConfigBindKeyword bindswitch bindgesture contained
@@ -80,6 +77,10 @@ syn match swayConfigFocusFollowsMouse /^\s*focus_follows_mouse\s\+\(yes\|no\|alw
 " xwayland 
 syn keyword swayConfigXwaylandKeyword xwayland contained
 syn match swayConfigXwaylandModifier /^\s*xwayland\s\+\(enable\|disable\|force\)\s\?$/ contains=swayConfigXwaylandKeyword
+
+" Group mode/bar
+syn clear i3ConfigBlock
+syn region swayConfigBlock start=+.*s\?{$+ end=+^}$+ contains=i3ConfigBlockKeyword,i3ConfigString,i3ConfigBind,i3ConfigInitializeKeyword,i3ConfigComment,i3ConfigFont,i3ConfigFocusWrappingType,i3ConfigColor,i3ConfigVariable,swayConfigInputKeyword,i3ConfigOutput transparent keepend extend
 
 "hi def link swayConfigError                         Error
 hi def link i3ConfigFloating                        Error
