@@ -1,8 +1,6 @@
 " Tests for editing the command line.
 
 source check.vim
-CheckFeature cmdwin
-
 source screendump.vim
 
 func Test_getcmdwintype()
