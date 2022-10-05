@@ -1792,7 +1792,7 @@ fun! s:NetrwOptionsRestore(vt)
   if !exists("{a:vt}netrw_optionsave")
 "   call Decho("case ".a:vt."netrw_optionsave : doesn't exist",'~'.expand("<slnum>"))
 "   call Decho("..doing filetype detect anyway")
-   filetype detect
+   if !isdirectory(expand("%")) | filetype detect | endif
 "   call Decho("..settings buf#".bufnr("%")."<".bufname("%").">: ".((&l:ma == 0)? "no" : "")."ma ".((&l:mod == 0)? "no" : "")."mod ".((&l:bl == 0)? "no" : "")."bl ".((&l:ro == 0)? "no" : "")."ro fo=".&l:fo." a:vt=".a:vt,'~'.expand("<slnum>"))
 "   call Decho("..ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)",'~'.expand("<slnum>"))
 "   call Dret("s:NetrwOptionsRestore : ".a:vt."netrw_optionsave doesn't exist")
@@ -1905,7 +1905,7 @@ fun! s:NetrwOptionsRestore(vt)
   " NetrwOptionRestore.
   if &ft != "netrw"
 "   call Decho("before: filetype detect  (ft=".&ft.")",'~'.expand("<slnum>"))
-   filetype detect
+   if !isdirectory(expand("%")) | filetype detect | endif
 "   call Decho("after : filetype detect  (ft=".&ft.")",'~'.expand("<slnum>"))
   endif
 "  call Decho("(s:NetrwOptionsRestore) lines=".&lines)
