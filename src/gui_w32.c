@@ -852,6 +852,12 @@ get_active_modifiers(void)
 	modifiers |= MOD_MASK_ALT;
     if ((modifiers & MOD_MASK_CTRL) && (GetKeyState(VK_RMENU) & 0x8000))
 	modifiers &= ~MOD_MASK_CTRL;
+    // Add RightALT only if it is hold alone (without Ctrl),
+    // because if AltGr is press, Windows claims that Ctrl is
+    // hold as well. That way we can recognize RightALT alone and
+    // be sure that not AltGr is hold.
+    if (!(GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_RMENU) & 0x8000))
+	modifiers |= MOD_MASK_ALT;
 
     return modifiers;
 }
