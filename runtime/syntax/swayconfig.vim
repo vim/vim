@@ -2,7 +2,8 @@
 " Language: sway window manager config
 " Original Author: James Eapen <james.eapen@vai.org>
 " Maintainer: James Eapen <james.eapen@vai.org>
-" Version: 0.11.1
+" Version: 0.1.1
+" Reference version (jamespeapen/swayconfig.vim): 0.11.1
 " Last Change: 2022 Aug 08
 
 " References:
