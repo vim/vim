@@ -956,13 +956,12 @@ func Test_spell_screendump()
              \ ])
        set spell spelllang=en_nz
   END
-  call writefile(lines, 'XtestSpell')
+  call writefile(lines, 'XtestSpell', 'D')
   let buf = RunVimInTerminal('-S XtestSpell', {'rows': 8})
   call VerifyScreenDump(buf, 'Test_spell_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestSpell')
 endfunc
 
 func Test_spell_screendump_spellcap()
@@ -979,7 +978,7 @@ func Test_spell_screendump_spellcap()
              \ ])
        set spell spelllang=en
   END
-  call writefile(lines, 'XtestSpellCap')
+  call writefile(lines, 'XtestSpellCap', 'D')
   let buf = RunVimInTerminal('-S XtestSpellCap', {'rows': 8})
   call VerifyScreenDump(buf, 'Test_spell_2', {})
 
@@ -997,7 +996,30 @@ func Test_spell_screendump_spellcap()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestSpellCap')
+endfunc
+
+func Test_spell_compatible()
+  CheckScreendump
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "test "->repeat(20),
+             \ "",
+             \ "end",
+             \ ])
+       set spell cpo+=$
+  END
+  call writefile(lines, 'XtestSpellComp', 'D')
+  let buf = RunVimInTerminal('-S XtestSpellComp', {'rows': 8})
+
+  call term_sendkeys(buf, "51|C")
+  call VerifyScreenDump(buf, 'Test_spell_compatible_1', {})
+
+  call term_sendkeys(buf, "x")
+  call VerifyScreenDump(buf, 'Test_spell_compatible_2', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 let g:test_data_aff1 = [

@@ -1738,8 +1738,8 @@ edit_unputchar(void)
 }
 
 /*
- * Called when p_dollar is set: display a '$' at the end of the changed text
- * Only works when cursor is in the line that changes.
+ * Called when "$" is in 'cpoptions': display a '$' at the end of the changed
+ * text.  Only works when cursor is in the line that changes.
  */
     void
 display_dollar(colnr_T col_arg)
