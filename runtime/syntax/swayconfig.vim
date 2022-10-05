@@ -2,8 +2,8 @@
 " Language: sway window manager config
 " Original Author: James Eapen <james.eapen@vai.org>
 " Maintainer: James Eapen <james.eapen@vai.org>
-" Version: 0.1.3
-" Reference version (jamespeapen/swayconfig.vim): 0.11.4
+" Version: 0.1.4
+" Reference version (jamespeapen/swayconfig.vim): 0.11.5
 " Last Change: 2022 Aug 08
 
 " References:
@@ -25,8 +25,7 @@ scriptencoding utf-8
 "syn match swayConfigError /.*/
 
 " Group mode/bar
-syn keyword swayConfigBlockKeyword set input contained
-syn region swayConfigBlock start=+.*s\?{$+ end=+^}$+ contains=i3ConfigBlockKeyword,swayConfigBlockKeyword,i3ConfigString,i3ConfigBind,i3ConfigComment,i3ConfigFont,i3ConfigFocusWrappingType,i3ConfigColor,i3ConfigVariable transparent keepend extend
+syn region swayConfigBlock start=+.*s\?{$+ end=+^}$+ contains=i3ConfigBlockKeyword,i3ConfigString,i3ConfigBind,i3ConfigInitializeKeyword,i3ConfigComment,i3ConfigFont,i3ConfigFocusWrappingType,i3ConfigColor,i3ConfigVariable,swayConfigInputKeyword,i3ConfigOutput transparent keepend extend
 
 " binding
 syn keyword swayConfigBindKeyword bindswitch bindgesture contained
@@ -85,7 +84,6 @@ hi def link swayConfigBindGestureCommand            Identifier
 hi def link swayConfigBindGestureDirection          Constant
 hi def link swayConfigBindGesturePinchDirection     Constant
 hi def link swayConfigBindKeyword                   Identifier
-hi def link swayConfigBlockKeyword                  Identifier
 hi def link swayConfigClientColorKeyword            Identifier
 hi def link swayConfigFloatingKeyword               Identifier
 hi def link swayConfigFloatingModifier              Identifier
