@@ -555,20 +555,17 @@ func Test_match_char_class_upper()
 endfunc
 
 func Test_match_invalid_byte()
-  call writefile(0z630a.765d30aa0a.2e0a.790a.4030, 'Xinvalid')
+  call writefile(0z630a.765d30aa0a.2e0a.790a.4030, 'Xinvalid', 'D')
   new
   source Xinvalid
   bwipe!
-  call delete('Xinvalid')
 endfunc
 
 func Test_match_illegal_byte()
   " Text has illegal bytes which need to be set explicitly
   let lines = ["norm :set no\x01\<CR>", "silent n\xff", "silent norm :b\xff\<CR>"]
-  call writefile(lines, 'Xregexp')
+  call writefile(lines, 'Xregexp', 'D')
   call system(GetVimCommand() .. ' -X -Z -e -s -S Xregexp -c qa!')
-
-  call delete('Xregexp')
 endfunc
 
 func Test_match_too_complicated()
