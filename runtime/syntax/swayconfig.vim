@@ -2,8 +2,8 @@
 " Language: sway window manager config
 " Original Author: James Eapen <james.eapen@vai.org>
 " Maintainer: James Eapen <james.eapen@vai.org>
-" Version: 0.1.4
-" Reference version (jamespeapen/swayconfig.vim): 0.11.5
+" Version: 0.1.5
+" Reference version (jamespeapen/swayconfig.vim): 0.11.6
 " Last Change: 2022 Aug 08
 
 " References:
@@ -69,6 +69,14 @@ syn keyword swayConfigFocusKeyword focus contained
 syn keyword swayConfigFocusType output contained
 syn match swayConfigFocus /^\s*focus\soutput\s.*$/ contains=swayConfigFocusKeyword,swayConfigFocusType
 
+" focus follows mouse
+syn clear i3ConfigFocusFollowsMouseType
+syn clear i3ConfigFocusFollowsMouse
+
+syn keyword swayConfigFocusFollowsMouseType yes no always contained
+syn match swayConfigFocusFollowsMouse /^\s*focus_follows_mouse\s\+\(yes\|no\|always\)\s\?$/ contains=i3ConfigFocusFollowsMouseKeyword,swayConfigFocusFollowsMouseType
+
+
 " xwayland 
 syn keyword swayConfigXwaylandKeyword xwayland contained
 syn match swayConfigXwaylandModifier /^\s*xwayland\s\+\(enable\|disable\|force\)\s\?$/ contains=swayConfigXwaylandKeyword
@@ -80,6 +88,7 @@ hi def link swayConfigFloatingMouseAction           Type
 hi def link swayConfigFocusKeyword                  Type
 hi def link swayConfigSmartBorderKeyword            Type
 hi def link swayConfigInputKeyword                  Type
+hi def link swayConfigFocusFollowsMouseType         Type
 hi def link swayConfigBindGestureCommand            Identifier
 hi def link swayConfigBindGestureDirection          Constant
 hi def link swayConfigBindGesturePinchDirection     Constant
