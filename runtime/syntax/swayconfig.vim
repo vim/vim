@@ -2,8 +2,8 @@
 " Language: sway window manager config
 " Original Author: James Eapen <james.eapen@vai.org>
 " Maintainer: James Eapen <james.eapen@vai.org>
-" Version: 0.1.2
-" Reference version (jamespeapen/swayconfig.vim): 0.11.2
+" Version: 0.1.3
+" Reference version (jamespeapen/swayconfig.vim): 0.11.4
 " Last Change: 2022 Aug 08
 
 " References:
@@ -58,6 +58,10 @@ syn match swayConfigSmartBorder /^\s*smart_borders\s\+\(on\|no_gaps\|off\)\s\?$/
 syn keyword swayConfigClientColorKeyword focused_tab_title contained
 syn match swayConfigClientColor /^\s*client.\w\+\s\+.*$/ contains=i3ConfigClientColorKeyword,i3ConfigColor,i3ConfigVariable,i3ConfigClientColorKeyword,swayConfigClientColorKeyword
 
+" Input config
+syn keyword swayConfigInputKeyword input contained
+syn match swayConfigInput /^\s*input\s\+.*$/ contains=swayConfigInputKeyword
+
 " set display outputs
 syn match swayConfigOutput /^\s*output\s\+.*$/ contains=i3ConfigOutput
 
@@ -76,6 +80,7 @@ hi def link swayConfigFloating                      Type
 hi def link swayConfigFloatingMouseAction           Type
 hi def link swayConfigFocusKeyword                  Type
 hi def link swayConfigSmartBorderKeyword            Type
+hi def link swayConfigInputKeyword                  Type
 hi def link swayConfigBindGestureCommand            Identifier
 hi def link swayConfigBindGestureDirection          Constant
 hi def link swayConfigBindGesturePinchDirection     Constant
