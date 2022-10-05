@@ -2,8 +2,8 @@
 " Language: sway window manager config
 " Original Author: James Eapen <james.eapen@vai.org>
 " Maintainer: James Eapen <james.eapen@vai.org>
-" Version: 0.1.1
-" Reference version (jamespeapen/swayconfig.vim): 0.11.1
+" Version: 0.1.2
+" Reference version (jamespeapen/swayconfig.vim): 0.11.2
 " Last Change: 2022 Aug 08
 
 " References:
@@ -46,7 +46,7 @@ syn match swayConfigFloating /^\s*floating\s\+\(enable\|disable\|toggle\)\s*$/ c
 
 syn clear i3ConfigFloatingModifier
 syn keyword swayConfigFloatingModifier floating_modifier contained
-syn match swayConfigFloatingMouseAction /^\s\?.*floating_modifier\s.*\(normal\|inverted\)$/ contains=swayConfigFloatingModifier,i3ConfigVariable
+syn match swayConfigFloatingMouseAction /^\s\?.*floating_modifier\s\S\+\s\?\(normal\|inverted\|none\)\?$/ contains=swayConfigFloatingModifier,i3ConfigVariable
 
 " Gaps
 syn clear i3ConfigSmartBorderKeyword
