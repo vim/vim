@@ -2258,7 +2258,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	min_scrolled = scrolled;
 	if (cln > curwin->w_botline && curwin->w_p_sms && curwin->w_p_wrap)
 	    for (linenr_T lnum = curwin->w_botline + 1; lnum <= cln; ++lnum)
-		min_scrolled += plines_nofill(lnum);
+		min_scrolled += PLINES_NOFILL(lnum);
     }
 
     /*
