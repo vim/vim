@@ -856,7 +856,9 @@ get_active_modifiers(void)
     // because if AltGr is press, Windows claims that Ctrl is
     // hold as well. That way we can recognize RightALT alone and
     // be sure that not AltGr is hold.
-    if (!(GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(VK_RMENU) & 0x8000))
+    if (!(GetKeyState(VK_CONTROL) & 0x8000)
+	    &&  (GetKeyState(VK_RMENU) & 0x8000)
+	    && !(GetKeyState(VK_LMENU) & 0x8000)) // seems AltGr has both set
 	modifiers |= MOD_MASK_ALT;
 
     return modifiers;
