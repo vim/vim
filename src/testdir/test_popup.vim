@@ -1152,11 +1152,11 @@ func Test_CompleteChanged()
   bw!
 endfunc
 
-function! GetPumPosition()
+func GetPumPosition()
   call assert_true( pumvisible() )
   let g:pum_pos = pum_getpos()
   return ''
-endfunction
+endfunc
 
 func Test_pum_getpos()
   new
