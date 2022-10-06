@@ -1458,10 +1458,11 @@ scrolldown(
     long	done = 0;	// total # of physical lines done
     int		wrow;
     int		moved = FALSE;
+    int		do_sms = curwin->w_p_wrap && curwin->w_p_sms;
     int		width1 = 0;
     int		width2 = 0;
 
-    if (curwin->w_p_wrap && curwin->w_p_sms)
+    if (do_sms)
     {
 	width1 = curwin->w_width - curwin_col_off();
 	width2 = width1 + curwin_col_off2();
@@ -1474,7 +1475,7 @@ scrolldown(
     (void)hasFolding(curwin->w_topline, &curwin->w_topline, NULL);
 #endif
     validate_cursor();		// w_wrow needs to be valid
-    while (line_count-- > 0)
+    for (int todo = line_count; todo > 0; --todo)
     {
 #ifdef FEAT_DIFF
 	if (curwin->w_topfill < diff_check(curwin, curwin->w_topline)
@@ -1488,10 +1489,9 @@ scrolldown(
 	{
 	    // break when at the very top
 	    if (curwin->w_topline == 1
-			   && (!curwin->w_p_sms || curwin->w_skipcol < width1))
+				   && (!do_sms || curwin->w_skipcol < width1))
 		break;
-	    if (curwin->w_p_wrap && curwin->w_p_sms
-						&& curwin->w_skipcol >= width1)
+	    if (do_sms && curwin->w_skipcol >= width1)
 	    {
 		// scroll a screen line down
 		if (curwin->w_skipcol >= width1 + width2)
@@ -1515,13 +1515,13 @@ scrolldown(
 		{
 		    ++done;
 		    if (!byfold)
-			line_count -= curwin->w_topline - first - 1;
+			todo -= curwin->w_topline - first - 1;
 		    curwin->w_botline -= curwin->w_topline - first;
 		    curwin->w_topline = first;
 		}
 		else
 #endif
-		if (curwin->w_p_wrap && curwin->w_p_sms)
+		if (do_sms)
 		{
 		    int size = win_linetabsize(curwin, curwin->w_topline,
 				   ml_get(curwin->w_topline), (colnr_T)MAXCOL);
@@ -1602,9 +1602,9 @@ scrollup(
     long	line_count,
     int		byfold UNUSED)	// TRUE: count a closed fold as one line
 {
-    int		do_smoothscroll = curwin->w_p_wrap && curwin->w_p_sms;
+    int		do_sms = curwin->w_p_wrap && curwin->w_p_sms;
 
-    if (do_smoothscroll
+    if (do_sms
 # ifdef FEAT_FOLDING
 	    || (byfold && hasAnyFolding(curwin))
 # endif
@@ -1618,7 +1618,7 @@ scrollup(
 	int	    size = 0;
 	linenr_T    prev_topline = curwin->w_topline;
 
-	if (do_smoothscroll)
+	if (do_sms)
 	    size = win_linetabsize(curwin, curwin->w_topline,
 				   ml_get(curwin->w_topline), (colnr_T)MAXCOL);
 
@@ -1675,7 +1675,7 @@ scrollup(
 		    curwin->w_topfill = diff_check_fill(curwin, lnum);
 # endif
 		    curwin->w_skipcol = 0;
-		    if (todo > 1 && do_smoothscroll)
+		    if (todo > 1 && do_sms)
 			size = win_linetabsize(curwin, curwin->w_topline,
 				ml_get(curwin->w_topline), (colnr_T)MAXCOL);
 		}
