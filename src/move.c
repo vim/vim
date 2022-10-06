@@ -266,7 +266,7 @@ update_topline(void)
      */
     else
     {
-	if (curwin->w_topline > 1)
+	if (curwin->w_topline > 1 || curwin->w_skipcol > 0)
 	{
 	    // If the cursor is above topline, scrolling is always needed.
 	    // If the cursor is far below topline and there is no folding,
@@ -275,6 +275,16 @@ update_topline(void)
 		check_topline = TRUE;
 	    else if (check_top_offset())
 		check_topline = TRUE;
+	    else if (curwin->w_cursor.lnum == curwin->w_topline)
+	    {
+		colnr_T vcol;
+
+		// check the cursor position is visible.  Add 3 for the ">>>"
+		// displayed in the top-left.
+		getvvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
+		if (curwin->w_skipcol + 3 >= vcol)
+		    check_topline = TRUE;
+	    }
 	}
 #ifdef FEAT_DIFF
 	    // Check if there are more filler lines than allowed.
@@ -2007,6 +2017,7 @@ scroll_cursor_top(int min_scroll, int always)
     linenr_T	top;		// just above displayed lines
     linenr_T	bot;		// just below displayed lines
     linenr_T	old_topline = curwin->w_topline;
+    int		old_skipcol = curwin->w_skipcol;
 #ifdef FEAT_DIFF
     linenr_T	old_topfill = curwin->w_topfill;
 #endif
@@ -2118,7 +2129,14 @@ scroll_cursor_top(int min_scroll, int always)
 	}
 	check_topfill(curwin, FALSE);
 #endif
+	// TODO: if the line doesn't fit may optimize w_skipcol
+	if (curwin->w_topline == curwin->w_cursor.lnum)
+	{
+	    curwin->w_skipcol = 0;
+	    redraw_later(UPD_NOT_VALID);
+	}
 	if (curwin->w_topline != old_topline
+		|| curwin->w_skipcol != old_skipcol
 #ifdef FEAT_DIFF
 		|| curwin->w_topfill != old_topfill
 #endif
