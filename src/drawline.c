@@ -346,7 +346,13 @@ handle_lnum_col(
 
     if ((wp->w_p_nu || wp->w_p_rnu)
 	     && (wlv->row == wlv->startrow + wlv->filler_lines || !has_cpo_n)
-	     && !(has_cpo_n && wp->w_skipcol > 0 && wlv->lnum == wp->w_topline))
+	     // there is no line number in a wrapped line when "n" is in
+	     // 'cpoptions', but 'breakindent' assumes it anyway.
+	     && !((has_cpo_n
+#ifdef FEAT_LINEBREAK
+		     && !wp->w_p_bri
+#endif
+		  ) && wp->w_skipcol > 0 && wlv->lnum == wp->w_topline))
     {
 #ifdef FEAT_SIGNS
 	// If 'signcolumn' is set to 'number' and a sign is present
