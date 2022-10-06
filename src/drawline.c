@@ -745,12 +745,17 @@ text_prop_position(
 
 /*
  * Call screen_line() using values from "wlv".
- * Also takes care of putting "<<<" on the first line for 'smoothscroll'.
+ * Also takes care of putting "<<<" on the first line for 'smoothscroll'
+ * when 'showbreak' is not set.
  */
     static void
 wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
 {
-    if (wlv->row == 0 && wp->w_skipcol > 0)
+    if (wlv->row == 0 && wp->w_skipcol > 0
+#if defined(FEAT_LINEBREAK)
+	    && *get_showbreak_value(wp) == NUL
+#endif
+	    )
     {
 	int off = (int)(current_ScreenLine - ScreenLines);
 
