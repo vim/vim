@@ -3577,7 +3577,8 @@ set_num_option(
 
 	// Only compute the new window layout when startup has been
 	// completed. Otherwise the frame sizes may be wrong.
-	if ((p_ch != old_value || topframe->fr_height != Rows - p_ch)
+	if ((p_ch != old_value
+		      || tabline_height() + topframe->fr_height != Rows - p_ch)
 		&& full_screen
 #ifdef FEAT_GUI
 		&& !gui.starting
