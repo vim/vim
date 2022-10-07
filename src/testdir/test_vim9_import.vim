@@ -452,6 +452,21 @@ def Test_import_funcref()
   delete('Xlib.vim')
 enddef
 
+def Test_export_closure()
+  # tests that the closure in block can be compiled, not the import part
+  var lines =<< trim END
+      vim9script
+      {
+        var foo = 42
+        export def Bar(): number
+          return foo
+        enddef
+      }
+      assert_equal(42, Bar())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_import_duplicate_function()
   # Function Hover() exists in both scripts, partial should refer to the right
   # one.
@@ -1513,7 +1528,7 @@ def Test_export_fails()
   v9.CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
   v9.CheckScriptFailure(['vim9script', 'export function /a1b2c3'], 'E1044:')
 
-  assert_fails('export something', 'E1043:')
+  assert_fails('export echo 1', 'E1043:')
 enddef
 
 func Test_import_fails_without_script()

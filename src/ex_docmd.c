@@ -1820,6 +1820,15 @@ do_one_cmd(
     if (may_have_range)
 	ea.cmd = skip_range(ea.cmd, TRUE, NULL);
 
+#ifdef FEAT_EVAL
+    // Handle ":export" - it functions almost like a command modifier.
+    // ":export var Name: type"
+    // ":export def Name(..."
+    // etc.
+    if (vim9script && checkforcmd_noparen(&ea.cmd, "export", 6))
+	is_export = TRUE;
+#endif
+
     if (vim9script && !may_have_range)
     {
 	if (ea.cmd == cmd + 1 && *cmd == '$')
@@ -2496,11 +2505,17 @@ do_one_cmd(
     }
 #endif
 
-    if (ea.argt & EX_XFILE)
+    if ((ea.argt & EX_XFILE)
+	    && expand_filename(&ea, cmdlinep, &errormsg) == FAIL)
+	goto doend;
+
+#ifdef FEAT_EVAL
+    if (is_export && (ea.argt & EX_EXPORT) == 0)
     {
-	if (expand_filename(&ea, cmdlinep, &errormsg) == FAIL)
-	    goto doend;
+	emsg(_(e_invalid_command_after_export));
+	goto doend;
     }
+#endif
 
     /*
      * Accept buffer name.  Cannot be used at the same time with a buffer
@@ -2557,13 +2572,21 @@ do_one_cmd(
 	/*
 	 * Call the function to execute the builtin command.
 	 */
-	ea.errmsg = NULL;
 	(cmdnames[ea.cmdidx].cmd_func)(&ea);
 	if (ea.errmsg != NULL)
 	    errormsg = ea.errmsg;
     }
 
 #ifdef FEAT_EVAL
+    // A command will reset "is_export" when exporting an item.  If it is still
+    // set something went wrong.
+    if (is_export)
+    {
+	if (errormsg == NULL)
+	    errormsg = _(e_export_with_invalid_argument);
+	is_export = FALSE;
+    }
+
     // Set flag that any command was executed, used by ex_vim9script().
     // Not if this was a command that wasn't executed or :endif.
     if (sourcing_a_script(&ea)
@@ -2620,6 +2643,7 @@ doend:
 
     if (did_set_expr_line)
 	set_expr_line(NULL, NULL);
+    is_export = FALSE;
 #endif
 
     undo_cmdmod(&cmdmod);

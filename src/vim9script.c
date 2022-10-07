@@ -246,49 +246,13 @@ ex_incdec(exarg_T *eap)
 }
 
 /*
- * ":export let Name: type"
- * ":export const Name: type"
- * ":export def Name(..."
- * ":export class Name ..."
+ * ":export cmd"
  */
     void
-ex_export(exarg_T *eap)
+ex_export(exarg_T *eap UNUSED)
 {
-    int	    prev_did_emsg = did_emsg;
-
-    if (!in_vim9script())
-    {
-	emsg(_(e_export_can_only_be_used_in_vim9script));
-	return;
-    }
-
-    eap->cmd = eap->arg;
-    (void)find_ex_command(eap, NULL, lookup_scriptitem, NULL);
-    switch (eap->cmdidx)
-    {
-	case CMD_var:
-	case CMD_final:
-	case CMD_const:
-	case CMD_def:
-	case CMD_function:
-	// case CMD_class:
-	    is_export = TRUE;
-	    do_cmdline(eap->cmd, eap->getline, eap->cookie,
-						DOCMD_VERBOSE + DOCMD_NOWAIT);
-
-	    // The command will reset "is_export" when exporting an item.
-	    if (is_export)
-	    {
-		if (did_emsg == prev_did_emsg)
-		    emsg(_(e_export_with_invalid_argument));
-		is_export = FALSE;
-	    }
-	    break;
-	default:
-	    if (did_emsg == prev_did_emsg)
-		emsg(_(e_invalid_command_after_export));
-	    break;
-    }
+    // can only get here when "export" wasn't caught in do_cmdline()
+    emsg(_(e_export_can_only_be_used_in_vim9script));
 }
 
 /*
