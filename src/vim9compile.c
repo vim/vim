@@ -2682,6 +2682,7 @@ check_args_shadowing(ufunc_T *ufunc, cctx_T *cctx)
     return r;
 }
 
+#ifdef HAS_MESSAGE_WINDOW
 /*
  * Get a count before a command.  Can only be a number.
  * Returns zero if there is no count.
@@ -2707,6 +2708,7 @@ get_cmd_count(char_u *line, exarg_T *eap)
     }
     return atol((char *)p);
 }
+#endif
 
 /*
  * Get the compilation type that should be used for "ufunc".
