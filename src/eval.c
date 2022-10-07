@@ -6916,7 +6916,7 @@ ex_execute(exarg_T *eap)
 	else if (eap->cmdidx == CMD_echowindow)
 	{
 #ifdef HAS_MESSAGE_WINDOW
-	    start_echowindow();
+	    start_echowindow(eap->addr_count > 0 ? eap->line2 : 0);
 #endif
 	    msg_attr(ga.ga_data, echo_attr);
 #ifdef HAS_MESSAGE_WINDOW

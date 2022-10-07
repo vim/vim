@@ -511,6 +511,10 @@ func Test_echowindow()
         echo 'two'
         echo 'three'
       enddef
+
+      def HideWin()
+        popup_hide(popup_findecho())
+      enddef
   END
   call writefile(lines, 'XtestEchowindow', 'D')
   let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
@@ -536,8 +540,11 @@ func Test_echowindow()
   call VerifyScreenDump(buf, 'Test_echowindow_7', {})
 
   call term_sendkeys(buf, ":tabnew\<CR>")
-  call term_sendkeys(buf, ":echowin 'more'\<CR>")
+  call term_sendkeys(buf, ":7echowin 'more'\<CR>")
   call VerifyScreenDump(buf, 'Test_echowindow_8', {})
+
+  call term_sendkeys(buf, ":call HideWin()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_9', {})
 
   " clean up
   call StopVimInTerminal(buf)

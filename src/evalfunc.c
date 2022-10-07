@@ -2273,6 +2273,8 @@ static funcentry_T global_functions[] =
 			ret_bool,	    PROP_FUNC(f_popup_filter_menu)},
     {"popup_filter_yesno", 2, 2, 0,	    arg2_number_string,
 			ret_bool,	    PROP_FUNC(f_popup_filter_yesno)},
+    {"popup_findecho",	0, 0, 0,	    NULL,
+			ret_number,	    PROP_FUNC(f_popup_findecho)},
     {"popup_findinfo",	0, 0, 0,	    NULL,
 			ret_number,	    PROP_FUNC(f_popup_findinfo)},
     {"popup_findpreview", 0, 0, 0,	    NULL,

@@ -457,6 +457,12 @@ typedef struct {
     int		defer_argcount;	    // number of arguments
 } deferins_T;
 
+// arguments to ISN_ECHOWINDOW
+typedef struct {
+    int		ewin_count;	    // number of arguments
+    long	ewin_time;	    // time argument (msec)
+} echowin_T;
+
 /*
  * Instruction
  */
@@ -507,6 +513,7 @@ struct isn_S {
 	getitem_T	    getitem;
 	debug_T		    debug;
 	deferins_T	    defer;
+	echowin_T	    echowin;
     } isn_arg;
 };
 

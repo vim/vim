@@ -32,6 +32,9 @@ static poppos_entry_T poppos_entries[] = {
 // Window used for ":echowindow"
 static win_T *message_win = NULL;
 
+// Time used for the next ":echowindow" message in msec.
+static int  message_win_time = 3000;
+
 // Flag set when a message is added to the message window, timer is started
 // when the message window is drawn.  This might be after pressing Enter at the
 // hit-enter prompt.
@@ -4379,6 +4382,16 @@ popup_find_info_window(void)
 #endif
 
     void
+f_popup_findecho(typval_T *argvars UNUSED, typval_T *rettv)
+{
+#ifdef HAS_MESSAGE_WINDOW
+    rettv->vval.v_number = message_win == NULL ? 0 : message_win->w_id;
+#else
+    rettv->vval.v_number = 0;
+#endif
+}
+
+    void
 f_popup_findinfo(typval_T *argvars UNUSED, typval_T *rettv)
 {
 #ifdef FEAT_QUICKFIX
@@ -4537,7 +4550,11 @@ may_start_message_win_timer(win_T *wp)
     if (wp == message_win && start_message_win_timer)
     {
 	if (message_win->w_popup_timer != NULL)
+	{
+	    message_win->w_popup_timer->tr_interval = message_win_time;
 	    timer_start(message_win->w_popup_timer);
+	    message_win_time = 3000;
+	}
 	start_message_win_timer = FALSE;
     }
 }
@@ -4568,15 +4585,18 @@ static int ew_msg_col = 0;
 
 /*
  * Invoked before outputting a message for ":echowindow".
+ * "time_sec" is the display time, zero means using the default 3 sec.
  */
     void
-start_echowindow(void)
+start_echowindow(int time_sec)
 {
     in_echowindow = TRUE;
     save_msg_didout = msg_didout;
     save_msg_col = msg_col;
     msg_didout = ew_msg_didout;
     msg_col = ew_msg_col;
+    if (time_sec != 0)
+	message_win_time = time_sec * 1000;
 }
 
 /*

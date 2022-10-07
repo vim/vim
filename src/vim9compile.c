@@ -2683,6 +2683,32 @@ check_args_shadowing(ufunc_T *ufunc, cctx_T *cctx)
 }
 
 /*
+ * Get a count before a command.  Can only be a number.
+ * Returns zero if there is no count.
+ * Returns -1 if there is something wrong.
+ */
+    static long
+get_cmd_count(char_u *line, exarg_T *eap)
+{
+    char_u *p;
+
+    // skip over colons and white space
+    for (p = line; *p == ':' || VIM_ISWHITE(*p); ++p)
+	;
+    if (!isdigit(*p))
+    {
+	// the command must be following
+	if (p < eap->cmd)
+	{
+	    emsg(_(e_invalid_range));
+	    return -1;
+	}
+	return 0;
+    }
+    return atol((char *)p);
+}
+
+/*
  * Get the compilation type that should be used for "ufunc".
  * Keep in sync with INSTRUCTIONS().
  */
@@ -3309,16 +3335,23 @@ compile_def_function(
 		    line = compile_defer(p, &cctx);
 		    break;
 
+#ifdef HAS_MESSAGE_WINDOW
+	    case CMD_echowindow:
+		    {
+			long cmd_count = get_cmd_count(line, &ea);
+			if (cmd_count >= 0)
+			    line = compile_mult_expr(p, ea.cmdidx,
+							     cmd_count, &cctx);
+		    }
+		    break;
+#endif
 	    case CMD_echo:
 	    case CMD_echon:
 	    case CMD_echoconsole:
 	    case CMD_echoerr:
 	    case CMD_echomsg:
-#ifdef HAS_MESSAGE_WINDOW
-	    case CMD_echowindow:
-#endif
 	    case CMD_execute:
-		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
+		    line = compile_mult_expr(p, ea.cmdidx, 0, &cctx);
 		    break;
 
 	    case CMD_put:

@@ -1971,10 +1971,11 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
  * compile "echomsg expr"
  * compile "echoerr expr"
  * compile "echoconsole expr"
+ * compile "echowindow expr" - may have cmd_count set
  * compile "execute expr"
  */
     char_u *
-compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
+compile_mult_expr(char_u *arg, int cmdidx, long cmd_count, cctx_T *cctx)
 {
     char_u	*p = arg;
     char_u	*prev = arg;
@@ -1982,6 +1983,7 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
     int		count = 0;
     int		start_ctx_lnum = cctx->ctx_lnum;
     type_T	*type;
+    int		r = OK;
 
     for (;;)
     {
@@ -2015,23 +2017,23 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 	cctx->ctx_lnum = start_ctx_lnum;
 
 	if (cmdidx == CMD_echo || cmdidx == CMD_echon)
-	    generate_ECHO(cctx, cmdidx == CMD_echo, count);
+	    r = generate_ECHO(cctx, cmdidx == CMD_echo, count);
 	else if (cmdidx == CMD_execute)
-	    generate_MULT_EXPR(cctx, ISN_EXECUTE, count);
+	    r = generate_MULT_EXPR(cctx, ISN_EXECUTE, count);
 	else if (cmdidx == CMD_echomsg)
-	    generate_MULT_EXPR(cctx, ISN_ECHOMSG, count);
+	    r = generate_MULT_EXPR(cctx, ISN_ECHOMSG, count);
 #ifdef HAS_MESSAGE_WINDOW
 	else if (cmdidx == CMD_echowindow)
-	    generate_MULT_EXPR(cctx, ISN_ECHOWINDOW, count);
+	    r = generate_ECHOWINDOW(cctx, count, cmd_count);
 #endif
 	else if (cmdidx == CMD_echoconsole)
-	    generate_MULT_EXPR(cctx, ISN_ECHOCONSOLE, count);
+	    r = generate_MULT_EXPR(cctx, ISN_ECHOCONSOLE, count);
 	else
-	    generate_MULT_EXPR(cctx, ISN_ECHOERR, count);
+	    r = generate_MULT_EXPR(cctx, ISN_ECHOERR, count);
 
 	cctx->ctx_lnum = save_lnum;
     }
-    return p;
+    return r == OK ? p : NULL;
 }
 
 /*

@@ -2367,6 +2367,7 @@ def s:Echomsg()
   echoerr 'went' .. 'wrong'
   var local = 'window'
   echowin 'in' local
+  :5echowin 'five'
 enddef
 
 def Test_disassemble_echomsg()
@@ -2389,6 +2390,9 @@ def Test_disassemble_echomsg()
         '\d\+ PUSHS "in"\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ ECHOWINDOW 2\_s*' ..
+        ":5echowin 'five'\\_s*" ..
+        '\d\+ PUSHS "five"\_s*' ..
+        '\d\+ ECHOWINDOW 1 (5 sec)\_s*' ..
         '\d\+ RETURN void',
         res)
 enddef

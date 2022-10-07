@@ -3392,7 +3392,7 @@ text...
 			when the screen is redrawn.
 
 					*:echow* *:echowin* *:echowindow*
-:echow[indow] {expr1} ..
+:[N]echow[indow] {expr1} ..
 			Like |:echomsg| but when the messages popup window is
 			available the message is displayed there.  This means
 			it will show for three seconds and avoid a
@@ -3400,6 +3400,9 @@ text...
 			that, press Esc in Normal mode (when it would
 			otherwise beep).  If it disappears too soon you can
 			use `:messages` to see the text.
+			When [N] is given then the window will show up for
+			this number of seconds.  The last `:echowindow` with a
+			count matters, it is used once only.
 			The message window is available when Vim was compiled
 			with the +timer and the +popupwin features.
 

@@ -347,6 +347,12 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		See the example here: |popup_dialog-example|
 
 
+popup_findecho()					*popup_findecho()*
+		Get the |window-ID| for the popup that shows messages for the
+		`:echowindow` command.  Return zero if there is none.
+		Mainly useful to hide the popup.
+
+
 popup_findinfo()					*popup_findinfo()*
 		Get the |window-ID| for the popup info window, as it used by
 		the popup menu.  See |complete-popup|.  The info popup is
