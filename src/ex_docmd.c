@@ -1889,7 +1889,11 @@ do_one_cmd(
 	}
     }
 # endif
+#endif
 
+    ea.cmd = cmd;
+
+#ifdef FEAT_EVAL
     // May go to debug mode.  If this happens and the ">quit" debug command is
     // used, throw an interrupt exception and skip the next command.
     dbg_check_breakpoint(&ea);
@@ -1935,7 +1939,6 @@ do_one_cmd(
 #endif
     }
 
-    ea.cmd = cmd;
     if (!may_have_range)
 	ea.line1 = ea.line2 = default_address(&ea);
     else if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
