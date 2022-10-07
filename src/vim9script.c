@@ -969,7 +969,7 @@ update_vim9_script_var(
 		sv->sv_flags |= SVFLAG_ASSIGNED;
 	    newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	    ++si->sn_var_vals.ga_len;
-	    STRCPY(&newsav->sav_key, name);
+	    STRCPY(&newsav->sav_key[0], name);
 	    sv->sv_name = newsav->sav_key;
 	    newsav->sav_di = di;
 	    newsav->sav_block_id = si->sn_current_block_id;
