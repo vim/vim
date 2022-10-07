@@ -3339,7 +3339,9 @@ compile_def_function(
 	    case CMD_echowindow:
 		    {
 			long cmd_count = get_cmd_count(line, &ea);
-			if (cmd_count >= 0)
+			if (cmd_count < 0)
+			    line = NULL;
+			else
 			    line = compile_mult_expr(p, ea.cmdidx,
 							     cmd_count, &cctx);
 		    }
