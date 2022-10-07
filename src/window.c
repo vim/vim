@@ -5322,7 +5322,8 @@ win_free_popup(win_T *win)
 	    close_buffer(win, win->w_buffer, 0, FALSE, FALSE);
     }
 # if defined(FEAT_TIMERS)
-    if (win->w_popup_timer != NULL)
+    // the timer may have been cleared, making the pointer invalid
+    if (timer_valid(win->w_popup_timer))
 	stop_timer(win->w_popup_timer);
 # endif
     vim_free(win->w_frame);

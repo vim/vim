@@ -137,6 +137,20 @@ func Test_timer_stopall()
   call assert_equal(0, len(info))
 endfunc
 
+def Test_timer_stopall_with_popup()
+  # Create a popup that times out after ten seconds.
+  # Another timer will fire in half a second and close it early after stopping
+  # all timers.
+  var pop = popup_create('Popup', {time: 10000})
+  var tmr = timer_start(500, (_) => {
+    timer_stopall()
+    popup_clear()
+  })
+  sleep 1
+  assert_equal([], timer_info(tmr))
+  assert_equal([], popup_list())
+enddef
+
 func Test_timer_paused()
   let g:test_is_flaky = 1
   let g:val = 0

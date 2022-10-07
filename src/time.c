@@ -777,15 +777,27 @@ set_ref_in_timer(int copyID)
     return abort;
 }
 
+/*
+ * Return TRUE if "timer" exists in the list of timers.
+ */
+    int
+timer_valid(timer_T *timer)
+{
+    if (timer == NULL)
+	return FALSE;
+    for (timer_T *t = first_timer; t != NULL; t = t->tr_next)
+	if (t == timer)
+	    return TRUE;
+    return FALSE;
+}
+
 # if defined(EXITFREE) || defined(PROTO)
     void
 timer_free_all()
 {
-    timer_T *timer;
-
     while (first_timer != NULL)
     {
-	timer = first_timer;
+	timer_T *timer = first_timer;
 	remove_timer(timer);
 	free_timer(timer);
     }
