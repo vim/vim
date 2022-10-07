@@ -140,7 +140,8 @@ ex_vim9script(exarg_T *eap UNUSED)
 					 0L, (char_u *)CPO_VIM, OPT_NO_REDRAW);
     }
 #else
-    // No check for this being the first command, it doesn't matter.
+    // No check for this being the first command, the information is not
+    // available.
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
 #endif
 }
@@ -969,7 +970,8 @@ update_vim9_script_var(
 		sv->sv_flags |= SVFLAG_ASSIGNED;
 	    newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	    ++si->sn_var_vals.ga_len;
-	    STRCPY(&newsav->sav_key, name);
+	    // a pointer to the first char avoids a FORTIFY_SOURCE problem
+	    STRCPY(&newsav->sav_key[0], name);
 	    sv->sv_name = newsav->sav_key;
 	    newsav->sav_di = di;
 	    newsav->sav_block_id = si->sn_current_block_id;
