@@ -4066,6 +4066,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
 		curwin->w_p_lbr = lbr_saved;
+		if (curwin->w_p_lbr)
+		    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 #endif
 		// Reset finish_op now, don't want it set inside edit().
 		finish_op = FALSE;
@@ -4173,6 +4175,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
 		curwin->w_p_lbr = lbr_saved;
+		if (curwin->w_p_lbr)
+		    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 #endif
 		op_insert(oap, cap->count1);
 #ifdef FEAT_LINEBREAK
@@ -4280,5 +4284,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
     }
 #ifdef FEAT_LINEBREAK
     curwin->w_p_lbr = lbr_saved;
+    if (curwin->w_p_lbr)
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 #endif
 }
