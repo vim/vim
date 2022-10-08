@@ -2207,6 +2207,7 @@ theend:
     return ret;
 }
 
+#ifdef FEAT_LINEBREAK
 /*
  * Reset 'linebreak' and take care of side effects.
  * Returns the previous value, to be passed to restore_lbr().
@@ -2235,6 +2236,7 @@ restore_lbr(int lbr_saved)
 	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
     }
 }
+#endif
 
 /*
  * prepare a few things for block mode yank/delete/tilde
