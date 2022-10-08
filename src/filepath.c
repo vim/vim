@@ -2583,7 +2583,7 @@ f_browse(typval_T *argvars UNUSED, typval_T *rettv)
 		|| check_for_string_arg(argvars, 3) == FAIL))
 	return;
 
-    save = (int)tv_get_number_chk(&argvars[0], &error);
+    save = (int)tv_get_bool_chk(&argvars[0], &error);
     title = tv_get_string_chk(&argvars[1]);
     initdir = tv_get_string_buf_chk(&argvars[2], buf);
     defname = tv_get_string_buf_chk(&argvars[3], buf2);
