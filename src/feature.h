@@ -236,6 +236,18 @@
 # endif
 #endif
 
+// It is unclear if there are any users of the +rightleft and +arabic fetures.
+// The lack of feedback and bug reports suggests that they are not actively
+// being used.
+// FOR NOW: disable the features here.  If nobody complains the code can be
+// removed.
+#ifdef FEAT_RIGHTLEFT
+# undef FEAT_RIGHTLEFT
+#endif
+#ifdef FEAT_ARABIC
+# undef FEAT_ARABIC
+#endif
+
 /*
  * +emacs_tags		When FEAT_EMACS_TAGS defined: Include support for
  *			emacs style TAGS file.
