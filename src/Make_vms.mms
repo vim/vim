@@ -29,7 +29,6 @@ DECC = YES
 # Build model selection
 # TINY   - No optional features enabled
 # NORMAL - A default selection of features enabled
-# BIG    - Many features enabled, as rich as possible. (default)
 # HUGE   - All possible features enabled.
 # Please select one of these alternatives above.
 MODEL = HUGE

@@ -79,11 +79,10 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 	Description	: Build model selection
 	Options:	: TINY	  - No optional features enabled
 			  NORMAL  - A default selection of features enabled
-			  BIG	  - Many features enabled, as rich as possible.
-			  (OpenVMS default)
+				    (OpenVMS default)
 			  HUGE	  - All possible features enabled.
-			  Uncommented - will default to BIG
-	Default		: MODEL = BIG
+			  Uncommented - will default to NORMAL
+	Default		: MODEL = NORMAL
 
 	Parameter name	: GUI
 	Description	: GUI or terminal mode executable

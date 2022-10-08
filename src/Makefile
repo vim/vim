@@ -453,7 +453,6 @@ CClink = $(CC)
 # Uncomment this when you want to include the Tcl interface.
 # First one is for static linking, second one for dynamic loading.
 # Debian package is "tcl-dev".
-# This requires at least "normal" features, "tiny" doesn't work.
 #CONF_OPT_TCL = --enable-tclinterp
 #CONF_OPT_TCL = --enable-tclinterp=dynamic
 #CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
@@ -482,7 +481,7 @@ CClink = $(CC)
 # MULTIBYTE - To edit multi-byte characters.
 # This is now always enabled.
 
-# When building with at least "big" features, right-left and Arabic
+# When building with "huge" features, right-left and Arabic
 # features are enabled.  Use this to disable them.
 #CONF_OPT_MULTIBYTE = --disable-rightleft --disable-arabic
 
@@ -518,7 +517,7 @@ CClink = $(CC)
 # though you have /dev/sysmouse and includes.
 #CONF_OPT_SYSMOUSE = --disable-sysmouse
 
-# libcanberra - For sound support.  Default is on for big features.
+# libcanberra - For sound support.  Default is on for huge features.
 # Uncomment one of the two to chose otherwise.
 # CONF_OPT_CANBERRA = --enable-canberra
 # CONF_OPT_CANBERRA = --disable-canberra
@@ -532,7 +531,6 @@ CClink = $(CC)
 # The default is "huge" for most systems.
 #CONF_OPT_FEAT = --with-features=tiny
 #CONF_OPT_FEAT = --with-features=normal
-#CONF_OPT_FEAT = --with-features=big
 #CONF_OPT_FEAT = --with-features=huge
 
 # COMPILED BY - For including a specific e-mail address for ":version".
