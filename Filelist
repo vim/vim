@@ -590,30 +590,9 @@ SRC_DOS =	\
 		nsis/README.txt \
 		nsis/lang/*.nsi \
 		uninstall.txt \
-		src/VisVim/Commands.cpp \
-		src/VisVim/Commands.h \
-		src/VisVim/DSAddIn.cpp \
-		src/VisVim/DSAddIn.h \
-		src/VisVim/OleAut.cpp \
-		src/VisVim/OleAut.h \
-		src/VisVim/README_VisVim.txt \
-		src/VisVim/Reg.cpp \
-		src/VisVim/Register.bat \
-		src/VisVim/Resource.h \
-		src/VisVim/StdAfx.cpp \
-		src/VisVim/StdAfx.h \
-		src/VisVim/UnRegist.bat \
-		src/VisVim/VisVim.cpp \
-		src/VisVim/VisVim.def \
-		src/VisVim/VisVim.mak \
-		src/VisVim/VisVim.h \
-		src/VisVim/VisVim.odl \
-		src/VisVim/VisVim.rc \
-		src/VisVim/VsReadMe.txt \
 
 # source files for DOS without CR/LF translation (also in the extra archive)
 SRC_DOS_BIN =	\
-		src/VisVim/Res/*.bmp \
 		src/tearoff.bmp \
 		src/tools.bmp \
 		src/vim*.ico \
@@ -945,7 +924,6 @@ EXTRA =		\
 		$(RT_EXTRA) \
 		$(SRC_EXTRA) \
 		README_extra.txt \
-		src/VisVim/VisVim.dll \
 		runtime/vimlogo.xpm \
 
 # files in READMEdir that are included from the top dir

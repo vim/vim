@@ -1,6 +1,6 @@
 README_ole.txt for version 9.0 of Vim: Vi IMproved.
 
-This archive contains gvim.exe with OLE interface and VisVim.
+This archive contains gvim.exe with OLE interface.
 This version of gvim.exe can also load a number of interface dynamically (you
 can optionally install the .dll files for each interface).
 It is only for MS-Windows 95/98/ME/NT/2000/XP.
@@ -15,6 +15,3 @@ Win32 with OLE - "MS-Windows 32 bit GUI version with OLE support"
 
 For further information, type this inside Vim:
 	:help if_ole
-
-Furthermore, this archive contains VISVIM.DLL.  It can be used to integrate
-the OLE gvim with Microsoft Visual Developer Studio.  See VisVim/README.txt.

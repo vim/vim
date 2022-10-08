@@ -123,11 +123,6 @@ LangString str_desc_plugin_vim      ${LANG_ITALIAN} \
     "Crea directory per plugin nella directory di installazione di Vim \
      per uso da parte di tutti gli utenti di questo sistema."
 
-LangString str_section_vis_vim      ${LANG_ITALIAN} \
-    "Estensione VisVim"
-LangString str_desc_vis_vim         ${LANG_ITALIAN} \
-    "Estensione VisVim per integrazione con Microsoft Visual Studio."
-
 LangString str_section_nls          ${LANG_ITALIAN} \
     "Supporto Multilingue (NLS)"
 LangString str_desc_nls             ${LANG_ITALIAN} \
