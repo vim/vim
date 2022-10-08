@@ -2802,49 +2802,56 @@ win_line(
 						      && wlv.n_extra > tab_len)
 			    tab_len += wlv.n_extra - tab_len;
 # endif
-			// If wlv.n_extra > 0, it gives the number of chars, to
-			// use for a tab, else we need to calculate the width
-			// for a tab.
-			int tab2_len = mb_char2len(wp->w_lcs_chars.tab2);
-			len = tab_len * tab2_len;
-			if (wp->w_lcs_chars.tab3)
-			    len += mb_char2len(wp->w_lcs_chars.tab3) - tab2_len;
-			if (wlv.n_extra > 0)
-			    len += wlv.n_extra - tab_len;
-			c = wp->w_lcs_chars.tab1;
-			p = alloc(len + 1);
-			if (p == NULL)
-			    wlv.n_extra = 0;
-			else
+			if (tab_len > 0)
 			{
-			    vim_memset(p, ' ', len);
-			    p[len] = NUL;
-			    vim_free(wlv.p_extra_free);
-			    wlv.p_extra_free = p;
-			    for (i = 0; i < tab_len; i++)
+			    // If wlv.n_extra > 0, it gives the number of
+			    // chars, to use for a tab, else we need to
+			    // calculate the width for a tab.
+			    int tab2_len = mb_char2len(wp->w_lcs_chars.tab2);
+			    len = tab_len * tab2_len;
+			    if (wp->w_lcs_chars.tab3)
+				len += mb_char2len(wp->w_lcs_chars.tab3)
+								    - tab2_len;
+			    if (wlv.n_extra > 0)
+				len += wlv.n_extra - tab_len;
+			    c = wp->w_lcs_chars.tab1;
+			    p = alloc(len + 1);
+			    if (p == NULL)
+				wlv.n_extra = 0;
+			    else
 			    {
-				int lcs = wp->w_lcs_chars.tab2;
-
-				if (*p == NUL)
+				vim_memset(p, ' ', len);
+				p[len] = NUL;
+				vim_free(wlv.p_extra_free);
+				wlv.p_extra_free = p;
+				for (i = 0; i < tab_len; i++)
 				{
-				    tab_len = i;
-				    break;
-				}
+				    int lcs = wp->w_lcs_chars.tab2;
 
-				// if tab3 is given, use it for the last char
-				if (wp->w_lcs_chars.tab3 && i == tab_len - 1)
-				    lcs = wp->w_lcs_chars.tab3;
-				p += mb_char2bytes(lcs, p);
-				wlv.n_extra += mb_char2len(lcs)
+				    if (*p == NUL)
+				    {
+					tab_len = i;
+					break;
+				    }
+
+				    // if tab3 is given, use it for the last
+				    // char
+				    if (wp->w_lcs_chars.tab3
+							   && i == tab_len - 1)
+					lcs = wp->w_lcs_chars.tab3;
+				    p += mb_char2bytes(lcs, p);
+				    wlv.n_extra += mb_char2len(lcs)
 						  - (saved_nextra > 0 ? 1 : 0);
-			    }
-			    wlv.p_extra = wlv.p_extra_free;
+				}
+				wlv.p_extra = wlv.p_extra_free;
 # ifdef FEAT_CONCEAL
-			    // n_extra will be increased by FIX_FOX_BOGUSCOLS
-			    // macro below, so need to adjust for that here
-			    if (wlv.vcol_off > 0)
-				wlv.n_extra -= wlv.vcol_off;
+				// n_extra will be increased by
+				// FIX_FOX_BOGUSCOLS macro below, so need to
+				// adjust for that here
+				if (wlv.vcol_off > 0)
+				    wlv.n_extra -= wlv.vcol_off;
 # endif
+			    }
 			}
 		    }
 #endif
