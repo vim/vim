@@ -17,7 +17,11 @@ func Test_play_event()
   endif
   let g:playcallback_count = 0
   let g:id = 0
-  let id = 'bell'->sound_playevent('PlayCallback')
+  let event_name = 'bell'
+  if has('osx')
+      let event_name = 'Tink'
+  endif
+  let id = event_name->sound_playevent('PlayCallback')
   if id == 0
     throw 'Skipped: bell event not available'
   endif

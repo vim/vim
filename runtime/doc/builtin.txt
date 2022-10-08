@@ -8631,6 +8631,9 @@ sound_playevent({name} [, {callback}])
 <		On MS-Windows, {name} can be SystemAsterisk, SystemDefault,
 		SystemExclamation, SystemExit, SystemHand, SystemQuestion,
 		SystemStart, SystemWelcome, etc.
+		On macOS, {name} refers to files located in
+		/System/Library/Sounds (e.g. "Tink").  It will also work for
+		custom installed sounds in folders like ~/Library/Sounds.
 
 		When {callback} is specified it is invoked when the sound is
 		finished.  The first argument is the sound ID, the second

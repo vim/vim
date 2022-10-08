@@ -163,9 +163,16 @@
  */
 #include "feature.h"
 
-#if defined(MACOS_X_DARWIN) && defined(FEAT_NORMAL) \
-	&& !defined(FEAT_CLIPBOARD)
-# define FEAT_CLIPBOARD
+#if defined(MACOS_X_DARWIN)
+# if defined(FEAT_NORMAL) && !defined(FEAT_CLIPBOARD)
+#  define FEAT_CLIPBOARD
+# endif
+# if defined(FEAT_BIG) && !defined(FEAT_SOUND)
+#  define FEAT_SOUND
+# endif
+# if defined(FEAT_SOUND)
+#  define FEAT_SOUND_MACOSX
+# endif
 #endif
 
 // +x11 is only enabled when it's both available and wanted.
