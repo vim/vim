@@ -2805,9 +2805,10 @@ win_line(
 			// If wlv.n_extra > 0, it gives the number of chars, to
 			// use for a tab, else we need to calculate the width
 			// for a tab.
-			len = (tab_len * mb_char2len(wp->w_lcs_chars.tab2));
+			int tab2_len = mb_char2len(wp->w_lcs_chars.tab2);
+			len = tab_len * tab2_len;
 			if (wp->w_lcs_chars.tab3)
-			    len += mb_char2len(wp->w_lcs_chars.tab3);
+			    len += mb_char2len(wp->w_lcs_chars.tab3) - tab2_len;
 			if (wlv.n_extra > 0)
 			    len += wlv.n_extra - tab_len;
 			c = wp->w_lcs_chars.tab1;
