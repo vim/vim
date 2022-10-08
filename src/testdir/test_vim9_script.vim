@@ -297,6 +297,14 @@ def Test_const()
     constdict->assert_equal({one: 1, two: {five: 55, six: 66}, three: 3})
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # "any" type with const flag is recognized as "any"
+  lines =<< trim END
+      const dict: dict<any> = {foo: {bar: 42}}
+      const foo = dict.foo
+      assert_equal(v:t_number, type(foo.bar))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_const_bang()

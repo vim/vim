@@ -1831,7 +1831,8 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
 
     // check for dict type
     type = get_type_on_stack(cctx, 0);
-    if (type->tt_type != VAR_DICT && type != &t_any && type != &t_unknown)
+    if (type->tt_type != VAR_DICT
+		   && type->tt_type != VAR_ANY && type->tt_type != VAR_UNKNOWN)
     {
 	char *tofree;
 
@@ -1843,7 +1844,7 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
     // change dict type to dict member type
     if (type->tt_type == VAR_DICT)
     {
-	type_T *ntype = type->tt_member == &t_unknown
+	type_T *ntype = type->tt_member->tt_type == VAR_UNKNOWN
 						    ? &t_any : type->tt_member;
 	set_type_on_stack(cctx, ntype, 0);
     }
