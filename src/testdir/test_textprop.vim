@@ -3211,6 +3211,36 @@ func Test_long_text_below_with_padding()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_text_after_nowrap()
+  CheckRunVimInTerminal
+
+  " FIXME: the second property causes a hang
+  let lines =<< trim END
+      vim9script
+      setline(1, ['first line', 'second line '->repeat(50), 'third', 'fourth'])
+      set nowrap
+      prop_type_add('theprop', {highlight: 'DiffChange'})
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'after the text '->repeat(5),
+          text_align: 'after',
+          text_padding_left: 2,
+      })
+      #prop_add(1, 0, {
+      #    type: 'theprop',
+      #    text: 'after the text '->repeat(5),
+      #    text_align: 'after',
+      #    text_padding_left: 2,
+      #})
+      normal 2Gw
+  END
+  call writefile(lines, 'XTextAfterNowrap', 'D')
+  let buf = RunVimInTerminal('-S XTextAfterNowrap', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_text_after_nowrap_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_insert_text_change_arg()
   CheckRunVimInTerminal
 

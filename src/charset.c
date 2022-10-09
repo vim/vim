@@ -1178,7 +1178,7 @@ win_lbr_chartabsize(
 		    {
 			int n_extra = (int)STRLEN(p);
 
-			cells = text_prop_position(wp, tp,
+			cells = text_prop_position(wp, tp, vcol,
 			     (vcol + size) % (wp->w_width - col_off) + col_off,
 						     &n_extra, &p, NULL, NULL);
 #ifdef FEAT_LINEBREAK

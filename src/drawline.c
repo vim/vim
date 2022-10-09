@@ -612,7 +612,8 @@ textprop_size_after_trunc(
 text_prop_position(
 	win_T	    *wp,
 	textprop_T  *tp,
-	int	    vcol,	    // current screen column
+	int	    vcol UNUSED,    // current text column
+	int	    scr_col,	    // current screen column
 	int	    *n_extra,	    // nr of bytes for virtual text
 	char_u	    **p_extra,	    // virtual text
 	int	    *n_attr,	    // attribute cells, NULL if not used
@@ -624,7 +625,7 @@ text_prop_position(
     int	    wrap = (tp->tp_flags & TP_FLAG_WRAP);
     int	    padding = tp->tp_col == MAXCOL && tp->tp_len > 1
 				  ? tp->tp_len - 1 : 0;
-    int	    col_with_padding = vcol + (below ? 0 : padding);
+    int	    col_with_padding = scr_col + (below ? 0 : padding);
     int	    room = wp->w_width - col_with_padding;
     int	    before = room;	// spaces before the text
     int	    after = 0;		// spaces after the text
@@ -1888,21 +1889,21 @@ win_line(
 		    for (pi = 0; pi < text_props_active; ++pi)
 		    {
 			int	    tpi = text_prop_idxs[pi];
+			textprop_T  *tp = &text_props[tpi];
 			proptype_T  *pt = text_prop_type_by_id(
-					wp->w_buffer, text_props[tpi].tp_type);
+					wp->w_buffer, tp->tp_type);
 
 			if (pt != NULL && (pt->pt_hl_id > 0
-						  || text_props[tpi].tp_id < 0)
-					  && text_props[tpi].tp_id != -MAXCOL)
+				     || tp->tp_id < 0) && tp->tp_id != -MAXCOL)
 			{
 			    if (pt->pt_hl_id > 0)
 				used_attr = syn_id2attr(pt->pt_hl_id);
 			    text_prop_type = pt;
 			    text_prop_attr =
 				   hl_combine_attr(text_prop_attr, used_attr);
-			    text_prop_flags = pt->pt_flags;
-			    text_prop_id = text_props[tpi].tp_id;
 			    other_tpi = used_tpi;
+			    text_prop_flags = pt->pt_flags;
+			    text_prop_id = tp->tp_id;
 			    used_tpi = tpi;
 			}
 		    }
@@ -1972,6 +1973,7 @@ win_line(
 				// Shared with win_lbr_chartabsize(), must do
 				// exactly the same.
 				start_line = text_prop_position(wp, tp,
+						    wlv.vcol,
 						    wlv.col,
 						    &wlv.n_extra, &wlv.p_extra,
 						    &n_attr, &n_attr_skip);
@@ -2011,7 +2013,10 @@ win_line(
 			// If this is an "above" text prop and 'nowrap' the we
 			// must wrap anyway.
 			text_prop_above = above;
-			text_prop_follows = other_tpi != -1;
+			text_prop_follows = other_tpi != -1
+			    && (wp->w_p_wrap
+				   || (text_props[other_tpi].tp_flags
+			       & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_RIGHT)));
 		    }
 		}
 		else if (text_prop_next < text_prop_count
