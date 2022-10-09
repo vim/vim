@@ -3183,6 +3183,34 @@ func Test_insert_text_with_padding()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_long_text_below_with_padding()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['first line', 'second line'])
+      prop_type_add('theprop', {highlight: 'DiffChange'})
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'after '->repeat(20),
+          text_align: 'below',
+          text_padding_left: 3,
+      })
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'more '->repeat(20),
+          text_align: 'below',
+          text_padding_left: 30,
+      })
+      normal 2Gw
+  END
+  call writefile(lines, 'XlongTextBelowWithPadding', 'D')
+  let buf = RunVimInTerminal('-S XlongTextBelowWithPadding', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_long_text_with_padding_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_insert_text_change_arg()
   CheckRunVimInTerminal
 

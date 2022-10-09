@@ -573,6 +573,7 @@ textprop_size_after_trunc(
 	win_T	*wp,
 	int	flags,	    // TP_FLAG_ALIGN_*
 	int	added,
+	int	padding,
 	char_u	*text,
 	int	*n_used_ptr)
 {
@@ -585,6 +586,8 @@ textprop_size_after_trunc(
     // if the remaining size is to small wrap anyway and use the next line
     if (space < PROP_TEXT_MIN_CELLS)
 	space += wp->w_width;
+    if (flags & TP_FLAG_ALIGN_BELOW)
+	space -= padding;
     for (n_used = 0; n_used < len; n_used += (*mb_ptr2len)(text + n_used))
     {
 	int clen = ptr2cells(text + n_used);
@@ -629,7 +632,7 @@ text_prop_position(
     char_u  *l = NULL;
     int	    strsize = vim_strsize(*p_extra);
     int	    cells = wrap ? strsize : textprop_size_after_trunc(wp,
-				      tp->tp_flags, before, *p_extra, &n_used);
+			     tp->tp_flags, before, padding, *p_extra, &n_used);
 
     if (wrap || right || above || below || padding > 0 || n_used < *n_extra)
     {
@@ -715,7 +718,7 @@ text_prop_position(
 			// change last character to '…'
 			lp -= (*mb_head_off)(l, lp);
 			STRCPY(lp, "…");
-			n_used = lp - l + 3 - padding;
+			n_used = lp - l + 3 - before - padding;
 		    }
 		    else
 			// change last character to '>'
