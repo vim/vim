@@ -150,7 +150,7 @@ ex_help(exarg_T *eap)
 	    n = WSP_HELP;
 	    if (cmdmod.cmod_split == 0 && curwin->w_width != Columns
 						  && curwin->w_width < 80)
-		n |= WSP_TOP;
+		n |= p_sb ? WSP_BOT : WSP_TOP;
 	    if (win_split(0, n) == FAIL)
 		goto erret;
 
