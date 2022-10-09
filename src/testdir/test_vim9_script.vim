@@ -305,6 +305,25 @@ def Test_const()
       assert_equal(v:t_number, type(foo.bar))
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # also when used as a builtin function argument
+  lines =<< trim END
+      vim9script
+
+      def SorterFunc(lhs: dict<string>, rhs: dict<string>): number
+        return lhs.name <# rhs.name ? -1 : 1
+      enddef
+
+      def Run(): void
+        var list =  [{name: "3"}, {name: "2"}]
+        const Sorter = get({}, "unknown", SorterFunc)
+        sort(list, Sorter)
+        assert_equal([{name: "2"}, {name: "3"}], list)
+      enddef
+
+      Run()
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_const_bang()

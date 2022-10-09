@@ -337,6 +337,17 @@ func_type_add_arg_types(
 }
 
 /*
+ * Return TRUE if "type" is NULL, any or unknown.
+ * This also works for const (comparing with &t_any and &t_unknown doesn't).
+ */
+    int
+type_any_or_unknown(type_T *type)
+{
+    return type == NULL || type->tt_type == VAR_ANY
+					       || type->tt_type == VAR_UNKNOWN;
+}
+
+/*
  * Get a type_T for a typval_T.
  * "type_gap" is used to temporarily create types in.
  * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
