@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        features: [tiny, small, normal, huge]
+        features: [tiny, normal, huge]
         compiler: [clang, gcc]
         extra: [none]
         include:
@@ -125,7 +125,7 @@ jobs:
           echo "TMPDIR=${{ runner.temp }}"
 
           case "${{ matrix.features }}" in
-          tiny|small)
+          tiny)
             echo "TEST=testtiny"
             if ${{ contains(matrix.extra, 'nogui') }}; then
               echo "CONFOPT=--disable-gui"
