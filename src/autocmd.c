@@ -2095,6 +2095,7 @@ apply_autocmds_group(
 		|| event == EVENT_DIRCHANGED
 		|| event == EVENT_DIRCHANGEDPRE
 		|| event == EVENT_MODECHANGED
+		|| event == EVENT_MENUPOPUP
 		|| event == EVENT_USER
 		|| event == EVENT_WINCLOSED
 		|| event == EVENT_WINSCROLLED)
