@@ -20,9 +20,7 @@ static int	VIsual_mode_orig = NUL;		// saved Visual mode
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
 #endif
 static void	unshift_special(cmdarg_T *cap);
-#ifdef FEAT_CMDL_INFO
 static void	del_from_showcmd(int);
-#endif
 
 /*
  * nv_*(): functions called to handle Normal and Visual mode commands.
@@ -222,9 +220,7 @@ getcount:
 	    if (c == K_DEL || c == K_KDEL)
 	    {
 		cap->count0 /= 10;
-#ifdef FEAT_CMDL_INFO
 		del_from_showcmd(4);	// delete the digit and ~@%
-#endif
 	    }
 	    else if (cap->count0 > 99999999L)
 	    {
@@ -255,9 +251,7 @@ getcount:
 		--no_mapping;
 		--allow_keys;
 	    }
-#ifdef FEAT_CMDL_INFO
 	    *need_flushbuf |= add_to_showcmd(c);
-#endif
 	}
 
 	// If we got CTRL-W there may be a/another count
@@ -272,9 +266,7 @@ getcount:
 	    LANGMAP_ADJUST(c, TRUE);
 	    --no_mapping;
 	    --allow_keys;
-#ifdef FEAT_CMDL_INFO
 	    *need_flushbuf |= add_to_showcmd(c);
-#endif
 	    goto getcount;		// jump back
 	}
     }
@@ -375,9 +367,7 @@ normal_cmd_get_more_chars(
 	 */
 	cap->nchar = plain_vgetc();
 	LANGMAP_ADJUST(cap->nchar, TRUE);
-#ifdef FEAT_CMDL_INFO
 	*need_flushbuf |= add_to_showcmd(cap->nchar);
-#endif
 	if (cap->nchar == 'r' || cap->nchar == '\'' || cap->nchar == '`'
 		|| cap->nchar == Ctrl_BSL)
 	{
@@ -465,9 +455,7 @@ normal_cmd_get_more_chars(
 	p_smd = save_smd;
 #endif
 	State = MODE_NORMAL_BUSY;
-#ifdef FEAT_CMDL_INFO
 	*need_flushbuf |= add_to_showcmd(*cp);
-#endif
 
 	if (!lit)
 	{
@@ -482,11 +470,9 @@ normal_cmd_get_more_chars(
 		if (c > 0)
 		{
 		    *cp = c;
-# ifdef FEAT_CMDL_INFO
 		    // Guessing how to update showcmd here...
 		    del_from_showcmd(3);
 		    *need_flushbuf |= add_to_showcmd(*cp);
-# endif
 		}
 	    }
 #endif
@@ -789,9 +775,7 @@ normal_cmd(
     if (KeyTyped && !KeyStuffed)
 	win_ensure_size();
 
-#ifdef FEAT_CMDL_INFO
     need_flushbuf = add_to_showcmd(c);
-#endif
 
     // Get the command count
     c = normal_cmd_get_count(&ca, c, toplevel, set_prevcount, &ctrl_w,
@@ -879,14 +863,13 @@ normal_cmd(
     if (normal_cmd_needs_more_chars(&ca, nv_cmds[idx].cmd_flags))
 	idx = normal_cmd_get_more_chars(idx, &ca, &need_flushbuf);
 
-#ifdef FEAT_CMDL_INFO
     // Flush the showcmd characters onto the screen so we can see them while
     // the command is being executed.  Only do this when the shown command was
     // actually displayed, otherwise this will slow down a lot when executing
     // mappings.
     if (need_flushbuf)
 	out_flush();
-#endif
+
     if (ca.cmdchar != K_IGNORE)
     {
 	if (ex_normal_busy)
@@ -991,11 +974,9 @@ normal_end:
     }
 #endif
 
-#ifdef FEAT_CMDL_INFO
     if (oap->op_type == OP_NOP && oap->regname == 0
 	    && ca.cmdchar != K_CURSORHOLD)
 	clear_showcmd();
-#endif
 
     checkpcmark();		// check if we moved since setting pcmark
     vim_free(ca.searchbuf);
@@ -1566,13 +1547,10 @@ may_clear_cmdline(void)
 {
     if (mode_displayed)
 	clear_cmdline = TRUE;   // unshow visual mode later
-#ifdef FEAT_CMDL_INFO
     else
 	clear_showcmd();
-#endif
 }
 
-#if defined(FEAT_CMDL_INFO) || defined(PROTO)
 /*
  * Routines for displaying a partly typed command
  */
@@ -1820,7 +1798,6 @@ display_showcmd(void)
 
     setcursor();	    // put cursor back where it belongs
 }
-#endif
 
 /*
  * When "check" is FALSE, prepare for commands that scroll the window.
@@ -2550,9 +2527,8 @@ nv_z_get_count(cmdarg_T *cap, int *nchar_arg)
 	LANGMAP_ADJUST(nchar, TRUE);
 	--no_mapping;
 	--allow_keys;
-#ifdef FEAT_CMDL_INFO
 	(void)add_to_showcmd(nchar);
-#endif
+
 	if (nchar == K_DEL || nchar == K_KDEL)
 	    n /= 10;
 	else if (VIM_ISDIGIT(nchar))
@@ -2607,9 +2583,8 @@ nv_zg_zw(cmdarg_T *cap, int nchar)
 	LANGMAP_ADJUST(nchar, TRUE);
 	--no_mapping;
 	--allow_keys;
-#ifdef FEAT_CMDL_INFO
 	(void)add_to_showcmd(nchar);
-#endif
+
 	if (vim_strchr((char_u *)"gGwW", nchar) == NULL)
 	{
 	    clearopbeep(cap->oap);

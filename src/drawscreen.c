@@ -547,9 +547,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    screen_puts(NameBuff, row, (int)(this_ru_col - STRLEN(NameBuff)
 						   - 1 + wp->w_wincol), attr);
 
-#ifdef FEAT_CMDL_INFO
 	win_redr_ruler(wp, TRUE, ignore_pum);
-#endif
     }
 
     /*
@@ -619,9 +617,7 @@ showruler(int always)
 	redraw_custom_statusline(curwin);
     else
 #endif
-#ifdef FEAT_CMDL_INFO
 	win_redr_ruler(curwin, always, FALSE);
-#endif
 
     if (need_maketitle
 #ifdef FEAT_STL_OPT
@@ -636,7 +632,6 @@ showruler(int always)
 	draw_tabline();
 }
 
-#if defined(FEAT_CMDL_INFO) || defined(PROTO)
     void
 win_redr_ruler(win_T *wp, int always, int ignore_pum)
 {
@@ -816,7 +811,6 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 #endif
     }
 }
-#endif
 
 /*
  * To be called when "updating_screen" was set before and now the postponed
@@ -2924,10 +2918,7 @@ updateWindow(win_T *wp)
     if (redraw_tabline)
 	draw_tabline();
 
-    if (wp->w_redr_status
-# ifdef FEAT_CMDL_INFO
-	    || p_ru
-# endif
+    if (wp->w_redr_status || p_ru
 # ifdef FEAT_STL_OPT
 	    || *p_stl != NUL || *wp->w_p_stl != NUL
 # endif

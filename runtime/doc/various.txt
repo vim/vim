@@ -355,7 +355,7 @@ N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard_working*	|clipboard| support compiled-in and working
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 T  *+cmdline_hist*	command line history |cmdline-history|
-N  *+cmdline_info*	|'showcmd'| and |'ruler'|
+T  *+cmdline_info*	|'showcmd'| and |'ruler'|
 T  *+cmdwin*		|cmdline-window| support; Always enabled since 9.0.0657
 T  *+comments*		|'comments'| support
 N  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.

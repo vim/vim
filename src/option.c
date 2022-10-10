@@ -6851,9 +6851,7 @@ paste_option_changed(void)
     static int	old_p_paste = FALSE;
     static int	save_sm = 0;
     static int	save_sta = 0;
-#ifdef FEAT_CMDL_INFO
     static int	save_ru = 0;
-#endif
 #ifdef FEAT_RIGHTLEFT
     static int	save_ri = 0;
     static int	save_hkmap = 0;
@@ -6887,9 +6885,7 @@ paste_option_changed(void)
 	    // save global options
 	    save_sm = p_sm;
 	    save_sta = p_sta;
-#ifdef FEAT_CMDL_INFO
 	    save_ru = p_ru;
-#endif
 #ifdef FEAT_RIGHTLEFT
 	    save_ri = p_ri;
 	    save_hkmap = p_hkmap;
@@ -6930,11 +6926,9 @@ paste_option_changed(void)
 	// set global options
 	p_sm = 0;		    // no showmatch
 	p_sta = 0;		    // no smarttab
-#ifdef FEAT_CMDL_INFO
 	if (p_ru)
 	    status_redraw_all();    // redraw to remove the ruler
 	p_ru = 0;		    // no ruler
-#endif
 #ifdef FEAT_RIGHTLEFT
 	p_ri = 0;		    // no reverse insert
 	p_hkmap = 0;		    // no Hebrew keyboard
@@ -6980,11 +6974,9 @@ paste_option_changed(void)
 	// restore global options
 	p_sm = save_sm;
 	p_sta = save_sta;
-#ifdef FEAT_CMDL_INFO
 	if (p_ru != save_ru)
 	    status_redraw_all();    // redraw to draw the ruler
 	p_ru = save_ru;
-#endif
 #ifdef FEAT_RIGHTLEFT
 	p_ri = save_ri;
 	p_hkmap = save_hkmap;

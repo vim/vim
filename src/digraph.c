@@ -1546,10 +1546,8 @@ get_digraph(
 		    )
 		putcmdline(c, TRUE);
 	}
-#ifdef FEAT_CMDL_INFO
 	else
 	    add_to_showcmd(c);
-#endif
 	++no_mapping;
 	++allow_keys;
 	cc = plain_vgetc();

@@ -4420,7 +4420,6 @@ showmode(void)
 	msg_clr_eos();
     }
 
-#ifdef FEAT_CMDL_INFO
     // In Visual mode the size of the selected area must be redrawn.
     if (VIsual_active)
 	clear_showcmd();
@@ -4429,7 +4428,7 @@ showmode(void)
     // message and must be redrawn
     if (redrawing() && lastwin->w_status_height == 0)
 	win_redr_ruler(lastwin, TRUE, FALSE);
-#endif
+
     redraw_cmdline = FALSE;
     redraw_mode = FALSE;
     clear_cmdline = FALSE;
@@ -4790,18 +4789,17 @@ messaging(void)
     void
 comp_col(void)
 {
-#if defined(FEAT_CMDL_INFO)
     int last_has_status = (p_ls == 2 || (p_ls == 1 && !ONE_WINDOW));
 
     sc_col = 0;
     ru_col = 0;
     if (p_ru)
     {
-# ifdef FEAT_STL_OPT
+#ifdef FEAT_STL_OPT
 	ru_col = (ru_wid ? ru_wid : COL_RULER) + 1;
-# else
+#else
 	ru_col = COL_RULER + 1;
-# endif
+#endif
 	// no last status line, adjust sc_col
 	if (!last_has_status)
 	    sc_col = ru_col;
@@ -4818,10 +4816,6 @@ comp_col(void)
 	sc_col = 1;
     if (ru_col <= 0)
 	ru_col = 1;
-#else
-    sc_col = Columns;
-    ru_col = Columns;
-#endif
 #ifdef FEAT_EVAL
     set_vim_var_nr(VV_ECHOSPACE, sc_col - 1);
 #endif
