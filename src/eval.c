@@ -6023,10 +6023,12 @@ var2fpos(
 }
 
 /*
- * Convert list in "arg" into a position and optional file number.
- * When "fnump" is NULL there is no file number, only 3 items.
+ * Convert list in "arg" into position "psop" and optional file number "fnump".
+ * When "fnump" is NULL there is no file number, only 3 items: [lnum, col, off]
  * Note that the column is passed on as-is, the caller may want to decrement
  * it to use 1 for the first column.
+ * If "charcol" is TRUE use the column as the character index instead of the
+ * byte index.
  * Return FAIL when conversion is not possible, doesn't check the position for
  * validity.
  */
@@ -6069,6 +6071,7 @@ list2fpos(
     if (n < 0)
 	return FAIL;
     // If character position is specified, then convert to byte position
+    // If the line number is zero use the cursor line.
     if (charcol)
     {
 	buf_T	*buf;
@@ -6078,7 +6081,8 @@ list2fpos(
 	if (buf == NULL || buf->b_ml.ml_mfp == NULL)
 	    return FAIL;
 
-	n = buf_charidx_to_byteidx(buf, posp->lnum, n) + 1;
+	n = buf_charidx_to_byteidx(buf,
+		  posp->lnum == 0 ? curwin->w_cursor.lnum : posp->lnum, n) + 1;
     }
     posp->col = n;
 

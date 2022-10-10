@@ -3545,7 +3545,7 @@ f_copy(typval_T *argvars, typval_T *rettv)
     static void
 set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 {
-    long	line, col;
+    long	lnum, col;
     long	coladd = 0;
     int		set_curswant = TRUE;
 
@@ -3567,7 +3567,7 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 	    emsg(_(e_invalid_argument));
 	    return;
 	}
-	line = pos.lnum;
+	lnum = pos.lnum;
 	col = pos.col;
 	coladd = pos.coladd;
 	if (curswant >= 0)
@@ -3576,17 +3576,19 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 	    set_curswant = FALSE;
 	}
     }
-    else if ((argvars[0].v_type == VAR_NUMBER ||
-					argvars[0].v_type == VAR_STRING)
-	    && (argvars[1].v_type == VAR_NUMBER ||
-					argvars[1].v_type == VAR_STRING))
+    else if ((argvars[0].v_type == VAR_NUMBER
+					    || argvars[0].v_type == VAR_STRING)
+	    && (argvars[1].v_type == VAR_NUMBER
+					   || argvars[1].v_type == VAR_STRING))
     {
-	line = tv_get_lnum(argvars);
-	if (line < 0)
+	lnum = tv_get_lnum(argvars);
+	if (lnum < 0)
 	    semsg(_(e_invalid_argument_str), tv_get_string(&argvars[0]));
+	else if (lnum == 0)
+	    lnum = curwin->w_cursor.lnum;
 	col = (long)tv_get_number_chk(&argvars[1], NULL);
 	if (charcol)
-	    col = buf_charidx_to_byteidx(curbuf, line, col) + 1;
+	    col = buf_charidx_to_byteidx(curbuf, lnum, col) + 1;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    coladd = (long)tv_get_number_chk(&argvars[2], NULL);
     }
@@ -3595,10 +3597,10 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 	emsg(_(e_invalid_argument));
 	return;
     }
-    if (line < 0 || col < 0 || coladd < 0)
+    if (lnum < 0 || col < 0 || coladd < 0)
 	return;		// type error; errmsg already given
-    if (line > 0)
-	curwin->w_cursor.lnum = line;
+    if (lnum > 0)
+	curwin->w_cursor.lnum = lnum;
     if (col > 0)
 	curwin->w_cursor.col = col - 1;
     curwin->w_cursor.coladd = coladd;
