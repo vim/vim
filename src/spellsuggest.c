@@ -702,9 +702,11 @@ spell_suggest(int count)
 	    curwin->w_cursor.col = c;
 
 	    changed_bytes(curwin->w_cursor.lnum, c);
+#if defined(FEAT_PROP_POPUP)
 	    if (curbuf->b_has_textprop && len_diff != 0)
 		adjust_prop_columns(curwin->w_cursor.lnum, c, len_diff,
 							       APC_SUBSTITUTE);
+#endif
 	}
     }
     else
