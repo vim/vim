@@ -860,7 +860,7 @@ func Test_sub_with_no_last_pat()
     call writefile(v:errors, 'Xresult')
     qall!
   [SCRIPT]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   if RunVim([], [], '--clean -S Xscript')
     call assert_equal([], readfile('Xresult'))
   endif
@@ -876,7 +876,6 @@ func Test_sub_with_no_last_pat()
     call assert_equal([], readfile('Xresult'))
   endif
 
-  call delete('Xscript')
   call delete('Xresult')
 endfunc
 
@@ -1075,13 +1074,12 @@ func Test_sub_open_cmdline_win()
     redir END
     qall!
   [SCRIPT]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   if RunVim([], [], '-u NONE -S Xscript')
     call assert_match('E565: Not allowed to change text or change window',
           \ readfile('Xresult')->join('XX'))
   endif
 
-  call delete('Xscript')
   call delete('Xresult')
 endfunc
 
