@@ -1750,6 +1750,9 @@ au BufNewFile,BufRead *.sed			setf sed
 " SubRip
 au BufNewFile,BufRead *.srt			setf srt
 
+" SubStation Alpha
+au BufNewFile,BufRead *.ass,*.ssa		setf ssa
+
 " svelte
 au BufNewFile,BufRead *.svelte			setf svelte
 
