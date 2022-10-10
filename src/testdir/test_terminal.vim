@@ -96,6 +96,16 @@ func Test_terminal_paste_register()
   unlet g:job
 endfunc
 
+func Test_terminal_unload_buffer()
+  let buf = Run_shell_in_terminal({})
+  call assert_fails(buf . 'bunload', 'E948:')
+  exe buf . 'bunload!'
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
+
 func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal({})
   call assert_fails(buf . 'bwipe', 'E948:')
@@ -202,7 +212,7 @@ func Test_terminal_quit()
   quit!
   call assert_notequal(buf, bufnr())
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
-  exec buf .. 'bwipe!'
+  call assert_equal("", bufname(buf))
 
   unlet g:job
 endfunc
@@ -237,7 +247,7 @@ func Test_terminal_split_quit()
   quit!
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
 
-  exe buf . 'bwipe'
+  call assert_equal("", bufname(buf))
   unlet g:job
 endfunc
 
@@ -261,16 +271,28 @@ endfunc
 func Test_terminal_hide_buffer_job_finished()
   term echo hello
   let buf = bufnr()
-  setlocal bufhidden=hide
   call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+
   call assert_true(bufloaded(buf))
   call assert_true(buflisted(buf))
+
+  " Test :hide
+  hide
+  call assert_true(bufloaded(buf))
+  call assert_true(buflisted(buf))
+  split
+  exe buf .. 'buf'
+  call assert_equal(buf, bufnr())
+
+  " Test bufhidden, which exercises a different code path
+  setlocal bufhidden=hide
   edit Xasdfasdf
   call assert_true(bufloaded(buf))
   call assert_true(buflisted(buf))
   exe buf .. 'buf'
   call assert_equal(buf, bufnr())
   setlocal bufhidden=
+
   edit Xasdfasdf
   call assert_false(bufloaded(buf))
   call assert_false(buflisted(buf))
