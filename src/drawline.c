@@ -975,7 +975,11 @@ win_line(
     int		n_attr3 = 0;	    // chars with overruling special attr
     int		saved_attr3 = 0;    // char_attr saved for n_attr3
 
-    int		n_skip = 0;		// nr of chars to skip for 'nowrap'
+    int		n_skip = 0;		// nr of cells to skip for 'nowrap' or
+					// concealing
+    int		skip_cells = 0;		// nr of cells to skip for virtual text
+					// after the line, when w_skipcol is
+					// larger than the text length
 
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
@@ -1504,6 +1508,11 @@ win_line(
 	       n_skip = v - wlv.vcol;
 	}
 
+	// If there the text doesn't reach to the desired column, need to skip
+	// "skip_cells" cells when virtual text follows.
+	if (!wp->w_p_wrap && v > wlv.vcol)
+	    skip_cells = v - wlv.vcol;
+
 	// Adjust for when the inverted text is before the screen,
 	// and when the start of the inverted text is before the screen.
 	if (wlv.tocol <= wlv.vcol)
@@ -1897,10 +1906,20 @@ win_line(
 			int	    tpi = text_prop_idxs[pi];
 			textprop_T  *tp = &text_props[tpi];
 			proptype_T  *pt = text_prop_type_by_id(
-					wp->w_buffer, tp->tp_type);
+						    wp->w_buffer, tp->tp_type);
 
-			if (pt != NULL && (pt->pt_hl_id > 0
-				     || tp->tp_id < 0) && tp->tp_id != -MAXCOL)
+			// Only use a text property that can be displayed.
+			// Skip "after" properties when wrap is off and at the
+			// end of the window.
+			if (pt != NULL
+				&& (pt->pt_hl_id > 0 || tp->tp_id < 0)
+				&& tp->tp_id != -MAXCOL
+				&& !(tp->tp_id < 0
+				    && !wp->w_p_wrap
+				    && (tp->tp_flags & (TP_FLAG_ALIGN_RIGHT
+						| TP_FLAG_ALIGN_ABOVE
+						| TP_FLAG_ALIGN_BELOW)) == 0
+				    && wlv.col >= wp->w_width))
 			{
 			    if (pt->pt_hl_id > 0)
 				used_attr = syn_id2attr(pt->pt_hl_id);
@@ -2012,6 +2031,30 @@ win_line(
 				    win_line_start(wp, &wlv, TRUE);
 				    bail_out = TRUE;
 				}
+			    }
+			}
+
+			// If the text didn't reach until the first window
+			// column we need to skip cells.
+			if (skip_cells > 0)
+			{
+			    if (wlv.n_extra > skip_cells)
+			    {
+				wlv.n_extra -= skip_cells;
+				wlv.p_extra += skip_cells;
+				n_attr_skip -= skip_cells;
+				if (n_attr_skip < 0)
+				    n_attr_skip = 0;
+				skip_cells = 0;
+			    }
+			    else
+			    {
+				// the whole text is left of the window, drop
+				// it and advance to the next one
+				skip_cells -= wlv.n_extra;
+				wlv.n_extra = 0;
+				n_attr_skip = 0;
+				bail_out = TRUE;
 			    }
 			}
 

@@ -3214,29 +3214,43 @@ endfunc
 func Test_text_after_nowrap()
   CheckRunVimInTerminal
 
-  " FIXME: the second property causes a hang
   let lines =<< trim END
       vim9script
-      setline(1, ['first line', 'second line '->repeat(50), 'third', 'fourth'])
+      setline(1, ['first line', range(80)->join(' '), 'third', 'fourth'])
       set nowrap
       prop_type_add('theprop', {highlight: 'DiffChange'})
       prop_add(1, 0, {
           type: 'theprop',
-          text: 'after the text '->repeat(5),
+          text: 'right after the text '->repeat(3),
           text_align: 'after',
           text_padding_left: 2,
       })
-      #prop_add(1, 0, {
-      #    type: 'theprop',
-      #    text: 'after the text '->repeat(5),
-      #    text_align: 'after',
-      #    text_padding_left: 2,
-      #})
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'in the middle '->repeat(4),
+          text_align: 'after',
+          text_padding_left: 3,
+      })
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'the last one '->repeat(3),
+          text_align: 'after',
+          text_padding_left: 1,
+      })
       normal 2Gw
   END
   call writefile(lines, 'XTextAfterNowrap', 'D')
   let buf = RunVimInTerminal('-S XTextAfterNowrap', #{rows: 8, cols: 60})
   call VerifyScreenDump(buf, 'Test_text_after_nowrap_1', {})
+
+  call term_sendkeys(buf, "30w")
+  call VerifyScreenDump(buf, 'Test_text_after_nowrap_2', {})
+
+  call term_sendkeys(buf, "22w")
+  call VerifyScreenDump(buf, 'Test_text_after_nowrap_3', {})
+
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_text_after_nowrap_4', {})
 
   call StopVimInTerminal(buf)
 endfunc
