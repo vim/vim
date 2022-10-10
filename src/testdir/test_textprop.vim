@@ -3241,6 +3241,35 @@ func Test_text_after_nowrap()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_text_below_nowrap()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['first line', 'second line '->repeat(50), 'third', 'fourth'])
+      set nowrap number
+      prop_type_add('theprop', {highlight: 'DiffChange'})
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'one below the text '->repeat(5),
+          text_align: 'below',
+          text_padding_left: 2,
+      })
+      prop_add(1, 0, {
+          type: 'theprop',
+          text: 'two below the text '->repeat(5),
+          text_align: 'below',
+          text_padding_left: 2,
+      })
+      normal 2Gw
+  END
+  call writefile(lines, 'XTextBelowNowrap', 'D')
+  let buf = RunVimInTerminal('-S XTextBelowNowrap', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_text_below_nowrap_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_insert_text_change_arg()
   CheckRunVimInTerminal
 
