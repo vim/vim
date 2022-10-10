@@ -1075,7 +1075,7 @@ win_line(
     int		get_term_attr = FALSE;
 #endif
 
-#ifdef FEAT_SYN_HL
+#if defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
     // margin columns for the screen line, needed for when 'cursorlineopt'
     // contains "screenline"
     int		left_curline_col = 0;

@@ -268,7 +268,7 @@ typedef struct
     int		wo_spell;
 # define w_p_spell w_onebuf_opt.wo_spell // 'spell'
 #endif
-#if defined(FEAT_SYN_HL) || defined(FEAT_FOLDING)
+#if defined(FEAT_SYN_HL) || defined(FEAT_FOLDING) || defined(FEAT_DIFF)
     int		wo_cuc;
 # define w_p_cuc w_onebuf_opt.wo_cuc	// 'cursorcolumn'
     int		wo_cul;
@@ -3831,7 +3831,7 @@ struct window_S
     long_u	w_p_fde_flags;	    // flags for 'foldexpr'
     long_u	w_p_fdt_flags;	    // flags for 'foldtext'
 #endif
-#if defined(FEAT_SIGNS) || defined(FEAT_FOLDING)
+#if defined(FEAT_SIGNS) || defined(FEAT_FOLDING) || defined(FEAT_DIFF)
     int		*w_p_cc_cols;	    // array of columns to highlight or NULL
     char_u	w_p_culopt_flags;   // flags for cursorline highlighting
 #endif
