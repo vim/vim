@@ -186,6 +186,7 @@
 #ifdef FEAT_NORMAL
 # define FEAT_LINEBREAK
 #endif
+# define FEAT_LINEBREAK
 
 /*
  * +extra_search	'hlsearch' and 'incsearch' options.

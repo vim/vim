@@ -1087,7 +1087,7 @@ win_line(
     int		feedback_old_attr = -1;
 #endif
 
-#if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
+#if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA) || defined(FEAT_LINEBREAK)
     int		match_conc	= 0;	// cchar for match functions
     int		on_last_col     = FALSE;
 #endif
