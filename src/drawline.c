@@ -639,7 +639,7 @@ text_prop_position(
 
     if (wrap || right || above || below || padding > 0 || n_used < *n_extra)
     {
-	int	    col_off = win_col_off(wp) + win_col_off2(wp);
+	int	    col_off = win_col_off(wp) - win_col_off2(wp);
 	int	    skip_add = 0;
 
 	if (above)
@@ -655,7 +655,7 @@ text_prop_position(
 	    if (before < 0
 		    || !(right || below)
 		    || (below
-			? (col_with_padding == 0 || !wp->w_p_wrap)
+			? (col_with_padding <= col_off || !wp->w_p_wrap)
 			: (n_used < *n_extra)))
 	    {
 		if (right && (wrap || room < PROP_TEXT_MIN_CELLS))
