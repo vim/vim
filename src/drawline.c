@@ -977,9 +977,11 @@ win_line(
 
     int		n_skip = 0;		// nr of cells to skip for 'nowrap' or
 					// concealing
+#ifdef FEAT_PROP_POPUP
     int		skip_cells = 0;		// nr of cells to skip for virtual text
 					// after the line, when w_skipcol is
 					// larger than the text length
+#endif
 
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
@@ -1508,10 +1510,12 @@ win_line(
 	       n_skip = v - wlv.vcol;
 	}
 
+#ifdef FEAT_PROP_POPUP
 	// If there the text doesn't reach to the desired column, need to skip
 	// "skip_cells" cells when virtual text follows.
 	if (!wp->w_p_wrap && v > wlv.vcol)
 	    skip_cells = v - wlv.vcol;
+#endif
 
 	// Adjust for when the inverted text is before the screen,
 	// and when the start of the inverted text is before the screen.
