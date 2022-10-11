@@ -1048,7 +1048,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 			&& need_type_where(item_type, lhs_type, -1,
 					    where, cctx, FALSE, FALSE) == FAIL)
 		    goto failed;
-		var_lvar = reserve_local(cctx, arg, varlen, ASSIGN_CONST,
+		var_lvar = reserve_local(cctx, arg, varlen, ASSIGN_FINAL,
 								     lhs_type);
 		if (var_lvar == NULL)
 		    // out of memory or used as an argument

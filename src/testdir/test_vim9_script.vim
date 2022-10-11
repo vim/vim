@@ -2275,6 +2275,20 @@ def Test_for_loop()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_for_loop_list_of_lists()
+  # loop variable is final, not const
+  var lines =<< trim END
+      # Filter out all odd numbers in each sublist
+      var list: list<list<number>> = [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4]]
+      for i in list
+          filter(i, (_, n: number): bool => n % 2 == 0)
+      endfor
+
+      assert_equal([[], [2], [2], [2, 4]], list)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_for_loop_with_closure()
   # using the loop variable in a closure results in the last used value
   var lines =<< trim END
