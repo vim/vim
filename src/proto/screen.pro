@@ -13,7 +13,7 @@ void draw_vsep_win(win_T *wp, int row);
 void win_redr_status_matches(expand_T *xp, int num_matches, char_u **matches, int match, int showtail);
 int stl_connected(win_T *wp);
 int get_keymap_str(win_T *wp, char_u *fmt, char_u *buf, int len);
-void win_redr_custom(win_T *wp, int draw_ruler);
+void win_redr_custom(win_T *wp, int draw_ruler, long row);
 void screen_putchar(int c, int row, int col, int attr);
 void screen_getbytes(int row, int col, char_u *bytes, int *attrp);
 void screen_puts(char_u *text, int row, int col, int attr);

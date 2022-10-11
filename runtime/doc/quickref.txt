@@ -823,6 +823,7 @@ Short explanation of each option:		*option-list*
 'mzschemegcdll'		    name of the MzScheme dynamic library for GC
 'nrformats'	  'nf'	    number formats recognized for CTRL-A command
 'number'	  'nu'	    print the line number in front of each line
+'numberformat'	  'nuf'	    custom format for the number column
 'numberwidth'	  'nuw'     number of columns used for the line number
 'omnifunc'	  'ofu'     function for filetype-specific completion
 'opendevice'	  'odev'    allow reading/writing devices on MS-Windows

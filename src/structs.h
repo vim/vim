@@ -236,6 +236,10 @@ typedef struct
 #define w_p_fcs w_onebuf_opt.wo_fcs	// 'fillchars'
     int		wo_nu;
 #define w_p_nu w_onebuf_opt.wo_nu	// 'number'
+#ifdef FEAT_STL_OPT
+    char_u	*wo_nuf;
+#define w_p_nuf w_onebuf_opt.wo_nuf	// 'numberformat'
+#endif
     int		wo_rnu;
 #define w_p_rnu w_onebuf_opt.wo_rnu	// 'relativenumber'
     char_u	*wo_ve;

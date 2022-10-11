@@ -1260,6 +1260,9 @@ enum
     , WV_LBR
 #endif
     , WV_NU
+#ifdef FEAT_STL_OPT
+    , WV_NUF
+#endif
     , WV_RNU
     , WV_VE
 #ifdef FEAT_LINEBREAK

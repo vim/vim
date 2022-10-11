@@ -1783,13 +1783,18 @@ did_set_string_option(
     }
 
 #ifdef FEAT_STL_OPT
-    // 'statusline', 'tabline' or 'rulerformat'
-    else if (gvarp == &p_stl || varp == &p_tal || varp == &p_ruf)
+    // 'statusline', 'tabline', 'rulerformat' or 'numberformat'
+    else if (gvarp == &p_stl
+	    || varp == &p_tal
+	    || varp == &p_ruf
+	    || varp == &curwin->w_p_nuf)
     {
 	int wid;
 
-	if (varp == &p_ruf)	// reset ru_wid first
+	if (varp == &p_ruf)		    // reset ru_wid first
 	    ru_wid = 0;
+	if (varp == &curwin->w_p_nuf)
+	    curwin->w_nrwidth_line_count = 0;
 	s = *varp;
 	if (varp == &p_ruf && *s == '%')
 	{

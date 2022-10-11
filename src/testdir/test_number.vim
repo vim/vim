@@ -354,4 +354,47 @@ func Test_number_no_text_virtual_edit()
   bwipe!
 endfunc
 
+" Test for displaying line numbers with 'numberformat'
+func Test_number_numberformat()
+  CheckScreendump
+
+  let lines =<< trim END
+    set number
+    let nuf='%{nuflnum?printf("%-*d",strlen(line("w$"))+nufrnum>=0,nuflnum):""}'
+    let nuf.='%=%{(nufrnum>=0?"\ ".nufrnum:"")}'
+    let &numberformat=nuf
+    call setline(1, repeat(['aaaa'], 100))
+    norm GM
+  END
+  call writefile(lines, 'XTestNumberNumberFormat', 'D')
+  let buf = RunVimInTerminal('-S XTestNumberNumberFormat', #{rows: 10})
+
+  call VerifyScreenDump(buf, 'Test_numberformat_1', {})
+
+  call term_sendkeys(buf, ":set relativenumber\<CR>")
+  call VerifyScreenDump(buf, 'Test_numberformat_2', {})
+
+  call term_sendkeys(buf, ":set nonumber\<CR>")
+  call VerifyScreenDump(buf, 'Test_numberformat_3', {})
+
+  call term_sendkeys(buf, ":set numberformat=aaaaaaaaaaaaaaaaaaaa\<CR>")
+  call VerifyScreenDump(buf, 'Test_numberformat_4', {})
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test for invalid 'numberformat' expressions
+func Test_numberformat_valid()
+  call setline(1, repeat(['aaaa'], 10))
+  set number
+  set relativenumber
+  set numberformat=%{undefined}
+
+  call assert_fails("redraw!", "E121")
+  call assert_equal(&numberformat, "")
+
+  set number&
+  set numberformat&
+  set relativenumber&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

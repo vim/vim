@@ -373,6 +373,9 @@ handle_lnum_col(
 		    && (wp->w_skipcol == 0 || wlv->row > wp->w_winrow))
 	  {
 	      long num;
+#ifdef FEAT_STL_OPT
+	      long rnum = -1;
+#endif
 	      char *fmt = "%*ld ";
 
 	      if (wp->w_p_nu && !wp->w_p_rnu)
@@ -382,6 +385,9 @@ handle_lnum_col(
 	      {
 		  // 'relativenumber', don't use negative numbers
 		  num = labs((long)get_cursor_rel_lnum(wp, wlv->lnum));
+#ifdef FEAT_STL_OPT
+		  rnum = num;
+#endif
 		  if (num == 0 && wp->w_p_nu && wp->w_p_rnu)
 		  {
 		      // 'number' + 'relativenumber'
@@ -389,6 +395,21 @@ handle_lnum_col(
 		      fmt = "%-*ld ";
 		  }
 	      }
+#ifdef FEAT_STL_OPT
+	      if (*wp->w_p_nuf != NUL)
+	      {
+		  // 'numberformat', set variable
+		  typval_T tv = { .v_type = VAR_NUMBER,
+				.vval.v_number = wp->w_p_nu ? wlv->lnum : 0 };
+
+		  num = ' ';
+		  fmt = "%*c ";
+
+		  set_var((char_u *)"g:nuflnum", &tv, FALSE);
+		  tv.vval.v_number = rnum;
+		  set_var((char_u *)"g:nufrnum", &tv, FALSE);
+	      }
+#endif
 
 	      sprintf((char *)wlv->extra, fmt, number_width(wp), num);
 	      if (wp->w_skipcol > 0 && wlv->startrow == 0)

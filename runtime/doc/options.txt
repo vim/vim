@@ -5761,6 +5761,26 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    |nobody         |  3 nobody     |  0 nobody     |3   nobody
 	    |there          |  4 there      |  1 there      |  1 there
 
+					*'numberformat'* *'nuf'*
+'numberformat' 'nuf'	string	(default: empty)
+			local to window
+			{not available when compiled without the |+statusline|
+			feature}
+	When this option is not empty, it determines the content of the number
+	column. The format of this option is like that of 'statusline'. The
+	variables *g:nuflnum* and *g:nufrnum* will be set to the to be printed line
+	number and relative line number respectively. These can be evaluated
+	in an expression inside a 'statusline' '%{}' block.
+	Examples: >
+		Line numbers in hexadecimal:
+		:set nuf=%=%{(nuflnum?nuflnum:'').(nufrnum>=0?'\ '.nufrnum:'')}
+
+		Both 'number' and 'relativenumber' in number column:
+		:set nuf=%{printf('%-*d\ ',strlen(line('w$'))+1,(nuflnum?nuflnum:''))}%=%{(nufrnum>=0?'\ '.nufrnum:'')}
+
+	WARNING: this expression is evaluated for each buffer line so defining
+	an expensive expression can negatively affect render performance.
+
 						*'numberwidth'* *'nuw'*
 'numberwidth' 'nuw'	number	(Vim default: 4  Vi default: 8)
 			local to window

@@ -1265,16 +1265,17 @@ get_keymap_str(
 /*
  * Redraw the status line or ruler of window "wp".
  * When "wp" is NULL redraw the tab pages line from 'tabline'.
+ * When "row" is nonzero redraw the number comlumn from 'numberformat'.
  */
     void
 win_redr_custom(
     win_T	*wp,
-    int		draw_ruler)	// TRUE or FALSE
+    int		draw_ruler,	// TRUE or FALSE
+    long	row)
 {
     static int	entered = FALSE;
     int		attr;
     int		curattr;
-    int		row;
     int		col = 0;
     int		maxwidth;
     int		width;
@@ -1284,11 +1285,13 @@ win_redr_custom(
     char_u	buf[MAXPATHL];
     char_u	*stl;
     char_u	*p;
+    char_u	*opt;
     stl_hlrec_T *hltab;
     stl_hlrec_T *tabtab;
     int		use_sandbox = FALSE;
     win_T	*ewp;
     int		p_crb_save;
+    int		nuf = FALSE;
 
     // There is a tiny chance that this gets called recursively: When
     // redrawing a status line triggers redrawing the ruler or tabline.
@@ -1302,13 +1305,23 @@ win_redr_custom(
     {
 	// Use 'tabline'.  Always at the first line of the screen.
 	stl = p_tal;
+	opt = (char_u *)"tabline";
 	row = 0;
 	fillchar = ' ';
 	attr = HL_ATTR(HLF_TPF);
 	maxwidth = Columns;
-# ifdef FEAT_EVAL
-	use_sandbox = was_set_insecurely((char_u *)"tabline", 0);
-# endif
+    }
+    else if (row != -1)
+    {
+	// Use 'numberformat'
+	stl = wp->w_p_nuf;
+	opt = (char_u *)"numberformat";
+	row += wp->w_winrow;
+	col = wp->w_wincol;
+	fillchar = ' ';
+	attr = HL_ATTR(HLF_N);
+	maxwidth = number_width(wp);
+	nuf = TRUE;
     }
     else
     {
@@ -1319,6 +1332,7 @@ win_redr_custom(
 	if (draw_ruler)
 	{
 	    stl = p_ruf;
+	    opt = (char_u *)"rulerformat";
 	    // advance past any leading group spec - implicit in ru_col
 	    if (*stl == '%')
 	    {
@@ -1341,25 +1355,25 @@ win_redr_custom(
 		fillchar = ' ';
 		attr = 0;
 	    }
-
-# ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"rulerformat", 0);
-# endif
 	}
 	else
 	{
 	    if (*wp->w_p_stl != NUL)
+	    {
 		stl = wp->w_p_stl;
+		use_sandbox = OPT_LOCAL;
+	    }
 	    else
 		stl = p_stl;
-# ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"statusline",
-					 *wp->w_p_stl == NUL ? 0 : OPT_LOCAL);
-# endif
+	    opt = (char_u *)"statusline";
 	}
 
 	col += wp->w_wincol;
     }
+
+# ifdef FEAT_EVAL
+	use_sandbox = was_set_insecurely(opt, use_sandbox);
+# endif
 
     if (maxwidth <= 0)
 	goto theend;
@@ -1373,9 +1387,18 @@ win_redr_custom(
     // Make a copy, because the statusline may include a function call that
     // might change the option value and free the memory.
     stl = vim_strsave(stl);
-    width = build_stl_str_hl(ewp, buf, sizeof(buf),
-				stl, use_sandbox,
+
+    // Make sure 'numberformat' fits in the number column.
+    for(;;)
+    {
+	width = build_stl_str_hl(ewp, buf, sizeof(buf),
+				stl, opt, use_sandbox,
 				fillchar, maxwidth, &hltab, &tabtab);
+	if (!nuf || *buf != '<' || ++maxwidth == 20)
+	    break;
+	++wp->w_nrwidth_width;
+    }
+
     vim_free(stl);
     ewp->w_p_crb = p_crb_save;
 
@@ -4548,18 +4571,7 @@ draw_tabline(void)
 
     // Use the 'tabline' option if it's set.
     if (*p_tal != NUL)
-    {
-	int	saved_did_emsg = did_emsg;
-
-	// Check for an error.  If there is one we would loop in redrawing the
-	// screen.  Avoid that by making 'tabline' empty.
-	did_emsg = FALSE;
-	win_redr_custom(NULL, FALSE);
-	if (did_emsg)
-	    set_string_option_direct((char_u *)"tabline", -1,
-					   (char_u *)"", OPT_FREE, SID_ERROR);
-	did_emsg |= saved_did_emsg;
-    }
+	win_redr_custom(NULL, FALSE, 0);
     else
 #endif
     {

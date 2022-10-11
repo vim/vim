@@ -575,7 +575,6 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 redraw_custom_statusline(win_T *wp)
 {
     static int	    entered = FALSE;
-    int		    saved_did_emsg = did_emsg;
 
     // When called recursively return.  This can happen when the statusline
     // contains an expression that triggers a redraw.
@@ -583,18 +582,7 @@ redraw_custom_statusline(win_T *wp)
 	return;
     entered = TRUE;
 
-    did_emsg = FALSE;
-    win_redr_custom(wp, FALSE);
-    if (did_emsg)
-    {
-	// When there is an error disable the statusline, otherwise the
-	// display is messed up with errors and a redraw triggers the problem
-	// again and again.
-	set_string_option_direct((char_u *)"statusline", -1,
-		(char_u *)"", OPT_FREE | (*wp->w_p_stl != NUL
-					? OPT_LOCAL : OPT_GLOBAL), SID_ERROR);
-    }
-    did_emsg |= saved_did_emsg;
+    win_redr_custom(wp, FALSE, -1);
     entered = FALSE;
 }
 #endif
@@ -678,12 +666,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 #ifdef FEAT_STL_OPT
     if (*p_ruf)
     {
-	int	called_emsg_before = called_emsg;
-
-	win_redr_custom(wp, TRUE);
-	if (called_emsg > called_emsg_before)
-	    set_string_option_direct((char_u *)"rulerformat", -1,
-					   (char_u *)"", OPT_FREE, SID_ERROR);
+	win_redr_custom(wp, TRUE, -1);
 	return;
     }
 #endif
@@ -1482,6 +1465,10 @@ win_update(win_T *wp)
 #if defined(FEAT_SYN_HL) || defined(FEAT_SEARCH_EXTRA)
     int		save_got_int;
 #endif
+#ifdef FEAT_STL_OPT
+    int		drawnum;
+#endif
+
 
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
     // This needs to be done only for the first window when update_screen() is
@@ -2209,7 +2196,6 @@ win_update(win_T *wp)
     // Update all the window rows.
     idx = 0;		// first entry in w_lines[].wl_size
     row = 0;
-    srow = 0;
     lnum = wp->w_topline;	// first line shown in window
     for (;;)
     {
@@ -2232,6 +2218,9 @@ win_update(win_T *wp)
 	// with.  It is used further down when the line doesn't fit.
 	srow = row;
 
+#ifdef FEAT_STL_OPT
+	drawnum = FALSE;
+#endif
 	// Update a line when it is in an area that needs updating, when it
 	// has changes or w_lines[idx] is invalid.
 	// "bot_start" may be halfway a wrapped line after using
@@ -2464,6 +2453,9 @@ win_update(win_T *wp)
 # ifdef FEAT_SYN_HL
 		did_update = DID_FOLD;
 # endif
+# ifdef FEAT_STL_OPT
+		drawnum = wp->w_p_nu || wp->w_p_rnu;
+# endif
 	    }
 	    else
 #endif
@@ -2498,7 +2490,6 @@ win_update(win_T *wp)
 		// Display one line.
 		row = win_line(wp, lnum, srow, wp->w_height,
 							  mod_top == 0, FALSE);
-
 #ifdef FEAT_FOLDING
 		wp->w_lines[idx].wl_folded = FALSE;
 		wp->w_lines[idx].wl_lastlnum = lnum;
@@ -2507,6 +2498,9 @@ win_update(win_T *wp)
 		did_update = DID_LINE;
 		syntax_last_parsed = lnum;
 #endif
+# ifdef FEAT_STL_OPT
+		drawnum = wp->w_p_nu || wp->w_p_rnu;
+# endif
 	    }
 
 	    wp->w_lines[idx].wl_lnum = lnum;
@@ -2543,8 +2537,15 @@ win_update(win_T *wp)
 		if (fold_count != 0)
 		    fold_line(wp, fold_count, &win_foldinfo, lnum, row);
 		else
+		{
 #endif
 		    (void)win_line(wp, lnum, srow, wp->w_height, TRUE, TRUE);
+#ifdef FEAT_FOLDING
+		}
+#endif
+#ifdef FEAT_STL_OPT
+		drawnum = TRUE;
+#endif
 	    }
 
 	    // This line does not need to be drawn, advance to the next one.
@@ -2560,7 +2561,22 @@ win_update(win_T *wp)
 	    did_update = DID_NONE;
 #endif
 	}
-
+#ifdef FEAT_STL_OPT
+	// Display 'numberformat' in number column.
+	if (*wp->w_p_nuf != NUL && drawnum && (wp->w_p_nu || wp->w_p_rnu))
+	{
+	    int nuw = wp->w_nrwidth_width;
+	    win_redr_custom(wp, FALSE, srow);
+	    if (wp->w_nrwidth_width != nuw)
+	    {
+		// If number column got wider, start over.
+		idx = 0;
+		row = 0;
+		lnum = wp->w_topline;
+		continue;
+	    }
+	}
+#endif
 	if (lnum > buf->b_ml.ml_line_count)
 	{
 	    eof = TRUE;

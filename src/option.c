@@ -3256,6 +3256,13 @@ set_bool_option(
 # endif
     }
 #endif
+#ifdef FEAT_STL_OPT
+    // Force a redraw for 'numberformat'
+    else if (*curwin->w_p_nuf != NUL
+	    && ((int *)varp == &curwin->w_p_nu
+		|| (int *)varp == &curwin->w_p_rnu))
+	curwin->w_nrwidth_line_count = 0;
+#endif
 
     /*
      * End of handling side effects for bool options.
@@ -5206,6 +5213,9 @@ unset_global_local_option(char_u *name, void *from)
 	    break;
 #endif
 #ifdef FEAT_STL_OPT
+	case PV_NUF:
+	    clear_string_option(&((win_T *)from)->w_p_nuf);
+	    break;
 	case PV_STL:
 	    clear_string_option(&((win_T *)from)->w_p_stl);
 	    break;
@@ -5383,6 +5393,7 @@ get_varp(struct vimoption *p)
 				    ? (char_u *)&(curwin->w_p_sbr) : p->var;
 #endif
 #ifdef FEAT_STL_OPT
+	case PV_NUF:	return (char_u *)&(curwin->w_p_nuf);
 	case PV_STL:	return *curwin->w_p_stl != NUL
 				    ? (char_u *)&(curwin->w_p_stl) : p->var;
 #endif
@@ -5663,6 +5674,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_sbr = copy_option_val(from->wo_sbr);
 #endif
 #ifdef FEAT_STL_OPT
+    to->wo_nuf = copy_option_val(from->wo_nuf);
     to->wo_stl = copy_option_val(from->wo_stl);
 #endif
     to->wo_wrap = from->wo_wrap;
@@ -5768,6 +5780,7 @@ check_winopt(winopt_T *wop UNUSED)
     check_string_option(&wop->wo_sbr);
 #endif
 #ifdef FEAT_STL_OPT
+    check_string_option(&wop->wo_nuf);
     check_string_option(&wop->wo_stl);
 #endif
 #ifdef FEAT_SYN_HL
@@ -5820,6 +5833,7 @@ clear_winopt(winopt_T *wop UNUSED)
     clear_string_option(&wop->wo_sbr);
 #endif
 #ifdef FEAT_STL_OPT
+    clear_string_option(&wop->wo_nuf);
     clear_string_option(&wop->wo_stl);
 #endif
 #ifdef FEAT_SYN_HL
