@@ -2017,7 +2017,7 @@ win_line(
 				if (lcs_eol_one < 0 && wlv.col
 					       + wlv.n_extra - 2 > wp->w_width)
 				    // don't bail out at end of line
-				    lcs_eol_one = 0;
+				    text_prop_follows = TRUE;
 
 				// When 'wrap' is off then for "below" we need
 				// to start a new line explictly.
@@ -2067,7 +2067,7 @@ win_line(
 			// If this is an "above" text prop and 'nowrap' the we
 			// must wrap anyway.
 			text_prop_above = above;
-			text_prop_follows = other_tpi != -1
+			text_prop_follows |= other_tpi != -1
 			    && (wp->w_p_wrap
 				   || (text_props[other_tpi].tp_flags
 			       & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_RIGHT)));

@@ -3256,6 +3256,9 @@ func Test_long_text_below_with_padding()
   let buf = RunVimInTerminal('-S XlongTextBelowWithPadding', #{rows: 8, cols: 60})
   call VerifyScreenDump(buf, 'Test_long_text_with_padding_1', {})
 
+  call term_sendkeys(buf, ":set list\<CR>")
+  call VerifyScreenDump(buf, 'Test_long_text_with_padding_2', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
