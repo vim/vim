@@ -57,22 +57,20 @@ current_instr_idx(cctx_T *cctx)
 }
 /*
  * Remove local variables above "new_top".
+ * Do this by clearing the name.  If "keep" is TRUE do not reset the length, a
+ * closure may still need location of the variable.
  */
     static void
-unwind_locals(cctx_T *cctx, int new_top)
+unwind_locals(cctx_T *cctx, int new_top, int keep)
 {
     if (cctx->ctx_locals.ga_len > new_top)
-    {
-	int	idx;
-	lvar_T	*lvar;
-
-	for (idx = new_top; idx < cctx->ctx_locals.ga_len; ++idx)
+	for (int idx = new_top; idx < cctx->ctx_locals.ga_len; ++idx)
 	{
-	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
-	    vim_free(lvar->lv_name);
+	    lvar_T *lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
+	    VIM_CLEAR(lvar->lv_name);
 	}
-    }
-    cctx->ctx_locals.ga_len = new_top;
+    if (!keep)
+	cctx->ctx_locals.ga_len = new_top;
 }
 
 /*
@@ -81,7 +79,7 @@ unwind_locals(cctx_T *cctx, int new_top)
     void
 free_locals(cctx_T *cctx)
 {
-    unwind_locals(cctx, 0);
+    unwind_locals(cctx, 0, FALSE);
     ga_clear(&cctx->ctx_locals);
 }
 
@@ -525,7 +523,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	emsg(_(e_elseif_without_if));
 	return NULL;
     }
-    unwind_locals(cctx, scope->se_local_count);
+    unwind_locals(cctx, scope->se_local_count, TRUE);
     if (!cctx->ctx_had_return)
 	scope->se_u.se_if.is_had_return = FALSE;
 
@@ -672,7 +670,7 @@ compile_else(char_u *arg, cctx_T *cctx)
 	emsg(_(e_else_without_if));
 	return NULL;
     }
-    unwind_locals(cctx, scope->se_local_count);
+    unwind_locals(cctx, scope->se_local_count, TRUE);
     if (!cctx->ctx_had_return)
 	scope->se_u.se_if.is_had_return = FALSE;
     scope->se_u.se_if.is_seen_else = TRUE;
@@ -744,7 +742,7 @@ compile_endif(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
     ifscope = &scope->se_u.se_if;
-    unwind_locals(cctx, scope->se_local_count);
+    unwind_locals(cctx, scope->se_local_count, TRUE);
     if (!cctx->ctx_had_return)
 	ifscope->is_had_return = FALSE;
 
@@ -1122,7 +1120,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 	if (compile_loop_end(&forscope->fs_loop_info, cctx) == FAIL)
 	    return NULL;
 
-	unwind_locals(cctx, scope->se_local_count);
+	unwind_locals(cctx, scope->se_local_count, FALSE);
 
 	// At end of ":for" scope jump back to the FOR instruction.
 	generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
@@ -1249,7 +1247,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	if (compile_loop_end(&whilescope->ws_loop_info, cctx) == FAIL)
 	    return NULL;
 
-	unwind_locals(cctx, scope->se_local_count);
+	unwind_locals(cctx, scope->se_local_count, FALSE);
 
 #ifdef FEAT_PROFILE
 	// count the endwhile before jumping
@@ -1471,7 +1469,7 @@ compile_endblock(cctx_T *cctx)
     scope_T	*scope = cctx->ctx_scope;
 
     cctx->ctx_scope = scope->se_outer;
-    unwind_locals(cctx, scope->se_local_count);
+    unwind_locals(cctx, scope->se_local_count, TRUE);
     vim_free(scope);
 }
 

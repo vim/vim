@@ -2314,6 +2314,36 @@ def Test_for_loop_with_closure()
   END
   v9.CheckDefAndScriptSuccess(lines)
 
+  # also with an extra block level
+  lines =<< trim END
+      var flist: list<func>
+      for i in range(5)
+        {
+          var inloop = i
+          flist[i] = () => inloop
+        }
+      endfor
+      for i in range(5)
+        assert_equal(i, flist[i]())
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # and declaration in higher block
+  lines =<< trim END
+      var flist: list<func>
+      for i in range(5)
+        var inloop = i
+        {
+          flist[i] = () => inloop
+        }
+      endfor
+      for i in range(5)
+        assert_equal(i, flist[i]())
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
   lines =<< trim END
       var flist: list<func>
       for i in range(5)

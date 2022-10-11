@@ -47,7 +47,8 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
     for (idx = 0; idx < cctx->ctx_locals.ga_len; ++idx)
     {
 	lvp = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
-	if (STRNCMP(name, lvp->lv_name, len) == 0
+	if (lvp->lv_name != NULL
+		&& STRNCMP(name, lvp->lv_name, len) == 0
 					       && STRLEN(lvp->lv_name) == len)
 	{
 	    if (lvar != NULL)
