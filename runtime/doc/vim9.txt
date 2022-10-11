@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Oct 03
+*vim9.txt*	For Vim version 9.0.  Last change: 2022 Oct 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -962,6 +962,8 @@ In compiled Vim9 script you get:
 	3
 Generally, you should not change the list that is iterated over.  Make a copy
 first if needed.
+When looping over a list of lists, the nested lists can be changed.  The loop
+variable is "final", it cannot be changed but what its value can be changed.
 							*E1306*
 The depth of loops, :for and :while loops added together, cannot exceed 10.
 
