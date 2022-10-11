@@ -459,7 +459,7 @@ handle_lnum_col(
 handle_breakindent(win_T *wp, winlinevars_T *wlv)
 {
     if (wp->w_briopt_sbr && wlv->draw_state == WL_BRI - 1
-		    && *get_showbreak_value(wp) != NUL)
+					    && *get_showbreak_value(wp) != NUL)
 	// draw indent after showbreak value
 	wlv->draw_state = WL_BRI;
     else if (wp->w_briopt_sbr && wlv->draw_state == WL_SBR)
@@ -586,7 +586,7 @@ textprop_size_after_trunc(
     // if the remaining size is to small wrap anyway and use the next line
     if (space < PROP_TEXT_MIN_CELLS)
 	space += wp->w_width;
-    if (flags & TP_FLAG_ALIGN_BELOW)
+    if (flags & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_ABOVE))
 	space -= padding;
     for (n_used = 0; n_used < len; n_used += (*mb_ptr2len)(text + n_used))
     {

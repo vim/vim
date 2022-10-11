@@ -2852,6 +2852,11 @@ func Test_props_with_text_above()
       func AddPropBelow()
         call prop_add(1, 0, #{type: 'below', text: 'below', text_align: 'below'})
       endfunc
+      func AddLongPropAbove()
+        3,4delete
+        set wrap
+        call prop_add(1, 0, #{type: 'above1', text: range(50)->join(' '), text_align: 'above', text_padding_left: 2})
+      endfunc
   END
   call writefile(lines, 'XscriptPropsWithTextAbove', 'D')
   let buf = RunVimInTerminal('-S XscriptPropsWithTextAbove', #{rows: 9, cols: 60})
@@ -2886,6 +2891,9 @@ func Test_props_with_text_above()
 
   call term_sendkeys(buf, "\<Esc>ls\<CR>\<Esc>")
   call VerifyScreenDump(buf, 'Test_prop_with_text_above_8', {})
+
+  call term_sendkeys(buf, ":call AddLongPropAbove()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_above_9', {})
 
   call StopVimInTerminal(buf)
 endfunc
