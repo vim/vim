@@ -475,6 +475,10 @@ screen_line(
 #endif
 				;
     int		    redraw_next;	// redraw_this for next character
+#ifdef FEAT_GUI_MSWIN
+    int		    changed_this;	// TRUE if character changed
+    int		    changed_next;	// TRUE if next character changed
+#endif
     int		    clear_next = FALSE;
     int		    char_cells;		// 1: normal char
 					// 2: occupies two display cells
@@ -534,6 +538,9 @@ screen_line(
 #endif
 
     redraw_next = char_needs_redraw(off_from, off_to, endcol - col);
+#ifdef FEAT_GUI_MSWIN
+    changed_next = redraw_next;
+#endif
 
     while (col < endcol)
     {
@@ -547,15 +554,24 @@ screen_line(
 			      off_to + char_cells, endcol - col - char_cells);
 
 #ifdef FEAT_GUI
+# ifdef FEAT_GUI_MSWIN
+	changed_this = changed_next;
+	changed_next = redraw_next;
+# endif
 	// If the next character was bold, then redraw the current character to
 	// remove any pixels that might have spilt over into us.  This only
 	// happens in the GUI.
+	// With MS-Windows antialiasing may also cause pixels to spill over
+	// from a previous character, no matter attributes, always redraw if a
+	// character changed.
 	if (redraw_next && gui.in_use)
 	{
+# ifndef FEAT_GUI_MSWIN
 	    hl = ScreenAttrs[off_to + char_cells];
 	    if (hl > HL_ALL)
 		hl = syn_attr2attr(hl);
 	    if (hl & HL_BOLD)
+# endif
 		redraw_this = TRUE;
 	}
 #endif
@@ -688,6 +704,12 @@ screen_line(
 		if (hl & HL_BOLD)
 		    redraw_next = TRUE;
 	    }
+#endif
+#ifdef FEAT_GUI_MSWIN
+	    // MS-Windows antialiasing may spill over to the next character,
+	    // redraw that one if this one changed, no matter attributes.
+	    if (gui.in_use && changed_this)
+		redraw_next = TRUE;
 #endif
 	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
 
