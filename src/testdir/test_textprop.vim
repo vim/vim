@@ -2628,6 +2628,43 @@ func Test_props_with_text_after()
   call assert_fails('call prop_add(1, 2, #{text: "yes", text_align: "right", type: "some"})', 'E1294:')
 endfunc
 
+func Test_props_with_text_after_and_list()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one', 'two'])
+      prop_type_add('test', {highlight: 'Special'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: range(50)->join(' '),
+          text_align: 'after',
+          text_padding_left: 3
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: range(50)->join('-'),
+          text_align: 'after',
+          text_padding_left: 5
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: range(50)->join('.'),
+          text_align: 'after',
+          text_padding_left: 1
+      })
+      normal G$
+  END
+  call writefile(lines, 'XscriptPropsAfter', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsAfter', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_props_after_1', {})
+
+  call term_sendkeys(buf, ":set list\<CR>")
+  call VerifyScreenDump(buf, 'Test_props_after_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_props_with_text_after_below_trunc()
   CheckRunVimInTerminal
 
