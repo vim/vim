@@ -1223,14 +1223,14 @@ def Test_extend_const()
   END
   v9.CheckDefSuccess(lines)
 
-  # item in a for loop is const
+  # item in a for loop is final
   lines =<< trim END
       var l: list<dict<any>> = [{n: 1}]
       for item in l
         item->extend({x: 2})
       endfor
   END
-  v9.CheckDefFailure(lines, 'E1307: Argument 1: Trying to modify a const dict<any>')
+  v9.CheckDefSuccess(lines)
 enddef
 
 def Test_extendnew()
