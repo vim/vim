@@ -583,8 +583,9 @@ textprop_size_after_trunc(
     int strsize = 0;
     int n_used;
 
-    // if the remaining size is to small wrap anyway and use the next line
-    if (space < PROP_TEXT_MIN_CELLS)
+    // if the remaining size is to small and 'wrap' is set we wrap anyway and
+    // use the next line
+    if (space < PROP_TEXT_MIN_CELLS && wp->w_p_wrap)
 	space += wp->w_width;
     if (flags & (TP_FLAG_ALIGN_BELOW | TP_FLAG_ALIGN_ABOVE))
 	space -= padding;
@@ -658,7 +659,8 @@ text_prop_position(
 			? (col_with_padding <= col_off || !wp->w_p_wrap)
 			: (n_used < *n_extra)))
 	    {
-		if (right && (wrap || room < PROP_TEXT_MIN_CELLS))
+		if (right && (wrap
+			      || (room < PROP_TEXT_MIN_CELLS && wp->w_p_wrap)))
 		{
 		    // right-align on next line instead of wrapping if possible
 		    before = wp->w_width - col_off - strsize + room;

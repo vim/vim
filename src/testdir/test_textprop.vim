@@ -3289,6 +3289,22 @@ func Test_text_after_nowrap()
           text_padding_left: 1,
       })
       normal 2Gw
+      def g:ChangeText()
+        prop_clear(1)
+        set list
+        prop_add(1, 0, {
+            type: 'theprop',
+            text: 'just after txt '->repeat(3),
+            text_align: 'after',
+            text_padding_left: 2,
+        })
+        prop_add(1, 0, {
+            type: 'theprop',
+            text: 'in the middle '->repeat(4),
+            text_align: 'after',
+            text_padding_left: 1,
+        })
+      enddef
   END
   call writefile(lines, 'XTextAfterNowrap', 'D')
   let buf = RunVimInTerminal('-S XTextAfterNowrap', #{rows: 8, cols: 60})
@@ -3302,6 +3318,10 @@ func Test_text_after_nowrap()
 
   call term_sendkeys(buf, "$")
   call VerifyScreenDump(buf, 'Test_text_after_nowrap_4', {})
+
+  call term_sendkeys(buf, "0")
+  call term_sendkeys(buf, ":call ChangeText()\<CR>")
+  call VerifyScreenDump(buf, 'Test_text_after_nowrap_5', {})
 
   call StopVimInTerminal(buf)
 endfunc
