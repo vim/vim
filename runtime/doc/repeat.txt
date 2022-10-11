@@ -628,6 +628,11 @@ When Vim starts up, after processing your .vimrc, it scans all directories in
 directories are added to 'runtimepath'.  Then all the plugins are loaded.
 See |packload-two-steps| for how these two steps can be useful.
 
+To allow for calling into package functionality while parsing your .vimrc,
+|:colorscheme| and |autoload| will both automatically search under 'packpath'
+as well in addition to 'runtimepath'.  See the documentation for each for
+details.
+
 In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds
 "~/.vim/pack/foo/start/foobar" to 'runtimepath'.
 
