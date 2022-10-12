@@ -186,7 +186,7 @@
 #endif
 
 /*
- * +linebreak		'showbreak', 'breakat'  and 'linebreak' options.
+ * +linebreak		'showbreak', 'breakat' and 'linebreak' options.
  *			Also 'numberwidth'.
  */
 #ifdef FEAT_NORMAL
@@ -216,6 +216,8 @@
 
 /*
  * +rightleft		Right-to-left editing/typing support.
+ *			Note that this isn't perfect, but enough users say they
+ *			use it to keep supporting it.
  */
 #if defined(FEAT_HUGE) && !defined(DISABLE_RIGHTLEFT)
 # define FEAT_RIGHTLEFT
@@ -232,18 +234,6 @@
 # ifndef FEAT_RIGHTLEFT
 #   define FEAT_RIGHTLEFT
 # endif
-#endif
-
-// It is unclear if there are any users of the +rightleft and +arabic fetures.
-// The lack of feedback and bug reports suggests that they are not actively
-// being used.
-// FOR NOW: disable the features here.  If nobody complains the code can be
-// removed.
-#ifdef FEAT_RIGHTLEFT
-# undef FEAT_RIGHTLEFT
-#endif
-#ifdef FEAT_ARABIC
-# undef FEAT_ARABIC
 #endif
 
 /*
