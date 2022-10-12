@@ -172,8 +172,6 @@ get_fpos_of_mouse(pos_T *mpos)
 
     mpos->col = vcol2col(wp, mpos->lnum, col);
 
-    if (mpos->col > 0)
-	--mpos->col;
     mpos->coladd = 0;
     return IN_BUFFER;
 }
