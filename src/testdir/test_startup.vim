@@ -392,7 +392,7 @@ endfunc
 " Test the -A, -F and -H arguments (Arabic, Farsi and Hebrew modes).
 func Test_A_F_H_arg()
   let after =<< trim [CODE]
-    call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout", 'D')
+    call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout")
     qall
   [CODE]
 
@@ -412,6 +412,8 @@ func Test_A_F_H_arg()
     let lines = readfile('Xtestout')
     call assert_equal(['1', '0', '0', '1'], lines)
   endif
+
+  call delete('Xtestout')
 endfunc
 
 " Test the --echo-wid argument (for GTK GUI only).
