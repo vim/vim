@@ -2636,6 +2636,7 @@ beginline(int flags)
 	}
 	curwin->w_set_curswant = TRUE;
     }
+    adjust_skipcol();
 }
 
 /*
@@ -2683,6 +2684,7 @@ oneright(void)
     curwin->w_cursor.col += l;
 
     curwin->w_set_curswant = TRUE;
+    adjust_skipcol();
     return OK;
 }
 
@@ -2742,6 +2744,7 @@ oneleft(void)
     // character, move to its first byte
     if (has_mbyte)
 	mb_adjust_cursor();
+    adjust_skipcol();
     return OK;
 }
 

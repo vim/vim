@@ -2448,6 +2448,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 
     if (atend)
 	curwin->w_curswant = MAXCOL;	    // stick in the last column
+    adjust_skipcol();
 
     return retval;
 }
