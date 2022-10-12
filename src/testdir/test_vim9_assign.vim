@@ -1904,6 +1904,25 @@ def Test_heredoc()
       STOP
   END
   v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<string>', 1)
+
+  lines =<< trim END
+      var lines=<< STOP
+        xxx
+      STOP
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1004: White space required before and after ''=<<'' at "=<< STOP"', 1)
+  lines =<< trim END
+      var lines =<<STOP
+        xxx
+      STOP
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1004: White space required before and after ''=<<'' at "=<<STOP"', 1)
+  lines =<< trim END
+      var lines=<<STOP
+        xxx
+      STOP
+  END
+  v9.CheckDefAndScriptFailure(lines, 'E1004: White space required before and after ''=<<'' at "=<<STOP"', 1)
 enddef
 
 def Test_var_func_call()

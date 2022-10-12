@@ -1066,11 +1066,18 @@ ex_let(exarg_T *eap)
     }
     else if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
     {
-	list_T	*l;
+	list_T	*l = NULL;
 	long	cur_lnum = SOURCING_LNUM;
 
-	// HERE document
-	l = heredoc_get(eap, expr + 3, FALSE, FALSE);
+	// :let text =<< [trim] [eval] END
+	// :var text =<< [trim] [eval] END
+	if (vim9script && !eap->skip && (!VIM_ISWHITE(expr[-1])
+						 || !IS_WHITE_OR_NUL(expr[3])))
+	    semsg(_(e_white_space_required_before_and_after_str_at_str),
+								  "=<<", expr);
+	else
+	    l = heredoc_get(eap, expr + 3, FALSE, FALSE);
+
 	if (l != NULL)
 	{
 	    rettv_list_set(&rettv, l);
