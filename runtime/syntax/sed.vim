@@ -2,7 +2,7 @@
 " Language:	sed
 " Maintainer:	Haakon Riiser <hakonrk@fys.uio.no>
 " URL:		http://folk.uio.no/hakonrk/vim/syntax/sed.vim
-" Last Change:	2010 May 29
+" Last Change:	2022 Oct 13
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -17,8 +17,13 @@ syn match sedAddress	"[[:digit:]$]"
 syn match sedAddress	"\d\+\~\d\+"
 syn region sedAddress   matchgroup=Special start="[{,;]\s*/\(\\/\)\="lc=1 skip="[^\\]\(\\\\\)*\\/" end="/I\=" contains=sedTab,sedRegexpMeta
 syn region sedAddress   matchgroup=Special start="^\s*/\(\\/\)\=" skip="[^\\]\(\\\\\)*\\/" end="/I\=" contains=sedTab,sedRegexpMeta
-syn match sedComment	"^\s*#.*$"
 syn match sedFunction	"[dDgGhHlnNpPqQx=]\s*\($\|;\)" contains=sedSemicolon,sedWhitespace
+if exists("g:sed_dialect") && g:sed_dialect ==? "bsd"
+    syn match sedComment	"^\s*#.*$"
+else
+    syn match sedFunction	"[dDgGhHlnNpPqQx=]\s*\ze#" contains=sedSemicolon,sedWhitespace
+    syn match sedComment	"#.*$"
+endif
 syn match sedLabel	":[^;]*"
 syn match sedLineCont	"^\(\\\\\)*\\$" contained
 syn match sedLineCont	"[^\\]\(\\\\\)*\\$"ms=e contained
