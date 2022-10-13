@@ -1089,6 +1089,8 @@ win_line(
 
 #if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
     int		match_conc	= 0;	// cchar for match functions
+#endif
+#if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA) || defined(FEAT_LINEBREAK)
     int		on_last_col     = FALSE;
 #endif
 #ifdef FEAT_CONCEAL
