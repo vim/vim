@@ -1992,6 +1992,11 @@ func GetEscCodeCSIu(key, modifier)
   return "\<Esc>[" .. key .. ';' .. mod .. 'u'
 endfunc
 
+func GetEscCodeCSIuWithoutModifier(key)
+  let key = printf("%d", char2nr(a:key))
+  return "\<Esc>[" .. key .. 'u'
+endfunc
+
 " This checks the CSI sequences when in modifyOtherKeys mode.
 " The mode doesn't need to be enabled, the codes are always detected.
 func RunTest_modifyOtherKeys(func)
@@ -2078,6 +2083,19 @@ func Test_modifyOtherKeys_no_mapping()
   bwipe!
 
   set timeoutlen&
+endfunc
+
+func Test_CSIu_keys_without_modifiers()
+  " Escape sent as `CSI 27 u` should act as normal escape and not undo
+  call setline(1, 'a')
+  call feedkeys('a' .. GetEscCodeCSIuWithoutModifier("\e"), 'Lx!')
+  call assert_equal('n', mode())
+  call assert_equal('a', getline(1))
+
+  " Tab sent as `CSI 9 u` should work
+  call setline(1, '')
+  call feedkeys('a' .. GetEscCodeCSIuWithoutModifier("\t") .. "\<Esc>", 'Lx!')
+  call assert_equal("\t", getline(1))
 endfunc
 
 " Check that when DEC mouse codes are recognized a special key is handled.

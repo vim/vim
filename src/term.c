@@ -4862,6 +4862,32 @@ handle_key_with_modifier(
 }
 
 /*
+ * Handle a sequence with key without a modifier:
+ *	{lead}{key}u
+ * Returns the difference in length.
+ */
+    static int
+handle_key_without_modifier(
+	int	*arg,
+	int	csi_len,
+	int	offset,
+	char_u	*buf,
+	int	bufsize,
+	int	*buflen)
+{
+    int	    key = arg[0];
+    int	    new_slen = 0;
+    char_u  string[MAX_KEY_CODE_LEN + 1];
+
+    string[new_slen++] = key;
+
+    if (put_string_in_typebuf(offset, csi_len, string, new_slen,
+						 buf, bufsize, buflen) == FAIL)
+	return -1;
+    return new_slen - csi_len + offset;
+}
+
+/*
  * Handle a CSI escape sequence.
  * - Xterm version string.
  *
@@ -5013,6 +5039,14 @@ handle_csi(
 	    || (argc == 2 && trail == 'u'))
     {
 	return len + handle_key_with_modifier(arg, trail,
+			    csi_len, offset, buf, bufsize, buflen);
+    }
+
+    // Key without modifier:
+    //	{lead}{key}u
+    else if (argc == 1 && trail == 'u')
+    {
+	return len + handle_key_without_modifier(arg,
 			    csi_len, offset, buf, bufsize, buflen);
     }
 
