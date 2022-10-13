@@ -4339,6 +4339,33 @@ def Test_defer()
   assert_equal('', glob('XdeferFile'))
 enddef
 
+def Test_invalid_redir()
+  var lines =<< trim END
+      def Tone()
+        if 1
+          redi =>@ 0
+          redi END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E354:')
+  delfunc g:Tone
+
+  # this was reading past the end of the line
+  lines =<< trim END
+      def Ttwo()
+        if 0
+          redi =>@ 0
+          redi END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptFailure(lines, 'E354:')
+  delfunc g:Ttwo
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()

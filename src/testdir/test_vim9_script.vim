@@ -2136,15 +2136,66 @@ enddef
 
 def Test_skipped_redir()
   var lines =<< trim END
-      def T()
+      def Tredir()
         if 0
-          redir =>l[0]
+          redir => l[0]
           redir END
         endif
       enddef
       defcompile
   END
   v9.CheckScriptSuccess(lines)
+  delfunc g:Tredir
+
+  lines =<< trim END
+      def Tredir()
+        if 0
+          redir => l[0]
+        endif
+        echo 'executed'
+        if 0
+          redir END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc g:Tredir
+
+  lines =<< trim END
+      def Tredir()
+        var l = ['']
+        if 1
+          redir => l[0]
+        endif
+        echo 'executed'
+        if 0
+          redir END
+        else
+          redir END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc g:Tredir
+
+  lines =<< trim END
+      let doit = 1
+      def Tredir()
+        var l = ['']
+        if g:doit
+          redir => l[0]
+        endif
+        echo 'executed'
+        if g:doit
+          redir END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc g:Tredir
 enddef
 
 def Test_for_loop()
