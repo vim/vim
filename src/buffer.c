@@ -2543,7 +2543,7 @@ buflist_getfpos(void)
     }
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Find file in buffer list by name (it has to be for the current window).
  * Returns NULL if not found.
@@ -3846,14 +3846,12 @@ fileinfo(
 					    (long)curbuf->b_ml.ml_line_count);
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
 	vim_snprintf_add(buffer, IOSIZE, "%s", _(no_lines_msg));
-#ifdef FEAT_CMDL_INFO
     else if (p_ru)
 	// Current line and column are already on the screen -- webb
 	vim_snprintf_add(buffer, IOSIZE,
 		NGETTEXT("%ld line --%d%%--", "%ld lines --%d%%--",
 						   curbuf->b_ml.ml_line_count),
 		(long)curbuf->b_ml.ml_line_count, n);
-#endif
     else
     {
 	vim_snprintf_add(buffer, IOSIZE,
@@ -5177,8 +5175,6 @@ build_stl_str_hl(
 }
 #endif // FEAT_STL_OPT
 
-#if defined(FEAT_STL_OPT) || defined(FEAT_CMDL_INFO) \
-	    || defined(FEAT_GUI_TABLINE) || defined(PROTO)
 /*
  * Get relative cursor position in window into "buf[buflen]", in the form 99%,
  * using "Top", "Bot" or "All" when appropriate.
@@ -5213,7 +5209,6 @@ get_rel_pos(
 				    ? (int)(above / ((above + below) / 100L))
 				    : (int)(above * 100L / (above + below)));
 }
-#endif
 
 /*
  * Append (file 2 of 8) to "buf[buflen]", if editing more than one file.

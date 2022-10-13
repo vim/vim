@@ -2932,9 +2932,11 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	    STRCAT(p, line + curwin->w_cursor.col + STRLEN(repl_from));
 	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
 	    changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
+#if defined(FEAT_PROP_POPUP)
 	    if (curbuf->b_has_textprop && addlen != 0)
 		adjust_prop_columns(curwin->w_cursor.lnum,
 				 curwin->w_cursor.col, addlen, APC_SUBSTITUTE);
+#endif
 
 	    if (curwin->w_cursor.lnum != prev_lnum)
 	    {

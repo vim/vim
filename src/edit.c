@@ -310,9 +310,7 @@ edit(
 #endif
 
     setmouse();
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
 #ifdef FEAT_RIGHTLEFT
     // there is no reverse replace mode
     revins_on = (State == MODE_INSERT && p_ri);
@@ -1561,9 +1559,7 @@ ins_ctrl_v(void)
     }
     AppendToRedobuff((char_u *)CTRL_V_STR);	// CTRL-V
 
-#ifdef FEAT_CMDL_INFO
     add_to_showcmd_c(Ctrl_V);
-#endif
 
     // Do not change any modifyOtherKeys ESC sequence to a normal key for
     // CTRL-SHIFT-V.
@@ -1572,9 +1568,7 @@ ins_ctrl_v(void)
 	// when the line fits in 'columns' the '^' is at the start of the next
 	// line and will not removed by the redraw
 	edit_unputchar();
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
 
     insert_special(c, FALSE, TRUE);
 #ifdef FEAT_RIGHTLEFT
@@ -1907,10 +1901,8 @@ get_literal(int noReduceKeys)
 	    // character for i_CTRL-V_digit.
 	    break;
 
-#ifdef FEAT_CMDL_INFO
 	if ((State & MODE_CMDLINE) == 0 && MB_BYTE2LEN_CHECK(nc) == 1)
 	    add_to_showcmd(nc);
-#endif
 	if (nc == 'x' || nc == 'X')
 	    hex = TRUE;
 	else if (nc == 'o' || nc == 'O')
@@ -3372,9 +3364,7 @@ ins_reg(void)
 	ins_redraw(FALSE);
 
 	edit_putchar('"', TRUE);
-#ifdef FEAT_CMDL_INFO
 	add_to_showcmd_c(Ctrl_R);
-#endif
     }
 
 #ifdef USE_ON_FLY_SCROLL
@@ -3393,9 +3383,7 @@ ins_reg(void)
     {
 	// Get a third key for literal register insertion
 	literally = regname;
-#ifdef FEAT_CMDL_INFO
 	add_to_showcmd_c(literally);
-#endif
 	regname = plain_vgetc();
 	LANGMAP_ADJUST(regname, TRUE);
     }
@@ -3463,9 +3451,7 @@ ins_reg(void)
 	ins_need_undo = TRUE;
     u_sync_once = 0;
 #endif
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
 
     // If the inserted register is empty, we need to remove the '"'
     if (need_redraw || stuff_empty())
@@ -5176,9 +5162,7 @@ ins_digraph(void)
 
 	edit_putchar('?', TRUE);
 	did_putchar = TRUE;
-#ifdef FEAT_CMDL_INFO
 	add_to_showcmd_c(Ctrl_K);
-#endif
     }
 
 #ifdef USE_ON_FLY_SCROLL
@@ -5199,9 +5183,7 @@ ins_digraph(void)
 
     if (IS_SPECIAL(c) || mod_mask)	    // special key
     {
-#ifdef FEAT_CMDL_INFO
 	clear_showcmd();
-#endif
 	insert_special(c, TRUE, FALSE);
 	return NUL;
     }
@@ -5219,9 +5201,7 @@ ins_digraph(void)
 		edit_putchar(c, TRUE);
 		did_putchar = TRUE;
 	    }
-#ifdef FEAT_CMDL_INFO
 	    add_to_showcmd_c(c);
-#endif
 	}
 	++no_mapping;
 	++allow_keys;
@@ -5236,15 +5216,11 @@ ins_digraph(void)
 	{
 	    AppendToRedobuff((char_u *)CTRL_V_STR);
 	    c = digraph_get(c, cc, TRUE);
-#ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
-#endif
 	    return c;
 	}
     }
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
     return NUL;
 }
 #endif

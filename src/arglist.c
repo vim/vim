@@ -295,7 +295,7 @@ get_arglist(garray_T *gap, char_u *str, int escaped)
     return OK;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Parse a list of arguments (file names), expand them and return in
  * "fnames[fcountp]".  When "wig" is TRUE, removes files matching 'wildignore'.

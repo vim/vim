@@ -2060,11 +2060,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"ruler",	    "ru",   P_BOOL|P_VI_DEF|P_VIM|P_RSTAT,
-#ifdef FEAT_CMDL_INFO
 			    (char_u *)&p_ru, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"rulerformat", "ruf",  P_STRING|P_VI_DEF|P_ALLOCED|P_RSTAT|P_MLE,
 #ifdef FEAT_STL_OPT
@@ -2224,11 +2220,7 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"showcmd",	    "sc",   P_BOOL|P_VIM,
-#ifdef FEAT_CMDL_INFO
 			    (char_u *)&p_sc, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)FALSE,
 #ifdef UNIX
 				(char_u *)FALSE

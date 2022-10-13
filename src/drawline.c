@@ -1075,7 +1075,7 @@ win_line(
     int		get_term_attr = FALSE;
 #endif
 
-#ifdef FEAT_SYN_HL
+#if defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
     // margin columns for the screen line, needed for when 'cursorlineopt'
     // contains "screenline"
     int		left_curline_col = 0;
@@ -1089,6 +1089,8 @@ win_line(
 
 #if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
     int		match_conc	= 0;	// cchar for match functions
+#endif
+#if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA) || defined(FEAT_LINEBREAK)
     int		on_last_col     = FALSE;
 #endif
 #ifdef FEAT_CONCEAL

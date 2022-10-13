@@ -604,9 +604,8 @@ wingotofile:
 		LANGMAP_ADJUST(xchar, TRUE);
 		--no_mapping;
 		--allow_keys;
-#ifdef FEAT_CMDL_INFO
 		(void)add_to_showcmd(xchar);
-#endif
+
 		switch (xchar)
 		{
 #if defined(FEAT_QUICKFIX)
@@ -6285,7 +6284,7 @@ win_drag_vsep_line(win_T *dragwin, int offset)
     if (fr == NULL)
 	// This can happen when calling win_move_separator() on the rightmost
 	// window.  Just don't do anything.
-	return;			
+	return;
 
     // grow frame fr by offset lines
     frame_new_width(fr, fr->fr_width + offset, left, FALSE);

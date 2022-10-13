@@ -1085,7 +1085,7 @@ win_lbr_chartabsize(
 	int		*headp UNUSED)
 {
     win_T	*wp = cts->cts_win;
-#ifdef FEAT_PROP_POPUP
+#if defined(FEAT_PROP_POPUP) || defined(FEAT_LINEBREAK)
     char_u	*line = cts->cts_line; // start of the line
 #endif
     char_u	*s = cts->cts_ptr;

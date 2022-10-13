@@ -1907,7 +1907,7 @@ EXTERN char e_character_in_fol_low_or_upp_is_out_of_range[]
 EXTERN char e_word_characters_differ_between_spell_files[]
 	INIT(= N_("E763: Word characters differ between spell files"));
 #endif
-#if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC)
+#if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC) || defined(FEAT_SPELL)
 EXTERN char e_option_str_is_not_set[]
 	INIT(= N_("E764: Option '%s' is not set"));
 #endif
@@ -3082,7 +3082,7 @@ EXTERN char e_bool_required_for_argument_nr[]
 EXTERN char e_redefining_imported_item_str[]
 	INIT(= N_("E1213: Redefining imported item \"%s\""));
 #endif
-#if defined(FEAT_DIGRAPHS) && defined(FEAT_EVAL)
+#if defined(FEAT_DIGRAPHS)
 EXTERN char e_digraph_must_be_just_two_characters_str[]
 	INIT(= N_("E1214: Digraph must be just two characters: %s"));
 EXTERN char e_digraph_argument_must_be_one_character_str[]

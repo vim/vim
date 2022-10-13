@@ -126,6 +126,7 @@
  * +builtin_terms	all builtin termcap entries included
  * +float		Floating point variables.
  * +cmdwin		Command line window.
+ * +cmdline_info	'showcmd' and 'ruler' options.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -176,13 +177,6 @@
 
 #ifdef FEAT_NORMAL
 # define VIM_BACKTICK		// internal backtick expansion
-#endif
-
-/*
- * +cmdline_info	'showcmd' and 'ruler' options.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_CMDL_INFO
 #endif
 
 /*
@@ -324,9 +318,6 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_STL_OPT
-# ifndef FEAT_CMDL_INFO
-#  define FEAT_CMDL_INFO	// 'ruler' is required for 'statusline'
-# endif
 #endif
 
 /*

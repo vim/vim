@@ -268,7 +268,7 @@ typedef struct
     int		wo_spell;
 # define w_p_spell w_onebuf_opt.wo_spell // 'spell'
 #endif
-#ifdef FEAT_SYN_HL
+#if defined(FEAT_SYN_HL) || defined(FEAT_FOLDING) || defined(FEAT_DIFF)
     int		wo_cuc;
 # define w_p_cuc w_onebuf_opt.wo_cuc	// 'cursorcolumn'
     int		wo_cul;
@@ -3785,17 +3785,15 @@ struct window_S
     linenr_T	w_redraw_bot;	    // when != 0: last line needing redraw
     int		w_redr_status;	    // if TRUE status line must be redrawn
 
-#ifdef FEAT_CMDL_INFO
     // remember what is shown in the ruler for this window (if 'ruler' set)
     pos_T	w_ru_cursor;	    // cursor position shown in ruler
     colnr_T	w_ru_virtcol;	    // virtcol shown in ruler
     linenr_T	w_ru_topline;	    // topline shown in ruler
     linenr_T	w_ru_line_count;    // line count used for ruler
-# ifdef FEAT_DIFF
+#ifdef FEAT_DIFF
     int		w_ru_topfill;	    // topfill shown in ruler
-# endif
-    char	w_ru_empty;	    // TRUE if ruler shows 0-1 (empty line)
 #endif
+    char	w_ru_empty;	    // TRUE if ruler shows 0-1 (empty line)
 
     int		w_alt_fnum;	    // alternate file (for # and CTRL-^)
 
@@ -3833,7 +3831,7 @@ struct window_S
     long_u	w_p_fde_flags;	    // flags for 'foldexpr'
     long_u	w_p_fdt_flags;	    // flags for 'foldtext'
 #endif
-#ifdef FEAT_SYN_HL
+#if defined(FEAT_SIGNS) || defined(FEAT_FOLDING) || defined(FEAT_DIFF)
     int		*w_p_cc_cols;	    // array of columns to highlight or NULL
     char_u	w_p_culopt_flags;   // flags for cursorline highlighting
 #endif

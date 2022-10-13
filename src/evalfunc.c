@@ -6091,20 +6091,8 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"scrollbind", 1},
-	{"showcmd",
-#ifdef FEAT_CMDL_INFO
-		1
-#else
-		0
-#endif
-		},
-	{"cmdline_info",
-#ifdef FEAT_CMDL_INFO
-		1
-#else
-		0
-#endif
-		},
+	{"showcmd", 1},
+	{"cmdline_info", 1},
 	{"signs",
 #ifdef FEAT_SIGNS
 		1
@@ -10276,7 +10264,7 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 		    p = highlight_has_attr(id, HL_ITALIC, modec);
 		break;
 
-	case 'n':					
+	case 'n':
 		if (TOLOWER_ASC(what[1]) == 'o')	// nocombine
 		    p = highlight_has_attr(id, HL_NOCOMBINE, modec);
 		else					// name

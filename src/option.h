@@ -821,9 +821,7 @@ EXTERN int	p_ri;		// 'revins'
 #if defined(DYNAMIC_RUBY)
 EXTERN char_u	*p_rubydll;	// 'rubydll'
 #endif
-#ifdef FEAT_CMDL_INFO
 EXTERN int	p_ru;		// 'ruler'
-#endif
 #ifdef FEAT_STL_OPT
 EXTERN char_u	*p_ruf;		// 'rulerformat'
 #endif
@@ -890,9 +888,7 @@ EXTERN int	p_sn;		// 'shortname'
 #ifdef FEAT_LINEBREAK
 EXTERN char_u	*p_sbr;		// 'showbreak'
 #endif
-#ifdef FEAT_CMDL_INFO
 EXTERN int	p_sc;		// 'showcmd'
-#endif
 EXTERN int	p_sft;		// 'showfulltag'
 EXTERN int	p_sm;		// 'showmatch'
 EXTERN int	p_smd;		// 'showmode'
