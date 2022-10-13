@@ -954,7 +954,7 @@ err_closing:
 
 	// run the cscope command
 #ifdef UNIX
-	vim_snprintf(cmd, cmdlen, "/bin/sh -c \"exec %s -dl -f %s\"",
+	vim_snprintf(cmd, cmdlen, "/bin/sh -c \"exec %s -dl -f %s",
 							prog, csinfo[i].fname);
 #else
 	vim_snprintf(cmd, cmdlen, "%s -dl -f %s", prog, csinfo[i].fname);
@@ -970,6 +970,9 @@ err_closing:
 	    vim_snprintf(cmd + len, cmdlen - len, " %s", csinfo[i].flags);
 	}
 # ifdef UNIX
+	// terminate the -c command argument
+	STRCAT(cmd, "\"");
+
 	// on Win32 we still need prog
 	vim_free(prog);
 # endif
