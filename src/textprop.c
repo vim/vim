@@ -353,6 +353,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     linenr_T	end_lnum;
     colnr_T	end_col;
     int		error = FALSE;
+    int		prev_did_emsg = did_emsg;
 
     if (check_for_dict_arg(argvars, 0) == FAIL
 	    || check_for_list_arg(argvars, 1) == FAIL)
@@ -389,13 +390,17 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 
 	pos_list = li->li_tv.vval.v_list;
 	start_lnum = list_find_nr(pos_list, 0L, &error);
-	start_col = list_find_nr(pos_list, 1L, &error);
-	end_lnum = list_find_nr(pos_list, 2L, &error);
-	end_col = list_find_nr(pos_list, 3L, &error);
+	if (!error)
+	    start_col = list_find_nr(pos_list, 1L, &error);
+	if (!error)
+	    end_lnum = list_find_nr(pos_list, 2L, &error);
+	if (!error)
+	    end_col = list_find_nr(pos_list, 3L, &error);
 	if (error || start_lnum <= 0 || start_col <= 0
-		|| end_lnum <= 0 || end_col <= 0)
+		  || end_lnum <= 0 || end_col <= 0)
 	{
-	    emsg(_(e_invalid_argument));
+	    if (prev_did_emsg == did_emsg)
+		emsg(_(e_invalid_argument));
 	    return;
 	}
 	if (prop_add_one(buf, type_name, id, NULL, 0, 0, start_lnum, end_lnum,

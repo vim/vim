@@ -383,6 +383,9 @@ func Test_prop_add_list()
   call assert_fails('call prop_add_list(test_null_dict(), [[2, 2, 2]])', 'E965:')
   call assert_fails('call prop_add_list(#{type: "one"}, test_null_list())', 'E1298:')
   call assert_fails('call prop_add_list(#{type: "one"}, [test_null_list()])', 'E714:')
+
+  " only one error for multiple wrong values
+  call assert_fails('call prop_add_list(#{type: "one"}, [[{}, [], 0z00, 0.3]])', ['E728:', 'E728:'])
   call DeletePropTypes()
   bw!
 endfunc

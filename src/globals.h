@@ -219,8 +219,8 @@ EXTERN char_u	*emsg_assert_fails_context INIT(= NULL);
 
 EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 #endif
-EXTERN int	did_emsg;		    // set by emsg() when the message
-					    // is displayed or thrown
+EXTERN int	did_emsg;		    // incremented by emsg() when a
+					    // message is displayed or thrown
 #ifdef FEAT_EVAL
 EXTERN int	did_emsg_silent INIT(= 0);  // incremented by emsg() when
 					    // emsg_silent was set and did_emsg
