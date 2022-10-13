@@ -596,7 +596,19 @@ do_mouse(
 			jump_flags = MOUSE_MAY_STOP_VIS;
 		    else
 		    {
-			if ((LT_POS(curwin->w_cursor, VIsual)
+			if (VIsual_mode == 'V')
+			{
+			    if ((curwin->w_cursor.lnum <= VIsual.lnum
+				    && (m_pos.lnum < curwin->w_cursor.lnum
+					|| VIsual.lnum < m_pos.lnum))
+				|| (VIsual.lnum < curwin->w_cursor.lnum
+				    && (m_pos.lnum < VIsual.lnum
+					|| curwin->w_cursor.lnum < m_pos.lnum)))
+			    {
+				jump_flags = MOUSE_MAY_STOP_VIS;
+			    }
+			}
+			else if ((LTOREQ_POS(curwin->w_cursor, VIsual)
 				    && (LT_POS(m_pos, curwin->w_cursor)
 					|| LT_POS(VIsual, m_pos)))
 				|| (LT_POS(VIsual, curwin->w_cursor)
