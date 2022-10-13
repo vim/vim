@@ -182,7 +182,7 @@ NEW_TESTS = \
 	test_largefile \
 	test_let \
 	test_lineending \
-	test_lispwords \
+	test_lispindent \
 	test_listchars \
 	test_listdict \
 	test_listener \
@@ -427,6 +427,7 @@ NEW_TESTS_RES = \
 	test_langmap.res \
 	test_let.res \
 	test_lineending.res \
+	test_lispindent.res \
 	test_listchars.res \
 	test_listdict.res \
 	test_listener.res \
