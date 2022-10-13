@@ -1036,8 +1036,8 @@ curs_columns(
     int		off_left, off_right;
     int		n;
     int		p_lines;
-    int		width = 0;
-    int		textwidth;
+    int		width1;		// text width for first screen line
+    int		width2 = 0;	// text width for second and later screen line
     int		new_leftcol;
     colnr_T	startcol;
     colnr_T	endcol;
@@ -1087,8 +1087,8 @@ curs_columns(
      */
     curwin->w_wrow = curwin->w_cline_row;
 
-    textwidth = curwin->w_width - extra;
-    if (textwidth <= 0)
+    width1 = curwin->w_width - extra;
+    if (width1 <= 0)
     {
 	// No room for text, put cursor in last char of window.
 	// If not wrapping, the last non-empty line.
@@ -1100,13 +1100,20 @@ curs_columns(
     }
     else if (curwin->w_p_wrap && curwin->w_width != 0)
     {
-	width = textwidth + curwin_col_off2();
+	width2 = width1 + curwin_col_off2();
 
 	// skip columns that are not visible
 	if (curwin->w_cursor.lnum == curwin->w_topline
+		&& curwin->w_skipcol > 0
 		&& curwin->w_wcol >= curwin->w_skipcol)
 	{
-	    curwin->w_wcol -= curwin->w_skipcol;
+	    // w_skipcol excludes win_col_off().  Include it here, since w_wcol
+	    // counts actual screen columns.
+	    if (curwin->w_skipcol <= width1)
+		curwin->w_wcol -= curwin->w_width;
+	    else
+		curwin->w_wcol -= curwin->w_width
+			       * (((curwin->w_skipcol - width1) / width2) + 1);
 	    did_sub_skipcol = TRUE;
 	}
 
@@ -1114,8 +1121,8 @@ curs_columns(
 	if (curwin->w_wcol >= curwin->w_width)
 	{
 	    // this same formula is used in validate_cursor_col()
-	    n = (curwin->w_wcol - curwin->w_width) / width + 1;
-	    curwin->w_wcol -= n * width;
+	    n = (curwin->w_wcol - curwin->w_width) / width2 + 1;
+	    curwin->w_wcol -= n * width2;
 	    curwin->w_wrow += n;
 
 #ifdef FEAT_LINEBREAK
@@ -1170,8 +1177,8 @@ curs_columns(
 
 	    // When far off or not enough room on either side, put cursor in
 	    // middle of window.
-	    if (p_ss == 0 || diff >= textwidth / 2 || off_right >= off_left)
-		new_leftcol = curwin->w_wcol - extra - textwidth / 2;
+	    if (p_ss == 0 || diff >= width1 / 2 || off_right >= off_left)
+		new_leftcol = curwin->w_wcol - extra - width1 / 2;
 	    else
 	    {
 		if (diff < p_ss)
@@ -1223,7 +1230,7 @@ curs_columns(
 						    - 1 >= curwin->w_height))
 	    && curwin->w_height != 0
 	    && curwin->w_cursor.lnum == curwin->w_topline
-	    && width > 0
+	    && width2 > 0
 	    && curwin->w_width != 0)
     {
 	// Cursor past end of screen.  Happens with a single line that does
@@ -1233,7 +1240,7 @@ curs_columns(
 	// 2: Less than 'scrolloff' lines below
 	// 3: both of them
 	extra = 0;
-	if (curwin->w_skipcol + so * width > curwin->w_virtcol)
+	if (curwin->w_skipcol + so * width2 > curwin->w_virtcol)
 	    extra = 1;
 	// Compute last display line of the buffer line that we want at the
 	// bottom of the window.
@@ -1244,13 +1251,13 @@ curs_columns(
 	    n = curwin->w_wrow + so;
 	else
 	    n = p_lines;
-	if ((colnr_T)n >= curwin->w_height + curwin->w_skipcol / width - so)
+	if ((colnr_T)n >= curwin->w_height + curwin->w_skipcol / width2 - so)
 	    extra += 2;
 
 	if (extra == 3 || curwin->w_height <= so * 2)
 	{
 	    // not enough room for 'scrolloff', put cursor in the middle
-	    n = curwin->w_virtcol / width;
+	    n = curwin->w_virtcol / width2;
 	    if (n > curwin->w_height / 2)
 		n -= curwin->w_height / 2;
 	    else
@@ -1258,45 +1265,45 @@ curs_columns(
 	    // don't skip more than necessary
 	    if (n > p_lines - curwin->w_height + 1)
 		n = p_lines - curwin->w_height + 1;
-	    curwin->w_skipcol = n * width;
+	    curwin->w_skipcol = n * width2;
 	}
 	else if (extra == 1)
 	{
 	    // less than 'scrolloff' lines above, decrease skipcol
-	    extra = (curwin->w_skipcol + so * width - curwin->w_virtcol
-				     + width - 1) / width;
+	    extra = (curwin->w_skipcol + so * width2 - curwin->w_virtcol
+				     + width2 - 1) / width2;
 	    if (extra > 0)
 	    {
-		if ((colnr_T)(extra * width) > curwin->w_skipcol)
-		    extra = curwin->w_skipcol / width;
-		curwin->w_skipcol -= extra * width;
+		if ((colnr_T)(extra * width2) > curwin->w_skipcol)
+		    extra = curwin->w_skipcol / width2;
+		curwin->w_skipcol -= extra * width2;
 	    }
 	}
 	else if (extra == 2)
 	{
 	    // less than 'scrolloff' lines below, increase skipcol
-	    endcol = (n - curwin->w_height + 1) * width;
+	    endcol = (n - curwin->w_height + 1) * width2;
 	    while (endcol > curwin->w_virtcol)
-		endcol -= width;
+		endcol -= width2;
 	    if (endcol > curwin->w_skipcol)
 		curwin->w_skipcol = endcol;
 	}
 
 	// adjust w_wrow for the changed w_skipcol
 	if (did_sub_skipcol)
-	    curwin->w_wrow -= (curwin->w_skipcol - prev_skipcol) / width;
+	    curwin->w_wrow -= (curwin->w_skipcol - prev_skipcol) / width2;
 	else
-	    curwin->w_wrow -= curwin->w_skipcol / width;
+	    curwin->w_wrow -= curwin->w_skipcol / width2;
 
 	if (curwin->w_wrow >= curwin->w_height)
 	{
 	    // small window, make sure cursor is in it
 	    extra = curwin->w_wrow - curwin->w_height + 1;
-	    curwin->w_skipcol += extra * width;
+	    curwin->w_skipcol += extra * width2;
 	    curwin->w_wrow -= extra;
 	}
 
-	extra = ((int)prev_skipcol - (int)curwin->w_skipcol) / width;
+	extra = ((int)prev_skipcol - (int)curwin->w_skipcol) / width2;
 	if (extra > 0)
 	    win_ins_lines(curwin, 0, extra, FALSE, FALSE);
 	else if (extra < 0)

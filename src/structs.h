@@ -3600,7 +3600,7 @@ struct window_S
 				    // 'wrap' is off
     colnr_T	w_skipcol;	    // starting screen column for the first
 				    // line in the window; used when 'wrap' is
-				    // on
+				    // on; does not include win_col_off()
 
     int		w_empty_rows;	    // number of ~ rows in window
 #ifdef FEAT_DIFF
@@ -4667,8 +4667,8 @@ typedef struct {
 					// cts_text_props is not used
     textprop_T	*cts_text_props;	// text props (allocated)
     char	cts_has_prop_with_text; // TRUE if if a property inserts text
-    int         cts_cur_text_width;     // width of current inserted text
-    int         cts_first_char;		// width text props above the line
+    int		cts_cur_text_width;     // width of current inserted text
+    int		cts_first_char;		// width text props above the line
     int		cts_with_trailing;	// include size of trailing props with
 					// last character
     int		cts_start_incl;		// prop has true "start_incl" arg
