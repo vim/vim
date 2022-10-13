@@ -1218,6 +1218,26 @@ def Test_autoload_import_deleted()
   delete('Xa.vim')
 enddef
 
+def Test_autoload_import_using_const()
+  mkdir('Xdir/autoload', 'pR')
+  var lines =<< trim END
+      vim9script
+      export const FOO = 42
+      echomsg FOO
+  END
+  writefile(lines, 'Xdir/autoload/exp.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  lines =<< trim END
+      vim9script
+      import autoload 'exp.vim'
+      assert_equal(42, exp.FOO)
+  END
+  v9.CheckScriptSuccess(lines)
+  &rtp = save_rtp
+enddef
+
 func Test_import_in_diffexpr()
   CheckExecutable diff
 
@@ -2570,7 +2590,7 @@ def Test_vim9script_autoload_duplicate()
      enddef
   END
   writefile(lines, 'Xdupdir/autoload/dup4func.vim')
-  assert_fails('source Xdupdir/autoload/dup4func.vim', 'E707:')
+  assert_fails('source Xdupdir/autoload/dup4func.vim', 'E1041:')
 
   lines =<< trim END
      vim9script

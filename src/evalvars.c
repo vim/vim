@@ -1326,7 +1326,7 @@ skip_var_list(
 	}
 	return p + 1;
     }
- 
+
     return skip_var_one(arg, include_type);
 }
 
@@ -3160,18 +3160,20 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
     // When using "vim9script autoload" script-local items are prefixed but can
     // be used with s:name.
     if (SCRIPT_ID_VALID(current_sctx.sc_sid)
-					   && name[0] == 's' && name[1] == ':')
+		   && (in_vim9script() || (name[0] == 's' && name[1] == ':')))
     {
 	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
 	if (si->sn_autoload_prefix != NULL)
 	{
-	    char_u *auto_name = concat_str(si->sn_autoload_prefix, name + 2);
+	    char_u *base_name = (name[0] == 's' && name[1] == ':')
+							     ? name + 2 : name;
+	    char_u *auto_name = concat_str(si->sn_autoload_prefix, base_name);
 
 	    if (auto_name != NULL)
 	    {
 		ht = &globvarht;
-		ret = find_var_in_ht(ht, *name, auto_name, TRUE);
+		ret = find_var_in_ht(ht, 'g', auto_name, TRUE);
 		vim_free(auto_name);
 		if (ret != NULL)
 		{
