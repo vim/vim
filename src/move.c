@@ -1044,6 +1044,7 @@ curs_columns(
     colnr_T	prev_skipcol;
     long	so = get_scrolloff_value();
     long	siso = get_sidescrolloff_value();
+    int		did_sub_skipcol = FALSE;
 
     /*
      * First make sure that w_topline is valid (after moving the cursor).
@@ -1104,15 +1105,14 @@ curs_columns(
 	// skip columns that are not visible
 	if (curwin->w_cursor.lnum == curwin->w_topline
 		&& curwin->w_wcol >= curwin->w_skipcol)
+	{
 	    curwin->w_wcol -= curwin->w_skipcol;
+	    did_sub_skipcol = TRUE;
+	}
 
 	// long line wrapping, adjust curwin->w_wrow
 	if (curwin->w_wcol >= curwin->w_width)
 	{
-#ifdef FEAT_LINEBREAK
-	    char_u *sbr;
-#endif
-
 	    // this same formula is used in validate_cursor_col()
 	    n = (curwin->w_wcol - curwin->w_width) / width + 1;
 	    curwin->w_wcol -= n * width;
@@ -1122,7 +1122,7 @@ curs_columns(
 	    // When cursor wraps to first char of next line in Insert
 	    // mode, the 'showbreak' string isn't shown, backup to first
 	    // column
-	    sbr = get_showbreak_value(curwin);
+	    char_u *sbr = get_showbreak_value(curwin);
 	    if (*sbr && *ml_get_cursor() == NUL
 				    && curwin->w_wcol == vim_strsize(sbr))
 		curwin->w_wcol = 0;
@@ -1247,7 +1247,7 @@ curs_columns(
 	if ((colnr_T)n >= curwin->w_height + curwin->w_skipcol / width - so)
 	    extra += 2;
 
-	if (extra == 3 || p_lines <= so * 2)
+	if (extra == 3 || curwin->w_height <= so * 2)
 	{
 	    // not enough room for 'scrolloff', put cursor in the middle
 	    n = curwin->w_virtcol / width;
@@ -1279,11 +1279,14 @@ curs_columns(
 	    while (endcol > curwin->w_virtcol)
 		endcol -= width;
 	    if (endcol > curwin->w_skipcol)
-	    {
-		curwin->w_wrow -= (endcol - curwin->w_skipcol) / width;
 		curwin->w_skipcol = endcol;
-	    }
 	}
+
+	// adjust w_wrow for the changed w_skipcol
+	if (did_sub_skipcol)
+	    curwin->w_wrow -= (curwin->w_skipcol - prev_skipcol) / width;
+	else
+	    curwin->w_wrow -= curwin->w_skipcol / width;
 
 	if (curwin->w_wrow >= curwin->w_height)
 	{
