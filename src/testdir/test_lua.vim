@@ -817,8 +817,7 @@ endfunc
 
 " Test :luafile foo.lua
 func Test_luafile()
-  call delete('Xlua_file')
-  call writefile(["str = 'hello'", "num = 123" ], 'Xlua_file')
+  call writefile(["str = 'hello'", "num = 123" ], 'Xlua_file', 'D')
   call setfperm('Xlua_file', 'r-xr-xr-x')
 
   luafile Xlua_file
@@ -826,7 +825,6 @@ func Test_luafile()
   call assert_equal(123, luaeval('num'))
 
   lua str, num = nil
-  call delete('Xlua_file')
 endfunc
 
 " Test :luafile %
@@ -849,12 +847,11 @@ endfunc
 " Test :luafile with syntax error
 func Test_luafile_error()
   new Xlua_file
-  call writefile(['nil = 0' ], 'Xlua_file')
+  call writefile(['nil = 0' ], 'Xlua_file', 'D')
   call setfperm('Xlua_file', 'r-xr-xr-x')
 
   call assert_fails('luafile Xlua_file', "Xlua_file:1: unexpected symbol near 'nil'")
 
-  call delete('Xlua_file')
   bwipe!
 endfunc
 

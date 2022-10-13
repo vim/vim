@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2022 Sep 17
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Oct 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6,9 +6,10 @@
 
 Builtin functions				*builtin-functions*
 
-Note: Expression evaluation can be disabled at compile time.  If this has been
-done, the builtin functions are not available.  See |+eval| and
-|no-eval-feature|.
+Note: Expression evaluation can be disabled at compile time, the builtin
+functions are not available then.  See |+eval| and |no-eval-feature|.
+
+For functions grouped by what they are used for see |function-list|.
 
 1. Overview				|builtin-function-list|
 2. Details				|builtin-function-details|
@@ -395,6 +396,7 @@ popup_create({what}, {options}) Number	create a popup window
 popup_dialog({what}, {options}) Number	create a popup window used as a dialog
 popup_filter_menu({id}, {key})  Number	filter for a menu popup window
 popup_filter_yesno({id}, {key}) Number	filter for a dialog popup window
+popup_findecho()		Number	get window ID of popup for `:echowin`
 popup_findinfo()		Number	get window ID of info popup window
 popup_findpreview()		Number	get window ID of preview popup window
 popup_getoptions({id})		Dict	get options of popup window {id}
@@ -1880,10 +1882,10 @@ cursor({list})
 		|setcursorcharpos()|.
 
 		Does not change the jumplist.
-		{lnum} is used like with |getline()|.
+		{lnum} is used like with |getline()|, except that if {lnum} is
+		zero, the cursor will stay in the current line.
 		If {lnum} is greater than the number of lines in the buffer,
 		the cursor will be positioned at the last line in the buffer.
-		If {lnum} is zero, the cursor will stay in the current line.
 		If {col} is greater than the number of bytes in the line,
 		the cursor will be positioned at the last character in the
 		line.
@@ -5864,7 +5866,7 @@ matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
 		respectively.  3 is reserved for use by the |matchparen|
 		plugin.
 		If the {id} argument is not specified or -1, |matchadd()|
-		automatically chooses a free ID.
+		automatically chooses a free ID, which is at least 1000.
 
 		The optional {dict} argument allows for further custom
 		values. Currently this is used to specify a match specific
@@ -5917,8 +5919,6 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 		  be highlighted.
 		- A list with three numbers, e.g., [23, 11, 3]. As above, but
 		  the third number gives the length of the highlight in bytes.
-
-		The maximum number of positions in {pos} is 8.
 
 		Returns -1 on error.
 
@@ -7037,13 +7037,19 @@ reg_recording()						*reg_recording()*
 		Returns the single letter name of the register being recorded.
 		Returns an empty string when not recording.  See |q|.
 
-reltime([{start} [, {end}]])				*reltime()*
+reltime()
+reltime({start})
+reltime({start}, {end})					*reltime()*
 		Return an item that represents a time value.  The item is a
 		list with items that depend on the system.  In Vim 9 script
 		list<any> can be used.
 		The item can be passed to |reltimestr()| to convert it to a
-		string or |reltimefloat()| to convert to a Float.
-
+		string or |reltimefloat()| to convert to a Float.  For
+		example, to see the time spent in function Work(): >
+			var startTime = reltime()
+			Work()
+			echo startTime->reltime()->reltimestr()
+<
 		Without an argument reltime() returns the current time (the
 		representation is system-dependent, it can not be used as the
 		wall-clock time, see |localtime()| for that).
@@ -7164,8 +7170,8 @@ remote_peek({serverid} [, {retvar}])		*remote_peek()*
 		This function is not available in the |sandbox|.
 		{only available when compiled with the |+clientserver| feature}
 		Examples: >
-			:let repl = ""
-			:echo "PEEK: " .. remote_peek(id, "repl") .. ": " .. repl
+		   :let repl = ""
+		   :echo "PEEK: " .. remote_peek(id, "repl") .. ": " .. repl
 
 <		Can also be used as a |method|: >
 			ServerId()->remote_peek()
@@ -7225,7 +7231,8 @@ remote_startserver({name})
 
 <		{only available when compiled with the |+clientserver| feature}
 
-remove({list}, {idx} [, {end}])				*remove()*
+remove({list}, {idx})
+remove({list}, {idx}, {end})				*remove()*
 		Without {end}: Remove the item at {idx} from |List| {list} and
 		return the item.
 		With {end}: Remove items from {idx} to {end} (inclusive) and
@@ -7243,7 +7250,8 @@ remove({list}, {idx} [, {end}])				*remove()*
 		Can also be used as a |method|: >
 			mylist->remove(idx)
 
-remove({blob}, {idx} [, {end}])
+remove({blob}, {idx})
+remove({blob}, {idx}, {end})
 		Without {end}: Remove the byte at {idx} from |Blob| {blob} and
 		return the byte.
 		With {end}: Remove bytes from {idx} to {end} (inclusive) and
@@ -8623,6 +8631,9 @@ sound_playevent({name} [, {callback}])
 <		On MS-Windows, {name} can be SystemAsterisk, SystemDefault,
 		SystemExclamation, SystemExit, SystemHand, SystemQuestion,
 		SystemStart, SystemWelcome, etc.
+		On macOS, {name} refers to files located in
+		/System/Library/Sounds (e.g. "Tink").  It will also work for
+		custom installed sounds in folders like ~/Library/Sounds.
 
 		When {callback} is specified it is invoked when the sound is
 		finished.  The first argument is the sound ID, the second

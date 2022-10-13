@@ -82,7 +82,7 @@ vim_time(void)
     char *
 get_ctime(time_t thetime, int add_newline)
 {
-    static char buf[50];
+    static char buf[100];  // hopefully enough for every language
 #ifdef HAVE_STRFTIME
     struct tm	tmval;
     struct tm	*curtime;
@@ -90,12 +90,20 @@ get_ctime(time_t thetime, int add_newline)
     curtime = vim_localtime(&thetime, &tmval);
     // MSVC returns NULL for an invalid value of seconds.
     if (curtime == NULL)
-	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
+	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 2);
     else
     {
 	// xgettext:no-c-format
-	(void)strftime(buf, sizeof(buf) - 1, _("%a %b %d %H:%M:%S %Y"),
-								    curtime);
+	if (strftime(buf, sizeof(buf) - 2, _("%a %b %d %H:%M:%S %Y"), curtime)
+									  == 0)
+	{
+	    // Quoting "man strftime":
+	    // > If the length of the result string (including the terminating
+	    // > null byte) would exceed max bytes, then strftime() returns 0,
+	    // > and the contents of the array are undefined.
+	    vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"),
+							      sizeof(buf) - 2);
+	}
 # ifdef MSWIN
 	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
 	{
@@ -105,7 +113,7 @@ get_ctime(time_t thetime, int add_newline)
 	    acp_to_enc((char_u *)buf, (int)strlen(buf), &to_free, &len);
 	    if (to_free != NULL)
 	    {
-		STRCPY(buf, to_free);
+		STRNCPY(buf, to_free, sizeof(buf) - 2);
 		vim_free(to_free);
 	    }
 	}
@@ -318,10 +326,8 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 	convert_setup(&conv, p_enc, enc);
 	if (conv.vc_type != CONV_NONE)
 	    p = string_convert(&conv, p, NULL);
-	if (p != NULL)
-	    (void)strftime((char *)result_buf, sizeof(result_buf),
-							  (char *)p, curtime);
-	else
+	if (p == NULL || strftime((char *)result_buf, sizeof(result_buf),
+						  (char *)p, curtime) == 0)
 	    result_buf[0] = NUL;
 
 	if (conv.vc_type != CONV_NONE)
@@ -777,15 +783,27 @@ set_ref_in_timer(int copyID)
     return abort;
 }
 
+/*
+ * Return TRUE if "timer" exists in the list of timers.
+ */
+    int
+timer_valid(timer_T *timer)
+{
+    if (timer == NULL)
+	return FALSE;
+    for (timer_T *t = first_timer; t != NULL; t = t->tr_next)
+	if (t == timer)
+	    return TRUE;
+    return FALSE;
+}
+
 # if defined(EXITFREE) || defined(PROTO)
     void
 timer_free_all()
 {
-    timer_T *timer;
-
     while (first_timer != NULL)
     {
-	timer = first_timer;
+	timer_T *timer = first_timer;
 	remove_timer(timer);
 	free_timer(timer);
     }
@@ -1105,16 +1123,19 @@ add_time(char_u *buf, size_t buflen, time_t tt)
 #ifdef HAVE_STRFTIME
     struct tm	tmval;
     struct tm	*curtime;
+    int		n;
 
     if (vim_time() - tt >= 100)
     {
 	curtime = vim_localtime(&tt, &tmval);
 	if (vim_time() - tt < (60L * 60L * 12L))
 	    // within 12 hours
-	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
+	    n = strftime((char *)buf, buflen, "%H:%M:%S", curtime);
 	else
 	    // longer ago
-	    (void)strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
+	    n = strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
+	if (n == 0)
+	    buf[0] = NUL;
     }
     else
 #endif

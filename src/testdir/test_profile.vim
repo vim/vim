@@ -46,7 +46,7 @@ func RunProfileFunc(command, declare, assign)
   call map(lines, {k, v -> substitute(v, 'DDD', a:declare, '') })
   call map(lines, {k, v -> substitute(v, 'AAA', a:assign, '') })
 
-  call writefile(lines, 'Xprofile_func.vim')
+  call writefile(lines, 'Xprofile_func.vim', 'D')
   call system(GetVimCommand()
     \ . ' -es --clean'
     \ . ' -c "so Xprofile_func.vim"'
@@ -96,7 +96,6 @@ func RunProfileFunc(command, declare, assign)
   call assert_match('^\s*2\s\+\d\+\.\d\+\s\+Foo1()$',              lines[29])
   call assert_equal('',                                            lines[30])
 
-  call delete('Xprofile_func.vim')
   call delete('Xprofile_func.log')
 endfunc
 
@@ -142,7 +141,7 @@ func Run_profile_func_with_ifelse(command, declare)
   call map(lines, {k, v -> substitute(v, 'XXX', a:command, '') })
   call map(lines, {k, v -> substitute(v, 'DDD', a:declare, '') })
 
-  call writefile(lines, 'Xprofile_func.vim')
+  call writefile(lines, 'Xprofile_func.vim', 'D')
   call system(GetVimCommand()
     \ . ' -es -i NONE --noplugin'
     \ . ' -c "profile start Xprofile_func.log"'
@@ -214,7 +213,6 @@ func Run_profile_func_with_ifelse(command, declare)
   call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo.()$',              lines[55])
   call assert_equal('',                                            lines[56])
 
-  call delete('Xprofile_func.vim')
   call delete('Xprofile_func.log')
 endfunc
 
@@ -269,7 +267,7 @@ func Run_profile_func_with_trycatch(command, declare)
   call map(lines, {k, v -> substitute(v, 'XXX', a:command, '') })
   call map(lines, {k, v -> substitute(v, 'DDD', a:declare, '') })
 
-  call writefile(lines, 'Xprofile_func.vim')
+  call writefile(lines, 'Xprofile_func.vim', 'D')
   call system(GetVimCommand()
     \ . ' -es -i NONE --noplugin'
     \ . ' -c "profile start Xprofile_func.log"'
@@ -341,7 +339,6 @@ func Run_profile_func_with_trycatch(command, declare)
   call assert_match('^\s*1\s\+\d\+\.\d\+\s\+Foo.()$',              lines[55])
   call assert_equal('',                                            lines[56])
 
-  call delete('Xprofile_func.vim')
   call delete('Xprofile_func.log')
 endfunc
 
@@ -356,7 +353,7 @@ func Test_profile_file()
     call Foo()
   [CODE]
 
-  call writefile(lines, 'Xprofile_file.vim')
+  call writefile(lines, 'Xprofile_file.vim', 'D')
   call system(GetVimCommandClean()
     \ . ' -es'
     \ . ' -c "profile start Xprofile_file.log"'
@@ -389,7 +386,6 @@ func Test_profile_file()
   call assert_match('^\s*2\s\+\(\d\+\.\d\+\s\+\)\=\d\+\.\d\+\s\+call Foo()$', lines[12])
   call assert_equal('',                                               lines[13])
 
-  call delete('Xprofile_file.vim')
   call delete('Xprofile_file.log')
 endfunc
 
@@ -401,7 +397,7 @@ func Test_profile_file_with_cont()
     \ '  \bar"',
     \ ]
 
-  call writefile(lines, 'Xprofile_file.vim')
+  call writefile(lines, 'Xprofile_file.vim', 'D')
   call system(GetVimCommandClean()
     \ . ' -es'
     \ . ' -c "profile start Xprofile_file.log"'
@@ -425,7 +421,6 @@ func Test_profile_file_with_cont()
   call assert_equal('                              \bar"',    lines[9])
   call assert_equal('',                                       lines[10])
 
-  call delete('Xprofile_file.vim')
   call delete('Xprofile_file.log')
 endfunc
 
@@ -596,7 +591,7 @@ func Test_profile_truncate_mbyte()
     \ 'call Foo()',
     \ ]
 
-  call writefile(lines, 'Xprofile_file.vim')
+  call writefile(lines, 'Xprofile_file.vim', 'D')
   call system(GetVimCommandClean()
     \ . ' -es --cmd "set enc=utf-8"'
     \ . ' -c "profile start Xprofile_file.log"'
@@ -617,7 +612,6 @@ func Test_profile_truncate_mbyte()
   call assert_match('^\s*\\ \]$', getline(lnum + 4))
   bwipe!
 
-  call delete('Xprofile_file.vim')
   call delete('Xprofile_file.log')
 endfunc
 
@@ -643,7 +637,7 @@ func Test_profdel_func()
     call Foo2()
     call Foo3()
   [CODE]
-  call writefile(lines, 'Xprofile_file.vim')
+  call writefile(lines, 'Xprofile_file.vim', 'D')
   call system(GetVimCommandClean() . ' -es -c "so Xprofile_file.vim" -c q')
   call assert_equal(0, v:shell_error)
 
@@ -662,7 +656,6 @@ func Test_profdel_func()
   call assert_equal('FUNCTIONS SORTED ON TOTAL TIME', lines[16])
   call assert_equal('FUNCTIONS SORTED ON SELF TIME',  lines[21])
 
-  call delete('Xprofile_file.vim')
   call delete('Xprofile_file.log')
 endfunc
 
@@ -678,7 +671,7 @@ func Test_profdel_star()
     profdel *
     call Foo()
   [CODE]
-  call writefile(lines, 'Xprofile_file.vim')
+  call writefile(lines, 'Xprofile_file.vim', 'D')
   call system(GetVimCommandClean() . ' -es -c "so Xprofile_file.vim" -c q')
   call assert_equal(0, v:shell_error)
 
@@ -691,7 +684,6 @@ func Test_profdel_star()
   call assert_equal('FUNCTIONS SORTED ON TOTAL TIME', lines[8])
   call assert_equal('FUNCTIONS SORTED ON SELF TIME',  lines[12])
 
-  call delete('Xprofile_file.vim')
   call delete('Xprofile_file.log')
 endfunc
 
@@ -702,7 +694,7 @@ func Test_profile_typed_func()
   let lines =<< trim END
       profile start XprofileTypedFunc
   END
-  call writefile(lines, 'XtestProfile')
+  call writefile(lines, 'XtestProfile', 'D')
   let buf = RunVimInTerminal('-S XtestProfile', #{})
 
   call term_sendkeys(buf, ":func DoSomething()\<CR>"
@@ -718,7 +710,6 @@ func Test_profile_typed_func()
 
   " clean up
   call delete('XprofileTypedFunc')
-  call delete('XtestProfile')
 endfunc
 
 func Test_vim9_profiling()
@@ -734,11 +725,11 @@ func Test_vim9_profiling()
       prof func Func
       Func()
   END
-  call writefile(lines, 'Xprofile_crash.vim')
+  call writefile(lines, 'Xprofile_crash.vim', 'D')
   call system(GetVimCommandClean() . ' -es -c "so Xprofile_crash.vim" -c q')
   call assert_equal(0, v:shell_error)
   call assert_true(readfile('Xprofile_crash.log')->len() > 10)
-  call delete('Xprofile_crash.vim')
+
   call delete('Xprofile_crash.log')
 endfunc
 
@@ -760,7 +751,7 @@ func Test_vim9_nested_call()
     One((nr) => Two(nr))
     assert_equal(3, total)
   END
-  call writefile(lines, 'Xprofile_nested.vim')
+  call writefile(lines, 'Xprofile_nested.vim', 'D')
   call system(GetVimCommandClean() . ' -es -c "so Xprofile_nested.vim" -c q')
   call assert_equal(0, v:shell_error)
 
@@ -773,7 +764,7 @@ func Test_vim9_nested_call()
   call assert_match('FUNCTION  <SNR>\d\+_Two().*'
         \ .. '#Called 3 times.*'
         \ .. '#    3 \s*[0-9.]\+   total += nr', prof_lines)
-  call delete('Xprofile_nested.vim')
+
   call delete('Xprofile_nested.log')
 endfunc
 

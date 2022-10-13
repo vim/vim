@@ -288,9 +288,8 @@ way to kill or interrupt the job.  For example: >
 
 So long as the job is running the window behaves like it contains a modified
 buffer.  Trying to close the window with `CTRL-W :quit` fails.  When using
-`CTRL-W :quit!` the job is ended.  The text in the window is lost.  The buffer
-still exists, but getting it in a window with `:buffer` will show an empty
-buffer.
+`CTRL-W :quit!` the job is ended.  The text in the window is lost, the buffer
+is deleted.  With `CTRL-W :bunload!` the buffer remains but will be empty.
 
 Trying to close the window with `CTRL-W :close` also fails.   Using
 `CTRL-W :close!` will close the window and make the buffer hidden.

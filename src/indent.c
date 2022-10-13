@@ -1906,7 +1906,7 @@ get_expr_indent(void)
     inde_copy = vim_strsave(curbuf->b_p_inde);
     if (inde_copy != NULL)
     {
-	indent = (int)eval_to_number(inde_copy);
+	indent = (int)eval_to_number(inde_copy, TRUE);
 	vim_free(inde_copy);
     }
 
@@ -1952,7 +1952,7 @@ lisp_match(char_u *p)
     {
 	(void)copy_option_part(&word, buf, LSIZE, ",");
 	len = (int)STRLEN(buf);
-	if (STRNCMP(buf, p, len) == 0 && p[len] == ' ')
+	if (STRNCMP(buf, p, len) == 0 && IS_WHITE_OR_NUL(p[len]))
 	    return TRUE;
     }
     return FALSE;

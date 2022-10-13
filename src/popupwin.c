@@ -32,6 +32,9 @@ static poppos_entry_T poppos_entries[] = {
 // Window used for ":echowindow"
 static win_T *message_win = NULL;
 
+// Time used for the next ":echowindow" message in msec.
+static int  message_win_time = 3000;
+
 // Flag set when a message is added to the message window, timer is started
 // when the message window is drawn.  This might be after pressing Enter at the
 // hit-enter prompt.
@@ -2053,6 +2056,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    }
 	}
     }
+    else if (popup_is_notification(type))
+	tabnr = -1;  // show on all tabs
 
     // Create the window and buffer.
     wp = win_alloc_popup_win();
@@ -4377,6 +4382,16 @@ popup_find_info_window(void)
 #endif
 
     void
+f_popup_findecho(typval_T *argvars UNUSED, typval_T *rettv)
+{
+#ifdef HAS_MESSAGE_WINDOW
+    rettv->vval.v_number = message_win == NULL ? 0 : message_win->w_id;
+#else
+    rettv->vval.v_number = 0;
+#endif
+}
+
+    void
 f_popup_findinfo(typval_T *argvars UNUSED, typval_T *rettv)
 {
 #ifdef FEAT_QUICKFIX
@@ -4535,7 +4550,11 @@ may_start_message_win_timer(win_T *wp)
     if (wp == message_win && start_message_win_timer)
     {
 	if (message_win->w_popup_timer != NULL)
+	{
+	    message_win->w_popup_timer->tr_interval = message_win_time;
 	    timer_start(message_win->w_popup_timer);
+	    message_win_time = 3000;
+	}
 	start_message_win_timer = FALSE;
     }
 }
@@ -4557,13 +4576,27 @@ popup_hide_message_win(void)
 	popup_hide(message_win);
 }
 
+// Values saved in start_echowindow() and restored in end_echowindow()
+static int save_msg_didout = FALSE;
+static int save_msg_col = 0;
+// Values saved in end_echowindow() and restored in start_echowindow()
+static int ew_msg_didout = FALSE;
+static int ew_msg_col = 0;
+
 /*
  * Invoked before outputting a message for ":echowindow".
+ * "time_sec" is the display time, zero means using the default 3 sec.
  */
     void
-start_echowindow(void)
+start_echowindow(int time_sec)
 {
     in_echowindow = TRUE;
+    save_msg_didout = msg_didout;
+    save_msg_col = msg_col;
+    msg_didout = ew_msg_didout;
+    msg_col = ew_msg_col;
+    if (time_sec != 0)
+	message_win_time = time_sec * 1000;
 }
 
 /*
@@ -4579,10 +4612,10 @@ end_echowindow(void)
 	redraw_cmd(FALSE);
 
     // do not overwrite messages
-    // TODO: only for message window
-    msg_didout = TRUE;
-    if (msg_col == 0)
-	msg_col = 1;
+    ew_msg_didout = TRUE;
+    ew_msg_col = msg_col == 0 ? 1 : msg_col;
+    msg_didout = save_msg_didout;
+    msg_col = save_msg_col;
 }
 #endif
 

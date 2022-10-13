@@ -194,6 +194,7 @@
 #endif
 #define PV_SCBIND	OPT_WIN(WV_SCBIND)
 #define PV_SCROLL	OPT_WIN(WV_SCROLL)
+#define PV_SMS		OPT_WIN(WV_SMS)
 #define PV_SISO		OPT_BOTH(OPT_WIN(WV_SISO))
 #define PV_SO		OPT_BOTH(OPT_WIN(WV_SO))
 #ifdef FEAT_SPELL
@@ -543,13 +544,8 @@ static struct vimoption options[] =
 			    {(char_u *)",,", (char_u *)0L}
 			    SCTX_INIT},
     {"cedit",	    NULL,   P_STRING,
-#ifdef FEAT_CMDWIN
 			    (char_u *)&p_cedit, PV_NONE,
 			    {(char_u *)"", (char_u *)CTRL_F_STR}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"charconvert",  "ccv", P_STRING|P_VI_DEF|P_SECURE,
 #if defined(FEAT_EVAL)
@@ -596,11 +592,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_ch, PV_NONE,
 			    {(char_u *)1L, (char_u *)0L} SCTX_INIT},
     {"cmdwinheight", "cwh", P_NUM|P_VI_DEF,
-#ifdef FEAT_CMDWIN
 			    (char_u *)&p_cwh, PV_NONE,
-#else
-			    (char_u *)NULL, PV_NONE,
-#endif
 			    {(char_u *)7L, (char_u *)0L} SCTX_INIT},
     {"colorcolumn", "cc",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP|P_RWIN,
 #ifdef FEAT_SYN_HL
@@ -935,7 +927,8 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"fillchars",   "fcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_fcs, PV_FCS,
-			    {(char_u *)"vert:|,fold:-,eob:~", (char_u *)0L}
+			    {(char_u *)"vert:|,fold:-,eob:~,lastline:@",
+								  (char_u *)0L}
 			    SCTX_INIT},
     {"fixendofline",  "fixeol", P_BOOL|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_fixeol, PV_FIXEOL,
@@ -2282,6 +2275,9 @@ static struct vimoption options[] =
     {"smarttab",    "sta",  P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_sta, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"smoothscroll", "sms", P_BOOL|P_VI_DEF|P_RWIN,
+			    (char_u *)VAR_WIN, PV_SMS,
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"softtabstop", "sts",  P_NUM|P_VI_DEF|P_VIM,
 			    (char_u *)&p_sts, PV_STS,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
@@ -2346,12 +2342,12 @@ static struct vimoption options[] =
     {"splitbelow",  "sb",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_sb, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"splitkeep",   "spk",  P_STRING,
+			    (char_u *)&p_spk, PV_NONE,
+			    {(char_u *)"cursor", (char_u *)"cursor"} SCTX_INIT},
     {"splitright",  "spr",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_spr, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"splitscroll", "spsc", P_BOOL,
-			    (char_u *)&p_spsc, PV_NONE,
-			    {(char_u *)TRUE, (char_u *)TRUE} SCTX_INIT},
     {"startofline", "sol",  P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_sol, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},

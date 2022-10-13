@@ -1023,15 +1023,15 @@ def Test_disassemble_closure_in_loop()
 
         'endif\_s*' ..
         'g:Ref = () => ii\_s*' ..
-        '\d\+ FUNCREF <lambda>4 var $3 - $3\_s*' ..
+        '\d\+ FUNCREF <lambda>4 vars  $3-$3\_s*' ..
         '\d\+ STOREG g:Ref\_s*' ..
 
         'continue\_s*' ..
-        '\d\+ ENDLOOP $1 save $3 - $3\_s*' ..
+        '\d\+ ENDLOOP ref $1 save $3-$3 depth 0\_s*' ..
         '\d\+ JUMP -> \d\+\_s*' ..
 
         'break\_s*' ..
-        '\d\+ ENDLOOP $1 save $3 - $3\_s*' ..
+        '\d\+ ENDLOOP ref $1 save $3-$3 depth 0\_s*' ..
         '\d\+ JUMP -> \d\+\_s*' ..
 
          'if g:val\_s*' ..
@@ -1041,12 +1041,12 @@ def Test_disassemble_closure_in_loop()
 
         '  return\_s*' ..
         '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ ENDLOOP $1 save $3 - $3\_s*' ..
+        '\d\+ ENDLOOP ref $1 save $3-$3 depth 0\_s*' ..
         '\d\+ RETURN\_s*' ..
 
         'endif\_s*' ..
         'endfor\_s*' ..
-        '\d\+ ENDLOOP $1 save $3 - $3\_s*' ..
+        '\d\+ ENDLOOP ref $1 save $3-$3 depth 0\_s*' ..
         '\d\+ JUMP -> \d\+\_s*' ..
         '\d\+ DROP\_s*' ..
         '\d\+ RETURN void',
@@ -2367,6 +2367,7 @@ def s:Echomsg()
   echoerr 'went' .. 'wrong'
   var local = 'window'
   echowin 'in' local
+  :5echowin 'five'
 enddef
 
 def Test_disassemble_echomsg()
@@ -2389,6 +2390,9 @@ def Test_disassemble_echomsg()
         '\d\+ PUSHS "in"\_s*' ..
         '\d\+ LOAD $0\_s*' ..
         '\d\+ ECHOWINDOW 2\_s*' ..
+        ":5echowin 'five'\\_s*" ..
+        '\d\+ PUSHS "five"\_s*' ..
+        '\d\+ ECHOWINDOW 1 (5 sec)\_s*' ..
         '\d\+ RETURN void',
         res)
 enddef

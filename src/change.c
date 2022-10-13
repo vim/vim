@@ -709,6 +709,16 @@ changed_bytes(linenr_T lnum, colnr_T col)
     changedOneline(curbuf, lnum);
     changed_common(lnum, col, lnum + 1, 0L);
 
+#ifdef FEAT_SPELL
+    // When text has been changed at the end of the line, possibly the start of
+    // the next line may have SpellCap that should be removed or it needs to be
+    // displayed.  Schedule the next line for redrawing just in case.
+    // Don't do this when displaying '$' at the end of changed text.
+    if (spell_check_window(curwin)
+	    && lnum < curbuf->b_ml.ml_line_count
+	    && vim_strchr(p_cpo, CPO_DOLLAR) == NULL)
+	redrawWinline(curwin, lnum + 1);
+#endif
 #ifdef FEAT_DIFF
     // Diff highlighting in other diff windows may need to be updated too.
     if (curwin->w_p_diff)

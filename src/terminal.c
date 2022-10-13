@@ -445,13 +445,11 @@ term_start(
 
     if (check_restricted() || check_secure())
 	return NULL;
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
 	emsg(_(e_cannot_open_terminal_from_command_line_window));
 	return NULL;
     }
-#endif
 
     if ((opt->jo_set & (JO_IN_IO + JO_OUT_IO + JO_ERR_IO))
 					 == (JO_IN_IO + JO_OUT_IO + JO_ERR_IO)
@@ -1653,6 +1651,25 @@ term_none_open(term_T *term)
 	&& term->tl_job->jv_channel->ch_keep_open;
 }
 
+//
+// Used to confirm whether we would like to kill a terminal.
+// Return OK when the user confirms to kill it.
+// Return FAIL if the user selects otherwise.
+//
+    int
+term_confirm_stop(buf_T *buf)
+{
+    char_u	buff[DIALOG_MSG_SIZE];
+    int	ret;
+
+    dialog_msg(buff, _("Kill job in \"%s\"?"), buf_get_fname(buf));
+    ret = vim_dialog_yesno(VIM_QUESTION, NULL, buff, 1);
+    if (ret == VIM_YES)
+	return OK;
+    else
+	return FAIL;
+}
+
 /*
  * Used when exiting: kill the job in "buf" if so desired.
  * Return OK when the job finished.
@@ -1668,14 +1685,9 @@ term_try_stop_job(buf_T *buf)
     if ((how == NULL || *how == NUL)
 			  && (p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)))
     {
-	char_u	buff[DIALOG_MSG_SIZE];
-	int	ret;
-
-	dialog_msg(buff, _("Kill job in \"%s\"?"), buf_get_fname(buf));
-	ret = vim_dialog_yesnocancel(VIM_QUESTION, NULL, buff, 1);
-	if (ret == VIM_YES)
+	if (term_confirm_stop(buf) == OK)
 	    how = "kill";
-	else if (ret == VIM_CANCEL)
+	else
 	    return FAIL;
     }
 #endif

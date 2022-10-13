@@ -256,7 +256,6 @@ func Test_start_autoload()
 	\ 'endfunc'], fname)
 
   call assert_equal(1666, foobar#test())
-  call delete(fname)
 endfunc
 
 func Test_helptags()

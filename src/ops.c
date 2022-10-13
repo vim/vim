@@ -2207,6 +2207,37 @@ theend:
     return ret;
 }
 
+#ifdef FEAT_LINEBREAK
+/*
+ * Reset 'linebreak' and take care of side effects.
+ * Returns the previous value, to be passed to restore_lbr().
+ */
+    static int
+reset_lbr(void)
+{
+    if (!curwin->w_p_lbr)
+	return FALSE;
+    // changing 'linebreak' may require w_virtcol to be updated
+    curwin->w_p_lbr = FALSE;
+    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+    return TRUE;
+}
+
+/*
+ * Restore 'linebreak' and take care of side effects.
+ */
+    static void
+restore_lbr(int lbr_saved)
+{
+    if (!curwin->w_p_lbr && lbr_saved)
+    {
+	// changing 'linebreak' may require w_virtcol to be updated
+	curwin->w_p_lbr = TRUE;
+	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
+    }
+}
+#endif
+
 /*
  * prepare a few things for block mode yank/delete/tilde
  *
@@ -2235,11 +2266,10 @@ block_prep(
     char_u	*prev_pend;
     chartabsize_T cts;
 #ifdef FEAT_LINEBREAK
-    int		lbr_saved = curwin->w_p_lbr;
-
-    // Avoid a problem with unwanted linebreaks in block mode.
-    curwin->w_p_lbr = FALSE;
+		// Avoid a problem with unwanted linebreaks in block mode.
+    int		lbr_saved = reset_lbr();
 #endif
+
     bdp->startspaces = 0;
     bdp->endspaces = 0;
     bdp->textlen = 0;
@@ -2369,7 +2399,7 @@ block_prep(
     bdp->textcol = (colnr_T) (pstart - line);
     bdp->textstart = pstart;
 #ifdef FEAT_LINEBREAK
-    curwin->w_p_lbr = lbr_saved;
+    restore_lbr(lbr_saved);
 #endif
 }
 
@@ -3570,9 +3600,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 
 #ifdef FEAT_LINEBREAK
 	// Avoid a problem with unwanted linebreaks in block mode.
-	if (curwin->w_p_lbr)
-	    curwin->w_valid &= ~VALID_VIRTCOL;
-	curwin->w_p_lbr = FALSE;
+	(void)reset_lbr();
 #endif
 	oap->is_VIsual = VIsual_active;
 	if (oap->motion_force == 'V')
@@ -3908,7 +3936,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		{
 #ifdef FEAT_LINEBREAK
 		    // make sure redrawing is correct
-		    curwin->w_p_lbr = lbr_saved;
+		    restore_lbr(lbr_saved);
 #endif
 		    redraw_curbuf_later(UPD_INVERTED);
 		}
@@ -3948,7 +3976,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    ))
 	{
 #ifdef FEAT_LINEBREAK
-	    curwin->w_p_lbr = lbr_saved;
+	    restore_lbr(lbr_saved);
 #endif
 	    redraw_curbuf_later(UPD_INVERTED);
 	}
@@ -4036,7 +4064,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    else
 	    {
 #ifdef FEAT_LINEBREAK
-		curwin->w_p_lbr = lbr_saved;
+		restore_lbr(lbr_saved);
 #endif
 		oap->excl_tr_ws = cap->cmdchar == 'z';
 		(void)op_yank(oap, FALSE, !gui_yank);
@@ -4065,7 +4093,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
-		curwin->w_p_lbr = lbr_saved;
+		restore_lbr(lbr_saved);
 #endif
 		// Reset finish_op now, don't want it set inside edit().
 		finish_op = FALSE;
@@ -4143,7 +4171,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
-		curwin->w_p_lbr = lbr_saved;
+		restore_lbr(lbr_saved);
 #endif
 		// call 'operatorfunc'
 		op_function(oap);
@@ -4172,12 +4200,12 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
-		curwin->w_p_lbr = lbr_saved;
+		restore_lbr(lbr_saved);
 #endif
 		op_insert(oap, cap->count1);
 #ifdef FEAT_LINEBREAK
 		// Reset linebreak, so that formatting works correctly.
-		curwin->w_p_lbr = FALSE;
+		(void)reset_lbr();
 #endif
 
 		// TODO: when inserting in several lines, should format all
@@ -4203,7 +4231,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
-		curwin->w_p_lbr = lbr_saved;
+		restore_lbr(lbr_saved);
 #endif
 		op_replace(oap, cap->nchar);
 	    }
@@ -4246,7 +4274,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    {
 		VIsual_active = TRUE;
 #ifdef FEAT_LINEBREAK
-		curwin->w_p_lbr = lbr_saved;
+		restore_lbr(lbr_saved);
 #endif
 		op_addsub(oap, cap->count1, redo_VIsual.rv_arg);
 		VIsual_active = FALSE;
@@ -4265,7 +4293,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 						|| oap->op_type == OP_DELETE))
 	    {
 #ifdef FEAT_LINEBREAK
-		curwin->w_p_lbr = FALSE;
+		(void)reset_lbr();
 #endif
 		coladvance(curwin->w_curswant = old_col);
 	    }
@@ -4279,6 +4307,6 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	motion_force = NUL;
     }
 #ifdef FEAT_LINEBREAK
-    curwin->w_p_lbr = lbr_saved;
+    restore_lbr(lbr_saved);
 #endif
 }

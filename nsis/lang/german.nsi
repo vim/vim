@@ -122,11 +122,6 @@ LangString str_desc_plugin_vim      ${LANG_GERMAN} \
     "Plugin-Verzeichnisse im Vim-Installationsverzeichnis erstellen. Diese werden \
      für alle Benutzer dieses Systems genutzt."
 
-LangString str_section_vis_vim      ${LANG_GERMAN} \
-    "VisVim-Erweiterung"
-LangString str_desc_vis_vim         ${LANG_GERMAN} \
-    "VisVim-Erweiterung zur Integration in Microsoft Visual Studio."
-
 LangString str_section_nls          ${LANG_GERMAN} \
     "Unterstützung für andere Sprachen"
 LangString str_desc_nls             ${LANG_GERMAN} \

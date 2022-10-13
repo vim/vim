@@ -344,36 +344,31 @@ func Test_let_heredoc_fails()
     let v =<< that there
   endfunc
   END
-  call writefile(text, 'XheredocFail')
+  call writefile(text, 'XheredocFail', 'D')
   call assert_fails('source XheredocFail', 'E1145:')
-  call delete('XheredocFail')
 
   let text =<< trim CodeEnd
   func MissingEnd()
     let v =<< END
   endfunc
   CodeEnd
-  call writefile(text, 'XheredocWrong')
+  call writefile(text, 'XheredocWrong', 'D')
   call assert_fails('source XheredocWrong', 'E1145:')
-  call delete('XheredocWrong')
 
   let text =<< trim TEXTend
     let v =<< " comment
   TEXTend
-  call writefile(text, 'XheredocNoMarker')
+  call writefile(text, 'XheredocNoMarker', 'D')
   call assert_fails('source XheredocNoMarker', 'E172:')
-  call delete('XheredocNoMarker')
 
   let text =<< trim TEXTend
     let v =<< text
   TEXTend
-  call writefile(text, 'XheredocBadMarker')
+  call writefile(text, 'XheredocBadMarker', 'D')
   call assert_fails('source XheredocBadMarker', 'E221:')
-  call delete('XheredocBadMarker')
 
-  call writefile(['let v =<< TEXT', 'abc'], 'XheredocMissingMarker')
+  call writefile(['let v =<< TEXT', 'abc'], 'XheredocMissingMarker', 'D')
   call assert_fails('source XheredocMissingMarker', 'E990:')
-  call delete('XheredocMissingMarker')
 endfunc
 
 func Test_let_heredoc_trim_no_indent_marker()

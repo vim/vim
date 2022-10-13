@@ -157,12 +157,12 @@ endfunc
 func Test_gui_read_stdin()
   CheckUnix
 
-  call writefile(['some', 'lines'], 'Xstdin')
+  call writefile(['some', 'lines'], 'Xstdin', 'D')
   let script =<< trim END
       call writefile(getline(1, '$'), 'XstdinOK')
       qa!
   END
-  call writefile(script, 'Xscript')
+  call writefile(script, 'Xscript', 'D')
 
   " Cannot use --not-a-term here, the "reading from stdin" message would not be
   " displayed.
@@ -176,9 +176,7 @@ func Test_gui_read_stdin()
   call system('cat Xstdin | ' .. vimcmd .. ' -f -g -S Xscript -')
   call assert_equal(['some', 'lines'], readfile('XstdinOK'))
 
-  call delete('Xstdin')
   call delete('XstdinOK')
-  call delete('Xscript')
 endfunc
 
 func Test_set_background()
@@ -853,33 +851,27 @@ endfunc
 " Test "vim -g" and also the GUIEnter autocommand.
 func Test_gui_dash_g()
   let cmd = GetVimCommand('Xscriptgui')
-  call writefile([""], "Xtestgui")
+  call writefile([""], "Xtestgui", 'D')
   let lines =<< trim END
 	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
 	au GUIEnter * qall
   END
-  call writefile(lines, 'Xscriptgui')
+  call writefile(lines, 'Xscriptgui', 'D')
   call system(cmd . ' -g')
   call WaitForAssert({-> assert_equal(['insertmode: 0'], readfile('Xtestgui'))})
-
-  call delete('Xscriptgui')
-  call delete('Xtestgui')
 endfunc
 
 " Test "vim -7" and also the GUIEnter autocommand.
 func Test_gui_dash_y()
   let cmd = GetVimCommand('Xscriptgui')
-  call writefile([""], "Xtestgui")
+  call writefile([""], "Xtestgui", 'D')
   let lines =<< trim END
 	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
 	au GUIEnter * qall
   END
-  call writefile(lines, 'Xscriptgui')
+  call writefile(lines, 'Xscriptgui', 'D')
   call system(cmd . ' -y')
   call WaitForAssert({-> assert_equal(['insertmode: 1'], readfile('Xtestgui'))})
-
-  call delete('Xscriptgui')
-  call delete('Xtestgui')
 endfunc
 
 " Test for "!" option in 'guioptions'. Use a terminal for running external
@@ -1412,7 +1404,7 @@ func Test_gui_drop_files()
   %argdelete
   " pressing shift when dropping files should change directory
   let save_cwd = getcwd()
-  call mkdir('Xdropdir1')
+  call mkdir('Xdropdir1', 'R')
   call writefile([], 'Xdropdir1/Xfile1')
   call writefile([], 'Xdropdir1/Xfile2')
   let d = #{files: ['Xdropdir1/Xfile1', 'Xdropdir1/Xfile2'], row: 1, col: 1,
@@ -1441,7 +1433,6 @@ func Test_gui_drop_files()
   call assert_equal('', @%)
   %bw!
   %argdelete
-  call delete('Xdropdir1', 'rf')
 
   " drop files in the command line. The GUI drop files adds the file names to
   " the low level input buffer. So need to use a cmdline map and feedkeys()
@@ -1739,6 +1730,25 @@ func Test_gui_lowlevel_keyevent()
   endfor
 
   bw!
+endfunc
+
+func Test_gui_macro_csi()
+  " Test for issue #11270
+  nnoremap <C-L> <Cmd>let g:triggered = 1<CR>
+  let @q = "\x9b\xfc\x04L"
+  norm @q
+  call assert_equal(1, g:triggered)
+  unlet g:triggered
+  nunmap <C-L>
+
+  " Test for issue #11057
+  inoremap <C-D>t bbb
+  call setline(1, "\t")
+  let @q = "i\x9b\xfc\x04D"
+  " The end of :normal is like a mapping timing out
+  norm @q
+  call assert_equal('', getline(1))
+  iunmap <C-D>t
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

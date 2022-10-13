@@ -719,23 +719,23 @@ endfunc
 
 XpathINIT
 
-function! NULL()
+func NULL()
     Xpath 'a'
     return 0
-endfunction
+endfunc
 
-function! ZERO()
+func ZERO()
     Xpath 'b'
     return 0
-endfunction
+endfunc
 
-function! F0()
+func! F0()
     Xpath 'c'
-endfunction
+endfunc
 
-function! F1(arg)
+func! F1(arg)
     Xpath 'e'
-endfunction
+endfunc
 
 let V0 = 1
 
@@ -6822,10 +6822,10 @@ endfunc
 " Test 95:  lines of :append, :change, :insert			    {{{1
 "-------------------------------------------------------------------------------
 
-function! DefineFunction(name, body)
+func DefineFunction(name, body)
     let func = join(['function! ' . a:name . '()'] + a:body + ['endfunction'], "\n")
     exec func
-endfunction
+endfunc
 
 func Test_script_lines()
     " :append
@@ -7216,6 +7216,16 @@ func Test_refcount()
     call d.Func()
     unlet d
     delfunc DictFunc
+
+    if has('channel')
+      call assert_equal(-1, test_refcount(test_null_job()))
+      call assert_equal(-1, test_refcount(test_null_channel()))
+    endif
+    call assert_equal(-1, test_refcount(test_null_function()))
+    call assert_equal(-1, test_refcount(test_null_partial()))
+    call assert_equal(-1, test_refcount(test_null_blob()))
+    call assert_equal(-1, test_refcount(test_null_list()))
+    call assert_equal(-1, test_refcount(test_null_dict()))
 endfunc
 
 " Test for missing :endif, :endfor, :endwhile and :endtry           {{{1

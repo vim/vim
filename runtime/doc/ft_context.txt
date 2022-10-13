@@ -1,4 +1,4 @@
-*ft_context.txt*	For Vim version 9.0.  Last change: 2022 Aug 12
+*ft_context.txt*	For Vim version 9.0.  Last change: 2022 Sep 27
 
 This is the documentation for the ConTeXt filetype plugin.
 
@@ -23,13 +23,12 @@ ConTeXt, similarly to LaTeX, is a macro-based typesetting system built on TeX:
 <
 The ConTeXt plugin provides syntax highlighting, completion and support for
 typesetting ConTeXt documents. The recommended way to typeset a document is to
-use |:ConTeXt|. This will invoke the `mtxrun` script that is found in $PATH.
+use |:ConTeXt|. This will invoke the `mtxrun` script that is found in `$PATH`.
 
-For more fine grained control over the command and its environment, you may
-invoke `context.Typeset()` directly (or `context#Typeset()` from legacy Vim
-script). For instance, if you have installed a version of ConTeXt in
-`~/context`, you may define a function to use it (you may put the following
-code in `~/.vim/after/ftplugin/context.vim`) similar to the following:
+For more fine grained control over the command and its environment,
+`context.Typeset()` can be used directly (or `context#Typeset()` from legacy
+Vim script). For instance, if a version of ConTeXt is installed in
+`~/context`, you may define a function to use it similar to the following:
 >
 	import autoload 'context.vim'
 
@@ -38,14 +37,15 @@ code in `~/.vim/after/ftplugin/context.vim`) similar to the following:
 	      printf("%s/context/tex/texmf-<os>-<arch>/bin:%s", $HOME, $PATH)}
 	    context.Typeset("%", env)
 	enddef
-<
-and perhaps use it with a mapping:
+
+This code may go in `~/.vim/after/ftplugin/context.vim`. A mapping can then be
+defined to invoke the custom command:
 >
 	nnoremap <silent><buffer><leader>t <scriptcmd>MyConTeXt()<cr>
 <
 `context.Typeset()` accepts a third optional argument to specify a custom
-typesetting command. Such argument must be a function that takes a path and
-returns the command as a List. For example:
+typesetting command. That must be a function that takes a path and returns the
+command as a List. For example:
 >
 	def ConTeXtCustomCommand(path: string): list<string>
 	  return ['mtxrun', '--script', 'context', '--nonstopmode, path]
@@ -103,14 +103,20 @@ Stop all the ConTeXt jobs currently running in the background.
 Settings ~
 					*'b:context_ignore_makefile'*
 					*'g:context_ignore_makefile'*
-`make` can be used to (synchronously) typeset a document. If a Makefile exists
+`:make` can be used to (synchronously) typeset a document. If a Makefile exists
 and this option is not set, standard `make` is used. If this option is set,
 `mtxrun` is invoked instead, even if a Makefile exists.
 >
 	g:context_ignore_makefile = 0
 <
-NOTE: before using `make`, set the working directory of the buffer to the
+NOTE: before using `:make`, set the working directory of the buffer to the
 directory of the file to be typeset.
+
+					*'g:context_extra_options'*
+A list of additional options to pass to `mtxrun`.
+>
+	g:context_extra_options = []
+<
 					*'b:context_include'*
 					*'g:context_include'*
 Dictionary of filetype/GROUP pairs for which syntax highlighting should be

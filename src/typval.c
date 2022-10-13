@@ -2509,10 +2509,12 @@ eval_env_var(char_u **arg, typval_T *rettv, int evaluate)
 tv_get_lnum(typval_T *argvars)
 {
     linenr_T	lnum = -1;
+    int		did_emsg_before = did_emsg;
 
     if (argvars[0].v_type != VAR_STRING || !in_vim9script())
 	lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
-    if (lnum <= 0 && argvars[0].v_type != VAR_NUMBER)
+    if (lnum <= 0 && did_emsg_before == did_emsg
+					    && argvars[0].v_type != VAR_NUMBER)
     {
 	int	fnum;
 	pos_T	*fp;

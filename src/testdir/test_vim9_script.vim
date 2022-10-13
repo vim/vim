@@ -297,6 +297,33 @@ def Test_const()
     constdict->assert_equal({one: 1, two: {five: 55, six: 66}, three: 3})
   END
   v9.CheckDefAndScriptSuccess(lines)
+
+  # "any" type with const flag is recognized as "any"
+  lines =<< trim END
+      const dict: dict<any> = {foo: {bar: 42}}
+      const foo = dict.foo
+      assert_equal(v:t_number, type(foo.bar))
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # also when used as a builtin function argument
+  lines =<< trim END
+      vim9script
+
+      def SorterFunc(lhs: dict<string>, rhs: dict<string>): number
+        return lhs.name <# rhs.name ? -1 : 1
+      enddef
+
+      def Run(): void
+        var list =  [{name: "3"}, {name: "2"}]
+        const Sorter = get({}, "unknown", SorterFunc)
+        sort(list, Sorter)
+        assert_equal([{name: "2"}, {name: "3"}], list)
+      enddef
+
+      Run()
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_const_bang()
@@ -2109,15 +2136,66 @@ enddef
 
 def Test_skipped_redir()
   var lines =<< trim END
-      def T()
+      def Tredir()
         if 0
-          redir =>l[0]
+          redir => l[0]
           redir END
         endif
       enddef
       defcompile
   END
   v9.CheckScriptSuccess(lines)
+  delfunc g:Tredir
+
+  lines =<< trim END
+      def Tredir()
+        if 0
+          redir => l[0]
+        endif
+        echo 'executed'
+        if 0
+          redir END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc g:Tredir
+
+  lines =<< trim END
+      def Tredir()
+        var l = ['']
+        if 1
+          redir => l[0]
+        endif
+        echo 'executed'
+        if 0
+          redir END
+        else
+          redir END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc g:Tredir
+
+  lines =<< trim END
+      let doit = 1
+      def Tredir()
+        var l = ['']
+        if g:doit
+          redir => l[0]
+        endif
+        echo 'executed'
+        if g:doit
+          redir END
+        endif
+      enddef
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+  delfunc g:Tredir
 enddef
 
 def Test_for_loop()
@@ -2248,6 +2326,20 @@ def Test_for_loop()
   v9.CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_for_loop_list_of_lists()
+  # loop variable is final, not const
+  var lines =<< trim END
+      # Filter out all odd numbers in each sublist
+      var list: list<list<number>> = [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4]]
+      for i in list
+          filter(i, (_, n: number): bool => n % 2 == 0)
+      endfor
+
+      assert_equal([[], [2], [2], [2, 4]], list)
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_for_loop_with_closure()
   # using the loop variable in a closure results in the last used value
   var lines =<< trim END
@@ -2280,6 +2372,36 @@ def Test_for_loop_with_closure()
       for i in range(5)
         var inloop = i
         flist[i] = () => inloop
+      endfor
+      for i in range(5)
+        assert_equal(i, flist[i]())
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # also with an extra block level
+  lines =<< trim END
+      var flist: list<func>
+      for i in range(5)
+        {
+          var inloop = i
+          flist[i] = () => inloop
+        }
+      endfor
+      for i in range(5)
+        assert_equal(i, flist[i]())
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # and declaration in higher block
+  lines =<< trim END
+      var flist: list<func>
+      for i in range(5)
+        var inloop = i
+        {
+          flist[i] = () => inloop
+        }
       endfor
       for i in range(5)
         assert_equal(i, flist[i]())
@@ -2322,10 +2444,67 @@ def Test_for_loop_with_closure()
         endfor
       endfor
   END
-  v9.CheckScriptSuccess(['vim9script'] + lines)
-  # FIXME: not yet right for :def
-  lines[14] = 'assert_equal(2 .. a, flist[n]())'
-  v9.CheckDefSuccess(lines)
+  v9.CheckDefAndScriptSuccess(lines)
+
+  # using two loop variables
+  lines =<< trim END
+      var lv_list: list<func>
+      var copy_list: list<func>
+      for [idx, c] in items('word')
+        var lidx = idx
+        var lc = c
+        lv_list[idx] = () => {
+              return idx .. c
+            }
+        copy_list[idx] = () => {
+              return lidx .. lc
+            }
+      endfor
+      for [i, c] in items('word')
+        assert_equal(3 .. 'd', lv_list[i]())
+        assert_equal(i .. c, copy_list[i]())
+      endfor
+  END
+  v9.CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_define_global_closure_in_loops()
+  var lines =<< trim END
+      vim9script
+
+      def Func()
+        for i in range(3)
+          var ii = i
+          for a in ['a', 'b', 'c']
+            var aa = a
+            if ii == 0 && aa == 'a'
+              def g:Global_0a(): string
+                return ii .. aa
+              enddef
+            endif
+            if ii == 1 && aa == 'b'
+              def g:Global_1b(): string
+                return ii .. aa
+              enddef
+            endif
+            if ii == 2 && aa == 'c'
+              def g:Global_2c(): string
+                return ii .. aa
+              enddef
+            endif
+          endfor
+        endfor
+      enddef
+      Func()
+  END
+  v9.CheckScriptSuccess(lines)
+  assert_equal("0a", g:Global_0a())
+  assert_equal("1b", g:Global_1b())
+  assert_equal("2c", g:Global_2c())
+
+  delfunc g:Global_0a
+  delfunc g:Global_1b
+  delfunc g:Global_2c
 enddef
 
 def Test_for_loop_fails()
@@ -2414,10 +2593,37 @@ def Test_for_loop_fails()
   lines =<< trim END
       var l: list<dict<any>> = [{n: 1}]
       for item: dict<number> in l
-        item->extend({s: ''})
+        var d = {s: ''}
+        d->extend(item)
       endfor
   END
-  v9.CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
+  v9.CheckDefExecAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<string> but got dict<number>')
+
+  lines =<< trim END
+      for a in range(3)
+        while a > 3
+          for b in range(2)
+            while b < 0
+              for c in range(5)
+                while c > 6
+                  while c < 0
+                    for d in range(1)
+                      for e in range(3)
+                        while e > 3
+                        endwhile
+                      endfor
+                    endfor
+                  endwhile
+                endwhile
+              endfor
+            endwhile
+          endfor
+        endwhile
+      endfor
+  END
+  v9.CheckDefSuccess(lines)
+
+  v9.CheckDefFailure(['for x in range(3)'] + lines + ['endfor'], 'E1306:')
 enddef
 
 def Test_for_loop_script_var()

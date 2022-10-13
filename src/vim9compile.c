@@ -47,14 +47,17 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
     for (idx = 0; idx < cctx->ctx_locals.ga_len; ++idx)
     {
 	lvp = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
-	if (STRNCMP(name, lvp->lv_name, len) == 0
+	if (lvp->lv_name != NULL
+		&& STRNCMP(name, lvp->lv_name, len) == 0
 					       && STRLEN(lvp->lv_name) == len)
 	{
 	    if (lvar != NULL)
 	    {
 		*lvar = *lvp;
 		lvar->lv_from_outer = 0;
-		lvar->lv_loop_idx = get_loop_var_idx(cctx);
+		// If the variable was declared inside a loop set
+		// lvar->lv_loop_idx and lvar->lv_loop_depth.
+		get_loop_var_idx(cctx, idx, lvar);
 	    }
 	    return OK;
 	}
@@ -461,7 +464,32 @@ need_type(
 }
 
 /*
+ * Set type of variable "lvar" to "type".  If the variable is a constant then
+ * the type gets TTFLAG_CONST.
+ */
+    static void
+set_var_type(lvar_T *lvar, type_T *type_arg, cctx_T *cctx)
+{
+    type_T	*type = type_arg;
+
+    if (lvar->lv_const == ASSIGN_CONST && (type->tt_flags & TTFLAG_CONST) == 0)
+    {
+	if (type->tt_flags & TTFLAG_STATIC)
+	    // entry in static_types[] is followed by const type
+	    type = type + 1;
+	else
+	{
+	    type = copy_type(type, cctx->ctx_type_list);
+	    type->tt_flags |= TTFLAG_CONST;
+	}
+    }
+    lvar->lv_type = type;
+}
+
+/*
  * Reserve space for a local variable.
+ * "assign" can be ASSIGN_VAR for :var, ASSIGN_CONST for :const and
+ * ASSIGN_FINAL for :final.
  * Return the variable or NULL if it failed.
  */
     lvar_T *
@@ -469,7 +497,7 @@ reserve_local(
 	cctx_T	*cctx,
 	char_u	*name,
 	size_t	len,
-	int	isConst,
+	int	assign,
 	type_T	*type)
 {
     lvar_T  *lvar;
@@ -494,8 +522,13 @@ reserve_local(
     lvar->lv_idx = dfunc->df_var_names.ga_len;
 
     lvar->lv_name = vim_strnsave(name, len == 0 ? STRLEN(name) : len);
-    lvar->lv_const = isConst;
-    lvar->lv_type = type;
+    lvar->lv_const = assign;
+    if (type == &t_unknown || type == &t_any)
+	// type not known yet, may be inferred from RHS
+	lvar->lv_type = type;
+    else
+	// may use TTFLAG_CONST
+	set_var_type(lvar, type, cctx);
 
     // Remember the name for debugging.
     if (GA_GROW_FAILS(&dfunc->df_var_names, 1))
@@ -955,8 +988,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     // recursive call.
     if (is_global)
     {
-	// TODO: loop variable index and count
-	r = generate_NEWFUNC(cctx, lambda_name, func_name, 0, 0);
+	r = generate_NEWFUNC(cctx, lambda_name, func_name);
 	func_name = NULL;
 	lambda_name = NULL;
     }
@@ -964,7 +996,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     {
 	// Define a local variable for the function reference.
 	lvar = reserve_local(cctx, func_name, name_end - name_start,
-						    TRUE, ufunc->uf_func_type);
+					    ASSIGN_CONST, ufunc->uf_func_type);
 	if (lvar == NULL)
 	    goto theend;
 	if (generate_FUNCREF(cctx, ufunc, &funcref_isn) == FAIL)
@@ -1195,7 +1227,7 @@ generate_loadvar(
 	    {
 		if (lvar->lv_from_outer > 0)
 		    generate_LOADOUTER(cctx, lvar->lv_idx, lvar->lv_from_outer,
-						      lvar->lv_loop_idx, type);
+				 lvar->lv_loop_depth, lvar->lv_loop_idx, type);
 		else
 		    generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
 	    }
@@ -1249,6 +1281,19 @@ vim9_declare_error(char_u *name)
 	default: return;
     }
     semsg(_(e_cannot_declare_a_scope_variable), scope, name);
+}
+
+/*
+ * Return TRUE if "name" is a valid register to use.
+ * Return FALSE and give an error message if not.
+ */
+    static int
+valid_dest_reg(int name)
+{
+    if ((name == '@' || valid_yank_reg(name, FALSE)) && name != '.')
+	return TRUE;
+    emsg_invreg(name);
+    return FAIL;
 }
 
 /*
@@ -1332,12 +1377,8 @@ get_var_dest(
     }
     else if (*name == '@')
     {
-	if (name[1] != '@'
-			&& (!valid_yank_reg(name[1], FALSE) || name[1] == '.'))
-	{
-	    emsg_invreg(name[1]);
+	if (!valid_dest_reg(name[1]))
 	    return FAIL;
-	}
 	*dest = dest_reg;
 	*type = name[1] == '#' ? &t_number_or_string : &t_string;
     }
@@ -1413,7 +1454,11 @@ compile_lhs(
     // "var_end" is the end of the variable/option/etc. name.
     lhs->lhs_dest_end = skip_var_one(var_start, FALSE);
     if (*var_start == '@')
+    {
+	if (!valid_dest_reg(var_start[1]))
+	    return FAIL;
 	var_end = var_start + 2;
+    }
     else
     {
 	// skip over the leading "&", "&l:", "&g:" and "$"
@@ -1662,8 +1707,10 @@ compile_lhs(
 	    return FAIL;
 
 	// New local variable.
+	int assign = cmdidx == CMD_final ? ASSIGN_FINAL
+			     : cmdidx == CMD_const ? ASSIGN_CONST : ASSIGN_VAR;
 	lhs->lhs_lvar = reserve_local(cctx, var_start, lhs->lhs_varlen,
-		    cmdidx == CMD_final || cmdidx == CMD_const, lhs->lhs_type);
+							assign, lhs->lhs_type);
 	if (lhs->lhs_lvar == NULL)
 	    return FAIL;
 	lhs->lhs_new_local = TRUE;
@@ -1740,7 +1787,8 @@ compile_assign_lhs(
 	return FAIL;
     }
     if (!is_decl && lhs->lhs_lvar != NULL
-			   && lhs->lhs_lvar->lv_const && !lhs->lhs_has_index)
+			   && lhs->lhs_lvar->lv_const != ASSIGN_VAR
+			   && !lhs->lhs_has_index)
     {
 	semsg(_(e_cannot_assign_to_constant), lhs->lhs_name);
 	return FAIL;
@@ -2303,19 +2351,22 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			}
 			else
 			{
+			    type_T *type;
+
 			    // An empty list or dict has a &t_unknown member,
 			    // for a variable that implies &t_any.
 			    if (rhs_type == &t_list_empty)
-				lhs.lhs_lvar->lv_type = &t_list_any;
+				type = &t_list_any;
 			    else if (rhs_type == &t_dict_empty)
-				lhs.lhs_lvar->lv_type = &t_dict_any;
+				type = &t_dict_any;
 			    else if (rhs_type == &t_unknown)
-				lhs.lhs_lvar->lv_type = &t_any;
+				type = &t_any;
 			    else
 			    {
-				lhs.lhs_lvar->lv_type = rhs_type;
+				type = rhs_type;
 				inferred_type = rhs_type;
 			    }
+			    set_var_type(lhs.lhs_lvar, type, cctx);
 			}
 		    }
 		    else if (*op == '=')
@@ -2644,6 +2695,34 @@ check_args_shadowing(ufunc_T *ufunc, cctx_T *cctx)
     ufunc->uf_args_visible = ufunc->uf_args.ga_len;
     return r;
 }
+
+#ifdef HAS_MESSAGE_WINDOW
+/*
+ * Get a count before a command.  Can only be a number.
+ * Returns zero if there is no count.
+ * Returns -1 if there is something wrong.
+ */
+    static long
+get_cmd_count(char_u *line, exarg_T *eap)
+{
+    char_u *p;
+
+    // skip over colons and white space
+    for (p = line; *p == ':' || VIM_ISWHITE(*p); ++p)
+	;
+    if (!isdigit(*p))
+    {
+	// the command must be following
+	if (p < eap->cmd)
+	{
+	    emsg(_(e_invalid_range));
+	    return -1;
+	}
+	return 0;
+    }
+    return atol((char *)p);
+}
+#endif
 
 /*
  * Get the compilation type that should be used for "ufunc".
@@ -3272,16 +3351,25 @@ compile_def_function(
 		    line = compile_defer(p, &cctx);
 		    break;
 
+#ifdef HAS_MESSAGE_WINDOW
+	    case CMD_echowindow:
+		    {
+			long cmd_count = get_cmd_count(line, &ea);
+			if (cmd_count < 0)
+			    line = NULL;
+			else
+			    line = compile_mult_expr(p, ea.cmdidx,
+							     cmd_count, &cctx);
+		    }
+		    break;
+#endif
 	    case CMD_echo:
 	    case CMD_echon:
 	    case CMD_echoconsole:
 	    case CMD_echoerr:
 	    case CMD_echomsg:
-#ifdef HAS_MESSAGE_WINDOW
-	    case CMD_echowindow:
-#endif
 	    case CMD_execute:
-		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
+		    line = compile_mult_expr(p, ea.cmdidx, 0, &cctx);
 		    break;
 
 	    case CMD_put:

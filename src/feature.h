@@ -31,44 +31,53 @@
  * Basic choices:
  * ==============
  *
- * +tiny		almost no features enabled, not even multiple windows
- * +small		as tiny plus cmdline window
- * +normal		A default selection of features enabled
- * +big			many features enabled, as rich as possible.
+ * +tiny		no optional features enabled, not even +eval
+ * +normal		a default selection of features enabled
  * +huge		all possible features enabled.
  *
- * When +small is used, +tiny is also included.  +normal implies +small, etc.
+ * When +normal is used, +tiny is also included.  +huge implies +normal, etc.
  */
+
+/*
+ * +small is now an alias for +tiny
+ */
+#if defined(FEAT_SMALL)
+# undef FEAT_SMALL
+# if !defined(FEAT_TINY)
+#  define FEAT_TINY
+# endif
+#endif
+
+/*
+ * +big is now an alias for +normal
+ */
+#if defined(FEAT_BIG)
+# undef FEAT_BIG
+# if !defined(FEAT_NORMAL)
+#  define FEAT_NORMAL
+# endif
+#endif
 
 /*
  * Uncomment one of these to override the default.  For unix use a configure
  * argument, see Makefile.
  */
-#if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
-	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
+#if !defined(FEAT_TINY) && !defined(FEAT_NORMAL) && !defined(FEAT_HUGE)
 // #define FEAT_TINY
-// #define FEAT_SMALL
 // #define FEAT_NORMAL
-// #define FEAT_BIG
 // #define FEAT_HUGE
 #endif
 
 /*
  * For Unix, Mac and Win32 use +huge by default.  These days CPUs are fast and
  * Memory is cheap.
- * Use +big for older systems: VMS and Amiga.
  * Otherwise use +normal
  */
-#if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
-	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
+#if !defined(FEAT_TINY) && !defined(FEAT_NORMAL) && !defined(FEAT_HUGE)
 # if defined(UNIX) || defined(MSWIN) || defined(MACOS_X)
 #  define FEAT_HUGE
 # else
-#  if defined(VMS) || defined(AMIGA)
-#   define FEAT_BIG
-#  else
-#   define FEAT_NORMAL
-#  endif
+#  define FEAT_NORMAL
 # endif
 #endif
 
@@ -76,15 +85,9 @@
  * Each feature implies including the "smaller" ones.
  */
 #ifdef FEAT_HUGE
-# define FEAT_BIG
-#endif
-#ifdef FEAT_BIG
 # define FEAT_NORMAL
 #endif
 #ifdef FEAT_NORMAL
-# define FEAT_SMALL
-#endif
-#ifdef FEAT_SMALL
 # define FEAT_TINY
 #endif
 
@@ -122,6 +125,7 @@
  * +wildmenu		'wildmenu' option
  * +builtin_terms	all builtin termcap entries included
  * +float		Floating point variables.
+ * +cmdwin		Command line window.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -136,10 +140,6 @@
  * Message history is fixed at 200 messages.
  */
 #define MAX_MSG_HIST_LEN 200
-
-#if defined(FEAT_SMALL)
-# define FEAT_CMDWIN
-#endif
 
 /*
  * +folding		Fold lines.
@@ -162,7 +162,7 @@
  *			keyboard in a special language mode, e.g. for typing
  *			greek.
  */
-#ifdef FEAT_BIG
+#ifdef FEAT_HUGE
 # define FEAT_LANGMAP
 #endif
 
@@ -170,7 +170,7 @@
  * +keymap		'keymap' option.  Allows you to map typed keys in
  *			Insert mode for a special language.
  */
-#ifdef FEAT_BIG
+#ifdef FEAT_HUGE
 # define FEAT_KEYMAP
 #endif
 
@@ -186,7 +186,7 @@
 #endif
 
 /*
- * +linebreak		'showbreak', 'breakat'  and 'linebreak' options.
+ * +linebreak		'showbreak', 'breakat' and 'linebreak' options.
  *			Also 'numberwidth'.
  */
 #ifdef FEAT_NORMAL
@@ -216,8 +216,10 @@
 
 /*
  * +rightleft		Right-to-left editing/typing support.
+ *			Note that this isn't perfect, but enough users say they
+ *			use it to keep supporting it.
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_RIGHTLEFT)
+#if defined(FEAT_HUGE) && !defined(DISABLE_RIGHTLEFT)
 # define FEAT_RIGHTLEFT
 #endif
 
@@ -225,7 +227,7 @@
  * +arabic		Arabic keymap and shaping support.
  *			Requires FEAT_RIGHTLEFT
  */
-#if defined(FEAT_BIG) && !defined(DISABLE_ARABIC)
+#if defined(FEAT_HUGE) && !defined(DISABLE_ARABIC)
 # define FEAT_ARABIC
 #endif
 #ifdef FEAT_ARABIC
@@ -238,14 +240,14 @@
  * +emacs_tags		When FEAT_EMACS_TAGS defined: Include support for
  *			emacs style TAGS file.
  */
-#ifdef FEAT_BIG
+#ifdef FEAT_HUGE
 # define FEAT_EMACS_TAGS
 #endif
 
 /*
  * +cscope		Unix only: Cscope support.
  */
-#if defined(UNIX) && defined(FEAT_BIG) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)
+#if defined(UNIX) && defined(FEAT_HUGE) && !defined(FEAT_CSCOPE) && !defined(MACOS_X)
 # define FEAT_CSCOPE
 #endif
 
@@ -360,7 +362,7 @@
  * +conceal		'conceal' option.  Depends on syntax highlighting
  *			as this is how the concealed text is defined.
  */
-#if defined(FEAT_BIG) && defined(FEAT_SYN_HL)
+#if defined(FEAT_NORMAL) && defined(FEAT_SYN_HL)
 # define FEAT_CONCEAL
 #endif
 
@@ -381,7 +383,7 @@
 /*
  * libsodium - add cryptography support
  */
-#if defined(HAVE_SODIUM) && defined(FEAT_BIG)
+#if defined(HAVE_SODIUM) && defined(FEAT_HUGE)
 # define FEAT_SODIUM
 #endif
 
@@ -414,7 +416,7 @@
 // #define FEAT_MBYTE_IME
 #endif
 
-#if defined(FEAT_BIG) && defined(FEAT_GUI_HAIKU) && !defined(FEAT_MBYTE_IME)
+#if defined(FEAT_HUGE) && defined(FEAT_GUI_HAIKU) && !defined(FEAT_MBYTE_IME)
 # define FEAT_MBYTE_IME
 #endif
 
@@ -482,7 +484,7 @@
 #endif
 
 /*
- * sound - currently only with libcanberra
+ * sound
  */
 #if !defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
 # define FEAT_SOUND
@@ -592,14 +594,14 @@
 /*
  * +termguicolors	'termguicolors' option.
  */
-#if (defined(FEAT_BIG) && defined(FEAT_SYN_HL)) && !defined(ALWAYS_USE_GUI)
+#if (defined(FEAT_NORMAL) && defined(FEAT_SYN_HL)) && !defined(ALWAYS_USE_GUI)
 # define FEAT_TERMGUICOLORS
 #endif
 
 /*
  * +vartabs		'vartabstop' and 'varsofttabstop' options.
  */
-#ifdef FEAT_BIG
+#ifdef FEAT_HUGE
 # define FEAT_VARTABS
 #endif
 
@@ -840,13 +842,9 @@
 // Amiga console has no mouse support
 #if defined(UNIX) || defined(VMS)
 # define FEAT_MOUSE_XTERM
-# ifdef FEAT_BIG
+# ifdef FEAT_NORMAL
 #  define FEAT_MOUSE_NET
-# endif
-# ifdef FEAT_BIG
 #  define FEAT_MOUSE_DEC
-# endif
-# ifdef FEAT_BIG
 #  define FEAT_MOUSE_URXVT
 # endif
 #endif
@@ -915,7 +913,7 @@
 # define FEAT_DND
 #endif
 
-#if defined(FEAT_GUI_MSWIN) && defined(FEAT_SMALL)
+#if defined(FEAT_GUI_MSWIN)
 # define MSWIN_FIND_REPLACE	// include code for find/replace dialog
 # define MSWIN_FR_BUFSIZE 256
 #endif
@@ -1077,7 +1075,7 @@
  * +signs		Allow signs to be displayed to the left of text lines.
  *			Adds the ":sign" command.
  */
-#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_PROP_POPUP)
+#if defined(FEAT_NORMAL) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_PROP_POPUP)
 # define FEAT_SIGNS
 # if (defined(FEAT_GUI_MOTIF) && defined(HAVE_X11_XPM_H)) \
 	|| defined(FEAT_GUI_GTK) \
@@ -1135,7 +1133,7 @@
 /*
  * +autochdir		'autochdir' option.
  */
-#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_BIG)
+#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_NORMAL)
 # define FEAT_AUTOCHDIR
 #endif
 

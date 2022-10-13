@@ -1,8 +1,6 @@
 " Tests for editing the command line.
 
 source check.vim
-CheckFeature cmdwin
-
 source screendump.vim
 
 func Test_getcmdwintype()
@@ -402,6 +400,28 @@ func Test_cmdwin_freed_buffer_ptr()
 
   au! BufEnter
   bwipe!
+endfunc
+
+" This was resulting in a window with negative width.
+" The test doesn't reproduce the illegal memory access though...
+func Test_cmdwin_split_often()
+  let lines = &lines
+  let columns = &columns
+  set t_WS=
+
+  try
+    set encoding=iso8859
+    set ruler
+    winsize 0 0
+    noremap 0 H
+    sil norm 0000000q:
+  catch /E36:/
+  endtry
+
+  bwipe!
+  set encoding=utf8
+  let &lines = lines
+  let &columns = columns
 endfunc
 
 

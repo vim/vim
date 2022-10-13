@@ -77,7 +77,7 @@ func Test_help_keyword()
 endfunc
 
 func Test_help_local_additions()
-  call mkdir('Xruntime/doc', 'p')
+  call mkdir('Xruntime/doc', 'pR')
   call writefile(['*mydoc.txt* my awesome doc'], 'Xruntime/doc/mydoc.txt')
   call writefile(['*mydoc-ext.txt* my extended awesome doc'], 'Xruntime/doc/mydoc-ext.txt')
   let rtp_save = &rtp
@@ -91,7 +91,7 @@ func Test_help_local_additions()
   call delete('Xruntime/doc/mydoc-ext.txt')
   close
 
-  call mkdir('Xruntime-ja/doc', 'p')
+  call mkdir('Xruntime-ja/doc', 'pR')
   call writefile(["local-additions\thelp.jax\t/*local-additions*"], 'Xruntime-ja/doc/tags-ja')
   call writefile(['*help.txt* This is jax file', '',
   \ 'LOCAL ADDITIONS: *local-additions*', ''], 'Xruntime-ja/doc/help.jax')
@@ -116,8 +116,6 @@ func Test_help_local_additions()
   \ ], lines)
   close
 
-  call delete('Xruntime', 'rf')
-  call delete('Xruntime-ja', 'rf')
   let &rtp = rtp_save
 endfunc
 
@@ -129,7 +127,7 @@ endfunc
 " Test for the :helptags command
 " NOTE: if you run tests as root this will fail.  Don't run tests as root!
 func Test_helptag_cmd()
-  call mkdir('Xtagdir/a/doc', 'p')
+  call mkdir('Xtagdir/a/doc', 'pR')
 
   " No help file to process in the directory
   call assert_fails('helptags Xtagdir', 'E151:')
@@ -151,8 +149,6 @@ func Test_helptag_cmd()
   " Duplicate tags in the help file
   call writefile(['*tag1*', '*tag1*', '*tag2*'], 'Xtagdir/a/doc/sample.txt')
   call assert_fails('helptags Xtagdir', 'E154:')
-
-  call delete('Xtagdir', 'rf')
 endfunc
 
 func Test_helptag_cmd_readonly()
@@ -160,7 +156,7 @@ func Test_helptag_cmd_readonly()
   CheckNotRoot
 
   " Read-only tags file
-  call mkdir('Xrodir/doc', 'p')
+  call mkdir('Xrodir/doc', 'pR')
   call writefile([''], 'Xrodir/doc/tags')
   call writefile([], 'Xrodir/doc/sample.txt')
   call setfperm('Xrodir/doc/tags', 'r-xr--r--')
@@ -178,7 +174,6 @@ func Test_helptag_cmd_readonly()
   call writefile([], 'Xrodir/b/doc/sample.txt')
   call setfperm('Xrodir/b/doc/sample.txt', '-w-------')
   call assert_fails('helptags Xrodir', 'E153:', getfperm('Xrodir/b/doc/sample.txt'))
-  call delete('Xrodir', 'rf')
 endfunc
 
 " Test for setting the 'helpheight' option in the help window

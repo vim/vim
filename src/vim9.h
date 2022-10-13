@@ -252,30 +252,31 @@ typedef enum {
 // arguments to ISN_JUMP
 typedef struct {
     jumpwhen_T	jump_when;
-    int		jump_where;	    // position to jump to
+    int		jump_where;	// position to jump to
 } jump_T;
 
 // arguments to ISN_JUMP_IF_ARG_SET
 typedef struct {
-    int		jump_arg_off;	    // argument index, negative
-    int		jump_where;	    // position to jump to
+    int		jump_arg_off;	// argument index, negative
+    int		jump_where;	// position to jump to
 } jumparg_T;
 
 // arguments to ISN_FOR
 typedef struct {
-    int	    for_idx;	    // loop variable index
-    int	    for_end;	    // position to jump to after done
+    short	for_loop_idx;	// loop variable index
+    int		for_end;	// position to jump to after done
 } forloop_T;
 
 // arguments to ISN_WHILE
 typedef struct {
-    int	    while_funcref_idx;  // variable index for funcref count
-    int	    while_end;		// position to jump to after done
+    short	while_funcref_idx;  // variable index for funcref count
+    int		while_end;	    // position to jump to after done
 } whileloop_T;
 
 // arguments to ISN_ENDLOOP
 typedef struct {
     short    end_funcref_idx;	// variable index of funcrefs.ga_len
+    short    end_depth;		// nested loop depth
     short    end_var_idx;	// first variable declared in the loop
     short    end_var_count;	// number of variables declared in the loop
 } endloop_T;
@@ -356,9 +357,8 @@ typedef struct {
 
 // extra arguments for funcref_T
 typedef struct {
-    char_u	*fre_func_name;	    // function name for legacy function
-    short	fre_loop_var_idx;   // index of first variable inside loop
-    short	fre_loop_var_count; // number of variables inside loop
+    char_u	  *fre_func_name;	// function name for legacy function
+    loopvarinfo_T fre_loopvar_info;	// info about variables inside loops
 } funcref_extra_T;
 
 // arguments to ISN_FUNCREF
@@ -369,10 +369,9 @@ typedef struct {
 
 // arguments to ISN_NEWFUNC
 typedef struct {
-    char_u	*nfa_lambda;	   // name of the lambda already defined
-    char_u	*nfa_global;	   // name of the global function to be created
-    short	nfa_loop_var_idx;    // index of first variable inside loop
-    short	nfa_loop_var_count;  // number of variables inside loop
+    char_u	  *nfa_lambda;	    // name of the lambda already defined
+    char_u	  *nfa_global;	    // name of the global function to be created
+    loopvarinfo_T nfa_loopvar_info; // ifno about variables inside loops
 } newfuncarg_T;
 
 typedef struct {
@@ -458,6 +457,12 @@ typedef struct {
     int		defer_argcount;	    // number of arguments
 } deferins_T;
 
+// arguments to ISN_ECHOWINDOW
+typedef struct {
+    int		ewin_count;	    // number of arguments
+    long	ewin_time;	    // time argument (msec)
+} echowin_T;
+
 /*
  * Instruction
  */
@@ -508,6 +513,7 @@ struct isn_S {
 	getitem_T	    getitem;
 	debug_T		    debug;
 	deferins_T	    defer;
+	echowin_T	    echowin;
     } isn_arg;
 };
 
@@ -628,6 +634,7 @@ typedef struct {
     int	    li_local_count;	    // ctx_locals.ga_len at loop start
     int	    li_closure_count;	    // ctx_closure_count at loop start
     int	    li_funcref_idx;	    // index of var that holds funcref count
+    int	    li_depth;		    // nested loop depth
 } loop_info_T;
 
 /*
@@ -678,6 +685,7 @@ struct scope_S {
     scopetype_T se_type;
     int		se_local_count;	    // ctx_locals.ga_len before scope
     skip_T	se_skip_save;	    // ctx_skip before the block
+    int		se_loop_depth;	    // number of loop scopes, including this
     union {
 	ifscope_T	se_if;
 	whilescope_T	se_while;
@@ -693,9 +701,12 @@ typedef struct {
     char_u	*lv_name;
     type_T	*lv_type;
     int		lv_idx;		// index of the variable on the stack
+    int		lv_loop_depth;	// depth for variable inside a loop or -1
     int		lv_loop_idx;	// index of first variable inside a loop or -1
     int		lv_from_outer;	// nesting level, using ctx_outer scope
-    int		lv_const;	// when TRUE cannot be assigned to
+    int		lv_const;	// ASSIGN_VAR (can be assigned to),
+				// ASSIGN_FINAL (no assignment) or ASSIGN_CONST
+				// (value cannot be changed)
     int		lv_arg;		// when TRUE this is an argument
 } lvar_T;
 

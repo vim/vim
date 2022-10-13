@@ -1609,7 +1609,7 @@ checkitem_common(void *context, char_u *name, dict_T *dict)
 	argv[0].vval.v_dict = dict;
     }
 
-    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
+    if (eval_expr_typval(expr, argv, 1, NULL, &rettv) == FAIL)
 	goto theend;
 
     // We want to use -1, but also true/false should be allowed.
@@ -2583,7 +2583,7 @@ f_browse(typval_T *argvars UNUSED, typval_T *rettv)
 		|| check_for_string_arg(argvars, 3) == FAIL))
 	return;
 
-    save = (int)tv_get_number_chk(&argvars[0], &error);
+    save = (int)tv_get_bool_chk(&argvars[0], &error);
     title = tv_get_string_chk(&argvars[1]);
     initdir = tv_get_string_buf_chk(&argvars[2], buf);
     defname = tv_get_string_buf_chk(&argvars[3], buf2);
@@ -3354,7 +3354,7 @@ expand_backtick(
 
 #ifdef FEAT_EVAL
     if (*cmd == '=')	    // `={expr}`: Expand expression
-	buffer = eval_to_string(cmd + 1, TRUE);
+	buffer = eval_to_string(cmd + 1, TRUE, FALSE);
     else
 #endif
 	buffer = get_cmd_output(cmd, NULL,

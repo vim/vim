@@ -4044,7 +4044,7 @@ func Test_python3_fold_hidden_buffer()
   endfunc
 
   call setline(1, repeat([''], 15) + repeat(['from'], 3))
-  eval repeat(['x'], 17)->writefile('Xa.txt')
+  eval repeat(['x'], 17)->writefile('Xa.txt', 'D')
   split Xa.txt
   py3 import vim
   py3 b = vim.current.buffer
@@ -4052,7 +4052,6 @@ func Test_python3_fold_hidden_buffer()
   hide
   py3 b[:] = aaa
 
-  call delete('Xa.txt')
   set fdm& fde&
   delfunc Fde
   bwipe! Xa.txt
@@ -4078,7 +4077,7 @@ func Test_python3_hidden_buf_mod_does_not_mess_up_display()
         norm! Gzb
         call feedkeys(":call Func()\r", 'n')
   END
-  call writefile(lines, testfile)
+  call writefile(lines, testfile, 'D')
 
   let rows = 10
   let bufnr = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -4090,8 +4089,8 @@ func Test_python3_hidden_buf_mod_does_not_mess_up_display()
 
   call term_sendkeys(bufnr, ":qall!\<CR>")
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(bufnr)))})
+
   exe bufnr . 'bwipe!'
-  call delete(testfile)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

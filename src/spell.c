@@ -1238,18 +1238,27 @@ spell_valid_case(
 }
 
 /*
- * Return TRUE if spell checking is not enabled.
+ * Return TRUE if spell checking is enabled for "wp".
+ */
+    int
+spell_check_window(win_T *wp)
+{
+    return wp->w_p_spell
+		&& *wp->w_s->b_p_spl != NUL
+		&& wp->w_s->b_langp.ga_len > 0
+		&& *(char **)(wp->w_s->b_langp.ga_data) != NULL;
+}
+
+/*
+ * Return TRUE and give an error if spell checking is not enabled.
  */
     static int
 no_spell_checking(win_T *wp)
 {
-    if (!wp->w_p_spell || *wp->w_s->b_p_spl == NUL
-					 || wp->w_s->b_langp.ga_len == 0)
-    {
-	emsg(_(e_spell_checking_is_not_possible));
-	return TRUE;
-    }
-    return FALSE;
+    if (spell_check_window(wp))
+	return FALSE;
+    emsg(_(e_spell_checking_is_not_possible));
+    return TRUE;
 }
 
 /*
@@ -1559,6 +1568,10 @@ spell_load_lang(char_u *lang)
     sl.sl_slang = NULL;
     sl.sl_nobreak = FALSE;
 
+    // Disallow deleting the current buffer.  Autocommands can do weird things
+    // and cause "lang" to be freed.
+    ++curbuf->b_locked;
+
     // We may retry when no spell file is found for the language, an
     // autocommand may load it then.
     for (round = 1; round <= 2; ++round)
@@ -1612,6 +1625,8 @@ spell_load_lang(char_u *lang)
 	STRCPY(fname_enc + STRLEN(fname_enc) - 3, "add.spl");
 	do_in_runtimepath(fname_enc, DIP_ALL, spell_load_cb, &sl);
     }
+
+    --curbuf->b_locked;
 }
 
 /*

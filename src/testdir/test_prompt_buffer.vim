@@ -220,7 +220,7 @@ func Test_prompt_buffer_getbufinfo()
   %bwipe!
 endfunc
 
-function! Test_prompt_while_writing_to_hidden_buffer()
+func Test_prompt_while_writing_to_hidden_buffer()
   call CanTestPromptBuffer()
   CheckUnix
 
@@ -237,7 +237,7 @@ function! Test_prompt_while_writing_to_hidden_buffer()
         \ done'], #{out_io: 'buffer', out_name: ''})
     startinsert
   END
-  eval script->writefile(scriptName)
+  eval script->writefile(scriptName, 'D')
 
   let buf = RunVimInTerminal('-S ' .. scriptName, {})
   call WaitForAssert({-> assert_equal('cmd:', term_getline(buf, 1))})
@@ -250,7 +250,6 @@ function! Test_prompt_while_writing_to_hidden_buffer()
   call WaitForAssert({-> assert_equal('cmd:testtesttest', term_getline(buf, 1))})
 
   call StopVimInTerminal(buf)
-  call delete(scriptName)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

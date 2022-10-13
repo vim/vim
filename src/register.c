@@ -151,7 +151,7 @@ get_expr_line(void)
 	return expr_copy;
 
     ++nested;
-    rv = eval_to_string_eap(expr_copy, TRUE, expr_eap);
+    rv = eval_to_string_eap(expr_copy, TRUE, expr_eap, FALSE);
     --nested;
     vim_free(expr_copy);
     return rv;

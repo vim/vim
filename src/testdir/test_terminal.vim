@@ -96,15 +96,145 @@ func Test_terminal_paste_register()
   unlet g:job
 endfunc
 
+func Test_terminal_unload_buffer()
+  let buf = Run_shell_in_terminal({})
+  call assert_fails(buf . 'bunload', 'E948:')
+  exe buf . 'bunload!'
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
+
 func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal({})
-  call assert_fails(buf . 'bwipe', 'E89:')
+  call assert_fails(buf . 'bwipe', 'E948:')
   exe buf . 'bwipe!'
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
   call assert_equal("", bufname(buf))
 
   unlet g:job
 endfunc
+
+" Test that using ':confirm bwipe' on terminal works
+func Test_terminal_confirm_wipe_buffer()
+  CheckUnix
+  CheckNotGui
+  CheckFeature dialog_con
+  let buf = Run_shell_in_terminal({})
+  call assert_fails(buf . 'bwipe', 'E948:')
+  call feedkeys('n', 'L')
+  call assert_fails('confirm ' .. buf .. 'bwipe', 'E517:')
+  call assert_equal(buf, bufnr())
+  call assert_equal(1, &modified)
+  call feedkeys('y', 'L')
+  exe 'confirm ' .. buf .. 'bwipe'
+  call assert_notequal(buf, bufnr())
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
+
+" Test that using :b! will hide the terminal
+func Test_terminal_goto_buffer()
+  let buf_mod = bufnr()
+  let buf_term = Run_shell_in_terminal({})
+  call assert_equal(buf_term, bufnr())
+  call assert_fails(buf_mod . 'b', 'E948:')
+  exe buf_mod . 'b!'
+  call assert_equal(buf_mod, bufnr())
+  call assert_equal('run', job_status(g:job))
+  call assert_notequal('', bufname(buf_term))
+  exec buf_mod .. 'bwipe!'
+  exec buf_term .. 'bwipe!'
+
+  unlet g:job
+endfunc
+
+" Test that using ':confirm :b' will kill terminal
+func Test_terminal_confirm_goto_buffer()
+  CheckUnix
+  CheckNotGui
+  CheckFeature dialog_con
+  let buf_mod = bufnr()
+  let buf_term = Run_shell_in_terminal({})
+  call feedkeys('n', 'L')
+  exe 'confirm ' .. buf_mod .. 'b'
+  call assert_equal(buf_term, bufnr())
+  call feedkeys('y', 'L')
+  exec 'confirm ' .. buf_mod .. 'b'
+  call assert_equal(buf_mod, bufnr())
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
+  call assert_equal("", bufname(buf_term))
+  exec buf_mod .. 'bwipe!'
+
+  unlet g:job
+endfunc
+
+" Test that using :close! will hide the terminal
+func Test_terminal_close_win()
+  let buf = Run_shell_in_terminal({})
+  call assert_equal(buf, bufnr())
+  call assert_fails('close', 'E948:')
+  close!
+  call assert_notequal(buf, bufnr())
+  call assert_equal('run', job_status(g:job))
+  call assert_notequal('', bufname(buf))
+  exec buf .. 'bwipe!'
+
+  unlet g:job
+endfunc
+
+" Test that using ':confirm close' will kill terminal
+func Test_terminal_confirm_close_win()
+  CheckUnix
+  CheckNotGui
+  CheckFeature dialog_con
+  let buf = Run_shell_in_terminal({})
+  call feedkeys('n', 'L')
+  confirm close
+  call assert_equal(buf, bufnr())
+  call feedkeys('y', 'L')
+  confirm close
+  call assert_notequal(buf, bufnr())
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
+
+" Test that using :quit! will kill the terminal
+func Test_terminal_quit()
+  let buf = Run_shell_in_terminal({})
+  call assert_equal(buf, bufnr())
+  call assert_fails('quit', 'E948:')
+  quit!
+  call assert_notequal(buf, bufnr())
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
+  call assert_equal("", bufname(buf))
+
+  unlet g:job
+endfunc
+
+" Test that using ':confirm quit' will kill terminal
+func Test_terminal_confirm_quit()
+  CheckUnix
+  CheckNotGui
+  CheckFeature dialog_con
+  let buf = Run_shell_in_terminal({})
+  call feedkeys('n', 'L')
+  confirm quit
+  call assert_equal(buf, bufnr())
+  call feedkeys('y', 'L')
+  confirm quit
+  call assert_notequal(buf, bufnr())
+  call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
+
+  unlet g:job
+endfunc
+
+" Test :q or :next
 
 func Test_terminal_split_quit()
   let buf = Run_shell_in_terminal({})
@@ -117,7 +247,7 @@ func Test_terminal_split_quit()
   quit!
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
 
-  exe buf . 'bwipe'
+  call assert_equal("", bufname(buf))
   unlet g:job
 endfunc
 
@@ -141,16 +271,28 @@ endfunc
 func Test_terminal_hide_buffer_job_finished()
   term echo hello
   let buf = bufnr()
-  setlocal bufhidden=hide
   call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+
   call assert_true(bufloaded(buf))
   call assert_true(buflisted(buf))
+
+  " Test :hide
+  hide
+  call assert_true(bufloaded(buf))
+  call assert_true(buflisted(buf))
+  split
+  exe buf .. 'buf'
+  call assert_equal(buf, bufnr())
+
+  " Test bufhidden, which exercises a different code path
+  setlocal bufhidden=hide
   edit Xasdfasdf
   call assert_true(bufloaded(buf))
   call assert_true(buflisted(buf))
   exe buf .. 'buf'
   call assert_equal(buf, bufnr())
   setlocal bufhidden=
+
   edit Xasdfasdf
   call assert_false(bufloaded(buf))
   call assert_false(buflisted(buf))
@@ -630,7 +772,9 @@ func Test_terminal_cwd()
   endif
   call mkdir('Xtermdir')
   let buf = term_start(cmd, {'cwd': 'Xtermdir'})
-  call WaitForAssert({-> assert_equal('Xtermdir', fnamemodify(getline(1), ":t"))})
+  " if the path is very long it may be split over two lines, join them
+  " together
+  call WaitForAssert({-> assert_equal('Xtermdir', fnamemodify(getline(1) .. getline(2), ":t"))})
 
   exe buf . 'bwipe'
   call delete('Xtermdir', 'rf')
@@ -705,7 +849,7 @@ endfunc
 
 func Test_terminal_list_args()
   let buf = term_start([&shell, &shellcmdflag, 'echo "123"'])
-  call assert_fails(buf . 'bwipe', 'E89:')
+  call assert_fails(buf . 'bwipe', 'E948:')
   exe buf . 'bwipe!'
   call assert_equal("", bufname(buf))
 endfunction
@@ -1233,7 +1377,7 @@ func Test_terminal_qall_prompt()
 
   " make Vim exit, it will prompt to kill the shell
   call term_sendkeys(buf, "\<C-W>:confirm qall\<CR>")
-  call WaitForAssert({-> assert_match('ancel:', term_getline(buf, 20))})
+  call WaitForAssert({-> assert_match('\[Y\]es, (N)o:', term_getline(buf, 20))})
   call term_sendkeys(buf, "y")
   call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
 

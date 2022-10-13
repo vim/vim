@@ -140,7 +140,8 @@ ex_vim9script(exarg_T *eap UNUSED)
 					 0L, (char_u *)CPO_VIM, OPT_NO_REDRAW);
     }
 #else
-    // No check for this being the first command, it doesn't matter.
+    // No check for this being the first command, the information is not
+    // available.
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
 #endif
 }
@@ -245,49 +246,13 @@ ex_incdec(exarg_T *eap)
 }
 
 /*
- * ":export let Name: type"
- * ":export const Name: type"
- * ":export def Name(..."
- * ":export class Name ..."
+ * ":export cmd"
  */
     void
-ex_export(exarg_T *eap)
+ex_export(exarg_T *eap UNUSED)
 {
-    int	    prev_did_emsg = did_emsg;
-
-    if (!in_vim9script())
-    {
-	emsg(_(e_export_can_only_be_used_in_vim9script));
-	return;
-    }
-
-    eap->cmd = eap->arg;
-    (void)find_ex_command(eap, NULL, lookup_scriptitem, NULL);
-    switch (eap->cmdidx)
-    {
-	case CMD_var:
-	case CMD_final:
-	case CMD_const:
-	case CMD_def:
-	case CMD_function:
-	// case CMD_class:
-	    is_export = TRUE;
-	    do_cmdline(eap->cmd, eap->getline, eap->cookie,
-						DOCMD_VERBOSE + DOCMD_NOWAIT);
-
-	    // The command will reset "is_export" when exporting an item.
-	    if (is_export)
-	    {
-		if (did_emsg == prev_did_emsg)
-		    emsg(_(e_export_with_invalid_argument));
-		is_export = FALSE;
-	    }
-	    break;
-	default:
-	    if (did_emsg == prev_did_emsg)
-		emsg(_(e_invalid_command_after_export));
-	    break;
-    }
+    // can only get here when "export" wasn't caught in do_cmdline()
+    emsg(_(e_export_can_only_be_used_in_vim9script));
 }
 
 /*
@@ -969,7 +934,8 @@ update_vim9_script_var(
 		sv->sv_flags |= SVFLAG_ASSIGNED;
 	    newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	    ++si->sn_var_vals.ga_len;
-	    STRCPY(&newsav->sav_key, name);
+	    // a pointer to the first char avoids a FORTIFY_SOURCE problem
+	    STRCPY(&newsav->sav_key[0], name);
 	    sv->sv_name = newsav->sav_key;
 	    newsav->sav_di = di;
 	    newsav->sav_block_id = si->sn_current_block_id;

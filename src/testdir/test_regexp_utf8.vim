@@ -228,8 +228,7 @@ func Test_multibyte_chars()
   "  When there is no match use only the first two items.
   let tl = []
 
-  " Multi-byte character tests. These will fail unless vim is compiled
-  " with Multibyte (FEAT_MBYTE) or BIG/HUGE features.
+  " Multi-byte character tests.
   call add(tl, [2, '[[:alpha:][=a=]]\+', '879 aiaãâaiuvna ', 'aiaãâaiuvna'])
   call add(tl, [2, '[[=a=]]\+', 'ddaãâbcd', 'aãâ'])								" equivalence classes
   call add(tl, [2, '[^ม ]\+', 'มม oijasoifjos ifjoisj f osij j มมมมม abcd', 'oijasoifjos'])
@@ -555,20 +554,17 @@ func Test_match_char_class_upper()
 endfunc
 
 func Test_match_invalid_byte()
-  call writefile(0z630a.765d30aa0a.2e0a.790a.4030, 'Xinvalid')
+  call writefile(0z630a.765d30aa0a.2e0a.790a.4030, 'Xinvalid', 'D')
   new
   source Xinvalid
   bwipe!
-  call delete('Xinvalid')
 endfunc
 
 func Test_match_illegal_byte()
   " Text has illegal bytes which need to be set explicitly
   let lines = ["norm :set no\x01\<CR>", "silent n\xff", "silent norm :b\xff\<CR>"]
-  call writefile(lines, 'Xregexp')
+  call writefile(lines, 'Xregexp', 'D')
   call system(GetVimCommand() .. ' -X -Z -e -s -S Xregexp -c qa!')
-
-  call delete('Xregexp')
 endfunc
 
 func Test_match_too_complicated()

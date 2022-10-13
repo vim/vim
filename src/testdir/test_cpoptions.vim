@@ -422,7 +422,7 @@ func Test_cpo_O()
   let &cpo = save_cpo
 endfunc
 
-" Test for the 'p' flag in 'cpo' is in the test_lispwords.vim file.
+" Test for the 'p' flag in 'cpo' is in the test_lispindent.vim file.
 
 " Test for the 'P' flag in 'cpo' (appending to a file sets the current file
 " name)

@@ -1102,7 +1102,6 @@ fold_line(
 
     // 1. Add the cmdwin_type for the command-line window
     // Ignores 'rightleft', this window is never right-left.
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0 && wp == curwin)
     {
 	ScreenLines[off] = cmdwin_type;
@@ -1111,7 +1110,6 @@ fold_line(
 	    ScreenLinesUC[off] = 0;
 	++col;
     }
-#endif
 
 #ifdef FEAT_RIGHTLEFT
 # define RL_MEMSET(p, v, l) \
@@ -1552,6 +1550,26 @@ win_update(win_T *wp)
     init_search_hl(wp, &screen_search_hl);
 #endif
 
+    // Make sure skipcol is valid, it depends on various options and the window
+    // width.
+    if (wp->w_skipcol > 0)
+    {
+	int w = 0;
+	int width1 = wp->w_width - win_col_off(wp);
+	int width2 = width1 + win_col_off2(wp);
+	int add = width1;
+
+	while (w < wp->w_skipcol)
+	{
+	    if (w > 0)
+		add = width2;
+	    w += add;
+	}
+	if (w != wp->w_skipcol)
+	    // always round down, the higher value may not be valid
+	    wp->w_skipcol = w - add;
+    }
+
 #ifdef FEAT_LINEBREAK
     // Force redraw when width of 'number' or 'relativenumber' column
     // changes.
@@ -1614,13 +1632,13 @@ win_update(win_T *wp)
 
 		while (cur != NULL)
 		{
-		    if (cur->match.regprog != NULL
-					   && re_multiline(cur->match.regprog))
+		    if (cur->mit_match.regprog != NULL
+				       && re_multiline(cur->mit_match.regprog))
 		    {
 			top_to_mod = TRUE;
 			break;
 		    }
-		    cur = cur->next;
+		    cur = cur->mit_next;
 		}
 	    }
 #endif
@@ -2623,33 +2641,42 @@ win_update(win_T *wp)
 #endif
 	else if (dy_flags & DY_TRUNCATE)	// 'display' has "truncate"
 	{
-	    int scr_row = W_WINROW(wp) + wp->w_height - 1;
+	    int		scr_row = W_WINROW(wp) + wp->w_height - 1;
+	    int		symbol  = wp->w_fill_chars.lastline;
+	    int		charlen;
+	    char_u	fillbuf[12];  // 2 characters of 6 bytes
+
+	    charlen = mb_char2bytes(symbol, &fillbuf[0]);
+	    mb_char2bytes(symbol, &fillbuf[charlen]);
 
 	    // Last line isn't finished: Display "@@@" in the last screen line.
-	    screen_puts_len((char_u *)"@@", wp->w_width > 2 ? 2 : wp->w_width,
-				       scr_row, wp->w_wincol, HL_ATTR(HLF_AT));
+	    screen_puts_len(fillbuf,
+			    (wp->w_width > 2 ? 2 : wp->w_width) * charlen,
+			    scr_row, wp->w_wincol, HL_ATTR(HLF_AT));
 	    screen_fill(scr_row, scr_row + 1,
 		    (int)wp->w_wincol + 2, (int)W_ENDCOL(wp),
-		    '@', ' ', HL_ATTR(HLF_AT));
+		    symbol, ' ', HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
 	}
 	else if (dy_flags & DY_LASTLINE)	// 'display' has "lastline"
 	{
 	    int start_col = (int)W_ENDCOL(wp) - 3;
+	    int symbol    = wp->w_fill_chars.lastline;
 
 	    // Last line isn't finished: Display "@@@" at the end.
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
 		    start_col < wp->w_wincol ? wp->w_wincol : start_col,
 		    (int)W_ENDCOL(wp),
-		    '@', '@', HL_ATTR(HLF_AT));
+		    symbol, symbol, HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
 	}
 	else
 	{
-	    win_draw_end(wp, '@', ' ', TRUE, srow, wp->w_height, HLF_AT);
+	    win_draw_end(wp, wp->w_fill_chars.lastline, ' ', TRUE,
+						   srow, wp->w_height, HLF_AT);
 	    wp->w_botline = lnum;
 	}
     }

@@ -60,29 +60,31 @@ rettv_blob_set(typval_T *rettv, blob_T *b)
     int
 blob_copy(blob_T *from, typval_T *to)
 {
-    int	    ret = OK;
+    int		len;
 
     to->v_type = VAR_BLOB;
     to->v_lock = 0;
     if (from == NULL)
-	to->vval.v_blob = NULL;
-    else if (rettv_blob_alloc(to) == FAIL)
-	ret = FAIL;
-    else
     {
-	int  len = from->bv_ga.ga_len;
-
-	if (len > 0)
-	{
-	    to->vval.v_blob->bv_ga.ga_data =
-					 vim_memsave(from->bv_ga.ga_data, len);
-	    if (to->vval.v_blob->bv_ga.ga_data == NULL)
-		len = 0;
-	}
-	to->vval.v_blob->bv_ga.ga_len = len;
-	to->vval.v_blob->bv_ga.ga_maxlen = len;
+	to->vval.v_blob = NULL;
+	return OK;
     }
-    return ret;
+
+    if (rettv_blob_alloc(to) == FAIL)
+	return FAIL;
+
+    len = from->bv_ga.ga_len;
+    if (len > 0)
+    {
+	to->vval.v_blob->bv_ga.ga_data =
+	    vim_memsave(from->bv_ga.ga_data, len);
+	if (to->vval.v_blob->bv_ga.ga_data == NULL)
+	    len = 0;
+    }
+    to->vval.v_blob->bv_ga.ga_len = len;
+    to->vval.v_blob->bv_ga.ga_maxlen = len;
+
+    return OK;
 }
 
     void
@@ -280,6 +282,93 @@ failed:
     return NULL;
 }
 
+/*
+ * Returns a slice of 'blob' from index 'n1' to 'n2' in 'rettv'.  The length of
+ * the blob is 'len'.  Returns an empty blob if the indexes are out of range.
+ */
+    static int
+blob_slice(
+	blob_T		*blob,
+	long		len,
+	varnumber_T	n1,
+	varnumber_T	n2,
+	int		exclusive,
+	typval_T	*rettv)
+{
+    if (n1 < 0)
+    {
+	n1 = len + n1;
+	if (n1 < 0)
+	    n1 = 0;
+    }
+    if (n2 < 0)
+	n2 = len + n2;
+    else if (n2 >= len)
+	n2 = len - (exclusive ? 0 : 1);
+    if (exclusive)
+	--n2;
+    if (n1 >= len || n2 < 0 || n1 > n2)
+    {
+	clear_tv(rettv);
+	rettv->v_type = VAR_BLOB;
+	rettv->vval.v_blob = NULL;
+    }
+    else
+    {
+	blob_T  *new_blob = blob_alloc();
+	long    i;
+
+	if (new_blob != NULL)
+	{
+	    if (ga_grow(&new_blob->bv_ga, n2 - n1 + 1) == FAIL)
+	    {
+		blob_free(new_blob);
+		return FAIL;
+	    }
+	    new_blob->bv_ga.ga_len = n2 - n1 + 1;
+	    for (i = n1; i <= n2; i++)
+		blob_set(new_blob, i - n1, blob_get(blob, i));
+
+	    clear_tv(rettv);
+	    rettv_blob_set(rettv, new_blob);
+	}
+    }
+
+    return OK;
+}
+
+/*
+ * Return the byte value in 'blob' at index 'idx' in 'rettv'.  If the index is
+ * too big or negative that is an error.  The length of the blob is 'len'.
+ */
+    static int
+blob_index(
+	blob_T		*blob,
+	int		len,
+	varnumber_T	idx,
+	typval_T	*rettv)
+{
+    // The resulting variable is a byte value.
+    // If the index is too big or negative that is an error.
+    if (idx < 0)
+	idx = len + idx;
+    if (idx < len && idx >= 0)
+    {
+	int v = blob_get(blob, idx);
+
+	clear_tv(rettv);
+	rettv->v_type = VAR_NUMBER;
+	rettv->vval.v_number = v;
+    }
+    else
+    {
+	semsg(_(e_blob_index_out_of_range_nr), idx);
+	return FAIL;
+    }
+
+    return OK;
+}
+
     int
 blob_slice_or_index(
 	blob_T		*blob,
@@ -289,71 +378,12 @@ blob_slice_or_index(
 	int		exclusive,
 	typval_T	*rettv)
 {
-    long	    len = blob_len(blob);
+    long	len = blob_len(blob);
 
     if (is_range)
-    {
-	// The resulting variable is a sub-blob.  If the indexes
-	// are out of range the result is empty.
-	if (n1 < 0)
-	{
-	    n1 = len + n1;
-	    if (n1 < 0)
-		n1 = 0;
-	}
-	if (n2 < 0)
-	    n2 = len + n2;
-	else if (n2 >= len)
-	    n2 = len - (exclusive ? 0 : 1);
-	if (exclusive)
-	    --n2;
-	if (n1 >= len || n2 < 0 || n1 > n2)
-	{
-	    clear_tv(rettv);
-	    rettv->v_type = VAR_BLOB;
-	    rettv->vval.v_blob = NULL;
-	}
-	else
-	{
-	    blob_T  *new_blob = blob_alloc();
-	    long    i;
-
-	    if (new_blob != NULL)
-	    {
-		if (ga_grow(&new_blob->bv_ga, n2 - n1 + 1) == FAIL)
-		{
-		    blob_free(new_blob);
-		    return FAIL;
-		}
-		new_blob->bv_ga.ga_len = n2 - n1 + 1;
-		for (i = n1; i <= n2; i++)
-		    blob_set(new_blob, i - n1, blob_get(blob, i));
-
-		clear_tv(rettv);
-		rettv_blob_set(rettv, new_blob);
-	    }
-	}
-    }
+	return blob_slice(blob, len, n1, n2, exclusive, rettv);
     else
-    {
-	// The resulting variable is a byte value.
-	// If the index is too big or negative that is an error.
-	if (n1 < 0)
-	    n1 = len + n1;
-	if (n1 < len && n1 >= 0)
-	{
-	    int v = blob_get(blob, n1);
-
-	    clear_tv(rettv);
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = v;
-	}
-	else
-	{
-	    semsg(_(e_blob_index_out_of_range_nr), n1);
-	    return FAIL;
-	}
-    }
+	return blob_index(blob, len, n1, rettv);
     return OK;
 }
 
@@ -529,6 +559,8 @@ blob_filter_map(
     blob_T	*b_ret;
     int		idx = 0;
     int		rem;
+    typval_T	newtv;
+    funccall_T	*fc;
 
     if (filtermap == FILTERMAP_MAPNEW)
     {
@@ -549,15 +581,16 @@ blob_filter_map(
     // set_vim_var_nr() doesn't set the type
     set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, &newtv);
+
     for (i = 0; i < b->bv_ga.ga_len; i++)
     {
-	typval_T newtv;
-
 	tv.v_type = VAR_NUMBER;
 	val = blob_get(b, i);
 	tv.vval.v_number = val;
 	set_vim_var_nr(VV_KEY, idx);
-	if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
+	if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL
 		|| did_emsg)
 	    break;
 	if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
@@ -582,6 +615,9 @@ blob_filter_map(
 	}
 	++idx;
     }
+
+    if (fc != NULL)
+	remove_funccal();
 }
 
 /*
@@ -638,15 +674,14 @@ blob_insert_func(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * reduce() Blob argvars[0] using the function 'funcname' with arguments in
- * 'funcexe' starting with the initial value argvars[2] and return the result
- * in 'rettv'.
+ * Implementaion of reduce() for Blob "argvars[0]" using the function "expr"
+ * starting with the optional initial value "argvars[2]" and return the result
+ * in "rettv".
  */
     void
 blob_reduce(
 	typval_T	*argvars,
-	char_u		*func_name,
-	funcexe_T	*funcexe,
+	typval_T	*expr,
 	typval_T	*rettv)
 {
     blob_T	*b = argvars[0].vval.v_blob;
@@ -684,7 +719,9 @@ blob_reduce(
 	argv[0] = *rettv;
 	argv[1].v_type = VAR_NUMBER;
 	argv[1].vval.v_number = blob_get(b, i);
-	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
+
+	r = eval_expr_typval(expr, argv, 2, NULL, rettv);
+
 	clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    return;

@@ -137,7 +137,7 @@ func Test_indent_fold_with_read()
     call assert_equal(1, foldlevel(n))
   endfor
 
-  call writefile(["a", "", "\<Tab>a"], 'Xinfofile')
+  call writefile(["a", "", "\<Tab>a"], 'Xinfofile', 'D')
   foldopen
   2read Xinfofile
   %foldclose
@@ -150,7 +150,6 @@ func Test_indent_fold_with_read()
 
   bwipe!
   set foldmethod&
-  call delete('Xinfofile')
 endfunc
 
 func Test_combining_folds_indent()
@@ -216,7 +215,7 @@ func Test_update_folds_expr_read()
   set foldexpr=s:TestFoldExpr(v:lnum)
   2
   foldopen
-  call writefile(['b', 'b', 'a', 'a', 'd', 'a', 'a', 'c'], 'Xupfofile')
+  call writefile(['b', 'b', 'a', 'a', 'd', 'a', 'a', 'c'], 'Xupfofile', 'D')
   read Xupfofile
   %foldclose
   call assert_equal(2, foldclosedend(1))
@@ -226,7 +225,6 @@ func Test_update_folds_expr_read()
   call assert_equal(10, foldclosedend(7))
   call assert_equal(14, foldclosedend(11))
 
-  call delete('Xupfofile')
   bwipe!
   set foldmethod& foldexpr&
 endfunc
@@ -248,6 +246,31 @@ func Test_foldexpr_no_interrupt_addsub()
 
   bwipe!
   delfunc FoldFunc
+  set foldmethod& foldexpr&
+endfunc
+
+" Fold function defined in another script
+func Test_foldexpr_compiled()
+  new
+  let lines =<< trim END
+      vim9script
+      def FoldFunc(): number
+        return v:lnum
+      enddef
+
+      set foldmethod=expr
+      set foldexpr=s:FoldFunc()
+  END
+  call writefile(lines, 'XfoldExpr', 'D')
+  source XfoldExpr
+
+  call setline(1, ['one', 'two', 'three'])
+  redraw
+  call assert_equal(1, foldlevel(1))
+  call assert_equal(2, foldlevel(2))
+  call assert_equal(3, foldlevel(3))
+
+  bwipe!
   set foldmethod& foldexpr&
 endfunc
 
@@ -808,7 +831,7 @@ func Test_folds_with_rnu()
   call writefile([
 	\ 'set fdm=marker rnu foldcolumn=2',
 	\ 'call setline(1, ["{{{1", "nline 1", "{{{1", "line 2"])',
-	\ ], 'Xtest_folds_with_rnu')
+	\ ], 'Xtest_folds_with_rnu', 'D')
   let buf = RunVimInTerminal('-S Xtest_folds_with_rnu', {})
 
   call VerifyScreenDump(buf, 'Test_folds_with_rnu_01', {})
@@ -817,7 +840,6 @@ func Test_folds_with_rnu()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_folds_with_rnu')
 endfunc
 
 func Test_folds_marker_in_comment2()
@@ -1263,7 +1285,7 @@ func Test_foldclose_opt()
         \ foldclosed(4)])], 'Xoutput', 'a')
     endfunc
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   let rows = 10
   let buf = RunVimInTerminal('-S Xscript', {'rows': rows})
   call term_wait(buf)
@@ -1292,7 +1314,6 @@ func Test_foldclose_opt()
 
   call assert_equal(['[-1,2,2,-1]', '[-1,-1,-1,-1]', '[-1,2,2,-1]',
         \ '[-1,-1,-1,-1]', '[-1,2,2,-1]'], readfile('Xoutput'))
-  call delete('Xscript')
   call delete('Xoutput')
 endfunc
 

@@ -17,7 +17,7 @@
  * 1. Memory, allocated with scheme_malloc*, need not to be freed explicitly,
  *    garbage collector will do it self
  * 2. Requires at least NORMAL features. I can't imagine why one may want
- *    to build with SMALL or TINY features but with MzScheme interface.
+ *    to build with TINY features but with MzScheme interface.
  * 3. I don't use K&R-style functions. Anyways, MzScheme headers are ANSI.
  */
 

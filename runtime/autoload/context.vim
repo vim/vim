@@ -3,13 +3,18 @@ vim9script
 # Language:           ConTeXt typesetting engine
 # Maintainer:         Nicola Vitacolonna <nvitacolonna@gmail.com>
 # Former Maintainers: Nikolai Weibull <now@bitwi.se>
-# Latest Revision:    2022 Aug 12
+# Latest Revision:    2022 Sep 19
 
 # Typesetting {{{
 import autoload './typeset.vim'
 
 export def ConTeXtCmd(path: string): list<string>
-  return ['mtxrun', '--script', 'context', '--nonstopmode', '--autogenerate', path]
+  var cmd = ['mtxrun', '--script', 'context', '--nonstopmode', '--autogenerate']
+  if !empty(get(g:, 'context_extra_options', ''))
+    cmd += g:context_extra_options
+  endif
+  cmd->add(path)
+  return cmd
 enddef
 
 export def Typeset(bufname: string, env = {}, Cmd = ConTeXtCmd): bool

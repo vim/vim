@@ -452,6 +452,21 @@ def Test_import_funcref()
   delete('Xlib.vim')
 enddef
 
+def Test_export_closure()
+  # tests that the closure in block can be compiled, not the import part
+  var lines =<< trim END
+      vim9script
+      {
+        var foo = 42
+        export def Bar(): number
+          return foo
+        enddef
+      }
+      assert_equal(42, Bar())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_import_duplicate_function()
   # Function Hover() exists in both scripts, partial should refer to the right
   # one.
@@ -1203,6 +1218,26 @@ def Test_autoload_import_deleted()
   delete('Xa.vim')
 enddef
 
+def Test_autoload_import_using_const()
+  mkdir('Xdir/autoload', 'pR')
+  var lines =<< trim END
+      vim9script
+      export const FOO = 42
+      echomsg FOO
+  END
+  writefile(lines, 'Xdir/autoload/exp.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+  lines =<< trim END
+      vim9script
+      import autoload 'exp.vim'
+      assert_equal(42, exp.FOO)
+  END
+  v9.CheckScriptSuccess(lines)
+  &rtp = save_rtp
+enddef
+
 func Test_import_in_diffexpr()
   CheckExecutable diff
 
@@ -1513,7 +1548,7 @@ def Test_export_fails()
   v9.CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
   v9.CheckScriptFailure(['vim9script', 'export function /a1b2c3'], 'E1044:')
 
-  assert_fails('export something', 'E1043:')
+  assert_fails('export echo 1', 'E1043:')
 enddef
 
 func Test_import_fails_without_script()
@@ -2555,7 +2590,7 @@ def Test_vim9script_autoload_duplicate()
      enddef
   END
   writefile(lines, 'Xdupdir/autoload/dup4func.vim')
-  assert_fails('source Xdupdir/autoload/dup4func.vim', 'E707:')
+  assert_fails('source Xdupdir/autoload/dup4func.vim', 'E1041:')
 
   lines =<< trim END
      vim9script

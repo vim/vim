@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2022 Jun 10
+*syntax.txt*	For Vim version 9.0.  Last change: 2022 Oct 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3153,7 +3153,7 @@ The default is to use the twice sh_minlines.  Set it to a smaller number to
 speed up displaying.  The disadvantage is that highlight errors may appear.
 
 syntax/sh.vim tries to flag certain problems as errors; usually things like
-extra ']'s, 'done's, 'fi's, etc.  If you find the error handling problematic
+unmatched "]", "done", "fi", etc.  If you find the error handling problematic
 for your purposes, you may suppress such error highlighting by putting
 the following line in your .vimrc: >
 
@@ -5376,10 +5376,11 @@ ModeMsg		'showmode' message (e.g., "-- INSERT --").
 							*hl-MoreMsg*
 MoreMsg		|more-prompt|
 							*hl-NonText*
-NonText		'@' at the end of the window, characters from 'showbreak'
-		and other characters that do not really exist in the text
-		(e.g., ">" displayed when a double-wide character doesn't
-		fit at the end of the line).
+NonText		'@' at the end of the window, "<<<" at the start of the window
+		for 'smoothscroll', characters from 'showbreak' and other
+		characters that do not really exist in the text, such as the
+		">" displayed when a double-wide character doesn't fit at the
+		end of the line.
 							*hl-Normal*
 Normal		Normal text.
 							*hl-Pmenu*

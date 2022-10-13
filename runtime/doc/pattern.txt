@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 9.0.  Last change: 2022 Mar 04
+*pattern.txt*   For Vim version 9.0.  Last change: 2022 Sep 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -134,6 +134,11 @@ gD			Goto global Declaration.  When the cursor is on a
 CTRL-C			Interrupt current (search) command.  Use CTRL-Break on
 			MS-Windows |dos-CTRL-Break|.
 			In Normal mode, any pending command is aborted.
+			When Vim was started with output redirected and there
+			are no changed buffers CTRL-C exits Vim.  That is to
+			help users who use "vim file | grep word" and don't
+			know how to get out (blindly typing :qa<CR> would
+			work).
 
 							*:noh* *:nohlsearch*
 :noh[lsearch]		Stop the highlighting for the 'hlsearch' option.  It

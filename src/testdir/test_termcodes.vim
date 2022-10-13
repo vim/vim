@@ -367,8 +367,6 @@ endfunc
 
 " Test for using the mouse to increase the height of the cmdline window
 func Test_mouse_cmdwin_resize()
-  CheckFeature cmdwin
-
   let save_mouse = &mouse
   let save_term = &term
   let save_ttymouse = &ttymouse
@@ -1300,20 +1298,20 @@ func Test_term_mouse_popup_menu_setpos()
     call assert_equal([1, 10], [line('.'), col('.')], msg)
     call assert_equal('ran away', @", msg)
 
-    " Test for right click in visual mode before the selection
+    " Test for right click in visual mode right before the selection
     let @" = ''
     call cursor(1, 10)
-    call feedkeys('vee' .. MouseRightClickCode(1, 2)
-		\ .. MouseRightReleaseCode(1, 2) .. "\<Down>\<CR>", "x")
-    call assert_equal([1, 2], [line('.'), col('.')], msg)
+    call feedkeys('vee' .. MouseRightClickCode(1, 9)
+		\ .. MouseRightReleaseCode(1, 9) .. "\<Down>\<CR>", "x")
+    call assert_equal([1, 9], [line('.'), col('.')], msg)
     call assert_equal('', @", msg)
 
-    " Test for right click in visual mode after the selection
+    " Test for right click in visual mode right after the selection
     let @" = ''
     call cursor(1, 10)
-    call feedkeys('vee' .. MouseRightClickCode(1, 20)
-		\ .. MouseRightReleaseCode(1, 20) .. "\<Down>\<CR>", "x")
-    call assert_equal([1, 20], [line('.'), col('.')], msg)
+    call feedkeys('vee' .. MouseRightClickCode(1, 18)
+		\ .. MouseRightReleaseCode(1, 18) .. "\<Down>\<CR>", "x")
+    call assert_equal([1, 18], [line('.'), col('.')], msg)
     call assert_equal('', @", msg)
 
     " Test for right click in block-wise visual mode inside the selection
@@ -1332,6 +1330,32 @@ func Test_term_mouse_popup_menu_setpos()
     call assert_equal([2, 2], [line('.'), col('.')], msg)
     call assert_equal('v', getregtype('"'), msg)
     call assert_equal('', @", msg)
+
+    " Test for right click in line-wise visual mode inside the selection
+    let @" = ''
+    call cursor(1, 16)
+    call feedkeys("V" .. MouseRightClickCode(1, 10)
+		\ .. MouseRightReleaseCode(1, 10) .. "\<Down>\<CR>", "x")
+    call assert_equal([1, 1], [line('.'), col('.')], msg) " After yanking, the cursor goes to 1,1
+    call assert_equal("V", getregtype('"'), msg)
+    call assert_equal(len(getreg('"', 1, v:true)), 1, msg)
+
+    " Test for right click in multi-line line-wise visual mode inside the selection
+    let @" = ''
+    call cursor(1, 16)
+    call feedkeys("Vj" .. MouseRightClickCode(2, 20)
+		\ .. MouseRightReleaseCode(2, 20) .. "\<Down>\<CR>", "x")
+    call assert_equal([1, 1], [line('.'), col('.')], msg) " After yanking, the cursor goes to 1,1
+    call assert_equal("V", getregtype('"'), msg)
+    call assert_equal(len(getreg('"', 1, v:true)), 2, msg)
+
+    " Test for right click in line-wise visual mode outside the selection
+    let @" = ''
+    call cursor(1, 16)
+    call feedkeys("V" .. MouseRightClickCode(2, 10)
+		\ .. MouseRightReleaseCode(2, 10) .. "\<Down>\<CR>", "x")
+    call assert_equal([2, 10], [line('.'), col('.')], msg)
+    call assert_equal("", @", msg)
 
     " Try clicking on the status line
     let @" = ''

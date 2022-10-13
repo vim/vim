@@ -14,7 +14,7 @@ def SetSyn(name: string)
     filetype = "fvwm"
   endif
   if name == "whitespace"
-    " do not replace the filetype but add whitespace on top
+    # do not replace the filetype but add whitespace on top
     filetype = &ft .. ".whitespace"
   endif
   if !exists("s:syntax_menu_synonly")

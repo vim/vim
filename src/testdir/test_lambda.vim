@@ -354,7 +354,7 @@ func Test_closure_error()
       return 1
     endfunc
   END
-  call writefile(l, 'Xscript')
+  call writefile(l, 'Xscript', 'D')
   let caught_932 = 0
   try
     source Xscript
@@ -362,7 +362,6 @@ func Test_closure_error()
     let caught_932 = 1
   endtry
   call assert_equal(1, caught_932)
-  call delete('Xscript')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

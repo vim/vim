@@ -3311,11 +3311,7 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 
 	// When ignoring events return TRUE so that the selected page doesn't
 	// change.
-	if (hold_gui_events
-# ifdef FEAT_CMDWIN
-		|| cmdwin_type != 0
-# endif
-	   )
+	if (hold_gui_events || cmdwin_type != 0)
 	    return TRUE;
 
 	tabwin = gui_gtk_window_at_position(gui.mainwin, &x, &y);
@@ -3344,6 +3340,12 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 		// small guess it's the left button.
 		send_tabline_event(x < 50 ? -1 : 0);
 	    }
+	}
+	else if (bevent->button == 2)
+	{
+	    if (clicked_page != 0)
+		// Middle mouse click on tabpage label closes that tab.
+		send_tabline_menu_event(clicked_page, TABLINE_MENU_CLOSE);
 	}
     }
 
@@ -6153,7 +6155,7 @@ gui_mch_haskey(char_u *name)
     return FAIL;
 }
 
-#if defined(FEAT_TITLE) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the text window-id and display.  Only required for X-based GUI's
  */

@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 9.0.  Last change: 2022 Jan 23
+*print.txt*     For Vim version 9.0.  Last change: 2022 Oct 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -158,12 +158,15 @@ currently specified printdevice: >
 If you change this option, using a function is an easy way to avoid having to
 escape all the spaces.  Example: >
 
-	:set printexpr=PrintFile(v:fname_in)
-	:function PrintFile(fname)
-	:  call system("ghostview " .. a:fname)
-	:  call delete(a:fname)
+	:set printexpr=PrintFile()
+	:function PrintFile()
+	:  call system("ghostview " .. v:fname_in)
+	:  call delete(v:fname_in)
 	:  return v:shell_error
 	:endfunc
+
+It is more efficient if the option is set to just a function call,
+see |expr-option-function|.
 
 Be aware that some print programs return control before they have read the
 file.  If you delete the file too soon it will not be printed.  These programs

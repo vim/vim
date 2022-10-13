@@ -1531,56 +1531,68 @@ make_filter_cmd(
 {
     char_u	*buf;
     long_u	len;
-
-#if defined(UNIX)
+    int		is_powershell = FALSE;
+#ifdef UNIX
     int		is_fish_shell;
-    char_u	*shell_name = get_isolated_shell_name();
+#endif
 
+    char_u *shell_name = get_isolated_shell_name();
     if (shell_name == NULL)
 	return NULL;
 
+#if defined(UNIX)
     // Account for fish's different syntax for subshells
-    is_fish_shell = (fnamecmp(shell_name, "fish") == 0);
-    vim_free(shell_name);
+    is_fish_shell = fnamecmp(shell_name, "fish") == 0;
     if (is_fish_shell)
 	len = (long_u)STRLEN(cmd) + 13;		// "begin; " + "; end" + NUL
     else
 #endif
-	len = (long_u)STRLEN(cmd) + 3;			// "()" + NUL
+    {
+	is_powershell = (shell_name[0] == 'p')
+			&& (fnamecmp(shell_name, "powershell") == 0
+				|| fnamecmp(shell_name, "powershell.exe") == 0
+				|| fnamecmp(shell_name, "pwsh") == 0
+				|| fnamecmp(shell_name, "pwsh.exe") == 0);
+	len = (long_u)STRLEN(cmd) + 3;		// "()" + NUL
+    }
+
     if (itmp != NULL)
-	len += (long_u)STRLEN(itmp) + 9;		// " { < " + " } "
+    {
+	if (is_powershell)
+	    // "& { Get-Content " + " | & " + " }"
+	    len += (long_u)STRLEN(itmp) + 24;
+	else
+	    len += (long_u)STRLEN(itmp) + 9;	// " { < " + " } "
+    }
     if (otmp != NULL)
 	len += (long_u)STRLEN(otmp) + (long_u)STRLEN(p_srr) + 2; // "  "
+
+    vim_free(shell_name);
+
     buf = alloc(len);
     if (buf == NULL)
 	return NULL;
 
-#if defined(UNIX)
-    /*
-     * Put braces around the command (for concatenated commands) when
-     * redirecting input and/or output.
-     */
-    if (itmp != NULL || otmp != NULL)
+    if (is_powershell)
     {
-	if (is_fish_shell)
-	    vim_snprintf((char *)buf, len, "begin; %s; end", (char *)cmd);
+	if (itmp != NULL)
+	    vim_snprintf((char *)buf, len, "& { Get-Content %s | & %s }",
+								itmp, cmd);
 	else
-	    vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	    vim_snprintf((char *)buf, len, "(%s)", cmd);
     }
     else
-	STRCPY(buf, cmd);
-    if (itmp != NULL)
     {
-	STRCAT(buf, " < ");
-	STRCAT(buf, itmp);
-    }
-#else
-    // For shells that don't understand braces around commands, at least allow
-    // the use of commands in a pipe.
-    if (*p_sxe != NUL && *p_sxq == '(')
-    {
+#if defined(UNIX)
+	// Put braces around the command (for concatenated commands) when
+	// redirecting input and/or output.
 	if (itmp != NULL || otmp != NULL)
-	    vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	{
+	    if (is_fish_shell)
+		vim_snprintf((char *)buf, len, "begin; %s; end", (char *)cmd);
+	    else
+		vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	}
 	else
 	    STRCPY(buf, cmd);
 	if (itmp != NULL)
@@ -1588,37 +1600,53 @@ make_filter_cmd(
 	    STRCAT(buf, " < ");
 	    STRCAT(buf, itmp);
 	}
-    }
-    else
-    {
-	STRCPY(buf, cmd);
-	if (itmp != NULL)
+#else
+	// For shells that don't understand braces around commands, at least
+	// allow the use of commands in a pipe.
+	if (*p_sxe != NUL && *p_sxq == '(')
 	{
-	    char_u	*p;
-
-	    // If there is a pipe, we have to put the '<' in front of it.
-	    // Don't do this when 'shellquote' is not empty, otherwise the
-	    // redirection would be inside the quotes.
-	    if (*p_shq == NUL)
+	    if (itmp != NULL || otmp != NULL)
+		vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	    else
+		STRCPY(buf, cmd);
+	    if (itmp != NULL)
 	    {
-		p = find_pipe(buf);
-		if (p != NULL)
-		    *p = NUL;
+		STRCAT(buf, " < ");
+		STRCAT(buf, itmp);
 	    }
-	    STRCAT(buf, " <");	// " < " causes problems on Amiga
-	    STRCAT(buf, itmp);
-	    if (*p_shq == NUL)
+	}
+	else
+	{
+	    STRCPY(buf, cmd);
+	    if (itmp != NULL)
 	    {
-		p = find_pipe(cmd);
-		if (p != NULL)
+		char_u	*p;
+
+		// If there is a pipe, we have to put the '<' in front of it.
+		// Don't do this when 'shellquote' is not empty, otherwise the
+		// redirection would be inside the quotes.
+		if (*p_shq == NUL)
 		{
-		    STRCAT(buf, " ");  // insert a space before the '|' for DOS
-		    STRCAT(buf, p);
+		    p = find_pipe(buf);
+		    if (p != NULL)
+			*p = NUL;
+		}
+		STRCAT(buf, " <");	// " < " causes problems on Amiga
+		STRCAT(buf, itmp);
+		if (*p_shq == NUL)
+		{
+		    p = find_pipe(cmd);
+		    if (p != NULL)
+		    {
+			// insert a space before the '|' for DOS
+			STRCAT(buf, " ");
+			STRCAT(buf, p);
+		    }
 		}
 	    }
 	}
-    }
 #endif
+    }
     if (otmp != NULL)
 	append_redir(buf, (int)len, p_srr, otmp);
 
@@ -2651,8 +2679,13 @@ do_ecmd(
 		// with the current window.
 		newbuf = buflist_new(ffname, sfname, tlnum,
 						    BLN_LISTED | BLN_NOCURWIN);
-		if (newbuf != NULL && (flags & ECMD_ALTBUF))
-		    curwin->w_alt_fnum = newbuf->b_fnum;
+		if (newbuf != NULL)
+		{
+		    if (flags & ECMD_ALTBUF)
+			curwin->w_alt_fnum = newbuf->b_fnum;
+		    if (tlnum > 0)
+			newbuf->b_last_cursor.lnum = tlnum;
+		}
 		goto theend;
 	    }
 	    buf = buflist_new(ffname, sfname, 0L,
@@ -2706,12 +2739,11 @@ do_ecmd(
 	if (buf != curbuf)
 	{
 	    bufref_T	save_au_new_curbuf;
-#ifdef FEAT_CMDWIN
 	    int		save_cmdwin_type = cmdwin_type;
 
 	    // BufLeave applies to the old buffer.
 	    cmdwin_type = 0;
-#endif
+
 	    /*
 	     * Be careful: The autocommands may delete any buffer and change
 	     * the current buffer.
@@ -2727,9 +2759,7 @@ do_ecmd(
 	    save_au_new_curbuf = au_new_curbuf;
 	    set_bufref(&au_new_curbuf, buf);
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
-#ifdef FEAT_CMDWIN
 	    cmdwin_type = save_cmdwin_type;
-#endif
 	    if (!bufref_valid(&au_new_curbuf))
 	    {
 		// new buffer has been deleted

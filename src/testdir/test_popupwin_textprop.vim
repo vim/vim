@@ -28,7 +28,7 @@ func Test_textprop_popup()
 	      \ close: 'click',
 	      \ })
   END
-  call writefile(lines, 'XtestTextpropPopup')
+  call writefile(lines, 'XtestTextpropPopup', 'D')
   let buf = RunVimInTerminal('-S XtestTextpropPopup', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popup_textprop_01', {})
 
@@ -52,7 +52,6 @@ func Test_textprop_popup()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestTextpropPopup')
 endfunc
 
 func Test_textprop_popup_corners()
@@ -91,7 +90,7 @@ func Test_textprop_popup_corners()
 	      \ padding: [0,1,0,1],
 	      \ })
   END
-  call writefile(lines, 'XtestTextpropPopupCorners')
+  call writefile(lines, 'XtestTextpropPopupCorners', 'D')
   let buf = RunVimInTerminal('-S XtestTextpropPopupCorners', #{rows: 12})
   call VerifyScreenDump(buf, 'Test_popup_textprop_corn_1', {})
 
@@ -113,7 +112,6 @@ func Test_textprop_popup_corners()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestTextpropPopupCorners')
 endfunc
 
 func Test_textprop_popup_offsets()
@@ -159,7 +157,7 @@ func Test_textprop_popup_offsets()
 	      \ padding: [0,1,0,1],
 	      \ })
   END
-  call writefile(lines, 'XtestTextpropPopupOffset')
+  call writefile(lines, 'XtestTextpropPopupOffset', 'D')
   let buf = RunVimInTerminal('-S XtestTextpropPopupOffset', #{rows: 12})
   call VerifyScreenDump(buf, 'Test_popup_textprop_off_1', {})
 
@@ -169,7 +167,6 @@ func Test_textprop_popup_offsets()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestTextpropPopupOffset')
 endfunc
 
 

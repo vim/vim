@@ -2320,6 +2320,7 @@ filter_map_one(
 	typval_T	*tv,	    // original value
 	typval_T	*expr,	    // callback
 	filtermap_T	filtermap,
+	funccall_T	*fc,	    // from eval_expr_get_funccal()
 	typval_T	*newtv,	    // for map() and mapnew(): new value
 	int		*remp)	    // for filter(): remove flag
 {
@@ -2329,7 +2330,7 @@ filter_map_one(
     copy_tv(tv, get_vim_var_tv(VV_VAL));
     argv[0] = *get_vim_var_tv(VV_KEY);
     argv[1] = *get_vim_var_tv(VV_VAL);
-    if (eval_expr_typval(expr, argv, 2, newtv) == FAIL)
+    if (eval_expr_typval(expr, argv, 2, fc, newtv) == FAIL)
 	goto theend;
     if (filtermap == FILTERMAP_FILTER)
     {
@@ -2371,15 +2372,16 @@ list_filter_map(
     int		idx = 0;
     int		rem;
     listitem_T	*li, *nli;
+    typval_T	newtv;
+    funccall_T	*fc;
 
     if (filtermap == FILTERMAP_MAPNEW)
     {
 	rettv->v_type = VAR_LIST;
 	rettv->vval.v_list = NULL;
     }
-    if (l == NULL
-	    || (filtermap == FILTERMAP_FILTER
-		&& value_check_lock(l->lv_lock, arg_errmsg, TRUE)))
+    if (l == NULL || (filtermap == FILTERMAP_FILTER
+			    && value_check_lock(l->lv_lock, arg_errmsg, TRUE)))
 	return;
 
     prev_lock = l->lv_lock;
@@ -2395,6 +2397,9 @@ list_filter_map(
 
     if (filtermap != FILTERMAP_FILTER && l->lv_lock == 0)
 	l->lv_lock = VAR_LOCKED;
+
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, &newtv);
 
     if (l->lv_first == &range_list_item)
     {
@@ -2414,13 +2419,12 @@ list_filter_map(
 	for (idx = 0; idx < len; ++idx)
 	{
 	    typval_T tv;
-	    typval_T newtv;
 
 	    tv.v_type = VAR_NUMBER;
 	    tv.v_lock = 0;
 	    tv.vval.v_number = val;
 	    set_vim_var_nr(VV_KEY, idx);
-	    if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL)
+	    if (filter_map_one(&tv, expr, filtermap, fc, &newtv, &rem) == FAIL)
 		break;
 	    if (did_emsg)
 	    {
@@ -2458,15 +2462,13 @@ list_filter_map(
 	// Materialized list: loop over the items
 	for (li = l->lv_first; li != NULL; li = nli)
 	{
-	    typval_T newtv;
-
 	    if (filtermap == FILTERMAP_MAP && value_check_lock(
 			li->li_tv.v_lock, arg_errmsg, TRUE))
 		break;
 	    nli = li->li_next;
 	    set_vim_var_nr(VV_KEY, idx);
-	    if (filter_map_one(&li->li_tv, expr, filtermap,
-			&newtv, &rem) == FAIL)
+	    if (filter_map_one(&li->li_tv, expr, filtermap, fc,
+							 &newtv, &rem) == FAIL)
 		break;
 	    if (did_emsg)
 	    {
@@ -2499,6 +2501,8 @@ list_filter_map(
     }
 
     l->lv_lock = prev_lock;
+    if (fc != NULL)
+	remove_funccal();
 }
 
 /*
@@ -2999,41 +3003,57 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * reduce() List argvars[0] using the function 'funcname' with arguments in
- * 'funcexe' starting with the initial value argvars[2] and return the result
- * in 'rettv'.
+ * Implementation of reduce() for list "argvars[0]", using the function "expr"
+ * starting with the optional initial value argvars[2] and return the result in
+ * "rettv".
  */
     static void
 list_reduce(
 	typval_T	*argvars,
-	char_u		*func_name,
-	funcexe_T	*funcexe,
+	typval_T	*expr,
 	typval_T	*rettv)
 {
     list_T	*l = argvars[0].vval.v_list;
     listitem_T  *li = NULL;
+    int		range_list;
+    int		range_idx = 0;
+    varnumber_T	range_val = 0;
     typval_T	initial;
     typval_T	argv[3];
     int		r;
     int		called_emsg_start = called_emsg;
     int		prev_locked;
+    funccall_T	*fc;
 
-    if (l != NULL)
-	CHECK_LIST_MATERIALIZE(l);
+    // Using reduce on a range() uses "range_idx" and "range_val".
+    range_list = l != NULL && l->lv_first == &range_list_item;
+    if (range_list)
+	range_val = l->lv_u.nonmat.lv_start;
+
     if (argvars[2].v_type == VAR_UNKNOWN)
     {
-	if (l == NULL || l->lv_first == NULL)
+	if (l == NULL || l->lv_len == 0)
 	{
 	    semsg(_(e_reduce_of_an_empty_str_with_no_initial_value), "List");
 	    return;
 	}
-	initial = l->lv_first->li_tv;
-	li = l->lv_first->li_next;
+	if (range_list)
+	{
+	    initial.v_type = VAR_NUMBER;
+	    initial.vval.v_number = range_val;
+	    range_val += l->lv_u.nonmat.lv_stride;
+	    range_idx = 1;
+	}
+	else
+	{
+	    initial = l->lv_first->li_tv;
+	    li = l->lv_first->li_next;
+	}
     }
     else
     {
 	initial = argvars[2];
-	if (l != NULL)
+	if (l != NULL && !range_list)
 	    li = l->lv_first;
     }
     copy_tv(&initial, rettv);
@@ -3041,19 +3061,45 @@ list_reduce(
     if (l == NULL)
 	return;
 
-    prev_locked = l->lv_lock;
+    // Create one funccal_T for all eval_expr_typval() calls.
+    fc = eval_expr_get_funccal(expr, rettv);
 
+    prev_locked = l->lv_lock;
     l->lv_lock = VAR_FIXED;  // disallow the list changing here
-    for ( ; li != NULL; li = li->li_next)
+
+    while (range_list ? range_idx < l->lv_len : li != NULL)
     {
 	argv[0] = *rettv;
-	argv[1] = li->li_tv;
 	rettv->v_type = VAR_UNKNOWN;
-	r = call_func(func_name, -1, rettv, 2, argv, funcexe);
-	clear_tv(&argv[0]);
+
+	if (range_list)
+	{
+	    argv[1].v_type = VAR_NUMBER;
+	    argv[1].vval.v_number = range_val;
+	}
+	else
+	    argv[1] = li->li_tv;
+
+	r = eval_expr_typval(expr, argv, 2, fc, rettv);
+
+	if (argv[0].v_type != VAR_NUMBER && argv[0].v_type != VAR_UNKNOWN)
+	    clear_tv(&argv[0]);
 	if (r == FAIL || called_emsg != called_emsg_start)
 	    break;
+
+	// advance to the next item
+	if (range_list)
+	{
+	    range_val += l->lv_u.nonmat.lv_stride;
+	    ++range_idx;
+	}
+	else
+	    li = li->li_next;
     }
+
+    if (fc != NULL)
+	remove_funccal();
+
     l->lv_lock = prev_locked;
 }
 
@@ -3066,8 +3112,6 @@ list_reduce(
 f_reduce(typval_T *argvars, typval_T *rettv)
 {
     char_u	*func_name;
-    partial_T   *partial = NULL;
-    funcexe_T	funcexe;
 
     if (in_vim9script()
 		   && check_for_string_or_list_or_blob_arg(argvars, 0) == FAIL)
@@ -3084,10 +3128,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
     else if (argvars[1].v_type == VAR_PARTIAL)
-    {
-	partial = argvars[1].vval.v_partial;
-	func_name = partial_name(partial);
-    }
+	func_name = partial_name(argvars[1].vval.v_partial);
     else
 	func_name = tv_get_string(&argvars[1]);
     if (func_name == NULL || *func_name == NUL)
@@ -3096,16 +3137,12 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    CLEAR_FIELD(funcexe);
-    funcexe.fe_evaluate = TRUE;
-    funcexe.fe_partial = partial;
-
     if (argvars[0].v_type == VAR_LIST)
-	list_reduce(argvars, func_name, &funcexe, rettv);
+	list_reduce(argvars, &argvars[1], rettv);
     else if (argvars[0].v_type == VAR_STRING)
-	string_reduce(argvars, func_name, &funcexe, rettv);
+	string_reduce(argvars, &argvars[1], rettv);
     else
-	blob_reduce(argvars, func_name, &funcexe, rettv);
+	blob_reduce(argvars, &argvars[1], rettv);
 }
 
 #endif // defined(FEAT_EVAL)
