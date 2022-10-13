@@ -141,7 +141,9 @@ find_end_of_word(pos_T *pos)
 # define NEED_VCOL2COL
 
 /*
- * Translate window coordinates to buffer position without any side effects
+ * Translate window coordinates to buffer position without any side effects.
+ * Returns IN_BUFFER and sets "mpos->col" to the column when in buffer text.
+ * The column is one for the first column.
  */
     static int
 get_fpos_of_mouse(pos_T *mpos)
@@ -172,8 +174,6 @@ get_fpos_of_mouse(pos_T *mpos)
 
     mpos->col = vcol2col(wp, mpos->lnum, col);
 
-    if (mpos->col > 0)
-	--mpos->col;
     mpos->coladd = 0;
     return IN_BUFFER;
 }
@@ -598,7 +598,19 @@ do_mouse(
 			jump_flags = MOUSE_MAY_STOP_VIS;
 		    else
 		    {
-			if ((LT_POS(curwin->w_cursor, VIsual)
+			if (VIsual_mode == 'V')
+			{
+			    if ((curwin->w_cursor.lnum <= VIsual.lnum
+				    && (m_pos.lnum < curwin->w_cursor.lnum
+					|| VIsual.lnum < m_pos.lnum))
+				|| (VIsual.lnum < curwin->w_cursor.lnum
+				    && (m_pos.lnum < VIsual.lnum
+					|| curwin->w_cursor.lnum < m_pos.lnum)))
+			    {
+				jump_flags = MOUSE_MAY_STOP_VIS;
+			    }
+			}
+			else if ((LTOREQ_POS(curwin->w_cursor, VIsual)
 				    && (LT_POS(m_pos, curwin->w_cursor)
 					|| LT_POS(VIsual, m_pos)))
 				|| (LT_POS(VIsual, curwin->w_cursor)
