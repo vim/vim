@@ -367,6 +367,16 @@ func Test_prop_add_list()
         \ length: 7, start: 1}], prop_list(3))
   call assert_equal([#{id: 2, col: 1, type_bufnr: 0, end: 1, type: 'one',
         \ length: 5, start: 0}], prop_list(4))
+  call prop_remove(#{id: 2})
+  call assert_equal([], prop_list(1))
+
+  call prop_add_list(#{type: 'one', id: 3},
+        \ [[1, 1, 1, 3], [2, 5, 2, 7, 9]])
+  call assert_equal([#{id: 3, col: 1, type_bufnr: 0, end: 1, type: 'one',
+        \ length: 2, start: 1}], prop_list(1))
+  call assert_equal([#{id: 9, col: 5, type_bufnr: 0, end: 1, type: 'one',
+        \ length: 2, start: 1}], prop_list(2))
+
   call assert_fails('call prop_add_list([1, 2], [[1, 1, 3]])', 'E1206:')
   call assert_fails('call prop_add_list({}, {})', 'E1211:')
   call assert_fails('call prop_add_list({}, [[1, 1, 3]])', 'E965:')

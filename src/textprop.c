@@ -396,6 +396,9 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 	    end_lnum = list_find_nr(pos_list, 2L, &error);
 	if (!error)
 	    end_col = list_find_nr(pos_list, 3L, &error);
+	int this_id = id;
+	if (!error && pos_list->lv_len > 4)
+	    this_id = list_find_nr(pos_list, 4L, &error);
 	if (error || start_lnum <= 0 || start_col <= 0
 		  || end_lnum <= 0 || end_col <= 0)
 	{
@@ -403,8 +406,8 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 		emsg(_(e_invalid_argument));
 	    return;
 	}
-	if (prop_add_one(buf, type_name, id, NULL, 0, 0, start_lnum, end_lnum,
-						start_col, end_col) == FAIL)
+	if (prop_add_one(buf, type_name, this_id, NULL, 0, 0,
+			     start_lnum, end_lnum, start_col, end_col) == FAIL)
 	    return;
     }
 
