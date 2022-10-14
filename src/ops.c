@@ -3261,7 +3261,7 @@ cursor_pos_info(dict_T *dict)
 		col_print(buf1, sizeof(buf1), (int)curwin->w_cursor.col + 1,
 			(int)curwin->w_virtcol + 1);
 		col_print(buf2, sizeof(buf2), (int)STRLEN(p),
-				    linetabsize(p));
+							   linetabsize_str(p));
 
 		if (char_count_cursor == byte_count_cursor
 			&& char_count == byte_count)

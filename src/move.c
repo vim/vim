@@ -1633,7 +1633,7 @@ scrolldown(
 
     if (curwin->w_cursor.lnum == curwin->w_topline && do_sms)
     {
-	long	so = curwin->w_p_so >= 0 ? curwin->w_p_so : p_so;
+	long	so = get_scrolloff_value();
 	int	scrolloff_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
 
 	// make sure the cursor is in the visible text
@@ -1684,8 +1684,7 @@ scrollup(
 	linenr_T    prev_topline = curwin->w_topline;
 
 	if (do_sms)
-	    size = win_linetabsize(curwin, curwin->w_topline,
-				   ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+	    size = linetabsize(curwin, curwin->w_topline);
 
 	// diff mode: first consume "topfill"
 	// 'smoothscroll': increase "w_skipcol" until it goes over the end of
@@ -1740,8 +1739,7 @@ scrollup(
 # endif
 		    curwin->w_skipcol = 0;
 		    if (todo > 1 && do_sms)
-			size = win_linetabsize(curwin, curwin->w_topline,
-				ml_get(curwin->w_topline), (colnr_T)MAXCOL);
+			size = linetabsize(curwin, curwin->w_topline);
 		}
 	    }
 	}
@@ -1784,11 +1782,15 @@ scrollup(
     {
 	int	width1 = curwin->w_width - curwin_col_off();
 	int	width2 = width1 + curwin_col_off2();
-	long	so = curwin->w_p_so >= 0 ? curwin->w_p_so : p_so;
+	long	so = get_scrolloff_value();
 	int	scrolloff_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
+	int	space_cols = (curwin->w_height - 1) * width2;
 
 	// Make sure the cursor is in a visible part of the line, taking
 	// 'scrolloff' into account, but using screen lines.
+	// If there are not enough screen lines put the cursor in the middle.
+	if (scrolloff_cols > space_cols / 2)
+	    scrolloff_cols = space_cols / 2;
 	validate_virtcol();
 	if (curwin->w_virtcol < curwin->w_skipcol + 3 + scrolloff_cols)
 	{
@@ -1823,11 +1825,22 @@ adjust_skipcol(void)
 
     int	    width1 = curwin->w_width - curwin_col_off();
     int	    width2 = width1 + curwin_col_off2();
-    long    so = curwin->w_p_so >= 0 ? curwin->w_p_so : p_so;
+    long    so = get_scrolloff_value();
     int	    scrolloff_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
     int	    scrolled = FALSE;
 
     validate_virtcol();
+    if (curwin->w_cline_height == curwin->w_height)
+    {
+	// the line just fits in the window, don't scroll
+	if (curwin->w_skipcol != 0)
+	{
+	    curwin->w_skipcol = 0;
+	    redraw_later(UPD_NOT_VALID);
+	}
+	return;
+    }
+
     while (curwin->w_skipcol > 0
 		 && curwin->w_virtcol < curwin->w_skipcol + 3 + scrolloff_cols)
     {
@@ -2690,6 +2703,19 @@ cursor_correct(void)
 #endif
 	    )
 	return;
+
+    if (curwin->w_p_sms && !curwin->w_p_wrap)
+    {
+	// 'smoothscroll is active
+	if (curwin->w_cline_height == curwin->w_height)
+	{
+	    // The cursor line just fits in the window, don't scroll.
+	    curwin->w_skipcol = 0;
+	    return;
+	}
+	// TODO: If the cursor line doesn't fit in the window then only adjust
+	// w_skipcol.
+    }
 
     /*
      * Narrow down the area where the cursor can be put by taking lines from

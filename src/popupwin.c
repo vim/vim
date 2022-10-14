@@ -1403,8 +1403,7 @@ popup_adjust_position(win_T *wp)
 	// "margin_width" is added to "len" where it matters.
 	if (wp->w_width < maxwidth)
 	    wp->w_width = maxwidth;
-	len = win_linetabsize(wp, lnum, ml_get_buf(wp->w_buffer, lnum, FALSE),
-							      (colnr_T)MAXCOL);
+	len = linetabsize(wp, lnum);
 	wp->w_width = w_width;
 
 	if (wp->w_p_wrap)

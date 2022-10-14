@@ -2266,7 +2266,7 @@ find_decl(
     static int
 nv_screengo(oparg_T *oap, int dir, long dist)
 {
-    int		linelen = linetabsize(ml_get_curline());
+    int		linelen = linetabsize_str(ml_get_curline());
     int		retval = OK;
     int		atend = FALSE;
     int		n;
@@ -2343,7 +2343,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		}
 		--curwin->w_cursor.lnum;
 
-		linelen = linetabsize(ml_get_curline());
+		linelen = linetabsize_str(ml_get_curline());
 		if (linelen > width1)
 		    curwin->w_curswant += (((linelen - width1 - 1) / width2)
 								+ 1) * width2;
@@ -2383,7 +2383,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		// clipped to column 0.
 		if (curwin->w_curswant >= width1)
 		    curwin->w_curswant -= width2;
-		linelen = linetabsize(ml_get_curline());
+		linelen = linetabsize_str(ml_get_curline());
 	    }
 	}
       }
@@ -6005,7 +6005,7 @@ nv_g_cmd(cmdarg_T *cap)
 	{
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = FALSE;
-	    i = linetabsize(ml_get_curline());
+	    i = linetabsize_str(ml_get_curline());
 	    if (cap->count0 > 0 && cap->count0 <= 100)
 		coladvance((colnr_T)(i * cap->count0 / 100));
 	    else
