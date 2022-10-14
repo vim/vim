@@ -1542,10 +1542,12 @@ syn_stack_equal(synstate_T *sp)
  * lnum ->  line below window
  */
     void
-syntax_end_parsing(linenr_T lnum)
+syntax_end_parsing(win_T *wp, linenr_T lnum)
 {
     synstate_T	*sp;
 
+    if (syn_block != wp->w_s)
+	return;  // not the right window
     sp = syn_stack_find_entry(lnum);
     if (sp != NULL && sp->sst_lnum < lnum)
 	sp = sp->sst_next;
