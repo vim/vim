@@ -8390,9 +8390,8 @@ ex_helpgrep(exarg_T *eap)
 	    curwin->w_llist = qi;
     }
 }
-#endif // FEAT_QUICKFIX
-       //
-#if defined(EXITFREE) || defined(PROTO)
+
+# if defined(EXITFREE)
     void
 free_quickfix()
 {
@@ -8406,7 +8405,9 @@ free_quickfix()
 
     ga_clear(&qfga);
 }
-#endif
+# endif
+
+#endif // FEAT_QUICKFIX
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 # ifdef FEAT_QUICKFIX
