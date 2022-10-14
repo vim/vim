@@ -182,6 +182,7 @@ static struct event_name
     {"TextChanged",	EVENT_TEXTCHANGED},
     {"TextChangedI",	EVENT_TEXTCHANGEDI},
     {"TextChangedP",	EVENT_TEXTCHANGEDP},
+    {"TextChangedT",	EVENT_TEXTCHANGEDT},
     {"User",		EVENT_USER},
     {"VimEnter",	EVENT_VIMENTER},
     {"VimLeave",	EVENT_VIMLEAVE},

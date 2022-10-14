@@ -1232,6 +1232,7 @@ update_cursor(term_T *term, int redraw)
 	    gui_mch_flush();
 	}
 #endif
+	apply_autocmds(EVENT_TEXTCHANGEDT, NULL, NULL, FALSE, curbuf);
     }
 }
 

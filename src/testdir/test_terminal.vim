@@ -2321,5 +2321,24 @@ func Test_term_wait_in_close_cb()
   bwipe!
 endfunc
 
+func Test_term_TextChangedT()
+  let g:called = v:false
+  augroup TermTest
+    autocmd TextChangedT * ++once let g:called = v:true
+  augroup END
+
+  terminal
+
+  call term_sendkeys(bufnr(), "aaabbc\r")
+  call TermWait(bufnr())
+
+  call assert_equal(v:true, g:called)
+
+  bwipe!
+  augroup TermTest
+    au!
+  augroup END
+  unlet! g:called
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
