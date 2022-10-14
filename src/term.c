@@ -4807,6 +4807,28 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 }
 
 /*
+ * Add "key" to "buf" and return the number of bytes used.
+ * Handles special keys and multi-byte characters.
+ */
+    static int
+add_key_to_buf(int key, char_u *buf)
+{
+    int idx = 0;
+
+    if (IS_SPECIAL(key))
+    {
+	buf[idx++] = K_SPECIAL;
+	buf[idx++] = KEY2TERMCAP0(key);
+	buf[idx++] = KEY2TERMCAP1(key);
+    }
+    else if (has_mbyte)
+	idx += (*mb_char2bytes)(key, buf + idx);
+    else
+	buf[idx++] = key;
+    return idx;
+}
+
+/*
  * Handle a sequence with key and modifier, one of:
  *	{lead}27;{modifier};{key}~
  *	{lead}{key};{modifier}u
@@ -4824,7 +4846,6 @@ handle_key_with_modifier(
 {
     int	    key;
     int	    modifiers;
-    int	    new_slen;
     char_u  string[MAX_KEY_CODE_LEN + 1];
 
     seenModifyOtherKeys = TRUE;
@@ -4842,18 +4863,33 @@ handle_key_with_modifier(
     modifiers = may_remove_shift_modifier(modifiers, key);
 
     // insert modifiers with KS_MODIFIER
-    new_slen = modifiers2keycode(modifiers, &key, string);
+    int new_slen = modifiers2keycode(modifiers, &key, string);
 
-    if (IS_SPECIAL(key))
-    {
-	string[new_slen++] = K_SPECIAL;
-	string[new_slen++] = KEY2TERMCAP0(key);
-	string[new_slen++] = KEY2TERMCAP1(key);
-    }
-    else if (has_mbyte)
-	new_slen += (*mb_char2bytes)(key, string + new_slen);
-    else
-	string[new_slen++] = key;
+    // add the bytes for the key
+    new_slen += add_key_to_buf(key, string + new_slen);
+
+    if (put_string_in_typebuf(offset, csi_len, string, new_slen,
+						 buf, bufsize, buflen) == FAIL)
+	return -1;
+    return new_slen - csi_len + offset;
+}
+
+/*
+ * Handle a sequence with key without a modifier:
+ *	{lead}{key}u
+ * Returns the difference in length.
+ */
+    static int
+handle_key_without_modifier(
+	int	*arg,
+	int	csi_len,
+	int	offset,
+	char_u	*buf,
+	int	bufsize,
+	int	*buflen)
+{
+    char_u  string[MAX_KEY_CODE_LEN + 1];
+    int	    new_slen = add_key_to_buf(arg[0], string);
 
     if (put_string_in_typebuf(offset, csi_len, string, new_slen,
 						 buf, bufsize, buflen) == FAIL)
@@ -5013,6 +5049,14 @@ handle_csi(
 	    || (argc == 2 && trail == 'u'))
     {
 	return len + handle_key_with_modifier(arg, trail,
+			    csi_len, offset, buf, bufsize, buflen);
+    }
+
+    // Key without modifier (bad Kitty may send this):
+    //	{lead}{key}u
+    else if (argc == 1 && trail == 'u')
+    {
+	return len + handle_key_without_modifier(arg,
 			    csi_len, offset, buf, bufsize, buflen);
     }
 
