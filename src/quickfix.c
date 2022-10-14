@@ -219,6 +219,25 @@ static qf_info_T *ll_get_or_alloc_list(win_T *);
 static char_u   *qf_last_bufname = NULL;
 static bufref_T  qf_last_bufref = {NULL, 0, 0};
 
+static garray_T qfga;
+
+    static garray_T *
+qfga_get(void)
+{
+    static int initialized = FALSE;
+
+    if (!initialized)
+    {
+	initialized = TRUE;
+	ga_init2(&qfga, 1, 256);
+    }
+
+    // Retain ga_data from previous use.  Reset the length to zero.
+    qfga.ga_len = 0;
+
+    return &qfga;
+}
+
 /*
  * Maximum number of bytes allowed per line while reading a errorfile.
  */
@@ -3286,7 +3305,9 @@ qf_jump_print_msg(
 	linenr_T	old_lnum)
 {
     linenr_T		i;
-    garray_T		ga;
+    garray_T		*gap;
+
+    gap = qfga_get();
 
     // Update the screen before showing the message, unless the screen
     // scrolled up.
@@ -3297,9 +3318,8 @@ qf_jump_print_msg(
 	    qf_ptr->qf_cleared ? _(" (line deleted)") : "",
 	    (char *)qf_types(qf_ptr->qf_type, qf_ptr->qf_nr));
     // Add the message, skipping leading whitespace and newlines.
-    ga_init2(&ga, 1, 256);
-    ga_concat(&ga, IObuff);
-    qf_fmt_text(&ga, skipwhite(qf_ptr->qf_text));
+    ga_concat(gap, IObuff);
+    qf_fmt_text(gap, skipwhite(qf_ptr->qf_text));
 
     // Output the message.  Overwrite to avoid scrolling when the 'O'
     // flag is present in 'shortmess'; But when not jumping, print the
@@ -3309,9 +3329,8 @@ qf_jump_print_msg(
 	msg_scroll = TRUE;
     else if (!msg_scrolled && shortmess(SHM_OVERALL))
 	msg_scroll = FALSE;
-    msg_attr_keep((char *)ga.ga_data, 0, TRUE);
+    msg_attr_keep((char *)gap->ga_data, 0, TRUE);
     msg_scroll = i;
-    ga_clear(&ga);
 }
 
 /*
@@ -3576,7 +3595,7 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     char_u	*fname;
     buf_T	*buf;
     int		filter_entry;
-    garray_T	ga;
+    garray_T	*gap;
 
     fname = NULL;
     if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
@@ -3617,34 +3636,31 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
 
     if (qfp->qf_lnum != 0)
 	msg_puts_attr(":", qfSepAttr);
-    ga_init2(&ga, 1, 256);
+    gap = qfga_get();
     if (qfp->qf_lnum == 0)
-	ga_append(&ga, NUL);
+	ga_append(gap, NUL);
     else
-	qf_range_text(&ga, qfp);
-    ga_concat(&ga, qf_types(qfp->qf_type, qfp->qf_nr));
-    ga_append(&ga, NUL);
-    msg_puts_attr((char *)ga.ga_data, qfLineAttr);
-    ga_clear(&ga);
+	qf_range_text(gap, qfp);
+    ga_concat(gap, qf_types(qfp->qf_type, qfp->qf_nr));
+    ga_append(gap, NUL);
+    msg_puts_attr((char *)gap->ga_data, qfLineAttr);
     msg_puts_attr(":", qfSepAttr);
     if (qfp->qf_pattern != NULL)
     {
-	qf_fmt_text(&ga, qfp->qf_pattern);
-	msg_puts((char *)ga.ga_data);
-	ga_clear(&ga);
+	gap = qfga_get();
+	qf_fmt_text(gap, qfp->qf_pattern);
+	msg_puts((char *)gap->ga_data);
 	msg_puts_attr(":", qfSepAttr);
     }
     msg_puts(" ");
 
-    {
-	// Remove newlines and leading whitespace from the text.  For an
-	// unrecognized line keep the indent, the compiler may mark a word
-	// with ^^^^.
-	qf_fmt_text(&ga, (fname != NULL || qfp->qf_lnum != 0)
-				    ? skipwhite(qfp->qf_text) : qfp->qf_text);
-	msg_prt_line((char_u *)ga.ga_data, FALSE);
-	ga_clear(&ga);
-    }
+    // Remove newlines and leading whitespace from the text.  For an
+    // unrecognized line keep the indent, the compiler may mark a word
+    // with ^^^^.
+    gap = qfga_get();
+    qf_fmt_text(gap, (fname != NULL || qfp->qf_lnum != 0)
+	    ? skipwhite(qfp->qf_text) : qfp->qf_text);
+    msg_prt_line((char_u *)gap->ga_data, FALSE);
     out_flush();		// show one line at a time
 }
 
@@ -4593,24 +4609,24 @@ qf_buf_add_line(
 	char_u		*qftf_str)
 {
     buf_T	*errbuf;
-    garray_T	ga;
+    garray_T	*gap;
 
-    ga_init2(&ga, 1, 256);
+    gap = qfga_get();
 
     // If the 'quickfixtextfunc' function returned a non-empty custom string
     // for this entry, then use it.
     if (qftf_str != NULL && *qftf_str != NUL)
-	ga_concat(&ga, qftf_str);
+	ga_concat(gap, qftf_str);
     else
     {
 	if (qfp->qf_module != NULL)
-	    ga_concat(&ga, qfp->qf_module);
+	    ga_concat(gap, qfp->qf_module);
 	else if (qfp->qf_fnum != 0
 		&& (errbuf = buflist_findnr(qfp->qf_fnum)) != NULL
 		&& errbuf->b_fname != NULL)
 	{
 	    if (qfp->qf_type == 1)	// :helpgrep
-		ga_concat(&ga, gettail(errbuf->b_fname));
+		ga_concat(gap, gettail(errbuf->b_fname));
 	    else
 	    {
 		// Shorten the file name if not done already.
@@ -4623,34 +4639,32 @@ qf_buf_add_line(
 			mch_dirname(dirname, MAXPATHL);
 		    shorten_buf_fname(errbuf, dirname, FALSE);
 		}
-		ga_concat(&ga, errbuf->b_fname);
+		ga_concat(gap, errbuf->b_fname);
 	    }
 	}
 
-	ga_append(&ga, '|');
+	ga_append(gap, '|');
 
 	if (qfp->qf_lnum > 0)
 	{
-	    qf_range_text(&ga, qfp);
-	    ga_concat(&ga, qf_types(qfp->qf_type, qfp->qf_nr));
+	    qf_range_text(gap, qfp);
+	    ga_concat(gap, qf_types(qfp->qf_type, qfp->qf_nr));
 	}
 	else if (qfp->qf_pattern != NULL)
-	    qf_fmt_text(&ga, qfp->qf_pattern);
-	ga_append(&ga, '|');
-	ga_append(&ga, ' ');
+	    qf_fmt_text(gap, qfp->qf_pattern);
+	ga_append(gap, '|');
+	ga_append(gap, ' ');
 
 	// Remove newlines and leading whitespace from the text.
 	// For an unrecognized line keep the indent, the compiler may
 	// mark a word with ^^^^.
-	qf_fmt_text(&ga, ga.ga_len > 3 ? skipwhite(qfp->qf_text) : qfp->qf_text);
+	qf_fmt_text(gap, gap->ga_len > 3 ? skipwhite(qfp->qf_text) : qfp->qf_text);
     }
 
-    ga_append(&ga, NUL);
+    ga_append(gap, NUL);
 
-    if (ml_append_buf(buf, lnum, ga.ga_data, ga.ga_len + 1, FALSE) == FAIL)
+    if (ml_append_buf(buf, lnum, gap->ga_data, gap->ga_len + 1, FALSE) == FAIL)
 	return FAIL;
-
-    ga_clear(&ga);
 
     return OK;
 }
@@ -8377,6 +8391,22 @@ ex_helpgrep(exarg_T *eap)
     }
 }
 #endif // FEAT_QUICKFIX
+       //
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_quickfix()
+{
+    win_T	*win;
+    tabpage_T	*tab;
+
+    qf_free_all(NULL);
+    // Free all location lists
+    FOR_ALL_TAB_WINDOWS(tab, win)
+	qf_free_all(win);
+
+    ga_clear(&qfga);
+}
+#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 # ifdef FEAT_QUICKFIX
