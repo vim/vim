@@ -1628,6 +1628,9 @@ else
   au BufNewFile,BufRead *.rmd,*.smd			setf rmd
 endif
 
+" R profile file
+au BufNewFile,BufRead .Rprofile,Rprofile,Rprofile.site	setf r
+
 " RSS looks like XML
 au BufNewFile,BufRead *.rss				setf xml
 
