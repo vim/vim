@@ -2049,10 +2049,10 @@ mch_inchar(
 
 		if (scroll_dir > 0
 			&& (
-				scroll_dir==KE_MOUSEDOWN ||
-				scroll_dir==KE_MOUSEUP ||
-				scroll_dir==KE_MOUSELEFT ||
-				scroll_dir==KE_MOUSERIGHT ) 
+				scroll_dir == KE_MOUSEDOWN ||
+				scroll_dir == KE_MOUSEUP ||
+				scroll_dir == KE_MOUSELEFT ||
+				scroll_dir == KE_MOUSERIGHT)
 			)
 		{
 			if ( modifiers > 0 )
