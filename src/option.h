@@ -709,6 +709,7 @@ EXTERN char_u	*p_lm;		// 'langmenu'
 EXTERN long	p_linespace;	// 'linespace'
 #endif
 EXTERN int	p_lisp;		// 'lisp'
+EXTERN char_u	*p_lop;		// 'lispoptions'
 EXTERN char_u	*p_lispwords;	// 'lispwords'
 EXTERN long	p_ls;		// 'laststatus'
 EXTERN long	p_stal;		// 'showtabline'
@@ -1155,6 +1156,7 @@ enum
 #endif
     , BV_KP
     , BV_LISP
+    , BV_LOP
     , BV_LW
     , BV_MENC
     , BV_MA

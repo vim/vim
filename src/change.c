@@ -2269,20 +2269,23 @@ open_line(
     else
 	vreplace_mode = 0;
 
-    if (!p_paste
-	    && leader == NULL
-	    && curbuf->b_p_lisp
-	    && curbuf->b_p_ai)
+    if (!p_paste)
     {
-	// do lisp indenting
-	fixthisline(get_lisp_indent);
-	ai_col = (colnr_T)getwhitecols_curline();
-    }
-    else if (do_cindent)
-    {
-	// do 'cindent' or 'indentexpr' indenting
-	do_c_expr_indent();
-	ai_col = (colnr_T)getwhitecols_curline();
+	if (leader == NULL
+		&& !use_indentexpr_for_lisp()
+		&& curbuf->b_p_lisp
+		&& curbuf->b_p_ai)
+	{
+	    // do lisp indenting
+	    fixthisline(get_lisp_indent);
+	    ai_col = (colnr_T)getwhitecols_curline();
+	}
+	else if (do_cindent || (curbuf->b_p_ai && use_indentexpr_for_lisp()))
+	{
+	    // do 'cindent' or 'indentexpr' indenting
+	    do_c_expr_indent();
+	    ai_col = (colnr_T)getwhitecols_curline();
+	}
     }
 
     if (vreplace_mode != 0)

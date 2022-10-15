@@ -259,6 +259,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_p_cino);
     check_string_option(&buf->b_p_cinsd);
     parse_cino(buf);
+    check_string_option(&buf->b_p_lop);
     check_string_option(&buf->b_p_ft);
     check_string_option(&buf->b_p_cinw);
     check_string_option(&buf->b_p_cpt);
@@ -2100,6 +2101,14 @@ did_set_string_option(
     {
 	// TODO: recognize errors
 	parse_cino(curbuf);
+    }
+
+    // 'lispoptions'
+    else if (gvarp == &p_lop)
+    {
+	if (**varp != NUL && STRCMP(*varp, "expr:0") != 0
+					       && STRCMP(*varp, "expr:1") != 0)
+	    errmsg = e_invalid_argument;
     }
 
 #if defined(FEAT_RENDER_OPTIONS)
