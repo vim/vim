@@ -766,9 +766,11 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
 {
     if (wlv->row == 0 && wp->w_skipcol > 0
 #if defined(FEAT_LINEBREAK)
+	    // do not overwrite the 'showbreak' text with "<<<"
 	    && *get_showbreak_value(wp) == NUL
 #endif
-	    )
+	    // do not overwrite the 'listchars' "precedes" text with "<<<"
+	    && !(wp->w_p_list && wp->w_lcs_chars.prec != 0))
     {
 	int off = (int)(current_ScreenLine - ScreenLines);
 	int skip = 0;
