@@ -2055,7 +2055,7 @@ mch_inchar(
 				scroll_dir == KE_MOUSERIGHT)
 			)
 		{
-			if ( modifiers > 0 )
+			if (modifiers > 0)
 			{
 				typeahead[typeaheadlen++] = CSI;
 				typeahead[typeaheadlen++] = KS_MODIFIER;
