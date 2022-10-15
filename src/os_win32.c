@@ -1253,8 +1253,8 @@ mch_bevalterm_changed(void)
 	   the wheel was rotated forward, away from the user. 
 	.  Otherwise, the wheel was rotated backward, toward the user.
 */ 
-     static void
-decode_mouse_wheel( MOUSE_EVENT_RECORD *pmer )
+    static void
+decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 {
 	win_T *wp;
 
