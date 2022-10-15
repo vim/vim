@@ -36,7 +36,7 @@ macos_task:
   timeout_in: 20m
   install_script:
     - brew update
-    - brew install gettext libtool
+    - brew install gettext lua ruby perl libtool
   build_script:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
     - ./configure --with-features=${FEATURES}
