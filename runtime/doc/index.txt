@@ -1150,7 +1150,7 @@ tag		command		action ~
 |:!!|		:!!		repeat last ":!" command
 |:#|		:#		same as ":number"
 |:&|		:&		repeat last ":substitute"
-|:star|		:*		execute contents of a register
+|:star|		:*		use the last selected area in Visual mode
 |:<|		:<		shift lines one 'shiftwidth' left
 |:=|		:=		print the last line number
 |:>|		:>		shift lines one 'shiftwidth' right
@@ -1277,6 +1277,7 @@ tag		command		action ~
 |:debuggreedy|	:debugg[reedy]	read debug mode commands from normal input
 |:def|		:def		define a Vim9 user function
 |:defcompile|	:defc[ompile]	compile Vim9 user functions in current script
+|:defer|	:defer		call function when current function is done
 |:delcommand|	:delc[ommand]	delete user-defined command
 |:delfunction|	:delf[unction]	delete a user function
 |:delmarks|	:delm[arks]	delete marks
@@ -1308,6 +1309,7 @@ tag		command		action ~
 |:echohl|	:echoh[l]	set highlighting for echo commands
 |:echomsg|	:echom[sg]	same as :echo, put message in history
 |:echon|	:echon		same as :echo, but without <EOL>
+|:echowindow|	:echow[indow]	same as :echomsg, but use a popup window
 |:else|		:el[se]		part of an :if command
 |:elseif|	:elsei[f]	part of an :if command
 |:emenu|	:em[enu]	execute a menu by name
@@ -1356,6 +1358,7 @@ tag		command		action ~
 |:highlight|	:hi[ghlight]	specify highlighting methods
 |:hide|		:hid[e]		hide current buffer for a command
 |:history|	:his[tory]	print a history list
+|:horizontal|	:hor[izontal]	make windcmd = only apply horizontally
 |:insert|	:i[nsert]	insert text
 |:iabbrev|	:ia[bbrev]	like ":abbrev" but for Insert mode
 |:iabclear|	:iabc[lear]	like ":abclear" but for Insert mode

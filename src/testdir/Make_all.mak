@@ -91,6 +91,7 @@ NEW_TESTS = \
 	test_cjk_linebreak \
 	test_clientserver \
 	test_close_count \
+	test_cmd_lists \
 	test_cmdline \
 	test_cmdmods \
 	test_cmdwin \
@@ -351,6 +352,7 @@ NEW_TESTS_RES = \
 	test_cjk_linebreak.res \
 	test_clientserver.res \
 	test_close_count.res \
+	test_cmd_lists.res \
 	test_cmdline.res \
 	test_cmdmods.res \
 	test_cmdwin.res \
