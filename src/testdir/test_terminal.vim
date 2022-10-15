@@ -2322,23 +2322,53 @@ func Test_term_wait_in_close_cb()
 endfunc
 
 func Test_term_TextChangedT()
-  let g:called = v:false
   augroup TermTest
-    autocmd TextChangedT * ++once let g:called = v:true
+    autocmd TextChangedT * ++once
+          \ execute expand('<abuf>') . 'buffer' |
+          \ let b:called = 1 |
+          \ split |
+          \ enew
   augroup END
 
   terminal
 
-  call term_sendkeys(bufnr(), "aaabbc\r")
-  call TermWait(bufnr())
+  let term_buf = bufnr()
 
-  call assert_equal(v:true, g:called)
+  let b:called = 0
+
+  call term_sendkeys(term_buf, "aaabbc\r")
+  call TermWait(term_buf)
+
+  call assert_equal(1, getbufvar(term_buf, 'called'))
+
+  " Current buffer will be restored
+  call assert_equal(bufnr(), term_buf)
 
   bwipe!
   augroup TermTest
     au!
   augroup END
-  unlet! g:called
+endfunc
+
+func Test_term_TextChangedT_close()
+  augroup TermTest
+    autocmd TextChangedT * ++once split | enew | 1close!
+  augroup END
+
+  terminal
+
+  let term_buf = bufnr()
+
+  call term_sendkeys(term_buf, "aaabbc\r")
+  call TermWait(term_buf)
+
+  " Current buffer will be restored
+  call assert_equal(bufnr(), term_buf)
+
+  bwipe!
+  augroup TermTest
+    au!
+  augroup END
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
