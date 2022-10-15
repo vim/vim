@@ -957,6 +957,11 @@ do_bang(
 	}
     } while (trailarg != NULL);
 
+    // Don't do anything if there is no command as there isn't really anything
+    // useful to do except run "sh -c ''".
+    if (STRLEN(newcmd) == 0)
+	return;
+
     vim_free(prevcmd);
     prevcmd = newcmd;
 
