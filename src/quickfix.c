@@ -236,10 +236,26 @@ qfga_get(void)
 	ga_init2(&qfga, 1, 256);
     }
 
-    // Retain ga_data from previous use.  Reset the length to zero.
+    // Reset the length to zero.  Retain ga_data from previous use to avoid
+    // many alloc/free calls.
     qfga.ga_len = 0;
 
     return &qfga;
+}
+
+/*
+ * The "qfga" grow array buffer is reused across multiple quickfix commands as
+ * a temporary buffer to reduce the number of alloc/free calls.  But if the
+ * buffer size is large, then to avoid holding on to that memory, clear the
+ * grow array.  Otherwise just reset the grow array length.
+ */
+    static void
+qfga_clear(void)
+{
+    if (qfga.ga_maxlen > 2048)
+	ga_clear(&qfga);
+
+    qfga.ga_len = 0;
 }
 
 /*
@@ -3335,6 +3351,8 @@ qf_jump_print_msg(
 	msg_scroll = FALSE;
     msg_attr_keep((char *)gap->ga_data, 0, TRUE);
     msg_scroll = i;
+
+    qfga_clear();
 }
 
 /*
@@ -3744,6 +3762,7 @@ qf_list(exarg_T *eap)
 
 	ui_breakcheck();
     }
+    qfga_clear();
 }
 
 /*
@@ -4820,6 +4839,8 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	if (old_last == NULL)
 	    // Delete the empty line which is now at the end
 	    (void)ml_delete(lnum + 1);
+
+	qfga_clear();
     }
 
     // correct cursor position
