@@ -108,4 +108,5 @@ src/cscope.out
 /.ccls-cache/
 /compile_commands.json
 
+/vim90/
 /src/.vscode/
