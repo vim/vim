@@ -1222,6 +1222,8 @@ update_cursor(term_T *term, int redraw)
 	setcursor();
     if (redraw)
     {
+	aco_save_T	aco;
+
 	if (term->tl_buffer == curbuf && term->tl_cursor_visible)
 	    cursor_on();
 	out_flush();
@@ -1232,6 +1234,16 @@ update_cursor(term_T *term, int redraw)
 	    gui_mch_flush();
 	}
 #endif
+        // Make sure an invoked autocmd doesn't delete the buffer (and the
+        // terminal) under our fingers.
+	++term->tl_buffer->b_locked;
+
+	// save and restore curwin and curbuf, in case the autocmd changes them
+	aucmd_prepbuf(&aco, curbuf);
+	apply_autocmds(EVENT_TEXTCHANGEDT, NULL, NULL, FALSE, term->tl_buffer);
+	aucmd_restbuf(&aco);
+
+	--term->tl_buffer->b_locked;
     }
 }
 
