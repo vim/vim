@@ -405,7 +405,7 @@ func Test_terminal_scrape_123()
 endfunc
 
 func Test_terminal_scrape_multibyte()
-  call writefile(["léttまrs"], 'Xtext')
+  call writefile(["léttまrs"], 'Xtext', 'D')
   if has('win32')
     " Run cmd with UTF-8 codepage to make the type command print the expected
     " multibyte characters.
@@ -436,7 +436,6 @@ func Test_terminal_scrape_multibyte()
   call TermWait(buf)
 
   exe buf . 'bwipe'
-  call delete('Xtext')
 endfunc
 
 func Test_terminal_one_column()
@@ -455,7 +454,7 @@ func Test_terminal_one_column()
 endfunc
 
 func Test_terminal_scroll()
-  call writefile(range(1, 200), 'Xtext')
+  call writefile(range(1, 200), 'Xtext', 'D')
   if has('win32')
     let cmd = 'cmd /c "type Xtext"'
   else
@@ -484,13 +483,12 @@ func Test_terminal_scroll()
   call assert_equal('200', term_getline(buf, 200 - scrolled))
 
   exe buf . 'bwipe'
-  call delete('Xtext')
 endfunc
 
 func Test_terminal_scrollback()
   let buf = Run_shell_in_terminal({'term_rows': 15})
   set termwinscroll=100
-  call writefile(range(150), 'Xtext')
+  call writefile(range(150), 'Xtext', 'D')
   if has('win32')
     call term_sendkeys(buf, "type Xtext\<CR>")
   else
@@ -505,14 +503,13 @@ func Test_terminal_scrollback()
   call StopShellInTerminal(buf)
   exe buf . 'bwipe'
   set termwinscroll&
-  call delete('Xtext')
 endfunc
 
 func Test_terminal_postponed_scrollback()
   " tail -f only works on Unix
   CheckUnix
 
-  call writefile(range(50), 'Xtext')
+  call writefile(range(50), 'Xtext', 'D')
   call writefile([
 	\ 'set shell=/bin/sh noruler',
 	\ 'terminal',
@@ -520,7 +517,7 @@ func Test_terminal_postponed_scrollback()
 	\ 'call feedkeys("tail -n 100 -f Xtext\<CR>", "xt")',
 	\ 'sleep 100m',
 	\ 'call feedkeys("\<C-W>N", "xt")',
-	\ ], 'XTest_postponed')
+	\ ], 'XTest_postponed', 'D')
   let buf = RunVimInTerminal('-S XTest_postponed', {})
   " Check that the Xtext lines are displayed and in Terminal-Normal mode
   call VerifyScreenDump(buf, 'Test_terminal_scrollback_1', {})
@@ -547,8 +544,6 @@ func Test_terminal_postponed_scrollback()
   echo type(tsk_ret)
 
   call StopVimInTerminal(buf)
-  call delete('XTest_postponed')
-  call delete('Xtext')
 endfunc
 
 " Run diff on two dumps with different size.
@@ -783,10 +778,9 @@ endfunc
 func Test_terminal_cwd_failure()
   " Case 1: Provided directory is not actually a directory.  Attempt to make
   " the file executable as well.
-  call writefile([], 'Xtcfile')
+  call writefile([], 'Xtcfile', 'D')
   call setfperm('Xtcfile', 'rwx------')
   call assert_fails("call term_start(&shell, {'cwd': 'Xtcfile'})", 'E475:')
-  call delete('Xtcfile')
 
   " Case 2: Directory does not exist.
   call assert_fails("call term_start(&shell, {'cwd': 'Xdir'})", 'E475:')
@@ -989,14 +983,13 @@ func Test_terminal_special_chars()
   " this file name only works on Unix
   CheckUnix
 
-  call mkdir('Xdir with spaces')
+  call mkdir('Xdir with spaces', 'R')
   call writefile(['x'], 'Xdir with spaces/quoted"file')
   term ls Xdir\ with\ spaces/quoted\"file
   call WaitForAssert({-> assert_match('quoted"file', term_getline('', 1))})
   " make sure the job has finished
   call WaitForAssert({-> assert_match('finish', term_getstatus(bufnr()))})
 
-  call delete('Xdir with spaces', 'rf')
   bwipe
 endfunc
 
@@ -1040,14 +1033,13 @@ func Test_terminal_redir_file()
   bwipe
 
   if has('unix')
-    call writefile(['one line'], 'Xtrfile')
+    call writefile(['one line'], 'Xtrfile', 'D')
     let buf = term_start('cat', {'in_io': 'file', 'in_name': 'Xtrfile'})
     call TermWait(buf)
     call WaitForAssert({-> assert_equal('one line', term_getline(buf, 1))})
     let g:job = term_getjob(buf)
     call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
     bwipe
-    call delete('Xtrfile')
   endif
 endfunc
 
@@ -1279,7 +1271,7 @@ func Test_aa_terminal_focus_events()
       au FocusLost * call setline(1, 'I am lost') | set nomod
       au FocusGained * call setline(1, 'I am back') | set nomod
   END
-  call writefile(lines, 'XtermFocus')
+  call writefile(lines, 'XtermFocus', 'D')
   let buf = RunVimInTerminal('-S XtermFocus', #{rows: 6})
 
   " Send a focus event to ourselves, it should be forwarded to the terminal
@@ -1297,7 +1289,6 @@ func Test_aa_terminal_focus_events()
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('XtermFocus')
   let &term = save_term
   let &ttymouse = save_ttymouse
 endfunc
@@ -1399,7 +1390,7 @@ func Test_terminal_exit()
      close
      call win_gotoid(termid)
   END
-  call writefile(lines, 'XtermExit')
+  call writefile(lines, 'XtermExit', 'D')
   let buf = RunVimInTerminal('-S XtermExit', #{rows: 10})
   let job = term_getjob(buf)
   call WaitForAssert({-> assert_equal("run", job_status(job))})
@@ -1407,8 +1398,6 @@ func Test_terminal_exit()
   " quit the shell, it will make Vim exit
   call term_sendkeys(buf, "exit\<CR>")
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
-
-  call delete('XtermExit')
 endfunc
 
 func Test_terminal_open_autocmd()
@@ -1455,7 +1444,7 @@ func Test_open_term_from_cmd()
       set incsearch
       cnoremap <F3> <Cmd>call term_start(['/bin/sh', '-c', ':'])<CR>
   END
-  call writefile(lines, 'Xopenterm')
+  call writefile(lines, 'Xopenterm', 'D')
   let buf = RunVimInTerminal('-S Xopenterm', {})
 
   " this opens a window, incsearch should not use the old cursor position
@@ -1465,18 +1454,17 @@ func Test_open_term_from_cmd()
   call term_sendkeys(buf, ":q\<CR>")
 
   call StopVimInTerminal(buf)
-  call delete('Xopenterm')
 endfunc
 
 func Test_combining_double_width()
   CheckUnix
   CheckRunVimInTerminal
 
-  call writefile(["\xe3\x83\x9b\xe3\x82\x9a"], 'Xonedouble')
+  call writefile(["\xe3\x83\x9b\xe3\x82\x9a"], 'Xonedouble', 'D')
   let lines =<< trim END
       call term_start(['/bin/sh', '-c', 'cat Xonedouble'])
   END
-  call writefile(lines, 'Xcombining')
+  call writefile(lines, 'Xcombining', 'D')
   let buf = RunVimInTerminal('-S Xcombining', #{rows: 9})
 
   " this opens a window, incsearch should not use the old cursor position
@@ -1484,8 +1472,6 @@ func Test_combining_double_width()
   call term_sendkeys(buf, ":q\<CR>")
 
   call StopVimInTerminal(buf)
-  call delete('Xonedouble')
-  call delete('Xcombining')
 endfunc
 
 func Test_terminal_popup_with_cmd()
@@ -1531,7 +1517,7 @@ func Test_terminal_popup_two_windows()
 
       call term_sendkeys(termbuf, "echo 'test'")
   END
-  call writefile(lines, 'XpopupScript')
+  call writefile(lines, 'XpopupScript', 'D')
   let buf = RunVimInTerminal('-S XpopupScript', {})
 
   " typed text appears both in normal window and in popup
@@ -1542,7 +1528,6 @@ func Test_terminal_popup_two_windows()
   call TermWait(buf)
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
-  call delete('XpopupScript')
 endfunc
 
 func Test_terminal_popup_insert_cmd()
@@ -1576,7 +1561,7 @@ func Test_terminal_dumpwrite_composing()
   call assert_equal(1, winnr('$'))
 
   let text = " a\u0300 e\u0302 o\u0308"
-  call writefile([text], 'Xcomposing')
+  call writefile([text], 'Xcomposing', 'D')
   let buf = RunVimInTerminal('--cmd "set encoding=utf-8" Xcomposing', {})
   call WaitForAssert({-> assert_match(text, term_getline(buf, 1))})
   eval 'Xdump'->term_dumpwrite(buf)
@@ -1584,7 +1569,6 @@ func Test_terminal_dumpwrite_composing()
   call assert_match('|à| |ê| |ö', dumpline)
 
   call StopVimInTerminal(buf)
-  call delete('Xcomposing')
   call delete('Xdump')
   let &encoding = save_enc
 endfunc
@@ -1647,12 +1631,11 @@ func Test_terminal_dumpload_dump()
   let lines =<< trim END
      call term_dumpload('dumps/Test_popupwin_22.dump', #{term_rows: 12})
   END
-  call writefile(lines, 'XtermDumpload')
+  call writefile(lines, 'XtermDumpload', 'D')
   let buf = RunVimInTerminal('-S XtermDumpload', #{rows: 15})
   call VerifyScreenDump(buf, 'Test_terminal_dumpload', {})
 
   call StopVimInTerminal(buf)
-  call delete('XtermDumpload')
 endfunc
 
 func Test_terminal_dumpdiff()
@@ -1667,9 +1650,8 @@ func Test_terminal_dumpdiff()
 
   call assert_fails('call term_dumpdiff("X1.dump", [])', 'E730:')
   call assert_fails('call term_dumpdiff("X1.dump", "X2.dump")', 'E485:')
-  call writefile([], 'X1.dump')
+  call writefile([], 'X1.dump', 'D')
   call assert_fails('call term_dumpdiff("X1.dump", "X2.dump")', 'E485:')
-  call delete('X1.dump')
 endfunc
 
 func Test_terminal_dumpdiff_swap()
@@ -1766,7 +1748,7 @@ func Test_start_terminal_from_timer()
   CheckFeature timers
 
   " Open a terminal window from a timer, typed text goes to the terminal
-  call writefile(["call timer_start(100, { -> term_start('sh') })"], 'XtimerTerm')
+  call writefile(["call timer_start(100, { -> term_start('sh') })"], 'XtimerTerm', 'D')
   let buf = RunVimInTerminal('-S XtimerTerm', {})
   call CheckTerminalWindowWorks(buf)
 
@@ -1775,7 +1757,6 @@ func Test_start_terminal_from_timer()
   call CheckTerminalWindowWorks(buf)
 
   call StopVimInTerminal(buf)
-  call delete('XtimerTerm')
 endfunc
 
 func Test_terminal_window_focus()
@@ -1923,13 +1904,12 @@ func Test_terminal_api_drop_oldwin()
 	\ 'let &titlestring = ''["drop","Xtextfile"]''',
 	\ 'redraw',
 	\ "set t_ts=",
-	\ ], 'Xscript')
+	\ ], 'Xscript', 'D')
   let buf = RunVimInTerminal('-S Xscript', {'rows': 10})
   call WaitForAssert({-> assert_equal('Xtextfile', expand('%:t'))})
   call assert_equal(textfile_winid, win_getid())
 
   call StopVimInTerminal(buf)
-  call delete('Xscript')
   bwipe Xtextfile
 endfunc
 
@@ -2261,13 +2241,12 @@ func Test_terminal_all_ansi_colors()
 	\ 'call  matchadd("TgreenBold", "Y")',
 	\ 'call  matchadd("TmagentaBold", "Z")',
 	\ 'redraw',
-	\ ], 'Xcolorscript')
+	\ ], 'Xcolorscript', 'D')
   let buf = RunVimInTerminal('-S Xcolorscript', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_terminal_all_ansi_colors', {})
 
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
-  call delete('Xcolorscript')
 endfunc
 
 function On_BufFilePost()

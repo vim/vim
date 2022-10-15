@@ -606,13 +606,12 @@ func Test_tabpage_cmdheight()
         \ 'echo "hello\nthere"',
         \ 'tabnext',
         \ 'redraw',
-	\ ], 'XTest_tabpage_cmdheight')
+	\ ], 'XTest_tabpage_cmdheight', 'D')
   " Check that cursor line is concealed
   let buf = RunVimInTerminal('-S XTest_tabpage_cmdheight', {'statusoff': 3})
   call VerifyScreenDump(buf, 'Test_tabpage_cmdheight', {})
 
   call StopVimInTerminal(buf)
-  call delete('XTest_tabpage_cmdheight')
 endfunc
 
 " Test for closing the tab page from a command window

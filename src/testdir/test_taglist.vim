@@ -12,7 +12,7 @@ func Test_taglist()
 	\ "Kindly\tXbar\t3;\"\tv\tfile:",
 	\ "Lambda\tXbar\t3;\"\tλ\tfile:",
 	\ "Command\tXbar\tcall cursor(3, 4)|;\"\td",
-	\ ], 'Xtags')
+	\ ], 'Xtags', 'D')
   set tags=Xtags
   split Xtext
 
@@ -40,12 +40,11 @@ func Test_taglist()
   " Use characters with value > 127 in the tag extra field.
   call writefile([
 	\ "vFoo\tXfoo\t4" .. ';"' .. "\ttypename:int\ta£££\tv",
-	\ ], 'Xtags')
+	\ ], 'Xtags', 'D')
   call assert_equal('v', taglist('vFoo')[0].kind)
 
   call assert_fails("let l=taglist([])", 'E730:')
 
-  call delete('Xtags')
   set tags&
   bwipe
 endfunc
@@ -58,14 +57,13 @@ func Test_taglist_native_etags()
 	\ "src/os_unix.c,13491",
 	\ "set_signals(\x7f1335,32699",
 	\ "reset_signals(\x7f1407,34136",
-	\ ], 'Xtags')
+	\ ], 'Xtags', 'D')
 
   set tags=Xtags
 
   call assert_equal([['set_signals', '1335,32699'], ['reset_signals', '1407,34136']],
 	\ map(taglist('set_signals'), {i, v -> [v.name, v.cmd]}))
 
-  call delete('Xtags')
   set tags&
 endfunc
 
@@ -77,14 +75,13 @@ func Test_taglist_ctags_etags()
 	\ "src/os_unix.c,13491",
 	\ "set_signals(void)\x7fset_signals\x011335,32699",
 	\ "reset_signals(void)\x7freset_signals\x011407,34136",
-	\ ], 'Xtags')
+	\ ], 'Xtags', 'D')
 
   set tags=Xtags
 
   call assert_equal([['set_signals', '1335,32699'], ['reset_signals', '1407,34136']],
 	\ map(taglist('set_signals'), {i, v -> [v.name, v.cmd]}))
 
-  call delete('Xtags')
   set tags&
 endfunc
 
@@ -96,8 +93,8 @@ endfunc
 func Test_tagfiles()
   call assert_equal([], tagfiles())
 
-  call writefile(["FFoo\tXfoo\t1"], 'Xtags1')
-  call writefile(["FBar\tXbar\t1"], 'Xtags2')
+  call writefile(["FFoo\tXfoo\t1"], 'Xtags1', 'D')
+  call writefile(["FBar\tXbar\t1"], 'Xtags2', 'D')
   set tags=Xtags1,Xtags2
   call assert_equal(['Xtags1', 'Xtags2'], tagfiles())
 
@@ -111,22 +108,19 @@ func Test_tagfiles()
   set tags&
   call assert_equal([], tagfiles())
 
-  call delete('Xtags1')
-  call delete('Xtags2')
   bd
 endfunc
 
 " For historical reasons we support a tags file where the last line is missing
 " the newline.
 func Test_tagsfile_without_trailing_newline()
-  call writefile(["Foo\tfoo\t1"], 'Xtags', 'b')
+  call writefile(["Foo\tfoo\t1"], 'Xtags', 'bD')
   set tags=Xtags
 
   let tl = taglist('.*')
   call assert_equal(1, len(tl))
   call assert_equal('Foo', tl[0].name)
 
-  call delete('Xtags')
   set tags&
 endfunc
 
@@ -136,7 +130,7 @@ func Test_tagfile_ignore_comments()
 	\ "!_TAG_PROGRAM_NAME	/Test tags generator/",
 	\ "FBar\tXfoo\t2" .. ';"' .. "\textrafield\tf",
 	\ "!_TAG_FILE_FORMAT	2	/extended format/",
-	\ ], 'Xtags')
+	\ ], 'Xtags', 'D')
   set tags=Xtags
 
   let l = taglist('.*')
@@ -144,7 +138,6 @@ func Test_tagfile_ignore_comments()
   call assert_equal('FBar', l[0].name)
 
   set tags&
-  call delete('Xtags')
 endfunc
 
 " Test for using an excmd in a tags file to position the cursor (instead of a
@@ -152,7 +145,7 @@ endfunc
 func Test_tagfile_excmd()
   call writefile([
 	\ "vFoo\tXfoo\tcall cursor(3, 4)" .. '|;"' .. "\tv",
-	\ ], 'Xtags')
+	\ ], 'Xtags', 'D')
   set tags=Xtags
 
   let l = taglist('.*')
@@ -164,14 +157,13 @@ func Test_tagfile_excmd()
 	      \ 'filename' : 'Xfoo'}], l)
 
   set tags&
-  call delete('Xtags')
 endfunc
 
 " Test for duplicate fields in a tag in a tags file
 func Test_duplicate_field()
   call writefile([
 	\ "vFoo\tXfoo\t4" .. ';"' .. "\ttypename:int\ttypename:int\tv",
-	\ ], 'Xtags')
+	\ ], 'Xtags', 'D')
   set tags=Xtags
 
   let l = taglist('.*')
@@ -184,14 +176,13 @@ func Test_duplicate_field()
 	      \ 'filename' : 'Xfoo'}], l)
 
   set tags&
-  call delete('Xtags')
 endfunc
 
 " Test for tag address with ;
 func Test_tag_addr_with_semicolon()
   call writefile([
 	      \ "Func1\tXfoo\t6;/^Func1/" .. ';"' .. "\tf"
-	      \ ], 'Xtags')
+	      \ ], 'Xtags', 'D')
   set tags=Xtags
 
   let l = taglist('.*')
@@ -203,12 +194,11 @@ func Test_tag_addr_with_semicolon()
 	      \ 'filename' : 'Xfoo'}], l)
 
   set tags&
-  call delete('Xtags')
 endfunc
 
 " Test for format error in a tags file
 func Test_format_error()
-  call writefile(['vFoo-Xfoo-4'], 'Xtags')
+  call writefile(['vFoo-Xfoo-4'], 'Xtags', 'D')
   set tags=Xtags
 
   let caught_exception = v:false
@@ -228,12 +218,11 @@ func Test_format_error()
   call assert_fails("echo taglist('foo')", 'E431:')
 
   set tags&
-  call delete('Xtags')
 endfunc
 
 " Test for :tag command completion with 'wildoptions' set to 'tagfile'
 func Test_tag_complete_wildoptions()
-  call writefile(["foo\ta.c\t10;\"\tf", "bar\tb.c\t20;\"\td"], 'Xtags')
+  call writefile(["foo\ta.c\t10;\"\tf", "bar\tb.c\t20;\"\td"], 'Xtags', 'D')
   set tags=Xtags
   set wildoptions=tagfile
 
@@ -242,7 +231,6 @@ func Test_tag_complete_wildoptions()
 
   call assert_equal('"tag bar d b.c : foo f a.c', @:)
 
-  call delete('Xtags')
   set wildoptions&
   set tags&
 endfunc
@@ -256,7 +244,7 @@ func Test_tag_complete_with_overlong_line()
       inboundGovernor	a	2;"	kind:⊢	type:forall (muxMode :: MuxMode) socket peerAddr versionNumber m a b. (MonadAsync m, MonadCatch m, MonadEvaluate m, MonadThrow m, MonadThrow (STM m), MonadTime m, MonadTimer m, MonadMask m, Ord peerAddr, HasResponder muxMode ~ True) => Tracer m (RemoteTransitionTrace peerAddr) -> Tracer m (InboundGovernorTrace peerAddr) -> ServerControlChannel muxMode peerAddr ByteString m a b -> DiffTime -> MuxConnectionManager muxMode socket peerAddr versionNumber ByteString m a b -> StrictTVar m InboundGovernorObservableState -> m Void
       inboundGovernorCounters	a	3;"	kind:⊢	type:InboundGovernorState muxMode peerAddr m a b -> InboundGovernorCounters
   END
-  call writefile(tagslines, 'Xtags')
+  call writefile(tagslines, 'Xtags', 'D')
   set tags=Xtags
 
   " try with binary search
@@ -269,7 +257,6 @@ func Test_tag_complete_with_overlong_line()
   call assert_equal('"tag inboundGSV inboundGovernor inboundGovernorCounters', @:)
   set tagbsearch&
 
-  call delete('Xtags')
   set tags&
 endfunc
 
