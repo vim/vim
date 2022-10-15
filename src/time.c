@@ -1123,7 +1123,7 @@ add_time(char_u *buf, size_t buflen, time_t tt)
 #ifdef HAVE_STRFTIME
     struct tm	tmval;
     struct tm	*curtime;
-    int		n;
+    size_t	n;
 
     if (vim_time() - tt >= 100)
     {
