@@ -1403,7 +1403,7 @@ decode_mouse_event(
     if (g_nMouseClick != -1)
 	return TRUE;
    
-    if (pmer->dwEventFlags == MOUSE_WHEELED || pmer->dwEventFlags == MOUSE_HWHEELED )
+    if (pmer->dwEventFlags == MOUSE_WHEELED || pmer->dwEventFlags == MOUSE_HWHEELED)
     {
  		decode_mouse_wheel(pmer);
 		return TRUE;  // we now should have a mouse scroll in g_nMouseClick
