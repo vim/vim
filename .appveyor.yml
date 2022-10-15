@@ -1,5 +1,6 @@
 version: "{build}"
 
+clone_depth: 3
 skip_tags: true
 
 environment:
