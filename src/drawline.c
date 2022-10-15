@@ -370,7 +370,8 @@ handle_lnum_col(
 #ifdef FEAT_PROP_POPUP
 		  + wlv->text_prop_above_count
 #endif
-		    && (wp->w_skipcol == 0 || wlv->row > wp->w_winrow))
+		    && (wp->w_skipcol == 0 || wlv->row > wp->w_winrow
+					       || (wp->w_p_nu && wp->w_p_rnu)))
 	  {
 	      long num;
 	      char *fmt = "%*ld ";
@@ -770,8 +771,18 @@ wlv_screen_line(win_T *wp, winlinevars_T *wlv, int negative_width)
 	    )
     {
 	int off = (int)(current_ScreenLine - ScreenLines);
+	int skip = 0;
 
-	for (int i = 0; i < 3; ++i)
+	if (wp->w_p_nu && wp->w_p_rnu)
+	    // Do not overwrite the line number, change "123 text" to
+	    // "123>>>xt".
+	    while (skip < wp->w_width && VIM_ISDIGIT(ScreenLines[off]))
+	    {
+		++off;
+		++skip;
+	    }
+
+	for (int i = 0; i < 3 && i + skip < wp->w_width; ++i)
 	{
 	    ScreenLines[off] = '<';
 	    if (enc_utf8)
