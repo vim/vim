@@ -921,9 +921,8 @@ def Test_vim9_single_char_vars()
       assert_equal(333, v)
       assert_equal(444, w)
   END
-  writefile(lines, 'Xsinglechar')
+  writefile(lines, 'Xsinglechar', 'D')
   source Xsinglechar
-  delete('Xsinglechar')
 enddef
 
 def Test_assignment_list()
@@ -1940,13 +1939,12 @@ def Test_var_func_call()
     # env var is always a string
     var env = $TERM
   END
-  writefile(lines, 'Xfinished')
+  writefile(lines, 'Xfinished', 'D')
   source Xfinished
   # GetValue() is not called during discovery phase
   assert_equal(1, g:count)
 
   unlet g:count
-  delete('Xfinished')
 enddef
 
 def Test_var_missing_type()
@@ -2532,7 +2530,7 @@ def Test_unlet()
    'DelChangedtick(b:)',
    ], 'E795:')
 
-  writefile(['vim9script', 'export var svar = 1234'], 'XunletExport.vim')
+  writefile(['vim9script', 'export var svar = 1234'], 'XunletExport.vim', 'D')
   var lines =<< trim END
     vim9script
     import './XunletExport.vim' as exp
@@ -2542,7 +2540,6 @@ def Test_unlet()
     defcompile
   END
   v9.CheckScriptFailure(lines, 'E1260:', 1)
-  delete('XunletExport.vim')
 
   $ENVVAR = 'foobar'
   assert_equal('foobar', $ENVVAR)
@@ -2701,11 +2698,9 @@ def Test_abort_after_error()
       var x: string
       x = strpart(1, 2)
   END
-  writefile(lines, 'Xtestscript')
+  writefile(lines, 'Xtestscript', 'D')
   var expected = 'E1174: String required for argument 1'
   assert_fails('so Xtestscript', [expected, expected], 3)
-
-  delete('Xtestscript')
 enddef
 
 def Test_using_s_var_in_function()

@@ -313,7 +313,7 @@ def s:ScriptFuncPush()
 enddef
 
 def Test_disassemble_push()
-  mkdir('Xdisdir/autoload', 'p')
+  mkdir('Xdisdir/autoload', 'pR')
   var save_rtp = &rtp
   exe 'set rtp^=' .. getcwd() .. '/Xdisdir'
 
@@ -340,12 +340,11 @@ def Test_disassemble_push()
   END
   v9.CheckScriptSuccess(lines)
 
-  delete('Xdisdir', 'rf')
   &rtp = save_rtp
 enddef
 
 def Test_disassemble_import_autoload()
-  writefile(['vim9script'], 'XimportAL.vim')
+  writefile(['vim9script'], 'XimportAL.vim', 'D')
 
   var lines =<< trim END
       vim9script
@@ -380,8 +379,6 @@ def Test_disassemble_import_autoload()
             res)
   END
   v9.CheckScriptSuccess(lines)
-
-  delete('XimportAL.vim')
 enddef
 
 def s:ScriptFuncStore()
@@ -2440,7 +2437,7 @@ def Test_vim9script_forward_func()
     enddef
     g:res_FuncOne = execute('disass FuncOne')
   END
-  writefile(lines, 'Xdisassemble')
+  writefile(lines, 'Xdisassemble', 'D')
   source Xdisassemble
 
   # check that the first function calls the second with DCALL
@@ -2450,7 +2447,6 @@ def Test_vim9script_forward_func()
         '\d RETURN',
         g:res_FuncOne)
 
-  delete('Xdisassemble')
   unlet g:res_FuncOne
 enddef
 
@@ -2901,51 +2897,50 @@ def Test_disassemble_nextcmd()
 enddef
 
 def Test_disassemble_after_reload()
-    var lines =<< trim END
-        vim9script
-        if exists('g:ThisFunc')
-          finish
-        endif
-        var name: any
-        def g:ThisFunc(): number
-          g:name = name
-          return 0
-        enddef
-        def g:ThatFunc(): number
-          name = g:name
-          return 0
-        enddef
-    END
-    lines->writefile('Xreload.vim')
+  var lines =<< trim END
+      vim9script
+      if exists('g:ThisFunc')
+        finish
+      endif
+      var name: any
+      def g:ThisFunc(): number
+        g:name = name
+        return 0
+      enddef
+      def g:ThatFunc(): number
+        name = g:name
+        return 0
+      enddef
+  END
+  lines->writefile('Xreload.vim', 'D')
 
-    source Xreload.vim
-    g:ThisFunc()
-    g:ThatFunc()
+  source Xreload.vim
+  g:ThisFunc()
+  g:ThatFunc()
 
-    source Xreload.vim
-    var res = execute('disass g:ThisFunc')
-    assert_match('ThisFunc\_s*' ..
-          'g:name = name\_s*' ..
-          '\d LOADSCRIPT \[deleted\] from .*/Xreload.vim\_s*' ..
-          '\d STOREG g:name\_s*' ..
-          'return 0\_s*' ..
-          '\d PUSHNR 0\_s*' ..
-          '\d RETURN\_s*',
-          res)
+  source Xreload.vim
+  var res = execute('disass g:ThisFunc')
+  assert_match('ThisFunc\_s*' ..
+        'g:name = name\_s*' ..
+        '\d LOADSCRIPT \[deleted\] from .*/Xreload.vim\_s*' ..
+        '\d STOREG g:name\_s*' ..
+        'return 0\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN\_s*',
+        res)
 
-    res = execute('disass g:ThatFunc')
-    assert_match('ThatFunc\_s*' ..
-          'name = g:name\_s*' ..
-          '\d LOADG g:name\_s*' ..
-          '\d STORESCRIPT \[deleted\] in .*/Xreload.vim\_s*' ..
-          'return 0\_s*' ..
-          '\d PUSHNR 0\_s*' ..
-          '\d RETURN\_s*',
-          res)
+  res = execute('disass g:ThatFunc')
+  assert_match('ThatFunc\_s*' ..
+        'name = g:name\_s*' ..
+        '\d LOADG g:name\_s*' ..
+        '\d STORESCRIPT \[deleted\] in .*/Xreload.vim\_s*' ..
+        'return 0\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN\_s*',
+        res)
 
-    delete('Xreload.vim')
-    delfunc g:ThisFunc
-    delfunc g:ThatFunc
+  delfunc g:ThisFunc
+  delfunc g:ThatFunc
 enddef
 
 def s:MakeString(x: number): string

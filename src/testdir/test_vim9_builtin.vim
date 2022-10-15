@@ -12,7 +12,7 @@ func Test_internalfunc_arg_error()
     enddef
     defcompile
   END
-  call writefile(l, 'Xinvalidarg')
+  call writefile(l, 'Xinvalidarg', 'D')
   call assert_fails('so Xinvalidarg', 'E118:', '', 1, 'FArgErr')
   let l =<< trim END
     def! FArgErr(): float
@@ -22,7 +22,6 @@ func Test_internalfunc_arg_error()
   END
   call writefile(l, 'Xinvalidarg')
   call assert_fails('so Xinvalidarg', 'E119:', '', 1, 'FArgErr')
-  call delete('Xinvalidarg')
 endfunc
 
 " Test for builtin functions returning different types
@@ -52,7 +51,7 @@ func Test_InternalFuncRetType()
       return environ()
     enddef
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   source Xscript
 
   call RetFloat()->assert_equal(2.0)
@@ -61,7 +60,6 @@ func Test_InternalFuncRetType()
   call RetListDictAny()->assert_notequal([])
   call RetDictNumber()->assert_notequal({})
   call RetDictString()->assert_notequal({})
-  call delete('Xscript')
 endfunc
 
 def Test_abs()
@@ -1984,7 +1982,7 @@ def Test_getscriptinfo()
     def g:Xscript_def_func2()
     enddef
   END
-  writefile(lines1, 'X22script92')
+  writefile(lines1, 'X22script92', 'D')
 
   var lines2 =<< trim END
     source X22script92
@@ -2006,7 +2004,6 @@ def Test_getscriptinfo()
     endfor
   END
   v9.CheckDefAndScriptSuccess(lines2)
-  delete('X22script92')
 enddef
 
 def Test_gettabinfo()
@@ -3238,7 +3235,7 @@ enddef
 
 def Test_readblob()
   var blob = 0z12341234
-  writefile(blob, 'Xreadblob')
+  writefile(blob, 'Xreadblob', 'D')
   var read: blob = readblob('Xreadblob')
   assert_equal(blob, read)
 
@@ -3247,12 +3244,11 @@ def Test_readblob()
   END
   v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected list<string> but got blob', 1)
   v9.CheckDefExecAndScriptFailure(['readblob("")'], 'E484: Can''t open file <empty>')
-  delete('Xreadblob')
 enddef
 
 def Test_readfile()
   var text = ['aaa', 'bbb', 'ccc']
-  writefile(text, 'Xreadfile')
+  writefile(text, 'Xreadfile', 'D')
   var read: list<string> = readfile('Xreadfile')
   assert_equal(text, read)
   assert_equal([7, 7, 7], readfile('Xreadfile')->map((_, _) => 7))
@@ -3261,7 +3257,6 @@ def Test_readfile()
       var read: dict<string> = readfile('Xreadfile')
   END
   v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<string> but got list<string>', 1)
-  delete('Xreadfile')
 
   v9.CheckDefAndScriptFailure(['readfile("a", 0z10)'], ['E1013: Argument 2: type mismatch, expected string but got blob', 'E1174: String required for argument 2'])
   v9.CheckDefAndScriptFailure(['readfile("a", "b", "c")'], ['E1013: Argument 3: type mismatch, expected number but got string', 'E1210: Number required for argument 3'])
@@ -4131,9 +4126,8 @@ def Test_sort_compare_func_fails()
     vim9script
     echo ['a', 'b', 'c']->sort((a: number, b: number) => 0)
   END
-  writefile(lines, 'Xbadsort')
+  writefile(lines, 'Xbadsort', 'D')
   assert_fails('source Xbadsort', ['E1013:', 'E702:'])
-  delete('Xbadsort')
 
   lines =<< trim END
       var l = [1, 2, 3]
@@ -4822,7 +4816,7 @@ func Test_win_gotoid_in_mapping()
 	  call feedkeys("\<F3>\<LeftMouse>\<LeftRelease>", "xt")
         endfunc
     END
-    call writefile(lines, 'Xgotoscript')
+    call writefile(lines, 'Xgotoscript', 'D')
     let buf = RunVimInTerminal('-S Xgotoscript', #{rows: 15, wait_for_ruler: 0})
     " wait longer here, since we didn't wait for the ruler
     call VerifyScreenDump(buf, 'Test_win_gotoid_1', #{wait: 3000})
@@ -4833,7 +4827,6 @@ func Test_win_gotoid_in_mapping()
     call VerifyScreenDump(buf, 'Test_win_gotoid_3', {})
 
     call StopVimInTerminal(buf)
-    call delete('Xgotoscript')
   endif
 endfunc
 
