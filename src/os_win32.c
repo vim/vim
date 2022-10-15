@@ -1281,7 +1281,7 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 		clear_oparg(&oa);
 		cap.oap = &oa;
 		
-		if ( horizontal ) 
+		if (horizontal)
 		{
 			cap.arg = zDelta < 0 ? MSCR_LEFT : MSCR_RIGHT;
 			cap.cmdchar = zDelta < 0 ? K_MOUSELEFT : K_MOUSERIGHT;
