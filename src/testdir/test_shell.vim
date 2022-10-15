@@ -252,6 +252,8 @@ func Test_set_shell()
 endfunc
 
 func Test_shell_repeat()
+  CheckUnix
+
   let save_shell = &shell
 
   call writefile(['#!/bin/sh', 'echo "Cmd: [$*]" > Xlog'], 'Xtestshell', 'D')
