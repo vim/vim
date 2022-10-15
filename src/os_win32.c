@@ -1325,7 +1325,7 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 		modifiers |= MOD_MASK_ALT; // MOUSE_ALT;
 
 	// add (bitwise or) the scroll direction and the key modifier chars together.
-	g_nMouseClick = ( (direction << 8) | modifiers );
+	g_nMouseClick = ((direction << 8) | modifiers);
 
 	return;
 }
