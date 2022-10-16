@@ -2041,13 +2041,10 @@ mch_inchar(
 		char_u modifiers = ((char_u *)(&g_nMouseClick))[0];
 		char_u scroll_dir = ((char_u *)(&g_nMouseClick))[1];
 
-		if (scroll_dir > 0
-			&& (
-				scroll_dir == KE_MOUSEDOWN ||
-				scroll_dir == KE_MOUSEUP ||
-				scroll_dir == KE_MOUSELEFT ||
-				scroll_dir == KE_MOUSERIGHT
-			)
+		if ( scroll_dir == KE_MOUSEDOWN ||
+		     scroll_dir == KE_MOUSEUP ||
+		     scroll_dir == KE_MOUSELEFT ||
+		     scroll_dir == KE_MOUSERIGHT
 		)
 		{
 			if (modifiers > 0)
