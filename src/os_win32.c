@@ -1264,11 +1264,11 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 
 #ifdef FEAT_PROP_POPUP
 
-	int l_col;
-	int l_row;
-	l_col = g_xMouse;
-	l_row = g_yMouse;
-	wp = mouse_find_win(&l_row, &l_col, FAIL_POPUP);
+	int lcol;
+	int lrow;
+	lcol = g_xMouse;
+	lrow = g_yMouse;
+	wp = mouse_find_win(&lrow, &lcol, FAIL_POPUP);
 	if (wp != NULL && popup_is_popup(wp))
 	{
 		g_nMouseClick = -1;
