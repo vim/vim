@@ -203,44 +203,44 @@ ch_log_active(void)
     static void
 ch_log_lead(const char *what, channel_T *ch, ch_part_T part)
 {
-    if (log_fd != NULL)
-    {
-#ifdef FEAT_RELTIME
-	proftime_T log_now;
+    if (log_fd == NULL)
+	return;
 
-	profile_start(&log_now);
-	profile_sub(&log_now, &log_start);
-	fprintf(log_fd, "%s ", profile_msg(&log_now));
+#ifdef FEAT_RELTIME
+    proftime_T log_now;
+
+    profile_start(&log_now);
+    profile_sub(&log_now, &log_start);
+    fprintf(log_fd, "%s ", profile_msg(&log_now));
 #endif
-	if (ch != NULL)
-	{
-	    if (part < PART_COUNT)
-		fprintf(log_fd, "%son %d(%s): ",
-					   what, ch->ch_id, part_names[part]);
-	    else
-		fprintf(log_fd, "%son %d: ", what, ch->ch_id);
-	}
+    if (ch != NULL)
+    {
+	if (part < PART_COUNT)
+	    fprintf(log_fd, "%son %d(%s): ",
+		    what, ch->ch_id, part_names[part]);
 	else
-	    fprintf(log_fd, "%s: ", what);
+	    fprintf(log_fd, "%son %d: ", what, ch->ch_id);
     }
+    else
+	fprintf(log_fd, "%s: ", what);
 }
 
 #ifndef PROTO  // prototype is in proto.h
     void
 ch_log(channel_T *ch, const char *fmt, ...)
 {
-    if (log_fd != NULL)
-    {
-	va_list ap;
+    va_list ap;
 
-	ch_log_lead("", ch, PART_COUNT);
-	va_start(ap, fmt);
-	vfprintf(log_fd, fmt, ap);
-	va_end(ap);
-	fputc('\n', log_fd);
-	fflush(log_fd);
-	did_repeated_msg = 0;
-    }
+    if (log_fd == NULL)
+	return;
+
+    ch_log_lead("", ch, PART_COUNT);
+    va_start(ap, fmt);
+    vfprintf(log_fd, fmt, ap);
+    va_end(ap);
+    fputc('\n', log_fd);
+    fflush(log_fd);
+    did_repeated_msg = 0;
 }
 #endif
 
@@ -250,18 +250,18 @@ ch_error(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
     static void
 ch_error(channel_T *ch, const char *fmt, ...)
 {
-    if (log_fd != NULL)
-    {
-	va_list ap;
+    va_list ap;
 
-	ch_log_lead("ERR ", ch, PART_COUNT);
-	va_start(ap, fmt);
-	vfprintf(log_fd, fmt, ap);
-	va_end(ap);
-	fputc('\n', log_fd);
-	fflush(log_fd);
-	did_repeated_msg = 0;
-    }
+    if (log_fd == NULL)
+	return;
+
+    ch_log_lead("ERR ", ch, PART_COUNT);
+    va_start(ap, fmt);
+    vfprintf(log_fd, fmt, ap);
+    va_end(ap);
+    fputc('\n', log_fd);
+    fflush(log_fd);
+    did_repeated_msg = 0;
 }
 
 #ifdef MSWIN
@@ -445,15 +445,15 @@ channel_free_channel(channel_T *channel)
     static void
 channel_free(channel_T *channel)
 {
-    if (!in_free_unref_items)
+    if (in_free_unref_items)
+	return;
+
+    if (safe_to_invoke_callback == 0)
+	channel->ch_to_be_freed = TRUE;
+    else
     {
-	if (safe_to_invoke_callback == 0)
-	    channel->ch_to_be_freed = TRUE;
-	else
-	{
-	    channel_free_contents(channel);
-	    channel_free_channel(channel);
-	}
+	channel_free_contents(channel);
+	channel_free_channel(channel);
     }
 }
 
@@ -540,16 +540,18 @@ channel_fd2channel(sock_T fd, ch_part_T *partp)
     channel_T	*channel;
     ch_part_T	part;
 
-    if (fd != INVALID_FD)
-	FOR_ALL_CHANNELS(channel)
-	{
-	    for (part = PART_SOCK; part < PART_IN; ++part)
-		if (channel->ch_part[part].ch_fd == fd)
-		{
-		    *partp = part;
-		    return channel;
-		}
-	}
+    if (fd == INVALID_FD)
+	return NULL;
+
+    FOR_ALL_CHANNELS(channel)
+    {
+	for (part = PART_SOCK; part < PART_IN; ++part)
+	    if (channel->ch_part[part].ch_fd == fd)
+	    {
+		*partp = part;
+		return channel;
+	    }
+    }
     return NULL;
 }
 
@@ -1214,21 +1216,22 @@ channel_find_buffer(char_u *name, int err, int msg)
 	if (buf == NULL)
 	    buf = buflist_findname_exp(name);
     }
-    if (buf == NULL)
-    {
-	buf = buflist_new(name == NULL || *name == NUL ? NULL : name,
-				     NULL, (linenr_T)0, BLN_LISTED | BLN_NEW);
-	if (buf == NULL)
-	    return NULL;
-	prepare_buffer(buf);
 
-	curbuf = buf;
-	if (msg)
-	    ml_replace(1, (char_u *)(err ? "Reading from channel error..."
-				   : "Reading from channel output..."), TRUE);
-	changed_bytes(1, 0);
-	curbuf = save_curbuf;
-    }
+    if (buf != NULL)
+	return buf;
+
+    buf = buflist_new(name == NULL || *name == NUL ? NULL : name,
+	    NULL, (linenr_T)0, BLN_LISTED | BLN_NEW);
+    if (buf == NULL)
+	return NULL;
+    prepare_buffer(buf);
+
+    curbuf = buf;
+    if (msg)
+	ml_replace(1, (char_u *)(err ? "Reading from channel error..."
+		    : "Reading from channel output..."), TRUE);
+    changed_bytes(1, 0);
+    curbuf = save_curbuf;
 
     return buf;
 }
@@ -1479,30 +1482,30 @@ ch_close_part(channel_T *channel, ch_part_T part)
 {
     sock_T *fd = &channel->ch_part[part].ch_fd;
 
-    if (*fd != INVALID_FD)
-    {
-	if (part == PART_SOCK)
-	    sock_close(*fd);
-	else
-	{
-	    // When using a pty the same FD is set on multiple parts, only
-	    // close it when the last reference is closed.
-	    if ((part == PART_IN || channel->CH_IN_FD != *fd)
-		    && (part == PART_OUT || channel->CH_OUT_FD != *fd)
-		    && (part == PART_ERR || channel->CH_ERR_FD != *fd))
-	    {
-#ifdef MSWIN
-		if (channel->ch_named_pipe)
-		    DisconnectNamedPipe((HANDLE)fd);
-#endif
-		fd_close(*fd);
-	    }
-	}
-	*fd = INVALID_FD;
+    if (*fd == INVALID_FD)
+	return;
 
-	// channel is closed, may want to end the job if it was the last
-	channel->ch_to_be_closed &= ~(1U << part);
+    if (part == PART_SOCK)
+	sock_close(*fd);
+    else
+    {
+	// When using a pty the same FD is set on multiple parts, only
+	// close it when the last reference is closed.
+	if ((part == PART_IN || channel->CH_IN_FD != *fd)
+		&& (part == PART_OUT || channel->CH_OUT_FD != *fd)
+		&& (part == PART_ERR || channel->CH_ERR_FD != *fd))
+	{
+#ifdef MSWIN
+	    if (channel->ch_named_pipe)
+		DisconnectNamedPipe((HANDLE)fd);
+#endif
+	    fd_close(*fd);
+	}
     }
+    *fd = INVALID_FD;
+
+    // channel is closed, may want to end the job if it was the last
+    channel->ch_to_be_closed &= ~(1U << part);
 }
 
     void
@@ -1552,38 +1555,40 @@ channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err)
     void
 channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
 {
+    chanpart_T *in_part;
+
     channel->ch_job = job;
 
     channel_set_options(channel, options);
 
-    if (job->jv_in_buf != NULL)
-    {
-	chanpart_T *in_part = &channel->ch_part[PART_IN];
+    if (job->jv_in_buf == NULL)
+	return;
 
-	set_bufref(&in_part->ch_bufref, job->jv_in_buf);
-	ch_log(channel, "reading from buffer '%s'",
-				 (char *)in_part->ch_bufref.br_buf->b_ffname);
-	if (options->jo_set & JO_IN_TOP)
+    in_part = &channel->ch_part[PART_IN];
+
+    set_bufref(&in_part->ch_bufref, job->jv_in_buf);
+    ch_log(channel, "reading from buffer '%s'",
+	    (char *)in_part->ch_bufref.br_buf->b_ffname);
+    if (options->jo_set & JO_IN_TOP)
+    {
+	if (options->jo_in_top == 0 && !(options->jo_set & JO_IN_BOT))
 	{
-	    if (options->jo_in_top == 0 && !(options->jo_set & JO_IN_BOT))
-	    {
-		// Special mode: send last-but-one line when appending a line
-		// to the buffer.
-		in_part->ch_bufref.br_buf->b_write_to_channel = TRUE;
-		in_part->ch_buf_append = TRUE;
-		in_part->ch_buf_top =
-			    in_part->ch_bufref.br_buf->b_ml.ml_line_count + 1;
-	    }
-	    else
-		in_part->ch_buf_top = options->jo_in_top;
+	    // Special mode: send last-but-one line when appending a line
+	    // to the buffer.
+	    in_part->ch_bufref.br_buf->b_write_to_channel = TRUE;
+	    in_part->ch_buf_append = TRUE;
+	    in_part->ch_buf_top =
+		in_part->ch_bufref.br_buf->b_ml.ml_line_count + 1;
 	}
 	else
-	    in_part->ch_buf_top = 1;
-	if (options->jo_set & JO_IN_BOT)
-	    in_part->ch_buf_bot = options->jo_in_bot;
-	else
-	    in_part->ch_buf_bot = in_part->ch_bufref.br_buf->b_ml.ml_line_count;
+	    in_part->ch_buf_top = options->jo_in_top;
     }
+    else
+	in_part->ch_buf_top = 1;
+    if (options->jo_set & JO_IN_BOT)
+	in_part->ch_buf_bot = options->jo_in_bot;
+    else
+	in_part->ch_buf_bot = in_part->ch_bufref.br_buf->b_ml.ml_line_count;
 }
 
 /*
@@ -1599,18 +1604,18 @@ channel_set_req_callback(
     cbq_T *head = &channel->ch_part[part].ch_cb_head;
     cbq_T *item = ALLOC_ONE(cbq_T);
 
-    if (item != NULL)
-    {
-	copy_callback(&item->cq_callback, callback);
-	item->cq_seq_nr = id;
-	item->cq_prev = head->cq_prev;
-	head->cq_prev = item;
-	item->cq_next = NULL;
-	if (item->cq_prev == NULL)
-	    head->cq_next = item;
-	else
-	    item->cq_prev->cq_next = item;
-    }
+    if (item == NULL)
+	return;
+
+    copy_callback(&item->cq_callback, callback);
+    item->cq_seq_nr = id;
+    item->cq_prev = head->cq_prev;
+    head->cq_prev = item;
+    item->cq_next = NULL;
+    if (item->cq_prev == NULL)
+	head->cq_next = item;
+    else
+	item->cq_prev->cq_next = item;
 }
 
     static void
@@ -2636,42 +2641,42 @@ channel_push_json(channel_T *channel, ch_part_T part, typval_T *rettv)
 
     newitem = ALLOC_ONE(jsonq_T);
     if (newitem == NULL)
+    {
 	clear_tv(rettv);
+	return;
+    }
+
+    newitem->jq_value = alloc_tv();
+    if (newitem->jq_value == NULL)
+    {
+	vim_free(newitem);
+	clear_tv(rettv);
+	return;
+    }
+
+    newitem->jq_no_callback = FALSE;
+    *newitem->jq_value = *rettv;
+    if (item == NULL)
+    {
+	// append to the end
+	newitem->jq_prev = head->jq_prev;
+	head->jq_prev = newitem;
+	newitem->jq_next = NULL;
+	if (newitem->jq_prev == NULL)
+	    head->jq_next = newitem;
+	else
+	    newitem->jq_prev->jq_next = newitem;
+    }
     else
     {
-	newitem->jq_value = alloc_tv();
-	if (newitem->jq_value == NULL)
-	{
-	    vim_free(newitem);
-	    clear_tv(rettv);
-	}
+	// append after "item"
+	newitem->jq_prev = item;
+	newitem->jq_next = item->jq_next;
+	item->jq_next = newitem;
+	if (newitem->jq_next == NULL)
+	    head->jq_prev = newitem;
 	else
-	{
-	    newitem->jq_no_callback = FALSE;
-	    *newitem->jq_value = *rettv;
-	    if (item == NULL)
-	    {
-		// append to the end
-		newitem->jq_prev = head->jq_prev;
-		head->jq_prev = newitem;
-		newitem->jq_next = NULL;
-		if (newitem->jq_prev == NULL)
-		    head->jq_next = newitem;
-		else
-		    newitem->jq_prev->jq_next = newitem;
-	    }
-	    else
-	    {
-		// append after "item"
-		newitem->jq_prev = item;
-		newitem->jq_next = item->jq_next;
-		item->jq_next = newitem;
-		if (newitem->jq_next == NULL)
-		    head->jq_prev = newitem;
-		else
-		    newitem->jq_next->jq_prev = newitem;
-	    }
-	}
+	    newitem->jq_next->jq_prev = newitem;
     }
 }
 
@@ -4184,56 +4189,56 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
     if (opt.jo_set & JO_PART)
 	part = opt.jo_part;
     channel = get_channel_arg(&argvars[0], TRUE, TRUE, part);
-    if (channel != NULL)
+    if (channel == NULL)
+	goto theend;
+
+    if (part == PART_COUNT)
+	part = channel_part_read(channel);
+    mode = channel_get_mode(channel, part);
+    timeout = channel_get_timeout(channel, part);
+    if (opt.jo_set & JO_TIMEOUT)
+	timeout = opt.jo_timeout;
+
+    if (blob)
     {
-	if (part == PART_COUNT)
-	    part = channel_part_read(channel);
-	mode = channel_get_mode(channel, part);
-	timeout = channel_get_timeout(channel, part);
-	if (opt.jo_set & JO_TIMEOUT)
-	    timeout = opt.jo_timeout;
-
-	if (blob)
+	int	    outlen = 0;
+	char_u  *p = channel_read_block(channel, part,
+		timeout, TRUE, &outlen);
+	if (p != NULL)
 	{
-	    int	    outlen = 0;
-	    char_u  *p = channel_read_block(channel, part,
-						       timeout, TRUE, &outlen);
-	    if (p != NULL)
-	    {
-		blob_T	*b = blob_alloc();
+	    blob_T	*b = blob_alloc();
 
-		if (b != NULL)
+	    if (b != NULL)
+	    {
+		b->bv_ga.ga_len = outlen;
+		if (ga_grow(&b->bv_ga, outlen) == FAIL)
+		    blob_free(b);
+		else
 		{
-		    b->bv_ga.ga_len = outlen;
-		    if (ga_grow(&b->bv_ga, outlen) == FAIL)
-			blob_free(b);
-		    else
-		    {
-			memcpy(b->bv_ga.ga_data, p, outlen);
-			rettv_blob_set(rettv, b);
-		    }
+		    memcpy(b->bv_ga.ga_data, p, outlen);
+		    rettv_blob_set(rettv, b);
 		}
-		vim_free(p);
 	    }
+	    vim_free(p);
 	}
-	else if (raw || mode == CH_MODE_RAW || mode == CH_MODE_NL)
-	    rettv->vval.v_string = channel_read_block(channel, part,
-							 timeout, raw, NULL);
+    }
+    else if (raw || mode == CH_MODE_RAW || mode == CH_MODE_NL)
+	rettv->vval.v_string = channel_read_block(channel, part,
+		timeout, raw, NULL);
+    else
+    {
+	if (opt.jo_set & JO_ID)
+	    id = opt.jo_id;
+	channel_read_json_block(channel, part, timeout, id, &listtv);
+	if (listtv != NULL)
+	{
+	    *rettv = *listtv;
+	    vim_free(listtv);
+	}
 	else
 	{
-	    if (opt.jo_set & JO_ID)
-		id = opt.jo_id;
-	    channel_read_json_block(channel, part, timeout, id, &listtv);
-	    if (listtv != NULL)
-	    {
-		*rettv = *listtv;
-		vim_free(listtv);
-	    }
-	    else
-	    {
-		rettv->v_type = VAR_SPECIAL;
-		rettv->vval.v_number = VVAL_NONE;
-	    }
+	    rettv->v_type = VAR_SPECIAL;
+	    rettv->vval.v_number = VVAL_NONE;
 	}
     }
 
@@ -4262,17 +4267,19 @@ channel_handle_events(int only_keep_open)
 	// check the socket and pipes
 	for (part = PART_SOCK; part < PART_IN; ++part)
 	{
-	    fd = channel->ch_part[part].ch_fd;
-	    if (fd != INVALID_FD)
-	    {
-		int r = channel_wait(channel, fd, 0);
+	    int r;
 
-		if (r == CW_READY)
-		    channel_read(channel, part, "channel_handle_events");
-		else if (r == CW_ERROR)
-		    ch_close_part_on_error(channel, part, TRUE,
-						     "channel_handle_events");
-	    }
+	    fd = channel->ch_part[part].ch_fd;
+	    if (fd == INVALID_FD)
+		continue;
+
+	    r = channel_wait(channel, fd, 0);
+
+	    if (r == CW_READY)
+		channel_read(channel, part, "channel_handle_events");
+	    else if (r == CW_ERROR)
+		ch_close_part_on_error(channel, part, TRUE,
+			"channel_handle_events");
 	}
 
 # ifdef __HAIKU__
@@ -4318,17 +4325,17 @@ channel_set_nonblock(channel_T *channel, ch_part_T part)
     chanpart_T *ch_part = &channel->ch_part[part];
     int		fd = ch_part->ch_fd;
 
-    if (fd != INVALID_FD)
-    {
-#ifdef MSWIN
-	u_long	val = 1;
+    if (fd == INVALID_FD)
+	return;
 
-	ioctlsocket(fd, FIONBIO, &val);
+#ifdef MSWIN
+    u_long	val = 1;
+
+    ioctlsocket(fd, FIONBIO, &val);
 #else
-	(void)fcntl(fd, F_SETFL, O_NONBLOCK);
+    (void)fcntl(fd, F_SETFL, O_NONBLOCK);
 #endif
-	ch_part->ch_nonblocking = TRUE;
-    }
+    ch_part->ch_nonblocking = TRUE;
 }
 
 /*
@@ -5218,7 +5225,9 @@ f_ch_close_in(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
 {
-    channel_T *channel;
+    channel_T	*channel;
+    char_u	*what;
+    int		part;
 
     rettv->vval.v_number = -1;
 
@@ -5228,23 +5237,21 @@ f_ch_getbufnr(typval_T *argvars, typval_T *rettv)
 	return;
 
     channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
-    if (channel != NULL)
-    {
-	char_u	*what = tv_get_string(&argvars[1]);
-	int	part;
+    if (channel == NULL)
+	return;
 
-	if (STRCMP(what, "err") == 0)
-	    part = PART_ERR;
-	else if (STRCMP(what, "out") == 0)
-	    part = PART_OUT;
-	else if (STRCMP(what, "in") == 0)
-	    part = PART_IN;
-	else
-	    part = PART_SOCK;
-	if (channel->ch_part[part].ch_bufref.br_buf != NULL)
-	    rettv->vval.v_number =
-			      channel->ch_part[part].ch_bufref.br_buf->b_fnum;
-    }
+    what = tv_get_string(&argvars[1]);
+    if (STRCMP(what, "err") == 0)
+	part = PART_ERR;
+    else if (STRCMP(what, "out") == 0)
+	part = PART_OUT;
+    else if (STRCMP(what, "in") == 0)
+	part = PART_IN;
+    else
+	part = PART_SOCK;
+    if (channel->ch_part[part].ch_bufref.br_buf != NULL)
+	rettv->vval.v_number =
+	    channel->ch_part[part].ch_bufref.br_buf->b_fnum;
 }
 
 /*
@@ -5259,13 +5266,13 @@ f_ch_getjob(typval_T *argvars, typval_T *rettv)
 	return;
 
     channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
-    if (channel != NULL)
-    {
-	rettv->v_type = VAR_JOB;
-	rettv->vval.v_job = channel->ch_job;
-	if (channel->ch_job != NULL)
-	    ++channel->ch_job->jv_refcount;
-    }
+    if (channel == NULL)
+	return;
+
+    rettv->v_type = VAR_JOB;
+    rettv->vval.v_job = channel->ch_job;
+    if (channel->ch_job != NULL)
+	++channel->ch_job->jv_refcount;
 }
 
 /*
