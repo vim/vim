@@ -44,6 +44,8 @@ gvimext.lib
 gvim.lib
 runtime/doc/uganda.nsis.txt
 nsis/icons/*
+/vim90/
+.vscode/
 
 # NetBeans
 nbproject/*
@@ -108,5 +110,3 @@ src/cscope.out
 /.ccls-cache/
 /compile_commands.json
 
-/vim90/
-/src/.vscode/
