@@ -502,7 +502,10 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
   int old_cols = screen->cols;
 
   ScreenCell *old_buffer = screen->buffers[bufidx];
+  VTermLineInfo *old_lineinfo = statefields->lineinfos[bufidx];
+
   ScreenCell *new_buffer = vterm_allocator_malloc(screen->vt, sizeof(ScreenCell) * new_rows * new_cols);
+  VTermLineInfo *new_lineinfo = vterm_allocator_malloc(screen->vt, sizeof(new_lineinfo[0]) * new_rows);
 
   // Find the final row of old buffer content
   int old_row = old_rows - 1;
@@ -514,6 +517,8 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
       new_buffer[new_row * new_cols + col] = old_buffer[old_row * old_cols + col];
     for( ; col < new_cols; col++)
       clearcell(screen, &new_buffer[new_row * new_cols + col]);
+
+    new_lineinfo[new_row] = old_lineinfo[old_row];
 
     old_row--;
     new_row--;
@@ -584,14 +589,20 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
     /* Scroll new rows back up to the top and fill in blanks at the bottom */
     int moverows = new_rows - new_row - 1;
     memmove(&new_buffer[0], &new_buffer[(new_row + 1) * new_cols], moverows * new_cols * sizeof(ScreenCell));
+    memmove(&new_lineinfo[0], &new_lineinfo[new_row + 1], moverows * sizeof(new_lineinfo[0]));
 
-    for(new_row = moverows; new_row < new_rows; new_row++)
+    for(new_row = moverows; new_row < new_rows; new_row++) {
       for(col = 0; col < new_cols; col++)
         clearcell(screen, &new_buffer[new_row * new_cols + col]);
+      new_lineinfo[new_row] = (VTermLineInfo){ 0 };
+    }
   }
 
   vterm_allocator_free(screen->vt, old_buffer);
   screen->buffers[bufidx] = new_buffer;
+
+  vterm_allocator_free(screen->vt, old_lineinfo);
+  statefields->lineinfos[bufidx] = new_lineinfo;
 
   return;
 
@@ -606,6 +617,7 @@ static int resize(int new_rows, int new_cols, VTermStateFields *fields, void *us
 
   int altscreen_active = (screen->buffers[BUFIDX_ALTSCREEN] && screen->buffer == screen->buffers[BUFIDX_ALTSCREEN]);
 
+  int old_rows = screen->rows;
   int old_cols = screen->cols;
 
   if(new_cols > old_cols) {
@@ -619,6 +631,17 @@ static int resize(int new_rows, int new_cols, VTermStateFields *fields, void *us
   resize_buffer(screen, 0, new_rows, new_cols, !altscreen_active, fields);
   if(screen->buffers[BUFIDX_ALTSCREEN])
     resize_buffer(screen, 1, new_rows, new_cols, altscreen_active, fields);
+  else if(new_rows != old_rows) {
+    /* We don't need a full resize of the altscreen because it isn't enabled
+     * but we should at least keep the lineinfo the right size */
+    vterm_allocator_free(screen->vt, fields->lineinfos[BUFIDX_ALTSCREEN]);
+
+    VTermLineInfo *new_lineinfo = vterm_allocator_malloc(screen->vt, sizeof(new_lineinfo[0]) * new_rows);
+    for(int row = 0; row < new_rows; row++)
+      new_lineinfo[row] = (VTermLineInfo){ 0 };
+
+    fields->lineinfos[BUFIDX_ALTSCREEN] = new_lineinfo;
+  }
 
   screen->buffer = altscreen_active ? screen->buffers[BUFIDX_ALTSCREEN] : screen->buffers[BUFIDX_PRIMARY];
 

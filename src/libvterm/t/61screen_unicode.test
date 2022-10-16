@@ -7,7 +7,7 @@ WANTSCREEN
 # U+00E9 = 0xC3 0xA9  name: LATIN SMALL LETTER E WITH ACUTE
 RESET
 PUSH "\xC3\x81\xC3\xA9"
-  ?screen_chars 0,0,1,80 = 0xc1,0xe9
+  ?screen_row 0 = 0xc1,0xe9
   ?screen_text 0,0,1,80 = 0xc3,0x81,0xc3,0xa9
   ?screen_cell 0,0 = {0xc1} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
 
@@ -16,7 +16,7 @@ PUSH "\xC3\x81\xC3\xA9"
 RESET
 PUSH "0123\e[H"
 PUSH "\xEF\xBC\x90"
-  ?screen_chars 0,0,1,80 = 0xff10,0x32,0x33
+  ?screen_row 0 = 0xff10,0x32,0x33
   ?screen_text 0,0,1,80 = 0xef,0xbc,0x90,0x32,0x33
   ?screen_cell 0,0 = {0xff10} width=2 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
 
@@ -25,7 +25,7 @@ PUSH "\xEF\xBC\x90"
 RESET
 PUSH "0123\e[H"
 PUSH "e\xCC\x81"
-  ?screen_chars 0,0,1,80 = 0x65,0x301,0x31,0x32,0x33
+  ?screen_row 0 = 0x65,0x301,0x31,0x32,0x33
   ?screen_text 0,0,1,80 = 0x65,0xcc,0x81,0x31,0x32,0x33
   ?screen_cell 0,0 = {0x65,0x301} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
 

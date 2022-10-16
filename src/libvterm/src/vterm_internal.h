@@ -182,7 +182,7 @@ struct VTermState
 
 struct VTerm
 {
-  VTermAllocatorFunctions *allocator;
+  const VTermAllocatorFunctions *allocator;
   void *allocdata;
 
   int rows;

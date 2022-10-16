@@ -8,7 +8,7 @@ The original can be found:
 
 Modifications:
 - Add a .gitignore file.
-- Convert from C99 to C90.
+- Convert some code from C99 to C90.
 - Other changes to support embedding in Vim.
 
 To get the latest version of libvterm you need the "bzr" command and do:

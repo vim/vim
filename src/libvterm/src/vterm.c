@@ -34,21 +34,39 @@ static VTermAllocatorFunctions default_allocator = {
 
 VTerm *vterm_new(int rows, int cols)
 {
-  return vterm_new_with_allocator(rows, cols, &default_allocator, NULL);
+  struct VTermBuilder builder;
+  memset(&builder, 0, sizeof(builder));
+  builder.rows = rows;
+  builder.cols = cols;
+  return vterm_build(&builder);
 }
 
 VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *funcs, void *allocdata)
 {
+  struct VTermBuilder builder;
+  memset(&builder, 0, sizeof(builder));
+  builder.rows = rows;
+  builder.cols = cols;
+  builder.allocator = funcs;
+  builder.allocdata = allocdata;
+  return vterm_build(&builder);
+}
+
+/* A handy macro for defaulting values out of builder fields */
+#define DEFAULT(v, def)  ((v) ? (v) : (def))
+
+VTerm *vterm_build(const struct VTermBuilder *builder)
+{
+  const VTermAllocatorFunctions *allocator = DEFAULT(builder->allocator, &default_allocator);
+
   /* Need to bootstrap using the allocator function directly */
-  VTerm *vt = (*funcs->malloc)(sizeof(VTerm), allocdata);
+  VTerm *vt = (*allocator->malloc)(sizeof(VTerm), builder->allocdata);
 
-  if (vt == NULL)
-    return NULL;
-  vt->allocator = funcs;
-  vt->allocdata = allocdata;
+  vt->allocator = allocator;
+  vt->allocdata = builder->allocdata;
 
-  vt->rows = rows;
-  vt->cols = cols;
+  vt->rows = builder->rows;
+  vt->cols = builder->cols;
 
   vt->parser.state = NORMAL;
 
@@ -58,11 +76,11 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
   vt->outfunc = NULL;
   vt->outdata = NULL;
 
-  vt->outbuffer_len = 200;
+  vt->outbuffer_len = DEFAULT(builder->outbuffer_len, 4096);
   vt->outbuffer_cur = 0;
   vt->outbuffer = vterm_allocator_malloc(vt, vt->outbuffer_len);
 
-  vt->tmpbuffer_len = 64;
+  vt->tmpbuffer_len = DEFAULT(builder->tmpbuffer_len, 4096);
   vt->tmpbuffer = vterm_allocator_malloc(vt, vt->tmpbuffer_len);
 
   if (vt->tmpbuffer == NULL

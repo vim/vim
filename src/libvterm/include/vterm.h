@@ -26,6 +26,11 @@ typedef unsigned int		uint32_t;
 #define VTERM_CHECK_VERSION \
         vterm_check_version(VTERM_VERSION_MAJOR, VTERM_VERSION_MINOR)
 
+/* Any cell can contain at most one basic printing character and 5 combining
+ * characters. This number could be changed but will be ABI-incompatible if
+ * you do */
+#define VTERM_MAX_CHARS_PER_CELL 6
+
 typedef struct VTerm VTerm;
 typedef struct VTermState VTermState;
 typedef struct VTermScreen VTermScreen;
@@ -297,6 +302,7 @@ typedef struct {
  */
 typedef struct {
   VTermPos pos;                /* current cursor position */
+  VTermLineInfo *lineinfos[2]; /* [1] may be NULL */
 } VTermStateFields;
 
 typedef struct {
@@ -306,10 +312,29 @@ typedef struct {
   void  (*free)(void *ptr, void *allocdata);
 } VTermAllocatorFunctions;
 
+/* A convenient shortcut for default cases */
 void vterm_check_version(int major, int minor);
 
+struct VTermBuilder {
+  int ver; /* currently unused but reserved for some sort of ABI version flag */
+
+  int rows, cols;
+
+  const VTermAllocatorFunctions *allocator;
+  void *allocdata;
+
+  /* Override default sizes for various structures */
+  size_t outbuffer_len;  /* default: 4096 */
+  size_t tmpbuffer_len;  /* default: 4096 */
+};
+
+VTerm *vterm_build(const struct VTermBuilder *builder);
+
+/* A convenient shortcut for default cases */
 // Allocate and initialize a new terminal with default allocators.
 VTerm *vterm_new(int rows, int cols);
+
+/* These shortcuts are generally discouraged in favour of just using vterm_build() */
 
 // Allocate and initialize a new terminal with specified allocators.
 VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *funcs, void *allocdata);
@@ -507,7 +532,6 @@ enum {
 };
 
 typedef struct {
-#define VTERM_MAX_CHARS_PER_CELL 6
   uint32_t chars[VTERM_MAX_CHARS_PER_CELL];
   char     width;
   VTermScreenCellAttrs attrs;

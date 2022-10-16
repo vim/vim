@@ -1001,7 +1001,14 @@ int main(int argc UNUSED, char **argv UNUSED)
         size_t len;
         while(linep[0] == ' ')
           linep++;
-        if(sscanf(linep, "%d,%d,%d,%d", &rect.start_row, &rect.start_col, &rect.end_row, &rect.end_col) < 4) {
+        if(sscanf(linep, "%d,%d,%d,%d", &rect.start_row, &rect.start_col, &rect.end_row, &rect.end_col) == 4)
+          ; // fine
+        else if(sscanf(linep, "%d", &rect.start_row) == 1) {
+          rect.end_row = rect.start_row + 1;
+          rect.start_col = 0;
+          vterm_get_size(vt, NULL, &rect.end_col);
+        }
+        else {
           printf("! screen_chars unrecognised input\n");
           goto abort_line;
         }

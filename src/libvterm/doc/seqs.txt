@@ -132,6 +132,7 @@ x = xterm
            1 or 2       =   block
            3 or 4       =   underline
            5 or 6       =   I-beam to left
+   x   CSI > q          = XTVERSION, request version string
  23x   CSI " q          = DECSCA, select character attributes
 123x   CSI r            = DECSTBM
    x   CSI s            = DECSLRM
