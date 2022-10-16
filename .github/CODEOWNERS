@@ -166,6 +166,7 @@ runtime/ftplugin/nginx.vim		@chr4
 runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
 runtime/ftplugin/octave.vim		@dkearns
+runtime/ftplugin/openvpn.vim		@ObserverOfTime
 runtime/ftplugin/pascal.vim		@dkearns
 runtime/ftplugin/pbtxt.vim		@lakshayg
 runtime/ftplugin/pdf.vim		@tpope
@@ -392,6 +393,7 @@ runtime/syntax/nginx.vim		@chr4
 runtime/syntax/ninja.vim		@nico
 runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
+runtime/syntax/openvpn.vim		@ObserverOfTime
 runtime/syntax/pascal.vim		@dkearns
 runtime/syntax/pbtxt.vim		@lakshayg
 runtime/syntax/pdf.vim			@tpope
