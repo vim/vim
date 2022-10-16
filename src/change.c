@@ -28,43 +28,43 @@ change_warning(int col)
 {
     static char *w_readonly = N_("W10: Warning: Changing a readonly file");
 
-    if (curbuf->b_did_warn == FALSE
-	    && curbufIsChanged() == 0
-	    && !autocmd_busy
-	    && curbuf->b_p_ro)
-    {
-	++curbuf_lock;
-	apply_autocmds(EVENT_FILECHANGEDRO, NULL, NULL, FALSE, curbuf);
-	--curbuf_lock;
-	if (!curbuf->b_p_ro)
-	    return;
+    if (curbuf->b_did_warn
+	    || curbufIsChanged()
+	    || autocmd_busy
+	    || !curbuf->b_p_ro)
+	return;
 
-	// Do what msg() does, but with a column offset if the warning should
-	// be after the mode message.
-	msg_start();
-	if (msg_row == Rows - 1)
-	    msg_col = col;
-	msg_source(HL_ATTR(HLF_W));
-	msg_puts_attr(_(w_readonly), HL_ATTR(HLF_W) | MSG_HIST);
+    ++curbuf_lock;
+    apply_autocmds(EVENT_FILECHANGEDRO, NULL, NULL, FALSE, curbuf);
+    --curbuf_lock;
+    if (!curbuf->b_p_ro)
+	return;
+
+    // Do what msg() does, but with a column offset if the warning should
+    // be after the mode message.
+    msg_start();
+    if (msg_row == Rows - 1)
+	msg_col = col;
+    msg_source(HL_ATTR(HLF_W));
+    msg_puts_attr(_(w_readonly), HL_ATTR(HLF_W) | MSG_HIST);
 #ifdef FEAT_EVAL
-	set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_readonly), -1);
+    set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_readonly), -1);
 #endif
-	msg_clr_eos();
-	(void)msg_end();
-	if (msg_silent == 0 && !silent_mode
+    msg_clr_eos();
+    (void)msg_end();
+    if (msg_silent == 0 && !silent_mode
 #ifdef FEAT_EVAL
-		&& time_for_testing != 1
+	    && time_for_testing != 1
 #endif
-		)
-	{
-	    out_flush();
-	    ui_delay(1002L, TRUE); // give the user time to think about it
-	}
-	curbuf->b_did_warn = TRUE;
-	redraw_cmdline = FALSE;	// don't redraw and erase the message
-	if (msg_row < Rows - 1)
-	    showmode();
+       )
+    {
+	out_flush();
+	ui_delay(1002L, TRUE); // give the user time to think about it
     }
+    curbuf->b_did_warn = TRUE;
+    redraw_cmdline = FALSE;	// don't redraw and erase the message
+    if (msg_row < Rows - 1)
+	showmode();
 }
 
 /*
@@ -159,25 +159,25 @@ check_recorded_changes(
 	linenr_T	lnume,
 	long		xtra)
 {
-    if (buf->b_recorded_changes != NULL && xtra != 0)
-    {
-	listitem_T *li;
-	linenr_T    prev_lnum;
-	linenr_T    prev_lnume;
+    if (buf->b_recorded_changes == NULL || xtra == 0)
+	return;
 
-	FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
+    listitem_T *li;
+    linenr_T    prev_lnum;
+    linenr_T    prev_lnume;
+
+    FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
+    {
+	prev_lnum = (linenr_T)dict_get_number(
+		li->li_tv.vval.v_dict, "lnum");
+	prev_lnume = (linenr_T)dict_get_number(
+		li->li_tv.vval.v_dict, "end");
+	if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	{
-	    prev_lnum = (linenr_T)dict_get_number(
-						li->li_tv.vval.v_dict, "lnum");
-	    prev_lnume = (linenr_T)dict_get_number(
-						 li->li_tv.vval.v_dict, "end");
-	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
-	    {
-		// the current change is going to make the line number in
-		// the older change invalid, flush now
-		invoke_listeners(curbuf);
-		break;
-	    }
+	    // the current change is going to make the line number in
+	    // the older change invalid, flush now
+	    invoke_listeners(curbuf);
+	    break;
 	}
     }
 }
