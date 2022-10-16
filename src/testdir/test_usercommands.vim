@@ -239,7 +239,7 @@ func Test_Ambiguous()
 endfunc
 
 func Test_redefine_on_reload()
-  call writefile(['command ExistingCommand echo "yes"'], 'Xcommandexists')
+  call writefile(['command ExistingCommand echo "yes"'], 'Xcommandexists', 'D')
   call assert_equal(0, exists(':ExistingCommand'))
   source Xcommandexists
   call assert_equal(2, exists(':ExistingCommand'))
@@ -248,9 +248,8 @@ func Test_redefine_on_reload()
   call assert_equal(2, exists(':ExistingCommand'))
 
   " But redefining in another script is not OK.
-  call writefile(['command ExistingCommand echo "yes"'], 'Xcommandexists2')
+  call writefile(['command ExistingCommand echo "yes"'], 'Xcommandexists2', 'D')
   call assert_fails('source Xcommandexists2', 'E174:')
-  call delete('Xcommandexists2')
 
   " And defining twice in one script is not OK.
   delcommand ExistingCommand
@@ -262,7 +261,6 @@ func Test_redefine_on_reload()
   call assert_fails('source Xcommandexists', 'E174:')
   call assert_equal(2, exists(':ExistingCommand'))
 
-  call delete('Xcommandexists')
   delcommand ExistingCommand
 endfunc
 
@@ -849,7 +847,7 @@ func Test_block_declaration_legacy_script()
                      @a = save
                 }
   END
-  call writefile(lines, 'Xlegacy')
+  call writefile(lines, 'Xlegacy', 'D')
   source Xlegacy
 
   let lines =<< trim END
@@ -864,12 +862,10 @@ func Test_block_declaration_legacy_script()
       call assert_equal('something', g:someExpr)
       call assert_equal('also', @a)
   END
-  call writefile(lines, 'Xother')
+  call writefile(lines, 'Xother', 'D')
   source Xother
 
   unlet g:someExpr
-  call delete('Xlegacy')
-  call delete('Xother')
   delcommand Rename
 endfunc
 

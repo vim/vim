@@ -317,8 +317,8 @@ jobs:
           normal)
             ;;
           huge)
-            #  FIXME: --enable-perlinterp temporarily removed, it always fails
-            echo "CONFOPT=--enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            # Use "dynamic" for Perl otherwise it fails.
+            echo "CONFOPT=--enable-perlinterp=dynamic --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
           ) >> $GITHUB_ENV

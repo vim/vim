@@ -4119,7 +4119,12 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    {
 		if (curbuf->b_p_lisp)
 		{
-		    op_reindent(oap, get_lisp_indent);
+#ifdef FEAT_EVAL
+		    if (use_indentexpr_for_lisp())
+			op_reindent(oap, get_expr_indent);
+		    else
+#endif
+			op_reindent(oap, get_lisp_indent);
 		    break;
 		}
 		op_reindent(oap,

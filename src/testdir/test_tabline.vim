@@ -154,10 +154,8 @@ func Test_mouse_click_in_tab()
       set mouse=a
       exe "norm \<LeftMouse>"
   END
-  call writefile(lines, 'Xclickscript')
+  call writefile(lines, 'Xclickscript', 'D')
   call RunVim([], [], "-e -s -S Xclickscript -c qa")
-
-  call delete('Xclickscript')
 endfunc
 
 

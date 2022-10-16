@@ -371,12 +371,12 @@ func Test_timer_restore_count()
         \ '  normal 3j',
         \ 'endfunc',
         \ 'call timer_start(100, "Doit")',
-	\ ], 'Xtrcscript')
+	\ ], 'Xtrcscript', 'D')
   call writefile([
         \ '1-1234',
         \ '2-1234',
         \ '3-1234',
-	\ ], 'Xtrctext')
+	\ ], 'Xtrctext', 'D')
   let buf = RunVimInTerminal('-S Xtrcscript Xtrctext', {})
 
   " Wait for the timer to move the cursor to the third line.
@@ -387,8 +387,6 @@ func Test_timer_restore_count()
   call WaitForAssert({-> assert_equal(2, term_getcursor(buf)[1])})
 
   call StopVimInTerminal(buf)
-  call delete('Xtrcscript')
-  call delete('Xtrctext')
 endfunc
 
 " Test that the garbage collector isn't triggered if a timer callback invokes
@@ -438,7 +436,7 @@ func Test_timer_error_in_timer_callback()
   set updatetime=50
   call timer_start(1, 'Func')
   [CODE]
-  call writefile(lines, 'Xtest.vim')
+  call writefile(lines, 'Xtest.vim', 'D')
 
   let buf = term_start(GetVimCommandCleanTerm() .. ' -S Xtest.vim', {'term_rows': 8})
   let job = term_getjob(buf)
@@ -456,7 +454,6 @@ func Test_timer_error_in_timer_callback()
     call assert_equal('', job_info(job).termsig)
   endif
 
-  call delete('Xtest.vim')
   exe buf .. 'bwipe!'
 endfunc
 
@@ -485,7 +482,7 @@ func Test_timer_changing_function_list()
     endfor
     au CmdlineLeave : call timer_start(0, {-> 0})
   END
-  call writefile(lines, 'XTest_timerchange')
+  call writefile(lines, 'XTest_timerchange', 'D')
   let buf = RunVimInTerminal('-S XTest_timerchange', #{rows: 10})
   call term_sendkeys(buf, ":fu\<CR>")
   call WaitForAssert({-> assert_match('-- More --', term_getline(buf, 10))})
@@ -494,7 +491,6 @@ func Test_timer_changing_function_list()
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('XTest_timerchange')
 endfunc
 
 func Test_timer_outputting_message()
@@ -508,7 +504,7 @@ func Test_timer_outputting_message()
             echon repeat('x', &columns - 11)
         })
   END
-  call writefile(lines, 'XTest_timermessage')
+  call writefile(lines, 'XTest_timermessage', 'D')
   let buf = RunVimInTerminal('-S XTest_timermessage', #{rows: 6})
   call term_sendkeys(buf, "l")
   call term_wait(buf)
@@ -516,7 +512,6 @@ func Test_timer_outputting_message()
   call WaitForAssert({-> assert_match('xxxxxxxxxxx', term_getline(buf, 6))})
 
   call StopVimInTerminal(buf)
-  call delete('XTest_timermessage')
 endfunc
 
 func Test_timer_using_win_execute_undo_sync()

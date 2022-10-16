@@ -114,6 +114,7 @@ let test_values = {
       \ 'keymap': [['', 'accents'], ['xxx']],
       \ 'keymodel': [['', 'startsel', 'startsel,stopsel'], ['xxx']],
       \ 'langmap': [['', 'xX', 'aA,bB'], ['xxx']],
+      \ 'lispoptions': [['', 'expr:0', 'expr:1'], ['xxx']],
       \ 'listchars': [['', 'eol:x', 'eol:x,space:y'], ['xxx']],
       \ 'matchpairs': [['', '(:)', '(:),<:>'], ['xxx']],
       \ 'mkspellmem': [['10000,100,12'], ['', 'xxx']],

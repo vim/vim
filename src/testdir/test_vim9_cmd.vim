@@ -120,12 +120,11 @@ def Test_cmdmod_execute()
       vim9script
       export var exported = 'x'
   END
-  writefile(lines, 'Xvim9import.vim')
+  writefile(lines, 'Xvim9import.vim', 'D')
   lines =<< trim END
       legacy exe "import './Xvim9import.vim'"
   END
   v9.CheckScriptSuccess(lines)
-  delete('Xvim9import.vim')
 
   # "legacy" does not aply to a called function
   lines =<< trim END
@@ -331,7 +330,7 @@ def Test_hardcopy_wildcards()
 enddef
 
 def Test_syn_include_wildcards()
-  writefile(['syn keyword Found found'], 'Xthemine.vim')
+  writefile(['syn keyword Found found'], 'Xthemine.vim', 'D')
   var save_rtp = &rtp
   &rtp = '.'
 
@@ -340,7 +339,6 @@ def Test_syn_include_wildcards()
   assert_match('Found.* contained found', execute('syn list Found'))
 
   &rtp = save_rtp
-  delete('Xthemine.vim')
 enddef
 
 def Test_echo_linebreak()
@@ -932,7 +930,7 @@ func Test_command_modifier_confirm()
       confirm write Xcmodfile
     enddef
   END
-  call writefile(lines, 'Xconfirmscript')
+  call writefile(lines, 'Xconfirmscript', 'D')
   call writefile(['empty'], 'Xcmodfile')
   let buf = RunVimInTerminal('-S Xconfirmscript', {'rows': 8})
   call term_sendkeys(buf, ":call Getout()\n")
@@ -946,7 +944,6 @@ func Test_command_modifier_confirm()
   call assert_equal(['changed'], readfile('Xcmodfile'))
   call delete('Xcmodfile')
   call delete('.Xcmodfile.swp')  " in case Vim was killed
-  call delete('Xconfirmscript')
 endfunc
 
 def Test_command_modifiers_keep()

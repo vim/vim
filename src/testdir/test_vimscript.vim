@@ -33,15 +33,13 @@ func RunInNewVim(test, verify)
     call writefile(v:errors, 'Xtest.out')
     qall
   END
-  call writefile(init, 'Xtest.vim')
+  call writefile(init, 'Xtest.vim', 'D')
   call writefile(a:test, 'Xtest.vim', 'a')
-  call writefile(a:verify, 'Xverify.vim')
+  call writefile(a:verify, 'Xverify.vim', 'D')
   call writefile(cleanup, 'Xverify.vim', 'a')
   call RunVim([], [], "-S Xtest.vim -S Xverify.vim")
   call assert_equal([], readfile('Xtest.out'))
   call delete('Xtest.out')
-  call delete('Xtest.vim')
-  call delete('Xverify.vim')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -2935,7 +2933,7 @@ func Test_nested_if_else_errors()
   let code =<< trim END
     endif
   END
-  call writefile(code, 'Xtest')
+  call writefile(code, 'Xtest', 'D')
   call AssertException(['source Xtest'], 'Vim(endif):E580: :endif without :if')
 
   " :endif without :if
@@ -3088,8 +3086,6 @@ func Test_nested_if_else_errors()
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(elseif):E584: :elseif after :else')
-
-  call delete('Xtest')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -3118,7 +3114,7 @@ func Test_nested_while_error()
       endwhile
     endif
   END
-  call writefile(code, 'Xtest')
+  call writefile(code, 'Xtest', 'D')
   call AssertException(['source Xtest'], 'Vim(endwhile):E588: :endwhile without :while')
 
   " Missing :endif
@@ -3215,8 +3211,6 @@ func Test_nested_while_error()
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(endwhile):E588: :endwhile without :while')
-
-  call delete('Xtest')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -3236,7 +3230,7 @@ func Test_nested_cont_break_error()
   let code =<< trim END
     continue
   END
-  call writefile(code, 'Xtest')
+  call writefile(code, 'Xtest', 'D')
   call AssertException(['source Xtest'], 'Vim(continue):E586: :continue without :while or :for')
 
   " :continue without :while
@@ -3323,8 +3317,6 @@ func Test_nested_cont_break_error()
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(break):E587: :break without :while or :for')
-
-  call delete('Xtest')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -3344,7 +3336,7 @@ func Test_nested_endtry_error()
   let code =<< trim END
     endtry
   END
-  call writefile(code, 'Xtest')
+  call writefile(code, 'Xtest', 'D')
   call AssertException(['source Xtest'], 'Vim(endtry):E602: :endtry without :try')
 
   " :endtry without :try
@@ -3424,8 +3416,6 @@ func Test_nested_endtry_error()
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(endtry):E170: Missing :endwhile')
-
-  call delete('Xtest')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -5891,7 +5881,7 @@ func Test_discard_exception_after_error_2()
     endtry
     call assert_report('should not get here')
   [CODE]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   breakadd file 7 Xscript
   try
@@ -5906,7 +5896,6 @@ func Test_discard_exception_after_error_2()
   call assert_equal(1, caught_intr)
   call assert_equal('ab', g:Xpath)
   breakdel *
-  call delete('Xscript')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -5996,7 +5985,7 @@ func Test_ignore_catch_after_intr_1()
     endtry
     call assert_report('should not get here')
   [CODE]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   breakadd file 6 Xscript
   try
@@ -6011,7 +6000,6 @@ func Test_ignore_catch_after_intr_1()
   call assert_equal(1, caught_intr)
   call assert_equal('a', g:Xpath)
   breakdel *
-  call delete('Xscript')
 endfunc
 
 " interrupt right before a catch is invoked inside a function.
@@ -6104,7 +6092,7 @@ func Test_finally_after_intr()
     endtry
     call assert_report('should not get here')
   [CODE]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   breakadd file 7 Xscript
   try
@@ -6119,7 +6107,6 @@ func Test_finally_after_intr()
   call assert_equal(1, caught_intr)
   call assert_equal('abc', g:Xpath)
   breakdel *
-  call delete('Xscript')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -6963,13 +6950,12 @@ func Test_script_expand_sfile()
     endfunc
     let g:result = s:snr()
   END
-  call writefile(lines, 'Xexpand')
+  call writefile(lines, 'Xexpand', 'D')
   source Xexpand
   call assert_match('<SNR>\d\+_snr', g:result)
   source Xexpand
   call assert_match('<SNR>\d\+_snr', g:result)
 
-  call delete('Xexpand')
   unlet g:result
 endfunc
 
@@ -7230,7 +7216,7 @@ endfunc
 
 " Test for missing :endif, :endfor, :endwhile and :endtry           {{{1
 func Test_missing_end()
-  call writefile(['if 2 > 1', 'echo ">"'], 'Xscript')
+  call writefile(['if 2 > 1', 'echo ">"'], 'Xscript', 'D')
   call assert_fails('source Xscript', 'E171:')
   call writefile(['for i in range(5)', 'echo i'], 'Xscript')
   call assert_fails('source Xscript', 'E170:')
@@ -7238,7 +7224,6 @@ func Test_missing_end()
   call assert_fails('source Xscript', 'E170:')
   call writefile(['try', 'echo "."'], 'Xscript')
   call assert_fails('source Xscript', 'E600:')
-  call delete('Xscript')
 
   " Using endfor with :while
   let caught_e732 = 0
@@ -7320,7 +7305,7 @@ func Test_deep_nest()
       let @a = ''
     endfunc
   [SCRIPT]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   let buf = RunVimInTerminal('-S Xscript', {'rows': 6})
 
@@ -7358,7 +7343,6 @@ func Test_deep_nest()
   "call assert_report(l)
 
   call StopVimInTerminal(buf)
-  call delete('Xscript')
 endfunc
 
 " Test for errors in converting to float from various types         {{{1
@@ -7429,9 +7413,8 @@ func Test_invalid_function_names()
     call assert_equal(1, exists('Bar'))
     call assert_equal(1, exists('*Bar'))
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   source Xscript
-  call delete('Xscript')
 endfunc
 
 " substring and variable name              {{{1
@@ -7522,13 +7505,11 @@ func Test_deeply_nested_source()
       so
       0
   END
-  call writefile(["vim9 silent! @0 \n/"] + lines, 'Xnested.vim')
+  call writefile(["vim9 silent! @0 \n/"] + lines, 'Xnested.vim', 'D')
 
   " this must not crash
   let cmd = GetVimCommand() .. " -e -s -S Xnested.vim -c qa!"
   call system(cmd)
-
-  call delete('Xnested.vim')
 endfunc
 
 "-------------------------------------------------------------------------------

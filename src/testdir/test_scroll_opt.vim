@@ -121,6 +121,17 @@ func Test_smoothscroll_number()
       set smoothscroll
       set number cpo+=n
       :3
+
+      def g:DoRel()
+        set number relativenumber scrolloff=0
+        :%del
+        setline(1, [
+          'one',
+          'very long text '->repeat(12),
+          'three',
+        ])
+        exe "normal 2Gzt\<C-E>"
+      enddef
   END
   call writefile(lines, 'XSmoothNumber', 'D')
   let buf = RunVimInTerminal('-S XSmoothNumber', #{rows: 12, cols: 40})
@@ -137,6 +148,34 @@ func Test_smoothscroll_number()
   call VerifyScreenDump(buf, 'Test_smooth_number_5', {})
   call term_sendkeys(buf, "\<C-Y>")
   call VerifyScreenDump(buf, 'Test_smooth_number_6', {})
+
+  call term_sendkeys(buf, ":call DoRel()\<CR>")
+  call VerifyScreenDump(buf, 'Test_smooth_number_7', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_list()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      set smoothscroll scrolloff=0
+      set list
+      setline(1, [
+        'one',
+        'very long text '->repeat(12),
+        'three',
+      ])
+      exe "normal 2Gzt\<C-E>"
+  END
+  call writefile(lines, 'XSmoothList', 'D')
+  let buf = RunVimInTerminal('-S XSmoothList', #{rows: 8, cols: 40})
+
+  call VerifyScreenDump(buf, 'Test_smooth_list_1', {})
+
+  call term_sendkeys(buf, ":set listchars+=precedes:#\<CR>")
+  call VerifyScreenDump(buf, 'Test_smooth_list_2', {})
 
   call StopVimInTerminal(buf)
 endfunc

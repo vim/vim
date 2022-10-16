@@ -69,8 +69,8 @@ endfunc
 func Test_window_cmd_wincmd_gf()
   let fname = 'test_gf.txt'
   let swp_fname = '.' . fname . '.swp'
-  call writefile([], fname)
-  call writefile([], swp_fname)
+  call writefile([], fname, 'D')
+  call writefile([], swp_fname, 'D')
   function s:swap_exists()
     let v:swapchoice = s:swap_choice
   endfunc
@@ -96,8 +96,6 @@ func Test_window_cmd_wincmd_gf()
   call assert_notequal(fname, bufname("%"))
   new | only!
 
-  call delete(fname)
-  call delete(swp_fname)
   augroup! test_window_cmd_wincmd_gf
 endfunc
 
@@ -740,7 +738,7 @@ func Test_window_prevwin()
   CheckUnix
 
   set hidden autoread
-  call writefile(['2'], 'tmp.txt')
+  call writefile(['2'], 'tmp.txt', 'D')
   new tmp.txt
   q
   call Fun_RenewFile()
@@ -756,7 +754,6 @@ func Test_window_prevwin()
   wincmd p
   " reset
   q
-  call delete('tmp.txt')
   set hidden&vim autoread&vim
   delfunc Fun_RenewFile
 endfunc
@@ -1082,9 +1079,9 @@ func Run_noroom_for_newwindow_test(dir_arg)
     endtry
   endwhile
 
-  call writefile(['first', 'second', 'third'], 'Xnorfile1')
-  call writefile([], 'Xnorfile2')
-  call writefile([], 'Xnorfile3')
+  call writefile(['first', 'second', 'third'], 'Xnorfile1', 'D')
+  call writefile([], 'Xnorfile2', 'D')
+  call writefile([], 'Xnorfile3', 'D')
 
   " Argument list related commands
   args Xnorfile1 Xnorfile2 Xnorfile3
@@ -1165,9 +1162,6 @@ func Run_noroom_for_newwindow_test(dir_arg)
   endif
 
   %bwipe!
-  call delete('Xnorfile1')
-  call delete('Xnorfile2')
-  call delete('Xnorfile3')
   only
 endfunc
 

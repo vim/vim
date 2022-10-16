@@ -684,25 +684,22 @@ endfunc
 " Test :tclfile
 func Test_tclfile()
   call delete('Xtcl_file')
-  call writefile(['set pi [format "%.2f" [expr acos(-1.0)]]'], 'Xtcl_file')
+  call writefile(['set pi [format "%.2f" [expr acos(-1.0)]]'], 'Xtcl_file', 'D')
   call setfperm('Xtcl_file', 'r-xr-xr-x')
 
   tclfile Xtcl_file
   call assert_equal('3.14', TclEval('set pi'))
 
   tcl unset pi
-  call delete('Xtcl_file')
 endfunc
 
 " Test :tclfile with syntax error in tcl script
 func Test_tclfile_error()
   call delete('Xtcl_file')
-  call writefile(['xyz'], 'Xtcl_file')
+  call writefile(['xyz'], 'Xtcl_file', 'D')
   call setfperm('Xtcl_file', 'r-xr-xr-x')
 
   call assert_fails('tclfile Xtcl_file', 'invalid command name "xyz"')
-
-  call delete('Xtcl_file')
 endfunc
 
 " Test exiting current Tcl interpreter and re-creating one.

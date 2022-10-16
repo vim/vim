@@ -18,7 +18,7 @@ func Test_terminal_altscreen()
   let cmd = "cat Xtext\<CR>"
 
   let buf = term_start(&shell, {})
-  call writefile(["\<Esc>[?1047h"], 'Xtext')
+  call writefile(["\<Esc>[?1047h"], 'Xtext', 'D')
   call term_sendkeys(buf, cmd)
   call WaitForAssert({-> assert_equal(1, term_getaltscreen(buf))})
 
@@ -28,7 +28,6 @@ func Test_terminal_altscreen()
 
   call term_sendkeys(buf, "exit\r")
   exe buf . "bwipe!"
-  call delete('Xtext')
 endfunc
 
 func Test_terminal_shell_option()
@@ -79,7 +78,7 @@ func Terminal_color(group_name, highlight_cmds, highlight_opt, open_cmds)
 	\ ] + a:open_cmds + [
 	\ 'endfunc',
 	\ ] + a:highlight_cmds
-  call writefile(lines, 'XtermStart')
+  call writefile(lines, 'XtermStart', 'D')
   let buf = RunVimInTerminal('-S XtermStart', #{rows: 15})
   call TermWait(buf, 100)
   call term_sendkeys(buf, ":call OpenTerm()\<CR>")
@@ -90,7 +89,6 @@ func Terminal_color(group_name, highlight_cmds, highlight_opt, open_cmds)
   call term_sendkeys(buf, "\<C-D>")
   call TermWait(buf, 50)
   call StopVimInTerminal(buf)
-  call delete('XtermStart')
 endfunc
 
 func Test_terminal_color_Terminal()
@@ -143,7 +141,7 @@ func Test_terminal_color_wincolor_split()
   \ 'highlight MyWinCol ctermfg=red ctermbg=darkyellow',
   \ 'highlight MyWinCol2 ctermfg=black ctermbg=blue',
 	\ ]
-  call writefile(lines, 'XtermStart')
+  call writefile(lines, 'XtermStart', 'D')
   let buf = RunVimInTerminal('-S XtermStart', #{rows: 15})
   call TermWait(buf, 100)
   call term_sendkeys(buf, ":call OpenTerm()\<CR>")
@@ -162,7 +160,6 @@ func Test_terminal_color_wincolor_split()
   call term_sendkeys(buf, "\<C-D>")
   call TermWait(buf, 50)
   call StopVimInTerminal(buf)
-  call delete('XtermStart')
 endfunc
 
 func Test_terminal_color_transp_Terminal()
@@ -245,7 +242,7 @@ func Test_terminal_in_popup()
     to edit
     in a popup window
   END
-  call writefile(text, 'Xtext')
+  call writefile(text, 'Xtext', 'D')
   let cmd = GetVimCommandCleanTerm()
   let lines = [
 	\ 'call setline(1, range(20))',
@@ -268,7 +265,7 @@ func Test_terminal_in_popup()
 	\ '  call popup_create(s:buf, #{minwidth: 40, minheight: 6, border: []})',
 	\ 'endfunc',
 	\ ]
-  call writefile(lines, 'XtermPopup')
+  call writefile(lines, 'XtermPopup', 'D')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
   call TermWait(buf, 100)
   call term_sendkeys(buf, ":call OpenTerm(0)\<CR>")
@@ -312,8 +309,6 @@ func Test_terminal_in_popup()
   call TermWait(buf, 250)  " wait for terminal to vanish
 
   call StopVimInTerminal(buf)
-  call delete('Xtext')
-  call delete('XtermPopup')
 endfunc
 
 " Check a terminal in popup window uses the default minimum size.
@@ -325,7 +320,7 @@ func Test_terminal_in_popup_min_size()
     to show
     in a popup window
   END
-  call writefile(text, 'Xtext')
+  call writefile(text, 'Xtext', 'D')
   let lines = [
 	\ 'call setline(1, range(20))',
 	\ 'func OpenTerm()',
@@ -333,7 +328,7 @@ func Test_terminal_in_popup_min_size()
 	\ '  let g:winid = popup_create(s:buf, #{ border: []})',
 	\ 'endfunc',
 	\ ]
-  call writefile(lines, 'XtermPopup')
+  call writefile(lines, 'XtermPopup', 'D')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
   call TermWait(buf, 100)
   call term_sendkeys(buf, ":set noruler\<CR>")
@@ -346,8 +341,6 @@ func Test_terminal_in_popup_min_size()
   call term_sendkeys(buf, ":q\<CR>")
   call TermWait(buf, 50)  " wait for terminal to vanish
   call StopVimInTerminal(buf)
-  call delete('Xtext')
-  call delete('XtermPopup')
 endfunc
 
 " Check a terminal in popup window with different colors
@@ -365,7 +358,7 @@ func Terminal_in_popup_color(group_name, highlight_cmds, highlight_opt, popup_cm
   \ ] + a:popup_cmds + [
 	\ 'endfunc',
 	\ ] + a:highlight_cmds
-  call writefile(lines, 'XtermPopup')
+  call writefile(lines, 'XtermPopup', 'D')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
   call TermWait(buf, 100)
   call term_sendkeys(buf, ":set noruler\<CR>")
@@ -379,7 +372,6 @@ func Terminal_in_popup_color(group_name, highlight_cmds, highlight_opt, popup_cm
   call term_sendkeys(buf, ":q\<CR>")
   call TermWait(buf, 50)  " wait for terminal to vanish
   call StopVimInTerminal(buf)
-  call delete('XtermPopup')
 endfunc
 
 func Test_terminal_in_popup_color_Terminal()
@@ -582,7 +574,7 @@ func Test_term_and_startinsert()
      term
      startinsert
   EOL
-  call writefile(lines, 'XTest_startinsert')
+  call writefile(lines, 'XTest_startinsert', 'D')
   let buf = RunVimInTerminal('-S XTest_startinsert', {})
 
   call term_sendkeys(buf, "exit\r")
@@ -592,7 +584,6 @@ func Test_term_and_startinsert()
   call WaitForAssert({-> assert_equal("some text<", term_getline(buf, 1))})
 
   call StopVimInTerminal(buf)
-  call delete('XTest_startinsert')
 endfunc
 
 " Test for passing invalid arguments to terminal functions
@@ -683,7 +674,7 @@ func Test_term_mouse()
     red green yellow red blue
     vim emacs sublime nano
   END
-  call writefile(lines, 'Xtest_mouse')
+  call writefile(lines, 'Xtest_mouse', 'D')
 
   " Create a terminal window running Vim for the test with mouse enabled
   let prev_win = win_getid()
@@ -783,7 +774,6 @@ func Test_term_mouse()
   let &ttymouse = save_ttymouse
   let &clipboard = save_clipboard
   set mousetime&
-  call delete('Xtest_mouse')
   call delete('Xbuf')
 endfunc
 
@@ -836,7 +826,7 @@ func Test_term_modeless_selection()
     red green yellow red blue
     vim emacs sublime nano
   END
-  call writefile(lines, 'Xtest_modeless')
+  call writefile(lines, 'Xtest_modeless', 'D')
 
   " Create a terminal window running Vim for the test with mouse disabled
   let prev_win = win_getid()
@@ -869,7 +859,6 @@ func Test_term_modeless_selection()
   let &term = save_term
   let &ttymouse = save_ttymouse
   set mousetime& clipboard&
-  call delete('Xtest_modeless')
   new | only!
 endfunc
 
