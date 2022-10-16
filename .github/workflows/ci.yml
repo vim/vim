@@ -304,6 +304,7 @@ jobs:
         run: |
           brew install lua
           echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
+          brew uninstall perl
 
       - name: Set up environment
         run: |
@@ -317,8 +318,7 @@ jobs:
           normal)
             ;;
           huge)
-            # Use "dynamic" for Perl otherwise it fails.
-            echo "CONFOPT=--enable-perlinterp=dynamic --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
           ) >> $GITHUB_ENV
