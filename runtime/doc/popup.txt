@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 9.0.  Last change: 2022 Jun 16
+*popup.txt*  For Vim version 9.0.  Last change: 2022 Oct 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -365,7 +365,6 @@ popup_findinfo()					*popup_findinfo()*
 popup_findpreview()					*popup_findpreview()*
 		Get the |window-ID| for the popup preview window.
 		Return zero if there is none.
-
 
 popup_getoptions({id})					*popup_getoptions()*
 		Return the {options} for popup {id} in a Dict.

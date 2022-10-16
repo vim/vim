@@ -171,6 +171,7 @@ runtime/ftplugin/pbtxt.vim		@lakshayg
 runtime/ftplugin/pdf.vim		@tpope
 runtime/ftplugin/perl.vim		@petdance @dkearns
 runtime/ftplugin/pod.vim		@petdance @dkearns
+runtime/ftplugin/poefilter.vim		@ObserverOfTime
 runtime/ftplugin/postscr.vim		@mrdubya
 runtime/ftplugin/ps1.vim		@heaths
 runtime/ftplugin/ps1xml.vim		@heaths
@@ -192,6 +193,7 @@ runtime/ftplugin/sdoc.vim		@gpanders
 runtime/ftplugin/sh.vim			@dkearns
 runtime/ftplugin/solution.vim		@dkearns
 runtime/ftplugin/spec.vim		@ignatenkobrain
+runtime/ftplugin/ssa.vim		@ObserverOfTime
 runtime/ftplugin/swayconfig.vim		@jamespeapen
 runtime/ftplugin/systemverilog.vim	@Kocha
 runtime/ftplugin/tap.vim		@petdance
@@ -397,6 +399,7 @@ runtime/syntax/perl.vim			@petdance
 runtime/syntax/php.vim			@TysonAndre
 runtime/syntax/plsql.vim		@lee-lindley
 runtime/syntax/pod.vim			@petdance
+runtime/syntax/poefilter.vim		@ObserverOfTime
 runtime/syntax/postscr.vim		@mrdubya
 runtime/syntax/privoxy.vim		@dkearns
 runtime/syntax/prolog.vim		@XVilka
@@ -424,12 +427,14 @@ runtime/syntax/sass.vim			@tpope
 runtime/syntax/scala.vim		@derekwyatt
 runtime/syntax/scss.vim			@tpope
 runtime/syntax/sdoc.vim			@gpanders
+runtime/syntax/sed.vim			@dkearns
 runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
 runtime/syntax/spec.vim			@ignatenkobrain
-runtime/syntax/srt.vim			@ObserverOfTime
 runtime/syntax/sqloracle.vim		@chrisbra
 runtime/syntax/squirrel.vim		@zenmatic
+runtime/syntax/srt.vim			@ObserverOfTime
+runtime/syntax/ssa.vim			@ObserverOfTime
 runtime/syntax/sshconfig.vim		@Jakuje
 runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/sudoers.vim		@e-kwsm

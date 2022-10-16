@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Oct 02
+" Last Change:	2022 Oct 15
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -956,6 +956,8 @@ if has("lispindent")
   call <SID>BinOptionL("lisp")
   call <SID>AddOption("lispwords", gettext("words that change how lisp indenting works"))
   call <SID>OptionL("lw")
+  call <SID>AddOption("lispoptions", gettext("options for Lisp indenting"))
+  call <SID>OptionL("lop")
 endif
 
 

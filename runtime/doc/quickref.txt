@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 9.0.  Last change: 2022 Oct 02
+*quickref.txt*  For Vim version 9.0.  Last change: 2022 Oct 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -785,6 +785,7 @@ Short explanation of each option:		*option-list*
 'lines'			    number of lines in the display
 'linespace'	  'lsp'     number of pixel lines to use between characters
 'lisp'			    automatic indenting for Lisp
+'lispoptions'	  'lop'     changes how Lisp indenting is done
 'lispwords'	  'lw'	    words that change how lisp indenting works
 'list'			    show <Tab> and <EOL>
 'listchars'	  'lcs'     characters for displaying in list mode
