@@ -35,13 +35,13 @@ static int rect_equal(VTermRect *a, VTermRect *b)
          (a->end_col   == b->end_col);
 }
 
-/* True if small is contained entirely within big */
-static int rect_contains(VTermRect *big, VTermRect *small)
+/* True if smallrect is contained entirely within big */
+static int rect_contains(VTermRect *big, VTermRect *smallrect)
 {
-  if(small->start_row < big->start_row) return 0;
-  if(small->start_col < big->start_col) return 0;
-  if(small->end_row   > big->end_row)   return 0;
-  if(small->end_col   > big->end_col)   return 0;
+  if(smallrect->start_row < big->start_row) return 0;
+  if(smallrect->start_col < big->start_col) return 0;
+  if(smallrect->end_row   > big->end_row)   return 0;
+  if(smallrect->end_col   > big->end_col)   return 0;
   return 1;
 }
 

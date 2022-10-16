@@ -60,7 +60,7 @@ struct VTermPen
   unsigned int conceal:1;
   unsigned int strike:1;
   unsigned int font:4; /* To store 0-9 */
-  unsigned int small:1;
+  unsigned int smallfont:1;
   unsigned int baseline:2;
 };
 
