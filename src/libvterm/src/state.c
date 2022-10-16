@@ -387,8 +387,11 @@ static int on_text(const char bytes[], size_t len, void *user)
       }
 #endif
       if (i == glyph_starts || this_width > width)
-	width = this_width;
+	width = this_width;  // TODO: should be += ?
     }
+
+    while(i < npoints && vterm_unicode_is_combining(codepoints[i]))
+      i++;
 
     chars[glyph_ends - glyph_starts] = 0;
     i--;
@@ -1149,6 +1152,12 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
 	set_lineinfo(state, row, FORCE, DWL_OFF, DHL_OFF);
       erase(state, rect, selective);
       break;
+
+    case 3:
+      if(state->callbacks && state->callbacks->sb_clear)
+        if((*state->callbacks->sb_clear)(state->cbdata))
+          return 1;
+      break;
     }
     break;
 
@@ -1389,6 +1398,29 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
 
   case 0x6d: // SGR - ECMA-48 8.3.117
     vterm_state_setpen(state, args, argcount);
+    break;
+
+  case LEADER('?', 0x6d): // DECSGR
+    /* No actual DEC terminal recognised these, but some printers did. These
+     * are alternative ways to request subscript/superscript/off
+     */
+    for(int argi = 0; argi < argcount; argi++) {
+      long arg;
+      switch(arg = CSI_ARG(args[argi])) {
+        case 4: // Superscript on
+          arg = 73;
+          vterm_state_setpen(state, &arg, 1);
+          break;
+        case 5: // Subscript on
+          arg = 74;
+          vterm_state_setpen(state, &arg, 1);
+          break;
+        case 24: // Super+subscript off
+          arg = 75;
+          vterm_state_setpen(state, &arg, 1);
+          break;
+      }
+    }
     break;
 
   case LEADER('>', 0x6d): // xterm resource modifyOtherKeys
@@ -1857,11 +1889,11 @@ static void request_status_string(VTermState *state, VTermStringFragment frag)
   VTerm *vt = state->vt;
 
   char *tmp = state->tmp.decrqss;
-  size_t i = 0;
 
   if(frag.initial)
     tmp[0] = tmp[1] = tmp[2] = tmp[3] = 0;
 
+  size_t i = 0;
   while(i < sizeof(state->tmp.decrqss)-1 && tmp[i])
     i++;
   while(i < sizeof(state->tmp.decrqss)-1 && frag.len--)
@@ -1877,14 +1909,13 @@ static void request_status_string(VTermState *state, VTermStringFragment frag)
       long args[20];
       int argc = vterm_state_getpen(state, args, sizeof(args)/sizeof(args[0]));
       size_t cur = 0;
-      int argi;
 
       cur += SNPRINTF(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
           vt->mode.ctrl8bit ? "\x90" "1$r" : ESC_S "P" "1$r"); // DCS 1$r ...
       if(cur >= vt->tmpbuffer_len)
         return;
 
-      for(argi = 0; argi < argc; argi++) {
+      for(int argi = 0; argi < argc; argi++) {
         cur += SNPRINTF(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
             argi == argc - 1             ? "%ld" :
             CSI_ARG_HAS_MORE(args[argi]) ? "%ld:" :
@@ -1996,15 +2027,14 @@ static int on_resize(int rows, int cols, void *user)
 {
   VTermState *state = user;
   VTermPos oldpos = state->pos;
-  VTermStateFields fields;
 
   if(cols != state->cols) {
-    int col;
     unsigned char *newtabstops = vterm_allocator_malloc(state->vt, (cols + 7) / 8);
     if (newtabstops == NULL)
       return 0;
 
     /* TODO: This can all be done much more efficiently bytewise */
+    int col;
     for(col = 0; col < state->cols && col < cols; col++) {
       unsigned char mask = 1 << (col & 7);
       if(state->tabstops[col >> 3] & mask)
@@ -2033,13 +2063,13 @@ static int on_resize(int rows, int cols, void *user)
   if(state->scrollregion_right > -1)
     UBOUND(state->scrollregion_right, state->cols);
 
+  VTermStateFields fields;
   fields.pos = state->pos;
   fields.lineinfos[0] = state->lineinfos[0];
   fields.lineinfos[1] = state->lineinfos[1];
 
   if(state->callbacks && state->callbacks->resize) {
     (*state->callbacks->resize)(rows, cols, &fields, state->cbdata);
-
     state->pos = fields.pos;
 
     state->lineinfos[0] = fields.lineinfos[0];
@@ -2111,11 +2141,10 @@ static const VTermParserCallbacks parser_callbacks = {
  */
 VTermState *vterm_obtain_state(VTerm *vt)
 {
-  VTermState *state;
   if(vt->state)
     return vt->state;
 
-  state = vterm_state_new(vt);
+  VTermState *state = vterm_state_new(vt);
   if (state == NULL)
     return NULL;
   vt->state = state;
@@ -2127,8 +2156,6 @@ VTermState *vterm_obtain_state(VTerm *vt)
 
 void vterm_state_reset(VTermState *state, int hard)
 {
-  VTermEncoding *default_enc;
-
   state->scrollregion_top = 0;
   state->scrollregion_bottom = -1;
   state->scrollregion_left = 0;
@@ -2149,37 +2176,28 @@ void vterm_state_reset(VTermState *state, int hard)
 
   state->vt->mode.ctrl8bit   = 0;
 
-  {
-    int col;
-    for(col = 0; col < state->cols; col++)
-      if(col % 8 == 0)
-	set_col_tabstop(state, col);
-      else
-	clear_col_tabstop(state, col);
-  }
+  for(int col = 0; col < state->cols; col++)
+    if(col % 8 == 0)
+      set_col_tabstop(state, col);
+    else
+      clear_col_tabstop(state, col);
 
-  {
-    int row;
-    for(row = 0; row < state->rows; row++)
-      set_lineinfo(state, row, FORCE, DWL_OFF, DHL_OFF);
-  }
+  for(int row = 0; row < state->rows; row++)
+    set_lineinfo(state, row, FORCE, DWL_OFF, DHL_OFF);
 
   if(state->callbacks && state->callbacks->initpen)
     (*state->callbacks->initpen)(state->cbdata);
 
   vterm_state_resetpen(state);
 
-  default_enc = state->vt->mode.utf8 ?
+  VTermEncoding *default_enc = state->vt->mode.utf8 ?
       vterm_lookup_encoding(ENC_UTF8,      'u') :
       vterm_lookup_encoding(ENC_SINGLE_94, 'B');
 
-  {
-    int i;
-    for(i = 0; i < 4; i++) {
-      state->encoding[i].enc = default_enc;
-      if(default_enc->init)
-	(*default_enc->init)(default_enc, state->encoding[i].data);
-    }
+  for(int i = 0; i < 4; i++) {
+    state->encoding[i].enc = default_enc;
+    if(default_enc->init)
+      (*default_enc->init)(default_enc, state->encoding[i].data);
   }
 
   state->gl_set = 0;
@@ -2194,12 +2212,11 @@ void vterm_state_reset(VTermState *state, int hard)
   settermprop_int (state, VTERM_PROP_CURSORSHAPE,   VTERM_PROP_CURSORSHAPE_BLOCK);
 
   if(hard) {
-    VTermRect rect = { 0, 0, 0, 0 };
-
     state->pos.row = 0;
     state->pos.col = 0;
     state->at_phantom = 0;
 
+    VTermRect rect = { 0, 0, 0, 0 };
     rect.end_row = state->rows;
     rect.end_col =  state->cols;
     erase(state, rect, 0);

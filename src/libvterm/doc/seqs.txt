@@ -122,6 +122,7 @@ x = xterm
 123x   CSI l            = RM, Reset mode
 123x   CSI ? l          = DECRM, DEC reset mode
 123x   CSI m            = SGR, Set Graphic Rendition
+       CSI ? m          = DECSGR, private Set Graphic Rendition
 123x   CSI   n          = DSR, Device Status Report
  23x       5            =   operating status
  23x       6            =   CPR = cursor position
@@ -198,6 +199,9 @@ x = xterm
    x   SGR 40-47        = Background ANSI
    x   SGR 48           = Background alternative palette
    x   SGR 49           = Background default
+       SGR 73           = Superscript on
+       SGR 74           = Subscript on
+       SGR 75           = Superscript/subscript off
    x   SGR 90-97        = Foreground ANSI high-intensity
    x   SGR 100-107      = Background ANSI high-intensity
 

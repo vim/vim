@@ -7,8 +7,11 @@ The original can be found:
 	https://github.com/neovim/libvterm
 
 Modifications:
-- Add a .gitignore file.
-- Convert some code from C99 to C90.
+- revisions up to 817 have been included
+- Added a .gitignore file.
+- use TRUE and FALSE instead of true and false
+- use int or unsigned int instead of bool
+- Converted some code from C99 to C90.
 - Other changes to support embedding in Vim.
 
 To get the latest version of libvterm you need the "bzr" command and do:

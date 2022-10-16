@@ -134,6 +134,9 @@ void vterm_get_size(const VTerm *vt, int *rowsp, int *colsp)
 
 void vterm_set_size(VTerm *vt, int rows, int cols)
 {
+  if(rows < 1 || cols < 1)
+    return;
+
   vt->rows = rows;
   vt->cols = cols;
 
@@ -201,7 +204,6 @@ INTERNAL void vterm_push_output_sprintf(VTerm *vt, const char *format, ...)
 INTERNAL void vterm_push_output_sprintf_ctrl(VTerm *vt, unsigned char ctrl, const char *fmt, ...)
 {
   size_t cur;
-  va_list args;
 
   if(ctrl >= 0x80 && !vt->mode.ctrl8bit)
     cur = SNPRINTF(vt->tmpbuffer, vt->tmpbuffer_len,
@@ -213,6 +215,7 @@ INTERNAL void vterm_push_output_sprintf_ctrl(VTerm *vt, unsigned char ctrl, cons
     return;
   vterm_push_output_bytes(vt, vt->tmpbuffer, cur);
 
+  va_list args;
   va_start(args, fmt);
   vterm_push_output_vsprintf(vt, fmt, args);
   va_end(args);
@@ -221,7 +224,6 @@ INTERNAL void vterm_push_output_sprintf_ctrl(VTerm *vt, unsigned char ctrl, cons
 INTERNAL void vterm_push_output_sprintf_str(VTerm *vt, unsigned char ctrl, int term, const char *fmt, ...)
 {
   size_t cur;
-  va_list args;
 
   if(ctrl) {
     if(ctrl >= 0x80 && !vt->mode.ctrl8bit)
@@ -236,6 +238,7 @@ INTERNAL void vterm_push_output_sprintf_str(VTerm *vt, unsigned char ctrl, int t
     vterm_push_output_bytes(vt, vt->tmpbuffer, cur);
   }
 
+  va_list args;
   va_start(args, fmt);
   vterm_push_output_vsprintf(vt, fmt, args);
   va_end(args);
@@ -292,6 +295,8 @@ VTermValueType vterm_get_attr_type(VTermAttr attr)
     case VTERM_ATTR_FONT:       return VTERM_VALUETYPE_INT;
     case VTERM_ATTR_FOREGROUND: return VTERM_VALUETYPE_COLOR;
     case VTERM_ATTR_BACKGROUND: return VTERM_VALUETYPE_COLOR;
+    case VTERM_ATTR_SMALL:      return VTERM_VALUETYPE_BOOL;
+    case VTERM_ATTR_BASELINE:   return VTERM_VALUETYPE_INT;
 
     case VTERM_N_ATTRS: return 0;
   }
@@ -396,8 +401,6 @@ void vterm_copy_cells(VTermRect dest,
   int init_row, test_row, init_col, test_col;
   int inc_row, inc_col;
 
-  VTermPos pos;
-
   if(downward < 0) {
     init_row = dest.end_row - 1;
     test_row = dest.start_row - 1;
@@ -420,6 +423,7 @@ void vterm_copy_cells(VTermRect dest,
     inc_col = +1;
   }
 
+  VTermPos pos;
   for(pos.row = init_row; pos.row != test_row; pos.row += inc_row)
     for(pos.col = init_col; pos.col != test_col; pos.col += inc_col) {
       VTermPos srcpos;

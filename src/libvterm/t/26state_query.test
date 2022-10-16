@@ -9,7 +9,7 @@ PUSH "\e[c"
 !XTVERSION
 RESET
 PUSH "\e[>q"
-  output "\eP>|libvterm(0.2)\e\\"
+  output "\eP>|libvterm(0.3)\e\\"
 
 !DSR
 RESET

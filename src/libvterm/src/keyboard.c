@@ -4,6 +4,7 @@
 
 #include "utf8.h"
 
+// VIM: added
 int vterm_is_modify_other_keys(VTerm *vt)
 {
   return vt->state->mode.modify_other_keys;
@@ -12,8 +13,7 @@ int vterm_is_modify_other_keys(VTerm *vt)
 
 void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
 {
-  int needs_CSIu;
-
+  // VIM: added modifyOtherKeys support
   if (vt->state->mode.modify_other_keys && mod != 0) {
     vterm_push_output_sprintf_ctrl(vt, C1_CSI, "27;%d;%d~", mod+1, c);
     return;
@@ -33,6 +33,7 @@ void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
     return;
   }
 
+  int needs_CSIu;
   switch(c) {
     /* Special Ctrl- letters that can't be represented elsewise */
     case 'i': case 'j': case 'm': case '[':
@@ -93,12 +94,12 @@ static keycodes_s keycodes[] = {
   { KEYCODE_CSI_CURSOR, 'D', 0 }, // LEFT
   { KEYCODE_CSI_CURSOR, 'C', 0 }, // RIGHT
 
-  { KEYCODE_CSINUM,     '~', 2 }, // INS
-  { KEYCODE_CSINUM,     '~', 3 }, // DEL
+  { KEYCODE_CSINUM, '~', 2 },  // INS
+  { KEYCODE_CSINUM, '~', 3 },  // DEL
   { KEYCODE_CSI_CURSOR, 'H', 0 }, // HOME
   { KEYCODE_CSI_CURSOR, 'F', 0 }, // END
-  { KEYCODE_CSINUM,     '~', 5 }, // PAGEUP
-  { KEYCODE_CSINUM,     '~', 6 }, // PAGEDOWN
+  { KEYCODE_CSINUM, '~', 5 },  // PAGEUP
+  { KEYCODE_CSINUM, '~', 6 },  // PAGEDOWN
 };
 
 static keycodes_s keycodes_fn[] = {
@@ -107,14 +108,14 @@ static keycodes_s keycodes_fn[] = {
   { KEYCODE_SS3,	'Q', 0 }, // F2
   { KEYCODE_SS3,	'R', 0 }, // F3
   { KEYCODE_SS3,	'S', 0 }, // F4
-  { KEYCODE_CSINUM,     '~', 15 }, // F5
-  { KEYCODE_CSINUM,     '~', 17 }, // F6
-  { KEYCODE_CSINUM,     '~', 18 }, // F7
-  { KEYCODE_CSINUM,     '~', 19 }, // F8
-  { KEYCODE_CSINUM,     '~', 20 }, // F9
-  { KEYCODE_CSINUM,     '~', 21 }, // F10
-  { KEYCODE_CSINUM,     '~', 23 }, // F11
-  { KEYCODE_CSINUM,     '~', 24 }, // F12
+  { KEYCODE_CSINUM, '~', 15 }, // F5
+  { KEYCODE_CSINUM, '~', 17 }, // F6
+  { KEYCODE_CSINUM, '~', 18 }, // F7
+  { KEYCODE_CSINUM, '~', 19 }, // F8
+  { KEYCODE_CSINUM, '~', 20 }, // F9
+  { KEYCODE_CSINUM, '~', 21 }, // F10
+  { KEYCODE_CSINUM, '~', 23 }, // F11
+  { KEYCODE_CSINUM, '~', 24 }, // F12
 };
 
 static keycodes_s keycodes_kp[] = {
@@ -140,11 +141,10 @@ static keycodes_s keycodes_kp[] = {
 
 void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
 {
-  keycodes_s k;
-
   if(key == VTERM_KEY_NONE)
     return;
 
+  keycodes_s k;
   if(key < VTERM_KEY_FUNCTION_0) {
     if(key >= sizeof(keycodes)/sizeof(keycodes[0]))
       return;

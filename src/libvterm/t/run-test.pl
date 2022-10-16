@@ -124,7 +124,7 @@ sub do_line
       elsif( $line =~ m/^putglyph (\S+) (.*)$/ ) {
          $line = "putglyph " . join( ",", map sprintf("%x", $_), eval($1) ) . " $2";
       }
-      elsif( $line =~ m/^(?:movecursor|scrollrect|moverect|erase|damage|sb_pushline|sb_popline|settermprop|setmousefunc|selection-query) / ) {
+      elsif( $line =~ m/^(?:movecursor|scrollrect|moverect|erase|damage|sb_pushline|sb_popline|sb_clear|settermprop|setmousefunc|selection-query) ?/ ) {
          # no conversion
       }
       elsif( $line =~ m/^(selection-set) (.*?) (\[?)(.*?)(\]?)$/ ) {
