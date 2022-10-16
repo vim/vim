@@ -1233,35 +1233,33 @@ mch_bevalterm_changed(void)
 
 
 /*
-  Win32 console mouse scroll event handler.
-  loosely based on the _OnMouseWheel in gui_w32.c
-  
-  This encodes the mouse scroll direction and keyboard modifiers 
-  into g_nMouseClick, and the mouse position into g_xMouse and g_yMouse
-
-  The direction of the scroll is decoded from two fields of the
-  win32 console mouse event record;
-	1. The axis - vertical or horizontal flag - from dwEventFlags, and
-	2. The sign - positive or negative (aka delta flag) - from dwButtonState
-
-	When scroll axis is HORIZONTAL
-	.  If the high word of the dwButtonState member contains a positive value, 
-	   the wheel was rotated to the right. 
-	.  Otherwise, the wheel was rotated to the left.
-	When scroll axis is VERTICAL
-	.  If the high word of the dwButtonState member contains a positive value, 
-	   the wheel was rotated forward, away from the user. 
-	.  Otherwise, the wheel was rotated backward, toward the user.
+ * Win32 console mouse scroll event handler.
+ * loosely based on the _OnMouseWheel in gui_w32.c
+ *  
+ * This encodes the mouse scroll direction and keyboard modifiers 
+ *  into g_nMouseClick, and the mouse position into g_xMouse and g_yMouse
+ *
+ *  The direction of the scroll is decoded from two fields of the
+ *  win32 console mouse event record;
+ *    1. The axis - vertical or horizontal flag - from dwEventFlags, and
+ *    2. The sign - positive or negative (aka delta flag) - from dwButtonState
+ *
+ *    When scroll axis is HORIZONTAL
+ *    .  If the high word of the dwButtonState member contains a positive value, 
+ *       the wheel was rotated to the right. 
+ *    .  Otherwise, the wheel was rotated to the left.
+ *    When scroll axis is VERTICAL
+ *    .  If the high word of the dwButtonState member contains a positive value, 
+ *       the wheel was rotated forward, away from the user. 
+ *    .  Otherwise, the wheel was rotated backward, toward the user.
 */ 
     static void
 decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 {
 	win_T *wp;
-
-    int horizontal = (pmer->dwEventFlags == MOUSE_HWHEELED);
-    int zDelta = pmer->dwButtonState;
-
-    g_xMouse = pmer->dwMousePosition.X;  
+	int horizontal = (pmer->dwEventFlags == MOUSE_HWHEELED);
+	int zDelta = pmer->dwButtonState;
+	g_xMouse = pmer->dwMousePosition.X;  
 	g_yMouse = pmer->dwMousePosition.Y;
 
 #ifdef FEAT_PROP_POPUP
@@ -1271,28 +1269,26 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 	l_col = g_xMouse;
 	l_row = g_yMouse;
 	wp = mouse_find_win(&l_row, &l_col, FAIL_POPUP);
-    if (wp != NULL && popup_is_popup(wp))
-    {
+	if (wp != NULL && popup_is_popup(wp))
+	{
 		g_nMouseClick = -1;
-
 		cmdarg_T cap;
 		oparg_T oa;
 		CLEAR_FIELD(cap);
 		clear_oparg(&oa);
 		cap.oap = &oa;
-		
 		if (horizontal)
 		{
 			cap.arg = zDelta < 0 ? MSCR_LEFT : MSCR_RIGHT;
 			cap.cmdchar = zDelta < 0 ? K_MOUSELEFT : K_MOUSERIGHT;
 		}
-		else 
+		else
 		{ 
 			cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
 			cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
 		}
-
-        // Mouse hovers over popup window, scroll it if possible.
+		
+		// Mouse hovers over popup window, scroll it if possible.
 		mouse_row = wp->w_winrow;
 		mouse_col = wp->w_wincol;
 		nv_mousescroll(&cap);
@@ -1302,7 +1298,6 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 		return;
 	}
 #endif
-
 	mouse_col = g_xMouse;
 	mouse_row = g_yMouse;
 
@@ -1310,23 +1305,22 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 	char_u direction = 0;
 
 	// Decode the direction into an event that Vim can process
-    if (horizontal)
+	if (horizontal)
 		direction = zDelta >= 0 ? KE_MOUSELEFT : KE_MOUSERIGHT;
-    else
+	else
 		direction = zDelta >= 0 ? KE_MOUSEDOWN : KE_MOUSEUP;
-
 
 	// Decode the win32 console key modifers into Vim mouse modifers. 
 	if (pmer->dwControlKeyState & SHIFT_PRESSED)
 		modifiers |= MOD_MASK_SHIFT; //MOUSE_SHIFT;
-    if (pmer->dwControlKeyState & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED))
+	if (pmer->dwControlKeyState & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED))
 		modifiers |= MOD_MASK_CTRL; //MOUSE_CTRL;
-    if (pmer->dwControlKeyState & (RIGHT_ALT_PRESSED  | LEFT_ALT_PRESSED))
+	if (pmer->dwControlKeyState & (RIGHT_ALT_PRESSED  | LEFT_ALT_PRESSED))
 		modifiers |= MOD_MASK_ALT; // MOUSE_ALT;
 
 	// add (bitwise or) the scroll direction and the key modifier chars together.
 	g_nMouseClick = ((direction << 8) | modifiers);
-
+	
 	return;
 }
 
@@ -1405,12 +1399,12 @@ decode_mouse_event(
    
     if (pmer->dwEventFlags == MOUSE_WHEELED || pmer->dwEventFlags == MOUSE_HWHEELED)
     {
- 		decode_mouse_wheel(pmer);
-		return TRUE;  // we now should have a mouse scroll in g_nMouseClick
+        decode_mouse_wheel(pmer);
+        return TRUE;  // we now should have a mouse scroll in g_nMouseClick
     }
 
-	nButton = -1;
-	g_xMouse = pmer->dwMousePosition.X;
+    nButton = -1;
+    g_xMouse = pmer->dwMousePosition.X;
     g_yMouse = pmer->dwMousePosition.Y;
 
     if (pmer->dwEventFlags == MOUSE_MOVED)
@@ -2052,8 +2046,9 @@ mch_inchar(
 				scroll_dir == KE_MOUSEDOWN ||
 				scroll_dir == KE_MOUSEUP ||
 				scroll_dir == KE_MOUSELEFT ||
-				scroll_dir == KE_MOUSERIGHT)
+				scroll_dir == KE_MOUSERIGHT
 			)
+		)
 		{
 			if (modifiers > 0)
 			{
@@ -2069,10 +2064,10 @@ mch_inchar(
 		else
 		{
 			typeahead[typeaheadlen++] = ESC + 128;
-	    	typeahead[typeaheadlen++] = 'M';
-	    	typeahead[typeaheadlen++] = g_nMouseClick;
-	    	typeahead[typeaheadlen++] = g_xMouse + '!';
-	    	typeahead[typeaheadlen++] = g_yMouse + '!';
+			typeahead[typeaheadlen++] = 'M';
+			typeahead[typeaheadlen++] = g_nMouseClick;
+			typeahead[typeaheadlen++] = g_xMouse + '!';
+			typeahead[typeaheadlen++] = g_yMouse + '!';
 			g_nMouseClick = -1;
 		}
 	}
