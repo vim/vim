@@ -849,7 +849,7 @@ endfor
     echo []
 	+ []
 	+ [{a: 1,
-	    b: 2}]
+	b: 2}]
 }
 " END_INDENT
 
@@ -868,4 +868,22 @@ def Foo()
 	    echo
 	})
 enddef
+" END_INDENT
+
+" START_INDENT
+echo {
+    k: () => {
+	if true
+	    echo
+	    popup_setoptions(id,
+		{title: 'title'})
+	endif
+    }
+}
+" END_INDENT
+
+" START_INDENT
+if true
+elseif
+endif
 " END_INDENT

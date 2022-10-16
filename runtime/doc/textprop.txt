@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.0.  Last change: 2022 Sep 21
+*textprop.txt*  For Vim version 9.0.  Last change: 2022 Oct 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -172,6 +172,9 @@ prop_add({lnum}, {col}, {props})
 				   wrap      wrap the text to the next line
 				   truncate  truncate the text to make it fit
 		   		When omitted "truncate" is used.
+				Note that this applies to the individual text
+				property, the 'wrap' option sets the overall
+				behavior
 		All fields except "type" are optional.
 
 		It is an error when both "length" and "end_lnum" or "end_col"

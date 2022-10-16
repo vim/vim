@@ -91,7 +91,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		   Lección 1.4: EDITAR TEXTO - BORRAR
+		   Lección 1.4: EDITAR TEXTO - INSERTAR
 
          ** Pulse  i  para insertar texto. **
 
@@ -248,8 +248,11 @@ Ahora continúe con la Lección 2.
   Una lista resumida de movimientos:
    w - hasta el comienzo de la siguiente palabra, EXCLUYENDO su primer
        carácter.
-   e - hasta el final de la palabra actual, INCLUYENDO su primer carácter.
+   e - hasta el final de la palabra actual, INCLUYENDO el último carácter.
    $ - hasta el final de la línea, INCLUYENDO el último carácter.
+
+ Por tanto, al escribir  de  borrará desde la posición del cursor, hasta
+ el final de la palabra.
 
 NOTA: Pulsando únicamente el movimiento estando en el modo Normal sin un
       operador, moverá el cursor como se especifica en la lista anterior.
@@ -262,7 +265,7 @@ NOTA: Pulsando únicamente el movimiento estando en el modo Normal sin un
 
   1. Mueva el cursor al comienzo de la línea marcada con --->.
 
-  2. Escriba 2w  para mover el cursor dos palabras hacia adelante.
+  2. Escriba  2w  para mover el cursor dos palabras hacia adelante.
 
   3. Escriba  3e  para mover el cursor al final de la tercera palabra hacia
      adelante.
@@ -271,7 +274,7 @@ NOTA: Pulsando únicamente el movimiento estando en el modo Normal sin un
 
   5. Repita el paso 2 y 3 con diferentes números.
 
----> Esto es solo una línea con palabra donde poder moverse.
+---> Esto es solo una línea con palabras donde poder moverse.
 
   6. Pase a la lección 2.5.
 
@@ -288,15 +291,15 @@ NOTA: Pulsando únicamente el movimiento estando en el modo Normal sin un
   anteriormente, añada un contador antes del movimiento para eliminar más:
 	 d   número   movimiento
 
-  1. Mueva el cursos a la primera palabra en MAYÚSCULAS en la línea
-     marcada con --->.
+  1. Mueva el cursor al inicio de la primera palabra en MAYÚSCULAS en la
+     línea marcada con --->.
 
   2. Escriba  d2w  para eliminar las dos palabras en MAYÚSCULAS.
 
   3. Repita los pasos 1 y 2 con diferentes contadores para eliminar
      las siguientes palabras en MAYÚSCULAS con un comando.
 
---->  esta ABC DE serie FGHI JK LMN OP de palabras ha sido Q RS TUV limpiada.
+--->  Esta ABC DE serie FGHI JK LMN OP de palabras ha sido Q RS TUV limpiada.
 
 
 
@@ -319,7 +322,7 @@ NOTA: Pulsando únicamente el movimiento estando en el modo Normal sin un
 
 --->  1)  Las rosas son rojas,
 --->  2)  El barro es divertido,
---->  3)  Las violetas son azules,
+--->  3)  La violeta es azul,
 --->  4)  Tengo un coche,
 --->  5)  Los relojes dan la hora,
 --->  6)  El azúcar es dulce
@@ -362,7 +365,7 @@ mencionados anteriormente.
   3. Para borrar desde el cursor hasta el final de una línea pulse:	 d$
   4. Para borrar una línea entera pulse:                             dd
 
-  5. Para repetir un movimiento precédalo con un número:  2w
+  5. Para repetir un movimiento anteponga un número:  2w
   6. El formato para un comando de cambio es:
                operador  [número]  movimiento
      donde:
@@ -394,7 +397,7 @@ mencionados anteriormente.
   5. Repita los pasos 2 a 4 para poner todas las líneas en el orden correcto.
 
 ---> d) ¿Puedes aprenderla tú?
----> b) Las violetas son azules,
+---> b) La violeta es azul,
 ---> c) La inteligencia se aprende,
 ---> a) Las rosas son rojas,
      
@@ -426,7 +429,7 @@ NOTA: Recuerde que debería aprender practicando.
 			Lección 3.3: EL COMANDO CAMBIAR
 
 
-     ** Para cambiar hasta el final de una línea, escriba  ce . **
+     ** Para cambiar hasta el final de una palabra, escriba  ce . **
 
   1. Mueva el cursor a la primera línea inferior marcada con --->.
 
@@ -477,7 +480,7 @@ NOTA: Puede utilizar el retorno de carro para corregir errores mientras escribe.
      escriba  p . Esto pega el texto después del cursor (si se borró una
      línea, al pegarla, esta se situará en la línea debajo del cursor).
 
-  2. Para sustituir el carácter bajo el cursor, pulse	r   y luego el
+  2. Para reemplazar el carácter bajo el cursor, pulse	r   y luego el
      carácter que quiere que esté en ese lugar.
 
   3. El operador change le permite cambiar desde la posición del cursor
@@ -585,11 +588,11 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
 ---> Laas mejores épocas para ver laas flores son laas primaveras.
 
   4. Para cambiar cada ocurrencia de la cadena de caracteres entre dos líneas,
-     Pulse  :#,#s/viejo/nuevo/g  donde #,# son los números de línea del rango
+   Escriba  :#,#s/viejo/nuevo/g  donde #,# son los números de línea del rango
                                  de líneas donde se realizará la sustitución.
-     Pulse  :%s/old/new/g        para cambiar cada ocurrencia en todo el
+   Escriba  :%s/old/new/g        para cambiar cada ocurrencia en todo el
                                  archivo.
-     Pulse  :%s/old/new/gc       para encontrar cada ocurrencia en todo el 
+   Escriba  :%s/old/new/gc       para encontrar cada ocurrencia en todo el 
                                  archivo, pidiendo confirmación para 
                                  realizar la sustitución o no.
 
@@ -602,19 +605,19 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
      número  G  mueve el cursor a ese número de línea.
             gg  mueve el cursor a la primera línea del archivo.
 
-  2. Pulsando  /  seguido de una frase busca la frase hacia ADELANTE.
-     Pulsando  ?  seguido de una frase busca la frase hacia ATRÁS.
+  2. Escribiendo  /  seguido de una frase busca la frase hacia ADELANTE.
+     Escribiendo  ?  seguido de una frase busca la frase hacia ATRÁS.
      Después de una búsqueda pulse  n  para encontrar la aparición
      siguiente en la misma dirección o  N  para buscar en dirección opuesta.
 
   3. Pulsando  %  cuando el cursor esta sobre (,), [,], { o } localiza
      la pareja correspondiente.
 
-  4. Para cambiar viejo en el primer nuevo en una línea pulse  :s/viejo/nuevo
-     Para cambiar todos los viejo por nuevo en una línea pulse :s/viejo/nuevo/g
-     Para cambiar frases entre dos números de líneas pulse  :#,#s/viejo/nuevo/g
-     Para cambiar viejo por nuevo en todo el fichero pulse  :%s/viejo/nuevo/g
-     Para pedir confirmación en cada caso añada  'c'	    :%s/viejo/nuevo/gc
+  4. Para cambiar viejo en el primer nuevo en una línea escriba  :s/viejo/nuevo
+   Para cambiar todos los viejo por nuevo en una línea escriba :s/viejo/nuevo/g
+   Para cambiar frases entre dos números de líneas escriba  :#,#s/viejo/nuevo/g
+   Para cambiar viejo por nuevo en todo el fichero escriba  :%s/viejo/nuevo/g
+   Para pedir confirmación en cada caso añada  'c'	    :%s/viejo/nuevo/gc
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -631,7 +634,7 @@ NOTA: ¡Esto es muy útil en la detección de errores en un programa con
 
   3. Como ejemplo escriba   ls	 después del ! y luego pulse <INTRO>. Esto
      le mostrará una lista de su directorio, igual que si estuviera en el
-     símbolo del sistema. Si  ls  no funciona utilice	!:dir	.
+     símbolo del sistema. Si  ls  no funciona utilice	:!dir	.
 
 NOTA: De esta manera es posible ejecutar cualquier comando externo,
       también incluyendo argumentos.
@@ -680,7 +683,7 @@ NOTA: Si saliera de Vim y volviera a entrar de nuevo con  vim TEST  , el
      :'<,'>
 
   4. Pulse  w TEST  , donde TEST es un nombre de archivo que aún no existe.
-     Verifique que  :'<,'>w TEST  antes de pulsar <INTRO>.
+     Verifique que ve  :'<,'>w TEST  antes de pulsar <INTRO>.
 
   5. Vim escribirá las líneas seleccionadas en el archivo TEST. Utilice
      :!dir  o  :!ls  para verlo. ¡No lo elimine todavía! Lo utilizaremos
@@ -759,7 +762,7 @@ NOTA: También puede leer la salida de un comando externo. Por ejemplo,
 ---> Después de pulsar  o  el cursor se sitúa en la línea abierta en modo Insertar.
 
   4. Para abrir una línea por ENCIMA del cursor, simplemente pulse una O
-     mayúscula, en lugar de una o minúscula. Pruebe este en la línea siguiente.
+     mayúscula, en lugar de una o minúscula. Pruebe esto en la línea siguiente.
 
 ---> Abra una línea sobre esta pulsando O cuando el cursor está en esta línea.
 
@@ -893,7 +896,7 @@ NOTA:  Si quiere ignorar las mayúsculas y minúsculas, solo para un comando
 	'hls' 'hlsearch'	resalta todas las coincidencias de la frases
      Puedes utilizar tanto los nombre largos o cortos de las opciones.
 
-  7. Añade "no" para inhabilitar una opción:   :set noic
+  7. Añada "no" para inhabilitar una opción:   :set noic
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		  Lección 7: OBTENER AYUDA

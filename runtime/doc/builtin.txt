@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2022 Oct 10
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Oct 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5404,7 +5404,8 @@ listener_add({callback} [, {buf}])			*listener_add()*
 				the change; one if unknown or the whole line
 				was affected; this is a byte index, first
 				character has a value of one.
-		When lines are inserted the values are:
+		When lines are inserted (not when a line is split, e.g. by
+		typing CR in Insert mode) the values are:
 		    lnum	line above which the new line is added
 		    end		equal to "lnum"
 		    added	number of lines inserted
