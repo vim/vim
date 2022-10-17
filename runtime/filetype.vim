@@ -1960,6 +1960,10 @@ au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 au BufNewFile,BufRead sshd_config			setf sshdconfig
 au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
 
+" OpenVPN configuration
+au BufNewFile,BufRead *.ovpn			setf openvpn
+au BufNewFile,BufRead */openvpn/*/*.conf	setf openvpn
+
 " Stata
 au BufNewFile,BufRead *.ado,*.do,*.imata,*.mata	setf stata
 " Also *.class, but not when it's a Java bytecode file
