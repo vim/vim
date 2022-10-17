@@ -3132,6 +3132,30 @@ def Test_expr9_any_index_slice()
   unlet g:testlist
 enddef
 
+def Test_expr9_const_any_index_slice()
+  var lines =<< trim END
+      vim9script
+
+      export def V(): dict<any>
+        return {a: [1, 43], b: 0}
+      enddef
+  END
+  writefile(lines, 'XexportDict.vim', 'D')
+
+  lines =<< trim END
+      vim9script
+
+      import './XexportDict.vim' as x
+
+      def Test()
+        const v = x.V()
+        assert_equal(43, v.a[1])
+      enddef
+      Test()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_expr_member_vim9script()
   var lines =<< trim END
       var d = {one:

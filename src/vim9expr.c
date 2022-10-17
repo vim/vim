@@ -93,7 +93,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     vartype = typep->type_curr->tt_type;
     idxtype = (((type2_T *)stack->ga_data) + stack->ga_len - 1)->type_curr;
     // If the index is a string, the variable must be a Dict.
-    if ((typep->type_curr == &t_any || typep->type_curr == &t_unknown)
+    if ((typep->type_curr->tt_type == VAR_ANY
+		|| typep->type_curr->tt_type == VAR_UNKNOWN)
 						       && idxtype == &t_string)
 	vartype = VAR_DICT;
     if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB)
@@ -172,8 +173,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 		return FAIL;
 	}
     }
-    else if (vartype == VAR_LIST || typep->type_curr == &t_any
-					     || typep->type_curr == &t_unknown)
+    else if (vartype == VAR_LIST || typep->type_curr->tt_type == VAR_ANY
+				 || typep->type_curr->tt_type == VAR_UNKNOWN)
     {
 	if (is_slice)
 	{
@@ -669,7 +670,7 @@ compile_arguments(
 	    // {sub} argument of substitute() can be compiled if it starts
 	    // with \=
 	    if (isn->isn_type == ISN_PUSHS && isn->isn_arg.string[0] == '\\'
-		    && isn->isn_arg.string[1] == '=')
+					      && isn->isn_arg.string[1] == '=')
 		compile_string(isn, cctx, 2);
 	}
 
@@ -1646,10 +1647,11 @@ bool_on_stack(cctx_T *cctx)
     if (type == &t_bool)
 	return OK;
 
-    if (type == &t_any
-	    || type == &t_unknown
-	    || type == &t_number
-	    || type == &t_number_bool)
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_UNKNOWN
+	    || type->tt_type == VAR_NUMBER
+	    || type == &t_number_bool
+	    || type == &t_const_number_bool)
 	// Number 0 and 1 are OK to use as a bool.  "any" could also be a bool.
 	// This requires a runtime type check.
 	return generate_COND2BOOL(cctx);
