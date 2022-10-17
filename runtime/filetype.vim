@@ -1032,6 +1032,9 @@ au BufNewFile,BufRead Kconfig,Kconfig.debug	setf kconfig
 " Lace (ISE)
 au BufNewFile,BufRead *.ace,*.ACE		setf lace
 
+" Larch Shared Language
+au BufNewFile,BufRead .lsl			call dist#ft#FTlsl()
+
 " Latexmkrc
 au BufNewFile,BufRead .latexmkrc,latexmkrc	setf perl
 
@@ -1122,7 +1125,7 @@ au BufNewFile,BufRead .luacheckrc		setf lua
 au BufNewFile,BufRead *.rockspec		setf lua
 
 " Linden Scripting Language (Second Life)
-au BufNewFile,BufRead *.lsl			setf lsl
+au BufNewFile,BufRead *.lsl			call dist#ft#FTlsl()
 
 " Lynx style file (or LotusScript!)
 au BufNewFile,BufRead *.lss			setf lss
@@ -1219,6 +1222,9 @@ au BufNewFile,BufRead *.m2,*.DEF,*.mi		setf modula2
 
 " Modula-3 (.m3, .i3, .mg, .ig)
 au BufNewFile,BufRead *.[mi][3g]		setf modula3
+
+" Larch/Modula-3
+au BufNewFile,BufRead *.lm3			setf modula3
 
 " Monk
 au BufNewFile,BufRead *.isc,*.monk,*.ssc,*.tsc	setf monk
