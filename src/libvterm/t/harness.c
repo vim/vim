@@ -410,7 +410,7 @@ static struct {
   int conceal;
   int strike;
   int font;
-  int smallfont;
+  int small;
   int baseline;
   VTermColor foreground;
   VTermColor background;
@@ -443,7 +443,7 @@ static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user UNUSED)
     state_pen.font = val->number;
     break;
   case VTERM_ATTR_SMALL:
-    state_pen.smallfont = val->boolean;
+    state_pen.small = val->boolean;
     break;
   case VTERM_ATTR_BASELINE:
     state_pen.baseline = val->number;
@@ -1015,11 +1015,11 @@ int main(int argc UNUSED, char **argv UNUSED)
         }
         else if(streq(linep, "small")) {
           vterm_state_get_penattr(state, VTERM_ATTR_SMALL, &val);
-          if(val.boolean != state_pen.smallfont)
+          if(val.boolean != state_pen.small)
             printf("! pen small mismatch; state=%s, event=%s\n",
-                BOOLSTR(val.boolean), BOOLSTR(state_pen.smallfont));
+                BOOLSTR(val.boolean), BOOLSTR(state_pen.small));
           else
-            printf("%s\n", BOOLSTR(state_pen.smallfont));
+            printf("%s\n", BOOLSTR(state_pen.small));
         }
         else if(streq(linep, "baseline")) {
           vterm_state_get_penattr(state, VTERM_ATTR_BASELINE, &val);
@@ -1160,7 +1160,7 @@ int main(int argc UNUSED, char **argv UNUSED)
         if(cell.attrs.blink)     printf("K");
         if(cell.attrs.reverse)   printf("R");
         if(cell.attrs.font)      printf("F%d", cell.attrs.font);
-        if(cell.attrs.smallfont) printf("S");
+        if(cell.attrs.small)     printf("S");
         if(cell.attrs.baseline)  printf(
             cell.attrs.baseline == VTERM_BASELINE_RAISE ? "^" :
                                                           "_");
