@@ -960,7 +960,10 @@ do_bang(
     // Don't do anything if there is no command as there isn't really anything
     // useful in running "sh -c ''".  Avoids changing "prevcmd".
     if (STRLEN(newcmd) == 0)
+    {
+	vim_free(newcmd);
 	return;
+    }
 
     vim_free(prevcmd);
     prevcmd = newcmd;
