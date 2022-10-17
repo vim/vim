@@ -343,9 +343,14 @@ handle_lnum_col(
 	int		num_attr UNUSED)
 {
     int has_cpo_n = vim_strchr(p_cpo, CPO_NUMCOL) != NULL;
+    int lnum_row = wlv->startrow + wlv->filler_lines
+#ifdef FEAT_PROP_POPUP
+		      + wlv->text_prop_above_count
+#endif
+		      ;
 
     if ((wp->w_p_nu || wp->w_p_rnu)
-	     && (wlv->row == wlv->startrow + wlv->filler_lines || !has_cpo_n)
+	     && (wlv->row <= lnum_row || !has_cpo_n)
 	     // there is no line number in a wrapped line when "n" is in
 	     // 'cpoptions', but 'breakindent' assumes it anyway.
 	     && !((has_cpo_n
@@ -366,10 +371,7 @@ handle_lnum_col(
 	  // Draw the line number (empty space after wrapping).
 	  // When there are text properties above the line put the line number
 	  // below them.
-	  if (wlv->row == wlv->startrow + wlv->filler_lines
-#ifdef FEAT_PROP_POPUP
-		  + wlv->text_prop_above_count
-#endif
+	  if (wlv->row == lnum_row
 		    && (wp->w_skipcol == 0 || wlv->row > wp->w_winrow
 					       || (wp->w_p_nu && wp->w_p_rnu)))
 	  {
@@ -1695,6 +1697,8 @@ win_line(
 	    {
 		area_highlighting = TRUE;
 		extra_check = TRUE;
+		// text props "above" move the line number down to where the
+		// text is.
 		for (int i = 0; i < text_prop_count; ++i)
 		    if (text_props[i].tp_flags & TP_FLAG_ALIGN_ABOVE)
 			++wlv.text_prop_above_count;
