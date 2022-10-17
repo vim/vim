@@ -85,6 +85,7 @@ src/testdir/messages
 src/testdir/viminfo
 src/testdir/opt_test.vim
 src/testdir/failed
+src/testdir/starttime
 runtime/indent/testdir/*.out
 runtime/indent/testdir/*.fail
 src/memfile_test
