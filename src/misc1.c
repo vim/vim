@@ -330,6 +330,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 
 /*
  * Return the number of window lines occupied by buffer line "lnum".
+ * Includes any filler lines.
  */
     int
 plines(linenr_T lnum)
@@ -349,6 +350,10 @@ plines_win(
     return plines_win_nofill(wp, lnum, winheight) + diff_check_fill(wp, lnum);
 }
 
+/*
+ * Return the number of window lines occupied by buffer line "lnum".
+ * Does not include filler lines.
+ */
     int
 plines_nofill(linenr_T lnum)
 {
@@ -2754,7 +2759,9 @@ may_trigger_modechanged()
     char_u	    curr_mode[MODE_MAX_LENGTH];
     char_u	    pattern_buf[2 * MODE_MAX_LENGTH];
 
-    if (!has_modechanged())
+    // Skip this when got_int is set, the autocommand will not be executed.
+    // Better trigger it next time.
+    if (!has_modechanged() || got_int)
 	return;
 
     get_mode(curr_mode);
