@@ -1231,7 +1231,7 @@ mch_bevalterm_changed(void)
 }
 # endif
 
-
+#ifdef VIMDLL
 /*
  * Win32 console mouse scroll event handler.
  * Loosely based on the _OnMouseWheel() function in gui_w32.c
@@ -1324,6 +1324,7 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 
     return;
 }
+#endif
 
 /*
  * Decode a MOUSE_EVENT.  If it's a valid event, return MOUSE_LEFT,
