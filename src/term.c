@@ -871,13 +871,13 @@ static struct builtin_term builtin_termcaps[] =
     {K_HELP,		"\033[28;*~"},
     {K_UNDO,		"\033[26;*~"},
     {K_INS,		"\033[2;*~"},
-    {K_HOME,		"\033[1;*H"},
+    {K_HOME,		"\033[@;*H"},
     // {K_S_HOME,		"\033O2H"},
     // {K_C_HOME,		"\033O5H"},
     {K_KHOME,		"\033[1;*~"},
     {K_XHOME,		"\033O*H"},	// other Home
     {K_ZHOME,		"\033[7;*~"},	// other Home
-    {K_END,		"\033[1;*F"},
+    {K_END,		"\033[@;*F"},
     // {K_S_END,		"\033O2F"},
     // {K_C_END,		"\033O5F"},
     {K_KEND,		"\033[4;*~"},
