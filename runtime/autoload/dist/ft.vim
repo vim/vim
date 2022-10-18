@@ -1087,5 +1087,18 @@ export def FTdat()
   endif
 enddef
 
+export def FTlsl()
+  if exists("g:filetype_lsl")
+    exe "setf " .. g:filetype_lsl
+  endif
+
+  var line = getline(nextnonblank(1))
+  if line =~ '^\s*%' || line =~# ':\s*trait\s*$'
+    setf larch
+  else
+    setf lsl
+  endif
+enddef
+
 # Uncomment this line to check for compilation errors early
 # defcompile

@@ -528,7 +528,7 @@ typedef struct {
     unsigned int font      : 4; /* 0 to 9 */
     unsigned int dwl       : 1; /* On a DECDWL or DECDHL line */
     unsigned int dhl       : 2; /* On a DECDHL line (1=top 2=bottom) */
-    unsigned int smallfont : 1;
+    unsigned int small     : 1;
     unsigned int baseline  : 2;
 } VTermScreenCellAttrs;
 
