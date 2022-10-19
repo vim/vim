@@ -1338,7 +1338,7 @@ func Test_term_mouse_popup_menu_setpos()
 		\ .. MouseRightReleaseCode(1, 10) .. "\<Down>\<CR>", "x")
     call assert_equal([1, 1], [line('.'), col('.')], msg) " After yanking, the cursor goes to 1,1
     call assert_equal("V", getregtype('"'), msg)
-    call assert_equal(len(getreg('"', 1, v:true)), 1, msg)
+    call assert_equal(1, len(getreg('"', 1, v:true)), msg)
 
     " Test for right click in multi-line line-wise visual mode inside the selection
     let @" = ''
@@ -1347,7 +1347,7 @@ func Test_term_mouse_popup_menu_setpos()
 		\ .. MouseRightReleaseCode(2, 20) .. "\<Down>\<CR>", "x")
     call assert_equal([1, 1], [line('.'), col('.')], msg) " After yanking, the cursor goes to 1,1
     call assert_equal("V", getregtype('"'), msg)
-    call assert_equal(len(getreg('"', 1, v:true)), 2, msg)
+    call assert_equal(2, len(getreg('"', 1, v:true)), msg)
 
     " Test for right click in line-wise visual mode outside the selection
     let @" = ''
@@ -1367,7 +1367,7 @@ func Test_term_mouse_popup_menu_setpos()
 
     " Try clicking outside the window
     let @" = ''
-    call cursor(7, 2)
+    call cursor(2, 2)
     call feedkeys('vee' .. MouseRightClickCode(7, 2)
 		\ .. MouseRightReleaseCode(7, 2) .. "\<Down>\<CR>", "x")
     call assert_equal(2, winnr(), msg)
