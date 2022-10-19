@@ -2059,13 +2059,6 @@ mch_inchar(
 		typeahead[typeaheadlen++] = KS_EXTRA;
 		typeahead[typeaheadlen++] = scroll_dir;
 
-		// Pass the pointer coordinates of the scroll event so that we
-		// know which window to scroll.
-		typeahead[typeaheadlen++] = (char_u)(mouse_col / 128 + '!');
-		typeahead[typeaheadlen++] = (char_u)(mouse_col % 128 + '!');
-		typeahead[typeaheadlen++] = (char_u)(mouse_row / 128 + '!');
-		typeahead[typeaheadlen++] = (char_u)(mouse_row % 128 + '!');
-
 		g_nMouseClick = -1;
 	    }
 	    else
