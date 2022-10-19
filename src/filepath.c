@@ -1793,7 +1793,7 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     char_u	*p;			// position in buf
     char_u	*start;			// start of current line
     off_T	offset = 0;
-    size_t	size = 0;
+    off_T	size = -1;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
@@ -1801,7 +1801,7 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
 	{
 	    offset = (off_T)tv_get_number(&argvars[1]);
 	    if (argvars[2].v_type != VAR_UNKNOWN)
-		size = (size_t)tv_get_number(&argvars[2]);
+		size = (off_T)tv_get_number(&argvars[2]);
 	}
 	else
 	{

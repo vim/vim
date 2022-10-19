@@ -186,7 +186,7 @@ blob_equal(
  * Return OK or FAIL.
  */
     int
-read_blob(FILE *fd, blob_T *blob, off_T offset, size_t size)
+read_blob(FILE *fd, blob_T *blob, off_T offset, off_T size)
 {
     struct stat	st;
     int		whence;
@@ -197,13 +197,13 @@ read_blob(FILE *fd, blob_T *blob, off_T offset, size_t size)
 
     if (offset >= 0)
     {
-	if (size == 0)
+	if (size == -1)
 	    newsize = st.st_size - offset;
 	whence = SEEK_SET;
     }
     else
     {
-	if (size == 0)
+	if (size == -1)
 	    newsize = -offset;
 	whence = SEEK_END;
     }

@@ -6854,7 +6854,7 @@ readblob({fname} [, {offset} [, {size}]])			*readblob()*
 		offset.  If it is a negative value, it is used as an offset
 		from the end of the file.
 		If {size} is specified, only the specified size will be read.
-		If {size} is zero or omitted, the whole data starting from
+		If {size} is -1 or omitted, the whole data starting from
 		{offset} will be read.
 		When the file can't be opened an error message is given and
 		the result is an empty |Blob|.

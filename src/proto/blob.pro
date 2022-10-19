@@ -10,7 +10,7 @@ int blob_get(blob_T *b, int idx);
 void blob_set(blob_T *blob, int idx, int byte);
 void blob_set_append(blob_T *blob, int idx, int byte);
 int blob_equal(blob_T *b1, blob_T *b2);
-int read_blob(FILE *fd, blob_T *blob, off_T offset, size_t size);
+int read_blob(FILE *fd, blob_T *blob, off_T offset, off_T size);
 int write_blob(FILE *fd, blob_T *blob);
 char_u *blob2string(blob_T *blob, char_u **tofree, char_u *numbuf);
 blob_T *string2blob(char_u *str);
