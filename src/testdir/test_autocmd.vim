@@ -3429,6 +3429,18 @@ func Test_mode_changes()
   unlet g:n_to_c
   unlet g:c_to_n
 
+  let g:n_to_v = 0
+  au ModeChanged n:v let g:n_to_v += 1
+  let g:v_to_n = 0
+  au ModeChanged v:n let g:v_to_n += 1
+  let g:mode_seq += ['v', 'n']
+  call feedkeys("v\<C-C>", 'tnix')
+  call assert_equal(len(g:mode_seq) - 1, g:index)
+  call assert_equal(1, g:n_to_v)
+  call assert_equal(1, g:v_to_n)
+  unlet g:n_to_v
+  unlet g:v_to_n
+
   au! ModeChanged
   delfunc TestMode
   unlet! g:mode_seq
@@ -3843,6 +3855,27 @@ func Test_autocmd_delete()
 
   call assert_true(autocmd_delete([[]]))
   call assert_true(autocmd_delete([test_null_dict()]))
+endfunc
+
+func Test_autocmd_split_dummy()
+  " Autocommand trying to split a window containing a dummy buffer.
+  auto BufReadPre * exe "sbuf " .. expand("<abuf>") 
+  " Avoid the "W11" prompt
+  au FileChangedShell * let v:fcs_choice = 'reload'
+  func Xautocmd_changelist()
+    cal writefile(['Xtestfile2:4:4'], 'Xerr')
+    edit Xerr
+    lex 'Xtestfile2:4:4'
+  endfunc
+  call Xautocmd_changelist()
+  " Should get E86, but it doesn't always happen (timing?)
+  silent! call Xautocmd_changelist()
+
+  au! BufReadPre
+  au! FileChangedShell
+  delfunc Xautocmd_changelist
+  bwipe! Xerr
+  call delete('Xerr')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

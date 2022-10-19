@@ -846,10 +846,10 @@ static struct builtin_term builtin_termcaps[] =
     {K_RIGHT,		"\033O*C"},
     {K_LEFT,		"\033O*D"},
     // An extra set of cursor keys for vt100 mode
-    {K_XUP,		"\033[@;*A"},
-    {K_XDOWN,		"\033[@;*B"},
-    {K_XRIGHT,		"\033[@;*C"},
-    {K_XLEFT,		"\033[@;*D"},
+    {K_XUP,		"\033[@;*A"},	// Esc [ A or Esc [ 1 ; A
+    {K_XDOWN,		"\033[@;*B"},	// Esc [ B or Esc [ 1 ; B
+    {K_XRIGHT,		"\033[@;*C"},	// Esc [ C or Esc [ 1 ; C
+    {K_XLEFT,		"\033[@;*D"},	// Esc [ D or Esc [ 1 ; D
     // An extra set of function keys for vt100 mode
     {K_XF1,		"\033O*P"},
     {K_XF2,		"\033O*Q"},
@@ -871,13 +871,13 @@ static struct builtin_term builtin_termcaps[] =
     {K_HELP,		"\033[28;*~"},
     {K_UNDO,		"\033[26;*~"},
     {K_INS,		"\033[2;*~"},
-    {K_HOME,		"\033[1;*H"},
+    {K_HOME,		"\033[@;*H"},    // Esc [ H  or Esc 1 ; H
     // {K_S_HOME,		"\033O2H"},
     // {K_C_HOME,		"\033O5H"},
     {K_KHOME,		"\033[1;*~"},
     {K_XHOME,		"\033O*H"},	// other Home
     {K_ZHOME,		"\033[7;*~"},	// other Home
-    {K_END,		"\033[1;*F"},
+    {K_END,		"\033[@;*F"},	// Esc [ F or Esc 1 ; F
     // {K_S_END,		"\033O2F"},
     // {K_C_END,		"\033O5F"},
     {K_KEND,		"\033[4;*~"},
@@ -5483,12 +5483,9 @@ check_termcode(
 		 */
 		if (termcodes[idx].modlen > 0 && mouse_index_found < 0)
 		{
-		    int at_code;
-
 		    modslen = termcodes[idx].modlen;
 		    if (cpo_koffset && offset && len < modslen)
 			continue;
-		    at_code = termcodes[idx].code[modslen] == '@';
 		    if (STRNCMP(termcodes[idx].code, tp,
 				(size_t)(modslen > len ? len : modslen)) == 0)
 		    {
@@ -5503,7 +5500,8 @@ check_termcode(
 			else if (tp[modslen] != ';' && modslen == slen - 3)
 			    // no match for "code;*X" with "code;"
 			    continue;
-			else if (at_code && tp[modslen] != '1')
+			else if (termcodes[idx].code[modslen] == '@'
+							 && tp[modslen] != '1')
 			    // no match for "<Esc>[@" with "<Esc>[1"
 			    continue;
 			else
