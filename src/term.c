@@ -5045,8 +5045,11 @@ handle_csi(
     // Key with modifier:
     //	{lead}27;{modifier};{key}~
     //	{lead}{key};{modifier}u
-    else if ((arg[0] == 27 && argc == 3 && trail == '~')
-	    || (argc == 2 && trail == 'u'))
+    // Only handles four modifiers, this won't work if the modifier value is
+    // more than 16.
+    else if (((arg[0] == 27 && argc == 3 && trail == '~')
+		|| (argc == 2 && trail == 'u'))
+	    && arg[1] <= 16)
     {
 	return len + handle_key_with_modifier(arg, trail,
 			    csi_len, offset, buf, bufsize, buflen);
