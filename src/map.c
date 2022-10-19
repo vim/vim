@@ -136,6 +136,9 @@ map_mode_to_chars(int mode)
     return (char_u *)mapmode.ga_data;
 }
 
+/*
+ * Output a line for one mapping.
+ */
     static void
 showmap(
     mapblock_T	*mp,
@@ -279,6 +282,61 @@ map_add(
 	map_table[n] = mp;
     }
     return OK;
+}
+
+/*
+ * List mappings.  When "haskey" is FALSE all mappings, otherwise mappings that
+ * match "keys[keys_len]".
+ */
+    static void
+list_mappings(
+	int	keyround,
+	int	abbrev,
+	int	haskey,
+	char_u	*keys,
+	int	keys_len,
+	int	mode,
+	int	*did_local)
+{
+    if (p_verbose > 0 && keyround == 1 && seenModifyOtherKeys)
+	msg_puts(_("Seen modifyOtherKeys: true"));
+
+    // need to loop over all global hash lists
+    for (int hash = 0; hash < 256 && !got_int; ++hash)
+    {
+	mapblock_T	*mp;
+
+	if (abbrev)
+	{
+	    if (hash != 0)	// there is only one abbreviation list
+		break;
+	    mp = curbuf->b_first_abbr;
+	}
+	else
+	    mp = curbuf->b_maphash[hash];
+	for ( ; mp != NULL && !got_int; mp = mp->m_next)
+	{
+	    // check entries with the same mode
+	    if (!mp->m_simplified && (mp->m_mode & mode) != 0)
+	    {
+		if (!haskey)		    // show all entries
+		{
+		    showmap(mp, TRUE);
+		    *did_local = TRUE;
+		}
+		else
+		{
+		    int n = mp->m_keylen;
+		    if (STRNCMP(mp->m_keys, keys,
+				   (size_t)(n < keys_len ? n : keys_len)) == 0)
+		    {
+			showmap(mp, TRUE);
+			*did_local = TRUE;
+		    }
+		}
+	    }
+	}
+    }
 }
 
 /*
@@ -503,8 +561,6 @@ do_map(
 	int	did_local = FALSE;
 	int	keyround1_simplified = keyround == 1 && did_simplify;
 	int	round;
-	int	hash;
-	int	new_hash;
 
 	if (keyround == 2)
 	{
@@ -585,7 +641,7 @@ do_map(
 			       && haskey && hasarg && maptype != MAPTYPE_UNMAP)
 	{
 	    // need to loop over all global hash lists
-	    for (hash = 0; hash < 256 && !got_int; ++hash)
+	    for (int hash = 0; hash < 256 && !got_int; ++hash)
 	    {
 		if (abbrev)
 		{
@@ -619,42 +675,8 @@ do_map(
 	// When listing global mappings, also list buffer-local ones here.
 	if (map_table != curbuf->b_maphash && !hasarg
 						   && maptype != MAPTYPE_UNMAP)
-	{
-	    // need to loop over all global hash lists
-	    for (hash = 0; hash < 256 && !got_int; ++hash)
-	    {
-		if (abbrev)
-		{
-		    if (hash != 0)	// there is only one abbreviation list
-			break;
-		    mp = curbuf->b_first_abbr;
-		}
-		else
-		    mp = curbuf->b_maphash[hash];
-		for ( ; mp != NULL && !got_int; mp = mp->m_next)
-		{
-		    // check entries with the same mode
-		    if (!mp->m_simplified && (mp->m_mode & mode) != 0)
-		    {
-			if (!haskey)		    // show all entries
-			{
-			    showmap(mp, TRUE);
-			    did_local = TRUE;
-			}
-			else
-			{
-			    n = mp->m_keylen;
-			    if (STRNCMP(mp->m_keys, keys,
-					     (size_t)(n < len ? n : len)) == 0)
-			    {
-				showmap(mp, TRUE);
-				did_local = TRUE;
-			    }
-			}
-		    }
-		}
-	    }
-	}
+	    list_mappings(keyround, abbrev, haskey, keys, len,
+							     mode, &did_local);
 
 	// Find an entry in the maphash[] list that matches.
 	// For :unmap we may loop two times: once to try to unmap an entry with
@@ -666,7 +688,7 @@ do_map(
 					       && !did_it && !got_int; ++round)
 	{
 	    // need to loop over all hash lists
-	    for (hash = 0; hash < 256 && !got_int; ++hash)
+	    for (int hash = 0; hash < 256 && !got_int; ++hash)
 	    {
 		if (abbrev)
 		{
@@ -792,7 +814,7 @@ do_map(
 
 			    // May need to put this entry into another hash
 			    // list.
-			    new_hash = MAP_HASH(mp->m_mode, mp->m_keys[0]);
+			    int new_hash = MAP_HASH(mp->m_mode, mp->m_keys[0]);
 			    if (!abbrev && new_hash != hash)
 			    {
 				*mpp = mp->m_next;

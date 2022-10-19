@@ -989,6 +989,11 @@ mapping, see |map-bar|.
 WARNING: if you map <C-[> you may very well break any key codes that start
 with Esc.  Make sure it comes AFTER other mappings.
 
+Vim automatically detects if the modifyOtherKeys mode was enabled when it
+spots an escape sequence that must have been created by it.  To see if Vim
+detected such an escape sequence use `:verbose map`, the first line will then
+show "Seen modifyOtherKeys: true" (possibly translated).
+
 A known side effect is that in Insert mode the raw escape sequence is inserted
 after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
 enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you get one byte then
