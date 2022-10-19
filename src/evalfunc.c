@@ -1078,6 +1078,7 @@ static argcheck_T arg3_string_any_dict[] = {arg_string, NULL, arg_dict_any};
 static argcheck_T arg3_string_any_string[] = {arg_string, NULL, arg_string};
 static argcheck_T arg3_string_bool_bool[] = {arg_string, arg_bool, arg_bool};
 static argcheck_T arg3_string_number_bool[] = {arg_string, arg_number, arg_bool};
+static argcheck_T arg3_string_number_number[] = {arg_string, arg_number, arg_number};
 static argcheck_T arg3_string_or_dict_bool_dict[] = {arg_string_or_dict_any, arg_bool, arg_dict_any};
 static argcheck_T arg3_string_string_bool[] = {arg_string, arg_string, arg_bool};
 static argcheck_T arg3_string_string_dict[] = {arg_string, arg_string, arg_dict_any};
@@ -2339,7 +2340,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_rand},
     {"range",		1, 3, FEARG_1,	    arg3_number,
 			ret_list_number,    f_range},
-    {"readblob",	1, 1, FEARG_1,	    arg1_string,
+    {"readblob",	1, 3, FEARG_1,	    arg3_string_number_number,
 			ret_blob,	    f_readblob},
     {"readdir",		1, 3, FEARG_1,	    arg3_string_any_dict,
 			ret_list_string,    f_readdir},

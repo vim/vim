@@ -182,22 +182,52 @@ blob_equal(
 }
 
 /*
- * Read "blob" from file "fd".
+ * Read blob from file "fd".
+ * Caller has allocated a blob in "rettv".
  * Return OK or FAIL.
  */
     int
-read_blob(FILE *fd, blob_T *blob)
+read_blob(FILE *fd, typval_T *rettv, off_T offset, off_T size_arg)
 {
+    blob_T	*blob = rettv->vval.v_blob;
     struct stat	st;
+    int		whence;
+    off_T	size = size_arg;
 
     if (fstat(fileno(fd), &st) < 0)
+	return FAIL;  // can't read the file, error
+
+    if (offset >= 0)
+    {
+	if (size == -1)
+	    // size may become negative, checked below
+	    size = st.st_size - offset;
+	whence = SEEK_SET;
+    }
+    else
+    {
+	if (size == -1)
+	    size = -offset;
+	whence = SEEK_END;
+    }
+    // Trying to read bytes that aren't there results in an empty blob, not an
+    // error.
+    if (size < 0 || size > st.st_size)
+	return OK;
+    if (vim_fseek(fd, offset, whence) != 0)
+	return OK;
+
+    if (ga_grow(&blob->bv_ga, (int)size) == FAIL)
 	return FAIL;
-    if (ga_grow(&blob->bv_ga, st.st_size) == FAIL)
-	return FAIL;
-    blob->bv_ga.ga_len = st.st_size;
+    blob->bv_ga.ga_len = (int)size;
     if (fread(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
 						  < (size_t)blob->bv_ga.ga_len)
+    {
+	// An empty blob is returned on error.
+	blob_free(rettv->vval.v_blob);
+	rettv->vval.v_blob = NULL;
 	return FAIL;
+    }
     return OK;
 }
 
