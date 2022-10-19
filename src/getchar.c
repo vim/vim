@@ -1745,7 +1745,7 @@ vgetc(void)
 
 	    // Get two extra bytes for special keys
 	    if (c == K_SPECIAL
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(MSWIN)
 		    || (c == CSI)
 #endif
 	       )
