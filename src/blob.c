@@ -189,7 +189,8 @@ blob_equal(
 read_blob(FILE *fd, blob_T *blob, off_T offset, size_t size)
 {
     struct stat	st;
-    int		ret = 0;
+    int		whence;
+    off_T	newsize = (off_T)size;
 
     if (fstat(fileno(fd), &st) < 0)
 	return FAIL;
@@ -197,21 +198,23 @@ read_blob(FILE *fd, blob_T *blob, off_T offset, size_t size)
     if (offset >= 0)
     {
 	if (size == 0)
-	    size = st.st_size - offset;
-	ret = vim_fseek(fd, offset, SEEK_SET);
+	    newsize = st.st_size - offset;
+	whence = SEEK_SET;
     }
     else
     {
 	if (size == 0)
-	    size = -offset;
-	ret = vim_fseek(fd, offset, SEEK_END);
+	    newsize = -offset;
+	whence = SEEK_END;
     }
-    if (ret != 0)
+    if (newsize < 0 || newsize > st.st_size)
+	return FAIL;
+    if (vim_fseek(fd, offset, whence) != 0)
 	return FAIL;
 
-    if (ga_grow(&blob->bv_ga, (int)size) == FAIL)
+    if (ga_grow(&blob->bv_ga, (int)newsize) == FAIL)
 	return FAIL;
-    blob->bv_ga.ga_len = (int)size;
+    blob->bv_ga.ga_len = (int)newsize;
     if (fread(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
 						  < (size_t)blob->bv_ga.ga_len)
 	return FAIL;
