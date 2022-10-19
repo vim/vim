@@ -190,7 +190,7 @@ read_blob(FILE *fd, blob_T *blob, off_T offset, off_T size)
 {
     struct stat	st;
     int		whence;
-    off_T	newsize = (off_T)size;
+    off_T	newsize = size;
 
     if (fstat(fileno(fd), &st) < 0)
 	return FAIL;
