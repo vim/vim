@@ -1396,14 +1396,14 @@ decode_mouse_event(
     // unprocessed mouse click?
     if (g_nMouseClick != -1)
 	return TRUE;
-#ifdef VIMDLL
+
     if (pmer->dwEventFlags == MOUSE_WHEELED
 				       || pmer->dwEventFlags == MOUSE_HWHEELED)
     {
 	decode_mouse_wheel(pmer);
 	return TRUE;  // we now should have a mouse scroll in g_nMouseClick
     }
-#endif
+
     nButton = -1;
     g_xMouse = pmer->dwMousePosition.X;
     g_yMouse = pmer->dwMousePosition.Y;
