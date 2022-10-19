@@ -1788,12 +1788,13 @@ compile_subscript(
 	{
 	    char_u *next = peek_next_line_from_context(cctx);
 
-	    // If a following line starts with "->{" or "->X" advance to that
-	    // line, so that a line break before "->" is allowed.
+	    // If a following line starts with "->{", "->(" or "->X" advance to
+	    // that line, so that a line break before "->" is allowed.
 	    // Also if a following line starts with ".x".
 	    if (next != NULL &&
 		    ((next[0] == '-' && next[1] == '>'
 				 && (next[2] == '{'
+				       || next[2] == '('
 				       || ASCII_ISALPHA(*skipwhite(next + 2))))
 		    || (next[0] == '.' && eval_isdictc(next[1]))))
 	    {
