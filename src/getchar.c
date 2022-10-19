@@ -1745,8 +1745,10 @@ vgetc(void)
 
 	    // Get two extra bytes for special keys
 	    if (c == K_SPECIAL
-#ifdef FEAT_GUI
-		    || (c == CSI)
+#if defined(FEAT_GUI) || defined(MSWIN)
+		    // GUI codes start with CSI; MS-Windows sends mouse scroll
+		    // events with CSI.
+		    || c == CSI
 #endif
 	       )
 	    {
