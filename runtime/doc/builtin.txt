@@ -445,7 +445,8 @@ pyxeval({expr})			any	evaluate |python_x| expression
 rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
-readblob({fname})		Blob	read a |Blob| from {fname}
+readblob({fname} [, {offset} [, {size}]])
+				Blob	read a |Blob| from {fname}
 readdir({dir} [, {expr} [, {dict}]])
 				List	file names in {dir} selected by {expr}
 readdirex({dir} [, {expr} [, {dict}]])
@@ -6847,8 +6848,14 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			GetExpr()->range()
 <
 
-readblob({fname})					*readblob()*
+readblob({fname} [, {offset} [, {size}]])			*readblob()*
 		Read file {fname} in binary mode and return a |Blob|.
+		If {offset} is specified, read the file from the specified
+		offset.  If it is a negative value, it is used as an offset
+		from the end of the file.
+		If {size} is specified, only the specified size will be read.
+		If {size} is zero or omitted, the whole data starting from
+		{offset} will be read.
 		When the file can't be opened an error message is given and
 		the result is an empty |Blob|.
 		Also see |readfile()| and |writefile()|.

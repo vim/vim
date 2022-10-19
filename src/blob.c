@@ -186,15 +186,32 @@ blob_equal(
  * Return OK or FAIL.
  */
     int
-read_blob(FILE *fd, blob_T *blob)
+read_blob(FILE *fd, blob_T *blob, off_T offset, size_t size)
 {
     struct stat	st;
+    int		ret = 0;
 
     if (fstat(fileno(fd), &st) < 0)
 	return FAIL;
-    if (ga_grow(&blob->bv_ga, st.st_size) == FAIL)
+
+    if (offset >= 0)
+    {
+	if (size == 0)
+	    size = st.st_size - offset;
+	ret = vim_fseek(fd, offset, SEEK_SET);
+    }
+    else
+    {
+	if (size == 0)
+	    size = -offset;
+	ret = vim_fseek(fd, offset, SEEK_END);
+    }
+    if (ret != 0)
 	return FAIL;
-    blob->bv_ga.ga_len = st.st_size;
+
+    if (ga_grow(&blob->bv_ga, (int)size) == FAIL)
+	return FAIL;
+    blob->bv_ga.ga_len = (int)size;
     if (fread(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
 						  < (size_t)blob->bv_ga.ga_len)
 	return FAIL;

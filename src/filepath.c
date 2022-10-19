@@ -1792,16 +1792,27 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     long	cnt	 = 0;
     char_u	*p;			// position in buf
     char_u	*start;			// start of current line
+    off_T	offset = 0;
+    size_t	size = 0;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	if (STRCMP(tv_get_string(&argvars[1]), "b") == 0)
-	    binary = TRUE;
-	if (STRCMP(tv_get_string(&argvars[1]), "B") == 0)
-	    blob = TRUE;
+	if (always_blob)
+	{
+	    offset = (off_T)tv_get_number(&argvars[1]);
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+		size = (size_t)tv_get_number(&argvars[2]);
+	}
+	else
+	{
+	    if (STRCMP(tv_get_string(&argvars[1]), "b") == 0)
+		binary = TRUE;
+	    if (STRCMP(tv_get_string(&argvars[1]), "B") == 0)
+		blob = TRUE;
 
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	    maxline = (long)tv_get_number(&argvars[2]);
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+		maxline = (long)tv_get_number(&argvars[2]);
+	}
     }
 
     if ((blob ? rettv_blob_alloc(rettv) : rettv_list_alloc(rettv)) == FAIL)
@@ -1824,7 +1835,7 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
 
     if (blob)
     {
-	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
+	if (read_blob(fd, rettv->vval.v_blob, offset, size) == FAIL)
 	{
 	    semsg(_(e_cant_read_file_str), fname);
 	    // An empty blob is returned on error.
@@ -2007,7 +2018,11 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     void
 f_readblob(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (in_vim9script()
+	    && (check_for_nonempty_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
 
     read_file_or_blob(argvars, rettv, TRUE);
