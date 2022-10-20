@@ -6860,8 +6860,9 @@ readblob({fname} [, {offset} [, {size}]])			*readblob()*
 <		If {size} is -1 or omitted, the whole data starting from
 		{offset} will be read.
 		This can be also used to read the data from a character device
-		on Unix when {size} is explicitly set.  {offset} should be
-		normally zero.  E.g. to read 10 bytes from a serial console: >
+		on Unix when {size} is explicitly set.  Only if the device
+		supports seeking {offset} can be used.  Otherwise it should be
+		zero.  E.g. to read 10 bytes from a serial console: >
 			readblob('/dev/ttyS0', 0, 10)
 <		When the file can't be opened an error message is given and
 		the result is an empty |Blob|.
