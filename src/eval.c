@@ -66,6 +66,12 @@ num_divide(varnumber_T n1, varnumber_T n2, int *failed)
 	else
 	    result = VARNUM_MAX;
     }
+    else if (n1 == VARNUM_MIN && n2 == -1)
+    {
+	// specific case: trying to do VARNUM_MIN / -1 results in a positive
+	// number that doesn't fit in varnumber_T and causes an FPE
+	result = VARNUM_MAX;
+    }
     else
 	result = n1 / n2;
 
@@ -6023,7 +6029,7 @@ var2fpos(
 }
 
 /*
- * Convert list in "arg" into position "psop" and optional file number "fnump".
+ * Convert list in "arg" into position "posp" and optional file number "fnump".
  * When "fnump" is NULL there is no file number, only 3 items: [lnum, col, off]
  * Note that the column is passed on as-is, the caller may want to decrement
  * it to use 1 for the first column.
