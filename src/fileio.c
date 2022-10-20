@@ -2278,6 +2278,7 @@ failed:
 	    && !got_int
 	    && linerest != 0
 	    && !(!curbuf->b_p_bin
+		&& curbuf->b_p_fixeol
 		&& fileformat == EOL_DOS
 		&& *line_start == Ctrl_Z
 		&& ptr == line_start + 1))
