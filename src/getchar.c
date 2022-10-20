@@ -2590,24 +2590,35 @@ handle_mapping(
 	    {
 #ifdef FEAT_LANGMAP
 		int	nomap = nolmaplen;
-		int	c2;
+		int	modifiers = 0;
 #endif
 		// find the match length of this mapping
 		for (mlen = 1; mlen < typebuf.tb_len; ++mlen)
 		{
+		    int	c2 = typebuf.tb_buf[typebuf.tb_off + mlen];
 #ifdef FEAT_LANGMAP
-		    c2 = typebuf.tb_buf[typebuf.tb_off + mlen];
 		    if (nomap > 0)
+		    {
+			if (nomap == 2 && c2 == KS_MODIFIER)
+			    modifiers = 1;
+			else if (nomap == 1 && modifiers == 1)
+			    modifiers = c2;
 			--nomap;
-		    else if (c2 == K_SPECIAL)
-			nomap = 2;
+		    }
 		    else
-			LANGMAP_ADJUST(c2, TRUE);
-		    if (mp->m_keys[mlen] != c2)
-#else
-		    if (mp->m_keys[mlen] !=
-					 typebuf.tb_buf[typebuf.tb_off + mlen])
+		    {
+			if (c2 == K_SPECIAL)
+			    nomap = 2;
+			else if (merge_modifyOtherKeys(c2, &modifiers) == c2)
+			    // Only apply 'langmap' if merging modifiers into
+			    // the key will not result in another character,
+			    // so that 'langmap' behaves consistently in
+			    // different terminals and GUIs.
+			    LANGMAP_ADJUST(c2, TRUE);
+			modifiers = 0;
+		    }
 #endif
+		    if (mp->m_keys[mlen] != c2)
 			break;
 		}
 
