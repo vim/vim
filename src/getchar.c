@@ -2520,11 +2520,28 @@ handle_mapping(
 	    && State != MODE_CONFIRM
 	    && !at_ins_compl_key())
     {
-#ifdef FEAT_GUI
-	if (gui.in_use && tb_c1 == CSI && typebuf.tb_len >= 2
-		&& typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER)
+#if defined(FEAT_GUI) || defined(MSWIN)
+	if (
+#if !defined(MSWIN)
+		gui.in_use && 
+#endif
+		tb_c1 == CSI && typebuf.tb_len >= 2
+		&& (typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER
+#if defined(MSWIN)
+		|| (typebuf.tb_len >= 3 
+		  && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
+		   && (typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEUP
+		    || typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEDOWN
+		    || typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSELEFT
+		    || typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSERIGHT)
+		)
+#endif
+		)
+	)
 	{
-	    // The GUI code sends CSI KS_MODIFIER {flags}, but mappings expect
+	    // The GUI code sends CSI KS_MODIFIER {flags}, and
+	    // MS-Windows sends mouse scroll
+	    // events with CSI.  but mappings expect
 	    // K_SPECIAL KS_MODIFIER {flags}.
 	    tb_c1 = K_SPECIAL;
 	}
