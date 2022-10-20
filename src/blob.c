@@ -212,9 +212,13 @@ read_blob(FILE *fd, typval_T *rettv, off_T offset, off_T size_arg)
     }
     // Trying to read bytes that aren't there results in an empty blob, not an
     // error.
-    if (size < 0 || size > st.st_size)
+    if (size <= 0 || (
+#ifdef S_ISCHR
+		!S_ISCHR(st.st_mode) &&
+#endif
+		size > st.st_size))
 	return OK;
-    if (vim_fseek(fd, offset, whence) != 0)
+    if (offset != 0 && vim_fseek(fd, offset, whence) != 0)
 	return OK;
 
     if (ga_grow(&blob->bv_ga, (int)size) == FAIL)
