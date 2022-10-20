@@ -2272,16 +2272,8 @@ failed:
     /*
      * If we get EOF in the middle of a line, note the fact and
      * complete the line ourselves.
-     * In Dos format ignore a trailing CTRL-Z, unless 'binary' set.
      */
-    if (!error
-	    && !got_int
-	    && linerest != 0
-	    && !(!curbuf->b_p_bin
-		&& curbuf->b_p_fixeol
-		&& fileformat == EOL_DOS
-		&& *line_start == Ctrl_Z
-		&& ptr == line_start + 1))
+    if (!error && !got_int && linerest != 0)
     {
 	// remember for when writing
 	if (set_options)
