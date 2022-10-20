@@ -2522,12 +2522,12 @@ handle_mapping(
     {
 #if defined(FEAT_GUI) || defined(MSWIN)
 	if (
-#if !defined(MSWIN)
+# if !defined(MSWIN)
 		gui.in_use && 
-#endif
+# endif
 		tb_c1 == CSI && typebuf.tb_len >= 2
 		&& (typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER
-#if defined(MSWIN)
+# if defined(MSWIN)
 		|| (typebuf.tb_len >= 3 
 		  && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
 		   && (typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEUP
@@ -2535,7 +2535,7 @@ handle_mapping(
 		    || typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSELEFT
 		    || typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSERIGHT)
 		)
-#endif
+# endif
 		)
 	)
 	{
