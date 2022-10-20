@@ -1004,7 +1004,7 @@ au BufNewFile,BufRead .babelrc,.eslintrc,.prettierrc,.firebaserc  setf json
 au BufNewFile,BufRead *.jsonc			setf jsonc
 
 " Jsonnet
-au BufNewFile,BufRead *.jsonnet,*.libjsonnet	setf jsonnet
+au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
 
 " Julia
 au BufNewFile,BufRead *.jl			setf julia
