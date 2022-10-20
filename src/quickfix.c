@@ -4595,6 +4595,9 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 	    qf_winid = win->w_id;
 	}
 
+	// autocommands may cause trouble
+	incr_quickfix_busy();
+
 	if (old_last == NULL)
 	    // set curwin/curbuf to buf and save a few things
 	    aucmd_prepbuf(&aco, buf);
@@ -4616,6 +4619,9 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 	// when the added lines are not visible.
 	if ((win = qf_find_win(qi)) != NULL && old_line_count < win->w_botline)
 	    redraw_buf_later(buf, UPD_NOT_VALID);
+
+	// always called after incr_quickfix_busy()
+	decr_quickfix_busy();
     }
 }
 
