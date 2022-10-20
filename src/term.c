@@ -4807,6 +4807,42 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 }
 
 /*
+ * Determine if it's safe to set seenModifyOtherKeys when a sequence with key
+ * and modifier is seen. There's four known cases we see a key with modifier:
+ *  1. Kittys keyboard protocol has been enabled by a control sequence.
+ *  2. Kitty is used, but the keyboard protocol has not been enabled.
+ *  3. modifyOtherKeys 2 has been enabled by a control sequence.
+ *  4. modifyOtherKeys 1 is enabled by default in a terminal or has been enabled by a control sequence.
+ *  Only in cases 1 and 3 should seenModifyOtherKeys be set. If
+ *  seenModifyOtherKeys is set in case 2 or 4, mappings that include the Ctrl
+ *  modifier will stop working because they are still sent as control
+ *  characters.
+ */
+    static int
+should_set_seen_modify_other_keys()
+{
+    char_u  *term = T_NAME;
+    if (term == NULL || *term == NUL)	    // 'term' not defined yet
+	return FALSE;
+
+    // If we have enabled kittys keyboard protocol, we should set it.
+    if (strstr((char *)T_CTI, "\e[>1u") != NULL) {
+	return TRUE;
+    }
+    // Else if term is xterm-kitty, we should not set it because kitty doesn't
+    // support modifyOtherKeys.
+    if (STRNICMP(term, "xterm-kitty", 11) == 0) {
+	return FALSE;
+    }
+    // Else if we have enabled modifyOtherKeys 2 we should set it.
+    if (strstr((char *)T_CTI, "\e[>4;2m") != NULL) {
+	return TRUE;
+    }
+    // If we have not enabled modifyOtherKeys 2, we should not set it.
+    return FALSE;
+}
+
+/*
  * Add "key" to "buf" and return the number of bytes used.
  * Handles special keys and multi-byte characters.
  */
@@ -4848,7 +4884,9 @@ handle_key_with_modifier(
     int	    modifiers;
     char_u  string[MAX_KEY_CODE_LEN + 1];
 
-    seenModifyOtherKeys = TRUE;
+    if (!seenModifyOtherKeys && should_set_seen_modify_other_keys())
+	seenModifyOtherKeys = TRUE;
+
     if (trail == 'u')
 	key = arg[0];
     else
