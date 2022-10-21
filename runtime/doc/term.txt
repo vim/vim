@@ -569,7 +569,7 @@ anymore.
 Vim supports using true colors in the terminal (taken from |highlight-guifg|
 and |highlight-guibg|), given that the terminal supports this. To make this
 work the 'termguicolors' option needs to be set.
-See https://gist.github.com/XVilka/8346728 for a list of terminals that
+See https://github.com/termstandard/colors for a list of terminals that
 support true colors.
 
 Sometimes setting 'termguicolors' is not enough and one has to set the |t_8f|
