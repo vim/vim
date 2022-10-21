@@ -9670,6 +9670,7 @@ terminalprops()						*terminalprops()*
 		   cursor_blink_mode	whether sending |t_RC| works  **
 		   underline_rgb	whether |t_8u| works **
 		   mouse		mouse type supported
+		   kitty		whether Kitty terminal was detected
 
 		** value 'u' for unknown, 'y' for yes, 'n' for no
 
