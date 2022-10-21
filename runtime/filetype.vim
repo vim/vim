@@ -1372,6 +1372,7 @@ au BufNewFile,BufRead pf.conf				setf pf
 
 " ini style config files, using # comments
 au BufNewFile,BufRead */etc/pacman.conf,mpv.conf	setf confini
+au BufNewFile,BufRead */.aws/config,*/.aws/credentials	setf confini
 
 " Pacman hooks
 au BufNewFile,BufRead *.hook
