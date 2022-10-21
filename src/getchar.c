@@ -2529,6 +2529,9 @@ handle_mapping(
 		&& (typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER
 # if defined(MSWIN)
 		    || (typebuf.tb_len >= 3
+#  ifdef FEAT_GUI
+		      && !gui.in_use
+#  endif
 		      && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
 		      && (typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEUP
 			|| typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEDOWN
@@ -2542,7 +2545,7 @@ handle_mapping(
 	    // The GUI code sends CSI KS_MODIFIER {flags}, but mappings expect
 	    // K_SPECIAL KS_MODIFIER {flags}.
 	    // MS-Windows sends mouse scroll events CSI KS_EXTRA {what}, but
-	    // mappings expect K_SPECIAL KS_EXTRA {what}.
+	    // non-GUI mappings expect K_SPECIAL KS_EXTRA {what}.
 	    tb_c1 = K_SPECIAL;
 	}
 #endif
