@@ -2032,6 +2032,10 @@ enddef
 def Test_echowindow_cmd()
   var local = 'local'
   echowindow 'something' local # comment
+
+  # with modifier
+  unsilent echowin 'loud'
+
   # output goes in message window
   popup_clear()
 enddef
