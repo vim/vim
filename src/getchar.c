@@ -2528,7 +2528,11 @@ handle_mapping(
 		&& typebuf.tb_len >= 2
 		&& (typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER
 # if defined(MSWIN)
-		    || (typebuf.tb_len >= 3
+		    || (
+#  if defined(FEAT_GUI)
+			!gui.in_use &&
+#  endif
+		      typebuf.tb_len >= 3
 		      && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
 		      && (typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEUP
 			|| typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEDOWN
