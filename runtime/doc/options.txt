@@ -3052,6 +3052,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 'endofline' 'eol'	boolean	(default on)
 			local to buffer
 	When writing a file and this option is off and the 'binary' option
+	is on, or 'fixeol' option is off, no CTRL-Z will be written for at the
+	end of the file.
+
+			*'endofline'* *'eol'* *'noendofline'* *'noeol'*
+'endofline' 'eol'	boolean	(default on)
+			local to buffer
+	When writing a file and this option is off and the 'binary' option
 	is on, or 'fixeol' option is off, no <EOL> will be written for the
 	last line in the file.  This option is automatically set or reset when
 	starting to edit a new file, depending on whether file has an <EOL>
@@ -3452,7 +3459,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'fixendofline' 'fixeol'	boolean	(default on)
 			local to buffer
 	When writing a file and this option is on, <EOL> at the end of file
-	will be restored if missing. Turn this option off if you want to
+	will be restored if missing.  Turn this option off if you want to
 	preserve the situation from the original file.
 	When the 'binary' option is set the value of this option doesn't
 	matter.

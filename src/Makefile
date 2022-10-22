@@ -355,7 +355,7 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=gnome2 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=gtk3
 #CONF_OPT_GUI = --enable-gui=gtk3 --disable-gtktest
-#CONF_OPT_GUI = --enable-gui=motif
+CONF_OPT_GUI = --enable-gui=motif
 #CONF_OPT_GUI = --enable-gui=motif --with-motif-lib="-static -lXm -shared"
 
 # Uncomment this line to run an individual test with gvim.
