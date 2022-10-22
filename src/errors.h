@@ -15,10 +15,8 @@ EXTERN char e_interrupted[]
 
 EXTERN char e_backslash_should_be_followed_by[]
 	INIT(= N_("E10: \\ should be followed by /, ? or &"));
-#ifdef FEAT_CMDWIN
 EXTERN char e_invalid_in_cmdline_window[]
-	INIT(= N_("E11: Invalid in command-line window; <CR> executes, CTRL-C quits"));
-#endif
+	INIT(= N_("E11: Invalid in command-line window; :q<CR> closes the window"));
 EXTERN char e_command_not_allowed_from_vimrc_in_current_dir_or_tag_search[]
 	INIT(= N_("E12: Command not allowed from exrc/vimrc in current dir or tag search"));
 EXTERN char e_file_exists[]
@@ -461,10 +459,8 @@ EXTERN char e_no_digraphs_version[]
 EXTERN char e_cannot_set_language_to_str[]
 	INIT(= N_("E197: Cannot set language to \"%s\""));
 // E198 unused
-#ifdef FEAT_CMDWIN
 EXTERN char e_active_window_or_buffer_deleted[]
 	INIT(= N_("E199: Active window or buffer deleted"));
-#endif
 EXTERN char e_readpre_autocommands_made_file_unreadable[]
 	INIT(= N_("E200: *ReadPre autocommands made the file unreadable"));
 EXTERN char e_readpre_autocommands_must_not_change_current_buffer[]
@@ -895,7 +891,7 @@ EXTERN char e_cannot_execute_shell_with_f_option[]
 	INIT(= N_("E360: Cannot execute shell with -f option"));
 #endif
 // E361 unused
-#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
+#if defined(FEAT_EVAL)
 EXTERN char e_using_boolean_value_as_float[]
 	INIT(= N_("E362: Using a boolean value as a Float"));
 #endif
@@ -1715,8 +1711,8 @@ EXTERN char e_printmbcharset_cannot_be_empty_with_multi_byte_encoding[]
 EXTERN char e_no_default_font_specified_for_multi_byte_printing[]
 	INIT(= N_("E675: No default font specified for multi-byte printing."));
 #endif
-EXTERN char e_no_matching_autocommands_for_acwrite_buffer[]
-	INIT(= N_("E676: No matching autocommands for acwrite buffer"));
+EXTERN char e_no_matching_autocommands_for_buftype_str_buffer[]
+	INIT(= N_("E676: No matching autocommands for buftype=%s buffer"));
 #ifdef FEAT_SYN_HL
 EXTERN char e_error_writing_temp_file[]
 	INIT(= N_("E677: Error writing temp file"));
@@ -1911,7 +1907,7 @@ EXTERN char e_character_in_fol_low_or_upp_is_out_of_range[]
 EXTERN char e_word_characters_differ_between_spell_files[]
 	INIT(= N_("E763: Word characters differ between spell files"));
 #endif
-#if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC)
+#if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC) || defined(FEAT_SPELL)
 EXTERN char e_option_str_is_not_set[]
 	INIT(= N_("E764: Option '%s' is not set"));
 #endif
@@ -2011,11 +2007,11 @@ EXTERN char e_cannot_delete_variable[]
 	INIT(= N_("E795: Cannot delete variable"));
 EXTERN char e_cannot_delete_variable_str[]
 	INIT(= N_("E795: Cannot delete variable %s"));
+#endif
+#ifdef MSWIN
 	// E796
-# ifdef MSWIN
 EXTERN char e_writing_to_device_disabled_with_opendevice_option[]
 	INIT(= N_("writing to device disabled with 'opendevice' option"));
-# endif
 #endif
 #ifdef FEAT_SPELL
 EXTERN char e_spellfilemising_autocommand_deleted_buffer[]
@@ -2044,17 +2040,13 @@ EXTERN char e_cannot_use_percent_with_float[]
 	// xgettext:no-c-format
 	INIT(= N_("E804: Cannot use '%' with Float"));
 #endif
-#ifdef FEAT_FLOAT
 EXTERN char e_using_float_as_number[]
 	INIT(= N_("E805: Using a Float as a Number"));
 EXTERN char e_using_float_as_string[]
 	INIT(= N_("E806: Using a Float as a String"));
-#endif
-#ifdef FEAT_FLOAT
 EXTERN char e_expected_float_argument_for_printf[]
 	INIT(= N_("E807: Expected Float argument for printf()"));
-#endif
-#if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
+#if defined(FEAT_EVAL)
 EXTERN char e_number_or_float_required[]
 	INIT(= N_("E808: Number or Float required"));
 #endif
@@ -2290,7 +2282,6 @@ EXTERN char e_number_required[]
 EXTERN char e_trailing_char_after_rsb_str_str[]
 	INIT(= N_("E890: Trailing char after ']': %s]%s"));
 #endif
-#ifdef FEAT_FLOAT
 EXTERN char e_using_funcref_as_float[]
 	INIT(= N_("E891: Using a Funcref as a Float"));
 EXTERN char e_using_string_as_float[]
@@ -2299,7 +2290,6 @@ EXTERN char e_using_list_as_float[]
 	INIT(= N_("E893: Using a List as a Float"));
 EXTERN char e_using_dictionary_as_float[]
 	INIT(= N_("E894: Using a Dictionary as a Float"));
-#endif
 #ifdef FEAT_MZSCHEME
 EXTERN char e_sorry_this_command_is_disabled_the_mzscheme_racket_base_module_could_not_be_loaded[]
 	INIT(= N_("E895: Sorry, this command is disabled, the MzScheme's racket/base module could not be loaded."));
@@ -2340,10 +2330,8 @@ EXTERN char e_received_unknown_command_str[]
 EXTERN char e_not_an_open_channel[]
 	INIT(= N_("E906: Not an open channel"));
 #endif
-#ifdef FEAT_FLOAT
 EXTERN char e_using_special_value_as_float[]
 	INIT(= N_("E907: Using a special value as a Float"));
-#endif
 #ifdef FEAT_EVAL
 EXTERN char e_using_invalid_value_as_string_str[]
 	INIT(= N_("E908: Using an invalid value as a String: %s"));
@@ -2537,10 +2525,8 @@ EXTERN char e_blob_literal_should_have_an_even_number_of_hex_characters[]
 	INIT(= N_("E973: Blob literal should have an even number of hex characters"));
 EXTERN char e_using_blob_as_number[]
 	INIT(= N_("E974: Using a Blob as a Number"));
-# ifdef FEAT_FLOAT
 EXTERN char e_using_blob_as_float[]
 	INIT(= N_("E975: Using a Blob as a Float"));
-# endif
 EXTERN char e_using_blob_as_string[]
 	INIT(= N_("E976: Using a Blob as a String"));
 EXTERN char e_can_only_compare_blob_with_blob[]
@@ -2723,8 +2709,10 @@ EXTERN char e_item_not_found_in_script_str[]
 	INIT(= N_("E1048: Item not found in script: %s"));
 EXTERN char e_item_not_exported_in_script_str[]
 	INIT(= N_("E1049: Item not exported in script: %s"));
+#endif
 EXTERN char e_colon_required_before_range_str[]
 	INIT(= N_("E1050: Colon required before a range: %s"));
+#ifdef FEAT_EVAL
 EXTERN char e_wrong_argument_type_for_plus[]
 	INIT(= N_("E1051: Wrong argument type for +"));
 EXTERN char e_cannot_declare_an_option[]
@@ -2775,10 +2763,7 @@ EXTERN char e_no_white_space_allowed_after_dot[]
 	INIT(= N_("E1074: No white space allowed after dot"));
 EXTERN char e_namespace_not_supported_str[]
 	INIT(= N_("E1075: Namespace not supported: %s"));
-# ifndef FEAT_FLOAT
-EXTERN char e_this_vim_is_not_compiled_with_float_support[]
-	INIT(= N_("E1076: This Vim is not compiled with float support"));
-# endif
+// E1076 was deleted
 EXTERN char e_missing_argument_type_for_str[]
 	INIT(= N_("E1077: Missing argument type for %s"));
 #endif
@@ -3023,7 +3008,7 @@ EXTERN char e_expression_does_not_result_in_value_str[]
 #endif
 EXTERN char e_failed_to_source_defaults[]
 	INIT(= N_("E1187: Failed to source defaults.vim"));
-#if defined(FEAT_TERMINAL) && defined(FEAT_CMDWIN)
+#if defined(FEAT_TERMINAL)
 EXTERN char e_cannot_open_terminal_from_command_line_window[]
 	INIT(= N_("E1188: Cannot open a terminal from the command line window"));
 #endif
@@ -3097,7 +3082,7 @@ EXTERN char e_bool_required_for_argument_nr[]
 EXTERN char e_redefining_imported_item_str[]
 	INIT(= N_("E1213: Redefining imported item \"%s\""));
 #endif
-#if defined(FEAT_DIGRAPHS) && defined(FEAT_EVAL)
+#if defined(FEAT_DIGRAPHS)
 EXTERN char e_digraph_must_be_just_two_characters_str[]
 	INIT(= N_("E1214: Digraph must be just two characters: %s"));
 EXTERN char e_digraph_argument_must_be_one_character_str[]
@@ -3302,10 +3287,8 @@ EXTERN char e_substitute_nesting_too_deep[]
 EXTERN char e_invalid_argument_nr[]
 	INIT(= N_("E1291: Invalid argument: %ld"));
 #endif
-#ifdef FEAT_CMDWIN
 EXTERN char e_cmdline_window_already_open[]
 	INIT(= N_("E1292: Command-line window is already open"));
-#endif
 #ifdef FEAT_PROP_POPUP
 EXTERN char e_cannot_use_negative_id_after_adding_textprop_with_text[]
 	INIT(= N_("E1293: Cannot use a negative id after adding a textprop with text"));
@@ -3317,4 +3300,34 @@ EXTERN char e_cannot_specify_both_type_and_types[]
 	INIT(= N_("E1295: Cannot specify both 'type' and 'types'"));
 EXTERN char e_can_only_use_left_padding_when_column_is_zero[]
 	INIT(= N_("E1296: Can only use left padding when column is zero"));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_non_null_dict_required_for_argument_nr[]
+	INIT(= N_("E1297: Non-NULL Dictionary required for argument %d"));
+EXTERN char e_non_null_list_required_for_argument_nr[]
+	INIT(= N_("E1298: Non-NULL List required for argument %d"));
+#endif
+EXTERN char e_window_unexpectedly_close_while_searching_for_tags[]
+	INIT(= N_("E1299: Window unexpectedly closed while searching for tags"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_use_partial_with_dictionary_for_defer[]
+	INIT(= N_("E1300: Cannot use a partial with dictionary for :defer"));
+EXTERN char e_string_number_list_or_blob_required_for_argument_nr[]
+	INIT(= N_("E1301: String, Number, List or Blob required for argument %d"));
+EXTERN char e_script_variable_was_deleted[]
+	INIT(= N_("E1302: Script variable was deleted"));
+EXTERN char e_custom_list_completion_function_does_not_return_list_but_str[]
+	INIT(= N_("E1303: Custom list completion function does not return a List but a %s"));
+EXTERN char e_cannot_use_type_with_this_variable_str[]
+	INIT(= N_("E1304: Cannot use type with this variable: %s"));
+#endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_use_length_endcol_and_endlnum_with_text[]
+	INIT(= N_("E1305: Cannot use \"length\", \"end_col\" and \"end_lnum\" with \"text\""));
+#endif
+#ifdef FEAT_EVAL
+EXTERN char e_loop_nesting_too_deep[]
+	INIT(= N_("E1306: Loop nesting too deep"));
+EXTERN char e_argument_nr_trying_to_modify_const_str[]
+	INIT(= N_("E1307: Argument %d: Trying to modify a const %s"));
 #endif

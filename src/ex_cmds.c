@@ -14,9 +14,7 @@
 #include "vim.h"
 #include "version.h"
 
-#ifdef FEAT_FLOAT
-# include <float.h>
-#endif
+#include <float.h>
 
 static int linelen(int *has_tab);
 static void do_filter(linenr_T line1, linenr_T line2, exarg_T *eap, char_u *cmd, int do_in, int do_out);
@@ -258,7 +256,7 @@ linelen(int *has_tab)
 	;
     save = *last;
     *last = NUL;
-    len = linetabsize(line);		// get line length
+    len = linetabsize_str(line);	// get line length on screen
     if (has_tab != NULL)		// check for embedded TAB
 	*has_tab = (vim_strchr(first, TAB) != NULL);
     *last = save;
@@ -275,9 +273,7 @@ static int	sort_lc;	// sort using locale
 static int	sort_ic;	// ignore case
 static int	sort_nr;	// sort on number
 static int	sort_rx;	// sort on regex instead of skipping it
-#ifdef FEAT_FLOAT
 static int	sort_flt;	// sort on floating number
-#endif
 
 static int	sort_abort;	// flag to indicate if sorting has been interrupted
 
@@ -296,9 +292,7 @@ typedef struct
 	    varnumber_T	value;		// value if sorting by integer
 	    int is_number;		// TRUE when line contains a number
 	} num;
-#ifdef FEAT_FLOAT
 	float_T value_flt;		// value if sorting by float
-#endif
     } st_u;
 } sorti_T;
 
@@ -334,11 +328,9 @@ sort_compare(const void *s1, const void *s2)
 	    result = l1.st_u.num.value == l2.st_u.num.value ? 0
 			     : l1.st_u.num.value > l2.st_u.num.value ? 1 : -1;
     }
-#ifdef FEAT_FLOAT
     else if (sort_flt)
 	result = l1.st_u.value_flt == l2.st_u.value_flt ? 0
 			     : l1.st_u.value_flt > l2.st_u.value_flt ? 1 : -1;
-#endif
     else
     {
 	// We need to copy one line into "sortbuf1", because there is no
@@ -399,9 +391,7 @@ ex_sort(exarg_T *eap)
 	goto sortend;
 
     sort_abort = sort_ic = sort_lc = sort_rx = sort_nr = 0;
-#ifdef FEAT_FLOAT
     sort_flt = 0;
-#endif
 
     for (p = eap->arg; *p != NUL; ++p)
     {
@@ -418,13 +408,11 @@ ex_sort(exarg_T *eap)
 	    sort_nr = 1;
 	    ++format_found;
 	}
-#ifdef FEAT_FLOAT
 	else if (*p == 'f')
 	{
 	    sort_flt = 1;
 	    ++format_found;
 	}
-#endif
 	else if (*p == 'b')
 	{
 	    sort_what = STR2NR_BIN + STR2NR_FORCE;
@@ -521,11 +509,7 @@ ex_sort(exarg_T *eap)
 	    if (regmatch.regprog != NULL)
 		end_col = 0;
 
-	if (sort_nr
-#ifdef FEAT_FLOAT
-		|| sort_flt
-#endif
-		)
+	if (sort_nr || sort_flt)
 	{
 	    // Make sure vim_str2nr doesn't read any digits past the end
 	    // of the match, by temporarily terminating the string there
@@ -558,7 +542,6 @@ ex_sort(exarg_T *eap)
 			NULL, 0, FALSE);
 		}
 	    }
-#ifdef FEAT_FLOAT
 	    else
 	    {
 		s = skipwhite(p);
@@ -572,7 +555,6 @@ ex_sort(exarg_T *eap)
 		    nrs[lnum - eap->line1].st_u.value_flt =
 						      strtod((char *)s, NULL);
 	    }
-#endif
 	    *s2 = c;
 	}
 	else
@@ -947,6 +929,8 @@ do_bang(
 	    STRCAT(t, newcmd);
 	if (ins_prevcmd)
 	    STRCAT(t, prevcmd);
+	else
+	    vim_free(t);
 	p = t + STRLEN(t);
 	STRCAT(t, trailarg);
 	vim_free(newcmd);
@@ -975,8 +959,12 @@ do_bang(
 	}
     } while (trailarg != NULL);
 
-    vim_free(prevcmd);
-    prevcmd = newcmd;
+    // Don't clear "prevcmd" if there is no command to run.
+    if (STRLEN(newcmd) > 0)
+    {
+	vim_free(prevcmd);
+	prevcmd = newcmd;
+    }
 
     if (bangredo)	    // put cmd in redo buffer for ! command
     {
@@ -1150,7 +1138,8 @@ do_filter(
 #if defined(FEAT_EVAL)
 	if (!aborting())
 #endif
-	    (void)semsg(_(e_cant_create_file_str), itmp);	// will call wait_return
+	    // will call wait_return()
+	    (void)semsg(_(e_cant_create_file_str), itmp);
 	goto filterend;
     }
     if (curbuf != old_curbuf)
@@ -1548,56 +1537,68 @@ make_filter_cmd(
 {
     char_u	*buf;
     long_u	len;
-
-#if defined(UNIX)
+    int		is_powershell = FALSE;
+#ifdef UNIX
     int		is_fish_shell;
-    char_u	*shell_name = get_isolated_shell_name();
+#endif
 
+    char_u *shell_name = get_isolated_shell_name();
     if (shell_name == NULL)
 	return NULL;
 
+#if defined(UNIX)
     // Account for fish's different syntax for subshells
-    is_fish_shell = (fnamecmp(shell_name, "fish") == 0);
-    vim_free(shell_name);
+    is_fish_shell = fnamecmp(shell_name, "fish") == 0;
     if (is_fish_shell)
 	len = (long_u)STRLEN(cmd) + 13;		// "begin; " + "; end" + NUL
     else
 #endif
-	len = (long_u)STRLEN(cmd) + 3;			// "()" + NUL
+    {
+	is_powershell = (shell_name[0] == 'p')
+			&& (fnamecmp(shell_name, "powershell") == 0
+				|| fnamecmp(shell_name, "powershell.exe") == 0
+				|| fnamecmp(shell_name, "pwsh") == 0
+				|| fnamecmp(shell_name, "pwsh.exe") == 0);
+	len = (long_u)STRLEN(cmd) + 3;		// "()" + NUL
+    }
+
     if (itmp != NULL)
-	len += (long_u)STRLEN(itmp) + 9;		// " { < " + " } "
+    {
+	if (is_powershell)
+	    // "& { Get-Content " + " | & " + " }"
+	    len += (long_u)STRLEN(itmp) + 24;
+	else
+	    len += (long_u)STRLEN(itmp) + 9;	// " { < " + " } "
+    }
     if (otmp != NULL)
 	len += (long_u)STRLEN(otmp) + (long_u)STRLEN(p_srr) + 2; // "  "
+
+    vim_free(shell_name);
+
     buf = alloc(len);
     if (buf == NULL)
 	return NULL;
 
-#if defined(UNIX)
-    /*
-     * Put braces around the command (for concatenated commands) when
-     * redirecting input and/or output.
-     */
-    if (itmp != NULL || otmp != NULL)
+    if (is_powershell)
     {
-	if (is_fish_shell)
-	    vim_snprintf((char *)buf, len, "begin; %s; end", (char *)cmd);
+	if (itmp != NULL)
+	    vim_snprintf((char *)buf, len, "& { Get-Content %s | & %s }",
+								itmp, cmd);
 	else
-	    vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	    vim_snprintf((char *)buf, len, "(%s)", cmd);
     }
     else
-	STRCPY(buf, cmd);
-    if (itmp != NULL)
     {
-	STRCAT(buf, " < ");
-	STRCAT(buf, itmp);
-    }
-#else
-    // For shells that don't understand braces around commands, at least allow
-    // the use of commands in a pipe.
-    if (*p_sxe != NUL && *p_sxq == '(')
-    {
+#if defined(UNIX)
+	// Put braces around the command (for concatenated commands) when
+	// redirecting input and/or output.
 	if (itmp != NULL || otmp != NULL)
-	    vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	{
+	    if (is_fish_shell)
+		vim_snprintf((char *)buf, len, "begin; %s; end", (char *)cmd);
+	    else
+		vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	}
 	else
 	    STRCPY(buf, cmd);
 	if (itmp != NULL)
@@ -1605,37 +1606,53 @@ make_filter_cmd(
 	    STRCAT(buf, " < ");
 	    STRCAT(buf, itmp);
 	}
-    }
-    else
-    {
-	STRCPY(buf, cmd);
-	if (itmp != NULL)
+#else
+	// For shells that don't understand braces around commands, at least
+	// allow the use of commands in a pipe.
+	if (*p_sxe != NUL && *p_sxq == '(')
 	{
-	    char_u	*p;
-
-	    // If there is a pipe, we have to put the '<' in front of it.
-	    // Don't do this when 'shellquote' is not empty, otherwise the
-	    // redirection would be inside the quotes.
-	    if (*p_shq == NUL)
+	    if (itmp != NULL || otmp != NULL)
+		vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
+	    else
+		STRCPY(buf, cmd);
+	    if (itmp != NULL)
 	    {
-		p = find_pipe(buf);
-		if (p != NULL)
-		    *p = NUL;
+		STRCAT(buf, " < ");
+		STRCAT(buf, itmp);
 	    }
-	    STRCAT(buf, " <");	// " < " causes problems on Amiga
-	    STRCAT(buf, itmp);
-	    if (*p_shq == NUL)
+	}
+	else
+	{
+	    STRCPY(buf, cmd);
+	    if (itmp != NULL)
 	    {
-		p = find_pipe(cmd);
-		if (p != NULL)
+		char_u	*p;
+
+		// If there is a pipe, we have to put the '<' in front of it.
+		// Don't do this when 'shellquote' is not empty, otherwise the
+		// redirection would be inside the quotes.
+		if (*p_shq == NUL)
 		{
-		    STRCAT(buf, " ");  // insert a space before the '|' for DOS
-		    STRCAT(buf, p);
+		    p = find_pipe(buf);
+		    if (p != NULL)
+			*p = NUL;
+		}
+		STRCAT(buf, " <");	// " < " causes problems on Amiga
+		STRCAT(buf, itmp);
+		if (*p_shq == NUL)
+		{
+		    p = find_pipe(cmd);
+		    if (p != NULL)
+		    {
+			// insert a space before the '|' for DOS
+			STRCAT(buf, " ");
+			STRCAT(buf, p);
+		    }
 		}
 	    }
 	}
-    }
 #endif
+    }
     if (otmp != NULL)
 	append_redir(buf, (int)len, p_srr, otmp);
 
@@ -2092,12 +2109,17 @@ check_overwrite(
     /*
      * Write to another file or b_flags set or not writing the whole file:
      * overwriting only allowed with '!'.
+     * If "other" is FALSE and bt_nofilename(buf) is TRUE, this must be
+     * writing an "acwrite" buffer to the same file as its b_ffname, and
+     * buf_write() will only allow writing with BufWriteCmd autocommands,
+     * so there is no need for an overwrite check.
      */
     if (       (other
-		|| (buf->b_flags & BF_NOTEDITED)
-		|| ((buf->b_flags & BF_NEW)
-		    && vim_strchr(p_cpo, CPO_OVERNEW) == NULL)
-		|| (buf->b_flags & BF_READERR))
+		|| (!bt_nofilename(buf)
+		    && ((buf->b_flags & BF_NOTEDITED)
+			|| ((buf->b_flags & BF_NEW)
+			    && vim_strchr(p_cpo, CPO_OVERNEW) == NULL)
+			|| (buf->b_flags & BF_READERR))))
 	    && !p_wa
 	    && vim_fexists(ffname))
     {
@@ -2663,8 +2685,13 @@ do_ecmd(
 		// with the current window.
 		newbuf = buflist_new(ffname, sfname, tlnum,
 						    BLN_LISTED | BLN_NOCURWIN);
-		if (newbuf != NULL && (flags & ECMD_ALTBUF))
-		    curwin->w_alt_fnum = newbuf->b_fnum;
+		if (newbuf != NULL)
+		{
+		    if (flags & ECMD_ALTBUF)
+			curwin->w_alt_fnum = newbuf->b_fnum;
+		    if (tlnum > 0)
+			newbuf->b_last_cursor.lnum = tlnum;
+		}
 		goto theend;
 	    }
 	    buf = buflist_new(ffname, sfname, 0L,
@@ -2718,12 +2745,11 @@ do_ecmd(
 	if (buf != curbuf)
 	{
 	    bufref_T	save_au_new_curbuf;
-#ifdef FEAT_CMDWIN
 	    int		save_cmdwin_type = cmdwin_type;
 
 	    // BufLeave applies to the old buffer.
 	    cmdwin_type = 0;
-#endif
+
 	    /*
 	     * Be careful: The autocommands may delete any buffer and change
 	     * the current buffer.
@@ -2739,9 +2765,7 @@ do_ecmd(
 	    save_au_new_curbuf = au_new_curbuf;
 	    set_bufref(&au_new_curbuf, buf);
 	    apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf);
-#ifdef FEAT_CMDWIN
 	    cmdwin_type = save_cmdwin_type;
-#endif
 	    if (!bufref_valid(&au_new_curbuf))
 	    {
 		// new buffer has been deleted
@@ -3695,7 +3719,6 @@ ex_substitute(exarg_T *eap)
     int		endcolumn = FALSE;	// cursor in last column when done
     pos_T	old_cursor = curwin->w_cursor;
     int		start_nsubs;
-    int		cmdheight0 = p_ch == 0;
 #ifdef FEAT_EVAL
     int		save_ma = 0;
     int		save_sandbox = 0;
@@ -4005,14 +4028,6 @@ ex_substitute(exarg_T *eap)
 	}
     }
 
-    if (cmdheight0)
-    {
-	// If cmdheight is 0, cmdheight must be set to 1 when we enter command
-	// line.
-	set_option_value((char_u *)"ch", 1L, NULL, 0);
-	redraw_statuslines();
-    }
-
     /*
      * Check for a match on each line.
      */
@@ -4311,6 +4326,10 @@ ex_substitute(exarg_T *eap)
 						  - regmatch.startpos[0].lnum;
 			    search_match_endcol = regmatch.endpos[0].col
 								 + len_change;
+			    if (search_match_lines == 0
+						   && search_match_endcol == 0)
+				// highlight at least one character for /^/
+				search_match_endcol = 1;
 			    highlight_match = TRUE;
 
 			    update_topline();
@@ -4330,7 +4349,7 @@ ex_substitute(exarg_T *eap)
 							// needed
 			    msg_no_more = TRUE;
 			    // write message same highlighting as for
-			    // wait_return
+			    // wait_return()
 			    smsg_attr(HL_ATTR(HLF_R),
 				_("replace with %s (y/n/a/q/l/^E/^Y)?"), sub);
 			    msg_no_more = FALSE;
@@ -4683,7 +4702,8 @@ ex_substitute(exarg_T *eap)
 				last_line = lnum + 1;
 			    }
 #ifdef FEAT_PROP_POPUP
-			    adjust_props_for_split(lnum + 1, lnum, plen, 1);
+			    adjust_props_for_split(lnum + 1, lnum,
+							       plen, 1, FALSE);
 #endif
 			    // all line numbers increase
 			    ++sub_firstlnum;
@@ -4894,10 +4914,6 @@ outofmem:
 	// Cursor position may require updating
 	changed_window_setting();
 #endif
-
-    // Restore cmdheight
-    if (cmdheight0)
-	set_option_value((char_u *)"ch", 0L, NULL, 0);
 
     vim_regfree(regmatch.regprog);
     vim_free(sub_copy);

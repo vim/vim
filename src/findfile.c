@@ -1931,12 +1931,13 @@ file_name_in_line(
      */
     len = 0;
     while (vim_isfilec(ptr[len]) || (ptr[len] == '\\' && ptr[len + 1] == ' ')
-			 || ((options & FNAME_HYP) && path_is_url(ptr + len))
-			 || (is_url && vim_strchr((char_u *)":?&=", ptr[len]) != NULL))
+		 || ((options & FNAME_HYP) && path_is_url(ptr + len))
+		 || (is_url && vim_strchr((char_u *)":?&=", ptr[len]) != NULL))
     {
-	// After type:// we also include :, ?, & and = as valid characters, so that
-	// http://google.com:8080?q=this&that=ok works.
-	if ((ptr[len] >= 'A' && ptr[len] <= 'Z') || (ptr[len] >= 'a' && ptr[len] <= 'z'))
+	// After type:// we also include :, ?, & and = as valid characters, so
+	// that http://google.com:8080?q=this&that=ok works.
+	if ((ptr[len] >= 'A' && ptr[len] <= 'Z')
+				       || (ptr[len] >= 'a' && ptr[len] <= 'z'))
 	{
 	    if (in_type && path_is_url(ptr + len + 1))
 		is_url = TRUE;
@@ -2001,7 +2002,8 @@ eval_includeexpr(char_u *ptr, int len)
     current_sctx = curbuf->b_p_script_ctx[BV_INEX];
 
     res = eval_to_string_safe(curbuf->b_p_inex,
-		 was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL), TRUE);
+	    was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL),
+								   TRUE, TRUE);
 
     set_vim_var_string(VV_FNAME, NULL, 0);
     current_sctx = save_sctx;

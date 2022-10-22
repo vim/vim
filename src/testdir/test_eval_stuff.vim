@@ -1,6 +1,7 @@
 " Tests for various eval things.
 
 source view_util.vim
+source shared.vim
 
 function s:foo() abort
   try
@@ -24,7 +25,7 @@ func Test_nocatch_restore_silent_emsg()
 endfunc
 
 func Test_mkdir_p()
-  call mkdir('Xmkdir/nested', 'p')
+  call mkdir('Xmkdir/nested', 'pR')
   call assert_true(isdirectory('Xmkdir/nested'))
   try
     " Trying to make existing directories doesn't error
@@ -34,13 +35,70 @@ func Test_mkdir_p()
     call assert_report('mkdir(..., "p") failed for an existing directory')
   endtry
   " 'p' doesn't suppress real errors
-  call writefile([], 'Xfile')
-  call assert_fails('call mkdir("Xfile", "p")', 'E739:')
-  call delete('Xfile')
-  call delete('Xmkdir', 'rf')
+  call writefile([], 'Xmkdirfile', 'D')
+  call assert_fails('call mkdir("Xmkdirfile", "p")', 'E739:')
+
   call assert_equal(0, mkdir(test_null_string()))
   call assert_fails('call mkdir([])', 'E730:')
   call assert_fails('call mkdir("abc", [], [])', 'E745:')
+endfunc
+
+func DoMkdirDel(name)
+  call mkdir(a:name, 'pD')
+  call assert_true(isdirectory(a:name))
+endfunc
+
+func DoMkdirDelAddFile(name)
+  call mkdir(a:name, 'pD')
+  call assert_true(isdirectory(a:name))
+  call writefile(['text'], a:name .. '/file')
+endfunc
+
+func DoMkdirDelRec(name)
+  call mkdir(a:name, 'pR')
+  call assert_true(isdirectory(a:name))
+endfunc
+
+func DoMkdirDelRecAddFile(name)
+  call mkdir(a:name, 'pR')
+  call assert_true(isdirectory(a:name))
+  call writefile(['text'], a:name .. '/file')
+endfunc
+
+func Test_mkdir_defer_del()
+  " Xtopdir/tmp is created thus deleted, not Xtopdir itself
+  call mkdir('Xtopdir', 'R')
+  call DoMkdirDel('Xtopdir/tmp')
+  call assert_true(isdirectory('Xtopdir'))
+  call assert_false(isdirectory('Xtopdir/tmp'))
+
+  " Deletion fails because "tmp" contains "sub"
+  call DoMkdirDel('Xtopdir/tmp/sub')
+  call assert_true(isdirectory('Xtopdir'))
+  call assert_true(isdirectory('Xtopdir/tmp'))
+  call delete('Xtopdir/tmp', 'rf')
+
+  " Deletion fails because "tmp" contains "file"
+  call DoMkdirDelAddFile('Xtopdir/tmp')
+  call assert_true(isdirectory('Xtopdir'))
+  call assert_true(isdirectory('Xtopdir/tmp'))
+  call assert_true(filereadable('Xtopdir/tmp/file'))
+  call delete('Xtopdir/tmp', 'rf')
+
+  " Xtopdir/tmp is created thus deleted, not Xtopdir itself
+  call DoMkdirDelRec('Xtopdir/tmp')
+  call assert_true(isdirectory('Xtopdir'))
+  call assert_false(isdirectory('Xtopdir/tmp'))
+
+  " Deletion works even though "tmp" contains "sub"
+  call DoMkdirDelRec('Xtopdir/tmp/sub')
+  call assert_true(isdirectory('Xtopdir'))
+  call assert_false(isdirectory('Xtopdir/tmp'))
+
+  " Deletion works even though "tmp" contains "file"
+  call DoMkdirDelRecAddFile('Xtopdir/tmp')
+  call assert_true(isdirectory('Xtopdir'))
+  call assert_false(isdirectory('Xtopdir/tmp'))
 endfunc
 
 func Test_line_continuation()
@@ -87,6 +145,25 @@ func Test_for_over_null_string()
   let &enc = save_enc
 endfunc
 
+func Test_for_with_modifier()
+  " this checks has_loop_cmd() works with a modifier
+  let result = []
+  vim9cmd for i in range(3)
+    call extend(result, [i])
+  endfor
+  call assert_equal([0, 1, 2], result)
+endfunc
+
+func Test_for_invalid_line_count()
+  let lines =<< trim END
+      111111111111111111111111 for line in ['one']
+      endfor
+  END
+  call writefile(lines, 'XinvalidFor', 'D')
+  " only test that this doesn't crash
+  call RunVim([], [], '-u NONE -e -s -S XinvalidFor -c qa')
+endfunc
+
 func Test_readfile_binary()
   new
   call setline(1, ['one', 'two', 'three'])
@@ -106,10 +183,9 @@ func Test_readfile_binary()
 endfunc
 
 func Test_readfile_binary_empty()
-  call writefile([], 'Xempty-file')
+  call writefile([], 'Xempty-file', 'D')
   " This used to compare uninitialized memory in Vim <= 8.2.4065
   call assert_equal([''], readfile('Xempty-file', 'b'))
-  call delete('Xempty-file')
 endfunc
 
 func Test_readfile_bom()
@@ -119,10 +195,9 @@ func Test_readfile_bom()
 endfunc
 
 func Test_readfile_max()
-  call writefile(range(1, 4), 'XReadfile_max')
+  call writefile(range(1, 4), 'XReadfile_max', 'D')
   call assert_equal(['1', '2'], readfile('XReadfile_max', '', 2))
   call assert_equal(['3', '4'], readfile('XReadfile_max', '', -2))
-  call delete('XReadfile_max')
 endfunc
 
 func Test_let_errmsg()
@@ -160,11 +235,9 @@ func Test_string_concatenation()
   let a..=b
   call assert_equal('ab', a)
 
-  if has('float')
-    let a = 'A'
-    let b = 1.234
-    call assert_equal('A1.234', a .. b)
-  endif
+  let a = 'A'
+  let b = 1.234
+  call assert_equal('A1.234', a .. b)
 endfunc
 
 " Test fix for issue #4507
@@ -186,10 +259,8 @@ func Test_string_concat_scriptversion2()
   call assert_fails('let a .= b', 'E985:')
   call assert_fails('let vers = 1.2.3', 'E488:')
 
-  if has('float')
-    let f = .5
-    call assert_equal(0.5, f)
-  endif
+  let f = .5
+  call assert_equal(0.5, f)
 endfunc
 
 scriptversion 1
@@ -203,9 +274,7 @@ func Test_string_concat_scriptversion1()
   let vers = 1.2.3
   call assert_equal('123', vers)
 
-  if has('float')
-    call assert_fails('let f = .5', 'E15:')
-  endif
+  call assert_fails('let f = .5', 'E15:')
 endfunc
 
 scriptversion 3
@@ -262,9 +331,8 @@ func Test_vvar_scriptversion1()
 endfunc
 
 func Test_scriptversion_fail()
-  call writefile(['scriptversion 9'], 'Xversionscript')
+  call writefile(['scriptversion 9'], 'Xversionscript', 'D')
   call assert_fails('source Xversionscript', 'E999:')
-  call delete('Xversionscript')
 endfunc
 
 func Test_execute_cmd_with_null()

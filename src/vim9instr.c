@@ -208,9 +208,7 @@ generate_add_instr(
 		      vartype == VAR_NUMBER ? ISN_OPNR
 		    : vartype == VAR_LIST ? ISN_ADDLIST
 		    : vartype == VAR_BLOB ? ISN_ADDBLOB
-#ifdef FEAT_FLOAT
 		    : vartype == VAR_FLOAT ? ISN_OPFLOAT
-#endif
 		    : ISN_OPANY, 1);
 
     if (vartype != VAR_LIST && vartype != VAR_BLOB
@@ -251,9 +249,7 @@ operator_type(type_T *type1, type_T *type2)
     if (type1->tt_type == type2->tt_type
 	    && (type1->tt_type == VAR_NUMBER
 		|| type1->tt_type == VAR_LIST
-#ifdef FEAT_FLOAT
 		|| type1->tt_type == VAR_FLOAT
-#endif
 		|| type1->tt_type == VAR_BLOB))
 	return type1->tt_type;
     return VAR_ANY;
@@ -293,10 +289,8 @@ generate_two_op(cctx_T *cctx, char_u *op)
 		      return FAIL;
 		  if (vartype == VAR_NUMBER)
 		      isn = generate_instr_drop(cctx, ISN_OPNR, 1);
-#ifdef FEAT_FLOAT
 		  else if (vartype == VAR_FLOAT)
 		      isn = generate_instr_drop(cctx, ISN_OPFLOAT, 1);
-#endif
 		  else
 		      isn = generate_instr_drop(cctx, ISN_OPANY, 1);
 		  if (isn != NULL)
@@ -326,12 +320,10 @@ generate_two_op(cctx_T *cctx, char_u *op)
     {
 	type_T *type = &t_any;
 
-#ifdef FEAT_FLOAT
 	// float+number and number+float results in float
 	if ((type1->tt_type == VAR_NUMBER || type1->tt_type == VAR_FLOAT)
-		&& (type2->tt_type == VAR_NUMBER || type2->tt_type == VAR_FLOAT))
+	      && (type2->tt_type == VAR_NUMBER || type2->tt_type == VAR_FLOAT))
 	    type = &t_float;
-#endif
 	set_type_on_stack(cctx, type, 0);
     }
 
@@ -514,10 +506,8 @@ generate_2BOOL(cctx_T *cctx, int invert, int offset)
     int
 generate_COND2BOOL(cctx_T *cctx)
 {
-    isn_T	*isn;
-
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_COND2BOOL)) == NULL)
+    if (generate_instr(cctx, ISN_COND2BOOL) == NULL)
 	return FAIL;
 
     // type becomes bool
@@ -582,11 +572,9 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	case VAR_NUMBER:
 	    generate_PUSHNR(cctx, tv->vval.v_number);
 	    break;
-#ifdef FEAT_FLOAT
 	case VAR_FLOAT:
 	    generate_PUSHF(cctx, tv->vval.v_float);
 	    break;
-#endif
 	case VAR_BLOB:
 	    generate_PUSHBLOB(cctx, tv->vval.v_blob);
 	    tv->vval.v_blob = NULL;
@@ -616,7 +604,7 @@ generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 	case VAR_FUNC:
 	    if (tv->vval.v_string != NULL)
 		iemsg("non-null function constant not supported");
-	    generate_PUSHFUNC(cctx, NULL, &t_func_unknown);
+	    generate_PUSHFUNC(cctx, NULL, &t_func_unknown, TRUE);
 	    break;
 	case VAR_PARTIAL:
 	    if (tv->vval.v_partial != NULL)
@@ -690,7 +678,6 @@ generate_PUSHSPEC(cctx_T *cctx, varnumber_T number)
     return OK;
 }
 
-#if defined(FEAT_FLOAT) || defined(PROTO)
 /*
  * Generate an ISN_PUSHF instruction.
  */
@@ -706,7 +693,6 @@ generate_PUSHF(cctx_T *cctx, float_T fnumber)
 
     return OK;
 }
-#endif
 
 /*
  * Generate an ISN_PUSHS instruction.
@@ -741,13 +727,9 @@ generate_PUSHS(cctx_T *cctx, char_u **str)
     int
 generate_PUSHCHANNEL(cctx_T *cctx)
 {
-#ifdef FEAT_JOB_CHANNEL
-    isn_T	*isn;
-#endif
-
     RETURN_OK_IF_SKIP(cctx);
 #ifdef FEAT_JOB_CHANNEL
-    if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel) == NULL)
 	return FAIL;
     return OK;
 #else
@@ -762,13 +744,9 @@ generate_PUSHCHANNEL(cctx_T *cctx)
     int
 generate_PUSHJOB(cctx_T *cctx)
 {
-#ifdef FEAT_JOB_CHANNEL
-    isn_T	*isn;
-#endif
-
     RETURN_OK_IF_SKIP(cctx);
 #ifdef FEAT_JOB_CHANNEL
-    if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_job)) == NULL)
+    if (generate_instr_type(cctx, ISN_PUSHJOB, &t_job) == NULL)
 	return FAIL;
     return OK;
 #else
@@ -796,9 +774,11 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
 
 /*
  * Generate an ISN_PUSHFUNC instruction with name "name".
+ * When "may_prefix" is TRUE prefix "g:" unless "name" is script-local or
+ * autoload.
  */
     int
-generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
+generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type, int may_prefix)
 {
     isn_T	*isn;
     char_u	*funcname;
@@ -808,7 +788,8 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
 	return FAIL;
     if (name == NULL)
 	funcname = NULL;
-    else if (*name == K_SPECIAL				    // script-local
+    else if (!may_prefix
+	    || *name == K_SPECIAL			    // script-local
 	    || vim_strchr(name, AUTOLOAD_CHAR) != NULL)	    // autoload
 	funcname = vim_strsave(name);
     else
@@ -923,15 +904,25 @@ generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name)
  * Generate an ISN_STOREOUTER instruction.
  */
     static int
-generate_STOREOUTER(cctx_T *cctx, int idx, int level)
+generate_STOREOUTER(cctx_T *cctx, int idx, int level, int loop_idx)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_drop(cctx, ISN_STOREOUTER, 1)) == NULL)
 	return FAIL;
-    isn->isn_arg.outer.outer_idx = idx;
-    isn->isn_arg.outer.outer_depth = level;
+    if (level == 1 && loop_idx >= 0 && idx >= loop_idx)
+    {
+	// Store a variable defined in a loop.  A copy will be made at the end
+	// of the loop.  TODO: how about deeper nesting?
+	isn->isn_arg.outer.outer_idx = idx - loop_idx;
+	isn->isn_arg.outer.outer_depth = OUTER_LOOP_DEPTH;
+    }
+    else
+    {
+	isn->isn_arg.outer.outer_idx = idx;
+	isn->isn_arg.outer.outer_depth = level;
+    }
 
     return OK;
 }
@@ -1006,6 +997,8 @@ generate_LOADOUTER(
 	cctx_T	    *cctx,
 	int	    idx,
 	int	    nesting,
+	int	    loop_depth,
+	int	    loop_idx,
 	type_T	    *type)
 {
     isn_T	*isn;
@@ -1013,8 +1006,18 @@ generate_LOADOUTER(
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_type2(cctx, ISN_LOADOUTER, type, type)) == NULL)
 	return FAIL;
-    isn->isn_arg.outer.outer_idx = idx;
-    isn->isn_arg.outer.outer_depth = nesting;
+    if (nesting == 1 && loop_idx >= 0 && idx >= loop_idx)
+    {
+	// Load a variable defined in a loop.  A copy will be made at the end
+	// of the loop.
+	isn->isn_arg.outer.outer_idx = idx - loop_idx;
+	isn->isn_arg.outer.outer_depth = -loop_depth - 1;
+    }
+    else
+    {
+	isn->isn_arg.outer.outer_idx = idx;
+	isn->isn_arg.outer.outer_depth = nesting;
+    }
 
     return OK;
 }
@@ -1064,10 +1067,8 @@ generate_UNLET(cctx_T *cctx, isntype_T isn_type, char_u *name, int forceit)
     int
 generate_LOCKCONST(cctx_T *cctx)
 {
-    isn_T	*isn;
-
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_LOCKCONST)) == NULL)
+    if (generate_instr(cctx, ISN_LOCKCONST) == NULL)
 	return FAIL;
     return OK;
 }
@@ -1195,22 +1196,43 @@ generate_NEWDICT(cctx_T *cctx, int count, int use_null)
 /*
  * Generate an ISN_FUNCREF instruction.
  * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
+ * If variables were declared inside a loop "loop_var_idx" is the index of the
+ * first one and "loop_var_count" the number of variables declared.
  */
     int
-generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc, isn_T **isnp)
+generate_FUNCREF(
+	cctx_T	    *cctx,
+	ufunc_T	    *ufunc,
+	isn_T	    **isnp)
 {
-    isn_T	*isn;
-    type_T	*type;
+    isn_T	    *isn;
+    type_T	    *type;
+    funcref_extra_T *extra;
+    loopvarinfo_T   loopinfo;
+    int		    has_vars;
 
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
     if (isnp != NULL)
 	*isnp = isn;
+
+    has_vars = get_loop_var_info(cctx, &loopinfo);
+    if (ufunc->uf_def_status == UF_NOT_COMPILED || has_vars)
+    {
+	extra = ALLOC_CLEAR_ONE(funcref_extra_T);
+	if (extra == NULL)
+	    return FAIL;
+	isn->isn_arg.funcref.fr_extra = extra;
+	extra->fre_loopvar_info = loopinfo;
+    }
     if (ufunc->uf_def_status == UF_NOT_COMPILED)
-	isn->isn_arg.funcref.fr_func_name = vim_strsave(ufunc->uf_name);
+	extra->fre_func_name = vim_strsave(ufunc->uf_name);
     else
 	isn->isn_arg.funcref.fr_dfunc_idx = ufunc->uf_dfunc_idx;
+
+    // Reserve an extra variable to keep track of the number of closures
+    // created.
     cctx->ctx_has_closure = 1;
 
     // If the referenced function is a closure, it may use items further up in
@@ -1230,7 +1252,10 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc, isn_T **isnp)
  * consumed.
  */
     int
-generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name)
+generate_NEWFUNC(
+	cctx_T	*cctx,
+	char_u	*lambda_name,
+	char_u	*func_name)
 {
     isn_T	*isn;
     int		ret = OK;
@@ -1241,9 +1266,22 @@ generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name)
 	    ret = FAIL;
 	else
 	{
-	    isn->isn_arg.newfunc.nf_lambda = lambda_name;
-	    isn->isn_arg.newfunc.nf_global = func_name;
-	    return OK;
+	    newfuncarg_T *arg = ALLOC_CLEAR_ONE(newfuncarg_T);
+
+	    if (arg == NULL)
+		ret = FAIL;
+	    else
+	    {
+		// Reserve an extra variable to keep track of the number of
+		// closures created.
+		cctx->ctx_has_closure = 1;
+
+		isn->isn_arg.newfunc.nf_arg = arg;
+		arg->nfa_lambda = lambda_name;
+		arg->nfa_global = func_name;
+		(void)get_loop_var_info(cctx, &arg->nfa_loopvar_info);
+		return OK;
+	    }
 	}
     }
     vim_free(lambda_name);
@@ -1293,6 +1331,27 @@ generate_JUMP(cctx_T *cctx, jumpwhen_T when, int where)
 }
 
 /*
+ * Generate an ISN_WHILE instruction.  Similar to ISN_JUMP for :while
+ */
+    int
+generate_WHILE(cctx_T *cctx, int funcref_idx)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_WHILE)) == NULL)
+	return FAIL;
+    isn->isn_arg.whileloop.while_funcref_idx = funcref_idx;
+    isn->isn_arg.whileloop.while_end = 0;  // filled in later
+
+    if (stack->ga_len > 0)
+	--stack->ga_len;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_JUMP_IF_ARG_SET instruction.
  */
     int
@@ -1316,11 +1375,28 @@ generate_FOR(cctx_T *cctx, int loop_idx)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FOR)) == NULL)
 	return FAIL;
-    isn->isn_arg.forloop.for_idx = loop_idx;
+    isn->isn_arg.forloop.for_loop_idx = loop_idx;
 
     // type doesn't matter, will be stored next
     return push_type_stack(cctx, &t_any);
 }
+
+    int
+generate_ENDLOOP(cctx_T *cctx, loop_info_T *loop_info)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_ENDLOOP)) == NULL)
+	return FAIL;
+    isn->isn_arg.endloop.end_depth = loop_info->li_depth;
+    isn->isn_arg.endloop.end_funcref_idx = loop_info->li_funcref_idx;
+    isn->isn_arg.endloop.end_var_idx = loop_info->li_local_count;
+    isn->isn_arg.endloop.end_var_count =
+			   cctx->ctx_locals.ga_len - loop_info->li_local_count;
+    return OK;
+}
+
 /*
  * Generate an ISN_TRYCONT instruction.
  */
@@ -1338,6 +1414,65 @@ generate_TRYCONT(cctx_T *cctx, int levels, int where)
     return OK;
 }
 
+/*
+ * Check "argount" arguments and their types on the type stack.
+ * Give an error and return FAIL if something is wrong.
+ * When "method_call" is NULL no code is generated.
+ */
+    int
+check_internal_func_args(
+	cctx_T	*cctx,
+	int	func_idx,
+	int	argcount,
+	int	method_call,
+	type2_T **argtypes,
+	type2_T *shuffled_argtypes)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    int		argoff = check_internal_func(func_idx, argcount);
+
+    if (argoff < 0)
+	return FAIL;
+
+    if (method_call && argoff > 1)
+    {
+	isn_T	*isn = generate_instr(cctx, ISN_SHUFFLE);
+
+	if (isn  == NULL)
+	    return FAIL;
+	isn->isn_arg.shuffle.shfl_item = argcount;
+	isn->isn_arg.shuffle.shfl_up = argoff - 1;
+    }
+
+    if (argcount > 0)
+    {
+	type2_T	*typep = ((type2_T *)stack->ga_data) + stack->ga_len - argcount;
+
+	// Check the types of the arguments.
+	if (method_call && argoff > 1)
+	{
+	    int i;
+
+	    for (i = 0; i < argcount; ++i)
+		shuffled_argtypes[i] = (i < argoff - 1)
+				    ? typep[i + 1]
+				    : (i == argoff - 1) ? typep[0] : typep[i];
+	    *argtypes = shuffled_argtypes;
+	}
+	else
+	{
+	    int i;
+
+	    for (i = 0; i < argcount; ++i)
+		shuffled_argtypes[i] = typep[i];
+	    *argtypes = shuffled_argtypes;
+	}
+	if (internal_func_check_arg_types(*argtypes, func_idx, argcount,
+								 cctx) == FAIL)
+	    return FAIL;
+    }
+    return OK;
+}
 
 /*
  * Generate an ISN_BCALL instruction.
@@ -1349,8 +1484,6 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
-    int		argoff;
-    type2_T	*typep;
     type2_T	*argtypes = NULL;
     type2_T	shuffled_argtypes[MAX_FUNC_ARGS];
     type2_T	*maptype = NULL;
@@ -1358,46 +1491,13 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     type_T	*decl_type;
 
     RETURN_OK_IF_SKIP(cctx);
-    argoff = check_internal_func(func_idx, argcount);
-    if (argoff < 0)
+
+    if (check_internal_func_args(cctx, func_idx, argcount, method_call,
+					 &argtypes, shuffled_argtypes) == FAIL)
 	return FAIL;
 
-    if (method_call && argoff > 1)
-    {
-	if ((isn = generate_instr(cctx, ISN_SHUFFLE)) == NULL)
-	    return FAIL;
-	isn->isn_arg.shuffle.shfl_item = argcount;
-	isn->isn_arg.shuffle.shfl_up = argoff - 1;
-    }
-
-    if (argcount > 0)
-    {
-	// Check the types of the arguments.
-	typep = ((type2_T *)stack->ga_data) + stack->ga_len - argcount;
-	if (method_call && argoff > 1)
-	{
-	    int i;
-
-	    for (i = 0; i < argcount; ++i)
-		shuffled_argtypes[i] = (i < argoff - 1)
-			    ? typep[i + 1]
-				  : (i == argoff - 1) ? typep[0] : typep[i];
-	    argtypes = shuffled_argtypes;
-	}
-	else
-	{
-	    int i;
-
-	    for (i = 0; i < argcount; ++i)
-		shuffled_argtypes[i] = typep[i];
-	    argtypes = shuffled_argtypes;
-	}
-	if (internal_func_check_arg_types(argtypes, func_idx, argcount,
-								 cctx) == FAIL)
-	    return FAIL;
-	if (internal_func_is_map(func_idx))
-	    maptype = argtypes;
-    }
+    if (internal_func_is_map(func_idx))
+	maptype = argtypes;
 
     if ((isn = generate_instr(cctx, ISN_BCALL)) == NULL)
 	return FAIL;
@@ -1433,6 +1533,8 @@ generate_LISTAPPEND(cctx_T *cctx)
     // For checking the item type we use the declared type of the list and the
     // current type of the added item, adding a string to [1, 2] is OK.
     list_type = get_decl_type_on_stack(cctx, 1);
+    if (arg_type_modifiable(list_type, 1) == FAIL)
+	return FAIL;
     item_type = get_type_on_stack(cctx, 0);
     expected = list_type->tt_member;
     if (need_type(item_type, expected, -1, 0, cctx, FALSE, FALSE) == FAIL)
@@ -1454,7 +1556,9 @@ generate_BLOBAPPEND(cctx_T *cctx)
 {
     type_T	*item_type;
 
-    // Caller already checked that blob_type is a blob.
+    // Caller already checked that blob_type is a blob, check it is modifiable.
+    if (arg_type_modifiable(get_decl_type_on_stack(cctx, 1), 1) == FAIL)
+	return FAIL;
     item_type = get_type_on_stack(cctx, 0);
     if (need_type(item_type, &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
@@ -1587,6 +1691,61 @@ generate_UCALL(cctx_T *cctx, char_u *name, int argcount)
 }
 
 /*
+ * Check the arguments of function "type" against the types on the stack.
+ * Returns OK or FAIL;
+ */
+    int
+check_func_args_from_type(
+	cctx_T	*cctx,
+	type_T	*type,
+	int	argcount,
+	int	at_top,
+	char_u	*name)
+{
+    if (type->tt_argcount != -1)
+    {
+	int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
+
+	if (argcount < type->tt_min_argcount - varargs)
+	{
+	    emsg_funcname(e_not_enough_arguments_for_function_str, name);
+	    return FAIL;
+	}
+	if (!varargs && argcount > type->tt_argcount)
+	{
+	    emsg_funcname(e_too_many_arguments_for_function_str, name);
+	    return FAIL;
+	}
+	if (type->tt_args != NULL)
+	{
+	    int i;
+
+	    for (i = 0; i < argcount; ++i)
+	    {
+		int	offset = -argcount + i - (at_top ? 0 : 1);
+		type_T	*actual = get_type_on_stack(cctx, -1 - offset);
+		type_T	*expected;
+
+		if (varargs && i >= type->tt_argcount - 1)
+		    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
+		else if (i >= type->tt_min_argcount
+					     && actual->tt_type == VAR_SPECIAL)
+		    expected = &t_any;
+		else
+		    expected = type->tt_args[i];
+		if (need_type(actual, expected, offset, i + 1,
+						    cctx, TRUE, FALSE) == FAIL)
+		{
+		    arg_type_mismatch(expected, actual, i + 1);
+		    return FAIL;
+		}
+	    }
+	}
+    }
+
+    return OK;
+}
+/*
  * Generate an ISN_PCALL instruction.
  * "type" is the type of the FuncRef.
  */
@@ -1607,47 +1766,9 @@ generate_PCALL(
 	ret_type = &t_any;
     else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
     {
-	if (type->tt_argcount != -1)
-	{
-	    int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
+	if (check_func_args_from_type(cctx, type, argcount, at_top, name) == FAIL)
+	    return FAIL;
 
-	    if (argcount < type->tt_min_argcount - varargs)
-	    {
-		emsg_funcname(e_not_enough_arguments_for_function_str, name);
-		return FAIL;
-	    }
-	    if (!varargs && argcount > type->tt_argcount)
-	    {
-		emsg_funcname(e_too_many_arguments_for_function_str, name);
-		return FAIL;
-	    }
-	    if (type->tt_args != NULL)
-	    {
-		int i;
-
-		for (i = 0; i < argcount; ++i)
-		{
-		    int	    offset = -argcount + i - (at_top ? 0 : 1);
-		    type_T *actual = get_type_on_stack(cctx, -1 - offset);
-		    type_T *expected;
-
-		    if (varargs && i >= type->tt_argcount - 1)
-			expected = type->tt_args[
-					     type->tt_argcount - 1]->tt_member;
-		    else if (i >= type->tt_min_argcount
-					     && actual->tt_type == VAR_SPECIAL)
-			expected = &t_any;
-		    else
-			expected = type->tt_args[i];
-		    if (need_type(actual, expected, offset, i + 1,
-						    cctx, TRUE, FALSE) == FAIL)
-		    {
-			arg_type_mismatch(expected, actual, i + 1);
-			return FAIL;
-		    }
-		}
-	    }
-	}
 	ret_type = type->tt_member;
 	if (ret_type == &t_unknown)
 	    // return type not known yet, use a runtime check
@@ -1679,6 +1800,22 @@ generate_PCALL(
 }
 
 /*
+ * Generate an ISN_DEFER instruction.
+ */
+    int
+generate_DEFER(cctx_T *cctx, int var_idx, int argcount)
+{
+    isn_T *isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr_drop(cctx, ISN_DEFER, argcount + 1)) == NULL)
+	return FAIL;
+    isn->isn_arg.defer.defer_var_idx = var_idx;
+    isn->isn_arg.defer.defer_argcount = argcount;
+    return OK;
+}
+
+/*
  * Generate an ISN_STRINGMEMBER instruction.
  */
     int
@@ -1694,7 +1831,8 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
 
     // check for dict type
     type = get_type_on_stack(cctx, 0);
-    if (type->tt_type != VAR_DICT && type != &t_any && type != &t_unknown)
+    if (type->tt_type != VAR_DICT
+		   && type->tt_type != VAR_ANY && type->tt_type != VAR_UNKNOWN)
     {
 	char *tofree;
 
@@ -1706,7 +1844,7 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
     // change dict type to dict member type
     if (type->tt_type == VAR_DICT)
     {
-	type_T *ntype = type->tt_member == &t_unknown
+	type_T *ntype = type->tt_member->tt_type == VAR_UNKNOWN
 						    ? &t_any : type->tt_member;
 	set_type_on_stack(cctx, ntype, 0);
     }
@@ -1739,10 +1877,25 @@ generate_MULT_EXPR(cctx_T *cctx, isntype_T isn_type, int count)
 {
     isn_T	*isn;
 
+    RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_drop(cctx, isn_type, count)) == NULL)
 	return FAIL;
     isn->isn_arg.number = count;
+    return OK;
+}
 
+/*
+ * Generate an ISN_ECHOWINDOW instruction
+ */
+    int
+generate_ECHOWINDOW(cctx_T *cctx, int count, long time)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_drop(cctx, ISN_ECHOWINDOW, count)) == NULL)
+	return FAIL;
+    isn->isn_arg.echowin.ewin_count = count;
+    isn->isn_arg.echowin.ewin_time = time;
     return OK;
 }
 
@@ -2035,7 +2188,7 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
 	}
 	else if (lhs->lhs_lvar->lv_from_outer > 0)
 	    generate_STOREOUTER(cctx, lhs->lhs_lvar->lv_idx,
-						 lhs->lhs_lvar->lv_from_outer);
+		     lhs->lhs_lvar->lv_from_outer, lhs->lhs_lvar->lv_loop_idx);
 	else
 	    generate_STORE(cctx, ISN_STORE, lhs->lhs_lvar->lv_idx, NULL);
     }
@@ -2138,22 +2291,28 @@ delete_instr(isn_T *isn)
 
 	case ISN_FUNCREF:
 	    {
-		if (isn->isn_arg.funcref.fr_func_name == NULL)
+		funcref_T	*funcref = &isn->isn_arg.funcref;
+		funcref_extra_T *extra = funcref->fr_extra;
+
+		if (extra == NULL || extra->fre_func_name == NULL)
 		{
 		    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-			+ isn->isn_arg.funcref.fr_dfunc_idx;
+						       + funcref->fr_dfunc_idx;
 		    ufunc_T *ufunc = dfunc->df_ufunc;
 
 		    if (ufunc != NULL && func_name_refcount(ufunc->uf_name))
 			func_ptr_unref(ufunc);
 		}
-		else
+		if (extra != NULL)
 		{
-		    char_u *name = isn->isn_arg.funcref.fr_func_name;
+		    char_u *name = extra->fre_func_name;
 
 		    if (name != NULL)
+		    {
 			func_unref(name);
-		    vim_free(isn->isn_arg.funcref.fr_func_name);
+			vim_free(name);
+		    }
+		    vim_free(extra);
 		}
 	    }
 	    break;
@@ -2171,17 +2330,23 @@ delete_instr(isn_T *isn)
 
 	case ISN_NEWFUNC:
 	    {
-		char_u  *lambda = isn->isn_arg.newfunc.nf_lambda;
-		ufunc_T *ufunc = find_func_even_dead(lambda, FFED_IS_GLOBAL);
+		newfuncarg_T *arg = isn->isn_arg.newfunc.nf_arg;
 
-		if (ufunc != NULL)
+		if (arg != NULL)
 		{
-		    unlink_def_function(ufunc);
-		    func_ptr_unref(ufunc);
-		}
+		    ufunc_T *ufunc = find_func_even_dead(
+					      arg->nfa_lambda, FFED_IS_GLOBAL);
 
-		vim_free(lambda);
-		vim_free(isn->isn_arg.newfunc.nf_global);
+		    if (ufunc != NULL)
+		    {
+			unlink_def_function(ufunc);
+			func_ptr_unref(ufunc);
+		    }
+
+		    vim_free(arg->nfa_lambda);
+		    vim_free(arg->nfa_global);
+		    vim_free(arg);
+		}
 	    }
 	    break;
 
@@ -2240,11 +2405,14 @@ delete_instr(isn_T *isn)
 	case ISN_CONCAT:
 	case ISN_COND2BOOL:
 	case ISN_DEBUG:
+	case ISN_DEFER:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOCONSOLE:
 	case ISN_ECHOERR:
 	case ISN_ECHOMSG:
+	case ISN_ECHOWINDOW:
+	case ISN_ENDLOOP:
 	case ISN_ENDTRY:
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
@@ -2291,25 +2459,26 @@ delete_instr(isn_T *isn)
 	case ISN_RETURN_VOID:
 	case ISN_SHUFFLE:
 	case ISN_SLICE:
+	case ISN_SOURCE:
 	case ISN_STORE:
 	case ISN_STOREINDEX:
 	case ISN_STORENR:
-	case ISN_SOURCE:
-    case ISN_STOREOUTER:
-    case ISN_STORERANGE:
-    case ISN_STOREREG:
-    case ISN_STOREV:
-    case ISN_STRINDEX:
-    case ISN_STRSLICE:
-    case ISN_THROW:
-    case ISN_TRYCONT:
-    case ISN_UNLETINDEX:
-    case ISN_UNLETRANGE:
-    case ISN_UNPACK:
-    case ISN_USEDICT:
+	case ISN_STOREOUTER:
+	case ISN_STORERANGE:
+	case ISN_STOREREG:
+	case ISN_STOREV:
+	case ISN_STRINDEX:
+	case ISN_STRSLICE:
+	case ISN_THROW:
+	case ISN_TRYCONT:
+	case ISN_UNLETINDEX:
+	case ISN_UNLETRANGE:
+	case ISN_UNPACK:
+	case ISN_USEDICT:
+	case ISN_WHILE:
 	// nothing allocated
 	break;
-}
+    }
 }
 
     void

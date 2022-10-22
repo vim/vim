@@ -2835,7 +2835,16 @@ u_undoredo(int undo)
 		curbuf->b_op_end.lnum += newsize - oldsize;
 	}
 	if (oldsize > 0 || newsize > 0)
+	{
 	    changed_lines(top + 1, 0, bot, newsize - oldsize);
+#ifdef FEAT_SPELL
+	    // When text has been changed, possibly the start of the next line
+	    // may have SpellCap that should be removed or it needs to be
+	    // displayed.  Schedule the next line for redrawing just in case.
+	    if (spell_check_window(curwin) && bot <= curbuf->b_ml.ml_line_count)
+		redrawWinline(curwin, bot);
+#endif
+	}
 
 	// Set the '[ mark.
 	if (top + 1 < curbuf->b_op_start.lnum)

@@ -52,16 +52,12 @@ static void	restore_cmdline(cmdline_info_T *ccp);
 static int	cmdline_paste(int regname, int literally, int remcr);
 static void	redrawcmdprompt(void);
 static int	ccheck_abbr(int);
+static int	open_cmdwin(void);
 #ifdef FEAT_SEARCH_EXTRA
 static int	empty_pattern_magic(char_u *pat, size_t len, magic_T magic_val);
 #endif
 
-#ifdef FEAT_CMDWIN
-static int	open_cmdwin(void);
-
 static int	cedit_key = -1;	// key value of 'cedit' option
-#endif
-
 
     static void
 trigger_cmd_autocmd(int typechar, int evt)
@@ -1587,26 +1583,11 @@ getcmdline_int(
 #endif
     expand_T	xpc;
     long	*b_im_ptr = NULL;
+    buf_T	*b_im_ptr_buf = NULL;	// buffer where b_im_ptr is valid
     cmdline_info_T save_ccline;
     int		did_save_ccline = FALSE;
     int		cmdline_type;
     int		wild_type;
-    int		cmdheight0 = p_ch == 0;
-
-    if (cmdheight0)
-    {
-	int  save_so = lastwin->w_p_so;
-
-	// If cmdheight is 0, cmdheight must be set to 1 when we enter the
-	// command line.  Set "made_cmdheight_nonzero" and reset 'scrolloff' to
-	// avoid scrolling the last window.
-	made_cmdheight_nonzero = TRUE;
-	lastwin->w_p_so = 0;
-	set_option_value((char_u *)"ch", 1L, NULL, 0);
-	update_screen(UPD_VALID);                 // redraw the screen NOW
-	made_cmdheight_nonzero = FALSE;
-	lastwin->w_p_so = save_so;
-    }
 
     // one recursion level deeper
     ++depth;
@@ -1663,7 +1644,7 @@ getcmdline_int(
     if (!cmd_silent)
     {
 	i = msg_scrolled;
-	msg_scrolled = 0;		// avoid wait_return message
+	msg_scrolled = 0;		// avoid wait_return() message
 	gotocmdline(TRUE);
 	msg_scrolled += i;
 	redrawcmdprompt();		// draw prompt or indent
@@ -1699,6 +1680,7 @@ getcmdline_int(
 	    b_im_ptr = &curbuf->b_p_iminsert;
 	else
 	    b_im_ptr = &curbuf->b_p_imsearch;
+	b_im_ptr_buf = curbuf;
 	if (*b_im_ptr == B_IMODE_LMAP)
 	    State |= MODE_LANGMAP;
 #ifdef HAVE_INPUT_METHOD
@@ -1936,7 +1918,6 @@ getcmdline_int(
 					// cmdline_handle_backslash_key()
 	}
 
-#ifdef FEAT_CMDWIN
 	if (c == cedit_key || c == K_CMDWIN)
 	{
 	    // TODO: why is ex_normal_busy checked here?
@@ -1949,11 +1930,8 @@ getcmdline_int(
 		some_key_typed = TRUE;
 	    }
 	}
-# ifdef FEAT_DIGRAPHS
-	else
-# endif
-#endif
 #ifdef FEAT_DIGRAPHS
+	else
 	    c = do_digraph(c);
 #endif
 
@@ -2050,7 +2028,8 @@ getcmdline_int(
 		goto cmdline_not_changed;
 
 	case Ctrl_HAT:
-		cmdline_toggle_langmap(b_im_ptr);
+		cmdline_toggle_langmap(
+				    buf_valid(b_im_ptr_buf) ? b_im_ptr : NULL);
 		goto cmdline_not_changed;
 
 //	case '@':   only in very old vi
@@ -2560,7 +2539,8 @@ returncmd:
 #endif
 
 #ifdef HAVE_INPUT_METHOD
-    if (b_im_ptr != NULL && *b_im_ptr != B_IMODE_LMAP)
+    if (b_im_ptr != NULL && buf_valid(b_im_ptr_buf)
+						  && *b_im_ptr != B_IMODE_LMAP)
 	im_save_status(b_im_ptr);
     im_set_active(FALSE);
 #endif
@@ -2573,15 +2553,6 @@ returncmd:
 theend:
     {
 	char_u *p = ccline.cmdbuff;
-
-	if (cmdheight0)
-	{
-	    made_cmdheight_nonzero = TRUE;
-	    set_option_value((char_u *)"ch", 0L, NULL, 0);
-	    // Redraw is needed for command line completion
-	    redraw_all_later(UPD_CLEAR);
-	    made_cmdheight_nonzero = FALSE;
-	}
 
 	--depth;
 	if (did_save_ccline)
@@ -2708,10 +2679,8 @@ check_opt_wim(void)
     int
 text_locked(void)
 {
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	return TRUE;
-#endif
     return textlock != 0;
 }
 
@@ -2728,10 +2697,8 @@ text_locked_msg(void)
     char *
 get_text_locked_msg(void)
 {
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	return e_invalid_in_cmdline_window;
-#endif
     return e_not_allowed_to_change_text_or_change_window;
 }
 
@@ -3869,6 +3836,8 @@ redrawcmdprompt(void)
     void
 redrawcmd(void)
 {
+    int save_in_echowindow = in_echowindow;
+
     if (cmd_silent)
 	return;
 
@@ -3879,6 +3848,9 @@ redrawcmd(void)
 	msg_clr_eos();
 	return;
     }
+
+    // Do not put this in the message window.
+    in_echowindow = FALSE;
 
     sb_text_restart_cmdline();
     msg_start();
@@ -3903,12 +3875,15 @@ redrawcmd(void)
     // Typing ':' at the more prompt may set skip_redraw.  We don't want this
     // in cmdline mode
     skip_redraw = FALSE;
+
+    in_echowindow = save_in_echowindow;
 }
 
     void
 compute_cmdrow(void)
 {
-    if (exmode_active || msg_scrolled != 0)
+    // ignore "msg_scrolled" in update_screen(), it will be reset soon.
+    if (exmode_active || (msg_scrolled != 0 && !updating_screen))
 	cmdline_row = Rows - 1;
     else
 	cmdline_row = W_WINROW(lastwin) + lastwin->w_height
@@ -4093,7 +4068,6 @@ get_cmdline_info(void)
     return &ccline;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN) || defined(PROTO)
 /*
  * Get pointer to the command line info to use. save_cmdline() may clear
  * ccline and put the previous value in prev_ccline.
@@ -4109,7 +4083,28 @@ get_ccline_ptr(void)
 	return &prev_ccline;
     return NULL;
 }
-#endif
+
+/*
+ * Get the current command-line type.
+ * Returns ':' or '/' or '?' or '@' or '>' or '-'
+ * Only works when the command line is being edited.
+ * Returns NUL when something is wrong.
+ */
+    static int
+get_cmdline_type(void)
+{
+    cmdline_info_T *p = get_ccline_ptr();
+
+    if (p == NULL)
+	return NUL;
+    if (p->cmdfirstc == NUL)
+	return
+# ifdef FEAT_EVAL
+	    (p->input_fn) ? '@' :
+# endif
+	    '-';
+    return p->cmdfirstc;
+}
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
@@ -4184,22 +4179,7 @@ f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
 {
     cmdline_info_T *p = get_ccline_ptr();
 
-    rettv->vval.v_number = 0;
-    if (p != NULL)
-    rettv->vval.v_number = p->cmdpos + 1;
-}
-
-/*
- * Get the command line cursor screen position.
- */
-    static int
-get_cmdline_screen_pos(void)
-{
-    cmdline_info_T *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return -1;
-    return p->cmdspos;
+    rettv->vval.v_number = p != NULL ? p->cmdpos + 1 : 0;
 }
 
 /*
@@ -4208,16 +4188,32 @@ get_cmdline_screen_pos(void)
     void
 f_getcmdscreenpos(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    rettv->vval.v_number = get_cmdline_screen_pos() + 1;
+    cmdline_info_T *p = get_ccline_ptr();
+
+    rettv->vval.v_number = p != NULL ? p->cmdspos + 1 : 0;
+}
+
+/*
+ * "getcmdtype()" function
+ */
+    void
+f_getcmdtype(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = alloc(2);
+    if (rettv->vval.v_string != NULL)
+    {
+	rettv->vval.v_string[0] = get_cmdline_type();
+	rettv->vval.v_string[1] = NUL;
+    }
 }
 
 // Set the command line str to "str".
 // Returns 1 when failed, 0 when OK.
-    int
+    static int
 set_cmdline_str(char_u *str, int pos)
 {
     cmdline_info_T  *p = get_ccline_ptr();
-    int		    cmdline_type;
     int		    len;
 
     if (p == NULL)
@@ -4234,8 +4230,7 @@ set_cmdline_str(char_u *str, int pos)
     redrawcmd();
 
     // Trigger CmdlineChanged autocommands.
-    cmdline_type = ccline.cmdfirstc == NUL ? '-' : ccline.cmdfirstc;
-    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+    trigger_cmd_autocmd(get_cmdline_type(), EVENT_CMDLINECHANGED);
 
     return 0;
 }
@@ -4269,11 +4264,9 @@ f_setcmdline(typval_T *argvars, typval_T *rettv)
 {
     int pos = -1;
 
-    if (argvars[0].v_type != VAR_STRING || argvars[0].vval.v_string == NULL)
-    {
-	emsg(_(e_string_required));
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_opt_number_arg(argvars, 1) == FAIL)
 	return;
-    }
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
@@ -4307,48 +4300,6 @@ f_setcmdpos(typval_T *argvars, typval_T *rettv)
     if (pos >= 0)
 	rettv->vval.v_number = set_cmdline_pos(pos);
 }
-#endif
-
-#if defined(FEAT_EVAL) || defined(FEAT_CMDWIN)
-/*
- * Get the current command-line type.
- * Returns ':' or '/' or '?' or '@' or '>' or '-'
- * Only works when the command line is being edited.
- * Returns NUL when something is wrong.
- */
-    static int
-get_cmdline_type(void)
-{
-    cmdline_info_T *p = get_ccline_ptr();
-
-    if (p == NULL)
-	return NUL;
-    if (p->cmdfirstc == NUL)
-	return
-# ifdef FEAT_EVAL
-	    (p->input_fn) ? '@' :
-# endif
-	    '-';
-    return p->cmdfirstc;
-}
-#endif
-
-#if defined(FEAT_EVAL) || defined(PROTO)
-/*
- * "getcmdtype()" function
- */
-    void
-f_getcmdtype(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = alloc(2);
-    if (rettv->vval.v_string != NULL)
-    {
-	rettv->vval.v_string[0] = get_cmdline_type();
-	rettv->vval.v_string[1] = NUL;
-    }
-}
-
 #endif
 
 /*
@@ -4398,7 +4349,6 @@ get_list_range(char_u **str, int *num1, int *num2)
     return OK;
 }
 
-#if defined(FEAT_CMDWIN) || defined(PROTO)
 /*
  * Check value of 'cedit' and set cedit_key.
  * Returns NULL if value is OK, error message otherwise.
@@ -4664,13 +4614,11 @@ open_cmdwin(void)
 	    ccline.cmdlen = (int)STRLEN(ccline.cmdbuff);
 	    ccline.cmdbufflen = ccline.cmdlen + 1;
 	    ccline.cmdpos = curwin->w_cursor.col;
-	    if (ccline.cmdpos > ccline.cmdlen)
+	    // If the cursor is on the last character, it probably should be
+	    // after it.
+	    if (ccline.cmdpos == ccline.cmdlen - 1
+		    || ccline.cmdpos > ccline.cmdlen)
 		ccline.cmdpos = ccline.cmdlen;
-	    if (cmdwin_result == K_IGNORE)
-	    {
-		set_cmdspos_cursor();
-		redrawcmd();
-	    }
 	}
 
 # ifdef FEAT_CONCEAL
@@ -4680,6 +4628,8 @@ open_cmdwin(void)
 	// First go back to the original window.
 	wp = curwin;
 	set_bufref(&bufref, curbuf);
+
+	skip_win_fix_cursor = TRUE;
 	win_goto(old_curwin);
 
 	// win_goto() may trigger an autocommand that already closes the
@@ -4694,6 +4644,16 @@ open_cmdwin(void)
 
 	// Restore window sizes.
 	win_size_restore(&winsizes);
+	skip_win_fix_cursor = FALSE;
+
+	if (cmdwin_result == K_IGNORE)
+	{
+	    // It can be confusing that the cmdwin still shows, redraw the
+	    // screen.
+	    update_screen(UPD_VALID);
+	    set_cmdspos_cursor();
+	    redrawcmd();
+	}
     }
 
     ga_clear(&winsizes);
@@ -4717,7 +4677,6 @@ is_in_cmdwin(void)
 {
     return cmdwin_type != 0 && get_cmdline_type() == NUL;
 }
-#endif // FEAT_CMDWIN
 
 /*
  * Used for commands that either take a simple command string argument, or:

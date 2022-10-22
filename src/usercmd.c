@@ -1436,13 +1436,33 @@ add_win_cmd_modifers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
 
     // :tab
     if (cmod->cmod_tab > 0)
-	result += add_cmd_modifier(buf, "tab", multi_mods);
+    {
+	int tabnr = cmod->cmod_tab - 1;
+
+	if (tabnr == tabpage_index(curtab))
+	{
+	    // For compatibility, don't add a tabpage number if it is the same
+	    // as the default number for :tab.
+	    result += add_cmd_modifier(buf, "tab", multi_mods);
+	}
+	else
+	{
+	    char tab_buf[NUMBUFLEN + 3];
+
+	    sprintf(tab_buf, "%dtab", tabnr);
+	    result += add_cmd_modifier(buf, tab_buf, multi_mods);
+	}
+    }
+
     // :topleft
     if (cmod->cmod_split & WSP_TOP)
 	result += add_cmd_modifier(buf, "topleft", multi_mods);
     // :vertical
     if (cmod->cmod_split & WSP_VERT)
 	result += add_cmd_modifier(buf, "vertical", multi_mods);
+    // :horizontal
+    if (cmod->cmod_split & WSP_HOR)
+	result += add_cmd_modifier(buf, "horizontal", multi_mods);
     return result;
 }
 

@@ -522,18 +522,22 @@ fi
 dnl Check user requested features.
 
 AC_MSG_CHECKING(--with-features argument)
-AC_ARG_WITH(features, [  --with-features=TYPE    tiny, small, normal, big or huge (default: huge)],
+AC_ARG_WITH(features, [  --with-features=TYPE    tiny, normal or huge (default: huge)],
 	features="$withval"; AC_MSG_RESULT($features),
 	features="huge"; AC_MSG_RESULT(Defaulting to huge))
+
+dnl "small" is supported for backwards compatibility, now an alias for "tiny"
+dnl "big" is supported for backwards compatibility, now an alias for "normal"
+case "$features" in
+  small) features="tiny"   ;;
+  big)   features="normal" ;;
+esac
 
 dovimdiff=""
 dogvimdiff=""
 case "$features" in
   tiny)		AC_DEFINE(FEAT_TINY) ;;
-  small)	AC_DEFINE(FEAT_SMALL) ;;
   normal)	AC_DEFINE(FEAT_NORMAL) dovimdiff="installvimdiff";
-			dogvimdiff="installgvimdiff" ;;
-  big)		AC_DEFINE(FEAT_BIG) dovimdiff="installvimdiff";
 			dogvimdiff="installgvimdiff" ;;
   huge)		AC_DEFINE(FEAT_HUGE) dovimdiff="installvimdiff";
 			dogvimdiff="installgvimdiff" ;;
@@ -543,7 +547,7 @@ esac
 AC_SUBST(dovimdiff)
 AC_SUBST(dogvimdiff)
 
-if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+if test "x$features" = "xtiny"; then
   has_eval=no
 else
   has_eval=yes
@@ -577,7 +581,7 @@ else
 fi
 
 AC_MSG_CHECKING([diff feature])
-if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+if test "x$features" = "xtiny"; then
   AC_MSG_RESULT([disabled in $features version])
 else
   AC_MSG_RESULT(enabled)
@@ -595,7 +599,7 @@ AC_MSG_RESULT($enable_luainterp)
 
 if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Lua with tiny or small features])
+    AC_MSG_ERROR([cannot use Lua with tiny features])
   fi
 
   dnl -- find the lua executable
@@ -1082,7 +1086,7 @@ AC_ARG_ENABLE(perlinterp,
 AC_MSG_RESULT($enable_perlinterp)
 if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Perl with tiny or small features])
+    AC_MSG_ERROR([cannot use Perl with tiny features])
   fi
   AC_SUBST(vi_cv_path_perl)
   AC_PATH_PROG(vi_cv_path_perl, perl)
@@ -1231,7 +1235,7 @@ AC_ARG_ENABLE(pythoninterp,
 AC_MSG_RESULT($enable_pythoninterp)
 if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Python with tiny or small features])
+    AC_MSG_ERROR([cannot use Python with tiny features])
   fi
 
   dnl -- find the python executable
@@ -1466,7 +1470,7 @@ AC_ARG_ENABLE(python3interp,
 AC_MSG_RESULT($enable_python3interp)
 if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Python with tiny or small features])
+    AC_MSG_ERROR([cannot use Python with tiny features])
   fi
 
   dnl -- find the python3 executable
@@ -1979,7 +1983,7 @@ AC_ARG_ENABLE(rubyinterp,
 AC_MSG_RESULT($enable_rubyinterp)
 if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_ERROR([cannot use Ruby with tiny or small features])
+    AC_MSG_ERROR([cannot use Ruby with tiny features])
   fi
 
   AC_MSG_CHECKING(--with-ruby-command argument)
@@ -1990,7 +1994,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   AC_PATH_PROG(vi_cv_path_ruby, $RUBY_CMD)
   if test "X$vi_cv_path_ruby" != "X"; then
     AC_MSG_CHECKING(Ruby version)
-    if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
+    if $vi_cv_path_ruby -e 'RUBY_VERSION >= "1.9.1" or exit 1' >/dev/null 2>/dev/null; then
       AC_MSG_RESULT(OK)
       AC_MSG_CHECKING(Ruby rbconfig)
       ruby_rbconfig="RbConfig"
@@ -2009,7 +2013,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
         fi
         rubyversion=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['ruby_version']].gsub(/\./, '')[[0,2]]"`
 	if test "X$rubyversion" = "X"; then
-	  rubyversion=`$vi_cv_path_ruby -e "print ((VERSION rescue RUBY_VERSION)).gsub(/\./, '')[[0,2]]"`
+	  rubyversion=`$vi_cv_path_ruby -e "print RUBY_VERSION.gsub(/\./, '')[[0,2]]"`
 	fi
         RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
 	rubylibs=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG[['LIBS']]"`
@@ -2062,7 +2066,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	AC_MSG_RESULT(not found; disabling Ruby)
       fi
     else
-      AC_MSG_RESULT(too old; need Ruby version 1.6.0 or later)
+      AC_MSG_RESULT(too old; need Ruby version 1.9.1 or later)
     fi
   fi
 
@@ -2092,7 +2096,7 @@ AC_ARG_ENABLE(netbeans,
 	, [enable_netbeans="yes"])
 if test "$enable_netbeans" = "yes"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_RESULT([cannot use NetBeans with tiny or small features])
+    AC_MSG_RESULT([cannot use NetBeans with tiny features])
     enable_netbeans="no"
   else
     AC_MSG_RESULT(no)
@@ -2107,7 +2111,7 @@ AC_ARG_ENABLE(channel,
 	, [enable_channel="yes"])
 if test "$enable_channel" = "yes"; then
   if test "$has_eval" = "no"; then
-    AC_MSG_RESULT([cannot use channels with tiny or small features])
+    AC_MSG_RESULT([cannot use channels with tiny features])
     enable_channel="no"
   else
     AC_MSG_RESULT(no)
@@ -2215,7 +2219,7 @@ AC_ARG_ENABLE(terminal,
 	, [enable_terminal="auto"])
 if test "$enable_terminal" = "yes" || test "$enable_terminal" = "auto" -a "x$features" = "xhuge" ; then
   if test "$has_eval" = "no"; then
-    AC_MSG_RESULT([cannot use terminal emulator with tiny or small features])
+    AC_MSG_RESULT([cannot use terminal emulator with tiny features])
     enable_terminal="no"
   else
     if test "$enable_terminal" = "auto"; then
@@ -2262,7 +2266,7 @@ if test "$enable_multibyte" != "yes"; then
 		a problem with this, discuss on the Vim mailing list.])
 fi
 
-dnl Right-to-Left language support for Vim will be included with big features,
+dnl Right-to-Left language support for Vim will be included with huge features,
 dnl unless ENABLE_RIGHTLEFT is undefined.
 AC_MSG_CHECKING(--disable-rightleft argument)
 AC_ARG_ENABLE(rightleft,
@@ -2275,7 +2279,7 @@ else
 	AC_DEFINE(DISABLE_RIGHTLEFT)
 fi
 
-dnl Arabic language support for Vim will be included with big features,
+dnl Arabic language support for Vim will be included with huge features,
 dnl unless ENABLE_ARABIC is undefined.
 AC_MSG_CHECKING(--disable-arabic argument)
 AC_ARG_ENABLE(arabic,
@@ -3713,7 +3717,7 @@ AC_ARG_ENABLE(canberra,
 	, [enable_canberra="maybe"])
 
 if test "$enable_canberra" = "maybe"; then
-  if test "$features" = "big" -o "$features" = "huge"; then
+  if test "$features" = "huge"; then
     AC_MSG_RESULT(Defaulting to yes)
     enable_canberra="yes"
   else
@@ -3722,7 +3726,7 @@ if test "$enable_canberra" = "maybe"; then
   fi
 else
   if test "$enable_canberra" = "yes" -a "$has_eval" = "no"; then
-    AC_MSG_RESULT([cannot use sound with tiny or small features])
+    AC_MSG_RESULT([cannot use sound with tiny features])
     enable_canberra="no"
   else
     AC_MSG_RESULT($enable_canberra)
@@ -3759,7 +3763,7 @@ AC_ARG_ENABLE(libsodium,
 	, [enable_libsodium="maybe"])
 
 if test "$enable_libsodium" = "maybe"; then
-  if test "$features" = "big" -o "$features" = "huge"; then
+  if test "$features" = "huge"; then
     AC_MSG_RESULT(Defaulting to yes)
     enable_libsodium="yes"
   else
@@ -3952,32 +3956,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM([
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_NL_LANGINFO_CODESET),
 	AC_MSG_RESULT(no))
 
-dnl Need various functions for floating point support.  Only enable
-dnl floating point when they are all present.
+dnl Floating point support may require the "m" library
 AC_CHECK_LIB(m, strtod)
-AC_MSG_CHECKING([for strtod() and other floating point functions])
-AC_LINK_IFELSE([AC_LANG_PROGRAM([
-#ifdef HAVE_MATH_H
-# include <math.h>
-#endif
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-], [char *s; double d;
-    d = strtod("1.1", &s);
-    d = fabs(1.11);
-    d = ceil(1.11);
-    d = floor(1.11);
-    d = log10(1.11);
-    d = pow(1.11, 2.22);
-    d = sqrt(1.11);
-    d = sin(1.11);
-    d = cos(1.11);
-    d = atan(1.11);
-    ])],
-	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FLOAT_FUNCS),
-	AC_MSG_RESULT(no))
 
 dnl isinf() and isnan() need to include header files and may need -lm.
 AC_MSG_CHECKING([for isinf()])
@@ -4456,7 +4436,7 @@ if test "$enable_nls" = "yes"; then
     else
       AC_MSG_RESULT([msgfmt not found - disabled]);
     fi
-    if test $have_gettext = "yes" -a "x$features" != "xtiny" -a "x$features" != "xsmall"; then
+    if test $have_gettext = "yes" -a "x$features" != "xtiny"; then
       AC_DEFINE(HAVE_GETTEXT)
       MAKEMO=yes
       AC_SUBST(MAKEMO)
@@ -4573,7 +4553,7 @@ if test "$MACOS_X" = "yes"; then
   AC_MSG_CHECKING([whether we need macOS frameworks])
   if test "$MACOS_X_DARWIN" = "yes"; then
     if test "$features" = "tiny"; then
-      dnl Since no FEAT_CLIPBOARD, no longer need for os_macosx.m.
+      dnl Since no FEAT_CLIPBOARD or FEAT_SOUND, no need for os_macosx.m.
       OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
       OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
       AC_MSG_RESULT([yes, we need CoreServices])

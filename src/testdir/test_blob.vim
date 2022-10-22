@@ -488,9 +488,40 @@ func Test_blob_read_write()
       call writefile(b, 'Xblob')
       VAR br = readfile('Xblob', 'B')
       call assert_equal(b, br)
+      VAR br2 = readblob('Xblob')
+      call assert_equal(b, br2)
+      VAR br3 = readblob('Xblob', 1)
+      call assert_equal(b[1 :], br3)
+      VAR br4 = readblob('Xblob', 1, 2)
+      call assert_equal(b[1 : 2], br4)
+      VAR br5 = readblob('Xblob', -3)
+      call assert_equal(b[-3 :], br5)
+      VAR br6 = readblob('Xblob', -3, 2)
+      call assert_equal(b[-3 : -2], br6)
+      
+      #" reading past end of file, empty result
+      VAR br1e = readblob('Xblob', 10000)
+      call assert_equal(0z, br1e)
+
+      #" reading too much, result is truncated
+      VAR blong = readblob('Xblob', -1000)
+      call assert_equal(b, blong)
+      LET blong = readblob('Xblob', -10, 8)
+      call assert_equal(b, blong)
+      LET blong = readblob('Xblob', 0, 10)
+      call assert_equal(b, blong)
+
       call delete('Xblob')
   END
   call v9.CheckLegacyAndVim9Success(lines)
+
+  if filereadable('/dev/random')
+    let b = readblob('/dev/random', 0, 10)
+    call assert_equal(10, len(b))
+  endif
+
+  call assert_fails("call readblob('notexist')", 'E484:')
+  " TODO: How do we test for the E485 error?
 
   " This was crashing when calling readfile() with a directory.
   call assert_fails("call readfile('.', 'B')", 'E17: "." is a directory')
@@ -669,9 +700,7 @@ func Test_blob_lock()
 endfunc
 
 func Test_blob_sort()
-  if has('float')
-    call v9.CheckLegacyAndVim9Failure(['call sort([1.0, 0z11], "f")'], 'E975:')
-  endif
+  call v9.CheckLegacyAndVim9Failure(['call sort([1.0, 0z11], "f")'], 'E975:')
   call v9.CheckLegacyAndVim9Failure(['call sort([11, 0z11], "N")'], 'E974:')
 endfunc
 
@@ -723,6 +752,18 @@ func Test_blob2string()
   let v ..= '01'
   exe 'let b = ' .. v
   call assert_equal(v, string(b))
+endfunc
+
+func Test_blob_repeat()
+  call assert_equal(0z, repeat(0z00, 0))
+  call assert_equal(0z00, repeat(0z00, 1))
+  call assert_equal(0z0000, repeat(0z00, 2))
+  call assert_equal(0z00000000, repeat(0z0000, 2))
+
+  call assert_equal(0z, repeat(0z12, 0))
+  call assert_equal(0z, repeat(0z1234, 0))
+  call assert_equal(0z1234, repeat(0z1234, 1))
+  call assert_equal(0z12341234, repeat(0z1234, 2))
 endfunc
 
 " Test for blob allocation failure

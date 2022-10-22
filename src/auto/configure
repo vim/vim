@@ -1523,7 +1523,7 @@ Optional Packages:
   --with-view-name=NAME   what to call the View executable
   --with-global-runtime=DIR    global runtime directory in 'runtimepath', comma-separated for multiple directories
   --with-modified-by=NAME       name of who modified a release version
-  --with-features=TYPE    tiny, small, normal, big or huge (default: huge)
+  --with-features=TYPE    tiny, normal or huge (default: huge)
   --with-compiledby=NAME  name to show in :version message
   --with-lua-prefix=PFX   Prefix where Lua is installed.
   --with-luajit           Link with LuaJIT instead of Lua.
@@ -5219,17 +5219,17 @@ $as_echo "Defaulting to huge" >&6; }
 fi
 
 
+case "$features" in
+  small) features="tiny"   ;;
+  big)   features="normal" ;;
+esac
+
 dovimdiff=""
 dogvimdiff=""
 case "$features" in
   tiny)		$as_echo "#define FEAT_TINY 1" >>confdefs.h
  ;;
-  small)	$as_echo "#define FEAT_SMALL 1" >>confdefs.h
- ;;
   normal)	$as_echo "#define FEAT_NORMAL 1" >>confdefs.h
- dovimdiff="installvimdiff";
-			dogvimdiff="installgvimdiff" ;;
-  big)		$as_echo "#define FEAT_BIG 1" >>confdefs.h
  dovimdiff="installvimdiff";
 			dogvimdiff="installgvimdiff" ;;
   huge)		$as_echo "#define FEAT_HUGE 1" >>confdefs.h
@@ -5242,7 +5242,7 @@ esac
 
 
 
-if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+if test "x$features" = "xtiny"; then
   has_eval=no
 else
   has_eval=yes
@@ -5300,7 +5300,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking diff feature" >&5
 $as_echo_n "checking diff feature... " >&6; }
-if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+if test "x$features" = "xtiny"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: disabled in $features version" >&5
 $as_echo "disabled in $features version" >&6; }
 else
@@ -5326,7 +5326,7 @@ $as_echo "$enable_luainterp" >&6; }
 
 if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    as_fn_error $? "cannot use Lua with tiny or small features" "$LINENO" 5
+    as_fn_error $? "cannot use Lua with tiny features" "$LINENO" 5
   fi
 
 
@@ -6096,7 +6096,7 @@ fi
 $as_echo "$enable_perlinterp" >&6; }
 if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    as_fn_error $? "cannot use Perl with tiny or small features" "$LINENO" 5
+    as_fn_error $? "cannot use Perl with tiny features" "$LINENO" 5
   fi
 
   # Extract the first word of "perl", so it can be a program name with args.
@@ -6301,7 +6301,7 @@ fi
 $as_echo "$enable_pythoninterp" >&6; }
 if test "$enable_pythoninterp" = "yes" -o "$enable_pythoninterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    as_fn_error $? "cannot use Python with tiny or small features" "$LINENO" 5
+    as_fn_error $? "cannot use Python with tiny features" "$LINENO" 5
   fi
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-python-command argument" >&5
@@ -6652,7 +6652,7 @@ fi
 $as_echo "$enable_python3interp" >&6; }
 if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    as_fn_error $? "cannot use Python with tiny or small features" "$LINENO" 5
+    as_fn_error $? "cannot use Python with tiny features" "$LINENO" 5
   fi
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-python3-command argument" >&5
@@ -7580,7 +7580,7 @@ fi
 $as_echo "$enable_rubyinterp" >&6; }
 if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
   if test "$has_eval" = "no"; then
-    as_fn_error $? "cannot use Ruby with tiny or small features" "$LINENO" 5
+    as_fn_error $? "cannot use Ruby with tiny features" "$LINENO" 5
   fi
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-ruby-command argument" >&5
@@ -7639,7 +7639,7 @@ fi
   if test "X$vi_cv_path_ruby" != "X"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Ruby version" >&5
 $as_echo_n "checking Ruby version... " >&6; }
-    if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
+    if $vi_cv_path_ruby -e 'RUBY_VERSION >= "1.9.1" or exit 1' >/dev/null 2>/dev/null; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: OK" >&5
 $as_echo "OK" >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking Ruby rbconfig" >&5
@@ -7663,7 +7663,7 @@ $as_echo "$rubyhdrdir" >&6; }
         fi
         rubyversion=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['ruby_version'].gsub(/\./, '')[0,2]"`
 	if test "X$rubyversion" = "X"; then
-	  rubyversion=`$vi_cv_path_ruby -e "print ((VERSION rescue RUBY_VERSION)).gsub(/\./, '')[0,2]"`
+	  rubyversion=`$vi_cv_path_ruby -e "print RUBY_VERSION.gsub(/\./, '')[0,2]"`
 	fi
         RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
 	rubylibs=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['LIBS']"`
@@ -7715,8 +7715,8 @@ $as_echo "$rubyhdrdir" >&6; }
 $as_echo "not found; disabling Ruby" >&6; }
       fi
     else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: too old; need Ruby version 1.6.0 or later" >&5
-$as_echo "too old; need Ruby version 1.6.0 or later" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: too old; need Ruby version 1.9.1 or later" >&5
+$as_echo "too old; need Ruby version 1.9.1 or later" >&6; }
     fi
   fi
 
@@ -7758,8 +7758,8 @@ fi
 
 if test "$enable_netbeans" = "yes"; then
   if test "$has_eval" = "no"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use NetBeans with tiny or small features" >&5
-$as_echo "cannot use NetBeans with tiny or small features" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use NetBeans with tiny features" >&5
+$as_echo "cannot use NetBeans with tiny features" >&6; }
     enable_netbeans="no"
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -7781,8 +7781,8 @@ fi
 
 if test "$enable_channel" = "yes"; then
   if test "$has_eval" = "no"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use channels with tiny or small features" >&5
-$as_echo "cannot use channels with tiny or small features" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use channels with tiny features" >&5
+$as_echo "cannot use channels with tiny features" >&6; }
     enable_channel="no"
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -8085,8 +8085,8 @@ fi
 
 if test "$enable_terminal" = "yes" || test "$enable_terminal" = "auto" -a "x$features" = "xhuge" ; then
   if test "$has_eval" = "no"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use terminal emulator with tiny or small features" >&5
-$as_echo "cannot use terminal emulator with tiny or small features" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use terminal emulator with tiny features" >&5
+$as_echo "cannot use terminal emulator with tiny features" >&6; }
     enable_terminal="no"
   else
     if test "$enable_terminal" = "auto"; then
@@ -12881,7 +12881,7 @@ fi
 
 
 if test "$enable_canberra" = "maybe"; then
-  if test "$features" = "big" -o "$features" = "huge"; then
+  if test "$features" = "huge"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to yes" >&5
 $as_echo "Defaulting to yes" >&6; }
     enable_canberra="yes"
@@ -12892,8 +12892,8 @@ $as_echo "Defaulting to no" >&6; }
   fi
 else
   if test "$enable_canberra" = "yes" -a "$has_eval" = "no"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use sound with tiny or small features" >&5
-$as_echo "cannot use sound with tiny or small features" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use sound with tiny features" >&5
+$as_echo "cannot use sound with tiny features" >&6; }
     enable_canberra="no"
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_canberra" >&5
@@ -12955,7 +12955,7 @@ fi
 
 
 if test "$enable_libsodium" = "maybe"; then
-  if test "$features" = "big" -o "$features" = "huge"; then
+  if test "$features" = "huge"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to yes" >&5
 $as_echo "Defaulting to yes" >&6; }
     enable_libsodium="yes"
@@ -13379,48 +13379,6 @@ _ACEOF
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for strtod() and other floating point functions" >&5
-$as_echo_n "checking for strtod() and other floating point functions... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#ifdef HAVE_MATH_H
-# include <math.h>
-#endif
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-
-int
-main ()
-{
-char *s; double d;
-    d = strtod("1.1", &s);
-    d = fabs(1.11);
-    d = ceil(1.11);
-    d = floor(1.11);
-    d = log10(1.11);
-    d = pow(1.11, 2.22);
-    d = sqrt(1.11);
-    d = sin(1.11);
-    d = cos(1.11);
-    d = atan(1.11);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }; $as_echo "#define HAVE_FLOAT_FUNCS 1" >>confdefs.h
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for isinf()" >&5
 $as_echo_n "checking for isinf()... " >&6; }
@@ -14763,7 +14721,7 @@ rm -f core conftest.err conftest.$ac_objext \
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: msgfmt not found - disabled" >&5
 $as_echo "msgfmt not found - disabled" >&6; };
     fi
-    if test $have_gettext = "yes" -a "x$features" != "xtiny" -a "x$features" != "xsmall"; then
+    if test $have_gettext = "yes" -a "x$features" != "xtiny"; then
       $as_echo "#define HAVE_GETTEXT 1" >>confdefs.h
 
       MAKEMO=yes

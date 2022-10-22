@@ -40,7 +40,7 @@ func Test_window_preview_from_help()
   CheckFeature quickfix
 
   filetype on
-  call writefile(['/* some C code */'], 'Xpreview.c')
+  call writefile(['/* some C code */'], 'Xpreview.c', 'D')
   help
   pedit Xpreview.c
   wincmd P
@@ -50,7 +50,6 @@ func Test_window_preview_from_help()
 
   filetype off
   close
-  call delete('Xpreview.c')
 endfunc
 
 func Test_multiple_preview_windows()

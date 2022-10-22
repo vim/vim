@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 9.0.  Last change: 2022 Jun 25
+*various.txt*   For Vim version 9.0.  Last change: 2022 Oct 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -29,6 +29,8 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 			Useful to update the status line(s) when 'statusline'
 			includes an item that doesn't cause automatic
 			updating.
+			If the command line is being edited the redraw is
+			postponed until later.
 
 						*:redrawt* *:redrawtabline*
 :redrawt[abline]	Redraw the tabline.  Useful to update the tabline when
@@ -247,7 +249,8 @@ g8			Print the hex values of the bytes used in the
 
 							*:!cmd* *:!*
 :!{cmd}			Execute {cmd} with the shell.  See also the 'shell'
-			and 'shelltype' option.
+			and 'shelltype' option. `:!` without a {cmd} is a no-op,
+			it does nothing.
 							*E34*
 			Any '!' in {cmd} is replaced with the previous
 			external command (see also 'cpoptions').  But not when
@@ -330,8 +333,8 @@ g8			Print the hex values of the bytes used in the
 							*+feature-list*
    *+acl*		|ACL| support included
    *+ARP*		Amiga only: ARP support included
-B  *+arabic*		|Arabic| language support
-B  *+autochdir*		support 'autochdir' option
+H  *+arabic*		|Arabic| language support
+N  *+autochdir*		support 'autochdir' option
 T  *+autocmd*		|:autocmd|, automatic commands.  Always enabled since
 			8.0.1564
 H  *+autoservername*	Automatically enable |clientserver|
@@ -347,18 +350,19 @@ T  *++builtin_terms*	maximal terminals builtin |builtin-terms| Always
 N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 			and ":goto" commands.
 m  *+channel*		inter process communication |channel|
-6  *+cindent*		|'cindent'|, C indenting
+T  *+cindent*		|'cindent'|, C indenting; Always enabled
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 T  *+cmdline_hist*	command line history |cmdline-history|
-N  *+cmdline_info*	|'showcmd'| and |'ruler'|
-S  *+cmdwin*		|cmdline-window| support
+T  *+cmdline_info*	|'showcmd'| and |'ruler'|; Always enabled since
+			9.0.0747
+T  *+cmdwin*		|cmdline-window| support; Always enabled since 9.0.0657
 T  *+comments*		|'comments'| support
-B  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
+N  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
-B  *+cscope*		|cscope| support
+H  *+cscope*		|cscope| support
 T  *+cursorbind*	|'cursorbind'| support
 m  *+cursorshape*	|termcap-cursor-shape| support
 m  *+debug*		Compiled for debugging.
@@ -369,7 +373,7 @@ N  *+diff*		|vimdiff| and 'diff'
 N  *+digraphs*		|digraphs| *E196*
    *+directx*		Win32 GUI only: DirectX and |'renderoptions'|
    *+dnd*		Support for DnD into the "~ register |quote_~|.
-B  *+emacs_tags*	|emacs-tags| files
+H  *+emacs_tags*	|emacs-tags| files
 N  *+eval*		expression evaluation |eval.txt|
 T  *+ex_extra*		always on now, used to be for Vim's extra Ex commands
 N  *+extra_search*	|'hlsearch'| and |'incsearch'| options.
@@ -381,7 +385,7 @@ N  *+find_in_path*	include file searches: |[I|, |:isearch|,
 N  *+folding*		|folding|
    *+footer*		|gui-footer|
    *+fork*		Unix only: |fork| shell commands
-   *+float*		Floating point support
+T  *+float*		Floating point support  Always enabled since 9.0.0491
 N  *+gettext*		message translations |multi-lang|
 -  *+GUI_Athena*	Unix only: Athena |GUI|
    *+GUI_neXtaw*	Unix only: neXtaw |GUI|
@@ -395,12 +399,12 @@ T  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+ipv6*		Support for IPv6 networking |channel|
 m  *+job*		starting and stopping jobs |job|
 T  *+jumplist*		|jumplist|; Always enabled since 8.2.3795
-B  *+keymap*		|'keymap'|
+H  *+keymap*		|'keymap'|
 N  *+lambda*		|lambda| and |closure|
-B  *+langmap*		|'langmap'|
+H  *+langmap*		|'langmap'|
 N  *+libcall*		|libcall()|
 N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
-t  *+lispindent*	|'lisp'|
+T  *+lispindent*	|'lisp'|
 T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
 T  *+localmap*		Support for mappings local to a buffer |:map-local|
@@ -411,16 +415,16 @@ N  *+mksession*		|:mksession|
 T  *+modify_fname*	|filename-modifiers|
 T  *+mouse*		Mouse handling |mouse-using|
 N  *+mouseshape*	|'mouseshape'|
-B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
+N  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
 m  *+mouse_gpm/dyn*	Same as |+mouse_gpm| with optional library dependency
 			|/dyn|
 N  *+mouse_jsbterm*	JSB mouse handling |jsbterm-mouse|
-B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
+N  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
 N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
 N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
-B  *+mouse_sgr*		Unix only: sgr mouse handling |sgr-mouse|
-B  *+mouse_urxvt*	Unix only: urxvt mouse handling |urxvt-mouse|
+N  *+mouse_sgr*		Unix only: sgr mouse handling |sgr-mouse|
+N  *+mouse_urxvt*	Unix only: urxvt mouse handling |urxvt-mouse|
 N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
 T  *+multi_byte*	Unicode support, 16 and 32 bit characters |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
@@ -449,14 +453,14 @@ m  *+python3/dyn*	Python 3 interface |python-dynamic| |/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
 N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 			'redrawtime' option
-B  *+rightleft*		Right to left typing |'rightleft'|
+H  *+rightleft*		Right to left typing |'rightleft'|
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
 T  *+scrollbind*	|'scrollbind'|
-B  *+signs*		|:sign|
-t  *+smartindent*	|'smartindent'|
-B  *+sodium*		compiled with libsodium for better encryption support
-B  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
+N  *+signs*		|:sign|
+T  *+smartindent*	|'smartindent'|
+H  *+sodium*		compiled with libsodium for better encryption support
+H  *+sound*		|sound_playevent()|, |sound_playfile()| functions, etc.
 N  *+spell*		spell checking support, see |spell|
 N  *+startuptime*	|--startuptime| argument
 N  *+statusline*	Options 'statusline', 'rulerformat' and special
@@ -472,7 +476,7 @@ m  *+tcl/dyn*		Tcl interface |tcl-dynamic| |/dyn|
 m  *+terminal*		Support for terminal window |terminal|
    *+terminfo*		uses |terminfo| instead of termcap
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
-B  *+termguicolors*	24-bit color in xterm-compatible terminals support
+N  *+termguicolors*	24-bit color in xterm-compatible terminals support
 T  *+textobjects*	|text-objects| selection. Always enabled since 9.0.0222.
 N  *+textprop*		|text-properties|
    *+tgetent*		non-Unix only: able to use external termcap
@@ -481,7 +485,7 @@ T  *+title*		Setting the window 'title' and 'icon'; Always enabled
 N  *+toolbar*		|gui-toolbar|
 T  *+user_commands*	User-defined commands. |user-commands|
 			Always enabled since 8.1.1210.
-B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
+H  *+vartabs*		Variable-width tabstops. |'vartabstop'|
 T  *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
 T  *+vim9script*	|Vim9| script

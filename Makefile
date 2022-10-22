@@ -198,8 +198,6 @@ MINOR = 0
 # - copy these files (get them from a binary archive or build them):
 #	gvimext.dll in src/GvimExt
 #	gvimext64.dll in src/GvimExt
-#	VisVim.dll in src/VisVim
-#   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
 #   gvimext64.dll can be obtained from:
 #   https://github.com/vim/vim-win32-installer/releases
 #	It is part of gvim_9.0.*_x64.zip as vim/vim90/GvimExt/gvimext64.dll.
@@ -554,8 +552,6 @@ dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
 	cp uninstallw32.exe dist/vim/$(VIMRTDIR)/uninstall.exe
 	cp gvimext.dll dist/vim/$(VIMRTDIR)/gvimext.dll
 	cp README_ole.txt dist/vim/$(VIMRTDIR)
-	cp src/VisVim/VisVim.dll dist/vim/$(VIMRTDIR)/VisVim.dll
-	cp src/VisVim/README_VisVim.txt dist/vim/$(VIMRTDIR)
 	cd dist && zip -9 -rD -z gvim$(VERSION)ole.zip vim <$(COMMENT_OLE)
 	cp gvim_ole.pdb dist/gvim$(VERSION)ole.pdb
 

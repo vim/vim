@@ -136,6 +136,9 @@ map_mode_to_chars(int mode)
     return (char_u *)mapmode.ga_data;
 }
 
+/*
+ * Output a line for one mapping.
+ */
     static void
 showmap(
     mapblock_T	*mp,
@@ -279,6 +282,61 @@ map_add(
 	map_table[n] = mp;
     }
     return OK;
+}
+
+/*
+ * List mappings.  When "haskey" is FALSE all mappings, otherwise mappings that
+ * match "keys[keys_len]".
+ */
+    static void
+list_mappings(
+	int	keyround,
+	int	abbrev,
+	int	haskey,
+	char_u	*keys,
+	int	keys_len,
+	int	mode,
+	int	*did_local)
+{
+    if (p_verbose > 0 && keyround == 1 && seenModifyOtherKeys)
+	msg_puts(_("Seen modifyOtherKeys: true"));
+
+    // need to loop over all global hash lists
+    for (int hash = 0; hash < 256 && !got_int; ++hash)
+    {
+	mapblock_T	*mp;
+
+	if (abbrev)
+	{
+	    if (hash != 0)	// there is only one abbreviation list
+		break;
+	    mp = curbuf->b_first_abbr;
+	}
+	else
+	    mp = curbuf->b_maphash[hash];
+	for ( ; mp != NULL && !got_int; mp = mp->m_next)
+	{
+	    // check entries with the same mode
+	    if (!mp->m_simplified && (mp->m_mode & mode) != 0)
+	    {
+		if (!haskey)		    // show all entries
+		{
+		    showmap(mp, TRUE);
+		    *did_local = TRUE;
+		}
+		else
+		{
+		    int n = mp->m_keylen;
+		    if (STRNCMP(mp->m_keys, keys,
+				   (size_t)(n < keys_len ? n : keys_len)) == 0)
+		    {
+			showmap(mp, TRUE);
+			*did_local = TRUE;
+		    }
+		}
+	    }
+	}
+    }
 }
 
 /*
@@ -503,8 +561,6 @@ do_map(
 	int	did_local = FALSE;
 	int	keyround1_simplified = keyround == 1 && did_simplify;
 	int	round;
-	int	hash;
-	int	new_hash;
 
 	if (keyround == 2)
 	{
@@ -585,7 +641,7 @@ do_map(
 			       && haskey && hasarg && maptype != MAPTYPE_UNMAP)
 	{
 	    // need to loop over all global hash lists
-	    for (hash = 0; hash < 256 && !got_int; ++hash)
+	    for (int hash = 0; hash < 256 && !got_int; ++hash)
 	    {
 		if (abbrev)
 		{
@@ -619,42 +675,8 @@ do_map(
 	// When listing global mappings, also list buffer-local ones here.
 	if (map_table != curbuf->b_maphash && !hasarg
 						   && maptype != MAPTYPE_UNMAP)
-	{
-	    // need to loop over all global hash lists
-	    for (hash = 0; hash < 256 && !got_int; ++hash)
-	    {
-		if (abbrev)
-		{
-		    if (hash != 0)	// there is only one abbreviation list
-			break;
-		    mp = curbuf->b_first_abbr;
-		}
-		else
-		    mp = curbuf->b_maphash[hash];
-		for ( ; mp != NULL && !got_int; mp = mp->m_next)
-		{
-		    // check entries with the same mode
-		    if (!mp->m_simplified && (mp->m_mode & mode) != 0)
-		    {
-			if (!haskey)		    // show all entries
-			{
-			    showmap(mp, TRUE);
-			    did_local = TRUE;
-			}
-			else
-			{
-			    n = mp->m_keylen;
-			    if (STRNCMP(mp->m_keys, keys,
-					     (size_t)(n < len ? n : len)) == 0)
-			    {
-				showmap(mp, TRUE);
-				did_local = TRUE;
-			    }
-			}
-		    }
-		}
-	    }
-	}
+	    list_mappings(keyround, abbrev, haskey, keys, len,
+							     mode, &did_local);
 
 	// Find an entry in the maphash[] list that matches.
 	// For :unmap we may loop two times: once to try to unmap an entry with
@@ -666,7 +688,7 @@ do_map(
 					       && !did_it && !got_int; ++round)
 	{
 	    // need to loop over all hash lists
-	    for (hash = 0; hash < 256 && !got_int; ++hash)
+	    for (int hash = 0; hash < 256 && !got_int; ++hash)
 	    {
 		if (abbrev)
 		{
@@ -792,7 +814,7 @@ do_map(
 
 			    // May need to put this entry into another hash
 			    // list.
-			    new_hash = MAP_HASH(mp->m_mode, mp->m_keys[0]);
+			    int new_hash = MAP_HASH(mp->m_mode, mp->m_keys[0]);
 			    if (!abbrev && new_hash != hash)
 			    {
 				*mpp = mp->m_next;
@@ -1711,7 +1733,7 @@ eval_map_expr(
     }
 
     // Note: the evaluation may make "mp" invalid.
-    p = eval_to_string(expr, FALSE);
+    p = eval_to_string(expr, FALSE, FALSE);
 
     --textlock;
     --ex_normal_lock;
@@ -1753,7 +1775,11 @@ vim_strsave_escape_csi(char_u *p)
 	d = res;
 	for (s = p; *s != NUL; )
 	{
-	    if (s[0] == K_SPECIAL && s[1] != NUL && s[2] != NUL)
+	    if ((s[0] == K_SPECIAL
+#ifdef FEAT_GUI
+		    || (gui.in_use && s[0] == CSI)
+#endif
+		) && s[1] != NUL && s[2] != NUL)
 	    {
 		// Copy special key unmodified.
 		*d++ = *s++;
@@ -2317,7 +2343,7 @@ mapblock2dict(
 	int	    buffer_local,   // false if not buffer local mapping
 	int	    abbr)	    // true if abbreviation
 {
-    char_u	    *lhs = str2special_save(mp->m_keys, TRUE);
+    char_u	    *lhs = str2special_save(mp->m_keys, TRUE, FALSE);
     char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
 
     dict_add_string(dict, "lhs", lhs);
@@ -2409,7 +2435,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	    if (*rhs == NUL)
 		rettv->vval.v_string = vim_strsave((char_u *)"<Nop>");
 	    else
-		rettv->vval.v_string = str2special_save(rhs, FALSE);
+		rettv->vval.v_string = str2special_save(rhs, FALSE, FALSE);
 	}
 
     }
@@ -2478,7 +2504,7 @@ f_maplist(typval_T *argvars UNUSED, typval_T *rettv)
 		keys_buf = NULL;
 		did_simplify = FALSE;
 
-		lhs = str2special_save(mp->m_keys, TRUE);
+		lhs = str2special_save(mp->m_keys, TRUE, FALSE);
 		(void)replace_termcodes(lhs, &keys_buf, flags, &did_simplify);
 		vim_free(lhs);
 
@@ -2635,11 +2661,8 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	    return;
 	is_abbr = (int)tv_get_bool(&argvars[1]);
 
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
 	d = argvars[2].vval.v_dict;
     }
     mode = get_map_mode_string(which, is_abbr);
@@ -2661,7 +2684,10 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
     orig_rhs = rhs;
-    rhs = replace_termcodes(rhs, &arg_buf,
+    if (STRICMP(rhs, "<nop>") == 0)	// "<Nop>" means nothing
+	rhs = (char_u *)"";
+    else
+	rhs = replace_termcodes(rhs, &arg_buf,
 					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
     noremap = dict_get_number(d, "noremap") ? REMAP_NONE: 0;
@@ -2811,8 +2837,6 @@ init_mappings(void)
 #endif
 }
 
-#if defined(MSWIN) || defined(FEAT_CMDWIN) || defined(MACOS_X) \
-							     || defined(PROTO)
 /*
  * Add a mapping "map" for mode "mode".
  * When "nore" is TRUE use MAPTYPE_NOREMAP.
@@ -2833,7 +2857,6 @@ add_map(char_u *map, int mode, int nore)
     }
     p_cpo = cpo_save;
 }
-#endif
 
 #if defined(FEAT_LANGMAP) || defined(PROTO)
 /*

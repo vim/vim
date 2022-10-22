@@ -145,7 +145,7 @@ export def FTcls()
     return
   endif
 
-  if getline(1) =~ '^%'
+  if getline(1) =~ '^\v%(\%|\\)'
     setf tex
   elseif getline(1)[0] == '#' && getline(1) =~ 'rexx'
     setf rexx
@@ -878,6 +878,23 @@ export def FTsig()
   endif
 enddef
 
+# This function checks the first 100 lines of files matching "*.sil" to
+# resolve detection between Swift Intermediate Language and SILE.
+export def FTsil()
+  for lnum in range(1, [line('$'), 100]->min())
+    var line: string = getline(lnum)
+    if line =~ '^\s*[\\%]'
+      setf sile
+      return
+    elseif line =~ '^\s*\S'
+      setf sil
+      return
+    endif
+  endfor
+  # no clue, default to "sil"
+  setf sil
+enddef
+
 export def FTsys()
   if exists("g:filetype_sys")
     exe "setf " .. g:filetype_sys
@@ -1067,6 +1084,19 @@ export def FTdat()
     exe "setf " .. g:filetype_dat
   elseif getline(nextnonblank(1)) =~? '\v^\s*%(' .. ft_krl_header .. '|' .. ft_krl_defdat .. ')'
     setf krl
+  endif
+enddef
+
+export def FTlsl()
+  if exists("g:filetype_lsl")
+    exe "setf " .. g:filetype_lsl
+  endif
+
+  var line = getline(nextnonblank(1))
+  if line =~ '^\s*%' || line =~# ':\s*trait\s*$'
+    setf larch
+  else
+    setf lsl
   endif
 enddef
 

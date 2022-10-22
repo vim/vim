@@ -52,22 +52,20 @@ def Test_vim9cmd()
   END
   v9.CheckScriptFailure(lines, 'E115:')
 
-  if has('float')
-    lines =<< trim END
-        vim9script
-        echo .10
-    END
-    v9.CheckScriptSuccess(lines)
-    lines =<< trim END
-        vim9cmd echo .10
-    END
-    v9.CheckScriptSuccess(lines)
-    lines =<< trim END
-        vim9script
-        legacy echo .10
-    END
-    v9.CheckScriptFailure(lines, 'E15:')
-  endif
+  lines =<< trim END
+      vim9script
+      echo .10
+  END
+  v9.CheckScriptSuccess(lines)
+  lines =<< trim END
+      vim9cmd echo .10
+  END
+  v9.CheckScriptSuccess(lines)
+  lines =<< trim END
+      vim9script
+      legacy echo .10
+  END
+  v9.CheckScriptFailure(lines, 'E15:')
 
   echo v:version
   assert_fails('vim9cmd echo version', 'E121:')
@@ -122,12 +120,11 @@ def Test_cmdmod_execute()
       vim9script
       export var exported = 'x'
   END
-  writefile(lines, 'Xvim9import.vim')
+  writefile(lines, 'Xvim9import.vim', 'D')
   lines =<< trim END
       legacy exe "import './Xvim9import.vim'"
   END
   v9.CheckScriptSuccess(lines)
-  delete('Xvim9import.vim')
 
   # "legacy" does not aply to a called function
   lines =<< trim END
@@ -333,7 +330,7 @@ def Test_hardcopy_wildcards()
 enddef
 
 def Test_syn_include_wildcards()
-  writefile(['syn keyword Found found'], 'Xthemine.vim')
+  writefile(['syn keyword Found found'], 'Xthemine.vim', 'D')
   var save_rtp = &rtp
   &rtp = '.'
 
@@ -342,7 +339,6 @@ def Test_syn_include_wildcards()
   assert_match('Found.* contained found', execute('syn list Found'))
 
   &rtp = save_rtp
-  delete('Xthemine.vim')
 enddef
 
 def Test_echo_linebreak()
@@ -931,11 +927,11 @@ func Test_command_modifier_confirm()
   let lines =<< trim END
     call setline(1, 'changed')
     def Getout()
-      confirm write Xfile
+      confirm write Xcmodfile
     enddef
   END
-  call writefile(lines, 'Xconfirmscript')
-  call writefile(['empty'], 'Xfile')
+  call writefile(lines, 'Xconfirmscript', 'D')
+  call writefile(['empty'], 'Xcmodfile')
   let buf = RunVimInTerminal('-S Xconfirmscript', {'rows': 8})
   call term_sendkeys(buf, ":call Getout()\n")
   call WaitForAssert({-> assert_match('(Y)es, \[N\]o: ', term_getline(buf, 8))}, 1000)
@@ -945,10 +941,9 @@ func Test_command_modifier_confirm()
   call TermWait(buf)
   call StopVimInTerminal(buf)
 
-  call assert_equal(['changed'], readfile('Xfile'))
-  call delete('Xfile')
-  call delete('.Xfile.swp')  " in case Vim was killed
-  call delete('Xconfirmscript')
+  call assert_equal(['changed'], readfile('Xcmodfile'))
+  call delete('Xcmodfile')
+  call delete('.Xcmodfile.swp')  " in case Vim was killed
 endfunc
 
 def Test_command_modifiers_keep()
@@ -1065,13 +1060,13 @@ def Test_command_modifier_other()
   edit Xsomefile
   bwipe!
 
-  au BufNewFile Xfile g:readFile = 1
+  au BufNewFile Xcmofile g:readFile = 1
   g:readFile = 0
-  edit Xfile
+  edit Xcmofile
   assert_equal(1, g:readFile)
   bwipe!
   g:readFile = 0
-  noautocmd edit Xfile
+  noautocmd edit Xcmofile
   assert_equal(0, g:readFile)
   au! BufNewFile
   unlet g:readFile
@@ -1407,7 +1402,7 @@ def Test_star_command()
 enddef
 
 def Test_cmd_argument_without_colon()
-  new Xfile
+  new Xawcfile
   setline(1, ['a', 'b', 'c', 'd'])
   write
   edit +3 %
@@ -1415,7 +1410,7 @@ def Test_cmd_argument_without_colon()
   edit +/a %
   assert_equal(1, getcurpos()[1])
   bwipe
-  delete('Xfile')
+  delete('Xawcfile')
 enddef
 
 def Test_ambiguous_user_cmd()
@@ -1882,7 +1877,7 @@ def Test_redir_to_var()
       var text: string
       redir => text
         echo 'hello'
-        redir > Xfile
+        redir > Xnopfile
       redir END
   END
   v9.CheckDefFailure(lines, 'E1092:')
@@ -1936,7 +1931,7 @@ def Test_var_not_cmd()
   var lines =<< trim END
       g:notexist:cmd
   END
-  v9.CheckDefAndScriptFailure(lines, ['E488: Trailing characters: :cmd', 'E121: Undefined variable: g:notexist'], 1)
+  v9.CheckDefAndScriptFailure(lines, ['E1016: Cannot declare a global variable: g:notexist', "E1069: White space required after ':'"], 1)
 
   lines =<< trim END
       g-pat-cmd
@@ -1950,7 +1945,7 @@ def Test_var_not_cmd()
   lines =<< trim END
       s:notexist:repl
   END
-  v9.CheckDefAndScriptFailure(lines, ['E488: Trailing characters: :repl', 'E1268:'], 1)
+  v9.CheckDefAndScriptFailure(lines, ['E1101: Cannot declare a script variable in a function: s:notexist', "E1069: White space required after ':'"], 1)
 
   lines =<< trim END
       notexist:repl
@@ -2025,10 +2020,10 @@ enddef
 " Test for the 'previewpopup' option
 def Test_previewpopup()
   set previewpopup=height:10,width:60
-  pedit Xfile
+  pedit Xppfile
   var id = popup_findpreview()
   assert_notequal(id, 0)
-  assert_match('Xfile', popup_getoptions(id).title)
+  assert_match('Xppfile', popup_getoptions(id).title)
   popup_clear()
   set previewpopup&
 enddef

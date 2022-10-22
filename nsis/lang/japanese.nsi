@@ -128,11 +128,6 @@ LangString str_section_plugin_vim   ${LANG_JAPANESE} \
 LangString str_desc_plugin_vim      ${LANG_JAPANESE} \
     "プラグインディレクトリを Vim のインストールディレクトリに作成します。システムの全員で共有されます。"
 
-LangString str_section_vis_vim      ${LANG_JAPANESE} \
-    "VisVim 拡張"
-LangString str_desc_vis_vim         ${LANG_JAPANESE} \
-    "Microsoft Visual Studio 統合用の VisVim 拡張。"
-
 LangString str_section_nls          ${LANG_JAPANESE} \
     "多言語サポート"
 LangString str_desc_nls             ${LANG_JAPANESE} \

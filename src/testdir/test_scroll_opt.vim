@@ -1,4 +1,7 @@
-" Test for reset 'scroll'
+" Test for reset 'scroll' and 'smoothscroll'
+
+source check.vim
+source screendump.vim
 
 func Test_reset_scroll()
   let scr = &l:scroll
@@ -33,5 +36,277 @@ func Test_reset_scroll()
 
   quit!
 endfunc
+
+func Test_CtrlE_CtrlY_stop_at_end()
+  enew
+  call setline(1, ['one', 'two'])
+  set number
+  exe "normal \<C-Y>"
+  call assert_equal(["  1 one   "], ScreenLines(1, 10))
+  exe "normal \<C-E>\<C-E>\<C-E>"
+  call assert_equal(["  2 two   "], ScreenLines(1, 10))
+
+  bwipe!
+  set nonumber
+endfunc
+
+func Test_smoothscroll_CtrlE_CtrlY()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, [
+        'line one',
+        'word '->repeat(20),
+        'line three',
+        'long word '->repeat(7),
+        'line',
+        'line',
+        'line',
+      ])
+      set smoothscroll
+      :5
+  END
+  call writefile(lines, 'XSmoothScroll', 'D')
+  let buf = RunVimInTerminal('-S XSmoothScroll', #{rows: 12, cols: 40})
+
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_1', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_2', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_3', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_4', {})
+
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_5', {})
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_6', {})
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_7', {})
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_8', {})
+
+  if has('folding')
+    call term_sendkeys(buf, ":set foldmethod=indent\<CR>")
+    " move the cursor so we can reuse the same dumps
+    call term_sendkeys(buf, "5G")
+    call term_sendkeys(buf, "\<C-E>")
+    call VerifyScreenDump(buf, 'Test_smoothscroll_1', {})
+    call term_sendkeys(buf, "\<C-E>")
+    call VerifyScreenDump(buf, 'Test_smoothscroll_2', {})
+    call term_sendkeys(buf, "7G")
+    call term_sendkeys(buf, "\<C-Y>")
+    call VerifyScreenDump(buf, 'Test_smoothscroll_7', {})
+    call term_sendkeys(buf, "\<C-Y>")
+    call VerifyScreenDump(buf, 'Test_smoothscroll_8', {})
+  endif
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_number()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, [
+        'one ' .. 'word '->repeat(20),
+        'two ' .. 'long word '->repeat(7),
+        'line',
+        'line',
+        'line',
+      ])
+      set smoothscroll
+      set number cpo+=n
+      :3
+
+      def g:DoRel()
+        set number relativenumber scrolloff=0
+        :%del
+        setline(1, [
+          'one',
+          'very long text '->repeat(12),
+          'three',
+        ])
+        exe "normal 2Gzt\<C-E>"
+      enddef
+  END
+  call writefile(lines, 'XSmoothNumber', 'D')
+  let buf = RunVimInTerminal('-S XSmoothNumber', #{rows: 12, cols: 40})
+
+  call VerifyScreenDump(buf, 'Test_smooth_number_1', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_number_2', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_number_3', {})
+
+  call term_sendkeys(buf, ":set cpo-=n\<CR>")
+  call VerifyScreenDump(buf, 'Test_smooth_number_4', {})
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smooth_number_5', {})
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smooth_number_6', {})
+
+  call term_sendkeys(buf, ":call DoRel()\<CR>")
+  call VerifyScreenDump(buf, 'Test_smooth_number_7', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_list()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      set smoothscroll scrolloff=0
+      set list
+      setline(1, [
+        'one',
+        'very long text '->repeat(12),
+        'three',
+      ])
+      exe "normal 2Gzt\<C-E>"
+  END
+  call writefile(lines, 'XSmoothList', 'D')
+  let buf = RunVimInTerminal('-S XSmoothList', #{rows: 8, cols: 40})
+
+  call VerifyScreenDump(buf, 'Test_smooth_list_1', {})
+
+  call term_sendkeys(buf, ":set listchars+=precedes:#\<CR>")
+  call VerifyScreenDump(buf, 'Test_smooth_list_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_diff_mode()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      var text = 'just some text here'
+      setline(1, text)
+      set smoothscroll
+      diffthis
+      new
+      setline(1, text)
+      set smoothscroll
+      diffthis
+  END
+  call writefile(lines, 'XSmoothDiff', 'D')
+  let buf = RunVimInTerminal('-S XSmoothDiff', #{rows: 8})
+
+  call VerifyScreenDump(buf, 'Test_smooth_diff_1', {})
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smooth_diff_1', {})
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_diff_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_wrap_scrolloff_zero()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['Line' .. (' with some text'->repeat(7))]->repeat(7))
+      set smoothscroll scrolloff=0
+      :3
+  END
+  call writefile(lines, 'XSmoothWrap', 'D')
+  let buf = RunVimInTerminal('-S XSmoothWrap', #{rows: 8, cols: 40})
+
+  call VerifyScreenDump(buf, 'Test_smooth_wrap_1', {})
+
+  " moving cursor down - whole bottom line shows
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_smooth_wrap_2', {})
+
+  call term_sendkeys(buf, "\<C-E>j")
+  call VerifyScreenDump(buf, 'Test_smooth_wrap_3', {})
+
+  call term_sendkeys(buf, "G")
+  call VerifyScreenDump(buf, 'Test_smooth_wrap_4', {})
+
+  " moving cursor up - whole top line shows
+  call term_sendkeys(buf, "2k")
+  call VerifyScreenDump(buf, 'Test_smooth_wrap_5', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_wrap_long_line()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one', 'two', 'Line' .. (' with lots of text'->repeat(30))])
+      set smoothscroll scrolloff=0
+      normal 3G10|zt
+  END
+  call writefile(lines, 'XSmoothWrap', 'D')
+  let buf = RunVimInTerminal('-S XSmoothWrap', #{rows: 6, cols: 40})
+  call VerifyScreenDump(buf, 'Test_smooth_long_1', {})
+
+  " scrolling up, cursor moves screen line down
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_2', {})
+  call term_sendkeys(buf, "5\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_3', {})
+
+  " scrolling down, cursor moves screen line up
+  call term_sendkeys(buf, "5\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_4', {})
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_5', {})
+
+  " 'scrolloff' set to 1, scrolling up, cursor moves screen line down
+  call term_sendkeys(buf, ":set scrolloff=1\<CR>")
+  call term_sendkeys(buf, "10|\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_6', {})
+  
+  " 'scrolloff' set to 1, scrolling down, cursor moves screen line up
+  call term_sendkeys(buf, "\<C-E>")
+  call term_sendkeys(buf, "gjgj")
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_7', {})
+  
+  " 'scrolloff' set to 2, scrolling up, cursor moves screen line down
+  call term_sendkeys(buf, ":set scrolloff=2\<CR>")
+  call term_sendkeys(buf, "10|\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_8', {})
+  
+  " 'scrolloff' set to 2, scrolling down, cursor moves screen line up
+  call term_sendkeys(buf, "\<C-E>")
+  call term_sendkeys(buf, "gj")
+  call term_sendkeys(buf, "\<C-Y>")
+  call VerifyScreenDump(buf, 'Test_smooth_long_9', {})
+  
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_smoothscroll_one_long_line()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, 'with lots of text '->repeat(7))
+      set smoothscroll scrolloff=0
+  END
+  call writefile(lines, 'XSmoothOneLong', 'D')
+  let buf = RunVimInTerminal('-S XSmoothOneLong', #{rows: 6, cols: 40})
+  call VerifyScreenDump(buf, 'Test_smooth_one_long_1', {})
+  
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_smooth_one_long_2', {})
+
+  call term_sendkeys(buf, "0")
+  call VerifyScreenDump(buf, 'Test_smooth_one_long_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

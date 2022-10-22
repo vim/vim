@@ -159,13 +159,19 @@
 
 /*
  * #defines for optionals and features
- * Also defines FEAT_TINY, FEAT_SMALL, etc. when FEAT_HUGE is defined.
+ * Also defines FEAT_TINY, FEAT_NORMAL, etc. when FEAT_HUGE is defined.
  */
 #include "feature.h"
 
 #if defined(MACOS_X_DARWIN)
-# if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
+# if defined(FEAT_NORMAL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
+# endif
+# if defined(FEAT_BIG) && !defined(FEAT_SOUND)
+#  define FEAT_SOUND
+# endif
+# if defined(FEAT_SOUND)
+#  define FEAT_SOUND_MACOSX
 # endif
 #endif
 
@@ -1209,14 +1215,15 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 /*
  * arguments for win_split()
  */
-#define WSP_ROOM	1	// require enough room
-#define WSP_VERT	2	// split vertically
-#define WSP_TOP		4	// window at top-left of shell
-#define WSP_BOT		8	// window at bottom-right of shell
-#define WSP_HELP	16	// creating the help window
-#define WSP_BELOW	32	// put new window below/right
-#define WSP_ABOVE	64	// put new window above/left
-#define WSP_NEWLOC	128	// don't copy location list
+#define WSP_ROOM	0x01	// require enough room
+#define WSP_VERT	0x02	// split/equalize vertically
+#define WSP_HOR		0x04	// equalize horizontally
+#define WSP_TOP		0x08	// window at top-left of shell
+#define WSP_BOT		0x10	// window at bottom-right of shell
+#define WSP_HELP	0x20	// creating the help window
+#define WSP_BELOW	0x40	// put new window below/right
+#define WSP_ABOVE	0x80	// put new window above/left
+#define WSP_NEWLOC	0x100	// don't copy location list
 
 /*
  * arguments for gui_set_shellsize()
@@ -1387,6 +1394,7 @@ enum auto_event
     EVENT_TEXTCHANGED,		// text was modified not in Insert mode
     EVENT_TEXTCHANGEDI,		// text was modified in Insert mode
     EVENT_TEXTCHANGEDP,		// TextChangedI with popup menu visible
+    EVENT_TEXTCHANGEDT,		// text was modified in Terminal mode
     EVENT_TEXTYANKPOST,		// after some text was yanked
     EVENT_USER,			// user defined autocommand
     EVENT_VIMENTER,		// after starting Vim
@@ -2249,6 +2257,7 @@ typedef enum {
 } estack_arg_T;
 
 // Flags for assignment functions.
+#define ASSIGN_VAR	0     // ":var" (nothing special)
 #define ASSIGN_FINAL	0x01  // ":final"
 #define ASSIGN_CONST	0x02  // ":const"
 #define ASSIGN_NO_DECL	0x04  // "name = expr" without ":let"/":const"/":final"
@@ -2257,6 +2266,7 @@ typedef enum {
 #define ASSIGN_NO_MEMBER_TYPE 0x20 // use "any" for list and dict member type
 #define ASSIGN_FOR_LOOP 0x40 // assigning to loop variable
 #define ASSIGN_INIT	0x80 // not assigning a value, just a declaration
+#define ASSIGN_UPDATE_BLOCK_ID 0x100  // update sav_block_id
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff

@@ -507,7 +507,9 @@ load_colors(char_u *name)
 	sprintf((char *)buf, "colors/%s.vim", name);
 	retval = source_runtime(buf, DIP_START + DIP_OPT);
 	vim_free(buf);
-	apply_autocmds(EVENT_COLORSCHEME, name, curbuf->b_fname, FALSE, curbuf);
+	if (retval == OK)
+	    apply_autocmds(EVENT_COLORSCHEME, name, curbuf->b_fname,
+								FALSE, curbuf);
     }
     recursive = FALSE;
 
@@ -4513,7 +4515,7 @@ hlg_add_or_update(dict_T *dict)
 # endif
     p = add_attr_and_value(p, (char_u *)" guifg=", 7, guifg);
     p = add_attr_and_value(p, (char_u *)" guibg=", 7, guibg);
-    p = add_attr_and_value(p, (char_u *)" guisp=", 7, guisp);
+    (void)add_attr_and_value(p, (char_u *)" guisp=", 7, guisp);
 
     do_highlight(hlsetBuf, forceit, FALSE);
 

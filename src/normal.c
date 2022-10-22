@@ -20,9 +20,7 @@ static int	VIsual_mode_orig = NUL;		// saved Visual mode
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
 #endif
 static void	unshift_special(cmdarg_T *cap);
-#ifdef FEAT_CMDL_INFO
 static void	del_from_showcmd(int);
-#endif
 
 /*
  * nv_*(): functions called to handle Normal and Visual mode commands.
@@ -222,9 +220,7 @@ getcount:
 	    if (c == K_DEL || c == K_KDEL)
 	    {
 		cap->count0 /= 10;
-#ifdef FEAT_CMDL_INFO
 		del_from_showcmd(4);	// delete the digit and ~@%
-#endif
 	    }
 	    else if (cap->count0 > 99999999L)
 	    {
@@ -255,9 +251,7 @@ getcount:
 		--no_mapping;
 		--allow_keys;
 	    }
-#ifdef FEAT_CMDL_INFO
 	    *need_flushbuf |= add_to_showcmd(c);
-#endif
 	}
 
 	// If we got CTRL-W there may be a/another count
@@ -272,9 +266,7 @@ getcount:
 	    LANGMAP_ADJUST(c, TRUE);
 	    --no_mapping;
 	    --allow_keys;
-#ifdef FEAT_CMDL_INFO
 	    *need_flushbuf |= add_to_showcmd(c);
-#endif
 	    goto getcount;		// jump back
 	}
     }
@@ -375,9 +367,7 @@ normal_cmd_get_more_chars(
 	 */
 	cap->nchar = plain_vgetc();
 	LANGMAP_ADJUST(cap->nchar, TRUE);
-#ifdef FEAT_CMDL_INFO
 	*need_flushbuf |= add_to_showcmd(cap->nchar);
-#endif
 	if (cap->nchar == 'r' || cap->nchar == '\'' || cap->nchar == '`'
 		|| cap->nchar == Ctrl_BSL)
 	{
@@ -465,9 +455,7 @@ normal_cmd_get_more_chars(
 	p_smd = save_smd;
 #endif
 	State = MODE_NORMAL_BUSY;
-#ifdef FEAT_CMDL_INFO
 	*need_flushbuf |= add_to_showcmd(*cp);
-#endif
 
 	if (!lit)
 	{
@@ -482,11 +470,9 @@ normal_cmd_get_more_chars(
 		if (c > 0)
 		{
 		    *cp = c;
-# ifdef FEAT_CMDL_INFO
 		    // Guessing how to update showcmd here...
 		    del_from_showcmd(3);
 		    *need_flushbuf |= add_to_showcmd(*cp);
-# endif
 		}
 	    }
 #endif
@@ -789,9 +775,7 @@ normal_cmd(
     if (KeyTyped && !KeyStuffed)
 	win_ensure_size();
 
-#ifdef FEAT_CMDL_INFO
     need_flushbuf = add_to_showcmd(c);
-#endif
 
     // Get the command count
     c = normal_cmd_get_count(&ca, c, toplevel, set_prevcount, &ctrl_w,
@@ -879,14 +863,13 @@ normal_cmd(
     if (normal_cmd_needs_more_chars(&ca, nv_cmds[idx].cmd_flags))
 	idx = normal_cmd_get_more_chars(idx, &ca, &need_flushbuf);
 
-#ifdef FEAT_CMDL_INFO
     // Flush the showcmd characters onto the screen so we can see them while
     // the command is being executed.  Only do this when the shown command was
     // actually displayed, otherwise this will slow down a lot when executing
     // mappings.
     if (need_flushbuf)
 	out_flush();
-#endif
+
     if (ca.cmdchar != K_IGNORE)
     {
 	if (ex_normal_busy)
@@ -991,11 +974,9 @@ normal_end:
     }
 #endif
 
-#ifdef FEAT_CMDL_INFO
     if (oap->op_type == OP_NOP && oap->regname == 0
 	    && ca.cmdchar != K_CURSORHOLD)
 	clear_showcmd();
-#endif
 
     checkpcmark();		// check if we moved since setting pcmark
     vim_free(ca.searchbuf);
@@ -1466,6 +1447,13 @@ prep_redo_num2(
     int	    cmd5)
 {
     ResetRedobuff();
+
+#ifdef FEAT_EVAL
+    // Put info about a mapping in the redo buffer, so that "." will use the
+    // same script context.
+    may_add_last_used_map_to_redobuff();
+#endif
+
     if (regname != 0)	// yank from specified buffer
     {
 	AppendCharToRedobuff('"');
@@ -1559,13 +1547,10 @@ may_clear_cmdline(void)
 {
     if (mode_displayed)
 	clear_cmdline = TRUE;   // unshow visual mode later
-#ifdef FEAT_CMDL_INFO
     else
 	clear_showcmd();
-#endif
 }
 
-#if defined(FEAT_CMDL_INFO) || defined(PROTO)
 /*
  * Routines for displaying a partly typed command
  */
@@ -1796,9 +1781,6 @@ display_showcmd(void)
 {
     int	    len;
 
-    if (p_ch == 0)
-	return;
-
     cursor_off();
 
     len = (int)STRLEN(showcmd_buf);
@@ -1816,7 +1798,6 @@ display_showcmd(void)
 
     setcursor();	    // put cursor back where it belongs
 }
-#endif
 
 /*
  * When "check" is FALSE, prepare for commands that scroll the window.
@@ -2285,7 +2266,7 @@ find_decl(
     static int
 nv_screengo(oparg_T *oap, int dir, long dist)
 {
-    int		linelen = linetabsize(ml_get_curline());
+    int		linelen = linetabsize_str(ml_get_curline());
     int		retval = OK;
     int		atend = FALSE;
     int		n;
@@ -2362,7 +2343,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		}
 		--curwin->w_cursor.lnum;
 
-		linelen = linetabsize(ml_get_curline());
+		linelen = linetabsize_str(ml_get_curline());
 		if (linelen > width1)
 		    curwin->w_curswant += (((linelen - width1 - 1) / width2)
 								+ 1) * width2;
@@ -2402,7 +2383,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		// clipped to column 0.
 		if (curwin->w_curswant >= width1)
 		    curwin->w_curswant -= width2;
-		linelen = linetabsize(ml_get_curline());
+		linelen = linetabsize_str(ml_get_curline());
 	    }
 	}
       }
@@ -2444,6 +2425,7 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 
     if (atend)
 	curwin->w_curswant = MAXCOL;	    // stick in the last column
+    adjust_skipcol();
 
     return retval;
 }
@@ -2466,6 +2448,7 @@ nv_scroll_line(cmdarg_T *cap)
 scroll_redraw(int up, long count)
 {
     linenr_T	prev_topline = curwin->w_topline;
+    int		prev_skipcol = curwin->w_skipcol;
 #ifdef FEAT_DIFF
     int		prev_topfill = curwin->w_topfill;
 #endif
@@ -2487,6 +2470,7 @@ scroll_redraw(int up, long count)
 	// we get stuck at one position.  Don't move the cursor up if the
 	// first line of the buffer is already on the screen
 	while (curwin->w_topline == prev_topline
+		&& curwin->w_skipcol == prev_skipcol
 #ifdef FEAT_DIFF
 		&& curwin->w_topfill == prev_topfill
 #endif
@@ -2543,9 +2527,8 @@ nv_z_get_count(cmdarg_T *cap, int *nchar_arg)
 	LANGMAP_ADJUST(nchar, TRUE);
 	--no_mapping;
 	--allow_keys;
-#ifdef FEAT_CMDL_INFO
 	(void)add_to_showcmd(nchar);
-#endif
+
 	if (nchar == K_DEL || nchar == K_KDEL)
 	    n /= 10;
 	else if (VIM_ISDIGIT(nchar))
@@ -2600,9 +2583,8 @@ nv_zg_zw(cmdarg_T *cap, int nchar)
 	LANGMAP_ADJUST(nchar, TRUE);
 	--no_mapping;
 	--allow_keys;
-#ifdef FEAT_CMDL_INFO
 	(void)add_to_showcmd(nchar);
-#endif
+
 	if (vim_strchr((char_u *)"gGwW", nchar) == NULL)
 	{
 	    clearopbeep(cap->oap);
@@ -4022,12 +4004,10 @@ nv_down(cmdarg_T *cap)
 #endif
     else
     {
-#ifdef FEAT_CMDWIN
 	// In the cmdline window a <CR> executes the command.
 	if (cmdwin_type != 0 && cap->cmdchar == CAR)
 	    cmdwin_result = CAR;
 	else
-#endif
 #ifdef FEAT_JOB_CHANNEL
 	// In a prompt buffer a <CR> in the last line invokes the callback.
 	if (bt_prompt(curbuf) && cap->cmdchar == CAR
@@ -5487,9 +5467,8 @@ nv_visual(cmdarg_T *cap)
 	    {
 		if (resel_VIsual_line_count <= 1)
 		{
-		    validate_virtcol();
-		    curwin->w_curswant = curwin->w_virtcol
-					+ resel_VIsual_vcol * cap->count0 - 1;
+		    update_curswant_force();
+		    curwin->w_curswant += resel_VIsual_vcol * cap->count0 - 1;
 		}
 		else
 		    curwin->w_curswant = resel_VIsual_vcol;
@@ -5502,9 +5481,8 @@ nv_visual(cmdarg_T *cap)
 	    }
 	    else if (VIsual_mode == Ctrl_V)
 	    {
-		validate_virtcol();
-		curwin->w_curswant = curwin->w_virtcol
-					+ resel_VIsual_vcol * cap->count0 - 1;
+		update_curswant_force();
+		curwin->w_curswant += + resel_VIsual_vcol * cap->count0 - 1;
 		coladvance(curwin->w_curswant);
 	    }
 	    else
@@ -5731,13 +5709,19 @@ nv_g_home_m_cmd(cmdarg_T *cap)
     cap->oap->inclusive = FALSE;
     if (curwin->w_p_wrap && curwin->w_width != 0)
     {
-	int		width1 = curwin->w_width - curwin_col_off();
-	int		width2 = width1 + curwin_col_off2();
+	int	width1 = curwin->w_width - curwin_col_off();
+	int	width2 = width1 + curwin_col_off2();
+	int	virtcol;
 
 	validate_virtcol();
+	virtcol = curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+	    - curwin->w_virtcol_first_char
+#endif
+	    ;
 	i = 0;
-	if (curwin->w_virtcol >= (colnr_T)width1 && width2 > 0)
-	    i = (curwin->w_virtcol - width1) / width2 * width2 + width1;
+	if (virtcol >= (colnr_T)width1 && width2 > 0)
+	    i = (virtcol - width1) / width2 * width2 + width1;
     }
     else
 	i = curwin->w_leftcol;
@@ -5811,24 +5795,32 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 	{
 	    int		width1 = curwin->w_width - col_off;
 	    int		width2 = width1 + curwin_col_off2();
+	    int		virtcol;
 
 	    validate_virtcol();
+	    virtcol = curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+		- curwin->w_virtcol_first_char
+#endif
+		;
 	    i = width1 - 1;
-	    if (curwin->w_virtcol >= (colnr_T)width1)
-		i += ((curwin->w_virtcol - width1) / width2 + 1)
+	    if (virtcol >= (colnr_T)width1)
+		i += ((virtcol - width1) / width2 + 1)
 		    * width2;
 	    coladvance((colnr_T)i);
 
 	    // Make sure we stick in this column.
-	    validate_virtcol();
-	    curwin->w_curswant = curwin->w_virtcol;
-	    curwin->w_set_curswant = FALSE;
+	    update_curswant_force();
 	    if (curwin->w_cursor.col > 0 && curwin->w_p_wrap)
 	    {
 		// Check for landing on a character that got split at
 		// the end of the line.  We do not want to advance to
 		// the next screen line.
-		if (curwin->w_virtcol > (colnr_T)i)
+		if (curwin->w_virtcol
+#ifdef FEAT_PROP_POPUP
+			- curwin->w_virtcol_first_char
+#endif
+						> (colnr_T)i)
 		    --curwin->w_cursor.col;
 	    }
 	}
@@ -5856,9 +5848,7 @@ nv_g_dollar_cmd(cmdarg_T *cap)
 	}
 
 	// Make sure we stick in this column.
-	validate_virtcol();
-	curwin->w_curswant = curwin->w_virtcol;
-	curwin->w_set_curswant = FALSE;
+	update_curswant_force();
     }
 }
 
@@ -6015,7 +6005,7 @@ nv_g_cmd(cmdarg_T *cap)
 	{
 	    oap->motion_type = MCHAR;
 	    oap->inclusive = FALSE;
-	    i = linetabsize(ml_get_curline());
+	    i = linetabsize_str(ml_get_curline());
 	    if (cap->count0 > 0 && cap->count0 <= 100)
 		coladvance((colnr_T)(i * cap->count0 / 100));
 	    else
@@ -6738,10 +6728,8 @@ nv_normal(cmdarg_T *cap)
 	if (restart_edit != 0 && mode_displayed)
 	    clear_cmdline = TRUE;		// unshow mode later
 	restart_edit = 0;
-#ifdef FEAT_CMDWIN
 	if (cmdwin_type != 0)
 	    cmdwin_result = Ctrl_C;
-#endif
 	if (VIsual_active)
 	{
 	    end_visual_mode();		// stop Visual
@@ -6772,17 +6760,33 @@ nv_esc(cmdarg_T *cap)
 
     if (cap->arg)		// TRUE for CTRL-C
     {
-	if (restart_edit == 0
-#ifdef FEAT_CMDWIN
-		&& cmdwin_type == 0
-#endif
-		&& !VIsual_active
-		&& no_reason)
+	if (restart_edit == 0 && cmdwin_type == 0
+						&& !VIsual_active && no_reason)
 	{
+	    int	out_redir = !stdout_isatty && !is_not_a_term_or_gui();
+
+	    // The user may accidentally do "vim file | grep word" and then
+	    // CTRL-C doesn't show anything.  With a changed buffer give the
+	    // message on stderr.  Without any changes might as well exit.
 	    if (anyBufIsChanged())
-		msg(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
+	    {
+		char *ms = _("Type  :qa!  and press <Enter> to abandon all changes and exit Vim");
+
+		if (out_redir)
+		    mch_errmsg(ms);
+		else
+		    msg(ms);
+	    }
 	    else
-		msg(_("Type  :qa  and press <Enter> to exit Vim"));
+	    {
+		if (out_redir)
+		{
+		    got_int = FALSE;
+		    do_cmdline_cmd((char_u *)"qa");
+		}
+		else
+		    msg(_("Type  :qa  and press <Enter> to exit Vim"));
+	    }
 	}
 
 	if (restart_edit != 0)
@@ -6792,16 +6796,13 @@ nv_esc(cmdarg_T *cap)
 	// set again below when halfway a mapping.
 	if (!p_im)
 	    restart_edit = 0;
-#ifdef FEAT_CMDWIN
 	if (cmdwin_type != 0)
 	{
 	    cmdwin_result = K_IGNORE;
 	    got_int = FALSE;	// don't stop executing autocommands et al.
 	    return;
 	}
-#endif
     }
-#ifdef FEAT_CMDWIN
     else if (cmdwin_type != 0 && ex_normal_busy && typebuf_was_empty)
     {
 	// When :normal runs out of characters while in the command line window
@@ -6810,7 +6811,6 @@ nv_esc(cmdarg_T *cap)
 	cmdwin_result = K_IGNORE;
 	return;
     }
-#endif
 
     if (VIsual_active)
     {
@@ -6820,7 +6820,14 @@ nv_esc(cmdarg_T *cap)
 	redraw_curbuf_later(UPD_INVERTED);
     }
     else if (no_reason)
-	vim_beep(BO_ESC);
+    {
+#ifdef HAS_MESSAGE_WINDOW
+	if (!cap->arg && popup_message_win_visible())
+	    popup_hide_message_win();
+	else
+#endif
+	    vim_beep(BO_ESC);
+    }
     clearop(cap->oap);
 
     // A CTRL-C is often used at the start of a menu.  When 'insertmode' is
@@ -7135,7 +7142,6 @@ nv_record(cmdarg_T *cap)
     }
     else if (!checkclearop(cap->oap))
     {
-#ifdef FEAT_CMDWIN
 	if (cap->nchar == ':' || cap->nchar == '/' || cap->nchar == '?')
 	{
 	    if (cmdwin_type != 0)
@@ -7147,7 +7153,6 @@ nv_record(cmdarg_T *cap)
 	    stuffcharReadbuff(K_CMDWIN);
 	}
 	else
-#endif
 	    // (stop) recording into a named register, unless executing a
 	    // register
 	    if (reg_executing == 0 && do_record(cap->nchar) == FAIL)

@@ -93,7 +93,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
     vartype = typep->type_curr->tt_type;
     idxtype = (((type2_T *)stack->ga_data) + stack->ga_len - 1)->type_curr;
     // If the index is a string, the variable must be a Dict.
-    if ((typep->type_curr == &t_any || typep->type_curr == &t_unknown)
+    if ((typep->type_curr->tt_type == VAR_ANY
+		|| typep->type_curr->tt_type == VAR_UNKNOWN)
 						       && idxtype == &t_string)
 	vartype = VAR_DICT;
     if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB)
@@ -172,8 +173,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 		return FAIL;
 	}
     }
-    else if (vartype == VAR_LIST || typep->type_curr == &t_any
-					     || typep->type_curr == &t_unknown)
+    else if (vartype == VAR_LIST || typep->type_curr->tt_type == VAR_ANY
+				 || typep->type_curr->tt_type == VAR_UNKNOWN)
     {
 	if (is_slice)
 	{
@@ -313,7 +314,7 @@ compile_load_scriptvar(
 		// name.  If a '(' follows it must be a function.  Otherwise we
 		// don't know, it can be "script.Func".
 		if (cc == '(' || paren_follows_after_expr)
-		    res = generate_PUSHFUNC(cctx, auto_name, &t_func_any);
+		    res = generate_PUSHFUNC(cctx, auto_name, &t_func_any, TRUE);
 		else
 		    res = generate_AUTOLOAD(cctx, auto_name, &t_any);
 		vim_free(auto_name);
@@ -329,7 +330,7 @@ compile_load_scriptvar(
 		    char_u sid_name[MAX_FUNC_NAME_LEN];
 
 		    func_name_with_sid(exp_name, import->imp_sid, sid_name);
-		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any);
+		    res = generate_PUSHFUNC(cctx, sid_name, &t_func_any, TRUE);
 		}
 		else
 		    res = generate_OLDSCRIPT(cctx, ISN_LOADEXPORT, exp_name,
@@ -353,7 +354,7 @@ compile_load_scriptvar(
 	    if (ufunc != NULL)
 	    {
 		// function call or function reference
-		generate_PUSHFUNC(cctx, ufunc->uf_name, NULL);
+		generate_PUSHFUNC(cctx, ufunc->uf_name, NULL, TRUE);
 		return OK;
 	    }
 	    return FAIL;
@@ -387,7 +388,7 @@ generate_funcref(cctx_T *cctx, char_u *name, int has_g_prefix)
     if (func_needs_compiling(ufunc, compile_type)
 	      && compile_def_function(ufunc, TRUE, compile_type, NULL) == FAIL)
 	return FAIL;
-    return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type);
+    return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type, TRUE);
 }
 
 /*
@@ -496,6 +497,8 @@ compile_load(
 	int	    idx;
 	int	    gen_load = FALSE;
 	int	    gen_load_outer = 0;
+	int	    outer_loop_depth = -1;
+	int	    outer_loop_idx = -1;
 
 	name = vim_strnsave(*arg, end - *arg);
 	if (name == NULL)
@@ -521,7 +524,11 @@ compile_load(
 		type = lvar.lv_type;
 		idx = lvar.lv_idx;
 		if (lvar.lv_from_outer != 0)
+		{
 		    gen_load_outer = lvar.lv_from_outer;
+		    outer_loop_depth = lvar.lv_loop_depth;
+		    outer_loop_idx = lvar.lv_loop_idx;
+		}
 		else
 		    gen_load = TRUE;
 	    }
@@ -544,7 +551,8 @@ compile_load(
 	    res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
 	if (gen_load_outer > 0)
 	{
-	    res = generate_LOADOUTER(cctx, idx, gen_load_outer, type);
+	    res = generate_LOADOUTER(cctx, idx, gen_load_outer,
+				       outer_loop_depth, outer_loop_idx, type);
 	    cctx->ctx_outer_used = TRUE;
 	}
     }
@@ -610,19 +618,10 @@ compile_string(isn_T *isn, cctx_T *cctx, int str_offset)
 }
 
 /*
- * List of special functions for "compile_arguments".
- */
-typedef enum {
-    CA_NOT_SPECIAL,
-    CA_SEARCHPAIR,	    // {skip} in searchpair() and searchpairpos()
-    CA_SUBSTITUTE,	    // {sub} in substitute(), when prefixed with \=
-} ca_special_T;
-
-/*
  * Compile the argument expressions.
  * "arg" points to just after the "(" and is advanced to after the ")"
  */
-    static int
+    int
 compile_arguments(
 	char_u	     **arg,
 	cctx_T	     *cctx,
@@ -671,7 +670,7 @@ compile_arguments(
 	    // {sub} argument of substitute() can be compiled if it starts
 	    // with \=
 	    if (isn->isn_type == ISN_PUSHS && isn->isn_arg.string[0] == '\\'
-		    && isn->isn_arg.string[1] == '=')
+					      && isn->isn_arg.string[1] == '=')
 		compile_string(isn, cctx, 2);
 	}
 
@@ -840,6 +839,15 @@ compile_call(
 		    res = generate_BLOBAPPEND(cctx);
 		    idx = -1;
 		}
+	    }
+
+	    if ((STRCMP(name, "writefile") == 0 && argcount > 2)
+		    || (STRCMP(name, "mkdir") == 0 && argcount > 1))
+	    {
+		// May have the "D" or "R" flag, reserve a variable for a
+		// deferred function call.
+		if (get_defer_var_idx(cctx) == 0)
+		    idx = -1;
 	    }
 
 	    if (idx >= 0)
@@ -1091,6 +1099,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 
 	*arg = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum]
 									 + off;
+	evalarg.eval_using_cmdline = FALSE;
     }
 
     clear_evalarg(&evalarg, NULL);
@@ -1485,14 +1494,12 @@ apply_leader(typval_T *rettv, int numeric_only, char_u *start, char_u **end)
 	if (*p == '-' || *p == '+')
 	{
 	    // only '-' has an effect, for '+' we only check the type
-#ifdef FEAT_FLOAT
 	    if (rettv->v_type == VAR_FLOAT)
 	    {
 		if (*p == '-')
 		    rettv->vval.v_float = -rettv->vval.v_float;
 	    }
 	    else
-#endif
 	    {
 		varnumber_T	val;
 		int		error = FALSE;
@@ -1640,10 +1647,11 @@ bool_on_stack(cctx_T *cctx)
     if (type == &t_bool)
 	return OK;
 
-    if (type == &t_any
-	    || type == &t_unknown
-	    || type == &t_number
-	    || type == &t_number_bool)
+    if (type->tt_type == VAR_ANY
+	    || type->tt_type == VAR_UNKNOWN
+	    || type->tt_type == VAR_NUMBER
+	    || type == &t_number_bool
+	    || type == &t_const_number_bool)
 	// Number 0 and 1 are OK to use as a bool.  "any" could also be a bool.
 	// This requires a runtime type check.
 	return generate_COND2BOOL(cctx);
@@ -1780,12 +1788,13 @@ compile_subscript(
 	{
 	    char_u *next = peek_next_line_from_context(cctx);
 
-	    // If a following line starts with "->{" or "->X" advance to that
-	    // line, so that a line break before "->" is allowed.
+	    // If a following line starts with "->{", "->(" or "->X" advance to
+	    // that line, so that a line break before "->" is allowed.
 	    // Also if a following line starts with ".x".
 	    if (next != NULL &&
 		    ((next[0] == '-' && next[1] == '>'
 				 && (next[2] == '{'
+				       || next[2] == '('
 				       || ASCII_ISALPHA(*skipwhite(next + 2))))
 		    || (next[0] == '.' && eval_isdictc(next[1]))))
 	    {

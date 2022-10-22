@@ -49,6 +49,7 @@ static int	append_arg_number(win_T *wp, char_u *buf, int buflen, int add_file);
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
 static int	bt_nofileread(buf_T *buf);
+static void	no_write_message_buf(buf_T *buf);
 
 #ifdef UNIX
 # define dev_T dev_t
@@ -468,7 +469,12 @@ can_unload_buffer(buf_T *buf)
 	    }
     }
     if (!can_unload)
-	semsg(_(e_attempt_to_delete_buffer_that_is_in_use_str), buf->b_fname);
+    {
+	char_u *fname = buf->b_fname != NULL ? buf->b_fname : buf->b_ffname;
+
+	semsg(_(e_attempt_to_delete_buffer_that_is_in_use_str),
+				fname != NULL ? fname : (char_u *)"[No Name]");
+    }
     return can_unload;
 }
 
@@ -532,7 +538,8 @@ close_buffer(
 	unload_buf = TRUE;
 
 #ifdef FEAT_TERMINAL
-    if (bt_terminal(buf) && (buf->b_nwindows == 1 || del_buf))
+    // depending on how we get here b_nwindows may already be zero
+    if (bt_terminal(buf) && (buf->b_nwindows <= 1 || del_buf))
     {
 	CHECK_CURBUF;
 	if (term_job_running(buf->b_term))
@@ -544,6 +551,11 @@ close_buffer(
 
 		// Wiping out or unloading a terminal buffer kills the job.
 		free_terminal(buf);
+
+		// A terminal buffer is wiped out when job has finished.
+		del_buf = TRUE;
+		unload_buf = TRUE;
+		wipe_buf = TRUE;
 	    }
 	    else
 	    {
@@ -559,10 +571,16 @@ close_buffer(
 	}
 	else
 	{
-	    // A terminal buffer is wiped out if the job has finished.
-	    del_buf = TRUE;
-	    unload_buf = TRUE;
-	    wipe_buf = TRUE;
+	    if (del_buf || unload_buf)
+	    {
+		// A terminal buffer is wiped out if the job has finished.
+		// We only do this when there's an intention to unload the
+		// buffer. This way, :hide and other similar commands won't
+		// wipe the buffer.
+		del_buf = TRUE;
+		unload_buf = TRUE;
+		wipe_buf = TRUE;
+	    }
 	}
 	CHECK_CURBUF;
     }
@@ -1333,6 +1351,13 @@ do_buffer_ext(
     if ((flags & DOBUF_NOPOPUP) && bt_popup(buf) && !bt_terminal(buf))
 	return OK;
 #endif
+    if ((action == DOBUF_GOTO || action == DOBUF_SPLIT)
+						  && (buf->b_flags & BF_DUMMY))
+    {
+	// disallow navigating to the dummy buffer
+	semsg(_(e_buffer_nr_does_not_exist), count);
+	return FAIL;
+    }
 
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
@@ -1362,21 +1387,30 @@ do_buffer_ext(
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	    if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	    {
-		dialog_changed(buf, FALSE);
-		if (!bufref_valid(&bufref))
-		    // Autocommand deleted buffer, oops!  It's not changed
-		    // now.
-		    return FAIL;
-		// If it's still changed fail silently, the dialog already
-		// mentioned why it fails.
-		if (bufIsChanged(buf))
-		    return FAIL;
+# ifdef FEAT_TERMINAL
+		if (term_job_running(buf->b_term))
+		{
+		    if (term_confirm_stop(buf) == FAIL)
+			return FAIL;
+		}
+		else
+# endif
+		{
+		    dialog_changed(buf, FALSE);
+		    if (!bufref_valid(&bufref))
+			// Autocommand deleted buffer, oops!  It's not changed
+			// now.
+			return FAIL;
+		    // If it's still changed fail silently, the dialog already
+		    // mentioned why it fails.
+		    if (bufIsChanged(buf))
+			return FAIL;
+		}
 	    }
 	    else
 #endif
 	    {
-		semsg(_(e_no_write_since_last_change_for_buffer_nr_add_bang_to_override),
-								 buf->b_fnum);
+		no_write_message_buf(buf);
 		return FAIL;
 	    }
 	}
@@ -1547,15 +1581,34 @@ do_buffer_ext(
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	{
-	    bufref_T bufref;
+# ifdef FEAT_TERMINAL
+	    if (term_job_running(curbuf->b_term))
+	    {
+		if (term_confirm_stop(curbuf) == FAIL)
+		    return FAIL;
+		// Manually kill the terminal here because this command will
+		// hide it otherwise.
+		free_terminal(curbuf);
+	    }
+	    else
+# endif
+	    {
+		bufref_T bufref;
 
-	    set_bufref(&bufref, buf);
-	    dialog_changed(curbuf, FALSE);
-	    if (!bufref_valid(&bufref))
-		// Autocommand deleted buffer, oops!
-		return FAIL;
+		set_bufref(&bufref, buf);
+		dialog_changed(curbuf, FALSE);
+		if (!bufref_valid(&bufref))
+		    // Autocommand deleted buffer, oops!
+		    return FAIL;
+
+		if (bufIsChanged(curbuf))
+		{
+		    no_write_message();
+		    return FAIL;
+		}
+	    }
 	}
-	if (bufIsChanged(curbuf))
+	else
 #endif
 	{
 	    no_write_message();
@@ -1934,6 +1987,18 @@ do_autochdir(void)
     }
 }
 #endif
+
+    static void
+no_write_message_buf(buf_T *buf UNUSED)
+{
+#ifdef FEAT_TERMINAL
+    if (term_job_running(buf->b_term))
+	emsg(_(e_job_still_running_add_bang_to_end_the_job));
+    else
+#endif
+	semsg(_(e_no_write_since_last_change_for_buffer_nr_add_bang_to_override),
+		buf->b_fnum);
+}
 
     void
 no_write_message(void)
@@ -2332,6 +2397,7 @@ free_buf_options(
     clear_string_option(&buf->b_p_ft);
     clear_string_option(&buf->b_p_cink);
     clear_string_option(&buf->b_p_cino);
+    clear_string_option(&buf->b_p_lop);
     clear_string_option(&buf->b_p_cinsd);
     clear_string_option(&buf->b_p_cinw);
     clear_string_option(&buf->b_p_cpt);
@@ -2485,7 +2551,7 @@ buflist_getfpos(void)
     }
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Find file in buffer list by name (it has to be for the current window).
  * Returns NULL if not found.
@@ -3788,14 +3854,12 @@ fileinfo(
 					    (long)curbuf->b_ml.ml_line_count);
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
 	vim_snprintf_add(buffer, IOSIZE, "%s", _(no_lines_msg));
-#ifdef FEAT_CMDL_INFO
     else if (p_ru)
 	// Current line and column are already on the screen -- webb
 	vim_snprintf_add(buffer, IOSIZE,
 		NGETTEXT("%ld line --%d%%--", "%ld lines --%d%%--",
 						   curbuf->b_ml.ml_line_count),
 		(long)curbuf->b_ml.ml_line_count, n);
-#endif
     else
     {
 	vim_snprintf_add(buffer, IOSIZE,
@@ -4241,7 +4305,7 @@ build_stl_str_hl(
 	tv.vval.v_number = wp->w_id;
 	set_var((char_u *)"g:statusline_winid", &tv, FALSE);
 
-	usefmt = eval_to_string_safe(fmt + 2, use_sandbox, FALSE);
+	usefmt = eval_to_string_safe(fmt + 2, use_sandbox, FALSE, FALSE);
 	if (usefmt == NULL)
 	    usefmt = fmt;
 
@@ -4628,7 +4692,7 @@ build_stl_str_hl(
 	    if (curwin != save_curwin)
 		VIsual_active = FALSE;
 
-	    str = eval_to_string_safe(p, use_sandbox, FALSE);
+	    str = eval_to_string_safe(p, use_sandbox, FALSE, FALSE);
 
 	    curwin = save_curwin;
 	    curbuf = save_curbuf;
@@ -5119,8 +5183,6 @@ build_stl_str_hl(
 }
 #endif // FEAT_STL_OPT
 
-#if defined(FEAT_STL_OPT) || defined(FEAT_CMDL_INFO) \
-	    || defined(FEAT_GUI_TABLINE) || defined(PROTO)
 /*
  * Get relative cursor position in window into "buf[buflen]", in the form 99%,
  * using "Top", "Bot" or "All" when appropriate.
@@ -5155,7 +5217,6 @@ get_rel_pos(
 				    ? (int)(above / ((above + below) / 100L))
 				    : (int)(above * 100L / (above + below)));
 }
-#endif
 
 /*
  * Append (file 2 of 8) to "buf[buflen]", if editing more than one file.
@@ -5746,8 +5807,8 @@ bt_nofile(buf_T *buf)
 #endif
 
 /*
- * Return TRUE if "buf" is a "nowrite", "nofile", "terminal" or "prompt"
- * buffer.
+ * Return TRUE if "buf" is a "nowrite", "nofile", "terminal", "prompt", or
+ * "popup" buffer.
  */
     int
 bt_dontwrite(buf_T *buf)

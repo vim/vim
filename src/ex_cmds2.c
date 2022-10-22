@@ -86,6 +86,13 @@ check_changed(buf_T *buf, int flags)
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	{
+# ifdef FEAT_TERMINAL
+	    if (term_job_running(buf->b_term))
+	    {
+		return term_confirm_stop(buf) == FAIL;
+	    }
+# endif
+
 	    buf_T	*buf2;
 	    int		count = 0;
 
@@ -198,6 +205,7 @@ dialog_changed(
 			|| (cmdmod.cmod_flags & CMOD_BROWSE)
 #endif
 			)
+		    && !bt_dontwrite(buf2)
 		    && !buf2->b_p_ro)
 	    {
 		bufref_T bufref;
@@ -348,7 +356,7 @@ check_changed_any(
     if (!(p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)))
 #endif
     {
-	// There must be a wait_return for this message, do_buffer()
+	// There must be a wait_return() for this message, do_buffer()
 	// may cause a redraw.  But wait_return() is a no-op when vgetc()
 	// is busy (Quit used from window menu), then make sure we don't
 	// cause a scroll up.

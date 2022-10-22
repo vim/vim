@@ -445,13 +445,11 @@ term_start(
 
     if (check_restricted() || check_secure())
 	return NULL;
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
 	emsg(_(e_cannot_open_terminal_from_command_line_window));
 	return NULL;
     }
-#endif
 
     if ((opt->jo_set & (JO_IN_IO + JO_OUT_IO + JO_ERR_IO))
 					 == (JO_IN_IO + JO_OUT_IO + JO_ERR_IO)
@@ -1224,6 +1222,8 @@ update_cursor(term_T *term, int redraw)
 	setcursor();
     if (redraw)
     {
+	aco_save_T	aco;
+
 	if (term->tl_buffer == curbuf && term->tl_cursor_visible)
 	    cursor_on();
 	out_flush();
@@ -1234,6 +1234,16 @@ update_cursor(term_T *term, int redraw)
 	    gui_mch_flush();
 	}
 #endif
+        // Make sure an invoked autocmd doesn't delete the buffer (and the
+        // terminal) under our fingers.
+	++term->tl_buffer->b_locked;
+
+	// save and restore curwin and curbuf, in case the autocmd changes them
+	aucmd_prepbuf(&aco, curbuf);
+	apply_autocmds(EVENT_TEXTCHANGEDT, NULL, NULL, FALSE, term->tl_buffer);
+	aucmd_restbuf(&aco);
+
+	--term->tl_buffer->b_locked;
     }
 }
 
@@ -1653,6 +1663,25 @@ term_none_open(term_T *term)
 	&& term->tl_job->jv_channel->ch_keep_open;
 }
 
+//
+// Used to confirm whether we would like to kill a terminal.
+// Return OK when the user confirms to kill it.
+// Return FAIL if the user selects otherwise.
+//
+    int
+term_confirm_stop(buf_T *buf)
+{
+    char_u	buff[DIALOG_MSG_SIZE];
+    int	ret;
+
+    dialog_msg(buff, _("Kill job in \"%s\"?"), buf_get_fname(buf));
+    ret = vim_dialog_yesno(VIM_QUESTION, NULL, buff, 1);
+    if (ret == VIM_YES)
+	return OK;
+    else
+	return FAIL;
+}
+
 /*
  * Used when exiting: kill the job in "buf" if so desired.
  * Return OK when the job finished.
@@ -1668,14 +1697,9 @@ term_try_stop_job(buf_T *buf)
     if ((how == NULL || *how == NUL)
 			  && (p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)))
     {
-	char_u	buff[DIALOG_MSG_SIZE];
-	int	ret;
-
-	dialog_msg(buff, _("Kill job in \"%s\"?"), buf_get_fname(buf));
-	ret = vim_dialog_yesnocancel(VIM_QUESTION, NULL, buff, 1);
-	if (ret == VIM_YES)
+	if (term_confirm_stop(buf) == OK)
 	    how = "kill";
-	else if (ret == VIM_CANCEL)
+	else
 	    return FAIL;
     }
 #endif
@@ -2303,15 +2327,13 @@ term_paste_register(int prev_c UNUSED)
     long	reglen = 0;
     int		type;
 
-#ifdef FEAT_CMDL_INFO
     if (add_to_showcmd(prev_c))
     if (add_to_showcmd('"'))
 	out_flush();
-#endif
+
     c = term_vgetc();
-#ifdef FEAT_CMDL_INFO
     clear_showcmd();
-#endif
+
     if (!term_use_loop())
 	// job finished while waiting for a character
 	return;
@@ -2690,16 +2712,14 @@ terminal_loop(int blocking)
 	    int	    prev_raw_c = raw_c;
 	    int	    prev_mod_mask = mod_mask;
 
-#ifdef FEAT_CMDL_INFO
 	    if (add_to_showcmd(c))
 		out_flush();
-#endif
+
 	    raw_c = term_vgetc();
 	    c = raw_c_to_ctrl(raw_c);
 
-#ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
-#endif
+
 	    if (!term_use_loop_check(TRUE)
 					 || in_terminal_loop != curbuf->b_term)
 		// job finished while waiting for a character
@@ -3427,7 +3447,8 @@ static VTermScreenCallbacks screen_callbacks = {
   handle_bell,		// bell
   handle_resize,	// resize
   handle_pushline,	// sb_pushline
-  NULL			// sb_popline
+  NULL,			// sb_popline
+  NULL			// sb_clear
 };
 
 /*
@@ -4989,11 +5010,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	dict_T *d;
 
-	if (argvars[2].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
+	if (check_for_dict_arg(argvars, 2) == FAIL)
 	    return;
-	}
 	d = argvars[2].vval.v_dict;
 	if (d != NULL)
 	{
@@ -6465,11 +6483,9 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
     if (term->tl_vterm == NULL)
 	return;
 
-    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-    {
-	emsg(_(e_list_required));
+    if (check_for_nonnull_list_arg(argvars, 1) == FAIL)
 	return;
-    }
+
     if (argvars[1].vval.v_list->lv_first == &range_list_item
 	    || argvars[1].vval.v_list->lv_len != 16)
     {

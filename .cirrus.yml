@@ -11,7 +11,6 @@ freebsd_task:
     - name: FreeBSD 13.2
       freebsd_instance:
         image_family: freebsd-13-2
-  only_if: $CIRRUS_TAG == ''
   timeout_in: 20m
   install_script:
     - pkg update -f
@@ -26,3 +25,22 @@ freebsd_task:
     - pw useradd cirrus -m
     - chown -R cirrus:cirrus .
     - sudo -u cirrus make test
+
+macos_task:
+  name: macOS m1
+  macos_instance:
+    image: ghcr.io/cirruslabs/macos-ventura-xcode:latest
+  env:
+    # only run with clang, gcc is not real, it is a link to clang
+    CC: clang
+  timeout_in: 20m
+  install_script:
+    - brew update
+    - brew install gettext libtool
+  build_script:
+    - NPROC=$(getconf _NPROCESSORS_ONLN)
+    - ./configure --with-features=${FEATURES}
+    - make -j${NPROC}
+  test_script:
+    - src/vim --version
+    - make test

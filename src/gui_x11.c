@@ -1184,7 +1184,7 @@ gui_mch_init_check(void)
 		cmdline_options, XtNumber(cmdline_options),
 		CARDINAL &gui_argc, gui_argv);
 
-# if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
+# if defined(LC_NUMERIC)
     {
 	// The call to XtOpenDisplay() may have set the locale from the
 	// environment. Set LC_NUMERIC to "C" to make sure that strtod() uses a
@@ -2231,10 +2231,14 @@ gui_x11_create_blank_mouse(void)
 {
     Pixmap blank_pixmap = XCreatePixmap(gui.dpy, gui.wid, 1, 1, 1);
     GC gc = XCreateGC(gui.dpy, blank_pixmap, (unsigned long)0, (XGCValues*)0);
-    XDrawPoint(gui.dpy, blank_pixmap, gc, 0, 0);
-    XFreeGC(gui.dpy, gc);
+
+    if (gc != NULL)
+    {
+	XDrawPoint(gui.dpy, blank_pixmap, gc, 0, 0);
+	XFreeGC(gui.dpy, gc);
+    }
     return XCreatePixmapCursor(gui.dpy, blank_pixmap, blank_pixmap,
-	    (XColor*)&gui.norm_pixel, (XColor*)&gui.norm_pixel, 0, 0);
+		     (XColor*)&gui.norm_pixel, (XColor*)&gui.norm_pixel, 0, 0);
 }
 
 /*

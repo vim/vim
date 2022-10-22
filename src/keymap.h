@@ -277,6 +277,7 @@ enum key_extra
     , KE_COMMAND = 103		// <Cmd> special key
     , KE_SCRIPT_COMMAND = 104	// <ScriptCmd> special key
     , KE_S_BS = 105		// shift + <BS>
+    , KE_SID = 106		// <SID> special key, followed by {nr};
 };
 
 /*
@@ -483,6 +484,7 @@ enum key_extra
 
 #define K_COMMAND	TERMCAP2KEY(KS_EXTRA, KE_COMMAND)
 #define K_SCRIPT_COMMAND TERMCAP2KEY(KS_EXTRA, KE_SCRIPT_COMMAND)
+#define K_SID		TERMCAP2KEY(KS_EXTRA, KE_SID)
 
 // Bits for modifier mask
 // 0x01 cannot be used, because the modifier must be 0x02 or higher

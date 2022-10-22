@@ -4522,7 +4522,7 @@ mch_call_shell_terminal(
     // restore curwin/curbuf and a few other things
     aucmd_restbuf(&aco);
 
-    // only require pressing Enter when redrawing, to avoid that system() gets
+    // Only require pressing Enter when redrawing, to avoid that system() gets
     // the hit-enter prompt even though it didn't output anything.
     if (!RedrawingDisabled)
 	wait_return(TRUE);
@@ -5021,7 +5021,6 @@ mch_call_shell_fork(
 				{
 				    // finished all the lines, close pipe
 				    close(toshell_fd);
-				    toshell_fd = -1;
 				    break;
 				}
 				lp = ml_get(lnum);
@@ -5107,7 +5106,8 @@ mch_call_shell_fork(
 			    }
 			}
 
-			term_replace_bs_del_keycode(ta_buf, ta_len, len);
+			// Remove Vim-specific codes from the input.
+			len = term_replace_keycodes(ta_buf, ta_len, len);
 
 			/*
 			 * For pipes: echo the typed characters.
@@ -5399,7 +5399,7 @@ finished:
 	     * child already exited.
 	     */
 	    if (wait_pid != pid)
-		wait_pid = wait4pid(pid, &status);
+		(void)wait4pid(pid, &status);
 
 # ifdef FEAT_GUI
 	    // Close slave side of pty.  Only do this after the child has
@@ -5477,7 +5477,8 @@ mch_call_shell(
     ch_log(NULL, "executing shell command: %s", cmd);
 #endif
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
-    if (gui.in_use && vim_strchr(p_go, GO_TERMINAL) != NULL)
+    if (gui.in_use && vim_strchr(p_go, GO_TERMINAL) != NULL
+					      && (options & SHELL_SILENT) == 0)
 	return mch_call_shell_terminal(cmd, options);
 #endif
 #ifdef USE_SYSTEM
@@ -6124,6 +6125,10 @@ WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
 		rest -= msec;
 	}
 # endif
+# ifdef FEAT_SOUND_MACOSX
+	// Invoke any pending sound callbacks.
+	process_cfrunloop();
+# endif
 # ifdef FEAT_SOUND_CANBERRA
 	// Invoke any pending sound callbacks.
 	if (has_sound_callback_in_queue())
@@ -6495,7 +6500,7 @@ select_eintr:
 #ifdef FEAT_JOB_CHANNEL
 	// also call when ret == 0, we may be polling a keep-open channel
 	if (ret >= 0)
-	    ret = channel_select_check(ret, &rfds, &wfds);
+	    (void)channel_select_check(ret, &rfds, &wfds);
 #endif
 
 #endif // HAVE_SELECT

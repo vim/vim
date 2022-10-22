@@ -28,43 +28,43 @@ change_warning(int col)
 {
     static char *w_readonly = N_("W10: Warning: Changing a readonly file");
 
-    if (curbuf->b_did_warn == FALSE
-	    && curbufIsChanged() == 0
-	    && !autocmd_busy
-	    && curbuf->b_p_ro)
-    {
-	++curbuf_lock;
-	apply_autocmds(EVENT_FILECHANGEDRO, NULL, NULL, FALSE, curbuf);
-	--curbuf_lock;
-	if (!curbuf->b_p_ro)
-	    return;
+    if (curbuf->b_did_warn
+	    || curbufIsChanged()
+	    || autocmd_busy
+	    || !curbuf->b_p_ro)
+	return;
 
-	// Do what msg() does, but with a column offset if the warning should
-	// be after the mode message.
-	msg_start();
-	if (msg_row == Rows - 1)
-	    msg_col = col;
-	msg_source(HL_ATTR(HLF_W));
-	msg_puts_attr(_(w_readonly), HL_ATTR(HLF_W) | MSG_HIST);
+    ++curbuf_lock;
+    apply_autocmds(EVENT_FILECHANGEDRO, NULL, NULL, FALSE, curbuf);
+    --curbuf_lock;
+    if (!curbuf->b_p_ro)
+	return;
+
+    // Do what msg() does, but with a column offset if the warning should
+    // be after the mode message.
+    msg_start();
+    if (msg_row == Rows - 1)
+	msg_col = col;
+    msg_source(HL_ATTR(HLF_W));
+    msg_puts_attr(_(w_readonly), HL_ATTR(HLF_W) | MSG_HIST);
 #ifdef FEAT_EVAL
-	set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_readonly), -1);
+    set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_readonly), -1);
 #endif
-	msg_clr_eos();
-	(void)msg_end();
-	if (msg_silent == 0 && !silent_mode
+    msg_clr_eos();
+    (void)msg_end();
+    if (msg_silent == 0 && !silent_mode
 #ifdef FEAT_EVAL
-		&& time_for_testing != 1
+	    && time_for_testing != 1
 #endif
-		)
-	{
-	    out_flush();
-	    ui_delay(1002L, TRUE); // give the user time to think about it
-	}
-	curbuf->b_did_warn = TRUE;
-	redraw_cmdline = FALSE;	// don't redraw and erase the message
-	if (msg_row < Rows - 1)
-	    showmode();
+       )
+    {
+	out_flush();
+	ui_delay(1002L, TRUE); // give the user time to think about it
     }
+    curbuf->b_did_warn = TRUE;
+    redraw_cmdline = FALSE;	// don't redraw and erase the message
+    if (msg_row < Rows - 1)
+	showmode();
 }
 
 /*
@@ -159,25 +159,25 @@ check_recorded_changes(
 	linenr_T	lnume,
 	long		xtra)
 {
-    if (buf->b_recorded_changes != NULL && xtra != 0)
-    {
-	listitem_T *li;
-	linenr_T    prev_lnum;
-	linenr_T    prev_lnume;
+    if (buf->b_recorded_changes == NULL || xtra == 0)
+	return;
 
-	FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
+    listitem_T *li;
+    linenr_T    prev_lnum;
+    linenr_T    prev_lnume;
+
+    FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
+    {
+	prev_lnum = (linenr_T)dict_get_number(
+		li->li_tv.vval.v_dict, "lnum");
+	prev_lnume = (linenr_T)dict_get_number(
+		li->li_tv.vval.v_dict, "end");
+	if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	{
-	    prev_lnum = (linenr_T)dict_get_number(
-						li->li_tv.vval.v_dict, "lnum");
-	    prev_lnume = (linenr_T)dict_get_number(
-						 li->li_tv.vval.v_dict, "end");
-	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
-	    {
-		// the current change is going to make the line number in
-		// the older change invalid, flush now
-		invoke_listeners(curbuf);
-		break;
-	    }
+	    // the current change is going to make the line number in
+	    // the older change invalid, flush now
+	    invoke_listeners(curbuf);
+	    break;
 	}
     }
 }
@@ -362,6 +362,7 @@ invoke_listeners(buf_T *buf)
     int		save_updating_screen = updating_screen;
     static int	recursive = FALSE;
     listener_T	*next;
+    listener_T	*prev;
 
     if (buf->b_recorded_changes == NULL  // nothing changed
 	    || buf->b_listener == NULL   // no listeners
@@ -406,10 +407,9 @@ invoke_listeners(buf_T *buf)
     }
 
     // If f_listener_remove() was called may have to remove a listener now.
+    prev = NULL;
     for (lnr = buf->b_listener; lnr != NULL; lnr = next)
     {
-	listener_T	*prev = NULL;
-
 	next = lnr->lr_next;
 	if (lnr->lr_id == 0)
 	    remove_listener(buf, lnr, prev);
@@ -709,6 +709,16 @@ changed_bytes(linenr_T lnum, colnr_T col)
     changedOneline(curbuf, lnum);
     changed_common(lnum, col, lnum + 1, 0L);
 
+#ifdef FEAT_SPELL
+    // When text has been changed at the end of the line, possibly the start of
+    // the next line may have SpellCap that should be removed or it needs to be
+    // displayed.  Schedule the next line for redrawing just in case.
+    // Don't do this when displaying '$' at the end of changed text.
+    if (spell_check_window(curwin)
+	    && lnum < curbuf->b_ml.ml_line_count
+	    && vim_strchr(p_cpo, CPO_DOLLAR) == NULL)
+	redrawWinline(curwin, lnum + 1);
+#endif
 #ifdef FEAT_DIFF
     // Diff highlighting in other diff windows may need to be updated too.
     if (curwin->w_p_diff)
@@ -1404,11 +1414,18 @@ open_line(
     int		vreplace_mode;
     int		did_append;		// appended a new line
     int		saved_pi = curbuf->b_p_pi; // copy of preserveindent setting
+#ifdef FEAT_PROP_POPUP
+    int		at_eol;			// cursor after last character
+#endif
 
     // make a copy of the current line so we can mess with it
     saved_line = vim_strsave(ml_get_curline());
     if (saved_line == NULL)	    // out of memory!
 	return FALSE;
+
+#ifdef FEAT_PROP_POPUP
+    at_eol = curwin->w_cursor.col >= (int)STRLEN(saved_line);
+#endif
 
     if (State & VREPLACE_FLAG)
     {
@@ -2133,7 +2150,7 @@ open_line(
 	if ((State & MODE_INSERT) && (State & VREPLACE_FLAG) == 0)
 	    // Properties after the split move to the next line.
 	    adjust_props_for_split(curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-		    curwin->w_cursor.col + 1, 0);
+		    curwin->w_cursor.col + 1, 0, at_eol);
 #endif
     }
     else
@@ -2252,21 +2269,23 @@ open_line(
     else
 	vreplace_mode = 0;
 
-    // May do lisp indenting.
-    if (!p_paste
-	    && leader == NULL
-	    && curbuf->b_p_lisp
-	    && curbuf->b_p_ai)
+    if (!p_paste)
     {
-	fixthisline(get_lisp_indent);
-	ai_col = (colnr_T)getwhitecols_curline();
-    }
-
-    // May do indenting after opening a new line.
-    if (do_cindent)
-    {
-	do_c_expr_indent();
-	ai_col = (colnr_T)getwhitecols_curline();
+	if (leader == NULL
+		&& !use_indentexpr_for_lisp()
+		&& curbuf->b_p_lisp
+		&& curbuf->b_p_ai)
+	{
+	    // do lisp indenting
+	    fixthisline(get_lisp_indent);
+	    ai_col = (colnr_T)getwhitecols_curline();
+	}
+	else if (do_cindent || (curbuf->b_p_ai && use_indentexpr_for_lisp()))
+	{
+	    // do 'cindent' or 'indentexpr' indenting
+	    do_c_expr_indent();
+	    ai_col = (colnr_T)getwhitecols_curline();
+	}
     }
 
     if (vreplace_mode != 0)

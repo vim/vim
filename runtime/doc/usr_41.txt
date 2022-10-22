@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.0.  Last change: 2022 Jun 23
+*usr_41.txt*	For Vim version 9.0.  Last change: 2022 Oct 07
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -737,6 +737,8 @@ String manipulation:					*string-functions*
 	fnameescape()		escape a file name for use with a Vim command
 	tr()			translate characters from one set to another
 	strtrans()		translate a string to make it printable
+	keytrans()		translate internal keycodes to a form that
+				can be used by |:map|
 	tolower()		turn a string to lowercase
 	toupper()		turn a string to uppercase
 	charclass()		class of a character
@@ -1287,6 +1289,7 @@ Popup window:					*popup-window-functions*
 	popup_filter_yesno()	block until 'y' or 'n' is pressed
 	popup_getoptions()	get current options for a popup
 	popup_getpos()		get actual position and size of a popup
+	popup_findecho()	get window ID for popup used for `:echowindow`
 	popup_findinfo()	get window ID for popup info window
 	popup_findpreview()	get window ID for popup preview window
 	popup_list()		get list of all popup window IDs

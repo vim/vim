@@ -18,11 +18,11 @@ PUSH "ABC"
   ?screen_eol 0,3 = 1
 PUSH "\e[H"
   movecursor 0,0
-  ?screen_chars 0,0,1,80 = "ABC"
+  ?screen_row 0 = "ABC"
   ?screen_text 0,0,1,80 = 0x41,0x42,0x43
 PUSH "E"
   movecursor 0,1
-  ?screen_chars 0,0,1,80 = "EBC"
+  ?screen_row 0 = "EBC"
   ?screen_text 0,0,1,80 = 0x45,0x42,0x43
 
 WANTSCREEN -c
@@ -30,14 +30,14 @@ WANTSCREEN -c
 !Erase
 RESET
 PUSH "ABCDE\e[H\e[K"
-  ?screen_chars 0,0,1,80 = 
+  ?screen_row 0 = ""
   ?screen_text 0,0,1,80 = 
 
 !Copycell
 RESET
 PUSH "ABC\e[H\e[@"
 PUSH "1"
-  ?screen_chars 0,0,1,80 = "1ABC"
+  ?screen_row 0 = "1ABC"
 
 RESET
 PUSH "ABC\e[H\e[P"
@@ -48,7 +48,7 @@ PUSH "ABC\e[H\e[P"
 !Space padding
 RESET
 PUSH "Hello\e[CWorld"
-  ?screen_chars 0,0,1,80 = "Hello World"
+  ?screen_row 0 = "Hello World"
   ?screen_text 0,0,1,80 = 0x48,0x65,0x6c,0x6c,0x6f,0x20,0x57,0x6f,0x72,0x6c,0x64
 
 !Linefeed padding
@@ -60,10 +60,10 @@ PUSH "Hello\r\nWorld"
 !Altscreen
 RESET
 PUSH "P"
-  ?screen_chars 0,0,1,80 = "P"
+  ?screen_row 0 = "P"
 PUSH "\e[?1049h"
-  ?screen_chars 0,0,1,80 = 
+  ?screen_row 0 = ""
 PUSH "\e[2K\e[HA"
-  ?screen_chars 0,0,1,80 = "A"
+  ?screen_row 0 = "A"
 PUSH "\e[?1049l"
-  ?screen_chars 0,0,1,80 = "P"
+  ?screen_row 0 = "P"

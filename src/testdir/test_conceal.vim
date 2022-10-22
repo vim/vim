@@ -25,7 +25,7 @@ func Test_conceal_two_windows()
     exe "normal /here\r"
   [CODE]
 
-  call writefile(code, 'XTest_conceal')
+  call writefile(code, 'XTest_conceal', 'D')
   " Check that cursor line is concealed
   let buf = RunVimInTerminal('-S XTest_conceal', {})
   call VerifyScreenDump(buf, 'Test_conceal_two_windows_01', {})
@@ -109,7 +109,6 @@ func Test_conceal_two_windows()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_conceal')
 endfunc
 
 func Test_conceal_with_cursorline()
@@ -126,7 +125,7 @@ func Test_conceal_with_cursorline()
     normal M
   [CODE]
 
-  call writefile(code, 'XTest_conceal_cul')
+  call writefile(code, 'XTest_conceal_cul', 'D')
   let buf = RunVimInTerminal('-S XTest_conceal_cul', {})
   call VerifyScreenDump(buf, 'Test_conceal_cul_01', {})
 
@@ -138,7 +137,6 @@ func Test_conceal_with_cursorline()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_conceal_cul')
 endfunc
 
 func Test_conceal_resize_term()
@@ -150,7 +148,7 @@ func Test_conceal_resize_term()
     syn region CommentCodeSpan matchgroup=Comment start=/`/ end=/`/ concealends
     normal fb
   [CODE]
-  call writefile(code, 'XTest_conceal_resize')
+  call writefile(code, 'XTest_conceal_resize', 'D')
   let buf = RunVimInTerminal('-S XTest_conceal_resize', {'rows': 6})
   call VerifyScreenDump(buf, 'Test_conceal_resize_01', {})
 
@@ -159,7 +157,32 @@ func Test_conceal_resize_term()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_conceal_resize')
+endfunc
+
+func Test_conceal_linebreak()
+  CheckScreendump
+
+  let code =<< trim [CODE]
+      vim9script
+      &wrap = true
+      &conceallevel = 2
+      &concealcursor = 'nc'
+      &linebreak = true
+      &showbreak = '+ '
+      var line: string = 'a`a`a`a`'
+          .. 'a'->repeat(&columns - 15)
+          .. ' b`b`'
+          .. 'b'->repeat(&columns - 10)
+          .. ' cccccc'
+      ['x'->repeat(&columns), '', line]->setline(1)
+      syntax region CodeSpan matchgroup=Delimiter start=/\z(`\+\)/ end=/\z1/ concealends
+  [CODE]
+  call writefile(code, 'XTest_conceal_linebreak', 'D')
+  let buf = RunVimInTerminal('-S XTest_conceal_linebreak', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_conceal_linebreak_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 " Tests for correct display (cursor column position) with +conceal and
@@ -247,7 +270,7 @@ func Test_conceal_cursor_pos()
     :q!
 
   [CODE]
-  call writefile(code, 'XTest_conceal_curpos')
+  call writefile(code, 'XTest_conceal_curpos', 'D')
 
   if RunVim([], [], '-s XTest_conceal_curpos')
     call assert_equal([
@@ -258,7 +281,6 @@ func Test_conceal_cursor_pos()
   endif
 
   call delete('Xconceal_curpos.out')
-  call delete('XTest_conceal_curpos')
 endfunc
 
 func Test_conceal_eol()

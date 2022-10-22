@@ -23,7 +23,7 @@ char_u *concat_str(char_u *str1, char_u *str2);
 char_u *string_quote(char_u *str, int function);
 long string_count(char_u *haystack, char_u *needle, int ic);
 void string_filter_map(char_u *str, filtermap_T filtermap, typval_T *expr, typval_T *rettv);
-void string_reduce(typval_T *argvars, char_u *func_name, funcexe_T *funcexe, typval_T *rettv);
+void string_reduce(typval_T *argvars, typval_T *expr, typval_T *rettv);
 void f_byteidx(typval_T *argvars, typval_T *rettv);
 void f_byteidxcomp(typval_T *argvars, typval_T *rettv);
 void f_charidx(typval_T *argvars, typval_T *rettv);

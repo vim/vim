@@ -157,7 +157,6 @@
 #undef HAVE_FCHDIR
 #undef HAVE_FCHOWN
 #undef HAVE_FCHMOD
-#undef HAVE_FLOAT_FUNCS
 #undef HAVE_FSEEKO
 #undef HAVE_FSYNC
 #undef HAVE_FTRUNCATE
@@ -320,14 +319,8 @@
 /* Define if you want tiny features. */
 #undef FEAT_TINY
 
-/* Define if you want small features. */
-#undef FEAT_SMALL
-
 /* Define if you want normal features. */
 #undef FEAT_NORMAL
-
-/* Define if you want big features. */
-#undef FEAT_BIG
 
 /* Define if you want huge features. */
 #undef FEAT_HUGE

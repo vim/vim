@@ -170,38 +170,47 @@ update_screen(int type_arg)
     if (msg_scrolled)
     {
 	clear_cmdline = TRUE;
-	if (msg_scrolled > Rows - 5)	    // clearing is faster
-	    type = UPD_CLEAR;
-	else if (type != UPD_CLEAR)
+	if (type != UPD_CLEAR)
 	{
-	    check_for_delay(FALSE);
-	    if (screen_ins_lines(0, 0, msg_scrolled, (int)Rows, 0, NULL)
-								       == FAIL)
-		type = UPD_CLEAR;
-	    FOR_ALL_WINDOWS(wp)
+	    if (msg_scrolled > Rows - 5)	    // redrawing is faster
 	    {
-		if (wp->w_winrow < msg_scrolled)
+		type = UPD_NOT_VALID;
+		redraw_as_cleared();
+	    }
+	    else
+	    {
+		check_for_delay(FALSE);
+		if (screen_ins_lines(0, 0, msg_scrolled, (int)Rows, 0, NULL)
+								       == FAIL)
 		{
-		    if (W_WINROW(wp) + wp->w_height > msg_scrolled
-			    && wp->w_redr_type < UPD_REDRAW_TOP
-			    && wp->w_lines_valid > 0
-			    && wp->w_topline == wp->w_lines[0].wl_lnum)
+		    type = UPD_NOT_VALID;
+		    redraw_as_cleared();
+		}
+		FOR_ALL_WINDOWS(wp)
+		{
+		    if (wp->w_winrow < msg_scrolled)
 		    {
-			wp->w_upd_rows = msg_scrolled - W_WINROW(wp);
-			wp->w_redr_type = UPD_REDRAW_TOP;
-		    }
-		    else
-		    {
-			wp->w_redr_type = UPD_NOT_VALID;
-			if (W_WINROW(wp) + wp->w_height + wp->w_status_height
-							       <= msg_scrolled)
-			    wp->w_redr_status = TRUE;
+			if (W_WINROW(wp) + wp->w_height > msg_scrolled
+				&& wp->w_redr_type < UPD_REDRAW_TOP
+				&& wp->w_lines_valid > 0
+				&& wp->w_topline == wp->w_lines[0].wl_lnum)
+			{
+			    wp->w_upd_rows = msg_scrolled - W_WINROW(wp);
+			    wp->w_redr_type = UPD_REDRAW_TOP;
+			}
+			else
+			{
+			    wp->w_redr_type = UPD_NOT_VALID;
+			    if (W_WINROW(wp) + wp->w_height
+					 + wp->w_status_height <= msg_scrolled)
+				wp->w_redr_status = TRUE;
+			}
 		    }
 		}
+		if (!no_update)
+		    redraw_cmdline = TRUE;
+		redraw_tabline = TRUE;
 	    }
-	    if (!no_update)
-		redraw_cmdline = TRUE;
-	    redraw_tabline = TRUE;
 	}
 	msg_scrolled = 0;
 	need_wait_return = FALSE;
@@ -538,9 +547,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    screen_puts(NameBuff, row, (int)(this_ru_col - STRLEN(NameBuff)
 						   - 1 + wp->w_wincol), attr);
 
-#ifdef FEAT_CMDL_INFO
 	win_redr_ruler(wp, TRUE, ignore_pum);
-#endif
     }
 
     /*
@@ -610,9 +617,7 @@ showruler(int always)
 	redraw_custom_statusline(curwin);
     else
 #endif
-#ifdef FEAT_CMDL_INFO
 	win_redr_ruler(curwin, always, FALSE);
-#endif
 
     if (need_maketitle
 #ifdef FEAT_STL_OPT
@@ -627,7 +632,6 @@ showruler(int always)
 	draw_tabline();
 }
 
-#if defined(FEAT_CMDL_INFO) || defined(PROTO)
     void
 win_redr_ruler(win_T *wp, int always, int ignore_pum)
 {
@@ -645,8 +649,8 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
     int		off = 0;
     int		width;
 
-    // If 'ruler' off or messages area disabled, don't do anything
-    if (!p_ru || (wp->w_status_height == 0 && p_ch == 0))
+    // If 'ruler' off don't do anything
+    if (!p_ru)
 	return;
 
     /*
@@ -667,7 +671,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	return;
 
 #ifdef FEAT_STL_OPT
-    if (*p_ruf && p_ch > 0)
+    if (*p_ruf)
     {
 	int	called_emsg_before = called_emsg;
 
@@ -807,7 +811,6 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 #endif
     }
 }
-#endif
 
 /*
  * To be called when "updating_screen" was set before and now the postponed
@@ -1093,7 +1096,6 @@ fold_line(
 
     // 1. Add the cmdwin_type for the command-line window
     // Ignores 'rightleft', this window is never right-left.
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0 && wp == curwin)
     {
 	ScreenLines[off] = cmdwin_type;
@@ -1102,7 +1104,6 @@ fold_line(
 	    ScreenLinesUC[off] = 0;
 	++col;
     }
-#endif
 
 #ifdef FEAT_RIGHTLEFT
 # define RL_MEMSET(p, v, l) \
@@ -1543,6 +1544,26 @@ win_update(win_T *wp)
     init_search_hl(wp, &screen_search_hl);
 #endif
 
+    // Make sure skipcol is valid, it depends on various options and the window
+    // width.
+    if (wp->w_skipcol > 0)
+    {
+	int w = 0;
+	int width1 = wp->w_width - win_col_off(wp);
+	int width2 = width1 + win_col_off2(wp);
+	int add = width1;
+
+	while (w < wp->w_skipcol)
+	{
+	    if (w > 0)
+		add = width2;
+	    w += add;
+	}
+	if (w != wp->w_skipcol)
+	    // always round down, the higher value may not be valid
+	    wp->w_skipcol = w - add;
+    }
+
 #ifdef FEAT_LINEBREAK
     // Force redraw when width of 'number' or 'relativenumber' column
     // changes.
@@ -1605,13 +1626,13 @@ win_update(win_T *wp)
 
 		while (cur != NULL)
 		{
-		    if (cur->match.regprog != NULL
-					   && re_multiline(cur->match.regprog))
+		    if (cur->mit_match.regprog != NULL
+				       && re_multiline(cur->mit_match.regprog))
 		    {
 			top_to_mod = TRUE;
 			break;
 		    }
-		    cur = cur->next;
+		    cur = cur->mit_next;
 		}
 	    }
 #endif
@@ -1805,13 +1826,9 @@ win_update(win_T *wp)
 
 			    // Move the entries that were scrolled, disable
 			    // the entries for the lines to be redrawn.
-			    // Avoid using a wrong index when 'cmdheight' is
-			    // zero and wp->w_height == Rows.
 			    if ((wp->w_lines_valid += j) > wp->w_height)
 				wp->w_lines_valid = wp->w_height;
-			    for (idx = wp->w_lines_valid >= wp->w_height
-				    ? wp->w_height - 1 : wp->w_lines_valid;
-							   idx - j >= 0; idx--)
+			    for (idx = wp->w_lines_valid; idx - j >= 0; idx--)
 				wp->w_lines[idx] = wp->w_lines[idx - j];
 			    while (idx >= 0)
 				wp->w_lines[idx--].wl_valid = FALSE;
@@ -1917,24 +1934,9 @@ win_update(win_T *wp)
 	    }
 	}
 
-	// When starting redraw in the first line, redraw all lines.  When
-	// there is only one window it's probably faster to clear the screen
-	// first.
+	// When starting redraw in the first line, redraw all lines.
 	if (mid_start == 0)
-	{
 	    mid_end = wp->w_height;
-	    if (ONE_WINDOW && !WIN_IS_POPUP(wp))
-	    {
-		// Clear the screen when it was not done by win_del_lines() or
-		// win_ins_lines() above, "screen_cleared" is FALSE or MAYBE
-		// then.
-		if (screen_cleared != TRUE)
-		    screenclear();
-		// The screen was cleared, redraw the tab pages line.
-		if (redraw_tabline)
-		    draw_tabline();
-	    }
-	}
 
 	// When win_del_lines() or win_ins_lines() caused the screen to be
 	// cleared (only happens for the first window) or when screenclear()
@@ -2484,7 +2486,7 @@ win_update(win_T *wp)
 		// Let the syntax stuff know we skipped a few lines.
 		if (syntax_last_parsed != 0 && syntax_last_parsed + 1 < lnum
 						       && syntax_present(wp))
-		    syntax_end_parsing(syntax_last_parsed + 1);
+		    syntax_end_parsing(wp, syntax_last_parsed + 1);
 #endif
 
 		// Display one line.
@@ -2507,8 +2509,7 @@ win_update(win_T *wp)
 	    // Past end of the window or end of the screen. Note that after
 	    // resizing wp->w_height may be end up too big. That's a problem
 	    // elsewhere, but prevent a crash here.
-	    if (row > wp->w_height
-		    || row + wp->w_winrow >= (p_ch > 0 ? Rows : Rows + 1))
+	    if (row > wp->w_height || row + wp->w_winrow >= Rows)
 	    {
 		// we may need the size of that too long line later on
 		if (dollar_vcol == -1)
@@ -2562,7 +2563,7 @@ win_update(win_T *wp)
 
 	// Safety check: if any of the wl_size values is wrong we might go over
 	// the end of w_lines[].
-	if (idx >= (p_ch > 0 ? Rows : Rows + 1))
+	if (idx >= Rows)
 	    break;
     }
 
@@ -2600,7 +2601,7 @@ win_update(win_T *wp)
 #ifdef FEAT_SYN_HL
     // Let the syntax stuff know we stop parsing here.
     if (syntax_last_parsed != 0 && syntax_present(wp))
-	syntax_end_parsing(syntax_last_parsed + 1);
+	syntax_end_parsing(wp, syntax_last_parsed + 1);
 #endif
 
     // If we didn't hit the end of the file, and we didn't finish the last
@@ -2634,33 +2635,42 @@ win_update(win_T *wp)
 #endif
 	else if (dy_flags & DY_TRUNCATE)	// 'display' has "truncate"
 	{
-	    int scr_row = W_WINROW(wp) + wp->w_height - 1;
+	    int		scr_row = W_WINROW(wp) + wp->w_height - 1;
+	    int		symbol  = wp->w_fill_chars.lastline;
+	    int		charlen;
+	    char_u	fillbuf[12];  // 2 characters of 6 bytes
+
+	    charlen = mb_char2bytes(symbol, &fillbuf[0]);
+	    mb_char2bytes(symbol, &fillbuf[charlen]);
 
 	    // Last line isn't finished: Display "@@@" in the last screen line.
-	    screen_puts_len((char_u *)"@@", wp->w_width > 2 ? 2 : wp->w_width,
-				       scr_row, wp->w_wincol, HL_ATTR(HLF_AT));
+	    screen_puts_len(fillbuf,
+			    (wp->w_width > 2 ? 2 : wp->w_width) * charlen,
+			    scr_row, wp->w_wincol, HL_ATTR(HLF_AT));
 	    screen_fill(scr_row, scr_row + 1,
 		    (int)wp->w_wincol + 2, (int)W_ENDCOL(wp),
-		    '@', ' ', HL_ATTR(HLF_AT));
+		    symbol, ' ', HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
 	}
 	else if (dy_flags & DY_LASTLINE)	// 'display' has "lastline"
 	{
 	    int start_col = (int)W_ENDCOL(wp) - 3;
+	    int symbol    = wp->w_fill_chars.lastline;
 
 	    // Last line isn't finished: Display "@@@" at the end.
 	    screen_fill(W_WINROW(wp) + wp->w_height - 1,
 		    W_WINROW(wp) + wp->w_height,
 		    start_col < wp->w_wincol ? wp->w_wincol : start_col,
 		    (int)W_ENDCOL(wp),
-		    '@', '@', HL_ATTR(HLF_AT));
+		    symbol, symbol, HL_ATTR(HLF_AT));
 	    set_empty_rows(wp, srow);
 	    wp->w_botline = lnum;
 	}
 	else
 	{
-	    win_draw_end(wp, '@', ' ', TRUE, srow, wp->w_height, HLF_AT);
+	    win_draw_end(wp, wp->w_fill_chars.lastline, ' ', TRUE,
+						   srow, wp->w_height, HLF_AT);
 	    wp->w_botline = lnum;
 	}
     }
@@ -2908,10 +2918,7 @@ updateWindow(win_T *wp)
     if (redraw_tabline)
 	draw_tabline();
 
-    if (wp->w_redr_status
-# ifdef FEAT_CMDL_INFO
-	    || p_ru
-# endif
+    if (wp->w_redr_status || p_ru
 # ifdef FEAT_STL_OPT
 	    || *p_stl != NUL || *wp->w_p_stl != NUL
 # endif
@@ -2950,8 +2957,7 @@ redraw_asap(int type)
     redraw_later(type);
     if (msg_scrolled
 	    || (State != MODE_NORMAL && State != MODE_NORMAL_BUSY)
-	    || exiting
-	    || p_ch == 0)
+	    || exiting)
 	return ret;
 
     // Allocate space to save the text displayed in the command line area.
@@ -3169,7 +3175,7 @@ redraw_later_clear(void)
 }
 
 /*
- * Mark all windows to be redrawn later.
+ * Mark all windows to be redrawn later.  Except popup windows.
  */
     void
 redraw_all_later(int type)
@@ -3181,6 +3187,20 @@ redraw_all_later(int type)
     // This may be needed when switching tabs.
     set_must_redraw(type);
 }
+
+#if 0  // not actually used yet, it probably should
+/*
+ * Mark all windows, including popup windows, to be redrawn.
+ */
+    void
+redraw_all_windows_later(int type)
+{
+    redraw_all_later(type);
+#ifdef FEAT_PROP_POPUP
+    popup_redraw_all();		// redraw all popup windows
+#endif
+}
+#endif
 
 /*
  * Set "must_redraw" to "type" unless it already has a higher value

@@ -690,6 +690,16 @@ do_tag(
 		max_num_matches = MAXCOL; // If less than max_num_matches
 					  // found: all matches found.
 
+	    // A tag function may do anything, which may cause various
+	    // information to become invalid.  At least check for the tagstack
+	    // to still be the same.
+	    if (tagstack != curwin->w_tagstack)
+	    {
+		emsg(_(e_window_unexpectedly_close_while_searching_for_tags));
+		FreeWild(new_num_matches, new_matches);
+		break;
+	    }
+
 	    // If there already were some matches for the same name, move them
 	    // to the start.  Avoids that the order changes when using
 	    // ":tnext" and jumping to another file.
@@ -4368,7 +4378,12 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
     {
 	for (i = 0; i < num_matches; ++i)
 	{
-	    parse_match(matches[i], &tp);
+	    if (parse_match(matches[i], &tp) == FAIL)
+	    {
+		vim_free(matches[i]);
+		continue;
+	    }
+
 	    is_static = test_for_static(&tp);
 
 	    // Skip pseudo-tag lines.
@@ -4379,7 +4394,11 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 	    }
 
 	    if ((dict = dict_alloc()) == NULL)
+	    {
 		ret = FAIL;
+		vim_free(matches[i]);
+		break;
+	    }
 	    if (list_append_dict(list, dict) == FAIL)
 		ret = FAIL;
 

@@ -40,9 +40,9 @@ func SetUp()
   eval 'Xtopdir'->mkdir()
   cd Xtopdir
   let g:topdir = getcwd()
-  call mkdir('Xdir1')
-  call mkdir('Xdir2')
-  call mkdir('Xdir3')
+  call mkdir('Xcwdir1')
+  call mkdir('Xcwdir2')
+  call mkdir('Xcwdir3')
 endfunction
 
 let g:cwd=getcwd()
@@ -57,23 +57,23 @@ function Test_GetCwd()
   new b
   new c
   3wincmd w
-  lcd Xdir1
-  call assert_equal("a Xdir1 1", GetCwdInfo(0, 0))
+  lcd Xcwdir1
+  call assert_equal("a Xcwdir1 1", GetCwdInfo(0, 0))
   call assert_equal(g:topdir, getcwd(-1))
   wincmd W
   call assert_equal("b Xtopdir 0", GetCwdInfo(0, 0))
   call assert_equal(g:topdir, getcwd(-1))
   wincmd W
-  lcd Xdir3
-  call assert_equal("c Xdir3 1", GetCwdInfo(0, 0))
-  call assert_equal("a Xdir1 1", GetCwdInfo(bufwinnr("a"), 0))
+  lcd Xcwdir3
+  call assert_equal("c Xcwdir3 1", GetCwdInfo(0, 0))
+  call assert_equal("a Xcwdir1 1", GetCwdInfo(bufwinnr("a"), 0))
   call assert_equal("b Xtopdir 0", GetCwdInfo(bufwinnr("b"), 0))
-  call assert_equal("c Xdir3 1", GetCwdInfo(bufwinnr("c"), 0))
+  call assert_equal("c Xcwdir3 1", GetCwdInfo(bufwinnr("c"), 0))
   call assert_equal(g:topdir, getcwd(-1))
   wincmd W
-  call assert_equal("a Xdir1 1", GetCwdInfo(bufwinnr("a"), tabpagenr()))
+  call assert_equal("a Xcwdir1 1", GetCwdInfo(bufwinnr("a"), tabpagenr()))
   call assert_equal("b Xtopdir 0", GetCwdInfo(bufwinnr("b"), tabpagenr()))
-  call assert_equal("c Xdir3 1", GetCwdInfo(bufwinnr("c"), tabpagenr()))
+  call assert_equal("c Xcwdir3 1", GetCwdInfo(bufwinnr("c"), tabpagenr()))
   call assert_equal(g:topdir, getcwd(-1))
 
   tabnew x
@@ -83,21 +83,21 @@ function Test_GetCwd()
   call assert_equal("x Xtopdir 0", GetCwdInfo(0, 0))
   call assert_equal(g:topdir, getcwd(-1))
   wincmd W
-  lcd Xdir2
-  call assert_equal("y Xdir2 1", GetCwdInfo(0, 0))
+  lcd Xcwdir2
+  call assert_equal("y Xcwdir2 1", GetCwdInfo(0, 0))
   call assert_equal(g:topdir, getcwd(-1))
   wincmd W
-  lcd Xdir3
-  call assert_equal("z Xdir3 1", GetCwdInfo(0, 0))
+  lcd Xcwdir3
+  call assert_equal("z Xcwdir3 1", GetCwdInfo(0, 0))
   call assert_equal("x Xtopdir 0", GetCwdInfo(bufwinnr("x"), 0))
-  call assert_equal("y Xdir2 1", GetCwdInfo(bufwinnr("y"), 0))
-  call assert_equal("z Xdir3 1", GetCwdInfo(bufwinnr("z"), 0))
+  call assert_equal("y Xcwdir2 1", GetCwdInfo(bufwinnr("y"), 0))
+  call assert_equal("z Xcwdir3 1", GetCwdInfo(bufwinnr("z"), 0))
   call assert_equal(g:topdir, getcwd(-1))
   let tp_nr = tabpagenr()
   tabrewind
   call assert_equal("x Xtopdir 0", GetCwdInfo(3, tp_nr))
-  call assert_equal("y Xdir2 1", GetCwdInfo(2, tp_nr))
-  call assert_equal("z Xdir3 1", GetCwdInfo(1, tp_nr))
+  call assert_equal("y Xcwdir2 1", GetCwdInfo(2, tp_nr))
+  call assert_equal("z Xcwdir3 1", GetCwdInfo(1, tp_nr))
   call assert_equal(g:topdir, getcwd(-1))
   " Non existing windows and tab pages
   call assert_equal('', getcwd(100))
@@ -241,24 +241,24 @@ function Test_Tab_Local_Cwd()
 
   " Change the global directory for the first tab page
   tabrewind | 1wincmd w
-  cd ../Xdir1
-  call assert_equal("a Xdir1 0", GetCwdInfo(1, 1))
-  call assert_equal("b Xdir1 0", GetCwdInfo(2, 1))
+  cd ../Xcwdir1
+  call assert_equal("a Xcwdir1 0", GetCwdInfo(1, 1))
+  call assert_equal("b Xcwdir1 0", GetCwdInfo(2, 1))
   call assert_equal("m Xtabdir1 2", GetCwdInfo(1, 2))
   call assert_equal("n Xwindir2 1", GetCwdInfo(2, 2))
 
   " Change the global directory for the second tab page
   tabnext | 1wincmd w
-  cd ../Xdir3
-  call assert_equal("m Xdir3 0", GetCwdInfo(1, 2))
+  cd ../Xcwdir3
+  call assert_equal("m Xcwdir3 0", GetCwdInfo(1, 2))
   call assert_equal("n Xwindir2 1", GetCwdInfo(2, 2))
-  call assert_equal("o Xdir3 0", GetCwdInfo(3, 2))
+  call assert_equal("o Xcwdir3 0", GetCwdInfo(3, 2))
 
   " Change the tab-local directory for the third tab page
   tabnext | 1wincmd w
-  cd ../Xdir1
-  call assert_equal("x Xdir1 0", GetCwdInfo(1, 3))
-  call assert_equal("y Xdir1 0", GetCwdInfo(2, 3))
+  cd ../Xcwdir1
+  call assert_equal("x Xcwdir1 0", GetCwdInfo(1, 3))
+  call assert_equal("y Xcwdir1 0", GetCwdInfo(2, 3))
   call assert_equal("z Xwindir3 1", GetCwdInfo(3, 3))
 
   enew | only | tabonly

@@ -213,6 +213,7 @@ static int g_color_index_bg = 0;
 static int g_color_index_fg = 7;
 
 # ifdef FEAT_TERMGUICOLORS
+static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
 # endif
 
@@ -241,27 +242,6 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
-
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-// Dynamic loading for portability
-typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
-{
-    ULONG cbSize;
-    COORD dwSize;
-    COORD dwCursorPosition;
-    WORD wAttributes;
-    SMALL_RECT srWindow;
-    COORD dwMaximumWindowSize;
-    WORD wPopupAttributes;
-    BOOL bFullscreenSupported;
-    COLORREF ColorTable[16];
-} DYN_CONSOLE_SCREEN_BUFFER_INFOEX, *PDYN_CONSOLE_SCREEN_BUFFER_INFOEX;
-typedef BOOL (WINAPI *PfnGetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
-static PfnGetConsoleScreenBufferInfoEx pGetConsoleScreenBufferInfoEx;
-typedef BOOL (WINAPI *PfnSetConsoleScreenBufferInfoEx)(HANDLE, PDYN_CONSOLE_SCREEN_BUFFER_INFOEX);
-static PfnSetConsoleScreenBufferInfoEx pSetConsoleScreenBufferInfoEx;
-static BOOL has_csbiex = FALSE;
-#endif
 
 /*
  * Get version number including build number
@@ -1252,6 +1232,97 @@ mch_bevalterm_changed(void)
 # endif
 
 /*
+ * Win32 console mouse scroll event handler.
+ * Loosely based on the _OnMouseWheel() function in gui_w32.c
+ *
+ * This encodes the mouse scroll direction and keyboard modifiers into
+ * g_nMouseClick, and the mouse position into g_xMouse and g_yMouse
+ *
+ * The direction of the scroll is decoded from two fields of the win32 console
+ * mouse event record;
+ *    1. The axis - vertical or horizontal flag - from dwEventFlags, and
+ *    2. The sign - positive or negative (aka delta flag) - from dwButtonState
+ *
+ * When scroll axis is HORIZONTAL
+ *    -  If the high word of the dwButtonState member contains a positive
+ *	 value, the wheel was rotated to the right.
+ *    -  Otherwise, the wheel was rotated to the left.
+ * When scroll axis is VERTICAL
+ *    -  If the high word of the dwButtonState member contains a positive value,
+ *       the wheel was rotated forward, away from the user.
+ *    -  Otherwise, the wheel was rotated backward, toward the user.
+ */
+    static void
+decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
+{
+    win_T   *wp;
+    int	    horizontal = (pmer->dwEventFlags == MOUSE_HWHEELED);
+    int	    zDelta = pmer->dwButtonState;
+
+    g_xMouse = pmer->dwMousePosition.X;
+    g_yMouse = pmer->dwMousePosition.Y;
+
+#ifdef FEAT_PROP_POPUP
+    int lcol = g_xMouse;
+    int lrow = g_yMouse;
+    wp = mouse_find_win(&lrow, &lcol, FIND_POPUP);
+    if (wp != NULL && popup_is_popup(wp))
+    {
+	g_nMouseClick = -1;
+	cmdarg_T cap;
+	oparg_T oa;
+	CLEAR_FIELD(cap);
+	clear_oparg(&oa);
+	cap.oap = &oa;
+	if (horizontal)
+	{
+	    cap.arg = zDelta < 0 ? MSCR_LEFT : MSCR_RIGHT;
+	    cap.cmdchar = zDelta < 0 ? K_MOUSELEFT : K_MOUSERIGHT;
+	}
+	else
+	{
+	    cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
+	    cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
+	}
+
+	// Mouse hovers over popup window, scroll it if possible.
+	mouse_row = wp->w_winrow;
+	mouse_col = wp->w_wincol;
+	nv_mousescroll(&cap);
+	update_screen(0);
+	setcursor();
+	out_flush();
+	return;
+    }
+#endif
+    mouse_col = g_xMouse;
+    mouse_row = g_yMouse;
+
+    char_u modifiers = 0;
+    char_u direction = 0;
+
+    // Decode the direction into an event that Vim can process
+    if (horizontal)
+	direction = zDelta >= 0 ? KE_MOUSELEFT : KE_MOUSERIGHT;
+    else
+	direction = zDelta >= 0 ? KE_MOUSEDOWN : KE_MOUSEUP;
+
+    // Decode the win32 console key modifers into Vim mouse modifers.
+    if (pmer->dwControlKeyState & SHIFT_PRESSED)
+	modifiers |= MOD_MASK_SHIFT; // MOUSE_SHIFT;
+    if (pmer->dwControlKeyState & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED))
+	modifiers |= MOD_MASK_CTRL; // MOUSE_CTRL;
+    if (pmer->dwControlKeyState & (RIGHT_ALT_PRESSED  | LEFT_ALT_PRESSED))
+	modifiers |= MOD_MASK_ALT; // MOUSE_ALT;
+
+    // add (bitwise or) the scroll direction and the key modifier chars
+    // together.
+    g_nMouseClick = ((direction << 8) | modifiers);
+
+    return;
+}
+
+/*
  * Decode a MOUSE_EVENT.  If it's a valid event, return MOUSE_LEFT,
  * MOUSE_MIDDLE, or MOUSE_RIGHT for a click; MOUSE_DRAG for a mouse
  * move with a button held down; and MOUSE_RELEASE after a MOUSE_DRAG
@@ -1320,9 +1391,16 @@ decode_mouse_event(
 	return FALSE;
     }
 
-    // unprocessed mouse click?
+    // If there is an unprocessed mouse click drop this one.
     if (g_nMouseClick != -1)
 	return TRUE;
+
+    if (pmer->dwEventFlags == MOUSE_WHEELED
+				       || pmer->dwEventFlags == MOUSE_HWHEELED)
+    {
+	decode_mouse_wheel(pmer);
+	return TRUE;  // we now should have a mouse scroll in g_nMouseClick
+    }
 
     nButton = -1;
     g_xMouse = pmer->dwMousePosition.X;
@@ -1527,13 +1605,27 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    CONSOLE_CURSOR_INFO ConsoleCursorInfo;
-    ConsoleCursorInfo.dwSize = thickness;
-    ConsoleCursorInfo.bVisible = s_cursor_visible;
+    if (USE_VTP || USE_WT)
+    {
+	if (*T_CSI == NUL)
+	{
+	    // If 't_SI' is not set, use the default cursor styles.
+	    if (thickness < 50)
+		vtp_printf("\033[3 q");	// underline
+	    else
+		vtp_printf("\033[0 q");	// default
+	}
+    }
+    else
+    {
+	CONSOLE_CURSOR_INFO ConsoleCursorInfo;
+	ConsoleCursorInfo.dwSize = thickness;
+	ConsoleCursorInfo.bVisible = s_cursor_visible;
 
-    SetConsoleCursorInfo(g_hConOut, &ConsoleCursorInfo);
-    if (s_cursor_visible)
-	SetConsoleCursorPosition(g_hConOut, g_coord);
+	SetConsoleCursorInfo(g_hConOut, &ConsoleCursorInfo);
+	if (s_cursor_visible)
+	    SetConsoleCursorPosition(g_hConOut, g_coord);
+    }
 }
 
     void
@@ -1945,12 +2037,34 @@ mch_inchar(
 		fprintf(fdDump, "{%02x @ %d, %d}",
 			g_nMouseClick, g_xMouse, g_yMouse);
 # endif
-	    typeahead[typeaheadlen++] = ESC + 128;
-	    typeahead[typeaheadlen++] = 'M';
-	    typeahead[typeaheadlen++] = g_nMouseClick;
-	    typeahead[typeaheadlen++] = g_xMouse + '!';
-	    typeahead[typeaheadlen++] = g_yMouse + '!';
-	    g_nMouseClick = -1;
+	    char_u modifiers = ((char_u *)(&g_nMouseClick))[0];
+	    char_u scroll_dir = ((char_u *)(&g_nMouseClick))[1];
+
+	    if (scroll_dir == KE_MOUSEDOWN
+		    || scroll_dir == KE_MOUSEUP
+		    || scroll_dir == KE_MOUSELEFT
+		    || scroll_dir == KE_MOUSERIGHT)
+	    {
+		if (modifiers > 0)
+		{
+		    typeahead[typeaheadlen++] = CSI;
+		    typeahead[typeaheadlen++] = KS_MODIFIER;
+		    typeahead[typeaheadlen++] = modifiers;
+		}
+		typeahead[typeaheadlen++] = CSI;
+		typeahead[typeaheadlen++] = KS_EXTRA;
+		typeahead[typeaheadlen++] = scroll_dir;
+		g_nMouseClick = -1;
+	    }
+	    else
+	    {
+		typeahead[typeaheadlen++] = ESC + 128;
+		typeahead[typeaheadlen++] = 'M';
+		typeahead[typeaheadlen++] = g_nMouseClick;
+		typeahead[typeaheadlen++] = g_xMouse + '!';
+		typeahead[typeaheadlen++] = g_yMouse + '!';
+		g_nMouseClick = -1;
+	    }
 	}
 	else
 	{
@@ -2819,7 +2933,11 @@ SaveConsoleTitleAndIcon(void)
 	return;
 
     // Extract the first icon contained in the Vim executable.
-    if (mch_icon_load((HANDLE *)&g_hVimIcon) == FAIL || g_hVimIcon == NULL)
+    if (
+# ifdef FEAT_LIBCALL
+	    mch_icon_load((HANDLE *)&g_hVimIcon) == FAIL ||
+# endif
+	    g_hVimIcon == NULL)
 	g_hVimIcon = ExtractIcon(NULL, (LPCSTR)exe_name, 0);
     if (g_hVimIcon != NULL)
 	g_fCanChangeIcon = TRUE;
@@ -4533,7 +4651,7 @@ mch_system_piped(char *cmd, int options)
 			}
 		    }
 
-		    term_replace_bs_del_keycode(ta_buf, ta_len, len);
+		    len = term_replace_keycodes(ta_buf, ta_len, len);
 
 		    /*
 		     * For pipes: echo the typed characters.  For a pty this
@@ -6769,6 +6887,21 @@ notsgr:
 	    }
 # endif
 	}
+	else if (s[0] == ESC && len >= 3-1 && s[1] == '[')
+	{
+	    int l = 2;
+
+	    if (isdigit(s[l]))
+		l++;
+	    if (s[l] == ' ' && s[l + 1] == 'q')
+	    {
+		// DECSCUSR (cursor style) sequences
+		if (USE_VTP || USE_WT)
+		    vtp_printf("%.*s", l + 2, s);   // Pass through
+		s += l + 2;
+		len -= l + 1;
+	    }
+	}
 	else
 	{
 	    // Write a single character
@@ -7848,36 +7981,26 @@ vtp_flag_init(void)
     static void
 vtp_init(void)
 {
-    HMODULE hKerneldll;
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 # ifdef FEAT_TERMGUICOLORS
     COLORREF fg;
 # endif
 
-    // Use functions supported from Vista
-    hKerneldll = GetModuleHandle("kernel32.dll");
-    if (hKerneldll != NULL)
-    {
-	pGetConsoleScreenBufferInfoEx =
-		(PfnGetConsoleScreenBufferInfoEx)GetProcAddress(
-		hKerneldll, "GetConsoleScreenBufferInfoEx");
-	pSetConsoleScreenBufferInfoEx =
-		(PfnSetConsoleScreenBufferInfoEx)GetProcAddress(
-		hKerneldll, "SetConsoleScreenBufferInfoEx");
-	if (pGetConsoleScreenBufferInfoEx != NULL
-		&& pSetConsoleScreenBufferInfoEx != NULL)
-	    has_csbiex = TRUE;
-    }
-
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
     save_console_bg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_bg];
     save_console_fg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_fg];
     store_console_bg_rgb = save_console_bg_rgb;
     store_console_fg_rgb = save_console_fg_rgb;
 
 # ifdef FEAT_TERMGUICOLORS
+    if (!USE_WT)
+    {
+	COLORREF bg;
+	bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
+	bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
+	default_console_color_bg = bg;
+    }
     fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     default_console_color_fg = fg;
@@ -7945,7 +8068,7 @@ vtp_sgr_bulks(
     if (argc == 0)
     {
 	sgrfgr = sgrbgr = -1;
-	vtp_printf("033[m");
+	vtp_printf("\033[m");
 	return;
     }
 
@@ -8093,7 +8216,7 @@ ctermtoxterm(
 set_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
     guicolor_T	fg, bg;
     int		ctermfg, ctermbg;
 
@@ -8113,8 +8236,7 @@ set_console_color_rgb(void)
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
@@ -8123,8 +8245,7 @@ set_console_color_rgb(void)
     store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
     csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8160,11 +8281,20 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	cterm_normal_bg_gui_color = guibg =
+	if (USE_WT)
+	{
+	    cterm_normal_bg_gui_color = guibg =
 			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
-
-	if (ctermbg < 0)
-	    ctermbg = 0;
+	    if (ctermbg < 0)
+		ctermbg = 0;
+	}
+	else
+	{
+	    guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
+						    : default_console_color_bg;
+	    cterm_normal_bg_gui_color = guibg;
+	    ctermbg = ctermbg < 0 ? 0 : ctermbg;
+	}
     }
 
     *cterm_fg = ctermfg;
@@ -8181,22 +8311,20 @@ get_default_console_color(
 reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
     if (USE_WT)
 	return;
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
     csbi.ColorTable[g_color_index_bg] = (COLORREF)store_console_bg_rgb;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)store_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8207,19 +8335,17 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
     csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
     csbi.ColorTable[g_color_index_bg] = (COLORREF)save_console_bg_rgb;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)save_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8355,7 +8481,7 @@ stop_timeout(void)
 {
     if (timer_active)
     {
-        BOOL ret = DeleteTimerQueueTimer(NULL, timer_handle, NULL);
+	BOOL ret = DeleteTimerQueueTimer(NULL, timer_handle, NULL);
 	timer_active = FALSE;
 	if (!ret && GetLastError() != ERROR_IO_PENDING)
 	{

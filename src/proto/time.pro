@@ -13,6 +13,7 @@ void timer_start(timer_T *timer);
 long check_due_timer(void);
 void stop_timer(timer_T *timer);
 int set_ref_in_timer(int copyID);
+int timer_valid(timer_T *timer);
 void timer_free_all(void);
 void f_timer_info(typval_T *argvars, typval_T *rettv);
 void f_timer_pause(typval_T *argvars, typval_T *rettv);

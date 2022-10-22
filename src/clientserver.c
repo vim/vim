@@ -86,7 +86,7 @@ eval_client_expr_to_string(char_u *expr)
     // to be typed.  Do generate errors so that try/catch works.
     ++emsg_silent;
 
-    res = eval_to_string(expr, TRUE);
+    res = eval_to_string(expr, TRUE, FALSE);
 
     debug_break_level = save_dbl;
     redir_off = save_ro;
@@ -423,9 +423,7 @@ cmdsrv_main(
 	    if (argtype == ARGTYPE_EDIT_WAIT)
 	    {
 		int	numFiles = *argc - i - 1;
-		int	j;
 		char_u  *done = alloc(numFiles);
-		char_u  *p;
 # ifdef FEAT_GUI_MSWIN
 		NOTIFYICONDATA ni;
 		int	count = 0;
@@ -450,6 +448,8 @@ cmdsrv_main(
 		vim_memset(done, 0, numFiles);
 		while (memchr(done, 0, numFiles) != NULL)
 		{
+		    char_u  *p;
+		    int	    j;
 # ifdef MSWIN
 		    p = serverGetReply(srv, NULL, TRUE, TRUE, 0);
 		    if (p == NULL)
@@ -459,6 +459,7 @@ cmdsrv_main(
 			break;
 # endif
 		    j = atoi((char *)p);
+		    vim_free(p);
 		    if (j >= 0 && j < numFiles)
 		    {
 # ifdef FEAT_GUI_MSWIN

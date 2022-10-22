@@ -90,11 +90,6 @@ LangString str_desc_plugin_vim      ${LANG_TURKISH} \
     "Eklenti dizinlerini Vim yükleme dizininde oluşturur. Bu eklentilerden \
      bilgisayarın tüm kullanıcıları yararlanabilir."
 
-LangString str_section_vis_vim      ${LANG_TURKISH} \
-    "VisVim eklentisi"
-LangString str_desc_vis_vim         ${LANG_TURKISH} \
-    "Microsoft Visual Studio entegrasyonu için VisVim eklentisi"
-
 LangString str_section_nls          ${LANG_TURKISH} \
     "Ek dil desteği"
 LangString str_desc_nls             ${LANG_TURKISH} \

@@ -299,7 +299,7 @@ func Test_normal06_formatprg()
   CheckNotMSWindows
 
   " uses sed to number non-empty lines
-  call writefile(['#!/bin/sh', 'sed ''/./=''|sed ''/./{', 'N', 's/\n/    /', '}'''], 'Xsed_format.sh')
+  call writefile(['#!/bin/sh', 'sed ''/./=''|sed ''/./{', 'N', 's/\n/    /', '}'''], 'Xsed_format.sh', 'D')
   call system('chmod +x ./Xsed_format.sh')
   let text = ['a', '', 'c', '', ' ', 'd', 'e']
   let expected = ['1    a', '', '3    c', '', '5     ', '6    d', '7    e']
@@ -330,7 +330,6 @@ func Test_normal06_formatprg()
   " clean up
   set formatprg=
   setlocal formatprg=
-  call delete('Xsed_format.sh')
 endfunc
 
 func Test_normal07_internalfmt()
@@ -702,11 +701,10 @@ func Test_opfunc_callback()
     call writefile([execute('messages')], 'Xtest.out')
     qall
   END
-  call writefile(cleanup, 'Xverify.vim')
+  call writefile(cleanup, 'Xverify.vim', 'D')
   call RunVim([], [], "-c \"set opfunc=s:abc\" -S Xverify.vim")
   call assert_match('E81: Using <SID> not in a', readfile('Xtest.out')[0])
   call delete('Xtest.out')
-  call delete('Xverify.vim')
 
   " cleanup
   set opfunc&
@@ -1292,11 +1290,10 @@ func Test_scroll_in_ex_mode()
       call writefile(['done'], 'Xdone')
       qa!
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   call assert_equal(1, RunVim([], [], '--clean -X -Z -e -s -S Xscript'))
   call assert_equal(['done'], readfile('Xdone'))
 
-  call delete('Xscript')
   call delete('Xdone')
 endfunc
 
@@ -1709,16 +1706,14 @@ endfunc
 func Test_normal20_exmode()
   " Reading from redirected file doesn't work on MS-Windows
   CheckNotMSWindows
-  call writefile(['1a', 'foo', 'bar', '.', 'w! Xfile2', 'q!'], 'Xscript')
-  call writefile(['1', '2'], 'Xfile')
-  call system(GetVimCommand() .. ' -e -s < Xscript Xfile')
-  let a=readfile('Xfile2')
+  call writefile(['1a', 'foo', 'bar', '.', 'w! Xn20file2', 'q!'], 'Xn20script', 'D')
+  call writefile(['1', '2'], 'Xn20file', 'D')
+  call system(GetVimCommand() .. ' -e -s < Xn20script Xn20file')
+  let a = readfile('Xn20file2')
   call assert_equal(['1', 'foo', 'bar', '2'], a)
 
   " clean up
-  for file in ['Xfile', 'Xfile2', 'Xscript']
-    call delete(file)
-  endfor
+  call delete('Xn20file2')
   bw!
 endfunc
 
@@ -1758,24 +1753,21 @@ func Test_normal22_zet()
   " Test for ZZ
   " let shell = &shell
   " let &shell = 'sh'
-  call writefile(['1', '2'], 'Xfile')
+  call writefile(['1', '2'], 'Xn22file', 'D')
   let args = ' -N -i NONE --noplugins -X --not-a-term'
-  call system(GetVimCommand() .. args .. ' -c "%d" -c ":norm! ZZ" Xfile')
-  let a = readfile('Xfile')
+  call system(GetVimCommand() .. args .. ' -c "%d" -c ":norm! ZZ" Xn22file')
+  let a = readfile('Xn22file')
   call assert_equal([], a)
   " Test for ZQ
-  call writefile(['1', '2'], 'Xfile')
-  call system(GetVimCommand() . args . ' -c "%d" -c ":norm! ZQ" Xfile')
-  let a = readfile('Xfile')
+  call writefile(['1', '2'], 'Xn22file')
+  call system(GetVimCommand() . args . ' -c "%d" -c ":norm! ZQ" Xn22file')
+  let a = readfile('Xn22file')
   call assert_equal(['1', '2'], a)
 
   " Unsupported Z command
   call assert_beeps('normal! ZW')
 
   " clean up
-  for file in ['Xfile']
-    call delete(file)
-  endfor
   " let &shell = shell
 endfunc
 
@@ -3141,7 +3133,7 @@ func Test_normal51_FileChangedRO()
   CheckFeature autocmd
   " Don't sleep after the warning message.
   call test_settime(1)
-  call writefile(['foo'], 'Xreadonly.log')
+  call writefile(['foo'], 'Xreadonly.log', 'D')
   new Xreadonly.log
   setl ro
   au FileChangedRO <buffer> :call feedkeys("\<c-^>", 'tix')
@@ -3152,7 +3144,6 @@ func Test_normal51_FileChangedRO()
   " cleanup
   call test_settime(0)
   bw!
-  call delete("Xreadonly.log")
 endfunc
 
 func Test_normal52_rl()
@@ -3656,15 +3647,45 @@ endfunc
 " Test for 'scrolloff' with a long line that doesn't fit in the screen
 func Test_normal_scroloff()
   10new
-  80vnew
-  call setline(1, repeat('a', 1000))
+  60vnew
+  call setline(1, ' 1 ' .. repeat('a', 57)
+             \ .. ' 2 ' .. repeat('b', 57)
+             \ .. ' 3 ' .. repeat('c', 57)
+             \ .. ' 4 ' .. repeat('d', 57)
+             \ .. ' 5 ' .. repeat('e', 57)
+             \ .. ' 6 ' .. repeat('f', 57)
+             \ .. ' 7 ' .. repeat('g', 57)
+             \ .. ' 8 ' .. repeat('h', 57)
+             \ .. ' 9 ' .. repeat('i', 57)
+             \ .. '10 ' .. repeat('j', 57)
+             \ .. '11 ' .. repeat('k', 57)
+             \ .. '12 ' .. repeat('l', 57)
+             \ .. '13 ' .. repeat('m', 57)
+             \ .. '14 ' .. repeat('n', 57)
+             \ .. '15 ' .. repeat('o', 57)
+             \ .. '16 ' .. repeat('p', 57)
+             \ .. '17 ' .. repeat('q', 57)
+             \ .. '18 ' .. repeat('r', 57)
+             \ .. '19 ' .. repeat('s', 57)
+             \ .. '20 ' .. repeat('t', 57)
+             \ .. '21 ' .. repeat('u', 57)
+             \ .. '22 ' .. repeat('v', 57)
+             \ .. '23 ' .. repeat('w', 57)
+             \ .. '24 ' .. repeat('x', 57)
+             \ .. '25 ' .. repeat('y', 57)
+             \ .. '26 ' .. repeat('z', 57)
+             \ )
   set scrolloff=10
   normal gg10gj
-  call assert_equal(8, winline())
+  call assert_equal(6, winline())
   normal 10gj
-  call assert_equal(10, winline())
+  call assert_equal(6, winline())
   normal 10gk
-  call assert_equal(3, winline())
+  call assert_equal(6, winline())
+  normal 0
+  call assert_equal(1, winline())
+  normal $
+  call assert_equal(10, winline())
   set scrolloff&
   close!
 endfunc

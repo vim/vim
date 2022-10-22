@@ -147,7 +147,7 @@ func Test_spell_file_missing()
   augroup TestSpellFileMissing
     autocmd! SpellFileMissing * bwipe
   augroup END
-  call assert_fails('set spell spelllang=ab_cd', 'E797:')
+  call assert_fails('set spell spelllang=ab_cd', 'E937:')
 
   " clean up
   augroup TestSpellFileMissing
@@ -762,8 +762,8 @@ endfunc
 func Test_zz_sal_and_addition()
   set enc=latin1
   set spellfile=
-  call writefile(g:test_data_dic1, "Xtest.dic")
-  call writefile(g:test_data_aff_sal, "Xtest.aff")
+  call writefile(g:test_data_dic1, "Xtest.dic", 'D')
+  call writefile(g:test_data_aff_sal, "Xtest.aff", 'D')
   mkspell! Xtest Xtest
   set spl=Xtest.latin1.spl spell
   call assert_equal('kbltykk', soundfold('goobledygoook'))
@@ -771,7 +771,7 @@ func Test_zz_sal_and_addition()
   call assert_equal('*fls kswts tl', soundfold('oeverloos gezwets edale'))
 
   "also use an addition file
-  call writefile(["/regions=usgbnz", "elequint/2", "elekwint/3"], "Xtest.latin1.add")
+  call writefile(["/regions=usgbnz", "elequint/2", "elekwint/3"], "Xtest.latin1.add", 'D')
   mkspell! Xtest.latin1.add.spl Xtest.latin1.add
 
   bwipe!
@@ -808,10 +808,9 @@ endfunc
 
 func Test_region_error()
   messages clear
-  call writefile(["/regions=usgbnz", "elequint/0"], "Xtest.latin1.add")
+  call writefile(["/regions=usgbnz", "elequint/0"], "Xtest.latin1.add", 'D')
   mkspell! Xtest.latin1.add.spl Xtest.latin1.add
   call assert_match('Invalid region nr in Xtest.latin1.add line 2: 0', execute('messages'))
-  call delete('Xtest.latin1.add')
   call delete('Xtest.latin1.add.spl')
 endfunc
 
@@ -956,13 +955,12 @@ func Test_spell_screendump()
              \ ])
        set spell spelllang=en_nz
   END
-  call writefile(lines, 'XtestSpell')
+  call writefile(lines, 'XtestSpell', 'D')
   let buf = RunVimInTerminal('-S XtestSpell', {'rows': 8})
   call VerifyScreenDump(buf, 'Test_spell_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestSpell')
 endfunc
 
 func Test_spell_screendump_spellcap()
@@ -979,13 +977,48 @@ func Test_spell_screendump_spellcap()
              \ ])
        set spell spelllang=en
   END
-  call writefile(lines, 'XtestSpellCap')
+  call writefile(lines, 'XtestSpellCap', 'D')
   let buf = RunVimInTerminal('-S XtestSpellCap', {'rows': 8})
   call VerifyScreenDump(buf, 'Test_spell_2', {})
 
+  " After adding word missing Cap in next line is updated
+  call term_sendkeys(buf, "3GANot\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_3', {})
+
+  " Deleting a full stop removes missing Cap in next line
+  call term_sendkeys(buf, "5Gddk$x")
+  call VerifyScreenDump(buf, 'Test_spell_4', {})
+
+  " Undo also updates the next line (go to command line to remove message)
+  call term_sendkeys(buf, "u:\<Esc>")
+  call VerifyScreenDump(buf, 'Test_spell_5', {})
+
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestSpellCap')
+endfunc
+
+func Test_spell_compatible()
+  CheckScreendump
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "test "->repeat(20),
+             \ "",
+             \ "end",
+             \ ])
+       set spell cpo+=$
+  END
+  call writefile(lines, 'XtestSpellComp', 'D')
+  let buf = RunVimInTerminal('-S XtestSpellComp', {'rows': 8})
+
+  call term_sendkeys(buf, "51|C")
+  call VerifyScreenDump(buf, 'Test_spell_compatible_1', {})
+
+  call term_sendkeys(buf, "x")
+  call VerifyScreenDump(buf, 'Test_spell_compatible_2', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 let g:test_data_aff1 = [

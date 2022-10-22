@@ -2349,11 +2349,8 @@ f_sign_define(typval_T *argvars, typval_T *rettv)
     if (name == NULL)
 	return;
 
-    if (argvars[1].v_type != VAR_UNKNOWN && argvars[1].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictionary_required));
+    if (check_for_opt_dict_arg(argvars, 1) == FAIL)
 	return;
-    }
 
     rettv->vval.v_number = sign_define_from_dict(name,
 	    argvars[1].v_type == VAR_DICT ? argvars[1].vval.v_dict : NULL);
@@ -2411,12 +2408,9 @@ f_sign_getplaced(typval_T *argvars, typval_T *rettv)
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
-	    if (argvars[1].v_type != VAR_DICT ||
-				((dict = argvars[1].vval.v_dict) == NULL))
-	    {
-		emsg(_(e_dictionary_required));
+	    if (check_for_nonnull_dict_arg(argvars, 1) == FAIL)
 		return;
-	    }
+	    dict = argvars[1].vval.v_dict;
 	    if ((di = dict_find(dict, (char_u *)"lnum", -1)) != NULL)
 	    {
 		// get signs placed at this line
@@ -2640,12 +2634,11 @@ f_sign_place(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_dict_arg(argvars, 4) == FAIL))
 	return;
 
-    if (argvars[4].v_type != VAR_UNKNOWN
-	    && (argvars[4].v_type != VAR_DICT
-		|| ((dict = argvars[4].vval.v_dict) == NULL)))
+    if (argvars[4].v_type != VAR_UNKNOWN)
     {
-	emsg(_(e_dictionary_required));
-	return;
+	if (check_for_nonnull_dict_arg(argvars, 4) == FAIL)
+	    return;
+	dict = argvars[4].vval.v_dict;
     }
 
     rettv->vval.v_number = sign_place_from_dict(&argvars[0], &argvars[1],
@@ -2667,11 +2660,8 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     // Process the List of sign attributes
     FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
@@ -2859,26 +2849,12 @@ f_sign_unplace(typval_T *argvars, typval_T *rettv)
 
     rettv->vval.v_number = -1;
 
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
+    if ((check_for_string_arg(argvars, 0) == FAIL
 		|| check_for_opt_dict_arg(argvars, 1) == FAIL))
 	return;
 
-    if (argvars[0].v_type != VAR_STRING)
-    {
-	emsg(_(e_invalid_argument));
-	return;
-    }
-
     if (argvars[1].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[1].v_type != VAR_DICT)
-	{
-	    emsg(_(e_dictionary_required));
-	    return;
-	}
 	dict = argvars[1].vval.v_dict;
-    }
 
     rettv->vval.v_number = sign_unplace_from_dict(&argvars[0], dict);
 }
@@ -2898,11 +2874,8 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
     if (in_vim9script() && check_for_list_arg(argvars, 0) == FAIL)
 	return;
 
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_list_required));
+    if (check_for_list_arg(argvars, 0) == FAIL)
 	return;
-    }
 
     FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
     {

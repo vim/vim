@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Jun 27
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Oct 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,43 +38,31 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-*.sil detection with FTsil() (lacygoill, Aug 25)
+'smoothscroll':
+- CTRL-E and gj in long line with 'scrolloff' 5 not working well yet.
+- computing 'scrolloff' position row use w_skipcol
+
+Check textprop right/above/below with 'number' set and "n" in 'cpo'.
+
+Don't do anything for ":!". #11372
+
 
 Further Vim9 improvements, possibly after launch:
 - Use Vim9 for more runtime files.
-- Check performance with callgrind and kcachegrind.
-    getline()/substitute()/setline() in #5632
-- Better implementation for partial and tests for that.
-- when using "const" mark the variable type as const with TTFLAG_CONST, so
-  that an error is given at compile time when trying to change it.  E.g. for a
-  const list and trying to call add().
-- Compile options that are an expression, e.g. "expr:" in 'spellsuggest',
-  'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
-  'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
-  Give an error if compilation fails. (#7625)
-  Alternatively: Detect a compiled function call and skip the expression
-  evaluation.
-  Use the location where the option was set for deciding whether it's to be
-  evaluated in Vim9 script context.
 - implement :type
 - implement :enum
 - implement :class and :interface: See |vim9-classes|
-- For range: make table of first ASCII character with flag to quickly check if
-  it can be a Vim9 command. E.g. "+" can, but "." can't.
 - Inline call to map() and filter(), better type checking.
-- Make accessing varargs faster: arg[expr]
-	EVAL expr
-	LOADVARARG (varargs idx)
 - When evaluating constants for script variables, some functions could work:
     has(featureName), len(someString)
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
 Popup windows:
-- Preview popup not properly updated when it overlaps with completion menu.
-  (Yegappan Lakshmanan, 2021 May 22)
-- Scrollbar thumb sometimes not visible  #10492
 - Add a function to redraw a specific popup window.  Esp. to be used when
   editing the command line, when screen updating doesn't happen. (Shougo)
+  #10210  Example that shows the need on the issue.
+  Probably need to update all popup windows (they may overlap)
+  If the display is scrolled need to redraw everything later.
 - Add a flag to make a popup window focusable?
     CTRL-W P cycle over any preview window or focusable popup, end up back in
 	     current window.
@@ -101,8 +89,6 @@ Popup windows:
     - put popup menu also in popup_mask?
 - Match does not have right BG color if line length equals popup width.
   (#5658)
-- Any other commands to disable in a popup window?
-  Use ERROR_IF_POPUP_WINDOW for these.
 - Figure out the size and position better if wrapping inserts indent
 
 'incsearch' with :s:
@@ -178,27 +164,21 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Patches considered for including:
-- use int instead of char_ for index  #10818  needs a test
-- Add "-n" option to xxd. #10599  needs a test
-- allow for nesting of timeout, sketch in #10595
-- Add setcmdline()  #10869
-
-Cleanup:
-- Remove OLD_DIGRAPHS ?
-- Remove FEAT_FOOTER ?
-
-Add 'splitscroll'  #10682  Useful?  Any trouble? Null Chilly says it's OK.
-    suggestion: names instead of numbers for the option value
-    problem depending on whether window is focused or not
-
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
-- try using autoconf 2.71 and fix all "obsolete" warnings
+- try using autoconf 2.71 and fix all "obsolete" warnings  #11322
+
+Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
+#11272
 
 Can deref_func_name() and deref_function_name() be merged?
 
 After patch 8.2.4915 w_botline is computed much more often. Can this be
 reduced?
+
+Add BufDeletePost.  #11041
+
+Test property disappears when using CR twice in a row.  OK when some text was
+entered. (#11151)
 
 NFA regexp does not handle composing characters well: #10286
     [ɔ̃] matches both ɔ and ɔ̃
@@ -210,9 +190,16 @@ feature is supported or not.  Replaces the xterm mechanism to request each
 entry separately. #6609
 Multiplexers (screen, tmux) can request it to the underlying terminal, and
 pass it on with modifications.
+How to get all the text quickly (also over ssh)?  Can we use a side channel?
 
 Using "A" and "o" in manually created fold (in empty buffer) does not behave
 consistenly (James McCoy, #10698)
+
+In a timer callback, when using ":echo" and then input() the message is
+overwritten.  Could use ":echowin" and call redraw_cmd() in get_user_input().
+#11299
+
+Syntax include problem: #11277.  Related to Patch 8.2.2761
 
 To avoid flicker: add an option that when a screen clear is requested, instead
 of clearing it draws everything and uses "clear to end of line" for every line.
@@ -247,10 +234,9 @@ MS-Windows: did path modifier :p:8 stop working?  #8600
 Version of getchar() that does not move the cursor - #10603 Use a separate
 argument for the new flag.
 
-Add "lastline" entry to 'fillchars' to specify a character instead of '@'.
-#10963
-
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
+
+Can we add highlighting to ":echowindow"?
 
 Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
 spread out.  Make a section with copy/paste examples of script and pointers to
@@ -277,6 +263,9 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 Also, z= in German on a long word can take a very long time, but CTRL-C to
 interrupt does not work. Where to add ui_breakcheck()?
 New English spell files also have very slow suggestions.
+
+French spell files don't work correctly.  #4916
+    Make Vim understand the format somehow?
 
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558
@@ -461,8 +450,6 @@ find them. (Max Kukartsev, #6218)
 
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
-Sound: support on Mac?  Or does libcanberra work there?
-
 Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
 
 "--cleanFOO" does not result in an error. (#5537)
@@ -558,12 +545,6 @@ Bug: script written with "-W scriptout" contains Key codes, while the script
 read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
 be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
 
-Add a string to the 'display' option ("smoothscroll" ?) to make CTRL-E and
-CTRL-Y scroll one screen line, also if this means the first line doesn't start
-with the first character (like what happens with a last line that doesn't
-fit).  Display "<<<" at the start of the first visible line (like "@@@" is
-displayed in the last line). (Arseny Nasokin,  #5154)
-
 Window size changes after closing a tab. (#4741)
 
 Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
@@ -617,6 +598,11 @@ negative. (see #4326)
 `:echo gettabwinvar(2, 1, '&cmdheight')` returns the value for the _current_
 tab page. (Ingo Karkat, #4324)
 :call settabwinvar(1, 1, '&cmdheight', 2) also doesn't work well.
+
+When opening a file, allow for specifying the initial column position:
+    vim +12:5 file.txt   line 12 column 5
+    :edit +12:5 file.txt
+Should probably use the column as the character index.
 
 This modeline throws unexpected errors: (#4165)
     vim: syn=nosyntax
@@ -673,9 +659,6 @@ when possible. (Dylan Lloyd, #3973)
 
 Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 (#3692)
-
-matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
-19.
 
 Add something like 'fillchars' local to window, but allow for specifying a
 highlight name.  Esp. for the statusline.
@@ -881,9 +864,6 @@ The ++ options for the :edit command are also useful on the Vim command line.
 
 Overlong utf-8 sequence is displayed wrong. (Harm te Hennepe, 2017 Sep 14,
 #2089)  Patch with possible solution by Björn Linse.
-
-The change list index is local to a buffer, but it doesn't make sense using it
-for another buffer.  (lacygoill) Copy w_changelistidx to wininfo_S and back.
 
 X11: Putting more than about 262040 characters of text on the clipboard and
 pasting it in another Vim doesn't work.  (Dominique Pelle, 2008 Aug 21-23)
@@ -2651,6 +2631,11 @@ Better 'rightleft' or BIDI support:
 
 
 Spell checking:
+-   List of common misspellings in English:
+    https://en.wikipedia.org/wiki/Wikipedia:Lists_of_common_misspellings/For_machines
+    German:
+    https://de.wikipedia.org/wiki/Wikipedia:Liste_von_Tippfehlern/F%C3%BCr_Maschinen
+    There are other languages.
 -   [s does not find missing capital at start of the line.  #10838
     Probably because the dot at the end of the previous line isn't seen.
 -   When 'cursorline' is set and the first word should have SpellCap
@@ -3092,9 +3077,6 @@ Macintosh:
     line is too short.  Add a word in 'scrollopt' to allow moving the cursor
     to longer line that is visible.  A similar thing is done for the GUI when
     using the horizontal scrollbar.
-7   VisVim can only open one file.  Hard to solve: each opened file is passed
-    with a separate invocation, would need to use timestamps to know the
-    invocations belong together.
 8   When giving a ":bwipeout" command a file-changed dialog may popup for this
     buffer, which is pointless.  (Mike Williams)
 8   On MS-Windows ":make" doesn't show output while it is working.  Use the
@@ -3760,6 +3742,7 @@ Syntax highlighting:
     - use treesitter, NeoVim uses it - Many people don't like it.
 	After changes requires rebuilding the library.
     - use TextMate, vscode uses it.  #9087 - Other people don't like it.
+	    https://github.com/icedman/vim-textmate
       Vscode is asked to switch to treesitter:
       https://github.com/microsoft/vscode/issues/50140
     - sublime grammar?

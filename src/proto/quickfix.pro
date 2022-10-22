@@ -35,6 +35,7 @@ int trigger_cexpr_autocmd(int cmdidx);
 int cexpr_core(exarg_T *eap, typval_T *tv);
 void ex_cexpr(exarg_T *eap);
 void ex_helpgrep(exarg_T *eap);
+void free_quickfix(void);
 void f_getloclist(typval_T *argvars, typval_T *rettv);
 void f_getqflist(typval_T *argvars, typval_T *rettv);
 void f_setloclist(typval_T *argvars, typval_T *rettv);

@@ -265,11 +265,12 @@ typedef enum {
 #define SHM_ATTENTION	'A'		// no ATTENTION messages
 #define SHM_INTRO	'I'		// intro messages
 #define SHM_COMPLETIONMENU  'c'		// completion menu messages
+#define SHM_COMPLETIONSCAN  'C'		// completion scanning messages
 #define SHM_RECORDING	'q'		// short recording message
 #define SHM_FILEINFO	'F'		// no file info messages
 #define SHM_SEARCHCOUNT  'S'		// search stats: '[1/10]'
 #define SHM_POSIX       "AS"		// POSIX value
-#define SHM_ALL		"rmfixlnwaWtToOsAIcqFS" // all possible flags for 'shm'
+#define SHM_ALL		"rmfixlnwaWtToOsAIcCqFS" // all possible flags for 'shm'
 
 // characters for p_go:
 #define GO_TERMINAL	'!'		// use terminal for system commands
@@ -486,10 +487,8 @@ EXTERN char_u	*p_ccv;		// 'charconvert'
 #endif
 EXTERN int	p_cdh;		// 'cdhome'
 EXTERN char_u	*p_cino;	// 'cinoptions'
-#ifdef FEAT_CMDWIN
 EXTERN char_u	*p_cedit;	// 'cedit'
 EXTERN long	p_cwh;		// 'cmdwinheight'
-#endif
 #ifdef FEAT_CLIPBOARD
 EXTERN char_u	*p_cb;		// 'clipboard'
 #endif
@@ -710,6 +709,7 @@ EXTERN char_u	*p_lm;		// 'langmenu'
 EXTERN long	p_linespace;	// 'linespace'
 #endif
 EXTERN int	p_lisp;		// 'lisp'
+EXTERN char_u	*p_lop;		// 'lispoptions'
 EXTERN char_u	*p_lispwords;	// 'lispwords'
 EXTERN long	p_ls;		// 'laststatus'
 EXTERN long	p_stal;		// 'showtabline'
@@ -822,9 +822,7 @@ EXTERN int	p_ri;		// 'revins'
 #if defined(DYNAMIC_RUBY)
 EXTERN char_u	*p_rubydll;	// 'rubydll'
 #endif
-#ifdef FEAT_CMDL_INFO
 EXTERN int	p_ru;		// 'ruler'
-#endif
 #ifdef FEAT_STL_OPT
 EXTERN char_u	*p_ruf;		// 'rulerformat'
 #endif
@@ -891,9 +889,7 @@ EXTERN int	p_sn;		// 'shortname'
 #ifdef FEAT_LINEBREAK
 EXTERN char_u	*p_sbr;		// 'showbreak'
 #endif
-#ifdef FEAT_CMDL_INFO
 EXTERN int	p_sc;		// 'showcmd'
-#endif
 EXTERN int	p_sft;		// 'showfulltag'
 EXTERN int	p_sm;		// 'showmatch'
 EXTERN int	p_smd;		// 'showmode'
@@ -928,6 +924,7 @@ EXTERN int	p_sol;		// 'startofline'
 EXTERN char_u	*p_su;		// 'suffixes'
 EXTERN char_u	*p_sws;		// 'swapsync'
 EXTERN char_u	*p_swb;		// 'switchbuf'
+EXTERN char_u	*p_spk;		// 'splitkeep'
 EXTERN unsigned	swb_flags;
 // Keep in sync with p_swb_values in optionstr.c
 #define SWB_USEOPEN		0x001
@@ -1159,6 +1156,7 @@ enum
 #endif
     , BV_KP
     , BV_LISP
+    , BV_LOP
     , BV_LW
     , BV_MENC
     , BV_MA
@@ -1275,6 +1273,7 @@ enum
 #endif
     , WV_SCBIND
     , WV_SCROLL
+    , WV_SMS
     , WV_SISO
     , WV_SO
 #ifdef FEAT_SPELL

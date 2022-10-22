@@ -889,12 +889,15 @@ like |CTRL-]|.
 
 The function used for generating the taglist is specified by setting the
 'tagfunc' option.  The function will be called with three arguments:
-   a:pattern	The tag identifier or pattern used during the tag search.
-   a:flags	String containing flags to control the function behavior.
-   a:info	Dict containing the following entries:
+   pattern	The tag identifier or pattern used during the tag search.
+   flags	String containing flags to control the function behavior.
+   info		Dict containing the following entries:
 		    buf_ffname	  Full filename which can be used for priority.
 		    user_data	  Custom data String, if stored in the tag
 				  stack previously by tagfunc.
+
+Note that in a legacy function "a:" needs to be prepended to the argument name
+when using it.
 
 Currently up to three flags may be passed to the tag function:
   'c'		The function was invoked by a normal command being processed
@@ -931,6 +934,8 @@ If the function returns |v:null| instead of a List, a standard tag lookup will
 be performed instead.
 
 It is not allowed to change the tagstack from inside 'tagfunc'.  *E986*
+It is not allowed to close a window or change window from inside 'tagfunc'.
+*E1299*
 
 The following is a hypothetical example of a function used for 'tagfunc'.  It
 uses the output of |taglist()| to generate the result: a list of tags in the

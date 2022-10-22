@@ -138,7 +138,7 @@ func Test_number_with_linewrap1()
   call s:validate_cursor()
   let lines = s:screen_lines(1, 3)
   let expect = [
-\ "--1 aaaa",
+\ "<<< aaaa",
 \ "    aaaa",
 \ "    aaaa",
 \ ]
@@ -276,7 +276,7 @@ func Test_relativenumber_colors()
     set number relativenumber
     hi LineNr ctermfg=red
   [CODE]
-  call writefile(lines, 'XTest_relnr')
+  call writefile(lines, 'XTest_relnr', 'D')
 
   " Check that the balloon shows up after a mouse move
   let buf = RunVimInTerminal('-S XTest_relnr', {'rows': 10, 'cols': 50})
@@ -295,7 +295,6 @@ func Test_relativenumber_colors()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XTest_relnr')
 endfunc
 
 func Test_relativenumber_callback()
@@ -313,14 +312,13 @@ func Test_relativenumber_callback()
 
       call timer_start(300, 'Func')
   END
-  call writefile(lines, 'Xrnu_timer')
+  call writefile(lines, 'Xrnu_timer', 'D')
 
   let buf = RunVimInTerminal('-S Xrnu_timer', #{rows: 8})
   call TermWait(buf, 310)
   call VerifyScreenDump(buf, 'Test_relativenumber_callback_1', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xrnu_timer')
 endfunc
 
 " Test for displaying line numbers with 'rightleft'

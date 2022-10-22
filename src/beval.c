@@ -39,94 +39,94 @@ find_word_under_cursor(
 
     *textp = NULL;
     wp = mouse_find_win(&row, &col, FAIL_POPUP);
-    if (wp != NULL && row >= 0 && row < wp->w_height && col < wp->w_width)
+    if (wp == NULL || row < 0 || row >= wp->w_height || col >= wp->w_width)
+	return FAIL;
+
+    // Found a window and the cursor is in the text.  Now find the line
+    // number.
+    if (mouse_comp_pos(wp, &row, &col, &lnum, NULL))
+	return FAIL;		// position is below the last line
+
+    // Not past end of the file.
+    lbuf = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    if (col > win_linetabsize(wp, lnum, lbuf, (colnr_T)MAXCOL))
+	return FAIL;		// past end of line
+
+    // Not past end of line.
+    if (getword)
     {
-	// Found a window and the cursor is in the text.  Now find the line
-	// number.
-	if (!mouse_comp_pos(wp, &row, &col, &lnum, NULL))
+	// For Netbeans we get the relevant part of the line
+	// instead of the whole line.
+	int		len;
+	pos_T	*spos = NULL, *epos = NULL;
+
+	if (VIsual_active)
 	{
-	    // Not past end of the file.
-	    lbuf = ml_get_buf(wp->w_buffer, lnum, FALSE);
-	    if (col <= win_linetabsize(wp, lnum, lbuf, (colnr_T)MAXCOL))
+	    if (LT_POS(VIsual, curwin->w_cursor))
 	    {
-		// Not past end of line.
-		if (getword)
-		{
-		    // For Netbeans we get the relevant part of the line
-		    // instead of the whole line.
-		    int		len;
-		    pos_T	*spos = NULL, *epos = NULL;
-
-		    if (VIsual_active)
-		    {
-			if (LT_POS(VIsual, curwin->w_cursor))
-			{
-			    spos = &VIsual;
-			    epos = &curwin->w_cursor;
-			}
-			else
-			{
-			    spos = &curwin->w_cursor;
-			    epos = &VIsual;
-			}
-		    }
-
-		    col = vcol2col(wp, lnum, col);
-		    scol = col;
-
-		    if (VIsual_active
-			    && wp->w_buffer == curwin->w_buffer
-			    && (lnum == spos->lnum
-				? col >= (int)spos->col
-				: lnum > spos->lnum)
-			    && (lnum == epos->lnum
-				? col <= (int)epos->col
-				: lnum < epos->lnum))
-		    {
-			// Visual mode and pointing to the line with the
-			// Visual selection: return selected text, with a
-			// maximum of one line.
-			if (spos->lnum != epos->lnum || spos->col == epos->col)
-			    return FAIL;
-
-			lbuf = ml_get_buf(curwin->w_buffer, VIsual.lnum, FALSE);
-			len = epos->col - spos->col;
-			if (*p_sel != 'e')
-			    len += mb_ptr2len(lbuf + epos->col);
-			lbuf = vim_strnsave(lbuf + spos->col, len);
-			lnum = spos->lnum;
-			col = spos->col;
-			scol = col;
-		    }
-		    else
-		    {
-			// Find the word under the cursor.
-			++emsg_off;
-			len = find_ident_at_pos(wp, lnum, (colnr_T)col,
-							  &lbuf, &scol, flags);
-			--emsg_off;
-			if (len == 0)
-			    return FAIL;
-			lbuf = vim_strnsave(lbuf, len);
-		    }
-		}
-		else
-		    scol = col;
-
-		if (winp != NULL)
-		    *winp = wp;
-		if (lnump != NULL)
-		    *lnump = lnum;
-		*textp = lbuf;
-		if (colp != NULL)
-		    *colp = col;
-		if (startcolp != NULL)
-		    *startcolp = scol;
-		return OK;
+		spos = &VIsual;
+		epos = &curwin->w_cursor;
+	    }
+	    else
+	    {
+		spos = &curwin->w_cursor;
+		epos = &VIsual;
 	    }
 	}
+
+	col = vcol2col(wp, lnum, col);
+	scol = col;
+
+	if (VIsual_active
+		&& wp->w_buffer == curwin->w_buffer
+		&& (lnum == spos->lnum
+		    ? col >= (int)spos->col
+		    : lnum > spos->lnum)
+		&& (lnum == epos->lnum
+		    ? col <= (int)epos->col
+		    : lnum < epos->lnum))
+	{
+	    // Visual mode and pointing to the line with the
+	    // Visual selection: return selected text, with a
+	    // maximum of one line.
+	    if (spos->lnum != epos->lnum || spos->col == epos->col)
+		return FAIL;
+
+	    lbuf = ml_get_buf(curwin->w_buffer, VIsual.lnum, FALSE);
+	    len = epos->col - spos->col;
+	    if (*p_sel != 'e')
+		len += mb_ptr2len(lbuf + epos->col);
+	    lbuf = vim_strnsave(lbuf + spos->col, len);
+	    lnum = spos->lnum;
+	    col = spos->col;
+	    scol = col;
+	}
+	else
+	{
+	    // Find the word under the cursor.
+	    ++emsg_off;
+	    len = find_ident_at_pos(wp, lnum, (colnr_T)col,
+		    &lbuf, &scol, flags);
+	    --emsg_off;
+	    if (len == 0)
+		return FAIL;
+	    lbuf = vim_strnsave(lbuf, len);
+	}
     }
-    return FAIL;
+    else
+	scol = col;
+
+    if (winp != NULL)
+	*winp = wp;
+    if (lnump != NULL)
+	*lnump = lnum;
+    *textp = lbuf;
+    if (colp != NULL)
+	*colp = col;
+    if (startcolp != NULL)
+	*startcolp = scol;
+
+    return OK;
 }
 #endif
 
@@ -220,6 +220,92 @@ can_use_beval(void)
 	     ) && msg_scrolled == 0;
 }
 
+# ifdef FEAT_EVAL
+/*
+ * Evaluate the expression 'bexpr' and set the text in the balloon 'beval'.
+ */
+    static void
+bexpr_eval(
+	BalloonEval	*beval,
+	char_u		*bexpr,
+	win_T		*wp,
+	linenr_T	lnum,
+	int		col,
+	char_u		*text)
+{
+    win_T	*cw;
+    long	winnr = 0;
+    buf_T	*save_curbuf;
+    int		use_sandbox;
+    static char_u  *result = NULL;
+    size_t	len;
+
+    sctx_T	save_sctx = current_sctx;
+
+    // Convert window pointer to number.
+    for (cw = firstwin; cw != wp; cw = cw->w_next)
+	++winnr;
+
+    set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
+    set_vim_var_nr(VV_BEVAL_WINNR, winnr);
+    set_vim_var_nr(VV_BEVAL_WINID, wp->w_id);
+    set_vim_var_nr(VV_BEVAL_LNUM, (long)lnum);
+    set_vim_var_nr(VV_BEVAL_COL, (long)(col + 1));
+    set_vim_var_string(VV_BEVAL_TEXT, text, -1);
+    vim_free(text);
+
+    /*
+     * Temporarily change the curbuf, so that we can determine whether
+     * the buffer-local balloonexpr option was set insecurely.
+     */
+    save_curbuf = curbuf;
+    curbuf = wp->w_buffer;
+    use_sandbox = was_set_insecurely((char_u *)"balloonexpr",
+	    *curbuf->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
+    curbuf = save_curbuf;
+    if (use_sandbox)
+	++sandbox;
+    ++textlock;
+
+    if (bexpr == p_bexpr)
+    {
+	sctx_T *sp = get_option_sctx("balloonexpr");
+
+	if (sp != NULL)
+	    current_sctx = *sp;
+    }
+    else
+	current_sctx = curbuf->b_p_script_ctx[BV_BEXPR];
+
+    vim_free(result);
+    result = eval_to_string(bexpr, TRUE, TRUE);
+
+    // Remove one trailing newline, it is added when the result was a
+    // list and it's hardly ever useful.  If the user really wants a
+    // trailing newline he can add two and one remains.
+    if (result != NULL)
+    {
+	len = STRLEN(result);
+	if (len > 0 && result[len - 1] == NL)
+	    result[len - 1] = NUL;
+    }
+
+    if (use_sandbox)
+	--sandbox;
+    --textlock;
+    current_sctx = save_sctx;
+
+    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
+    if (result != NULL && result[0] != NUL)
+	post_balloon(beval, result, NULL);
+
+    // The 'balloonexpr' evaluation may show something on the screen
+    // that requires a screen update.
+    if (must_redraw)
+	redraw_after_callback(FALSE, FALSE);
+}
+# endif
+
 /*
  * Common code, invoked when the mouse is resting for a moment.
  */
@@ -229,15 +315,9 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 #ifdef FEAT_EVAL
     win_T	*wp;
     int		col;
-    int		use_sandbox;
     linenr_T	lnum;
     char_u	*text;
-    static char_u  *result = NULL;
-    long	winnr = 0;
     char_u	*bexpr;
-    buf_T	*save_curbuf;
-    size_t	len;
-    win_T	*cw;
 #endif
     static int	recursive = FALSE;
 
@@ -259,70 +339,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 						    : wp->w_buffer->b_p_bexpr;
 	if (*bexpr != NUL)
 	{
-	    sctx_T	save_sctx = current_sctx;
-
-	    // Convert window pointer to number.
-	    for (cw = firstwin; cw != wp; cw = cw->w_next)
-		++winnr;
-
-	    set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
-	    set_vim_var_nr(VV_BEVAL_WINNR, winnr);
-	    set_vim_var_nr(VV_BEVAL_WINID, wp->w_id);
-	    set_vim_var_nr(VV_BEVAL_LNUM, (long)lnum);
-	    set_vim_var_nr(VV_BEVAL_COL, (long)(col + 1));
-	    set_vim_var_string(VV_BEVAL_TEXT, text, -1);
-	    vim_free(text);
-
-	    /*
-	     * Temporarily change the curbuf, so that we can determine whether
-	     * the buffer-local balloonexpr option was set insecurely.
-	     */
-	    save_curbuf = curbuf;
-	    curbuf = wp->w_buffer;
-	    use_sandbox = was_set_insecurely((char_u *)"balloonexpr",
-				 *curbuf->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
-	    curbuf = save_curbuf;
-	    if (use_sandbox)
-		++sandbox;
-	    ++textlock;
-
-	    if (bexpr == p_bexpr)
-	    {
-		sctx_T *sp = get_option_sctx("balloonexpr");
-
-		if (sp != NULL)
-		    current_sctx = *sp;
-	    }
-	    else
-		current_sctx = curbuf->b_p_script_ctx[BV_BEXPR];
-
-	    vim_free(result);
-	    result = eval_to_string(bexpr, TRUE);
-
-	    // Remove one trailing newline, it is added when the result was a
-	    // list and it's hardly ever useful.  If the user really wants a
-	    // trailing newline he can add two and one remains.
-	    if (result != NULL)
-	    {
-		len = STRLEN(result);
-		if (len > 0 && result[len - 1] == NL)
-		    result[len - 1] = NUL;
-	    }
-
-	    if (use_sandbox)
-		--sandbox;
-	    --textlock;
-	    current_sctx = save_sctx;
-
-	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
-	    if (result != NULL && result[0] != NUL)
-		post_balloon(beval, result, NULL);
-
-	    // The 'balloonexpr' evaluation may show something on the screen
-	    // that requires a screen update.
-	    if (must_redraw)
-		redraw_after_callback(FALSE, FALSE);
-
+	    bexpr_eval(beval, bexpr, wp, lnum, col, text);
 	    recursive = FALSE;
 	    return;
 	}

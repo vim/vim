@@ -460,7 +460,7 @@ ui_wait_for_chars_or_timer(
 	}
 	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
 	    due_time = remaining;
-# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_SOUND_CANBERRA)
+# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_SOUND_CANBERRA) || defined(FEAT_SOUND_MACOSX)
 	if ((due_time < 0 || due_time > 10L) && (
 #  if defined(FEAT_JOB_CHANNEL)
 		(
@@ -468,11 +468,11 @@ ui_wait_for_chars_or_timer(
 		!gui.in_use &&
 #   endif
 		(has_pending_job() || channel_any_readahead()))
-#   ifdef FEAT_SOUND_CANBERRA
+#   if defined(FEAT_SOUND_CANBERRA) || defined(FEAT_SOUND_MACOSX)
 		||
 #   endif
 #  endif
-#  ifdef FEAT_SOUND_CANBERRA
+#  if defined(FEAT_SOUND_CANBERRA) ||  defined(FEAT_SOUND_MACOSX)
 		    has_any_sound_callback()
 #  endif
 		    ))

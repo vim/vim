@@ -2,7 +2,7 @@
 " This file is normally sourced from menu.vim.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Feb 04
+" Last Change:	2022 Oct 04
 
 " Define the SetSyn function, used for the Syntax menu entries.
 " Set 'filetype' and also 'syntax' if it is manually selected.
@@ -14,7 +14,7 @@ def SetSyn(name: string)
     filetype = "fvwm"
   endif
   if name == "whitespace"
-    " do not replace the filetype but add whitespace on top
+    # do not replace the filetype but add whitespace on top
     filetype = &ft .. ".whitespace"
   endif
   if !exists("s:syntax_menu_synonly")

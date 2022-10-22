@@ -743,13 +743,13 @@ win_chartabsize(win_T *wp, char_u *p, colnr_T col)
  * Does not handle text properties, since "s" is not a buffer line.
  */
     int
-linetabsize(char_u *s)
+linetabsize_str(char_u *s)
 {
     return linetabsize_col(0, s);
 }
 
 /*
- * Like linetabsize(), but "s" starts at column "startcol".
+ * Like linetabsize_str(), but "s" starts at column "startcol".
  */
     int
 linetabsize_col(int startcol, char_u *s)
@@ -772,7 +772,7 @@ linetabsize_col(int startcol, char_u *s)
 }
 
 /*
- * Like linetabsize(), but for a given window instead of the current one.
+ * Like linetabsize_str(), but for a given window instead of the current one.
  */
     int
 win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len)
@@ -783,6 +783,17 @@ win_linetabsize(win_T *wp, linenr_T lnum, char_u *line, colnr_T len)
     win_linetabsize_cts(&cts, len);
     clear_chartabsize_arg(&cts);
     return (int)cts.cts_vcol;
+}
+
+/*
+ * Return the number of cells line "lnum" of window "wp" will take on the
+ * screen, taking into account the size of a tab and text properties.
+ */
+  int
+linetabsize(win_T *wp, linenr_T lnum)
+{
+    return win_linetabsize(wp, lnum,
+		       ml_get_buf(wp->w_buffer, lnum, FALSE), (colnr_T)MAXCOL);
 }
 
     void
@@ -943,19 +954,18 @@ vim_isprintc_strict(int c)
 init_chartabsize_arg(
 	chartabsize_T	*cts,
 	win_T		*wp,
-	linenr_T	lnum,
+	linenr_T	lnum UNUSED,
 	colnr_T		col,
 	char_u		*line,
 	char_u		*ptr)
 {
     CLEAR_POINTER(cts);
     cts->cts_win = wp;
-    cts->cts_lnum = lnum;
     cts->cts_vcol = col;
     cts->cts_line = line;
     cts->cts_ptr = ptr;
 #ifdef FEAT_PROP_POPUP
-    if (lnum > 0)
+    if (lnum > 0 && !ignore_text_props)
     {
 	char_u	*prop_start;
 	int	count;
@@ -1070,40 +1080,6 @@ lbr_chartabsize_adv(chartabsize_T *cts)
     return retval;
 }
 
-#if defined(FEAT_PROP_POPUP) || defined(PROTO)
-/*
- * Return the cell size of virtual text after truncation.
- */
-    int
-textprop_size_after_trunc(
-	win_T	*wp,
-	int	below,
-	int	added,
-	char_u	*text,
-	int	*n_used_ptr)
-{
-    int	space = below ? wp->w_width : added;
-    int len = (int)STRLEN(text);
-    int strsize = 0;
-    int n_used;
-
-    // if the remaining size is to small wrap
-    // anyway and use the next line
-    if (space < PROP_TEXT_MIN_CELLS)
-	space += wp->w_width;
-    for (n_used = 0; n_used < len; n_used += (*mb_ptr2len)(text + n_used))
-    {
-	int clen = ptr2cells(text + n_used);
-
-	if (strsize + clen > space)
-	    break;
-	strsize += clen;
-    }
-    *n_used_ptr = n_used;
-    return strsize;
-}
-#endif
-
 /*
  * Return the screen size of the character indicated by "cts".
  * "cts->cts_cur_text_width" is set to the extra size for a text property that
@@ -1120,7 +1096,7 @@ win_lbr_chartabsize(
 	int		*headp UNUSED)
 {
     win_T	*wp = cts->cts_win;
-#ifdef FEAT_PROP_POPUP
+#if defined(FEAT_PROP_POPUP) || defined(FEAT_LINEBREAK)
     char_u	*line = cts->cts_line; // start of the line
 #endif
     char_u	*s = cts->cts_ptr;
@@ -1143,6 +1119,7 @@ win_lbr_chartabsize(
 
 #if defined(FEAT_PROP_POPUP)
     cts->cts_cur_text_width = 0;
+    cts->cts_first_char = 0;
 #endif
 
 #if defined(FEAT_LINEBREAK) || defined(FEAT_PROP_POPUP)
@@ -1187,16 +1164,20 @@ win_lbr_chartabsize(
 
 	for (i = 0; i < cts->cts_text_prop_count; ++i)
 	{
-	    textprop_T *tp = cts->cts_text_props + i;
+	    textprop_T	*tp = cts->cts_text_props + i;
+	    int		col_off = win_col_off(wp);
 
 	    // Watch out for the text being deleted.  "cts_text_props" is a
 	    // copy, the text prop may actually have been removed from the line.
 	    if (tp->tp_id < 0
 		    && ((tp->tp_col - 1 >= col
 					     && tp->tp_col - 1 < col + charlen)
-		       || (tp->tp_col == MAXCOL && (s[0] == NUL || s[1] == NUL)
-						   && cts->cts_with_trailing))
-		    && -tp->tp_id - 1 < gap->ga_len)
+		       || (tp->tp_col == MAXCOL
+			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
+				? col == 0
+				: (s[0] == NUL || s[1] == NUL)
+						  && cts->cts_with_trailing)))
+		    && tp->tp_id - 1 < gap->ga_len)
 	    {
 		char_u *p = ((char_u **)gap->ga_data)[-tp->tp_id - 1];
 
@@ -1208,8 +1189,8 @@ win_lbr_chartabsize(
 		    {
 			int n_extra = (int)STRLEN(p);
 
-			cells = text_prop_position(wp, tp,
-					    (vcol + size) % wp->w_width,
+			cells = text_prop_position(wp, tp, vcol,
+			     (vcol + size) % (wp->w_width - col_off) + col_off,
 						     &n_extra, &p, NULL, NULL);
 #ifdef FEAT_LINEBREAK
 			no_sbr = TRUE;  // don't use 'showbreak' now
@@ -1218,6 +1199,8 @@ win_lbr_chartabsize(
 		    else
 			cells = vim_strsize(p);
 		    cts->cts_cur_text_width += cells;
+		    if (tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
+			cts->cts_first_char += cells;
 		    cts->cts_start_incl = tp->tp_flags & TP_FLAG_START_INCL;
 		    size += cells;
 		    if (*s == TAB)
@@ -1308,6 +1291,9 @@ win_lbr_chartabsize(
 
 	numberextra = numberwidth;
 	vcol += numberextra + mb_added;
+#ifdef FEAT_PROP_POPUP
+	vcol -= wp->w_virtcol_first_char;
+#endif
 	if (vcol >= (colnr_T)wp->w_width)
 	{
 	    vcol -= wp->w_width;
@@ -1564,6 +1550,11 @@ getvcol(
 #endif
 		break;
 	    }
+#ifdef FEAT_PROP_POPUP
+	    if (cursor == &wp->w_virtcol && cts.cts_ptr == cts.cts_line)
+		// do not count the virtual text above for w_curswant
+		wp->w_virtcol_first_char = cts.cts_first_char;
+#endif
 
 	    if (posptr != NULL && cts.cts_ptr >= posptr)
 		// character at pos->col
@@ -1599,6 +1590,9 @@ getvcol(
 	    if (((State & MODE_INSERT) == 0 || cts.cts_start_incl) && !on_NUL)
 		// cursor is after inserted text, unless on the NUL
 		vcol += cts.cts_cur_text_width;
+	    else
+		// insertion also happens after the "above" virtual text
+		vcol += cts.cts_first_char;
 #endif
 	    *cursor = vcol + head;	    // cursor at start
 	}

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2022 Jun 18
+*map.txt*       For Vim version 9.0.  Last change: 2022 Sep 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -989,6 +989,11 @@ mapping, see |map-bar|.
 WARNING: if you map <C-[> you may very well break any key codes that start
 with Esc.  Make sure it comes AFTER other mappings.
 
+Vim automatically detects if the modifyOtherKeys mode was enabled when it
+spots an escape sequence that must have been created by it.  To see if Vim
+detected such an escape sequence use `:verbose map`, the first line will then
+show "Seen modifyOtherKeys: true" (possibly translated).
+
 A known side effect is that in Insert mode the raw escape sequence is inserted
 after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
 enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you get one byte then
@@ -1583,7 +1588,7 @@ completion candidates as the return value.
 
 For the "custom" argument, the function should return the completion
 candidates one per line in a newline separated string.
-
+							*E1303*
 For the "customlist" argument, the function should return the completion
 candidates as a Vim List.  Non-string items in the list are ignored.
 
@@ -1724,11 +1729,11 @@ The valid escape sequences are
 					*<mods>* *<q-mods>* *:command-modifiers*
 	<mods>  The command modifiers, if specified. Otherwise, expands to
 		nothing. Supported modifiers are |:aboveleft|, |:belowright|,
-		|:botright|, |:browse|, |:confirm|, |:hide|, |:keepalt|,
-		|:keepjumps|, |:keepmarks|, |:keeppatterns|, |:leftabove|,
-		|:lockmarks|, |:noautocmd|, |:noswapfile| |:rightbelow|,
-		|:sandbox|, |:silent|, |:tab|, |:topleft|, |:unsilent|,
-		|:verbose|, and |:vertical|.
+		|:botright|, |:browse|, |:confirm|, |:hide|, |:horizontal|,
+		|:keepalt|, |:keepjumps|, |:keepmarks|, |:keeppatterns|,
+		|:leftabove|, |:lockmarks|, |:noautocmd|, |:noswapfile|
+		|:rightbelow|, |:sandbox|, |:silent|, |:tab|, |:topleft|,
+		|:unsilent|, |:verbose|, and |:vertical|.
 		Note that |:filter| is not supported.
 		Examples: >
 		    command! -nargs=+ -complete=file MyEdit
@@ -1761,7 +1766,8 @@ The valid escape sequences are
 If the first two characters of an escape sequence are "q-" (for example,
 <q-args>) then the value is quoted in such a way as to make it a valid value
 for use in an expression.  This uses the argument as one single value.
-When there is no argument <q-args> is an empty string.
+When there is no argument <q-args> is an empty string.  See the
+|q-args-example| below.
 							*<f-args>*
 To allow commands to pass their arguments on to a user-defined function, there
 is a special form <f-args> ("function args").  This splits the command
@@ -1771,7 +1777,7 @@ See the Mycmd example below.  If no arguments are given <f-args> is removed.
    To embed whitespace into an argument of <f-args>, prepend a backslash.
 <f-args> replaces every pair of backslashes (\\) with one backslash.  A
 backslash followed by a character other than white space or a backslash
-remains unmodified.  Overview:
+remains unmodified.  Also see |f-args-example| below.  Overview:
 
 	command		   <f-args> ~
 	XX ab		   'ab'
@@ -1785,7 +1791,8 @@ remains unmodified.  Overview:
 	XX a\\\\b	   'a\\b'
 	XX a\\\\ b	   'a\\', 'b'
 
-Examples >
+
+Examples for user commands: >
 
    " Delete everything after here to the end
    :com Ddel +,$d
@@ -1801,7 +1808,8 @@ Examples >
    " Count the number of lines in the range
    :com! -range -nargs=0 Lines  echo <line2> - <line1> + 1 "lines"
 
-   " Call a user function (example of <f-args>)
+<						*f-args-example*
+Call a user function (example of <f-args>) >
    :com -nargs=* Mycmd call Myfunc(<f-args>)
 
 When executed as: >
@@ -1809,7 +1817,8 @@ When executed as: >
 This will invoke: >
 	:call Myfunc("arg1","arg2")
 
-   :" A more substantial example
+<						*q-args-example* 
+A more substantial example: >
    :function Allargs(command)
    :   let i = 0
    :   while i < argc()

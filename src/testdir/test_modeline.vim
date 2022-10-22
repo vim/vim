@@ -4,7 +4,7 @@ source check.vim
 
 func Test_modeline_invalid()
   " This was reading allocated memory in the past.
-  call writefile(['vi:0', 'nothing'], 'Xmodeline')
+  call writefile(['vi:0', 'nothing'], 'Xmodeline', 'D')
   let modeline = &modeline
   set modeline
   call assert_fails('split Xmodeline', 'E518:')
@@ -29,11 +29,10 @@ func Test_modeline_invalid()
 
   let &modeline = modeline
   bwipe!
-  call delete('Xmodeline')
 endfunc
 
 func Test_modeline_filetype()
-  call writefile(['vim: set ft=c :', 'nothing'], 'Xmodeline_filetype')
+  call writefile(['vim: set ft=c :', 'nothing'], 'Xmodeline_filetype', 'D')
   let modeline = &modeline
   set modeline
   filetype plugin on
@@ -43,13 +42,12 @@ func Test_modeline_filetype()
   call assert_equal("ccomplete#Complete", &ofu)
 
   bwipe!
-  call delete('Xmodeline_filetype')
   let &modeline = modeline
   filetype plugin off
 endfunc
 
 func Test_modeline_syntax()
-  call writefile(['vim: set syn=c :', 'nothing'], 'Xmodeline_syntax')
+  call writefile(['vim: set syn=c :', 'nothing'], 'Xmodeline_syntax', 'D')
   let modeline = &modeline
   set modeline
   syntax enable
@@ -58,14 +56,13 @@ func Test_modeline_syntax()
   call assert_equal("c", b:current_syntax)
 
   bwipe!
-  call delete('Xmodeline_syntax')
   let &modeline = modeline
   syntax off
 endfunc
 
 func Test_modeline_keymap()
   CheckFeature keymap
-  call writefile(['vim: set keymap=greek :', 'nothing'], 'Xmodeline_keymap')
+  call writefile(['vim: set keymap=greek :', 'nothing'], 'Xmodeline_keymap', 'D')
   let modeline = &modeline
   set modeline
   split Xmodeline_keymap
@@ -73,7 +70,6 @@ func Test_modeline_keymap()
   call assert_match('greek\|grk', b:keymap_name)
 
   bwipe!
-  call delete('Xmodeline_keymap')
   let &modeline = modeline
   set keymap= iminsert=0 imsearch=-1
 endfunc
@@ -83,7 +79,7 @@ func Test_modeline_version()
   set modeline
 
   " Test with vim:{vers}: (version {vers} or later).
-  call writefile(['// vim' .. v:version .. ': ts=2:'], 'Xmodeline_version')
+  call writefile(['// vim' .. v:version .. ': ts=2:'], 'Xmodeline_version', 'D')
   edit Xmodeline_version
   call assert_equal(2, &ts)
   bwipe!
@@ -147,14 +143,13 @@ func Test_modeline_version()
   bwipe!
 
   let &modeline = modeline
-  call delete('Xmodeline_version')
 endfunc
 
 func Test_modeline_colon()
   let modeline = &modeline
   set modeline
 
-  call writefile(['// vim: set showbreak=\: ts=2: sw=2'], 'Xmodeline_colon')
+  call writefile(['// vim: set showbreak=\: ts=2: sw=2'], 'Xmodeline_colon', 'D')
   edit Xmodeline_colon
 
   " backlash colon should become colon.
@@ -166,13 +161,12 @@ func Test_modeline_colon()
   call assert_equal(8, &sw)
 
   let &modeline = modeline
-  call delete('Xmodeline_colon')
 endfunc
 
 func s:modeline_fails(what, text, error)
   call CheckOption(a:what)
   let fname = "Xmodeline_fails_" . a:what
-  call writefile(['vim: set ' . a:text . ' :', 'nothing'], fname)
+  call writefile(['vim: set ' . a:text . ' :', 'nothing'], fname, 'D')
   let modeline = &modeline
   set modeline
   filetype plugin on
@@ -182,7 +176,6 @@ func s:modeline_fails(what, text, error)
   call assert_equal("", &syntax)
 
   bwipe!
-  call delete(fname)
   let &modeline = modeline
   filetype plugin off
   syntax off
@@ -292,7 +285,7 @@ func Test_modeline_setoption_verbose()
   7 seven
   8 eight
   END
-  call writefile(lines, 'Xmodeline')
+  call writefile(lines, 'Xmodeline', 'D')
   edit Xmodeline
   let info = split(execute('verbose set tabstop?'), "\n")
   call assert_match('^\s*Last set from modeline line 1$', info[-1])
@@ -331,7 +324,6 @@ func Test_modeline_setoption_verbose()
   bwipe!
 
   let &modeline = modeline
-  call delete('Xmodeline')
 endfunc
 
 " Test for the 'modeline' default value in compatible and non-compatible modes
@@ -350,22 +342,20 @@ endfunc
 
 " Some options cannot be set from the modeline when 'diff' option is set
 func Test_modeline_diff_buffer()
-  call writefile(['vim: diff foldmethod=marker wrap'], 'Xfile')
+  call writefile(['vim: diff foldmethod=marker wrap'], 'Xmdifile', 'D')
   set foldmethod& nowrap
-  new Xfile
+  new Xmdifile
   call assert_equal('manual', &foldmethod)
   call assert_false(&wrap)
   set wrap&
-  call delete('Xfile')
   bw
 endfunc
 
 func Test_modeline_disable()
   set modeline
-  call writefile(['vim: sw=2', 'vim: nomodeline', 'vim: sw=3'], 'Xmodeline_disable')
+  call writefile(['vim: sw=2', 'vim: nomodeline', 'vim: sw=3'], 'Xmodeline_disable', 'D')
   edit Xmodeline_disable
   call assert_equal(2, &sw)
-  call delete('Xmodeline_disable')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

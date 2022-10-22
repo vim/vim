@@ -151,7 +151,7 @@ get_expr_line(void)
 	return expr_copy;
 
     ++nested;
-    rv = eval_to_string_eap(expr_copy, TRUE, expr_eap);
+    rv = eval_to_string_eap(expr_copy, TRUE, expr_eap, FALSE);
     --nested;
     vim_free(expr_copy);
     return rv;
@@ -371,7 +371,6 @@ do_record(int c)
 {
     char_u	    *p;
     static int	    regname;
-    static int	    changed_cmdheight = FALSE;
     yankreg_T	    *old_y_previous, *old_y_current;
     int		    retval;
 
@@ -386,15 +385,6 @@ do_record(int c)
 	    showmode();
 	    regname = c;
 	    retval = OK;
-
-	    if (p_ch < 1)
-	    {
-		// Enable macro indicator temporarily
-		set_option_value((char_u *)"ch", 1L, NULL, 0);
-		update_screen(UPD_VALID);
-
-		changed_cmdheight = TRUE;
-	    }
 	}
     }
     else			    // stop recording
@@ -421,13 +411,6 @@ do_record(int c)
 
 	    y_previous = old_y_previous;
 	    y_current = old_y_current;
-	}
-
-	if (changed_cmdheight)
-	{
-	    // Restore cmdheight
-	    set_option_value((char_u *)"ch", 0L, NULL, 0);
-	    redraw_all_later(UPD_CLEAR);
 	}
     }
     return retval;
@@ -1977,6 +1960,8 @@ do_put(
 	// adjust '] mark
 	curbuf->b_op_end.lnum = curwin->w_cursor.lnum - 1;
 	curbuf->b_op_end.col = bd.textcol + totlen - 1;
+	if (curbuf->b_op_end.col < 0)
+	    curbuf->b_op_end.col = 0;
 	curbuf->b_op_end.coladd = 0;
 	if (flags & PUT_CURSEND)
 	{
