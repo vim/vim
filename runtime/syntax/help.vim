@@ -11,7 +11,7 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-syn match helpHeadline		"^[A-Z.][-A-Z0-9 .,()_?]*\ze\(\s\+\*\|$\)"
+syn match helpHeadline		"^[A-Z.][-A-Z0-9 .,()_]*?\=\ze\(\s\+\*\|$\)"
 syn match helpSectionDelim	"^===.*===$"
 syn match helpSectionDelim	"^---.*--$"
 if has("conceal")

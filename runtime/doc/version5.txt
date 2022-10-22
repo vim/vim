@@ -118,7 +118,7 @@ Added					|added-5.8|
 Fixed					|fixed-5.8|
 
 ==============================================================================
-				 INCOMPATIBLE		*incompatible-5*
+INCOMPATIBLE				 		*incompatible-5*
 
 Default value for 'compatible' changed			*cp-default*
 --------------------------------------
@@ -360,7 +360,7 @@ CTRL-_ key for this |i_CTRL-_|. >
    :imap <C-B> <C-O>:set revins!<CR>
 
 ==============================================================================
-				 NEW FEATURES		*new-5*
+NEW FEATURES				 		*new-5*
 
 Syntax highlighting					*new-highlighting*
 -------------------
@@ -635,7 +635,7 @@ Included support for the Farsi language (Shiran).  Only when enabled at
 compile time.  See |farsi|.
 
 ==============================================================================
-				 IMPROVEMENTS		*improvements-5*
+IMPROVEMENTS				 		*improvements-5*
 
 Performance:
 - When 'showcmd' was set, mappings would execute much more slowly because the
@@ -929,7 +929,7 @@ Some versions of Motif require "-lXpm".  Added check for this in configure.
 Don't add "-L/usr/lib" to the link line, causes problems on a few systems.
 
 ==============================================================================
-			     COMPILE TIME CHANGES	*compile-changes-5*
+COMPILE TIME CHANGES			     	*compile-changes-5*
 
 When compiling, allow a choice for minimal, normal or maximal features in an
 easy way, by changing a single line in src/feature.h.
@@ -975,7 +975,7 @@ Don't use HPUX digraphs by default, but only when HPUX_DIGRAPHS is defined.
 |digraphs-default|
 
 ==============================================================================
-				 BUG FIXES		*bug-fixes-5*
+BUG FIXES				 		*bug-fixes-5*
 
 Note:	Some of these fixes may only apply to test versions which were
 	created after version 4.6, but before 5.0.
