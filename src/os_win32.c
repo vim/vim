@@ -2810,7 +2810,6 @@ RestoreConsoleBuffer(
 	return FALSE;
     if (!SetConsoleWindowInfo(g_hConOut, TRUE, &cb->Info.srWindow))
 	return FALSE;
-    
     /*
      * Restore the screen buffer contents.
      */
@@ -2829,7 +2828,6 @@ RestoreConsoleBuffer(
 		return FALSE;
 	}
     }
-    
     return TRUE;
 }
 
