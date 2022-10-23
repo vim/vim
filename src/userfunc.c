@@ -2921,7 +2921,7 @@ call_user_func(
     // If called from a compiled :def function the execution context must be
     // hidden, any deferred functions need to be added to the function being
     // executed here.
-    save_current_ectx = clear_currrent_ectx();
+    save_current_ectx = clear_current_ectx();
 
     save_current_sctx = current_sctx;
     current_sctx = fp->uf_script_ctx;

@@ -5772,7 +5772,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
      * String received to output to screen can print using pre-cached glyphs
      * (fast) or Pango (slow). Ligatures and multibype utf-8 must use Pango.
      * Since we receive mixed content string, split it into logical segments
-     * that are guaranteed to go trough glyphs as much as possible. Since
+     * that are guaranteed to go through glyphs as much as possible. Since
      * single ligature char prints as ascii, print it that way.
      */
     len_sum = 0;    // return value needs to add up since we are printing
@@ -5781,7 +5781,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
     cs = s;
     // First char decides starting needs_pango mode, 0=ascii 1=utf8/ligatures.
     // Even if it is ligature char, two chars or more make ligature.
-    // Ascii followed by utf8 is also going trough pango.
+    // Ascii followed by utf8 is also going through pango.
     is_utf8 = (*cs & 0x80);
     is_ligature = gui.ligatures_map[*cs] && (len > 1);
     if (is_ligature)
@@ -5808,7 +5808,7 @@ gui_gtk2_draw_string(int row, int col, char_u *s, int len, int flags)
 	    }
 	    is_utf8 = *(cs + slen) & 0x80;
 	    // ascii followed by utf8 could be combining
-	    // if so send it trough pango
+	    // if so send it through pango
 	    if ((!is_utf8) && ((slen + 1) < (len - byte_sum)))
 		is_utf8 = (*(cs + slen + 1) & 0x80);
 	    should_need_pango = (is_ligature || is_utf8);

@@ -900,7 +900,7 @@ find_type_by_id(hashtab_T *ht, proptype_T ***array, int id)
     if (ht == NULL || ht->ht_used == 0)
 	return NULL;
 
-    // Make the loopup faster by creating an array with pointers to
+    // Make the lookup faster by creating an array with pointers to
     // hashtable entries, sorted on pt_id.
     if (*array == NULL)
     {

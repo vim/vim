@@ -1420,7 +1420,7 @@ add_cmd_modifier(char_u *buf, char *mod_str, int *multi_mods)
  * was added.  Return the number of bytes added.
  */
     size_t
-add_win_cmd_modifers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
+add_win_cmd_modifiers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
 {
     size_t result = 0;
 
@@ -1537,7 +1537,7 @@ produce_cmdmods(char_u *buf, cmdmod_T *cmod, int quote)
 	}
     }
     // flags from cmod->cmod_split
-    result += add_win_cmd_modifers(buf, cmod, &multi_mods);
+    result += add_win_cmd_modifiers(buf, cmod, &multi_mods);
 
     if (quote && buf != NULL)
     {

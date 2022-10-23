@@ -1056,7 +1056,7 @@ EXTERN char e_tags_file_not_sorted_str[]
 	INIT(= N_("E432: Tags file not sorted: %s"));
 EXTERN char e_no_tags_file[]
 	INIT(= N_("E433: No tags file"));
-EXTERN char e_canot_find_tag_pattern[]
+EXTERN char e_cannot_find_tag_pattern[]
 	INIT(= N_("E434: Can't find tag pattern"));
 EXTERN char e_couldnt_find_tag_just_guessing[]
 	INIT(= N_("E435: Couldn't find tag, just guessing!"));
@@ -1261,7 +1261,7 @@ EXTERN char e_is_read_only_add_bang_to_override[]
 	INIT(= N_("is read-only (add ! to override)"));
 EXTERN char e_str_is_read_only_add_bang_to_override[]
 	INIT(= N_("E505: \"%s\" is read-only (add ! to override)"));
-EXTERN char e_canot_write_to_backup_file_add_bang_to_override[]
+EXTERN char e_cannot_write_to_backup_file_add_bang_to_override[]
 	INIT(= N_("E506: Can't write to backup file (add ! to override)"));
 EXTERN char e_close_error_for_backup_file_add_bang_to_write_anyway[]
 	INIT(= N_("E507: Close error for backup file (add ! to write anyway)"));
@@ -1808,7 +1808,7 @@ EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
 EXTERN char e_missing_colon_in_dictionary[]
 	INIT(= N_("E720: Missing colon in Dictionary: %s"));
-EXTERN char e_duplicate_key_in_dicitonary[]
+EXTERN char e_duplicate_key_in_dictionary[]
 	INIT(= N_("E721: Duplicate key in Dictionary: \"%s\""));
 EXTERN char e_missing_comma_in_dictionary[]
 	INIT(= N_("E722: Missing comma in Dictionary: %s"));
@@ -2890,7 +2890,7 @@ EXTERN char e_using_string_as_bool_str[]
 #endif
 EXTERN char e_cmd_mapping_must_end_with_cr_before_second_cmd[]
 	INIT(= N_("E1136: <Cmd> mapping must end with <CR> before second <Cmd>"));
-EXTERN char e_cmd_maping_must_not_include_str_key[]
+EXTERN char e_cmd_mapping_must_not_include_str_key[]
 	INIT(= N_("E1137: <Cmd> mapping must not include %s key"));
 #ifdef FEAT_EVAL
 EXTERN char e_using_bool_as_number[]
@@ -3262,7 +3262,7 @@ EXTERN char e_atom_engine_must_be_at_start_of_pattern[]
 #ifdef FEAT_EVAL
 EXTERN char e_bitshift_ops_must_be_number[]
 	INIT(= N_("E1282: Bitshift operands must be numbers"));
-EXTERN char e_bitshift_ops_must_be_postive[]
+EXTERN char e_bitshift_ops_must_be_positive[]
 	INIT(= N_("E1283: Bitshift amount must be a positive number"));
 #endif
 #if defined(FEAT_PROP_POPUP)

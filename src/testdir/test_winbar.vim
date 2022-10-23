@@ -132,8 +132,8 @@ func Test_winbar_not_visible()
       wincmd j
       wincmd _
   END
-  call writefile(lines, 'XtestWinbarNotVisble', 'D')
-  let buf = RunVimInTerminal('-S XtestWinbarNotVisble', #{rows: 10})
+  call writefile(lines, 'XtestWinbarNotVisible', 'D')
+  let buf = RunVimInTerminal('-S XtestWinbarNotVisible', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_winbar_not_visible', {})
 
   " clean up
@@ -151,8 +151,8 @@ func Test_winbar_not_visible_custom_statusline()
       wincmd j
       wincmd _
   END
-  call writefile(lines, 'XtestWinbarNotVisble', 'D')
-  let buf = RunVimInTerminal('-S XtestWinbarNotVisble', #{rows: 10})
+  call writefile(lines, 'XtestWinbarNotVisible', 'D')
+  let buf = RunVimInTerminal('-S XtestWinbarNotVisible', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_winbar_not_visible_custom_statusline', {})
 
   " clean up

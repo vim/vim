@@ -4366,7 +4366,7 @@ def Run_Test_debug_running_out_of_lines()
   g:StopVimInTerminal(buf)
 enddef
 
-def Test_ambigous_command_error()
+def Test_ambiguous_command_error()
   var lines =<< trim END
       vim9script
       command CmdA echomsg 'CmdA'

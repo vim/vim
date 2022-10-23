@@ -2734,7 +2734,7 @@ retry:
     if (enc_dbcs == DBCS_JPNU)
 	new_ScreenLines2 = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
     new_ScreenAttrs = LALLOC_MULT(sattr_T, (Rows + 1) * Columns);
-    // Clear ScreenCols to avoid a warning for unitialized memory in
+    // Clear ScreenCols to avoid a warning for uninitialized memory in
     // jump_to_mouse().
     new_ScreenCols = LALLOC_CLEAR_MULT(colnr_T, (Rows + 1) * Columns);
     new_LineOffset = LALLOC_MULT(unsigned, Rows);

@@ -72,7 +72,7 @@ straightforward.  Older versions probably don't work.
 
 Visual Studio installed a batch file called vcvarsall.bat, which you must
 run to set up paths for nmake and MSVC.  We provide a batch file
-"msvc2015.bat" for this.  You may need to edit it if you didn't instal Visual
+"msvc2015.bat" for this.  You may need to edit it if you didn't install Visual
 Studio in the standard location.
 If you use VS2017 or later, you can use "msvc-latest.bat" (or "msvc2017.bat"
 and so on for the specific version).  You must specify the architecture (e.g.

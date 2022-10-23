@@ -559,7 +559,7 @@ def Test_maplist()
   assert_equal(len(maps_maplist), len(map_set))
 
   # For everything returned by maplist, should be the same as from maparg.
-  # Except for "map dup", bacause maparg returns the <buffer> version
+  # Except for "map dup", because maparg returns the <buffer> version
   for d in maps_maplist
     if d.lhs == 'dup' && d.buffer == 0
       continue
