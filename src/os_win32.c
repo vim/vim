@@ -2810,7 +2810,7 @@ RestoreConsoleBuffer(
 	return FALSE;
     if (!SetConsoleWindowInfo(g_hConOut, TRUE, &cb->Info.srWindow))
 	return FALSE;
-
+    
     /*
      * Restore the screen buffer contents.
      */
@@ -2829,7 +2829,7 @@ RestoreConsoleBuffer(
 		return FALSE;
 	}
     }
-
+    
     return TRUE;
 }
 
@@ -5745,9 +5745,10 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
-    if (!p_rs && USE_VTP)
-	vtp_printf("\033[?1049h");
-
+    // Switches to a new alternate screen buffer.
+    if (p_rs && (USE_VTP || USE_WT))
+	vtp_printf("\033[?1049h");  
+    
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
@@ -5829,6 +5830,11 @@ termcap_mode_end(void)
 
     if (p_rs || exiting)
     {
+	if (p_rs && (USE_VTP || USE_WT)){
+	    // Switches back to main screen buffer.
+	    vtp_printf("\033[?1049l");
+	}
+
 	/*
 	 * Clear anything that happens to be on the current line.
 	 */
@@ -5851,13 +5857,9 @@ termcap_mode_end(void)
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
-
-    if (!p_rs && USE_VTP)
-	vtp_printf("\033[?1049l");
-
     g_fTermcapMode = FALSE;
 }
-#endif // FEAT_GUI_MSWIN
+#endif // !FEAT_GUI_MSWIN || VIMDLL
 
 
 #if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
