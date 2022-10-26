@@ -1601,7 +1601,7 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    if (USE_VTP || is_conpty_stable())
+    if (USE_VTP || CONPTY_STABLE)
     {
 	if (*T_CSI == NUL)
 	{
@@ -5746,7 +5746,7 @@ termcap_mode_start(void)
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     // Switches to a new alternate screen buffer.
-    if (p_rs && (USE_VTP || is_conpty_stable()))
+    if (p_rs && (USE_VTP || CONPTY_STABLE))
 	vtp_printf("\033[?1049h");  
 
     if (g_cbTermcap.IsValid)
@@ -6077,7 +6077,7 @@ insert_lines(unsigned cLines)
 	}
     }
 
-    if (is_conpty_stable())
+    if (CONPTY_STABLE)
     {
 	COORD coord;
 	int i;
@@ -6146,7 +6146,7 @@ delete_lines(unsigned cLines)
 	}
     }
 
-    if (is_conpty_stable())
+    if (CONPTY_STABLE)
     {
 	COORD coord;
 	int i;
@@ -6896,7 +6896,7 @@ notsgr:
 	    if (s[l] == ' ' && s[l + 1] == 'q')
 	    {
 		// DECSCUSR (cursor style) sequences
-		if (USE_VTP || is_conpty_stable())
+		if (USE_VTP || CONPTY_STABLE)
 		    vtp_printf("%.*s", l + 2, s);   // Pass through
 		s += l + 2;
 		len -= l + 1;
