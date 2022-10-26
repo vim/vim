@@ -214,9 +214,9 @@ static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
 # endif
 
+#  define CONPTY_STABLE		(conpty_stable)
 # ifdef FEAT_TERMGUICOLORS
 #  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
-#  define CONPTY_STABLE		(conpty_stable)
 # else
 #  define USE_VTP		0
 # endif
