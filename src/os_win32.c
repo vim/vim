@@ -2774,7 +2774,7 @@ RestoreConsoleBuffer(
     BOOL	    RestoreScreen)
 {
     if (CONPTY_STABLE)
-	return;
+	return TRUE;
 
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
