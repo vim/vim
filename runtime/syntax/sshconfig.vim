@@ -162,6 +162,7 @@ syn keyword sshconfigKeyword EnableSSHKeysign
 syn keyword sshconfigKeyword EscapeChar
 syn keyword sshconfigKeyword ExitOnForwardFailure
 syn keyword sshconfigKeyword FingerprintHash
+syn keyword sshconfigKeyword ForkAfterAuthentication
 syn keyword sshconfigKeyword ForwardAgent
 syn keyword sshconfigKeyword ForwardX11
 syn keyword sshconfigKeyword ForwardX11Timeout
@@ -212,13 +213,16 @@ syn keyword sshconfigKeyword RekeyLimit
 syn keyword sshconfigKeyword RemoteCommand
 syn keyword sshconfigKeyword RemoteForward
 syn keyword sshconfigKeyword RequestTTY
+syn keyword sshconfigKeyword RequiredRSASize
 syn keyword sshconfigKeyword RevokedHostKeys
 syn keyword sshconfigKeyword SecurityKeyProvider
 syn keyword sshconfigKeyword SendEnv
 syn keyword sshconfigKeyword ServerAliveCountMax
 syn keyword sshconfigKeyword ServerAliveInterval
+syn keyword sshconfigKeyword SessionType
 syn keyword sshconfigKeyword SmartcardDevice
 syn keyword sshconfigKeyword SetEnv
+syn keyword sshconfigKeyword StdinNull
 syn keyword sshconfigKeyword StreamLocalBindMask
 syn keyword sshconfigKeyword StreamLocalBindUnlink
 syn keyword sshconfigKeyword StrictHostKeyChecking
