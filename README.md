@@ -152,4 +152,3 @@ Send any other comments, patches, flowers and suggestions to:
 
 
 This is `README.md` for version 9.0 of Vim: Vi IMproved.
-
