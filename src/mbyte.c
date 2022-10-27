@@ -1570,7 +1570,7 @@ utf_char2cells(int c)
 	// Area-B range. The exact range was determined by downloading the "SF
 	// Symbols" app from Apple, and then selecting all symbols, copying
 	// them out, and inspecting the unicode values of them.
-	, {0x100000, 0x100d7f}
+	, {0x100000, 0x1018c7}
 #endif
     };
 
