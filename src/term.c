@@ -2987,7 +2987,7 @@ term_rgb_color(char_u *s, guicolor_T rgb)
     vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
 #ifdef FEAT_VTP
-    if (is_conpty_stable())
+    if (use_wt())
     {
 	out_flush();
 	buf[1] = '[';
@@ -3001,8 +3001,7 @@ term_rgb_color(char_u *s, guicolor_T rgb)
     void
 term_fg_rgb_color(guicolor_T rgb)
 {
-    if (rgb != INVALCOLOR)
-	term_rgb_color(T_8F, rgb);
+    term_rgb_color(T_8F, rgb);
 }
 
     void
