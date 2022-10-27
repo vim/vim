@@ -2072,7 +2072,7 @@ retnomove:
     void
 nv_mousescroll(cmdarg_T *cap)
 {
-    win_T *old_curwin = curwin, *wp;
+    win_T	*old_curwin = curwin, *wp;
 
     if (mouse_row >= 0 && mouse_col >= 0)
     {
