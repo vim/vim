@@ -962,9 +962,12 @@ do_bang(
     // Don't clear "prevcmd" if there is no command to run.
     if (STRLEN(newcmd) > 0)
     {
-	vim_free(prevcmd);
-	prevcmd = newcmd;
+	vim_free(newcmd);
+	return;
     }
+
+    vim_free(prevcmd);
+    prevcmd = newcmd;
 
     if (bangredo)	    // put cmd in redo buffer for ! command
     {
