@@ -2181,6 +2181,9 @@ au BufNewFile,BufRead *.va,*.vams		setf verilogams
 " SystemVerilog
 au BufNewFile,BufRead *.sv,*.svh		setf systemverilog
 
+" VHS tape
+au BufNewFile,BufRead *.tape		    setf vhs
+
 " VHDL
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst,*.vho  setf vhdl
 
