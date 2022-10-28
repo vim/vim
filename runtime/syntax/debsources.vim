@@ -25,7 +25,7 @@ let s:supported = [
       \ 'oldstable', 'stable', 'testing', 'unstable', 'experimental', 'sid', 'rc-buggy',
       \ 'buster', 'bullseye', 'bookworm', 'trixie',
       \
-      \ 'trusty', 'xenial', 'bionic', 'focal', 'jammy', 'kinetic',
+      \ 'trusty', 'xenial', 'bionic', 'focal', 'jammy', 'kinetic', 'lunar',
       \ 'devel'
       \ ]
 let s:unsupported = [
