@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2022 Oct 15
+*options.txt*	For Vim version 9.0.  Last change: 2022 Oct 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3048,11 +3048,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When 'encoding' is set to a Unicode encoding, and 'fileencodings' was
 	not set yet, the default for 'fileencodings' is changed.
 
-			*'endofline'* *'eol'* *'noendofline'* *'noeol'*
-'endofline' 'eol'	boolean	(default on)
+			*'endoffile'* *'eof'* *'noendoffile'* *'noeof'*
+'endoffile' 'eof'	boolean	(default on)
 			local to buffer
+	Indicates that a CTRL-Z character was found at the end of the file
+	when reading it.  Normally only happens when 'fileformat' is "dos".
 	When writing a file and this option is off and the 'binary' option
-	is on, or 'fixeol' option is off, no CTRL-Z will be written for at the
+	is on, or 'fixeol' option is off, no CTRL-Z will be written at the
 	end of the file.
 
 			*'endofline'* *'eol'* *'noendofline'* *'noeol'*
