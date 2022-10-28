@@ -61,6 +61,7 @@
 # define PV_DEF		OPT_BOTH(OPT_BUF(BV_DEF))
 # define PV_INC		OPT_BOTH(OPT_BUF(BV_INC))
 #endif
+#define PV_EOF		OPT_BUF(BV_EOF)
 #define PV_EOL		OPT_BUF(BV_EOL)
 #define PV_FIXEOL	OPT_BUF(BV_FIXEOL)
 #define PV_EP		OPT_BOTH(OPT_BUF(BV_EP))
@@ -846,7 +847,7 @@ static struct vimoption options[] =
     {"edcompatible","ed",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_ed, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"emoji",  "emo",	    P_BOOL|P_VI_DEF|P_RCLR,
+    {"emoji",      "emo",   P_BOOL|P_VI_DEF|P_RCLR,
 			    (char_u *)&p_emoji, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L}
 			    SCTX_INIT},
@@ -854,6 +855,9 @@ static struct vimoption options[] =
 			    (char_u *)&p_enc, PV_NONE,
 			    {(char_u *)ENC_DFLT, (char_u *)0L}
 			    SCTX_INIT},
+    {"endoffile",   "eof",  P_BOOL|P_NO_MKRC|P_VI_DEF|P_RSTAT,
+			    (char_u *)&p_eof, PV_EOF,
+			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"endofline",   "eol",  P_BOOL|P_NO_MKRC|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_eol, PV_EOL,
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},

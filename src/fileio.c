@@ -590,6 +590,7 @@ readfile(
 	if (!read_buffer)
 	{
 	    curbuf->b_p_eol = TRUE;
+	    curbuf->b_p_eof = FALSE;
 	    curbuf->b_start_eol = TRUE;
 	}
 	curbuf->b_p_bomb = FALSE;
@@ -2278,13 +2279,15 @@ failed:
 	    && !got_int
 	    && linerest != 0
 	    && !(!curbuf->b_p_bin
-		&& fileformat == EOL_DOS
-		&& *line_start == Ctrl_Z
-		&& ptr == line_start + 1))
+		&& fileformat == EOL_DOS))
     {
 	// remember for when writing
 	if (set_options)
+	{
 	    curbuf->b_p_eol = FALSE;
+	    if (*line_start == Ctrl_Z && ptr == line_start + 1)
+		curbuf->b_p_eof = FALSE;
+	}
 	*ptr = NUL;
 	len = (colnr_T)(ptr - line_start + 1);
 	if (ml_append(lnum, line_start, len, newfile) == FAIL)
