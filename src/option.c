@@ -5560,6 +5560,7 @@ get_varp(struct vimoption *p)
 	case PV_VSTS:	return (char_u *)&(curbuf->b_p_vsts);
 	case PV_VTS:	return (char_u *)&(curbuf->b_p_vts);
 #endif
+	case PV_EOF:	return (char_u *)&(curbuf->b_p_eof);
 	default:	iemsg(_(e_get_varp_error));
     }
     // always return a valid pointer to avoid a crash!
