@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 9.0.  Last change: 2022 Jan 26
+*message.txt*   For Vim version 9.0.  Last change: 2022 Oct 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -635,6 +635,7 @@ probably means that some other program changed the file.  You will have to
 find out what happened, and decide which version of the file you want to keep.
 Set the 'autoread' option if you want to do this automatically.
 This message is not given when 'buftype' is not empty.
+Also see the |FileChangedShell| autocommand.
 
 There is one situation where you get this message even though there is nothing
 wrong: If you save a file in Windows on the day the daylight saving time

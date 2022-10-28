@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2022 Sep 26
+*map.txt*       For Vim version 9.0.  Last change: 2022 Oct 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1483,7 +1483,7 @@ See |:verbose-cmd| for more information.
 
 
 Command attributes ~
-                                                       *command-attributes*
+							*command-attributes*
 User-defined commands are treated by Vim just like any other Ex commands.  They
 can have arguments, or have a range specified.  Arguments are subject to
 completion as filenames, buffers, etc.  Exactly how this works depends upon the
