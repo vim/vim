@@ -921,6 +921,7 @@ unchanged(buf_T *buf, int ff, int always_inc_changedtick)
 save_file_ff(buf_T *buf)
 {
     buf->b_start_ffc = *buf->b_p_ff;
+    buf->b_start_eof = buf->b_p_eof;
     buf->b_start_eol = buf->b_p_eol;
     buf->b_start_bomb = buf->b_p_bomb;
 
@@ -955,7 +956,9 @@ file_ff_differs(buf_T *buf, int ignore_empty)
 	return FALSE;
     if (buf->b_start_ffc != *buf->b_p_ff)
 	return TRUE;
-    if ((buf->b_p_bin || !buf->b_p_fixeol) && buf->b_start_eol != buf->b_p_eol)
+    if ((buf->b_p_bin || !buf->b_p_fixeol)
+	    && (buf->b_start_eof != buf->b_p_eof
+		|| buf->b_start_eol != buf->b_p_eol))
 	return TRUE;
     if (!buf->b_p_bin && buf->b_start_bomb != buf->b_p_bomb)
 	return TRUE;
