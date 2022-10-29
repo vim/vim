@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Oct 16
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Oct 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,10 +41,7 @@ browser use: https://github.com/vim/vim/issues/1234
 'smoothscroll':
 - CTRL-E and gj in long line with 'scrolloff' 5 not working well yet.
 - computing 'scrolloff' position row use w_skipcol
-
-Check textprop right/above/below with 'number' set and "n" in 'cpo'.
-
-Don't do anything for ":!". #11372
+- PR: Error in screen dump for Test_smoothscroll_one_long_line.  (PR #11436)
 
 
 Further Vim9 improvements, possibly after launch:
@@ -164,6 +161,8 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Crash when a variable is removed while listing variables (Issue #11435)
+
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
 - try using autoconf 2.71 and fix all "obsolete" warnings  #11322
 
@@ -267,6 +266,9 @@ New English spell files also have very slow suggestions.
 French spell files don't work correctly.  #4916
     Make Vim understand the format somehow?
 
+When 'spelloptions' is "camel" then zG doesn't work on some words.
+(Gary Johnson, 17 Oct 2022)
+
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558
 
@@ -340,6 +342,7 @@ Is this the right solution?  Need to cleanup langmap behavior:
 So that replaying the register doesn't use keymap/langmap and still does the
 same thing.
 Also see #737: langmap not applied to replaying recording.
+Perhaps also related: #5147
 
 Matchparen doesn't remove highlight after undo. (#7054)
 Is OK when syntax HL is active.
@@ -380,6 +383,8 @@ and/or "sandbox" are set.
 
 Problem with auto-formatting - inserting space and putting cursor before added
 character. (#6154)
+Auto-formatting comments joins a following non-comment line when the comment
+ends in a space. (Adam Levy, 18 Oct 2022)
 
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.

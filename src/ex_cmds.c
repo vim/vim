@@ -929,8 +929,6 @@ do_bang(
 	    STRCAT(t, newcmd);
 	if (ins_prevcmd)
 	    STRCAT(t, prevcmd);
-	else
-	    vim_free(t);
 	p = t + STRLEN(t);
 	STRCAT(t, trailarg);
 	vim_free(newcmd);
