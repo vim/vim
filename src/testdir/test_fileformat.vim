@@ -94,6 +94,8 @@ func Test_fileformats()
   call assert_equal("mac\rmac\r\n", s:file2str('Xtest'))
   bwipe XXUnix XXDos XXMac
 
+  new
+
   " try with 'fileformat' set to 'dos'
   set fileformat=dos
   e! XXUnix
@@ -106,6 +108,8 @@ func Test_fileformats()
   w! Xtest
   call assert_equal("mac\rmac\r\r\n", s:file2str('Xtest'))
   bwipe XXUnix XXDos XXMac
+
+  new
 
   " try with 'fileformat' set to 'mac'
   set fileformat=mac
@@ -122,6 +126,8 @@ func Test_fileformats()
 
   " Test 2: try reading and writing with 'fileformats' set to one format
 
+  new
+
   " try with 'fileformats' set to 'unix'
   set fileformats=unix
   e! XXUxDsMc
@@ -130,6 +136,8 @@ func Test_fileformats()
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
 
+  new
+
   " try with 'fileformats' set to 'dos'
   set fileformats=dos
   e! XXUxDsMc
@@ -137,6 +145,8 @@ func Test_fileformats()
   call assert_equal("unix\r\nunix\r\ndos\r\ndos\r\nmac\rmac\r\r\n",
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
+
+  new
 
   " try with 'fileformats' set to 'mac'
   set fileformats=mac
@@ -148,6 +158,8 @@ func Test_fileformats()
 
   " Test 3: try reading and writing with 'fileformats' set to two formats
 
+  new
+
   " try with 'fileformats' set to 'unix,dos'
   set fileformats=unix,dos
   e! XXUxDsMc
@@ -156,15 +168,21 @@ func Test_fileformats()
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
 
+  new
+
   e! XXUxMac
   w! Xtest
   call assert_equal("unix\nunix\nmac\rmac\r\n", s:file2str('Xtest'))
   bwipe XXUxMac
 
+  new
+
   e! XXDosMac
   w! Xtest
   call assert_equal("dos\r\ndos\r\nmac\rmac\r\r\n", s:file2str('Xtest'))
   bwipe XXDosMac
+
+  new
 
   " try with 'fileformats' set to 'unix,mac'
   set fileformats=unix,mac
@@ -173,22 +191,30 @@ func Test_fileformats()
   call assert_equal("unix\nunix\ndos\r\ndos\r\n", s:file2str('Xtest'))
   bwipe XXUxDs
 
+  new
+
   e! XXUxDsMc
   w! Xtest
   call assert_equal("unix\nunix\ndos\r\ndos\r\nmac\rmac\r\n",
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
 
+  new
+
   e! XXDosMac
   w! Xtest
   call assert_equal("dos\r\ndos\r\nmac\rmac\r", s:file2str('Xtest'))
   bwipe XXDosMac
+
+  new
 
   e! XXEol
   exe "normal ggO\<C-R>=&ffs\<CR>:\<C-R>=&ff\<CR>"
   w! Xtest
   call assert_equal("unix,mac:unix\nnoeol\n", s:file2str('Xtest'))
   bwipe! XXEol
+
+  new
 
   " try with 'fileformats' set to 'dos,mac'
   set fileformats=dos,mac
@@ -197,6 +223,8 @@ func Test_fileformats()
   call assert_equal("unix\r\nunix\r\ndos\r\ndos\r\n", s:file2str('Xtest'))
   bwipe XXUxDs
 
+  new
+
   e! XXUxMac
   exe "normal ggO\<C-R>=&ffs\<CR>:\<C-R>=&ff\<CR>"
   w! Xtest
@@ -204,11 +232,15 @@ func Test_fileformats()
 	      \ s:file2str('Xtest'))
   bwipe! XXUxMac
 
+  new
+
   e! XXUxDsMc
   w! Xtest
   call assert_equal("unix\r\nunix\r\ndos\r\ndos\r\nmac\rmac\r\r\n",
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
+
+  new
 
   e! XXMacEol
   exe "normal ggO\<C-R>=&ffs\<CR>:\<C-R>=&ff\<CR>"
@@ -217,6 +249,9 @@ func Test_fileformats()
   bwipe! XXMacEol
 
   " Test 4: try reading and writing with 'fileformats' set to three formats
+
+  new
+
   set fileformats=unix,dos,mac
   e! XXUxDsMc
   w! Xtest
@@ -224,11 +259,15 @@ func Test_fileformats()
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
 
+  new
+
   e! XXEol
   exe "normal ggO\<C-R>=&ffs\<CR>:\<C-R>=&ff\<CR>"
   w! Xtest
   call assert_equal("unix,dos,mac:unix\nnoeol\n", s:file2str('Xtest'))
   bwipe! XXEol
+
+  new
 
   set fileformats=mac,dos,unix
   e! XXUxDsMc
@@ -237,6 +276,8 @@ func Test_fileformats()
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
 
+  new
+
   e! XXEol
   exe "normal ggO\<C-R>=&ffs\<CR>:\<C-R>=&ff\<CR>"
   w! Xtest
@@ -244,6 +285,9 @@ func Test_fileformats()
   bwipe! XXEol
 
   " Test 5: try with 'binary' set
+
+  new
+
   set fileformats=mac,unix,dos
   set binary
   e! XXUxDsMc
@@ -252,6 +296,8 @@ func Test_fileformats()
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
 
+  new
+
   set fileformats=mac
   e! XXUxDsMc
   w! Xtest
@@ -259,12 +305,16 @@ func Test_fileformats()
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
 
+  new
+
   set fileformats=dos
   e! XXUxDsMc
   w! Xtest
   call assert_equal("unix\nunix\ndos\r\ndos\r\nmac\rmac\r",
 	      \ s:file2str('Xtest'))
   bwipe XXUxDsMc
+
+  new
 
   e! XXUnix
   w! Xtest
