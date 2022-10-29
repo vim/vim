@@ -1058,6 +1058,7 @@ static argcheck_T arg2_string_list_number[] = {arg_string, arg_list_number};
 static argcheck_T arg2_string_number[] = {arg_string, arg_number};
 static argcheck_T arg2_string_or_list_dict[] = {arg_string_or_list_any, arg_dict_any};
 static argcheck_T arg2_string_or_list_bool[] = {arg_string_or_list_any, arg_bool};
+static argcheck_T arg2_string_or_list_number[] = {arg_string_or_list_any, arg_number};
 static argcheck_T arg2_string_string_or_number[] = {arg_string, arg_string_or_nr};
 static argcheck_T arg3_any_list_dict[] = {NULL, arg_list_any, arg_dict_any};
 static argcheck_T arg3_buffer_lnum_lnum[] = {arg_buffer, arg_lnum, arg_lnum};
@@ -1774,7 +1775,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_char2nr},
     {"charclass",	1, 1, FEARG_1,	    arg1_string,
 			ret_number,	    f_charclass},
-    {"charcol",		1, 1, FEARG_1,	    arg1_string_or_list_any,
+    {"charcol",		1, 2, FEARG_1,	    arg2_string_or_list_number,
 			ret_number,	    f_charcol},
     {"charidx",		2, 3, FEARG_1,	    arg3_string_number_bool,
 			ret_number,	    f_charidx},
@@ -1784,7 +1785,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_cindent},
     {"clearmatches",	0, 1, FEARG_1,	    arg1_number,
 			ret_void,	    f_clearmatches},
-    {"col",		1, 1, FEARG_1,	    arg1_string_or_list_any,
+    {"col",		1, 2, FEARG_1,	    arg2_string_or_list_number,
 			ret_number,	    f_col},
     {"complete",	2, 2, FEARG_2,	    arg2_number_list,
 			ret_void,	    f_complete},
@@ -3389,11 +3390,34 @@ get_col(typval_T *argvars, typval_T *rettv, int charcol)
 {
     colnr_T	col = 0;
     pos_T	*fp;
-    int		fnum = curbuf->b_fnum;
+    int		fnum;
+    switchwin_T	switchwin;
+    int		winchanged = FALSE;
 
-    if (in_vim9script()
-	    && check_for_string_or_list_arg(argvars, 0) == FAIL)
+    if (check_for_string_or_list_arg(argvars, 0) == FAIL
+	    || check_for_opt_number_arg(argvars, 1) == FAIL)
 	return;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	int		id;
+	tabpage_T	*tp;
+	win_T		*wp;
+
+	// use the window specified in the second argument
+	id = (int)tv_get_number(&argvars[1]);
+	wp = win_id2wp_tp(id, &tp);
+	if (wp == NULL || tp == NULL)
+	    return;
+
+	if (switch_win_noblock(&switchwin, wp, tp, TRUE) != OK)
+	    return;
+
+	check_cursor();
+	winchanged = TRUE;
+    }
+
+    fnum = curbuf->b_fnum;
 
     fp = var2fpos(&argvars[0], FALSE, &fnum, charcol);
     if (fp != NULL && fnum == curbuf->b_fnum)
@@ -3427,6 +3451,9 @@ get_col(typval_T *argvars, typval_T *rettv, int charcol)
 	}
     }
     rettv->vval.v_number = col;
+
+    if (winchanged)
+	restore_win_noblock(&switchwin, TRUE);
 }
 
 /*

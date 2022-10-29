@@ -53,7 +53,7 @@ def Test_expr1_ternary()
       assert_equal(function('len'), Res)
 
       var RetOne: func(string): number = function('len')
-      var RetTwo: func(string): number = function('charcol')
+      var RetTwo: func(string): number = function('strlen')
       var RetThat: func = g:atrue ? RetOne : RetTwo
       assert_equal(function('len'), RetThat)
 
