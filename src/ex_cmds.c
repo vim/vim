@@ -957,12 +957,15 @@ do_bang(
 	}
     } while (trailarg != NULL);
 
-    // Don't clear "prevcmd" if there is no command to run.
+    // Only set "prevcmd" if there is a command to run, otherwise keep te one
+    // we have.
     if (STRLEN(newcmd) > 0)
     {
 	vim_free(prevcmd);
 	prevcmd = newcmd;
     }
+    else
+	free_newcmd = TRUE;
 
     if (bangredo)	    // put cmd in redo buffer for ! command
     {
@@ -986,6 +989,8 @@ do_bang(
      */
     if (*p_shq != NUL)
     {
+	if (free_newcmd)
+	    vim_free(newcmd);
 	newcmd = alloc(STRLEN(prevcmd) + 2 * STRLEN(p_shq) + 1);
 	if (newcmd == NULL)
 	    return;
