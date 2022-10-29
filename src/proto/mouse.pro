@@ -1,4 +1,6 @@
 /* mouse.c */
+int do_mousescroll_horizontal(long_u leftcol, int compute_longest_lnum);
+void do_mousescroll(int mode, cmdarg_T *cap);
 void mouse_set_vert_scroll_step(long step);
 void mouse_set_hor_scroll_step(long step);
 int do_mouse(oparg_T *oap, int c, int dir, long count, int fixindent);

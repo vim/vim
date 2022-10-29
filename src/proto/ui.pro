@@ -1,4 +1,6 @@
 /* ui.c */
+colnr_T scroll_line_len(linenr_T lnum);
+linenr_T ui_find_longest_lnum(void);
 void ui_write(char_u *s, int len, int console);
 void ui_inchar_undo(char_u *s, int len);
 int ui_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
