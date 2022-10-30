@@ -120,7 +120,7 @@ let s:filename_checks = {
     \ 'conaryrecipe': ['file.recipe'],
     \ 'conf': ['auto.master'],
     \ 'config': ['configure.in', 'configure.ac', '/etc/hostname.file', 'any/etc/hostname.file'],
-    \ 'confini': ['/etc/pacman.conf', 'any/etc/pacman.conf', 'mpv.conf'],
+    \ 'confini': ['/etc/pacman.conf', 'any/etc/pacman.conf', 'mpv.conf', 'any/.aws/config', 'any/.aws/credentials'],
     \ 'context': ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
     \ 'cook': ['file.cook'],
     \ 'cpp': ['file.cxx', 'file.c++', 'file.hh', 'file.hxx', 'file.hpp', 'file.ipp', 'file.moc', 'file.tcc', 'file.inl', 'file.tlh'],
@@ -289,7 +289,7 @@ let s:filename_checks = {
     \ 'json': ['file.json', 'file.jsonp', 'file.json-patch', 'file.webmanifest', 'Pipfile.lock', 'file.ipynb', '.babelrc', '.eslintrc', '.prettierrc', '.firebaserc', 'file.slnf'],
     \ 'json5': ['file.json5'],
     \ 'jsonc': ['file.jsonc'],
-    \ 'jsonnet': ['file.jsonnet', 'file.libjsonnet'],
+    \ 'jsonnet': ['file.jsonnet', 'file.libsonnet'],
     \ 'jsp': ['file.jsp'],
     \ 'julia': ['file.jl'],
     \ 'kconfig': ['Kconfig', 'Kconfig.debug', 'Kconfig.file'],
@@ -365,7 +365,7 @@ let s:filename_checks = {
     \ 'mmp': ['file.mmp'],
     \ 'modconf': ['/etc/modules.conf', '/etc/modules', '/etc/conf.modules', '/etc/modprobe.file', 'any/etc/conf.modules', 'any/etc/modprobe.file', 'any/etc/modules', 'any/etc/modules.conf'],
     \ 'modula2': ['file.m2', 'file.mi'],
-    \ 'modula3': ['file.m3', 'file.mg', 'file.i3', 'file.ig'],
+    \ 'modula3': ['file.m3', 'file.mg', 'file.i3', 'file.ig', 'file.lm3'],
     \ 'monk': ['file.isc', 'file.monk', 'file.ssc', 'file.tsc'],
     \ 'moo': ['file.moo'],
     \ 'moonscript': ['file.moon'],
@@ -400,6 +400,7 @@ let s:filename_checks = {
     \ 'opam': ['opam', 'file.opam', 'file.opam.template'],
     \ 'openroad': ['file.or'],
     \ 'openscad': ['file.scad'],
+    \ 'openvpn': ['file.ovpn', '/etc/openvpn/client/client.conf', '/usr/share/openvpn/examples/server.conf'],
     \ 'opl': ['file.OPL', 'file.OPl', 'file.OpL', 'file.Opl', 'file.oPL', 'file.oPl', 'file.opL', 'file.opl'],
     \ 'ora': ['file.ora'],
     \ 'org': ['file.org', 'file.org_archive'],
@@ -640,7 +641,7 @@ let s:filename_checks = {
     \ 'xsd': ['file.xsd'],
     \ 'xslt': ['file.xsl', 'file.xslt'],
     \ 'yacc': ['file.yy', 'file.yxx', 'file.y++'],
-    \ 'yaml': ['file.yaml', 'file.yml', '.clang-tidy'],
+    \ 'yaml': ['file.yaml', 'file.yml', '.clang-format', '.clang-tidy'],
     \ 'yang': ['file.yang'],
     \ 'z8a': ['file.z8a'],
     \ 'zig': ['file.zig'],
@@ -1741,6 +1742,11 @@ func Test_cls_file()
   call assert_equal('tex', &filetype)
   bwipe!
 
+  call writefile(['\NeedsTeXFormat{LaTeX2e}'], 'Xfile.cls')
+  split Xfile.cls
+  call assert_equal('tex', &filetype)
+  bwipe!
+
   " Rexx
 
   call writefile(['# rexx'], 'Xfile.cls')
@@ -1921,6 +1927,37 @@ func Test_inc_file()
   call writefile(['asmsyntax=foo'], 'Xfile.inc')
   split Xfile.inc
   call assert_equal('foo', &filetype)
+  bwipe!
+
+  filetype off
+endfunc
+
+func Test_lsl_file()
+  filetype on
+
+  call writefile(['looks like Linden Scripting Language'], 'Xfile.lsl', 'D')
+  split Xfile.lsl
+  call assert_equal('lsl', &filetype)
+  bwipe!
+
+  " Test dist#ft#FTlsl()
+
+  let g:filetype_lsl = 'larch'
+  split Xfile.lsl
+  call assert_equal('larch', &filetype)
+  bwipe!
+  unlet g:filetype_lsl
+
+  " Larch Shared Language
+
+  call writefile(['% larch comment'], 'Xfile.lsl')
+  split Xfile.lsl
+  call assert_equal('larch', &filetype)
+  bwipe!
+
+  call writefile(['foo: trait'], 'Xfile.lsl')
+  split Xfile.lsl
+  call assert_equal('larch', &filetype)
   bwipe!
 
   filetype off

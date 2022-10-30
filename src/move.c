@@ -62,6 +62,28 @@ adjust_plines_for_skipcol(win_T *wp, int n)
 }
 
 /*
+ * Return how many lines "lnum" will take on the screen, taking into account
+ * whether it is the first line, whether w_skipcol is non-zero and limiting to
+ * the window height.
+ */
+    static int
+plines_correct_topline(win_T *wp, linenr_T lnum)
+{
+    int n;
+#ifdef FEAT_DIFF
+    if (lnum == wp->w_topline)
+	n = plines_win_nofill(wp, lnum, FALSE) + wp->w_topfill;
+    else
+#endif
+	n = plines_win(wp, lnum, FALSE);
+    if (lnum == wp->w_topline)
+	n = adjust_plines_for_skipcol(wp, n);
+    if (n > wp->w_height)
+	n = wp->w_height;
+    return n;
+}
+
+/*
  * Compute wp->w_botline for the current wp->w_topline.  Can be called after
  * wp->w_topline changed.
  */
@@ -105,14 +127,7 @@ comp_botline(win_T *wp)
 	else
 #endif
 	{
-#ifdef FEAT_DIFF
-	    if (lnum == wp->w_topline)
-		n = plines_win_nofill(wp, lnum, TRUE) + wp->w_topfill;
-	    else
-#endif
-		n = plines_win(wp, lnum, TRUE);
-	    if (lnum == wp->w_topline)
-		n = adjust_plines_for_skipcol(wp, n);
+	    n = plines_correct_topline(wp, lnum);
 	}
 	if (
 #ifdef FEAT_FOLDING
@@ -833,16 +848,8 @@ curs_rows(win_T *wp)
 	    else
 #endif
 	    {
-		int n;
-#ifdef FEAT_DIFF
-		if (lnum == wp->w_topline)
-		    n = plines_win_nofill(wp, lnum, TRUE) + wp->w_topfill;
-		else
-#endif
-		    n = plines_win(wp, lnum, TRUE);
-		if (lnum++ == wp->w_topline)
-		    n = adjust_plines_for_skipcol(wp, n);
-		wp->w_cline_row += n;
+		wp->w_cline_row += plines_correct_topline(wp, lnum);
+		++lnum;
 	    }
 	}
     }
@@ -1660,6 +1667,22 @@ scrolldown(
 }
 
 /*
+ * Return TRUE if scrollup() will scroll by screen line rather than text line.
+ */
+    static int
+scrolling_screenlines(int byfold UNUSED)
+{
+    return (curwin->w_p_wrap && curwin->w_p_sms)
+# ifdef FEAT_FOLDING
+	|| (byfold && hasAnyFolding(curwin))
+# endif
+# ifdef FEAT_DIFF
+	|| curwin->w_p_diff
+# endif
+	;
+}
+
+/*
  * Scroll the current window up by "line_count" logical lines.  "CTRL-E"
  */
     void
@@ -1669,14 +1692,7 @@ scrollup(
 {
     int		do_sms = curwin->w_p_wrap && curwin->w_p_sms;
 
-    if (do_sms
-# ifdef FEAT_FOLDING
-	    || (byfold && hasAnyFolding(curwin))
-# endif
-# ifdef FEAT_DIFF
-	    || curwin->w_p_diff
-# endif
-	    )
+    if (scrolling_screenlines(byfold))
     {
 	int	    width1 = curwin->w_width - curwin_col_off();
 	int	    width2 = width1 + curwin_col_off2();
@@ -1829,7 +1845,7 @@ adjust_skipcol(void)
     int	    scrolloff_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
     int	    scrolled = FALSE;
 
-    validate_virtcol();
+    validate_cheight();
     if (curwin->w_cline_height == curwin->w_height)
     {
 	// the line just fits in the window, don't scroll
@@ -1841,6 +1857,7 @@ adjust_skipcol(void)
 	return;
     }
 
+    validate_virtcol();
     while (curwin->w_skipcol > 0
 		 && curwin->w_virtcol < curwin->w_skipcol + 3 + scrolloff_cols)
     {
@@ -2539,10 +2556,20 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	scroll_cursor_halfway(FALSE);
     else
     {
-	// With 'smoothscroll' scroll at least the height of the cursor line.
-	if (curwin->w_p_wrap && curwin->w_p_sms && line_count < min_scrolled)
+	// With 'smoothscroll' scroll at least the height of the cursor line,
+	// unless it would move the cursor.
+	if (curwin->w_p_wrap && curwin->w_p_sms && line_count < min_scrolled
+		&& (curwin->w_cursor.lnum < curwin->w_topline
+		    || (curwin->w_virtcol - curwin->w_skipcol >=
+					  curwin->w_width - curwin_col_off())))
 	    line_count = min_scrolled;
-	scrollup(line_count, TRUE);
+	if (line_count > 0)
+	{
+	    if (scrolling_screenlines(TRUE))
+		scrollup(scrolled, TRUE);  // TODO
+	    else
+		scrollup(line_count, TRUE);
+	}
     }
 
     /*

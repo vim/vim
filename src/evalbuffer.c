@@ -571,10 +571,13 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
 	    {
 		if (wp->w_cursor.lnum > last)
 		    wp->w_cursor.lnum -= count;
-		else if (wp->w_cursor.lnum> first)
+		else if (wp->w_cursor.lnum > first)
 		    wp->w_cursor.lnum = first;
 		if (wp->w_cursor.lnum > wp->w_buffer->b_ml.ml_line_count)
 		    wp->w_cursor.lnum = wp->w_buffer->b_ml.ml_line_count;
+		wp->w_valid = 0;
+		if (wp->w_cursor.lnum <= wp->w_topline)
+		    wp->w_topline = 1;
 	    }
 	check_cursor_col();
 	deleted_lines_mark(first, count);

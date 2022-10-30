@@ -1745,8 +1745,10 @@ vgetc(void)
 
 	    // Get two extra bytes for special keys
 	    if (c == K_SPECIAL
-#ifdef FEAT_GUI
-		    || (c == CSI)
+#if defined(FEAT_GUI) || defined(MSWIN)
+		    // GUI codes start with CSI; MS-Windows sends mouse scroll
+		    // events with CSI.
+		    || c == CSI
 #endif
 	       )
 	    {
@@ -2518,12 +2520,32 @@ handle_mapping(
 	    && State != MODE_CONFIRM
 	    && !at_ins_compl_key())
     {
-#ifdef FEAT_GUI
-	if (gui.in_use && tb_c1 == CSI && typebuf.tb_len >= 2
-		&& typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER)
+#if defined(FEAT_GUI) || defined(MSWIN)
+	if (tb_c1 == CSI
+# if !defined(MSWIN)
+		&& gui.in_use
+# endif
+		&& typebuf.tb_len >= 2
+		&& (typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER
+# if defined(MSWIN)
+		    || (typebuf.tb_len >= 3
+#  ifdef FEAT_GUI
+		      && !gui.in_use
+#  endif
+		      && typebuf.tb_buf[typebuf.tb_off + 1] == KS_EXTRA
+		      && (typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEUP
+			|| typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSEDOWN
+			|| typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSELEFT
+			|| typebuf.tb_buf[typebuf.tb_off + 2] == KE_MOUSERIGHT)
+		       )
+# endif
+		   )
+	   )
 	{
 	    // The GUI code sends CSI KS_MODIFIER {flags}, but mappings expect
 	    // K_SPECIAL KS_MODIFIER {flags}.
+	    // MS-Windows sends mouse scroll events CSI KS_EXTRA {what}, but
+	    // non-GUI mappings expect K_SPECIAL KS_EXTRA {what}.
 	    tb_c1 = K_SPECIAL;
 	}
 #endif
@@ -2566,28 +2588,40 @@ handle_mapping(
 		    && (mp->m_mode & local_State)
 		    && !(mp->m_simplified && seenModifyOtherKeys
 						     && typebuf.tb_maplen == 0)
-		    && ((mp->m_mode & MODE_LANGMAP) == 0 || typebuf.tb_maplen == 0))
+		    && ((mp->m_mode & MODE_LANGMAP) == 0
+						    || typebuf.tb_maplen == 0))
 	    {
 #ifdef FEAT_LANGMAP
 		int	nomap = nolmaplen;
-		int	c2;
+		int	modifiers = 0;
 #endif
 		// find the match length of this mapping
 		for (mlen = 1; mlen < typebuf.tb_len; ++mlen)
 		{
+		    int	c2 = typebuf.tb_buf[typebuf.tb_off + mlen];
 #ifdef FEAT_LANGMAP
-		    c2 = typebuf.tb_buf[typebuf.tb_off + mlen];
 		    if (nomap > 0)
+		    {
+			if (nomap == 2 && c2 == KS_MODIFIER)
+			    modifiers = 1;
+			else if (nomap == 1 && modifiers == 1)
+			    modifiers = c2;
 			--nomap;
-		    else if (c2 == K_SPECIAL)
-			nomap = 2;
+		    }
 		    else
-			LANGMAP_ADJUST(c2, TRUE);
-		    if (mp->m_keys[mlen] != c2)
-#else
-		    if (mp->m_keys[mlen] !=
-					 typebuf.tb_buf[typebuf.tb_off + mlen])
+		    {
+			if (c2 == K_SPECIAL)
+			    nomap = 2;
+			else if (merge_modifyOtherKeys(c2, &modifiers) == c2)
+			    // Only apply 'langmap' if merging modifiers into
+			    // the key will not result in another character,
+			    // so that 'langmap' behaves consistently in
+			    // different terminals and GUIs.
+			    LANGMAP_ADJUST(c2, TRUE);
+			modifiers = 0;
+		    }
 #endif
+		    if (mp->m_keys[mlen] != c2)
 			break;
 		}
 

@@ -17,7 +17,7 @@
 
 static long	    sound_id = 0;
 
-typedef struct soundcb_S soundcb_T;
+// soundcb_T is typdef'ed in proto/sound.pro
 
 struct soundcb_S {
     callback_T	snd_callback;

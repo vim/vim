@@ -846,10 +846,10 @@ static struct builtin_term builtin_termcaps[] =
     {K_RIGHT,		"\033O*C"},
     {K_LEFT,		"\033O*D"},
     // An extra set of cursor keys for vt100 mode
-    {K_XUP,		"\033[@;*A"},
-    {K_XDOWN,		"\033[@;*B"},
-    {K_XRIGHT,		"\033[@;*C"},
-    {K_XLEFT,		"\033[@;*D"},
+    {K_XUP,		"\033[@;*A"},	// Esc [ A or Esc [ 1 ; A
+    {K_XDOWN,		"\033[@;*B"},	// Esc [ B or Esc [ 1 ; B
+    {K_XRIGHT,		"\033[@;*C"},	// Esc [ C or Esc [ 1 ; C
+    {K_XLEFT,		"\033[@;*D"},	// Esc [ D or Esc [ 1 ; D
     // An extra set of function keys for vt100 mode
     {K_XF1,		"\033O*P"},
     {K_XF2,		"\033O*Q"},
@@ -871,13 +871,13 @@ static struct builtin_term builtin_termcaps[] =
     {K_HELP,		"\033[28;*~"},
     {K_UNDO,		"\033[26;*~"},
     {K_INS,		"\033[2;*~"},
-    {K_HOME,		"\033[1;*H"},
+    {K_HOME,		"\033[@;*H"},    // Esc [ H  or Esc 1 ; H
     // {K_S_HOME,		"\033O2H"},
     // {K_C_HOME,		"\033O5H"},
     {K_KHOME,		"\033[1;*~"},
     {K_XHOME,		"\033O*H"},	// other Home
     {K_ZHOME,		"\033[7;*~"},	// other Home
-    {K_END,		"\033[1;*F"},
+    {K_END,		"\033[@;*F"},	// Esc [ F or Esc 1 ; F
     // {K_S_END,		"\033O2F"},
     // {K_C_END,		"\033O5F"},
     {K_KEND,		"\033[4;*~"},
@@ -1350,8 +1350,10 @@ typedef struct {
 #define TPR_UNDERLINE_RGB	    2
 // mouse support - TPR_MOUSE_XTERM, TPR_MOUSE_XTERM2 or TPR_MOUSE_SGR
 #define TPR_MOUSE		    3
+// term response indicates kitty
+#define TPR_KITTY		    4
 // table size
-#define TPR_COUNT		    4
+#define TPR_COUNT		    5
 
 static termprop_T term_props[TPR_COUNT];
 
@@ -1373,6 +1375,8 @@ init_term_props(int all)
     term_props[TPR_UNDERLINE_RGB].tpr_set_by_termresponse = TRUE;
     term_props[TPR_MOUSE].tpr_name = "mouse";
     term_props[TPR_MOUSE].tpr_set_by_termresponse = TRUE;
+    term_props[TPR_KITTY].tpr_name = "kitty";
+    term_props[TPR_KITTY].tpr_set_by_termresponse = FALSE;
 
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
@@ -4715,6 +4719,13 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// else if (version == 115 && arg[0] == 0 && arg[2] == 0)
 	//     term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
+	// Kitty sends 1;400{version};{secondary-version}
+	if (arg[0] == 1 && arg[1] >= 4000 && arg[1] <= 4009)
+	{
+	    term_props[TPR_KITTY].tpr_status = TPR_YES;
+	    term_props[TPR_KITTY].tpr_set_by_termresponse = TRUE;
+	}
+
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
 	// 30600/40500 is a version number of GNU screen. DA2 support is added
 	// on 3.6.  DCS string has a special meaning to GNU screen, but xterm
@@ -4848,7 +4859,11 @@ handle_key_with_modifier(
     int	    modifiers;
     char_u  string[MAX_KEY_CODE_LEN + 1];
 
-    seenModifyOtherKeys = TRUE;
+    // Do not set seenModifyOtherKeys for kitty, it does send some sequences
+    // like this but does not have the modifyOtherKeys feature.
+    if (term_props[TPR_KITTY].tpr_status != TPR_YES)
+	seenModifyOtherKeys = TRUE;
+
     if (trail == 'u')
 	key = arg[0];
     else
@@ -5045,8 +5060,11 @@ handle_csi(
     // Key with modifier:
     //	{lead}27;{modifier};{key}~
     //	{lead}{key};{modifier}u
-    else if ((arg[0] == 27 && argc == 3 && trail == '~')
-	    || (argc == 2 && trail == 'u'))
+    // Only handles four modifiers, this won't work if the modifier value is
+    // more than 16.
+    else if (((arg[0] == 27 && argc == 3 && trail == '~')
+		|| (argc == 2 && trail == 'u'))
+	    && arg[1] <= 16)
     {
 	return len + handle_key_with_modifier(arg, trail,
 			    csi_len, offset, buf, bufsize, buflen);
@@ -5483,12 +5501,9 @@ check_termcode(
 		 */
 		if (termcodes[idx].modlen > 0 && mouse_index_found < 0)
 		{
-		    int at_code;
-
 		    modslen = termcodes[idx].modlen;
 		    if (cpo_koffset && offset && len < modslen)
 			continue;
-		    at_code = termcodes[idx].code[modslen] == '@';
 		    if (STRNCMP(termcodes[idx].code, tp,
 				(size_t)(modslen > len ? len : modslen)) == 0)
 		    {
@@ -5503,7 +5518,8 @@ check_termcode(
 			else if (tp[modslen] != ';' && modslen == slen - 3)
 			    // no match for "code;*X" with "code;"
 			    continue;
-			else if (at_code && tp[modslen] != '1')
+			else if (termcodes[idx].code[modslen] == '@'
+							 && tp[modslen] != '1')
 			    // no match for "<Esc>[@" with "<Esc>[1"
 			    continue;
 			else

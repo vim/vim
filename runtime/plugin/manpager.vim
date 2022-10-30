@@ -1,6 +1,11 @@
 " Vim plugin for using Vim as manpager.
 " Maintainer: Enno Nagel <ennonagel+vim@gmail.com>
-" Last Change: 2022 Sep 30
+" Last Change: 2022 Oct 17
+
+if exists('g:loaded_manpager_plugin')
+  finish
+endif
+let g:loaded_manpager_plugin = 1
 
 " Set up the current buffer (likely read from stdin) as a manpage
 command MANPAGER call s:ManPager()

@@ -5,8 +5,8 @@ source term_util.vim
 
 func Test_writefile()
   let f = tempname()
-  call writefile(["over","written"], f, "b")
-  call writefile(["hello","world"], f, "b")
+  call writefile(["over", "written"], f, "bD")
+  call writefile(["hello", "world"], f, "b")
   call writefile(["!", "good"], f, "a")
   call writefile(["morning"], f, "ab")
   call writefile(["", "vimmers"], f, "ab")
@@ -16,7 +16,6 @@ func Test_writefile()
   call assert_equal("good", l[2])
   call assert_equal("morning", l[3])
   call assert_equal("vimmers", l[4])
-  call delete(f)
 
   call assert_fails('call writefile("text", "Xwffile")', 'E475: Invalid argument: writefile() first argument must be a List or a Blob')
 endfunc
@@ -52,7 +51,7 @@ func Test_writefile_fails_conversion()
   set nobackup nowritebackup backupdir=. backupskip=
   new
   let contents = ["line one", "line two"]
-  call writefile(contents, 'Xwfcfile')
+  call writefile(contents, 'Xwfcfile', 'D')
   edit Xwfcfile
   call setline(1, ["first line", "cannot convert \u010b", "third line"])
   call assert_fails('write ++enc=cp932', 'E513:')
@@ -79,7 +78,6 @@ func Test_writefile_fails_conversion()
   call delete('Xwfcfily~')
   %bw!
 
-  call delete('Xwfcfile')
   call delete('Xwfcfile' .. &backupext)
   bwipe!
   set backup& writebackup& backupdir&vim backupskip&vim
@@ -94,7 +92,7 @@ func Test_writefile_fails_conversion2()
   " but then the backup file must remain
   set nobackup writebackup backupdir=. backupskip=
   let contents = ["line one", "line two"]
-  call writefile(contents, 'Xwf2file_conversion_err')
+  call writefile(contents, 'Xwf2file_conversion_err', 'D')
   edit Xwf2file_conversion_err
   call setline(1, ["first line", "cannot convert \u010b", "third line"])
   set fileencoding=latin1
@@ -102,7 +100,6 @@ func Test_writefile_fails_conversion2()
   call assert_match('CONVERSION ERROR', output)
   call assert_equal(contents, readfile('Xwf2file_conversion_err~'))
 
-  call delete('Xwf2file_conversion_err')
   call delete('Xwf2file_conversion_err~')
   bwipe!
   set backup& writebackup& backupdir&vim backupskip&vim
@@ -154,9 +151,8 @@ endfunc
 
 func Test_writefile_sync_arg()
   " This doesn't check if fsync() works, only that the argument is accepted.
-  call writefile(['one'], 'Xtest', 's')
+  call writefile(['one'], 'Xtest', 'sD')
   call writefile(['two'], 'Xtest', 'S')
-  call delete('Xtest')
 endfunc
 
 func Test_writefile_sync_dev_stdout()
@@ -311,7 +307,7 @@ func Test_write_file_mtime()
   CheckRunVimInTerminal
 
   " First read the file into a buffer
-  call writefile(["Line1", "Line2"], 'Xwfmfile')
+  call writefile(["Line1", "Line2"], 'Xwfmfile', 'D')
   let old_ftime = getftime('Xwfmfile')
   let buf = RunVimInTerminal('Xwfmfile', #{rows : 10})
   call TermWait(buf)
@@ -347,7 +343,6 @@ func Test_write_file_mtime()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xwfmfile')
 endfunc
 
 " Test for an autocmd unloading a buffer during a write command
@@ -417,7 +412,7 @@ endfunc
 
 " Test for writing to a readonly file
 func Test_write_readonly()
-  call writefile([], 'Xwrofile')
+  call writefile([], 'Xwrofile', 'D')
   call setfperm('Xwrofile', "r--------")
   edit Xwrofile
   set noreadonly backupskip=
@@ -442,13 +437,12 @@ func Test_write_readonly()
   set autowriteall&
 
   set backupskip&
-  call delete('Xwrofile')
   %bw!
 endfunc
 
 " Test for 'patchmode'
 func Test_patchmode()
-  call writefile(['one'], 'Xpafile')
+  call writefile(['one'], 'Xpafile', 'D')
   set patchmode=.orig nobackup backupskip= writebackup
   new Xpafile
   call setline(1, 'two')
@@ -473,7 +467,6 @@ func Test_patchmode()
   call assert_equal([], readfile('Xpafile.orig'))
 
   set patchmode& backup& backupskip& writebackup&
-  call delete('Xpafile')
   call delete('Xpafile.orig')
 endfunc
 
@@ -485,7 +478,7 @@ func Test_write_readonly_dir()
   " Root can do it too.
   CheckNotRoot
 
-  call mkdir('Xrodir/')
+  call mkdir('Xrodir/', 'R')
   call writefile(['one'], 'Xrodir/Xfile1')
   call setfperm('Xrodir', 'r-xr--r--')
   " try to create a new file in the directory
@@ -498,7 +491,6 @@ func Test_write_readonly_dir()
   set patchmode=.orig
   call assert_fails('write', 'E509:')
   call setfperm('Xrodir', 'rwxr--r--')
-  call delete('Xrodir', 'rf')
   set backupdir& backupskip& patchmode&
 endfunc
 
@@ -521,7 +513,7 @@ func Test_write_file_encoding()
     2 cp1251 text: ƒÎˇ Vim version 6.2.  œÓÒÎÂ‰ÌÂÂ ËÁÏÂÌÂÌËÂ: 1970 Jan 01
     3 cp866 text: Ñ´Ô Vim version 6.2.  èÆ·´•§≠•• ®ß¨•≠•≠®•: 1970 Jan 01
   END
-  call writefile(text, 'Xwfefile')
+  call writefile(text, 'Xwfefile', 'D')
   edit Xwfefile
 
   " write tests:
@@ -614,7 +606,6 @@ func Test_write_file_encoding()
   END
   call assert_equal(expected, readfile('Xwfetest'))
 
-  call delete('Xwfefile')
   call delete('Xwfetest')
   call delete('Xutf8')
   call delete('Xcp1251')
@@ -641,7 +632,7 @@ func Test_readwrite_file_with_bom()
   set cpoptions+=S
 
   " Check that editing a latin1 file doesn't see a BOM
-  call writefile(["\xFE\xFElatin-1"], 'Xrwtest1')
+  call writefile(["\xFE\xFElatin-1"], 'Xrwtest1', 'D')
   edit Xrwtest1
   call assert_equal('latin1', &fileencoding)
   call assert_equal(0, &bomb)
@@ -746,7 +737,6 @@ func Test_readwrite_file_with_bom()
 
   set cpoptions-=S
   let &fileencoding = save_fileencoding
-  call delete('Xrwtest1')
   call delete('Xrwfile2')
   call delete('Xrwtest3')
   %bw!
@@ -754,7 +744,7 @@ endfunc
 
 func Test_read_write_bin()
   " write file missing EOL
-  call writefile(['noeol'], "XNoEolSetEol", 'bS')
+  call writefile(['noeol'], "XNoEolSetEol", 'bSD')
   call assert_equal(0z6E6F656F6C, readfile('XNoEolSetEol', 'B'))
 
   " when file is read 'eol' is off
@@ -767,7 +757,6 @@ func Test_read_write_bin()
   w
   call assert_equal(0z6E6F656F6C0A, readfile('XNoEolSetEol', 'B'))
 
-  call delete('XNoEolSetEol')
   set ff& fixeol&
   bwipe! XNoEolSetEol
 endfunc
@@ -899,7 +888,7 @@ func Test_write_backup_symlink()
   call mkdir('Xbackup')
   let save_backupdir = &backupdir
   set backupdir=.,./Xbackup
-  call writefile(['1111'], 'Xwbsfile')
+  call writefile(['1111'], 'Xwbsfile', 'D')
   silent !ln -s Xwbsfile Xwbsfile.bak
 
   new Xwbsfile
@@ -915,7 +904,6 @@ func Test_write_backup_symlink()
   set backup& backupcopy& backupext&
   %bw
 
-  call delete('Xwbsfile')
   call delete('Xwbsfile.bak')
   call delete('Xbackup', 'rf')
   let &backupdir = save_backupdir
@@ -924,7 +912,7 @@ endfunc
 " Test for ':write ++bin' and ':write ++nobin'
 func Test_write_binary_file()
   " create a file without an eol/eof character
-  call writefile(0z616161, 'Xwbfile1', 'b')
+  call writefile(0z616161, 'Xwbfile1', 'bD')
   new Xwbfile1
   write ++bin Xwbfile2
   write ++nobin Xwbfile3
@@ -934,7 +922,6 @@ func Test_write_binary_file()
   else
     call assert_equal(0z6161610A, readblob('Xwbfile3'))
   endif
-  call delete('Xwbfile1')
   call delete('Xwbfile2')
   call delete('Xwbfile3')
 endfunc

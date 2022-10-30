@@ -6,6 +6,11 @@ RESET
 PUSH "\e[c"
   output "\e[?1;2c"
 
+!XTVERSION
+RESET
+PUSH "\e[>q"
+  output "\eP>|libvterm(0.3)\e\\"
+
 !DSR
 RESET
 PUSH "\e[5n"
@@ -57,6 +62,6 @@ PUSH "\e[5n"
   output "\x{9b}0n"
 PUSH "\e F"
 
-!Truncation on attempted buffer overflow
-PUSH "\e[6n" x 30
-  output "\e[10;10R" x 25
+#!Truncation on attempted buffer overflow
+#PUSH "\e[6n" x 30
+#  output "\e[10;10R" x 25

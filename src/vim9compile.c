@@ -2712,8 +2712,9 @@ get_cmd_count(char_u *line, exarg_T *eap)
 	;
     if (!isdigit(*p))
     {
-	// the command must be following
-	if (p < eap->cmd)
+	// The command or modifiers must be following.  Assume a lower case
+	// character means there is a modifier.
+	if (p < eap->cmd && !vim_islower(*p))
 	{
 	    emsg(_(e_invalid_range));
 	    return -1;

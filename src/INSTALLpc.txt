@@ -896,45 +896,45 @@ work on MS-DOS because of the limited amount of memory available.
 After you've built the Vim binaries as described above, you're ready to
 install Vim on your system.  However, if you've obtained the Vim sources
 using Git, Mercurial or by downloading them as a unix tar file, you must
-first create a "vim82" directory.  If you instead downloaded the sources as
+first create a "vim90" directory.  If you instead downloaded the sources as
 zip files, you can skip this setup as the zip archives already have the
 correct directory structure.
 
-  A.  Create a Vim "runtime" subdirectory named "vim82"
+  A.  Create a Vim "runtime" subdirectory named "vim90"
   -----------------------------------------------------
   If you obtained your Vim sources as zip files, you can skip this step.
   Otherwise, continue reading.
 
   Go to the directory that contains the Vim "src" and "runtime"
-  directories and create a new subdirectory named "vim82".
+  directories and create a new subdirectory named "vim90".
 
-  Copy the "runtime" files into "vim82":
-     copy runtime\* vim82
-     xcopy /s runtime\* vim82
+  Copy the "runtime" files into "vim90":
+     copy runtime\* vim90
+     xcopy /s runtime\* vim90
 
-  B.  Copy the new binaries into the "vim82" directory
+  B.  Copy the new binaries into the "vim90" directory
   ----------------------------------------------------
   Regardless of how you installed the Vim sources, you need to copy the
-  new binaries you created above into "vim82":
+  new binaries you created above into "vim90":
 
-     copy src\*.exe vim82
-     copy src\tee\tee.exe vim82
-     copy src\xxd\xxd.exe vim82
+     copy src\*.exe vim90
+     copy src\tee\tee.exe vim90
+     copy src\xxd\xxd.exe vim90
 
   To install the "Edit with Vim" popup menu, you need both 32-bit and 64-bit
-  versions of gvimext.dll.  They should be copied to "vim82\GvimExt32" and
-  "vim82\GvimExt64" respectively.
+  versions of gvimext.dll.  They should be copied to "vim90\GvimExt32" and
+  "vim90\GvimExt64" respectively.
   First, build the 32-bit version, then:
 
-     mkdir vim82\GvimExt32
-     copy src\GvimExt\gvimext.dll vim82\GvimExt32
+     mkdir vim90\GvimExt32
+     copy src\GvimExt\gvimext.dll vim90\GvimExt32
 
   Next, clean the 32-bit version and build the 64-bit version, then:
 
-     mkdir vim82\GvimExt64
-     copy src\GvimExt\gvimext.dll vim82\GvimExt64
+     mkdir vim90\GvimExt64
+     copy src\GvimExt\gvimext.dll vim90\GvimExt64
 
-  C.  Copy gettext and iconv DLLs into the "vim82" directory
+  C.  Copy gettext and iconv DLLs into the "vim90" directory
   ----------------------------------------------------------
   Get gettext and iconv DLLs from the following site:
      https://github.com/mlocati/gettext-iconv-windows/releases
@@ -942,7 +942,7 @@ correct directory structure.
   Download the files gettextX.X.X.X-iconvX.XX-shared-{32,64}.zip, extract
   DLLs and place them as follows:
 
-        vim82\
+        vim90\
             |   libintl-8.dll
             |   libiconv-2.dll
             |   libgcc_s_sjlj-1.dll     (only for 32-bit)
@@ -956,18 +956,18 @@ correct directory structure.
                 libintl-8.dll
                 libiconv-2.dll
 
-  The DLLs in the "vim82" should be the same bitness with the (g)vim.exe.
+  The DLLs in the "vim90" should be the same bitness with the (g)vim.exe.
 
-  D.  Move the "vim82" directory into the Vim installation subdirectory
+  D.  Move the "vim90" directory into the Vim installation subdirectory
   ---------------------------------------------------------------------
-  Move the "vim82" subdirectory into the subdirectory where you want Vim
+  Move the "vim90" subdirectory into the subdirectory where you want Vim
   to be installed.  Typically, this subdirectory will be named "vim".
-  If you already have a "vim82" subdirectory in "vim", delete it first
+  If you already have a "vim90" subdirectory in "vim", delete it first
   by running its uninstall.exe program.
 
   E.  Install Vim
   ---------------
-  "cd" to your Vim installation subdirectory "vim\vim82" and run the
+  "cd" to your Vim installation subdirectory "vim\vim90" and run the
   "install.exe" program.  It will ask you a number of questions about
   how you would like to have your Vim setup.  Among these are:
   - You can tell it to write a "_vimrc" file with your preferences in the

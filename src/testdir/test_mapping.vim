@@ -478,8 +478,12 @@ func Test_list_mappings()
         \ execute('nmap ,n')->trim()->split("\n"))
 
   " verbose map
+  " first line might be "seen modifyOtherKeys"
+  let lines = execute('verbose map ,n')->trim()->split("\n")
+  let index = indexof(lines, 'v:val =~ "Last set"')
+  call assert_inrange(1, 2, index)
   call assert_match("\tLast set from .*/test_mapping.vim line \\d\\+$",
-        \ execute('verbose map ,n')->trim()->split("\n")[1])
+        \ lines[index])
 
   " character with K_SPECIAL byte in rhs
   nmap foo …

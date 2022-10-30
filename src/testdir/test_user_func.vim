@@ -303,7 +303,7 @@ func Test_function_defined_line()
   qall!
   [CODE]
 
-  call writefile(lines, 'Xtest.vim')
+  call writefile(lines, 'Xtest.vim', 'D')
   let res = system(GetVimCommandClean() .. ' -es -X -S Xtest.vim')
   call assert_equal(0, v:shell_error)
 
@@ -324,8 +324,6 @@ func Test_function_defined_line()
 
   let m = matchstr(res, 'function F6()[^[:print:]]*[[:print:]]*')
   call assert_match(' line 23$', m)
-
-  call delete('Xtest.vim')
 endfunc
 
 " Test for defining a function reference in the global scope
@@ -380,12 +378,11 @@ func Test_script_local_func()
     :qall
 
   [CODE]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   if RunVim([], [], '-s Xscript')
     call assert_equal([], readfile('Xresult'))
   endif
   call delete('Xresult')
-  call delete('Xscript')
 endfunc
 
 " Test for errors in defining new functions
@@ -417,9 +414,8 @@ func Test_func_def_error()
   call assert_fails('call feedkeys(":func d.F1()\<CR>", "xt")', 'E717:')
 
   " Define an autoload function with an incorrect file name
-  call writefile(['func foo#Bar()', 'return 1', 'endfunc'], 'Xscript')
+  call writefile(['func foo#Bar()', 'return 1', 'endfunc'], 'Xscript', 'D')
   call assert_fails('source Xscript', 'E746:')
-  call delete('Xscript')
 
   " Try to list functions using an invalid search pattern
   call assert_fails('function /\%(/', 'E53:')
@@ -444,9 +440,8 @@ endfunc
 
 " Test for calling return outside of a function
 func Test_return_outside_func()
-  call writefile(['return 10'], 'Xscript')
+  call writefile(['return 10'], 'Xscript', 'D')
   call assert_fails('source Xscript', 'E133:')
-  call delete('Xscript')
 endfunc
 
 " Test for errors in calling a function

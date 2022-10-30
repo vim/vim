@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 9.0.  Last change: 2022 Oct 02
+*quickref.txt*  For Vim version 9.0.  Last change: 2022 Oct 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -689,6 +689,7 @@ Short explanation of each option:		*option-list*
 'edcompatible'	  'ed'	    toggle flags of ":substitute" command
 'emoji'		  'emo'	    emoji characters are considered full width
 'encoding'	  'enc'     encoding used internally
+'endoffile'	  'eof'     write CTRL-Z at end of the file
 'endofline'	  'eol'     write <EOL> for last line in file
 'equalalways'	  'ea'	    windows are automatically made the same size
 'equalprg'	  'ep'	    external program to use for "=" command
@@ -785,6 +786,7 @@ Short explanation of each option:		*option-list*
 'lines'			    number of lines in the display
 'linespace'	  'lsp'     number of pixel lines to use between characters
 'lisp'			    automatic indenting for Lisp
+'lispoptions'	  'lop'     changes how Lisp indenting is done
 'lispwords'	  'lw'	    words that change how lisp indenting works
 'list'			    show <Tab> and <EOL>
 'listchars'	  'lcs'     characters for displaying in list mode

@@ -2964,6 +2964,37 @@ func Test_prop_above_with_indent()
   call prop_type_delete('indented')
 endfunc
 
+func Test_prop_above_with_number()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one one one', 'two two two', 'three three three'])
+      set number cpo+=n
+      prop_type_add('test', {highlight: 'DiffChange'})
+      prop_add(2, 0, {
+          text:  'above the text',
+          type: 'test',
+          text_align: 'above',
+      })
+      def g:OneMore()
+        prop_add(2, 0, {
+            text:  'also above the text',
+            type: 'test',
+            text_align: 'above',
+        })
+      enddef
+  END
+  call writefile(lines, 'XscriptPropAboveNr', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropAboveNr', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_prop_above_number_1', {})
+
+  call term_sendkeys(buf, ":call OneMore()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_above_number_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_below_split_line()
   CheckRunVimInTerminal
 

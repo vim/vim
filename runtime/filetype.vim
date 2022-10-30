@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Sep 27
+" Last Change:	2022 Oct 12
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -368,6 +368,9 @@ au BufNewFile,BufRead *.ch			call dist#ft#FTchange()
 
 " ChordPro
 au BufNewFile,BufRead *.chopro,*.crd,*.cho,*.crdpro,*.chordpro	setf chordpro
+
+" Clang-format
+au BufNewFile,BufRead .clang-format		setf yaml
 
 " Clang-tidy
 au BufNewFile,BufRead .clang-tidy		setf yaml
@@ -1001,7 +1004,7 @@ au BufNewFile,BufRead .babelrc,.eslintrc,.prettierrc,.firebaserc  setf json
 au BufNewFile,BufRead *.jsonc			setf jsonc
 
 " Jsonnet
-au BufNewFile,BufRead *.jsonnet,*.libjsonnet	setf jsonnet
+au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
 
 " Julia
 au BufNewFile,BufRead *.jl			setf julia
@@ -1031,6 +1034,9 @@ au BufNewFile,BufRead Kconfig,Kconfig.debug	setf kconfig
 
 " Lace (ISE)
 au BufNewFile,BufRead *.ace,*.ACE		setf lace
+
+" Larch Shared Language
+au BufNewFile,BufRead .lsl			call dist#ft#FTlsl()
 
 " Latexmkrc
 au BufNewFile,BufRead .latexmkrc,latexmkrc	setf perl
@@ -1122,7 +1128,7 @@ au BufNewFile,BufRead .luacheckrc		setf lua
 au BufNewFile,BufRead *.rockspec		setf lua
 
 " Linden Scripting Language (Second Life)
-au BufNewFile,BufRead *.lsl			setf lsl
+au BufNewFile,BufRead *.lsl			call dist#ft#FTlsl()
 
 " Lynx style file (or LotusScript!)
 au BufNewFile,BufRead *.lss			setf lss
@@ -1219,6 +1225,9 @@ au BufNewFile,BufRead *.m2,*.DEF,*.mi		setf modula2
 
 " Modula-3 (.m3, .i3, .mg, .ig)
 au BufNewFile,BufRead *.[mi][3g]		setf modula3
+
+" Larch/Modula-3
+au BufNewFile,BufRead *.lm3			setf modula3
 
 " Monk
 au BufNewFile,BufRead *.isc,*.monk,*.ssc,*.tsc	setf monk
@@ -1363,6 +1372,7 @@ au BufNewFile,BufRead pf.conf				setf pf
 
 " ini style config files, using # comments
 au BufNewFile,BufRead */etc/pacman.conf,mpv.conf	setf confini
+au BufNewFile,BufRead */.aws/config,*/.aws/credentials	setf confini
 
 " Pacman hooks
 au BufNewFile,BufRead *.hook
@@ -1953,6 +1963,10 @@ au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 " OpenSSH server configuration
 au BufNewFile,BufRead sshd_config			setf sshdconfig
 au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
+
+" OpenVPN configuration
+au BufNewFile,BufRead *.ovpn			setf openvpn
+au BufNewFile,BufRead */openvpn/*/*.conf	setf openvpn
 
 " Stata
 au BufNewFile,BufRead *.ado,*.do,*.imata,*.mata	setf stata

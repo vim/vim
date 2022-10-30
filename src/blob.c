@@ -182,22 +182,64 @@ blob_equal(
 }
 
 /*
- * Read "blob" from file "fd".
+ * Read blob from file "fd".
+ * Caller has allocated a blob in "rettv".
  * Return OK or FAIL.
  */
     int
-read_blob(FILE *fd, blob_T *blob)
+read_blob(FILE *fd, typval_T *rettv, off_T offset, off_T size_arg)
 {
+    blob_T	*blob = rettv->vval.v_blob;
     struct stat	st;
+    int		whence;
+    off_T	size = size_arg;
 
     if (fstat(fileno(fd), &st) < 0)
+	return FAIL;  // can't read the file, error
+
+    if (offset >= 0)
+    {
+	// The size defaults to the whole file.  If a size is given it is
+	// limited to not go past the end of the file.
+	if (size == -1 || (size > st.st_size - offset
+#ifdef S_ISCHR
+		    && !S_ISCHR(st.st_mode)
+#endif
+		    ))
+	    // size may become negative, checked below
+	    size = st.st_size - offset;
+	whence = SEEK_SET;
+    }
+    else
+    {
+	// limit the offset to not go before the start of the file
+	if (-offset > st.st_size
+#ifdef S_ISCHR
+		    && !S_ISCHR(st.st_mode)
+#endif
+		    )
+	    offset = -st.st_size;
+	// Size defaults to reading until the end of the file.
+	if (size == -1 || size > -offset)
+	    size = -offset;
+	whence = SEEK_END;
+    }
+    if (size <= 0)
+	return OK;
+    if (offset != 0 && vim_fseek(fd, offset, whence) != 0)
+	return OK;
+
+    if (ga_grow(&blob->bv_ga, (int)size) == FAIL)
 	return FAIL;
-    if (ga_grow(&blob->bv_ga, st.st_size) == FAIL)
-	return FAIL;
-    blob->bv_ga.ga_len = st.st_size;
+    blob->bv_ga.ga_len = (int)size;
     if (fread(blob->bv_ga.ga_data, 1, blob->bv_ga.ga_len, fd)
 						  < (size_t)blob->bv_ga.ga_len)
+    {
+	// An empty blob is returned on error.
+	blob_free(rettv->vval.v_blob);
+	rettv->vval.v_blob = NULL;
 	return FAIL;
+    }
     return OK;
 }
 

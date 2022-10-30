@@ -790,6 +790,8 @@ buf_clear_file(buf_T *buf)
     buf->b_ml.ml_line_count = 1;
     unchanged(buf, TRUE, TRUE);
     buf->b_shortname = FALSE;
+    buf->b_p_eof = FALSE;
+    buf->b_start_eof = FALSE;
     buf->b_p_eol = TRUE;
     buf->b_start_eol = TRUE;
     buf->b_p_bomb = FALSE;
@@ -1351,6 +1353,13 @@ do_buffer_ext(
     if ((flags & DOBUF_NOPOPUP) && bt_popup(buf) && !bt_terminal(buf))
 	return OK;
 #endif
+    if ((action == DOBUF_GOTO || action == DOBUF_SPLIT)
+						  && (buf->b_flags & BF_DUMMY))
+    {
+	// disallow navigating to the dummy buffer
+	semsg(_(e_buffer_nr_does_not_exist), count);
+	return FAIL;
+    }
 
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;

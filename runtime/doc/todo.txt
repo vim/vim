@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Oct 03
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Oct 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,22 +39,9 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 'smoothscroll':
+- CTRL-E and gj in long line with 'scrolloff' 5 not working well yet.
 - computing 'scrolloff' position row use w_skipcol
-
-Add a string to the 'display' option ("smoothscroll" ?) to make CTRL-E and
-CTRL-Y scroll one screen line, also if this means the first line doesn't start
-with the first character (like what happens with a last line that doesn't
-fit).  Display "<<<" at the start of the first visible line (like "@@@" is
-displayed in the last line). (Arseny Nasokin,  #5154)
-Neovim PR: https://github.com/neovim/neovim/pull/11014
-
-Use :defer command:
-    - Use "D" flag of writefile() and mkdir() in tests.
-	(testdir/test_p*.vim done)
-
-Fix for powershell: #11257
-
-Change boolean 'splitscroll' into string 'splitkeep'. #11258
+- PR: Error in screen dump for Test_smoothscroll_one_long_line.  (PR #11436)
 
 
 Further Vim9 improvements, possibly after launch:
@@ -70,7 +57,8 @@ Further Vim9 improvements, possibly after launch:
 Popup windows:
 - Add a function to redraw a specific popup window.  Esp. to be used when
   editing the command line, when screen updating doesn't happen. (Shougo)
-  #10210  Probably need to update all popup windows (they may overlap)
+  #10210  Example that shows the need on the issue.
+  Probably need to update all popup windows (they may overlap)
   If the display is scrolled need to redraw everything later.
 - Add a flag to make a popup window focusable?
     CTRL-W P cycle over any preview window or focusable popup, end up back in
@@ -173,8 +161,13 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Crash when a variable is removed while listing variables (Issue #11435)
+
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
-- try using autoconf 2.71 and fix all "obsolete" warnings
+- try using autoconf 2.71 and fix all "obsolete" warnings  #11322
+
+Problem with Visual highlight when 'linebreak' and 'showbreak' are set.
+#11272
 
 Can deref_func_name() and deref_function_name() be merged?
 
@@ -196,9 +189,16 @@ feature is supported or not.  Replaces the xterm mechanism to request each
 entry separately. #6609
 Multiplexers (screen, tmux) can request it to the underlying terminal, and
 pass it on with modifications.
+How to get all the text quickly (also over ssh)?  Can we use a side channel?
 
 Using "A" and "o" in manually created fold (in empty buffer) does not behave
 consistenly (James McCoy, #10698)
+
+In a timer callback, when using ":echo" and then input() the message is
+overwritten.  Could use ":echowin" and call redraw_cmd() in get_user_input().
+#11299
+
+Syntax include problem: #11277.  Related to Patch 8.2.2761
 
 To avoid flicker: add an option that when a screen clear is requested, instead
 of clearing it draws everything and uses "clear to end of line" for every line.
@@ -233,10 +233,9 @@ MS-Windows: did path modifier :p:8 stop working?  #8600
 Version of getchar() that does not move the cursor - #10603 Use a separate
 argument for the new flag.
 
-Add "lastline" entry to 'fillchars' to specify a character instead of '@'.
-#10963
-
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
+
+Can we add highlighting to ":echowindow"?
 
 Information for a specific terminal (e.g. gnome, tmux, konsole, alacritty) is
 spread out.  Make a section with copy/paste examples of script and pointers to
@@ -266,6 +265,9 @@ New English spell files also have very slow suggestions.
 
 French spell files don't work correctly.  #4916
     Make Vim understand the format somehow?
+
+When 'spelloptions' is "camel" then zG doesn't work on some words.
+(Gary Johnson, 17 Oct 2022)
 
 Make "g>" and "g<" in Visual mode move the text right or left.
 Also for a block selection.  #8558
@@ -340,6 +342,7 @@ Is this the right solution?  Need to cleanup langmap behavior:
 So that replaying the register doesn't use keymap/langmap and still does the
 same thing.
 Also see #737: langmap not applied to replaying recording.
+Perhaps also related: #5147
 
 Matchparen doesn't remove highlight after undo. (#7054)
 Is OK when syntax HL is active.
@@ -380,6 +383,8 @@ and/or "sandbox" are set.
 
 Problem with auto-formatting - inserting space and putting cursor before added
 character. (#6154)
+Auto-formatting comments joins a following non-comment line when the comment
+ends in a space. (Adam Levy, 18 Oct 2022)
 
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.
@@ -449,8 +454,6 @@ Statusline highlighting error, off by one. (#5599)
 find them. (Max Kukartsev, #6218)
 
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
-
-Sound: support on Mac?  Or does libcanberra work there?
 
 Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
 
@@ -600,6 +603,11 @@ negative. (see #4326)
 `:echo gettabwinvar(2, 1, '&cmdheight')` returns the value for the _current_
 tab page. (Ingo Karkat, #4324)
 :call settabwinvar(1, 1, '&cmdheight', 2) also doesn't work well.
+
+When opening a file, allow for specifying the initial column position:
+    vim +12:5 file.txt   line 12 column 5
+    :edit +12:5 file.txt
+Should probably use the column as the character index.
 
 This modeline throws unexpected errors: (#4165)
     vim: syn=nosyntax
@@ -3074,9 +3082,6 @@ Macintosh:
     line is too short.  Add a word in 'scrollopt' to allow moving the cursor
     to longer line that is visible.  A similar thing is done for the GUI when
     using the horizontal scrollbar.
-7   VisVim can only open one file.  Hard to solve: each opened file is passed
-    with a separate invocation, would need to use timestamps to know the
-    invocations belong together.
 8   When giving a ":bwipeout" command a file-changed dialog may popup for this
     buffer, which is pointless.  (Mike Williams)
 8   On MS-Windows ":make" doesn't show output while it is working.  Use the
