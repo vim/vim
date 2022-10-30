@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2022 Apr 23
+*term.txt*      For Vim version 9.0.  Last change: 2022 Oct 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -569,7 +569,7 @@ anymore.
 Vim supports using true colors in the terminal (taken from |highlight-guifg|
 and |highlight-guibg|), given that the terminal supports this. To make this
 work the 'termguicolors' option needs to be set.
-See https://gist.github.com/XVilka/8346728 for a list of terminals that
+See https://github.com/termstandard/colors for a list of terminals that
 support true colors.
 
 Sometimes setting 'termguicolors' is not enough and one has to set the |t_8f|
@@ -1004,6 +1004,8 @@ Dragging the mouse with a double click (button-down, button-up, button-down
 and then drag) will result in whole words to be selected.  This continues
 until the button is released, at which point the selection is per character
 again.
+
+For scrolling with the mouse see |scroll-mouse-wheel|.
 
 							*gpm-mouse*
 The GPM mouse is only supported when the |+mouse_gpm| feature was enabled at

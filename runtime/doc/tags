@@ -231,7 +231,9 @@ $quote	eval.txt	/*$quote*
 'emoji'	options.txt	/*'emoji'*
 'enc'	options.txt	/*'enc'*
 'encoding'	options.txt	/*'encoding'*
+'endoffile'	options.txt	/*'endoffile'*
 'endofline'	options.txt	/*'endofline'*
+'eof'	options.txt	/*'eof'*
 'eol'	options.txt	/*'eol'*
 'ep'	options.txt	/*'ep'*
 'equalalways'	options.txt	/*'equalalways'*
@@ -598,7 +600,9 @@ $quote	eval.txt	/*$quote*
 'noek'	options.txt	/*'noek'*
 'noemo'	options.txt	/*'noemo'*
 'noemoji'	options.txt	/*'noemoji'*
+'noendoffile'	options.txt	/*'noendoffile'*
 'noendofline'	options.txt	/*'noendofline'*
+'noeof'	options.txt	/*'noeof'*
 'noeol'	options.txt	/*'noeol'*
 'noequalalways'	options.txt	/*'noequalalways'*
 'noerrorbells'	options.txt	/*'noerrorbells'*
@@ -7250,8 +7254,11 @@ g:html_id_expr	syntax.txt	/*g:html_id_expr*
 g:html_ignore_conceal	syntax.txt	/*g:html_ignore_conceal*
 g:html_ignore_folding	syntax.txt	/*g:html_ignore_folding*
 g:html_line_ids	syntax.txt	/*g:html_line_ids*
+g:html_no_doc	syntax.txt	/*g:html_no_doc*
 g:html_no_foldcolumn	syntax.txt	/*g:html_no_foldcolumn*
 g:html_no_invalid	syntax.txt	/*g:html_no_invalid*
+g:html_no_links	syntax.txt	/*g:html_no_links*
+g:html_no_modeline	syntax.txt	/*g:html_no_modeline*
 g:html_no_pre	syntax.txt	/*g:html_no_pre*
 g:html_no_progress	syntax.txt	/*g:html_no_progress*
 g:html_number_lines	syntax.txt	/*g:html_number_lines*
@@ -8418,6 +8425,7 @@ motion-count-multiplied	motion.txt	/*motion-count-multiplied*
 motion.txt	motion.txt	/*motion.txt*
 mouse-mode-table	term.txt	/*mouse-mode-table*
 mouse-overview	term.txt	/*mouse-overview*
+mouse-scrolling-off	scroll.txt	/*mouse-scrolling-off*
 mouse-swap-buttons	term.txt	/*mouse-swap-buttons*
 mouse-using	term.txt	/*mouse-using*
 mouse_col-variable	eval.txt	/*mouse_col-variable*

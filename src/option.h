@@ -555,6 +555,7 @@ EXTERN char_u	*p_efm;		// 'errorformat'
 EXTERN char_u	*p_gefm;	// 'grepformat'
 EXTERN char_u	*p_gp;		// 'grepprg'
 #endif
+EXTERN int	p_eof;		// 'endoffile'
 EXTERN int	p_eol;		// 'endofline'
 EXTERN int	p_ek;		// 'esckeys'
 EXTERN char_u	*p_ei;		// 'eventignore'
@@ -1123,6 +1124,7 @@ enum
     , BV_DEF
     , BV_INC
 #endif
+    , BV_EOF
     , BV_EOL
     , BV_FIXEOL
     , BV_EP

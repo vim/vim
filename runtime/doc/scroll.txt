@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 9.0.  Last change: 2022 May 07
+*scroll.txt*    For Vim version 9.0.  Last change: 2022 Oct 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -280,6 +280,17 @@ You can also use Alt and Ctrl modifiers.
 
 This only works when Vim gets the scroll wheel events, of course.  You can
 check if this works with the "xev" program.
+							*mouse-scrolling-off*
+If you do not want the mouse to cause scrolling (e.g. because resting your
+palm on the touchpad causes scroll events), you can disable that with: >
+	:map <ScrollWheelDown> <Nop>
+	:map! <ScrollWheelDown> <Nop>
+	:map <ScrollWheelUp> <Nop>
+	:map! <ScrollWheelUp> <Nop>
+	:map <ScrollWheelLeft> <Nop>
+	:map! <ScrollWheelLeft> <Nop>
+	:map <ScrollWheelRight> <Nop>
+	:map! <ScrollWheelRight> <Nop>
 
 When using XFree86, the /etc/XF86Config file should have the correct entry for
 your mouse.  For FreeBSD, this entry works for a Logitech scrollmouse: >

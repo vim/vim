@@ -2999,6 +2999,7 @@ struct file_buffer
     char_u	*b_p_tfu;	// 'tagfunc' option value
     callback_T	b_tfu_cb;	// 'tagfunc' callback
 #endif
+    int		b_p_eof;	// 'endoffile'
     int		b_p_eol;	// 'endofline'
     int		b_p_fixeol;	// 'fixendofline'
     int		b_p_et;		// 'expandtab'
@@ -3149,6 +3150,7 @@ struct file_buffer
     linenr_T	b_no_eol_lnum;	// non-zero lnum when last line of next binary
 				// write should not have an end-of-line
 
+    int		b_start_eof;	// last line had eof (CTRL-Z) when it was read
     int		b_start_eol;	// last line had eol when it was read
     int		b_start_ffc;	// first char of 'ff' when edit started
     char_u	*b_start_fenc;	// 'fileencoding' when edit started or NULL

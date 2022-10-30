@@ -104,6 +104,7 @@ runtime/doc/pi_vimball.txt		@cecamp
 runtime/doc/pi_zip.txt			@cecamp
 runtime/doc/ps1.txt			@heaths
 runtime/ftplugin/abaqus.vim		@costerwi
+runtime/ftplugin/apache.vim		@dubgeiser 
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
@@ -166,6 +167,7 @@ runtime/ftplugin/nginx.vim		@chr4
 runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
 runtime/ftplugin/octave.vim		@dkearns
+runtime/ftplugin/openvpn.vim		@ObserverOfTime
 runtime/ftplugin/pascal.vim		@dkearns
 runtime/ftplugin/pbtxt.vim		@lakshayg
 runtime/ftplugin/pdf.vim		@tpope
@@ -294,6 +296,7 @@ runtime/plugin/netrwPlugin.vim		@cecamp
 runtime/plugin/tarPlugin.vim		@cecamp
 runtime/plugin/vimballPlugin.vim	@cecamp
 runtime/plugin/zipPlugin.vim		@cecamp
+runtime/plugin/manpager.vim		@Konfekt
 runtime/syntax/abaqus.vim		@costerwi
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/amiga.vim		@cecamp
@@ -392,6 +395,7 @@ runtime/syntax/nginx.vim		@chr4
 runtime/syntax/ninja.vim		@nico
 runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
+runtime/syntax/openvpn.vim		@ObserverOfTime
 runtime/syntax/pascal.vim		@dkearns
 runtime/syntax/pbtxt.vim		@lakshayg
 runtime/syntax/pdf.vim			@tpope
