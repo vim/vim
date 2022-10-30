@@ -1537,6 +1537,13 @@ If you don't want this then disable it with: >
 or if there is no g:termdebug_config: >
 	let g:termdebug_popup = 0
 
+Window toolbar ~
+							*termdebug_winbar*
+
+By default the Termdebug plugin creates a window toolbar if mouse is enabled.
+If you don't want this then disable it with: >
+	let g:termdebug_config['winbar'] = 0
+
 
 Vim window width ~
 							*termdebug_wide*

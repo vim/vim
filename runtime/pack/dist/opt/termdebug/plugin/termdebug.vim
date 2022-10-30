@@ -891,7 +891,14 @@ func s:InstallCommands()
   endif
 
   if has('menu') && &mouse != ''
-    call s:InstallWinbar()
+    if exists('g:termdebug_config')
+      let winbar = get(g:termdebug_config, 'winbar', 1)
+    else
+      let winbar = 1
+    endif
+    if winbar
+      call s:InstallWinbar()
+    endif
 
     let popup = 1
     if exists('g:termdebug_config')
