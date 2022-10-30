@@ -1,8 +1,6 @@
 " Tests for editing the command line.
 
 source check.vim
-CheckFeature cmdwin
-
 source screendump.vim
 
 func Test_getcmdwintype()
@@ -73,7 +71,6 @@ func Test_cmdwin_restore()
   call writefile(lines, 'XTest_restore', 'D')
 
   let buf = RunVimInTerminal('-S XTest_restore', {'rows': 12})
-  call TermWait(buf, 50)
   call term_sendkeys(buf, "q:")
   call VerifyScreenDump(buf, 'Test_cmdwin_restore_1', {})
 
@@ -93,15 +90,29 @@ func Test_cmdwin_restore()
 endfunc
 
 func Test_cmdwin_no_terminal()
-  CheckFeature terminal
-  CheckNotMSWindows
+  CheckScreendump
 
   let buf = RunVimInTerminal('', {'rows': 12})
-  call TermWait(buf, 50)
   call term_sendkeys(buf, ":set cmdheight=2\<CR>")
   call term_sendkeys(buf, "q:")
   call term_sendkeys(buf, ":let buf = term_start(['/bin/echo'], #{hidden: 1})\<CR>")
   call VerifyScreenDump(buf, 'Test_cmdwin_no_terminal', {})
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_cmdwin_wrong_command()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', {'rows': 12})
+  call term_sendkeys(buf, "q:")
+  call term_sendkeys(buf, "als\<Esc>")
+  call term_sendkeys(buf, "\<C-W>k")
+  call VerifyScreenDump(buf, 'Test_cmdwin_wrong_command_1', {})
+
+  call term_sendkeys(buf, "\<C-C>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_wrong_command_2', {})
+
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
 endfunc
@@ -376,6 +387,41 @@ endfunc
 func Test_normal_escape()
   call feedkeys("q:i\" foo\<Esc>:normal! \<C-V>\<Esc>\<CR>:\" bar\<CR>", 'ntx')
   call assert_equal('" bar', @:)
+endfunc
+
+" This was using a pointer to a freed buffer
+func Test_cmdwin_freed_buffer_ptr()
+  " this does not work on MS-Windows because renaming an open file fails
+  CheckNotMSWindows
+
+  au BufEnter * next 0| file 
+  edit 0
+  silent! norm q/
+
+  au! BufEnter
+  bwipe!
+endfunc
+
+" This was resulting in a window with negative width.
+" The test doesn't reproduce the illegal memory access though...
+func Test_cmdwin_split_often()
+  let lines = &lines
+  let columns = &columns
+  set t_WS=
+
+  try
+    set encoding=iso8859
+    set ruler
+    winsize 0 0
+    noremap 0 H
+    sil norm 0000000q:
+  catch /E36:/
+  endtry
+
+  bwipe!
+  set encoding=utf8
+  let &lines = lines
+  let &columns = columns
 endfunc
 
 

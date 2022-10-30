@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 9.0.  Last change: 2022 Jun 16
+*cmdline.txt*   For Vim version 9.0.  Last change: 2022 Sep 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -806,7 +806,7 @@ Count and Range						*N:*
 
 When giving a count before entering ":", this is translated into:
 		:.,.+(count - 1)
-In words: The 'count' lines at and after the cursor.  Example: To delete
+In words: The "count" lines at and after the cursor.  Example: To delete
 three lines: >
 		3:d<CR>		is translated into: .,.+2d<CR>
 <
@@ -1124,7 +1124,6 @@ Also see |`=|.
 In the command-line window the command line can be edited just like editing
 text in any window.  It is a special kind of window, because you cannot leave
 it in a normal way.
-{not available when compiled without the |+cmdwin| feature}
 
 
 OPEN						*c_CTRL-F* *q:* *q/* *q?*

@@ -3,6 +3,7 @@
 
 source check.vim
 source shared.vim
+import './vim9.vim' as v9
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -1974,7 +1975,7 @@ func Test_builtin_func_error()
 endfunc
 
 func Test_reload_in_try_catch()
-  call writefile(['x'], 'Xreload')
+  call writefile(['x'], 'Xreload', 'D')
   set autoread
   edit Xreload
   tabnew
@@ -1994,7 +1995,6 @@ func Test_reload_in_try_catch()
   autocmd! ReLoad
   set noautoread
   bwipe! Xreload
-  call delete('Xreload')
 endfunc
 
 " Test for errors with :catch, :throw, :finally                            {{{1
@@ -2008,6 +2008,27 @@ func Test_try_catch_errors()
   call assert_fails('try | for i in range(5) | endif | endtry', 'E580:')
   call assert_fails('try | while v:true | endtry', 'E170:')
   call assert_fails('try | if v:true | endtry', 'E171:')
+
+  " this was using a negative index in cstack[]
+  let lines =<< trim END
+      try
+      for
+      if
+      endwhile
+      if
+      finally
+  END
+  call v9.CheckScriptFailure(lines, 'E690:')
+
+  let lines =<< trim END
+      try
+      for
+      if
+      endwhile
+      if
+      endtry
+  END
+  call v9.CheckScriptFailure(lines, 'E690:')
 endfunc
 
 " Test for verbose messages with :try :catch, and :finally                 {{{1
@@ -2284,10 +2305,8 @@ func Test_user_command_function_call_with_endtry()
       call s:main()
       call assert_equal('yes', s:caught)
   END
-  call writefile(lines, 'XtestThrow')
+  call writefile(lines, 'XtestThrow', 'D')
   source XtestThrow
-
-  call delete('XtestThrow')
 endfunc
 
 func ThisWillFail()
@@ -2303,13 +2322,11 @@ func Test_error_in_catch_and_finally()
       for l in []
     finally
   END
-  call writefile(lines, 'XtestCatchAndFinally')
+  call writefile(lines, 'XtestCatchAndFinally', 'D')
   try
     source XtestCatchAndFinally
   catch /E600:/
   endtry
-
-  call delete('XtestCatchAndFinally')
 endfunc
 
 " This was causing an illegal memory access
@@ -2323,13 +2340,11 @@ func Test_leave_block_in_endtry_not_called()
       if
       endtry
   END
-  call writefile(lines, 'XtestEndtry')
+  call writefile(lines, 'XtestEndtry', 'D')
   try
     source XtestEndtry
   catch /E171:/
   endtry
-
-  call delete('XtestEndtry')
 endfunc
 
 " Modeline								    {{{1

@@ -80,6 +80,34 @@ disable_regexp_timeout(void)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+# ifdef FEAT_RELTIME
+static sig_atomic_t *saved_timeout_flag;
+# endif
+
+/*
+ * Used at the debug prompt: disable the timeout so that expression evaluation
+ * can used patterns.
+ * Must be followed by calling restore_timeout_for_debugging().
+ */
+    void
+save_timeout_for_debugging(void)
+{
+# ifdef FEAT_RELTIME
+    saved_timeout_flag = (sig_atomic_t *)timeout_flag;
+    timeout_flag = &dummy_timeout_flag;
+# endif
+}
+
+    void
+restore_timeout_for_debugging(void)
+{
+# ifdef FEAT_RELTIME
+    timeout_flag = saved_timeout_flag;
+# endif
+}
+#endif
+
 /*
  * The first byte of the BT regexp internal "program" is actually this magic
  * number; the start node begins in the second byte.  It's used to catch the
@@ -1817,14 +1845,14 @@ static regsubmatch_T rsm;  // can only be used when can_f_submatch is TRUE
  * call_func() by vim_regsub_both().
  */
     static int
-fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, int argcount)
+fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, ufunc_T *fp)
 {
     listitem_T	*li;
     int		i;
     char_u	*s;
     typval_T	*listarg = argv + argskip;
 
-    if (argcount == argskip)
+    if (!has_varargs(fp) && fp->uf_args.ga_len <= argskip)
 	// called function doesn't take a submatches argument
 	return argskip;
 
@@ -2097,7 +2125,7 @@ vim_regsub_both(
 		// Execute instructions from ISN_SUBSTITUTE.
 		eval_result[nested] = exe_substitute_instr();
 	    else
-		eval_result[nested] = eval_to_string(source + 2, TRUE);
+		eval_result[nested] = eval_to_string(source + 2, TRUE, FALSE);
 	    --nesting;
 
 	    if (eval_result[nested] != NULL)

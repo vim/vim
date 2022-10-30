@@ -380,7 +380,7 @@ eval_charconvert(
     if (ctx != NULL)
 	current_sctx = *ctx;
 
-    if (eval_to_bool(p_ccv, &err, NULL, FALSE))
+    if (eval_to_bool(p_ccv, &err, NULL, FALSE, TRUE))
 	err = TRUE;
 
     set_vim_var_string(VV_CC_FROM, NULL, -1);
@@ -408,7 +408,7 @@ eval_printexpr(char_u *fname, char_u *args)
     if (ctx != NULL)
 	current_sctx = *ctx;
 
-    if (eval_to_bool(p_pexpr, &err, NULL, FALSE))
+    if (eval_to_bool(p_pexpr, &err, NULL, FALSE, TRUE))
 	err = TRUE;
 
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
@@ -444,7 +444,7 @@ eval_diff(
 	current_sctx = *ctx;
 
     // errors are ignored
-    tv = eval_expr(p_dex, NULL);
+    tv = eval_expr_ext(p_dex, NULL, TRUE);
     free_tv(tv);
 
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
@@ -472,7 +472,7 @@ eval_patch(
 	current_sctx = *ctx;
 
     // errors are ignored
-    tv = eval_expr(p_pex, NULL);
+    tv = eval_expr_ext(p_pex, NULL, TRUE);
     free_tv(tv);
 
     set_vim_var_string(VV_FNAME_IN, NULL, -1);
@@ -497,6 +497,7 @@ eval_spell_expr(char_u *badword, char_u *expr)
     char_u	*p = skipwhite(expr);
     sctx_T	saved_sctx = current_sctx;
     sctx_T	*ctx;
+    int		r;
 
     // Set "v:val" to the bad word.
     prepare_vimvar(VV_VAL, &save_val);
@@ -507,7 +508,10 @@ eval_spell_expr(char_u *badword, char_u *expr)
     if (ctx != NULL)
 	current_sctx = *ctx;
 
-    if (eval1(&p, &rettv, &EVALARG_EVALUATE) == OK)
+    r = may_call_simple_func(p, &rettv);
+    if (r == NOTDONE)
+	r = eval1(&p, &rettv, &EVALARG_EVALUATE);
+    if (r == OK)
     {
 	if (rettv.v_type != VAR_LIST)
 	    clear_tv(&rettv);
@@ -603,6 +607,18 @@ list_script_vars(int *first)
 }
 
 /*
+ * Return TRUE if "name" starts with "g:", "w:", "t:" or "b:".
+ * But only when an identifier character follows.
+ */
+    int
+is_scoped_variable(char_u *name)
+{
+    return vim_strchr((char_u *)"gwbt", name[0]) != NULL
+	&& name[1] == ':'
+	&& eval_isnamec(name[2]);
+}
+
+/*
  * Evaluate one Vim expression {expr} in string "p" and append the
  * resulting string to "gap".  "p" points to the opening "{".
  * When "evaluate" is FALSE only skip over the expression.
@@ -631,7 +647,7 @@ eval_one_expr_in_str(char_u *p, garray_T *gap, int evaluate)
     if (evaluate)
     {
 	*block_end = NUL;
-	expr_val = eval_to_string(block_start, TRUE);
+	expr_val = eval_to_string(block_start, TRUE, FALSE);
 	*block_end = '}';
 	if (expr_val == NULL)
 	    return NULL;
@@ -1050,11 +1066,18 @@ ex_let(exarg_T *eap)
     }
     else if (expr[0] == '=' && expr[1] == '<' && expr[2] == '<')
     {
-	list_T	*l;
+	list_T	*l = NULL;
 	long	cur_lnum = SOURCING_LNUM;
 
-	// HERE document
-	l = heredoc_get(eap, expr + 3, FALSE, FALSE);
+	// :let text =<< [trim] [eval] END
+	// :var text =<< [trim] [eval] END
+	if (vim9script && !eap->skip && (!VIM_ISWHITE(expr[-1])
+						 || !IS_WHITE_OR_NUL(expr[3])))
+	    semsg(_(e_white_space_required_before_and_after_str_at_str),
+								  "=<<", expr);
+	else
+	    l = heredoc_get(eap, expr + 3, FALSE, FALSE);
+
 	if (l != NULL)
 	{
 	    rettv_list_set(&rettv, l);
@@ -1303,8 +1326,8 @@ skip_var_list(
 	}
 	return p + 1;
     }
-    else
-	return skip_var_one(arg, include_type);
+
+    return skip_var_one(arg, include_type);
 }
 
 /*
@@ -3137,18 +3160,20 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
     // When using "vim9script autoload" script-local items are prefixed but can
     // be used with s:name.
     if (SCRIPT_ID_VALID(current_sctx.sc_sid)
-					   && name[0] == 's' && name[1] == ':')
+		   && (in_vim9script() || (name[0] == 's' && name[1] == ':')))
     {
 	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
 	if (si->sn_autoload_prefix != NULL)
 	{
-	    char_u *auto_name = concat_str(si->sn_autoload_prefix, name + 2);
+	    char_u *base_name = (name[0] == 's' && name[1] == ':')
+							     ? name + 2 : name;
+	    char_u *auto_name = concat_str(si->sn_autoload_prefix, base_name);
 
 	    if (auto_name != NULL)
 	    {
 		ht = &globvarht;
-		ret = find_var_in_ht(ht, *name, auto_name, TRUE);
+		ret = find_var_in_ht(ht, 'g', auto_name, TRUE);
 		vim_free(auto_name);
 		if (ret != NULL)
 		{
@@ -3679,8 +3704,7 @@ set_var_const(
 	vim9_declare_error(name);
 	goto failed;
     }
-    if ((flags & ASSIGN_FOR_LOOP) && name[1] == ':'
-			      && vim_strchr((char_u *)"gwbt", name[0]) != NULL)
+    if ((flags & ASSIGN_FOR_LOOP) && is_scoped_variable(name))
 	// Do not make g:var, w:var, b:var or t:var final.
 	flags &= ~ASSIGN_FINAL;
 
@@ -3840,6 +3864,14 @@ set_var_const(
 	}
 
 	clear_tv(&di->di_tv);
+
+	if ((flags & ASSIGN_UPDATE_BLOCK_ID)
+				       && SCRIPT_ID_VALID(current_sctx.sc_sid))
+	{
+	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+	    update_script_var_block_id(name, si->sn_current_block_id);
+	}
     }
     else
     {

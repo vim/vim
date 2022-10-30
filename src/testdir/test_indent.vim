@@ -161,7 +161,7 @@ func Test_modeline_indent_expr()
   func GetIndent()
     return line('.') * 2
   endfunc
-  call writefile(['# vim: indentexpr=GetIndent()'], 'Xmlfile.txt')
+  call writefile(['# vim: indentexpr=GetIndent()'], 'Xmlfile.txt', 'D')
   set modelineexpr
   new Xmlfile.txt
   call assert_equal('GetIndent()', &indentexpr)
@@ -172,7 +172,6 @@ func Test_modeline_indent_expr()
   delfunc GetIndent
   let &modeline = modeline
   close!
-  call delete('Xmlfile.txt')
 endfunc
 
 func Test_indent_func_with_gq()

@@ -142,7 +142,6 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
   for( ; pos < len; pos++) {
     unsigned char c = bytes[pos];
     int c1_allowed = !vt->mode.utf8;
-    size_t string_len;
 
     if(c == 0x00 || c == 0x7f) { // NUL, DEL
       if(IS_STRING_STATE()) {
@@ -187,7 +186,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
     }
     // else fallthrough
 
-    string_len = bytes + pos - string_start;
+    size_t string_len = bytes + pos - string_start;
 
     if(vt->parser.in_esc) {
       // Hoist an ESC letter into a C1 if we're not in a string mode
@@ -247,7 +246,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
       vt->parser.v.csi.argi++;
       vt->parser.intermedlen = 0;
       vt->parser.state = CSI_INTERMED;
-      // fallthrough
+      // FALLTHROUGH
     case CSI_INTERMED:
       if(is_intermed(c)) {
         if(vt->parser.intermedlen < INTERMED_MAX-1)

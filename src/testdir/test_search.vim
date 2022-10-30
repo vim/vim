@@ -724,7 +724,7 @@ func Test_search_cmdline8()
   endif
   " Prepare buffer text
   let lines = ['abb vim vim vi', 'vimvivim']
-  call writefile(lines, 'Xsearch.txt')
+  call writefile(lines, 'Xsearch.txt', 'D')
   let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
 
   call WaitForAssert({-> assert_equal(lines, [term_getline(buf, 1), term_getline(buf, 2)])})
@@ -743,9 +743,8 @@ func Test_search_cmdline8()
   call assert_notequal(a1, a2)
   call assert_equal(a0, a2)
   call assert_equal(a1, a3)
-  " clean up
-  call delete('Xsearch.txt')
 
+  " clean up
   bwipe!
 endfunc
 
@@ -859,7 +858,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Prepare buffer text
   let lines = ['abb vim vim vi', 'vimvivim']
-  call writefile(lines, 'Xsearch.txt')
+  call writefile(lines, 'Xsearch.txt', 'D')
   let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
 
   call WaitForAssert({-> assert_equal(lines, [term_getline(buf, 1), term_getline(buf, 2)])})
@@ -928,9 +927,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
   let attr_line2 = [a0,a0,a0,a0,a0,a0,a0,a0]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
   call assert_equal(attr_line2, map(term_scrape(buf, 2)[:len(attr_line2)-1], 'v:val.attr'))
-  call delete('Xsearch.txt')
 
-  call delete('Xsearch.txt')
   bwipe!
 endfunc
 
@@ -956,7 +953,7 @@ func Test_incsearch_scrolling()
 	\ 'call setline(1, [dots, dots, dots, "", "target", dots, dots])',
 	\ 'normal gg',
 	\ 'redraw',
-	\ ], 'Xscript')
+	\ ], 'Xscript', 'D')
   let buf = RunVimInTerminal('-S Xscript', {'rows': 9, 'cols': 70})
   " Need to send one key at a time to force a redraw
   call term_sendkeys(buf, '/')
@@ -972,7 +969,6 @@ func Test_incsearch_scrolling()
 
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
-  call delete('Xscript')
 endfunc
 
 func Test_incsearch_search_dump()
@@ -985,7 +981,7 @@ func Test_incsearch_search_dump()
 	\ '  call setline(n, "foo " . n)',
 	\ 'endfor',
 	\ '3',
-	\ ], 'Xis_search_script')
+	\ ], 'Xis_search_script', 'D')
   let buf = RunVimInTerminal('-S Xis_search_script', {'rows': 9, 'cols': 70})
   " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
   " the 'ambiwidth' check.
@@ -1002,7 +998,6 @@ func Test_incsearch_search_dump()
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('Xis_search_script')
 endfunc
 
 func Test_hlsearch_dump()
@@ -1014,7 +1009,7 @@ func Test_hlsearch_dump()
         \ 'call setline(1, ["xxx", "xxx", "xxx"])',
 	\ '/.*',
 	\ '2',
-	\ ], 'Xhlsearch_script')
+	\ ], 'Xhlsearch_script', 'D')
   let buf = RunVimInTerminal('-S Xhlsearch_script', {'rows': 6, 'cols': 50})
   call VerifyScreenDump(buf, 'Test_hlsearch_1', {})
 
@@ -1022,7 +1017,6 @@ func Test_hlsearch_dump()
   call VerifyScreenDump(buf, 'Test_hlsearch_2', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xhlsearch_script')
 endfunc
 
 func Test_hlsearch_and_visual()
@@ -1035,14 +1029,13 @@ func Test_hlsearch_and_visual()
         \ 'hi Search cterm=bold',
 	\ '/yyy',
 	\ 'call cursor(1, 6)',
-	\ ], 'Xhlvisual_script')
+	\ ], 'Xhlvisual_script', 'D')
   let buf = RunVimInTerminal('-S Xhlvisual_script', {'rows': 6, 'cols': 40})
   call term_sendkeys(buf, "vjj")
   call VerifyScreenDump(buf, 'Test_hlsearch_visual_1', {})
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('Xhlvisual_script')
 endfunc
 
 func Test_hlsearch_block_visual_match()
@@ -1052,7 +1045,7 @@ func Test_hlsearch_block_visual_match()
     set hlsearch
     call setline(1, ['aa', 'bbbb', 'cccccc'])
   END
-  call writefile(lines, 'Xhlsearch_block')
+  call writefile(lines, 'Xhlsearch_block', 'D')
   let buf = RunVimInTerminal('-S Xhlsearch_block', {'rows': 9, 'cols': 60})
 
   call term_sendkeys(buf, "G\<C-V>$kk\<Esc>")
@@ -1062,7 +1055,6 @@ func Test_hlsearch_block_visual_match()
   call VerifyScreenDump(buf, 'Test_hlsearch_block_visual_match', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xhlsearch_block')
 endfunc
 
 func Test_incsearch_substitute()
@@ -1108,7 +1100,7 @@ func Test_hlsearch_cursearch()
     hi Search ctermbg=yellow
     hi CurSearch ctermbg=blue
   END
-  call writefile(lines, 'Xhlsearch_cursearch')
+  call writefile(lines, 'Xhlsearch_cursearch', 'D')
   let buf = RunVimInTerminal('-S Xhlsearch_cursearch', {'rows': 9, 'cols': 60})
 
   call term_sendkeys(buf, "gg/foo\<CR>")
@@ -1146,7 +1138,6 @@ func Test_hlsearch_cursearch()
   call VerifyScreenDump(buf, 'Test_hlsearch_cursearch_changed_1', {})
 
   call StopVimInTerminal(buf)
-  call delete('Xhlsearch_cursearch')
 endfunc
 
 " Similar to Test_incsearch_substitute() but with a screendump halfway.
@@ -1161,7 +1152,7 @@ func Test_incsearch_substitute_dump()
 	\ 'endfor',
 	\ 'call setline(11, "bar 11")',
 	\ '3',
-	\ ], 'Xis_subst_script')
+	\ ], 'Xis_subst_script', 'D')
   let buf = RunVimInTerminal('-S Xis_subst_script', {'rows': 9, 'cols': 70})
   " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
   " the 'ambiwidth' check.
@@ -1256,7 +1247,6 @@ func Test_incsearch_substitute_dump()
   call term_sendkeys(buf, "<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('Xis_subst_script')
 endfunc
 
 func Test_incsearch_highlighting()
@@ -1266,7 +1256,7 @@ func Test_incsearch_highlighting()
   call writefile([
 	\ 'set incsearch hlsearch',
 	\ 'call setline(1, "hello/there")',
-	\ ], 'Xis_subst_hl_script')
+	\ ], 'Xis_subst_hl_script', 'D')
   let buf = RunVimInTerminal('-S Xis_subst_hl_script', {'rows': 4, 'cols': 20})
   " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
   " the 'ambiwidth' check.
@@ -1279,7 +1269,6 @@ func Test_incsearch_highlighting()
   call term_sendkeys(buf, "<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('Xis_subst_hl_script')
 endfunc
 
 func Test_incsearch_with_change()
@@ -1291,7 +1280,7 @@ func Test_incsearch_with_change()
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'call setline(1, ["one", "two ------ X", "three"])',
 	\ 'call timer_start(200, { _ -> setline(2, "x")})',
-	\ ], 'Xis_change_script')
+	\ ], 'Xis_change_script', 'D')
   let buf = RunVimInTerminal('-S Xis_change_script', {'rows': 9, 'cols': 70})
   " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
   " the 'ambiwidth' check.
@@ -1303,7 +1292,6 @@ func Test_incsearch_with_change()
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('Xis_change_script')
 endfunc
 
 " Similar to Test_incsearch_substitute_dump() for :sort
@@ -1314,7 +1302,7 @@ func Test_incsearch_sort_dump()
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'call setline(1, ["another one 2", "that one 3", "the one 1"])',
-	\ ], 'Xis_sort_script')
+	\ ], 'Xis_sort_script', 'D')
   let buf = RunVimInTerminal('-S Xis_sort_script', {'rows': 9, 'cols': 70})
   " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
   " the 'ambiwidth' check.
@@ -1329,7 +1317,6 @@ func Test_incsearch_sort_dump()
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('Xis_sort_script')
 endfunc
 
 " Similar to Test_incsearch_substitute_dump() for :vimgrep famiry
@@ -1340,7 +1327,7 @@ func Test_incsearch_vimgrep_dump()
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'call setline(1, ["another one 2", "that one 3", "the one 1"])',
-	\ ], 'Xis_vimgrep_script')
+	\ ], 'Xis_vimgrep_script', 'D')
   let buf = RunVimInTerminal('-S Xis_vimgrep_script', {'rows': 9, 'cols': 70})
   " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
   " the 'ambiwidth' check.
@@ -1368,7 +1355,6 @@ func Test_incsearch_vimgrep_dump()
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
-  call delete('Xis_vimgrep_script')
 endfunc
 
 func Test_keep_last_search_pattern()
@@ -1492,11 +1478,9 @@ endfunc
 func Test_no_last_substitute_pat()
   " Use viminfo to set the last search pattern to a string and make the last
   " substitute pattern the most recent used and make it empty (NULL).
-  call writefile(['~MSle0/bar', '~MSle0~&'], 'Xviminfo')
+  call writefile(['~MSle0/bar', '~MSle0~&'], 'Xviminfo', 'D')
   rviminfo! Xviminfo
   call assert_fails('normal n', 'E35:')
-
-  call delete('Xviminfo')
 endfunc
 
 func Test_search_Ctrl_L_combining()
@@ -1739,12 +1723,11 @@ func Test_search_with_no_last_pat()
     call writefile(v:errors, 'Xresult')
     qall!
   [SCRIPT]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   if RunVim([], [], '--clean -S Xscript')
     call assert_equal([], readfile('Xresult'))
   endif
-  call delete('Xscript')
   call delete('Xresult')
 endfunc
 
@@ -1762,11 +1745,10 @@ func Test_search_tilde_pat()
     call writefile(v:errors, 'Xresult')
     qall!
   [SCRIPT]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   if RunVim([], [], '--clean -S Xscript')
     call assert_equal([], readfile('Xresult'))
   endif
-  call delete('Xscript')
   call delete('Xresult')
 endfunc
 
@@ -2012,7 +1994,7 @@ func Test_incsearch_highlighting_newline()
     set incsearch nohls
     call setline(1, ['test', 'xxx'])
   [CODE]
-  call writefile(commands, 'Xincsearch_nl')
+  call writefile(commands, 'Xincsearch_nl', 'D')
   let buf = RunVimInTerminal('-S Xincsearch_nl', {'rows': 5, 'cols': 10})
   call term_sendkeys(buf, '/test')
   call VerifyScreenDump(buf, 'Test_incsearch_newline1', {})
@@ -2028,7 +2010,6 @@ func Test_incsearch_highlighting_newline()
   call StopVimInTerminal(buf)
 
   " clean up
-  call delete('Xincsearch_nl')
   call test_override("char_avail", 0)
   bw
 endfunc
@@ -2044,7 +2025,7 @@ func Test_incsearch_substitute_dump2()
 	\ 'endfor',
 	\ 'call setline(5, "abc|def")',
 	\ '3',
-	\ ], 'Xis_subst_script2')
+	\ ], 'Xis_subst_script2', 'D')
   let buf = RunVimInTerminal('-S Xis_subst_script2', {'rows': 9, 'cols': 70})
 
   call term_sendkeys(buf, ':%s/\vabc|')
@@ -2059,7 +2040,6 @@ func Test_incsearch_substitute_dump2()
 
 
   call StopVimInTerminal(buf)
-  call delete('Xis_subst_script2')
 endfunc
 
 func Test_pattern_is_uppercase_smartcase()
@@ -2146,11 +2126,10 @@ func Test_search_with_invalid_range()
     5/
     c
   END
-  call writefile(lines, 'Xrangesearch')
+  call writefile(lines, 'Xrangesearch', 'D')
   source Xrangesearch
 
   bwipe!
-  call delete('Xrangesearch')
 endfunc
 
 

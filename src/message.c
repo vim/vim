@@ -535,11 +535,11 @@ msg_source(int attr)
 	return;
     recursive = TRUE;
 
-    msg_scroll = TRUE;  // this will take more than one line
     ++no_wait_return;
     p = get_emsg_source();
     if (p != NULL)
     {
+	msg_scroll = TRUE;  // this will take more than one line
 	msg_attr((char *)p, attr);
 	vim_free(p);
     }
@@ -767,8 +767,8 @@ emsg_core(char_u *s)
 #endif
     /*
      * Display name and line number for the source of the error.
-     * Sets "msg_scroll".
      */
+    msg_scroll = TRUE;
     msg_source(attr);
 
     /*
@@ -1157,6 +1157,10 @@ wait_return(int redraw)
     // need_wait_return to do it later.
     if (msg_silent != 0)
 	return;
+#ifdef HAS_MESSAGE_WINDOW
+    if (in_echowindow)
+	return;
+#endif
 
     /*
      * When inside vgetc(), we can't wait for a typed character at all.
@@ -1755,7 +1759,7 @@ msg_outtrans_special(
 	    ++str;
 	}
 	else
-	    text = (char *)str2special(&str, from);
+	    text = (char *)str2special(&str, from, FALSE);
 	if (text[0] != NUL && text[1] == NUL)
 	    // single-byte character or illegal byte
 	    text = (char *)transchar_byte((char_u)text[0]);
@@ -1770,7 +1774,7 @@ msg_outtrans_special(
     return retval;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Return the lhs or rhs of a mapping, with the key codes turned into printable
  * strings, in an allocated string.
@@ -1778,14 +1782,16 @@ msg_outtrans_special(
     char_u *
 str2special_save(
     char_u  *str,
-    int	    is_lhs)  // TRUE for lhs, FALSE for rhs
+    int	    replace_spaces,	// TRUE to replace " " with "<Space>".
+				// used for the lhs of mapping and keytrans().
+    int	    replace_lt)		// TRUE to replace "<" with "<lt>".
 {
     garray_T	ga;
     char_u	*p = str;
 
     ga_init2(&ga, 1, 40);
     while (*p != NUL)
-	ga_concat(&ga, str2special(&p, is_lhs));
+	ga_concat(&ga, str2special(&p, replace_spaces, replace_lt));
     ga_append(&ga, NUL);
     return (char_u *)ga.ga_data;
 }
@@ -1800,7 +1806,9 @@ str2special_save(
     char_u *
 str2special(
     char_u	**sp,
-    int		from)	// TRUE for lhs of mapping
+    int		replace_spaces,	// TRUE to replace " " with "<Space>".
+				// used for the lhs of mapping and keytrans().
+    int		replace_lt)	// TRUE to replace "<" with "<lt>".
 {
     int			c;
     static char_u	buf[7];
@@ -1857,8 +1865,10 @@ str2special(
 	*sp = str + (*str == NUL ? 0 : 1);
 
     // Make special keys and C0 control characters in <> form, also <M-Space>.
-    // Use <Space> only for lhs of a mapping.
-    if (special || c < ' ' || (from && c == ' '))
+    if (special
+	|| c < ' '
+	|| (replace_spaces && c == ' ')
+	|| (replace_lt && c == '<'))
 	return get_special_key_name(c, modifiers);
     buf[0] = c;
     buf[1] = NUL;
@@ -1876,7 +1886,7 @@ str2specialbuf(char_u *sp, char_u *buf, int len)
     *buf = NUL;
     while (*sp)
     {
-	s = str2special(&sp, FALSE);
+	s = str2special(&sp, FALSE, FALSE);
 	if ((int)(STRLEN(s) + STRLEN(buf)) < len)
 	    STRCAT(buf, s);
     }
@@ -2592,7 +2602,8 @@ msg_puts_display(
     if (msg_win != NULL)
 	popup_show_message_win();
 #endif
-    if (p_more && !recurse)
+    // Store the text for scroll back, unless it's a newline by itself.
+    if (p_more && !recurse && !(s == sb_str + 1 && *sb_str == '\n'))
 	store_sb_text(&sb_str, s, attr, &sb_col, FALSE);
 
     msg_check();
@@ -2903,10 +2914,11 @@ msg_sb_eol(void)
 
 /*
  * Display a screen line from previously displayed text at row "row".
+ * When "clear_to_eol" is set clear the rest of the screen line.
  * Returns a pointer to the text for the next line (can be NULL).
  */
     static msgchunk_T *
-disp_sb_line(int row, msgchunk_T *smp)
+disp_sb_line(int row, msgchunk_T *smp, int clear_to_eol)
 {
     msgchunk_T	*mp = smp;
     char_u	*p;
@@ -2919,6 +2931,12 @@ disp_sb_line(int row, msgchunk_T *smp)
 	if (*p == '\n')	    // don't display the line break
 	    ++p;
 	msg_puts_display(p, -1, mp->sb_attr, TRUE);
+
+	// If clearing the screen did not work (e.g. because of a background
+	// color and t_ut isn't set) clear until the last column here.
+	if (clear_to_eol)
+	    screen_fill(row, row + 1, msg_col, (int)Columns, ' ', ' ', 0);
+
 	if (mp->sb_eol || mp->sb_next == NULL)
 	    break;
 	mp = mp->sb_next;
@@ -3269,15 +3287,16 @@ do_more_prompt(int typed_char)
 						     (int)Rows, 0, NULL) == OK)
 		    {
 			// display line at top
-			(void)disp_sb_line(0, mp);
+			(void)disp_sb_line(0, mp, FALSE);
 		    }
 		    else
 		    {
+			int did_clear = screenclear();
+
 			// redisplay all lines
-			screenclear();
 			for (i = 0; mp != NULL && i < Rows - 1; ++i)
 			{
-			    mp = disp_sb_line(i, mp);
+			    mp = disp_sb_line(i, mp, !did_clear);
 			    ++msg_scrolled;
 			}
 		    }
@@ -3294,7 +3313,7 @@ do_more_prompt(int typed_char)
 		    inc_msg_scrolled();
 		    screen_fill((int)Rows - 2, (int)Rows - 1, 0,
 						   (int)Columns, ' ', ' ', 0);
-		    mp_last = disp_sb_line((int)Rows - 2, mp_last);
+		    mp_last = disp_sb_line((int)Rows - 2, mp_last, FALSE);
 		    --toscroll;
 		}
 	    }

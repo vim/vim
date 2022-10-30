@@ -20,6 +20,11 @@
 # include <float.h>
 #endif
 
+// When not generating protos this is included in proto.h
+#ifdef PROTO
+# include "vim9.h"
+#endif
+
 /*
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
  * be easily freed later.
@@ -38,6 +43,27 @@ get_type_ptr(garray_T *type_gap)
 	++type_gap->ga_len;
     }
     return type;
+}
+
+/*
+ * Make a shallow copy of "type".
+ * When allocation fails returns "type".
+ */
+    type_T *
+copy_type(type_T *type, garray_T *type_gap)
+{
+    type_T *copy = get_type_ptr(type_gap);
+
+    if (copy == NULL)
+	return type;
+    *copy = *type;
+
+    if (type->tt_args != NULL
+	   && func_type_add_arg_types(copy, type->tt_argcount, type_gap) == OK)
+	for (int i = 0; i < type->tt_argcount; ++i)
+	    copy->tt_args[i] = type->tt_args[i];
+
+    return copy;
 }
 
     void
@@ -311,6 +337,17 @@ func_type_add_arg_types(
 }
 
 /*
+ * Return TRUE if "type" is NULL, any or unknown.
+ * This also works for const (comparing with &t_any and &t_unknown doesn't).
+ */
+    int
+type_any_or_unknown(type_T *type)
+{
+    return type == NULL || type->tt_type == VAR_ANY
+					       || type->tt_type == VAR_UNKNOWN;
+}
+
+/*
  * Get a type_T for a typval_T.
  * "type_gap" is used to temporarily create types in.
  * When "flags" has TVTT_DO_MEMBER also get the member type, otherwise use
@@ -459,18 +496,13 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		    {
 			type->tt_argcount -= tv->vval.v_partial->pt_argc;
 			type->tt_min_argcount -= tv->vval.v_partial->pt_argc;
-			if (type->tt_argcount <= 0)
-			    type->tt_args = NULL;
-			else
-			{
-			    int i;
-
-			    func_type_add_arg_types(type, type->tt_argcount,
-								     type_gap);
-			    for (i = 0; i < type->tt_argcount; ++i)
-				type->tt_args[i] = ufunc->uf_func_type->tt_args[
+			if (type->tt_argcount > 0
+				&& func_type_add_arg_types(type,
+					    type->tt_argcount, type_gap) == OK)
+			    for (int i = 0; i < type->tt_argcount; ++i)
+				type->tt_args[i] =
+					ufunc->uf_func_type->tt_args[
 					      i + tv->vval.v_partial->pt_argc];
-			}
 		    }
 		    return type;
 		}
@@ -980,14 +1012,8 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	case 'f':
 	    if (len == 5 && STRNCMP(*arg, "float", len) == 0)
 	    {
-#ifdef FEAT_FLOAT
 		*arg += len;
 		return &t_float;
-#else
-		if (give_error)
-		    emsg(_(e_this_vim_is_not_compiled_with_float_support));
-		return NULL;
-#endif
 	    }
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
 	    {

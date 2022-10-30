@@ -821,13 +821,11 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 	return;
 
     id = tv_get_number(&argvars[0]);
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
 	emsg(_(e_invalid_in_cmdline_window));
 	return;
     }
-#endif
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
     if (popup_is_popup(curwin) && curbuf->b_term != NULL)
     {
@@ -1065,10 +1063,8 @@ f_win_gettype(typval_T *argvars, typval_T *rettv)
     else if (WIN_IS_POPUP(wp))
 	rettv->vval.v_string = vim_strsave((char_u *)"popup");
 #endif
-#ifdef FEAT_CMDWIN
     else if (wp == curwin && cmdwin_type != 0)
 	rettv->vval.v_string = vim_strsave((char_u *)"command");
-#endif
 #ifdef FEAT_QUICKFIX
     else if (bt_quickfix(wp->w_buffer))
 	rettv->vval.v_string = vim_strsave((char_u *)
@@ -1085,14 +1081,12 @@ f_getcmdwintype(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
-#ifdef FEAT_CMDWIN
     rettv->vval.v_string = alloc(2);
     if (rettv->vval.v_string != NULL)
     {
 	rettv->vval.v_string[0] = cmdwin_type;
 	rettv->vval.v_string[1] = NUL;
     }
-#endif
 }
 
 /*

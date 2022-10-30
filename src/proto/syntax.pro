@@ -2,7 +2,7 @@
 void syntax_start(win_T *wp, linenr_T lnum);
 void syn_stack_free_all(synblock_T *block);
 void syn_stack_apply_changes(buf_T *buf);
-void syntax_end_parsing(linenr_T lnum);
+void syntax_end_parsing(win_T *wp, linenr_T lnum);
 int syntax_check_changed(linenr_T lnum);
 int get_syntax_attr(colnr_T col, int *can_spell, int keep_state);
 void syntax_clear(synblock_T *block);

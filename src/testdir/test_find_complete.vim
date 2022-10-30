@@ -10,7 +10,7 @@ func Test_find_complete()
   call delete("Xfind", "rf")
   let cwd = getcwd()
   let test_out = cwd . '/test.out'
-  call mkdir('Xfind')
+  call mkdir('Xfind', 'R')
   cd Xfind
 
   new
@@ -158,7 +158,6 @@ func Test_find_complete()
 
   enew | only
   call chdir(cwd)
-  call delete('Xfind', 'rf')
   set path&
 endfunc
 

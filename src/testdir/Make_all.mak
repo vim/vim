@@ -7,8 +7,12 @@
 NO_PLUGINS = --noplugin --not-a-term
 NO_INITS = -U NONE $(NO_PLUGINS)
 
-# Tests for tiny and small builds.
+# File to delete when testing starts
+CLEANUP_FILES = test.log messages starttime
+
+# Tests for tiny build.
 SCRIPTS_TINY = \
+	test10 \
 	test20 \
 	test21 \
 	test22 \
@@ -19,6 +23,7 @@ SCRIPTS_TINY = \
 	test27
 
 SCRIPTS_TINY_OUT = \
+	test10.out \
 	test20.out \
 	test21.out \
 	test22.out \
@@ -86,7 +91,9 @@ NEW_TESTS = \
 	test_cjk_linebreak \
 	test_clientserver \
 	test_close_count \
+	test_cmd_lists \
 	test_cmdline \
+	test_cmdmods \
 	test_cmdwin \
 	test_command_count \
 	test_comments \
@@ -176,7 +183,7 @@ NEW_TESTS = \
 	test_largefile \
 	test_let \
 	test_lineending \
-	test_lispwords \
+	test_lispindent \
 	test_listchars \
 	test_listdict \
 	test_listener \
@@ -345,7 +352,9 @@ NEW_TESTS_RES = \
 	test_cjk_linebreak.res \
 	test_clientserver.res \
 	test_close_count.res \
+	test_cmd_lists.res \
 	test_cmdline.res \
+	test_cmdmods.res \
 	test_cmdwin.res \
 	test_command_count.res \
 	test_comments.res \
@@ -420,6 +429,7 @@ NEW_TESTS_RES = \
 	test_langmap.res \
 	test_let.res \
 	test_lineending.res \
+	test_lispindent.res \
 	test_listchars.res \
 	test_listdict.res \
 	test_listener.res \

@@ -33,15 +33,13 @@ func RunInNewVim(test, verify)
     call writefile(v:errors, 'Xtest.out')
     qall
   END
-  call writefile(init, 'Xtest.vim')
+  call writefile(init, 'Xtest.vim', 'D')
   call writefile(a:test, 'Xtest.vim', 'a')
-  call writefile(a:verify, 'Xverify.vim')
+  call writefile(a:verify, 'Xverify.vim', 'D')
   call writefile(cleanup, 'Xverify.vim', 'a')
   call RunVim([], [], "-S Xtest.vim -S Xverify.vim")
   call assert_equal([], readfile('Xtest.out'))
   call delete('Xtest.out')
-  call delete('Xtest.vim')
-  call delete('Xverify.vim')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -719,23 +717,23 @@ endfunc
 
 XpathINIT
 
-function! NULL()
+func NULL()
     Xpath 'a'
     return 0
-endfunction
+endfunc
 
-function! ZERO()
+func ZERO()
     Xpath 'b'
     return 0
-endfunction
+endfunc
 
-function! F0()
+func! F0()
     Xpath 'c'
-endfunction
+endfunc
 
-function! F1(arg)
+func! F1(arg)
     Xpath 'e'
-endfunction
+endfunc
 
 let V0 = 1
 
@@ -2935,7 +2933,7 @@ func Test_nested_if_else_errors()
   let code =<< trim END
     endif
   END
-  call writefile(code, 'Xtest')
+  call writefile(code, 'Xtest', 'D')
   call AssertException(['source Xtest'], 'Vim(endif):E580: :endif without :if')
 
   " :endif without :if
@@ -3088,8 +3086,6 @@ func Test_nested_if_else_errors()
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(elseif):E584: :elseif after :else')
-
-  call delete('Xtest')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -3118,7 +3114,7 @@ func Test_nested_while_error()
       endwhile
     endif
   END
-  call writefile(code, 'Xtest')
+  call writefile(code, 'Xtest', 'D')
   call AssertException(['source Xtest'], 'Vim(endwhile):E588: :endwhile without :while')
 
   " Missing :endif
@@ -3215,8 +3211,6 @@ func Test_nested_while_error()
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(endwhile):E588: :endwhile without :while')
-
-  call delete('Xtest')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -3236,7 +3230,7 @@ func Test_nested_cont_break_error()
   let code =<< trim END
     continue
   END
-  call writefile(code, 'Xtest')
+  call writefile(code, 'Xtest', 'D')
   call AssertException(['source Xtest'], 'Vim(continue):E586: :continue without :while or :for')
 
   " :continue without :while
@@ -3323,8 +3317,6 @@ func Test_nested_cont_break_error()
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(break):E587: :break without :while or :for')
-
-  call delete('Xtest')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -3344,7 +3336,7 @@ func Test_nested_endtry_error()
   let code =<< trim END
     endtry
   END
-  call writefile(code, 'Xtest')
+  call writefile(code, 'Xtest', 'D')
   call AssertException(['source Xtest'], 'Vim(endtry):E602: :endtry without :try')
 
   " :endtry without :try
@@ -3424,8 +3416,6 @@ func Test_nested_endtry_error()
   END
   call writefile(code, 'Xtest')
   call AssertException(['source Xtest'], 'Vim(endtry):E170: Missing :endwhile')
-
-  call delete('Xtest')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -5891,7 +5881,7 @@ func Test_discard_exception_after_error_2()
     endtry
     call assert_report('should not get here')
   [CODE]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   breakadd file 7 Xscript
   try
@@ -5906,7 +5896,6 @@ func Test_discard_exception_after_error_2()
   call assert_equal(1, caught_intr)
   call assert_equal('ab', g:Xpath)
   breakdel *
-  call delete('Xscript')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -5996,7 +5985,7 @@ func Test_ignore_catch_after_intr_1()
     endtry
     call assert_report('should not get here')
   [CODE]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   breakadd file 6 Xscript
   try
@@ -6011,7 +6000,6 @@ func Test_ignore_catch_after_intr_1()
   call assert_equal(1, caught_intr)
   call assert_equal('a', g:Xpath)
   breakdel *
-  call delete('Xscript')
 endfunc
 
 " interrupt right before a catch is invoked inside a function.
@@ -6104,7 +6092,7 @@ func Test_finally_after_intr()
     endtry
     call assert_report('should not get here')
   [CODE]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   breakadd file 7 Xscript
   try
@@ -6119,7 +6107,6 @@ func Test_finally_after_intr()
   call assert_equal(1, caught_intr)
   call assert_equal('abc', g:Xpath)
   breakdel *
-  call delete('Xscript')
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -6490,9 +6477,7 @@ func Test_type()
     call assert_equal(2, type(function("tr", [8])))
     call assert_equal(3, type([]))
     call assert_equal(4, type({}))
-    if has('float')
-      call assert_equal(5, type(0.0))
-    endif
+    call assert_equal(5, type(0.0))
     call assert_equal(6, type(v:false))
     call assert_equal(6, type(v:true))
     call assert_equal(7, type(v:none))
@@ -6505,9 +6490,7 @@ func Test_type()
     call assert_equal(v:t_func, type(function("tr", [8])))
     call assert_equal(v:t_list, type([]))
     call assert_equal(v:t_dict, type({}))
-    if has('float')
-      call assert_equal(v:t_float, type(0.0))
-    endif
+    call assert_equal(v:t_float, type(0.0))
     call assert_equal(v:t_bool, type(v:false))
     call assert_equal(v:t_bool, type(v:true))
     call assert_equal(v:t_none, type(v:none))
@@ -6551,11 +6534,9 @@ func Test_type()
     call assert_true(v:none == 0)
     call assert_false(v:none == 1)
     call assert_false(v:none != 0)
-    if has('float')
-      call assert_true(v:null == 0.0)
-      call assert_false(v:null == 0.1)
-      call assert_false(v:null != 0.0)
-    endif
+    call assert_true(v:null == 0.0)
+    call assert_false(v:null == 0.1)
+    call assert_false(v:null != 0.0)
 
     call assert_true(v:false is v:false)
     call assert_true(v:true is v:true)
@@ -6670,16 +6651,14 @@ func Test_echo_and_string()
 		     \ "'foo bar'"], l)
 
     " Float
-    if has('float')
-	let a = -1.2e0
-	redir => result
-	echo a
-	echo string(a)
-	redir END
-	let l = split(result, "\n")
-	call assert_equal(["-1.2",
-			 \ "-1.2"], l)
-    endif
+    let a = -1.2e0
+    redir => result
+    echo a
+    echo string(a)
+    redir END
+    let l = split(result, "\n")
+    call assert_equal(["-1.2",
+                     \ "-1.2"], l)
 
     " Funcref
     redir => result
@@ -6816,10 +6795,8 @@ func Test_num64()
     call assert_equal(-9223372036854775807, -1 / 0)
     call assert_equal(-9223372036854775807 - 1,  0 / 0)
 
-    if has('float')
-      call assert_equal( 0x7FFFffffFFFFffff, float2nr( 1.0e150))
-      call assert_equal(-0x7FFFffffFFFFffff, float2nr(-1.0e150))
-    endif
+    call assert_equal( 0x7FFFffffFFFFffff, float2nr( 1.0e150))
+    call assert_equal(-0x7FFFffffFFFFffff, float2nr(-1.0e150))
 
     let rng = range(0xFFFFffff, 0x100000001)
     call assert_equal([0xFFFFffff, 0x100000000, 0x100000001], rng)
@@ -6832,10 +6809,10 @@ endfunc
 " Test 95:  lines of :append, :change, :insert			    {{{1
 "-------------------------------------------------------------------------------
 
-function! DefineFunction(name, body)
+func DefineFunction(name, body)
     let func = join(['function! ' . a:name . '()'] + a:body + ['endfunction'], "\n")
     exec func
-endfunction
+endfunc
 
 func Test_script_lines()
     " :append
@@ -6921,10 +6898,8 @@ func Test_bitwise_functions()
     call assert_equal(0, and(127, 128))
     call assert_fails("call and([], 1)", 'E745:')
     call assert_fails("call and({}, 1)", 'E728:')
-    if has('float')
-      call assert_fails("call and(1.0, 1)", 'E805:')
-      call assert_fails("call and(1, 1.0)", 'E805:')
-    endif
+    call assert_fails("call and(1.0, 1)", 'E805:')
+    call assert_fails("call and(1, 1.0)", 'E805:')
     call assert_fails("call and(1, [])", 'E745:')
     call assert_fails("call and(1, {})", 'E728:')
     " or
@@ -6934,10 +6909,8 @@ func Test_bitwise_functions()
     call assert_equal(123, or(0, 123))
     call assert_fails("call or([], 1)", 'E745:')
     call assert_fails("call or({}, 1)", 'E728:')
-    if has('float')
-      call assert_fails("call or(1.0, 1)", 'E805:')
-      call assert_fails("call or(1, 1.0)", 'E805:')
-    endif
+    call assert_fails("call or(1.0, 1)", 'E805:')
+    call assert_fails("call or(1, 1.0)", 'E805:')
     call assert_fails("call or(1, [])", 'E745:')
     call assert_fails("call or(1, {})", 'E728:')
     " xor
@@ -6945,10 +6918,8 @@ func Test_bitwise_functions()
     call assert_equal(111, xor(127, 16))
     eval 127->xor(16)->assert_equal(111)
     call assert_equal(255, xor(127, 128))
-    if has('float')
-      call assert_fails("call xor(1.0, 1)", 'E805:')
-      call assert_fails("call xor(1, 1.0)", 'E805:')
-    endif
+    call assert_fails("call xor(1.0, 1)", 'E805:')
+    call assert_fails("call xor(1, 1.0)", 'E805:')
     call assert_fails("call xor([], 1)", 'E745:')
     call assert_fails("call xor({}, 1)", 'E728:')
     call assert_fails("call xor(1, [])", 'E745:')
@@ -6958,9 +6929,7 @@ func Test_bitwise_functions()
     eval 127->invert()->and(65535)->assert_equal(65408)
     call assert_equal(65519, and(invert(16), 65535))
     call assert_equal(65407, and(invert(128), 65535))
-    if has('float')
-      call assert_fails("call invert(1.0)", 'E805:')
-    endif
+    call assert_fails("call invert(1.0)", 'E805:')
     call assert_fails("call invert([])", 'E745:')
     call assert_fails("call invert({})", 'E728:')
 endfunc
@@ -6981,13 +6950,12 @@ func Test_script_expand_sfile()
     endfunc
     let g:result = s:snr()
   END
-  call writefile(lines, 'Xexpand')
+  call writefile(lines, 'Xexpand', 'D')
   source Xexpand
   call assert_match('<SNR>\d\+_snr', g:result)
   source Xexpand
   call assert_match('<SNR>\d\+_snr', g:result)
 
-  call delete('Xexpand')
   unlet g:result
 endfunc
 
@@ -7039,38 +7007,36 @@ func Test_compound_assignment_operators()
     let x += 1
     call assert_equal(1, x)
 
-    if has('float')
-      " Test for float
-      let x -= 1.5
-      call assert_equal(-0.5, x)
-      let x = 0.5
-      let x += 4.5
-      call assert_equal(5.0, x)
-      let x -= 1.5
-      call assert_equal(3.5, x)
-      let x *= 3.0
-      call assert_equal(10.5, x)
-      let x /= 2.5
-      call assert_equal(4.2, x)
-      call assert_fails('let x %= 0.5', 'E734:')
-      call assert_fails('let x .= "f"', 'E734:')
-      let x = !3.14
-      call assert_equal(0.0, x)
+    " Test for float
+    let x -= 1.5
+    call assert_equal(-0.5, x)
+    let x = 0.5
+    let x += 4.5
+    call assert_equal(5.0, x)
+    let x -= 1.5
+    call assert_equal(3.5, x)
+    let x *= 3.0
+    call assert_equal(10.5, x)
+    let x /= 2.5
+    call assert_equal(4.2, x)
+    call assert_fails('let x %= 0.5', 'E734:')
+    call assert_fails('let x .= "f"', 'E734:')
+    let x = !3.14
+    call assert_equal(0.0, x)
 
-      " integer and float operations
-      let x = 1
-      let x *= 2.1
-      call assert_equal(2.1, x)
-      let x = 1
-      let x /= 0.25
-      call assert_equal(4.0, x)
-      let x = 1
-      call assert_fails('let x %= 0.25', 'E734:')
-      let x = 1
-      call assert_fails('let x .= 0.25', 'E734:')
-      let x = 1.0
-      call assert_fails('let x += [1.1]', 'E734:')
-    endif
+    " integer and float operations
+    let x = 1
+    let x *= 2.1
+    call assert_equal(2.1, x)
+    let x = 1
+    let x /= 0.25
+    call assert_equal(4.0, x)
+    let x = 1
+    call assert_fails('let x %= 0.25', 'E734:')
+    let x = 1
+    call assert_fails('let x .= 0.25', 'E734:')
+    let x = 1.0
+    call assert_fails('let x += [1.1]', 'E734:')
 
     " Test for environment variable
     let $FOO = 1
@@ -7142,9 +7108,7 @@ func Test_refcount()
     call assert_equal(0, test_refcount({}))
     call assert_equal(0, test_refcount(0zff))
     call assert_equal(0, test_refcount({-> line('.')}))
-    if has('float')
-        call assert_equal(-1, test_refcount(0.1))
-    endif
+    call assert_equal(-1, test_refcount(0.1))
     if has('job')
         call assert_equal(0, test_refcount(job_start([&shell, &shellcmdflag, 'echo .'])))
     endif
@@ -7156,10 +7120,8 @@ func Test_refcount()
     call assert_equal(-1, test_refcount(x))
     let x = v:true
     call assert_equal(-1, test_refcount(x))
-    if has('float')
-        let x = 0.1
-        call assert_equal(-1, test_refcount(x))
-    endif
+    let x = 0.1
+    call assert_equal(-1, test_refcount(x))
 
     " Check refcount
     let x = []
@@ -7240,11 +7202,21 @@ func Test_refcount()
     call d.Func()
     unlet d
     delfunc DictFunc
+
+    if has('channel')
+      call assert_equal(-1, test_refcount(test_null_job()))
+      call assert_equal(-1, test_refcount(test_null_channel()))
+    endif
+    call assert_equal(-1, test_refcount(test_null_function()))
+    call assert_equal(-1, test_refcount(test_null_partial()))
+    call assert_equal(-1, test_refcount(test_null_blob()))
+    call assert_equal(-1, test_refcount(test_null_list()))
+    call assert_equal(-1, test_refcount(test_null_dict()))
 endfunc
 
 " Test for missing :endif, :endfor, :endwhile and :endtry           {{{1
 func Test_missing_end()
-  call writefile(['if 2 > 1', 'echo ">"'], 'Xscript')
+  call writefile(['if 2 > 1', 'echo ">"'], 'Xscript', 'D')
   call assert_fails('source Xscript', 'E171:')
   call writefile(['for i in range(5)', 'echo i'], 'Xscript')
   call assert_fails('source Xscript', 'E170:')
@@ -7252,7 +7224,6 @@ func Test_missing_end()
   call assert_fails('source Xscript', 'E170:')
   call writefile(['try', 'echo "."'], 'Xscript')
   call assert_fails('source Xscript', 'E600:')
-  call delete('Xscript')
 
   " Using endfor with :while
   let caught_e732 = 0
@@ -7334,7 +7305,7 @@ func Test_deep_nest()
       let @a = ''
     endfunc
   [SCRIPT]
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
 
   let buf = RunVimInTerminal('-S Xscript', {'rows': 6})
 
@@ -7372,21 +7343,18 @@ func Test_deep_nest()
   "call assert_report(l)
 
   call StopVimInTerminal(buf)
-  call delete('Xscript')
 endfunc
 
 " Test for errors in converting to float from various types         {{{1
 func Test_float_conversion_errors()
-  if has('float')
-    call assert_fails('let x = 4.0 % 2.0', 'E804:')
-    call assert_fails('echo 1.1[0]', 'E806:')
-    call assert_fails('echo sort([function("min"), 1], "f")', 'E891:')
-    call assert_fails('echo 3.2 == "vim"', 'E892:')
-    call assert_fails('echo sort([[], 1], "f")', 'E893:')
-    call assert_fails('echo sort([{}, 1], "f")', 'E894:')
-    call assert_fails('echo 3.2 == v:true', 'E362:')
-    call assert_fails('echo 3.2 == v:none', 'E907:')
-  endif
+  call assert_fails('let x = 4.0 % 2.0', 'E804:')
+  call assert_fails('echo 1.1[0]', 'E806:')
+  call assert_fails('echo sort([function("min"), 1], "f")', 'E891:')
+  call assert_fails('echo 3.2 == "vim"', 'E892:')
+  call assert_fails('echo sort([[], 1], "f")', 'E893:')
+  call assert_fails('echo sort([{}, 1], "f")', 'E894:')
+  call assert_fails('echo 3.2 == v:true', 'E362:')
+  call assert_fails('echo 3.2 == v:none', 'E907:')
 endfunc
 
 " invalid function names               {{{1
@@ -7445,9 +7413,8 @@ func Test_invalid_function_names()
     call assert_equal(1, exists('Bar'))
     call assert_equal(1, exists('*Bar'))
   END
-  call writefile(lines, 'Xscript')
+  call writefile(lines, 'Xscript', 'D')
   source Xscript
-  call delete('Xscript')
 endfunc
 
 " substring and variable name              {{{1
@@ -7538,13 +7505,11 @@ func Test_deeply_nested_source()
       so
       0
   END
-  call writefile(["vim9 silent! @0 \n/"] + lines, 'Xnested.vim')
+  call writefile(["vim9 silent! @0 \n/"] + lines, 'Xnested.vim', 'D')
 
   " this must not crash
   let cmd = GetVimCommand() .. " -e -s -S Xnested.vim -c qa!"
   call system(cmd)
-
-  call delete('Xnested.vim')
 endfunc
 
 "-------------------------------------------------------------------------------

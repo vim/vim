@@ -29,9 +29,6 @@ src/Make_mvc.mak	MS Visual C++ makefile for the Win32 GUI.
 
 src/if_ole.*		OLE automation interface, for MS Windows 95 and NT.
 
-src/VisVim/*		Integration of Win32 GUI with MS Visual Developer
-			Studio.
-
 src/GvimExt/*		DLL for the "Edit with Vim" context menu entry
 
 nsis/*			NSIS script to build the self-installing MS-Windows exe

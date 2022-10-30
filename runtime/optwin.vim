@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Apr 07
+" Last Change:	2022 Oct 28
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -343,6 +343,9 @@ call <SID>Header(gettext("displaying text"))
 call <SID>AddOption("scroll", gettext("number of lines to scroll for CTRL-U and CTRL-D"))
 call append("$", "\t" .. s:local_to_window)
 call <SID>OptionL("scr")
+call <SID>AddOption("smoothscroll", gettext("scroll by screen line"))
+call append("$", "\t" .. s:local_to_window)
+call <SID>BinOptionL("sms")
 call <SID>AddOption("scrolloff", gettext("number of screen lines to show around the cursor"))
 call append("$", " \tset so=" . &so)
 call <SID>AddOption("wrap", gettext("long lines wrap"))
@@ -513,6 +516,8 @@ call <SID>AddOption("switchbuf", gettext("\"useopen\" and/or \"split\"; which wi
 call <SID>OptionG("swb", &swb)
 call <SID>AddOption("splitbelow", gettext("a new window is put below the current one"))
 call <SID>BinOptionG("sb", &sb)
+call <SID>AddOption("splitkeep", gettext("determines scroll behavior for split windows"))
+call <SID>BinOptionG("spk", &spk)
 call <SID>AddOption("splitright", gettext("a new window is put right of the current one"))
 call <SID>BinOptionG("spr", &spr)
 call <SID>AddOption("scrollbind", gettext("this window scrolls together with other bound windows"))
@@ -951,6 +956,8 @@ if has("lispindent")
   call <SID>BinOptionL("lisp")
   call <SID>AddOption("lispwords", gettext("words that change how lisp indenting works"))
   call <SID>OptionL("lw")
+  call <SID>AddOption("lispoptions", gettext("options for Lisp indenting"))
+  call <SID>OptionL("lop")
 endif
 
 
@@ -1040,6 +1047,9 @@ call <SID>BinOptionL("bin")
 call <SID>AddOption("endofline", gettext("last line in the file has an end-of-line"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>BinOptionL("eol")
+call <SID>AddOption("endoffile", gettext("last line in the file followed by CTRL-Z"))
+call append("$", "\t" .. s:local_to_buffer)
+call <SID>BinOptionL("eof")
 call <SID>AddOption("fixendofline", gettext("fixes missing end-of-line at end of text file"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>BinOptionL("fixeol")

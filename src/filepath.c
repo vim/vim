@@ -1609,7 +1609,7 @@ checkitem_common(void *context, char_u *name, dict_T *dict)
 	argv[0].vval.v_dict = dict;
     }
 
-    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
+    if (eval_expr_typval(expr, argv, 1, NULL, &rettv) == FAIL)
 	goto theend;
 
     // We want to use -1, but also true/false should be allowed.
@@ -1792,16 +1792,27 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     long	cnt	 = 0;
     char_u	*p;			// position in buf
     char_u	*start;			// start of current line
+    off_T	offset = 0;
+    off_T	size = -1;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	if (STRCMP(tv_get_string(&argvars[1]), "b") == 0)
-	    binary = TRUE;
-	if (STRCMP(tv_get_string(&argvars[1]), "B") == 0)
-	    blob = TRUE;
+	if (always_blob)
+	{
+	    offset = (off_T)tv_get_number(&argvars[1]);
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+		size = (off_T)tv_get_number(&argvars[2]);
+	}
+	else
+	{
+	    if (STRCMP(tv_get_string(&argvars[1]), "b") == 0)
+		binary = TRUE;
+	    if (STRCMP(tv_get_string(&argvars[1]), "B") == 0)
+		blob = TRUE;
 
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	    maxline = (long)tv_get_number(&argvars[2]);
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+		maxline = (long)tv_get_number(&argvars[2]);
+	}
     }
 
     if ((blob ? rettv_blob_alloc(rettv) : rettv_list_alloc(rettv)) == FAIL)
@@ -1818,19 +1829,15 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     }
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
-	semsg(_(e_cant_open_file_str), *fname == NUL ? (char_u *)_("<empty>") : fname);
+	semsg(_(e_cant_open_file_str),
+			       *fname == NUL ? (char_u *)_("<empty>") : fname);
 	return;
     }
 
     if (blob)
     {
-	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
-	{
+	if (read_blob(fd, rettv, offset, size) == FAIL)
 	    semsg(_(e_cant_read_file_str), fname);
-	    // An empty blob is returned on error.
-	    blob_free(rettv->vval.v_blob);
-	    rettv->vval.v_blob = NULL;
-	}
 	fclose(fd);
 	return;
     }
@@ -2007,7 +2014,11 @@ read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
     void
 f_readblob(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_opt_number_arg(argvars, 1) == FAIL
+		|| (argvars[1].v_type != VAR_UNKNOWN
+		    && check_for_opt_number_arg(argvars, 2) == FAIL)))
 	return;
 
     read_file_or_blob(argvars, rettv, TRUE);
@@ -2583,7 +2594,7 @@ f_browse(typval_T *argvars UNUSED, typval_T *rettv)
 		|| check_for_string_arg(argvars, 3) == FAIL))
 	return;
 
-    save = (int)tv_get_number_chk(&argvars[0], &error);
+    save = (int)tv_get_bool_chk(&argvars[0], &error);
     title = tv_get_string_chk(&argvars[1]);
     initdir = tv_get_string_buf_chk(&argvars[2], buf);
     defname = tv_get_string_buf_chk(&argvars[3], buf2);
@@ -3354,7 +3365,7 @@ expand_backtick(
 
 #ifdef FEAT_EVAL
     if (*cmd == '=')	    // `={expr}`: Expand expression
-	buffer = eval_to_string(cmd + 1, TRUE);
+	buffer = eval_to_string(cmd + 1, TRUE, FALSE);
     else
 #endif
 	buffer = get_cmd_output(cmd, NULL,

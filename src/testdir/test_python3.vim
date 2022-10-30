@@ -286,16 +286,14 @@ endfunc
 " Test vim.eval() with various types.
 func Test_python3_vim_val()
   call assert_equal("\n8",             execute('py3 print(vim.eval("3+5"))'))
-  if has('float')
-    call assert_equal("\n3.140000",    execute('py3 print(vim.eval("1.01+2.13"))'))
-    call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
-    call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
-    call assert_equal("\n-0.000000",   execute('py3 print(vim.eval("0.0/(-1.0/0.0)"))'))
-    " Commented out: output of infinity and nan depend on platforms.
-    " call assert_equal("\ninf",         execute('py3 print(vim.eval("1.0/0.0"))'))
-    " call assert_equal("\n-inf",        execute('py3 print(vim.eval("-1.0/0.0"))'))
-    " call assert_equal("\n-nan",        execute('py3 print(vim.eval("0.0/0.0"))'))
-  endif
+  call assert_equal("\n3.140000",    execute('py3 print(vim.eval("1.01+2.13"))'))
+  call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
+  call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
+  call assert_equal("\n-0.000000",   execute('py3 print(vim.eval("0.0/(-1.0/0.0)"))'))
+  " Commented out: output of infinity and nan depend on platforms.
+  " call assert_equal("\ninf",         execute('py3 print(vim.eval("1.0/0.0"))'))
+  " call assert_equal("\n-inf",        execute('py3 print(vim.eval("-1.0/0.0"))'))
+  " call assert_equal("\n-nan",        execute('py3 print(vim.eval("0.0/0.0"))'))
   call assert_equal("\nabc",           execute('py3 print(vim.eval("\"abc\""))'))
   call assert_equal("\n['1', '2']",    execute('py3 print(vim.eval("[1, 2]"))'))
   call assert_equal("\n{'1': '2'}",    execute('py3 print(vim.eval("{1:2}"))'))
@@ -879,7 +877,6 @@ func Test_python3_function_call()
 endfunc
 
 func Test_python3_float()
-  CheckFeature float
   let l = [0.0]
   py3 l = vim.bindeval('l')
   py3 l.extend([0.0])
@@ -982,9 +979,7 @@ func Test_python3_pyeval()
   py3 v = vim.eval('test_null_function()')
   call assert_equal(v:none, py3eval('v'))
 
-  if has('float')
-    call assert_equal(0.0, py3eval('0.0'))
-  endif
+  call assert_equal(0.0, py3eval('0.0'))
 
   " Evaluate an invalid values
   call AssertException(['let v = py3eval(''"\0"'')'], 'E859:')
@@ -4049,7 +4044,7 @@ func Test_python3_fold_hidden_buffer()
   endfunc
 
   call setline(1, repeat([''], 15) + repeat(['from'], 3))
-  eval repeat(['x'], 17)->writefile('Xa.txt')
+  eval repeat(['x'], 17)->writefile('Xa.txt', 'D')
   split Xa.txt
   py3 import vim
   py3 b = vim.current.buffer
@@ -4057,7 +4052,6 @@ func Test_python3_fold_hidden_buffer()
   hide
   py3 b[:] = aaa
 
-  call delete('Xa.txt')
   set fdm& fde&
   delfunc Fde
   bwipe! Xa.txt
@@ -4083,7 +4077,7 @@ func Test_python3_hidden_buf_mod_does_not_mess_up_display()
         norm! Gzb
         call feedkeys(":call Func()\r", 'n')
   END
-  call writefile(lines, testfile)
+  call writefile(lines, testfile, 'D')
 
   let rows = 10
   let bufnr = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -4095,8 +4089,8 @@ func Test_python3_hidden_buf_mod_does_not_mess_up_display()
 
   call term_sendkeys(bufnr, ":qall!\<CR>")
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(bufnr)))})
+
   exe bufnr . 'bwipe!'
-  call delete(testfile)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

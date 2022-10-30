@@ -540,6 +540,7 @@ vim_main2(void)
 	// don't have them.
 	if (!gui.in_use && params.evim_mode)
 	    mch_exit(1);
+	firstwin->w_prev_height = firstwin->w_height; // may have changed
     }
 #endif
 
@@ -1007,7 +1008,7 @@ common_init(mparm_T *paramp)
  * Return TRUE when the --not-a-term argument was found.
  */
     int
-is_not_a_term()
+is_not_a_term(void)
 {
     return params.not_a_term;
 }
@@ -1015,8 +1016,8 @@ is_not_a_term()
 /*
  * Return TRUE when the --not-a-term argument was found or the GUI is in use.
  */
-    static int
-is_not_a_term_or_gui()
+    int
+is_not_a_term_or_gui(void)
 {
     return params.not_a_term
 #ifdef FEAT_GUI
@@ -1215,11 +1216,7 @@ main_loop(
 #endif
 
     clear_oparg(&oa);
-    while (!cmdwin
-#ifdef FEAT_CMDWIN
-	    || cmdwin_result == 0
-#endif
-	    )
+    while (!cmdwin || cmdwin_result == 0)
     {
 	if (stuff_empty())
 	{

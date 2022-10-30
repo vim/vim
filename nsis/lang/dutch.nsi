@@ -123,11 +123,6 @@ LangString str_desc_plugin_vim      ${LANG_DUTCH} \
     "Creëer plugin mappen in Vim installatie map, deze worden gebruikt \
      voor iedereen op het systeem."
 
-LangString str_section_vis_vim      ${LANG_DUTCH} \
-    "VisVim extensie"
-LangString str_desc_vis_vim         ${LANG_DUTCH} \
-    "VisVim extensie voor Microsoft Visual Studio integratie."
-
 LangString str_section_nls          ${LANG_DUTCH} \
     "Ondersteuning voor andere talen"
 LangString str_desc_nls             ${LANG_DUTCH} \

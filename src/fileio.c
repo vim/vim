@@ -589,6 +589,8 @@ readfile(
 	// correctly set when reading stdin.
 	if (!read_buffer)
 	{
+	    curbuf->b_p_eof = FALSE;
+	    curbuf->b_start_eof = FALSE;
 	    curbuf->b_p_eol = TRUE;
 	    curbuf->b_start_eol = TRUE;
 	}
@@ -2277,6 +2279,7 @@ failed:
     if (!error
 	    && !got_int
 	    && linerest != 0
+	    // TODO: should we handle CTRL-Z differently here for 'endoffile'?
 	    && !(!curbuf->b_p_bin
 		&& fileformat == EOL_DOS
 		&& *line_start == Ctrl_Z
@@ -2284,7 +2287,11 @@ failed:
     {
 	// remember for when writing
 	if (set_options)
+	{
 	    curbuf->b_p_eol = FALSE;
+	    if (*line_start == Ctrl_Z && ptr == line_start + 1)
+		curbuf->b_p_eof = TRUE;
+	}
 	*ptr = NUL;
 	len = (colnr_T)(ptr - line_start + 1);
 	if (ml_append(lnum, line_start, len, newfile) == FAIL)

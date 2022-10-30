@@ -210,11 +210,51 @@ func Test_redraw_in_autocmd()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_redrawstatus_in_autocmd()
+  CheckScreendump
+
+  let lines =<< trim END
+      set laststatus=2
+      set statusline=%=:%{getcmdline()}
+      autocmd CmdlineChanged * redrawstatus
+  END
+  call writefile(lines, 'XTest_redrawstatus', 'D')
+
+  let buf = RunVimInTerminal('-S XTest_redrawstatus', {'rows': 8})
+  " :redrawstatus is postponed if messages have scrolled
+  call term_sendkeys(buf, ":echo \"one\\ntwo\\nthree\\nfour\"\<CR>")
+  call term_sendkeys(buf, ":foobar")
+  call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_1', {})
+  " it is not postponed if messages have not scrolled
+  call term_sendkeys(buf, "\<Esc>:for in in range(3)")
+  call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_2', {})
+  " with cmdheight=1 messages have scrolled when typing :endfor
+  call term_sendkeys(buf, "\<CR>:endfor")
+  call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_3', {})
+  call term_sendkeys(buf, "\<CR>:set cmdheight=2\<CR>")
+  " with cmdheight=2 messages haven't scrolled when typing :for or :endfor
+  call term_sendkeys(buf, ":for in in range(3)")
+  call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_4', {})
+  call term_sendkeys(buf, "\<CR>:endfor")
+  call VerifyScreenDump(buf, 'Test_redrawstatus_in_autocmd_5', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<CR>")
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_changing_cmdheight()
   CheckScreendump
 
   let lines =<< trim END
       set cmdheight=1 laststatus=2
+      func EchoTwo()
+        set laststatus=2
+        set cmdheight=5
+        echo 'foo'
+        echo 'bar'
+        set cmdheight=1
+      endfunc
   END
   call writefile(lines, 'XTest_cmdheight', 'D')
 
@@ -238,6 +278,20 @@ func Test_changing_cmdheight()
   call term_sendkeys(buf, ":resize -1\<CR>")
   call term_sendkeys(buf, ":set cmdheight=1\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_5', {})
+
+  " setting 'cmdheight' works after outputting two messages
+  call term_sendkeys(buf, ":call EchoTwo()\<CR>")
+  call VerifyScreenDump(buf, 'Test_changing_cmdheight_6', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_cmdheight_tabline()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('-c "set ls=2" -c "set stal=2" -c "set cmdheight=1"', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_cmdheight_tabline_1', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -662,6 +716,9 @@ func Test_fullcommand()
         \ '3match':     'match',
         \ 'aboveleft':  'aboveleft',
         \ 'abo':        'aboveleft',
+        \ 'en':         'endif',
+        \ 'end':        'endif',
+        \ 'endi':        'endif',
         \ 's':          'substitute',
         \ '5s':         'substitute',
         \ ':5s':        'substitute',
@@ -2149,7 +2206,7 @@ func Test_wildmenu_pum()
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_13', {})
 
   " Directory name completion
-  call mkdir('Xnamedir/XdirA/XdirB', 'p')
+  call mkdir('Xnamedir/XdirA/XdirB', 'pR')
   call writefile([], 'Xnamedir/XfileA')
   call writefile([], 'Xnamedir/XdirA/XfileB')
   call writefile([], 'Xnamedir/XdirA/XdirB/XfileC')
@@ -2229,7 +2286,7 @@ func Test_wildmenu_pum()
   call VerifyScreenDump(buf, 'Test_wildmenu_pum_31', {})
 
   " Tests a directory name contained full-width characters.
-  call mkdir('Xnamedir/あいう', 'pR')
+  call mkdir('Xnamedir/あいう', 'p')
   call writefile([], 'Xnamedir/あいう/abc')
   call writefile([], 'Xnamedir/あいう/xyz')
   call writefile([], 'Xnamedir/あいう/123')

@@ -74,9 +74,7 @@ func Test_echomsg()
   call assert_equal("\n[1, 2, []]", execute(':echomsg [1, 2, test_null_list()]'))
   call assert_equal("\n{}", execute(':echomsg {}'))
   call assert_equal("\n{'a': 1, 'b': 2}", execute(':echomsg {"a": 1, "b": 2}'))
-  if has('float')
-    call assert_equal("\n1.23", execute(':echomsg 1.23'))
-  endif
+  call assert_equal("\n1.23", execute(':echomsg 1.23'))
   call assert_match("function('<lambda>\\d*')", execute(':echomsg {-> 1234}'))
 endfunc
 
@@ -86,9 +84,7 @@ func Test_echoerr()
   call assert_equal("\n12345 IgNoRe", execute(':echoerr 12345 "IgNoRe"'))
   call assert_equal("\n[1, 2, 'IgNoRe']", execute(':echoerr [1, 2, "IgNoRe"]'))
   call assert_equal("\n{'IgNoRe': 2, 'a': 1}", execute(':echoerr {"a": 1, "IgNoRe": 2}'))
-  if has('float')
-    call assert_equal("\n1.23 IgNoRe", execute(':echoerr 1.23 "IgNoRe"'))
-  endif
+  call assert_equal("\n1.23 IgNoRe", execute(':echoerr 1.23 "IgNoRe"'))
   eval '<lambda>'->test_ignore_error()
   call assert_match("function('<lambda>\\d*')", execute(':echoerr {-> 1234}'))
   call test_ignore_error('RESET')
@@ -107,7 +103,7 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
         set statusline=%!StatusLine()
         set laststatus=2
   END
-  call writefile(lines, testfile)
+  call writefile(lines, testfile, 'D')
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -121,8 +117,8 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
 
   call term_sendkeys(buf, ":qall!\<CR>")
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+
   exe buf . 'bwipe!'
-  call delete(testfile)
 endfunc
 
 func Test_mode_message_at_leaving_insert_with_esc_mapped()
@@ -135,7 +131,7 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
         set laststatus=2
         inoremap <Esc> <Esc>00
   END
-  call writefile(lines, testfile)
+  call writefile(lines, testfile, 'D')
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -149,8 +145,8 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
 
   call term_sendkeys(buf, ":qall!\<CR>")
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
+
   exe buf . 'bwipe!'
-  call delete(testfile)
 endfunc
 
 func Test_echospace()
@@ -168,6 +164,38 @@ func Test_echospace()
   call assert_equal(&columns - 29, v:echospace)
 
   set ruler& showcmd&
+endfunc
+
+func Test_warning_scroll()
+  CheckRunVimInTerminal
+  let lines =<< trim END
+      call test_override('ui_delay', 50)
+      set noruler
+      set readonly
+      undo
+  END
+  call writefile(lines, 'XTestWarningScroll', 'D')
+  let buf = RunVimInTerminal('', #{rows: 8})
+
+  " When the warning comes from a script, messages are scrolled so that the
+  " stacktrace is visible.
+  call term_sendkeys(buf, ":source XTestWarningScroll\n")
+  " only match the final colon in the line that shows the source
+  call WaitForAssert({-> assert_match(':$', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('line    4:W10: Warning: Changing a readonly file', term_getline(buf, 6))})
+  call WaitForAssert({-> assert_equal('Already at oldest change', term_getline(buf, 7))})
+  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 8))})
+  call term_sendkeys(buf, "\n")
+
+  " When the warning does not come from a script, messages are not scrolled.
+  call term_sendkeys(buf, ":enew\n")
+  call term_sendkeys(buf, ":set readonly\n")
+  call term_sendkeys(buf, 'u')
+  call WaitForAssert({-> assert_equal('W10: Warning: Changing a readonly file', term_getline(buf, 8))})
+  call WaitForAssert({-> assert_equal('Already at oldest change', term_getline(buf, 8))})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 " Test more-prompt (see :help more-prompt).
@@ -283,6 +311,67 @@ func Test_message_more()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test more-prompt scrollback
+func Test_message_more_scrollback()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set t_ut=
+      hi Normal ctermfg=15 ctermbg=0
+      for i in range(100)
+          echo i
+      endfor
+  END
+  call writefile(lines, 'XmoreScrollback', 'D')
+  let buf = RunVimInTerminal('-S XmoreScrollback', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_more_scrollback_1', {})
+
+  call term_sendkeys(buf, 'f')
+  call TermWait(buf)
+  call term_sendkeys(buf, 'b')
+  call VerifyScreenDump(buf, 'Test_more_scrollback_2', {})
+
+  call term_sendkeys(buf, 'q')
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+" Test verbose message before echo command
+func Test_echo_verbose_system()
+  CheckRunVimInTerminal
+  CheckUnix    " needs the "seq" command
+  CheckNotMac  " doesn't use /tmp
+
+  let buf = RunVimInTerminal('', {'rows': 10})
+  call term_sendkeys(buf, ":4 verbose echo system('seq 20')\<CR>")
+  " Note that the screendump is filtered to remove the name of the temp file
+  call VerifyScreenDump(buf, 'Test_verbose_system_1', {})
+
+  " display a page and go back, results in exactly the same view
+  call term_sendkeys(buf, ' ')
+  call TermWait(buf)
+  call term_sendkeys(buf, 'b')
+  call VerifyScreenDump(buf, 'Test_verbose_system_1', {})
+
+  " do the same with 'cmdheight' set to 2
+  call term_sendkeys(buf, 'q')
+  call TermWait(buf)
+  call term_sendkeys(buf, ":set ch=2\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":4 verbose echo system('seq 20')\<CR>")
+  call VerifyScreenDump(buf, 'Test_verbose_system_2', {})
+
+  call term_sendkeys(buf, ' ')
+  call TermWait(buf)
+  call term_sendkeys(buf, 'b')
+  call VerifyScreenDump(buf, 'Test_verbose_system_2', {})
+
+  call term_sendkeys(buf, 'q')
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+endfunc
+
+
 func Test_ask_yesno()
   CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
@@ -337,14 +426,14 @@ func Test_quit_long_message()
   let content =<< trim END
     echom range(9999)->join("\x01")
   END
-  call writefile(content, 'Xtest_quit_message')
-  let buf = RunVimInTerminal('-S Xtest_quit_message', #{rows: 6})
+  call writefile(content, 'Xtest_quit_message', 'D')
+  let buf = RunVimInTerminal('-S Xtest_quit_message', #{rows: 10, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('^-- More --', term_getline(buf, 10))})
   call term_sendkeys(buf, "q")
   call VerifyScreenDump(buf, 'Test_quit_long_message', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_quit_message')
 endfunc
 
 " this was missing a terminating NUL
@@ -373,7 +462,7 @@ func Test_fileinfo_after_echo()
     autocmd CursorHold * buf b.txt | w | echo "'b' written"
   END
 
-  call writefile(content, 'Xtest_fileinfo_after_echo')
+  call writefile(content, 'Xtest_fileinfo_after_echo', 'D')
   let buf = RunVimInTerminal('-S Xtest_fileinfo_after_echo', #{rows: 6})
   call term_sendkeys(buf, ":set updatetime=50\<CR>")
   call term_sendkeys(buf, "0$")
@@ -383,7 +472,6 @@ func Test_fileinfo_after_echo()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_fileinfo_after_echo')
   call delete('b.txt')
 endfunc
 
@@ -401,8 +489,34 @@ func Test_echowindow()
           echowindow 'line' n
         endfor
       endfunc
+
+      def TwoMessages()
+        popup_clear()
+        set cmdheight=2
+        redraw
+        timer_start(100, (_) => {
+            echowin 'message'
+          })
+        echo 'one'
+        echo 'two'
+      enddef
+
+      def ThreeMessages()
+        popup_clear()
+        redraw
+        timer_start(100, (_) => {
+            echowin 'later message'
+          })
+        echo 'one'
+        echo 'two'
+        echo 'three'
+      enddef
+
+      def HideWin()
+        popup_hide(popup_findecho())
+      enddef
   END
-  call writefile(lines, 'XtestEchowindow')
+  call writefile(lines, 'XtestEchowindow', 'D')
   let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
   call VerifyScreenDump(buf, 'Test_echowindow_1', {})
 
@@ -415,9 +529,25 @@ func Test_echowindow()
   call term_sendkeys(buf, ":call ManyMessages()\<CR>")
   call VerifyScreenDump(buf, 'Test_echowindow_4', {})
 
+  call term_sendkeys(buf, ":call TwoMessages()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_5', {})
+
+  call term_sendkeys(buf, ":call ThreeMessages()\<CR>")
+  sleep 120m
+  call VerifyScreenDump(buf, 'Test_echowindow_6', {})
+
+  call term_sendkeys(buf, "\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_7', {})
+
+  call term_sendkeys(buf, ":tabnew\<CR>")
+  call term_sendkeys(buf, ":7echowin 'more'\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_8', {})
+
+  call term_sendkeys(buf, ":call HideWin()\<CR>")
+  call VerifyScreenDump(buf, 'Test_echowindow_9', {})
+
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestEchowindow')
 endfunc
 
 " messages window should not be used while evaluating the :echowin argument
@@ -431,13 +561,32 @@ func Test_echowin_eval()
       endfunc
       echowindow ShowMessage()
   END
-  call writefile(lines, 'XtestEchowindow')
+  call writefile(lines, 'XtestEchowindow', 'D')
   let buf = RunVimInTerminal('-S XtestEchowindow', #{rows: 8})
   call VerifyScreenDump(buf, 'Test_echowin_eval', {})
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('XtestEchowindow')
+endfunc
+
+" messages window should not be used for showing the mode
+func Test_echowin_showmode()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      setline(1, ['one', 'two'])
+      timer_start(100, (_) => {
+           echowin 'echo window'
+         })
+      normal V
+  END
+  call writefile(lines, 'XtestEchowinMode', 'D')
+  let buf = RunVimInTerminal('-S XtestEchowinMode', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_echowin_showmode', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
 endfunc
 
 

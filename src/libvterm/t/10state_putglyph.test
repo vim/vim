@@ -52,6 +52,12 @@ PUSH "\xCC\x81Z"
   putglyph 0x65,0x301 1 0,0
   putglyph 0x5a 1 0,1
 
+!Spare combining chars get truncated
+RESET
+PUSH "e" . "\xCC\x81" x 10
+  putglyph 0x65,0x301,0x301,0x301,0x301,0x301 1 0,0
+  # and nothing more
+
 RESET
 PUSH "e"
   putglyph 0x65 1 0,0

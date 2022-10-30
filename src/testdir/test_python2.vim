@@ -686,7 +686,6 @@ func Test_python_function_call()
 endfunc
 
 func Test_python_float()
-  CheckFeature float
   let l = [0.0]
   py l = vim.bindeval('l')
   py l.extend([0.0])
@@ -785,9 +784,7 @@ func Test_python_pyeval()
   py v = vim.eval('test_null_function()')
   call assert_equal(v:none, pyeval('v'))
 
-  if has('float')
-    call assert_equal(0.0, pyeval('0.0'))
-  endif
+  call assert_equal(0.0, pyeval('0.0'))
 
   " Evaluate an invalid values
   call AssertException(['let v = pyeval(''"\0"'')'], 'E859:')

@@ -384,21 +384,18 @@ func Test_undofile_truncated()
 
   " try several sizes
   for size in range(20, 500, 33)
-    call writefile(contents[0:size], 'Xundofile')
+    call writefile(contents[0:size], 'Xundofile', 'D')
     call assert_fails('rundo Xundofile', 'E825:')
   endfor
 
   bwipe!
-  call delete('Xundofile')
 endfunc
 
 func Test_rundo_errors()
   call assert_fails('rundo XfileDoesNotExist', 'E822:')
 
-  call writefile(['abc'], 'Xundofile')
+  call writefile(['abc'], 'Xundofile', 'D')
   call assert_fails('rundo Xundofile', 'E823:')
-
-  call delete('Xundofile')
 endfunc
 
 func Test_undofile_next()

@@ -21,8 +21,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
   cancel-in-progress: true
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   analyze:
+    permissions:
+      contents: read # to fetch code (actions/checkout)
+      security-events: write #  (github/codeql-action/autobuild)
+
     name: Analyze
     runs-on: ubuntu-latest
 

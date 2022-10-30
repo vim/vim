@@ -88,11 +88,11 @@ endfunc
 func Test_gf()
   set isfname=@,48-57,/,.,-,_,+,,,$,:,~,{,}
 
-  call writefile(["Test for gf command"], "Xtest1")
+  call writefile(["Test for gf command"], "Xtest1", 'D')
   if has("unix")
-    call writefile(["    ${CDIR}/Xtest1"], "Xtestgf")
+    call writefile(["    ${CDIR}/Xtest1"], "Xtestgf", 'D')
   else
-    call writefile(["    $TDIR/Xtest1"], "Xtestgf")
+    call writefile(["    $TDIR/Xtest1"], "Xtestgf", 'D')
   endif
   new Xtestgf
   if has("unix")
@@ -109,14 +109,12 @@ func Test_gf()
 
   normal gf
   call assert_equal('Xtest1', fnamemodify(bufname(''), ":t"))
-  close!
 
-  call delete('Xtest1')
-  call delete('Xtestgf')
+  close!
 endfunc
 
 func Test_gf_visual()
-  call writefile(['one', 'two', 'three', 'four'], "Xtest_gf_visual")
+  call writefile(['one', 'two', 'three', 'four'], "Xtest_gf_visual", 'D')
   new
   call setline(1, 'XXXtest_gf_visualXXX')
   set hidden
@@ -139,33 +137,30 @@ func Test_gf_visual()
   call assert_equal(3, getcurpos()[1])
 
   " do not include the NUL at the end
-  call writefile(['x'], 'X')
+  call writefile(['x'], 'Xvisual', 'D')
   let save_enc = &enc
   for enc in ['latin1', 'utf-8']
     exe "set enc=" .. enc
     new
-    call setline(1, 'X')
+    call setline(1, 'Xvisual')
     set nomodified
     exe "normal \<C-V>$gf"
-    call assert_equal('X', bufname())
+    call assert_equal('Xvisual', bufname())
     bwipe!
   endfor
   let &enc = save_enc
-  call delete('X')
 
   " line number in visual area is used for file name
   if has('unix')
     bwipe!
-    call writefile([], "Xtest_gf_visual:3")
+    call writefile([], "Xtest_gf_visual:3", 'D')
     new
     call setline(1, 'XXXtest_gf_visual:3XXX')
     norm! 0ttvtXgF
     call assert_equal('Xtest_gf_visual:3', bufname('%'))
-  call delete('Xtest_gf_visual:3')
   endif
 
   bwipe!
-  call delete('Xtest_gf_visual')
   set hidden&
 endfunc
 
@@ -254,7 +249,7 @@ endfunc
 func Test_gf_subdirs_wildcard()
   let cwd = getcwd()
   let dir = 'Xtestgf_dir'
-  call mkdir(dir)
+  call mkdir(dir, 'R')
   call chdir(dir)
   for i in range(300)
     call mkdir(i)
@@ -269,7 +264,6 @@ func Test_gf_subdirs_wildcard()
   call assert_equal('99', fnamemodify(bufname(''), ":t"))
 
   call chdir(cwd)
-  call delete(dir, 'rf')
   set path&
 endfunc
 

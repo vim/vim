@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 9.0.  Last change: 2022 May 21
+*indent.txt*    For Vim version 9.0.  Last change: 2022 Oct 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -982,9 +982,12 @@ indentation: >
 
 PYTHON							*ft-python-indent*
 
-The amount of indent can be set for the following situations.  The examples
-given are the defaults.  Note that the dictionary values are set to an
-expression, so that you can change the value of 'shiftwidth' later.
+The amount of indent can be set with the `g:python_indent` |Dictionary|, which
+needs to be created before adding the items: >
+	let g:python_indent = {}
+The examples given are the defaults.  Note that the dictionary values are set
+to an expression, so that you can change the value of 'shiftwidth' later
+without having to update these values.
 
 Indent after an open paren: >
 	let g:python_indent.open_paren = 'shiftwidth() * 2'
@@ -1227,13 +1230,31 @@ comments will be indented according to the correctly indented code.
 
 
 VIM							*ft-vim-indent*
+							*g:vim_indent*
+Vim scripts indentation can be configured with the `g:vim_indent` dictionary
+variable.  It supports 3 keys, `line_continuation`, `more_in_bracket_block`,
+and `searchpair_timeout`.
+`line_continuation` expects a number which will be added to the indent level of
+a continuation line starting with a backslash, and defaults to
+`shiftwidth() * 3`.  It also accepts a string, which is evaluated at runtime.
+`more_in_bracket_block` expects a boolean value; when on, an extra
+`shiftwidth()` is added inside blocks surrounded with brackets.  It defaults to
+`v:false`.
+`searchpair_timeout` expects a number which will be passed to `searchpair()` as
+a timeout.  Increasing the value might give more accurate results, but also
+causes the indentation to take more time.  It defaults to 100 (milliseconds).
+
+Example of configuration:
+
+	let g:vim_indent = #{
+	    \ line_continuation: shiftwidth() * 3,
+	    \ more_in_bracket_block: v:false,
+	    \ searchpair_timeout: 100,
+	    \ }
+
 							*g:vim_indent_cont*
-For indenting Vim scripts there is one variable that specifies the amount of
-indent for a continuation line, a line that starts with a backslash: >
-
-	:let g:vim_indent_cont = shiftwidth() * 3
-
-Three times shiftwidth is the default value.
+This variable is equivalent to `g:vim_indent.line_continuation`.
+It's supported for backward compatibility.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

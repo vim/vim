@@ -12,19 +12,25 @@ extern "C" {
 
 #include "vterm_keycodes.h"
 
+// VIM: use TRUE and FALSE instead of true and false
 #define TRUE 1
 #define FALSE 0
 
-// from stdint.h
+// VIM: from stdint.h
 typedef unsigned char		uint8_t;
 typedef unsigned short		uint16_t;
 typedef unsigned int		uint32_t;
 
 #define VTERM_VERSION_MAJOR 0
-#define VTERM_VERSION_MINOR 2
+#define VTERM_VERSION_MINOR 3
 
 #define VTERM_CHECK_VERSION \
         vterm_check_version(VTERM_VERSION_MAJOR, VTERM_VERSION_MINOR)
+
+/* Any cell can contain at most one basic printing character and 5 combining
+ * characters. This number could be changed but will be ABI-incompatible if
+ * you do */
+#define VTERM_MAX_CHARS_PER_CELL 6
 
 typedef struct VTerm VTerm;
 typedef struct VTermState VTermState;
@@ -126,7 +132,7 @@ typedef enum {
   VTERM_COLOR_DEFAULT_MASK = 0x06,
 
   /**
-   * If set, indicates that the color is invalid.
+   * VIM: If set, indicates that the color is invalid.
    */
   VTERM_COLOR_INVALID = 0x08
 } VTermColorType;
@@ -167,6 +173,7 @@ typedef enum {
  */
 #define VTERM_COLOR_IS_INVALID(col) (!!((col)->type & VTERM_COLOR_INVALID))
 
+// VIM: this was a union, but that doesn't always work.
 typedef struct {
   /**
    * Tag indicating which member is actually valid.
@@ -232,6 +239,8 @@ typedef enum {
   VTERM_ATTR_FONT,       // number: 10-19
   VTERM_ATTR_FOREGROUND, // color:  30-39 90-97
   VTERM_ATTR_BACKGROUND, // color:  40-49 100-107
+  VTERM_ATTR_SMALL,      // bool:   73, 74, 75
+  VTERM_ATTR_BASELINE,   // number: 73, 74, 75
 
   VTERM_N_ATTRS
 } VTermAttr;
@@ -246,7 +255,7 @@ typedef enum {
   VTERM_PROP_REVERSE,           // bool
   VTERM_PROP_CURSORSHAPE,       // number
   VTERM_PROP_MOUSE,             // number
-  VTERM_PROP_CURSORCOLOR,       // string
+  VTERM_PROP_CURSORCOLOR,       // VIM - string
 
   VTERM_N_PROPS
 } VTermProp;
@@ -297,6 +306,7 @@ typedef struct {
  */
 typedef struct {
   VTermPos pos;                /* current cursor position */
+  VTermLineInfo *lineinfos[2]; /* [1] may be NULL */
 } VTermStateFields;
 
 typedef struct {
@@ -308,8 +318,25 @@ typedef struct {
 
 void vterm_check_version(int major, int minor);
 
+struct VTermBuilder {
+  int ver; /* currently unused but reserved for some sort of ABI version flag */
+
+  int rows, cols;
+
+  const VTermAllocatorFunctions *allocator;
+  void *allocdata;
+
+  /* Override default sizes for various structures */
+  size_t outbuffer_len;  /* default: 4096 */
+  size_t tmpbuffer_len;  /* default: 4096 */
+};
+
+VTerm *vterm_build(const struct VTermBuilder *builder);
+
+/* A convenient shortcut for default cases */
 // Allocate and initialize a new terminal with default allocators.
 VTerm *vterm_new(int rows, int cols);
+/* These shortcuts are generally discouraged in favour of just using vterm_build() */
 
 // Allocate and initialize a new terminal with specified allocators.
 VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *funcs, void *allocdata);
@@ -371,6 +398,7 @@ void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod);
 #define CSI_ARG(a)          ((a) & CSI_ARG_MASK)
 
 /* Can't use -1 to indicate a missing argument; use this instead */
+// VIM: changed 31 to 30 to avoid an overflow warning
 #define CSI_ARG_MISSING ((1<<30)-1)
 
 #define CSI_ARG_IS_MISSING(a) (CSI_ARG(a) == CSI_ARG_MISSING)
@@ -411,8 +439,10 @@ typedef struct {
   int (*bell)(void *user);
   int (*resize)(int rows, int cols, VTermStateFields *fields, void *user);
   int (*setlineinfo)(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user);
+  int (*sb_clear)(void *user);
 } VTermStateCallbacks;
 
+// VIM: added
 typedef struct {
   VTermPos pos;
   int	   buttons;
@@ -453,6 +483,7 @@ void *vterm_state_get_unrecognised_fbdata(VTermState *state);
 void vterm_state_reset(VTermState *state, int hard);
 
 void vterm_state_get_cursorpos(const VTermState *state, VTermPos *cursorpos);
+// VIM: added
 void vterm_state_get_mousestate(const VTermState *state, VTermMouseState *mousestate);
 void vterm_state_get_default_colors(const VTermState *state, VTermColor *default_fg, VTermColor *default_bg);
 void vterm_state_get_palette_color(const VTermState *state, int index, VTermColor *col);
@@ -497,6 +528,8 @@ typedef struct {
     unsigned int font      : 4; /* 0 to 9 */
     unsigned int dwl       : 1; /* On a DECDWL or DECDHL line */
     unsigned int dhl       : 2; /* On a DECDHL line (1=top 2=bottom) */
+    unsigned int small     : 1;
+    unsigned int baseline  : 2;
 } VTermScreenCellAttrs;
 
 enum {
@@ -506,8 +539,13 @@ enum {
   VTERM_UNDERLINE_CURLY,
 };
 
+enum {
+  VTERM_BASELINE_NORMAL,
+  VTERM_BASELINE_RAISE,
+  VTERM_BASELINE_LOWER,
+};
+
 typedef struct {
-#define VTERM_MAX_CHARS_PER_CELL 6
   uint32_t chars[VTERM_MAX_CHARS_PER_CELL];
   char     width;
   VTermScreenCellAttrs attrs;
@@ -527,6 +565,7 @@ typedef struct {
   // Return value is unused.
   int (*sb_pushline)(int cols, const VTermScreenCell *cells, void *user);
   int (*sb_popline)(int cols, VTermScreenCell *cells, void *user);
+  int (*sb_clear)(void* user);
 } VTermScreenCallbacks;
 
 // Return the screen of the vterm.
@@ -541,6 +580,11 @@ void *vterm_screen_get_cbdata(VTermScreen *screen);
 
 void  vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermStateFallbacks *fallbacks, void *user);
 void *vterm_screen_get_unrecognised_fbdata(VTermScreen *screen);
+
+void vterm_screen_enable_reflow(VTermScreen *screen, int reflow);
+
+// Back-compat alias for the brief time it was in 0.3-RC1
+#define vterm_screen_set_reflow  vterm_screen_enable_reflow
 
 // Enable support for using the alternate screen if "altscreen" is non-zero.
 // Before that switching to the alternate screen won't work.
@@ -582,8 +626,10 @@ typedef enum {
   VTERM_ATTR_FOREGROUND_MASK = 1 << 7,
   VTERM_ATTR_BACKGROUND_MASK = 1 << 8,
   VTERM_ATTR_CONCEAL_MASK    = 1 << 9,
+  VTERM_ATTR_SMALL_MASK      = 1 << 10,
+  VTERM_ATTR_BASELINE_MASK   = 1 << 11,
 
-  VTERM_ALL_ATTRS_MASK = (1 << 10) - 1
+  VTERM_ALL_ATTRS_MASK = (1 << 12) - 1
 } VTermAttrMask;
 
 int vterm_screen_get_attrs_extent(const VTermScreen *screen, VTermRect *extent, VTermPos pos, VTermAttrMask attrs);

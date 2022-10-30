@@ -54,14 +54,12 @@ func Test_empty()
   call assert_equal(0, empty(1))
   call assert_equal(0, empty(-1))
 
-  if has('float')
-    call assert_equal(1, empty(0.0))
-    call assert_equal(1, empty(-0.0))
-    call assert_equal(0, empty(1.0))
-    call assert_equal(0, empty(-1.0))
-    call assert_equal(0, empty(1.0/0.0))
-    call assert_equal(0, empty(0.0/0.0))
-  endif
+  call assert_equal(1, empty(0.0))
+  call assert_equal(1, empty(-0.0))
+  call assert_equal(0, empty(1.0))
+  call assert_equal(0, empty(-1.0))
+  call assert_equal(0, empty(1.0/0.0))
+  call assert_equal(0, empty(0.0/0.0))
 
   call assert_equal(1, empty([]))
   call assert_equal(0, empty(['a']))
@@ -90,9 +88,7 @@ endfunc
 
 func Test_test_void()
   call assert_fails('echo 1 == test_void()', 'E1031:')
-  if has('float')
-    call assert_fails('echo 1.0 == test_void()', 'E1031:')
-  endif
+  call assert_fails('echo 1.0 == test_void()', 'E1031:')
   call assert_fails('let x = json_encode(test_void())', 'E685:')
   call assert_fails('let x = copy(test_void())', 'E685:')
   call assert_fails('let x = copy([test_void()])', 'E1031:')
@@ -175,10 +171,8 @@ func Test_strwidth()
     call assert_fails('call strwidth({})', 'E731:')
   endfor
 
-  if has('float')
-    call assert_equal(3, strwidth(1.2))
-    call v9.CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal(3, strwidth(1.2))
+  call v9.CheckDefAndScriptFailure(['echo strwidth(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
 
   set ambiwidth&
 endfunc
@@ -242,10 +236,8 @@ func Test_str2nr()
 
   call assert_fails('call str2nr([])', 'E730:')
   call assert_fails('call str2nr({->2})', 'E729:')
-  if has('float')
-    call assert_equal(1, str2nr(1.2))
-    call v9.CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal(1, str2nr(1.2))
+  call v9.CheckDefAndScriptFailure(['echo str2nr(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
   call assert_fails('call str2nr(10, [])', 'E745:')
 endfunc
 
@@ -504,10 +496,8 @@ func Test_simplify()
   call assert_fails('call simplify({->0})', 'E729:')
   call assert_fails('call simplify([])', 'E730:')
   call assert_fails('call simplify({})', 'E731:')
-  if has('float')
-    call assert_equal('1.2', simplify(1.2))
-    call v9.CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
-  endif
+  call assert_equal('1.2', simplify(1.2))
+  call v9.CheckDefAndScriptFailure(['echo simplify(1.2)'], ['E1013: Argument 1: type mismatch, expected string but got float', 'E1174: String required for argument 1'])
 endfunc
 
 func Test_pathshorten()
@@ -960,6 +950,8 @@ func Test_append()
 
   " Using $ instead of '$' must give an error
   call assert_fails("call append($, 'foobar')", 'E116:')
+
+  call assert_fails("call append({}, '')", ['E728:', 'E728:'])
 endfunc
 
 " Test for setline()
@@ -1336,9 +1328,8 @@ func Test_filewritable()
 
   call assert_equal(0, filewritable('doesnotexist'))
 
-  call mkdir('Xwritedir')
+  call mkdir('Xwritedir', 'D')
   call assert_equal(2, filewritable('Xwritedir'))
-  call delete('Xwritedir', 'd')
 
   call delete('Xfilewritable')
   bw!
@@ -1671,7 +1662,7 @@ func Test_setbufvar_keep_window_title()
       let g:buf = bufadd('Xb.txt')
       inoremap <F2> <C-R>=setbufvar(g:buf, '&autoindent', 1) ?? ''<CR>
   END
-  call writefile(lines, 'Xsetbufvar')
+  call writefile(lines, 'Xsetbufvar', 'D')
   let buf = RunVimInTerminal('-S Xsetbufvar', {})
   call WaitForAssert({-> assert_match('Xa.txt', term_gettitle(buf))}, 1000)
 
@@ -1682,7 +1673,6 @@ func Test_setbufvar_keep_window_title()
   call assert_match('Xa.txt', term_gettitle(buf))
 
   call StopVimInTerminal(buf)
-  call delete('Xsetbufvar')
 endfunc
 
 func Test_redo_in_nested_functions()
@@ -1948,19 +1938,18 @@ endfunc
 func Test_func_range_with_edit()
   " Define a function that edits another buffer, then call it with a range that
   " is invalid in that buffer.
-  call writefile(['just one line'], 'Xfuncrange2')
+  call writefile(['just one line'], 'Xfuncrange2', 'D')
   new
   eval 10->range()->setline(1)
   write Xfuncrange1
   call assert_fails('5,8call EditAnotherFile()', 'E16:')
 
   call delete('Xfuncrange1')
-  call delete('Xfuncrange2')
   bwipe!
 endfunc
 
 func Test_func_exists_on_reload()
-  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists')
+  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists', 'D')
   call assert_equal(0, exists('*ExistingFunction'))
   source Xfuncexists
   call assert_equal(1, '*ExistingFunction'->exists())
@@ -1969,7 +1958,7 @@ func Test_func_exists_on_reload()
   call assert_equal(1, exists('*ExistingFunction'))
 
   " But redefining in another script is not OK.
-  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists2')
+  call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists2', 'D')
   call assert_fails('source Xfuncexists2', 'E122:')
 
   " Defining a new function from the cmdline should fail if the function is
@@ -1985,8 +1974,6 @@ func Test_func_exists_on_reload()
   call assert_fails('source Xfuncexists', 'E122:')
   call assert_equal(1, exists('*ExistingFunction'))
 
-  call delete('Xfuncexists2')
-  call delete('Xfuncexists')
   delfunc ExistingFunction
 endfunc
 
@@ -2073,7 +2060,7 @@ func Test_platform_name()
 endfunc
 
 func Test_readdir()
-  call mkdir('Xreaddir')
+  call mkdir('Xreaddir', 'R')
   call writefile([], 'Xreaddir/foo.txt')
   call writefile([], 'Xreaddir/bar.txt')
   call mkdir('Xreaddir/dir')
@@ -2102,12 +2089,10 @@ func Test_readdir()
   " Nested readdir() must not crash
   let files = readdir('Xreaddir', 'readdir("Xreaddir", "1") != []')
   call sort(files)->assert_equal(['bar.txt', 'dir', 'foo.txt'])
-
-  eval 'Xreaddir'->delete('rf')
 endfunc
 
 func Test_readdirex()
-  call mkdir('Xexdir')
+  call mkdir('Xexdir', 'R')
   call writefile(['foo'], 'Xexdir/foo.txt')
   call writefile(['barbar'], 'Xexdir/bar.txt')
   call mkdir('Xexdir/dir')
@@ -2154,7 +2139,6 @@ func Test_readdirex()
     call sort(files)->assert_equal(
         \ ['bar.txt_file', 'dir_dir', 'foo.txt_file', 'link_link'])
   endif
-  eval 'Xexdir'->delete('rf')
 
   call assert_fails('call readdirex("doesnotexist")', 'E484:')
 endfunc
@@ -2166,7 +2150,7 @@ func Test_readdirex_sort()
     throw 'Skipped: Test_readdirex_sort on systems that do not allow this using the default filesystem'
   endif
   let _collate = v:collate
-  call mkdir('Xsortdir2')
+  call mkdir('Xsortdir2', 'R')
   call writefile(['1'], 'Xsortdir2/README.txt')
   call writefile(['2'], 'Xsortdir2/Readme.txt')
   call writefile(['3'], 'Xsortdir2/readme.txt')
@@ -2208,14 +2192,13 @@ func Test_readdirex_sort()
 
   finally
     exe 'lang collate' collate
-    eval 'Xsortdir2'->delete('rf')
   endtry
 endfunc
 
 func Test_readdir_sort()
   " some more cases for testing sorting for readdirex
   let dir = 'Xsortdir3'
-  call mkdir(dir)
+  call mkdir(dir, 'R')
   call writefile(['1'], dir .. '/README.txt')
   call writefile(['2'], dir .. '/Readm.txt')
   call writefile(['3'], dir .. '/read.txt')
@@ -2257,8 +2240,6 @@ func Test_readdir_sort()
 
   " Cleanup
   exe "lang collate" collate
-
-  eval dir->delete('rf')
 endfunc
 
 func Test_delete_rf()
@@ -2762,6 +2743,32 @@ endfunc
 " Test for the eval() function
 func Test_eval()
   call assert_fails("call eval('5 a')", 'E488:')
+endfunc
+
+" Test for the keytrans() function
+func Test_keytrans()
+  call assert_equal('<Space>', keytrans(' '))
+  call assert_equal('<lt>', keytrans('<'))
+  call assert_equal('<lt>Tab>', keytrans('<Tab>'))
+  call assert_equal('<Tab>', keytrans("\<Tab>"))
+  call assert_equal('<C-V>', keytrans("\<C-V>"))
+  call assert_equal('<BS>', keytrans("\<BS>"))
+  call assert_equal('<Home>', keytrans("\<Home>"))
+  call assert_equal('<C-Home>', keytrans("\<C-Home>"))
+  call assert_equal('<M-Home>', keytrans("\<M-Home>"))
+  call assert_equal('<C-Space>', keytrans("\<C-Space>"))
+  call assert_equal('<M-Space>', keytrans("\<*M-Space>"))
+  call assert_equal('<M-x>', "\<*M-x>"->keytrans())
+  call assert_equal('<C-I>', "\<*C-I>"->keytrans())
+  call assert_equal('<S-3>', "\<*S-3>"->keytrans())
+  call assert_equal('π', 'π'->keytrans())
+  call assert_equal('<M-π>', "\<M-π>"->keytrans())
+  call assert_equal('ě', 'ě'->keytrans())
+  call assert_equal('<M-ě>', "\<M-ě>"->keytrans())
+  call assert_equal('', ''->keytrans())
+  call assert_equal('', test_null_string()->keytrans())
+  call assert_fails('call keytrans(1)', 'E1174:')
+  call assert_fails('call keytrans()', 'E119:')
 endfunc
 
 " Test for the nr2char() function

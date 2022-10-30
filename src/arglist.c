@@ -295,7 +295,7 @@ get_arglist(garray_T *gap, char_u *str, int escaped)
     return OK;
 }
 
-#if defined(FEAT_QUICKFIX) || defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_QUICKFIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Parse a list of arguments (file names), expand them and return in
  * "fnames[fcountp]".  When "wig" is TRUE, removes files matching 'wildignore'.
@@ -982,7 +982,8 @@ arg_all_close_unused_windows(arg_all_state_T *aall)
 		{
 		    if (i < aall->alist->al_ga.ga_len
 			    && (AARGLIST(aall->alist)[i].ae_fnum == buf->b_fnum
-				|| fullpathcmp(alist_name(&AARGLIST(aall->alist)[i]),
+				|| fullpathcmp(alist_name(
+						    &AARGLIST(aall->alist)[i]),
 					buf->b_ffname, TRUE, TRUE) & FPC_SAME))
 		    {
 			int weight = 1;
@@ -1000,7 +1001,8 @@ arg_all_close_unused_windows(arg_all_state_T *aall)
 			    if (i == 0)
 			    {
 				if (aall->new_curwin != NULL)
-				    aall->new_curwin->w_arg_idx = aall->opened_len;
+				    aall->new_curwin->w_arg_idx =
+							      aall->opened_len;
 				aall->new_curwin = wp;
 				aall->new_curtab = curtab;
 			    }
@@ -1184,13 +1186,11 @@ do_arg_all(
     tabpage_T		*last_curtab;
     int			prev_arglist_locked = arglist_locked;
 
-#ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
 	emsg(_(e_invalid_in_cmdline_window));
 	return;
     }
-#endif
     if (ARGCOUNT <= 0)
     {
 	// Don't give an error message.  We don't want it when the ":all"

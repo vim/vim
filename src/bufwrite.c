@@ -888,7 +888,8 @@ buf_write(
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (nofile_err)
-		emsg(_(e_no_matching_autocommands_for_acwrite_buffer));
+		semsg(_(e_no_matching_autocommands_for_buftype_str_buffer),
+							       curbuf->b_p_bt);
 
 	    if (nofile_err
 #ifdef FEAT_EVAL
@@ -2049,6 +2050,10 @@ restore_backup:
 		len = 0;
 		write_info.bw_start_lnum = lnum;
 	    }
+	    if (!buf->b_p_fixeol && buf->b_p_eof)
+		// write trailing CTRL-Z
+		(void)write_eintr(write_info.bw_fd, "\x1a", 1);
+
 	    // write failed or last line has no EOL: stop here
 	    if (end == 0
 		    || (lnum == end

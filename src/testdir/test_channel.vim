@@ -1633,7 +1633,12 @@ func Test_exit_callback_interval()
   let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
   let job = [s:python, '-c', 'import time;time.sleep(0.5)']->job_start({'exit_cb': 'MyExitTimeCb'})
   let g:exit_cb_val.process = job_info(job).process
-  call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
+  try
+    call WaitFor('type(g:exit_cb_val.end) != v:t_number || g:exit_cb_val.end != 0')
+  catch
+    call add(v:errors, "Job status: " .. string(job->job_info()))
+    throw v:exception
+  endtry
   let elapsed = reltimefloat(g:exit_cb_val.end)
   call assert_inrange(0.5, 1.0, elapsed)
 
@@ -1964,8 +1969,10 @@ func Test_env()
     let cmd = [&shell, &shellcmdflag, 'echo $FOO']
   endif
   call assert_fails('call job_start(cmd, {"env": 1})', 'E475:')
-  call job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'env': {'FOO': 'bar'}})
-  call WaitForAssert({-> assert_equal("bar", g:envstr)})
+  let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'env': {'FOO': 'bar'}})
+  if WaitForAssert({-> assert_equal("bar", g:envstr)}, 500) != 0
+    call add(v:errors, "Job status: " .. string(job->job_info()))
+  endif
   unlet g:envstr
 endfunc
 
@@ -1982,8 +1989,13 @@ func Test_cwd()
   let job = job_start(cmd, {'callback': {ch,msg -> execute(":let g:envstr .= msg")}, 'cwd': expect})
   try
     call WaitForAssert({-> assert_notequal("", g:envstr)})
+    " There may be a trailing slash or not, ignore it
     let expect = substitute(expect, '[/\\]$', '', '')
     let g:envstr = substitute(g:envstr, '[/\\]$', '', '')
+    " on CI there can be /private prefix or not, ignore it
+    if $CI != '' && stridx(expect, '/private/') == 0
+      let expect = expect[8:]
+    endif
     if $CI != '' && stridx(g:envstr, '/private/') == 0
       let g:envstr = g:envstr[8:]
     endif
@@ -2027,7 +2039,12 @@ func s:test_list_args(cmd, out, remove_lf)
   try
     let g:out = ''
     let job = job_start([s:python, '-c', a:cmd], {'callback': {ch, msg -> execute('let g:out .= msg')}, 'out_mode': 'raw'})
-    call WaitFor('"" != g:out')
+    try
+      call WaitFor('"" != g:out')
+    catch
+      call add(v:errors, "Job status: " .. string(job->job_info()))
+      throw v:exception
+    endtry
     if has('win32')
       let g:out = substitute(g:out, '\r', '', 'g')
     endif

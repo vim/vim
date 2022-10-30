@@ -12,13 +12,16 @@ SCRIPTSOURCE = ../../runtime
 # Comment out this line to see the verbose output of tests.
 #
 # Catches SwapExists to avoid hanging at the ATTENTION prompt.
-REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C LANG=C LANGUAGE=C awk '/Executing Test_/{match($$0, "Executing Test_[^\\)]*\\)"); print substr($$0, RSTART, RLENGTH) "\r"; fflush()}'
+REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C LANG=C LANGUAGE=C awk '/Executing Test_/{match($$0, "([0-9][0-9]:[0-9][0-9] *)?Executing Test_[^\\)]*\\)"); print substr($$0, RSTART, RLENGTH) "\r"; fflush()}'
 
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 #   The output goes into a file "valgrind.testN"
 #   Vim should be compiled with EXITFREE to avoid false warnings.
 #   This will make testing about 10 times as slow.
 # VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=35 --log-file=valgrind.$*
+
+# To execute one test, e.g. in gdb, use something like this:
+# run -f -u unix.vim --gui-dialog-file guidialog -U NONE --noplugin --not-a-term -S runtest.vim test_name.vim
 
 default: nongui
 
@@ -46,6 +49,7 @@ report:
 		else echo No failures reported > test_result.log; \
 		fi"
 	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages $(REDIR_TEST_TO_NULL)
+	@rm -f starttime
 	@echo
 	@echo 'Test results:'
 	@cat test_result.log
@@ -60,7 +64,7 @@ $(SCRIPTS_TINY_OUT) $(NEW_TESTS_RES): $(VIMPROG)
 # Execute an individual new style test, e.g.:
 # 	make test_largefile
 $(NEW_TESTS):
-	rm -f $@.res test.log messages
+	rm -f $@.res $(CLEANUP_FILES)
 	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile $@.res VIMPROG=$(VIMPROG) XXDPROG=$(XXDPROG) SCRIPTSOURCE=$(SCRIPTSOURCE)
 	@cat messages
 	@if test -f test.log; then \
@@ -69,9 +73,10 @@ $(NEW_TESTS):
 
 # Run only tests specific for Vim9 script
 test_vim9:
-	rm -f test_vim9_*.res test.log messages
+	rm -f test_vim9_*.res $(CLEANUP_FILES)
 	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile $(TEST_VIM9_RES) VIMPROG=$(VIMPROG) XXDPROG=$(XXDPROG) SCRIPTSOURCE=$(SCRIPTSOURCE)
 	@cat messages
+	@rm -f starttime
 	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile report VIMPROG=$(VIMPROG) XXDPROG=$(XXDPROG) SCRIPTSOURCE=$(SCRIPTSOURCE)
 	@if test -f test.log; then \
 		exit 1; \
@@ -85,7 +90,7 @@ RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u un
 # that may result from working on the tests, not only from running them.
 clean:
 	-rm -rf *.out *.failed *.res *.rej *.orig XfakeHOME Xdir1 Xfind
-	-rm -f opt_test.vim test.log test_result.log messages
+	-rm -f opt_test.vim test_result.log $(CLEANUP_FILES)
 	-rm -rf $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
 	-rm -f asan.*
@@ -96,7 +101,7 @@ benchmarkclean:
 	rm -f $(SCRIPTS_BENCH)
 
 nolog:
-	-rm -f test.log test_result.log messages
+	-rm -f test_result.log $(CLEANUP_FILES)
 
 
 # Tiny tests.  Works even without the +eval feature.

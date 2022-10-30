@@ -327,6 +327,9 @@ extern char_u *vimpty_getenv(const char_u *string);	// in misc2.c
 # ifdef MACOS_CONVERT
 #  include "os_mac_conv.pro"
 # endif
+# ifdef MACOS_X
+#  include "os_macosx.pro"
+# endif
 # if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 // functions in os_macosx.m
 void clip_mch_lose_selection(Clipboard_T *cbd);

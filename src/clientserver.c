@@ -86,7 +86,7 @@ eval_client_expr_to_string(char_u *expr)
     // to be typed.  Do generate errors so that try/catch works.
     ++emsg_silent;
 
-    res = eval_to_string(expr, TRUE);
+    res = eval_to_string(expr, TRUE, FALSE);
 
     debug_break_level = save_dbl;
     redir_off = save_ro;

@@ -1960,7 +1960,8 @@ get_foldtext(
 
 	    ++emsg_off; // handle exceptions, but don't display errors
 	    text = eval_to_string_safe(wp->w_p_fdt,
-		    was_set_insecurely((char_u *)"foldtext", OPT_LOCAL), TRUE);
+			   was_set_insecurely((char_u *)"foldtext", OPT_LOCAL),
+			   TRUE, TRUE);
 	    --emsg_off;
 
 	    if (text == NULL || did_emsg)

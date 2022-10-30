@@ -384,6 +384,139 @@ timer_delete(timer_t timerid)
 
 #endif /* FEAT_RELTIME */
 
+#ifdef FEAT_SOUND
+
+static NSMutableDictionary<NSNumber*, NSSound*> *sounds_list = nil;
+
+/// A delegate for handling when a sound has stopped playing, in
+/// order to clean up the sound and to send a callback.
+@interface SoundDelegate : NSObject<NSSoundDelegate>;
+
+- (id) init:(long) sound_id callback:(soundcb_T*) callback;
+- (void) sound:(NSSound *)sound didFinishPlaying:(BOOL)flag;
+
+@property (readonly) long sound_id;
+@property (readonly) soundcb_T *callback;
+
+@end
+
+@implementation SoundDelegate
+- (id) init:(long) sound_id callback:(soundcb_T*) callback
+{
+    if ([super init])
+    {
+	_sound_id = sound_id;
+	_callback = callback;
+    }
+    return self;
+}
+
+- (void) sound:(NSSound *)sound didFinishPlaying:(BOOL)flag
+{
+    if (sounds_list != nil)
+    {
+	if (_callback)
+	{
+	    call_sound_callback(_callback, _sound_id, flag ? 0 : 1);
+	    delete_sound_callback(_callback);
+	    _callback = NULL;
+	}
+	[sounds_list removeObjectForKey:[NSNumber numberWithLong:_sound_id]];
+    }
+    // Release itself. Do that here instead of earlier because NSSound only
+    // holds weak reference to this object.
+    [self release];
+}
+@end
+
+    void
+process_cfrunloop()
+{
+    if (sounds_list != nil && [sounds_list count] > 0)
+    {
+	// Continually drain the run loop of events. Currently, this
+	// is only used for processing sound callbacks, because
+	// NSSound relies of this runloop to call back to the
+	// delegate.
+	@autoreleasepool
+	{
+	    while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, true)
+		    == kCFRunLoopRunHandledSource)
+		;   // do nothing
+	}
+    }
+}
+
+    bool
+sound_mch_play(const char_u* sound_name, long sound_id, soundcb_T *callback, bool playfile)
+{
+    @autoreleasepool
+    {
+	NSString *sound_name_ns = [[[NSString alloc] initWithUTF8String:(const char*)sound_name] autorelease];
+	NSSound* sound = playfile ?
+	    [[[NSSound alloc] initWithContentsOfFile:sound_name_ns byReference:YES] autorelease] :
+	    [NSSound soundNamed:sound_name_ns];
+	if (!sound)
+	{
+	    return false;
+	}
+
+	if (sounds_list == nil)
+	{
+	    sounds_list = [[NSMutableDictionary<NSNumber*, NSSound*> alloc] init];
+	}
+	sounds_list[[NSNumber numberWithLong:sound_id]] = sound;
+
+	// Make a delegate to handle when the sound stops. No need to call
+	// autorelease because NSSound only holds a weak reference to it.
+	SoundDelegate *delegate = [[SoundDelegate alloc] init:sound_id callback:callback];
+
+	[sound setDelegate:delegate];
+	[sound play];
+    }
+    return true;
+}
+
+    void
+sound_mch_stop(long sound_id)
+{
+    @autoreleasepool
+    {
+	NSSound *sound = sounds_list[[NSNumber numberWithLong:sound_id]];
+	if (sound != nil)
+	{
+	    // Stop the sound. No need to release it because the delegate will do
+	    // it for us.
+	    [sound stop];
+	}
+    }
+}
+
+    void
+sound_mch_clear()
+{
+    if (sounds_list != nil)
+    {
+	@autoreleasepool
+	{
+	    for (NSSound *sound in [sounds_list allValues])
+	    {
+		[sound stop];
+	    }
+	    [sounds_list release];
+	    sounds_list = nil;
+	}
+    }
+}
+
+    void
+sound_mch_free()
+{
+    sound_mch_clear();
+}
+
+#endif // FEAT_SOUND
+
 /* Lift the compiler warning suppression. */
 #if defined(__clang__) && defined(__STRICT_ANSI__)
 # pragma clang diagnostic pop

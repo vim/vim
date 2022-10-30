@@ -81,6 +81,19 @@ function Test_cmdmods()
   call assert_equal('silent!', g:mods)
   tab MyCmd
   call assert_equal('tab', g:mods)
+  0tab MyCmd
+  call assert_equal('0tab', g:mods)
+  tab split
+  tab MyCmd
+  call assert_equal('tab', g:mods)
+  1tab MyCmd
+  call assert_equal('1tab', g:mods)
+  tabprev
+  tab MyCmd
+  call assert_equal('tab', g:mods)
+  2tab MyCmd
+  call assert_equal('2tab', g:mods)
+  2tabclose
   topleft MyCmd
   call assert_equal('topleft', g:mods)
   to MyCmd
@@ -239,7 +252,7 @@ func Test_Ambiguous()
 endfunc
 
 func Test_redefine_on_reload()
-  call writefile(['command ExistingCommand echo "yes"'], 'Xcommandexists')
+  call writefile(['command ExistingCommand echo "yes"'], 'Xcommandexists', 'D')
   call assert_equal(0, exists(':ExistingCommand'))
   source Xcommandexists
   call assert_equal(2, exists(':ExistingCommand'))
@@ -248,9 +261,8 @@ func Test_redefine_on_reload()
   call assert_equal(2, exists(':ExistingCommand'))
 
   " But redefining in another script is not OK.
-  call writefile(['command ExistingCommand echo "yes"'], 'Xcommandexists2')
+  call writefile(['command ExistingCommand echo "yes"'], 'Xcommandexists2', 'D')
   call assert_fails('source Xcommandexists2', 'E174:')
-  call delete('Xcommandexists2')
 
   " And defining twice in one script is not OK.
   delcommand ExistingCommand
@@ -262,7 +274,6 @@ func Test_redefine_on_reload()
   call assert_fails('source Xcommandexists', 'E174:')
   call assert_equal(2, exists(':ExistingCommand'))
 
-  call delete('Xcommandexists')
   delcommand ExistingCommand
 endfunc
 
@@ -666,7 +677,7 @@ func Test_usercmd_custom()
     return "a\nb\n"
   endfunc
   command -nargs=* -complete=customlist,T1 TCmd1
-  call feedkeys(":TCmd1 \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_fails('call feedkeys(":TCmd1 \<C-A>\<C-B>\"\<CR>", "xt")', 'E1303: Custom list completion function does not return a List but a string')
   call assert_equal('"TCmd1 ', @:)
   delcommand TCmd1
   delfunc T1
@@ -675,7 +686,7 @@ func Test_usercmd_custom()
     return {}
   endfunc
   command -nargs=* -complete=customlist,T2 TCmd2
-  call feedkeys(":TCmd2 \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_fails('call feedkeys(":TCmd2 \<C-A>\<C-B>\"\<CR>", "xt")', 'E1303: Custom list completion function does not return a List but a dict')
   call assert_equal('"TCmd2 ', @:)
   delcommand TCmd2
   delfunc T2
@@ -849,7 +860,7 @@ func Test_block_declaration_legacy_script()
                      @a = save
                 }
   END
-  call writefile(lines, 'Xlegacy')
+  call writefile(lines, 'Xlegacy', 'D')
   source Xlegacy
 
   let lines =<< trim END
@@ -864,12 +875,10 @@ func Test_block_declaration_legacy_script()
       call assert_equal('something', g:someExpr)
       call assert_equal('also', @a)
   END
-  call writefile(lines, 'Xother')
+  call writefile(lines, 'Xother', 'D')
   source Xother
 
   unlet g:someExpr
-  call delete('Xlegacy')
-  call delete('Xother')
   delcommand Rename
 endfunc
 

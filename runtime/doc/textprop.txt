@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.0.  Last change: 2021 Nov 23
+*textprop.txt*  For Vim version 9.0.  Last change: 2022 Oct 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -142,9 +142,12 @@ prop_add({lnum}, {col}, {props})
 				then "id" must not be present and will be set
 				automatically to a negative number; otherwise
 				zero is used
-		   text		text to be displayed before {col}, or after the
-				line if {col} is zero; prepend and/or append
-				spaces for padding with highlighting
+							*E1305*
+		   text		text to be displayed before {col}, or
+				above/below the line if {col} is zero; prepend
+				and/or append spaces for padding with
+				highlighting; cannot be used with "length",
+				"end_lnum" and "end_col" |virtual-text|
 		   					*E1294*
 		   text_align	when "text" is present and {col} is zero;
 				specifies where to display the text:
@@ -153,9 +156,10 @@ prop_add({lnum}, {col}, {props})
 					   the text wraps to the next screen
 					   line)
 				   below   in the next screen line
+				   above   just above the line
 				When omitted "after" is used.  Only one
 				"right" property can fit in each line, if
-				there are two ore more these will go in a
+				there are two or more these will go in a
 				separate line (still right aligned).
 		   text_padding_left				*E1296*
 				used when "text" is present and {col} is zero;
@@ -168,6 +172,9 @@ prop_add({lnum}, {col}, {props})
 				   wrap      wrap the text to the next line
 				   truncate  truncate the text to make it fit
 		   		When omitted "truncate" is used.
+				Note that this applies to the individual text
+				property, the 'wrap' option sets the overall
+				behavior
 		All fields except "type" are optional.
 
 		It is an error when both "length" and "end_lnum" or "end_col"
@@ -188,12 +195,23 @@ prop_add({lnum}, {col}, {props})
 		If not found an error is given.
 							*virtual-text*
 		When "text" is used and the column is non-zero then this text
-		will be displayed at the start location of the text property
-		after the text.  The text of the buffer line will be shifted
-		to make room.  This is called "virtual text".
-		When the column is zero the virtual text will appear after the
-		buffer text.  The "text_align" and "text_wrap" arguments
-		determine how it is displayed.
+		will be displayed at the specified start location of the text
+		property.  The text of the buffer line will be shifted to make
+		room.  This is called "virtual text".
+		When the column is zero the virtual text will appear above,
+		after or below the buffer text.  The "text_align" and
+		"text_wrap" arguments determine how it is displayed.
+		To separate the virtual text from the buffer text prepend
+		and/or append spaces to the "text" field or use the
+		"text_padding_left" value.
+
+		Make sure to use a highlight that makes clear to the user that
+		this is virtual text, otherwise it will be very confusing that
+		the text cannot be edited.  When using "above" you need to
+		make clear this text belongs to the text line below it, when
+		using "below" you need to make sure it belongs to the text
+		line above it.
+
 		The text will be displayed but it is not part of the actual
 		buffer line, the cursor cannot be placed on it.  A mouse click
 		in the text will move the cursor to the first character after
@@ -205,17 +223,12 @@ prop_add({lnum}, {col}, {props})
 		property with "text" has been added for a buffer then using a
 		negative "id" for any other property will give an error:
 		*E1293*
-		Make sure to use a highlight that makes clear to the user that
-		this is virtual text, otherwise it will be very confusing that
-		the text cannot be edited.
-		To separate the virtual text from the buffer text prepend
-		and/or append spaces to the "text" field.
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
 <
 						*prop_add_list()*
-prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
+prop_add_list({props}, [{item}, ...])
 		Similar to prop_add(), but attaches a text property at
 		multiple positions in a buffer.
 
@@ -227,12 +240,18 @@ prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
 		   type		name of the text property type
 		All fields except "type" are optional.
 
-		The second argument is a List of Lists where each list
-		specifies the starting and ending position of the text.  The
-		first two items {lnum} and {col} specify the starting position
-		of the text where the property will be attached and the last
-		two items {end-lnum} and {end-col} specify the position just
-		after the text.
+		The second argument is a List of items, where each {item} is a
+		list that specifies the starting and ending position of the
+		text: [{lnum}, {col}, {end-lnum}, {end-col}]
+		or:   [{lnum}, {col}, {end-lnum}, {end-col}, {id}]
+
+		The first two items {lnum} and {col} specify the starting
+		position of the text where the property will be attached.
+		The next two items {end-lnum} and {end-col} specify the
+		position just after the text.
+		An optional fifth item {id} can be used to give a different ID
+		to a property.  When omitted the ID from {props} is used,
+		falling back to zero if none are present.
 
 		It is not possible to add a text property with a "text" field
 		here.

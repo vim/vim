@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Jun 25
+*vim9.txt*	For Vim version 9.0.  Last change: 2022 Oct 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -107,7 +107,7 @@ script and `:def` functions; details are below:
 	`:t`
   	`:xit`
 - Some commands, especially those used for flow control, cannot be shortened.
-  E.g., `:throw` cannot be written as `:th`.
+  E.g., `:throw` cannot be written as `:th`.  *vim9-no-shorten*
 - You cannot use curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that
@@ -502,7 +502,7 @@ How constants work varies between languages.  Some consider a variable that
 can't be assigned another value a constant.  JavaScript is an example.  Others
 also make the value immutable, thus when a constant uses a list, the list
 cannot be changed.  In Vim9 we can use both.
-							*E1021*
+							*E1021* *E1307*
 `:const` is used for making both the variable and the value a constant.  Use
 this for composite structures that you want to make sure will not be modified.
 Example: >
@@ -962,6 +962,10 @@ In compiled Vim9 script you get:
 	3
 Generally, you should not change the list that is iterated over.  Make a copy
 first if needed.
+When looping over a list of lists, the nested lists can be changed.  The loop
+variable is "final", it cannot be changed but what its value can be changed.
+							*E1306*
+The depth of loops, :for and :while loops added together, cannot exceed 10.
 
 
 Conditions and expressions ~
@@ -1311,7 +1315,7 @@ Make sure to define the breakpoint before compiling the outer function.
 The "inloop" variable will exist only once, all closures put in the list refer
 to the same instance, which in the end will have the value 4.  This is
 efficient, also when looping many times.  If you do want a separate context
-for each closure call a function to define it: >
+for each closure, call a function to define it: >
 	def GetClosure(i: number): func
 	  var infunc = i
 	  return () => infunc
@@ -1326,6 +1330,29 @@ for each closure call a function to define it: >
 
 In some situations, especially when calling a Vim9 closure from legacy
 context, the evaluation will fail.  *E1248*
+
+Note that at the script level the loop variable will be invalid after the
+loop, also when used in a closure that is called later, e.g. with a timer.
+This will generate error |E1302|: >
+	for n in range(4)
+	    timer_start(500 * n, (_) => {
+	          echowin n
+	       })
+	endfor
+
+You need to use a block and define a variable there, and use that one in the
+closure: >
+	for n in range(4)
+	{
+	   var nr = n
+	   timer_start(500 * n, (_) => {
+	          echowin nr
+	      })
+	}
+	endfor
+
+Using `echowindow` is useful in a timer, the messages go into a popup and will
+not interfere with what the user is doing when it triggers.
 
 
 Converting a function from legacy to Vim9 ~
@@ -1384,6 +1411,21 @@ to a Vim9 function:
 		'two',
 		'three'
 		]
+
+
+Calling a function in an expr option ~
+							*expr-option-function*
+The value of a few options, such as 'foldexpr', is an expression that is
+evaluated to get a value.  The evaluation can have quite a bit of overhead.
+One way to minimize the overhead, and also to keep the option value very
+simple, is to define a compiled function and set the option to call it
+without arguments.  Example: >
+	vim9script
+	def MyFoldFunc(): any
+	   ... compute fold level for line v:lnum
+	   return level
+	enddef
+	set foldexpr=s:MyFoldFunc()
 
 ==============================================================================
 
@@ -1618,7 +1660,7 @@ type, it can not be used in Vim9 script.
 			 *E1211* *E1217* *E1218* *E1219* *E1220* *E1221*
 			 *E1222* *E1223* *E1224* *E1225* *E1226* *E1227*
 			 *E1228* *E1238* *E1250* *E1251* *E1252* *E1253*
-			 *E1256* *E1297* *E1298*
+			 *E1256* *E1297* *E1298* *E1301*
 Types are checked for most builtin functions to make it easier to spot
 mistakes.
 
@@ -1660,7 +1702,7 @@ deleted.
 
 In Vim9 script the global "g:" namespace can still be used as before.  And the
 "w:", "b:" and "t:" namespaces.  These have in common that variables are not
-declared and they can be deleted.
+declared, have no specific type and they can be deleted.  *E1304*
 
 A side effect of `:vim9script` is that the 'cpoptions' option is set to the
 Vim default value, like with: >
@@ -1801,7 +1843,7 @@ And using the "as name" form: >
 	import "otherfile.vim9script" as that
 	call s:that.OtherFunc()
 
-However, the namespace cannot be resolved on it's own: >
+However, the namespace cannot be resolved on its own: >
 	import "that.vim"
 	echo s:that
 	" ERROR: E1060: Expected dot after name: s:that

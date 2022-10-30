@@ -121,7 +121,6 @@ func Test_method_funcref()
 endfunc
 
 func Test_method_float()
-  CheckFeature float
   eval 1.234->string()->assert_equal('1.234')
   eval -1.234->string()->assert_equal('-1.234')
 endfunc

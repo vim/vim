@@ -198,9 +198,7 @@ gui_mch_set_rendering_options(char_u *s)
 # ifndef __MINGW32__
 #  include <shellapi.h>
 # endif
-# if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL_GUI) || defined(FEAT_GUI_TABLINE)
-#  include <commctrl.h>
-# endif
+# include <commctrl.h>
 # include <windowsx.h>
 
 #endif // PROTO
@@ -854,6 +852,13 @@ get_active_modifiers(void)
 	modifiers |= MOD_MASK_ALT;
     if ((modifiers & MOD_MASK_CTRL) && (GetKeyState(VK_RMENU) & 0x8000))
 	modifiers &= ~MOD_MASK_CTRL;
+    // Add RightALT only if it is hold alone (without Ctrl), because if AltGr
+    // is pressed, Windows claims that Ctrl is hold as well. That way we can
+    // recognize Right-ALT alone and be sure that not AltGr is hold.
+    if (!(GetKeyState(VK_CONTROL) & 0x8000)
+	    &&  (GetKeyState(VK_RMENU) & 0x8000)
+	    && !(GetKeyState(VK_LMENU) & 0x8000)) // seems AltGr has both set
+	modifiers |= MOD_MASK_ALT;
 
     return modifiers;
 }
@@ -2611,11 +2616,7 @@ show_tabline_popup_menu(void)
     POINT	    pt;
 
     // When ignoring events don't show the menu.
-    if (hold_gui_events
-# ifdef FEAT_CMDWIN
-	    || cmdwin_type != 0
-# endif
-       )
+    if (hold_gui_events || cmdwin_type != 0)
 	return;
 
     tab_pmenu = CreatePopupMenu();
@@ -8093,6 +8094,20 @@ tabline_wndproc(
 		{
 		    SetCursor(s_hCursor);
 		    ReleaseCapture();
+		}
+		break;
+	    }
+	case WM_MBUTTONUP:
+	    {
+		TCHITTESTINFO htinfo;
+
+		htinfo.pt.x = GET_X_LPARAM(lParam);
+		htinfo.pt.y = GET_Y_LPARAM(lParam);
+		idx0 = TabCtrl_HitTest(hwnd, &htinfo);
+		if (idx0 != -1)
+		{
+		    idx0 += 1;
+		    send_tabline_menu_event(idx0, TABLINE_MENU_CLOSE);
 		}
 		break;
 	    }

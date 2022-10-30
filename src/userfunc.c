@@ -1166,6 +1166,7 @@ lambda_function_body(
 	garray_T    *default_args,
 	char_u	    *ret_type)
 {
+    char_u	*start = *arg;
     int		evaluate = (evalarg->eval_flags & EVAL_EVALUATE);
     garray_T	*gap = &evalarg->eval_ga;
     garray_T	*freegap = &evalarg->eval_freega;
@@ -1179,9 +1180,10 @@ lambda_function_body(
     int		lnum_save = -1;
     linenr_T	sourcing_lnum_top = SOURCING_LNUM;
 
-    if (!ends_excmd2(*arg, skipwhite(*arg + 1)))
+    *arg = skipwhite(*arg + 1);
+    if (**arg == '|' || !ends_excmd2(start, *arg))
     {
-	semsg(_(e_trailing_characters_str), *arg + 1);
+	semsg(_(e_trailing_characters_str), *arg);
 	return FAIL;
     }
 
@@ -1879,7 +1881,7 @@ eval_fname_sid(char_u *p)
  * In a script change <SID>name() and s:name() to K_SNR 123_name().
  * Change <SNR>123_name() to K_SNR 123_name().
  * Use "fname_buf[FLEN_FIXED + 1]" when it fits, otherwise allocate memory
- * (slow).
+ * and set "tofree".
  */
     char_u *
 fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
@@ -1889,43 +1891,41 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
     int		i;
 
     llen = eval_fname_script(name);
-    if (llen > 0)
+    if (llen == 0)
+	return name;  // no prefix
+
+    fname_buf[0] = K_SPECIAL;
+    fname_buf[1] = KS_EXTRA;
+    fname_buf[2] = (int)KE_SNR;
+    i = 3;
+    if (eval_fname_sid(name))	// "<SID>" or "s:"
     {
-	fname_buf[0] = K_SPECIAL;
-	fname_buf[1] = KS_EXTRA;
-	fname_buf[2] = (int)KE_SNR;
-	i = 3;
-	if (eval_fname_sid(name))	// "<SID>" or "s:"
-	{
-	    if (current_sctx.sc_sid <= 0)
-		*error = FCERR_SCRIPT;
-	    else
-	    {
-		sprintf((char *)fname_buf + 3, "%ld_",
-						    (long)current_sctx.sc_sid);
-		i = (int)STRLEN(fname_buf);
-	    }
-	}
-	if (i + STRLEN(name + llen) < FLEN_FIXED)
-	{
-	    STRCPY(fname_buf + i, name + llen);
-	    fname = fname_buf;
-	}
+	if (current_sctx.sc_sid <= 0)
+	    *error = FCERR_SCRIPT;
 	else
 	{
-	    fname = alloc(i + STRLEN(name + llen) + 1);
-	    if (fname == NULL)
-		*error = FCERR_OTHER;
-	    else
-	    {
-		*tofree = fname;
-		mch_memmove(fname, fname_buf, (size_t)i);
-		STRCPY(fname + i, name + llen);
-	    }
+	    sprintf((char *)fname_buf + 3, "%ld_",
+						(long)current_sctx.sc_sid);
+	    i = (int)STRLEN(fname_buf);
 	}
     }
+    if (i + STRLEN(name + llen) < FLEN_FIXED)
+    {
+	STRCPY(fname_buf + i, name + llen);
+	fname = fname_buf;
+    }
     else
-	fname = name;
+    {
+	fname = alloc(i + STRLEN(name + llen) + 1);
+	if (fname == NULL)
+	    *error = FCERR_OTHER;
+	else
+	{
+	    *tofree = fname;
+	    mch_memmove(fname, fname_buf, (size_t)i);
+	    STRCPY(fname + i, name + llen);
+	}
+    }
     return fname;
 }
 
@@ -2095,7 +2095,8 @@ func_requires_g_prefix(ufunc_T *ufunc)
 {
     return ufunc->uf_name[0] != K_SPECIAL
 	    && (ufunc->uf_flags & FC_LAMBDA) == 0
-	    && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL;
+	    && vim_strchr(ufunc->uf_name, AUTOLOAD_CHAR) == NULL
+	    && !isdigit(ufunc->uf_name[0]);
 }
 
 /*
@@ -2452,7 +2453,11 @@ func_clear_free(ufunc_T *fp, int force)
  * This is for when a compiled function defines a global function.
  */
     int
-copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
+copy_lambda_to_global_func(
+	char_u		*lambda,
+	char_u		*global,
+	loopvarinfo_T	*loopvarinfo,
+	ectx_T		*ectx)
 {
     ufunc_T *ufunc = find_func_even_dead(lambda, FFED_IS_GLOBAL);
     ufunc_T *fp = NULL;
@@ -2519,13 +2524,12 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
 
 	if (pt == NULL)
 	    goto failed;
-	if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
+	if (fill_partial_and_closure(pt, ufunc, loopvarinfo, ectx) == FAIL)
 	{
 	    vim_free(pt);
 	    goto failed;
 	}
 	ufunc->uf_partial = pt;
-	--pt->pt_refcount;  // not actually referenced here
     }
 
     return OK;
@@ -3443,12 +3447,12 @@ call_callback_retnr(
  * Nothing if "error" is FCERR_NONE.
  */
     void
-user_func_error(int error, char_u *name, funcexe_T *funcexe)
+user_func_error(int error, char_u *name, int found_var)
 {
     switch (error)
     {
 	case FCERR_UNKNOWN:
-		if (funcexe->fe_found_var)
+		if (found_var)
 		    emsg_funcname(e_not_callable_type_str, name);
 		else
 		    emsg_funcname(e_unknown_function_str, name);
@@ -3644,7 +3648,7 @@ call_func(
 		if (funcexe->fe_argv_func != NULL)
 		    // postponed filling in the arguments, do it now
 		    argcount = funcexe->fe_argv_func(argcount, argvars,
-					       argv_clear, fp->uf_args.ga_len);
+					       argv_clear, fp);
 
 		if (funcexe->fe_basetv != NULL)
 		{
@@ -3698,12 +3702,84 @@ theend:
      * cancelled due to an aborting error, an interrupt, or an exception.
      */
     if (!aborting())
-	user_func_error(error, (name != NULL) ? name : funcname, funcexe);
+	user_func_error(error, (name != NULL) ? name : funcname,
+							funcexe->fe_found_var);
 
     // clear the copies made from the partial
     while (argv_clear > 0)
 	clear_tv(&argv[--argv_clear + argv_base]);
 
+    vim_free(tofree);
+    vim_free(name);
+
+    return ret;
+}
+
+/*
+ * Call a function without arguments, partial or dict.
+ * This is like call_func() when the call is only "FuncName()".
+ * To be used by "expr" options.
+ * Returns NOTDONE when the function could not be found.
+ */
+    int
+call_simple_func(
+    char_u	*funcname,	// name of the function
+    int		len,		// length of "name" or -1 to use strlen()
+    typval_T	*rettv)		// return value goes here
+{
+    int		ret = FAIL;
+    int		error = FCERR_NONE;
+    char_u	fname_buf[FLEN_FIXED + 1];
+    char_u	*tofree = NULL;
+    char_u	*name;
+    char_u	*fname;
+    char_u	*rfname;
+    int		is_global = FALSE;
+    ufunc_T	*fp;
+
+    rettv->v_type = VAR_NUMBER;	// default rettv is number zero
+    rettv->vval.v_number = 0;
+
+    // Make a copy of the name, an option can be changed in the function.
+    name = vim_strnsave(funcname, len);
+    if (name == NULL)
+	return ret;
+
+    fname = fname_trans_sid(name, fname_buf, &tofree, &error);
+
+    // Skip "g:" before a function name.
+    if (fname[0] == 'g' && fname[1] == ':')
+    {
+	is_global = TRUE;
+	rfname = fname + 2;
+    }
+    else
+	rfname = fname;
+    fp = find_func(rfname, is_global);
+    if (fp != NULL && !is_global && in_vim9script()
+						 && func_requires_g_prefix(fp))
+	// In Vim9 script g: is required to find a global non-autoload
+	// function.
+	fp = NULL;
+    if (fp == NULL)
+	ret = NOTDONE;
+    else if (fp != NULL && (fp->uf_flags & FC_DELETED))
+	error = FCERR_DELETED;
+    else if (fp != NULL)
+    {
+	typval_T argvars[1];
+	funcexe_T	funcexe;
+
+	argvars[0].v_type = VAR_UNKNOWN;
+	CLEAR_FIELD(funcexe);
+	funcexe.fe_evaluate = TRUE;
+
+	error = call_user_func_check(fp, 0, argvars, rettv, &funcexe, NULL);
+	if (error == FCERR_NONE)
+	    ret = OK;
+    }
+
+    user_func_error(error, name, FALSE);
     vim_free(tofree);
     vim_free(name);
 
@@ -5672,7 +5748,7 @@ ex_defer_inner(
 
 		if (error != FCERR_UNKNOWN)
 		{
-		    user_func_error(error, name, NULL);
+		    user_func_error(error, name, FALSE);
 		    r = FAIL;
 		}
 	    }

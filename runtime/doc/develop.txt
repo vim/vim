@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 9.0.  Last change: 2020 Aug 15
+*develop.txt*   For Vim version 9.0.  Last change: 2022 Sep 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -188,8 +188,8 @@ C COMPILER				*style-compiler* *ANSI-C* *C89* *C99*
 
 The minimal C compiler version supported is C89, also known as ANSI C.
 Later standards, such as C99, are not widely supported, or at least not 100%
-supported.  Therefore we use only some of the C99 features and disallow some
-(at least for now).
+supported.  Therefore we use only some of the C99 features and explicitly
+disallow some (this will gradually be adjusted over time).
 
 Please don't make changes everywhere to use the C99 features, it causes merge
 problems for existing patches.  Only use them for new and changed code.
@@ -215,12 +215,21 @@ Types ~
 "long long" is allowed and can be expected to be 64 bits.  Use %lld in printf
 formats.  Also "long long unsigned" with %llu.
 
+Declarations ~
+
+Now that the minimal supported compiler is MSVC 2015 declarations do not need
+to be at the start of a block.  However, it is often a good idea to do this
+anyway.
+
+Declaration of the for loop variable inside the loop is recommended:
+	for (int i = 0; i < len; ++i)
+Since this is clearly an advantage we'll use this more often.
+
+
 Not to be used ~
 
 These C99 features are not to be used, because not enough compilers support
 them:
-- Declaration after Statements (MSVC 2012 does not support it).  All
-  declarations need to be at the start of the block.
 - Variable length arrays (even in C11 this is an optional feature).
 - _Bool and _Complex types.
 - "inline" (it's hardly ever needed, let the optimizer do its work)

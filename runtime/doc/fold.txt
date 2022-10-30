@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 9.0.  Last change: 2022 Jan 22
+*fold.txt*      For Vim version 9.0.  Last change: 2022 Oct 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -74,8 +74,6 @@ method.  The value of the 'foldexpr' option is evaluated to get the foldlevel
 of a line.  Examples:
 This will create a fold for all consecutive lines that start with a tab: >
 	:set foldexpr=getline(v:lnum)[0]==\"\\t\"
-This will call a function to compute the fold level: >
-	:set foldexpr=MyFoldLevel(v:lnum)
 This will make a fold out of paragraphs separated by blank lines: >
 	:set foldexpr=getline(v:lnum)=~'^\\s*$'&&getline(v:lnum+1)=~'\\S'?'<1':1
 This does the same: >
@@ -83,6 +81,10 @@ This does the same: >
 
 Note that backslashes must be used to escape characters that ":set" handles
 differently (space, backslash, double quote, etc., see |option-backslash|).
+
+The most efficient is to call a compiled function without arguments: >
+	:set foldexpr=MyFoldLevel()
+The function must use v:lnum.  See |expr-option-function|.
 
 These are the conditions with which the expression is evaluated:
 - The current buffer and window are set for the line.
@@ -501,7 +503,7 @@ is evaluated to obtain the text displayed for a closed fold.  Example: >
 
 This shows the first line of the fold, with "/*", "*/" and "{{{" removed.
 Note the use of backslashes to avoid some characters to be interpreted by the
-":set" command.  It's simpler to define a function and call that: >
+":set" command.  It is much simpler to define a function and call it: >
 
     :set foldtext=MyFoldText()
     :function MyFoldText()
@@ -509,6 +511,9 @@ Note the use of backslashes to avoid some characters to be interpreted by the
     :  let sub = substitute(line, '/\*\|\*/\|{{{\d\=', '', 'g')
     :  return v:folddashes .. sub
     :endfunction
+
+The advantage of using a function call without arguments is that it is faster,
+see |expr-option-function|.
 
 Evaluating 'foldtext' is done in the |sandbox|.  The current window is set to
 the window that displays the line.  The context is set to the script where the

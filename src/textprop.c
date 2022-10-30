@@ -232,8 +232,9 @@ prop_add_one(
 
     for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
     {
-	colnr_T col;	// start column
-	long	length;	// in bytes
+	colnr_T col;	    // start column use in tp_col
+	colnr_T sort_col;   // column where it appears
+	long	length;	    // in bytes
 
 	// Fetch the line to get the ml_line_len field updated.
 	proplen = get_text_props(buf, lnum, &props, TRUE);
@@ -248,6 +249,7 @@ prop_add_one(
 	    semsg(_(e_invalid_column_number_nr), (long)start_col);
 	    goto theend;
 	}
+	sort_col = col;
 
 	if (lnum == end_lnum)
 	    length = end_col - col;
@@ -263,7 +265,9 @@ prop_add_one(
 	    length = 1;		// text is placed on one character
 	    if (col == 0)
 	    {
-		col = MAXCOL;	// after the line
+		col = MAXCOL;	// before or after the line
+		if ((text_flags & TP_FLAG_ALIGN_ABOVE) == 0)
+		    sort_col = MAXCOL;
 		length += text_padding_left;
 	    }
 	}
@@ -280,9 +284,15 @@ prop_add_one(
 	// the text, we need to copy them as bytes before using it as a struct.
 	for (i = 0; i < proplen; ++i)
 	{
+	    colnr_T prop_col;
+
 	    mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
 							   sizeof(textprop_T));
-	    if (tmp_prop.tp_col >= col)
+	    // col is MAXCOL when the text goes above or after the line, when
+	    // above we should use column zero for sorting
+	    prop_col = (tmp_prop.tp_flags & TP_FLAG_ALIGN_ABOVE)
+				? 0 : tmp_prop.tp_col;
+	    if (prop_col >= sort_col)
 		break;
 	}
 	newprops = newtext + textlen;
@@ -343,6 +353,7 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
     linenr_T	end_lnum;
     colnr_T	end_col;
     int		error = FALSE;
+    int		prev_did_emsg = did_emsg;
 
     if (check_for_dict_arg(argvars, 0) == FAIL
 	    || check_for_list_arg(argvars, 1) == FAIL)
@@ -379,17 +390,24 @@ f_prop_add_list(typval_T *argvars, typval_T *rettv UNUSED)
 
 	pos_list = li->li_tv.vval.v_list;
 	start_lnum = list_find_nr(pos_list, 0L, &error);
-	start_col = list_find_nr(pos_list, 1L, &error);
-	end_lnum = list_find_nr(pos_list, 2L, &error);
-	end_col = list_find_nr(pos_list, 3L, &error);
+	if (!error)
+	    start_col = list_find_nr(pos_list, 1L, &error);
+	if (!error)
+	    end_lnum = list_find_nr(pos_list, 2L, &error);
+	if (!error)
+	    end_col = list_find_nr(pos_list, 3L, &error);
+	int this_id = id;
+	if (!error && pos_list->lv_len > 4)
+	    this_id = list_find_nr(pos_list, 4L, &error);
 	if (error || start_lnum <= 0 || start_col <= 0
-		|| end_lnum <= 0 || end_col <= 0)
+		  || end_lnum <= 0 || end_col <= 0)
 	{
-	    emsg(_(e_invalid_argument));
+	    if (prev_did_emsg == did_emsg)
+		emsg(_(e_invalid_argument));
 	    return;
 	}
-	if (prop_add_one(buf, type_name, id, NULL, 0, 0, start_lnum, end_lnum,
-						start_col, end_col) == FAIL)
+	if (prop_add_one(buf, type_name, this_id, NULL, 0, 0,
+			     start_lnum, end_lnum, start_col, end_col) == FAIL)
 	    return;
     }
 
@@ -478,6 +496,14 @@ prop_add_common(
 
     if (dict_has_key(dict, "text"))
     {
+	if (dict_has_key(dict, "length")
+		|| dict_has_key(dict, "end_col")
+		|| dict_has_key(dict, "end_lnum"))
+	{
+	    emsg(_(e_cannot_use_length_endcol_and_endlnum_with_text));
+	    goto theend;
+	}
+
 	text = dict_get_string(dict, "text", TRUE);
 	if (text == NULL)
 	    goto theend;
@@ -497,6 +523,8 @@ prop_add_common(
 	    }
 	    if (STRCMP(p, "right") == 0)
 		flags |= TP_FLAG_ALIGN_RIGHT;
+	    else if (STRCMP(p, "above") == 0)
+		flags |= TP_FLAG_ALIGN_ABOVE;
 	    else if (STRCMP(p, "below") == 0)
 		flags |= TP_FLAG_ALIGN_BELOW;
 	    else if (STRCMP(p, "after") != 0)
@@ -606,12 +634,12 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 }
 
 /*
- * Return the number of text properties with "below" alignment in line "lnum".
- * A "right" aligned property also goes below after a "below" or other "right"
- * aligned property.
+ * Return the number of text properties with "above" or "below" alignment in
+ * line "lnum".  A "right" aligned property also goes below after a "below" or
+ * other "right" aligned property.
  */
     int
-prop_count_below(buf_T *buf, linenr_T lnum)
+prop_count_above_below(buf_T *buf, linenr_T lnum)
 {
     char_u	*props;
     int		count = get_text_props(buf, lnum, &props, FALSE);
@@ -632,6 +660,11 @@ prop_count_below(buf_T *buf, linenr_T lnum)
 				     && (prop.tp_flags & TP_FLAG_ALIGN_RIGHT)))
 	    {
 		next_right_goes_below = TRUE;
+		++result;
+	    }
+	    else if (prop.tp_flags & TP_FLAG_ALIGN_ABOVE)
+	    {
+		next_right_goes_below = FALSE;
 		++result;
 	    }
 	    else if (prop.tp_flags & TP_FLAG_ALIGN_RIGHT)
@@ -673,6 +706,21 @@ count_props(linenr_T lnum, int only_starting, int last_line)
 static textprop_T	*text_prop_compare_props;
 static buf_T		*text_prop_compare_buf;
 
+/* Score for sorting on position of the text property: 0: above,
+ * 1: after (default), 2: right, 3: below (comes last)
+ */
+    static int
+text_prop_order(int flags)
+{
+    if (flags & TP_FLAG_ALIGN_ABOVE)
+	return 0;
+    if (flags & TP_FLAG_ALIGN_RIGHT)
+	return 2;
+    if (flags & TP_FLAG_ALIGN_BELOW)
+	return 3;
+    return 1;
+}
+
 /*
  * Function passed to qsort() to sort text properties.
  * Return 1 if "s1" has priority over "s2", -1 if the other way around, zero if
@@ -694,21 +742,13 @@ text_prop_compare(const void *s1, const void *s2)
     col2 = tp2->tp_col;
     if (col1 == MAXCOL && col2 == MAXCOL)
     {
-	int flags1 = 0;
-	int flags2 = 0;
+	int order1 = text_prop_order(tp1->tp_flags);
+	int order2 = text_prop_order(tp2->tp_flags);
 
-	// both props add text are after the line, order on 0: after (default),
-	// 1: right, 2: below (comes last)
-	if (tp1->tp_flags & TP_FLAG_ALIGN_RIGHT)
-	    flags1 = 1;
-	if (tp1->tp_flags & TP_FLAG_ALIGN_BELOW)
-	    flags1 = 2;
-	if (tp2->tp_flags & TP_FLAG_ALIGN_RIGHT)
-	    flags2 = 1;
-	if (tp2->tp_flags & TP_FLAG_ALIGN_BELOW)
-	    flags2 = 2;
-	if (flags1 != flags2)
-	    return flags1 < flags2 ? 1 : -1;
+	// both props add text before or after the line, sort on order where it
+	// is added
+	if (order1 != order2)
+	    return order1 < order2 ? 1 : -1;
     }
 
     // property that inserts text has priority over one that doesn't
@@ -2208,13 +2248,15 @@ adjust_prop_columns(
  * "lnum_top" is the top line.
  * "kept" is the number of bytes kept in the first line, while
  * "deleted" is the number of bytes deleted.
+ * "at_eol" is true if the split is after the end of the line.
  */
     void
 adjust_props_for_split(
-	linenr_T lnum_props,
-	linenr_T lnum_top,
-	int kept,
-	int deleted)
+	linenr_T    lnum_props,
+	linenr_T    lnum_top,
+	int	    kept,
+	int	    deleted,
+	int	    at_eol)
 {
     char_u	*props;
     int		count;
@@ -2240,6 +2282,7 @@ adjust_props_for_split(
 	proptype_T *pt;
 	int	    start_incl, end_incl;
 	int	    cont_prev, cont_next;
+	int	    prop_col;
 
 	// copy the prop to an aligned structure
 	mch_memmove(&prop, props + i * sizeof(textprop_T), sizeof(textprop_T));
@@ -2247,9 +2290,20 @@ adjust_props_for_split(
 	pt = text_prop_type_by_id(curbuf, prop.tp_type);
 	start_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL));
 	end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
-	cont_prev = prop.tp_col != MAXCOL && prop.tp_col + !start_incl <= kept;
-	cont_next = prop.tp_col != MAXCOL
-			   && skipped <= prop.tp_col + prop.tp_len - !end_incl;
+
+	// a text prop "above" behaves like it is on the first text column
+	prop_col = (prop.tp_flags & TP_FLAG_ALIGN_ABOVE) ? 1 : prop.tp_col;
+
+	if (prop_col == MAXCOL)
+	{
+	    cont_prev = at_eol;
+	    cont_next = !at_eol;
+	}
+	else
+	{
+	    cont_prev = prop_col + !start_incl <= kept;
+	    cont_next = skipped <= prop_col + prop.tp_len - !end_incl;
+	}
 	// when a prop has text it is never copied
 	if (prop.tp_id < 0 && cont_next)
 	    cont_prev = FALSE;
@@ -2260,7 +2314,7 @@ adjust_props_for_split(
 
 	    *p = prop;
 	    ++prevprop.ga_len;
-	    if (p->tp_col + p->tp_len >= kept)
+	    if (p->tp_col != MAXCOL && p->tp_col + p->tp_len >= kept)
 		p->tp_len = kept - p->tp_col;
 	    if (cont_next)
 		p->tp_flags |= TP_FLAG_CONT_NEXT;
@@ -2268,8 +2322,7 @@ adjust_props_for_split(
 
 	// Only add the property to the next line if the length is bigger than
 	// zero.
-	if ((cont_next || prop.tp_col == MAXCOL)
-						&& ga_grow(&nextprop, 1) == OK)
+	if (cont_next && ga_grow(&nextprop, 1) == OK)
 	{
 	    textprop_T *p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
 

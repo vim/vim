@@ -794,10 +794,8 @@ comp_textwidth(
 	// The width is the window width minus 'wrapmargin' minus all the
 	// things that add to the margin.
 	textwidth = curwin->w_width - curbuf->b_p_wm;
-#ifdef FEAT_CMDWIN
 	if (cmdwin_type != 0)
 	    textwidth -= 1;
-#endif
 #ifdef FEAT_FOLDING
 	textwidth -= curwin->w_p_fdc;
 #endif
@@ -938,7 +936,7 @@ fex_format(
     // Evaluate the function.
     if (use_sandbox)
 	++sandbox;
-    r = (int)eval_to_number(fex);
+    r = (int)eval_to_number(fex, TRUE);
     if (use_sandbox)
 	--sandbox;
 

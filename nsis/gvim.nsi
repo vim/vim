@@ -36,9 +36,6 @@ Unicode true
 # Comment the next line if you do not want to add Native Language Support
 !define HAVE_NLS
 
-# Uncomment the next line if you want to include VisVim extension:
-#!define HAVE_VIS_VIM
-
 # Comment the following line to create an English-only installer:
 !define HAVE_MULTI_LANG
 
@@ -55,9 +52,6 @@ Unicode true
 # ----------- No configurable settings below this line -----------
 
 !include "Library.nsh"		# For DLL install
-!ifdef HAVE_VIS_VIM
-  !include "UpgradeDLL.nsh"	# for VisVim.dll
-!endif
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 !include "nsDialogs.nsh"
@@ -537,17 +531,6 @@ SectionGroup $(str_group_plugin) id_group_plugin
 SectionGroupEnd
 
 ##########################################################
-!ifdef HAVE_VIS_VIM
-Section "$(str_section_vis_vim)" id_section_visvim
-	SectionIn 3
-
-	SetOutPath $0
-	!insertmacro UpgradeDLL "${VIMSRC}\VisVim\VisVim.dll" "$0\VisVim.dll" "$0"
-	File ${VIMSRC}\VisVim\README_VisVim.txt
-SectionEnd
-!endif
-
-##########################################################
 !ifdef HAVE_NLS
 Section "$(str_section_nls)" id_section_nls
 	SectionIn 1 3
@@ -634,12 +617,6 @@ Section -post
 	  SectionGetSize ${id_section_editwith} $4
 	  IntOp $3 $3 + $4
 	${EndIf}
-!ifdef HAVE_VIS_VIM
-	${If} ${SectionIsSelected} ${id_section_visvim}
-	  SectionGetSize ${id_section_visvim} $4
-	  IntOp $3 $3 + $4
-	${EndIf}
-!endif
 !ifdef HAVE_NLS
 	${If} ${SectionIsSelected} ${id_section_nls}
 	  SectionGetSize ${id_section_nls} $4
@@ -670,9 +647,6 @@ Section -post
 	!insertmacro SaveSectionSelection ${id_section_vimrc}      "select_vimrc"
 	!insertmacro SaveSectionSelection ${id_section_pluginhome} "select_pluginhome"
 	!insertmacro SaveSectionSelection ${id_section_pluginvim}  "select_pluginvim"
-!ifdef HAVE_VIS_VIM
-	!insertmacro SaveSectionSelection ${id_section_visvim}     "select_visvim"
-!endif
 !ifdef HAVE_NLS
 	!insertmacro SaveSectionSelection ${id_section_nls}        "select_nls"
 !endif
@@ -744,9 +718,6 @@ Function .onInit
   !insertmacro LoadSectionSelection ${id_section_vimrc}      "select_vimrc"
   !insertmacro LoadSectionSelection ${id_section_pluginhome} "select_pluginhome"
   !insertmacro LoadSectionSelection ${id_section_pluginvim}  "select_pluginvim"
-!ifdef HAVE_VIS_VIM
-  !insertmacro LoadSectionSelection ${id_section_visvim}     "select_visvim"
-!endif
 !ifdef HAVE_NLS
   !insertmacro LoadSectionSelection ${id_section_nls}        "select_nls"
 !endif
@@ -921,9 +892,6 @@ FunctionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${id_group_plugin}        $(str_desc_plugin)
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_pluginhome}  $(str_desc_plugin_home)
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_pluginvim}   $(str_desc_plugin_vim)
-!ifdef HAVE_VIS_VIM
-    !insertmacro MUI_DESCRIPTION_TEXT ${id_section_visvim}      $(str_desc_vis_vim)
-!endif
 !ifdef HAVE_NLS
     !insertmacro MUI_DESCRIPTION_TEXT ${id_section_nls}         $(str_desc_nls)
 !endif
@@ -946,13 +914,6 @@ Section "un.$(str_unsection_register)" id_unsection_register
 	# Apparently $INSTDIR is set to the directory where the uninstaller is
 	# created.  Thus the "vim61" directory is included in it.
 	StrCpy $0 "$INSTDIR"
-
-!ifdef HAVE_VIS_VIM
-	# If VisVim was installed, unregister the DLL.
-	${If} ${FileExists} "$0\VisVim.dll"
-	  ExecWait "regsvr32.exe /u /s $0\VisVim.dll"
-	${EndIf}
-!endif
 
 	# delete the context menu entry and batch files
 	DetailPrint "$(str_msg_unregistering)"
@@ -1046,9 +1007,6 @@ Section "un.$(str_unsection_exe)" id_unsection_exe
 	RMDir /r $0\syntax
 	RMDir /r $0\tools
 	RMDir /r $0\tutor
-!ifdef HAVE_VIS_VIM
-	RMDir /r $0\VisVim
-!endif
 	RMDir /r $0\lang
 	RMDir /r $0\keymap
 	Delete $0\*.exe

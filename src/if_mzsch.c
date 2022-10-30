@@ -17,7 +17,7 @@
  * 1. Memory, allocated with scheme_malloc*, need not to be freed explicitly,
  *    garbage collector will do it self
  * 2. Requires at least NORMAL features. I can't imagine why one may want
- *    to build with SMALL or TINY features but with MzScheme interface.
+ *    to build with TINY features but with MzScheme interface.
  * 3. I don't use K&R-style functions. Anyways, MzScheme headers are ANSI.
  */
 
@@ -3009,13 +3009,11 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	result = scheme_make_integer((long)vim_value->vval.v_number);
 	MZ_GC_CHECK();
     }
-# ifdef FEAT_FLOAT
     else if (vim_value->v_type == VAR_FLOAT)
     {
 	result = scheme_make_double((double)vim_value->vval.v_float);
 	MZ_GC_CHECK();
     }
-# endif
     else if (vim_value->v_type == VAR_LIST)
     {
 	list_T		*list = vim_value->vval.v_list;
@@ -3208,13 +3206,11 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 	tv->v_type = VAR_BOOL;
 	tv->vval.v_number = SCHEME_TRUEP(obj);
     }
-# ifdef FEAT_FLOAT
     else if (SCHEME_DBLP(obj))
     {
 	tv->v_type = VAR_FLOAT;
 	tv->vval.v_float = SCHEME_DBL_VAL(obj);
     }
-# endif
     else if (SCHEME_BYTE_STRINGP(obj))
     {
 	tv->v_type = VAR_STRING;

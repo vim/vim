@@ -30,7 +30,7 @@ void check_for_delay(int check_msg_scroll);
 int screen_valid(int doclear);
 void screenalloc(int doclear);
 void free_screenlines(void);
-void screenclear(void);
+int screenclear(void);
 void redraw_as_cleared(void);
 void line_was_clobbered(int screen_lnum);
 int can_clear(char_u *p);

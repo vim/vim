@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 9.0.  Last change: 2021 Jan 04
+*os_vms.txt*    For Vim version 9.0.  Last change: 2022 Sep 30
 
 
 		  VIM REFERENCE MANUAL
@@ -331,10 +331,10 @@ features, it is worth to choose non GUI executables.
 8.1 Backspace/delete
 
 There are backspace/delete key inconsistencies with VMS.
-:fixdel doesn't do the trick, but the solution is: >
+:fixdel doesn't do the trick, but the solution is (without "<" in 'cpo'): >
 
-	:inoremap ^? ^H		" for terminal mode
-	:inoremap <Del> ^H	" for gui mode
+	:inoremap <C-?> <C-H>	" for terminal mode
+	:inoremap <Del> <C-H>	" for gui mode
 
 Read more in ch: 8.6 (Terminal problems).
 (Bruce Hunsaker <BNHunsaker@chq.byu.edu> Vim 5.3)

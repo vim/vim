@@ -1,6 +1,8 @@
 /* regexp.c */
 void init_regexp_timeout(long msec);
 void disable_regexp_timeout(void);
+void save_timeout_for_debugging(void);
+void restore_timeout_for_debugging(void);
 int re_multiline(regprog_T *prog);
 char_u *skip_regexp(char_u *startp, int delim, int magic);
 char_u *skip_regexp_err(char_u *startp, int delim, int magic);

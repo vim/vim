@@ -47,7 +47,7 @@ features you can enable/disable.
 
 Haiku uses "ncurses6" as its terminal library, therefore you need to have
 "ncurses6_devel" package installed from HaikuDepot in order to configure
-the Haiku build.  Just append "--with-tlib=ncurses6" to ./configure command
+the Haiku build.  Just append "--with-tlib=ncurses" to ./configure command.
 
 Now you should use "make" to compile Vim, then "make install" to install it.
 For seamless integration into Haiku, the GUI-less vim binary should be
@@ -56,12 +56,14 @@ additionally installed over the GUI version.  Typical build commands are:
   ./configure --prefix=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY` \
     --datarootdir=`finddir B_SYSTEM_NONPACKAGED_DATA_DIRECTORY` \
     --mandir=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY`/documentation/man \
+    --with-tlib=ncurses \
   make clean
   make install
 
   ./configure --prefix=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY`  \
     --datarootdir=`finddir B_SYSTEM_NONPACKAGED_DATA_DIRECTORY` \
     --mandir=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY`/documentation/man \
+    --with-tlib=ncurses \
     --disable-gui
   make clean
   make install

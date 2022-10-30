@@ -12,9 +12,9 @@
 func Test_winbuf_close()
   enew | only
 
-  call writefile(['testtext 1'], 'Xtest1')
-  call writefile(['testtext 2'], 'Xtest2')
-  call writefile(['testtext 3'], 'Xtest3')
+  call writefile(['testtext 1'], 'Xtest1', 'D')
+  call writefile(['testtext 2'], 'Xtest2', 'D')
+  call writefile(['testtext 3'], 'Xtest3', 'D')
 
   next! Xtest1 Xtest2
   call setline(1, 'testtext 1 1')
@@ -117,10 +117,6 @@ func Test_winbuf_close()
   call assert_equal('Xtest3', bufname('%'))
   call assert_fails('silent! quit!', 'E37:')
   call assert_equal('Xtest1', bufname('%'))
-
-  call delete('Xtest1')
-  call delete('Xtest2')
-  call delete('Xtest3')
 endfunc
 
 " Test that ":close" will respect 'winfixheight' when possible.

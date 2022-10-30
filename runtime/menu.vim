@@ -129,6 +129,12 @@ an <silent> 10.330 &File.&Close<Tab>:close
 	\ else <Bar>
 	\   confirm close <Bar>
 	\ endif<CR>
+tln <silent> 10.330 &File.&Close<Tab>:close
+	\ <C-W>:if winheight(2) < 0 && tabpagewinnr(2) == 0 <Bar>
+	\   confirm enew <Bar>
+	\ else <Bar>
+	\   confirm close <Bar>
+	\ endif<CR>
 an 10.335 &File.-SEP1-				<Nop>
 an <silent> 10.340 &File.&Save<Tab>:w		:if expand("%") == ""<Bar>browse confirm w<Bar>else<Bar>confirm w<Bar>endif<CR>
 an 10.350 &File.Save\ &As\.\.\.<Tab>:sav	:browse confirm saveas<CR>

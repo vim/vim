@@ -269,6 +269,20 @@ func Test_assert_fail_fails()
   call assert_match("E856: \"assert_fails()\" second argument", exp)
 
   try
+    call assert_equal(1, assert_fails('xxx', test_null_list()))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E856: \"assert_fails()\" second argument", exp)
+
+  try
+    call assert_equal(1, assert_fails('xxx', []))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E856: \"assert_fails()\" second argument", exp)
+
+  try
     call assert_equal(1, assert_fails('xxx', #{one: 1}))
   catch
     let exp = v:exception
@@ -307,6 +321,15 @@ func Test_assert_fail_fails()
   call assert_equal(1, assert_fails('c0', ['', '\(.\)\1']))
   call assert_match("Expected '\\\\\\\\(.\\\\\\\\)\\\\\\\\1' but got 'E939: Positive count required: c0': c0", v:errors[0])
   call remove(v:errors, 0)
+
+  " Test for matching the line number and the script name in an error message
+  call writefile(['', 'call Xnonexisting()'], 'Xassertfails.vim', 'D')
+  call assert_fails('source Xassertfails.vim', 'E117:', '', 10)
+  call assert_match("Expected 10 but got 2", v:errors[0])
+  call remove(v:errors, 0)
+  call assert_fails('source Xassertfails.vim', 'E117:', '', 2, 'Xabc')
+  call assert_match("Expected 'Xabc' but got .*Xassertfails.vim", v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_assert_fails_in_try_block()
@@ -331,6 +354,12 @@ func Test_assert_beeps()
   bwipe
 endfunc
 
+func Test_assert_nobeep()
+  call assert_equal(1, assert_nobeep('normal! cr'))
+  call assert_match("command did beep: normal! cr", v:errors[0])
+  call remove(v:errors, 0)
+endfunc
+
 func Test_assert_inrange()
   call assert_equal(0, assert_inrange(7, 7, 7))
   call assert_equal(0, assert_inrange(5, 7, 5))
@@ -352,21 +381,29 @@ func Test_assert_inrange()
 
   call assert_fails('call assert_inrange(1, 1)', 'E119:')
 
-  if has('float')
-    call assert_equal(0, assert_inrange(7.0, 7, 7))
-    call assert_equal(0, assert_inrange(7, 7.0, 7))
-    call assert_equal(0, assert_inrange(7, 7, 7.0))
-    call assert_equal(0, assert_inrange(5, 7, 5.0))
-    call assert_equal(0, assert_inrange(5, 7, 6.0))
-    call assert_equal(0, assert_inrange(5, 7, 7.0))
+  call assert_equal(0, assert_inrange(7.0, 7, 7))
+  call assert_equal(0, assert_inrange(7, 7.0, 7))
+  call assert_equal(0, assert_inrange(7, 7, 7.0))
+  call assert_equal(0, assert_inrange(5, 7, 5.0))
+  call assert_equal(0, assert_inrange(5, 7, 6.0))
+  call assert_equal(0, assert_inrange(5, 7, 7.0))
 
-    call assert_equal(1, assert_inrange(5, 7, 4.0))
-    call assert_match("Expected range 5.0 - 7.0, but got 4.0", v:errors[0])
-    call remove(v:errors, 0)
-    call assert_equal(1, assert_inrange(5, 7, 8.0))
-    call assert_match("Expected range 5.0 - 7.0, but got 8.0", v:errors[0])
-    call remove(v:errors, 0)
-  endif
+  call assert_equal(1, assert_inrange(5, 7, 4.0))
+  call assert_match("Expected range 5.0 - 7.0, but got 4.0", v:errors[0])
+  call remove(v:errors, 0)
+  call assert_equal(1, assert_inrange(5, 7, 8.0))
+  call assert_match("Expected range 5.0 - 7.0, but got 8.0", v:errors[0])
+  call remove(v:errors, 0)
+
+  " Use a custom message
+  call assert_equal(1, assert_inrange(5, 7, 8.0, "Higher"))
+  call assert_match("Higher", v:errors[0])
+  call remove(v:errors, 0)
+
+  " Invalid arguments
+  call assert_fails("call assert_inrange([], 2, 3)", 'E1219:')
+  call assert_fails("call assert_inrange(1, [], 3)", 'E1219:')
+  call assert_fails("call assert_inrange(1, 2, [])", 'E1219:')
 endfunc
 
 func Test_assert_with_msg()
@@ -407,6 +444,19 @@ endfunc
 func Test_user_is_happy()
   smile
   sleep 300m
+endfunc
+
+" Test for the test_alloc_fail() function
+func Test_test_alloc_fail()
+  call assert_fails('call test_alloc_fail([], 1, 1)', 'E474:')
+  call assert_fails('call test_alloc_fail(10, [], 1)', 'E474:')
+  call assert_fails('call test_alloc_fail(10, 1, [])', 'E474:')
+  call assert_fails('call test_alloc_fail(999999, 1, 1)', 'E474:')
+endfunc
+
+" Test for the test_option_not_set() function
+func Test_test_option_not_set()
+  call assert_fails('call test_option_not_set("Xinvalidopt")', 'E475:')
 endfunc
 
 " Must be last.

@@ -232,7 +232,7 @@ func Test_find_non_existing_path()
   new
   let save_path = &path
   let save_dir = getcwd()
-  call mkdir('dir1/dir2', 'p')
+  call mkdir('dir1/dir2', 'pR')
   call writefile([], 'dir1/file.txt')
   call writefile([], 'dir1/dir2/base.txt')
   call chdir('dir1/dir2')
@@ -243,10 +243,6 @@ func Test_find_non_existing_path()
 
   call chdir(save_dir)
   bw!
-  call delete('dir1/dir2/base.txt', 'rf')
-  call delete('dir1/dir2', 'rf')
-  call delete('dir1/file.txt', 'rf')
-  call delete('dir1', 'rf')
   let &path = save_path
 endfunc
 

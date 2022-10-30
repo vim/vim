@@ -153,7 +153,7 @@ static termrequest_T *all_termrequests[] = {
 
 // The t_8u code may default to a value but get reset when the term response is
 // received.  To avoid redrawing too often, only redraw when t_8u is not reset
-// and it was supposed to be written.
+// and it was supposed to be written.  Unless t_8u was set explicitly.
 // FALSE -> don't output t_8u yet
 // MAYBE -> tried outputing t_8u while FALSE
 // OK    -> can write t_8u
@@ -846,10 +846,10 @@ static struct builtin_term builtin_termcaps[] =
     {K_RIGHT,		"\033O*C"},
     {K_LEFT,		"\033O*D"},
     // An extra set of cursor keys for vt100 mode
-    {K_XUP,		"\033[@;*A"},
-    {K_XDOWN,		"\033[@;*B"},
-    {K_XRIGHT,		"\033[@;*C"},
-    {K_XLEFT,		"\033[@;*D"},
+    {K_XUP,		"\033[@;*A"},	// Esc [ A or Esc [ 1 ; A
+    {K_XDOWN,		"\033[@;*B"},	// Esc [ B or Esc [ 1 ; B
+    {K_XRIGHT,		"\033[@;*C"},	// Esc [ C or Esc [ 1 ; C
+    {K_XLEFT,		"\033[@;*D"},	// Esc [ D or Esc [ 1 ; D
     // An extra set of function keys for vt100 mode
     {K_XF1,		"\033O*P"},
     {K_XF2,		"\033O*Q"},
@@ -871,13 +871,13 @@ static struct builtin_term builtin_termcaps[] =
     {K_HELP,		"\033[28;*~"},
     {K_UNDO,		"\033[26;*~"},
     {K_INS,		"\033[2;*~"},
-    {K_HOME,		"\033[1;*H"},
+    {K_HOME,		"\033[@;*H"},    // Esc [ H  or Esc 1 ; H
     // {K_S_HOME,		"\033O2H"},
     // {K_C_HOME,		"\033O5H"},
     {K_KHOME,		"\033[1;*~"},
     {K_XHOME,		"\033O*H"},	// other Home
     {K_ZHOME,		"\033[7;*~"},	// other Home
-    {K_END,		"\033[1;*F"},
+    {K_END,		"\033[@;*F"},	// Esc [ F or Esc 1 ; F
     // {K_S_END,		"\033O2F"},
     // {K_C_END,		"\033O5F"},
     {K_KEND,		"\033[4;*~"},
@@ -1350,8 +1350,10 @@ typedef struct {
 #define TPR_UNDERLINE_RGB	    2
 // mouse support - TPR_MOUSE_XTERM, TPR_MOUSE_XTERM2 or TPR_MOUSE_SGR
 #define TPR_MOUSE		    3
+// term response indicates kitty
+#define TPR_KITTY		    4
 // table size
-#define TPR_COUNT		    4
+#define TPR_COUNT		    5
 
 static termprop_T term_props[TPR_COUNT];
 
@@ -1373,6 +1375,8 @@ init_term_props(int all)
     term_props[TPR_UNDERLINE_RGB].tpr_set_by_termresponse = TRUE;
     term_props[TPR_MOUSE].tpr_name = "mouse";
     term_props[TPR_MOUSE].tpr_set_by_termresponse = TRUE;
+    term_props[TPR_KITTY].tpr_name = "kitty";
+    term_props[TPR_KITTY].tpr_set_by_termresponse = FALSE;
 
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
@@ -3011,7 +3015,10 @@ term_bg_rgb_color(guicolor_T rgb)
 term_ul_rgb_color(guicolor_T rgb)
 {
 # ifdef FEAT_TERMRESPONSE
-    if (write_t_8u_state != OK)
+    // If the user explicitly sets t_8u then use it.  Otherwise wait for
+    // termresponse to be received, which is when t_8u would be set and a
+    // redraw is needed if it was used.
+    if (!option_was_set((char_u *)"t_8u") && write_t_8u_state != OK)
 	write_t_8u_state = MAYBE;
     else
 # endif
@@ -4712,6 +4719,13 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// else if (version == 115 && arg[0] == 0 && arg[2] == 0)
 	//     term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
+	// Kitty sends 1;400{version};{secondary-version}
+	if (arg[0] == 1 && arg[1] >= 4000 && arg[1] <= 4009)
+	{
+	    term_props[TPR_KITTY].tpr_status = TPR_YES;
+	    term_props[TPR_KITTY].tpr_set_by_termresponse = TRUE;
+	}
+
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
 	// 30600/40500 is a version number of GNU screen. DA2 support is added
 	// on 3.6.  DCS string has a special meaning to GNU screen, but xterm
@@ -4804,6 +4818,28 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 }
 
 /*
+ * Add "key" to "buf" and return the number of bytes used.
+ * Handles special keys and multi-byte characters.
+ */
+    static int
+add_key_to_buf(int key, char_u *buf)
+{
+    int idx = 0;
+
+    if (IS_SPECIAL(key))
+    {
+	buf[idx++] = K_SPECIAL;
+	buf[idx++] = KEY2TERMCAP0(key);
+	buf[idx++] = KEY2TERMCAP1(key);
+    }
+    else if (has_mbyte)
+	idx += (*mb_char2bytes)(key, buf + idx);
+    else
+	buf[idx++] = key;
+    return idx;
+}
+
+/*
  * Handle a sequence with key and modifier, one of:
  *	{lead}27;{modifier};{key}~
  *	{lead}{key};{modifier}u
@@ -4821,10 +4857,13 @@ handle_key_with_modifier(
 {
     int	    key;
     int	    modifiers;
-    int	    new_slen;
     char_u  string[MAX_KEY_CODE_LEN + 1];
 
-    seenModifyOtherKeys = TRUE;
+    // Do not set seenModifyOtherKeys for kitty, it does send some sequences
+    // like this but does not have the modifyOtherKeys feature.
+    if (term_props[TPR_KITTY].tpr_status != TPR_YES)
+	seenModifyOtherKeys = TRUE;
+
     if (trail == 'u')
 	key = arg[0];
     else
@@ -4839,18 +4878,33 @@ handle_key_with_modifier(
     modifiers = may_remove_shift_modifier(modifiers, key);
 
     // insert modifiers with KS_MODIFIER
-    new_slen = modifiers2keycode(modifiers, &key, string);
+    int new_slen = modifiers2keycode(modifiers, &key, string);
 
-    if (IS_SPECIAL(key))
-    {
-	string[new_slen++] = K_SPECIAL;
-	string[new_slen++] = KEY2TERMCAP0(key);
-	string[new_slen++] = KEY2TERMCAP1(key);
-    }
-    else if (has_mbyte)
-	new_slen += (*mb_char2bytes)(key, string + new_slen);
-    else
-	string[new_slen++] = key;
+    // add the bytes for the key
+    new_slen += add_key_to_buf(key, string + new_slen);
+
+    if (put_string_in_typebuf(offset, csi_len, string, new_slen,
+						 buf, bufsize, buflen) == FAIL)
+	return -1;
+    return new_slen - csi_len + offset;
+}
+
+/*
+ * Handle a sequence with key without a modifier:
+ *	{lead}{key}u
+ * Returns the difference in length.
+ */
+    static int
+handle_key_without_modifier(
+	int	*arg,
+	int	csi_len,
+	int	offset,
+	char_u	*buf,
+	int	bufsize,
+	int	*buflen)
+{
+    char_u  string[MAX_KEY_CODE_LEN + 1];
+    int	    new_slen = add_key_to_buf(arg[0], string);
 
     if (put_string_in_typebuf(offset, csi_len, string, new_slen,
 						 buf, bufsize, buflen) == FAIL)
@@ -5006,10 +5060,21 @@ handle_csi(
     // Key with modifier:
     //	{lead}27;{modifier};{key}~
     //	{lead}{key};{modifier}u
-    else if ((arg[0] == 27 && argc == 3 && trail == '~')
-	    || (argc == 2 && trail == 'u'))
+    // Only handles four modifiers, this won't work if the modifier value is
+    // more than 16.
+    else if (((arg[0] == 27 && argc == 3 && trail == '~')
+		|| (argc == 2 && trail == 'u'))
+	    && arg[1] <= 16)
     {
 	return len + handle_key_with_modifier(arg, trail,
+			    csi_len, offset, buf, bufsize, buflen);
+    }
+
+    // Key without modifier (bad Kitty may send this):
+    //	{lead}{key}u
+    else if (argc == 1 && trail == 'u')
+    {
+	return len + handle_key_without_modifier(arg,
 			    csi_len, offset, buf, bufsize, buflen);
     }
 
@@ -5436,12 +5501,9 @@ check_termcode(
 		 */
 		if (termcodes[idx].modlen > 0 && mouse_index_found < 0)
 		{
-		    int at_code;
-
 		    modslen = termcodes[idx].modlen;
 		    if (cpo_koffset && offset && len < modslen)
 			continue;
-		    at_code = termcodes[idx].code[modslen] == '@';
 		    if (STRNCMP(termcodes[idx].code, tp,
 				(size_t)(modslen > len ? len : modslen)) == 0)
 		    {
@@ -5456,7 +5518,8 @@ check_termcode(
 			else if (tp[modslen] != ';' && modslen == slen - 3)
 			    // no match for "code;*X" with "code;"
 			    continue;
-			else if (at_code && tp[modslen] != '1')
+			else if (termcodes[idx].code[modslen] == '@'
+							 && tp[modslen] != '1')
 			    // no match for "<Esc>[@" with "<Esc>[1"
 			    continue;
 			else
@@ -6730,23 +6793,39 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 #endif
 
 /*
- * Replace K_BS by <BS> and K_DEL by <DEL>
+ * Replace K_BS by <BS> and K_DEL by <DEL>.
+ * Include any modifiers into the key and drop them.
+ * Returns "len" adjusted for replaced codes.
  */
-    void
-term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len)
+    int
+term_replace_keycodes(char_u *ta_buf, int ta_len, int len_arg)
 {
+    int		len = len_arg;
     int		i;
     int		c;
 
     for (i = ta_len; i < ta_len + len; ++i)
     {
-	if (ta_buf[i] == CSI && len - i > 2)
+	if (ta_buf[i] == CSI && len - i > 3 && ta_buf[i + 1] == KS_MODIFIER)
+	{
+	    int modifiers = ta_buf[i + 2];
+	    int key = ta_buf[i + 3];
+
+	    // Try to use the modifier to modify the key.  In any case drop the
+	    // modifier.
+	    mch_memmove(ta_buf + i + 1, ta_buf + i + 4, (size_t)(len - i - 3));
+	    len -= 3;
+	    if (key < 0x80)
+		key = merge_modifyOtherKeys(key, &modifiers);
+	    ta_buf[i] = key;
+	}
+	else if (ta_buf[i] == CSI && len - i > 2)
 	{
 	    c = TERMCAP2KEY(ta_buf[i + 1], ta_buf[i + 2]);
 	    if (c == K_DEL || c == K_KDEL || c == K_BS)
 	    {
 		mch_memmove(ta_buf + i + 1, ta_buf + i + 3,
-			(size_t)(len - i - 2));
+							(size_t)(len - i - 2));
 		if (c == K_DEL || c == K_KDEL)
 		    ta_buf[i] = DEL;
 		else
@@ -6759,4 +6838,5 @@ term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len)
 	if (has_mbyte)
 	    i += (*mb_ptr2len_len)(ta_buf + i, ta_len + len - i) - 1;
     }
+    return len;
 }

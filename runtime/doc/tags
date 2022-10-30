@@ -231,7 +231,9 @@ $quote	eval.txt	/*$quote*
 'emoji'	options.txt	/*'emoji'*
 'enc'	options.txt	/*'enc'*
 'encoding'	options.txt	/*'encoding'*
+'endoffile'	options.txt	/*'endoffile'*
 'endofline'	options.txt	/*'endofline'*
+'eof'	options.txt	/*'eof'*
 'eol'	options.txt	/*'eol'*
 'ep'	options.txt	/*'ep'*
 'equalalways'	options.txt	/*'equalalways'*
@@ -302,6 +304,7 @@ $quote	eval.txt	/*$quote*
 'fs'	options.txt	/*'fs'*
 'fsync'	options.txt	/*'fsync'*
 'ft'	options.txt	/*'ft'*
+'g:context_extra_options'	ft_context.txt	/*'g:context_extra_options'*
 'g:context_ignore_makefile'	ft_context.txt	/*'g:context_ignore_makefile'*
 'g:context_include'	ft_context.txt	/*'g:context_include'*
 'g:mf_other_macros'	ft_mp.txt	/*'g:mf_other_macros'*
@@ -450,6 +453,7 @@ $quote	eval.txt	/*$quote*
 'lines'	options.txt	/*'lines'*
 'linespace'	options.txt	/*'linespace'*
 'lisp'	options.txt	/*'lisp'*
+'lispoptions'	options.txt	/*'lispoptions'*
 'lispwords'	options.txt	/*'lispwords'*
 'list'	options.txt	/*'list'*
 'listchars'	options.txt	/*'listchars'*
@@ -457,6 +461,7 @@ $quote	eval.txt	/*$quote*
 'lmap'	options.txt	/*'lmap'*
 'lnr'	options.txt	/*'lnr'*
 'loadplugins'	options.txt	/*'loadplugins'*
+'lop'	options.txt	/*'lop'*
 'lpl'	options.txt	/*'lpl'*
 'lrm'	options.txt	/*'lrm'*
 'ls'	options.txt	/*'ls'*
@@ -595,7 +600,9 @@ $quote	eval.txt	/*$quote*
 'noek'	options.txt	/*'noek'*
 'noemo'	options.txt	/*'noemo'*
 'noemoji'	options.txt	/*'noemoji'*
+'noendoffile'	options.txt	/*'noendoffile'*
 'noendofline'	options.txt	/*'noendofline'*
+'noeof'	options.txt	/*'noeof'*
 'noeol'	options.txt	/*'noeol'*
 'noequalalways'	options.txt	/*'noequalalways'*
 'noerrorbells'	options.txt	/*'noerrorbells'*
@@ -713,6 +720,8 @@ $quote	eval.txt	/*$quote*
 'nosmartindent'	options.txt	/*'nosmartindent'*
 'nosmarttab'	options.txt	/*'nosmarttab'*
 'nosmd'	options.txt	/*'nosmd'*
+'nosmoothscroll'	options.txt	/*'nosmoothscroll'*
+'nosms'	options.txt	/*'nosms'*
 'nosn'	options.txt	/*'nosn'*
 'nosol'	options.txt	/*'nosol'*
 'nospell'	options.txt	/*'nospell'*
@@ -935,6 +944,8 @@ $quote	eval.txt	/*$quote*
 'smarttab'	options.txt	/*'smarttab'*
 'smc'	options.txt	/*'smc'*
 'smd'	options.txt	/*'smd'*
+'smoothscroll'	options.txt	/*'smoothscroll'*
+'sms'	options.txt	/*'sms'*
 'sn'	options.txt	/*'sn'*
 'so'	options.txt	/*'so'*
 'softtabstop'	options.txt	/*'softtabstop'*
@@ -949,8 +960,10 @@ $quote	eval.txt	/*$quote*
 'spelloptions'	options.txt	/*'spelloptions'*
 'spellsuggest'	options.txt	/*'spellsuggest'*
 'spf'	options.txt	/*'spf'*
+'spk'	options.txt	/*'spk'*
 'spl'	options.txt	/*'spl'*
 'splitbelow'	options.txt	/*'splitbelow'*
+'splitkeep'	options.txt	/*'splitkeep'*
 'splitright'	options.txt	/*'splitright'*
 'spo'	options.txt	/*'spo'*
 'spr'	options.txt	/*'spr'*
@@ -4087,7 +4100,6 @@ E1072	eval.txt	/*E1072*
 E1073	vim9.txt	/*E1073*
 E1074	vim9.txt	/*E1074*
 E1075	vim9.txt	/*E1075*
-E1076	eval.txt	/*E1076*
 E1077	vim9.txt	/*E1077*
 E1078	autocmd.txt	/*E1078*
 E1079	vim9.txt	/*E1079*
@@ -4332,7 +4344,16 @@ E1295	textprop.txt	/*E1295*
 E1296	textprop.txt	/*E1296*
 E1297	vim9.txt	/*E1297*
 E1298	vim9.txt	/*E1298*
+E1299	tagsrch.txt	/*E1299*
 E13	message.txt	/*E13*
+E1300	userfunc.txt	/*E1300*
+E1301	vim9.txt	/*E1301*
+E1302	eval.txt	/*E1302*
+E1303	map.txt	/*E1303*
+E1304	vim9.txt	/*E1304*
+E1305	textprop.txt	/*E1305*
+E1306	vim9.txt	/*E1306*
+E1307	vim9.txt	/*E1307*
 E131	userfunc.txt	/*E131*
 E132	userfunc.txt	/*E132*
 E133	userfunc.txt	/*E133*
@@ -5533,6 +5554,7 @@ TerminalWinOpen	autocmd.txt	/*TerminalWinOpen*
 TextChanged	autocmd.txt	/*TextChanged*
 TextChangedI	autocmd.txt	/*TextChangedI*
 TextChangedP	autocmd.txt	/*TextChangedP*
+TextChangedT	autocmd.txt	/*TextChangedT*
 TextYankPost	autocmd.txt	/*TextYankPost*
 Transact-SQL	ft_sql.txt	/*Transact-SQL*
 U	undo.txt	/*U*
@@ -5560,7 +5582,6 @@ VimResume	autocmd.txt	/*VimResume*
 VimSuspend	autocmd.txt	/*VimSuspend*
 Vimball-copyright	pi_vimball.txt	/*Vimball-copyright*
 Virtual-Replace-mode	insert.txt	/*Virtual-Replace-mode*
-VisVim	if_ole.txt	/*VisVim*
 Visual	visual.txt	/*Visual*
 Visual-mode	visual.txt	/*Visual-mode*
 W	motion.txt	/*W*
@@ -5919,6 +5940,7 @@ blob-modification	eval.txt	/*blob-modification*
 blob2list()	builtin.txt	/*blob2list()*
 blockwise-examples	visual.txt	/*blockwise-examples*
 blockwise-operators	visual.txt	/*blockwise-operators*
+blockwise-put	change.txt	/*blockwise-put*
 blockwise-register	change.txt	/*blockwise-register*
 blockwise-visual	visual.txt	/*blockwise-visual*
 blowfish	options.txt	/*blowfish*
@@ -6764,6 +6786,7 @@ expr-lambda	eval.txt	/*expr-lambda*
 expr-nesting	eval.txt	/*expr-nesting*
 expr-number	eval.txt	/*expr-number*
 expr-option	eval.txt	/*expr-option*
+expr-option-function	vim9.txt	/*expr-option-function*
 expr-quote	eval.txt	/*expr-quote*
 expr-register	eval.txt	/*expr-register*
 expr-star	eval.txt	/*expr-star*
@@ -6791,6 +6814,7 @@ extendnew()	builtin.txt	/*extendnew()*
 extension-removal	cmdline.txt	/*extension-removal*
 extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
+f-args-example	map.txt	/*f-args-example*
 false	vim9.txt	/*false*
 false-variable	eval.txt	/*false-variable*
 falsy	eval.txt	/*falsy*
@@ -7230,8 +7254,11 @@ g:html_id_expr	syntax.txt	/*g:html_id_expr*
 g:html_ignore_conceal	syntax.txt	/*g:html_ignore_conceal*
 g:html_ignore_folding	syntax.txt	/*g:html_ignore_folding*
 g:html_line_ids	syntax.txt	/*g:html_line_ids*
+g:html_no_doc	syntax.txt	/*g:html_no_doc*
 g:html_no_foldcolumn	syntax.txt	/*g:html_no_foldcolumn*
 g:html_no_invalid	syntax.txt	/*g:html_no_invalid*
+g:html_no_links	syntax.txt	/*g:html_no_links*
+g:html_no_modeline	syntax.txt	/*g:html_no_modeline*
 g:html_no_pre	syntax.txt	/*g:html_no_pre*
 g:html_no_progress	syntax.txt	/*g:html_no_progress*
 g:html_number_lines	syntax.txt	/*g:html_number_lines*
@@ -7388,6 +7415,7 @@ g:tex_subscripts	syntax.txt	/*g:tex_subscripts*
 g:tex_superscripts	syntax.txt	/*g:tex_superscripts*
 g:tex_verbspell	syntax.txt	/*g:tex_verbspell*
 g:var	eval.txt	/*g:var*
+g:vim_indent	indent.txt	/*g:vim_indent*
 g:vim_indent_cont	indent.txt	/*g:vim_indent_cont*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
 g:vimball_mkdir	pi_vimball.txt	/*g:vimball_mkdir*
@@ -8119,6 +8147,7 @@ keypad-page-up	intro.txt	/*keypad-page-up*
 keypad-plus	intro.txt	/*keypad-plus*
 keypad-point	intro.txt	/*keypad-point*
 keys()	builtin.txt	/*keys()*
+keytrans()	builtin.txt	/*keytrans()*
 known-bugs	todo.txt	/*known-bugs*
 l	motion.txt	/*l*
 l:	eval.txt	/*l:*
@@ -8396,6 +8425,7 @@ motion-count-multiplied	motion.txt	/*motion-count-multiplied*
 motion.txt	motion.txt	/*motion.txt*
 mouse-mode-table	term.txt	/*mouse-mode-table*
 mouse-overview	term.txt	/*mouse-overview*
+mouse-scrolling-off	scroll.txt	/*mouse-scrolling-off*
 mouse-swap-buttons	term.txt	/*mouse-swap-buttons*
 mouse-using	term.txt	/*mouse-using*
 mouse_col-variable	eval.txt	/*mouse_col-variable*
@@ -9015,6 +9045,7 @@ popup_dialog()	popup.txt	/*popup_dialog()*
 popup_dialog-example	popup.txt	/*popup_dialog-example*
 popup_filter_menu()	popup.txt	/*popup_filter_menu()*
 popup_filter_yesno()	popup.txt	/*popup_filter_yesno()*
+popup_findecho()	popup.txt	/*popup_findecho()*
 popup_findinfo()	popup.txt	/*popup_findinfo()*
 popup_findpreview()	popup.txt	/*popup_findpreview()*
 popup_getoptions()	popup.txt	/*popup_getoptions()*
@@ -9161,6 +9192,7 @@ pythonx	if_pyth.txt	/*pythonx*
 pythonx-directory	if_pyth.txt	/*pythonx-directory*
 pyxeval()	builtin.txt	/*pyxeval()*
 q	repeat.txt	/*q*
+q-args-example	map.txt	/*q-args-example*
 q/	cmdline.txt	/*q\/*
 q:	cmdline.txt	/*q:*
 q?	cmdline.txt	/*q?*
@@ -10711,6 +10743,7 @@ vim9-literal-dict	vim9.txt	/*vim9-literal-dict*
 vim9-mix	vim9.txt	/*vim9-mix*
 vim9-namespace	vim9.txt	/*vim9-namespace*
 vim9-no-dict-function	vim9.txt	/*vim9-no-dict-function*
+vim9-no-shorten	vim9.txt	/*vim9-no-shorten*
 vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-reload	vim9.txt	/*vim9-reload*
 vim9-s-namespace	vim9.txt	/*vim9-s-namespace*

@@ -2,6 +2,7 @@
 void redraw_for_cursorline(win_T *wp);
 void update_topline_redraw(void);
 void update_topline(void);
+void update_curswant_force(void);
 void update_curswant(void);
 void check_cursor_moved(win_T *wp);
 void changed_window_setting(void);
@@ -34,6 +35,7 @@ void f_screenpos(typval_T *argvars, typval_T *rettv);
 void f_virtcol2col(typval_T *argvars, typval_T *rettv);
 void scrolldown(long line_count, int byfold);
 void scrollup(long line_count, int byfold);
+void adjust_skipcol(void);
 void check_topfill(win_T *wp, int down);
 void scrolldown_clamp(void);
 void scrollup_clamp(void);

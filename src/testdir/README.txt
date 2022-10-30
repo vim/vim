@@ -106,7 +106,7 @@ tests are successful, then this file will be an empty file.
 
 - To run the test on MS-Windows using the MSVC nmake:
 
-    > nmake -f Make_dos.mak
+    > nmake -f Make_mvc.mak
 
 - To run the tests with GUI Vim:
 

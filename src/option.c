@@ -1205,6 +1205,431 @@ ex_set(exarg_T *eap)
     }
 }
 
+typedef enum {
+    OP_NONE = 0,
+    OP_ADDING,		// "opt+=arg"
+    OP_PREPENDING,	// "opt^=arg"
+    OP_REMOVING,	// "opt-=arg"
+} set_op_T;
+
+/*
+ * Part of do_set() for string options.
+ * Returns FAIL on failure, do not process further options.
+ */
+    static int
+do_set_string(
+	int	    opt_idx,
+	int	    opt_flags,
+	char_u	    **argp,
+	int	    nextchar,
+	set_op_T    op_arg,
+	int	    flags,
+	int	    cp_val,
+	char_u	    *varp_arg,
+	char	    *errbuf,
+	int	    *value_checked,
+	char	    **errmsg)
+{
+    char_u	*arg = *argp;
+    set_op_T    op = op_arg;
+    char_u	*varp = varp_arg;
+    char_u	*save_arg = NULL;
+    char_u	*s = NULL;
+    char_u	*oldval = NULL; // previous value if *varp
+    char_u	*newval;
+    char_u	*origval = NULL;
+    char_u	*origval_l = NULL;
+    char_u	*origval_g = NULL;
+#if defined(FEAT_EVAL)
+    char_u	*saved_origval = NULL;
+    char_u	*saved_origval_l = NULL;
+    char_u	*saved_origval_g = NULL;
+    char_u	*saved_newval = NULL;
+#endif
+    unsigned	newlen;
+    int		comma;
+    char_u	whichwrap[80];
+
+    // When using ":set opt=val" for a global option
+    // with a local value the local value will be
+    // reset, use the global value here.
+    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0
+	    && ((int)options[opt_idx].indir & PV_BOTH))
+	varp = options[opt_idx].var;
+
+    // The old value is kept until we are sure that the new value is valid.
+    oldval = *(char_u **)varp;
+
+    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+    {
+	origval_l = *(char_u **)get_varp_scope(
+			   &(options[opt_idx]), OPT_LOCAL);
+	origval_g = *(char_u **)get_varp_scope(
+			  &(options[opt_idx]), OPT_GLOBAL);
+
+	// A global-local string option might have an empty option as value to
+	// indicate that the global value should be used.
+	if (((int)options[opt_idx].indir & PV_BOTH)
+						  && origval_l == empty_option)
+	    origval_l = origval_g;
+    }
+
+    // When setting the local value of a global option, the old value may be
+    // the global value.
+    if (((int)options[opt_idx].indir & PV_BOTH) && (opt_flags & OPT_LOCAL))
+	origval = *(char_u **)get_varp(&options[opt_idx]);
+    else
+	origval = oldval;
+
+    if (nextchar == '&')	// set to default val
+    {
+	newval = options[opt_idx].def_val[((flags & P_VI_DEF) || cp_val)
+						   ? VI_DEFAULT : VIM_DEFAULT];
+	if ((char_u **)varp == &p_bg)
+	{
+	    // guess the value of 'background'
+#ifdef FEAT_GUI
+	    if (gui.in_use)
+		newval = gui_bg_default();
+	    else
+#endif
+		newval = term_bg_default();
+	}
+	else if ((char_u **)varp == &p_fencs && enc_utf8)
+	    newval = fencs_utf8_default;
+
+	// expand environment variables and ~ since the default value was
+	// already expanded, only required when an environment variable was set
+	// later
+	if (newval == NULL)
+	    newval = empty_option;
+	else
+	{
+	    s = option_expand(opt_idx, newval);
+	    if (s == NULL)
+		s = newval;
+	    newval = vim_strsave(s);
+	}
+    }
+    else if (nextchar == '<')	// set to global val
+    {
+	newval = vim_strsave(*(char_u **)get_varp_scope(
+					     &(options[opt_idx]), OPT_GLOBAL));
+    }
+    else
+    {
+	++arg;	// jump to after the '=' or ':'
+
+	/*
+	 * Set 'keywordprg' to ":help" if an empty
+	 * value was passed to :set by the user.
+	 */
+	if (varp == (char_u *)&p_kp && (*arg == NUL || *arg == ' '))
+	{
+	    save_arg = arg;
+	    arg = (char_u *)":help";
+	}
+	/*
+	 * Convert 'backspace' number to string, for
+	 * adding, prepending and removing string.
+	 */
+	else if (varp == (char_u *)&p_bs && VIM_ISDIGIT(**(char_u **)varp))
+	{
+	    int i = getdigits((char_u **)varp);
+
+	    switch (i)
+	    {
+		case 0:
+		    *(char_u **)varp = empty_option;
+		    break;
+		case 1:
+		    *(char_u **)varp = vim_strsave((char_u *)"indent,eol");
+		    break;
+		case 2:
+		    *(char_u **)varp = vim_strsave(
+						 (char_u *)"indent,eol,start");
+		    break;
+		case 3:
+		    *(char_u **)varp = vim_strsave(
+						(char_u *)"indent,eol,nostop");
+		    break;
+	    }
+	    vim_free(oldval);
+	    if (origval == oldval)
+		origval = *(char_u **)varp;
+	    if (origval_l == oldval)
+		origval_l = *(char_u **)varp;
+	    if (origval_g == oldval)
+		origval_g = *(char_u **)varp;
+	    oldval = *(char_u **)varp;
+	}
+	/*
+	 * Convert 'whichwrap' number to string, for backwards compatibility
+	 * with Vim 3.0.
+	 */
+	else if (varp == (char_u *)&p_ww && VIM_ISDIGIT(*arg))
+	{
+	    *whichwrap = NUL;
+	    int i = getdigits(&arg);
+	    if (i & 1)
+		STRCAT(whichwrap, "b,");
+	    if (i & 2)
+		STRCAT(whichwrap, "s,");
+	    if (i & 4)
+		STRCAT(whichwrap, "h,l,");
+	    if (i & 8)
+		STRCAT(whichwrap, "<,>,");
+	    if (i & 16)
+		STRCAT(whichwrap, "[,],");
+	    if (*whichwrap != NUL)	// remove trailing ,
+		whichwrap[STRLEN(whichwrap) - 1] = NUL;
+	    save_arg = arg;
+	    arg = (char_u *)whichwrap;
+	}
+	/*
+	 * Remove '>' before 'dir' and 'bdir', for backwards compatibility with
+	 * version 3.0
+	 */
+	else if (*arg == '>' && (varp == (char_u *)&p_dir
+						 || varp == (char_u *)&p_bdir))
+	    ++arg;
+
+	/*
+	 * Copy the new string into allocated memory.
+	 * Can't use set_string_option_direct(), because we need to remove the
+	 * backslashes.
+	 */
+	// get a bit too much
+	newlen = (unsigned)STRLEN(arg) + 1;
+	if (op != OP_NONE)
+	    newlen += (unsigned)STRLEN(origval) + 1;
+	newval = alloc(newlen);
+	if (newval == NULL)  // out of mem, don't change
+	    return FAIL;
+	s = newval;
+
+	/*
+	 * Copy the string, skip over escaped chars.
+	 * For MS-DOS and WIN32 backslashes before normal file name characters
+	 * are not removed, and keep backslash at start, for "\\machine\path",
+	 * but do remove it for "\\\\machine\\path".
+	 * The reverse is found in ExpandOldSetting().
+	 */
+	while (*arg != NUL && !VIM_ISWHITE(*arg))
+	{
+	    int i;
+
+	    if (*arg == '\\' && arg[1] != NUL
+#ifdef BACKSLASH_IN_FILENAME
+		    && !((flags & P_EXPAND)
+			    && vim_isfilec(arg[1])
+			    && !VIM_ISWHITE(arg[1])
+			    && (arg[1] != '\\'
+					   || (s == newval && arg[2] != '\\')))
+#endif
+						)
+		++arg;	// remove backslash
+	    if (has_mbyte && (i = (*mb_ptr2len)(arg)) > 1)
+	    {
+		// copy multibyte char
+		mch_memmove(s, arg, (size_t)i);
+		arg += i;
+		s += i;
+	    }
+	    else
+		*s++ = *arg++;
+	}
+	*s = NUL;
+
+	/*
+	 * Expand environment variables and ~.
+	 * Don't do it when adding without inserting a comma.
+	 */
+	if (op == OP_NONE || (flags & P_COMMA))
+	{
+	    s = option_expand(opt_idx, newval);
+	    if (s != NULL)
+	    {
+		vim_free(newval);
+		newlen = (unsigned)STRLEN(s) + 1;
+		if (op != OP_NONE)
+		    newlen += (unsigned)STRLEN(origval) + 1;
+		newval = alloc(newlen);
+		if (newval == NULL)
+		    return FAIL;
+		STRCPY(newval, s);
+	    }
+	}
+
+	// locate newval[] in origval[] when removing it
+	// and when adding to avoid duplicates
+	int len = 0;
+	if (op == OP_REMOVING || (flags & P_NODUP))
+	{
+	    len = (int)STRLEN(newval);
+	    s = find_dup_item(origval, newval, flags);
+
+	    // do not add if already there
+	    if ((op == OP_ADDING || op == OP_PREPENDING) && s != NULL)
+	    {
+		op = OP_NONE;
+		STRCPY(newval, origval);
+	    }
+
+	    // if no duplicate, move pointer to end of original value
+	    if (s == NULL)
+		s = origval + (int)STRLEN(origval);
+	}
+
+	// concatenate the two strings; add a ',' if needed
+	if (op == OP_ADDING || op == OP_PREPENDING)
+	{
+	    comma = ((flags & P_COMMA) && *origval != NUL && *newval != NUL);
+	    if (op == OP_ADDING)
+	    {
+		len = (int)STRLEN(origval);
+		// strip a trailing comma, would get 2
+		if (comma && len > 1
+			  && (flags & P_ONECOMMA) == P_ONECOMMA
+			  && origval[len - 1] == ','
+			  && origval[len - 2] != '\\')
+		    len--;
+		mch_memmove(newval + len + comma, newval, STRLEN(newval) + 1);
+		mch_memmove(newval, origval, (size_t)len);
+	    }
+	    else
+	    {
+		len = (int)STRLEN(newval);
+		STRMOVE(newval + len + comma, origval);
+	    }
+	    if (comma)
+		newval[len] = ',';
+	}
+
+	// Remove newval[] from origval[]. (Note: "len" has been set above and
+	// is used here).
+	if (op == OP_REMOVING)
+	{
+	    STRCPY(newval, origval);
+	    if (*s)
+	    {
+		// may need to remove a comma
+		if (flags & P_COMMA)
+		{
+		    if (s == origval)
+		    {
+			// include comma after string
+			if (s[len] == ',')
+			    ++len;
+		    }
+		    else
+		    {
+			// include comma before string
+			--s;
+			++len;
+		    }
+		}
+		STRMOVE(newval + (s - origval), s + len);
+	    }
+	}
+
+	if (flags & P_FLAGLIST)
+	{
+	    // Remove flags that appear twice.
+	    for (s = newval; *s;)
+	    {
+		// if options have P_FLAGLIST and P_ONECOMMA such as
+		// 'whichwrap'
+		if (flags & P_ONECOMMA)
+		{
+		    if (*s != ',' && *(s + 1) == ','
+					      && vim_strchr(s + 2, *s) != NULL)
+		    {
+			// Remove the duplicated value and the next comma.
+			STRMOVE(s, s + 2);
+			continue;
+		    }
+		}
+		else
+		{
+		    if ((!(flags & P_COMMA) || *s != ',')
+					      && vim_strchr(s + 1, *s) != NULL)
+		    {
+			STRMOVE(s, s + 1);
+			continue;
+		    }
+		}
+		++s;
+	    }
+	}
+
+	if (save_arg != NULL)
+	    arg = save_arg;  // arg was temporarily changed, restore it
+    }
+
+    /*
+     * Set the new value.
+     */
+    *(char_u **)(varp) = newval;
+
+#if defined(FEAT_EVAL)
+    if (!starting
+# ifdef FEAT_CRYPT
+	    && options[opt_idx].indir != PV_KEY
+# endif
+		      && origval != NULL && newval != NULL)
+    {
+	// origval may be freed by did_set_string_option(), make a copy.
+	saved_origval = vim_strsave(origval);
+	// newval (and varp) may become invalid if the buffer is closed by
+	// autocommands.
+	saved_newval = vim_strsave(newval);
+	if (origval_l != NULL)
+	    saved_origval_l = vim_strsave(origval_l);
+	if (origval_g != NULL)
+	    saved_origval_g = vim_strsave(origval_g);
+    }
+#endif
+
+    {
+	long_u	*p = insecure_flag(opt_idx, opt_flags);
+	int	secure_saved = secure;
+
+	// When an option is set in the sandbox, from a modeline or in secure
+	// mode, then deal with side effects in secure mode.  Also when the
+	// value was set with the P_INSECURE flag and is not completely
+	// replaced.
+	if ((opt_flags & OPT_MODELINE)
+#ifdef HAVE_SANDBOX
+	      || sandbox != 0
+#endif
+	      || (op != OP_NONE && (*p & P_INSECURE)))
+	    secure = 1;
+
+	// Handle side effects, and set the global value for ":set" on local
+	// options. Note: when setting 'syntax' or 'filetype' autocommands may
+	// be triggered that can cause havoc.
+	*errmsg = did_set_string_option(
+			opt_idx, (char_u **)varp, oldval, errbuf,
+			opt_flags, value_checked);
+
+	secure = secure_saved;
+    }
+
+#if defined(FEAT_EVAL)
+    if (*errmsg == NULL)
+	trigger_optionsset_string(opt_idx, opt_flags, saved_origval,
+			       saved_origval_l, saved_origval_g, saved_newval);
+    vim_free(saved_origval);
+    vim_free(saved_origval_l);
+    vim_free(saved_origval_g);
+    vim_free(saved_newval);
+#endif
+
+    *argp = arg;
+    return *errmsg == NULL ? OK : FAIL;
+}
+
 /*
  * Parse 'arg' for option settings.
  *
@@ -1241,9 +1666,7 @@ do_set(
     long_u	flags;		    // flags for current option
     char_u	*varp = NULL;	    // pointer to variable for current option
     int		did_show = FALSE;   // already showed one value
-    int		adding;		    // "opt+=arg"
-    int		prepending;	    // "opt^=arg"
-    int		removing;	    // "opt-=arg"
+    set_op_T	op = 0;
     int		cp_val = 0;
     char_u	key_name[2];
 
@@ -1371,24 +1794,22 @@ do_set(
 		while (VIM_ISWHITE(arg[len]))
 		    ++len;
 
-	    adding = FALSE;
-	    prepending = FALSE;
-	    removing = FALSE;
+	    op = OP_NONE;
 	    if (arg[len] != NUL && arg[len + 1] == '=')
 	    {
 		if (arg[len] == '+')
 		{
-		    adding = TRUE;		// "+="
+		    op = OP_ADDING;		// "+="
 		    ++len;
 		}
 		else if (arg[len] == '^')
 		{
-		    prepending = TRUE;		// "^="
+		    op = OP_PREPENDING;		// "^="
 		    ++len;
 		}
 		else if (arg[len] == '-')
 		{
-		    removing = TRUE;		// "-="
+		    op = OP_REMOVING;		// "-="
 		    ++len;
 		}
 	    }
@@ -1564,7 +1985,6 @@ do_set(
 	    }
 	    else
 	    {
-		int value_is_replaced = !prepending && !adding && !removing;
 		int value_checked = FALSE;
 
 		if (flags & P_BOOL)		    // boolean
@@ -1686,440 +2106,25 @@ do_set(
 			    goto skip;
 			}
 
-			if (adding)
+			if (op == OP_ADDING)
 			    value = *(long *)varp + value;
-			if (prepending)
+			else if (op == OP_PREPENDING)
 			    value = *(long *)varp * value;
-			if (removing)
+			else if (op == OP_REMOVING)
 			    value = *(long *)varp - value;
 			errmsg = set_num_option(opt_idx, varp, value,
 					   errbuf, sizeof(errbuf), opt_flags);
 		    }
 		    else if (opt_idx >= 0)		    // string
 		    {
-			char_u	  *save_arg = NULL;
-			char_u	  *s = NULL;
-			char_u	  *oldval = NULL; // previous value if *varp
-			char_u	  *newval;
-			char_u	  *origval = NULL;
-			char_u	  *origval_l = NULL;
-			char_u	  *origval_g = NULL;
-#if defined(FEAT_EVAL)
-			char_u	  *saved_origval = NULL;
-			char_u	  *saved_origval_l = NULL;
-			char_u	  *saved_origval_g = NULL;
-			char_u	  *saved_newval = NULL;
-#endif
-			unsigned  newlen;
-			int	  comma;
-
-			// When using ":set opt=val" for a global option
-			// with a local value the local value will be
-			// reset, use the global value here.
-			if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0
-				&& ((int)options[opt_idx].indir & PV_BOTH))
-			    varp = options[opt_idx].var;
-
-			// The old value is kept until we are sure that the
-			// new value is valid.
-			oldval = *(char_u **)varp;
-
-			if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+			if (do_set_string(opt_idx, opt_flags, &arg, nextchar,
+				       op, flags, cp_val, varp, errbuf,
+				       &value_checked, &errmsg) == FAIL)
 			{
-			    origval_l = *(char_u **)get_varp_scope(
-					       &(options[opt_idx]), OPT_LOCAL);
-			    origval_g = *(char_u **)get_varp_scope(
-					      &(options[opt_idx]), OPT_GLOBAL);
-
-			    // A global-local string option might have an empty
-			    // option as value to indicate that the global
-			    // value should be used.
-			    if (((int)options[opt_idx].indir & PV_BOTH)
-						  && origval_l == empty_option)
-				origval_l = origval_g;
+			    if (errmsg != NULL)
+				goto skip;
+			    break;
 			}
-
-			// When setting the local value of a global
-			// option, the old value may be the global value.
-			if (((int)options[opt_idx].indir & PV_BOTH)
-					       && (opt_flags & OPT_LOCAL))
-			    origval = *(char_u **)get_varp(
-						       &options[opt_idx]);
-			else
-			    origval = oldval;
-
-			if (nextchar == '&')	// set to default val
-			{
-			    newval = options[opt_idx].def_val[
-						((flags & P_VI_DEF) || cp_val)
-						 ?  VI_DEFAULT : VIM_DEFAULT];
-			    if ((char_u **)varp == &p_bg)
-			    {
-				// guess the value of 'background'
-#ifdef FEAT_GUI
-				if (gui.in_use)
-				    newval = gui_bg_default();
-				else
-#endif
-				    newval = term_bg_default();
-			    }
-			    else if ((char_u **)varp == &p_fencs && enc_utf8)
-				newval = fencs_utf8_default;
-
-			    // expand environment variables and ~ since the
-			    // default value was already expanded, only
-			    // required when an environment variable was set
-			    // later
-			    if (newval == NULL)
-				newval = empty_option;
-			    else
-			    {
-				s = option_expand(opt_idx, newval);
-				if (s == NULL)
-				    s = newval;
-				newval = vim_strsave(s);
-			    }
-			}
-			else if (nextchar == '<')	// set to global val
-			{
-			    newval = vim_strsave(*(char_u **)get_varp_scope(
-					     &(options[opt_idx]), OPT_GLOBAL));
-			}
-			else
-			{
-			    ++arg;	// jump to after the '=' or ':'
-
-			    /*
-			     * Set 'keywordprg' to ":help" if an empty
-			     * value was passed to :set by the user.
-			     * Misuse errbuf[] for the resulting string.
-			     */
-			    if (varp == (char_u *)&p_kp
-					      && (*arg == NUL || *arg == ' '))
-			    {
-				STRCPY(errbuf, ":help");
-				save_arg = arg;
-				arg = (char_u *)errbuf;
-			    }
-			    /*
-			     * Convert 'backspace' number to string, for
-			     * adding, prepending and removing string.
-			     */
-			    else if (varp == (char_u *)&p_bs
-					 && VIM_ISDIGIT(**(char_u **)varp))
-			    {
-				i = getdigits((char_u **)varp);
-				switch (i)
-				{
-				    case 0:
-					*(char_u **)varp = empty_option;
-					break;
-				    case 1:
-					*(char_u **)varp = vim_strsave(
-						      (char_u *)"indent,eol");
-					break;
-				    case 2:
-					*(char_u **)varp = vim_strsave(
-						(char_u *)"indent,eol,start");
-					break;
-				    case 3:
-					*(char_u **)varp = vim_strsave(
-						(char_u *)"indent,eol,nostop");
-					break;
-				}
-				vim_free(oldval);
-				if (origval == oldval)
-				    origval = *(char_u **)varp;
-				if (origval_l == oldval)
-				    origval_l = *(char_u **)varp;
-				if (origval_g == oldval)
-				    origval_g = *(char_u **)varp;
-				oldval = *(char_u **)varp;
-			    }
-			    /*
-			     * Convert 'whichwrap' number to string, for
-			     * backwards compatibility with Vim 3.0.
-			     * Misuse errbuf[] for the resulting string.
-			     */
-			    else if (varp == (char_u *)&p_ww
-							 && VIM_ISDIGIT(*arg))
-			    {
-				*errbuf = NUL;
-				i = getdigits(&arg);
-				if (i & 1)
-				    STRCAT(errbuf, "b,");
-				if (i & 2)
-				    STRCAT(errbuf, "s,");
-				if (i & 4)
-				    STRCAT(errbuf, "h,l,");
-				if (i & 8)
-				    STRCAT(errbuf, "<,>,");
-				if (i & 16)
-				    STRCAT(errbuf, "[,],");
-				if (*errbuf != NUL)	// remove trailing ,
-				    errbuf[STRLEN(errbuf) - 1] = NUL;
-				save_arg = arg;
-				arg = (char_u *)errbuf;
-			    }
-			    /*
-			     * Remove '>' before 'dir' and 'bdir', for
-			     * backwards compatibility with version 3.0
-			     */
-			    else if (  *arg == '>'
-				    && (varp == (char_u *)&p_dir
-					    || varp == (char_u *)&p_bdir))
-			    {
-				++arg;
-			    }
-
-			    /*
-			     * Copy the new string into allocated memory.
-			     * Can't use set_string_option_direct(), because
-			     * we need to remove the backslashes.
-			     */
-			    // get a bit too much
-			    newlen = (unsigned)STRLEN(arg) + 1;
-			    if (adding || prepending || removing)
-				newlen += (unsigned)STRLEN(origval) + 1;
-			    newval = alloc(newlen);
-			    if (newval == NULL)  // out of mem, don't change
-				break;
-			    s = newval;
-
-			    /*
-			     * Copy the string, skip over escaped chars.
-			     * For MS-DOS and WIN32 backslashes before normal
-			     * file name characters are not removed, and keep
-			     * backslash at start, for "\\machine\path", but
-			     * do remove it for "\\\\machine\\path".
-			     * The reverse is found in ExpandOldSetting().
-			     */
-			    while (*arg && !VIM_ISWHITE(*arg))
-			    {
-				if (*arg == '\\' && arg[1] != NUL
-#ifdef BACKSLASH_IN_FILENAME
-					&& !((flags & P_EXPAND)
-						&& vim_isfilec(arg[1])
-						&& !VIM_ISWHITE(arg[1])
-						&& (arg[1] != '\\'
-						    || (s == newval
-							&& arg[2] != '\\')))
-#endif
-								    )
-				    ++arg;	// remove backslash
-				if (has_mbyte
-					&& (i = (*mb_ptr2len)(arg)) > 1)
-				{
-				    // copy multibyte char
-				    mch_memmove(s, arg, (size_t)i);
-				    arg += i;
-				    s += i;
-				}
-				else
-				    *s++ = *arg++;
-			    }
-			    *s = NUL;
-
-			    /*
-			     * Expand environment variables and ~.
-			     * Don't do it when adding without inserting a
-			     * comma.
-			     */
-			    if (!(adding || prepending || removing)
-							 || (flags & P_COMMA))
-			    {
-				s = option_expand(opt_idx, newval);
-				if (s != NULL)
-				{
-				    vim_free(newval);
-				    newlen = (unsigned)STRLEN(s) + 1;
-				    if (adding || prepending || removing)
-					newlen += (unsigned)STRLEN(origval) + 1;
-				    newval = alloc(newlen);
-				    if (newval == NULL)
-					break;
-				    STRCPY(newval, s);
-				}
-			    }
-
-			    // locate newval[] in origval[] when removing it
-			    // and when adding to avoid duplicates
-			    i = 0;	// init for GCC
-			    if (removing || (flags & P_NODUP))
-			    {
-				i = (int)STRLEN(newval);
-				s = find_dup_item(origval, newval, flags);
-
-				// do not add if already there
-				if ((adding || prepending) && s != NULL)
-				{
-				    prepending = FALSE;
-				    adding = FALSE;
-				    STRCPY(newval, origval);
-				}
-
-				// if no duplicate, move pointer to end of
-				// original value
-				if (s == NULL)
-				    s = origval + (int)STRLEN(origval);
-			    }
-
-			    // concatenate the two strings; add a ',' if
-			    // needed
-			    if (adding || prepending)
-			    {
-				comma = ((flags & P_COMMA) && *origval != NUL
-							   && *newval != NUL);
-				if (adding)
-				{
-				    i = (int)STRLEN(origval);
-				    // strip a trailing comma, would get 2
-				    if (comma && i > 1
-					  && (flags & P_ONECOMMA) == P_ONECOMMA
-					  && origval[i - 1] == ','
-					  && origval[i - 2] != '\\')
-					i--;
-				    mch_memmove(newval + i + comma, newval,
-							  STRLEN(newval) + 1);
-				    mch_memmove(newval, origval, (size_t)i);
-				}
-				else
-				{
-				    i = (int)STRLEN(newval);
-				    STRMOVE(newval + i + comma, origval);
-				}
-				if (comma)
-				    newval[i] = ',';
-			    }
-
-			    // Remove newval[] from origval[]. (Note: "i" has
-			    // been set above and is used here).
-			    if (removing)
-			    {
-				STRCPY(newval, origval);
-				if (*s)
-				{
-				    // may need to remove a comma
-				    if (flags & P_COMMA)
-				    {
-					if (s == origval)
-					{
-					    // include comma after string
-					    if (s[i] == ',')
-						++i;
-					}
-					else
-					{
-					    // include comma before string
-					    --s;
-					    ++i;
-					}
-				    }
-				    STRMOVE(newval + (s - origval), s + i);
-				}
-			    }
-
-			    if (flags & P_FLAGLIST)
-			    {
-				// Remove flags that appear twice.
-				for (s = newval; *s;)
-				{
-				    // if options have P_FLAGLIST and
-				    // P_ONECOMMA such as 'whichwrap'
-				    if (flags & P_ONECOMMA)
-				    {
-					if (*s != ',' && *(s + 1) == ','
-					      && vim_strchr(s + 2, *s) != NULL)
-					{
-					    // Remove the duplicated value and
-					    // the next comma.
-					    STRMOVE(s, s + 2);
-					    continue;
-					}
-				    }
-				    else
-				    {
-					if ((!(flags & P_COMMA) || *s != ',')
-					      && vim_strchr(s + 1, *s) != NULL)
-					{
-					    STRMOVE(s, s + 1);
-					    continue;
-					}
-				    }
-				    ++s;
-				}
-			    }
-
-			    if (save_arg != NULL)   // number for 'whichwrap'
-				arg = save_arg;
-			}
-
-			/*
-			 * Set the new value.
-			 */
-			*(char_u **)(varp) = newval;
-
-#if defined(FEAT_EVAL)
-			if (!starting
-# ifdef FEAT_CRYPT
-				&& options[opt_idx].indir != PV_KEY
-# endif
-					  && origval != NULL && newval != NULL)
-			{
-			    // origval may be freed by
-			    // did_set_string_option(), make a copy.
-			    saved_origval = vim_strsave(origval);
-			    // newval (and varp) may become invalid if the
-			    // buffer is closed by autocommands.
-			    saved_newval = vim_strsave(newval);
-			    if (origval_l != NULL)
-				saved_origval_l = vim_strsave(origval_l);
-			    if (origval_g != NULL)
-				saved_origval_g = vim_strsave(origval_g);
-			}
-#endif
-
-			{
-			    long_u *p = insecure_flag(opt_idx, opt_flags);
-			    int	    secure_saved = secure;
-
-			    // When an option is set in the sandbox, from a
-			    // modeline or in secure mode, then deal with side
-			    // effects in secure mode.  Also when the value was
-			    // set with the P_INSECURE flag and is not
-			    // completely replaced.
-			    if ((opt_flags & OPT_MODELINE)
-#ifdef HAVE_SANDBOX
-				  || sandbox != 0
-#endif
-				  || (!value_is_replaced && (*p & P_INSECURE)))
-				secure = 1;
-
-			    // Handle side effects, and set the global value
-			    // for ":set" on local options. Note: when setting
-			    // 'syntax' or 'filetype' autocommands may be
-			    // triggered that can cause havoc.
-			    errmsg = did_set_string_option(
-				    opt_idx, (char_u **)varp, oldval, errbuf,
-				    opt_flags, &value_checked);
-
-			    secure = secure_saved;
-			}
-
-#if defined(FEAT_EVAL)
-			if (errmsg == NULL)
-			    trigger_optionsset_string(
-				    opt_idx, opt_flags, saved_origval,
-				    saved_origval_l, saved_origval_g,
-				    saved_newval);
-			vim_free(saved_origval);
-			vim_free(saved_origval_l);
-			vim_free(saved_origval_g);
-			vim_free(saved_newval);
-#endif
-			// If error detected, print the error message.
-			if (errmsg != NULL)
-			    goto skip;
 		    }
 		    else	    // key code option
 		    {
@@ -2149,7 +2154,7 @@ do_set(
 
 		if (opt_idx >= 0)
 		    did_set_option(
-			 opt_idx, opt_flags, value_is_replaced, value_checked);
+			 opt_idx, opt_flags, op == OP_NONE, value_checked);
 	    }
 
 skip:
@@ -2399,10 +2404,8 @@ didset_options(void)
     (void)compile_cap_prog(curwin->w_s);
     (void)did_set_spell_option(TRUE);
 #endif
-#ifdef FEAT_CMDWIN
     // set cedit_key
     (void)check_cedit();
-#endif
 #ifdef FEAT_LINEBREAK
     // initialize the table for 'breakat'.
     fill_breakat_flags();
@@ -2958,6 +2961,15 @@ set_bool_option(
 	}
     }
 #endif
+
+    else if ((int *)varp == &curwin->w_p_sms)
+    {
+	if (!curwin->w_p_sms)
+	{
+	    curwin->w_skipcol = 0;
+	    changed_line_abv_curs();
+	}
+    }
 
     // when 'textmode' is set or reset also change 'fileformat'
     else if ((int *)varp == &curbuf->b_p_tx)
@@ -3565,11 +3577,13 @@ set_num_option(
 
 	// Only compute the new window layout when startup has been
 	// completed. Otherwise the frame sizes may be wrong.
-	if (p_ch != old_value && full_screen
+	if ((p_ch != old_value
+		      || tabline_height() + topframe->fr_height != Rows - p_ch)
+		&& full_screen
 #ifdef FEAT_GUI
 		&& !gui.starting
 #endif
-	   )
+		       )
 	    command_height();
     }
 
@@ -3790,13 +3804,11 @@ set_num_option(
 	errmsg = e_argument_must_be_positive;
 	p_siso = 0;
     }
-#ifdef FEAT_CMDWIN
     if (p_cwh < 1)
     {
 	errmsg = e_argument_must_be_positive;
 	p_cwh = 1;
     }
-#endif
     if (p_ut < 0)
     {
 	errmsg = e_argument_must_be_positive;
@@ -3919,7 +3931,7 @@ findoption(char_u *arg)
     return opt_idx;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_TCL) || defined(FEAT_MZSCHEME)
+#if defined(FEAT_EVAL) || defined(FEAT_TCL) || defined(FEAT_MZSCHEME) || defined(FEAT_SPELL)
 /*
  * Get the value for an option.
  *
@@ -3994,7 +4006,8 @@ get_option_value(
 	if (stringval != NULL)
 	{
 	    if ((char_u **)varp == &p_pt)	// 'pastetoggle'
-		*stringval = str2special_save(*(char_u **)(varp), FALSE);
+		*stringval = str2special_save(*(char_u **)(varp), FALSE,
+									FALSE);
 #ifdef FEAT_CRYPT
 	    // never return the value of the crypt key
 	    else if ((char_u **)varp == &curbuf->b_p_key
@@ -4879,7 +4892,7 @@ put_setstring(
 	{
 	    s = *valuep;
 	    while (*s != NUL)
-		if (put_escstr(fd, str2special(&s, FALSE), 2) == FAIL)
+		if (put_escstr(fd, str2special(&s, FALSE, FALSE), 2) == FAIL)
 		    return FAIL;
 	}
 	// expand the option value, replace $HOME by ~
@@ -5430,6 +5443,7 @@ get_varp(struct vimoption *p)
 	case PV_RLC:	return (char_u *)&(curwin->w_p_rlc);
 #endif
 	case PV_SCROLL:	return (char_u *)&(curwin->w_p_scr);
+	case PV_SMS:	return (char_u *)&(curwin->w_p_sms);
 	case PV_WRAP:	return (char_u *)&(curwin->w_p_wrap);
 #ifdef FEAT_LINEBREAK
 	case PV_LBR:	return (char_u *)&(curwin->w_p_lbr);
@@ -5476,6 +5490,7 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_EVAL
 	case PV_TFU:	return (char_u *)&(curbuf->b_p_tfu);
 #endif
+	case PV_EOF:	return (char_u *)&(curbuf->b_p_eof);
 	case PV_EOL:	return (char_u *)&(curbuf->b_p_eol);
 	case PV_FIXEOL:	return (char_u *)&(curbuf->b_p_fixeol);
 	case PV_ET:	return (char_u *)&(curbuf->b_p_et);
@@ -5504,6 +5519,7 @@ get_varp(struct vimoption *p)
 	case PV_KEY:	return (char_u *)&(curbuf->b_p_key);
 #endif
 	case PV_LISP:	return (char_u *)&(curbuf->b_p_lisp);
+	case PV_LOP:	return (char_u *)&(curbuf->b_p_lop);
 	case PV_ML:	return (char_u *)&(curbuf->b_p_ml);
 	case PV_MPS:	return (char_u *)&(curbuf->b_p_mps);
 	case PV_MA:	return (char_u *)&(curbuf->b_p_ma);
@@ -5663,6 +5679,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_wcr = copy_option_val(from->wo_wcr);
     to->wo_scb = from->wo_scb;
     to->wo_scb_save = from->wo_scb_save;
+    to->wo_sms = from->wo_sms;
     to->wo_crb = from->wo_crb;
     to->wo_crb_save = from->wo_crb_save;
 #ifdef FEAT_SPELL
@@ -6032,6 +6049,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_CINO);
 	    buf->b_p_cinsd = vim_strsave(p_cinsd);
 	    COPY_OPT_SCTX(buf, BV_CINSD);
+	    buf->b_p_lop = vim_strsave(p_lop);
+	    COPY_OPT_SCTX(buf, BV_LOP);
 
 	    // Don't copy 'filetype', it must be detected
 	    buf->b_p_ft = empty_option;
@@ -6836,9 +6855,7 @@ paste_option_changed(void)
     static int	old_p_paste = FALSE;
     static int	save_sm = 0;
     static int	save_sta = 0;
-#ifdef FEAT_CMDL_INFO
     static int	save_ru = 0;
-#endif
 #ifdef FEAT_RIGHTLEFT
     static int	save_ri = 0;
     static int	save_hkmap = 0;
@@ -6872,9 +6889,7 @@ paste_option_changed(void)
 	    // save global options
 	    save_sm = p_sm;
 	    save_sta = p_sta;
-#ifdef FEAT_CMDL_INFO
 	    save_ru = p_ru;
-#endif
 #ifdef FEAT_RIGHTLEFT
 	    save_ri = p_ri;
 	    save_hkmap = p_hkmap;
@@ -6915,11 +6930,9 @@ paste_option_changed(void)
 	// set global options
 	p_sm = 0;		    // no showmatch
 	p_sta = 0;		    // no smarttab
-#ifdef FEAT_CMDL_INFO
 	if (p_ru)
 	    status_redraw_all();    // redraw to remove the ruler
 	p_ru = 0;		    // no ruler
-#endif
 #ifdef FEAT_RIGHTLEFT
 	p_ri = 0;		    // no reverse insert
 	p_hkmap = 0;		    // no Hebrew keyboard
@@ -6965,11 +6978,9 @@ paste_option_changed(void)
 	// restore global options
 	p_sm = save_sm;
 	p_sta = save_sta;
-#ifdef FEAT_CMDL_INFO
 	if (p_ru != save_ru)
 	    status_redraw_all();    // redraw to draw the ruler
 	p_ru = save_ru;
-#endif
 #ifdef FEAT_RIGHTLEFT
 	p_ri = save_ri;
 	p_hkmap = save_hkmap;
