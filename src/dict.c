@@ -352,7 +352,7 @@ dict_copy(dict_T *orig, int deep, int top, int copyID)
 }
 
 /*
- * Check for adding a function to g: or s:.
+ * Check for adding a function to g: or s: (in Vim9 script) or l:.
  * If the name is wrong give an error message and return TRUE.
  */
     int
@@ -1105,17 +1105,9 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	{
 	    --todo;
 	    di1 = dict_find(d1, hi2->hi_key, -1);
-	    if (d1->dv_scope != 0)
-	    {
-		// Disallow replacing a builtin function in l: and g:.
-		// Check the key to be valid when adding to any scope.
-		if (d1->dv_scope == VAR_DEF_SCOPE
-			&& HI2DI(hi2)->di_tv.v_type == VAR_FUNC
-			&& var_wrong_func_name(hi2->hi_key, di1 == NULL))
-		    break;
-		if (!valid_varname(hi2->hi_key, -1, TRUE))
-		    break;
-	    }
+	    // Check the key to be valid when adding to any scope.
+	    if (d1->dv_scope != 0 && !valid_varname(hi2->hi_key, -1, TRUE))
+		break;
 
 	    if (type != NULL
 		     && check_typval_arg_type(type, &HI2DI(hi2)->di_tv,
@@ -1138,6 +1130,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 		if (value_check_lock(di1->di_tv.v_lock, arg_errmsg, TRUE)
 			|| var_check_ro(di1->di_flags, arg_errmsg, TRUE))
 		    break;
+		// Disallow replacing a builtin function.
 		if (dict_wrong_func_name(d1, &HI2DI(hi2)->di_tv, hi2->hi_key))
 		    break;
 		clear_tv(&di1->di_tv);
