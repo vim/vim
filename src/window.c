@@ -4249,7 +4249,6 @@ leave_tabpage(
 {
     tabpage_T	*tp = curtab;
 
-    reset_mouse_got_click();
 #ifdef FEAT_JOB_CHANNEL
     leaving_window(curwin);
 #endif
@@ -4269,6 +4268,8 @@ leave_tabpage(
 	if (curtab != tp)
 	    return FAIL;
     }
+
+    reset_mouse_got_click();
 #if defined(FEAT_GUI)
     // Remove the scrollbars.  They may be added back later.
     if (gui.in_use)
@@ -4334,6 +4335,10 @@ enter_tabpage(
     // check cmdline_row.
     if (row < cmdline_row && cmdline_row <= Rows - p_ch)
 	clear_cmdline = TRUE;
+
+    // If there was a click in a window, it won't be usable for a following
+    // drag.
+    reset_mouse_got_click();
 
     // The tabpage line may have appeared or disappeared, may need to resize
     // the frames for that.  When the Vim window was resized need to update
@@ -4465,7 +4470,6 @@ goto_tabpage_tp(
     // Don't repeat a message in another tab page.
     set_keep_msg(NULL, 0);
 
-    reset_mouse_got_click();
     skip_win_fix_scroll = TRUE;
     if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer,
 					trigger_leave_autocmds) == OK)
