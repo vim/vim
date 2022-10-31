@@ -93,7 +93,6 @@ syn match i3ConfigBorderStyle /^\s*\(new_window\|new_float\|default_border\|defa
 syn keyword i3ConfigEdgeKeyword none vertical horizontal both smart smart_no_gaps contained
 syn match i3ConfigEdge /^\s*hide_edge_borders\s\+\(none\|vertical\|horizontal\|both\|smart\|smart_no_gaps\)\s\?$/ contains=i3ConfigEdgeKeyword
 
-
 " Arbitrary commands for specific windows (for_window)
 syn keyword i3ConfigCommandKeyword for_window contained
 syn match i3ConfigWindowCommandStringSpecial /\w\+\(-\w\+\)*/ contained
@@ -208,11 +207,11 @@ hi def link i3ConfigIncludeKeyword                  Keyword
 hi def link i3ConfigCommandSubstitutionDelimiter    Delimiter
 hi def link i3ConfigCommandSubstitutionRegion       Normal
 hi def link i3ConfigIncludePath                     Parameter
-hi def link i3ConfigGapStyleKeyword                 Type
+hi def link i3ConfigGapStyleKeyword                 i3ConfigOption
 hi def link i3ConfigGapStyle                        i3ConfigCommand
-hi def link i3ConfigSmartGapKeyword                 Normal
+hi def link i3ConfigSmartGapKeyword                 i3ConfigOption
 hi def link i3ConfigSmartGap                        Keyword
-hi def link i3ConfigSmartBorderKeyword              Normal
+hi def link i3ConfigSmartBorderKeyword              i3ConfigOption
 hi def link i3ConfigSmartBorder                     Keyword
 hi def link i3ConfigAction                          i3ConfigCommand
 hi def link i3ConfigOption                          Type
@@ -224,13 +223,13 @@ hi def link i3ConfigBindArgument                    Parameter
 hi def link i3ConfigSizeSpecial                     i3ConfigOperator
 hi def link i3ConfigFloating                        Keyword
 hi def link i3ConfigFloatingModifier                Keyword
-hi def link i3ConfigOrientationKeyword              Normal
+hi def link i3ConfigOrientationKeyword              i3ConfigOption
 hi def link i3ConfigOrientation                     Keyword
-hi def link i3ConfigLayoutKeyword                   Normal
+hi def link i3ConfigLayoutKeyword                   i3ConfigOption
 hi def link i3ConfigLayout                          Keyword
-hi def link i3ConfigBorderStyleKeyword              Normal
+hi def link i3ConfigBorderStyleKeyword              i3ConfigOption
 hi def link i3ConfigBorderStyle                     Keyword
-hi def link i3ConfigEdgeKeyword                     Normal
+hi def link i3ConfigEdgeKeyword                     i3ConfigOption
 hi def link i3ConfigEdge                            Keyword
 hi def link i3ConfigCommandKeyword                  Keyword
 hi def link i3ConfigEqualsOperator                  i3ConfigOperator
@@ -238,13 +237,13 @@ hi def link i3ConfigWindowCommandStringSpecial      Normal
 hi def link i3ConfigWindowCommandSpecial            Delimiter
 hi def link i3ConfigNoFocusKeyword                  Keyword
 hi def link i3ConfigAssignKeyword                   Keyword
-hi def link i3ConfigAssignSpecial                   Type
+hi def link i3ConfigAssignSpecial                   i3ConfigOption
 hi def link i3ConfigResourceKeyword                 Keyword
 hi def link i3ConfigExecKeyword                     i3ConfigCommand
 hi def link i3ConfigExecAlwaysKeyword               Keyword
 hi def link i3ConfigNoStartupId                     i3ConfigBindArgument
 hi def link i3ConfigWorkspaceKeyword                i3ConfigCommand
-hi def link i3ConfigOutput                          Type
+hi def link i3ConfigOutput                          i3ConfigOption
 hi def link i3ConfigClientColorKeyword              Keyword
 hi def link i3ConfigClientColor                     Operator
 hi def link i3ConfigTitleAlignKeyword               Normal
