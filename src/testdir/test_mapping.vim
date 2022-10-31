@@ -1652,18 +1652,24 @@ func Test_mouse_drag_statusline()
   set laststatus=2
   set mouse=a
   func ClickExpr()
-      call test_setmouse(&lines - 1, 1)
-        return "\<LeftMouse>"
+    call test_setmouse(&lines - 1, 1)
+    return "\<LeftMouse>"
   endfunc
   func DragExpr()
-      call test_setmouse(&lines - 2, 1)
-        return "\<LeftDrag>"
+    call test_setmouse(&lines - 2, 1)
+    return "\<LeftDrag>"
   endfunc
   nnoremap <expr> <F2> ClickExpr()
   nnoremap <expr> <F3> DragExpr()
 
   " this was causing a crash in win_drag_status_line()
   call feedkeys("\<F2>:tabnew\<CR>\<F3>", 'tx')
+
+  nunmap <F2>
+  nunmap <F3>
+  delfunc ClickExpr
+  delfunc DragExpr
+  set laststatus& mouse&
 endfunc
 
 " Test for mapping <LeftDrag> in Insert mode
