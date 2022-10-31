@@ -914,6 +914,11 @@ f_win_move_statusline(typval_T *argvars, typval_T *rettv)
     wp = find_win_by_nr_or_id(&argvars[0]);
     if (wp == NULL || win_valid_popup(wp))
 	return;
+    if (!win_valid(wp))
+    {
+	emsg(_(e_cannot_resize_window_in_another_tab_page));
+	return;
+    }
 
     offset = (int)tv_get_number(&argvars[1]);
     win_drag_status_line(wp, offset);
