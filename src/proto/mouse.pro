@@ -1,6 +1,7 @@
 /* mouse.c */
 void mouse_set_vert_scroll_step(long step);
 void mouse_set_hor_scroll_step(long step);
+void reset_mouse_got_click(void);
 int do_mouse(oparg_T *oap, int c, int dir, long count, int fixindent);
 void ins_mouse(int c);
 void ins_mousescroll(int dir);

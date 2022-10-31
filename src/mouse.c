@@ -179,6 +179,18 @@ get_fpos_of_mouse(pos_T *mpos)
 }
 #endif
 
+static int	mouse_got_click = FALSE;	// got a click some time back
+
+/*
+ * Reset the flag that a mouse click was seen.  To be called when switching tab
+ * page.
+ */
+    void
+reset_mouse_got_click(void)
+{
+    mouse_got_click = FALSE;
+}
+
 /*
  * Do the appropriate action for the current mouse click in the current mode.
  * Not used for Command-line mode.
@@ -224,7 +236,6 @@ do_mouse(
     int		fixindent)	// PUT_FIXINDENT if fixing indent necessary
 {
     static int	do_always = FALSE;	// ignore 'mouse' setting next time
-    static int	got_click = FALSE;	// got a click some time back
 
     int		which_button;	// MOUSE_LEFT, _MIDDLE or _RIGHT
     int		is_click = FALSE; // If FALSE it's a drag or release event
@@ -336,14 +347,14 @@ do_mouse(
 
     // Ignore drag and release events if we didn't get a click.
     if (is_click)
-	got_click = TRUE;
+	mouse_got_click = TRUE;
     else
     {
-	if (!got_click)			// didn't get click, ignore
+	if (!mouse_got_click)			// didn't get click, ignore
 	    return FALSE;
-	if (!is_drag)			// release, reset got_click
+	if (!is_drag)			// release, reset mouse_got_click
 	{
-	    got_click = FALSE;
+	    mouse_got_click = FALSE;
 	    if (in_tab_line)
 	    {
 		in_tab_line = FALSE;
@@ -360,7 +371,7 @@ do_mouse(
 	if (count > 1)
 	    stuffnumReadbuff(count);
 	stuffcharReadbuff(Ctrl_T);
-	got_click = FALSE;		// ignore drag&release now
+	mouse_got_click = FALSE;		// ignore drag&release now
 	return FALSE;
     }
 
@@ -641,7 +652,7 @@ do_mouse(
 	    }
 # ifdef FEAT_MENU
 	    show_popupmenu();
-	    got_click = FALSE;	// ignore release events
+	    mouse_got_click = FALSE;	// ignore release events
 # endif
 	    return (jump_flags & CURSOR_MOVED) != 0;
 #else
@@ -698,7 +709,7 @@ do_mouse(
     // next mouse click.
     if (!is_drag && oap != NULL && oap->op_type != OP_NOP)
     {
-	got_click = FALSE;
+	mouse_got_click = FALSE;
 	oap->motion_type = MCHAR;
     }
 
@@ -897,7 +908,7 @@ do_mouse(
 	    do_cmdline_cmd((char_u *)".cc");
 	else					// location list window
 	    do_cmdline_cmd((char_u *)".ll");
-	got_click = FALSE;		// ignore drag&release now
+	mouse_got_click = FALSE;		// ignore drag&release now
     }
 #endif
 
@@ -909,7 +920,7 @@ do_mouse(
 	if (State & MODE_INSERT)
 	    stuffcharReadbuff(Ctrl_O);
 	stuffcharReadbuff(Ctrl_RSB);
-	got_click = FALSE;		// ignore drag&release now
+	mouse_got_click = FALSE;		// ignore drag&release now
     }
 
     // Shift-Mouse click searches for the next occurrence of the word under

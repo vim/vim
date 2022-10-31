@@ -4249,6 +4249,7 @@ leave_tabpage(
 {
     tabpage_T	*tp = curtab;
 
+    reset_mouse_got_click();
 #ifdef FEAT_JOB_CHANNEL
     leaving_window(curwin);
 #endif
@@ -4464,6 +4465,7 @@ goto_tabpage_tp(
     // Don't repeat a message in another tab page.
     set_keep_msg(NULL, 0);
 
+    reset_mouse_got_click();
     skip_win_fix_scroll = TRUE;
     if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer,
 					trigger_leave_autocmds) == OK)
