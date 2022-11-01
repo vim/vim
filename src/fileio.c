@@ -2272,26 +2272,29 @@ failed:
 	error = FALSE;
 
     /*
+     * In Dos format ignore a trailing CTRL-Z, unless 'binary' set.
+     */
+    if (linerest != 0
+	    && !curbuf->b_p_bin
+	    && fileformat == EOL_DOS
+	    && ptr[-1] == Ctrl_Z)
+    {
+	ptr--;
+	linerest--;
+	if (set_options)
+	    curbuf->b_p_eof = TRUE;
+    }
+    /*
      * If we get EOF in the middle of a line, note the fact and
      * complete the line ourselves.
-     * In Dos format ignore a trailing CTRL-Z, unless 'binary' set.
      */
     if (!error
 	    && !got_int
-	    && linerest != 0
-	    // TODO: should we handle CTRL-Z differently here for 'endoffile'?
-	    && !(!curbuf->b_p_bin
-		&& fileformat == EOL_DOS
-		&& *line_start == Ctrl_Z
-		&& ptr == line_start + 1))
+	    && linerest != 0)
     {
 	// remember for when writing
 	if (set_options)
-	{
 	    curbuf->b_p_eol = FALSE;
-	    if (*line_start == Ctrl_Z && ptr == line_start + 1)
-		curbuf->b_p_eof = TRUE;
-	}
 	*ptr = NUL;
 	len = (colnr_T)(ptr - line_start + 1);
 	if (ml_append(lnum, line_start, len, newfile) == FAIL)
