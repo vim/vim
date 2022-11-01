@@ -578,6 +578,30 @@ single <NL> characters are unexpectedly replaced with <CR><NL>.
 You can encrypt files that are written by setting the 'key' option.  This
 provides some security against others reading your files. |encryption|
 
+END OF LINE AND END OF FILE				*eol-and-eof*
+
+Vim has several options to control the file formats:
+	'fileformat'	the <EOL> style
+	'endoofline'	whether every line ends with a <EOL>
+	'endooffile'	whether the file ends with a CTRL-Z
+	'fixendofline'	whether to fix eol and eof
+
+Here are some examples how to use them.
+
+If you want files in Unix format (every line NL terminated): >
+	setl ff=unix fixeol
+
+If you want to use an old MS-DOS file in a modern environment, fixing line
+endings and dropping CTRL-Z, keeping the <CR><NL> style <EOL>: >
+	setl ff=dos fixeol
+
+If you want to drop final <EOL> and add final CTRL-Z (e.g. for old systems
+like CP/M): >
+	setl ff=dos nofixeol noeol eof
+
+If you want to preserve the fileformat exactly as-is, including final <EOL>
+and final CTRL-Z: >
+	setl nofixeol
 
 ==============================================================================
 3. The argument list				*argument-list* *arglist*
