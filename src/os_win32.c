@@ -201,6 +201,9 @@ static void vtp_exit();
 static void vtp_sgr_bulk(int arg);
 static void vtp_sgr_bulks(int argc, int *argv);
 
+static int wt_working = 0;
+static void wt_init();
+
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
 static guicolor_T store_console_bg_rgb;
@@ -214,11 +217,12 @@ static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
 # endif
 
-# define CONPTY_STABLE		(conpty_stable)
 # ifdef FEAT_TERMGUICOLORS
 #  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
+#  define USE_WT		(wt_working)
 # else
 #  define USE_VTP		0
+#  define USE_WT		0
 # endif
 
 static void set_console_color_rgb(void);
@@ -238,6 +242,7 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
+static BOOL win11_or_later = FALSE;
 
 /*
  * Get version number including build number
@@ -330,7 +335,7 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (!CONPTY_STABLE && nLength == -1)
+	if (!(USE_WT || win11_or_later) && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
 	if (dwEvents == 0 && nLength == -1)
@@ -892,6 +897,10 @@ PlatformId(void)
 	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
 		|| ovi.dwMajorVersion > 6)
 	    win8_or_later = TRUE;
+
+	if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 22000)
+		|| ovi.dwMajorVersion > 10)
+	    win11_or_later = TRUE;
 
 #ifdef HAVE_ACL
 	// Enable privilege for getting or setting SACLs.
@@ -1601,7 +1610,7 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    if (USE_VTP || CONPTY_STABLE)
+    if (USE_VTP || USE_WT || win11_or_later)
     {
 	if (*T_CSI == NUL)
 	{
@@ -2773,7 +2782,7 @@ RestoreConsoleBuffer(
     ConsoleBuffer   *cb,
     BOOL	    RestoreScreen)
 {
-    if (CONPTY_STABLE)
+    if (win11_or_later)
 	return TRUE;
 
     COORD BufferCoord;
@@ -2978,6 +2987,7 @@ mch_init_c(void)
 
     vtp_flag_init();
     vtp_init();
+    wt_init();
 
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     // Save the initial console buffer for later restoration
@@ -5746,8 +5756,8 @@ termcap_mode_start(void)
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     // Switches to a new alternate screen buffer.
-    if (p_rs && (USE_VTP || CONPTY_STABLE))
-	vtp_printf("\033[?1049h");  
+    if (p_rs && (USE_VTP || win11_or_later))
+	vtp_printf("\033[?1049h");
 
     if (g_cbTermcap.IsValid)
     {
@@ -5828,11 +5838,6 @@ termcap_mode_end(void)
 
     if (p_rs || exiting)
     {
-	if (p_rs && (USE_VTP || CONPTY_STABLE)){
-	    // Switches back to main screen buffer.
-	    vtp_printf("\033[?1049l");
-	}
-
 	/*
 	 * Clear anything that happens to be on the current line.
 	 */
@@ -5854,6 +5859,11 @@ termcap_mode_end(void)
 	 * Position the cursor at the leftmost column of the desired row.
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
+    }
+    if (p_rs && (USE_VTP || win11_or_later))
+    {
+	// Switches back to main screen buffer.
+	vtp_printf("\033[?1049l");
     }
     g_fTermcapMode = FALSE;
 }
@@ -6077,7 +6087,7 @@ insert_lines(unsigned cLines)
 	}
     }
 
-    if (CONPTY_STABLE)
+    if (USE_WT || win11_or_later)
     {
 	COORD coord;
 	int i;
@@ -6146,7 +6156,7 @@ delete_lines(unsigned cLines)
 	}
     }
 
-    if (CONPTY_STABLE)
+    if (USE_WT || win11_or_later)
     {
 	COORD coord;
 	int i;
@@ -6896,7 +6906,7 @@ notsgr:
 	    if (s[l] == ' ' && s[l + 1] == 'q')
 	    {
 		// DECSCUSR (cursor style) sequences
-		if (USE_VTP || CONPTY_STABLE)
+		if (USE_VTP || USE_WT || win11_or_later)
 		    vtp_printf("%.*s", l + 2, s);   // Pass through
 		s += l + 2;
 		len -= l + 1;
@@ -7932,9 +7942,10 @@ mch_setenv(char *var, char *value, int x UNUSED)
 #define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18995)
 
 /*
- * Windows 11 (build >= 22000 means windows 11, even though major says 10!)
+ * Not stable now.
  */
-#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 22000)
+#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
+// Note: Windows 11 (build >= 22000 means Windows 11, even though major says 10!)
 
     static void
 vtp_flag_init(void)
@@ -7983,7 +7994,7 @@ vtp_init(void)
 {
 
 # ifdef FEAT_TERMGUICOLORS
-    if (!CONPTY_STABLE)
+    if (!(USE_WT || win11_or_later))
     {
 	CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 	csbi.cbSize = sizeof(csbi);
@@ -8186,6 +8197,18 @@ vtp_sgr_bulks(
     }
 }
 
+    static void
+wt_init(void)
+{
+    wt_working = (mch_getenv("WT_SESSION") != NULL);
+}
+
+    int
+use_wt(void)
+{
+    return USE_WT;
+}
+
 # ifdef FEAT_TERMGUICOLORS
     static int
 ctermtoxterm(
@@ -8211,7 +8234,7 @@ set_console_color_rgb(void)
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
 
-    if (CONPTY_STABLE)
+    if (USE_WT || win11_or_later)
     {
 	term_fg_rgb_color(fg);
 	term_bg_rgb_color(bg);
@@ -8258,7 +8281,7 @@ get_default_console_color(
 	ctermfg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &dummynull);
-	if (CONPTY_STABLE)
+	if (USE_WT || win11_or_later)
 	{
 	    cterm_normal_fg_gui_color = guifg =
 			    ctermfg != -1 ? ctermtoxterm(ctermfg) : INVALCOLOR;
@@ -8277,7 +8300,7 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &dummynull, &ctermbg);
-	if (CONPTY_STABLE)
+	if (USE_WT || win11_or_later)
 	{
 	    cterm_normal_bg_gui_color = guibg =
 			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
@@ -8309,7 +8332,7 @@ reset_console_color_rgb(void)
 # ifdef FEAT_TERMGUICOLORS
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
-    if (CONPTY_STABLE)
+    if (USE_WT || win11_or_later)
 	return;
 
     csbi.cbSize = sizeof(csbi);
@@ -8331,7 +8354,7 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    if(CONPTY_STABLE)
+    if (USE_WT || win11_or_later)
 	return;
 
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
@@ -8351,7 +8374,7 @@ restore_console_color_rgb(void)
     void
 control_console_color_rgb(void)
 {
-    if (USE_VTP || CONPTY_STABLE)
+    if (USE_VTP || win11_or_later)
 	set_console_color_rgb();
     else
 	reset_console_color_rgb();
