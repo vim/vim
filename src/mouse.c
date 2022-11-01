@@ -179,18 +179,6 @@ get_fpos_of_mouse(pos_T *mpos)
 }
 #endif
 
-static int	mouse_got_click = FALSE;	// got a click some time back
-
-/*
- * Reset the flag that a mouse click was seen.  To be called when switching tab
- * page.
- */
-    void
-reset_mouse_got_click(void)
-{
-    mouse_got_click = FALSE;
-}
-
 /*
  * Do the appropriate action for the current mouse click in the current mode.
  * Not used for Command-line mode.
@@ -236,6 +224,7 @@ do_mouse(
     int		fixindent)	// PUT_FIXINDENT if fixing indent necessary
 {
     static int	do_always = FALSE;	// ignore 'mouse' setting next time
+    static int	got_click = FALSE;	// got a click some time back
 
     int		which_button;	// MOUSE_LEFT, _MIDDLE or _RIGHT
     int		is_click = FALSE; // If FALSE it's a drag or release event
@@ -347,14 +336,14 @@ do_mouse(
 
     // Ignore drag and release events if we didn't get a click.
     if (is_click)
-	mouse_got_click = TRUE;
+	got_click = TRUE;
     else
     {
-	if (!mouse_got_click)			// didn't get click, ignore
+	if (!got_click)			// didn't get click, ignore
 	    return FALSE;
-	if (!is_drag)			// release, reset mouse_got_click
+	if (!is_drag)			// release, reset got_click
 	{
-	    mouse_got_click = FALSE;
+	    got_click = FALSE;
 	    if (in_tab_line)
 	    {
 		in_tab_line = FALSE;
@@ -371,7 +360,7 @@ do_mouse(
 	if (count > 1)
 	    stuffnumReadbuff(count);
 	stuffcharReadbuff(Ctrl_T);
-	mouse_got_click = FALSE;		// ignore drag&release now
+	got_click = FALSE;		// ignore drag&release now
 	return FALSE;
     }
 
@@ -652,7 +641,7 @@ do_mouse(
 	    }
 # ifdef FEAT_MENU
 	    show_popupmenu();
-	    mouse_got_click = FALSE;	// ignore release events
+	    got_click = FALSE;	// ignore release events
 # endif
 	    return (jump_flags & CURSOR_MOVED) != 0;
 #else
@@ -709,7 +698,7 @@ do_mouse(
     // next mouse click.
     if (!is_drag && oap != NULL && oap->op_type != OP_NOP)
     {
-	mouse_got_click = FALSE;
+	got_click = FALSE;
 	oap->motion_type = MCHAR;
     }
 
@@ -908,7 +897,7 @@ do_mouse(
 	    do_cmdline_cmd((char_u *)".cc");
 	else					// location list window
 	    do_cmdline_cmd((char_u *)".ll");
-	mouse_got_click = FALSE;		// ignore drag&release now
+	got_click = FALSE;		// ignore drag&release now
     }
 #endif
 
@@ -920,7 +909,7 @@ do_mouse(
 	if (State & MODE_INSERT)
 	    stuffcharReadbuff(Ctrl_O);
 	stuffcharReadbuff(Ctrl_RSB);
-	mouse_got_click = FALSE;		// ignore drag&release now
+	got_click = FALSE;		// ignore drag&release now
     }
 
     // Shift-Mouse click searches for the next occurrence of the word under
@@ -1513,6 +1502,17 @@ mouse_model_popup(void)
     return (p_mousem[0] == 'p');
 }
 
+static win_T *dragwin = NULL;	// window being dragged
+
+/*
+ * Reset the window being dragged.  To be called when switching tab page.
+ */
+    void
+reset_dragwin(void)
+{
+    dragwin = NULL;
+}
+
 /*
  * Move the cursor to the specified row and column on the screen.
  * Change current window if necessary.	Returns an integer with the
@@ -1556,7 +1556,6 @@ jump_to_mouse(
 #endif
     static int	prev_row = -1;
     static int	prev_col = -1;
-    static win_T *dragwin = NULL;	// window being dragged
     static int	did_drag = FALSE;	// drag was noticed
 
     win_T	*wp, *old_curwin;

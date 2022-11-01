@@ -4269,7 +4269,7 @@ leave_tabpage(
 	    return FAIL;
     }
 
-    reset_mouse_got_click();
+    reset_dragwin();
 #if defined(FEAT_GUI)
     // Remove the scrollbars.  They may be added back later.
     if (gui.in_use)
@@ -4338,7 +4338,7 @@ enter_tabpage(
 
     // If there was a click in a window, it won't be usable for a following
     // drag.
-    reset_mouse_got_click();
+    reset_dragwin();
 
     // The tabpage line may have appeared or disappeared, may need to resize
     // the frames for that.  When the Vim window was resized need to update
