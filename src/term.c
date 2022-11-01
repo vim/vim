@@ -5520,8 +5520,8 @@ check_termcode(
 			    // no match for "code;*X" with "code;"
 			    continue;
 			else if (termcodes[idx].code[modslen] == '@'
-							 && tp[modslen] != '1')
-			    // no match for "<Esc>[@" with "<Esc>[1"
+				     && (tp[modslen] != '1' || tp[modslen + 1] != ';'))
+			    // no match for "<Esc>[@" with "<Esc>[1;"
 			    continue;
 			else
 			{
