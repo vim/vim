@@ -220,9 +220,11 @@ static int default_console_color_fg = 0xc0c0c0; // white
 # ifdef FEAT_TERMGUICOLORS
 #  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
 #  define USE_WT		(wt_working)
+#  define WIN11_OR_LATER	(is_win11_or_later())
 # else
 #  define USE_VTP		0
 #  define USE_WT		0
+#  define WIN11_OR_LATER	0
 # endif
 
 static void set_console_color_rgb(void);
@@ -335,7 +337,7 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (!(USE_WT || win11_or_later) && nLength == -1)
+	if (!(USE_WT || WIN11_OR_LATER) && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
 	if (dwEvents == 0 && nLength == -1)
@@ -1610,7 +1612,7 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    if (USE_VTP || USE_WT || win11_or_later)
+    if (USE_VTP || USE_WT || WIN11_OR_LATER)
     {
 	if (*T_CSI == NUL)
 	{
@@ -2782,7 +2784,7 @@ RestoreConsoleBuffer(
     ConsoleBuffer   *cb,
     BOOL	    RestoreScreen)
 {
-    if (win11_or_later)
+    if (WIN11_OR_LATER)
 	return TRUE;
 
     COORD BufferCoord;
@@ -5756,7 +5758,7 @@ termcap_mode_start(void)
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     // Switches to a new alternate screen buffer.
-    if (p_rs && (USE_VTP || win11_or_later))
+    if (p_rs && (USE_VTP || WIN11_OR_LATER))
 	vtp_printf("\033[?1049h");
 
     if (g_cbTermcap.IsValid)
@@ -5860,7 +5862,7 @@ termcap_mode_end(void)
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
-    if (p_rs && (USE_VTP || win11_or_later))
+    if (p_rs && (USE_VTP || WIN11_OR_LATER))
     {
 	// Switches back to main screen buffer.
 	vtp_printf("\033[?1049l");
@@ -6087,7 +6089,7 @@ insert_lines(unsigned cLines)
 	}
     }
 
-    if (USE_WT || win11_or_later)
+    if (USE_WT || WIN11_OR_LATER)
     {
 	COORD coord;
 	int i;
@@ -6156,7 +6158,7 @@ delete_lines(unsigned cLines)
 	}
     }
 
-    if (USE_WT || win11_or_later)
+    if (USE_WT || WIN11_OR_LATER)
     {
 	COORD coord;
 	int i;
@@ -6906,7 +6908,7 @@ notsgr:
 	    if (s[l] == ' ' && s[l + 1] == 'q')
 	    {
 		// DECSCUSR (cursor style) sequences
-		if (USE_VTP || USE_WT || win11_or_later)
+		if (USE_VTP || USE_WT || WIN11_OR_LATER)
 		    vtp_printf("%.*s", l + 2, s);   // Pass through
 		s += l + 2;
 		len -= l + 1;
@@ -7994,7 +7996,7 @@ vtp_init(void)
 {
 
 # ifdef FEAT_TERMGUICOLORS
-    if (!(USE_WT || win11_or_later))
+    if (!(USE_WT || WIN11_OR_LATER))
     {
 	CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 	csbi.cbSize = sizeof(csbi);
@@ -8234,7 +8236,7 @@ set_console_color_rgb(void)
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
 
-    if (USE_WT || win11_or_later)
+    if (USE_WT || WIN11_OR_LATER)
     {
 	term_fg_rgb_color(fg);
 	term_bg_rgb_color(bg);
@@ -8281,7 +8283,7 @@ get_default_console_color(
 	ctermfg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &dummynull);
-	if (USE_WT || win11_or_later)
+	if (USE_WT || WIN11_OR_LATER)
 	{
 	    cterm_normal_fg_gui_color = guifg =
 			    ctermfg != -1 ? ctermtoxterm(ctermfg) : INVALCOLOR;
@@ -8300,7 +8302,7 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &dummynull, &ctermbg);
-	if (USE_WT || win11_or_later)
+	if (USE_WT || WIN11_OR_LATER)
 	{
 	    cterm_normal_bg_gui_color = guibg =
 			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
@@ -8332,7 +8334,7 @@ reset_console_color_rgb(void)
 # ifdef FEAT_TERMGUICOLORS
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
-    if (USE_WT || win11_or_later)
+    if (USE_WT || WIN11_OR_LATER)
 	return;
 
     csbi.cbSize = sizeof(csbi);
@@ -8354,7 +8356,7 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    if (USE_WT || win11_or_later)
+    if (USE_WT || WIN11_OR_LATER)
 	return;
 
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
@@ -8374,7 +8376,7 @@ restore_console_color_rgb(void)
     void
 control_console_color_rgb(void)
 {
-    if (USE_VTP || win11_or_later)
+    if (USE_VTP || WIN11_OR_LATER)
 	set_console_color_rgb();
     else
 	reset_console_color_rgb();
@@ -8390,6 +8392,12 @@ use_vtp(void)
 is_term_win32(void)
 {
     return T_NAME != NULL && STRCMP(T_NAME, "win32") == 0;
+}
+
+    int
+is_win11_or_later(void)
+{
+    return win11_or_later;
 }
 
     int
