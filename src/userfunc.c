@@ -2921,7 +2921,7 @@ call_user_func(
     // If called from a compiled :def function the execution context must be
     // hidden, any deferred functions need to be added to the function being
     // executed here.
-    save_current_ectx = clear_currrent_ectx();
+    save_current_ectx = clear_current_ectx();
 
     save_current_sctx = current_sctx;
     current_sctx = fp->uf_script_ctx;
@@ -5064,7 +5064,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
     if (is_export)
     {
 	fp->uf_flags |= FC_EXPORT;
-	// let ex_export() know the export worked.
+	// let do_one_cmd() know the export worked.
 	is_export = FALSE;
     }
 

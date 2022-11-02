@@ -823,7 +823,7 @@ typedef struct textprop_S
 					// text is truncated
 #define TP_FLAG_START_INCL	0x100	// "start_incl" copied from proptype
 
-#define PROP_TEXT_MIN_CELLS	4	// minimun number of cells to use for
+#define PROP_TEXT_MIN_CELLS	4	// minimum number of cells to use for
 					// the text, even when truncating
 
 /*
@@ -1884,7 +1884,7 @@ typedef struct {
 #define IMP_FLAGS_AUTOLOAD	4   // script still needs to be loaded
 
 /*
- * Info about an encoutered script.
+ * Info about an encountered script.
  * When sn_state has the SN_STATE_NOT_LOADED is has not been sourced yet.
  */
 typedef struct
@@ -2095,7 +2095,7 @@ struct funcstack_S
 };
 
 /*
- * Structure to hold the variables declared in a loop that are possiblly used
+ * Structure to hold the variables declared in a loop that are possibly used
  * in a closure.
  */
 typedef struct loopvars_S loopvars_T;

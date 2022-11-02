@@ -3954,7 +3954,7 @@ jumpto_tag(
 		}
 		if (found == 0)
 		{
-		    emsg(_(e_canot_find_tag_pattern));
+		    emsg(_(e_cannot_find_tag_pattern));
 		    curwin->w_cursor.lnum = save_lnum;
 		}
 		else

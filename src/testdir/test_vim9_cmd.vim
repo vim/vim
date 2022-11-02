@@ -126,7 +126,7 @@ def Test_cmdmod_execute()
   END
   v9.CheckScriptSuccess(lines)
 
-  # "legacy" does not aply to a called function
+  # "legacy" does not apply to a called function
   lines =<< trim END
       vim9script
 

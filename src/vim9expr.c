@@ -1242,7 +1242,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key_in_dicitonary), key);
+		semsg(_(e_duplicate_key_in_dictionary), key);
 		goto failret;
 	    }
 	    item = dictitem_alloc(key);
@@ -2725,7 +2725,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		if (tv2->v_type != VAR_NUMBER)
 		    emsg(_(e_bitshift_ops_must_be_number));
 		else
-		    emsg(_(e_bitshift_ops_must_be_postive));
+		    emsg(_(e_bitshift_ops_must_be_positive));
 		return FAIL;
 	    }
 
