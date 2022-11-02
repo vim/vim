@@ -1475,7 +1475,7 @@ buf_write(
 			{
 			    if (buf_write_bytes(&write_info) == FAIL)
 			    {
-				errmsg = (char_u *)_(e_canot_write_to_backup_file_add_bang_to_override);
+				errmsg = (char_u *)_(e_cant_write_to_backup_file_add_bang_to_override);
 				break;
 			    }
 			    ui_breakcheck();

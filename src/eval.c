@@ -3269,7 +3269,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    if (var2.v_type != VAR_NUMBER)
 		emsg(_(e_bitshift_ops_must_be_number));
 	    else
-		emsg(_(e_bitshift_ops_must_be_postive));
+		emsg(_(e_bitshift_ops_must_be_positive));
 	    clear_tv(rettv);
 	    clear_tv(&var2);
 	    return FAIL;

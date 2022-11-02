@@ -1222,7 +1222,7 @@ func Test_term_mouse_visual_mode()
   call assert_equal(5, col("'<"))
   call assert_equal(12, col("'>"))
 
-  " Multi-line selection. Right click inside thse selection.
+  " Multi-line selection. Right click inside the selection.
   call setline(1, repeat(['aaaaaa'], 7))
   call test_setmouse(3, 1)
   exe "normal ggVG\<RightMouse>y"

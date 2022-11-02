@@ -2563,11 +2563,11 @@ func LspTests(port)
 
   " Test for using a one time callback function to process a response
   let g:lspOtMsgs = []
-  let r = ch_sendexpr(ch, #{method: 'msg-specifc-cb', params: {}},
+  let r = ch_sendexpr(ch, #{method: 'msg-specific-cb', params: {}},
         \ #{callback: 'LspOtCb'})
   call assert_equal(9, r.id)
   call assert_equal('alive', ch_evalexpr(ch, #{method: 'ping'}).result)
-  call assert_equal([#{id: 9, jsonrpc: '2.0', result: 'msg-specifc-cb'}],
+  call assert_equal([#{id: 9, jsonrpc: '2.0', result: 'msg-specific-cb'}],
         \ g:lspOtMsgs)
 
   " Test for generating a request message from the other end (server)
