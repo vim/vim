@@ -1376,7 +1376,8 @@ get_lval(
 		else
 		    prevval = 0; // avoid compiler warning
 		wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
-			       && rettv->v_type == VAR_FUNC
+			       && (rettv->v_type == VAR_FUNC ||
+				   rettv->v_type == VAR_PARTIAL)
 			       && var_wrong_func_name(key, lp->ll_di == NULL))
 			|| !valid_varname(key, -1, TRUE);
 		if (len != -1)
