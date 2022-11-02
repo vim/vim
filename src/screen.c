@@ -2287,7 +2287,7 @@ screen_char_2(unsigned off, int row, int col)
     if (off + 1 >= (unsigned)(screen_Rows * screen_Columns))
 	return;
 
-    // Outputting the last character on the screen may scrollup the screen.
+    // Outputting the last character on the screen may scroll the screen up.
     // Don't to it!  Mark the character invalid (update it when scrolled up)
     if (row == screen_Rows - 1 && col >= screen_Columns - 2)
     {
@@ -2734,7 +2734,7 @@ retry:
     if (enc_dbcs == DBCS_JPNU)
 	new_ScreenLines2 = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
     new_ScreenAttrs = LALLOC_MULT(sattr_T, (Rows + 1) * Columns);
-    // Clear ScreenCols to avoid a warning for unitialized memory in
+    // Clear ScreenCols to avoid a warning for uninitialized memory in
     // jump_to_mouse().
     new_ScreenCols = LALLOC_CLEAR_MULT(colnr_T, (Rows + 1) * Columns);
     new_LineOffset = LALLOC_MULT(unsigned, Rows);
