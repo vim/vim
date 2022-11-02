@@ -583,7 +583,7 @@ END OF LINE AND END OF FILE				*eol-and-eof*
 Vim has several options to control the file format:
 	'fileformat'	the <EOL> style: Unix, DOS, Mac
 	'endofline'	whether the last line ends with a <EOL>
-	'endooffile'	whether the file ends with a CTRL-Z
+	'endoffile'	whether the file ends with a CTRL-Z
 	'fixendofline'	whether to fix eol and eof
 
 The first three values are normally detected automatically when reading the

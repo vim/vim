@@ -2833,6 +2833,11 @@ set_bool_option(
 # endif
 	redraw_titles();
     }
+    // when 'endoffile' is changed, redraw the window title
+    else if ((int *)varp == &curbuf->b_p_eof)
+    {
+	redraw_titles();
+    }
     // when 'endofline' is changed, redraw the window title
     else if ((int *)varp == &curbuf->b_p_eol)
     {
