@@ -2784,9 +2784,6 @@ RestoreConsoleBuffer(
     ConsoleBuffer   *cb,
     BOOL	    RestoreScreen)
 {
-    if (WIN11_OR_LATER)
-	return TRUE;
-
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
     int i;
@@ -2987,10 +2984,6 @@ mch_init_c(void)
 	create_conin();
     g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    vtp_flag_init();
-    vtp_init();
-    wt_init();
-
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     // Save the initial console buffer for later restoration
     SaveConsoleBuffer(&g_cbOrig);
@@ -3043,6 +3036,10 @@ mch_init_c(void)
     g_fWindInitCalled = TRUE;
 
     g_fMouseAvail = GetSystemMetrics(SM_MOUSEPRESENT);
+
+    vtp_flag_init();
+    vtp_init();
+    wt_init();
 
 # ifdef FEAT_CLIPBOARD
     win_clip_init();
