@@ -337,7 +337,8 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (!(USE_WT || WIN11_OR_LATER) && nLength == -1)
+	/////////if (!(USE_WT || WIN11_OR_LATER) && nLength == -1)
+	if (!USE_WT && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
 	if (dwEvents == 0 && nLength == -1)
@@ -1612,7 +1613,7 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    if (USE_VTP || USE_WT || WIN11_OR_LATER)
+    if (USE_VTP || USE_WT) // || WIN11_OR_LATER??
     {
 	if (*T_CSI == NUL)
 	{
@@ -2784,6 +2785,9 @@ RestoreConsoleBuffer(
     ConsoleBuffer   *cb,
     BOOL	    RestoreScreen)
 {
+//     if (WIN11_OR_LATER && USE_WT)
+// 	return TRUE;
+
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
     int i;
@@ -3037,13 +3041,13 @@ mch_init_c(void)
 
     g_fMouseAvail = GetSystemMetrics(SM_MOUSEPRESENT);
 
-    vtp_flag_init();
-    vtp_init();
-    wt_init();
-
 # ifdef FEAT_CLIPBOARD
     win_clip_init();
 # endif
+
+    vtp_flag_init();
+    vtp_init();
+    wt_init();
 }
 
 /*
@@ -5752,11 +5756,12 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
-    SaveConsoleBuffer(&g_cbNonTermcap);
-
-    // Switches to a new alternate screen buffer.
-    if (p_rs && (USE_VTP || WIN11_OR_LATER))
+    // Switch to a new alternate screen buffer.
+    ////if ((!p_rs && USE_VTP && !WIN11_OR_LATER) || WIN11_OR_LATER)
+    if (!p_rs && USE_VTP)
 	vtp_printf("\033[?1049h");
+
+    SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
     {
@@ -5859,11 +5864,11 @@ termcap_mode_end(void)
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
-    if (p_rs && (USE_VTP || WIN11_OR_LATER))
-    {
+    //if ((!p_rs && USE_VTP && !WIN11_OR_LATER) || WIN11_OR_LATER)
 	// Switches back to main screen buffer.
+    if (!p_rs && USE_VTP)
 	vtp_printf("\033[?1049l");
-    }
+
     g_fTermcapMode = FALSE;
 }
 #endif // !FEAT_GUI_MSWIN || VIMDLL
@@ -6086,7 +6091,7 @@ insert_lines(unsigned cLines)
 	}
     }
 
-    if (USE_WT || WIN11_OR_LATER)
+    if (USE_WT) // || WIN11_OR_LATER
     {
 	COORD coord;
 	int i;
@@ -6155,7 +6160,7 @@ delete_lines(unsigned cLines)
 	}
     }
 
-    if (USE_WT || WIN11_OR_LATER)
+    if (USE_WT) //WIN11_OR_LATER
     {
 	COORD coord;
 	int i;
