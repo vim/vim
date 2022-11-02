@@ -405,7 +405,7 @@ function to abort.  `:defer` can be used to avoid that: >
 	  call Handle('Outfile')
 	endfunc
 
-Note that deleting "Outfile" is scheduled before calling system(), since it
+Note that deleting "Outfile" is scheduled before calling `system()`, since it
 can be created even when `system()` fails.
 
 The deferred functions are called in reverse order, the last one added is

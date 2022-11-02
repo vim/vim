@@ -259,7 +259,7 @@ Support for evaluating Vim expressions in a heredoc. |:let-heredoc|
 
 Support for fuzzy matching:
 - a string in a List of strings. |fuzzy-matching|
-- completion support for command line completion using 'wildoptions'
+- completion support for command line completion using 'wildoptions'.
 - for |:vimgrep|.
 
 Added support for the |Haiku| OS.
@@ -398,22 +398,22 @@ Update xdiff to version 2.33.  Update libvterm to revision 789.
 
 Support 'trim' for Python/Lua/Perl/Tcl/Ruby/MzScheme interface heredoc.
 
-Add the |t_AU| and |t_8u| termap codes for underline and undercurl.  Add the
+Add the |t_AU| and |t_8u| termcap codes for underline and undercurl.  Add the
 t_fd and t_fe termcap codes for detecting focus events.
 
 Support for indenting C pragmas like normal code. (|cino-P|)
 
-Add support for defining the syntax fold level (|:syn-foldlevel|)
+Add support for defining the syntax fold level. (|:syn-foldlevel|)
 
 Add support for using \<*xxx> in a string to prepend a modifier to a
-character. (|expr-quote|).
+character. (|expr-quote|)
 
 Add support trimming characters at the beginning or end of a string using
 |trim()|.
 
 Make ":verbose pwd" show the scope of the directory. |:pwd-verbose|
 
-Add the "0o" notation for specifying octal numbers |scriptversion-4|
+Add the "0o" notation for specifying octal numbers. |scriptversion-4|
 
 Support for changing to the previous tab-local and window-local directories
 using the "tcd -" and "lcd -" commands. (|:tcd-| and |:lcd-|)
@@ -428,7 +428,7 @@ Add support for executing (|:@|) a register containing line continuation.
 Lua support:
 - Call Vim functions from Lua (vim.call() and vim.fn()).
 - Convert a Lua function and a closure to a Vim funcref so that it can be
-  accessed in a Vimscript (|lua-funcref|).
+  accessed in a Vim script (|lua-funcref|).
 - Not backwards compatible: Make Lua arrays one based.
 - Add support for using table.insert() and table.remove() functions with Vim
   lists.
@@ -27366,7 +27366,7 @@ Files:      src/evalfunc.c, src/testdir/test_vim9_builtin.vim
 Patch 8.2.4460
 Problem:    Vim9: wrong error for defining dict function.
 Solution:   Explicitly check for trying to define a dict function.
-            (closes 9827)
+            (closes #9827)
 Files:      src/errors.h, src/userfunc.c, src/vim9compile.c,
             src/testdir/test_vim9_func.vim
 

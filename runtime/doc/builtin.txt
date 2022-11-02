@@ -981,7 +981,7 @@ autocmd_add({acmds})					*autocmd_add()*
 			let acmd.bufnr = 5
 			let acmd.cmd = 'call BufEnterFunc()'
 			call autocmd_add([acmd])
-
+<
 		Can also be used as a |method|: >
 			GetAutocmdList()->autocmd_add()
 <
@@ -2769,7 +2769,7 @@ flattennew({list} [, {maxdepth}])			*flattennew()*
 float2nr({expr})					*float2nr()*
 		Convert {expr} to a Number by omitting the part after the
 		decimal point.
-		{expr} must evaluate to a |Float| or a Number.
+		{expr} must evaluate to a |Float| or a |Number|.
 		Returns 0 if {expr} is not a |Float| or a |Number|.
 		When the value of {expr} is out of range for a |Number| the
 		result is truncated to 0x7fffffff or -0x7fffffff (or when
