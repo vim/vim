@@ -337,7 +337,6 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	/////////if (!(USE_WT || WIN11_OR_LATER) && nLength == -1)
 	if (!USE_WT && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
@@ -1613,7 +1612,7 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    if (USE_VTP || USE_WT) // || WIN11_OR_LATER??
+    if (USE_VTP || USE_WT)
     {
 	if (*T_CSI == NUL)
 	{
@@ -2785,9 +2784,6 @@ RestoreConsoleBuffer(
     ConsoleBuffer   *cb,
     BOOL	    RestoreScreen)
 {
-//     if (WIN11_OR_LATER && USE_WT)
-// 	return TRUE;
-
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
     int i;
@@ -5757,7 +5753,6 @@ termcap_mode_start(void)
 	return;
 
     // Switch to a new alternate screen buffer.
-    ////if ((!p_rs && USE_VTP && !WIN11_OR_LATER) || WIN11_OR_LATER)
     if (!p_rs && USE_VTP)
 	vtp_printf("\033[?1049h");
 
@@ -5864,8 +5859,7 @@ termcap_mode_end(void)
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
-    //if ((!p_rs && USE_VTP && !WIN11_OR_LATER) || WIN11_OR_LATER)
-	// Switches back to main screen buffer.
+    // Switch back to main screen buffer.
     if (!p_rs && USE_VTP)
 	vtp_printf("\033[?1049l");
 
@@ -6091,7 +6085,7 @@ insert_lines(unsigned cLines)
 	}
     }
 
-    if (USE_WT) // || WIN11_OR_LATER
+    if (USE_WT)
     {
 	COORD coord;
 	int i;
@@ -6160,7 +6154,7 @@ delete_lines(unsigned cLines)
 	}
     }
 
-    if (USE_WT) //WIN11_OR_LATER
+    if (USE_WT)
     {
 	COORD coord;
 	int i;
