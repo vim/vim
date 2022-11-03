@@ -2699,7 +2699,7 @@ SaveConsoleBuffer(
 
     // VTP uses alternate screen buffer,
     // so no need to save buffer contents for restoration.
-    if (USE_VTP || USE_WT)
+    if (has_vtp_working())
         return TRUE;
     /*
      * Allocate a buffer large enough to hold the entire console screen
@@ -2793,6 +2793,9 @@ RestoreConsoleBuffer(
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
     int i;
+
+    if (has_vtp_working())
+	return TRUE;
 
     if (cb == NULL || !cb->IsValid)
 	return FALSE;
@@ -5759,7 +5762,7 @@ termcap_mode_start(void)
 	return;
 
     // Switch to a new alternate screen buffer.
-    if (USE_VTP || USE_WT)
+    if (has_vtp_working())
 	vtp_printf("\033[?1049h");
 
     SaveConsoleBuffer(&g_cbNonTermcap);
@@ -5841,7 +5844,7 @@ termcap_mode_end(void)
     restore_console_color_rgb();
 
     // Switch back to main screen buffer.
-    if (p_rs && (USE_VTP || USE_WT))
+    if (p_rs && has_vtp_working())
     {
 	vtp_printf("\033[?1049l");
     }
