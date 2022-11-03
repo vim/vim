@@ -204,20 +204,16 @@ static void vtp_sgr_bulks(int argc, int *argv);
 static int wt_working = 0;
 static void wt_init();
 
-static guicolor_T save_console_bg_rgb;
-static guicolor_T save_console_fg_rgb;
-static guicolor_T store_console_bg_rgb;
-static guicolor_T store_console_fg_rgb;
-
 static int g_color_index_bg = 0;
 static int g_color_index_fg = 7;
 
 # ifdef FEAT_TERMGUICOLORS
+static guicolor_T save_console_bg_rgb;
+static guicolor_T save_console_fg_rgb;
+static guicolor_T store_console_bg_rgb;
+static guicolor_T store_console_fg_rgb;
 static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
-# endif
-
-# ifdef FEAT_TERMGUICOLORS
 #  define USE_VTP		(vtp_working && is_term_win32() \
 				    && (is_win11_or_later() || p_tgc \
 						|| t_colors >= 256))
@@ -1264,7 +1260,6 @@ mch_bevalterm_changed(void)
     static void
 decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 {
-    win_T   *wp;
     int	    horizontal = (pmer->dwEventFlags == MOUSE_HWHEELED);
     int	    zDelta = pmer->dwButtonState;
 
@@ -1272,6 +1267,7 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
     g_yMouse = pmer->dwMousePosition.Y;
 
 #ifdef FEAT_PROP_POPUP
+    win_T   *wp;
     int lcol = g_xMouse;
     int lrow = g_yMouse;
     wp = mouse_find_win(&lrow, &lcol, FIND_POPUP);
@@ -6236,9 +6232,11 @@ textattr(WORD wAttr)
     static void
 textcolor(WORD wAttr)
 {
+#ifdef FEAT_TERMGUICOLORS
     if(p_tgc)
 	g_attrCurrent = (g_attrCurrent & 0xf0) + (wAttr & 0x0f);
     else
+#endif
 	g_attrCurrent = wAttr & 0xff;
 
     if (!USE_VTP)
@@ -6439,7 +6437,11 @@ write_chars(
 	}
     }
 
-    if (!(USE_VTP && p_tgc))
+    if (!(USE_VTP
+#ifdef FEAT_TERMGUICOLORS
+	&& p_tgc
+#endif
+	))
     {
 	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, cells,
 				    coord, &written);
