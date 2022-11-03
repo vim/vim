@@ -1105,18 +1105,8 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	{
 	    --todo;
 	    di1 = dict_find(d1, hi2->hi_key, -1);
-	    if (d1->dv_scope != 0)
-	    {
-		// Disallow replacing a builtin function in l: and g:.
-		// Check the key to be valid when adding to any scope.
-		if (d1->dv_scope == VAR_DEF_SCOPE
-			&& (HI2DI(hi2)->di_tv.v_type == VAR_FUNC ||
-			    HI2DI(hi2)->di_tv.v_type == VAR_PARTIAL)
-			&& var_wrong_func_name(hi2->hi_key, di1 == NULL))
-		    break;
-		if (!valid_varname(hi2->hi_key, -1, TRUE))
-		    break;
-	    }
+	    if (!(d1->dv_scope == 0 || valid_varname(hi2->hi_key, -1, TRUE)))
+		break;
 
 	    if (type != NULL
 		     && check_typval_arg_type(type, &HI2DI(hi2)->di_tv,
