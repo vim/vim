@@ -218,7 +218,9 @@ static int default_console_color_fg = 0xc0c0c0; // white
 # endif
 
 # ifdef FEAT_TERMGUICOLORS
-#  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
+#  define USE_VTP		(vtp_working && is_term_win32() \
+				    && (is_win11_or_later() || p_tgc \
+						|| t_colors >= 256))
 #  define USE_WT		(wt_working)
 #  define WIN11_OR_LATER	(is_win11_or_later())
 # else
@@ -337,7 +339,7 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (!USE_WT && nLength == -1)
+	if (!(USE_WT || WIN11_OR_LATER) && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
 	if (dwEvents == 0 && nLength == -1)
@@ -2695,6 +2697,10 @@ SaveConsoleBuffer(
     }
     cb->IsValid = TRUE;
 
+    // VTP uses alternate screen buffer,
+    // so no need to save buffer contents for restoration.
+    if (USE_VTP || USE_WT)
+        return TRUE;
     /*
      * Allocate a buffer large enough to hold the entire console screen
      * buffer.  If this ConsoleBuffer structure has already been initialized
@@ -5753,7 +5759,7 @@ termcap_mode_start(void)
 	return;
 
     // Switch to a new alternate screen buffer.
-    if (!p_rs && USE_VTP)
+    if (USE_VTP || USE_WT)
 	vtp_printf("\033[?1049h");
 
     SaveConsoleBuffer(&g_cbNonTermcap);
@@ -5833,9 +5839,13 @@ termcap_mode_end(void)
 # endif
     RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
-    SetConsoleCursorInfo(g_hConOut, &g_cci);
 
-    if (p_rs || exiting)
+    // Switch back to main screen buffer.
+    if (p_rs && (USE_VTP || USE_WT))
+    {
+	vtp_printf("\033[?1049l");
+    }
+    else if (exiting)
     {
 	/*
 	 * Clear anything that happens to be on the current line.
@@ -5859,9 +5869,8 @@ termcap_mode_end(void)
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
-    // Switch back to main screen buffer.
-    if (!p_rs && USE_VTP)
-	vtp_printf("\033[?1049l");
+
+    SetConsoleCursorInfo(g_hConOut, &g_cci);
 
     g_fTermcapMode = FALSE;
 }
@@ -6224,7 +6233,10 @@ textattr(WORD wAttr)
     static void
 textcolor(WORD wAttr)
 {
-    g_attrCurrent = (g_attrCurrent & 0xf0) + (wAttr & 0x0f);
+    if(p_tgc)
+	g_attrCurrent = (g_attrCurrent & 0xf0) + (wAttr & 0x0f);
+    else
+	g_attrCurrent = wAttr & 0xff;
 
     if (!USE_VTP)
 	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
@@ -6424,7 +6436,7 @@ write_chars(
 	}
     }
 
-    if (!USE_VTP)
+    if (!(USE_VTP && p_tgc))
     {
 	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, cells,
 				    coord, &written);
@@ -6463,9 +6475,7 @@ write_chars(
 	    g_coord.Y++;
     }
 
-    // Cursor under VTP is always in the correct position, no need to reset.
-    if (!USE_VTP)
-	gotoxy(g_coord.X + 1, g_coord.Y + 1);
+    gotoxy(g_coord.X + 1, g_coord.Y + 1);
 
     return written;
 }
@@ -6760,10 +6770,7 @@ notsgr:
 			normvideo();
 		    else if (argc == 1)
 		    {
-			if (USE_VTP)
-			    textcolor((WORD) arg1);
-			else
-			    textattr((WORD) arg1);
+			textcolor((WORD) arg1);
 		    }
 		    else if (USE_VTP)
 			vtp_sgr_bulks(argc, args);
@@ -6904,7 +6911,7 @@ notsgr:
 	    if (s[l] == ' ' && s[l + 1] == 'q')
 	    {
 		// DECSCUSR (cursor style) sequences
-		if (USE_VTP || USE_WT || WIN11_OR_LATER)
+		if (USE_VTP || USE_WT)
 		    vtp_printf("%.*s", l + 2, s);   // Pass through
 		s += l + 2;
 		len -= l + 1;
@@ -8372,7 +8379,7 @@ restore_console_color_rgb(void)
     void
 control_console_color_rgb(void)
 {
-    if (USE_VTP || WIN11_OR_LATER)
+    if (USE_VTP)
 	set_console_color_rgb();
     else
 	reset_console_color_rgb();
