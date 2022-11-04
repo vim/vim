@@ -1963,8 +1963,8 @@ typedef int sock_T;
 #define MOUSE_COLOFF 10000
 
 /*
- * jump_to_mouse() returns one of first four these values, possibly with
- * some of the other three added.
+ * jump_to_mouse() returns one of first five these values, possibly with
+ * some of the other four added.
  */
 #define IN_UNKNOWN		0
 #define IN_BUFFER		1
