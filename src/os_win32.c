@@ -334,7 +334,7 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (!USE_WT && nLength == -1)
+	if (!(USE_WT || WIN11_OR_LATER) && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
 	if (dwEvents == 0 && nLength == -1)
@@ -7988,7 +7988,7 @@ vtp_init(void)
 {
 
 # ifdef FEAT_TERMGUICOLORS
-    if (!(vtp_working))
+    if (!(USE_WT || WIN11_OR_LATER))
     {
 	CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 	csbi.cbSize = sizeof(csbi);
@@ -8229,7 +8229,7 @@ set_console_color_rgb(void)
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
 
-    if (USE_WT)
+    if (USE_WT || WIN11_OR_LATER)
     {
 	term_fg_rgb_color(fg);
 	term_bg_rgb_color(bg);
@@ -8276,7 +8276,7 @@ get_default_console_color(
 	ctermfg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &dummynull);
-	if (USE_WT)
+	if (USE_WT || WIN11_OR_LATER)
 	{
 	    cterm_normal_fg_gui_color = guifg =
 			    ctermfg != -1 ? ctermtoxterm(ctermfg) : INVALCOLOR;
@@ -8295,7 +8295,7 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &dummynull, &ctermbg);
-	if (USE_WT)
+	if (USE_WT || WIN11_OR_LATER)
 	{
 	    cterm_normal_bg_gui_color = guibg =
 			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
@@ -8327,7 +8327,7 @@ reset_console_color_rgb(void)
 # ifdef FEAT_TERMGUICOLORS
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
-    if (USE_WT)
+    if (USE_WT || WIN11_OR_LATER)
 	return;
 
     csbi.cbSize = sizeof(csbi);
@@ -8349,6 +8349,9 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
+    if (USE_WT || WIN11_OR_LATER)
+	return;
+
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
     csbi.cbSize = sizeof(csbi);
