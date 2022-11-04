@@ -215,8 +215,7 @@ static guicolor_T store_console_fg_rgb;
 static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
 #  define USE_VTP		(vtp_working && is_term_win32() \
-				    && (win11_or_later || p_tgc \
-						|| t_colors >= 256))
+						&& (p_tgc || t_colors >= 256))
 #  define USE_WT		(wt_working)
 #  define WIN11_OR_LATER	(win11_or_later)
 # else
@@ -1610,7 +1609,7 @@ decode_mouse_event(
     static void
 mch_set_cursor_shape(int thickness)
 {
-    if (USE_VTP || USE_WT)
+    if (vtp_working)
     {
 	if (*T_CSI == NUL)
 	{
@@ -5750,7 +5749,7 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
-    if (!p_rs && USE_VTP)
+    if (!p_rs && vtp_working)
 	vtp_printf("\033[?1049h");
 
     SaveConsoleBuffer(&g_cbNonTermcap);
@@ -5857,7 +5856,7 @@ termcap_mode_end(void)
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
 
-    if (!p_rs && USE_VTP)
+    if (!p_rs && vtp_working)
 	vtp_printf("\033[?1049l");
 
     g_fTermcapMode = FALSE;
@@ -5884,7 +5883,7 @@ clear_chars(
     COORD coord,
     DWORD n)
 {
-    if (!USE_VTP)
+    if (!vtp_working)
     {
 	DWORD dwDummy;
 
@@ -5909,7 +5908,7 @@ clear_screen(void)
 {
     g_coord.X = g_coord.Y = 0;
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	clear_chars(g_coord, Rows * Columns);
     else
     {
@@ -5928,7 +5927,7 @@ clear_to_end_of_display(void)
 {
     COORD save = g_coord;
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	clear_chars(g_coord, (Rows - g_coord.Y - 1)
 					   * Columns + (Columns - g_coord.X));
     else
@@ -5951,7 +5950,7 @@ clear_to_end_of_line(void)
 {
     COORD save = g_coord;
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	clear_chars(g_coord, Columns - g_coord.X);
     else
     {
@@ -6053,7 +6052,7 @@ insert_lines(unsigned cLines)
     clip.Bottom = g_srScrollRegion.Bottom;
 
     fill.Char.AsciiChar = ' ';
-    if (!USE_VTP)
+    if (!vtp_working)
 	fill.Attributes = g_attrCurrent;
     else
 	fill.Attributes = g_attrDefault;
@@ -6124,7 +6123,7 @@ delete_lines(unsigned cLines)
     clip.Bottom = g_srScrollRegion.Bottom;
 
     fill.Char.AsciiChar = ' ';
-    if (!USE_VTP)
+    if (!vtp_working)
 	fill.Attributes = g_attrCurrent;
     else
 	fill.Attributes = g_attrDefault;
@@ -6177,7 +6176,7 @@ gotoxy(
     if (x < 1 || x > (unsigned)Columns || y < 1 || y > (unsigned)Rows)
 	return;
 
-    if (!USE_VTP)
+    if (!vtp_working)
     {
 	// There are reports of double-width characters not displayed
 	// correctly.  This workaround should fix it, similar to how it's done
@@ -6223,7 +6222,7 @@ textcolor(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0xf0) + (wAttr & 0x0f);
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
     else
 	vtp_sgr_bulk(wAttr);
@@ -6235,7 +6234,7 @@ textbackground(WORD wAttr)
 {
     g_attrCurrent = (g_attrCurrent & 0x0f) + ((wAttr & 0x0f) << 4);
 
-    if (!USE_VTP)
+    if (!vtp_working)
 	SetConsoleTextAttribute(g_hConOut, g_attrCurrent);
     else
 	vtp_sgr_bulk(wAttr);
@@ -6248,7 +6247,7 @@ textbackground(WORD wAttr)
     static void
 normvideo(void)
 {
-    if (!USE_VTP)
+    if (!vtp_working)
 	textattr(g_attrDefault);
     else
 	vtp_sgr_bulk(0);
@@ -6334,7 +6333,7 @@ visual_bell(void)
 			       coordOrigin, &dwDummy);
 
     Sleep(15);	    // wait for 15 msec
-    if (!USE_VTP)
+    if (!vtp_working)
 	WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 				coordOrigin, &dwDummy);
     vim_free(oldattrs);
@@ -6349,7 +6348,7 @@ cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
 
-    if (USE_VTP)
+    if (vtp_working)
 	vtp_printf("\033[?25%c", fVisible ? 'h' : 'l');
 
 # ifdef MCH_CURSOR_SHAPE
@@ -6461,7 +6460,7 @@ write_chars(
     }
 
     // Cursor under VTP is always in the correct position, no need to reset.
-    if (!USE_VTP)
+    if (!vtp_working)
 	gotoxy(g_coord.X + 1, g_coord.Y + 1);
 
     return written;
@@ -6757,12 +6756,12 @@ notsgr:
 			normvideo();
 		    else if (argc == 1)
 		    {
-			if (USE_VTP)
+			if (vtp_working)
 			    textcolor((WORD) arg1);
 			else
 			    textattr((WORD) arg1);
 		    }
-		    else if (USE_VTP)
+		    else if (vtp_working)
 			vtp_sgr_bulks(argc, args);
 		}
 		else if (argc == 2 && *p == 'H')
@@ -6901,7 +6900,7 @@ notsgr:
 	    if (s[l] == ' ' && s[l + 1] == 'q')
 	    {
 		// DECSCUSR (cursor style) sequences
-		if (USE_VTP || USE_WT)
+		if (vtp_working)
 		    vtp_printf("%.*s", l + 2, s);   // Pass through
 		s += l + 2;
 		len -= l + 1;
@@ -7989,7 +7988,7 @@ vtp_init(void)
 {
 
 # ifdef FEAT_TERMGUICOLORS
-    if (!(USE_WT || WIN11_OR_LATER))
+    if (!(vtp_working))
     {
 	CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 	csbi.cbSize = sizeof(csbi);
@@ -8230,7 +8229,7 @@ set_console_color_rgb(void)
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
 
-    if (USE_WT || WIN11_OR_LATER)
+    if (vtp_working)
     {
 	term_fg_rgb_color(fg);
 	term_bg_rgb_color(bg);
@@ -8277,7 +8276,7 @@ get_default_console_color(
 	ctermfg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &ctermfg, &dummynull);
-	if (USE_WT || WIN11_OR_LATER)
+	if (vtp_working)
 	{
 	    cterm_normal_fg_gui_color = guifg =
 			    ctermfg != -1 ? ctermtoxterm(ctermfg) : INVALCOLOR;
@@ -8296,7 +8295,7 @@ get_default_console_color(
 	ctermbg = -1;
 	if (id > 0)
 	    syn_id2cterm_bg(id, &dummynull, &ctermbg);
-	if (USE_WT || WIN11_OR_LATER)
+	if (vtp_working)
 	{
 	    cterm_normal_bg_gui_color = guibg =
 			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
@@ -8328,7 +8327,7 @@ reset_console_color_rgb(void)
 # ifdef FEAT_TERMGUICOLORS
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
-    if (USE_WT || WIN11_OR_LATER)
+    if (vtp_working)
 	return;
 
     csbi.cbSize = sizeof(csbi);
@@ -8350,7 +8349,7 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    if (USE_WT || WIN11_OR_LATER)
+    if (vtp_working)
 	return;
 
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
@@ -8370,7 +8369,7 @@ restore_console_color_rgb(void)
     void
 control_console_color_rgb(void)
 {
-    if (USE_VTP)
+    if (vtp_working)
 	set_console_color_rgb();
     else
 	reset_console_color_rgb();
