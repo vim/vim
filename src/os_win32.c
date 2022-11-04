@@ -6757,7 +6757,10 @@ notsgr:
 			normvideo();
 		    else if (argc == 1)
 		    {
-			textcolor((WORD) arg1);
+			if (USE_VTP)
+			    textcolor((WORD) arg1);
+			else
+			    textattr((WORD) arg1);
 		    }
 		    else if (USE_VTP)
 			vtp_sgr_bulks(argc, args);

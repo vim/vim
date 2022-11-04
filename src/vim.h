@@ -167,7 +167,7 @@
 # if defined(FEAT_NORMAL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
-# if defined(FEAT_HUGE) && !defined(FEAT_SOUND)
+# if defined(FEAT_BIG) && !defined(FEAT_SOUND)
 #  define FEAT_SOUND
 # endif
 # if defined(FEAT_SOUND)
