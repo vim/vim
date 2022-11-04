@@ -3942,7 +3942,7 @@ getcmdkeycmd(
 		ga_concat(&line_ga, (char_u *)"<SNR>");
 	    else
 	    {
-		semsg(e_cmd_maping_must_not_include_str_key,
+		semsg(e_cmd_mapping_must_not_include_str_key,
 					       get_special_key_name(c1, cmod));
 		aborted = TRUE;
 	    }

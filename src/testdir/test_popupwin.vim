@@ -4124,8 +4124,8 @@ func Test_popup_prop_not_visible()
           fixed: false,
           })
   END
-  call writefile(lines, 'XtestPropNotVisble', 'D')
-  let buf = RunVimInTerminal('-S XtestPropNotVisble', #{rows: 10})
+  call writefile(lines, 'XtestPropNotVisible', 'D')
+  let buf = RunVimInTerminal('-S XtestPropNotVisible', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popup_prop_not_visible_01', {})
 
   " check that hiding and unhiding the popup works

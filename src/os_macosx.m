@@ -334,7 +334,7 @@ timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid)
  *
  * The limitations and differences include:
  *
- * - The flags argument is ignored. The supplied new_value is therfore
+ * - The flags argument is ignored. The supplied new_value is therefore
  *   always treated as a relative time.
  * - The old_value argument is ignored.
  */

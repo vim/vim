@@ -164,7 +164,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         self.send_lsp_msg(payload['id'], 'msg-with-id')
 
     def do_msg_specific_cb(self, payload):
-        self.send_lsp_msg(payload['id'], 'msg-specifc-cb')
+        self.send_lsp_msg(payload['id'], 'msg-specific-cb')
 
     def do_server_req(self, payload):
         self.send_lsp_msg(201, {'method': 'checkhealth', 'params': {'a': 20}})
@@ -205,7 +205,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         'simple-notif': self.do_simple_notif,
                         'multi-notif': self.do_multi_notif,
                         'msg-with-id': self.do_msg_with_id,
-                        'msg-specifc-cb': self.do_msg_specific_cb,
+                        'msg-specific-cb': self.do_msg_specific_cb,
                         'server-req': self.do_server_req,
                         'extra-hdr-fields': self.do_extra_hdr_fields,
                         'delayed-payload': self.do_delayad_payload,
