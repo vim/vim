@@ -2469,9 +2469,38 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	if (cln == curwin->w_botline)
 	    scrolled -= curwin->w_empty_rows;
 	min_scrolled = scrolled;
-	if (cln > curwin->w_botline && curwin->w_p_sms && curwin->w_p_wrap)
-	    for (linenr_T lnum = curwin->w_botline + 1; lnum <= cln; ++lnum)
-		min_scrolled += PLINES_NOFILL(lnum);
+	if (curwin->w_p_sms && curwin->w_p_wrap)
+	{
+	    // 'smoothscroll' is used
+	    if (cln > curwin->w_botline)
+		for (linenr_T lnum = curwin->w_botline + 1; lnum <= cln; ++lnum)
+		    min_scrolled += PLINES_NOFILL(lnum);
+
+	    // Calculate how many physical lines the current top line of window
+	    // occupies. If it is occupying more than the entire window, we
+	    // need to scroll the additional clipped lines to scroll past the
+	    // top line before we can move on to the other lines.
+#ifdef FEAT_DIFF
+	    int top_plines = plines_win_nofill(curwin, curwin->w_topline, FALSE);
+#else
+	    int top_plines = plines_win(curwin, curwin->w_topline, FALSE);
+#endif
+	    int skip_lines = 0;
+	    int width1 = curwin->w_width - curwin_col_off();
+	    int width2 = width1 + curwin_col_off2();
+	    // similar formula is used in curs_columns()
+	    if (curwin->w_skipcol > width1)
+		skip_lines += (curwin->w_skipcol - width1) / width2 + 1;
+	    else if (curwin->w_skipcol > 0)
+		skip_lines = 1;
+
+	    top_plines -= skip_lines;
+	    if (top_plines > curwin->w_height)
+	    {
+		scrolled += (top_plines - curwin->w_height);
+		min_scrolled += (top_plines - curwin->w_height);
+	    }
+	}
     }
 
     /*
