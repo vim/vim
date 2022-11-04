@@ -81,6 +81,11 @@
 # define CODEC_ERROR_HANDLER NULL
 #endif
 
+// Suppress Python 3.11 depreciation
+#if defined(__clang__) && defined(__clang_major__) && __clang_major__ > 11
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 // Python 3 does not support CObjects, always use Capsules
 #define PY_USE_CAPSULE
 
