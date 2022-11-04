@@ -1255,7 +1255,6 @@ mch_bevalterm_changed(void)
     static void
 decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 {
-    win_T   *wp;
     int	    horizontal = (pmer->dwEventFlags == MOUSE_HWHEELED);
     int	    zDelta = pmer->dwButtonState;
 
@@ -1263,6 +1262,7 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
     g_yMouse = pmer->dwMousePosition.Y;
 
 #ifdef FEAT_PROP_POPUP
+    win_T   *wp;
     int lcol = g_xMouse;
     int lrow = g_yMouse;
     wp = mouse_find_win(&lrow, &lcol, FIND_POPUP);
