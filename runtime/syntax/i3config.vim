@@ -37,8 +37,8 @@ syn match i3ConfigFont /^\s*font\s\+.*\(\\\_.*\)\?[^\\]\+$/ contains=i3ConfigFon
 syn match i3ConfigFont /^\s*font\s\+\(\(.*\\\_.*\)\|\(.*[^\\]\+$\)\)/ contains=i3ConfigFontContent,i3ConfigFontSize,i3ConfigFontNamespace
 
 " variables
-syn match i3ConfigString /['"][^'"]*['"]/ contained
-syn region i3ConfigString start=/['"][^'"]*\\/ end=/['"]/ contained
+syn region i3ConfigString start=/"/ skip=/'/ end=/"/ contained
+syn region i3ConfigString start=/'/ skip=/"/ end=/'/ contained
 syn match i3ConfigColor /#\w\{3,8}/ contained
 syn match i3ConfigVariableModifier /+/ contained
 syn match i3ConfigVariable /\$[A-Z0-9a-z-_]\+/ contained
