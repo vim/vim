@@ -2987,6 +2987,21 @@ mouse_comp_pos(
 	    if (plines_cache != NULL && cache_idx < Rows)
 		plines_cache[cache_idx] = count;
 	}
+
+	if (win->w_skipcol > 0 && lnum == win->w_topline)
+	{
+	    // Adjust for 'smoothscroll' clipping the top physical lines
+	    int skip_lines = 0;
+	    int width1 = win->w_width - win_col_off(win);
+	    int width2 = width1 + win_col_off2(win);
+	    // similar formula is used in curs_columns()
+	    if (win->w_skipcol > width1)
+		skip_lines += (win->w_skipcol - width1) / width2 + 1;
+	    else if (win->w_skipcol > 0)
+		skip_lines = 1;
+	    count -= skip_lines;
+	}
+
 	if (count > row)
 	    break;	// Position is in this buffer line.
 #ifdef FEAT_FOLDING
@@ -3009,7 +3024,8 @@ mouse_comp_pos(
 	    col = off;
 	col += row * (win->w_width - off);
 	// add skip column (for long wrapping line)
-	col += win->w_skipcol;
+	if (lnum == win->w_topline)
+	    col += win->w_skipcol;
     }
 
     if (!win->w_p_wrap)
