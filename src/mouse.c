@@ -2018,10 +2018,9 @@ retnomove:
     return count;
 }
 
-// // Remember which line is currently the longest, 
-// // so that we don't have to
-// // search for it when scrolling horizontally.
-// EXTERN linenr_T longest_lnum INIT(= 0);
+// Remember which line is currently the longest, 
+// so that we don't have to
+// search for it when scrolling horizontally.
 linenr_T longest_lnum = 0;
 
 /*
@@ -2152,7 +2151,7 @@ do_mousescroll(int mode, cmdarg_T *cap)
 
 #ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(curwin))
-		popup_set_firstline(curwin);
+	    popup_set_firstline(curwin);
 #endif
 	}
 	else
@@ -2181,8 +2180,8 @@ do_mousescroll(int mode, cmdarg_T *cap)
     if (mode == MODE_NORMAL && curwin != old_curwin && curwin->w_p_cul)
 	redraw_for_cursorline(curwin);
 # endif
-
     may_trigger_winscrolled();
+
     curwin->w_redr_status = TRUE;
 
     curwin = old_curwin;
