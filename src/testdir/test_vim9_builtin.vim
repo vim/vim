@@ -3721,8 +3721,8 @@ def Test_set_get_bufline()
 
       assert_equal(1, setbufline(b, 5, 'x'))
       assert_equal(1, setbufline(b, 5, ['x']))
-      assert_equal(1, setbufline(b, 5, []))
-      assert_equal(1, setbufline(b, 5, test_null_list()))
+      assert_equal(0, setbufline(b, 5, []))
+      assert_equal(0, setbufline(b, 5, test_null_list()))
 
       assert_equal(1, 'x'->setbufline(bufnr('$') + 1, 1))
       assert_equal(1, ['x']->setbufline(bufnr('$') + 1, 1))
