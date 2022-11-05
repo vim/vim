@@ -53,9 +53,14 @@ export def Format(line1: number, line2: number)
             endif
         elseif state == "ATTR"
             json_line ..= char
-            if char == '"'
+            if char == '\'
+                state = "ESCAPE"
+            elseif char == '"'
                 state = ""
             endif
+        elseif state == "ESCAPE"
+            state = "ATTR"
+            json_line ..= char
         else
             json_line ..= char
         endif
