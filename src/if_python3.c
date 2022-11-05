@@ -45,6 +45,9 @@
 # undef F_BLANK
 #endif
 
+#ifdef HAVE_DUP
+# undef HAVE_DUP
+#endif
 #ifdef HAVE_STRFTIME
 # undef HAVE_STRFTIME
 #endif
