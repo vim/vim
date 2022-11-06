@@ -4394,7 +4394,6 @@ dump_pipe(int	    options,
     int		ret;
     DWORD	len;
     DWORD	toRead;
-    int		repeatCount;
 
     // we query the pipe to see if there is any data to read
     // to avoid to perform a blocking read
@@ -4405,11 +4404,9 @@ dump_pipe(int	    options,
 			&availableBytes,    // available bytes total
 			NULL);		    // byteLeft
 
-    repeatCount = 0;
     // We got real data in the pipe, read it
     while (ret != 0 && availableBytes > 0)
     {
-	repeatCount++;
 	toRead = (DWORD)(BUFLEN - *buffer_off);
 	toRead = availableBytes < toRead ? availableBytes : toRead;
 	ReadFile(g_hChildStd_OUT_Rd, buffer + *buffer_off, toRead , &len, NULL);

@@ -6190,13 +6190,11 @@ gui_mch_draw_string(
 	// handled here.
 	int		i;
 	int		wlen;	// string length in words
-	int		clen;	// string length in characters
 	int		cells;	// cell width of string up to composing char
 	int		cw;	// width of current cell
 	int		c;
 
 	wlen = 0;
-	clen = 0;
 	cells = 0;
 	for (i = 0; i < len; )
 	{
@@ -6236,7 +6234,6 @@ gui_mch_draw_string(
 	    }
 	    cells += cw;
 	    i += utf_ptr2len_len(text + i, len - i);
-	    ++clen;
 	}
 #if defined(FEAT_DIRECTX)
 	if (IS_ENABLE_DIRECTX())
