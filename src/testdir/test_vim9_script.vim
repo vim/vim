@@ -4087,7 +4087,8 @@ def Test_no_unknown_error_after_error()
       endfor
   END
   writefile(lines, 'Xdef', 'D')
-  assert_fails('so Xdef', ['E684:', 'E1012:'])
+  # Either the exit or out callback is called first, accept them in any order
+  assert_fails('so Xdef', ['E684:\|E1012:', 'E1012:\|E684:'])
 enddef
 
 def InvokeNormal()
