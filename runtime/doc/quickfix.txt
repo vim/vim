@@ -1034,7 +1034,7 @@ commands can be combined to create a NewGrep command: >
 5.1 using Vim's internal grep
 
 					*:vim* *:vimgrep* *E682* *E683*
-:vim[grep][!] /{pattern}/[g][j][f] {file} ...
+:vim[grep][!] /{pattern}/[g][j][f][s] {file} ...
 			Search for {pattern} in the files {file} ... and set
 			the error list to the matches.  Files matching
 			'wildignore' are ignored; files in 'suffixes' are
@@ -1065,6 +1065,12 @@ commands can be combined to create a NewGrep command: >
 			     instead of a regular expression.  See
 			     |fuzzy-matching| for more information about fuzzy
 			     matching strings.
+
+			's'  When the 's' flag is specified, the values
+			     matched from the 'f' flag are sorted based on
+			     their score. Without the 'f' flag, this does
+			     nothing. See |fuzzy-matching| for more
+			     information about fuzzy matching scores.
 
 			|QuickFixCmdPre| and |QuickFixCmdPost| are triggered.
 			A file that is opened for matching may use a buffer

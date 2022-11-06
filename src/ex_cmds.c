@@ -5504,7 +5504,7 @@ skip_vimgrep_pat_ext(char_u *p, char_u **s, int *flags, char_u **nulp, int *cp)
 	++p;
 
 	// Find the flags
-	while (*p == 'g' || *p == 'j' || *p == 'f')
+	while (*p == 'g' || *p == 'j' || *p == 'f' || *p == 's')
 	{
 	    if (flags != NULL)
 	    {
@@ -5512,6 +5512,8 @@ skip_vimgrep_pat_ext(char_u *p, char_u **s, int *flags, char_u **nulp, int *cp)
 		    *flags |= VGR_GLOBAL;
 		else if (*p == 'j')
 		    *flags |= VGR_NOJUMP;
+		else if (*p == 's')
+		    *flags |= VGR_FUZZYSORT;
 		else
 		    *flags |= VGR_FUZZY;
 	    }

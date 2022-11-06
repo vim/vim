@@ -2562,6 +2562,7 @@ typedef enum {
 #define VGR_GLOBAL	1
 #define VGR_NOJUMP	2
 #define VGR_FUZZY	4
+#define VGR_FUZZYSORT	8
 
 // behavior for bad character, "++bad=" argument
 #define BAD_REPLACE	'?'	// replace it with '?' (default)

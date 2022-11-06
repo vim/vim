@@ -6026,6 +6026,29 @@ vgr_qflist_valid(
 }
 
 /*
+ * Used for sorted fuzzy vimgrep, stores match data to be sorted.
+ */
+struct fuzzy_match_data
+{
+    int     score;
+    long    lnum;
+    colnr_T col;
+};
+/*
+ * Compare function used for vimgrep fuzzy sorted by score.
+ */
+    int
+compare_fuzzy_match_data_desc(const void* a, const void* b)
+{
+    int int_a = ( (struct fuzzy_match_data*) a )->score;
+    int int_b = ( (struct fuzzy_match_data*) b )->score;
+
+    if (int_a == int_b) return 0;
+    else if (int_a < int_b) return 1;
+    else return -1;
+}
+
+/*
  * Search for a pattern in all the lines in a buffer and add the matching lines
  * to a quickfix list.
  */
@@ -6044,6 +6067,11 @@ vgr_match_buflines(
     long	lnum;
     colnr_T	col;
     int		pat_len = (int)STRLEN(spat);
+
+    struct fuzzy_match_data   *fmd_arr = NULL;
+    int_u		      fmd_length = 0;
+    if (flags & VGR_FUZZYSORT)
+	fmd_arr = alloc(sizeof(struct fuzzy_match_data) * MAX_FUZZY_MATCHES);
 
     for (lnum = 1; lnum <= buf->b_ml.ml_line_count && *tomatch > 0; ++lnum)
     {
@@ -6100,28 +6128,36 @@ vgr_match_buflines(
 	    // Fuzzy string match
 	    while (fuzzy_match(str + col, spat, FALSE, &score, matches, sz) > 0)
 	    {
-		// Pass the buffer number so that it gets used even for a
-		// dummy buffer, unless duplicate_name is set, then the
-		// buffer will be wiped out below.
-		if (qf_add_entry(qfl,
-			    NULL,	// dir
-			    fname,
-			    NULL,
-			    duplicate_name ? 0 : buf->b_fnum,
-			    str,
-			    lnum,
-			    0,
-			    matches[0] + col + 1,
-			    0,
-			    FALSE,	// vis_col
-			    NULL,	// search pattern
-			    0,		// nr
-			    0,		// type
-			    TRUE	// valid
-			    ) == QF_FAIL)
-		{
-		    got_int = TRUE;
-		    break;
+		if (flags & VGR_FUZZYSORT) {
+		    // On a sorted fuzzy sort, just store the information for each match
+		    fmd_arr[fmd_length].lnum = lnum;
+		    fmd_arr[fmd_length].col = matches[0] + col + 1;
+		    fmd_arr[fmd_length].score = score;
+		    fmd_length++;
+		} else {
+		    // Pass the buffer number so that it gets used even for a
+		    // dummy buffer, unless duplicate_name is set, then the
+		    // buffer will be wiped out below.
+		    if (qf_add_entry(qfl,
+				NULL,	// dir
+				fname,
+				NULL,
+				duplicate_name ? 0 : buf->b_fnum,
+				str,
+				lnum,
+				0,
+				matches[0] + col + 1,
+				0,
+				FALSE,	// vis_col
+				NULL,	// search pattern
+				0,		// nr
+				0,		// type
+				TRUE	// valid
+				) == QF_FAIL)
+		    {
+			got_int = TRUE;
+			break;
+		    }
 		}
 		found_match = TRUE;
 		if (--*tomatch == 0)
@@ -6136,6 +6172,34 @@ vgr_match_buflines(
 	line_breakcheck();
 	if (got_int)
 	    break;
+    }
+    if (flags & VGR_FUZZYSORT) {
+	// Sort the fuzzy_match_data and add to quickfix list.
+	qsort(fmd_arr,
+		fmd_length,
+		sizeof(struct fuzzy_match_data),
+		compare_fuzzy_match_data_desc);
+	for (int_u i = 0; i < fmd_length; i++) {
+	    struct fuzzy_match_data *cur = &fmd_arr[i];
+	    char_u *str = ml_get_buf(buf, cur->lnum, FALSE);
+	    qf_add_entry(qfl,
+			NULL,	// dir
+			fname,
+			NULL,
+			duplicate_name ? 0 : buf->b_fnum,
+			str,
+			cur->lnum,
+			0,
+			cur->col,
+			0,
+			FALSE,	// vis_col
+			NULL,	// search pattern
+			0,		// nr
+			0,		// type
+			TRUE	// valid
+			);
+	}
+	vim_free(fmd_arr);
     }
 
     return found_match;
