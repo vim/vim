@@ -64,7 +64,9 @@ static int disable_flush = 0;	// If > 0, gui_mch_flush() is disabled.
 gui_start(char_u *arg UNUSED)
 {
     char_u	*old_term;
+#ifdef GUI_MAY_FORK
     static int	recursive = 0;
+#endif
 #if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
     char	*msg = NULL;
 #endif
@@ -76,9 +78,8 @@ gui_start(char_u *arg UNUSED)
 	cursor_on();			// needed for ":gui" in .vimrc
     full_screen = FALSE;
 
-    ++recursive;
-
 #ifdef GUI_MAY_FORK
+    ++recursive;
     /*
      * Quit the current process and continue in the child.
      * Makes "gvim file" disconnect from the shell it was started in.
@@ -153,7 +154,9 @@ gui_start(char_u *arg UNUSED)
     gui_mch_update();
     apply_autocmds(gui.in_use ? EVENT_GUIENTER : EVENT_GUIFAILED,
 						   NULL, NULL, FALSE, curbuf);
+#ifdef GUI_MAY_FORK
     --recursive;
+#endif
 }
 
 /*

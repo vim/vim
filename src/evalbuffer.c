@@ -175,9 +175,7 @@ set_buffer_lines(
 	l = lines->vval.v_list;
 	if (l == NULL || list_len(l) == 0)
 	{
-	    // set proper return code
-	    if (lnum > curbuf->b_ml.ml_line_count)
-		rettv->vval.v_number = 1;	// FAIL
+	    // not appending anything always succeeds
 	    goto done;
 	}
 	CHECK_LIST_MATERIALIZE(l);
