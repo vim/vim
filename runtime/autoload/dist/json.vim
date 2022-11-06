@@ -77,15 +77,18 @@ export def FormatRange(line1: number, line2: number)
     var indent_base = matchstr(getline(line1), '^\s*')
     var indent = &expandtab ? repeat(' ', &shiftwidth) : "\t"
 
-    var json_src = getline(line1, line2)->join()
+    var [l1, l2] = line1 > line2 ? [line2, line1] : [line1, line2]
+
+    var json_src = getline(l1, l2)->join()
     var json_fmt = Format(json_src, {use_tabs: !&et, indent: &sw, indent_base: indent_base})->split("\n")
 
-    exe $":{line1},{line2}d"
-    if line('$') == 1
-        setline(line1, json_fmt[0])
-        append(line1, json_fmt[1 : ])
+    exe $":{l1},{l2}d"
+
+    if line('$') == 1 && getline(1) == ''
+        setline(l1, json_fmt[0])
+        append(l1, json_fmt[1 : ])
     else
-        append(line1 - 1, json_fmt)
+        append(l1 - 1, json_fmt)
     endif
 enddef
 
