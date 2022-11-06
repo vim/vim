@@ -556,38 +556,35 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     }
 
     if (u_save(first - 1, last + 1) == FAIL)
-    {
-	rettv->vval.v_number = 1;	// FAIL
-    }
-    else
-    {
-	for (lnum = first; lnum <= last; ++lnum)
-	    ml_delete_flags(first, ML_DEL_MESSAGE);
+	goto cleanup;
 
-	FOR_ALL_TAB_WINDOWS(tp, wp)
-	    if (wp->w_buffer == buf)
-	    {
-		if (wp->w_cursor.lnum > last)
-		    wp->w_cursor.lnum -= count;
-		else if (wp->w_cursor.lnum > first)
-		    wp->w_cursor.lnum = first;
-		if (wp->w_cursor.lnum > wp->w_buffer->b_ml.ml_line_count)
-		    wp->w_cursor.lnum = wp->w_buffer->b_ml.ml_line_count;
-		wp->w_valid = 0;
-		if (wp->w_cursor.lnum <= wp->w_topline)
-		    wp->w_topline = 1;
-	    }
-	check_cursor_col();
-	deleted_lines_mark(first, count);
-    }
+    for (lnum = first; lnum <= last; ++lnum)
+	ml_delete_flags(first, ML_DEL_MESSAGE);
 
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_buffer == buf)
+	{
+	    if (wp->w_cursor.lnum > last)
+		wp->w_cursor.lnum -= count;
+	    else if (wp->w_cursor.lnum > first)
+		wp->w_cursor.lnum = first;
+	    if (wp->w_cursor.lnum > wp->w_buffer->b_ml.ml_line_count)
+		wp->w_cursor.lnum = wp->w_buffer->b_ml.ml_line_count;
+	    wp->w_valid = 0;
+	    if (wp->w_cursor.lnum <= wp->w_topline)
+		wp->w_topline = 1;
+	}
+    check_cursor_col();
+    deleted_lines_mark(first, count);
+
+    rettv->vval.v_number = 0; // OK
+cleanup:
     if (!is_curbuf)
     {
 	curbuf = curbuf_save;
 	curwin = curwin_save;
 	VIsual_active = save_VIsual_active;
     }
-    rettv->vval.v_number = 0; // OK
 }
 
 /*
