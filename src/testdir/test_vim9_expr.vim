@@ -3132,6 +3132,18 @@ def Test_expr9_any_index_slice()
   unlet g:testlist
 enddef
 
+def s:GetList(): list<string>
+  return ['a', 'b', 'z']
+enddef
+
+def Test_slice_const_list()
+  const list = GetList()
+  final sliced = list[0 : 1]
+  # OK to change the list after slicing, it is a copy now
+  add(sliced, 'Z')
+  assert_equal(['a', 'b', 'Z'], sliced)
+enddef
+
 def Test_expr9_const_any_index_slice()
   var lines =<< trim END
       vim9script
