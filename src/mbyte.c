@@ -1565,10 +1565,10 @@ utf_char2cells(int c)
 	{0x1f6f3, 0x1f6f3}
 
 #ifdef MACOS_X
-	// Include SF Symbols characters, which should be rendered as
+	// Include SF Symbols 4 characters, which should be rendered as
 	// double-width. All of them are in the Supplementary Private Use
-	// Area-B range. The exact range was determined by downloading the "SF
-	// Symbols" app from Apple, and then selecting all symbols, copying
+	// Area-B range. The exact range was determined by downloading the 'SF
+	// Symbols 4' app from Apple, and then selecting all symbols, copying
 	// them out, and inspecting the unicode values of them.
 	, {0x100000, 0x1018c7}
 #endif
