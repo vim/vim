@@ -5,7 +5,6 @@ vim9script
 # Could be used to reformat a minified json in a buffer (put it into ~/.vim/ftplugin/json.vim):
 #    import autoload 'dist/json.vim'
 #    setl formatexpr=json.FormatExpr()
-#    xnoremap <buffer> gq <scriptcmd>json.FormatRange(line('v'), line('.'))<CR>
 #
 # Or to get a formatted string out of vim's dict/list/string:
 #    vim9script
@@ -64,7 +63,6 @@ vim9script
 # To be able to reformat with `gq` add following to `~/.vim/ftplugin/json.vim`:
 #    import autoload 'dist/json.vim'
 #    setl formatexpr=json.FormatExpr()
-#    xnoremap <buffer> gq <scriptcmd>json.FormatRange(line('v'), line('.'))<CR>
 export def FormatExpr(): number
     FormatRange(v:lnum, v:lnum + v:count - 1)
     return 0
