@@ -1565,12 +1565,27 @@ utf_char2cells(int c)
 	{0x1f6f3, 0x1f6f3}
 
 #ifdef MACOS_X
-	// Include SF Symbols characters, which should be rendered as
-	// double-width. All of them are in the Supplementary Private Use
-	// Area-B range. The exact range was determined by downloading the "SF
-	// Symbols" app from Apple, and then selecting all symbols, copying
-	// them out, and inspecting the unicode values of them.
-	, {0x100000, 0x100d7f}
+	// Include SF Symbols 4 characters, which should be rendered as
+	// double-width.  SF Symbols is an Apple-specific set of symbols and
+	// icons for use in Apple operating systems.  They are included as
+	// glyphs as part of the default San Francisco fonts shipped with
+	// macOS.  The current version is SF Symbols 4.
+	//
+	// These Apple-specific glyphs are not part of standard Unicode, and
+	// all of them are in the Supplementary Private Use Area-B range. The
+	// exact range was determined by downloading the 'SF Symbols 4' app
+	// from Apple (https://developer.apple.com/sf-symbols/), and then
+	// selecting all symbols, copying them out, and inspecting the unicode
+	// values of them.
+	//
+	// Note that these symbols are of varying widths, as they are symbols
+	// representing differents things ranging from a simple gear icon to an
+	// airplane. Some of them are in fact wider than double-width, but Vim
+	// doesn't support non-fixed-width font, and tagging them as
+	// double-width is the best way to handle them.
+	//
+	// Also see https://en.wikipedia.org/wiki/San_Francisco_(sans-serif_typeface)#SF_Symbols
+	, {0x100000, 0x1018c7}
 #endif
     };
 
