@@ -1653,6 +1653,33 @@ func Test_cmd_bang_E135()
   %bwipe!
 endfunc
 
+func Test_cmd_bang_args()
+  CheckUnix
+
+  new
+
+  :.!pwd
+  call assert_equal(0, v:shell_error)
+
+  :.! pwd
+  call assert_equal(0, v:shell_error)
+  " Note there is 1 space char after 'pwd'
+  :.! pwd 
+  call assert_equal(0, v:shell_error)
+  " Note there are 2 space chars after 'pwd'
+  :.!  pwd  
+  call assert_equal(0, v:shell_error)
+
+  :.!
+  call assert_equal(0, v:shell_error)
+  " Note there is 1 space char after '!'
+  " that perhaps shell err, refer 'https://github.com/vim/vim/issues/11495'
+  :.! 
+  call assert_equal(0, v:shell_error)
+
+  %bwipe!
+endfunc
+
 " Test for using ~ for home directory in cmdline completion matches
 func Test_cmdline_expand_home()
   call mkdir('Xexpdir', 'R')
