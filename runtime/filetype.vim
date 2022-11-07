@@ -2182,6 +2182,8 @@ au BufNewFile,BufRead *.va,*.vams		setf verilogams
 au BufNewFile,BufRead *.sv,*.svh		setf systemverilog
 
 " VHS tape
+" .tape is also used by TapeCalc, which we do not support.
+" If we want to support it we'll need to match the contents of the file.
 au BufNewFile,BufRead *.tape		    setf vhs
 
 " VHDL
