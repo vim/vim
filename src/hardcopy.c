@@ -471,7 +471,6 @@ prt_header(
     if (*p_header != NUL)
     {
 	linenr_T	tmp_lnum, tmp_topline, tmp_botline;
-	int		use_sandbox = FALSE;
 
 	/*
 	 * Need to (temporarily) set current line number and first/last line
@@ -487,12 +486,8 @@ prt_header(
 	curwin->w_botline = lnum + 63;
 	printer_page_num = pagenum;
 
-# ifdef FEAT_EVAL
-	use_sandbox = was_set_insecurely((char_u *)"printheader", 0);
-# endif
-	build_stl_str_hl(curwin, tbuf, (size_t)(width + IOSIZE),
-						  p_header, use_sandbox,
-						  ' ', width, NULL, NULL);
+	build_stl_str_hl(curwin, tbuf, (size_t)(width + IOSIZE), p_header,
+			    (char_u *)"printheader", 0, ' ', width, NULL, NULL);
 
 	// Reset line numbers
 	curwin->w_cursor.lnum = tmp_lnum;
