@@ -2979,11 +2979,11 @@ mouse_comp_pos(
 		    row -= win->w_topfill;
 		else
 		    row -= diff_check_fill(win, lnum);
-		count = plines_win_nofill(win, lnum, TRUE);
+		count = plines_win_nofill(win, lnum, FALSE);
 	    }
 	    else
 #endif
-		count = plines_win(win, lnum, TRUE);
+		count = plines_win(win, lnum, FALSE);
 	    if (plines_cache != NULL && cache_idx < Rows)
 		plines_cache[cache_idx] = count;
 	}

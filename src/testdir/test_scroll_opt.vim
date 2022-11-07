@@ -355,6 +355,15 @@ func Test_smoothscroll_mouse_pos()
   call s:check_mouse_click(3, 1, 3, 1)
   call s:check_mouse_click(3, 6, 3, 6)
 
+  " Make a new first line 11 physical lines tall so it's taller than window
+  " height, to test overflow calculations with really long lines wrapping.
+  normal gg
+  call setline(1, "12345678901234567890"->repeat(11))
+  exe "normal 6\<C-E>"
+  call s:check_mouse_click(5, 1, 1, 201)
+  call s:check_mouse_click(6, 1, 2, 1)
+  call s:check_mouse_click(7, 1, 3, 1)
+
   let &mouse = save_mouse
   let &term = save_term
   let &ttymouse = save_ttymouse
