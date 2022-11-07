@@ -1670,6 +1670,15 @@ func Test_cmd_bang_args()
   :.!  pwd  
   call assert_equal(0, v:shell_error)
 
+  :.!ls ~
+  call assert_equal(0, v:shell_error)
+  " Note there is 1 space char after '~'
+  :.!ls  ~ 
+  call assert_equal(0, v:shell_error)
+  " Note there are 2 space chars after '~'
+  :.!ls  ~  
+  call assert_equal(0, v:shell_error)
+
   :.!
   call assert_equal(0, v:shell_error)
   " Note there is 1 space char after '!'
