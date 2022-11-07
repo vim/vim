@@ -3959,20 +3959,9 @@ maketitle(void)
 	{
 #ifdef FEAT_STL_OPT
 	    if (stl_syntax & STL_IN_TITLE)
-	    {
-		int	use_sandbox = FALSE;
-		int	called_emsg_before = called_emsg;
-
-# ifdef FEAT_EVAL
-		use_sandbox = was_set_insecurely((char_u *)"titlestring", 0);
-# endif
-		build_stl_str_hl(curwin, title_str, sizeof(buf),
-					      p_titlestring, use_sandbox,
-					      0, maxlen, NULL, NULL);
-		if (called_emsg > called_emsg_before)
-		    set_string_option_direct((char_u *)"titlestring", -1,
-					   (char_u *)"", OPT_FREE, SID_ERROR);
-	    }
+		build_stl_str_hl(curwin, title_str, sizeof(buf), p_titlestring,
+				    (char_u *)"titlestring", 0,
+				    0, maxlen, NULL, NULL);
 	    else
 #endif
 		title_str = p_titlestring;
@@ -4090,20 +4079,8 @@ maketitle(void)
 	{
 #ifdef FEAT_STL_OPT
 	    if (stl_syntax & STL_IN_ICON)
-	    {
-		int	use_sandbox = FALSE;
-		int	called_emsg_before = called_emsg;
-
-# ifdef FEAT_EVAL
-		use_sandbox = was_set_insecurely((char_u *)"iconstring", 0);
-# endif
-		build_stl_str_hl(curwin, icon_str, sizeof(buf),
-						    p_iconstring, use_sandbox,
-						    0, 0, NULL, NULL);
-		if (called_emsg > called_emsg_before)
-		    set_string_option_direct((char_u *)"iconstring", -1,
-					   (char_u *)"", OPT_FREE, SID_ERROR);
-	    }
+		build_stl_str_hl(curwin, icon_str, sizeof(buf), p_iconstring,
+				 (char_u *)"iconstring", 0, 0, 0, NULL, NULL);
 	    else
 #endif
 		icon_str = p_iconstring;
@@ -4228,7 +4205,8 @@ build_stl_str_hl(
     char_u	*out,		// buffer to write into != NameBuff
     size_t	outlen,		// length of out[]
     char_u	*fmt,
-    int		use_sandbox UNUSED, // "fmt" was set insecurely, use sandbox
+    char_u	*opt_name,      // option name corresponding to "fmt"
+    int		opt_scope,	// scope for "opt_name"
     int		fillchar,
     int		maxwidth,
     stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
@@ -4241,6 +4219,7 @@ build_stl_str_hl(
     char_u	*t;
     int		byteval;
 #ifdef FEAT_EVAL
+    int		use_sandbox;
     win_T	*save_curwin;
     buf_T	*save_curbuf;
     int		save_VIsual_active;
@@ -4276,6 +4255,10 @@ build_stl_str_hl(
     stl_hlrec_T *sp;
     int		save_redraw_not_allowed = redraw_not_allowed;
     int		save_KeyTyped = KeyTyped;
+    // TODO: find out why using called_emsg_before makes tests fail, does it
+    // matter?
+    // int	called_emsg_before = called_emsg;
+    int		did_emsg_before = did_emsg;
 
     // When inside update_screen() we do not want redrawing a statusline,
     // ruler, title, etc. to trigger another redraw, it may cause an endless
@@ -4295,10 +4278,11 @@ build_stl_str_hl(
     }
 
 #ifdef FEAT_EVAL
-    /*
-     * When the format starts with "%!" then evaluate it as an expression and
-     * use the result as the actual format string.
-     */
+    // if "fmt" was set insecurely it needs to be evaluated in the sandbox
+    use_sandbox = was_set_insecurely(opt_name, opt_scope);
+
+    // When the format starts with "%!" then evaluate it as an expression and
+    // use the result as the actual format string.
     if (fmt[0] == '%' && fmt[1] == '!')
     {
 	typval_T	tv;
@@ -5180,6 +5164,16 @@ build_stl_str_hl(
 
     // A user function may reset KeyTyped, restore it.
     KeyTyped = save_KeyTyped;
+
+    // Check for an error.  If there is one the display will be messed up and
+    // might loop redrawing.  Avoid that by making the corresponding option
+    // empty.
+    // TODO: find out why using called_emsg_before makes tests fail, does it
+    // matter?
+    // if (called_emsg > called_emsg_before)
+    if (did_emsg > did_emsg_before)
+	set_string_option_direct(opt_name, -1, (char_u *)"",
+					      OPT_FREE | opt_scope, SID_ERROR);
 
     return width;
 }
