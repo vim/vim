@@ -686,6 +686,8 @@ func Test_term_mouse()
   call TermWait(buf)
   redraw!
 
+  let XbufExists = {-> filereadable('Xbuf')}
+
   " Use the mouse to enter the terminal window
   call win_gotoid(prev_win)
   call feedkeys(MouseLeftClickCode(1, 1), 'x')
@@ -700,6 +702,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([json_encode(getpos('.'))], 'Xbuf')\<CR>")
   call TermWait(buf, 50)
+  call WaitFor(XbufExists)
   let pos = json_decode(readfile('Xbuf')[0])
   call assert_equal([3, 8], pos[1:2])
 
@@ -712,6 +715,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
   call TermWait(buf, 50)
+  call WaitFor(XbufExists)
   call assert_equal('yellow', readfile('Xbuf')[0])
 
   " Test for selecting text using double click
@@ -723,6 +727,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
   call TermWait(buf, 50)
+  call WaitFor(XbufExists)
   call assert_equal('three four', readfile('Xbuf')[0])
 
   " Test for selecting a line using triple click
@@ -732,6 +737,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
   call TermWait(buf, 50)
+  call WaitFor(XbufExists)
   call assert_equal("vim emacs sublime nano\n", readfile('Xbuf')[0])
 
   " Test for selecting a block using quadruple click
@@ -743,6 +749,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
   call TermWait(buf, 50)
+  call WaitFor(XbufExists)
   call assert_equal("ree\nyel\nsub", readfile('Xbuf')[0])
 
   " Test for extending a selection using right click
@@ -754,6 +761,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
   call TermWait(buf, 50)
+  call WaitFor(XbufExists)
   call assert_equal("n yellow", readfile('Xbuf')[0])
 
   " Test for pasting text using middle click
@@ -764,6 +772,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([getline(2)], 'Xbuf')\<CR>")
   call TermWait(buf, 50)
+  call WaitFor(XbufExists)
   call assert_equal("red bright blue", readfile('Xbuf')[0][-15:])
 
   " cleanup
