@@ -1682,6 +1682,14 @@ func Test_cmd_bang_args()
   " Note there are 2 space chars after '~'
   :.!ls  ~  
   call assert_equal(0, v:shell_error)
+  :.!echo "foo"
+  call assert_equal(getline('.'), "foo")
+  :.!echo "foo  "
+  call assert_equal(getline('.'), "foo  ")
+  :.!echo " foo  "
+  call assert_equal(getline('.'), " foo  ")
+  :.!echo  " foo  "
+  call assert_equal(getline('.'), " foo  ")
   %bwipe!
 endfunc
 
