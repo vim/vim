@@ -1654,13 +1654,18 @@ func Test_cmd_bang_E135()
 endfunc
 
 func Test_cmd_bang_args()
-  CheckUnix
-
   new
+  :.!
+  call assert_equal(0, v:shell_error)
+  " Note there is 1 space char after '!'
+  " that perhaps shell err, refer 'https://github.com/vim/vim/issues/11495'
+  :.! 
+  call assert_equal(0, v:shell_error)
+  bwipe!
 
+  CheckUnix
   :.!pwd
   call assert_equal(0, v:shell_error)
-
   :.! pwd
   call assert_equal(0, v:shell_error)
   " Note there is 1 space char after 'pwd'
@@ -1669,7 +1674,6 @@ func Test_cmd_bang_args()
   " Note there are 2 space chars after 'pwd'
   :.!  pwd  
   call assert_equal(0, v:shell_error)
-
   :.!ls ~
   call assert_equal(0, v:shell_error)
   " Note there is 1 space char after '~'
@@ -1678,14 +1682,6 @@ func Test_cmd_bang_args()
   " Note there are 2 space chars after '~'
   :.!ls  ~  
   call assert_equal(0, v:shell_error)
-
-  :.!
-  call assert_equal(0, v:shell_error)
-  " Note there is 1 space char after '!'
-  " that perhaps shell err, refer 'https://github.com/vim/vim/issues/11495'
-  :.! 
-  call assert_equal(0, v:shell_error)
-
   %bwipe!
 endfunc
 
