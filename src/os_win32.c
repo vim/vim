@@ -6462,7 +6462,6 @@ write_chars(
     }
 
     // Cursor under VTP is always in the correct position, no need to reset.
-									     
     if (!(vtp_working
 #ifdef FEAT_TERMGUICOLORS
 	    && (p_tgc || t_colors >= 256)
@@ -6763,7 +6762,6 @@ notsgr:
 			normvideo();
 		    else if (argc == 1)
 		    {
-								     
 			if (vtp_working
 # ifdef FEAT_TERMGUICOLORS
 				&& (p_tgc || t_colors >= 256)
