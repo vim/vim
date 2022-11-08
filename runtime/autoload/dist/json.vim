@@ -140,6 +140,10 @@ export def Format(obj: any, params: dict<any> = {}): string
                     else
                         json_line = indent_base .. repeat(indent, indent_lvl)
                     endif
+                elseif json =~ '[{\[]\n$'
+                    json = json[ : -2]
+                    json_line = substitute(json_line, '^\s*', '', '')
+                    indent_lvl -= 1
                 endif
                 json_line ..= char
             elseif char == ':'
