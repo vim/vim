@@ -903,7 +903,7 @@ do_bang(
      * (:!! is indicated by the 'forceit' variable)
      */
     ins_prevcmd = forceit;
-    trailarg = arg;
+    trailarg = skipwhite(arg);
     do
     {
 	len = (int)STRLEN(trailarg) + 1;
