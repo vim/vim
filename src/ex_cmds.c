@@ -899,11 +899,13 @@ do_bang(
     }
 
     /*
-     * Try to find an embedded bang, like in :!<cmd> ! [args]
-     * (:!! is indicated by the 'forceit' variable)
+     * Try to find an embedded bang, like in ":!<cmd> ! [args]"
+     * ":!!" is indicated by the 'forceit' variable.
      */
     ins_prevcmd = forceit;
-    trailarg = arg;
+
+    // Skip leading white space to avoid a strange error with some shells.
+    trailarg = skipwhite(arg);
     do
     {
 	len = (int)STRLEN(trailarg) + 1;
