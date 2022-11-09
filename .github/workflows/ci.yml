@@ -425,9 +425,9 @@ jobs:
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
           if [ "${{ matrix.features }}" != "TINY" ]; then
             if [ "${{ matrix.arch }}" = "x86" ]; then
-              choco install python2 --forcex86
+              choco install python2 --no-progress --forcex86
             else
-              choco install python2
+              choco install python2 --no-progress
             fi
           fi
           python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
