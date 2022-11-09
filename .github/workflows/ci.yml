@@ -401,6 +401,9 @@ jobs:
         id: init
         shell: bash
         run: |
+          # Show Windows version
+          cmd /c ver
+
           git config --global core.autocrlf input
 
           if [ "${{ matrix.arch }}" = "x64" ]; then
