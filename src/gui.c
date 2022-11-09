@@ -4504,11 +4504,11 @@ gui_do_scroll(void)
     return (wp == curwin && !EQUAL_POS(curwin->w_cursor, old_cursor));
 }
 
+extern linenr_T longest_lnum;  // defined in ui.c
 
 /*
  * Horizontal scrollbar stuff:
  */
-
     static void
 gui_update_horiz_scrollbar(int force)
 {
@@ -4547,7 +4547,7 @@ gui_update_horiz_scrollbar(int force)
     {
 	value = curwin->w_leftcol;
 
-	linenr_T longest_lnum = ui_find_longest_lnum();
+	longest_lnum = ui_find_longest_lnum();
 	max = scroll_line_len(longest_lnum);
 
 	if (virtual_active())
