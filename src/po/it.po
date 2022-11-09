@@ -1616,8 +1616,8 @@ msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr ""
 "--startuptime <file>\tScrivi tutti i messaggi iniziali di timing in <file>"
 
-msgid "--log <file>\tStart logging to <file> early"
-msgstr "--log <file>\tInizia registrazione a <file> appena possibile"
+msgid "--log <file>\t\tStart logging to <file> early"
+msgstr "--log <file>\t\tInizia registrazione a <file> appena possibile"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tUsa <viminfo> invece di .viminfo"
