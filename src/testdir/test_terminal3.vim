@@ -686,7 +686,10 @@ func Test_term_mouse()
   call TermWait(buf)
   redraw!
 
-  let XbufExists = {-> filereadable('Xbuf')}
+  " Funcref used in WaitFor() to check that the "Xbuf" file is readable and
+  " has some contents.  This avoids a "List index out of range" error when the
+  " file hasn't been written yet.
+  let XbufNotEmpty = {-> filereadable('Xbuf') && len(readfile('Xbuf')) > 0}
 
   " Use the mouse to enter the terminal window
   call win_gotoid(prev_win)
@@ -703,7 +706,7 @@ func Test_term_mouse()
   call delete('Xbuf')
   call term_sendkeys(buf, ":call writefile([json_encode(getpos('.'))], 'Xbuf')\<CR>")
   call TermWait(buf, 50)
-  call WaitFor(XbufExists)
+  call WaitFor(XbufNotEmpty)
   let pos = json_decode(readfile('Xbuf')[0])
   call assert_equal([3, 8], pos[1:2])
   call delete('Xbuf')
@@ -715,7 +718,7 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<LeftRelease>y")
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call WaitFor(XbufExists)
+  call WaitFor(XbufNotEmpty)
   call WaitForAssert({-> assert_equal('yellow', readfile('Xbuf')[0])})
   call delete('Xbuf')
 
@@ -726,7 +729,7 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<LeftRelease>y")
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call WaitFor(XbufExists)
+  call WaitFor(XbufNotEmpty)
   call assert_equal('three four', readfile('Xbuf')[0])
   call delete('Xbuf')
 
@@ -735,7 +738,7 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>y")
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call WaitFor(XbufExists)
+  call WaitFor(XbufNotEmpty)
   call assert_equal("vim emacs sublime nano\n", readfile('Xbuf')[0])
   call delete('Xbuf')
 
@@ -746,7 +749,7 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<LeftRelease>y")
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call WaitFor(XbufExists)
+  call WaitFor(XbufNotEmpty)
   call assert_equal("ree\nyel\nsub", readfile('Xbuf')[0])
   call delete('Xbuf')
 
@@ -757,7 +760,7 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<RightMouse>\<RightRelease>y")
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call WaitFor(XbufExists)
+  call WaitFor(XbufNotEmpty)
   call assert_equal("n yellow", readfile('Xbuf')[0])
   call delete('Xbuf')
 
@@ -767,7 +770,7 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\"r\<MiddleMouse>\<MiddleRelease>")
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([getline(2)], 'Xbuf')\<CR>")
-  call WaitFor(XbufExists)
+  call WaitFor(XbufNotEmpty)
   call assert_equal("red bright blue", readfile('Xbuf')[0][-15:])
   call delete('Xbuf')
 
