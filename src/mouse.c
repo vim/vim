@@ -2112,46 +2112,46 @@ do_mousescroll(int mode, cmdarg_T *cap)
     {
 	if (dir == MSCR_UP || dir == MSCR_DOWN)
 	{
-	if (mouse_vert_step < 0
-		|| mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-	{
-	    if (mode == MODE_INSERT)
+	    if (mouse_vert_step < 0
+		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 	    {
-		long step = (long)(curwin->w_botline - curwin->w_topline);
-		scroll_redraw(dir,step);    
-	    }	
-	    else
-	    {
-		did_scroll = onepage(dir ? FORWARD : BACKWARD, 1L);
-	    }
-	}
-	else
-	{
-	    if (mode == MODE_INSERT)
-	    {
-		scroll_redraw(dir, mouse_vert_step);
-	    }
-	    else
-	    {
-		// Don't scroll more than half the window height.
-		if (curwin->w_height < mouse_vert_step * 2)
+		if (mode == MODE_INSERT)
 		{
-		    cap->count1 = curwin->w_height / 2;
-		    if (cap->count1 == 0)
-			cap->count1 = 1;
+		    long step = (long)(curwin->w_botline - curwin->w_topline);
+		    scroll_redraw(dir,step);
 		}
 		else
 		{
-		    cap->count1 = mouse_vert_step;
+		    did_scroll = onepage(dir ? FORWARD : BACKWARD, 1L);
 		}
-		cap->count0 = cap->count1;
-		nv_scroll_line(cap);
 	    }
-	}
+	    else
+	    {
+		if (mode == MODE_INSERT)
+		{
+		    scroll_redraw(dir, mouse_vert_step);
+		}
+		else
+		{
+		    // Don't scroll more than half the window height.
+		    if (curwin->w_height < mouse_vert_step * 2)
+		    {
+			cap->count1 = curwin->w_height / 2;
+			if (cap->count1 == 0)
+			    cap->count1 = 1;
+		    }
+		    else
+		    {
+			cap->count1 = mouse_vert_step;
+		    }
+		    cap->count0 = cap->count1;
+		    nv_scroll_line(cap);
+		}
+	    }
 
 #ifdef FEAT_PROP_POPUP
-	if (WIN_IS_POPUP(curwin))
-	    popup_set_firstline(curwin);
+	    if (WIN_IS_POPUP(curwin))
+		popup_set_firstline(curwin);
 #endif
 	}
 	else
