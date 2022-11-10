@@ -2683,6 +2683,11 @@ SaveConsoleBuffer(
     }
     cb->IsValid = TRUE;
 
+    // VTP uses alternate screen buffer,
+    // so no need to save buffer contents for restoration.
+    if (vtp_working)
+	return TRUE;
+
     /*
      * Allocate a buffer large enough to hold the entire console screen
      * buffer.  If this ConsoleBuffer structure has already been initialized
@@ -2775,6 +2780,9 @@ RestoreConsoleBuffer(
     COORD BufferCoord;
     SMALL_RECT WriteRegion;
     int i;
+
+    if (vtp_working)
+	return TRUE;
 
     if (cb == NULL || !cb->IsValid)
 	return FALSE;
@@ -5736,7 +5744,8 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
-    if (!p_rs && USE_VTP)
+    // Switch to a new alternate screen buffer.
+    if (p_rs && vtp_working)
 	vtp_printf("\033[?1049h");
 
     SaveConsoleBuffer(&g_cbNonTermcap);
@@ -5816,17 +5825,21 @@ termcap_mode_end(void)
 # endif
     RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
-    SetConsoleCursorInfo(g_hConOut, &g_cci);
 
-    if (p_rs || exiting)
+    // Switch back to main screen buffer.
+    if (p_rs && vtp_working)
+	vtp_printf("\033[?1049l");
+
+    if (!USE_WT && (p_rs || exiting))
     {
 	/*
 	 * Clear anything that happens to be on the current line.
 	 */
 	coord.X = 0;
 	coord.Y = (SHORT) (p_rs ? cb->Info.dwCursorPosition.Y : (Rows - 1));
-	FillConsoleOutputCharacter(g_hConOut, ' ',
-		cb->Info.dwSize.X, coord, &dwDummy);
+	if (!vtp_working)
+	    FillConsoleOutputCharacter(g_hConOut, ' ',
+		    cb->Info.dwSize.X, coord, &dwDummy);
 	/*
 	 * The following is just for aesthetics.  If we are exiting without
 	 * restoring the screen, then we want to have a prompt string
@@ -5842,10 +5855,7 @@ termcap_mode_end(void)
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
-
-    if (!p_rs && USE_VTP)
-	vtp_printf("\033[?1049l");
-
+    SetConsoleCursorInfo(g_hConOut, &g_cci);
     g_fTermcapMode = FALSE;
 }
 #endif // !FEAT_GUI_MSWIN || VIMDLL
@@ -7945,9 +7955,13 @@ mch_setenv(char *var, char *value, int x UNUSED)
 /*
  * Not stable now.
  */
-#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
-// Note: Windows 11 (build >= 22000 means Windows 11, even though the major
-// version says 10!)
+#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 20348)  // T.B.D. ?32767?
+// Notes: 
+// Windows 10 22H2 Final is build 19045, its conpty seems stable.
+// However, 19045 is a lower build number than the 2020 insider preview which
+// had a build 19587.  And, not sure how stable that was.
+// Windows Server 2022 (May 10, 2022) is build 20348, its conpty seems stable.
+// Windows 11 starts from build 22000, even though the major version says 10!
 
     static void
 vtp_flag_init(void)
