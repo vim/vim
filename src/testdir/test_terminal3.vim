@@ -716,7 +716,7 @@ func Test_term_mouse()
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
   call WaitFor(XbufExists)
-  call assert_equal('yellow', readfile('Xbuf')[0])
+  call WaitForAssert({-> assert_equal('yellow', readfile('Xbuf')[0])})
   call delete('Xbuf')
 
   " Test for selecting text using double click
