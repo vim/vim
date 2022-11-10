@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Oct 28
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Nov 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,8 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Add test for what 9.0.0827 fixes - '@' in termcap key code
 
 'smoothscroll':
 - CTRL-E and gj in long line with 'scrolloff' 5 not working well yet.
@@ -176,12 +178,18 @@ reduced?
 
 Add BufDeletePost.  #11041
 
+Add winid arg to col() and charcol()  #11466 (request #11461)
+
 Test property disappears when using CR twice in a row.  OK when some text was
 entered. (#11151)
 
 NFA regexp does not handle composing characters well: #10286
     [ɔ̃] matches both ɔ and ɔ̃
     \(ɔ\|ɔ̃\) matches ɔ and not ɔ̃
+
+Is there a way to make 'autowriteall' make a clean exit when the xterm is
+closed? (Dennis Nazic says files are preserved, okt 28).  Perhaps handle TERM
+like HUP?
 
 Improvement in terminal configuration mess: Request the terminfo entry from
 the terminal itself.  The $TERM value then is only relevant for whether this
@@ -190,6 +198,16 @@ entry separately. #6609
 Multiplexers (screen, tmux) can request it to the underlying terminal, and
 pass it on with modifications.
 How to get all the text quickly (also over ssh)?  Can we use a side channel?
+
+Horizontal mouse scroll only works when compiled with GUI?  #11374
+
+In the libvterm fork properly implement:
+- modifyOtherKeys 2 - follow xterm implementation as close as possible, that
+  is the reference.
+- Kitty key protocol - just like the latest Kitty
+So that in TermDebug the key handling can be stepped through (instead of
+having to log messages all over the place to see what happens).
+Ask Leonerd about location of code, he might want to take over some of it.
 
 Using "A" and "o" in manually created fold (in empty buffer) does not behave
 consistenly (James McCoy, #10698)
@@ -300,6 +318,9 @@ When ":redir" is used while already active, the previous one is ended.  But
 when redirecting to a local variable (function or script) storing the value
 won't work.  At least give an error.  Is there a way to make it work?
 #10616
+
+Completion for ":runtime" should show valid values, not what's in the current
+directory. (#11447)
 
 Add an option to start_timer() to return from the input loop with K_IGNORE.
 This is useful e.g. when a popup was created that disables mappings, we need

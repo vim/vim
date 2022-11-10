@@ -1628,7 +1628,7 @@ msgstr "--servername <име>\tПошаљи/постани Vim сервер <и�
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <фајл>\tУпиши поруке о дужини покретања у <фајл>"
 
-msgid "--log <file>\tStart logging to <file> early"
+msgid "--log <file>\t\tStart logging to <file> early"
 msgstr "--log <фајл>\t\tЗапочиње рано логовање у <фајл>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"

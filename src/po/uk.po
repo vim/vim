@@ -1745,8 +1745,8 @@ msgstr ""
 "--startuptime <файл>\tЗаписати запускні повідомлення з часовими відмітками "
 "до <файлу>"
 
-msgid "--log <file>\tStart logging to <file> early"
-msgstr "--log <файл>\tПочати запис у <файл> журналу якнайраніше"
+msgid "--log <file>\t\tStart logging to <file> early"
+msgstr "--log <файл>\t\tПочати запис у <файл> журналу якнайраніше"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tВикористати <viminfo> замість .viminfo"

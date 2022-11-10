@@ -3588,7 +3588,7 @@ usage(void)
     main_msg(_("--startuptime <file>\tWrite startup timing messages to <file>"));
 #endif
 #ifdef FEAT_JOB_CHANNEL
-    main_msg(_("--log <file>\tStart logging to <file> early"));
+    main_msg(_("--log <file>\t\tStart logging to <file> early"));
 #endif
 #ifdef FEAT_VIMINFO
     main_msg(_("-i <viminfo>\t\tUse <viminfo> instead of .viminfo"));

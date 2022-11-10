@@ -4354,6 +4354,7 @@ E1304	vim9.txt	/*E1304*
 E1305	textprop.txt	/*E1305*
 E1306	vim9.txt	/*E1306*
 E1307	vim9.txt	/*E1307*
+E1308	builtin.txt	/*E1308*
 E131	userfunc.txt	/*E131*
 E132	userfunc.txt	/*E132*
 E133	userfunc.txt	/*E133*
@@ -6655,6 +6656,7 @@ end	intro.txt	/*end*
 end-of-file	pattern.txt	/*end-of-file*
 enlightened-terminal	syntax.txt	/*enlightened-terminal*
 environ()	builtin.txt	/*environ()*
+eol-and-eof	editing.txt	/*eol-and-eof*
 erlang.vim	syntax.txt	/*erlang.vim*
 err_buf	channel.txt	/*err_buf*
 err_cb	channel.txt	/*err_cb*
