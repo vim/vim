@@ -236,7 +236,15 @@ endfunc
 func GetVimProg()
   if !filereadable('vimcmd')
     " Assume the script was sourced instead of running "make".
-    return '../vim'
+    if !has("win32")
+      return '../vim'
+    else
+      if !filereadable('..\vim.exe') && filereadable('..\vimd.exe')
+        return '..\vimd.exe'
+      else
+        return '..\vim.exe'
+      endif
+    endif
   endif
   return readfile('vimcmd')[0]
 endfunc
@@ -251,7 +259,11 @@ func GetVimCommand(...)
     if !has("win32")
       let lines = ['../vim']
     else
-      let lines = ['..\vim.exe']
+      if !filereadable('..\vim.exe') && filereadable('..\vimd.exe')
+        let lines = ['..\vimd.exe']
+      else
+        let lines = ['..\vim.exe']
+      endif
     endif
   else
     let lines = readfile('vimcmd')
