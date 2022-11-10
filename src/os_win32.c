@@ -238,6 +238,7 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
+static BOOL win11_or_later = FALSE;
 
 /*
  * Get version number including build number
@@ -892,6 +893,10 @@ PlatformId(void)
 	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
 		|| ovi.dwMajorVersion > 6)
 	    win8_or_later = TRUE;
+
+	if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 22000)
+		|| ovi.dwMajorVersion > 10)
+	    win11_or_later = TRUE;
 
 #ifdef HAVE_ACL
 	// Enable privilege for getting or setting SACLs.
@@ -2683,9 +2688,9 @@ SaveConsoleBuffer(
     }
     cb->IsValid = TRUE;
 
-    // VTP uses alternate screen buffer,
-    // so no need to save buffer contents for restoration.
-    if (vtp_working)
+    // VTP uses alternate screen buffer.
+    // No need to save buffer contents for restoration.
+    if (win11_or_later && vtp_working)
 	return TRUE;
 
     /*
@@ -2781,7 +2786,9 @@ RestoreConsoleBuffer(
     SMALL_RECT WriteRegion;
     int i;
 
-    if (vtp_working)
+    // VTP uses alternate screen buffer.
+    // No need to restore buffer contents.
+    if (win11_or_later && vtp_working)
 	return TRUE;
 
     if (cb == NULL || !cb->IsValid)
@@ -5744,8 +5751,9 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
+    // VTP uses alternate screen buffer.
     // Switch to a new alternate screen buffer.
-    if (p_rs && vtp_working)
+    if (win11_or_later && p_rs && vtp_working)
 	vtp_printf("\033[?1049h");
 
     SaveConsoleBuffer(&g_cbNonTermcap);
@@ -5826,8 +5834,9 @@ termcap_mode_end(void)
     RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
 
+    // VTP uses alternate screen buffer.
     // Switch back to main screen buffer.
-    if (p_rs && vtp_working)
+    if (exiting && win11_or_later && p_rs && vtp_working)
 	vtp_printf("\033[?1049l");
 
     if (!USE_WT && (p_rs || exiting))
@@ -7957,11 +7966,11 @@ mch_setenv(char *var, char *value, int x UNUSED)
  */
 #define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
 // Notes: 
-// Windows 10 22H2 Final is build 19045, its conpty seems stable.
-// However, 19045 is a lower build number than the 2020 insider preview which
-// had a build 19587.  And, not sure how stable that was.
-// Windows Server 2022 (May 10, 2022) is build 20348, its conpty seems stable.
-// Windows 11 starts from build 22000, even though the major version says 10!
+// Win 10 22H2 Final is build 19045, its conpty is widely used.
+// Strangely, 19045 is newer but is a lower build number than the 2020 insider
+// preview which had a build 19587.  And, not sure how stable that was?
+// Win Server 2022 (May 10, 2022) is build 20348, its conpty is widely used.
+// Win 11 starts from build 22000, even though the major version says 10!
 
     static void
 vtp_flag_init(void)
