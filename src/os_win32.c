@@ -7955,7 +7955,7 @@ mch_setenv(char *var, char *value, int x UNUSED)
 /*
  * Not stable now.
  */
-#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 20348)  // T.B.D. ?32767?
+#define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
 // Notes: 
 // Windows 10 22H2 Final is build 19045, its conpty seems stable.
 // However, 19045 is a lower build number than the 2020 insider preview which
