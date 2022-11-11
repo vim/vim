@@ -441,6 +441,9 @@ func Test_argdedupe()
   argdedupe
   next
   call assert_equal('c', expand('%:t'))
+  args a ./a
+  argdedupe
+  call assert_equal(['a'], argv())
   %argd
 endfunc
 

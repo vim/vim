@@ -782,19 +782,22 @@ ex_argdedupe(exarg_T *eap UNUSED)
 {
     int i;
     int j;
-    char_u* firstFullname;
-    char_u* secondFullname;
-    int areNamesDuplicate;
 
     for (i = 0; i < ARGCOUNT; ++i)
+    {
+	char_u* firstFullname;
+
+	firstFullname = FullName_save(ARGLIST[i].ae_fname, FALSE);
+
 	for (j = i + 1; j < ARGCOUNT; ++j)
 	{
-	    firstFullname = FullName_save(ARGLIST[i].ae_fname, FALSE);
+	    char_u* secondFullname;
+	    int areNamesDuplicate;
+
 	    secondFullname = FullName_save(ARGLIST[j].ae_fname, FALSE);
 
 	    areNamesDuplicate = fnamecmp(firstFullname, secondFullname) == 0;
 
-	    vim_free(firstFullname);
 	    vim_free(secondFullname);
 
 	    if (areNamesDuplicate)
@@ -812,6 +815,9 @@ ex_argdedupe(exarg_T *eap UNUSED)
 		--j;
 	    }
 	}
+
+	vim_free(firstFullname);
+    }
 }
 
 /*
