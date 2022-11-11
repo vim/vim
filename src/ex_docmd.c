@@ -4308,6 +4308,8 @@ get_address(
     lnum = MAXLNUM;
     do
     {
+	int base_char = *cmd;
+
 	switch (*cmd)
 	{
 	    case '.':			    // '.' - Cursor position
@@ -4602,10 +4604,11 @@ get_address(
 		i = '+';		// "number" is same as "+number"
 	    else
 		i = *cmd++;
-	    if (!VIM_ISDIGIT(*cmd))	// '+' is '+1', but '+0' is not '+1'
+	    if (!VIM_ISDIGIT(*cmd))	// '+' is '+1'
 		n = 1;
 	    else
 	    {
+		// "number", "+number" or "-number"
 		n = getdigits(&cmd);
 		if (n == MAXLNUM)
 		{
@@ -4627,10 +4630,16 @@ get_address(
 	    else
 	    {
 #ifdef FEAT_FOLDING
-		// Relative line addressing, need to adjust for folded lines
-		// now, but only do it after the first address.
-		if (addr_type == ADDR_LINES && (i == '-' || i == '+')
-							 && address_count >= 2)
+		// Relative line addressing: need to adjust for closed folds
+		// after the first address.
+		// Subtle difference: "number,+number" and "number,-number"
+		// adjusts to end of closed fold before adding/subtracting,
+		// while "number,.+number" adjusts to end of closed fold after
+		// adding to make "!!" expanded into ".,.+N" work correctly.
+		int adjust_for_folding = addr_type == ADDR_LINES
+						      && (i == '-' || i == '+')
+						      && address_count >= 2;
+		if (adjust_for_folding && (i == '-' || base_char != '.'))
 		    (void)hasFolding(lnum, NULL, &lnum);
 #endif
 		if (i == '-')
@@ -4643,6 +4652,12 @@ get_address(
 			goto error;
 		    }
 		    lnum += n;
+#ifdef FEAT_FOLDING
+		    // ".+number" rounds up to the end of a closed fold after
+		    // adding, so that ":!!sort" sorts one closed fold.
+		    if (adjust_for_folding && base_char == '.')
+			(void)hasFolding(lnum, NULL, &lnum);
+#endif
 		}
 	    }
 	}
