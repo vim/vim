@@ -4308,8 +4308,9 @@ get_address(
     lnum = MAXLNUM;
     do
     {
+#ifdef FEAT_FOLDING
 	int base_char = *cmd;
-
+#endif
 	switch (*cmd)
 	{
 	    case '.':			    // '.' - Cursor position
