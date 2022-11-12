@@ -1664,6 +1664,9 @@ func Test_cmd_bang_args()
   call assert_equal(0, v:shell_error)
   bwipe!
 
+  " This caused a segfault, see https://github.com/vim/vim/issues/11495.
+  call feedkeys("!!\<CR>", 't')
+
   CheckUnix
   :.!pwd
   call assert_equal(0, v:shell_error)
