@@ -10,7 +10,6 @@ void reset_screen_attr(void);
 void screen_line(win_T *wp, int row, int coloff, int endcol, int clear_width, int flags);
 void rl_mirror(char_u *str);
 void draw_vsep_win(win_T *wp, int row);
-void win_redr_status_matches(expand_T *xp, int num_matches, char_u **matches, int match, int showtail);
 int stl_connected(win_T *wp);
 int get_keymap_str(win_T *wp, char_u *fmt, char_u *buf, int len);
 void win_redr_custom(win_T *wp, int draw_ruler);
