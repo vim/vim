@@ -857,7 +857,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"endoffile",   "eof",  P_BOOL|P_NO_MKRC|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_eof, PV_EOF,
-			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"endofline",   "eol",  P_BOOL|P_NO_MKRC|P_VI_DEF|P_RSTAT,
 			    (char_u *)&p_eol, PV_EOL,
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
