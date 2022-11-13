@@ -3793,14 +3793,35 @@ printable_func_name(ufunc_T *fp)
 }
 
 /*
+ * When "prev_ht_changed" does not equal "ht_changed" give an error and return
+ * TRUE.  Otherwise return FALSE.
+ */
+    static int
+function_list_modified(int prev_ht_changed)
+{
+    if (prev_ht_changed != func_hashtab.ht_changed)
+    {
+	emsg(_(e_function_list_was_modified));
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * List the head of the function: "function name(arg1, arg2)".
  */
-    static void
+    static int
 list_func_head(ufunc_T *fp, int indent)
 {
+    int		prev_ht_changed = func_hashtab.ht_changed;
     int		j;
 
     msg_start();
+
+    // a timer at the more prompt may have deleted the function
+    if (function_list_modified(prev_ht_changed))
+	return FAIL;
+
     if (indent)
 	msg_puts("   ");
     if (fp->uf_def_status != UF_NOT_COMPILED)
@@ -3877,6 +3898,8 @@ list_func_head(ufunc_T *fp, int indent)
     msg_clr_eos();
     if (p_verbose > 0)
 	last_set_msg(fp->uf_script_ctx);
+
+    return OK;
 }
 
 /*
@@ -4315,7 +4338,7 @@ save_function_name(
     void
 list_functions(regmatch_T *regmatch)
 {
-    int		changed = func_hashtab.ht_changed;
+    int		prev_ht_changed = func_hashtab.ht_changed;
     long_u	todo = func_hashtab.ht_used;
     hashitem_T	*hi;
 
@@ -4333,12 +4356,10 @@ list_functions(regmatch_T *regmatch)
 			: !isdigit(*fp->uf_name)
 			    && vim_regexec(regmatch, fp->uf_name, 0)))
 	    {
-		list_func_head(fp, FALSE);
-		if (changed != func_hashtab.ht_changed)
-		{
-		    emsg(_(e_function_list_was_modified));
+		if (list_func_head(fp, FALSE) == FAIL)
 		    return;
-		}
+		if (function_list_modified(prev_ht_changed))
+		    return;
 	    }
 	}
     }
@@ -4542,28 +4563,39 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 
 	    if (fp != NULL)
 	    {
-		list_func_head(fp, TRUE);
-		for (j = 0; j < fp->uf_lines.ga_len && !got_int; ++j)
+		// Check no function was added or removed from a timer, e.g. at
+		// the more prompt.  "fp" may then be invalid.
+		int prev_ht_changed = func_hashtab.ht_changed;
+
+		if (list_func_head(fp, TRUE) == OK)
 		{
-		    if (FUNCLINE(fp, j) == NULL)
-			continue;
-		    msg_putchar('\n');
-		    msg_outnum((long)(j + 1));
-		    if (j < 9)
-			msg_putchar(' ');
-		    if (j < 99)
-			msg_putchar(' ');
-		    msg_prt_line(FUNCLINE(fp, j), FALSE);
-		    out_flush();	// show a line at a time
-		    ui_breakcheck();
-		}
-		if (!got_int)
-		{
-		    msg_putchar('\n');
-		    if (fp->uf_def_status != UF_NOT_COMPILED)
-			msg_puts("   enddef");
-		    else
-			msg_puts("   endfunction");
+		    for (j = 0; j < fp->uf_lines.ga_len && !got_int; ++j)
+		    {
+			if (FUNCLINE(fp, j) == NULL)
+			    continue;
+			msg_putchar('\n');
+			msg_outnum((long)(j + 1));
+			if (j < 9)
+			    msg_putchar(' ');
+			if (j < 99)
+			    msg_putchar(' ');
+			if (function_list_modified(prev_ht_changed))
+			    break;
+			msg_prt_line(FUNCLINE(fp, j), FALSE);
+			out_flush();	// show a line at a time
+			ui_breakcheck();
+		    }
+		    if (!got_int)
+		    {
+			msg_putchar('\n');
+			if (!function_list_modified(prev_ht_changed))
+			{
+			    if (fp->uf_def_status != UF_NOT_COMPILED)
+				msg_puts("   enddef");
+			    else
+				msg_puts("   endfunction");
+			}
+		    }
 		}
 	    }
 	    else
