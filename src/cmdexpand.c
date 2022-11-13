@@ -92,6 +92,89 @@ sort_func_compare(const void *s1, const void *s2)
  * Escape special characters in the cmdline completion matches.
  */
     static void
+wildescape(
+    expand_T	*xp,
+    char_u	*str,
+    int		numfiles,
+    char_u	**files)
+{
+    int		i;
+    char_u	*p;
+    int		vse_what = xp->xp_context == EXPAND_BUFFERS
+						       ? VSE_BUFFER : VSE_NONE;
+
+    if (xp->xp_context == EXPAND_FILES
+	    || xp->xp_context == EXPAND_FILES_IN_PATH
+	    || xp->xp_context == EXPAND_SHELLCMD
+	    || xp->xp_context == EXPAND_BUFFERS
+	    || xp->xp_context == EXPAND_DIRECTORIES)
+    {
+	// Insert a backslash into a file name before a space, \, %, #
+	// and wildmatch characters, except '~'.
+	for (i = 0; i < numfiles; ++i)
+	{
+	    // for ":set path=" we need to escape spaces twice
+	    if (xp->xp_backslash == XP_BS_THREE)
+	    {
+		p = vim_strsave_escaped(files[i], (char_u *)" ");
+		if (p != NULL)
+		{
+		    vim_free(files[i]);
+		    files[i] = p;
+#if defined(BACKSLASH_IN_FILENAME)
+		    p = vim_strsave_escaped(files[i], (char_u *)" ");
+		    if (p != NULL)
+		    {
+			vim_free(files[i]);
+			files[i] = p;
+		    }
+#endif
+		}
+	    }
+#ifdef BACKSLASH_IN_FILENAME
+	    p = vim_strsave_fnameescape(files[i], vse_what);
+#else
+	    p = vim_strsave_fnameescape(files[i],
+		    xp->xp_shell ? VSE_SHELL : vse_what);
+#endif
+	    if (p != NULL)
+	    {
+		vim_free(files[i]);
+		files[i] = p;
+	    }
+
+	    // If 'str' starts with "\~", replace "~" at start of
+	    // files[i] with "\~".
+	    if (str[0] == '\\' && str[1] == '~' && files[i][0] == '~')
+		escape_fname(&files[i]);
+	}
+	xp->xp_backslash = XP_BS_NONE;
+
+	// If the first file starts with a '+' escape it.  Otherwise it
+	// could be seen as "+cmd".
+	if (*files[0] == '+')
+	    escape_fname(&files[0]);
+    }
+    else if (xp->xp_context == EXPAND_TAGS)
+    {
+	// Insert a backslash before characters in a tag name that
+	// would terminate the ":tag" command.
+	for (i = 0; i < numfiles; ++i)
+	{
+	    p = vim_strsave_escaped(files[i], (char_u *)"\\|\"");
+	    if (p != NULL)
+	    {
+		vim_free(files[i]);
+		files[i] = p;
+	    }
+	}
+    }
+}
+
+/*
+ * Escape special characters in the cmdline completion matches.
+ */
+    static void
 ExpandEscape(
     expand_T	*xp,
     char_u	*str,
@@ -99,84 +182,12 @@ ExpandEscape(
     char_u	**files,
     int		options)
 {
-    int		i;
-    char_u	*p;
-    int		vse_what = xp->xp_context == EXPAND_BUFFERS
-						       ? VSE_BUFFER : VSE_NONE;
-
     // May change home directory back to "~"
     if (options & WILD_HOME_REPLACE)
 	tilde_replace(str, numfiles, files);
 
     if (options & WILD_ESCAPE)
-    {
-	if (xp->xp_context == EXPAND_FILES
-		|| xp->xp_context == EXPAND_FILES_IN_PATH
-		|| xp->xp_context == EXPAND_SHELLCMD
-		|| xp->xp_context == EXPAND_BUFFERS
-		|| xp->xp_context == EXPAND_DIRECTORIES)
-	{
-	    // Insert a backslash into a file name before a space, \, %, #
-	    // and wildmatch characters, except '~'.
-	    for (i = 0; i < numfiles; ++i)
-	    {
-		// for ":set path=" we need to escape spaces twice
-		if (xp->xp_backslash == XP_BS_THREE)
-		{
-		    p = vim_strsave_escaped(files[i], (char_u *)" ");
-		    if (p != NULL)
-		    {
-			vim_free(files[i]);
-			files[i] = p;
-#if defined(BACKSLASH_IN_FILENAME)
-			p = vim_strsave_escaped(files[i], (char_u *)" ");
-			if (p != NULL)
-			{
-			    vim_free(files[i]);
-			    files[i] = p;
-			}
-#endif
-		    }
-		}
-#ifdef BACKSLASH_IN_FILENAME
-		p = vim_strsave_fnameescape(files[i], vse_what);
-#else
-		p = vim_strsave_fnameescape(files[i],
-					  xp->xp_shell ? VSE_SHELL : vse_what);
-#endif
-		if (p != NULL)
-		{
-		    vim_free(files[i]);
-		    files[i] = p;
-		}
-
-		// If 'str' starts with "\~", replace "~" at start of
-		// files[i] with "\~".
-		if (str[0] == '\\' && str[1] == '~' && files[i][0] == '~')
-		    escape_fname(&files[i]);
-	    }
-	    xp->xp_backslash = XP_BS_NONE;
-
-	    // If the first file starts with a '+' escape it.  Otherwise it
-	    // could be seen as "+cmd".
-	    if (*files[0] == '+')
-		escape_fname(&files[0]);
-	}
-	else if (xp->xp_context == EXPAND_TAGS)
-	{
-	    // Insert a backslash before characters in a tag name that
-	    // would terminate the ":tag" command.
-	    for (i = 0; i < numfiles; ++i)
-	    {
-		p = vim_strsave_escaped(files[i], (char_u *)"\\|\"");
-		if (p != NULL)
-		{
-		    vim_free(files[i]);
-		    files[i] = p;
-		}
-	    }
-	}
-    }
+	wildescape(xp, str, numfiles, files);
 }
 
 /*
@@ -3249,35 +3260,36 @@ expand_shellcmd_onedir(
 
     // Expand matches in one directory of $PATH.
     ret = expand_wildcards(1, &buf, numMatches, matches, flags);
-    if (ret == OK)
-    {
-	if (ga_grow(gap, *numMatches) == FAIL)
-	    FreeWild(*numMatches, *matches);
-	else
-	{
-	    for (i = 0; i < *numMatches; ++i)
-	    {
-		char_u *name = (*matches)[i];
+    if (ret != OK)
+	return;
 
-		if (STRLEN(name) > l)
-		{
-		    // Check if this name was already found.
-		    hash = hash_hash(name + l);
-		    hi = hash_lookup(ht, name + l, hash);
-		    if (HASHITEM_EMPTY(hi))
-		    {
-			// Remove the path that was prepended.
-			STRMOVE(name, name + l);
-			((char_u **)gap->ga_data)[gap->ga_len++] = name;
-			hash_add_item(ht, hi, name, hash);
-			name = NULL;
-		    }
-		}
-		vim_free(name);
-	    }
-	    vim_free(*matches);
-	}
+    if (ga_grow(gap, *numMatches) == FAIL)
+    {
+	FreeWild(*numMatches, *matches);
+	return;
     }
+
+    for (i = 0; i < *numMatches; ++i)
+    {
+	char_u *name = (*matches)[i];
+
+	if (STRLEN(name) > l)
+	{
+	    // Check if this name was already found.
+	    hash = hash_hash(name + l);
+	    hi = hash_lookup(ht, name + l, hash);
+	    if (HASHITEM_EMPTY(hi))
+	    {
+		// Remove the path that was prepended.
+		STRMOVE(name, name + l);
+		((char_u **)gap->ga_data)[gap->ga_len++] = name;
+		hash_add_item(ht, hi, name, hash);
+		name = NULL;
+	    }
+	}
+	vim_free(name);
+    }
+    vim_free(*matches);
 }
 
 /*
