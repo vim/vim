@@ -3335,3 +3335,7 @@ EXTERN char e_cannot_resize_window_in_another_tab_page[]
 #endif
 EXTERN char e_cannot_change_mappings_while_listing[]
 	INIT(= N_("E1309: Cannot change mappings while listing"));
+#if defined(FEAT_MENU)
+EXTERN char e_cannot_change_menus_while_listing[]
+	INIT(= N_("E1310: Cannot change menus while listing"));
+#endif

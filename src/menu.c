@@ -46,6 +46,10 @@ static int s_tearoffs = FALSE;
 static int menu_is_hidden(char_u *name);
 static int menu_is_tearoff(char_u *name);
 
+// When non-zero no menu must be added or cleared.  Prevents the list of menus
+// changing while listing them.
+static int menus_locked = 0;
+
 #if defined(FEAT_MULTI_LANG) || defined(FEAT_TOOLBAR)
 static char_u *menu_skip_part(char_u *p);
 #endif
@@ -96,6 +100,21 @@ get_root_menu(char_u *name)
     if (menu_is_winbar(name))
 	return &curwin->w_winbar;
     return &root_menu;
+}
+
+/*
+ * If "menus_locked" is set then give an error and return TRUE.
+ * Otherwise return FALSE.
+ */
+    static int
+is_menus_locked(void)
+{
+    if (menus_locked > 0)
+    {
+	emsg(_(e_cannot_change_menus_while_listing));
+	return TRUE;
+    }
+    return FALSE;
 }
 
 /*
@@ -329,6 +348,9 @@ ex_menu(
     }
     else if (unmenu)
     {
+	if (is_menus_locked())
+	    goto theend;
+
 	/*
 	 * Delete menu(s).
 	 */
@@ -357,6 +379,9 @@ ex_menu(
     }
     else
     {
+	if (is_menus_locked())
+	    goto theend;
+
 	/*
 	 * Add menu(s).
 	 * Replace special key codes.
@@ -1147,11 +1172,14 @@ show_menus(char_u *path_name, int modes)
     }
     vim_free(path_name);
 
-    // Now we have found the matching menu, and we list the mappings
-						    // Highlight title
-    msg_puts_title(_("\n--- Menus ---"));
+    // make sure the list of menus doesn't change while listing them
+    ++menus_locked;
 
+    // list the matching menu mappings
+    msg_puts_title(_("\n--- Menus ---"));
     show_menus_recursive(parent, modes, 0);
+
+    --menus_locked;
     return OK;
 }
 
