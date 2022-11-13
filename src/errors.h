@@ -3339,3 +3339,5 @@ EXTERN char e_cannot_change_mappings_while_listing[]
 EXTERN char e_cannot_change_menus_while_listing[]
 	INIT(= N_("E1310: Cannot change menus while listing"));
 #endif
+EXTERN char e_cannot_change_user_commands_while_listing[]
+	INIT(= N_("E1311: Cannot change user commands while listing"));
