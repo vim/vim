@@ -62,6 +62,7 @@ if has('timers')
     set updatetime=20
     call timer_start(200, 'ExitInsertMode')
     call feedkeys('a', 'x!')
+    sleep 30m
     call assert_equal(1, g:triggered)
     unlet g:triggered
     au! CursorHoldI
@@ -2157,6 +2158,27 @@ func Test_autocmd_user()
   call assert_equal(['MyEvent', 'MyEvent'], s:res)
   au! User
   unlet s:res
+endfunc
+
+func Test_autocmd_user_clear_group()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    autocmd! User
+    for i in range(1, 999)
+      exe 'autocmd User ' .. 'Foo' .. i .. ' bar'
+    endfor
+    au CmdlineLeave : call timer_start(0, {-> execute('autocmd! User')})
+  END
+  call writefile(lines, 'XautoUser', 'D')
+  let buf = RunVimInTerminal('-S XautoUser', {'rows': 10})
+
+  " this was using freed memory
+  call term_sendkeys(buf, ":autocmd User\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "G")
+
+  call StopVimInTerminal(buf)
 endfunc
 
 function s:Before_test_dirchanged()

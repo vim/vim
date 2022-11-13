@@ -296,9 +296,14 @@ show_autocmd(AutoPat *ap, event_T event)
     if (ap->pat == NULL)		// pattern has been removed
 	return;
 
+    // Make sure no info referenced by "ap" is cleared, e.g. when a timer
+    // clears an augroup.  Jump to "theend" after this!
+    // "ap->pat" may be cleared anyway.
+    ++autocmd_busy;
+
     msg_putchar('\n');
     if (got_int)
-	return;
+	goto theend;
     if (event != last_event || ap->group != last_group)
     {
 	if (ap->group != AUGROUP_DEFAULT)
@@ -314,8 +319,12 @@ show_autocmd(AutoPat *ap, event_T event)
 	last_group = ap->group;
 	msg_putchar('\n');
 	if (got_int)
-	    return;
+	    goto theend;
     }
+
+    if (ap->pat == NULL)
+	goto theend;  // timer might have cleared the pattern or group
+
     msg_col = 4;
     msg_outtrans(ap->pat);
 
@@ -328,21 +337,24 @@ show_autocmd(AutoPat *ap, event_T event)
 	    msg_putchar('\n');
 	msg_col = 14;
 	if (got_int)
-	    return;
+	    goto theend;
 	msg_outtrans(ac->cmd);
 #ifdef FEAT_EVAL
 	if (p_verbose > 0)
 	    last_set_msg(ac->script_ctx);
 #endif
 	if (got_int)
-	    return;
+	    goto theend;
 	if (ac->next != NULL)
 	{
 	    msg_putchar('\n');
 	    if (got_int)
-		return;
+		goto theend;
 	}
     }
+
+theend:
+    --autocmd_busy;
 }
 
 /*
