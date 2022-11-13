@@ -388,6 +388,7 @@ let s:filename_checks = {
     \ 'nginx': ['file.nginx', 'nginxfile.conf', 'filenginx.conf', 'any/etc/nginx/file', 'any/usr/local/nginx/conf/file', 'any/nginx/file.conf'],
     \ 'nim': ['file.nim', 'file.nims', 'file.nimble'],
     \ 'ninja': ['file.ninja'],
+    \ 'obl': ['file.obl', 'file.obse', 'file.oblivion', 'file.obscript'],
     \ 'nix': ['file.nix'],
     \ 'nqc': ['file.nqc'],
     \ 'nroff': ['file.tr', 'file.nr', 'file.roff', 'file.tmac', 'file.mom', 'tmac.file'],
