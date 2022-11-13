@@ -1,4 +1,4 @@
-" Vim sections file
+" Vim filetype plugin file
 " Language:    Oblivion Language (obl)
 " Original Creator: Kat <katisntgood@gmail.com>
 " Maintainer:  Kat <katisntgood@gmail.com>
