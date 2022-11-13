@@ -3333,3 +3333,5 @@ EXTERN char e_argument_nr_trying_to_modify_const_str[]
 EXTERN char e_cannot_resize_window_in_another_tab_page[]
 	INIT(= N_("E1308: Cannot resize a window in another tab page"));
 #endif
+EXTERN char e_cannot_change_mappings_while_listing[]
+	INIT(= N_("E1309: Cannot change mappings while listing"));

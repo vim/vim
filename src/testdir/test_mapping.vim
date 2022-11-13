@@ -1774,5 +1774,29 @@ func Test_using_past_typeahead()
   nunmap :00
 endfunc
 
+func Test_mapclear_while_listing()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set nocompatible
+      mapclear
+      for i in range(1, 999)
+        exe 'map ' .. 'foo' .. i .. ' bar'
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('mapclear')})
+  END
+  call writefile(lines, 'Xmapclear', 'D')
+  let buf = RunVimInTerminal('-S Xmapclear', {'rows': 10})
+
+  " this was using freed memory
+  call term_sendkeys(buf, ":map\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "G")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
