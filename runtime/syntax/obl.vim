@@ -8,8 +8,10 @@ if exists("b:current_syntax")
   finish
 endif
 
-let b:current_syntax = 'obl'
-" obscript is case insensitive
+let s:cpo_save = &cpo
+set cpo&vim
+
+" obl is case insensitive
 syntax case ignore
 
 " Statements {{{
@@ -3352,3 +3354,7 @@ if !exists("did_obl_inits")
 
 endif
 
+let b:current_syntax = 'obl'
+
+let &cpo = s:cpo_save
+unlet s:cpo_save

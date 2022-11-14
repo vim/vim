@@ -1335,7 +1335,7 @@ au BufNewFile,BufRead *.nse			setf lua
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
 
 " Oblivion Language
-au BufRead,BufNewFile *.obl,*.obse,*.oblivion,*.obscript set ft=obl
+au BufRead,BufNewFile *.obl,*.obse,*.oblivion,*.obscript setf obl
 
 " OCaml
 au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli.cppo,*.ml.cppo setf ocaml

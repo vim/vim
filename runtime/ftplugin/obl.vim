@@ -5,6 +5,12 @@
 " Created:     August 08, 2021
 " Last Change: 13 November 2022
 
+if exists("b:did_ftplugin")
+  finish
+endif
+
+let b:undo_ftplugin = "setl com< cms<f"
+
 noremap <script> <buffer> <silent> [[ <nop>
 noremap <script> <buffer> <silent> ]] <nop>
 

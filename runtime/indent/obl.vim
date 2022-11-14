@@ -9,6 +9,7 @@ if exists("b:did_indent")
   finish
 endif
 let b:did_indent = 1
+b:undo_indent = 'setlocal indentkeys< indentexpr<'
 
 setlocal indentexpr=GetOblIndent()
 setlocal indentkeys+==~endif,=~else,=~loop,=~end
