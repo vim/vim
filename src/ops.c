@@ -1734,6 +1734,7 @@ op_change(oparg_T *oap)
     long		pre_textlen = 0;
     long		pre_indent = 0;
     char_u		*firstline;
+    int			save_finish_op = finish_op;
     char_u		*ins_text, *newp, *oldp;
     struct block_def	bd;
 
@@ -1775,7 +1776,12 @@ op_change(oparg_T *oap)
     if (oap->motion_type == MLINE)
 	fix_indent();
 
+    // Reset finish_op now, don't want it set inside edit().
+    finish_op = FALSE;
+
     retval = edit(NUL, FALSE, (linenr_T)1);
+
+    finish_op = save_finish_op;
 
     /*
      * In Visual block mode, handle copying the new text to all lines of the
@@ -4113,8 +4119,6 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// before.
 		restore_lbr(lbr_saved);
 #endif
-		// Reset finish_op now, don't want it set inside edit().
-		finish_op = FALSE;
 		if (op_change(oap))	// will call edit()
 		    cap->retval |= CA_COMMAND_BUSY;
 		if (restart_edit == 0)
