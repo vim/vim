@@ -72,6 +72,54 @@ func Test_address_fold()
   quit!
 endfunc
 
+func Test_address_offsets()
+  " check the help for :range-closed-fold
+  enew
+  call setline(1, [
+        \ '1 one',
+        \ '2 two',
+        \ '3 three',
+        \ '4 four FOLDED',
+        \ '5 five FOLDED',
+        \ '6 six',
+        \ '7 seven',
+        \ '8 eight',
+        \])
+  set foldmethod=manual
+  normal 4Gvjzf
+  3,4+2yank
+  call assert_equal([
+        \ '3 three',
+        \ '4 four FOLDED',
+        \ '5 five FOLDED',
+        \ '6 six',
+        \ '7 seven',
+        \ ], getreg(0,1,1))
+
+  enew!
+  call setline(1, [
+        \ '1 one',
+        \ '2 two',
+        \ '3 three FOLDED',
+        \ '4 four FOLDED',
+        \ '5 five FOLDED',
+        \ '6 six FOLDED',
+        \ '7 seven',
+        \ '8 eight',
+        \])
+  normal 3Gv3jzf
+  2,4-1yank
+  call assert_equal([
+        \ '2 two',
+        \ '3 three FOLDED',
+        \ '4 four FOLDED',
+        \ '5 five FOLDED',
+        \ '6 six FOLDED',
+        \ ], getreg(0,1,1))
+
+  bwipe!
+endfunc
+
 func Test_indent_fold()
     new
     call setline(1, ['', 'a', '    b', '    c'])
@@ -1568,6 +1616,42 @@ func Test_indent_append_blank_small_fold_close()
   normal zM
   call assert_notequal(-1, foldclosed(2)) " the fold should be closed now
   bw!
+endfunc
+
+func Test_sort_closed_fold()
+  CheckExecutable sort
+
+  call setline(1, [
+        \ 'Section 1',
+        \ '   how',
+        \ '   now',
+        \ '   brown',
+        \ '   cow',
+        \ 'Section 2',
+        \ '   how',
+        \ '   now',
+        \ '   brown',
+        \ '   cow',
+        \])
+  setlocal foldmethod=indent sw=3
+  normal 2G
+
+  " The "!!" expands to ".,.+3" and must only sort four lines
+  call feedkeys("!!sort\<CR>", 'xt')
+  call assert_equal([
+        \ 'Section 1',
+        \ '   brown',
+        \ '   cow',
+        \ '   how',
+        \ '   now',
+        \ 'Section 2',
+        \ '   how',
+        \ '   now',
+        \ '   brown',
+        \ '   cow',
+        \ ], getline(1, 10))
+
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1173,7 +1173,8 @@ ex_else(exarg_T *eap)
     {
 	// When skipping we ignore most errors, but a missing expression is
 	// wrong, perhaps it should have been "else".
-	if (skip && ends_excmd(*eap->arg))
+	// A double quote here is the start of a string, not a comment.
+	if (skip && *eap->arg != '"' && ends_excmd(*eap->arg))
 	    semsg(_(e_invalid_expression_str), eap->arg);
 	else
 	    result = eval_to_bool(eap->arg, &error, eap, skip, FALSE);

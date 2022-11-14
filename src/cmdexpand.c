@@ -19,6 +19,7 @@ static int      ExpandGeneric(char_u *pat, expand_T *xp, regmatch_T *regmatch,
 			      char_u ***matches, int *numMatches,
 			      char_u *((*func)(expand_T *, int)), int escaped);
 static int	ExpandFromContext(expand_T *xp, char_u *, char_u ***, int *, int);
+static char_u	*showmatches_gettail(char_u *s);
 static int	expand_showtail(expand_T *xp);
 static int	expand_shellcmd(char_u *filepat, char_u ***matches, int *numMatches, int flagsarg);
 #if defined(FEAT_EVAL)
@@ -34,7 +35,7 @@ static int compl_match_arraysize;
 static int compl_startcol;
 static int compl_selected;
 
-#define SHOW_FILE_TEXT(m) (showtail ? sm_gettail(matches[m]) : matches[m])
+#define SHOW_FILE_TEXT(m) (showtail ? showmatches_gettail(matches[m]) : matches[m])
 
 /*
  * Returns TRUE if fuzzy completion is supported for a given cmdline completion
@@ -91,6 +92,88 @@ sort_func_compare(const void *s1, const void *s2)
  * Escape special characters in the cmdline completion matches.
  */
     static void
+wildescape(
+    expand_T	*xp,
+    char_u	*str,
+    int		numfiles,
+    char_u	**files)
+{
+    char_u	*p;
+    int		vse_what = xp->xp_context == EXPAND_BUFFERS
+						       ? VSE_BUFFER : VSE_NONE;
+
+    if (xp->xp_context == EXPAND_FILES
+	    || xp->xp_context == EXPAND_FILES_IN_PATH
+	    || xp->xp_context == EXPAND_SHELLCMD
+	    || xp->xp_context == EXPAND_BUFFERS
+	    || xp->xp_context == EXPAND_DIRECTORIES)
+    {
+	// Insert a backslash into a file name before a space, \, %, #
+	// and wildmatch characters, except '~'.
+	for (int i = 0; i < numfiles; ++i)
+	{
+	    // for ":set path=" we need to escape spaces twice
+	    if (xp->xp_backslash == XP_BS_THREE)
+	    {
+		p = vim_strsave_escaped(files[i], (char_u *)" ");
+		if (p != NULL)
+		{
+		    vim_free(files[i]);
+		    files[i] = p;
+#if defined(BACKSLASH_IN_FILENAME)
+		    p = vim_strsave_escaped(files[i], (char_u *)" ");
+		    if (p != NULL)
+		    {
+			vim_free(files[i]);
+			files[i] = p;
+		    }
+#endif
+		}
+	    }
+#ifdef BACKSLASH_IN_FILENAME
+	    p = vim_strsave_fnameescape(files[i], vse_what);
+#else
+	    p = vim_strsave_fnameescape(files[i],
+		    xp->xp_shell ? VSE_SHELL : vse_what);
+#endif
+	    if (p != NULL)
+	    {
+		vim_free(files[i]);
+		files[i] = p;
+	    }
+
+	    // If 'str' starts with "\~", replace "~" at start of
+	    // files[i] with "\~".
+	    if (str[0] == '\\' && str[1] == '~' && files[i][0] == '~')
+		escape_fname(&files[i]);
+	}
+	xp->xp_backslash = XP_BS_NONE;
+
+	// If the first file starts with a '+' escape it.  Otherwise it
+	// could be seen as "+cmd".
+	if (*files[0] == '+')
+	    escape_fname(&files[0]);
+    }
+    else if (xp->xp_context == EXPAND_TAGS)
+    {
+	// Insert a backslash before characters in a tag name that
+	// would terminate the ":tag" command.
+	for (int i = 0; i < numfiles; ++i)
+	{
+	    p = vim_strsave_escaped(files[i], (char_u *)"\\|\"");
+	    if (p != NULL)
+	    {
+		vim_free(files[i]);
+		files[i] = p;
+	    }
+	}
+    }
+}
+
+/*
+ * Escape special characters in the cmdline completion matches.
+ */
+    static void
 ExpandEscape(
     expand_T	*xp,
     char_u	*str,
@@ -98,84 +181,12 @@ ExpandEscape(
     char_u	**files,
     int		options)
 {
-    int		i;
-    char_u	*p;
-    int		vse_what = xp->xp_context == EXPAND_BUFFERS
-						       ? VSE_BUFFER : VSE_NONE;
-
     // May change home directory back to "~"
     if (options & WILD_HOME_REPLACE)
 	tilde_replace(str, numfiles, files);
 
     if (options & WILD_ESCAPE)
-    {
-	if (xp->xp_context == EXPAND_FILES
-		|| xp->xp_context == EXPAND_FILES_IN_PATH
-		|| xp->xp_context == EXPAND_SHELLCMD
-		|| xp->xp_context == EXPAND_BUFFERS
-		|| xp->xp_context == EXPAND_DIRECTORIES)
-	{
-	    // Insert a backslash into a file name before a space, \, %, #
-	    // and wildmatch characters, except '~'.
-	    for (i = 0; i < numfiles; ++i)
-	    {
-		// for ":set path=" we need to escape spaces twice
-		if (xp->xp_backslash == XP_BS_THREE)
-		{
-		    p = vim_strsave_escaped(files[i], (char_u *)" ");
-		    if (p != NULL)
-		    {
-			vim_free(files[i]);
-			files[i] = p;
-#if defined(BACKSLASH_IN_FILENAME)
-			p = vim_strsave_escaped(files[i], (char_u *)" ");
-			if (p != NULL)
-			{
-			    vim_free(files[i]);
-			    files[i] = p;
-			}
-#endif
-		    }
-		}
-#ifdef BACKSLASH_IN_FILENAME
-		p = vim_strsave_fnameescape(files[i], vse_what);
-#else
-		p = vim_strsave_fnameescape(files[i],
-					  xp->xp_shell ? VSE_SHELL : vse_what);
-#endif
-		if (p != NULL)
-		{
-		    vim_free(files[i]);
-		    files[i] = p;
-		}
-
-		// If 'str' starts with "\~", replace "~" at start of
-		// files[i] with "\~".
-		if (str[0] == '\\' && str[1] == '~' && files[i][0] == '~')
-		    escape_fname(&files[i]);
-	    }
-	    xp->xp_backslash = XP_BS_NONE;
-
-	    // If the first file starts with a '+' escape it.  Otherwise it
-	    // could be seen as "+cmd".
-	    if (*files[0] == '+')
-		escape_fname(&files[0]);
-	}
-	else if (xp->xp_context == EXPAND_TAGS)
-	{
-	    // Insert a backslash before characters in a tag name that
-	    // would terminate the ":tag" command.
-	    for (i = 0; i < numfiles; ++i)
-	    {
-		p = vim_strsave_escaped(files[i], (char_u *)"\\|\"");
-		if (p != NULL)
-		{
-		    vim_free(files[i]);
-		    files[i] = p;
-		}
-	    }
-	}
-    }
+	wildescape(xp, str, numfiles, files);
 }
 
 /*
@@ -334,7 +345,7 @@ cmdline_pum_create(
     columns = vim_strsize(xp->xp_pattern);
     if (showtail)
     {
-	columns += vim_strsize(sm_gettail(matches[0]));
+	columns += vim_strsize(showmatches_gettail(matches[0]));
 	columns -= vim_strsize(matches[0]);
     }
     if (columns >= compl_startcol)
@@ -400,6 +411,272 @@ void cmdline_pum_cleanup(cmdline_info_T *cclp)
 int cmdline_compl_startcol(void)
 {
     return compl_startcol;
+}
+
+/*
+ * Return the number of characters that should be skipped in a status match.
+ * These are backslashes used for escaping.  Do show backslashes in help tags.
+ */
+    static int
+skip_status_match_char(expand_T *xp, char_u *s)
+{
+    if ((rem_backslash(s) && xp->xp_context != EXPAND_HELP)
+#ifdef FEAT_MENU
+	    || ((xp->xp_context == EXPAND_MENUS
+		    || xp->xp_context == EXPAND_MENUNAMES)
+			  && (s[0] == '\t' || (s[0] == '\\' && s[1] != NUL)))
+#endif
+	   )
+    {
+#ifndef BACKSLASH_IN_FILENAME
+	if (xp->xp_shell && csh_like_shell() && s[1] == '\\' && s[2] == '!')
+	    return 2;
+#endif
+	return 1;
+    }
+    return 0;
+}
+
+/*
+ * Get the length of an item as it will be shown in the status line.
+ */
+    static int
+status_match_len(expand_T *xp, char_u *s)
+{
+    int	len = 0;
+
+#ifdef FEAT_MENU
+    int emenu = xp->xp_context == EXPAND_MENUS
+	     || xp->xp_context == EXPAND_MENUNAMES;
+
+    // Check for menu separators - replace with '|'.
+    if (emenu && menu_is_separator(s))
+	return 1;
+#endif
+
+    while (*s != NUL)
+    {
+	s += skip_status_match_char(xp, s);
+	len += ptr2cells(s);
+	MB_PTR_ADV(s);
+    }
+
+    return len;
+}
+
+/*
+ * Show wildchar matches in the status line.
+ * Show at least the "match" item.
+ * We start at item 'first_match' in the list and show all matches that fit.
+ *
+ * If inversion is possible we use it. Else '=' characters are used.
+ */
+    static void
+win_redr_status_matches(
+    expand_T	*xp,
+    int		num_matches,
+    char_u	**matches,	// list of matches
+    int		match,
+    int		showtail)
+{
+#define L_MATCH(m) (showtail ? showmatches_gettail(matches[m]) : matches[m])
+    int		row;
+    char_u	*buf;
+    int		len;
+    int		clen;		// length in screen cells
+    int		fillchar;
+    int		attr;
+    int		i;
+    int		highlight = TRUE;
+    char_u	*selstart = NULL;
+    int		selstart_col = 0;
+    char_u	*selend = NULL;
+    static int	first_match = 0;
+    int		add_left = FALSE;
+    char_u	*s;
+#ifdef FEAT_MENU
+    int		emenu;
+#endif
+    int		l;
+
+    if (matches == NULL)	// interrupted completion?
+	return;
+
+    if (has_mbyte)
+	buf = alloc(Columns * MB_MAXBYTES + 1);
+    else
+	buf = alloc(Columns + 1);
+    if (buf == NULL)
+	return;
+
+    if (match == -1)	// don't show match but original text
+    {
+	match = 0;
+	highlight = FALSE;
+    }
+    // count 1 for the ending ">"
+    clen = status_match_len(xp, L_MATCH(match)) + 3;
+    if (match == 0)
+	first_match = 0;
+    else if (match < first_match)
+    {
+	// jumping left, as far as we can go
+	first_match = match;
+	add_left = TRUE;
+    }
+    else
+    {
+	// check if match fits on the screen
+	for (i = first_match; i < match; ++i)
+	    clen += status_match_len(xp, L_MATCH(i)) + 2;
+	if (first_match > 0)
+	    clen += 2;
+	// jumping right, put match at the left
+	if ((long)clen > Columns)
+	{
+	    first_match = match;
+	    // if showing the last match, we can add some on the left
+	    clen = 2;
+	    for (i = match; i < num_matches; ++i)
+	    {
+		clen += status_match_len(xp, L_MATCH(i)) + 2;
+		if ((long)clen >= Columns)
+		    break;
+	    }
+	    if (i == num_matches)
+		add_left = TRUE;
+	}
+    }
+    if (add_left)
+	while (first_match > 0)
+	{
+	    clen += status_match_len(xp, L_MATCH(first_match - 1)) + 2;
+	    if ((long)clen >= Columns)
+		break;
+	    --first_match;
+	}
+
+    fillchar = fillchar_status(&attr, curwin);
+
+    if (first_match == 0)
+    {
+	*buf = NUL;
+	len = 0;
+    }
+    else
+    {
+	STRCPY(buf, "< ");
+	len = 2;
+    }
+    clen = len;
+
+    i = first_match;
+    while ((long)(clen + status_match_len(xp, L_MATCH(i)) + 2) < Columns)
+    {
+	if (i == match)
+	{
+	    selstart = buf + len;
+	    selstart_col = clen;
+	}
+
+	s = L_MATCH(i);
+	// Check for menu separators - replace with '|'
+#ifdef FEAT_MENU
+	emenu = (xp->xp_context == EXPAND_MENUS
+		|| xp->xp_context == EXPAND_MENUNAMES);
+	if (emenu && menu_is_separator(s))
+	{
+	    STRCPY(buf + len, transchar('|'));
+	    l = (int)STRLEN(buf + len);
+	    len += l;
+	    clen += l;
+	}
+	else
+#endif
+	    for ( ; *s != NUL; ++s)
+	{
+	    s += skip_status_match_char(xp, s);
+	    clen += ptr2cells(s);
+	    if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
+	    {
+		STRNCPY(buf + len, s, l);
+		s += l - 1;
+		len += l;
+	    }
+	    else
+	    {
+		STRCPY(buf + len, transchar_byte(*s));
+		len += (int)STRLEN(buf + len);
+	    }
+	}
+	if (i == match)
+	    selend = buf + len;
+
+	*(buf + len++) = ' ';
+	*(buf + len++) = ' ';
+	clen += 2;
+	if (++i == num_matches)
+		break;
+    }
+
+    if (i != num_matches)
+    {
+	*(buf + len++) = '>';
+	++clen;
+    }
+
+    buf[len] = NUL;
+
+    row = cmdline_row - 1;
+    if (row >= 0)
+    {
+	if (wild_menu_showing == 0)
+	{
+	    if (msg_scrolled > 0)
+	    {
+		// Put the wildmenu just above the command line.  If there is
+		// no room, scroll the screen one line up.
+		if (cmdline_row == Rows - 1)
+		{
+		    screen_del_lines(0, 0, 1, (int)Rows, TRUE, 0, NULL);
+		    ++msg_scrolled;
+		}
+		else
+		{
+		    ++cmdline_row;
+		    ++row;
+		}
+		wild_menu_showing = WM_SCROLLED;
+	    }
+	    else
+	    {
+		// Create status line if needed by setting 'laststatus' to 2.
+		// Set 'winminheight' to zero to avoid that the window is
+		// resized.
+		if (lastwin->w_status_height == 0)
+		{
+		    save_p_ls = p_ls;
+		    save_p_wmh = p_wmh;
+		    p_ls = 2;
+		    p_wmh = 0;
+		    last_status(FALSE);
+		}
+		wild_menu_showing = WM_SHOWN;
+	    }
+	}
+
+	screen_puts(buf, row, 0, attr);
+	if (selstart != NULL && highlight)
+	{
+	    *selend = NUL;
+	    screen_puts(selstart, row, selstart_col, HL_ATTR(HLF_WM));
+	}
+
+	screen_fill(row, row + 1, clen, (int)Columns, fillchar, fillchar, attr);
+    }
+
+    win_redraw_last_status(topframe);
+    vim_free(buf);
 }
 
 /*
@@ -979,11 +1256,11 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 }
 
 /*
- * Private gettail for showmatches() (and win_redr_status_matches()):
- * Find tail of file name path, but ignore trailing "/".
+ * gettail() version for showmatches() and win_redr_status_matches():
+ * Return the tail of file name path "s", ignoring a trailing "/".
  */
-    char_u *
-sm_gettail(char_u *s)
+    static char_u *
+showmatches_gettail(char_u *s)
 {
     char_u	*p;
     char_u	*t = s;
@@ -2971,7 +3248,6 @@ expand_shellcmd_onedir(
 	garray_T	*gap)
 {
     int		ret;
-    int		i;
     hash_T	hash;
     hashitem_T	*hi;
 
@@ -2982,35 +3258,36 @@ expand_shellcmd_onedir(
 
     // Expand matches in one directory of $PATH.
     ret = expand_wildcards(1, &buf, numMatches, matches, flags);
-    if (ret == OK)
-    {
-	if (ga_grow(gap, *numMatches) == FAIL)
-	    FreeWild(*numMatches, *matches);
-	else
-	{
-	    for (i = 0; i < *numMatches; ++i)
-	    {
-		char_u *name = (*matches)[i];
+    if (ret != OK)
+	return;
 
-		if (STRLEN(name) > l)
-		{
-		    // Check if this name was already found.
-		    hash = hash_hash(name + l);
-		    hi = hash_lookup(ht, name + l, hash);
-		    if (HASHITEM_EMPTY(hi))
-		    {
-			// Remove the path that was prepended.
-			STRMOVE(name, name + l);
-			((char_u **)gap->ga_data)[gap->ga_len++] = name;
-			hash_add_item(ht, hi, name, hash);
-			name = NULL;
-		    }
-		}
-		vim_free(name);
-	    }
-	    vim_free(*matches);
-	}
+    if (ga_grow(gap, *numMatches) == FAIL)
+    {
+	FreeWild(*numMatches, *matches);
+	return;
     }
+
+    for (int i = 0; i < *numMatches; ++i)
+    {
+	char_u *name = (*matches)[i];
+
+	if (STRLEN(name) > l)
+	{
+	    // Check if this name was already found.
+	    hash = hash_hash(name + l);
+	    hi = hash_lookup(ht, name + l, hash);
+	    if (HASHITEM_EMPTY(hi))
+	    {
+		// Remove the path that was prepended.
+		STRMOVE(name, name + l);
+		((char_u **)gap->ga_data)[gap->ga_len++] = name;
+		hash_add_item(ht, hi, name, hash);
+		name = NULL;
+	    }
+	}
+	vim_free(name);
+    }
+    vim_free(*matches);
 }
 
 /*

@@ -687,6 +687,7 @@ enddef
 def Test_charcol()
   v9.CheckDefAndScriptFailure(['charcol(10)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1'])
   v9.CheckDefAndScriptFailure(['charcol({a: 10})'], ['E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1222: String or List required for argument 1'])
+  v9.CheckDefAndScriptFailure(['charcol(".", [])'], ['E1013: Argument 2: type mismatch, expected number but got list<unknown>', 'E1210: Number required for argument 2'])
   v9.CheckDefExecAndScriptFailure(['charcol("")'], 'E1209: Invalid value for a line number')
   new
   setline(1, ['abcdefgh'])
@@ -734,6 +735,7 @@ def Test_col()
   v9.CheckDefAndScriptFailure(['col(10)'], ['E1013: Argument 1: type mismatch, expected string but got number', 'E1222: String or List required for argument 1'])
   v9.CheckDefAndScriptFailure(['col({a: 10})'], ['E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1222: String or List required for argument 1'])
   v9.CheckDefAndScriptFailure(['col(true)'], ['E1013: Argument 1: type mismatch, expected string but got bool', 'E1222: String or List required for argument 1'])
+  v9.CheckDefAndScriptFailure(['col(".", [])'], ['E1013: Argument 2: type mismatch, expected number but got list<unknown>', 'E1210: Number required for argument 2'])
   v9.CheckDefExecAndScriptFailure(['col("")'], 'E1209: Invalid value for a line number')
   bw!
 enddef

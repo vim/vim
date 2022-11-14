@@ -227,7 +227,11 @@ endif
 ifeq ($(UNDER_CYGWIN),yes)
 WINDRES := $(CROSS_COMPILE)windres
 else
+ifeq ($(findstring clang,$(CC)),)
 WINDRES := windres
+else
+WINDRES := llvm-windres
+endif
 endif
 
 # Get the default ARCH.

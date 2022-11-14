@@ -3434,4 +3434,31 @@ func Test_insert_text_change_arg()
   call StopVimInTerminal(buf)
 endfunc
 
+def Test_textprop_in_quickfix_window()
+  enew!
+  var prop_type = 'my_prop'
+  prop_type_add(prop_type, {})
+
+  for lnum in range(1, 10)
+    setline(lnum, 'hello world')
+  endfor
+
+  cgetbuffer
+  copen
+
+  var bufnr = bufnr()
+  for lnum in range(1, line('$', bufnr->bufwinid()))
+    prop_add(lnum, 1, {
+      id: 1000 + lnum,
+      type: prop_type,
+      bufnr: bufnr,
+    })
+  endfor
+
+  prop_type_delete(prop_type)
+  cclose
+  bwipe!
+enddef
+
+
 " vim: shiftwidth=2 sts=2 expandtab

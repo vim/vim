@@ -859,6 +859,21 @@ free_prev_shellcmd(void)
 #endif
 
 /*
+ * Check that "prevcmd" is not NULL.  If it is NULL then give an error message
+ * and return FALSE.
+ */
+    static int
+prevcmd_is_set(void)
+{
+    if (prevcmd == NULL)
+    {
+	emsg(_(e_no_previous_command));
+	return FALSE;
+    }
+    return TRUE;
+}
+
+/*
  * Handle the ":!cmd" command.	Also for ":r !cmd" and ":w !cmd"
  * Bangs in the argument are replaced with the previously entered command.
  * Remember the argument.
@@ -913,9 +928,8 @@ do_bang(
 	    len += (int)STRLEN(newcmd);
 	if (ins_prevcmd)
 	{
-	    if (prevcmd == NULL)
+	    if (!prevcmd_is_set())
 	    {
-		emsg(_(e_no_previous_command));
 		vim_free(newcmd);
 		return;
 	    }
@@ -971,6 +985,9 @@ do_bang(
 
     if (bangredo)	    // put cmd in redo buffer for ! command
     {
+	if (!prevcmd_is_set())
+	    goto theend;
+
 	// If % or # appears in the command, it must have been escaped.
 	// Reescape them, so that redoing them does not substitute them by the
 	// buffername.
@@ -1020,6 +1037,8 @@ do_bang(
 	do_filter(line1, line2, eap, newcmd, do_in, do_out);
 	apply_autocmds(EVENT_SHELLFILTERPOST, NULL, NULL, FALSE, curbuf);
     }
+
+theend:
     if (free_newcmd)
 	vim_free(newcmd);
 }

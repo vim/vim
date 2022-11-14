@@ -1484,7 +1484,8 @@ func Test_col()
   call assert_equal(0, col([1, 100]))
   call assert_equal(0, col([1]))
   call assert_equal(0, col(test_null_list()))
-  call assert_fails('let c = col({})', 'E731:')
+  call assert_fails('let c = col({})', 'E1222:')
+  call assert_fails('let c = col(".", [])', 'E1210:')
 
   " test for getting the visual start column
   func T()
@@ -1513,6 +1514,15 @@ func Test_col()
   call cursor(1, 10)
   call assert_equal(4, col('.'))
   set virtualedit&
+
+  " Test for getting the column number in another window
+  let winid = win_getid()
+  new
+  call win_execute(winid, 'normal 1G$')
+  call assert_equal(3, col('.', winid))
+  call win_execute(winid, 'normal 2G')
+  call assert_equal(8, col('$', winid))
+  call assert_equal(0, col('.', 5001))
 
   bw!
 endfunc
@@ -3015,5 +3025,32 @@ func Test_virtcol()
   call assert_equal([4, 8], virtcol('.', v:true))
   bwipe!
 endfunc
+
+func Test_delfunc_while_listing()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set nocompatible
+      for i in range(1, 999)
+        exe 'func ' .. 'MyFunc' .. i .. '()'
+        endfunc
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('delfunc MyFunc622')})
+  END
+  call writefile(lines, 'Xfunctionclear', 'D')
+  let buf = RunVimInTerminal('-S Xfunctionclear', {'rows': 12})
+
+  " This was using freed memory.  The height of the terminal must be so that
+  " the next function to be listed with "j" is the one that is deleted in the
+  " timer callback, tricky!
+  call term_sendkeys(buf, ":func /MyFunc\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
