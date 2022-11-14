@@ -2018,16 +2018,11 @@ retnomove:
     return count;
 }
 
-// Remember which line is currently the longest, 
-// so that we don't have to
-// search for it when scrolling horizontally.
-linenr_T longest_lnum = 0;
-
 /*
  * Do a horizontal scroll.  Return TRUE if the cursor moved, FALSE otherwise.
  */
     int
-do_mousescroll_horizontal(long_u leftcol, int compute_longest_lnum)
+do_mousescroll_horizontal(long_u leftcol)
 {
     // no wrapping, no scrolling
     if (curwin->w_p_wrap)
@@ -2047,18 +2042,8 @@ do_mousescroll_horizontal(long_u leftcol, int compute_longest_lnum)
 	    !virtual_active()
 	    && (colnr_T)leftcol > scroll_line_len(curwin->w_cursor.lnum))
     {
-	if (compute_longest_lnum)
-	{
-	    curwin->w_cursor.lnum = ui_find_longest_lnum();
-	    curwin->w_cursor.col = 0;
-	}
-	// Do a sanity check on "longest_lnum", just in case.
-	else if (longest_lnum >= curwin->w_topline
-		&& longest_lnum < curwin->w_botline)
-	{
-	    curwin->w_cursor.lnum = longest_lnum;
-	    curwin->w_cursor.col = 0;
-	}
+	curwin->w_cursor.lnum = ui_find_longest_lnum();
+	curwin->w_cursor.col = 0;
     }
 
     return leftcol_changed();
@@ -2075,8 +2060,7 @@ do_mousescroll_horizontal(long_u leftcol, int compute_longest_lnum)
 do_mousescroll(int mode, cmdarg_T *cap)
 {
     win_T *old_curwin = curwin, *wp;
-    int dir = cap->arg;
-    int did_scroll = FALSE;
+    int did_ins_scroll = FALSE;
     pos_T tpos = curwin->w_cursor;
 
     if (mouse_row >= 0 && mouse_col >= 0)
@@ -2107,10 +2091,10 @@ do_mousescroll(int mode, cmdarg_T *cap)
 	send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
     else
 # endif
-    // Don't scroll the window in which completion is being done.
+    // For insert mode, don't scroll the window in which completion is being done.
     if (mode == MODE_NORMAL || !pum_visible() || curwin != old_curwin)
     {
-	if (dir == MSCR_UP || dir == MSCR_DOWN)
+	if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
 	{
 	    if (mouse_vert_step < 0
 		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
@@ -2118,18 +2102,18 @@ do_mousescroll(int mode, cmdarg_T *cap)
 		if (mode == MODE_INSERT)
 		{
 		    long step = (long)(curwin->w_botline - curwin->w_topline);
-		    scroll_redraw(dir,step);
+		    scroll_redraw(cap->arg,step);
 		}
 		else
 		{
-		    did_scroll = onepage(dir ? FORWARD : BACKWARD, 1L);
+		    did_ins_scroll = onepage(cap->arg ? FORWARD : BACKWARD, 1L);
 		}
 	    }
 	    else
 	    {
 		if (mode == MODE_INSERT)
 		{
-		    scroll_redraw(dir, mouse_vert_step);
+		    scroll_redraw(cap->arg, mouse_vert_step);
 		}
 		else
 		{
@@ -2156,23 +2140,18 @@ do_mousescroll(int mode, cmdarg_T *cap)
 	}
 	else
 	{
-	    // Horizontal scroll - only allowed when 'wrap' is disabled
-	    if ( mode == MODE_INSERT || !curwin->w_p_wrap)
-	    {
-		int val, step;
+	    int leftcol, step;
+	    if (mouse_hor_step < 0
+		|| mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+		step = curwin->w_width;
+	    else
+		step = mouse_hor_step;
+	
+	    leftcol = curwin->w_leftcol + (cap->arg == MSCR_RIGHT ? -step : +step);
+	    if (leftcol < 0)
+		leftcol = 0;
 
-		if (mouse_hor_step < 0
-			|| mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-		    step = curwin->w_width;
-		else
-		    step = mouse_hor_step;
-		
-		val = curwin->w_leftcol + (dir == MSCR_RIGHT ? -step : +step);
-		if (val < 0)
-		    val = 0;
-
-		did_scroll = do_mousescroll_horizontal(val, TRUE);
-	    }
+	    did_ins_scroll = do_mousescroll_horizontal(leftcol);
 	}
     }
 
@@ -2192,7 +2171,7 @@ do_mousescroll(int mode, cmdarg_T *cap)
 	// The popup menu may overlay the window, need to redraw it.
 	// TODO: Would be more efficient to only redraw the windows that are
 	// overlapped by the popup menu.
-	if (pum_visible() && did_scroll)
+	if (pum_visible() && did_ins_scroll)
 	{
 	    redraw_all_later(UPD_NOT_VALID);
 	    ins_compl_show_pum();

@@ -4105,14 +4105,14 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
 	scrollbar_value = value;
 
 	if (State & MODE_NORMAL)
-	    gui_do_horiz_scroll(scrollbar_value, FALSE);
+	    gui_do_horiz_scroll(scrollbar_value);
 	else if (State & MODE_INSERT)
 	    ins_horscroll();
 	else if (State & MODE_CMDLINE)
 	{
 	    if (msg_scrolled == 0)
 	    {
-		gui_do_horiz_scroll(scrollbar_value, FALSE);
+		gui_do_horiz_scroll(scrollbar_value);
 		redrawcmdline();
 	    }
 	}
@@ -4504,8 +4504,6 @@ gui_do_scroll(void)
     return (wp == curwin && !EQUAL_POS(curwin->w_cursor, old_cursor));
 }
 
-extern linenr_T longest_lnum;  // defined in ui.c
-
 /*
  * Horizontal scrollbar stuff:
  */
@@ -4547,7 +4545,7 @@ gui_update_horiz_scrollbar(int force)
     {
 	value = curwin->w_leftcol;
 
-	longest_lnum = ui_find_longest_lnum();
+	linenr_T longest_lnum = ui_find_longest_lnum();
 	max = scroll_line_len(longest_lnum);
 
 	if (virtual_active())
@@ -4600,9 +4598,9 @@ gui_update_horiz_scrollbar(int force)
  * Do a horizontal scroll.  Return TRUE if the cursor moved, FALSE otherwise.
  */
     int
-gui_do_horiz_scroll(long_u leftcol, int compute_longest_lnum)
+gui_do_horiz_scroll(long_u leftcol)
 {
-    return do_mousescroll_horizontal(leftcol,compute_longest_lnum);
+    return do_mousescroll_horizontal(leftcol);
 }
 
 /*
