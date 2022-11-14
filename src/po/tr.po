@@ -1691,7 +1691,7 @@ msgstr "--servername <ad>\t<ad> Vim sunucusuna gönder veya sunucu ol"
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <dsy>\tBaşlangıç zamanlama iletilerini <dsy>'ya yaz"
 
-msgid "--log <file>\tStart logging to <file> early"
+msgid "--log <file>\t\tStart logging to <file> early"
 msgstr "--log <dosya>\t<dosya>'ya günlüklemeyi erkenden başlat"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"

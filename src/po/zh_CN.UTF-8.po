@@ -1676,8 +1676,8 @@ msgstr "--servername <名称>\t发送到或成为 Vim 服务器 <名称>"
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <文件>\t将启动计时信息写入 <文件>"
 
-msgid "--log <file>\tStart logging to <file> early"
-msgstr "--log <文件>\t尽早开始记录日志到 <文件>"
+msgid "--log <file>\t\tStart logging to <file> early"
+msgstr "--log <文件>\t\t尽早开始记录日志到 <文件>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\t使用 <viminfo> 取代 .viminfo"

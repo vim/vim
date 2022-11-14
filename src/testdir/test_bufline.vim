@@ -23,8 +23,8 @@ func Test_setbufline_getbufline()
 
   call assert_equal(1, setbufline(b, 5, 'x'))
   call assert_equal(1, setbufline(b, 5, ['x']))
-  call assert_equal(1, setbufline(b, 5, []))
-  call assert_equal(1, setbufline(b, 5, test_null_list()))
+  call assert_equal(0, setbufline(b, 5, []))
+  call assert_equal(0, setbufline(b, 5, test_null_list()))
 
   call assert_equal(1, 'x'->setbufline(bufnr('$') + 1, 1))
   call assert_equal(1, ['x']->setbufline(bufnr('$') + 1, 1))
@@ -86,6 +86,11 @@ func Test_setline_startup()
   sleep 50m
   call assert_equal(['Hello'], readfile('Xtest'))
 
+  call assert_equal(0, setline(1, []))
+  call assert_equal(0, setline(1, test_null_list()))
+  call assert_equal(0, setline(5, []))
+  call assert_equal(0, setline(6, test_null_list()))
+
   call delete('Xtest')
 endfunc
 
@@ -112,8 +117,8 @@ func Test_appendbufline()
 
   call assert_equal(1, appendbufline(b, 4, 'x'))
   call assert_equal(1, appendbufline(b, 4, ['x']))
-  call assert_equal(1, appendbufline(b, 4, []))
-  call assert_equal(1, appendbufline(b, 4, test_null_list()))
+  call assert_equal(0, appendbufline(b, 4, []))
+  call assert_equal(0, appendbufline(b, 4, test_null_list()))
 
   call assert_equal(1, appendbufline(1234, 1, 'x'))
   call assert_equal(1, appendbufline(1234, 1, ['x']))
@@ -122,8 +127,8 @@ func Test_appendbufline()
 
   call assert_equal(0, appendbufline(b, 1, []))
   call assert_equal(0, appendbufline(b, 1, test_null_list()))
-  call assert_equal(1, appendbufline(b, 3, []))
-  call assert_equal(1, appendbufline(b, 3, test_null_list()))
+  call assert_equal(0, appendbufline(b, 3, []))
+  call assert_equal(0, appendbufline(b, 3, test_null_list()))
 
   call assert_equal(['a', 'b', 'c'], getbufline(b, 1, '$'))
 
@@ -272,6 +277,22 @@ func Test_setbufline_startup_nofile()
   endif
   call assert_equal(['success'], readfile('Xresult'))
   call delete('Xresult')
+endfunc
+
+" Test that setbufline(), appendbufline() and deletebufline() should fail and
+" return 1 when "textlock" is active.
+func Test_change_bufline_with_textlock()
+  new
+  inoremap <buffer> <expr> <F2> setbufline('', 1, '')
+  call assert_fails("normal a\<F2>", 'E565:')
+  call assert_equal('1', getline(1))
+  inoremap <buffer> <expr> <F2> appendbufline('', 1, '')
+  call assert_fails("normal a\<F2>", 'E565:')
+  call assert_equal('11', getline(1))
+  inoremap <buffer> <expr> <F2> deletebufline('', 1)
+  call assert_fails("normal a\<F2>", 'E565:')
+  call assert_equal('111', getline(1))
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

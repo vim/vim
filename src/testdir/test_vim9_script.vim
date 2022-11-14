@@ -4087,7 +4087,8 @@ def Test_no_unknown_error_after_error()
       endfor
   END
   writefile(lines, 'Xdef', 'D')
-  assert_fails('so Xdef', ['E684:', 'E1012:'])
+  # Either the exit or out callback is called first, accept them in any order
+  assert_fails('so Xdef', ['E684:\|E1012:', 'E1012:\|E684:'])
 enddef
 
 def InvokeNormal()
@@ -4366,7 +4367,7 @@ def Run_Test_debug_running_out_of_lines()
   g:StopVimInTerminal(buf)
 enddef
 
-def Test_ambigous_command_error()
+def Test_ambiguous_command_error()
   var lines =<< trim END
       vim9script
       command CmdA echomsg 'CmdA'

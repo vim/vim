@@ -167,7 +167,7 @@
 # if defined(FEAT_NORMAL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
-# if defined(FEAT_BIG) && !defined(FEAT_SOUND)
+# if defined(FEAT_HUGE) && !defined(FEAT_SOUND)
 #  define FEAT_SOUND
 # endif
 # if defined(FEAT_SOUND)
@@ -1963,8 +1963,8 @@ typedef int sock_T;
 #define MOUSE_COLOFF 10000
 
 /*
- * jump_to_mouse() returns one of first four these values, possibly with
- * some of the other three added.
+ * jump_to_mouse() returns one of first five these values, possibly with
+ * some of the other four added.
  */
 #define IN_UNKNOWN		0
 #define IN_BUFFER		1

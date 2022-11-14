@@ -1741,7 +1741,7 @@ msgstr ""
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <файл>\tЗаписать временные метки запуска в <файл>"
 
-msgid "--log <file>\tStart logging to <file> early"
+msgid "--log <file>\t\tStart logging to <file> early"
 msgstr ""
 "--log <файл>\t\tНачать запись журнала в <файл> на раннем этапе\n"
 "\t\t\t\tинициализации"

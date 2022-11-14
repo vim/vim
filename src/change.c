@@ -1378,7 +1378,7 @@ del_bytes(
  * "second_line_indent": indent for after ^^D in Insert mode or if flag
  *			  OPENLINE_COM_LIST
  * "did_do_comment" is set to TRUE when intentionally putting the comment
- * leader in fromt of the new line.
+ * leader in front of the new line.
  *
  * Return OK for success, FAIL for failure
  */

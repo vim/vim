@@ -4602,10 +4602,11 @@ get_address(
 		i = '+';		// "number" is same as "+number"
 	    else
 		i = *cmd++;
-	    if (!VIM_ISDIGIT(*cmd))	// '+' is '+1', but '+0' is not '+1'
+	    if (!VIM_ISDIGIT(*cmd))	// '+' is '+1'
 		n = 1;
 	    else
 	    {
+		// "number", "+number" or "-number"
 		n = getdigits(&cmd);
 		if (n == MAXLNUM)
 		{
@@ -4627,8 +4628,8 @@ get_address(
 	    else
 	    {
 #ifdef FEAT_FOLDING
-		// Relative line addressing, need to adjust for folded lines
-		// now, but only do it after the first address.
+		// Relative line addressing: need to adjust for lines in a
+		// closed fold after the first address.
 		if (addr_type == ADDR_LINES && (i == '-' || i == '+')
 							 && address_count >= 2)
 		    (void)hasFolding(lnum, NULL, &lnum);

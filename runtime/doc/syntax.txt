@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2022 Oct 17
+*syntax.txt*	For Vim version 9.0.  Last change: 2022 Nov 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2416,7 +2416,7 @@ you set the variable: >
 
 	:let papp_include_html=1
 
-in your startup file it will try to syntax-hilight html code inside phtml
+in your startup file it will try to syntax-highlight html code inside phtml
 sections, but this is relatively slow and much too colourful to be able to
 edit sensibly. ;)
 
@@ -4943,7 +4943,7 @@ Change a couple more colors: >
 	augroup my_colorschemes
 	  au!
 	  au Colorscheme pablo hi Normal ctermbg=NONE
-		      \ | higlight Special ctermfg=63
+		      \ | highlight Special ctermfg=63
 		      \ | highlight Identifier ctermfg=44
 	augroup END
 
@@ -5386,10 +5386,10 @@ LineNrBelow	Line number for when the 'relativenumber'
 							*hl-CursorLineNr*
 CursorLineNr	Like LineNr when 'cursorline' is set and 'cursorlineopt'
 		contains "number" or is "both", for the cursor line.
-							*hl-CursorLineSign*
-CursorLineSign	Like SignColumn when 'cursorline' is set for the cursor line.
 							*hl-CursorLineFold*
 CursorLineFold	Like FoldColumn when 'cursorline' is set for the cursor line.
+							*hl-CursorLineSign*
+CursorLineSign	Like SignColumn when 'cursorline' is set for the cursor line.
 							*hl-MatchParen*
 MatchParen	Character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|

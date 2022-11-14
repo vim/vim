@@ -634,7 +634,7 @@ lookup_color(int idx, int foreground, int *boldp)
 /*
  * Link highlight group 'from_hg' to 'to_hg'.
  * 'dodefault' is set to TRUE for ":highlight default link".
- * 'forceit' is set to TRUE for ":higlight! link"
+ * 'forceit' is set to TRUE for ":highlight! link"
  * 'init' is set to TRUE when initializing all the highlight groups.
  */
     static void

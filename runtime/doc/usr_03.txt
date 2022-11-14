@@ -1,4 +1,4 @@
-*usr_03.txt*	For Vim version 9.0.  Last change: 2020 Sep 03
+*usr_03.txt*	For Vim version 9.0.  Last change: 2022 Oct 30
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -223,7 +223,7 @@ you can see?  This figure shows the three commands you can use:
 			+---------------------------+
 
 Hints: "H" stands for Home, "M" for Middle and "L" for Last.  Alternatively,
-"H" for high, "M" for Middle and "L" for low.
+"H" for High, "M" for Middle and "L" for Low.
 
 ==============================================================================
 *03.6*	Telling where you are

@@ -1648,6 +1648,30 @@ func Test_mouse_drag_mapped_start_select()
   set mouse&
 endfunc
 
+func Test_mouse_drag_statusline()
+  set laststatus=2
+  set mouse=a
+  func ClickExpr()
+    call test_setmouse(&lines - 1, 1)
+    return "\<LeftMouse>"
+  endfunc
+  func DragExpr()
+    call test_setmouse(&lines - 2, 1)
+    return "\<LeftDrag>"
+  endfunc
+  nnoremap <expr> <F2> ClickExpr()
+  nnoremap <expr> <F3> DragExpr()
+
+  " this was causing a crash in win_drag_status_line()
+  call feedkeys("\<F2>:tabnew\<CR>\<F3>", 'tx')
+
+  nunmap <F2>
+  nunmap <F3>
+  delfunc ClickExpr
+  delfunc DragExpr
+  set laststatus& mouse&
+endfunc
+
 " Test for mapping <LeftDrag> in Insert mode
 func Test_mouse_drag_insert_map()
   set mouse=a
@@ -1748,6 +1772,30 @@ func Test_using_past_typeahead()
 
   exe "norm :set \x80\xfb0=\<CR>"
   nunmap :00
+endfunc
+
+func Test_mapclear_while_listing()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set nocompatible
+      mapclear
+      for i in range(1, 999)
+        exe 'map ' .. 'foo' .. i .. ' bar'
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('mapclear')})
+  END
+  call writefile(lines, 'Xmapclear', 'D')
+  let buf = RunVimInTerminal('-S Xmapclear', {'rows': 10})
+
+  " this was using freed memory
+  call term_sendkeys(buf, ":map\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "G")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
 endfunc
 
 

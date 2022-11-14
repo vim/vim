@@ -1267,7 +1267,7 @@ endfunc
 
 " Test for jumping to a vertical/horizontal neighbor window based on the
 " current cursor position
-func Test_window_goto_neightbor()
+func Test_window_goto_neighbor()
   %bw!
 
   " Vertical window movement
@@ -1483,23 +1483,33 @@ func Test_win_move_separator()
   call assert_equal(w0, winwidth(0))
   call assert_true(win_move_separator(0, -1))
   call assert_equal(w0, winwidth(0))
+
   " check that win_move_separator doesn't error with offsets beyond moving
   " possibility
   call assert_true(win_move_separator(id, 5000))
   call assert_true(winwidth(id) > w)
   call assert_true(win_move_separator(id, -5000))
   call assert_true(winwidth(id) < w)
+
   " check that win_move_separator returns false for an invalid window
   wincmd =
   let w = winwidth(0)
   call assert_false(win_move_separator(-1, 1))
   call assert_equal(w, winwidth(0))
+
   " check that win_move_separator returns false for a popup window
   let id = popup_create(['hello', 'world'], {})
   let w = winwidth(id)
   call assert_false(win_move_separator(id, 1))
   call assert_equal(w, winwidth(id))
   call popup_close(id)
+
+  " check that using another tabpage fails without crash
+  let id = win_getid()
+  tabnew
+  call assert_fails('call win_move_separator(id, -1)', 'E1308:')
+  tabclose
+
   %bwipe!
 endfunc
 
@@ -1545,23 +1555,33 @@ func Test_win_move_statusline()
     call assert_true(id->win_move_statusline(-offset))
     call assert_equal(h, winheight(id))
   endfor
+
   " check that win_move_statusline doesn't error with offsets beyond moving
   " possibility
   call assert_true(win_move_statusline(id, 5000))
   call assert_true(winheight(id) > h)
   call assert_true(win_move_statusline(id, -5000))
   call assert_true(winheight(id) < h)
+
   " check that win_move_statusline returns false for an invalid window
   wincmd =
   let h = winheight(0)
   call assert_false(win_move_statusline(-1, 1))
   call assert_equal(h, winheight(0))
+
   " check that win_move_statusline returns false for a popup window
   let id = popup_create(['hello', 'world'], {})
   let h = winheight(id)
   call assert_false(win_move_statusline(id, 1))
   call assert_equal(h, winheight(id))
   call popup_close(id)
+
+  " check that using another tabpage fails without crash
+  let id = win_getid()
+  tabnew
+  call assert_fails('call win_move_statusline(id, -1)', 'E1308:')
+  tabclose
+
   %bwipe!
 endfunc
 

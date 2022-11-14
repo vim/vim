@@ -2291,7 +2291,7 @@ vim_str2nr(
 	}
 	else
 	{
-	    // prevent a larg unsigned number to become negative
+	    // prevent a large unsigned number to become negative
 	    if (un > VARNUM_MAX)
 		un = VARNUM_MAX;
 	    *nptr = (varnumber_T)un;

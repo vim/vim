@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2022 Oct 21
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Nov 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -116,13 +116,13 @@ ch_status({handle} [, {options}])
 changenr()			Number	current change number
 char2nr({expr} [, {utf8}])	Number	ASCII/UTF-8 value of first char in {expr}
 charclass({string})		Number	character class of {string}
-charcol({expr})			Number	column number of cursor or mark
+charcol({expr} [, {winid}])	Number	column number of cursor or mark
 charidx({string}, {idx} [, {countcc}])
 				Number	char index of byte {idx} in {string}
 chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
-col({expr})			Number	column byte index of cursor or mark
+col({expr} [, {winid}])		Number	column byte index of cursor or mark
 complete({startcol}, {matches}) none	set Insert mode completion
 complete_add({expr})		Number	add completion match
 complete_check()		Number	check for key typed during completion
@@ -246,6 +246,7 @@ getloclist({nr}, {what})	Dict	get specific location list properties
 getmarklist([{buf}])		List	list of global/local marks
 getmatches([{win}])		List	list of current matches
 getmousepos()			Dict	last known mouse position
+getmouseshape()			String	current mouse shape name
 getpid()			Number	process ID of Vim
 getpos({expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
@@ -806,8 +807,10 @@ append({lnum}, {text})					*append()*
 		{lnum} can be zero to insert a line before the first one.
 		{lnum} is used like with |getline()|.
 		Returns 1 for failure ({lnum} out of range or out of memory),
-		0 for success.  In |Vim9| script an invalid argument or
-		negative number results in an error.  Example: >
+		0 for success.  When {text} is an empty list zero is returned,
+		no matter the value of {lnum}.
+		In |Vim9| script an invalid argument or negative number
+		results in an error.  Example: >
 			:let failed = append(line('$'), "# THE END")
 			:let failed = append(0, ["Chapter 1", "the beginning"])
 
@@ -835,7 +838,9 @@ appendbufline({buf}, {lnum}, {text})			*appendbufline()*
 		If {buf} is not a valid buffer or {lnum} is not valid, an
 		error message is given. Example: >
 			:let failed = appendbufline(13, 0, "# THE START")
-<
+<		However, when {text} is an empty list then no error is given
+		for an invalid {lnum}, since {lnum} isn't actually used.
+
 		Can also be used as a |method| after a List, the base is
 		passed as the second argument: >
 			mylist->appendbufline(buf, lnum)
@@ -981,7 +986,7 @@ autocmd_add({acmds})					*autocmd_add()*
 			let acmd.bufnr = 5
 			let acmd.cmd = 'call BufEnterFunc()'
 			call autocmd_add([acmd])
-
+<
 		Can also be used as a |method|: >
 			GetAutocmdList()->autocmd_add()
 <
@@ -1317,7 +1322,8 @@ bufwinid({buf})						*bufwinid()*
 
 	echo "A window containing buffer 1 is " .. (bufwinid(1))
 <
-		Only deals with the current tab page.
+		Only deals with the current tab page.  See |win_findbuf()| for
+		finding more.
 
 		Can also be used as a |method|: >
 			FindBuffer()->bufwinid()
@@ -1469,7 +1475,7 @@ charclass({string})					*charclass()*
 		Returns 0 if {string} is not a |String|.
 
 
-charcol({expr})						*charcol()*
+charcol({expr} [, {winid}])				*charcol()*
 		Same as |col()| but returns the character index of the column
 		position given with {expr} instead of the byte position.
 
@@ -1552,8 +1558,8 @@ clearmatches([{win}])					*clearmatches()*
 		Can also be used as a |method|: >
 			GetWin()->clearmatches()
 <
-							*col()*
-col({expr})	The result is a Number, which is the byte index of the column
+col({expr} [, {winid})					*col()*
+		The result is a Number, which is the byte index of the column
 		position given with {expr}.  The accepted positions are:
 		    .	    the cursor position
 		    $	    the end of the cursor line (the result is the
@@ -1568,6 +1574,8 @@ col({expr})	The result is a Number, which is the byte index of the column
 		and column number. Most useful when the column is "$", to get
 		the last column of a specific line.  When "lnum" or "col" is
 		out of range then col() returns zero.
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.
 		To get the line number use |line()|.  To get both use
 		|getpos()|.
 		For the screen column position use |virtcol()|.  For the
@@ -1578,14 +1586,15 @@ col({expr})	The result is a Number, which is the byte index of the column
 			col("$")		length of cursor line plus one
 			col("'t")		column of mark t
 			col("'" .. markname)	column of mark markname
-<		The first column is 1.  Returns 0 if {expr} is invalid.
+<		The first column is 1.  Returns 0 if {expr} is invalid or when
+		the window with ID {winid} is not found.
 		For an uppercase mark the column may actually be in another
 		buffer.
 		For the cursor position, when 'virtualedit' is active, the
 		column is one higher if the cursor is after the end of the
 		line.  Also, when using a <Cmd> mapping the cursor isn't
 		moved, this can be used to obtain the column in Insert mode: >
-			:imap <F2> <Cmd>echo col(".")<CR>
+			:imap <F2> <Cmd>echowin col(".")<CR>
 
 <		Can also be used as a |method|: >
 			GetPos()->col()
@@ -2769,7 +2778,7 @@ flattennew({list} [, {maxdepth}])			*flattennew()*
 float2nr({expr})					*float2nr()*
 		Convert {expr} to a Number by omitting the part after the
 		decimal point.
-		{expr} must evaluate to a |Float| or a Number.
+		{expr} must evaluate to a |Float| or a |Number|.
 		Returns 0 if {expr} is not a |Float| or a |Number|.
 		When the value of {expr} is out of range for a |Number| the
 		result is truncated to 0x7fffffff or -0x7fffffff (or when
@@ -3870,6 +3879,12 @@ getmousepos()						*getmousepos()*
 
 		When using |getchar()| the Vim variables |v:mouse_lnum|,
 		|v:mouse_col| and |v:mouse_winid| also provide these values.
+
+getmouseshape()						*getmouseshape()*
+		Returns the name of the currently showing mouse pointer.
+		When the |+mouseshape| feature is not supported or the shape
+		is unknown an empty string is returned.
+		This function is mainly intended for testing.
 
 							*getpid()*
 getpid()	Return a Number which is the process ID of the Vim process.
@@ -7873,9 +7888,10 @@ setbufline({buf}, {lnum}, {text})			*setbufline()*
 		To insert lines use |appendbufline()|.
 		Any text properties in {lnum} are cleared.
 
-		{text} can be a string to set one line, or a list of strings
-		to set multiple lines.  If the list extends below the last
-		line then those lines are added.
+		{text} can be a string to set one line, or a List of strings
+		to set multiple lines.  If the List extends below the last
+		line then those lines are added.  If the List is empty then
+		nothing is changed and zero is returned.
 
 		For the use of {buf}, see |bufname()| above.
 
@@ -8060,7 +8076,8 @@ setline({lnum}, {text})					*setline()*
 		When {lnum} is just below the last line the {text} will be
 		added below the last line.
 		{text} can be any type or a List of any type, each item is
-		converted to a String.
+		converted to a String.  When {text} is an empty List then
+		nothing is changed and FALSE is returned.
 
 		If this succeeds, FALSE is returned.  If this fails (most likely
 		because {lnum} is invalid) TRUE is returned.
@@ -10198,6 +10215,7 @@ win_move_separator({nr}, {offset})			*win_move_separator()*
 		FALSE otherwise.
 		This will fail for the rightmost window and a full-width
 		window, since it has no separator on the right.
+		Only works for the current tab page. *E1308*
 
 		Can also be used as a |method|: >
 			GetWinnr()->win_move_separator(offset)
@@ -10212,6 +10230,7 @@ win_move_statusline({nr}, {offset})			*win_move_statusline()*
 		movement may be smaller than specified (e.g., as a consequence
 		of maintaining 'winminheight'). Returns TRUE if the window can
 		be found and FALSE otherwise.
+		Only works for the current tab page.
 
 		Can also be used as a |method|: >
 			GetWinnr()->win_move_statusline(offset)
