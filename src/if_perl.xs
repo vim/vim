@@ -145,6 +145,11 @@
 # define EXTERN_C
 #endif
 
+// Suppress Infinite warnings when compiling XS modules under macOS 12 Monterey.
+#if defined(__clang__) && defined(__clang_major__) && __clang_major__ > 11
+# pragma clang diagnostic ignored "-Wcompound-token-split-by-macro"
+#endif
+
 /* Compatibility hacks over */
 
 static PerlInterpreter *perl_interp = NULL;

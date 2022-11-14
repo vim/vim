@@ -2,6 +2,9 @@
 
 import './vim9.vim' as v9
 
+source check.vim
+source screendump.vim
+
 " Test for <mods> in user defined commands
 function Test_cmdmods()
   let g:mods = ''
@@ -373,6 +376,14 @@ func Test_CmdCompletion()
   call feedkeys(":com MyCmd chist\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal("\"com MyCmd chistory", @:)
 
+  " delete the Check commands to avoid them showing up
+  call feedkeys(":com Check\<C-A>\<C-B>\"\<CR>", 'tx')
+  let cmds = substitute(@:, '"com ', '', '')->split()
+  for cmd in cmds
+    exe 'delcommand ' .. cmd
+  endfor
+  delcommand MissingFeature
+
   command! DoCmd1 :
   command! DoCmd2 :
   call feedkeys(":com \<C-A>\<C-B>\"\<CR>", 'tx')
@@ -716,6 +727,7 @@ func Test_usercmd_with_block()
          echo 'hello'
   END
   call v9.CheckScriptFailure(lines, 'E1026:')
+  delcommand DoesNotEnd
 
   let lines =<< trim END
       command HelloThere {
@@ -754,6 +766,7 @@ func Test_usercmd_with_block()
       BadCommand
   END
   call v9.CheckScriptFailure(lines, 'E1128:')
+  delcommand BadCommand
 endfunc
 
 func Test_delcommand_buffer()
@@ -817,7 +830,7 @@ func Test_recursive_define()
   call DefCmd('Command')
 
   let name = 'Command'
-  while len(name) < 30
+  while len(name) <= 30
     exe 'delcommand ' .. name
     let name ..= 'x'
   endwhile
@@ -880,6 +893,31 @@ func Test_block_declaration_legacy_script()
 
   unlet g:someExpr
   delcommand Rename
+endfunc
+
+func Test_comclear_while_listing()
+  call CheckRunVimInTerminal()
+
+  let lines =<< trim END
+      set nocompatible
+      comclear
+      for i in range(1, 999)
+        exe 'command ' .. 'Foo' .. i .. ' bar'
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('comclear')})
+  END
+  call writefile(lines, 'Xcommandclear', 'D')
+  let buf = RunVimInTerminal('-S Xcommandclear', {'rows': 10})
+
+  " this was using freed memory
+  call term_sendkeys(buf, ":command\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "j")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "G")
+  call term_sendkeys(buf, "\<CR>")
+
+  call StopVimInTerminal(buf)
 endfunc
 
 

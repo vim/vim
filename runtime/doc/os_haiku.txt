@@ -56,7 +56,7 @@ additionally installed over the GUI version.  Typical build commands are:
   ./configure --prefix=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY` \
     --datarootdir=`finddir B_SYSTEM_NONPACKAGED_DATA_DIRECTORY` \
     --mandir=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY`/documentation/man \
-    --with-tlib=ncurses \
+    --with-tlib=ncurses
   make clean
   make install
 

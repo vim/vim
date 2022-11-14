@@ -231,14 +231,31 @@ func s:feedkeys(timer)
   call feedkeys('x', 'nt')
 endfunc
 
+" Get the name of the Vim executable that we expect has been build in the src
+" directory.
+func s:GetJustBuildVimExe()
+  if has("win32")
+    if !filereadable('..\vim.exe') && filereadable('..\vimd.exe')
+      " looks like the debug executable was intentionally build, so use it
+      return '..\vimd.exe'
+    endif
+    return '..\vim.exe'
+  endif
+  return '../vim'
+endfunc
+
 " Get $VIMPROG to run the Vim executable.
 " The Makefile writes it as the first line in the "vimcmd" file.
+" Falls back to the Vim executable in the src directory.
 func GetVimProg()
-  if !filereadable('vimcmd')
-    " Assume the script was sourced instead of running "make".
-    return '../vim'
+  if filereadable('vimcmd')
+    return readfile('vimcmd')[0]
   endif
-  return readfile('vimcmd')[0]
+  echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
+
+  " Probably the script was sourced instead of running "make".
+  " We assume Vim was just build in the src directory then.
+  return s:GetJustBuildVimExe()
 endfunc
 
 let g:valgrind_cnt = 1
@@ -246,16 +263,13 @@ let g:valgrind_cnt = 1
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.
 " If there is an argument use it instead of "NONE".
 func GetVimCommand(...)
-  if !filereadable('vimcmd')
-    echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
-    if !has("win32")
-      let lines = ['../vim']
-    else
-      let lines = ['..\vim.exe']
-    endif
-  else
+  if filereadable('vimcmd')
     let lines = readfile('vimcmd')
+  else
+    echo 'Cannot read the "vimcmd" file, falling back to ../vim.'
+    let lines = [s:GetJustBuildVimExe()]
   endif
+
   if a:0 == 0
     let name = 'NONE'
   else

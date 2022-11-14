@@ -154,7 +154,7 @@ test_trunc_string_mbyte(void)
 /*
  * Test vim_snprintf() with a focus on checking that truncation is
  * correct when buffer is small, since it cannot be tested from
- * vim scrip tests. Check that:
+ * vim script tests. Check that:
  * - no buffer overflows happens (with valgrind or asan)
  * - output string is always NUL terminated.
  *

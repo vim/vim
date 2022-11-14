@@ -3049,13 +3049,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	not set yet, the default for 'fileencodings' is changed.
 
 			*'endoffile'* *'eof'* *'noendoffile'* *'noeof'*
-'endoffile' 'eof'	boolean	(default on)
+'endoffile' 'eof'	boolean	(default off)
 			local to buffer
 	Indicates that a CTRL-Z character was found at the end of the file
 	when reading it.  Normally only happens when 'fileformat' is "dos".
 	When writing a file and this option is off and the 'binary' option
 	is on, or 'fixeol' option is off, no CTRL-Z will be written at the
 	end of the file.
+	See |eol-and-eof| for example settings.
 
 			*'endofline'* *'eol'* *'noendofline'* *'noeol'*
 'endofline' 'eol'	boolean	(default on)
@@ -3071,6 +3072,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	to remember the presence of a <EOL> for the last line in the file, so
 	that when you write the file the situation from the original file can
 	be kept.  But you can change it if you want to.
+	See |eol-and-eof| for example settings.
 
 			     *'equalalways'* *'ea'* *'noequalalways'* *'noea'*
 'equalalways' 'ea'	boolean	(default on)
@@ -3466,6 +3468,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When the 'binary' option is set the value of this option doesn't
 	matter.
 	See the 'endofline' option.
+	See |eol-and-eof| for example settings.
 
 					*'fkmap'* *'fk'* *'nofkmap'* *'nofk'*
 'fkmap' 'fk'		boolean (default off)

@@ -1376,7 +1376,8 @@ get_lval(
 		else
 		    prevval = 0; // avoid compiler warning
 		wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
-			       && rettv->v_type == VAR_FUNC
+			       && (rettv->v_type == VAR_FUNC
+					    || rettv->v_type == VAR_PARTIAL)
 			       && var_wrong_func_name(key, lp->ll_di == NULL))
 			|| !valid_varname(key, -1, TRUE);
 		if (len != -1)
@@ -3269,7 +3270,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    if (var2.v_type != VAR_NUMBER)
 		emsg(_(e_bitshift_ops_must_be_number));
 	    else
-		emsg(_(e_bitshift_ops_must_be_postive));
+		emsg(_(e_bitshift_ops_must_be_positive));
 	    clear_tv(rettv);
 	    clear_tv(&var2);
 	    return FAIL;

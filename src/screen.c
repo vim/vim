@@ -916,274 +916,6 @@ draw_vsep_win(win_T *wp, int row)
     }
 }
 
-static int skip_status_match_char(expand_T *xp, char_u *s);
-
-/*
- * Get the length of an item as it will be shown in the status line.
- */
-    static int
-status_match_len(expand_T *xp, char_u *s)
-{
-    int	len = 0;
-
-#ifdef FEAT_MENU
-    int emenu = (xp->xp_context == EXPAND_MENUS
-	    || xp->xp_context == EXPAND_MENUNAMES);
-
-    // Check for menu separators - replace with '|'.
-    if (emenu && menu_is_separator(s))
-	return 1;
-#endif
-
-    while (*s != NUL)
-    {
-	s += skip_status_match_char(xp, s);
-	len += ptr2cells(s);
-	MB_PTR_ADV(s);
-    }
-
-    return len;
-}
-
-/*
- * Return the number of characters that should be skipped in a status match.
- * These are backslashes used for escaping.  Do show backslashes in help tags.
- */
-    static int
-skip_status_match_char(expand_T *xp, char_u *s)
-{
-    if ((rem_backslash(s) && xp->xp_context != EXPAND_HELP)
-#ifdef FEAT_MENU
-	    || ((xp->xp_context == EXPAND_MENUS
-		    || xp->xp_context == EXPAND_MENUNAMES)
-			  && (s[0] == '\t' || (s[0] == '\\' && s[1] != NUL)))
-#endif
-	   )
-    {
-#ifndef BACKSLASH_IN_FILENAME
-	if (xp->xp_shell && csh_like_shell() && s[1] == '\\' && s[2] == '!')
-	    return 2;
-#endif
-	return 1;
-    }
-    return 0;
-}
-
-/*
- * Show wildchar matches in the status line.
- * Show at least the "match" item.
- * We start at item 'first_match' in the list and show all matches that fit.
- *
- * If inversion is possible we use it. Else '=' characters are used.
- */
-    void
-win_redr_status_matches(
-    expand_T	*xp,
-    int		num_matches,
-    char_u	**matches,	// list of matches
-    int		match,
-    int		showtail)
-{
-#define L_MATCH(m) (showtail ? sm_gettail(matches[m]) : matches[m])
-    int		row;
-    char_u	*buf;
-    int		len;
-    int		clen;		// length in screen cells
-    int		fillchar;
-    int		attr;
-    int		i;
-    int		highlight = TRUE;
-    char_u	*selstart = NULL;
-    int		selstart_col = 0;
-    char_u	*selend = NULL;
-    static int	first_match = 0;
-    int		add_left = FALSE;
-    char_u	*s;
-#ifdef FEAT_MENU
-    int		emenu;
-#endif
-    int		l;
-
-    if (matches == NULL)	// interrupted completion?
-	return;
-
-    if (has_mbyte)
-	buf = alloc(Columns * MB_MAXBYTES + 1);
-    else
-	buf = alloc(Columns + 1);
-    if (buf == NULL)
-	return;
-
-    if (match == -1)	// don't show match but original text
-    {
-	match = 0;
-	highlight = FALSE;
-    }
-    // count 1 for the ending ">"
-    clen = status_match_len(xp, L_MATCH(match)) + 3;
-    if (match == 0)
-	first_match = 0;
-    else if (match < first_match)
-    {
-	// jumping left, as far as we can go
-	first_match = match;
-	add_left = TRUE;
-    }
-    else
-    {
-	// check if match fits on the screen
-	for (i = first_match; i < match; ++i)
-	    clen += status_match_len(xp, L_MATCH(i)) + 2;
-	if (first_match > 0)
-	    clen += 2;
-	// jumping right, put match at the left
-	if ((long)clen > Columns)
-	{
-	    first_match = match;
-	    // if showing the last match, we can add some on the left
-	    clen = 2;
-	    for (i = match; i < num_matches; ++i)
-	    {
-		clen += status_match_len(xp, L_MATCH(i)) + 2;
-		if ((long)clen >= Columns)
-		    break;
-	    }
-	    if (i == num_matches)
-		add_left = TRUE;
-	}
-    }
-    if (add_left)
-	while (first_match > 0)
-	{
-	    clen += status_match_len(xp, L_MATCH(first_match - 1)) + 2;
-	    if ((long)clen >= Columns)
-		break;
-	    --first_match;
-	}
-
-    fillchar = fillchar_status(&attr, curwin);
-
-    if (first_match == 0)
-    {
-	*buf = NUL;
-	len = 0;
-    }
-    else
-    {
-	STRCPY(buf, "< ");
-	len = 2;
-    }
-    clen = len;
-
-    i = first_match;
-    while ((long)(clen + status_match_len(xp, L_MATCH(i)) + 2) < Columns)
-    {
-	if (i == match)
-	{
-	    selstart = buf + len;
-	    selstart_col = clen;
-	}
-
-	s = L_MATCH(i);
-	// Check for menu separators - replace with '|'
-#ifdef FEAT_MENU
-	emenu = (xp->xp_context == EXPAND_MENUS
-		|| xp->xp_context == EXPAND_MENUNAMES);
-	if (emenu && menu_is_separator(s))
-	{
-	    STRCPY(buf + len, transchar('|'));
-	    l = (int)STRLEN(buf + len);
-	    len += l;
-	    clen += l;
-	}
-	else
-#endif
-	    for ( ; *s != NUL; ++s)
-	{
-	    s += skip_status_match_char(xp, s);
-	    clen += ptr2cells(s);
-	    if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
-	    {
-		STRNCPY(buf + len, s, l);
-		s += l - 1;
-		len += l;
-	    }
-	    else
-	    {
-		STRCPY(buf + len, transchar_byte(*s));
-		len += (int)STRLEN(buf + len);
-	    }
-	}
-	if (i == match)
-	    selend = buf + len;
-
-	*(buf + len++) = ' ';
-	*(buf + len++) = ' ';
-	clen += 2;
-	if (++i == num_matches)
-		break;
-    }
-
-    if (i != num_matches)
-    {
-	*(buf + len++) = '>';
-	++clen;
-    }
-
-    buf[len] = NUL;
-
-    row = cmdline_row - 1;
-    if (row >= 0)
-    {
-	if (wild_menu_showing == 0)
-	{
-	    if (msg_scrolled > 0)
-	    {
-		// Put the wildmenu just above the command line.  If there is
-		// no room, scroll the screen one line up.
-		if (cmdline_row == Rows - 1)
-		{
-		    screen_del_lines(0, 0, 1, (int)Rows, TRUE, 0, NULL);
-		    ++msg_scrolled;
-		}
-		else
-		{
-		    ++cmdline_row;
-		    ++row;
-		}
-		wild_menu_showing = WM_SCROLLED;
-	    }
-	    else
-	    {
-		// Create status line if needed by setting 'laststatus' to 2.
-		// Set 'winminheight' to zero to avoid that the window is
-		// resized.
-		if (lastwin->w_status_height == 0)
-		{
-		    save_p_ls = p_ls;
-		    save_p_wmh = p_wmh;
-		    p_ls = 2;
-		    p_wmh = 0;
-		    last_status(FALSE);
-		}
-		wild_menu_showing = WM_SHOWN;
-	    }
-	}
-
-	screen_puts(buf, row, 0, attr);
-	if (selstart != NULL && highlight)
-	{
-	    *selend = NUL;
-	    screen_puts(selstart, row, selstart_col, HL_ATTR(HLF_WM));
-	}
-
-	screen_fill(row, row + 1, clen, (int)Columns, fillchar, fillchar, attr);
-    }
-
-    win_redraw_last_status(topframe);
-    vim_free(buf);
-}
-
 /*
  * Return TRUE if the status line of window "wp" is connected to the status
  * line of the window right of it.  If not, then it's a vertical separator.
@@ -1284,9 +1016,10 @@ win_redr_custom(
     char_u	buf[MAXPATHL];
     char_u	*stl;
     char_u	*p;
+    char_u	*opt_name;
+    int         opt_scope = 0;
     stl_hlrec_T *hltab;
     stl_hlrec_T *tabtab;
-    int		use_sandbox = FALSE;
     win_T	*ewp;
     int		p_crb_save;
 
@@ -1306,9 +1039,7 @@ win_redr_custom(
 	fillchar = ' ';
 	attr = HL_ATTR(HLF_TPF);
 	maxwidth = Columns;
-# ifdef FEAT_EVAL
-	use_sandbox = was_set_insecurely((char_u *)"tabline", 0);
-# endif
+	opt_name = (char_u *)"tabline";
     }
     else
     {
@@ -1319,6 +1050,7 @@ win_redr_custom(
 	if (draw_ruler)
 	{
 	    stl = p_ruf;
+	    opt_name = (char_u *)"rulerformat";
 	    // advance past any leading group spec - implicit in ru_col
 	    if (*stl == '%')
 	    {
@@ -1341,21 +1073,17 @@ win_redr_custom(
 		fillchar = ' ';
 		attr = 0;
 	    }
-
-# ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"rulerformat", 0);
-# endif
 	}
 	else
 	{
+	    opt_name = (char_u *)"statusline";
 	    if (*wp->w_p_stl != NUL)
+	    {
 		stl = wp->w_p_stl;
+		opt_scope = OPT_LOCAL;
+	    }
 	    else
 		stl = p_stl;
-# ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"statusline",
-					 *wp->w_p_stl == NUL ? 0 : OPT_LOCAL);
-# endif
 	}
 
 	col += wp->w_wincol;
@@ -1374,7 +1102,7 @@ win_redr_custom(
     // might change the option value and free the memory.
     stl = vim_strsave(stl);
     width = build_stl_str_hl(ewp, buf, sizeof(buf),
-				stl, use_sandbox,
+				stl, opt_name, opt_scope,
 				fillchar, maxwidth, &hltab, &tabtab);
     vim_free(stl);
     ewp->w_p_crb = p_crb_save;
@@ -2287,7 +2015,7 @@ screen_char_2(unsigned off, int row, int col)
     if (off + 1 >= (unsigned)(screen_Rows * screen_Columns))
 	return;
 
-    // Outputting the last character on the screen may scrollup the screen.
+    // Outputting the last character on the screen may scroll the screen up.
     // Don't to it!  Mark the character invalid (update it when scrolled up)
     if (row == screen_Rows - 1 && col >= screen_Columns - 2)
     {
@@ -2734,7 +2462,7 @@ retry:
     if (enc_dbcs == DBCS_JPNU)
 	new_ScreenLines2 = LALLOC_MULT(schar_T, (Rows + 1) * Columns);
     new_ScreenAttrs = LALLOC_MULT(sattr_T, (Rows + 1) * Columns);
-    // Clear ScreenCols to avoid a warning for unitialized memory in
+    // Clear ScreenCols to avoid a warning for uninitialized memory in
     // jump_to_mouse().
     new_ScreenCols = LALLOC_CLEAR_MULT(colnr_T, (Rows + 1) * Columns);
     new_LineOffset = LALLOC_MULT(unsigned, Rows);
@@ -4547,18 +4275,7 @@ draw_tabline(void)
 
     // Use the 'tabline' option if it's set.
     if (*p_tal != NUL)
-    {
-	int	saved_did_emsg = did_emsg;
-
-	// Check for an error.  If there is one we would loop in redrawing the
-	// screen.  Avoid that by making 'tabline' empty.
-	did_emsg = FALSE;
 	win_redr_custom(NULL, FALSE);
-	if (did_emsg)
-	    set_string_option_direct((char_u *)"tabline", -1,
-					   (char_u *)"", OPT_FREE, SID_ERROR);
-	did_emsg |= saved_did_emsg;
-    }
     else
 #endif
     {

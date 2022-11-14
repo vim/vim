@@ -1857,7 +1857,7 @@ do_put(
 
 	    shortline = (vcol < col) || (vcol == col && !*ptr) ;
 
-	    if (vcol < col) // line too short, padd with spaces
+	    if (vcol < col) // line too short, pad with spaces
 		bd.startspaces = col - vcol;
 	    else if (vcol > col)
 	    {

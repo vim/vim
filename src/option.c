@@ -2833,18 +2833,12 @@ set_bool_option(
 # endif
 	redraw_titles();
     }
-    // when 'endofline' is changed, redraw the window title
-    else if ((int *)varp == &curbuf->b_p_eol)
-    {
-	redraw_titles();
-    }
-    // when 'fixeol' is changed, redraw the window title
-    else if ((int *)varp == &curbuf->b_p_fixeol)
-    {
-	redraw_titles();
-    }
-    // when 'bomb' is changed, redraw the window title and tab page text
-    else if ((int *)varp == &curbuf->b_p_bomb)
+    // redraw the window title and tab page text when 'endoffile', 'endofline',
+    // 'fixeol' or 'bomb' is changed
+    else if ((int *)varp == &curbuf->b_p_eof
+	    || (int *)varp == &curbuf->b_p_eol
+	    || (int *)varp == &curbuf->b_p_fixeol
+	    || (int *)varp == &curbuf->b_p_bomb)
     {
 	redraw_titles();
     }

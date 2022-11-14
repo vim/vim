@@ -2041,7 +2041,7 @@ win_line(
 				    text_prop_follows = TRUE;
 
 				// When 'wrap' is off then for "below" we need
-				// to start a new line explictly.
+				// to start a new line explicitly.
 				if (start_line)
 				{
 				    draw_screen_line(wp, &wlv);

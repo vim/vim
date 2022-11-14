@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Oct 12
+" Last Change:	2022 Nov 07
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2180,6 +2180,11 @@ au BufNewFile,BufRead *.va,*.vams		setf verilogams
 
 " SystemVerilog
 au BufNewFile,BufRead *.sv,*.svh		setf systemverilog
+
+" VHS tape
+" .tape is also used by TapeCalc, which we do not support ATM.  If TapeCalc
+" support is needed the contents of the file needs to be inspected.
+au BufNewFile,BufRead *.tape			setf vhs
 
 " VHDL
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst,*.vho  setf vhdl

@@ -185,6 +185,18 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    // a copy is made so the member type is no longer declared
 	    if (typep->type_decl->tt_type == VAR_LIST)
 		typep->type_decl = &t_list_any;
+
+	    // a copy is made, the composite is no longer "const"
+	    if (typep->type_curr->tt_flags & TTFLAG_CONST)
+	    {
+		type_T *type = copy_type(typep->type_curr, cctx->ctx_type_list);
+
+		if (type != typep->type_curr)  // did get a copy
+		{
+		    type->tt_flags &= ~(TTFLAG_CONST | TTFLAG_STATIC);
+		    typep->type_curr = type;
+		}
+	    }
 	}
 	else
 	{
@@ -1242,7 +1254,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key_in_dicitonary), key);
+		semsg(_(e_duplicate_key_in_dictionary), key);
 		goto failret;
 	    }
 	    item = dictitem_alloc(key);
@@ -2725,7 +2737,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		if (tv2->v_type != VAR_NUMBER)
 		    emsg(_(e_bitshift_ops_must_be_number));
 		else
-		    emsg(_(e_bitshift_ops_must_be_postive));
+		    emsg(_(e_bitshift_ops_must_be_positive));
 		return FAIL;
 	    }
 

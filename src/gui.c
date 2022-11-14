@@ -64,7 +64,9 @@ static int disable_flush = 0;	// If > 0, gui_mch_flush() is disabled.
 gui_start(char_u *arg UNUSED)
 {
     char_u	*old_term;
+#ifdef GUI_MAY_FORK
     static int	recursive = 0;
+#endif
 #if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
     char	*msg = NULL;
 #endif
@@ -76,9 +78,8 @@ gui_start(char_u *arg UNUSED)
 	cursor_on();			// needed for ":gui" in .vimrc
     full_screen = FALSE;
 
-    ++recursive;
-
 #ifdef GUI_MAY_FORK
+    ++recursive;
     /*
      * Quit the current process and continue in the child.
      * Makes "gvim file" disconnect from the shell it was started in.
@@ -153,7 +154,9 @@ gui_start(char_u *arg UNUSED)
     gui_mch_update();
     apply_autocmds(gui.in_use ? EVENT_GUIENTER : EVENT_GUIFAILED,
 						   NULL, NULL, FALSE, curbuf);
+#ifdef GUI_MAY_FORK
     --recursive;
+#endif
 }
 
 /*
@@ -227,10 +230,10 @@ gui_do_fork(void)
     int		exit_status;
     pid_t	pid = -1;
 
-#if defined(FEAT_RELTIME) && defined(HAVE_TIMER_CREATE)
+# if defined(FEAT_RELTIME) && defined(HAVE_TIMER_CREATE)
     // a timer is not carried forward
     delete_timer();
-#endif
+# endif
 
     // Setup a pipe between the child and the parent, so that the parent
     // knows when the child has done the setsid() call and is allowed to
@@ -3760,8 +3763,6 @@ get_tabline_label(
     opt = (tooltip ? &p_gtt : &p_gtl);
     if (**opt != NUL)
     {
-	int	use_sandbox = FALSE;
-	int	called_emsg_before = called_emsg;
 	char_u	res[MAXPATHL];
 	tabpage_T *save_curtab;
 	char_u	*opt_name = (char_u *)(tooltip ? "guitabtooltip"
@@ -3770,7 +3771,6 @@ get_tabline_label(
 	printer_page_num = tabpage_index(tp);
 # ifdef FEAT_EVAL
 	set_vim_var_nr(VV_LNUM, printer_page_num);
-	use_sandbox = was_set_insecurely(opt_name, 0);
 # endif
 	// It's almost as going to the tabpage, but without autocommands.
 	curtab->tp_firstwin = firstwin;
@@ -3785,7 +3785,7 @@ get_tabline_label(
 	curbuf = curwin->w_buffer;
 
 	// Can't use NameBuff directly, build_stl_str_hl() uses it.
-	build_stl_str_hl(curwin, res, MAXPATHL, *opt, use_sandbox,
+	build_stl_str_hl(curwin, res, MAXPATHL, *opt, opt_name, 0,
 						 0, (int)Columns, NULL, NULL);
 	STRCPY(NameBuff, res);
 
@@ -3796,10 +3796,6 @@ get_tabline_label(
 	lastwin = curtab->tp_lastwin;
 	curwin = curtab->tp_curwin;
 	curbuf = curwin->w_buffer;
-
-	if (called_emsg > called_emsg_before)
-	    set_string_option_direct(opt_name, -1,
-					   (char_u *)"", OPT_FREE, SID_ERROR);
     }
 
     // If 'guitablabel'/'guitabtooltip' is not set or the result is empty then

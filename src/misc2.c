@@ -2027,12 +2027,12 @@ cursorentry_T shape_table[SHAPE_IDX_COUNT] =
     {0,	0, 0, 100L, 100L, 100L, 0, 0, "sm", SHAPE_CURSOR},
 };
 
-#ifdef FEAT_MOUSESHAPE
+# ifdef FEAT_MOUSESHAPE
 /*
  * Table with names for mouse shapes.  Keep in sync with all the tables for
  * mch_set_mouse_shape()!.
  */
-static char * mshape_names[] =
+static char *mshape_names[] =
 {
     "arrow",	// default, must be the first one
     "blank",	// hidden
@@ -2052,7 +2052,9 @@ static char * mshape_names[] =
     "up-arrow",
     NULL
 };
-#endif
+
+#  define MSHAPE_NAMES_COUNT  (ARRAY_LENGTH(mshape_names) - 1)
+# endif
 
 /*
  * Parse the 'guicursor' option ("what" is SHAPE_CURSOR) or 'mouseshape'
@@ -2355,7 +2357,7 @@ get_shape_idx(int mouse)
 #endif
 
 # if defined(FEAT_MOUSESHAPE) || defined(PROTO)
-static int old_mouse_shape = 0;
+static int current_mouse_shape = 0;
 
 /*
  * Set the mouse shape:
@@ -2389,24 +2391,43 @@ update_mouseshape(int shape_idx)
 	shape_idx = -2;
 
     if (shape_idx == -2
-	    && old_mouse_shape != shape_table[SHAPE_IDX_CLINE].mshape
-	    && old_mouse_shape != shape_table[SHAPE_IDX_STATUS].mshape
-	    && old_mouse_shape != shape_table[SHAPE_IDX_VSEP].mshape)
+	    && current_mouse_shape != shape_table[SHAPE_IDX_CLINE].mshape
+	    && current_mouse_shape != shape_table[SHAPE_IDX_STATUS].mshape
+	    && current_mouse_shape != shape_table[SHAPE_IDX_VSEP].mshape)
 	return;
     if (shape_idx < 0)
 	new_mouse_shape = shape_table[get_shape_idx(TRUE)].mshape;
     else
 	new_mouse_shape = shape_table[shape_idx].mshape;
-    if (new_mouse_shape != old_mouse_shape)
+    if (new_mouse_shape != current_mouse_shape)
     {
 	mch_set_mouse_shape(new_mouse_shape);
-	old_mouse_shape = new_mouse_shape;
+	current_mouse_shape = new_mouse_shape;
     }
     postponed_mouseshape = FALSE;
 }
 # endif
 
 #endif // CURSOR_SHAPE
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Mainly for tests: get the name of the current mouse shape.
+ */
+    void
+f_getmouseshape(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+# if defined(FEAT_MOUSESHAPE) || defined(PROTO)
+    if (current_mouse_shape >= 0
+			      && current_mouse_shape < (int)MSHAPE_NAMES_COUNT)
+	rettv->vval.v_string = vim_strsave(
+				  (char_u *)mshape_names[current_mouse_shape]);
+# endif
+}
+#endif
+
 
 
 /*

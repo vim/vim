@@ -363,6 +363,7 @@ runtime/syntax/haml.vim			@tpope
 runtime/syntax/hare.vim			@rsaihe
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
+runtime/syntax/hollywood.vim		@sodero
 runtime/syntax/html.vim			@dkearns
 runtime/syntax/i3config.vim		@hiqua
 runtime/syntax/icon.vim			@dkearns

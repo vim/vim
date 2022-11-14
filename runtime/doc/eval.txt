@@ -1965,7 +1965,7 @@ v:collate	The current locale setting for collation order of the runtime
 		command.
 		See |multi-lang|.
 
-                                                                *v:colornames*
+								*v:colornames*
 v:colornames    A dictionary that maps color names to hex color strings. These
 		color names can be used with the |highlight-guifg|,
 		|highlight-guibg|, and |highlight-guisp| parameters. Updating
@@ -3598,7 +3598,7 @@ this pending exception or command is discarded.
 For examples see |throw-catch| and |try-finally|.
 
 
-NESTING	OF TRY CONDITIONALS				*try-nesting*
+NESTING OF TRY CONDITIONALS				*try-nesting*
 
 Try conditionals can be nested arbitrarily.  That is, a complete try
 conditional can be put into the try block, a catch clause, or the finally

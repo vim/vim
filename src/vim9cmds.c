@@ -1438,7 +1438,7 @@ compile_break(char_u *arg, cctx_T *cctx)
     if (try_scopes > 0)
 	// Inside one or more try/catch blocks we first need to jump to the
 	// "finally" or "endtry" to cleanup.  Then come to the next JUMP
-	// intruction, which we don't know the index of yet.
+	// instruction, which we don't know the index of yet.
 	generate_TRYCONT(cctx, try_scopes, cctx->ctx_instr.ga_len + 1);
 
     // Jump to the end of the FOR or WHILE loop.  The instruction index will be
