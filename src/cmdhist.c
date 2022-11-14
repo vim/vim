@@ -137,7 +137,7 @@ init_history(void)
     // history length changed
     for (type = 0; type < HIST_COUNT; ++type)   // adjust the tables
     {
-	if (newlen)
+	if (newlen > 0)
 	{
 	    temp = ALLOC_MULT(histentry_T, newlen);
 	    if (temp == NULL)   // out of memory!
@@ -156,9 +156,6 @@ init_history(void)
 	}
 	else
 	    temp = NULL;
-
-	if (newlen != 0 && temp == NULL)
-	    continue;
 
 	if (hisidx[type] < 0)		// there are no entries yet
 	{
