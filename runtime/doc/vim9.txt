@@ -1039,7 +1039,7 @@ In Vim9 script one can use the following predefined values: >
 `true` is the same as `v:true`, `false` the same as `v:false`, `null` the same
 as `v:null`.
 
-While `null` has the type "special", the other "null_" types have the type
+While `null` has the type "special", the other "null_" values have the type
 indicated by their name.  Quite often a null value is handled the same as an
 empty value, but not always.  The values can be useful to clear a script-local
 variable, since they cannot be deleted with `:unlet`.  E.g.: >

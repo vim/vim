@@ -784,9 +784,25 @@ ex_argdedupe(exarg_T *eap UNUSED)
     int j;
 
     for (i = 0; i < ARGCOUNT; ++i)
+    {
+	// Expand each argument to a full path to catch different paths leading
+	// to the same file.
+	char_u *firstFullname = FullName_save(ARGLIST[i].ae_fname, FALSE);
+	if (firstFullname == NULL)
+	    return;  // out of memory
+
 	for (j = i + 1; j < ARGCOUNT; ++j)
-	    if (fnamecmp(ARGLIST[i].ae_fname, ARGLIST[j].ae_fname) == 0)
+	{
+	    char_u *secondFullname = FullName_save(ARGLIST[j].ae_fname, FALSE);
+	    if (secondFullname == NULL)
+		break;  // out of memory
+	    int areNamesDuplicate =
+				  fnamecmp(firstFullname, secondFullname) == 0;
+	    vim_free(secondFullname);
+
+	    if (areNamesDuplicate)
 	    {
+		// remove one duplicate argument
 		vim_free(ARGLIST[j].ae_fname);
 		mch_memmove(ARGLIST + j, ARGLIST + j + 1,
 					(ARGCOUNT - j - 1) * sizeof(aentry_T));
@@ -799,6 +815,10 @@ ex_argdedupe(exarg_T *eap UNUSED)
 
 		--j;
 	    }
+	}
+
+	vim_free(firstFullname);
+    }
 }
 
 /*

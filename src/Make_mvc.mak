@@ -222,8 +222,12 @@ CPU = i386
 !  endif
 ! else  # !CPU
 CPU = i386
-!  if !defined(PLATFORM) && defined(TARGET_CPU)
+!  ifndef PLATFORM
+!   ifdef TARGET_CPU
 PLATFORM = $(TARGET_CPU)
+!   elseif defined(VSCMD_ARG_TGT_ARCH)
+PLATFORM = $(VSCMD_ARG_TGT_ARCH)
+!   endif
 !  endif
 !  ifdef PLATFORM
 !   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")

@@ -274,7 +274,7 @@ func Test_set_completion()
   call feedkeys(":setglobal di\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"setglobal dictionary diff diffexpr diffopt digraph directory display', @:)
 
-  " Expand boolan options. When doing :set no<Tab>
+  " Expand boolean options. When doing :set no<Tab>
   " vim displays the options names without "no" but completion uses "no...".
   call feedkeys(":set nodi\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set nodiff digraph', @:)
@@ -1451,6 +1451,18 @@ func Test_keywordprg_empty()
   call assert_equal('man', &keywordprg)
   call assert_equal("\n  keywordprg=:help", execute('set kp= kp?'))
   let &keywordprg = k
+endfunc
+
+" check that the very first buffer created does not have 'endoffile' set
+func Test_endoffile_default()
+  let after =<< trim [CODE]
+    call writefile([execute('set eof?')], 'Xtestout')
+    qall!
+  [CODE]
+  if RunVim([], after, '')
+    call assert_equal(["\nnoendoffile"], readfile('Xtestout'))
+  endif
+  call delete('Xtestout')
 endfunc
 
 

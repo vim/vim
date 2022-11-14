@@ -1730,7 +1730,7 @@ msgstr "--servername <Name>\tBenutze den Vim-Server <Name>"
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr "--startuptime <Datei>\tSchreibe Start Zeitmessung in <Datei>"
 
-msgid "--log <file>\tStart logging to <file> early"
+msgid "--log <file>\t\tStart logging to <file> early"
 msgstr "--log <Datei>\tLogge frühzeitig in <Datei>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"

@@ -234,7 +234,7 @@ exe_newdict(int count, ectx_T *ectx)
 	    item = dict_find(dict, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key_in_dicitonary), key);
+		semsg(_(e_duplicate_key_in_dictionary), key);
 		dict_unref(dict);
 		return MAYBE;
 	    }
@@ -866,7 +866,7 @@ in_def_function(void)
  * a user function.
  */
     ectx_T *
-clear_currrent_ectx(void)
+clear_current_ectx(void)
 {
     ectx_T *r = current_ectx;
 
@@ -4523,7 +4523,7 @@ exec_instructions(ectx_T *ectx)
 			if (arg2 < 0)
 			{
 			    SOURCING_LNUM = iptr->isn_lnum;
-			    emsg(_(e_bitshift_ops_must_be_postive));
+			    emsg(_(e_bitshift_ops_must_be_positive));
 			    goto on_error;
 			}
 		    }
@@ -5929,7 +5929,7 @@ unwind_def_callstack(ectx_T *ectx)
 }
 
 /*
- * Invoke any deffered functions for the top function in "ectx".
+ * Invoke any deferred functions for the top function in "ectx".
  */
     void
 may_invoke_defer_funcs(ectx_T *ectx)

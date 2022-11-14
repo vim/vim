@@ -1765,7 +1765,7 @@ msgstr ""
 "-- startuptime <archivo>\tGuardar los mensajes de tiempo de inicio en "
 "<archivo>"
 
-msgid "--log <file>\tStart logging to <file> early"
+msgid "--log <file>\t\tStart logging to <file> early"
 msgstr "--log <archivo>\tIniciar registro en <archivo> pronto"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"

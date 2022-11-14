@@ -1896,7 +1896,7 @@ def Test_delete_line_within_multiline_prop()
   try
     :2 del
   catch
-    assert_report('Line delete should have workd, but it raised an error.')
+    assert_report('Line delete should have worked, but it raised an error.')
   endtry
 
   # The property for line 2 (was 3) should no longer extend into the previous
@@ -1910,7 +1910,7 @@ def Test_delete_line_within_multiline_prop()
   try
     :3 del
   catch
-    assert_report('Line delete should have workd, but it raised an error.')
+    assert_report('Line delete should have worked, but it raised an error.')
   endtry
 
   # The property for line 2 (originally 3) should no longer extend into the next
@@ -2405,7 +2405,7 @@ func Do_test_props_do_not_affect_byte_offsets(ff, increment)
   exec 'setlocal fileformat=' . a:ff
 
   " Fill the buffer with varying length lines. We need a suitably large number
-  " to force Vim code through paths wehere previous error have occurred. This
+  " to force Vim code through paths where previous error have occurred. This
   " is more 'art' than 'science'.
   let text = 'a'
   call setline(1, text)
@@ -2448,7 +2448,7 @@ func Test_props_do_not_affect_byte_offsets_editline()
   setlocal fileformat=unix
 
   " Fill the buffer with varying length lines. We need a suitably large number
-  " to force Vim code through paths wehere previous error have occurred. This
+  " to force Vim code through paths where previous error have occurred. This
   " is more 'art' than 'science'.
   let text = 'aa'
   call setline(1, text)
@@ -3433,5 +3433,32 @@ func Test_insert_text_change_arg()
 
   call StopVimInTerminal(buf)
 endfunc
+
+def Test_textprop_in_quickfix_window()
+  enew!
+  var prop_type = 'my_prop'
+  prop_type_add(prop_type, {})
+
+  for lnum in range(1, 10)
+    setline(lnum, 'hello world')
+  endfor
+
+  cgetbuffer
+  copen
+
+  var bufnr = bufnr()
+  for lnum in range(1, line('$', bufnr->bufwinid()))
+    prop_add(lnum, 1, {
+      id: 1000 + lnum,
+      type: prop_type,
+      bufnr: bufnr,
+    })
+  endfor
+
+  prop_type_delete(prop_type)
+  cclose
+  bwipe!
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab

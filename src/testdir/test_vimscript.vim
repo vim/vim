@@ -192,6 +192,16 @@ func Test_if_while()
     call assert_equal('ab3j3b2c2b1f1h1km', g:Xpath)
 endfunc
 
+" Check double quote after skipped "elseif" does not give error E15
+func Test_skipped_elseif()
+  if "foo" ==? "foo"
+      let result = "first"
+  elseif "foo" ==? "foo"
+      let result = "second"
+  endif
+  call assert_equal('first', result)
+endfunc
+
 "-------------------------------------------------------------------------------
 " Test 4:   :return							    {{{1
 "-------------------------------------------------------------------------------
@@ -6882,7 +6892,7 @@ endfunc
 "	    Undefined behavior was detected by ubsan with line continuation
 "	    after an empty line.
 "-------------------------------------------------------------------------------
-func Test_script_emty_line_continuation()
+func Test_script_empty_line_continuation()
 
     \
 endfunc

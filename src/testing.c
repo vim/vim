@@ -592,7 +592,6 @@ f_assert_exception(typval_T *argvars, typval_T *rettv)
     void
 f_assert_fails(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*cmd;
     garray_T	ga;
     int		save_trylevel = trylevel;
     int		called_emsg_before = called_emsg;
@@ -608,13 +607,13 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 			    && check_for_opt_string_arg(argvars, 4) == FAIL)))))
 	return;
 
-    cmd = tv_get_string_chk(&argvars[0]);
-
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
     suppress_errthrow = TRUE;
     in_assert_fails = TRUE;
+    ++no_wait_return;
 
+    char_u *cmd = tv_get_string_chk(&argvars[0]);
     do_cmdline_cmd(cmd);
 
     // reset here for any errors reported below
@@ -758,6 +757,7 @@ theend:
     did_emsg = FALSE;
     got_int = FALSE;
     msg_col = 0;
+    --no_wait_return;
     need_wait_return = FALSE;
     emsg_on_display = FALSE;
     msg_scrolled = 0;

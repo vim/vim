@@ -1,4 +1,4 @@
-" Test for all comand modifiers in 
+" Test for all command modifiers in
 
 def Test_cmdmods_array()
   # Get all the command modifiers from ex_cmds.h.

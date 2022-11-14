@@ -1973,7 +1973,7 @@ process_message(void)
 	if (dead_key != DEAD_KEY_OFF)
 	{
 	    /*
-	     * Expell the dead key pressed with Ctrl in a special way.
+	     * Expel the dead key pressed with Ctrl in a special way.
 	     *
 	     * After dead key was pressed with Ctrl in some cases, ESC was
 	     * artificially injected and handled by _OnChar(), now we are
@@ -2160,7 +2160,7 @@ process_message(void)
 		   )
 		{
 		    // post WM_CHAR='[' - which will be interpreted with CTRL
-		    // stil hold as ESC
+		    // still hold as ESC
 		    PostMessageW(msg.hwnd, WM_CHAR, '[', msg.lParam);
 		    // ask _OnChar() to not touch this state, wait for next key
 		    // press and maintain knowledge that we are "poisoned" with
@@ -6190,13 +6190,11 @@ gui_mch_draw_string(
 	// handled here.
 	int		i;
 	int		wlen;	// string length in words
-	int		clen;	// string length in characters
 	int		cells;	// cell width of string up to composing char
 	int		cw;	// width of current cell
 	int		c;
 
 	wlen = 0;
-	clen = 0;
 	cells = 0;
 	for (i = 0; i < len; )
 	{
@@ -6236,7 +6234,6 @@ gui_mch_draw_string(
 	    }
 	    cells += cw;
 	    i += utf_ptr2len_len(text + i, len - i);
-	    ++clen;
 	}
 #if defined(FEAT_DIRECTX)
 	if (IS_ENABLE_DIRECTX())

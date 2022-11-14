@@ -131,68 +131,67 @@ init_history(void)
 
     // If size of history table changed, reallocate it
     newlen = (int)p_hi;
-    if (newlen != hislen)			// history length changed
+    if (newlen == hislen)		// history length didn't change
+	return;
+
+    // history length changed
+    for (type = 0; type < HIST_COUNT; ++type)   // adjust the tables
     {
-	for (type = 0; type < HIST_COUNT; ++type)   // adjust the tables
+	if (newlen > 0)
 	{
-	    if (newlen)
+	    temp = ALLOC_MULT(histentry_T, newlen);
+	    if (temp == NULL)   // out of memory!
 	    {
-		temp = ALLOC_MULT(histentry_T, newlen);
-		if (temp == NULL)   // out of memory!
+		if (type == 0)  // first one: just keep the old length
 		{
-		    if (type == 0)  // first one: just keep the old length
-		    {
-			newlen = hislen;
-			break;
-		    }
-		    // Already changed one table, now we can only have zero
-		    // length for all tables.
-		    newlen = 0;
-		    type = -1;
-		    continue;
+		    newlen = hislen;
+		    break;
 		}
-	    }
-	    else
-		temp = NULL;
-	    if (newlen == 0 || temp != NULL)
-	    {
-		if (hisidx[type] < 0)		// there are no entries yet
-		{
-		    for (i = 0; i < newlen; ++i)
-			clear_hist_entry(&temp[i]);
-		}
-		else if (newlen > hislen)	// array becomes bigger
-		{
-		    for (i = 0; i <= hisidx[type]; ++i)
-			temp[i] = history[type][i];
-		    j = i;
-		    for ( ; i <= newlen - (hislen - hisidx[type]); ++i)
-			clear_hist_entry(&temp[i]);
-		    for ( ; j < hislen; ++i, ++j)
-			temp[i] = history[type][j];
-		}
-		else				// array becomes smaller or 0
-		{
-		    j = hisidx[type];
-		    for (i = newlen - 1; ; --i)
-		    {
-			if (i >= 0)		// copy newest entries
-			    temp[i] = history[type][j];
-			else			// remove older entries
-			    vim_free(history[type][j].hisstr);
-			if (--j < 0)
-			    j = hislen - 1;
-			if (j == hisidx[type])
-			    break;
-		    }
-		    hisidx[type] = newlen - 1;
-		}
-		vim_free(history[type]);
-		history[type] = temp;
+		// Already changed one table, now we can only have zero
+		// length for all tables.
+		newlen = 0;
+		type = -1;
+		continue;
 	    }
 	}
-	hislen = newlen;
+	else
+	    temp = NULL;
+
+	if (hisidx[type] < 0)		// there are no entries yet
+	{
+	    for (i = 0; i < newlen; ++i)
+		clear_hist_entry(&temp[i]);
+	}
+	else if (newlen > hislen)	// array becomes bigger
+	{
+	    for (i = 0; i <= hisidx[type]; ++i)
+		temp[i] = history[type][i];
+	    j = i;
+	    for ( ; i <= newlen - (hislen - hisidx[type]); ++i)
+		clear_hist_entry(&temp[i]);
+	    for ( ; j < hislen; ++i, ++j)
+		temp[i] = history[type][j];
+	}
+	else				// array becomes smaller or 0
+	{
+	    j = hisidx[type];
+	    for (i = newlen - 1; ; --i)
+	    {
+		if (i >= 0)		// copy newest entries
+		    temp[i] = history[type][j];
+		else			// remove older entries
+		    vim_free(history[type][j].hisstr);
+		if (--j < 0)
+		    j = hislen - 1;
+		if (j == hisidx[type])
+		    break;
+	    }
+	    hisidx[type] = newlen - 1;
+	}
+	vim_free(history[type]);
+	history[type] = temp;
     }
+    hislen = newlen;
 }
 
     void
@@ -244,23 +243,22 @@ in_history(
 	    i = hislen - 1;
     } while (i != hisidx[type]);
 
-    if (last_i >= 0)
+    if (last_i < 0)
+	return FALSE;
+
+    str = history[type][i].hisstr;
+    while (i != hisidx[type])
     {
-	str = history[type][i].hisstr;
-	while (i != hisidx[type])
-	{
-	    if (++i >= hislen)
-		i = 0;
-	    history[type][last_i] = history[type][i];
-	    last_i = i;
-	}
-	history[type][i].hisnum = ++hisnum[type];
-	history[type][i].viminfo = FALSE;
-	history[type][i].hisstr = str;
-	history[type][i].time_set = vim_time();
-	return TRUE;
+	if (++i >= hislen)
+	    i = 0;
+	history[type][last_i] = history[type][i];
+	last_i = i;
     }
-    return FALSE;
+    history[type][i].hisnum = ++hisnum[type];
+    history[type][i].viminfo = FALSE;
+    history[type][i].hisstr = str;
+    history[type][i].time_set = vim_time();
+    return TRUE;
 }
 
 /*
@@ -328,25 +326,26 @@ add_to_history(
 	}
 	last_maptick = -1;
     }
-    if (!in_history(histype, new_entry, TRUE, sep, FALSE))
-    {
-	if (++hisidx[histype] == hislen)
-	    hisidx[histype] = 0;
-	hisptr = &history[histype][hisidx[histype]];
-	vim_free(hisptr->hisstr);
 
-	// Store the separator after the NUL of the string.
-	len = (int)STRLEN(new_entry);
-	hisptr->hisstr = vim_strnsave(new_entry, len + 2);
-	if (hisptr->hisstr != NULL)
-	    hisptr->hisstr[len + 1] = sep;
+    if (in_history(histype, new_entry, TRUE, sep, FALSE))
+	return;
 
-	hisptr->hisnum = ++hisnum[histype];
-	hisptr->viminfo = FALSE;
-	hisptr->time_set = vim_time();
-	if (histype == HIST_SEARCH && in_map)
-	    last_maptick = maptick;
-    }
+    if (++hisidx[histype] == hislen)
+	hisidx[histype] = 0;
+    hisptr = &history[histype][hisidx[histype]];
+    vim_free(hisptr->hisstr);
+
+    // Store the separator after the NUL of the string.
+    len = (int)STRLEN(new_entry);
+    hisptr->hisstr = vim_strnsave(new_entry, len + 2);
+    if (hisptr->hisstr != NULL)
+	hisptr->hisstr[len + 1] = sep;
+
+    hisptr->hisnum = ++hisnum[histype];
+    hisptr->viminfo = FALSE;
+    hisptr->time_set = vim_time();
+    if (histype == HIST_SEARCH && in_map)
+	last_maptick = maptick;
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -557,17 +556,16 @@ f_histadd(typval_T *argvars UNUSED, typval_T *rettv)
 
     str = tv_get_string_chk(&argvars[0]);	// NULL on type error
     histype = str != NULL ? get_histtype(str) : -1;
-    if (histype >= 0)
-    {
-	str = tv_get_string_buf(&argvars[1], buf);
-	if (*str != NUL)
-	{
-	    init_history();
-	    add_to_history(histype, str, FALSE, NUL);
-	    rettv->vval.v_number = TRUE;
-	    return;
-	}
-    }
+    if (histype < 0)
+	return;
+
+    str = tv_get_string_buf(&argvars[1], buf);
+    if (*str == NUL)
+	return;
+
+    init_history();
+    add_to_history(histype, str, FALSE, NUL);
+    rettv->vval.v_number = TRUE;
 }
 
 /*
@@ -670,20 +668,22 @@ remove_key_from_history(void)
     if (i < 0)
 	return;
     p = history[HIST_CMD][i].hisstr;
-    if (p != NULL)
-	for ( ; *p; ++p)
-	    if (STRNCMP(p, "key", 3) == 0 && !isalpha(p[3]))
-	    {
-		p = vim_strchr(p + 3, '=');
-		if (p == NULL)
-		    break;
-		++p;
-		for (i = 0; p[i] && !VIM_ISWHITE(p[i]); ++i)
-		    if (p[i] == '\\' && p[i + 1])
-			++i;
-		STRMOVE(p, p + i);
-		--p;
-	    }
+    if (p == NULL)
+	return;
+
+    for ( ; *p; ++p)
+	if (STRNCMP(p, "key", 3) == 0 && !isalpha(p[3]))
+	{
+	    p = vim_strchr(p + 3, '=');
+	    if (p == NULL)
+		break;
+	    ++p;
+	    for (i = 0; p[i] && !VIM_ISWHITE(p[i]); ++i)
+		if (p[i] == '\\' && p[i + 1])
+		    ++i;
+	    STRMOVE(p, p + i);
+	    --p;
+	}
 }
 #endif
 

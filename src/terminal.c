@@ -2396,7 +2396,7 @@ terminal_is_active()
 }
 
 /*
- * Return the highight group ID for the terminal and the window.
+ * Return the highlight group ID for the terminal and the window.
  */
     static int
 term_get_highlight_id(term_T *term, win_T *wp)

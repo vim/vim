@@ -4645,7 +4645,10 @@ qf_buf_add_line(
     // If the 'quickfixtextfunc' function returned a non-empty custom string
     // for this entry, then use it.
     if (qftf_str != NULL && *qftf_str != NUL)
+    {
 	ga_concat(gap, qftf_str);
+	ga_append(gap, NUL);
+    }
     else
     {
 	if (qfp->qf_module != NULL)
@@ -4687,12 +4690,11 @@ qf_buf_add_line(
 	// Remove newlines and leading whitespace from the text.
 	// For an unrecognized line keep the indent, the compiler may
 	// mark a word with ^^^^.
-	qf_fmt_text(gap, gap->ga_len > 3 ? skipwhite(qfp->qf_text) : qfp->qf_text);
+	qf_fmt_text(gap, gap->ga_len > 3 ? skipwhite(qfp->qf_text)
+							       : qfp->qf_text);
     }
 
-    ga_append(gap, NUL);
-
-    if (ml_append_buf(buf, lnum, gap->ga_data, gap->ga_len + 1, FALSE) == FAIL)
+    if (ml_append_buf(buf, lnum, gap->ga_data, gap->ga_len, FALSE) == FAIL)
 	return FAIL;
 
     return OK;
