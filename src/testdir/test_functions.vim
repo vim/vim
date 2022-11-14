@@ -2890,6 +2890,12 @@ func Test_getmousepos()
   bwipe!
 endfunc
 
+func Test_getmouseshape()
+  CheckFeature mouseshape
+
+  call assert_equal('arrow', getmouseshape())
+endfunc
+
 " Test for glob()
 func Test_glob()
   call assert_equal('', glob(test_null_string()))

@@ -246,6 +246,7 @@ getloclist({nr}, {what})	Dict	get specific location list properties
 getmarklist([{buf}])		List	list of global/local marks
 getmatches([{win}])		List	list of current matches
 getmousepos()			Dict	last known mouse position
+getmouseshape()			String	current mouse shape name
 getpid()			Number	process ID of Vim
 getpos({expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
@@ -3878,6 +3879,12 @@ getmousepos()						*getmousepos()*
 
 		When using |getchar()| the Vim variables |v:mouse_lnum|,
 		|v:mouse_col| and |v:mouse_winid| also provide these values.
+
+getmouseshape()						*getmouseshape()*
+		Returns the name of the currently showing mouse pointer.
+		When the |+mouseshape| feature is not supported or the shape
+		is unknown an empty string is returned.
+		This function is mainly intended for testing.
 
 							*getpid()*
 getpid()	Return a Number which is the process ID of the Vim process.

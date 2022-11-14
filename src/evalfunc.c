@@ -1983,6 +1983,8 @@ static funcentry_T global_functions[] =
 			ret_list_dict_any,  f_getmatches},
     {"getmousepos",	0, 0, 0,	    NULL,
 			ret_dict_number,    f_getmousepos},
+    {"getmouseshape",	0, 0, 0,	    NULL,
+			ret_string,	    f_getmouseshape},
     {"getpid",		0, 0, 0,	    NULL,
 			ret_number,	    f_getpid},
     {"getpos",		1, 1, FEARG_1,	    arg1_string,

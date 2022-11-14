@@ -1110,6 +1110,7 @@ Interactive:					*interactive-functions*
 	getcharstr()		get a character from the user as a string
 	getcharmod()		get modifiers for the last typed character
 	getmousepos()		get last known mouse position
+	getmouseshape()		get name of the current mouse shape
 	echoraw()		output characters as-is
 	feedkeys()		put characters in the typeahead queue
 	input()			get a line from the user
