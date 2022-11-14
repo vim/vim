@@ -2110,8 +2110,8 @@ did_set_spelllang(win_T *wp)
 	    {
 		spell_load_lang(lang);
 		// SpellFileMissing autocommands may do anything, including
-		// destroying the buffer we are using...
-		if (!bufref_valid(&bufref))
+		// destroying the buffer we are using or closing the window.
+		if (!bufref_valid(&bufref) || !win_valid_any_tab(wp))
 		{
 		    ret_msg = N_(e_spellfilemising_autocommand_deleted_buffer);
 		    goto theend;
