@@ -1163,8 +1163,8 @@ ui_find_longest_lnum(void)
     // postponed.
     if (
 # ifdef FEAT_GUI
-	    gui.in_use && vim_strchr(p_go, GO_HORSCROLL) == NULL &&
-# endif 
+	    (!gui.in_use || vim_strchr(p_go, GO_HORSCROLL) == NULL) &&
+# endif
 	    curwin->w_topline <= curwin->w_cursor.lnum
 	    && curwin->w_botline > curwin->w_cursor.lnum
 	    && curwin->w_botline <= curbuf->b_ml.ml_line_count + 1)

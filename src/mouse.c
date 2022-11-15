@@ -2037,7 +2037,7 @@ do_mousescroll_horizontal(long_u leftcol)
     // longest visible line.
     if (
 #ifdef FEAT_GUI
-	    gui.in_use && vim_strchr(p_go, GO_HORSCROLL) == NULL &&
+	    (!gui.in_use || vim_strchr(p_go, GO_HORSCROLL) == NULL) &&
 #endif
 	    !virtual_active()
 	    && (colnr_T)leftcol > scroll_line_len(curwin->w_cursor.lnum))
