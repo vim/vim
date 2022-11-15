@@ -2221,7 +2221,7 @@ getcmdline_int(
 	case K_HOR_SCROLLBAR:
 		if (msg_scrolled == 0)
 		{
-		    gui_do_horiz_scroll(scrollbar_value, FALSE);
+		    do_mousescroll_horiz(scrollbar_value);
 		    redrawcmd();
 		}
 		goto cmdline_not_changed;

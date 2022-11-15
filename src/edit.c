@@ -4499,7 +4499,7 @@ ins_horscroll(void)
 
     undisplay_dollar();
     tpos = curwin->w_cursor;
-    if (gui_do_horiz_scroll(scrollbar_value, FALSE))
+    if (do_mousescroll_horiz(scrollbar_value))
     {
 	start_arrow(&tpos);
 	can_cindent = TRUE;

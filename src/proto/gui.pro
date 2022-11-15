@@ -45,7 +45,6 @@ void gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging);
 void gui_may_update_scrollbars(void);
 void gui_update_scrollbars(int force);
 int gui_do_scroll(void);
-int gui_do_horiz_scroll(long_u leftcol, int compute_longest_lnum);
 void gui_check_colors(void);
 guicolor_T gui_get_color(char_u *name);
 int gui_get_lightness(guicolor_T pixel);

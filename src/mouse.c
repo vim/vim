@@ -1101,89 +1101,39 @@ ins_mouse(int c)
     redraw_statuslines();
 }
 
+/*
+ * Implementation for scrolling in direction "dir", which is one of the MSCR_
+ * values.
+ */
     void
 ins_mousescroll(int dir)
 {
-    pos_T	tpos;
-    win_T	*old_curwin = curwin, *wp;
-    int		did_scroll = FALSE;
+    cmdarg_T cap;
+    CLEAR_FIELD(cap);
 
-    tpos = curwin->w_cursor;
+    oparg_T oa;
+    clear_oparg(&oa);
+    cap.oap = &oa;
 
-    if (mouse_row >= 0 && mouse_col >= 0)
+    cap.arg = dir;
+    switch (dir)
     {
-	int row, col;
-
-	row = mouse_row;
-	col = mouse_col;
-
-	// find the window at the pointer coordinates
-	wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp == NULL)
-	    return;
-	curwin = wp;
-	curbuf = curwin->w_buffer;
+	case MSCR_UP:
+	    cap.cmdchar = K_MOUSEUP;
+	    break;
+	case MSCR_DOWN:
+	    cap.cmdchar = K_MOUSEDOWN;
+	    break;
+	case MSCR_LEFT:
+	    cap.cmdchar = K_MOUSELEFT;
+	    break;
+	case MSCR_RIGHT:
+	    cap.cmdchar = K_MOUSERIGHT;
+	    break;
+	default:
+	    siemsg("Invalid ins_mousescroll() argument: %d", dir);
     }
-    if (curwin == old_curwin)
-	undisplay_dollar();
-
-    // Don't scroll the window in which completion is being done.
-    if (!pum_visible() || curwin != old_curwin)
-    {
-	long step;
-
-	if (dir == MSCR_DOWN || dir == MSCR_UP)
-	{
-	    if (mouse_vert_step < 0
-		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-		step = (long)(curwin->w_botline - curwin->w_topline);
-	    else
-		step = mouse_vert_step;
-	    scroll_redraw(dir, step);
-# ifdef FEAT_PROP_POPUP
-	if (WIN_IS_POPUP(curwin))
-	    popup_set_firstline(curwin);
-# endif
-	}
-#ifdef FEAT_GUI
-	else
-	{
-	    int val;
-
-	    if (mouse_hor_step < 0
-		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-		step = curwin->w_width;
-	    else
-		step = mouse_hor_step;
-	    val = curwin->w_leftcol + (dir == MSCR_RIGHT ? -step : step);
-	    if (val < 0)
-		val = 0;
-	    gui_do_horiz_scroll(val, TRUE);
-	}
-#endif
-	did_scroll = TRUE;
-	may_trigger_winscrolled();
-    }
-
-    curwin->w_redr_status = TRUE;
-
-    curwin = old_curwin;
-    curbuf = curwin->w_buffer;
-
-    // The popup menu may overlay the window, need to redraw it.
-    // TODO: Would be more efficient to only redraw the windows that are
-    // overlapped by the popup menu.
-    if (pum_visible() && did_scroll)
-    {
-	redraw_all_later(UPD_NOT_VALID);
-	ins_compl_show_pum();
-    }
-
-    if (!EQUAL_POS(curwin->w_cursor, tpos))
-    {
-	start_arrow(&tpos);
-	set_can_cindent(TRUE);
-    }
+    do_mousescroll(MODE_INSERT, &cap);
 }
 
 /*
@@ -2073,16 +2023,52 @@ retnomove:
 }
 
 /*
+ * Make a horizontal scroll to "leftcol".
+ * Return TRUE if the cursor moved, FALSE otherwise.
+ */
+    int
+do_mousescroll_horiz(long_u leftcol)
+{
+    if (curwin->w_p_wrap)
+	return FALSE;  // no wrapping, no scrolling
+
+    if (curwin->w_leftcol == (colnr_T)leftcol)
+	return FALSE;  // already there
+
+    curwin->w_leftcol = (colnr_T)leftcol;
+
+    // When the line of the cursor is too short, move the cursor to the
+    // longest visible line.
+    if (
+#ifdef FEAT_GUI
+	    (!gui.in_use || vim_strchr(p_go, GO_HORSCROLL) == NULL) &&
+#endif
+		    !virtual_active()
+	    && (long)leftcol > scroll_line_len(curwin->w_cursor.lnum))
+    {
+	curwin->w_cursor.lnum = ui_find_longest_lnum();
+	curwin->w_cursor.col = 0;
+    }
+
+    return leftcol_changed();
+}
+
+/*
  * Mouse scroll wheel: Default action is to scroll mouse_vert_step lines (or
- * mouse_hor_step, depending on the scroll direction), or one page when Shift or
- * Ctrl is used.
- * K_MOUSEUP (cap->arg == 1) or K_MOUSEDOWN (cap->arg == 0) or
- * K_MOUSELEFT (cap->arg == -1) or K_MOUSERIGHT (cap->arg == -2)
+ * mouse_hor_step, depending on the scroll direction), or one page when Shift
+ * or Ctrl is used.
+ * Direction is indicated by "cap->arg":
+ *    K_MOUSEUP    - MSCR_UP
+ *    K_MOUSEDOWN  - MSCR_DOWN
+ *    K_MOUSELEFT  - MSCR_LEFT
+ *    K_MOUSERIGHT - MSCR_RIGHT
  */
     void
-nv_mousescroll(cmdarg_T *cap)
+do_mousescroll(int mode, cmdarg_T *cap)
 {
-    win_T *old_curwin = curwin, *wp;
+    win_T   *old_curwin = curwin, *wp;
+    int	    did_ins_scroll = FALSE;
+    pos_T   tpos = curwin->w_cursor;
 
     if (mouse_row >= 0 && mouse_col >= 0)
     {
@@ -2102,61 +2088,80 @@ nv_mousescroll(cmdarg_T *cap)
 	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
-    if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
-    {
+    if (mode == MODE_INSERT && curwin == old_curwin)
+	undisplay_dollar();
+
 # ifdef FEAT_TERMINAL
-	if (term_use_loop())
-	    // This window is a terminal window, send the mouse event there.
-	    // Set "typed" to FALSE to avoid an endless loop.
-	    send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
-	else
+    if (term_use_loop())
+	// This window is a terminal window, send the mouse event there.
+	// Set "typed" to FALSE to avoid an endless loop.
+	send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
+    else
 # endif
-	if (mouse_vert_step < 0 || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+    // For insert mode, don't scroll the window in which completion is being
+    // done.
+    if (mode == MODE_NORMAL || !pum_visible() || curwin != old_curwin)
+    {
+	if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
 	{
-	    (void)onepage(cap->arg ? FORWARD : BACKWARD, 1L);
-	}
-	else
-	{
-	    // Don't scroll more than half the window height.
-	    if (curwin->w_height < mouse_vert_step * 2)
+	    if (mouse_vert_step < 0
+		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 	    {
-		cap->count1 = curwin->w_height / 2;
-		if (cap->count1 == 0)
-		    cap->count1 = 1;
+		if (mode == MODE_INSERT)
+		{
+		    long step = (long)(curwin->w_botline - curwin->w_topline);
+		    scroll_redraw(cap->arg, step);
+		}
+		else
+		{
+		    did_ins_scroll = onepage(cap->arg ? FORWARD : BACKWARD, 1L);
+		}
 	    }
 	    else
-		cap->count1 = mouse_vert_step;
-	    cap->count0 = cap->count1;
-	    nv_scroll_line(cap);
-	}
+	    {
+		if (mode == MODE_INSERT)
+		{
+		    scroll_redraw(cap->arg, mouse_vert_step);
+		}
+		else
+		{
+		    // Don't scroll more than half the window height.
+		    if (curwin->w_height < mouse_vert_step * 2)
+		    {
+			cap->count1 = curwin->w_height / 2;
+			if (cap->count1 == 0)
+			    cap->count1 = 1;
+		    }
+		    else
+		    {
+			cap->count1 = mouse_vert_step;
+		    }
+		    cap->count0 = cap->count1;
+		    nv_scroll_line(cap);
+		}
+	    }
+
 #ifdef FEAT_PROP_POPUP
-	if (WIN_IS_POPUP(curwin))
-	    popup_set_firstline(curwin);
+	    if (WIN_IS_POPUP(curwin))
+		popup_set_firstline(curwin);
 #endif
-    }
-# ifdef FEAT_GUI
-    else
-    {
-	// Horizontal scroll - only allowed when 'wrap' is disabled
-	if (!curwin->w_p_wrap)
+	}
+	else
 	{
-	    int val, step;
+	    long step = (mouse_hor_step < 0
+			      || (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
+		    ? curwin->w_width : mouse_hor_step;
+	    long leftcol = curwin->w_leftcol
+				     + (cap->arg == MSCR_RIGHT ? -step : step);
+	    if (leftcol < 0)
+		leftcol = 0;
 
-	    if (mouse_hor_step < 0
-		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-		step = curwin->w_width;
-	    else
-		step = mouse_hor_step;
-	    val = curwin->w_leftcol + (cap->arg == MSCR_RIGHT ? -step : +step);
-	    if (val < 0)
-		val = 0;
-
-	    gui_do_horiz_scroll(val, TRUE);
+	    did_ins_scroll = do_mousescroll_horiz((long_u)leftcol);
 	}
     }
-# endif
+
 # ifdef FEAT_SYN_HL
-    if (curwin != old_curwin && curwin->w_p_cul)
+    if (mode == MODE_NORMAL && curwin != old_curwin && curwin->w_p_cul)
 	redraw_for_cursorline(curwin);
 # endif
     may_trigger_winscrolled();
@@ -2165,6 +2170,29 @@ nv_mousescroll(cmdarg_T *cap)
 
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
+
+    if (mode == MODE_INSERT)
+    {
+	// The popup menu may overlay the window, need to redraw it.
+	// TODO: Would be more efficient to only redraw the windows that are
+	// overlapped by the popup menu.
+	if (pum_visible() && did_ins_scroll)
+	{
+	    redraw_all_later(UPD_NOT_VALID);
+	    ins_compl_show_pum();
+	}
+	if (!EQUAL_POS(curwin->w_cursor, tpos))
+	{
+	    start_arrow(&tpos);
+	    set_can_cindent(TRUE);
+	}
+    }
+}
+
+    void
+nv_mousescroll(cmdarg_T *cap)
+{
+    do_mousescroll(MODE_NORMAL, cap);
 }
 
 /*
