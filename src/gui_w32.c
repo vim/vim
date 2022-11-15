@@ -2152,16 +2152,29 @@ process_message(void)
 
 	    if (len <= 0)
 	    {
+		int wm_char = '\0';
+
 		if (   dead_key == DEAD_KEY_SET_DEFAULT
 		    && (GetKeyState(VK_CONTROL) & 0x8000)
-		    && (   (vk == 221 && scan_code == 26) // AZERTY CTRL+dead_circumflex
+		    )
+		{
+		    if (   (vk == 221 && scan_code == 26) // AZERTY CTRL+dead_circumflex
 			|| (vk == 220 && scan_code == 41) // QWERTZ CTRL+dead_circumflex
 		       )
-		   )
+		    {
+			wm_char = '[';
+		    }
+		    if (   (vk == 192 && scan_code == 27) // QWERTZ CTRL+dead_two-overdots
+			)
+		    {
+			wm_char = ']';
+		    }
+		}
+		if (wm_char != '\0')
 		{
 		    // post WM_CHAR='[' - which will be interpreted with CTRL
 		    // still hold as ESC
-		    PostMessageW(msg.hwnd, WM_CHAR, '[', msg.lParam);
+		    PostMessageW(msg.hwnd, WM_CHAR, wm_char, msg.lParam);
 		    // ask _OnChar() to not touch this state, wait for next key
 		    // press and maintain knowledge that we are "poisoned" with
 		    // "dead state"
