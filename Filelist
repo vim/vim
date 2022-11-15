@@ -177,6 +177,8 @@ SRC_ALL =	\
 		src/testdir/Make_all.mak \
 		src/testdir/*.in \
 		src/testdir/*.py \
+		src/testdir/keycode_check.vim \
+		src/testdir/keycode_check.json \
 		src/testdir/lsan-suppress.txt \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
