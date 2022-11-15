@@ -226,8 +226,13 @@ nextwild(
 	return FAIL;
     }
 
-    msg_puts("...");	    // show that we are busy
-    out_flush();
+    // If cmd_silent is set then don't show the dots, because redrawcmd() below
+    // won't remove them.
+    if (!cmd_silent)
+    {
+	msg_puts("...");	    // show that we are busy
+	out_flush();
+    }
 
     i = (int)(xp->xp_pattern - ccline->cmdbuff);
     xp->xp_pattern_len = ccline->cmdpos - i;
@@ -2756,7 +2761,7 @@ get_behave_arg(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
  * ":breakadd {expr, file, func, here}" command.
@@ -3020,10 +3025,10 @@ ExpandFromContext(
 	char *directories[] = {"syntax", "indent", "ftplugin", NULL};
 	return ExpandRTDir(pat, 0, numMatches, matches, directories);
     }
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     if (xp->xp_context == EXPAND_USER_LIST)
 	return ExpandUserList(xp, matches, numMatches);
-# endif
+#endif
     if (xp->xp_context == EXPAND_PACKADD)
 	return ExpandPackAddDir(pat, numMatches, matches);
 
@@ -3057,10 +3062,10 @@ ExpandFromContext(
 	ret = ExpandSettings(xp, &regmatch, pat, numMatches, matches, fuzzy);
     else if (xp->xp_context == EXPAND_MAPPINGS)
 	ret = ExpandMappings(pat, &regmatch, numMatches, matches);
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
     else if (xp->xp_context == EXPAND_USER_DEFINED)
 	ret = ExpandUserDefined(pat, xp, &regmatch, matches, numMatches);
-# endif
+#endif
     else
 	ret = ExpandOther(pat, xp, &regmatch, matches, numMatches);
 
@@ -3168,7 +3173,7 @@ ExpandGeneric(
 	else
 	    ((char_u **)ga.ga_data)[ga.ga_len] = str;
 
-# ifdef FEAT_MENU
+#ifdef FEAT_MENU
 	if (func == get_menu_names)
 	{
 	    // test for separator added by get_menu_names()
@@ -3176,7 +3181,7 @@ ExpandGeneric(
 	    if (*str == '\001')
 		*str = '.';
 	}
-# endif
+#endif
 
 	++ga.ga_len;
     }
@@ -3350,11 +3355,11 @@ expand_shellcmd(
     hash_init(&found_ht);
     for (s = path; ; s = e)
     {
-# if defined(MSWIN)
+#if defined(MSWIN)
 	e = vim_strchr(s, ';');
-# else
+#else
 	e = vim_strchr(s, ':');
-# endif
+#endif
 	if (e == NULL)
 	    e = s + STRLEN(s);
 
@@ -3396,7 +3401,7 @@ expand_shellcmd(
     return OK;
 }
 
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 /*
  * Call "user_expand_func()" to invoke a user defined Vim script function and
  * return the result (either a string, a List or NULL).
@@ -3580,7 +3585,7 @@ ExpandUserList(
     *numMatches = ga.ga_len;
     return OK;
 }
-# endif
+#endif
 
 /*
  * Expand "file" for all comma-separated directories in "path".
@@ -3613,14 +3618,14 @@ globpath(
 	copy_option_part(&path, buf, MAXPATHL, ",");
 	if (STRLEN(buf) + STRLEN(file) + 2 < MAXPATHL)
 	{
-# if defined(MSWIN)
+#if defined(MSWIN)
 	    // Using the platform's path separator (\) makes vim incorrectly
 	    // treat it as an escape character, use '/' instead.
 	    if (*buf != NUL && !after_pathsep(buf, buf + STRLEN(buf)))
 		STRCAT(buf, "/");
-# else
+#else
 	    add_pathsep(buf);
-# endif
+#endif
 	    STRCAT(buf, file);
 	    if (ExpandFromContext(&xpc, buf, &p, &num_p,
 			     WILD_SILENT|expand_options) != FAIL && num_p > 0)
@@ -3828,10 +3833,10 @@ wildmenu_process_key_filenames(cmdline_info_T *cclp, int key, expand_T *xp)
 	    if (has_mbyte)
 		j -= (*mb_head_off)(cclp->cmdbuff, cclp->cmdbuff + j);
 	    if (vim_ispathsep(cclp->cmdbuff[j])
-# ifdef BACKSLASH_IN_FILENAME
+#ifdef BACKSLASH_IN_FILENAME
 		    && vim_strchr((char_u *)" *?[{`$%#",
 			cclp->cmdbuff[j + 1]) == NULL
-# endif
+#endif
 	       )
 	    {
 		if (found)

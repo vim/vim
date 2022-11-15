@@ -1262,7 +1262,7 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
     g_xMouse = pmer->dwMousePosition.X;
     g_yMouse = pmer->dwMousePosition.Y;
 
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
     int lcol = g_xMouse;
     int lrow = g_yMouse;
     win_T *wp = mouse_find_win(&lrow, &lcol, FIND_POPUP);
@@ -1294,7 +1294,7 @@ decode_mouse_wheel(MOUSE_EVENT_RECORD *pmer)
 	out_flush();
 	return;
     }
-#endif
+# endif
     mouse_col = g_xMouse;
     mouse_row = g_yMouse;
 
@@ -6059,9 +6059,9 @@ insert_lines(unsigned cLines)
 
     fill.Char.AsciiChar = ' ';
     if (!(vtp_working
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
 		&& (p_tgc || t_colors >= 256)
-#endif
+# endif
 	 ))
 	fill.Attributes = g_attrCurrent;
     else
@@ -6187,9 +6187,9 @@ gotoxy(
 	return;
 
     if (!(vtp_working
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
 		&& (p_tgc || t_colors >= 256)
-#endif
+# endif
 	 ))
     {
 	// There are reports of double-width characters not displayed
@@ -6435,9 +6435,9 @@ write_chars(
     }
 
     if (!(vtp_working
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
 	    && (p_tgc || t_colors >= 256)
-#endif
+# endif
 	))
     {
 	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, cells,
@@ -6479,9 +6479,9 @@ write_chars(
 
     // Cursor under VTP is always in the correct position, no need to reset.
     if (!(vtp_working
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
 		&& (p_tgc || t_colors >= 256)
-#endif
+# endif
 	 ))
 	gotoxy(g_coord.X + 1, g_coord.Y + 1);
 

@@ -230,10 +230,10 @@ gui_do_fork(void)
     int		exit_status;
     pid_t	pid = -1;
 
-#if defined(FEAT_RELTIME) && defined(HAVE_TIMER_CREATE)
+# if defined(FEAT_RELTIME) && defined(HAVE_TIMER_CREATE)
     // a timer is not carried forward
     delete_timer();
-#endif
+# endif
 
     // Setup a pipe between the child and the parent, so that the parent
     // knows when the child has done the setsid() call and is allowed to
