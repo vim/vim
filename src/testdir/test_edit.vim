@@ -1216,20 +1216,20 @@ func Test_edit_MOUSE()
   call assert_equal(13, line('w$'))
   " This should move by one page down.
   call feedkeys("A\<S-ScrollWheelDown>\<esc>", 'tnix')
-  call assert_equal(14, line('w0'))
+  call assert_equal(12, line('w0'))
   set nostartofline
   " Another page down.
   call feedkeys("A\<C-ScrollWheelDown>\<esc>", 'tnix')
-  call assert_equal(24, line('w0'))
+  call assert_equal(20, line('w0'))
 
-  call assert_equal([0, 24, 2, 0], getpos('.'))
+  call assert_equal([0, 20, 2, 0], getpos('.'))
   call test_setmouse(4, 3)
   call feedkeys("A\<LeftMouse>\<esc>", 'tnix')
-  call assert_equal([0, 27, 2, 0], getpos('.'))
+  call assert_equal([0, 23, 2, 0], getpos('.'))
   set mousemodel=extend
   call test_setmouse(5, 3)
   call feedkeys("A\<RightMouse>\<esc>\<esc>", 'tnix')
-  call assert_equal([0, 28, 2, 0], getpos('.'))
+  call assert_equal([0, 24, 2, 0], getpos('.'))
   set mousemodel&
   call cursor(1, 100)
   norm! zt
