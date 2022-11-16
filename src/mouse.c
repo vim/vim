@@ -2072,10 +2072,8 @@ do_mousescroll(int mode, cmdarg_T *cap)
 
     if (mouse_row >= 0 && mouse_col >= 0)
     {
-	int row, col;
-
-	row = mouse_row;
-	col = mouse_col;
+	int row = mouse_row;
+	int col = mouse_col;
 
 	// find the window at the pointer coordinates
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
@@ -2102,43 +2100,29 @@ do_mousescroll(int mode, cmdarg_T *cap)
     // done.
     if (mode == MODE_NORMAL || !pum_visible() || curwin != old_curwin)
     {
+	int shift_or_ctrl = mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL);
+
 	if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
 	{
-	    if (mouse_vert_step < 0
-		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+	    if (mouse_vert_step < 0 || shift_or_ctrl)
 	    {
-		if (mode == MODE_INSERT)
-		{
-		    long step = (long)(curwin->w_botline - curwin->w_topline);
-		    scroll_redraw(cap->arg, step);
-		}
-		else
-		{
-		    did_ins_scroll = onepage(cap->arg ? FORWARD : BACKWARD, 1L);
-		}
+		onepage(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L);
 	    }
 	    else
 	    {
-		// if (mode == MODE_INSERT)
-		// {
-		//     scroll_redraw(cap->arg, mouse_vert_step);
-		// }
-		// else
-		// {
-		    // Don't scroll more than half the window height.
-		    if (curwin->w_height < mouse_vert_step * 2)
-		    {
-			cap->count1 = curwin->w_height / 2;
-			if (cap->count1 == 0)
-			    cap->count1 = 1;
-		    }
-		    else
-		    {
-			cap->count1 = mouse_vert_step;
-		    }
-		    cap->count0 = cap->count1;
-		    nv_scroll_line(cap);
-		// }
+		// Don't scroll more than half the window height.
+		if (curwin->w_height < mouse_vert_step * 2)
+		{
+		    cap->count1 = curwin->w_height / 2;
+		    if (cap->count1 == 0)
+			cap->count1 = 1;
+		}
+		else
+		{
+		    cap->count1 = mouse_vert_step;
+		}
+		cap->count0 = cap->count1;
+		nv_scroll_line(cap);
 	    }
 
 #ifdef FEAT_PROP_POPUP
@@ -2148,15 +2132,14 @@ do_mousescroll(int mode, cmdarg_T *cap)
 	}
 	else
 	{
-	    long step = (mouse_hor_step < 0
-			      || (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
+	    long step = (mouse_hor_step < 0 || shift_or_ctrl)
 		    ? curwin->w_width : mouse_hor_step;
 	    long leftcol = curwin->w_leftcol
 				     + (cap->arg == MSCR_RIGHT ? -step : step);
 	    if (leftcol < 0)
 		leftcol = 0;
 
-	    did_ins_scroll = do_mousescroll_horiz((long_u)leftcol);
+	    do_mousescroll_horiz((long_u)leftcol);
 	}
     }
 
@@ -2176,7 +2159,7 @@ do_mousescroll(int mode, cmdarg_T *cap)
 	// The popup menu may overlay the window, need to redraw it.
 	// TODO: Would be more efficient to only redraw the windows that are
 	// overlapped by the popup menu.
-	if (pum_visible() && did_ins_scroll)
+	if (pum_visible() && has_winscrolled())
 	{
 	    redraw_all_later(UPD_NOT_VALID);
 	    ins_compl_show_pum();
