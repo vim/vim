@@ -2119,12 +2119,12 @@ do_mousescroll(int mode, cmdarg_T *cap)
 	    }
 	    else
 	    {
-		if (mode == MODE_INSERT)
-		{
-		    scroll_redraw(cap->arg, mouse_vert_step);
-		}
-		else
-		{
+		// if (mode == MODE_INSERT)
+		// {
+		//     scroll_redraw(cap->arg, mouse_vert_step);
+		// }
+		// else
+		// {
 		    // Don't scroll more than half the window height.
 		    if (curwin->w_height < mouse_vert_step * 2)
 		    {
@@ -2138,7 +2138,7 @@ do_mousescroll(int mode, cmdarg_T *cap)
 		    }
 		    cap->count0 = cap->count1;
 		    nv_scroll_line(cap);
-		}
+		// }
 	    }
 
 #ifdef FEAT_PROP_POPUP
