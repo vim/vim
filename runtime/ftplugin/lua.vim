@@ -21,7 +21,7 @@ setlocal formatoptions-=t formatoptions+=croql
 let &l:define = '\<function\|\<local\%(\s\+function\)\='
 
 " TODO: handle init.lua
-setlocal includeexpr=substitute(v:fname,'\\.','/','g')
+setlocal includeexpr=substitute(v:fname,'\.','/','g')
 setlocal suffixesadd=.lua
 
 let b:undo_ftplugin = "setlocal cms< com< def< fo< inex< sua<"
