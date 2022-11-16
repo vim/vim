@@ -4720,7 +4720,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// else if (version == 115 && arg[0] == 0 && arg[2] == 0)
 	//     term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
-	// Kitty sends 1;400{version};{secondary-version}
+	// Kitty up to 9.x sends 1;400{version};{secondary-version}
 	if (arg[0] == 1 && arg[1] >= 4000 && arg[1] <= 4009)
 	{
 	    term_props[TPR_KITTY].tpr_status = TPR_YES;
@@ -5520,7 +5520,8 @@ check_termcode(
 			    // no match for "code;*X" with "code;"
 			    continue;
 			else if (termcodes[idx].code[modslen] == '@'
-				     && (tp[modslen] != '1' || tp[modslen + 1] != ';'))
+					 && (tp[modslen] != '1'
+						    || tp[modslen + 1] != ';'))
 			    // no match for "<Esc>[@" with "<Esc>[1;"
 			    continue;
 			else
