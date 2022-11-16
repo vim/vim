@@ -2067,7 +2067,6 @@ do_mousescroll_horiz(long_u leftcol)
 do_mousescroll(int mode, cmdarg_T *cap)
 {
     win_T   *old_curwin = curwin, *wp;
-    int	    did_ins_scroll = FALSE;
     pos_T   tpos = curwin->w_cursor;
 
     if (mouse_row >= 0 && mouse_col >= 0)
