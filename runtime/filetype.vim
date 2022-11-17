@@ -419,6 +419,12 @@ au BufNewFile,BufRead configure.in,configure.ac setf config
 " Cooklang
 au BufNewFile,BufRead *.cook			setf cook
 
+" Clinical Quality Language (CQL)
+" .cql is also mentioned as the 'XDCC Catcher queue list' file extension.
+" If support for XDCC Catcher is needed in the future, the contents of the file
+" needs to be inspected.
+au BufNewFile,BufRead *.cql			setf cqlang
+
 " CSV Files
 au BufNewFile,BufRead *.csv			setf csv
 
