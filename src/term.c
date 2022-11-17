@@ -50,12 +50,6 @@
 
 #undef tgetstr
 
-struct builtin_term
-{
-    int		bt_entry;
-    char	*bt_string;
-};
-
 // start of keys that are not directly used by Vim but can be mapped
 #define BT_EXTRA_KEYS	0x101
 
@@ -207,176 +201,29 @@ static int initial_cursor_blink = FALSE;
 #endif
 
 /*
- * Here are the builtin termcap entries.  They are not stored as complete
- * structures with all entries to save space.
+ * The builtin termcap entries.
  *
- * The entries are also included even when HAVE_TGETENT is defined, the systerm
- * termcap may be incomplee.  When HAVE_TGETENT is defined, the builtin entries
- * can be accessed with "builtin_amiga", "builtin_ansi", "builtin_debug", etc.
+ * The entries are also included when HAVE_TGETENT is defined, the system
+ * termcap may be incomplete and a few Vim-specific entries are added.
  *
- * Each termcap is a list of builtin_term structures. It always starts with
- * KS_NAME, which separates the entries.  See parse_builtin_tcap() for all
+ * When HAVE_TGETENT is defined, the builtin entries can be accessed with
+ * "builtin_amiga", "builtin_ansi", "builtin_debug", etc.
+ *
+ * Each termcap is a list of tcap_entry_T.  See parse_builtin_tcap() for all
  * details.
- * bt_entry is either a KS_xxx code (>= 0), or a K_xxx code.
  *
  * Entries marked with "guessed" may be wrong.
  */
-static struct builtin_term builtin_termcaps[] =
+typedef struct
 {
-#if defined(FEAT_GUI)
-/*
- * GUI pseudo term-cap.
- */
-    {(int)KS_NAME,	"gui"},
-    {(int)KS_CE,	"\033|$"},
-    {(int)KS_AL,	"\033|i"},
-# ifdef TERMINFO
-    {(int)KS_CAL,	"\033|%p1%dI"},
-# else
-    {(int)KS_CAL,	"\033|%dI"},
-# endif
-    {(int)KS_DL,	"\033|d"},
-# ifdef TERMINFO
-    {(int)KS_CDL,	"\033|%p1%dD"},
-    {(int)KS_CS,	"\033|%p1%d;%p2%dR"},
-    {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
-# else
-    {(int)KS_CDL,	"\033|%dD"},
-    {(int)KS_CS,	"\033|%d;%dR"},
-    {(int)KS_CSV,	"\033|%d;%dV"},
-# endif
-    {(int)KS_CL,	"\033|C"},
-			// attributes switched on with 'h', off with * 'H'
-    {(int)KS_ME,	"\033|31H"}, // HL_ALL
-    {(int)KS_MR,	"\033|1h"},   // HL_INVERSE
-    {(int)KS_MD,	"\033|2h"},   // HL_BOLD
-    {(int)KS_SE,	"\033|16H"}, // HL_STANDOUT
-    {(int)KS_SO,	"\033|16h"}, // HL_STANDOUT
-    {(int)KS_UE,	"\033|8H"},   // HL_UNDERLINE
-    {(int)KS_US,	"\033|8h"},   // HL_UNDERLINE
-    {(int)KS_UCE,	"\033|8C"},   // HL_UNDERCURL
-    {(int)KS_UCS,	"\033|8c"},   // HL_UNDERCURL
-    {(int)KS_STE,	"\033|4C"},   // HL_STRIKETHROUGH
-    {(int)KS_STS,	"\033|4c"},   // HL_STRIKETHROUGH
-    {(int)KS_CZR,	"\033|4H"},   // HL_ITALIC
-    {(int)KS_CZH,	"\033|4h"},   // HL_ITALIC
-    {(int)KS_VB,	"\033|f"},
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},
-    {(int)KS_XN,	"y"},
-    {(int)KS_LE,	"\b"},		// cursor-left = BS
-    {(int)KS_ND,	"\014"},	// cursor-right = CTRL-L
-# ifdef TERMINFO
-    {(int)KS_CM,	"\033|%p1%d;%p2%dM"},
-# else
-    {(int)KS_CM,	"\033|%d;%dM"},
-# endif
-	// there are no key sequences here, the GUI sequences are recognized
-	// in check_termcode()
-#endif
+    int		bt_entry;   // either a KS_xxx code (>= 0), or a K_xxx code.
+    char	*bt_string; // value
+} tcap_entry_T;
 
 /*
- * Amiga console window, default for Amiga
+ * Standard ANSI terminal, default for Unix.
  */
-    {(int)KS_NAME,	"amiga"},
-    {(int)KS_CE,	"\033[K"},
-    {(int)KS_CD,	"\033[J"},
-    {(int)KS_AL,	"\033[L"},
-#  ifdef TERMINFO
-    {(int)KS_CAL,	"\033[%p1%dL"},
-#  else
-    {(int)KS_CAL,	"\033[%dL"},
-#  endif
-    {(int)KS_DL,	"\033[M"},
-#  ifdef TERMINFO
-    {(int)KS_CDL,	"\033[%p1%dM"},
-#  else
-    {(int)KS_CDL,	"\033[%dM"},
-#  endif
-    {(int)KS_CL,	"\014"},
-    {(int)KS_VI,	"\033[0 p"},
-    {(int)KS_VE,	"\033[1 p"},
-    {(int)KS_ME,	"\033[0m"},
-    {(int)KS_MR,	"\033[7m"},
-    {(int)KS_MD,	"\033[1m"},
-    {(int)KS_SE,	"\033[0m"},
-    {(int)KS_SO,	"\033[33m"},
-    {(int)KS_US,	"\033[4m"},
-    {(int)KS_UE,	"\033[0m"},
-    {(int)KS_CZH,	"\033[3m"},
-    {(int)KS_CZR,	"\033[0m"},
-#if defined(__amigaos4__) || defined(__MORPHOS__) || defined(__AROS__)
-    {(int)KS_CCO,	"8"},		// allow 8 colors
-#  ifdef TERMINFO
-    {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
-    {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
-#  else
-    {(int)KS_CAB,	"\033[4%dm"},	// set background color
-    {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
-#  endif
-    {(int)KS_OP,	"\033[m"},	// reset colors
-#endif
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},		// guessed
-    {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
-    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
-    {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-#if defined(__MORPHOS__)
-    {(int)KS_SR,	"\033M"},
-#endif
-#  ifdef TERMINFO
-    {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
-    {(int)KS_CRI,	"\033[%dC"},
-#  endif
-    {K_UP,		"\233A"},
-    {K_DOWN,		"\233B"},
-    {K_LEFT,		"\233D"},
-    {K_RIGHT,		"\233C"},
-    {K_S_UP,		"\233T"},
-    {K_S_DOWN,		"\233S"},
-    {K_S_LEFT,		"\233 A"},
-    {K_S_RIGHT,		"\233 @"},
-    {K_S_TAB,		"\233Z"},
-    {K_F1,		"\233\060~"},// some compilers don't dig "\2330"
-    {K_F2,		"\233\061~"},
-    {K_F3,		"\233\062~"},
-    {K_F4,		"\233\063~"},
-    {K_F5,		"\233\064~"},
-    {K_F6,		"\233\065~"},
-    {K_F7,		"\233\066~"},
-    {K_F8,		"\233\067~"},
-    {K_F9,		"\233\070~"},
-    {K_F10,		"\233\071~"},
-    {K_S_F1,		"\233\061\060~"},
-    {K_S_F2,		"\233\061\061~"},
-    {K_S_F3,		"\233\061\062~"},
-    {K_S_F4,		"\233\061\063~"},
-    {K_S_F5,		"\233\061\064~"},
-    {K_S_F6,		"\233\061\065~"},
-    {K_S_F7,		"\233\061\066~"},
-    {K_S_F8,		"\233\061\067~"},
-    {K_S_F9,		"\233\061\070~"},
-    {K_S_F10,		"\233\061\071~"},
-    {K_HELP,		"\233?~"},
-    {K_INS,		"\233\064\060~"},	// 101 key keyboard
-    {K_PAGEUP,		"\233\064\061~"},	// 101 key keyboard
-    {K_PAGEDOWN,	"\233\064\062~"},	// 101 key keyboard
-    {K_HOME,		"\233\064\064~"},	// 101 key keyboard
-    {K_END,		"\233\064\065~"},	// 101 key keyboard
-
-    {BT_EXTRA_KEYS,	""},
-    {TERMCAP2KEY('#', '2'), "\233\065\064~"},	// shifted home key
-    {TERMCAP2KEY('#', '3'), "\233\065\060~"},	// shifted insert key
-    {TERMCAP2KEY('*', '7'), "\233\065\065~"},	// shifted end key
-
-/*
- * standard ANSI terminal, default for unix
- */
-    {(int)KS_NAME,	"ansi"},
+static tcap_entry_T builtin_ansi[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
 #  ifdef TERMINFO
@@ -407,216 +254,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CRI,	"\033[%dC"},
 #  endif
 
-/*
- * These codes are valid when nansi.sys or equivalent has been installed.
- * Function keys on a PC are preceded with a NUL. These are converted into
- * K_NUL '\316' in mch_inchar(), because we cannot handle NULs in key codes.
- * CTRL-arrow is used instead of SHIFT-arrow.
- */
-    {(int)KS_NAME,	"pcansi"},
-    {(int)KS_DL,	"\033[M"},
-    {(int)KS_AL,	"\033[L"},
-    {(int)KS_CE,	"\033[K"},
-    {(int)KS_CL,	"\033[2J"},
-    {(int)KS_ME,	"\033[0m"},
-    {(int)KS_MR,	"\033[5m"},	// reverse: black on lightgrey
-    {(int)KS_MD,	"\033[1m"},	// bold: white text
-    {(int)KS_SE,	"\033[0m"},	// standout end
-    {(int)KS_SO,	"\033[31m"},	// standout: white on blue
-    {(int)KS_CZH,	"\033[34;43m"},	// italic mode: blue text on yellow
-    {(int)KS_CZR,	"\033[0m"},	// italic mode end
-    {(int)KS_US,	"\033[36;41m"},	// underscore mode: cyan text on red
-    {(int)KS_UE,	"\033[0m"},	// underscore mode end
-    {(int)KS_CCO,	"8"},		// allow 8 colors
-#  ifdef TERMINFO
-    {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
-    {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
-#  else
-    {(int)KS_CAB,	"\033[4%dm"},	// set background color
-    {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
-#  endif
-    {(int)KS_OP,	"\033[0m"},	// reset colors
-    {(int)KS_MS,	"y"},
-    {(int)KS_UT,	"y"},		// guessed
-    {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
-    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#  else
-    {(int)KS_CM,	"\033[%i%d;%dH"},
-#  endif
-#  ifdef TERMINFO
-    {(int)KS_CRI,	"\033[%p1%dC"},
-#  else
-    {(int)KS_CRI,	"\033[%dC"},
-#  endif
-    {K_UP,		"\316H"},
-    {K_DOWN,		"\316P"},
-    {K_LEFT,		"\316K"},
-    {K_RIGHT,		"\316M"},
-    {K_S_LEFT,		"\316s"},
-    {K_S_RIGHT,		"\316t"},
-    {K_F1,		"\316;"},
-    {K_F2,		"\316<"},
-    {K_F3,		"\316="},
-    {K_F4,		"\316>"},
-    {K_F5,		"\316?"},
-    {K_F6,		"\316@"},
-    {K_F7,		"\316A"},
-    {K_F8,		"\316B"},
-    {K_F9,		"\316C"},
-    {K_F10,		"\316D"},
-    {K_F11,		"\316\205"},	// guessed
-    {K_F12,		"\316\206"},	// guessed
-    {K_S_F1,		"\316T"},
-    {K_S_F2,		"\316U"},
-    {K_S_F3,		"\316V"},
-    {K_S_F4,		"\316W"},
-    {K_S_F5,		"\316X"},
-    {K_S_F6,		"\316Y"},
-    {K_S_F7,		"\316Z"},
-    {K_S_F8,		"\316["},
-    {K_S_F9,		"\316\\"},
-    {K_S_F10,		"\316]"},
-    {K_S_F11,		"\316\207"},	// guessed
-    {K_S_F12,		"\316\210"},	// guessed
-    {K_INS,		"\316R"},
-    {K_DEL,		"\316S"},
-    {K_HOME,		"\316G"},
-    {K_END,		"\316O"},
-    {K_PAGEDOWN,	"\316Q"},
-    {K_PAGEUP,		"\316I"},
-
-/*
- * These codes are valid for the Win32 Console .  The entries that start with
- * ESC | are translated into console calls in os_win32.c.  The function keys
- * are also translated in os_win32.c.
- */
-    {(int)KS_NAME,	"win32"},
-    {(int)KS_CE,	"\033|K"},	// clear to end of line
-    {(int)KS_AL,	"\033|L"},	// add new blank line
-#  ifdef TERMINFO
-    {(int)KS_CAL,	"\033|%p1%dL"},	// add number of new blank lines
-#  else
-    {(int)KS_CAL,	"\033|%dL"},	// add number of new blank lines
-#  endif
-    {(int)KS_DL,	"\033|M"},	// delete line
-#  ifdef TERMINFO
-    {(int)KS_CDL,	"\033|%p1%dM"},	// delete number of lines
-    {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
-#  else
-    {(int)KS_CDL,	"\033|%dM"},	// delete number of lines
-    {(int)KS_CSV,	"\033|%d;%dV"},
-#  endif
-    {(int)KS_CL,	"\033|J"},	// clear screen
-    {(int)KS_CD,	"\033|j"},	// clear to end of display
-    {(int)KS_VI,	"\033|v"},	// cursor invisible
-    {(int)KS_VE,	"\033|V"},	// cursor visible
-
-    {(int)KS_ME,	"\033|0m"},	// normal
-    {(int)KS_MR,	"\033|112m"},	// reverse: black on lightgray
-    {(int)KS_MD,	"\033|15m"},	// bold: white on black
-#if 1
-    {(int)KS_SO,	"\033|31m"},	// standout: white on blue
-    {(int)KS_SE,	"\033|0m"},	// standout end
-#else
-    {(int)KS_SO,	"\033|F"},	// standout: high intensity
-    {(int)KS_SE,	"\033|f"},	// standout end
-#endif
-    {(int)KS_CZH,	"\033|225m"},	// italic: blue text on yellow
-    {(int)KS_CZR,	"\033|0m"},	// italic end
-    {(int)KS_US,	"\033|67m"},	// underscore: cyan text on red
-    {(int)KS_UE,	"\033|0m"},	// underscore end
-    {(int)KS_CCO,	"16"},		// allow 16 colors
-#  ifdef TERMINFO
-    {(int)KS_CAB,	"\033|%p1%db"},	// set background color
-    {(int)KS_CAF,	"\033|%p1%df"},	// set foreground color
-#  else
-    {(int)KS_CAB,	"\033|%db"},	// set background color
-    {(int)KS_CAF,	"\033|%df"},	// set foreground color
-#  endif
-
-    {(int)KS_MS,	"y"},		// save to move cur in reverse mode
-    {(int)KS_UT,	"y"},
-    {(int)KS_XN,	"y"},
-    {(int)KS_LE,	"\b"},
-#  ifdef TERMINFO
-    {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"}, // cursor motion
-#  else
-    {(int)KS_CM,	"\033|%i%d;%dH"}, // cursor motion
-#  endif
-    {(int)KS_VB,	"\033|B"},	// visual bell
-    {(int)KS_TI,	"\033|S"},	// put terminal in termcap mode
-    {(int)KS_TE,	"\033|E"},	// out of termcap mode
-#  ifdef TERMINFO
-    {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"}, // scroll region
-#  else
-    {(int)KS_CS,	"\033|%i%d;%dr"}, // scroll region
-#  endif
-#  ifdef FEAT_TERMGUICOLORS
-    {(int)KS_8F,	"\033|38;2;%lu;%lu;%lum"},
-    {(int)KS_8B,	"\033|48;2;%lu;%lu;%lum"},
-#  endif
-
-    {K_UP,		"\316H"},
-    {K_DOWN,		"\316P"},
-    {K_LEFT,		"\316K"},
-    {K_RIGHT,		"\316M"},
-    {K_S_UP,		"\316\304"},
-    {K_S_DOWN,		"\316\317"},
-    {K_S_LEFT,		"\316\311"},
-    {K_C_LEFT,		"\316s"},
-    {K_S_RIGHT,		"\316\313"},
-    {K_C_RIGHT,		"\316t"},
-    {K_S_TAB,		"\316\017"},
-    {K_F1,		"\316;"},
-    {K_F2,		"\316<"},
-    {K_F3,		"\316="},
-    {K_F4,		"\316>"},
-    {K_F5,		"\316?"},
-    {K_F6,		"\316@"},
-    {K_F7,		"\316A"},
-    {K_F8,		"\316B"},
-    {K_F9,		"\316C"},
-    {K_F10,		"\316D"},
-    {K_F11,		"\316\205"},
-    {K_F12,		"\316\206"},
-    {K_S_F1,		"\316T"},
-    {K_S_F2,		"\316U"},
-    {K_S_F3,		"\316V"},
-    {K_S_F4,		"\316W"},
-    {K_S_F5,		"\316X"},
-    {K_S_F6,		"\316Y"},
-    {K_S_F7,		"\316Z"},
-    {K_S_F8,		"\316["},
-    {K_S_F9,		"\316\\"},
-    {K_S_F10,		"\316]"},
-    {K_S_F11,		"\316\207"},
-    {K_S_F12,		"\316\210"},
-    {K_INS,		"\316R"},
-    {K_DEL,		"\316S"},
-    {K_HOME,		"\316G"},
-    {K_S_HOME,		"\316\302"},
-    {K_C_HOME,		"\316w"},
-    {K_END,		"\316O"},
-    {K_S_END,		"\316\315"},
-    {K_C_END,		"\316u"},
-    {K_PAGEDOWN,	"\316Q"},
-    {K_PAGEUP,		"\316I"},
-    {K_KPLUS,		"\316N"},
-    {K_KMINUS,		"\316J"},
-    {K_KMULTIPLY,	"\316\067"},
-    {K_K0,		"\316\332"},
-    {K_K1,		"\316\336"},
-    {K_K2,		"\316\342"},
-    {K_K3,		"\316\346"},
-    {K_K4,		"\316\352"},
-    {K_K5,		"\316\356"},
-    {K_K6,		"\316\362"},
-    {K_K7,		"\316\366"},
-    {K_K8,		"\316\372"},
-    {K_K9,		"\316\376"},
-    {K_BS,		"\316x"},
-    {K_S_BS,		"\316y"},
+    {(int)KS_NAME,	NULL}  // end marker
+};
 
 /*
  * VT320 is working as an ANSI terminal compatible DEC terminal.
@@ -624,7 +263,7 @@ static struct builtin_term builtin_termcaps[] =
  * TODO:- rewrite ESC[ codes to CSI
  *      - keyboard languages (CSI ? 26 n)
  */
-    {(int)KS_NAME,	"vt320"},
+static tcap_entry_T builtin_vt320[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
 #  ifdef TERMINFO
@@ -718,10 +357,13 @@ static struct builtin_term builtin_termcaps[] =
     {K_K9,		"\033Oy"},	// keypad 9
     {K_BS,		"\x7f"},	// for some reason 0177 doesn't work
 
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
 /*
  * Ordinary vt52
  */
-    {(int)KS_NAME,	"vt52"},
+static tcap_entry_T builtin_vt52[] = {
     {(int)KS_CE,	"\033K"},
     {(int)KS_CD,	"\033J"},
 #  ifdef TERMINFO
@@ -743,7 +385,13 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CL,	"\033H\033J"},
     {(int)KS_MS,	"y"},
 
-    {(int)KS_NAME,	"xterm"},
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
+/*
+ * Builtin xterm with Vim-specific entries.
+ */
+static tcap_entry_T builtin_xterm[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_AL,	"\033[L"},
 #  ifdef TERMINFO
@@ -935,10 +583,13 @@ static struct builtin_term builtin_termcaps[] =
     {TERMCAP2KEY('F', 'Q'), "\033[57;*~"}, // F36
     {TERMCAP2KEY('F', 'R'), "\033[58;*~"}, // F37
 
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
 /*
  * iris-ansi for Silicon Graphics machines.
  */
-    {(int)KS_NAME,	"iris-ansi"},
+static tcap_entry_T builtin_iris_ansi[] = {
     {(int)KS_CE,	"\033[K"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_AL,	"\033[L"},
@@ -1049,10 +700,400 @@ static struct builtin_term builtin_termcaps[] =
     {K_PAGEUP,		"\033[150q"},
     {K_PAGEDOWN,	"\033[154q"},
 
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
 /*
- * for debugging
+ * These codes are valid when nansi.sys or equivalent has been installed.
+ * Function keys on a PC are preceded with a NUL. These are converted into
+ * K_NUL '\316' in mch_inchar(), because we cannot handle NULs in key codes.
+ * CTRL-arrow is used instead of SHIFT-arrow.
  */
-    {(int)KS_NAME,	"debug"},
+static tcap_entry_T builtin_pcansi[] = {
+    {(int)KS_DL,	"\033[M"},
+    {(int)KS_AL,	"\033[L"},
+    {(int)KS_CE,	"\033[K"},
+    {(int)KS_CL,	"\033[2J"},
+    {(int)KS_ME,	"\033[0m"},
+    {(int)KS_MR,	"\033[5m"},	// reverse: black on lightgrey
+    {(int)KS_MD,	"\033[1m"},	// bold: white text
+    {(int)KS_SE,	"\033[0m"},	// standout end
+    {(int)KS_SO,	"\033[31m"},	// standout: white on blue
+    {(int)KS_CZH,	"\033[34;43m"},	// italic mode: blue text on yellow
+    {(int)KS_CZR,	"\033[0m"},	// italic mode end
+    {(int)KS_US,	"\033[36;41m"},	// underscore mode: cyan text on red
+    {(int)KS_UE,	"\033[0m"},	// underscore mode end
+    {(int)KS_CCO,	"8"},		// allow 8 colors
+#  ifdef TERMINFO
+    {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
+    {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
+#  else
+    {(int)KS_CAB,	"\033[4%dm"},	// set background color
+    {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
+#  endif
+    {(int)KS_OP,	"\033[0m"},	// reset colors
+    {(int)KS_MS,	"y"},
+    {(int)KS_UT,	"y"},		// guessed
+    {(int)KS_LE,	"\b"},
+#  ifdef TERMINFO
+    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
+#  else
+    {(int)KS_CM,	"\033[%i%d;%dH"},
+#  endif
+#  ifdef TERMINFO
+    {(int)KS_CRI,	"\033[%p1%dC"},
+#  else
+    {(int)KS_CRI,	"\033[%dC"},
+#  endif
+    {K_UP,		"\316H"},
+    {K_DOWN,		"\316P"},
+    {K_LEFT,		"\316K"},
+    {K_RIGHT,		"\316M"},
+    {K_S_LEFT,		"\316s"},
+    {K_S_RIGHT,		"\316t"},
+    {K_F1,		"\316;"},
+    {K_F2,		"\316<"},
+    {K_F3,		"\316="},
+    {K_F4,		"\316>"},
+    {K_F5,		"\316?"},
+    {K_F6,		"\316@"},
+    {K_F7,		"\316A"},
+    {K_F8,		"\316B"},
+    {K_F9,		"\316C"},
+    {K_F10,		"\316D"},
+    {K_F11,		"\316\205"},	// guessed
+    {K_F12,		"\316\206"},	// guessed
+    {K_S_F1,		"\316T"},
+    {K_S_F2,		"\316U"},
+    {K_S_F3,		"\316V"},
+    {K_S_F4,		"\316W"},
+    {K_S_F5,		"\316X"},
+    {K_S_F6,		"\316Y"},
+    {K_S_F7,		"\316Z"},
+    {K_S_F8,		"\316["},
+    {K_S_F9,		"\316\\"},
+    {K_S_F10,		"\316]"},
+    {K_S_F11,		"\316\207"},	// guessed
+    {K_S_F12,		"\316\210"},	// guessed
+    {K_INS,		"\316R"},
+    {K_DEL,		"\316S"},
+    {K_HOME,		"\316G"},
+    {K_END,		"\316O"},
+    {K_PAGEDOWN,	"\316Q"},
+    {K_PAGEUP,		"\316I"},
+
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
+/*
+ * These codes are valid for the Win32 Console .  The entries that start with
+ * ESC | are translated into console calls in os_win32.c.  The function keys
+ * are also translated in os_win32.c.
+ */
+static tcap_entry_T builtin_win32[] = {
+    {(int)KS_CE,	"\033|K"},	// clear to end of line
+    {(int)KS_AL,	"\033|L"},	// add new blank line
+#  ifdef TERMINFO
+    {(int)KS_CAL,	"\033|%p1%dL"},	// add number of new blank lines
+#  else
+    {(int)KS_CAL,	"\033|%dL"},	// add number of new blank lines
+#  endif
+    {(int)KS_DL,	"\033|M"},	// delete line
+#  ifdef TERMINFO
+    {(int)KS_CDL,	"\033|%p1%dM"},	// delete number of lines
+    {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
+#  else
+    {(int)KS_CDL,	"\033|%dM"},	// delete number of lines
+    {(int)KS_CSV,	"\033|%d;%dV"},
+#  endif
+    {(int)KS_CL,	"\033|J"},	// clear screen
+    {(int)KS_CD,	"\033|j"},	// clear to end of display
+    {(int)KS_VI,	"\033|v"},	// cursor invisible
+    {(int)KS_VE,	"\033|V"},	// cursor visible
+
+    {(int)KS_ME,	"\033|0m"},	// normal
+    {(int)KS_MR,	"\033|112m"},	// reverse: black on lightgray
+    {(int)KS_MD,	"\033|15m"},	// bold: white on black
+#if 1
+    {(int)KS_SO,	"\033|31m"},	// standout: white on blue
+    {(int)KS_SE,	"\033|0m"},	// standout end
+#else
+    {(int)KS_SO,	"\033|F"},	// standout: high intensity
+    {(int)KS_SE,	"\033|f"},	// standout end
+#endif
+    {(int)KS_CZH,	"\033|225m"},	// italic: blue text on yellow
+    {(int)KS_CZR,	"\033|0m"},	// italic end
+    {(int)KS_US,	"\033|67m"},	// underscore: cyan text on red
+    {(int)KS_UE,	"\033|0m"},	// underscore end
+    {(int)KS_CCO,	"16"},		// allow 16 colors
+#  ifdef TERMINFO
+    {(int)KS_CAB,	"\033|%p1%db"},	// set background color
+    {(int)KS_CAF,	"\033|%p1%df"},	// set foreground color
+#  else
+    {(int)KS_CAB,	"\033|%db"},	// set background color
+    {(int)KS_CAF,	"\033|%df"},	// set foreground color
+#  endif
+
+    {(int)KS_MS,	"y"},		// save to move cur in reverse mode
+    {(int)KS_UT,	"y"},
+    {(int)KS_XN,	"y"},
+    {(int)KS_LE,	"\b"},
+#  ifdef TERMINFO
+    {(int)KS_CM,	"\033|%i%p1%d;%p2%dH"}, // cursor motion
+#  else
+    {(int)KS_CM,	"\033|%i%d;%dH"}, // cursor motion
+#  endif
+    {(int)KS_VB,	"\033|B"},	// visual bell
+    {(int)KS_TI,	"\033|S"},	// put terminal in termcap mode
+    {(int)KS_TE,	"\033|E"},	// out of termcap mode
+#  ifdef TERMINFO
+    {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"}, // scroll region
+#  else
+    {(int)KS_CS,	"\033|%i%d;%dr"}, // scroll region
+#  endif
+#  ifdef FEAT_TERMGUICOLORS
+    {(int)KS_8F,	"\033|38;2;%lu;%lu;%lum"},
+    {(int)KS_8B,	"\033|48;2;%lu;%lu;%lum"},
+#  endif
+
+    {K_UP,		"\316H"},
+    {K_DOWN,		"\316P"},
+    {K_LEFT,		"\316K"},
+    {K_RIGHT,		"\316M"},
+    {K_S_UP,		"\316\304"},
+    {K_S_DOWN,		"\316\317"},
+    {K_S_LEFT,		"\316\311"},
+    {K_C_LEFT,		"\316s"},
+    {K_S_RIGHT,		"\316\313"},
+    {K_C_RIGHT,		"\316t"},
+    {K_S_TAB,		"\316\017"},
+    {K_F1,		"\316;"},
+    {K_F2,		"\316<"},
+    {K_F3,		"\316="},
+    {K_F4,		"\316>"},
+    {K_F5,		"\316?"},
+    {K_F6,		"\316@"},
+    {K_F7,		"\316A"},
+    {K_F8,		"\316B"},
+    {K_F9,		"\316C"},
+    {K_F10,		"\316D"},
+    {K_F11,		"\316\205"},
+    {K_F12,		"\316\206"},
+    {K_S_F1,		"\316T"},
+    {K_S_F2,		"\316U"},
+    {K_S_F3,		"\316V"},
+    {K_S_F4,		"\316W"},
+    {K_S_F5,		"\316X"},
+    {K_S_F6,		"\316Y"},
+    {K_S_F7,		"\316Z"},
+    {K_S_F8,		"\316["},
+    {K_S_F9,		"\316\\"},
+    {K_S_F10,		"\316]"},
+    {K_S_F11,		"\316\207"},
+    {K_S_F12,		"\316\210"},
+    {K_INS,		"\316R"},
+    {K_DEL,		"\316S"},
+    {K_HOME,		"\316G"},
+    {K_S_HOME,		"\316\302"},
+    {K_C_HOME,		"\316w"},
+    {K_END,		"\316O"},
+    {K_S_END,		"\316\315"},
+    {K_C_END,		"\316u"},
+    {K_PAGEDOWN,	"\316Q"},
+    {K_PAGEUP,		"\316I"},
+    {K_KPLUS,		"\316N"},
+    {K_KMINUS,		"\316J"},
+    {K_KMULTIPLY,	"\316\067"},
+    {K_K0,		"\316\332"},
+    {K_K1,		"\316\336"},
+    {K_K2,		"\316\342"},
+    {K_K3,		"\316\346"},
+    {K_K4,		"\316\352"},
+    {K_K5,		"\316\356"},
+    {K_K6,		"\316\362"},
+    {K_K7,		"\316\366"},
+    {K_K8,		"\316\372"},
+    {K_K9,		"\316\376"},
+    {K_BS,		"\316x"},
+    {K_S_BS,		"\316y"},
+
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
+#if defined(FEAT_GUI)
+/*
+ * GUI uses made-up codes, only used inside Vim.
+ */
+static tcap_entry_T builtin_gui[] = {
+    {(int)KS_CE,	"\033|$"},
+    {(int)KS_AL,	"\033|i"},
+# ifdef TERMINFO
+    {(int)KS_CAL,	"\033|%p1%dI"},
+# else
+    {(int)KS_CAL,	"\033|%dI"},
+# endif
+    {(int)KS_DL,	"\033|d"},
+# ifdef TERMINFO
+    {(int)KS_CDL,	"\033|%p1%dD"},
+    {(int)KS_CS,	"\033|%p1%d;%p2%dR"},
+    {(int)KS_CSV,	"\033|%p1%d;%p2%dV"},
+# else
+    {(int)KS_CDL,	"\033|%dD"},
+    {(int)KS_CS,	"\033|%d;%dR"},
+    {(int)KS_CSV,	"\033|%d;%dV"},
+# endif
+    {(int)KS_CL,	"\033|C"},
+			// attributes switched on with 'h', off with * 'H'
+    {(int)KS_ME,	"\033|31H"}, // HL_ALL
+    {(int)KS_MR,	"\033|1h"},   // HL_INVERSE
+    {(int)KS_MD,	"\033|2h"},   // HL_BOLD
+    {(int)KS_SE,	"\033|16H"}, // HL_STANDOUT
+    {(int)KS_SO,	"\033|16h"}, // HL_STANDOUT
+    {(int)KS_UE,	"\033|8H"},   // HL_UNDERLINE
+    {(int)KS_US,	"\033|8h"},   // HL_UNDERLINE
+    {(int)KS_UCE,	"\033|8C"},   // HL_UNDERCURL
+    {(int)KS_UCS,	"\033|8c"},   // HL_UNDERCURL
+    {(int)KS_STE,	"\033|4C"},   // HL_STRIKETHROUGH
+    {(int)KS_STS,	"\033|4c"},   // HL_STRIKETHROUGH
+    {(int)KS_CZR,	"\033|4H"},   // HL_ITALIC
+    {(int)KS_CZH,	"\033|4h"},   // HL_ITALIC
+    {(int)KS_VB,	"\033|f"},
+    {(int)KS_MS,	"y"},
+    {(int)KS_UT,	"y"},
+    {(int)KS_XN,	"y"},
+    {(int)KS_LE,	"\b"},		// cursor-left = BS
+    {(int)KS_ND,	"\014"},	// cursor-right = CTRL-L
+# ifdef TERMINFO
+    {(int)KS_CM,	"\033|%p1%d;%p2%dM"},
+# else
+    {(int)KS_CM,	"\033|%d;%dM"},
+# endif
+	// there are no key sequences here, the GUI sequences are recognized
+	// in check_termcode()
+
+    {(int)KS_NAME,	NULL}  // end marker
+};
+#endif
+
+/*
+ * Amiga console window, default for Amiga.
+ */
+static tcap_entry_T builtin_amiga[] = {
+    {(int)KS_CE,	"\033[K"},
+    {(int)KS_CD,	"\033[J"},
+    {(int)KS_AL,	"\033[L"},
+#  ifdef TERMINFO
+    {(int)KS_CAL,	"\033[%p1%dL"},
+#  else
+    {(int)KS_CAL,	"\033[%dL"},
+#  endif
+    {(int)KS_DL,	"\033[M"},
+#  ifdef TERMINFO
+    {(int)KS_CDL,	"\033[%p1%dM"},
+#  else
+    {(int)KS_CDL,	"\033[%dM"},
+#  endif
+    {(int)KS_CL,	"\014"},
+    {(int)KS_VI,	"\033[0 p"},
+    {(int)KS_VE,	"\033[1 p"},
+    {(int)KS_ME,	"\033[0m"},
+    {(int)KS_MR,	"\033[7m"},
+    {(int)KS_MD,	"\033[1m"},
+    {(int)KS_SE,	"\033[0m"},
+    {(int)KS_SO,	"\033[33m"},
+    {(int)KS_US,	"\033[4m"},
+    {(int)KS_UE,	"\033[0m"},
+    {(int)KS_CZH,	"\033[3m"},
+    {(int)KS_CZR,	"\033[0m"},
+#if defined(__amigaos4__) || defined(__MORPHOS__) || defined(__AROS__)
+    {(int)KS_CCO,	"8"},		// allow 8 colors
+#  ifdef TERMINFO
+    {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
+    {(int)KS_CAF,	"\033[3%p1%dm"},// set foreground color
+#  else
+    {(int)KS_CAB,	"\033[4%dm"},	// set background color
+    {(int)KS_CAF,	"\033[3%dm"},	// set foreground color
+#  endif
+    {(int)KS_OP,	"\033[m"},	// reset colors
+#endif
+    {(int)KS_MS,	"y"},
+    {(int)KS_UT,	"y"},		// guessed
+    {(int)KS_LE,	"\b"},
+#  ifdef TERMINFO
+    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
+#  else
+    {(int)KS_CM,	"\033[%i%d;%dH"},
+#  endif
+#if defined(__MORPHOS__)
+    {(int)KS_SR,	"\033M"},
+#endif
+#  ifdef TERMINFO
+    {(int)KS_CRI,	"\033[%p1%dC"},
+#  else
+    {(int)KS_CRI,	"\033[%dC"},
+#  endif
+    {K_UP,		"\233A"},
+    {K_DOWN,		"\233B"},
+    {K_LEFT,		"\233D"},
+    {K_RIGHT,		"\233C"},
+    {K_S_UP,		"\233T"},
+    {K_S_DOWN,		"\233S"},
+    {K_S_LEFT,		"\233 A"},
+    {K_S_RIGHT,		"\233 @"},
+    {K_S_TAB,		"\233Z"},
+    {K_F1,		"\233\060~"},// some compilers don't dig "\2330"
+    {K_F2,		"\233\061~"},
+    {K_F3,		"\233\062~"},
+    {K_F4,		"\233\063~"},
+    {K_F5,		"\233\064~"},
+    {K_F6,		"\233\065~"},
+    {K_F7,		"\233\066~"},
+    {K_F8,		"\233\067~"},
+    {K_F9,		"\233\070~"},
+    {K_F10,		"\233\071~"},
+    {K_S_F1,		"\233\061\060~"},
+    {K_S_F2,		"\233\061\061~"},
+    {K_S_F3,		"\233\061\062~"},
+    {K_S_F4,		"\233\061\063~"},
+    {K_S_F5,		"\233\061\064~"},
+    {K_S_F6,		"\233\061\065~"},
+    {K_S_F7,		"\233\061\066~"},
+    {K_S_F8,		"\233\061\067~"},
+    {K_S_F9,		"\233\061\070~"},
+    {K_S_F10,		"\233\061\071~"},
+    {K_HELP,		"\233?~"},
+    {K_INS,		"\233\064\060~"},	// 101 key keyboard
+    {K_PAGEUP,		"\233\064\061~"},	// 101 key keyboard
+    {K_PAGEDOWN,	"\233\064\062~"},	// 101 key keyboard
+    {K_HOME,		"\233\064\064~"},	// 101 key keyboard
+    {K_END,		"\233\064\065~"},	// 101 key keyboard
+
+    {BT_EXTRA_KEYS,	""},
+    {TERMCAP2KEY('#', '2'), "\233\065\064~"},	// shifted home key
+    {TERMCAP2KEY('#', '3'), "\233\065\060~"},	// shifted insert key
+    {TERMCAP2KEY('*', '7'), "\233\065\065~"},	// shifted end key
+
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
+/*
+ * The most minimal terminal: only clear screen and cursor positioning.
+ */
+static tcap_entry_T builtin_dumb[] = {
+    {(int)KS_CL,	"\014"},
+#ifdef TERMINFO
+    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
+#else
+    {(int)KS_CM,	"\033[%i%d;%dH"},
+#endif
+
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
+/*
+ * Terminal used for debugging.
+ */
+static tcap_entry_T builtin_debug[] = {
     {(int)KS_CE,	"[CE]"},
     {(int)KS_CD,	"[CD]"},
     {(int)KS_AL,	"[AL]"},
@@ -1235,24 +1276,39 @@ static struct builtin_term builtin_termcaps[] =
     {K_K8,		"[K8]"},
     {K_K9,		"[K9]"},
 
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
 /*
- * The most minimal terminal: only clear screen and cursor positioning
- * Always included.
+ * List of builtin terminals.
  */
-    {(int)KS_NAME,	"dumb"},
-    {(int)KS_CL,	"\014"},
-#ifdef TERMINFO
-    {(int)KS_CM,	"\033[%i%p1%d;%p2%dH"},
-#else
-    {(int)KS_CM,	"\033[%i%d;%dH"},
+typedef struct {
+    char	    *bitc_name;	    // name, such as "xterm"
+    tcap_entry_T    *bitc_table;    // table with entries for bitc_name
+} builtin_tcap_T;
+
+builtin_tcap_T builtin_terminals[] = {
+    // Unix and Generic
+    {"ansi",	    builtin_ansi},
+    {"vt320",	    builtin_vt320},
+    {"vt52",	    builtin_vt52},
+    {"xterm",	    builtin_xterm},
+    {"iris-ansi",   builtin_iris_ansi},
+
+    // MS-Windows
+    {"pcansi",	    builtin_pcansi},
+    {"win32",	    builtin_win32},
+
+    // Other systems
+#if defined(FEAT_GUI)
+    {"gui",	    builtin_gui},
 #endif
+    {"amiga",	    builtin_amiga},
+    {"dumb",	    builtin_dumb},
+    {"debug",	    builtin_debug},
 
-/*
- * end marker
- */
-    {(int)KS_NAME,	NULL}
-
-};	// end of builtin_termcaps
+    {NULL,	    NULL},  // end marker
+};
 
 #if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
     static guicolor_T
@@ -1407,54 +1463,49 @@ f_terminalprops(typval_T *argvars UNUSED, typval_T *rettv)
 }
 #endif
 
-    static struct builtin_term *
+/*
+ * Find the builtin termcap entries for "term".
+ * This also recognizes similar names.  E.g. "xterm-256color" finds the "xterm"
+ * entry.
+ * Returns NULL when "term" is not found.
+ */
+    static tcap_entry_T *
 find_builtin_term(char_u *term)
 {
-    struct builtin_term *p;
-
-    p = builtin_termcaps;
-    while (p->bt_string != NULL)
+    for (int i = 0; ; ++i)
     {
-	if (p->bt_entry == (int)KS_NAME)
-	{
+	char_u *name = (char_u *)builtin_terminals[i].bitc_name;
+	if (name == NULL)  // end marker
+	    break;
 #ifdef UNIX
-	    if (STRCMP(p->bt_string, "iris-ansi") == 0 && vim_is_iris(term))
-		return p;
-	    else if (STRCMP(p->bt_string, "xterm") == 0 && vim_is_xterm(term))
-		return p;
-	    else
+	if (STRCMP(name, "iris-ansi") == 0 && vim_is_iris(term))
+	    return builtin_terminals[i].bitc_table;
+	if (STRCMP(name, "xterm") == 0 && vim_is_xterm(term))
+	    return builtin_terminals[i].bitc_table;
 #endif
 #ifdef VMS
-		if (STRCMP(p->bt_string, "vt320") == 0 && vim_is_vt300(term))
-		    return p;
-		else
+	if (STRCMP(name, "vt320") == 0 && vim_is_vt300(term))
+	    return builtin_terminals[i].bitc_table;
 #endif
-		  if (STRCMP(term, p->bt_string) == 0)
-		    return p;
-	}
-	++p;
+	if (STRCMP(term, name) == 0)
+	    return builtin_terminals[i].bitc_table;
     }
-    return p;
+    return NULL;
 }
 
 /*
  * Parsing of the builtin termcap entries.
- * Caller should check if 'name' is a valid builtin term.
+ * Caller should check if "term" is a valid builtin terminal name.
  * The terminal's name is not set, as this is already done in termcapinit().
  */
     static void
 parse_builtin_tcap(char_u *term)
 {
-    struct builtin_term	    *p;
-    char_u		    name[2];
-    int			    term_8bit;
-
-    p = find_builtin_term(term);
-    term_8bit = term_is_8bit(term);
-
-    // Do not parse if builtin term not found
-    if (p->bt_string == NULL)
+    tcap_entry_T *p = find_builtin_term(term);
+    if (p == NULL)  // builtin term not found
 	return;
+
+    int term_8bit = term_is_8bit(term);
 
     for (++p; p->bt_entry != (int)KS_NAME && p->bt_entry != BT_EXTRA_KEYS; ++p)
     {
@@ -1503,6 +1554,7 @@ parse_builtin_tcap(char_u *term)
 	}
 	else
 	{
+	    char_u  name[2];
 	    name[0] = KEY2TERMCAP0((int)p->bt_entry);
 	    name[1] = KEY2TERMCAP1((int)p->bt_entry);
 	    if (find_termcode(name) == NULL)
@@ -1691,12 +1743,12 @@ get_term_entries(int *height, int *width)
 }
 #endif
 
+/*
+ * Report "term" is not found and list the ones we do know about.
+ */
     static void
 report_term_error(char *error_msg, char_u *term)
 {
-    struct builtin_term *termp;
-    int			i;
-
     mch_errmsg("\r\n");
     if (error_msg != NULL)
     {
@@ -1707,23 +1759,27 @@ report_term_error(char *error_msg, char_u *term)
     mch_errmsg((char *)term);
     mch_errmsg(_("' not known. Available builtin terminals are:"));
     mch_errmsg("\r\n");
-    for (termp = &(builtin_termcaps[0]); termp->bt_string != NULL; ++termp)
+
+    for (int i = 0; ; ++i)
     {
-	if (termp->bt_entry == (int)KS_NAME
-		&& STRCMP(termp->bt_string, "gui") != 0)
+	char *name = builtin_terminals[i].bitc_name;
+	if (name == NULL)  // end marker
+	    break;
+	// Do not mention the "gui" entry, the user won't need to type it.
+	if (STRCMP(name, "gui") != 0)
 	{
 #ifdef HAVE_TGETENT
 	    mch_errmsg("    builtin_");
 #else
 	    mch_errmsg("    ");
 #endif
-	    mch_errmsg(termp->bt_string);
+	    mch_errmsg(name);
 	    mch_errmsg("\r\n");
 	}
     }
     // Output extra 'cmdheight' line breaks to avoid that the following error
     // message overwrites the last terminal name.
-    for (i = 1; i < p_ch; ++i)
+    for (int i = 1; i < p_ch; ++i)
 	mch_errmsg("\r\n");
 }
 
@@ -1751,7 +1807,6 @@ report_default_term(char_u *term)
     int
 set_termname(char_u *term)
 {
-    struct builtin_term *termp;
 #ifdef HAVE_TGETENT
     int		builtin_first = p_tbi;
     int		try;
@@ -1825,10 +1880,10 @@ set_termname(char_u *term)
 		break;
 #endif
 	    /*
-	     * search for 'term' in builtin_termcaps[]
+	     * Search for 'term' in builtin_terminals[].
 	     */
-	    termp = find_builtin_term(term);
-	    if (termp->bt_string == NULL)	// did not find it
+	    tcap_entry_T *termp = find_builtin_term(term);
+	    if (termp == NULL)	// did not find it
 	    {
 #ifdef HAVE_TGETENT
 		/*
@@ -2211,7 +2266,6 @@ add_termcap_entry(char_u *name, int force)
 {
     char_u  *term;
     int	    key;
-    struct builtin_term *termp;
 #ifdef HAVE_TGETENT
     char_u  *string;
     int	    i;
@@ -2262,11 +2316,11 @@ add_termcap_entry(char_u *name, int force)
 	if ((!builtin_first) == i)
 #endif
 	/*
-	 * Search in builtin termcap
+	 * Search in builtin termcaps
 	 */
 	{
-	    termp = find_builtin_term(term);
-	    if (termp->bt_string != NULL)	// found it
+	    tcap_entry_T *termp = find_builtin_term(term);
+	    if (termp != NULL)	// found it
 	    {
 		key = TERMCAP2KEY(name[0], name[1]);
 		++termp;
@@ -6555,13 +6609,13 @@ static char ksmd_str[20];
     void
 update_tcap(int attr)
 {
-    struct builtin_term *p;
-
-    p = find_builtin_term(DEFAULT_TERM);
     sprintf(ksme_str, "\033|%dm", attr);
     sprintf(ksmd_str, "\033|%dm", attr | 0x08);  // FOREGROUND_INTENSITY
     sprintf(ksmr_str, "\033|%dm", ((attr & 0x0F) << 4) | ((attr & 0xF0) >> 4));
 
+    tcap_entry_T *p = find_builtin_term(DEFAULT_TERM);
+    if (p == NULL)  // did not find it
+	return;
     while (p->bt_string != NULL)
     {
       if (p->bt_entry == (int)KS_ME)
@@ -6619,16 +6673,25 @@ static struct ks_tbl_S ks_tbl[] =
     {(int)KS_NAME, NULL, NULL, {""}}			    // terminator
 };
 
-    static struct builtin_term *
+/*
+ * Find the first entry for "code" in the builtin termcap for "name".
+ * Returns NULL when not found.
+ */
+    static tcap_entry_T *
 find_first_tcap(
     char_u *name,
     int	    code)
 {
-    struct builtin_term *p;
-
-    for (p = find_builtin_term(name); p->bt_string != NULL; ++p)
-	if (p->bt_entry == code)
-	    return p;
+    tcap_entry_T *p = find_builtin_term(name);
+    if (p != NULL)
+    {
+	while (p->bt_string != NULL)
+	{
+	    if (p->bt_entry == code)
+		return p;
+	    ++p;
+	}
+    }
     return NULL;
 }
 # endif
@@ -6643,14 +6706,13 @@ swap_tcap(void)
     static int		init_done = FALSE;
     static cmode_T	curr_mode;
     struct ks_tbl_S	*ks;
-    struct builtin_term *bt;
     cmode_T		mode;
 
     if (!init_done)
     {
 	for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
 	{
-	    bt = find_first_tcap(DEFAULT_TERM, ks->code);
+	    tcap_entry_T *bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	    if (bt != NULL)
 	    {
 		// Preserve the original value.
@@ -6677,7 +6739,7 @@ swap_tcap(void)
 
     for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
     {
-	bt = find_first_tcap(DEFAULT_TERM, ks->code);
+	tcap_entry_T *bt = find_first_tcap(DEFAULT_TERM, ks->code);
 	if (bt != NULL)
 	    bt->bt_string = ks->buf[mode];
     }

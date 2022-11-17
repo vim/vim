@@ -2026,13 +2026,27 @@ endfunc
 
 func Test_list_builtin_terminals()
   CheckRunVimInTerminal
+
   call RunVimInTerminal('', #{rows: 14})
   call term_sendkeys('', ":set cmdheight=3\<CR>")
   call TermWait('', 100)
   call term_sendkeys('', ":set term=xxx\<CR>")
   call TermWait('', 100)
-  call assert_match('builtin_dumb', term_getline('', 11))
-  call assert_match('Not found in termcap', term_getline('', 12))
+
+  " Check that the list ends in "builtin_dumb" and "builtin_debug".
+  let dumb_idx = 0
+  for n in range(8, 12)
+    if term_getline('', n) =~ 'builtin_dumb'
+      let dumb_idx = n
+      break
+    endif
+  endfor
+  call assert_notequal(0, dumb_idx, 'builtin_dumb not found')
+
+  call assert_match('builtin_dumb', term_getline('', dumb_idx))
+  call assert_match('builtin_debug', term_getline('', dumb_idx + 1))
+  call assert_match('Not found in termcap', term_getline('', dumb_idx + 2))
+
   call StopVimInTerminal('')
 endfunc
 
