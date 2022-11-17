@@ -393,6 +393,7 @@ finish_incsearch_highlighting(
 	magic_overruled = is_state->magic_overruled_save;
 
 	validate_cursor();	// needed for TAB
+	status_redraw_all();
 	redraw_all_later(UPD_SOME_VALID);
 	if (call_update_screen)
 	    update_screen(UPD_SOME_VALID);
@@ -559,6 +560,7 @@ may_do_incsearch_highlighting(
     }
 
     validate_cursor();
+
     // May redraw the status line to show the cursor position.
     if (p_ru && curwin->w_status_height > 0)
 	curwin->w_redr_status = TRUE;

@@ -202,6 +202,23 @@ redraw_for_cursorcolumn(win_T *wp)
 #endif
 
 /*
+ * Set curwin->s_skipcol to zero and redraw later if needed.
+ */
+    static void
+reset_skipcol(void)
+{
+    if (curwin->w_skipcol != 0)
+    {
+	curwin->w_skipcol = 0;
+
+	// Should use the least expensive way that displays all that changed.
+	// UPD_NOT_VALID is too expensive, UPD_REDRAW_TOP does not redraw
+	// enough when the top line gets another screen line.
+	redraw_later(UPD_SOME_VALID);
+    }
+}
+
+/*
  * Update curwin->w_topline and redraw if necessary.
  * Used to update the screen before printing a message.
  */
@@ -458,13 +475,9 @@ update_topline(void)
 	    )
     {
 	dollar_vcol = -1;
-	if (curwin->w_skipcol != 0)
-	{
-	    curwin->w_skipcol = 0;
-	    redraw_later(UPD_NOT_VALID);
-	}
-	else
-	    redraw_later(UPD_VALID);
+	redraw_later(UPD_VALID);
+	reset_skipcol();
+
 	// May need to set w_skipcol when cursor in w_topline.
 	if (curwin->w_cursor.lnum == curwin->w_topline)
 	    validate_cursor();
@@ -1319,7 +1332,7 @@ curs_columns(
     else if (!curwin->w_p_sms)
 	curwin->w_skipcol = 0;
     if (prev_skipcol != curwin->w_skipcol)
-	redraw_later(UPD_NOT_VALID);
+	redraw_later(UPD_SOME_VALID);
 
 #ifdef FEAT_SYN_HL
     redraw_for_cursorcolumn(curwin);
@@ -1849,11 +1862,7 @@ adjust_skipcol(void)
     if (curwin->w_cline_height == curwin->w_height)
     {
 	// the line just fits in the window, don't scroll
-	if (curwin->w_skipcol != 0)
-	{
-	    curwin->w_skipcol = 0;
-	    redraw_later(UPD_NOT_VALID);
-	}
+	reset_skipcol();
 	return;
     }
 
@@ -2302,10 +2311,7 @@ scroll_cursor_top(int min_scroll, int always)
 #endif
 	// TODO: if the line doesn't fit may optimize w_skipcol
 	if (curwin->w_topline == curwin->w_cursor.lnum)
-	{
-	    curwin->w_skipcol = 0;
-	    redraw_later(UPD_NOT_VALID);
-	}
+	    reset_skipcol();
 	if (curwin->w_topline != old_topline
 		|| curwin->w_skipcol != old_skipcol
 #ifdef FEAT_DIFF
@@ -2737,7 +2743,7 @@ cursor_correct(void)
 	if (curwin->w_cline_height == curwin->w_height)
 	{
 	    // The cursor line just fits in the window, don't scroll.
-	    curwin->w_skipcol = 0;
+	    reset_skipcol();
 	    return;
 	}
 	// TODO: If the cursor line doesn't fit in the window then only adjust

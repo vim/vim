@@ -484,6 +484,7 @@ NEW_TESTS_RES = \
 	test_retab.res \
 	test_ruby.res \
 	test_scriptnames.res \
+	test_scroll_opt.res \
 	test_scrollbind.res \
 	test_search.res \
 	test_search_stat.res \
