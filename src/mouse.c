@@ -576,7 +576,7 @@ do_mouse(
 		// Ignore right button release events, only shows the popup
 		// menu on the button down event.
 		return FALSE;
-#endif
+# endif
 
 	    jump_flags = 0;
 	    if (STRCMP(p_mousem, "popup_setpos") == 0)
@@ -1063,10 +1063,10 @@ ins_mouse(int c)
     pos_T	tpos;
     win_T	*old_curwin = curwin;
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     // When GUI is active, also move/paste when 'mouse' is empty
     if (!gui.in_use)
-# endif
+#endif
 	if (!mouse_has(MOUSE_INSERT))
 	    return;
 
@@ -1316,36 +1316,36 @@ set_mouse_termcode(
     name[0] = n;
     name[1] = KE_FILLER;
     add_termcode(name, s, FALSE);
-#   ifdef FEAT_MOUSE_JSB
+#ifdef FEAT_MOUSE_JSB
     if (n == KS_JSBTERM_MOUSE)
 	has_mouse_termcode |= HMT_JSBTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_NET
+#endif
+#ifdef FEAT_MOUSE_NET
     if (n == KS_NETTERM_MOUSE)
 	has_mouse_termcode |= HMT_NETTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_DEC
+#endif
+#ifdef FEAT_MOUSE_DEC
     if (n == KS_DEC_MOUSE)
 	has_mouse_termcode |= HMT_DEC;
     else
-#   endif
-#   ifdef FEAT_MOUSE_PTERM
+#endif
+#ifdef FEAT_MOUSE_PTERM
     if (n == KS_PTERM_MOUSE)
 	has_mouse_termcode |= HMT_PTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_URXVT
+#endif
+#ifdef FEAT_MOUSE_URXVT
     if (n == KS_URXVT_MOUSE)
 	has_mouse_termcode |= HMT_URXVT;
     else
-#   endif
-#   ifdef FEAT_MOUSE_GPM
+#endif
+#ifdef FEAT_MOUSE_GPM
     if (n == KS_GPM_MOUSE)
 	has_mouse_termcode |= HMT_GPM;
     else
-#   endif
+#endif
     if (n == KS_SGR_MOUSE)
 	has_mouse_termcode |= HMT_SGR;
     else if (n == KS_SGR_MOUSE_RELEASE)
@@ -1354,7 +1354,7 @@ set_mouse_termcode(
 	has_mouse_termcode |= HMT_NORMAL;
 }
 
-# if defined(UNIX) || defined(VMS) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(PROTO)
     void
 del_mouse_termcode(
     int		n)	// KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE
@@ -1364,36 +1364,36 @@ del_mouse_termcode(
     name[0] = n;
     name[1] = KE_FILLER;
     del_termcode(name);
-#   ifdef FEAT_MOUSE_JSB
+# ifdef FEAT_MOUSE_JSB
     if (n == KS_JSBTERM_MOUSE)
 	has_mouse_termcode &= ~HMT_JSBTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_NET
+# endif
+# ifdef FEAT_MOUSE_NET
     if (n == KS_NETTERM_MOUSE)
 	has_mouse_termcode &= ~HMT_NETTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_DEC
+# endif
+# ifdef FEAT_MOUSE_DEC
     if (n == KS_DEC_MOUSE)
 	has_mouse_termcode &= ~HMT_DEC;
     else
-#   endif
-#   ifdef FEAT_MOUSE_PTERM
+# endif
+# ifdef FEAT_MOUSE_PTERM
     if (n == KS_PTERM_MOUSE)
 	has_mouse_termcode &= ~HMT_PTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_URXVT
+# endif
+# ifdef FEAT_MOUSE_URXVT
     if (n == KS_URXVT_MOUSE)
 	has_mouse_termcode &= ~HMT_URXVT;
     else
-#   endif
-#   ifdef FEAT_MOUSE_GPM
+# endif
+# ifdef FEAT_MOUSE_GPM
     if (n == KS_GPM_MOUSE)
 	has_mouse_termcode &= ~HMT_GPM;
     else
-#   endif
+# endif
     if (n == KS_SGR_MOUSE)
 	has_mouse_termcode &= ~HMT_SGR;
     else if (n == KS_SGR_MOUSE_RELEASE)
@@ -1401,7 +1401,7 @@ del_mouse_termcode(
     else
 	has_mouse_termcode &= ~HMT_NORMAL;
 }
-# endif
+#endif  // UNIX || VMS || PROTO
 
 /*
  * setmouse() - switch mouse on/off depending on current mode and 'mouse'
@@ -1411,16 +1411,16 @@ setmouse(void)
 {
     int	    checkfor;
 
-# ifdef FEAT_MOUSESHAPE
+#ifdef FEAT_MOUSESHAPE
     update_mouseshape(-1);
-# endif
+#endif
 
     // Should be outside proc, but may break MOUSESHAPE
-#  ifdef FEAT_GUI
+#ifdef FEAT_GUI
     // In the GUI the mouse is always enabled.
     if (gui.in_use)
 	return;
-#  endif
+#endif
     // be quick when mouse is off
     if (*p_mouse == NUL || has_mouse_termcode == 0)
 	return;
@@ -1748,15 +1748,15 @@ retnomove:
 	    // A click outside the command-line window: Use modeless
 	    // selection if possible.  Allow dragging the status lines.
 	    on_sep_line = 0;
-# ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD
 	    if (on_status_line)
 		return IN_STATUS_LINE;
 	    return IN_OTHER_WIN;
-# else
+#else
 	    row = 0;
 	    col += wp->w_wincol;
 	    wp = curwin;
-# endif
+#endif
 	}
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
 	if (popup_is_popup(curwin) && curbuf->b_term != NULL)
@@ -2047,12 +2047,12 @@ retnomove:
 	    || curwin->w_cursor.col != old_cursor.col)
 	count |= CURSOR_MOVED;		// Cursor has moved
 
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
     if (mouse_char == curwin->w_fill_chars.foldclosed)
 	count |= MOUSE_FOLD_OPEN;
     else if (mouse_char != ' ')
 	count |= MOUSE_FOLD_CLOSE;
-# endif
+#endif
 
     return count;
 }
@@ -2169,10 +2169,10 @@ nv_mousescroll(cmdarg_T *cap)
 	do_mousescroll_horiz((long_u)leftcol);
     }
 
-# ifdef FEAT_SYN_HL
+#ifdef FEAT_SYN_HL
     if (curwin != old_curwin && curwin->w_p_cul)
 	redraw_for_cursorline(curwin);
-# endif
+#endif
     may_trigger_winscrolled();
 
     curwin->w_redr_status = TRUE;
@@ -2213,11 +2213,11 @@ check_termcode_mouse(
 {
     int		j;
     char_u	*p;
-# if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
+#if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
     || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
     char_u	bytes[6];
     int		num_bytes;
-# endif
+#endif
     int		mouse_code = 0;	    // init for GCC
     int		is_click, is_drag;
     int		is_release, release_is_ambiguous;
@@ -2225,23 +2225,23 @@ check_termcode_mouse(
     int		current_button;
     static int	orig_num_clicks = 1;
     static int	orig_mouse_code = 0x0;
-# ifdef CHECK_DOUBLE_CLICK
+#ifdef CHECK_DOUBLE_CLICK
     static int	orig_mouse_col = 0;
     static int	orig_mouse_row = 0;
     static struct timeval  orig_mouse_time = {0, 0};
     // time of previous mouse click
     struct timeval  mouse_time;		// time of current mouse click
     long	timediff;		// elapsed time in msec
-# endif
+#endif
 
     is_click = is_drag = is_release = release_is_ambiguous = FALSE;
 
-# if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
+#if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
     || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
     if (key_name[0] == KS_MOUSE
-#  ifdef FEAT_MOUSE_GPM
+# ifdef FEAT_MOUSE_GPM
 	    || key_name[0] == KS_GPM_MOUSE
-#  endif
+# endif
        )
     {
 	/*
@@ -2267,7 +2267,7 @@ check_termcode_mouse(
 	 */
 	for (;;)
 	{
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    if (gui.in_use)
 	    {
 		// GUI uses more bits for columns > 223
@@ -2281,7 +2281,7 @@ check_termcode_mouse(
 		    + bytes[4] - ' ' - 1;
 	    }
 	    else
-#  endif
+# endif
 	    {
 		num_bytes = get_bytes_from_buf(tp + *slen, bytes, 3);
 		if (num_bytes == -1)	// not enough coordinates
@@ -2295,21 +2295,21 @@ check_termcode_mouse(
 	    // If the following bytes is also a mouse code and it has the same
 	    // code, dump this one and get the next.  This makes dragging a
 	    // whole lot faster.
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    if (gui.in_use)
 		j = 3;
 	    else
-#  endif
+# endif
 		j = get_termcode_len(idx);
 	    if (STRNCMP(tp, tp + *slen, (size_t)j) == 0
 		    && tp[*slen + j] == mouse_code
 		    && tp[*slen + j + 1] != NUL
 		    && tp[*slen + j + 2] != NUL
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 		    && (!gui.in_use
 			|| (tp[*slen + j + 3] != NUL
 			    && tp[*slen + j + 4] != NUL))
-#  endif
+# endif
 	       )
 		*slen += j;
 	    else
@@ -2385,16 +2385,16 @@ check_termcode_mouse(
     }
 
     if (key_name[0] == KS_MOUSE
-#  ifdef FEAT_MOUSE_GPM
+# ifdef FEAT_MOUSE_GPM
 	    || key_name[0] == KS_GPM_MOUSE
-#  endif
-#  ifdef FEAT_MOUSE_URXVT
+# endif
+# ifdef FEAT_MOUSE_URXVT
 	    || key_name[0] == KS_URXVT_MOUSE
-#  endif
+# endif
 	    || key_name[0] == KS_SGR_MOUSE
 	    || key_name[0] == KS_SGR_MOUSE_RELEASE)
     {
-#  if !defined(MSWIN)
+# if !defined(MSWIN)
 	/*
 	 * Handle old style mouse events.
 	 * Recognize the xterm mouse wheel, but not in the GUI, the
@@ -2402,29 +2402,29 @@ check_termcode_mouse(
 	 * (multi-clicks use >= 0x60).
 	 */
 	if (mouse_code >= MOUSEWHEEL_LOW
-#   ifdef FEAT_GUI
+#  ifdef FEAT_GUI
 		&& !gui.in_use
-#   endif
-#   ifdef FEAT_MOUSE_GPM
+#  endif
+#  ifdef FEAT_MOUSE_GPM
 		&& key_name[0] != KS_GPM_MOUSE
-#   endif
+#  endif
 	   )
 	{
-#   if defined(UNIX)
+#  if defined(UNIX)
 	    if (use_xterm_mouse() > 1 && mouse_code >= 0x80)
 		// mouse-move event, using MOUSE_DRAG works
 		mouse_code = MOUSE_DRAG;
 	    else
-#   endif
+#  endif
 		// Keep the mouse_code before it's changed, so that we
 		// remember that it was a mouse wheel click.
 		wheel_code = mouse_code;
 	}
-#   ifdef FEAT_MOUSE_XTERM
+#  ifdef FEAT_MOUSE_XTERM
 	else if (held_button == MOUSE_RELEASE
-#    ifdef FEAT_GUI
+#   ifdef FEAT_GUI
 		&& !gui.in_use
-#    endif
+#   endif
 		&& (mouse_code == 0x23 || mouse_code == 0x24
 		    || mouse_code == 0x40 || mouse_code == 0x41))
 	{
@@ -2433,16 +2433,16 @@ check_termcode_mouse(
 	    wheel_code = mouse_code - (mouse_code >= 0x40 ? 0x40 : 0x23)
 							      + MOUSEWHEEL_LOW;
 	}
-#   endif
+#  endif
 
-#   if defined(UNIX)
+#  if defined(UNIX)
 	else if (use_xterm_mouse() > 1)
 	{
 	    if (mouse_code & MOUSE_DRAG_XTERM)
 		mouse_code |= MOUSE_DRAG;
 	}
-#   endif
-#   ifdef FEAT_XCLIPBOARD
+#  endif
+#  ifdef FEAT_XCLIPBOARD
 	else if (!(mouse_code & MOUSE_DRAG & ~MOUSE_CLICK_MASK))
 	{
 	    if (is_release)
@@ -2450,11 +2450,11 @@ check_termcode_mouse(
 	    else
 		start_xterm_trace(mouse_code);
 	}
-#   endif
 #  endif
+# endif
     }
-# endif // !UNIX || FEAT_MOUSE_XTERM
-# ifdef FEAT_MOUSE_NET
+#endif // !UNIX || FEAT_MOUSE_XTERM
+#ifdef FEAT_MOUSE_NET
     if (key_name[0] == KS_NETTERM_MOUSE)
     {
 	int mc, mr;
@@ -2475,8 +2475,8 @@ check_termcode_mouse(
 	mouse_code = MOUSE_LEFT;
 	*slen += (int)(p - (tp + *slen));
     }
-# endif	// FEAT_MOUSE_NET
-# ifdef FEAT_MOUSE_JSB
+#endif	// FEAT_MOUSE_NET
+#ifdef FEAT_MOUSE_JSB
     if (key_name[0] == KS_JSBTERM_MOUSE)
     {
 	int mult, val, iter, button, status;
@@ -2600,8 +2600,8 @@ check_termcode_mouse(
 
 	*slen += (p - (tp + *slen));
     }
-# endif // FEAT_MOUSE_JSB
-# ifdef FEAT_MOUSE_DEC
+#endif // FEAT_MOUSE_JSB
+#ifdef FEAT_MOUSE_DEC
     if (key_name[0] == KS_DEC_MOUSE)
     {
 	/*
@@ -2735,8 +2735,8 @@ check_termcode_mouse(
 
 	*slen += (int)(p - (tp + *slen));
     }
-# endif // FEAT_MOUSE_DEC
-# ifdef FEAT_MOUSE_PTERM
+#endif // FEAT_MOUSE_DEC
+#ifdef FEAT_MOUSE_PTERM
     if (key_name[0] == KS_PTERM_MOUSE)
     {
 	int button, num_clicks, action;
@@ -2792,7 +2792,7 @@ check_termcode_mouse(
 
 	*slen += (p - (tp + *slen));
     }
-# endif // FEAT_MOUSE_PTERM
+#endif // FEAT_MOUSE_PTERM
 
     // Interpret the mouse code
     current_button = (mouse_code & MOUSE_CLICK_MASK);
@@ -2800,9 +2800,9 @@ check_termcode_mouse(
 	current_button |= MOUSE_RELEASE;
 
     if (current_button == MOUSE_RELEASE
-# ifdef FEAT_MOUSE_XTERM
+#ifdef FEAT_MOUSE_XTERM
 	    && wheel_code == 0
-# endif
+#endif
        )
     {
 	/*
@@ -2820,22 +2820,22 @@ check_termcode_mouse(
     {
       if (wheel_code == 0)
       {
-# ifdef CHECK_DOUBLE_CLICK
-#  ifdef FEAT_MOUSE_GPM
+#ifdef CHECK_DOUBLE_CLICK
+# ifdef FEAT_MOUSE_GPM
 	/*
 	 * Only for Unix, when GUI not active, we handle multi-clicks here, but
 	 * not for GPM mouse events.
 	 */
-#   ifdef FEAT_GUI
+#  ifdef FEAT_GUI
 	if (key_name[0] != KS_GPM_MOUSE && !gui.in_use)
-#   else
-	    if (key_name[0] != KS_GPM_MOUSE)
-#   endif
 #  else
-#   ifdef FEAT_GUI
-		if (!gui.in_use)
-#   endif
+	    if (key_name[0] != KS_GPM_MOUSE)
 #  endif
+# else
+#  ifdef FEAT_GUI
+		if (!gui.in_use)
+#  endif
+# endif
 		{
 		    /*
 		     * Compute the time elapsed since the previous mouse click.
@@ -2871,13 +2871,13 @@ check_termcode_mouse(
 		    orig_mouse_row = mouse_row;
 		    set_mouse_topline(curwin);
 		}
-#  if defined(FEAT_GUI) || defined(FEAT_MOUSE_GPM)
+# if defined(FEAT_GUI) || defined(FEAT_MOUSE_GPM)
 		else
 		    orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
-#  endif
-# else
-	orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
 # endif
+#else
+	orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
+#endif
 	is_click = TRUE;
       }
       orig_mouse_code = mouse_code;
@@ -3177,14 +3177,14 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	int	left_off = 0;
 	int	height = wp->w_height + wp->w_status_height;
 
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(wp))
 	{
 	    top_off = popup_top_extra(wp);
 	    left_off = popup_left_extra(wp);
 	    height = popup_height(wp);
 	}
-#endif
+# endif
 	if (row < height)
 	{
 	    winid = wp->w_id;
@@ -3206,4 +3206,4 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
     dict_add_number(d, "line", (varnumber_T)lnum);
     dict_add_number(d, "column", column);
 }
-#endif
+#endif  // FEAT_EVAL || PROTO
