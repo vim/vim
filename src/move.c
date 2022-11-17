@@ -1127,13 +1127,15 @@ curs_columns(
 		&& curwin->w_skipcol > 0
 		&& curwin->w_wcol >= curwin->w_skipcol)
 	{
-	    // w_skipcol excludes win_col_off().  Include it here, since w_wcol
-	    // counts actual screen columns.
+	    // Deduct by multiples of width2.  This allows the long line
+	    // wrapping formula below to correctly calculate the w_wcol value
+	    // when wrapping.
 	    if (curwin->w_skipcol <= width1)
-		curwin->w_wcol -= curwin->w_width;
+		curwin->w_wcol -= width2;
 	    else
-		curwin->w_wcol -= curwin->w_width
+		curwin->w_wcol -= width2
 			       * (((curwin->w_skipcol - width1) / width2) + 1);
+
 	    did_sub_skipcol = TRUE;
 	}
 
