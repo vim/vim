@@ -419,6 +419,9 @@ au BufNewFile,BufRead configure.in,configure.ac setf config
 " Cooklang
 au BufNewFile,BufRead *.cook			setf cook
 
+" Clinical Quality Language (CQL)
+au BufNewFile,BufRead *.cql	  		setf cql
+
 " CSV Files
 au BufNewFile,BufRead *.csv			setf csv
 
