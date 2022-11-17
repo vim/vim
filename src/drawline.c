@@ -130,12 +130,16 @@ typedef struct {
     char_u	*p_extra;	// string of extra chars, plus NUL, only used
 				// when c_extra and c_final are NUL
     char_u	*p_extra_free;  // p_extra buffer that needs to be freed
+    int		extra_attr;	// attributes for p_extra
     int		c_extra;	// extra chars, all the same
     int		c_final;	// final char, mandatory if set
+    int		extra_for_textprop; // wlv.n_extra set for textprop
 
     // saved "extra" items for when draw_state becomes WL_LINE (again)
     int		saved_n_extra;
     char_u	*saved_p_extra;
+    int		saved_extra_attr;
+    int		saved_extra_for_textprop;
     int		saved_c_extra;
     int		saved_c_final;
     int		saved_char_attr;
@@ -915,6 +919,8 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 	wlv->draw_state = WL_START;
 	wlv->saved_n_extra = wlv->n_extra;
 	wlv->saved_p_extra = wlv->p_extra;
+	wlv->saved_extra_attr = wlv->extra_attr;
+	wlv->saved_extra_for_textprop = wlv->extra_for_textprop;
 	wlv->saved_c_extra = wlv->c_extra;
 	wlv->saved_c_final = wlv->c_final;
 #ifdef FEAT_SYN_HL
@@ -944,6 +950,8 @@ win_line_continue(winlinevars_T *wlv)
 	wlv->c_extra = wlv->saved_c_extra;
 	wlv->c_final = wlv->saved_c_final;
 	wlv->p_extra = wlv->saved_p_extra;
+	wlv->extra_attr = wlv->saved_extra_attr;
+	wlv->extra_for_textprop = wlv->saved_extra_for_textprop;
 	wlv->char_attr = wlv->saved_char_attr;
     }
     else
@@ -976,7 +984,6 @@ win_line(
 #ifdef FEAT_PROP_POPUP
     char_u	*p_extra_free2 = NULL;   // another p_extra to be freed
 #endif
-    int		extra_attr = 0;		// attributes when n_extra != 0
 #if defined(FEAT_LINEBREAK) && defined(FEAT_PROP_POPUP)
     int		in_linebreak = FALSE;	// n_extra set for showing linebreak
 #endif
@@ -987,7 +994,7 @@ win_line(
 					// prec until it's been used
 
     int		n_attr = 0;	    // chars with special attr
-    int		n_attr_skip = 0;    // chars to skip before using extra_attr
+    int		n_attr_skip = 0;    // chars to skip bef. using wlv.extra_attr
     int		saved_attr2 = 0;    // char_attr saved for n_attr
     int		n_attr3 = 0;	    // chars with overruling special attr
     int		saved_attr3 = 0;    // char_attr saved for n_attr3
@@ -1028,7 +1035,6 @@ win_line(
     int		*text_prop_idxs = NULL;
     int		text_props_active = 0;
     proptype_T  *text_prop_type = NULL;
-    int		extra_for_textprop = FALSE; // wlv.n_extra set for textprop
     int		text_prop_attr = 0;
     int		text_prop_attr_comb = 0;  // text_prop_attr combined with
 					  // syntax_attr
@@ -1905,7 +1911,7 @@ win_line(
 		    ++text_prop_next;
 		}
 
-		if (wlv.n_extra == 0 || !extra_for_textprop)
+		if (wlv.n_extra == 0 || !wlv.extra_for_textprop)
 		{
 		    text_prop_attr = 0;
 		    text_prop_attr_comb = 0;
@@ -1990,8 +1996,8 @@ win_line(
 			    wlv.c_extra = NUL;
 			    wlv.c_final = NUL;
 			    wlv.n_extra = (int)STRLEN(p);
-			    extra_for_textprop = TRUE;
-			    extra_attr = used_attr;
+			    wlv.extra_for_textprop = TRUE;
+			    wlv.extra_attr = used_attr;
 			    n_attr = mb_charlen(p);
 			    // restore search_attr and area_attr when n_extra
 			    // is down to zero
@@ -2390,12 +2396,18 @@ win_line(
 #if defined(FEAT_PROP_POPUP)
 	    if (wlv.n_extra <= 0)
 	    {
-		extra_for_textprop = FALSE;
+		wlv.extra_for_textprop = FALSE;
 		in_linebreak = FALSE;
-		if (search_attr == 0)
-		    search_attr = saved_search_attr;
-		if (area_attr == 0 && *ptr != NUL)
-		    area_attr = saved_area_attr;
+
+		// only restore search_attr and area_attr after extra in the
+		// next screen line is also done
+		if (wlv.saved_n_extra <= 0)
+		{
+		    if (search_attr == 0)
+			search_attr = saved_search_attr;
+		    if (area_attr == 0 && *ptr != NUL)
+			area_attr = saved_area_attr;
+		}
 	    }
 #endif
 	}
@@ -2468,7 +2480,7 @@ win_line(
 			if (area_attr == 0 && search_attr == 0)
 			{
 			    n_attr = wlv.n_extra + 1;
-			    extra_attr = hl_combine_attr(
+			    wlv.extra_attr = hl_combine_attr(
 						 wlv.win_attr, HL_ATTR(HLF_8));
 			    saved_attr2 = wlv.char_attr; // save current attr
 			}
@@ -2538,7 +2550,7 @@ win_line(
 			    if (area_attr == 0 && search_attr == 0)
 			    {
 				n_attr = wlv.n_extra + 1;
-				extra_attr = hl_combine_attr(
+				wlv.extra_attr = hl_combine_attr(
 						 wlv.win_attr, HL_ATTR(HLF_8));
 				// save current attr
 				saved_attr2 = wlv.char_attr;
@@ -2584,7 +2596,7 @@ win_line(
 		    if (area_attr == 0 && search_attr == 0)
 		    {
 			n_attr = wlv.n_extra + 1;
-			extra_attr = hl_combine_attr(
+			wlv.extra_attr = hl_combine_attr(
 						wlv.win_attr, HL_ATTR(HLF_AT));
 			saved_attr2 = wlv.char_attr; // save current attr
 		    }
@@ -2781,7 +2793,7 @@ win_line(
 		    if (area_attr == 0 && search_attr == 0)
 		    {
 			n_attr = 1;
-			extra_attr = hl_combine_attr(wlv.win_attr,
+			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							       HL_ATTR(HLF_8));
 			saved_attr2 = wlv.char_attr; // save current attr
 		    }
@@ -2821,7 +2833,7 @@ win_line(
 		    if (!attr_pri)
 		    {
 			n_attr = 1;
-			extra_attr = hl_combine_attr(wlv.win_attr,
+			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							       HL_ATTR(HLF_8));
 			saved_attr2 = wlv.char_attr; // save current attr
 		    }
@@ -2976,7 +2988,7 @@ win_line(
 			    wlv.c_extra = wp->w_lcs_chars.tab2;
 			wlv.c_final = wp->w_lcs_chars.tab3;
 			n_attr = tab_len + 1;
-			extra_attr = hl_combine_attr(wlv.win_attr,
+			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							       HL_ATTR(HLF_8));
 			saved_attr2 = wlv.char_attr; // save current attr
 			mb_c = c;
@@ -3043,7 +3055,7 @@ win_line(
 		    --ptr;	    // put it back at the NUL
 		    if (!attr_pri)
 		    {
-			extra_attr = hl_combine_attr(wlv.win_attr,
+			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							      HL_ATTR(HLF_AT));
 			n_attr = 1;
 		    }
@@ -3090,7 +3102,7 @@ win_line(
 		    if (!attr_pri)
 		    {
 			n_attr = wlv.n_extra + 1;
-			extra_attr = hl_combine_attr(wlv.win_attr,
+			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
 							       HL_ATTR(HLF_8));
 			saved_attr2 = wlv.char_attr; // save current attr
 		    }
@@ -3284,9 +3296,9 @@ win_line(
 	}
 #endif
 
-	// Use "extra_attr", but don't override visual selection highlighting,
-	// unless text property overrides.
-	// Don't use "extra_attr" until n_attr_skip is zero.
+	// Use "wlv.extra_attr", but don't override visual selection
+	// highlighting, unless text property overrides.
+	// Don't use "wlv.extra_attr" until n_attr_skip is zero.
 	if (n_attr_skip == 0 && n_attr > 0
 		&& wlv.draw_state == WL_LINE
 		&& (!attr_pri
@@ -3297,10 +3309,10 @@ win_line(
 	{
 #ifdef LINE_ATTR
 	    if (line_attr)
-		wlv.char_attr = hl_combine_attr(line_attr, extra_attr);
+		wlv.char_attr = hl_combine_attr(line_attr, wlv.extra_attr);
 	    else
 #endif
-		wlv.char_attr = extra_attr;
+		wlv.char_attr = wlv.extra_attr;
 	}
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
@@ -3364,7 +3376,8 @@ win_line(
 		wlv.c_final = NUL;
 		wlv.n_extra = 1;
 		n_attr = 2;
-		extra_attr = hl_combine_attr(wlv.win_attr, HL_ATTR(HLF_AT));
+		wlv.extra_attr =
+				hl_combine_attr(wlv.win_attr, HL_ATTR(HLF_AT));
 	    }
 	    mb_c = c;
 	    if (enc_utf8 && utf_char2len(c) > 1)

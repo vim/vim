@@ -2,7 +2,7 @@ vim9script
 
 # Script to get various codes that keys send, depending on the protocol used.
 #
-# Usage:  vim -u keycode_check.vim
+# Usage:  vim -u NONE -S keycode_check.vim
 #
 # Author: 	Bram Moolenaar
 # Last Update: 	2022 Nov 15
@@ -76,6 +76,54 @@ var key_entries = [
 	['Alt-Space', 'A-Space'],
       ]
 
+# Given a terminal name and a item name, return the text to display.
+def GetItemDisplay(term: string, item: string): string
+  var val = get(keycodes[term], item, '')
+
+  # see if we can pretty-print this one
+  var pretty = val
+  if val[0 : 1] == '1b'
+    pretty = 'ESC'
+    var idx = 2
+
+    if val[0 : 3] == '1b5b'
+      pretty = 'CSI'
+      idx = 4
+    endif
+
+    var digits = false
+    while idx < len(val)
+      var cc = val[idx : idx + 1]
+      var nr = str2nr('0x' .. cc, 16)
+      idx += 2
+      if nr >= char2nr('0') && nr <= char2nr('9')
+	if !digits
+	  pretty ..= ' '
+	endif
+	digits = true
+	pretty ..= cc[1]
+      else
+	if nr == char2nr(';') && digits
+	  # don't use space between semicolon and digits to keep it short
+	  pretty ..= ';'
+	else
+	  digits = false
+	  if nr >= char2nr(' ') && nr <= char2nr('~')
+	    # printable character
+	    pretty ..= ' ' .. printf('%c', nr)
+	  else
+	    # non-printable, use hex code
+	    pretty = val
+	    break
+	  endif
+	endif
+      endif
+    endwhile
+  endif
+
+  return pretty
+enddef
+
 
 # Action: list the information in "keycodes" in a more or less nice way.
 def ActionList()
@@ -84,64 +132,52 @@ def ActionList()
     echo 'No terminal results yet'
     return
   endif
+  sort(terms)
 
-  # Use one column of width 10 for the item name, then columns of 20
-  # characters to fit most codes.  You will need to increase the terminal
-  # width to avoid wrapping.
-  echon printf('         ')
-  for term in terms
-    echon printf('%-20s', term)
+  var items = ['protocol', 'version', 'status']
+	      + key_entries->copy()->map((_, v) => v[1])
+
+  # For each terminal compute the needed width, add two.
+  # You may need to increase the terminal width to avoid wrapping.
+  var widths = []
+  for [idx, term] in items(terms)
+    widths[idx] = len(term) + 2
+  endfor
+
+  for item in items
+    for [idx, term] in items(terms)
+      var l = len(GetItemDisplay(term, item))
+      if widths[idx] < l + 2
+	widths[idx] = l + 2
+      endif
+    endfor
+  endfor
+
+  # Use one column of width 10 for the item name.
+  echo "\n"
+  echon '          '
+  for [idx, term] in items(terms)
+    echon printf('%-' .. widths[idx] .. 's', term)
   endfor
   echo "\n"
 
-  var items = ['protocol'] + key_entries->copy()->map((_, v) => v[1])
-
   for item in items
     echon printf('%8s  ', item)
-    for term in terms
-      var val = get(keycodes[term], item, '')
-
-      # see if we can pretty-print this one
-      var pretty = val
-      if val[0 : 1] == '1b'
-	pretty = 'ESC'
-	var idx = 2
-
-	if val[0 : 3] == '1b5b'
-	  pretty = 'CSI'
-	  idx = 4
-	endif
-
-	var digits = false
-	while idx < len(val)
-	  var cc = val[idx : idx + 1]
-	  var nr = str2nr('0x' .. cc, 16)
-	  idx += 2
-	  if nr >= char2nr('0') && nr <= char2nr('9')
-	    if !digits
-	      pretty ..= ' '
-	    endif
-	    digits = true
-	    pretty ..= cc[1]
-	  else
-	    digits = false
-	    if nr >= char2nr(' ') && nr <= char2nr('~')
-	      # printable character
-	      pretty ..= ' ' .. printf('%c', nr)
-	    else
-	      # non-printable, use hex code
-	      pretty = val
-	      break
-	    endif
-	  endif
-	endwhile
-      endif
-
-      echon printf('%-20s', pretty)
+    for [idx, term] in items(terms)
+      echon printf('%-' .. widths[idx] .. 's', GetItemDisplay(term, item))
     endfor
     echo ''
   endfor
   echo "\n"
+enddef
+
+# Convert the literal string after "raw key input" into hex form.
+def Literal2hex(code: string): string
+  var hex = ''
+  for i in range(len(code))
+    hex ..= printf('%02x', char2nr(code[i]))
+  endfor
+  return hex
 enddef
 
 def GetTermName(): string
@@ -162,27 +198,98 @@ def DoTerm(name: string)
   if proto == 1
     &t_TI = ""
   elseif proto == 2
+    # Enable modifyOtherKeys level 2 - no status is reported
     &t_TI = "\<Esc>[>4;2m"
     proto_name = 'mok2'
   elseif proto == 3
-    &t_TI = "\<Esc>[>1u"
+    # Enable Kitty keyboard protocol and request the status
+    &t_TI = "\<Esc>[>1u" .. "\<Esc>[?u"
     proto_name = 'kitty'
   else
     echoerr 'invalid protocol choice'
     return
   endif
 
+  # Append the request for the version response, this is used to check we have
+  # the results.
+  &t_TI ..= "\<Esc>[>c"
+
+  # Pattern that matches the line with the version response.
+  const version_pattern = "\<Esc>\\[>\\d\\+;\\d\\+;\\d*c"
+
+  # Pattern that matches the line with the status.  Currently what terminals
+  # return for the Kitty keyboard protocol.
+  const status_pattern = "\<Esc>\\[?\\d\\+u"
+
+  ch_logfile('keylog', 'w')
+
   # executing a dummy shell command will output t_TI
   !echo >/dev/null
 
+  # Wait until the log file has the version response.
+  var startTime = reltime()
+  var seenVersion = false
+  while !seenVersion
+    var log = readfile('keylog')
+    if len(log) > 2
+      for line in log
+	if line =~ 'raw key input'
+	  var code = substitute(line, '.*raw key input: "\([^"]*\).*', '\1', '')
+	  if code =~ version_pattern
+	    seenVersion = true
+	    echo 'Found the version response'
+	    break
+	  endif
+	endif
+      endfor
+    endif
+    if reltime(startTime)->reltimefloat() > 3
+      break
+    endif
+  endwhile
+
+  echo 'seenVersion: ' seenVersion
+
+  # Prepare the terminal entry, set protocol and clear status and version.
   if !has_key(keycodes, name)
     keycodes[name] = {}
   endif
   keycodes[name]['protocol'] = proto_name
+  keycodes[name]['version'] = ''
+  keycodes[name]['status'] = ''
 
-  echo "When a key press doesn't get to Vim (e.g. when using Alt) press Space"
+  # Check the log file for a status and the version response
+  ch_logfile('', '')
+  var log = readfile('keylog')
+  delete('keylog')
+  for line in log
+    if line =~ 'raw key input'
+      var code = substitute(line, '.*raw key input: "\([^"]*\).*', '\1', '')
+      # Check for kitty keyboard protocol status
+      if code =~ status_pattern
+	var status = substitute(code, '.*\(' .. status_pattern .. '\).*', '\1', '')
+	keycodes[name]['status'] = Literal2hex(status)
+      endif
+
+      if code =~ version_pattern
+	var version = substitute(code, '.*\(' .. version_pattern .. '\).*', '\1', '')
+	keycodes[name]['version'] = Literal2hex(version)
+	break
+      endif
+    endif
+  endfor
+
+  echo "For Alt to work you may need to press the Windows/Super key as well"
+  echo "When a key press doesn't get to Vim (e.g. when using Alt) press x"
 
   for entry in key_entries
+    # Consume any typeahead.  Wait a bit for any responses to arrive.
+    sleep 100m
+    while getchar(1)
+      getchar()
+      sleep 100m
+    endwhile
+
     ch_logfile('keylog', 'w')
     echo $'Press the {entry[0]} key (q to quit):'
     var r = getcharstr()
@@ -190,8 +297,13 @@ def DoTerm(name: string)
     if r == 'q'
       break
     endif
-    var log = readfile('keylog')
-    delete('keylog')
+    log = readfile('keylog')
+    if entry[1] == 'Tab'
+# keep a copy
+rename('keylog', 'keylog-tab')
+    else
+      delete('keylog')
+    endif
     if len(log) < 2
       echoerr 'failed to read result'
       return
@@ -201,11 +313,26 @@ def DoTerm(name: string)
       if line =~ 'raw key input'
 	var code = substitute(line, '.*raw key input: "\([^"]*\).*', '\1', '')
 
-	# convert the literal bytes into hex
+	# Remove any version termresponse
+	code = substitute(code, version_pattern, '', 'g')
+
+	# Remove any XTGETTCAP replies.
+	const cappat = "\<Esc>P[01]+\\k\\+=\\x*\<Esc>\\\\"
+	code = substitute(code, cappat, '', 'g')
+
+	# Remove any kitty status reply
+	code = substitute(code, status_pattern, '', 'g')
+	if code == ''
+	  continue
+	endif
+
+	# Convert the literal bytes into hex.  If 'x' was pressed then clear
+	# the entry.
 	var hex = ''
-	for i in range(len(code))
-	  hex ..= printf('%02x', char2nr(code[i]))
-	endfor
+	if code != 'x'
+	  hex = Literal2hex(code)
+	endif
+
 	keycodes[name][entry[1]] = hex
 	done = true
 	break
@@ -241,8 +368,26 @@ def ActionReplace()
   echo "\n"
   if choice > 0 && choice <= len(terms)
     DoTerm(terms[choice - 1])
+  else
+    echo 'invalid index'
   endif
-  echo 'invalid index'
+enddef
+
+# Action: Clear key codes for an already known terminal.
+def ActionClear()
+  var terms = keys(keycodes)
+  if len(terms) == 0
+    echo 'No terminal results yet'
+    return
+  endif
+
+  var choice = inputlist(['Select:'] + terms->copy()->map((idx, arg) => (idx + 1) .. ': ' .. arg))
+  echo "\n"
+  if choice > 0 && choice <= len(terms)
+    remove(keycodes, terms[choice - 1])
+  else
+    echo 'invalid index'
+  endif
 enddef
 
 # Action: Quit, possibly after saving the results first.
@@ -271,7 +416,8 @@ while true
     			'1. List results',
 			'2. Add results for a new terminal',
 			'3. Replace results',
-			'4. Quit',
+			'4. Clear results',
+			'5. Quit',
 		      ])
   echo "\n"
   if action == 1
@@ -281,6 +427,8 @@ while true
   elseif action == 3
     ActionReplace()
   elseif action == 4
+    ActionClear()
+  elseif action == 5
     ActionQuit()
   endif
 endwhile

@@ -2531,6 +2531,37 @@ func Test_special_term_keycodes()
   bw!
 endfunc
 
+func Test_home_key_works()
+  " The '@' character in K_HOME must only match "1" when followed by ";",
+  " otherwise this code for Home is not recognized: "<Esc>[1~"
+  " Set termcap values like "xterm" uses them.
+  let save_kh = &t_kh
+  let save_K1 = &t_K1
+  let save_k2 = &t_k2
+  let save_k3 = &t_k3
+  let save_end = &t_@7
+  let &t_K1 = "\<Esc>[1;*~"      " <kHome>
+  let &t_kh = "\<Esc>[@;*H"      " <Home>
+  let &t_k2 = "\<Esc>O*H[1;*~"   " use <F2> for <xHome>
+  let &t_k3 = "\<Esc>[7;*~"      " use <F3> for <zHome>
+  let &t_@7 = "\<Esc>[@;*F"      " <End>
+
+  new
+  call feedkeys("i\<C-K>\<Esc>OH\n\<Esc>", 'tx')
+  call feedkeys("i\<C-K>\<Esc>[1~\n\<Esc>", 'tx')
+  call assert_equal([
+        \ '<Home>',
+        \ '<kHome>',
+        \ ''], getline(1, '$'))
+
+  bwipe!
+  let &t_kh = save_kh
+  let &t_K1 = save_K1
+  let &t_k2 = save_k2
+  let &t_k3 = save_k3
+  let &t_@7 = save_end
+endfunc
+
 func Test_terminal_builtin_without_gui()
   CheckNotMSWindows
 

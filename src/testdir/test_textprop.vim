@@ -2709,6 +2709,29 @@ func Test_props_with_text_after_below_trunc()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_with_text_below_after_match()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+
+      setline(1, ['vim9script', 'some text'])
+      set signcolumn=yes
+      matchaddpos('Search', [[1, 10]])
+      prop_type_add('test', {highlight: 'Error'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'The quick brown fox',
+          text_align: 'below'
+      })
+  END
+  call writefile(lines, 'XscriptPropsBelow', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsBelow', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_below_after_match_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_props_with_text_after_joined()
   CheckRunVimInTerminal
 
