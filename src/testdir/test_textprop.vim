@@ -3422,6 +3422,50 @@ func Test_text_below_nowrap()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_virtual_text_in_popup_highlight()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+
+      # foreground highlight only, popup background is used
+      prop_type_add('Prop1', {'highlight': 'SpecialKey'})
+      # foreground and background highlight, popup background is not used
+      prop_type_add('Prop2', {'highlight': 'DiffDelete'})
+
+      var popupText = [{
+        text: 'Some text',
+        props: [
+                    {
+                      col: 1,
+                      type: 'Prop1',
+                      text: ' + '
+                    },
+                    {
+                      col: 6,
+                      type: 'Prop2',
+                      text: ' x '
+                    },
+                ]
+          }]
+      var popupArgs = {
+            line: 3,
+            col: 20,
+            maxwidth: 80,
+            highlight: 'PMenu',
+            border: [],
+            borderchars: [' '],
+          }
+
+      popup_create(popupText, popupArgs)
+  END
+  call writefile(lines, 'XscriptVirtualHighlight', 'D')
+  let buf = RunVimInTerminal('-S XscriptVirtualHighlight', #{rows: 8})
+  call VerifyScreenDump(buf, 'Test_virtual_text_in_popup_highlight_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_insert_text_change_arg()
   CheckRunVimInTerminal
 

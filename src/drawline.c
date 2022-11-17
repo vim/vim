@@ -130,7 +130,8 @@ typedef struct {
     char_u	*p_extra;	// string of extra chars, plus NUL, only used
 				// when c_extra and c_final are NUL
     char_u	*p_extra_free;  // p_extra buffer that needs to be freed
-    int		extra_attr;	// attributes for p_extra
+    int		extra_attr;	// attributes for p_extra, should be combined
+				// with win_attr if needed
     int		c_extra;	// extra chars, all the same
     int		c_final;	// final char, mandatory if set
     int		extra_for_textprop; // wlv.n_extra set for textprop
@@ -1997,7 +1998,8 @@ win_line(
 			    wlv.c_final = NUL;
 			    wlv.n_extra = (int)STRLEN(p);
 			    wlv.extra_for_textprop = TRUE;
-			    wlv.extra_attr = used_attr;
+			    wlv.extra_attr = hl_combine_attr(wlv.win_attr,
+								    used_attr);
 			    n_attr = mb_charlen(p);
 			    // restore search_attr and area_attr when n_extra
 			    // is down to zero
