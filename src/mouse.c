@@ -2131,14 +2131,18 @@ nv_mousescroll(cmdarg_T *cap)
 #endif
     if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)  // Vertical scrolling
     {
-	if (mouse_vert_step < 0 || shift_or_ctrl)
+	if (!(State & MODE_INSERT) && (mouse_vert_step < 0 || shift_or_ctrl))
 	{
 	    onepage(cap->arg, 1L);
 	}
 	else
 	{
+	    if (mouse_vert_step < 0 || shift_or_ctrl)
+	    {
+		cap->count1 = (long)(curwin->w_botline - curwin->w_topline);
+	    }
 	    // Don't scroll more than half the window height.
-	    if (curwin->w_height < mouse_vert_step * 2)
+	    else if (curwin->w_height < mouse_vert_step * 2)
 	    {
 		cap->count1 = curwin->w_height / 2;
 		if (cap->count1 == 0)
