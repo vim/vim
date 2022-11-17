@@ -2133,7 +2133,7 @@ nv_mousescroll(cmdarg_T *cap)
     {
 	if (mouse_vert_step < 0 || shift_or_ctrl)
 	{
-	    onepage(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L);
+	    onepage(cap->arg, 1L);
 	}
 	else
 	{
