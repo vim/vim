@@ -5244,6 +5244,9 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
  * {flag} can be '0' or '1'
  * {tail} can be Esc>\ or STERM
  *
+ * Check for resource response from xterm (and drop it):
+ * {lead}{flag}+R<hex bytes>=<value>{tail}
+ *
  * Check for cursor shape response from xterm:
  * {lead}1$r<digit> q{tail}
  *
@@ -5260,7 +5263,8 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
     j = 1 + (tp[0] == ESC);
     if (len < j + 3)
 	i = len; // need more chars
-    else if ((argp[1] != '+' && argp[1] != '$') || argp[2] != 'r')
+    else if ((argp[1] != '+' && argp[1] != '$')
+	    || (argp[2] != 'r' && argp[2] != 'R'))
 	i = 0; // no match
     else if (argp[1] == '+')
 	// key code response
@@ -5269,7 +5273,8 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 	    if ((tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')
 		    || tp[i] == STERM)
 	    {
-		if (i - j >= 3)
+		// handle a key code response, drop a resource response
+		if (i - j >= 3 && argp[2] == 'r')
 		    got_code_from_term(tp + j, i);
 		key_name[0] = (int)KS_EXTRA;
 		key_name[1] = (int)KE_IGNORE;
@@ -5674,9 +5679,10 @@ check_termcode(
 
 	    // Check for key code response from xterm,
 	    // starting with <Esc>P or DCS
-	    else if ((check_for_codes || rcs_status.tr_progress == STATUS_SENT)
-		    && ((tp[0] == ESC && len >= 2 && tp[1] == 'P')
-			|| tp[0] == DCS))
+	    // It would only be needed with this condition:
+	    //	    (check_for_codes || rcs_status.tr_progress == STATUS_SENT)
+	    // Now this is always done so that DCS codes don't mess up things.
+	    else if ((tp[0] == ESC && len >= 2 && tp[1] == 'P') || tp[0] == DCS)
 	    {
 		if (handle_dcs(tp, argp, len, key_name, &slen) == FAIL)
 		    return -1;

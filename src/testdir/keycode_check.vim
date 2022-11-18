@@ -134,7 +134,7 @@ def ActionList()
   endif
   sort(terms)
 
-  var items = ['protocol', 'version', 'status']
+  var items = ['protocol', 'version', 'status', 'resource']
 	      + key_entries->copy()->map((_, v) => v[1])
 
   # For each terminal compute the needed width, add two.
@@ -198,8 +198,9 @@ def DoTerm(name: string)
   if proto == 1
     &t_TI = ""
   elseif proto == 2
-    # Enable modifyOtherKeys level 2 - no status is reported
-    &t_TI = "\<Esc>[>4;2m"
+    # Enable modifyOtherKeys level 2
+    # Request the resource value: DCS + Q modifyOtherKeys ST
+    &t_TI = "\<Esc>[>4;2m" .. "\<Esc>P+Q6d6f646966794f746865724b657973\<Esc>\\"
     proto_name = 'mok2'
   elseif proto == 3
     # Enable Kitty keyboard protocol and request the status
@@ -217,9 +218,14 @@ def DoTerm(name: string)
   # Pattern that matches the line with the version response.
   const version_pattern = "\<Esc>\\[>\\d\\+;\\d\\+;\\d*c"
 
+  # Pattern that matches the resource value response:
+  #    DCS 1 + R Pt ST    valid
+  #    DCS 0 + R Pt ST    invalid
+  const resource_pattern = "\<Esc>P[01]+R.*\<Esc>\\\\"
+
   # Pattern that matches the line with the status.  Currently what terminals
   # return for the Kitty keyboard protocol.
-  const status_pattern = "\<Esc>\\[?\\d\\+u"
+  const kitty_status_pattern = "\<Esc>\\[?\\d\\+u"
 
   ch_logfile('keylog', 'w')
 
@@ -244,6 +250,7 @@ def DoTerm(name: string)
       endfor
     endif
     if reltime(startTime)->reltimefloat() > 3
+      # break out after three seconds
       break
     endif
   endwhile
@@ -257,18 +264,39 @@ def DoTerm(name: string)
   keycodes[name]['protocol'] = proto_name
   keycodes[name]['version'] = ''
   keycodes[name]['status'] = ''
+  keycodes[name]['resource'] = ''
 
   # Check the log file for a status and the version response
   ch_logfile('', '')
   var log = readfile('keylog')
   delete('keylog')
+
   for line in log
     if line =~ 'raw key input'
       var code = substitute(line, '.*raw key input: "\([^"]*\).*', '\1', '')
+
+      # Check for resource value response
+      if code =~ resource_pattern
+	var resource = substitute(code, '.*\(' .. resource_pattern .. '\).*', '\1', '')
+	# use the value as the resource, "=30" means zero
+	resource = substitute(resource, '.*\(=\p\+\).*', '\1', '')
+
+	if keycodes[name]['resource'] != ''
+	  echomsg 'Another resource found after ' .. keycodes[name]['resource']
+	endif
+	keycodes[name]['resource'] = resource
+      endif
+
       # Check for kitty keyboard protocol status
-      if code =~ status_pattern
-	var status = substitute(code, '.*\(' .. status_pattern .. '\).*', '\1', '')
-	keycodes[name]['status'] = Literal2hex(status)
+      if code =~ kitty_status_pattern
+	var status = substitute(code, '.*\(' .. kitty_status_pattern .. '\).*', '\1', '')
+	# use the response itself as the status
+	status = Literal2hex(status)
+
+	if keycodes[name]['status'] != ''
+	  echomsg 'Another status found after ' .. keycodes[name]['status']
+	endif
+	keycodes[name]['status'] = status
       endif
 
       if code =~ version_pattern
@@ -282,13 +310,23 @@ def DoTerm(name: string)
   echo "For Alt to work you may need to press the Windows/Super key as well"
   echo "When a key press doesn't get to Vim (e.g. when using Alt) press x"
 
+  # The log of ignored typeahead is left around for debugging, start with an
+  # empty file here.
+  delete('keylog-ignore')
+
   for entry in key_entries
     # Consume any typeahead.  Wait a bit for any responses to arrive.
-    sleep 100m
-    while getchar(1)
-      getchar()
+    ch_logfile('keylog-ignore', 'a')
+    while 1
       sleep 100m
+      if !getchar(1)
+	break
+      endif
+      while getchar(1)
+	getchar()
+      endwhile
     endwhile
+    ch_logfile('', '')
 
     ch_logfile('keylog', 'w')
     echo $'Press the {entry[0]} key (q to quit):'
@@ -297,13 +335,9 @@ def DoTerm(name: string)
     if r == 'q'
       break
     endif
+
     log = readfile('keylog')
-    if entry[1] == 'Tab'
-# keep a copy
-rename('keylog', 'keylog-tab')
-    else
-      delete('keylog')
-    endif
+    delete('keylog')
     if len(log) < 2
       echoerr 'failed to read result'
       return
@@ -321,7 +355,7 @@ rename('keylog', 'keylog-tab')
 	code = substitute(code, cappat, '', 'g')
 
 	# Remove any kitty status reply
-	code = substitute(code, status_pattern, '', 'g')
+	code = substitute(code, kitty_status_pattern, '', 'g')
 	if code == ''
 	  continue
 	endif
