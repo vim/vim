@@ -202,6 +202,26 @@ redraw_for_cursorcolumn(win_T *wp)
 #endif
 
 /*
+ * Calculates how much overlap the smoothscroll marker "<<<" overlaps with
+ * buffer text for curwin.
+ * Parameter "extra2" should be the padding on the 2nd line, not the first
+ * line.
+ * Returns the number of columns of overlap with buffer text, excluding the
+ * extra padding on the ledge.
+ */
+    static int
+smoothscroll_marker_overlap(int extra2)
+{
+#if defined(FEAT_LINEBREAK)
+    // We don't draw the <<< marker when in showbreak mode, thus no need to
+    // account for it.  See wlv_screen_line().
+    if (*get_showbreak_value(curwin) != NUL)
+	return 0;
+#endif
+    return extra2 > 3 ? 0 : 3 - extra2;
+}
+
+/*
  * Set curwin->s_skipcol to zero and redraw later if needed.
  */
     static void
@@ -311,10 +331,13 @@ update_topline(void)
 	    {
 		colnr_T vcol;
 
-		// check the cursor position is visible.  Add 3 for the ">>>"
-		// displayed in the top-left.
+		// Check that the cursor position is visible.  Add columns for
+		// the smoothscroll marker "<<<" displayed in the top-left if
+		// needed.
 		getvvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
-		if (curwin->w_skipcol + 3 >= vcol)
+		int smoothscroll_overlap = smoothscroll_marker_overlap(
+					 curwin_col_off() - curwin_col_off2());
+		if (curwin->w_skipcol + smoothscroll_overlap > vcol)
 		    check_topline = TRUE;
 	    }
 	}
@@ -1811,11 +1834,20 @@ scrollup(
     if (curwin->w_cursor.lnum == curwin->w_topline
 					    && do_sms && curwin->w_skipcol > 0)
     {
-	int	width1 = curwin->w_width - curwin_col_off();
-	int	width2 = width1 + curwin_col_off2();
+	int	col_off = curwin_col_off();
+	int	col_off2 = curwin_col_off2();
+
+	int	width1 = curwin->w_width - col_off;
+	int	width2 = width1 + col_off2;
+	int	extra2 = col_off - col_off2;
 	long	so = get_scrolloff_value();
 	int	scrolloff_cols = so == 0 ? 0 : width1 + (so - 1) * width2;
 	int	space_cols = (curwin->w_height - 1) * width2;
+
+	// If we have non-zero scrolloff, just ignore the <<< marker as we are
+	// going past it anyway.
+	int smoothscroll_overlap = scrolloff_cols != 0 ? 0 :
+					   smoothscroll_marker_overlap(extra2);
 
 	// Make sure the cursor is in a visible part of the line, taking
 	// 'scrolloff' into account, but using screen lines.
@@ -1823,13 +1855,15 @@ scrollup(
 	if (scrolloff_cols > space_cols / 2)
 	    scrolloff_cols = space_cols / 2;
 	validate_virtcol();
-	if (curwin->w_virtcol < curwin->w_skipcol + 3 + scrolloff_cols)
+	if (curwin->w_virtcol < curwin->w_skipcol
+				       + smoothscroll_overlap + scrolloff_cols)
 	{
 	    colnr_T col = curwin->w_virtcol;
 
 	    if (col < width1)
 		col += width1;
-	    while (col < curwin->w_skipcol + 3 + scrolloff_cols)
+	    while (col < curwin->w_skipcol
+				       + smoothscroll_overlap + scrolloff_cols)
 		col += width2;
 	    curwin->w_curswant = col;
 	    coladvance(curwin->w_curswant);
@@ -2818,9 +2852,9 @@ cursor_correct(void)
 static void get_scroll_overlap(lineoff_T *lp, int dir);
 
 /*
- * move screen 'count' pages up or down and update screen
+ * Move screen "count" pages up or down and update screen.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 onepage(int dir, long count)
