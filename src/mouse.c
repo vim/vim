@@ -576,7 +576,7 @@ do_mouse(
 		// Ignore right button release events, only shows the popup
 		// menu on the button down event.
 		return FALSE;
-#endif
+# endif
 
 	    jump_flags = 0;
 	    if (STRCMP(p_mousem, "popup_setpos") == 0)
@@ -1063,10 +1063,10 @@ ins_mouse(int c)
     pos_T	tpos;
     win_T	*old_curwin = curwin;
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
     // When GUI is active, also move/paste when 'mouse' is empty
     if (!gui.in_use)
-# endif
+#endif
 	if (!mouse_has(MOUSE_INSERT))
 	    return;
 
@@ -1102,20 +1102,19 @@ ins_mouse(int c)
 }
 
 /*
- * Implementation for scrolling in direction "dir", which is one of the MSCR_
- * values.
+ * Implementation for scrolling in Insert mode in direction "dir", which is one
+ * of the MSCR_ values.
  */
     void
 ins_mousescroll(int dir)
 {
-    cmdarg_T cap;
+    cmdarg_T	cap;
+    oparg_T	oa;
     CLEAR_FIELD(cap);
-
-    oparg_T oa;
     clear_oparg(&oa);
     cap.oap = &oa;
-
     cap.arg = dir;
+
     switch (dir)
     {
 	case MSCR_UP:
@@ -1133,7 +1132,50 @@ ins_mousescroll(int dir)
 	default:
 	    siemsg("Invalid ins_mousescroll() argument: %d", dir);
     }
-    do_mousescroll(MODE_INSERT, &cap);
+
+    win_T *wp = curwin;
+    if (mouse_row >= 0 && mouse_col >= 0)
+    {
+	// Find the window at the mouse pointer coordinates.
+	int row = mouse_row;
+	int col = mouse_col;
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
+	if (wp == NULL)
+	    return;
+    }
+
+    if (wp == curwin)
+    {
+	// Don't scroll the current window if the popup menu is visible.
+	if (pum_visible())
+	    return;
+
+	undisplay_dollar();
+    }
+
+    linenr_T	orig_topline = wp->w_topline;
+    colnr_T	orig_leftcol = wp->w_leftcol;
+    pos_T	orig_cursor = curwin->w_cursor;
+
+    // The scrolling works almost the same way as in Normal mode.
+    nv_mousescroll(&cap);
+
+    // If the window actually scrolled and the popup menu may overlay the
+    // window, need to redraw it.
+    if ((orig_topline != wp->w_topline || orig_leftcol != wp->w_leftcol)
+	    && pum_visible())
+    {
+	// TODO: Would be more efficient to only redraw the windows that are
+	// overlapped by the popup menu.
+	redraw_all_later(UPD_NOT_VALID);
+	ins_compl_show_pum();
+    }
+
+    if (!EQUAL_POS(curwin->w_cursor, orig_cursor))
+    {
+	start_arrow(&orig_cursor);
+	set_can_cindent(TRUE);
+    }
 }
 
 /*
@@ -1281,36 +1323,36 @@ set_mouse_termcode(
     name[0] = n;
     name[1] = KE_FILLER;
     add_termcode(name, s, FALSE);
-#   ifdef FEAT_MOUSE_JSB
+#ifdef FEAT_MOUSE_JSB
     if (n == KS_JSBTERM_MOUSE)
 	has_mouse_termcode |= HMT_JSBTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_NET
+#endif
+#ifdef FEAT_MOUSE_NET
     if (n == KS_NETTERM_MOUSE)
 	has_mouse_termcode |= HMT_NETTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_DEC
+#endif
+#ifdef FEAT_MOUSE_DEC
     if (n == KS_DEC_MOUSE)
 	has_mouse_termcode |= HMT_DEC;
     else
-#   endif
-#   ifdef FEAT_MOUSE_PTERM
+#endif
+#ifdef FEAT_MOUSE_PTERM
     if (n == KS_PTERM_MOUSE)
 	has_mouse_termcode |= HMT_PTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_URXVT
+#endif
+#ifdef FEAT_MOUSE_URXVT
     if (n == KS_URXVT_MOUSE)
 	has_mouse_termcode |= HMT_URXVT;
     else
-#   endif
-#   ifdef FEAT_MOUSE_GPM
+#endif
+#ifdef FEAT_MOUSE_GPM
     if (n == KS_GPM_MOUSE)
 	has_mouse_termcode |= HMT_GPM;
     else
-#   endif
+#endif
     if (n == KS_SGR_MOUSE)
 	has_mouse_termcode |= HMT_SGR;
     else if (n == KS_SGR_MOUSE_RELEASE)
@@ -1319,7 +1361,7 @@ set_mouse_termcode(
 	has_mouse_termcode |= HMT_NORMAL;
 }
 
-# if defined(UNIX) || defined(VMS) || defined(PROTO)
+#if defined(UNIX) || defined(VMS) || defined(PROTO)
     void
 del_mouse_termcode(
     int		n)	// KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE
@@ -1329,36 +1371,36 @@ del_mouse_termcode(
     name[0] = n;
     name[1] = KE_FILLER;
     del_termcode(name);
-#   ifdef FEAT_MOUSE_JSB
+# ifdef FEAT_MOUSE_JSB
     if (n == KS_JSBTERM_MOUSE)
 	has_mouse_termcode &= ~HMT_JSBTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_NET
+# endif
+# ifdef FEAT_MOUSE_NET
     if (n == KS_NETTERM_MOUSE)
 	has_mouse_termcode &= ~HMT_NETTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_DEC
+# endif
+# ifdef FEAT_MOUSE_DEC
     if (n == KS_DEC_MOUSE)
 	has_mouse_termcode &= ~HMT_DEC;
     else
-#   endif
-#   ifdef FEAT_MOUSE_PTERM
+# endif
+# ifdef FEAT_MOUSE_PTERM
     if (n == KS_PTERM_MOUSE)
 	has_mouse_termcode &= ~HMT_PTERM;
     else
-#   endif
-#   ifdef FEAT_MOUSE_URXVT
+# endif
+# ifdef FEAT_MOUSE_URXVT
     if (n == KS_URXVT_MOUSE)
 	has_mouse_termcode &= ~HMT_URXVT;
     else
-#   endif
-#   ifdef FEAT_MOUSE_GPM
+# endif
+# ifdef FEAT_MOUSE_GPM
     if (n == KS_GPM_MOUSE)
 	has_mouse_termcode &= ~HMT_GPM;
     else
-#   endif
+# endif
     if (n == KS_SGR_MOUSE)
 	has_mouse_termcode &= ~HMT_SGR;
     else if (n == KS_SGR_MOUSE_RELEASE)
@@ -1366,7 +1408,7 @@ del_mouse_termcode(
     else
 	has_mouse_termcode &= ~HMT_NORMAL;
 }
-# endif
+#endif
 
 /*
  * setmouse() - switch mouse on/off depending on current mode and 'mouse'
@@ -1376,16 +1418,16 @@ setmouse(void)
 {
     int	    checkfor;
 
-# ifdef FEAT_MOUSESHAPE
+#ifdef FEAT_MOUSESHAPE
     update_mouseshape(-1);
-# endif
+#endif
 
     // Should be outside proc, but may break MOUSESHAPE
-#  ifdef FEAT_GUI
+#ifdef FEAT_GUI
     // In the GUI the mouse is always enabled.
     if (gui.in_use)
 	return;
-#  endif
+#endif
     // be quick when mouse is off
     if (*p_mouse == NUL || has_mouse_termcode == 0)
 	return;
@@ -1713,15 +1755,15 @@ retnomove:
 	    // A click outside the command-line window: Use modeless
 	    // selection if possible.  Allow dragging the status lines.
 	    on_sep_line = 0;
-# ifdef FEAT_CLIPBOARD
+#ifdef FEAT_CLIPBOARD
 	    if (on_status_line)
 		return IN_STATUS_LINE;
 	    return IN_OTHER_WIN;
-# else
+#else
 	    row = 0;
 	    col += wp->w_wincol;
 	    wp = curwin;
-# endif
+#endif
 	}
 #if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
 	if (popup_is_popup(curwin) && curbuf->b_term != NULL)
@@ -2012,12 +2054,12 @@ retnomove:
 	    || curwin->w_cursor.col != old_cursor.col)
 	count |= CURSOR_MOVED;		// Cursor has moved
 
-# ifdef FEAT_FOLDING
+#ifdef FEAT_FOLDING
     if (mouse_char == curwin->w_fill_chars.foldclosed)
 	count |= MOUSE_FOLD_OPEN;
     else if (mouse_char != ' ')
 	count |= MOUSE_FOLD_CLOSE;
-# endif
+#endif
 
     return count;
 }
@@ -2062,135 +2104,94 @@ do_mousescroll_horiz(long_u leftcol)
  *    K_MOUSERIGHT - MSCR_RIGHT
  */
     void
-do_mousescroll(int mode, cmdarg_T *cap)
+nv_mousescroll(cmdarg_T *cap)
 {
-    win_T   *old_curwin = curwin, *wp;
-    int	    did_ins_scroll = FALSE;
-    pos_T   tpos = curwin->w_cursor;
+    win_T   *old_curwin = curwin;
 
     if (mouse_row >= 0 && mouse_col >= 0)
     {
-	int row, col;
-
-	row = mouse_row;
-	col = mouse_col;
-
-	// find the window at the pointer coordinates
-	wp = mouse_find_win(&row, &col, FIND_POPUP);
+	// Find the window at the mouse pointer coordinates.
+	int row = mouse_row;
+	int col = mouse_col;
+	win_T *wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
 #ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
+	    // cannot scroll this popup window
 	    return;
 #endif
+	// NOTE: Must restore "curwin" to "old_curwin" before returning!
 	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
-    if (mode == MODE_INSERT && curwin == old_curwin)
-	undisplay_dollar();
 
-# ifdef FEAT_TERMINAL
+    int shift_or_ctrl = mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL);
+
+#ifdef FEAT_TERMINAL
     if (term_use_loop())
 	// This window is a terminal window, send the mouse event there.
 	// Set "typed" to FALSE to avoid an endless loop.
 	send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
     else
-# endif
-    // For Insert mode, don't scroll the window in which completion is being
-    // done.
-    if (mode == MODE_NORMAL || !pum_visible() || curwin != old_curwin)
-    {
-	if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
-	{
-	    if (mouse_vert_step < 0
-		    || mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-	    {
-		if (mode == MODE_INSERT)
-		{
-		    long step = (long)(curwin->w_botline - curwin->w_topline);
-		    scroll_redraw(cap->arg, step);
-		}
-		else
-		{
-		    did_ins_scroll = onepage(cap->arg ? FORWARD : BACKWARD, 1L);
-		}
-	    }
-	    else
-	    {
-		if (mode == MODE_INSERT)
-		{
-		    scroll_redraw(cap->arg, mouse_vert_step);
-		}
-		else
-		{
-		    // Don't scroll more than half the window height.
-		    if (curwin->w_height < mouse_vert_step * 2)
-		    {
-			cap->count1 = curwin->w_height / 2;
-			if (cap->count1 == 0)
-			    cap->count1 = 1;
-		    }
-		    else
-		    {
-			cap->count1 = mouse_vert_step;
-		    }
-		    cap->count0 = cap->count1;
-		    nv_scroll_line(cap);
-		}
-	    }
-
-#ifdef FEAT_PROP_POPUP
-	    if (WIN_IS_POPUP(curwin))
-		popup_set_firstline(curwin);
 #endif
+    if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
+    {
+	// Vertical scrolling
+	if (!(State & MODE_INSERT) && (mouse_vert_step < 0 || shift_or_ctrl))
+	{
+	    // whole page up or down
+	    onepage(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L);
 	}
 	else
 	{
-	    long step = (mouse_hor_step < 0
-			      || (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
-		    ? curwin->w_width : mouse_hor_step;
-	    long leftcol = curwin->w_leftcol
-				     + (cap->arg == MSCR_RIGHT ? -step : step);
-	    if (leftcol < 0)
-		leftcol = 0;
-
-	    did_ins_scroll = do_mousescroll_horiz((long_u)leftcol);
+	    if (mouse_vert_step < 0 || shift_or_ctrl)
+	    {
+		// whole page up or down
+		cap->count1 = (long)(curwin->w_botline - curwin->w_topline);
+	    }
+	    // Don't scroll more than half the window height.
+	    else if (curwin->w_height < mouse_vert_step * 2)
+	    {
+		cap->count1 = curwin->w_height / 2;
+		if (cap->count1 == 0)
+		    cap->count1 = 1;
+	    }
+	    else
+	    {
+		cap->count1 = mouse_vert_step;
+	    }
+	    cap->count0 = cap->count1;
+	    nv_scroll_line(cap);
 	}
+
+#ifdef FEAT_PROP_POPUP
+	if (WIN_IS_POPUP(curwin))
+	    popup_set_firstline(curwin);
+#endif
+    }
+    else
+    {
+	// Horizontal scrolling
+	long step = (mouse_hor_step < 0 || shift_or_ctrl)
+					    ? curwin->w_width : mouse_hor_step;
+	long leftcol = curwin->w_leftcol
+				     + (cap->arg == MSCR_RIGHT ? -step : step);
+	if (leftcol < 0)
+	    leftcol = 0;
+	do_mousescroll_horiz((long_u)leftcol);
     }
 
-# ifdef FEAT_SYN_HL
-    if (mode == MODE_NORMAL && curwin != old_curwin && curwin->w_p_cul)
+#ifdef FEAT_SYN_HL
+    if (curwin != old_curwin && curwin->w_p_cul)
 	redraw_for_cursorline(curwin);
-# endif
+#endif
     may_trigger_winscrolled();
 
     curwin->w_redr_status = TRUE;
 
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
-
-    if (mode == MODE_INSERT)
-    {
-	// The popup menu may overlay the window, need to redraw it.
-	// TODO: Would be more efficient to only redraw the windows that are
-	// overlapped by the popup menu.
-	if (pum_visible() && did_ins_scroll)
-	{
-	    redraw_all_later(UPD_NOT_VALID);
-	    ins_compl_show_pum();
-	}
-	if (!EQUAL_POS(curwin->w_cursor, tpos))
-	{
-	    start_arrow(&tpos);
-	    set_can_cindent(TRUE);
-	}
-    }
-}
-
-    void
-nv_mousescroll(cmdarg_T *cap)
-{
-    do_mousescroll(MODE_NORMAL, cap);
 }
 
 /*
@@ -2225,11 +2226,11 @@ check_termcode_mouse(
 {
     int		j;
     char_u	*p;
-# if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
+#if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
     || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
     char_u	bytes[6];
     int		num_bytes;
-# endif
+#endif
     int		mouse_code = 0;	    // init for GCC
     int		is_click, is_drag;
     int		is_release, release_is_ambiguous;
@@ -2237,23 +2238,23 @@ check_termcode_mouse(
     int		current_button;
     static int	orig_num_clicks = 1;
     static int	orig_mouse_code = 0x0;
-# ifdef CHECK_DOUBLE_CLICK
+#ifdef CHECK_DOUBLE_CLICK
     static int	orig_mouse_col = 0;
     static int	orig_mouse_row = 0;
     static struct timeval  orig_mouse_time = {0, 0};
     // time of previous mouse click
     struct timeval  mouse_time;		// time of current mouse click
     long	timediff;		// elapsed time in msec
-# endif
+#endif
 
     is_click = is_drag = is_release = release_is_ambiguous = FALSE;
 
-# if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
+#if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
     || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
     if (key_name[0] == KS_MOUSE
-#  ifdef FEAT_MOUSE_GPM
+# ifdef FEAT_MOUSE_GPM
 	    || key_name[0] == KS_GPM_MOUSE
-#  endif
+# endif
        )
     {
 	/*
@@ -2279,7 +2280,7 @@ check_termcode_mouse(
 	 */
 	for (;;)
 	{
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    if (gui.in_use)
 	    {
 		// GUI uses more bits for columns > 223
@@ -2293,7 +2294,7 @@ check_termcode_mouse(
 		    + bytes[4] - ' ' - 1;
 	    }
 	    else
-#  endif
+# endif
 	    {
 		num_bytes = get_bytes_from_buf(tp + *slen, bytes, 3);
 		if (num_bytes == -1)	// not enough coordinates
@@ -2307,21 +2308,21 @@ check_termcode_mouse(
 	    // If the following bytes is also a mouse code and it has the same
 	    // code, dump this one and get the next.  This makes dragging a
 	    // whole lot faster.
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    if (gui.in_use)
 		j = 3;
 	    else
-#  endif
+# endif
 		j = get_termcode_len(idx);
 	    if (STRNCMP(tp, tp + *slen, (size_t)j) == 0
 		    && tp[*slen + j] == mouse_code
 		    && tp[*slen + j + 1] != NUL
 		    && tp[*slen + j + 2] != NUL
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 		    && (!gui.in_use
 			|| (tp[*slen + j + 3] != NUL
 			    && tp[*slen + j + 4] != NUL))
-#  endif
+# endif
 	       )
 		*slen += j;
 	    else
@@ -2397,16 +2398,16 @@ check_termcode_mouse(
     }
 
     if (key_name[0] == KS_MOUSE
-#  ifdef FEAT_MOUSE_GPM
+# ifdef FEAT_MOUSE_GPM
 	    || key_name[0] == KS_GPM_MOUSE
-#  endif
-#  ifdef FEAT_MOUSE_URXVT
+# endif
+# ifdef FEAT_MOUSE_URXVT
 	    || key_name[0] == KS_URXVT_MOUSE
-#  endif
+# endif
 	    || key_name[0] == KS_SGR_MOUSE
 	    || key_name[0] == KS_SGR_MOUSE_RELEASE)
     {
-#  if !defined(MSWIN)
+# if !defined(MSWIN)
 	/*
 	 * Handle old style mouse events.
 	 * Recognize the xterm mouse wheel, but not in the GUI, the
@@ -2414,29 +2415,29 @@ check_termcode_mouse(
 	 * (multi-clicks use >= 0x60).
 	 */
 	if (mouse_code >= MOUSEWHEEL_LOW
-#   ifdef FEAT_GUI
+#  ifdef FEAT_GUI
 		&& !gui.in_use
-#   endif
-#   ifdef FEAT_MOUSE_GPM
+#  endif
+#  ifdef FEAT_MOUSE_GPM
 		&& key_name[0] != KS_GPM_MOUSE
-#   endif
+#  endif
 	   )
 	{
-#   if defined(UNIX)
+#  if defined(UNIX)
 	    if (use_xterm_mouse() > 1 && mouse_code >= 0x80)
 		// mouse-move event, using MOUSE_DRAG works
 		mouse_code = MOUSE_DRAG;
 	    else
-#   endif
+#  endif
 		// Keep the mouse_code before it's changed, so that we
 		// remember that it was a mouse wheel click.
 		wheel_code = mouse_code;
 	}
-#   ifdef FEAT_MOUSE_XTERM
+#  ifdef FEAT_MOUSE_XTERM
 	else if (held_button == MOUSE_RELEASE
-#    ifdef FEAT_GUI
+#   ifdef FEAT_GUI
 		&& !gui.in_use
-#    endif
+#   endif
 		&& (mouse_code == 0x23 || mouse_code == 0x24
 		    || mouse_code == 0x40 || mouse_code == 0x41))
 	{
@@ -2445,16 +2446,16 @@ check_termcode_mouse(
 	    wheel_code = mouse_code - (mouse_code >= 0x40 ? 0x40 : 0x23)
 							      + MOUSEWHEEL_LOW;
 	}
-#   endif
+#  endif
 
-#   if defined(UNIX)
+#  if defined(UNIX)
 	else if (use_xterm_mouse() > 1)
 	{
 	    if (mouse_code & MOUSE_DRAG_XTERM)
 		mouse_code |= MOUSE_DRAG;
 	}
-#   endif
-#   ifdef FEAT_XCLIPBOARD
+#  endif
+#  ifdef FEAT_XCLIPBOARD
 	else if (!(mouse_code & MOUSE_DRAG & ~MOUSE_CLICK_MASK))
 	{
 	    if (is_release)
@@ -2462,11 +2463,11 @@ check_termcode_mouse(
 	    else
 		start_xterm_trace(mouse_code);
 	}
-#   endif
 #  endif
+# endif
     }
-# endif // !UNIX || FEAT_MOUSE_XTERM
-# ifdef FEAT_MOUSE_NET
+#endif // !UNIX || FEAT_MOUSE_XTERM
+#ifdef FEAT_MOUSE_NET
     if (key_name[0] == KS_NETTERM_MOUSE)
     {
 	int mc, mr;
@@ -2487,8 +2488,8 @@ check_termcode_mouse(
 	mouse_code = MOUSE_LEFT;
 	*slen += (int)(p - (tp + *slen));
     }
-# endif	// FEAT_MOUSE_NET
-# ifdef FEAT_MOUSE_JSB
+#endif	// FEAT_MOUSE_NET
+#ifdef FEAT_MOUSE_JSB
     if (key_name[0] == KS_JSBTERM_MOUSE)
     {
 	int mult, val, iter, button, status;
@@ -2612,8 +2613,8 @@ check_termcode_mouse(
 
 	*slen += (p - (tp + *slen));
     }
-# endif // FEAT_MOUSE_JSB
-# ifdef FEAT_MOUSE_DEC
+#endif // FEAT_MOUSE_JSB
+#ifdef FEAT_MOUSE_DEC
     if (key_name[0] == KS_DEC_MOUSE)
     {
 	/*
@@ -2747,8 +2748,8 @@ check_termcode_mouse(
 
 	*slen += (int)(p - (tp + *slen));
     }
-# endif // FEAT_MOUSE_DEC
-# ifdef FEAT_MOUSE_PTERM
+#endif // FEAT_MOUSE_DEC
+#ifdef FEAT_MOUSE_PTERM
     if (key_name[0] == KS_PTERM_MOUSE)
     {
 	int button, num_clicks, action;
@@ -2804,7 +2805,7 @@ check_termcode_mouse(
 
 	*slen += (p - (tp + *slen));
     }
-# endif // FEAT_MOUSE_PTERM
+#endif // FEAT_MOUSE_PTERM
 
     // Interpret the mouse code
     current_button = (mouse_code & MOUSE_CLICK_MASK);
@@ -2812,9 +2813,9 @@ check_termcode_mouse(
 	current_button |= MOUSE_RELEASE;
 
     if (current_button == MOUSE_RELEASE
-# ifdef FEAT_MOUSE_XTERM
+#ifdef FEAT_MOUSE_XTERM
 	    && wheel_code == 0
-# endif
+#endif
        )
     {
 	/*
@@ -2832,22 +2833,22 @@ check_termcode_mouse(
     {
       if (wheel_code == 0)
       {
-# ifdef CHECK_DOUBLE_CLICK
-#  ifdef FEAT_MOUSE_GPM
+#ifdef CHECK_DOUBLE_CLICK
+# ifdef FEAT_MOUSE_GPM
 	/*
 	 * Only for Unix, when GUI not active, we handle multi-clicks here, but
 	 * not for GPM mouse events.
 	 */
-#   ifdef FEAT_GUI
+#  ifdef FEAT_GUI
 	if (key_name[0] != KS_GPM_MOUSE && !gui.in_use)
-#   else
-	    if (key_name[0] != KS_GPM_MOUSE)
-#   endif
 #  else
-#   ifdef FEAT_GUI
-		if (!gui.in_use)
-#   endif
+	    if (key_name[0] != KS_GPM_MOUSE)
 #  endif
+# else
+#  ifdef FEAT_GUI
+		if (!gui.in_use)
+#  endif
+# endif
 		{
 		    /*
 		     * Compute the time elapsed since the previous mouse click.
@@ -2883,13 +2884,13 @@ check_termcode_mouse(
 		    orig_mouse_row = mouse_row;
 		    set_mouse_topline(curwin);
 		}
-#  if defined(FEAT_GUI) || defined(FEAT_MOUSE_GPM)
+# if defined(FEAT_GUI) || defined(FEAT_MOUSE_GPM)
 		else
 		    orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
-#  endif
-# else
-	orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
 # endif
+#else
+	orig_num_clicks = NUM_MOUSE_CLICKS(mouse_code);
+#endif
 	is_click = TRUE;
       }
       orig_mouse_code = mouse_code;
@@ -3162,6 +3163,9 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol)
 #endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "getmousepos()" function.
+ */
     void
 f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -3189,14 +3193,14 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	int	left_off = 0;
 	int	height = wp->w_height + wp->w_status_height;
 
-#ifdef FEAT_PROP_POPUP
+# ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(wp))
 	{
 	    top_off = popup_top_extra(wp);
 	    left_off = popup_left_extra(wp);
 	    height = popup_height(wp);
 	}
-#endif
+# endif
 	if (row < height)
 	{
 	    winid = wp->w_id;
