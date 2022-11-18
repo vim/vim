@@ -2035,8 +2035,6 @@ do_mousescroll_horiz(long_u leftcol)
     if (curwin->w_leftcol == (colnr_T)leftcol)
 	return FALSE;  // already there
 
-    curwin->w_leftcol = (colnr_T)leftcol;
-
     // When the line of the cursor is too short, move the cursor to the
     // longest visible line.
     if (
@@ -2050,7 +2048,7 @@ do_mousescroll_horiz(long_u leftcol)
 	curwin->w_cursor.col = 0;
     }
 
-    return leftcol_changed();
+    return set_leftcol((colnr_T)leftcol);
 }
 
 /*
@@ -2098,7 +2096,7 @@ do_mousescroll(int mode, cmdarg_T *cap)
 	send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
     else
 # endif
-    // For insert mode, don't scroll the window in which completion is being
+    // For Insert mode, don't scroll the window in which completion is being
     // done.
     if (mode == MODE_NORMAL || !pum_visible() || curwin != old_curwin)
     {
