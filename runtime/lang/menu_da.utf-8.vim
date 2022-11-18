@@ -44,7 +44,7 @@ menut &Save<Tab>:w	Gem<Tab>:w
 menut Save\ &As\.\.\.<Tab>:sav	Gem\ som\.\.\.<Tab>:sav
 " -SEP2-
 menut Split\ &Diff\ with\.\.\.	Opdel\ diff\ med\.\.\.
-menut Split\ Patched\ &By\.\.\.	Opdel\ patched\ af\.\.\.
+menut Split\ Patched\ &By\.\.\.	Opdel\ patchet\ af\.\.\.
 " -SEP3-
 menut &Print	Udskriv
 " -SEP4-
