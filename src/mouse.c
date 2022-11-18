@@ -1109,7 +1109,7 @@ ins_mouse(int c)
 ins_mousescroll(int dir)
 {
     pos_T tpos = curwin->w_cursor;
-    win_T *wp = NULL;
+    win_T *wp = curwin;
     linenr_T orig_topline = 0;
     colnr_T orig_leftcol = 0;
     cmdarg_T cap;
@@ -1137,27 +1137,27 @@ ins_mousescroll(int dir)
 	    siemsg("Invalid ins_mousescroll() argument: %d", dir);
     }
 
+    // Find the window at the pointer coordinates
     if (mouse_row >= 0 && mouse_col >= 0)
     {
 	int row = mouse_row;
 	int col = mouse_col;
-
-	// find the window at the pointer coordinates
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp != NULL)
-	{
-	    if (curwin == wp)
-	    {
-		// Don't scroll the window in which completion is being done.
-		if (pum_visible())
-		    return;
-		else
-		    undisplay_dollar();
-	    }
-	    orig_topline = wp->w_topline;
-	    orig_leftcol = wp->w_leftcol;
-	}
+	if (wp == NULL)
+	    return;
     }
+
+    // Don't scroll the window in which completion is being done.
+    if (curwin == wp)
+    {
+	if (pum_visible())
+	    return;
+
+	undisplay_dollar();
+    }
+
+    orig_topline = wp->w_topline;
+    orig_leftcol = wp->w_leftcol;
 
     nv_mousescroll(&cap);
 
