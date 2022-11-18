@@ -6782,8 +6782,7 @@ nfa_regmatch(
 			if (REG_MULTI && (lnum <= 0
 				   || lnum > wp->w_buffer->b_ml.ml_line_count))
 			    lnum = 1;
-			vcol = (long_u)win_linetabsize(wp, lnum,
-								rex.line, col);
+			vcol = (long_u)win_linetabsize(wp, lnum, rex.line, col);
 			result = nfa_re_num_cmp(t->state->val, op, vcol + 1);
 		    }
 		    if (result)

@@ -89,6 +89,7 @@ win_id2wp(int id)
 
 /*
  * Return the window and tab pointer of window "id".
+ * Returns NULL when not found.
  */
     win_T *
 win_id2wp_tp(int id, tabpage_T **tpp)

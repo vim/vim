@@ -2352,6 +2352,7 @@ mch_restore_title(int which)
 
 /*
  * Return TRUE if "name" looks like some xterm name.
+ * This matches "xterm.*", thus "xterm-256color", "xterm-kitty", etc.
  * Seiichi Sato mentioned that "mlterm" works like xterm.
  */
     int
@@ -2409,6 +2410,9 @@ use_xterm_mouse(void)
     return 0;
 }
 
+/*
+ * Return TRUE if "name" is an iris-ansi terminal name.
+ */
     int
 vim_is_iris(char_u *name)
 {
@@ -2418,14 +2422,18 @@ vim_is_iris(char_u *name)
 	    || STRCMP(name, "builtin_iris-ansi") == 0);
 }
 
+/*
+ * Return TRUE if "name" is a vt300-like terminal name.
+ */
     int
 vim_is_vt300(char_u *name)
 {
     if (name == NULL)
-	return FALSE;	       // actually all ANSI comp. terminals should be here
-    // catch VT100 - VT5xx
+	return FALSE;
+    // Actually all ANSI compatible terminals should be here.
+    // Catch at least VT1xx - VT5xx
     return ((STRNICMP(name, "vt", 2) == 0
-		&& vim_strchr((char_u *)"12345", name[2]) != NULL)
+			     && vim_strchr((char_u *)"12345", name[2]) != NULL)
 	    || STRCMP(name, "builtin_vt320") == 0);
 }
 
@@ -5011,8 +5019,7 @@ mch_call_shell_fork(
 					|| (!curbuf->b_p_bin
 					    && curbuf->b_p_fixeol)
 					|| (lnum != curbuf->b_no_eol_lnum
-					    && (lnum !=
-						    curbuf->b_ml.ml_line_count
+					    && (lnum != curbuf->b_ml.ml_line_count
 						    || curbuf->b_p_eol)))
 				    vim_ignored = write(toshell_fd, "\n",
 								   (size_t)1);
@@ -8309,8 +8316,8 @@ stop_timeout(void)
 start_timeout(long msec)
 {
     struct itimerspec interval = {
-	    {0, 0},                                   // Do not repeat.
-	    {msec / 1000, (msec % 1000) * 1000000}};  // Timeout interval
+	    {0, 0},					// Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000000}};	// Timeout interval
     int ret;
 
     // This is really the caller's responsibility, but let's make sure the
@@ -8323,8 +8330,8 @@ start_timeout(long msec)
 
 	action.sigev_notify = SIGEV_THREAD;
 	action.sigev_notify_function = set_flag;
-        ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
-        if (ret < 0)
+	ret = timer_create(CLOCK_MONOTONIC, &action, &timer_id);
+	if (ret < 0)
 	{
 	    semsg(_(e_could_not_set_timeout_str), strerror(errno));
 	    return &timeout_flag;
@@ -8362,10 +8369,10 @@ delete_timer(void)
  * Implement timeout with setitimer()
  */
 static struct sigaction		prev_sigaction;
-static volatile sig_atomic_t	timeout_flag         = FALSE;
-static int			timer_active         = FALSE;
+static volatile sig_atomic_t	timeout_flag	     = FALSE;
+static int			timer_active	     = FALSE;
 static int			timer_handler_active = FALSE;
-static volatile sig_atomic_t	alarm_pending        = FALSE;
+static volatile sig_atomic_t	alarm_pending	     = FALSE;
 
 /*
  * Handle SIGALRM for a timeout.
@@ -8424,8 +8431,8 @@ stop_timeout(void)
 start_timeout(long msec)
 {
     struct itimerval	interval = {
-	    {0, 0},                                // Do not repeat.
-	    {msec / 1000, (msec % 1000) * 1000}};  // Timeout interval
+	    {0, 0},				    // Do not repeat.
+	    {msec / 1000, (msec % 1000) * 1000}};   // Timeout interval
     struct sigaction	handle_alarm;
     int			ret;
     sigset_t		sigs;

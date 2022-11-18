@@ -2852,7 +2852,8 @@ cursor_correct(void)
 static void get_scroll_overlap(lineoff_T *lp, int dir);
 
 /*
- * Move screen "count" pages up or down and update screen.
+ * Move screen "count" pages up ("dir" is BACKWARD) or down ("dir" is FORWARD)
+ * and update the screen.
  *
  * Return FAIL for failure, OK otherwise.
  */

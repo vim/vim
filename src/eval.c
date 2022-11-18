@@ -1366,7 +1366,6 @@ get_lval(
 	    if (rettv != NULL && lp->ll_dict->dv_scope != 0)
 	    {
 		int prevval;
-		int wrong;
 
 		if (len != -1)
 		{
@@ -1375,7 +1374,7 @@ get_lval(
 		}
 		else
 		    prevval = 0; // avoid compiler warning
-		wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
+		int wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
 			       && (rettv->v_type == VAR_FUNC
 					    || rettv->v_type == VAR_PARTIAL)
 			       && var_wrong_func_name(key, lp->ll_di == NULL))

@@ -1311,9 +1311,8 @@ wait_return(int redraw)
 					|| c == K_X2MOUSE))
 				);
 	ui_breakcheck();
-	/*
-	 * Avoid that the mouse-up event causes visual mode to start.
-	 */
+
+	// Avoid that the mouse-up event causes Visual mode to start.
 	if (c == K_LEFTMOUSE || c == K_MIDDLEMOUSE || c == K_RIGHTMOUSE
 					  || c == K_X1MOUSE || c == K_X2MOUSE)
 	    (void)jump_to_mouse(MOUSE_SETPOS, NULL, 0);

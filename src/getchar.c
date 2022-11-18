@@ -968,18 +968,18 @@ noremap_keys(void)
  * Insert a string in position 'offset' in the typeahead buffer (for "@r"
  * and ":normal" command, vgetorpeek() and check_termcode()).
  *
- * If noremap is REMAP_YES, new string can be mapped again.
- * If noremap is REMAP_NONE, new string cannot be mapped again.
- * If noremap is REMAP_SKIP, first char of new string cannot be mapped again,
+ * If "noremap" is REMAP_YES, new string can be mapped again.
+ * If "noremap" is REMAP_NONE, new string cannot be mapped again.
+ * If "noremap" is REMAP_SKIP, first char of new string cannot be mapped again,
  * but abbreviations are allowed.
- * If noremap is REMAP_SCRIPT, new string cannot be mapped again, except for
+ * If "noremap" is REMAP_SCRIPT, new string cannot be mapped again, except for
  *			script-local mappings.
- * If noremap is > 0, that many characters of the new string cannot be mapped.
+ * If "noremap" is > 0, that many characters of the new string cannot be mapped.
  *
- * If nottyped is TRUE, the string does not return KeyTyped (don't use when
- * offset is non-zero!).
+ * If "nottyped" is TRUE, the string does not return KeyTyped (don't use when
+ * "offset" is non-zero!).
  *
- * If silent is TRUE, cmd_silent is set when the characters are obtained.
+ * If "silent" is TRUE, cmd_silent is set when the characters are obtained.
  *
  * return FAIL for failure, OK otherwise
  */
@@ -1601,8 +1601,8 @@ before_blocking(void)
 }
 
 /*
- * updatescript() is called when a character can be written into the script file
- * or when we have waited some time for a character (c == 0)
+ * updatescript() is called when a character can be written into the script
+ * file or when we have waited some time for a character (c == 0)
  *
  * All the changed memfiles are synced if c == 0 or when the number of typed
  * characters reaches 'updatecount' and 'updatecount' is non-zero.
