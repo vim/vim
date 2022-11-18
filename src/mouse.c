@@ -1109,7 +1109,7 @@ ins_mouse(int c)
 ins_mousescroll(int dir)
 {
     pos_T tpos = curwin->w_cursor;
-    win_T *wp;
+    win_T *wp = NULL;
     linenr_T orig_topline = 0;
     colnr_T orig_leftcol = 0;
     cmdarg_T cap;
