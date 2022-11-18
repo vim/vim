@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2022 Oct 07
+*eval.txt*	For Vim version 9.0.  Last change: 2022 Nov 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3072,6 +3072,10 @@ text...
 :unlo[ckvar][!] [depth] {name} ...		*:unlockvar* *:unlo* *E1246*
 			Unlock the internal variable {name}.  Does the
 			opposite of |:lockvar|.
+
+			If {name} does not exist:
+			- In |Vim9| script an error is given.
+			- In legacy script this is silently ignored.
 
 :if {expr1}			*:if* *:end* *:endif* *:en* *E171* *E579* *E580*
 :en[dif]		Execute the commands until the next matching `:else`

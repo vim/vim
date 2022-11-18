@@ -3042,6 +3042,9 @@ $quote	eval.txt	/*$quote*
 :r!	insert.txt	/*:r!*
 :range	cmdline.txt	/*:range*
 :range!	change.txt	/*:range!*
+:range-closed-fold	cmdline.txt	/*:range-closed-fold*
+:range-offset	cmdline.txt	/*:range-offset*
+:range-pattern	cmdline.txt	/*:range-pattern*
 :re	insert.txt	/*:re*
 :read	insert.txt	/*:read*
 :read!	insert.txt	/*:read!*
@@ -4355,7 +4358,10 @@ E1305	textprop.txt	/*E1305*
 E1306	vim9.txt	/*E1306*
 E1307	vim9.txt	/*E1307*
 E1308	builtin.txt	/*E1308*
+E1309	map.txt	/*E1309*
 E131	userfunc.txt	/*E131*
+E1310	gui.txt	/*E1310*
+E1311	map.txt	/*E1311*
 E132	userfunc.txt	/*E132*
 E133	userfunc.txt	/*E133*
 E134	change.txt	/*E134*
@@ -7512,6 +7518,7 @@ getloclist()	builtin.txt	/*getloclist()*
 getmarklist()	builtin.txt	/*getmarklist()*
 getmatches()	builtin.txt	/*getmatches()*
 getmousepos()	builtin.txt	/*getmousepos()*
+getmouseshape()	builtin.txt	/*getmouseshape()*
 getpid()	builtin.txt	/*getpid()*
 getpos()	builtin.txt	/*getpos()*
 getqflist()	builtin.txt	/*getqflist()*
@@ -7832,6 +7839,7 @@ howto.txt	howto.txt	/*howto.txt*
 hpterm	term.txt	/*hpterm*
 hpterm-color	syntax.txt	/*hpterm-color*
 html-flavor	insert.txt	/*html-flavor*
+html-folding	syntax.txt	/*html-folding*
 html-indent	indent.txt	/*html-indent*
 html-indenting	indent.txt	/*html-indenting*
 html.vim	syntax.txt	/*html.vim*
@@ -10179,6 +10187,7 @@ termdebug_popup	terminal.txt	/*termdebug_popup*
 termdebug_shortcuts	terminal.txt	/*termdebug_shortcuts*
 termdebug_use_prompt	terminal.txt	/*termdebug_use_prompt*
 termdebug_wide	terminal.txt	/*termdebug_wide*
+termdebug_winbar	terminal.txt	/*termdebug_winbar*
 terminal	terminal.txt	/*terminal*
 terminal-api	terminal.txt	/*terminal-api*
 terminal-autoshelldir	terminal.txt	/*terminal-autoshelldir*

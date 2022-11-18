@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Oct 11
+*vim9.txt*	For Vim version 9.0.  Last change: 2022 Nov 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1950,13 +1950,22 @@ For now we'll just make sure classes can be added later.
 Thoughts:
 - `class` / `endclass`, the whole class must be in one file
 - Class names are always CamelCase (to avoid a name clash with builtin types)
-- A single constructor called "constructor"
-- Single inheritance with `class ThisClass extends BaseClass`
-- `abstract class` (class with incomplete implementation)
-- `interface` / `endinterface` (abstract class without any implementation)
-- `class SomeClass implements SomeInterface`
+- A single constructor called "constructor" (similar to TypeScript)
+- Single inheritance: `class ThisClass extends BaseClass`
+- `interface` / `endinterface` (looks like a class without any implementation)
+- Explicit declaration that the class supports an interface, so that type
+  checking works properly:
+  `class SomeClass implements SomeInterface, OtherInterface`
+- `abstract class` (class with incomplete implementation) - not really needed?
+- Class (static) methods and Object methods: syntax to be defined.
+- Class (static) members and Object members: syntax to be defined.
+- Access control: private / protected / shared / public ?  Keep it simple.
+- Access object members with `this.member` ?
 - Generics for class: `class <Tkey, Tentry>`
 - Generics for function: `def <Tkey> GetLast(key: Tkey)`
+- Method overloading (two methods with the same name but different argument
+  types): Most likely not
+- Mixins: not sure if that is useful, leave out for simplicity.
 
 Again, much of this is from TypeScript with a slightly different syntax.
 

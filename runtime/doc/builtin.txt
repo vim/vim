@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2022 Nov 09
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Nov 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

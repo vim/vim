@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2022 Oct 19
+*map.txt*       For Vim version 9.0.  Last change: 2022 Nov 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -583,6 +583,9 @@ is the start of the last selected Visual area in the current buffer |'<|.
 
 The |:filter| command can be used to select what mappings to list.  The
 pattern is matched against the {lhs} and {rhs} in the raw form.
+
+While mappings are being listed, it is not possible to add or clear mappings,
+e.g. from a timer callback. *E1309*
 
 							*:map-verbose*
 When 'verbose' is non-zero, listing a key map will also display where it was
@@ -1476,6 +1479,8 @@ See |:verbose-cmd| for more information.
 
 :delc[ommand] {cmd}				*:delc* *:delcommand* *E184*
 			Delete the user-defined command {cmd}.
+			This is not allowed while listing commands, e.g. from
+			a timer. *E1311*
 
 :delc[ommand] -buffer {cmd}					*E1237*
 			Delete the user-defined command {cmd} that was defined
