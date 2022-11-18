@@ -1108,15 +1108,17 @@ ins_mouse(int c)
     void
 ins_mousescroll(int dir)
 {
-    pos_T   tpos = curwin->w_cursor;
+    pos_T tpos = curwin->w_cursor;
+    win_T *wp;
+    linenr_T orig_topline = 0;
+    colnr_T orig_leftcol = 0;
     cmdarg_T cap;
     CLEAR_FIELD(cap);
-
     oparg_T oa;
     clear_oparg(&oa);
     cap.oap = &oa;
-
     cap.arg = dir;
+
     switch (dir)
     {
 	case MSCR_UP:
@@ -1141,19 +1143,28 @@ ins_mousescroll(int dir)
 	int col = mouse_col;
 
 	// find the window at the pointer coordinates
-	if (curwin == mouse_find_win(&row, &col, FIND_POPUP))
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
+	if (wp != NULL)
 	{
-	    // Don't scroll the window in which completion is being done.
-	    if (pum_visible())
-		return;
-	    else
-		undisplay_dollar();
+	    if (curwin == wp)
+	    {
+		// Don't scroll the window in which completion is being done.
+		if (pum_visible())
+		    return;
+		else
+		    undisplay_dollar();
+	    }
+	    orig_topline = wp->w_topline;
+	    orig_leftcol = wp->w_leftcol;
 	}
     }
 
     nv_mousescroll(&cap);
 
-    if (has_winscrolled())
+    // If the window actually scrolled
+    if (wp != NULL
+        && (orig_topline != wp->w_topline 
+        || orig_leftcol != wp->w_leftcol))
     {
 	// The popup menu may overlay the window, need to redraw it.
 	// TODO: Would be more efficient to only redraw the windows that are
