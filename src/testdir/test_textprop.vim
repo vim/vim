@@ -3393,6 +3393,42 @@ func Test_text_after_nowrap()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_text_after_nowrap_list()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+
+      set nowrap
+      set listchars+=extends:>
+      set list
+      setline(1, ['some text here', '', 'last line'])
+
+      prop_type_add('test', {highlight: 'DiffChange'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'The quick brown fox jumps.',
+          text_padding_left: 2,
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: '■ The fox jumps over the lazy dog.',
+          text_padding_left: 2,
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: '■ The lazy dog.',
+          text_padding_left: 2,
+      })
+      normal 3G$
+  END
+  call writefile(lines, 'XTextAfterNowrapList', 'D')
+  let buf = RunVimInTerminal('-S XTextAfterNowrapList', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_text_after_nowrap_list_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_text_below_nowrap()
   CheckRunVimInTerminal
 
