@@ -319,10 +319,10 @@ def DoTerm(name: string)
     ch_logfile('keylog-ignore', 'a')
     while 1
       sleep 100m
-      if !getchar(1)
+      if getchar(1) == 0
 	break
       endif
-      while getchar(1)
+      while getchar(1) != 0
 	getchar()
       endwhile
     endwhile

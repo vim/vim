@@ -14,7 +14,7 @@ int vterm_is_modify_other_keys(VTerm *vt)
 void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
 {
   // VIM: added modifyOtherKeys support
-  if (vt->state->mode.modify_other_keys && mod != 0) {
+  if (vterm_is_modify_other_keys(vt) && mod != 0) {
     vterm_push_output_sprintf_ctrl(vt, C1_CSI, "27;%d;%d~", mod+1, c);
     return;
   }
@@ -184,7 +184,9 @@ void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
     break;
 
   case KEYCODE_LITERAL: case_LITERAL:
-    if(mod & (VTERM_MOD_SHIFT|VTERM_MOD_CTRL))
+    if (vterm_is_modify_other_keys(vt) && mod != 0)
+      vterm_push_output_sprintf_ctrl(vt, C1_CSI, "27;%d;%d~", mod+1, k.literal);
+    else if(mod & (VTERM_MOD_SHIFT|VTERM_MOD_CTRL))
       vterm_push_output_sprintf_ctrl(vt, C1_CSI, "%d;%du", k.literal, mod+1);
     else
       vterm_push_output_sprintf(vt, mod & VTERM_MOD_ALT ? ESC_S "%c" : "%c", k.literal);

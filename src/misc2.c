@@ -1516,7 +1516,8 @@ find_special_key(
  * CTRL-2 is CTRL-@
  * CTRL-6 is CTRL-^
  * CTRL-- is CTRL-_
- * Also, <C-H> and <C-h> mean the same thing, always use "H".
+ * Also, unless no_reduce_keys is set then <C-H> and <C-h> mean the same thing,
+ * use "H".
  * Returns the possibly adjusted key.
  */
     int
@@ -1525,7 +1526,12 @@ may_adjust_key_for_ctrl(int modifiers, int key)
     if (modifiers & MOD_MASK_CTRL)
     {
 	if (ASCII_ISALPHA(key))
-	    return TOUPPER_ASC(key);
+	{
+#ifdef FEAT_TERMINAL
+	    check_no_reduce_keys();  // may update the no_reduce_keys flag
+#endif
+	    return no_reduce_keys == 0 ? TOUPPER_ASC(key) : key;
+	}
 	if (key == '2')
 	    return '@';
 	if (key == '6')

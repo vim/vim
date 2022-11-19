@@ -2168,6 +2168,38 @@ term_enter_job_mode()
 }
 
 /*
+ * When "modify_other_keys" is set then vgetc() should not reduce a key with
+ * modifiers into a basic key.  However, we may only find out after calling
+ * vgetc().  Therefore vgetorpeek() will call check_no_reduce_keys() to update
+ * "no_reduce_keys" before using it.
+ */
+typedef enum {
+    NRKS_NONE,	    // initial value
+    NRKS_CHECK,	    // modify_other_keys was off before calling vgetc()
+    NRKS_SET,	    // no_reduce_keys was incremented in term_vgetc() or
+		    // check_no_reduce_keys(), must be decremented.
+} reduce_key_state_T;
+
+static reduce_key_state_T  no_reduce_key_state = NRKS_NONE;
+
+    void
+check_no_reduce_keys(void)
+{
+    if (no_reduce_key_state != NRKS_CHECK
+	    || no_reduce_keys >= 1
+	    || curbuf->b_term == NULL
+	    || curbuf->b_term->tl_vterm == NULL)
+	return;
+
+    if (vterm_is_modify_other_keys(curbuf->b_term->tl_vterm))
+    {
+	// "modify_other_keys" was enabled while waiting.
+	no_reduce_key_state = NRKS_SET;
+	++no_reduce_keys;
+    }
+}
+
+/*
  * Get a key from the user with terminal mode mappings.
  * Note: while waiting a terminal may be closed and freed if the channel is
  * closed and ++close was used.  This may even happen before we get here.
@@ -2177,21 +2209,32 @@ term_vgetc()
 {
     int c;
     int save_State = State;
-    int modify_other_keys = curbuf->b_term->tl_vterm == NULL ? FALSE
-			: vterm_is_modify_other_keys(curbuf->b_term->tl_vterm);
 
     State = MODE_TERMINAL;
     got_int = FALSE;
 #ifdef MSWIN
     ctrl_break_was_pressed = FALSE;
 #endif
-    if (modify_other_keys)
+
+    if (curbuf->b_term->tl_vterm != NULL
+		       && vterm_is_modify_other_keys(curbuf->b_term->tl_vterm))
+    {
 	++no_reduce_keys;
+	no_reduce_key_state = NRKS_SET;
+    }
+    else
+    {
+	no_reduce_key_state = NRKS_CHECK;
+    }
+
     c = vgetc();
     got_int = FALSE;
     State = save_State;
-    if (modify_other_keys)
+
+    if (no_reduce_key_state == NRKS_SET)
 	--no_reduce_keys;
+    no_reduce_key_state = NRKS_NONE;
+
     return c;
 }
 

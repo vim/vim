@@ -2778,6 +2778,9 @@ handle_mapping(
 
 	    // If no termcode matched, try to include the modifier into the
 	    // key.  This is for when modifyOtherKeys is working.
+#ifdef FEAT_TERMINAL
+	    check_no_reduce_keys();  // may update the no_reduce_keys flag
+#endif
 	    if (keylen == 0 && !no_reduce_keys)
 	    {
 		keylen = check_simplify_modifier(max_mlen + 1);
@@ -3919,9 +3922,9 @@ getcmdkeycmd(
 	{
 	    // CTRL-V is followed by octal, hex or other characters, reverses
 	    // what AppendToRedobuffLit() does.
-	    no_reduce_keys = TRUE;  //  don't merge modifyOtherKeys
+	    ++no_reduce_keys;  //  don't merge modifyOtherKeys
 	    c1 = get_literal(TRUE);
-	    no_reduce_keys = FALSE;
+	    --no_reduce_keys;
 	}
 
 	if (got_int)
