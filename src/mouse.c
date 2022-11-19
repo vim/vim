@@ -1102,6 +1102,77 @@ ins_mouse(int c)
 }
 
 /*
+ * Common mouse wheel scrolling, shared between Insert mode and NV modes.
+ * Default action is to scroll mouse_vert_step lines (or mouse_hor_step columns
+ * depending on the scroll direction) or one page when Shift or Ctrl is used.
+ * Direction is indicated by "cap->arg":
+ *    K_MOUSEUP    - MSCR_UP
+ *    K_MOUSEDOWN  - MSCR_DOWN
+ *    K_MOUSELEFT  - MSCR_LEFT
+ *    K_MOUSERIGHT - MSCR_RIGHT
+ */
+    void
+do_mousescroll(cmdarg_T *cap)
+{
+    int shift_or_ctrl = mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL);
+
+#ifdef FEAT_TERMINAL
+    if (term_use_loop())
+	// This window is a terminal window, send the mouse event there.
+	// Set "typed" to FALSE to avoid an endless loop.
+	send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
+    else
+#endif
+    if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
+    {
+	// Vertical scrolling
+	if (!(State & MODE_INSERT) && (mouse_vert_step < 0 || shift_or_ctrl))
+	{
+	    // whole page up or down
+	    onepage(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L);
+	}
+	else
+	{
+	    if (mouse_vert_step < 0 || shift_or_ctrl)
+	    {
+		// whole page up or down
+		cap->count1 = (long)(curwin->w_botline - curwin->w_topline);
+	    }
+	    // Don't scroll more than half the window height.
+	    else if (curwin->w_height < mouse_vert_step * 2)
+	    {
+		cap->count1 = curwin->w_height / 2;
+		if (cap->count1 == 0)
+		    cap->count1 = 1;
+	    }
+	    else
+	    {
+		cap->count1 = mouse_vert_step;
+	    }
+	    cap->count0 = cap->count1;
+	    nv_scroll_line(cap);
+	}
+
+#ifdef FEAT_PROP_POPUP
+	if (WIN_IS_POPUP(curwin))
+	    popup_set_firstline(curwin);
+#endif
+    }
+    else
+    {
+	// Horizontal scrolling
+	long step = (mouse_hor_step < 0 || shift_or_ctrl)
+					    ? curwin->w_width : mouse_hor_step;
+	long leftcol = curwin->w_leftcol
+				     + (cap->arg == MSCR_RIGHT ? -step : step);
+	if (leftcol < 0)
+	    leftcol = 0;
+	do_mousescroll_horiz((long_u)leftcol);
+    }
+    may_trigger_winscrolled();
+}
+
+/*
  * Insert mode implementation for scrolling in direction "dir", which is
  * one of the MSCR_ values.
  */
@@ -2101,77 +2172,6 @@ do_mousescroll_horiz(long_u leftcol)
     }
 
     return set_leftcol((colnr_T)leftcol);
-}
-
-/*
- * Common mouse wheel scrolling, shared between Insert mode and NV modes.
- * Default action is to scroll mouse_vert_step lines (or mouse_hor_step columns
- * depending on the scroll direction) or one page when Shift or Ctrl is used.
- * Direction is indicated by "cap->arg":
- *    K_MOUSEUP    - MSCR_UP
- *    K_MOUSEDOWN  - MSCR_DOWN
- *    K_MOUSELEFT  - MSCR_LEFT
- *    K_MOUSERIGHT - MSCR_RIGHT
- */
-    void
-do_mousescroll(cmdarg_T *cap)
-{
-    int shift_or_ctrl = mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL);
-
-#ifdef FEAT_TERMINAL
-    if (term_use_loop())
-	// This window is a terminal window, send the mouse event there.
-	// Set "typed" to FALSE to avoid an endless loop.
-	send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
-    else
-#endif
-    if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
-    {
-	// Vertical scrolling
-	if (!(State & MODE_INSERT) && (mouse_vert_step < 0 || shift_or_ctrl))
-	{
-	    // whole page up or down
-	    onepage(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L);
-	}
-	else
-	{
-	    if (mouse_vert_step < 0 || shift_or_ctrl)
-	    {
-		// whole page up or down
-		cap->count1 = (long)(curwin->w_botline - curwin->w_topline);
-	    }
-	    // Don't scroll more than half the window height.
-	    else if (curwin->w_height < mouse_vert_step * 2)
-	    {
-		cap->count1 = curwin->w_height / 2;
-		if (cap->count1 == 0)
-		    cap->count1 = 1;
-	    }
-	    else
-	    {
-		cap->count1 = mouse_vert_step;
-	    }
-	    cap->count0 = cap->count1;
-	    nv_scroll_line(cap);
-	}
-
-#ifdef FEAT_PROP_POPUP
-	if (WIN_IS_POPUP(curwin))
-	    popup_set_firstline(curwin);
-#endif
-    }
-    else
-    {
-	// Horizontal scrolling
-	long step = (mouse_hor_step < 0 || shift_or_ctrl)
-					    ? curwin->w_width : mouse_hor_step;
-	long leftcol = curwin->w_leftcol
-				     + (cap->arg == MSCR_RIGHT ? -step : step);
-	if (leftcol < 0)
-	    leftcol = 0;
-	do_mousescroll_horiz((long_u)leftcol);
-    }
-    may_trigger_winscrolled();
 }
 
 /*
