@@ -3341,3 +3341,5 @@ EXTERN char e_cannot_change_menus_while_listing[]
 #endif
 EXTERN char e_cannot_change_user_commands_while_listing[]
 	INIT(= N_("E1311: Cannot change user commands while listing"));
+EXTERN char e_not_allowed_to_change_window_layout_in_this_autocmd[]
+	INIT(= N_("E1312: Not allowed to change the window layout in this autocmd"));
