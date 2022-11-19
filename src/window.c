@@ -111,13 +111,15 @@ window_layout_unlock(void)
 
 /*
  * When the window layout cannot be changed give an error and return TRUE.
+ * "cmd" indicates the action being performed and is used to pick the relevant
+ * error message.
  */
     int
-window_layout_locked(void)
+window_layout_locked(enum CMD_index cmd)
 {
     if (split_disallowed > 0 || close_disallowed > 0)
     {
-	if (close_disallowed == 0)
+	if (close_disallowed == 0 && cmd == CMD_tabnew)
 	    emsg(_(e_cannot_split_window_when_closing_buffer));
 	else
 	    emsg(_(e_not_allowed_to_change_window_layout_in_this_autocmd));
@@ -2573,7 +2575,7 @@ win_close(win_T *win, int free_buf)
 	emsg(_(e_cannot_close_last_window));
 	return FAIL;
     }
-    if (window_layout_locked())
+    if (window_layout_locked(CMD_close))
 	return FAIL;
 
     if (win->w_closing || (win->w_buffer != NULL
@@ -4062,7 +4064,7 @@ win_new_tabpage(int after)
 	emsg(_(e_invalid_in_cmdline_window));
 	return FAIL;
     }
-    if (window_layout_locked())
+    if (window_layout_locked(CMD_tabnew))
 	return FAIL;
 
     newtp = alloc_tabpage();

@@ -6055,7 +6055,7 @@ ex_win_close(
 	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return;
     }
-    if (window_layout_locked())
+    if (window_layout_locked(CMD_close))
 	return;
 
     need_hide = (bufIsChanged(buf) && buf->b_nwindows <= 1);
@@ -6229,7 +6229,7 @@ ex_tabclose(exarg_T *eap)
 	cmdwin_result = K_IGNORE;
     else if (first_tabpage->tp_next == NULL)
 	emsg(_(e_cannot_close_last_tab_page));
-    else if (!window_layout_locked())
+    else if (!window_layout_locked(CMD_tabclose))
     {
 	tab_number = get_tabpage_arg(eap);
 	if (eap->errmsg == NULL)
@@ -6265,7 +6265,7 @@ ex_tabonly(exarg_T *eap)
 	cmdwin_result = K_IGNORE;
     else if (first_tabpage->tp_next == NULL)
 	msg(_("Already only one tab page"));
-    else if (!window_layout_locked())
+    else if (!window_layout_locked(CMD_tabonly))
     {
 	tab_number = get_tabpage_arg(eap);
 	if (eap->errmsg == NULL)
@@ -6298,7 +6298,7 @@ ex_tabonly(exarg_T *eap)
     void
 tabpage_close(int forceit)
 {
-    if (window_layout_locked())
+    if (window_layout_locked(CMD_tabclose))
 	return;
 
     // First close all the windows but the current one.  If that worked then
@@ -6346,7 +6346,7 @@ tabpage_close_other(tabpage_T *tp, int forceit)
     static void
 ex_only(exarg_T *eap)
 {
-    if (window_layout_locked())
+    if (window_layout_locked(CMD_only))
 	return;
 # ifdef FEAT_GUI
     need_mouse_correct = TRUE;
@@ -6373,7 +6373,7 @@ ex_hide(exarg_T *eap UNUSED)
     // ":hide" or ":hide | cmd": hide current window
     if (!eap->skip)
     {
-	if (window_layout_locked())
+	if (window_layout_locked(CMD_hide))
 	    return;
 #ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
