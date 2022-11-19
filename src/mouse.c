@@ -1208,14 +1208,15 @@ ins_mousescroll(int dir)
     if (mouse_row >= 0 && mouse_col >= 0)
     {
 	// Find the window at the mouse pointer coordinates.
+	// NOTE: Must restore "curwin" to "old_curwin" before returning!
 	int row = mouse_row;
 	int col = mouse_col;
-	win_T *wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp == NULL)
+	curwin = mouse_find_win(&row, &col, FIND_POPUP);
+	if (curwin == NULL)
+	{
+	    curwin = old_curwin;
 	    return;
-
-	// NOTE: Must restore "curwin" to "old_curwin" before returning!
-	curwin = wp;
+	}
 	curbuf = curwin->w_buffer;
     }
 
@@ -2186,19 +2187,22 @@ nv_mousescroll(cmdarg_T *cap)
     if (mouse_row >= 0 && mouse_col >= 0)
     {
 	// Find the window at the mouse pointer coordinates.
+	// NOTE: Must restore "curwin" to "old_curwin" before returning!
 	int row = mouse_row;
 	int col = mouse_col;
-	win_T *wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp == NULL)
+	curwin = mouse_find_win(&row, &col, FIND_POPUP);
+	if (curwin == NULL)
+	{
+	    curwin = old_curwin;
 	    return;
+	}
+	curbuf = curwin->w_buffer;
+
 #ifdef FEAT_PROP_POPUP
-	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
+	if (WIN_IS_POPUP(curwin) && !curwin->w_has_scrollbar)
 	    // cannot scroll this popup window
 	    return;
 #endif
-	// NOTE: Must restore "curwin" to "old_curwin" before returning!
-	curwin = wp;
-	curbuf = curwin->w_buffer;
     }
 
     // Call the common mouse scroll function shared with other modes.
