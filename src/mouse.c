@@ -1102,8 +1102,8 @@ ins_mouse(int c)
 }
 
 /*
- * Implementation for scrolling in Insert mode in direction "dir", which is one
- * of the MSCR_ values.
+ * Insert mode implementation for scrolling in direction "dir", which is
+ * one of the MSCR_ values.
  */
     void
 ins_mousescroll(int dir)
@@ -1157,8 +1157,8 @@ ins_mousescroll(int dir)
     colnr_T	orig_leftcol = wp->w_leftcol;
     pos_T	orig_cursor = curwin->w_cursor;
 
-    // The scrolling works almost the same way as in Normal mode.
-    nv_mousescroll(&cap);
+    // Call the common mouse scroll function shared with other modes.
+    do_mousescroll(&cap);
 
     // If the window actually scrolled and the popup menu may overlay the
     // window, need to redraw it.
@@ -2094,9 +2094,9 @@ do_mousescroll_horiz(long_u leftcol)
 }
 
 /*
- * Mouse scroll wheel: Default action is to scroll mouse_vert_step lines (or
- * mouse_hor_step, depending on the scroll direction), or one page when Shift
- * or Ctrl is used.
+ * Common mouse wheel scrolling, shared between Insert mode and NV modes.
+ * Default action is to scroll mouse_vert_step lines (or mouse_hor_step columns
+ * depending on the scroll direction) or one page when Shift or Ctrl is used.
  * Direction is indicated by "cap->arg":
  *    K_MOUSEUP    - MSCR_UP
  *    K_MOUSEDOWN  - MSCR_DOWN
@@ -2104,28 +2104,8 @@ do_mousescroll_horiz(long_u leftcol)
  *    K_MOUSERIGHT - MSCR_RIGHT
  */
     void
-nv_mousescroll(cmdarg_T *cap)
+do_mousescroll(cmdarg_T *cap)
 {
-    win_T   *old_curwin = curwin;
-
-    if (mouse_row >= 0 && mouse_col >= 0)
-    {
-	// Find the window at the mouse pointer coordinates.
-	int row = mouse_row;
-	int col = mouse_col;
-	win_T *wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp == NULL)
-	    return;
-#ifdef FEAT_PROP_POPUP
-	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
-	    // cannot scroll this popup window
-	    return;
-#endif
-	// NOTE: Must restore "curwin" to "old_curwin" before returning!
-	curwin = wp;
-	curbuf = curwin->w_buffer;
-    }
-
     int shift_or_ctrl = mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL);
 
 #ifdef FEAT_TERMINAL
@@ -2181,6 +2161,37 @@ nv_mousescroll(cmdarg_T *cap)
 	    leftcol = 0;
 	do_mousescroll_horiz((long_u)leftcol);
     }
+}
+
+/*
+ * Normal and Visual modes implementation for scrolling in direction
+ * "cap->arg", which is one of the MSCR_ values.
+ */
+    void
+nv_mousescroll(cmdarg_T *cap)
+{
+    win_T   *old_curwin = curwin;
+
+    if (mouse_row >= 0 && mouse_col >= 0)
+    {
+	// Find the window at the mouse pointer coordinates.
+	int row = mouse_row;
+	int col = mouse_col;
+	win_T *wp = mouse_find_win(&row, &col, FIND_POPUP);
+	if (wp == NULL)
+	    return;
+#ifdef FEAT_PROP_POPUP
+	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
+	    // cannot scroll this popup window
+	    return;
+#endif
+	// NOTE: Must restore "curwin" to "old_curwin" before returning!
+	curwin = wp;
+	curbuf = curwin->w_buffer;
+    }
+
+    // Call the common mouse scroll function shared with other modes.
+    do_mousescroll(cap);
 
 #ifdef FEAT_SYN_HL
     if (curwin != old_curwin && curwin->w_p_cul)
