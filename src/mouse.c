@@ -2161,6 +2161,7 @@ do_mousescroll(cmdarg_T *cap)
 	    leftcol = 0;
 	do_mousescroll_horiz((long_u)leftcol);
     }
+    may_trigger_winscrolled();
 }
 
 /*
@@ -2197,10 +2198,7 @@ nv_mousescroll(cmdarg_T *cap)
     if (curwin != old_curwin && curwin->w_p_cul)
 	redraw_for_cursorline(curwin);
 #endif
-    may_trigger_winscrolled();
-
     curwin->w_redr_status = TRUE;
-
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
 }
