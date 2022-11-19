@@ -2200,8 +2200,12 @@ nv_mousescroll(cmdarg_T *cap)
 
 #ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(curwin) && !curwin->w_has_scrollbar)
+	{
 	    // cannot scroll this popup window
+	    curwin = old_curwin;
 	    return;
+	}
+	    
 #endif
     }
 
