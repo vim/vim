@@ -1133,18 +1133,22 @@ ins_mousescroll(int dir)
 	    siemsg("Invalid ins_mousescroll() argument: %d", dir);
     }
 
-    win_T *wp = curwin;
+    win_T *old_curwin = curwin;
     if (mouse_row >= 0 && mouse_col >= 0)
     {
 	// Find the window at the mouse pointer coordinates.
 	int row = mouse_row;
 	int col = mouse_col;
-	wp = mouse_find_win(&row, &col, FIND_POPUP);
+	win_T *wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
+
+	// NOTE: Must restore "curwin" to "old_curwin" before returning!
+	curwin = wp;
+	curbuf = curwin->w_buffer;
     }
 
-    if (wp == curwin)
+    if (curwin == old_curwin)
     {
 	// Don't scroll the current window if the popup menu is visible.
 	if (pum_visible())
@@ -1153,17 +1157,23 @@ ins_mousescroll(int dir)
 	undisplay_dollar();
     }
 
-    linenr_T	orig_topline = wp->w_topline;
-    colnr_T	orig_leftcol = wp->w_leftcol;
+    linenr_T	orig_topline = curwin->w_topline;
+    colnr_T	orig_leftcol = curwin->w_leftcol;
     pos_T	orig_cursor = curwin->w_cursor;
 
     // Call the common mouse scroll function shared with other modes.
     do_mousescroll(&cap);
 
+    int did_scroll = (orig_topline != curwin->w_topline 
+		    || orig_leftcol != curwin->w_leftcol);
+
+    curwin->w_redr_status = TRUE;
+    curwin = old_curwin;
+    curbuf = curwin->w_buffer;
+
     // If the window actually scrolled and the popup menu may overlay the
     // window, need to redraw it.
-    if ((orig_topline != wp->w_topline || orig_leftcol != wp->w_leftcol)
-	    && pum_visible())
+    if (did_scroll && pum_visible())
     {
 	// TODO: Would be more efficient to only redraw the windows that are
 	// overlapped by the popup menu.
