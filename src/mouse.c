@@ -1102,8 +1102,81 @@ ins_mouse(int c)
 }
 
 /*
- * Implementation for scrolling in Insert mode in direction "dir", which is one
- * of the MSCR_ values.
+ * Common mouse wheel scrolling, shared between Insert mode and NV modes.
+ * Default action is to scroll mouse_vert_step lines (or mouse_hor_step columns
+ * depending on the scroll direction) or one page when Shift or Ctrl is used.
+ * Direction is indicated by "cap->arg":
+ *    K_MOUSEUP    - MSCR_UP
+ *    K_MOUSEDOWN  - MSCR_DOWN
+ *    K_MOUSELEFT  - MSCR_LEFT
+ *    K_MOUSERIGHT - MSCR_RIGHT
+ * "curwin" may have been changed to the window that should be scrolled and
+ * differ from the window that actually has focus.
+ */
+    static void
+do_mousescroll(cmdarg_T *cap)
+{
+    int shift_or_ctrl = mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL);
+
+#ifdef FEAT_TERMINAL
+    if (term_use_loop())
+	// This window is a terminal window, send the mouse event there.
+	// Set "typed" to FALSE to avoid an endless loop.
+	send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
+    else
+#endif
+    if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
+    {
+	// Vertical scrolling
+	if (!(State & MODE_INSERT) && (mouse_vert_step < 0 || shift_or_ctrl))
+	{
+	    // whole page up or down
+	    onepage(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L);
+	}
+	else
+	{
+	    if (mouse_vert_step < 0 || shift_or_ctrl)
+	    {
+		// whole page up or down
+		cap->count1 = (long)(curwin->w_botline - curwin->w_topline);
+	    }
+	    // Don't scroll more than half the window height.
+	    else if (curwin->w_height < mouse_vert_step * 2)
+	    {
+		cap->count1 = curwin->w_height / 2;
+		if (cap->count1 == 0)
+		    cap->count1 = 1;
+	    }
+	    else
+	    {
+		cap->count1 = mouse_vert_step;
+	    }
+	    cap->count0 = cap->count1;
+	    nv_scroll_line(cap);
+	}
+
+#ifdef FEAT_PROP_POPUP
+	if (WIN_IS_POPUP(curwin))
+	    popup_set_firstline(curwin);
+#endif
+    }
+    else
+    {
+	// Horizontal scrolling
+	long step = (mouse_hor_step < 0 || shift_or_ctrl)
+					    ? curwin->w_width : mouse_hor_step;
+	long leftcol = curwin->w_leftcol
+				     + (cap->arg == MSCR_RIGHT ? -step : step);
+	if (leftcol < 0)
+	    leftcol = 0;
+	do_mousescroll_horiz((long_u)leftcol);
+    }
+    may_trigger_winscrolled();
+}
+
+/*
+ * Insert mode implementation for scrolling in direction "dir", which is
+ * one of the MSCR_ values.
  */
     void
 ins_mousescroll(int dir)
@@ -1133,18 +1206,23 @@ ins_mousescroll(int dir)
 	    siemsg("Invalid ins_mousescroll() argument: %d", dir);
     }
 
-    win_T *wp = curwin;
+    win_T *old_curwin = curwin;
     if (mouse_row >= 0 && mouse_col >= 0)
     {
 	// Find the window at the mouse pointer coordinates.
+	// NOTE: Must restore "curwin" to "old_curwin" before returning!
 	int row = mouse_row;
 	int col = mouse_col;
-	wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp == NULL)
+	curwin = mouse_find_win(&row, &col, FIND_POPUP);
+	if (curwin == NULL)
+	{
+	    curwin = old_curwin;
 	    return;
+	}
+	curbuf = curwin->w_buffer;
     }
 
-    if (wp == curwin)
+    if (curwin == old_curwin)
     {
 	// Don't scroll the current window if the popup menu is visible.
 	if (pum_visible())
@@ -1153,17 +1231,23 @@ ins_mousescroll(int dir)
 	undisplay_dollar();
     }
 
-    linenr_T	orig_topline = wp->w_topline;
-    colnr_T	orig_leftcol = wp->w_leftcol;
+    linenr_T	orig_topline = curwin->w_topline;
+    colnr_T	orig_leftcol = curwin->w_leftcol;
     pos_T	orig_cursor = curwin->w_cursor;
 
-    // The scrolling works almost the same way as in Normal mode.
-    nv_mousescroll(&cap);
+    // Call the common mouse scroll function shared with other modes.
+    do_mousescroll(&cap);
+
+    int did_scroll = (orig_topline != curwin->w_topline
+		   || orig_leftcol != curwin->w_leftcol);
+
+    curwin->w_redr_status = TRUE;
+    curwin = old_curwin;
+    curbuf = curwin->w_buffer;
 
     // If the window actually scrolled and the popup menu may overlay the
     // window, need to redraw it.
-    if ((orig_topline != wp->w_topline || orig_leftcol != wp->w_leftcol)
-	    && pum_visible())
+    if (did_scroll && pum_visible())
     {
 	// TODO: Would be more efficient to only redraw the windows that are
 	// overlapped by the popup menu.
@@ -2094,14 +2178,8 @@ do_mousescroll_horiz(long_u leftcol)
 }
 
 /*
- * Mouse scroll wheel: Default action is to scroll mouse_vert_step lines (or
- * mouse_hor_step, depending on the scroll direction), or one page when Shift
- * or Ctrl is used.
- * Direction is indicated by "cap->arg":
- *    K_MOUSEUP    - MSCR_UP
- *    K_MOUSEDOWN  - MSCR_DOWN
- *    K_MOUSELEFT  - MSCR_LEFT
- *    K_MOUSERIGHT - MSCR_RIGHT
+ * Normal and Visual modes implementation for scrolling in direction
+ * "cap->arg", which is one of the MSCR_ values.
  */
     void
 nv_mousescroll(cmdarg_T *cap)
@@ -2111,85 +2189,35 @@ nv_mousescroll(cmdarg_T *cap)
     if (mouse_row >= 0 && mouse_col >= 0)
     {
 	// Find the window at the mouse pointer coordinates.
+	// NOTE: Must restore "curwin" to "old_curwin" before returning!
 	int row = mouse_row;
 	int col = mouse_col;
-	win_T *wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp == NULL)
+	curwin = mouse_find_win(&row, &col, FIND_POPUP);
+	if (curwin == NULL)
+	{
+	    curwin = old_curwin;
 	    return;
+	}
+
 #ifdef FEAT_PROP_POPUP
-	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
+	if (WIN_IS_POPUP(curwin) && !curwin->w_has_scrollbar)
+	{
 	    // cannot scroll this popup window
+	    curwin = old_curwin;
 	    return;
+	}
 #endif
-	// NOTE: Must restore "curwin" to "old_curwin" before returning!
-	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
 
-    int shift_or_ctrl = mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL);
-
-#ifdef FEAT_TERMINAL
-    if (term_use_loop())
-	// This window is a terminal window, send the mouse event there.
-	// Set "typed" to FALSE to avoid an endless loop.
-	send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
-    else
-#endif
-    if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
-    {
-	// Vertical scrolling
-	if (!(State & MODE_INSERT) && (mouse_vert_step < 0 || shift_or_ctrl))
-	{
-	    // whole page up or down
-	    onepage(cap->arg == MSCR_UP ? FORWARD : BACKWARD, 1L);
-	}
-	else
-	{
-	    if (mouse_vert_step < 0 || shift_or_ctrl)
-	    {
-		// whole page up or down
-		cap->count1 = (long)(curwin->w_botline - curwin->w_topline);
-	    }
-	    // Don't scroll more than half the window height.
-	    else if (curwin->w_height < mouse_vert_step * 2)
-	    {
-		cap->count1 = curwin->w_height / 2;
-		if (cap->count1 == 0)
-		    cap->count1 = 1;
-	    }
-	    else
-	    {
-		cap->count1 = mouse_vert_step;
-	    }
-	    cap->count0 = cap->count1;
-	    nv_scroll_line(cap);
-	}
-
-#ifdef FEAT_PROP_POPUP
-	if (WIN_IS_POPUP(curwin))
-	    popup_set_firstline(curwin);
-#endif
-    }
-    else
-    {
-	// Horizontal scrolling
-	long step = (mouse_hor_step < 0 || shift_or_ctrl)
-					    ? curwin->w_width : mouse_hor_step;
-	long leftcol = curwin->w_leftcol
-				     + (cap->arg == MSCR_RIGHT ? -step : step);
-	if (leftcol < 0)
-	    leftcol = 0;
-	do_mousescroll_horiz((long_u)leftcol);
-    }
+    // Call the common mouse scroll function shared with other modes.
+    do_mousescroll(cap);
 
 #ifdef FEAT_SYN_HL
     if (curwin != old_curwin && curwin->w_p_cul)
 	redraw_for_cursorline(curwin);
 #endif
-    may_trigger_winscrolled();
-
     curwin->w_redr_status = TRUE;
-
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
 }
