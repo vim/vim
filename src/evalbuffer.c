@@ -137,14 +137,15 @@ set_buffer_lines(
     listitem_T	*li = NULL;
     long	added = 0;
     linenr_T	append_lnum;
-    buf_T	*curbuf_save = NULL;
     win_T	*curwin_save = NULL;
-    int		is_curbuf = buf == curbuf;
+    aco_save_T	aco;
+    int		using_aco = FALSE;
     int		save_VIsual_active = VIsual_active;
 
     // When using the current buffer ml_mfp will be set if needed.  Useful when
     // setline() is used on startup.  For other buffers the buffer must be
     // loaded.
+    int is_curbuf = buf == curbuf;
     if (buf == NULL || (!is_curbuf && buf->b_ml.ml_mfp == NULL) || lnum < 1)
     {
 	rettv->vval.v_number = 1;	// FAIL
@@ -155,11 +156,21 @@ set_buffer_lines(
 
     if (!is_curbuf)
     {
+	// Set "curbuf" to the buffer being changed.  Then make sure there is a
+	// window for it to handle any side effects.
 	VIsual_active = FALSE;
-	curbuf_save = curbuf;
 	curwin_save = curwin;
 	curbuf = buf;
-	find_win_for_curbuf();
+	find_win_for_curbuf();  // simplest: find existing window for "buf"
+
+	if (curwin->w_buffer != buf)
+	{
+	    // No existing window for this buffer.  It is dangerous to have
+	    // curwin->w_buffer differ from "curbuf", use the autocmd window.
+	    curbuf = curwin->w_buffer;
+	    aucmd_prepbuf(&aco, buf);
+	    using_aco = TRUE;
+	}
     }
 
     if (append)
@@ -262,8 +273,15 @@ set_buffer_lines(
 done:
     if (!is_curbuf)
     {
-	curbuf = curbuf_save;
-	curwin = curwin_save;
+	if (using_aco)
+	{
+	    aucmd_restbuf(&aco);
+	}
+	else
+	{
+	    curwin = curwin_save;
+	    curbuf = curwin->w_buffer;
+	}
 	VIsual_active = save_VIsual_active;
     }
 }
