@@ -1133,7 +1133,6 @@ op_yank(oparg_T *oap, int deleting, int mess)
     int			yanktype = oap->motion_type;
     long		yanklines = oap->line_count;
     linenr_T		yankendlnum = oap->end.lnum;
-    char_u		*p;
     char_u		*pnew;
     struct block_def	bd;
 #if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
@@ -1225,70 +1224,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 	    case MCHAR:
 		{
-		    colnr_T startcol = 0, endcol = MAXCOL;
-		    int	    is_oneChar = FALSE;
-		    colnr_T cs, ce;
-
-		    p = ml_get(lnum);
-		    bd.startspaces = 0;
-		    bd.endspaces = 0;
-
-		    if (lnum == oap->start.lnum)
-		    {
-			startcol = oap->start.col;
-			if (virtual_op)
-			{
-			    getvcol(curwin, &oap->start, &cs, NULL, &ce);
-			    if (ce != cs && oap->start.coladd > 0)
-			    {
-				// Part of a tab selected -- but don't
-				// double-count it.
-				bd.startspaces = (ce - cs + 1)
-							  - oap->start.coladd;
-				startcol++;
-			    }
-			}
-		    }
-
-		    if (lnum == oap->end.lnum)
-		    {
-			endcol = oap->end.col;
-			if (virtual_op)
-			{
-			    getvcol(curwin, &oap->end, &cs, NULL, &ce);
-			    if (p[endcol] == NUL || (cs + oap->end.coladd < ce
-					// Don't add space for double-wide
-					// char; endcol will be on last byte
-					// of multi-byte char.
-					&& (*mb_head_off)(p, p + endcol) == 0))
-			    {
-				if (oap->start.lnum == oap->end.lnum
-					    && oap->start.col == oap->end.col)
-				{
-				    // Special case: inside a single char
-				    is_oneChar = TRUE;
-				    bd.startspaces = oap->end.coladd
-					 - oap->start.coladd + oap->inclusive;
-				    endcol = startcol;
-				}
-				else
-				{
-				    bd.endspaces = oap->end.coladd
-							     + oap->inclusive;
-				    endcol -= oap->inclusive;
-				}
-			    }
-			}
-		    }
-		    if (endcol == MAXCOL) {
-			endcol = (colnr_T)STRLEN(p);
-			if (endcol > 0 && inclusive) endcol--;
-		    }
-		    if (startcol > endcol || is_oneChar)
-			bd.textlen = 0;
-		    else
-			bd.textlen = endcol - startcol + oap->inclusive;
-		    bd.textstart = p + startcol;
+		    charwise_block_prep(oap->start, oap->end, &bd, lnum, oap->inclusive);
 		    if (yank_copy_line(&bd, y_idx, FALSE) == FAIL)
 			goto fail;
 		    break;
