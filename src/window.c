@@ -2843,44 +2843,76 @@ trigger_winclosed(win_T *win)
 }
 
 /*
- * Trigger WinScrolled for "curwin" if needed.
+ * Make a snapshot of all the window scroll positions and sizes of the current
+ * tab page.
+ */
+    static void
+snapshot_windows_scroll_size(void)
+{
+    win_T *wp;
+    FOR_ALL_WINDOWS(wp)
+    {
+	wp->w_last_topline = wp->w_topline;
+	wp->w_last_leftcol = wp->w_leftcol;
+	wp->w_last_skipcol = wp->w_skipcol;
+	wp->w_last_width = wp->w_width;
+	wp->w_last_height = wp->w_height;
+    }
+}
+
+static int did_initial_scroll_size_snapshot = FALSE;
+
+    void
+may_make_initial_scroll_size_snapshot(void)
+{
+    if (!did_initial_scroll_size_snapshot)
+    {
+	did_initial_scroll_size_snapshot = TRUE;
+	snapshot_windows_scroll_size();
+    }
+}
+
+/*
+ * Trigger WinScrolled if any window scrolled or changed size.
  */
     void
 may_trigger_winscrolled(void)
 {
     static int	    recursive = FALSE;
 
-    if (recursive || !has_winscrolled())
+    if (recursive
+	    || !has_winscrolled()
+	    || !did_initial_scroll_size_snapshot)
 	return;
 
-    win_T *wp = curwin;
-    if (wp->w_last_topline != wp->w_topline
-	    || wp->w_last_leftcol != wp->w_leftcol
-	    || wp->w_last_skipcol != wp->w_skipcol
-	    || wp->w_last_width != wp->w_width
-	    || wp->w_last_height != wp->w_height)
-    {
-	// "curwin" may be different from the actual current window, make sure
-	// it can be restored.
-	window_layout_lock();
-
-	recursive = TRUE;
-	char_u winid[NUMBUFLEN];
-	vim_snprintf((char *)winid, sizeof(winid), "%d", wp->w_id);
-	apply_autocmds(EVENT_WINSCROLLED, winid, winid, FALSE, wp->w_buffer);
-	recursive = FALSE;
-	window_layout_unlock();
-
-	// an autocmd may close the window, "wp" may be invalid now
-	if (win_valid_any_tab(wp))
+    win_T *wp;
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_last_topline != wp->w_topline
+		|| wp->w_last_leftcol != wp->w_leftcol
+		|| wp->w_last_skipcol != wp->w_skipcol
+		|| wp->w_last_width != wp->w_width
+		|| wp->w_last_height != wp->w_height)
 	{
-	    wp->w_last_topline = wp->w_topline;
-	    wp->w_last_leftcol = wp->w_leftcol;
-	    wp->w_last_skipcol = wp->w_skipcol;
-	    wp->w_last_width = wp->w_width;
-	    wp->w_last_height = wp->w_height;
+	    // WinScrolled is triggered only once, even when multiple windows
+	    // scrolled or changed size.  Store the current values before
+	    // triggering the event, if a scroll or resize happens as a side
+	    // effect then WinScrolled is triggered again later.
+	    snapshot_windows_scroll_size();
+
+	    // "curwin" may be different from the actual current window, make
+	    // sure it can be restored.
+	    window_layout_lock();
+
+	    recursive = TRUE;
+	    char_u winid[NUMBUFLEN];
+	    vim_snprintf((char *)winid, sizeof(winid), "%d", wp->w_id);
+	    apply_autocmds(EVENT_WINSCROLLED, winid, winid, FALSE,
+								 wp->w_buffer);
+	    recursive = FALSE;
+	    window_layout_unlock();
+
+	    break;
 	}
-    }
 }
 
 /*

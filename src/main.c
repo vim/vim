@@ -1469,6 +1469,9 @@ main_loop(
 		time_fd = NULL;
 	    }
 #endif
+	    // After the first screen update may start triggering WinScrolled
+	    // autocmd events.  Store all the scroll positions and sizes now.
+	    may_make_initial_scroll_size_snapshot();
 	}
 #ifdef FEAT_GUI
 	if (need_mouse_correct)

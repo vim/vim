@@ -407,9 +407,36 @@ func Test_WinScrolled_close_curwin()
   call TermWait(buf)
   call StopVimInTerminal(buf)
 
+  " check the startup script finished to the end
   call assert_equal(['123456'], readfile('Xtestout'))
-
   call delete('Xtestout')
+endfunc
+
+func Test_WinScrolled_once_only()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      set cmdheight=2
+      call setline(1, ['aaa', 'bbb'])
+      let trigger_count = 0
+      func ShowInfo(id)
+        echo g:trigger_count g:winid winlayout()
+      endfunc
+
+      vsplit
+      split
+      " use a timer to show the info after a redraw
+      au WinScrolled * let trigger_count += 1 | let winid = expand('<amatch>') | call timer_start(100, 'ShowInfo')
+      wincmd j
+      wincmd l
+  END
+  call writefile(lines, 'Xtest_winscrolled_once', 'D')
+  let buf = RunVimInTerminal('-S Xtest_winscrolled_once', #{rows: 10, cols: 60, statusoff: 2})
+
+  call term_sendkeys(buf, "\<C-E>")
+  call VerifyScreenDump(buf, 'Test_winscrolled_once_only_1', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_WinScrolled_long_wrapped()
@@ -2916,6 +2943,7 @@ func Test_SpellFileMissing_bwipe()
   call assert_fails('set spell spelllang=0', 'E937:')
 
   au! SpellFileMissing
+  set nospell spelllang=en
   bwipe
 endfunc
 
