@@ -690,6 +690,25 @@ list_append_string(list_T *l, char_u *str, int len)
     return OK;
 }
 
+
+/*
+ * Simmilar to list_append_string() but does not make copy of the 'str'.
+ * Returns FAIL when out of memory.
+ */
+    int
+list_append_string_move(list_T *l, char_u *str)
+{
+    listitem_T *li = listitem_alloc();
+
+    if (li == NULL)
+	return FAIL;
+    list_append(l, li);
+    li->li_tv.v_type = VAR_STRING;
+    li->li_tv.v_lock = 0;
+    li->li_tv.vval.v_string = str;
+    return OK;
+}
+
 /*
  * Append "n" to list "l".
  * Returns FAIL when out of memory.

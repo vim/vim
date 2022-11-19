@@ -148,6 +148,7 @@ static void f_searchdecl(typval_T *argvars, typval_T *rettv);
 static void f_searchpair(typval_T *argvars, typval_T *rettv);
 static void f_searchpairpos(typval_T *argvars, typval_T *rettv);
 static void f_searchpos(typval_T *argvars, typval_T *rettv);
+static void f_selectedlines(typval_T *argvars, typval_T *rettv);
 static void f_setcharpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_setcursorcharpos(typval_T *argvars, typval_T *rettv);
@@ -2423,6 +2424,8 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_searchpairpos},
     {"searchpos",	1, 5, FEARG_1,	    arg15_search,
 			ret_list_number,    f_searchpos},
+    {"selectedlines",	0, 0, 0,	    NULL,
+			ret_list_string,    f_selectedlines},
     {"server2client",	2, 2, FEARG_1,	    arg2_string,
 			ret_number_bool,    f_server2client},
     {"serverlist",	0, 0, 0,	    NULL,
@@ -9313,6 +9316,129 @@ f_searchpos(typval_T *argvars, typval_T *rettv)
     list_append_number(rettv->vval.v_list, (varnumber_T)col);
     if (flags & SP_SUBPAT)
 	list_append_number(rettv->vval.v_list, (varnumber_T)n);
+}
+
+    char_u *
+block_def2str(struct block_def *bd)
+{
+    char_u *p, *ret;
+    size_t size = bd->startspaces + bd->endspaces + bd->textlen;
+
+    ret = alloc(size + 1);
+    if (ret != NULL) {
+	p = ret;
+	memset(p, ' ', bd->startspaces);
+	p += bd->startspaces;
+	memmove(p, bd->textstart, bd->textlen);
+	p += bd->textlen;
+	memset(p, ' ', bd->endspaces);
+	*(p + bd->endspaces) = NUL;
+    }
+    return ret;
+}
+
+/*
+ * "selectedlines()" function
+ */
+static void f_selectedlines(typval_T *argvars, typval_T *rettv)
+{
+    pos_T p1, p2;
+    linenr_T lnum;
+    oparg_T oap;
+    struct block_def bd;
+    char_u *akt;
+    int inclusive = TRUE;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    if (!VIsual_active) {
+	return;
+    }
+
+    virtual_op = virtual_active();
+
+    if (LT_POS(VIsual, curwin->w_cursor)) {
+	p1 = VIsual;
+	p2 = curwin->w_cursor;
+    } else {
+	p1 = curwin->w_cursor;
+	p2 = VIsual;
+    }
+
+    if (VIsual_mode == 'v') {
+	// handle 'selection' == "exclusive"
+	if (*p_sel == 'e' && !EQUAL_POS(p1, p2)) {
+	    if (p2.coladd > 0) {
+		p2.coladd--;
+	    } else if (p2.col > 0) {
+		p2.col--;
+		mb_adjustpos(curbuf, &p2);
+	    } else if (p2.lnum > 1) {
+		p2.lnum--;
+		p2.col = (colnr_T)STRLEN(ml_get(p2.lnum));
+		if (p2.col > 0) {
+		    p2.col--;
+		    mb_adjustpos(curbuf, &p2);
+		}
+	    }
+	}
+	// if p2 is on NUL (empty line) inclusive becomes false
+	if (*ml_get_pos(&p2) == NUL && !virtual_op) {
+	    inclusive = FALSE;
+	}
+    } else if (VIsual_mode == Ctrl_V) {
+	colnr_T sc1, ec1, sc2, ec2;
+	getvvcol(curwin, &p1, &sc1, NULL, &ec1);
+	getvvcol(curwin, &p2, &sc2, NULL, &ec2);
+	oap.motion_type = OP_NOP;
+	oap.inclusive = TRUE;
+	oap.start = p1;
+	oap.end = p2;
+	oap.start_vcol = MIN(sc1, sc2);
+	if (*p_sel == 'e' && ec1 < sc2 && 0 < sc2 && ec2 > ec1)
+	    oap.end_vcol = sc2 - 1;
+	else
+	    oap.end_vcol = MAX(ec1, ec2);
+    }
+
+    // Include the trailing byte of a multi-byte char.
+    const int l = utfc_ptr2len((char *)ml_get_pos(&p2));
+    if (l > 1) {
+	p2.col += l - 1;
+    }
+
+    for (lnum = p1.lnum; lnum <= p2.lnum; lnum++) {
+	switch (VIsual_mode) {
+	    case 'V':
+		akt = vim_strsave(ml_get(lnum));
+		break;
+
+	    case 'v':
+		if (p1.lnum < lnum && lnum < p2.lnum) {
+		    akt = vim_strsave(ml_get(lnum));
+		} else {
+		    charwise_block_prep(p1, p2, &bd, lnum, inclusive);
+		    akt = block_def2str(&bd);
+		}
+		break;
+
+	    case Ctrl_V:
+		block_prep(&oap, &bd, lnum, FALSE);
+		akt = block_def2str(&bd);
+		break;
+
+	    // NOTREACHED
+	    default:
+		abort();
+	}
+
+	if (akt == NULL ||  list_append_string_move(rettv->vval.v_list, akt) == FAIL) {
+	    list_free(rettv->vval.v_list);
+	    break;
+	}
+    }
+    virtual_op = MAYBE;
 }
 
 /*
