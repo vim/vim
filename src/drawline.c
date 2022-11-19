@@ -2043,7 +2043,9 @@ win_line(
 				    p_extra_free2 = wlv.p_extra;
 				}
 
-				if (lcs_eol_one < 0 && wlv.col
+				if (lcs_eol_one < 0
+					&& wp->w_p_wrap
+					&& wlv.col
 					       + wlv.n_extra - 2 > wp->w_width)
 				    // don't bail out at end of line
 				    text_prop_follows = TRUE;
