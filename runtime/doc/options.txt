@@ -5103,7 +5103,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The cursor is displayed at the start of the space a Tab character
 	occupies, not at the end as usual in Normal mode.  To get this cursor
 	position while displaying Tabs with spaces, use: >
-		:set list lcs=tab:\ \ 
+		:set list lcs=tab:\ \
 <
 	Note that list mode will also affect formatting (set with 'textwidth'
 	or 'wrapmargin') when 'cpoptions' includes 'L'.  See 'listchars' for
@@ -7138,7 +7138,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	String to put at the start of lines that have been wrapped.  Useful
 	values are "> " or "+++ ": >
-		:set showbreak=>\ 
+		:set showbreak=>\
 <	Note the backslash to escape the trailing space.  It's easier like
 	this: >
 		:let &showbreak = '+++ '

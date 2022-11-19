@@ -892,7 +892,7 @@ Groß): >
       endfor
       return res
     endfunc
-    
+
     if exists('+thesaurusfunc')
       set thesaurusfunc=Thesaur
     endif

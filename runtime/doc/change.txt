@@ -1235,7 +1235,7 @@ There are ten types of registers:		*registers* *{register}* *E354*
 5. Three read-only registers ":, "., "%
 6. Alternate buffer register "#
 7. The expression register "=
-8. The selection and drop registers "*, "+ and "~ 
+8. The selection and drop registers "*, "+ and "~
 9. The black hole register "_
 10. Last search pattern register "/
 
@@ -1340,7 +1340,7 @@ If the "= register is used for the "p" command, the String is split up at <NL>
 characters.  If the String ends in a <NL>, it is regarded as a linewise
 register.
 
-8. Selection and drop registers "*, "+ and "~ 
+8. Selection and drop registers "*, "+ and "~
 Use these registers for storing and retrieving the selected text for the GUI.
 See |quotestar| and |quoteplus|.  When the clipboard is not available or not
 working, the unnamed register is used instead.  For Unix systems the clipboard
@@ -1842,9 +1842,9 @@ editing text paragraphs.  A few hints on how to use this:
 
 - Set 'formatoptions' to "aw2tq" to make text with indents like this:
 
-	    bla bla foobar bla 
+	    bla bla foobar bla
 	bla foobar bla foobar bla
-	    bla bla foobar bla 
+	    bla bla foobar bla
 	bla foobar bla bla foobar
 
 - Add the 'c' flag to only auto-format comments.  Useful in source code.

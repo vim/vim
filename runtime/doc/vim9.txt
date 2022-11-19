@@ -1993,10 +1993,10 @@ Some commands have already been reserved:
 
 Some examples: >
 
-	abstract class Person 
+	abstract class Person
 	    static const prefix = 'xxx'
 	    var name: string
-	    
+
 	    def constructor(name: string)
 		this.name = name
 	    enddef

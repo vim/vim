@@ -298,7 +298,7 @@ Another wasteful use of spaces is placing them before a tab.  Often these can
 be deleted without changing the amount of white space.  But not always!
 Therefore, you can best do this manually.  Use this search command: >
 
-	/ 	
+	/
 
 You cannot see it, but there is a space before a tab in this command.  Thus
 it's "/<Space><Tab>".   Now use "x" to delete the space and check that the

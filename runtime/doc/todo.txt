@@ -294,7 +294,7 @@ Resetting 't_ut' already causes this?
 
 When scheme can't be found by configure there is no clear "not found" message:
     configure:5769: checking MzScheme install prefix
-    configure:5781: result: 
+    configure:5781: result:
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
 

@@ -899,10 +899,10 @@ buffer lines	logical lines	window lines	screen lines ~
 						8.  ccc ccc c
 1. aaa		1. aaa		1. aaa		9.  cc
 2. bbb		2. bbb		2. bbb		10. ddd
-3. ccc ccc ccc	3. ccc ccc ccc	3. ccc ccc c	11. ~ 
+3. ccc ccc ccc	3. ccc ccc ccc	3. ccc ccc c	11. ~
 4. ddd		4. ddd		4. cc		12. === status line ===
 				5. ddd		13. (command line)
-				6. ~ 
+				6. ~
 
 ==============================================================================
  vim:tw=78:ts=8:noet:ft=help:norl:
