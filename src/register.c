@@ -1280,8 +1280,10 @@ op_yank(oparg_T *oap, int deleting, int mess)
 			    }
 			}
 		    }
-		    if (endcol == MAXCOL)
+		    if (endcol == MAXCOL) {
 			endcol = (colnr_T)STRLEN(p);
+			if (endcol > 0 && inclusive) endcol--;
+		    }
 		    if (startcol > endcol || is_oneChar)
 			bd.textlen = 0;
 		    else
