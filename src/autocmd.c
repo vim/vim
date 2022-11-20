@@ -1264,14 +1264,20 @@ do_autocmd_event(
 		    get_mode(last_mode);
 #endif
 		// Initialize the fields checked by the WinScrolled trigger to
-		// stop it from firing right after the first autocmd is defined.
+		// prevent it from firing right after the first autocmd is
+		// defined.
 		if (event == EVENT_WINSCROLLED && !has_winscrolled())
 		{
-		    curwin->w_last_topline = curwin->w_topline;
-		    curwin->w_last_leftcol = curwin->w_leftcol;
-		    curwin->w_last_skipcol = curwin->w_skipcol;
-		    curwin->w_last_width = curwin->w_width;
-		    curwin->w_last_height = curwin->w_height;
+		    tabpage_T *save_curtab = curtab;
+		    tabpage_T *tp;
+		    FOR_ALL_TABPAGES(tp)
+		    {
+			unuse_tabpage(curtab);
+			use_tabpage(tp);
+			snapshot_windows_scroll_size();
+		    }
+		    unuse_tabpage(curtab);
+		    use_tabpage(save_curtab);
 		}
 
 		if (is_buflocal)

@@ -2846,7 +2846,7 @@ trigger_winclosed(win_T *win)
  * Make a snapshot of all the window scroll positions and sizes of the current
  * tab page.
  */
-    static void
+    void
 snapshot_windows_scroll_size(void)
 {
     win_T *wp;
@@ -3864,6 +3864,33 @@ close_others(
 }
 
 /*
+ * Store the relevant window pointers for tab page "tp".  To be used before
+ * use_tabpage().
+ */
+    void
+unuse_tabpage(tabpage_T *tp)
+{
+    tp->tp_topframe = topframe;
+    tp->tp_firstwin = firstwin;
+    tp->tp_lastwin = lastwin;
+    tp->tp_curwin = curwin;
+}
+
+/*
+ * Set the relevant pointers to use tab page "tp".  May want to call
+ * unuse_tabpage() first.
+ */
+    void
+use_tabpage(tabpage_T *tp)
+{
+    curtab = tp;
+    topframe = curtab->tp_topframe;
+    firstwin = curtab->tp_firstwin;
+    lastwin = curtab->tp_lastwin;
+    curwin = curtab->tp_curwin;
+}
+
+/*
  * Allocate the first window and put an empty buffer in it.
  * Called from main().
  * Return FAIL when something goes wrong (out of memory).
@@ -3877,11 +3904,8 @@ win_alloc_first(void)
     first_tabpage = alloc_tabpage();
     if (first_tabpage == NULL)
 	return FAIL;
-    first_tabpage->tp_topframe = topframe;
     curtab = first_tabpage;
-    curtab->tp_firstwin = firstwin;
-    curtab->tp_lastwin = lastwin;
-    curtab->tp_curwin = curwin;
+    unuse_tabpage(first_tabpage);
 
     return OK;
 }
@@ -4389,10 +4413,7 @@ enter_tabpage(
     win_T	*next_prevwin = tp->tp_prevwin;
     tabpage_T	*last_tab = curtab;
 
-    curtab = tp;
-    firstwin = tp->tp_firstwin;
-    lastwin = tp->tp_lastwin;
-    topframe = tp->tp_topframe;
+    use_tabpage(tp);
 
     // We would like doing the TabEnter event first, but we don't have a
     // valid current window yet, which may break some commands.
