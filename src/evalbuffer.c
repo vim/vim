@@ -521,8 +521,9 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     linenr_T	lnum;
     long	count;
     int		is_curbuf;
-    buf_T	*curbuf_save = NULL;
     win_T	*curwin_save = NULL;
+    aco_save_T	aco;
+    int		using_aco = FALSE;
     tabpage_T	*tp;
     win_T	*wp;
     int		did_emsg_before = did_emsg;
@@ -556,11 +557,21 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     // After this don't use "return", goto "cleanup"!
     if (!is_curbuf)
     {
+	// Set "curbuf" to the buffer being changed.  Then make sure there is a
+	// window for it to handle any side effects.
 	VIsual_active = FALSE;
-	curbuf_save = curbuf;
 	curwin_save = curwin;
 	curbuf = buf;
-	find_win_for_curbuf();
+	find_win_for_curbuf();  // simplest: find existing window for "buf"
+
+	if (curwin->w_buffer != buf)
+	{
+	    // No existing window for this buffer.  It is dangerous to have
+	    // curwin->w_buffer differ from "curbuf", use the autocmd window.
+	    curbuf = curwin->w_buffer;
+	    aucmd_prepbuf(&aco, buf);
+	    using_aco = TRUE;
+	}
     }
     if (last > curbuf->b_ml.ml_line_count)
 	last = curbuf->b_ml.ml_line_count;
@@ -600,8 +611,15 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
 cleanup:
     if (!is_curbuf)
     {
-	curbuf = curbuf_save;
-	curwin = curwin_save;
+	if (using_aco)
+	{
+	    aucmd_restbuf(&aco);
+	}
+	else
+	{
+	    curwin = curwin_save;
+	    curbuf = curwin->w_buffer;
+	}
 	VIsual_active = save_VIsual_active;
     }
 }
