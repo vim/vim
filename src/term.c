@@ -5456,6 +5456,21 @@ check_termcode(
 	}
 	else
 #endif // FEAT_GUI
+#ifdef MSWIN
+	if (len >= 3 && tp[0] == CSI && tp[1] == KS_EXTRA
+	    && (tp[2] == KE_MOUSEUP || tp[2] == KE_MOUSEDOWN
+	    || tp[2] == KE_MOUSELEFT || tp[2] == KE_MOUSERIGHT))
+	{
+	    // MS-Windows console sends mouse scroll events 
+	    // - CSI 
+	    // - KS_EXTRA 
+	    // - {KE_MOUSE[UP|DOWN|LEFT|RIGHT]}
+	    slen = 3;
+	    key_name[0] = tp[1];
+	    key_name[1] = tp[2];
+	}
+	else
+#endif // MSWIN
 	{
 	    int  mouse_index_found = -1;
 

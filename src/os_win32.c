@@ -2047,7 +2047,7 @@ mch_inchar(
 	    {
 		if (modifiers > 0)
 		{
-		    typeahead[typeaheadlen++] = CSI;
+		    typeahead[typeaheadlen++] = K_SPECIAL;
 		    typeahead[typeaheadlen++] = KS_MODIFIER;
 		    typeahead[typeaheadlen++] = modifiers;
 		}
