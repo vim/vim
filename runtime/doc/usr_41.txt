@@ -935,6 +935,7 @@ Working with text in the current buffer:		*text-functions*
 
 Working with text in another buffer:
 	getbufline()		get a list of lines from the specified buffer
+	getbufoneline()		get a one line from the specified buffer
 	setbufline()		replace a line in the specified buffer
 	appendbufline()		append a list of lines in the specified buffer
 	deletebufline()		delete lines from a specified buffer

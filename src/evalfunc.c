@@ -1923,6 +1923,8 @@ static funcentry_T global_functions[] =
 			ret_list_dict_any,  f_getbufinfo},
     {"getbufline",	2, 3, FEARG_1,	    arg3_buffer_lnum_lnum,
 			ret_list_string,    f_getbufline},
+    {"getbufoneline",	2, 2, FEARG_1,	    arg2_buffer_lnum,
+			ret_string,	    f_getbufoneline},
     {"getbufvar",	2, 3, FEARG_1,	    arg3_buffer_string_any,
 			ret_any,	    f_getbufvar},
     {"getchangelist",	0, 1, FEARG_1,	    arg1_buffer,

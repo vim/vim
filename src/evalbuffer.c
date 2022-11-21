@@ -814,10 +814,11 @@ get_buffer_lines(
 }
 
 /*
- * "getbufline()" function
+ * "retlist" TRUE: "getbufline()" function
+ * "retlist" FALSE: "getbufoneline()" function
  */
-    void
-f_getbufline(typval_T *argvars, typval_T *rettv)
+    static void
+getbufline(typval_T *argvars, typval_T *rettv, int retlist)
 {
     linenr_T	lnum = 1;
     linenr_T	end = 1;
@@ -842,7 +843,25 @@ f_getbufline(typval_T *argvars, typval_T *rettv)
 	    end = tv_get_lnum_buf(&argvars[2], buf);
     }
 
-    get_buffer_lines(buf, lnum, end, TRUE, rettv);
+    get_buffer_lines(buf, lnum, end, retlist, rettv);
+}
+
+/*
+ * "getbufline()" function
+ */
+    void
+f_getbufline(typval_T *argvars, typval_T *rettv)
+{
+    getbufline(argvars, rettv, TRUE);
+}
+
+/*
+ * "getbufoneline()" function
+ */
+    void
+f_getbufoneline(typval_T *argvars, typval_T *rettv)
+{
+    getbufline(argvars, rettv, FALSE);
 }
 
 /*
