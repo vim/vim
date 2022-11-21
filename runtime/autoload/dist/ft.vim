@@ -712,7 +712,7 @@ export def SetFileTypeSH(name: string)
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif name =~ '\<sh\>'
+  elseif name =~ '\<sh\>' || name =~ '\<dash\>'
     b:is_sh = 1
     if exists("b:is_kornshell")
       unlet b:is_kornshell

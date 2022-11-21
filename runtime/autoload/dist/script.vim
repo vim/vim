@@ -53,8 +53,8 @@ def DetectFromHashBang(firstline: string)
     name = 'wish'
   endif
 
-  # Bourne-like shell scripts: bash bash2 ksh ksh93 sh
-  if name =~ '^\(bash\d*\|\|ksh\d*\|sh\)\>'
+  # Bourne-like shell scripts: bash bash2 dash ksh ksh93 sh
+  if name =~ '^\(bash\d*\|dash\|ksh\d*\|sh\)\>'
     call dist#ft#SetFileTypeSH(line1)
 
     # csh scripts
