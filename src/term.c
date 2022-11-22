@@ -1507,7 +1507,7 @@ parse_builtin_tcap(char_u *term)
 
     int term_8bit = term_is_8bit(term);
 
-    for (++p; p->bt_entry != (int)KS_NAME && p->bt_entry != BT_EXTRA_KEYS; ++p)
+    for ( ; p->bt_entry != (int)KS_NAME && p->bt_entry != BT_EXTRA_KEYS; ++p)
     {
 	if ((int)p->bt_entry >= 0)	// KS_xx entry
 	{
