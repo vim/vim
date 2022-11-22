@@ -2034,6 +2034,15 @@ def Test_source_vim9_from_legacy()
   source Xlegacy_script.vim
   assert_equal('global', g:global)
   unlet g:global
+
+  legacy_lines =<< trim END
+    import './Xvim9_script.vim'
+    let g:global = s:Xvim9_script.GetText()
+  END
+  writefile(legacy_lines, 'Xlegacyimport.vim', 'D')
+  source Xlegacyimport.vim
+  assert_equal('text', g:global)
+  unlet g:global
 enddef
 
 def Test_import_vim9_from_legacy()
