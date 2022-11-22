@@ -1197,6 +1197,9 @@ au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
 " Mercurial config (looks like generic config file)
 au BufNewFile,BufRead *.hgrc,*hgrc		setf cfg
 
+" Mermaid
+au BufNewFile,BufRead *.mmd,*.mmdc,*.mermaid	setf mermaid
+
 " Meson Build system config
 au BufNewFile,BufRead meson.build,meson_options.txt setf meson
 au BufNewFile,BufRead *.wrap			setf dosini
