@@ -1171,7 +1171,7 @@ do_mousescroll(cmdarg_T *cap)
 	    leftcol = 0;
 	do_mousescroll_horiz((long_u)leftcol);
     }
-    may_trigger_winscrolled();
+    may_trigger_win_scrolled_resized();
 }
 
 /*

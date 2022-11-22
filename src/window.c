@@ -2873,46 +2873,273 @@ may_make_initial_scroll_size_snapshot(void)
 }
 
 /*
- * Trigger WinScrolled if any window scrolled or changed size.
+ * Create a dictionary with information about size and scroll changes in a
+ * window.
+ * Returns the dictionary with refcount set to one.
+ * Returns NULL when out of memory.
  */
-    void
-may_trigger_winscrolled(void)
+    static dict_T *
+make_win_info_dict(
+	int width,
+	int height,
+	int topline,
+	int leftcol,
+	int skipcol)
 {
-    static int	    recursive = FALSE;
+    dict_T *d = dict_alloc();
+    if (d == NULL)
+	return NULL;
+    d->dv_refcount = 1;
 
-    if (recursive
-	    || !has_winscrolled()
-	    || !did_initial_scroll_size_snapshot)
-	return;
+    // not actually looping, for breaking out on error
+    while (1)
+    {
+	typval_T tv;
+	tv.v_lock = 0;
+	tv.v_type = VAR_NUMBER;
+
+	tv.vval.v_number = width;
+	if (dict_add_tv(d, "width", &tv) == FAIL)
+	    break;
+	tv.vval.v_number = height;
+	if (dict_add_tv(d, "height", &tv) == FAIL)
+	    break;
+	tv.vval.v_number = topline;
+	if (dict_add_tv(d, "topline", &tv) == FAIL)
+	    break;
+	tv.vval.v_number = leftcol;
+	if (dict_add_tv(d, "leftcol", &tv) == FAIL)
+	    break;
+	tv.vval.v_number = skipcol;
+	if (dict_add_tv(d, "skipcol", &tv) == FAIL)
+	    break;
+	return d;
+    }
+    dict_unref(d);
+    return NULL;
+}
+
+// Return values of check_window_scroll_resize():
+#define CWSR_SCROLLED	1  // at least one window scrolled
+#define CWSR_RESIZED	2  // at least one window size changed
+
+/*
+ * This function is used for three purposes:
+ * 1. Goes over all windows in the current tab page and returns:
+ *	0				no scrolling and no size changes found
+ *	CWSR_SCROLLED			at least one window scrolled
+ *	CWSR_RESIZED			at least one window changed size
+ *	CWSR_SCROLLED + CWSR_RESIZED	both
+ *    "size_count" is set to the nr of windows with size changes.
+ *    "first_scroll_win" is set to the first window with any relevant changes.
+ *    "first_size_win" is set to the first window with size changes.
+ *
+ * 2. When the first three arguments are NULL and "winlist" is not NULL,
+ *    "winlist" is set to the list of window IDs with size changes.
+ *
+ * 3. When the first three arguments are NULL and "v_event" is not NULL,
+ *    information about changed windows is added to "v_event".
+ */
+    static int
+check_window_scroll_resize(
+	int	*size_count,
+	win_T	**first_scroll_win,
+	win_T	**first_size_win,
+	list_T	*winlist,
+	dict_T	*v_event)
+{
+    int result = 0;
+    int listidx = 0;
+    int tot_width = 0;
+    int tot_height = 0;
+    int tot_topline = 0;
+    int tot_leftcol = 0;
+    int tot_skipcol = 0;
 
     win_T *wp;
     FOR_ALL_WINDOWS(wp)
-	if (wp->w_last_topline != wp->w_topline
-		|| wp->w_last_leftcol != wp->w_leftcol
-		|| wp->w_last_skipcol != wp->w_skipcol
-		|| wp->w_last_width != wp->w_width
-		|| wp->w_last_height != wp->w_height)
+    {
+	int size_changed = wp->w_last_width != wp->w_width
+					  || wp->w_last_height != wp->w_height;
+	if (size_changed)
 	{
-	    // WinScrolled is triggered only once, even when multiple windows
-	    // scrolled or changed size.  Store the current values before
-	    // triggering the event, if a scroll or resize happens as a side
-	    // effect then WinScrolled is triggered again later.
-	    snapshot_windows_scroll_size();
-
-	    // "curwin" may be different from the actual current window, make
-	    // sure it can be restored.
-	    window_layout_lock();
-
-	    recursive = TRUE;
-	    char_u winid[NUMBUFLEN];
-	    vim_snprintf((char *)winid, sizeof(winid), "%d", wp->w_id);
-	    apply_autocmds(EVENT_WINSCROLLED, winid, winid, FALSE,
-								 wp->w_buffer);
-	    recursive = FALSE;
-	    window_layout_unlock();
-
-	    break;
+	    result |= CWSR_RESIZED;
+	    if (winlist != NULL)
+	    {
+		// Add this window to the list of changed windows.
+		typval_T tv;
+		tv.v_lock = 0;
+		tv.v_type = VAR_NUMBER;
+		tv.vval.v_number = wp->w_id;
+		list_set_item(winlist, listidx++, &tv);
+	    }
+	    else if (size_count != NULL)
+	    {
+		++*size_count;
+		if (*first_size_win == NULL)
+		    *first_size_win = wp;
+		// For WinScrolled the first window with a size change is used
+		// even when it didn't scroll.
+		if (*first_scroll_win == NULL)
+		    *first_scroll_win = wp;
+	    }
 	}
+
+	int scroll_changed = wp->w_last_topline != wp->w_topline
+				|| wp->w_last_leftcol != wp->w_leftcol
+				|| wp->w_last_skipcol != wp->w_skipcol;
+	if (scroll_changed)
+	{
+	    result |= CWSR_SCROLLED;
+	    if (first_scroll_win != NULL && *first_scroll_win == NULL)
+		*first_scroll_win = wp;
+	}
+
+	if ((size_changed || scroll_changed) && v_event != NULL)
+	{
+	    // Add info about this window to the v:event dictionary.
+	    int width = wp->w_width - wp->w_last_width;
+	    int height = wp->w_height - wp->w_last_height;
+	    int topline = wp->w_topline - wp->w_last_topline;
+	    int leftcol = wp->w_leftcol - wp->w_last_leftcol;
+	    int skipcol = wp->w_skipcol - wp->w_last_skipcol;
+	    dict_T *d = make_win_info_dict(width, height,
+						    topline, leftcol, skipcol);
+	    if (d == NULL)
+		break;
+	    char winid[NUMBUFLEN];
+	    vim_snprintf(winid, sizeof(winid), "%d", wp->w_id);
+	    if (dict_add_dict(v_event, winid, d) == FAIL)
+	    {
+		dict_unref(d);
+		break;
+	    }
+	    --d->dv_refcount;
+
+	    tot_width += abs(width);
+	    tot_height += abs(height);
+	    tot_topline += abs(topline);
+	    tot_leftcol += abs(leftcol);
+	    tot_skipcol += abs(skipcol);
+	}
+    }
+
+    if (v_event != NULL)
+    {
+	dict_T *alldict = make_win_info_dict(tot_width, tot_height,
+					tot_topline, tot_leftcol, tot_skipcol);
+	if (alldict != NULL)
+	{
+	    if (dict_add_dict(v_event, "all", alldict) == FAIL)
+		dict_unref(alldict);
+	    else
+		--alldict->dv_refcount;
+	}
+    }
+
+    return result;
+}
+
+/*
+ * Trigger WinScrolled and/or WinResized if any window in the current tab page
+ * scrolled or changed size.
+ */
+    void
+may_trigger_win_scrolled_resized(void)
+{
+    static int	    recursive = FALSE;
+    int		    do_resize = has_winresized();
+    int		    do_scroll = has_winscrolled();
+
+    // Do not trigger WinScrolled or WinResized recursively.  Do not trigger
+    // before the initial snapshot of the w_last_ values was made.
+    if (recursive
+	    || !(do_scroll || do_resize)
+	    || !did_initial_scroll_size_snapshot)
+	return;
+
+    int size_count = 0;
+    win_T *first_scroll_win = NULL, *first_size_win = NULL;
+    int cwsr = check_window_scroll_resize(&size_count,
+					   &first_scroll_win, &first_size_win,
+					   NULL, NULL);
+    int trigger_resize = do_resize && size_count > 0;
+    int trigger_scroll = do_scroll && cwsr != 0;
+    if (!trigger_resize && !trigger_scroll)
+	return;  // no relevant changes
+
+    list_T *windows_list = NULL;
+    if (trigger_resize)
+    {
+	// Create the list for v:event.windows before making the snapshot.
+	windows_list = list_alloc_with_items(size_count);
+	(void)check_window_scroll_resize(NULL, NULL, NULL, windows_list, NULL);
+    }
+
+    dict_T *scroll_dict = NULL;
+    if (trigger_scroll)
+    {
+	// Create the dict with entries for v:event before making the snapshot.
+	scroll_dict = dict_alloc();
+	if (scroll_dict != NULL)
+	{
+	    scroll_dict->dv_refcount = 1;
+	    (void)check_window_scroll_resize(NULL, NULL, NULL, NULL,
+								  scroll_dict);
+	}
+    }
+
+    // WinScrolled/WinResized are triggered only once, even when multiple
+    // windows scrolled or changed size.  Store the current values before
+    // triggering the event, if a scroll or resize happens as a side effect
+    // then WinScrolled/WinResized is triggered for that later.
+    snapshot_windows_scroll_size();
+
+    // "curwin" may be different from the actual current window, make
+    // sure it can be restored.
+    window_layout_lock();
+    recursive = TRUE;
+
+    // If both are to be triggered do WinResized first.
+    if (trigger_resize)
+    {
+	save_v_event_T  save_v_event;
+	dict_T		*v_event = get_v_event(&save_v_event);
+
+	if (dict_add_list(v_event, "windows", windows_list) == OK)
+	{
+	    dict_set_items_ro(v_event);
+
+	    char_u winid[NUMBUFLEN];
+	    vim_snprintf((char *)winid, sizeof(winid), "%d",
+							 first_size_win->w_id);
+	    apply_autocmds(EVENT_WINRESIZED, winid, winid, FALSE,
+						     first_size_win->w_buffer);
+	}
+	restore_v_event(v_event, &save_v_event);
+    }
+
+    if (trigger_scroll)
+    {
+	save_v_event_T  save_v_event;
+	dict_T		*v_event = get_v_event(&save_v_event);
+
+	// Move the entries from scroll_dict to v_event.
+	dict_extend(v_event, scroll_dict, (char_u *)"move", NULL);
+	dict_set_items_ro(v_event);
+	dict_unref(scroll_dict);
+
+	char_u winid[NUMBUFLEN];
+	vim_snprintf((char *)winid, sizeof(winid), "%d",
+						       first_scroll_win->w_id);
+	apply_autocmds(EVENT_WINSCROLLED, winid, winid, FALSE,
+						   first_scroll_win->w_buffer);
+
+	restore_v_event(v_event, &save_v_event);
+    }
+
+    recursive = FALSE;
+    window_layout_unlock();
 }
 
 /*

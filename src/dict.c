@@ -1082,13 +1082,14 @@ failret:
  * Go over all entries in "d2" and add them to "d1".
  * When "action" is "error" then a duplicate key is an error.
  * When "action" is "force" then a duplicate key is overwritten.
+ * When "action" is "move" then move items instead of copying.
  * Otherwise duplicate keys are ignored ("action" is "keep").
+ * "func_name" is used for reporting where an error occurred.
  */
     void
 dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 {
     dictitem_T	*di1;
-    hashitem_T	*hi2;
     int		todo;
     char_u	*arg_errmsg = (char_u *)N_("extend() argument");
     type_T	*type;
@@ -1098,8 +1099,11 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
     else
 	type = NULL;
 
+    if (*action == 'm')
+	hash_lock(&d2->dv_hashtab);  // don't rehash on hash_remove()
+
     todo = (int)d2->dv_hashtab.ht_used;
-    for (hi2 = d2->dv_hashtab.ht_array; todo > 0; ++hi2)
+    for (hashitem_T *hi2 = d2->dv_hashtab.ht_array; todo > 0; ++hi2)
     {
 	if (!HASHITEM_EMPTY(hi2))
 	{
@@ -1116,9 +1120,19 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 
 	    if (di1 == NULL)
 	    {
-		di1 = dictitem_copy(HI2DI(hi2));
-		if (di1 != NULL && dict_add(d1, di1) == FAIL)
-		    dictitem_free(di1);
+		if (*action == 'm')
+		{
+		    // cheap way to move a dict item from "d2" to "d1"
+		    di1 = HI2DI(hi2);
+		    dict_add(d1, di1);
+		    hash_remove(&d2->dv_hashtab, hi2);
+		}
+		else
+		{
+		    di1 = dictitem_copy(HI2DI(hi2));
+		    if (di1 != NULL && dict_add(d1, di1) == FAIL)
+			dictitem_free(di1);
+		}
 	    }
 	    else if (*action == 'e')
 	    {
@@ -1138,6 +1152,9 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	    }
 	}
     }
+
+    if (*action == 'm')
+	hash_unlock(&d2->dv_hashtab);
 }
 
 /*
@@ -1272,7 +1289,7 @@ dict_extend_func(
 	    action = (char_u *)"force";
 
 	if (type != NULL && check_typval_arg_type(type, &argvars[1],
-		    func_name, 2) == FAIL)
+							 func_name, 2) == FAIL)
 	    return;
 	dict_extend(d1, d2, action, func_name);
 

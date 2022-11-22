@@ -20,7 +20,7 @@ int one_window(void);
 int win_close(win_T *win, int free_buf);
 void snapshot_windows_scroll_size(void);
 void may_make_initial_scroll_size_snapshot(void);
-void may_trigger_winscrolled(void);
+void may_trigger_win_scrolled_resized(void);
 void win_close_othertab(win_T *win, int free_buf, tabpage_T *tp);
 void win_free_all(void);
 win_T *winframe_remove(win_T *win, int *dirp, tabpage_T *tp);

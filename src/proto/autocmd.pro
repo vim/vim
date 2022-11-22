@@ -16,6 +16,7 @@ int apply_autocmds(event_T event, char_u *fname, char_u *fname_io, int force, bu
 int apply_autocmds_exarg(event_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf, exarg_T *eap);
 int apply_autocmds_retval(event_T event, char_u *fname, char_u *fname_io, int force, buf_T *buf, int *retval);
 int trigger_cursorhold(void);
+int has_winresized(void);
 int has_winscrolled(void);
 int has_cursormoved(void);
 int has_cursormovedI(void);
