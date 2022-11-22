@@ -3439,28 +3439,9 @@ shell_resized_check(void)
  * If 'mustset' is FALSE, we may try to get the real window size and if
  * it fails use 'width' and 'height'.
  */
-    void
-set_shellsize(int width, int height, int mustset)
+    static void
+set_shellsize_inner(int width, int height, int mustset)
 {
-    static int		busy = FALSE;
-
-    /*
-     * Avoid recursiveness, can happen when setting the window size causes
-     * another window-changed signal.
-     */
-    if (busy)
-	return;
-
-    if (width < 0 || height < 0)    // just checking...
-	return;
-
-    if (State == MODE_HITRETURN || State == MODE_SETWSIZE)
-    {
-	// postpone the resizing
-	State = MODE_SETWSIZE;
-	return;
-    }
-
     if (updating_screen)
 	// resizing while in update_screen() may cause a crash
 	return;
@@ -3471,8 +3452,6 @@ set_shellsize(int width, int height, int mustset)
     // another buffer.
     if (curwin->w_buffer == NULL || curwin->w_lines == NULL)
 	return;
-
-    ++busy;
 
 #ifdef AMIGA
     out_flush();	    // must do this before mch_get_shellsize() for
@@ -3547,7 +3526,39 @@ set_shellsize(int width, int height, int mustset)
 	cursor_on();	    // redrawing may have switched it off
     }
     out_flush();
-    --busy;
+}
+
+    void
+set_shellsize(int width, int height, int mustset)
+{
+    static int	busy = FALSE;
+    static int	do_run = FALSE;
+
+    if (width < 0 || height < 0)    // just checking...
+	return;
+
+    if (State == MODE_HITRETURN || State == MODE_SETWSIZE)
+    {
+	// postpone the resizing
+	State = MODE_SETWSIZE;
+	return;
+    }
+
+    // Avoid recursiveness.  This can happen when setting the window size
+    // causes another window-changed signal or when two SIGWINCH signals come
+    // very close together.  There needs to be another run then after the
+    // current one is done to pick up the latest size.
+    do_run = TRUE;
+    if (busy)
+	return;
+
+    while (do_run)
+    {
+	do_run = FALSE;
+	busy = TRUE;
+	set_shellsize_inner(width, height, mustset);
+	busy = FALSE;
+    }
 }
 
 /*
