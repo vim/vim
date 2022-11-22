@@ -2872,6 +2872,7 @@ may_make_initial_scroll_size_snapshot(void)
     }
 }
 
+#ifdef FEAT_EVAL
 /*
  * Create a dictionary with information about size and scroll changes in a
  * window.
@@ -2918,6 +2919,7 @@ make_win_info_dict(
     dict_unref(d);
     return NULL;
 }
+#endif
 
 // Return values of check_window_scroll_resize():
 #define CWSR_SCROLLED	1  // at least one window scrolled
@@ -2945,16 +2947,18 @@ check_window_scroll_resize(
 	int	*size_count,
 	win_T	**first_scroll_win,
 	win_T	**first_size_win,
-	list_T	*winlist,
-	dict_T	*v_event)
+	list_T	*winlist UNUSED,
+	dict_T	*v_event UNUSED)
 {
     int result = 0;
+#ifdef FEAT_EVAL
     int listidx = 0;
     int tot_width = 0;
     int tot_height = 0;
     int tot_topline = 0;
     int tot_leftcol = 0;
     int tot_skipcol = 0;
+#endif
 
     win_T *wp;
     FOR_ALL_WINDOWS(wp)
@@ -2964,6 +2968,7 @@ check_window_scroll_resize(
 	if (size_changed)
 	{
 	    result |= CWSR_RESIZED;
+#ifdef FEAT_EVAL
 	    if (winlist != NULL)
 	    {
 		// Add this window to the list of changed windows.
@@ -2973,7 +2978,9 @@ check_window_scroll_resize(
 		tv.vval.v_number = wp->w_id;
 		list_set_item(winlist, listidx++, &tv);
 	    }
-	    else if (size_count != NULL)
+	    else
+#endif
+		if (size_count != NULL)
 	    {
 		++*size_count;
 		if (*first_size_win == NULL)
@@ -2995,6 +3002,7 @@ check_window_scroll_resize(
 		*first_scroll_win = wp;
 	}
 
+#ifdef FEAT_EVAL
 	if ((size_changed || scroll_changed) && v_event != NULL)
 	{
 	    // Add info about this window to the v:event dictionary.
@@ -3022,8 +3030,10 @@ check_window_scroll_resize(
 	    tot_leftcol += abs(leftcol);
 	    tot_skipcol += abs(skipcol);
 	}
+#endif
     }
 
+#ifdef FEAT_EVAL
     if (v_event != NULL)
     {
 	dict_T *alldict = make_win_info_dict(tot_width, tot_height,
@@ -3036,6 +3046,7 @@ check_window_scroll_resize(
 		--alldict->dv_refcount;
 	}
     }
+#endif
 
     return result;
 }
@@ -3067,7 +3078,7 @@ may_trigger_win_scrolled_resized(void)
     int trigger_scroll = do_scroll && cwsr != 0;
     if (!trigger_resize && !trigger_scroll)
 	return;  // no relevant changes
-
+#ifdef FEAT_EVAL
     list_T *windows_list = NULL;
     if (trigger_resize)
     {
@@ -3088,6 +3099,7 @@ may_trigger_win_scrolled_resized(void)
 								  scroll_dict);
 	}
     }
+#endif
 
     // WinScrolled/WinResized are triggered only once, even when multiple
     // windows scrolled or changed size.  Store the current values before
@@ -3103,24 +3115,28 @@ may_trigger_win_scrolled_resized(void)
     // If both are to be triggered do WinResized first.
     if (trigger_resize)
     {
+#ifdef FEAT_EVAL
 	save_v_event_T  save_v_event;
 	dict_T		*v_event = get_v_event(&save_v_event);
 
 	if (dict_add_list(v_event, "windows", windows_list) == OK)
 	{
 	    dict_set_items_ro(v_event);
-
+#endif
 	    char_u winid[NUMBUFLEN];
 	    vim_snprintf((char *)winid, sizeof(winid), "%d",
 							 first_size_win->w_id);
 	    apply_autocmds(EVENT_WINRESIZED, winid, winid, FALSE,
 						     first_size_win->w_buffer);
+#ifdef FEAT_EVAL
 	}
 	restore_v_event(v_event, &save_v_event);
+#endif
     }
 
     if (trigger_scroll)
     {
+#ifdef FEAT_EVAL
 	save_v_event_T  save_v_event;
 	dict_T		*v_event = get_v_event(&save_v_event);
 
@@ -3128,14 +3144,15 @@ may_trigger_win_scrolled_resized(void)
 	dict_extend(v_event, scroll_dict, (char_u *)"move", NULL);
 	dict_set_items_ro(v_event);
 	dict_unref(scroll_dict);
-
+#endif
 	char_u winid[NUMBUFLEN];
 	vim_snprintf((char *)winid, sizeof(winid), "%d",
 						       first_scroll_win->w_id);
 	apply_autocmds(EVENT_WINSCROLLED, winid, winid, FALSE,
 						   first_scroll_win->w_buffer);
-
+#ifdef FEAT_EVAL
 	restore_v_event(v_event, &save_v_event);
+#endif
     }
 
     recursive = FALSE;
