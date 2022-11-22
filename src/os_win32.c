@@ -2047,7 +2047,8 @@ mch_inchar(
 	    {
 		if (modifiers > 0)
 		{
-		    typeahead[typeaheadlen++] = CSI;
+		    // use K_SPECIAL instead of CSI to make mappings work
+		    typeahead[typeaheadlen++] = K_SPECIAL;
 		    typeahead[typeaheadlen++] = KS_MODIFIER;
 		    typeahead[typeaheadlen++] = modifiers;
 		}
