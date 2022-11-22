@@ -7862,11 +7862,6 @@ searchpos({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 		Can also be used as a |method|: >
 			GetPattern()->searchpos()
 
-selectedlines()						*selectedlines()*
-		Returns current visual selection. The result is returned as an
-		array of lines. In modes other then visual, emty array is
-		returned.
-
 server2client({clientid}, {string})			*server2client()*
 		Send a reply string to {clientid}.  The most recent {clientid}
 		that sent a string can be retrieved with expand("<client>").
@@ -10118,6 +10113,11 @@ visualmode([{expr}])						*visualmode()*
 		If {expr} is supplied and it evaluates to a non-zero Number or
 		a non-empty String, then the Visual mode will be cleared and
 		the old value is returned.  See |non-zero-arg|.
+
+visualtext()						*visualtext()*
+		Returns current visual selection. The result is returned as an
+		array of lines. In modes other then visual, emty array is
+		returned.
 
 wildmenumode()					*wildmenumode()*
 		Returns |TRUE| when the wildmenu is active and |FALSE|
