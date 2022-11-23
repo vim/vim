@@ -183,12 +183,8 @@ jobs:
       - name: Set up snd-dummy
         run: |
           if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
-            if [[ ${CC} = gcc ]]; then
+            ${CC} = gcc
             CFLAGS="-Wno-incompatible-pointer-types"
-            fi
-            if [[ ${CC} = clang ]]; then
-            clang diagnostic ignored "-Wno-incompatible-pointer-types"
-            fi
             bash ci/build-snd-dummy.sh
           fi
           cd "${SND_DUMMY_DIR}"
