@@ -5238,6 +5238,9 @@ handle_csi(
 	// The protocol has various "progressive enhancement flags" values, but
 	// we only check for zero and non-zero here.
 	kitty_protocol_state = arg[0] == '0' ? KKPS_OFF : KKPS_ENABLED;
+
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
 	*slen = csi_len;
     }
 
