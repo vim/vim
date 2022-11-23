@@ -3134,7 +3134,11 @@ may_trigger_win_scrolled_resized(void)
 #endif
     }
 
-    if (trigger_scroll && scroll_dict != NULL)
+    if (trigger_scroll
+#ifdef FEAT_EVAL
+	    && scroll_dict != NULL
+#endif
+	    )
     {
 #ifdef FEAT_EVAL
 	save_v_event_T  save_v_event;
