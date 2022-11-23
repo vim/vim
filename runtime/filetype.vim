@@ -1343,6 +1343,9 @@ au BufNewFile,BufRead *.nse			setf lua
 " NSIS
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
 
+" Oblivion Language and Oblivion Script Extender
+au BufNewFile,BufRead *.obl,*.obse,*.oblivion,*.obscript  setf obse
+
 " OCaml
 au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli.cppo,*.ml.cppo setf ocaml
 
