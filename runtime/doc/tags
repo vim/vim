@@ -437,10 +437,12 @@ $quote	eval.txt	/*$quote*
 'key'	options.txt	/*'key'*
 'keymap'	options.txt	/*'keymap'*
 'keymodel'	options.txt	/*'keymodel'*
+'keyprotocol'	options.txt	/*'keyprotocol'*
 'keywordprg'	options.txt	/*'keywordprg'*
 'km'	options.txt	/*'km'*
 'kmp'	options.txt	/*'kmp'*
 'kp'	options.txt	/*'kp'*
+'kpc'	options.txt	/*'kpc'*
 'langmap'	options.txt	/*'langmap'*
 'langmenu'	options.txt	/*'langmenu'*
 'langnoremap'	options.txt	/*'langnoremap'*
@@ -4362,6 +4364,7 @@ E1309	map.txt	/*E1309*
 E131	userfunc.txt	/*E131*
 E1310	gui.txt	/*E1310*
 E1311	map.txt	/*E1311*
+E1312	windows.txt	/*E1312*
 E132	userfunc.txt	/*E132*
 E133	userfunc.txt	/*E133*
 E134	change.txt	/*E134*
@@ -5614,7 +5617,10 @@ WinClosed	autocmd.txt	/*WinClosed*
 WinEnter	autocmd.txt	/*WinEnter*
 WinLeave	autocmd.txt	/*WinLeave*
 WinNew	autocmd.txt	/*WinNew*
+WinResized	autocmd.txt	/*WinResized*
+WinResized-event	windows.txt	/*WinResized-event*
 WinScrolled	autocmd.txt	/*WinScrolled*
+WinScrolled-event	windows.txt	/*WinScrolled-event*
 X	change.txt	/*X*
 X11	options.txt	/*X11*
 X11-icon	gui_x11.txt	/*X11-icon*
@@ -6692,6 +6698,8 @@ escape()	builtin.txt	/*escape()*
 escape-bar	version4.txt	/*escape-bar*
 euphoria3.vim	syntax.txt	/*euphoria3.vim*
 euphoria4.vim	syntax.txt	/*euphoria4.vim*
+euro	digraph.txt	/*euro*
+euro-digraph	digraph.txt	/*euro-digraph*
 eval	eval.txt	/*eval*
 eval()	builtin.txt	/*eval()*
 eval-examples	eval.txt	/*eval-examples*
@@ -7487,6 +7495,7 @@ get()	builtin.txt	/*get()*
 get-ms-debuggers	debug.txt	/*get-ms-debuggers*
 getbufinfo()	builtin.txt	/*getbufinfo()*
 getbufline()	builtin.txt	/*getbufline()*
+getbufoneline()	builtin.txt	/*getbufoneline()*
 getbufvar()	builtin.txt	/*getbufvar()*
 getchangelist()	builtin.txt	/*getchangelist()*
 getchar()	builtin.txt	/*getchar()*
@@ -8066,7 +8075,7 @@ interfaces-5.2	version5.txt	/*interfaces-5.2*
 internal-variables	eval.txt	/*internal-variables*
 internal-wordlist	spell.txt	/*internal-wordlist*
 internet	intro.txt	/*internet*
-interp-string	eval.txt	/*interp-string*
+interpolated-string	eval.txt	/*interpolated-string*
 interrupt()	builtin.txt	/*interrupt()*
 intro	intro.txt	/*intro*
 intro.txt	intro.txt	/*intro.txt*
@@ -8158,6 +8167,7 @@ keypad-plus	intro.txt	/*keypad-plus*
 keypad-point	intro.txt	/*keypad-point*
 keys()	builtin.txt	/*keys()*
 keytrans()	builtin.txt	/*keytrans()*
+kitty-keyboard-protocol	map.txt	/*kitty-keyboard-protocol*
 known-bugs	todo.txt	/*known-bugs*
 l	motion.txt	/*l*
 l:	eval.txt	/*l:*
@@ -10860,6 +10870,7 @@ whitespace	pattern.txt	/*whitespace*
 wildcard	editing.txt	/*wildcard*
 wildcards	editing.txt	/*wildcards*
 wildmenumode()	builtin.txt	/*wildmenumode()*
+win-scrolled-resized	windows.txt	/*win-scrolled-resized*
 win16	os_win32.txt	/*win16*
 win32	os_win32.txt	/*win32*
 win32-!start	gui_w32.txt	/*win32-!start*

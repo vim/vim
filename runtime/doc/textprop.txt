@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.0.  Last change: 2022 Oct 13
+*textprop.txt*  For Vim version 9.0.  Last change: 2022 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -147,7 +147,8 @@ prop_add({lnum}, {col}, {props})
 				above/below the line if {col} is zero; prepend
 				and/or append spaces for padding with
 				highlighting; cannot be used with "length",
-				"end_lnum" and "end_col" |virtual-text|
+				"end_lnum" and "end_col"
+				See |virtual-text| for more information.
 		   					*E1294*
 		   text_align	when "text" is present and {col} is zero;
 				specifies where to display the text:

@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Oct 28
+" Last Change:	2022 Nov 23
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -583,6 +583,8 @@ call <SID>BinOptionG("xtermcodes", &xtermcodes)
 call <SID>AddOption("weirdinvert", gettext("terminal that requires extra redrawing"))
 call <SID>BinOptionG("wiv", &wiv)
 
+call <SID>AddOption("keyprotocol", gettext("what keyboard protocol to use for which terminal"))
+call <SID>OptionG("kpc", &kpc)
 call <SID>AddOption("esckeys", gettext("recognize keys that start with <Esc> in Insert mode"))
 call <SID>BinOptionG("ek", &ek)
 call <SID>AddOption("scrolljump", gettext("minimal number of lines to scroll at a time"))

@@ -1,4 +1,4 @@
-*version9.txt*  For Vim version 9.0.  Last change: 2022 Jun 28
+*version9.txt*  For Vim version 9.0.  Last change: 2022 Nov 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -254,7 +254,7 @@ summary.
 Many memory leaks, invalid memory accesses and crashes have been fixed.
 See the list of patches below: |bug-fixes-9|.
 
-Support for Vim expression evaluation in a string. |interp-string|
+Support for Vim expression evaluation in a string. |interpolated-string|
 Support for evaluating Vim expressions in a heredoc. |:let-heredoc|
 
 Support for fuzzy matching:
@@ -28478,7 +28478,7 @@ Files:      src/change.c, src/drawscreen.c, src/structs.h
 
 Patch 8.2.4645
 Problem:    'shortmess' changed when session does not store options.
-Solution:   Save and restore 'shortmess' if needed. (James Charti,
+Solution:   Save and restore 'shortmess' if needed. (James Cherti,
             closes #10037)
 Files:      src/session.c, src/testdir/test_mksession.vim
 

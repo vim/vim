@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Nov 18
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Nov 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,23 +38,24 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Keyboard protocol (also see below):
+- Use the kitty_protocol_state value, similar to seenModifyOtherKeys
+- When kitty_protocol_state is set then reset seenModifyOtherKeys.
+    Do not set seenModifyOtherKeys for kitty-protocol sequences in
+	handle_key_with_modifier().
+
 virtual text issues:
-- #11463  `after` is sometimes wrapped with `list`, `nowrap` and
-  `listchars+=extends:>`, cursor position is also wrong
 - #11520   `below` cannot be placed below empty lines
     James Alvarado looks into it
+- virtual text `below` highlighted incorrectly when `cursorline` enabled
+  (Issue #11588)
 
 'smoothscroll':
-- PR #11502 -  cursor position wrong
-- PR #11514 -  mouse click is off
 - CTRL-E and gj in long line with 'scrolloff' 5 not working well yet.
 - computing 'scrolloff' position row use w_skipcol
 - Check this list: https://github.com/vim/vim/pulls?q=is%3Apr+is%3Aopen+smoothscroll+author%3Aychin
 - Long line spanning multiple pages:  After a few CTRL-E then gj causes a
   scroll. (Ernie Rael, 18 Nov)  Also pressing space or "l"
-
-Switching to window for a buffer in set_buffer_lines() doesn't work if there
-is no window.  Use aucmd_prepbuf() instead.  #11558
 
 
 Upcoming larger works:
@@ -70,12 +71,6 @@ Upcoming larger works:
    - example plugin: https://github.com/uga-rosa/dps-vsctm.vim
 - Better support for detecting terminal emulator behavior (esp. special key
   handling) and taking away the need for users to tweak their config.
-  > In the libvterm fork properly implement:
-    - modifyOtherKeys 2 - follow xterm implementation as close as possible
-    - Kitty key protocol - just like the latest Kitty
-    So that in TermDebug the key handling can be stepped through (instead of
-    having to log messages all over the place to see what happens).  Ask
-    Leonerd about location of code, he might want to take over some of it.
   > In the table of names pointing to the list of entries, with an additional
     one.  So that "xterm-kitty" can first load "xterm" and then add "kitty"
     entries.
@@ -88,11 +83,6 @@ Upcoming larger works:
     -> May also send t_RV and delay starting a shell command until the
        response has been seen, to make sure the other responses don't get read
        by a shell command.
-  > Add an option with a list of names that, when matching $TERM, indicate the
-    kitty keyboard protocol should be used?  Allows adding "foot" and others
-    later, without modifying Vim.  Perhaps a pattern-value pair:
-	set keyprotocol=kitty:kitty,foot:kitty,xterm:mok2,doggy:mok2
-    Here "mok2" means modifyOtherKeys level 2.
   > Can we use the req_more_codes_from_term() mechanism with more terminals?
     Should we repeat it after executing a shell command?
     Can also add this to the 'keyprotocol' option: "mok2+tcap"
@@ -294,7 +284,7 @@ Resetting 't_ut' already causes this?
 
 When scheme can't be found by configure there is no clear "not found" message:
     configure:5769: checking MzScheme install prefix
-    configure:5781: result: 
+    configure:5781: result:
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
 
@@ -4568,8 +4558,11 @@ Autocommands:
 		      BufChangePre, BufChangePost and RevertBuf. (Shah)
     ViewChanged	    - triggered when the text scrolls and when the window size
 		      changes.
-    WinResized	    - After a window has been resized
-    WinClose	    - Just before closing a window
+    QuickfixList    - when any entry in the current list changes or another
+		      list is selected
+    QuickfixPosition - when selecting another entry in the current quickfix
+		       list
+
 -   Write the file now and then ('autosave'):
 				  *'autosave'* *'as'* *'noautosave'* *'noas'*
     'autosave' 'as' number  (default 0)

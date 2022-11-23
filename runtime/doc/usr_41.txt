@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.0.  Last change: 2022 Nov 14
+*usr_41.txt*	For Vim version 9.0.  Last change: 2022 Nov 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -442,7 +442,7 @@ If you don't like the concatenation you can use the $"string" form, which
 accepts an expression in curly braces: >
 	echo $"Name: {name}"
 
-See |interp-string| for more information.
+See |interpolated-string| for more information.
 
 Borrowed from the C language is the conditional expression: >
 
@@ -803,7 +803,7 @@ List manipulation:					*list-functions*
 	call()			call a function with List as arguments
 	index()			index of a value in a List or Blob
 	indexof()		index in a List or Blob where an expression
-				evaluates to true 
+				evaluates to true
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List

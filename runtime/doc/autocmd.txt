@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.0.  Last change: 2022 May 24
+*autocmd.txt*   For Vim version 9.0.  Last change: 2022 Nov 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1058,8 +1058,8 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				command is run, before jumping to the first
 				location. For |:cfile| and |:lfile| commands
-				it is run after error file is read and before
-				moving to the first error.
+				it is run after the error file is read and
+				before moving to the first error.
 				See |QuickFixCmdPost-example|.
 							*QuitPre*
 QuitPre				When using `:quit`, `:wq` or `:qall`, before
@@ -1342,8 +1342,9 @@ VimSuspend			When the Vim instance is suspended.  Only when
 				CTRL-Z was typed inside Vim, or when the SIGTSTP
 				signal was sent to Vim, but not for SIGSTOP.
 							*WinClosed*
-WinClosed			After closing a window.  The pattern is
-				matched against the |window-ID|.  Both
+WinClosed			When closing a window, just before it is
+				removed from the window layout.  The pattern
+				is matched against the |window-ID|.  Both
 				<amatch> and <afile> are set to the
 				|window-ID|.  Non-recursive (event cannot
 				trigger itself).
