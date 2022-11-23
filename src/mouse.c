@@ -2308,10 +2308,15 @@ check_termcode_mouse(
 	 */
 	for (;;)
 	{
-# ifdef FEAT_GUI
-	    if (gui.in_use)
+	    // For the GUI and for MS-Windows two bytes each are used for row
+	    // and column.  Allows for more than 223 columns.
+# if defined(FEAT_GUI) || defined(MSWIN)
+	    if (TRUE
+#  if defined(FEAT_GUI) && !defined(MSWIN)
+		&& gui.in_use
+#  endif
+		)
 	    {
-		// GUI uses more bits for columns > 223
 		num_bytes = get_bytes_from_buf(tp + *slen, bytes, 5);
 		if (num_bytes == -1)	// not enough coordinates
 		    return -1;

@@ -2055,17 +2055,23 @@ mch_inchar(
 		typeahead[typeaheadlen++] = CSI;
 		typeahead[typeaheadlen++] = KS_EXTRA;
 		typeahead[typeaheadlen++] = scroll_dir;
-		g_nMouseClick = -1;
 	    }
 	    else
 	    {
 		typeahead[typeaheadlen++] = ESC + 128;
 		typeahead[typeaheadlen++] = 'M';
 		typeahead[typeaheadlen++] = g_nMouseClick;
-		typeahead[typeaheadlen++] = g_xMouse + '!';
-		typeahead[typeaheadlen++] = g_yMouse + '!';
-		g_nMouseClick = -1;
 	    }
+
+	    // Pass the pointer coordinates of the mouse event in 2 bytes,
+	    // allowing for > 223 columns.  Both for click and scroll events.
+	    // This is the same as what is used for the GUI.
+	    typeahead[typeaheadlen++] = (char_u)(g_xMouse / 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_xMouse % 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_yMouse / 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_yMouse % 128 + ' ' + 1);
+
+	    g_nMouseClick = -1;
 	}
 	else
 	{
