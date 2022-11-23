@@ -698,6 +698,7 @@ EXTERN char_u	*p_keymap;	// 'keymap'
 #endif
 EXTERN char_u	*p_kp;		// 'keywordprg'
 EXTERN char_u	*p_km;		// 'keymodel'
+EXTERN char_u	*p_kpc;		// 'keyprotocol'
 #ifdef FEAT_LANGMAP
 EXTERN char_u	*p_langmap;	// 'langmap'
 EXTERN int	p_lnr;		// 'langnoremap'

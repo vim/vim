@@ -2257,6 +2257,14 @@ typedef enum {
     ESTACK_SCRIPT,
 } estack_arg_T;
 
+// Return value of match_keyprotocol()
+typedef enum {
+    KEYPROTOCOL_NONE,
+    KEYPROTOCOL_MOK2,
+    KEYPROTOCOL_KITTY,
+    KEYPROTOCOL_FAIL
+} keyprot_T;
+
 // Flags for assignment functions.
 #define ASSIGN_VAR	0     // ":var" (nothing special)
 #define ASSIGN_FINAL	0x01  // ":final"

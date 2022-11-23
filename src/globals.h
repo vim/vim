@@ -1377,6 +1377,24 @@ EXTERN int pending_end_reg_executing INIT(= 0);
 // no longer be used.
 EXTERN int seenModifyOtherKeys INIT(= FALSE);
 
+// The state for the Kitty keyboard protocol.
+typedef enum {
+    // Initially we have no clue if the protocol is on or off.
+    KKPS_INITIAL,
+    // Used when receiving the state and the flags are zero.
+    KKPS_OFF,
+    // Used when receiving the state and the flags are non-zero.
+    KKPS_ENABLED,
+    // Used after outputting t_KE when the state was KKPS_ENABLED.  We do not
+    // really know if t_KE actually disabled the protocol, the following t_KI
+    // is expected to request the state, but the response may come only later.
+    KKPS_DISABLED,
+    // Used after outputting t_KE when the state was not KKPS_ENABLED.
+    KKPS_AFTER_T_KE,
+} kkpstate_T;
+
+EXTERN kkpstate_T kitty_protocol_state INIT(= KKPS_INITIAL);
+
 EXTERN int no_mapping INIT(= FALSE);	// currently no mapping allowed
 EXTERN int no_zero_mapping INIT(= 0);	// mapping zero not allowed
 EXTERN int allow_keys INIT(= FALSE);	// allow key codes when no_mapping

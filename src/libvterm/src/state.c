@@ -1423,9 +1423,37 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     }
     break;
 
-  case LEADER('>', 0x6d): // xterm resource modifyOtherKeys
+  case LEADER('>', 0x6d): // CSI > 4 ; Pv m   xterm resource modifyOtherKeys
     if (argcount == 2 && args[0] == 4)
+    {
+      // can't have both modify_other_keys and kitty_keyboard
+      state->mode.kitty_keyboard = 0;
+
       state->mode.modify_other_keys = args[1] == 2;
+    }
+    break;
+
+  case LEADER('>', 0x75): // CSI > 1 u  enable kitty keyboard protocol
+    if (argcount == 1 && args[0] == 1)
+    {
+      // can't have both modify_other_keys and kitty_keyboard
+      state->mode.modify_other_keys = 0;
+
+      state->mode.kitty_keyboard = 1;
+    }
+    break;
+
+  case LEADER('<', 0x75): // CSI < u  disable kitty keyboard protocol
+    if (argcount <= 1)
+      state->mode.kitty_keyboard = 0;
+    break;
+
+  case LEADER('?', 0x75): // CSI ? u  request kitty keyboard protocol state
+    if (argcount <= 1)
+      // TODO: this only uses the values zero and one.  The protocol specifies
+      // more values, the progressive enhancement flags.
+      vterm_push_output_sprintf_ctrl(state->vt, C1_CSI, "?%du",
+						   state->mode.kitty_keyboard);
     break;
 
   case 0x6e: // DSR - ECMA-48 8.3.35

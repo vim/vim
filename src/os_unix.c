@@ -5348,9 +5348,9 @@ finished:
 		long delay_msec = 1;
 
 		if (tmode == TMODE_RAW)
-		    // possibly disables modifyOtherKeys, so that the system
-		    // can recognize CTRL-C
-		    out_str(T_CTE);
+		    // Possibly disables modifyOtherKeys, so that the system
+		    // can recognize CTRL-C.
+		    out_str_t_TE();
 
 		/*
 		 * Similar to the loop above, but only handle X events, no

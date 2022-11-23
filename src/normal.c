@@ -424,7 +424,7 @@ normal_cmd_get_more_chars(
 	    // Disable bracketed paste and modifyOtherKeys here, we won't
 	    // recognize the escape sequences with 'esckeys' off.
 	    out_str(T_BD);
-	    out_str(T_CTE);
+	    out_str_t_TE();
 	}
 
 	*cp = plain_vgetc();

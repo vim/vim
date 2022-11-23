@@ -312,8 +312,27 @@ list_mappings(
     // Prevent mappings to be cleared while at the more prompt.
     ++map_locked;
 
-    if (p_verbose > 0 && keyround == 1 && seenModifyOtherKeys)
-	msg_puts(_("Seen modifyOtherKeys: true"));
+    if (p_verbose > 0 && keyround == 1)
+    {
+	if (seenModifyOtherKeys)
+	    msg_puts(_("Seen modifyOtherKeys: true"));
+	if (kitty_protocol_state != KKPS_INITIAL)
+	{
+	    char *name = _("Unknown");
+	    switch (kitty_protocol_state)
+	    {
+		case KKPS_INITIAL: break;
+		case KKPS_OFF: name = _("Off"); break;
+		case KKPS_ENABLED: name = _("On"); break;
+		case KKPS_DISABLED: name = _("Disabled"); break;
+		case KKPS_AFTER_T_KE: name = _("Cleared"); break;
+	    }
+
+	    char buf[200];
+	    vim_snprintf(buf, sizeof(buf), _("Kitty keyboard protocol: %s"), name);
+	    msg_puts(buf);
+	}
+    }
 
     // need to loop over all global hash lists
     for (int hash = 0; hash < 256 && !got_int; ++hash)

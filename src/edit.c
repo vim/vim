@@ -330,7 +330,7 @@ edit(
 
 	// Disable modifyOtherKeys, keys with modifiers would cause exiting
 	// Insert mode.
-	out_str(T_CTE);
+	out_str_t_TE();
     }
 
     /*

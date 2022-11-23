@@ -1663,6 +1663,13 @@ did_set_string_option(
 	}
     }
 
+    // 'keyprotocol'
+    else if (varp == &p_kpc)
+    {
+	if (match_keyprotocol(NULL) == KEYPROTOCOL_FAIL)
+	    errmsg = e_invalid_argument;
+    }
+
     // 'mousemodel'
     else if (varp == &p_mousem)
     {

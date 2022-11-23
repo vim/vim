@@ -10,18 +10,19 @@ This subject is introduced in sections |05.4|, |24.7| and |40.1| of the user
 manual.
 
 1. Key mapping			|key-mapping|
-   1.1 MAP COMMANDS			|:map-commands|
-   1.2 Special arguments		|:map-arguments|
-   1.3 Mapping and modes		|:map-modes|
-   1.4 Listing mappings			|map-listing|
-   1.5 Mapping special keys		|:map-special-keys|
-   1.6 Special characters		|:map-special-chars|
-   1.7 What keys to map			|map-which-keys|
-   1.8 Examples				|map-examples|
-   1.9 Using mappings			|map-typing|
-   1.10 Mapping alt-keys		|:map-alt-keys|
-   1.11 Mapping in modifyOtherKeys mode	|modifyOtherKeys|
-   1.12 Mapping an operator		|:map-operator|
+   1.1 MAP COMMANDS				|:map-commands|
+   1.2 Special arguments			|:map-arguments|
+   1.3 Mapping and modes			|:map-modes|
+   1.4 Listing mappings				|map-listing|
+   1.5 Mapping special keys			|:map-special-keys|
+   1.6 Special characters			|:map-special-chars|
+   1.7 What keys to map				|map-which-keys|
+   1.8 Examples					|map-examples|
+   1.9 Using mappings				|map-typing|
+   1.10 Mapping alt-keys			|:map-alt-keys|
+   1.11 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
+   1.12 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
+   1.13 Mapping an operator			|:map-operator|
 2. Abbreviations		|abbreviations|
 3. Local mappings and functions	|script-local|
 4. User-defined commands	|user-commands|
@@ -1009,7 +1010,34 @@ When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.
 
 
-1.12 MAPPING AN OPERATOR				*:map-operator*
+1.12 MAPPING WITH KITTY KEYBOARD PROTOCOL	 *kitty-keyboard-protocol*
+
+If the value of 'term' contains "kitty" then Vim will send out an escape
+sequence to enable the Kitty keyboard protocol.  This can be changed with the
+'keyprotocol' option.
+
+Like modifyOtherKeys, this will make it possible to distinguish between more
+keys with modifiers.  Also, this protocol sends an escape sequence for the Esc
+key, so that Vim does not need to use a timeout to know whether receiving an
+Esc character means the Esc key was pressed or it's the start of an escape
+sequence.
+
+Vim automatically detects if the Kitty keyboard protocol was enabled when it
+spots the response to the status request (this should be part of the |t_TI|
+termcap entry).  To see if Vim detected such an escape sequence use: >
+	:verbose map
+The first line will then show "Kitty keyboard protocol: {value}" (possibly
+translated).  The meaning of {value}:
+	Unknown		no status received yet
+	Off		protocol is not used
+	On		protocol is used
+	Disabled	protocol was used but expected to have been disabled
+			by 't_TE'
+	Cleared		protocol expected to have beeen disabled by 't_TE',
+			previous state is unknown 
+
+
+1.13 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
 you must create a mapping that first sets the 'operatorfunc' option and then

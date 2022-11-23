@@ -4888,6 +4888,50 @@ A jump table for the options with a short description can be found at |Q_op|.
 	<PageUp> and <PageDown>.
 	The 'keymodel' option is set by the |:behave| command.
 
+						*'keyprotocol'* *'kpc'*
+'keyprotocol' 'kpc'	string	(default: see below)
+			global
+	Specifies what keyboard protocol to use depending on the value of
+	'term'.  The supported keyboard protocols names are:
+		none	whatever the terminal uses
+		mok2	modifyOtherKeys level 2, as supported by xterm
+		kitty	Kitty keyboard protocol, as supported by Kitty
+
+	The option value is a list of command separated items.  Each item has
+	a pattern that is matched against the 'term' option, a colon and the
+	protocol name to be used.  To illustrate this, the default value would
+	be set with: >
+	   set keyprotocol=kitty:kitty,foot:kitty,wezterm:kitty,xterm:mok2
+
+<	This means that when 'term' contains "kitty, "foot" or "wezterm"
+	somewhere then the "kitty" protocol is used.  When 'term' contains
+	"xterm" somewhere, then the "mok2" protocol is used. 
+
+	The first match is used, thus if you want to have "kitty" use the
+	kitty protocol, but "badkitty" not, then you should match "badkitty"
+	first and use the "none" value: >
+	   set keyprotocol=badkitty:none,kitty:kitty
+<
+	The option is used after 'term' has been changed.  First the termcap
+	entries are set, possibly using the builtin list, see |builtin-terms|.
+	Then this option is inspected and if there is a match and a protocol
+	is specified the following happens:
+		none	Nothing, the regular t_TE and t_TI values remain
+
+		mok2	The t_TE value is changed to:
+			    CSI >4;m	disables modifyOtherKeys
+			The t_TI value is changed to:
+			    CSI >4;2m	enables modifyOtherKeys
+
+		kitty	The t_TE value is changed to:
+			    CSI >4;m	disables modifyOtherKeys
+			    CSI <u	disables the kitty keyboard protocol
+			The t_TI value is changed to:
+			    CSI >1u	enables the kitty keyboard protocol
+			    CSI ?u	request kitty keyboard protocol state
+			    CSI >c	request the termresponse
+
+
 					*'keywordprg'* *'kp'*
 'keywordprg' 'kp'	string	(default "man" or "man -s",  DOS: ":help",
 								  VMS: "help")

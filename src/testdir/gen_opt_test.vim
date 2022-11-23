@@ -113,6 +113,8 @@ let test_values = {
       \ 'isprint': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'keymap': [['', 'accents'], ['xxx']],
       \ 'keymodel': [['', 'startsel', 'startsel,stopsel'], ['xxx']],
+      \ 'keyprotocol': [['', 'xxx:none', 'yyy:mok2', 'zzz:kitty'],
+      \		[':none', 'xxx:', 'x:non', 'y:mok3', 'z:kittty']],
       \ 'langmap': [['', 'xX', 'aA,bB'], ['xxx']],
       \ 'lispoptions': [['', 'expr:0', 'expr:1'], ['xxx']],
       \ 'listchars': [['', 'eol:x', 'eol:x,space:y'], ['xxx']],

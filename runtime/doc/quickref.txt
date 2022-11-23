@@ -775,6 +775,7 @@ Short explanation of each option:		*option-list*
 'key'			    encryption key
 'keymap'	  'kmp'     name of a keyboard mapping
 'keymodel'	  'km'	    enable starting/stopping selection with keys
+'keyprotocol'	  'kpc'	    what keyboard protocol to use for what terminal
 'keywordprg'	  'kp'	    program to use for the "K" command
 'langmap'	  'lmap'    alphabetic characters for other language mode
 'langmenu'	  'lm'	    language to be used for the menus

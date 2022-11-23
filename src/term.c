@@ -587,6 +587,32 @@ static tcap_entry_T builtin_xterm[] = {
 };
 
 /*
+ * Additions for using modifyOtherKeys level 2.  Same as what is used for
+ * xterm.
+ */
+static tcap_entry_T builtin_mok2[] = {
+    {(int)KS_CTI,	"\033[>4;2m"},
+    {(int)KS_CTE,	"\033[>4;m"},
+
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
+/*
+ * Additions for using the Kitty keyboard protocol.
+ */
+static tcap_entry_T builtin_kitty[] = {
+    // t_TI enables the kitty keyboard protocol, requests the kitty keyboard
+    // protocol state and requests the version response.
+    {(int)KS_CTI,	"\033[>1u\033[?u\033[>c"},
+
+    // t_TE also disabled modifyOtherKeys, because t_TI from xterm may already
+    // have been used.
+    {(int)KS_CTE,	"\033[>4;m\033[<u"},
+
+    {(int)KS_NAME,	NULL}  // end marker
+};
+
+/*
  * iris-ansi for Silicon Graphics machines.
  */
 static tcap_entry_T builtin_iris_ansi[] = {
@@ -1494,26 +1520,22 @@ find_builtin_term(char_u *term)
 }
 
 /*
- * Parsing of the builtin termcap entries.
- * Caller should check if "term" is a valid builtin terminal name.
- * The terminal's name is not set, as this is already done in termcapinit().
+ * Apply entries from a builtin termcap.
  */
     static void
-parse_builtin_tcap(char_u *term)
+apply_builtin_tcap(char_u *term, tcap_entry_T *entries, int overwrite)
 {
-    tcap_entry_T *p = find_builtin_term(term);
-    if (p == NULL)  // builtin term not found
-	return;
-
     int term_8bit = term_is_8bit(term);
 
-    for ( ; p->bt_entry != (int)KS_NAME && p->bt_entry != BT_EXTRA_KEYS; ++p)
+    for (tcap_entry_T *p = entries;
+	      p->bt_entry != (int)KS_NAME && p->bt_entry != BT_EXTRA_KEYS; ++p)
     {
 	if ((int)p->bt_entry >= 0)	// KS_xx entry
 	{
-	    // Only set the value if it wasn't set yet.
+	    // Only set the value if it wasn't set yet or "overwrite" is TRUE.
 	    if (term_strings[p->bt_entry] == NULL
-				 || term_strings[p->bt_entry] == empty_option)
+		    || term_strings[p->bt_entry] == empty_option
+		    || overwrite)
 	    {
 #ifdef FEAT_EVAL
 		int opt_idx = -1;
@@ -1557,10 +1579,23 @@ parse_builtin_tcap(char_u *term)
 	    char_u  name[2];
 	    name[0] = KEY2TERMCAP0((int)p->bt_entry);
 	    name[1] = KEY2TERMCAP1((int)p->bt_entry);
-	    if (find_termcode(name) == NULL)
+	    if (find_termcode(name) == NULL || overwrite)
 		add_termcode(name, (char_u *)p->bt_string, term_8bit);
 	}
     }
+}
+
+/*
+ * Parsing of the builtin termcap entries.
+ * Caller should check if "term" is a valid builtin terminal name.
+ * The terminal's name is not set, as this is already done in termcapinit().
+ */
+    static void
+parse_builtin_tcap(char_u *term)
+{
+    tcap_entry_T *entries = find_builtin_term(term);
+    if (entries != NULL)
+	apply_builtin_tcap(term, entries, FALSE);
 }
 
 /*
@@ -1799,6 +1834,67 @@ report_default_term(char_u *term)
 }
 
 /*
+ * Parse the 'keyprotocol' option, match against "term" and return the protocol
+ * for the first matching entry.
+ * When "term" is NULL then compile all patterns to check for any errors.
+ * Returns KEYPROTOCOL_FAIL if a pattern cannot be compiled.
+ * Returns KEYPROTOCOL_NONE if there is no match.
+ */
+    keyprot_T
+match_keyprotocol(char_u *term)
+{
+    int		len = (int)STRLEN(p_kpc) + 1;
+    char_u	*buf = alloc(len);
+    if (buf == NULL)
+	return KEYPROTOCOL_FAIL;
+
+    keyprot_T	ret = KEYPROTOCOL_FAIL;
+    char_u	*p = p_kpc;
+    while (*p != NUL)
+    {
+	// Isolate one comma separated item.
+	(void)copy_option_part(&p, buf, len, ",");
+	char_u *colon = vim_strchr(buf, ':');
+	if (colon == NULL || colon == buf || colon[1] == NUL)
+	    goto theend;
+	*colon = NUL;
+
+	keyprot_T prot;
+	if (STRCMP(colon + 1, "none") == 0)
+	    prot = KEYPROTOCOL_NONE;
+	else if (STRCMP(colon + 1, "mok2") == 0)
+	    prot = KEYPROTOCOL_MOK2;
+	else if (STRCMP(colon + 1, "kitty") == 0)
+	    prot = KEYPROTOCOL_KITTY;
+	else
+	    goto theend;
+
+	regmatch_T regmatch;
+	CLEAR_FIELD(regmatch);
+	regmatch.rm_ic = TRUE;
+	regmatch.regprog = vim_regcomp(buf, RE_MAGIC);
+	if (regmatch.regprog == NULL)
+	    goto theend;
+
+	int match = term != NULL && vim_regexec(&regmatch, term, (colnr_T)0);
+	vim_regfree(regmatch.regprog);
+	if (match)
+	{
+	    ret = prot;
+	    goto theend;
+	}
+
+    }
+
+    // No match found, use "none".
+    ret = KEYPROTOCOL_NONE;
+
+theend:
+    vim_free(buf);
+    return ret;
+}
+
+/*
  * Set terminal options for terminal "term".
  * Return OK if terminal 'term' was found in a termcap, FAIL otherwise.
  *
@@ -1924,6 +2020,15 @@ set_termname(char_u *term)
 	    }
 #endif
 	    parse_builtin_tcap(term);
+
+	    // Use the 'keyprotocol' option to adjust the t_TE and t_TI
+	    // termcap entries if there is an entry maching "term".
+	    keyprot_T kpc = match_keyprotocol(term);
+	    if (kpc == KEYPROTOCOL_KITTY)
+		apply_builtin_tcap(term, builtin_kitty, TRUE);
+	    else if (kpc == KEYPROTOCOL_MOK2)
+		apply_builtin_tcap(term, builtin_mok2, TRUE);
+
 #ifdef FEAT_GUI
 	    if (term_is_gui(term))
 	    {
@@ -3562,6 +3667,25 @@ set_shellsize(int width, int height, int mustset)
 }
 
 /*
+ * Output T_CTE, the t_TE termcap entry, and handle expected effects.
+ * The code possibly disables modifyOtherKeys and the Kitty keyboard protocol.
+ */
+    void
+out_str_t_TE(void)
+{
+    out_str(T_CTE);
+
+    // When the kitty keyboard protocol is enabled we expect t_TE to disable
+    // it.  Remembering that it was detected to be enabled is useful in some
+    // situations.
+    if (kitty_protocol_state == KKPS_ENABLED
+	    || kitty_protocol_state == KKPS_DISABLED)
+	kitty_protocol_state = KKPS_DISABLED;
+    else
+	kitty_protocol_state = KKPS_AFTER_T_KE;
+}
+
+/*
  * Set the terminal to TMODE_RAW (for Normal mode) or TMODE_COOK (for external
  * commands and Ex mode).
  */
@@ -3613,7 +3737,7 @@ settmode(tmode_T tmode)
 		if (tmode != TMODE_RAW)
 		{
 		    out_str(T_BD);	// disable bracketed paste mode
-		    out_str(T_CTE);	// possibly disables modifyOtherKeys
+		    out_str_t_TE();	// possibly disables modifyOtherKeys
 		}
 		else
 		{
@@ -3714,7 +3838,8 @@ stoptermcap(void)
 	out_flush();
 	termcap_active = FALSE;
 	cursor_on();			// just in case it is still off
-	out_str(T_CTE);			// stop "raw" mode
+	out_str_t_TE();			// stop "raw" mode, modifyOtherKeys and
+					// Kitty keyboard protocol
 	out_str(T_TE);			// stop termcap mode
 	screen_start();			// don't know where cursor is now
 	out_flush();
@@ -5105,6 +5230,15 @@ handle_csi(
 # ifdef FEAT_EVAL
 	set_vim_var_string(VV_TERMBLINKRESP, tp, *slen);
 # endif
+    }
+
+    // Kitty keyboard protocol status response: CSI ? flags u
+    else if (first == '?' && argc == 1 && trail == 'u')
+    {
+	// The protocol has various "progressive enhancement flags" values, but
+	// we only check for zero and non-zero here.
+	kitty_protocol_state = arg[0] == '0' ? KKPS_OFF : KKPS_ENABLED;
+	*slen = csi_len;
     }
 
     // Check for a window position response from the terminal:
