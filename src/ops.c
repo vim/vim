@@ -3422,7 +3422,7 @@ free_operatorfunc_option(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Mark the global 'operatorfunc' callback with 'copyID' so that it is not
+ * Mark the global 'operatorfunc' callback with "copyID" so that it is not
  * garbage collected.
  */
     int

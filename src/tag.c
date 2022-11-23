@@ -202,7 +202,7 @@ free_tagfunc_option(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Mark the global 'tagfunc' callback with 'copyID' so that it is not garbage
+ * Mark the global 'tagfunc' callback with "copyID" so that it is not garbage
  * collected.
  */
     int
@@ -1773,7 +1773,7 @@ findtags_in_help_init(findtags_state_T *st)
     int		i;
     char_u	*s;
 
-    // Keep 'en' as the language if the file extension is '.txt'
+    // Keep "en" as the language if the file extension is ".txt"
     if (st->is_txt)
 	STRCPY(st->help_lang, "en");
     else
@@ -1883,9 +1883,9 @@ emacs_tags_incstack_free(void)
 /*
  * Emacs tags line with CTRL-L: New file name on next line.
  * The file name is followed by a ','.  Remember etag file name in ebuf.
- * The FILE pointer to the tags file is stored in 'st->fp'.  If another tags
+ * The FILE pointer to the tags file is stored in "st->fp".  If another tags
  * file is included, then the FILE pointer to the new tags file is stored in
- * 'st->fp'. The old file pointer is saved in incstack.
+ * "st->fp". The old file pointer is saved in incstack.
  */
     static void
 emacs_tags_new_filename(findtags_state_T *st)
@@ -2131,7 +2131,7 @@ findtags_get_next_line(findtags_state_T *st, tagsearch_info_T *sinfo_p)
 }
 
 /*
- * Parse a tags file header line in 'st->lbuf'.
+ * Parse a tags file header line in "st->lbuf".
  * Returns TRUE if the current line in st->lbuf is not a tags header line and
  * should be parsed as a regular tag line. Returns FALSE if the line is a
  * header line and the next header line should be read.
@@ -2254,10 +2254,14 @@ findtags_start_state_handler(
 
 /*
  * Parse a tag line read from a tags file.
- * Returns OK if a tags line is successfully parsed.
- * Returns FAIL if a format error is encountered.
+ * Also compares the tag name in "tagpp->tagname" with a search pattern in
+ * "st->orgpat->head" as a quick check if the tag may match.
+ * Returns TAG_MATCH_SUCCESS if the tag may match, TAG_MATCH_FAIL if the tag
+ * doesn't match, TAG_MATCH_NEXT to look for the next matching tag (used in a
+ * binary search) and TAG_MATCH_STOP if all the tags are processed without a
+ * match. Uses the values in "margs" for doing the comparison.
  */
-    static int
+    static tagmatch_status_T
 findtags_parse_line(
     findtags_state_T		*st,
     tagptrs_T			*tagpp,
@@ -2424,14 +2428,12 @@ findtags_matchargs_init(findtags_match_args_T *margs, int flags)
 }
 
 /*
- * Compares the tag name in 'tagpp->tagname' with a search pattern in
- * 'st->orgpat.head'.
- * Returns TAG_MATCH_SUCCESS if the tag matches, TAG_MATCH_FAIL if the tag
- * doesn't match, TAG_MATCH_NEXT to look for the next matching tag (used in a
- * binary search) and TAG_MATCH_STOP if all the tags are processed without a
- * match. Uses the values in 'margs' for doing the comparison.
+ * Compares the tag name in "tagpp->tagname" with a search pattern in
+ * "st->orgpat->pat".
+ * Returns TRUE if the tag matches, FALSE if the tag doesn't match.
+ * Uses the values in "margs" for doing the comparison.
  */
-    static tagmatch_status_T
+    static int
 findtags_match_tag(
     findtags_state_T	*st,
     tagptrs_T		*tagpp,
@@ -2487,11 +2489,11 @@ findtags_match_tag(
 	margs->match_re = TRUE;
     }
 
-    return match ? TAG_MATCH_SUCCESS : TAG_MATCH_FAIL;
+    return match;
 }
 
 /*
- * Convert the encoding of a line read from a tags file in 'st->lbuf'.
+ * Convert the encoding of a line read from a tags file in "st->lbuf".
  * Converting the pattern from 'enc' to the tags file encoding doesn't work,
  * because characters are not recognized. The converted line is saved in
  * st->lbuf.
@@ -2756,7 +2758,7 @@ findtags_add_match(
 
 /*
  * Read and get all the tags from file st->tag_fname.
- * Sets 'st->stop_searching' to TRUE to stop searching for additional tags.
+ * Sets "st->stop_searching" to TRUE to stop searching for additional tags.
  */
     static void
 findtags_get_all_tags(
@@ -2885,14 +2887,8 @@ line_read_in:
 	    return;
 	}
 
-	retval = findtags_match_tag(st, &tagp, margs);
-	if (retval == TAG_MATCH_NEXT)
-	    continue;
-	if (retval == TAG_MATCH_STOP)
-	    break;
-
 	// If a match is found, add it to ht_match[] and ga_match[].
-	if (retval == TAG_MATCH_SUCCESS)
+	if (findtags_match_tag(st, &tagp, margs))
 	{
 	    if (findtags_add_match(st, &tagp, margs, buf_ffname, &hash)
 								== FAIL)
@@ -2902,10 +2898,10 @@ line_read_in:
 }
 
 /*
- * Search for tags matching 'st->orgpat.pat' in the 'st->tag_fname' tags file.
- * Information needed to search for the tags is in the 'st' state structure.
- * The matching tags are returned in 'st'. If an error is encountered, then
- * 'st->stop_searching' is set to TRUE.
+ * Search for tags matching "st->orgpat->pat" in the "st->tag_fname" tags file.
+ * Information needed to search for the tags is in the "st" state structure.
+ * The matching tags are returned in "st". If an error is encountered, then
+ * "st->stop_searching" is set to TRUE.
  */
     static void
 findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
@@ -2977,7 +2973,7 @@ findtags_in_file(findtags_state_T *st, char_u *buf_ffname)
 }
 
 /*
- * Copy the tags found by find_tags() to 'matchesp'.
+ * Copy the tags found by find_tags() to "matchesp".
  * Returns the number of matches copied.
  */
     static int
