@@ -2062,10 +2062,14 @@ mch_inchar(
 		typeahead[typeaheadlen++] = ESC + 128;
 		typeahead[typeaheadlen++] = 'M';
 		typeahead[typeaheadlen++] = g_nMouseClick;
-		typeahead[typeaheadlen++] = g_xMouse + '!';
-		typeahead[typeaheadlen++] = g_yMouse + '!';
-		g_nMouseClick = -1;
 	    }
+	    // Pass the pointer coordinates of the scroll event so that we know
+	    // which window to scroll. Use 2 bytes for > 223 columns.
+	    typeahead[typeaheadlen++] = (char_u)(g_xMouse / 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_xMouse % 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_yMouse / 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_yMouse % 128 + ' ' + 1);
+	    g_nMouseClick = -1;
 	}
 	else
 	{

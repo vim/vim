@@ -5723,13 +5723,16 @@ check_termcode(
 
 	// We only get here when we have a complete termcode match
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(MSWIN)
 	/*
-	 * Only in the GUI: Fetch the pointer coordinates of the scroll event
-	 * so that we know which window to scroll later.
+	 * For scroll events from the GUI or MS-Windows consoles, fetch the
+	 * pointer coordinates so that we know which window to scroll later.
 	 */
-	if (gui.in_use
-		&& key_name[0] == (int)KS_EXTRA
+	if (
+# if defined(FEAT_GUI) && !defined(MSWIN)
+		gui.in_use &&
+# endif
+		key_name[0] == (int)KS_EXTRA
 		&& (key_name[1] == (int)KE_X1MOUSE
 		    || key_name[1] == (int)KE_X2MOUSE
 		    || key_name[1] == (int)KE_MOUSEMOVE_XY
