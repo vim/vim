@@ -2055,7 +2055,6 @@ mch_inchar(
 		typeahead[typeaheadlen++] = CSI;
 		typeahead[typeaheadlen++] = KS_EXTRA;
 		typeahead[typeaheadlen++] = scroll_dir;
-		g_nMouseClick = -1;
 	    }
 	    else
 	    {
