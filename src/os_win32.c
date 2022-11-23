@@ -2063,8 +2063,8 @@ mch_inchar(
 		typeahead[typeaheadlen++] = 'M';
 		typeahead[typeaheadlen++] = g_nMouseClick;
 	    }
-	    // Pass the pointer coordinates of the scroll event so that we know
-	    // which window to scroll. Use 2 bytes for > 223 columns.
+	    // Pass the pointer coordinates of the mouse event. 
+	    // Use 2 bytes for > 223 columns.
 	    typeahead[typeaheadlen++] = (char_u)(g_xMouse / 128 + ' ' + 1);
 	    typeahead[typeaheadlen++] = (char_u)(g_xMouse % 128 + ' ' + 1);
 	    typeahead[typeaheadlen++] = (char_u)(g_yMouse / 128 + ' ' + 1);
