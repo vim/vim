@@ -1122,10 +1122,11 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	    {
 		if (*action == 'm')
 		{
-		    // cheap way to move a dict item from "d2" to "d1"
+		    // Cheap way to move a dict item from "d2" to "d1".
+		    // If dict_add() fails then "d2" won't be empty.
 		    di1 = HI2DI(hi2);
-		    dict_add(d1, di1);
-		    hash_remove(&d2->dv_hashtab, hi2);
+		    if (dict_add(d1, di1) == OK)
+			hash_remove(&d2->dv_hashtab, hi2);
 		}
 		else
 		{
