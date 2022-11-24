@@ -2690,12 +2690,14 @@ func Test_props_with_text_after_below_trunc()
       prop_add(1, 0, {
           type: 'test',
           text: 'the quick brown fox jumps over the lazy dog',
-          text_align: 'after'
+          text_align: 'after',
       })
+      prop_type_add('another', {highlight: 'DiffChange'})
       prop_add(1, 0, {
-          type: 'test',
+          type: 'another',
           text: 'the quick brown fox jumps over the lazy dog',
-          text_align: 'below'
+          text_align: 'below',
+          text_padding_left: 4,
       })
       normal G$
   END
@@ -2705,6 +2707,9 @@ func Test_props_with_text_after_below_trunc()
 
   call term_sendkeys(buf, ":set number\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_below_trunc_2', {})
+
+  call term_sendkeys(buf, ":set cursorline\<CR>gg")
+  call VerifyScreenDump(buf, 'Test_prop_with_text_after_below_trunc_3', {})
 
   call StopVimInTerminal(buf)
 endfunc
