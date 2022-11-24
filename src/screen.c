@@ -1017,7 +1017,7 @@ win_redr_custom(
     char_u	*stl;
     char_u	*p;
     char_u	*opt_name;
-    int         opt_scope = 0;
+    int		opt_scope = 0;
     stl_hlrec_T *hltab;
     stl_hlrec_T *tabtab;
     win_T	*ewp;

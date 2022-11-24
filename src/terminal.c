@@ -1234,8 +1234,8 @@ update_cursor(term_T *term, int redraw)
 	    gui_mch_flush();
 	}
 #endif
-        // Make sure an invoked autocmd doesn't delete the buffer (and the
-        // terminal) under our fingers.
+	// Make sure an invoked autocmd doesn't delete the buffer (and the
+	// terminal) under our fingers.
 	++term->tl_buffer->b_locked;
 
 	// save and restore curwin and curbuf, in case the autocmd changes them

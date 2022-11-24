@@ -1298,16 +1298,15 @@ main_loop(
 #endif
 
 	    // Trigger CursorMoved if the cursor moved.
-	    if (!finish_op && (
-			has_cursormoved()
+	    if (!finish_op && (has_cursormoved()
 #ifdef FEAT_PROP_POPUP
-			|| popup_visible
+				|| popup_visible
 #endif
 #ifdef FEAT_CONCEAL
-			|| curwin->w_p_cole > 0
+				|| curwin->w_p_cole > 0
 #endif
-			)
-		 && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
+			      )
+		    && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
 	    {
 		if (has_cursormoved())
 		    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL,
@@ -1401,10 +1400,8 @@ main_loop(
 	    }
 #endif
 
-	    /*
-	     * Before redrawing, make sure w_topline is correct, and w_leftcol
-	     * if lines don't wrap, and w_skipcol if lines wrap.
-	     */
+	    // Before redrawing, make sure w_topline is correct, and w_leftcol
+	    // if lines don't wrap, and w_skipcol if lines wrap.
 	    update_topline();
 	    validate_cursor();
 

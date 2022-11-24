@@ -413,8 +413,7 @@ arglist_del_files(garray_T *alist_ga)
 
 	didone = FALSE;
 	for (match = 0; match < ARGCOUNT; ++match)
-	    if (vim_regexec(&regmatch, alist_name(&ARGLIST[match]),
-			(colnr_T)0))
+	    if (vim_regexec(&regmatch, alist_name(&ARGLIST[match]), (colnr_T)0))
 	    {
 		didone = TRUE;
 		vim_free(ARGLIST[match].ae_fname);

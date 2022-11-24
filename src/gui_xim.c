@@ -133,7 +133,7 @@ free_xim_stuff(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Mark the global 'imactivatefunc' and 'imstatusfunc' callbacks with 'copyID'
+ * Mark the global 'imactivatefunc' and 'imstatusfunc' callbacks with "copyID"
  * so that they are not garbage collected.
  */
     int
