@@ -174,22 +174,22 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      - name: Cache snd-dummy
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.SND_DUMMY_DIR }}
-          key: linux-${{ env.LINUX_VERSION }}-snd-dummy
+      #- name: Cache snd-dummy
+      #  uses: actions/cache@v3
+      #  with:
+      #    path: ${{ env.SND_DUMMY_DIR }}
+      #    key: linux-${{ env.LINUX_VERSION }}-snd-dummy
 
-      - name: Set up snd-dummy
-        run: |
-          if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
-            bash ci/build-snd-dummy.sh
-          fi
-          cd "${SND_DUMMY_DIR}"
-          sudo insmod soundcore.ko
-          sudo insmod snd.ko
-          sudo insmod snd-pcm.ko
-          sudo insmod snd-dummy.ko
+      #- name: Set up snd-dummy
+      #  run: |
+      #    if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
+      #      bash ci/build-snd-dummy.sh
+      #    fi
+      #    cd "${SND_DUMMY_DIR}"
+      #    sudo insmod soundcore.ko
+      #    sudo insmod snd.ko
+      #    sudo insmod snd-pcm.ko
+      #    sudo insmod snd-dummy.ko
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
