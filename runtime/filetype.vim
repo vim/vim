@@ -2349,6 +2349,9 @@ au BufNewFile,BufRead fglrxrc			setf xml
 " Web Services Description Language (WSDL)
 au BufNewFile,BufRead *.wsdl			setf xml
 
+" Workflow Description Language (WDL)
+au BufNewFile,BufRead *.wdl			setf wdl
+
 " XLIFF (XML Localisation Interchange File Format) is also XML
 au BufNewFile,BufRead *.xlf			setf xml
 au BufNewFile,BufRead *.xliff			setf xml
