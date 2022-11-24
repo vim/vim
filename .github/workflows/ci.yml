@@ -184,7 +184,7 @@ jobs:
         run: |
           if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
             IGNORE_CC_MISMATCH=1
-            bash CC=gcc ci/build-snd-dummy.sh
+            bash ci/build-snd-dummy.sh
           fi
           cd "${SND_DUMMY_DIR}"
           sudo insmod soundcore.ko
