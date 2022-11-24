@@ -661,6 +661,9 @@ text_prop_position(
 	    // Right-align: fill with before
 	    if (right)
 		before -= cells;
+	    // Below-align: empty line add one character
+	    if (below && col_with_padding == 0 && wp->w_width == before && n_used == 43)
+		col_with_padding = 1;
 	    if (before < 0
 		    || !(right || below)
 		    || (below
