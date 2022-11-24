@@ -2403,9 +2403,6 @@ win_line(
 #if defined(FEAT_PROP_POPUP)
 	    if (wlv.n_extra <= 0)
 	    {
-		wlv.extra_for_textprop = FALSE;
-		in_linebreak = FALSE;
-
 		// Only restore search_attr and area_attr after "n_extra" in
 		// the next screen line is also done.
 		if (wlv.saved_n_extra <= 0)
@@ -2414,10 +2411,15 @@ win_line(
 			search_attr = saved_search_attr;
 		    if (area_attr == 0 && *ptr != NUL)
 			area_attr = saved_area_attr;
-		    // wlv.extra_attr should be used at this position but not
-		    // any further.
-		    reset_extra_attr = TRUE;
+
+		    if (wlv.extra_for_textprop)
+			// wlv.extra_attr should be used at this position but
+			// not any further.
+			reset_extra_attr = TRUE;
 		}
+
+		wlv.extra_for_textprop = FALSE;
+		in_linebreak = FALSE;
 	    }
 #endif
 	}
