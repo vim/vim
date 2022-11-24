@@ -22,7 +22,7 @@ jobs:
 
       - name: Download Coverity
         run: |
-          # probably no TOKEN if it was a forked repo, then just cancel the process
+          # probably no TOKEN if it was a forked repo
           [ -n "${TOKEN}" ] && wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=vim" -O coverity_tool.tgz || exit 0
           mkdir cov-scan
           tar ax -f coverity_tool.tgz --strip-components=1 -C cov-scan
@@ -64,17 +64,20 @@ jobs:
 
       - name: Build/scan vim
         run: |
-          cov-build --dir cov-int make -j${NPROC}
+          # if no 'cov-build' there, then just cancel the process
+          [ -x "$(which cov-build)" ] && cov-build --dir cov-int make -j${NPROC} || exit 0
 
       - name: Submit results
         run: |
-          tar zcf cov-scan.tgz cov-int
-          curl --form token=$TOKEN \
+          [ -d 'cov-int' ] && tar zcf cov-scan.tgz cov-int
+          [ -n "${TOKEN}" ] \
+          && curl --form token=$TOKEN \
             --form email=$EMAIL \
             --form file=@cov-scan.tgz \
             --form version="$(git rev-parse HEAD)" \
             --form description="Automatic GHA scan" \
-            'https://scan.coverity.com/builds?project=vim'
+            'https://scan.coverity.com/builds?project=vim' \
+          || exit 0
         env:
           TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
