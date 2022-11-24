@@ -22,7 +22,8 @@ jobs:
 
       - name: Download Coverity
         run: |
-          wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=vim" -O coverity_tool.tgz
+          # probably no TOKEN if it was a forked repo, then just cancel the process
+          [ -n "${TOKEN}" ] && wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=vim" -O coverity_tool.tgz || exit 0
           mkdir cov-scan
           tar ax -f coverity_tool.tgz --strip-components=1 -C cov-scan
         env:
