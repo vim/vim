@@ -2456,6 +2456,17 @@ check_simplify_modifier(int max_offset)
 }
 
 /*
+ * Return TRUE if the terminal sends modifiers with various keys.  This is when
+ * modifyOtherKeys level 2 is enabled or the kitty keyboard protocol is
+ * enabled.
+ */
+    static int
+key_protocol_enabled(void)
+{
+    return seenModifyOtherKeys || kitty_protocol_state == KKPS_ENABLED;
+}
+
+/*
  * Handle mappings in the typeahead buffer.
  * - When something was mapped, return map_result_retry for recursive mappings.
  * - When nothing mapped and typeahead has a character: return map_result_get.
@@ -2564,7 +2575,7 @@ handle_mapping(
 	    // Skip ":lmap" mappings if keys were mapped.
 	    if (mp->m_keys[0] == tb_c1
 		    && (mp->m_mode & local_State)
-		    && !(mp->m_simplified && seenModifyOtherKeys
+		    && !(mp->m_simplified && key_protocol_enabled()
 						     && typebuf.tb_maplen == 0)
 		    && ((mp->m_mode & MODE_LANGMAP) == 0
 						    || typebuf.tb_maplen == 0))
