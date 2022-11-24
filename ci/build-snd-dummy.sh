@@ -13,7 +13,7 @@ wget -q "https://github.com/torvalds/linux/archive/${LINUX_ARCHIVE_FILE}"
 tar -xf "${LINUX_ARCHIVE_FILE}" "${LINUX_SOURCE_DIR}/sound"
 cd "${LINUX_SOURCE_DIR}/sound"
 
-CC=gcc make -C "/lib/modules/$(uname -r)/build" M="${PWD}" CONFIG_SOUND=m CONFIG_SND=m CONFIG_SND_PCM=m CONFIG_SND_DUMMY=m modules
+CC=gcc CFLAGS="-Wno-error" make -C "/lib/modules/$(uname -r)/build" M="${PWD}" CONFIG_SOUND=m CONFIG_SND=m CONFIG_SND_PCM=m CONFIG_SND_DUMMY=m modules
 
 mkdir -p "${SND_DUMMY_DIR}"
 cp soundcore.ko core/snd.ko core/snd-pcm.ko drivers/snd-dummy.ko "${SND_DUMMY_DIR}"
