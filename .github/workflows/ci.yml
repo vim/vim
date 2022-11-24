@@ -183,6 +183,7 @@ jobs:
       - name: Set up snd-dummy
         run: |
           if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
+            CFLAGS=-Wno-error
             bash ci/build-snd-dummy.sh
           fi
           cd "${SND_DUMMY_DIR}"
