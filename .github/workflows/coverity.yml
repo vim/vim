@@ -15,21 +15,22 @@ jobs:
       CC: gcc
       CFLAGS: -Wno-deprecated-declarations
       DEBIAN_FRONTEND: noninteractive
+      TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
     steps:
       - name: Checkout repository from github
+        if: env.TOKEN
         uses: actions/checkout@v3
 
       - name: Download Coverity
+        if: env.TOKEN
         run: |
-          # probably no TOKEN if it was a forked repo
-          [ -n "${TOKEN}" ] && wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=vim" -O coverity_tool.tgz || exit 0
+          wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=vim" -O coverity_tool.tgz
           mkdir cov-scan
           tar ax -f coverity_tool.tgz --strip-components=1 -C cov-scan
-        env:
-          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
       - name: Install packages
+        if: env.TOKEN
         run: |
           sudo apt update && sudo apt install -y \
             autoconf \
@@ -48,6 +49,7 @@ jobs:
             libsodium-dev
 
       - name: Set up environment
+        if: env.TOKEN
         run: |
           echo "$(pwd)/cov-scan/bin" >> $GITHUB_PATH
           (
@@ -56,6 +58,7 @@ jobs:
           ) >> $GITHUB_ENV
 
       - name: Configure
+        if: env.TOKEN
         run: |
           ./configure --with-features=huge ${CONFOPT} --enable-fail-if-missing
           # Append various warning flags to CFLAGS.
@@ -63,21 +66,19 @@ jobs:
           sed -i -f ci/config.mk.${CC}.sed src/auto/config.mk
 
       - name: Build/scan vim
+        if: env.TOKEN
         run: |
-          # if no 'cov-build' there, then just cancel the process
-          [ -x "$(which cov-build)" ] && cov-build --dir cov-int make -j${NPROC} || exit 0
+          cov-build --dir cov-int make -j${NPROC}
 
       - name: Submit results
+        if: env.TOKEN
         run: |
-          [ -d 'cov-int' ] && tar zcf cov-scan.tgz cov-int
-          [ -n "${TOKEN}" ] \
-          && curl --form token=$TOKEN \
+          tar zcf cov-scan.tgz cov-int
+          curl --form token=$TOKEN \
             --form email=$EMAIL \
             --form file=@cov-scan.tgz \
             --form version="$(git rev-parse HEAD)" \
             --form description="Automatic GHA scan" \
-            'https://scan.coverity.com/builds?project=vim' \
-          || exit 0
+            'https://scan.coverity.com/builds?project=vim'
         env:
-          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}
