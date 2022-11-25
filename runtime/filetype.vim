@@ -981,6 +981,7 @@ au BufNewFile,BufRead *.jsp			setf jsp
 
 " Java Properties resource file (note: doesn't catch font.properties.pl)
 au BufNewFile,BufRead *.properties,*.properties_??,*.properties_??_??	setf jproperties
+au BufNewFile,BufRead org.eclipse.*.prefs				setf jproperties
 
 " Jess
 au BufNewFile,BufRead *.clp			setf jess
