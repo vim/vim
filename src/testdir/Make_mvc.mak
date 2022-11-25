@@ -3,7 +3,13 @@
 #
 # Requires a set of Unix tools: echo, diff, etc.
 
+# Testing may be done with a debug build 
+!IF EXIST(..\\vimd.exe) && !EXIST(..\\vim.exe)
+VIMPROG = ..\\vimd
+!ELSE
 VIMPROG = ..\\vim
+!ENDIF
+
 
 default: nongui
 

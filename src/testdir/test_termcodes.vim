@@ -2156,6 +2156,9 @@ func Test_modifyOtherKeys_no_mapping()
 endfunc
 
 func Test_CSIu_keys_without_modifiers()
+  " make this execute faster
+  set timeoutlen=10
+
   " Escape sent as `CSI 27 u` should act as normal escape and not undo
   call setline(1, 'a')
   call feedkeys('a' .. GetEscCodeCSIuWithoutModifier("\e"), 'Lx!')
@@ -2166,6 +2169,8 @@ func Test_CSIu_keys_without_modifiers()
   call setline(1, '')
   call feedkeys('a' .. GetEscCodeCSIuWithoutModifier("\t") .. "\<Esc>", 'Lx!')
   call assert_equal("\t", getline(1))
+
+  set timeoutlen&
 endfunc
 
 " Check that when DEC mouse codes are recognized a special key is handled.
