@@ -621,7 +621,7 @@ textprop_size_after_trunc(
 text_prop_position(
 	win_T	    *wp,
 	textprop_T  *tp,
-	int	    vcol UNUSED,    // current text column
+	int	    vcol,    // current text column
 	int	    scr_col,	    // current screen column
 	int	    *n_extra,	    // nr of bytes for virtual text
 	char_u	    **p_extra,	    // virtual text
@@ -662,7 +662,7 @@ text_prop_position(
 	    if (right)
 		before -= cells;
 	    // Below-align: empty line add one character
-	    if (below && col_with_padding == 0 && wp->w_width == before && n_used == 43)
+	    if (below && vcol == 0 && col_with_padding == 0 && wp->w_width == before)
 		col_with_padding = 1;
 	    if (before < 0
 		    || !(right || below)
