@@ -768,8 +768,9 @@ See the "Options" chapter |options|.
 
 If your terminal does not support a scrolling region, but it does support
 insert/delete line commands, scrolling with multiple windows may make the
-lines jump up and down.  If you don't want this set the 'ttyfast' option.
-This will redraw the window instead of scroll it.
+lines jump up and down.  This would happen if the 'ttyfast' option has been
+reset.  Check that with: >
+	verbose set ttyfast?
 
 If your terminal scrolls very slowly, but redrawing is not slow, set the
 'ttyscroll' option to a small number, e.g., 3.  This will make Vim redraw the

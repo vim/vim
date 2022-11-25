@@ -2174,21 +2174,6 @@ set_termname(char_u *term)
     }
 #endif
 
-#if defined(UNIX) || defined(VMS)
-    /*
-     * 'ttyfast' is default on for xterm, iris-ansi and a few others.
-     */
-    if (vim_is_fastterm(term))
-	p_tf = TRUE;
-#endif
-#ifdef USE_TERM_CONSOLE
-    /*
-     * 'ttyfast' is default on consoles
-     */
-    if (term_console)
-	p_tf = TRUE;
-#endif
-
     ttest(TRUE);	// make sure we have a valid set of terminal codes
 
     full_screen = TRUE;		// we can use termcap codes from now on
