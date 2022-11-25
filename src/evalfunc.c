@@ -8415,7 +8415,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 
 	if (item != NULL)
 	{
-	    item->di_tv.v_type = VAR_SPECIAL;
+	    item->di_tv.v_type = VAR_BOOL;
 	    item->di_tv.vval.v_number = regname == buf[0]
 						      ? VVAL_TRUE : VVAL_FALSE;
 	    (void)dict_add(dict, item);

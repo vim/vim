@@ -3675,9 +3675,16 @@ out_str_t_TE(void)
 {
     out_str(T_CTE);
 
+    // The seenModifyOtherKeys flag is not reset here.  We do expect t_TE to
+    // disable modifyOtherKeys, but there is no way to detect it's enabled
+    // again after the following t_TI.  We assume that when seenModifyOtherKeys
+    // was set before it will still be valid.
+
     // When the kitty keyboard protocol is enabled we expect t_TE to disable
     // it.  Remembering that it was detected to be enabled is useful in some
     // situations.
+    // The following t_TI is expected to request the state and then
+    // kitty_protocol_state will be set again.
     if (kitty_protocol_state == KKPS_ENABLED
 	    || kitty_protocol_state == KKPS_DISABLED)
 	kitty_protocol_state = KKPS_DISABLED;
@@ -5050,9 +5057,22 @@ handle_key_with_modifier(
     int	    modifiers;
     char_u  string[MAX_KEY_CODE_LEN + 1];
 
+    // Only set seenModifyOtherKeys for the "{lead}27;" code to avoid setting
+    // it for terminals using the kitty keyboard protocol.  Xterm sends
+    // the form ending in "u" when the formatOtherKeys resource is set.  We do
+    // not support this.
+    //
+    // Do not set seenModifyOtherKeys if there was a positive response at any
+    // time from requesting the kitty keyboard protocol state, these are not
+    // expected to support modifyOtherKeys level 2.
+    //
     // Do not set seenModifyOtherKeys for kitty, it does send some sequences
     // like this but does not have the modifyOtherKeys feature.
-    if (term_props[TPR_KITTY].tpr_status != TPR_YES)
+    if (trail != 'u'
+	    && (kitty_protocol_state == KKPS_INITIAL
+		|| kitty_protocol_state == KKPS_OFF
+		|| kitty_protocol_state == KKPS_AFTER_T_KE)
+	    && term_props[TPR_KITTY].tpr_status != TPR_YES)
 	seenModifyOtherKeys = TRUE;
 
     if (trail == 'u')
@@ -5237,7 +5257,18 @@ handle_csi(
     {
 	// The protocol has various "progressive enhancement flags" values, but
 	// we only check for zero and non-zero here.
-	kitty_protocol_state = arg[0] == '0' ? KKPS_OFF : KKPS_ENABLED;
+	if (arg[0] == '0')
+	{
+	    kitty_protocol_state = KKPS_OFF;
+	}
+	else
+	{
+	    kitty_protocol_state = KKPS_ENABLED;
+
+	    // Reset seenModifyOtherKeys just in case some key combination has
+	    // been seen that set it before we get the status response.
+	    seenModifyOtherKeys = FALSE;
+	}
 
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
