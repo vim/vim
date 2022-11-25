@@ -1789,7 +1789,7 @@ prop_type_set(typval_T *argvars, int add)
 	    }
 	    hash_init(*htp);
 	}
-	hash_add(*htp, PT2HIKEY(prop));
+	hash_add(*htp, PT2HIKEY(prop), "prop type");
     }
     else
     {
@@ -1924,7 +1924,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
 	    ht = buf->b_proptypes;
 	    VIM_CLEAR(buf->b_proparray);
 	}
-	hash_remove(ht, hi);
+	hash_remove(ht, hi, "prop type delete");
 	vim_free(prop);
     }
 }

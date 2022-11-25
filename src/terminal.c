@@ -1020,7 +1020,7 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
 	char *hash_key = alloc(NUMBUFLEN);
 
 	vim_snprintf(hash_key, NUMBUFLEN, "%d", bufnr);
-	hash_add(terminal_bufs, (char_u *)hash_key);
+	hash_add(terminal_bufs, (char_u *)hash_key, "terminal session");
     }
 
     return put_eol(fd);

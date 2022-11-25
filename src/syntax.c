@@ -4339,7 +4339,7 @@ syn_clear_keyword(int id, hashtab_T *ht)
 		    if (kp_prev == NULL)
 		    {
 			if (kp_next == NULL)
-			    hash_remove(ht, hi);
+			    hash_remove(ht, hi, "syntax clear keyword");
 			else
 			    hi->hi_key = KE2HIKEY(kp_next);
 		    }

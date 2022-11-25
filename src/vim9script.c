@@ -942,7 +942,8 @@ update_vim9_script_var(
 
 	    if (HASHITEM_EMPTY(hi))
 		// new variable name
-		hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
+		hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key,
+							       "add variable");
 	    else if (sav != NULL)
 		// existing name in a new block, append to the list
 		sav->sav_next = newsav;
@@ -1033,7 +1034,7 @@ hide_script_var(scriptitem_T *si, int idx, int func_defined)
 	    else
 	    {
 		if (sav_prev == NULL)
-		    hash_remove(all_ht, all_hi);
+		    hash_remove(all_ht, all_hi, "hide variable");
 		else
 		    sav_prev->sav_next = sav->sav_next;
 		sv->sv_name = NULL;

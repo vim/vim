@@ -71,6 +71,20 @@ hash_init(hashtab_T *ht)
 }
 
 /*
+ * If "ht->ht_flags" has HTFLAGS_FROZEN then give an error message using
+ * "command" and return TRUE.
+ */
+    int
+check_hashtab_frozen(hashtab_T *ht, char *command)
+{
+    if ((ht->ht_flags & HTFLAGS_FROZEN) == 0)
+	return FALSE;
+
+    semsg(_(e_not_allowed_to_add_or_remove_entries_str), command);
+    return TRUE;
+}
+
+/*
  * Free the array of a hash table.  Does not free the items it contains!
  * If "ht" is not freed then you should call hash_init() next!
  */
@@ -201,14 +215,17 @@ hash_debug_results(void)
 
 /*
  * Add item with key "key" to hashtable "ht".
+ * "command" is used for the error message when the hashtab if frozen.
  * Returns FAIL when out of memory or the key is already present.
  */
     int
-hash_add(hashtab_T *ht, char_u *key)
+hash_add(hashtab_T *ht, char_u *key, char *command)
 {
     hash_T	hash = hash_hash(key);
     hashitem_T	*hi;
 
+    if (check_hashtab_frozen(ht, command))
+	return FAIL;
     hi = hash_lookup(ht, key, hash);
     if (!HASHITEM_EMPTY(hi))
     {
@@ -232,7 +249,7 @@ hash_add_item(
     hash_T	hash)
 {
     // If resizing failed before and it fails again we can't add an item.
-    if (ht->ht_error && hash_may_resize(ht, 0) == FAIL)
+    if ((ht->ht_flags & HTFLAGS_ERROR) && hash_may_resize(ht, 0) == FAIL)
 	return FAIL;
 
     ++ht->ht_used;
@@ -266,15 +283,19 @@ hash_set(hashitem_T *hi, char_u *key)
 /*
  * Remove item "hi" from  hashtable "ht".  "hi" must have been obtained with
  * hash_lookup().
+ * "command" is used for the error message when the hashtab if frozen.
  * The caller must take care of freeing the item itself.
  */
-    void
-hash_remove(hashtab_T *ht, hashitem_T *hi)
+    int
+hash_remove(hashtab_T *ht, hashitem_T *hi, char *command)
 {
+    if (check_hashtab_frozen(ht, command))
+	return FAIL;
     --ht->ht_used;
     ++ht->ht_changed;
     hi->hi_key = HI_KEY_REMOVED;
     hash_may_resize(ht, 0);
+    return OK;
 }
 
 /*
@@ -407,11 +428,11 @@ hash_may_resize(
 	if (newarray == NULL)
 	{
 	    // Out of memory.  When there are NULL items still return OK.
-	    // Otherwise set ht_error, because lookup may result in a hang if
-	    // we add another item.
+	    // Otherwise set ht_flags to HTFLAGS_ERROR, because lookup may
+	    // result in a hang if we add another item.
 	    if (ht->ht_filled < ht->ht_mask)
 		return OK;
-	    ht->ht_error = TRUE;
+	    ht->ht_flags |= HTFLAGS_ERROR;
 	    return FAIL;
 	}
 	oldarray = ht->ht_array;
@@ -453,7 +474,7 @@ hash_may_resize(
     ht->ht_mask = newmask;
     ht->ht_filled = ht->ht_used;
     ++ht->ht_changed;
-    ht->ht_error = FALSE;
+    ht->ht_flags &= ~HTFLAGS_ERROR;
 
     return OK;
 }
