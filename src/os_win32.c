@@ -407,7 +407,8 @@ peek_console_input(
 # if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * This is for testing Vim's low-level handling of user input events from
- * MS-Windows console input buffer.
+ * MS-Windows console input buffer.  It is loosely based on the function
+ * test_gui_w32_sendevent() from guiw32.c.
  * 
  * This essentially does the reverse of "read_console_input()", where Vim reads
  * user input events from the console's input buffer in the form of
@@ -420,19 +421,51 @@ peek_console_input(
  * directly onto the console input buffer, for Vim to then process via
  * read_console_input(), as if a user had entered them directly.
  * 
- * To fit in with Vim's test ecosystem, this function is designed to be called
- * by feedkeys({string},{mode}), where mode is 'L' (low-level) in MS-Windows
- * consoles.
- * 
+ * This function is designed to be called by test_console_event
  * This function returns void.  If an exception occurs it will write an error
  * message via semsg().  Otherwise, it's typically up to the test script to
  * assert that the expected operation has occurred, by checking the end result
  * after Vim's processing the console's input buffer.
  */
     void
-add_to_win32_console_input(char_u *s)
+test_console_w32_event(typval_T *argvars, typval_T *rettv)
 {
-    int len = (int)STRLEN(s);
+
+#  ifdef VIMDLL
+    if (gui.in_use)
+	return;
+#  endif
+
+    char_u	*event;
+
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = FALSE;
+
+    if (sandbox != 0)
+    {
+	emsg(_(e_not_allowed_in_sandbox));
+	return;
+    }
+
+    if (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_dict_arg(argvars, 1) == FAIL
+	    || argvars[1].vval.v_dict == NULL)
+	return;
+
+    event = tv_get_string(&argvars[0]);
+    if (STRCMP(event, "mouse") == 0)
+	rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
+    else if (STRCMP(event, "tabline") == 0)
+	rettv->vval.v_number = test_gui_tabline_event(argvars[1].vval.v_dict);
+    else if (STRCMP(event, "tabmenu") == 0)
+	rettv->vval.v_number = test_gui_tabmenu_event(argvars[1].vval.v_dict);
+    else if (STRCMP(event, "sendevent") == 0)
+	rettv->vval.v_number = test_gui_w32_sendevent(argvars[1].vval.v_dict);
+    else
+    {
+	semsg(_(e_invalid_argument_str), event);
+	return;
+    }
 
 // KEY_EVENT 
 //	synthesize_key_event() -->
@@ -467,7 +500,6 @@ add_to_win32_console_input(char_u *s)
 // MENU_EVENT
 //	n/a
 
-//
 	// int lpEventsWritten = 0;
 	// INPUT_RECORD ir;
 	// ir.EventType = KEY_EVENT;
@@ -485,6 +517,28 @@ add_to_win32_console_input(char_u *s)
 	// //   _In_        DWORD        nLength,
 	// //   _Out_       LPDWORD      lpNumberOfEventsWritten
 	// // );
+
+}
+
+/*
+ * This function is designed to be called by feedkeys({string},{mode}), where
+ * mode is 'L' (low-level) in MS-Windows consoles.
+ * 
+ * To include special keys into {string}, use double-quotes
+ * and "\..." notation |expr-quote|. For example,
+ * feedkeys("\<CR>") simulates pressing of the <Enter> key. But
+ * feedkeys('\<CR>') pushes 5 characters.
+ * 
+ * mouse events often need the mouse position.  
+ * See test_setmouse({row}, {col}), eg.
+ * 
+ * 	call test_setmouse(4, 20)
+ * 	call feedkeys("\<LeftMouse>", "L")
+ */
+   void
+add_to_win32_console_input(char_u *s)
+{
+    int len = (int)STRLEN(s);
 
 }
 # endif

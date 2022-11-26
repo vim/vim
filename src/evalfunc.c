@@ -2679,6 +2679,8 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_alloc_fail},
     {"test_autochdir",	0, 0, 0,	    NULL,
 			ret_void,	    f_test_autochdir},
+    {"test_console_event", 2, 2, FEARG_1,   arg2_string_dict,
+			ret_bool,	    f_test_console_event},
     {"test_feedinput",	1, 1, FEARG_1,	    arg1_string,
 			ret_void,	    f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, 0,    NULL,

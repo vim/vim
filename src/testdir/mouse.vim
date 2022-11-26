@@ -70,7 +70,11 @@ func MouseMiddleClickCode(row, col)
 endfunc
 
 func MouseMiddleClick(row, col)
-  call feedkeys(MouseMiddleClickCode(a:row, a:col), 'Lx!')
+  if &term ==# 'win32'
+    call feedkeys("\<MiddleMouse>", 'L')
+  else
+    call feedkeys(MouseMiddleClickCode(a:row, a:col), 'Lx!')
+  endif
 endfunc
 
 func MouseRightClickCode(row, col)
