@@ -7,10 +7,10 @@ CheckMSWindows
 " Test for sending low level key presses
 func SendKeys(keylist)
   for k in a:keylist
-    call test_console_event("key", #{event: "keydown", keycode: k})
+    call test_mswin_event("key", #{event: "keydown", keycode: k})
   endfor
   for k in reverse(a:keylist)
-    call test_console_event("key", #{event: "keyup", keycode: k})
+    call test_mswin_event("key", #{event: "keyup", keycode: k})
   endfor
 endfunc
 
@@ -127,34 +127,34 @@ func Test_windows_console_mouse_event()
   " place the cursor using left click in normal mode
   call cursor(1, 1)
   let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  eval 'mouse'->test_console_event(args)
+  eval 'mouse'->test_mswin_event(args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 2, 4, 0], getpos('.'))
 
   " select and yank a word
   let @" = ''
   let args = #{button: 0, row: 1, col: 9, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.multiclick = 1
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
   let args.multiclick = 0
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal('three', @")
 
   " create visual selection using right click
   let @" = ''
   let args = #{button: 0, row: 2, col: 6, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args = #{button: 2, row: 2, col: 13, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal('five six', @")
 
@@ -162,9 +162,9 @@ func Test_windows_console_mouse_event()
   let @* = 'abc '
   call feedkeys('""', 'Lx!')
   let args = #{button: 1, row: 1, col: 9, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
 
@@ -173,9 +173,9 @@ func Test_windows_console_mouse_event()
   call cursor(1, 1)
   call feedkeys('v', 'Lx!')
   let args = #{button: 2, row: 1, col: 17, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal('one two abc three', @")
 
@@ -183,11 +183,11 @@ func Test_windows_console_mouse_event()
   let @" = ''
   call cursor(1, 1)
   let args = #{button: 0, row: 2, col: 1, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args = #{button: 0x43, row: 2, col: 9, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 0x3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal('four five', @")
 
@@ -196,14 +196,14 @@ func Test_windows_console_mouse_event()
   call cursor(1, 1)
   redraw!
   let args = #{button: 0, row: 1, col: 4, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 0x700
   let args.col = 9
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.col = 13
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("y", 'Lx!')
   call assert_equal(' two abc t', @")
 
@@ -211,9 +211,9 @@ func Test_windows_console_mouse_event()
   call cursor(1, 1)
   call feedkeys('i', 't')
   let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("po\<Esc>", 'Lx!')
   call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
 
@@ -222,16 +222,16 @@ func Test_windows_console_mouse_event()
   call setline(1, range(1, 100))
   " scroll up
   let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
-  call test_console_event('mouse', args)
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
+  call test_mswin_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("H", 'Lx!')
   call assert_equal(10, line('.'))
 
   " scroll down
   let args = #{button: 0x100, row: 2, col: 1, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("H", 'Lx!')
   call assert_equal(4, line('.'))
   set scrolloff&
@@ -241,19 +241,19 @@ func Test_windows_console_mouse_event()
   call setline(1, range(10)->join('')->repeat(10))
   " scroll left
   let args = #{button: 0x500, row: 1, col: 5, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.col = 10
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.col = 15
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys('g0', 'Lx!')
   call assert_equal(19, col('.'))
 
   " scroll right
   let args = #{button: 0x600, row: 1, col: 15, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.col = 10
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys('g0', 'Lx!')
   call assert_equal(7, col('.'))
   set wrap&
@@ -284,52 +284,52 @@ func Test_windows_console_mouse_event()
   for button in [0, 1, 2, 0x300, 0x400]
     " Single click
     let args = #{button: button, row: 2, col: 5, multiclick: 0, modifiers: 0}
-    call test_console_event('mouse', args)
+    call test_mswin_event('mouse', args)
     let args.button = 3
-    call test_console_event('mouse', args)
+    call test_mswin_event('mouse', args)
 
     " Double/Triple click is supported by only the Left/Middle/Right mouse
     " buttons
     if button <= 2
       " Double Click
       let args.button = button
-      call test_console_event('mouse', args)
+      call test_mswin_event('mouse', args)
       let args.multiclick = 1
-      call test_console_event('mouse', args)
+      call test_mswin_event('mouse', args)
       let args.button = 3
       let args.multiclick = 0
-      call test_console_event('mouse', args)
+      call test_mswin_event('mouse', args)
 
       " Triple Click
       let args.button = button
-      call test_console_event('mouse', args)
+      call test_mswin_event('mouse', args)
       let args.multiclick = 1
-      call test_console_event('mouse', args)
-      call test_console_event('mouse', args)
+      call test_mswin_event('mouse', args)
+      call test_mswin_event('mouse', args)
       let args.button = 3
       let args.multiclick = 0
-      call test_console_event('mouse', args)
+      call test_mswin_event('mouse', args)
     endif
 
     " Shift click
     let args = #{button: button, row: 3, col: 7, multiclick: 0, modifiers: 4}
-    call test_console_event('mouse', args)
+    call test_mswin_event('mouse', args)
     let args.button = 3
-    call test_console_event('mouse', args)
+    call test_mswin_event('mouse', args)
 
     " Alt click
     let args.button = button
     let args.modifiers = 8
-    call test_console_event('mouse', args)
+    call test_mswin_event('mouse', args)
     let args.button = 3
-    call test_console_event('mouse', args)
+    call test_mswin_event('mouse', args)
 
     " Ctrl click
     let args.button = button
     let args.modifiers = 16
-    call test_console_event('mouse', args)
+    call test_mswin_event('mouse', args)
     let args.button = 3
-    call test_console_event('mouse', args)
+    call test_mswin_event('mouse', args)
 
     call feedkeys("\<Esc>", 'Lx!')
   endfor
@@ -360,12 +360,12 @@ func Test_windows_console_mouse_event()
   " Double click should select the word and copy it to clipboard
   let @* = ''
   let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.multiclick = 1
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
   let args.multiclick = 0
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 1, 1, 0], getpos('.'))
   call assert_equal('sixteen', @*)
@@ -374,9 +374,9 @@ func Test_windows_console_mouse_event()
   redraw!
   let @* = ''
   let args = #{button: 2, row: 1, col: 11, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 1, 6, 0], getpos('.'))
   call assert_equal('wo thr', @*)
@@ -384,33 +384,33 @@ func Test_windows_console_mouse_event()
   call cursor(2, 1)
   redraw!
   let args = #{button: 1, row: 1, col: 11, multiclick: 0, modifiers: 0}
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   let args.button = 3
-  call test_console_event('mouse', args)
+  call test_mswin_event('mouse', args)
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 2, 7, 0], getpos('.'))
   call assert_equal('wo thrfour five sixteen', getline(2))
   set mouse&
   let &guioptions = save_guioptions
 
-  " Test invalid parameters for test_console_event()
+  " Test invalid parameters for test_mswin_event()
   let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
-  call assert_false(test_console_event('mouse', args))
+  call assert_false(test_mswin_event('mouse', args))
   let args = #{button: 0, col: 4, multiclick: 0, modifiers: 0}
-  call assert_false(test_console_event('mouse', args))
+  call assert_false(test_mswin_event('mouse', args))
   let args = #{button: 0, row: 2, multiclick: 0, modifiers: 0}
-  call assert_false(test_console_event('mouse', args))
+  call assert_false(test_mswin_event('mouse', args))
   let args = #{button: 0, row: 2, col: 4, modifiers: 0}
-  call assert_false(test_console_event('mouse', args))
+  call assert_false(test_mswin_event('mouse', args))
   let args = #{button: 0, row: 2, col: 4, multiclick: 0}
-  call assert_false(test_console_event('mouse', args))
+  call assert_false(test_mswin_event('mouse', args))
 
-  " Error cases for test_console_event()
-  call assert_fails("call test_console_event('a1b2c3', args)", 'E475:')
-  call assert_fails("call test_console_event([], args)", 'E1174:')
-  call assert_fails("call test_console_event('abc', [])", 'E1206:')
-  call assert_fails("call test_console_event(test_null_string(), {})", 'E475:')
-  call assert_false(test_console_event('mouse', test_null_dict()))
+  " Error cases for test_mswin_event()
+  call assert_fails("call test_mswin_event('a1b2c3', args)", 'E475:')
+  call assert_fails("call test_mswin_event([], args)", 'E1174:')
+  call assert_fails("call test_mswin_event('abc', [])", 'E1206:')
+  call assert_fails("call test_mswin_event(test_null_string(), {})", 'E475:')
+  call assert_false(test_mswin_event('mouse', test_null_dict()))
 
   bw!
   call test_override('no_query_mouse', 0)
