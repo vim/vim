@@ -567,6 +567,8 @@ newwindow:
     case Ctrl_F:
 wingotofile:
 		CHECK_CMDWIN;
+		if (check_text_or_curbuf_locked(NULL))
+		    break;
 
 		ptr = grab_file_name(Prenum1, &lnum);
 		if (ptr != NULL)
@@ -885,7 +887,7 @@ win_split(int size, int flags)
  * When "new_wp" is NULL: split the current window in two.
  * When "new_wp" is not NULL: insert this window at the far
  * top/left/right/bottom.
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 win_split_ins(

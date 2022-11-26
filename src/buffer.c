@@ -434,7 +434,7 @@ static hashtab_T buf_hashtab;
 buf_hashtab_add(buf_T *buf)
 {
     sprintf((char *)buf->b_key, "%x", buf->b_fnum);
-    if (hash_add(&buf_hashtab, buf->b_key) == FAIL)
+    if (hash_add(&buf_hashtab, buf->b_key, "create buffer") == FAIL)
 	emsg(_(e_buffer_cannot_be_registered));
 }
 
@@ -444,7 +444,7 @@ buf_hashtab_remove(buf_T *buf)
     hashitem_T *hi = hash_find(&buf_hashtab, buf->b_key);
 
     if (!HASHITEM_EMPTY(hi))
-	hash_remove(&buf_hashtab, hi);
+	hash_remove(&buf_hashtab, hi, "close buffer");
 }
 
 /*
@@ -925,7 +925,7 @@ free_buffer(buf_T *buf)
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
     // b:changedtick uses an item in buf_T, remove it now
-    dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di);
+    dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di, "free buffer");
     unref_var_dict(buf->b_vars);
     remove_listeners(buf);
 #endif

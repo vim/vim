@@ -585,7 +585,7 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     fp->uf_cb_state = state;
 
     set_ufunc_name(fp, name);
-    hash_add(&func_hashtab, UF2HIKEY(fp));
+    hash_add(&func_hashtab, UF2HIKEY(fp), "add C function");
 
     return name;
 }
@@ -1278,7 +1278,7 @@ lambda_function_body(
     if (ufunc == NULL)
 	goto erret;
     set_ufunc_name(ufunc, name);
-    if (hash_add(&func_hashtab, UF2HIKEY(ufunc)) == FAIL)
+    if (hash_add(&func_hashtab, UF2HIKEY(ufunc), "add function") == FAIL)
 	goto erret;
     ufunc->uf_flags = FC_LAMBDA;
     ufunc->uf_refcount = 1;
@@ -1572,7 +1572,7 @@ get_lambda_tv(
 	rettv->vval.v_partial = pt;
 	rettv->v_type = VAR_PARTIAL;
 
-	hash_add(&func_hashtab, UF2HIKEY(fp));
+	hash_add(&func_hashtab, UF2HIKEY(fp), "add lambda");
     }
 
 theend:
@@ -2128,7 +2128,7 @@ add_nr_var(
 {
     STRCPY(v->di_key, name);
     v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
-    hash_add(&dp->dv_hashtab, DI2HIKEY(v));
+    hash_add(&dp->dv_hashtab, DI2HIKEY(v), "add variable");
     v->di_tv.v_type = VAR_NUMBER;
     v->di_tv.v_lock = VAR_FIXED;
     v->di_tv.vval.v_number = nr;
@@ -2348,7 +2348,7 @@ func_remove(ufunc_T *fp)
 	    fp->uf_flags |= FC_DEAD;
 	    return FALSE;
 	}
-	hash_remove(&func_hashtab, hi);
+	hash_remove(&func_hashtab, hi, "remove function");
 	fp->uf_flags |= FC_DELETED;
 	return TRUE;
     }
@@ -2510,7 +2510,7 @@ copy_lambda_to_global_func(
 
     fp->uf_refcount = 1;
     STRCPY(fp->uf_name, global);
-    hash_add(&func_hashtab, UF2HIKEY(fp));
+    hash_add(&func_hashtab, UF2HIKEY(fp), "copy lambda");
 
     // the referenced dfunc_T is now used one more time
     link_def_function(fp);
@@ -2718,7 +2718,7 @@ call_user_func(
 	name = v->di_key;
 	STRCPY(name, "self");
 	v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
-	hash_add(&fc->fc_l_vars.dv_hashtab, DI2HIKEY(v));
+	hash_add(&fc->fc_l_vars.dv_hashtab, DI2HIKEY(v), "set self dictionary");
 	v->di_tv.v_type = VAR_DICT;
 	v->di_tv.v_lock = 0;
 	v->di_tv.vval.v_dict = selfdict;
@@ -2744,7 +2744,7 @@ call_user_func(
 	name = v->di_key;
 	STRCPY(name, "000");
 	v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
-	hash_add(&fc->fc_l_avars.dv_hashtab, DI2HIKEY(v));
+	hash_add(&fc->fc_l_avars.dv_hashtab, DI2HIKEY(v), "function argument");
 	v->di_tv.v_type = VAR_LIST;
 	v->di_tv.v_lock = VAR_FIXED;
 	v->di_tv.vval.v_list = &fc->fc_l_varlist;
@@ -2838,10 +2838,10 @@ call_user_func(
 	    // Named arguments should be accessed without the "a:" prefix in
 	    // lambda expressions.  Add to the l: dict.
 	    copy_tv(&v->di_tv, &v->di_tv);
-	    hash_add(&fc->fc_l_vars.dv_hashtab, DI2HIKEY(v));
+	    hash_add(&fc->fc_l_vars.dv_hashtab, DI2HIKEY(v), "local variable");
 	}
 	else
-	    hash_add(&fc->fc_l_avars.dv_hashtab, DI2HIKEY(v));
+	    hash_add(&fc->fc_l_avars.dv_hashtab, DI2HIKEY(v), "add variable");
 
 	if (ai >= 0 && ai < MAX_FUNC_ARGS)
 	{
@@ -5060,7 +5060,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	    hi = hash_find(&func_hashtab, name);
 	    hi->hi_key = UF2HIKEY(fp);
 	}
-	else if (hash_add(&func_hashtab, UF2HIKEY(fp)) == FAIL)
+	else if (hash_add(&func_hashtab, UF2HIKEY(fp), "add function") == FAIL)
 	{
 	    free_fp = TRUE;
 	    goto erret;
@@ -5462,7 +5462,7 @@ ex_delfunction(exarg_T *eap)
 	{
 	    // Delete the dict item that refers to the function, it will
 	    // invoke func_unref() and possibly delete the function.
-	    dictitem_remove(fudi.fd_dict, fudi.fd_di);
+	    dictitem_remove(fudi.fd_dict, fudi.fd_di, "delfunction");
 	}
 	else
 	{

@@ -793,6 +793,8 @@ searchit(
 		    if (dir == FORWARD && at_first_line)
 		    {
 			match_ok = TRUE;
+			matchcol = col;
+
 			/*
 			 * When the match starts in a next line it's certainly
 			 * past the start position.
@@ -837,7 +839,9 @@ searchit(
 			    }
 			    else
 			    {
-				matchcol = matchpos.col;
+				// Advance "matchcol" to the next character.
+				// This does not use matchpos.col, because
+				// "\zs" may have have set it.
 				if (ptr[matchcol] != NUL)
 				{
 				    if (has_mbyte)

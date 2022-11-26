@@ -458,17 +458,10 @@ Ins, Del buttons etc., except Backspace in GUI mode.  To solve it, add to
 
 Vim will also recognize that they are fast terminals.
 
-If you have some annoying line jumping on the screen between windows add to
-your .vimrc file: >
-
-	set ttyfast	" set fast terminal
-
-Note: if you're using Vim on remote host or through a very slow connection, it's
-recommended to avoid the fast terminal option with: >
+If you're using Vim on remote host or through a very slow connection, you
+might want to reset fast terminal option with: >
 
 	set nottyfast   " set terminal to slow mode
-
-(Zoltan Arpadffy, Vim 5.6)
 
 
 8.7 Hex-editing and other external tools

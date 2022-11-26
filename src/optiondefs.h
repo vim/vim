@@ -2599,7 +2599,7 @@ static struct vimoption options[] =
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"ttyfast",	    "tf",   P_BOOL|P_NO_MKRC|P_VI_DEF,
 			    (char_u *)&p_tf, PV_NONE,
-			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"ttymouse",    "ttym", P_STRING|P_NODEFAULT|P_NO_MKRC|P_VI_DEF,
 #if defined(UNIX) || defined(VMS)
 			    (char_u *)&p_ttym, PV_NONE,

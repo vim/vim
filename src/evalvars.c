@@ -217,10 +217,10 @@ evalvars_init(void)
 
 	// add to v: scope dict, unless the value is not always available
 	if (p->vv_tv_type != VAR_UNKNOWN)
-	    hash_add(&vimvarht, p->vv_di.di_key);
+	    hash_add(&vimvarht, p->vv_di.di_key, "initialization");
 	if (p->vv_flags & VV_COMPAT)
 	    // add to compat scope dict
-	    hash_add(&compat_hashtab, p->vv_di.di_key);
+	    hash_add(&compat_hashtab, p->vv_di.di_key, "initialization");
     }
     set_vim_var_nr(VV_VERSION, VIM_VERSION_100);
     set_vim_var_nr(VV_VERSIONLONG, VIM_VERSION_100 * 10000 + highest_patch());
@@ -562,7 +562,7 @@ prepare_vimvar(int idx, typval_T *save_tv)
     *save_tv = vimvars[idx].vv_tv;
     vimvars[idx].vv_str = NULL;  // don't free it now
     if (vimvars[idx].vv_tv_type == VAR_UNKNOWN)
-	hash_add(&vimvarht, vimvars[idx].vv_di.di_key);
+	hash_add(&vimvarht, vimvars[idx].vv_di.di_key, "prepare vimvar");
 }
 
 /*
@@ -582,7 +582,7 @@ restore_vimvar(int idx, typval_T *save_tv)
 	if (HASHITEM_EMPTY(hi))
 	    internal_error("restore_vimvar()");
 	else
-	    hash_remove(&vimvarht, hi);
+	    hash_remove(&vimvarht, hi, "restore vimvar");
     }
 }
 
@@ -1380,6 +1380,9 @@ list_hashtable_vars(
     int		todo;
     char_u	buf[IOSIZE];
 
+    int save_ht_flags = ht->ht_flags;
+    ht->ht_flags |= HTFLAGS_FROZEN;
+
     todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && !got_int; ++hi)
     {
@@ -1399,6 +1402,8 @@ list_hashtable_vars(
 		list_one_var(di, prefix, first);
 	}
     }
+
+    ht->ht_flags = save_ht_flags;
 }
 
 /*
@@ -2008,7 +2013,7 @@ do_unlet_var(
 	listitem_remove(lp->ll_list, lp->ll_li);
     else
 	// unlet a Dictionary item.
-	dictitem_remove(lp->ll_dict, lp->ll_di);
+	dictitem_remove(lp->ll_dict, lp->ll_di, "unlet");
 
     return ret;
 }
@@ -2095,7 +2100,8 @@ do_unlet(char_u *name, int forceit)
 	    di = HI2DI(hi);
 	    if (var_check_fixed(di->di_flags, name, FALSE)
 		    || var_check_ro(di->di_flags, name, FALSE)
-		    || value_check_lock(d->dv_lock, name, FALSE))
+		    || value_check_lock(d->dv_lock, name, FALSE)
+		    || check_hashtab_frozen(ht, "unlet"))
 		return FAIL;
 
 	    delete_var(ht, hi);
@@ -3554,9 +3560,11 @@ delete_var(hashtab_T *ht, hashitem_T *hi)
 {
     dictitem_T	*di = HI2DI(hi);
 
-    hash_remove(ht, hi);
-    clear_tv(&di->di_tv);
-    vim_free(di);
+    if (hash_remove(ht, hi, "delete variable") == OK)
+    {
+	clear_tv(&di->di_tv);
+	vim_free(di);
+    }
 }
 
 /*
@@ -3895,6 +3903,9 @@ set_var_const(
 	    goto failed;
 	}
 
+	if (check_hashtab_frozen(ht, "add variable"))
+	    goto failed;
+
 	// Can't add "v:" or "a:" variable.
 	if (ht == &vimvarht || ht == get_funccal_args_ht())
 	{
@@ -3913,7 +3924,7 @@ set_var_const(
 	if (di == NULL)
 	    goto failed;
 	STRCPY(di->di_key, varname);
-	if (hash_add(ht, DI2HIKEY(di)) == FAIL)
+	if (hash_add(ht, DI2HIKEY(di), "add variable") == FAIL)
 	{
 	    vim_free(di);
 	    goto failed;

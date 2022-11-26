@@ -2326,6 +2326,28 @@ func Test_autocmd_user_clear_group()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_autocmd_CmdlineLeave_unlet()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      for i in range(1, 999)
+        exe 'let g:var' .. i '=' i
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('unlet g:var990')})
+  END
+  call writefile(lines, 'XleaveUnlet', 'D')
+  let buf = RunVimInTerminal('-S XleaveUnlet', {'rows': 10})
+
+  " this was using freed memory
+  call term_sendkeys(buf, ":let g:\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "G")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")  " for the hit-enter prompt
+
+  call StopVimInTerminal(buf)
+endfunc
+
 function s:Before_test_dirchanged()
   augroup test_dirchanged
     autocmd!

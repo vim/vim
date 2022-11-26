@@ -188,8 +188,28 @@ check_text_locked(oparg_T *oap)
 {
     if (text_locked())
     {
-	clearopbeep(oap);
+	if (oap != NULL)
+	    clearopbeep(oap);
 	text_locked_msg();
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * If text is locked, "curbuf_lock" or "allbuf_lock" is set:
+ * Give an error message, possibly beep and return TRUE.
+ * "oap" may be NULL.
+ */
+    int
+check_text_or_curbuf_locked(oparg_T *oap)
+{
+    if (check_text_locked(oap))
+	return TRUE;
+    if (curbuf_locked())
+    {
+	if (oap != NULL)
+	    clearop(oap);
 	return TRUE;
     }
     return FALSE;
@@ -798,8 +818,7 @@ normal_cmd(
 	goto normal_end;
     }
 
-    if ((nv_cmds[idx].cmd_flags & NV_NCW)
-				&& (check_text_locked(oap) || curbuf_locked()))
+    if ((nv_cmds[idx].cmd_flags & NV_NCW) && check_text_or_curbuf_locked(oap))
 	// this command is not allowed now
 	goto normal_end;
 
@@ -4026,13 +4045,9 @@ nv_gotofile(cmdarg_T *cap)
     char_u	*ptr;
     linenr_T	lnum = -1;
 
-    if (check_text_locked(cap->oap))
+    if (check_text_or_curbuf_locked(cap->oap))
 	return;
-    if (curbuf_locked())
-    {
-	clearop(cap->oap);
-	return;
-    }
+
 #ifdef FEAT_PROP_POPUP
     if (ERROR_IF_TERM_POPUP_WINDOW)
 	return;

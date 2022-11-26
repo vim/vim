@@ -1799,7 +1799,7 @@ convert_hash2dict(VALUE key, VALUE val, VALUE arg)
     if (di == NULL || ruby_convert_to_vim_value(val, &di->di_tv) != OK
 						     || dict_add(d, di) != OK)
     {
-	d->dv_hashtab.ht_error = TRUE;
+	d->dv_hashtab.ht_flags |= HTFLAGS_ERROR;
 	return ST_STOP;
     }
     return ST_CONTINUE;
@@ -1879,7 +1879,7 @@ ruby_convert_to_vim_value(VALUE val, typval_T *rettv)
 		    return FAIL;
 
 		rb_hash_foreach(val, convert_hash2dict, (VALUE)d);
-		if (d->dv_hashtab.ht_error)
+		if (d->dv_hashtab.ht_flags & HTFLAGS_ERROR)
 		{
 		    dict_unref(d);
 		    return FAIL;

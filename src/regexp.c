@@ -1093,7 +1093,6 @@ static void	cleanup_subexpr(void);
 #ifdef FEAT_SYN_HL
 static void	cleanup_zsubexpr(void);
 #endif
-static void	reg_nextline(void);
 static int	match_with_backref(linenr_T start_lnum, colnr_T start_col, linenr_T end_lnum, colnr_T end_col, int *bytelen);
 
 /*

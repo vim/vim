@@ -1768,7 +1768,7 @@ _DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
 	    return NULL;
 	}
 
-	hash_remove(&dict->dv_hashtab, hi);
+	hash_remove(&dict->dv_hashtab, hi, "Python remove variable");
 	dictitem_free(di);
     }
 
@@ -1893,7 +1893,7 @@ DictionaryAssItem(
 	    return -1;
 	}
 	hi = hash_find(&dict->dv_hashtab, di->di_key);
-	hash_remove(&dict->dv_hashtab, hi);
+	hash_remove(&dict->dv_hashtab, hi, "Python remove item");
 	dictitem_free(di);
 	Py_XDECREF(todecref);
 	return 0;
@@ -2194,7 +2194,7 @@ DictionaryPopItem(DictionaryObject *self, PyObject *args UNUSED)
 	return NULL;
     }
 
-    hash_remove(&self->dict->dv_hashtab, hi);
+    hash_remove(&self->dict->dv_hashtab, hi, "Python pop item");
     dictitem_free(di);
 
     return ret;
