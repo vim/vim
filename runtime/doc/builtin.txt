@@ -2596,9 +2596,8 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		't'	Handle keys as if typed; otherwise they are handled as
 			if coming from a mapping.  This matters for undo,
 			opening folds, etc.
-		'L'	Lowlevel input.  Only works for Unix or when using the
-			GUI. Keys are used as if they were coming from the
-			terminal.  Other flags are not used.  *E980*
+		'L'	Lowlevel input.  Keys are used as if they were coming
+			from the terminal.  Other flags are not used.  *E980*
 			When a CTRL-C interrupts and 't' is included it sets
 			the internal "got_int" flag.
 		'i'	Insert the string instead of appending (see above).

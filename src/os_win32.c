@@ -404,6 +404,91 @@ peek_console_input(
     return read_console_input(hInput, lpBuffer, -1, lpEvents);
 }
 
+# if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * This is for testing Vim's low-level handling of user input events from
+ * MS-Windows console input buffer.
+ * 
+ * This essentially does the reverse of "read_console_input()", where Vim reads
+ * user input events from the console's input buffer in the form of
+ * MS-Windows INPUT_RECORD structs.  Each INPUT_RECORD represents one event
+ * such as; a keystroke, a mouse motion, a mouse scroll or a button click, etc. 
+ * 
+ * This function allows us to emulate user input at test-time.  It takes in a
+ * string character array [char_u *s].  The characters contain the data needed
+ * for Vim to synthesize Win32 INPUT_RECORD events, which are then written
+ * directly onto the console input buffer, for Vim to then process via
+ * read_console_input(), as if a user had entered them directly.
+ * 
+ * To fit in with Vim's test ecosystem, this function is designed to be called
+ * by feedkeys({string},{mode}), where mode is 'L' (low-level) in MS-Windows
+ * consoles.
+ * 
+ * This function returns void.  If an exception occurs it will write an error
+ * message via semsg().  Otherwise, it's typically up to the test script to
+ * assert that the expected operation has occurred, by checking the end result
+ * after Vim's processing the console's input buffer.
+ */
+    void
+add_to_win32_console_input(char_u *s)
+{
+    int len = (int)STRLEN(s);
+
+// KEY_EVENT 
+//	synthesize_key_event() -->
+//	    ir.EventType == KEY_EVENT
+//	    ir.Event.KeyEvent = KEY_EVENT_RECORD
+//	ie. reverse of decode_key_event(
+//		KEY_EVENT_RECORD *pker,
+//		WCHAR *pch,
+//		WCHAR *pch2,
+//		int *pmodifiers,
+//		BOOL fDoPost)
+//
+// MOUSE_EVENT  
+//	synthesize_mouse_event() -->
+//	    ir.EventType() == MOUSE_EVENT
+//	    ir.Event.MouseEvent = MOUSE_EVENT_RECORD
+//	ie. reverse of decode_mouse_event(MOUSE_EVENT_RECORD *pmer)
+//
+// FOCUS_EVENT
+//	synthesize_focus_event() -->
+//	    ir.EventType == FOCUS_EVENT
+//	    ir.Event.FocusEvent = FOCUS_EVENT_RECORD
+//	ie. reverse of handle_focus_event(INPUT_RECORD ir)
+//
+//
+// WINDOW_BUFFER_SIZE_EVENT
+//	synthesize_console_resize() -->
+//	    ir.EventType == WINDOW_BUFFER_SIZE_EVENT
+//	    ir.Event.WindowBufferSizeEvent = WINDOW_BUFFER_SIZE_RECORD 
+//	ie. reverse of shell_resized
+//
+// MENU_EVENT
+//	n/a
+
+//
+	// int lpEventsWritten = 0;
+	// INPUT_RECORD ir;
+	// ir.EventType = KEY_EVENT;
+	// ir.Event.KeyEvent.bKeyDown = ;
+	// ir.Event.KeyEvent.wRepeatCount = ;
+	// ir.Event.KeyEvent.wVirtualKeyCode = ;
+	// ir.Event.KeyEvent.wVirtualScanCode = ;
+	// ir.Event.KeyEvent.dwControlKeyState = ;
+	// ir.Event.KeyEvent.uChar.UnicodeChar = ;
+	// WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+
+	// // BOOL WINAPI WriteConsoleInput(
+	// //   _In_        HANDLE       hConsoleInput,
+	// //   _In_  const INPUT_RECORD *lpBuffer,
+	// //   _In_        DWORD        nLength,
+	// //   _Out_       LPDWORD      lpNumberOfEventsWritten
+	// // );
+
+}
+# endif
+
 # ifdef FEAT_CLIENTSERVER
     static DWORD
 msg_wait_for_multiple_objects(
