@@ -665,6 +665,8 @@ test_garbagecollect_soon()	none	free memory soon for testing
 test_getvalue({string})		any	get value of an internal variable
 test_gui_event({event}, {args})	bool	generate a GUI event for testing
 test_ignore_error({expr})	none	ignore a specific error
+test_mswin_event({event}, {args})
+				bool	generate a MS-Windows event for testing
 test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
@@ -681,7 +683,6 @@ test_settime({expr})		none	set current time for testing
 test_srand_seed([seed])		none	set seed for testing srand()
 test_unknown()			any	unknown value for testing
 test_void()			any	void value for testing
-test_console_event({event}, {args})	bool	generate a console event for testing
 timer_info([{id}])		List	information about timers
 timer_pause({id}, {pause})	none	pause or unpause a timer
 timer_start({time}, {callback} [, {options}])

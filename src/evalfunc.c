@@ -2679,8 +2679,6 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_test_alloc_fail},
     {"test_autochdir",	0, 0, 0,	    NULL,
 			ret_void,	    f_test_autochdir},
-    {"test_console_event", 2, 2, FEARG_1,   arg2_string_dict,
-			ret_bool,	    f_test_console_event},
     {"test_feedinput",	1, 1, FEARG_1,	    arg1_string,
 			ret_void,	    f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, 0,    NULL,
@@ -2693,6 +2691,8 @@ static funcentry_T global_functions[] =
 			ret_bool,	    f_test_gui_event},
     {"test_ignore_error", 1, 1, FEARG_1,    arg1_string,
 			ret_void,	    f_test_ignore_error},
+    {"test_mswin_event", 2, 2, FEARG_1,     arg2_string_dict,
+			ret_bool,	    f_test_mswin_event},
     {"test_null_blob",	0, 0, 0,	    NULL,
 			ret_blob,	    f_test_null_blob},
     {"test_null_channel", 0, 0, 0,	    NULL,
@@ -4405,7 +4405,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 # if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
 		if (!gui.in_use)
 # endif
-		    add_to_win32_console_input(keys);
+		    feed_mswin_input(keys);
 #else
 		emsg(_(e_lowlevel_input_not_supported));
 #endif

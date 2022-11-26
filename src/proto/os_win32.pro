@@ -85,6 +85,6 @@ void resize_console_buf(void);
 char *GetWin32Error(void);
 void stop_timeout(void);
 volatile sig_atomic_t *start_timeout(long msec);
-void test_console_w32_event(typval_T *argvars, typval_T *rettv);
-void add_to_win32_console_input(char_u *s);
+void test_mswin_event(typval_T *argvars, typval_T *rettv);
+void feed_mswin_input(char_u *s);
 /* vim: set ft=c : */

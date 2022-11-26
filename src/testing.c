@@ -1487,14 +1487,14 @@ test_gui_tabmenu_event(dict_T *args UNUSED)
 # endif
 
     void
-f_test_console_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_test_mswin_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 # ifdef MSWIN
 #  ifdef VIMDLL
     if (gui.in_use)
 	return;
 #  endif
-    (void)test_console_w32_event(argvars, rettv);
+    (void)test_mswin_event(argvars, rettv);
 # endif
 }
 
