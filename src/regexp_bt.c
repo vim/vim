@@ -4842,11 +4842,12 @@ regtry(
     static long
 bt_regexec_both(
     char_u	*line,
-    colnr_T	col,		// column to start looking for match
+    colnr_T	startcol,	// column to start looking for match
     int		*timed_out)	// flag set on timeout or NULL
 {
     bt_regprog_T    *prog;
     char_u	    *s;
+    colnr_T	    col = startcol;
     long	    retval = 0L;
 
     // Create "regstack" and "backpos" if they are not allocated yet.
@@ -5042,11 +5043,19 @@ theend:
 	    if (end->lnum < start->lnum
 			|| (end->lnum == start->lnum && end->col < start->col))
 		rex.reg_mmatch->endpos[0] = rex.reg_mmatch->startpos[0];
+
+	    // startpos[0] may be set by "\zs", also return the column where
+	    // the whole pattern matched.
+	    rex.reg_mmatch->rmm_matchcol = col;
 	}
 	else
 	{
 	    if (rex.reg_match->endp[0] < rex.reg_match->startp[0])
 		rex.reg_match->endp[0] = rex.reg_match->startp[0];
+
+	    // startpos[0] may be set by "\zs", also return the column where
+	    // the whole pattern matched.
+	    rex.reg_match->rm_matchcol = col;
 	}
     }
 
