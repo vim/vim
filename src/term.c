@@ -450,7 +450,7 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_TI,	"\0337\033[?47h"},
     {(int)KS_TE,	"\033[?47l\0338"},
 #  endif
-    {(int)KS_CTI,	"\033[>4;2m"},
+    {(int)KS_CTI,	"\033[>4;2m\033[?4m"},  // see "builtin_mok2"
     {(int)KS_CTE,	"\033[>4;m"},
     {(int)KS_CIS,	"\033]1;"},
     {(int)KS_CIE,	"\007"},
@@ -591,7 +591,10 @@ static tcap_entry_T builtin_xterm[] = {
  * xterm.
  */
 static tcap_entry_T builtin_mok2[] = {
-    {(int)KS_CTI,	"\033[>4;2m"},
+    // XTQMODKEYS was added in xterm version 377: "CSI ? 4 m" which should
+    // return "{lead} > 4 ; Pv m".  Before version 377 we expect it to have no
+    // effect.
+    {(int)KS_CTI,	"\033[>4;2m\033[?4m"},
     {(int)KS_CTE,	"\033[>4;m"},
 
     {(int)KS_NAME,	NULL}  // end marker
@@ -3661,9 +3664,20 @@ out_str_t_TE(void)
     out_str(T_CTE);
 
     // The seenModifyOtherKeys flag is not reset here.  We do expect t_TE to
-    // disable modifyOtherKeys, but there is no way to detect it's enabled
-    // again after the following t_TI.  We assume that when seenModifyOtherKeys
-    // was set before it will still be valid.
+    // disable modifyOtherKeys, but until Xterm version 377 there is no way to
+    // detect it's enabled again after the following t_TI.  We assume that when
+    // seenModifyOtherKeys was set before it will still be valid.
+
+    // When the modifyOtherKeys level is detected to be 2 we expect t_TE to
+    // disable it.  Remembering that it was detected to be enabled is useful in
+    // some situations.
+    // The following t_TI is expected to request the state and then
+    // modify_otherkeys_state will be set again.
+    if (modify_otherkeys_state == MOKS_ENABLED
+	    || modify_otherkeys_state == MOKS_DISABLED)
+	modify_otherkeys_state = MOKS_DISABLED;
+    else if (modify_otherkeys_state != MOKS_INITIAL)
+	modify_otherkeys_state = MOKS_AFTER_T_KE;
 
     // When the kitty keyboard protocol is enabled we expect t_TE to disable
     // it.  Remembering that it was detected to be enabled is useful in some
@@ -5112,6 +5126,8 @@ handle_key_without_modifier(
  * Handle a CSI escape sequence.
  * - Xterm version string.
  *
+ * - Response to XTQMODKEYS: "{lead} > 4 ; Pv m".
+ *
  * - Cursor position report: {lead}{row};{col}R
  *   The final byte must be 'R'. It is used for checking the
  *   ambiguous-width character state.
@@ -5121,6 +5137,7 @@ handle_key_without_modifier(
  * - key with modifiers when modifyOtherKeys is enabled:
  *	    {lead}27;{modifier};{key}~
  *	    {lead}{key};{modifier}u
+ *
  * Return 0 for no match, -1 for partial match, > 0 for full match.
  */
     static int
@@ -5184,12 +5201,24 @@ handle_csi(
     trail = *ap;
     csi_len = (int)(ap - tp) + 1;
 
+    // Response to XTQMODKEYS: "CSI > 4 ; Pv m" where Pv indicates the
+    // modifyOtherKeys level.  Drop similar responses.
+    if (first == '>' && (argc == 1 || argc == 2) && trail == 'm')
+    {
+	if (arg[0] == 4 && argc == 2)
+	    modify_otherkeys_state = arg[1] == 2 ? MOKS_ENABLED : MOKS_OFF;
+
+	key_name[0] = (int)KS_EXTRA;
+	key_name[1] = (int)KE_IGNORE;
+	*slen = csi_len;
+    }
+
     // Cursor position report: Eat it when there are 2 arguments
     // and it ends in 'R'. Also when u7_status is not "sent", it
     // may be from a previous Vim that just exited.  But not for
     // <S-F3>, it sends something similar, check for row and column
     // to make sense.
-    if (first == -1 && argc == 2 && trail == 'R')
+    else if (first == -1 && argc == 2 && trail == 'R')
     {
 	handle_u7_response(arg, tp, csi_len);
 
@@ -5821,6 +5850,8 @@ check_termcode(
 	     * - Xterm version string: {lead}>{x};{vers};{y}c
 	     *   Also eat other possible responses to t_RV, rxvt returns
 	     *   "{lead}?1;2c".
+	     *
+	     * - Response to XTQMODKEYS: "{lead} > 4 ; Pv m".
 	     *
 	     * - Cursor position report: {lead}{row};{col}R
 	     *   The final byte must be 'R'. It is used for checking the

@@ -1374,8 +1374,28 @@ EXTERN int reg_executing INIT(= 0);	// register being executed or zero
 EXTERN int pending_end_reg_executing INIT(= 0);
 
 // Set when a modifyOtherKeys sequence was seen, then simplified mappings will
-// no longer be used.
+// no longer be used.  To be combined with modify_otherkeys_state.
 EXTERN int seenModifyOtherKeys INIT(= FALSE);
+
+// The state for the modifyOtherKeys level
+typedef enum {
+    // Initially we have no clue if the protocol is on or off.
+    MOKS_INITIAL,
+    // Used when receiving the state and the level is not two.
+    MOKS_OFF,
+    // Used when receiving the state and the level is two.
+    MOKS_ENABLED,
+    // Used after outputting t_KE when the state was MOKS_ENABLED.  We do not
+    // really know if t_KE actually disabled the protocol, the following t_KI
+    // is expected to request the state, but the response may come only later.
+    MOKS_DISABLED,
+    // Used after outputting t_KE when the state was not MOKS_ENABLED.
+    MOKS_AFTER_T_KE,
+} mokstate_T;
+
+// Set when a response to XTQMODKEYS was received.  Only works for xterm
+// version 377 and later.
+EXTERN mokstate_T modify_otherkeys_state INIT(= MOKS_INITIAL);
 
 // The state for the Kitty keyboard protocol.
 typedef enum {
