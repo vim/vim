@@ -405,6 +405,51 @@ peek_console_input(
 }
 
 # if defined(FEAT_EVAL) || defined(PROTO)
+
+    int
+synthesize_mouse_event()
+{
+    int		button;
+    int		row;
+    int		col;
+    int		repeated_click;
+    int_u	mods;
+    int		move;
+    if (!dict_has_key(args, "row")
+	    || !dict_has_key(args, "col"))
+	return FALSE;
+    // Note: "move" is optional, requires fewer arguments
+    move = (int)dict_get_bool(args, "move", FALSE);
+    if (!move && (!dict_has_key(args, "button")
+	    || !dict_has_key(args, "multiclick")
+	    || !dict_has_key(args, "modifiers")))
+	return FALSE;
+    row = (int)dict_get_number(args, "row");
+    col = (int)dict_get_number(args, "col");
+    if (move)
+    {
+	if (dict_get_bool(args, "cell", FALSE))
+	{
+	    // click in the middle of the character cell
+	    row = row * gui.char_height + gui.char_height / 2;
+	    col = col * gui.char_width + gui.char_width / 2;
+	}
+	// gui_mouse_moved(col, row);
+    }
+    else
+    {
+	button = (int)dict_get_number(args, "button");
+	repeated_click = (int)dict_get_number(args, "multiclick");
+	mods = (int)dict_get_number(args, "modifiers");
+	// Reset the scroll values to known values.
+	// XXX: Remove this when/if the scroll step is made configurable.
+	mouse_set_hor_scroll_step(6);
+	mouse_set_vert_scroll_step(3);
+	// gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
+	// 						repeated_click, mods);
+    }
+}
+
 /*
  * This is for testing Vim's low-level handling of user input events from
  * MS-Windows console input buffer.  It is loosely based on the function
@@ -453,14 +498,13 @@ test_console_w32_event(typval_T *argvars, typval_T *rettv)
 	return;
 
     event = tv_get_string(&argvars[0]);
-    if (STRCMP(event, "mouse") == 0)
-	rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
-    else if (STRCMP(event, "tabline") == 0)
-	rettv->vval.v_number = test_gui_tabline_event(argvars[1].vval.v_dict);
-    else if (STRCMP(event, "tabmenu") == 0)
-	rettv->vval.v_number = test_gui_tabmenu_event(argvars[1].vval.v_dict);
-    else if (STRCMP(event, "sendevent") == 0)
-	rettv->vval.v_number = test_gui_w32_sendevent(argvars[1].vval.v_dict);
+    int abc = 0;
+    if (STRCMP(event, "key") == 0)
+	///////////rettv->vval.v_number = test_gui_w32_sendevent(argvars[1].vval.v_dict);
+	synthesize_key_event();
+    else if (STRCMP(event, "mouse") == 0)
+	///////////rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
+	rettv->vval.v_number = synthesize_mouse_event(argvars[1].vval.v_dict);
     else
     {
 	semsg(_(e_invalid_argument_str), event);
