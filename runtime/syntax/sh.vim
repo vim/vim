@@ -793,8 +793,11 @@ endif
 " Delete shell folding commands {{{1
 " =============================
 delc ShFoldFunctions
+unlet s:sh_fold_functions
 delc ShFoldHereDoc
+unlet s:sh_fold_heredoc
 delc ShFoldIfDoFor
+unlet s:sh_fold_ifdofor
 
 " Set Current Syntax: {{{1
 " ===================
