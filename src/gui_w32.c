@@ -8643,53 +8643,126 @@ netbeans_draw_multisign_indicator(int row)
 #endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+
+
+    int
+test_gui_w32_sendevent_mouse(dict_T *args)
+{
+    if (!dict_has_key(args, "row") || !dict_has_key(args, "col"))
+	return FALSE;
+
+    // Note: "move" is optional, requires fewer arguments
+    int move = (int)dict_get_bool(args, "move", FALSE);
+
+    if (!move && (!dict_has_key(args, "button")
+	    || !dict_has_key(args, "multiclick")
+	    || !dict_has_key(args, "modifiers")))
+	return FALSE;
+
+    int row = (int)dict_get_number(args, "row");
+    int col = (int)dict_get_number(args, "col");
+
+    if (move)
+    {
+	if (dict_get_bool(args, "cell", FALSE))
+	{
+	    // click in the middle of the character cell
+	    row = row * gui.char_height + gui.char_height / 2;
+	    col = col * gui.char_width + gui.char_width / 2;
+	}
+	gui_mouse_moved(col, row);
+    }
+    else
+    {
+	int button = (int)dict_get_number(args, "button");
+	int repeated_click = (int)dict_get_number(args, "multiclick");
+	int_u mods = (int)dict_get_number(args, "modifiers");
+
+	// Reset the scroll values to known values.
+	// XXX: Remove this when/if the scroll step is made configurable.
+	mouse_set_hor_scroll_step(6);
+	mouse_set_vert_scroll_step(3);
+
+	gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
+							repeated_click, mods);
+	// Zewpo TODO: At the moment, this is essentially a copy of the general
+	// test_gui_mouse_event() function.  But, this directly calls
+	// gui_mouse_moved() and gui_send_mouse_event(), and we could instead
+	// generate actual Win32 mouse event messages. This would increase test
+	// coverage for gVim's low-level mouse handling.
+	// Leaving this as a TODO, because I'm concentrating on the mswin
+	// terminal console testing for now, and I would like to come back
+	// around to this after.
+	// ie. Reference Win32 API: MOUSEINPUT (winuser.h)
+	// eg...
+	// INPUT inputs[1];
+        // SecureZeroMemory(inputs, sizeof(inputs));
+	// inputs[0].type = INPUT_MOUSE;
+	// inputs[0].mi.dx = ...
+	// ...etc...
+	// (void)SetForegroundWindow(s_hwnd);
+	// SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+    }
+    return TRUE;
+}
+
+    int
+test_gui_w32_sendevent_keyboard(dict_T *args)
+{
+    INPUT inputs[1];
+    SecureZeroMemory(inputs, sizeof(inputs));
+    char_u *event_flags = dict_get_string(args, "event", TRUE);
+
+    if (event_flags && (STRICMP(event_flags, "keydown") == 0
+    					|| STRICMP(event_flags, "keyup") == 0))
+    {
+	WORD vkCode = dict_get_number_def(args, "keycode", 0);
+	if (vkCode <= 0 || vkCode >= 0xFF)
+	{
+	    semsg(_(e_invalid_argument_nr), (long)vkCode);
+	    return FALSE;
+	}
+
+	inputs[0].type = INPUT_KEYBOARD;
+	inputs[0].ki.wVk = vkCode;
+	if (STRICMP(event_flags, "keyup") == 0)
+	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	(void)SetForegroundWindow(s_hwnd);
+	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+	vim_free(event_flags);
+    }
+    else
+    {
+	if (event_flags == NULL)
+	{
+	    semsg(_(e_invalid_argument_str), "NULL");
+	}
+	else
+	{
+	    semsg(_(e_invalid_argument_str), event_flags);
+	    vim_free(event_flags);
+	}
+	return FALSE;
+    }
+    return TRUE;
+}
+
     int
 test_gui_w32_sendevent(char_u *event, dict_T *args)
 {
     if (STRICMP(event, "keyboard") == 0)
     {
-	INPUT	inputs[1];
-
-	char_u	*event_flags = dict_get_string(args, "event", TRUE);
-	if (event_flags == NULL)
-	    return FALSE;
-
-	SecureZeroMemory(inputs, sizeof(inputs));
-
-	if (STRICMP(event_flags, "keydown") == 0 || STRICMP(event_flags, "keyup") == 0)
-	{
-	    WORD vkCode = dict_get_number_def(args, "keycode", 0);
-	    if (vkCode <= 0 || vkCode >= 0xFF)
-	    {
-		semsg(_(e_invalid_argument_nr), (long)vkCode);
-		return FALSE;
-	    }
-
-	    inputs[0].type = INPUT_KEYBOARD;
-	    inputs[0].ki.wVk = vkCode;
-	    if (STRICMP(event_flags, "keyup") == 0)
-		inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
-	    (void)SetForegroundWindow(s_hwnd);
-	    SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
-	}
-	else
-	{
-	    semsg(_(e_invalid_argument_str), event_flags);
-	    return FALSE;
-	}
-
-	vim_free(event_flags);
-	return TRUE;
+	return test_gui_w32_sendevent_keyboard(args);
     }
     else if (STRICMP(event, "mouse") == 0)
     {
-	// TODO:.....  now!!!
+	return test_gui_w32_sendevent_mouse(args);
     }
     else
     {
 	semsg(_(e_invalid_argument_str), event);
 	return FALSE;
     }
-    
 }
 #endif
