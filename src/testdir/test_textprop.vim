@@ -2714,6 +2714,39 @@ func Test_props_with_text_after_below_trunc()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_with_text_below_after_empty()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+      
+      setline(1, ['vim9script', '', 'three', ''])
+
+      # Add text prop below empty line 2 with padding.
+      prop_type_add('test', {highlight: 'ErrorMsg'})
+      prop_add(2, 0, {
+           type: 'test',
+           text: 'The quick brown fox jumps over the lazy dog',
+           text_align: 'below',
+           text_padding_left: 1,
+      })
+
+      # Add text prop below empty line 4 without padding.
+      prop_type_add('other', {highlight: 'DiffChange'})
+      prop_add(4, 0, {
+           type: 'other',
+           text: 'The slow fox bumps into the lazy dog',
+           text_align: 'below',
+           text_padding_left: 0,
+      })
+  END
+  call writefile(lines, 'XscriptPropBelowAfterEmpty', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropBelowAfterEmpty', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_1', {}) 
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_with_text_below_after_match()
   CheckRunVimInTerminal
 
