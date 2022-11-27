@@ -2463,7 +2463,11 @@ check_simplify_modifier(int max_offset)
     static int
 key_protocol_enabled(void)
 {
-    return seenModifyOtherKeys || kitty_protocol_state == KKPS_ENABLED;
+    // If xterm has responded to XTQMODKEYS it overrules seenModifyOtherKeys.
+    int using_mok = modify_otherkeys_state != MOKS_INITIAL
+			? modify_otherkeys_state == MOKS_ENABLED
+			: seenModifyOtherKeys;
+    return using_mok || kitty_protocol_state == KKPS_ENABLED;
 }
 
 /*

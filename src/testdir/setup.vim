@@ -2,6 +2,12 @@
 
 " Only load this once.
 if 1
+
+  " When using xterm version 377 the response to the modifyOtherKeys status
+  " interferes with some tests.  Remove the request from the t_TI termcap
+  " entry.
+  let &t_TI = substitute(&t_TI, "\<Esc>\\[?4m", '', '')
+
   if exists('s:did_load')
     finish
   endif

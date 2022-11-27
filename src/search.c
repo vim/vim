@@ -793,7 +793,6 @@ searchit(
 		    if (dir == FORWARD && at_first_line)
 		    {
 			match_ok = TRUE;
-			matchcol = col;
 
 			/*
 			 * When the match starts in a next line it's certainly
@@ -840,8 +839,9 @@ searchit(
 			    else
 			    {
 				// Advance "matchcol" to the next character.
-				// This does not use matchpos.col, because
-				// "\zs" may have have set it.
+				// This uses rmm_matchcol, the actual start of
+				// the match, ignoring "\zs".
+				matchcol = regmatch.rmm_matchcol;
 				if (ptr[matchcol] != NUL)
 				{
 				    if (has_mbyte)

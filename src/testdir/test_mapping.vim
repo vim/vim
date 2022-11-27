@@ -478,10 +478,24 @@ func Test_list_mappings()
         \ execute('nmap ,n')->trim()->split("\n"))
 
   " verbose map
-  " first line might be "seen modifyOtherKeys"
   let lines = execute('verbose map ,n')->trim()->split("\n")
+
+  " Remove "Seen modifyOtherKeys" and other optional info.
+  if lines[0] =~ 'Seen modifyOtherKeys'
+    call remove(lines, 0)
+  endif
+  if lines[0] =~ 'modifyOtherKeys detected:'
+    call remove(lines, 0)
+  endif
+  if lines[0] =~ 'Kitty keyboard protocol:'
+    call remove(lines, 0)
+  endif
+  if lines[0] == ''
+    call remove(lines, 0)
+  endif
+
   let index = indexof(lines, 'v:val =~ "Last set"')
-  call assert_inrange(1, 2, index)
+  call assert_equal(1, index)
   call assert_match("\tLast set from .*/test_mapping.vim line \\d\\+$",
         \ lines[index])
 
