@@ -109,9 +109,12 @@ find_win_for_curbuf(void)
 {
     wininfo_T *wip;
 
+    // The b_wininfo list should have the windows that recently contained the
+    // buffer, going over this is faster than going over all the windows.
+    // Do check the buffer is still there.
     FOR_ALL_BUF_WININFO(curbuf, wip)
     {
-	if (wip->wi_win != NULL)
+	if (wip->wi_win != NULL && wip->wi_win->w_buffer == curbuf)
 	{
 	    curwin = wip->wi_win;
 	    break;
