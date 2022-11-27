@@ -2692,7 +2692,7 @@ static funcentry_T global_functions[] =
     {"test_ignore_error", 1, 1, FEARG_1,    arg1_string,
 			ret_void,	    f_test_ignore_error},
     {"test_mswin_event", 2, 2, FEARG_1,     arg2_string_dict,
-			ret_bool,	    f_test_mswin_event},
+			ret_number,	    f_test_mswin_event},
     {"test_null_blob",	0, 0, 0,	    NULL,
 			ret_blob,	    f_test_null_blob},
     {"test_null_channel", 0, 0, 0,	    NULL,

@@ -409,14 +409,12 @@ peek_console_input(
     int
 encode_key_event(dict_T *args, INPUT_RECORD *ir)
 {
-    char_u *event = dict_get_string(args, "key", TRUE);
-
-    if (event == NULL)
-	return FALSE;
+    char_u *event_flags = dict_get_string(args, "event", TRUE);
 
     ZeroMemory(ir, sizeof(ir));
 
-    if (STRICMP(event, "keydown") == 0 || STRICMP(event, "keyup") == 0)
+    if (event_flags && (STRICMP(event_flags, "keydown") == 0
+					|| STRICMP(event_flags, "keyup") == 0))
     {
 	WORD vkCode = dict_get_number_def(args, "keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
@@ -428,7 +426,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 
 	ir->EventType = KEY_EVENT;
 	KEY_EVENT_RECORD ker;
-	ker.bKeyDown = STRICMP(event, "keydown") == 0;
+	ker.bKeyDown = STRICMP(event_flags, "keydown") == 0;
 	ker.wRepeatCount = 1;
 	ker.wVirtualKeyCode = vkCode;
 	ker.wVirtualScanCode = 0;
@@ -445,11 +443,21 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	}
 	ker.uChar.UnicodeChar = 0;
 	ir->Event.KeyEvent = ker;
+	vim_free(event_flags);
     }
     else
-	semsg(_(e_invalid_argument_str), event);
-
-    vim_free(event);
+    {
+	if (event_flags == NULL)
+	{
+	    semsg(_(e_invalid_argument_str), "NULL");
+	}
+	else
+	{
+	    semsg(_(e_invalid_argument_str), event_flags);
+	    vim_free(event_flags);
+	}
+	return FALSE;
+    }
     return TRUE;
 }
 
@@ -543,7 +551,6 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
 	}
     }
 
-    // DWORD dwControlKeyState;
     mer.dwControlKeyState = 0;
     if (mods != 0)
     {
@@ -560,88 +567,82 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
 }
 
 /*
- * This is for testing Vim's low-level handling of user input events from
- * MS-Windows console input buffer.  It is loosely based on the function
- * test_gui_w32_sendevent() from guiw32.c.
+ * This is for testing Vim's low-level handling of user input events when
+ * running in MS-Windows.
+ *
+ * If the GUI is running, this will call test_gui_w32_sendevent() in gui_w32.c
+ * to test MS-Windows Win32 GUI input event message handling.  Otherwise, this
+ * will go on to process the events as MS-Windows terminal console input buffer
+ * events. 
  * 
  * This essentially does the reverse of "read_console_input()", where Vim reads
  * user input events from the console's input buffer in the form of
  * MS-Windows INPUT_RECORD structs.  Each INPUT_RECORD represents one event
  * such as; a keystroke, a mouse motion, a mouse scroll or a button click, etc. 
  * 
- * This function allows us to emulate user input at test-time.  It takes in a
- * string character array [char_u *s].  The characters contain the data needed
+ * This function allows us to emulate user input at test-time.  
+ *
+ * ....The event type and args dictionary....
+ * 
  * for Vim to synthesize Win32 INPUT_RECORD events, which are then written
  * directly onto the console input buffer, for Vim to then process via
  * read_console_input(), as if a user had entered them directly.
  * 
- * This function is designed to be called by f_test_mswin_event
- * This function returns void.  If an exception occurs it will write an error
+ * This function returns the number of events actually written to the buffer.
+ * 
+ * If an exception occurs it will write an error
  * message via semsg().  Otherwise, it's typically up to the test script to
  * assert that the expected operation has occurred, by checking the end result
  * after Vim's processing the console's input buffer.
  */ 
-    void
-test_mswin_event(typval_T *argvars, typval_T *rettv) 
+    int
+test_mswin_event(char_u *event, dict_T *args)
 {
 
-#  ifdef VIMDLL
+#  if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
     if (gui.in_use)
-	return;
+	return test_mswin_gui_event(event, args);
 #  endif
 
-    rettv->v_type = VAR_BOOL;
-    rettv->vval.v_number = FALSE;
 
-    if (sandbox != 0)
-    {
-	emsg(_(e_not_allowed_in_sandbox));
-	return;
-    }
-
-    if (check_for_string_arg(argvars, 0) == FAIL
-	    || check_for_dict_arg(argvars, 1) == FAIL
-	    || argvars[1].vval.v_dict == NULL)
-	return;
-
-// KEY_EVENT
-// MOUSE_EVENT
-// FOCUS_EVENT
-// WINDOW_BUFFER_SIZE_EVENT
-// MENU_EVENT
+// Only implemented event record types are;
+//    KEY_EVENT and MOUSE_EVENT
+// TODO: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
+// Not planned:  MENU_EVENT
 
     int lpEventsWritten = 0;
     INPUT_RECORD ir;
-    char_u *event = tv_get_string(&argvars[0]);
     BOOL input_encoded = FALSE;
-    if (STRCMP(event, "key") == 0)
-	input_encoded = encode_key_event(argvars[1].vval.v_dict, &ir);
+    if (STRCMP(event, "keyboard") == 0)
+	input_encoded = encode_key_event(args, &ir);
     else if (STRCMP(event, "mouse") == 0)
-	input_encoded = encode_mouse_event(argvars[1].vval.v_dict, &ir);
+	input_encoded = encode_mouse_event(args, &ir);
     else
     {
 	semsg(_(e_invalid_argument_str), event);
-	return;
+	return FALSE;
     }
 
-    if (input_encoded && WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten))
-	rettv->vval.v_number = lpEventsWritten;
-    else
-	rettv->vval.v_number = FAIL;
+    if (input_encoded)
+	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+
+    return lpEventsWritten;
 }
 
 /*
- * This function is designed to be called by feedkeys({string},{mode}), where
- * mode is 'L' (low-level) in MS-Windows consoles.
+ * This function is designed to be called by feedkeys({string},{mode})
+ *
+ * Where mode is 'L' (low-level) for MS-Windows console events.
  * 
- * To include special keys into {string}, use double-quotes
+ * feedkeys passes to this its {string} argument, (char_u *s)
+ * 
+ * To include special keys in {string}, use double-quotes
  * and "\..." notation |expr-quote|. For example,
- * feedkeys("\<CR>") simulates pressing of the <Enter> key. But
- * feedkeys('\<CR>') pushes 5 characters.
+ * feedkeys("\<CR>", 'L') simulates pressing of the <Enter> key. But
+ * feedkeys('\<CR>', 'L') pushes 5 characters.
  * 
- * mouse events often need the mouse position.  
- * See test_setmouse({row}, {col}), eg.
- * 
+ * Mouse events usually need the mouse position. See test_setmouse({row}, {col})
+ *  eg.
  * 	call test_setmouse(4, 20)
  * 	call feedkeys("\<LeftMouse>", "L")
  */
@@ -652,6 +653,7 @@ feed_mswin_input(char_u *s)
     int len = (int)STRLEN(s);
     //TODO: convert s to mswin input buffer events...
 }
+
 # endif
 
 # ifdef FEAT_CLIENTSERVER
@@ -5275,7 +5277,7 @@ mch_call_shell(
 	    INT			n_show_cmd = SW_SHOWNORMAL;
 	    char_u		*p;
 
-	    ZeroMemory(&si, sizeof(si));
+	    SecureZeroMemory(&si, sizeof(si));
 	    si.cb = sizeof(si);
 	    si.lpReserved = NULL;
 	    si.lpDesktop = NULL;
@@ -5712,8 +5714,8 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     if (options->jo_env != NULL)
 	win32_build_env(options->jo_env, &ga, FALSE);
 
-    ZeroMemory(&pi, sizeof(pi));
-    ZeroMemory(&si, sizeof(si));
+    SecureZeroMemory(&pi, sizeof(pi));
+    SecureZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     si.dwFlags |= STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE;
@@ -7680,7 +7682,7 @@ copy_infostreams(char_u *from, char_u *to)
 	    {
 		// Get the header to find the length of the stream name.  If
 		// the "readcount" is zero we have done all info streams.
-		ZeroMemory(&sid, sizeof(WIN32_STREAM_ID));
+		SecureZeroMemory(&sid, sizeof(WIN32_STREAM_ID));
 		headersize = (int)((char *)&sid.cStreamName - (char *)&sid.dwStreamId);
 		if (!BackupRead(sh, (LPBYTE)&sid, headersize,
 					   &readcount, FALSE, FALSE, &context)

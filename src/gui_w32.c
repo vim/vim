@@ -8644,40 +8644,52 @@ netbeans_draw_multisign_indicator(int row)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
     int
-test_gui_w32_sendevent(dict_T *args)
+test_gui_w32_sendevent(char_u *event, dict_T *args)
 {
-    char_u	*event;
-    INPUT	inputs[1];
-
-    event = dict_get_string(args, "event", TRUE);
-    if (event == NULL)
-	return FALSE;
-
-    ZeroMemory(inputs, sizeof(inputs));
-
-    if (STRICMP(event, "keydown") == 0 || STRICMP(event, "keyup") == 0)
+    if (STRICMP(event, "keyboard") == 0)
     {
-	WORD	    vkCode;
+	INPUT	inputs[1];
 
-	vkCode = dict_get_number_def(args, "keycode", 0);
-	if (vkCode <= 0 || vkCode >= 0xFF)
+	char_u	*event_flags = dict_get_string(args, "event", TRUE);
+	if (event_flags == NULL)
+	    return FALSE;
+
+	SecureZeroMemory(inputs, sizeof(inputs));
+
+	if (STRICMP(event_flags, "keydown") == 0 || STRICMP(event_flags, "keyup") == 0)
 	{
-	    semsg(_(e_invalid_argument_nr), (long)vkCode);
+	    WORD vkCode = dict_get_number_def(args, "keycode", 0);
+	    if (vkCode <= 0 || vkCode >= 0xFF)
+	    {
+		semsg(_(e_invalid_argument_nr), (long)vkCode);
+		return FALSE;
+	    }
+
+	    inputs[0].type = INPUT_KEYBOARD;
+	    inputs[0].ki.wVk = vkCode;
+	    if (STRICMP(event_flags, "keyup") == 0)
+		inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	    (void)SetForegroundWindow(s_hwnd);
+	    SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+	}
+	else
+	{
+	    semsg(_(e_invalid_argument_str), event_flags);
 	    return FALSE;
 	}
 
-	inputs[0].type = INPUT_KEYBOARD;
-	inputs[0].ki.wVk = vkCode;
-	if (STRICMP(event, "keyup") == 0)
-	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
-	(void)SetForegroundWindow(s_hwnd);
-	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+	vim_free(event_flags);
+	return TRUE;
+    }
+    else if (STRICMP(event, "mouse") == 0)
+    {
+	// TODO:.....  now!!!
     }
     else
+    {
 	semsg(_(e_invalid_argument_str), event);
-
-    vim_free(event);
-
-    return TRUE;
+	return FALSE;
+    }
+    
 }
 #endif

@@ -94,7 +94,7 @@ test_gui_event({event}, {args})
 		    "findrepl"  search and replace text.
 		    "mouse"	mouse button click event.
 		    "scrollbar" move or drag the scrollbar.
-		    "sendevent" send a low-level GUI event.
+		    "keyboard" send a low-level GUI event.
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
 
@@ -178,7 +178,7 @@ test_gui_event({event}, {args})
 		    dragging:	1 to drag the scrollbar and 0 to click in the
 				scrollbar.
 
-		"sendevent":
+		"keyboard":
 		  Send a low-level GUI event (e.g. key-up or down).
 		  Currently only supported on MS-Windows.
 		  The supported items in {args} are:
@@ -223,6 +223,70 @@ test_ignore_error({expr})			 *test_ignore_error()*
 		Can also be used as a |method|: >
 			GetErrorText()->test_ignore_error()
 
+						*test_mswin_event()*
+test_mswin_event({event}, {args})
+		Generate a low-level MS-Windows {event} with arguments {args}
+		for testing Vim functionality.  It works for MS-Windows GUI 
+		and the console application.
+		
+		{event} is a String and the supported values are:
+		    "mouse"	mouse event.
+		    "keyboard"	keyboard event.
+
+		"mouse":
+		  Inject either a mouse button click, or a mouse move, event.
+		  The supported items in {args} are:
+		    button:	mouse button.  The supported values are:
+				    0	right mouse button
+				    1	middle mouse button
+				    2	left mouse button
+				    3	mouse button release
+				    4	scroll wheel down
+				    5	scroll wheel up
+				    6	scroll wheel left
+				    7	scroll wheel right
+		    row:	mouse click row number.  The first row of the
+				Vim window is 1 and the last row is 'lines'.
+		    col:	mouse click column number.  The maximum value
+				of {col} is 'columns'.
+				Note: row and col are always interpreted as
+				screen cells for the console application.
+				But, they may be interpreted as pixels
+				for the GUI, depending on "cell".
+		    multiclick:	set to 1 to inject a double-click mouse event.
+		    modifiers:	key modifiers.  The supported values are:
+				    4	shift is pressed
+				    8	alt is pressed
+				   16	ctrl is pressed
+		    move:	Optional; if used and TRUE then a mouse move
+			        event can be generated.
+				Only {args} row: and col: are used and
+				required.
+				Only results in an event when 'mousemoveevent'
+				is set or a popup uses mouse move events.
+		    cell:	Optional for the GUI: when present and TRUE
+				then "move" uses screen cells instead of pixel
+				positions.  Not used by the console.
+
+		"keyboard":
+		  Send a low-level GUI event (e.g. key-up or down).
+		  The supported items in {args} are:
+		    event:	The supported string values are:
+				    keyup   generate a keyup event
+				    keydown generate a keydown event
+		    keycode:    Keycode to use for a keyup or a keydown event.
+								*E1291*
+
+		After injecting the GUI events you probably should call
+		|feedkeys()| to have them processed, e.g.: >
+			call feedkeys("y", 'Lx!')
+<
+		Returns TRUE if the event is successfully added, FALSE if
+		there is a failure.
+
+		Can also be used as a |method|: >
+			GetEvent()->test_mswin_event({args})
+<
 
 test_null_blob()					*test_null_blob()*
 		Return a |Blob| that is null. Only useful for testing.
