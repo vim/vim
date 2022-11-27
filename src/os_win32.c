@@ -596,6 +596,7 @@ wait_for_single_object(
 # endif
 #endif   // !FEAT_GUI_MSWIN || VIMDLL
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * This is for testing Vim's low-level handling of user input events when
  * running in MS-Windows.
@@ -628,19 +629,20 @@ wait_for_single_object(
     int
 test_mswin_event(char_u *event, dict_T *args)
 {
+    int lpEventsWritten = 0;
 
-#  if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
+# if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
     if (gui.in_use)
 	return test_mswin_gui_event(event, args);
-#  endif
+# endif
 
+# if defined(VIMDLL) || !defined(FEAT_GUI_MSWIN)
 
 // Only implemented event record types are;
 //    KEY_EVENT and MOUSE_EVENT
 // TODO: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
 // Not planned:  MENU_EVENT
 
-    int lpEventsWritten = 0;
     INPUT_RECORD ir;
     BOOL input_encoded = FALSE;
     if (STRCMP(event, "keyboard") == 0)
@@ -655,7 +657,7 @@ test_mswin_event(char_u *event, dict_T *args)
 
     if (input_encoded)
 	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
-
+# endif
     return lpEventsWritten;
 }
 
@@ -683,6 +685,8 @@ feed_mswin_input(char_u *s)
     int len = (int)STRLEN(s);
     //TODO: convert s to mswin input buffer events...
 }
+
+#endif // FEAT_EVAL || PROTO
 
     static void
 get_exe_name(void)
