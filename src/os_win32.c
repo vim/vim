@@ -224,7 +224,7 @@ static int default_console_color_fg = 0xc0c0c0; // white
 static void set_console_color_rgb(void);
 static void reset_console_color_rgb(void);
 static void restore_console_color_rgb(void);
-#endif
+#endif  // !FEAT_GUI_MSWIN || VIMDLL
 
 // This flag is newly created from Windows 10
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -405,7 +405,6 @@ peek_console_input(
 }
 
 # if defined(FEAT_EVAL) || defined(PROTO)
-
     int
 encode_key_event(dict_T *args, INPUT_RECORD *ir)
 {
@@ -566,6 +565,37 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
     return TRUE;
 }
 
+# endif  // FEAT_EVAL || PROTO
+
+# ifdef FEAT_CLIENTSERVER
+    static DWORD
+msg_wait_for_multiple_objects(
+    DWORD    nCount,
+    LPHANDLE pHandles,
+    BOOL     fWaitAll,
+    DWORD    dwMilliseconds,
+    DWORD    dwWakeMask)
+{
+    if (read_console_input(NULL, NULL, -2, NULL))
+	return WAIT_OBJECT_0;
+    return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
+				     dwMilliseconds, dwWakeMask);
+}
+# endif
+
+# ifndef FEAT_CLIENTSERVER
+    static DWORD
+wait_for_single_object(
+    HANDLE hHandle,
+    DWORD dwMilliseconds)
+{
+    if (read_console_input(NULL, NULL, -2, NULL))
+	return WAIT_OBJECT_0;
+    return WaitForSingleObject(hHandle, dwMilliseconds);
+}
+# endif
+#endif   // !FEAT_GUI_MSWIN || VIMDLL
+
 /*
  * This is for testing Vim's low-level handling of user input events when
  * running in MS-Windows.
@@ -653,37 +683,6 @@ feed_mswin_input(char_u *s)
     int len = (int)STRLEN(s);
     //TODO: convert s to mswin input buffer events...
 }
-
-# endif
-
-# ifdef FEAT_CLIENTSERVER
-    static DWORD
-msg_wait_for_multiple_objects(
-    DWORD    nCount,
-    LPHANDLE pHandles,
-    BOOL     fWaitAll,
-    DWORD    dwMilliseconds,
-    DWORD    dwWakeMask)
-{
-    if (read_console_input(NULL, NULL, -2, NULL))
-	return WAIT_OBJECT_0;
-    return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
-				     dwMilliseconds, dwWakeMask);
-}
-# endif
-
-# ifndef FEAT_CLIENTSERVER
-    static DWORD
-wait_for_single_object(
-    HANDLE hHandle,
-    DWORD dwMilliseconds)
-{
-    if (read_console_input(NULL, NULL, -2, NULL))
-	return WAIT_OBJECT_0;
-    return WaitForSingleObject(hHandle, dwMilliseconds);
-}
-# endif
-#endif
 
     static void
 get_exe_name(void)
