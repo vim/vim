@@ -2094,23 +2094,6 @@ func Test_list_builtin_terminals()
   call StopVimInTerminal('')
 endfunc
 
-func GetEscCodeCSI27(key, modifier)
-  let key = printf("%d", char2nr(a:key))
-  let mod = printf("%d", a:modifier)
-  return "\<Esc>[27;" .. mod .. ';' .. key .. '~'
-endfunc
-
-func GetEscCodeCSIu(key, modifier)
-  let key = printf("%d", char2nr(a:key))
-  let mod = printf("%d", a:modifier)
-  return "\<Esc>[" .. key .. ';' .. mod .. 'u'
-endfunc
-
-func GetEscCodeCSIuWithoutModifier(key)
-  let key = printf("%d", char2nr(a:key))
-  return "\<Esc>[" .. key .. 'u'
-endfunc
-
 " This checks the CSI sequences when in modifyOtherKeys mode.
 " The mode doesn't need to be enabled, the codes are always detected.
 func RunTest_modifyOtherKeys(func)

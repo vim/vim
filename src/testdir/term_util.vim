@@ -189,4 +189,43 @@ func Term_getlines(buf, lines)
   return join(map(a:lines, 'term_getline(a:buf, v:val)'), '')
 endfunc
 
+" When using RunVimInTerminal() we expect modifyOtherKeys level 2 to be enabled
+" automatically.  The key + modifier Escape codes must then use the
+" modifyOtherKeys encoding.  They are recognized anyway, thus it's safer to use
+" than the raw code.
+
+" Return the modifyOtherKeys level 2 encoding for "key" with "modifier"
+" (number value, e.g. CTRL is 5).
+func GetEscCodeCSI27(key, modifier)
+  let key = printf("%d", char2nr(a:key))
+  let mod = printf("%d", a:modifier)
+  return "\<Esc>[27;" .. mod .. ';' .. key .. '~'
+endfunc
+
+" Return the modifyOtherKeys level 2 encoding for "key" with "modifier"
+" (character value, e.g. CTRL is "C").
+func GetEscCodeWithModifier(modifier, key)
+  let modifier = get({'C': 5}, a:modifier, '')
+  if modifier == ''
+    echoerr 'Unknown modifier: ' .. a:modifier
+  endif
+  return GetEscCodeCSI27(a:key, modifier)
+endfunc
+
+" Return the kitty keyboard protocol encoding for "key" with "modifier"
+" (number value, e.g. CTRL is 5).
+func GetEscCodeCSIu(key, modifier)
+  let key = printf("%d", char2nr(a:key))
+  let mod = printf("%d", a:modifier)
+  return "\<Esc>[" .. key .. ';' .. mod .. 'u'
+endfunc
+
+" Return the kitty keyboard protocol encoding for "key" without a modifier.
+" Used for the Escape key.
+func GetEscCodeCSIuWithoutModifier(key)
+  let key = printf("%d", char2nr(a:key))
+  return "\<Esc>[" .. key .. 'u'
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
