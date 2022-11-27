@@ -633,7 +633,7 @@ test_mswin_event(char_u *event, dict_T *args)
 
 # if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
     if (gui.in_use)
-	return test_mswin_gui_event(event, args);
+	return test_gui_w32_sendevent(event, args);
 # endif
 
 # if defined(VIMDLL) || !defined(FEAT_GUI_MSWIN)
