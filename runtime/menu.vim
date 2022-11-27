@@ -341,7 +341,7 @@ def s:TextWidth()
     # Remove leading zeros to avoid it being used as an octal number.
     # But keep a zero by itself.
     var tw = substitute(n, "^0*", "", "")
-    &tw = tw == '' ? 0 : tw
+    &tw = tw == '' ? 0 : str2nr(tw)
   endif
 enddef
 
