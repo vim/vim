@@ -653,12 +653,7 @@ free_all_autocmds(void)
     }
     ga_clear(&augroups);
 
-    for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
-	if (aucmd_win[i].auc_win_used)
-	{
-	    aucmd_win[i].auc_win_used = FALSE;
-	    win_remove(aucmd_win[i].auc_win, NULL);
-	}
+    // aucmd_win[] is freed in win_free_all()
 }
 #endif
 
@@ -1553,12 +1548,11 @@ aucmd_prepbuf(
 	for (auc_idx = 0; auc_idx < AUCMD_WIN_COUNT; ++auc_idx)
 	    if (!aucmd_win[auc_idx].auc_win_used)
 	    {
-		auc_win = win_alloc_popup_win();
+		if (aucmd_win[auc_idx].auc_win == NULL)
+		    aucmd_win[auc_idx].auc_win = win_alloc_popup_win();
+		auc_win = aucmd_win[auc_idx].auc_win;
 		if (auc_win != NULL)
-		{
-		    aucmd_win[auc_idx].auc_win = auc_win;
 		    aucmd_win[auc_idx].auc_win_used = TRUE;
-		}
 		break;
 	    }
 
@@ -1667,6 +1661,9 @@ win_found:
 	// Remove the window and frame from the tree of frames.
 	(void)winframe_remove(curwin, &dummy, NULL);
 	win_remove(curwin, NULL);
+
+	// The window is marked as not used, but it is not freed, it can be
+	// used again.
 	aucmd_win[aco->use_aucmd_win_idx].auc_win_used = FALSE;
 	last_status(FALSE);	    // may need to remove last status line
 

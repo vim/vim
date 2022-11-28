@@ -2439,7 +2439,7 @@ retry:
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	win_free_lsize(wp);
     for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
-	if (aucmd_win[i].auc_win_used)
+	if (aucmd_win[i].auc_win != NULL)
 	    win_free_lsize(aucmd_win[i].auc_win);
 #ifdef FEAT_PROP_POPUP
     // global popup windows
@@ -2484,7 +2484,7 @@ retry:
 	}
     }
     for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
-	if (aucmd_win[i].auc_win_used
+	if (aucmd_win[i].auc_win != NULL
 		&& aucmd_win[i].auc_win->w_lines == NULL
 		&& win_alloc_lines(aucmd_win[i].auc_win) == FAIL)
 	{

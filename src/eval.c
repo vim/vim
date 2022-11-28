@@ -5084,8 +5084,9 @@ garbage_collect(int testing)
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
 								  NULL, NULL);
+    // window-local variables in autocmd windows
     for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
-	if (aucmd_win[i].auc_win_used)
+	if (aucmd_win[i].auc_win != NULL)
 	    abort = abort || set_ref_in_item(
 		    &aucmd_win[i].auc_win->w_winvar.di_tv, copyID, NULL, NULL);
 #ifdef FEAT_PROP_POPUP

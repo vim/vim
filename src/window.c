@@ -3293,10 +3293,10 @@ win_free_all(void)
 	tabpage_close(TRUE);
 
     for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
-	if (aucmd_win[i].auc_win_used)
+	if (aucmd_win[i].auc_win != NULL)
 	{
 	    (void)win_free_mem(aucmd_win[i].auc_win, &dummy, NULL);
-	    aucmd_win[i].auc_win_used = FALSE;
+	    aucmd_win[i].auc_win = NULL;
 	}
 
     while (firstwin != NULL)

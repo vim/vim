@@ -984,8 +984,9 @@ EXTERN win_T	*curwin;	// currently active window
 #define AUCMD_WIN_COUNT 5
 
 typedef struct {
-  win_T	*auc_win;	// window used in aucmd_prepbuf()
-  int	auc_win_used;	// this auc_win is being used
+  win_T	*auc_win;	// Window used in aucmd_prepbuf().  When not NULL the
+			// window has been allocated.
+  int	auc_win_used;	// This auc_win is being used.
 } aucmdwin_T;
 
 EXTERN aucmdwin_T aucmd_win[AUCMD_WIN_COUNT];
