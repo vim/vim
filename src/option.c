@@ -1618,7 +1618,7 @@ do_set_string(
 
 #if defined(FEAT_EVAL)
     if (*errmsg == NULL)
-	trigger_optionsset_string(opt_idx, opt_flags, saved_origval,
+	trigger_optionset_string(opt_idx, opt_flags, saved_origval,
 			       saved_origval_l, saved_origval_g, saved_newval);
     vim_free(saved_origval);
     vim_free(saved_origval_l);
