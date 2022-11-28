@@ -2383,6 +2383,7 @@ screenalloc(int doclear)
     static int	    entered = FALSE;		// avoid recursiveness
     static int	    done_outofmem_msg = FALSE;	// did outofmem message
     int		    retry_count = 0;
+    int		    found_null;
 
 retry:
     /*
@@ -2509,8 +2510,7 @@ retry:
 #endif
 
 give_up:
-
-    int found_null = FALSE;
+    found_null = FALSE;
     for (int i = 0; i < p_mco; ++i)
 	if (new_ScreenLinesC[i] == NULL)
 	{
