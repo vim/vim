@@ -123,6 +123,8 @@ main
 #endif
     params.window_count = -1;
 
+    autocmd_init();
+
 #ifdef FEAT_RUBY
     {
 	int ruby_stack_start;

@@ -136,6 +136,8 @@ typedef struct {
  *
  * Information is saved in "cob" and MUST be restored by calling
  * change_other_buffer_restore().
+ *
+ * If this fails then "curbuf" will not be equal to "buf".
  */
     static void
 change_other_buffer_prepare(cob_T *cob, buf_T *buf)
@@ -156,7 +158,8 @@ change_other_buffer_prepare(cob_T *cob, buf_T *buf)
 	// curwin->w_buffer differ from "curbuf", use the autocmd window.
 	curbuf = curwin->w_buffer;
 	aucmd_prepbuf(&cob->cob_aco, buf);
-	cob->cob_using_aco = TRUE;
+	if (curbuf == buf)
+	    cob->cob_using_aco = TRUE;
     }
 }
 

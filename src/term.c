@@ -2232,10 +2232,13 @@ set_termname(char_u *term)
 		if (curbuf->b_ml.ml_mfp != NULL)
 		{
 		    aucmd_prepbuf(&aco, buf);
-		    apply_autocmds(EVENT_TERMCHANGED, NULL, NULL, FALSE,
+		    if (curbuf == buf)
+		    {
+			apply_autocmds(EVENT_TERMCHANGED, NULL, NULL, FALSE,
 								      curbuf);
-		    // restore curwin/curbuf and a few other things
-		    aucmd_restbuf(&aco);
+			// restore curwin/curbuf and a few other things
+			aucmd_restbuf(&aco);
+		    }
 		}
 	    }
 	}

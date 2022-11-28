@@ -5283,8 +5283,11 @@ BufferSetattr(BufferObject *self, char *name, PyObject *valObject)
 	VimTryStart();
 	// Using aucmd_*: autocommands will be executed by rename_buffer
 	aucmd_prepbuf(&aco, self->buf);
-	ren_ret = rename_buffer(val);
-	aucmd_restbuf(&aco);
+	if (curbuf == self->buf)
+	{
+	    ren_ret = rename_buffer(val);
+	    aucmd_restbuf(&aco);
+	}
 	Py_XDECREF(todecref);
 	if (VimTryEnd())
 	    return -1;

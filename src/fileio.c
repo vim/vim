@@ -4369,8 +4369,14 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
     int		flags = READ_NEW;
     int		prepped = OK;
 
-    // set curwin/curbuf for "buf" and save some things
+    // Set curwin/curbuf for "buf" and save some things.
     aucmd_prepbuf(&aco, buf);
+    if (curbuf != buf)
+    {
+	// Failed to find a window for "buf", it is dangerous to continue,
+	// better bail out.
+	return;
+    }
 
     // Unless reload_options is set, we only want to read the text from the
     // file, not reset the syntax highlighting, clear marks, diff status, etc.

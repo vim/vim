@@ -1362,7 +1362,7 @@ win_split_ins(
 	win_equal(wp, TRUE,
 		(flags & WSP_VERT) ? (dir == 'v' ? 'b' : 'h')
 		: dir == 'h' ? 'b' : 'v');
-    else if (*p_spk != 'c' && wp != aucmd_win)
+    else if (*p_spk != 'c' && !is_aucmd_win(wp))
 	win_fix_scroll(FALSE);
 
     // Don't change the window height/width to 'winheight' / 'winwidth' if a
@@ -1962,7 +1962,7 @@ win_equal(
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
 		      topframe, dir, 0, tabline_height(),
 					   (int)Columns, topframe->fr_height);
-    if (*p_spk != 'c' && next_curwin != aucmd_win)
+    if (*p_spk != 'c' && !is_aucmd_win(next_curwin))
 	win_fix_scroll(TRUE);
 }
 
@@ -2426,7 +2426,7 @@ close_windows(
 
 /*
  * Return TRUE if the current window is the only window that exists (ignoring
- * "aucmd_win").
+ * "aucmd_win[]").
  * Returns FALSE if there is a window, possibly in another tab page.
  */
     static int
@@ -2436,7 +2436,7 @@ last_window(void)
 }
 
 /*
- * Return TRUE if there is only one window other than "aucmd_win" in the
+ * Return TRUE if there is only one window other than "aucmd_win[]" in the
  * current tab page.
  */
     int
@@ -2447,7 +2447,7 @@ one_window(void)
 
     FOR_ALL_WINDOWS(wp)
     {
-	if (wp != aucmd_win)
+	if (!is_aucmd_win(wp))
 	{
 	    if (seen_one)
 		return FALSE;
@@ -2588,7 +2588,7 @@ win_close(win_T *win, int free_buf)
 	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return FAIL;
     }
-    if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
+    if ((is_aucmd_win(firstwin) || is_aucmd_win(lastwin)) && one_window())
     {
 	emsg(_(e_cannot_close_window_only_autocmd_window_would_remain));
 	return FAIL;
@@ -3292,11 +3292,12 @@ win_free_all(void)
     while (first_tabpage->tp_next != NULL)
 	tabpage_close(TRUE);
 
-    if (aucmd_win != NULL)
-    {
-	(void)win_free_mem(aucmd_win, &dummy, NULL);
-	aucmd_win = NULL;
-    }
+    for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
+	if (aucmd_win[i].auc_win_used)
+	{
+	    (void)win_free_mem(aucmd_win[i].auc_win, &dummy, NULL);
+	    aucmd_win[i].auc_win_used = FALSE;
+	}
 
     while (firstwin != NULL)
 	(void)win_free_mem(firstwin, &dummy, NULL);
@@ -5663,7 +5664,7 @@ win_free(
     int
 win_unlisted(win_T *wp)
 {
-    return wp == aucmd_win || WIN_IS_POPUP(wp);
+    return is_aucmd_win(wp) || WIN_IS_POPUP(wp);
 }
 
 #if defined(FEAT_PROP_POPUP) || defined(PROTO)
@@ -7257,7 +7258,7 @@ only_one_window(void)
 # ifdef FEAT_QUICKFIX
 		    || wp->w_p_pvw
 # endif
-	     ) || wp == curwin) && wp != aucmd_win)
+	     ) || wp == curwin) && !is_aucmd_win(wp))
 	    ++count;
     return (count <= 1);
 }

@@ -2872,8 +2872,14 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 
     buffer->b_p_ma = TRUE;
 
-    // set curbuf to be our buf, temporarily
+    // Set curbuf to "buffer", temporarily.
     aucmd_prepbuf(&aco, buffer);
+    if (curbuf != buffer)
+    {
+	// Could not find a window for this buffer, the following might cause
+	// trouble, better bail out.
+	return;
+    }
 
     u_sync(TRUE);
     // ignore undo failure, undo is not very useful here
