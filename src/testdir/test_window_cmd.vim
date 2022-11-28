@@ -1895,4 +1895,20 @@ function Test_splitkeep_fold()
   call VerifyScreenDump(buf, 'Test_splitkeep_fold_4', {})
 endfunction
 
+function Test_splitkeep_status()
+  CheckScreendump
+
+  let lines =<< trim END
+    set splitkeep=screen
+    let win = winnr()
+    wincmd s
+    wincmd j
+  END
+  call writefile(lines, 'XTestSplitkeepStatus', 'D')
+  let buf = RunVimInTerminal('-S XTestSplitkeepStatus', #{rows: 10})
+
+  call term_sendkeys(buf, ":call win_move_statusline(win, 1)\<CR>")
+  call VerifyScreenDump(buf, 'Test_splitkeep_status_1', {})
+endfunction
+
 " vim: shiftwidth=2 sts=2 expandtab

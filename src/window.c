@@ -6832,6 +6832,7 @@ win_new_height(win_T *wp, int height)
 
     wp->w_height = height;
     wp->w_skipcol = 0;
+    wp->w_redr_status = TRUE;
     win_comp_scroll(wp);
 
     // There is no point in adjusting the scroll position when exiting.  Some
@@ -6958,7 +6959,6 @@ scroll_to_fraction(win_T *wp, int prev_height)
 	wp->w_prev_fraction_row = wp->w_wrow;
 
     redraw_win_later(wp, UPD_SOME_VALID);
-    wp->w_redr_status = TRUE;
     invalidate_botline_win(wp);
 }
 
