@@ -4693,6 +4693,8 @@ decode_modifiers(int n)
 	modifiers |= MOD_MASK_CTRL;
     if (code & 8)
 	modifiers |= MOD_MASK_META;
+    // Any further modifiers are silently dropped.
+
     return modifiers;
 }
 
@@ -5317,14 +5319,14 @@ handle_csi(
     // Key with modifier:
     //	{lead}27;{modifier};{key}~
     //	{lead}{key};{modifier}u
-    // Only handles four modifiers, this won't work if the modifier value is
-    // more than 16.
-    else if (((arg[0] == 27 && argc == 3 && trail == '~')
+    // Even though we only handle four modifiers and the {modifier} value
+    // should be 16 or lower, we accept all modifier values to avoid the raw
+    // sequence to be passed through.
+    else if ((arg[0] == 27 && argc == 3 && trail == '~')
 		|| (argc == 2 && trail == 'u'))
-	    && arg[1] <= 16)
     {
 	return len + handle_key_with_modifier(arg, trail,
-			    csi_len, offset, buf, bufsize, buflen);
+					csi_len, offset, buf, bufsize, buflen);
     }
 
     // Key without modifier (Kitty sends this for Esc):
