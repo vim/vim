@@ -5274,7 +5274,7 @@ BufferSetattr(BufferObject *self, char *name, PyObject *valObject)
     {
 	char_u		*val;
 	aco_save_T	aco;
-	int		ren_ret;
+	int		ren_ret = OK;
 	PyObject	*todecref;
 
 	if (!(val = StringToChars(valObject, &todecref)))
