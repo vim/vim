@@ -663,9 +663,9 @@ text_prop_position(
 		before -= cells;
 
 	    // Below-align: empty line add one character
-	    if (below && vcol == 0 && col_with_padding == 0
-						      && wp->w_width == before)
-		col_with_padding = 1;
+	    if (below && vcol == 0 && col_with_padding == col_off
+					    && wp->w_width - col_off == before)
+		col_with_padding += 1;
 
 	    if (before < 0
 		    || !(right || below)
