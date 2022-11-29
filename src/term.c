@@ -66,16 +66,6 @@ static int find_term_bykeys(char_u *src);
 static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
 
-#ifdef HAVE_TGETENT
-static char *invoke_tgetent(char_u *, char_u *);
-
-/*
- * Here is our own prototype for tgetstr(), any prototypes from the include
- * files have been disabled by the define at the start of this file.
- */
-char		*tgetstr(char *, char **);
-
-# ifdef FEAT_TERMRESPONSE
     // Change this to "if 1" to debug what happens with termresponse.
 #  if 0
 #   define DEBUG_TERMRESPONSE
@@ -84,6 +74,16 @@ static void log_tr(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 #  else
 #   define LOG_TR(msg) do { /**/ } while (0)
 #  endif
+
+#ifdef HAVE_TGETENT
+static char *invoke_tgetent(char_u *, char_u *);
+
+/*
+ * Here is our own prototype for tgetstr(), any prototypes from the include
+ * files have been disabled by the define at the start of this file.
+ */
+char		*tgetstr(char *, char **);
+#endif
 
 typedef enum {
     STATUS_GET,		// send request when switching to RAW mode
@@ -97,7 +97,7 @@ typedef struct {
     time_t		    tr_start;	// when request was sent, -1 for never
 } termrequest_T;
 
-#  define TERMREQUEST_INIT {STATUS_GET, -1}
+# define TERMREQUEST_INIT {STATUS_GET, -1}
 
 // Request Terminal Version status:
 static termrequest_T crv_status = TERMREQUEST_INIT;
@@ -108,7 +108,8 @@ static termrequest_T u7_status = TERMREQUEST_INIT;
 // Request xterm compatibility check:
 static termrequest_T xcc_status = TERMREQUEST_INIT;
 
-#  ifdef FEAT_TERMINAL
+#ifdef FEAT_TERMRESPONSE
+# ifdef FEAT_TERMINAL
 // Request foreground color report:
 static termrequest_T rfg_status = TERMREQUEST_INIT;
 static int fg_r = 0;
@@ -117,7 +118,7 @@ static int fg_b = 0;
 static int bg_r = 255;
 static int bg_g = 255;
 static int bg_b = 255;
-#  endif
+# endif
 
 // Request background color report:
 static termrequest_T rbg_status = TERMREQUEST_INIT;
@@ -152,8 +153,9 @@ static termrequest_T *all_termrequests[] = {
 // MAYBE -> tried outputting t_8u while FALSE
 // OK    -> can write t_8u
 int write_t_8u_state = FALSE;
-# endif
+#endif
 
+#ifdef HAVE_TGETENT
 /*
  * Don't declare these variables if termcap.h contains them.
  * Autoconf checks if these variables should be declared extern (not all
@@ -1406,6 +1408,7 @@ static int	need_gather = FALSE;	    // need to fill termleader[]
 static char_u	termleader[256 + 1];	    // for check_termcode()
 #ifdef FEAT_TERMRESPONSE
 static int	check_for_codes = FALSE;    // check for key code response
+#endif
 
 /*
  * Structure and table to store terminal features that can be detected by
@@ -1467,7 +1470,6 @@ init_term_props(int all)
 	if (all || term_props[i].tpr_set_by_termresponse)
 	    term_props[i].tpr_status = TPR_UNKNOWN;
 }
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
     void
@@ -1619,7 +1621,6 @@ set_color_count(int nr)
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
 }
 
-#if defined(FEAT_TERMRESPONSE)
 /*
  * Set the color count to "val" and redraw if it changed.
  */
@@ -1628,25 +1629,23 @@ may_adjust_color_count(int val)
 {
     if (val != t_colors)
     {
-	// Nr of colors changed, initialize highlighting and
-	// redraw everything.  This causes a redraw, which usually
-	// clears the message.  Try keeping the message if it
-	// might work.
+	// Nr of colors changed, initialize highlighting and redraw everything.
+	// This causes a redraw, which usually clears the message.  Try keeping
+	// the message if it might work.
 	set_keep_msg_from_hist();
 	set_color_count(val);
 	init_highlight(TRUE, FALSE);
-# ifdef DEBUG_TERMRESPONSE
+#ifdef DEBUG_TERMRESPONSE
 	{
 	    int r = redraw_asap(UPD_CLEAR);
 
 	    log_tr("Received t_Co, redraw_asap(): %d", r);
 	}
-# else
+#else
 	redraw_asap(UPD_CLEAR);
-# endif
+#endif
     }
 }
-#endif
 
 #ifdef HAVE_TGETENT
 static char *(key_names[]) =
@@ -4552,7 +4551,6 @@ del_termcode_idx(int idx)
 	termcodes[i] = termcodes[i + 1];
 }
 
-#ifdef FEAT_TERMRESPONSE
 /*
  * Called when detected that the terminal sends 8-bit codes.
  * Convert all 7-bit codes to their 8-bit equivalent.
@@ -4580,7 +4578,6 @@ switch_to_8bit(void)
     detected_8bit = TRUE;
     LOG_TR(("Switching to 8 bit"));
 }
-#endif
 
 #ifdef CHECK_DOUBLE_CLICK
 static linenr_T orig_topline = 0;
@@ -4815,8 +4812,6 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
     // Figure out more if the response is CSI > 99 ; 99 ; 99 c
     if (first == '>' && argc == 3)
     {
-	int need_flush = FALSE;
-
 	// mintty 2.9.5 sends 77;20905;0c.
 	// (77 is ASCII 'M' for mintty.)
 	if (arg[0] == 77)
@@ -4825,6 +4820,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	}
 
+#ifdef FEAT_TERMRESPONSE
 	// If xterm version >= 141 try to get termcap codes.  For other
 	// terminals the request should be ignored.
 	if (version >= 141 && p_xtermcodes)
@@ -4834,6 +4830,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    need_gather = TRUE;
 	    req_codes_from_term();
 	}
+#endif
 
 	// libvterm sends 0;100;0
 	// Konsole sends 0;115;0 and works the same way
@@ -4962,10 +4959,12 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    set_string_option_direct((char_u *)"t_8u", -1, (char_u *)"",
 								  OPT_FREE, 0);
 	}
+#ifdef FEAT_TERMRESPONSE
 	if (*T_8U != NUL && write_t_8u_state == MAYBE)
 	    // Did skip writing t_8u, a complete redraw is needed.
 	    redraw_later_clear();
 	write_t_8u_state = OK;  // can output t_8u now
+#endif
 
 	// Only set 'ttymouse' automatically if it was not set
 	// by the user already.
@@ -4977,6 +4976,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		    term_props[TPR_MOUSE].tpr_status == TPR_MOUSE_SGR
 				    ? (char_u *)"sgr" : (char_u *)"xterm2", 0);
 	}
+
+#ifdef FEAT_TERMRESPONSE
+	int need_flush = FALSE;
 
 	// Only request the cursor style if t_SH and t_RS are
 	// set. Only supported properly by xterm since version
@@ -5013,6 +5015,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 
 	if (need_flush)
 	    out_flush();
+#endif
     }
 }
 
@@ -5245,6 +5248,7 @@ handle_csi(
 	key_name[1] = (int)KE_IGNORE;
     }
 
+#ifdef FEAT_TERMRESPONSE
     // Check blinking cursor from xterm:
     // {lead}?12;1$y       set
     // {lead}?12;2$y       not set
@@ -5263,10 +5267,11 @@ handle_csi(
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
 	*slen = csi_len;
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	set_vim_var_string(VV_TERMBLINKRESP, tp, *slen);
-#endif
+# endif
     }
+#endif
 
     // Kitty keyboard protocol status response: CSI ? flags u
     else if (first == '?' && argc == 1 && trail == 'u')
@@ -5291,6 +5296,7 @@ handle_csi(
 	*slen = csi_len;
     }
 
+#ifdef FEAT_TERMRESPONSE
     // Check for a window position response from the terminal:
     //       {lead}3;{x};{y}t
     else if (did_request_winpos && argc == 3 && arg[0] == 3
@@ -5306,6 +5312,7 @@ handle_csi(
 	if (--did_request_winpos <= 0)
 	    winpos_status.tr_progress = STATUS_GOT;
     }
+#endif
 
     // Key with modifier:
     //	{lead}27;{modifier};{key}~
@@ -5372,7 +5379,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		    char_u *tp_r = tp + j + 7;
 		    char_u *tp_g = tp + j + (is_4digit ? 12 : 10);
 		    char_u *tp_b = tp + j + (is_4digit ? 17 : 13);
-#ifdef FEAT_TERMINAL
+#if defined(FEAT_TERMRESPONSE) && defined(FEAT_TERMINAL)
 		    int rval, gval, bval;
 
 		    rval = hexhex2nr(tp_r);
@@ -5385,11 +5392,13 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 					     *tp_b) ? "light" : "dark";
 
 			LOG_TR(("Received RBG response: %s", tp));
+#ifdef FEAT_TERMRESPONSE
 			rbg_status.tr_progress = STATUS_GOT;
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 			bg_r = rval;
 			bg_g = gval;
 			bg_b = bval;
+# endif
 #endif
 			if (!option_was_set((char_u *)"bg")
 				      && STRCMP(p_bg, new_bg_val) != 0)
@@ -5401,7 +5410,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 			    redraw_asap(UPD_CLEAR);
 			}
 		    }
-#ifdef FEAT_TERMINAL
+#if defined(FEAT_TERMRESPONSE) && defined(FEAT_TERMINAL)
 		    else
 		    {
 			LOG_TR(("Received RFG response: %s", tp));
@@ -5468,9 +5477,11 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 	    if ((tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')
 		    || tp[i] == STERM)
 	    {
+#ifdef FEAT_TERMRESPONSE
 		// handle a key code response, drop a resource response
 		if (i - j >= 3 && argp[2] == 'r')
 		    got_code_from_term(tp + j, i);
+#endif
 		key_name[0] = (int)KS_EXTRA;
 		key_name[1] = (int)KE_IGNORE;
 		*slen = i + 1 + (tp[i] == ESC);
@@ -5493,8 +5504,9 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 	    if (i - j == 6 && tp[i] != ESC && tp[i] != STERM)
 		break;
 	    if ((i - j == 6 && tp[i] == STERM)
-	     || (i - j == 7 && tp[i] == '\\'))
+		    || (i - j == 7 && tp[i] == '\\'))
 	    {
+#ifdef FEAT_TERMRESPONSE
 		int number = argp[3] - '0';
 
 		// 0, 1 = block blink, 2 = block
@@ -5507,6 +5519,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		initial_cursor_shape_blink =
 				       (number & 1) ? FALSE : TRUE;
 		rcs_status.tr_progress = STATUS_GOT;
+#endif
 		LOG_TR(("Received cursor shape response: %s", tp));
 
 		key_name[0] = (int)KS_EXTRA;
