@@ -621,7 +621,7 @@ textprop_size_after_trunc(
 text_prop_position(
 	win_T	    *wp,
 	textprop_T  *tp,
-	int	    vcol UNUSED,    // current text column
+	int	    vcol,	    // current text column
 	int	    scr_col,	    // current screen column
 	int	    *n_extra,	    // nr of bytes for virtual text
 	char_u	    **p_extra,	    // virtual text
@@ -633,7 +633,7 @@ text_prop_position(
     int	    below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
     int	    wrap = (tp->tp_flags & TP_FLAG_WRAP);
     int	    padding = tp->tp_col == MAXCOL && tp->tp_len > 1
-				  ? tp->tp_len - 1 : 0;
+							  ? tp->tp_len - 1 : 0;
     int	    col_with_padding = scr_col + (below ? 0 : padding);
     int	    room = wp->w_width - col_with_padding;
     int	    before = room;	// spaces before the text
@@ -661,11 +661,16 @@ text_prop_position(
 	    // Right-align: fill with before
 	    if (right)
 		before -= cells;
+
+	    // Below-align: empty line add one character
+	    if (below && vcol == 0 && col_with_padding == col_off
+					    && wp->w_width - col_off == before)
+		col_with_padding += 1;
+
 	    if (before < 0
 		    || !(right || below)
-		    || (below
-			? (col_with_padding <= col_off || !wp->w_p_wrap)
-			: (n_used < *n_extra)))
+		    || (below ? (col_with_padding <= col_off || !wp->w_p_wrap)
+			      : (n_used < *n_extra)))
 	    {
 		if (right && (wrap
 			      || (room < PROP_TEXT_MIN_CELLS && wp->w_p_wrap)))

@@ -1400,7 +1400,15 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     vterm_state_setpen(state, args, argcount);
     break;
 
-  case LEADER('?', 0x6d): // DECSGR
+  case LEADER('?', 0x6d): // DECSGR and XTQMODKEYS
+    // CSI ? 4 m  XTQMODKEYS: request modifyOtherKeys level
+    if (argcount == 1 && CSI_ARG(args[0]) == 4)
+    {
+      vterm_push_output_sprintf_ctrl(state->vt, C1_CSI, ">4;%dm",
+					state->mode.modify_other_keys ? 2 : 0);
+      break;
+    }
+
     /* No actual DEC terminal recognised these, but some printers did. These
      * are alternative ways to request subscript/superscript/off
      */
@@ -1424,17 +1432,17 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     break;
 
   case LEADER('>', 0x6d): // CSI > 4 ; Pv m   xterm resource modifyOtherKeys
-    if (argcount == 2 && args[0] == 4)
+    if (argcount == 2 && CSI_ARG(args[0]) == 4)
     {
       // can't have both modify_other_keys and kitty_keyboard
       state->mode.kitty_keyboard = 0;
 
-      state->mode.modify_other_keys = args[1] == 2;
+      state->mode.modify_other_keys = CSI_ARG(args[1]) == 2;
     }
     break;
 
   case LEADER('>', 0x75): // CSI > 1 u  enable kitty keyboard protocol
-    if (argcount == 1 && args[0] == 1)
+    if (argcount == 1 && CSI_ARG(args[0]) == 1)
     {
       // can't have both modify_other_keys and kitty_keyboard
       state->mode.modify_other_keys = 0;

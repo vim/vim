@@ -1371,21 +1371,24 @@ set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 
     if (n > 0 && n <= buf->b_ml.ml_line_count && line != NULL)
     {
-	// set curwin/curbuf for "buf" and save some things
+	// Set curwin/curbuf for "buf" and save some things.
 	aucmd_prepbuf(&aco, buf);
-
-	if (u_savesub(n) == OK)
+	if (curbuf == buf)
 	{
-	    ml_replace(n, (char_u *)line, TRUE);
-	    changed();
+	    // Only when it worked to set "curbuf".
+	    if (u_savesub(n) == OK)
+	    {
+		ml_replace(n, (char_u *)line, TRUE);
+		changed();
 #ifdef SYNTAX_HL
-	    syn_changed(n); // recompute syntax hl. for this line
+		syn_changed(n); // recompute syntax hl. for this line
 #endif
-	}
+	    }
 
-	// restore curwin/curbuf and a few other things
-	aucmd_restbuf(&aco);
-	// Careful: autocommands may have made "buf" invalid!
+	    // restore curwin/curbuf and a few other things
+	    aucmd_restbuf(&aco);
+	    // Careful: autocommands may have made "buf" invalid!
+	}
 
 	update_curbuf(UPD_NOT_VALID);
     }
@@ -1415,23 +1418,26 @@ buffer_delete(VALUE self, VALUE num)
 
     if (n > 0 && n <= buf->b_ml.ml_line_count)
     {
-	// set curwin/curbuf for "buf" and save some things
+	// Set curwin/curbuf for "buf" and save some things.
 	aucmd_prepbuf(&aco, buf);
-
-	if (u_savedel(n, 1) == OK)
+	if (curbuf == buf)
 	{
-	    ml_delete(n);
+	    // Only when it worked to set "curbuf".
+	    if (u_savedel(n, 1) == OK)
+	    {
+		ml_delete(n);
 
-	    // Changes to non-active buffers should properly refresh
-	    //   SegPhault - 01/09/05
-	    deleted_lines_mark(n, 1L);
+		// Changes to non-active buffers should properly refresh
+		//   SegPhault - 01/09/05
+		deleted_lines_mark(n, 1L);
 
-	    changed();
+		changed();
+	    }
+
+	    // restore curwin/curbuf and a few other things
+	    aucmd_restbuf(&aco);
+	    // Careful: autocommands may have made "buf" invalid!
 	}
-
-	// restore curwin/curbuf and a few other things
-	aucmd_restbuf(&aco);
-	// Careful: autocommands may have made "buf" invalid!
 
 	update_curbuf(UPD_NOT_VALID);
     }
@@ -1458,21 +1464,24 @@ buffer_append(VALUE self, VALUE num, VALUE str)
     {
 	// set curwin/curbuf for "buf" and save some things
 	aucmd_prepbuf(&aco, buf);
-
-	if (u_inssub(n + 1) == OK)
+	if (curbuf == buf)
 	{
-	    ml_append(n, (char_u *) line, (colnr_T) 0, FALSE);
+	    // Only when it worked to set "curbuf".
+	    if (u_inssub(n + 1) == OK)
+	    {
+		ml_append(n, (char_u *) line, (colnr_T) 0, FALSE);
 
-	    //  Changes to non-active buffers should properly refresh screen
-	    //    SegPhault - 12/20/04
-	    appended_lines_mark(n, 1L);
+		//  Changes to non-active buffers should properly refresh screen
+		//    SegPhault - 12/20/04
+		appended_lines_mark(n, 1L);
 
-	    changed();
+		changed();
+	    }
+
+	    // restore curwin/curbuf and a few other things
+	    aucmd_restbuf(&aco);
+	    // Careful: autocommands may have made "buf" invalid!
 	}
-
-	// restore curwin/curbuf and a few other things
-	aucmd_restbuf(&aco);
-	// Careful: autocommands may have made "buf" invalid!
 
 	update_curbuf(UPD_NOT_VALID);
     }

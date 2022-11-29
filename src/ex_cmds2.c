@@ -705,9 +705,12 @@ ex_listdo(exarg_T *eap)
 		else
 		{
 		    aucmd_prepbuf(&aco, buf);
-		    apply_autocmds(EVENT_SYNTAX, buf->b_p_syn,
+		    if (curbuf == buf)
+		    {
+			apply_autocmds(EVENT_SYNTAX, buf->b_p_syn,
 						      buf->b_fname, TRUE, buf);
-		    aucmd_restbuf(&aco);
+			aucmd_restbuf(&aco);
+		    }
 		}
 
 		// start over, in case autocommands messed things up.

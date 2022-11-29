@@ -904,13 +904,17 @@ endfunc
 
 " Test GUI mouse events
 func Test_gui_mouse_event()
+  " Low level input isn't 100% reliable
+  let g:test_is_flaky = 1
+
   set mousemodel=extend
   call test_override('no_query_mouse', 1)
   new
   call setline(1, ['one two three', 'four five six'])
-
-  " place the cursor using left click in normal mode
   call cursor(1, 1)
+  redraw!
+
+  " place the cursor using left click and release in normal mode
   let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
   call test_gui_event('mouse', args)
   let args.button = 3
@@ -1175,10 +1179,21 @@ func Test_gui_mouse_event()
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 2, 7, 0], getpos('.'))
   call assert_equal('wo thrfour five sixteen', getline(2))
+
   set mouse&
   let &guioptions = save_guioptions
+  bw!
+  call test_override('no_query_mouse', 0)
+  set mousemodel&
+endfunc
 
-  " Test invalid parameters for test_gui_event()
+" Test invalid parameters for test_gui_event()
+func Test_gui_event_mouse_fails()
+  call test_override('no_query_mouse', 1)
+  new
+  call setline(1, ['one two three', 'four five six'])
+  set mousemodel=extend
+
   let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
   call assert_false(test_gui_event('mouse', args))
   let args = #{button: 0, col: 4, multiclick: 0, modifiers: 0}

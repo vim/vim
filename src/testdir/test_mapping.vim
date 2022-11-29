@@ -584,7 +584,7 @@ func Test_expr_map_restore_cursor()
   END
   call writefile(lines, 'XtestExprMap', 'D')
   let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
-  call term_sendkeys(buf, "\<C-B>")
+  call term_sendkeys(buf, GetEscCodeWithModifier('C', 'B'))
   call VerifyScreenDump(buf, 'Test_map_expr_1', {})
 
   " clean up

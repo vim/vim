@@ -1417,7 +1417,6 @@ set_keep_msg(char_u *s, int attr)
     keep_msg_attr = attr;
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * If there currently is a message being displayed, set "keep_msg" to it, so
  * that it will be displayed again after redraw.
@@ -1429,7 +1428,6 @@ set_keep_msg_from_hist(void)
 						      && (State & MODE_NORMAL))
 	set_keep_msg(last_msg_hist->msg, last_msg_hist->attr);
 }
-#endif
 
 /*
  * Prepare for outputting characters in the command line.

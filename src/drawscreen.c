@@ -2917,7 +2917,6 @@ updateWindow(win_T *wp)
 }
 #endif
 
-#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * Redraw as soon as possible.  When the command line is not scrolled redraw
  * right away and restore what was on the command line.
@@ -3049,7 +3048,6 @@ redraw_asap(int type)
 
     return ret;
 }
-#endif
 
 /*
  * Invoked after an asynchronous callback is called.

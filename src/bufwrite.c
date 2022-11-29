@@ -802,8 +802,15 @@ buf_write(
 	if (fname == buf->b_sfname)
 	    buf_fname_s = TRUE;
 
-	// set curwin/curbuf to buf and save a few things
+	// Set curwin/curbuf to buf and save a few things.
 	aucmd_prepbuf(&aco, buf);
+	if (curbuf != buf)
+	{
+	    // Could not find a window for "buf".  Doing more might cause
+	    // problems, better bail out.
+	    return FAIL;
+	}
+
 	set_bufref(&bufref, buf);
 
 	if (append)
@@ -2592,23 +2599,26 @@ nofail:
 
 	// Apply POST autocommands.
 	// Careful: The autocommands may call buf_write() recursively!
+	// Only do this when a window was found for "buf".
 	aucmd_prepbuf(&aco, buf);
+	if (curbuf == buf)
+	{
+	    if (append)
+		apply_autocmds_exarg(EVENT_FILEAPPENDPOST, fname, fname,
+							   FALSE, curbuf, eap);
+	    else if (filtering)
+		apply_autocmds_exarg(EVENT_FILTERWRITEPOST, NULL, fname,
+							   FALSE, curbuf, eap);
+	    else if (reset_changed && whole)
+		apply_autocmds_exarg(EVENT_BUFWRITEPOST, fname, fname,
+							   FALSE, curbuf, eap);
+	    else
+		apply_autocmds_exarg(EVENT_FILEWRITEPOST, fname, fname,
+							   FALSE, curbuf, eap);
 
-	if (append)
-	    apply_autocmds_exarg(EVENT_FILEAPPENDPOST, fname, fname,
-							  FALSE, curbuf, eap);
-	else if (filtering)
-	    apply_autocmds_exarg(EVENT_FILTERWRITEPOST, NULL, fname,
-							  FALSE, curbuf, eap);
-	else if (reset_changed && whole)
-	    apply_autocmds_exarg(EVENT_BUFWRITEPOST, fname, fname,
-							  FALSE, curbuf, eap);
-	else
-	    apply_autocmds_exarg(EVENT_FILEWRITEPOST, fname, fname,
-							  FALSE, curbuf, eap);
-
-	// restore curwin/curbuf and a few other things
-	aucmd_restbuf(&aco);
+	    // restore curwin/curbuf and a few other things
+	    aucmd_restbuf(&aco);
+	}
 
 #ifdef FEAT_EVAL
 	if (aborting())	    // autocmds may abort script processing

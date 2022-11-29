@@ -629,26 +629,45 @@ do_augroup(char_u *arg, int del_group)
     }
 }
 
+    void
+autocmd_init(void)
+{
+    CLEAR_FIELD(aucmd_win);
+}
+
 #if defined(EXITFREE) || defined(PROTO)
     void
 free_all_autocmds(void)
 {
-    int		i;
     char_u	*s;
 
     for (current_augroup = -1; current_augroup < augroups.ga_len;
 							    ++current_augroup)
 	do_autocmd(NULL, (char_u *)"", TRUE);
 
-    for (i = 0; i < augroups.ga_len; ++i)
+    for (int i = 0; i < augroups.ga_len; ++i)
     {
 	s = ((char_u **)(augroups.ga_data))[i];
 	if (s != get_deleted_augroup())
 	    vim_free(s);
     }
     ga_clear(&augroups);
+
+    // aucmd_win[] is freed in win_free_all()
 }
 #endif
+
+/*
+ * Return TRUE if "win" is an active entry in aucmd_win[].
+ */
+    int
+is_aucmd_win(win_T *win)
+{
+    for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
+	if (aucmd_win[i].auc_win_used && aucmd_win[i].auc_win == win)
+	    return TRUE;
+    return FALSE;
+}
 
 /*
  * Return the event number for event name "start".
@@ -1438,8 +1457,16 @@ ex_doautoall(exarg_T *eap)
 	if (buf->b_ml.ml_mfp == NULL || buf == curbuf)
 	    continue;
 
-	// find a window for this buffer and save some values
+	// Find a window for this buffer and save some values.
 	aucmd_prepbuf(&aco, buf);
+	if (curbuf != buf)
+	{
+	    // Failed to find a window for this buffer.  Better not execute
+	    // autocommands then.
+	    retval = FAIL;
+	    break;
+	}
+
 	set_bufref(&bufref, buf);
 
 	// execute the autocommands for this buffer
@@ -1449,7 +1476,7 @@ ex_doautoall(exarg_T *eap)
 	    // Execute the modeline settings, but don't set window-local
 	    // options if we are using the current window for another
 	    // buffer.
-	    do_modelines(curwin == aucmd_win ? OPT_NOWIN : 0);
+	    do_modelines(is_aucmd_win(curwin) ? OPT_NOWIN : 0);
 
 	// restore the current window
 	aucmd_restbuf(&aco);
@@ -1490,8 +1517,9 @@ check_nomodeline(char_u **argp)
 /*
  * Prepare for executing autocommands for (hidden) buffer "buf".
  * Search for a visible window containing the current buffer.  If there isn't
- * one then use "aucmd_win".
+ * one then use an entry in "aucmd_win[]".
  * Set "curbuf" and "curwin" to match "buf".
+ * When this fails "curbuf" is not equal "buf".
  */
     void
 aucmd_prepbuf(
@@ -1512,18 +1540,28 @@ aucmd_prepbuf(
 	    if (win->w_buffer == buf)
 		break;
 
-    // Allocate "aucmd_win" when needed.  If this fails (out of memory) fall
-    // back to using the current window.
-    if (win == NULL && aucmd_win == NULL)
+    // Allocate a window when needed.
+    win_T *auc_win = NULL;
+    int auc_idx = AUCMD_WIN_COUNT;
+    if (win == NULL)
     {
-	aucmd_win = win_alloc_popup_win();
-	if (aucmd_win == NULL)
-	    win = curwin;
+	for (auc_idx = 0; auc_idx < AUCMD_WIN_COUNT; ++auc_idx)
+	    if (!aucmd_win[auc_idx].auc_win_used)
+	    {
+		if (aucmd_win[auc_idx].auc_win == NULL)
+		    aucmd_win[auc_idx].auc_win = win_alloc_popup_win();
+		auc_win = aucmd_win[auc_idx].auc_win;
+		if (auc_win != NULL)
+		    aucmd_win[auc_idx].auc_win_used = TRUE;
+		break;
+	    }
+
+	// If this fails (out of memory or using all AUCMD_WIN_COUNT
+	// entries) then we can't reliable execute the autocmd, return with
+	// "curbuf" unequal "buf".
+	if (auc_win == NULL)
+	    return;
     }
-    if (win == NULL && aucmd_win_used)
-	// Strange recursive autocommand, fall back to using the current
-	// window.  Expect a few side effects...
-	win = curwin;
 
     aco->save_curwin_id = curwin->w_id;
     aco->save_curbuf = curbuf;
@@ -1533,24 +1571,23 @@ aucmd_prepbuf(
 	// There is a window for "buf" in the current tab page, make it the
 	// curwin.  This is preferred, it has the least side effects (esp. if
 	// "buf" is curbuf).
-	aco->use_aucmd_win = FALSE;
+	aco->use_aucmd_win_idx = -1;
 	curwin = win;
     }
     else
     {
-	// There is no window for "buf", use "aucmd_win".  To minimize the side
+	// There is no window for "buf", use "auc_win".  To minimize the side
 	// effects, insert it in the current tab page.
 	// Anything related to a window (e.g., setting folds) may have
 	// unexpected results.
-	aco->use_aucmd_win = TRUE;
-	aucmd_win_used = TRUE;
+	aco->use_aucmd_win_idx = auc_idx;
 
-	win_init_popup_win(aucmd_win, buf);
+	win_init_popup_win(auc_win, buf);
 
 	aco->globaldir = globaldir;
 	globaldir = NULL;
 
-	// Split the current window, put the aucmd_win in the upper half.
+	// Split the current window, put the auc_win in the upper half.
 	// We don't want the BufEnter or WinEnter autocommands.
 	block_autocmds();
 	make_snapshot(SNAP_AUCMD_IDX);
@@ -1565,7 +1602,7 @@ aucmd_prepbuf(
 
 	// no redrawing and don't set the window title
 	++RedrawingDisabled;
-	(void)win_split_ins(0, WSP_TOP, aucmd_win, 0);
+	(void)win_split_ins(0, WSP_TOP, auc_win, 0);
 	--RedrawingDisabled;
 	(void)win_comp_pos();   // recompute window positions
 	p_ea = save_ea;
@@ -1573,7 +1610,7 @@ aucmd_prepbuf(
 	p_acd = save_acd;
 #endif
 	unblock_autocmds();
-	curwin = aucmd_win;
+	curwin = auc_win;
     }
     curbuf = buf;
     aco->new_curwin_id = curwin->w_id;
@@ -1595,24 +1632,26 @@ aucmd_restbuf(
     int	    dummy;
     win_T   *save_curwin;
 
-    if (aco->use_aucmd_win)
+    if (aco->use_aucmd_win_idx >= 0)
     {
+	win_T *awp = aucmd_win[aco->use_aucmd_win_idx].auc_win;
+
 	--curbuf->b_nwindows;
-	// Find "aucmd_win", it can't be closed, but it may be in another tab
+	// Find "awp", it can't be closed, but it may be in another tab
 	// page. Do not trigger autocommands here.
 	block_autocmds();
-	if (curwin != aucmd_win)
+	if (curwin != awp)
 	{
 	    tabpage_T	*tp;
 	    win_T	*wp;
 
 	    FOR_ALL_TAB_WINDOWS(tp, wp)
 	    {
-		if (wp == aucmd_win)
+		if (wp == awp)
 		{
 		    if (tp != curtab)
 			goto_tabpage_tp(tp, TRUE, TRUE);
-		    win_goto(aucmd_win);
+		    win_goto(awp);
 		    goto win_found;
 		}
 	    }
@@ -1622,7 +1661,10 @@ win_found:
 	// Remove the window and frame from the tree of frames.
 	(void)winframe_remove(curwin, &dummy, NULL);
 	win_remove(curwin, NULL);
-	aucmd_win_used = FALSE;
+
+	// The window is marked as not used, but it is not freed, it can be
+	// used again.
+	aucmd_win[aco->use_aucmd_win_idx].auc_win_used = FALSE;
 	last_status(FALSE);	    // may need to remove last status line
 
 	if (!valid_tabpage_win(curtab))
@@ -1646,8 +1688,8 @@ win_found:
 #endif
 	prevwin = win_find_by_id(aco->save_prevwin_id);
 #ifdef FEAT_EVAL
-	vars_clear(&aucmd_win->w_vars->dv_hashtab);  // free all w: variables
-	hash_init(&aucmd_win->w_vars->dv_hashtab);   // re-use the hashtab
+	vars_clear(&awp->w_vars->dv_hashtab);  // free all w: variables
+	hash_init(&awp->w_vars->dv_hashtab);   // re-use the hashtab
 #endif
 	vim_free(globaldir);
 	globaldir = aco->globaldir;
@@ -1664,11 +1706,9 @@ win_found:
 #if defined(FEAT_GUI)
 	if (gui.in_use)
 	{
-	    // Hide the scrollbars from the aucmd_win and update.
-	    gui_mch_enable_scrollbar(
-				   &aucmd_win->w_scrollbars[SBAR_LEFT], FALSE);
-	    gui_mch_enable_scrollbar(
-				  &aucmd_win->w_scrollbars[SBAR_RIGHT], FALSE);
+	    // Hide the scrollbars from the "awp" and update.
+	    gui_mch_enable_scrollbar(&awp->w_scrollbars[SBAR_LEFT], FALSE);
+	    gui_mch_enable_scrollbar(&awp->w_scrollbars[SBAR_RIGHT], FALSE);
 	    gui_may_update_scrollbars();
 	}
 #endif
