@@ -4720,7 +4720,6 @@ modifiers2keycode(int modifiers, int *key, char_u *string)
     return new_slen;
 }
 
-#ifdef FEAT_TERMRESPONSE
 /*
  * Handle a cursor position report.
  */
@@ -4744,18 +4743,18 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 	    // that right away if possible, keeping any
 	    // messages.
 	    set_option_value_give_err((char_u *)"ambw", 0L, (char_u *)aw, 0);
-# ifdef DEBUG_TERMRESPONSE
+#ifdef DEBUG_TERMRESPONSE
 	    {
 		int r = redraw_asap(UPD_CLEAR);
 
 		log_tr("set 'ambiwidth', redraw_asap(): %d", r);
 	    }
-# else
+#else
 	    redraw_asap(UPD_CLEAR);
-# endif
-# ifdef FEAT_EVAL
+#endif
+#ifdef FEAT_EVAL
 	    set_vim_var_string(VV_TERMU7RESP, tp, csi_len);
-# endif
+#endif
 	}
     }
     else if (arg[0] == 3)
@@ -5237,9 +5236,9 @@ handle_csi(
 	handle_version_response(first, arg, argc, tp);
 
 	*slen = csi_len;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	set_vim_var_string(VV_TERMRESPONSE, tp, *slen);
-# endif
+#endif
 	apply_autocmds(EVENT_TERMRESPONSE,
 					NULL, NULL, FALSE, curbuf);
 	key_name[0] = (int)KS_EXTRA;
@@ -5264,9 +5263,9 @@ handle_csi(
 	key_name[0] = (int)KS_EXTRA;
 	key_name[1] = (int)KE_IGNORE;
 	*slen = csi_len;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 	set_vim_var_string(VV_TERMBLINKRESP, tp, *slen);
-# endif
+#endif
     }
 
     // Kitty keyboard protocol status response: CSI ? flags u
@@ -5373,13 +5372,13 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		    char_u *tp_r = tp + j + 7;
 		    char_u *tp_g = tp + j + (is_4digit ? 12 : 10);
 		    char_u *tp_b = tp + j + (is_4digit ? 17 : 13);
-# ifdef FEAT_TERMINAL
+#ifdef FEAT_TERMINAL
 		    int rval, gval, bval;
 
 		    rval = hexhex2nr(tp_r);
 		    gval = hexhex2nr(tp_b);
 		    bval = hexhex2nr(tp_g);
-# endif
+#endif
 		    if (is_bg)
 		    {
 			char *new_bg_val = (3 * '6' < *tp_r + *tp_g +
@@ -5387,11 +5386,11 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 
 			LOG_TR(("Received RBG response: %s", tp));
 			rbg_status.tr_progress = STATUS_GOT;
-# ifdef FEAT_TERMINAL
+#ifdef FEAT_TERMINAL
 			bg_r = rval;
 			bg_g = gval;
 			bg_b = bval;
-# endif
+#endif
 			if (!option_was_set((char_u *)"bg")
 				      && STRCMP(p_bg, new_bg_val) != 0)
 			{
@@ -5402,7 +5401,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 			    redraw_asap(UPD_CLEAR);
 			}
 		    }
-# ifdef FEAT_TERMINAL
+#ifdef FEAT_TERMINAL
 		    else
 		    {
 			LOG_TR(("Received RFG response: %s", tp));
@@ -5411,17 +5410,17 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 			fg_g = gval;
 			fg_b = bval;
 		    }
-# endif
+#endif
 		}
 
 		// got finished code: consume it
 		key_name[0] = (int)KS_EXTRA;
 		key_name[1] = (int)KE_IGNORE;
 		*slen = i + 1 + (tp[i] == ESC);
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		set_vim_var_string(is_bg ? VV_TERMRBGRESP
 						  : VV_TERMRFGRESP, tp, *slen);
-# endif
+#endif
 		break;
 	    }
     if (i == len)
@@ -5513,9 +5512,9 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 		key_name[0] = (int)KS_EXTRA;
 		key_name[1] = (int)KE_IGNORE;
 		*slen = i + 1;
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		set_vim_var_string(VV_TERMSTYLERESP, tp, *slen);
-# endif
+#endif
 		break;
 	    }
 	}
@@ -5530,7 +5529,6 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
     }
     return OK;
 }
-#endif // FEAT_TERMRESPONSE
 
 /*
  * Check if typebuf.tb_buf[] contains a terminal key code.
@@ -5831,17 +5829,16 @@ check_termcode(
 	    }
 	}
 
-#ifdef FEAT_TERMRESPONSE
 	if (key_name[0] == NUL
 	    // Mouse codes of DEC and pterm start with <ESC>[.  When
 	    // detecting the start of these mouse codes they might as well be
 	    // another key code or terminal response.
-# ifdef FEAT_MOUSE_DEC
+#ifdef FEAT_MOUSE_DEC
 	    || key_name[0] == KS_DEC_MOUSE
-# endif
-# ifdef FEAT_MOUSE_PTERM
+#endif
+#ifdef FEAT_MOUSE_PTERM
 	    || key_name[0] == KS_PTERM_MOUSE
-# endif
+#endif
 	   )
 	{
 	    char_u *argp = tp[0] == ESC ? tp + 2 : tp + 1;
@@ -5874,10 +5871,10 @@ check_termcode(
 					     bufsize, buflen, key_name, &slen);
 		if (resp != 0)
 		{
-# ifdef DEBUG_TERMRESPONSE
+#ifdef DEBUG_TERMRESPONSE
 		    if (resp == -1)
 			LOG_TR(("Not enough characters for CSI sequence"));
-# endif
+#endif
 		    return resp;
 		}
 	    }
@@ -5903,7 +5900,6 @@ check_termcode(
 		    return -1;
 	    }
 	}
-#endif
 
 	if (key_name[0] == NUL)
 	    continue;	    // No match at this position, try next one
