@@ -5121,7 +5121,19 @@ handle_key_without_modifier(
 	int	*buflen)
 {
     char_u  string[MAX_KEY_CODE_LEN + 1];
-    int	    new_slen = add_key_to_buf(arg[0], string);
+    int	    new_slen;
+
+    if (arg[0] == ESC)
+    {
+	// Putting Esc in the buffer creates ambiguity, it can be the start of
+	// an escape sequence.  Use K_ESC to avoid that.
+	string[0] = K_SPECIAL;
+	string[1] = KS_EXTRA;
+	string[2] = KE_ESC;
+	new_slen = 3;
+    }
+    else
+	new_slen = add_key_to_buf(arg[0], string);
 
     if (put_string_in_typebuf(offset, csi_len, string, new_slen,
 						 buf, bufsize, buflen) == FAIL)
