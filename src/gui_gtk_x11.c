@@ -407,7 +407,7 @@ static int using_gnome = 0;
  * See https://github.com/vim/vim/issues/10123
  */
 # if 0  // Change to 1 to enable ch_log() calls for debugging.
-#  ifdef FEAT_JOB_CHANNEL
+#  ifdef FEAT_EVAL
 #   define ENABLE_RESIZE_HISTORY_LOG
 #  endif
 # endif

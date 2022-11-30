@@ -2641,7 +2641,7 @@ out_flush(void)
 	len = out_pos;
 	out_pos = 0;
 	ui_write(out_buf, len, FALSE);
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 	if (ch_log_output != FALSE)
 	{
 	    out_buf[len] = NUL;

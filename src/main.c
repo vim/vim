@@ -152,7 +152,7 @@ main
 	    TIME_MSG("--- VIM STARTING ---");
 	}
 # endif
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	if (STRICMP(argv[i], "--log") == 0)
 	    ch_logfile((char_u *)(argv[i + 1]), (char_u *)"ao");
 # endif
@@ -1084,7 +1084,7 @@ may_trigger_safestate(int safe)
 {
     int is_safe = safe && is_safe_now();
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     if (was_safe != is_safe)
 	// Only log when the state changes, otherwise it happens at nearly
 	// every key stroke.
@@ -1104,7 +1104,7 @@ may_trigger_safestate(int safe)
     void
 state_no_longer_safe(char *reason UNUSED)
 {
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     if (was_safe)
 	ch_log(NULL, "SafeState: reset: %s", reason);
 #endif
@@ -1133,14 +1133,14 @@ may_trigger_safestateagain(void)
 	// of calling feedkeys(), we check if it's now safe again (all keys
 	// were consumed).
 	was_safe = is_safe_now();
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 	if (was_safe)
 	    ch_log(NULL, "SafeState: undo reset");
 #endif
     }
     if (was_safe)
     {
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 	// Only do this message when another message was given, otherwise we
 	// get lots of them.
 	if ((did_repeated_msg & REPEATED_MSG_SAFESTATE) == 0)
@@ -1154,7 +1154,7 @@ may_trigger_safestateagain(void)
 #endif
 	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
     }
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     else
 	ch_log(NULL,
 		  "SafeState: back to waiting, not triggering SafeStateAgain");
@@ -1563,7 +1563,7 @@ getout_preserve_modified(int exitval)
 getout(int exitval)
 {
     exiting = TRUE;
-#if defined(FEAT_JOB_CHANNEL)
+#if defined(FEAT_EVAL)
     ch_log(NULL, "Exiting...");
 #endif
 

@@ -3163,7 +3163,7 @@ bt_did_time_out(int *timed_out)
     {
 	if (timed_out != NULL)
 	{
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	    if (!*timed_out)
 		ch_log(NULL, "BT regexp timed out");
 # endif

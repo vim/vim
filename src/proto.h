@@ -104,6 +104,7 @@ extern int _stricoll(char *a, char *b);
 # include "json.pro"
 # include "list.pro"
 # include "locale.pro"
+# include "logfile.pro"
 # include "blob.pro"
 # include "main.pro"
 # include "map.pro"
@@ -263,8 +264,9 @@ void mbyte_im_set_active(int active_arg);
 #  include "job.pro"
 #  include "channel.pro"
 
-// Not generated automatically, to add extra attribute.
+// Not generated automatically so that we can add an extra attribute.
 void ch_log(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
+void ch_error(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 # endif
 

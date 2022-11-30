@@ -124,6 +124,7 @@ SRC += \
 	json.c \
 	list.c \
 	locale.c \
+	logfile.c \
 	main.c \
 	mark.c \
 	map.c \

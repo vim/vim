@@ -491,7 +491,7 @@ timer_callback(timer_T *timer)
     typval_T	rettv;
     typval_T	argv[2];
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     if (ch_log_active())
     {
 	callback_T *cb = &timer->tr_callback;
@@ -509,7 +509,7 @@ timer_callback(timer_T *timer)
     call_callback(&timer->tr_callback, -1, &rettv, 1, argv);
     clear_tv(&rettv);
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     ch_log(NULL, "timer callback finished");
 #endif
 }
