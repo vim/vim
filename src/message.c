@@ -37,7 +37,7 @@ static char_u	*confirm_msg = NULL;		// ":confirm" message
 static char_u	*confirm_msg_tail;		// tail of confirm_msg
 static void display_confirm_msg(void);
 #endif
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 static int emsg_to_channel_log = FALSE;
 #endif
 

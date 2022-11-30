@@ -75,7 +75,7 @@ ch_log_active(void)
 }
 
     static void
-ch_log_lead(const char *what, channel_T *ch, ch_part_T part)
+ch_log_lead(const char *what, channel_T *ch UNUSED, ch_part_T part UNUSED)
 {
     if (log_fd == NULL)
 	return;
