@@ -608,11 +608,11 @@ static tcap_entry_T builtin_mok2[] = {
 static tcap_entry_T builtin_kitty[] = {
     // t_TI enables the kitty keyboard protocol, requests the kitty keyboard
     // protocol state and requests the version response.
-    {(int)KS_CTI,	"\033[>1u\033[?u\033[>c"},
+    {(int)KS_CTI,	"\033[=1;1u\033[?u\033[>c"},
 
     // t_TE also disabled modifyOtherKeys, because t_TI from xterm may already
     // have been used.
-    {(int)KS_CTE,	"\033[>4;m\033[<u"},
+    {(int)KS_CTE,	"\033[>4;m\033[=0;1u"},
 
     {(int)KS_NAME,	NULL}  // end marker
 };
