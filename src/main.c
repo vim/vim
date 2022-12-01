@@ -1133,14 +1133,14 @@ may_trigger_safestateagain(void)
 	// of calling feedkeys(), we check if it's now safe again (all keys
 	// were consumed).
 	was_safe = is_safe_now();
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	if (was_safe)
 	    ch_log(NULL, "SafeState: undo reset");
-#endif
+# endif
     }
     if (was_safe)
     {
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	// Only do this message when another message was given, otherwise we
 	// get lots of them.
 	if ((did_repeated_msg & REPEATED_MSG_SAFESTATE) == 0)
@@ -1151,16 +1151,25 @@ may_trigger_safestateagain(void)
 		      "SafeState: back to waiting, triggering SafeStateAgain");
 	    did_repeated_msg = did | REPEATED_MSG_SAFESTATE;
 	}
-#endif
+# endif
 	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
     }
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
     else
 	ch_log(NULL,
 		  "SafeState: back to waiting, not triggering SafeStateAgain");
-#endif
+# endif
 }
 #endif
+
+/*
+ * Return TRUE if there is any typeahead, pending operator or command.
+ */
+    int
+work_pending(void)
+{
+    return op_pending() || !is_safe_now();
+}
 
 
 /*
@@ -1477,10 +1486,11 @@ main_loop(
 	    gui_mouse_correct();
 #endif
 
-	/*
-	 * Update w_curswant if w_set_curswant has been set.
-	 * Postponed until here to avoid computing w_virtcol too often.
-	 */
+	// May request the keyboard protocol state now.
+	may_send_t_RK();
+
+	// Update w_curswant if w_set_curswant has been set.
+	// Postponed until here to avoid computing w_virtcol too often.
 	update_curswant();
 
 #ifdef FEAT_EVAL

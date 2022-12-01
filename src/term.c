@@ -452,7 +452,8 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_TI,	"\0337\033[?47h"},
     {(int)KS_TE,	"\033[?47l\0338"},
 #  endif
-    {(int)KS_CTI,	"\033[>4;2m\033[?4m"},  // see "builtin_mok2"
+    {(int)KS_CTI,	"\033[>4;2m"},
+    {(int)KS_CRK,	"\033[?4m"},  // see "builtin_mok2"
     {(int)KS_CTE,	"\033[>4;m"},
     {(int)KS_CIS,	"\033]1;"},
     {(int)KS_CIE,	"\007"},
@@ -593,10 +594,15 @@ static tcap_entry_T builtin_xterm[] = {
  * xterm.
  */
 static tcap_entry_T builtin_mok2[] = {
+    // t_TI enables modifyOtherKeys level 2
+    {(int)KS_CTI,	"\033[>4;2m"},
+
     // XTQMODKEYS was added in xterm version 377: "CSI ? 4 m" which should
     // return "{lead} > 4 ; Pv m".  Before version 377 we expect it to have no
     // effect.
-    {(int)KS_CTI,	"\033[>4;2m\033[?4m"},
+    {(int)KS_CRK,	"\033[?4m"},
+
+    // t_TE disables modifyOtherKeys
     {(int)KS_CTE,	"\033[>4;m"},
 
     {(int)KS_NAME,	NULL}  // end marker
@@ -606,11 +612,13 @@ static tcap_entry_T builtin_mok2[] = {
  * Additions for using the Kitty keyboard protocol.
  */
 static tcap_entry_T builtin_kitty[] = {
-    // t_TI enables the kitty keyboard protocol, requests the kitty keyboard
-    // protocol state and requests the version response.
-    {(int)KS_CTI,	"\033[=1;1u\033[?u\033[>c"},
+    // t_TI enables the kitty keyboard protocol.
+    {(int)KS_CTI,	"\033[=1;1u"},
 
-    // t_TE also disabled modifyOtherKeys, because t_TI from xterm may already
+    // t_RK requests the kitty keyboard protocol state
+    {(int)KS_CRK,	"\033[?u"},
+
+    // t_TE also disables modifyOtherKeys, because t_TI from xterm may already
     // have been used.
     {(int)KS_CTE,	"\033[>4;m\033[=0;1u"},
 
@@ -1685,7 +1693,7 @@ get_term_entries(int *height, int *width)
 			{KS_CM, "cm"}, {KS_SR, "sr"},
 			{KS_CRI,"RI"}, {KS_VB, "vb"}, {KS_KS, "ks"},
 			{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},
-			{KS_CTI, "TI"}, {KS_CTE, "TE"},
+			{KS_CTI, "TI"}, {KS_CRK, "RK"}, {KS_CTE, "TE"},
 			{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},
 			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_CAU,"AU"},
 			{KS_LE, "le"},
@@ -3693,6 +3701,40 @@ out_str_t_TE(void)
 	kitty_protocol_state = KKPS_AFTER_T_KE;
 }
 
+static int send_t_RK = FALSE;
+
+/*
+ * Output T_TI and setup for what follows.
+ */
+    void
+out_str_t_TI(void)
+{
+    out_str(T_CTI);
+
+    // Send t_RK when there is no more work to do.
+    send_t_RK = TRUE;
+}
+
+/*
+ * If t_TI was recently sent and there is no typeahead or work to do, now send
+ * t_RK.  This is postponed to avoid the response arriving in a shell command
+ * or after Vim exits.
+ */
+    void
+may_send_t_RK(void)
+{
+    if (send_t_RK
+	    && !work_pending()
+	    && !ex_normal_busy
+	    && !in_feedkeys
+	    && !exiting)
+    {
+	send_t_RK = FALSE;
+	out_str(T_CRK);
+	out_flush();
+    }
+}
+
 /*
  * Set the terminal to TMODE_RAW (for Normal mode) or TMODE_COOK (for external
  * commands and Ex mode).
@@ -3751,7 +3793,7 @@ settmode(tmode_T tmode)
 		{
 		    out_str(T_BE);	// enable bracketed paste mode (should
 					// be before mch_settmode().
-		    out_str(T_CTI);	// possibly enables modifyOtherKeys
+		    out_str_t_TI();	// possibly enables modifyOtherKeys
 		}
 	    }
 	    out_flush();
@@ -3775,7 +3817,7 @@ starttermcap(void)
 	MAY_WANT_TO_LOG_THIS;
 
 	out_str(T_TI);			// start termcap mode
-	out_str(T_CTI);			// start "raw" mode
+	out_str_t_TI();			// start "raw" mode
 	out_str(T_KS);			// start "keypad transmit" mode
 	out_str(T_BE);			// enable bracketed paste mode
 

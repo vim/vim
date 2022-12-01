@@ -2908,6 +2908,9 @@ getexmodeline(
 	long    sw;
 	char_u *s;
 
+	// May request the keyboard protocol state now.
+	may_send_t_RK();
+
 	if (ga_grow(&line_ga, 40) == FAIL)
 	    break;
 

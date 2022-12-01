@@ -455,7 +455,7 @@ normal_cmd_get_more_chars(
 
 	    // Re-enable bracketed paste mode and modifyOtherKeys
 	    out_str(T_BE);
-	    out_str(T_CTI);
+	    out_str_t_TI();
 	}
 
 	if (langmap_active)
