@@ -3726,7 +3726,9 @@ may_send_t_RK(void)
     if (send_t_RK
 	    && !work_pending()
 	    && !ex_normal_busy
+#ifdef FEAT_EVAL
 	    && !in_feedkeys
+#endif
 	    && !exiting)
     {
 	send_t_RK = FALSE;
