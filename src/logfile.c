@@ -177,7 +177,9 @@ f_ch_log(typval_T *argvars, typval_T *rettv UNUSED)
 	channel = get_channel_arg(&argvars[1], FALSE, FALSE, 0);
 #endif
 
-    ch_log(channel, "%s", msg);
+    // Prepend "ch_log()" to make it easier to find these entries in the
+    // logfile.
+    ch_log(channel, "ch_log(): %s", msg);
 }
 
 /*
