@@ -75,6 +75,12 @@ margin_columns_win(win_T *wp, int *left_col, int *right_col)
 }
 #endif
 
+#if defined(FEAT_SIGNS) || defined(FEAT_QUICKFIX) \
+	|| defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
+// using an attribute for the whole line
+# define LINE_ATTR
+#endif
+
 // structure with variables passed between win_line() and other functions
 typedef struct {
     int		draw_state;	// what to draw next
@@ -105,6 +111,9 @@ typedef struct {
     int		wcr_attr;	// attributes from 'wincolor'
 #ifdef FEAT_SYN_HL
     int		cul_attr;	// set when 'cursorline' active
+#endif
+#ifdef LINE_ATTR
+    int		line_attr;	// for the whole line, includes 'cursorline'
 #endif
 
     int		screen_line_flags;  // flags for screen_line()
@@ -848,8 +857,11 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 		    && (int)wp->w_virtcol <
 			 (long)wp->w_width * (wlv->row - wlv->startrow + 1) + v
 			 && wlv->lnum != wp->w_cursor.lnum)
-	    || wlv->draw_color_col
-	    || wlv->win_attr != 0)
+		|| wlv->draw_color_col
+# ifdef LINE_ATTR
+		|| wlv->line_attr != 0
+# endif
+		|| wlv->win_attr != 0)
 # ifdef FEAT_RIGHTLEFT
 	    && !wp->w_p_rl
 # endif
@@ -877,14 +889,22 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 		wlv->draw_color_col = advance_color_col(
 						   VCOL_HLC, &wlv->color_cols);
 
+	    int attr = wlv->win_attr;
 	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol)
-		ScreenAttrs[wlv->off++] = HL_ATTR(HLF_CUC);
+		attr = HL_ATTR(HLF_CUC);
 	    else if (wlv->draw_color_col && VCOL_HLC == *wlv->color_cols)
-		ScreenAttrs[wlv->off++] = HL_ATTR(HLF_MC);
-	    else
-		ScreenAttrs[wlv->off++] = wlv->win_attr;
+		attr = HL_ATTR(HLF_MC);
+# ifdef LINE_ATTR
+	    else if (wlv->line_attr != 0)
+		attr = wlv->line_attr;
+# endif
+	    ScreenAttrs[wlv->off++] = attr;
 
-	    if (VCOL_HLC >= rightmost_vcol && wlv->win_attr == 0)
+	    if (VCOL_HLC >= rightmost_vcol
+# ifdef LINE_ATTR
+		    && wlv->line_attr == 0
+# endif
+		    && wlv->win_attr == 0)
 		break;
 
 	    ++wlv->vcol;
@@ -1085,10 +1105,7 @@ win_line(
     colnr_T	leadcol = 0;		// start of leading spaces
     int		in_multispace = FALSE;	// in multiple consecutive spaces
     int		multispace_pos = 0;	// position in lcs-multispace string
-#if defined(FEAT_SIGNS) || defined(FEAT_QUICKFIX) \
-	|| defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
-# define LINE_ATTR
-    int		line_attr = 0;		// attribute for the whole line
+#ifdef LINE_ATTR
     int		line_attr_save = 0;
 #endif
     int		sign_present = FALSE;
@@ -1392,16 +1409,16 @@ win_line(
 
 #ifdef LINE_ATTR
 # ifdef FEAT_SIGNS
-    // If this line has a sign with line highlighting set line_attr.
+    // If this line has a sign with line highlighting set wlv.line_attr.
     if (sign_present)
-	line_attr = wlv.sattr.sat_linehl;
+	wlv.line_attr = wlv.sattr.sat_linehl;
 # endif
 # if defined(FEAT_QUICKFIX)
     // Highlight the current line in the quickfix window.
     if (bt_quickfix(wp->w_buffer) && qf_current_entry(wp) == lnum)
-	line_attr = HL_ATTR(HLF_QFL);
+	wlv.line_attr = HL_ATTR(HLF_QFL);
 # endif
-    if (line_attr != 0)
+    if (wlv.line_attr != 0)
 	area_highlighting = TRUE;
 #endif
 
@@ -1651,7 +1668,7 @@ win_line(
 	    wlv.cul_screenline = (wp->w_p_wrap
 				   && (wp->w_p_culopt_flags & CULOPT_SCRLINE));
 
-	    // Only set line_attr here when "screenline" is not present in
+	    // Only set wlv.line_attr here when "screenline" is not present in
 	    // 'cursorlineopt'.  Otherwise it's done later.
 	    if (!wlv.cul_screenline)
 	    {
@@ -1662,9 +1679,11 @@ win_line(
 		if (sign_present && wlv.sattr.sat_linehl > 0)
 		{
 		    if (wlv.sattr.sat_priority >= 100)
-			line_attr = hl_combine_attr(wlv.cul_attr, line_attr);
+			wlv.line_attr = hl_combine_attr(
+						  wlv.cul_attr, wlv.line_attr);
 		    else
-			line_attr = hl_combine_attr(line_attr, wlv.cul_attr);
+			wlv.line_attr = hl_combine_attr(
+						  wlv.line_attr, wlv.cul_attr);
 		}
 		else
 # endif
@@ -1672,14 +1691,15 @@ win_line(
 		    // let the line attribute overrule 'cursorline', otherwise
 		    // it disappears when both have background set;
 		    // 'cursorline' can use underline or bold to make it show
-		    line_attr = hl_combine_attr(wlv.cul_attr, line_attr);
+		    wlv.line_attr = hl_combine_attr(
+						  wlv.cul_attr, wlv.line_attr);
 # else
-		    line_attr = wlv.cul_attr;
+		    wlv.line_attr = wlv.cul_attr;
 # endif
 	    }
 	    else
 	    {
-		line_attr_save = line_attr;
+		line_attr_save = wlv.line_attr;
 		margin_columns_win(wp, &left_curline_col, &right_curline_col);
 	    }
 	    area_highlighting = TRUE;
@@ -1741,7 +1761,7 @@ win_line(
 	    if (wlv.cul_screenline)
 	    {
 		wlv.cul_attr = 0;
-		line_attr = line_attr_save;
+		wlv.line_attr = line_attr_save;
 	    }
 #endif
 	    if (wlv.draw_state == WL_CMDLINE - 1 && wlv.n_extra == 0)
@@ -1805,7 +1825,7 @@ win_line(
 		&& wlv.vcol < right_curline_col)
 	{
 	    wlv.cul_attr = HL_ATTR(HLF_CUL);
-	    line_attr = wlv.cul_attr;
+	    wlv.line_attr = wlv.cul_attr;
 	}
 #endif
 
@@ -2161,13 +2181,13 @@ win_line(
 		if (wlv.diff_hlf == HLF_TXD && ptr - line > change_end
 							   && wlv.n_extra == 0)
 		    wlv.diff_hlf = HLF_CHD;		// changed line
-		line_attr = HL_ATTR(wlv.diff_hlf);
+		wlv.line_attr = HL_ATTR(wlv.diff_hlf);
 		if (wp->w_p_cul && lnum == wp->w_cursor.lnum
 			&& wp->w_p_culopt_flags != CULOPT_NBR
 			&& (!wlv.cul_screenline || (wlv.vcol >= left_curline_col
 					    && wlv.vcol <= right_curline_col)))
-		    line_attr = hl_combine_attr(
-					  line_attr, HL_ATTR(HLF_CUL));
+		    wlv.line_attr = hl_combine_attr(
+					  wlv.line_attr, HL_ATTR(HLF_CUL));
 	    }
 #endif
 
@@ -2251,7 +2271,7 @@ win_line(
 #ifdef LINE_ATTR
 	    if (area_attr != 0)
 	    {
-		wlv.char_attr = hl_combine_attr(line_attr, area_attr);
+		wlv.char_attr = hl_combine_attr(wlv.line_attr, area_attr);
 		if (!highlight_match)
 		    // let search highlight show in Visual area if possible
 		    wlv.char_attr = hl_combine_attr(search_attr, wlv.char_attr);
@@ -2261,23 +2281,23 @@ win_line(
 	    }
 	    else if (search_attr != 0)
 	    {
-		wlv.char_attr = hl_combine_attr(line_attr, search_attr);
+		wlv.char_attr = hl_combine_attr(wlv.line_attr, search_attr);
 # ifdef FEAT_SYN_HL
 		wlv.char_attr = hl_combine_attr(syntax_attr, wlv.char_attr);
 # endif
 	    }
-	    else if (line_attr != 0
+	    else if (wlv.line_attr != 0
 		    && ((wlv.fromcol == -10 && wlv.tocol == MAXCOL)
 			      || wlv.vcol < wlv.fromcol
 			      || vcol_prev < fromcol_prev
 			      || wlv.vcol >= wlv.tocol))
 	    {
-		// Use line_attr when not in the Visual or 'incsearch' area
+		// Use wlv.line_attr when not in the Visual or 'incsearch' area
 		// (area_attr may be 0 when "noinvcur" is set).
 # ifdef FEAT_SYN_HL
-		wlv.char_attr = hl_combine_attr(syntax_attr, line_attr);
+		wlv.char_attr = hl_combine_attr(syntax_attr, wlv.line_attr);
 # else
-		wlv.char_attr = line_attr;
+		wlv.char_attr = wlv.line_attr;
 # endif
 		attr_pri = FALSE;
 	    }
@@ -3051,7 +3071,7 @@ win_line(
 #  endif
 # endif
 # ifdef LINE_ATTR
-			    line_attr == 0
+			    wlv.line_attr == 0
 # endif
 		       )
 #endif
@@ -3148,7 +3168,7 @@ win_line(
 # ifdef FEAT_TERMINAL
 			    wlv.win_attr != 0 ||
 # endif
-			    line_attr != 0
+			    wlv.line_attr != 0
 			) && (
 # ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? (wlv.col >= 0) :
@@ -3167,11 +3187,11 @@ win_line(
 		    ++did_line_attr;
 
 		    // don't do search HL for the rest of the line
-		    if (line_attr != 0 && wlv.char_attr == search_attr
+		    if (wlv.line_attr != 0 && wlv.char_attr == search_attr
 					&& (did_line_attr > 1
 					    || (wp->w_p_list &&
 						wp->w_lcs_chars.eol > 0)))
-			wlv.char_attr = line_attr;
+			wlv.char_attr = wlv.line_attr;
 # ifdef FEAT_DIFF
 		    if (wlv.diff_hlf == HLF_TXD)
 		    {
@@ -3202,9 +3222,9 @@ win_line(
 				wlv.char_attr = hl_combine_attr(
 					      wlv.char_attr, HL_ATTR(HLF_CUL));
 			}
-			else if (line_attr)
-			    wlv.char_attr = hl_combine_attr(wlv.char_attr,
-								    line_attr);
+			else if (wlv.line_attr)
+			    wlv.char_attr = hl_combine_attr(
+						 wlv.char_attr, wlv.line_attr);
 		    }
 # endif
 		}
@@ -3325,8 +3345,8 @@ win_line(
 		   ))
 	{
 #ifdef LINE_ATTR
-	    if (line_attr)
-		wlv.char_attr = hl_combine_attr(line_attr, wlv.extra_attr);
+	    if (wlv.line_attr)
+		wlv.char_attr = hl_combine_attr(wlv.line_attr, wlv.extra_attr);
 	    else
 #endif
 		wlv.char_attr = wlv.extra_attr;

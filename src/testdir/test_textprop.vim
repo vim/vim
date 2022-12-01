@@ -2918,6 +2918,29 @@ func Test_props_with_text_after_nowrap()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_with_text_below_cul()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+
+      setline(1, ['some text', 'last line'])
+      set cursorline nowrap
+      prop_type_add('test', {highlight: 'DiffChange'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'The quick brown fox jumps over the lazy dog',
+          text_align: 'below',
+          text_padding_left: 4,
+      })
+  END
+  call writefile(lines, 'XscriptPropsBelowCurline', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsBelowCurline', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_below_cul_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_props_with_text_below_nowrap()
   CheckRunVimInTerminal
 
