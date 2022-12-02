@@ -2894,10 +2894,10 @@ win_line(
 		// into "ScreenLines".
 		if (c == TAB && (!wp->w_p_list || wp->w_lcs_chars.tab1))
 		{
-		    int tab_len = 0;
-		    long vcol_adjusted = wlv.vcol; // removed showbreak length
+		    int	    tab_len = 0;
+		    long    vcol_adjusted = wlv.vcol; // removed showbreak len
 #ifdef FEAT_LINEBREAK
-		    char_u *sbr = get_showbreak_value(wp);
+		    char_u  *sbr = get_showbreak_value(wp);
 
 		    // only adjust the tab_len, when at the first column
 		    // after the showbreak value was drawn
@@ -2917,8 +2917,10 @@ win_line(
 #ifdef FEAT_LINEBREAK
 		    if (!wp->w_p_lbr || !wp->w_p_list)
 #endif
+		    {
 			// tab amount depends on current column
 			wlv.n_extra = tab_len;
+		    }
 #ifdef FEAT_LINEBREAK
 		    else
 		    {
@@ -2940,9 +2942,9 @@ win_line(
 # endif
 			if (tab_len > 0)
 			{
-			    // If wlv.n_extra > 0, it gives the number of
-			    // chars, to use for a tab, else we need to
-			    // calculate the width for a tab.
+			    // If wlv.n_extra > 0, it gives the number of chars
+			    // to use for a tab, else we need to calculate the
+			    // width for a tab.
 			    int tab2_len = mb_char2len(wp->w_lcs_chars.tab2);
 			    len = tab_len * tab2_len;
 			    if (wp->w_lcs_chars.tab3)
@@ -3018,7 +3020,7 @@ win_line(
 							? wp->w_lcs_chars.tab3
 							: wp->w_lcs_chars.tab1;
 #ifdef FEAT_LINEBREAK
-			if (wp->w_p_lbr)
+			if (wp->w_p_lbr && wlv.p_extra != NULL)
 			    wlv.c_extra = NUL; // using p_extra from above
 			else
 #endif
