@@ -2531,7 +2531,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
     char_u	*p = arg;
     type_T	*stack_type;
 
-    if (*p != NUL && *p != '|' && *p != '\n')
+    if (*p != NUL && *p != '|' && *p != '\n' && !(!legacy && vim9_comment_start(p)))
     {
 	// For a lambda, "return expr" is always used, also when "expr" results
 	// in a void.
