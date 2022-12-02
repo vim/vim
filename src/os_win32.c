@@ -947,7 +947,7 @@ static const struct
     { VK_F8,	TRUE,	'B',	'[',	'e',	    'o', },
     { VK_F9,	TRUE,	'C',	'\\',	'f',	    'p', },
     { VK_F10,	TRUE,	'D',	']',	'g',	    'q', },
-    { VK_F11,	TRUE,	'\205',	'\207',	'\205',	    '\213', }, //\211
+    { VK_F11,	TRUE,	'\205',	'\207',	'\211',	    '\213', },
     { VK_F12,	TRUE,	'\206',	'\210',	'\212',	    '\214', },
 
     { VK_HOME,	TRUE,	'G',	'\302',	'w',	    '\303', },
@@ -1237,9 +1237,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	else if (vkCode == VK_RCONTROL)
 	{
 	    if (STRICMP(event_flags, "keydown") == 0)
-	    {
 		s_dwMods |= RIGHT_CTRL_PRESSED;
-	    }
 	    else
 		s_dwMods &= ~RIGHT_CTRL_PRESSED;
 	}
