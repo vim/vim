@@ -646,6 +646,20 @@ changed_window_setting_win(win_T *wp)
 }
 
 /*
+ * Call changed_window_setting_win() for every window containing "buf".
+ */
+    void
+changed_window_setting_buf(buf_T *buf)
+{
+    tabpage_T	*tp;
+    win_T	*wp;
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_buffer == buf)
+	    changed_window_setting_win(wp);
+}
+
+/*
  * Set wp->w_topline to a certain number.
  */
     void
