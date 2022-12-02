@@ -5156,7 +5156,9 @@ handle_key_with_modifier(
 		|| kitty_protocol_state == KKPS_AFTER_T_KE)
 	    && term_props[TPR_KITTY].tpr_status != TPR_YES)
     {
+#ifdef FEAT_EVAL
 	ch_log(NULL, "setting seenModifyOtherKeys to TRUE");
+#endif
 	seenModifyOtherKeys = TRUE;
     }
 
@@ -5435,7 +5437,9 @@ handle_csi(
 
 	    // Reset seenModifyOtherKeys just in case some key combination has
 	    // been seen that set it before we get the status response.
+#ifdef FEAT_EVAL
 	    ch_log(NULL, "setting seenModifyOtherKeys to FALSE");
+#endif
 	    seenModifyOtherKeys = FALSE;
 	}
 
