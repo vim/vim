@@ -141,6 +141,7 @@ typedef struct {
     char_u	*p_extra_free;  // p_extra buffer that needs to be freed
     int		extra_attr;	// attributes for p_extra, should be combined
 				// with win_attr if needed
+    int		n_attr_skip;    // chars to skip before using extra_attr
     int		c_extra;	// extra chars, all the same
     int		c_final;	// final char, mandatory if set
     int		extra_for_textprop; // wlv.n_extra set for textprop
@@ -149,6 +150,7 @@ typedef struct {
     int		saved_n_extra;
     char_u	*saved_p_extra;
     int		saved_extra_attr;
+    int		saved_n_attr_skip;
     int		saved_extra_for_textprop;
     int		saved_c_extra;
     int		saved_c_final;
@@ -652,13 +654,10 @@ text_prop_position(
     int	    strsize = vim_strsize(*p_extra);
     int	    cells = wrap ? strsize : textprop_size_after_trunc(wp,
 			     tp->tp_flags, before, padding, *p_extra, &n_used);
-    int	    cont_on_next_line = below && col_with_padding > win_col_off(wp)
-							      && !wp->w_p_wrap;
 
     if (wrap || right || above || below || padding > 0 || n_used < *n_extra)
     {
 	int	    col_off = win_col_off(wp) - win_col_off2(wp);
-	int	    skip_add = 0;
 
 	if (above)
 	{
@@ -690,14 +689,10 @@ text_prop_position(
 			before = 0;
 		    else
 			n_used = *n_extra;
-		    skip_add = col_off;
 		}
 		else
 		    before = 0;
 	    }
-	    else if (below && before > 0)
-		// include 'number' column et al.
-		skip_add = col_off;
 	}
 
 	// With 'nowrap' add one to show the "extends" character if needed (it
@@ -707,8 +702,6 @@ text_prop_position(
 		&& wp->w_lcs_chars.ext != NUL
 		&& wp->w_p_list)
 	    ++n_used;
-	if (!wp->w_p_wrap && below && padding > 0)
-	    skip_add = col_off;
 
 	// add 1 for NUL, 2 for when '…' is used
 	if (n_attr != NULL)
@@ -763,10 +756,9 @@ text_prop_position(
 		if (above)
 		    *n_attr -= padding + after;
 
-		// Add "skip_add" when starting a new line or wrapping,
-		// n_attr_skip will then be decremented in the number column.
-		*n_attr_skip = before + padding
-			    + (cont_on_next_line || before > 0 ? skip_add : 0);
+		// n_attr_skip will not be decremented before draw_state is
+		// WL_LINE
+		*n_attr_skip = before + padding;
 	    }
 	}
     }
@@ -946,6 +938,7 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 	wlv->saved_n_extra = wlv->n_extra;
 	wlv->saved_p_extra = wlv->p_extra;
 	wlv->saved_extra_attr = wlv->extra_attr;
+	wlv->saved_n_attr_skip = wlv->n_attr_skip;
 	wlv->saved_extra_for_textprop = wlv->extra_for_textprop;
 	wlv->saved_c_extra = wlv->c_extra;
 	wlv->saved_c_final = wlv->c_final;
@@ -959,7 +952,10 @@ win_line_start(win_T *wp UNUSED, winlinevars_T *wlv, int save_extra)
 	else
 #endif
 	    wlv->saved_char_attr = 0;
+
+	// these are not used until restored in win_line_continue()
 	wlv->n_extra = 0;
+	wlv->n_attr_skip = 0;
     }
 }
 
@@ -978,6 +974,7 @@ win_line_continue(winlinevars_T *wlv)
 	wlv->c_final = wlv->saved_c_final;
 	wlv->p_extra = wlv->saved_p_extra;
 	wlv->extra_attr = wlv->saved_extra_attr;
+	wlv->n_attr_skip = wlv->saved_n_attr_skip;
 	wlv->extra_for_textprop = wlv->saved_extra_for_textprop;
 	wlv->char_attr = wlv->saved_char_attr;
     }
@@ -1021,7 +1018,6 @@ win_line(
 					// prec until it's been used
 
     int		n_attr = 0;	    // chars with special attr
-    int		n_attr_skip = 0;    // chars to skip bef. using wlv.extra_attr
     int		saved_attr2 = 0;    // char_attr saved for n_attr
     int		n_attr3 = 0;	    // chars with overruling special attr
     int		saved_attr3 = 0;    // char_attr saved for n_attr3
@@ -2063,7 +2059,7 @@ win_line(
 						    wlv.vcol,
 						    wlv.col,
 						    &wlv.n_extra, &wlv.p_extra,
-						    &n_attr, &n_attr_skip);
+						    &n_attr, &wlv.n_attr_skip);
 				if (wlv.p_extra != prev_p_extra)
 				{
 				    // wlv.p_extra was allocated
@@ -2105,9 +2101,9 @@ win_line(
 			    {
 				wlv.n_extra -= skip_cells;
 				wlv.p_extra += skip_cells;
-				n_attr_skip -= skip_cells;
-				if (n_attr_skip < 0)
-				    n_attr_skip = 0;
+				wlv.n_attr_skip -= skip_cells;
+				if (wlv.n_attr_skip < 0)
+				    wlv.n_attr_skip = 0;
 				skip_cells = 0;
 			    }
 			    else
@@ -2116,7 +2112,7 @@ win_line(
 				// it and advance to the next one
 				skip_cells -= wlv.n_extra;
 				wlv.n_extra = 0;
-				n_attr_skip = 0;
+				wlv.n_attr_skip = 0;
 				bail_out = TRUE;
 			    }
 			}
@@ -3337,8 +3333,8 @@ win_line(
 
 	// Use "wlv.extra_attr", but don't override visual selection
 	// highlighting, unless text property overrides.
-	// Don't use "wlv.extra_attr" until n_attr_skip is zero.
-	if (n_attr_skip == 0 && n_attr > 0
+	// Don't use "wlv.extra_attr" until wlv.n_attr_skip is zero.
+	if (wlv.n_attr_skip == 0 && n_attr > 0
 		&& wlv.draw_state == WL_LINE
 		&& (!attr_pri
 #ifdef FEAT_PROP_POPUP
@@ -3828,10 +3824,10 @@ win_line(
 
 	// restore attributes after last 'listchars' or 'number' char
 	if (n_attr > 0 && wlv.draw_state == WL_LINE
-					  && n_attr_skip == 0 && --n_attr == 0)
+				      && wlv.n_attr_skip == 0 && --n_attr == 0)
 	    wlv.char_attr = saved_attr2;
-	if (n_attr_skip > 0)
-	    --n_attr_skip;
+	if (wlv.n_attr_skip > 0)
+	    --wlv.n_attr_skip;
 
 	// At end of screen line and there is more to come: Display the line
 	// so far.  If there is no more to display it is caught above.

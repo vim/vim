@@ -2747,6 +2747,9 @@ func Test_prop_with_text_below_after_empty()
   call term_sendkeys(buf, ":set number\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_below_after_empty_2', {}) 
 
+  call term_sendkeys(buf, ":set nowrap\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_3', {}) 
+
   call StopVimInTerminal(buf)
 endfunc
 
