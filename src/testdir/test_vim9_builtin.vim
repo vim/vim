@@ -3171,14 +3171,14 @@ def Test_prop_type_delete()
   v9.CheckDefAndScriptFailure(['prop_type_delete({"a": 10})'], ['E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['prop_type_delete({"a": 10}, "b")'], ['E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['prop_type_delete("a", "b")'], ['E1013: Argument 2: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 2'])
-  assert_fails("prop_type_delete('')", 'E474:')
+  assert_fails("prop_type_delete('')", 'E475:')
 enddef
 
 def Test_prop_type_get()
   v9.CheckDefAndScriptFailure(['prop_type_get({"a": 10})'], ['E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['prop_type_get({"a": 10}, "b")'], ['E1013: Argument 1: type mismatch, expected string but got dict<number>', 'E1174: String required for argument 1'])
   v9.CheckDefAndScriptFailure(['prop_type_get("a", "b")'], ['E1013: Argument 2: type mismatch, expected dict<any> but got string', 'E1206: Dictionary required for argument 2'])
-  assert_fails("prop_type_get('')", 'E474:')
+  assert_fails("prop_type_get('')", 'E475:')
 enddef
 
 def Test_prop_type_list()
