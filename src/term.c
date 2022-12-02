@@ -815,7 +815,7 @@ static tcap_entry_T builtin_pcansi[] = {
 };
 
 /*
- * These codes are valid for the Win32 Console .  The entries that start with
+ * These codes are valid for the Win32 Console.  The entries that start with
  * ESC | are translated into console calls in os_win32.c.  The function keys
  * are also translated in os_win32.c.
  */

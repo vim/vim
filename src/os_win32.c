@@ -404,169 +404,6 @@ peek_console_input(
     return read_console_input(hInput, lpBuffer, -1, lpEvents);
 }
 
-# if defined(FEAT_EVAL) || defined(PROTO)
-    int
-encode_key_event(dict_T *args, INPUT_RECORD *ir)
-{
-    char_u *event_flags = dict_get_string(args, "event", TRUE);
-
-    ZeroMemory(ir, sizeof(ir));
-
-    if (event_flags && (STRICMP(event_flags, "keydown") == 0
-					|| STRICMP(event_flags, "keyup") == 0))
-    {
-	WORD vkCode = dict_get_number_def(args, "keycode", 0);
-	if (vkCode <= 0 || vkCode >= 0xFF)
-	{
-	    semsg(_(e_invalid_argument_nr), (long)vkCode);
-	    return FALSE;
-	}
-	int mods = (int)dict_get_number(args, "modifiers");
-
-	ir->EventType = KEY_EVENT;
-	KEY_EVENT_RECORD ker;
-	ker.bKeyDown = STRICMP(event_flags, "keydown") == 0;
-	ker.wRepeatCount = 1;
-	ker.wVirtualKeyCode = vkCode;
-	ker.wVirtualScanCode = 0;
-	ker.dwControlKeyState = 0;
-	if (mods != 0)
-	{
-	// Encode the win32 console key modifiers from Vim keyboard modifiers.
-	if (mods & MOD_MASK_SHIFT)
-		ker.dwControlKeyState |= SHIFT_PRESSED;
-	if (mods & MOD_MASK_CTRL)
-		ker.dwControlKeyState |= LEFT_CTRL_PRESSED; // or RIGHT_CTL_?
-	if (mods & MOD_MASK_ALT)
-		ker.dwControlKeyState |= LEFT_ALT_PRESSED; // or RIGHT_ALT_?
-	}
-	ker.uChar.UnicodeChar = 0;
-	ir->Event.KeyEvent = ker;
-	vim_free(event_flags);
-    }
-    else
-    {
-	if (event_flags == NULL)
-	{
-	    semsg(_(e_invalid_argument_str), "NULL");
-	}
-	else
-	{
-	    semsg(_(e_invalid_argument_str), event_flags);
-	    vim_free(event_flags);
-	}
-	return FALSE;
-    }
-    return TRUE;
-}
-
-    int
-encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
-{
-    int		button;
-    int		row;
-    int		col;
-    int		repeated_click;
-    int_u	mods;
-    int		move;
-
-    if (!dict_has_key(args, "row") || !dict_has_key(args, "col"))
-	return FALSE;
-
-    // Note: "move" is optional, requires fewer arguments
-    move = (int)dict_get_bool(args, "move", FALSE);
-    if (!move && (!dict_has_key(args, "button")
-	    || !dict_has_key(args, "multiclick")
-	    || !dict_has_key(args, "modifiers")))
-	return FALSE;
-
-    row = (int)dict_get_number(args, "row");
-    col = (int)dict_get_number(args, "col");
-
-    ir->EventType = MOUSE_EVENT;
-    MOUSE_EVENT_RECORD mer;
-    mer.dwMousePosition.X  = col;
-    mer.dwMousePosition.Y  = row;
-
-    if (move)
-    {
-	mer.dwButtonState = 0;
-	mer.dwEventFlags = MOUSE_MOVED;
-    }
-    else
-    {
-	button = (int)dict_get_number(args, "button");
-	repeated_click = (int)dict_get_number(args, "multiclick");
-	mods = (int)dict_get_number(args, "modifiers");
-	// Reset the scroll values to known values.
-	// XXX: Remove this when/if the scroll step is made configurable.
-	mouse_set_hor_scroll_step(6);
-	mouse_set_vert_scroll_step(3);
-
-	switch (button)
-	{
-	    case MOUSE_LEFT:
-		mer.dwButtonState = FROM_LEFT_1ST_BUTTON_PRESSED;
-		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
-		break;
-	    case MOUSE_MIDDLE:
-		mer.dwButtonState = FROM_LEFT_2ND_BUTTON_PRESSED;
-		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
-		break;
-	    case MOUSE_RIGHT:
-		mer.dwButtonState = RIGHTMOST_BUTTON_PRESSED;
-		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
-		break;
-	    case MOUSE_MOVE:
-		mer.dwButtonState = 0;
-		mer.dwEventFlags = MOUSE_MOVED;
-		break;
-	    case MOUSE_X1:
-		mer.dwButtonState = FROM_LEFT_3RD_BUTTON_PRESSED;
-		break;
-	    case MOUSE_X2:
-		mer.dwButtonState = FROM_LEFT_4TH_BUTTON_PRESSED;
-		break;
-	    case MOUSE_4:  // KE_MOUSEDOWN;
-		mer.dwButtonState = -1;
-		mer.dwEventFlags = MOUSE_WHEELED;
-		break;
-	    case MOUSE_5:  // KE_MOUSEUP;
-		mer.dwButtonState = +1;
-		mer.dwEventFlags = MOUSE_WHEELED;
-		break;
-	    case MOUSE_6:  // KE_MOUSELEFT;
-		mer.dwButtonState = -1;
-		mer.dwEventFlags = MOUSE_HWHEELED;
-		break;
-	    case MOUSE_7:  // KE_MOUSERIGHT;
-		mer.dwButtonState = +1;
-		mer.dwEventFlags = MOUSE_HWHEELED;
-		break;
-	    default:
-	    	//"unknown button"
-		// semsg something...
-		return FALSE;
-	}
-    }
-
-    mer.dwControlKeyState = 0;
-    if (mods != 0)
-    {
-	// Encode the win32 console key modifiers from Vim mouse modifiers.
-	if (mods & MOD_MASK_SHIFT)
-	    mer.dwControlKeyState |= SHIFT_PRESSED;
-	if (mods & MOD_MASK_CTRL)
-	    mer.dwControlKeyState |= LEFT_CTRL_PRESSED; // or RIGHT_CTRL_?
-	if (mods & MOD_MASK_ALT)
-	    mer.dwControlKeyState |= LEFT_ALT_PRESSED; // or RIGHT_ALT_?
-    }
-    ir->Event.MouseEvent = mer;
-    return TRUE;
-}
-
-# endif  // FEAT_EVAL || PROTO
-
 # ifdef FEAT_CLIENTSERVER
     static DWORD
 msg_wait_for_multiple_objects(
@@ -595,98 +432,6 @@ wait_for_single_object(
 }
 # endif
 #endif   // !FEAT_GUI_MSWIN || VIMDLL
-
-#if defined(FEAT_EVAL) || defined(PROTO)
-/*
- * This is for testing Vim's low-level handling of user input events when
- * running in MS-Windows.
- *
- * If the GUI is running, this will call test_gui_w32_sendevent() in gui_w32.c
- * to test MS-Windows Win32 GUI input event message handling.  Otherwise, this
- * will go on to process the events as MS-Windows terminal console input buffer
- * events. 
- * 
- * This essentially does the reverse of "read_console_input()", where Vim reads
- * user input events from the console's input buffer in the form of
- * MS-Windows INPUT_RECORD structs.  Each INPUT_RECORD represents one event
- * such as; a keystroke, a mouse motion, a mouse scroll or a button click, etc. 
- * 
- * This function allows us to emulate user input at test-time.  
- *
- * ....The event type and args dictionary....
- * 
- * for Vim to synthesize Win32 INPUT_RECORD events, which are then written
- * directly onto the console input buffer, for Vim to then process via
- * read_console_input(), as if a user had entered them directly.
- * 
- * This function returns the number of events actually written to the buffer.
- * 
- * If an exception occurs it will write an error
- * message via semsg().  Otherwise, it's typically up to the test script to
- * assert that the expected operation has occurred, by checking the end result
- * after Vim's processing the console's input buffer.
- */ 
-    int
-test_mswin_event(char_u *event, dict_T *args)
-{
-    int lpEventsWritten = 0;
-
-# if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
-    if (gui.in_use)
-	return test_gui_w32_sendevent(event, args);
-# endif
-
-# if defined(VIMDLL) || !defined(FEAT_GUI_MSWIN)
-
-// Only implemented event record types are;
-//    KEY_EVENT and MOUSE_EVENT
-// TODO: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
-// Not planned:  MENU_EVENT
-
-    INPUT_RECORD ir;
-    BOOL input_encoded = FALSE;
-    if (STRCMP(event, "keyboard") == 0)
-	input_encoded = encode_key_event(args, &ir);
-    else if (STRCMP(event, "mouse") == 0)
-	input_encoded = encode_mouse_event(args, &ir);
-    else
-    {
-	semsg(_(e_invalid_argument_str), event);
-	return FALSE;
-    }
-
-    if (input_encoded)
-	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
-# endif
-    return lpEventsWritten;
-}
-
-/*
- * This function is designed to be called by feedkeys({string},{mode})
- *
- * Where mode is 'L' (low-level) for MS-Windows console events.
- * 
- * feedkeys passes to this its {string} argument, (char_u *s)
- * 
- * To include special keys in {string}, use double-quotes
- * and "\..." notation |expr-quote|. For example,
- * feedkeys("\<CR>", 'L') simulates pressing of the <Enter> key. But
- * feedkeys('\<CR>', 'L') pushes 5 characters.
- * 
- * Mouse events usually need the mouse position. See test_setmouse({row}, {col})
- *  eg.
- * 	call test_setmouse(4, 20)
- * 	call feedkeys("\<LeftMouse>", "L")
- */
-
-   void
-feed_mswin_input(char_u *s)
-{
-    int len = (int)STRLEN(s);
-    //TODO: convert s to mswin input buffer events...
-}
-
-#endif // FEAT_EVAL || PROTO
 
     static void
 get_exe_name(void)
@@ -1202,7 +947,7 @@ static const struct
     { VK_F8,	TRUE,	'B',	'[',	'e',	    'o', },
     { VK_F9,	TRUE,	'C',	'\\',	'f',	    'p', },
     { VK_F10,	TRUE,	'D',	']',	'g',	    'q', },
-    { VK_F11,	TRUE,	'\205',	'\207',	'\211',	    '\213', },
+    { VK_F11,	TRUE,	'\205',	'\207',	'\205',	    '\213', }, //\211
     { VK_F12,	TRUE,	'\206',	'\210',	'\212',	    '\214', },
 
     { VK_HOME,	TRUE,	'G',	'\302',	'w',	    '\303', },
@@ -1261,7 +1006,6 @@ win32_kbd_patch_key(
     static WORD awAnsiCode[2];
     static BYTE abKeystate[256];
 
-
     if (s_iIsDead == 2)
     {
 	pker->uChar.UnicodeChar = (WCHAR) awAnsiCode[1];
@@ -1269,7 +1013,7 @@ win32_kbd_patch_key(
 	return 1;
     }
 
-    if (pker->uChar.UnicodeChar != 0)
+    if (pker->uChar.UnicodeChar > 0 && pker->uChar.UnicodeChar < 0xfffd)
 	return 1;
 
     CLEAR_FIELD(abKeystate);
@@ -1335,7 +1079,7 @@ decode_key_event(
 
     // special cases
     if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0
-					    && pker->uChar.UnicodeChar == NUL)
+	&& (pker->uChar.UnicodeChar == NUL || pker->uChar.UnicodeChar == 0xfffd))
     {
 	// Ctrl-6 is Ctrl-^
 	if (pker->wVirtualKeyCode == '6')
@@ -1384,8 +1128,21 @@ decode_key_event(
 		{
 		    *pch2 = *pch;
 		    *pch = K_NUL;
-		}
+		    if (pmodifiers)
+		    {
+			if (nModifs & ALT)
+			    *pmodifiers |= MOD_MASK_ALT;
+			if (nModifs & SHIFT)
+			    *pmodifiers |= MOD_MASK_SHIFT;
+			if (nModifs & CTRL)
+			    *pmodifiers |= MOD_MASK_CTRL;
 
+			if (*pmodifiers)
+			{
+			    //VirtKeyMap
+			}
+		    }
+		}
 		return TRUE;
 	    }
 	}
@@ -1422,8 +1179,125 @@ decode_key_event(
 
     return (*pch != NUL);
 }
+# if defined(FEAT_EVAL) || defined(PROTO)
+    static int
+encode_key_event(dict_T *args, INPUT_RECORD *ir)
+{
+    static int s_dwMods = 0;
 
-#endif // FEAT_GUI_MSWIN
+    char_u *event_flags = dict_get_string(args, "event", TRUE);
+    if (event_flags && (STRICMP(event_flags, "keydown") == 0
+					|| STRICMP(event_flags, "keyup") == 0))
+    {
+	WORD vkCode = dict_get_number_def(args, "keycode", 0);
+	if (vkCode <= 0 || vkCode >= 0xFF)
+	{
+	    semsg(_(e_invalid_argument_nr), (long)vkCode);
+	    return FALSE;
+	}
+
+	ir->EventType = KEY_EVENT;
+	KEY_EVENT_RECORD ker;
+	SecureZeroMemory(&ker, sizeof(ker));
+	ker.bKeyDown = STRICMP(event_flags, "keydown") == 0;
+	ker.wRepeatCount = 1;
+	ker.wVirtualScanCode = 0;
+	ker.dwControlKeyState = 0;
+	int mods = (int)dict_get_number(args, "modifiers");
+	// Encode the win32 console key modifiers from Vim keyboard modifiers.
+	if(mods)
+	{
+	    // If "modifiers" is explicitly set in the args, then we reset any
+	    // remembered modifer key state that may have been set from earlier
+	    // mod-key-down events, even if they are not yet unset by earlier
+	    // mod-key-up events.
+	    s_dwMods = 0;
+	    if (mods & MOD_MASK_SHIFT)
+		ker.dwControlKeyState |= SHIFT_PRESSED;
+	    if (mods & MOD_MASK_CTRL)
+		ker.dwControlKeyState |= LEFT_CTRL_PRESSED;
+	    if (mods & MOD_MASK_ALT)
+		ker.dwControlKeyState |= LEFT_ALT_PRESSED;
+	}
+
+	if (vkCode == VK_LSHIFT || vkCode == VK_RSHIFT || vkCode == VK_SHIFT)
+	{
+	    if (STRICMP(event_flags, "keydown") == 0)
+		s_dwMods |= SHIFT_PRESSED;
+	    else
+		s_dwMods &= ~SHIFT_PRESSED;
+	}
+	else if (vkCode == VK_LCONTROL || vkCode == VK_CONTROL)
+	{
+	    if (STRICMP(event_flags, "keydown") == 0)
+		s_dwMods |= LEFT_CTRL_PRESSED;
+	    else
+		s_dwMods &= ~LEFT_CTRL_PRESSED;
+	}
+	else if (vkCode == VK_RCONTROL)
+	{
+	    if (STRICMP(event_flags, "keydown") == 0)
+	    {
+		s_dwMods |= RIGHT_CTRL_PRESSED;
+	    }
+	    else
+		s_dwMods &= ~RIGHT_CTRL_PRESSED;
+	}
+	else if (vkCode == VK_LMENU || vkCode == VK_MENU)
+	{
+	    if (STRICMP(event_flags, "keydown") == 0)
+		s_dwMods |= LEFT_ALT_PRESSED;
+	    else
+		s_dwMods &= ~LEFT_ALT_PRESSED;
+	}
+	else if (vkCode == VK_RMENU)
+	{
+	    if (STRICMP(event_flags, "keydown") == 0)
+		s_dwMods |= RIGHT_ALT_PRESSED;
+	    else
+		s_dwMods &= ~RIGHT_ALT_PRESSED;
+	}
+	ker.dwControlKeyState |= s_dwMods;
+	ker.wVirtualKeyCode = vkCode;
+	win32_kbd_patch_key(&ker);
+
+	for (int i = ARRAY_LENGTH(VirtKeyMap);  --i >= 0 && !ker.uChar.UnicodeChar; )
+	{
+	    if (VirtKeyMap[i].wVirtKey == vkCode)
+	    {
+		// REPLACEMENT CHARACTER
+		ker.uChar.UnicodeChar = 0xfffd;
+		// if (s_dwMods == 0)
+		// 	ker.uChar.UnicodeChar = VirtKeyMap[i].chAlone;
+		// else if ((s_dwMods & SHIFT) != 0 && (s_dwMods & ~SHIFT) == 0)
+		// 	ker.uChar.UnicodeChar = VirtKeyMap[i].chShift;
+		// else if ((s_dwMods & CTRL) != 0 && (s_dwMods & ~CTRL) == 0)
+		// 	ker.uChar.UnicodeChar = VirtKeyMap[i].chCtrl;
+		// else if ((s_dwMods & ALT) != 0 && (s_dwMods & ~ALT) == 0)
+		// 	ker.uChar.UnicodeChar = VirtKeyMap[i].chAlt;
+	    }
+	}
+
+	ir->Event.KeyEvent = ker;
+	vim_free(event_flags);
+    }
+    else
+    {
+	if (event_flags == NULL)
+	{
+	    semsg(_(e_invalid_argument_str), "NULL");
+	}
+	else
+	{
+	    semsg(_(e_invalid_argument_str), event_flags);
+	    vim_free(event_flags);
+	}
+	return FALSE;
+    }
+    return TRUE;
+}
+# endif  // FEAT_EVAL || PROTO
+#endif // !FEAT_GUI_MSWIN || VIMDLL
 
 
 /*
@@ -1434,7 +1308,7 @@ decode_key_event(
 mch_setmouse(int on UNUSED)
 {
 }
-#else
+#else  // !FEAT_GUI_MSWIN || VIMDLL
 static int g_fMouseAvail = FALSE;   // mouse present
 static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
@@ -1489,7 +1363,7 @@ mch_bevalterm_changed(void)
 
 /*
  * Win32 console mouse scroll event handler.
- * Loosely based on the _OnMouseWheel() function in gui_w32.c
+ * Console version of the _OnMouseWheel() function in gui_w32.c
  *
  * This encodes the mouse scroll direction and keyboard modifiers into
  * g_nMouseClick, and the mouse position into g_xMouse and g_yMouse
@@ -1849,8 +1723,202 @@ decode_mouse_event(
     return TRUE;
 }
 
-#endif // FEAT_GUI_MSWIN
+# if defined(FEAT_EVAL) || defined(PROTO)
+    static int
+encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
+{
+    int		button;
+    int		row;
+    int		col;
+    int		repeated_click;
+    int_u	mods;
+    int		move;
 
+    if (!dict_has_key(args, "row") || !dict_has_key(args, "col"))
+	return FALSE;
+
+    // Note: "move" is optional, requires fewer arguments
+    move = (int)dict_get_bool(args, "move", FALSE);
+    if (!move && (!dict_has_key(args, "button")
+	    || !dict_has_key(args, "multiclick")
+	    || !dict_has_key(args, "modifiers")))
+	return FALSE;
+
+    row = (int)dict_get_number(args, "row");
+    col = (int)dict_get_number(args, "col");
+
+    ir->EventType = MOUSE_EVENT;
+    MOUSE_EVENT_RECORD mer;
+    SecureZeroMemory(&mer, sizeof(mer));
+    mer.dwMousePosition.X  = col;
+    mer.dwMousePosition.Y  = row;
+
+    if (move)
+    {
+	mer.dwButtonState = 0;
+	mer.dwEventFlags = MOUSE_MOVED;
+    }
+    else
+    {
+	button = (int)dict_get_number(args, "button");
+	repeated_click = (int)dict_get_number(args, "multiclick");
+	mods = (int)dict_get_number(args, "modifiers");
+	// Reset the scroll values to known values.
+	// XXX: Remove this when/if the scroll step is made configurable.
+	mouse_set_hor_scroll_step(6);
+	mouse_set_vert_scroll_step(3);
+
+	switch (button)
+	{
+	    case MOUSE_LEFT:
+		mer.dwButtonState = FROM_LEFT_1ST_BUTTON_PRESSED;
+		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
+		break;
+	    case MOUSE_MIDDLE:
+		mer.dwButtonState = FROM_LEFT_2ND_BUTTON_PRESSED;
+		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
+		break;
+	    case MOUSE_RIGHT:
+		mer.dwButtonState = RIGHTMOST_BUTTON_PRESSED;
+		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
+		break;
+	    case MOUSE_MOVE:
+		mer.dwButtonState = 0;
+		mer.dwEventFlags = MOUSE_MOVED;
+		break;
+	    case MOUSE_X1:
+		mer.dwButtonState = FROM_LEFT_3RD_BUTTON_PRESSED;
+		break;
+	    case MOUSE_X2:
+		mer.dwButtonState = FROM_LEFT_4TH_BUTTON_PRESSED;
+		break;
+	    case MOUSE_4:  // KE_MOUSEDOWN;
+		mer.dwButtonState = -1;
+		mer.dwEventFlags = MOUSE_WHEELED;
+		break;
+	    case MOUSE_5:  // KE_MOUSEUP;
+		mer.dwButtonState = +1;
+		mer.dwEventFlags = MOUSE_WHEELED;
+		break;
+	    case MOUSE_6:  // KE_MOUSELEFT;
+		mer.dwButtonState = -1;
+		mer.dwEventFlags = MOUSE_HWHEELED;
+		break;
+	    case MOUSE_7:  // KE_MOUSERIGHT;
+		mer.dwButtonState = +1;
+		mer.dwEventFlags = MOUSE_HWHEELED;
+		break;
+	    default:
+	    	//"unknown button"
+		// semsg something...
+		return FALSE;
+	}
+    }
+
+    mer.dwControlKeyState = 0;
+    if (mods != 0)
+    {
+	// Encode the win32 console key modifiers from Vim mouse modifiers.
+	if (mods & MOD_MASK_SHIFT)
+	    mer.dwControlKeyState |= SHIFT_PRESSED;
+	if (mods & MOD_MASK_CTRL)
+	    mer.dwControlKeyState |= LEFT_CTRL_PRESSED;
+	if (mods & MOD_MASK_ALT)
+	    mer.dwControlKeyState |= LEFT_ALT_PRESSED;
+    }
+    ir->Event.MouseEvent = mer;
+    return TRUE;
+}
+# endif  // FEAT_EVAL || PROTO
+#endif // !FEAT_GUI_MSWIN || VIMDLL
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * This is for testing Vim's low-level handling of user input events when
+ * running in MS-Windows.  Entry point for both GUI and Console.
+ *
+ * If the GUI is running, this will call test_gui_w32_sendevent() in gui_w32.c
+ * to test MS-Windows Win32 GUI input event message handling.  Otherwise, this
+ * will go on to process the events as MS-Windows terminal console input buffer
+ * events.
+ * 
+ * This essentially does the reverse of "read_console_input()", where Vim reads
+ * user input events from the console's input buffer in the form of
+ * MS-Windows INPUT_RECORD structs.  Each INPUT_RECORD represents one event
+ * such as; a keystroke, a mouse motion, a mouse scroll or a button click, etc. 
+ * 
+ * This function allows us to emulate user input at test-time.  
+ *
+ * ....The event type and args dictionary....
+ * 
+ * for Vim to synthesize Win32 INPUT_RECORD events, which are then written
+ * directly onto the console input buffer, for Vim to then process via
+ * read_console_input(), as if a user had entered them directly.
+ * 
+ * This function returns the number of events actually written to the buffer.
+ * 
+ * If an exception occurs it will write an error
+ * message via semsg().  Otherwise, it's typically up to the test script to
+ * assert that the expected operation has occurred, by checking the end result
+ * after Vim's processing the console's input buffer.
+ */ 
+    int
+test_mswin_event(char_u *event, dict_T *args)
+{
+    int lpEventsWritten = 0;
+
+# if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
+    if (gui.in_use)
+	return test_gui_w32_sendevent(event, args);
+# endif
+
+# if defined(VIMDLL) || !defined(FEAT_GUI_MSWIN)
+
+// Only implemented event record types are;
+//    KEY_EVENT and MOUSE_EVENT
+// TODO: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
+// Not planned:  MENU_EVENT
+
+    INPUT_RECORD ir;
+    BOOL input_encoded = FALSE;
+    if (STRCMP(event, "keyboard") == 0)
+	input_encoded = encode_key_event(args, &ir);
+    else if (STRCMP(event, "mouse") == 0)
+	input_encoded = encode_mouse_event(args, &ir);
+    else
+    {
+	semsg(_(e_invalid_argument_str), event);
+	return FALSE;
+    }
+
+    if (input_encoded)
+	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+# endif
+    return lpEventsWritten;
+}
+
+/*
+ * This function is designed to be called by feedkeys({string},{mode})
+ * Where mode is 'L' (low-level) for MS-Windows console events.
+ * feedkeys passes to this its {string} argument, (char_u *s)
+ * To include special keys in {string}, use double-quotes
+ * and "\..." notation |expr-quote|. For example,
+ * feedkeys("\<CR>", 'L') simulates pressing of the <Enter> key. But
+ * feedkeys('\<CR>', 'L') pushes 5 characters.
+ * 
+ * Mouse events usually need the mouse position. See test_setmouse({row}, {col})
+ *  eg.
+ * 	call test_setmouse(4, 20)
+ * 	call feedkeys("\<LeftMouse>", "L")
+ */
+   void
+feed_mswin_input(char_u *s)
+{
+    int len = (int)STRLEN(s);
+    //TODO: convert s to mswin input buffer events...
+}
+
+#endif // FEAT_EVAL || PROTO
 
 #ifdef MCH_CURSOR_SHAPE
 /*

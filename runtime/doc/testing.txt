@@ -227,7 +227,7 @@ test_ignore_error({expr})			 *test_ignore_error()*
 test_mswin_event({event}, {args})
 		Generate a low-level MS-Windows {event} with arguments {args}
 		for testing Vim functionality.  It works for MS-Windows GUI 
-		and the console application.
+		and for the console.
 		
 		{event} is a String and the supported values are:
 		    "mouse"	mouse event.
@@ -269,18 +269,18 @@ test_mswin_event({event}, {args})
 				positions.  Not used by the console.
 
 		"keyboard":
-		  Send a low-level GUI event (e.g. key-up or down).
+		  Send a low-level keyboard event (e.g. keyup or keydown).
 		  The supported items in {args} are:
 		    event:	The supported string values are:
 				    keyup   generate a keyup event
 				    keydown generate a keydown event
 		    keycode:    Keycode to use for a keyup or a keydown event.
+		    modifiers:	Optional; key modifiers.  The supported values are:
+				    4	shift is pressed
+				    8	alt is pressed
+				   16	ctrl is pressed
 								*E1291*
 
-		After injecting the GUI events you probably should call
-		|feedkeys()| to have them processed, e.g.: >
-			call feedkeys("y", 'Lx!')
-<
 		Returns TRUE if the event is successfully added, FALSE if
 		there is a failure.
 
