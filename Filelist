@@ -275,6 +275,7 @@ SRC_ALL =	\
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
+		src/proto/logfile.pro \
 		src/proto/main.pro \
 		src/proto/map.pro \
 		src/proto/mark.pro \
