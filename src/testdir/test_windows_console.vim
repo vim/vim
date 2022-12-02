@@ -2,6 +2,7 @@
 
 source check.vim
 CheckMSWindows
+CheckNotGui
 
 
 " Test for sending low level key presses
@@ -17,6 +18,7 @@ endfunc
 " Test MS-Windows console key events
 func Test_windows_console_key_event()
   CheckMSWindows
+  CheckNotGui
   new
 
 " Test keyboard codes for digits
@@ -165,6 +167,8 @@ endfunc
 
 " Test MS-Windows console mouse events
 func Test_windows_console_mouse_event()
+  CheckMSWindows
+  CheckNotGui
   set mousemodel=extend
   call test_override('no_query_mouse', 1)
   new
