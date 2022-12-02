@@ -2048,9 +2048,9 @@ set_termname(char_u *term)
 		// things for this terminal
 		if (!gui.in_use)
 		    return FAIL;
-#ifdef HAVE_TGETENT
+# ifdef HAVE_TGETENT
 		break;		// don't try using external termcap
-#endif
+# endif
 	    }
 #endif // FEAT_GUI
 	}
@@ -5088,6 +5088,42 @@ add_key_to_buf(int key, char_u *buf)
 }
 
 /*
+ * Shared between handle_key_with_modifier() and handle_csi_function_key().
+ */
+    static int
+put_key_modifiers_in_typebuf(
+	int	key_arg,
+	int	modifiers_arg,
+	int	csi_len,
+	int	offset,
+	char_u	*buf,
+	int	bufsize,
+	int	*buflen)
+{
+    int key = key_arg;
+    int modifiers = modifiers_arg;
+
+    // Some keys need adjustment when the Ctrl modifier is used.
+    key = may_adjust_key_for_ctrl(modifiers, key);
+
+    // May remove the shift modifier if it's already included in the key.
+    modifiers = may_remove_shift_modifier(modifiers, key);
+
+    // Produce modifiers with K_SPECIAL KS_MODIFIER {mod}
+    char_u string[MAX_KEY_CODE_LEN + 1];
+    int new_slen = modifiers2keycode(modifiers, &key, string);
+
+    // Add the bytes for the key.
+    new_slen += add_key_to_buf(key, string + new_slen);
+
+    string[new_slen] = NUL;
+    if (put_string_in_typebuf(offset, csi_len, string, new_slen,
+						 buf, bufsize, buflen) == FAIL)
+	return -1;
+    return new_slen - csi_len + offset;
+}
+
+/*
  * Handle a sequence with key and modifier, one of:
  *	{lead}27;{modifier};{key}~
  *	{lead}{key};{modifier}u
@@ -5103,10 +5139,6 @@ handle_key_with_modifier(
 	int	bufsize,
 	int	*buflen)
 {
-    int	    key;
-    int	    modifiers;
-    char_u  string[MAX_KEY_CODE_LEN + 1];
-
     // Only set seenModifyOtherKeys for the "{lead}27;" code to avoid setting
     // it for terminals using the kitty keyboard protocol.  Xterm sends
     // the form ending in "u" when the formatOtherKeys resource is set.  We do
@@ -5123,31 +5155,15 @@ handle_key_with_modifier(
 		|| kitty_protocol_state == KKPS_OFF
 		|| kitty_protocol_state == KKPS_AFTER_T_KE)
 	    && term_props[TPR_KITTY].tpr_status != TPR_YES)
+    {
+	ch_log(NULL, "setting seenModifyOtherKeys to TRUE");
 	seenModifyOtherKeys = TRUE;
+    }
 
-    if (trail == 'u')
-	key = arg[0];
-    else
-	key = arg[2];
-
-    modifiers = decode_modifiers(arg[1]);
-
-    // Some keys need adjustment when the Ctrl modifier is used.
-    key = may_adjust_key_for_ctrl(modifiers, key);
-
-    // May remove the shift modifier if it's already included in the key.
-    modifiers = may_remove_shift_modifier(modifiers, key);
-
-    // insert modifiers with KS_MODIFIER
-    int new_slen = modifiers2keycode(modifiers, &key, string);
-
-    // add the bytes for the key
-    new_slen += add_key_to_buf(key, string + new_slen);
-
-    if (put_string_in_typebuf(offset, csi_len, string, new_slen,
-						 buf, bufsize, buflen) == FAIL)
-	return -1;
-    return new_slen - csi_len + offset;
+    int key = trail == 'u' ? arg[0] : arg[2];
+    int modifiers = decode_modifiers(arg[1]);
+    return put_key_modifiers_in_typebuf(key, modifiers,
+					csi_len, offset, buf, bufsize, buflen);
 }
 
 /*
@@ -5186,6 +5202,51 @@ handle_key_without_modifier(
 }
 
 /*
+ * CSI function key without or with modifiers:
+ *	{lead}[ABCDEFHPQRS]
+ *	{lead}1;{modifier}[ABCDEFHPQRS]
+ * Returns zero when nog recognized, a positive number when recognized.
+ */
+    static int
+handle_csi_function_key(
+	int	argc,
+	int	*arg,
+	int	trail,
+	int	csi_len,
+	char_u	*key_name,
+	int	offset,
+	char_u  *buf,
+	int	bufsize,
+	int	*buflen)
+{
+    key_name[0] = 'k';
+    switch (trail)
+    {
+	case 'A': key_name[1] = 'u'; break;  // K_UP
+	case 'B': key_name[1] = 'd'; break;  // K_DOWN
+	case 'C': key_name[1] = 'r'; break;  // K_RIGHT
+	case 'D': key_name[1] = 'l'; break;  // K_LEFT
+
+	// case 'E': keypad BEGIN - not supported
+	case 'F': key_name[0] = '@'; key_name[1] = '7'; break;  // K_END
+	case 'H': key_name[1] = 'h'; break;  // K_HOME
+
+	case 'P': key_name[1] = '1'; break;  // K_F1
+	case 'Q': key_name[1] = '2'; break;  // K_F2
+	case 'R': key_name[1] = '3'; break;  // K_F3
+	case 'S': key_name[1] = '4'; break;  // K_F4
+
+	default: return 0;  // not recognized
+    }
+
+    int key = TERMCAP2KEY(key_name[0], key_name[1]);
+    int modifiers = argc == 2 ? decode_modifiers(arg[1]) : 0;
+    put_key_modifiers_in_typebuf(key, modifiers,
+					csi_len, offset, buf, bufsize, buflen);
+    return csi_len;
+}
+
+/*
  * Handle a CSI escape sequence.
  * - Xterm version string.
  *
@@ -5197,9 +5258,14 @@ handle_key_without_modifier(
  *
  * - window position reply: {lead}3;{x};{y}t
  *
- * - key with modifiers when modifyOtherKeys is enabled:
+ * - key with modifiers when modifyOtherKeys is enabled or the Kitty keyboard
+ *   protocol is used:
  *	    {lead}27;{modifier};{key}~
  *	    {lead}{key};{modifier}u
+ *
+ * - function key with or without modifiers:
+ *	{lead}[ABCDEFHPQRS]
+ *	{lead}1;{modifier}[ABCDEFHPQRS]
  *
  * Return 0 for no match, -1 for partial match, > 0 for full match.
  */
@@ -5218,7 +5284,7 @@ handle_csi(
     int		first = -1;  // optional char right after {lead}
     int		trail;	     // char that ends CSI sequence
     int		arg[3] = {-1, -1, -1};	// argument numbers
-    int		argc;			// number of arguments
+    int		argc = 0;		// number of arguments
     char_u	*ap = argp;
     int		csi_len;
 
@@ -5226,42 +5292,54 @@ handle_csi(
     if (!VIM_ISDIGIT(*ap))
 	first = *ap++;
 
-    // Find up to three argument numbers.
-    for (argc = 0; argc < 3; )
+    if (ASCII_ISUPPER(first))
     {
+	// If "first" is in [ABCDEFHPQRS] then it is actually the "trail" and
+	// no argument follows.
+	trail = first;
+	first = -1;
+	--ap;
+    }
+    else
+    {
+	// Find up to three argument numbers.
+	for (argc = 0; argc < 3; )
+	{
+	    if (ap >= tp + len)
+		return -1;
+	    if (*ap == ';')
+		arg[argc++] = -1;  // omitted number
+	    else if (VIM_ISDIGIT(*ap))
+	    {
+		arg[argc] = 0;
+		for (;;)
+		{
+		    if (ap >= tp + len)
+			return -1;
+		    if (!VIM_ISDIGIT(*ap))
+			break;
+		    arg[argc] = arg[argc] * 10 + (*ap - '0');
+		    ++ap;
+		}
+		++argc;
+	    }
+	    if (*ap == ';')
+		++ap;
+	    else
+		break;
+	}
+
+	// mrxvt has been reported to have "+" in the version. Assume
+	// the escape sequence ends with a letter or one of "{|}~".
+	while (ap < tp + len
+		&& !(*ap >= '{' && *ap <= '~')
+		&& !ASCII_ISALPHA(*ap))
+	    ++ap;
 	if (ap >= tp + len)
 	    return -1;
-	if (*ap == ';')
-	    arg[argc++] = -1;  // omitted number
-	else if (VIM_ISDIGIT(*ap))
-	{
-	    arg[argc] = 0;
-	    for (;;)
-	    {
-		if (ap >= tp + len)
-		    return -1;
-		if (!VIM_ISDIGIT(*ap))
-		    break;
-		arg[argc] = arg[argc] * 10 + (*ap - '0');
-		++ap;
-	    }
-	    ++argc;
-	}
-	if (*ap == ';')
-	    ++ap;
-	else
-	    break;
+	trail = *ap;
     }
 
-    // mrxvt has been reported to have "+" in the version. Assume
-    // the escape sequence ends with a letter or one of "{|}~".
-    while (ap < tp + len
-	    && !(*ap >= '{' && *ap <= '~')
-	    && !ASCII_ISALPHA(*ap))
-	++ap;
-    if (ap >= tp + len)
-	return -1;
-    trail = *ap;
     csi_len = (int)(ap - tp) + 1;
 
     // Response to XTQMODKEYS: "CSI > 4 ; Pv m" where Pv indicates the
@@ -5276,11 +5354,22 @@ handle_csi(
 	*slen = csi_len;
     }
 
-    // Cursor position report: Eat it when there are 2 arguments
-    // and it ends in 'R'. Also when u7_status is not "sent", it
-    // may be from a previous Vim that just exited.  But not for
-    // <S-F3>, it sends something similar, check for row and column
-    // to make sense.
+    // Function key starting with CSI:
+    //	{lead}[ABCDEFHPQRS]
+    //	{lead}1;{modifier}[ABCDEFHPQRS]
+    else if (first == -1 && ASCII_ISUPPER(trail)
+	    && (argc == 0 || (argc == 2 && arg[0] == 1)))
+    {
+	int res = handle_csi_function_key(argc, arg, trail,
+			      csi_len, key_name, offset, buf, bufsize, buflen);
+	return res <= 0 ? res : len + res;
+    }
+
+    // Cursor position report: {lead}{row};{col}R
+    // Eat it when there are 2 arguments and it ends in 'R'.
+    // Also when u7_status is not "sent", it may be from a previous Vim that
+    // just exited.  But not for <S-F3>, it sends something similar, check for
+    // row and column to make sense.
     else if (first == -1 && argc == 2 && trail == 'R')
     {
 	handle_u7_response(arg, tp, csi_len);
@@ -5346,6 +5435,7 @@ handle_csi(
 
 	    // Reset seenModifyOtherKeys just in case some key combination has
 	    // been seen that set it before we get the status response.
+	    ch_log(NULL, "setting seenModifyOtherKeys to FALSE");
 	    seenModifyOtherKeys = FALSE;
 	}
 
@@ -5916,7 +6006,9 @@ check_termcode(
 
 	    /*
 	     * Check for responses from the terminal starting with {lead}:
-	     * "<Esc>[" or CSI followed by [0-9>?]
+	     * "<Esc>[" or CSI followed by [0-9>?].
+	     * Also for function keys without a modifier:
+	     * "<Esc>[" or CSI followed by [ABCDEFHPQRS].
 	     *
 	     * - Xterm version string: {lead}>{x};{vers};{y}c
 	     *   Also eat other possible responses to t_RV, rxvt returns
@@ -5935,8 +6027,9 @@ check_termcode(
 	     *	    {lead}{key};{modifier}u
 	     */
 	    if (((tp[0] == ESC && len >= 3 && tp[1] == '[')
-			    || (tp[0] == CSI && len >= 2))
-		    && (VIM_ISDIGIT(*argp) || *argp == '>' || *argp == '?'))
+			|| (tp[0] == CSI && len >= 2))
+		    && vim_strchr((char_u *)"0123456789>?ABCDEFHPQRS",
+								*argp) != NULL)
 	    {
 		int resp = handle_csi(tp, len, argp, offset, buf,
 					     bufsize, buflen, key_name, &slen);
@@ -6424,7 +6517,7 @@ replace_termcodes(
 	    slen = trans_special(&src, result + dlen, FSK_KEYCODE
 			  | ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY),
 							   TRUE, did_simplify);
-	    if (slen)
+	    if (slen > 0)
 	    {
 		dlen += slen;
 		continue;
