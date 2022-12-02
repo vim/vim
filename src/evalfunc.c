@@ -4343,7 +4343,6 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
     int		context = FALSE;
     int		dangerous = FALSE;
     int		lowlevel = FALSE;
-    char_u	*keys_esc;
 
     // This is not allowed in the sandbox.  If the commands would still be
     // executed in the sandbox it would be OK, but it probably happens later,
@@ -4379,73 +4378,79 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (*keys != NUL || execute)
     {
-	// Need to escape K_SPECIAL and CSI before putting the string in the
-	// typeahead buffer.
-	keys_esc = vim_strsave_escape_csi(keys);
-	if (keys_esc != NULL)
+	if (lowlevel)
 	{
-	    if (lowlevel)
-	    {
 #ifdef USE_INPUT_BUF
-		int len = (int)STRLEN(keys);
+	    ch_log(NULL, "feedkeys() lowlevel: %s", keys);
 
-		for (int idx = 0; idx < len; ++idx)
-		{
-		    // if a CTRL-C was typed, set got_int, similar to what
-		    // happens in fill_input_buf()
-		    if (keys[idx] == 3 && ctrl_c_interrupts && typed)
-			got_int = TRUE;
-		    add_to_input_buf(keys + idx, 1);
-		}
+	    int len = (int)STRLEN(keys);
+	    for (int idx = 0; idx < len; ++idx)
+	    {
+		// if a CTRL-C was typed, set got_int, similar to what
+		// happens in fill_input_buf()
+		if (keys[idx] == 3 && ctrl_c_interrupts && typed)
+		    got_int = TRUE;
+		add_to_input_buf(keys + idx, 1);
+	    }
 #else
-		emsg(_(e_lowlevel_input_not_supported));
+	    emsg(_(e_lowlevel_input_not_supported));
 #endif
-	    }
-	    else
-	    {
-		ins_typebuf(keys_esc, (remap ? REMAP_YES : REMAP_NONE),
-				  insert ? 0 : typebuf.tb_len, !typed, FALSE);
-		if (vgetc_busy
+	}
+	else
+	{
+	    // Need to escape K_SPECIAL and CSI before putting the string in
+	    // the typeahead buffer.
+	    char_u *keys_esc = vim_strsave_escape_csi(keys);
+	    if (keys_esc == NULL)
+		return;
+
+	    ch_log(NULL, "feedkeys(%s): %s", typed ? "typed" : "", keys);
+
+	    ins_typebuf(keys_esc, (remap ? REMAP_YES : REMAP_NONE),
+				   insert ? 0 : typebuf.tb_len, !typed, FALSE);
+	    if (vgetc_busy
 #ifdef FEAT_TIMERS
-			|| timer_busy
+		    || timer_busy
 #endif
-			|| input_busy)
-		    typebuf_was_filled = TRUE;
-	    }
+		    || input_busy)
+		typebuf_was_filled = TRUE;
+
 	    vim_free(keys_esc);
+	}
 
-	    if (execute)
+	if (execute)
+	{
+	    int		save_msg_scroll = msg_scroll;
+	    sctx_T	save_sctx;
+
+	    // Avoid a 1 second delay when the keys start Insert mode.
+	    msg_scroll = FALSE;
+
+	    ch_log(NULL, "feedkeys() executing");
+
+	    if (context)
 	    {
-		int	save_msg_scroll = msg_scroll;
-		sctx_T	save_sctx;
-
-		// Avoid a 1 second delay when the keys start Insert mode.
-		msg_scroll = FALSE;
-
-		if (context)
-		{
-		    save_sctx = current_sctx;
-		    current_sctx.sc_sid = 0;
-		    current_sctx.sc_version = 0;
-		}
-
-		if (!dangerous)
-		{
-		    ++ex_normal_busy;
-		    ++in_feedkeys;
-		}
-		exec_normal(TRUE, lowlevel, TRUE);
-		if (!dangerous)
-		{
-		    --ex_normal_busy;
-		    --in_feedkeys;
-		}
-
-		msg_scroll |= save_msg_scroll;
-
-		if (context)
-		    current_sctx = save_sctx;
+		save_sctx = current_sctx;
+		current_sctx.sc_sid = 0;
+		current_sctx.sc_version = 0;
 	    }
+
+	    if (!dangerous)
+	    {
+		++ex_normal_busy;
+		++in_feedkeys;
+	    }
+	    exec_normal(TRUE, lowlevel, TRUE);
+	    if (!dangerous)
+	    {
+		--ex_normal_busy;
+		--in_feedkeys;
+	    }
+
+	    msg_scroll |= save_msg_scroll;
+
+	    if (context)
+		current_sctx = save_sctx;
 	}
     }
 }
