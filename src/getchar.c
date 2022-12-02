@@ -1765,6 +1765,12 @@ vgetc(void)
 		}
 		c = TO_SPECIAL(c2, c);
 
+		// K_ESC is used to avoid ambiguity with the single Esc
+		// character that might be the start of an escape sequence.
+		// Convert it back to a single Esc here.
+		if (c == K_ESC)
+		    c = ESC;
+
 #if defined(FEAT_GUI_MSWIN) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
 		// Handle K_TEAROFF here, the caller of vgetc() doesn't need to
 		// know that a menu was torn off
@@ -3913,6 +3919,12 @@ getcmdkeycmd(
 		continue;
 	    }
 	    c1 = TO_SPECIAL(c1, c2);
+
+	    // K_ESC is used to avoid ambiguity with the single Esc character
+	    // that might be the start of an escape sequence.  Convert it back
+	    // to a single Esc here.
+	    if (c1 == K_ESC)
+		c1 = ESC;
 	}
 	if (c1 == Ctrl_V)
 	{

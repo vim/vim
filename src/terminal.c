@@ -3560,15 +3560,18 @@ term_after_channel_closed(term_T *term)
 	    // ++close or term_finish == "close"
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);
-	    // Avoid closing the window if we temporarily use it.
-	    if (curwin == aucmd_win)
-		do_set_w_closing = TRUE;
-	    if (do_set_w_closing)
-		curwin->w_closing = TRUE;
-	    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
-	    if (do_set_w_closing)
-		curwin->w_closing = FALSE;
-	    aucmd_restbuf(&aco);
+	    if (curbuf == term->tl_buffer)
+	    {
+		// Avoid closing the window if we temporarily use it.
+		if (is_aucmd_win(curwin))
+		    do_set_w_closing = TRUE;
+		if (do_set_w_closing)
+		    curwin->w_closing = TRUE;
+		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
+		if (do_set_w_closing)
+		    curwin->w_closing = FALSE;
+		aucmd_restbuf(&aco);
+	    }
 #ifdef FEAT_PROP_POPUP
 	    if (pwin != NULL)
 		popup_close_with_retval(pwin, 0);

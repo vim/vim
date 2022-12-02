@@ -1869,18 +1869,21 @@ Set(vimbuf, ...)
 	    {
 		aco_save_T	aco;
 
-		/* set curwin/curbuf for "vimbuf" and save some things */
+		/* Set curwin/curbuf for "vimbuf" and save some things. */
 		aucmd_prepbuf(&aco, vimbuf);
-
-		if (u_savesub(lnum) == OK)
+		if (curbuf == vimbuf)
 		{
-		    ml_replace(lnum, (char_u *)line, TRUE);
-		    changed_bytes(lnum, 0);
-		}
+		    /* Only when a window was found. */
+		    if (u_savesub(lnum) == OK)
+		    {
+			ml_replace(lnum, (char_u *)line, TRUE);
+			changed_bytes(lnum, 0);
+		    }
 
-		/* restore curwin/curbuf and a few other things */
-		aucmd_restbuf(&aco);
-		/* Careful: autocommands may have made "vimbuf" invalid! */
+		    /* restore curwin/curbuf and a few other things */
+		    aucmd_restbuf(&aco);
+		    /* Careful: autocommands may have made "vimbuf" invalid! */
+		}
 	    }
 	}
     }
@@ -1921,17 +1924,21 @@ Delete(vimbuf, ...)
 
 		    /* set curwin/curbuf for "vimbuf" and save some things */
 		    aucmd_prepbuf(&aco, vimbuf);
-
-		    if (u_savedel(lnum, 1) == OK)
+		    if (curbuf == vimbuf)
 		    {
-			ml_delete(lnum);
-			check_cursor();
-			deleted_lines_mark(lnum, 1L);
-		    }
+			/* Only when a window was found. */
+			if (u_savedel(lnum, 1) == OK)
+			{
+			    ml_delete(lnum);
+			    check_cursor();
+			    deleted_lines_mark(lnum, 1L);
+			}
 
-		    /* restore curwin/curbuf and a few other things */
-		    aucmd_restbuf(&aco);
-		    /* Careful: autocommands may have made "vimbuf" invalid! */
+			/* restore curwin/curbuf and a few other things */
+			aucmd_restbuf(&aco);
+			/* Careful: autocommands may have made "vimbuf"
+			 * invalid! */
+		    }
 
 		    update_curbuf(UPD_VALID);
 		}
@@ -1963,16 +1970,19 @@ Append(vimbuf, ...)
 
 		/* set curwin/curbuf for "vimbuf" and save some things */
 		aucmd_prepbuf(&aco, vimbuf);
-
-		if (u_inssub(lnum + 1) == OK)
+		if (curbuf == vimbuf)
 		{
-		    ml_append(lnum, (char_u *)line, (colnr_T)0, FALSE);
-		    appended_lines_mark(lnum, 1L);
-		}
+		    /* Only when a window for "vimbuf" was found. */
+		    if (u_inssub(lnum + 1) == OK)
+		    {
+			ml_append(lnum, (char_u *)line, (colnr_T)0, FALSE);
+			appended_lines_mark(lnum, 1L);
+		    }
 
-		/* restore curwin/curbuf and a few other things */
-		aucmd_restbuf(&aco);
-		/* Careful: autocommands may have made "vimbuf" invalid! */
+		    /* restore curwin/curbuf and a few other things */
+		    aucmd_restbuf(&aco);
+		    /* Careful: autocommands may have made "vimbuf" invalid! */
+		    }
 
 		update_curbuf(UPD_VALID);
 	    }

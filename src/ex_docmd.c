@@ -6050,7 +6050,7 @@ ex_win_close(
     buf_T	*buf = win->w_buffer;
 
     // Never close the autocommand window.
-    if (win == aucmd_win)
+    if (is_aucmd_win(win))
     {
 	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return;

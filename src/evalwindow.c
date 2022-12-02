@@ -1064,7 +1064,7 @@ f_win_gettype(typval_T *argvars, typval_T *rettv)
 	    return;
 	}
     }
-    if (wp == aucmd_win)
+    if (is_aucmd_win(wp))
 	rettv->vval.v_string = vim_strsave((char_u *)"autocmd");
 #if defined(FEAT_QUICKFIX)
     else if (wp->w_p_pvw)

@@ -4,6 +4,7 @@ source check.vim
 CheckFeature popupwin
 
 source screendump.vim
+source term_util.vim
 
 func Test_simple_popup()
   CheckScreendump
@@ -3722,7 +3723,9 @@ func Test_popupmenu_masking()
   let buf = RunVimInTerminal('-S XtestPopupmenuMasking', #{rows: 14})
   call TermWait(buf, 25)
 
-  call term_sendkeys(buf, "A\<C-X>\<C-U>\<C-A>")
+  call term_sendkeys(buf, "A" .. GetEscCodeWithModifier('C', 'X')
+			    \ .. GetEscCodeWithModifier('C', 'U')
+			    \ .. GetEscCodeWithModifier('C', 'A'))
   call VerifyScreenDump(buf, 'Test_popupwin_popupmenu_masking_1', {})
 
   call term_sendkeys(buf, "\<Esc>")

@@ -134,7 +134,7 @@ def ActionList()
   endif
   sort(terms)
 
-  var items = ['protocol', 'version', 'status', 'modkeys']
+  var items = ['protocol', 'version', 'kitty', 'modkeys']
 	      + key_entries->copy()->map((_, v) => v[1])
 
   # For each terminal compute the needed width, add two.
@@ -194,15 +194,17 @@ def DoTerm(name: string)
 			])
   echo "\n"
   &t_TE = "\<Esc>[>4;m"
-  var proto_name = 'none'
+  var proto_name = 'unknown'
   if proto == 1
-    &t_TI = ""
+    # Request the XTQMODKEYS value and request the kitty keyboard protocol status.
+    &t_TI = "\<Esc>[?4m" .. "\<Esc>[?u"
+    proto_name = 'none'
   elseif proto == 2
-    # Enable modifyOtherKeys level 2.  Request the XTQMODKEYS value.
+    # Enable modifyOtherKeys level 2 and request the XTQMODKEYS value.
     &t_TI = "\<Esc>[>4;2m" .. "\<Esc>[?4m"
     proto_name = 'mok2'
   elseif proto == 3
-    # Enable Kitty keyboard protocol and request the status
+    # Enable Kitty keyboard protocol and request the status.
     &t_TI = "\<Esc>[>1u" .. "\<Esc>[?u"
     proto_name = 'kitty'
   else
@@ -262,7 +264,7 @@ def DoTerm(name: string)
   endif
   keycodes[name]['protocol'] = proto_name
   keycodes[name]['version'] = ''
-  keycodes[name]['status'] = ''
+  keycodes[name]['kitty'] = ''
   keycodes[name]['modkeys'] = ''
 
   # Check the log file for a status and the version response
@@ -277,8 +279,9 @@ def DoTerm(name: string)
       # Check for the XTQMODKEYS response.
       if code =~ modkeys_pattern
 	var modkeys = substitute(code, '.*\(' .. modkeys_pattern .. '\).*', '\1', '')
-	# Get the level out of the response
-	modkeys = substitute(modkeys, '.*4;\(\d\)m', '\1', '')
+	# We could get the level out of the response, but showing the response
+	# itself provides more information.
+	# modkeys = substitute(modkeys, '.*4;\(\d\)m', '\1', '')
 
 	if keycodes[name]['modkeys'] != ''
 	  echomsg 'Another modkeys found after ' .. keycodes[name]['modkeys']
@@ -292,10 +295,10 @@ def DoTerm(name: string)
 	# use the response itself as the status
 	status = Literal2hex(status)
 
-	if keycodes[name]['status'] != ''
-	  echomsg 'Another status found after ' .. keycodes[name]['status']
+	if keycodes[name]['kitty'] != ''
+	  echomsg 'Another status found after ' .. keycodes[name]['kitty']
 	endif
-	keycodes[name]['status'] = status
+	keycodes[name]['kitty'] = status
       endif
 
       if code =~ version_pattern
