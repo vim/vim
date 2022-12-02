@@ -908,6 +908,8 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
     else
     {
 	set_callback(&timer->tr_callback, &callback);
+	if (callback.cb_free_name)
+	    vim_free(callback.cb_name);
 	rettv->vval.v_number = (varnumber_T)timer->tr_id;
     }
 }
