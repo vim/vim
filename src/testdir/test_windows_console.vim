@@ -14,6 +14,7 @@ func SendKeys(keylist)
   for k in reverse(a:keylist)
     call test_mswin_event("keyboard", #{event: "keyup", keycode: k})
   endfor
+  sleep 50m
 endfunc
 
 " Test MS-Windows console key events
