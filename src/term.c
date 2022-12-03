@@ -5296,7 +5296,7 @@ handle_csi(
     if (!VIM_ISDIGIT(*ap))
 	first = *ap++;
 
-    if (ASCII_ISUPPER(first))
+    if (first >= 'A' && first <= 'Z')
     {
 	// If "first" is in [ABCDEFHPQRS] then it is actually the "trail" and
 	// no argument follows.
