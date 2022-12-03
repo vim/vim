@@ -2343,7 +2343,7 @@ scroll_cursor_top(int min_scroll, int always)
     {
 	/*
 	 * If "always" is FALSE, only adjust topline to a lower value, higher
-	 * value may happen with wrapping lines
+	 * value may happen with wrapping lines.
 	 */
 	if (new_topline < curwin->w_topline || always)
 	    curwin->w_topline = new_topline;
@@ -2360,7 +2360,8 @@ scroll_cursor_top(int min_scroll, int always)
 	check_topfill(curwin, FALSE);
 #endif
 	// TODO: if the line doesn't fit may optimize w_skipcol
-	if (curwin->w_topline == curwin->w_cursor.lnum)
+	if (curwin->w_topline == curwin->w_cursor.lnum
+		&& curwin->w_skipcol >= curwin->w_cursor.col)
 	    reset_skipcol();
 	if (curwin->w_topline != old_topline
 		|| curwin->w_skipcol != old_skipcol
