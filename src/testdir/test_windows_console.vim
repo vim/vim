@@ -14,11 +14,11 @@ func SendKeys(keylist)
   for k in reverse(a:keylist)
     call test_mswin_event("keyboard", #{event: "keyup", keycode: k})
   endfor
-  sleep 10m
 endfunc
 
 " Test MS-Windows console key events
 func Test_windows_console_key_event()
+  let g:test_is_flaky = 1
   CheckMSWindows
   CheckNotGui
   new
@@ -27,14 +27,14 @@ func Test_windows_console_key_event()
 " (0x30 - 0x39) : VK_0 - VK_9 are the same as ASCII '0' - '9'
   for kc in range(48, 57)
     call SendKeys([kc])
-    let ch = getcharstr()
+    let ch = getcharstr(0)
     call assert_equal(nr2char(kc), ch)
   endfor
 
 " Test keyboard code for Spacebar 
   let kc = 0x20
   call SendKeys([kc])
-  let ch = getcharstr()
+  let ch = getcharstr(0)
   call assert_equal(nr2char(kc), ch)
 
 " Test for lowercase 'a' to 'z', VK codes 65(0x41) - 90(0x5A)
@@ -46,7 +46,7 @@ func Test_windows_console_key_event()
 " are 32 higher than their uppercase counterparts.
   for kc in range(65, 90)
     call SendKeys([kc])
-    let ch = getcharstr()
+    let ch = getcharstr(0)
     call assert_equal(nr2char(kc + 32), ch)
   endfor
 
@@ -54,7 +54,7 @@ func Test_windows_console_key_event()
 "  With VK_SHIFT, expect the keycode = character code.
   for kc in range(65, 90)
     call SendKeys([0x10, kc])
-    let ch = getcharstr()
+    let ch = getcharstr(0)
     call assert_equal(nr2char(kc), ch)
   endfor
 
@@ -63,14 +63,14 @@ func Test_windows_console_key_event()
  "  Expect the unicode characters 0x01 to 0x1A
   for kc in range(65, 90)
     call SendKeys([0x11, kc])
-    let chstr = getcharstr()
+    let chstr = getcharstr(0)
     call assert_equal(nr2char(kc - 64), chstr)
   endfor
 
 " Test keyboard code for <S-Pageup> 
   "call SendKeys([0x10, 0x21])
   call SendKeys([0x10,0x21])
-  let ch = getcharstr()
+  let ch = getcharstr(0)
   "let mod = getcharmod()
   let keycode = eval('"\<S-Pageup>"')
   call assert_equal(keycode, ch, "key = S-Pageup")
