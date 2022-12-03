@@ -1128,19 +1128,15 @@ decode_key_event(
 		{
 		    *pch2 = *pch;
 		    *pch = K_NUL;
-		    if (pmodifiers)
+		    if (pmodifiers && vtp_working)
 		    {
+			*pch2 = VirtKeyMap[i].chAlone;
 			if (nModifs & ALT)
 			    *pmodifiers |= MOD_MASK_ALT;
 			if (nModifs & SHIFT)
 			    *pmodifiers |= MOD_MASK_SHIFT;
 			if (nModifs & CTRL)
 			    *pmodifiers |= MOD_MASK_CTRL;
-
-			if (*pmodifiers)
-			{
-			    //VirtKeyMap
-			}
 		    }
 		}
 		return TRUE;
