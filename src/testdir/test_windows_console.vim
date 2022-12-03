@@ -18,82 +18,131 @@ endfunc
 
 " Test MS-Windows console key events
 func Test_windows_console_key_event()
-  let g:test_is_flaky = 1
   CheckMSWindows
   CheckNotGui
   new
 
-"  " Test keyboard codes for digits
-"  " (0x30 - 0x39) : VK_0 - VK_9 are the same as ASCII '0' - '9'
-"    for kc in range(48, 57)
-"      call SendKeys([kc])
-"      let ch = getcharstr(0)
-"      call assert_equal(nr2char(kc), ch)
-"    endfor
+  let vKey = {
+	\ 'VK_SPACE'      : 0x20,
+        \ 'VK_SHIFT'      : 0x10,
+        \ 'VK_LSHIFT'     : 0xA0,
+        \ 'VK_RSHIFT'     : 0xA1,
+        \ 'VK_CONTROL'    : 0x11,
+        \ 'VK_LCONTROL'   : 0xA2,
+        \ 'VK_RCONTROL'   : 0xA3,
+        \ 'VK_MENU'       : 0x12,
+        \ 'VK_LMENU'      : 0xA4,
+        \ 'VK_RMENU'      : 0xA5,
+        \ 'VK_OEM_1'      : 0xBA,
+        \ 'VK_OEM_2'      : 0xBF,
+        \ 'VK_OEM_3'      : 0xC0,
+        \ 'VK_OEM_4'      : 0xDB,
+        \ 'VK_OEM_5'      : 0xDC,
+        \ 'VK_OEM_6'      : 0xDD,
+        \ 'VK_OEM_7'      : 0xDE,
+        \ 'VK_OEM_PLUS'   : 0xBB,
+        \ 'VK_OEM_COMMA'  : 0xBC,
+        \ 'VK_OEM_MINUS'  : 0xBD,
+        \ 'VK_OEM_PERIOD' : 0xBE,
+        \ }
 
-"  " Test keyboard code for Spacebar 
-"    let kc = 0x20
-"    call SendKeys([kc])
-"    let ch = getcharstr(0)
-"    call assert_equal(nr2char(kc), ch)
+  let vim_MOD_MASK_SHIFT = 0x02
+  let vim_MOD_MASK_CTRL  = 0x04
+  let vim_MOD_MASK_ALT   = 0x08
 
-"  " Test for lowercase 'a' to 'z', VK codes 65(0x41) - 90(0x5A)
-"  " VK_A - VK_Z virtual key codes coincide with uppercase ASCII codes 'A'-'Z'.
-"  " eg VK_A is 65 and the ASCII character code for uppercase 'A' is also 65.
-"  " Note: these are interpreted as lowercase when Shift is NOT pressed. 
-"  " Sending VK_A (65) 'A' Key code without shift modifier, will produce ASCII
-"  " char 'a' (91) as the output.  The ASCII codes for the lowercase letters
-"  " are 32 higher than their uppercase counterparts.
-"    for kc in range(65, 90)
-"      call SendKeys([kc])
-"      let ch = getcharstr(0)
-"      call assert_equal(nr2char(kc + 32), ch)
-"    endfor
-
-"  "  Test for Uppercase 'A' - 'Z' keys
-"  "  With VK_SHIFT, expect the keycode = character code.
-"    for kc in range(65, 90)
-"      call SendKeys([0x10, kc])
-"      let ch = getcharstr(0)
-"      call assert_equal(nr2char(kc), ch)
-"    endfor
-
-"    " Test for <Ctrl-A> to <Ctrl-Z> keys
-"   "  Same as for lowercase, except with Ctrl Key
-"   "  Expect the unicode characters 0x01 to 0x1A
-"    for kc in range(65, 90)
-"      call SendKeys([0x11, kc])
-"      let chstr = getcharstr(0)
-"      call assert_equal(nr2char(kc - 64), chstr)
-"    endfor
-
-" Test keyboard code for <S-Pageup> 
-  "call SendKeys([0x10, 0x21])
-  call SendKeys([0x10,0x21])
-  let ch = getcharstr(0)
-  "let mod = getcharmod()
-  let keycode = eval('"\<S-Pageup>"')
-  if ch != ''
-    call assert_equal(keycode, ch, "key = S-Pageup")
-  else
-    throw 'Skipped: The MS-Windows console input buffer was empty.'
-  endif
-  "call assert_equal(2, mod, "key = S-Pageup")
-
-  " Testing some punctuation characters
+  " Some punctuation characters
   " Assuming Standard US PC Keyboard layout
-  let VK_OEM_1 = 0xBA       "the ';:' key
-  let VK_OEM_2 = 0xBF       "the '/?' key
-  let VK_OEM_3 = 0xC0       "the '`~' key
-  let VK_OEM_4 = 0xDB       "the '[{' key
-  let VK_OEM_5 = 0xDC       "the '\|' key
-  let VK_OEM_6 = 0xDD       "the ']}' key
-  let VK_OEM_7 = 0xDE       "the 'single-quote/double-quote' key
-  
-  let VK_OEM_PLUS   = 0xBB  "the '+' key all keyboards (shifted '=' on US Keyboard)
-  let VK_OEM_COMMA  = 0xBC  "the ',' key all keyboards (unshifted '<' on US Keyboard)?
-  let VK_OEM_MINUS  = 0xBD  "the '-' key all keyboards (unshifted '_' on US Keyboard)?
-  let VK_OEM_PERIOD = 0xBE  "the '.' key all keyboards (unshifted '>' on US Keyboard)?
+  let test_oem_keys = [
+	\ [[vKey.VK_SPACE], ' '],
+        \ [[vKey.VK_OEM_1], ';'],
+        \ [[vKey.VK_OEM_2], '/'],
+        \ [[vKey.VK_OEM_3], '`'],
+        \ [[vKey.VK_OEM_4], '['],
+        \ [[vKey.VK_OEM_5], '\'],
+        \ [[vKey.VK_OEM_6], ']'],
+        \ [[vKey.VK_OEM_7], ''''],
+        \ [[vKey.VK_OEM_PLUS], '='],
+        \ [[vKey.VK_OEM_COMMA], ','],
+        \ [[vKey.VK_OEM_MINUS], '-'],
+        \ [[vKey.VK_OEM_PERIOD], '.'],
+	\ [[vKey.VK_SHIFT, vKey.VK_OEM_1], ':'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_2], '?'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_3], '~'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_4], '{'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_5], '|'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_6], '}'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_7], '"'],
+	\ [[vKey.VK_SHIFT, vKey.VK_OEM_PLUS], '+'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_COMMA], '<'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_MINUS], '_'],
+        \ [[vKey.VK_SHIFT, vKey.VK_OEM_PERIOD], '>'],
+        \ ]
+
+  for [kcodes, kstr] in test_oem_keys
+    call SendKeys(kcodes)
+    let ch = getcharstr(0)
+    if ch == ''
+      throw 'Skipped: The MS-Windows console input buffer was empty.'
+    endif
+    call assert_equal($"{kstr}", $"{ch}")
+    let mod_mask = getcharmod()
+    if kcodes[0] == vKey.VK_SHIFT
+	call assert_equal(vim_MOD_MASK_SHIFT, mod_mask, $"key = {kstr}")
+    else
+	call assert_equal(0, mod_mask, $"key = {kstr}")
+    endif
+  endfor
+
+
+" Test keyboard codes for digits
+" (0x30 - 0x39) : VK_0 - VK_9 are the same as ASCII '0' - '9'
+  for kc in range(48, 57)
+    call SendKeys([kc])
+    let ch = getcharstr(0)
+    if ch == ''
+      throw 'Skipped: The MS-Windows console input buffer was empty.'
+    endif
+    call assert_equal(nr2char(kc), ch)
+  endfor
+
+" Test for lowercase 'a' to 'z', VK codes 65(0x41) - 90(0x5A)
+" VK_A - VK_Z virtual key codes coincide with uppercase ASCII codes 'A'-'Z'.
+" eg VK_A is 65 and the ASCII character code for uppercase 'A' is also 65.
+" Note: these are interpreted as lowercase when Shift is NOT pressed. 
+" Sending VK_A (65) 'A' Key code without shift modifier, will produce ASCII
+" char 'a' (91) as the output.  The ASCII codes for the lowercase letters
+" are 32 higher than their uppercase counterparts.
+  for kc in range(65, 90)
+    call SendKeys([kc])
+    let ch = getcharstr(0)
+    if ch == ''
+      throw 'Skipped: The MS-Windows console input buffer was empty.'
+    endif
+    call assert_equal(nr2char(kc + 32), ch)
+  endfor
+
+"  Test for Uppercase 'A' - 'Z' keys
+"  With VK_SHIFT, expect the keycode = character code.
+  for kc in range(65, 90)
+    call SendKeys([0x10, kc])
+    let ch = getcharstr(0)
+    if ch == ''
+      throw 'Skipped: The MS-Windows console input buffer was empty.'
+    endif
+    call assert_equal(nr2char(kc), ch)
+  endfor
+
+  " Test for <Ctrl-A> to <Ctrl-Z> keys
+ "  Same as for lowercase, except with Ctrl Key
+ "  Expect the unicode characters 0x01 to 0x1A
+  for kc in range(65, 90)
+    call SendKeys([0x11, kc])
+    let ch = getcharstr(0)
+    if ch == ''
+      throw 'Skipped: The MS-Windows console input buffer was empty.'
+    endif
+    call assert_equal(nr2char(kc - 64), ch)
+  endfor
 
   " Test for the various Ctrl and Shift key combinations.
   " Refer to the following page for the virtual key codes:
@@ -177,6 +226,9 @@ func Test_windows_console_key_event()
 "    for [kcodes, kstr, kmod] in keytests
 "      call SendKeys(kcodes)
 "      let ch = getcharstr(0)
+"      if ch == ''
+"        throw 'Skipped: The MS-Windows console input buffer was empty.'
+"      endif
 "      let mod = getcharmod()
 "      let keycode = eval('"\<' .. kstr .. '>"')
 "      call assert_equal(keycode, ch, $"key = {kstr}")
