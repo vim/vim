@@ -80,6 +80,21 @@ func Test_windows_console_key_event()
   endif
   "call assert_equal(2, mod, "key = S-Pageup")
 
+  " Testing some punctuation characters
+  " Assuming Standard US PC Keyboard layout
+  let VK_OEM_1 = 0xBA       "the ';:' key
+  let VK_OEM_2 = 0xBF       "the '/?' key
+  let VK_OEM_3 = 0xC0       "the '`~' key
+  let VK_OEM_4 = 0xDB       "the '[{' key
+  let VK_OEM_5 = 0xDC       "the '\|' key
+  let VK_OEM_6 = 0xDD       "the ']}' key
+  let VK_OEM_7 = 0xDE       "the 'single-quote/double-quote' key
+  
+  let VK_OEM_PLUS   = 0xBB  "the '+' key all keyboards (shifted '=' on US Keyboard)
+  let VK_OEM_COMMA  = 0xBC  "the ',' key all keyboards (unshifted '<' on US Keyboard)?
+  let VK_OEM_MINUS  = 0xBD  "the '-' key all keyboards (unshifted '_' on US Keyboard)?
+  let VK_OEM_PERIOD = 0xBE  "the '.' key all keyboards (unshifted '>' on US Keyboard)?
+
   " Test for the various Ctrl and Shift key combinations.
   " Refer to the following page for the virtual key codes:
   " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
