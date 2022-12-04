@@ -8158,7 +8158,7 @@ init_srand(UINT32_T *x)
     if (dev_urandom_state != OK)
 	// Reading /dev/urandom doesn't work, fall back to time().
 #endif
-	*x = vim_time();
+	*x = vim_time() ^ mch_get_pid();
 }
 
 #define ROTL(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
