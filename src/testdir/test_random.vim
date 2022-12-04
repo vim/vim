@@ -57,7 +57,7 @@ func Test_srand()
       let bad += 1
     endif
   endfor
-  call assert_true(bad > 5)
+  call assert_true(bad < 5)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
