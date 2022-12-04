@@ -1180,10 +1180,8 @@ EXTERN char e_invalid_value_for_argument_str_str[]
 #endif
 EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
-#ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
-#endif
 EXTERN char e_no_bang_allowed[]
 	INIT(= N_("E477: No ! allowed"));
 EXTERN char e_dont_panic[]
