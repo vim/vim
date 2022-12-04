@@ -47,6 +47,9 @@ func Test_issue_5587()
 endfunc
 
 func Test_srand()
+  if has('gui_running')
+    return
+  endif
   let cmd = GetVimCommand() .. ' -V -es -c "echo rand()" -c qa!'
   let bad = 0
   for _ in range(10)
