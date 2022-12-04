@@ -665,6 +665,9 @@ func Test_term_mouse_click_tab()
   set mouse=a term=xterm
   call WaitForResponses()
 
+  " in case a previous failure left a swap file behind
+  call delete('.Xfoo.swp')
+
   let row = 1
 
   for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec + g:Ttymouse_netterm
