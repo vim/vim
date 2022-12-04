@@ -56,7 +56,6 @@ func Test_srand()
     if result1 ==# result2
       let bad += 1
     endif
-    echo result1 result2
   endfor
   call assert_true(bad > 5)
 endfunc
