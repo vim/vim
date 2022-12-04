@@ -735,6 +735,7 @@ OBJ = \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\usercmd.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\vim9class.obj \
 	$(OUTDIR)\vim9cmds.obj \
 	$(OUTDIR)\vim9compile.obj \
 	$(OUTDIR)\vim9execute.obj \
@@ -1708,6 +1709,8 @@ $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
 $(OUTDIR)/version.obj:	$(OUTDIR) version.c  $(INCL) version.h
 
+$(OUTDIR)/vim9class.obj:	$(OUTDIR) vim9class.c  $(INCL) vim9.h
+
 $(OUTDIR)/vim9cmds.obj:	$(OUTDIR) vim9cmds.c  $(INCL) vim9.h
 
 $(OUTDIR)/vim9compile.obj:	$(OUTDIR) vim9compile.c  $(INCL) vim9.h
@@ -1915,6 +1918,7 @@ proto.h: \
 	proto/undo.pro \
 	proto/usercmd.pro \
 	proto/userfunc.pro \
+	proto/vim9class.pro \
 	proto/vim9cmds.pro \
 	proto/vim9compile.pro \
 	proto/vim9execute.pro \

@@ -174,6 +174,7 @@ SRC += \
 	userfunc.c \
 	version.c \
 	viminfo.c \
+	vim9class.c \
 	vim9cmds.c \
 	vim9compile.c \
 	vim9execute.c \

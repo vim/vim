@@ -267,6 +267,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_breaklist		ex_ni
 # define ex_call		ex_ni
 # define ex_catch		ex_ni
+# define ex_class		ex_ni
 # define ex_compiler		ex_ni
 # define ex_continue		ex_ni
 # define ex_debug		ex_ni
@@ -282,10 +283,12 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_endif		ex_ni
 # define ex_endtry		ex_ni
 # define ex_endwhile		ex_ni
+# define ex_enum		ex_ni
 # define ex_eval		ex_ni
 # define ex_execute		ex_ni
-# define ex_incdec		ex_ni
 # define ex_finally		ex_ni
+# define ex_incdec		ex_ni
+# define ex_interface		ex_ni
 # define ex_finish		ex_ni
 # define ex_function		ex_ni
 # define ex_if			ex_ni
@@ -300,6 +303,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_scriptnames		ex_ni
 # define ex_throw		ex_ni
 # define ex_try			ex_ni
+# define ex_type		ex_ni
 # define ex_unlet		ex_ni
 # define ex_while		ex_ni
 # define ex_import		ex_ni
@@ -6693,12 +6697,13 @@ ex_recover(exarg_T *eap)
 }
 
 /*
- * Command modifier used in a wrong way.
+ * Command modifier used in a wrong way.  Also for other commands that can't
+ * appear at the toplevel.
  */
     static void
 ex_wrongmodifier(exarg_T *eap)
 {
-    eap->errmsg = _(e_invalid_command);
+    eap->errmsg = ex_errmsg(e_invalid_command_str, eap->cmd);
 }
 
 /*

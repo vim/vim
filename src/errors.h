@@ -3345,3 +3345,7 @@ EXTERN char e_not_allowed_to_change_window_layout_in_this_autocmd[]
 	INIT(= N_("E1312: Not allowed to change the window layout in this autocmd"));
 EXTERN char e_not_allowed_to_add_or_remove_entries_str[]
 	INIT(= N_("E1313: Not allowed to add or remove entries (%s)"));
+#ifdef FEAT_EVAL
+EXTERN char e_class_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1314: Class name must start with an uppercase letter: %s"));
+#endif

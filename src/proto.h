@@ -215,6 +215,7 @@ void mbyte_im_set_active(int active_arg);
 # ifdef FEAT_EVAL
 // include vim9.h here, the types defined there are used by function arguments.
 #  include "vim9.h"
+#  include "vim9class.pro"
 #  include "vim9cmds.pro"
 #  include "vim9compile.pro"
 #  include "vim9execute.pro"

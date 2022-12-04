@@ -163,6 +163,7 @@ SRC_ALL =	\
 		src/version.h \
 		src/vim.h \
 		src/vim9.h \
+		src/vim9class.c \
 		src/vim9cmds.c \
 		src/vim9compile.c \
 		src/vim9execute.c \
@@ -327,6 +328,7 @@ SRC_ALL =	\
 		src/proto/usercmd.pro \
 		src/proto/userfunc.pro \
 		src/proto/version.pro \
+		src/proto/vim9class.pro \
 		src/proto/vim9cmds.pro \
 		src/proto/vim9compile.pro \
 		src/proto/vim9execute.pro \

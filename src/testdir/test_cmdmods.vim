@@ -15,6 +15,16 @@ def Test_cmdmods_array()
   lines = getline(top, bot)
   var mods = lines->map((_, v) => substitute(v, '.*"\(\k*\)".*', '\1', ''))
 
+  # Add the other commands that use ex_wrongmodifier.
+  mods->extend([
+                'endclass',
+                'endenum',
+                'endinterface',
+                'public',
+                'static',
+                'this',
+              ])
+
   # Check the lists are equal.  Convert them to a dict to get a clearer error
   # message.
   var cmds_dict = {}

@@ -16,7 +16,7 @@ features in Vim9 script.
 3.  New style functions			|fast-functions|
 4.  Types				|vim9-types|
 5.  Namespace, Import and Export	|vim9script|
-6.  Future work: classes		|vim9-classes|
+6.  Classes and interfaces		|vim9-classes|
 
 9.  Rationale				|vim9-rationale|
 
@@ -1940,73 +1940,17 @@ Or: >
 
 ==============================================================================
 
-6. Future work: classes					*vim9-classes*
+6. Classes and interfaces				*vim9-classes*
 
-Above "class" was mentioned a few times, but it has not been implemented yet.
-Most of Vim9 script can be created without this functionality, and since
-implementing classes is going to be a lot of work, it is left for the future.
-For now we'll just make sure classes can be added later.
+In legacy script a Dictionary could be used as a kind-of object, by adding
+members that are functions.  However, this is quite inefficient and requires
+the writer to do the work of making sure all the objects have the right
+members.  See |Dictionary-function|.
 
-Thoughts:
-- `class` / `endclass`, the whole class must be in one file
-- Class names are always CamelCase (to avoid a name clash with builtin types)
-- A single constructor called "constructor" (similar to TypeScript)
-- Single inheritance: `class ThisClass extends BaseClass`
-- `interface` / `endinterface` (looks like a class without any implementation)
-- Explicit declaration that the class supports an interface, so that type
-  checking works properly:
-  `class SomeClass implements SomeInterface, OtherInterface`
-- `abstract class` (class with incomplete implementation) - not really needed?
-- Class (static) methods and Object methods: syntax to be defined.
-- Class (static) members and Object members: syntax to be defined.
-- Access control: private / protected / shared / public ?  Keep it simple.
-- Access object members with `this.member` ?
-- Generics for class: `class <Tkey, Tentry>`
-- Generics for function: `def <Tkey> GetLast(key: Tkey)`
-- Method overloading (two methods with the same name but different argument
-  types): Most likely not
-- Mixins: not sure if that is useful, leave out for simplicity.
+In |Vim9| script you can have classes, objects and interfaces like in most
+popular object-oriented programming languages.  Since this is a lot of
+functionality it is located in a separate help file: |vim9class.txt|.
 
-Again, much of this is from TypeScript with a slightly different syntax.
-
-Some things that look like good additions:
-- Use a class as an interface (like Dart)
-- Extend a class with methods, using an import (like Dart)
-- Mixins
-- For testing: Mock mechanism
-
-An important class that will be provided is "Promise".  Since Vim is single
-threaded, connecting asynchronous operations is a natural way of allowing
-plugins to do their work without blocking the user.  It's a uniform way to
-invoke callbacks and handle timeouts and errors.
-
-Some commands have already been reserved:
-	*:class*
-	*:endclass*
-	*:abstract*
-	*:enum*
-	*:endenum*
-	*:interface*
-	*:endinterface*
-	*:static*
-	*:type*
-
-Some examples: >
-
-	abstract class Person
-	    static const prefix = 'xxx'
-	    var name: string
-
-	    def constructor(name: string)
-		this.name = name
-	    enddef
-
-	    def display(): void
-		echo name
-	    enddef
-
-	    abstract def find(string): Person
-	endclass
 
 ==============================================================================
 
@@ -2291,19 +2235,6 @@ the tool into Vim script.  For that to be possible without too much
 translation, and keeping the code fast at the same time, the constructs of the
 tool need to be supported.  Since most languages support classes the lack of
 support for classes in Vim is then a problem.
-
-
-Classes ~
-
-Vim supports a kind-of object oriented programming by adding methods to a
-dictionary.  With some care this can be made to work, but it does not look
-like real classes.  On top of that, it's quite slow, because of the use of
-dictionaries.
-
-It would be good to support real classes, and this is planned for a later
-version.  The support is a "minimal common functionality" of class support in
-most languages.  It will work much like Java, which is the most popular
-programming language.
 
 
 
