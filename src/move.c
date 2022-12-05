@@ -1500,6 +1500,11 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
     pos.lnum = tv_get_number(&argvars[1]);
+    if (pos.lnum > wp->w_buffer->b_ml.ml_line_count)
+    {
+	semsg(_(e_invalid_line_number_nr), pos.lnum);
+	return;
+    }
     pos.col = tv_get_number(&argvars[2]) - 1;
     pos.coladd = 0;
     textpos2screenpos(wp, &pos, &row, &scol, &ccol, &ecol);
