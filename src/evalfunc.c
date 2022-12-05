@@ -8156,13 +8156,18 @@ init_srand(UINT32_T *x)
 	}
     }
     if (dev_urandom_state != OK)
-	// Reading /dev/urandom doesn't work, fall back to reltime() or time().
+	// Reading /dev/urandom doesn't work, fall back to:
+	//   randombytes_random()
+	//   reltime()
+	//   time() ^ getpid()
 #endif
     {
-#ifdef FEAT_RELTIME
+#if defined(FEAT_SODIUM)
+	*x = randombytes_random();
+#elif defined(FEAT_RELTIME)
 	proftime_T res;
 	profile_start(&res);
-#  ifdef MSWIN
+#  if defined(MSWIN)
 	*x = (UINT32_T) res.LowPart;
 #  else
 	*x = (UINT32_T) res.tv_usec;
