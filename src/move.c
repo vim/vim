@@ -1426,6 +1426,12 @@ textpos2screenpos(
 	is_folded = hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
 #endif
 	row = plines_m_win(wp, wp->w_topline, lnum - 1) + 1;
+
+#ifdef FEAT_DIFF
+	// Add filler lines above this buffer line.
+	row += diff_check_fill(wp, lnum);
+#endif
+
 #ifdef FEAT_FOLDING
 	if (is_folded)
 	{
