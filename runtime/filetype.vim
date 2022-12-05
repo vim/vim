@@ -1855,8 +1855,9 @@ au BufNewFile,BufRead .tcshrc,*.tcsh,tcsh.tcshrc,tcsh.login	call dist#ft#SetFile
 " (patterns ending in a start further below)
 au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call dist#ft#CSH()
 
-" Zig
+" Zig and Zir (Zig Intermediate Representation)
 au BufNewFile,BufRead *.zig			setf zig
+au BufNewFile,BufRead *.zir			setf zir
 
 " Z-Shell script (patterns ending in a star further below)
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
