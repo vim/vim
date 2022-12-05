@@ -4386,6 +4386,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	    ch_log(NULL, "feedkeys() lowlevel: %s", keys);
 
 	    int len = (int)STRLEN(keys);
+
 # if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
 	    if (gui.in_use)
 # endif

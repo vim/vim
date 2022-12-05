@@ -444,7 +444,13 @@ popup_add_timeout(win_T *wp, int time, int close)
     if (get_lambda_tv_and_compile(&ptr, &tv, FALSE, &EVALARG_EVALUATE) == OK)
     {
 	wp->w_popup_timer = create_timer(time, 0);
-	wp->w_popup_timer->tr_callback = get_callback(&tv);
+	callback_T cb = get_callback(&tv);
+	if (cb.cb_name != NULL && !cb.cb_free_name)
+	{
+	    cb.cb_name = vim_strsave(cb.cb_name);
+	    cb.cb_free_name = TRUE;
+	}
+	wp->w_popup_timer->tr_callback = cb;
 	clear_tv(&tv);
     }
 }
@@ -961,6 +967,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 	{
 	    free_callback(&wp->w_filter_cb);
 	    set_callback(&wp->w_filter_cb, &callback);
+	    if (callback.cb_free_name)
+		vim_free(callback.cb_name);
 	}
     }
     nr = dict_get_bool(dict, "mapping", -1);
@@ -990,6 +998,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 	{
 	    free_callback(&wp->w_close_cb);
 	    set_callback(&wp->w_close_cb, &callback);
+	    if (callback.cb_free_name)
+		vim_free(callback.cb_name);
 	}
     }
 }
@@ -2229,7 +2239,11 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	tv.vval.v_string = (char_u *)"popup_filter_menu";
 	callback = get_callback(&tv);
 	if (callback.cb_name != NULL)
+	{
 	    set_callback(&wp->w_filter_cb, &callback);
+	    if (callback.cb_free_name)
+		vim_free(callback.cb_name);
+	}
 
 	wp->w_p_wrap = 0;
 	wp->w_popup_flags |= POPF_CURSORLINE;

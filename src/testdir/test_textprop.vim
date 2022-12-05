@@ -1700,7 +1700,7 @@ func Test_prop_func_invalid_args()
   call assert_fails("call prop_type_delete([])", 'E730:')
   call assert_fails("call prop_type_delete('xyz', [])", 'E715:')
   call assert_fails("call prop_type_get([])", 'E730:')
-  call assert_fails("call prop_type_get('', [])", 'E474:')
+  call assert_fails("call prop_type_get('', [])", 'E475:')
   call assert_fails("call prop_type_list([])", 'E715:')
   call assert_fails("call prop_type_add('yyy', 'not_a_dict')", 'E715:')
   call assert_fails("call prop_add(1, 5, {'type':'missing_type', 'length':1})", 'E971:')
@@ -2747,6 +2747,9 @@ func Test_prop_with_text_below_after_empty()
   call term_sendkeys(buf, ":set number\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_below_after_empty_2', {}) 
 
+  call term_sendkeys(buf, ":set nowrap\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_3', {}) 
+
   call StopVimInTerminal(buf)
 endfunc
 
@@ -2914,6 +2917,29 @@ func Test_props_with_text_after_nowrap()
 
   call term_sendkeys(buf, "j")
   call VerifyScreenDump(buf, 'Test_prop_with_text_after_nowrap_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_prop_with_text_below_cul()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+
+      setline(1, ['some text', 'last line'])
+      set cursorline nowrap
+      prop_type_add('test', {highlight: 'DiffChange'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'The quick brown fox jumps over the lazy dog',
+          text_align: 'below',
+          text_padding_left: 4,
+      })
+  END
+  call writefile(lines, 'XscriptPropsBelowCurline', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropsBelowCurline', #{rows: 6, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_with_text_below_cul_1', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -3603,6 +3629,44 @@ def Test_textprop_in_quickfix_window()
   cclose
   bwipe!
 enddef
+
+func Test_text_prop_delete_updates()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+
+      setline(1, ['some text', 'more text', 'the end'])
+      prop_type_add('test', {highlight: 'DiffChange'})
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'The quick brown fox jumps over the lazy dog',
+          text_align: 'below',
+          text_padding_left: 3,
+      })
+      prop_add(1, 0, {
+          type: 'test',
+          text: 'The quick brown fox jumps over the lazy dog',
+          text_align: 'below',
+          text_padding_left: 5,
+      })
+
+      normal! G
+  END
+  call writefile(lines, 'XtextPropDelete', 'D')
+  let buf = RunVimInTerminal('-S XtextPropDelete', #{rows: 10, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_delete_updates_1', {})
+
+  " Check that after deleting the text prop type the text properties using
+  " this type no longer show and are not counted for cursor positioning.
+  call term_sendkeys(buf, ":call prop_type_delete('test')\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_delete_updates_2', {})
+
+  call term_sendkeys(buf, "ggj")
+  call VerifyScreenDump(buf, 'Test_prop_delete_updates_3', {})
+
+  call StopVimInTerminal(buf)
+endfunc
 
 
 " vim: shiftwidth=2 sts=2 expandtab

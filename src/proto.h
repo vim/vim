@@ -104,6 +104,7 @@ extern int _stricoll(char *a, char *b);
 # include "json.pro"
 # include "list.pro"
 # include "locale.pro"
+# include "logfile.pro"
 # include "blob.pro"
 # include "main.pro"
 # include "map.pro"
@@ -214,6 +215,7 @@ void mbyte_im_set_active(int active_arg);
 # ifdef FEAT_EVAL
 // include vim9.h here, the types defined there are used by function arguments.
 #  include "vim9.h"
+#  include "vim9class.pro"
 #  include "vim9cmds.pro"
 #  include "vim9compile.pro"
 #  include "vim9execute.pro"
@@ -262,10 +264,12 @@ void mbyte_im_set_active(int active_arg);
 # ifdef FEAT_JOB_CHANNEL
 #  include "job.pro"
 #  include "channel.pro"
+# endif
 
-// Not generated automatically, to add extra attribute.
+# ifdef FEAT_EVAL
+// Not generated automatically so that we can add an extra attribute.
 void ch_log(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
-
+void ch_error(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 # endif
 
 # if defined(FEAT_GUI) || defined(FEAT_JOB_CHANNEL)

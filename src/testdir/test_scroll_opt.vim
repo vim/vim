@@ -359,6 +359,12 @@ func Test_smoothscroll_long_line_showbreak()
   call StopVimInTerminal(buf)
 endfunc
 
+func s:check_col_calc(win_col, win_line, buf_col)
+  call assert_equal(a:win_col, wincol())
+  call assert_equal(a:win_line, winline())
+  call assert_equal(a:buf_col, col('.'))
+endfunc
+
 " Test that if the current cursor is on a smooth scrolled line, we correctly
 " reposition it. Also check that we don't miscalculate the values by checking
 " the consistency between wincol() and col('.') as they are calculated
@@ -367,12 +373,6 @@ func Test_smoothscroll_cursor_position()
   call NewWindow(10, 20)
   setl smoothscroll wrap
   call setline(1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-  func s:check_col_calc(win_col, win_line, buf_col)
-    call assert_equal(a:win_col, wincol())
-    call assert_equal(a:win_line, winline())
-    call assert_equal(a:buf_col, col('.'))
-  endfunc
 
   call s:check_col_calc(1, 1, 1)
   exe "normal \<C-E>"
@@ -450,8 +450,47 @@ func Test_smoothscroll_cursor_position()
   call s:check_col_calc(1, 3, 37)
   normal gg
 
-  bwipeout!
+  bwipe!
 endfunc
+
+func Test_smoothscroll_cursor_scrolloff()
+  call NewWindow(10, 20)
+  setl smoothscroll wrap
+  setl scrolloff=3
+  
+  " 120 chars are 6 screen lines
+  call setline(1, "abcdefghijklmnopqrstABCDEFGHIJKLMNOPQRSTabcdefghijklmnopqrstABCDEFGHIJKLMNOPQRSTabcdefghijklmnopqrstABCDEFGHIJKLMNOPQRST")
+  call setline(2, "below")
+
+  call s:check_col_calc(1, 1, 1)
+
+  " CTRL-E shows "<<<DEFG...", cursor move four lines down
+  exe "normal \<C-E>"
+  call s:check_col_calc(1, 4, 81)
+
+  " cursor on start of second line, "gk" moves into first line, skipcol doesn't
+  " change
+  exe "normal G0gk"
+  call s:check_col_calc(1, 5, 101)
+
+  " move cursor left one window width worth, scrolls one screen line
+  exe "normal 20h"
+  call s:check_col_calc(1, 5, 81)
+
+  " move cursor left one window width worth, scrolls one screen line
+  exe "normal 20h"
+  call s:check_col_calc(1, 4, 61)
+
+  " cursor on last line, "gk" should not cause a scroll
+  set scrolloff=0
+  normal G0
+  call s:check_col_calc(1, 7, 1)
+  normal gk
+  call s:check_col_calc(1, 6, 101)
+
+  bwipe!
+endfunc
+
 
 " Test that mouse picking is still accurate when we have smooth scrolled lines
 func Test_smoothscroll_mouse_pos()

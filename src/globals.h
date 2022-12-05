@@ -20,12 +20,12 @@
 EXTERN long	Rows			// nr of rows in the screen
 #ifdef DO_INIT
 # if defined(MSWIN)
-			    = 25L
+		    = 25L
 # else
-			    = 24L
+		    = 24L
 # endif
 #endif
-			    ;
+		    ;
 EXTERN long	Columns INIT(= 80);	// nr of columns in the screen
 
 /*
@@ -1218,9 +1218,9 @@ EXTERN int	old_indent INIT(= 0);	// for ^^D command in insert mode
 
 EXTERN pos_T	saved_cursor		// w_cursor before formatting text.
 #ifdef DO_INIT
-	= {0, 0, 0}
+		    = {0, 0, 0}
 #endif
-	;
+		    ;
 
 /*
  * Stuff for insert mode.
@@ -1589,9 +1589,9 @@ EXTERN char_u	*autocmd_match INIT(= NULL); // name for <amatch> on cmdline
 EXTERN int	did_cursorhold INIT(= FALSE); // set when CursorHold t'gerd
 EXTERN pos_T	last_cursormoved	      // for CursorMoved event
 # ifdef DO_INIT
-			= {0, 0, 0}
+		    = {0, 0, 0}
 # endif
-			;
+		    ;
 
 EXTERN int	postponed_split INIT(= 0);  // for CTRL-W CTRL-] command
 EXTERN int	postponed_split_flags INIT(= 0);  // args for win_split()
@@ -1751,25 +1751,24 @@ extern cursorentry_T shape_table[SHAPE_IDX_COUNT];
 
 EXTERN option_table_T printer_opts[OPT_PRINT_NUM_OPTIONS]
 # ifdef DO_INIT
- =
-{
-    {"top",	TRUE, 0, NULL, 0, FALSE},
-    {"bottom",	TRUE, 0, NULL, 0, FALSE},
-    {"left",	TRUE, 0, NULL, 0, FALSE},
-    {"right",	TRUE, 0, NULL, 0, FALSE},
-    {"header",	TRUE, 0, NULL, 0, FALSE},
-    {"syntax",	FALSE, 0, NULL, 0, FALSE},
-    {"number",	FALSE, 0, NULL, 0, FALSE},
-    {"wrap",	FALSE, 0, NULL, 0, FALSE},
-    {"duplex",	FALSE, 0, NULL, 0, FALSE},
-    {"portrait", FALSE, 0, NULL, 0, FALSE},
-    {"paper",	FALSE, 0, NULL, 0, FALSE},
-    {"collate",	FALSE, 0, NULL, 0, FALSE},
-    {"jobsplit", FALSE, 0, NULL, 0, FALSE},
-    {"formfeed", FALSE, 0, NULL, 0, FALSE},
-}
+    = {
+	{"top",	TRUE, 0, NULL, 0, FALSE},
+	{"bottom",	TRUE, 0, NULL, 0, FALSE},
+	{"left",	TRUE, 0, NULL, 0, FALSE},
+	{"right",	TRUE, 0, NULL, 0, FALSE},
+	{"header",	TRUE, 0, NULL, 0, FALSE},
+	{"syntax",	FALSE, 0, NULL, 0, FALSE},
+	{"number",	FALSE, 0, NULL, 0, FALSE},
+	{"wrap",	FALSE, 0, NULL, 0, FALSE},
+	{"duplex",	FALSE, 0, NULL, 0, FALSE},
+	{"portrait", FALSE, 0, NULL, 0, FALSE},
+	{"paper",	FALSE, 0, NULL, 0, FALSE},
+	{"collate",	FALSE, 0, NULL, 0, FALSE},
+	{"jobsplit", FALSE, 0, NULL, 0, FALSE},
+	{"formfeed", FALSE, 0, NULL, 0, FALSE},
+    }
 # endif
-;
+    ;
 
 // For prt_get_unit().
 # define PRT_UNIT_NONE	-1
@@ -1871,9 +1870,9 @@ EXTERN int		need_cursor_line_redraw INIT(= FALSE);
 // Grow array to collect error messages in until they can be displayed.
 EXTERN garray_T error_ga
 # ifdef DO_INIT
-	= {0, 0, 0, 0, NULL}
+		    = {0, 0, 0, 0, NULL}
 # endif
-	;
+		    ;
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
@@ -1991,22 +1990,31 @@ EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
 #endif
 
-#if defined(FEAT_JOB_CHANNEL)
-EXTERN int did_repeated_msg INIT(= 0);
-# define REPEATED_MSG_LOOKING	    1
-# define REPEATED_MSG_SAFESTATE	    2
 
-// This flag is set when outputting a terminal control code and reset in
-// out_flush() when characters have been written.
-EXTERN int ch_log_output INIT(= FALSE);
+#if defined(FEAT_JOB_CHANNEL)
+EXTERN char *ch_part_names[]
+# ifdef DO_INIT
+		= {"sock", "out", "err", "in"}
+# endif
+		;
 
 // Whether a redraw is needed for appending a line to a buffer.
 EXTERN int channel_need_redraw INIT(= FALSE);
 
-#define FOR_ALL_CHANNELS(ch) \
+# define FOR_ALL_CHANNELS(ch) \
     for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)
-#define FOR_ALL_JOBS(job) \
+# define FOR_ALL_JOBS(job) \
     for ((job) = first_job; (job) != NULL; (job) = (job)->jv_next)
+#endif
+
+#ifdef FEAT_EVAL
+// This flag is set when outputting a terminal control code and reset in
+// out_flush() when characters have been written.
+EXTERN int ch_log_output INIT(= FALSE);
+
+EXTERN int did_repeated_msg INIT(= 0);
+# define REPEATED_MSG_LOOKING	    1
+# define REPEATED_MSG_SAFESTATE	    2
 #endif
 
 #if defined(FEAT_DIFF)

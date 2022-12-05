@@ -4250,7 +4250,7 @@ nfa_did_time_out(void)
     {
 	if (nfa_timed_out != NULL)
 	{
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	    if (!*nfa_timed_out)
 		ch_log(NULL, "NFA regexp timed out");
 # endif

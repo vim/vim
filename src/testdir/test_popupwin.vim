@@ -1197,8 +1197,11 @@ func Test_popup_time()
   call assert_equal(0, popup_locate(1, 21))
   call assert_equal(0, popup_locate(2, 1))
 
-  sleep 700m
+  " Mac is usually a bit slow
+  let delay = has('mac') ? '900m' : '700m'
+  exe 'sleep ' .. delay
   redraw
+
   let line = join(map(range(1, 5), '1->screenstring(v:val)'), '')
   call assert_equal('hello', line)
 
@@ -1212,7 +1215,7 @@ func Test_popup_time()
   let line = join(map(range(1, 30), 'screenstring(&lines, v:val)'), '')
   call assert_match('.*on the command line.*', line)
 
-  sleep 700m
+  exe 'sleep ' .. delay
   redraw
   let line = join(map(range(1, 30), 'screenstring(&lines, v:val)'), '')
   call assert_notmatch('.*on the command line.*', line)

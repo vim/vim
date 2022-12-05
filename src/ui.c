@@ -538,8 +538,6 @@ ui_delay(long msec_arg, int ignoreinput)
 #ifdef FEAT_EVAL
     if (ui_delay_for_testing > 0)
 	msec = ui_delay_for_testing;
-#endif
-#ifdef FEAT_JOB_CHANNEL
     ch_log(NULL, "ui_delay(%ld)", msec);
 #endif
 #ifdef FEAT_GUI
@@ -968,7 +966,7 @@ fill_input_buf(int exit_on_error UNUSED)
 #  else
 	len = read(read_cmd_fd, (char *)inbuf + inbufcount, readlen);
 #  endif
-#  ifdef FEAT_JOB_CHANNEL
+#  ifdef FEAT_EVAL
 	if (len > 0)
 	{
 	    inbuf[inbufcount + len] = NUL;

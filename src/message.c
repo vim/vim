@@ -37,7 +37,7 @@ static char_u	*confirm_msg = NULL;		// ":confirm" message
 static char_u	*confirm_msg_tail;		// tail of confirm_msg
 static void display_confirm_msg(void);
 #endif
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 static int emsg_to_channel_log = FALSE;
 #endif
 
@@ -161,7 +161,7 @@ msg_attr_keep(
 		&& STRCMP(s, last_msg_hist->msg)))
 	add_msg_hist((char_u *)s, -1, attr);
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     if (emsg_to_channel_log)
 	// Write message in the channel log.
 	ch_log(NULL, "ERROR: %s", s);
@@ -725,7 +725,7 @@ emsg_core(char_u *s)
 	    if (emsg_silent == emsg_silent_def)
 		++did_emsg_def;
 #endif
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 	    ch_log(NULL, "ERROR silent: %s", (char *)s);
 #endif
 	    return TRUE;

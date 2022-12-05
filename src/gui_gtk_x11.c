@@ -407,7 +407,7 @@ static int using_gnome = 0;
  * See https://github.com/vim/vim/issues/10123
  */
 # if 0  // Change to 1 to enable ch_log() calls for debugging.
-#  ifdef FEAT_JOB_CHANNEL
+#  ifdef FEAT_EVAL
 #   define ENABLE_RESIZE_HISTORY_LOG
 #  endif
 # endif
@@ -780,7 +780,8 @@ draw_event(GtkWidget *widget UNUSED,
 	    for (i = 0; i < list->num_rectangles; i++)
 	    {
 		const cairo_rectangle_t *rect = &list->rectangles[i];
-		cairo_rectangle(cr, rect->x, rect->y, rect->width, rect->height);
+		cairo_rectangle(cr, rect->x, rect->y,
+						    rect->width, rect->height);
 		cairo_fill(cr);
 	    }
 	}
@@ -6313,7 +6314,17 @@ gui_mch_iconify(void)
     void
 gui_mch_set_foreground(void)
 {
+    // Just calling gtk_window_present() used to work in the past, but now this
+    // sequence appears to be needed:
+    // - Show the window on top of others.
+    // - Present the window (also shows it above others).
+    // - Do not the window on top of others (otherwise it would be stuck there).
+    gtk_window_set_keep_above(GTK_WINDOW(gui.mainwin), TRUE);
+    gui_may_flush();
     gtk_window_present(GTK_WINDOW(gui.mainwin));
+    gui_may_flush();
+    gtk_window_set_keep_above(GTK_WINDOW(gui.mainwin), FALSE);
+    gui_may_flush();
 }
 #endif
 
