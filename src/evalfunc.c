@@ -8163,8 +8163,14 @@ init_srand(UINT32_T *x)
 #endif
     {
 #if defined(FEAT_SODIUM)
-	*x = randombytes_random();
-#elif defined(FEAT_RELTIME)
+	if (sodium_init() >= 0)
+	{
+	    *x = randombytes_random();
+	    return;
+	}
+#endif
+
+#if defined(FEAT_RELTIME)
 	proftime_T res;
 	profile_start(&res);
 #  if defined(MSWIN)
