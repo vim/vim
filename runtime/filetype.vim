@@ -1857,6 +1857,7 @@ au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias 
 
 " Zig
 au BufNewFile,BufRead *.zig			setf zig
+au BufNewFile,BufRead *.zir			setf zir
 
 " Z-Shell script (patterns ending in a star further below)
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
