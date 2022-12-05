@@ -394,6 +394,7 @@ runtime/syntax/n1ql.vim			@pr3d4t0r
 runtime/syntax/netrw.vim		@cecamp
 runtime/syntax/nginx.vim		@chr4
 runtime/syntax/ninja.vim		@nico
+runtime/syntax/nix.vim			@equill
 runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
 runtime/syntax/openvpn.vim		@ObserverOfTime
