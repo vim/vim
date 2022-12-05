@@ -207,6 +207,9 @@ func Test_windows_console_key_event()
       let keycode = eval('"\<' .. kstr .. '>"')
       call SendKeys(mod_keycodes + [111+n])
       let ch = getcharstr(0)
+      if ch == ''
+	throw 'Skipped: The MS-Windows console input buffer was empty.'
+      endif
       let mod_mask = getcharmod()
       call assert_equal(keycode, $"{ch}", $"key = {kstr}")
       " workaround for termcap changing the character instead of sending Shift
@@ -283,9 +286,9 @@ func Test_windows_console_key_event()
     call SendKeys(kcodes)
     sleep 10ms
     let ch = getcharstr(0)
-"      if ch == ''
-"        throw 'Skipped: The MS-Windows console input buffer was empty.'
-"      endif
+    if ch == ''
+      throw 'Skipped: The MS-Windows console input buffer was empty.'
+    endif
     let mod = getcharmod()
     "if ch != ''
       let keycode = eval('"\<' .. kstr .. '>"')
