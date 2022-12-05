@@ -2,7 +2,8 @@
 
 source check.vim
 CheckMSWindows
-"  CheckNotGui .. The key events should also work in gui
+CheckNotGui 
+".. The key events should also work in gui
 
 
 " Test for sending low level key presses
