@@ -4387,8 +4387,14 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 
 	    int len = (int)STRLEN(keys);
 
-# if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
-	    if (gui.in_use)
+# if defined(MSWIN)
+#  if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
+	    if (!gui.in_use)
+#  endif
+		feed_mswin_input(keys);
+#  if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
+	    else
+#  endif
 # endif
 	    for (int idx = 0; idx < len; ++idx)
 	    {
@@ -4398,11 +4404,6 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		    got_int = TRUE;
 		add_to_input_buf(keys + idx, 1);
 	    }
-#elif defined(MSWIN)
-# if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
-	    if (!gui.in_use)
-# endif
-		    feed_mswin_input(keys);
 #else
 	    emsg(_(e_lowlevel_input_not_supported));
 #endif

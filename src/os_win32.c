@@ -1941,7 +1941,7 @@ test_mswin_event(char_u *event, dict_T *args)
 /*
  * This function is designed to be called by feedkeys({string},{mode})
  * Where mode is 'L' (low-level) for MS-Windows console events.
- * feedkeys passes to this its {string} argument, (char_u *s)
+ * feedkeys passes to this its {string} variable, (char_u *keys)
  * To include special keys in {string}, use double-quotes
  * and "\..." notation |expr-quote|. For example,
  * feedkeys("\<CR>", 'L') simulates pressing of the <Enter> key. But
@@ -1953,10 +1953,18 @@ test_mswin_event(char_u *event, dict_T *args)
  * 	call feedkeys("\<LeftMouse>", "L")
  */
    void
-feed_mswin_input(char_u *s)
+feed_mswin_input(char_u *keys)
 {
-    int len = (int)STRLEN(s);
-    //TODO: convert s to mswin input buffer events...
+    int len = (int)STRLEN(keys);
+    //TODO: convert each key to a mswin input buffer event...
+    for (int idx = 0; idx < len; ++idx)
+    {
+	// // if a CTRL-C was typed, set got_int, similar to what
+	// // happens in fill_input_buf()
+	// if (keys[idx] == 3 && ctrl_c_interrupts && typed)
+	//     got_int = TRUE;
+	add_to_input_buf(keys + idx, 1);
+    }
 }
 
 #endif // FEAT_EVAL || PROTO

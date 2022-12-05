@@ -19,7 +19,7 @@ endfunc
 " Test MS-Windows console key events
 func Test_windows_console_key_event()
   CheckMSWindows
-"    CheckNotGui
+  CheckNotGui
   new
 
   let VK = {
@@ -456,8 +456,6 @@ endfunc
 "          \ 'S-MiddleMouse', 'A-MiddleMouse', 'C-MiddleMouse',
 "          \ 'RightMouse', 'RightRelease', '2-RightMouse',
 "          \ '3-RightMouse', 'S-RightMouse', 'A-RightMouse', 'C-RightMouse',
-"          \ 'X1Mouse', 'S-X1Mouse', 'A-X1Mouse', 'C-X1Mouse', 'X2Mouse',
-"          \ 'S-X2Mouse', 'A-X2Mouse', 'C-X2Mouse'
 "          \ ]
 "    let mouseEventCodes = map(copy(mouseEventNames), "'<' .. v:val .. '>'")
 "    let g:events = []
@@ -466,37 +464,32 @@ endfunc
 "            \ substitute(e, '[<>]', '', 'g') .. '")<CR>'
 "    endfor
 
-"    " Test various mouse buttons (0 - Left, 1 - Middle, 2 - Right, 0x300 - X1,
-"    " 0x300- X2)
-"    for button in [0, 1, 2, 0x300, 0x400]
+"    " Test various mouse buttons (0 - Left, 1 - Middle, 2 - Right)
+"    for button in [0, 1, 2]
 "      " Single click
 "      let args = #{button: button, row: 2, col: 5, multiclick: 0, modifiers: 0}
 "      call test_mswin_event('mouse', args)
 "      let args.button = 3
 "      call test_mswin_event('mouse', args)
 
-"      " Double/Triple click is supported by only the Left/Middle/Right mouse
-"      " buttons
-"      if button <= 2
-"        " Double Click
-"        let args.button = button
-"        call test_mswin_event('mouse', args)
-"        let args.multiclick = 1
-"        call test_mswin_event('mouse', args)
-"        let args.button = 3
-"        let args.multiclick = 0
-"        call test_mswin_event('mouse', args)
+"      " Double Click
+"      let args.button = button
+"      call test_mswin_event('mouse', args)
+"      let args.multiclick = 1
+"      call test_mswin_event('mouse', args)
+"      let args.button = 3
+"      let args.multiclick = 0
+"      call test_mswin_event('mouse', args)
 
-"        " Triple Click
-"        let args.button = button
-"        call test_mswin_event('mouse', args)
-"        let args.multiclick = 1
-"        call test_mswin_event('mouse', args)
-"        call test_mswin_event('mouse', args)
-"        let args.button = 3
-"        let args.multiclick = 0
-"        call test_mswin_event('mouse', args)
-"      endif
+"      " Triple Click
+"      let args.button = button
+"      call test_mswin_event('mouse', args)
+"      let args.multiclick = 1
+"      call test_mswin_event('mouse', args)
+"      call test_mswin_event('mouse', args)
+"      let args.button = 3
+"      let args.multiclick = 0
+"      call test_mswin_event('mouse', args)
 
 "      " Shift click
 "      let args = #{button: button, row: 3, col: 7, multiclick: 0, modifiers: 4}
@@ -521,15 +514,8 @@ endfunc
 "      call feedkeys("\<Esc>", 'Lx!')
 "    endfor
 
-"    call assert_equal(['LeftMouse', 'LeftRelease', 'LeftMouse', '2-LeftMouse',
-"          \ 'LeftMouse', '2-LeftMouse', '3-LeftMouse', 'S-LeftMouse',
-"          \ 'A-LeftMouse', 'C-LeftMouse', 'MiddleMouse', 'MiddleRelease',
-"          \ 'MiddleMouse', '2-MiddleMouse', 'MiddleMouse', '2-MiddleMouse',
-"          \ '3-MiddleMouse', 'S-MiddleMouse', 'A-MiddleMouse', 'C-MiddleMouse',
-"          \ 'RightMouse', 'RightRelease', 'RightMouse', '2-RightMouse',
-"          \ 'RightMouse', '2-RightMouse', '3-RightMouse', 'S-RightMouse',
-"          \ 'A-RightMouse', 'C-RightMouse', 'X1Mouse', 'S-X1Mouse', 'A-X1Mouse',
-"          \ 'C-X1Mouse', 'X2Mouse', 'S-X2Mouse', 'A-X2Mouse', 'C-X2Mouse'],
+"    call assert_equal(['LeftMouse', '2-LeftMouse', '3-LeftMouse', 
+"          \ '2-LeftMouse', 'C-LeftMouse', '3-LeftMouse'],
 "          \ g:events)
 
 "    for e in mouseEventCodes
@@ -538,8 +524,6 @@ endfunc
 
 "    " modeless selection
 "    set mouse=
-"    let save_guioptions = &guioptions
-"    set guioptions+=A
 "    %d _
 "    call setline(1, ['one two three', 'four five sixteen'])
 "    call cursor(1, 1)
@@ -578,7 +562,6 @@ endfunc
 "    call assert_equal([0, 2, 7, 0], getpos('.'))
 "    call assert_equal('wo thrfour five sixteen', getline(2))
 "    set mouse&
-"    let &guioptions = save_guioptions
 
 "    " Test invalid parameters for test_mswin_event()
 "    let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
