@@ -578,6 +578,8 @@ func Test_WinScrolled_long_wrapped()
   call term_sendkeys(buf, '$')
   call term_sendkeys(buf, ":echo g:scrolled\<CR>")
   call WaitForAssert({-> assert_match('^3 ', term_getline(buf, 6))}, 1000)
+
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_WinClosed()
@@ -3162,7 +3164,7 @@ func Test_autocmd_FileReadCmd()
         \ 'v:cmdarg =  ++ff=mac',
         \ 'v:cmdarg =  ++enc=utf-8'], getline(1, '$'))
 
-  close!
+  bwipe!
   augroup FileReadCmdTest
     au!
   augroup END
