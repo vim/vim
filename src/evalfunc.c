@@ -8156,9 +8156,21 @@ init_srand(UINT32_T *x)
 	}
     }
     if (dev_urandom_state != OK)
-	// Reading /dev/urandom doesn't work, fall back to time().
+	// Reading /dev/urandom doesn't work, fall back to reltime() or time().
 #endif
+    {
+#ifdef FEAT_RELTIME
+	proftime_T res;
+	profile_start(&res);
+#  ifdef MSWIN
+	*x = (UINT32_T) res.LowPart;
+#  else
+	*x = (UINT32_T) res.tv_usec;
+#  endif
+#else
 	*x = vim_time() ^ mch_get_pid();
+#endif
+    }
 }
 
 #define ROTL(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
