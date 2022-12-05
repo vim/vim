@@ -2,8 +2,7 @@
 
 source check.vim
 CheckMSWindows
-CheckNotGui
-"  Note, I think it should work in gui also - so need to debug
+"  CheckNotGui .. The key events should also work in gui
 
 
 " Test for sending low level key presses
@@ -19,63 +18,117 @@ endfunc
 " Test MS-Windows console key events
 func Test_windows_console_key_event()
   CheckMSWindows
-  CheckNotGui
+"    CheckNotGui
   new
 
-  let vKey = {
-	\ 'VK_SPACE'      : 0x20,
-        \ 'VK_SHIFT'      : 0x10,
-        \ 'VK_LSHIFT'     : 0xA0,
-        \ 'VK_RSHIFT'     : 0xA1,
-        \ 'VK_CONTROL'    : 0x11,
-        \ 'VK_LCONTROL'   : 0xA2,
-        \ 'VK_RCONTROL'   : 0xA3,
-        \ 'VK_MENU'       : 0x12,
-        \ 'VK_LMENU'      : 0xA4,
-        \ 'VK_RMENU'      : 0xA5,
-        \ 'VK_OEM_1'      : 0xBA,
-        \ 'VK_OEM_2'      : 0xBF,
-        \ 'VK_OEM_3'      : 0xC0,
-        \ 'VK_OEM_4'      : 0xDB,
-        \ 'VK_OEM_5'      : 0xDC,
-        \ 'VK_OEM_6'      : 0xDD,
-        \ 'VK_OEM_7'      : 0xDE,
-        \ 'VK_OEM_PLUS'   : 0xBB,
-        \ 'VK_OEM_COMMA'  : 0xBC,
-        \ 'VK_OEM_MINUS'  : 0xBD,
-        \ 'VK_OEM_PERIOD' : 0xBE,
-        \ }
+  let VK = {
+	\ 'SPACE'      : 0x20,
+        \ 'SHIFT'      : 0x10,
+        \ 'LSHIFT'     : 0xA0,
+        \ 'RSHIFT'     : 0xA1,
+        \ 'CONTROL'    : 0x11,
+        \ 'LCONTROL'   : 0xA2,
+        \ 'RCONTROL'   : 0xA3,
+        \ 'MENU'       : 0x12,
+        \ 'LMENU'      : 0xA4,
+        \ 'RMENU'      : 0xA5,
+        \ 'OEM_1'      : 0xBA,
+        \ 'OEM_2'      : 0xBF,
+        \ 'OEM_3'      : 0xC0,
+        \ 'OEM_4'      : 0xDB,
+        \ 'OEM_5'      : 0xDC,
+        \ 'OEM_6'      : 0xDD,
+        \ 'OEM_7'      : 0xDE,
+        \ 'OEM_PLUS'   : 0xBB,
+        \ 'OEM_COMMA'  : 0xBC,
+        \ 'OEM_MINUS'  : 0xBD,
+        \ 'OEM_PERIOD' : 0xBE,
+        \ 'PRIOR'      : 0x21,
+        \ 'NEXT'       : 0x22,
+        \ 'END'        : 0x23,
+        \ 'HOME'       : 0x24,
+        \ 'LEFT'       : 0x25,
+        \ 'UP'         : 0x26,
+        \ 'RIGHT'      : 0x27,
+        \ 'DOWN'       : 0x28,
+        \ 'KEY0'       : 0x30,
+        \ 'KEY1'       : 0x31,
+        \ 'KEY2'       : 0x32,
+        \ 'KEY3'       : 0x33,
+        \ 'KEY4'       : 0x34,
+        \ 'KEY5'       : 0x35,
+        \ 'KEY6'       : 0x36,
+        \ 'KEY7'       : 0x37,
+        \ 'KEY8'       : 0x38,
+        \ 'KEY9'       : 0x39,
+	\ 'NUMPAD0'    : 0x60,
+        \ 'NUMPAD1'    : 0x61,
+        \ 'NUMPAD2'    : 0x62,
+        \ 'NUMPAD3'    : 0x63,
+        \ 'NUMPAD4'    : 0x64,
+        \ 'NUMPAD5'    : 0x65,
+        \ 'NUMPAD6'    : 0x66,
+        \ 'NUMPAD7'    : 0x67,
+        \ 'NUMPAD8'    : 0x68,
+        \ 'NUMPAD9'    : 0x69,
+        \ 'MULTIPLY'   : 0x6A,
+        \ 'ADD'        : 0x6B,
+        \ 'SUBTRACT'   : 0x6D,
+        \ 'F1'         : 0x70,
+        \ 'F2'         : 0x71,
+        \ 'F3'         : 0x72,
+        \ 'F4'         : 0x73,
+        \ 'F5'         : 0x74,
+        \ 'F6'         : 0x75,
+        \ 'F7'         : 0x76,
+        \ 'F8'         : 0x77,
+        \ 'F9'         : 0x78,
+        \ 'F10'        : 0x79,
+        \ 'F11'        : 0x7A,
+        \ 'F12'        : 0x7B,
+	\ }
 
   let vim_MOD_MASK_SHIFT = 0x02
   let vim_MOD_MASK_CTRL  = 0x04
   let vim_MOD_MASK_ALT   = 0x08
+  
+  let modifiers = [
+    \ ["",       0,   []],
+    \ ["S-",     2,   [VK.SHIFT]],
+    \ ["C-",     4,   [VK.CONTROL]],
+    \ ["C-S-",   6,   [VK.CONTROL, VK.SHIFT]],
+    \ ["A-",     8,   [VK.MENU]],
+    \ ["A-S-",   10,  [VK.MENU, VK.SHIFT]],
+    \ ["A-C-",   12,  [VK.MENU, VK.CONTROL]],
+    \ ["A-C-S-", 14,  [VK.MENU, VK.CONTROL, VK.SHIFT]],
+    \]
 
   " Some punctuation characters
   " Assuming Standard US PC Keyboard layout
   let test_oem_keys = [
-	\ [[vKey.VK_SPACE], ' '],
-        \ [[vKey.VK_OEM_1], ';'],
-        \ [[vKey.VK_OEM_2], '/'],
-        \ [[vKey.VK_OEM_3], '`'],
-        \ [[vKey.VK_OEM_4], '['],
-        \ [[vKey.VK_OEM_5], '\'],
-        \ [[vKey.VK_OEM_6], ']'],
-        \ [[vKey.VK_OEM_7], ''''],
-        \ [[vKey.VK_OEM_PLUS], '='],
-        \ [[vKey.VK_OEM_COMMA], ','],
-        \ [[vKey.VK_OEM_MINUS], '-'],
-        \ [[vKey.VK_OEM_PERIOD], '.'],
-	\ [[vKey.VK_SHIFT, vKey.VK_OEM_1], ':'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_2], '?'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_3], '~'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_4], '{'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_5], '|'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_6], '}'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_7], '"'],
-	\ [[vKey.VK_SHIFT, vKey.VK_OEM_PLUS], '+'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_COMMA], '<'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_MINUS], '_'],
-        \ [[vKey.VK_SHIFT, vKey.VK_OEM_PERIOD], '>'],
+	\ [[VK.SPACE], ' '],
+        \ [[VK.OEM_1], ';'],
+        \ [[VK.OEM_2], '/'],
+        \ [[VK.OEM_3], '`'],
+        \ [[VK.OEM_4], '['],
+        \ [[VK.OEM_5], '\'],
+        \ [[VK.OEM_6], ']'],
+        \ [[VK.OEM_7], ''''],
+        \ [[VK.OEM_PLUS], '='],
+        \ [[VK.OEM_COMMA], ','],
+        \ [[VK.OEM_MINUS], '-'],
+        \ [[VK.OEM_PERIOD], '.'],
+	\ [[VK.SHIFT, VK.OEM_1], ':'],
+        \ [[VK.SHIFT, VK.OEM_2], '?'],
+        \ [[VK.SHIFT, VK.OEM_3], '~'],
+        \ [[VK.SHIFT, VK.OEM_4], '{'],
+        \ [[VK.SHIFT, VK.OEM_5], '|'],
+        \ [[VK.SHIFT, VK.OEM_6], '}'],
+        \ [[VK.SHIFT, VK.OEM_7], '"'],
+	\ [[VK.SHIFT, VK.OEM_PLUS], '+'],
+        \ [[VK.SHIFT, VK.OEM_COMMA], '<'],
+        \ [[VK.SHIFT, VK.OEM_MINUS], '_'],
+        \ [[VK.SHIFT, VK.OEM_PERIOD], '>'],
         \ ]
 
   for [kcodes, kstr] in test_oem_keys
@@ -86,7 +139,7 @@ func Test_windows_console_key_event()
     endif
     call assert_equal($"{kstr}", $"{ch}")
     let mod_mask = getcharmod()
-    if kcodes[0] == vKey.VK_SHIFT
+    if kcodes[0] == VK.SHIFT
 	call assert_equal(vim_MOD_MASK_SHIFT, mod_mask, $"key = {kstr}")
     else
 	call assert_equal(0, mod_mask, $"key = {kstr}")
@@ -108,10 +161,11 @@ func Test_windows_console_key_event()
 " Test for lowercase 'a' to 'z', VK codes 65(0x41) - 90(0x5A)
 " VK_A - VK_Z virtual key codes coincide with uppercase ASCII codes 'A'-'Z'.
 " eg VK_A is 65 and the ASCII character code for uppercase 'A' is also 65.
-" Note: these are interpreted as lowercase when Shift is NOT pressed. 
+" Caution: these are interpreted as lowercase when Shift is NOT pressed. 
 " Sending VK_A (65) 'A' Key code without shift modifier, will produce ASCII
-" char 'a' (91) as the output.  The ASCII codes for the lowercase letters
-" are 32 higher than their uppercase counterparts.
+" char 'a' (91) as the output.
+" The ASCII codes for the lowercase letters are 32 higher than their uppercase
+" counterparts.
   for kc in range(65, 90)
     call SendKeys([kc])
     let ch = getcharstr(0)
@@ -124,7 +178,7 @@ func Test_windows_console_key_event()
 "  Test for Uppercase 'A' - 'Z' keys
 "  With VK_SHIFT, expect the keycode = character code.
   for kc in range(65, 90)
-    call SendKeys([0x10, kc])
+    call SendKeys([VK.SHIFT, kc])
     let ch = getcharstr(0)
     if ch == ''
       throw 'Skipped: The MS-Windows console input buffer was empty.'
@@ -136,7 +190,7 @@ func Test_windows_console_key_event()
  "  Same as for lowercase, except with Ctrl Key
  "  Expect the unicode characters 0x01 to 0x1A
   for kc in range(65, 90)
-    call SendKeys([0x11, kc])
+    call SendKeys([VK.CONTROL, kc])
     let ch = getcharstr(0)
     if ch == ''
       throw 'Skipped: The MS-Windows console input buffer was empty.'
@@ -144,96 +198,101 @@ func Test_windows_console_key_event()
     call assert_equal(nr2char(kc - 64), ch)
   endfor
 
+  " Test for Function Keys 'F1' to 'F12'
+  " VK codes 112(0x70) - 123(0x7B)
+  " With ALL permutatios of modifiers; Shift, Ctrl & Alt
+  for n in range(1, 12)
+    for [mod_str, vim_mod_mask, mod_keycodes] in modifiers
+      let kstr = $"{mod_str}F{n}"
+      let keycode = eval('"\<' .. kstr .. '>"')
+      call SendKeys(mod_keycodes + [111+n])
+      let ch = getcharstr(0)
+      let mod_mask = getcharmod()
+      call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+      " workaround for termcap changing the character instead of sending Shift
+      if index(mod_keycodes, 0x10) >= 0
+	let vim_mod_mask = vim_mod_mask - 2
+      endif
+      call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
+    endfor
+  endfor
+
+
   " Test for the various Ctrl and Shift key combinations.
   " Refer to the following page for the virtual key codes:
   " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
   let keytests = [
-    \ [[0x10, 0x21], "S-Pageup", 2],
-    \ [[0xA0, 0x21], "S-Pageup", 2],
-    \ [[0xA1, 0x21], "S-Pageup", 2],
-    \ [[0x11, 0x21], "C-Pageup", 4],
-    \ [[0xA2, 0x21], "C-Pageup", 4],
-    \ [[0xA3, 0x21], "C-Pageup", 4],
-    \ [[0x11, 0x10, 0x21], "C-S-Pageup", 6],
-    \ [[0x10, 0x22], "S-PageDown", 2],
-    \ [[0xA0, 0x22], "S-PageDown", 2],
-    \ [[0xA1, 0x22], "S-PageDown", 2],
-    \ [[0x11, 0x22], "C-PageDown", 4],
-    \ [[0xA2, 0x22], "C-PageDown", 4],
-    \ [[0xA3, 0x22], "C-PageDown", 4],
-    \ [[0x11, 0x10, 0x22], "C-S-PageDown", 6],
-    \ [[0x10, 0x23], "S-End", 0],
-    \ [[0x11, 0x23], "C-End", 0],
-    \ [[0x11, 0x10, 0x23], "C-S-End", 4],
-    \ [[0x10, 0x24], "S-Home", 0],
-    \ [[0x11, 0x24], "C-Home", 0],
-    \ [[0x11, 0x10, 0x24], "C-S-Home", 4],
-    \ [[0x10, 0x25], "S-Left", 0],
-    \ [[0x11, 0x25], "C-Left", 0],
-    \ [[0x11, 0x10, 0x25], "C-S-Left", 4],
-    \ [[0x10, 0x26], "S-Up", 0],
-    \ [[0x11, 0x26], "C-Up", 4],
-    \ [[0x11, 0x10, 0x26], "C-S-Up", 4],
-    \ [[0x10, 0x27], "S-Right", 0],
-    \ [[0x11, 0x27], "C-Right", 0],
-    \ [[0x11, 0x10, 0x27], "C-S-Right", 4],
-    \ [[0x10, 0x28], "S-Down", 0],
-    \ [[0x11, 0x28], "C-Down", 4],
-    \ [[0x11, 0x10, 0x28], "C-S-Down", 4],
-    \ [[0x11, 0x30], "C-0", 4],
-    \ [[0x11, 0x31], "C-1", 4],
-    \ [[0x11, 0x32], "C-2", 4],
-    \ [[0x11, 0x33], "C-3", 4],
-    \ [[0x11, 0x34], "C-4", 4],
-    \ [[0x11, 0x35], "C-5", 4],
-    \ [[0x11, 0x36], "C-^", 0],
-    \ [[0x11, 0x37], "C-7", 4],
-    \ [[0x11, 0x38], "C-8", 4],
-    \ [[0x11, 0x39], "C-9", 4],
-    \ [[0x11, 0x60], "C-0", 4],
-    \ [[0x11, 0x61], "C-1", 4],
-    \ [[0x11, 0x62], "C-2", 4],
-    \ [[0x11, 0x63], "C-3", 4],
-    \ [[0x11, 0x64], "C-4", 4],
-    \ [[0x11, 0x65], "C-5", 4],
-    \ [[0x11, 0x66], "C-6", 4],
-    \ [[0x11, 0x67], "C-7", 4],
-    \ [[0x11, 0x68], "C-8", 4],
-    \ [[0x11, 0x69], "C-9", 4],
-    \ [[0x11, 0x6A], "C-*", 4],
-    \ [[0x11, 0x6B], "C-+", 4],
-    \ [[0x11, 0x6D], "C--", 4],
-    \ [[0x11, 0x70], "C-F1", 4],
-    \ [[0x11, 0x10, 0x70], "C-S-F1", 4],
-    \ [[0x11, 0x71], "C-F2", 4],
-    \ [[0x11, 0x10, 0x71], "C-S-F2", 4],
-    \ [[0x11, 0x72], "C-F3", 4],
-    \ [[0x11, 0x10, 0x72], "C-S-F3", 4],
-    \ [[0x11, 0x73], "C-F4", 4],
-    \ [[0x11, 0x10, 0x73], "C-S-F4", 4],
-    \ [[0x11, 0x74], "C-F5", 4],
-    \ [[0x11, 0x10, 0x74], "C-S-F5", 4],
-    \ [[0x11, 0x75], "C-F6", 4],
-    \ [[0x11, 0x10, 0x75], "C-S-F6", 4],
-    \ [[0x11, 0x76], "C-F7", 4],
-    \ [[0x11, 0x10, 0x76], "C-S-F7", 4],
-    \ [[0x11, 0x77], "C-F8", 4],
-    \ [[0x11, 0x10, 0x77], "C-S-F8", 4],
-    \ [[0x11, 0x78], "C-F9", 4],
-    \ [[0x11, 0x10, 0x78], "C-S-F9", 4],
+    \ [[VK.SHIFT,    VK.PRIOR], "S-Pageup", 2],
+    \ [[VK.LSHIFT,   VK.PRIOR], "S-Pageup", 2],
+    \ [[VK.RSHIFT,   VK.PRIOR], "S-Pageup", 2],
+    \ [[VK.CONTROL,  VK.PRIOR], "C-Pageup", 4],
+    \ [[VK.LCONTROL, VK.PRIOR], "C-Pageup", 4],
+    \ [[VK.RCONTROL, VK.PRIOR], "C-Pageup", 4],
+    \ [[VK.CONTROL,  VK.SHIFT, VK.PRIOR], "C-S-Pageup", 6],
+    \ [[VK.SHIFT,    VK.NEXT], "S-PageDown", 2],
+    \ [[VK.LSHIFT,   VK.NEXT], "S-PageDown", 2],
+    \ [[VK.RSHIFT,   VK.NEXT], "S-PageDown", 2],
+    \ [[VK.CONTROL,  VK.NEXT], "C-PageDown", 4],
+    \ [[VK.LCONTROL, VK.NEXT], "C-PageDown", 4],
+    \ [[VK.RCONTROL, VK.NEXT], "C-PageDown", 4],
+    \ [[VK.CONTROL,  VK.SHIFT, VK.NEXT], "C-S-PageDown", 6],
+    \ [[VK.SHIFT,    VK.END], "S-End", 0],
+    \ [[VK.CONTROL,  VK.END], "C-End", 0],
+    \ [[VK.CONTROL,  VK.SHIFT, VK.END], "C-S-End", 4],
+    \ [[VK.SHIFT,    VK.HOME], "S-Home", 0],
+    \ [[VK.CONTROL,  VK.HOME], "C-Home", 0],
+    \ [[VK.CONTROL,  VK.SHIFT, VK.HOME], "C-S-Home", 4],
+    \ [[VK.SHIFT,    VK.LEFT], "S-Left", 0],
+    \ [[VK.CONTROL,  VK.LEFT], "C-Left", 0],
+    \ [[VK.CONTROL,  VK.SHIFT, VK.LEFT], "C-S-Left", 4],
+    \ [[VK.SHIFT,    VK.UP], "S-Up", 0],
+    \ [[VK.CONTROL,  VK.UP], "C-Up", 4],
+    \ [[VK.CONTROL,  VK.SHIFT, VK.UP], "C-S-Up", 4],
+    \ [[VK.SHIFT,    VK.RIGHT], "S-Right", 0],
+    \ [[VK.CONTROL,  VK.RIGHT], "C-Right", 0],
+    \ [[VK.CONTROL,  VK.SHIFT, VK.RIGHT], "C-S-Right", 4],
+    \ [[VK.SHIFT,    VK.DOWN], "S-Down", 0],
+    \ [[VK.CONTROL,  VK.DOWN], "C-Down", 4],
+    \ [[VK.CONTROL,  VK.SHIFT, VK.DOWN], "C-S-Down", 4],
+    \ [[VK.CONTROL,  VK.KEY0], "C-0", 4],
+    \ [[VK.CONTROL,  VK.KEY1], "C-1", 4],
+    \ [[VK.CONTROL,  VK.KEY2], "C-2", 4],
+    \ [[VK.CONTROL,  VK.KEY3], "C-3", 4],
+    \ [[VK.CONTROL,  VK.KEY4], "C-4", 4],
+    \ [[VK.CONTROL,  VK.KEY5], "C-5", 4],
+    \ [[VK.CONTROL,  VK.KEY6], "C-^", 0],
+    \ [[VK.CONTROL,  VK.KEY7], "C-7", 4],
+    \ [[VK.CONTROL,  VK.KEY8], "C-8", 4],
+    \ [[VK.CONTROL,  VK.KEY9], "C-9", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD0], "C-0", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD1], "C-1", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD2], "C-2", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD3], "C-3", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD4], "C-4", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD5], "C-5", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD6], "C-6", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD7], "C-7", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD8], "C-8", 4],
+    \ [[VK.CONTROL,  VK.NUMPAD9], "C-9", 4],
+    \ [[VK.CONTROL,  VK.MULTIPLY], "C-*", 4],
+    \ [[VK.CONTROL,  VK.ADD], "C-+", 4],
+    \ [[VK.CONTROL,  VK.SUBTRACT], "C--", 4]
     \ ]
 
-"    for [kcodes, kstr, kmod] in keytests
-"      call SendKeys(kcodes)
-"      let ch = getcharstr(0)
+  for [kcodes, kstr, kmod] in keytests
+    call SendKeys(kcodes)
+    sleep 10ms
+    let ch = getcharstr(0)
 "      if ch == ''
 "        throw 'Skipped: The MS-Windows console input buffer was empty.'
 "      endif
-"      let mod = getcharmod()
-"      let keycode = eval('"\<' .. kstr .. '>"')
-"      call assert_equal(keycode, ch, $"key = {kstr}")
-"      call assert_equal(kmod, mod, $"key = {kstr}")
-"    endfor
+    let mod = getcharmod()
+    "if ch != ''
+      let keycode = eval('"\<' .. kstr .. '>"')
+      call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"key = {kstr}")
+    "endif
+  endfor
 
   bw!
 endfunc

@@ -1079,7 +1079,8 @@ decode_key_event(
 
     // special cases
     if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0
-	&& (pker->uChar.UnicodeChar == NUL || pker->uChar.UnicodeChar == 0xfffd))
+					&& (pker->uChar.UnicodeChar == NUL
+					|| pker->uChar.UnicodeChar == 0xfffd))
     {
 	// Ctrl-6 is Ctrl-^
 	if (pker->wVirtualKeyCode == '6')
@@ -1115,11 +1116,11 @@ decode_key_event(
 	{
 	    if (nModifs == 0)
 		*pch = VirtKeyMap[i].chAlone;
-	    else if ((nModifs & SHIFT) != 0 && (nModifs & ~SHIFT) == 0)
+	    else if ((nModifs & SHIFT) && (vtp_working || !(nModifs & ~SHIFT)))
 		*pch = VirtKeyMap[i].chShift;
-	    else if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0)
+	    else if ((nModifs & CTRL) && !(nModifs & ~CTRL))
 		*pch = VirtKeyMap[i].chCtrl;
-	    else if ((nModifs & ALT) != 0 && (nModifs & ~ALT) == 0)
+	    else if ((nModifs & ALT) && (vtp_working || !(nModifs & ~ALT)))
 		*pch = VirtKeyMap[i].chAlt;
 
 	    if (*pch != 0)
@@ -1130,13 +1131,67 @@ decode_key_event(
 		    *pch = K_NUL;
 		    if (pmodifiers && vtp_working)
 		    {
-			*pch2 = VirtKeyMap[i].chAlone;
-			if (nModifs & ALT)
-			    *pmodifiers |= MOD_MASK_ALT;
-			if (nModifs & SHIFT)
-			    *pmodifiers |= MOD_MASK_SHIFT;
-			if (nModifs & CTRL)
-			    *pmodifiers |= MOD_MASK_CTRL;
+			if (pker->wVirtualKeyCode >= VK_F1 
+			    && pker->wVirtualKeyCode <= VK_F12)
+			{
+			    if (nModifs & ALT)
+			    {
+				*pmodifiers |= MOD_MASK_ALT;
+				if (!(nModifs & SHIFT))
+				    *pch2 = VirtKeyMap[i].chAlone;
+			    }
+			    if ((nModifs & CTRL))
+			    {
+				*pmodifiers |= MOD_MASK_CTRL;
+				if (!(nModifs & SHIFT))
+				    *pch2 = VirtKeyMap[i].chAlone;
+			    }
+			}
+			else if (pker->wVirtualKeyCode >= VK_END 
+				&& pker->wVirtualKeyCode <= VK_DOWN)
+			{
+			    // VK_END   0x23
+			    // VK_HOME  0x24
+			    // VK_LEFT  0x25
+			    // VK_UP    0x26
+			    // VK_RIGHT 0x27
+			    // VK_DOWN  0x28
+			    *pmodifiers = 0;
+			    *pch2 = VirtKeyMap[i].chAlone;
+			    if ((nModifs & SHIFT) && !(nModifs & ~SHIFT))
+			    {
+				*pch2 = VirtKeyMap[i].chShift;
+			    }
+			    else if ((nModifs & CTRL) && !(nModifs & ~CTRL))
+			    {
+				*pch2 = VirtKeyMap[i].chCtrl;
+				if (pker->wVirtualKeyCode == VK_UP 
+				    || pker->wVirtualKeyCode == VK_DOWN)
+				{
+				    *pmodifiers |= MOD_MASK_CTRL;
+				    *pch2 = VirtKeyMap[i].chAlone;
+				}
+			    }
+			    else if ((nModifs & ALT) && !(nModifs & ~ALT))
+			    {
+				*pch2 = VirtKeyMap[i].chAlt;
+			    }
+			    else if ((nModifs & SHIFT) && (nModifs & CTRL))
+			    {
+				*pmodifiers |= MOD_MASK_CTRL;
+				*pch2 = VirtKeyMap[i].chShift;
+			    }
+			}
+			else
+			{
+			    *pch2 = VirtKeyMap[i].chAlone;
+			    if (nModifs & SHIFT)
+				*pmodifiers |= MOD_MASK_SHIFT;
+			    if (nModifs & CTRL)
+				*pmodifiers |= MOD_MASK_CTRL;
+			    if (nModifs & ALT)
+				*pmodifiers |= MOD_MASK_ALT;
+			}
 		    }
 		}
 		return TRUE;
@@ -1261,14 +1316,6 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	    {
 		// REPLACEMENT CHARACTER
 		ker.uChar.UnicodeChar = 0xfffd;
-		// if (s_dwMods == 0)
-		// 	ker.uChar.UnicodeChar = VirtKeyMap[i].chAlone;
-		// else if ((s_dwMods & SHIFT) != 0 && (s_dwMods & ~SHIFT) == 0)
-		// 	ker.uChar.UnicodeChar = VirtKeyMap[i].chShift;
-		// else if ((s_dwMods & CTRL) != 0 && (s_dwMods & ~CTRL) == 0)
-		// 	ker.uChar.UnicodeChar = VirtKeyMap[i].chCtrl;
-		// else if ((s_dwMods & ALT) != 0 && (s_dwMods & ~ALT) == 0)
-		// 	ker.uChar.UnicodeChar = VirtKeyMap[i].chAlt;
 	    }
 	}
 
