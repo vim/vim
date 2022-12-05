@@ -8159,9 +8159,32 @@ init_srand(UINT32_T *x)
 	}
     }
     if (dev_urandom_state != OK)
-	// Reading /dev/urandom doesn't work, fall back to time().
 #endif
-	*x = vim_time();
+    {
+	// Reading /dev/urandom doesn't work, fall back to:
+	// - randombytes_random()
+	// - reltime() or time()
+	// - XOR with process ID
+#if defined(FEAT_SODIUM)
+	if (sodium_init() >= 0)
+	    *x = randombytes_random();
+	else
+#endif
+	{
+#if defined(FEAT_RELTIME)
+	    proftime_T res;
+	    profile_start(&res);
+#  if defined(MSWIN)
+	    *x = (UINT32_T)res.LowPart;
+#  else
+	    *x = (UINT32_T)res.tv_usec;
+#  endif
+#else
+	    *x = vim_time();
+#endif
+	    *x ^= mch_get_pid();
+	}
+    }
 }
 
 #define ROTL(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
