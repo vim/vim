@@ -28,9 +28,6 @@ func Test_suspend()
     sleep 150m
   endif
 
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   let buf = term_start('/bin/sh')
   " Wait for shell prompt.
   call WaitForAssert({-> assert_match('[$#] $', term_getline(buf, '.'))})
@@ -69,7 +66,6 @@ func Test_suspend()
 
   exe buf . 'bwipe!'
   call delete('Xfoo')
-  call delete('.Xfoo.swp')
 endfunc
 
 func Test_suspend_autocmd()
@@ -81,9 +77,6 @@ func Test_suspend_autocmd()
     " Mac OS machines tend to be slow, wait a bit longer
     sleep 150m
   endif
-
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
 
   let buf = term_start('/bin/sh', #{term_rows: 6})
   " Wait for shell prompt.
@@ -123,7 +116,6 @@ func Test_suspend_autocmd()
 
   exe buf . 'bwipe!'
   call delete('Xfoo')
-  call delete('.Xfoo.swp')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -168,6 +168,7 @@ static void f_split(typval_T *argvars, typval_T *rettv);
 static void f_srand(typval_T *argvars, typval_T *rettv);
 static void f_submatch(typval_T *argvars, typval_T *rettv);
 static void f_substitute(typval_T *argvars, typval_T *rettv);
+static void f_swapfilelist(typval_T *argvars, typval_T *rettv);
 static void f_swapinfo(typval_T *argvars, typval_T *rettv);
 static void f_swapname(typval_T *argvars, typval_T *rettv);
 static void f_synID(typval_T *argvars, typval_T *rettv);
@@ -2579,6 +2580,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_submatch},
     {"substitute",	4, 4, FEARG_1,	    arg4_string_string_any_string,
 			ret_string,	    f_substitute},
+    {"swapfilelist",	0, 0, 0,	    NULL,
+			ret_list_string,    f_swapfilelist},
     {"swapinfo",	1, 1, FEARG_1,	    arg1_string,
 			ret_dict_any,	    f_swapinfo},
     {"swapname",	1, 1, FEARG_1,	    arg1_buffer,
@@ -10168,6 +10171,17 @@ f_substitute(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_string = NULL;
     else
 	rettv->vval.v_string = do_string_sub(str, pat, sub, expr, flg);
+}
+
+/*
+ * "swapfilelist()" function
+ */
+    static void
+f_swapfilelist(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    recover_names(NULL, FALSE, rettv->vval.v_list, 0, NULL);
 }
 
 /*
