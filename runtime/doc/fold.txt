@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 9.0.  Last change: 2022 Oct 01
+*fold.txt*      For Vim version 9.0.  Last change: 2022 Nov 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -597,6 +597,11 @@ line is folded, it cannot be displayed there.
 
 Many movement commands handle a sequence of folded lines like an empty line.
 For example, the "w" command stops once in the first column.
+
+When starting a search in a closed fold it will not find a match in the
+current fold.  It's like a forward search always starts from the end of the
+closed fold, while a backwards search starts from the start of the closed
+fold.
 
 When in Insert mode, the cursor line is never folded.  That allows you to see
 what you type!
