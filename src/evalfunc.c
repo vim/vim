@@ -4384,25 +4384,27 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 #ifdef USE_INPUT_BUF
 	    ch_log(NULL, "feedkeys() lowlevel: %s", keys);
-
-	    int len = (int)STRLEN(keys);
-
 # if defined(MSWIN)
+	    if (has_vtp_working() 
 #  if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
-	    if (!gui.in_use)
+		&& !gui.in_use
 #  endif
-		feed_mswin_input(keys);
-#  if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
-	    else
-#  endif
-# endif
-	    for (int idx = 0; idx < len; ++idx)
+		)
 	    {
-		// if a CTRL-C was typed, set got_int, similar to what
-		// happens in fill_input_buf()
-		if (keys[idx] == 3 && ctrl_c_interrupts && typed)
-		    got_int = TRUE;
-		add_to_input_buf(keys + idx, 1);
+		feed_mswin_input(keys);
+	    }
+	    else
+# endif
+	    {
+		int len = (int)STRLEN(keys);
+		for (int idx = 0; idx < len; ++idx)
+		{
+		    // if a CTRL-C was typed, set got_int, similar to what
+		    // happens in fill_input_buf()
+		    if (keys[idx] == 3 && ctrl_c_interrupts && typed)
+			got_int = TRUE;
+		    add_to_input_buf(keys + idx, 1);
+		}
 	    }
 #else
 	    emsg(_(e_lowlevel_input_not_supported));
