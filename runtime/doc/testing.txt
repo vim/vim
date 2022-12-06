@@ -94,7 +94,7 @@ test_gui_event({event}, {args})
 		    "findrepl"  search and replace text.
 		    "mouse"	mouse button click event.
 		    "scrollbar" move or drag the scrollbar.
-		    "keyboard" send a low-level GUI event.
+		    "keyboard"  send a low-level keyboard event.
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
 
@@ -179,7 +179,7 @@ test_gui_event({event}, {args})
 				scrollbar.
 
 		"keyboard":
-		  Send a low-level GUI event (e.g. key-up or down).
+		  Send a low-level keyboard event (e.g. key-up or down).
 		  Currently only supported on MS-Windows.
 		  The supported items in {args} are:
 		    event:	The supported string values are:
