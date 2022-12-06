@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 9.0.  Last change: 2022 Dec 04
+*visual.txt*    For Vim version 9.0.  Last change: 2022 Jun 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -151,11 +151,6 @@ gN			Like |gn| but searches backward, like with `N`.
 			display where the xterm is running (via the DISPLAY
 			environment variable or the -display argument).  Only
 			when 'mouse' option contains 'n' or 'a'.
-
-<LeftMouseNM>		Internal mouse code, used for clicking on the status
-<LeftReleaseNM>		line to focus a window.  NM stands for non-mappable.
-			You cannot use these, but they might show up in some
-			places.
 
 If Visual mode is not active and the "v", "V" or CTRL-V is preceded with a
 count, the size of the previously highlighted area is used for a start.  You

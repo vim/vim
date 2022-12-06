@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 9.0.  Last change: 2022 Nov 25
+*os_vms.txt*    For Vim version 9.0.  Last change: 2022 Sep 30
 
 
 		  VIM REFERENCE MANUAL

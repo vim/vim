@@ -637,8 +637,7 @@ text_prop_position(
 	int	    *n_extra,	    // nr of bytes for virtual text
 	char_u	    **p_extra,	    // virtual text
 	int	    *n_attr,	    // attribute cells, NULL if not used
-	int	    *n_attr_skip,   // cells to skip attr, NULL if not used
-	int	    do_skip)	    // skip_cells is not zero
+	int	    *n_attr_skip)   // cells to skip attr, NULL if not used
 {
     int	    right = (tp->tp_flags & TP_FLAG_ALIGN_RIGHT);
     int	    above = (tp->tp_flags & TP_FLAG_ALIGN_ABOVE);
@@ -691,8 +690,6 @@ text_prop_position(
 		    else
 			n_used = *n_extra;
 		}
-		else if (below && before > vcol && do_skip)
-		    before -= vcol;
 		else
 		    before = 0;
 	    }
@@ -1503,75 +1500,15 @@ win_line(
 	area_highlighting = TRUE;
     }
 
-    // When w_skipcol is non-zero and there is virtual text above the actual
-    // text, then this much of the virtual text is skipped.
-    int skipcol_in_text_prop_above = 0;
-
 #ifdef FEAT_PROP_POPUP
     if (WIN_IS_POPUP(wp))
 	wlv.screen_line_flags |= SLF_POPUP;
-
-    char_u *prop_start;
-    text_prop_count = get_text_props(wp->w_buffer, lnum, &prop_start, FALSE);
-    if (text_prop_count > 0)
-    {
-	// Make a copy of the properties, so that they are properly
-	// aligned.
-	text_props = ALLOC_MULT(textprop_T, text_prop_count);
-	if (text_props != NULL)
-	    mch_memmove(text_props, prop_start,
-				     text_prop_count * sizeof(textprop_T));
-
-	// Allocate an array for the indexes.
-	text_prop_idxs = ALLOC_MULT(int, text_prop_count);
-	if (text_prop_idxs == NULL)
-	    VIM_CLEAR(text_props);
-
-	if (text_props != NULL)
-	{
-	    area_highlighting = TRUE;
-	    extra_check = TRUE;
-
-	    // When skipping virtual text the props need to be sorted.  The
-	    // order is reversed!
-	    if (lnum == wp->w_topline && wp->w_skipcol > 0)
-	    {
-		for (int i = 0; i < text_prop_count; ++i)
-		    text_prop_idxs[i] = i;
-		sort_text_props(wp->w_buffer, text_props,
-					      text_prop_idxs, text_prop_count);
-	    }
-
-	    // Text props "above" move the line number down to where the text
-	    // is.  Only count the ones that are visible, not those that are
-	    // skipped because of w_skipcol.
-	    int text_width = wp->w_width - win_col_off(wp);
-	    for (int i = text_prop_count - 1; i >= 0; --i)
-		if (text_props[i].tp_flags & TP_FLAG_ALIGN_ABOVE)
-		{
-		    if (lnum == wp->w_topline
-			    && wp->w_skipcol - skipcol_in_text_prop_above
-								 >= text_width)
-		    {
-			// This virtual text above is skipped, remove it from
-			// the array.
-			skipcol_in_text_prop_above += text_width;
-			for (int j = i + 1; j < text_prop_count; ++j)
-			    text_props[j - 1] = text_props[j];
-			++i;
-			--text_prop_count;
-		    }
-		    else
-			++wlv.text_prop_above_count;
-		}
-	}
-    }
 #endif
 
     // 'nowrap' or 'wrap' and a single line that doesn't fit: Advance to the
     // first character to be displayed.
     if (wp->w_p_wrap)
-	v = startrow == 0 ? wp->w_skipcol - skipcol_in_text_prop_above : 0;
+	v = startrow == 0 ? wp->w_skipcol : 0;
     else
 	v = wp->w_leftcol;
     if (v > 0 && !number_only)
@@ -1622,8 +1559,7 @@ win_line(
 #ifdef FEAT_PROP_POPUP
 	// If there the text doesn't reach to the desired column, need to skip
 	// "skip_cells" cells when virtual text follows.
-	if ((!wp->w_p_wrap || (lnum == wp->w_topline && wp->w_skipcol > 0))
-							       && v > wlv.vcol)
+	if (!wp->w_p_wrap && v > wlv.vcol)
 	    skip_cells = v - wlv.vcol;
 #endif
 
@@ -1763,6 +1699,40 @@ win_line(
 		margin_columns_win(wp, &left_curline_col, &right_curline_col);
 	    }
 	    area_highlighting = TRUE;
+	}
+    }
+#endif
+
+#ifdef FEAT_PROP_POPUP
+    {
+	char_u *prop_start;
+
+	text_prop_count = get_text_props(wp->w_buffer, lnum,
+							   &prop_start, FALSE);
+	if (text_prop_count > 0)
+	{
+	    // Make a copy of the properties, so that they are properly
+	    // aligned.
+	    text_props = ALLOC_MULT(textprop_T, text_prop_count);
+	    if (text_props != NULL)
+		mch_memmove(text_props, prop_start,
+					 text_prop_count * sizeof(textprop_T));
+
+	    // Allocate an array for the indexes.
+	    text_prop_idxs = ALLOC_MULT(int, text_prop_count);
+	    if (text_prop_idxs == NULL)
+		VIM_CLEAR(text_props);
+
+	    if (text_props != NULL)
+	    {
+		area_highlighting = TRUE;
+		extra_check = TRUE;
+		// text props "above" move the line number down to where the
+		// text is.
+		for (int i = 0; i < text_prop_count; ++i)
+		    if (text_props[i].tp_flags & TP_FLAG_ALIGN_ABOVE)
+			++wlv.text_prop_above_count;
+	    }
 	}
     }
 #endif
@@ -2089,8 +2059,7 @@ win_line(
 						    wlv.vcol,
 						    wlv.col,
 						    &wlv.n_extra, &wlv.p_extra,
-						    &n_attr, &wlv.n_attr_skip,
-						    skip_cells > 0);
+						    &n_attr, &wlv.n_attr_skip);
 				if (wlv.p_extra != prev_p_extra)
 				{
 				    // wlv.p_extra was allocated

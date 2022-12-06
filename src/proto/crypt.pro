@@ -26,6 +26,4 @@ char_u *crypt_get_key(int store, int twice);
 void crypt_append_msg(buf_T *buf);
 int crypt_sodium_munlock(void *const addr, const size_t len);
 void crypt_sodium_randombytes_buf(void *const buf, const size_t size);
-int crypt_sodium_init(void);
-uint32_t crypt_sodium_randombytes_random(void);
 /* vim: set ft=c : */

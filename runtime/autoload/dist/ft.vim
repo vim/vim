@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Nov 24
+# Last Change:	2022 Apr 13
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.

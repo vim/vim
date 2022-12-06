@@ -8,9 +8,9 @@ freebsd_task:
     - name: FreeBSD 13.1
       freebsd_instance:
         image_family: freebsd-13-1
-    - name: FreeBSD 12.4
+    - name: FreeBSD 12.3
       freebsd_instance:
-        image_family: freebsd-12-4
+        image_family: freebsd-12-3
   timeout_in: 20m
   install_script:
     - pkg update -f

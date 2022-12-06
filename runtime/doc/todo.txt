@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Dec 05
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Nov 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,26 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Keyboard protocol (also see below):
+- Use the kitty_protocol_state value, similar to seenModifyOtherKeys
+- When kitty_protocol_state is set then reset seenModifyOtherKeys.
+    Do not set seenModifyOtherKeys for kitty-protocol sequences in
+	handle_key_with_modifier().
+
+virtual text issues:
+- #11520   `below` cannot be placed below empty lines
+    James Alvarado looks into it
+- virtual text `below` highlighted incorrectly when `cursorline` enabled
+  (Issue #11588)
+
+'smoothscroll':
+- CTRL-E and gj in long line with 'scrolloff' 5 not working well yet.
+- computing 'scrolloff' position row use w_skipcol
+- Check this list: https://github.com/vim/vim/pulls?q=is%3Apr+is%3Aopen+smoothscroll+author%3Aychin
+- Long line spanning multiple pages:  After a few CTRL-E then gj causes a
+  scroll. (Ernie Rael, 18 Nov)  Also pressing space or "l"
+
+
 Upcoming larger works:
 - Make spell checking work with recent .dic/.aff files, e.g. French.  #4916
     Make Vim understand the format somehow?   Search for "spell" below.
@@ -47,16 +67,32 @@ Upcoming larger works:
    - Other mechanism than group and cluster to nest syntax items, to be used
      for grammars.
    - Possibly keeping the parsed syntax tree and incremental updates.
-   - tree-sitter doesn't handle incorrect syntax (while typing) properly.
    - Make clear how it relates to LSP.
    - example plugin: https://github.com/uga-rosa/dps-vsctm.vim
+- Better support for detecting terminal emulator behavior (esp. special key
+  handling) and taking away the need for users to tweak their config.
+  > In the table of names pointing to the list of entries, with an additional
+    one.  So that "xterm-kitty" can first load "xterm" and then add "kitty"
+    entries.
+  > Add an "expectKittyEsc" flag (Esc is always sent as a sequence, not one
+    character) and always wait after an Esc for more to come, don't leave
+    Insert mode.
+    -> Request code for Esc after outputting t_KI, use "k!" value.
+       Use response to set "expectKittyEsc".
+    -> Add ESC[>1uESC[?u to t_KI, parse flag response.
+    -> May also send t_RV and delay starting a shell command until the
+       response has been seen, to make sure the other responses don't get read
+       by a shell command.
+  > Can we use the req_more_codes_from_term() mechanism with more terminals?
+    Should we repeat it after executing a shell command?
+    Can also add this to the 'keyprotocol' option: "mok2+tcap"
 
 
 Further Vim9 improvements, possibly after launch:
-- implement :class and :interface: See |vim9-classes|  #11544
+- Use Vim9 for more runtime files.
 - implement :type
 - implement :enum
-- Use Vim9 for more runtime files.
+- implement :class and :interface: See |vim9-classes|  #11544
 - Inline call to map() and filter(), better type checking.
 - When evaluating constants for script variables, some functions could work:
     has(featureName), len(someString)
@@ -186,6 +222,9 @@ Add BufDeletePost.  #11041
 
 Add winid arg to col() and charcol()  #11466 (request #11461)
 
+Make the default for 'ttyfast' on, checking $TERM names doesn't make much
+sense right now, most terminals are fast.  #11549
+
 Can we make 'noendofline' and 'endoffile' visible?  Should show by default,
 since it's an unusual situation.
 - Show 'noendofline' when it would be used for writing ('fileformat' "dos")
@@ -201,11 +240,6 @@ entered. (#11151)
 
 Add 'keywordprg' to various ftplugin files:
 https://github.com/vim/vim/pull/5566
-
-PR #11579 to add visualtext(), return Visually selected text.
-
-Issue #10512: Dynamic loading broken with Perl 5.36
-Damien has a patch (2022 Dec 4)
 
 Add some kind of ":whathappend" command and functions to make visible what the
 last few typed keys and executed commands are.  To be used when the user
@@ -223,27 +257,15 @@ Is there a way to make 'autowriteall' make a clean exit when the xterm is
 closed? (Dennis Nazic says files are preserved, okt 28).  Perhaps handle TERM
 like HUP?
 
-Better terminal emulator support:
-  > Somehow request the terminfo entry from the terminal itself.  The $TERM
-    value then is only relevant for whether this feature is supported or not.
-    Replaces the xterm mechanism to request each entry separately. #6609
-    Multiplexers (screen, tmux) can request it to the underlying terminal, and
-    pass it on with modifications.
-    How to get all the text quickly (also over ssh)? Can we use a side channel?
-  > When xterm supports sending an Escape sequence for the Esc key, should
-    have a way to request this state.  That could be an XTGETTCAP entry, e.g.
-    "k!".  Add "esc_sends_sequence" flag.
-    If we know this state, then do not pretend going out of Insert mode in
-    vgetorpeek(), where kitty_protocol_state is checked.
-  > If a response ends up in a shell command, one way to avoid this is by
-    sending t_RV last and delay starting a shell command until the response
-    has been seen.
-  > Can we use the req_more_codes_from_term() mechanism with more terminals?
-    Should we repeat it after executing a shell command?
-    Can also add this to the 'keyprotocol' option: "mok2+tcap"
-  > In the table of terminal names pointing to the list of termcap entries,
-    add an optional additional one.  So that "xterm-kitty" can first load
-    "xterm" and then add "kitty" entries.
+Improvement in terminal configuration mess: Request the terminfo entry from
+the terminal itself.  The $TERM value then is only relevant for whether this
+feature is supported or not.  Replaces the xterm mechanism to request each
+entry separately. #6609
+Multiplexers (screen, tmux) can request it to the underlying terminal, and
+pass it on with modifications.
+How to get all the text quickly (also over ssh)?  Can we use a side channel?
+
+Horizontal mouse scroll only works when compiled with GUI?  #11374
 
 Using "A" and "o" in manually created fold (in empty buffer) does not behave
 consistenly (James McCoy, #10698)
@@ -253,6 +275,8 @@ overwritten.  Could use ":echowin" and call redraw_cmd() in get_user_input().
 #11299
 
 Syntax include problem: #11277.  Related to Patch 8.2.2761
+
+Add str2blob() and blob2str() ?  #4049
 
 To avoid flicker: add an option that when a screen clear is requested, instead
 of clearing it draws everything and uses "clear to end of line" for every line.
@@ -274,15 +298,6 @@ Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 ":set shellpipe&" and ":set shellredir&" should use the logic from
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
-
-Support translations for plugins: #11637
-- Need a tool like xgettext for Vim script, generates a .pot file.
-  Need the equivalent of _() and N_(), perhaps TR() and TRN().
-- Instructions for how to create .po files and translate.
-- Script or Makefile to generate .mo files.
-- Instructions and perhaps a script to install the .mo files in the right
-  place.
-- Add variant of gettext() that takes a package name.
 
 With concealed text mouse click doesn't put the cursor in the right position.
 (Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
@@ -2653,6 +2668,13 @@ Awaiting updated patches:
 -   Add possibility to highlight specific columns (for Fortran).  Or put a
     line in between columns (e.g., for 'textwidth').
     Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
+8   Add functions:
+    gettext()		Translate a message.  (Patch from Yasuhiro Matsumoto)
+			Update 2004 Sep 10
+			Another patch from Edward L. Fox (2005 Nov 24)
+			Search in 'runtimepath'?
+			More docs needed about how to use this.
+			How to get the messages into the .po files?
     confirm()		add "flags" argument, with 'v' for vertical
 			    layout and 'c' for console dialog. (Haegg)
 			    Flemming Madsen has a patch for the 'c' flag

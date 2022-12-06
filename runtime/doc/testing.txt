@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.0.  Last change: 2022 Nov 28
+*testing.txt*	For Vim version 9.0.  Last change: 2022 May 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -135,9 +135,9 @@ test_gui_event({event}, {args})
 		  Inject either a mouse button click, or a mouse move, event.
 		  The supported items in {args} are:
 		    button:	mouse button.  The supported values are:
-				    0	left mouse button
+				    0	right mouse button
 				    1	middle mouse button
-				    2	right mouse button
+				    2	left mouse button
 				    3	mouse button release
 				    4	scroll wheel down
 				    5	scroll wheel up

@@ -3113,34 +3113,6 @@ func Test_prop_below_split_line()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_prop_above_below_smoothscroll()
-  CheckRunVimInTerminal
-
-  let lines =<< trim END
-      vim9script
-      setline(1, range(1, 10)->mapnew((_, v) => '" line ' .. v))
-
-      set smoothscroll wrap
-      call prop_type_add('mytype', {highlight: 'DiffChange'})
-      call prop_add(3, 0, {text: "insert above", type: "mytype", text_align: 'above'})
-      call prop_add(5, 0, {text: "insert above 1", type: "mytype", text_align: 'above'})
-      call prop_add(5, 0, {text: "insert above 2", type: "mytype", text_align: 'above'})
-      call prop_add(7, 0, {text: "insert below", type: "mytype", text_align: 'below'})
-      call prop_add(9, 0, {text: "insert below 1", type: "mytype", text_align: 'below'})
-      call prop_add(9, 0, {text: "insert below 2", type: "mytype", text_align: 'below'})
-  END
-  call writefile(lines, 'XscriptPropsSmoothscroll', 'D')
-  let buf = RunVimInTerminal('-S XscriptPropsSmoothscroll', #{rows: 8, cols: 60})
-  call VerifyScreenDump(buf, 'Test_prop_above_below_smoothscroll_1', {})
-
-  for nr in range(2, 16)
-    call term_sendkeys(buf, "\<C-E>")
-    call VerifyScreenDump(buf, 'Test_prop_above_below_smoothscroll_' .. nr, {})
-  endfor
-
-  call StopVimInTerminal(buf)
-endfunc
-
 func Test_props_with_text_override()
   CheckRunVimInTerminal
 

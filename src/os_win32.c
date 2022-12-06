@@ -1956,15 +1956,67 @@ test_mswin_event(char_u *event, dict_T *args)
 feed_mswin_input(char_u *keys)
 {
     int len = (int)STRLEN(keys);
-    //TODO: convert each key to a mswin input buffer event...
-    for (int idx = 0; idx < len; ++idx)
-    {
-	// // if a CTRL-C was typed, set got_int, similar to what
-	// // happens in fill_input_buf()
-	// if (keys[idx] == 3 && ctrl_c_interrupts && typed)
-	//     got_int = TRUE;
-	add_to_input_buf(keys + idx, 1);
-    }
+//     //TODO: convert each key to a mswin input buffer event...
+//     for (int idx = 0; idx < len; ++idx)
+//     {
+// 	// // if a CTRL-C was typed, set got_int, similar to what
+// 	// // happens in fill_input_buf()
+// 	// if (keys[idx] == 3 && ctrl_c_interrupts && typed)
+// 	//     got_int = TRUE;
+// 	add_to_input_buf(keys + idx, 1);
+//     }
+
+//     // Need to escape K_SPECIAL and CSI before putting the string in
+//     // the typeahead buffer.
+//     char_u *keys_esc = vim_strsave_escape_csi(keys);
+//     if (keys_esc == NULL)
+// 	return;
+
+//     ins_typebuf(keys_esc, REMAP_YES, typebuf.tb_len, TRUE, FALSE);
+
+//     if (vgetc_busy
+// #ifdef FEAT_TIMERS
+// 	    || timer_busy
+// #endif
+// 	    || input_busy)
+// 	typebuf_was_filled = TRUE;
+//
+//     vim_free(keys_esc);
+///////////////////////////////////////////////////////////////////////////
+//     typeahead[typeaheadlen++] = K_SPECIAL;   0x80
+//     typeahead[typeaheadlen++] = KS_MODIFIER; 0xFC
+//     typeahead[typeaheadlen++] = modifiers;  S-C-A  0x02-0x04-0x08
+///////////////
+// 	MOD_MASK_SHIFT	    0x02
+// 	MOD_MASK_CTRL	    0x04
+// 	MOD_MASK_ALT	    0x08	// aka META
+// 	MOD_MASK_META	    0x10	// META when it's different from ALT
+///////////////
+// 	    // bit masks for mouse modifiers:
+// 	    #define MOUSE_SHIFT	0x04
+// 	    #define MOUSE_ALT	0x08
+// 	    #define MOUSE_CTRL	0x10
+///////////////
+//     typeahead[typeaheadlen++] = CSI;         0x9B
+//     typeahead[typeaheadlen++] = KS_EXTRA;    0xFD
+//     typeahead[typeaheadlen++] = scroll_dir;  KE_MOUSEDOWN 75 0x4B, KE_MOUSEUP 76 0x4C, KE_MOUSELEFT 77 0x4D, KE_MOUSERIGHT 78 0x4E
+///////////////
+//     typeahead[typeaheadlen++] = ESC + 128;    (27 + 128) = 155 = 0x9b = CSI   ESC (octal: \033 , hexadecimal: \x1B , or ^[ , or, in decimal, 27)
+//     typeahead[typeaheadlen++] = 'M';           'M' = 77 = 0x4d
+//     typeahead[typeaheadlen++] = g_nMouseClick;   
+// 	MOUSE_LEFT	0x00
+// 	MOUSE_MIDDLE	0x01
+// 	MOUSE_RIGHT	0x02
+// 	MOUSE_RELEASE	0x03
+// 	MOUSE_DRAG  (0x40 | MOUSE_RELEASE)
+// 	MOUSE_4	0x100 // scroll wheel down
+// 	MOUSE_5	0x200 // scroll wheel up
+// 	MOUSE_6	0x500 // scroll wheel left
+// 	MOUSE_7	0x600 // scroll wheel right
+//     typeahead[typeaheadlen++] = (char_u)(g_xMouse / 128 + 0x21);   0x21 = 33
+//     typeahead[typeaheadlen++] = (char_u)(g_xMouse % 128 + 0x21);
+//     typeahead[typeaheadlen++] = (char_u)(g_yMouse / 128 + 0x21);
+//     typeahead[typeaheadlen++] = (char_u)(g_yMouse % 128 + 0x21);
 }
 
 #endif // FEAT_EVAL || PROTO

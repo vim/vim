@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2022 Dec 03
+*eval.txt*	For Vim version 9.0.  Last change: 2022 Nov 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -633,10 +633,6 @@ This removes all entries from "dict" with a value not matching 'x'.
 This can also be used to remove all entries: >
 	call filter(dict, 0)
 
-In some situations it is not allowed to remove or add entries to a Dictionary.
-Especially when iterating over all the entries.  You will get *E1313* or
-another error in that case.
-
 
 Dictionary function ~
 				*Dictionary-function* *self* *E725* *E862*
@@ -650,8 +646,7 @@ special way with a dictionary.  Example: >
 
 This is like a method in object oriented programming.  The entry in the
 Dictionary is a |Funcref|.  The local variable "self" refers to the dictionary
-the function was invoked from.  When using |Vim9| script you can use classes
-and objects, see `:class`.
+the function was invoked from.
 
 It is also possible to add a function without the "dict" attribute as a
 Funcref to a Dictionary, but the "self" variable is not available then.
