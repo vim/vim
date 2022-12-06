@@ -1195,7 +1195,7 @@ win_lbr_chartabsize(
 
 			cells = text_prop_position(wp, tp, vcol,
 			     (vcol + size) % (wp->w_width - col_off) + col_off,
-						     &n_extra, &p, NULL, NULL);
+					      &n_extra, &p, NULL, NULL, FALSE);
 #ifdef FEAT_LINEBREAK
 			no_sbr = TRUE;  // don't use 'showbreak' now
 #endif

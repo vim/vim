@@ -2,10 +2,9 @@
 
 source check.vim
 CheckMSWindows
-CheckNotGui  
-".. The key events should also work in gui, but not yet.
+CheckNotGui 
+".. The key events should also work in gui
 
-source mouse.vim
 
 " Test for sending low level key presses
 func SendKeys(keylist)
@@ -300,35 +299,6 @@ func Test_windows_console_key_event()
   endfor
 
   bw!
-endfunc
-
-func Test_windows_console_mouse_event()
-  CheckMSWindows
-  CheckNotGui
-  let msg = ''
-  go
-  " call assert_equal([0, 1, 1, 0], getpos('.'), msg)
-  let row = 2
-  let col = 6
-  call MouseLeftClick(row, col)
-  call MouseLeftRelease(row, col)
-  " call assert_equal([0, 2, 6, 0], getpos('.'), msg)
-
-"  func MouseLeftClick(row, col)
-"  func MouseMiddleClick(row, col)
-"  func MouseRightClick(row, col)
-"  func MouseCtrlLeftClick(row, col)
-"  func MouseCtrlRightClick(row, col)
-"  func MouseAltLeftClick(row, col)
-"  func MouseAltRightClick(row, col)
-"  func MouseLeftRelease(row, col)
-"  func MouseMiddleRelease(row, col)
-"  func MouseRightRelease(row, col)
-"  func MouseLeftDrag(row, col)
-"  func MouseWheelUp(row, col)
-"  func MouseWheelDown(row, col)
-"  func MouseWheelLeft(row, col)
-"  func MouseWheelRight(row, col)
 endfunc
 
 "  Not ready for this test just yet...
