@@ -667,7 +667,7 @@ test_getvalue({string})		any	get value of an internal variable
 test_gui_event({event}, {args})	bool	generate a GUI event for testing
 test_ignore_error({expr})	none	ignore a specific error
 test_mswin_event({event}, {args})
-				bool	generate a MS-Windows event for testing
+				bool	generate MS-Windows event for testing
 test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
