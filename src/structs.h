@@ -3618,6 +3618,9 @@ struct window_S
 
     // five fields that are only used when there is a WinScrolled autocommand
     linenr_T	w_last_topline;	    // last known value for w_topline
+#ifdef FEAT_DIFF
+    linenr_T	w_last_topfill;	    // last known value for w_topfill
+#endif
     colnr_T	w_last_leftcol;	    // last known value for w_leftcol
     colnr_T	w_last_skipcol;	    // last known value for w_skipcol
     int		w_last_width;	    // last known value for w_width
