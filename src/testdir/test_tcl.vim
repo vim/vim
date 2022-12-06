@@ -638,9 +638,6 @@ endfunc
 
 " Test $buf delcmd {cmd} (command executed when buffer is deleted)
 func Test_buffer_delcmd()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   new Xfoo
   split
   tcl $::vim::current(buffer) delcmd [list set msg "buffer deleted"]

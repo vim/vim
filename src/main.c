@@ -507,7 +507,7 @@ vim_main2(void)
      */
     if (recoverymode && params.fname == NULL)
     {
-	recover_names(NULL, TRUE, 0, NULL);
+	recover_names(NULL, TRUE, NULL, 0, NULL);
 	mch_exit(0);
     }
 

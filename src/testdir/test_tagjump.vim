@@ -733,9 +733,6 @@ endfunc
 
 " Tests for guessing the tag location
 func Test_tag_guess()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "func1\tXfoo\t/^int func1(int x)/",
         \ "func2\tXfoo\t/^int func2(int y)/",
@@ -772,9 +769,6 @@ endfunc
 
 " Test for an unsorted tags file
 func Test_tag_sort()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   let l = [
         \ "first\tXfoo\t1",
         \ "ten\tXfoo\t3",
@@ -802,9 +796,6 @@ endfunc
 
 " Test for an unsorted tags file
 func Test_tag_fold()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "!_TAG_FILE_SORTED\t2\t/0=unsorted, 1=sorted, 2=foldcase/",
@@ -831,9 +822,6 @@ endfunc
 
 " Test for the :ltag command
 func Test_ltag()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "first\tXfoo\t1",
@@ -871,9 +859,6 @@ endfunc
 " Test for setting the last search pattern to the tag search pattern
 " when cpoptions has 't'
 func Test_tag_last_search_pat()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "first\tXfoo\t/^int first() {}/",
@@ -902,9 +887,6 @@ endfunc
 
 " Tag stack tests
 func Test_tag_stack()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   let l = []
   for i in range(10, 31)
     let l += ["var" .. i .. "\tXfoo\t/^int var" .. i .. ";$/"]
@@ -967,9 +949,6 @@ endfunc
 
 " Test for browsing multiple matching tags
 func Test_tag_multimatch()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "first\tXfoo\t1",
@@ -1015,9 +994,6 @@ endfunc
 
 " Test for previewing multiple matching tags
 func Test_preview_tag_multimatch()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "first\tXfoo\t1",
@@ -1066,9 +1042,6 @@ endfunc
 
 " Test for jumping to multiple matching tags across multiple :tags commands
 func Test_tnext_multimatch()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "first\tXfoo1\t1",
@@ -1096,9 +1069,6 @@ endfunc
 
 " Test for jumping to multiple matching tags in non-existing files
 func Test_multimatch_non_existing_files()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "first\tXfoo1\t1",
@@ -1116,9 +1086,6 @@ func Test_multimatch_non_existing_files()
 endfunc
 
 func Test_tselect_listing()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "first\tXfoo\t1" .. ';"' .. "\tv\ttyperef:typename:int\tfile:",
@@ -1500,9 +1467,6 @@ endfunc
 
 " Test for 'tagbsearch' (binary search)
 func Test_tagbsearch()
-  " in case a previous failure left a swap file behind
-  call delete('.Xfoo.swp')
-
   " If a tags file header says the tags are sorted, but the tags are actually
   " unsorted, then binary search should fail and linear search should work.
   call writefile([
