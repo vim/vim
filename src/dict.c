@@ -122,6 +122,9 @@ hashtab_free_contents(hashtab_T *ht)
     hashitem_T	*hi;
     dictitem_T	*di;
 
+    if (check_hashtab_frozen(ht, "clear dict"))
+	return;
+
     // Lock the hashtab, we don't want it to resize while freeing items.
     hash_lock(ht);
     todo = (int)ht->ht_used;
@@ -132,7 +135,7 @@ hashtab_free_contents(hashtab_T *ht)
 	    // Remove the item before deleting it, just in case there is
 	    // something recursive causing trouble.
 	    di = HI2DI(hi);
-	    hash_remove(ht, hi);
+	    hash_remove(ht, hi, "clear dict");
 	    dictitem_free(di);
 	    --todo;
 	}
@@ -256,9 +259,10 @@ dictitem_copy(dictitem_T *org)
 
 /*
  * Remove item "item" from Dictionary "dict" and free it.
+ * "command" is used for the error message when the hashtab if frozen.
  */
     void
-dictitem_remove(dict_T *dict, dictitem_T *item)
+dictitem_remove(dict_T *dict, dictitem_T *item, char *command)
 {
     hashitem_T	*hi;
 
@@ -266,7 +270,7 @@ dictitem_remove(dict_T *dict, dictitem_T *item)
     if (HASHITEM_EMPTY(hi))
 	internal_error("dictitem_remove()");
     else
-	hash_remove(&dict->dv_hashtab, hi);
+	hash_remove(&dict->dv_hashtab, hi, command);
     dictitem_free(item);
 }
 
@@ -375,7 +379,7 @@ dict_add(dict_T *d, dictitem_T *item)
 {
     if (dict_wrong_func_name(d, &item->di_tv, item->di_key))
 	return FAIL;
-    return hash_add(&d->dv_hashtab, item->di_key);
+    return hash_add(&d->dv_hashtab, item->di_key, "add to dictionary");
 }
 
 /*
@@ -1082,16 +1086,27 @@ failret:
  * Go over all entries in "d2" and add them to "d1".
  * When "action" is "error" then a duplicate key is an error.
  * When "action" is "force" then a duplicate key is overwritten.
+ * When "action" is "move" then move items instead of copying.
  * Otherwise duplicate keys are ignored ("action" is "keep").
+ * "func_name" is used for reporting where an error occurred.
  */
     void
 dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 {
     dictitem_T	*di1;
-    hashitem_T	*hi2;
     int		todo;
     char_u	*arg_errmsg = (char_u *)N_("extend() argument");
     type_T	*type;
+
+    if (check_hashtab_frozen(&d1->dv_hashtab, "extend"))
+	return;
+
+    if (*action == 'm')
+    {
+	if (check_hashtab_frozen(&d2->dv_hashtab, "extend"))
+	    return;
+	hash_lock(&d2->dv_hashtab);  // don't rehash on hash_remove()
+    }
 
     if (d1->dv_type != NULL && d1->dv_type->tt_member != NULL)
 	type = d1->dv_type->tt_member;
@@ -1099,7 +1114,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	type = NULL;
 
     todo = (int)d2->dv_hashtab.ht_used;
-    for (hi2 = d2->dv_hashtab.ht_array; todo > 0; ++hi2)
+    for (hashitem_T *hi2 = d2->dv_hashtab.ht_array; todo > 0; ++hi2)
     {
 	if (!HASHITEM_EMPTY(hi2))
 	{
@@ -1116,9 +1131,20 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 
 	    if (di1 == NULL)
 	    {
-		di1 = dictitem_copy(HI2DI(hi2));
-		if (di1 != NULL && dict_add(d1, di1) == FAIL)
-		    dictitem_free(di1);
+		if (*action == 'm')
+		{
+		    // Cheap way to move a dict item from "d2" to "d1".
+		    // If dict_add() fails then "d2" won't be empty.
+		    di1 = HI2DI(hi2);
+		    if (dict_add(d1, di1) == OK)
+			hash_remove(&d2->dv_hashtab, hi2, "extend");
+		}
+		else
+		{
+		    di1 = dictitem_copy(HI2DI(hi2));
+		    if (di1 != NULL && dict_add(d1, di1) == FAIL)
+			dictitem_free(di1);
+		}
 	    }
 	    else if (*action == 'e')
 	    {
@@ -1138,6 +1164,9 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action, char *func_name)
 	    }
 	}
     }
+
+    if (*action == 'm')
+	hash_unlock(&d2->dv_hashtab);
 }
 
 /*
@@ -1272,7 +1301,7 @@ dict_extend_func(
 	    action = (char_u *)"force";
 
 	if (type != NULL && check_typval_arg_type(type, &argvars[1],
-		    func_name, 2) == FAIL)
+							 func_name, 2) == FAIL)
 	    return;
 	dict_extend(d1, d2, action, func_name);
 
@@ -1388,7 +1417,7 @@ dict_filter_map(
 		if (var_check_fixed(di->di_flags, arg_errmsg, TRUE)
 			|| var_check_ro(di->di_flags, arg_errmsg, TRUE))
 		    break;
-		dictitem_remove(d, di);
+		dictitem_remove(d, di, "filter");
 	    }
 	}
     }
@@ -1435,7 +1464,7 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 
     *rettv = di->di_tv;
     init_tv(&di->di_tv);
-    dictitem_remove(d, di);
+    dictitem_remove(d, di, "remove()");
 }
 
 typedef enum {

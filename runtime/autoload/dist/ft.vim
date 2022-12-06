@@ -712,7 +712,8 @@ export def SetFileTypeSH(name: string)
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif name =~ '\<sh\>'
+  elseif name =~ '\<sh\>' || name =~ '\<dash\>'
+    # Ubuntu links "sh" to "dash", thus it is expected to work the same way
     b:is_sh = 1
     if exists("b:is_kornshell")
       unlet b:is_kornshell

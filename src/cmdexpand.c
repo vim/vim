@@ -226,8 +226,13 @@ nextwild(
 	return FAIL;
     }
 
-    msg_puts("...");	    // show that we are busy
-    out_flush();
+    // If cmd_silent is set then don't show the dots, because redrawcmd() below
+    // won't remove them.
+    if (!cmd_silent)
+    {
+	msg_puts("...");	    // show that we are busy
+	out_flush();
+    }
 
     i = (int)(xp->xp_pattern - ccline->cmdbuff);
     xp->xp_pattern_len = ccline->cmdpos - i;

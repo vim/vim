@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2022 Oct 28
+*options.txt*	For Vim version 9.0.  Last change: 2022 Nov 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4548,17 +4548,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 			|+find_in_path| or |+eval| features}
 	Expression to be used to transform the string found with the 'include'
 	option to a file name.  Mostly useful to change "." to "/" for Java: >
-		:set includeexpr=substitute(v:fname,'\\.','/','g')
+		:setlocal includeexpr=substitute(v:fname,'\\.','/','g')
 <	The "v:fname" variable will be set to the file name that was detected.
-
+	Note the double backslash: the `:set` command first halves them, then
+	one remains it the value, where "\." matches a dot literally.  For
+	simple character replacements `tr()` avoids the need for escaping: >
+		:setlocal includeexpr=tr(v:fname,'.','/')
+<
 	Also used for the |gf| command if an unmodified file name can't be
 	found.  Allows doing "gf" on the name after an 'include' statement.
 	Also used for |<cfile>|.
 
 	If the expression starts with s: or |<SID>|, then it is replaced with
 	the script ID (|local-function|). Example: >
-		set includeexpr=s:MyIncludeExpr()
-		set includeexpr=<SID>SomeIncludeExpr()
+		setlocal includeexpr=s:MyIncludeExpr()
+		setlocal includeexpr=<SID>SomeIncludeExpr()
 <	Otherwise, the expression is evaluated in the context of the script
 	where the option was set, thus script-local items are available.
 
@@ -4887,6 +4891,51 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Special keys in this context are the cursor keys, <End>, <Home>,
 	<PageUp> and <PageDown>.
 	The 'keymodel' option is set by the |:behave| command.
+
+						*'keyprotocol'* *'kpc'*
+'keyprotocol' 'kpc'	string	(default: see below)
+			global
+	Specifies what keyboard protocol to use depending on the value of
+	'term'.  The supported keyboard protocols names are:
+		none	whatever the terminal uses
+		mok2	modifyOtherKeys level 2, as supported by xterm
+		kitty	Kitty keyboard protocol, as supported by Kitty
+
+	The option value is a list of comma separated items.  Each item has
+	a pattern that is matched against the 'term' option, a colon and the
+	protocol name to be used.  To illustrate this, the default value would
+	be set with: >
+	   set keyprotocol=kitty:kitty,foot:kitty,wezterm:kitty,xterm:mok2
+
+<	This means that when 'term' contains "kitty, "foot" or "wezterm"
+	somewhere then the "kitty" protocol is used.  When 'term' contains
+	"xterm" somewhere, then the "mok2" protocol is used. 
+
+	The first match is used, thus if you want to have "kitty" use the
+	kitty protocol, but "badkitty" not, then you should match "badkitty"
+	first and use the "none" value: >
+	   set keyprotocol=badkitty:none,kitty:kitty
+<
+	The option is used after 'term' has been changed.  First the termcap
+	entries are set, possibly using the builtin list, see |builtin-terms|.
+	Then this option is inspected and if there is a match and a protocol
+	is specified the following happens:
+		none	Nothing, the regular t_TE and t_TI values remain
+
+		mok2	The t_TE value is changed to:
+			    CSI >4;m	disables modifyOtherKeys
+			The t_TI value is changed to:
+			    CSI >4;2m	enables modifyOtherKeys
+			    CSI ?4m	request the modifyOtherKeys state
+
+		kitty	The t_TE value is changed to:
+			    CSI >4;m	disables modifyOtherKeys
+			    CSI =0;1u	disables the kitty keyboard protocol
+			The t_TI value is changed to:
+			    CSI =1;1u	enables the kitty keyboard protocol
+			    CSI ?u	request kitty keyboard protocol state
+			    CSI >c	request the termresponse
+
 
 					*'keywordprg'* *'kp'*
 'keywordprg' 'kp'	string	(default "man" or "man -s",  DOS: ":help",
@@ -8521,10 +8570,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	xterm entries...).
 
 				     *'ttyfast'* *'tf'* *'nottyfast'* *'notf'*
-'ttyfast' 'tf'		boolean	(default off, on when 'term' is xterm, hpterm,
-					sun-cmd, screen, rxvt, dtterm or
-					iris-ansi; also on when running Vim in
-					a DOS console)
+'ttyfast' 'tf'		boolean	(default on)
 			global
 	Indicates a fast terminal connection.  More characters will be sent to
 	the screen for redrawing, instead of using insert/delete line
@@ -8534,6 +8580,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	line for lines that wrap.  This helps when using copy/paste with the
 	mouse in an xterm and other terminals.
 
+	The default used to be set only for some terminal names, but these
+	days nearly all terminals are fast, therefore the default is now "on".
+	If you have a slow connection you may want to set this option off,
+	e.g. depending on the host name: >
+		if hostname() =~ 'faraway'
+		   set nottyfast
+		endif
+<
 						*'ttymouse'* *'ttym'*
 'ttymouse' 'ttym'	string	(default depends on 'term')
 			global

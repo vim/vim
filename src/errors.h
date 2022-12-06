@@ -1180,10 +1180,8 @@ EXTERN char e_invalid_value_for_argument_str_str[]
 #endif
 EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
-#ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
-#endif
 EXTERN char e_no_bang_allowed[]
 	INIT(= N_("E477: No ! allowed"));
 EXTERN char e_dont_panic[]
@@ -3341,3 +3339,11 @@ EXTERN char e_cannot_change_menus_while_listing[]
 #endif
 EXTERN char e_cannot_change_user_commands_while_listing[]
 	INIT(= N_("E1311: Cannot change user commands while listing"));
+EXTERN char e_not_allowed_to_change_window_layout_in_this_autocmd[]
+	INIT(= N_("E1312: Not allowed to change the window layout in this autocmd"));
+EXTERN char e_not_allowed_to_add_or_remove_entries_str[]
+	INIT(= N_("E1313: Not allowed to add or remove entries (%s)"));
+#ifdef FEAT_EVAL
+EXTERN char e_class_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1314: Class name must start with an uppercase letter: %s"));
+#endif

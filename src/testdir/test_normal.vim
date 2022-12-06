@@ -3102,15 +3102,18 @@ endfunc
 func Test_normal50_commandline()
   CheckFeature timers
   CheckFeature cmdline_hist
+
   func! DoTimerWork(id)
     call assert_equal('[Command Line]', bufname(''))
+
     " should fail, with E11, but does fail with E23?
     "call feedkeys("\<c-^>", 'tm')
 
-    " should also fail with E11
+    " should fail with E11 - "Invalid in command-line window"
     call assert_fails(":wincmd p", 'E11:')
-    " return from commandline window
-    call feedkeys("\<cr>")
+
+    " Return from commandline window.
+    call feedkeys("\<CR>", 't')
   endfunc
 
   let oldlang=v:lang
@@ -3123,7 +3126,9 @@ func Test_normal50_commandline()
   catch /E23/
     " no-op
   endtry
+
   " clean up
+  delfunc DoTimerWork
   set updatetime=4000
   exe "lang" oldlang
   bw!
@@ -3805,6 +3810,39 @@ func Test_normal_count_out_of_range()
   normal 44444444444y44444444444|
   call assert_equal(999999999, v:count)
   bwipe!
+endfunc
+
+" Test that mouse shape is restored to Normal mode after failed "c" operation.
+func Test_mouse_shape_after_failed_change()
+  CheckFeature mouseshape
+  CheckCanRunGui
+
+  let lines =<< trim END
+    set mouseshape+=o:busy
+    setlocal nomodifiable
+    let g:mouse_shapes = []
+
+    func SaveMouseShape(timer)
+      let g:mouse_shapes += [getmouseshape()]
+    endfunc
+
+    func SaveAndQuit(timer)
+      call writefile(g:mouse_shapes, 'Xmouseshapes')
+      quit
+    endfunc
+
+    call timer_start(50, {_ -> feedkeys('c')})
+    call timer_start(100, 'SaveMouseShape')
+    call timer_start(150, {_ -> feedkeys('c')})
+    call timer_start(200, 'SaveMouseShape')
+    call timer_start(250, 'SaveAndQuit')
+  END
+  call writefile(lines, 'Xmouseshape.vim', 'D')
+  call RunVim([], [], "-g -S Xmouseshape.vim")
+  sleep 300m
+  call assert_equal(['busy', 'arrow'], readfile('Xmouseshapes'))
+
+  call delete('Xmouseshapes')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

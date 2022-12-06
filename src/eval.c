@@ -1366,7 +1366,6 @@ get_lval(
 	    if (rettv != NULL && lp->ll_dict->dv_scope != 0)
 	    {
 		int prevval;
-		int wrong;
 
 		if (len != -1)
 		{
@@ -1375,7 +1374,7 @@ get_lval(
 		}
 		else
 		    prevval = 0; // avoid compiler warning
-		wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
+		int wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
 			       && (rettv->v_type == VAR_FUNC
 					    || rettv->v_type == VAR_PARTIAL)
 			       && var_wrong_func_name(key, lp->ll_di == NULL))
@@ -5085,9 +5084,11 @@ garbage_collect(int testing)
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
 								  NULL, NULL);
-    if (aucmd_win != NULL)
-	abort = abort || set_ref_in_item(&aucmd_win->w_winvar.di_tv, copyID,
-								  NULL, NULL);
+    // window-local variables in autocmd windows
+    for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
+	if (aucmd_win[i].auc_win != NULL)
+	    abort = abort || set_ref_in_item(
+		    &aucmd_win[i].auc_win->w_winvar.di_tv, copyID, NULL, NULL);
 #ifdef FEAT_PROP_POPUP
     FOR_ALL_POPUPWINS(wp)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,

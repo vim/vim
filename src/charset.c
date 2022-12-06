@@ -986,11 +986,15 @@ init_chartabsize_arg(
 		mch_memmove(cts->cts_text_props + count, prop_start,
 						   count * sizeof(textprop_T));
 		for (i = 0; i < count; ++i)
-		    if (cts->cts_text_props[i + count].tp_id < 0)
+		{
+		    textprop_T *tp = cts->cts_text_props + i + count;
+		    if (tp->tp_id < 0
+				     && text_prop_type_valid(wp->w_buffer, tp))
 		    {
 			cts->cts_has_prop_with_text = TRUE;
 			break;
 		    }
+		}
 		if (!cts->cts_has_prop_with_text)
 		{
 		    // won't use the text properties, free them

@@ -267,6 +267,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_breaklist		ex_ni
 # define ex_call		ex_ni
 # define ex_catch		ex_ni
+# define ex_class		ex_ni
 # define ex_compiler		ex_ni
 # define ex_continue		ex_ni
 # define ex_debug		ex_ni
@@ -282,10 +283,12 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_endif		ex_ni
 # define ex_endtry		ex_ni
 # define ex_endwhile		ex_ni
+# define ex_enum		ex_ni
 # define ex_eval		ex_ni
 # define ex_execute		ex_ni
-# define ex_incdec		ex_ni
 # define ex_finally		ex_ni
+# define ex_incdec		ex_ni
+# define ex_interface		ex_ni
 # define ex_finish		ex_ni
 # define ex_function		ex_ni
 # define ex_if			ex_ni
@@ -300,6 +303,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_scriptnames		ex_ni
 # define ex_throw		ex_ni
 # define ex_try			ex_ni
+# define ex_type		ex_ni
 # define ex_unlet		ex_ni
 # define ex_while		ex_ni
 # define ex_import		ex_ni
@@ -6050,11 +6054,13 @@ ex_win_close(
     buf_T	*buf = win->w_buffer;
 
     // Never close the autocommand window.
-    if (win == aucmd_win)
+    if (is_aucmd_win(win))
     {
 	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return;
     }
+    if (window_layout_locked(CMD_close))
+	return;
 
     need_hide = (bufIsChanged(buf) && buf->b_nwindows <= 1);
     if (need_hide && !buf_hide(buf) && !forceit)
@@ -6227,7 +6233,7 @@ ex_tabclose(exarg_T *eap)
 	cmdwin_result = K_IGNORE;
     else if (first_tabpage->tp_next == NULL)
 	emsg(_(e_cannot_close_last_tab_page));
-    else
+    else if (!window_layout_locked(CMD_tabclose))
     {
 	tab_number = get_tabpage_arg(eap);
 	if (eap->errmsg == NULL)
@@ -6263,7 +6269,7 @@ ex_tabonly(exarg_T *eap)
 	cmdwin_result = K_IGNORE;
     else if (first_tabpage->tp_next == NULL)
 	msg(_("Already only one tab page"));
-    else
+    else if (!window_layout_locked(CMD_tabonly))
     {
 	tab_number = get_tabpage_arg(eap);
 	if (eap->errmsg == NULL)
@@ -6296,6 +6302,9 @@ ex_tabonly(exarg_T *eap)
     void
 tabpage_close(int forceit)
 {
+    if (window_layout_locked(CMD_tabclose))
+	return;
+
     // First close all the windows but the current one.  If that worked then
     // close the last window in this tab, that will close it.
     if (!ONE_WINDOW)
@@ -6341,14 +6350,15 @@ tabpage_close_other(tabpage_T *tp, int forceit)
     static void
 ex_only(exarg_T *eap)
 {
-    win_T   *wp;
-    int	    wnr;
+    if (window_layout_locked(CMD_only))
+	return;
 # ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 # endif
     if (eap->addr_count > 0)
     {
-	wnr = eap->line2;
+	win_T   *wp;
+	int	wnr = eap->line2;
 	for (wp = firstwin; --wnr > 0; )
 	{
 	    if (wp->w_next == NULL)
@@ -6367,6 +6377,8 @@ ex_hide(exarg_T *eap UNUSED)
     // ":hide" or ":hide | cmd": hide current window
     if (!eap->skip)
     {
+	if (window_layout_locked(CMD_hide))
+	    return;
 #ifdef FEAT_GUI
 	need_mouse_correct = TRUE;
 #endif
@@ -6685,12 +6697,13 @@ ex_recover(exarg_T *eap)
 }
 
 /*
- * Command modifier used in a wrong way.
+ * Command modifier used in a wrong way.  Also for other commands that can't
+ * appear at the toplevel.
  */
     static void
 ex_wrongmodifier(exarg_T *eap)
 {
-    eap->errmsg = _(e_invalid_command);
+    eap->errmsg = ex_errmsg(e_invalid_command_str, eap->cmd);
 }
 
 /*

@@ -1768,7 +1768,7 @@ _DictionaryItem(DictionaryObject *self, PyObject *args, int flags)
 	    return NULL;
 	}
 
-	hash_remove(&dict->dv_hashtab, hi);
+	hash_remove(&dict->dv_hashtab, hi, "Python remove variable");
 	dictitem_free(di);
     }
 
@@ -1893,7 +1893,7 @@ DictionaryAssItem(
 	    return -1;
 	}
 	hi = hash_find(&dict->dv_hashtab, di->di_key);
-	hash_remove(&dict->dv_hashtab, hi);
+	hash_remove(&dict->dv_hashtab, hi, "Python remove item");
 	dictitem_free(di);
 	Py_XDECREF(todecref);
 	return 0;
@@ -2194,7 +2194,7 @@ DictionaryPopItem(DictionaryObject *self, PyObject *args UNUSED)
 	return NULL;
     }
 
-    hash_remove(&self->dict->dv_hashtab, hi);
+    hash_remove(&self->dict->dv_hashtab, hi, "Python pop item");
     dictitem_free(di);
 
     return ret;
@@ -5274,7 +5274,7 @@ BufferSetattr(BufferObject *self, char *name, PyObject *valObject)
     {
 	char_u		*val;
 	aco_save_T	aco;
-	int		ren_ret;
+	int		ren_ret = OK;
 	PyObject	*todecref;
 
 	if (!(val = StringToChars(valObject, &todecref)))
@@ -5283,8 +5283,11 @@ BufferSetattr(BufferObject *self, char *name, PyObject *valObject)
 	VimTryStart();
 	// Using aucmd_*: autocommands will be executed by rename_buffer
 	aucmd_prepbuf(&aco, self->buf);
-	ren_ret = rename_buffer(val);
-	aucmd_restbuf(&aco);
+	if (curbuf == self->buf)
+	{
+	    ren_ret = rename_buffer(val);
+	    aucmd_restbuf(&aco);
+	}
 	Py_XDECREF(todecref);
 	if (VimTryEnd())
 	    return -1;

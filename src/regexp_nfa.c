@@ -1742,7 +1742,8 @@ nfa_regatom(void)
 			    break;
 			}
 		    }
-		    semsg(_(e_nfa_regexp_unknown_operator_percent_chr), no_Magic(c));
+		    semsg(_(e_nfa_regexp_unknown_operator_percent_chr),
+								  no_Magic(c));
 		    return FAIL;
 	    }
 	    break;
@@ -4013,7 +4014,8 @@ log_subexpr(regsub_T *sub)
 
     for (j = 0; j < sub->in_use; j++)
 	if (REG_MULTI)
-	    fprintf(log_fd, "*** group %d, start: c=%d, l=%d, end: c=%d, l=%d\n",
+	    fprintf(log_fd,
+		    "*** group %d, start: c=%d, l=%d, end: c=%d, l=%d\n",
 		    j,
 		    sub->list.multi[j].start_col,
 		    (int)sub->list.multi[j].start_lnum,
@@ -4248,7 +4250,7 @@ nfa_did_time_out(void)
     {
 	if (nfa_timed_out != NULL)
 	{
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	    if (!*nfa_timed_out)
 		ch_log(NULL, "NFA regexp timed out");
 # endif
@@ -4790,7 +4792,7 @@ skip_add:
 		{
 		    sub->list.multi[subidx].start_lnum = rex.lnum;
 		    sub->list.multi[subidx].start_col =
-					  (colnr_T)(rex.input - rex.line + off);
+					 (colnr_T)(rex.input - rex.line + off);
 		}
 		sub->list.multi[subidx].end_lnum = -1;
 	    }
@@ -6243,7 +6245,7 @@ nfa_regmatch(
 		}
 		else if (!vim_iswordc_buf(curc, rex.reg_buf)
 			   || (rex.input > rex.line
-				&& vim_iswordc_buf(rex.input[-1], rex.reg_buf)))
+			       && vim_iswordc_buf(rex.input[-1], rex.reg_buf)))
 		    result = FALSE;
 		if (result)
 		{
@@ -6373,7 +6375,7 @@ nfa_regmatch(
 
 	    case NFA_NEWL:
 		if (curc == NUL && !rex.reg_line_lbr && REG_MULTI
-						 && rex.lnum <= rex.reg_maxline)
+						&& rex.lnum <= rex.reg_maxline)
 		{
 		    go_to_nextline = TRUE;
 		    // Pass -1 for the offset, which means taking the position
@@ -6782,8 +6784,7 @@ nfa_regmatch(
 			if (REG_MULTI && (lnum <= 0
 				   || lnum > wp->w_buffer->b_ml.ml_line_count))
 			    lnum = 1;
-			vcol = (long_u)win_linetabsize(wp, lnum,
-								rex.line, col);
+			vcol = (long_u)win_linetabsize(wp, lnum, rex.line, col);
 			result = nfa_re_num_cmp(t->state->val, op, vcol + 1);
 		    }
 		    if (result)
@@ -7026,7 +7027,7 @@ nfa_regmatch(
 			&& rex.lnum == 0
 			&& clen != 0
 			&& (rex.reg_maxcol == 0
-			    || (colnr_T)(rex.input - rex.line) < rex.reg_maxcol))
+			  || (colnr_T)(rex.input - rex.line) < rex.reg_maxcol))
 		    || (nfa_endp != NULL
 			&& (REG_MULTI
 			    ? (rex.lnum < nfa_endp->se_u.pos.lnum
@@ -7377,7 +7378,14 @@ nfa_regexec_both(
 	// If match_text is set it contains the full text that must match.
 	// Nothing else to try. Doesn't handle combining chars well.
 	if (prog->match_text != NULL && !rex.reg_icombine)
-	    return find_match_text(col, prog->regstart, prog->match_text);
+	{
+	    retval = find_match_text(col, prog->regstart, prog->match_text);
+	    if (REG_MULTI)
+		rex.reg_mmatch->rmm_matchcol = col;
+	    else
+		rex.reg_match->rm_matchcol = col;
+	    return retval;
+	}
     }
 
     // If the start column is past the maximum column: no need to try.
@@ -7413,11 +7421,19 @@ theend:
 	    if (end->lnum < start->lnum
 			|| (end->lnum == start->lnum && end->col < start->col))
 		rex.reg_mmatch->endpos[0] = rex.reg_mmatch->startpos[0];
+
+	    // startpos[0] may be set by "\zs", also return the column where
+	    // the whole pattern matched.
+	    rex.reg_mmatch->rmm_matchcol = col;
 	}
 	else
 	{
 	    if (rex.reg_match->endp[0] < rex.reg_match->startp[0])
 		rex.reg_match->endp[0] = rex.reg_match->startp[0];
+
+	    // startpos[0] may be set by "\zs", also return the column where
+	    // the whole pattern matched.
+	    rex.reg_match->rm_matchcol = col;
 	}
     }
 

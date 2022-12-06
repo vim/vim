@@ -538,8 +538,6 @@ ui_delay(long msec_arg, int ignoreinput)
 #ifdef FEAT_EVAL
     if (ui_delay_for_testing > 0)
 	msec = ui_delay_for_testing;
-#endif
-#ifdef FEAT_JOB_CHANNEL
     ch_log(NULL, "ui_delay(%ld)", msec);
 #endif
 #ifdef FEAT_GUI
@@ -968,7 +966,7 @@ fill_input_buf(int exit_on_error UNUSED)
 #  else
 	len = read(read_cmd_fd, (char *)inbuf + inbufcount, readlen);
 #  endif
-#  ifdef FEAT_JOB_CHANNEL
+#  ifdef FEAT_EVAL
 	if (len > 0)
 	{
 	    inbuf[inbufcount + len] = NUL;
@@ -1123,6 +1121,75 @@ check_row(int row)
     if (row >= screen_Rows)
 	return screen_Rows - 1;
     return row;
+}
+
+/*
+ * Return length of line "lnum" in screen cells for horizontal scrolling.
+ */
+    long
+scroll_line_len(linenr_T lnum)
+{
+    char_u	*p = ml_get(lnum);
+    colnr_T	col = 0;
+
+    if (*p != NUL)
+	for (;;)
+	{
+	    int	    w = chartabsize(p, col);
+	    MB_PTR_ADV(p);
+	    if (*p == NUL)		// don't count the last character
+		break;
+	    col += w;
+	}
+    return col;
+}
+
+/*
+ * Find the longest visible line number.  This is used for horizontal
+ * scrolling.  If this is not possible (or not desired, by setting 'h' in
+ * "guioptions") then the current line number is returned.
+ */
+    linenr_T
+ui_find_longest_lnum(void)
+{
+    linenr_T ret = 0;
+
+    // Calculate maximum for horizontal scrollbar.  Check for reasonable
+    // line numbers, topline and botline can be invalid when displaying is
+    // postponed.
+    if (
+# ifdef FEAT_GUI
+	    (!gui.in_use || vim_strchr(p_go, GO_HORSCROLL) == NULL) &&
+# endif
+	    curwin->w_topline <= curwin->w_cursor.lnum
+	    && curwin->w_botline > curwin->w_cursor.lnum
+	    && curwin->w_botline <= curbuf->b_ml.ml_line_count + 1)
+    {
+	linenr_T    lnum;
+	long	    n;
+	long	    max = 0;
+
+	// Use maximum of all visible lines.  Remember the lnum of the
+	// longest line, closest to the cursor line.  Used when scrolling
+	// below.
+	for (lnum = curwin->w_topline; lnum < curwin->w_botline; ++lnum)
+	{
+	    n = scroll_line_len(lnum);
+	    if (n > max)
+	    {
+		max = n;
+		ret = lnum;
+	    }
+	    else if (n == max && abs((int)(lnum - curwin->w_cursor.lnum))
+				     < abs((int)(ret - curwin->w_cursor.lnum)))
+		ret = lnum;
+	}
+    }
+    else
+	// Use cursor line only.
+	ret = curwin->w_cursor.lnum;
+
+    return ret;
 }
 
 /*

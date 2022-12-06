@@ -74,32 +74,31 @@ clear_job_options(jobopt_T *opt)
     CLEAR_POINTER(opt);
 }
 
+    static void
+unref_job_callback(callback_T *cb)
+{
+    if (cb->cb_partial != NULL)
+	partial_unref(cb->cb_partial);
+    else if (cb->cb_name != NULL)
+    {
+	func_unref(cb->cb_name);
+	if (cb->cb_free_name)
+	    vim_free(cb->cb_name);
+    }
+}
+
 /*
  * Free any members of a jobopt_T.
  */
     void
 free_job_options(jobopt_T *opt)
 {
-    if (opt->jo_callback.cb_partial != NULL)
-	partial_unref(opt->jo_callback.cb_partial);
-    else if (opt->jo_callback.cb_name != NULL)
-	func_unref(opt->jo_callback.cb_name);
-    if (opt->jo_out_cb.cb_partial != NULL)
-	partial_unref(opt->jo_out_cb.cb_partial);
-    else if (opt->jo_out_cb.cb_name != NULL)
-	func_unref(opt->jo_out_cb.cb_name);
-    if (opt->jo_err_cb.cb_partial != NULL)
-	partial_unref(opt->jo_err_cb.cb_partial);
-    else if (opt->jo_err_cb.cb_name != NULL)
-	func_unref(opt->jo_err_cb.cb_name);
-    if (opt->jo_close_cb.cb_partial != NULL)
-	partial_unref(opt->jo_close_cb.cb_partial);
-    else if (opt->jo_close_cb.cb_name != NULL)
-	func_unref(opt->jo_close_cb.cb_name);
-    if (opt->jo_exit_cb.cb_partial != NULL)
-	partial_unref(opt->jo_exit_cb.cb_partial);
-    else if (opt->jo_exit_cb.cb_name != NULL)
-	func_unref(opt->jo_exit_cb.cb_name);
+    unref_job_callback(&opt->jo_callback);
+    unref_job_callback(&opt->jo_out_cb);
+    unref_job_callback(&opt->jo_err_cb);
+    unref_job_callback(&opt->jo_close_cb);
+    unref_job_callback(&opt->jo_exit_cb);
+
     if (opt->jo_env != NULL)
 	dict_unref(opt->jo_env);
 }
@@ -1687,6 +1686,8 @@ f_prompt_setcallback(typval_T *argvars, typval_T *rettv UNUSED)
 
     free_callback(&buf->b_prompt_callback);
     set_callback(&buf->b_prompt_callback, &callback);
+    if (callback.cb_free_name)
+	vim_free(callback.cb_name);
 }
 
 /*
@@ -1714,6 +1715,8 @@ f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv UNUSED)
 
     free_callback(&buf->b_prompt_interrupt);
     set_callback(&buf->b_prompt_interrupt, &callback);
+    if (callback.cb_free_name)
+	vim_free(callback.cb_name);
 }
 
 

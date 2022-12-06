@@ -95,7 +95,7 @@ The default value for $VIM is set at compile time and can be determined with:
 
   :version
 
-The normal value is /boot/system/data/vim for Haikuports version, 
+The normal value is /boot/system/data/vim for Haikuports version,
 /boot/system/non-packaged/data/vim for manual builds.  If you don't like it
 you can set the VIM environment variable to override this, or set 'helpfile'
 in your .vimrc: >
@@ -223,11 +223,11 @@ Thank you, all!
 
 
 14. Bugs & to-do					*haiku-bugs*
- 
+
 The port is under development now and far away from the perfect state. For bug
 reports, patches and wishes, please use the Vim mailing list or Vim Github
 repository.
- 
+
 Mailing list: https://www.vim.org/maillist.php
 Vim Github repository: https://github.com/vim/vim
 

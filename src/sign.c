@@ -126,7 +126,7 @@ sign_group_unref(char_u *groupname)
 	if (group->sg_refcount == 0)
 	{
 	    // All the signs in this group are removed
-	    hash_remove(&sg_table, hi);
+	    hash_remove(&sg_table, hi, "sign remove");
 	    vim_free(group);
 	}
     }

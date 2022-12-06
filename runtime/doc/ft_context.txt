@@ -79,7 +79,7 @@ The last command will create the following syntax files:
 - `context-data-context.vim`;
 - `context-data-interfaces.vim`;
 - `context-data-metafun.vim`;
-- `context-data-tex.vim`. 
+- `context-data-tex.vim`.
 
 The same command can be used to update those syntax files.
 

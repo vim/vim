@@ -9,6 +9,7 @@ void may_trigger_safestate(int safe);
 void state_no_longer_safe(char *reason);
 int get_was_safe_state(void);
 void may_trigger_safestateagain(void);
+int work_pending(void);
 void main_loop(int cmdwin, int noexmode);
 void getout_preserve_modified(int exitval);
 void getout(int exitval);

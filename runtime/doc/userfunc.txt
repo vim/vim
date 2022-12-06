@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.0.  Last change: 2022 Sep 09
+*userfunc.txt*	For Vim version 9.0.  Last change: 2022 Nov 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8,8 +8,8 @@ Defining and using functions.
 
 This is introduced in section |41.7| of the user manual.
 
-1. Defining a fuction			|define-function|
-2. Calling a fuction			|:call|
+1. Defining a function			|define-function|
+2. Calling a function			|:call|
 3. Cleaning up in a function		|:defer|
 4. Automatically loading functions	|autoload-functions|
 

@@ -4,6 +4,7 @@ source check.vim
 CheckFeature popupwin
 
 source screendump.vim
+source term_util.vim
 
 func Test_simple_popup()
   CheckScreendump
@@ -1196,8 +1197,11 @@ func Test_popup_time()
   call assert_equal(0, popup_locate(1, 21))
   call assert_equal(0, popup_locate(2, 1))
 
-  sleep 700m
+  " Mac is usually a bit slow
+  let delay = has('mac') ? '900m' : '700m'
+  exe 'sleep ' .. delay
   redraw
+
   let line = join(map(range(1, 5), '1->screenstring(v:val)'), '')
   call assert_equal('hello', line)
 
@@ -1211,7 +1215,7 @@ func Test_popup_time()
   let line = join(map(range(1, 30), 'screenstring(&lines, v:val)'), '')
   call assert_match('.*on the command line.*', line)
 
-  sleep 700m
+  exe 'sleep ' .. delay
   redraw
   let line = join(map(range(1, 30), 'screenstring(&lines, v:val)'), '')
   call assert_notmatch('.*on the command line.*', line)
@@ -3722,7 +3726,9 @@ func Test_popupmenu_masking()
   let buf = RunVimInTerminal('-S XtestPopupmenuMasking', #{rows: 14})
   call TermWait(buf, 25)
 
-  call term_sendkeys(buf, "A\<C-X>\<C-U>\<C-A>")
+  call term_sendkeys(buf, "A" .. GetEscCodeWithModifier('C', 'X')
+			    \ .. GetEscCodeWithModifier('C', 'U')
+			    \ .. GetEscCodeWithModifier('C', 'A'))
   call VerifyScreenDump(buf, 'Test_popupwin_popupmenu_masking_1', {})
 
   call term_sendkeys(buf, "\<Esc>")

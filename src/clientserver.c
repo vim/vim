@@ -70,6 +70,10 @@ eval_client_expr_to_string(char_u *expr)
     funccal_entry_T funccal_entry;
     int		did_save_funccal = FALSE;
 
+#if defined(FEAT_EVAL)
+    ch_log(NULL, "eval_client_expr_to_string(\"%s\")", expr);
+#endif
+
     // Evaluate the expression at the toplevel, don't use variables local to
     // the calling function. Except when in debug mode.
     if (!debug_mode)

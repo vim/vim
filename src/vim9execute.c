@@ -2366,7 +2366,7 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 						  NULL, FALSE))
 		    status = FAIL;
 		else
-		    dictitem_remove(d, di);
+		    dictitem_remove(d, di, "unlet");
 	    }
 	}
     }

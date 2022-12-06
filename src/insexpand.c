@@ -123,8 +123,6 @@ struct compl_S
 # define CP_ICASE	    16	// ins_compl_equal() ignores case
 # define CP_FAST	    32	// use fast_breakcheck instead of ui_breakcheck
 
-static char e_hitend[] = N_("Hit end of paragraph");
-
 /*
  * All the current matches are stored in a list.
  * "compl_first_match" points to the start of the list.
@@ -4910,8 +4908,8 @@ ins_compl_show_statusmsg(void)
     if (is_first_match(compl_first_match->cp_next))
     {
 	edit_submode_extra = compl_status_adding() && compl_length > 1
-				? (char_u *)_(e_hitend)
-				: (char_u *)_(e_pattern_not_found);
+				? (char_u *)_("Hit end of paragraph")
+				: (char_u *)_("Pattern not found");
 	edit_submode_highl = HLF_E;
     }
 

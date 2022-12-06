@@ -2047,24 +2047,31 @@ mch_inchar(
 	    {
 		if (modifiers > 0)
 		{
-		    typeahead[typeaheadlen++] = CSI;
+		    // use K_SPECIAL instead of CSI to make mappings work
+		    typeahead[typeaheadlen++] = K_SPECIAL;
 		    typeahead[typeaheadlen++] = KS_MODIFIER;
 		    typeahead[typeaheadlen++] = modifiers;
 		}
 		typeahead[typeaheadlen++] = CSI;
 		typeahead[typeaheadlen++] = KS_EXTRA;
 		typeahead[typeaheadlen++] = scroll_dir;
-		g_nMouseClick = -1;
 	    }
 	    else
 	    {
 		typeahead[typeaheadlen++] = ESC + 128;
 		typeahead[typeaheadlen++] = 'M';
 		typeahead[typeaheadlen++] = g_nMouseClick;
-		typeahead[typeaheadlen++] = g_xMouse + '!';
-		typeahead[typeaheadlen++] = g_yMouse + '!';
-		g_nMouseClick = -1;
 	    }
+
+	    // Pass the pointer coordinates of the mouse event in 2 bytes,
+	    // allowing for > 223 columns.  Both for click and scroll events.
+	    // This is the same as what is used for the GUI.
+	    typeahead[typeaheadlen++] = (char_u)(g_xMouse / 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_xMouse % 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_yMouse / 128 + ' ' + 1);
+	    typeahead[typeaheadlen++] = (char_u)(g_yMouse % 128 + ' ' + 1);
+
+	    g_nMouseClick = -1;
 	}
 	else
 	{
@@ -2215,7 +2222,7 @@ theend:
 	buf[len++] = typeahead[0];
 	mch_memmove(typeahead, typeahead + 1, --typeaheadlen);
     }
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
     if (len > 0)
     {
 	buf[len] = NUL;
@@ -4871,27 +4878,30 @@ mch_call_shell_terminal(
 
     // Find a window to make "buf" curbuf.
     aucmd_prepbuf(&aco, buf);
-
-    clear_oparg(&oa);
-    while (term_use_loop())
+    if (curbuf == buf)
     {
-	if (oa.op_type == OP_NOP && oa.regname == NUL && !VIsual_active)
+	// Only do this when a window was found for "buf".
+	clear_oparg(&oa);
+	while (term_use_loop())
 	{
-	    // If terminal_loop() returns OK we got a key that is handled
-	    // in Normal model. We don't do redrawing anyway.
-	    if (terminal_loop(TRUE) == OK)
+	    if (oa.op_type == OP_NOP && oa.regname == NUL && !VIsual_active)
+	    {
+		// If terminal_loop() returns OK we got a key that is handled
+		// in Normal model. We don't do redrawing anyway.
+		if (terminal_loop(TRUE) == OK)
+		    normal_cmd(&oa, TRUE);
+	    }
+	    else
 		normal_cmd(&oa, TRUE);
 	}
-	else
-	    normal_cmd(&oa, TRUE);
+	retval = job->jv_exitval;
+	ch_log(NULL, "system command finished");
+
+	job_unref(job);
+
+	// restore curwin/curbuf and a few other things
+	aucmd_restbuf(&aco);
     }
-    retval = job->jv_exitval;
-    ch_log(NULL, "system command finished");
-
-    job_unref(job);
-
-    // restore curwin/curbuf and a few other things
-    aucmd_restbuf(&aco);
 
     wait_return(TRUE);
     do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD, buf->b_fnum, TRUE);
@@ -4913,7 +4923,7 @@ mch_call_shell(
     int		tmode = cur_tmode;
     WCHAR	szShellTitle[512];
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     ch_log(NULL, "executing shell command: %s", cmd);
 #endif
     // Change the title to reflect that we are in a subshell.

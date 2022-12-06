@@ -1264,7 +1264,7 @@ struct mapblock
     int		m_keylen;	// strlen(m_keys)
     int		m_mode;		// valid mode
     int		m_simplified;	// m_keys was simplified, do not use this map
-				// if seenModifyOtherKeys is TRUE
+				// if key_protocol_enabled() returns TRUE
     int		m_noremap;	// if non-zero no re-mapping for m_str
     char	m_silent;	// <silent> used, don't echo commands
     char	m_nowait;	// <nowait> used
@@ -1313,6 +1313,12 @@ typedef struct hashitem_S
 // This allows for storing 10 items (2/3 of 16) before a resize is needed.
 #define HT_INIT_SIZE 16
 
+// flags used for ht_flags
+#define HTFLAGS_ERROR	0x01	// Set when growing failed, can't add more
+				// items before growing works.
+#define HTFLAGS_FROZEN	0x02	// Trying to add or remove an item will result
+				// in an error message.
+
 typedef struct hashtable_S
 {
     long_u	ht_mask;	// mask used for hash value (nr of items in
@@ -1321,8 +1327,7 @@ typedef struct hashtable_S
     long_u	ht_filled;	// number of items used + removed
     int		ht_changed;	// incremented when adding or removing an item
     int		ht_locked;	// counter for hash_lock()
-    int		ht_error;	// when set growing failed, can't add more
-				// items before growing works
+    int		ht_flags;	// HTFLAGS_ values
     hashitem_T	*ht_array;	// points to the array, allocated when it's
 				// not "ht_smallarray"
     hashitem_T	ht_smallarray[HT_INIT_SIZE];   // initial array
@@ -4155,7 +4160,7 @@ typedef int vimmenu_T;
 typedef struct
 {
     buf_T	*save_curbuf;	    // saved curbuf
-    int		use_aucmd_win;	    // using aucmd_win
+    int		use_aucmd_win_idx;  // index in aucmd_win[] if >= 0
     int		save_curwin_id;	    // ID of saved curwin
     int		new_curwin_id;	    // ID of new curwin
     int		save_prevwin_id;    // ID of saved prevwin

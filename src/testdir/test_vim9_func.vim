@@ -467,6 +467,17 @@ def Test_return_bool()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_return_void_comment_follows()
+  var lines =<< trim END
+    vim9script
+    def ReturnCommentFollows(): void
+      return # Some comment
+    enddef
+    defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 let s:nothing = 0
 def ReturnNothing()
   s:nothing = 1

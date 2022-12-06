@@ -109,6 +109,8 @@ list_alloc_id(alloc_id_T id UNUSED)
 
 /*
  * Allocate space for a list, plus "count" items.
+ * This uses one allocation for efficiency.
+ * The reference count is not set.
  * Next list_set_item() must be called for each item.
  */
     list_T *
@@ -117,33 +119,34 @@ list_alloc_with_items(int count)
     list_T	*l;
 
     l = (list_T *)alloc_clear(sizeof(list_T) + count * sizeof(listitem_T));
-    if (l != NULL)
+    if (l == NULL)
+	return NULL;
+
+    list_init(l);
+
+    if (count > 0)
     {
-	list_init(l);
+	listitem_T	*li = (listitem_T *)(l + 1);
+	int		i;
 
-	if (count > 0)
+	l->lv_len = count;
+	l->lv_with_items = count;
+	l->lv_first = li;
+	l->lv_u.mat.lv_last = li + count - 1;
+	for (i = 0; i < count; ++i)
 	{
-	    listitem_T	*li = (listitem_T *)(l + 1);
-	    int		i;
-
-	    l->lv_len = count;
-	    l->lv_with_items = count;
-	    l->lv_first = li;
-	    l->lv_u.mat.lv_last = li + count - 1;
-	    for (i = 0; i < count; ++i)
-	    {
-		if (i == 0)
-		    li->li_prev = NULL;
-		else
-		    li->li_prev = li - 1;
-		if (i == count - 1)
-		    li->li_next = NULL;
-		else
-		    li->li_next = li + 1;
-		++li;
-	    }
+	    if (i == 0)
+		li->li_prev = NULL;
+	    else
+		li->li_prev = li - 1;
+	    if (i == count - 1)
+		li->li_next = NULL;
+	    else
+		li->li_next = li + 1;
+	    ++li;
 	}
     }
+
     return l;
 }
 

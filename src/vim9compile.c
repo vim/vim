@@ -656,12 +656,14 @@ find_imported_in_script(char_u *name, size_t len, int sid)
     imported_T *
 find_imported(char_u *name, size_t len, int load)
 {
-    imported_T	    *ret;
-
     if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return NULL;
 
-    ret = find_imported_in_script(name, len, current_sctx.sc_sid);
+    // Skip over "s:" before "s:something" to find the import name.
+    int off = name[0] == 's' && name[1] == ':' ? 2 : 0;
+
+    imported_T *ret = find_imported_in_script(name + off, len - off,
+							  current_sctx.sc_sid);
     if (ret != NULL && load && (ret->imp_flags & IMP_FLAGS_AUTOLOAD))
     {
 	scid_T	actual_sid = 0;

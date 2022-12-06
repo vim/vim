@@ -7683,15 +7683,8 @@ $as_echo "$rubyhdrdir" >&6; }
 	if test "X$librubyarg" != "X"; then
 	  RUBY_LIBS="$librubyarg $RUBY_LIBS"
 	fi
-	rubyldflags=`$vi_cv_path_ruby -r rbconfig -e "print $ruby_rbconfig::CONFIG['LDFLAGS']"`
-	if test "X$rubyldflags" != "X"; then
-	  	  	  	  rubyldflags=`echo "$rubyldflags" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
-	  if test "X$rubyldflags" != "X"; then
-	    if test "X`echo \"$LDFLAGS\" | $FGREP -e \"$rubyldflags\"`" = "X"; then
-	      LDFLAGS="$rubyldflags $LDFLAGS"
-	    fi
-	  fi
-	fi
+
+
 	RUBY_SRC="if_ruby.c"
 	RUBY_OBJ="objects/if_ruby.o"
 	RUBY_PRO="if_ruby.pro"

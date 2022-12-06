@@ -7,6 +7,13 @@ endif
 
 source view_util.vim
 
+" When 'term' is changed some status requests may be sent.  The responses may
+" interfere with what is being tested.  A short sleep is used to process any of
+" those responses first.
+func WaitForResponses()
+  sleep 50m
+endfunc
+
 " Get the name of the Python executable.
 " Also keeps it in s:python.
 func PythonProg()

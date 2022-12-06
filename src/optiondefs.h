@@ -1447,6 +1447,10 @@ static struct vimoption options[] =
     {"keymodel",    "km",   P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_km, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
+    {"keyprotocol", "kpc",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
+			    (char_u *)&p_kpc, PV_NONE,
+			    {(char_u *)"kitty:kitty,foot:kitty,wezterm:kitty,xterm:mok2", (char_u *)0L}
+			    SCTX_INIT},
     {"keywordprg",  "kp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_kp, PV_KP,
 			    {
@@ -2595,7 +2599,7 @@ static struct vimoption options[] =
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"ttyfast",	    "tf",   P_BOOL|P_NO_MKRC|P_VI_DEF,
 			    (char_u *)&p_tf, PV_NONE,
-			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"ttymouse",    "ttym", P_STRING|P_NODEFAULT|P_NO_MKRC|P_VI_DEF,
 #if defined(UNIX) || defined(VMS)
 			    (char_u *)&p_ttym, PV_NONE,
@@ -2893,6 +2897,7 @@ static struct vimoption options[] =
     p_term("t_RC", T_CRC)
     p_term("t_RI", T_CRI)
     p_term("t_Ri", T_SRI)
+    p_term("t_RK", T_CRK)
     p_term("t_RS", T_CRS)
     p_term("t_RT", T_CRT)
     p_term("t_RV", T_CRV)
