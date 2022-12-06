@@ -22,9 +22,9 @@ func Test_suspend()
   CheckFeature terminal
   CheckExecutable /bin/sh
 
-  " Somehow the modifyOtherKeys response may get to the terminal when using Mac
-  " OS.  Make t_RK empty to avoid that.
-  set t_RK=
+  " Somehow the modifyOtherKeys response may get to the terminal when using
+  " Mac OS.  Make t_RK and 'keyprotocol' empty to avoid that.
+  set t_RK= keyprotocol=
 
   call WaitForResponses()
 
@@ -72,9 +72,9 @@ func Test_suspend_autocmd()
   CheckFeature terminal
   CheckExecutable /bin/sh
 
-  " Somehow the modifyOtherKeys response may get to the terminal when using Mac
-  " OS.  Make t_RK empty to avoid that.
-  set t_RK=
+  " Somehow the modifyOtherKeys response may get to the terminal when using
+  " Mac OS.  Make t_RK and 'keyprotocol' empty to avoid that.
+  set t_RK= keyprotocol=
 
   call WaitForResponses()
 

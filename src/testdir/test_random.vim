@@ -12,17 +12,9 @@ func Test_Rand()
   call assert_equal(2658065534, rand(r))
   call assert_equal(3104308804, rand(r))
 
-  call test_settime(12341234)
   let s = srand()
-  if !has('win32') && filereadable('/dev/urandom')
-    " using /dev/urandom
-    call assert_notequal(s, srand())
-  else
-    " using time()
-    call assert_equal(s, srand())
-    call test_settime(12341235)
-    call assert_notequal(s, srand())
-  endif
+  " using /dev/urandom or used time, result is different each time
+  call assert_notequal(s, srand())
 
   call test_srand_seed(123456789)
   call assert_equal(4284103975, rand())
@@ -37,8 +29,6 @@ func Test_Rand()
   call assert_fails('echo rand([1, [2], 3, 4])', 'E730:')
   call assert_fails('echo rand([1, 2, [3], 4])', 'E730:')
   call assert_fails('echo rand([1, 2, 3, [4]])', 'E730:')
-
-  call test_settime(0)
 endfunc
 
 func Test_issue_5587()
