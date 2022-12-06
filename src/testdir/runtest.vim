@@ -161,8 +161,6 @@ if has('mac')
 endif
 
 
-
-
 " Prepare for calling test_garbagecollect_now().
 let v:testing = 1
 
@@ -210,6 +208,8 @@ endfunc
 for name in s:GetSwapFileList()
   call delete(name)
 endfor
+
+unlet name
 
 " Invoked when a test takes too much time.
 func TestTimeout(id)

@@ -8180,8 +8180,8 @@ init_srand(UINT32_T *x)
 	// - reltime() or time()
 	// - XOR with process ID
 #if defined(FEAT_SODIUM)
-	if (sodium_init() >= 0)
-	    *x = randombytes_random();
+	if (crypt_sodium_init() >= 0)
+	    *x = crypt_sodium_randombytes_random();
 	else
 #endif
 	{

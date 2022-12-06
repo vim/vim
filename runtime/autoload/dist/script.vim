@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Feb 13
+# Last Change:	2022 Nov 24
 
 export def DetectFiletype()
   var line1 = getline(1)
