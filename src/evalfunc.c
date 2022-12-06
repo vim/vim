@@ -4388,7 +4388,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 #ifdef USE_INPUT_BUF
 	    ch_log(NULL, "feedkeys() lowlevel: %s", keys);
 # if defined(MSWIN)
-	    if (has_vtp_working() 
+	    if ( TRUE
 #  if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
 		&& !gui.in_use
 #  endif
