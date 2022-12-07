@@ -3818,24 +3818,33 @@ func Test_mouse_shape_after_failed_change()
   CheckCanRunGui
 
   let lines =<< trim END
+    vim9script
     set mouseshape+=o:busy
     setlocal nomodifiable
-    let g:mouse_shapes = []
+    var mouse_shapes = []
 
-    func SaveMouseShape(timer)
-      let g:mouse_shapes += [getmouseshape()]
-    endfunc
+    def SaveMouseShape()
+      mouse_shapes += [getmouseshape()]
+    enddef
 
-    func SaveAndQuit(timer)
-      call writefile(g:mouse_shapes, 'Xmouseshapes')
+    def SaveAndQuit()
+      writefile(mouse_shapes, 'Xmouseshapes')
       quit
-    endfunc
+    enddef
 
-    call timer_start(50, {_ -> feedkeys('c')})
-    call timer_start(100, 'SaveMouseShape')
-    call timer_start(150, {_ -> feedkeys('c')})
-    call timer_start(200, 'SaveMouseShape')
-    call timer_start(250, 'SaveAndQuit')
+    feedkeys('c')
+    timer_start(50, (_) => {
+      SaveMouseShape()
+      timer_start(50, (_) => {
+        feedkeys('c')
+        timer_start(50, (_) => {
+          SaveMouseShape()
+          timer_start(50, (_) => {
+            SaveAndQuit()
+          })
+        })
+      })
+    })
   END
   call writefile(lines, 'Xmouseshape.vim', 'D')
   call RunVim([], [], "-g -S Xmouseshape.vim")
