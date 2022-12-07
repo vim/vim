@@ -75,3 +75,5 @@ Here are guidelines for removing Vim by hand:
 
 Vim does not use .ini files.  The above should remove all Vim files, except
 the ones that you moved elsewhere yourself.
+
+Thanks for using Vim!
