@@ -84,6 +84,13 @@ free_tv(typval_T *varp)
 		channel_unref(varp->vval.v_channel);
 		break;
 #endif
+	    case VAR_CLASS:
+		class_unref(varp);
+		break;
+	    case VAR_OBJECT:
+		object_unref(varp->vval.v_object);
+		break;
+
 	    case VAR_NUMBER:
 	    case VAR_FLOAT:
 	    case VAR_ANY:
@@ -152,6 +159,12 @@ clear_tv(typval_T *varp)
 		break;
 	    case VAR_INSTR:
 		VIM_CLEAR(varp->vval.v_instr);
+		break;
+	    case VAR_CLASS:
+		class_unref(varp);
+		break;
+	    case VAR_OBJECT:
+		object_unref(varp->vval.v_object);
 		break;
 	    case VAR_UNKNOWN:
 	    case VAR_ANY:
@@ -233,6 +246,12 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 #endif
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_number));
+	    break;
+	case VAR_CLASS:
+	    emsg(_(e_using_class_as_number));
+	    break;
+	case VAR_OBJECT:
+	    emsg(_(e_using_object_as_number));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
@@ -332,6 +351,12 @@ tv_get_float_chk(typval_T *varp, int *error)
 # endif
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_float));
+	    break;
+	case VAR_CLASS:
+	    emsg(_(e_using_class_as_float));
+	    break;
+	case VAR_OBJECT:
+	    emsg(_(e_using_object_as_float));
 	    break;
 	case VAR_VOID:
 	    emsg(_(e_cannot_use_void_value));
@@ -1029,6 +1054,12 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_BLOB:
 	    emsg(_(e_using_blob_as_string));
 	    break;
+	case VAR_CLASS:
+	    emsg(_(e_using_class_as_string));
+	    break;
+	case VAR_OBJECT:
+	    emsg(_(e_using_object_as_string));
+	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
 	    if (in_vim9script())
@@ -1156,6 +1187,14 @@ copy_tv(typval_T *from, typval_T *to)
 #endif
 	case VAR_INSTR:
 	    to->vval.v_instr = from->vval.v_instr;
+	    break;
+
+	case VAR_CLASS:
+	    copy_class(from, to);
+	    break;
+
+	case VAR_OBJECT:
+	    copy_object(from, to);
 	    break;
 
 	case VAR_STRING:
@@ -1877,6 +1916,13 @@ tv_equal(
 #endif
 	case VAR_INSTR:
 	    return tv1->vval.v_instr == tv2->vval.v_instr;
+
+	case VAR_CLASS:
+	    return tv1->vval.v_class == tv2->vval.v_class;
+
+	case VAR_OBJECT:
+	    // TODO: compare values
+	    return tv1->vval.v_object == tv2->vval.v_object;
 
 	case VAR_PARTIAL:
 	    return tv1->vval.v_partial == tv2->vval.v_partial;

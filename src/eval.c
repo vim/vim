@@ -1548,7 +1548,7 @@ set_var_lval(
     {
 	cc = *endp;
 	*endp = NUL;
-	if (in_vim9script() && check_reserved_name(lp->ll_name) == FAIL)
+	if (in_vim9script() && check_reserved_name(lp->ll_name, NULL) == FAIL)
 	    return;
 
 	if (lp->ll_blob != NULL)
@@ -1724,6 +1724,8 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
 	    case VAR_INSTR:
+	    case VAR_CLASS:
+	    case VAR_OBJECT:
 		break;
 
 	    case VAR_BLOB:
@@ -3850,10 +3852,23 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    return OK;
 		}
 		break;
+	case 10: if (STRNCMP(s, "null_class", 10) == 0)
+		{
+		    rettv->v_type = VAR_CLASS;
+		    rettv->vval.v_class = NULL;
+		    return OK;
+		}
+		 break;
 	case 11: if (STRNCMP(s, "null_string", 11) == 0)
 		{
 		    rettv->v_type = VAR_STRING;
 		    rettv->vval.v_string = NULL;
+		    return OK;
+		}
+		if (STRNCMP(s, "null_object", 11) == 0)
+		{
+		    rettv->v_type = VAR_OBJECT;
+		    rettv->vval.v_object = NULL;
 		    return OK;
 		}
 		break;
@@ -4685,6 +4700,8 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    if (verbose)
 		emsg(_(e_cannot_index_special_variable));
 	    return FAIL;
@@ -4788,6 +4805,8 @@ eval_index_inner(
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    break; // not evaluating, skipping over subscript
 
 	case VAR_NUMBER:
@@ -5781,6 +5800,16 @@ echo_string_core(
 	    r = (char_u *)"instructions";
 	    break;
 
+	case VAR_CLASS:
+	    *tofree = NULL;
+	    r = (char_u *)"class";
+	    break;
+
+	case VAR_OBJECT:
+	    *tofree = NULL;
+	    r = (char_u *)"object";
+	    break;
+
 	case VAR_FLOAT:
 	    *tofree = NULL;
 	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv->vval.v_float);
@@ -6588,6 +6617,20 @@ handle_subscript(
 		ret = FAIL;
 	    }
 	}
+	else if (**arg == '.' && (rettv->v_type == VAR_CLASS
+					       || rettv->v_type == VAR_OBJECT))
+	{
+	    // class member: SomeClass.varname
+	    // class method: SomeClass.SomeMethod()
+	    // class constructor: SomeClass.new()
+	    // object member: someObject.varname
+	    // object method: someObject.SomeMethod()
+	    if (class_object_index(arg, rettv, evalarg, verbose) == FAIL)
+	    {
+		clear_tv(rettv);
+		ret = FAIL;
+	    }
+	}
 	else
 	    break;
     }
@@ -6644,6 +6687,8 @@ item_copy(
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:

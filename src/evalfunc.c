@@ -3770,6 +3770,12 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	case VAR_SPECIAL:
 	    n = argvars[0].vval.v_number != VVAL_TRUE;
 	    break;
+	case VAR_CLASS:
+	    n = argvars[0].vval.v_class != NULL;
+	    break;
+	case VAR_OBJECT:
+	    n = argvars[0].vval.v_object != NULL;
+	    break;
 
 	case VAR_BLOB:
 	    n = argvars[0].vval.v_blob == NULL
@@ -7267,6 +7273,8 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    emsg(_(e_invalid_type_for_len));
 	    break;
     }
@@ -10183,7 +10191,9 @@ f_substitute(typval_T *argvars, typval_T *rettv)
 
     if (argvars[2].v_type == VAR_FUNC
 	    || argvars[2].v_type == VAR_PARTIAL
-	    || argvars[2].v_type == VAR_INSTR)
+	    || argvars[2].v_type == VAR_INSTR
+	    || argvars[2].v_type == VAR_CLASS
+	    || argvars[2].v_type == VAR_OBJECT)
 	expr = &argvars[2];
     else
 	sub = tv_get_string_buf_chk(&argvars[2], subbuf);
@@ -10617,6 +10627,8 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
+	case VAR_CLASS:   n = VAR_TYPE_CLASS; break;
+	case VAR_OBJECT:  n = VAR_TYPE_OBJECT; break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:

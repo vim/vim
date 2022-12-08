@@ -336,6 +336,9 @@ Defining a class ~
 A class is defined between `:class` and `:endclass`.  The whole class is
 defined in one script file.  It is not possible to add to a class later.
 
+A class can only be defined in a |Vim9| script file.  *E1315*
+A class cannot be defined inside a function.
+
 It is possible to define more than one class in a script file.  Although it
 usually is better to export only one main class.  It can be useful to define
 types, enums and helper classes though.
@@ -369,9 +372,9 @@ A class can extend one other class.
 							*implements*
 A class can implement one or more interfaces.
 							*specifies*
-A class can declare it's interface, the object members and methods, with a
+A class can declare its interface, the object members and methods, with a
 named interface.  This avoids the need for separately specifying the
-interface, which is often done an many languages, especially Java.
+interface, which is often done in many languages, especially Java.
 
 
 Defining an interface ~
@@ -634,7 +637,7 @@ directly writing you get an error, which makes you wonder if you actually want
 to allow that.  This helps writing code with fewer mistakes.
 
 
-Making object membes private with an underscore ~
+Making object members private with an underscore ~
 
 When an object member is private, it can only be read and changed inside the
 class (and in sub-classes), then it cannot be used outside of the class.

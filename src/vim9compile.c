@@ -43,6 +43,20 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
     if (len == 0)
 	return FAIL;
 
+    if (len == 4 && STRNCMP(name, "this", 4) == 0
+	    && cctx->ctx_ufunc != NULL
+	    && (cctx->ctx_ufunc->uf_flags & FC_OBJECT))
+    {
+	if (lvar != NULL)
+	{
+	    CLEAR_POINTER(lvar);
+	    lvar->lv_name = (char_u *)"this";
+	    if (cctx->ctx_ufunc->uf_class != NULL)
+		lvar->lv_type = &cctx->ctx_ufunc->uf_class->class_type;
+	}
+	return OK;
+    }
+
     // Find local in current function scope.
     for (idx = 0; idx < cctx->ctx_locals.ga_len; ++idx)
     {
@@ -296,7 +310,11 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
 {
     return (cctx != NULL
 		&& (lookup_local(name, len, NULL, cctx) == OK
-		    || arg_exists(name, len, NULL, NULL, NULL, cctx) == OK))
+		    || arg_exists(name, len, NULL, NULL, NULL, cctx) == OK
+		    || (len == 4
+			&& cctx->ctx_ufunc != NULL
+			&& (cctx->ctx_ufunc->uf_flags & FC_OBJECT)
+			&& STRNCMP(name, "this", 4) == 0)))
 	    || script_var_exists(name, len, cctx, NULL) == OK
 	    || find_imported(name, len, FALSE) != NULL;
 }
@@ -957,7 +975,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	goto theend;
     }
 
-    ufunc = define_function(eap, lambda_name, lines_to_free);
+    ufunc = define_function(eap, lambda_name, lines_to_free, NULL);
     if (ufunc == NULL)
     {
 	r = eap->skip ? OK : FAIL;
@@ -1450,6 +1468,7 @@ compile_lhs(
     lhs->lhs_dest = dest_local;
     lhs->lhs_vimvaridx = -1;
     lhs->lhs_scriptvar_idx = -1;
+    lhs->lhs_member_idx = -1;
 
     // "dest_end" is the end of the destination, including "[expr]" or
     // ".name".
@@ -1509,7 +1528,7 @@ compile_lhs(
 	else
 	{
 	    // No specific kind of variable recognized, just a name.
-	    if (check_reserved_name(lhs->lhs_name) == FAIL)
+	    if (check_reserved_name(lhs->lhs_name, cctx) == FAIL)
 		return FAIL;
 
 	    if (lookup_local(var_start, lhs->lhs_varlen,
@@ -1757,8 +1776,16 @@ compile_lhs(
 	    lhs->lhs_type = &t_any;
 	}
 
-	if (lhs->lhs_type->tt_member == NULL)
+	if (lhs->lhs_type == NULL || lhs->lhs_type->tt_member == NULL)
 	    lhs->lhs_member_type = &t_any;
+	else if (lhs->lhs_type->tt_type == VAR_CLASS
+		|| lhs->lhs_type->tt_type == VAR_OBJECT)
+	{
+	    // for an object or class member get the type of the member
+	    class_T *cl = (class_T *)lhs->lhs_type->tt_member;
+	    lhs->lhs_member_type = class_member_type(cl, after + 1,
+					   lhs->lhs_end, &lhs->lhs_member_idx);
+	}
 	else
 	    lhs->lhs_member_type = lhs->lhs_type->tt_member;
     }
@@ -1880,6 +1907,11 @@ compile_assign_index(
 	    r = FAIL;
 	}
     }
+    else if (lhs->lhs_member_idx >= 0)
+    {
+	// object member index
+	r = generate_PUSHNR(cctx, lhs->lhs_member_idx);
+    }
     else // if (*p == '.')
     {
 	char_u *key_end = to_name_end(p + 1, TRUE);
@@ -1996,7 +2028,7 @@ compile_assign_unlet(
 	return FAIL;
     }
 
-    if (lhs->lhs_type == &t_any)
+    if (lhs->lhs_type == NULL || lhs->lhs_type == &t_any)
     {
 	// Index on variable of unknown type: check at runtime.
 	dest_type = VAR_ANY;
@@ -2042,8 +2074,12 @@ compile_assign_unlet(
     if (compile_load_lhs(lhs, var_start, rhs_type, cctx) == FAIL)
 	return FAIL;
 
-    if (dest_type == VAR_LIST || dest_type == VAR_DICT
-			      || dest_type == VAR_BLOB || dest_type == VAR_ANY)
+    if (dest_type == VAR_LIST
+	    || dest_type == VAR_DICT
+	    || dest_type == VAR_BLOB
+	    || dest_type == VAR_CLASS
+	    || dest_type == VAR_OBJECT
+	    || dest_type == VAR_ANY)
     {
 	if (is_assign)
 	{
@@ -2466,6 +2502,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    case VAR_PARTIAL:
 		    case VAR_VOID:
 		    case VAR_INSTR:
+		    case VAR_CLASS:
+		    case VAR_OBJECT:
 		    case VAR_SPECIAL:  // cannot happen
 			// This is skipped for local variables, they are always
 			// initialized to zero.  But in a "for" or "while" loop
@@ -2896,6 +2934,22 @@ compile_def_function(
 
     if (check_args_shadowing(ufunc, &cctx) == FAIL)
 	goto erret;
+
+    // For an object method and constructor "this" is the first local variable.
+    if (ufunc->uf_flags & FC_OBJECT)
+    {
+	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+							 + ufunc->uf_dfunc_idx;
+	if (GA_GROW_FAILS(&dfunc->df_var_names, 1))
+	    goto erret;
+	((char_u **)dfunc->df_var_names.ga_data)[0] =
+						 vim_strsave((char_u *)"this");
+	++dfunc->df_var_names.ga_len;
+
+	// In the constructor allocate memory for the object.
+	if ((ufunc->uf_flags & FC_NEW) == FC_NEW)
+	    generate_CONSTRUCT(&cctx, ufunc->uf_class);
+    }
 
     if (ufunc->uf_def_args.ga_len > 0)
     {
@@ -3500,14 +3554,19 @@ nextline:
     {
 	if (ufunc->uf_ret_type->tt_type == VAR_UNKNOWN)
 	    ufunc->uf_ret_type = &t_void;
-	else if (ufunc->uf_ret_type->tt_type != VAR_VOID)
+	else if (ufunc->uf_ret_type->tt_type != VAR_VOID
+		&& (ufunc->uf_flags & FC_NEW) != FC_NEW)
 	{
 	    emsg(_(e_missing_return_statement));
 	    goto erret;
 	}
 
 	// Return void if there is no return at the end.
-	generate_instr(&cctx, ISN_RETURN_VOID);
+	// For a constructor return the object.
+	if ((ufunc->uf_flags & FC_NEW) == FC_NEW)
+	    generate_instr(&cctx, ISN_RETURN_OBJECT);
+	else
+	    generate_instr(&cctx, ISN_RETURN_VOID);
     }
 
     // When compiled with ":silent!" and there was an error don't consider the

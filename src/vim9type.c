@@ -29,7 +29,7 @@
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
  * be easily freed later.
  */
-    static type_T *
+    type_T *
 get_type_ptr(garray_T *type_gap)
 {
     type_T *type;
@@ -94,7 +94,12 @@ alloc_type(type_T *type)
     *ret = *type;
 
     if (ret->tt_member != NULL)
-	ret->tt_member = alloc_type(ret->tt_member);
+    {
+	// tt_member points to the class_T for VAR_CLASS and VAR_OBJECT
+	if (type->tt_type != VAR_CLASS && type->tt_type != VAR_OBJECT)
+	    ret->tt_member = alloc_type(ret->tt_member);
+    }
+
     if (type->tt_args != NULL)
     {
 	int i;
@@ -124,7 +129,11 @@ free_type(type_T *type)
 	    free_type(type->tt_args[i]);
 	vim_free(type->tt_args);
     }
-    free_type(type->tt_member);
+
+    // for an object and class tt_member is a pointer to the class
+    if (type->tt_type != VAR_OBJECT && type->tt_type != VAR_CLASS)
+	free_type(type->tt_member);
+
     vim_free(type);
 }
 
@@ -1203,6 +1212,8 @@ equal_type(type_T *type1, type_T *type2, int flags)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    break;  // not composite is always OK
 	case VAR_LIST:
 	case VAR_DICT:
@@ -1451,6 +1462,8 @@ vartype_name(vartype_T type)
 	case VAR_LIST: return "list";
 	case VAR_DICT: return "dict";
 	case VAR_INSTR: return "instr";
+	case VAR_CLASS: return "class";
+	case VAR_OBJECT: return "object";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";

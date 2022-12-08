@@ -2029,6 +2029,7 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
     for (ni = iptr + 1; ni->isn_type != ISN_FINISH; ++ni)
 	if (ni->isn_type == ISN_DEBUG
 		  || ni->isn_type == ISN_RETURN
+		  || ni->isn_type == ISN_RETURN_OBJECT
 		  || ni->isn_type == ISN_RETURN_VOID)
 	{
 	    end_lnum = ni->isn_lnum + (ni->isn_type == ISN_DEBUG ? 0 : 1);
@@ -2082,7 +2083,7 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
     // Stack contains:
     // -3 value to be stored
     // -2 index
-    // -1 dict or list
+    // -1 dict, list, blob or object
     tv = STACK_TV_BOT(-3);
     SOURCING_LNUM = iptr->isn_lnum;
     if (dest_type == VAR_ANY)
@@ -2202,6 +2203,13 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    if (error)
 		return FAIL;
 	    blob_set_append(blob, lidx, nr);
+	}
+	else if (dest_type == VAR_CLASS || dest_type == VAR_OBJECT)
+	{
+	    long	    idx = (long)tv_idx->vval.v_number;
+	    object_T	    *obj = tv_dest->vval.v_object;
+	    typval_T	    *otv = (typval_T *)(obj + 1);
+	    otv[idx] = *tv;
 	}
 	else
 	{
@@ -3001,6 +3009,18 @@ exec_instructions(ectx_T *ectx)
 	iptr = &ectx->ec_instr[ectx->ec_iidx++];
 	switch (iptr->isn_type)
 	{
+	    // Constructor, new() method.
+	    case ISN_CONSTRUCT:
+		// "this" is always the local variable at index zero
+		tv = STACK_TV_VAR(0);
+		tv->v_type = VAR_OBJECT;
+		tv->vval.v_object = alloc_clear(
+				       iptr->isn_arg.construct.construct_size);
+		tv->vval.v_object->obj_class =
+				       iptr->isn_arg.construct.construct_class;
+		tv->vval.v_object->obj_refcount = 1;
+		break;
+
 	    // execute Ex command line
 	    case ISN_EXEC:
 		if (exec_command(iptr) == FAIL)
@@ -4092,15 +4112,25 @@ exec_instructions(ectx_T *ectx)
 		    goto on_error;
 		break;
 
-	    // return from a :def function call without a value
+	    // Return from a :def function call without a value.
+	    // Return from a constructor.
 	    case ISN_RETURN_VOID:
+	    case ISN_RETURN_OBJECT:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
 		++ectx->ec_stack.ga_len;
-		tv->v_type = VAR_VOID;
-		tv->vval.v_number = 0;
-		tv->v_lock = 0;
+		if (iptr->isn_type == ISN_RETURN_VOID)
+		{
+		    tv->v_type = VAR_VOID;
+		    tv->vval.v_number = 0;
+		    tv->v_lock = 0;
+		}
+		else
+		{
+		    *tv = *STACK_TV_VAR(0);
+		    ++tv->vval.v_object->obj_refcount;
+		}
 		// FALLTHROUGH
 
 	    // return from a :def function call with what is on the stack
@@ -4193,7 +4223,7 @@ exec_instructions(ectx_T *ectx)
 		    CLEAR_FIELD(ea);
 		    ea.cmd = ea.arg = iptr->isn_arg.string;
 		    ga_init2(&lines_to_free, sizeof(char_u *), 50);
-		    define_function(&ea, NULL, &lines_to_free);
+		    define_function(&ea, NULL, &lines_to_free, NULL);
 		    ga_clear_strings(&lines_to_free);
 		}
 		break;
@@ -6018,6 +6048,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 	switch (iptr->isn_type)
 	{
+	    case ISN_CONSTRUCT:
+		smsg("%s%4d NEW %s size %d", pfx, current,
+			iptr->isn_arg.construct.construct_class->class_name,
+				  (int)iptr->isn_arg.construct.construct_size);
+		break;
 	    case ISN_EXEC:
 		smsg("%s%4d EXEC %s", pfx, current, iptr->isn_arg.string);
 		break;
@@ -6446,6 +6481,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_RETURN_VOID:
 		smsg("%s%4d RETURN void", pfx, current);
+		break;
+	    case ISN_RETURN_OBJECT:
+		smsg("%s%4d RETURN object", pfx, current);
 		break;
 	    case ISN_FUNCREF:
 		{
@@ -6979,6 +7017,8 @@ tv2bool(typval_T *tv)
 	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    break;
     }
     return FALSE;

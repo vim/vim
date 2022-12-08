@@ -214,6 +214,8 @@ get_function_args(
     garray_T	*default_args,
     int		skip,
     exarg_T	*eap,		// can be NULL
+    class_T	*class_arg,
+    garray_T	*newlines,	// function body lines
     garray_T	*lines_to_free)
 {
     int		mustend = FALSE;
@@ -291,6 +293,51 @@ get_function_args(
 		    break;
 		}
 	    }
+	}
+	else if (class_arg != NULL && STRNCMP(p, "this.", 5) == 0)
+	{
+	    // this.memberName
+	    p += 5;
+	    arg = p;
+	    while (ASCII_ISALNUM(*p) || *p == '_')
+		++p;
+
+	    // TODO: check the argument is indeed a member
+	    if (newargs != NULL && ga_grow(newargs, 1) == FAIL)
+		return FAIL;
+	    if (newargs != NULL)
+	    {
+		((char_u **)(newargs->ga_data))[newargs->ga_len] =
+						    vim_strnsave(arg, p - arg);
+		newargs->ga_len++;
+
+		if (argtypes != NULL && ga_grow(argtypes, 1) == OK)
+		{
+		    // TODO: use the actual type
+		    ((char_u **)argtypes->ga_data)[argtypes->ga_len++] =
+						  vim_strsave((char_u *)"any");
+
+		    // Add a line to the function body for the assignment.
+		    if (ga_grow(newlines, 1) == OK)
+		    {
+			// "this.name = name"
+			int len = 5 + (p - arg) + 3 + (p - arg) + 1;
+			char_u *assignment = alloc(len);
+			if (assignment != NULL)
+			{
+			    c = *p;
+			    *p = NUL;
+			    vim_snprintf((char *)assignment, len,
+						     "this.%s = %s", arg, arg);
+			    *p = c;
+			    ((char_u **)(newlines->ga_data))[
+					      newlines->ga_len++] = assignment;
+			}
+		    }
+		}
+	    }
+	    if (*p == ',')
+		++p;
 	}
 	else
 	{
@@ -1389,7 +1436,7 @@ get_lambda_tv(
     s = *arg + 1;
     ret = get_function_args(&s, equal_arrow ? ')' : '-', NULL,
 	    types_optional ? &argtypes : NULL, types_optional, evalarg,
-					NULL, &default_args, TRUE, NULL, NULL);
+			    NULL, &default_args, TRUE, NULL, NULL, NULL, NULL);
     if (ret == FAIL || skip_arrow(s, equal_arrow, &ret_type, NULL) == NULL)
     {
 	if (types_optional)
@@ -1406,7 +1453,7 @@ get_lambda_tv(
     ret = get_function_args(arg, equal_arrow ? ')' : '-', pnewargs,
 	    types_optional ? &argtypes : NULL, types_optional, evalarg,
 					    &varargs, &default_args,
-					    FALSE, NULL, NULL);
+					    FALSE, NULL, NULL, NULL, NULL);
     if (ret == FAIL
 		  || (s = skip_arrow(*arg, equal_arrow, &ret_type,
 		equal_arrow || vim9script ? &white_error : NULL)) == NULL)
@@ -1733,7 +1780,7 @@ emsg_funcname(char *ermsg, char_u *name)
  * Return them in "*argvars[MAX_FUNC_ARGS + 1]" and the count in "argcount".
  * On failure FAIL is returned but the "argvars[argcount]" are still set.
  */
-    static int
+    int
 get_func_arguments(
 	char_u	    **arg,
 	evalarg_T   *evalarg,
@@ -1809,7 +1856,7 @@ get_func_tv(
     funcexe_T	*funcexe)	// various values
 {
     char_u	*argp;
-    int		ret = OK;
+    int		ret;
     typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
     int		argcount = 0;			// number of arguments found
     int		vim9script = in_vim9script();
@@ -4370,10 +4417,15 @@ list_functions(regmatch_T *regmatch)
  * When "name_arg" is not NULL this is a nested function, using "name_arg" for
  * the function name.
  * "lines_to_free" is a list of strings to be freed later.
+ * If "class_arg" is not NULL then the function is defined in this class.
  * Returns a pointer to the function or NULL if no function defined.
  */
     ufunc_T *
-define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
+define_function(
+	exarg_T	    *eap,
+	char_u	    *name_arg,
+	garray_T    *lines_to_free,
+	class_T	    *class_arg)
 {
     int		j;
     int		c;
@@ -4488,8 +4540,9 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
 	    p = eap->arg;
 	}
 
-	name = save_function_name(&p, &is_global, eap->skip,
-					TFN_NO_AUTOLOAD | TFN_NEW_FUNC, &fudi);
+	int tfn_flags = TFN_NO_AUTOLOAD | TFN_NEW_FUNC
+					      | (class_arg == 0 ? 0 : TFN_INT);
+	name = save_function_name(&p, &is_global, eap->skip, tfn_flags, &fudi);
 	paren = (vim_strchr(p, '(') != NULL);
 	if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
 	{
@@ -4690,7 +4743,7 @@ define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free)
     if (get_function_args(&p, ')', &newargs,
 			eap->cmdidx == CMD_def ? &argtypes : NULL, FALSE,
 			 NULL, &varargs, &default_args, eap->skip,
-			 eap, lines_to_free) == FAIL)
+			 eap, class_arg, &newlines, lines_to_free) == FAIL)
 	goto errret_2;
     whitep = p;
 
@@ -5145,7 +5198,7 @@ ex_function(exarg_T *eap)
     garray_T lines_to_free;
 
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
-    (void)define_function(eap, NULL, &lines_to_free);
+    (void)define_function(eap, NULL, &lines_to_free, NULL);
     ga_clear_strings(&lines_to_free);
 }
 
