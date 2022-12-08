@@ -3018,7 +3018,9 @@ exec_instructions(ectx_T *ectx)
 				       iptr->isn_arg.construct.construct_size);
 		tv->vval.v_object->obj_class =
 				       iptr->isn_arg.construct.construct_class;
+		++tv->vval.v_object->obj_class->class_refcount;
 		tv->vval.v_object->obj_refcount = 1;
+		object_created(tv->vval.v_object);
 		break;
 
 	    // execute Ex command line

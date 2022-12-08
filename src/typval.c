@@ -85,7 +85,7 @@ free_tv(typval_T *varp)
 		break;
 #endif
 	    case VAR_CLASS:
-		class_unref(varp);
+		class_unref(varp->vval.v_class);
 		break;
 	    case VAR_OBJECT:
 		object_unref(varp->vval.v_object);
@@ -161,7 +161,7 @@ clear_tv(typval_T *varp)
 		VIM_CLEAR(varp->vval.v_instr);
 		break;
 	    case VAR_CLASS:
-		class_unref(varp);
+		class_unref(varp->vval.v_class);
 		break;
 	    case VAR_OBJECT:
 		object_unref(varp->vval.v_object);

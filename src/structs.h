@@ -1487,8 +1487,13 @@ struct class_S
 // Used for v_object of typval of VAR_OBJECT.
 // The member variables follow in an array of typval_T.
 struct object_S {
-    class_T	*obj_class;  // class this object is created for
+    class_T	*obj_class;	    // class this object is created for;
+				    // pointer adds to class_refcount
     int		obj_refcount;
+
+    object_T	*obj_next_used;	    // for list headed by "first_object"
+    object_T	*obj_prev_used;	    // for list headed by "first_object"
+    int		obj_copyID;	    // used by garbage collection
 };
 
 #define TTFLAG_VARARGS	0x01	    // func args ends with "..."

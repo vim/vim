@@ -132,11 +132,10 @@ def Test_class_basic()
 	this.col: number
       endclass
 
-      # # FIXME: this works but leaks memory
-      # # use the automatically generated new() method
-      # var pos = TextPosition.new(2, 12)
-      # assert_equal(2, pos.lnum)
-      # assert_equal(12, pos.col)
+      # use the automatically generated new() method
+      var pos = TextPosition.new(2, 12)
+      assert_equal(2, pos.lnum)
+      assert_equal(12, pos.col)
   END
   v9.CheckScriptSuccess(lines)
 enddef

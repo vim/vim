@@ -419,13 +419,18 @@ class_object_index(
 		CLEAR_FIELD(funcexe);
 		funcexe.fe_evaluate = TRUE;
 
+		// Clear the class or object after calling the function, in
+		// case the refcount is one.
+		typval_T tv_tofree = *rettv;
+		rettv->v_type = VAR_UNKNOWN;
+
 		// Call the user function.  Result goes into rettv;
 		// TODO: pass the object
-		rettv->v_type = VAR_UNKNOWN;
 		int error = call_user_func_check(fp, argcount, argvars,
 							rettv, &funcexe, NULL);
 
-		// Clear the arguments.
+		// Clear the previous rettv and the arguments.
+		clear_tv(&tv_tofree);
 		for (int idx = 0; idx < argcount; ++idx)
 		    clear_tv(&argvars[idx]);
 
@@ -494,7 +499,11 @@ object_clear(object_T *obj)
     for (int i = 0; i < cl->class_obj_member_count; ++i)
 	clear_tv(tv + i);
 
+    // Remove from the list headed by "first_object".
+    object_cleared(obj);
+
     vim_free(obj);
+    class_unref(cl);
 }
 
 /*
@@ -522,9 +531,8 @@ copy_class(typval_T *from, typval_T *to)
  * Unreference a class.  Free it when the reference count goes down to zero.
  */
     void
-class_unref(typval_T *tv)
+class_unref(class_T *cl)
 {
-    class_T *cl = tv->vval.v_class;
     if (cl != NULL && --cl->class_refcount <= 0)
     {
 	vim_free(cl->class_name);
@@ -545,6 +553,61 @@ class_unref(typval_T *tv)
 
 	vim_free(cl);
     }
+}
+
+static object_T *first_object = NULL;
+
+/*
+ * Call this function when an object has been created.  It will be added to the
+ * list headed by "first_object".
+ */
+    void
+object_created(object_T *obj)
+{
+    if (first_object != NULL)
+    {
+	obj->obj_next_used = first_object;
+	first_object->obj_prev_used = obj;
+    }
+    first_object = obj;
+}
+
+/*
+ * Call this function when an object has been cleared and is about to be freed.
+ * It is removed from the list headed by "first_object".
+ */
+    void
+object_cleared(object_T *obj)
+{
+    if (obj->obj_next_used != NULL)
+	obj->obj_next_used->obj_prev_used = obj->obj_prev_used;
+    if (obj->obj_prev_used != NULL)
+	obj->obj_prev_used->obj_next_used = obj->obj_next_used;
+    else if (first_object == obj)
+	first_object = obj->obj_next_used;
+}
+
+/*
+ * Go through the list of all objects and free items without "copyID".
+ */
+    int
+object_free_nonref(int copyID)
+{
+    int		did_free = FALSE;
+    object_T	*next_obj;
+
+    for (object_T *obj = first_object; obj != NULL; obj = next_obj)
+    {
+	next_obj = obj->obj_next_used;
+	if ((obj->obj_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
+	{
+	    // Free the object and items it contains.
+	    object_clear(obj);
+	    did_free = TRUE;
+	}
+    }
+
+    return did_free;
 }
 
 

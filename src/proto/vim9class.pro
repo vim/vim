@@ -8,5 +8,8 @@ int class_object_index(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int ve
 void copy_object(typval_T *from, typval_T *to);
 void object_unref(object_T *obj);
 void copy_class(typval_T *from, typval_T *to);
-void class_unref(typval_T *tv);
+void class_unref(class_T *cl);
+void object_created(object_T *obj);
+void object_cleared(object_T *obj);
+int object_free_nonref(int copyID);
 /* vim: set ft=c : */
