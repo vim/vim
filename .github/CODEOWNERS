@@ -51,6 +51,7 @@ runtime/compiler/dartanalyser.vim	@dkearns
 runtime/compiler/dartdevc.vim		@dkearns
 runtime/compiler/dartdoc.vim		@dkearns
 runtime/compiler/dartfmt.vim		@dkearns
+runtime/compiler/dotnet.vim		@nickspoons
 runtime/compiler/eruby.vim		@dkearns
 runtime/compiler/fbc.vim		@dkearns
 runtime/compiler/gawk.vim		@dkearns
