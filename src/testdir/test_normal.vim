@@ -3823,24 +3823,16 @@ func Test_mouse_shape_after_failed_change()
     setlocal nomodifiable
     var mouse_shapes = []
 
-    def SaveMouseShape()
-      mouse_shapes += [getmouseshape()]
-    enddef
-
-    def SaveAndQuit()
-      writefile(mouse_shapes, 'Xmouseshapes')
-      quit
-    enddef
-
     feedkeys('c')
     timer_start(50, (_) => {
-      SaveMouseShape()
+      mouse_shapes += [getmouseshape()]
       timer_start(50, (_) => {
         feedkeys('c')
         timer_start(50, (_) => {
-          SaveMouseShape()
+          mouse_shapes += [getmouseshape()]
           timer_start(50, (_) => {
-            SaveAndQuit()
+            writefile(mouse_shapes, 'Xmouseshapes')
+            quit
           })
         })
       })
