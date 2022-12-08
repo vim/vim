@@ -369,7 +369,8 @@ cmdline_pum_create(
 /*
  * Display the cmdline completion matches in a popup menu
  */
-void cmdline_pum_display(void)
+    void
+cmdline_pum_display(void)
 {
     pum_display(compl_match_array, compl_match_arraysize, compl_selected);
 }
@@ -377,7 +378,8 @@ void cmdline_pum_display(void)
 /*
  * Returns TRUE if the cmdline completion popup menu is being displayed.
  */
-int cmdline_pum_active(void)
+    int
+cmdline_pum_active(void)
 {
     return pum_visible() && compl_match_array != NULL;
 }
@@ -386,7 +388,8 @@ int cmdline_pum_active(void)
  * Remove the cmdline completion popup menu (if present), free the list of
  * items and refresh the screen.
  */
-void cmdline_pum_remove(void)
+    void
+cmdline_pum_remove(void)
 {
     int save_p_lz = p_lz;
     int	save_KeyTyped = KeyTyped;
@@ -403,7 +406,8 @@ void cmdline_pum_remove(void)
     KeyTyped = save_KeyTyped;
 }
 
-void cmdline_pum_cleanup(cmdline_info_T *cclp)
+    void
+cmdline_pum_cleanup(cmdline_info_T *cclp)
 {
     cmdline_pum_remove();
     wildmenu_cleanup(cclp);
@@ -413,7 +417,8 @@ void cmdline_pum_cleanup(cmdline_info_T *cclp)
  * Returns the starting column number to use for the cmdline completion popup
  * menu.
  */
-int cmdline_compl_startcol(void)
+    int
+cmdline_compl_startcol(void)
 {
     return compl_startcol;
 }
@@ -975,6 +980,10 @@ ExpandOne(
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
 	VIM_CLEAR(orig_save);
+
+	// The entries from xp_files may be used in the PUM, remove it.
+	if (compl_match_array != NULL)
+	    cmdline_pum_remove();
     }
     findex = 0;
 
