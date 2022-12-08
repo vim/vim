@@ -2077,10 +2077,10 @@ typedef struct
 # endif
 #else
 // dummy typedefs for use in function prototypes
-typedef struct
+struct ufunc_S
 {
     int	    dummy;
-} ufunc_T;
+};
 typedef struct
 {
     int	    dummy;
