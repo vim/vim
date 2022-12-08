@@ -798,12 +798,12 @@ cmdline_init(void)
 }
 
 /*
- * Handle the backslash key pressed in the command-line mode.  CTRL-\ CTRL-N
+ * Handle the CTRL-\ key pressed in the command-line mode.  CTRL-\ CTRL-N
  * goes to Normal mode, CTRL-\ CTRL-G goes to Insert mode when 'insertmode' is
  * set, CTRL-\ e prompts for an expression.
  */
     static int
-cmdline_handle_backslash_key(int c, int *gotesc)
+cmdline_handle_ctrl_bsl(int c, int *gotesc)
 {
     ++no_mapping;
     ++allow_keys;
@@ -832,8 +832,6 @@ cmdline_handle_backslash_key(int c, int *gotesc)
 
 	/*
 	 * Replace the command line with the result of an expression.
-	 * Need to save and restore the current command line, to be
-	 * able to enter a new one...
 	 */
 	if (ccline.cmdpos == ccline.cmdlen)
 	    new_cmdpos = 99999;	// keep it at the end
@@ -843,9 +841,8 @@ cmdline_handle_backslash_key(int c, int *gotesc)
 	c = get_expr_register();
 	if (c == '=')
 	{
-	    // Need to save and restore ccline.  And set "textlock"
-	    // to avoid nasty things like going to another buffer when
-	    // evaluating an expression.
+	    // Need to set "textlock" to avoid nasty things like going to
+	    // another buffer when evaluating an expression.
 	    ++textlock;
 	    p = get_expr_line();
 	    --textlock;
@@ -1508,7 +1505,6 @@ init_ccline(int firstc, int indent)
 	return FAIL;
     ccline.cmdlen = ccline.cmdpos = 0;
     ccline.cmdbuff[0] = NUL;
-    sb_text_start_cmdline();
 
     // autoindent for :insert and :append
     if (firstc <= 0)
@@ -1630,6 +1626,8 @@ getcmdline_int(
 	emsg(_(e_command_too_recursive));
 	goto theend;
     }
+
+    sb_text_start_cmdline();
 
     ExpandInit(&xpc);
     ccline.xpc = &xpc;
@@ -1909,7 +1907,7 @@ getcmdline_int(
 	// mode when 'insertmode' is set, CTRL-\ e prompts for an expression.
 	if (c == Ctrl_BSL)
 	{
-	    res = cmdline_handle_backslash_key(c, &gotesc);
+	    res = cmdline_handle_ctrl_bsl(c, &gotesc);
 	    if (res == CMDLINE_CHANGED)
 		goto cmdline_changed;
 	    else if (res == CMDLINE_NOT_CHANGED)
@@ -1917,7 +1915,7 @@ getcmdline_int(
 	    else if (res == GOTO_NORMAL_MODE)
 		goto returncmd;		// back to cmd mode
 	    c = Ctrl_BSL;		// backslash key not processed by
-					// cmdline_handle_backslash_key()
+					// cmdline_handle_ctrl_bsl()
 	}
 
 	if (c == cedit_key || c == K_CMDWIN)
