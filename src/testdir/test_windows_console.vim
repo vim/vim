@@ -2,9 +2,10 @@
 
 source check.vim
 CheckMSWindows
-CheckNotGui 
+CheckNotGui
 ".. The key events should also work in gui
 
+source mouse.vim
 
 " Test for sending low level key presses
 func SendKeys(keylist)
@@ -303,9 +304,72 @@ endfunc
 
 "  Not ready for this test just yet...
 "  " Test MS-Windows console mouse events
-"  func Test_windows_console_mouse_event()
-"    CheckMSWindows
-"    CheckNotGui
+func Test_windows_console_mouse_event()
+  CheckMSWindows
+  CheckNotGui
+  let msg = ''
+  call assert_equal([0, 1, 1, 0], getpos('.'), msg)
+  let row = 2
+  let col = 6
+  call MouseLeftClick(row, col)
+  call MouseLeftRelease(row, col)
+  call assert_equal([0, 2, 6, 0], getpos('.'), msg)
+endfunc
+
+" Test for the translation of various mouse terminal codes
+func Test_mouse_termcodes()
+
+  let mouse_codes = [
+        \ ["\<LeftMouse>", "<LeftMouse>"],
+        \ ["\<MiddleMouse>", "<MiddleMouse>"],
+        \ ["\<RightMouse>", "<RightMouse>"],
+        \ ["\<S-LeftMouse>", "<S-LeftMouse>"],
+        \ ["\<S-MiddleMouse>", "<S-MiddleMouse>"],
+        \ ["\<S-RightMouse>", "<S-RightMouse>"],
+        \ ["\<C-LeftMouse>", "<C-LeftMouse>"],
+        \ ["\<C-MiddleMouse>", "<C-MiddleMouse>"],
+        \ ["\<C-RightMouse>", "<C-RightMouse>"],
+        \ ["\<M-LeftMouse>", "<M-LeftMouse>"],
+        \ ["\<M-MiddleMouse>", "<M-MiddleMouse>"],
+        \ ["\<M-RightMouse>", "<M-RightMouse>"],
+        \ ["\<2-LeftMouse>", "<2-LeftMouse>"],
+        \ ["\<2-MiddleMouse>", "<2-MiddleMouse>"],
+        \ ["\<2-RightMouse>", "<2-RightMouse>"],
+        \ ["\<3-LeftMouse>", "<3-LeftMouse>"],
+        \ ["\<3-MiddleMouse>", "<3-MiddleMouse>"],
+        \ ["\<3-RightMouse>", "<3-RightMouse>"],
+        \ ["\<4-LeftMouse>", "<4-LeftMouse>"],
+        \ ["\<4-MiddleMouse>", "<4-MiddleMouse>"],
+        \ ["\<4-RightMouse>", "<4-RightMouse>"],
+        \ ["\<LeftDrag>", "<LeftDrag>"],
+        \ ["\<MiddleDrag>", "<MiddleDrag>"],
+        \ ["\<RightDrag>", "<RightDrag>"],
+        \ ["\<LeftRelease>", "<LeftRelease>"],
+        \ ["\<MiddleRelease>", "<MiddleRelease>"],
+        \ ["\<RightRelease>", "<RightRelease>"],
+        \ ["\<ScrollWheelUp>", "<ScrollWheelUp>"],
+        \ ["\<S-ScrollWheelUp>", "<S-ScrollWheelUp>"],
+        \ ["\<C-ScrollWheelUp>", "<C-ScrollWheelUp>"],
+        \ ["\<ScrollWheelDown>", "<ScrollWheelDown>"],
+        \ ["\<S-ScrollWheelDown>", "<S-ScrollWheelDown>"],
+        \ ["\<C-ScrollWheelDown>", "<C-ScrollWheelDown>"],
+        \ ["\<ScrollWheelLeft>", "<ScrollWheelLeft>"],
+        \ ["\<S-ScrollWheelLeft>", "<S-ScrollWheelLeft>"],
+        \ ["\<C-ScrollWheelLeft>", "<C-ScrollWheelLeft>"],
+        \ ["\<ScrollWheelRight>", "<ScrollWheelRight>"],
+        \ ["\<S-ScrollWheelRight>", "<S-ScrollWheelRight>"],
+        \ ["\<C-ScrollWheelRight>", "<C-ScrollWheelRight>"]
+        \ ]
+
+  for [code, outstr] in mouse_codes
+    exe "normal ggC\<C-K>" . code
+    call assert_equal(outstr, getline(1), msg)
+  endfor
+
+  %bw!
+
+endfunc
+
 "    set mousemodel=extend
 "    call test_override('no_query_mouse', 1)
 "    new

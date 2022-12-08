@@ -1823,6 +1823,10 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
 		mer.dwButtonState = RIGHTMOST_BUTTON_PRESSED;
 		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
 		break;
+	    case MOUSE_RELEASE:
+	        // umm?  Assume Left Release?
+		mer.dwEventFlags = 0;
+
 	    case MOUSE_MOVE:
 		mer.dwButtonState = 0;
 		mer.dwEventFlags = MOUSE_MOVED;
@@ -1956,6 +1960,203 @@ test_mswin_event(char_u *event, dict_T *args)
 feed_mswin_input(char_u *keys)
 {
     int len = (int)STRLEN(keys);
+
+    //INPUT_RECORD irBuffer[30]; // 30 should be enough for now
+    
+    int maybe_mouse = TRUE;
+    int maybe_key = TRUE;
+    
+    char_u s_mouse_code  [4] = {0};
+    int i_mouse_code = 0;
+    char_u s_mouse_col  [4] = {0};
+    int i_mouse_col = 0;
+    char_u s_mouse_row  [4] = {0};
+    int i_mouse_row = 0;
+    // int i_release = FALSE;
+    int modifiers = 0;   //   Keymods S(2) C(4) A(8)  
+                         // Mousemods S(4) A(8) C(16)
+
+    for (int i = 0; i < len; i++)
+    {
+	char_u c = keys[i];
+	int found_mouse = FALSE;
+
+	if (c == K_SPECIAL && i+2 < len)
+	{
+	    char_u c2 = keys[i+1];
+	    char_u c3 = keys[i+2];
+
+	    if (KS_MODIFIER == c2)
+	    {
+		i+=2;
+		modifiers = c3;
+	    }
+	    else if (KS_EXTRA == c2)
+	    {
+		i+=2;
+		found_mouse = TRUE;
+		switch(c3)
+		{
+		    case KE_MOUSEMOVE:
+		    case KE_MOUSEMOVE_XY:
+			i_mouse_code = MOUSE_MOVE;
+			break;
+		    case KE_LEFTMOUSE:
+			i_mouse_code = MOUSE_LEFT;
+			// -> FROM_LEFT_1ST_BUTTON_PRESSED (0x01 1)
+			break;
+		    case KE_MIDDLEMOUSE:
+			i_mouse_code = MOUSE_MIDDLE;
+			// -> FROM_LEFT_2ND_BUTTON_PRESSED (0x04 4)
+			break;
+		    case KE_RIGHTMOUSE:
+			i_mouse_code = MOUSE_RIGHT;
+			// -> RIGHTMOST_BUTTON_PRESSED (0x02 2)
+			break;
+		    case KE_X1MOUSE:
+			i_mouse_code = MOUSE_X1;
+			// -> FROM_LEFT_3RD_BUTTON_PRESSED (0x08 8)
+			break;
+		    case KE_X2MOUSE:
+			i_mouse_code = MOUSE_X2;
+			// -> FROM_LEFT_4TH_BUTTON_PRESSED (0x10 16)
+			break;
+		    case KE_LEFTRELEASE:
+		    case KE_MIDDLERELEASE:
+		    case KE_RIGHTRELEASE:
+		    case KE_X1RELEASE:
+		    case KE_X2RELEASE:
+			i_mouse_code = MOUSE_RELEASE;
+			break;
+		    case KE_LEFTDRAG:
+		    case KE_MIDDLEDRAG:
+		    case KE_RIGHTDRAG:
+		    case KE_X1DRAG:
+		    case KE_X2DRAG:
+			i_mouse_code = MOUSE_DRAG;
+			break;
+		    case KE_MOUSEDOWN:
+			i_mouse_code = MOUSE_4; 
+			break;
+		    case KE_MOUSEUP:
+			i_mouse_code = MOUSE_5;
+			break;
+		    case KE_MOUSELEFT:
+			i_mouse_code = MOUSE_6;
+			break;
+		    case KE_MOUSERIGHT:
+			i_mouse_code = MOUSE_7;
+			break;
+		    default:  // if we get to here, not actually mouse code.
+			i-=2;
+			found_mouse = FALSE;
+		}
+	    }
+	    else
+	    {
+		// all the other things that can come after K_SPECIAL??
+	    }
+	}
+	if (found_mouse)
+	{
+	    i_mouse_col = g_xMouse;
+	    i_mouse_row = g_yMouse;
+	}
+
+	// or, eg. from testdir/mouse.vim 
+	// feedkeys(printf("\<Esc>[<%d;%d;%d%s", code, col, row, m))
+	if (i < len - 8 && c == ESC && keys[i+1] == '[' && keys[i+2] == '<')
+	{
+	    int count_semicolons = 0;
+	    int idx_code = 0;
+	    int idx_col = 0;
+	    int idx_row = 0;
+
+	    for (int j = i + 3; j < len && maybe_mouse && !found_mouse; j++)
+	    {
+		c = keys[j];
+
+		if (c == ';')
+		{
+		    count_semicolons++;
+		    c = keys[++j];
+		}
+
+		switch (count_semicolons)
+		{
+		    case 0:
+			if( c >= '0' && c <= '9')
+			    s_mouse_code[idx_code++] = c;
+			else
+			    maybe_mouse = FALSE;
+			break;
+		    case 1:
+			if( c >= '0' && c <= '9')
+			    s_mouse_col[idx_col++] = c;
+			else
+			    maybe_mouse = FALSE;
+			break;
+		    case 2:
+			if (idx_row > 0 && 'M' == toupper(c))
+			{
+			    // 'M' click or 'm' release
+			    if (c == 'm')
+			    {
+				i_mouse_code = MOUSE_RELEASE;
+			    }
+			    else
+			    {
+				i_mouse_code = atoi(s_mouse_code);
+				if (i_mouse_code & MOUSE_SHIFT)
+				{
+				    i_mouse_code -= MOUSE_SHIFT;
+				    modifiers |= MOD_MASK_SHIFT;
+				}
+				if (i_mouse_code & MOUSE_CTRL)
+				{
+				    i_mouse_code -= MOUSE_CTRL;
+				    modifiers |= MOD_MASK_CTRL;
+				}
+				if (i_mouse_code & MOUSE_ALT)
+				{
+				    i_mouse_code -= MOUSE_ALT;
+				    modifiers |= MOD_MASK_ALT;
+				}
+			    }
+			    i_mouse_col  = atoi(s_mouse_col);
+			    i_mouse_row  = atoi(s_mouse_row);
+			    i = j;
+			    found_mouse = TRUE;
+			}
+			else
+			{
+			    s_mouse_row[idx_row++] = c;
+			}
+			break;
+		    default:
+			maybe_mouse = FALSE;
+		}
+	    }
+	}
+
+	if (found_mouse)
+	{
+	    dict_T *args = dict_alloc();
+	    dict_add_number(args, "button", i_mouse_code);
+	    dict_add_number(args, "row", i_mouse_row);
+	    dict_add_number(args, "col", i_mouse_col);
+	    dict_add_number(args, "multiclick", 0);
+	    dict_add_number(args, "modifiers", modifiers);
+
+	    test_mswin_event("mouse", args);
+	    // reset flags, potentially additional mouse events in feed.
+	    found_mouse = FALSE;
+	    maybe_mouse = TRUE;
+	}
+
+    }
+
+
 //     //TODO: convert each key to a mswin input buffer event...
 //     for (int idx = 0; idx < len; ++idx)
 //     {
