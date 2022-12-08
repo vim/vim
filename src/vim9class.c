@@ -121,8 +121,8 @@ ex_class(exarg_T *eap)
 		semsg(_(e_command_cannot_be_shortened_str), line);
 	    else if (*p == '|' || !ends_excmd2(line, p))
 		semsg(_(e_trailing_characters_str), p);
-
-	    success = TRUE;
+	    else
+		success = TRUE;
 	    break;
 	}
 
@@ -190,9 +190,10 @@ ex_class(exarg_T *eap)
 
 	// Members are used by the new() function, add them here.
 	cl->class_obj_member_count = objmembers.ga_len;
-	cl->class_obj_members = ALLOC_MULT(objmember_T, objmembers.ga_len);
+	cl->class_obj_members = objmembers.ga_len == 0 ? NULL
+				  : ALLOC_MULT(objmember_T, objmembers.ga_len);
 	if (cl->class_name == NULL
-		|| cl->class_obj_members == NULL)
+		|| (objmembers.ga_len > 0 && cl->class_obj_members == NULL))
 	{
 	    vim_free(cl->class_name);
 	    vim_free(cl->class_obj_members);
