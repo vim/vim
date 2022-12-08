@@ -1049,12 +1049,19 @@ doESCkey:
 
 	case K_COMMAND:		    // <Cmd>command<CR>
 	case K_SCRIPT_COMMAND:	    // <ScriptCmd>command<CR>
-	    do_cmdkey_command(c, 0);
+	    {
+		do_cmdkey_command(c, 0);
+
 #ifdef FEAT_TERMINAL
-	    if (term_use_loop())
-		// Started a terminal that gets the input, exit Insert mode.
-		goto doESCkey;
+		if (term_use_loop())
+		    // Started a terminal that gets the input, exit Insert mode.
+		    goto doESCkey;
 #endif
+		if (curbuf->b_u_synced)
+		    // The command caused undo to be synced.  Need to save the
+		    // line for undo before inserting the next char.
+		    ins_need_undo = TRUE;
+	    }
 	    break;
 
 	case K_CURSORHOLD:	// Didn't type something for a while.
