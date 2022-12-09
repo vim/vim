@@ -1908,6 +1908,15 @@ func Test_Cmdline()
   call assert_equal(':', g:entered)
   au! CmdlineChanged
 
+  let g:log = []
+  cnoremap <F1> <Cmd>call setcmdline('ls')<CR>
+  autocmd CmdlineChanged : let g:log += [getcmdline()]
+  call feedkeys(":\<F1>", 'xt')
+  call assert_equal(['ls'], g:log)
+  unlet g:log
+  au! CmdlineChanged
+  cunmap <F1>
+
   au! CmdlineEnter : let g:entered = expand('<afile>')
   au! CmdlineLeave : let g:left = expand('<afile>')
   let g:entered = 0

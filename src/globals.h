@@ -1582,10 +1582,13 @@ EXTERN char_u	last_mode[MODE_MAX_LENGTH] INIT(= "n"); // for ModeChanged event
 EXTERN char_u	*last_cmdline INIT(= NULL); // last command line (for ":)
 EXTERN char_u	*repeat_cmdline INIT(= NULL); // command line for "."
 EXTERN char_u	*new_last_cmdline INIT(= NULL);	// new value for last_cmdline
+						//
 EXTERN char_u	*autocmd_fname INIT(= NULL); // fname for <afile> on cmdline
 EXTERN int	autocmd_fname_full;	     // autocmd_fname is full path
 EXTERN int	autocmd_bufnr INIT(= 0);     // fnum for <abuf> on cmdline
 EXTERN char_u	*autocmd_match INIT(= NULL); // name for <amatch> on cmdline
+EXTERN int	aucmd_cmdline_changed_count INIT(= 0);
+
 EXTERN int	did_cursorhold INIT(= FALSE); // set when CursorHold t'gerd
 EXTERN pos_T	last_cursormoved	      // for CursorMoved event
 # ifdef DO_INIT
