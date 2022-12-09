@@ -130,12 +130,19 @@ def Test_class_basic()
       class TextPosition
         this.lnum: number
 	this.col: number
+
+        def ToString(): string
+          return $'({this.lnum}, {this.col})'
+        enddef
       endclass
 
       # use the automatically generated new() method
       var pos = TextPosition.new(2, 12)
       assert_equal(2, pos.lnum)
       assert_equal(12, pos.col)
+
+      # call an object method
+      assert_equal('(2, 12)', pos.ToString())
   END
   v9.CheckScriptSuccess(lines)
 enddef

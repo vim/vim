@@ -52,7 +52,7 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
 	    CLEAR_POINTER(lvar);
 	    lvar->lv_name = (char_u *)"this";
 	    if (cctx->ctx_ufunc->uf_class != NULL)
-		lvar->lv_type = &cctx->ctx_ufunc->uf_class->class_type;
+		lvar->lv_type = &cctx->ctx_ufunc->uf_class->class_object_type;
 	}
 	return OK;
     }
@@ -975,7 +975,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	goto theend;
     }
 
-    ufunc = define_function(eap, lambda_name, lines_to_free, NULL);
+    ufunc = define_function(eap, lambda_name, lines_to_free, FALSE);
     if (ufunc == NULL)
     {
 	r = eap->skip ? OK : FAIL;

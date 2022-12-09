@@ -132,6 +132,23 @@ generate_CONSTRUCT(cctx_T *cctx, class_T *cl)
 }
 
 /*
+ * Generate ISN_OBJ_MEMBER - access object member by indes.
+ */
+    int
+generate_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
+{
+    RETURN_OK_IF_SKIP(cctx);
+
+    // drop the object type
+    isn_T *isn = generate_instr_drop(cctx, ISN_OBJ_MEMBER, 1);
+    if (isn == NULL)
+	return FAIL;
+
+    isn->isn_arg.number = idx;
+    return push_type_stack2(cctx, type, &t_any);
+}
+
+/*
  * If type at "offset" isn't already VAR_STRING then generate ISN_2STRING.
  * But only for simple types.
  * When "tolerant" is TRUE convert most types to string, e.g. a List.
@@ -2460,6 +2477,7 @@ delete_instr(isn_T *isn)
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:
 	case ISN_NEWPARTIAL:
+	case ISN_OBJ_MEMBER:
 	case ISN_OPANY:
 	case ISN_OPFLOAT:
 	case ISN_OPNR:

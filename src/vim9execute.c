@@ -4225,7 +4225,7 @@ exec_instructions(ectx_T *ectx)
 		    CLEAR_FIELD(ea);
 		    ea.cmd = ea.arg = iptr->isn_arg.string;
 		    ga_init2(&lines_to_free, sizeof(char_u *), 50);
-		    define_function(&ea, NULL, &lines_to_free, NULL);
+		    define_function(&ea, NULL, &lines_to_free, FALSE);
 		    ga_clear_strings(&lines_to_free);
 		}
 		break;
@@ -5114,6 +5114,35 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    case ISN_OBJ_MEMBER:
+		{
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_OBJECT)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			garray_T type_list;
+			ga_init2(&type_list, sizeof(type_T *), 10);
+			type_T *type = typval2type(tv, get_copyID(),
+						   &type_list, TVTT_DO_MEMBER);
+			char *tofree = NULL;
+			char *typename = type_name(type, &tofree);
+			semsg(_(e_object_required_found_str), typename);
+			vim_free(tofree);
+			clear_type_list(&type_list);
+			goto on_error;
+		    }
+		    int idx = iptr->isn_arg.number;
+		    object_T *obj = tv->vval.v_object;
+		    // the members are located right after the object struct
+		    typval_T *mtv = ((typval_T *)(obj + 1)) + idx;
+		    *tv = *mtv;
+
+		    // Unreference the object after getting the member, it may
+		    // be freed.
+		    object_unref(obj);
+		}
+		break;
+
 	    case ISN_CLEARDICT:
 		dict_stack_drop();
 		break;
@@ -5577,6 +5606,7 @@ call_def_function(
     typval_T	*argv,		// arguments
     int		flags,		// DEF_ flags
     partial_T	*partial,	// optional partial for context
+    object_T	*object,	// object, e.g. for this.Func()
     funccall_T	*funccal,
     typval_T	*rettv)		// return value
 {
@@ -5818,6 +5848,15 @@ call_def_function(
 	    STACK_TV_VAR(idx)->vval.v_number = 0;
 	}
 	ectx.ec_stack.ga_len += dfunc->df_varcount;
+
+	if (object != NULL)
+	{
+	    // the object is always the variable at index zero
+	    tv = STACK_TV_VAR(0);
+	    tv->v_type = VAR_OBJECT;
+	    tv->vval.v_object = object;
+	}
+
 	if (dfunc->df_has_closure)
 	{
 	    // Initialize the variable that counts how many closures were
@@ -6766,6 +6805,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_MEMBER: smsg("%s%4d MEMBER", pfx, current); break;
 	    case ISN_STRINGMEMBER: smsg("%s%4d MEMBER %s", pfx, current,
 						  iptr->isn_arg.string); break;
+	    case ISN_OBJ_MEMBER: smsg("%s%4d OBJ_MEMBER %d", pfx, current,
+					     (int)iptr->isn_arg.number); break;
 	    case ISN_CLEARDICT: smsg("%s%4d CLEARDICT", pfx, current); break;
 	    case ISN_USEDICT: smsg("%s%4d USEDICT", pfx, current); break;
 

@@ -295,7 +295,7 @@ eval_expr_typval(
 
 	    // Shortcut to call a compiled function with minimal overhead.
 	    r = call_def_function(partial->pt_func, argc, argv,
-					  DEF_USE_PT_ARGV, partial, fc, rettv);
+				    DEF_USE_PT_ARGV, partial, NULL, fc, rettv);
 	    if (fc_arg == NULL)
 		remove_funccal();
 	    if (r == FAIL)

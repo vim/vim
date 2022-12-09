@@ -1478,15 +1478,16 @@ struct class_S
 
     int		class_obj_method_count;
     ufunc_T	**class_obj_methods;	// allocated
-    ufunc_T	*class_new_func;	// new() function that was created
 
     garray_T	class_type_list;	// used for type pointers
     type_T	class_type;
+    type_T	class_object_type;	// same as class_type but VAR_OBJECT
 };
 
 // Used for v_object of typval of VAR_OBJECT.
 // The member variables follow in an array of typval_T.
-struct object_S {
+struct object_S
+{
     class_T	*obj_class;	    // class this object is created for;
 				    // pointer adds to class_refcount
     int		obj_refcount;
@@ -2123,6 +2124,7 @@ typedef struct {
     int		fe_evaluate;	// actually evaluate expressions
     partial_T	*fe_partial;	// for extra arguments
     dict_T	*fe_selfdict;	// Dictionary for "self"
+    object_T	*fe_object;	// object, e.g. for "this.Func()"
     typval_T	*fe_basetv;	// base for base->method()
     type_T	*fe_check_type;	// type from funcref or NULL
     int		fe_found_var;	// if the function is not found then give an

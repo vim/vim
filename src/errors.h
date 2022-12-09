@@ -3370,4 +3370,6 @@ EXTERN char e_method_not_found_on_class_str_str[]
 	INIT(= N_("E1325: Method not found on class \"%s\": %s"));
 EXTERN char e_member_not_found_on_object_str_str[]
 	INIT(= N_("E1326: Member not found on object \"%s\": %s"));
+EXTERN char e_object_required_found_str[]
+	INIT(= N_("E1327: Object required, found %s"));
 #endif

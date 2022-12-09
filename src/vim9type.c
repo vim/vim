@@ -1585,10 +1585,7 @@ f_typename(typval_T *argvars, typval_T *rettv)
     if (tofree != NULL)
 	rettv->vval.v_string = (char_u *)tofree;
     else
-    {
 	rettv->vval.v_string = vim_strsave((char_u *)name);
-	vim_free(tofree);
-    }
     clear_type_list(&type_list);
 }
 

@@ -77,7 +77,7 @@ ex_class(exarg_T *eap)
 
     // Growarray with object methods declared in the class.
     garray_T objmethods;
-    ga_init2(&objmethods, sizeof(ufunc_T), 10);
+    ga_init2(&objmethods, sizeof(ufunc_T *), 10);
 
     /*
      * Go over the body of the class until "endclass" is found.
@@ -97,22 +97,6 @@ ex_class(exarg_T *eap)
 	//	  static varname
 	//	  public static varname
 	//	  static _varname
-	//
-	// constructors:
-	//	  def new()
-	//	  enddef
-	//	  def newOther()
-	//	  enddef
-	//
-	// methods (object, class, generics):
-	//	  def someMethod()
-	//	  enddef
-	//	  static def someMethod()
-	//	  enddef
-	//	  def <Tval> someMethod()
-	//	  enddef
-	//	  static def <Tval> someMethod()
-	//	  enddef
 
 	char_u *p = line;
 	if (checkforcmd(&p, "endclass", 4))
@@ -172,6 +156,45 @@ ex_class(exarg_T *eap)
 	    ++objmembers.ga_len;
 	}
 
+	// constructors:
+	//	  def new()
+	//	  enddef
+	//	  def newOther()
+	//	  enddef
+	// methods:
+	//	  def someMethod()
+	//	  enddef
+	// TODO:
+	//	  static def someMethod()
+	//	  enddef
+	//	  def <Tval> someMethod()
+	//	  enddef
+	//	  static def <Tval> someMethod()
+	//	  enddef
+	else if (checkforcmd(&p, "def", 3))
+	{
+	    exarg_T	ea;
+	    garray_T	lines_to_free;
+
+	    CLEAR_FIELD(ea);
+	    ea.cmd = line;
+	    ea.arg = p;
+	    ea.cmdidx = CMD_def;
+	    ea.getline = eap->getline;
+	    ea.cookie = eap->cookie;
+
+	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
+	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free, TRUE);
+	    ga_clear_strings(&lines_to_free);
+
+	    // TODO: how about errors?
+	    if (uf != NULL && ga_grow(&objmethods, 1) == OK)
+	    {
+		((ufunc_T **)objmethods.ga_data)[objmethods.ga_len] = uf;
+		++objmethods.ga_len;
+	    }
+	}
+
 	else
 	{
 	    semsg(_(e_not_valid_command_in_class_str), line);
@@ -206,7 +229,7 @@ ex_class(exarg_T *eap)
 
 	int have_new = FALSE;
 	for (int i = 0; i < objmethods.ga_len; ++i)
-	    if (STRCMP((((ufunc_T *)objmethods.ga_data) + i)->uf_name,
+	    if (STRCMP(((ufunc_T **)objmethods.ga_data)[i]->uf_name,
 								   "new") == 0)
 	    {
 		have_new = TRUE;
@@ -237,7 +260,7 @@ ex_class(exarg_T *eap)
 	    garray_T lines_to_free;
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
 
-	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, cl);
+	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, TRUE);
 
 	    ga_clear_strings(&lines_to_free);
 	    vim_free(fga.ga_data);
@@ -248,7 +271,6 @@ ex_class(exarg_T *eap)
 		++objmethods.ga_len;
 
 		nf->uf_flags |= FC_NEW;
-		nf->uf_class = cl;
 		nf->uf_ret_type = get_type_ptr(&type_list);
 		if (nf->uf_ret_type != NULL)
 		{
@@ -257,7 +279,6 @@ ex_class(exarg_T *eap)
 		    nf->uf_ret_type->tt_argcount = 0;
 		    nf->uf_ret_type->tt_args = NULL;
 		}
-		cl->class_new_func = nf;
 	    }
 	}
 
@@ -275,8 +296,18 @@ ex_class(exarg_T *eap)
 					sizeof(ufunc_T *) * objmethods.ga_len);
 	vim_free(objmethods.ga_data);
 
+	// Set the class pointer on all the object methods.
+	for (int i = 0; i < objmethods.ga_len; ++i)
+	{
+	    ufunc_T *fp = cl->class_obj_methods[i];
+	    fp->uf_class = cl;
+	    fp->uf_flags |= FC_OBJECT;  // TODO: not for class method
+	}
+
 	cl->class_type.tt_type = VAR_CLASS;
 	cl->class_type.tt_member = (type_T *)cl;
+	cl->class_object_type.tt_type = VAR_OBJECT;
+	cl->class_object_type.tt_member = (type_T *)cl;
 	cl->class_type_list = type_list;
 
 	// TODO:
@@ -305,6 +336,11 @@ cleanup:
     }
     ga_clear(&objmembers);
 
+    for (int i = 0; i < objmethods.ga_len; ++i)
+    {
+	ufunc_T *uf = ((ufunc_T **)objmethods.ga_data)[i];
+	func_clear_free(uf, FALSE);
+    }
     ga_clear(&objmethods);
     clear_type_list(&type_list);
 }
@@ -419,6 +455,11 @@ class_object_index(
 		funcexe_T   funcexe;
 		CLEAR_FIELD(funcexe);
 		funcexe.fe_evaluate = TRUE;
+		if (rettv->v_type == VAR_OBJECT)
+		{
+		    funcexe.fe_object = rettv->vval.v_object;
+		    ++funcexe.fe_object->obj_refcount;
+		}
 
 		// Clear the class or object after calling the function, in
 		// case the refcount is one.
@@ -426,7 +467,6 @@ class_object_index(
 		rettv->v_type = VAR_UNKNOWN;
 
 		// Call the user function.  Result goes into rettv;
-		// TODO: pass the object
 		int error = call_user_func_check(fp, argcount, argvars,
 							rettv, &funcexe, NULL);
 
@@ -545,10 +585,12 @@ class_unref(class_T *cl)
 	}
 	vim_free(cl->class_obj_members);
 
+	for (int i = 0; i < cl->class_obj_method_count; ++i)
+	{
+	    ufunc_T *uf = cl->class_obj_methods[i];
+	    func_clear_free(uf, FALSE);
+	}
 	vim_free(cl->class_obj_methods);
-
-	if (cl->class_new_func != NULL)
-	    func_ptr_unref(cl->class_new_func);
 
 	clear_type_list(&cl->class_type_list);
 

@@ -46,7 +46,7 @@ char_u *get_scriptlocal_funcname(char_u *funcname);
 char_u *alloc_printable_func_name(char_u *fname);
 char_u *save_function_name(char_u **name, int *is_global, int skip, int flags, funcdict_T *fudi);
 void list_functions(regmatch_T *regmatch);
-ufunc_T *define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free, class_T *class_arg);
+ufunc_T *define_function(exarg_T *eap, char_u *name_arg, garray_T *lines_to_free, int in_class);
 void ex_function(exarg_T *eap);
 ufunc_T *find_func_by_name(char_u *name, compiletype_T *compile_type);
 void ex_defcompile(exarg_T *eap);
