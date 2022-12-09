@@ -441,7 +441,10 @@ class_object_index(
 	for (int i = 0; i < cl->class_obj_method_count; ++i)
 	{
 	    ufunc_T *fp = cl->class_obj_methods[i];
-	    if (STRNCMP(name, fp->uf_name, len) == 0 && fp->uf_name[len] == NUL)
+	    // Use a separate pointer to avoid that ASAN complains about
+	    // uf_name[] only being 4 characters.
+	    char_u *ufname = (char_u *)fp->uf_name;
+	    if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
 	    {
 		typval_T    argvars[MAX_FUNC_ARGS + 1];
 		int	    argcount = 0;
