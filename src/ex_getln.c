@@ -1785,13 +1785,16 @@ getcmdline_int(
 
 	if (c == K_COMMAND || c == K_SCRIPT_COMMAND)
 	{
+	    int	    clen = ccline.cmdlen;
 	    int	    cc_count = aucmd_cmdline_changed_count;
 
 	    if (do_cmdkey_command(c, DOCMD_NOWAIT) == OK)
 	    {
-		// Do not trigger CmdlineChanged below if the <Cmd> mapping
-		// already did that.
-		if (cc_count != aucmd_cmdline_changed_count)
+		// Do not trigger CmdlineChanged below if:
+		// - the length of the command line didn't change
+		// - the <Cmd> mapping already triggered the event
+		if (clen == ccline.cmdlen
+				    || cc_count != aucmd_cmdline_changed_count)
 		    trigger_cmdlinechanged = FALSE;
 		goto cmdline_changed;
 	    }
