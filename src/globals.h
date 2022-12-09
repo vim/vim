@@ -2035,3 +2035,7 @@ EXTERN int skip_win_fix_cursor INIT(= FALSE);
 EXTERN int skip_win_fix_scroll INIT(= FALSE);
 // Skip update_topline() call while executing win_fix_scroll().
 EXTERN int skip_update_topline INIT(= FALSE);
+
+// 'showcmd' buffer shared between normal.c and statusline.c
+#define SHOWCMD_BUFLEN (SHOWCMD_COLS + 1 + 30)
+EXTERN char_u showcmd_buf[SHOWCMD_BUFLEN];

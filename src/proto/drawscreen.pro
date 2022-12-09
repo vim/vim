@@ -3,6 +3,7 @@ int update_screen(int type_arg);
 int statusline_row(win_T *wp);
 void showruler(int always);
 void win_redr_ruler(win_T *wp, int always, int ignore_pum);
+void win_redr_status(win_T *wp, int ignore_pum UNUSED);
 void after_updating_screen(int may_resize_shell);
 void update_curbuf(int type);
 void update_debug_sign(buf_T *buf, linenr_T lnum);

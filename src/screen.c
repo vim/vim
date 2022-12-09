@@ -4389,8 +4389,18 @@ draw_tabline(void)
 	    c = ' ';
 	screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
 
+	// Draw the 'showcmd' information if 'showcmdloc' == "tabline".
+	if (p_sc && *p_sloc == 't')
+	{
+	    int	width = MIN(10, (int)Columns - col - (tabcount > 1) * 3);
+
+	    if (width > 0)
+		screen_puts_len(showcmd_buf, width, 0, (int)Columns
+			    - width - (tabcount > 1) * 2, attr_nosel);
+	}
+
 	// Put an "X" for closing the current tab if there are several.
-	if (first_tabpage->tp_next != NULL)
+	if (tabcount > 1)
 	{
 	    screen_putchar('X', 0, (int)Columns - 1, attr_nosel);
 	    TabPageIdxs[Columns - 1] = -999;

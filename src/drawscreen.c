@@ -73,8 +73,6 @@ static void redraw_custom_statusline(win_T *wp);
 static int  did_update_one_window;
 #endif
 
-static void win_redr_status(win_T *wp, int ignore_pum);
-
 /*
  * Based on the current value of curwin->w_topline, transfer a screenfull
  * of stuff from Filemem to ScreenLines[], and update curwin->w_botline.
@@ -423,7 +421,7 @@ statusline_row(win_T *wp)
  * If "ignore_pum" is TRUE, also redraw statusline when the popup menu is
  * displayed.
  */
-    static void
+    void
 win_redr_status(win_T *wp, int ignore_pum UNUSED)
 {
     int		row;
@@ -548,6 +546,16 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 						   - 1 + wp->w_wincol), attr);
 
 	win_redr_ruler(wp, TRUE, ignore_pum);
+
+	// Draw the 'showcmd' information if 'showcmdloc' == "statusline".
+	if (p_sc && *p_sloc == 's')
+	{
+	    int	width = MIN(10, this_ru_col - len - 2);
+
+	    if (width > 0)
+		screen_puts_len(showcmd_buf, width, row,
+				wp->w_wincol + this_ru_col - width - 1, attr);
+	}
     }
 
     /*

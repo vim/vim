@@ -1574,8 +1574,6 @@ may_clear_cmdline(void)
  * Routines for displaying a partly typed command
  */
 
-#define SHOWCMD_BUFLEN (SHOWCMD_COLS + 1 + 30)
-static char_u	showcmd_buf[SHOWCMD_BUFLEN];
 static char_u	old_showcmd_buf[SHOWCMD_BUFLEN];  // For push_showcmd()
 static int	showcmd_is_clear = TRUE;
 static int	showcmd_visual = FALSE;
@@ -1798,22 +1796,25 @@ pop_showcmd(void)
     static void
 display_showcmd(void)
 {
-    int	    len;
+    int	    len = (int)STRLEN(showcmd_buf);
 
+    showcmd_is_clear = (len == 0);
     cursor_off();
 
-    len = (int)STRLEN(showcmd_buf);
-    if (len == 0)
-	showcmd_is_clear = TRUE;
-    else
+    if (*p_sloc == 's')
+	win_redr_status(curwin, FALSE);
+    else if (*p_sloc == 't')
+	draw_tabline();
+    else if (*p_sloc == 'l')
     {
-	screen_puts(showcmd_buf, (int)Rows - 1, sc_col, 0);
-	showcmd_is_clear = FALSE;
-    }
+	if (!showcmd_is_clear)
+	    screen_puts(showcmd_buf, (int)Rows - 1, sc_col, 0);
 
-    // clear the rest of an old message by outputting up to SHOWCMD_COLS
-    // spaces
-    screen_puts((char_u *)"          " + len, (int)Rows - 1, sc_col + len, 0);
+	// clear the rest of an old message by outputting up to SHOWCMD_COLS
+	// spaces
+	screen_puts((char_u *)"          " + len,
+						(int)Rows - 1, sc_col + len, 0);
+    }
 
     setcursor();	    // put cursor back where it belongs
 }
