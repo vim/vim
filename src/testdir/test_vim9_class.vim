@@ -129,7 +129,7 @@ def Test_class_basic()
 
       class TextPosition
         this.lnum: number
-	this.col: number
+        this.col: number
 
         def ToString(): string
           return $'({this.lnum}, {this.col})'
@@ -143,6 +143,41 @@ def Test_class_basic()
 
       # call an object method
       assert_equal('(2, 12)', pos.ToString())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_class_member_initializer()
+  var lines =<< trim END
+      vim9script
+
+      class TextPosition
+        this.lnum: number = 1
+        this.col: number = 1
+
+        def new(lnum: number)
+          this.lnum = lnum
+        enddef
+      endclass
+
+      var pos = TextPosition.new(3)
+      assert_equal(3, pos.lnum)
+      assert_equal(1, pos.col)
+
+      var instr = execute('disassemble TextPosition.new')
+      assert_match('new\_s*' ..
+            '0 NEW TextPosition size 72\_s*' ..
+            '\d PUSHNR 1\_s*' ..
+            '\d STORE_THIS 0\_s*' ..
+            '\d PUSHNR 1\_s*' ..
+            '\d STORE_THIS 1\_s*' ..
+            'this.lnum = lnum\_s*' ..
+            '\d LOAD arg\[-1]\_s*' ..
+            '\d PUSHNR 0\_s*' ..
+            '\d LOAD $0\_s*' ..
+            '\d\+ STOREINDEX object\_s*' ..
+            '\d\+ RETURN object.*',
+            instr)
   END
   v9.CheckScriptSuccess(lines)
 enddef

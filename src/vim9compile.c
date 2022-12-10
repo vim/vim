@@ -2118,6 +2118,71 @@ compile_assign_unlet(
 }
 
 /*
+ * Generate an instruction to push the default value for "vartype".
+ * if "dest_local" is TRUE then for some types no instruction is generated.
+ * "skip_store" is set to TRUE if no PUSH instruction is generated.
+ * Returns OK or FAIL.
+ */
+    static int
+push_default_value(
+	cctx_T	    *cctx,
+	vartype_T   vartype,
+	int	    dest_is_local,
+	int	    *skip_store)
+{
+    int r = OK;
+
+    switch (vartype)
+    {
+	case VAR_BOOL:
+	    r = generate_PUSHBOOL(cctx, VVAL_FALSE);
+	    break;
+	case VAR_FLOAT:
+	    r = generate_PUSHF(cctx, 0.0);
+	    break;
+	case VAR_STRING:
+	    r = generate_PUSHS(cctx, NULL);
+	    break;
+	case VAR_BLOB:
+	    r = generate_PUSHBLOB(cctx, blob_alloc());
+	    break;
+	case VAR_FUNC:
+	    r = generate_PUSHFUNC(cctx, NULL, &t_func_void, TRUE);
+	    break;
+	case VAR_LIST:
+	    r = generate_NEWLIST(cctx, 0, FALSE);
+	    break;
+	case VAR_DICT:
+	    r = generate_NEWDICT(cctx, 0, FALSE);
+	    break;
+	case VAR_JOB:
+	    r = generate_PUSHJOB(cctx);
+	    break;
+	case VAR_CHANNEL:
+	    r = generate_PUSHCHANNEL(cctx);
+	    break;
+	case VAR_NUMBER:
+	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_PARTIAL:
+	case VAR_VOID:
+	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
+	case VAR_SPECIAL:  // cannot happen
+	    // This is skipped for local variables, they are always
+	    // initialized to zero.  But in a "for" or "while" loop
+	    // the value may have been changed.
+	    if (dest_is_local && !inside_loop_scope(cctx))
+		*skip_store = TRUE;
+	    else
+		r = generate_PUSHNR(cctx, 0);
+	    break;
+    }
+    return r;
+}
+
+/*
  * Compile declaration and assignment:
  * "let name"
  * "var name = expr"
@@ -2462,62 +2527,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    else
 	    {
-		int r = OK;
-
 		// variables are always initialized
 		if (GA_GROW_FAILS(instr, 1))
 		    goto theend;
-		switch (lhs.lhs_member_type->tt_type)
-		{
-		    case VAR_BOOL:
-			r = generate_PUSHBOOL(cctx, VVAL_FALSE);
-			break;
-		    case VAR_FLOAT:
-			r = generate_PUSHF(cctx, 0.0);
-			break;
-		    case VAR_STRING:
-			r = generate_PUSHS(cctx, NULL);
-			break;
-		    case VAR_BLOB:
-			r = generate_PUSHBLOB(cctx, blob_alloc());
-			break;
-		    case VAR_FUNC:
-			r = generate_PUSHFUNC(cctx, NULL, &t_func_void, TRUE);
-			break;
-		    case VAR_LIST:
-			r = generate_NEWLIST(cctx, 0, FALSE);
-			break;
-		    case VAR_DICT:
-			r = generate_NEWDICT(cctx, 0, FALSE);
-			break;
-		    case VAR_JOB:
-			r = generate_PUSHJOB(cctx);
-			break;
-		    case VAR_CHANNEL:
-			r = generate_PUSHCHANNEL(cctx);
-			break;
-		    case VAR_NUMBER:
-		    case VAR_UNKNOWN:
-		    case VAR_ANY:
-		    case VAR_PARTIAL:
-		    case VAR_VOID:
-		    case VAR_INSTR:
-		    case VAR_CLASS:
-		    case VAR_OBJECT:
-		    case VAR_SPECIAL:  // cannot happen
-			// This is skipped for local variables, they are always
-			// initialized to zero.  But in a "for" or "while" loop
-			// the value may have been changed.
-			if (lhs.lhs_dest == dest_local
-						   && !inside_loop_scope(cctx))
-			    skip_store = TRUE;
-			else
-			{
-			    instr_count = instr->ga_len;
-			    r = generate_PUSHNR(cctx, 0);
-			}
-			break;
-		}
+		instr_count = instr->ga_len;
+		int r = push_default_value(cctx, lhs.lhs_member_type->tt_type,
+				      lhs.lhs_dest == dest_local, &skip_store);
 		if (r == FAIL)
 		    goto theend;
 	    }
@@ -2946,9 +2961,32 @@ compile_def_function(
 						 vim_strsave((char_u *)"this");
 	++dfunc->df_var_names.ga_len;
 
-	// In the constructor allocate memory for the object.
+	// In the constructor allocate memory for the object and initialize the
+	// object members.
 	if ((ufunc->uf_flags & FC_NEW) == FC_NEW)
+	{
 	    generate_CONSTRUCT(&cctx, ufunc->uf_class);
+
+	    for (int i = 0; i < ufunc->uf_class->class_obj_member_count; ++i)
+	    {
+		objmember_T *m = &ufunc->uf_class->class_obj_members[i];
+		if (m->om_init != NULL)
+		{
+		    char_u *expr = m->om_init;
+		    if (compile_expr0(&expr, &cctx) == FAIL)
+			goto erret;
+		    if (!ends_excmd2(m->om_init, expr))
+		    {
+			semsg(_(e_trailing_characters_str), expr);
+			goto erret;
+		    }
+		}
+		else
+		    push_default_value(&cctx, m->om_type->tt_type,
+								  FALSE, NULL);
+		generate_STORE_THIS(&cctx, i);
+	    }
+	}
     }
 
     if (ufunc->uf_def_args.ga_len > 0)
@@ -3564,7 +3602,10 @@ nextline:
 	// Return void if there is no return at the end.
 	// For a constructor return the object.
 	if ((ufunc->uf_flags & FC_NEW) == FC_NEW)
+	{
 	    generate_instr(&cctx, ISN_RETURN_OBJECT);
+	    ufunc->uf_ret_type = &ufunc->uf_class->class_object_type;
+	}
 	else
 	    generate_instr(&cctx, ISN_RETURN_VOID);
     }

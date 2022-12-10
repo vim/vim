@@ -1193,9 +1193,8 @@ get_lval(
     var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
-	int r = OK;
-
-	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT)
+	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT
+		      && lp->ll_tv->v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
@@ -1203,7 +1202,8 @@ get_lval(
 	}
 	if (lp->ll_tv->v_type != VAR_LIST
 		&& lp->ll_tv->v_type != VAR_DICT
-		&& lp->ll_tv->v_type != VAR_BLOB)
+		&& lp->ll_tv->v_type != VAR_BLOB
+		&& lp->ll_tv->v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		emsg(_(e_can_only_index_list_dictionary_or_blob));
@@ -1211,6 +1211,7 @@ get_lval(
 	}
 
 	// A NULL list/blob works like an empty list/blob, allocate one now.
+	int r = OK;
 	if (lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
 	    r = rettv_list_alloc(lp->ll_tv);
 	else if (lp->ll_tv->v_type == VAR_BLOB
@@ -1463,7 +1464,7 @@ get_lval(
 	    lp->ll_tv = NULL;
 	    break;
 	}
-	else
+	else if (lp->ll_tv->v_type == VAR_LIST)
 	{
 	    /*
 	     * Get the number and item for the only or first index of the List.
@@ -1507,6 +1508,11 @@ get_lval(
 	    }
 
 	    lp->ll_tv = &lp->ll_li->li_tv;
+	}
+	else  // v_type == VAR_CLASS
+	{
+	    // TODO: check object members and methods if
+	    // "key" points name start, "p" to the end
 	}
     }
 

@@ -1463,8 +1463,9 @@ typedef struct {
  * Entry for an object member variable.
  */
 typedef struct {
-    char_u	*om_name;  // allocated
+    char_u	*om_name;   // allocated
     type_T	*om_type;
+    char_u	*om_init;   // allocated
 } objmember_T;
 
 // "class_T": used for v_class of typval of VAR_CLASS

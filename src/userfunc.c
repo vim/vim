@@ -4047,6 +4047,12 @@ trans_function_name(
 	    name = vim_strsave(lv.ll_tv->vval.v_string);
 	    *pp = end;
 	}
+	else if (lv.ll_tv->v_type == VAR_CLASS
+					     && lv.ll_tv->vval.v_class != NULL)
+	{
+	    name = vim_strsave(lv.ll_tv->vval.v_class->class_name);
+	    *pp = end;
+	}
 	else if (lv.ll_tv->v_type == VAR_PARTIAL
 					  && lv.ll_tv->vval.v_partial != NULL)
 	{
@@ -5240,8 +5246,17 @@ find_func_by_name(char_u *name, compiletype_T *compile_type)
 	fname = vim_strnsave(name, arg - name);
     }
     else
+    {
+	// First try finding a method in a class, find_func_by_name() will give
+	// an error if the function is not found.
+	ufunc = find_class_func(&arg);
+	if (ufunc != NULL)
+	    return ufunc;
+
 	fname = trans_function_name(&arg, &is_global, FALSE,
-		      TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD, NULL, NULL, NULL);
+		      TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DECL,
+		      NULL, NULL, NULL);
+    }
     if (fname == NULL)
     {
 	semsg(_(e_invalid_argument_str), name);

@@ -3009,7 +3009,7 @@ exec_instructions(ectx_T *ectx)
 	iptr = &ectx->ec_instr[ectx->ec_iidx++];
 	switch (iptr->isn_type)
 	{
-	    // Constructor, new() method.
+	    // Constructor, first instruction in a new() method.
 	    case ISN_CONSTRUCT:
 		// "this" is always the local variable at index zero
 		tv = STACK_TV_VAR(0);
@@ -5114,7 +5114,7 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
-	    case ISN_OBJ_MEMBER:
+	    case ISN_GET_OBJ_MEMBER:
 		{
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_OBJECT)
@@ -5140,6 +5140,18 @@ exec_instructions(ectx_T *ectx)
 		    // Unreference the object after getting the member, it may
 		    // be freed.
 		    object_unref(obj);
+		}
+		break;
+
+	    case ISN_STORE_THIS:
+		{
+		    int idx = iptr->isn_arg.number;
+		    object_T *obj = STACK_TV_VAR(0)->vval.v_object;
+		    // the members are located right after the object struct
+		    typval_T *mtv = ((typval_T *)(obj + 1)) + idx;
+		    clear_tv(mtv);
+		    *mtv = *STACK_TV_BOT(-1);
+		    --ectx->ec_stack.ga_len;
 		}
 		break;
 
@@ -6805,7 +6817,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_MEMBER: smsg("%s%4d MEMBER", pfx, current); break;
 	    case ISN_STRINGMEMBER: smsg("%s%4d MEMBER %s", pfx, current,
 						  iptr->isn_arg.string); break;
-	    case ISN_OBJ_MEMBER: smsg("%s%4d OBJ_MEMBER %d", pfx, current,
+	    case ISN_GET_OBJ_MEMBER: smsg("%s%4d OBJ_MEMBER %d", pfx, current,
+					     (int)iptr->isn_arg.number); break;
+	    case ISN_STORE_THIS: smsg("%s%4d STORE_THIS %d", pfx, current,
 					     (int)iptr->isn_arg.number); break;
 	    case ISN_CLEARDICT: smsg("%s%4d CLEARDICT", pfx, current); break;
 	    case ISN_USEDICT: smsg("%s%4d USEDICT", pfx, current); break;

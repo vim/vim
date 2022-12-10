@@ -147,12 +147,30 @@ ex_class(exarg_T *eap)
 	    if (type == NULL)
 		break;
 
+	    char_u *expr_start = skipwhite(type_arg);
+	    if (*expr_start == '=' && (!VIM_ISWHITE(expr_start[-1])
+					       || !VIM_ISWHITE(expr_start[1])))
+	    {
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								"=", type_arg);
+		break;
+	    }
+	    expr_start = skipwhite(expr_start + 1);
+
+	    char_u *expr_end = expr_start;
+	    evalarg_T	evalarg;
+	    init_evalarg(&evalarg);
+	    skip_expr(&expr_end, &evalarg);
+	    clear_evalarg(&evalarg, NULL);
+
 	    if (ga_grow(&objmembers, 1) == FAIL)
 		break;
 	    objmember_T *m = ((objmember_T *)objmembers.ga_data)
 							  + objmembers.ga_len;
 	    m->om_name = vim_strnsave(varname, varname_end - varname);
 	    m->om_type = type;
+	    if (expr_end > expr_start)
+		m->om_init = vim_strnsave(expr_start, expr_end - expr_start);
 	    ++objmembers.ga_len;
 	}
 
@@ -190,6 +208,9 @@ ex_class(exarg_T *eap)
 	    // TODO: how about errors?
 	    if (uf != NULL && ga_grow(&objmethods, 1) == OK)
 	    {
+		if (STRNCMP(uf->uf_name, "new", 3) == 0)
+		    uf->uf_flags |= FC_NEW;
+
 		((ufunc_T **)objmethods.ga_data)[objmethods.ga_len] = uf;
 		++objmethods.ga_len;
 	    }
@@ -333,6 +354,7 @@ cleanup:
     {
 	objmember_T *m = ((objmember_T *)objmembers.ga_data) + i;
 	vim_free(m->om_name);
+	vim_free(m->om_init);
     }
     ga_clear(&objmembers);
 
@@ -520,6 +542,52 @@ class_object_index(
 }
 
 /*
+ * If "arg" points to a class or object method, return it.
+ * Otherwise return NULL.
+ */
+    ufunc_T *
+find_class_func(char_u **arg)
+{
+    char_u *name = *arg;
+    char_u *name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
+    if (name_end == name || *name_end != '.')
+	return NULL;
+
+    size_t len = name_end - name;
+    typval_T tv;
+    tv.v_type = VAR_UNKNOWN;
+    if (eval_variable(name, len, 0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
+	return NULL;
+    if (tv.v_type != VAR_CLASS && tv.v_type != VAR_OBJECT)
+    {
+	clear_tv(&tv);
+	return NULL;
+    }
+
+    class_T *cl = tv.v_type == VAR_CLASS ? tv.vval.v_class
+						 : tv.vval.v_object->obj_class;
+    if (cl == NULL)
+	return NULL;
+    char_u *fname = name_end + 1;
+    char_u *fname_end = find_name_end(fname, NULL, NULL, FNE_CHECK_START);
+    if (fname_end == fname)
+	return NULL;
+    len = fname_end - fname;
+
+    for (int i = 0; i < cl->class_obj_method_count; ++i)
+    {
+	ufunc_T *fp = cl->class_obj_methods[i];
+	// Use a separate pointer to avoid that ASAN complains about
+	// uf_name[] only being 4 characters.
+	char_u *ufname = (char_u *)fp->uf_name;
+	if (STRNCMP(fname, ufname, len) == 0 && ufname[len] == NUL)
+	    return fp;
+    }
+
+    return NULL;
+}
+
+/*
  * Make a copy of an object.
  */
     void
@@ -585,6 +653,7 @@ class_unref(class_T *cl)
 	{
 	    objmember_T *m = &cl->class_obj_members[i];
 	    vim_free(m->om_name);
+	    vim_free(m->om_init);
 	}
 	vim_free(cl->class_obj_members);
 
