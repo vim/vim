@@ -4081,10 +4081,12 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 #endif
 	savewin = curwin;
 	curwin = self->win;
+	curbuf = curwin->w_buffer;
 
 	VimTryStart();
 	win_setheight((int) height);
 	curwin = savewin;
+	curbuf = curwin->w_buffer;
 	if (VimTryEnd())
 	    return -1;
 
@@ -4103,10 +4105,12 @@ WindowSetattr(WindowObject *self, char *name, PyObject *valObject)
 #endif
 	savewin = curwin;
 	curwin = self->win;
+	curbuf = curwin->w_buffer;
 
 	VimTryStart();
 	win_setwidth((int) width);
 	curwin = savewin;
+	curbuf = curwin->w_buffer;
 	if (VimTryEnd())
 	    return -1;
 
