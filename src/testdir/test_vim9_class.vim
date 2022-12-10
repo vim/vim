@@ -166,7 +166,7 @@ def Test_class_member_initializer()
 
       var instr = execute('disassemble TextPosition.new')
       assert_match('new\_s*' ..
-            '0 NEW TextPosition size 72\_s*' ..
+            '0 NEW TextPosition size \d\+\_s*' ..
             '\d PUSHNR 1\_s*' ..
             '\d STORE_THIS 0\_s*' ..
             '\d PUSHNR 1\_s*' ..
