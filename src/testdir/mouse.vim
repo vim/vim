@@ -36,6 +36,8 @@ func TerminalEscapeCode(code, row, col, m)
     return printf("\<Esc>[<%d;%d;%d%s", a:code, a:col, a:row, a:m)
   elseif &ttymouse ==# 'urxvt'
     return printf("\<Esc>[%d;%d;%dM", a:code + 0x20, a:col, a:row)
+  elseif &term ==# 'win32'
+	return printf("\<Esc>[<%d;%d;%d%s", a:code, a:col, a:row, a:m)
   endif
 endfunc
 

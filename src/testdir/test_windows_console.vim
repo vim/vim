@@ -17,6 +17,51 @@ func SendKeys(keylist)
   endfor
 endfunc
 
+" Test for sending low level mouse events
+func SendMouse(button, row, col, multiclick, modifiers)
+    let args = #{ }
+    let args.button = a:button
+    let args.row = a:row
+    let args.col = a:col
+    let args.multiclick = a:multiclick
+    let args.modifiers = a:modifiers
+    call test_mswin_event("mouse", args)
+    "call feedkeys("\<Esc>",'Lx!')
+    return getchar(0)
+    "call getmousepos()
+endfunc
+    "return printf("\<Esc>[<%d;%d;%d%s", a:code, a:col, a:row, a:m)
+    
+" Test MS-Windows console low level feedkeys
+func Test_windows_console_feedkeys()
+  CheckMSWindows
+  CheckNotGui
+  new
+  call feedkeys("ABCXYZ",'L')
+  let chA = getcharstr()
+  let chB = getcharstr()
+  let chC = getcharstr()
+  let chX = getcharstr()
+  let chY = getcharstr()
+  let chZ = getcharstr()
+
+  call assert_equal('A', chA)
+  call assert_equal('B', chB)
+  call assert_equal('C', chC)
+  call assert_equal('X', chX)
+  call assert_equal('Y', chY)
+  call assert_equal('Z', chZ)
+
+  call feedkeys("\<Esc>",'L')
+  let ch = getcharstr(0)
+  call assert_equal('', ch)
+
+  exe "normal ggC\<C-K>\<ScrollWheelUp>"
+  call assert_equal("<ScrollWheelUp>", getline(1))
+
+  bw!
+endfunc
+
 " Test MS-Windows console key events
 func Test_windows_console_key_event()
   CheckMSWindows
@@ -53,16 +98,16 @@ func Test_windows_console_key_event()
         \ 'UP'         : 0x26,
         \ 'RIGHT'      : 0x27,
         \ 'DOWN'       : 0x28,
-        \ 'KEY0'       : 0x30,
-        \ 'KEY1'       : 0x31,
-        \ 'KEY2'       : 0x32,
-        \ 'KEY3'       : 0x33,
-        \ 'KEY4'       : 0x34,
-        \ 'KEY5'       : 0x35,
-        \ 'KEY6'       : 0x36,
-        \ 'KEY7'       : 0x37,
-        \ 'KEY8'       : 0x38,
-        \ 'KEY9'       : 0x39,
+        \ 'KEY_0'      : 0x30,
+        \ 'KEY_1'      : 0x31,
+        \ 'KEY_2'      : 0x32,
+        \ 'KEY_3'      : 0x33,
+        \ 'KEY_4'      : 0x34,
+        \ 'KEY_5'      : 0x35,
+        \ 'KEY_6'      : 0x36,
+        \ 'KEY_7'      : 0x37,
+        \ 'KEY_8'      : 0x38,
+        \ 'KEY_9'      : 0x39,
 	\ 'NUMPAD0'    : 0x60,
         \ 'NUMPAD1'    : 0x61,
         \ 'NUMPAD2'    : 0x62,
@@ -88,6 +133,32 @@ func Test_windows_console_key_event()
         \ 'F10'        : 0x79,
         \ 'F11'        : 0x7A,
         \ 'F12'        : 0x7B,
+        \ 'KEY_A'      : 0x41,
+        \ 'KEY_B'      : 0x42,
+        \ 'KEY_C'      : 0x43,
+        \ 'KEY_D'      : 0x44,
+        \ 'KEY_E'      : 0x45,
+        \ 'KEY_F'      : 0x46,
+        \ 'KEY_G'      : 0x47,
+        \ 'KEY_H'      : 0x48,
+        \ 'KEY_I'      : 0x49,
+        \ 'KEY_J'      : 0x4A,
+        \ 'KEY_K'      : 0x4B,
+        \ 'KEY_L'      : 0x4C,
+        \ 'KEY_M'      : 0x4D,
+        \ 'KEY_N'      : 0x4E,
+        \ 'KEY_O'      : 0x4F,
+        \ 'KEY_P'      : 0x50,
+        \ 'KEY_Q'      : 0x51,
+        \ 'KEY_R'      : 0x52,
+        \ 'KEY_S'      : 0x53,
+        \ 'KEY_T'      : 0x54,
+        \ 'KEY_U'      : 0x55,
+        \ 'KEY_V'      : 0x56,
+        \ 'KEY_W'      : 0x57,
+        \ 'KEY_X'      : 0x58,
+        \ 'KEY_Y'      : 0x59,
+        \ 'KEY_Z'      : 0x5A	
 	\ }
 
   let vim_MOD_MASK_SHIFT = 0x02
@@ -259,16 +330,16 @@ func Test_windows_console_key_event()
     \ [[VK.SHIFT,    VK.DOWN], "S-Down", 0],
     \ [[VK.CONTROL,  VK.DOWN], "C-Down", 4],
     \ [[VK.CONTROL,  VK.SHIFT, VK.DOWN], "C-S-Down", 4],
-    \ [[VK.CONTROL,  VK.KEY0], "C-0", 4],
-    \ [[VK.CONTROL,  VK.KEY1], "C-1", 4],
-    \ [[VK.CONTROL,  VK.KEY2], "C-2", 4],
-    \ [[VK.CONTROL,  VK.KEY3], "C-3", 4],
-    \ [[VK.CONTROL,  VK.KEY4], "C-4", 4],
-    \ [[VK.CONTROL,  VK.KEY5], "C-5", 4],
-    \ [[VK.CONTROL,  VK.KEY6], "C-^", 0],
-    \ [[VK.CONTROL,  VK.KEY7], "C-7", 4],
-    \ [[VK.CONTROL,  VK.KEY8], "C-8", 4],
-    \ [[VK.CONTROL,  VK.KEY9], "C-9", 4],
+    \ [[VK.CONTROL,  VK.KEY_0], "C-0", 4],
+    \ [[VK.CONTROL,  VK.KEY_1], "C-1", 4],
+    \ [[VK.CONTROL,  VK.KEY_2], "C-2", 4],
+    \ [[VK.CONTROL,  VK.KEY_3], "C-3", 4],
+    \ [[VK.CONTROL,  VK.KEY_4], "C-4", 4],
+    \ [[VK.CONTROL,  VK.KEY_5], "C-5", 4],
+    \ [[VK.CONTROL,  VK.KEY_6], "C-^", 0],
+    \ [[VK.CONTROL,  VK.KEY_7], "C-7", 4],
+    \ [[VK.CONTROL,  VK.KEY_8], "C-8", 4],
+    \ [[VK.CONTROL,  VK.KEY_9], "C-9", 4],
     \ [[VK.CONTROL,  VK.NUMPAD0], "C-0", 4],
     \ [[VK.CONTROL,  VK.NUMPAD1], "C-1", 4],
     \ [[VK.CONTROL,  VK.NUMPAD2], "C-2", 4],
@@ -307,177 +378,105 @@ endfunc
 func Test_windows_console_mouse_event()
   CheckMSWindows
   CheckNotGui
+  new
+
+  call test_override('no_query_mouse', 1)
+  set mousemodel=extend
+  call WaitForResponses()
+
   let msg = ''
-  call assert_equal([0, 1, 1, 0], getpos('.'), msg)
+  let MOUSE = {
+	\ 'LEFT'    : 0x00,
+	\ 'MIDDLE'  : 0x01,
+	\ 'RIGHT'   : 0x02,
+	\ 'RELEASE' : 0x03,
+	\ 'WHDOWN'  : 0x100,
+	\ 'WHUP'    : 0x200,
+	\ 'WHLEFT'  : 0x500,
+	\ 'WHRIGHT' : 0x600,
+	\ 'SHIFT'   : 0x04,
+	\ 'ALT'     : 0x08,
+	\ 'CTRL'    : 0x10,
+	\ }
+
+
   let row = 2
-  let col = 6
-  call MouseLeftClick(row, col)
-  call MouseLeftRelease(row, col)
-  call assert_equal([0, 2, 6, 0], getpos('.'), msg)
-endfunc
+  let col = 4
+  call SendMouse(MOUSE.LEFT, row, col, 0, 0)
+  call SendMouse(MOUSE.RELEASE, row, col, 0, 0)
+  let pos = getmousepos()
+  call assert_equal(col, pos.screencol, 'col')
+  call assert_equal(row, pos.screenrow , 'row')
 
-" Test for the translation of various mouse terminal codes
-func Test_mouse_termcodes()
+  call setline(1, ['one two three', 'four five six'])
+  
+  " place the cursor using left click in normal mode
+   call cursor(1, 1)
+   let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
+   call test_mswin_event('mouse', args)
+   let args.button = 3
+   eval 'mouse'->test_mswin_event(args)
+   call feedkeys("\<Esc>", 'Lx!')
+   call assert_equal([0, 2, 4, 0], getpos('.'))
 
-  let mouse_codes = [
-        \ ["\<LeftMouse>", "<LeftMouse>"],
-        \ ["\<MiddleMouse>", "<MiddleMouse>"],
-        \ ["\<RightMouse>", "<RightMouse>"],
-        \ ["\<S-LeftMouse>", "<S-LeftMouse>"],
-        \ ["\<S-MiddleMouse>", "<S-MiddleMouse>"],
-        \ ["\<S-RightMouse>", "<S-RightMouse>"],
-        \ ["\<C-LeftMouse>", "<C-LeftMouse>"],
-        \ ["\<C-MiddleMouse>", "<C-MiddleMouse>"],
-        \ ["\<C-RightMouse>", "<C-RightMouse>"],
-        \ ["\<M-LeftMouse>", "<M-LeftMouse>"],
-        \ ["\<M-MiddleMouse>", "<M-MiddleMouse>"],
-        \ ["\<M-RightMouse>", "<M-RightMouse>"],
-        \ ["\<2-LeftMouse>", "<2-LeftMouse>"],
-        \ ["\<2-MiddleMouse>", "<2-MiddleMouse>"],
-        \ ["\<2-RightMouse>", "<2-RightMouse>"],
-        \ ["\<3-LeftMouse>", "<3-LeftMouse>"],
-        \ ["\<3-MiddleMouse>", "<3-MiddleMouse>"],
-        \ ["\<3-RightMouse>", "<3-RightMouse>"],
-        \ ["\<4-LeftMouse>", "<4-LeftMouse>"],
-        \ ["\<4-MiddleMouse>", "<4-MiddleMouse>"],
-        \ ["\<4-RightMouse>", "<4-RightMouse>"],
-        \ ["\<LeftDrag>", "<LeftDrag>"],
-        \ ["\<MiddleDrag>", "<MiddleDrag>"],
-        \ ["\<RightDrag>", "<RightDrag>"],
-        \ ["\<LeftRelease>", "<LeftRelease>"],
-        \ ["\<MiddleRelease>", "<MiddleRelease>"],
-        \ ["\<RightRelease>", "<RightRelease>"],
-        \ ["\<ScrollWheelUp>", "<ScrollWheelUp>"],
-        \ ["\<S-ScrollWheelUp>", "<S-ScrollWheelUp>"],
-        \ ["\<C-ScrollWheelUp>", "<C-ScrollWheelUp>"],
-        \ ["\<ScrollWheelDown>", "<ScrollWheelDown>"],
-        \ ["\<S-ScrollWheelDown>", "<S-ScrollWheelDown>"],
-        \ ["\<C-ScrollWheelDown>", "<C-ScrollWheelDown>"],
-        \ ["\<ScrollWheelLeft>", "<ScrollWheelLeft>"],
-        \ ["\<S-ScrollWheelLeft>", "<S-ScrollWheelLeft>"],
-        \ ["\<C-ScrollWheelLeft>", "<C-ScrollWheelLeft>"],
-        \ ["\<ScrollWheelRight>", "<ScrollWheelRight>"],
-        \ ["\<S-ScrollWheelRight>", "<S-ScrollWheelRight>"],
-        \ ["\<C-ScrollWheelRight>", "<C-ScrollWheelRight>"]
-        \ ]
+    " select and yank a word
+    let @" = ''
+    let args = #{button: 0, row: 1, col: 9, multiclick: 0, modifiers: 0}
+    call test_mswin_event('mouse', args)
+    let args.multiclick = 1
+    call test_mswin_event('mouse', args)
+    let args.button = 3
+    let args.multiclick = 0
+    call test_mswin_event('mouse', args)
+    call feedkeys("y", 'Lx!')
+    call assert_equal('three', @")
 
-  for [code, outstr] in mouse_codes
-    exe "normal ggC\<C-K>" . code
-    call assert_equal(outstr, getline(1), msg)
-  endfor
+    " create visual selection using right click
+    let @" = ''
+    let args = #{button: 0, row: 2, col: 6, multiclick: 0, modifiers: 0}
+    call test_mswin_event('mouse', args)
+    let args.button = 3
+    call test_mswin_event('mouse', args)
+    let args = #{button: 2, row: 2, col: 13, multiclick: 0, modifiers: 0}
+    call test_mswin_event('mouse', args)
+    let args.button = 3
+    call test_mswin_event('mouse', args)
+    call feedkeys("y", 'Lx!')
+    call assert_equal('five six', @")
 
-  %bw!
-
-endfunc
-
-"    set mousemodel=extend
-"    call test_override('no_query_mouse', 1)
-"    new
-"    call setline(1, ['one two three', 'four five six'])
-
-"    " place the cursor using left click in normal mode
-"    call cursor(1, 1)
-"    let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.button = 3
-"    eval 'mouse'->test_mswin_event(args)
-"    call feedkeys("\<Esc>", 'Lx!')
-"    call assert_equal([0, 2, 4, 0], getpos('.'))
-
-"    " select and yank a word
-"    let @" = ''
-"    let args = #{button: 0, row: 1, col: 9, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.multiclick = 1
-"    call test_mswin_event('mouse', args)
-"    let args.button = 3
-"    let args.multiclick = 0
-"    call test_mswin_event('mouse', args)
-"    call feedkeys("y", 'Lx!')
-"    call assert_equal('three', @")
-
-"    " create visual selection using right click
-"    let @" = ''
-"    let args = #{button: 0, row: 2, col: 6, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.button = 3
-"    call test_mswin_event('mouse', args)
-"    let args = #{button: 2, row: 2, col: 13, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.button = 3
-"    call test_mswin_event('mouse', args)
-"    call feedkeys("y", 'Lx!')
-"    call assert_equal('five six', @")
-
-"    " paste using middle mouse button
-"    let @* = 'abc '
-"    call feedkeys('""', 'Lx!')
-"    let args = #{button: 1, row: 1, col: 9, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.button = 3
-"    call test_mswin_event('mouse', args)
-"    call feedkeys("\<Esc>", 'Lx!')
-"    call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
-
-"    " extend visual selection using right click in visual mode
-"    let @" = ''
-"    call cursor(1, 1)
-"    call feedkeys('v', 'Lx!')
-"    let args = #{button: 2, row: 1, col: 17, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.button = 3
-"    call test_mswin_event('mouse', args)
-"    call feedkeys("y", 'Lx!')
-"    call assert_equal('one two abc three', @")
-
-"    " extend visual selection using mouse drag
-"    let @" = ''
-"    call cursor(1, 1)
-"    let args = #{button: 0, row: 2, col: 1, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args = #{button: 0x43, row: 2, col: 9, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.button = 0x3
-"    call test_mswin_event('mouse', args)
-"    call feedkeys("y", 'Lx!')
-"    call assert_equal('four five', @")
-
-"    " select text by moving the mouse
-"    let @" = ''
-"    call cursor(1, 1)
-"    redraw!
-"    let args = #{button: 0, row: 1, col: 4, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.button = 0x700
-"    let args.col = 9
-"    call test_mswin_event('mouse', args)
-"    let args.col = 13
-"    call test_mswin_event('mouse', args)
-"    let args.button = 3
-"    call test_mswin_event('mouse', args)
-"    call feedkeys("y", 'Lx!')
-"    call assert_equal(' two abc t', @")
+    " paste using middle mouse button
+    let @* = 'abc '
+    call feedkeys('""', 'Lx!')
+    let args = #{button: 1, row: 1, col: 9, multiclick: 0, modifiers: 0}
+    call test_mswin_event('mouse', args)
+    let args.button = 3
+    call test_mswin_event('mouse', args)
+    call feedkeys("\<Esc>", 'Lx!')
+    call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
 
 "    " Using mouse in insert mode
 "    call cursor(1, 1)
-"    call feedkeys('i', 't')
+"    call feedkeys('i', 'L')
+"    ":startinsert!
 "    let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
 "    call test_mswin_event('mouse', args)
 "    let args.button = 3
 "    call test_mswin_event('mouse', args)
-"    call feedkeys("po\<Esc>", 'Lx!')
+"    call feedkeys("po")
+"    call getchar(0)
 "    call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
 
-"    %d _
-"    set scrolloff=0
-"    call setline(1, range(1, 100))
-"    " scroll up
-"    let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    call test_mswin_event('mouse', args)
-"    call test_mswin_event('mouse', args)
-"    call feedkeys("H", 'Lx!')
-"    call assert_equal(10, line('.'))
+
+  %d _
+  set scrolloff=0
+  call setline(1, range(1, 100))
+  " scroll up
+  let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
+  call test_mswin_event('mouse', args)
+  call test_mswin_event('mouse', args)
+  call test_mswin_event('mouse', args)
+  call feedkeys("H", 'Lx!')
+  call assert_equal(10, line('.'))
 
 "    " scroll down
 "    let args = #{button: 0x100, row: 2, col: 1, multiclick: 0, modifiers: 0}
@@ -592,6 +591,7 @@ endfunc
 "    call setline(1, ['one two three', 'four five sixteen'])
 "    call cursor(1, 1)
 "    redraw!
+
 "    " Double click should select the word and copy it to clipboard
 "    let @* = ''
 "    let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
@@ -604,6 +604,7 @@ endfunc
 "    call feedkeys("\<Esc>", 'Lx!')
 "    call assert_equal([0, 1, 1, 0], getpos('.'))
 "    call assert_equal('sixteen', @*)
+
 "    " Right click should extend the selection from cursor
 "    call cursor(1, 6)
 "    redraw!
@@ -615,6 +616,7 @@ endfunc
 "    call feedkeys("\<Esc>", 'Lx!')
 "    call assert_equal([0, 1, 6, 0], getpos('.'))
 "    call assert_equal('wo thr', @*)
+ 
 "    " Middle click should paste the clipboard contents
 "    call cursor(2, 1)
 "    redraw!
@@ -649,7 +651,61 @@ endfunc
 "    bw!
 "    call test_override('no_query_mouse', 0)
 "    set mousemodel&
-"  endfunc
+endfunc
 
+
+" Test for the translation of various mouse terminal codes
+func Test_mouse_termcodes()
+
+  let mouse_codes = [
+        \ ["\<LeftMouse>", "<LeftMouse>"],
+        \ ["\<MiddleMouse>", "<MiddleMouse>"],
+        \ ["\<RightMouse>", "<RightMouse>"],
+        \ ["\<S-LeftMouse>", "<S-LeftMouse>"],
+        \ ["\<S-MiddleMouse>", "<S-MiddleMouse>"],
+        \ ["\<S-RightMouse>", "<S-RightMouse>"],
+        \ ["\<C-LeftMouse>", "<C-LeftMouse>"],
+        \ ["\<C-MiddleMouse>", "<C-MiddleMouse>"],
+        \ ["\<C-RightMouse>", "<C-RightMouse>"],
+        \ ["\<M-LeftMouse>", "<M-LeftMouse>"],
+        \ ["\<M-MiddleMouse>", "<M-MiddleMouse>"],
+        \ ["\<M-RightMouse>", "<M-RightMouse>"],
+        \ ["\<2-LeftMouse>", "<2-LeftMouse>"],
+        \ ["\<2-MiddleMouse>", "<2-MiddleMouse>"],
+        \ ["\<2-RightMouse>", "<2-RightMouse>"],
+        \ ["\<3-LeftMouse>", "<3-LeftMouse>"],
+        \ ["\<3-MiddleMouse>", "<3-MiddleMouse>"],
+        \ ["\<3-RightMouse>", "<3-RightMouse>"],
+        \ ["\<4-LeftMouse>", "<4-LeftMouse>"],
+        \ ["\<4-MiddleMouse>", "<4-MiddleMouse>"],
+        \ ["\<4-RightMouse>", "<4-RightMouse>"],
+        \ ["\<LeftDrag>", "<LeftDrag>"],
+        \ ["\<MiddleDrag>", "<MiddleDrag>"],
+        \ ["\<RightDrag>", "<RightDrag>"],
+        \ ["\<LeftRelease>", "<LeftRelease>"],
+        \ ["\<MiddleRelease>", "<MiddleRelease>"],
+        \ ["\<RightRelease>", "<RightRelease>"],
+        \ ["\<ScrollWheelUp>", "<ScrollWheelUp>"],
+        \ ["\<S-ScrollWheelUp>", "<S-ScrollWheelUp>"],
+        \ ["\<C-ScrollWheelUp>", "<C-ScrollWheelUp>"],
+        \ ["\<ScrollWheelDown>", "<ScrollWheelDown>"],
+        \ ["\<S-ScrollWheelDown>", "<S-ScrollWheelDown>"],
+        \ ["\<C-ScrollWheelDown>", "<C-ScrollWheelDown>"],
+        \ ["\<ScrollWheelLeft>", "<ScrollWheelLeft>"],
+        \ ["\<S-ScrollWheelLeft>", "<S-ScrollWheelLeft>"],
+        \ ["\<C-ScrollWheelLeft>", "<C-ScrollWheelLeft>"],
+        \ ["\<ScrollWheelRight>", "<ScrollWheelRight>"],
+        \ ["\<S-ScrollWheelRight>", "<S-ScrollWheelRight>"],
+        \ ["\<C-ScrollWheelRight>", "<C-ScrollWheelRight>"]
+        \ ]
+
+  for [code, outstr] in mouse_codes
+    exe "normal ggC\<C-K>" . code
+    call assert_equal(outstr, getline(1))
+  endfor
+
+  %bw!
+
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

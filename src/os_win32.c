@@ -1785,8 +1785,8 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
 	    || !dict_has_key(args, "modifiers")))
 	return FALSE;
 
-    row = (int)dict_get_number(args, "row");
-    col = (int)dict_get_number(args, "col");
+    row = (int)dict_get_number(args, "row") - 1;
+    col = (int)dict_get_number(args, "col") - 1;
 
     ir->EventType = MOUSE_EVENT;
     MOUSE_EVENT_RECORD mer;
@@ -1942,6 +1942,32 @@ test_mswin_event(char_u *event, dict_T *args)
     return lpEventsWritten;
 }
 
+static const int vkPunctuationKeys [256] = {
+	0,
+    [';']  = VK_OEM_1,
+    ['/']  = VK_OEM_2,
+    ['`']  = VK_OEM_3,
+    ['[']  = VK_OEM_4,
+    ['\\'] = VK_OEM_5,
+    [']']  = VK_OEM_6,
+    ['\''] = VK_OEM_7,
+    ['=']  = VK_OEM_PLUS,
+    [',']  = VK_OEM_COMMA,
+    ['-']  = VK_OEM_MINUS,
+    ['.']  = VK_OEM_PERIOD,
+    [':']  = -VK_OEM_1,
+    ['?']  = -VK_OEM_2,
+    ['~']  = -VK_OEM_3,
+    ['{']  = -VK_OEM_4,
+    ['|']  = -VK_OEM_5,
+    ['}']  = -VK_OEM_6,
+    ['"']  = -VK_OEM_7,
+    ['+']  = -VK_OEM_PLUS,
+    ['<']  = -VK_OEM_COMMA,
+    ['_']  = -VK_OEM_MINUS,
+    ['>']  = -VK_OEM_PERIOD
+    };
+
 /*
  * This function is designed to be called by feedkeys({string},{mode})
  * Where mode is 'L' (low-level) for MS-Windows console events.
@@ -2059,8 +2085,8 @@ feed_mswin_input(char_u *keys)
 	}
 	if (found_mouse)
 	{
-	    i_mouse_col = g_xMouse;
-	    i_mouse_row = g_yMouse;
+	    i_mouse_col = mouse_col;
+	    i_mouse_row = mouse_row;
 	}
 
 	// or, eg. from testdir/mouse.vim 
@@ -2123,8 +2149,8 @@ feed_mswin_input(char_u *keys)
 				    modifiers |= MOD_MASK_ALT;
 				}
 			    }
-			    i_mouse_col  = atoi(s_mouse_col);
-			    i_mouse_row  = atoi(s_mouse_row);
+			    i_mouse_col  = atoi(s_mouse_col) - 1;
+			    i_mouse_row  = atoi(s_mouse_row) - 1;
 			    i = j;
 			    found_mouse = TRUE;
 			}
@@ -2145,79 +2171,69 @@ feed_mswin_input(char_u *keys)
 	    dict_add_number(args, "button", i_mouse_code);
 	    dict_add_number(args, "row", i_mouse_row);
 	    dict_add_number(args, "col", i_mouse_col);
-	    dict_add_number(args, "multiclick", 0);
+	    dict_add_number(args, "multiclick", 0);  // hmm.!?
 	    dict_add_number(args, "modifiers", modifiers);
 
 	    test_mswin_event("mouse", args);
-	    // reset flags, potentially additional mouse events in feed.
+	    // reset flags, potentially additional events in feed.
 	    found_mouse = FALSE;
 	    maybe_mouse = TRUE;
+	    //reset all the other stuff too...
 	}
 
+	//handle keys
+	// call test_mswin_event("keyboard", #{event: "keydown", keycode: k})
+	// and  test_mswin_event("keyboard", #{event: "keyup", keycode: k})
+	{
+	    int modifiers = 0;
+	    WORD vkCode = 0;
+	    if (c >= 'a' && c <= 'z')
+	    {
+		vkCode = (int)c - 32;
+	    }
+	    else if (c >= 'A' && c <= 'Z')
+	    {
+		vkCode = (int)c;
+		modifiers |= MOD_MASK_SHIFT;
+	    }
+	    else if ((c >= '0' && c <= '9') || c == ' ')
+	    {
+		vkCode = (int)c;
+	    }
+	    else if (c > 0 && c < 32)
+	    {
+		vkCode = (int)c + 64;
+		modifiers |= MOD_MASK_CTRL;
+	    }
+	    else if (vkPunctuationKeys[c])
+	    {
+		if (vkPunctuationKeys[c] < 0)
+		{
+		    vkCode = -vkPunctuationKeys[c];
+		    modifiers |= MOD_MASK_SHIFT;
+		}
+		else
+		    vkCode = vkPunctuationKeys[c];
+	    }
+
+	    if (vkCode)
+	    {
+		dict_T *keydown = dict_alloc();
+		dict_add_number(keydown, "keycode", vkCode);
+		dict_add_string_len(keydown, "event", "keydown", 7);
+		dict_add_number(keydown, "modifiers", modifiers);
+		if (test_mswin_event("keyboard", keydown))
+		{
+		    dict_T *keyup = dict_alloc();
+		    dict_add_number(keyup, "keycode", vkCode);
+		    dict_add_string_len(keyup, "event", "keyup", 5);
+		    dict_add_number(keyup, "modifiers", modifiers);
+		    test_mswin_event("keyboard", keyup);
+		}
+	    }
+
+	}
     }
-
-
-//     //TODO: convert each key to a mswin input buffer event...
-//     for (int idx = 0; idx < len; ++idx)
-//     {
-// 	// // if a CTRL-C was typed, set got_int, similar to what
-// 	// // happens in fill_input_buf()
-// 	// if (keys[idx] == 3 && ctrl_c_interrupts && typed)
-// 	//     got_int = TRUE;
-// 	add_to_input_buf(keys + idx, 1);
-//     }
-
-//     // Need to escape K_SPECIAL and CSI before putting the string in
-//     // the typeahead buffer.
-//     char_u *keys_esc = vim_strsave_escape_csi(keys);
-//     if (keys_esc == NULL)
-// 	return;
-
-//     ins_typebuf(keys_esc, REMAP_YES, typebuf.tb_len, TRUE, FALSE);
-
-//     if (vgetc_busy
-// #ifdef FEAT_TIMERS
-// 	    || timer_busy
-// #endif
-// 	    || input_busy)
-// 	typebuf_was_filled = TRUE;
-//
-//     vim_free(keys_esc);
-///////////////////////////////////////////////////////////////////////////
-//     typeahead[typeaheadlen++] = K_SPECIAL;   0x80
-//     typeahead[typeaheadlen++] = KS_MODIFIER; 0xFC
-//     typeahead[typeaheadlen++] = modifiers;  S-C-A  0x02-0x04-0x08
-///////////////
-// 	MOD_MASK_SHIFT	    0x02
-// 	MOD_MASK_CTRL	    0x04
-// 	MOD_MASK_ALT	    0x08	// aka META
-// 	MOD_MASK_META	    0x10	// META when it's different from ALT
-///////////////
-// 	    // bit masks for mouse modifiers:
-// 	    #define MOUSE_SHIFT	0x04
-// 	    #define MOUSE_ALT	0x08
-// 	    #define MOUSE_CTRL	0x10
-///////////////
-//     typeahead[typeaheadlen++] = CSI;         0x9B
-//     typeahead[typeaheadlen++] = KS_EXTRA;    0xFD
-//     typeahead[typeaheadlen++] = scroll_dir;  KE_MOUSEDOWN 75 0x4B, KE_MOUSEUP 76 0x4C, KE_MOUSELEFT 77 0x4D, KE_MOUSERIGHT 78 0x4E
-///////////////
-//     typeahead[typeaheadlen++] = ESC + 128;    (27 + 128) = 155 = 0x9b = CSI   ESC (octal: \033 , hexadecimal: \x1B , or ^[ , or, in decimal, 27)
-//     typeahead[typeaheadlen++] = 'M';           'M' = 77 = 0x4d
-//     typeahead[typeaheadlen++] = g_nMouseClick;   
-// 	MOUSE_LEFT	0x00
-// 	MOUSE_MIDDLE	0x01
-// 	MOUSE_RIGHT	0x02
-// 	MOUSE_RELEASE	0x03
-// 	MOUSE_DRAG  (0x40 | MOUSE_RELEASE)
-// 	MOUSE_4	0x100 // scroll wheel down
-// 	MOUSE_5	0x200 // scroll wheel up
-// 	MOUSE_6	0x500 // scroll wheel left
-// 	MOUSE_7	0x600 // scroll wheel right
-//     typeahead[typeaheadlen++] = (char_u)(g_xMouse / 128 + 0x21);   0x21 = 33
-//     typeahead[typeaheadlen++] = (char_u)(g_xMouse % 128 + 0x21);
-//     typeahead[typeaheadlen++] = (char_u)(g_yMouse / 128 + 0x21);
-//     typeahead[typeaheadlen++] = (char_u)(g_yMouse % 128 + 0x21);
 }
 
 #endif // FEAT_EVAL || PROTO
