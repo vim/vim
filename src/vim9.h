@@ -32,6 +32,10 @@ typedef enum {
 
     ISN_SOURCE,	    // source autoload script, isn_arg.number is the script ID
     ISN_INSTR,	    // instructions compiled from expression
+    ISN_CONSTRUCT,  // construct an object, using contstruct_T
+    ISN_GET_OBJ_MEMBER, // object member, index is isn_arg.number
+    ISN_STORE_THIS, // store value in "this" object member, index is
+		    // isn_arg.number
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -110,6 +114,7 @@ typedef enum {
     ISN_PCALL_END,  // cleanup after ISN_PCALL with cpf_top set
     ISN_RETURN,	    // return, result is on top of stack
     ISN_RETURN_VOID, // Push void, then return
+    ISN_RETURN_OBJECT, // Push constructed object, then return
     ISN_FUNCREF,    // push a function ref to dfunc isn_arg.funcref
     ISN_NEWFUNC,    // create a global function from a lambda function
     ISN_DEF,	    // list functions
@@ -463,6 +468,12 @@ typedef struct {
     long	ewin_time;	    // time argument (msec)
 } echowin_T;
 
+// arguments to ISN_CONSTRUCT
+typedef struct {
+    int		construct_size;	    // size of object in bytes
+    class_T	*construct_class;   // class the object is created from
+} construct_T;
+
 /*
  * Instruction
  */
@@ -514,6 +525,7 @@ struct isn_S {
 	debug_T		    debug;
 	deferins_T	    defer;
 	echowin_T	    echowin;
+	construct_T	    construct;
     } isn_arg;
 };
 
@@ -757,7 +769,8 @@ typedef struct {
 
     int		    lhs_has_type;   // type was specified
     type_T	    *lhs_type;
-    type_T	    *lhs_member_type;
+    int		    lhs_member_idx;    // object member index
+    type_T	    *lhs_member_type;  // list/dict/object member type
 
     int		    lhs_append;	    // used by ISN_REDIREND
 } lhs_T;

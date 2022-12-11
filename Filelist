@@ -15,7 +15,6 @@ SRC_ALL =	\
 		.github/dependabot.yml \
 		.gitignore \
 		.hgignore \
-		.lgtm.yml \
 		.appveyor.yml \
 		.codecov.yml \
 		ci/appveyor.bat \
@@ -784,6 +783,7 @@ RT_SCRIPTS =	\
 		runtime/autoload/README.txt \
 		runtime/autoload/dist/*.vim \
 		runtime/autoload/xml/*.vim \
+		runtime/autoload/zig/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
 		runtime/colors/lists/*.vim \
