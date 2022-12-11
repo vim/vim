@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Dec 05
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,6 +54,14 @@ Upcoming larger works:
 
 Further Vim9 improvements, possibly after launch:
 - implement :class and :interface: See |vim9-classes|  #11544
+    make default constructor use "this.member = void"
+    make public / default read access / private work for members.
+    string value of class and object in echo_string_core()
+    object empty(), len() - can class define a method?
+    tv_equal() should compare values, not identity.
+    garbage collection: set_ref_in_item(): Mark items in class as used ?
+    type() should return different type for each class?
+    how about lock/unlock?
 - implement :type
 - implement :enum
 - Use Vim9 for more runtime files.
