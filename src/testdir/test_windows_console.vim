@@ -38,12 +38,12 @@ func Test_windows_console_feedkeys()
   CheckNotGui
   new
   call feedkeys("ABCXYZ",'L')
-  let chA = getcharstr()
-  let chB = getcharstr()
-  let chC = getcharstr()
-  let chX = getcharstr()
-  let chY = getcharstr()
-  let chZ = getcharstr()
+  let chA = getcharstr(0)
+  let chB = getcharstr(0)
+  let chC = getcharstr(0)
+  let chX = getcharstr(0)
+  let chY = getcharstr(0)
+  let chZ = getcharstr(0)
 
   call assert_equal('A', chA)
   call assert_equal('B', chB)
@@ -467,16 +467,16 @@ func Test_windows_console_mouse_event()
 "    call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
 
 
-  %d _
-  set scrolloff=0
-  call setline(1, range(1, 100))
-  " scroll up
-  let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  call test_mswin_event('mouse', args)
-  call test_mswin_event('mouse', args)
-  call feedkeys("H", 'Lx!')
-  call assert_equal(10, line('.'))
+"    %d _
+"    set scrolloff=0
+"    call setline(1, range(1, 100))
+"    " scroll up
+"    let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
+"    call test_mswin_event('mouse', args)
+"    call test_mswin_event('mouse', args)
+"    call test_mswin_event('mouse', args)
+"    call feedkeys("H", 'Lx!')
+"    call assert_equal(10, line('.'))
 
 "    " scroll down
 "    let args = #{button: 0x100, row: 2, col: 1, multiclick: 0, modifiers: 0}
