@@ -3943,6 +3943,7 @@ typedef struct
 	    char_u	*end;
 	} line[NSUBEXP];
     } list;
+    colnr_T	orig_start_col;  // list.multi[0].start_col without \zs
 } regsub_T;
 
 typedef struct
@@ -4099,9 +4100,12 @@ copy_sub(regsub_T *to, regsub_T *from)
     {
 	// Copy the match start and end positions.
 	if (REG_MULTI)
+	{
 	    mch_memmove(&to->list.multi[0],
 			&from->list.multi[0],
 			sizeof(struct multipos) * from->in_use);
+	    to->orig_start_col = from->orig_start_col;
+	}
 	else
 	    mch_memmove(&to->list.line[0],
 			&from->list.line[0],
@@ -5621,9 +5625,9 @@ skip_to_start(int c, colnr_T *colp)
  * Returns zero for no match, 1 for a match.
  */
     static long
-find_match_text(colnr_T startcol, int regstart, char_u *match_text)
+find_match_text(colnr_T *startcol, int regstart, char_u *match_text)
 {
-    colnr_T col = startcol;
+    colnr_T col = *startcol;
     int	    c1, c2;
     int	    len1, len2;
     int	    match;
@@ -5662,6 +5666,7 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
 		rex.reg_startp[0] = rex.line + col;
 		rex.reg_endp[0] = rex.line + col + len2;
 	    }
+	    *startcol = col;
 	    return 1L;
 	}
 
@@ -5670,6 +5675,8 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
 	if (skip_to_start(regstart, &col) == FAIL)
 	    break;
     }
+
+    *startcol = col;
     return 0L;
 }
 
@@ -5777,6 +5784,7 @@ nfa_regmatch(
 	{
 	    m->norm.list.multi[0].start_lnum = rex.lnum;
 	    m->norm.list.multi[0].start_col = (colnr_T)(rex.input - rex.line);
+	    m->norm.orig_start_col = m->norm.list.multi[0].start_col;
 	}
 	else
 	    m->norm.list.line[0].start = rex.input;
@@ -7081,8 +7089,12 @@ nfa_regmatch(
 		if (add)
 		{
 		    if (REG_MULTI)
+		    {
 			m->norm.list.multi[0].start_col =
 					 (colnr_T)(rex.input - rex.line) + clen;
+			m->norm.orig_start_col =
+					       m->norm.list.multi[0].start_col;
+		    }
 		    else
 			m->norm.list.line[0].start = rex.input + clen;
 		    if (addstate(nextlist, start->out, m, NULL, clen) == NULL)
@@ -7218,6 +7230,8 @@ nfa_regtry(
 	    rex.reg_endpos[i].lnum = subs.norm.list.multi[i].end_lnum;
 	    rex.reg_endpos[i].col = subs.norm.list.multi[i].end_col;
 	}
+	if (rex.reg_mmatch != NULL)
+	    rex.reg_mmatch->rmm_matchcol = subs.norm.orig_start_col;
 
 	if (rex.reg_startpos[0].lnum < 0)
 	{
@@ -7379,7 +7393,7 @@ nfa_regexec_both(
 	// Nothing else to try. Doesn't handle combining chars well.
 	if (prog->match_text != NULL && !rex.reg_icombine)
 	{
-	    retval = find_match_text(col, prog->regstart, prog->match_text);
+	    retval = find_match_text(&col, prog->regstart, prog->match_text);
 	    if (REG_MULTI)
 		rex.reg_mmatch->rmm_matchcol = col;
 	    else
@@ -7421,10 +7435,6 @@ theend:
 	    if (end->lnum < start->lnum
 			|| (end->lnum == start->lnum && end->col < start->col))
 		rex.reg_mmatch->endpos[0] = rex.reg_mmatch->startpos[0];
-
-	    // startpos[0] may be set by "\zs", also return the column where
-	    // the whole pattern matched.
-	    rex.reg_mmatch->rmm_matchcol = col;
 	}
 	else
 	{
