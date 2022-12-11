@@ -2068,6 +2068,9 @@ apply_autocmds_group(
 		&& (event == EVENT_WINLEAVE || event == EVENT_BUFLEAVE)))
 	goto BYPASS_AU;
 
+    if (event == EVENT_CMDLINECHANGED)
+	++aucmd_cmdline_changed_count;
+
     /*
      * Save the autocmd_* variables and info about the current buffer.
      */
@@ -2088,8 +2091,8 @@ apply_autocmds_group(
     if (fname_io == NULL)
     {
 	if (event == EVENT_COLORSCHEME || event == EVENT_COLORSCHEMEPRE
-						   || event == EVENT_OPTIONSET
-						   || event == EVENT_MODECHANGED)
+						 || event == EVENT_OPTIONSET
+						 || event == EVENT_MODECHANGED)
 	    autocmd_fname = NULL;
 	else if (fname != NULL && !ends_excmd(*fname))
 	    autocmd_fname = fname;

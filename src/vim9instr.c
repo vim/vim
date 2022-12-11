@@ -114,6 +114,60 @@ generate_instr_debug(cctx_T *cctx)
 }
 
 /*
+ * Generate an ISN_CONSTRUCT instruction.
+ * The object will have "size" members.
+ */
+    int
+generate_CONSTRUCT(cctx_T *cctx, class_T *cl)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_CONSTRUCT)) == NULL)
+	return FAIL;
+    isn->isn_arg.construct.construct_size = sizeof(object_T)
+			       + cl->class_obj_member_count * sizeof(typval_T);
+    isn->isn_arg.construct.construct_class = cl;
+    return OK;
+}
+
+/*
+ * Generate ISN_GET_OBJ_MEMBER - access member of object at bottom of stack by
+ * index.
+ */
+    int
+generate_GET_OBJ_MEMBER(cctx_T *cctx, int idx, type_T *type)
+{
+    RETURN_OK_IF_SKIP(cctx);
+
+    // drop the object type
+    isn_T *isn = generate_instr_drop(cctx, ISN_GET_OBJ_MEMBER, 1);
+    if (isn == NULL)
+	return FAIL;
+
+    isn->isn_arg.number = idx;
+    return push_type_stack2(cctx, type, &t_any);
+}
+
+/*
+ * Generate ISN_STORE_THIS - store value in member of "this" object with member
+ * index "idx".
+ */
+    int
+generate_STORE_THIS(cctx_T *cctx, int idx)
+{
+    RETURN_OK_IF_SKIP(cctx);
+
+    // drop the value type
+    isn_T *isn = generate_instr_drop(cctx, ISN_STORE_THIS, 1);
+    if (isn == NULL)
+	return FAIL;
+
+    isn->isn_arg.number = idx;
+    return OK;
+}
+
+/*
  * If type at "offset" isn't already VAR_STRING then generate ISN_2STRING.
  * But only for simple types.
  * When "tolerant" is TRUE convert most types to string, e.g. a List.
@@ -163,6 +217,8 @@ may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 			 to_string_error(type->tt_type);
 			 return FAIL;
     }
@@ -2403,6 +2459,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
 	case ISN_CONCAT:
+	case ISN_CONSTRUCT:
 	case ISN_COND2BOOL:
 	case ISN_DEBUG:
 	case ISN_DEFER:
@@ -2420,6 +2477,7 @@ delete_instr(isn_T *isn)
 	case ISN_FINISH:
 	case ISN_FOR:
 	case ISN_GETITEM:
+	case ISN_GET_OBJ_MEMBER:
 	case ISN_JUMP:
 	case ISN_JUMP_IF_ARG_SET:
 	case ISN_LISTAPPEND:
@@ -2456,6 +2514,7 @@ delete_instr(isn_T *isn)
 	case ISN_REDIREND:
 	case ISN_REDIRSTART:
 	case ISN_RETURN:
+	case ISN_RETURN_OBJECT:
 	case ISN_RETURN_VOID:
 	case ISN_SHUFFLE:
 	case ISN_SLICE:
@@ -2464,6 +2523,7 @@ delete_instr(isn_T *isn)
 	case ISN_STOREINDEX:
 	case ISN_STORENR:
 	case ISN_STOREOUTER:
+	case ISN_STORE_THIS:
 	case ISN_STORERANGE:
 	case ISN_STOREREG:
 	case ISN_STOREV:

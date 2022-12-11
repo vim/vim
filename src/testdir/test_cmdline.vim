@@ -2485,6 +2485,23 @@ func Test_wildmenu_pum_from_terminal()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_wildmenu_pum_clear_entries()
+  CheckRunVimInTerminal
+
+  " This was using freed memory.  Run in a terminal to get the pum to update.
+  let lines =<< trim END
+    set wildoptions=pum
+    set wildchar=<C-E>
+  END
+  call writefile(lines, 'XwildmenuTest', 'D')
+  let buf = RunVimInTerminal('-S XwildmenuTest', #{rows: 10})
+
+  call term_sendkeys(buf, ":\<C-E>\<C-E>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_clear_entries_1', {})
+
+  set wildoptions& wildchar&
+endfunc
+
 " Test for completion after a :substitute command followed by a pipe (|)
 " character
 func Test_cmdline_complete_substitute()

@@ -838,7 +838,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     // parse type, check for reserved name
     p = skipwhite(p + 1);
     type = parse_type(&p, &si->sn_type_list, TRUE);
-    if (type == NULL || check_reserved_name(name) == FAIL)
+    if (type == NULL || check_reserved_name(name, NULL) == FAIL)
     {
 	vim_free(name);
 	return p;
@@ -1126,12 +1126,17 @@ static char *reserved[] = {
 };
 
     int
-check_reserved_name(char_u *name)
+check_reserved_name(char_u *name, cctx_T *cctx)
 {
     int idx;
 
     for (idx = 0; reserved[idx] != NULL; ++idx)
-	if (STRCMP(reserved[idx], name) == 0)
+	if (STRCMP(reserved[idx], name) == 0
+		// "this" can be used in an object method
+		&& !(STRCMP("this", name) == 0
+		    && cctx != NULL
+		    && cctx->ctx_ufunc != NULL
+		    && (cctx->ctx_ufunc->uf_flags & FC_OBJECT)))
 	{
 	    semsg(_(e_cannot_use_reserved_name), name);
 	    return FAIL;

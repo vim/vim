@@ -3346,4 +3346,30 @@ EXTERN char e_not_allowed_to_add_or_remove_entries_str[]
 #ifdef FEAT_EVAL
 EXTERN char e_class_name_must_start_with_uppercase_letter_str[]
 	INIT(= N_("E1314: Class name must start with an uppercase letter: %s"));
+EXTERN char e_white_space_required_after_class_name_str[]
+	INIT(= N_("E1315: White space required after class name: %s"));
+EXTERN char e_class_can_only_be_defined_in_vim9_script[]
+	INIT(= N_("E1316: Class can only be defined in Vim9 script"));
+EXTERN char e_invalid_object_member_declaration_str[]
+	INIT(= N_("E1317: Invalid object member declaration: %s"));
+EXTERN char e_not_valid_command_in_class_str[]
+	INIT(= N_("E1318: Not a valid command in a class: %s"));
+EXTERN char e_using_class_as_number[]
+	INIT(= N_("E1319: Using a class as a Number"));
+EXTERN char e_using_object_as_number[]
+	INIT(= N_("E1320: Using an object as a Number"));
+EXTERN char e_using_class_as_float[]
+	INIT(= N_("E1321: Using a class as a Float"));
+EXTERN char e_using_object_as_float[]
+	INIT(= N_("E1322: Using an object as a Float"));
+EXTERN char e_using_class_as_string[]
+	INIT(= N_("E1323: Using a class as a String"));
+EXTERN char e_using_object_as_string[]
+	INIT(= N_("E1324: Using an object as a String"));
+EXTERN char e_method_not_found_on_class_str_str[]
+	INIT(= N_("E1325: Method not found on class \"%s\": %s"));
+EXTERN char e_member_not_found_on_object_str_str[]
+	INIT(= N_("E1326: Member not found on object \"%s\": %s"));
+EXTERN char e_object_required_found_str[]
+	INIT(= N_("E1327: Object required, found %s"));
 #endif

@@ -35,7 +35,7 @@ static int compl_match_arraysize;
 static int compl_startcol;
 static int compl_selected;
 
-#define SHOW_FILE_TEXT(m) (showtail ? showmatches_gettail(matches[m]) : matches[m])
+#define SHOW_MATCH(m) (showtail ? showmatches_gettail(matches[m]) : matches[m])
 
 /*
  * Returns TRUE if fuzzy completion is supported for a given cmdline completion
@@ -339,7 +339,7 @@ cmdline_pum_create(
     compl_match_array = ALLOC_MULT(pumitem_T, compl_match_arraysize);
     for (i = 0; i < numMatches; i++)
     {
-	compl_match_array[i].pum_text = SHOW_FILE_TEXT(i);
+	compl_match_array[i].pum_text = SHOW_MATCH(i);
 	compl_match_array[i].pum_info = NULL;
 	compl_match_array[i].pum_extra = NULL;
 	compl_match_array[i].pum_kind = NULL;
@@ -369,7 +369,8 @@ cmdline_pum_create(
 /*
  * Display the cmdline completion matches in a popup menu
  */
-void cmdline_pum_display(void)
+    void
+cmdline_pum_display(void)
 {
     pum_display(compl_match_array, compl_match_arraysize, compl_selected);
 }
@@ -377,7 +378,8 @@ void cmdline_pum_display(void)
 /*
  * Returns TRUE if the cmdline completion popup menu is being displayed.
  */
-int cmdline_pum_active(void)
+    int
+cmdline_pum_active(void)
 {
     return pum_visible() && compl_match_array != NULL;
 }
@@ -386,7 +388,8 @@ int cmdline_pum_active(void)
  * Remove the cmdline completion popup menu (if present), free the list of
  * items and refresh the screen.
  */
-void cmdline_pum_remove(void)
+    void
+cmdline_pum_remove(void)
 {
     int save_p_lz = p_lz;
     int	save_KeyTyped = KeyTyped;
@@ -403,7 +406,8 @@ void cmdline_pum_remove(void)
     KeyTyped = save_KeyTyped;
 }
 
-void cmdline_pum_cleanup(cmdline_info_T *cclp)
+    void
+cmdline_pum_cleanup(cmdline_info_T *cclp)
 {
     cmdline_pum_remove();
     wildmenu_cleanup(cclp);
@@ -413,7 +417,8 @@ void cmdline_pum_cleanup(cmdline_info_T *cclp)
  * Returns the starting column number to use for the cmdline completion popup
  * menu.
  */
-int cmdline_compl_startcol(void)
+    int
+cmdline_compl_startcol(void)
 {
     return compl_startcol;
 }
@@ -484,7 +489,6 @@ win_redr_status_matches(
     int		match,
     int		showtail)
 {
-#define L_MATCH(m) (showtail ? showmatches_gettail(matches[m]) : matches[m])
     int		row;
     char_u	*buf;
     int		len;
@@ -520,7 +524,7 @@ win_redr_status_matches(
 	highlight = FALSE;
     }
     // count 1 for the ending ">"
-    clen = status_match_len(xp, L_MATCH(match)) + 3;
+    clen = status_match_len(xp, SHOW_MATCH(match)) + 3;
     if (match == 0)
 	first_match = 0;
     else if (match < first_match)
@@ -533,7 +537,7 @@ win_redr_status_matches(
     {
 	// check if match fits on the screen
 	for (i = first_match; i < match; ++i)
-	    clen += status_match_len(xp, L_MATCH(i)) + 2;
+	    clen += status_match_len(xp, SHOW_MATCH(i)) + 2;
 	if (first_match > 0)
 	    clen += 2;
 	// jumping right, put match at the left
@@ -544,7 +548,7 @@ win_redr_status_matches(
 	    clen = 2;
 	    for (i = match; i < num_matches; ++i)
 	    {
-		clen += status_match_len(xp, L_MATCH(i)) + 2;
+		clen += status_match_len(xp, SHOW_MATCH(i)) + 2;
 		if ((long)clen >= Columns)
 		    break;
 	    }
@@ -555,7 +559,7 @@ win_redr_status_matches(
     if (add_left)
 	while (first_match > 0)
 	{
-	    clen += status_match_len(xp, L_MATCH(first_match - 1)) + 2;
+	    clen += status_match_len(xp, SHOW_MATCH(first_match - 1)) + 2;
 	    if ((long)clen >= Columns)
 		break;
 	    --first_match;
@@ -576,7 +580,7 @@ win_redr_status_matches(
     clen = len;
 
     i = first_match;
-    while ((long)(clen + status_match_len(xp, L_MATCH(i)) + 2) < Columns)
+    while ((long)(clen + status_match_len(xp, SHOW_MATCH(i)) + 2) < Columns)
     {
 	if (i == match)
 	{
@@ -584,7 +588,7 @@ win_redr_status_matches(
 	    selstart_col = clen;
 	}
 
-	s = L_MATCH(i);
+	s = SHOW_MATCH(i);
 	// Check for menu separators - replace with '|'
 #ifdef FEAT_MENU
 	emenu = (xp->xp_context == EXPAND_MENUS
@@ -975,6 +979,10 @@ ExpandOne(
 	FreeWild(xp->xp_numfiles, xp->xp_files);
 	xp->xp_numfiles = -1;
 	VIM_CLEAR(orig_save);
+
+	// The entries from xp_files may be used in the PUM, remove it.
+	if (compl_match_array != NULL)
+	    cmdline_pum_remove();
     }
     findex = 0;
 
@@ -1120,7 +1128,7 @@ showmatches_oneline(
 		// Expansion was done here, file names are literal.
 		isdir = mch_isdir(matches[j]);
 	    if (showtail)
-		p = SHOW_FILE_TEXT(j);
+		p = SHOW_MATCH(j);
 	    else
 	    {
 		home_replace(NULL, matches[j], NameBuff, MAXPATHL,
@@ -1131,7 +1139,7 @@ showmatches_oneline(
 	else
 	{
 	    isdir = FALSE;
-	    p = SHOW_FILE_TEXT(j);
+	    p = SHOW_MATCH(j);
 	}
 	lastlen = msg_outtrans_attr(p, isdir ? dir_attr : 0);
     }
@@ -1210,7 +1218,7 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 		j = vim_strsize(NameBuff);
 	    }
 	    else
-		j = vim_strsize(SHOW_FILE_TEXT(i));
+		j = vim_strsize(SHOW_MATCH(i));
 	    if (j > maxlen)
 		maxlen = j;
 	}

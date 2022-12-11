@@ -540,6 +540,24 @@ func Test_python3_window()
   %bw!
 endfunc
 
+" This was causing trouble because "curbuf" was not matching curwin->w_buffer
+func Test_python3_window_set_height()
+  enew!
+  call setline(1, ['aaa', 'bbb', 'ccc'])
+  call cursor(2, 1)
+  set foldmethod=expr
+  new
+  wincmd w
+  python3 vim.windows[0].height = 5
+  call assert_equal(5, winheight(1))
+
+  call feedkeys('j', 'xt')
+  call assert_equal(3, getpos('.')[1])
+
+  bwipe!
+  bwipe!
+endfunc
+
 " Test for the python List object
 func Test_python3_list()
   " Try to convert a null List
