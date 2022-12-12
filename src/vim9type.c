@@ -403,7 +403,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	if (l->lv_type != NULL && (l->lv_first == NULL
 					   || (flags & TVTT_MORE_SPECIFIC) == 0
 					   || l->lv_type->tt_member != &t_any))
-	    return l->lv_type;
+	    // make a copy, lv_type may be freed if the list is freed
+	    return copy_type(l->lv_type, type_gap);
 	if (l->lv_first == &range_list_item)
 	    return &t_list_number;
 	if (l->lv_copyID == copyID)
