@@ -3120,6 +3120,11 @@ func Test_cwindow_highlight()
   call VerifyScreenDump(buf, 'Test_quickfix_cwindow_2', {})
 
   call term_sendkeys(buf, "\<C-W>j:set cursorline\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_quickfix_cwindow_3', {})
+
+  call term_sendkeys(buf, ":set cursorlineopt=number,screenline\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_quickfix_cwindow_3', {})
 
   call term_sendkeys(buf, "j")

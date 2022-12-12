@@ -1805,10 +1805,16 @@ func Test_sign_cursor_position()
   call term_sendkeys(buf, "2G")
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_sign_cursor_5', {})
+  call term_sendkeys(buf, ":set cursorlineopt=number,screenline\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_5', {})
 
   " sign highlighting overrules 'cursorline'
   call term_sendkeys(buf, ":sign unplace 12\<CR>")
   call term_sendkeys(buf, ":sign place 13 line=2 priority=100 name=s2\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_6', {})
+  call term_sendkeys(buf, ":set cursorlineopt&\<CR>")
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_sign_cursor_6', {})
 
