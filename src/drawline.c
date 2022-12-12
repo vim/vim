@@ -985,6 +985,36 @@ win_line_continue(winlinevars_T *wlv)
 	wlv->char_attr = wlv->win_attr;
 }
 
+#ifdef FEAT_SYN_HL
+    static void
+apply_cursorline_highlight(
+	winlinevars_T *wlv,
+	int sign_present UNUSED)
+{
+    wlv->cul_attr = HL_ATTR(HLF_CUL);
+# ifdef FEAT_SIGNS
+    // Combine the 'cursorline' and sign highlighting, depending on
+    // the sign priority.
+    if (sign_present && wlv->sattr.sat_linehl > 0)
+    {
+	if (wlv->sattr.sat_priority >= 100)
+	    wlv->line_attr = hl_combine_attr(wlv->cul_attr, wlv->line_attr);
+	else
+	    wlv->line_attr = hl_combine_attr(wlv->line_attr, wlv->cul_attr);
+    }
+    else
+# endif
+# if defined(FEAT_QUICKFIX)
+	// let the line attribute overrule 'cursorline', otherwise
+	// it disappears when both have background set;
+	// 'cursorline' can use underline or bold to make it show
+	wlv->line_attr = hl_combine_attr(wlv->cul_attr, wlv->line_attr);
+# else
+	wlv->line_attr = wlv->cul_attr;
+# endif
+}
+#endif
+
 /*
  * Display line "lnum" of window 'wp' on the screen.
  * Start at row "startrow", stop when "endrow" is reached.
@@ -1728,35 +1758,10 @@ win_line(
 	    wlv.cul_screenline = (wp->w_p_wrap
 				   && (wp->w_p_culopt_flags & CULOPT_SCRLINE));
 
-	    // Only set wlv.line_attr here when "screenline" is not present in
-	    // 'cursorlineopt'.  Otherwise it's done later.
+	    // Only apply CursorLine highlight here when "screenline" is not
+	    // present in 'cursorlineopt'.  Otherwise it's done later.
 	    if (!wlv.cul_screenline)
-	    {
-		wlv.cul_attr = HL_ATTR(HLF_CUL);
-# ifdef FEAT_SIGNS
-		// Combine the 'cursorline' and sign highlighting, depending on
-		// the sign priority.
-		if (sign_present && wlv.sattr.sat_linehl > 0)
-		{
-		    if (wlv.sattr.sat_priority >= 100)
-			wlv.line_attr = hl_combine_attr(
-						  wlv.cul_attr, wlv.line_attr);
-		    else
-			wlv.line_attr = hl_combine_attr(
-						  wlv.line_attr, wlv.cul_attr);
-		}
-		else
-# endif
-# if defined(FEAT_QUICKFIX)
-		    // let the line attribute overrule 'cursorline', otherwise
-		    // it disappears when both have background set;
-		    // 'cursorline' can use underline or bold to make it show
-		    wlv.line_attr = hl_combine_attr(
-						  wlv.cul_attr, wlv.line_attr);
-# else
-		    wlv.line_attr = wlv.cul_attr;
-# endif
-	    }
+		apply_cursorline_highlight(&wlv, sign_present);
 	    else
 	    {
 		line_attr_save = wlv.line_attr;
@@ -1850,8 +1855,7 @@ win_line(
 		&& wlv.vcol >= left_curline_col
 		&& wlv.vcol < right_curline_col)
 	{
-	    wlv.cul_attr = HL_ATTR(HLF_CUL);
-	    wlv.line_attr = wlv.cul_attr;
+	    apply_cursorline_highlight(&wlv, sign_present);
 	}
 #endif
 
