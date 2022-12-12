@@ -1911,4 +1911,16 @@ function Test_splitkeep_status()
   call VerifyScreenDump(buf, 'Test_splitkeep_status_1', {})
 endfunction
 
+function Test_new_help_window_on_error()
+  help change.txt
+  execute "normal! /CTRL-@\<CR>"
+  silent! execute "normal! \<C-W>]"
+
+  let wincount = winnr('$')
+  help 'mod'
+
+  call assert_equal(wincount, winnr('$'))
+  call assert_equal(expand("<cword>"), "'mod'")
+endfunction
+
 " vim: shiftwidth=2 sts=2 expandtab
