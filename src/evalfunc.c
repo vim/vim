@@ -4401,6 +4401,10 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		)
 	    {
 		feed_mswin_input(keys);
+		// Windows low level does not add directly add to
+		// the type-ahead buffer, the way other systems do,
+		// so 'execute' crashes with an endless loop in windows (yet.)
+		//execute = FALSE;
 	    }
 	    else
 # endif

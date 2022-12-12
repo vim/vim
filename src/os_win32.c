@@ -177,6 +177,11 @@ static void gotoxy(unsigned x, unsigned y);
 static void standout(void);
 static int s_cursor_visible = TRUE;
 static int did_create_conin = FALSE;
+# ifdef FEAT_EVAL
+// reads from virtual console input buffer for test purposes.
+static int read_test_buffer(INPUT_RECORD* irBuf, int nMaxLength);
+static int peek_test_buffer(INPUT_RECORD* irBuf, int nMaxLength);
+# endif
 #endif
 #ifdef FEAT_GUI_MSWIN
 static int s_dont_use_vimrun = TRUE;
@@ -337,6 +342,26 @@ read_console_input(
 	if (dwEvents == 0 && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
+
+// 	if (dwEvents == 0 && nLength == -1)
+// 	{
+// 	    if (PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents))
+// 		return TRUE;
+// # if defined(FEAT_EVAL)
+// 	    else
+// 	    {
+// 		*lpEvents = peek_test_buffer(lpBuffer, 1);
+// 		return (lpEvents != NULL);
+// 	    }
+// # endif
+// 	}
+// # if defined(FEAT_EVAL)
+// 	if (dwEvents == 0)
+// 	    dwEvents = read_test_buffer(s_irCache, IRSIZE);
+// 	if (dwEvents == 0)
+// # endif
+// 	    ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
+
 	s_dwIndex = 0;
 	s_dwMax = dwEvents;
 	if (dwEvents == 0)
@@ -1230,7 +1255,7 @@ decode_key_event(
 
     return (*pch != NUL);
 }
-# if defined(FEAT_EVAL) || defined(PROTO)
+# if defined(FEAT_EVAL)
     static int
 encode_key_event(dict_T *args, INPUT_RECORD *ir)
 {
@@ -1337,7 +1362,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
     }
     return TRUE;
 }
-# endif  // FEAT_EVAL || PROTO
+# endif  // FEAT_EVAL
 #endif // !FEAT_GUI_MSWIN || VIMDLL
 
 
@@ -1764,7 +1789,7 @@ decode_mouse_event(
     return TRUE;
 }
 
-# if defined(FEAT_EVAL) || defined(PROTO)
+# ifdef FEAT_EVAL
     static int
 encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
 {
@@ -1874,10 +1899,70 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
     ir->Event.MouseEvent = mer;
     return TRUE;
 }
-# endif  // FEAT_EVAL || PROTO
+# endif  // FEAT_EVAL
 #endif // !FEAT_GUI_MSWIN || VIMDLL
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#ifdef FEAT_EVAL
+struct test_buffer_node
+{
+    INPUT_RECORD ir;
+    struct test_buffer_node *next;
+};
+
+struct test_buffer_node *testbuf_head = NULL;
+struct test_buffer_node *testbuf_tail = NULL;
+
+    static int
+write_test_buffer(INPUT_RECORD* irBuf, int nLength)
+{
+    int nCount = 0;
+    while (nCount < nLength)
+    {
+	struct test_buffer_node *nptr = malloc(sizeof(struct test_buffer_node));
+	nptr->ir = irBuf[nCount++];
+	nptr->next = NULL;
+	if (testbuf_tail == NULL)
+	{
+	    testbuf_head = nptr;
+	    testbuf_tail = nptr;
+	}
+	else
+	{
+	    testbuf_tail->next = nptr;
+	    testbuf_tail = testbuf_tail->next;
+	}
+    }
+    return nCount;
+}
+
+    static int
+read_test_buffer(INPUT_RECORD* irBuf, int nMaxLength)
+{
+    int nCount = 0;
+    while (nCount < nMaxLength && testbuf_head != NULL)
+    {
+	struct test_buffer_node *temp;
+	temp = testbuf_head;
+	testbuf_head = testbuf_head->next;
+	irBuf[nCount++] = temp->ir;
+	free(temp);
+    }
+    return nCount;
+}
+    static int
+peek_test_buffer(INPUT_RECORD* irBuf, int nMaxLength)
+{
+    int nCount = 0;
+    struct test_buffer_node *temp;
+    temp = testbuf_head;
+    while (nCount < nMaxLength && temp != NULL)
+    {
+	irBuf[nCount++] = temp->ir;
+	temp = temp->next;
+    }
+    free(temp);
+    return nCount;
+}
 /*
  * This is for testing Vim's low-level handling of user input events when
  * running in MS-Windows.  Entry point for both GUI and Console.
@@ -1896,14 +1981,16 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
  *
  * ....The event type and args dictionary....
  * 
- * for Vim to synthesize Win32 INPUT_RECORD events, which are then written
- * directly onto the console input buffer, for Vim to then process via
- * read_console_input(), as if a user had entered them directly.
+ * for Vim to synthesize Win32 INPUT_RECORD events, which are then written to
+ * the test input buffer.  The test input buffer acts as a virtual console 
+ * input buffer for test purposes.  Vim can then process the input test buffer
+ * in read_console_input(), and process the records as if a user had entered
+ * them directly.
  * 
  * This function returns the number of events actually written to the buffer.
  * 
- * If an exception occurs it will write an error
- * message via semsg().  Otherwise, it's typically up to the test script to
+ * If an exception occurs it will write an error message via semsg().  
+ * Otherwise, it's typically up to the test script to
  * assert that the expected operation has occurred, by checking the end result
  * after Vim's processing the console's input buffer.
  */ 
@@ -1922,7 +2009,7 @@ test_mswin_event(char_u *event, dict_T *args)
 // Only implemented event record types are;
 //    KEY_EVENT and MOUSE_EVENT
 // TODO: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
-// Not planned:  MENU_EVENT
+// Maybe also:  MENU_EVENT
 
     INPUT_RECORD ir;
     BOOL input_encoded = FALSE;
@@ -1935,9 +2022,13 @@ test_mswin_event(char_u *event, dict_T *args)
 	semsg(_(e_invalid_argument_str), event);
 	return FALSE;
     }
-
+    // WriteConsoleInput doesnt seem to work in the CI test environment so,
+    // going to try implementing a virtual test input buffer instead.
     if (input_encoded)
-	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+    	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+//     if (input_encoded)
+// 	lpEventsWritten = write_test_buffer(&ir, 1);
+
 # endif
     return lpEventsWritten;
 }
@@ -1955,19 +2046,21 @@ static const int vkPunctuationKeys [256] = {
     [',']  = VK_OEM_COMMA,
     ['-']  = VK_OEM_MINUS,
     ['.']  = VK_OEM_PERIOD,
-    [':']  = -VK_OEM_1,
-    ['?']  = -VK_OEM_2,
-    ['~']  = -VK_OEM_3,
-    ['{']  = -VK_OEM_4,
-    ['|']  = -VK_OEM_5,
-    ['}']  = -VK_OEM_6,
-    ['"']  = -VK_OEM_7,
-    ['+']  = -VK_OEM_PLUS,
-    ['<']  = -VK_OEM_COMMA,
-    ['_']  = -VK_OEM_MINUS,
-    ['>']  = -VK_OEM_PERIOD
+    [':']  = 0x100 | VK_OEM_1,
+    ['?']  = 0x100 | VK_OEM_2,
+    ['~']  = 0x100 | VK_OEM_3,
+    ['{']  = 0x100 | VK_OEM_4,
+    ['|']  = 0x100 | VK_OEM_5,
+    ['}']  = 0x100 | VK_OEM_6,
+    ['"']  = 0x100 | VK_OEM_7,
+    ['+']  = 0x100 | VK_OEM_PLUS,
+    ['<']  = 0x100 | VK_OEM_COMMA,
+    ['_']  = 0x100 | VK_OEM_MINUS,
+    ['>']  = 0x100 | VK_OEM_PERIOD
     };
 
+#endif // FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * This function is designed to be called by feedkeys({string},{mode})
  * Where mode is 'L' (low-level) for MS-Windows console events.
@@ -1986,8 +2079,6 @@ static const int vkPunctuationKeys [256] = {
 feed_mswin_input(char_u *keys)
 {
     int len = (int)STRLEN(keys);
-
-    //INPUT_RECORD irBuffer[30]; // 30 should be enough for now
     
     int maybe_mouse = TRUE;
     int maybe_key = TRUE;
@@ -2080,7 +2171,7 @@ feed_mswin_input(char_u *keys)
 	    }
 	    else
 	    {
-		// all the other things that can come after K_SPECIAL??
+		// other things that can come directly after K_SPECIAL?
 	    }
 	}
 	if (found_mouse)
@@ -2207,9 +2298,9 @@ feed_mswin_input(char_u *keys)
 	    }
 	    else if (vkPunctuationKeys[c])
 	    {
-		if (vkPunctuationKeys[c] < 0)
+		if (vkPunctuationKeys[c] & 0x100)
 		{
-		    vkCode = -vkPunctuationKeys[c];
+		    vkCode = vkPunctuationKeys[c] & ~0x100;
 		    modifiers |= MOD_MASK_SHIFT;
 		}
 		else
@@ -2218,17 +2309,17 @@ feed_mswin_input(char_u *keys)
 
 	    if (vkCode)
 	    {
-		dict_T *keydown = dict_alloc();
-		dict_add_number(keydown, "keycode", vkCode);
-		dict_add_string_len(keydown, "event", "keydown", 7);
-		dict_add_number(keydown, "modifiers", modifiers);
-		if (test_mswin_event("keyboard", keydown))
+		dict_T *keydown_args = dict_alloc();
+		dict_add_number(keydown_args, "keycode", vkCode);
+		dict_add_string_len(keydown_args, "event", "keydown", 7);
+		dict_add_number(keydown_args, "modifiers", modifiers);
+		if (test_mswin_event("keyboard", keydown_args))
 		{
-		    dict_T *keyup = dict_alloc();
-		    dict_add_number(keyup, "keycode", vkCode);
-		    dict_add_string_len(keyup, "event", "keyup", 5);
-		    dict_add_number(keyup, "modifiers", modifiers);
-		    test_mswin_event("keyboard", keyup);
+		    dict_T *keyup_args = dict_alloc();
+		    dict_add_number(keyup_args, "keycode", vkCode);
+		    dict_add_string_len(keyup_args, "event", "keyup", 5);
+		    dict_add_number(keyup_args, "modifiers", modifiers);
+		    test_mswin_event("keyboard", keyup_args);
 		}
 	    }
 

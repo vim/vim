@@ -39,9 +39,9 @@ func Test_windows_console_feedkeys()
   new
   call feedkeys("ABCXYZ",'L')
   let chA = getcharstr(0)
-  if chA == ''
-    throw 'Skipped: The MS-Windows console input buffer was empty.'
-  endif
+"    if chA == ''
+"      throw 'Skipped: The MS-Windows console input buffer was empty.'
+"    endif
   let chB = getcharstr(0)
   let chC = getcharstr(0)
   let chX = getcharstr(0)
@@ -55,12 +55,12 @@ func Test_windows_console_feedkeys()
   call assert_equal('Y', chY)
   call assert_equal('Z', chZ)
 
-  call feedkeys("\<Esc>",'L')
-  let ch = getcharstr(0)
-  call assert_equal('', ch)
+"    call feedkeys("\<Esc>",'L')
+"    let ch = getcharstr(0)
+"    call assert_equal('', ch)
 
-  exe "normal ggC\<C-K>\<ScrollWheelUp>"
-  call assert_equal("<ScrollWheelUp>", getline(1))
+"    exe "normal ggC\<C-K>\<ScrollWheelUp>"
+"    call assert_equal("<ScrollWheelUp>", getline(1))
 
   bw!
 endfunc
@@ -383,7 +383,7 @@ func Test_windows_console_mouse_event()
   CheckNotGui
   new
 
-  throw 'Skipped: The MS-Windows console input buffer testing not ready.'
+  "throw 'Skipped: The MS-Windows console input buffer testing not ready.'
 
   call test_override('no_query_mouse', 1)
   set mousemodel=extend
