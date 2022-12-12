@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2022 Dec 03
+*eval.txt*	For Vim version 9.0.  Last change: 2022 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -163,9 +163,10 @@ Note that " " and "0" are also non-empty strings, thus considered to be TRUE.
 A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 
 		*E611* *E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910*
-		*E913* *E974* *E975* *E976*
-|List|, |Dictionary|, |Funcref|, |Job|, |Channel| and |Blob| types are not
-automatically converted.
+		*E913* *E974* *E975* *E976* *E1319* *E1320* *E1321* *E1322*
+		*E1323* *E1324*
+|List|, |Dictionary|, |Funcref|, |Job|, |Channel|, |Blob|, |Class| and
+|object| types are not automatically converted.
 
 							*E805* *E806* *E808*
 When mixing Number and Float the Number is converted to Float.  Otherwise

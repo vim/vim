@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Dec 03
+*vim9.txt*	For Vim version 9.0.  Last change: 2022 Dec 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1023,7 +1023,9 @@ always converted to string: >
 
 Simple types are Number, Float, Special and Bool.  For other types |string()|
 should be used.
-						*false* *true* *null* *E1034*
+			*false* *true* *null* *null_blob* *null_channel*
+			*null_dict* *null_function* *null_job* *null_list*
+			*null_partial* *null_string* *E1034*
 In Vim9 script one can use the following predefined values: >
 	true
 	false

@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2022 Dec 04
+*vim9class.txt*	For Vim version 9.0.  Last change: 2022 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -96,7 +96,7 @@ Let's start with a simple example: a class that stores a text position: >
 	      this.col = col
 	   enddef
 	 endclass
-
+<							*object* *Object*
 You can create an object from this class with the new() method: >
 
 	var pos = TextPosition.new(1, 1)
@@ -104,7 +104,7 @@ You can create an object from this class with the new() method: >
 The object members "lnum" and "col" can be accessed directly: >
 
 	echo $'The text position is ({pos.lnum}, {pos.col})'
-
+<							*E1317* *E1327*
 If you have been using other object-oriented languages you will notice that
 in Vim the object members are consistently referred to with the "this."
 prefix.  This is different from languages like Java and TypeScript.  This
@@ -329,14 +329,14 @@ The interface name can be used as a type: >
 
 ==============================================================================
 
-5.  More class details					*Vim9-class*
+5.  More class details				*Vim9-class* *Class* *class*
 
 Defining a class ~
 					*:class* *:endclass* *:abstract*
 A class is defined between `:class` and `:endclass`.  The whole class is
 defined in one script file.  It is not possible to add to a class later.
 
-A class can only be defined in a |Vim9| script file.  *E1315*
+A class can only be defined in a |Vim9| script file.  *E1316*
 A class cannot be defined inside a function.
 
 It is possible to define more than one class in a script file.  Although it
@@ -361,7 +361,7 @@ these variants: >
 							*E1314*
 The class name should be CamelCased.  It must start with an uppercase letter.
 That avoids clashing with builtin types.
-
+							*E1315*
 After the class name these optional items can be used.  Each can appear only
 once.  They can appear in any order, although this order is recommended: >
 	extends ClassName
@@ -375,6 +375,20 @@ A class can implement one or more interfaces.
 A class can declare its interface, the object members and methods, with a
 named interface.  This avoids the need for separately specifying the
 interface, which is often done in many languages, especially Java.
+
+
+Items in a class ~
+						*E1318* *E1325* *E1326*
+Inside a class, in betweeen `:class` and `:endclass`, these items can appear:
+- An object member declaration: >
+  	this._memberName: memberType
+  	this.memberName: memberType
+	public this.memberName: memberType
+- A constructor method: >
+  	def new(arguments)
+  	def newName(arguments)
+- An object method: >
+  	def SomeMethod(arguments)
 
 
 Defining an interface ~
@@ -417,10 +431,27 @@ members, in the order they were specified.  Thus if your class looks like: >
 
 Then The default constructor will be: >
 
-	def new(this.name, this.age, this.gender)
+	def new(this.name = void, this.age = void, this.gender = void)
 	enddef
 
 All object members will be used, also private access ones.
+
+The "= void" default values make the arguments optional.  Thus you can also
+call `new()` without any arguments.  Since "void" isn't an actual value, no
+assignment will happen and the default value for the object members will be
+used.  This is a more useful example, with default values: >
+
+	class TextPosition
+	   this.lnum: number = 1
+	   this.col: number = 1
+	endclass
+
+If you want the constructor to have mandatory arguments, you need to write it
+yourself.  For example, if for the AutoNew class above you insist on getting
+the name, you can define the constructor like this: >
+
+	def new(this.name, this.age = void, this.gender = void)
+	enddef
 
 
 Multiple constructors ~
