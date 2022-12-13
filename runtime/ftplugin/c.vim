@@ -17,9 +17,8 @@ set cpo-=C
 
 let b:undo_ftplugin = "setl fo< com< ofu< cms< def< inc< | if has('vms') | setl isk< | endif"
 
-" Set 'formatoptions' to break comment lines but not other lines,
-" and insert the comment leader when hitting <CR> or using "o".
-setlocal fo-=t fo+=croql
+" Set 'formatoptions' to break comment lines but not other lines.
+setlocal fo-=t fo+=cql
 
 " These options have the right value as default, but the user may have
 " overruled that.

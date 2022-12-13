@@ -37,9 +37,8 @@ endif
 
 let b:undo_ftplugin = "call VimFtpluginUndo()"
 
-" Set 'formatoptions' to break comment lines but not other lines,
-" and insert the comment leader when hitting <CR> or using "o".
-setlocal fo-=t fo+=croql
+" Set 'formatoptions' to break comment lines but not other lines.
+setlocal fo-=t fo+=cql
 
 " To allow tag lookup via CTRL-] for autoload functions, '#' must be a
 " keyword character.  E.g., for netrw#Nread().
