@@ -3374,4 +3374,8 @@ EXTERN char e_object_required_found_str[]
 	INIT(= N_("E1327: Object required, found %s"));
 EXTERN char e_constructor_default_value_must_be_vnone_str[]
 	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
+EXTERN char e_cannot_get_object_member_type_from_initializer_str[]
+	INIT(= N_("E1329: Cannot get object member type from initializer: %s"));
+EXTERN char e_invalid_type_for_object_member_str[]
+	INIT(= N_("E1330: Invalid type for object member: %s"));
 #endif

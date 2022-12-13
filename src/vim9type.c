@@ -425,6 +425,17 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	return &t_number;
     if (tv->v_type == VAR_BOOL)
 	return &t_bool;
+    if (tv->v_type == VAR_SPECIAL)
+    {
+	if (tv->vval.v_number == VVAL_NULL)
+	    return &t_null;
+	if (tv->vval.v_number == VVAL_NONE)
+	    return &t_none;
+	if (tv->vval.v_number == VVAL_TRUE
+		|| tv->vval.v_number == VVAL_TRUE)
+	    return &t_bool;
+	return &t_unknown;
+    }
     if (tv->v_type == VAR_STRING)
 	return &t_string;
     if (tv->v_type == VAR_BLOB)
@@ -617,6 +628,25 @@ typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	// bool.
 	type = &t_number_bool;
     return type;
+}
+
+/*
+ * Return TRUE if "type" can be used for a variable declaration.
+ * Give an error and return FALSE if not.
+ */
+    int
+valid_declaration_type(type_T *type)
+{
+    if (type->tt_type == VAR_SPECIAL  // null, none
+	    || type->tt_type == VAR_VOID)
+    {
+	char *tofree = NULL;
+	char *name = type_name(type, &tofree);
+	semsg(_(e_invalid_type_for_object_member_str), name);
+	vim_free(tofree);
+	return FALSE;
+    }
+    return TRUE;
 }
 
 /*

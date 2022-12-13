@@ -231,7 +231,58 @@ def Test_class_default_new()
       assert_equal("none", chris.education)
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class Person
+        this.name: string
+        this.age: number = 42
+        this.education: string = "unknown"
+
+        def new(this.name, this.age = v:none, this.education = v:none)
+        enddef
+      endclass
+
+      var missing = Person.new()
+  END
+  v9.CheckScriptFailure(lines, 'E119:')
 enddef
+
+def Test_class_object_member_inits()
+  var lines =<< trim END
+      vim9script
+      class TextPosition
+        this.lnum: number
+        this.col = 1
+        this.addcol: number = 2
+      endclass
+
+      var pos = TextPosition.new()
+      assert_equal(0, pos.lnum)
+      assert_equal(1, pos.col)
+      assert_equal(2, pos.addcol)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class TextPosition
+        this.lnum
+        this.col = 1
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1022:')
+
+  lines =<< trim END
+      vim9script
+      class TextPosition
+        this.lnum = v:none
+        this.col = 1
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1330:')
+enddef
+
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
