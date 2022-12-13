@@ -1408,15 +1408,15 @@ generate_WHILE(cctx_T *cctx, int funcref_idx)
 }
 
 /*
- * Generate an ISN_JUMP_IF_ARG_SET instruction.
+ * Generate an ISN_JUMP_IF_ARG_SET or ISN_JUMP_IF_ARG_NOT_SET instruction.
  */
     int
-generate_JUMP_IF_ARG_SET(cctx_T *cctx, int arg_off)
+generate_JUMP_IF_ARG(cctx_T *cctx, isntype_T isn_type, int arg_off)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_JUMP_IF_ARG_SET)) == NULL)
+    if ((isn = generate_instr(cctx, isn_type)) == NULL)
 	return FAIL;
     isn->isn_arg.jumparg.jump_arg_off = arg_off;
     // jump_where is set later
@@ -2479,6 +2479,7 @@ delete_instr(isn_T *isn)
 	case ISN_GETITEM:
 	case ISN_GET_OBJ_MEMBER:
 	case ISN_JUMP:
+	case ISN_JUMP_IF_ARG_NOT_SET:
 	case ISN_JUMP_IF_ARG_SET:
 	case ISN_LISTAPPEND:
 	case ISN_LISTINDEX:

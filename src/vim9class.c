@@ -269,6 +269,7 @@ ex_class(exarg_T *eap)
 		ga_concat(&fga, (char_u *)"this.");
 		objmember_T *m = cl->class_obj_members + i;
 		ga_concat(&fga, (char_u *)m->om_name);
+		ga_concat(&fga, (char_u *)" = v:none");
 	    }
 	    ga_concat(&fga, (char_u *)")\nenddef\n");
 	    ga_append(&fga, NUL);

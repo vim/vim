@@ -47,7 +47,7 @@ int generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name);
 int generate_DEF(cctx_T *cctx, char_u *name, size_t len);
 int generate_JUMP(cctx_T *cctx, jumpwhen_T when, int where);
 int generate_WHILE(cctx_T *cctx, int funcref_idx);
-int generate_JUMP_IF_ARG_SET(cctx_T *cctx, int arg_off);
+int generate_JUMP_IF_ARG(cctx_T *cctx, isntype_T isn_type, int arg_off);
 int generate_FOR(cctx_T *cctx, int loop_idx);
 int generate_ENDLOOP(cctx_T *cctx, loop_info_T *loop_info);
 int generate_TRYCONT(cctx_T *cctx, int levels, int where);

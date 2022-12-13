@@ -182,5 +182,56 @@ def Test_class_member_initializer()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_class_default_new()
+  var lines =<< trim END
+      vim9script
+
+      class TextPosition
+        this.lnum: number = 1
+        this.col: number = 1
+      endclass
+
+      var pos = TextPosition.new()
+      assert_equal(1, pos.lnum)
+      assert_equal(1, pos.col)
+
+      pos = TextPosition.new(v:none, v:none)
+      assert_equal(1, pos.lnum)
+      assert_equal(1, pos.col)
+
+      pos = TextPosition.new(3, 22)
+      assert_equal(3, pos.lnum)
+      assert_equal(22, pos.col)
+
+      pos = TextPosition.new(v:none, 33)
+      assert_equal(1, pos.lnum)
+      assert_equal(33, pos.col)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class Person
+        this.name: string
+        this.age: number = 42
+        this.education: string = "unknown"
+
+        def new(this.name, this.age = v:none, this.education = v:none)
+        enddef
+      endclass
+
+      var piet = Person.new("Piet")
+      assert_equal("Piet", piet.name)
+      assert_equal(42, piet.age)
+      assert_equal("unknown", piet.education)
+
+      var chris = Person.new("Chris", 4, "none")
+      assert_equal("Chris", chris.name)
+      assert_equal(4, chris.age)
+      assert_equal("none", chris.education)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

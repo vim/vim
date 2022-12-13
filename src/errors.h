@@ -3372,4 +3372,6 @@ EXTERN char e_member_not_found_on_object_str_str[]
 	INIT(= N_("E1326: Member not found on object \"%s\": %s"));
 EXTERN char e_object_required_found_str[]
 	INIT(= N_("E1327: Object required, found %s"));
+EXTERN char e_constructor_default_value_must_be_vnone_str[]
+	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
 #endif
