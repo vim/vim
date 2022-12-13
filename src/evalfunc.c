@@ -4401,10 +4401,24 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		)
 	    {
 		feed_mswin_input(keys);
-		// Windows low level does not add directly add to
-		// the type-ahead buffer, the way other systems do,
-		// so 'execute' crashes with an endless loop in windows (yet.)
-		//execute = FALSE;
+		//// execute = FALSE;
+		// TODO: 'execute' with 'lowlevel' often crashes with an
+		// endless loop in windows, for reasons yet to be determined.
+		// I think related to the additional layer of buffer handling.
+		// Workaround for now, only allow 'execute' with 'lowlevel' for
+		// 'keys' that are known to work, and known to be needed for
+		// testing
+		if (execute)
+		{
+		    if (((int)STRLEN(keys) == 1
+					&& (keys[0] == 0x1b || keys[0] == 'y'))
+			|| ((int)STRLEN(keys) == 2
+					&& (keys[0] == '"' && keys[1] == '"'))
+		       )
+			lowlevel = TRUE;
+		    else
+			lowlevel = FALSE;
+		}
 	    }
 	    else
 # endif

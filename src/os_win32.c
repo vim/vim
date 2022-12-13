@@ -177,11 +177,33 @@ static void gotoxy(unsigned x, unsigned y);
 static void standout(void);
 static int s_cursor_visible = TRUE;
 static int did_create_conin = FALSE;
-# ifdef FEAT_EVAL
-// reads from virtual console input buffer for test purposes.
-static int read_test_buffer(INPUT_RECORD* irBuf, int nMaxLength);
-static int peek_test_buffer(INPUT_RECORD* irBuf, int nMaxLength);
-# endif
+typedef struct input_record_buffer_node_s
+{
+    INPUT_RECORD ir;
+    struct input_record_buffer_node_s *next;
+} input_record_buffer_node_t;
+typedef struct input_record_buffer_s
+{
+    input_record_buffer_node_t *head;
+    input_record_buffer_node_t *tail;
+    int length;
+} input_record_buffer_t;
+// The 'input_record_buffer' is an internal dynamic fifo queue of MS-Windows
+// console INPUT_RECORD events that are read from the console input buffer.
+// This provides for;
+// 1. A cache for when records come in faster than can be processed, and
+// 2. An injection point for testing the low-level handling of INPUT_RECORDs.
+static input_record_buffer_t input_record_buffer;
+static int peek_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength);
+static int read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength);
+static int write_input_record_buffer(INPUT_RECORD* irEvents, int nLength);
+
+typedef enum EConReadType {
+    ConPeek = -1,
+    ConWaitObject = -2,
+    ConPopRecord = 1
+} ConReadType;
+
 #endif
 #ifdef FEAT_GUI_MSWIN
 static int s_dont_use_vimrun = TRUE;
@@ -308,111 +330,98 @@ make_ambiwidth_event(
 read_console_input(
     HANDLE	    hInput,
     INPUT_RECORD    *lpBuffer,
-    int		    nLength,
+    ConReadType	    nReadType,
     LPDWORD	    lpEvents)
 {
     enum
     {
 	IRSIZE = 10
     };
-    static INPUT_RECORD s_irCache[IRSIZE];
-    static DWORD s_dwIndex = 0;
-    static DWORD s_dwMax = 0;
-    DWORD dwEvents;
-    int head;
-    int tail;
-    int i;
-    static INPUT_RECORD s_irPseudo;
+    INPUT_RECORD irCache[IRSIZE];
+    SecureZeroMemory(irCache, IRSIZE * sizeof(INPUT_RECORD));
+//     static INPUT_RECORD s_irCache[IRSIZE];
+//     static DWORD s_dwIndex = 0;
+//     static DWORD s_dwMax = 0;
+    DWORD dwEvents = 0;
+    DWORD tail = 0;
+    DWORD i = 0;
+    DWORD j = 0;
+    INPUT_RECORD irPseudo;
 
-    if (nLength == -2)
-	return (s_dwMax > 0) ? TRUE : FALSE;
+    switch (nReadType)
+    {
+	case ConWaitObject:
+	    return (input_record_buffer.length > 0) ? TRUE : FALSE;
+	case ConPeek:
+	    if (input_record_buffer.length > 0)
+	    {
+		*lpEvents = peek_input_record_buffer(lpBuffer, 1);
+		return TRUE;
+	    }
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	case ConPopRecord: 
+	    // carry on below
+	    break;
+	default:
+	   // nothing else is going to work.
+	   *lpEvents = 0;
+	   return FALSE;
+    }
 
     if (!win8_or_later)
-    {
-	if (nLength == -1)
-	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	return ReadConsoleInputW(hInput, lpBuffer, 1, &dwEvents);
-    }
 
-    if (s_dwMax == 0)
+    if (input_record_buffer.length == 0)
     {
-	if (!vtp_working && nLength == -1)
-	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
 	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
-	if (dwEvents == 0 && nLength == -1)
-	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
-	ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
+	ReadConsoleInputW(hInput, irCache, IRSIZE, &dwEvents);
 
-// 	if (dwEvents == 0 && nLength == -1)
-// 	{
-// 	    if (PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents))
-// 		return TRUE;
-// # if defined(FEAT_EVAL)
-// 	    else
-// 	    {
-// 		*lpEvents = peek_test_buffer(lpBuffer, 1);
-// 		return (lpEvents != NULL);
-// 	    }
-// # endif
-// 	}
-// # if defined(FEAT_EVAL)
-// 	if (dwEvents == 0)
-// 	    dwEvents = read_test_buffer(s_irCache, IRSIZE);
-// 	if (dwEvents == 0)
-// # endif
-// 	    ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
-
-	s_dwIndex = 0;
-	s_dwMax = dwEvents;
-	if (dwEvents == 0)
+	if (dwEvents > 0)
 	{
-	    *lpEvents = 0;
-	    return TRUE;
+	    for (i = 0; i < dwEvents - 1; ++i)
+	    {
+		if (is_ambiwidth_event(&irCache[i]))
+		    make_ambiwidth_event(&irCache[i], &irCache[i + 1]);
+	    }
 	}
 
-	for (i = s_dwIndex; i < (int)s_dwMax - 1; ++i)
-	    if (is_ambiwidth_event(&s_irCache[i]))
-		make_ambiwidth_event(&s_irCache[i], &s_irCache[i + 1]);
-
-	if (s_dwMax > 1)
+	if (dwEvents > 1)
 	{
-	    head = 0;
-	    tail = s_dwMax - 1;
-	    while (head != tail)
+	    i = 0;
+	    tail = dwEvents - 1;
+	    while (i != tail)
 	    {
-		if (s_irCache[head].EventType == WINDOW_BUFFER_SIZE_EVENT
-			&& s_irCache[head + 1].EventType
-						  == WINDOW_BUFFER_SIZE_EVENT)
+		if (irCache[i].EventType == WINDOW_BUFFER_SIZE_EVENT
+		    && irCache[i + 1].EventType == WINDOW_BUFFER_SIZE_EVENT)
 		{
 		    // Remove duplicate event to avoid flicker.
-		    for (i = head; i < tail; ++i)
-			s_irCache[i] = s_irCache[i + 1];
+		    for (j = i; j < tail; ++j)
+			irCache[j] = irCache[j + 1];
 		    --tail;
+		    --dwEvents;
 		    continue;
 		}
-		head++;
+		i++;
 	    }
-	    s_dwMax = tail + 1;
 	}
+
+	if (dwEvents > 0)
+	    write_input_record_buffer(irCache, dwEvents);
     }
 
-    if (s_irCache[s_dwIndex].EventType == KEY_EVENT)
+    if (input_record_buffer.length > 0
+	&& input_record_buffer.head->ir.EventType == KEY_EVENT
+	&& input_record_buffer.head->ir.Event.KeyEvent.wRepeatCount > 1)
     {
-	if (s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount > 1)
-	{
-	    s_irPseudo = s_irCache[s_dwIndex];
-	    s_irPseudo.Event.KeyEvent.wRepeatCount = 1;
-	    s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount--;
-	    *lpBuffer = s_irPseudo;
-	    *lpEvents = 1;
-	    return TRUE;
-	}
+	irPseudo = input_record_buffer.head->ir;
+	irPseudo.Event.KeyEvent.wRepeatCount = 1;
+	input_record_buffer.head->ir.Event.KeyEvent.wRepeatCount--;
+	*lpBuffer = irPseudo;
+	*lpEvents = 1;
+	return TRUE;
     }
 
-    *lpBuffer = s_irCache[s_dwIndex];
-    if (!(nLength == -1 || nLength == -2) && ++s_dwIndex >= s_dwMax)
-	s_dwMax = 0;
-    *lpEvents = 1;
+    *lpEvents = read_input_record_buffer(lpBuffer, 1);
     return TRUE;
 }
 
@@ -426,7 +435,7 @@ peek_console_input(
     DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
-    return read_console_input(hInput, lpBuffer, -1, lpEvents);
+    return read_console_input(hInput, lpBuffer, ConPeek, lpEvents);
 }
 
 # ifdef FEAT_CLIENTSERVER
@@ -438,7 +447,7 @@ msg_wait_for_multiple_objects(
     DWORD    dwMilliseconds,
     DWORD    dwWakeMask)
 {
-    if (read_console_input(NULL, NULL, -2, NULL))
+    if (read_console_input(NULL, NULL, ConWaitObject, NULL))
 	return WAIT_OBJECT_0;
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
@@ -451,7 +460,7 @@ wait_for_single_object(
     HANDLE hHandle,
     DWORD dwMilliseconds)
 {
-    if (read_console_input(NULL, NULL, -2, NULL))
+    if (read_console_input(NULL, NULL, ConWaitObject, NULL))
 	return WAIT_OBJECT_0;
     return WaitForSingleObject(hHandle, dwMilliseconds);
 }
@@ -1662,15 +1671,16 @@ decode_mouse_event(
 			{
 			    if (pmer2->dwEventFlags != MOUSE_MOVED)
 			    {
-				read_console_input(g_hConIn, &ir, 1, &cRecords);
-
+				read_console_input(g_hConIn, &ir, ConPopRecord,
+								    &cRecords);
 				return decode_mouse_event(pmer2);
 			    }
 			    else if (s_xOldMouse == pmer2->dwMousePosition.X &&
 				     s_yOldMouse == pmer2->dwMousePosition.Y)
 			    {
 				// throw away spurious mouse move
-				read_console_input(g_hConIn, &ir, 1, &cRecords);
+				read_console_input(g_hConIn, &ir, ConPopRecord,
+								    &cRecords);
 
 				// are there any more mouse events in queue?
 				peek_console_input(g_hConIn, &ir, 1, &cRecords);
@@ -1900,69 +1910,62 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
     return TRUE;
 }
 # endif  // FEAT_EVAL
-#endif // !FEAT_GUI_MSWIN || VIMDLL
-
-#ifdef FEAT_EVAL
-struct test_buffer_node
-{
-    INPUT_RECORD ir;
-    struct test_buffer_node *next;
-};
-
-struct test_buffer_node *testbuf_head = NULL;
-struct test_buffer_node *testbuf_tail = NULL;
 
     static int
-write_test_buffer(INPUT_RECORD* irBuf, int nLength)
+write_input_record_buffer(INPUT_RECORD* irEvents, int nLength)
 {
     int nCount = 0;
     while (nCount < nLength)
     {
-	struct test_buffer_node *nptr = malloc(sizeof(struct test_buffer_node));
-	nptr->ir = irBuf[nCount++];
-	nptr->next = NULL;
-	if (testbuf_tail == NULL)
+	input_record_buffer.length++;
+	input_record_buffer_node_t *event_node = malloc(sizeof(input_record_buffer_node_t));
+	event_node->ir = irEvents[nCount++];
+	event_node->next = NULL;
+	if (input_record_buffer.tail == NULL)
 	{
-	    testbuf_head = nptr;
-	    testbuf_tail = nptr;
+	    input_record_buffer.head = event_node;
+	    input_record_buffer.tail = event_node;
 	}
 	else
 	{
-	    testbuf_tail->next = nptr;
-	    testbuf_tail = testbuf_tail->next;
+	    input_record_buffer.tail->next = event_node;
+	    input_record_buffer.tail = input_record_buffer.tail->next;
 	}
     }
     return nCount;
 }
 
     static int
-read_test_buffer(INPUT_RECORD* irBuf, int nMaxLength)
+read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
 {
     int nCount = 0;
-    while (nCount < nMaxLength && testbuf_head != NULL)
+    while (nCount < nMaxLength && input_record_buffer.head != NULL)
     {
-	struct test_buffer_node *temp;
-	temp = testbuf_head;
-	testbuf_head = testbuf_head->next;
-	irBuf[nCount++] = temp->ir;
-	free(temp);
+	input_record_buffer.length--;
+	input_record_buffer_node_t *pop_head = input_record_buffer.head;
+	irEvents[nCount++] = pop_head->ir;
+	input_record_buffer.head = pop_head->next;
+	vim_free(pop_head);
+	if (input_record_buffer.length == 0)
+	    input_record_buffer.tail = NULL;
     }
     return nCount;
 }
     static int
-peek_test_buffer(INPUT_RECORD* irBuf, int nMaxLength)
+peek_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
 {
     int nCount = 0;
-    struct test_buffer_node *temp;
-    temp = testbuf_head;
+    input_record_buffer_node_t *temp =  input_record_buffer.head;
     while (nCount < nMaxLength && temp != NULL)
     {
-	irBuf[nCount++] = temp->ir;
+	irEvents[nCount++] = temp->ir;
 	temp = temp->next;
     }
-    free(temp);
     return nCount;
 }
+#endif // !FEAT_GUI_MSWIN || VIMDLL
+
+#ifdef FEAT_EVAL
 /*
  * This is for testing Vim's low-level handling of user input events when
  * running in MS-Windows.  Entry point for both GUI and Console.
@@ -2022,12 +2025,12 @@ test_mswin_event(char_u *event, dict_T *args)
 	semsg(_(e_invalid_argument_str), event);
 	return FALSE;
     }
-    // WriteConsoleInput doesnt seem to work in the CI test environment so,
-    // going to try implementing a virtual test input buffer instead.
-    if (input_encoded)
-    	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+//     // WriteConsoleInput doesnt seem to work in the CI test environment so,
+//     // going to try implementing a virtual test input buffer instead.
 //     if (input_encoded)
-// 	lpEventsWritten = write_test_buffer(&ir, 1);
+//     	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+    if (input_encoded)
+	lpEventsWritten = write_input_record_buffer(&ir, 1);
 
 # endif
     return lpEventsWritten;
@@ -2056,7 +2059,17 @@ static const int vkPunctuationKeys [256] = {
     ['+']  = 0x100 | VK_OEM_PLUS,
     ['<']  = 0x100 | VK_OEM_COMMA,
     ['_']  = 0x100 | VK_OEM_MINUS,
-    ['>']  = 0x100 | VK_OEM_PERIOD
+    ['>']  = 0x100 | VK_OEM_PERIOD,
+    ['!']  = 0x100 | '1',
+    ['@']  = 0x100 | '2',
+    ['#']  = 0x100 | '3',
+    ['$']  = 0x100 | '4',
+    ['%']  = 0x100 | '5',
+    ['^']  = 0x100 | '6',
+    ['&']  = 0x100 | '7',
+    ['*']  = 0x100 | '8',
+    ['(']  = 0x100 | '9',
+    [')']  = 0x100 | '0'
     };
 
 #endif // FEAT_EVAL
@@ -2534,7 +2547,7 @@ WaitForChar(long msec, int ignore_input)
 		if (ir.Event.KeyEvent.uChar.UnicodeChar == 0
 			&& ir.Event.KeyEvent.wVirtualKeyCode == 13)
 		{
-		    read_console_input(g_hConIn, &ir, 1, &cRecords);
+		    read_console_input(g_hConIn, &ir, ConPopRecord, &cRecords);
 		    continue;
 		}
 # endif
@@ -2543,7 +2556,7 @@ WaitForChar(long msec, int ignore_input)
 		    return TRUE;
 	    }
 
-	    read_console_input(g_hConIn, &ir, 1, &cRecords);
+	    read_console_input(g_hConIn, &ir, ConPopRecord, &cRecords);
 
 	    if (ir.EventType == FOCUS_EVENT)
 		handle_focus_event(ir);
@@ -2644,7 +2657,7 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	if (g_nMouseClick != -1)
 	    return 0;
 # endif
-	if (read_console_input(g_hConIn, &ir, 1, &cRecords) == 0)
+	if (read_console_input(g_hConIn, &ir, ConPopRecord, &cRecords) == 0)
 	{
 	    if (did_create_conin)
 		read_error_exit();
@@ -3718,6 +3731,10 @@ mch_init_c(void)
 
     _fmode = O_BINARY;		// we do our own CR-LF translation
     out_flush();
+    
+    input_record_buffer.head = NULL;
+    input_record_buffer.tail = NULL;
+    input_record_buffer.length = 0;
 
     // Obtain handles for the standard Console I/O devices
     if (read_cmd_fd == 0)

@@ -37,30 +37,12 @@ func Test_windows_console_feedkeys()
   CheckMSWindows
   CheckNotGui
   new
-  call feedkeys("ABCXYZ",'L')
-  let chA = getcharstr(0)
-"    if chA == ''
-"      throw 'Skipped: The MS-Windows console input buffer was empty.'
-"    endif
-  let chB = getcharstr(0)
-  let chC = getcharstr(0)
-  let chX = getcharstr(0)
-  let chY = getcharstr(0)
-  let chZ = getcharstr(0)
 
-  call assert_equal('A', chA)
-  call assert_equal('B', chB)
-  call assert_equal('C', chC)
-  call assert_equal('X', chX)
-  call assert_equal('Y', chY)
-  call assert_equal('Z', chZ)
-
-"    call feedkeys("\<Esc>",'L')
-"    let ch = getcharstr(0)
-"    call assert_equal('', ch)
-
-"    exe "normal ggC\<C-K>\<ScrollWheelUp>"
-"    call assert_equal("<ScrollWheelUp>", getline(1))
+  " All printable ascii chars
+  for ch in range(0x20, 0x7e)
+    call feedkeys(nr2char(ch),'L')
+    call assert_equal(nr2char(ch).'', getcharstr(0), ch )
+  endfor
 
   bw!
 endfunc
@@ -459,22 +441,23 @@ func Test_windows_console_mouse_event()
     call feedkeys("\<Esc>", 'Lx!')
     call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
 
-"    " Using mouse in insert mode
-"    call cursor(1, 1)
-"    call feedkeys('i', 'L')
-"    ":startinsert!
-"    let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
-"    call test_mswin_event('mouse', args)
-"    let args.button = 3
-"    call test_mswin_event('mouse', args)
-"    call feedkeys("po")
-"    call getchar(0)
-"    call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
+"      " Using mouse in insert mode
+"      call cursor(1, 1)
+"      call feedkeys('i', 'xt')
+"      ":startinsert!
+"      let args = #{button: 0, row: 2, col: 11, multiclick: 0, modifiers: 0}
+"      call test_mswin_event('mouse', args)
+"      let args.button = 3
+"      call test_mswin_event('mouse', args)
+"      call feedkeys("po\<Esc>", 'Lx!')
+"      " call getchar(0)
+"      call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
 
 
 "    %d _
 "    set scrolloff=0
 "    call setline(1, range(1, 100))
+
 "    " scroll up
 "    let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
 "    call test_mswin_event('mouse', args)
