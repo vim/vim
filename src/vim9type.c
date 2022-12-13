@@ -57,6 +57,7 @@ copy_type(type_T *type, garray_T *type_gap)
     if (copy == NULL)
 	return type;
     *copy = *type;
+    copy->tt_flags &= ~TTFLAG_STATIC;
 
     if (type->tt_args != NULL
 	   && func_type_add_arg_types(copy, type->tt_argcount, type_gap) == OK)
@@ -64,6 +65,54 @@ copy_type(type_T *type, garray_T *type_gap)
 	    copy->tt_args[i] = type->tt_args[i];
 
     return copy;
+}
+
+/*
+ * Inner part of copy_type_deep().
+ * When allocation fails returns "type".
+ */
+    static type_T *
+copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
+{
+    for (int i = 0; i < seen_types->ga_len; ++i)
+	if (((type_T **)seen_types->ga_data)[i * 2] == type)
+	    // seen this type before, return the copy we made
+	    return ((type_T **)seen_types->ga_data)[i * 2 + 1];
+
+    type_T *copy = copy_type(type, type_gap);
+    if (ga_grow(seen_types, 1) == FAIL)
+	return copy;
+    ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2] = type;
+    ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2 + 1] = copy;
+    ++seen_types->ga_len;
+
+    if (copy->tt_member != NULL)
+	copy->tt_member = copy_type_deep_rec(copy->tt_member,
+							 type_gap, seen_types);
+
+    if (type->tt_args != NULL)
+	for (int i = 0; i < type->tt_argcount; ++i)
+	    copy->tt_args[i] = copy_type_deep_rec(copy->tt_args[i],
+							 type_gap, seen_types);
+
+    return copy;
+}
+
+/*
+ * Make a deep copy of "type".
+ * When allocation fails returns "type".
+ */
+    static type_T *
+copy_type_deep(type_T *type, garray_T *type_gap)
+{
+    garray_T seen_types;
+    // stores type pairs : a type we have seen and the copy used
+    ga_init2(&seen_types, sizeof(type_T *) * 2, 20);
+
+    type_T *res = copy_type_deep_rec(type, type_gap, &seen_types);
+
+    ga_clear(&seen_types);
+    return res;
 }
 
     void
@@ -404,7 +453,7 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 					   || (flags & TVTT_MORE_SPECIFIC) == 0
 					   || l->lv_type->tt_member != &t_any))
 	    // make a copy, lv_type may be freed if the list is freed
-	    return copy_type(l->lv_type, type_gap);
+	    return copy_type_deep(l->lv_type, type_gap);
 	if (l->lv_first == &range_list_item)
 	    return &t_list_number;
 	if (l->lv_copyID == copyID)
