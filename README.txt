@@ -16,7 +16,7 @@ All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 mapped to commands by the user, and the mouse can be used.
 
-Vim runs under MS-Windows (7, 8, 10, 11), macOS, Haiku, VMS and almost all
+Vim runs under MS-Windows (7, 8, 10, 11), macOS, Haiku, VMS, and almost all
 flavours of UNIX.  Porting to other systems should not be very difficult.
 Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000/XP/Vista,
 Amiga DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
@@ -28,7 +28,7 @@ You can often use your favorite package manager to install Vim.  On Mac and
 Linux a small version of Vim is pre-installed, you still need to install Vim
 if you want more features.
 
-There are separate distributions for Unix, PC, Amiga and some other systems.
+There are separate distributions for Unix, PC, Amiga, and some other systems.
 This README.txt file comes with the runtime archive.  It includes the
 documentation, syntax files and other files that are used at runtime.  To run
 Vim you must get either one of the binary archives or a source archive.
@@ -84,7 +84,7 @@ encouraged to make a donation to help orphans in Uganda.  Please read the file
 
 Summary of the license: There are no restrictions on using or distributing an
 unmodified copy of Vim.  Parts of Vim may also be distributed, but the license
-text must always be included.  For modified versions a few restrictions apply.
+text must always be included.  For modified versions, a few restrictions apply.
 The license is GPL compatible, you may compile Vim with GPL libraries and
 distribute it.
 
@@ -106,7 +106,7 @@ For the most recent information about sponsoring look on the Vim web site:
 
 CONTRIBUTING
 
-If you would like to help making Vim better, see the CONTRIBUTING.md file.
+If you would like to help make Vim better, see the CONTRIBUTING.md file.
 
 
 INFORMATION
@@ -128,6 +128,6 @@ If nothing else works, report bugs directly:
 
 MAIN AUTHOR
 
-Send any other comments, patches, flowers and suggestions to:
+Send any other comments, patches, flowers, and suggestions to:
 
 	Bram Moolenaar		E-mail:	Bram@vim.org
