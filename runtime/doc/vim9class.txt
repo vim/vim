@@ -431,15 +431,15 @@ members, in the order they were specified.  Thus if your class looks like: >
 
 Then The default constructor will be: >
 
-	def new(this.name = void, this.age = void, this.gender = void)
+	def new(this.name = v:none, this.age = v:none, this.gender = v:none)
 	enddef
 
 All object members will be used, also private access ones.
 
-The "= void" default values make the arguments optional.  Thus you can also
-call `new()` without any arguments.  Since "void" isn't an actual value, no
-assignment will happen and the default value for the object members will be
-used.  This is a more useful example, with default values: >
+The "= v:none" default values make the arguments optional.  Thus you can also
+call `new()` without any arguments.  No assignment will happen and the default
+value for the object members will be used.  This is a more useful example,
+with default values: >
 
 	class TextPosition
 	   this.lnum: number = 1
@@ -450,8 +450,12 @@ If you want the constructor to have mandatory arguments, you need to write it
 yourself.  For example, if for the AutoNew class above you insist on getting
 the name, you can define the constructor like this: >
 
-	def new(this.name, this.age = void, this.gender = void)
+	def new(this.name, this.age = v:none, this.gender = v:none)
 	enddef
+<							*E1328*
+Note that you cannot use another default value than "v:none" here.  If you
+want to initialize the object members, do it where they are declared.  This
+way you only need to look in one place for the default values.
 
 
 Multiple constructors ~

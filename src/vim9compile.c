@@ -2195,8 +2195,13 @@ push_default_value(
  * Return "arg" if it does not look like a variable list.
  */
     static char_u *
-compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
+compile_assignment(
+	char_u	    *arg_start,
+	exarg_T	    *eap,
+	cmdidx_T    cmdidx,
+	cctx_T	    *cctx)
 {
+    char_u	*arg = arg_start;
     char_u	*var_start;
     char_u	*p;
     char_u	*end = arg;
@@ -2206,6 +2211,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     int		semicolon = 0;
     int		did_generate_slice = FALSE;
     garray_T	*instr = &cctx->ctx_instr;
+    int		jump_instr_idx = instr->ga_len;
     char_u	*op;
     int		oplen = 0;
     int		heredoc = FALSE;
@@ -2215,6 +2221,23 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     int		is_decl = is_decl_command(cmdidx);
     lhs_T	lhs;
     long	start_lnum = SOURCING_LNUM;
+
+    int		has_arg_is_set_prefix = STRNCMP(arg, "ifargisset ", 11) == 0;
+    if (has_arg_is_set_prefix)
+    {
+	arg += 11;
+	int def_idx = getdigits(&arg);
+	arg = skipwhite(arg);
+
+	// Use a JUMP_IF_ARG_NOT_SET instruction to skip if the value was not
+	// given and the default value is "v:none".
+	int off = STACK_FRAME_SIZE + (cctx->ctx_ufunc->uf_va_name != NULL
+								      ? 1 : 0);
+	int count = cctx->ctx_ufunc->uf_def_args.ga_len;
+	if (generate_JUMP_IF_ARG(cctx, ISN_JUMP_IF_ARG_NOT_SET,
+						def_idx - count - off) == FAIL)
+	    goto theend;
+    }
 
     // Skip over the "varname" or "[varname, varname]" to get to any "=".
     p = skip_var_list(arg, TRUE, &var_count, &semicolon, TRUE);
@@ -2636,6 +2659,13 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	if (var_idx + 1 < var_count)
 	    var_start = skipwhite(lhs.lhs_end + 1);
+
+	if (has_arg_is_set_prefix)
+	{
+	    // set instruction index in JUMP_IF_ARG_SET to here
+	    isn_T *isn = ((isn_T *)instr->ga_data) + jump_instr_idx;
+	    isn->isn_arg.jumparg.jump_where = instr->ga_len;
+	}
     }
 
     // For "[var, var] = expr" drop the "expr" value.
@@ -2711,9 +2741,9 @@ may_compile_assignment(exarg_T *eap, char_u **line, cctx_T *cctx)
 	}
     }
 
-    if (*eap->cmd == '[')
+    // might be "[var, var] = expr" or "ifargisset this.member = expr"
+    if (*eap->cmd == '[' || STRNCMP(eap->cmd, "ifargisset ", 11) == 0)
     {
-	// might be "[var, var] = expr"
 	*line = compile_assignment(eap->cmd, eap, CMD_SIZE, cctx);
 	if (*line == NULL)
 	    return FAIL;
@@ -2994,7 +3024,6 @@ compile_def_function(
 	int	count = ufunc->uf_def_args.ga_len;
 	int	first_def_arg = ufunc->uf_args.ga_len - count;
 	int	i;
-	char_u	*arg;
 	int	off = STACK_FRAME_SIZE + (ufunc->uf_va_name != NULL ? 1 : 0);
 	int	did_set_arg_type = FALSE;
 
@@ -3002,23 +3031,27 @@ compile_def_function(
 	SOURCING_LNUM = 0;  // line number unknown
 	for (i = 0; i < count; ++i)
 	{
+	    char_u *arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
+	    if (STRCMP(arg, "v:none") == 0)
+		// "arg = v:none" means the argument is optional without
+		// setting a value when the argument is missing.
+		continue;
+
 	    type_T	*val_type;
 	    int		arg_idx = first_def_arg + i;
 	    where_T	where = WHERE_INIT;
-	    int		r;
 	    int		jump_instr_idx = instr->ga_len;
 	    isn_T	*isn;
 
 	    // Use a JUMP_IF_ARG_SET instruction to skip if the value was given.
-	    if (generate_JUMP_IF_ARG_SET(&cctx, i - count - off) == FAIL)
+	    if (generate_JUMP_IF_ARG(&cctx, ISN_JUMP_IF_ARG_SET,
+						      i - count - off) == FAIL)
 		goto erret;
 
 	    // Make sure later arguments are not found.
 	    ufunc->uf_args_visible = arg_idx;
 
-	    arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
-	    r = compile_expr0(&arg, &cctx);
-
+	    int r = compile_expr0(&arg, &cctx);
 	    if (r == FAIL)
 		goto erret;
 

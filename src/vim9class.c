@@ -125,43 +125,74 @@ ex_class(exarg_T *eap)
 	    char_u *varname_end = to_name_end(varname, FALSE);
 
 	    char_u *colon = skipwhite(varname_end);
-	    // TODO: accept initialization and figure out type from it
-	    if (*colon != ':')
+	    char_u *type_arg = colon;
+	    type_T *type = NULL;
+	    if (*colon == ':')
+	    {
+		if (VIM_ISWHITE(*varname_end))
+		{
+		    semsg(_(e_no_white_space_allowed_before_colon_str),
+								      varname);
+		    break;
+		}
+		if (!VIM_ISWHITE(colon[1]))
+		{
+		    semsg(_(e_white_space_required_after_str_str), ":",
+								      varname);
+		    break;
+		}
+		type_arg = skipwhite(colon + 1);
+		type = parse_type(&type_arg, &type_list, TRUE);
+		if (type == NULL)
+		    break;
+	    }
+
+	    char_u *expr_start = skipwhite(type_arg);
+	    char_u *expr_end = expr_start;
+	    if (type == NULL && *expr_start != '=')
 	    {
 		emsg(_(e_type_or_initialization_required));
 		break;
 	    }
-	    if (VIM_ISWHITE(*varname_end))
-	    {
-		semsg(_(e_no_white_space_allowed_before_colon_str), varname);
-		break;
-	    }
-	    if (!VIM_ISWHITE(colon[1]))
-	    {
-		semsg(_(e_white_space_required_after_str_str), ":", varname);
-		break;
-	    }
 
-	    char_u *type_arg = skipwhite(colon + 1);
-	    type_T *type = parse_type(&type_arg, &type_list, TRUE);
-	    if (type == NULL)
-		break;
-
-	    char_u *expr_start = skipwhite(type_arg);
-	    if (*expr_start == '=' && (!VIM_ISWHITE(expr_start[-1])
-					       || !VIM_ISWHITE(expr_start[1])))
+	    if (*expr_start == '=')
 	    {
-		semsg(_(e_white_space_required_before_and_after_str_at_str),
+		if (!VIM_ISWHITE(expr_start[-1]) || !VIM_ISWHITE(expr_start[1]))
+		{
+		    semsg(_(e_white_space_required_before_and_after_str_at_str),
 								"=", type_arg);
-		break;
-	    }
-	    expr_start = skipwhite(expr_start + 1);
+		    break;
+		}
+		expr_start = skipwhite(expr_start + 1);
 
-	    char_u *expr_end = expr_start;
-	    evalarg_T	evalarg;
-	    init_evalarg(&evalarg);
-	    skip_expr(&expr_end, &evalarg);
-	    clear_evalarg(&evalarg, NULL);
+		expr_end = expr_start;
+		evalarg_T evalarg;
+		fill_evalarg_from_eap(&evalarg, eap, FALSE);
+		skip_expr(&expr_end, &evalarg);
+
+		if (type == NULL)
+		{
+		    // No type specified, use the type of the initializer.
+		    typval_T tv;
+		    tv.v_type = VAR_UNKNOWN;
+		    char_u *expr = expr_start;
+		    int res = eval0(expr, &tv, eap, &evalarg);
+
+		    if (res == OK)
+			type = typval2type(&tv, get_copyID(), &type_list,
+							       TVTT_DO_MEMBER);
+		    if (type == NULL)
+		    {
+			semsg(_(e_cannot_get_object_member_type_from_initializer_str),
+				expr_start);
+			clear_evalarg(&evalarg, NULL);
+			break;
+		    }
+		}
+		clear_evalarg(&evalarg, NULL);
+	    }
+	    if (!valid_declaration_type(type))
+		break;
 
 	    if (ga_grow(&objmembers, 1) == FAIL)
 		break;
@@ -269,6 +300,7 @@ ex_class(exarg_T *eap)
 		ga_concat(&fga, (char_u *)"this.");
 		objmember_T *m = cl->class_obj_members + i;
 		ga_concat(&fga, (char_u *)m->om_name);
+		ga_concat(&fga, (char_u *)" = v:none");
 	    }
 	    ga_concat(&fga, (char_u *)")\nenddef\n");
 	    ga_append(&fga, NUL);
