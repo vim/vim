@@ -192,9 +192,6 @@ func Test_windows_console_key_event()
   for [kcodes, kstr] in test_oem_keys
     call SendKeys(kcodes)
     let ch = getcharstr(0)
-    if ch == ''
-      throw 'Skipped: The MS-Windows console input buffer was empty.'
-    endif
     call assert_equal($"{kstr}", $"{ch}")
     let mod_mask = getcharmod()
     if kcodes[0] == VK.SHIFT
@@ -210,9 +207,6 @@ func Test_windows_console_key_event()
   for kc in range(48, 57)
     call SendKeys([kc])
     let ch = getcharstr(0)
-    if ch == ''
-      throw 'Skipped: The MS-Windows console input buffer was empty.'
-    endif
     call assert_equal(nr2char(kc), ch)
   endfor
 
@@ -227,9 +221,6 @@ func Test_windows_console_key_event()
   for kc in range(65, 90)
     call SendKeys([kc])
     let ch = getcharstr(0)
-    if ch == ''
-      throw 'Skipped: The MS-Windows console input buffer was empty.'
-    endif
     call assert_equal(nr2char(kc + 32), ch)
   endfor
 
@@ -238,9 +229,6 @@ func Test_windows_console_key_event()
   for kc in range(65, 90)
     call SendKeys([VK.SHIFT, kc])
     let ch = getcharstr(0)
-    if ch == ''
-      throw 'Skipped: The MS-Windows console input buffer was empty.'
-    endif
     call assert_equal(nr2char(kc), ch)
   endfor
 
@@ -250,9 +238,6 @@ func Test_windows_console_key_event()
   for kc in range(65, 90)
     call SendKeys([VK.CONTROL, kc])
     let ch = getcharstr(0)
-    if ch == ''
-      throw 'Skipped: The MS-Windows console input buffer was empty.'
-    endif
     call assert_equal(nr2char(kc - 64), ch)
   endfor
 
