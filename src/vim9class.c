@@ -168,7 +168,7 @@ ex_class(exarg_T *eap)
 		expr_end = expr_start;
 		evalarg_T evalarg;
 		fill_evalarg_from_eap(&evalarg, eap, FALSE);
-		skip_expr(&expr_end, &evalarg);
+		skip_expr(&expr_end, NULL);
 
 		if (type == NULL)
 		{
@@ -255,9 +255,10 @@ ex_class(exarg_T *eap)
     }
     vim_free(theline);
 
+    class_T *cl = NULL;
     if (success)
     {
-	class_T *cl = ALLOC_CLEAR_ONE(class_T);
+	cl = ALLOC_CLEAR_ONE(class_T);
 	if (cl == NULL)
 	    goto cleanup;
 	cl->class_refcount = 1;
@@ -269,12 +270,7 @@ ex_class(exarg_T *eap)
 				  : ALLOC_MULT(objmember_T, objmembers.ga_len);
 	if (cl->class_name == NULL
 		|| (objmembers.ga_len > 0 && cl->class_obj_members == NULL))
-	{
-	    vim_free(cl->class_name);
-	    vim_free(cl->class_obj_members);
-	    vim_free(cl);
 	    goto cleanup;
-	}
 	mch_memmove(cl->class_obj_members, objmembers.ga_data,
 				      sizeof(objmember_T) * objmembers.ga_len);
 	vim_free(objmembers.ga_data);
@@ -338,13 +334,7 @@ ex_class(exarg_T *eap)
 	cl->class_obj_method_count = objmethods.ga_len;
 	cl->class_obj_methods = ALLOC_MULT(ufunc_T *, objmethods.ga_len);
 	if (cl->class_obj_methods == NULL)
-	{
-	    vim_free(cl->class_name);
-	    vim_free(cl->class_obj_members);
-	    vim_free(cl->class_obj_methods);
-	    vim_free(cl);
 	    goto cleanup;
-	}
 	mch_memmove(cl->class_obj_methods, objmethods.ga_data,
 					sizeof(ufunc_T *) * objmethods.ga_len);
 	vim_free(objmethods.ga_data);
@@ -382,6 +372,14 @@ ex_class(exarg_T *eap)
     }
 
 cleanup:
+    if (cl != NULL)
+    {
+	vim_free(cl->class_name);
+	vim_free(cl->class_obj_members);
+	vim_free(cl->class_obj_methods);
+	vim_free(cl);
+    }
+
     for (int i = 0; i < objmembers.ga_len; ++i)
     {
 	objmember_T *m = ((objmember_T *)objmembers.ga_data) + i;
@@ -591,19 +589,16 @@ find_class_func(char_u **arg)
     if (eval_variable(name, len, 0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
 	return NULL;
     if (tv.v_type != VAR_CLASS && tv.v_type != VAR_OBJECT)
-    {
-	clear_tv(&tv);
-	return NULL;
-    }
+	goto fail_after_eval;
 
     class_T *cl = tv.v_type == VAR_CLASS ? tv.vval.v_class
 						 : tv.vval.v_object->obj_class;
     if (cl == NULL)
-	return NULL;
+	goto fail_after_eval;
     char_u *fname = name_end + 1;
     char_u *fname_end = find_name_end(fname, NULL, NULL, FNE_CHECK_START);
     if (fname_end == fname)
-	return NULL;
+	goto fail_after_eval;
     len = fname_end - fname;
 
     for (int i = 0; i < cl->class_obj_method_count; ++i)
@@ -613,9 +608,14 @@ find_class_func(char_u **arg)
 	// uf_name[] only being 4 characters.
 	char_u *ufname = (char_u *)fp->uf_name;
 	if (STRNCMP(fname, ufname, len) == 0 && ufname[len] == NUL)
+	{
+	    clear_tv(&tv);
 	    return fp;
+	}
     }
 
+fail_after_eval:
+    clear_tv(&tv);
     return NULL;
 }
 
