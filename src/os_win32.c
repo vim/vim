@@ -1276,7 +1276,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 
 	ir->EventType = KEY_EVENT;
 	KEY_EVENT_RECORD ker;
-	SecureZeroMemory(&ker, sizeof(ker));
+	ZeroMemory(&ker, sizeof(ker));
 	ker.bKeyDown = STRICMP(event_flags, "keydown") == 0;
 	ker.wRepeatCount = 1;
 	ker.wVirtualScanCode = 0;
@@ -1818,7 +1818,7 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
 
     ir->EventType = MOUSE_EVENT;
     MOUSE_EVENT_RECORD mer;
-    SecureZeroMemory(&mer, sizeof(mer));
+    ZeroMemory(&mer, sizeof(mer));
     mer.dwMousePosition.X  = col;
     mer.dwMousePosition.Y  = row;
 
@@ -5770,7 +5770,7 @@ mch_call_shell(
 	    INT			n_show_cmd = SW_SHOWNORMAL;
 	    char_u		*p;
 
-	    SecureZeroMemory(&si, sizeof(si));
+	    ZeroMemory(&si, sizeof(si));
 	    si.cb = sizeof(si);
 	    si.lpReserved = NULL;
 	    si.lpDesktop = NULL;
@@ -6207,8 +6207,8 @@ mch_job_start(char *cmd, job_T *job, jobopt_T *options)
     if (options->jo_env != NULL)
 	win32_build_env(options->jo_env, &ga, FALSE);
 
-    SecureZeroMemory(&pi, sizeof(pi));
-    SecureZeroMemory(&si, sizeof(si));
+    ZeroMemory(&pi, sizeof(pi));
+    ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     si.dwFlags |= STARTF_USESHOWWINDOW;
     si.wShowWindow = SW_HIDE;
@@ -8175,7 +8175,7 @@ copy_infostreams(char_u *from, char_u *to)
 	    {
 		// Get the header to find the length of the stream name.  If
 		// the "readcount" is zero we have done all info streams.
-		SecureZeroMemory(&sid, sizeof(WIN32_STREAM_ID));
+		ZeroMemory(&sid, sizeof(WIN32_STREAM_ID));
 		headersize = (int)((char *)&sid.cStreamName - (char *)&sid.dwStreamId);
 		if (!BackupRead(sh, (LPBYTE)&sid, headersize,
 					   &readcount, FALSE, FALSE, &context)
