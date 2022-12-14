@@ -60,6 +60,8 @@ get_sound_callback(typval_T *arg)
 	soundcb->snd_next = first_callback;
 	first_callback = soundcb;
 	set_callback(&soundcb->snd_callback, &callback);
+	if (callback.cb_free_name)
+	    vim_free(callback.cb_name);
     }
     return soundcb;
 }

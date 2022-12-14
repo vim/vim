@@ -288,6 +288,20 @@ func Test_deletebufline_select_mode()
   bwipe!
 endfunc
 
+func Test_deletebufline_popup_window()
+  let popupID = popup_create('foo', {})
+  let bufnr = winbufnr(popupID)
+
+  " Check that deletebufline() brings us back to the same window.
+  new
+  let winid_before = win_getid()
+  call deletebufline(bufnr, 1, '$')
+  call assert_equal(winid_before, win_getid())
+  bwipe
+
+  call popup_close(popupID)
+endfunc
+
 func Test_setbufline_startup_nofile()
   let before =<< trim [CODE]
     set shortmess+=F

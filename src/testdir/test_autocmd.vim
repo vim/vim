@@ -393,8 +393,8 @@ func Test_WinScrolled()
 
   let event = readfile('XscrollEvent')[0]->json_decode()
   call assert_equal({
-        \ 'all': {'leftcol': 1, 'topline': 0, 'width': 0, 'height': 0, 'skipcol': 0},
-        \ '1000': {'leftcol': -1, 'topline': 0, 'width': 0, 'height': 0, 'skipcol': 0}
+        \ 'all': {'leftcol': 1, 'topline': 0, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1000': {'leftcol': -1, 'topline': 0, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0}
         \ }, event)
 
   " Scroll up/down in Normal mode.
@@ -403,8 +403,8 @@ func Test_WinScrolled()
 
   let event = readfile('XscrollEvent')[0]->json_decode()
   call assert_equal({
-        \ 'all': {'leftcol': 0, 'topline': 1, 'width': 0, 'height': 0, 'skipcol': 0},
-        \ '1000': {'leftcol': 0, 'topline': -1, 'width': 0, 'height': 0, 'skipcol': 0}
+        \ 'all': {'leftcol': 0, 'topline': 1, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1000': {'leftcol': 0, 'topline': -1, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0}
         \ }, event)
 
   " Scroll up/down in Insert mode.
@@ -414,8 +414,8 @@ func Test_WinScrolled()
 
   let event = readfile('XscrollEvent')[0]->json_decode()
   call assert_equal({
-        \ 'all': {'leftcol': 0, 'topline': 1, 'width': 0, 'height': 0, 'skipcol': 0},
-        \ '1000': {'leftcol': 0, 'topline': -1, 'width': 0, 'height': 0, 'skipcol': 0}
+        \ 'all': {'leftcol': 0, 'topline': 1, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1000': {'leftcol': 0, 'topline': -1, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0}
         \ }, event)
 
   " Scroll the window horizontally to focus the last letter of the third line
@@ -427,8 +427,8 @@ func Test_WinScrolled()
 
   let event = readfile('XscrollEvent')[0]->json_decode()
   call assert_equal({
-        \ 'all': {'leftcol': 5, 'topline': 0, 'width': 0, 'height': 0, 'skipcol': 0},
-        \ '1000': {'leftcol': -5, 'topline': 0, 'width': 0, 'height': 0, 'skipcol': 0}
+        \ 'all': {'leftcol': 5, 'topline': 0, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1000': {'leftcol': -5, 'topline': 0, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0}
         \ }, event)
 
   " Ensure the command was triggered for the specified window ID.
@@ -578,6 +578,68 @@ func Test_WinScrolled_long_wrapped()
   call term_sendkeys(buf, '$')
   call term_sendkeys(buf, ":echo g:scrolled\<CR>")
   call WaitForAssert({-> assert_match('^3 ', term_getline(buf, 6))}, 1000)
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_WinScrolled_diff()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    set diffopt+=foldcolumn:0
+    call setline(1, ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'])
+    vnew
+    call setline(1, ['d', 'e', 'f', 'g', 'h', 'i'])
+    windo diffthis
+    func WriteScrollEvent()
+      call writefile([json_encode(v:event)], 'XscrollEvent')
+    endfunc
+    au WinScrolled * call WriteScrollEvent()
+  END
+  call writefile(lines, 'Xtest_winscrolled_diff', 'D')
+  let buf = RunVimInTerminal('-S Xtest_winscrolled_diff', {'rows': 8})
+
+  call term_sendkeys(buf, "\<C-E>")
+  call WaitForAssert({-> assert_match('^d', term_getline(buf, 3))}, 1000)
+
+  let event = readfile('XscrollEvent')[0]->json_decode()
+  call assert_equal({
+        \ 'all': {'leftcol': 0, 'topline': 1, 'topfill': 1, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1000': {'leftcol': 0, 'topline': 1, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1001': {'leftcol': 0, 'topline': 0, 'topfill': -1, 'width': 0, 'height': 0, 'skipcol': 0}
+        \ }, event)
+
+  call term_sendkeys(buf, "2\<C-E>")
+  call WaitForAssert({-> assert_match('^f', term_getline(buf, 3))}, 1000)
+
+  let event = readfile('XscrollEvent')[0]->json_decode()
+  call assert_equal({
+        \ 'all': {'leftcol': 0, 'topline': 2, 'topfill': 2, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1000': {'leftcol': 0, 'topline': 2, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1001': {'leftcol': 0, 'topline': 0, 'topfill': -2, 'width': 0, 'height': 0, 'skipcol': 0}
+        \ }, event)
+
+  call term_sendkeys(buf, "\<C-E>")
+  call WaitForAssert({-> assert_match('^g', term_getline(buf, 3))}, 1000)
+
+  let event = readfile('XscrollEvent')[0]->json_decode()
+  call assert_equal({
+        \ 'all': {'leftcol': 0, 'topline': 2, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1000': {'leftcol': 0, 'topline': 1, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1001': {'leftcol': 0, 'topline': 1, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0}
+        \ }, event)
+
+  call term_sendkeys(buf, "2\<C-Y>")
+  call WaitForAssert({-> assert_match('^e', term_getline(buf, 3))}, 1000)
+
+  let event = readfile('XscrollEvent')[0]->json_decode()
+  call assert_equal({
+        \ 'all': {'leftcol': 0, 'topline': 3, 'topfill': 1, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1000': {'leftcol': 0, 'topline': -2, 'topfill': 0, 'width': 0, 'height': 0, 'skipcol': 0},
+        \ '1001': {'leftcol': 0, 'topline': -1, 'topfill': 1, 'width': 0, 'height': 0, 'skipcol': 0}
+        \ }, event)
+
+  call StopVimInTerminal(buf)
 endfunc
 
 func Test_WinClosed()
@@ -1846,6 +1908,15 @@ func Test_Cmdline()
   call assert_equal(':', g:entered)
   au! CmdlineChanged
 
+  let g:log = []
+  cnoremap <F1> <Cmd>call setcmdline('ls')<CR>
+  autocmd CmdlineChanged : let g:log += [getcmdline()]
+  call feedkeys(":\<F1>", 'xt')
+  call assert_equal(['ls'], g:log)
+  unlet g:log
+  au! CmdlineChanged
+  cunmap <F1>
+
   au! CmdlineEnter : let g:entered = expand('<afile>')
   au! CmdlineLeave : let g:left = expand('<afile>')
   let g:entered = 0
@@ -2322,6 +2393,28 @@ func Test_autocmd_user_clear_group()
   call term_sendkeys(buf, ":autocmd User\<CR>")
   call TermWait(buf, 50)
   call term_sendkeys(buf, "G")
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_autocmd_CmdlineLeave_unlet()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      for i in range(1, 999)
+        exe 'let g:var' .. i '=' i
+      endfor
+      au CmdlineLeave : call timer_start(0, {-> execute('unlet g:var990')})
+  END
+  call writefile(lines, 'XleaveUnlet', 'D')
+  let buf = RunVimInTerminal('-S XleaveUnlet', {'rows': 10})
+
+  " this was using freed memory
+  call term_sendkeys(buf, ":let g:\<CR>")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "G")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")  " for the hit-enter prompt
 
   call StopVimInTerminal(buf)
 endfunc
@@ -3140,7 +3233,7 @@ func Test_autocmd_FileReadCmd()
         \ 'v:cmdarg =  ++ff=mac',
         \ 'v:cmdarg =  ++enc=utf-8'], getline(1, '$'))
 
-  close!
+  bwipe!
   augroup FileReadCmdTest
     au!
   augroup END
@@ -4045,5 +4138,28 @@ func Test_autocmd_split_dummy()
   bwipe! Xerr
   call delete('Xerr')
 endfunc
+
+" This was crashing because there was only one window to execute autocommands
+" in.
+func Test_autocmd_nested_setbufvar()
+  CheckFeature python3
+
+  set hidden
+  edit Xaaa
+  edit Xbbb
+  call setline(1, 'bar')
+  enew
+  au BufWriteCmd Xbbb ++nested call setbufvar('Xaaa', '&ft', 'foo') | bw! Xaaa
+  au FileType foo call py3eval('vim.current.buffer.options["cindent"]')
+  wall
+
+  au! BufWriteCmd
+  au! FileType foo
+  set nohidden
+  call delete('Xaaa')
+  call delete('Xbbb')
+  %bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

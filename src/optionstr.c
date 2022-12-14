@@ -142,7 +142,7 @@ didset_string_options(void)
  * "newval"	the new value
  */
     void
-trigger_optionsset_string(
+trigger_optionset_string(
 	int	opt_idx,
 	int	opt_flags,
 	char_u  *oldval,
@@ -542,7 +542,7 @@ set_string_option(
 #if defined(FEAT_EVAL)
 	// call autocommand after handling side effects
 	if (errmsg == NULL)
-	    trigger_optionsset_string(opt_idx, opt_flags,
+	    trigger_optionset_string(opt_idx, opt_flags,
 				   saved_oldval, saved_oldval_l,
 				   saved_oldval_g, saved_newval);
 	vim_free(saved_oldval);

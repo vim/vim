@@ -1208,7 +1208,7 @@ ml_recover(int checkext)
 	directly = FALSE;
 
 	// count the number of matching swap files
-	len = recover_names(fname, FALSE, 0, NULL);
+	len = recover_names(fname, FALSE, NULL, 0, NULL);
 	if (len == 0)		    // no swap files found
 	{
 	    semsg(_(e_no_swap_file_found_for_str), fname);
@@ -1219,7 +1219,7 @@ ml_recover(int checkext)
 	else			    // several swap files found, choose
 	{
 	    // list the names of the swap files
-	    (void)recover_names(fname, TRUE, 0, NULL);
+	    (void)recover_names(fname, TRUE, NULL, 0, NULL);
 	    msg_putchar('\n');
 	    msg_puts(_("Enter number of swap file to use (0 to quit): "));
 	    i = get_number(FALSE, NULL);
@@ -1227,7 +1227,7 @@ ml_recover(int checkext)
 		goto theend;
 	}
 	// get the swap file name that will be used
-	(void)recover_names(fname, FALSE, i, &fname_used);
+	(void)recover_names(fname, FALSE, NULL, i, &fname_used);
     }
     if (fname_used == NULL)
 	goto theend;			// out of memory
@@ -1801,12 +1801,14 @@ theend:
  * - list the swap files for "vim -r"
  * - count the number of swap files when recovering
  * - list the swap files when recovering
+ * - list the swap files for swapfilelist()
  * - find the name of the n'th swap file when recovering
  */
     int
 recover_names(
     char_u	*fname,		// base for swap file name
-    int		list,		// when TRUE, list the swap file names
+    int		do_list,	// when TRUE, list the swap file names
+    list_T	*ret_list UNUSED, // when not NULL add file names to it
     int		nr,		// when non-zero, return nr'th swap file name
     char_u	**fname_out)	// result when "nr" > 0
 {
@@ -1817,7 +1819,6 @@ recover_names(
     int		num_files;
     int		file_count = 0;
     char_u	**files;
-    int		i;
     char_u	*dirp;
     char_u	*dir_name;
     char_u	*fname_res = NULL;
@@ -1837,7 +1838,7 @@ recover_names(
 	    fname_res = fname;
     }
 
-    if (list)
+    if (do_list)
     {
 	// use msg() to start the scrolling properly
 	msg(_("Swap files found:"));
@@ -1938,7 +1939,7 @@ recover_names(
 	}
 
 	// check for out-of-memory
-	for (i = 0; i < num_names; ++i)
+	for (int i = 0; i < num_names; ++i)
 	{
 	    if (names[i] == NULL)
 	    {
@@ -1987,12 +1988,14 @@ recover_names(
 	}
 
 	/*
-	 * remove swapfile name of the current buffer, it must be ignored
+	 * Remove swapfile name of the current buffer, it must be ignored.
+	 * But keep it for swapfilelist().
 	 */
 	if (curbuf->b_ml.ml_mfp != NULL
-			       && (p = curbuf->b_ml.ml_mfp->mf_fname) != NULL)
+			       && (p = curbuf->b_ml.ml_mfp->mf_fname) != NULL
+			       && ret_list == NULL)
 	{
-	    for (i = 0; i < num_files; ++i)
+	    for (int i = 0; i < num_files; ++i)
 		// Do not expand wildcards, on windows would try to expand
 		// "%tmp%" in "%tmp%file".
 		if (fullpathcmp(p, files[i], TRUE, FALSE) & FPC_SAME)
@@ -2018,7 +2021,7 @@ recover_names(
 		dirp = (char_u *)"";		    // stop searching
 	    }
 	}
-	else if (list)
+	else if (do_list)
 	{
 	    if (dir_name[0] == '.' && dir_name[1] == NUL)
 	    {
@@ -2036,7 +2039,7 @@ recover_names(
 
 	    if (num_files)
 	    {
-		for (i = 0; i < num_files; ++i)
+		for (int i = 0; i < num_files; ++i)
 		{
 		    // print the swap file name
 		    msg_outnum((long)++file_count);
@@ -2050,10 +2053,24 @@ recover_names(
 		msg_puts(_("      -- none --\n"));
 	    out_flush();
 	}
+#ifdef FEAT_EVAL
+	else if (ret_list != NULL)
+	{
+	    for (int i = 0; i < num_files; ++i)
+	    {
+		char_u *name = concat_fnames(dir_name, files[i], TRUE);
+		if (name != NULL)
+		{
+		    list_append_string(ret_list, name, -1);
+		    vim_free(name);
+		}
+	    }
+	}
+#endif
 	else
 	    file_count += num_files;
 
-	for (i = 0; i < num_names; ++i)
+	for (int i = 0; i < num_names; ++i)
 	    vim_free(names[i]);
 	if (num_files > 0)
 	    FreeWild(num_files, files);

@@ -4,7 +4,7 @@ vim9script
 # Invoked from "scripts.vim" in 'runtimepath'
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Feb 13
+# Last Change:	2022 Nov 24
 
 export def DetectFiletype()
   var line1 = getline(1)
@@ -53,8 +53,8 @@ def DetectFromHashBang(firstline: string)
     name = 'wish'
   endif
 
-  # Bourne-like shell scripts: bash bash2 ksh ksh93 sh
-  if name =~ '^\(bash\d*\|\|ksh\d*\|sh\)\>'
+    # Bourne-like shell scripts: bash bash2 dash ksh ksh93 sh
+  if name =~ '^\(bash\d*\|dash\|ksh\d*\|sh\)\>'
     call dist#ft#SetFileTypeSH(line1)
 
     # csh scripts

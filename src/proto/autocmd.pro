@@ -2,7 +2,9 @@
 void aubuflocal_remove(buf_T *buf);
 int au_has_group(char_u *name);
 void do_augroup(char_u *arg, int del_group);
+void autocmd_init(void);
 void free_all_autocmds(void);
+int is_aucmd_win(win_T *win);
 int check_ei(void);
 char_u *au_event_disable(char *what);
 void au_event_restore(char_u *old_ei);

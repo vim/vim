@@ -134,7 +134,7 @@ def ActionList()
   endif
   sort(terms)
 
-  var items = ['protocol', 'version', 'status', 'resource']
+  var items = ['protocol', 'version', 'kitty', 'modkeys']
 	      + key_entries->copy()->map((_, v) => v[1])
 
   # For each terminal compute the needed width, add two.
@@ -194,16 +194,17 @@ def DoTerm(name: string)
 			])
   echo "\n"
   &t_TE = "\<Esc>[>4;m"
-  var proto_name = 'none'
+  var proto_name = 'unknown'
   if proto == 1
-    &t_TI = ""
+    # Request the XTQMODKEYS value and request the kitty keyboard protocol status.
+    &t_TI = "\<Esc>[?4m" .. "\<Esc>[?u"
+    proto_name = 'none'
   elseif proto == 2
-    # Enable modifyOtherKeys level 2
-    # Request the resource value: DCS + Q modifyOtherKeys ST
-    &t_TI = "\<Esc>[>4;2m" .. "\<Esc>P+Q6d6f646966794f746865724b657973\<Esc>\\"
+    # Enable modifyOtherKeys level 2 and request the XTQMODKEYS value.
+    &t_TI = "\<Esc>[>4;2m" .. "\<Esc>[?4m"
     proto_name = 'mok2'
   elseif proto == 3
-    # Enable Kitty keyboard protocol and request the status
+    # Enable Kitty keyboard protocol and request the status.
     &t_TI = "\<Esc>[>1u" .. "\<Esc>[?u"
     proto_name = 'kitty'
   else
@@ -218,10 +219,10 @@ def DoTerm(name: string)
   # Pattern that matches the line with the version response.
   const version_pattern = "\<Esc>\\[>\\d\\+;\\d\\+;\\d*c"
 
-  # Pattern that matches the resource value response:
-  #    DCS 1 + R Pt ST    valid
-  #    DCS 0 + R Pt ST    invalid
-  const resource_pattern = "\<Esc>P[01]+R.*\<Esc>\\\\"
+  # Pattern that matches the XTQMODKEYS response:
+  #    CSI > 4;Pv m
+  # where Pv indicates the modifyOtherKeys level
+  const modkeys_pattern = "\<Esc>\\[>4;\\dm"
 
   # Pattern that matches the line with the status.  Currently what terminals
   # return for the Kitty keyboard protocol.
@@ -263,8 +264,8 @@ def DoTerm(name: string)
   endif
   keycodes[name]['protocol'] = proto_name
   keycodes[name]['version'] = ''
-  keycodes[name]['status'] = ''
-  keycodes[name]['resource'] = ''
+  keycodes[name]['kitty'] = ''
+  keycodes[name]['modkeys'] = ''
 
   # Check the log file for a status and the version response
   ch_logfile('', '')
@@ -275,16 +276,17 @@ def DoTerm(name: string)
     if line =~ 'raw key input'
       var code = substitute(line, '.*raw key input: "\([^"]*\).*', '\1', '')
 
-      # Check for resource value response
-      if code =~ resource_pattern
-	var resource = substitute(code, '.*\(' .. resource_pattern .. '\).*', '\1', '')
-	# use the value as the resource, "=30" means zero
-	resource = substitute(resource, '.*\(=\p\+\).*', '\1', '')
+      # Check for the XTQMODKEYS response.
+      if code =~ modkeys_pattern
+	var modkeys = substitute(code, '.*\(' .. modkeys_pattern .. '\).*', '\1', '')
+	# We could get the level out of the response, but showing the response
+	# itself provides more information.
+	# modkeys = substitute(modkeys, '.*4;\(\d\)m', '\1', '')
 
-	if keycodes[name]['resource'] != ''
-	  echomsg 'Another resource found after ' .. keycodes[name]['resource']
+	if keycodes[name]['modkeys'] != ''
+	  echomsg 'Another modkeys found after ' .. keycodes[name]['modkeys']
 	endif
-	keycodes[name]['resource'] = resource
+	keycodes[name]['modkeys'] = modkeys
       endif
 
       # Check for kitty keyboard protocol status
@@ -293,10 +295,10 @@ def DoTerm(name: string)
 	# use the response itself as the status
 	status = Literal2hex(status)
 
-	if keycodes[name]['status'] != ''
-	  echomsg 'Another status found after ' .. keycodes[name]['status']
+	if keycodes[name]['kitty'] != ''
+	  echomsg 'Another status found after ' .. keycodes[name]['kitty']
 	endif
-	keycodes[name]['status'] = status
+	keycodes[name]['kitty'] = status
       endif
 
       if code =~ version_pattern

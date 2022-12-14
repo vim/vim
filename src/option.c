@@ -1618,7 +1618,7 @@ do_set_string(
 
 #if defined(FEAT_EVAL)
     if (*errmsg == NULL)
-	trigger_optionsset_string(opt_idx, opt_flags, saved_origval,
+	trigger_optionset_string(opt_idx, opt_flags, saved_origval,
 			       saved_origval_l, saved_origval_g, saved_newval);
     vim_free(saved_origval);
     vim_free(saved_origval_l);
@@ -7370,6 +7370,8 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 
     free_callback(optcb);
     set_callback(optcb, &cb);
+    if (cb.cb_free_name)
+	vim_free(cb.cb_name);
     free_tv(tv);
 
     // when using Vim9 style "import.funcname" it needs to be expanded to

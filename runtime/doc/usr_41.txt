@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.0.  Last change: 2022 Nov 22
+*usr_41.txt*	For Vim version 9.0.  Last change: 2022 Dec 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1031,6 +1031,7 @@ Buffers, windows and the argument list:
 	getwininfo()		get a list with window information
 	getchangelist()		get a list of change list entries
 	getjumplist()		get a list of jump list entries
+	swapfilelist()		list of existing swap files in 'directory'
 	swapinfo()		information about a swap file
 	swapname()		get the swap file path of a buffer
 

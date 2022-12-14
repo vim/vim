@@ -150,11 +150,15 @@ buffer_ensure_loaded(buf_T *buf)
     {
 	aco_save_T	aco;
 
+	// Make sure the buffer is in a window.  If not then skip it.
 	aucmd_prepbuf(&aco, buf);
-	if (swap_exists_action != SEA_READONLY)
-	    swap_exists_action = SEA_NONE;
-	open_buffer(FALSE, NULL, 0);
-	aucmd_restbuf(&aco);
+	if (curbuf == buf)
+	{
+	    if (swap_exists_action != SEA_READONLY)
+		swap_exists_action = SEA_NONE;
+	    open_buffer(FALSE, NULL, 0);
+	    aucmd_restbuf(&aco);
+	}
     }
 }
 #endif
@@ -361,21 +365,26 @@ open_buffer(
 	{
 	    aco_save_T	aco;
 
-	    // Go to the buffer that was opened.
+	    // Go to the buffer that was opened, make sure it is in a window.
+	    // If not then skip it.
 	    aucmd_prepbuf(&aco, old_curbuf.br_buf);
-	    do_modelines(0);
-	    curbuf->b_flags &= ~(BF_CHECK_RO | BF_NEVERLOADED);
+	    if (curbuf == old_curbuf.br_buf)
+	    {
+		do_modelines(0);
+		curbuf->b_flags &= ~(BF_CHECK_RO | BF_NEVERLOADED);
 
-	    if ((flags & READ_NOWINENTER) == 0)
+		if ((flags & READ_NOWINENTER) == 0)
 #ifdef FEAT_EVAL
-		apply_autocmds_retval(EVENT_BUFWINENTER, NULL, NULL, FALSE,
-							      curbuf, &retval);
+		    apply_autocmds_retval(EVENT_BUFWINENTER, NULL, NULL,
+						       FALSE, curbuf, &retval);
 #else
-		apply_autocmds(EVENT_BUFWINENTER, NULL, NULL, FALSE, curbuf);
+		    apply_autocmds(EVENT_BUFWINENTER, NULL, NULL,
+								FALSE, curbuf);
 #endif
 
-	    // restore curwin/curbuf and a few other things
-	    aucmd_restbuf(&aco);
+		// restore curwin/curbuf and a few other things
+		aucmd_restbuf(&aco);
+	    }
 	}
     }
 
@@ -434,7 +443,7 @@ static hashtab_T buf_hashtab;
 buf_hashtab_add(buf_T *buf)
 {
     sprintf((char *)buf->b_key, "%x", buf->b_fnum);
-    if (hash_add(&buf_hashtab, buf->b_key) == FAIL)
+    if (hash_add(&buf_hashtab, buf->b_key, "create buffer") == FAIL)
 	emsg(_(e_buffer_cannot_be_registered));
 }
 
@@ -444,7 +453,7 @@ buf_hashtab_remove(buf_T *buf)
     hashitem_T *hi = hash_find(&buf_hashtab, buf->b_key);
 
     if (!HASHITEM_EMPTY(hi))
-	hash_remove(&buf_hashtab, hi);
+	hash_remove(&buf_hashtab, hi, "close buffer");
 }
 
 /*
@@ -925,7 +934,7 @@ free_buffer(buf_T *buf)
     free_buffer_stuff(buf, TRUE);
 #ifdef FEAT_EVAL
     // b:changedtick uses an item in buf_T, remove it now
-    dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di);
+    dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di, "free buffer");
     unref_var_dict(buf->b_vars);
     remove_listeners(buf);
 #endif
@@ -5942,8 +5951,14 @@ buf_contents_changed(buf_T *buf)
 	return TRUE;
     }
 
-    // set curwin/curbuf to buf and save a few things
+    // Set curwin/curbuf to buf and save a few things.
     aucmd_prepbuf(&aco, newbuf);
+    if (curbuf != newbuf)
+    {
+	// Failed to find a window for "newbuf".
+	wipe_buffer(newbuf, FALSE);
+	return TRUE;
+    }
 
     if (ml_open(curbuf) == OK
 	    && readfile(buf->b_ffname, buf->b_fname,

@@ -4519,6 +4519,36 @@ def Test_echo_uninit_variables()
   endif
 enddef
 
+def Test_free_type_before_use()
+  # this rather complicated script was freeing a type before using it
+  var lines =<< trim END
+      vim9script
+
+      def Scan(rel: list<dict<any>>): func(func(dict<any>))
+        return (Emit: func(dict<any>)) => {
+          for t in rel
+            Emit(t)
+          endfor
+        }
+      enddef
+
+      def Build(Cont: func(func(dict<any>))): list<dict<any>>
+        var rel: list<dict<any>> = []
+        Cont((t) => {
+            add(rel, t)
+        })
+        return rel
+      enddef
+
+      var R = [{A: 0}]
+      var result = Scan(R)->Build()
+      result = Scan(R)->Build()
+
+      assert_equal(R, result)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new

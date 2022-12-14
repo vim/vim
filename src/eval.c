@@ -295,7 +295,7 @@ eval_expr_typval(
 
 	    // Shortcut to call a compiled function with minimal overhead.
 	    r = call_def_function(partial->pt_func, argc, argv,
-					  DEF_USE_PT_ARGV, partial, fc, rettv);
+				    DEF_USE_PT_ARGV, partial, NULL, fc, rettv);
 	    if (fc_arg == NULL)
 		remove_funccal();
 	    if (r == FAIL)
@@ -1193,9 +1193,8 @@ get_lval(
     var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
-	int r = OK;
-
-	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT)
+	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT
+		      && lp->ll_tv->v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
@@ -1203,7 +1202,8 @@ get_lval(
 	}
 	if (lp->ll_tv->v_type != VAR_LIST
 		&& lp->ll_tv->v_type != VAR_DICT
-		&& lp->ll_tv->v_type != VAR_BLOB)
+		&& lp->ll_tv->v_type != VAR_BLOB
+		&& lp->ll_tv->v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		emsg(_(e_can_only_index_list_dictionary_or_blob));
@@ -1211,6 +1211,7 @@ get_lval(
 	}
 
 	// A NULL list/blob works like an empty list/blob, allocate one now.
+	int r = OK;
 	if (lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
 	    r = rettv_list_alloc(lp->ll_tv);
 	else if (lp->ll_tv->v_type == VAR_BLOB
@@ -1463,7 +1464,7 @@ get_lval(
 	    lp->ll_tv = NULL;
 	    break;
 	}
-	else
+	else if (lp->ll_tv->v_type == VAR_LIST)
 	{
 	    /*
 	     * Get the number and item for the only or first index of the List.
@@ -1508,6 +1509,11 @@ get_lval(
 
 	    lp->ll_tv = &lp->ll_li->li_tv;
 	}
+	else  // v_type == VAR_CLASS
+	{
+	    // TODO: check object members and methods if
+	    // "key" points name start, "p" to the end
+	}
     }
 
     clear_tv(&var1);
@@ -1548,7 +1554,7 @@ set_var_lval(
     {
 	cc = *endp;
 	*endp = NUL;
-	if (in_vim9script() && check_reserved_name(lp->ll_name) == FAIL)
+	if (in_vim9script() && check_reserved_name(lp->ll_name, NULL) == FAIL)
 	    return;
 
 	if (lp->ll_blob != NULL)
@@ -1724,6 +1730,8 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
 	    case VAR_INSTR:
+	    case VAR_CLASS:
+	    case VAR_OBJECT:
 		break;
 
 	    case VAR_BLOB:
@@ -3850,10 +3858,23 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    return OK;
 		}
 		break;
+	case 10: if (STRNCMP(s, "null_class", 10) == 0)
+		{
+		    rettv->v_type = VAR_CLASS;
+		    rettv->vval.v_class = NULL;
+		    return OK;
+		}
+		 break;
 	case 11: if (STRNCMP(s, "null_string", 11) == 0)
 		{
 		    rettv->v_type = VAR_STRING;
 		    rettv->vval.v_string = NULL;
+		    return OK;
+		}
+		if (STRNCMP(s, "null_object", 11) == 0)
+		{
+		    rettv->v_type = VAR_OBJECT;
+		    rettv->vval.v_object = NULL;
 		    return OK;
 		}
 		break;
@@ -4685,6 +4706,8 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    if (verbose)
 		emsg(_(e_cannot_index_special_variable));
 	    return FAIL;
@@ -4788,6 +4811,8 @@ eval_index_inner(
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    break; // not evaluating, skipping over subscript
 
 	case VAR_NUMBER:
@@ -5084,9 +5109,11 @@ garbage_collect(int testing)
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
 								  NULL, NULL);
-    if (aucmd_win != NULL)
-	abort = abort || set_ref_in_item(&aucmd_win->w_winvar.di_tv, copyID,
-								  NULL, NULL);
+    // window-local variables in autocmd windows
+    for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
+	if (aucmd_win[i].auc_win != NULL)
+	    abort = abort || set_ref_in_item(
+		    &aucmd_win[i].auc_win->w_winvar.di_tv, copyID, NULL, NULL);
 #ifdef FEAT_PROP_POPUP
     FOR_ALL_POPUPWINS(wp)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
@@ -5212,11 +5239,14 @@ free_unref_items(int copyID)
      * themselves yet, so that it is possible to decrement refcount counters
      */
 
-    // Go through the list of dicts and free items without the copyID.
+    // Go through the list of dicts and free items without this copyID.
     did_free |= dict_free_nonref(copyID);
 
-    // Go through the list of lists and free items without the copyID.
+    // Go through the list of lists and free items without this copyID.
     did_free |= list_free_nonref(copyID);
+
+    // Go through the list of objects and free items without this copyID.
+    did_free |= object_free_nonref(copyID);
 
 #ifdef FEAT_JOB_CHANNEL
     // Go through the list of jobs and free items without the copyID. This
@@ -5384,7 +5414,8 @@ set_ref_in_callback(callback_T *cb, int copyID)
 }
 
 /*
- * Mark all lists and dicts referenced through typval "tv" with "copyID".
+ * Mark all lists, dicts and other container types referenced through typval
+ * "tv" with "copyID".
  * "list_stack" is used to add lists to be marked.  Can be NULL.
  * "ht_stack" is used to add hashtabs to be marked.  Can be NULL.
  *
@@ -5399,162 +5430,214 @@ set_ref_in_item(
 {
     int		abort = FALSE;
 
-    if (tv->v_type == VAR_DICT)
+    switch (tv->v_type)
     {
-	dict_T	*dd = tv->vval.v_dict;
-
-	if (dd != NULL && dd->dv_copyID != copyID)
+	case VAR_DICT:
 	{
-	    // Didn't see this dict yet.
-	    dd->dv_copyID = copyID;
-	    if (ht_stack == NULL)
-	    {
-		abort = set_ref_in_ht(&dd->dv_hashtab, copyID, list_stack);
-	    }
-	    else
-	    {
-		ht_stack_T *newitem = ALLOC_ONE(ht_stack_T);
+	    dict_T	*dd = tv->vval.v_dict;
 
-		if (newitem == NULL)
-		    abort = TRUE;
+	    if (dd != NULL && dd->dv_copyID != copyID)
+	    {
+		// Didn't see this dict yet.
+		dd->dv_copyID = copyID;
+		if (ht_stack == NULL)
+		{
+		    abort = set_ref_in_ht(&dd->dv_hashtab, copyID, list_stack);
+		}
 		else
 		{
-		    newitem->ht = &dd->dv_hashtab;
-		    newitem->prev = *ht_stack;
-		    *ht_stack = newitem;
-		}
-	    }
-	}
-    }
-    else if (tv->v_type == VAR_LIST)
-    {
-	list_T	*ll = tv->vval.v_list;
+		    ht_stack_T *newitem = ALLOC_ONE(ht_stack_T);
 
-	if (ll != NULL && ll->lv_copyID != copyID)
-	{
-	    // Didn't see this list yet.
-	    ll->lv_copyID = copyID;
-	    if (list_stack == NULL)
-	    {
-		abort = set_ref_in_list_items(ll, copyID, ht_stack);
-	    }
-	    else
-	    {
-		list_stack_T *newitem = ALLOC_ONE(list_stack_T);
-
-		if (newitem == NULL)
-		    abort = TRUE;
-		else
-		{
-		    newitem->list = ll;
-		    newitem->prev = *list_stack;
-		    *list_stack = newitem;
-		}
-	    }
-	}
-    }
-    else if (tv->v_type == VAR_FUNC)
-    {
-	abort = set_ref_in_func(tv->vval.v_string, NULL, copyID);
-    }
-    else if (tv->v_type == VAR_PARTIAL)
-    {
-	partial_T	*pt = tv->vval.v_partial;
-	int		i;
-
-	if (pt != NULL && pt->pt_copyID != copyID)
-	{
-	    // Didn't see this partial yet.
-	    pt->pt_copyID = copyID;
-
-	    abort = set_ref_in_func(pt->pt_name, pt->pt_func, copyID);
-
-	    if (pt->pt_dict != NULL)
-	    {
-		typval_T dtv;
-
-		dtv.v_type = VAR_DICT;
-		dtv.vval.v_dict = pt->pt_dict;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-
-	    for (i = 0; i < pt->pt_argc; ++i)
-		abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
-							ht_stack, list_stack);
-	    // pt_funcstack is handled in set_ref_in_funcstacks()
-	    // pt_loopvars is handled in set_ref_in_loopvars()
-	}
-    }
-#ifdef FEAT_JOB_CHANNEL
-    else if (tv->v_type == VAR_JOB)
-    {
-	job_T	    *job = tv->vval.v_job;
-	typval_T    dtv;
-
-	if (job != NULL && job->jv_copyID != copyID)
-	{
-	    job->jv_copyID = copyID;
-	    if (job->jv_channel != NULL)
-	    {
-		dtv.v_type = VAR_CHANNEL;
-		dtv.vval.v_channel = job->jv_channel;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-	    if (job->jv_exit_cb.cb_partial != NULL)
-	    {
-		dtv.v_type = VAR_PARTIAL;
-		dtv.vval.v_partial = job->jv_exit_cb.cb_partial;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-	}
-    }
-    else if (tv->v_type == VAR_CHANNEL)
-    {
-	channel_T   *ch =tv->vval.v_channel;
-	ch_part_T   part;
-	typval_T    dtv;
-	jsonq_T	    *jq;
-	cbq_T	    *cq;
-
-	if (ch != NULL && ch->ch_copyID != copyID)
-	{
-	    ch->ch_copyID = copyID;
-	    for (part = PART_SOCK; part < PART_COUNT; ++part)
-	    {
-		for (jq = ch->ch_part[part].ch_json_head.jq_next; jq != NULL;
-							     jq = jq->jq_next)
-		    set_ref_in_item(jq->jq_value, copyID, ht_stack, list_stack);
-		for (cq = ch->ch_part[part].ch_cb_head.cq_next; cq != NULL;
-							     cq = cq->cq_next)
-		    if (cq->cq_callback.cb_partial != NULL)
+		    if (newitem == NULL)
+			abort = TRUE;
+		    else
 		    {
-			dtv.v_type = VAR_PARTIAL;
-			dtv.vval.v_partial = cq->cq_callback.cb_partial;
-			set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+			newitem->ht = &dd->dv_hashtab;
+			newitem->prev = *ht_stack;
+			*ht_stack = newitem;
 		    }
-		if (ch->ch_part[part].ch_callback.cb_partial != NULL)
+		}
+	    }
+	    break;
+	}
+
+	case VAR_LIST:
+	{
+	    list_T	*ll = tv->vval.v_list;
+
+	    if (ll != NULL && ll->lv_copyID != copyID)
+	    {
+		// Didn't see this list yet.
+		ll->lv_copyID = copyID;
+		if (list_stack == NULL)
+		{
+		    abort = set_ref_in_list_items(ll, copyID, ht_stack);
+		}
+		else
+		{
+		    list_stack_T *newitem = ALLOC_ONE(list_stack_T);
+
+		    if (newitem == NULL)
+			abort = TRUE;
+		    else
+		    {
+			newitem->list = ll;
+			newitem->prev = *list_stack;
+			*list_stack = newitem;
+		    }
+		}
+	    }
+	    break;
+	}
+
+	case VAR_FUNC:
+	{
+	    abort = set_ref_in_func(tv->vval.v_string, NULL, copyID);
+	    break;
+	}
+
+	case VAR_PARTIAL:
+	{
+	    partial_T	*pt = tv->vval.v_partial;
+	    int		i;
+
+	    if (pt != NULL && pt->pt_copyID != copyID)
+	    {
+		// Didn't see this partial yet.
+		pt->pt_copyID = copyID;
+
+		abort = set_ref_in_func(pt->pt_name, pt->pt_func, copyID);
+
+		if (pt->pt_dict != NULL)
+		{
+		    typval_T dtv;
+
+		    dtv.v_type = VAR_DICT;
+		    dtv.vval.v_dict = pt->pt_dict;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+
+		for (i = 0; i < pt->pt_argc; ++i)
+		    abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
+							 ht_stack, list_stack);
+		// pt_funcstack is handled in set_ref_in_funcstacks()
+		// pt_loopvars is handled in set_ref_in_loopvars()
+	    }
+	    break;
+	}
+
+	case VAR_JOB:
+	{
+#ifdef FEAT_JOB_CHANNEL
+	    job_T	    *job = tv->vval.v_job;
+	    typval_T    dtv;
+
+	    if (job != NULL && job->jv_copyID != copyID)
+	    {
+		job->jv_copyID = copyID;
+		if (job->jv_channel != NULL)
+		{
+		    dtv.v_type = VAR_CHANNEL;
+		    dtv.vval.v_channel = job->jv_channel;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+		if (job->jv_exit_cb.cb_partial != NULL)
 		{
 		    dtv.v_type = VAR_PARTIAL;
-		    dtv.vval.v_partial =
-				      ch->ch_part[part].ch_callback.cb_partial;
+		    dtv.vval.v_partial = job->jv_exit_cb.cb_partial;
 		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
 		}
 	    }
-	    if (ch->ch_callback.cb_partial != NULL)
-	    {
-		dtv.v_type = VAR_PARTIAL;
-		dtv.vval.v_partial = ch->ch_callback.cb_partial;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-	    if (ch->ch_close_cb.cb_partial != NULL)
-	    {
-		dtv.v_type = VAR_PARTIAL;
-		dtv.vval.v_partial = ch->ch_close_cb.cb_partial;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-	}
-    }
 #endif
+	    break;
+	}
+
+	case VAR_CHANNEL:
+	{
+#ifdef FEAT_JOB_CHANNEL
+	    channel_T   *ch = tv->vval.v_channel;
+	    ch_part_T   part;
+	    typval_T    dtv;
+	    jsonq_T	*jq;
+	    cbq_T	*cq;
+
+	    if (ch != NULL && ch->ch_copyID != copyID)
+	    {
+		ch->ch_copyID = copyID;
+		for (part = PART_SOCK; part < PART_COUNT; ++part)
+		{
+		    for (jq = ch->ch_part[part].ch_json_head.jq_next;
+						  jq != NULL; jq = jq->jq_next)
+			set_ref_in_item(jq->jq_value, copyID,
+							 ht_stack, list_stack);
+		    for (cq = ch->ch_part[part].ch_cb_head.cq_next; cq != NULL;
+							      cq = cq->cq_next)
+			if (cq->cq_callback.cb_partial != NULL)
+			{
+			    dtv.v_type = VAR_PARTIAL;
+			    dtv.vval.v_partial = cq->cq_callback.cb_partial;
+			    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+			}
+		    if (ch->ch_part[part].ch_callback.cb_partial != NULL)
+		    {
+			dtv.v_type = VAR_PARTIAL;
+			dtv.vval.v_partial =
+				      ch->ch_part[part].ch_callback.cb_partial;
+			set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		    }
+		}
+		if (ch->ch_callback.cb_partial != NULL)
+		{
+		    dtv.v_type = VAR_PARTIAL;
+		    dtv.vval.v_partial = ch->ch_callback.cb_partial;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+		if (ch->ch_close_cb.cb_partial != NULL)
+		{
+		    dtv.v_type = VAR_PARTIAL;
+		    dtv.vval.v_partial = ch->ch_close_cb.cb_partial;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+	    }
+#endif
+	    break;
+	}
+
+	case VAR_CLASS:
+	    // TODO: mark methods in class_obj_methods ?
+	    break;
+
+	case VAR_OBJECT:
+	    {
+		object_T *obj = tv->vval.v_object;
+		if (obj != NULL && obj->obj_copyID != copyID)
+		{
+		    obj->obj_copyID = copyID;
+
+		    // The typval_T array is right after the object_T.
+		    typval_T *mtv = (typval_T *)(obj + 1);
+		    for (int i = 0; !abort
+			    && i < obj->obj_class->class_obj_member_count; ++i)
+			abort = abort || set_ref_in_item(mtv + i, copyID,
+							 ht_stack, list_stack);
+		}
+		break;
+	    }
+
+	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_VOID:
+	case VAR_BOOL:
+	case VAR_SPECIAL:
+	case VAR_NUMBER:
+	case VAR_FLOAT:
+	case VAR_STRING:
+	case VAR_BLOB:
+	case VAR_INSTR:
+	    // Types that do not contain any other item
+	    break;
+    }
+
     return abort;
 }
 
@@ -5777,6 +5860,16 @@ echo_string_core(
 	case VAR_INSTR:
 	    *tofree = NULL;
 	    r = (char_u *)"instructions";
+	    break;
+
+	case VAR_CLASS:
+	    *tofree = NULL;
+	    r = (char_u *)"class";
+	    break;
+
+	case VAR_OBJECT:
+	    *tofree = NULL;
+	    r = (char_u *)"object";
 	    break;
 
 	case VAR_FLOAT:
@@ -6586,6 +6679,20 @@ handle_subscript(
 		ret = FAIL;
 	    }
 	}
+	else if (**arg == '.' && (rettv->v_type == VAR_CLASS
+					       || rettv->v_type == VAR_OBJECT))
+	{
+	    // class member: SomeClass.varname
+	    // class method: SomeClass.SomeMethod()
+	    // class constructor: SomeClass.new()
+	    // object member: someObject.varname
+	    // object method: someObject.SomeMethod()
+	    if (class_object_index(arg, rettv, evalarg, verbose) == FAIL)
+	    {
+		clear_tv(rettv);
+		ret = FAIL;
+	    }
+	}
 	else
 	    break;
     }
@@ -6642,6 +6749,8 @@ item_copy(
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:

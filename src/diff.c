@@ -2786,8 +2786,12 @@ ex_diffgetput(exarg_T *eap)
 	idx_to = idx_other;
 	// Need to make the other buffer the current buffer to be able to make
 	// changes in it.
-	// set curwin/curbuf to buf and save a few things
+	// Set curwin/curbuf to buf and save a few things.
 	aucmd_prepbuf(&aco, curtab->tp_diffbuf[idx_other]);
+	if (curbuf != curtab->tp_diffbuf[idx_other])
+	    // Could not find a window for this buffer, the rest is likely to
+	    // fail.
+	    goto theend;
     }
 
     // May give the warning for a changed buffer here, which can trigger the

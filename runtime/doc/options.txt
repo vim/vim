@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2022 Nov 23
+*options.txt*	For Vim version 9.0.  Last change: 2022 Dec 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4901,7 +4901,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		mok2	modifyOtherKeys level 2, as supported by xterm
 		kitty	Kitty keyboard protocol, as supported by Kitty
 
-	The option value is a list of command separated items.  Each item has
+	The option value is a list of comma separated items.  Each item has
 	a pattern that is matched against the 'term' option, a colon and the
 	protocol name to be used.  To illustrate this, the default value would
 	be set with: >
@@ -4926,12 +4926,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			    CSI >4;m	disables modifyOtherKeys
 			The t_TI value is changed to:
 			    CSI >4;2m	enables modifyOtherKeys
+			    CSI ?4m	request the modifyOtherKeys state
 
 		kitty	The t_TE value is changed to:
 			    CSI >4;m	disables modifyOtherKeys
-			    CSI <u	disables the kitty keyboard protocol
+			    CSI =0;1u	disables the kitty keyboard protocol
 			The t_TI value is changed to:
-			    CSI >1u	enables the kitty keyboard protocol
+			    CSI =1;1u	enables the kitty keyboard protocol
 			    CSI ?u	request kitty keyboard protocol state
 			    CSI >c	request the termresponse
 
@@ -7116,45 +7117,49 @@ A jump table for the options with a short description can be found at |Q_op|.
 	messages, for example  with CTRL-G, and to avoid some other messages.
 	It is a list of flags:
 	 flag	meaning when present	~
-	  f	use "(3 of 5)" instead of "(file 3 of 5)"
-	  i	use "[noeol]" instead of "[Incomplete last line]"
-	  l	use "999L, 888B" instead of "999 lines, 888 bytes"
-	  m	use "[+]" instead of "[Modified]"
-	  n	use "[New]" instead of "[New File]"
-	  r	use "[RO]" instead of "[readonly]"
-	  w	use "[w]" instead of "written" for file write message
+	  f	use "(3 of 5)" instead of "(file 3 of 5)"		*shm-f*
+	  i	use "[noeol]" instead of "[Incomplete last line]"	*shm-i*
+	  l	use "999L, 888B" instead of "999 lines, 888 bytes"	*shm-l*
+	  m	use "[+]" instead of "[Modified]"			*shm-m*
+	  n	use "[New]" instead of "[New File]"			*shm-n*
+	  r	use "[RO]" instead of "[readonly]"			*shm-r*
+	  w	use "[w]" instead of "written" for file write message	*shm-w*
 		and "[a]" instead of "appended" for ':w >> file' command
-	  x	use "[dos]" instead of "[dos format]", "[unix]" instead of
-		"[unix format]" and "[mac]" instead of "[mac format]".
-	  a	all of the above abbreviations
+	  x	use "[dos]" instead of "[dos format]", "[unix]"		*shm-x*
+		instead of "[unix format]" and "[mac]" instead of "[mac
+		format]".
+	  a	all of the above abbreviations				*shm-a*
 
-	  o	overwrite message for writing a file with subsequent message
-		for reading a file (useful for ":wn" or when 'autowrite' on)
-	  O	message for reading a file overwrites any previous message.
-		Also for quickfix message (e.g., ":cn").
-	  s	don't give "search hit BOTTOM, continuing at TOP" or "search
-		hit TOP, continuing at BOTTOM" messages; when using the search
-		count do not show "W" after the count message (see S below)
-	  t	truncate file message at the start if it is too long to fit
-		on the command-line, "<" will appear in the left most column.
-		Ignored in Ex mode.
-	  T	truncate other messages in the middle if they are too long to
-		fit on the command line.  "..." will appear in the middle.
-		Ignored in Ex mode.
-	  W	don't give "written" or "[w]" when writing a file
-	  A	don't give the "ATTENTION" message when an existing swap file
-		is found.
-	  I	don't give the intro message when starting Vim |:intro|.
-	  c	don't give |ins-completion-menu| messages.  For example,
-		"-- XXX completion (YYY)", "match 1 of 2", "The only match",
-		"Pattern not found", "Back at original", etc.
-	  C	don't give messages while scanning for ins-completion items,
-		for instance "scanning tags"
-	  q	use "recording" instead of "recording @a"
-	  F	don't give the file info when editing a file, like `:silent`
-		was used for the command; note that this also affects messages
-		from autocommands
-	  S     do not show search count message when searching, e.g.
+	  o	overwrite message for writing a file with subsequent	*shm-o*
+		message for reading a file (useful for ":wn" or when
+		'autowrite' on)
+	  O	message for reading a file overwrites any previous	*smh-O*
+		message.  Also for quickfix message (e.g., ":cn").
+	  s	don't give "search hit BOTTOM, continuing at TOP" or	*shm-s*
+		"search hit TOP, continuing at BOTTOM" messages; when using
+		the search count do not show "W" after the count message (see
+		S below)
+	  t	truncate file message at the start if it is too long	*shm-t*
+		to fit on the command-line, "<" will appear in the left most
+		column.  Ignored in Ex mode.
+	  T	truncate other messages in the middle if they are too	*shm-T*
+		long to fit on the command line.  "..." will appear in the
+		middle.  Ignored in Ex mode.
+	  W	don't give "written" or "[w]" when writing a file	*shm-W*
+	  A	don't give the "ATTENTION" message when an existing	*shm-A*
+		swap file is found.
+	  I	don't give the intro message when starting Vim,		*shm-I*
+	  	see |:intro|.
+	  c	don't give |ins-completion-menu| messages.  For		*shm-c*
+		example, "-- XXX completion (YYY)", "match 1 of 2", "The only
+		match", "Pattern not found", "Back at original", etc.
+	  C	don't give messages while scanning for ins-completion	*shm-C*
+		items, for instance "scanning tags"
+	  q	use "recording" instead of "recording @a"		*shm-q*
+	  F	don't give the file info when editing a file, like	*shm-F*
+		`:silent` was used for the command; note that this also
+		affects messages from autocommands
+	  S     do not show search count message when searching, e.g.	*shm-S*
 	        "[1/5]"
 
 	This gives you the opportunity to avoid that a change between buffers
@@ -8569,10 +8574,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	xterm entries...).
 
 				     *'ttyfast'* *'tf'* *'nottyfast'* *'notf'*
-'ttyfast' 'tf'		boolean	(default off, on when 'term' is xterm, hpterm,
-					sun-cmd, screen, rxvt, dtterm or
-					iris-ansi; also on when running Vim in
-					a DOS console)
+'ttyfast' 'tf'		boolean	(default on)
 			global
 	Indicates a fast terminal connection.  More characters will be sent to
 	the screen for redrawing, instead of using insert/delete line
@@ -8582,6 +8584,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	line for lines that wrap.  This helps when using copy/paste with the
 	mouse in an xterm and other terminals.
 
+	The default used to be set only for some terminal names, but these
+	days nearly all terminals are fast, therefore the default is now "on".
+	If you have a slow connection you may want to set this option off,
+	e.g. depending on the host name: >
+		if hostname() =~ 'faraway'
+		   set nottyfast
+		endif
+<
 						*'ttymouse'* *'ttym'*
 'ttymouse' 'ttym'	string	(default depends on 'term')
 			global

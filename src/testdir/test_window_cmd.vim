@@ -137,7 +137,6 @@ endfunc
 
 " Test the ":wincmd ^" and "<C-W>^" commands.
 func Test_window_split_edit_alternate()
-
   " Test for failure when the alternate buffer/file no longer exists.
   edit Xfoo | %bw
   call assert_fails(':wincmd ^', 'E23:')
@@ -170,7 +169,6 @@ endfunc
 
 " Test the ":[count]wincmd ^" and "[count]<C-W>^" commands.
 func Test_window_split_edit_bufnr()
-
   %bwipeout
   let l:nr = bufnr('%') + 1
   call assert_fails(':execute "normal! ' . l:nr . '\<C-W>\<C-^>"', 'E92:')
@@ -1894,5 +1892,36 @@ function Test_splitkeep_fold()
   call term_sendkeys(buf, ":wincmd k\<CR>:quit\<CR>")
   call VerifyScreenDump(buf, 'Test_splitkeep_fold_4', {})
 endfunction
+
+function Test_splitkeep_status()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['a', 'b', 'c'])
+    set nomodified
+    set splitkeep=screen
+    let win = winnr()
+    wincmd s
+    wincmd j
+  END
+  call writefile(lines, 'XTestSplitkeepStatus', 'D')
+  let buf = RunVimInTerminal('-S XTestSplitkeepStatus', #{rows: 10})
+
+  call term_sendkeys(buf, ":call win_move_statusline(win, 1)\<CR>")
+  call VerifyScreenDump(buf, 'Test_splitkeep_status_1', {})
+endfunction
+
+function Test_new_help_window_on_error()
+  help change.txt
+  execute "normal! /CTRL-@\<CR>"
+  silent! execute "normal! \<C-W>]"
+
+  let wincount = winnr('$')
+  help 'mod'
+
+  call assert_equal(wincount, winnr('$'))
+  call assert_equal(expand("<cword>"), "'mod'")
+endfunction
+
 
 " vim: shiftwidth=2 sts=2 expandtab

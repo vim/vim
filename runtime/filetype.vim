@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Nov 23
+" Last Change:	2022 Dec 05
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -981,6 +981,8 @@ au BufNewFile,BufRead *.jsp			setf jsp
 
 " Java Properties resource file (note: doesn't catch font.properties.pl)
 au BufNewFile,BufRead *.properties,*.properties_??,*.properties_??_??	setf jproperties
+" Eclipse preference files use Java Properties syntax
+au BufNewFile,BufRead org.eclipse.*.prefs	setf jproperties
 
 " Jess
 au BufNewFile,BufRead *.clp			setf jess
@@ -1853,8 +1855,9 @@ au BufNewFile,BufRead .tcshrc,*.tcsh,tcsh.tcshrc,tcsh.login	call dist#ft#SetFile
 " (patterns ending in a start further below)
 au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call dist#ft#CSH()
 
-" Zig
+" Zig and Zir (Zig Intermediate Representation)
 au BufNewFile,BufRead *.zig			setf zig
+au BufNewFile,BufRead *.zir			setf zir
 
 " Z-Shell script (patterns ending in a star further below)
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
@@ -2348,6 +2351,9 @@ au BufNewFile,BufRead fglrxrc			setf xml
 
 " Web Services Description Language (WSDL)
 au BufNewFile,BufRead *.wsdl			setf xml
+
+" Workflow Description Language (WDL)
+au BufNewFile,BufRead *.wdl			setf wdl
 
 " XLIFF (XML Localisation Interchange File Format) is also XML
 au BufNewFile,BufRead *.xlf			setf xml

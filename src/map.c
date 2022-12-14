@@ -315,7 +315,26 @@ list_mappings(
     if (p_verbose > 0 && keyround == 1)
     {
 	if (seenModifyOtherKeys)
-	    msg_puts(_("Seen modifyOtherKeys: true"));
+	    msg_puts(_("Seen modifyOtherKeys: true\n"));
+
+	if (modify_otherkeys_state != MOKS_INITIAL)
+	{
+	    char *name = _("Unknown");
+	    switch (modify_otherkeys_state)
+	    {
+		case MOKS_INITIAL: break;
+		case MOKS_OFF: name = _("Off"); break;
+		case MOKS_ENABLED: name = _("On"); break;
+		case MOKS_DISABLED: name = _("Disabled"); break;
+		case MOKS_AFTER_T_KE: name = _("Cleared"); break;
+	    }
+
+	    char buf[200];
+	    vim_snprintf(buf, sizeof(buf),
+				    _("modifyOtherKeys detected: %s\n"), name);
+	    msg_puts(buf);
+	}
+
 	if (kitty_protocol_state != KKPS_INITIAL)
 	{
 	    char *name = _("Unknown");
@@ -329,7 +348,8 @@ list_mappings(
 	    }
 
 	    char buf[200];
-	    vim_snprintf(buf, sizeof(buf), _("Kitty keyboard protocol: %s"), name);
+	    vim_snprintf(buf, sizeof(buf),
+				     _("Kitty keyboard protocol: %s\n"), name);
 	    msg_puts(buf);
 	}
     }

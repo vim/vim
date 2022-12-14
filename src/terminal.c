@@ -1020,7 +1020,7 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
 	char *hash_key = alloc(NUMBUFLEN);
 
 	vim_snprintf(hash_key, NUMBUFLEN, "%d", bufnr);
-	hash_add(terminal_bufs, (char_u *)hash_key);
+	hash_add(terminal_bufs, (char_u *)hash_key, "terminal session");
     }
 
     return put_eol(fd);
@@ -1590,7 +1590,7 @@ term_convert_key(term_T *term, int c, int modmask, char *buf)
     // Ctrl-Shift-i may have the key "I" instead of "i", but for the kitty
     // keyboard protocol should use "i".  Applies to all ascii letters.
     if (ASCII_ISUPPER(c)
-	    && vterm_is_kitty_keyboard(curbuf->b_term->tl_vterm)
+	    && vterm_is_kitty_keyboard(vterm)
 	    && mod == (VTERM_MOD_CTRL | VTERM_MOD_SHIFT))
 	c = TOLOWER_ASC(c);
 
@@ -3560,15 +3560,18 @@ term_after_channel_closed(term_T *term)
 	    // ++close or term_finish == "close"
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);
-	    // Avoid closing the window if we temporarily use it.
-	    if (curwin == aucmd_win)
-		do_set_w_closing = TRUE;
-	    if (do_set_w_closing)
-		curwin->w_closing = TRUE;
-	    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
-	    if (do_set_w_closing)
-		curwin->w_closing = FALSE;
-	    aucmd_restbuf(&aco);
+	    if (curbuf == term->tl_buffer)
+	    {
+		// Avoid closing the window if we temporarily use it.
+		if (is_aucmd_win(curwin))
+		    do_set_w_closing = TRUE;
+		if (do_set_w_closing)
+		    curwin->w_closing = TRUE;
+		do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
+		if (do_set_w_closing)
+		    curwin->w_closing = FALSE;
+		aucmd_restbuf(&aco);
+	    }
 #ifdef FEAT_PROP_POPUP
 	    if (pwin != NULL)
 		popup_close_with_retval(pwin, 0);

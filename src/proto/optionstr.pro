@@ -1,6 +1,6 @@
 /* optionstr.c */
 void didset_string_options(void);
-void trigger_optionsset_string(int opt_idx, int opt_flags, char_u *oldval, char_u *oldval_l, char_u *oldval_g, char_u *newval);
+void trigger_optionset_string(int opt_idx, int opt_flags, char_u *oldval, char_u *oldval_l, char_u *oldval_g, char_u *newval);
 void check_buf_options(buf_T *buf);
 void free_string_option(char_u *p);
 void clear_string_option(char_u **pp);

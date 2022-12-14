@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2022 Nov 23
+*map.txt*       For Vim version 9.0.  Last change: 2022 Dec 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -971,12 +971,17 @@ using other applications but not when inside Vim.
 Xterm and a few other terminals can be put in a mode where keys with modifiers
 are sent with a special escape code.  Vim recognizes these codes and can then
 make a difference between CTRL-H and Backspace, even when Backspace sends the
-character 8.  And many more special keys.
+character 8.  And many more special keys, such as Tab and CTRL-I, which cannot
+be mapped separately otherwise.
 
 For xterm modifyOtherKeys is enabled in the builtin termcap entry.  If this is
 not used you can enable modifyOtherKeys with these lines in your vimrc: >
       let &t_TI = "\<Esc>[>4;2m"
       let &t_TE = "\<Esc>[>4;m"
+
+This sets modifyOtherKeys to level 2.  Note that modifyOtherKeys level 1 does
+not work.  Some terminals do not support level 2 and then send key codes that
+Vim will not be able to correctly recognize.
 
 In case the modifyOtherKeys mode causes problems you can disable it: >
       let &t_TI = ""
@@ -996,15 +1001,28 @@ mapping, see |map-bar|.
 WARNING: if you map <C-[> you may very well break any key codes that start
 with Esc.  Make sure it comes AFTER other mappings.
 
-Vim automatically detects if the modifyOtherKeys mode was enabled when it
-spots an escape sequence that must have been created by it.  To see if Vim
-detected such an escape sequence use `:verbose map`, the first line will then
-show "Seen modifyOtherKeys: true" (possibly translated).
+Starting with xterm version 377 Vim can detect the modifyOtherKeys state by
+requesting it.  For this the 't_RK' termcap entry is used.  When the response
+is found then Vim will know whether modifyOtherKeys level 2 is enabled, and
+handle mappings accordingly.
+
+Before version 377 Vim automatically detects if the modifyOtherKeys mode was
+enabled when it spots an escape sequence that must have been created by it.
+To see if Vim detected such an escape sequence use `:verbose map`, the first
+line will then show "Seen modifyOtherKeys: true" (possibly translated).
+
+This automatic detection depends on receiving an escape code starting with 
+"<1b>[27;".  This is the normal way xterm sends these key codes.  However, if
+the *formatOtherKeys* resource is set another form is used that is not
+recognized, therefore you must not set formatOtherKeys.
 
 A known side effect is that in Insert mode the raw escape sequence is inserted
 after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
 enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you get one byte then
-modifyOtherKeys is off, if you get <1b>27;5;118~ then it is on.
+modifyOtherKeys is off, if you get <1b>[27;5;118~ then it is on.
+
+Note that xterm up to version 376 has a bug that makes Shift-Esc send a
+regular Esc code, the Shift modifier is dropped.
 
 When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.
@@ -1677,7 +1695,7 @@ Possible attributes are:
 		    number.
 	-count=N    A count (default N) which is specified either in the line
 		    number position, or as an initial argument (like |:Next|).
-	-count	    acts like -count=0
+	-count	    Acts like -count=0
 
 Note that -range=N and -count=N are mutually exclusive - only one should be
 specified.
@@ -1695,7 +1713,7 @@ Possible values are (second column is the short name used in listing):
     -addr=windows	  win	Range for windows
     -addr=tabs		  tab	Range for tab pages
     -addr=quickfix	  qf	Range for quickfix entries
-    -addr=other		  ?	other kind of range; can use ".", "$" and "%"
+    -addr=other		  ?	Other kind of range; can use ".", "$" and "%"
 				as with "lines" (this is the default for
 				-count)
 

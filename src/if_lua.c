@@ -1150,7 +1150,7 @@ luaV_dict_newindex(lua_State *L)
     if (lua_isnil(L, 3)) // remove?
     {
 	hashitem_T *hi = hash_find(&d->dv_hashtab, di->di_key);
-	hash_remove(&d->dv_hashtab, hi);
+	hash_remove(&d->dv_hashtab, hi, "Lua new index");
 	dictitem_free(di);
     }
     else
@@ -1838,9 +1838,8 @@ luaV_setvar(lua_State *L)
 	if (di == NULL)
 	    // Doesn't exist, nothing to do
 	    return 0;
-	else
-	    // Delete the entry
-	    dictitem_remove(dict, di);
+	// Delete the entry
+	dictitem_remove(dict, di, "Lua delete variable");
     }
     else
     {

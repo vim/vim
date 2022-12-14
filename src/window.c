@@ -559,6 +559,7 @@ newwindow:
 		// Execute the command right here, required when "wincmd ]"
 		// was used in a function.
 		do_nv_ident(Ctrl_RSB, NUL);
+		postponed_split = 0;
 		break;
 
 // edit file name under cursor in a new window
@@ -567,6 +568,8 @@ newwindow:
     case Ctrl_F:
 wingotofile:
 		CHECK_CMDWIN;
+		if (check_text_or_curbuf_locked(NULL))
+		    break;
 
 		ptr = grab_file_name(Prenum1, &lnum);
 		if (ptr != NULL)
@@ -672,6 +675,7 @@ wingotofile:
 			// Execute the command right here, required when
 			// "wincmd g}" was used in a function.
 			do_nv_ident('g', xchar);
+			postponed_split = 0;
 			break;
 
 		    case 'f':	    // CTRL-W gf: "gf" in a new tab page
@@ -885,7 +889,7 @@ win_split(int size, int flags)
  * When "new_wp" is NULL: split the current window in two.
  * When "new_wp" is not NULL: insert this window at the far
  * top/left/right/bottom.
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 win_split_ins(
@@ -1360,7 +1364,7 @@ win_split_ins(
 	win_equal(wp, TRUE,
 		(flags & WSP_VERT) ? (dir == 'v' ? 'b' : 'h')
 		: dir == 'h' ? 'b' : 'v');
-    else if (*p_spk != 'c' && wp != aucmd_win)
+    else if (*p_spk != 'c' && !is_aucmd_win(wp))
 	win_fix_scroll(FALSE);
 
     // Don't change the window height/width to 'winheight' / 'winwidth' if a
@@ -1960,7 +1964,7 @@ win_equal(
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
 		      topframe, dir, 0, tabline_height(),
 					   (int)Columns, topframe->fr_height);
-    if (*p_spk != 'c' && next_curwin != aucmd_win)
+    if (*p_spk != 'c' && !is_aucmd_win(next_curwin))
 	win_fix_scroll(TRUE);
 }
 
@@ -2424,7 +2428,7 @@ close_windows(
 
 /*
  * Return TRUE if the current window is the only window that exists (ignoring
- * "aucmd_win").
+ * "aucmd_win[]").
  * Returns FALSE if there is a window, possibly in another tab page.
  */
     static int
@@ -2434,7 +2438,7 @@ last_window(void)
 }
 
 /*
- * Return TRUE if there is only one window other than "aucmd_win" in the
+ * Return TRUE if there is only one window other than "aucmd_win[]" in the
  * current tab page.
  */
     int
@@ -2445,7 +2449,7 @@ one_window(void)
 
     FOR_ALL_WINDOWS(wp)
     {
-	if (wp != aucmd_win)
+	if (!is_aucmd_win(wp))
 	{
 	    if (seen_one)
 		return FALSE;
@@ -2586,7 +2590,7 @@ win_close(win_T *win, int free_buf)
 	emsg(_(e_cannot_close_autocmd_or_popup_window));
 	return FAIL;
     }
-    if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
+    if ((is_aucmd_win(firstwin) || is_aucmd_win(lastwin)) && one_window())
     {
 	emsg(_(e_cannot_close_window_only_autocmd_window_would_remain));
 	return FAIL;
@@ -2853,6 +2857,9 @@ snapshot_windows_scroll_size(void)
     FOR_ALL_WINDOWS(wp)
     {
 	wp->w_last_topline = wp->w_topline;
+#ifdef FEAT_DIFF
+	wp->w_last_topfill = wp->w_topfill;
+#endif
 	wp->w_last_leftcol = wp->w_leftcol;
 	wp->w_last_skipcol = wp->w_skipcol;
 	wp->w_last_width = wp->w_width;
@@ -2884,6 +2891,9 @@ make_win_info_dict(
 	int width,
 	int height,
 	int topline,
+# ifdef FEAT_DIFF
+	int topfill,
+# endif
 	int leftcol,
 	int skipcol)
 {
@@ -2907,6 +2917,13 @@ make_win_info_dict(
 	    break;
 	tv.vval.v_number = topline;
 	if (dict_add_tv(d, "topline", &tv) == FAIL)
+	    break;
+#ifdef FEAT_DIFF
+	tv.vval.v_number = topfill;
+#else
+	tv.vval.v_number = 0;
+#endif
+	if (dict_add_tv(d, "topfill", &tv) == FAIL)
 	    break;
 	tv.vval.v_number = leftcol;
 	if (dict_add_tv(d, "leftcol", &tv) == FAIL)
@@ -2956,6 +2973,9 @@ check_window_scroll_resize(
     int tot_width = 0;
     int tot_height = 0;
     int tot_topline = 0;
+# ifdef FEAT_DIFF
+    int tot_topfill = 0;
+# endif
     int tot_leftcol = 0;
     int tot_skipcol = 0;
 #endif
@@ -2993,6 +3013,9 @@ check_window_scroll_resize(
 	}
 
 	int scroll_changed = wp->w_last_topline != wp->w_topline
+#ifdef FEAT_DIFF
+				|| wp->w_last_topfill != wp->w_topfill
+#endif
 				|| wp->w_last_leftcol != wp->w_leftcol
 				|| wp->w_last_skipcol != wp->w_skipcol;
 	if (scroll_changed)
@@ -3009,10 +3032,16 @@ check_window_scroll_resize(
 	    int width = wp->w_width - wp->w_last_width;
 	    int height = wp->w_height - wp->w_last_height;
 	    int topline = wp->w_topline - wp->w_last_topline;
+#ifdef FEAT_DIFF
+	    int topfill = wp->w_topfill - wp->w_last_topfill;
+#endif
 	    int leftcol = wp->w_leftcol - wp->w_last_leftcol;
 	    int skipcol = wp->w_skipcol - wp->w_last_skipcol;
-	    dict_T *d = make_win_info_dict(width, height,
-						    topline, leftcol, skipcol);
+	    dict_T *d = make_win_info_dict(width, height, topline,
+#ifdef FEAT_DIFF
+							    topfill,
+#endif
+							    leftcol, skipcol);
 	    if (d == NULL)
 		break;
 	    char winid[NUMBUFLEN];
@@ -3027,6 +3056,9 @@ check_window_scroll_resize(
 	    tot_width += abs(width);
 	    tot_height += abs(height);
 	    tot_topline += abs(topline);
+#ifdef FEAT_DIFF
+	    tot_topfill += abs(topfill);
+#endif
 	    tot_leftcol += abs(leftcol);
 	    tot_skipcol += abs(skipcol);
 	}
@@ -3036,8 +3068,11 @@ check_window_scroll_resize(
 #ifdef FEAT_EVAL
     if (v_event != NULL)
     {
-	dict_T *alldict = make_win_info_dict(tot_width, tot_height,
-					tot_topline, tot_leftcol, tot_skipcol);
+	dict_T *alldict = make_win_info_dict(tot_width, tot_height, tot_topline,
+# ifdef FEAT_DIFF
+						    tot_topfill,
+# endif
+						    tot_leftcol, tot_skipcol);
 	if (alldict != NULL)
 	{
 	    if (dict_add_dict(v_event, "all", alldict) == FAIL)
@@ -3290,11 +3325,12 @@ win_free_all(void)
     while (first_tabpage->tp_next != NULL)
 	tabpage_close(TRUE);
 
-    if (aucmd_win != NULL)
-    {
-	(void)win_free_mem(aucmd_win, &dummy, NULL);
-	aucmd_win = NULL;
-    }
+    for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
+	if (aucmd_win[i].auc_win != NULL)
+	{
+	    (void)win_free_mem(aucmd_win[i].auc_win, &dummy, NULL);
+	    aucmd_win[i].auc_win = NULL;
+	}
 
     while (firstwin != NULL)
 	(void)win_free_mem(firstwin, &dummy, NULL);
@@ -5661,7 +5697,7 @@ win_free(
     int
 win_unlisted(win_T *wp)
 {
-    return wp == aucmd_win || WIN_IS_POPUP(wp);
+    return is_aucmd_win(wp) || WIN_IS_POPUP(wp);
 }
 
 #if defined(FEAT_PROP_POPUP) || defined(PROTO)
@@ -6830,6 +6866,7 @@ win_new_height(win_T *wp, int height)
 
     wp->w_height = height;
     wp->w_skipcol = 0;
+    wp->w_redr_status = TRUE;
     win_comp_scroll(wp);
 
     // There is no point in adjusting the scroll position when exiting.  Some
@@ -6956,7 +6993,6 @@ scroll_to_fraction(win_T *wp, int prev_height)
 	wp->w_prev_fraction_row = wp->w_wrow;
 
     redraw_win_later(wp, UPD_SOME_VALID);
-    wp->w_redr_status = TRUE;
     invalidate_botline_win(wp);
 }
 
@@ -7255,7 +7291,7 @@ only_one_window(void)
 # ifdef FEAT_QUICKFIX
 		    || wp->w_p_pvw
 # endif
-	     ) || wp == curwin) && wp != aucmd_win)
+	     ) || wp == curwin) && !is_aucmd_win(wp))
 	    ++count;
     return (count <= 1);
 }

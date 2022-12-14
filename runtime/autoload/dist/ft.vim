@@ -3,7 +3,7 @@ vim9script
 # Vim functions for file type detection
 #
 # Maintainer:	Bram Moolenaar <Bram@vim.org>
-# Last Change:	2022 Apr 13
+# Last Change:	2022 Nov 24
 
 # These functions are moved here from runtime/filetype.vim to make startup
 # faster.
@@ -712,7 +712,8 @@ export def SetFileTypeSH(name: string)
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif name =~ '\<sh\>'
+  elseif name =~ '\<sh\>' || name =~ '\<dash\>'
+    # Ubuntu links "sh" to "dash", thus it is expected to work the same way
     b:is_sh = 1
     if exists("b:is_kornshell")
       unlet b:is_kornshell

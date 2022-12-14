@@ -2438,24 +2438,6 @@ vim_is_vt300(char_u *name)
 }
 
 /*
- * Return TRUE if "name" is a terminal for which 'ttyfast' should be set.
- * This should include all windowed terminal emulators.
- */
-    int
-vim_is_fastterm(char_u *name)
-{
-    if (name == NULL)
-	return FALSE;
-    if (vim_is_xterm(name) || vim_is_vt300(name) || vim_is_iris(name))
-	return TRUE;
-    return (   STRNICMP(name, "hpterm", 6) == 0
-	    || STRNICMP(name, "sun-cmd", 7) == 0
-	    || STRNICMP(name, "screen", 6) == 0
-	    || STRNICMP(name, "tmux", 4) == 0
-	    || STRNICMP(name, "dtterm", 6) == 0);
-}
-
-/*
  * Insert user name in s[len].
  * Return OK if a name found.
  */
@@ -4508,27 +4490,30 @@ mch_call_shell_terminal(
 
     // Find a window to make "buf" curbuf.
     aucmd_prepbuf(&aco, buf);
-
-    clear_oparg(&oa);
-    while (term_use_loop())
+    if (curbuf == buf)
     {
-	if (oa.op_type == OP_NOP && oa.regname == NUL && !VIsual_active)
+	// Only when managed to find a window for "buf",
+	clear_oparg(&oa);
+	while (term_use_loop())
 	{
-	    // If terminal_loop() returns OK we got a key that is handled
-	    // in Normal model. We don't do redrawing anyway.
-	    if (terminal_loop(TRUE) == OK)
+	    if (oa.op_type == OP_NOP && oa.regname == NUL && !VIsual_active)
+	    {
+		// If terminal_loop() returns OK we got a key that is handled
+		// in Normal model. We don't do redrawing anyway.
+		if (terminal_loop(TRUE) == OK)
+		    normal_cmd(&oa, TRUE);
+	    }
+	    else
 		normal_cmd(&oa, TRUE);
 	}
-	else
-	    normal_cmd(&oa, TRUE);
+	retval = job->jv_exitval;
+	ch_log(NULL, "system command finished");
+
+	job_unref(job);
+
+	// restore curwin/curbuf and a few other things
+	aucmd_restbuf(&aco);
     }
-    retval = job->jv_exitval;
-    ch_log(NULL, "system command finished");
-
-    job_unref(job);
-
-    // restore curwin/curbuf and a few other things
-    aucmd_restbuf(&aco);
 
     // Only require pressing Enter when redrawing, to avoid that system() gets
     // the hit-enter prompt even though it didn't output anything.
@@ -4762,7 +4747,7 @@ mch_call_shell_fork(
 	    reset_signals();		// handle signals normally
 	    UNBLOCK_SIGNALS(&curset);
 
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	    if (ch_log_active())
 	    {
 		ch_log(NULL, "closing channel log in the child process");
@@ -5394,7 +5379,7 @@ finished:
 
 		if (tmode == TMODE_RAW)
 		    // possibly enables modifyOtherKeys again
-		    out_str(T_CTI);
+		    out_str_t_TI();
 	    }
 # endif
 
@@ -5480,7 +5465,7 @@ mch_call_shell(
     char_u	*cmd,
     int		options)	// SHELL_*, see vim.h
 {
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     ch_log(NULL, "executing shell command: %s", cmd);
 #endif
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
@@ -5612,7 +5597,7 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	reset_signals();		// handle signals normally
 	UNBLOCK_SIGNALS(&curset);
 
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	if (ch_log_active())
 	    // close the log file in the child
 	    ch_logfile((char_u *)"", (char_u *)"");
@@ -8339,7 +8324,7 @@ start_timeout(long msec)
 	timer_created = TRUE;
     }
 
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
     ch_log(NULL, "setting timeout timer to %d sec %ld nsec",
 	       (int)interval.it_value.tv_sec, (long)interval.it_value.tv_nsec);
 # endif

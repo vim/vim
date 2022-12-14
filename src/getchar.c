@@ -1765,6 +1765,12 @@ vgetc(void)
 		}
 		c = TO_SPECIAL(c2, c);
 
+		// K_ESC is used to avoid ambiguity with the single Esc
+		// character that might be the start of an escape sequence.
+		// Convert it back to a single Esc here.
+		if (c == K_ESC)
+		    c = ESC;
+
 #if defined(FEAT_GUI_MSWIN) && defined(FEAT_MENU) && defined(FEAT_TEAROFF)
 		// Handle K_TEAROFF here, the caller of vgetc() doesn't need to
 		// know that a menu was torn off
@@ -2456,6 +2462,21 @@ check_simplify_modifier(int max_offset)
 }
 
 /*
+ * Return TRUE if the terminal sends modifiers with various keys.  This is when
+ * modifyOtherKeys level 2 is enabled or the kitty keyboard protocol is
+ * enabled.
+ */
+    static int
+key_protocol_enabled(void)
+{
+    // If xterm has responded to XTQMODKEYS it overrules seenModifyOtherKeys.
+    int using_mok = modify_otherkeys_state != MOKS_INITIAL
+			? modify_otherkeys_state == MOKS_ENABLED
+			: seenModifyOtherKeys;
+    return using_mok || kitty_protocol_state == KKPS_ENABLED;
+}
+
+/*
  * Handle mappings in the typeahead buffer.
  * - When something was mapped, return map_result_retry for recursive mappings.
  * - When nothing mapped and typeahead has a character: return map_result_get.
@@ -2564,7 +2585,7 @@ handle_mapping(
 	    // Skip ":lmap" mappings if keys were mapped.
 	    if (mp->m_keys[0] == tb_c1
 		    && (mp->m_mode & local_State)
-		    && !(mp->m_simplified && seenModifyOtherKeys
+		    && !(mp->m_simplified && key_protocol_enabled()
 						     && typebuf.tb_maplen == 0)
 		    && ((mp->m_mode & MODE_LANGMAP) == 0
 						    || typebuf.tb_maplen == 0))
@@ -3252,12 +3273,14 @@ vgetorpeek(int advance)
  * get a character: 3. from the user - handle <Esc> in Insert mode
  */
 		/*
-		 * Special case: if we get an <ESC> in insert mode and there
+		 * Special case: if we get an <ESC> in Insert mode and there
 		 * are no more characters at once, we pretend to go out of
-		 * insert mode.  This prevents the one second delay after
+		 * Insert mode.  This prevents the one second delay after
 		 * typing an <ESC>.  If we get something after all, we may
 		 * have to redisplay the mode. That the cursor is in the wrong
 		 * place does not matter.
+		 * Do not do this if the kitty keyboard protocol is used, every
+		 * <ESC> is the start of an escape sequence then.
 		 */
 		c = 0;
 		new_wcol = curwin->w_wcol;
@@ -3266,6 +3289,7 @@ vgetorpeek(int advance)
 			&& typebuf.tb_len == 1
 			&& typebuf.tb_buf[typebuf.tb_off] == ESC
 			&& !no_mapping
+			&& kitty_protocol_state != KKPS_ENABLED
 			&& ex_normal_busy == 0
 			&& typebuf.tb_maplen == 0
 			&& (State & MODE_INSERT)
@@ -3895,6 +3919,12 @@ getcmdkeycmd(
 		continue;
 	    }
 	    c1 = TO_SPECIAL(c1, c2);
+
+	    // K_ESC is used to avoid ambiguity with the single Esc character
+	    // that might be the start of an escape sequence.  Convert it back
+	    // to a single Esc here.
+	    if (c1 == K_ESC)
+		c1 = ESC;
 	}
 	if (c1 == Ctrl_V)
 	{

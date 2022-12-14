@@ -571,6 +571,8 @@ edit(
 #ifdef USE_ON_FLY_SCROLL
 	dont_scroll = FALSE;		// allow scrolling here
 #endif
+	// May request the keyboard protocol state now.
+	may_send_t_RK();
 
 	/*
 	 * Get a character for Insert mode.  Ignore K_IGNORE and K_NOP.
@@ -1047,12 +1049,19 @@ doESCkey:
 
 	case K_COMMAND:		    // <Cmd>command<CR>
 	case K_SCRIPT_COMMAND:	    // <ScriptCmd>command<CR>
-	    do_cmdkey_command(c, 0);
+	    {
+		do_cmdkey_command(c, 0);
+
 #ifdef FEAT_TERMINAL
-	    if (term_use_loop())
-		// Started a terminal that gets the input, exit Insert mode.
-		goto doESCkey;
+		if (term_use_loop())
+		    // Started a terminal that gets the input, exit Insert mode.
+		    goto doESCkey;
 #endif
+		if (curbuf->b_u_synced)
+		    // The command caused undo to be synced.  Need to save the
+		    // line for undo before inserting the next char.
+		    ins_need_undo = TRUE;
+	    }
 	    break;
 
 	case K_CURSORHOLD:	// Didn't type something for a while.
@@ -1479,7 +1488,8 @@ ins_redraw(int ready)	    // not busy with something
 	aco_save_T	aco;
 	varnumber_T	tick = CHANGEDTICK(curbuf);
 
-	// save and restore curwin and curbuf, in case the autocmd changes them
+	// Save and restore curwin and curbuf, in case the autocmd changes
+	// them.
 	aucmd_prepbuf(&aco, curbuf);
 	apply_autocmds(EVENT_TEXTCHANGEDI, NULL, NULL, FALSE, curbuf);
 	aucmd_restbuf(&aco);
@@ -1499,7 +1509,8 @@ ins_redraw(int ready)	    // not busy with something
 	aco_save_T	aco;
 	varnumber_T	tick = CHANGEDTICK(curbuf);
 
-	// save and restore curwin and curbuf, in case the autocmd changes them
+	// Save and restore curwin and curbuf, in case the autocmd changes
+	// them.
 	aucmd_prepbuf(&aco, curbuf);
 	apply_autocmds(EVENT_TEXTCHANGEDP, NULL, NULL, FALSE, curbuf);
 	aucmd_restbuf(&aco);
@@ -3706,7 +3717,7 @@ ins_esc(
 	out_str(T_BE);
 
 	// Re-enable modifyOtherKeys.
-	out_str(T_CTI);
+	out_str_t_TI();
     }
 #ifdef FEAT_CONCEAL
     // Check if the cursor line needs redrawing after changing State.  If
@@ -4384,6 +4395,7 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 	do
 	    c = vgetc();
 	while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
+
 	if (c == NUL || got_int || (ex_normal_busy > 0 && c == Ctrl_C))
 	    // When CTRL-C was encountered the typeahead will be flushed and we
 	    // won't get the end sequence.  Except when using ":normal".

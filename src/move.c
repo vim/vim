@@ -646,6 +646,20 @@ changed_window_setting_win(win_T *wp)
 }
 
 /*
+ * Call changed_window_setting_win() for every window containing "buf".
+ */
+    void
+changed_window_setting_buf(buf_T *buf)
+{
+    tabpage_T	*tp;
+    win_T	*wp;
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_buffer == buf)
+	    changed_window_setting_win(wp);
+}
+
+/*
  * Set wp->w_topline to a certain number.
  */
     void
@@ -1412,6 +1426,12 @@ textpos2screenpos(
 	is_folded = hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
 #endif
 	row = plines_m_win(wp, wp->w_topline, lnum - 1) + 1;
+
+#ifdef FEAT_DIFF
+	// Add filler lines above this buffer line.
+	row += diff_check_fill(wp, lnum);
+#endif
+
 #ifdef FEAT_FOLDING
 	if (is_folded)
 	{
@@ -1486,6 +1506,11 @@ f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
     pos.lnum = tv_get_number(&argvars[1]);
+    if (pos.lnum > wp->w_buffer->b_ml.ml_line_count)
+    {
+	semsg(_(e_invalid_line_number_nr), pos.lnum);
+	return;
+    }
     pos.col = tv_get_number(&argvars[2]) - 1;
     pos.coladd = 0;
     textpos2screenpos(wp, &pos, &row, &scol, &ccol, &ecol);
@@ -1895,7 +1920,11 @@ adjust_skipcol(void)
     int	    scrolled = FALSE;
 
     validate_cheight();
-    if (curwin->w_cline_height == curwin->w_height)
+    if (curwin->w_cline_height == curwin->w_height
+	    // w_cline_height may be capped at w_height, check there aren't
+	    // actually more lines.
+	    && plines_win(curwin, curwin->w_cursor.lnum, FALSE)
+							   <= curwin->w_height)
     {
 	// the line just fits in the window, don't scroll
 	reset_skipcol();
@@ -2329,7 +2358,7 @@ scroll_cursor_top(int min_scroll, int always)
     {
 	/*
 	 * If "always" is FALSE, only adjust topline to a lower value, higher
-	 * value may happen with wrapping lines
+	 * value may happen with wrapping lines.
 	 */
 	if (new_topline < curwin->w_topline || always)
 	    curwin->w_topline = new_topline;
@@ -2346,7 +2375,8 @@ scroll_cursor_top(int min_scroll, int always)
 	check_topfill(curwin, FALSE);
 #endif
 	// TODO: if the line doesn't fit may optimize w_skipcol
-	if (curwin->w_topline == curwin->w_cursor.lnum)
+	if (curwin->w_topline == curwin->w_cursor.lnum
+		&& curwin->w_skipcol >= curwin->w_cursor.col)
 	    reset_skipcol();
 	if (curwin->w_topline != old_topline
 		|| curwin->w_skipcol != old_skipcol

@@ -15,20 +15,22 @@ jobs:
       CC: gcc
       CFLAGS: -Wno-deprecated-declarations
       DEBIAN_FRONTEND: noninteractive
+      TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
     steps:
       - name: Checkout repository from github
+        if: env.TOKEN
         uses: actions/checkout@v3
 
       - name: Download Coverity
+        if: env.TOKEN
         run: |
           wget -q https://scan.coverity.com/download/cxx/linux64 --post-data "token=$TOKEN&project=vim" -O coverity_tool.tgz
           mkdir cov-scan
           tar ax -f coverity_tool.tgz --strip-components=1 -C cov-scan
-        env:
-          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
       - name: Install packages
+        if: env.TOKEN
         run: |
           sudo apt update && sudo apt install -y \
             autoconf \
@@ -47,6 +49,7 @@ jobs:
             libsodium-dev
 
       - name: Set up environment
+        if: env.TOKEN
         run: |
           echo "$(pwd)/cov-scan/bin" >> $GITHUB_PATH
           (
@@ -55,6 +58,7 @@ jobs:
           ) >> $GITHUB_ENV
 
       - name: Configure
+        if: env.TOKEN
         run: |
           ./configure --with-features=huge ${CONFOPT} --enable-fail-if-missing
           # Append various warning flags to CFLAGS.
@@ -62,10 +66,12 @@ jobs:
           sed -i -f ci/config.mk.${CC}.sed src/auto/config.mk
 
       - name: Build/scan vim
+        if: env.TOKEN
         run: |
           cov-build --dir cov-int make -j${NPROC}
 
       - name: Submit results
+        if: env.TOKEN
         run: |
           tar zcf cov-scan.tgz cov-int
           curl --form token=$TOKEN \
@@ -75,5 +81,4 @@ jobs:
             --form description="Automatic GHA scan" \
             'https://scan.coverity.com/builds?project=vim'
         env:
-          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           EMAIL: ${{ secrets.COVERITY_SCAN_EMAIL }}

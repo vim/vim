@@ -1180,10 +1180,8 @@ EXTERN char e_invalid_value_for_argument_str_str[]
 #endif
 EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
-#ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
-#endif
 EXTERN char e_no_bang_allowed[]
 	INIT(= N_("E477: No ! allowed"));
 EXTERN char e_dont_panic[]
@@ -3343,3 +3341,41 @@ EXTERN char e_cannot_change_user_commands_while_listing[]
 	INIT(= N_("E1311: Cannot change user commands while listing"));
 EXTERN char e_not_allowed_to_change_window_layout_in_this_autocmd[]
 	INIT(= N_("E1312: Not allowed to change the window layout in this autocmd"));
+EXTERN char e_not_allowed_to_add_or_remove_entries_str[]
+	INIT(= N_("E1313: Not allowed to add or remove entries (%s)"));
+#ifdef FEAT_EVAL
+EXTERN char e_class_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1314: Class name must start with an uppercase letter: %s"));
+EXTERN char e_white_space_required_after_class_name_str[]
+	INIT(= N_("E1315: White space required after class name: %s"));
+EXTERN char e_class_can_only_be_defined_in_vim9_script[]
+	INIT(= N_("E1316: Class can only be defined in Vim9 script"));
+EXTERN char e_invalid_object_member_declaration_str[]
+	INIT(= N_("E1317: Invalid object member declaration: %s"));
+EXTERN char e_not_valid_command_in_class_str[]
+	INIT(= N_("E1318: Not a valid command in a class: %s"));
+EXTERN char e_using_class_as_number[]
+	INIT(= N_("E1319: Using a class as a Number"));
+EXTERN char e_using_object_as_number[]
+	INIT(= N_("E1320: Using an object as a Number"));
+EXTERN char e_using_class_as_float[]
+	INIT(= N_("E1321: Using a class as a Float"));
+EXTERN char e_using_object_as_float[]
+	INIT(= N_("E1322: Using an object as a Float"));
+EXTERN char e_using_class_as_string[]
+	INIT(= N_("E1323: Using a class as a String"));
+EXTERN char e_using_object_as_string[]
+	INIT(= N_("E1324: Using an object as a String"));
+EXTERN char e_method_not_found_on_class_str_str[]
+	INIT(= N_("E1325: Method not found on class \"%s\": %s"));
+EXTERN char e_member_not_found_on_object_str_str[]
+	INIT(= N_("E1326: Member not found on object \"%s\": %s"));
+EXTERN char e_object_required_found_str[]
+	INIT(= N_("E1327: Object required, found %s"));
+EXTERN char e_constructor_default_value_must_be_vnone_str[]
+	INIT(= N_("E1328: Constructor default value must be v:none: %s"));
+EXTERN char e_cannot_get_object_member_type_from_initializer_str[]
+	INIT(= N_("E1329: Cannot get object member type from initializer: %s"));
+EXTERN char e_invalid_type_for_object_member_str[]
+	INIT(= N_("E1330: Invalid type for object member: %s"));
+#endif

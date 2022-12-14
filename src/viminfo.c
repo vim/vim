@@ -1370,6 +1370,8 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_JOB:
 		    case VAR_CHANNEL:
 		    case VAR_INSTR:
+		    case VAR_CLASS:
+		    case VAR_OBJECT:
 				     continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
