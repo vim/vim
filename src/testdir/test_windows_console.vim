@@ -7,6 +7,8 @@ CheckNotGui
 
 source mouse.vim
 
+throw 'Skipped: The MS-Windows console input buffer testing not ready.'
+
 " Test for sending low level key presses
 func SendKeys(keylist)
   for k in a:keylist
@@ -34,6 +36,7 @@ endfunc
     
 " Test MS-Windows console low level feedkeys
 func Test_windows_console_feedkeys()
+	throw 'Skipped: The MS-Windows console input buffer testing not ready.'
   CheckMSWindows
   CheckNotGui
   new
@@ -49,6 +52,7 @@ endfunc
 
 " Test MS-Windows console key events
 func Test_windows_console_key_event()
+	throw 'Skipped: The MS-Windows console input buffer testing not ready.'
   CheckMSWindows
   CheckNotGui
   new
@@ -344,11 +348,10 @@ endfunc
 "  Not ready for this test just yet...
 "  " Test MS-Windows console mouse events
 func Test_windows_console_mouse_event()
+	throw 'Skipped: The MS-Windows console input buffer testing not ready.'
   CheckMSWindows
   CheckNotGui
   new
-
-  "throw 'Skipped: The MS-Windows console input buffer testing not ready.'
 
   call test_override('no_query_mouse', 1)
   set mousemodel=extend
@@ -627,7 +630,7 @@ endfunc
 
 " Test for the translation of various mouse terminal codes
 func Test_mouse_termcodes()
-
+	throw 'Skipped: The MS-Windows console input buffer testing not ready.'
   let mouse_codes = [
         \ ["\<LeftMouse>", "<LeftMouse>"],
         \ ["\<MiddleMouse>", "<MiddleMouse>"],
