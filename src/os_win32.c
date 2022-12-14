@@ -330,92 +330,91 @@ make_ambiwidth_event(
 read_console_input(
     HANDLE	    hInput,
     INPUT_RECORD    *lpBuffer,
-    ConReadType	    nReadType,
+    int		    nLength,
     LPDWORD	    lpEvents)
 {
     enum
     {
 	IRSIZE = 10
     };
-    INPUT_RECORD irCache[IRSIZE];
-    ZeroMemory(irCache, IRSIZE * sizeof(INPUT_RECORD));
-    DWORD dwEvents = 0;
-    DWORD tail = 0;
-    DWORD i = 0;
-    DWORD j = 0;
-    INPUT_RECORD irPseudo;
+    static INPUT_RECORD s_irCache[IRSIZE];
+    static DWORD s_dwIndex = 0;
+    static DWORD s_dwMax = 0;
+    DWORD dwEvents;
+    int head;
+    int tail;
+    int i;
+    static INPUT_RECORD s_irPseudo;
 
-    switch (nReadType)
-    {
-	case ConWaitObject:
-	    return (input_record_buffer.length > 0) ? TRUE : FALSE;
-	case ConPeek:
-	    if (input_record_buffer.length > 0)
-	    {
-		*lpEvents = peek_input_record_buffer(lpBuffer, 1);
-		return TRUE;
-	    }
-	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
-	case ConPopRecord: 
-	    // carry on below
-	    break;
-	default:
-	   // nothing else is going to work.
-	   *lpEvents = 0;
-	   return FALSE;
-    }
+    if (nLength == -2)
+	return (s_dwMax > 0) ? TRUE : FALSE;
 
     if (!win8_or_later)
-	return ReadConsoleInputW(hInput, lpBuffer, 1, &dwEvents);
-
-    if (input_record_buffer.length == 0)
     {
-	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
-	ReadConsoleInputW(hInput, irCache, IRSIZE, &dwEvents);
+	if (nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	return ReadConsoleInputW(hInput, lpBuffer, 1, &dwEvents);
+    }
 
-	if (dwEvents > 0)
+    if (s_dwMax == 0)
+    {
+	if (!vtp_working && nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
+	if (dwEvents == 0 && nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
+	s_dwIndex = 0;
+	s_dwMax = dwEvents;
+	if (dwEvents == 0)
 	{
-	    for (i = 0; i < dwEvents - 1; ++i)
-	    {
-		if (is_ambiwidth_event(&irCache[i]))
-		    make_ambiwidth_event(&irCache[i], &irCache[i + 1]);
-	    }
+	    *lpEvents = 0;
+	    return TRUE;
 	}
 
-	if (dwEvents > 1)
+	for (i = s_dwIndex; i < (int)s_dwMax - 1; ++i)
+	    if (is_ambiwidth_event(&s_irCache[i]))
+		make_ambiwidth_event(&s_irCache[i], &s_irCache[i + 1]);
+
+	if (s_dwMax > 1)
 	{
-	    i = 0;
-	    tail = dwEvents - 1;
-	    while (i != tail)
+	    head = 0;
+	    tail = s_dwMax - 1;
+	    while (head != tail)
 	    {
-		if (irCache[i].EventType == WINDOW_BUFFER_SIZE_EVENT
-		    && irCache[i + 1].EventType == WINDOW_BUFFER_SIZE_EVENT)
+		if (s_irCache[head].EventType == WINDOW_BUFFER_SIZE_EVENT
+			&& s_irCache[head + 1].EventType
+						  == WINDOW_BUFFER_SIZE_EVENT)
 		{
 		    // Remove duplicate event to avoid flicker.
-		    for (j = i; j < tail; ++j)
-			irCache[j] = irCache[j + 1];
+		    for (i = head; i < tail; ++i)
+			s_irCache[i] = s_irCache[i + 1];
 		    --tail;
-		    --dwEvents;
 		    continue;
 		}
-		i++;
+		head++;
 	    }
+	    s_dwMax = tail + 1;
 	}
     }
 
-    if (input_record_buffer.length > 0
-	&& input_record_buffer.head->ir.EventType == KEY_EVENT
-	&& input_record_buffer.head->ir.Event.KeyEvent.wRepeatCount > 1)
+    if (s_irCache[s_dwIndex].EventType == KEY_EVENT)
     {
-	irPseudo = input_record_buffer.head->ir;
-	irPseudo.Event.KeyEvent.wRepeatCount = 1;
-	input_record_buffer.head->ir.Event.KeyEvent.wRepeatCount--;
-	*lpBuffer = irPseudo;
-	*lpEvents = 1;
-	return TRUE;
+	if (s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount > 1)
+	{
+	    s_irPseudo = s_irCache[s_dwIndex];
+	    s_irPseudo.Event.KeyEvent.wRepeatCount = 1;
+	    s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount--;
+	    *lpBuffer = s_irPseudo;
+	    *lpEvents = 1;
+	    return TRUE;
+	}
     }
 
-    *lpEvents = read_input_record_buffer(lpBuffer, 1);
+    *lpBuffer = s_irCache[s_dwIndex];
+    if (!(nLength == -1 || nLength == -2) && ++s_dwIndex >= s_dwMax)
+	s_dwMax = 0;
+    *lpEvents = 1;
     return TRUE;
 }
 
