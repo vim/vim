@@ -816,7 +816,7 @@ enddef
 #       rely on checks that can't be confused.
 export def FTsc()
   for lnum in range(1, min([line("$"), 25]))
-    if getline(lnum) =~# 'var\s<\|classvar\s<\|\^this.*\||\w*|\|+\s\w*\s{\|\*ar\s'
+    if getline(lnum) =~# 'var\s<\|classvar\s<\|\^this.*\||\w\+|\|+\s\w*\s{\|\*ar\s'
       setf supercollider
       return
     endif
