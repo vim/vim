@@ -2220,6 +2220,7 @@ compile_assignment(
     char_u	*sp;
     int		is_decl = is_decl_command(cmdidx);
     lhs_T	lhs;
+    CLEAR_FIELD(lhs);
     long	start_lnum = SOURCING_LNUM;
 
     int		has_arg_is_set_prefix = STRNCMP(arg, "ifargisset ", 11) == 0;
@@ -2243,8 +2244,6 @@ compile_assignment(
     p = skip_var_list(arg, TRUE, &var_count, &semicolon, TRUE);
     if (p == NULL)
 	return *arg == '[' ? arg : NULL;
-
-    lhs.lhs_name = NULL;
 
     if (eap->cmdidx == CMD_increment || eap->cmdidx == CMD_decrement)
     {
