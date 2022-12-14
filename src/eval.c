@@ -1194,6 +1194,7 @@ get_lval(
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
 	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT
+		      && lp->ll_tv->v_type != VAR_OBJECT
 		      && lp->ll_tv->v_type != VAR_CLASS)
 	{
 	    if (!quiet)
@@ -1203,6 +1204,7 @@ get_lval(
 	if (lp->ll_tv->v_type != VAR_LIST
 		&& lp->ll_tv->v_type != VAR_DICT
 		&& lp->ll_tv->v_type != VAR_BLOB
+		&& lp->ll_tv->v_type != VAR_OBJECT
 		&& lp->ll_tv->v_type != VAR_CLASS)
 	{
 	    if (!quiet)
@@ -1509,10 +1511,55 @@ get_lval(
 
 	    lp->ll_tv = &lp->ll_li->li_tv;
 	}
-	else  // v_type == VAR_CLASS
+	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
 	{
-	    // TODO: check object members and methods if
-	    // "key" points name start, "p" to the end
+	    class_T *cl = (lp->ll_tv->v_type == VAR_OBJECT
+					   && lp->ll_tv->vval.v_object != NULL)
+			    ? lp->ll_tv->vval.v_object->obj_class
+			    : lp->ll_tv->vval.v_class;
+	    // TODO: what if class is NULL?
+	    if (cl != NULL)
+	    {
+		lp->ll_valtype = NULL;
+		for (int i = 0; i < cl->class_obj_member_count; ++i)
+		{
+		    objmember_T *om = cl->class_obj_members + i;
+		    if (STRNCMP(om->om_name, key, p - key) == 0
+						&& om->om_name[p - key] == NUL)
+		    {
+			switch (om->om_access)
+			{
+			    case ACCESS_PRIVATE:
+				    semsg(_(e_cannot_access_private_object_member_str),
+					    om->om_name);
+				    return NULL;
+			    case ACCESS_READ:
+				    if (!(flags & GLV_READ_ONLY))
+				    {
+					semsg(_(e_object_member_is_not_writable_str),
+						om->om_name);
+					return NULL;
+				    }
+				    break;
+			    case ACCESS_ALL:
+				    break;
+			}
+
+			lp->ll_valtype = om->om_type;
+
+			if (lp->ll_tv->v_type == VAR_OBJECT)
+			    lp->ll_tv = ((typval_T *)(
+					    lp->ll_tv->vval.v_object + 1)) + i;
+			// TODO: what about a class?
+			break;
+		    }
+		}
+		if (lp->ll_valtype == NULL)
+		{
+		    semsg(_(e_object_member_not_found_str), key);
+		    return NULL;
+		}
+	    }
 	}
     }
 
@@ -1640,7 +1687,7 @@ set_var_lval(
     else
     {
 	/*
-	 * Assign to a List or Dictionary item.
+	 * Assign to a List, Dictionary or Object item.
 	 */
 	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)

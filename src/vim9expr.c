@@ -281,6 +281,13 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    objmember_T *m = &cl->class_obj_members[i];
 	    if (STRNCMP(name, m->om_name, len) == 0 && m->om_name[len] == NUL)
 	    {
+		if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
+		{
+		    semsg(_(e_cannot_access_private_object_member_str),
+								   m->om_name);
+		    return FAIL;
+		}
+
 		generate_GET_OBJ_MEMBER(cctx, i, m->om_type);
 
 		*arg = name_end;

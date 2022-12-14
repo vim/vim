@@ -110,19 +110,40 @@ ex_class(exarg_T *eap)
 	    break;
 	}
 
-	// "this.varname"
 	// "this._varname"
-	// TODO:
-	//	"public this.varname"
-	if (STRNCMP(line, "this", 4) == 0)
+	// "this.varname"
+	// "public this.varname"
+	int has_public = FALSE;
+	if (checkforcmd(&p, "public", 3))
 	{
-	    if (line[4] != '.' || !eval_isnamec1(line[5]))
+	    if (STRNCMP(line, "public", 6) != 0)
 	    {
-		semsg(_(e_invalid_object_member_declaration_str), line);
+		semsg(_(e_command_cannot_be_shortened_str), line);
 		break;
 	    }
-	    char_u *varname = line + 5;
+	    has_public = TRUE;
+	    p = skipwhite(line + 6);
+
+	    if (STRNCMP(p, "this", 4) != 0)
+	    {
+		emsg(_(e_public_must_be_followed_by_this));
+		break;
+	    }
+	}
+	if (STRNCMP(p, "this", 4) == 0)
+	{
+	    if (p[4] != '.' || !eval_isnamec1(p[5]))
+	    {
+		semsg(_(e_invalid_object_member_declaration_str), p);
+		break;
+	    }
+	    char_u *varname = p + 5;
 	    char_u *varname_end = to_name_end(varname, FALSE);
+	    if (*varname == '_' && has_public)
+	    {
+		semsg(_(e_public_object_member_name_cannot_start_with_underscore_str), line);
+		break;
+	    }
 
 	    char_u *colon = skipwhite(varname_end);
 	    char_u *type_arg = colon;
@@ -199,6 +220,9 @@ ex_class(exarg_T *eap)
 	    objmember_T *m = ((objmember_T *)objmembers.ga_data)
 							  + objmembers.ga_len;
 	    m->om_name = vim_strnsave(varname, varname_end - varname);
+	    m->om_access = has_public ? ACCESS_ALL
+			    : *varname == '_' ? ACCESS_PRIVATE
+			    : ACCESS_READ;
 	    m->om_type = type;
 	    if (expr_end > expr_start)
 		m->om_init = vim_strnsave(expr_start, expr_end - expr_start);
@@ -551,6 +575,13 @@ class_object_index(
 	    objmember_T *m = &cl->class_obj_members[i];
 	    if (STRNCMP(name, m->om_name, len) == 0 && m->om_name[len] == NUL)
 	    {
+		if (*name == '_')
+		{
+		    semsg(_(e_cannot_access_private_object_member_str),
+								   m->om_name);
+		    return FAIL;
+		}
+
 		// The object only contains a pointer to the class, the member
 		// values array follows right after that.
 		object_T *obj = rettv->vval.v_object;
