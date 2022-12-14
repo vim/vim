@@ -346,6 +346,13 @@ read_console_input(
     int i;
     static INPUT_RECORD s_irPseudo;
 
+    if (s_dwMax == 0 && input_record_buffer.length > 0)
+    {
+	dwEvents = read_input_record_buffer(s_irCache, IRSIZE);
+	s_dwIndex = 0;
+	s_dwMax = dwEvents;
+    }
+
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
 
@@ -2020,10 +2027,10 @@ test_mswin_event(char_u *event, dict_T *args)
     }
 //     // WriteConsoleInput doesnt seem to work in the CI test environment so,
 //     // going to try implementing a virtual test input buffer instead.
-    if (input_encoded)
-    	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
 //     if (input_encoded)
-// 	lpEventsWritten = write_input_record_buffer(&ir, 1);
+//     	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+    if (input_encoded)
+	lpEventsWritten = write_input_record_buffer(&ir, 1);
 
 # endif
     return lpEventsWritten;
