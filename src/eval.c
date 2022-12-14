@@ -5604,7 +5604,8 @@ set_ref_in_item(
 	}
 
 	case VAR_CLASS:
-	    // TODO: mark methods in class_obj_methods ?
+	    // TODO: Mark methods in class_obj_methods ?
+	    // Mark initializer expressions?
 	    break;
 
 	case VAR_OBJECT:
@@ -5863,13 +5864,42 @@ echo_string_core(
 	    break;
 
 	case VAR_CLASS:
-	    *tofree = NULL;
-	    r = (char_u *)"class";
+	    {
+		class_T *cl = tv->vval.v_class;
+		size_t len = 6 + (cl == NULL ? 9 : STRLEN(cl->class_name)) + 1;
+		r = *tofree = alloc(len);
+		vim_snprintf((char *)r, len, "class %s",
+			    cl == NULL ? "[unknown]" : (char *)cl->class_name);
+	    }
 	    break;
 
 	case VAR_OBJECT:
-	    *tofree = NULL;
-	    r = (char_u *)"object";
+	    garray_T ga;
+	    ga_init2(&ga, 1, 50);
+	    ga_concat(&ga, (char_u *)"object of ");
+	    object_T *obj = tv->vval.v_object;
+	    class_T *cl = obj == NULL ? NULL : obj->obj_class;
+	    ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]" : cl->class_name);
+	    if (cl != NULL)
+	    {
+		ga_concat(&ga, (char_u *)" {");
+		for (int i = 0; i < cl->class_obj_member_count; ++i)
+		{
+		    if (i > 0)
+			ga_concat(&ga, (char_u *)", ");
+		    objmember_T *m = &cl->class_obj_members[i];
+		    ga_concat(&ga, m->om_name);
+		    ga_concat(&ga, (char_u *)": ");
+		    char_u *tf = NULL;
+		    ga_concat(&ga, echo_string_core((typval_T *)(obj + 1) + i,
+					       &tf, numbuf, copyID, echo_style,
+					       restore_copyID, composite_val));
+		    vim_free(tf);
+		}
+		ga_concat(&ga, (char_u *)"}");
+	    }
+
+	    *tofree = r = ga.ga_data;
 	    break;
 
 	case VAR_FLOAT:

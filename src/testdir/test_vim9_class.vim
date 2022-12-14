@@ -283,6 +283,21 @@ def Test_class_object_member_inits()
   v9.CheckScriptFailure(lines, 'E1330:')
 enddef
 
+def Test_class_object_to_string()
+  var lines =<< trim END
+      vim9script
+      class TextPosition
+        this.lnum = 1
+        this.col = 22
+      endclass
+
+      assert_equal("class TextPosition", string(TextPosition))
+
+      var pos = TextPosition.new()
+      assert_equal("object of TextPosition {lnum: 1, col: 22}", string(pos))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
