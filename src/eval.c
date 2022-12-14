@@ -5874,32 +5874,36 @@ echo_string_core(
 	    break;
 
 	case VAR_OBJECT:
-	    garray_T ga;
-	    ga_init2(&ga, 1, 50);
-	    ga_concat(&ga, (char_u *)"object of ");
-	    object_T *obj = tv->vval.v_object;
-	    class_T *cl = obj == NULL ? NULL : obj->obj_class;
-	    ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]" : cl->class_name);
-	    if (cl != NULL)
 	    {
-		ga_concat(&ga, (char_u *)" {");
-		for (int i = 0; i < cl->class_obj_member_count; ++i)
+		garray_T ga;
+		ga_init2(&ga, 1, 50);
+		ga_concat(&ga, (char_u *)"object of ");
+		object_T *obj = tv->vval.v_object;
+		class_T *cl = obj == NULL ? NULL : obj->obj_class;
+		ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]"
+							     : cl->class_name);
+		if (cl != NULL)
 		{
-		    if (i > 0)
-			ga_concat(&ga, (char_u *)", ");
-		    objmember_T *m = &cl->class_obj_members[i];
-		    ga_concat(&ga, m->om_name);
-		    ga_concat(&ga, (char_u *)": ");
-		    char_u *tf = NULL;
-		    ga_concat(&ga, echo_string_core((typval_T *)(obj + 1) + i,
+		    ga_concat(&ga, (char_u *)" {");
+		    for (int i = 0; i < cl->class_obj_member_count; ++i)
+		    {
+			if (i > 0)
+			    ga_concat(&ga, (char_u *)", ");
+			objmember_T *m = &cl->class_obj_members[i];
+			ga_concat(&ga, m->om_name);
+			ga_concat(&ga, (char_u *)": ");
+			char_u *tf = NULL;
+			ga_concat(&ga, echo_string_core(
+					       (typval_T *)(obj + 1) + i,
 					       &tf, numbuf, copyID, echo_style,
 					       restore_copyID, composite_val));
-		    vim_free(tf);
+			vim_free(tf);
+		    }
+		    ga_concat(&ga, (char_u *)"}");
 		}
-		ga_concat(&ga, (char_u *)"}");
-	    }
 
-	    *tofree = r = ga.ga_data;
+		*tofree = r = ga.ga_data;
+	    }
 	    break;
 
 	case VAR_FLOAT:
