@@ -93,6 +93,7 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
 #endif
+static char *(p_sloc_values[]) = {"last", "statusline", "tabline", NULL};
 
 static int check_opt_strings(char_u *val, char **values, int list);
 static int opt_strings_flags(char_u *val, char **values, unsigned *flagp, int list);
@@ -1894,6 +1895,12 @@ did_set_string_option(
     }
 #endif
 
+    // 'showcmdloc'
+    else if (varp == &p_sloc)
+    {
+	if (check_opt_strings(p_sloc, p_sloc_values, FALSE) != OK)
+	    errmsg = e_invalid_argument;
+    }
 
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
     // 'toolbar'

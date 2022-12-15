@@ -2240,6 +2240,9 @@ static struct vimoption options[] =
 				(char_u *)TRUE
 #endif
 				} SCTX_INIT},
+    {"showcmdloc",  "sloc", P_STRING|P_RSTAT,
+			    (char_u *)&p_sloc, PV_NONE,
+			    {(char_u *)"last", (char_u *)"last"} SCTX_INIT},
     {"showfulltag", "sft",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_sft, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
