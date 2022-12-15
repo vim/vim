@@ -578,6 +578,7 @@ func Test_statusline_showcmd()
 
   call feedkeys("\<Esc>:set statusline=\<CR>:\<CR>1234", "xt")
   call VerifyScreenDump(buf, 'Test_statusline_showcmd_3', {})
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

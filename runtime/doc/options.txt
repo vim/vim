@@ -7244,9 +7244,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Setting this option to "statusline" or "tabline" means that these will
 	be redrawn whenever the command changes, which can be on every key
 	pressed.
-	The %S 'statusline' item can be used in 'statusline' or 'tabline' to
-	place the text.  Without a custom 'statusline' or 'tabline' it will be
-	displayed in a convenient location.
+	The %S 'statusline' item or |showcmd()| function can be used in
+	'statusline' or 'tabline' to place the text.  Without a custom
+	'statusline' or 'tabline' it will be displayed in a convenient location.
 
 			*'showfulltag'* *'sft'* *'noshowfulltag'* *'nosft'*
 'showfulltag' 'sft'	boolean (default off)

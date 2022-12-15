@@ -1347,6 +1347,7 @@ Sound:							*sound-functions*
 
 Various:					*various-functions*
 	mode()			get current editing mode
+	showcmd()		get current (partially) entered command
 	state()			get current busy state
 	visualmode()		last visual mode used
 	exists()		check if a variable, function, etc. exists

@@ -2480,6 +2480,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_shellescape},
     {"shiftwidth",	0, 1, FEARG_1,	    arg1_number,
 			ret_number,	    f_shiftwidth},
+    {"showcmd",		0, 0, 0,	    NULL,
+			ret_string,	    f_showcmd},
     {"sign_define",	1, 2, FEARG_1,	    arg2_string_or_list_dict,
 			ret_any,	    SIGN_FUNC(f_sign_define)},
     {"sign_getdefined",	0, 1, FEARG_1,	    arg1_string,

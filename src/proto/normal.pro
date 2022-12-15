@@ -19,6 +19,7 @@ int add_to_showcmd(int c);
 void add_to_showcmd_c(int c);
 void push_showcmd(void);
 void pop_showcmd(void);
+void f_showcmd(typval_T *argvars, typval_T *rettv);
 void do_check_scrollbind(int check);
 void check_scrollbind(linenr_T topline_diff, long leftcol_diff);
 int find_decl(char_u *ptr, int len, int locally, int thisblock, int flags_arg);

@@ -1820,6 +1820,16 @@ display_showcmd(void)
 }
 
 /*
+ * "showcmd()" function
+ */
+    void
+f_showcmd(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->vval.v_string = vim_strsave(showcmd_buf);
+    rettv->v_type = VAR_STRING;
+}
+
+/*
  * When "check" is FALSE, prepare for commands that scroll the window.
  * When "check" is TRUE, take care of scroll-binding after the window has
  * scrolled.  Called from normal_cmd() and edit().

@@ -541,6 +541,7 @@ shellescape({string} [, {special}])
 				String	escape {string} for use as shell
 					command argument
 shiftwidth([{col}])		Number	effective value of 'shiftwidth'
+showcmd()			String	'showcmd' buffer, see 'showcmdloc'
 sign_define({name} [, {dict}])	Number	define or update a sign
 sign_define({list})		List	define or update a list of signs
 sign_getdefined([{name}])	List	get a list of defined signs
@@ -8530,6 +8531,16 @@ shiftwidth([{col}])						*shiftwidth()*
 
 		Can also be used as a |method|: >
 			GetColumn()->shiftwidth()
+
+showcmd()					*showcmd()*
+		Returns a |String| containing the (partially) entered
+		command.  The function is useful to add the entered
+		command to a custom 'statusline' or 'tabline': >
+		    set statusline=%{showcmd()}
+<
+		This will only work if the 'showcmd' and 'showcmdloc'
+		options are set accordingly.
+
 
 sign_ functions are documented here: |sign-functions-details|
 

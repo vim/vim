@@ -550,7 +550,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	// Draw the 'showcmd' information if 'showcmdloc' == "statusline".
 	if (p_sc && *p_sloc == 's')
 	{
-	    int	width = MIN(10, this_ru_col - len - 2);
+	    int	width = MIN(SHOWCMD_COLS, this_ru_col - len - 2);
 
 	    if (width > 0)
 		screen_puts_len(showcmd_buf, width, row,

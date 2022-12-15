@@ -4392,7 +4392,8 @@ draw_tabline(void)
 	// Draw the 'showcmd' information if 'showcmdloc' == "tabline".
 	if (p_sc && *p_sloc == 't')
 	{
-	    int	width = MIN(10, (int)Columns - col - (tabcount > 1) * 3);
+	    int	width = MIN(SHOWCMD_COLS,
+			    (int)Columns - col - (tabcount > 1) * 3);
 
 	    if (width > 0)
 		screen_puts_len(showcmd_buf, width, 0, (int)Columns

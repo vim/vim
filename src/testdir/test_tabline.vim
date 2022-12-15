@@ -167,6 +167,7 @@ func Test_tabline_showcmd()
   let lines =<< trim END
     set showtabline=2
     set showcmdloc=tabline
+    set tabline=%{showcmd()}
     call setline(1, ['a', 'b', 'c'])
   END
   call writefile(lines, 'XTest_tabline', 'D')
@@ -178,6 +179,10 @@ func Test_tabline_showcmd()
 
   call feedkeys("\<Esc>1234", "xt")
   call VerifyScreenDump(buf, 'Test_tabline_showcmd_2', {})
+
+  call feedkeys("\<Esc>:set tabline=\<CR>:\<CR>1234", "xt")
+  call VerifyScreenDump(buf, 'Test_tabline_showcmd_3', {})
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
