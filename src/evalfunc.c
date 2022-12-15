@@ -4393,45 +4393,15 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	{
 #ifdef USE_INPUT_BUF
 	    ch_log(NULL, "feedkeys() lowlevel: %s", keys);
-# if defined(MSWIN)
-	    if ( TRUE
-#  if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
-		&& !gui.in_use
-#  endif
-		)
+
+	    int len = (int)STRLEN(keys);
+	    for (int idx = 0; idx < len; ++idx)
 	    {
-		feed_mswin_input(keys);
-		//// execute = FALSE;
-		// TODO: 'execute' with 'lowlevel' often crashes with an
-		// endless loop in windows, for reasons yet to be determined.
-		// I think related to the additional layer of buffer handling.
-		// Workaround for now, only allow 'execute' with 'lowlevel' for
-		// 'keys' that are known to work, and known to be needed for
-		// testing
-		if (execute)
-		{
-		    if (((int)STRLEN(keys) == 1
-					&& (keys[0] == 0x1b || keys[0] == 'y'))
-			|| ((int)STRLEN(keys) == 2
-					&& (keys[0] == '"' && keys[1] == '"'))
-		       )
-			lowlevel = TRUE;
-		    else
-			lowlevel = FALSE;
-		}
-	    }
-	    else
-# endif
-	    {
-		int len = (int)STRLEN(keys);
-		for (int idx = 0; idx < len; ++idx)
-		{
-		    // if a CTRL-C was typed, set got_int, similar to what
-		    // happens in fill_input_buf()
-		    if (keys[idx] == 3 && ctrl_c_interrupts && typed)
-			got_int = TRUE;
-		    add_to_input_buf(keys + idx, 1);
-		}
+		// if a CTRL-C was typed, set got_int, similar to what
+		// happens in fill_input_buf()
+		if (keys[idx] == 3 && ctrl_c_interrupts && typed)
+		    got_int = TRUE;
+		add_to_input_buf(keys + idx, 1);
 	    }
 #else
 	    emsg(_(e_lowlevel_input_not_supported));
