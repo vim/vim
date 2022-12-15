@@ -4161,5 +4161,59 @@ func Test_autocmd_nested_setbufvar()
   %bwipe!
 endfunc
 
+func SetupVimTest()
+  let g:bwe = []
+  let g:brp = []
+  set shortmess+=F
+
+  call mkdir('/tmp/vim/', 'p')
+  call writefile(['test'], '/tmp/vim/1', 'D')
+  call writefile(['test'], '/tmp/vim/2', 'D')
+  call writefile(['test'], '/tmp/vim/3', 'D')
+
+  augroup test
+      autocmd!
+      autocmd BufWinEnter * call add(g:bwe, $'BufWinEnter: {expand('<amatch>')}')
+      autocmd BufReadPost * call add(g:brp,  $'BufReadPost: {expand('<amatch>')}')
+  augroup END
+
+  sil! grep! test /tmp/vim/1 /tmp/vim/2 /tmp/vim/3
+  cdo! substitute/test/TEST
+
+  noa enew!
+  call delete('/tmp/vim', 'rf')
+  set shortmess&vim
+  augroup test
+      autocmd!
+  augroup END
+  augroup! test
+endfunc
+
+func Test_autocmd_shortmess()
+  CheckNotMSWindows
+
+  call SetupVimTest()
+  let output = execute(':mess')->split('\n')
+
+  let info = copy(output)->filter({idx, val -> val =~# '\d of 3'} )
+  let bytes = copy(output)->filter({idx, val -> val =~# 'bytes'} )
+
+  call assert_equal(3, g:brp->len())
+  call assert_equal(3, g:bwe->len())
+  call assert_equal(3, info->len())
+  call assert_equal(3, bytes->len())
+
+  "call append('$', output)
+  "call append('$', ['----'])
+  "call append('$', g:brp)
+  "call append('$', ['----'])
+  "call append('$', g:bwe)
+  "call append('$', ['----'])
+  "call append('$', info)
+  "call append('$', ['----'])
+  "call append('$', bytes)
+
+  delfunc SetupVimTest
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

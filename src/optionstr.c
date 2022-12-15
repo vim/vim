@@ -13,6 +13,8 @@
 
 #include "vim.h"
 
+static char_u shm_buf[SHM_LEN];
+
 static char *(p_ambw_values[]) = {"single", "double", NULL};
 static char *(p_bg_values[]) = {"light", "dark", NULL};
 static char *(p_bkc_values[]) = {"yes", "auto", "no", "breaksymlink", "breakhardlink", NULL};
@@ -2689,4 +2691,29 @@ opt_strings_flags(
 check_ff_value(char_u *p)
 {
     return check_opt_strings(p, p_ff_values, FALSE);
+}
+
+/* 
+ * Save the acutal shortmess Flags and clear them 
+ * temporarily to avoid that file messages
+ * overwrites any output from the following commands.
+ *
+ * Caller must make sure to first call the save_shm_value()
+ * and then the restore_shm_value()!
+ */
+    void
+save_shm_value()
+{
+    mch_memmove(shm_buf, p_shm, STRLEN(p_shm));
+    set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
+}
+
+/* 
+ * Restore the shortmess Flags set from the save_shm_value() function
+ */
+    void
+restore_shm_value()
+{
+    set_option_value_give_err((char_u *)"shm", 0L, shm_buf, 0);
+    vim_memset(shm_buf, 0, SHM_LEN);
 }
