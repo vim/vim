@@ -4775,6 +4775,11 @@ build_stl_str_hl(
 	    get_rel_pos(wp, str, TMPLEN);
 	    break;
 
+	case STL_SHOWCMD:
+	    if (p_sc && STRCMP(opt_name, p_sloc) == 0)
+		str = showcmd_buf;
+	    break;
+
 	case STL_ARGLISTSTAT:
 	    fillable = FALSE;
 	    buf_tmp[0] = 0;
