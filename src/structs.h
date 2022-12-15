@@ -1459,11 +1459,18 @@ typedef struct {
     type_T	*type_decl;	    // declared type or equal to type_current
 } type2_T;
 
+typedef enum {
+    ACCESS_PRIVATE,	// read/write only inside th class
+    ACCESS_READ,	// read everywhere, write only inside th class
+    ACCESS_ALL		// read/write everywhere
+} omacc_T;
+
 /*
  * Entry for an object member variable.
  */
 typedef struct {
     char_u	*om_name;   // allocated
+    omacc_T	om_access;
     type_T	*om_type;
     char_u	*om_init;   // allocated
 } objmember_T;
@@ -1720,7 +1727,8 @@ struct ufunc_S
     def_status_T uf_def_status; // UF_NOT_COMPILED, UF_TO_BE_COMPILED, etc.
     int		uf_dfunc_idx;	// only valid if uf_def_status is UF_COMPILED
 
-    class_T	*uf_class;	// for object method and constructor
+    class_T	*uf_class;	// for object method and constructor; does not
+				// count for class_refcount
 
     garray_T	uf_args;	// arguments, including optional arguments
     garray_T	uf_def_args;	// default argument expressions

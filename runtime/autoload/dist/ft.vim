@@ -810,10 +810,13 @@ export def SQL()
 enddef
 
 # This function checks the first 25 lines of file extension "sc" to resolve
-# detection between scala and SuperCollider
+# detection between scala and SuperCollider.
+# NOTE: We don't check for 'Class : Method', as this can easily be confused
+# 	with valid Scala like `val x : Int = 3`. So we instead only rely on
+# 	checks that can't be confused.
 export def FTsc()
   for lnum in range(1, min([line("$"), 25]))
-    if getline(lnum) =~# '[A-Za-z0-9]*\s:\s[A-Za-z0-9]\|var\s<\|classvar\s<\|\^this.*\||\w*|\|+\s\w*\s{\|\*ar\s'
+    if getline(lnum) =~# 'var\s<\|classvar\s<\|\^this.*\||\w\+|\|+\s\w*\s{\|\*ar\s'
       setf supercollider
       return
     endif

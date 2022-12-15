@@ -283,6 +283,48 @@ def Test_class_object_member_inits()
   v9.CheckScriptFailure(lines, 'E1330:')
 enddef
 
+def Test_class_object_member_access()
+  var lines =<< trim END
+      vim9script
+      class Triple
+         this._one = 1
+         this.two = 2
+         public this.three = 3
+
+         def GetOne(): number
+           return this._one
+         enddef
+      endclass
+
+      var trip = Triple.new()
+      assert_equal(1, trip.GetOne())
+      assert_equal(2, trip.two)
+      assert_equal(3, trip.three)
+      assert_fails('echo trip._one', 'E1333')
+
+      assert_fails('trip._one = 11', 'E1333')
+      assert_fails('trip.two = 22', 'E1335')
+      trip.three = 33
+      assert_equal(33, trip.three)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_class_object_to_string()
+  var lines =<< trim END
+      vim9script
+      class TextPosition
+        this.lnum = 1
+        this.col = 22
+      endclass
+
+      assert_equal("class TextPosition", string(TextPosition))
+
+      var pos = TextPosition.new()
+      assert_equal("object of TextPosition {lnum: 1, col: 22}", string(pos))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
