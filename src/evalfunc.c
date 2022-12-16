@@ -4390,7 +4390,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
     if (*keys != NUL || execute)
     {
 	if (lowlevel
-#ifdef MSWIN
+#ifdef FEAT_VTP
 		&& !is_term_win32()
 #endif
 	   )
