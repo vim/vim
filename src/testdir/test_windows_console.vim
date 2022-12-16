@@ -225,99 +225,99 @@ func Test_windows_console_key_event()
 
 "  NOTE: Fn Keys not working in CI Testing!?
 "
-  " Test for Function Keys 'F1' to 'F12'
-  " VK codes 112(0x70) - 123(0x7B)
-  " With ALL permutatios of modifiers; Shift, Ctrl & Alt
-  for n in range(1, 12)
-    for [mod_str, vim_mod_mask, mod_keycodes] in modifiers
-      let kstr = $"{mod_str}F{n}"
-      let keycode = eval('"\<' .. kstr .. '>"')
-      call SendKeys(mod_keycodes + [111+n])
-      let ch = getcharstr(0)
-      if ch == ''
-	throw 'Skipped: The MS-Windows console input buffer was empty.'
-      endif
-      let mod_mask = getcharmod()
-      call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-      " workaround for termcap changing the character instead of sending Shift
-      if index(mod_keycodes, 0x10) >= 0
-	let vim_mod_mask = vim_mod_mask - 2
-      endif
-      call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
-    endfor
-  endfor
+"    " Test for Function Keys 'F1' to 'F12'
+"    " VK codes 112(0x70) - 123(0x7B)
+"    " With ALL permutatios of modifiers; Shift, Ctrl & Alt
+"    for n in range(1, 12)
+"      for [mod_str, vim_mod_mask, mod_keycodes] in modifiers
+"        let kstr = $"{mod_str}F{n}"
+"        let keycode = eval('"\<' .. kstr .. '>"')
+"        call SendKeys(mod_keycodes + [111+n])
+"        let ch = getcharstr(0)
+"        if ch == ''
+"  	throw 'Skipped: The MS-Windows console input buffer was empty.'
+"        endif
+"        let mod_mask = getcharmod()
+"        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+"        " workaround for termcap changing the character instead of sending Shift
+"        if index(mod_keycodes, 0x10) >= 0
+"  	let vim_mod_mask = vim_mod_mask - 2
+"        endif
+"        call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
+"      endfor
+"    endfor
 
 
-  " Test for the various Ctrl and Shift key combinations.
-  " Refer to the following page for the virtual key codes:
-  " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-  let keytests = [
-    \ [[VK.SHIFT,    VK.PRIOR], "S-Pageup", 2],
-    \ [[VK.LSHIFT,   VK.PRIOR], "S-Pageup", 2],
-    \ [[VK.RSHIFT,   VK.PRIOR], "S-Pageup", 2],
-    \ [[VK.CONTROL,  VK.PRIOR], "C-Pageup", 4],
-    \ [[VK.LCONTROL, VK.PRIOR], "C-Pageup", 4],
-    \ [[VK.RCONTROL, VK.PRIOR], "C-Pageup", 4],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.PRIOR], "C-S-Pageup", 6],
-    \ [[VK.SHIFT,    VK.NEXT], "S-PageDown", 2],
-    \ [[VK.LSHIFT,   VK.NEXT], "S-PageDown", 2],
-    \ [[VK.RSHIFT,   VK.NEXT], "S-PageDown", 2],
-    \ [[VK.CONTROL,  VK.NEXT], "C-PageDown", 4],
-    \ [[VK.LCONTROL, VK.NEXT], "C-PageDown", 4],
-    \ [[VK.RCONTROL, VK.NEXT], "C-PageDown", 4],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.NEXT], "C-S-PageDown", 6],
-    \ [[VK.SHIFT,    VK.END], "S-End", 0],
-    \ [[VK.CONTROL,  VK.END], "C-End", 0],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.END], "C-S-End", 4],
-    \ [[VK.SHIFT,    VK.HOME], "S-Home", 0],
-    \ [[VK.CONTROL,  VK.HOME], "C-Home", 0],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.HOME], "C-S-Home", 4],
-    \ [[VK.SHIFT,    VK.LEFT], "S-Left", 0],
-    \ [[VK.CONTROL,  VK.LEFT], "C-Left", 0],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.LEFT], "C-S-Left", 4],
-    \ [[VK.SHIFT,    VK.UP], "S-Up", 0],
-    \ [[VK.CONTROL,  VK.UP], "C-Up", 4],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.UP], "C-S-Up", 4],
-    \ [[VK.SHIFT,    VK.RIGHT], "S-Right", 0],
-    \ [[VK.CONTROL,  VK.RIGHT], "C-Right", 0],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.RIGHT], "C-S-Right", 4],
-    \ [[VK.SHIFT,    VK.DOWN], "S-Down", 0],
-    \ [[VK.CONTROL,  VK.DOWN], "C-Down", 4],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.DOWN], "C-S-Down", 4],
-    \ [[VK.CONTROL,  VK.KEY_0], "C-0", 4],
-    \ [[VK.CONTROL,  VK.KEY_1], "C-1", 4],
-    \ [[VK.CONTROL,  VK.KEY_2], "C-2", 4],
-    \ [[VK.CONTROL,  VK.KEY_3], "C-3", 4],
-    \ [[VK.CONTROL,  VK.KEY_4], "C-4", 4],
-    \ [[VK.CONTROL,  VK.KEY_5], "C-5", 4],
-    \ [[VK.CONTROL,  VK.KEY_6], "C-^", 0],
-    \ [[VK.CONTROL,  VK.KEY_7], "C-7", 4],
-    \ [[VK.CONTROL,  VK.KEY_8], "C-8", 4],
-    \ [[VK.CONTROL,  VK.KEY_9], "C-9", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD0], "C-0", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD1], "C-1", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD2], "C-2", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD3], "C-3", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD4], "C-4", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD5], "C-5", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD6], "C-6", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD7], "C-7", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD8], "C-8", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD9], "C-9", 4],
-    \ [[VK.CONTROL,  VK.MULTIPLY], "C-*", 4],
-    \ [[VK.CONTROL,  VK.ADD], "C-+", 4],
-    \ [[VK.CONTROL,  VK.SUBTRACT], "C--", 4]
-    \ ]
+"    " Test for the various Ctrl and Shift key combinations.
+"    " Refer to the following page for the virtual key codes:
+"    " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+"    let keytests = [
+"      \ [[VK.SHIFT,    VK.PRIOR], "S-Pageup", 2],
+"      \ [[VK.LSHIFT,   VK.PRIOR], "S-Pageup", 2],
+"      \ [[VK.RSHIFT,   VK.PRIOR], "S-Pageup", 2],
+"      \ [[VK.CONTROL,  VK.PRIOR], "C-Pageup", 4],
+"      \ [[VK.LCONTROL, VK.PRIOR], "C-Pageup", 4],
+"      \ [[VK.RCONTROL, VK.PRIOR], "C-Pageup", 4],
+"      \ [[VK.CONTROL,  VK.SHIFT, VK.PRIOR], "C-S-Pageup", 6],
+"      \ [[VK.SHIFT,    VK.NEXT], "S-PageDown", 2],
+"      \ [[VK.LSHIFT,   VK.NEXT], "S-PageDown", 2],
+"      \ [[VK.RSHIFT,   VK.NEXT], "S-PageDown", 2],
+"      \ [[VK.CONTROL,  VK.NEXT], "C-PageDown", 4],
+"      \ [[VK.LCONTROL, VK.NEXT], "C-PageDown", 4],
+"      \ [[VK.RCONTROL, VK.NEXT], "C-PageDown", 4],
+"      \ [[VK.CONTROL,  VK.SHIFT, VK.NEXT], "C-S-PageDown", 6],
+"      \ [[VK.SHIFT,    VK.END], "S-End", 0],
+"      \ [[VK.CONTROL,  VK.END], "C-End", 0],
+"      \ [[VK.CONTROL,  VK.SHIFT, VK.END], "C-S-End", 4],
+"      \ [[VK.SHIFT,    VK.HOME], "S-Home", 0],
+"      \ [[VK.CONTROL,  VK.HOME], "C-Home", 0],
+"      \ [[VK.CONTROL,  VK.SHIFT, VK.HOME], "C-S-Home", 4],
+"      \ [[VK.SHIFT,    VK.LEFT], "S-Left", 0],
+"      \ [[VK.CONTROL,  VK.LEFT], "C-Left", 0],
+"      \ [[VK.CONTROL,  VK.SHIFT, VK.LEFT], "C-S-Left", 4],
+"      \ [[VK.SHIFT,    VK.UP], "S-Up", 0],
+"      \ [[VK.CONTROL,  VK.UP], "C-Up", 4],
+"      \ [[VK.CONTROL,  VK.SHIFT, VK.UP], "C-S-Up", 4],
+"      \ [[VK.SHIFT,    VK.RIGHT], "S-Right", 0],
+"      \ [[VK.CONTROL,  VK.RIGHT], "C-Right", 0],
+"      \ [[VK.CONTROL,  VK.SHIFT, VK.RIGHT], "C-S-Right", 4],
+"      \ [[VK.SHIFT,    VK.DOWN], "S-Down", 0],
+"      \ [[VK.CONTROL,  VK.DOWN], "C-Down", 4],
+"      \ [[VK.CONTROL,  VK.SHIFT, VK.DOWN], "C-S-Down", 4],
+"      \ [[VK.CONTROL,  VK.KEY_0], "C-0", 4],
+"      \ [[VK.CONTROL,  VK.KEY_1], "C-1", 4],
+"      \ [[VK.CONTROL,  VK.KEY_2], "C-2", 4],
+"      \ [[VK.CONTROL,  VK.KEY_3], "C-3", 4],
+"      \ [[VK.CONTROL,  VK.KEY_4], "C-4", 4],
+"      \ [[VK.CONTROL,  VK.KEY_5], "C-5", 4],
+"      \ [[VK.CONTROL,  VK.KEY_6], "C-^", 0],
+"      \ [[VK.CONTROL,  VK.KEY_7], "C-7", 4],
+"      \ [[VK.CONTROL,  VK.KEY_8], "C-8", 4],
+"      \ [[VK.CONTROL,  VK.KEY_9], "C-9", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD0], "C-0", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD1], "C-1", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD2], "C-2", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD3], "C-3", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD4], "C-4", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD5], "C-5", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD6], "C-6", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD7], "C-7", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD8], "C-8", 4],
+"      \ [[VK.CONTROL,  VK.NUMPAD9], "C-9", 4],
+"      \ [[VK.CONTROL,  VK.MULTIPLY], "C-*", 4],
+"      \ [[VK.CONTROL,  VK.ADD], "C-+", 4],
+"      \ [[VK.CONTROL,  VK.SUBTRACT], "C--", 4]
+"      \ ]
 
-  for [kcodes, kstr, kmod] in keytests
-    call SendKeys(kcodes)
-    sleep 10ms
-    let ch = getcharstr(0)
-    let mod = getcharmod()
-    let keycode = eval('"\<' .. kstr .. '>"')
-    call assert_equal(keycode, ch, $"key = {kstr}")
-    call assert_equal(kmod, mod, $"key = {kstr}")
-  endfor
+"    for [kcodes, kstr, kmod] in keytests
+"      call SendKeys(kcodes)
+"      sleep 10ms
+"      let ch = getcharstr(0)
+"      let mod = getcharmod()
+"      let keycode = eval('"\<' .. kstr .. '>"')
+"      call assert_equal(keycode, ch, $"key = {kstr}")
+"      call assert_equal(kmod, mod, $"key = {kstr}")
+"    endfor
 
   bw!
 endfunc
