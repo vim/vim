@@ -3891,10 +3891,13 @@ stoptermcap(void)
 	out_str(T_KE);			// stop "keypad transmit" mode
 	out_flush();
 	termcap_active = FALSE;
+
+	// Output t_te first, it may switch between main and alternate screen,
+	// and following codes may work on the active screen only.
+	out_str(T_TE);			// stop termcap mode
 	cursor_on();			// just in case it is still off
 	out_str_t_TE();			// stop "raw" mode, modifyOtherKeys and
 					// Kitty keyboard protocol
-	out_str(T_TE);			// stop termcap mode
 	screen_start();			// don't know where cursor is now
 	out_flush();
     }
