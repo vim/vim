@@ -3389,3 +3389,5 @@ EXTERN char e_object_member_not_found_str[]
 EXTERN char e_object_member_is_not_writable_str[]
 	INIT(= N_("E1335: Object member is not writable: %s"));
 #endif
+EXTERN char e_internal_shm_length[]
+	INIT(= N_("EXXXX: Internal error: shortmess too long"));

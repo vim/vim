@@ -4161,15 +4161,16 @@ func Test_autocmd_nested_setbufvar()
   %bwipe!
 endfunc
 
-func SetupVimTest()
+func SetupVimTest_shm()
   let g:bwe = []
   let g:brp = []
   set shortmess+=F
 
-  call mkdir('/tmp/vim/', 'p')
-  call writefile(['test'], '/tmp/vim/1', 'D')
-  call writefile(['test'], '/tmp/vim/2', 'D')
-  call writefile(['test'], '/tmp/vim/3', 'D')
+  let dirname='XVimTestSHM'
+  call mkdir(dirname, 'p')
+  call writefile(['test'], dirname .. '/1')
+  call writefile(['test'], dirname .. '/2')
+  call writefile(['test'], dirname .. '/3')
 
   augroup test
       autocmd!
@@ -4177,11 +4178,16 @@ func SetupVimTest()
       autocmd BufReadPost * call add(g:brp,  $'BufReadPost: {expand('<amatch>')}')
   augroup END
 
-  sil! grep! test /tmp/vim/1 /tmp/vim/2 /tmp/vim/3
+  call setqflist([
+        \  {'filename': dirname .. '/1', 'lnum': 1, 'col': 1, 'text': 'test', 'vcol': 0},
+        \  {'filename': dirname .. '/2', 'lnum': 1, 'col': 1, 'text': 'test', 'vcol': 0},
+        \  {'filename': dirname .. '/3', 'lnum': 1, 'col': 1, 'text': 'test', 'vcol': 0}
+        \  ])
   cdo! substitute/test/TEST
 
+  " clean up
   noa enew!
-  call delete('/tmp/vim', 'rf')
+  call delete(dirname, 'rf')
   set shortmess&vim
   augroup test
       autocmd!
@@ -4192,28 +4198,24 @@ endfunc
 func Test_autocmd_shortmess()
   CheckNotMSWindows
 
-  call SetupVimTest()
+  call SetupVimTest_shm()
   let output = execute(':mess')->split('\n')
 
   let info = copy(output)->filter({idx, val -> val =~# '\d of 3'} )
   let bytes = copy(output)->filter({idx, val -> val =~# 'bytes'} )
+
+  " We test the following here:
+  " BufReadPost should have been triggered 3 times, once per file
+  " BufWinEnter should have been triggered 3 times, once per file
+  " FileInfoMessage should have been shown 3 times, regardless of shm option
+  " "(x of 3)" message from :cnext has been shown 3 times
 
   call assert_equal(3, g:brp->len())
   call assert_equal(3, g:bwe->len())
   call assert_equal(3, info->len())
   call assert_equal(3, bytes->len())
 
-  "call append('$', output)
-  "call append('$', ['----'])
-  "call append('$', g:brp)
-  "call append('$', ['----'])
-  "call append('$', g:bwe)
-  "call append('$', ['----'])
-  "call append('$', info)
-  "call append('$', ['----'])
-  "call append('$', bytes)
-
-  delfunc SetupVimTest
+  delfunc SetupVimTest_shm
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

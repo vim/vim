@@ -14,6 +14,7 @@
 #include "vim.h"
 
 static char_u shm_buf[SHM_LEN];
+static int set_shm_recursive = 0;
 
 static char *(p_ambw_values[]) = {"single", "double", NULL};
 static char *(p_bg_values[]) = {"light", "dark", NULL};
@@ -2704,8 +2705,17 @@ check_ff_value(char_u *p)
     void
 save_shm_value()
 {
-    mch_memmove(shm_buf, p_shm, STRLEN(p_shm));
-    set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
+    if (STRLEN(p_shm) > SHM_LEN)
+    {
+	iemsg(e_internal_shm_length);
+	return;
+    }
+
+    if (++set_shm_recursive == 1)
+    {
+	STRCPY(shm_buf, p_shm);
+	set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
+    }
 }
 
 /* 
@@ -2714,6 +2724,9 @@ save_shm_value()
     void
 restore_shm_value()
 {
-    set_option_value_give_err((char_u *)"shm", 0L, shm_buf, 0);
-    vim_memset(shm_buf, 0, SHM_LEN);
+    if (--set_shm_recursive == 0)
+    {
+	set_option_value_give_err((char_u *)"shm", 0L, shm_buf, 0);
+	vim_memset(shm_buf, 0, SHM_LEN);
+    }
 }
