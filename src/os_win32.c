@@ -2003,11 +2003,14 @@ test_mswin_event(char_u *event, dict_T *args)
 	return FALSE;
     }
 
-    // WriteConsoleInput should be the logical place to inject these low-level
-    // events, But, this doesnt work well in the CI test environment.  So 
+    // Ideally, WriteConsoleInput would be used to inject these low-level
+    // events.  But, this doesnt work well in the CI test environment.  So 
     // implementing an input_record_buffer instead.
     if (input_encoded)
 	lpEventsWritten = write_input_record_buffer(&ir, 1);
+
+    if (STRCMP(event, "mouse") == 0)
+	exec_normal(TRUE, TRUE, TRUE);
 
 # endif
     return lpEventsWritten;
