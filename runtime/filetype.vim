@@ -1006,10 +1006,10 @@ au BufNewFile,BufRead *.json-patch			setf json
 au BufNewFile,BufRead *.ipynb				setf json
 
 " Other files that look like json
-au BufNewFile,BufRead .babelrc,.eslintrc,.prettierrc,.firebaserc  setf json
+au BufNewFile,BufRead .prettierrc,.firebaserc setf json
 
 " JSONC
-au BufNewFile,BufRead *.jsonc			setf jsonc
+au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc,.jshintc,.hintrc,.swrc,[jt]sconfig.*.json setf jsonc
 
 " Jsonnet
 au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
