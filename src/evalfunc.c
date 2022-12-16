@@ -4389,7 +4389,11 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (*keys != NUL || execute)
     {
-	if (lowlevel && !is_term_win32())
+	if (lowlevel
+#ifdef MSWIN
+		&& !is_term_win32()
+#endif
+	   )
 	{
 #ifdef USE_INPUT_BUF
 	    ch_log(NULL, "feedkeys() lowlevel: %s", keys);
