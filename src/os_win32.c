@@ -177,33 +177,25 @@ static void gotoxy(unsigned x, unsigned y);
 static void standout(void);
 static int s_cursor_visible = TRUE;
 static int did_create_conin = FALSE;
-typedef struct input_record_buffer_node_s
+// The 'input_record_buffer' is an internal dynamic fifo queue of MS-Windows
+// console INPUT_RECORD events that are normally read from the console input
+// buffer.  This provides an injection point for testing the low-level handling
+// of INPUT_RECORDs.
+typedef struct input_record_buffer_node_S
 {
     INPUT_RECORD ir;
-    struct input_record_buffer_node_s *next;
-} input_record_buffer_node_t;
-typedef struct input_record_buffer_s
+    struct input_record_buffer_node_S *next;
+} input_record_buffer_node_T;
+typedef struct input_record_buffer_S
 {
-    input_record_buffer_node_t *head;
-    input_record_buffer_node_t *tail;
+    input_record_buffer_node_T *head;
+    input_record_buffer_node_T *tail;
     int length;
-} input_record_buffer_t;
-// The 'input_record_buffer' is an internal dynamic fifo queue of MS-Windows
-// console INPUT_RECORD events that are read from the console input buffer.
-// This provides for;
-// 1. A cache for when records come in faster than can be processed, and
-// 2. An injection point for testing the low-level handling of INPUT_RECORDs.
-static input_record_buffer_t input_record_buffer;
+} input_record_buffer_T;
+static input_record_buffer_T input_record_buffer;
 static int peek_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength);
 static int read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength);
 static int write_input_record_buffer(INPUT_RECORD* irEvents, int nLength);
-
-typedef enum EConReadType {
-    ConPeek = -1,
-    ConWaitObject = -2,
-    ConPopRecord = 1
-} ConReadType;
-
 #endif
 #ifdef FEAT_GUI_MSWIN
 static int s_dont_use_vimrun = TRUE;
@@ -435,7 +427,7 @@ peek_console_input(
     DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
-    return read_console_input(hInput, lpBuffer, ConPeek, lpEvents);
+    return read_console_input(hInput, lpBuffer, -1, lpEvents);
 }
 
 # ifdef FEAT_CLIENTSERVER
@@ -447,7 +439,7 @@ msg_wait_for_multiple_objects(
     DWORD    dwMilliseconds,
     DWORD    dwWakeMask)
 {
-    if (read_console_input(NULL, NULL, ConWaitObject, NULL))
+    if (read_console_input(NULL, NULL, -2, NULL))
 	return WAIT_OBJECT_0;
     return MsgWaitForMultipleObjects(nCount, pHandles, fWaitAll,
 				     dwMilliseconds, dwWakeMask);
@@ -460,7 +452,7 @@ wait_for_single_object(
     HANDLE hHandle,
     DWORD dwMilliseconds)
 {
-    if (read_console_input(NULL, NULL, ConWaitObject, NULL))
+    if (read_console_input(NULL, NULL, -2, NULL))
 	return WAIT_OBJECT_0;
     return WaitForSingleObject(hHandle, dwMilliseconds);
 }
@@ -1039,6 +1031,7 @@ win32_kbd_patch_key(
     static int s_iIsDead = 0;
     static WORD awAnsiCode[2];
     static BYTE abKeystate[256];
+
 
     if (s_iIsDead == 2)
     {
@@ -1671,16 +1664,15 @@ decode_mouse_event(
 			{
 			    if (pmer2->dwEventFlags != MOUSE_MOVED)
 			    {
-				read_console_input(g_hConIn, &ir, ConPopRecord,
-								    &cRecords);
+				read_console_input(g_hConIn, &ir, 1, &cRecords);
+
 				return decode_mouse_event(pmer2);
 			    }
 			    else if (s_xOldMouse == pmer2->dwMousePosition.X &&
 				     s_yOldMouse == pmer2->dwMousePosition.Y)
 			    {
 				// throw away spurious mouse move
-				read_console_input(g_hConIn, &ir, ConPopRecord,
-								    &cRecords);
+				read_console_input(g_hConIn, &ir, 1, &cRecords);
 
 				// are there any more mouse events in queue?
 				peek_console_input(g_hConIn, &ir, 1, &cRecords);
@@ -1918,7 +1910,7 @@ write_input_record_buffer(INPUT_RECORD* irEvents, int nLength)
     while (nCount < nLength)
     {
 	input_record_buffer.length++;
-	input_record_buffer_node_t *event_node = malloc(sizeof(input_record_buffer_node_t));
+	input_record_buffer_node_T *event_node = malloc(sizeof(input_record_buffer_node_T));
 	event_node->ir = irEvents[nCount++];
 	event_node->next = NULL;
 	if (input_record_buffer.tail == NULL)
@@ -1942,7 +1934,7 @@ read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
     while (nCount < nMaxLength && input_record_buffer.head != NULL)
     {
 	input_record_buffer.length--;
-	input_record_buffer_node_t *pop_head = input_record_buffer.head;
+	input_record_buffer_node_T *pop_head = input_record_buffer.head;
 	irEvents[nCount++] = pop_head->ir;
 	input_record_buffer.head = pop_head->next;
 	vim_free(pop_head);
@@ -1955,7 +1947,7 @@ read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
 peek_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
 {
     int nCount = 0;
-    input_record_buffer_node_t *temp =  input_record_buffer.head;
+    input_record_buffer_node_T *temp =  input_record_buffer.head;
     while (nCount < nMaxLength && temp != NULL)
     {
 	irEvents[nCount++] = temp->ir;
@@ -1967,35 +1959,21 @@ peek_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
 
 #ifdef FEAT_EVAL
 /*
- * This is for testing Vim's low-level handling of user input events when
- * running in MS-Windows.  Entry point for both GUI and Console.
- *
- * If the GUI is running, this will call test_gui_w32_sendevent() in gui_w32.c
- * to test MS-Windows Win32 GUI input event message handling.  Otherwise, this
- * will go on to process the events as MS-Windows terminal console input buffer
- * events.
+ * The 'test_mswin_event' function is for testing Vim's low-level handling of
+ * user input events.  ie, this manages the encoding of INPUT_RECORD events
+ * so that we have a way to test how Vim decodes INPUT_RECORD events in Windows
+ * consoles.
  * 
- * This essentially does the reverse of "read_console_input()", where Vim reads
- * user input events from the console's input buffer in the form of
- * MS-Windows INPUT_RECORD structs.  Each INPUT_RECORD represents one event
- * such as; a keystroke, a mouse motion, a mouse scroll or a button click, etc. 
+ * The 'test_mswin_event' function is based on 'test_gui_event'.  In fact, when
+ * the Windows GUI is running, the arguments; 'event' and 'args', are the same.
+ * So, it acts as an alias for 'test_gui_event' for the Windows GUI.
  * 
- * This function allows us to emulate user input at test-time.  
- *
- * ....The event type and args dictionary....
+ * When the Windows console is running, the arguments; 'event' and 'args', are
+ * a subset of what 'test_gui_event' handles, ie, only "keyboard" and "mouse"
+ * events are encoded as INPUT_RECORD events.
  * 
- * for Vim to synthesize Win32 INPUT_RECORD events, which are then written to
- * the test input buffer.  The test input buffer acts as a virtual console 
- * input buffer for test purposes.  Vim can then process the input test buffer
- * in read_console_input(), and process the records as if a user had entered
- * them directly.
- * 
- * This function returns the number of events actually written to the buffer.
- * 
- * If an exception occurs it will write an error message via semsg().  
- * Otherwise, it's typically up to the test script to
- * assert that the expected operation has occurred, by checking the end result
- * after Vim's processing the console's input buffer.
+ * Note: INPUT_RECORDs are only used by the Windows console, not the GUI.  The
+ * GUI sends MSG structs instead.
  */ 
     int
 test_mswin_event(char_u *event, dict_T *args)
@@ -2009,9 +1987,8 @@ test_mswin_event(char_u *event, dict_T *args)
 
 # if defined(VIMDLL) || !defined(FEAT_GUI_MSWIN)
 
-// Only implemented event record types are;
-//    KEY_EVENT and MOUSE_EVENT
-// TODO: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
+// Currently implemented event record types are; KEY_EVENT and MOUSE_EVENT
+// Potentially could also implement: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
 // Maybe also:  MENU_EVENT
 
     INPUT_RECORD ir;
@@ -2025,10 +2002,10 @@ test_mswin_event(char_u *event, dict_T *args)
 	semsg(_(e_invalid_argument_str), event);
 	return FALSE;
     }
-//     // WriteConsoleInput doesnt seem to work in the CI test environment so,
-//     // going to try implementing a virtual test input buffer instead.
-//     if (input_encoded)
-//     	WriteConsoleInput(g_hConIn, &ir, 1, &lpEventsWritten);
+
+    // WriteConsoleInput should be the logical place to inject these low-level
+    // events, But, this doesnt work well in the CI test environment.  So 
+    // implementing an input_record_buffer instead.
     if (input_encoded)
 	lpEventsWritten = write_input_record_buffer(&ir, 1);
 
@@ -2242,7 +2219,7 @@ WaitForChar(long msec, int ignore_input)
 		if (ir.Event.KeyEvent.uChar.UnicodeChar == 0
 			&& ir.Event.KeyEvent.wVirtualKeyCode == 13)
 		{
-		    read_console_input(g_hConIn, &ir, ConPopRecord, &cRecords);
+		    read_console_input(g_hConIn, &ir, 1, &cRecords);
 		    continue;
 		}
 # endif
@@ -2251,7 +2228,7 @@ WaitForChar(long msec, int ignore_input)
 		    return TRUE;
 	    }
 
-	    read_console_input(g_hConIn, &ir, ConPopRecord, &cRecords);
+	    read_console_input(g_hConIn, &ir, 1, &cRecords);
 
 	    if (ir.EventType == FOCUS_EVENT)
 		handle_focus_event(ir);
@@ -2352,7 +2329,7 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	if (g_nMouseClick != -1)
 	    return 0;
 # endif
-	if (read_console_input(g_hConIn, &ir, ConPopRecord, &cRecords) == 0)
+	if (read_console_input(g_hConIn, &ir, 1, &cRecords) == 0)
 	{
 	    if (did_create_conin)
 		read_error_exit();
@@ -3426,10 +3403,6 @@ mch_init_c(void)
 
     _fmode = O_BINARY;		// we do our own CR-LF translation
     out_flush();
-    
-    input_record_buffer.head = NULL;
-    input_record_buffer.tail = NULL;
-    input_record_buffer.length = 0;
 
     // Obtain handles for the standard Console I/O devices
     if (read_cmd_fd == 0)
