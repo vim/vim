@@ -3689,7 +3689,7 @@ out_str_t_TE(void)
 	    || modify_otherkeys_state == MOKS_DISABLED)
 	modify_otherkeys_state = MOKS_DISABLED;
     else if (modify_otherkeys_state != MOKS_INITIAL)
-	modify_otherkeys_state = MOKS_AFTER_T_KE;
+	modify_otherkeys_state = MOKS_AFTER_T_TE;
 
     // When the kitty keyboard protocol is enabled we expect t_TE to disable
     // it.  Remembering that it was detected to be enabled is useful in some
@@ -3700,7 +3700,7 @@ out_str_t_TE(void)
 	    || kitty_protocol_state == KKPS_DISABLED)
 	kitty_protocol_state = KKPS_DISABLED;
     else
-	kitty_protocol_state = KKPS_AFTER_T_KE;
+	kitty_protocol_state = KKPS_AFTER_T_TE;
 }
 
 static int send_t_RK = FALSE;
@@ -3891,10 +3891,23 @@ stoptermcap(void)
 	out_str(T_KE);			// stop "keypad transmit" mode
 	out_flush();
 	termcap_active = FALSE;
+
+	// Output t_te before t_TE, t_te may switch between main and alternate
+	// screen and following codes may work on the active screen only.
+	//
+	// When using the Kitty keyboard protocol the main and alternate screen
+	// use a separate state.  If we are (or were) using the Kitty keyboard
+	// protocol and t_te is not empty (possibly switching screens) then
+	// output t_TE both before and after outputting t_te.
+	if (*T_TE != NUL && (kitty_protocol_state == KKPS_ENABLED
+				     || kitty_protocol_state == KKPS_DISABLED))
+	    out_str_t_TE();		// probably disables the kitty keyboard
+					// protocol
+
+	out_str(T_TE);			// stop termcap mode
 	cursor_on();			// just in case it is still off
 	out_str_t_TE();			// stop "raw" mode, modifyOtherKeys and
 					// Kitty keyboard protocol
-	out_str(T_TE);			// stop termcap mode
 	screen_start();			// don't know where cursor is now
 	out_flush();
     }
@@ -5155,7 +5168,7 @@ handle_key_with_modifier(
     if (trail != 'u'
 	    && (kitty_protocol_state == KKPS_INITIAL
 		|| kitty_protocol_state == KKPS_OFF
-		|| kitty_protocol_state == KKPS_AFTER_T_KE)
+		|| kitty_protocol_state == KKPS_AFTER_T_TE)
 	    && term_props[TPR_KITTY].tpr_status != TPR_YES)
     {
 #ifdef FEAT_EVAL

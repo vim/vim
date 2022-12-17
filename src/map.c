@@ -326,7 +326,7 @@ list_mappings(
 		case MOKS_OFF: name = _("Off"); break;
 		case MOKS_ENABLED: name = _("On"); break;
 		case MOKS_DISABLED: name = _("Disabled"); break;
-		case MOKS_AFTER_T_KE: name = _("Cleared"); break;
+		case MOKS_AFTER_T_TE: name = _("Cleared"); break;
 	    }
 
 	    char buf[200];
@@ -344,7 +344,7 @@ list_mappings(
 		case KKPS_OFF: name = _("Off"); break;
 		case KKPS_ENABLED: name = _("On"); break;
 		case KKPS_DISABLED: name = _("Disabled"); break;
-		case KKPS_AFTER_T_KE: name = _("Cleared"); break;
+		case KKPS_AFTER_T_TE: name = _("Cleared"); break;
 	    }
 
 	    char buf[200];

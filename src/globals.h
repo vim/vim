@@ -1396,12 +1396,12 @@ typedef enum {
     MOKS_OFF,
     // Used when receiving the state and the level is two.
     MOKS_ENABLED,
-    // Used after outputting t_KE when the state was MOKS_ENABLED.  We do not
-    // really know if t_KE actually disabled the protocol, the following t_KI
+    // Used after outputting t_TE when the state was MOKS_ENABLED.  We do not
+    // really know if t_TE actually disabled the protocol, the following t_TI
     // is expected to request the state, but the response may come only later.
     MOKS_DISABLED,
-    // Used after outputting t_KE when the state was not MOKS_ENABLED.
-    MOKS_AFTER_T_KE,
+    // Used after outputting t_TE when the state was not MOKS_ENABLED.
+    MOKS_AFTER_T_TE,
 } mokstate_T;
 
 // Set when a response to XTQMODKEYS was received.  Only works for xterm
@@ -1416,12 +1416,12 @@ typedef enum {
     KKPS_OFF,
     // Used when receiving the state and the flags are non-zero.
     KKPS_ENABLED,
-    // Used after outputting t_KE when the state was KKPS_ENABLED.  We do not
-    // really know if t_KE actually disabled the protocol, the following t_KI
+    // Used after outputting t_TE when the state was KKPS_ENABLED.  We do not
+    // really know if t_TE actually disabled the protocol, the following t_TI
     // is expected to request the state, but the response may come only later.
     KKPS_DISABLED,
-    // Used after outputting t_KE when the state was not KKPS_ENABLED.
-    KKPS_AFTER_T_KE,
+    // Used after outputting t_TE when the state was not KKPS_ENABLED.
+    KKPS_AFTER_T_TE,
 } kkpstate_T;
 
 EXTERN kkpstate_T kitty_protocol_state INIT(= KKPS_INITIAL);
