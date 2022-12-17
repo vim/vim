@@ -2211,8 +2211,9 @@ win_line(
 		if (wlv.diff_hlf == HLF_CHD && ptr - line >= change_start
 							   && wlv.n_extra == 0)
 		    wlv.diff_hlf = HLF_TXD;		// changed text
-		if (wlv.diff_hlf == HLF_TXD && (ptr - line > change_end
-							   || wlv.n_extra > 0))
+		if (wlv.diff_hlf == HLF_TXD
+			&& ((ptr - line > change_end && wlv.n_extra == 0)
+			       || (wlv.n_extra > 0 && wlv.extra_for_textprop)))
 		    wlv.diff_hlf = HLF_CHD;		// changed line
 		wlv.line_attr = HL_ATTR(wlv.diff_hlf);
 		if (wp->w_p_cul && lnum == wp->w_cursor.lnum
