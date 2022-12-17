@@ -4389,7 +4389,8 @@ clear_termcodes(void)
 #define ATC_FROM_TERM 55
 
 /*
- * Add a new entry to the list of terminal codes.
+ * Add a new entry for "name[2]" to the list of terminal codes.
+ * Note that "name" may not have a terminating NUL.
  * The list is kept alphabetical for ":set termcap"
  * "flags" is TRUE when replacing 7-bit by 8-bit controls is desired.
  * "flags" can also be ATC_FROM_TERM for got_code_from_term().
@@ -4497,7 +4498,8 @@ add_termcode(char_u *name, char_u *string, int flags)
 		    {
 			// They are equal but for the ";*": don't add it.
 #ifdef FEAT_EVAL
-			ch_log(NULL, "Termcap entry %s did not change", name);
+			ch_log(NULL, "Termcap entry %c%c did not change",
+							     name[0], name[1]);
 #endif
 			vim_free(s);
 			return;
@@ -4507,8 +4509,8 @@ add_termcode(char_u *name, char_u *string, int flags)
 		{
 		    // Replace old code.
 #ifdef FEAT_EVAL
-		    ch_log(NULL, "Termcap entry %s was: %s",
-						      name, termcodes[i].code);
+		    ch_log(NULL, "Termcap entry %c%c was: %s",
+					  name[0], name[1], termcodes[i].code);
 #endif
 		    vim_free(termcodes[i].code);
 		    --tc_len;
@@ -4528,7 +4530,7 @@ add_termcode(char_u *name, char_u *string, int flags)
     }
 
 #ifdef FEAT_EVAL
-    ch_log(NULL, "%s termcap entry %s to %s", action, name, s);
+    ch_log(NULL, "%s termcap entry %c%c to %s", action, name[0], name[1], s);
 #endif
     termcodes[i].name[0] = name[0];
     termcodes[i].name[1] = name[1];
