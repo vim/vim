@@ -3696,5 +3696,35 @@ func Test_text_prop_delete_updates()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_text_prop_diff_mode()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['9000', '0009', '0009', '9000', '0009'])
+
+      let type = 'test'
+      call prop_type_add(type, {})
+      let text = '<text>'
+      call prop_add(1, 1, {'type': type, 'text': text})
+      call prop_add(2, 0, {'type': type, 'text': text, 'text_align': 'after'})
+      call prop_add(3, 0, {'type': type, 'text': text, 'text_align': 'right'})
+      call prop_add(4, 0, {'type': type, 'text': text, 'text_align': 'above'})
+      call prop_add(5, 0, {'type': type, 'text': text, 'text_align': 'below'})
+      set diff
+
+      vnew
+      call setline(1, ['000', '000', '000', '000', '000'])
+      set diff
+  END
+  call writefile(lines, 'XtextPropDiff', 'D')
+  let buf = RunVimInTerminal('-S XtextPropDiff', #{rows: 10, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_diff_mode_1', {})
+
+  call term_sendkeys(buf, ":windo set number\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_diff_mode_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

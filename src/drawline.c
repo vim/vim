@@ -2206,11 +2206,13 @@ win_line(
 #ifdef FEAT_DIFF
 	    if (wlv.diff_hlf != (hlf_T)0)
 	    {
+		// When there is extra text (e.g. virtual text) it gets the
+		// diff highlighting for the line, but not for changed text.
 		if (wlv.diff_hlf == HLF_CHD && ptr - line >= change_start
 							   && wlv.n_extra == 0)
 		    wlv.diff_hlf = HLF_TXD;		// changed text
-		if (wlv.diff_hlf == HLF_TXD && ptr - line > change_end
-							   && wlv.n_extra == 0)
+		if (wlv.diff_hlf == HLF_TXD && (ptr - line > change_end
+							   || wlv.n_extra > 0))
 		    wlv.diff_hlf = HLF_CHD;		// changed line
 		wlv.line_attr = HL_ATTR(wlv.diff_hlf);
 		if (wp->w_p_cul && lnum == wp->w_cursor.lnum
