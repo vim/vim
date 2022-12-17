@@ -4401,6 +4401,9 @@ add_termcode(char_u *name, char_u *string, int flags)
     int		    i, j;
     char_u	    *s;
     int		    len;
+#ifdef FEAT_EVAL
+    char	    *action = "Setting";
+#endif
 
     if (string == NULL || *string == NUL)
     {
@@ -4493,6 +4496,9 @@ add_termcode(char_u *name, char_u *string, int flags)
 				   == termcodes[i].code[termcodes[i].len - 1])
 		    {
 			// They are equal but for the ";*": don't add it.
+#ifdef FEAT_EVAL
+			ch_log(NULL, "Termcap entry %s did not change", name);
+#endif
 			vim_free(s);
 			return;
 		    }
@@ -4500,6 +4506,10 @@ add_termcode(char_u *name, char_u *string, int flags)
 		else
 		{
 		    // Replace old code.
+#ifdef FEAT_EVAL
+		    ch_log(NULL, "Termcap entry %s was: %s",
+						      name, termcodes[i].code);
+#endif
 		    vim_free(termcodes[i].code);
 		    --tc_len;
 		    break;
@@ -4509,11 +4519,17 @@ add_termcode(char_u *name, char_u *string, int flags)
 	/*
 	 * Found alphabetical larger entry, move rest to insert new entry
 	 */
+#ifdef FEAT_EVAL
+	action = "Adding";
+#endif
 	for (j = tc_len; j > i; --j)
 	    termcodes[j] = termcodes[j - 1];
 	break;
     }
 
+#ifdef FEAT_EVAL
+    ch_log(NULL, "%s termcap entry %s to %s", action, name, s);
+#endif
     termcodes[i].name[0] = name[0];
     termcodes[i].name[1] = name[1];
     termcodes[i].code = s;
@@ -6940,15 +6956,47 @@ got_code_from_term(char_u *code, int len)
 	    if (name[0] == 'C' && name[1] == 'o')
 	    {
 		// Color count is not a key code.
-		may_adjust_color_count(atoi((char *)str));
+		int val = atoi((char *)str);
+#if defined(FEAT_EVAL)
+		if (val == t_colors)
+		    ch_log(NULL, "got_code_from_term(Co): no change (%d)", val);
+		else
+		    ch_log(NULL,
+			       "got_code_from_term(Co): changed from %d to %d",
+								t_colors, val);
+#endif
+		may_adjust_color_count(val);
 	    }
 	    else
 	    {
-		// First delete any existing entry with the same code.
 		i = find_term_bykeys(str);
-		if (i >= 0)
-		    del_termcode_idx(i);
-		add_termcode(name, str, ATC_FROM_TERM);
+		if (i >= 0 && name[0] == termcodes[i].name[0]
+					    && name[1] == termcodes[i].name[1])
+		{
+		    // Existing entry with the same name and code - skip.
+#ifdef FEAT_EVAL
+		    ch_log(NULL, "got_code_from_term(): Entry %c%c did not change",
+							     name[0], name[1]);
+#endif
+		}
+		else
+		{
+		    if (i >= 0)
+		    {
+			// Delete an existing entry using the same code.
+#ifdef FEAT_EVAL
+			ch_log(NULL, "got_code_from_term(): Deleting entry %c%c with matching keys %s",
+			      termcodes[i].name[0], termcodes[i].name[1], str);
+#endif
+			del_termcode_idx(i);
+		    }
+#ifdef FEAT_EVAL
+		    else
+			ch_log(NULL, "got_code_from_term(): Adding entry %c%c with keys %s",
+							name[0], name[1], str);
+#endif
+		    add_termcode(name, str, ATC_FROM_TERM);
+		}
 	    }
 	}
     }
