@@ -238,7 +238,7 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
-static BOOL win11_or_later = FALSE;
+static BOOL win10_final_or_later = FALSE;
 
 /*
  * Get version number including build number
@@ -894,9 +894,9 @@ PlatformId(void)
 		|| ovi.dwMajorVersion > 6)
 	    win8_or_later = TRUE;
 
-	if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 22000)
+	if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19045)
 		|| ovi.dwMajorVersion > 10)
-	    win11_or_later = TRUE;
+	    win10_final_or_later = TRUE;
 
 #ifdef HAVE_ACL
 	// Enable privilege for getting or setting SACLs.
@@ -2697,7 +2697,7 @@ SaveConsoleBuffer(
 
     // VTP uses alternate screen buffer.
     // No need to save buffer contents for restoration.
-    if (win11_or_later && vtp_working)
+    if (win10_final_or_later && vtp_working)
 	return TRUE;
 
     /*
@@ -2795,7 +2795,7 @@ RestoreConsoleBuffer(
 
     // VTP uses alternate screen buffer.
     // No need to restore buffer contents.
-    if (win11_or_later && vtp_working)
+    if (win10_final_or_later && vtp_working)
 	return TRUE;
 
     if (cb == NULL || !cb->IsValid)
@@ -5763,7 +5763,7 @@ termcap_mode_start(void)
 
     // VTP uses alternate screen buffer.
     // Switch to a new alternate screen buffer.
-    if (win11_or_later && p_rs && vtp_working)
+    if (win10_final_or_later && p_rs && vtp_working)
 	vtp_printf("\033[?1049h");
 
     SaveConsoleBuffer(&g_cbNonTermcap);
@@ -5846,7 +5846,7 @@ termcap_mode_end(void)
 
     // VTP uses alternate screen buffer.
     // Switch back to main screen buffer.
-    if (exiting && win11_or_later && p_rs && vtp_working)
+    if (exiting && win10_final_or_later && p_rs && vtp_working)
 	vtp_printf("\033[?1049l");
 
     if (!USE_WT && (p_rs || exiting))
