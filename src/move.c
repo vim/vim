@@ -1437,6 +1437,7 @@ textpos2screenpos(
 	{
 	    row += W_WINROW(wp);
 	    coloff = wp->w_wincol + 1;
+	    coloff += win_col_off(wp);
 	}
 	else
 #endif
