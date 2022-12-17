@@ -17,20 +17,8 @@ func SendKeys(keylist)
   endfor
 endfunc
 
-" Test for sending low level mouse events
-func SendMouse(button, row, col, multiclick, modifiers)
-    let args = #{ }
-    let args.button = a:button
-    let args.row = a:row
-    let args.col = a:col
-    let args.multiclick = a:multiclick
-    let args.modifiers = a:modifiers
-    call test_mswin_event("mouse", args)
-    " call feedkeys("\<Esc>", 'Lx!')
-endfunc
-
 " Test MS-Windows console key events
-func Test_windows_console_key_event()
+func Test_mswin_key_event()
   CheckMSWindows
   CheckNotGui
   new
@@ -323,7 +311,7 @@ func Test_windows_console_key_event()
 endfunc
 
 "  Test MS-Windows console mouse events
-func Test_windows_console_mouse_event()
+func Test_mswin_mouse_event()
   CheckMSWindows
   CheckNotGui
   new
@@ -333,63 +321,38 @@ func Test_windows_console_mouse_event()
   call WaitForResponses()
 
   let msg = ''
-  let MOUSE = {
-	\ 'LEFT'    : 0x00,
-	\ 'MIDDLE'  : 0x01,
-	\ 'RIGHT'   : 0x02,
-	\ 'RELEASE' : 0x03,
-	\ 'WHDOWN'  : 0x100,
-	\ 'WHUP'    : 0x200,
-	\ 'WHLEFT'  : 0x500,
-	\ 'WHRIGHT' : 0x600,
-	\ 'SHIFT'   : 0x04,
-	\ 'ALT'     : 0x08,
-	\ 'CTRL'    : 0x10,
-	\ }
 
   call setline(1, ['one two three', 'four five six'])
 
   " place the cursor using left click and release in normal mode
-  let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  let args.button = 3
-  eval 'mouse'->test_mswin_event(args)
-  call feedkeys("\<Esc>", 'Lx!')
+  call MouseLeftClick(2, 4)
+  call MouseLeftRelease(2, 4)
   call assert_equal([0, 2, 4, 0], getpos('.'))
 
   " select and yank a word
   let @" = ''
-  let args = #{button: 0, row: 1, col: 9, multiclick: 0, modifiers: 0}
+  call MouseLeftClick(1, 9)
+  let args = #{button: 0, row: 1, col: 9, multiclick: 1, modifiers: 0}
   call test_mswin_event('mouse', args)
-  let args.multiclick = 1
-  call test_mswin_event('mouse', args)
-  let args.button = 3
-  let args.multiclick = 0
-  call test_mswin_event('mouse', args)
+  call MouseLeftRelease(1, 9)
   call feedkeys("y", 'Lx!')
   call assert_equal('three', @")
 
   " create visual selection using right click
   let @" = ''
-  let args = #{button: 0, row: 2, col: 6, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  let args.button = 3
-  call test_mswin_event('mouse', args)
-  let args = #{button: 2, row: 2, col: 13, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  let args.button = 3
-  call test_mswin_event('mouse', args)
+
+  call MouseLeftClick(2 ,6)
+  call MouseLeftRelease(2, 6)
+  call MouseRightClick(2, 13)
+  call MouseRightRelease(2, 13)
   call feedkeys("y", 'Lx!')
   call assert_equal('five six', @")
 
   " paste using middle mouse button
   let @* = 'abc '
   call feedkeys('""', 'Lx!')
-  let args = #{button: 1, row: 1, col: 9, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  let args.button = 3
-  call test_mswin_event('mouse', args)
-  call feedkeys("\<Esc>", 'Lx!')
+  call MouseMiddleClick(1, 9)
+  call MouseMiddleRelease(1, 9)
   call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
 
   %d _
@@ -397,18 +360,16 @@ func Test_windows_console_mouse_event()
   call setline(1, range(1, 100))
 
   " Note: the scroll directions seem inverted compared to the GUI tests
-  " scroll up
-  let args = #{button: 0x100, row: 2, col: 1, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  call test_mswin_event('mouse', args)
-  call test_mswin_event('mouse', args)
+  " Scroll Down
+  call MouseWheelDown(2, 1)
+  call MouseWheelDown(2, 1)
+  call MouseWheelDown(2, 1)
   call feedkeys("H", 'Lx!')
   call assert_equal(10, line('.'))
 
-  " scroll down
-  let args = #{button: 0x200, row: 2, col: 1, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  call test_mswin_event('mouse', args)
+  " Scroll Up
+  call MouseWheelUp(2, 1)
+  call MouseWheelUp(2, 1)
   call feedkeys("H", 'Lx!')
   call assert_equal(4, line('.'))
   set scrolloff&
@@ -416,21 +377,16 @@ func Test_windows_console_mouse_event()
   %d _
   set nowrap
   call setline(1, range(10)->join('')->repeat(10))
-  " scroll left
-  let args = #{button: 0x600, row: 1, col: 5, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  let args.col = 10
-  call test_mswin_event('mouse', args)
-  let args.col = 15
-  call test_mswin_event('mouse', args)
+  " Scroll Right
+  call MouseWheelRight(1, 5)
+  call MouseWheelRight(1, 10)
+  call MouseWheelRight(1, 15)
   call feedkeys('g0', 'Lx!')
   call assert_equal(19, col('.'))
 
-  " scroll right
-  let args = #{button: 0x500, row: 1, col: 15, multiclick: 0, modifiers: 0}
-  call test_mswin_event('mouse', args)
-  let args.col = 10
-  call test_mswin_event('mouse', args)
+  " Scroll Left
+  call MouseWheelLeft(1, 15)
+  call MouseWheelLeft(1, 10)
   call feedkeys('g0', 'Lx!')
   call assert_equal(7, col('.'))
   set wrap&
