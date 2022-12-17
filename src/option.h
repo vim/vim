@@ -271,6 +271,8 @@ typedef enum {
 #define SHM_SEARCHCOUNT  'S'		// search stats: '[1/10]'
 #define SHM_POSIX       "AS"		// POSIX value
 #define SHM_ALL		"rmfixlnwaWtToOsAIcCqFS" // all possible flags for 'shm'
+#define SHM_LEN		30		// max length of all flags together
+					// plus a NUL character
 
 // characters for p_go:
 #define GO_TERMINAL	'!'		// use terminal for system commands
