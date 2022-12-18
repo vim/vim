@@ -43,8 +43,9 @@ TEST_VIM9 = \
 	test_vim9_expr \
 	test_vim9_fails \
 	test_vim9_func \
-	test_vim9_import \
-	test_vim9_script
+	test_vim9_import
+
+# test_vim9_script
 
 TEST_VIM9_RES = \
 	test_vim9_assign.res \
@@ -55,8 +56,9 @@ TEST_VIM9_RES = \
 	test_vim9_expr.res \
 	test_vim9_fails.res \
 	test_vim9_func.res \
-	test_vim9_import.res \
-	test_vim9_script.res
+	test_vim9_import.res
+
+# test_vim9_script.res
 
 # Benchmark scripts.
 SCRIPTS_BENCH = test_bench_regexp.res
@@ -85,6 +87,7 @@ NEW_TESTS = \
 	test_cdo \
 	test_changedtick \
 	test_changelist \
+	test_channel \
 	test_charsearch \
 	test_charsearch_utf8 \
 	test_checkpath \
@@ -347,6 +350,7 @@ NEW_TESTS_RES = \
 	test_cdo.res \
 	test_changedtick.res \
 	test_changelist.res \
+	test_channel.res \
 	test_charsearch.res \
 	test_checkpath.res \
 	test_cindent.res \
