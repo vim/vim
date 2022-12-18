@@ -8711,10 +8711,10 @@ test_gui_w32_sendevent_keyboard(dict_T *args)
 {
     INPUT inputs[1];
     SecureZeroMemory(inputs, sizeof(inputs));
-    char_u *event_flags = dict_get_string(args, "event", TRUE);
+    char_u *event = dict_get_string(args, "event", TRUE);
 
-    if (event_flags && (STRICMP(event_flags, "keydown") == 0
-    					|| STRICMP(event_flags, "keyup") == 0))
+    if (event && (STRICMP(event, "keydown") == 0
+    					      || STRICMP(event, "keyup") == 0))
     {
 	WORD vkCode = dict_get_number_def(args, "keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
@@ -8725,23 +8725,23 @@ test_gui_w32_sendevent_keyboard(dict_T *args)
 
 	inputs[0].type = INPUT_KEYBOARD;
 	inputs[0].ki.wVk = vkCode;
-	if (STRICMP(event_flags, "keyup") == 0)
+	if (STRICMP(event, "keyup") == 0)
 	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
 
 	(void)SetForegroundWindow(s_hwnd);
 	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
-	vim_free(event_flags);
+	vim_free(event);
     }
     else
     {
-	if (event_flags == NULL)
+	if (event == NULL)
 	{
-	    semsg(_(e_invalid_argument_str), "NULL");
+	    semsg(_(e_missing_argument_str), "event");
 	}
 	else
 	{
-	    semsg(_(e_invalid_argument_str), event_flags);
-	    vim_free(event_flags);
+	    semsg(_(e_invalid_value_for_argument_str_str), "event", event);
+	    vim_free(event);
 	}
 	return FALSE;
     }
@@ -8752,17 +8752,10 @@ test_gui_w32_sendevent_keyboard(dict_T *args)
 test_gui_w32_sendevent(char_u *event, dict_T *args)
 {
     if (STRICMP(event, "keyboard") == 0)
-    {
 	return test_gui_w32_sendevent_keyboard(args);
-    }
     else if (STRICMP(event, "mouse") == 0)
-    {
 	return test_gui_w32_sendevent_mouse(args);
-    }
     else
-    {
-	semsg(_(e_invalid_argument_str), event);
 	return FALSE;
-    }
 }
 #endif

@@ -505,10 +505,10 @@ func Test_mswin_event_error_handling()
   call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': 0x0})", 'E1291:')
   call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': [15]})", 'E745:')
   call assert_fails("call test_mswin_event('keyboard', {'event': 'keys', 'keycode': 0x41})", "E475:")
-  call assert_fails("call test_mswin_event('keyboard', {'keycode': 0x41})", "E475:")
+  call assert_fails("call test_mswin_event('keyboard', {'keycode': 0x41})", "E417:")
   call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown'})", 'E1291:')
 
-  " flush out an garbage left in the buffer.
+  " flush out any garbage left in the buffer.
   while getchar(0)
   endwhile
 

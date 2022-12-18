@@ -1263,9 +1263,9 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 {
     static int s_dwMods = 0;
 
-    char_u *event_flags = dict_get_string(args, "event", TRUE);
-    if (event_flags && (STRICMP(event_flags, "keydown") == 0
-					|| STRICMP(event_flags, "keyup") == 0))
+    char_u *event = dict_get_string(args, "event", TRUE);
+    if (event && (STRICMP(event, "keydown") == 0
+					|| STRICMP(event, "keyup") == 0))
     {
 	WORD vkCode = dict_get_number_def(args, "keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
@@ -1277,7 +1277,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	ir->EventType = KEY_EVENT;
 	KEY_EVENT_RECORD ker;
 	ZeroMemory(&ker, sizeof(ker));
-	ker.bKeyDown = STRICMP(event_flags, "keydown") == 0;
+	ker.bKeyDown = STRICMP(event, "keydown") == 0;
 	ker.wRepeatCount = 1;
 	ker.wVirtualScanCode = 0;
 	ker.dwControlKeyState = 0;
@@ -1300,35 +1300,35 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 
 	if (vkCode == VK_LSHIFT || vkCode == VK_RSHIFT || vkCode == VK_SHIFT)
 	{
-	    if (STRICMP(event_flags, "keydown") == 0)
+	    if (STRICMP(event, "keydown") == 0)
 		s_dwMods |= SHIFT_PRESSED;
 	    else
 		s_dwMods &= ~SHIFT_PRESSED;
 	}
 	else if (vkCode == VK_LCONTROL || vkCode == VK_CONTROL)
 	{
-	    if (STRICMP(event_flags, "keydown") == 0)
+	    if (STRICMP(event, "keydown") == 0)
 		s_dwMods |= LEFT_CTRL_PRESSED;
 	    else
 		s_dwMods &= ~LEFT_CTRL_PRESSED;
 	}
 	else if (vkCode == VK_RCONTROL)
 	{
-	    if (STRICMP(event_flags, "keydown") == 0)
+	    if (STRICMP(event, "keydown") == 0)
 		s_dwMods |= RIGHT_CTRL_PRESSED;
 	    else
 		s_dwMods &= ~RIGHT_CTRL_PRESSED;
 	}
 	else if (vkCode == VK_LMENU || vkCode == VK_MENU)
 	{
-	    if (STRICMP(event_flags, "keydown") == 0)
+	    if (STRICMP(event, "keydown") == 0)
 		s_dwMods |= LEFT_ALT_PRESSED;
 	    else
 		s_dwMods &= ~LEFT_ALT_PRESSED;
 	}
 	else if (vkCode == VK_RMENU)
 	{
-	    if (STRICMP(event_flags, "keydown") == 0)
+	    if (STRICMP(event, "keydown") == 0)
 		s_dwMods |= RIGHT_ALT_PRESSED;
 	    else
 		s_dwMods &= ~RIGHT_ALT_PRESSED;
@@ -1337,28 +1337,26 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	ker.wVirtualKeyCode = vkCode;
 	win32_kbd_patch_key(&ker);
 
-	for (int i = ARRAY_LENGTH(VirtKeyMap);  --i >= 0 && !ker.uChar.UnicodeChar; )
+	for (int i = ARRAY_LENGTH(VirtKeyMap);  
+	     --i >= 0 && !ker.uChar.UnicodeChar; )
 	{
 	    if (VirtKeyMap[i].wVirtKey == vkCode)
-	    {
-		// REPLACEMENT CHARACTER
-		ker.uChar.UnicodeChar = 0xfffd;
-	    }
+		ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
 	}
 
 	ir->Event.KeyEvent = ker;
-	vim_free(event_flags);
+	vim_free(event);
     }
     else
     {
-	if (event_flags == NULL)
+	if (event == NULL)
 	{
-	    semsg(_(e_invalid_argument_str), "NULL");
+	    semsg(_(e_missing_argument_str), "event");
 	}
 	else
 	{
-	    semsg(_(e_invalid_argument_str), event_flags);
-	    vim_free(event_flags);
+	    semsg(_(e_invalid_value_for_argument_str_str), "event", event);
+	    vim_free(event);
 	}
 	return FALSE;
     }
@@ -1881,8 +1879,7 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
 		mer.dwEventFlags = MOUSE_HWHEELED;
 		break;
 	    default:
-	    	//"unknown button"
-		// semsg something...
+		semsg(_(e_invalid_argument_str), "button");
 		return FALSE;
 	}
     }
@@ -1999,7 +1996,7 @@ test_mswin_event(char_u *event, dict_T *args)
 	input_encoded = encode_mouse_event(args, &ir);
     else
     {
-	semsg(_(e_invalid_argument_str), event);
+	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
 	return FALSE;
     }
 
