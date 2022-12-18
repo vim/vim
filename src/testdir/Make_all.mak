@@ -306,24 +306,25 @@ NEW_TESTS = \
 	test_utf8 \
 	test_utf8_comparisons \
 	test_vartabs \
-	test_version \
-	$(TEST_VIM9) \
-	test_viminfo \
-	test_vimscript \
-	test_virtualedit \
-	test_visual \
-	test_winbar \
-	test_winbuf_close \
-	test_window_cmd \
-	test_window_id \
-	test_windows_home \
-	test_wnext \
-	test_wordcount \
-	test_writefile \
-	test_xxd \
-	test_alot_latin \
-	test_alot_utf8 \
-	test_alot
+	test_version
+
+# $(TEST_VIM9) \
+	# test_viminfo \
+	# test_vimscript \
+	# test_virtualedit \
+	# test_visual \
+	# test_winbar \
+	# test_winbuf_close \
+	# test_window_cmd \
+	# test_window_id \
+	# test_windows_home \
+	# test_wnext \
+	# test_wordcount \
+	# test_writefile \
+	# test_xxd \
+	# test_alot_latin \
+	# test_alot_utf8 \
+	# test_alot
 
 # Test targets that use runtest.vim.
 # Keep test_alot*.res as the last one, sort the others.
@@ -534,20 +535,21 @@ NEW_TESTS_RES = \
 	test_undo.res \
 	test_user_func.res \
 	test_usercommands.res \
-	test_vartabs.res \
-	$(TEST_VIM9_RES) \
-	test_viminfo.res \
-	test_vimscript.res \
-	test_virtualedit.res \
-	test_visual.res \
-	test_winbar.res \
-	test_winbuf_close.res \
-	test_window_cmd.res \
-	test_window_id.res \
-	test_windows_home.res \
-	test_wordcount.res \
-	test_writefile.res \
-	test_xxd.res \
-	test_alot_latin.res \
-	test_alot_utf8.res \
-	test_alot.res
+	test_vartabs.res
+
+# $(TEST_VIM9_RES) \
+	# test_viminfo.res \
+	# test_vimscript.res \
+	# test_virtualedit.res \
+	# test_visual.res \
+	# test_winbar.res \
+	# test_winbuf_close.res \
+	# test_window_cmd.res \
+	# test_window_id.res \
+	# test_windows_home.res \
+	# test_wordcount.res \
+	# test_writefile.res \
+	# test_xxd.res \
+	# test_alot_latin.res \
+	# test_alot_utf8.res \
+	# test_alot.res
