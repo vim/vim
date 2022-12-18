@@ -2,8 +2,8 @@
 
 source check.vim
 CheckMSWindows
-CheckNotGui
-".. The key events should also work in gui
+"  CheckNotGui
+".. The mswin events should also work in gui
 
 source mouse.vim
 
@@ -20,8 +20,12 @@ endfunc
 " Test MS-Windows console key events
 func Test_mswin_key_event()
   CheckMSWindows
-  CheckNotGui
+  "  CheckNotGui
   new
+
+  " flush out any garbage left in the buffer
+  while getchar(0)
+  endwhile
 
   let VK = {
 	\ 'SPACE'      : 0x20,
@@ -470,7 +474,21 @@ func Test_mswin_mouse_event()
     exe 'nunmap ' .. e
   endfor
 
-  " Test invalid parameters for test_mswin_event()
+  bw!
+  call test_override('no_query_mouse', 0)
+  set mousemodel&
+endfunc
+
+
+"  Test MS-Windows test_mswin_event error handling
+func Test_mswin_event_error_handling()
+
+  call assert_fails("call test_mswin_event('a1b2c3', args)", 'E121:')
+  call assert_fails("call test_mswin_event([], args)", 'E121:')
+  call assert_fails("call test_mswin_event('abc', [])", 'E1206:')
+  call assert_fails("call test_mswin_event(test_null_string(), {})", 'E475:')
+
+  call assert_false(test_mswin_event('mouse', test_null_dict()))
   let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
   call assert_false(test_mswin_event('mouse', args))
   let args = #{button: 0, col: 4, multiclick: 0, modifiers: 0}
@@ -482,16 +500,19 @@ func Test_mswin_mouse_event()
   let args = #{button: 0, row: 2, col: 4, multiclick: 0}
   call assert_false(test_mswin_event('mouse', args))
 
-  " Error cases for test_mswin_event()
-  call assert_fails("call test_mswin_event('a1b2c3', args)", 'E475:')
-  call assert_fails("call test_mswin_event([], args)", 'E1174:')
-  call assert_fails("call test_mswin_event('abc', [])", 'E1206:')
-  call assert_fails("call test_mswin_event(test_null_string(), {})", 'E475:')
-  call assert_false(test_mswin_event('mouse', test_null_dict()))
+  call assert_false(test_mswin_event('keyboard', test_null_dict()))
+  call assert_fails("call test_mswin_event('keyboard', [])", 'E1206:')
+  call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': 0x0})", 'E1291:')
+  call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': [15]})", 'E745:')
+  call assert_fails("call test_mswin_event('keyboard', {'event': 'keys', 'keycode': 0x41})", "E475:")
+  call assert_fails("call test_mswin_event('keyboard', {'keycode': 0x41})", "E475:")
+  call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown'})", 'E1291:')
 
-  bw!
-  call test_override('no_query_mouse', 0)
-  set mousemodel&
+  " flush out an garbage left in the buffer.
+  while getchar(0)
+  endwhile
+
+
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
