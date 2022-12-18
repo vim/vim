@@ -308,7 +308,7 @@ NEW_TESTS = \
 	test_vartabs \
 	test_version
 
- 	# $(TEST_VIM9) \
+# $(TEST_VIM9) \
 	# test_viminfo \
 	# test_vimscript \
 	# test_virtualedit \
@@ -537,7 +537,7 @@ NEW_TESTS_RES = \
 	test_usercommands.res \
 	test_vartabs.res
 
- 	# $(TEST_VIM9_RES) \
+# $(TEST_VIM9_RES) \
 	# test_viminfo.res \
 	# test_vimscript.res \
 	# test_virtualedit.res \
