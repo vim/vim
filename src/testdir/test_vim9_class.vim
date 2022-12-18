@@ -306,6 +306,30 @@ def Test_class_object_member_access()
       assert_fails('trip.two = 22', 'E1335')
       trip.three = 33
       assert_equal(33, trip.three)
+
+      assert_fails('trip.four = 4', 'E1334')
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_class_member_access()
+  var lines =<< trim END
+      vim9script
+      class TextPos
+         this.lnum = 1
+         this.col = 1
+         static counter = 0
+
+         def AddToCounter(nr: number)
+           counter += nr
+         enddef
+      endclass
+
+      assert_equal(0, TextPos.counter)
+      TextPos.AddToCounter(3)
+      assert_equal(3, TextPos.counter)
+
+      assert_fails('TextPos.counter += 5', 'E1335')
   END
   v9.CheckScriptSuccess(lines)
 enddef

@@ -2071,6 +2071,12 @@ set_termname(char_u *term)
     else
 	T_CCS = empty_option;
 
+    // Special case: "kitty" does not normally have a "RV" entry in terminfo,
+    // but we need to request the version for several other things to work.
+    if (strstr((char *)term, "kitty") != NULL
+					   && (T_CRV == NULL || *T_CRV == NUL))
+	T_CRV = (char_u *)"\033[>c";
+
 #ifdef UNIX
 /*
  * Any "stty" settings override the default for t_kb from the termcap.
@@ -2599,15 +2605,34 @@ tgoto(char *cm, int x, int y)
     void
 termcapinit(char_u *name)
 {
-    char_u	*term;
+    char_u	*term = name;
 
-    if (name != NULL && *name == NUL)
-	name = NULL;	    // empty name is equal to no name
-    term = name;
+    if (term != NULL && *term == NUL)
+	term = NULL;	    // empty name is equal to no name
 
 #ifndef MSWIN
+    char_u	*tofree = NULL;
     if (term == NULL)
+    {
 	term = mch_getenv((char_u *)"TERM");
+
+	// "xterm-kitty" is used for Kitty, but it is not actually compatible
+	// with xterm.  Remove the "xterm-" part to avoid trouble.
+	if (term != NULL && STRNCMP(term, "xterm-kitty", 11) == 0)
+	{
+#ifdef FEAT_EVAL
+	    ch_log(NULL, "Removing xterm- prefix from terminal name %s", term);
+#endif
+	    if (p_verbose > 0)
+	    {
+		verbose_enter();
+		smsg(_("Removing xterm- prefix from terminal name %s"), term);
+		verbose_leave();
+	    }
+	    term = vim_strsave(term + 6);
+	    tofree = term;
+	}
+    }
 #endif
     if (term == NULL || *term == NUL)
 	term = DEFAULT_TERM;
@@ -2617,10 +2642,12 @@ termcapinit(char_u *name)
     set_string_default("term", term);
     set_string_default("ttytype", term);
 
-    /*
-     * Avoid using "term" here, because the next mch_getenv() may overwrite it.
-     */
+    // Avoid using "term" here, because the next mch_getenv() may overwrite it.
     set_termname(T_NAME != NULL ? T_NAME : term);
+
+#ifndef MSWIN
+    vim_free(tofree);
+#endif
 }
 
 /*
@@ -4999,6 +5026,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	{
 	    term_props[TPR_KITTY].tpr_status = TPR_YES;
 	    term_props[TPR_KITTY].tpr_set_by_termresponse = TRUE;
+
+	    // Kitty can handle SGR mouse reporting.
+	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	}
 
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
