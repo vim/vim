@@ -210,120 +210,121 @@ NEW_TESTS = \
 	test_modeless \
 	test_modeline \
 	test_move \
-	test_mswin_event \
-	test_mzscheme \
-	test_nested_function \
-	test_netbeans \
-	test_normal \
-	test_number \
-	test_options \
-	test_packadd \
-	test_partial \
-	test_paste \
-	test_perl \
-	test_plus_arg_edit \
-	test_popup \
-	test_popupwin \
-	test_popupwin_textprop \
-	test_preview \
-	test_profile \
-	test_prompt_buffer \
-	test_put \
-	test_python2 \
-	test_python3 \
-	test_pyx2 \
-	test_pyx3 \
-	test_quickfix \
-	test_quotestar \
-	test_random \
-	test_recover \
-	test_regex_char_classes \
-	test_regexp_latin \
-	test_regexp_utf8 \
-	test_registers \
-	test_reltime \
-	test_rename \
-	test_restricted \
-	test_retab \
-	test_ruby \
-	test_scriptnames \
-	test_scroll_opt \
-	test_scrollbind \
-	test_search \
-	test_search_stat \
-	test_searchpos \
-	test_selectmode \
-	test_set \
-	test_sha256 \
-	test_shell \
-	test_shift \
-	test_shortpathname \
-	test_signals \
-	test_signs \
-	test_sleep \
-	test_smartindent \
-	test_sort \
-	test_sound \
-	test_source \
-	test_source_utf8 \
-	test_spell \
-	test_spell_utf8 \
-	test_spellfile \
-	test_startup \
-	test_startup_utf8 \
-	test_stat \
-	test_statusline \
-	test_substitute \
-	test_suspend \
-	test_swap \
-	test_syn_attr \
-	test_syntax \
-	test_system \
-	test_tab \
-	test_tabline \
-	test_tabpage \
-	test_tagcase \
-	test_tagfunc \
-	test_tagjump \
-	test_taglist \
-	test_tcl \
-	test_termcodes \
-	test_termencoding \
-	test_terminal \
-	test_terminal2 \
-	test_terminal3 \
-	test_terminal_fail \
-	test_textformat \
-	test_textobjects \
-	test_textprop \
-	test_timers \
-	test_true_false \
-	test_trycatch \
-	test_undo \
-	test_unlet \
-	test_user_func \
-	test_usercommands \
-	test_utf8 \
-	test_utf8_comparisons \
-	test_vartabs \
-	test_version \
-	$(TEST_VIM9) \
-	test_viminfo \
-	test_vimscript \
-	test_virtualedit \
-	test_visual \
-	test_winbar \
-	test_winbuf_close \
-	test_window_cmd \
-	test_window_id \
-	test_windows_home \
-	test_wnext \
-	test_wordcount \
-	test_writefile \
-	test_xxd \
-	test_alot_latin \
-	test_alot_utf8 \
-	test_alot
+	test_mswin_event
+
+# test_mzscheme \
+	# test_nested_function \
+	# test_netbeans \
+	# test_normal \
+	# test_number \
+	# test_options \
+	# test_packadd \
+	# test_partial \
+	# test_paste \
+	# test_perl \
+	# test_plus_arg_edit \
+	# test_popup \
+	# test_popupwin \
+	# test_popupwin_textprop \
+	# test_preview \
+	# test_profile \
+	# test_prompt_buffer \
+	# test_put \
+	# test_python2 \
+	# test_python3 \
+	# test_pyx2 \
+	# test_pyx3 \
+	# test_quickfix \
+	# test_quotestar \
+	# test_random \
+	# test_recover \
+	# test_regex_char_classes \
+	# test_regexp_latin \
+	# test_regexp_utf8 \
+	# test_registers \
+	# test_reltime \
+	# test_rename \
+	# test_restricted \
+	# test_retab \
+	# test_ruby \
+	# test_scriptnames \
+	# test_scroll_opt \
+	# test_scrollbind \
+	# test_search \
+	# test_search_stat \
+	# test_searchpos \
+	# test_selectmode \
+	# test_set \
+	# test_sha256 \
+	# test_shell \
+	# test_shift \
+	# test_shortpathname \
+	# test_signals \
+	# test_signs \
+	# test_sleep \
+	# test_smartindent \
+	# test_sort \
+	# test_sound \
+	# test_source \
+	# test_source_utf8 \
+	# test_spell \
+	# test_spell_utf8 \
+	# test_spellfile \
+	# test_startup \
+	# test_startup_utf8 \
+	# test_stat \
+	# test_statusline \
+	# test_substitute \
+	# test_suspend \
+	# test_swap \
+	# test_syn_attr \
+	# test_syntax \
+	# test_system \
+	# test_tab \
+	# test_tabline \
+	# test_tabpage \
+	# test_tagcase \
+	# test_tagfunc \
+	# test_tagjump \
+	# test_taglist \
+	# test_tcl \
+	# test_termcodes \
+	# test_termencoding \
+	# test_terminal \
+	# test_terminal2 \
+	# test_terminal3 \
+	# test_terminal_fail \
+	# test_textformat \
+	# test_textobjects \
+	# test_textprop \
+	# test_timers \
+	# test_true_false \
+	# test_trycatch \
+	# test_undo \
+	# test_unlet \
+	# test_user_func \
+	# test_usercommands \
+	# test_utf8 \
+	# test_utf8_comparisons \
+	# test_vartabs \
+	# test_version \
+	# $(TEST_VIM9) \
+	# test_viminfo \
+	# test_vimscript \
+	# test_virtualedit \
+	# test_visual \
+	# test_winbar \
+	# test_winbuf_close \
+	# test_window_cmd \
+	# test_window_id \
+	# test_windows_home \
+	# test_wnext \
+	# test_wordcount \
+	# test_writefile \
+	# test_xxd \
+	# test_alot_latin \
+	# test_alot_utf8 \
+	# test_alot
 
 # Test targets that use runtest.vim.
 # Keep test_alot*.res as the last one, sort the others.
@@ -455,99 +456,100 @@ NEW_TESTS_RES = \
 	test_mksession.res \
 	test_modeless.res \
 	test_modeline.res \
-	test_mswin_event.res \
-	test_mzscheme.res \
-	test_nested_function.res \
-	test_netbeans.res \
-	test_normal.res \
-	test_number.res \
-	test_options.res \
-	test_packadd.res \
-	test_partial.res \
-	test_paste.res \
-	test_perl.res \
-	test_plus_arg_edit.res \
-	test_popup.res \
-	test_popupwin.res \
-	test_popupwin_textprop.res \
-	test_preview.res \
-	test_profile.res \
-	test_prompt_buffer.res \
-	test_python2.res \
-	test_python3.res \
-	test_pyx2.res \
-	test_pyx3.res \
-	test_quickfix.res \
-	test_quotestar.res \
-	test_random.res \
-	test_recover.res \
-	test_regex_char_classes.res \
-	test_registers.res \
-	test_rename.res \
-	test_restricted.res \
-	test_retab.res \
-	test_ruby.res \
-	test_scriptnames.res \
-	test_scroll_opt.res \
-	test_scrollbind.res \
-	test_search.res \
-	test_search_stat.res \
-	test_selectmode.res \
-	test_shell.res \
-	test_shortpathname.res \
-	test_signals.res \
-	test_signs.res \
-	test_sleep.res \
-	test_smartindent.res \
-	test_sort.res \
-	test_sound.res \
-	test_source.res \
-	test_spell.res \
-	test_spell_utf8.res \
-	test_spellfile.res \
-	test_startup.res \
-	test_stat.res \
-	test_statusline.res \
-	test_substitute.res \
-	test_suspend.res \
-	test_swap.res \
-	test_syn_attr.res \
-	test_syntax.res \
-	test_system.res \
-	test_tab.res \
-	test_tabpage.res \
-	test_tagjump.res \
-	test_taglist.res \
-	test_tcl.res \
-	test_termcodes.res \
-	test_termencoding.res \
-	test_terminal.res \
-	test_terminal2.res \
-	test_terminal3.res \
-	test_terminal_fail.res \
-	test_textformat.res \
-	test_textobjects.res \
-	test_textprop.res \
-	test_timers.res \
-	test_true_false.res \
-	test_trycatch.res \
-	test_undo.res \
-	test_user_func.res \
-	test_usercommands.res \
-	test_vartabs.res \
-	$(TEST_VIM9_RES) \
-	test_viminfo.res \
-	test_vimscript.res \
-	test_virtualedit.res \
-	test_visual.res \
-	test_winbar.res \
-	test_winbuf_close.res \
-	test_window_cmd.res \
-	test_window_id.res \
-	test_windows_home.res \
-	test_wordcount.res \
-	test_writefile.res \
-	test_xxd.res \
-	test_alot_latin.res \
-	test_alot_utf8.res \
-	test_alot.res
+	test_mswin_event.res
+
+# test_mzscheme.res \
+	# test_nested_function.res \
+	# test_netbeans.res \
+	# test_normal.res \
+	# test_number.res \
+	# test_options.res \
+	# test_packadd.res \
+	# test_partial.res \
+	# test_paste.res \
+	# test_perl.res \
+	# test_plus_arg_edit.res \
+	# test_popup.res \
+	# test_popupwin.res \
+	# test_popupwin_textprop.res \
+	# test_preview.res \
+	# test_profile.res \
+	# test_prompt_buffer.res \
+	# test_python2.res \
+	# test_python3.res \
+	# test_pyx2.res \
+	# test_pyx3.res \
+	# test_quickfix.res \
+	# test_quotestar.res \
+	# test_random.res \
+	# test_recover.res \
+	# test_regex_char_classes.res \
+	# test_registers.res \
+	# test_rename.res \
+	# test_restricted.res \
+	# test_retab.res \
+	# test_ruby.res \
+	# test_scriptnames.res \
+	# test_scroll_opt.res \
+	# test_scrollbind.res \
+	# test_search.res \
+	# test_search_stat.res \
+	# test_selectmode.res \
+	# test_shell.res \
+	# test_shortpathname.res \
+	# test_signals.res \
+	# test_signs.res \
+	# test_sleep.res \
+	# test_smartindent.res \
+	# test_sort.res \
+	# test_sound.res \
+	# test_source.res \
+	# test_spell.res \
+	# test_spell_utf8.res \
+	# test_spellfile.res \
+	# test_startup.res \
+	# test_stat.res \
+	# test_statusline.res \
+	# test_substitute.res \
+	# test_suspend.res \
+	# test_swap.res \
+	# test_syn_attr.res \
+	# test_syntax.res \
+	# test_system.res \
+	# test_tab.res \
+	# test_tabpage.res \
+	# test_tagjump.res \
+	# test_taglist.res \
+	# test_tcl.res \
+	# test_termcodes.res \
+	# test_termencoding.res \
+	# test_terminal.res \
+	# test_terminal2.res \
+	# test_terminal3.res \
+	# test_terminal_fail.res \
+	# test_textformat.res \
+	# test_textobjects.res \
+	# test_textprop.res \
+	# test_timers.res \
+	# test_true_false.res \
+	# test_trycatch.res \
+	# test_undo.res \
+	# test_user_func.res \
+	# test_usercommands.res \
+	# test_vartabs.res \
+	# $(TEST_VIM9_RES) \
+	# test_viminfo.res \
+	# test_vimscript.res \
+	# test_virtualedit.res \
+	# test_visual.res \
+	# test_winbar.res \
+	# test_winbuf_close.res \
+	# test_window_cmd.res \
+	# test_window_id.res \
+	# test_windows_home.res \
+	# test_wordcount.res \
+	# test_writefile.res \
+	# test_xxd.res \
+	# test_alot_latin.res \
+	# test_alot_utf8.res \
+	# test_alot.res
