@@ -3378,16 +3378,22 @@ EXTERN char e_cannot_get_object_member_type_from_initializer_str[]
 	INIT(= N_("E1329: Cannot get object member type from initializer: %s"));
 EXTERN char e_invalid_type_for_object_member_str[]
 	INIT(= N_("E1330: Invalid type for object member: %s"));
-EXTERN char e_public_must_be_followed_by_this[]
-	INIT(= N_("E1331: Public must be followed by \"this\""));
-EXTERN char e_public_object_member_name_cannot_start_with_underscore_str[]
-	INIT(= N_("E1332: Public object member name cannot start with underscore: %s"));
-EXTERN char e_cannot_access_private_object_member_str[]
-	INIT(= N_("E1333: Cannot access private object member: %s"));
+EXTERN char e_public_must_be_followed_by_this_or_static[]
+	INIT(= N_("E1331: Public must be followed by \"this\" or \"static\""));
+EXTERN char e_public_member_name_cannot_start_with_underscore_str[]
+	INIT(= N_("E1332: Public member name cannot start with underscore: %s"));
+EXTERN char e_cannot_access_private_member_str[]
+	INIT(= N_("E1333: Cannot access private member: %s"));
 EXTERN char e_object_member_not_found_str[]
 	INIT(= N_("E1334: Object member not found: %s"));
-EXTERN char e_object_member_is_not_writable_str[]
-	INIT(= N_("E1335: Object member is not writable: %s"));
+EXTERN char e_member_is_not_writable_str[]
+	INIT(= N_("E1335: Member is not writable: %s"));
 #endif
 EXTERN char e_internal_error_shortmess_too_long[]
 	INIT(= N_("E1336: Internal error: shortmess too long"));
+#ifdef FEAT_EVAL
+EXTERN char e_class_member_not_found_str[]
+	INIT(= N_("E1337: Class member not found: %s"));
+EXTERN char e_member_not_found_on_class_str_str[]
+	INIT(= N_("E1338: Member not found on class \"%s\": %s"));
+#endif

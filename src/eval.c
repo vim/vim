@@ -1193,19 +1193,21 @@ get_lval(
     var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
-	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT
-		      && lp->ll_tv->v_type != VAR_OBJECT
-		      && lp->ll_tv->v_type != VAR_CLASS)
+	vartype_T v_type = lp->ll_tv->v_type;
+
+	if (*p == '.' && v_type != VAR_DICT
+		      && v_type != VAR_OBJECT
+		      && v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
 	    return NULL;
 	}
-	if (lp->ll_tv->v_type != VAR_LIST
-		&& lp->ll_tv->v_type != VAR_DICT
-		&& lp->ll_tv->v_type != VAR_BLOB
-		&& lp->ll_tv->v_type != VAR_OBJECT
-		&& lp->ll_tv->v_type != VAR_CLASS)
+	if (v_type != VAR_LIST
+		&& v_type != VAR_DICT
+		&& v_type != VAR_BLOB
+		&& v_type != VAR_OBJECT
+		&& v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		emsg(_(e_can_only_index_list_dictionary_or_blob));
@@ -1214,9 +1216,9 @@ get_lval(
 
 	// A NULL list/blob works like an empty list/blob, allocate one now.
 	int r = OK;
-	if (lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
+	if (v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
 	    r = rettv_list_alloc(lp->ll_tv);
-	else if (lp->ll_tv->v_type == VAR_BLOB
+	else if (v_type == VAR_BLOB
 					     && lp->ll_tv->vval.v_blob == NULL)
 	    r = rettv_blob_alloc(lp->ll_tv);
 	if (r == FAIL)
@@ -1278,7 +1280,7 @@ get_lval(
 	    // Optionally get the second index [ :expr].
 	    if (*p == ':')
 	    {
-		if (lp->ll_tv->v_type == VAR_DICT)
+		if (v_type == VAR_DICT)
 		{
 		    if (!quiet)
 			emsg(_(e_cannot_slice_dictionary));
@@ -1334,7 +1336,7 @@ get_lval(
 	    ++p;
 	}
 
-	if (lp->ll_tv->v_type == VAR_DICT)
+	if (v_type == VAR_DICT)
 	{
 	    if (len == -1)
 	    {
@@ -1435,7 +1437,7 @@ get_lval(
 	    clear_tv(&var1);
 	    lp->ll_tv = &lp->ll_di->di_tv;
 	}
-	else if (lp->ll_tv->v_type == VAR_BLOB)
+	else if (v_type == VAR_BLOB)
 	{
 	    long bloblen = blob_len(lp->ll_tv->vval.v_blob);
 
@@ -1466,7 +1468,7 @@ get_lval(
 	    lp->ll_tv = NULL;
 	    break;
 	}
-	else if (lp->ll_tv->v_type == VAR_LIST)
+	else if (v_type == VAR_LIST)
 	{
 	    /*
 	     * Get the number and item for the only or first index of the List.
@@ -1513,7 +1515,7 @@ get_lval(
 	}
 	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
 	{
-	    class_T *cl = (lp->ll_tv->v_type == VAR_OBJECT
+	    class_T *cl = (v_type == VAR_OBJECT
 					   && lp->ll_tv->vval.v_object != NULL)
 			    ? lp->ll_tv->vval.v_object->obj_class
 			    : lp->ll_tv->vval.v_class;
@@ -1521,23 +1523,28 @@ get_lval(
 	    if (cl != NULL)
 	    {
 		lp->ll_valtype = NULL;
-		for (int i = 0; i < cl->class_obj_member_count; ++i)
+		int count = v_type == VAR_OBJECT ? cl->class_obj_member_count
+						: cl->class_class_member_count;
+		ocmember_T *members = v_type == VAR_OBJECT
+						     ? cl->class_obj_members
+						     : cl->class_class_members;
+		for (int i = 0; i < count; ++i)
 		{
-		    objmember_T *om = cl->class_obj_members + i;
-		    if (STRNCMP(om->om_name, key, p - key) == 0
-						&& om->om_name[p - key] == NUL)
+		    ocmember_T *om = members + i;
+		    if (STRNCMP(om->ocm_name, key, p - key) == 0
+					       && om->ocm_name[p - key] == NUL)
 		    {
-			switch (om->om_access)
+			switch (om->ocm_access)
 			{
 			    case ACCESS_PRIVATE:
-				    semsg(_(e_cannot_access_private_object_member_str),
-					    om->om_name);
+				    semsg(_(e_cannot_access_private_member_str),
+								 om->ocm_name);
 				    return NULL;
 			    case ACCESS_READ:
 				    if (!(flags & GLV_READ_ONLY))
 				    {
-					semsg(_(e_object_member_is_not_writable_str),
-						om->om_name);
+					semsg(_(e_member_is_not_writable_str),
+								 om->ocm_name);
 					return NULL;
 				    }
 				    break;
@@ -1545,18 +1552,22 @@ get_lval(
 				    break;
 			}
 
-			lp->ll_valtype = om->om_type;
+			lp->ll_valtype = om->ocm_type;
 
-			if (lp->ll_tv->v_type == VAR_OBJECT)
+			if (v_type == VAR_OBJECT)
 			    lp->ll_tv = ((typval_T *)(
 					    lp->ll_tv->vval.v_object + 1)) + i;
-			// TODO: what about a class?
+			else
+			    lp->ll_tv = &cl->class_members_tv[i];
 			break;
 		    }
 		}
 		if (lp->ll_valtype == NULL)
 		{
-		    semsg(_(e_object_member_not_found_str), key);
+		    if (v_type == VAR_OBJECT)
+			semsg(_(e_object_member_not_found_str), key);
+		    else
+			semsg(_(e_class_member_not_found_str), key);
 		    return NULL;
 		}
 	    }
@@ -5936,8 +5947,8 @@ echo_string_core(
 		    {
 			if (i > 0)
 			    ga_concat(&ga, (char_u *)", ");
-			objmember_T *m = &cl->class_obj_members[i];
-			ga_concat(&ga, m->om_name);
+			ocmember_T *m = &cl->class_obj_members[i];
+			ga_concat(&ga, m->ocm_name);
 			ga_concat(&ga, (char_u *)": ");
 			char_u *tf = NULL;
 			ga_concat(&ga, echo_string_core(

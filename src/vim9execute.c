@@ -3817,6 +3817,27 @@ exec_instructions(ectx_T *ectx)
 		    goto on_error;
 		break;
 
+	    case ISN_LOAD_CLASSMEMBER:
+		{
+		    if (GA_GROW_FAILS(&ectx->ec_stack, 1))
+			goto theend;
+		    classmember_T *cm = &iptr->isn_arg.classmember;
+		    *STACK_TV_BOT(0) =
+				    cm->cm_class->class_members_tv[cm->cm_idx];
+		    ++ectx->ec_stack.ga_len;
+		}
+		break;
+
+	    case ISN_STORE_CLASSMEMBER:
+		{
+		    classmember_T *cm = &iptr->isn_arg.classmember;
+		    tv = &cm->cm_class->class_members_tv[cm->cm_idx];
+		    clear_tv(tv);
+		    *tv = *STACK_TV_BOT(-1);
+		    --ectx->ec_stack.ga_len;
+		}
+		break;
+
 	    // Load or store variable or argument from outer scope.
 	    case ISN_LOADOUTER:
 	    case ISN_STOREOUTER:
@@ -6401,6 +6422,19 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 	    case ISN_STORERANGE:
 		smsg("%s%4d STORERANGE", pfx, current);
+		break;
+
+	    case ISN_LOAD_CLASSMEMBER:
+	    case ISN_STORE_CLASSMEMBER:
+		{
+		    class_T *cl = iptr->isn_arg.classmember.cm_class;
+		    int	    idx = iptr->isn_arg.classmember.cm_idx;
+		    ocmember_T *ocm = &cl->class_class_members[idx];
+		    smsg("%s%4d %s CLASSMEMBER %s.%s", pfx, current,
+			    iptr->isn_type == ISN_LOAD_CLASSMEMBER
+							    ? "LOAD" : "STORE",
+			    cl->class_name, ocm->ocm_name);
+		}
 		break;
 
 	    // constants

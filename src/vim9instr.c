@@ -957,6 +957,38 @@ generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name)
 }
 
 /*
+ * Generate an ISN_LOAD_CLASSMEMBER ("load" == TRUE) or ISN_STORE_CLASSMEMBER
+ * ("load" == FALSE) instruction.
+ */
+    int
+generate_CLASSMEMBER(
+	cctx_T	    *cctx,
+	int	    load,
+	class_T	    *cl,
+	int	    idx)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if (load)
+    {
+	ocmember_T *m = &cl->class_class_members[idx];
+	isn = generate_instr_type(cctx, ISN_LOAD_CLASSMEMBER, m->ocm_type);
+    }
+    else
+    {
+	isn = generate_instr_drop(cctx, ISN_STORE_CLASSMEMBER, 1);
+    }
+    if (isn == NULL)
+	return FAIL;
+    isn->isn_arg.classmember.cm_class = cl;
+    ++cl->class_refcount;
+    isn->isn_arg.classmember.cm_idx = idx;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_STOREOUTER instruction.
  */
     static int
@@ -2114,6 +2146,7 @@ generate_undo_cmdmods(cctx_T *cctx)
 
 /*
  * Generate a STORE instruction for "dest", not being "dest_local".
+ * "lhs" might be NULL.
  * Return FAIL when out of memory.
  */
     int
@@ -2122,10 +2155,9 @@ generate_store_var(
 	assign_dest_T	dest,
 	int		opt_flags,
 	int		vimvaridx,
-	int		scriptvar_idx,
-	int		scriptvar_sid,
 	type_T		*type,
-	char_u		*name)
+	char_u		*name,
+	lhs_T		*lhs)
 {
     switch (dest)
     {
@@ -2156,9 +2188,11 @@ generate_store_var(
 	case dest_vimvar:
 	    return generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
 	case dest_script:
+	    int	    scriptvar_idx = lhs->lhs_scriptvar_idx;
+	    int	    scriptvar_sid = lhs->lhs_scriptvar_sid;
 	    if (scriptvar_idx < 0)
 	    {
-		isntype_T isn_type = ISN_STORES;
+		isntype_T   isn_type = ISN_STORES;
 
 		if (SCRIPT_ID_VALID(scriptvar_sid)
 			 && SCRIPT_ITEM(scriptvar_sid)->sn_import_autoload
@@ -2177,6 +2211,10 @@ generate_store_var(
 	    }
 	    return generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
 					   scriptvar_sid, scriptvar_idx, type);
+	case dest_class_member:
+	    return generate_CLASSMEMBER(cctx, FALSE,
+				     lhs->lhs_class, lhs->lhs_classmember_idx);
+
 	case dest_local:
 	case dest_expr:
 	    // cannot happen
@@ -2210,8 +2248,7 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
     if (lhs->lhs_dest != dest_local)
 	return generate_store_var(cctx, lhs->lhs_dest,
 			    lhs->lhs_opt_flags, lhs->lhs_vimvaridx,
-			    lhs->lhs_scriptvar_idx, lhs->lhs_scriptvar_sid,
-			    lhs->lhs_type, lhs->lhs_name);
+			    lhs->lhs_type, lhs->lhs_name, lhs);
 
     if (lhs->lhs_lvar != NULL)
     {
@@ -2420,6 +2457,11 @@ delete_instr(isn_T *isn)
 	case ISN_LOADSCRIPT:
 	case ISN_STORESCRIPT:
 	    vim_free(isn->isn_arg.script.scriptref);
+	    break;
+
+	case ISN_LOAD_CLASSMEMBER:
+	case ISN_STORE_CLASSMEMBER:
+	    class_unref(isn->isn_arg.classmember.cm_class);
 	    break;
 
 	case ISN_TRY:
