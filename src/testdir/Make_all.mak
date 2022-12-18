@@ -272,43 +272,43 @@ NEW_TESTS = \
 	test_startup \
 	test_startup_utf8 \
 	test_stat \
+	test_statusline \
+	test_substitute \
+	test_suspend \
+	test_swap \
+	test_syn_attr \
+	test_syntax \
+	test_system \
+	test_tab \
+	test_tabline \
+	test_tabpage \
+	test_tagcase \
+	test_tagfunc \
+	test_tagjump \
+	test_taglist \
+	test_tcl \
+	test_termcodes \
+	test_termencoding \
+	test_terminal \
+	test_terminal2 \
+	test_terminal3 \
+	test_terminal_fail \
+	test_textformat \
+	test_textobjects \
+	test_textprop \
+	test_timers \
+	test_true_false \
+	test_trycatch \
+	test_undo \
+	test_unlet \
+	test_user_func \
+	test_usercommands \
+	test_utf8 \
+	test_utf8_comparisons \
+	test_vartabs \
+	test_version
 
- 	# test_statusline \
-	# test_substitute \
-	# test_suspend \
-	# test_swap \
-	# test_syn_attr \
-	# test_syntax \
-	# test_system \
-	# test_tab \
-	# test_tabline \
-	# test_tabpage \
-	# test_tagcase \
-	# test_tagfunc \
-	# test_tagjump \
-	# test_taglist \
-	# test_tcl \
-	# test_termcodes \
-	# test_termencoding \
-	# test_terminal \
-	# test_terminal2 \
-	# test_terminal3 \
-	# test_terminal_fail \
-	# test_textformat \
-	# test_textobjects \
-	# test_textprop \
-	# test_timers \
-	# test_true_false \
-	# test_trycatch \
-	# test_undo \
-	# test_unlet \
-	# test_user_func \
-	# test_usercommands \
-	# test_utf8 \
-	# test_utf8_comparisons \
-	# test_vartabs \
-	# test_version \
-	# $(TEST_VIM9) \
+ 	# $(TEST_VIM9) \
 	# test_viminfo \
 	# test_vimscript \
 	# test_virtualedit \
@@ -508,36 +508,36 @@ NEW_TESTS_RES = \
 	test_spellfile.res \
 	test_startup.res \
 	test_stat.res
+	test_statusline.res \
+	test_substitute.res \
+	test_suspend.res \
+	test_swap.res \
+	test_syn_attr.res \
+	test_syntax.res \
+	test_system.res \
+	test_tab.res \
+	test_tabpage.res \
+	test_tagjump.res \
+	test_taglist.res \
+	test_tcl.res \
+	test_termcodes.res \
+	test_termencoding.res \
+	test_terminal.res \
+	test_terminal2.res \
+	test_terminal3.res \
+	test_terminal_fail.res \
+	test_textformat.res \
+	test_textobjects.res \
+	test_textprop.res \
+	test_timers.res \
+	test_true_false.res \
+	test_trycatch.res \
+	test_undo.res \
+	test_user_func.res \
+	test_usercommands.res \
+	test_vartabs.res
 
- 	# test_statusline.res \
-	# test_substitute.res \
-	# test_suspend.res \
-	# test_swap.res \
-	# test_syn_attr.res \
-	# test_syntax.res \
-	# test_system.res \
-	# test_tab.res \
-	# test_tabpage.res \
-	# test_tagjump.res \
-	# test_taglist.res \
-	# test_tcl.res \
-	# test_termcodes.res \
-	# test_termencoding.res \
-	# test_terminal.res \
-	# test_terminal2.res \
-	# test_terminal3.res \
-	# test_terminal_fail.res \
-	# test_textformat.res \
-	# test_textobjects.res \
-	# test_textprop.res \
-	# test_timers.res \
-	# test_true_false.res \
-	# test_trycatch.res \
-	# test_undo.res \
-	# test_user_func.res \
-	# test_usercommands.res \
-	# test_vartabs.res \
-	# $(TEST_VIM9_RES) \
+ 	# $(TEST_VIM9_RES) \
 	# test_viminfo.res \
 	# test_vimscript.res \
 	# test_virtualedit.res \
