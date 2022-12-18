@@ -4391,7 +4391,9 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
     {
 	if (lowlevel
 #ifdef FEAT_VTP
-		&& !is_term_win32()
+		&& (!is_term_win32()
+		    || (keys[0] == 3 && ctrl_c_interrupts && typed)
+		   )
 #endif
 	   )
 	{
