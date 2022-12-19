@@ -49,9 +49,12 @@ func Test_mswin_key_event()
         \ 'CONTROL'    : 0x11,
         \ 'LCONTROL'   : 0xA2,
         \ 'RCONTROL'   : 0xA3,
-        \ 'MENU'       : 0x12,
+	\ 'MENU'       : 0x12,
+	\ 'ALT'        : 0x12,
         \ 'LMENU'      : 0xA4,
+	\ 'LALT'       : 0xA4,
         \ 'RMENU'      : 0xA5,
+	\ 'RALT'       : 0xA5,
         \ 'OEM_1'      : 0xBA,
         \ 'OEM_2'      : 0xBF,
         \ 'OEM_3'      : 0xC0,
@@ -244,6 +247,17 @@ func Test_mswin_key_event()
     call assert_equal(nr2char(kc), ch)
   endfor
 
+" Test keyboard codes for Alt-0 to Alt-9
+" Expect +128 from the digit char codes
+  for kc in range(48, 57)
+    call SendKeys([VK.ALT, kc])
+    let ch = getchar(0)
+    call assert_equal(kc+128, ch)
+    call SendKey(kc, vim_MOD_MASK_ALT)
+    let ch = getchar(0)
+    call assert_equal(kc+128, ch)
+  endfor
+
 " Test for lowercase 'a' to 'z', VK codes 65(0x41) - 90(0x5A)
 " Note: VK_A-VK_Z virtual key codes coincide with uppercase ASCII codes A-Z.
 " eg VK_A is 65, and the ASCII character code for uppercase 'A' is also 65.
@@ -283,32 +297,45 @@ func Test_mswin_key_event()
     call assert_equal(nr2char(kc - 64), ch)
   endfor
 
+  if !has("gui_running")
+  " Test for <Alt-A> to <Alt-Z> keys
+  "  Expect the unicode characters 0xE1 to 0xFA
+  "  ie. 160 higher than the lowercase equivalent
+    for kc in range(65, 90)
+      call SendKeys([VK.LMENU, kc])
+      let ch = getchar(0)
+      call assert_equal(kc+160, ch)
+      call SendKey(kc, vim_MOD_MASK_ALT)
+      let ch = getchar(0)
+      call assert_equal(kc+160, ch)
+    endfor
+  endif
 
 "  NOTE: Todo: Fn Keys not working in CI Testing!
-"    if !has("gui_running")
-"      " Test for Function Keys 'F1' to 'F12'
-"      " VK codes 112(0x70) - 123(0x7B)
-"      " With ALL permutatios of modifiers; Shift, Ctrl & Alt
-"      for n in range(1, 12)
-"        for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
-"          let kstr = $"{mod_str}F{n}"
-"          let keycode = eval('"\<' .. kstr .. '>"')
-"          call SendKeys(mod_keycodes + [111+n])
-"          let ch = getcharstr(0)
-"  "          if ch == ''
-"  "    	throw 'Skipped: The MS-Windows console input buffer was empty.'
-"  "          endif
-"          let mod_mask = getcharmod()
-"          call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-"          " workaround for the virtual termcap maps 
-"          " changing the character instead of sending Shift
-"          if index(mod_keycodes, VK.SHIFT) >= 0
-"    	let vim_mod_mask = vim_mod_mask - vim_MOD_MASK_SHIFT
+  if !has("gui_running")
+    " Test for Function Keys 'F1' to 'F12'
+    " VK codes 112(0x70) - 123(0x7B)
+    " With ALL permutatios of modifiers; Shift, Ctrl & Alt
+    for n in range(1, 12)
+      for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
+        let kstr = $"{mod_str}F{n}"
+        let keycode = eval('"\<' .. kstr .. '>"')
+        call SendKeys(mod_keycodes + [111+n])
+        let ch = getcharstr(0)
+"          if ch == ''
+"    	throw 'Skipped: The MS-Windows console input buffer was empty.'
 "          endif
-"          call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
-"        endfor
-"      endfor
-"    endif
+        let mod_mask = getcharmod()
+        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+        " workaround for the virtual termcap maps 
+        " changing the character instead of sending Shift
+        if index(mod_keycodes, VK.SHIFT) >= 0
+  	let vim_mod_mask = vim_mod_mask - vim_MOD_MASK_SHIFT
+        endif
+        call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
+      endfor
+    endfor
+  endif
 
 "---------------------------------------------------------------------------"
 "    " Test for the various Ctrl and Shift key combinations.
@@ -592,9 +619,11 @@ func Test_mswin_event_error_handling()
   call assert_fails("call test_mswin_event('keyboard', [])", 'E1206:')
   call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': 0x0})", 'E1291:')
   call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': [15]})", 'E745:')
-  call assert_fails("call test_mswin_event('keyboard', {'event': 'keys', 'keycode': 0x41})", "E475:")
-  call assert_fails("call test_mswin_event('keyboard', {'keycode': 0x41})", "E417:")
+  call assert_fails("call test_mswin_event('keyboard', {'event': 'keys', 'keycode': 0x41})", 'E475:')
+  call assert_fails("call test_mswin_event('keyboard', {'keycode': 0x41})", 'E417:')
   call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown'})", 'E1291:')
+
+  call assert_fails("sandbox call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': 61 })", 'E48:')
 
   " flush out any garbage left in the buffer.
   while getchar(0)
