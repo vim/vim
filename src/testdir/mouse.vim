@@ -314,6 +314,7 @@ func MouseWheelRight(row, col)
 endfunc
 
 func MouseShiftWheelUpCode(row, col)
+  " todo feed shift mod.
   return TerminalEscapeCode(0x40, a:row, a:col, 'M')
 endfunc
 
@@ -327,6 +328,7 @@ func MouseShiftWheelUp(row, col)
 endfunc
 
 func MouseShiftWheelDownCode(row, col)
+  " todo feed shift mod.
   return TerminalEscapeCode(0x41, a:row, a:col, 'M')
 endfunc
 
@@ -340,6 +342,7 @@ func MouseShiftWheelDown(row, col)
 endfunc
 
 func MouseShiftWheelLeftCode(row, col)
+  " todo feed shift mod.
   return TerminalEscapeCode(0x42, a:row, a:col, 'M')
 endfunc
 
@@ -353,6 +356,7 @@ func MouseShiftWheelLeft(row, col)
 endfunc
 
 func MouseShiftWheelRightCode(row, col)
+	" todo feed shift mod.
   return TerminalEscapeCode(0x43, a:row, a:col, 'M')
 endfunc
 

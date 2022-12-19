@@ -187,7 +187,9 @@ func Test_mswin_key_event()
 	\ [[VK.SHIFT, VK.KEY_7], '&'],
 	\ [[VK.SHIFT, VK.KEY_8], '*'],
 	\ [[VK.SHIFT, VK.KEY_9], '('],
-	\ [[VK.SHIFT, VK.KEY_0], ')']
+	\ [[VK.SHIFT, VK.KEY_0], ')'],
+	\ [[VK.LSHIFT, VK.KEY_9], '('],
+	\ [[VK.RSHIFT, VK.KEY_0], ')']
         \ ]
 
   for [kcodes, kstr] in test_punctuation_keys
@@ -209,13 +211,13 @@ func Test_mswin_key_event()
     let key = kcodes[0]
 
     for key in kcodes
-      if key == VK.SHIFT
+      if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], key) >= 0
         let modifiers = modifiers + vim_MOD_MASK_SHIFT
       endif
-      if key == VK.CONTROL
+      if index([VK.CONTROL, VK.LCONTROL, VK.RCONTROL], key) >= 0
         let modifiers = modifiers + vim_MOD_MASK_CTRL
       endif
-      if key == VK.MENU
+      if index([VK.ALT, VK.LALT, VK.RALT], key) >= 0
         let modifiers = modifiers + vim_MOD_MASK_ALT
       endif
     endfor
@@ -226,7 +228,7 @@ func Test_mswin_key_event()
     let mod_mask = getcharmod()
     " workaround for the virtual termcap maps changing the character instead
     " of sending Shift
-    if index(kcodes, VK.SHIFT) >= 0
+    if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], kcodes[0]) >= 0
       let modifiers = modifiers - vim_MOD_MASK_SHIFT
     endif
     call assert_equal(modifiers, mod_mask, $"key = {kstr}")
@@ -249,13 +251,15 @@ func Test_mswin_key_event()
 
 " Test keyboard codes for Alt-0 to Alt-9
 " Expect +128 from the digit char codes
-  for kc in range(48, 57)
-    call SendKeys([VK.ALT, kc])
-    let ch = getchar(0)
-    call assert_equal(kc+128, ch)
-    call SendKey(kc, vim_MOD_MASK_ALT)
-    let ch = getchar(0)
-    call assert_equal(kc+128, ch)
+  for modkey in [VK.ALT, VK.LALT, VK.RALT]
+    for kc in range(48, 57)
+      call SendKeys([modkey, kc])
+      let ch = getchar(0)
+      call assert_equal(kc+128, ch)
+      call SendKey(kc, vim_MOD_MASK_ALT)
+      let ch = getchar(0)
+      call assert_equal(kc+128, ch)
+    endfor
   endfor
 
 " Test for lowercase 'a' to 'z', VK codes 65(0x41) - 90(0x5A)
@@ -435,6 +439,51 @@ func Test_mswin_mouse_event()
 
   call setline(1, ['one two three', 'four five six'])
 
+  " test mouse movement
+  if !has('gui_running')
+    " console version needs a button pressed,
+    " otherwise it ignores mouse movements.
+    call MouseLeftClick(2, 3)
+  endif
+  call MSWinMouseEvent(0x700, 8, 13, 0, 0, 0)
+  if has('gui_running')
+    call feedkeys("\<Esc>", 'Lx!')
+  endif
+  let pos = getmousepos()
+  call assert_equal(8, pos.screenrow)
+  call assert_equal(13, pos.screencol)
+
+  if !has('gui_running')
+    call MouseLeftClick(2, 3)
+    call MSWinMouseEvent(0x700, 6, 4, 1, 0, 0)
+    let pos = getmousepos()
+    call assert_equal(6, pos.screenrow)
+    call assert_equal(4, pos.screencol)
+  endif
+
+  " test cells vs pixels
+  if has('gui_running')
+    let args = { }
+    let args.row = 5
+    let args.col = 3
+    let args.move = 1
+    let args.cell = 1
+    call test_mswin_event("mouse", args)
+    call feedkeys("\<Esc>", 'Lx!')
+    let pos = getmousepos()
+    call assert_equal(5, pos.screenrow)
+    call assert_equal(3, pos.screencol)
+
+    let args.cell = 0
+    call test_mswin_event("mouse", args)
+    call feedkeys("\<Esc>", 'Lx!')
+    let pos = getmousepos()
+    call assert_equal(1, pos.screenrow)
+    call assert_equal(1, pos.screencol)
+
+    unlet args
+  endif
+
   " place the cursor using left click and release in normal mode
   call MouseLeftClick(2, 4)
   call MouseLeftRelease(2, 4)
@@ -527,8 +576,11 @@ func Test_mswin_mouse_event()
           \ substitute(e, '[<>]', '', 'g') .. '")<CR>'
   endfor
 
-  " Test various mouse buttons (0 - Left, 1 - Middle, 2 - Right)
-  for button in [0, 1, 2]
+  " Test various mouse buttons 
+  "(0 - Left, 1 - Middle, 2 - Right, 
+  " 0x300 - MOUSE_X1/FROM_LEFT_3RD_BUTTON,
+  " 0x400 - MOUSE_X2/FROM_LEFT_4TH_BUTTON)
+  for button in [0, 1, 2, 0x300, 0x400]
     " Single click
     let args = #{button: button, row: 2, col: 5, multiclick: 0, modifiers: 0}
     call test_mswin_event('mouse', args)
@@ -623,6 +675,9 @@ func Test_mswin_event_error_handling()
   let args = #{button: 0, row: 2, col: 4, modifiers: 0}
   call assert_false(test_mswin_event('mouse', args))
   let args = #{button: 0, row: 2, col: 4, multiclick: 0}
+  call assert_false(test_mswin_event('mouse', args))
+
+  let args = #{button: 0xfff, row: 2, col: 4, multiclick: 0}
   call assert_false(test_mswin_event('mouse', args))
 
   call assert_false(test_mswin_event('keyboard', test_null_dict()))
