@@ -1167,7 +1167,7 @@ ex_command(exarg_T *eap)
 	end = skiptowhite(p);
 	if (uc_scan_attr(p, end - p, &argt, &def, &flags, &compl,
 					   &compl_arg, &addr_type_arg) == FAIL)
-	    return;
+	    goto fail;
 	p = skipwhite(end);
     }
 
@@ -1179,7 +1179,7 @@ ex_command(exarg_T *eap)
     if (!ends_excmd2(eap->arg, p) && !VIM_ISWHITE(*p))
     {
 	emsg(_(e_invalid_command_name));
-	return;
+	goto fail;
     }
     end = p;
     name_len = (int)(end - name);
@@ -1215,7 +1215,11 @@ ex_command(exarg_T *eap)
 	uc_add_command(name, end - name, p, argt, def, flags, compl, compl_arg,
 						  addr_type_arg, eap->forceit);
 	vim_free(tofree);
+	return;  // success
     }
+
+fail:
+    vim_free(compl_arg);
 }
 
 /*
