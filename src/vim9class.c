@@ -164,7 +164,8 @@ add_members_to_class(
     *members = gap->ga_len == 0 ? NULL : ALLOC_MULT(ocmember_T, gap->ga_len);
     if (gap->ga_len > 0 && *members == NULL)
 	return FAIL;
-    mch_memmove(*members, gap->ga_data, sizeof(ocmember_T) * gap->ga_len);
+    if (gap->ga_len > 0)
+	mch_memmove(*members, gap->ga_data, sizeof(ocmember_T) * gap->ga_len);
     VIM_CLEAR(gap->ga_data);
     return OK;
 }
