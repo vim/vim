@@ -8667,8 +8667,8 @@ test_gui_w32_sendevent_mouse(dict_T *args)
 	if (dict_get_bool(args, "cell", FALSE))
 	{
 	    // click in the middle of the character cell
-	    row = (row - 1) * gui.char_height + gui.char_height / 2;
-	    col = (col - 1) * gui.char_width + gui.char_width / 2;
+	    row = row * gui.char_height + gui.char_height / 2;
+	    col = col * gui.char_width + gui.char_width / 2;
 	}
 	gui_mouse_moved(col, row);
     }
