@@ -68,10 +68,22 @@ func NettermEscapeCode(row, col)
     return printf("\<Esc>}%d,%d\r", a:row, a:col)
 endfunc
 
-" Send low level mouse event to MS-Windows consoles
+" Send low level mouse event to MS-Windows consoles or GUI
 func MSWinMouseEvent(button, row, col, move, multiclick, modifiers)
     let args = { }
     let args.button = a:button
+    " Scroll directions are inverted in the GUI, no idea why.
+    if has('gui_running')
+      if a:button == s:MOUSE_CODE.SCRL_UP
+        let args.button = s:MOUSE_CODE.SCRL_DOWN
+      elseif a:button == s:MOUSE_CODE.SCRL_DOWN
+        let args.button = s:MOUSE_CODE.SCRL_UP
+      elseif a:button == s:MOUSE_CODE.SCRL_LEFT
+        let args.button = s:MOUSE_CODE.SCRL_RIGHT
+      elseif a:button == s:MOUSE_CODE.SCRL_RIGHT
+        let args.button = s:MOUSE_CODE.SCRL_LEFT
+      endif
+    endif
     let args.row = a:row
     let args.col = a:col
     let args.move = a:move
