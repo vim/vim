@@ -2353,6 +2353,8 @@ mch_restore_title(int which)
 /*
  * Return TRUE if "name" looks like some xterm name.
  * This matches "xterm.*", thus "xterm-256color", "xterm-kitty", etc.
+ * Do not consider "xterm-kitty" an xterm, it is not fully xterm compatible,
+ * using the "xterm-kitty" terminfo entry should work better.
  * Seiichi Sato mentioned that "mlterm" works like xterm.
  */
     int
@@ -2360,7 +2362,8 @@ vim_is_xterm(char_u *name)
 {
     if (name == NULL)
 	return FALSE;
-    return (STRNICMP(name, "xterm", 5) == 0
+    return ((STRNICMP(name, "xterm", 5) == 0
+				     && STRNICMP(name, "xterm-kitty", 11) != 0)
 		|| STRNICMP(name, "nxterm", 6) == 0
 		|| STRNICMP(name, "kterm", 5) == 0
 		|| STRNICMP(name, "mlterm", 6) == 0

@@ -1675,6 +1675,12 @@ static char *(key_names[]) =
 #endif
 
 #ifdef HAVE_TGETENT
+/*
+ * Get the termcap entries we need with tgetstr(), tgetflag() and tgetnum().
+ * "invoke_tgetent()" must have been called before.
+ * If "*height" or "*width" are not zero then use the "li" and "col" entries to
+ * get their value.
+ */
     static void
 get_term_entries(int *height, int *width)
 {
@@ -2033,14 +2039,6 @@ set_termname(char_u *term)
 #endif
 	    parse_builtin_tcap(term);
 
-	    // Use the 'keyprotocol' option to adjust the t_TE and t_TI
-	    // termcap entries if there is an entry maching "term".
-	    keyprot_T kpc = match_keyprotocol(term);
-	    if (kpc == KEYPROTOCOL_KITTY)
-		apply_builtin_tcap(term, builtin_kitty, TRUE);
-	    else if (kpc == KEYPROTOCOL_MOK2)
-		apply_builtin_tcap(term, builtin_mok2, TRUE);
-
 #ifdef FEAT_GUI
 	    if (term_is_gui(term))
 	    {
@@ -2059,6 +2057,19 @@ set_termname(char_u *term)
 #ifdef HAVE_TGETENT
     }
 #endif
+
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+#endif
+    {
+	// Use the 'keyprotocol' option to adjust the t_TE and t_TI
+	// termcap entries if there is an entry maching "term".
+	keyprot_T kpc = match_keyprotocol(term);
+	if (kpc == KEYPROTOCOL_KITTY)
+	    apply_builtin_tcap(term, builtin_kitty, TRUE);
+	else if (kpc == KEYPROTOCOL_MOK2)
+	    apply_builtin_tcap(term, builtin_mok2, TRUE);
+    }
 
 /*
  * special: There is no info in the termcap about whether the cursor
@@ -2611,28 +2622,8 @@ termcapinit(char_u *name)
 	term = NULL;	    // empty name is equal to no name
 
 #ifndef MSWIN
-    char_u	*tofree = NULL;
     if (term == NULL)
-    {
 	term = mch_getenv((char_u *)"TERM");
-
-	// "xterm-kitty" is used for Kitty, but it is not actually compatible
-	// with xterm.  Remove the "xterm-" part to avoid trouble.
-	if (term != NULL && STRNCMP(term, "xterm-kitty", 11) == 0)
-	{
-#ifdef FEAT_EVAL
-	    ch_log(NULL, "Removing xterm- prefix from terminal name %s", term);
-#endif
-	    if (p_verbose > 0)
-	    {
-		verbose_enter();
-		smsg(_("Removing xterm- prefix from terminal name %s"), term);
-		verbose_leave();
-	    }
-	    term = vim_strsave(term + 6);
-	    tofree = term;
-	}
-    }
 #endif
     if (term == NULL || *term == NUL)
 	term = DEFAULT_TERM;
@@ -2644,10 +2635,6 @@ termcapinit(char_u *name)
 
     // Avoid using "term" here, because the next mch_getenv() may overwrite it.
     set_termname(T_NAME != NULL ? T_NAME : term);
-
-#ifndef MSWIN
-    vim_free(tofree);
-#endif
 }
 
 /*

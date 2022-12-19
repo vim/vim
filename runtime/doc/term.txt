@@ -306,9 +306,14 @@ One of the problems is that the value for $TERM is set to "xterm-kitty".  For
 Vim this is an indication that the terminal is xterm-compatible and the
 builtin xterm termcap entries should be used.  Many other terminals depend on
 this.  However, Kitty is not fully xterm compatible.  The author suggested to
-ignore the "xterm-" prefix and use the terminfo entry anyway, but that
-conflicts with what is needed for other terminals.  Therefore Vim removes the
-"xterm-" prefix from "xterm-kitty" when it comes from $TERM.
+ignore the "xterm-" prefix and use the terminfo entry anyway, so that is what
+happens now, the builtin xterm termcap entries are not used.  However, the
+t_RV is set, otherwise other things would not work, such as automatically
+setting 'ttymouse' to "sgr".
+
+It is not clear why kitty sets $TERM to "xterm-kitty", the terminal isn't
+really xterm compatible.  "kitty" would be more appropriate, but a terminfo
+entry with that name is not widespread.
 
 Note that using the kitty keyboard protocol is a separate feature, see
 |kitty-keyboard-protocol|.
