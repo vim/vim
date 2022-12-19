@@ -8659,26 +8659,18 @@ test_gui_w32_sendevent_mouse(dict_T *args)
 	    || !dict_has_key(args, "modifiers")))
 	return FALSE;
 
-    // GUI uses pixels (unless 'cell' is defined and TRUE)
-    int col = (int)dict_get_number(args, "col");
     int row = (int)dict_get_number(args, "row");
+    int col = (int)dict_get_number(args, "col");
 
     if (move)
     {
-	// The "move" argument defaults to pixels for the GUI
-	int px_X = col;
-	int px_Y = row;
-
-	// Check if col and row are cell coordinates rather than pixels.
-	// Note: vimscript cell coordinates are 1 based.
 	if (dict_get_bool(args, "cell", FALSE))
 	{
 	    // click in the middle of the character cell
-	    px_X = (col - 1) * gui.char_width + gui.char_width / 2;
-	    px_Y = (row - 1) * gui.char_height + gui.char_height / 2;
+	    row = (row - 1) * gui.char_height + gui.char_height / 2;
+	    col = (col - 1) * gui.char_width + gui.char_width / 2;
 	}
-	p_mousemev = TRUE;
-	gui_mouse_moved(px_X, px_Y);
+	gui_mouse_moved(col, row);
     }
     else
     {

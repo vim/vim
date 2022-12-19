@@ -439,7 +439,11 @@ func Test_mswin_mouse_event()
 
   call setline(1, ['one two three', 'four five six'])
 
-  " test mouse movement
+  " Test mouse movement
+  " by default, no mouse move events are generated
+  " this setting enables it to generate move events
+  set mousemev
+
   if !has('gui_running')
     " console version needs a button pressed,
     " otherwise it ignores mouse movements.
@@ -483,6 +487,9 @@ func Test_mswin_mouse_event()
 
     unlet args
   endif
+
+  " finish testing mouse movement
+  set mousemev&
 
   " place the cursor using left click and release in normal mode
   call MouseLeftClick(2, 4)
