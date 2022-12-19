@@ -993,23 +993,24 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 " Jovial
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 
-" JSON
-au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
-
 " JSON5
 au BufNewFile,BufRead *.json5			setf json5
 
 " JSON Patch (RFC 6902)
-au BufNewFile,BufRead *.json-patch			setf json
+au BufNewFile,BufRead *.json-patch		setf json
 
 " Jupyter Notebook is also json
-au BufNewFile,BufRead *.ipynb				setf json
+au BufNewFile,BufRead *.ipynb			setf json
 
 " Other files that look like json
-au BufNewFile,BufRead .babelrc,.eslintrc,.prettierrc,.firebaserc  setf json
+au BufNewFile,BufRead .prettierrc,.firebaserc	setf json
 
-" JSONC
-au BufNewFile,BufRead *.jsonc			setf jsonc
+" JSONC (JSON with comments)
+au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc 	setf jsonc
+au BufNewFile,BufRead .jshintc,.hintrc,.swrc,[jt]sconfig*.json 	setf jsonc
+
+" JSON
+au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
 
 " Jsonnet
 au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
