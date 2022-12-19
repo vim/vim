@@ -8710,7 +8710,10 @@ test_gui_w32_sendevent_mouse(dict_T *args)
 test_gui_w32_sendevent_keyboard(dict_T *args)
 {
     INPUT inputs[1];
-    SecureZeroMemory(inputs, sizeof(inputs));
+    INPUT modkeys[3];
+    SecureZeroMemory(inputs, sizeof(INPUT));
+    SecureZeroMemory(modkeys, 3 * sizeof(INPUT));
+
     char_u *event = dict_get_string(args, "event", TRUE);
 
     if (event && (STRICMP(event, "keydown") == 0
@@ -8723,14 +8726,75 @@ test_gui_w32_sendevent_keyboard(dict_T *args)
 	    return FALSE;
 	}
 
+	BOOL isModKey = (vkCode == VK_SHIFT || vkCode == VK_CONTROL 
+	    || vkCode == VK_MENU || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT
+	    || vkCode == VK_LCONTROL || vkCode == VK_RCONTROL
+	    || vkCode == VK_LMENU || vkCode == VK_RMENU );
+
+	BOOL unwrapMods = FALSE;
+	int mods = (int)dict_get_number(args, "modifiers");
+	
+	// If there are modifiers in the args, and it is not a keyup event and
+	// vkCode is not a modifier key, then we generate virtual modifier key
+	// messages before sending the actual key message.
+	if(mods && STRICMP(event, "keydown") == 0 && !isModKey)
+	{
+	    int n = 0;
+	    if (mods & MOD_MASK_SHIFT)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LSHIFT;
+		n++;
+	    }
+	    if (mods & MOD_MASK_CTRL)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LCONTROL;
+		n++;
+	    }
+	    if (mods & MOD_MASK_ALT)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LMENU;
+		n++;
+	    }
+	    if (n)
+	    {
+		(void)SetForegroundWindow(s_hwnd);
+		SendInput(n, modkeys, sizeof(INPUT));
+	    }
+	}
+
 	inputs[0].type = INPUT_KEYBOARD;
 	inputs[0].ki.wVk = vkCode;
 	if (STRICMP(event, "keyup") == 0)
+	{
 	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	    if(!isModKey)
+		unwrapMods = TRUE;
+	} 
 
 	(void)SetForegroundWindow(s_hwnd);
 	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
 	vim_free(event);
+
+	if (unwrapMods)
+	{
+	    modkeys[0].type = INPUT_KEYBOARD;
+	    modkeys[0].ki.wVk = VK_LSHIFT;
+	    modkeys[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	    
+	    modkeys[1].type = INPUT_KEYBOARD;
+	    modkeys[1].ki.wVk = VK_LCONTROL;
+	    modkeys[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	    modkeys[2].type = INPUT_KEYBOARD;
+	    modkeys[2].ki.wVk = VK_LMENU;
+	    modkeys[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	    (void)SetForegroundWindow(s_hwnd);
+	    SendInput(3, modkeys, sizeof(INPUT));
+	}
     }
     else
     {

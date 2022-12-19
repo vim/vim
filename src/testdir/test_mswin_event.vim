@@ -196,6 +196,10 @@ func Test_mswin_key_event()
     " and when the virtual termcap maps shift the character
     call assert_equal(0, mod_mask, $"key = {kstr}")
   endfor
+  
+  " flush out any garbage left in the buffer
+  while getchar(0)
+  endwhile
 
   for [kcodes, kstr] in test_oem_keys
     let modifiers = 0
@@ -224,6 +228,10 @@ func Test_mswin_key_event()
     endif
     call assert_equal(modifiers, mod_mask, $"key = {kstr}")
   endfor
+
+  " flush out any garbage left in the buffer
+  while getchar(0)
+  endwhile
 
 " Test keyboard codes for digits
 " (0x30 - 0x39) : VK_0 - VK_9 are the same as ASCII '0' - '9'
@@ -276,31 +284,34 @@ func Test_mswin_key_event()
   endfor
 
 
-"  "  NOTE: Fn Keys not working in CI Testing!?
-"    " Test for Function Keys 'F1' to 'F12'
-"    " VK codes 112(0x70) - 123(0x7B)
-"    " With ALL permutatios of modifiers; Shift, Ctrl & Alt
-"    for n in range(1, 12)
-"      for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
-"        let kstr = $"{mod_str}F{n}"
-"        let keycode = eval('"\<' .. kstr .. '>"')
-"        call SendKeys(mod_keycodes + [111+n])
-"        let ch = getcharstr(0)
-"        if ch == ''
-"  	throw 'Skipped: The MS-Windows console input buffer was empty.'
-"        endif
-"        let mod_mask = getcharmod()
-"        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-"        " workaround for the virtual termcap maps 
-"        " changing the character instead of sending Shift
-"        if index(mod_keycodes, VK.SHIFT) >= 0
-"  	let vim_mod_mask = vim_mod_mask - vim_MOD_MASK_SHIFT
-"        endif
-"        call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
-"      endfor
-"    endfor
+"  NOTE: Fn Keys not all working in CI Testing!
 
+  if !has("gui_running")
+    " Test for Function Keys 'F1' to 'F12'
+    " VK codes 112(0x70) - 123(0x7B)
+    " With ALL permutatios of modifiers; Shift, Ctrl & Alt
+    for n in range(1, 12)
+      for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
+        let kstr = $"{mod_str}F{n}"
+        let keycode = eval('"\<' .. kstr .. '>"')
+        call SendKeys(mod_keycodes + [111+n])
+        let ch = getcharstr(0)
+"          if ch == ''
+"    	throw 'Skipped: The MS-Windows console input buffer was empty.'
+"          endif
+        let mod_mask = getcharmod()
+        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+        " workaround for the virtual termcap maps 
+        " changing the character instead of sending Shift
+        if index(mod_keycodes, VK.SHIFT) >= 0
+  	let vim_mod_mask = vim_mod_mask - vim_MOD_MASK_SHIFT
+        endif
+        call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
+      endfor
+    endfor
+  endif
 
+"---------------------------------------------------------------------------"
 "    " Test for the various Ctrl and Shift key combinations.
 "    " Refer to the following page for the virtual key codes:
 "    " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
