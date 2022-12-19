@@ -311,15 +311,16 @@ func Test_mswin_key_event()
     endfor
   endif
 
-  " Test for Function Keys 'F1' to 'F12'
-  for n in range(1, 12)
-    let kstr = $"F{n}"
-    let keycode = eval('"\<' .. kstr .. '>"')
-    call SendKeys([111+n])
-    let ch = getcharstr(0)
-    call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
-  endfor
-
+  if !has("gui_running")
+    " Test for Function Keys 'F1' to 'F12'
+    for n in range(1, 12)
+      let kstr = $"F{n}"
+      let keycode = eval('"\<' .. kstr .. '>"')
+      call SendKeys([111+n])
+      let ch = getcharstr(0)
+      call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
+    endfor
+  endif
 "  "  NOTE: Todo: mods with Fn Keys not working in CI Testing!
 "    if !has("gui_running")
 "      " Test for Function Keys 'F1' to 'F12'
