@@ -70,7 +70,7 @@ endfunc
 
 " Send low level mouse event to MS-Windows consoles
 func MSWinMouseEvent(button, row, col, move, multiclick, modifiers)
-    let args = #{ }
+    let args = { }
     let args.button = a:button
     let args.row = a:row
     let args.col = a:col

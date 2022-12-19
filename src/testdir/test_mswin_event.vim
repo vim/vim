@@ -7,14 +7,28 @@ CheckMSWindows
 
 source mouse.vim
 
-" Test for sending low level key presses
+" Helper function for sending a sequence of low level key presses
+" The modifer key(s) can be included as normal key presses in the sequence
 func SendKeys(keylist)
   for k in a:keylist
     call test_mswin_event("keyboard", #{event: "keydown", keycode: k})
   endfor
-  for k in reverse(a:keylist)
+  for k in reverse(copy(a:keylist))
     call test_mswin_event("keyboard", #{event: "keyup", keycode: k})
   endfor
+endfunc
+
+" Send an individual key press
+" the modifers for the key press can be specified in the modifiers arg.
+func SendKey(key, modifiers)
+  let args = { }
+  let args.keycode = a:key
+  let args.modifiers = a:modifiers
+  let args.event = "keydown"
+  call test_mswin_event("keyboard", args)
+  let args.event = "keyup"
+  call test_mswin_event("keyboard", args)
+  unlet args
 endfunc
 
 " Test MS-Windows console key events
@@ -124,7 +138,7 @@ func Test_mswin_key_event()
   let vim_MOD_MASK_CTRL  = 0x04
   let vim_MOD_MASK_ALT   = 0x08
   
-  let modifiers = [
+  let vim_key_modifiers = [
     \ ["",       0,   []],
     \ ["S-",     2,   [VK.SHIFT]],
     \ ["C-",     4,   [VK.CONTROL]],
@@ -161,6 +175,16 @@ func Test_mswin_key_event()
         \ [[VK.SHIFT, VK.OEM_COMMA], '<'],
         \ [[VK.SHIFT, VK.OEM_MINUS], '_'],
         \ [[VK.SHIFT, VK.OEM_PERIOD], '>'],
+	\ [[VK.SHIFT, VK.KEY_1], '!'],
+	\ [[VK.SHIFT, VK.KEY_2], '@'],
+	\ [[VK.SHIFT, VK.KEY_3], '#'],
+	\ [[VK.SHIFT, VK.KEY_4], '$'],
+	\ [[VK.SHIFT, VK.KEY_5], '%'],
+	\ [[VK.SHIFT, VK.KEY_6], '^'],
+	\ [[VK.SHIFT, VK.KEY_7], '&'],
+	\ [[VK.SHIFT, VK.KEY_8], '*'],
+	\ [[VK.SHIFT, VK.KEY_9], '('],
+	\ [[VK.SHIFT, VK.KEY_0], ')']
         \ ]
 
   for [kcodes, kstr] in test_oem_keys
@@ -168,13 +192,38 @@ func Test_mswin_key_event()
     let ch = getcharstr(0)
     call assert_equal($"{kstr}", $"{ch}")
     let mod_mask = getcharmod()
-    if kcodes[0] == VK.SHIFT
-	call assert_equal(vim_MOD_MASK_SHIFT, mod_mask, $"key = {kstr}")
-    else
-	call assert_equal(0, mod_mask, $"key = {kstr}")
-    endif
+    " the mod_mask is zero when no modifiers are used
+    " and when the virtual termcap maps shift the character
+    call assert_equal(0, mod_mask, $"key = {kstr}")
   endfor
 
+  for [kcodes, kstr] in test_oem_keys
+    let modifiers = 0
+    let key = kcodes[0]
+
+    for key in kcodes
+      if key == VK.SHIFT
+        let modifiers = modifiers + vim_MOD_MASK_SHIFT
+      endif
+      if key == VK.CONTROL
+        let modifiers = modifiers + vim_MOD_MASK_CTRL
+      endif
+      if key == VK.MENU
+        let modifiers = modifiers + vim_MOD_MASK_ALT
+      endif
+    endfor
+
+    call SendKey(key, modifiers)
+    let ch = getcharstr(0)
+    call assert_equal($"{kstr}", $"{ch}")
+    let mod_mask = getcharmod()
+    " workaround for the virtual termcap maps changing the character instead
+    " of sending Shift
+    if index(kcodes, VK.SHIFT) >= 0
+      let modifiers = modifiers - vim_MOD_MASK_SHIFT
+    endif
+    call assert_equal(modifiers, mod_mask, $"key = {kstr}")
+  endfor
 
 " Test keyboard codes for digits
 " (0x30 - 0x39) : VK_0 - VK_9 are the same as ASCII '0' - '9'
@@ -182,26 +231,34 @@ func Test_mswin_key_event()
     call SendKeys([kc])
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc), ch)
+    call SendKey(kc, 0)
+    let ch = getcharstr(0)
+    call assert_equal(nr2char(kc), ch)
   endfor
 
 " Test for lowercase 'a' to 'z', VK codes 65(0x41) - 90(0x5A)
-" VK_A - VK_Z virtual key codes coincide with uppercase ASCII codes 'A'-'Z'.
-" eg VK_A is 65 and the ASCII character code for uppercase 'A' is also 65.
+" Note: VK_A-VK_Z virtual key codes coincide with uppercase ASCII codes A-Z.
+" eg VK_A is 65, and the ASCII character code for uppercase 'A' is also 65.
 " Caution: these are interpreted as lowercase when Shift is NOT pressed. 
-" Sending VK_A (65) 'A' Key code without shift modifier, will produce ASCII
-" char 'a' (91) as the output.
-" The ASCII codes for the lowercase letters are 32 higher than their uppercase
-" counterparts.
+" eg, sending VK_A (65) 'A' Key code without shift modifier, will produce ASCII
+" char 'a' (91) as the output.  The ASCII codes for the lowercase letters are
+" numbered 32 higher than their uppercase versions.
   for kc in range(65, 90)
     call SendKeys([kc])
+    let ch = getcharstr(0)
+    call assert_equal(nr2char(kc + 32), ch)
+    call SendKey(kc, 0)
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc + 32), ch)
   endfor
 
 "  Test for Uppercase 'A' - 'Z' keys
-"  With VK_SHIFT, expect the keycode = character code.
+"  ie. with VK_SHIFT, expect the keycode = character code.
   for kc in range(65, 90)
     call SendKeys([VK.SHIFT, kc])
+    let ch = getcharstr(0)
+    call assert_equal(nr2char(kc), ch)
+    call SendKey(kc, vim_MOD_MASK_SHIFT)
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc), ch)
   endfor
@@ -213,15 +270,18 @@ func Test_mswin_key_event()
     call SendKeys([VK.CONTROL, kc])
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc - 64), ch)
+    call SendKey(kc, vim_MOD_MASK_CTRL)
+    let ch = getcharstr(0)
+    call assert_equal(nr2char(kc - 64), ch)
   endfor
 
-"  NOTE: Fn Keys not working in CI Testing!?
-"
+
+"  "  NOTE: Fn Keys not working in CI Testing!?
 "    " Test for Function Keys 'F1' to 'F12'
 "    " VK codes 112(0x70) - 123(0x7B)
 "    " With ALL permutatios of modifiers; Shift, Ctrl & Alt
 "    for n in range(1, 12)
-"      for [mod_str, vim_mod_mask, mod_keycodes] in modifiers
+"      for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
 "        let kstr = $"{mod_str}F{n}"
 "        let keycode = eval('"\<' .. kstr .. '>"')
 "        call SendKeys(mod_keycodes + [111+n])
@@ -231,9 +291,10 @@ func Test_mswin_key_event()
 "        endif
 "        let mod_mask = getcharmod()
 "        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-"        " workaround for termcap changing the character instead of sending Shift
-"        if index(mod_keycodes, 0x10) >= 0
-"  	let vim_mod_mask = vim_mod_mask - 2
+"        " workaround for the virtual termcap maps 
+"        " changing the character instead of sending Shift
+"        if index(mod_keycodes, VK.SHIFT) >= 0
+"  	let vim_mod_mask = vim_mod_mask - vim_MOD_MASK_SHIFT
 "        endif
 "        call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
 "      endfor
