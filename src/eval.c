@@ -4548,11 +4548,19 @@ eval_method(
 	if (**arg != '(' && alias == NULL
 				    && (paren = vim_strchr(*arg, '(')) != NULL)
 	{
-	    char_u *deref;
-
 	    *arg = name;
+
+	    // Truncate the name a the "(".  Avoid trying to get another line
+	    // by making "getline" NULL.
 	    *paren = NUL;
-	    deref = deref_function_name(arg, &tofree, evalarg, verbose);
+	    char_u	*(*getline)(int, void *, int, getline_opt_T) = NULL;
+	    if (evalarg != NULL)
+	    {
+		getline = evalarg->eval_getline;
+		evalarg->eval_getline = NULL;
+	    }
+
+	    char_u *deref = deref_function_name(arg, &tofree, evalarg, verbose);
 	    if (deref == NULL)
 	    {
 		*arg = name + len;
@@ -4563,7 +4571,10 @@ eval_method(
 		name = deref;
 		len = (long)STRLEN(name);
 	    }
+
 	    *paren = '(';
+	    if (getline != NULL)
+		evalarg->eval_getline = getline;
 	}
 
 	if (ret == OK)

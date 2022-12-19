@@ -179,6 +179,60 @@ func Test_user_method()
   eval 'bar'->s:addFoo()->assert_equal('barfoo')
 endfunc
 
+func Test_method_with_linebreaks()
+  let lines =<< trim END
+      vim9script
+
+      export def Scan(ll: list<number>): func(func(number))
+        return (Emit: func(number)) => {
+          for v in ll
+            Emit(v)
+          endfor
+        }
+      enddef
+
+      export def Build(Cont: func(func(number))): list<number>
+        var result: list<number> = []
+        Cont((v) => {
+            add(result, v)
+        })
+        return result
+      enddef
+
+      export def Noop(Cont: func(func(number))): func(func(number))
+        return (Emit: func(number)) => {
+          Cont(Emit)
+        }
+      enddef
+  END
+  call writefile(lines, 'Xlib.vim', 'D')
+
+  let lines =<< trim END
+      vim9script
+
+      import "./Xlib.vim" as lib
+
+      const x = [1, 2, 3]
+
+      var result = lib.Scan(x)->lib.Noop()->lib.Build()
+      assert_equal([1, 2, 3], result)
+
+      result = lib.Scan(x)->lib.Noop()
+              ->lib.Build()
+      assert_equal([1, 2, 3], result)
+
+      result = lib.Scan(x)
+            ->lib.Noop()->lib.Build()
+      assert_equal([1, 2, 3], result)
+
+      result = lib.Scan(x)
+                ->lib.Noop()
+                ->lib.Build()
+      assert_equal([1, 2, 3], result)
+  END
+  call v9.CheckScriptSuccess(lines)
+endfunc
+
 func Test_failed_call_in_try()
   try | call UnknownFunc() | catch | endtry
 endfunc
