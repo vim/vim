@@ -1824,12 +1824,12 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
     mer.dwControlKeyState = 0;
     if (mods != 0)
     {
-	// Encode the win32 console key modifiers from Vim mouse modifiers.
-	if (mods & MOD_MASK_SHIFT)
+	// Encode the win32 console key modifiers from Vim MOUSE modifiers.
+	if (mods & MOUSE_SHIFT)
 	    mer.dwControlKeyState |= SHIFT_PRESSED;
-	if (mods & MOD_MASK_CTRL)
+	if (mods & MOUSE_CTRL)
 	    mer.dwControlKeyState |= LEFT_CTRL_PRESSED;
-	if (mods & MOD_MASK_ALT)
+	if (mods & MOUSE_ALT)
 	    mer.dwControlKeyState |= LEFT_ALT_PRESSED;
     }
     ir->Event.MouseEvent = mer;
@@ -1903,7 +1903,7 @@ peek_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
  * So, it acts as an alias for 'test_gui_event' for the Windows GUI.
  * 
  * When the Windows console is running, the arguments; 'event' and 'args', are
- * a subset of what 'test_gui_event' handles, ie, only "keyboard" and "mouse"
+ * a subset of what 'test_gui_event' handles, ie, only "key" and "mouse"
  * events are encoded as INPUT_RECORD events.
  * 
  * Note: INPUT_RECORDs are only used by the Windows console, not the GUI.  The
@@ -1927,7 +1927,7 @@ test_mswin_event(char_u *event, dict_T *args)
 
     INPUT_RECORD ir;
     BOOL input_encoded = FALSE;
-    if (STRCMP(event, "keyboard") == 0)
+    if (STRCMP(event, "key") == 0)
 	input_encoded = encode_key_event(args, &ir);
     else if (STRCMP(event, "mouse") == 0)
 	input_encoded = encode_mouse_event(args, &ir);

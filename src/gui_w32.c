@@ -8805,7 +8805,7 @@ test_gui_w32_sendevent_keyboard(dict_T *args)
     int
 test_gui_w32_sendevent(char_u *event, dict_T *args)
 {
-    if (STRICMP(event, "keyboard") == 0)
+    if (STRICMP(event, "key") == 0)
 	return test_gui_w32_sendevent_keyboard(args);
     else if (STRICMP(event, "mouse") == 0)
 	return test_gui_w32_sendevent_mouse(args);

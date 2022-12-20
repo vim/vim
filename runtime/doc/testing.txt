@@ -94,7 +94,7 @@ test_gui_event({event}, {args})
 		    "findrepl"  search and replace text.
 		    "mouse"	mouse button click event.
 		    "scrollbar" move or drag the scrollbar.
-		    "keyboard"  send a low-level keyboard event.
+		    "key"	send a low-level keyboard event.
 		    "tabline"	select a tab page by mouse click.
 		    "tabmenu"	select a tabline menu entry.
 
@@ -178,7 +178,7 @@ test_gui_event({event}, {args})
 		    dragging:	1 to drag the scrollbar and 0 to click in the
 				scrollbar.
 
-		"keyboard":
+		"key":
 		  Send a low-level keyboard event (e.g. key-up or down).
 		  Currently only supported on MS-Windows.
 		  The supported items in {args} are:
@@ -231,7 +231,7 @@ test_mswin_event({event}, {args})
 		
 		{event} is a String and the supported values are:
 		    "mouse"	mouse event.
-		    "keyboard"	keyboard event.
+		    "key"	keyboard event.
 
 		"mouse":
 		  Inject either a mouse button click, or a mouse move, event.
@@ -268,17 +268,20 @@ test_mswin_event({event}, {args})
 				then "move" uses screen cells instead of pixel
 				positions.  Not used by the console.
 
-		"keyboard":
+		"key":
 		  Send a low-level keyboard event (e.g. keyup or keydown).
 		  The supported items in {args} are:
 		    event:	The supported string values are:
 				    keyup   generate a keyup event
 				    keydown generate a keydown event
 		    keycode:    Keycode to use for a keyup or a keydown event.
-		    modifiers:	Optional; key modifiers.  The supported values are:
-				    4	shift is pressed
+		    modifiers:	Optional; key modifiers.
+				The supported values are:
+				    2	shift is pressed
+				    4	ctrl is pressed
 				    8	alt is pressed
-				   16	ctrl is pressed
+				Note: These values are different to the mouse
+				modifiers.
 								*E1291*
 
 		Returns TRUE if the event is successfully added, FALSE if

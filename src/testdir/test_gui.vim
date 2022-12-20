@@ -1638,10 +1638,10 @@ endfunc
 " Test for sending low level key presses
 func SendKeys(keylist)
   for k in a:keylist
-    call test_gui_event("keyboard", #{event: "keydown", keycode: k})
+    call test_gui_event("key", #{event: "keydown", keycode: k})
   endfor
   for k in reverse(a:keylist)
-    call test_gui_event("keyboard", #{event: "keyup", keycode: k})
+    call test_gui_event("key", #{event: "keyup", keycode: k})
   endfor
 endfunc
 

@@ -10,10 +10,10 @@ source mouse.vim
 " The modifer key(s) can be included as normal key presses in the sequence
 func SendKeys(keylist)
   for k in a:keylist
-    call test_mswin_event("keyboard", #{event: "keydown", keycode: k})
+    call test_mswin_event("key", #{event: "keydown", keycode: k})
   endfor
   for k in reverse(copy(a:keylist))
-    call test_mswin_event("keyboard", #{event: "keyup", keycode: k})
+    call test_mswin_event("key", #{event: "keyup", keycode: k})
   endfor
 endfunc
 
@@ -24,9 +24,9 @@ func SendKey(key, modifiers)
   let args.keycode = a:key
   let args.modifiers = a:modifiers
   let args.event = "keydown"
-  call test_mswin_event("keyboard", args)
+  call test_mswin_event("key", args)
   let args.event = "keyup"
-  call test_mswin_event("keyboard", args)
+  call test_mswin_event("key", args)
   unlet args
 endfunc
 
@@ -589,10 +589,10 @@ func Test_mswin_mouse_event()
         \ 'S-RightMouse', 'A-RightMouse', 'C-RightMouse'],
         \ g:events)
   else
-    call assert_equal(['MiddleRelease', 'LeftMouse', '2-LeftMouse', '3-LeftMouse',
-        \ 'C-LeftMouse', '3-LeftMouse', '2-MiddleMouse', '3-MiddleMouse',
-        \ 'MiddleMouse', 'C-MiddleMouse', '3-MiddleMouse', 'RightMouse',
-        \ '2-RightMouse', '3-RightMouse'],
+    call assert_equal(['MiddleRelease', 'LeftMouse', '2-LeftMouse',
+        \ '3-LeftMouse', 'S-LeftMouse', 'MiddleMouse', '2-MiddleMouse',
+	\ '3-MiddleMouse', 'MiddleMouse', 'S-MiddleMouse', 'RightMouse',
+	\ '2-RightMouse', '3-RightMouse'],
         \ g:events)
   endif
 
@@ -632,15 +632,15 @@ func Test_mswin_event_error_handling()
   let args = #{button: 0, row: 2, col: 4, multiclick: 0}
   call assert_false(test_mswin_event('mouse', args))
 
-  call assert_false(test_mswin_event('keyboard', test_null_dict()))
-  call assert_fails("call test_mswin_event('keyboard', [])", 'E1206:')
-  call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': 0x0})", 'E1291:')
-  call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': [15]})", 'E745:')
-  call assert_fails("call test_mswin_event('keyboard', {'event': 'keys', 'keycode': 0x41})", 'E475:')
-  call assert_fails("call test_mswin_event('keyboard', {'keycode': 0x41})", 'E417:')
-  call assert_fails("call test_mswin_event('keyboard', {'event': 'keydown'})", 'E1291:')
+  call assert_false(test_mswin_event('key', test_null_dict()))
+  call assert_fails("call test_mswin_event('key', [])", 'E1206:')
+  call assert_fails("call test_mswin_event('key', {'event': 'keydown', 'keycode': 0x0})", 'E1291:')
+  call assert_fails("call test_mswin_event('key', {'event': 'keydown', 'keycode': [15]})", 'E745:')
+  call assert_fails("call test_mswin_event('key', {'event': 'keys', 'keycode': 0x41})", 'E475:')
+  call assert_fails("call test_mswin_event('key', {'keycode': 0x41})", 'E417:')
+  call assert_fails("call test_mswin_event('key', {'event': 'keydown'})", 'E1291:')
 
-  call assert_fails("sandbox call test_mswin_event('keyboard', {'event': 'keydown', 'keycode': 61 })", 'E48:')
+  call assert_fails("sandbox call test_mswin_event('key', {'event': 'keydown', 'keycode': 61 })", 'E48:')
 
   " flush out any garbage left in the buffer.
   while getchar(0)
