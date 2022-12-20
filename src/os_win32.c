@@ -193,7 +193,6 @@ typedef struct input_record_buffer_S
     int length;
 } input_record_buffer_T;
 static input_record_buffer_T input_record_buffer;
-static int peek_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength);
 static int read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength);
 static int write_input_record_buffer(INPUT_RECORD* irEvents, int nLength);
 #endif
@@ -1735,7 +1734,7 @@ encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
     int		row;
     int		col;
     int		repeated_click;
-    int_u	mods;
+    int_u	mods = 0;
     int		move;
 
     if (!dict_has_key(args, "row") || !dict_has_key(args, "col"))
@@ -1876,18 +1875,6 @@ read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
 	vim_free(pop_head);
 	if (input_record_buffer.length == 0)
 	    input_record_buffer.tail = NULL;
-    }
-    return nCount;
-}
-    static int
-peek_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
-{
-    int nCount = 0;
-    input_record_buffer_node_T *temp =  input_record_buffer.head;
-    while (nCount < nMaxLength && temp != NULL)
-    {
-	irEvents[nCount++] = temp->ir;
-	temp = temp->next;
     }
     return nCount;
 }
