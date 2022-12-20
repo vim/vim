@@ -687,7 +687,11 @@ func Test_popup_and_window_resize()
     return
   endif
   let rows = h / 3
-  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
+  if has('win32')
+    let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile nors'], {'term_rows': rows})
+  else
+    let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
+  endif
   call term_sendkeys(buf, (h / 3 - 1) . "o\<esc>")
   " Wait for the nested Vim to exit insert mode, where it will show the ruler.
   " Need to trigger a redraw.
@@ -699,11 +703,11 @@ func Test_popup_and_window_resize()
   " popup first entry "!" must be at the top
   call WaitForAssert({-> assert_match('^!\s*$', term_getline(buf, 1))})
   exe 'resize +' . (h - 1)
-  call TermWait(buf, 100)
+  call TermWait(buf, 50)
   redraw!
   " popup shifted down, first line is now empty
   call WaitForAssert({-> assert_equal('', term_getline(buf, 1))})
-  sleep 300m
+  sleep 100m
   " popup is below cursor line and shows first match "!"
   call WaitForAssert({-> assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0] + 1))})
   " cursor line also shows !
