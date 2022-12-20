@@ -1299,14 +1299,14 @@ typedef struct
  */
 typedef struct hashitem_S
 {
-    long_u	hi_hash;	// cached hash number of hi_key
     char_u	*hi_key;
+    long_u	hi_hash;	// cached hash number of hi_key
 } hashitem_T;
 
 // The address of "hash_removed" is used as a magic number for hi_key to
 // indicate a removed item.
 #define HI_KEY_REMOVED &hash_removed
-#define HASHITEM_EMPTY(hi) ((hi)->hi_key == NULL || (hi)->hi_key == &hash_removed)
+#define HASHITEM_EMPTY(hi) (NULL == (hi)->hi_key || HI_KEY_REMOVED == (hi)->hi_key)
 
 // Initial size for a hashtable.  Our items are relatively small and growing
 // is expensive, thus use 16 as a start.  Must be a power of 2.
@@ -1318,6 +1318,7 @@ typedef struct hashitem_S
 				// items before growing works.
 #define HTFLAGS_FROZEN	0x02	// Trying to add or remove an item will result
 				// in an error message.
+#define HTFLAGS_LOCKED  0x04    // Set when hashtable is locked
 
 typedef struct hashtable_S
 {
@@ -1326,7 +1327,6 @@ typedef struct hashtable_S
     long_u	ht_used;	// number of items used
     long_u	ht_filled;	// number of items used + removed
     int		ht_changed;	// incremented when adding or removing an item
-    int		ht_locked;	// counter for hash_lock()
     int		ht_flags;	// HTFLAGS_ values
     hashitem_T	*ht_array;	// points to the array, allocated when it's
 				// not "ht_smallarray"
