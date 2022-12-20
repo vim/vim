@@ -1350,31 +1350,37 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 	if (STRNCMP(arg, "icon=", 5) == 0)
 	{
 	    arg += 5;
+	    vim_free(icon);
 	    icon = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "text=", 5) == 0)
 	{
 	    arg += 5;
+	    vim_free(text);
 	    text = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "linehl=", 7) == 0)
 	{
 	    arg += 7;
+	    vim_free(linehl);
 	    linehl = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "texthl=", 7) == 0)
 	{
 	    arg += 7;
+	    vim_free(texthl);
 	    texthl = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "culhl=", 6) == 0)
 	{
 	    arg += 6;
+	    vim_free(culhl);
 	    culhl = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "numhl=", 6) == 0)
 	{
 	    arg += 6;
+	    vim_free(numhl);
 	    numhl = vim_strnsave(arg, p - arg);
 	}
 	else

@@ -15,7 +15,9 @@ func Test_sign()
   " the icon name when listing signs.
   sign define Sign1 text=x
 
-  call Sign_command_ignore_error('sign define Sign2 text=xy texthl=Title linehl=Error culhl=Search numhl=Number icon=../../pixmaps/stock_vim_find_help.png')
+  let args = ' text=xy texthl=Title linehl=Error culhl=Search numhl=Number icon=../../pixmaps/stock_vim_find_help.png'
+  " This used to leak memory
+  call Sign_command_ignore_error('sign define Sign2' .. args .. args)
 
   " Test listing signs.
   let a=execute('sign list')
