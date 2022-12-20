@@ -1512,16 +1512,8 @@ f_test_mswin_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	return;
 
     char_u *event = tv_get_string(&argvars[0]);
+    rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
 
-    if (STRCMP(event, "keyboard") == 0 || STRCMP(event, "mouse") == 0)
-    {
-	rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
-    }
-    else
-    {
-	semsg(_(e_invalid_argument_str), event);
-	return;
-    }
 # endif
 }
 

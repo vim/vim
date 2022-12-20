@@ -595,6 +595,7 @@ endfunc
 "  Test MS-Windows test_mswin_event error handling
 func Test_mswin_event_error_handling()
 
+  let args = #{button: 0, row: 2, col: 4, move: 0, multiclick: 0, modifiers: 0}
   call assert_fails("call test_mswin_event('a1b2c3', args)", 'E121:')
   call assert_fails("call test_mswin_event([], args)", 'E121:')
   call assert_fails("call test_mswin_event('abc', [])", 'E1206:')
@@ -612,7 +613,7 @@ func Test_mswin_event_error_handling()
   let args = #{button: 0, row: 2, col: 4, multiclick: 0}
   call assert_false(test_mswin_event('mouse', args))
 
-  let args = #{button: 0xfff, row: 2, col: 4, multiclick: 0}
+  let args = #{button: 0xfff, row: 2, col: 4, move: 0, multiclick: 0, modifiers: 0}
   call assert_false(test_mswin_event('mouse', args))
 
   call assert_false(test_mswin_event('keyboard', test_null_dict()))
