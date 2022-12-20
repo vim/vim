@@ -703,7 +703,7 @@ func Test_popup_and_window_resize()
   redraw!
   " popup shifted down, first line is now empty
   call WaitForAssert({-> assert_equal('', term_getline(buf, 1))})
-  sleep 100m
+  sleep 300m
   " popup is below cursor line and shows first match "!"
   call WaitForAssert({-> assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0] + 1))})
   " cursor line also shows !
