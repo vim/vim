@@ -595,12 +595,17 @@ endfunc
 "  Test MS-Windows test_mswin_event error handling
 func Test_mswin_event_error_handling()
 
+  let args = #{button: 0xfff, row: 2, col: 4, move: 0, multiclick: 0, modifiers: 0}
+  if !has('gui_running')
+    call assert_fails("call test_mswin_event('mouse', args)",'E475:')
+  endif
   let args = #{button: 0, row: 2, col: 4, move: 0, multiclick: 0, modifiers: 0}
   call assert_fails("call test_mswin_event('a1b2c3', args)", 'E475:')
+  call assert_fails("call test_mswin_event(test_null_string(), {})", 'E475:')
+  
   call assert_fails("call test_mswin_event([], args)", 'E1174:')
   call assert_fails("call test_mswin_event('abc', [])", 'E1206:')
-  call assert_fails("call test_mswin_event(test_null_string(), {})", 'E475:')
-
+  
   call assert_false(test_mswin_event('mouse', test_null_dict()))
   let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
   call assert_false(test_mswin_event('mouse', args))
@@ -612,9 +617,6 @@ func Test_mswin_event_error_handling()
   call assert_false(test_mswin_event('mouse', args))
   let args = #{button: 0, row: 2, col: 4, multiclick: 0}
   call assert_false(test_mswin_event('mouse', args))
-
-  let args = #{button: 0xfff, row: 2, col: 4, move: 0, multiclick: 0, modifiers: 0}
-  call assert_fails("call test_mswin_event('mouse', args))",'E475:')
 
   call assert_false(test_mswin_event('keyboard', test_null_dict()))
   call assert_fails("call test_mswin_event('keyboard', [])", 'E1206:')

@@ -8810,6 +8810,9 @@ test_gui_w32_sendevent(char_u *event, dict_T *args)
     else if (STRICMP(event, "mouse") == 0)
 	return test_gui_w32_sendevent_mouse(args);
     else
+    {
+	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
 	return FALSE;
+    }
 }
 #endif
