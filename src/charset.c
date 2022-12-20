@@ -1181,7 +1181,7 @@ win_lbr_chartabsize(
 				? col == 0
 				: (s[0] == NUL || s[1] == NUL)
 						  && cts->cts_with_trailing)))
-		    && tp->tp_id - 1 < gap->ga_len)
+		    && -tp->tp_id - 1 < gap->ga_len)
 	    {
 		char_u *p = ((char_u **)gap->ga_data)[-tp->tp_id - 1];
 

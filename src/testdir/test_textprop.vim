@@ -3696,5 +3696,79 @@ func Test_text_prop_delete_updates()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_text_prop_diff_mode()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['9000', '0009', '0009', '9000', '0009'])
+
+      let type = 'test'
+      call prop_type_add(type, {})
+      let text = '<text>'
+      call prop_add(1, 1, {'type': type, 'text': text})
+      call prop_add(2, 0, {'type': type, 'text': text, 'text_align': 'after'})
+      call prop_add(3, 0, {'type': type, 'text': text, 'text_align': 'right'})
+      call prop_add(4, 0, {'type': type, 'text': text, 'text_align': 'above'})
+      call prop_add(5, 0, {'type': type, 'text': text, 'text_align': 'below'})
+      set diff
+
+      vnew
+      call setline(1, ['000', '000', '000', '000', '000'])
+      set diff
+  END
+  call writefile(lines, 'XtextPropDiff', 'D')
+  let buf = RunVimInTerminal('-S XtextPropDiff', #{rows: 10, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_diff_mode_1', {})
+
+  call term_sendkeys(buf, ":windo set number\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_diff_mode_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+ 
+func Test_error_when_using_negative_id()
+  call prop_type_add('test1', #{highlight: 'ErrorMsg'})
+  call prop_add(1, 1, #{type: 'test1', text: 'virtual'})
+  call assert_fails("call prop_add(1, 1, #{type: 'test1', length: 1, id: -1})", 'E1293:')
+
+  call prop_type_delete('test1')
+endfunc
+
+func Test_error_after_using_negative_id()
+  " This needs to run a separate Vim instance because the
+  " "did_use_negative_pop_id" will be set.
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      vim9script
+
+      setline(1, ['one', 'two', 'three'])
+      prop_type_add('test_1', {highlight: 'Error'})
+      prop_type_add('test_2', {highlight: 'WildMenu'})
+
+      prop_add(3, 1, {
+          type: 'test_1',
+          length: 5,
+          id: -1
+      })
+
+      def g:AddTextprop()
+          prop_add(1, 0, {
+              type: 'test_2',
+              text: 'The quick fox',
+              text_padding_left: 2
+          })
+      enddef
+  END
+  call writefile(lines, 'XtextPropError', 'D')
+  let buf = RunVimInTerminal('-S XtextPropError', #{rows: 8, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_negative_error_1', {})
+
+  call term_sendkeys(buf, ":call AddTextprop()\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_negative_error_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

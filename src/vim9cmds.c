@@ -1013,7 +1013,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    if (dest != dest_local)
 	    {
 		if (generate_store_var(cctx, dest, opt_flags, vimvaridx,
-						     0, 0, type, name) == FAIL)
+						     type, name, NULL) == FAIL)
 		    goto failed;
 	    }
 	    else if (varlen == 1 && *arg == '_')
