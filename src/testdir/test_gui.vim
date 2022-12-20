@@ -1281,7 +1281,7 @@ func Test_gui_mouse_move_event()
     let g:eventlist = g:eventlist[1 : ]
   endif
 
-  call assert_equal([#{row: 4, col: 31}, #{row: 11, col: 31}], g:eventlist)
+  call assert_equal([#{row: 3, col: 30}, #{row: 10, col: 30}], g:eventlist)
 
   " wiggle the mouse around within a screen cell, shouldn't trigger events
   call extend(args, #{cell: v:false})
@@ -1638,10 +1638,10 @@ endfunc
 " Test for sending low level key presses
 func SendKeys(keylist)
   for k in a:keylist
-    call test_gui_event("sendevent", #{event: "keydown", keycode: k})
+    call test_gui_event("key", #{event: "keydown", keycode: k})
   endfor
   for k in reverse(a:keylist)
-    call test_gui_event("sendevent", #{event: "keyup", keycode: k})
+    call test_gui_event("key", #{event: "keyup", keycode: k})
   endfor
 endfunc
 
