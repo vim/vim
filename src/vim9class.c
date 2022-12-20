@@ -248,6 +248,16 @@ ex_class(exarg_T *eap)
 	    break;
 	char_u *line = skipwhite(theline);
 
+	// Skip empty and comment lines.
+	if (*line == NUL)
+	    continue;
+	if (*line == '#')
+	{
+	    if (vim9_bad_comment(line))
+		break;
+	    continue;
+	}
+
 	char_u *p = line;
 	if (checkforcmd(&p, "endclass", 4))
 	{
