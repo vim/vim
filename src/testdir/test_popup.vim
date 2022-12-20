@@ -680,6 +680,7 @@ func Test_popup_and_window_resize()
   CheckFeature terminal
   CheckFeature quickfix
   CheckNotGui
+  CheckNotMSWindows
   let g:test_is_flaky = 1
 
   let h = winheight(0)
@@ -687,11 +688,7 @@ func Test_popup_and_window_resize()
     return
   endif
   let rows = h / 3
-  if has('win32')
-    let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile nors'], {'term_rows': rows})
-  else
-    let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
-  endif
+  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
   call term_sendkeys(buf, (h / 3 - 1) . "o\<esc>")
   " Wait for the nested Vim to exit insert mode, where it will show the ruler.
   " Need to trigger a redraw.
