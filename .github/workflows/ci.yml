@@ -228,7 +228,7 @@ jobs:
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
 
       - name: Test
-        timeout-minutes: 20
+        timeout-minutes: 25
         run: |
           do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
