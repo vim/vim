@@ -3397,3 +3397,7 @@ EXTERN char e_class_member_not_found_str[]
 EXTERN char e_member_not_found_on_class_str_str[]
 	INIT(= N_("E1338: Member not found on class \"%s\": %s"));
 #endif
+#ifdef FEAT_PROP_POPUP
+EXTERN char e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id[]
+	INIT(= N_("E1339: Cannot add a textprop with text after using a textprop with a negative id"));
+#endif
