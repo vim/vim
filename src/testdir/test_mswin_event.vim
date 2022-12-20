@@ -377,11 +377,9 @@ func Test_mswin_mouse_event()
     let args.cell = 1
     call test_mswin_event("mouse", args)
     call feedkeys("\<Esc>", 'Lx!')
-    let pos = getmousepos() 
-    " I think there is a bug in the GUI test for mouse 
-    "movement not using 1-index for cell positions. 
-    call assert_equal(9+1, pos.screenrow)
-    call assert_equal(7+1, pos.screencol)
+    let pos = getmousepos()
+    call assert_equal(9, pos.screenrow)
+    call assert_equal(7, pos.screencol)
 
     let args.cell = 0
     call test_mswin_event("mouse", args)

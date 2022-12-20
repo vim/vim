@@ -1281,7 +1281,7 @@ func Test_gui_mouse_move_event()
     let g:eventlist = g:eventlist[1 : ]
   endif
 
-  call assert_equal([#{row: 4, col: 31}, #{row: 11, col: 31}], g:eventlist)
+  call assert_equal([#{row: 3, col: 30}, #{row: 10, col: 30}], g:eventlist)
 
   " wiggle the mouse around within a screen cell, shouldn't trigger events
   call extend(args, #{cell: v:false})

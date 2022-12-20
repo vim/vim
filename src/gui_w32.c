@@ -8644,7 +8644,9 @@ netbeans_draw_multisign_indicator(int row)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-
+// TODO: at the moment, this is just a copy of test_gui_mouse_event.
+// But, we could instead generate actual Win32 mouse event messages,
+// ie. to make it consistent wih test_gui_w32_sendevent_keyboard.
     int
 test_gui_w32_sendevent_mouse(dict_T *args)
 {
@@ -8664,13 +8666,18 @@ test_gui_w32_sendevent_mouse(dict_T *args)
 
     if (move)
     {
+	int pY = row;
+	int pX = col;
+	// the "move" argument expects row and col coordnates to be in pixels,
+	// unless "cell" is specified and is TRUE.
 	if (dict_get_bool(args, "cell", FALSE))
 	{
-	    // click in the middle of the character cell
-	    row = row * gui.char_height + gui.char_height / 2;
-	    col = col * gui.char_width + gui.char_width / 2;
+	    // calculate the middle of the character cell
+	    // Note: Cell coordinates are 1-based from vimscript
+	    pY = (row - 1) * gui.char_height + gui.char_height / 2;
+	    pX = (col - 1) * gui.char_width + gui.char_width / 2;
 	}
-	gui_mouse_moved(col, row);
+	gui_mouse_moved(pX, pY);
     }
     else
     {
@@ -8685,8 +8692,6 @@ test_gui_w32_sendevent_mouse(dict_T *args)
 
 	gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
 							repeated_click, mods);
-	// TODO: We could instead generate actual Win32 mouse event messages,
-	// ie. to be consistent wih test_gui_w32_sendevent_keyboard
     }
     return TRUE;
 }
