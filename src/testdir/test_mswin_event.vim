@@ -2,8 +2,7 @@
 
 source check.vim
 CheckMSWindows
-"  CheckNotGui
-".. The mswin events should also work in gui
+" The mswin events should also work in gui
 
 source mouse.vim
 
@@ -34,7 +33,6 @@ endfunc
 " Test MS-Windows console key events
 func Test_mswin_key_event()
   CheckMSWindows
-  "  CheckNotGui
   new
 
   " flush out any garbage left in the buffer
@@ -292,13 +290,15 @@ func Test_mswin_key_event()
   " Test for <Ctrl-A> to <Ctrl-Z> keys
  "  Same as for lowercase, except with Ctrl Key
  "  Expect the unicode characters 0x01 to 0x1A
-  for kc in range(65, 90)
-    call SendKeys([VK.CONTROL, kc])
-    let ch = getcharstr(0)
-    call assert_equal(nr2char(kc - 64), ch)
-    call SendKey(kc, vim_MOD_MASK_CTRL)
-    let ch = getcharstr(0)
-    call assert_equal(nr2char(kc - 64), ch)
+   for modkey in [VK.CONTROL, VK.LCONTROL, VK.RCONTROL]
+    for kc in range(65, 90)
+      call SendKeys([modkey, kc])
+      let ch = getcharstr(0)
+      call assert_equal(nr2char(kc - 64), ch)
+      call SendKey(kc, vim_MOD_MASK_CTRL)
+      let ch = getcharstr(0)
+      call assert_equal(nr2char(kc - 64), ch)
+    endfor
   endfor
 
   if !has("gui_running")
@@ -325,103 +325,6 @@ func Test_mswin_key_event()
       call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
     endfor
   endif
-"  "  NOTE: Todo: mods with Fn Keys not working in CI Testing!
-"    if !has("gui_running")
-"      " Test for Function Keys 'F1' to 'F12'
-"      " VK codes 112(0x70) - 123(0x7B)
-"      " With ALL permutatios of modifiers; Shift, Ctrl & Alt
-"      for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
-"        for n in range(1, 12)
-"          let kstr = $"{mod_str}F{n}"
-"          let keycode = eval('"\<' .. kstr .. '>"')
-"          call SendKeys(mod_keycodes + [111+n])
-"          let ch = getcharstr(0)
-"  "          if ch == ''
-"  "    	throw 'Skipped: The MS-Windows console input buffer was empty.'
-"  "          endif
-"          call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
-"          "  let mod_mask = getcharmod()
-"          "  " workaround for the virtual termcap maps 
-"          "  " changing the character instead of sending Shift
-"          "  if index(mod_keycodes, VK.SHIFT) >= 0
-"    	"  let vim_mod_mask = vim_mod_mask - vim_MOD_MASK_SHIFT
-"          "  endif
-"          "  call assert_equal(vim_mod_mask, mod_mask, $"key = {kstr}")
-"        endfor
-"      endfor
-"    endif
-
-"---------------------------------------------------------------------------"
-"    " Test for the various Ctrl and Shift key combinations.
-"    " Refer to the following page for the virtual key codes:
-"    " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
-"    let keytests = [
-"      \ [[VK.SHIFT,    VK.PRIOR], "S-Pageup", 2],
-"      \ [[VK.LSHIFT,   VK.PRIOR], "S-Pageup", 2],
-"      \ [[VK.RSHIFT,   VK.PRIOR], "S-Pageup", 2],
-"      \ [[VK.CONTROL,  VK.PRIOR], "C-Pageup", 4],
-"      \ [[VK.LCONTROL, VK.PRIOR], "C-Pageup", 4],
-"      \ [[VK.RCONTROL, VK.PRIOR], "C-Pageup", 4],
-"      \ [[VK.CONTROL,  VK.SHIFT, VK.PRIOR], "C-S-Pageup", 6],
-"      \ [[VK.SHIFT,    VK.NEXT], "S-PageDown", 2],
-"      \ [[VK.LSHIFT,   VK.NEXT], "S-PageDown", 2],
-"      \ [[VK.RSHIFT,   VK.NEXT], "S-PageDown", 2],
-"      \ [[VK.CONTROL,  VK.NEXT], "C-PageDown", 4],
-"      \ [[VK.LCONTROL, VK.NEXT], "C-PageDown", 4],
-"      \ [[VK.RCONTROL, VK.NEXT], "C-PageDown", 4],
-"      \ [[VK.CONTROL,  VK.SHIFT, VK.NEXT], "C-S-PageDown", 6],
-"      \ [[VK.SHIFT,    VK.END], "S-End", 0],
-"      \ [[VK.CONTROL,  VK.END], "C-End", 0],
-"      \ [[VK.CONTROL,  VK.SHIFT, VK.END], "C-S-End", 4],
-"      \ [[VK.SHIFT,    VK.HOME], "S-Home", 0],
-"      \ [[VK.CONTROL,  VK.HOME], "C-Home", 0],
-"      \ [[VK.CONTROL,  VK.SHIFT, VK.HOME], "C-S-Home", 4],
-"      \ [[VK.SHIFT,    VK.LEFT], "S-Left", 0],
-"      \ [[VK.CONTROL,  VK.LEFT], "C-Left", 0],
-"      \ [[VK.CONTROL,  VK.SHIFT, VK.LEFT], "C-S-Left", 4],
-"      \ [[VK.SHIFT,    VK.UP], "S-Up", 0],
-"      \ [[VK.CONTROL,  VK.UP], "C-Up", 4],
-"      \ [[VK.CONTROL,  VK.SHIFT, VK.UP], "C-S-Up", 4],
-"      \ [[VK.SHIFT,    VK.RIGHT], "S-Right", 0],
-"      \ [[VK.CONTROL,  VK.RIGHT], "C-Right", 0],
-"      \ [[VK.CONTROL,  VK.SHIFT, VK.RIGHT], "C-S-Right", 4],
-"      \ [[VK.SHIFT,    VK.DOWN], "S-Down", 0],
-"      \ [[VK.CONTROL,  VK.DOWN], "C-Down", 4],
-"      \ [[VK.CONTROL,  VK.SHIFT, VK.DOWN], "C-S-Down", 4],
-"      \ [[VK.CONTROL,  VK.KEY_0], "C-0", 4],
-"      \ [[VK.CONTROL,  VK.KEY_1], "C-1", 4],
-"      \ [[VK.CONTROL,  VK.KEY_2], "C-2", 4],
-"      \ [[VK.CONTROL,  VK.KEY_3], "C-3", 4],
-"      \ [[VK.CONTROL,  VK.KEY_4], "C-4", 4],
-"      \ [[VK.CONTROL,  VK.KEY_5], "C-5", 4],
-"      \ [[VK.CONTROL,  VK.KEY_6], "C-^", 0],
-"      \ [[VK.CONTROL,  VK.KEY_7], "C-7", 4],
-"      \ [[VK.CONTROL,  VK.KEY_8], "C-8", 4],
-"      \ [[VK.CONTROL,  VK.KEY_9], "C-9", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD0], "C-0", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD1], "C-1", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD2], "C-2", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD3], "C-3", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD4], "C-4", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD5], "C-5", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD6], "C-6", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD7], "C-7", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD8], "C-8", 4],
-"      \ [[VK.CONTROL,  VK.NUMPAD9], "C-9", 4],
-"      \ [[VK.CONTROL,  VK.MULTIPLY], "C-*", 4],
-"      \ [[VK.CONTROL,  VK.ADD], "C-+", 4],
-"      \ [[VK.CONTROL,  VK.SUBTRACT], "C--", 4]
-"      \ ]
-
-"    for [kcodes, kstr, kmod] in keytests
-"      call SendKeys(kcodes)
-"      sleep 10ms
-"      let ch = getcharstr(0)
-"      let mod = getcharmod()
-"      let keycode = eval('"\<' .. kstr .. '>"')
-"      call assert_equal(keycode, ch, $"key = {kstr}")
-"      call assert_equal(kmod, mod, $"key = {kstr}")
-"    endfor
 
   bw!
 endfunc
@@ -468,17 +371,17 @@ func Test_mswin_mouse_event()
   " test cells vs pixels
   if has('gui_running')
     let args = { }
-    let args.row = 5
-    let args.col = 3
+    let args.row = 9
+    let args.col = 7
     let args.move = 1
     let args.cell = 1
     call test_mswin_event("mouse", args)
     call feedkeys("\<Esc>", 'Lx!')
-    let pos = getmousepos()
-    " I think there is a bug in the GUI mouse "move" arg,
-    " not using 1-based index. 
-    call assert_equal(5+1, pos.screenrow)
-    call assert_equal(3+1, pos.screencol)
+    let pos = getmousepos() 
+    " I think there is a bug in the GUI test for mouse 
+    "movement not using 1-index for cell positions. 
+    call assert_equal(9+1, pos.screenrow)
+    call assert_equal(7+1, pos.screencol)
 
     let args.cell = 0
     call test_mswin_event("mouse", args)
@@ -530,11 +433,11 @@ func Test_mswin_mouse_event()
   endif
   call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
 
+  " test mouse scrolling (aka touchpad scrolling.)
   %d _
   set scrolloff=0
   call setline(1, range(1, 100))
 
-  " Note: the scroll directions seem inverted compared to the GUI tests
   " Scroll Down
   call MouseWheelDown(2, 1)
   call MouseWheelDown(2, 1)
@@ -547,11 +450,25 @@ func Test_mswin_mouse_event()
   call MouseWheelUp(2, 1)
   call feedkeys("H", 'Lx!')
   call assert_equal(4, line('.'))
+
+  " Shift Scroll Down
+  call MouseShiftWheelDown(2, 1)
+  call feedkeys("H", 'Lx!')
+  " should scroll from where it is (4) + visible buffer height - cmdheight
+  let shift_scroll_height = line('w$') - line('w0') - &cmdheight 
+  call assert_equal(4 + shift_scroll_height, line('.'))
+
+  " Shift Scroll Up
+  call MouseShiftWheelUp(2, 1)
+  call feedkeys("H", 'Lx!')
+  call assert_equal(4, line('.'))
+  
   set scrolloff&
 
   %d _
   set nowrap
-  call setline(1, range(10)->join('')->repeat(10))
+  " make the buffer 500 wide.
+  call setline(1, range(10)->join('')->repeat(50))
   " Scroll Right
   call MouseWheelRight(1, 5)
   call MouseWheelRight(1, 10)
@@ -562,6 +479,17 @@ func Test_mswin_mouse_event()
   " Scroll Left
   call MouseWheelLeft(1, 15)
   call MouseWheelLeft(1, 10)
+  call feedkeys('g0', 'Lx!')
+  call assert_equal(7, col('.'))
+
+  " Shift Scroll Right
+  call MouseShiftWheelRight(1, 10)
+  call feedkeys('g0', 'Lx!')
+  " should scroll from where it is (7) + window width
+  call assert_equal(7 + winwidth(0), col('.'))
+ 
+  " Shift Scroll Left
+  call MouseShiftWheelLeft(1, 50)
   call feedkeys('g0', 'Lx!')
   call assert_equal(7, col('.'))
   set wrap&

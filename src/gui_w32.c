@@ -8685,23 +8685,8 @@ test_gui_w32_sendevent_mouse(dict_T *args)
 
 	gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
 							repeated_click, mods);
-	// Zewpo TODO: At the moment, this is essentially a copy of the general
-	// test_gui_mouse_event() function.  But, this directly calls
-	// gui_mouse_moved() and gui_send_mouse_event(), and we could instead
-	// generate actual Win32 mouse event messages. This would increase test
-	// coverage for gVim's low-level mouse handling.
-	// Leaving this as a TODO, because I'm concentrating on the mswin
-	// terminal console testing for now, and I would like to come back
-	// around to this after.
-	// ie. Reference Win32 API: MOUSEINPUT (winuser.h)
-	// eg...
-	// INPUT inputs[1];
-        // SecureZeroMemory(inputs, sizeof(inputs));
-	// inputs[0].type = INPUT_MOUSE;
-	// inputs[0].mi.dx = ...
-	// ...etc...
-	// (void)SetForegroundWindow(s_hwnd);
-	// SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+	// TODO: We could instead generate actual Win32 mouse event messages,
+	// ie. to be consistent wih test_gui_w32_sendevent_keyboard
     }
     return TRUE;
 }
