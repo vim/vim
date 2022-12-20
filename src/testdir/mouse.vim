@@ -104,7 +104,7 @@ func MouseLeftClickCode(row, col)
 endfunc
 
 func MouseLeftClick(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_LEFT, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseLeftClickCode(a:row, a:col), 'Lx!')
@@ -120,7 +120,7 @@ func MouseMiddleClickCode(row, col)
 endfunc
 
 func MouseMiddleClick(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_MIDDLE, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseMiddleClickCode(a:row, a:col), 'Lx!')
@@ -136,7 +136,7 @@ func MouseRightClickCode(row, col)
 endfunc
 
 func MouseRightClick(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_RIGHT, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseRightClickCode(a:row, a:col), 'Lx!')
@@ -149,7 +149,7 @@ func MouseCtrlLeftClickCode(row, col)
 endfunc
 
 func MouseCtrlLeftClick(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_LEFT, a:row, a:col, 0, 0,
                                                          \ s:MOUSE_CODE.MOD_CTRL)
   else
@@ -163,7 +163,7 @@ func MouseCtrlRightClickCode(row, col)
 endfunc
 
 func MouseCtrlRightClick(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_RIGHT, a:row, a:col, 0, 0,
                                                        \ s:MOUSE_CODE.MOD_CTRL)
   else
@@ -177,7 +177,7 @@ func MouseAltLeftClickCode(row, col)
 endfunc
 
 func MouseAltLeftClick(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_LEFT, a:row, a:col, 0, 0,
                                                        \ s:MOUSE_CODE.MOD_ALT)
   else
@@ -191,7 +191,7 @@ func MouseAltRightClickCode(row, col)
 endfunc
 
 func MouseAltRightClick(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_RIGHT, a:row, a:col, 0, 0,
                                                        \ s:MOUSE_CODE.MOD_ALT)
   else
@@ -210,7 +210,7 @@ func MouseLeftReleaseCode(row, col)
 endfunc
 
 func MouseLeftRelease(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_RELEASE, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseLeftReleaseCode(a:row, a:col), 'Lx!')
@@ -226,7 +226,7 @@ func MouseMiddleReleaseCode(row, col)
 endfunc
 
 func MouseMiddleRelease(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_RELEASE, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseMiddleReleaseCode(a:row, a:col), 'Lx!')
@@ -242,7 +242,7 @@ func MouseRightReleaseCode(row, col)
 endfunc
 
 func MouseRightRelease(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_RELEASE, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseRightReleaseCode(a:row, a:col), 'Lx!')
@@ -258,7 +258,7 @@ func MouseLeftDragCode(row, col)
 endfunc
 
 func MouseLeftDrag(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.BTN_LEFT, a:row, a:col, 1, 0, 0)
   else
     call feedkeys(MouseLeftDragCode(a:row, a:col), 'Lx!')
@@ -270,7 +270,7 @@ func MouseWheelUpCode(row, col)
 endfunc
 
 func MouseWheelUp(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.SCRL_UP, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseWheelUpCode(a:row, a:col), 'Lx!')
@@ -282,7 +282,7 @@ func MouseWheelDownCode(row, col)
 endfunc
 
 func MouseWheelDown(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.SCRL_DOWN, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseWheelDownCode(a:row, a:col), 'Lx!')
@@ -294,7 +294,7 @@ func MouseWheelLeftCode(row, col)
 endfunc
 
 func MouseWheelLeft(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.SCRL_LEFT, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseWheelLeftCode(a:row, a:col), 'Lx!')
@@ -306,7 +306,7 @@ func MouseWheelRightCode(row, col)
 endfunc
 
 func MouseWheelRight(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.SCRL_RIGHT, a:row, a:col, 0, 0, 0)
   else
     call feedkeys(MouseWheelRightCode(a:row, a:col), 'Lx!')
@@ -319,7 +319,7 @@ func MouseShiftWheelUpCode(row, col)
 endfunc
 
 func MouseShiftWheelUp(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.SCRL_UP, a:row, a:col, 0, 0,
                                                       \ s:MOUSE_CODE.MOD_SHIFT)
   else
@@ -333,7 +333,7 @@ func MouseShiftWheelDownCode(row, col)
 endfunc
 
 func MouseShiftWheelDown(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.SCRL_DOWN, a:row, a:col, 0, 0,
                                                       \ s:MOUSE_CODE.MOD_SHIFT)
   else
@@ -347,7 +347,7 @@ func MouseShiftWheelLeftCode(row, col)
 endfunc
 
 func MouseShiftWheelLeft(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.SCRL_LEFT, a:row, a:col, 0, 0,
                                                       \ s:MOUSE_CODE.MOD_SHIFT)
   else
@@ -361,7 +361,7 @@ func MouseShiftWheelRightCode(row, col)
 endfunc
 
 func MouseShiftWheelRight(row, col)
-  if has('win32') || has('win32unix')
+  if has('win32')
     call MSWinMouseEvent(s:MOUSE_CODE.SCRL_RIGHT, a:row, a:col, 0, 0,
                                                       \ s:MOUSE_CODE.MOD_SHIFT)
   else

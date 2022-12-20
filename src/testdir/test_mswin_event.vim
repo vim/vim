@@ -460,7 +460,21 @@ func Test_mswin_mouse_event()
   call MouseShiftWheelUp(2, 1)
   call feedkeys("H", 'Lx!')
   call assert_equal(4, line('.'))
-  
+
+  if !has('gui_running')
+    " Shift Scroll Down (using MOD)
+    call MSWinMouseEvent(0x100, 2, 1, 0, 0, 0x04)
+    call feedkeys("H", 'Lx!')
+    " should scroll from where it is (4) + visible buffer height - cmdheight
+    let shift_scroll_height = line('w$') - line('w0') - &cmdheight 
+    call assert_equal(4 + shift_scroll_height, line('.'))
+
+    " Shift Scroll Up (using MOD)
+    call MSWinMouseEvent(0x200, 2, 1, 0, 0, 0x04)
+    call feedkeys("H", 'Lx!')
+    call assert_equal(4, line('.'))
+  endif
+
   set scrolloff&
 
   %d _
