@@ -699,7 +699,7 @@ func Test_popup_and_window_resize()
   " popup first entry "!" must be at the top
   call WaitForAssert({-> assert_match('^!\s*$', term_getline(buf, 1))})
   exe 'resize +' . (h - 1)
-  call TermWait(buf, 50)
+  call TermWait(buf, 100)
   redraw!
   " popup shifted down, first line is now empty
   call WaitForAssert({-> assert_equal('', term_getline(buf, 1))})
