@@ -688,10 +688,12 @@ func Test_popup_and_window_resize()
     return
   endif
   let rows = h / 3
-  if has('win32') || has('win32unix')
+
+  try
     let s:saved_termwintype = &termwintype
     set termwintype=conpty
-  endif
+  catch
+  endtry
   let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
   call term_sendkeys(buf, (h / 3 - 1) . "o\<esc>")
   " Wait for the nested Vim to exit insert mode, where it will show the ruler.
@@ -713,10 +715,11 @@ func Test_popup_and_window_resize()
   call WaitForAssert({-> assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0] + 1))})
   " cursor line also shows !
   call assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0]))
-  if has('win32') || has('win32unix')
+  try
     let &termwintype=s:saved_termwintype
     unlet s:saved_termwintype
-  endif
+  catch
+  endtry
   bwipe!
 endfunc
 
