@@ -316,9 +316,6 @@ ml_open(buf_T *buf)
 #endif
     buf->b_ml.ml_flags = ML_EMPTY;
     buf->b_ml.ml_line_count = 1;
-#ifdef FEAT_LINEBREAK
-    curwin->w_nrwidth_line_count = 0;
-#endif
 
 /*
  * fill block0 struct and write page 0
