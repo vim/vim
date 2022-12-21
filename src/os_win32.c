@@ -3138,7 +3138,7 @@ RestoreConsoleBuffer(
 
     // VTP uses alternate screen buffer.
     // No need to restore buffer contents.
-    if (win10_22H2_or_later && p_rs && vtp_working)
+    if (win10_22H2_or_later && vtp_working)
 	return TRUE;
 
     if (cb == NULL || !cb->IsValid)
