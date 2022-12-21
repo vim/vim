@@ -2694,6 +2694,8 @@ static funcentry_T global_functions[] =
 			ret_bool,	    f_test_gui_event},
     {"test_ignore_error", 1, 1, FEARG_1,    arg1_string,
 			ret_void,	    f_test_ignore_error},
+    {"test_mswin_event", 2, 2, FEARG_1,     arg2_string_dict,
+			ret_number,	    f_test_mswin_event},
     {"test_null_blob",	0, 0, 0,	    NULL,
 			ret_blob,	    f_test_null_blob},
     {"test_null_channel", 0, 0, 0,	    NULL,
@@ -4387,7 +4389,12 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (*keys != NUL || execute)
     {
-	if (lowlevel)
+	if (lowlevel
+#ifdef FEAT_VTP
+		&& (!is_term_win32()
+		    || (keys[0] == 3 && ctrl_c_interrupts && typed))
+#endif
+	   )
 	{
 #ifdef USE_INPUT_BUF
 	    ch_log(NULL, "feedkeys() lowlevel: %s", keys);

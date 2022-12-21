@@ -210,6 +210,7 @@ NEW_TESTS = \
 	test_modeless \
 	test_modeline \
 	test_move \
+	test_mswin_event \
 	test_mzscheme \
 	test_nested_function \
 	test_netbeans \
@@ -454,6 +455,7 @@ NEW_TESTS_RES = \
 	test_mksession.res \
 	test_modeless.res \
 	test_modeline.res \
+	test_mswin_event.res \
 	test_mzscheme.res \
 	test_nested_function.res \
 	test_netbeans.res \

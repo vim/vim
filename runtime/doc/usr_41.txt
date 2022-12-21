@@ -1186,6 +1186,7 @@ Testing:				    *test-functions*
 	test_getvalue()		get value of an internal variable
 	test_gui_event()	generate a GUI event for testing
 	test_ignore_error()	ignore a specific error message
+	test_mswin_event()	generate an MS-Windows event
 	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict

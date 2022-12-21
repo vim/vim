@@ -131,6 +131,7 @@ def Test_class_basic()
         this.lnum: number
         this.col: number
 
+        # make a nicely formatted string
         def ToString(): string
           return $'({this.lnum}, {this.col})'
         enddef
@@ -155,6 +156,7 @@ def Test_class_member_initializer()
         this.lnum: number = 1
         this.col: number = 1
 
+        # constructor with only the line number
         def new(lnum: number)
           this.lnum = lnum
         enddef
