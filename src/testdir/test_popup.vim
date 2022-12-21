@@ -688,11 +688,11 @@ func Test_popup_and_window_resize()
     return
   endif
   let rows = h / 3
-  if has('win32')
-    let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows, 'tty_type':'conpty'})
-  else
-    let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
+  if has('win32') || has('win32unix')
+    let s:saved_termwintype = &termwintype
+    set termwintype=conpty
   endif
+  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
   call term_sendkeys(buf, (h / 3 - 1) . "o\<esc>")
   " Wait for the nested Vim to exit insert mode, where it will show the ruler.
   " Need to trigger a redraw.
@@ -713,6 +713,10 @@ func Test_popup_and_window_resize()
   call WaitForAssert({-> assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0] + 1))})
   " cursor line also shows !
   call assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0]))
+  if has('win32') || has('win32unix')
+    let &termwintype=s:saved_termwintype
+    unlet s:saved_termwintype
+  endif
   bwipe!
 endfunc
 
