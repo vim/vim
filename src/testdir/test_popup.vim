@@ -680,7 +680,16 @@ func Test_popup_and_window_resize()
   CheckFeature terminal
   CheckFeature quickfix
   CheckNotGui
-  
+
+  " TODO: work out why using the alternate screen buffer combined with WinPTY
+  " causes this test to fail in CI test environment for MS Windows.
+  " Note: Testing outside the CI Test environment, this test succeeds as long
+  " as Vim uses up-to-date ConPTY. ie. not WinPTY.  Tested succesfully on
+  " Windows 10, 11 and Windows Server 2022.
+  " Note: tried setting termwintype=conpty to bypass WinPTY, if WinPTY is still
+  " installed, and that resolves it at least in my test environments, but this
+  " doesnt resolve it for the CI test environment.
+  CheckNotMSWindows
   let g:test_is_flaky = 1
 
   let h = winheight(0)
@@ -689,11 +698,6 @@ func Test_popup_and_window_resize()
   endif
   let rows = h / 3
 
-  try
-    let s:saved_termwintype = &termwintype
-    set termwintype=conpty
-  catch
-  endtry
   let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
   call term_sendkeys(buf, (h / 3 - 1) . "o\<esc>")
   " Wait for the nested Vim to exit insert mode, where it will show the ruler.
@@ -715,11 +719,6 @@ func Test_popup_and_window_resize()
   call WaitForAssert({-> assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0] + 1))})
   " cursor line also shows !
   call assert_match('^!\s*$', term_getline(buf, term_getcursor(buf)[0]))
-  try
-    let &termwintype=s:saved_termwintype
-    unlet s:saved_termwintype
-  catch
-  endtry
   bwipe!
 endfunc
 
