@@ -13,6 +13,9 @@
 
 #include "vim.h"
 
+static char_u shm_buf[SHM_LEN];
+static int set_shm_recursive = 0;
+
 static char *(p_ambw_values[]) = {"single", "double", NULL};
 static char *(p_bg_values[]) = {"light", "dark", NULL};
 static char *(p_bkc_values[]) = {"yes", "auto", "no", "breaksymlink", "breakhardlink", NULL};
@@ -93,6 +96,7 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
 #endif
+static char *(p_sloc_values[]) = {"last", "statusline", "tabline", NULL};
 
 static int check_opt_strings(char_u *val, char **values, int list);
 static int opt_strings_flags(char_u *val, char **values, unsigned *flagp, int list);
@@ -1894,6 +1898,12 @@ did_set_string_option(
     }
 #endif
 
+    // 'showcmdloc'
+    else if (varp == &p_sloc)
+    {
+	if (check_opt_strings(p_sloc, p_sloc_values, FALSE) != OK)
+	    errmsg = e_invalid_argument;
+    }
 
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
     // 'toolbar'
@@ -2689,4 +2699,41 @@ opt_strings_flags(
 check_ff_value(char_u *p)
 {
     return check_opt_strings(p, p_ff_values, FALSE);
+}
+
+/*
+ * Save the acutal shortmess Flags and clear them
+ * temporarily to avoid that file messages
+ * overwrites any output from the following commands.
+ *
+ * Caller must make sure to first call save_clear_shm_value() and then
+ * restore_shm_value() exactly the same number of times.
+ */
+    void
+save_clear_shm_value()
+{
+    if (STRLEN(p_shm) >= SHM_LEN)
+    {
+	iemsg(e_internal_error_shortmess_too_long);
+	return;
+    }
+
+    if (++set_shm_recursive == 1)
+    {
+	STRCPY(shm_buf, p_shm);
+	set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
+    }
+}
+
+/*
+ * Restore the shortmess Flags set from the save_clear_shm_value() function.
+ */
+    void
+restore_shm_value()
+{
+    if (--set_shm_recursive == 0)
+    {
+	set_option_value_give_err((char_u *)"shm", 0L, shm_buf, 0);
+	vim_memset(shm_buf, 0, SHM_LEN);
+    }
 }

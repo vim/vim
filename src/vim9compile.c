@@ -302,6 +302,28 @@ script_var_exists(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 }
 
 /*
+ * If "name" is a class member in cctx->ctx_ufunc->uf_class return the index in
+ * class.class_class_members[].
+ * Otherwise return -1;
+ */
+    static int
+class_member_index(char_u *name, size_t len, cctx_T *cctx)
+{
+    if (cctx == NULL || cctx->ctx_ufunc == NULL
+					  || cctx->ctx_ufunc->uf_class == NULL)
+	return -1;
+    class_T *cl = cctx->ctx_ufunc->uf_class;
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	ocmember_T *m = &cl->class_class_members[i];
+	if (STRNCMP(name, m->ocm_name, len) == 0
+		&& m->ocm_name[len] == NUL)
+	    return i;
+    }
+    return -1;
+}
+
+/*
  * Return TRUE if "name" is a local variable, argument, script variable or
  * imported.
  */
@@ -316,6 +338,7 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
 			&& (cctx->ctx_ufunc->uf_flags & FC_OBJECT)
 			&& STRNCMP(name, "this", 4) == 0)))
 	    || script_var_exists(name, len, cctx, NULL) == OK
+	    || class_member_index(name, len, cctx) >= 0
 	    || find_imported(name, len, FALSE) != NULL;
 }
 
@@ -351,6 +374,9 @@ check_defined(
 
     // underscore argument is OK
     if (len == 1 && *p == '_')
+	return OK;
+
+    if (class_member_index(p, len, cctx) >= 0)
 	return OK;
 
     if (script_var_exists(p, len, cctx, cstack) == OK)
@@ -1195,14 +1221,12 @@ assignment_len(char_u *p, int *heredoc)
  * Generate the load instruction for "name".
  */
     static void
-generate_loadvar(
-	cctx_T		*cctx,
-	assign_dest_T	dest,
-	char_u		*name,
-	lvar_T		*lvar,
-	type_T		*type)
+generate_loadvar(cctx_T *cctx, lhs_T *lhs)
 {
-    switch (dest)
+    char_u	*name = lhs->lhs_name;
+    type_T	*type = lhs->lhs_type;
+
+    switch (lhs->lhs_dest)
     {
 	case dest_option:
 	case dest_func_option:
@@ -1245,12 +1269,17 @@ generate_loadvar(
 	case dest_local:
 	    if (cctx->ctx_skip != SKIP_YES)
 	    {
+		lvar_T	*lvar = lhs->lhs_lvar;
 		if (lvar->lv_from_outer > 0)
 		    generate_LOADOUTER(cctx, lvar->lv_idx, lvar->lv_from_outer,
 				 lvar->lv_loop_depth, lvar->lv_loop_idx, type);
 		else
 		    generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
 	    }
+	    break;
+	case dest_class_member:
+	    generate_CLASSMEMBER(cctx, TRUE, lhs->lhs_class,
+						     lhs->lhs_classmember_idx);
 	    break;
 	case dest_expr:
 	    // list or dict value should already be on the stack.
@@ -1533,7 +1562,9 @@ compile_lhs(
 
 	    if (lookup_local(var_start, lhs->lhs_varlen,
 					     &lhs->lhs_local_lvar, cctx) == OK)
+	    {
 		lhs->lhs_lvar = &lhs->lhs_local_lvar;
+	    }
 	    else
 	    {
 		CLEAR_FIELD(lhs->lhs_arg_lvar);
@@ -1549,6 +1580,7 @@ compile_lhs(
 		    lhs->lhs_lvar = &lhs->lhs_arg_lvar;
 		}
 	    }
+
 	    if (lhs->lhs_lvar != NULL)
 	    {
 		if (is_decl)
@@ -1556,6 +1588,12 @@ compile_lhs(
 		    semsg(_(e_variable_already_declared), lhs->lhs_name);
 		    return FAIL;
 		}
+	    }
+	    else if ((lhs->lhs_classmember_idx = class_member_index(
+				       var_start, lhs->lhs_varlen, cctx)) >= 0)
+	    {
+		lhs->lhs_dest = dest_class_member;
+		lhs->lhs_class = cctx->ctx_ufunc->uf_class;
 	    }
 	    else
 	    {
@@ -1965,8 +2003,7 @@ compile_load_lhs(
 	    return FAIL;
     }
     else
-	generate_loadvar(cctx, lhs->lhs_dest, lhs->lhs_name,
-						 lhs->lhs_lvar, lhs->lhs_type);
+	generate_loadvar(cctx, lhs);
     return OK;
 }
 
@@ -2220,6 +2257,7 @@ compile_assignment(
     char_u	*sp;
     int		is_decl = is_decl_command(cmdidx);
     lhs_T	lhs;
+    CLEAR_FIELD(lhs);
     long	start_lnum = SOURCING_LNUM;
 
     int		has_arg_is_set_prefix = STRNCMP(arg, "ifargisset ", 11) == 0;
@@ -2243,8 +2281,6 @@ compile_assignment(
     p = skip_var_list(arg, TRUE, &var_count, &semicolon, TRUE);
     if (p == NULL)
 	return *arg == '[' ? arg : NULL;
-
-    lhs.lhs_name = NULL;
 
     if (eap->cmdidx == CMD_increment || eap->cmdidx == CMD_decrement)
     {
@@ -2999,20 +3035,20 @@ compile_def_function(
 
 	    for (int i = 0; i < ufunc->uf_class->class_obj_member_count; ++i)
 	    {
-		objmember_T *m = &ufunc->uf_class->class_obj_members[i];
-		if (m->om_init != NULL)
+		ocmember_T *m = &ufunc->uf_class->class_obj_members[i];
+		if (m->ocm_init != NULL)
 		{
-		    char_u *expr = m->om_init;
+		    char_u *expr = m->ocm_init;
 		    if (compile_expr0(&expr, &cctx) == FAIL)
 			goto erret;
-		    if (!ends_excmd2(m->om_init, expr))
+		    if (!ends_excmd2(m->ocm_init, expr))
 		    {
 			semsg(_(e_trailing_characters_str), expr);
 			goto erret;
 		    }
 		}
 		else
-		    push_default_value(&cctx, m->om_type->tt_type,
+		    push_default_value(&cctx, m->ocm_type->tt_type,
 								  FALSE, NULL);
 		generate_STORE_THIS(&cctx, i);
 	    }
@@ -3793,6 +3829,13 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
 {
     int idx;
 
+    // In same cases the instructions may refer to a class in which the
+    // function is defined and unreferencing the class may call back here
+    // recursively.  Set the df_delete_busy to avoid problems.
+    if (dfunc->df_delete_busy)
+	return;
+    dfunc->df_delete_busy = TRUE;
+
     ga_clear(&dfunc->df_def_args_isn);
     ga_clear_strings(&dfunc->df_var_names);
 
@@ -3801,14 +3844,12 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
 	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
 	    delete_instr(dfunc->df_instr + idx);
 	VIM_CLEAR(dfunc->df_instr);
-	dfunc->df_instr = NULL;
     }
     if (dfunc->df_instr_debug != NULL)
     {
 	for (idx = 0; idx < dfunc->df_instr_debug_count; ++idx)
 	    delete_instr(dfunc->df_instr_debug + idx);
 	VIM_CLEAR(dfunc->df_instr_debug);
-	dfunc->df_instr_debug = NULL;
     }
 #ifdef FEAT_PROFILE
     if (dfunc->df_instr_prof != NULL)
@@ -3816,7 +3857,6 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
 	for (idx = 0; idx < dfunc->df_instr_prof_count; ++idx)
 	    delete_instr(dfunc->df_instr_prof + idx);
 	VIM_CLEAR(dfunc->df_instr_prof);
-	dfunc->df_instr_prof = NULL;
     }
 #endif
 
@@ -3824,6 +3864,8 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
 	dfunc->df_deleted = TRUE;
     if (dfunc->df_ufunc != NULL)
 	dfunc->df_ufunc->uf_def_status = UF_NOT_COMPILED;
+
+    dfunc->df_delete_busy = FALSE;
 }
 
 /*

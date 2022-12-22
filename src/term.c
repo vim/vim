@@ -827,7 +827,7 @@ static tcap_entry_T builtin_pcansi[] = {
 };
 
 /*
- * These codes are valid for the Win32 Console .  The entries that start with
+ * These codes are valid for the Win32 Console.  The entries that start with
  * ESC | are translated into console calls in os_win32.c.  The function keys
  * are also translated in os_win32.c.
  */
@@ -1675,6 +1675,12 @@ static char *(key_names[]) =
 #endif
 
 #ifdef HAVE_TGETENT
+/*
+ * Get the termcap entries we need with tgetstr(), tgetflag() and tgetnum().
+ * "invoke_tgetent()" must have been called before.
+ * If "*height" or "*width" are not zero then use the "li" and "col" entries to
+ * get their value.
+ */
     static void
 get_term_entries(int *height, int *width)
 {
@@ -2033,14 +2039,6 @@ set_termname(char_u *term)
 #endif
 	    parse_builtin_tcap(term);
 
-	    // Use the 'keyprotocol' option to adjust the t_TE and t_TI
-	    // termcap entries if there is an entry maching "term".
-	    keyprot_T kpc = match_keyprotocol(term);
-	    if (kpc == KEYPROTOCOL_KITTY)
-		apply_builtin_tcap(term, builtin_kitty, TRUE);
-	    else if (kpc == KEYPROTOCOL_MOK2)
-		apply_builtin_tcap(term, builtin_mok2, TRUE);
-
 #ifdef FEAT_GUI
 	    if (term_is_gui(term))
 	    {
@@ -2060,6 +2058,19 @@ set_termname(char_u *term)
     }
 #endif
 
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+#endif
+    {
+	// Use the 'keyprotocol' option to adjust the t_TE and t_TI
+	// termcap entries if there is an entry maching "term".
+	keyprot_T kpc = match_keyprotocol(term);
+	if (kpc == KEYPROTOCOL_KITTY)
+	    apply_builtin_tcap(term, builtin_kitty, TRUE);
+	else if (kpc == KEYPROTOCOL_MOK2)
+	    apply_builtin_tcap(term, builtin_mok2, TRUE);
+    }
+
 /*
  * special: There is no info in the termcap about whether the cursor
  * positioning is relative to the start of the screen or to the start of the
@@ -2070,6 +2081,12 @@ set_termname(char_u *term)
 	T_CCS = (char_u *)"yes";
     else
 	T_CCS = empty_option;
+
+    // Special case: "kitty" does not normally have a "RV" entry in terminfo,
+    // but we need to request the version for several other things to work.
+    if (strstr((char *)term, "kitty") != NULL
+					   && (T_CRV == NULL || *T_CRV == NUL))
+	T_CRV = (char_u *)"\033[>c";
 
 #ifdef UNIX
 /*
@@ -2599,11 +2616,10 @@ tgoto(char *cm, int x, int y)
     void
 termcapinit(char_u *name)
 {
-    char_u	*term;
+    char_u	*term = name;
 
-    if (name != NULL && *name == NUL)
-	name = NULL;	    // empty name is equal to no name
-    term = name;
+    if (term != NULL && *term == NUL)
+	term = NULL;	    // empty name is equal to no name
 
 #ifndef MSWIN
     if (term == NULL)
@@ -2617,9 +2633,7 @@ termcapinit(char_u *name)
     set_string_default("term", term);
     set_string_default("ttytype", term);
 
-    /*
-     * Avoid using "term" here, because the next mch_getenv() may overwrite it.
-     */
+    // Avoid using "term" here, because the next mch_getenv() may overwrite it.
     set_termname(T_NAME != NULL ? T_NAME : term);
 }
 
@@ -3689,7 +3703,7 @@ out_str_t_TE(void)
 	    || modify_otherkeys_state == MOKS_DISABLED)
 	modify_otherkeys_state = MOKS_DISABLED;
     else if (modify_otherkeys_state != MOKS_INITIAL)
-	modify_otherkeys_state = MOKS_AFTER_T_KE;
+	modify_otherkeys_state = MOKS_AFTER_T_TE;
 
     // When the kitty keyboard protocol is enabled we expect t_TE to disable
     // it.  Remembering that it was detected to be enabled is useful in some
@@ -3700,7 +3714,7 @@ out_str_t_TE(void)
 	    || kitty_protocol_state == KKPS_DISABLED)
 	kitty_protocol_state = KKPS_DISABLED;
     else
-	kitty_protocol_state = KKPS_AFTER_T_KE;
+	kitty_protocol_state = KKPS_AFTER_T_TE;
 }
 
 static int send_t_RK = FALSE;
@@ -3891,10 +3905,23 @@ stoptermcap(void)
 	out_str(T_KE);			// stop "keypad transmit" mode
 	out_flush();
 	termcap_active = FALSE;
+
+	// Output t_te before t_TE, t_te may switch between main and alternate
+	// screen and following codes may work on the active screen only.
+	//
+	// When using the Kitty keyboard protocol the main and alternate screen
+	// use a separate state.  If we are (or were) using the Kitty keyboard
+	// protocol and t_te is not empty (possibly switching screens) then
+	// output t_TE both before and after outputting t_te.
+	if (*T_TE != NUL && (kitty_protocol_state == KKPS_ENABLED
+				     || kitty_protocol_state == KKPS_DISABLED))
+	    out_str_t_TE();		// probably disables the kitty keyboard
+					// protocol
+
+	out_str(T_TE);			// stop termcap mode
 	cursor_on();			// just in case it is still off
 	out_str_t_TE();			// stop "raw" mode, modifyOtherKeys and
 					// Kitty keyboard protocol
-	out_str(T_TE);			// stop termcap mode
 	screen_start();			// don't know where cursor is now
 	out_flush();
     }
@@ -4376,7 +4403,8 @@ clear_termcodes(void)
 #define ATC_FROM_TERM 55
 
 /*
- * Add a new entry to the list of terminal codes.
+ * Add a new entry for "name[2]" to the list of terminal codes.
+ * Note that "name" may not have a terminating NUL.
  * The list is kept alphabetical for ":set termcap"
  * "flags" is TRUE when replacing 7-bit by 8-bit controls is desired.
  * "flags" can also be ATC_FROM_TERM for got_code_from_term().
@@ -4388,6 +4416,9 @@ add_termcode(char_u *name, char_u *string, int flags)
     int		    i, j;
     char_u	    *s;
     int		    len;
+#ifdef FEAT_EVAL
+    char	    *action = "Setting";
+#endif
 
     if (string == NULL || *string == NUL)
     {
@@ -4480,6 +4511,10 @@ add_termcode(char_u *name, char_u *string, int flags)
 				   == termcodes[i].code[termcodes[i].len - 1])
 		    {
 			// They are equal but for the ";*": don't add it.
+#ifdef FEAT_EVAL
+			ch_log(NULL, "Termcap entry %c%c did not change",
+							     name[0], name[1]);
+#endif
 			vim_free(s);
 			return;
 		    }
@@ -4487,6 +4522,10 @@ add_termcode(char_u *name, char_u *string, int flags)
 		else
 		{
 		    // Replace old code.
+#ifdef FEAT_EVAL
+		    ch_log(NULL, "Termcap entry %c%c was: %s",
+					  name[0], name[1], termcodes[i].code);
+#endif
 		    vim_free(termcodes[i].code);
 		    --tc_len;
 		    break;
@@ -4496,11 +4535,17 @@ add_termcode(char_u *name, char_u *string, int flags)
 	/*
 	 * Found alphabetical larger entry, move rest to insert new entry
 	 */
+#ifdef FEAT_EVAL
+	action = "Adding";
+#endif
 	for (j = tc_len; j > i; --j)
 	    termcodes[j] = termcodes[j - 1];
 	break;
     }
 
+#ifdef FEAT_EVAL
+    ch_log(NULL, "%s termcap entry %c%c to %s", action, name[0], name[1], s);
+#endif
     termcodes[i].name[0] = name[0];
     termcodes[i].name[1] = name[1];
     termcodes[i].code = s;
@@ -4968,6 +5013,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	{
 	    term_props[TPR_KITTY].tpr_status = TPR_YES;
 	    term_props[TPR_KITTY].tpr_set_by_termresponse = TRUE;
+
+	    // Kitty can handle SGR mouse reporting.
+	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	}
 
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
@@ -5155,7 +5203,7 @@ handle_key_with_modifier(
     if (trail != 'u'
 	    && (kitty_protocol_state == KKPS_INITIAL
 		|| kitty_protocol_state == KKPS_OFF
-		|| kitty_protocol_state == KKPS_AFTER_T_KE)
+		|| kitty_protocol_state == KKPS_AFTER_T_TE)
 	    && term_props[TPR_KITTY].tpr_status != TPR_YES)
     {
 #ifdef FEAT_EVAL
@@ -6927,15 +6975,47 @@ got_code_from_term(char_u *code, int len)
 	    if (name[0] == 'C' && name[1] == 'o')
 	    {
 		// Color count is not a key code.
-		may_adjust_color_count(atoi((char *)str));
+		int val = atoi((char *)str);
+#if defined(FEAT_EVAL)
+		if (val == t_colors)
+		    ch_log(NULL, "got_code_from_term(Co): no change (%d)", val);
+		else
+		    ch_log(NULL,
+			       "got_code_from_term(Co): changed from %d to %d",
+								t_colors, val);
+#endif
+		may_adjust_color_count(val);
 	    }
 	    else
 	    {
-		// First delete any existing entry with the same code.
 		i = find_term_bykeys(str);
-		if (i >= 0)
-		    del_termcode_idx(i);
-		add_termcode(name, str, ATC_FROM_TERM);
+		if (i >= 0 && name[0] == termcodes[i].name[0]
+					    && name[1] == termcodes[i].name[1])
+		{
+		    // Existing entry with the same name and code - skip.
+#ifdef FEAT_EVAL
+		    ch_log(NULL, "got_code_from_term(): Entry %c%c did not change",
+							     name[0], name[1]);
+#endif
+		}
+		else
+		{
+		    if (i >= 0)
+		    {
+			// Delete an existing entry using the same code.
+#ifdef FEAT_EVAL
+			ch_log(NULL, "got_code_from_term(): Deleting entry %c%c with matching keys %s",
+			      termcodes[i].name[0], termcodes[i].name[1], str);
+#endif
+			del_termcode_idx(i);
+		    }
+#ifdef FEAT_EVAL
+		    else
+			ch_log(NULL, "got_code_from_term(): Adding entry %c%c with keys %s",
+							name[0], name[1], str);
+#endif
+		    add_termcode(name, str, ATC_FROM_TERM);
+		}
 	    }
 	}
     }

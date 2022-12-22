@@ -1416,7 +1416,6 @@ textpos2screenpos(
 
     if (pos->lnum >= wp->w_topline && pos->lnum <= wp->w_botline)
     {
-	colnr_T	    off;
 	colnr_T	    col;
 	int	    width;
 	linenr_T    lnum = pos->lnum;
@@ -1432,11 +1431,12 @@ textpos2screenpos(
 	row += diff_check_fill(wp, lnum);
 #endif
 
+	colnr_T	off = win_col_off(wp);
 #ifdef FEAT_FOLDING
 	if (is_folded)
 	{
 	    row += W_WINROW(wp);
-	    coloff = wp->w_wincol + 1;
+	    coloff = wp->w_wincol + 1 + off;
 	}
 	else
 #endif
@@ -1445,7 +1445,6 @@ textpos2screenpos(
 
 	    // similar to what is done in validate_cursor_col()
 	    col = scol;
-	    off = win_col_off(wp);
 	    col += off;
 	    width = wp->w_width - off + win_col_off2(wp);
 

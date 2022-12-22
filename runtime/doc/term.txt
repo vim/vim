@@ -294,6 +294,31 @@ When Vim receives a response to the |t_RV| (request version) sequence and it
 starts with CSI, it assumes that the terminal is in 8-bit mode and will
 convert all key sequences to their 8-bit variants.
 
+						*xterm-kitty* *kitty-terminal*
+The Kitty terminal is a special case.  Mainly because it works different from
+most other terminals, but also because, instead of trying the fit in and make
+it behave like other terminals by default, it dictates how applications need
+to work when using Kitty.  This makes it very difficult for Vim to work in a
+Kitty terminal.  Some exceptions have been hard coded, but it is not at all
+nice to have to make exceptions for one specific terminal.
+
+One of the problems is that the value for $TERM is set to "xterm-kitty".  For
+Vim this is an indication that the terminal is xterm-compatible and the
+builtin xterm termcap entries should be used.  Many other terminals depend on
+this.  However, Kitty is not fully xterm compatible.  The author suggested to
+ignore the "xterm-" prefix and use the terminfo entry anyway, so that is what
+happens now, the builtin xterm termcap entries are not used.  However, the
+t_RV is set, otherwise other things would not work, such as automatically
+setting 'ttymouse' to "sgr".
+
+It is not clear why kitty sets $TERM to "xterm-kitty", the terminal isn't
+really xterm compatible.  "kitty" would be more appropriate, but a terminfo
+entry with that name is not widespread.
+
+Note that using the kitty keyboard protocol is a separate feature, see
+|kitty-keyboard-protocol|.
+
+
 ==============================================================================
 2. Terminal options		*terminal-options* *termcap-options* *E436*
 

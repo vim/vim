@@ -22,6 +22,155 @@
 #endif
 
 /*
+ * Parse a member declaration, both object and class member.
+ * Returns OK or FAIL.  When OK then "varname_end" is set to just after the
+ * variable name and "type_ret" is set to the decleared or detected type.
+ * "init_expr" is set to the initialisation expression (allocated), if there is
+ * one.
+ */
+    static int
+parse_member(
+	exarg_T	*eap,
+	char_u	*line,
+	char_u	*varname,
+	int	has_public,	    // TRUE if "public" seen before "varname"
+	char_u	**varname_end,
+	garray_T *type_list,
+	type_T	**type_ret,
+	char_u	**init_expr)
+{
+    *varname_end = to_name_end(varname, FALSE);
+    if (*varname == '_' && has_public)
+    {
+	semsg(_(e_public_member_name_cannot_start_with_underscore_str), line);
+	return FAIL;
+    }
+
+    char_u *colon = skipwhite(*varname_end);
+    char_u *type_arg = colon;
+    type_T *type = NULL;
+    if (*colon == ':')
+    {
+	if (VIM_ISWHITE(**varname_end))
+	{
+	    semsg(_(e_no_white_space_allowed_before_colon_str), varname);
+	    return FAIL;
+	}
+	if (!VIM_ISWHITE(colon[1]))
+	{
+	    semsg(_(e_white_space_required_after_str_str), ":", varname);
+	    return FAIL;
+	}
+	type_arg = skipwhite(colon + 1);
+	type = parse_type(&type_arg, type_list, TRUE);
+	if (type == NULL)
+	    return FAIL;
+    }
+
+    char_u *expr_start = skipwhite(type_arg);
+    char_u *expr_end = expr_start;
+    if (type == NULL && *expr_start != '=')
+    {
+	emsg(_(e_type_or_initialization_required));
+	return FAIL;
+    }
+
+    if (*expr_start == '=')
+    {
+	if (!VIM_ISWHITE(expr_start[-1]) || !VIM_ISWHITE(expr_start[1]))
+	{
+	    semsg(_(e_white_space_required_before_and_after_str_at_str),
+							"=", type_arg);
+	    return FAIL;
+	}
+	expr_start = skipwhite(expr_start + 1);
+
+	expr_end = expr_start;
+	evalarg_T evalarg;
+	fill_evalarg_from_eap(&evalarg, eap, FALSE);
+	skip_expr(&expr_end, NULL);
+
+	if (type == NULL)
+	{
+	    // No type specified, use the type of the initializer.
+	    typval_T tv;
+	    tv.v_type = VAR_UNKNOWN;
+	    char_u *expr = expr_start;
+	    int res = eval0(expr, &tv, eap, &evalarg);
+
+	    if (res == OK)
+		type = typval2type(&tv, get_copyID(), type_list,
+						       TVTT_DO_MEMBER);
+	    if (type == NULL)
+	    {
+		semsg(_(e_cannot_get_object_member_type_from_initializer_str),
+			expr_start);
+		clear_evalarg(&evalarg, NULL);
+		return FAIL;
+	    }
+	}
+	clear_evalarg(&evalarg, NULL);
+    }
+    if (!valid_declaration_type(type))
+	return FAIL;
+
+    *type_ret = type;
+    if (expr_end > expr_start)
+	*init_expr = vim_strnsave(expr_start, expr_end - expr_start);
+    return OK;
+}
+
+/*
+ * Add a member to an object or a class.
+ * Returns OK when successful, "init_expr" will be consumed then.
+ * Returns FAIL otherwise, caller might need to free "init_expr".
+ */
+    static int
+add_member(
+	garray_T    *gap,
+	char_u	    *varname,
+	char_u	    *varname_end,
+	int	    has_public,
+	type_T	    *type,
+	char_u	    *init_expr)
+{
+    if (ga_grow(gap, 1) == FAIL)
+	return FAIL;
+    ocmember_T *m = ((ocmember_T *)gap->ga_data) + gap->ga_len;
+    m->ocm_name = vim_strnsave(varname, varname_end - varname);
+    m->ocm_access = has_public ? ACCESS_ALL
+			      : *varname == '_' ? ACCESS_PRIVATE : ACCESS_READ;
+    m->ocm_type = type;
+    if (init_expr != NULL)
+	m->ocm_init = init_expr;
+    ++gap->ga_len;
+    return OK;
+}
+
+/*
+ * Move the class or object members found while parsing a class into the class.
+ * "gap" contains the found members.
+ * "members" will be set to the newly allocated array of members and
+ * "member_count" set to the number of members.
+ * Returns OK or FAIL.
+ */
+    static int
+add_members_to_class(
+    garray_T	*gap,
+    ocmember_T	**members,
+    int		*member_count)
+{
+    *member_count = gap->ga_len;
+    *members = gap->ga_len == 0 ? NULL : ALLOC_MULT(ocmember_T, gap->ga_len);
+    if (gap->ga_len > 0 && *members == NULL)
+	return FAIL;
+    if (gap->ga_len > 0)
+	mch_memmove(*members, gap->ga_data, sizeof(ocmember_T) * gap->ga_len);
+    VIM_CLEAR(gap->ga_data);
+    return OK;
+}
+
+/*
  * Handle ":class" and ":abstract class" up to ":endclass".
  */
     void
@@ -64,16 +213,23 @@ ex_class(exarg_T *eap)
     //    extends SomeClass
     //    implements SomeInterface
     //    specifies SomeInterface
-    //    check nothing follows
-
-    // TODO: handle "is_export" if it is set
+    //    check that nothing follows
+    //	  handle "is_export" if it is set
 
     garray_T	type_list;	    // list of pointers to allocated types
     ga_init2(&type_list, sizeof(type_T *), 10);
 
+    // Growarray with class members declared in the class.
+    garray_T classmembers;
+    ga_init2(&classmembers, sizeof(ocmember_T), 10);
+
+    // Growarray with object methods declared in the class.
+    garray_T classmethods;
+    ga_init2(&classmethods, sizeof(ufunc_T *), 10);
+
     // Growarray with object members declared in the class.
     garray_T objmembers;
-    ga_init2(&objmembers, sizeof(objmember_T), 10);
+    ga_init2(&objmembers, sizeof(ocmember_T), 10);
 
     // Growarray with object methods declared in the class.
     garray_T objmethods;
@@ -92,11 +248,15 @@ ex_class(exarg_T *eap)
 	    break;
 	char_u *line = skipwhite(theline);
 
-	// TODO:
-	// class members (public, read access, private):
-	//	  static varname
-	//	  public static varname
-	//	  static _varname
+	// Skip empty and comment lines.
+	if (*line == NUL)
+	    continue;
+	if (*line == '#')
+	{
+	    if (vim9_bad_comment(line))
+		break;
+	    continue;
+	}
 
 	char_u *p = line;
 	if (checkforcmd(&p, "endclass", 4))
@@ -110,99 +270,82 @@ ex_class(exarg_T *eap)
 	    break;
 	}
 
-	// "this.varname"
-	// "this._varname"
-	// TODO:
-	//	"public this.varname"
-	if (STRNCMP(line, "this", 4) == 0)
+	int has_public = FALSE;
+	if (checkforcmd(&p, "public", 3))
 	{
-	    if (line[4] != '.' || !eval_isnamec1(line[5]))
+	    if (STRNCMP(line, "public", 6) != 0)
 	    {
-		semsg(_(e_invalid_object_member_declaration_str), line);
+		semsg(_(e_command_cannot_be_shortened_str), line);
 		break;
 	    }
-	    char_u *varname = line + 5;
-	    char_u *varname_end = to_name_end(varname, FALSE);
+	    has_public = TRUE;
+	    p = skipwhite(line + 6);
 
-	    char_u *colon = skipwhite(varname_end);
-	    char_u *type_arg = colon;
+	    if (STRNCMP(p, "this", 4) != 0 && STRNCMP(p, "static", 6) != 0)
+	    {
+		emsg(_(e_public_must_be_followed_by_this_or_static));
+		break;
+	    }
+	}
+
+	// object members (public, read access, private):
+	//	"this._varname"
+	//	"this.varname"
+	//	"public this.varname"
+	if (STRNCMP(p, "this", 4) == 0)
+	{
+	    if (p[4] != '.' || !eval_isnamec1(p[5]))
+	    {
+		semsg(_(e_invalid_object_member_declaration_str), p);
+		break;
+	    }
+	    char_u *varname = p + 5;
+	    char_u *varname_end = NULL;
 	    type_T *type = NULL;
-	    if (*colon == ':')
+	    char_u *init_expr = NULL;
+	    if (parse_member(eap, line, varname, has_public,
+			  &varname_end, &type_list, &type, &init_expr) == FAIL)
+		break;
+	    if (add_member(&objmembers, varname, varname_end,
+					  has_public, type, init_expr) == FAIL)
 	    {
-		if (VIM_ISWHITE(*varname_end))
-		{
-		    semsg(_(e_no_white_space_allowed_before_colon_str),
-								      varname);
-		    break;
-		}
-		if (!VIM_ISWHITE(colon[1]))
-		{
-		    semsg(_(e_white_space_required_after_str_str), ":",
-								      varname);
-		    break;
-		}
-		type_arg = skipwhite(colon + 1);
-		type = parse_type(&type_arg, &type_list, TRUE);
-		if (type == NULL)
-		    break;
-	    }
-
-	    char_u *expr_start = skipwhite(type_arg);
-	    char_u *expr_end = expr_start;
-	    if (type == NULL && *expr_start != '=')
-	    {
-		emsg(_(e_type_or_initialization_required));
+		vim_free(init_expr);
 		break;
 	    }
+	}
 
-	    if (*expr_start == '=')
+	// class members and methods
+	else if (checkforcmd(&p, "static", 6))
+	{
+	    p = skipwhite(p);
+	    if (checkforcmd(&p, "def", 3))
 	    {
-		if (!VIM_ISWHITE(expr_start[-1]) || !VIM_ISWHITE(expr_start[1]))
+		// TODO: class method
+		//	  static def someMethod()
+		//	  enddef
+		//	  static def <Tval> someMethod()
+		//	  enddef
+	    }
+	    else
+	    {
+		// class members (public, read access, private):
+		//	"static _varname"
+		//	"static varname"
+		//	"public static varname"
+		char_u *varname = p;
+		char_u *varname_end = NULL;
+		type_T *type = NULL;
+		char_u *init_expr = NULL;
+		if (parse_member(eap, line, varname, has_public,
+			  &varname_end, &type_list, &type, &init_expr) == FAIL)
+		    break;
+		if (add_member(&classmembers, varname, varname_end,
+					  has_public, type, init_expr) == FAIL)
 		{
-		    semsg(_(e_white_space_required_before_and_after_str_at_str),
-								"=", type_arg);
+		    vim_free(init_expr);
 		    break;
 		}
-		expr_start = skipwhite(expr_start + 1);
-
-		expr_end = expr_start;
-		evalarg_T evalarg;
-		fill_evalarg_from_eap(&evalarg, eap, FALSE);
-		skip_expr(&expr_end, &evalarg);
-
-		if (type == NULL)
-		{
-		    // No type specified, use the type of the initializer.
-		    typval_T tv;
-		    tv.v_type = VAR_UNKNOWN;
-		    char_u *expr = expr_start;
-		    int res = eval0(expr, &tv, eap, &evalarg);
-
-		    if (res == OK)
-			type = typval2type(&tv, get_copyID(), &type_list,
-							       TVTT_DO_MEMBER);
-		    if (type == NULL)
-		    {
-			semsg(_(e_cannot_get_object_member_type_from_initializer_str),
-				expr_start);
-			clear_evalarg(&evalarg, NULL);
-			break;
-		    }
-		}
-		clear_evalarg(&evalarg, NULL);
 	    }
-	    if (!valid_declaration_type(type))
-		break;
-
-	    if (ga_grow(&objmembers, 1) == FAIL)
-		break;
-	    objmember_T *m = ((objmember_T *)objmembers.ga_data)
-							  + objmembers.ga_len;
-	    m->om_name = vim_strnsave(varname, varname_end - varname);
-	    m->om_type = type;
-	    if (expr_end > expr_start)
-		m->om_init = vim_strnsave(expr_start, expr_end - expr_start);
-	    ++objmembers.ga_len;
 	}
 
 	// constructors:
@@ -214,11 +357,7 @@ ex_class(exarg_T *eap)
 	//	  def someMethod()
 	//	  enddef
 	// TODO:
-	//	  static def someMethod()
-	//	  enddef
 	//	  def <Tval> someMethod()
-	//	  enddef
-	//	  static def <Tval> someMethod()
 	//	  enddef
 	else if (checkforcmd(&p, "def", 3))
 	{
@@ -255,29 +394,55 @@ ex_class(exarg_T *eap)
     }
     vim_free(theline);
 
+    class_T *cl = NULL;
     if (success)
     {
-	class_T *cl = ALLOC_CLEAR_ONE(class_T);
+	// "endclass" encountered without failures: Create the class.
+
+	cl = ALLOC_CLEAR_ONE(class_T);
 	if (cl == NULL)
 	    goto cleanup;
 	cl->class_refcount = 1;
 	cl->class_name = vim_strnsave(arg, name_end - arg);
-
-	// Members are used by the new() function, add them here.
-	cl->class_obj_member_count = objmembers.ga_len;
-	cl->class_obj_members = objmembers.ga_len == 0 ? NULL
-				  : ALLOC_MULT(objmember_T, objmembers.ga_len);
-	if (cl->class_name == NULL
-		|| (objmembers.ga_len > 0 && cl->class_obj_members == NULL))
-	{
-	    vim_free(cl->class_name);
-	    vim_free(cl->class_obj_members);
-	    vim_free(cl);
+	if (cl->class_name == NULL)
 	    goto cleanup;
+
+	// Add class and object members to "cl".
+	if (add_members_to_class(&classmembers,
+				    &cl->class_class_members,
+				    &cl->class_class_member_count) == FAIL
+		|| add_members_to_class(&objmembers,
+				    &cl->class_obj_members,
+				    &cl->class_obj_member_count) == FAIL)
+	    goto cleanup;
+
+	if (cl->class_class_member_count > 0)
+	{
+	    // Allocate a typval for each class member and initialize it.
+	    cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
+						 cl->class_class_member_count);
+	    if (cl->class_members_tv != NULL)
+		for (int i = 0; i < cl->class_class_member_count; ++i)
+		{
+		    ocmember_T *m = &cl->class_class_members[i];
+		    typval_T *tv = &cl->class_members_tv[i];
+		    if (m->ocm_init != NULL)
+		    {
+			typval_T *etv = eval_expr(m->ocm_init, eap);
+			if (etv != NULL)
+			{
+			    *tv = *etv;
+			    vim_free(etv);
+			}
+		    }
+		    else
+		    {
+			// TODO: proper default value
+			tv->v_type = m->ocm_type->tt_type;
+			tv->vval.v_string = NULL;
+		    }
+		}
 	}
-	mch_memmove(cl->class_obj_members, objmembers.ga_data,
-				      sizeof(objmember_T) * objmembers.ga_len);
-	vim_free(objmembers.ga_data);
 
 	int have_new = FALSE;
 	for (int i = 0; i < objmethods.ga_len; ++i)
@@ -298,8 +463,8 @@ ex_class(exarg_T *eap)
 		if (i > 0)
 		    ga_concat(&fga, (char_u *)", ");
 		ga_concat(&fga, (char_u *)"this.");
-		objmember_T *m = cl->class_obj_members + i;
-		ga_concat(&fga, (char_u *)m->om_name);
+		ocmember_T *m = cl->class_obj_members + i;
+		ga_concat(&fga, (char_u *)m->ocm_name);
 		ga_concat(&fga, (char_u *)" = v:none");
 	    }
 	    ga_concat(&fga, (char_u *)")\nenddef\n");
@@ -335,16 +500,11 @@ ex_class(exarg_T *eap)
 	    }
 	}
 
+	// TODO: class methods
 	cl->class_obj_method_count = objmethods.ga_len;
 	cl->class_obj_methods = ALLOC_MULT(ufunc_T *, objmethods.ga_len);
 	if (cl->class_obj_methods == NULL)
-	{
-	    vim_free(cl->class_name);
-	    vim_free(cl->class_obj_members);
-	    vim_free(cl->class_obj_methods);
-	    vim_free(cl);
 	    goto cleanup;
-	}
 	mch_memmove(cl->class_obj_methods, objmethods.ga_data,
 					sizeof(ufunc_T *) * objmethods.ga_len);
 	vim_free(objmethods.ga_data);
@@ -364,13 +524,7 @@ ex_class(exarg_T *eap)
 	cl->class_type_list = type_list;
 
 	// TODO:
-	// - Add the methods to the class
-	//	- array with ufunc_T pointers
-	// - Fill hashtab with object members and methods
-	// - Generate the default new() method, if needed.
-	// Later:
-	// - class members
-	// - class methods
+	// - Fill hashtab with object members and methods ?
 
 	// Add the class to the script-local variables.
 	typval_T tv;
@@ -382,13 +536,28 @@ ex_class(exarg_T *eap)
     }
 
 cleanup:
-    for (int i = 0; i < objmembers.ga_len; ++i)
+    if (cl != NULL)
     {
-	objmember_T *m = ((objmember_T *)objmembers.ga_data) + i;
-	vim_free(m->om_name);
-	vim_free(m->om_init);
+	vim_free(cl->class_name);
+	vim_free(cl->class_obj_members);
+	vim_free(cl->class_obj_methods);
+	vim_free(cl);
     }
-    ga_clear(&objmembers);
+
+    for (int round = 1; round <= 2; ++round)
+    {
+	garray_T *gap = round == 1 ? &classmembers : &objmembers;
+	if (gap->ga_len == 0 || gap->ga_data == NULL)
+	    continue;
+
+	for (int i = 0; i < gap->ga_len; ++i)
+	{
+	    ocmember_T *m = ((ocmember_T *)gap->ga_data) + i;
+	    vim_free(m->ocm_name);
+	    vim_free(m->ocm_init);
+	}
+	ga_clear(gap);
+    }
 
     for (int i = 0; i < objmethods.ga_len; ++i)
     {
@@ -415,11 +584,11 @@ class_member_type(
 
     for (int i = 0; i < cl->class_obj_member_count; ++i)
     {
-	objmember_T *m = cl->class_obj_members + i;
-	if (STRNCMP(m->om_name, name, len) == 0 && m->om_name[len] == NUL)
+	ocmember_T *m = cl->class_obj_members + i;
+	if (STRNCMP(m->ocm_name, name, len) == 0 && m->ocm_name[len] == NUL)
 	{
 	    *member_idx = i;
-	    return m->om_type;
+	    return m->ocm_type;
 	}
     }
     return &t_any;
@@ -550,9 +719,15 @@ class_object_index(
     {
 	for (int i = 0; i < cl->class_obj_member_count; ++i)
 	{
-	    objmember_T *m = &cl->class_obj_members[i];
-	    if (STRNCMP(name, m->om_name, len) == 0 && m->om_name[len] == NUL)
+	    ocmember_T *m = &cl->class_obj_members[i];
+	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
 	    {
+		if (*name == '_')
+		{
+		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		    return FAIL;
+		}
+
 		// The object only contains a pointer to the class, the member
 		// values array follows right after that.
 		object_T *obj = rettv->vval.v_object;
@@ -568,7 +743,31 @@ class_object_index(
 	semsg(_(e_member_not_found_on_object_str_str), cl->class_name, name);
     }
 
-    // TODO: class member
+    else if (rettv->v_type == VAR_CLASS)
+    {
+	// class member
+	for (int i = 0; i < cl->class_class_member_count; ++i)
+	{
+	    ocmember_T *m = &cl->class_class_members[i];
+	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+	    {
+		if (*name == '_')
+		{
+		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		    return FAIL;
+		}
+
+		typval_T *tv = &cl->class_members_tv[i];
+		copy_tv(tv, rettv);
+		class_unref(cl);
+
+		*arg = name_end;
+		return OK;
+	    }
+	}
+
+	semsg(_(e_member_not_found_on_class_str_str), cl->class_name, name);
+    }
 
     return FAIL;
 }
@@ -591,19 +790,16 @@ find_class_func(char_u **arg)
     if (eval_variable(name, len, 0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
 	return NULL;
     if (tv.v_type != VAR_CLASS && tv.v_type != VAR_OBJECT)
-    {
-	clear_tv(&tv);
-	return NULL;
-    }
+	goto fail_after_eval;
 
     class_T *cl = tv.v_type == VAR_CLASS ? tv.vval.v_class
 						 : tv.vval.v_object->obj_class;
     if (cl == NULL)
-	return NULL;
+	goto fail_after_eval;
     char_u *fname = name_end + 1;
     char_u *fname_end = find_name_end(fname, NULL, NULL, FNE_CHECK_START);
     if (fname_end == fname)
-	return NULL;
+	goto fail_after_eval;
     len = fname_end - fname;
 
     for (int i = 0; i < cl->class_obj_method_count; ++i)
@@ -613,9 +809,14 @@ find_class_func(char_u **arg)
 	// uf_name[] only being 4 characters.
 	char_u *ufname = (char_u *)fp->uf_name;
 	if (STRNCMP(fname, ufname, len) == 0 && ufname[len] == NUL)
+	{
+	    clear_tv(&tv);
 	    return fp;
+	}
     }
 
+fail_after_eval:
+    clear_tv(&tv);
     return NULL;
 }
 
@@ -677,15 +878,29 @@ copy_class(typval_T *from, typval_T *to)
     void
 class_unref(class_T *cl)
 {
-    if (cl != NULL && --cl->class_refcount <= 0)
+    if (cl != NULL && --cl->class_refcount <= 0 && cl->class_name != NULL)
     {
-	vim_free(cl->class_name);
+	// Freeing what the class contains may recursively come back here.
+	// Clear "class_name" first, if it is NULL the class does not need to
+	// be freed.
+	VIM_CLEAR(cl->class_name);
+
+	for (int i = 0; i < cl->class_class_member_count; ++i)
+	{
+	    ocmember_T *m = &cl->class_class_members[i];
+	    vim_free(m->ocm_name);
+	    vim_free(m->ocm_init);
+	    if (cl->class_members_tv != NULL)
+		clear_tv(&cl->class_members_tv[i]);
+	}
+	vim_free(cl->class_class_members);
+	vim_free(cl->class_members_tv);
 
 	for (int i = 0; i < cl->class_obj_member_count; ++i)
 	{
-	    objmember_T *m = &cl->class_obj_members[i];
-	    vim_free(m->om_name);
-	    vim_free(m->om_init);
+	    ocmember_T *m = &cl->class_obj_members[i];
+	    vim_free(m->ocm_name);
+	    vim_free(m->ocm_init);
 	}
 	vim_free(cl->class_obj_members);
 

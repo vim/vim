@@ -1193,17 +1193,21 @@ get_lval(
     var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
-	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT
-		      && lp->ll_tv->v_type != VAR_CLASS)
+	vartype_T v_type = lp->ll_tv->v_type;
+
+	if (*p == '.' && v_type != VAR_DICT
+		      && v_type != VAR_OBJECT
+		      && v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
 	    return NULL;
 	}
-	if (lp->ll_tv->v_type != VAR_LIST
-		&& lp->ll_tv->v_type != VAR_DICT
-		&& lp->ll_tv->v_type != VAR_BLOB
-		&& lp->ll_tv->v_type != VAR_CLASS)
+	if (v_type != VAR_LIST
+		&& v_type != VAR_DICT
+		&& v_type != VAR_BLOB
+		&& v_type != VAR_OBJECT
+		&& v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		emsg(_(e_can_only_index_list_dictionary_or_blob));
@@ -1212,9 +1216,9 @@ get_lval(
 
 	// A NULL list/blob works like an empty list/blob, allocate one now.
 	int r = OK;
-	if (lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
+	if (v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
 	    r = rettv_list_alloc(lp->ll_tv);
-	else if (lp->ll_tv->v_type == VAR_BLOB
+	else if (v_type == VAR_BLOB
 					     && lp->ll_tv->vval.v_blob == NULL)
 	    r = rettv_blob_alloc(lp->ll_tv);
 	if (r == FAIL)
@@ -1276,7 +1280,7 @@ get_lval(
 	    // Optionally get the second index [ :expr].
 	    if (*p == ':')
 	    {
-		if (lp->ll_tv->v_type == VAR_DICT)
+		if (v_type == VAR_DICT)
 		{
 		    if (!quiet)
 			emsg(_(e_cannot_slice_dictionary));
@@ -1332,7 +1336,7 @@ get_lval(
 	    ++p;
 	}
 
-	if (lp->ll_tv->v_type == VAR_DICT)
+	if (v_type == VAR_DICT)
 	{
 	    if (len == -1)
 	    {
@@ -1433,7 +1437,7 @@ get_lval(
 	    clear_tv(&var1);
 	    lp->ll_tv = &lp->ll_di->di_tv;
 	}
-	else if (lp->ll_tv->v_type == VAR_BLOB)
+	else if (v_type == VAR_BLOB)
 	{
 	    long bloblen = blob_len(lp->ll_tv->vval.v_blob);
 
@@ -1464,7 +1468,7 @@ get_lval(
 	    lp->ll_tv = NULL;
 	    break;
 	}
-	else if (lp->ll_tv->v_type == VAR_LIST)
+	else if (v_type == VAR_LIST)
 	{
 	    /*
 	     * Get the number and item for the only or first index of the List.
@@ -1509,10 +1513,64 @@ get_lval(
 
 	    lp->ll_tv = &lp->ll_li->li_tv;
 	}
-	else  // v_type == VAR_CLASS
+	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
 	{
-	    // TODO: check object members and methods if
-	    // "key" points name start, "p" to the end
+	    class_T *cl = (v_type == VAR_OBJECT
+					   && lp->ll_tv->vval.v_object != NULL)
+			    ? lp->ll_tv->vval.v_object->obj_class
+			    : lp->ll_tv->vval.v_class;
+	    // TODO: what if class is NULL?
+	    if (cl != NULL)
+	    {
+		lp->ll_valtype = NULL;
+		int count = v_type == VAR_OBJECT ? cl->class_obj_member_count
+						: cl->class_class_member_count;
+		ocmember_T *members = v_type == VAR_OBJECT
+						     ? cl->class_obj_members
+						     : cl->class_class_members;
+		for (int i = 0; i < count; ++i)
+		{
+		    ocmember_T *om = members + i;
+		    if (STRNCMP(om->ocm_name, key, p - key) == 0
+					       && om->ocm_name[p - key] == NUL)
+		    {
+			switch (om->ocm_access)
+			{
+			    case ACCESS_PRIVATE:
+				    semsg(_(e_cannot_access_private_member_str),
+								 om->ocm_name);
+				    return NULL;
+			    case ACCESS_READ:
+				    if (!(flags & GLV_READ_ONLY))
+				    {
+					semsg(_(e_member_is_not_writable_str),
+								 om->ocm_name);
+					return NULL;
+				    }
+				    break;
+			    case ACCESS_ALL:
+				    break;
+			}
+
+			lp->ll_valtype = om->ocm_type;
+
+			if (v_type == VAR_OBJECT)
+			    lp->ll_tv = ((typval_T *)(
+					    lp->ll_tv->vval.v_object + 1)) + i;
+			else
+			    lp->ll_tv = &cl->class_members_tv[i];
+			break;
+		    }
+		}
+		if (lp->ll_valtype == NULL)
+		{
+		    if (v_type == VAR_OBJECT)
+			semsg(_(e_object_member_not_found_str), key);
+		    else
+			semsg(_(e_class_member_not_found_str), key);
+		    return NULL;
+		}
+	    }
 	}
     }
 
@@ -1640,7 +1698,7 @@ set_var_lval(
     else
     {
 	/*
-	 * Assign to a List or Dictionary item.
+	 * Assign to a List, Dictionary or Object item.
 	 */
 	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)
@@ -4490,11 +4548,19 @@ eval_method(
 	if (**arg != '(' && alias == NULL
 				    && (paren = vim_strchr(*arg, '(')) != NULL)
 	{
-	    char_u *deref;
-
 	    *arg = name;
+
+	    // Truncate the name a the "(".  Avoid trying to get another line
+	    // by making "getline" NULL.
 	    *paren = NUL;
-	    deref = deref_function_name(arg, &tofree, evalarg, verbose);
+	    char_u	*(*getline)(int, void *, int, getline_opt_T) = NULL;
+	    if (evalarg != NULL)
+	    {
+		getline = evalarg->eval_getline;
+		evalarg->eval_getline = NULL;
+	    }
+
+	    char_u *deref = deref_function_name(arg, &tofree, evalarg, verbose);
 	    if (deref == NULL)
 	    {
 		*arg = name + len;
@@ -4505,7 +4571,10 @@ eval_method(
 		name = deref;
 		len = (long)STRLEN(name);
 	    }
+
 	    *paren = '(';
+	    if (getline != NULL)
+		evalarg->eval_getline = getline;
 	}
 
 	if (ret == OK)
@@ -5604,7 +5673,8 @@ set_ref_in_item(
 	}
 
 	case VAR_CLASS:
-	    // TODO: mark methods in class_obj_methods ?
+	    // TODO: Mark methods in class_obj_methods ?
+	    // Mark initializer expressions?
 	    break;
 
 	case VAR_OBJECT:
@@ -5863,13 +5933,46 @@ echo_string_core(
 	    break;
 
 	case VAR_CLASS:
-	    *tofree = NULL;
-	    r = (char_u *)"class";
+	    {
+		class_T *cl = tv->vval.v_class;
+		size_t len = 6 + (cl == NULL ? 9 : STRLEN(cl->class_name)) + 1;
+		r = *tofree = alloc(len);
+		vim_snprintf((char *)r, len, "class %s",
+			    cl == NULL ? "[unknown]" : (char *)cl->class_name);
+	    }
 	    break;
 
 	case VAR_OBJECT:
-	    *tofree = NULL;
-	    r = (char_u *)"object";
+	    {
+		garray_T ga;
+		ga_init2(&ga, 1, 50);
+		ga_concat(&ga, (char_u *)"object of ");
+		object_T *obj = tv->vval.v_object;
+		class_T *cl = obj == NULL ? NULL : obj->obj_class;
+		ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]"
+							     : cl->class_name);
+		if (cl != NULL)
+		{
+		    ga_concat(&ga, (char_u *)" {");
+		    for (int i = 0; i < cl->class_obj_member_count; ++i)
+		    {
+			if (i > 0)
+			    ga_concat(&ga, (char_u *)", ");
+			ocmember_T *m = &cl->class_obj_members[i];
+			ga_concat(&ga, m->ocm_name);
+			ga_concat(&ga, (char_u *)": ");
+			char_u *tf = NULL;
+			ga_concat(&ga, echo_string_core(
+					       (typval_T *)(obj + 1) + i,
+					       &tf, numbuf, copyID, echo_style,
+					       restore_copyID, composite_val));
+			vim_free(tf);
+		    }
+		    ga_concat(&ga, (char_u *)"}");
+		}
+
+		*tofree = r = ga.ga_data;
+	    }
 	    break;
 
 	case VAR_FLOAT:
