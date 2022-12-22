@@ -2393,6 +2393,7 @@ func Test_autocmd_user_clear_group()
   call term_sendkeys(buf, ":autocmd User\<CR>")
   call TermWait(buf, 50)
   call term_sendkeys(buf, "G")
+  call TermWait(buf, 50)
 
   call StopVimInTerminal(buf)
 endfunc
