@@ -701,6 +701,9 @@ au BufRead,BufNewFile *.fusion			setf fusion
 " F# or Forth
 au BufNewFile,BufRead *.fs			call dist#ft#FTfs()
 
+" FHIR Shorthand (FSH)
+au BufNewFile,BufRead *.fsh			setf fsh
+
 " F#
 au BufNewFile,BufRead *.fsi,*.fsx		setf fsharp
 
