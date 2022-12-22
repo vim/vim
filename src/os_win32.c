@@ -257,7 +257,9 @@ static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
 static BOOL win10_22H2_or_later = FALSE;
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static BOOL use_alternate_screen_buffer = FALSE;
+#endif
 
 /*
  * Get version number including build number
@@ -8395,7 +8397,7 @@ vtp_init(void)
     }
 # endif
     use_alternate_screen_buffer = win10_22H2_or_later && p_rs && vtp_working
-    						&& !mch_getenv("VIM_TERMINAL");
+						&& !mch_getenv("VIM_TERMINAL");
     set_console_color_rgb();
 }
 
