@@ -1902,12 +1902,12 @@ check_writable(char_u *fname)
 #endif
 
 /*
- * write current buffer to file 'eap->arg'
- * if 'eap->append' is TRUE, append to the file
+ * Write the current buffer to file "eap->arg".
+ * If "eap->append" is TRUE, append to the file.
  *
- * if *eap->arg == NUL write to current file
+ * If "*eap->arg == NUL" write to current file.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 do_write(exarg_T *eap)
@@ -4011,7 +4011,7 @@ ex_substitute(exarg_T *eap)
 	return;
     }
 
-    if (search_regcomp(pat, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, NULL, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	if (subflags.do_error)
 	    emsg(_(e_invalid_command));
@@ -5039,6 +5039,7 @@ ex_global(exarg_T *eap)
 
     char_u	delim;		// delimiter, normally '/'
     char_u	*pat;
+    char_u	*used_pat;
     regmmatch_T	regmatch;
     int		match;
     int		which_pat;
@@ -5104,7 +5105,7 @@ ex_global(exarg_T *eap)
 	    *cmd++ = NUL;		    // replace it with a NUL
     }
 
-    if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, &used_pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	emsg(_(e_invalid_command));
 	return;
@@ -5148,16 +5149,16 @@ ex_global(exarg_T *eap)
 	    if (type == 'v')
 	    {
 		if (in_vim9script())
-		    semsg(_(e_pattern_found_in_every_line_str), pat);
+		    semsg(_(e_pattern_found_in_every_line_str), used_pat);
 		else
-		    smsg(_("Pattern found in every line: %s"), pat);
+		    smsg(_("Pattern found in every line: %s"), used_pat);
 	    }
 	    else
 	    {
 		if (in_vim9script())
-		    semsg(_(e_pattern_not_found_str), pat);
+		    semsg(_(e_pattern_not_found_str), used_pat);
 		else
-		    smsg(_("Pattern not found: %s"), pat);
+		    smsg(_("Pattern not found: %s"), used_pat);
 	    }
 	}
 	else
