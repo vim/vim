@@ -1341,11 +1341,13 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	ker.wVirtualKeyCode = vkCode;
 	win32_kbd_patch_key(&ker);
 
-	for (int i = ARRAY_LENGTH(VirtKeyMap);
-	     --i >= 0 && !ker.uChar.UnicodeChar; )
+	for (int i = ARRAY_LENGTH(VirtKeyMap); i >= 0; --i)
 	{
 	    if (VirtKeyMap[i].wVirtKey == vkCode)
+	    {
 		ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
+		break;
+	    }
 	}
 
 	ir->Event.KeyEvent = ker;

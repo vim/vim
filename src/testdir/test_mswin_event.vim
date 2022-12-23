@@ -403,7 +403,7 @@ let VK = {
       call SendKeys(mod_keycodes + [111+n])
       let ch = getcharstr(0)
       let mod_mask = getcharmod()
-      call assert_equal(keycode, $"{ch} ", $"key = {kstr}")
+      call assert_equal(keycode, $"{ch}", $"key = {kstr}")
       " workaround for the virtual termcap maps changing the character instead
       " of sending Shift
       for mod_key in mod_keycodes
@@ -477,16 +477,15 @@ let VK = {
     \ [[VK.CONTROL,  VK.SUBTRACT], "C--", 4]
     \ ]
 
-"    Not working in CI Testing yet!?
-"    for [kcodes, kstr, kmod] in keytests
-"      call SendKeys(kcodes)
-"      sleep 10ms
-"      let ch = getcharstr(0)
-"      let mod = getcharmod()
-"      let keycode = eval('"\<' .. kstr .. '>"')
-"      call assert_equal(keycode, ch, $"key = {kstr}")
-"      call assert_equal(kmod, mod, $"key = {kstr}")
-"    endfor
+  " Not working in CI Testing yet!?
+  for [kcodes, kstr, kmod] in keytests
+    call SendKeys(kcodes)
+    let ch = getcharstr(0)
+    let mod = getcharmod()
+    let keycode = eval('"\<' .. kstr .. '>"')
+    call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"key = {kstr}")
+  endfor
 
   bw!
 endfunc
