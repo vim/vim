@@ -396,22 +396,21 @@ let VK = {
   " Test for Function Keys 'F1' to 'F12'
   " VK codes 112(0x70) - 123(0x7B)
   " With ALL permutatios of modifiers; Shift, Ctrl & Alt
-  for n in range(1, 12)
-    for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
+  for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
+    for n in range(1, 12)
       let kstr = $"{mod_str}F{n}"
       let keycode = eval('"\<' .. kstr .. '>"')
       call SendKeys(mod_keycodes + [111+n])
       let ch = getcharstr(0)
-      if ch == ''
-	throw 'Skipped: The MS-Windows console input buffer was empty.'
-      endif
       let mod_mask = getcharmod()
-      call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+      call assert_equal(keycode, $"{ch} ", $"key = {kstr}")
       " workaround for the virtual termcap maps changing the character instead
       " of sending Shift
-      if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], mod_keycodes) >= 0
-	let vim_mod_mask = vim_mod_mask - vim_MOD_MASK_SHIFT
-      endif
+      for mod_key in mod_keycodes
+        if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], mod_key) >= 0
+          let mod_mask = mod_mask + vim_MOD_MASK_SHIFT
+        endif
+      endfor
       call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
     endfor
   endfor
