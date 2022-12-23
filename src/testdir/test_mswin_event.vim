@@ -138,7 +138,7 @@ let VK = {
   let vim_MOD_MASK_CTRL  = 0x04
   let vim_MOD_MASK_ALT   = 0x08
   
-  let vim_key_modifier = [
+  let vim_key_modifiers = [
     \ ["",       0,   []],
     \ ["S-",     2,   [VK.SHIFT]],
     \ ["C-",     4,   [VK.CONTROL]],
@@ -397,7 +397,7 @@ let VK = {
   " VK codes 112(0x70) - 123(0x7B)
   " With ALL permutatios of modifiers; Shift, Ctrl & Alt
   for n in range(1, 12)
-    for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifier
+    for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
       let kstr = $"{mod_str}F{n}"
       let keycode = eval('"\<' .. kstr .. '>"')
       call SendKeys(mod_keycodes + [111+n])
