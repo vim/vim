@@ -111,6 +111,17 @@ def Test_class_basic()
   lines =<< trim END
       vim9script
       class Something
+        def new()
+          this.state = 0
+        enddef
+      endclass
+      var obj = Something.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1089:')
+
+  lines =<< trim END
+      vim9script
+      class Something
         this.count : number
       endclass
   END
@@ -330,7 +341,9 @@ def Test_class_member_access()
       assert_equal(0, TextPos.counter)
       TextPos.AddToCounter(3)
       assert_equal(3, TextPos.counter)
+      assert_fails('echo TextPos.noSuchMember', 'E1338:')
 
+      assert_fails('TextPos.noSuchMember = 2', 'E1337:')
       assert_fails('TextPos.counter += 5', 'E1335')
   END
   v9.CheckScriptSuccess(lines)

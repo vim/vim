@@ -1823,6 +1823,8 @@ compile_lhs(
 	    class_T *cl = (class_T *)lhs->lhs_type->tt_member;
 	    lhs->lhs_member_type = class_member_type(cl, after + 1,
 					   lhs->lhs_end, &lhs->lhs_member_idx);
+	    if (lhs->lhs_member_idx < 0)
+		return FAIL;
 	}
 	else
 	    lhs->lhs_member_type = lhs->lhs_type->tt_member;
