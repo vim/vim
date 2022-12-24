@@ -3799,7 +3799,7 @@ exec_instructions(ectx_T *ectx)
 		tv->vval.v_number = iptr->isn_arg.storenr.stnr_val;
 		break;
 
-	    // store value in list or dict variable
+	    // Store a value in a list, dict, blob or object variable.
 	    case ISN_STOREINDEX:
 		{
 		    int res = execute_storeindex(iptr, ectx);
@@ -5159,7 +5159,7 @@ exec_instructions(ectx_T *ectx)
 		    object_T *obj = tv->vval.v_object;
 		    // the members are located right after the object struct
 		    typval_T *mtv = ((typval_T *)(obj + 1)) + idx;
-		    *tv = *mtv;
+		    copy_tv(mtv, tv);
 
 		    // Unreference the object after getting the member, it may
 		    // be freed.

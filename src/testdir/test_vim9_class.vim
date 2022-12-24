@@ -323,6 +323,32 @@ def Test_class_object_member_access()
       assert_fails('trip.four = 4', 'E1334')
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class MyCar
+        this.make: string
+
+        def new(make_arg: string)
+          this.make = make_arg
+        enddef
+
+        def GetMake(): string
+          return $"make = {this.make}"
+        enddef
+      endclass
+
+      var c = MyCar.new("abc")
+      assert_equal('make = abc', c.GetMake())
+
+      c = MyCar.new("def")
+      assert_equal('make = def', c.GetMake())
+
+      var c2 = MyCar.new("123")
+      assert_equal('make = 123', c2.GetMake())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_member_access()
