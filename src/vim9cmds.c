@@ -1973,7 +1973,11 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
  * compile "execute expr"
  */
     char_u *
-compile_mult_expr(char_u *arg, int cmdidx, long cmd_count, cctx_T *cctx)
+compile_mult_expr(
+	char_u	*arg,
+	int	cmdidx,
+	long	cmd_count UNUSED,
+	cctx_T	*cctx)
 {
     char_u	*p = arg;
     char_u	*prev = arg;

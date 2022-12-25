@@ -162,9 +162,11 @@ clear_tv(typval_T *varp)
 		break;
 	    case VAR_CLASS:
 		class_unref(varp->vval.v_class);
+		varp->vval.v_class = NULL;
 		break;
 	    case VAR_OBJECT:
 		object_unref(varp->vval.v_object);
+		varp->vval.v_object = NULL;
 		break;
 	    case VAR_UNKNOWN:
 	    case VAR_ANY:
