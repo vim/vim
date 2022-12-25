@@ -1881,7 +1881,7 @@ if s:settings.use_css && !s:settings.no_doc
   endif
 endif
 
-if !s:settings.use_css && !s:settings_no_doc
+if !s:settings.use_css && !s:settings.no_doc
   " For Netscape 4, set <body> attributes too, though, strictly speaking, it's
   " incorrect.
   execute '%s:<body\([^>]*\):<body bgcolor="' . s:bgc . '" text="' . s:fgc . '"\1>\r<font face="'. s:htmlfont .'"'
