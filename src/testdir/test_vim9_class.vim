@@ -349,6 +349,22 @@ def Test_class_object_member_access()
       assert_equal('make = 123', c2.GetMake())
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class MyCar
+        this.make: string
+
+        def new(make_arg: string)
+            this.make = make_arg
+        enddef
+      endclass
+
+      var c = MyCar.new("abc")
+      var c = MyCar.new("def")
+  END
+  v9.CheckScriptFailure(lines, 'E1041:')
 enddef
 
 def Test_class_member_access()
