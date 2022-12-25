@@ -4816,6 +4816,19 @@ fi
 
 done
 
+# 10.5 and earlier lack dispatch
+for ac_header in dispatch/dispatch.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "dispatch/dispatch.h" "ac_cv_header_dispatch_dispatch_h" "$ac_includes_default"
+if test "x$ac_cv_header_dispatch_dispatch_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_DISPATCH_DISPATCH_H 1
+_ACEOF
+
+fi
+
+done
+
 
 
 
