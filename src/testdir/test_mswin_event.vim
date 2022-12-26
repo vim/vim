@@ -10,10 +10,10 @@ source mouse.vim
 " The modifer key(s) can be included as normal key presses in the sequence
 func SendKeys(keylist)
   for k in a:keylist
-    call test_mswin_event("key", #{event: "keydown", keycode: k})
+    call test_mswin_event("key", {'event': "keydown", 'keycode': k})
   endfor
   for k in reverse(copy(a:keylist))
-    call test_mswin_event("key", #{event: "keyup", keycode: k})
+    call test_mswin_event("key", {'event': "keyup", 'keycode': k})
   endfor
 endfunc
 
@@ -468,7 +468,8 @@ let VK = {
     for n in range(1, 12)
       let kstr = $"{mod_str}F{n}"
       let keycode = eval('"\<' .. kstr .. '>"')
-      call SendKeys(mod_keycodes + [111+n])
+      " call SendKeys(mod_keycodes + [111+n])
+      call SendKey(111+n, vim_mod_mask)
       let ch = getcharstr(0)
       let mod_mask = getcharmod()
       call assert_equal(keycode, $"{ch}", $"key = {kstr}")
@@ -482,7 +483,6 @@ let VK = {
       call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
     endfor
   endfor
-
 
   " Test for the various Ctrl and Shift key combinations.
   " Refer to the following page for the virtual key codes:
