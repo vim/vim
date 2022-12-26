@@ -249,7 +249,7 @@ hash_add_item(
     hash_T	hash)
 {
     // If resizing failed before and it fails again we can't add an item.
-    if ((ht->ht_flags & HTFLAGS_ERROR) && hash_may_resize(ht, 0) == FAIL)
+    if (ht->ht_flags & HTFLAGS_ERROR)
 	return FAIL;
 
     ++ht->ht_used;
