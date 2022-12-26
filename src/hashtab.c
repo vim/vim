@@ -405,10 +405,6 @@ hash_may_resize(
 	    return FAIL;	// overflow
     }
 
-    // bail out if the hashtab is already at the desired size
-    if (newsize == ht->ht_mask + 1)
-	return OK;
-
     if (newsize == HT_INIT_SIZE)
     {
 	// Use the small array inside the hashdict structure.
@@ -425,6 +421,13 @@ hash_may_resize(
 	    oldarray = ht->ht_array;
 	CLEAR_FIELD(ht->ht_smallarray);
     }
+
+    else if (newsize == ht->ht_mask + 1)
+    {
+	// the hashtab is already at the desired size, bail out
+	return OK;
+    }
+
     else
     {
 	// Allocate an array.
