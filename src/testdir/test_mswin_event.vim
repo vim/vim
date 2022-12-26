@@ -275,9 +275,9 @@ let VK = {
     \ [[VK.CONTROL, VK.KEY_Z], 0x1A],
     \ [[VK.CONTROL, VK.OEM_4], 0x1B],
     \ [[VK.CONTROL, VK.OEM_5], 0x1C],
-    \ [[VK.CONTROL, VK.OEM_6], 0x1D],
-    \ [[VK.CONTROL, VK.SHIFT, VK.KEY_6], 0x1E],
-    \ [[VK.CONTROL, VK.SHIFT, VK.OEM_MINUS], 0x1F] ]
+    \ [[VK.CONTROL, VK.OEM_6], 0x1D] ]
+"      \ [[VK.CONTROL, VK.SHIFT, VK.KEY_6], 0x1E],
+"      \ [[VK.CONTROL, VK.SHIFT, VK.OEM_MINUS], 0x1F],
 "      \ [[VK.ALT, VK.KEY_1], '±'],
 "      \ [[VK.ALT, VK.KEY_2], '²'],
 "      \ [[VK.ALT, VK.KEY_3], '³'],
