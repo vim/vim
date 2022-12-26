@@ -1160,7 +1160,7 @@ decode_key_event(
 		    *pch = K_NUL;
 		    if (pmodifiers && vtp_working)
 		    {
-			if (pker->wVirtualKeyCode >= VK_F1 
+			if (pker->wVirtualKeyCode >= VK_F1
 			    && pker->wVirtualKeyCode <= VK_F12)
 			{
 			    if (nModifs & ALT)
@@ -1176,7 +1176,7 @@ decode_key_event(
 				    *pch2 = VirtKeyMap[i].chAlone;
 			    }
 			}
-			else if (pker->wVirtualKeyCode >= VK_END 
+			else if (pker->wVirtualKeyCode >= VK_END
 				&& pker->wVirtualKeyCode <= VK_DOWN)
 			{
 			    // VK_END   0x23
@@ -1194,7 +1194,7 @@ decode_key_event(
 			    else if ((nModifs & CTRL) && !(nModifs & ~CTRL))
 			    {
 				*pch2 = VirtKeyMap[i].chCtrl;
-				if (pker->wVirtualKeyCode == VK_UP 
+				if (pker->wVirtualKeyCode == VK_UP
 				    || pker->wVirtualKeyCode == VK_DOWN)
 				{
 				    *pmodifiers |= MOD_MASK_CTRL;

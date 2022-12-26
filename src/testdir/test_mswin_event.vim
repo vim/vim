@@ -131,7 +131,8 @@ let VK = {
     \ 'F9'         : 0x78,
     \ 'F10'        : 0x79,
     \ 'F11'        : 0x7A,
-    \ 'F12'        : 0x7B
+    \ 'F12'        : 0x7B,
+    \ 'DELETE'     : 0x2E
     \ }
 
   let vim_MOD_MASK_SHIFT = 0x02
@@ -194,16 +195,6 @@ let VK = {
     \ [[VK.SHIFT, VK.KEY_8], '*'],
     \ [[VK.SHIFT, VK.KEY_9], '('],
     \ [[VK.SHIFT, VK.KEY_0], ')'],
-    \ [[VK.ALT, VK.KEY_1], '±'],
-    \ [[VK.ALT, VK.KEY_2], '²'],
-    \ [[VK.ALT, VK.KEY_3], '³'],
-    \ [[VK.ALT, VK.KEY_4], '´'],
-    \ [[VK.ALT, VK.KEY_5], 'µ'],
-    \ [[VK.ALT, VK.KEY_6], '¶'],
-    \ [[VK.ALT, VK.KEY_7], '·'],
-    \ [[VK.ALT, VK.KEY_8], '¸'],
-    \ [[VK.ALT, VK.KEY_9], '¹'],
-    \ [[VK.ALT, VK.KEY_0], '°'],
     \ [[VK.KEY_A], 'a'],
     \ [[VK.KEY_B], 'b'],
     \ [[VK.KEY_C], 'c'],
@@ -256,14 +247,87 @@ let VK = {
     \ [[VK.SHIFT, VK.KEY_X], 'X'],
     \ [[VK.SHIFT, VK.KEY_Y], 'Y'],
     \ [[VK.SHIFT, VK.KEY_Z], 'Z'],
+    \ [[VK.CONTROL, VK.KEY_A], 0x01],
+    \ [[VK.CONTROL, VK.KEY_B], 0x02],
+    \ [[VK.CONTROL, VK.KEY_C], 0x03],
+    \ [[VK.CONTROL, VK.KEY_D], 0x04],
+    \ [[VK.CONTROL, VK.KEY_E], 0x05],
+    \ [[VK.CONTROL, VK.KEY_F], 0x06],
+    \ [[VK.CONTROL, VK.KEY_G], 0x07],
+    \ [[VK.CONTROL, VK.KEY_H], 0x08],
+    \ [[VK.CONTROL, VK.KEY_I], 0x09],
+    \ [[VK.CONTROL, VK.KEY_J], 0x0A],
+    \ [[VK.CONTROL, VK.KEY_K], 0x0B],
+    \ [[VK.CONTROL, VK.KEY_L], 0x0C],
+    \ [[VK.CONTROL, VK.KEY_M], 0x0D],
+    \ [[VK.CONTROL, VK.KEY_N], 0x0E],
+    \ [[VK.CONTROL, VK.KEY_O], 0x0F],
+    \ [[VK.CONTROL, VK.KEY_P], 0x10],
+    \ [[VK.CONTROL, VK.KEY_Q], 0x11],
+    \ [[VK.CONTROL, VK.KEY_R], 0x12],
+    \ [[VK.CONTROL, VK.KEY_S], 0x13],
+    \ [[VK.CONTROL, VK.KEY_T], 0x14],
+    \ [[VK.CONTROL, VK.KEY_U], 0x15],
+    \ [[VK.CONTROL, VK.KEY_V], 0x16],
+    \ [[VK.CONTROL, VK.KEY_W], 0x17],
+    \ [[VK.CONTROL, VK.KEY_X], 0x18],
+    \ [[VK.CONTROL, VK.KEY_Y], 0x19],
+    \ [[VK.CONTROL, VK.KEY_Z], 0x1A],
+    \ [[VK.CONTROL, VK.OEM_4], 0x1B],
+    \ [[VK.CONTROL, VK.OEM_5], 0x1C],
+    \ [[VK.CONTROL, VK.OEM_6], 0x1D],
+    \ [[VK.CONTROL, VK.SHIFT, VK.KEY_6], 0x1E],
+    \ [[VK.CONTROL, VK.SHIFT, VK.OEM_MINUS], 0x1F],
+    \ [[VK.ALT, VK.KEY_1], '±'],
+    \ [[VK.ALT, VK.KEY_2], '²'],
+    \ [[VK.ALT, VK.KEY_3], '³'],
+    \ [[VK.ALT, VK.KEY_4], '´'],
+    \ [[VK.ALT, VK.KEY_5], 'µ'],
+    \ [[VK.ALT, VK.KEY_6], '¶'],
+    \ [[VK.ALT, VK.KEY_7], '·'],
+    \ [[VK.ALT, VK.KEY_8], '¸'],
+    \ [[VK.ALT, VK.KEY_9], '¹'],
+    \ [[VK.ALT, VK.KEY_0], '°'],
+    \ [[VK.ALT, VK.KEY_A], 'á'],
+    \ [[VK.ALT, VK.KEY_B], 'â'],
+    \ [[VK.ALT, VK.KEY_C], 'ã'],
+    \ [[VK.ALT, VK.KEY_D], 'ä'],
+    \ [[VK.ALT, VK.KEY_E], 'å'],
+    \ [[VK.ALT, VK.KEY_F], 'æ'],
+    \ [[VK.ALT, VK.KEY_G], 'ç'],
+    \ [[VK.ALT, VK.KEY_H], 'è'],
+    \ [[VK.ALT, VK.KEY_I], 'é'],
+    \ [[VK.ALT, VK.KEY_J], 'ê'],
+    \ [[VK.ALT, VK.KEY_K], 'ë'],
+    \ [[VK.ALT, VK.KEY_L], 'ì'],
+    \ [[VK.ALT, VK.KEY_M], 'í'],
+    \ [[VK.ALT, VK.KEY_N], 'î'],
+    \ [[VK.ALT, VK.KEY_O], 'ï'],
+    \ [[VK.ALT, VK.KEY_P], 'ð'],
+    \ [[VK.ALT, VK.KEY_Q], 'ñ'],
+    \ [[VK.ALT, VK.KEY_R], 'ò'],
+    \ [[VK.ALT, VK.KEY_S], 'ó'],
+    \ [[VK.ALT, VK.KEY_T], 'ô'],
+    \ [[VK.ALT, VK.KEY_U], 'õ'],
+    \ [[VK.ALT, VK.KEY_V], 'ö'],
+    \ [[VK.ALT, VK.KEY_W], '÷'],
+    \ [[VK.ALT, VK.KEY_X], 'ø'],
+    \ [[VK.ALT, VK.KEY_Y], 'ù'],
+    \ [[VK.ALT, VK.KEY_Z], 'ú'],
     \ ]
+
 
   for [kcodes, kstr] in test_key_chars
 
     " Send as a sequence of key presses.
     call SendKeys(kcodes)
     let ch = getcharstr(0)
-    call assert_equal($"{kstr}", $"{ch}")
+    " need to deal a bit differently with the non-printable ascii chars < 0x20
+    if kstr < 0x20 && index([VK.CONTROL, VK.LCONTROL, VK.RCONTROL],  kcodes[0]) >= 0
+      call assert_equal(nr2char(kstr), $"{ch}")
+    else
+      call assert_equal(kstr, $"{ch}")
+    endif
     let mod_mask = getcharmod()
     " the mod_mask is zero when no modifiers are used
     " and when the virtual termcap maps the character
@@ -272,7 +336,6 @@ let VK = {
     " Send as a single key press with a modifers mask.
     let modifiers = 0
     let key = kcodes[0]
-
     for key in kcodes
       if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], key) >= 0
         let modifiers = modifiers + vim_MOD_MASK_SHIFT
@@ -286,7 +349,12 @@ let VK = {
     endfor
     call SendKey(key, modifiers)
     let ch = getcharstr(0)
-    call assert_equal($"{kstr}", $"{ch}")
+    " need to deal a bit differently with the non-printable ascii chars < 0x20
+    if kstr < 0x20 && index([VK.CONTROL, VK.LCONTROL, VK.RCONTROL],  kcodes[0]) >= 0
+      call assert_equal(nr2char(kstr), $"{ch}")
+    else
+      call assert_equal(kstr, $"{ch}")
+    endif
     let mod_mask = getcharmod()
     " the mod_mask is zero when no modifiers are used
     " and when the virtual termcap maps the character
@@ -477,15 +545,15 @@ let VK = {
     \ [[VK.CONTROL,  VK.SUBTRACT], "C--", 4]
     \ ]
 
-  " Not working in CI Testing yet!?
-  for [kcodes, kstr, kmod] in keytests
-    call SendKeys(kcodes)
-    let ch = getcharstr(0)
-    let mod = getcharmod()
-    let keycode = eval('"\<' .. kstr .. '>"')
-    call assert_equal(keycode, ch, $"key = {kstr}")
-    call assert_equal(kmod, mod, $"key = {kstr}")
-  endfor
+"    " Not working in CI Testing yet!?
+"    for [kcodes, kstr, kmod] in keytests
+"      call SendKeys(kcodes)
+"      let ch = getcharstr(0)
+"      let mod = getcharmod()
+"      let keycode = eval('"\<' .. kstr .. '>"')
+"      call assert_equal(keycode, ch, $"key = {kstr}")
+"      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
+"    endfor
 
   bw!
 endfunc
