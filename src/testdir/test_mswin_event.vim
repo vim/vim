@@ -277,44 +277,44 @@ let VK = {
     \ [[VK.CONTROL, VK.OEM_5], 0x1C],
     \ [[VK.CONTROL, VK.OEM_6], 0x1D],
     \ [[VK.CONTROL, VK.SHIFT, VK.KEY_6], 0x1E],
-    \ [[VK.CONTROL, VK.SHIFT, VK.OEM_MINUS], 0x1F],
-    \ [[VK.ALT, VK.KEY_1], '±'],
-    \ [[VK.ALT, VK.KEY_2], '²'],
-    \ [[VK.ALT, VK.KEY_3], '³'],
-    \ [[VK.ALT, VK.KEY_4], '´'],
-    \ [[VK.ALT, VK.KEY_5], 'µ'],
-    \ [[VK.ALT, VK.KEY_6], '¶'],
-    \ [[VK.ALT, VK.KEY_7], '·'],
-    \ [[VK.ALT, VK.KEY_8], '¸'],
-    \ [[VK.ALT, VK.KEY_9], '¹'],
-    \ [[VK.ALT, VK.KEY_0], '°'],
-    \ [[VK.ALT, VK.KEY_A], 'á'],
-    \ [[VK.ALT, VK.KEY_B], 'â'],
-    \ [[VK.ALT, VK.KEY_C], 'ã'],
-    \ [[VK.ALT, VK.KEY_D], 'ä'],
-    \ [[VK.ALT, VK.KEY_E], 'å'],
-    \ [[VK.ALT, VK.KEY_F], 'æ'],
-    \ [[VK.ALT, VK.KEY_G], 'ç'],
-    \ [[VK.ALT, VK.KEY_H], 'è'],
-    \ [[VK.ALT, VK.KEY_I], 'é'],
-    \ [[VK.ALT, VK.KEY_J], 'ê'],
-    \ [[VK.ALT, VK.KEY_K], 'ë'],
-    \ [[VK.ALT, VK.KEY_L], 'ì'],
-    \ [[VK.ALT, VK.KEY_M], 'í'],
-    \ [[VK.ALT, VK.KEY_N], 'î'],
-    \ [[VK.ALT, VK.KEY_O], 'ï'],
-    \ [[VK.ALT, VK.KEY_P], 'ð'],
-    \ [[VK.ALT, VK.KEY_Q], 'ñ'],
-    \ [[VK.ALT, VK.KEY_R], 'ò'],
-    \ [[VK.ALT, VK.KEY_S], 'ó'],
-    \ [[VK.ALT, VK.KEY_T], 'ô'],
-    \ [[VK.ALT, VK.KEY_U], 'õ'],
-    \ [[VK.ALT, VK.KEY_V], 'ö'],
-    \ [[VK.ALT, VK.KEY_W], '÷'],
-    \ [[VK.ALT, VK.KEY_X], 'ø'],
-    \ [[VK.ALT, VK.KEY_Y], 'ù'],
-    \ [[VK.ALT, VK.KEY_Z], 'ú'],
-    \ ]
+    \ [[VK.CONTROL, VK.SHIFT, VK.OEM_MINUS], 0x1F] ]
+"      \ [[VK.ALT, VK.KEY_1], '±'],
+"      \ [[VK.ALT, VK.KEY_2], '²'],
+"      \ [[VK.ALT, VK.KEY_3], '³'],
+"      \ [[VK.ALT, VK.KEY_4], '´'],
+"      \ [[VK.ALT, VK.KEY_5], 'µ'],
+"      \ [[VK.ALT, VK.KEY_6], '¶'],
+"      \ [[VK.ALT, VK.KEY_7], '·'],
+"      \ [[VK.ALT, VK.KEY_8], '¸'],
+"      \ [[VK.ALT, VK.KEY_9], '¹'],
+"      \ [[VK.ALT, VK.KEY_0], '°'],
+"      \ [[VK.ALT, VK.KEY_A], 'á'],
+"      \ [[VK.ALT, VK.KEY_B], 'â'],
+"      \ [[VK.ALT, VK.KEY_C], 'ã'],
+"      \ [[VK.ALT, VK.KEY_D], 'ä'],
+"      \ [[VK.ALT, VK.KEY_E], 'å'],
+"      \ [[VK.ALT, VK.KEY_F], 'æ'],
+"      \ [[VK.ALT, VK.KEY_G], 'ç'],
+"      \ [[VK.ALT, VK.KEY_H], 'è'],
+"      \ [[VK.ALT, VK.KEY_I], 'é'],
+"      \ [[VK.ALT, VK.KEY_J], 'ê'],
+"      \ [[VK.ALT, VK.KEY_K], 'ë'],
+"      \ [[VK.ALT, VK.KEY_L], 'ì'],
+"      \ [[VK.ALT, VK.KEY_M], 'í'],
+"      \ [[VK.ALT, VK.KEY_N], 'î'],
+"      \ [[VK.ALT, VK.KEY_O], 'ï'],
+"      \ [[VK.ALT, VK.KEY_P], 'ð'],
+"      \ [[VK.ALT, VK.KEY_Q], 'ñ'],
+"      \ [[VK.ALT, VK.KEY_R], 'ò'],
+"      \ [[VK.ALT, VK.KEY_S], 'ó'],
+"      \ [[VK.ALT, VK.KEY_T], 'ô'],
+"      \ [[VK.ALT, VK.KEY_U], 'õ'],
+"      \ [[VK.ALT, VK.KEY_V], 'ö'],
+"      \ [[VK.ALT, VK.KEY_W], '÷'],
+"      \ [[VK.ALT, VK.KEY_X], 'ø'],
+"      \ [[VK.ALT, VK.KEY_Y], 'ù'],
+"      \ [[VK.ALT, VK.KEY_Z], 'ú'],
+"      \ ]
 
 
   for [kcodes, kstr] in test_key_chars
@@ -464,25 +464,25 @@ let VK = {
   " Test for Function Keys 'F1' to 'F12'
   " VK codes 112(0x70) - 123(0x7B)
   " With ALL permutatios of modifiers; Shift, Ctrl & Alt
-  for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
-    for n in range(1, 12)
-      let kstr = $"{mod_str}F{n}"
-      let keycode = eval('"\<' .. kstr .. '>"')
-      " call SendKeys(mod_keycodes + [111+n])
-      call SendKey(111+n, vim_mod_mask)
-      let ch = getcharstr(0)
-      let mod_mask = getcharmod()
-      call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-      " workaround for the virtual termcap maps changing the character instead
-      " of sending Shift
-      for mod_key in mod_keycodes
-        if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], mod_key) >= 0
-          let mod_mask = mod_mask + vim_MOD_MASK_SHIFT
-        endif
-      endfor
-      call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
-    endfor
-  endfor
+"    for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
+"      for n in range(1, 12)
+"        let kstr = $"{mod_str}F{n}"
+"        let keycode = eval('"\<' .. kstr .. '>"')
+"        " call SendKeys(mod_keycodes + [111+n])
+"        call SendKey(111+n, vim_mod_mask)
+"        let ch = getcharstr(0)
+"        let mod_mask = getcharmod()
+"        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+"        " workaround for the virtual termcap maps changing the character instead
+"        " of sending Shift
+"        for mod_key in mod_keycodes
+"          if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], mod_key) >= 0
+"            let mod_mask = mod_mask + vim_MOD_MASK_SHIFT
+"          endif
+"        endfor
+"        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+"      endfor
+"    endfor
 
   " Test for the various Ctrl and Shift key combinations.
   " Refer to the following page for the virtual key codes:
