@@ -996,6 +996,9 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 " Jovial
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 
+" Jq
+au BufNewFile,BufRead *.jq			setf jq
+
 " JSON5
 au BufNewFile,BufRead *.json5			setf json5
 
