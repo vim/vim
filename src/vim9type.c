@@ -848,7 +848,7 @@ check_type_maybe(
 	    {
 		int i;
 
-		for (i = 0; i < expected->tt_argcount; ++i)
+		for (i = 0; i < expected->tt_argcount && i < actual->tt_argcount; ++i)
 		    // Allow for using "any" argument type, lambda's have them.
 		    if (actual->tt_args[i] != &t_any && check_type(
 			    expected->tt_args[i], actual->tt_args[i], FALSE,
