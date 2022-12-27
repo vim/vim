@@ -1664,49 +1664,49 @@ edit_putchar(int c, int highlight)
 {
     int	    attr;
 
-    if (ScreenLines != NULL)
-    {
-	update_topline();	// just in case w_topline isn't valid
-	validate_cursor();
-	if (highlight)
-	    attr = HL_ATTR(HLF_8);
-	else
-	    attr = 0;
-	pc_row = W_WINROW(curwin) + curwin->w_wrow;
-	pc_col = curwin->w_wincol;
-	pc_status = PC_STATUS_UNSET;
-#ifdef FEAT_RIGHTLEFT
-	if (curwin->w_p_rl)
-	{
-	    pc_col += curwin->w_width - 1 - curwin->w_wcol;
-	    if (has_mbyte)
-	    {
-		int fix_col = mb_fix_col(pc_col, pc_row);
+    if (ScreenLines == NULL)
+	return;
 
-		if (fix_col != pc_col)
-		{
-		    screen_putchar(' ', pc_row, fix_col, attr);
-		    --curwin->w_wcol;
-		    pc_status = PC_STATUS_RIGHT;
-		}
+    update_topline();	// just in case w_topline isn't valid
+    validate_cursor();
+    if (highlight)
+	attr = HL_ATTR(HLF_8);
+    else
+	attr = 0;
+    pc_row = W_WINROW(curwin) + curwin->w_wrow;
+    pc_col = curwin->w_wincol;
+    pc_status = PC_STATUS_UNSET;
+#ifdef FEAT_RIGHTLEFT
+    if (curwin->w_p_rl)
+    {
+	pc_col += curwin->w_width - 1 - curwin->w_wcol;
+	if (has_mbyte)
+	{
+	    int fix_col = mb_fix_col(pc_col, pc_row);
+
+	    if (fix_col != pc_col)
+	    {
+		screen_putchar(' ', pc_row, fix_col, attr);
+		--curwin->w_wcol;
+		pc_status = PC_STATUS_RIGHT;
 	    }
 	}
-	else
-#endif
-	{
-	    pc_col += curwin->w_wcol;
-	    if (mb_lefthalve(pc_row, pc_col))
-		pc_status = PC_STATUS_LEFT;
-	}
-
-	// save the character to be able to put it back
-	if (pc_status == PC_STATUS_UNSET)
-	{
-	    screen_getbytes(pc_row, pc_col, pc_bytes, &pc_attr);
-	    pc_status = PC_STATUS_SET;
-	}
-	screen_putchar(c, pc_row, pc_col, attr);
     }
+    else
+#endif
+    {
+	pc_col += curwin->w_wcol;
+	if (mb_lefthalve(pc_row, pc_col))
+	    pc_status = PC_STATUS_LEFT;
+    }
+
+    // save the character to be able to put it back
+    if (pc_status == PC_STATUS_UNSET)
+    {
+	screen_getbytes(pc_row, pc_col, pc_bytes, &pc_attr);
+	pc_status = PC_STATUS_SET;
+    }
+    screen_putchar(c, pc_row, pc_col, attr);
 }
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
@@ -1782,11 +1782,11 @@ display_dollar(colnr_T col_arg)
     void
 undisplay_dollar(void)
 {
-    if (dollar_vcol >= 0)
-    {
-	dollar_vcol = -1;
-	redrawWinline(curwin, curwin->w_cursor.lnum);
-    }
+    if (dollar_vcol < 0)
+	return;
+
+    dollar_vcol = -1;
+    redrawWinline(curwin, curwin->w_cursor.lnum);
 }
 
 /*
@@ -2554,17 +2554,17 @@ set_last_insert(int c)
 
     vim_free(last_insert);
     last_insert = alloc(MB_MAXBYTES * 3 + 5);
-    if (last_insert != NULL)
-    {
-	s = last_insert;
-	// Use the CTRL-V only when entering a special char
-	if (c < ' ' || c == DEL)
-	    *s++ = Ctrl_V;
-	s = add_char2buf(c, s);
-	*s++ = ESC;
-	*s++ = NUL;
-	last_insert_skip = 0;
-    }
+    if (last_insert == NULL)
+	return;
+
+    s = last_insert;
+    // Use the CTRL-V only when entering a special char
+    if (c < ' ' || c == DEL)
+	*s++ = Ctrl_V;
+    s = add_char2buf(c, s);
+    *s++ = ESC;
+    *s++ = NUL;
+    last_insert_skip = 0;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
