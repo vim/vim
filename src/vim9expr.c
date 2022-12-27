@@ -1757,22 +1757,14 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 	    --p;
 	if (*p == '-' || *p == '+')
 	{
-	    int		negate = *p == '-';
-	    isn_T	*isn;
-	    type_T	*type;
-
-	    type = get_type_on_stack(cctx, 0);
-	    if (type != &t_float && need_type(type, &t_number,
+	    type_T *type = get_type_on_stack(cctx, 0);
+	    if (type->tt_type != VAR_FLOAT && need_type(type, &t_number,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 
 	    // only '-' has an effect, for '+' we only check the type
-	    if (negate)
-	    {
-		isn = generate_instr(cctx, ISN_NEGATENR);
-		if (isn == NULL)
-		    return FAIL;
-	    }
+	    if (*p == '-' && generate_instr(cctx, ISN_NEGATENR) == NULL)
+		return FAIL;
 	}
 	else if (numeric_only)
 	{
