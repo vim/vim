@@ -2033,6 +2033,34 @@ def Test_expr8()
   v9.CheckScriptFailure(['vim9script', "var x = <number>"], 'E15:', 2)
   v9.CheckDefAndScriptFailure(["var x = <number >123"], 'E1068:', 1)
   v9.CheckDefAndScriptFailure(["var x = <number 123"], 'E1104:', 1)
+
+  lines =<< trim END
+      vim9script
+
+      def Sum(v: any): float
+        var sum = 0.0
+        sum += v
+        return sum
+      enddef
+
+      const kk = 1
+      echo Sum(kk)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      def Sum(v: any): float
+        var sum = 0.0
+        sum += <float>v
+        return sum
+      enddef
+
+      const kk = 1
+      Sum(kk)
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected float but got number')
 enddef
 
 " test low level expression

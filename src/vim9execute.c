@@ -6872,16 +6872,23 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_CHECKTYPE:
 		  {
 		      checktype_T   *ct = &iptr->isn_arg.type;
-		      char	    *tofree;
+		      char	    *tofree = NULL;
+		      char	    *typename;
+
+		      if (ct->ct_type->tt_type == VAR_FLOAT
+			      && (ct->ct_type->tt_flags & TTFLAG_NUMBER_OK))
+			  typename = "float|number";
+		      else
+			  typename = type_name(ct->ct_type, &tofree);
 
 		      if (ct->ct_arg_idx == 0)
 			  smsg("%s%4d CHECKTYPE %s stack[%d]", pfx, current,
-					  type_name(ct->ct_type, &tofree),
+					  typename,
 					  (int)ct->ct_off);
 		      else
 			  smsg("%s%4d CHECKTYPE %s stack[%d] %s %d",
 					  pfx, current,
-					  type_name(ct->ct_type, &tofree),
+					  typename,
 					  (int)ct->ct_off,
 					  ct->ct_is_var ? "var": "arg",
 					  (int)ct->ct_arg_idx);
