@@ -1460,6 +1460,12 @@ typedef struct {
     type_T	*type_decl;	    // declared type or equal to type_current
 } type2_T;
 
+#define TTFLAG_VARARGS	    0x01    // func args ends with "..."
+#define TTFLAG_BOOL_OK	    0x02    // can be converted to bool
+#define TTFLAG_NUMBER_OK    0x04    // tt_type is VAR_FLOAT, VAR_NUMBER is OK
+#define TTFLAG_STATIC	    0x08    // one of the static types, e.g. t_any
+#define TTFLAG_CONST	    0x10    // cannot be changed
+
 typedef enum {
     ACCESS_PRIVATE,	// read/write only inside th class
     ACCESS_READ,	// read everywhere, write only inside th class
@@ -1516,11 +1522,6 @@ struct object_S
     object_T	*obj_prev_used;	    // for list headed by "first_object"
     int		obj_copyID;	    // used by garbage collection
 };
-
-#define TTFLAG_VARARGS	0x01	    // func args ends with "..."
-#define TTFLAG_BOOL_OK	0x02	    // can be converted to bool
-#define TTFLAG_STATIC	0x04	    // one of the static types, e.g. t_any
-#define TTFLAG_CONST	0x08	    // cannot be changed
 
 /*
  * Structure to hold an internal variable without a name.

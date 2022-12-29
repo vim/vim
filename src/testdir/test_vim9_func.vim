@@ -426,6 +426,16 @@ def Test_check_argument_type()
       Func()
   END
   v9.CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected number but got bool', 2)
+
+  lines =<< trim END
+      vim9script
+
+      def Foobar(Fn: func(any, ?string): any)
+      enddef
+
+      Foobar((t) => 0)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_missing_return()

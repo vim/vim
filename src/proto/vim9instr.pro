@@ -15,7 +15,7 @@ int generate_COMPARE(cctx_T *cctx, exprtype_T exprtype, int ic);
 int generate_CONCAT(cctx_T *cctx, int count);
 int generate_2BOOL(cctx_T *cctx, int invert, int offset);
 int generate_COND2BOOL(cctx_T *cctx);
-int generate_TYPECHECK(cctx_T *cctx, type_T *expected, int offset, int is_var, int argidx);
+int generate_TYPECHECK(cctx_T *cctx, type_T *expected, int number_ok, int offset, int is_var, int argidx);
 int generate_SETTYPE(cctx_T *cctx, type_T *expected);
 int generate_tv_PUSH(cctx_T *cctx, typval_T *tv);
 int generate_PUSHNR(cctx_T *cctx, varnumber_T number);
