@@ -314,6 +314,8 @@ fi
 dnl Mac OS X 10.9+ no longer include AvailabilityMacros.h in Carbon
 dnl so we need to include it to have access to version macros.
 AC_CHECK_HEADERS(AvailabilityMacros.h)
+# 10.5 and earlier lack dispatch
+AC_CHECK_HEADERS(dispatch/dispatch.h)
 
 AC_SUBST(OS_EXTRA_SRC)
 AC_SUBST(OS_EXTRA_OBJ)
