@@ -1327,9 +1327,8 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	// Ctrl-6 is Ctrl-^
 	// Ctrl-2 is Ctrl-@
 	// Ctrl-- is Ctrl-_
-	if ((ker.dwControlKeyState == LEFT_CTRL_PRESSED
-	   || ker.dwControlKeyState == RIGHT_CTRL_PRESSED)
-	   && (vkCode == 0xBD || vkCode == '2' || vkCode == '6'))
+	if ((vkCode == 0xBD || vkCode == '2' || vkCode == '6')
+					     && (ker.dwControlKeyState & CTRL))
 	    ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
 
 	ir->Event.KeyEvent = ker;

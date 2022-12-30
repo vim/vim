@@ -409,7 +409,7 @@ func Test_mswin_key_event()
 " Test keyboard codes for digits
 " (0x30 - 0x39) : VK_0 - VK_9 are the same as ASCII '0' - '9'
   for kc in range(48, 57)
-    call SendKeyGroup([kc])
+    call SendKey(kc)
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc), ch)
     call SendKeyWithModifiers(kc, 0)
@@ -438,7 +438,7 @@ func Test_mswin_key_event()
 " char 'a' (91) as the output.  The ASCII codes for the lowercase letters are
 " numbered 32 higher than their uppercase versions.
   for kc in range(65, 90)
-    call SendKeyGroup([kc])
+    call SendKey(kc)
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc + 32), ch)
     call SendKeyWithModifiers(kc, 0)
@@ -495,35 +495,34 @@ func Test_mswin_key_event()
     for n in range(1, 12)
       let kstr = $"F{n}"
       let keycode = eval('"\<' .. kstr .. '>"')
-      call SendKeyGroup([111+n])
+      call SendKey(111+n)
       let ch = getcharstr(0)
       call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
     endfor
+    "  NOTE: mod + Fn Keys not working in CI Testing!?
+    " Test for Function Keys 'F1' to 'F12'
+    " VK codes 112(0x70) - 123(0x7B)
+    " With ALL permutatios of modifiers; Shift, Ctrl & Alt
+    for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
+      for n in range(1, 12)
+        let kstr = $"{mod_str}F{n}"
+        let keycode = eval('"\<' .. kstr .. '>"')
+        " call SendKeyGroup(mod_keycodes + [111+n])
+        call SendKeyWithModifiers(111+n, vim_mod_mask)
+        let ch = getcharstr(0)
+        let mod_mask = getcharmod()
+        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+        " workaround for the virtual termcap maps changing the character instead
+        " of sending Shift
+        for mod_key in mod_keycodes
+          if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
+            let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
+          endif
+        endfor
+        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+      endfor
+    endfor
   endif
-
-  "  NOTE: mod + Fn Keys not working in CI Testing!?
-  " Test for Function Keys 'F1' to 'F12'
-  " VK codes 112(0x70) - 123(0x7B)
-  " With ALL permutatios of modifiers; Shift, Ctrl & Alt
-"    for [mod_str, vim_mod_mask, mod_keycodes] in vim_key_modifiers
-"      for n in range(1, 12)
-"        let kstr = $"{mod_str}F{n}"
-"        let keycode = eval('"\<' .. kstr .. '>"')
-"        " call SendKeyGroup(mod_keycodes + [111+n])
-"        call SendKeyWithModifiers(111+n, vim_mod_mask)
-"        let ch = getcharstr(0)
-"        let mod_mask = getcharmod()
-"        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-"        " workaround for the virtual termcap maps changing the character instead
-"        " of sending Shift
-"        for mod_key in mod_keycodes
-"          if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
-"            let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
-"          endif
-"        endfor
-"        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
-"      endfor
-"    endfor
 
   " Test for the various Ctrl and Shift key combinations.
   " Refer to the following page for the virtual key codes:
@@ -563,7 +562,7 @@ func Test_mswin_key_event()
     \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.DOWN], "C-S-Down", 4],
     \ [[s:VK.CONTROL,  s:VK.KEY_0], "C-0", 4],
     \ [[s:VK.CONTROL,  s:VK.KEY_1], "C-1", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_2], "C-2", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_2], "C-@", 0],
     \ [[s:VK.CONTROL,  s:VK.KEY_3], "C-3", 4],
     \ [[s:VK.CONTROL,  s:VK.KEY_4], "C-4", 4],
     \ [[s:VK.CONTROL,  s:VK.KEY_5], "C-5", 4],
@@ -583,18 +582,19 @@ func Test_mswin_key_event()
     \ [[s:VK.CONTROL,  s:VK.NUMPAD9], "C-9", 4],
     \ [[s:VK.CONTROL,  s:VK.MULTIPLY], "C-*", 4],
     \ [[s:VK.CONTROL,  s:VK.ADD], "C-+", 4],
-    \ [[s:VK.CONTROL,  s:VK.SUBTRACT], "C--", 4]
+    \ [[s:VK.CONTROL,  s:VK.SUBTRACT], "C--", 4],
+    \ [[s:VK.CONTROL,  s:VK.OEM_MINUS], "C-_", 0]
     \ ]
 
-"    " Not working in CI Testing yet!?
-"    for [kcodes, kstr, kmod] in keytests
-"      call SendKeyGroup(kcodes)
-"      let ch = getcharstr(0)
-"      let mod = getcharmod()
-"      let keycode = eval('"\<' .. kstr .. '>"')
-"      call assert_equal(keycode, ch, $"key = {kstr}")
-"      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
-"    endfor
+  " Not working in CI Testing yet!?
+  for [kcodes, kstr, kmod] in keytests
+    call SendKeyGroup(kcodes)
+    let ch = getcharstr(0)
+    let mod = getcharmod()
+    let keycode = eval('"\<' .. kstr .. '>"')
+    call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
+  endfor
 
   bw!
 endfunc
