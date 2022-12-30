@@ -1739,7 +1739,6 @@ do_one_cmd(
     char_u	*cmd;
     int		starts_with_colon = FALSE;
     int		may_have_range;
-    int		vim9script;
 #ifdef FEAT_EVAL
     int		did_set_expr_line = FALSE;
 #endif
@@ -1807,7 +1806,7 @@ do_one_cmd(
 
     // In Vim9 script a colon is required before the range.  This may also be
     // after command modifiers.
-    vim9script = in_vim9script();
+    int vim9script = in_vim9script();
     if (vim9script && (flags & DOCMD_RANGEOK) == 0)
     {
 	may_have_range = FALSE;
@@ -6230,29 +6229,37 @@ ex_tabclose(exarg_T *eap)
     int		tab_number;
 
     if (cmdwin_type != 0)
-	cmdwin_result = K_IGNORE;
-    else if (first_tabpage->tp_next == NULL)
-	emsg(_(e_cannot_close_last_tab_page));
-    else if (!window_layout_locked(CMD_tabclose))
     {
-	tab_number = get_tabpage_arg(eap);
-	if (eap->errmsg == NULL)
-	{
-	    tp = find_tabpage(tab_number);
-	    if (tp == NULL)
-	    {
-		beep_flush();
-		return;
-	    }
-	    if (tp != curtab)
-	    {
-		tabpage_close_other(tp, eap->forceit);
-		return;
-	    }
-	    else if (!text_locked() && !curbuf_locked())
-		tabpage_close(eap->forceit);
-	}
+	cmdwin_result = K_IGNORE;
+	return;
     }
+
+    if (first_tabpage->tp_next == NULL)
+    {
+	emsg(_(e_cannot_close_last_tab_page));
+	return;
+    }
+
+    if (window_layout_locked(CMD_tabclose))
+	return;
+
+    tab_number = get_tabpage_arg(eap);
+    if (eap->errmsg != NULL)
+	return;
+
+    tp = find_tabpage(tab_number);
+    if (tp == NULL)
+    {
+	beep_flush();
+	return;
+    }
+    if (tp != curtab)
+    {
+	tabpage_close_other(tp, eap->forceit);
+	return;
+    }
+    else if (!text_locked() && !curbuf_locked())
+	tabpage_close(eap->forceit);
 }
 
 /*
@@ -6266,33 +6273,41 @@ ex_tabonly(exarg_T *eap)
     int		tab_number;
 
     if (cmdwin_type != 0)
-	cmdwin_result = K_IGNORE;
-    else if (first_tabpage->tp_next == NULL)
-	msg(_("Already only one tab page"));
-    else if (!window_layout_locked(CMD_tabonly))
     {
-	tab_number = get_tabpage_arg(eap);
-	if (eap->errmsg == NULL)
-	{
-	    goto_tabpage(tab_number);
-	    // Repeat this up to a 1000 times, because autocommands may
-	    // mess up the lists.
-	    for (done = 0; done < 1000; ++done)
+	cmdwin_result = K_IGNORE;
+	return;
+    }
+
+    if (first_tabpage->tp_next == NULL)
+    {
+	msg(_("Already only one tab page"));
+	return;
+    }
+
+    if (window_layout_locked(CMD_tabonly))
+	return;
+
+    tab_number = get_tabpage_arg(eap);
+    if (eap->errmsg != NULL)
+	return;
+
+    goto_tabpage(tab_number);
+    // Repeat this up to a 1000 times, because autocommands may
+    // mess up the lists.
+    for (done = 0; done < 1000; ++done)
+    {
+	FOR_ALL_TABPAGES(tp)
+	    if (tp->tp_topframe != topframe)
 	    {
-		FOR_ALL_TABPAGES(tp)
-		    if (tp->tp_topframe != topframe)
-		    {
-			tabpage_close_other(tp, eap->forceit);
-			// if we failed to close it quit
-			if (valid_tabpage(tp))
-			    done = 1000;
-			// start over, "tp" is now invalid
-			break;
-		    }
-		if (first_tabpage->tp_next == NULL)
-		    break;
+		tabpage_close_other(tp, eap->forceit);
+		// if we failed to close it quit
+		if (valid_tabpage(tp))
+		    done = 1000;
+		// start over, "tp" is now invalid
+		break;
 	    }
-	}
+	if (first_tabpage->tp_next == NULL)
+	    break;
     }
 }
 
@@ -6375,30 +6390,30 @@ ex_only(exarg_T *eap)
 ex_hide(exarg_T *eap UNUSED)
 {
     // ":hide" or ":hide | cmd": hide current window
-    if (!eap->skip)
-    {
-	if (window_layout_locked(CMD_hide))
-	    return;
-#ifdef FEAT_GUI
-	need_mouse_correct = TRUE;
-#endif
-	if (eap->addr_count == 0)
-	    win_close(curwin, FALSE);	// don't free buffer
-	else
-	{
-	    int	winnr = 0;
-	    win_T	*win;
+    if (eap->skip)
+	return;
 
-	    FOR_ALL_WINDOWS(win)
-	    {
-		winnr++;
-		if (winnr == eap->line2)
-		    break;
-	    }
-	    if (win == NULL)
-		win = lastwin;
-	    win_close(win, FALSE);
+    if (window_layout_locked(CMD_hide))
+	return;
+#ifdef FEAT_GUI
+    need_mouse_correct = TRUE;
+#endif
+    if (eap->addr_count == 0)
+	win_close(curwin, FALSE);	// don't free buffer
+    else
+    {
+	int	winnr = 0;
+	win_T	*win;
+
+	FOR_ALL_WINDOWS(win)
+	{
+	    winnr++;
+	    if (winnr == eap->line2)
+		break;
 	}
+	if (win == NULL)
+	    win = lastwin;
+	win_close(win, FALSE);
     }
 }
 
@@ -6411,26 +6426,26 @@ ex_stop(exarg_T *eap)
     /*
      * Disallow suspending for "rvim".
      */
-    if (!check_restricted())
-    {
-	if (!eap->forceit)
-	    autowrite_all();
-	apply_autocmds(EVENT_VIMSUSPEND, NULL, NULL, FALSE, NULL);
-	windgoto((int)Rows - 1, 0);
-	out_char('\n');
-	out_flush();
-	stoptermcap();
-	out_flush();		// needed for SUN to restore xterm buffer
-	mch_restore_title(SAVE_RESTORE_BOTH);	// restore window titles
-	ui_suspend();		// call machine specific function
-	maketitle();
-	resettitle();		// force updating the title
-	starttermcap();
-	scroll_start();		// scroll screen before redrawing
-	redraw_later_clear();
-	shell_resized();	// may have resized window
-	apply_autocmds(EVENT_VIMRESUME, NULL, NULL, FALSE, NULL);
-    }
+    if (check_restricted())
+	return;
+
+    if (!eap->forceit)
+	autowrite_all();
+    apply_autocmds(EVENT_VIMSUSPEND, NULL, NULL, FALSE, NULL);
+    windgoto((int)Rows - 1, 0);
+    out_char('\n');
+    out_flush();
+    stoptermcap();
+    out_flush();		// needed for SUN to restore xterm buffer
+    mch_restore_title(SAVE_RESTORE_BOTH);	// restore window titles
+    ui_suspend();		// call machine specific function
+    maketitle();
+    resettitle();		// force updating the title
+    starttermcap();
+    scroll_start();		// scroll screen before redrawing
+    redraw_later_clear();
+    shell_resized();	// may have resized window
+    apply_autocmds(EVENT_VIMRESUME, NULL, NULL, FALSE, NULL);
 }
 
 /*
@@ -7403,73 +7418,74 @@ ex_read(exarg_T *eap)
     linenr_T	lnum;
 
     if (eap->usefilter)			// :r!cmd
-	do_bang(1, eap, FALSE, FALSE, TRUE);
-    else
     {
-	if (u_save(eap->line2, (linenr_T)(eap->line2 + 1)) == FAIL)
-	    return;
+	do_bang(1, eap, FALSE, FALSE, TRUE);
+	return;
+    }
+
+    if (u_save(eap->line2, (linenr_T)(eap->line2 + 1)) == FAIL)
+	return;
 
 #ifdef FEAT_BROWSE
-	if (cmdmod.cmod_flags & CMOD_BROWSE)
-	{
-	    char_u *browseFile;
+    if (cmdmod.cmod_flags & CMOD_BROWSE)
+    {
+	char_u *browseFile;
 
-	    browseFile = do_browse(0, (char_u *)_("Append File"), eap->arg,
-						    NULL, NULL, NULL, curbuf);
-	    if (browseFile != NULL)
-	    {
-		i = readfile(browseFile, NULL,
-			  eap->line2, (linenr_T)0, (linenr_T)MAXLNUM, eap, 0);
-		vim_free(browseFile);
-	    }
-	    else
-		i = OK;
+	browseFile = do_browse(0, (char_u *)_("Append File"), eap->arg,
+		NULL, NULL, NULL, curbuf);
+	if (browseFile != NULL)
+	{
+	    i = readfile(browseFile, NULL,
+		    eap->line2, (linenr_T)0, (linenr_T)MAXLNUM, eap, 0);
+	    vim_free(browseFile);
 	}
 	else
+	    i = OK;
+    }
+    else
 #endif
-	     if (*eap->arg == NUL)
+	if (*eap->arg == NUL)
 	{
 	    if (check_fname() == FAIL)	// check for no file name
 		return;
 	    i = readfile(curbuf->b_ffname, curbuf->b_fname,
-			  eap->line2, (linenr_T)0, (linenr_T)MAXLNUM, eap, 0);
+		    eap->line2, (linenr_T)0, (linenr_T)MAXLNUM, eap, 0);
 	}
 	else
 	{
 	    if (vim_strchr(p_cpo, CPO_ALTREAD) != NULL)
 		(void)setaltfname(eap->arg, eap->arg, (linenr_T)1);
 	    i = readfile(eap->arg, NULL,
-			  eap->line2, (linenr_T)0, (linenr_T)MAXLNUM, eap, 0);
+		    eap->line2, (linenr_T)0, (linenr_T)MAXLNUM, eap, 0);
 
 	}
-	if (i != OK)
-	{
+    if (i != OK)
+    {
 #if defined(FEAT_EVAL)
-	    if (!aborting())
+	if (!aborting())
 #endif
-		semsg(_(e_cant_open_file_str), eap->arg);
-	}
-	else
+	    semsg(_(e_cant_open_file_str), eap->arg);
+    }
+    else
+    {
+	if (empty && exmode_active)
 	{
-	    if (empty && exmode_active)
+	    // Delete the empty line that remains.  Historically ex does
+	    // this but vi doesn't.
+	    if (eap->line2 == 0)
+		lnum = curbuf->b_ml.ml_line_count;
+	    else
+		lnum = 1;
+	    if (*ml_get(lnum) == NUL && u_savedel(lnum, 1L) == OK)
 	    {
-		// Delete the empty line that remains.  Historically ex does
-		// this but vi doesn't.
-		if (eap->line2 == 0)
-		    lnum = curbuf->b_ml.ml_line_count;
-		else
-		    lnum = 1;
-		if (*ml_get(lnum) == NUL && u_savedel(lnum, 1L) == OK)
-		{
-		    ml_delete(lnum);
-		    if (curwin->w_cursor.lnum > 1
-					     && curwin->w_cursor.lnum >= lnum)
-			--curwin->w_cursor.lnum;
-		    deleted_lines_mark(lnum, 1L);
-		}
+		ml_delete(lnum);
+		if (curwin->w_cursor.lnum > 1
+			&& curwin->w_cursor.lnum >= lnum)
+		    --curwin->w_cursor.lnum;
+		deleted_lines_mark(lnum, 1L);
 	    }
-	    redraw_curbuf_later(UPD_VALID);
 	}
+	redraw_curbuf_later(UPD_VALID);
     }
 }
 
@@ -7675,23 +7691,24 @@ ex_cd(exarg_T *eap)
 #if !defined(UNIX) && !defined(VMS)
     // for non-UNIX ":cd" means: print current directory unless 'cdhome' is set
     if (*new_dir == NUL && !p_cdh)
-	ex_pwd(NULL);
-    else
-#endif
     {
-	cdscope_T	scope = CDSCOPE_GLOBAL;
+	ex_pwd(NULL);
+	return;
+    }
+#endif
 
-	if (eap->cmdidx == CMD_lcd || eap->cmdidx == CMD_lchdir)
-	    scope = CDSCOPE_WINDOW;
-	else if (eap->cmdidx == CMD_tcd || eap->cmdidx == CMD_tchdir)
-	    scope = CDSCOPE_TABPAGE;
+    cdscope_T	scope = CDSCOPE_GLOBAL;
 
-	if (changedir_func(new_dir, eap->forceit, scope))
-	{
-	    // Echo the new current directory if the command was typed.
-	    if (KeyTyped || p_verbose >= 5)
-		ex_pwd(eap);
-	}
+    if (eap->cmdidx == CMD_lcd || eap->cmdidx == CMD_lchdir)
+	scope = CDSCOPE_WINDOW;
+    else if (eap->cmdidx == CMD_tcd || eap->cmdidx == CMD_tchdir)
+	scope = CDSCOPE_TABPAGE;
+
+    if (changedir_func(new_dir, eap->forceit, scope))
+    {
+	// Echo the new current directory if the command was typed.
+	if (KeyTyped || p_verbose >= 5)
+	    ex_pwd(eap);
     }
 }
 
@@ -8155,23 +8172,22 @@ ex_at(exarg_T *eap)
 								      == FAIL)
     {
 	beep_flush();
+	return;
     }
-    else
-    {
-	int	save_efr = exec_from_reg;
 
-	exec_from_reg = TRUE;
+    int	save_efr = exec_from_reg;
 
-	/*
-	 * Execute from the typeahead buffer.
-	 * Continue until the stuff buffer is empty and all added characters
-	 * have been consumed.
-	 */
-	while (!stuff_empty() || typebuf.tb_len > prev_len)
-	    (void)do_cmdline(NULL, getexline, NULL, DOCMD_NOWAIT|DOCMD_VERBOSE);
+    exec_from_reg = TRUE;
 
-	exec_from_reg = save_efr;
-    }
+    /*
+     * Execute from the typeahead buffer.
+     * Continue until the stuff buffer is empty and all added characters
+     * have been consumed.
+     */
+    while (!stuff_empty() || typebuf.tb_len > prev_len)
+	(void)do_cmdline(NULL, getexline, NULL, DOCMD_NOWAIT|DOCMD_VERBOSE);
+
+    exec_from_reg = save_efr;
 }
 
 /*
@@ -8560,18 +8576,23 @@ ex_mark(exarg_T *eap)
 	return;
 #endif
     if (*eap->arg == NUL)		// No argument?
-	emsg(_(e_argument_required));
-    else if (eap->arg[1] != NUL)	// more than one character?
-	semsg(_(e_trailing_characters_str), eap->arg);
-    else
     {
-	pos = curwin->w_cursor;		// save curwin->w_cursor
-	curwin->w_cursor.lnum = eap->line2;
-	beginline(BL_WHITE | BL_FIX);
-	if (setmark(*eap->arg) == FAIL)	// set mark
-	    emsg(_(e_argument_must_be_letter_or_forward_backward_quote));
-	curwin->w_cursor = pos;		// restore curwin->w_cursor
+	emsg(_(e_argument_required));
+	return;
     }
+
+    if (eap->arg[1] != NUL)	// more than one character?
+    {
+	semsg(_(e_trailing_characters_str), eap->arg);
+	return;
+    }
+
+    pos = curwin->w_cursor;		// save curwin->w_cursor
+    curwin->w_cursor.lnum = eap->line2;
+    beginline(BL_WHITE | BL_FIX);
+    if (setmark(*eap->arg) == FAIL)	// set mark
+	emsg(_(e_argument_must_be_letter_or_forward_backward_quote));
+    curwin->w_cursor = pos;		// restore curwin->w_cursor
 }
 
 /*
@@ -9685,17 +9706,16 @@ ex_filetype(exarg_T *eap)
     static void
 ex_setfiletype(exarg_T *eap)
 {
-    if (!did_filetype)
-    {
-	char_u *arg = eap->arg;
+    if (did_filetype)
+	return;
 
-	if (STRNCMP(arg, "FALLBACK ", 9) == 0)
-	    arg += 9;
+    char_u *arg = eap->arg;
+    if (STRNCMP(arg, "FALLBACK ", 9) == 0)
+	arg += 9;
 
-	set_option_value_give_err((char_u *)"filetype", 0L, arg, OPT_LOCAL);
-	if (arg != eap->arg)
-	    did_filetype = FALSE;
-    }
+    set_option_value_give_err((char_u *)"filetype", 0L, arg, OPT_LOCAL);
+    if (arg != eap->arg)
+	did_filetype = FALSE;
 }
 
     static void
