@@ -1678,6 +1678,7 @@ static char *(key_names[]) =
 };
 #endif
 
+#if defined(HAVE_TGETENT) || defined(FEAT_TERMGUICOLORS)
 /*
  * Return TRUE if "term_strings[idx]" was not set.
  */
@@ -1686,6 +1687,7 @@ term_strings_not_set(enum SpecialKey idx)
 {
     return TERM_STR(idx) == NULL || TERM_STR(idx) == empty_option;
 }
+#endif
 
 #ifdef HAVE_TGETENT
 /*
