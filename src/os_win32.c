@@ -1106,31 +1106,6 @@ decode_key_event(
 	break;
     }
 
-    // special cases
-    if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0
-					&& (pker->uChar.UnicodeChar == NUL
-					|| pker->uChar.UnicodeChar == 0xfffd))
-    {
-	// Ctrl-6 is Ctrl-^
-	if (pker->wVirtualKeyCode == '6')
-	{
-	    *pch = Ctrl_HAT;
-	    return TRUE;
-	}
-	// Ctrl-2 is Ctrl-@
-	else if (pker->wVirtualKeyCode == '2')
-	{
-	    *pch = NUL;
-	    return TRUE;
-	}
-	// Ctrl-- is Ctrl-_
-	else if (pker->wVirtualKeyCode == 0xBD)
-	{
-	    *pch = Ctrl__;
-	    return TRUE;
-	}
-    }
-
     // Shift-TAB
     if (vk == VK_TAB && (nModifs & SHIFT_PRESSED))
     {
@@ -2519,6 +2494,15 @@ mch_inchar(
 	    int		modifiers = 0;
 
 	    c = tgetch(&modifiers, &ch2);
+
+	    // Some chars need adjustment when the Ctrl modifier is used.
+	    ++no_reduce_keys;
+	    c = may_adjust_key_for_ctrl(modifiers, c);
+	    --no_reduce_keys;
+
+	    // remove the SHIFT modifier for keys where it's already included,
+	    // e.g., '(' and '*'
+	    modifiers = may_remove_shift_modifier(modifiers, c);
 
 	    if (typebuf_changed(tb_change_cnt))
 	    {
