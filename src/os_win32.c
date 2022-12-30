@@ -1085,7 +1085,7 @@ decode_key_event(
 {
     int i;
     const int nModifs = pker->dwControlKeyState & (SHIFT | ALT | CTRL);
-
+    WORD vk = pker->wVirtualKeyCode;
     *pch = *pch2 = NUL;
     g_fJustGotFocus = FALSE;
 
@@ -1094,7 +1094,7 @@ decode_key_event(
 	return FALSE;
 
     // ignore some keystrokes
-    switch (pker->wVirtualKeyCode)
+    switch (vk)
     {
     // modifiers
     case VK_SHIFT:
@@ -1132,7 +1132,7 @@ decode_key_event(
     }
 
     // Shift-TAB
-    if (pker->wVirtualKeyCode == VK_TAB && (nModifs & SHIFT_PRESSED))
+    if (vk == VK_TAB && (nModifs & SHIFT_PRESSED))
     {
 	*pch = K_NUL;
 	*pch2 = '\017';
@@ -1141,7 +1141,7 @@ decode_key_event(
 
     for (i = ARRAY_LENGTH(VirtKeyMap);  --i >= 0;  )
     {
-	if (VirtKeyMap[i].wVirtKey == pker->wVirtualKeyCode)
+	if (VirtKeyMap[i].wVirtKey == vk)
 	{
 	    if (nModifs == 0)
 		*pch = VirtKeyMap[i].chAlone;
@@ -1160,8 +1160,7 @@ decode_key_event(
 		    *pch = K_NUL;
 		    if (pmodifiers && vtp_working)
 		    {
-			if (pker->wVirtualKeyCode >= VK_F1
-			    && pker->wVirtualKeyCode <= VK_F12)
+			if (vk >= VK_F1 && vk <= VK_F12)
 			{
 			    if (nModifs & ALT)
 			    {
@@ -1176,8 +1175,7 @@ decode_key_event(
 				    *pch2 = VirtKeyMap[i].chAlone;
 			    }
 			}
-			else if (pker->wVirtualKeyCode >= VK_END
-				&& pker->wVirtualKeyCode <= VK_DOWN)
+			else if (vk >= VK_END && vk <= VK_DOWN)
 			{
 			    // VK_END   0x23
 			    // VK_HOME  0x24
@@ -1194,8 +1192,7 @@ decode_key_event(
 			    else if ((nModifs & CTRL) && !(nModifs & ~CTRL))
 			    {
 				*pch2 = VirtKeyMap[i].chCtrl;
-				if (pker->wVirtualKeyCode == VK_UP
-				    || pker->wVirtualKeyCode == VK_DOWN)
+				if (vk == VK_UP || vk == VK_DOWN)
 				{
 				    *pmodifiers |= MOD_MASK_CTRL;
 				    *pch2 = VirtKeyMap[i].chAlone;
