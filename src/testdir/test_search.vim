@@ -375,7 +375,7 @@ func Test_searchpair_timeout_with_skip()
   else
     let ms = 1
     let min_time = 0.001
-    let max_time = min_time * 10.0
+    let max_time = min_time * 15.0
     if RunningWithValgrind()
       let max_time += 0.04  " this can be slow with valgrind
     endif
