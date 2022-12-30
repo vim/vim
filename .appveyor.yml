@@ -29,4 +29,10 @@ test_script:
     # Testing with MSVC console version
   - nmake -f Make_mvc.mak VIMPROG=..\vim
 
+artifacts:
+  - path: src/vim.exe
+    name: vim
+  - path: src/gvim.exe
+    name: gvim
+
 # vim: sw=2 sts=2 et ts=8 sr
