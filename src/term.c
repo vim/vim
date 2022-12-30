@@ -1674,6 +1674,7 @@ static char *(key_names[]) =
     "k7", "k8", "k9", "k;", "F1", "F2",
     "%1", "&8", "kb", "kI", "kD", "kh",
     "@7", "kP", "kN", "K1", "K3", "K4", "K5", "kB",
+    "PS", "PE",
     NULL
 };
 #endif
@@ -1730,13 +1731,11 @@ get_term_entries(int *height, int *width)
 			{KS_U7, "u7"}, {KS_RFG, "RF"}, {KS_RBG, "RB"},
 			{KS_8F, "8f"}, {KS_8B, "8b"}, {KS_8U, "8u"},
 			{KS_CBE, "BE"}, {KS_CBD, "BD"},
-			{KS_CPS, "PS"}, {KS_CPE, "PE"},
 			{KS_CST, "ST"}, {KS_CRT, "RT"},
 			{KS_SSI, "Si"}, {KS_SRI, "Ri"},
 			{(enum SpecialKey)0, NULL}
 		    };
     int		    i;
-    char_u	    *p;
     static char_u   tstrbuf[TBUFSZ];
     char_u	    *tp = tstrbuf;
 
@@ -1775,7 +1774,8 @@ get_term_entries(int *height, int *width)
     for (i = 0; key_names[i] != NULL; ++i)
 	if (find_termcode((char_u *)key_names[i]) == NULL)
 	{
-	    p = TGETSTR(key_names[i], &tp);
+	    char_u *p = TGETSTR(key_names[i], &tp);
+
 	    // if cursor-left == backspace, ignore it (televideo 925)
 	    if (p != NULL
 		    && (*p != Ctrl_H
@@ -1803,8 +1803,8 @@ get_term_entries(int *height, int *width)
 # ifndef hpux
     BC = (char *)TGETSTR("bc", &tp);
     UP = (char *)TGETSTR("up", &tp);
-    p = TGETSTR("pc", &tp);
-    if (p)
+    char_u *p = TGETSTR("pc", &tp);
+    if (p != NULL)
 	PC = *p;
 # endif
 }

@@ -108,8 +108,6 @@ enum SpecialKey
     KS_8U,	// set underline color (RGB)
     KS_CBE,	// enable bracketed paste mode
     KS_CBD,	// disable bracketed paste mode
-    KS_CPS,	// start of bracketed paste
-    KS_CPE,	// end of bracketed paste
     KS_CST,	// save window title
     KS_CRT,	// restore window title
     KS_SSI,	// save icon text
@@ -216,8 +214,6 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_8U	(TERM_STR(KS_8U))	// set underline color (RGB)
 #define T_BE	(TERM_STR(KS_CBE))	// enable bracketed paste mode
 #define T_BD	(TERM_STR(KS_CBD))	// disable bracketed paste mode
-#define T_PS	(TERM_STR(KS_CPS))	// start of bracketed paste
-#define T_PE	(TERM_STR(KS_CPE))	// end of bracketed paste
 #define T_CST	(TERM_STR(KS_CST))	// save window title
 #define T_CRT	(TERM_STR(KS_CRT))	// restore window title
 #define T_SSI	(TERM_STR(KS_SSI))	// save icon text
