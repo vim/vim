@@ -503,25 +503,25 @@ func Test_mswin_key_event()
     " Test for Function Keys 'F1' to 'F12'
     " VK codes 112(0x70) - 123(0x7B)
     " With ALL permutatios of modifiers; Shift, Ctrl & Alt
-"      for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
-"        for n in range(1, 12)
-"          let kstr = $"{mod_str}F{n}"
-"          let keycode = eval('"\<' .. kstr .. '>"')
-"          " call SendKeyGroup(mod_keycodes + [111+n])
-"          call SendKeyWithModifiers(111+n, vim_mod_mask)
-"          let ch = getcharstr(0)
-"          let mod_mask = getcharmod()
-"          call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-"          " workaround for the virtual termcap maps changing the character instead
-"          " of sending Shift
-"          for mod_key in mod_keycodes
-"            if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
-"              let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
-"            endif
-"          endfor
-"          call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
-"        endfor
-"      endfor
+    for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
+      for n in range(1, 12)
+        let kstr = $"{mod_str}F{n}"
+        let keycode = eval('"\<' .. kstr .. '>"')
+        " call SendKeyGroup(mod_keycodes + [111+n])
+        call SendKeyWithModifiers(111+n, vim_mod_mask)
+        let ch = getcharstr(0)
+        let mod_mask = getcharmod()
+        """"""  call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+        " workaround for the virtual termcap maps changing the character instead
+        " of sending Shift
+        for mod_key in mod_keycodes
+          if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
+            let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
+          endif
+        endfor
+        """"""call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+      endfor
+    endfor
   endif
 
   " Test for the various Ctrl and Shift key combinations.
@@ -587,14 +587,14 @@ func Test_mswin_key_event()
     \ ]
 
   " Not working in CI Testing yet!?
-"    for [kcodes, kstr, kmod] in keytests
-"      call SendKeyGroup(kcodes)
-"      let ch = getcharstr(0)
-"      let mod = getcharmod()
-"      let keycode = eval('"\<' .. kstr .. '>"')
+  for [kcodes, kstr, kmod] in keytests
+    call SendKeyGroup(kcodes)
+    let ch = getcharstr(0)
+    let mod = getcharmod()
+    let keycode = eval('"\<' .. kstr .. '>"')
 "      call assert_equal(keycode, ch, $"key = {kstr}")
 "      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
-"    endfor
+  endfor
 
   bw!
 endfunc
