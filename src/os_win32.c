@@ -2627,8 +2627,6 @@ mch_inchar(
 # endif
 	    }
 	}
-	if (time == 0)
-	    break;
     }
 
 # ifdef MCH_WRITE_DUMP
