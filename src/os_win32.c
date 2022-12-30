@@ -1106,31 +1106,6 @@ decode_key_event(
 	break;
     }
 
-    // special cases
-    if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0
-					&& (pker->uChar.UnicodeChar == NUL
-					|| pker->uChar.UnicodeChar == 0xfffd))
-    {
-	// Ctrl-6 is Ctrl-^
-	if (pker->wVirtualKeyCode == '6')
-	{
-	    *pch = Ctrl_HAT;
-	    return TRUE;
-	}
-	// Ctrl-2 is Ctrl-@
-	else if (pker->wVirtualKeyCode == '2')
-	{
-	    *pch = NUL;
-	    return TRUE;
-	}
-	// Ctrl-- is Ctrl-_
-	else if (pker->wVirtualKeyCode == 0xBD)
-	{
-	    *pch = Ctrl__;
-	    return TRUE;
-	}
-    }
-
     // Shift-TAB
     if (pker->wVirtualKeyCode == VK_TAB && (nModifs & SHIFT_PRESSED))
     {
@@ -1277,12 +1252,22 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	ker.wVirtualKeyCode = vkCode;
 	win32_kbd_patch_key(&ker);
 
-	for (int i = ARRAY_LENGTH(VirtKeyMap);
-	     --i >= 0 && !ker.uChar.UnicodeChar; )
+	for (int i = ARRAY_LENGTH(VirtKeyMap); i >= 0; --i)
 	{
 	    if (VirtKeyMap[i].wVirtKey == vkCode)
+	    {
 		ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
+		break;
+	    }
 	}
+
+	// The following are treated specially in Vim.
+	// Ctrl-6 is Ctrl-^
+	// Ctrl-2 is Ctrl-@
+	// Ctrl-- is Ctrl-_
+	if ((vkCode == 0xBD || vkCode == '2' || vkCode == '6')
+					     && (ker.dwControlKeyState & CTRL))
+	    ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
 
 	ir->Event.KeyEvent = ker;
 	vim_free(event);
@@ -1919,10 +1904,23 @@ test_mswin_event(char_u *event, dict_T *args)
 
     INPUT_RECORD ir;
     BOOL input_encoded = FALSE;
+    BOOL execute = FALSE;
     if (STRCMP(event, "key") == 0)
-	input_encoded = encode_key_event(args, &ir);
+    {
+	execute = dict_get_bool(args, "execute", FALSE);
+	if (dict_has_key(args, "event"))
+	    input_encoded = encode_key_event(args, &ir);
+	else if (!execute)
+	{
+	    semsg(_(e_missing_argument_str), "event");
+	    return FALSE;
+	}
+    }
     else if (STRCMP(event, "mouse") == 0)
+    {
+	execute = TRUE;
 	input_encoded = encode_mouse_event(args, &ir);
+    }
     else
     {
 	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
@@ -1935,8 +1933,16 @@ test_mswin_event(char_u *event, dict_T *args)
     if (input_encoded)
 	lpEventsWritten = write_input_record_buffer(&ir, 1);
 
-    if (STRCMP(event, "mouse") == 0)
+    // Set flags to execute the event, ie. like feedkeys mode X.
+    if (execute)
+    {
+	int save_msg_scroll = msg_scroll;
+	// Avoid a 1 second delay when the keys start Insert mode.
+	msg_scroll = FALSE;
+	ch_log(NULL, "test_mswin_event() executing");
 	exec_normal(TRUE, TRUE, TRUE);
+	msg_scroll |= save_msg_scroll;
+    }
 
 # endif
     return lpEventsWritten;
@@ -2425,6 +2431,15 @@ mch_inchar(
 	    int		modifiers = 0;
 
 	    c = tgetch(&modifiers, &ch2);
+
+	    // Some chars need adjustment when the Ctrl modifier is used.
+	    ++no_reduce_keys;
+	    c = may_adjust_key_for_ctrl(modifiers, c);
+	    --no_reduce_keys;
+
+	    // remove the SHIFT modifier for keys where it's already included,
+	    // e.g., '(' and '*'
+	    modifiers = may_remove_shift_modifier(modifiers, c);
 
 	    if (typebuf_changed(tb_change_cnt))
 	    {

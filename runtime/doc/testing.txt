@@ -274,7 +274,7 @@ test_mswin_event({event}, {args})		*test_mswin_event()*
 		    event:	The supported string values are:
 				    keyup   generate a keyup event
 				    keydown generate a keydown event
-		    keycode:    Keycode to use for a keyup or a keydown event.
+		    keycode:	Keycode to use for a keyup or a keydown event.
 		    modifiers:	Optional; key modifiers.
 				The supported values are:
 				    2	shift is pressed
@@ -282,9 +282,14 @@ test_mswin_event({event}, {args})		*test_mswin_event()*
 				    8	alt is pressed
 				Note: These values are different from the
 				mouse modifiers.
-								*E1291*
-		Returns TRUE if the event is successfully added, FALSE if
-		there is a failure.
+		    execute:	Optional. Similar to |feedkeys()| mode x.
+				When this is included and set to true
+				(non-zero) then Vim will process any buffered
+				unprocessed key events.  All other {args}
+				items are optional when this is set and true.
+
+		Returns TRUE if the event is successfully added or executed,
+		FALSE if there is a failure.
 
 		Can also be used as a |method|: >
 			GetEvent()->test_mswin_event({args})

@@ -888,6 +888,12 @@ _OnChar(
     modifiers = get_active_modifiers();
 
     ch = simplify_key(ch, &modifiers);
+    
+    // Some keys need adjustment when the Ctrl modifier is used.
+    ++no_reduce_keys;
+    ch = may_adjust_key_for_ctrl(modifiers, ch);
+    --no_reduce_keys;
+
     // remove the SHIFT modifier for keys where it's already included, e.g.,
     // '(' and '*'
     modifiers = may_remove_shift_modifier(modifiers, ch);
