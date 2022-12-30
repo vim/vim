@@ -1167,14 +1167,10 @@ Python3_Init(void)
 	// Catch exit() called in Py_Initialize().
 	hook_py_exit();
 	if (setjmp(exit_hook_jump_buf) == 0)
-#endif
 	{
 	    Py_Initialize();
-#ifdef HOOK_EXIT
 	    restore_py_exit();
-#endif
 	}
-#ifdef HOOK_EXIT
 	else
 	{
 	    // exit() was called in Py_Initialize().
@@ -1182,6 +1178,8 @@ Python3_Init(void)
 	    emsg(_(e_critical_error_in_python3_initialization_check_your_installation));
 	    goto fail;
 	}
+#else
+	Py_Initialize();
 #endif
 
 #if PY_VERSION_HEX < 0x03090000

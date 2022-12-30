@@ -569,8 +569,9 @@ cleanup:
 }
 
 /*
- * Find member "name" in class "cl" and return its type.
- * When not found t_any is returned.
+ * Find member "name" in class "cl", set "member_idx" to the member index and
+ * return its type.
+ * When not found "member_idx" is set to -1 and t_any is returned.
  */
     type_T *
 class_member_type(
@@ -591,6 +592,8 @@ class_member_type(
 	    return m->ocm_type;
 	}
     }
+
+    semsg(_(e_unknown_variable_str), name);
     return &t_any;
 }
 

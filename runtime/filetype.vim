@@ -701,6 +701,9 @@ au BufRead,BufNewFile *.fusion			setf fusion
 " F# or Forth
 au BufNewFile,BufRead *.fs			call dist#ft#FTfs()
 
+" FHIR Shorthand (FSH)
+au BufNewFile,BufRead *.fsh			setf fsh
+
 " F#
 au BufNewFile,BufRead *.fsi,*.fsx		setf fsharp
 
@@ -992,6 +995,9 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 
 " Jovial
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
+
+" Jq
+au BufNewFile,BufRead *.jq			setf jq
 
 " JSON5
 au BufNewFile,BufRead *.json5			setf json5
@@ -1492,7 +1498,7 @@ au BufNewFile,BufRead *.plp			setf plp
 au BufNewFile,BufRead *.po,*.pot		setf po
 
 " Postfix main config
-au BufNewFile,BufRead main.cf			setf pfmain
+au BufNewFile,BufRead main.cf,main.cf.proto	setf pfmain
 
 " PostScript (+ font files, encapsulated PostScript, Adobe Illustrator)
 au BufNewFile,BufRead *.ps,*.pfa,*.afm,*.eps,*.epsf,*.epsi,*.ai	  setf postscr

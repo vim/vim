@@ -1270,50 +1270,52 @@ dict_extend_func(
 	return;
     }
     d2 = argvars[1].vval.v_dict;
-    if ((is_new || !value_check_lock(d1->dv_lock, arg_errmsg, TRUE))
-	    && d2 != NULL)
+    if (d2 == NULL)
+	return;
+
+    if (!is_new && value_check_lock(d1->dv_lock, arg_errmsg, TRUE))
+	return;
+
+    if (is_new)
     {
-	if (is_new)
-	{
-	    d1 = dict_copy(d1, FALSE, TRUE, get_copyID());
-	    if (d1 == NULL)
-		return;
-	}
-
-	// Check the third argument.
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	{
-	    static char *(av[]) = {"keep", "force", "error"};
-
-	    action = tv_get_string_chk(&argvars[2]);
-	    if (action == NULL)
-		return;
-	    for (i = 0; i < 3; ++i)
-		if (STRCMP(action, av[i]) == 0)
-		    break;
-	    if (i == 3)
-	    {
-		semsg(_(e_invalid_argument_str), action);
-		return;
-	    }
-	}
-	else
-	    action = (char_u *)"force";
-
-	if (type != NULL && check_typval_arg_type(type, &argvars[1],
-							 func_name, 2) == FAIL)
+	d1 = dict_copy(d1, FALSE, TRUE, get_copyID());
+	if (d1 == NULL)
 	    return;
-	dict_extend(d1, d2, action, func_name);
-
-	if (is_new)
-	{
-	    rettv->v_type = VAR_DICT;
-	    rettv->vval.v_dict = d1;
-	    rettv->v_lock = FALSE;
-	}
-	else
-	    copy_tv(&argvars[0], rettv);
     }
+
+    // Check the third argument.
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	static char *(av[]) = {"keep", "force", "error"};
+
+	action = tv_get_string_chk(&argvars[2]);
+	if (action == NULL)
+	    return;
+	for (i = 0; i < 3; ++i)
+	    if (STRCMP(action, av[i]) == 0)
+		break;
+	if (i == 3)
+	{
+	    semsg(_(e_invalid_argument_str), action);
+	    return;
+	}
+    }
+    else
+	action = (char_u *)"force";
+
+    if (type != NULL && check_typval_arg_type(type, &argvars[1],
+		func_name, 2) == FAIL)
+	return;
+    dict_extend(d1, d2, action, func_name);
+
+    if (is_new)
+    {
+	rettv->v_type = VAR_DICT;
+	rettv->vval.v_dict = d1;
+	rettv->v_lock = FALSE;
+    }
+    else
+	copy_tv(&argvars[0], rettv);
 }
 
 /*

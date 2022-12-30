@@ -1905,9 +1905,6 @@ EXTERN char need_key_msg[]  INIT(= N_("Need encryption key for \"%s\""));
 EXTERN int xsmp_icefd INIT(= -1);   // The actual connection
 #endif
 
-// For undo we need to know the lowest time possible.
-EXTERN time_T starttime;
-
 #ifdef STARTUPTIME
 EXTERN FILE *time_fd INIT(= NULL);  // where to write startup timing
 #endif

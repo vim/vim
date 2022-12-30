@@ -111,6 +111,17 @@ def Test_class_basic()
   lines =<< trim END
       vim9script
       class Something
+        def new()
+          this.state = 0
+        enddef
+      endclass
+      var obj = Something.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1089:')
+
+  lines =<< trim END
+      vim9script
+      class Something
         this.count : number
       endclass
   END
@@ -312,6 +323,48 @@ def Test_class_object_member_access()
       assert_fails('trip.four = 4', 'E1334')
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class MyCar
+        this.make: string
+
+        def new(make_arg: string)
+          this.make = make_arg
+        enddef
+
+        def GetMake(): string
+          return $"make = {this.make}"
+        enddef
+      endclass
+
+      var c = MyCar.new("abc")
+      assert_equal('make = abc', c.GetMake())
+
+      c = MyCar.new("def")
+      assert_equal('make = def', c.GetMake())
+
+      var c2 = MyCar.new("123")
+      assert_equal('make = 123', c2.GetMake())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class MyCar
+        this.make: string
+
+        def new(make_arg: string)
+            this.make = make_arg
+        enddef
+      endclass
+
+      var c = MyCar.new("abc")
+      var c = MyCar.new("def")
+  END
+  v9.CheckScriptFailure(lines, 'E1041:')
 enddef
 
 def Test_class_member_access()
@@ -330,7 +383,9 @@ def Test_class_member_access()
       assert_equal(0, TextPos.counter)
       TextPos.AddToCounter(3)
       assert_equal(3, TextPos.counter)
+      assert_fails('echo TextPos.noSuchMember', 'E1338:')
 
+      assert_fails('TextPos.noSuchMember = 2', 'E1337:')
       assert_fails('TextPos.counter += 5', 'E1335')
   END
   v9.CheckScriptSuccess(lines)

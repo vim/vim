@@ -225,19 +225,19 @@ handle_foldcolumn(win_T *wp, winlinevars_T *wlv)
     // Allocate a buffer, "wlv->extra[]" may already be in use.
     vim_free(wlv->p_extra_free);
     wlv->p_extra_free = alloc(MAX_MCO * fdc + 1);
-    if (wlv->p_extra_free != NULL)
-    {
-	wlv->n_extra = (int)fill_foldcolumn(wlv->p_extra_free,
-							 wp, FALSE, wlv->lnum);
-	wlv->p_extra_free[wlv->n_extra] = NUL;
-	wlv->p_extra = wlv->p_extra_free;
-	wlv->c_extra = NUL;
-	wlv->c_final = NUL;
-	if (use_cursor_line_highlight(wp, wlv->lnum))
-	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLF));
-	else
-	    wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_FC));
-    }
+    if (wlv->p_extra_free == NULL)
+	return;
+
+    wlv->n_extra = (int)fill_foldcolumn(wlv->p_extra_free,
+	    wp, FALSE, wlv->lnum);
+    wlv->p_extra_free[wlv->n_extra] = NUL;
+    wlv->p_extra = wlv->p_extra_free;
+    wlv->c_extra = NUL;
+    wlv->c_final = NUL;
+    if (use_cursor_line_highlight(wp, wlv->lnum))
+	wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_CLF));
+    else
+	wlv->char_attr = hl_combine_attr(wlv->wcr_attr, HL_ATTR(HLF_FC));
 }
 #endif
 

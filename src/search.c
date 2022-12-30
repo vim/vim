@@ -123,6 +123,7 @@ typedef struct SearchedFile
     int
 search_regcomp(
     char_u	*pat,
+    char_u	**used_pat,
     int		pat_save,
     int		pat_use,
     int		options,
@@ -158,6 +159,9 @@ search_regcomp(
     }
     else if (options & SEARCH_HIS)	// put new pattern in history
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
+
+    if (used_pat)
+            *used_pat = pat;
 
     vim_free(mr_pattern);
 #ifdef FEAT_RIGHTLEFT
@@ -597,7 +601,7 @@ last_pat_prog(regmmatch_T *regmatch)
 	return;
     }
     ++emsg_off;		// So it doesn't beep if bad expr
-    (void)search_regcomp((char_u *)"", 0, last_idx, SEARCH_KEEP, regmatch);
+    (void)search_regcomp((char_u *)"", NULL, 0, last_idx, SEARCH_KEEP, regmatch);
     --emsg_off;
 }
 #endif
@@ -661,7 +665,7 @@ searchit(
     int		unused_timeout_flag = FALSE;
     int		*timed_out = &unused_timeout_flag;  // set when timed out.
 
-    if (search_regcomp(pat, RE_SEARCH, pat_use,
+    if (search_regcomp(pat, NULL, RE_SEARCH, pat_use,
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
     {
 	if ((options & SEARCH_MSG) && !rc_did_emsg)
@@ -2864,7 +2868,7 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
     if (pattern == NULL)
 	pattern = spats[last_idx].pat;
 
-    if (search_regcomp(pattern, RE_SEARCH, RE_SEARCH,
+    if (search_regcomp(pattern, NULL, RE_SEARCH, RE_SEARCH,
 					      SEARCH_KEEP, &regmatch) == FAIL)
 	return -1;
 

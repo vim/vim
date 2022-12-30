@@ -3799,7 +3799,7 @@ exec_instructions(ectx_T *ectx)
 		tv->vval.v_number = iptr->isn_arg.storenr.stnr_val;
 		break;
 
-	    // store value in list or dict variable
+	    // Store a value in a list, dict, blob or object variable.
 	    case ISN_STOREINDEX:
 		{
 		    int res = execute_storeindex(iptr, ectx);
@@ -5159,7 +5159,7 @@ exec_instructions(ectx_T *ectx)
 		    object_T *obj = tv->vval.v_object;
 		    // the members are located right after the object struct
 		    typval_T *mtv = ((typval_T *)(obj + 1)) + idx;
-		    *tv = *mtv;
+		    copy_tv(mtv, tv);
 
 		    // Unreference the object after getting the member, it may
 		    // be freed.
@@ -6872,16 +6872,23 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_CHECKTYPE:
 		  {
 		      checktype_T   *ct = &iptr->isn_arg.type;
-		      char	    *tofree;
+		      char	    *tofree = NULL;
+		      char	    *typename;
+
+		      if (ct->ct_type->tt_type == VAR_FLOAT
+			      && (ct->ct_type->tt_flags & TTFLAG_NUMBER_OK))
+			  typename = "float|number";
+		      else
+			  typename = type_name(ct->ct_type, &tofree);
 
 		      if (ct->ct_arg_idx == 0)
 			  smsg("%s%4d CHECKTYPE %s stack[%d]", pfx, current,
-					  type_name(ct->ct_type, &tofree),
+					  typename,
 					  (int)ct->ct_off);
 		      else
 			  smsg("%s%4d CHECKTYPE %s stack[%d] %s %d",
 					  pfx, current,
-					  type_name(ct->ct_type, &tofree),
+					  typename,
 					  (int)ct->ct_off,
 					  ct->ct_is_var ? "var": "arg",
 					  (int)ct->ct_arg_idx);

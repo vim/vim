@@ -1045,7 +1045,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		if (lhs_type == &t_any)
 		    lhs_type = item_type;
 		else if (item_type != &t_unknown
-			&& need_type_where(item_type, lhs_type, -1,
+			&& need_type_where(item_type, lhs_type, FALSE, -1,
 					    where, cctx, FALSE, FALSE) == FAIL)
 		    goto failed;
 		var_lvar = reserve_local(cctx, arg, varlen, ASSIGN_FINAL,
@@ -1973,7 +1973,11 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
  * compile "execute expr"
  */
     char_u *
-compile_mult_expr(char_u *arg, int cmdidx, long cmd_count, cctx_T *cctx)
+compile_mult_expr(
+	char_u	*arg,
+	int	cmdidx,
+	long	cmd_count UNUSED,
+	cctx_T	*cctx)
 {
     char_u	*p = arg;
     char_u	*prev = arg;
@@ -2465,7 +2469,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	if (compile_assign_lhs(arg, lhs, CMD_redir,
 					 FALSE, FALSE, FALSE, 1, cctx) == FAIL)
 	    return NULL;
-	if (need_type(&t_string, lhs->lhs_member_type,
+	if (need_type(&t_string, lhs->lhs_member_type, FALSE,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 	    return NULL;
 	if (cctx->ctx_skip == SKIP_YES)
@@ -2547,7 +2551,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    int save_flags = cmdmod.cmod_flags;
 
 	    generate_LEGACY_EVAL(cctx, p);
-	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, -1,
+	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, FALSE, -1,
 						0, cctx, FALSE, FALSE) == FAIL)
 		return NULL;
 	    cmdmod.cmod_flags |= CMOD_LEGACY;
@@ -2576,8 +2580,8 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    }
 	    else
 	    {
-		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
-						0, cctx, FALSE, FALSE) == FAIL)
+		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, FALSE,
+					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		    return NULL;
 	    }
 	}

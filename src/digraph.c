@@ -1681,14 +1681,14 @@ registerdigraph(int char1, int char2, int n)
     }
 
     // Add a new digraph to the table.
-    if (ga_grow(&user_digraphs, 1) == OK)
-    {
-	dp = (digr_T *)user_digraphs.ga_data + user_digraphs.ga_len;
-	dp->char1 = char1;
-	dp->char2 = char2;
-	dp->result = n;
-	++user_digraphs.ga_len;
-    }
+    if (ga_grow(&user_digraphs, 1) != OK)
+	return;
+
+    dp = (digr_T *)user_digraphs.ga_data + user_digraphs.ga_len;
+    dp->char1 = char1;
+    dp->char2 = char2;
+    dp->result = n;
+    ++user_digraphs.ga_len;
 }
 
 /*
@@ -1948,54 +1948,54 @@ printdigraph(digr_T *dp, result_T *previous)
     else
 	list_width = 11;
 
-    if (dp->result != 0)
-    {
+    if (dp->result == 0)
+	return;
+
 #if defined(USE_UNICODE_DIGRAPHS)
-	if (previous != NULL)
-	{
-	    int i;
+    if (previous != NULL)
+    {
+	int i;
 
-	    for (i = 0; header_table[i].dg_header != NULL; ++i)
-		if (*previous < header_table[i].dg_start
-			&& dp->result >= header_table[i].dg_start
-			&& dp->result < header_table[i + 1].dg_start)
-		{
-		    digraph_header(_(header_table[i].dg_header));
-		    break;
-		}
-	    *previous = dp->result;
-	}
-#endif
-	if (msg_col > Columns - list_width)
-	    msg_putchar('\n');
-	if (msg_col)
-	    while (msg_col % list_width != 0)
-		msg_putchar(' ');
-
-	p = buf;
-	*p++ = dp->char1;
-	*p++ = dp->char2;
-	*p++ = ' ';
-	*p = NUL;
-	msg_outtrans(buf);
-	p = buf;
-	if (has_mbyte)
-	{
-	    // add a space to draw a composing char on
-	    if (enc_utf8 && utf_iscomposing(dp->result))
-		*p++ = ' ';
-	    p += (*mb_char2bytes)(dp->result, p);
-	}
-	else
-	    *p++ = (char_u)dp->result;
-	*p = NUL;
-	msg_outtrans_attr(buf, HL_ATTR(HLF_8));
-	p = buf;
-	if (char2cells(dp->result) == 1)
-	    *p++ = ' ';
-	vim_snprintf((char *)p, sizeof(buf) - (p - buf), " %3d", dp->result);
-	msg_outtrans(buf);
+	for (i = 0; header_table[i].dg_header != NULL; ++i)
+	    if (*previous < header_table[i].dg_start
+		    && dp->result >= header_table[i].dg_start
+		    && dp->result < header_table[i + 1].dg_start)
+	    {
+		digraph_header(_(header_table[i].dg_header));
+		break;
+	    }
+	*previous = dp->result;
     }
+#endif
+    if (msg_col > Columns - list_width)
+	msg_putchar('\n');
+    if (msg_col)
+	while (msg_col % list_width != 0)
+	    msg_putchar(' ');
+
+    p = buf;
+    *p++ = dp->char1;
+    *p++ = dp->char2;
+    *p++ = ' ';
+    *p = NUL;
+    msg_outtrans(buf);
+    p = buf;
+    if (has_mbyte)
+    {
+	// add a space to draw a composing char on
+	if (enc_utf8 && utf_iscomposing(dp->result))
+	    *p++ = ' ';
+	p += (*mb_char2bytes)(dp->result, p);
+    }
+    else
+	*p++ = (char_u)dp->result;
+    *p = NUL;
+    msg_outtrans_attr(buf, HL_ATTR(HLF_8));
+    p = buf;
+    if (char2cells(dp->result) == 1)
+	*p++ = ' ';
+    vim_snprintf((char *)p, sizeof(buf) - (p - buf), " %3d", dp->result);
+    msg_outtrans(buf);
 }
 
 # ifdef FEAT_EVAL

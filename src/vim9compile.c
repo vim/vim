@@ -451,6 +451,7 @@ use_typecheck(type_T *actual, type_T *expected)
 need_type_where(
 	type_T	*actual,
 	type_T	*expected,
+	int	number_ok,	// expect VAR_FLOAT but VAR_NUMBER is OK
 	int	offset,
 	where_T	where,
 	cctx_T	*cctx,
@@ -480,7 +481,7 @@ need_type_where(
     // If the actual type can be the expected type add a runtime check.
     if (!actual_is_const && ret == MAYBE && use_typecheck(actual, expected))
     {
-	generate_TYPECHECK(cctx, expected, offset,
+	generate_TYPECHECK(cctx, expected, number_ok, offset,
 					    where.wt_variable, where.wt_index);
 	return OK;
     }
@@ -494,6 +495,7 @@ need_type_where(
 need_type(
 	type_T	*actual,
 	type_T	*expected,
+	int	number_ok,  // when expected is float number is also OK
 	int	offset,
 	int	arg_idx,
 	cctx_T	*cctx,
@@ -503,7 +505,7 @@ need_type(
     where_T where = WHERE_INIT;
 
     where.wt_index = arg_idx;
-    return need_type_where(actual, expected, offset, where,
+    return need_type_where(actual, expected, number_ok, offset, where,
 						cctx, silent, actual_is_const);
 }
 
@@ -1823,6 +1825,8 @@ compile_lhs(
 	    class_T *cl = (class_T *)lhs->lhs_type->tt_member;
 	    lhs->lhs_member_type = class_member_type(cl, after + 1,
 					   lhs->lhs_end, &lhs->lhs_member_idx);
+	    if (lhs->lhs_member_idx < 0)
+		return FAIL;
 	}
 	else
 	    lhs->lhs_member_type = lhs->lhs_type->tt_member;
@@ -1998,8 +2002,8 @@ compile_load_lhs(
 	// now we can properly check the type
 	if (rhs_type != NULL && lhs->lhs_type->tt_member != NULL
 		&& rhs_type != &t_void
-		&& need_type(rhs_type, lhs->lhs_type->tt_member, -2, 0, cctx,
-							 FALSE, FALSE) == FAIL)
+		&& need_type(rhs_type, lhs->lhs_type->tt_member, FALSE,
+					    -2, 0, cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
     }
     else
@@ -2088,13 +2092,13 @@ compile_assign_unlet(
 	    if (range)
 	    {
 		type = get_type_on_stack(cctx, 1);
-		if (need_type(type, &t_number,
+		if (need_type(type, &t_number, FALSE,
 					    -2, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	    }
 	    type = get_type_on_stack(cctx, 0);
 	    if ((dest_type != VAR_BLOB && type->tt_type != VAR_SPECIAL)
-		    && need_type(type, &t_number,
+		    && need_type(type, &t_number, FALSE,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	}
@@ -2355,7 +2359,7 @@ compile_assignment(
 		emsg(_(e_cannot_use_void_value));
 		goto theend;
 	    }
-	    if (need_type(stacktype, &t_list_any, -1, 0, cctx,
+	    if (need_type(stacktype, &t_list_any, FALSE, -1, 0, cctx,
 							 FALSE, FALSE) == FAIL)
 		goto theend;
 	    // If a constant list was used we can check the length right here.
@@ -2422,7 +2426,7 @@ compile_assignment(
 	{
 	    SOURCING_LNUM = start_lnum;
 	    if (lhs.lhs_has_type
-		    && need_type(&t_list_string, lhs.lhs_type,
+		    && need_type(&t_list_string, lhs.lhs_type, FALSE,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		goto theend;
 	}
@@ -2547,8 +2551,8 @@ compile_assignment(
 				&& !has_list_index(var_start + lhs.lhs_varlen,
 									 cctx))
 			    use_type = lhs.lhs_member_type;
-			if (need_type_where(rhs_type, use_type, -1, where,
-						cctx, FALSE, is_const) == FAIL)
+			if (need_type_where(rhs_type, use_type, FALSE, -1,
+					 where, cctx, FALSE, is_const) == FAIL)
 			    goto theend;
 		    }
 		}
@@ -2563,7 +2567,7 @@ compile_assignment(
 				|| lhs_type == &t_float)
 			    && rhs_type->tt_type == VAR_NUMBER)
 			lhs_type = &t_number;
-		    if (*p != '=' && need_type(rhs_type, lhs_type,
+		    if (*p != '=' && need_type(rhs_type, lhs_type, FALSE,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		    goto theend;
 		}
@@ -2620,8 +2624,8 @@ compile_assignment(
 		if (
 		    // If variable is float operation with number is OK.
 		    !(expected == &t_float && (stacktype == &t_number
-			    || stacktype == &t_number_bool)) &&
-		    need_type(stacktype, expected, -1, 0, cctx,
+			    || stacktype == &t_number_bool))
+		    && need_type(stacktype, expected, TRUE, -1, 0, cctx,
 							 FALSE, FALSE) == FAIL)
 		    goto theend;
 	    }
@@ -3102,7 +3106,7 @@ compile_def_function(
 		ufunc->uf_arg_types[arg_idx] = val_type;
 	    }
 	    else if (need_type_where(val_type, ufunc->uf_arg_types[arg_idx],
-				       -1, where, &cctx, FALSE, FALSE) == FAIL)
+				FALSE, -1, where, &cctx, FALSE, FALSE) == FAIL)
 		goto erret;
 
 	    if (generate_STORE(&cctx, ISN_STORE, i - count - off, NULL) == FAIL)
