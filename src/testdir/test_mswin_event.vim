@@ -610,6 +610,12 @@ func Test_QWERTY_Ctrl_minus()
   let ch = getcharstr(0)
   call assert_equal(nr2char(0x1f),ch)
 
+  call SendKey(s:VK.KEY_I)
+  call SendKeyGroup([s:VK.CONTROL, s:VK.SUBTRACT])
+  call SendKey(s:VK.ESCAPE)
+  call ExecuteBufferedKeys()
+  call assert_equal('-', getline('$'))
+
   %d _
   imapclear
   imap <C-_> BINGO
@@ -627,6 +633,8 @@ func Test_QWERTY_Ctrl_minus()
   call SendKey(s:VK.ESCAPE)
   call ExecuteBufferedKeys()
   call assert_equal('BILBO', getline('$'))
+
+
 
   imapclear
   bw!
