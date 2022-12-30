@@ -1,5 +1,5 @@
 " Test MS-Windows input event handling.
-" Should work in Windows terminal console and in the GUI
+" Most of this works the same in Windows GUI as well as Windows console.
 
 source check.vim
 CheckMSWindows
@@ -395,7 +395,7 @@ func s:LoopTestKeyArray(arr)
 
 endfunc
 
-" Test MS-Windows console key events
+" Test MS-Windows key events
 func Test_mswin_key_event()
   CheckMSWindows
   new
@@ -640,7 +640,7 @@ func Test_QWERTY_Ctrl_minus()
   bw!
 endfunc
 
-"  Test MS-Windows console mouse events
+"  Test MS-Windows mouse events
 func Test_mswin_mouse_event()
   CheckMSWindows
   new
