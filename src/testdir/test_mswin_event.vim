@@ -6,20 +6,22 @@ CheckMSWindows
 
 source mouse.vim
 
-" Helper function for sending a sequence of low level key presses
-" The modifer key(s) can be included as normal key presses in the sequence
-func SendKeys(keylist)
-  for k in a:keylist
+" Helper function for sending a grouped sequence of low level key presses
+" The modifer key(s) can be included as VK Key Codes in the sequence
+" Keydown events will be sent, to to the end of the group, then keyup events
+" will be sent in reverse order to release the keys.
+func SendKeyGroup(keygroup)
+  for k in a:keygroup
     call test_mswin_event("key", {'event': "keydown", 'keycode': k})
   endfor
-  for k in reverse(copy(a:keylist))
+  for k in reverse(copy(a:keygroup))
     call test_mswin_event("key", {'event': "keyup", 'keycode': k})
   endfor
 endfunc
 
-" Send an individual key press
+" Send individual key press and release events.
 " the modifers for the key press can be specified in the modifiers arg.
-func SendKey(key, modifiers)
+func SendKeyWithModifiers(key, modifiers)
   let args = { }
   let args.keycode = a:key
   let args.modifiers = a:modifiers
@@ -30,15 +32,31 @@ func SendKey(key, modifiers)
   unlet args
 endfunc
 
-" Test MS-Windows console key events
-func Test_mswin_key_event()
-  CheckMSWindows
-  new
+" Send an individual key press, without modifiers.
+func SendKey(key)
+  call SendKeyWithModifiers(a:key, 0)
+endfunc
 
-  " flush out any garbage left in the buffer
-  while getchar(0)
-  endwhile
-let VK = {
+" Send a string of individual key-press events, without modifiers.
+func SendKeyStr(keystring)
+  for k in a:keystring
+    call SendKey(k)
+  endfor
+endfunc
+
+" This tells Vim to execute the buffered keys as user commands, 
+" ie. same as feekdeys with mode X would do.
+func ExecuteBufferedKeys()
+  if has('gui_running')
+    call feedkeys("\<Esc>", 'Lx!')
+  else
+    call test_mswin_event("key", {'execute': v:true})
+  endif
+endfunc
+
+
+let s:VK = {
+    \ 'ENTER'      : 0x0D,
     \ 'SPACE'      : 0x20,
     \ 'SHIFT'      : 0x10,
     \ 'LSHIFT'     : 0xA0,
@@ -132,199 +150,208 @@ let VK = {
     \ 'F10'        : 0x79,
     \ 'F11'        : 0x7A,
     \ 'F12'        : 0x7B,
-    \ 'DELETE'     : 0x2E
+    \ 'DELETE'     : 0x2E,
+    \ 'BACK'       : 0x08,
+    \ 'ESCAPE'     : 0x1B
     \ }
 
-  let vim_MOD_MASK_SHIFT = 0x02
-  let vim_MOD_MASK_CTRL  = 0x04
-  let vim_MOD_MASK_ALT   = 0x08
+  let s:vim_MOD_MASK_SHIFT = 0x02
+  let s:vim_MOD_MASK_CTRL  = 0x04
+  let s:vim_MOD_MASK_ALT   = 0x08
   
-  let vim_key_modifiers = [
+  let s:vim_key_modifiers = [
     \ ["",       0,   []],
-    \ ["S-",     2,   [VK.SHIFT]],
-    \ ["C-",     4,   [VK.CONTROL]],
-    \ ["C-S-",   6,   [VK.CONTROL, VK.SHIFT]],
-    \ ["A-",     8,   [VK.MENU]],
-    \ ["A-S-",   10,  [VK.MENU, VK.SHIFT]],
-    \ ["A-C-",   12,  [VK.MENU, VK.CONTROL]],
-    \ ["A-C-S-", 14,  [VK.MENU, VK.CONTROL, VK.SHIFT]],
+    \ ["S-",     2,   [s:VK.SHIFT]],
+    \ ["C-",     4,   [s:VK.CONTROL]],
+    \ ["C-S-",   6,   [s:VK.CONTROL, s:VK.SHIFT]],
+    \ ["A-",     8,   [s:VK.MENU]],
+    \ ["A-S-",   10,  [s:VK.MENU, s:VK.SHIFT]],
+    \ ["A-C-",   12,  [s:VK.MENU, s:VK.CONTROL]],
+    \ ["A-C-S-", 14,  [s:VK.MENU, s:VK.CONTROL, s:VK.SHIFT]],
     \]
 
   " Assuming Standard US PC Keyboard layout
-  let test_key_chars = [
-    \ [[VK.SPACE], ' '],
-    \ [[VK.OEM_1], ';'],
-    \ [[VK.OEM_2], '/'],
-    \ [[VK.OEM_3], '`'],
-    \ [[VK.OEM_4], '['],
-    \ [[VK.OEM_5], '\'],
-    \ [[VK.OEM_6], ']'],
-    \ [[VK.OEM_7], ''''],
-    \ [[VK.OEM_PLUS], '='],
-    \ [[VK.OEM_COMMA], ','],
-    \ [[VK.OEM_MINUS], '-'],
-    \ [[VK.OEM_PERIOD], '.'],
-    \ [[VK.SHIFT, VK.OEM_1], ':'],
-    \ [[VK.SHIFT, VK.OEM_2], '?'],
-    \ [[VK.SHIFT, VK.OEM_3], '~'],
-    \ [[VK.SHIFT, VK.OEM_4], '{'],
-    \ [[VK.SHIFT, VK.OEM_5], '|'],
-    \ [[VK.SHIFT, VK.OEM_6], '}'],
-    \ [[VK.SHIFT, VK.OEM_7], '"'],
-    \ [[VK.SHIFT, VK.OEM_PLUS], '+'],
-    \ [[VK.SHIFT, VK.OEM_COMMA], '<'],
-    \ [[VK.SHIFT, VK.OEM_MINUS], '_'],
-    \ [[VK.SHIFT, VK.OEM_PERIOD], '>'],
-    \ [[VK.KEY_1], '1'],
-    \ [[VK.KEY_2], '2'],
-    \ [[VK.KEY_3], '3'],
-    \ [[VK.KEY_4], '4'],
-    \ [[VK.KEY_5], '5'],
-    \ [[VK.KEY_6], '6'],
-    \ [[VK.KEY_7], '7'],
-    \ [[VK.KEY_8], '8'],
-    \ [[VK.KEY_9], '9'],
-    \ [[VK.KEY_0], '0'],
-    \ [[VK.SHIFT, VK.KEY_1], '!'],
-    \ [[VK.SHIFT, VK.KEY_2], '@'],
-    \ [[VK.SHIFT, VK.KEY_3], '#'],
-    \ [[VK.SHIFT, VK.KEY_4], '$'],
-    \ [[VK.SHIFT, VK.KEY_5], '%'],
-    \ [[VK.SHIFT, VK.KEY_6], '^'],
-    \ [[VK.SHIFT, VK.KEY_7], '&'],
-    \ [[VK.SHIFT, VK.KEY_8], '*'],
-    \ [[VK.SHIFT, VK.KEY_9], '('],
-    \ [[VK.SHIFT, VK.KEY_0], ')'],
-    \ [[VK.KEY_A], 'a'],
-    \ [[VK.KEY_B], 'b'],
-    \ [[VK.KEY_C], 'c'],
-    \ [[VK.KEY_D], 'd'],
-    \ [[VK.KEY_E], 'e'],
-    \ [[VK.KEY_F], 'f'],
-    \ [[VK.KEY_G], 'g'],
-    \ [[VK.KEY_H], 'h'],
-    \ [[VK.KEY_I], 'i'],
-    \ [[VK.KEY_J], 'j'],
-    \ [[VK.KEY_K], 'k'],
-    \ [[VK.KEY_L], 'l'],
-    \ [[VK.KEY_M], 'm'],
-    \ [[VK.KEY_N], 'n'],
-    \ [[VK.KEY_O], 'o'],
-    \ [[VK.KEY_P], 'p'],
-    \ [[VK.KEY_Q], 'q'],
-    \ [[VK.KEY_R], 'r'],
-    \ [[VK.KEY_S], 's'],
-    \ [[VK.KEY_T], 't'],
-    \ [[VK.KEY_U], 'u'],
-    \ [[VK.KEY_V], 'v'],
-    \ [[VK.KEY_W], 'w'],
-    \ [[VK.KEY_X], 'x'],
-    \ [[VK.KEY_Y], 'y'],
-    \ [[VK.KEY_Z], 'z'],
-    \ [[VK.SHIFT, VK.KEY_A], 'A'],
-    \ [[VK.SHIFT, VK.KEY_B], 'B'],
-    \ [[VK.SHIFT, VK.KEY_C], 'C'],
-    \ [[VK.SHIFT, VK.KEY_D], 'D'],
-    \ [[VK.SHIFT, VK.KEY_E], 'E'],
-    \ [[VK.SHIFT, VK.KEY_F], 'F'],
-    \ [[VK.SHIFT, VK.KEY_G], 'G'],
-    \ [[VK.SHIFT, VK.KEY_H], 'H'],
-    \ [[VK.SHIFT, VK.KEY_I], 'I'],
-    \ [[VK.SHIFT, VK.KEY_J], 'J'],
-    \ [[VK.SHIFT, VK.KEY_K], 'K'],
-    \ [[VK.SHIFT, VK.KEY_L], 'L'],
-    \ [[VK.SHIFT, VK.KEY_M], 'M'],
-    \ [[VK.SHIFT, VK.KEY_N], 'N'],
-    \ [[VK.SHIFT, VK.KEY_O], 'O'],
-    \ [[VK.SHIFT, VK.KEY_P], 'P'],
-    \ [[VK.SHIFT, VK.KEY_Q], 'Q'],
-    \ [[VK.SHIFT, VK.KEY_R], 'R'],
-    \ [[VK.SHIFT, VK.KEY_S], 'S'],
-    \ [[VK.SHIFT, VK.KEY_T], 'T'],
-    \ [[VK.SHIFT, VK.KEY_U], 'U'],
-    \ [[VK.SHIFT, VK.KEY_V], 'V'],
-    \ [[VK.SHIFT, VK.KEY_W], 'W'],
-    \ [[VK.SHIFT, VK.KEY_X], 'X'],
-    \ [[VK.SHIFT, VK.KEY_Y], 'Y'],
-    \ [[VK.SHIFT, VK.KEY_Z], 'Z'],
-    \ [[VK.CONTROL, VK.KEY_A], 0x01],
-    \ [[VK.CONTROL, VK.KEY_B], 0x02],
-    \ [[VK.CONTROL, VK.KEY_C], 0x03],
-    \ [[VK.CONTROL, VK.KEY_D], 0x04],
-    \ [[VK.CONTROL, VK.KEY_E], 0x05],
-    \ [[VK.CONTROL, VK.KEY_F], 0x06],
-    \ [[VK.CONTROL, VK.KEY_G], 0x07],
-    \ [[VK.CONTROL, VK.KEY_H], 0x08],
-    \ [[VK.CONTROL, VK.KEY_I], 0x09],
-    \ [[VK.CONTROL, VK.KEY_J], 0x0A],
-    \ [[VK.CONTROL, VK.KEY_K], 0x0B],
-    \ [[VK.CONTROL, VK.KEY_L], 0x0C],
-    \ [[VK.CONTROL, VK.KEY_M], 0x0D],
-    \ [[VK.CONTROL, VK.KEY_N], 0x0E],
-    \ [[VK.CONTROL, VK.KEY_O], 0x0F],
-    \ [[VK.CONTROL, VK.KEY_P], 0x10],
-    \ [[VK.CONTROL, VK.KEY_Q], 0x11],
-    \ [[VK.CONTROL, VK.KEY_R], 0x12],
-    \ [[VK.CONTROL, VK.KEY_S], 0x13],
-    \ [[VK.CONTROL, VK.KEY_T], 0x14],
-    \ [[VK.CONTROL, VK.KEY_U], 0x15],
-    \ [[VK.CONTROL, VK.KEY_V], 0x16],
-    \ [[VK.CONTROL, VK.KEY_W], 0x17],
-    \ [[VK.CONTROL, VK.KEY_X], 0x18],
-    \ [[VK.CONTROL, VK.KEY_Y], 0x19],
-    \ [[VK.CONTROL, VK.KEY_Z], 0x1A],
-    \ [[VK.CONTROL, VK.OEM_4], 0x1B],
-    \ [[VK.CONTROL, VK.OEM_5], 0x1C],
-    \ [[VK.CONTROL, VK.OEM_6], 0x1D],
-    \ [[VK.ALT, VK.KEY_1], '±'],
-    \ [[VK.ALT, VK.KEY_2], '²'],
-    \ [[VK.ALT, VK.KEY_3], '³'],
-    \ [[VK.ALT, VK.KEY_4], '´'],
-    \ [[VK.ALT, VK.KEY_5], 'µ'],
-    \ [[VK.ALT, VK.KEY_6], '¶'],
-    \ [[VK.ALT, VK.KEY_7], '·'],
-    \ [[VK.ALT, VK.KEY_8], '¸'],
-    \ [[VK.ALT, VK.KEY_9], '¹'],
-    \ [[VK.ALT, VK.KEY_0], '°'],
-    \ [[VK.ALT, VK.KEY_A], 'á'],
-    \ [[VK.ALT, VK.KEY_B], 'â'],
-    \ [[VK.ALT, VK.KEY_C], 'ã'],
-    \ [[VK.ALT, VK.KEY_D], 'ä'],
-    \ [[VK.ALT, VK.KEY_E], 'å'],
-    \ [[VK.ALT, VK.KEY_F], 'æ'],
-    \ [[VK.ALT, VK.KEY_G], 'ç'],
-    \ [[VK.ALT, VK.KEY_H], 'è'],
-    \ [[VK.ALT, VK.KEY_I], 'é'],
-    \ [[VK.ALT, VK.KEY_J], 'ê'],
-    \ [[VK.ALT, VK.KEY_K], 'ë'],
-    \ [[VK.ALT, VK.KEY_L], 'ì'],
-    \ [[VK.ALT, VK.KEY_M], 'í'],
-    \ [[VK.ALT, VK.KEY_N], 'î'],
-    \ [[VK.ALT, VK.KEY_O], 'ï'],
-    \ [[VK.ALT, VK.KEY_P], 'ð'],
-    \ [[VK.ALT, VK.KEY_Q], 'ñ'],
-    \ [[VK.ALT, VK.KEY_R], 'ò'],
-    \ [[VK.ALT, VK.KEY_S], 'ó'],
-    \ [[VK.ALT, VK.KEY_T], 'ô'],
-    \ [[VK.ALT, VK.KEY_U], 'õ'],
-    \ [[VK.ALT, VK.KEY_V], 'ö'],
-    \ [[VK.ALT, VK.KEY_W], '÷'],
-    \ [[VK.ALT, VK.KEY_X], 'ø'],
-    \ [[VK.ALT, VK.KEY_Y], 'ù'],
-    \ [[VK.ALT, VK.KEY_Z], 'ú'],
+  let s:test_ascii_key_chars = [
+    \ [[s:VK.SPACE], ' '],
+    \ [[s:VK.OEM_1], ';'],
+    \ [[s:VK.OEM_2], '/'],
+    \ [[s:VK.OEM_3], '`'],
+    \ [[s:VK.OEM_4], '['],
+    \ [[s:VK.OEM_5], '\'],
+    \ [[s:VK.OEM_6], ']'],
+    \ [[s:VK.OEM_7], ''''],
+    \ [[s:VK.OEM_PLUS], '='],
+    \ [[s:VK.OEM_COMMA], ','],
+    \ [[s:VK.OEM_MINUS], '-'],
+    \ [[s:VK.OEM_PERIOD], '.'],
+    \ [[s:VK.SHIFT, s:VK.OEM_1], ':'],
+    \ [[s:VK.SHIFT, s:VK.OEM_2], '?'],
+    \ [[s:VK.SHIFT, s:VK.OEM_3], '~'],
+    \ [[s:VK.SHIFT, s:VK.OEM_4], '{'],
+    \ [[s:VK.SHIFT, s:VK.OEM_5], '|'],
+    \ [[s:VK.SHIFT, s:VK.OEM_6], '}'],
+    \ [[s:VK.SHIFT, s:VK.OEM_7], '"'],
+    \ [[s:VK.SHIFT, s:VK.OEM_PLUS], '+'],
+    \ [[s:VK.SHIFT, s:VK.OEM_COMMA], '<'],
+    \ [[s:VK.SHIFT, s:VK.OEM_MINUS], '_'],
+    \ [[s:VK.SHIFT, s:VK.OEM_PERIOD], '>'],
+    \ [[s:VK.KEY_1], '1'],
+    \ [[s:VK.KEY_2], '2'],
+    \ [[s:VK.KEY_3], '3'],
+    \ [[s:VK.KEY_4], '4'],
+    \ [[s:VK.KEY_5], '5'],
+    \ [[s:VK.KEY_6], '6'],
+    \ [[s:VK.KEY_7], '7'],
+    \ [[s:VK.KEY_8], '8'],
+    \ [[s:VK.KEY_9], '9'],
+    \ [[s:VK.KEY_0], '0'],
+    \ [[s:VK.SHIFT, s:VK.KEY_1], '!'],
+    \ [[s:VK.SHIFT, s:VK.KEY_2], '@'],
+    \ [[s:VK.SHIFT, s:VK.KEY_3], '#'],
+    \ [[s:VK.SHIFT, s:VK.KEY_4], '$'],
+    \ [[s:VK.SHIFT, s:VK.KEY_5], '%'],
+    \ [[s:VK.SHIFT, s:VK.KEY_6], '^'],
+    \ [[s:VK.SHIFT, s:VK.KEY_7], '&'],
+    \ [[s:VK.SHIFT, s:VK.KEY_8], '*'],
+    \ [[s:VK.SHIFT, s:VK.KEY_9], '('],
+    \ [[s:VK.SHIFT, s:VK.KEY_0], ')'],
+    \ [[s:VK.KEY_A], 'a'],
+    \ [[s:VK.KEY_B], 'b'],
+    \ [[s:VK.KEY_C], 'c'],
+    \ [[s:VK.KEY_D], 'd'],
+    \ [[s:VK.KEY_E], 'e'],
+    \ [[s:VK.KEY_F], 'f'],
+    \ [[s:VK.KEY_G], 'g'],
+    \ [[s:VK.KEY_H], 'h'],
+    \ [[s:VK.KEY_I], 'i'],
+    \ [[s:VK.KEY_J], 'j'],
+    \ [[s:VK.KEY_K], 'k'],
+    \ [[s:VK.KEY_L], 'l'],
+    \ [[s:VK.KEY_M], 'm'],
+    \ [[s:VK.KEY_N], 'n'],
+    \ [[s:VK.KEY_O], 'o'],
+    \ [[s:VK.KEY_P], 'p'],
+    \ [[s:VK.KEY_Q], 'q'],
+    \ [[s:VK.KEY_R], 'r'],
+    \ [[s:VK.KEY_S], 's'],
+    \ [[s:VK.KEY_T], 't'],
+    \ [[s:VK.KEY_U], 'u'],
+    \ [[s:VK.KEY_V], 'v'],
+    \ [[s:VK.KEY_W], 'w'],
+    \ [[s:VK.KEY_X], 'x'],
+    \ [[s:VK.KEY_Y], 'y'],
+    \ [[s:VK.KEY_Z], 'z'],
+    \ [[s:VK.SHIFT, s:VK.KEY_A], 'A'],
+    \ [[s:VK.SHIFT, s:VK.KEY_B], 'B'],
+    \ [[s:VK.SHIFT, s:VK.KEY_C], 'C'],
+    \ [[s:VK.SHIFT, s:VK.KEY_D], 'D'],
+    \ [[s:VK.SHIFT, s:VK.KEY_E], 'E'],
+    \ [[s:VK.SHIFT, s:VK.KEY_F], 'F'],
+    \ [[s:VK.SHIFT, s:VK.KEY_G], 'G'],
+    \ [[s:VK.SHIFT, s:VK.KEY_H], 'H'],
+    \ [[s:VK.SHIFT, s:VK.KEY_I], 'I'],
+    \ [[s:VK.SHIFT, s:VK.KEY_J], 'J'],
+    \ [[s:VK.SHIFT, s:VK.KEY_K], 'K'],
+    \ [[s:VK.SHIFT, s:VK.KEY_L], 'L'],
+    \ [[s:VK.SHIFT, s:VK.KEY_M], 'M'],
+    \ [[s:VK.SHIFT, s:VK.KEY_N], 'N'],
+    \ [[s:VK.SHIFT, s:VK.KEY_O], 'O'],
+    \ [[s:VK.SHIFT, s:VK.KEY_P], 'P'],
+    \ [[s:VK.SHIFT, s:VK.KEY_Q], 'Q'],
+    \ [[s:VK.SHIFT, s:VK.KEY_R], 'R'],
+    \ [[s:VK.SHIFT, s:VK.KEY_S], 'S'],
+    \ [[s:VK.SHIFT, s:VK.KEY_T], 'T'],
+    \ [[s:VK.SHIFT, s:VK.KEY_U], 'U'],
+    \ [[s:VK.SHIFT, s:VK.KEY_V], 'V'],
+    \ [[s:VK.SHIFT, s:VK.KEY_W], 'W'],
+    \ [[s:VK.SHIFT, s:VK.KEY_X], 'X'],
+    \ [[s:VK.SHIFT, s:VK.KEY_Y], 'Y'],
+    \ [[s:VK.SHIFT, s:VK.KEY_Z], 'Z'],
+    \ [[s:VK.CONTROL, s:VK.KEY_A], 0x01],
+    \ [[s:VK.CONTROL, s:VK.KEY_B], 0x02],
+    \ [[s:VK.CONTROL, s:VK.KEY_C], 0x03],
+    \ [[s:VK.CONTROL, s:VK.KEY_D], 0x04],
+    \ [[s:VK.CONTROL, s:VK.KEY_E], 0x05],
+    \ [[s:VK.CONTROL, s:VK.KEY_F], 0x06],
+    \ [[s:VK.CONTROL, s:VK.KEY_G], 0x07],
+    \ [[s:VK.CONTROL, s:VK.KEY_H], 0x08],
+    \ [[s:VK.CONTROL, s:VK.KEY_I], 0x09],
+    \ [[s:VK.CONTROL, s:VK.KEY_J], 0x0A],
+    \ [[s:VK.CONTROL, s:VK.KEY_K], 0x0B],
+    \ [[s:VK.CONTROL, s:VK.KEY_L], 0x0C],
+    \ [[s:VK.CONTROL, s:VK.KEY_M], 0x0D],
+    \ [[s:VK.CONTROL, s:VK.KEY_N], 0x0E],
+    \ [[s:VK.CONTROL, s:VK.KEY_O], 0x0F],
+    \ [[s:VK.CONTROL, s:VK.KEY_P], 0x10],
+    \ [[s:VK.CONTROL, s:VK.KEY_Q], 0x11],
+    \ [[s:VK.CONTROL, s:VK.KEY_R], 0x12],
+    \ [[s:VK.CONTROL, s:VK.KEY_S], 0x13],
+    \ [[s:VK.CONTROL, s:VK.KEY_T], 0x14],
+    \ [[s:VK.CONTROL, s:VK.KEY_U], 0x15],
+    \ [[s:VK.CONTROL, s:VK.KEY_V], 0x16],
+    \ [[s:VK.CONTROL, s:VK.KEY_W], 0x17],
+    \ [[s:VK.CONTROL, s:VK.KEY_X], 0x18],
+    \ [[s:VK.CONTROL, s:VK.KEY_Y], 0x19],
+    \ [[s:VK.CONTROL, s:VK.KEY_Z], 0x1A],
+    \ [[s:VK.CONTROL, s:VK.OEM_4], 0x1B],
+    \ [[s:VK.CONTROL, s:VK.OEM_5], 0x1C],
+    \ [[s:VK.CONTROL, s:VK.OEM_6], 0x1D],
+    \ ]
+" The following non-printable ascii chars fail in the GUI, but work in the 
+" console. 0x1e [^^] Record separator (RS), and 0x1f [^_] Unit separator (US)
+"      \ [[s:VK.CONTROL, s:VK.SHIFT, s:VK.KEY_6], 0x1E],
+"      \ [[s:VK.CONTROL, s:VK.SHIFT, s:VK.OEM_MINUS], 0x1F],
+
+let s:test_extra_key_chars = [
+    \ [[s:VK.ALT, s:VK.KEY_1], '±'],
+    \ [[s:VK.ALT, s:VK.KEY_2], '²'],
+    \ [[s:VK.ALT, s:VK.KEY_3], '³'],
+    \ [[s:VK.ALT, s:VK.KEY_4], '´'],
+    \ [[s:VK.ALT, s:VK.KEY_5], 'µ'],
+    \ [[s:VK.ALT, s:VK.KEY_6], '¶'],
+    \ [[s:VK.ALT, s:VK.KEY_7], '·'],
+    \ [[s:VK.ALT, s:VK.KEY_8], '¸'],
+    \ [[s:VK.ALT, s:VK.KEY_9], '¹'],
+    \ [[s:VK.ALT, s:VK.KEY_0], '°'],
+    \ [[s:VK.ALT, s:VK.KEY_A], 'á'],
+    \ [[s:VK.ALT, s:VK.KEY_B], 'â'],
+    \ [[s:VK.ALT, s:VK.KEY_C], 'ã'],
+    \ [[s:VK.ALT, s:VK.KEY_D], 'ä'],
+    \ [[s:VK.ALT, s:VK.KEY_E], 'å'],
+    \ [[s:VK.ALT, s:VK.KEY_F], 'æ'],
+    \ [[s:VK.ALT, s:VK.KEY_G], 'ç'],
+    \ [[s:VK.ALT, s:VK.KEY_H], 'è'],
+    \ [[s:VK.ALT, s:VK.KEY_I], 'é'],
+    \ [[s:VK.ALT, s:VK.KEY_J], 'ê'],
+    \ [[s:VK.ALT, s:VK.KEY_K], 'ë'],
+    \ [[s:VK.ALT, s:VK.KEY_L], 'ì'],
+    \ [[s:VK.ALT, s:VK.KEY_M], 'í'],
+    \ [[s:VK.ALT, s:VK.KEY_N], 'î'],
+    \ [[s:VK.ALT, s:VK.KEY_O], 'ï'],
+    \ [[s:VK.ALT, s:VK.KEY_P], 'ð'],
+    \ [[s:VK.ALT, s:VK.KEY_Q], 'ñ'],
+    \ [[s:VK.ALT, s:VK.KEY_R], 'ò'],
+    \ [[s:VK.ALT, s:VK.KEY_S], 'ó'],
+    \ [[s:VK.ALT, s:VK.KEY_T], 'ô'],
+    \ [[s:VK.ALT, s:VK.KEY_U], 'õ'],
+    \ [[s:VK.ALT, s:VK.KEY_V], 'ö'],
+    \ [[s:VK.ALT, s:VK.KEY_W], '÷'],
+    \ [[s:VK.ALT, s:VK.KEY_X], 'ø'],
+    \ [[s:VK.ALT, s:VK.KEY_Y], 'ù'],
+    \ [[s:VK.ALT, s:VK.KEY_Z], 'ú'],
     \ ]
 
-"      \ [[VK.CONTROL, VK.SHIFT, VK.KEY_6], 0x1E],
-"      \ [[VK.CONTROL, VK.SHIFT, VK.OEM_MINUS], 0x1F],
+func s:LoopTestKeyArray(arr)
+" flush out any garbage left in the buffer
+  while getchar(0)
+  endwhile
 
-
-  for [kcodes, kstr] in test_key_chars
-
+  for [kcodes, kstr] in a:arr
     " Send as a sequence of key presses.
-    call SendKeys(kcodes)
+    call SendKeyGroup(kcodes)
     let ch = getcharstr(0)
     " need to deal a bit differently with the non-printable ascii chars < 0x20
-    if kstr < 0x20 && index([VK.CONTROL, VK.LCONTROL, VK.RCONTROL],  kcodes[0]) >= 0
+    if kstr < 0x20 && index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL],  kcodes[0]) >= 0
       call assert_equal(nr2char(kstr), $"{ch}")
     else
       call assert_equal(kstr, $"{ch}")
@@ -338,20 +365,20 @@ let VK = {
     let modifiers = 0
     let key = kcodes[0]
     for key in kcodes
-      if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], key) >= 0
-        let modifiers = modifiers + vim_MOD_MASK_SHIFT
+      if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], key) >= 0
+        let modifiers = modifiers + s:vim_MOD_MASK_SHIFT
       endif
-      if index([VK.CONTROL, VK.LCONTROL, VK.RCONTROL], key) >= 0
-        let modifiers = modifiers + vim_MOD_MASK_CTRL
+      if index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], key) >= 0
+        let modifiers = modifiers + s:vim_MOD_MASK_CTRL
       endif
-      if index([VK.ALT, VK.LALT, VK.RALT], key) >= 0
-        let modifiers = modifiers + vim_MOD_MASK_ALT
+      if index([s:VK.ALT, s:VK.LALT, s:VK.RALT], key) >= 0
+        let modifiers = modifiers + s:vim_MOD_MASK_ALT
       endif
     endfor
-    call SendKey(key, modifiers)
+    call SendKeyWithModifiers(key, modifiers)
     let ch = getcharstr(0)
     " need to deal a bit differently with the non-printable ascii chars < 0x20
-    if kstr < 0x20 && index([VK.CONTROL, VK.LCONTROL, VK.RCONTROL],  kcodes[0]) >= 0
+    if kstr < 0x20 && index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL],  kcodes[0]) >= 0
       call assert_equal(nr2char(kstr), $"{ch}")
     else
       call assert_equal(kstr, $"{ch}")
@@ -366,25 +393,38 @@ let VK = {
   while getchar(0)
   endwhile
 
+endfunc
+
+" Test MS-Windows console key events
+func Test_mswin_key_event()
+  CheckMSWindows
+  new
+
+  call s:LoopTestKeyArray(s:test_ascii_key_chars)
+
+  if !has('gui_running')
+    call s:LoopTestKeyArray(s:test_extra_key_chars)
+  endif
+
 " Test keyboard codes for digits
 " (0x30 - 0x39) : VK_0 - VK_9 are the same as ASCII '0' - '9'
   for kc in range(48, 57)
-    call SendKeys([kc])
+    call SendKeyGroup([kc])
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc), ch)
-    call SendKey(kc, 0)
+    call SendKeyWithModifiers(kc, 0)
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc), ch)
   endfor
 
 " Test keyboard codes for Alt-0 to Alt-9
 " Expect +128 from the digit char codes
-  for modkey in [VK.ALT, VK.LALT, VK.RALT]
+  for modkey in [s:VK.ALT, s:VK.LALT, s:VK.RALT]
     for kc in range(48, 57)
-      call SendKeys([modkey, kc])
+      call SendKeyGroup([modkey, kc])
       let ch = getchar(0)
       call assert_equal(kc+128, ch)
-      call SendKey(kc, vim_MOD_MASK_ALT)
+      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_ALT)
       let ch = getchar(0)
       call assert_equal(kc+128, ch)
     endfor
@@ -398,22 +438,22 @@ let VK = {
 " char 'a' (91) as the output.  The ASCII codes for the lowercase letters are
 " numbered 32 higher than their uppercase versions.
   for kc in range(65, 90)
-    call SendKeys([kc])
+    call SendKeyGroup([kc])
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc + 32), ch)
-    call SendKey(kc, 0)
+    call SendKeyWithModifiers(kc, 0)
     let ch = getcharstr(0)
     call assert_equal(nr2char(kc + 32), ch)
   endfor
 
 "  Test for Uppercase 'A' - 'Z' keys
 "  ie. with VK_SHIFT, expect the keycode = character code.
-  for modkey in [VK.SHIFT, VK.LSHIFT, VK.RSHIFT]
+  for modkey in [s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT]
     for kc in range(65, 90)
-      call SendKeys([modkey, kc])
+      call SendKeyGroup([modkey, kc])
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc), ch)
-      call SendKey(kc, vim_MOD_MASK_SHIFT)
+      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_SHIFT)
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc), ch)
     endfor
@@ -421,12 +461,12 @@ let VK = {
 
   " Test for <Ctrl-A> to <Ctrl-Z> keys
  "  Expect the unicode characters 0x01 to 0x1A
-   for modkey in [VK.CONTROL, VK.LCONTROL, VK.RCONTROL]
+   for modkey in [s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL]
     for kc in range(65, 90)
-      call SendKeys([modkey, kc])
+      call SendKeyGroup([modkey, kc])
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc - 64), ch)
-      call SendKey(kc, vim_MOD_MASK_CTRL)
+      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_CTRL)
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc - 64), ch)
     endfor
@@ -437,12 +477,12 @@ let VK = {
   "  Test for <Alt-A> to <Alt-Z> keys
   "  Expect the unicode characters 0xE1 to 0xFA
   "  ie. 160 higher than the lowercase equivalent
-    for modkey in [VK.ALT, VK.LALT, VK.RALT]
+    for modkey in [s:VK.ALT, s:VK.LALT, s:VK.RALT]
       for kc in range(65, 90)
-        call SendKeys([modkey, kc])
+        call SendKeyGroup([modkey, kc])
         let ch = getchar(0)
         call assert_equal(kc+160, ch)
-        call SendKey(kc, vim_MOD_MASK_ALT)
+        call SendKeyWithModifiers(kc, s:vim_MOD_MASK_ALT)
         let ch = getchar(0)
         call assert_equal(kc+160, ch)
       endfor
@@ -455,7 +495,7 @@ let VK = {
     for n in range(1, 12)
       let kstr = $"F{n}"
       let keycode = eval('"\<' .. kstr .. '>"')
-      call SendKeys([111+n])
+      call SendKeyGroup([111+n])
       let ch = getcharstr(0)
       call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
     endfor
@@ -469,16 +509,16 @@ let VK = {
 "      for n in range(1, 12)
 "        let kstr = $"{mod_str}F{n}"
 "        let keycode = eval('"\<' .. kstr .. '>"')
-"        " call SendKeys(mod_keycodes + [111+n])
-"        call SendKey(111+n, vim_mod_mask)
+"        " call SendKeyGroup(mod_keycodes + [111+n])
+"        call SendKeyWithModifiers(111+n, vim_mod_mask)
 "        let ch = getcharstr(0)
 "        let mod_mask = getcharmod()
 "        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
 "        " workaround for the virtual termcap maps changing the character instead
 "        " of sending Shift
 "        for mod_key in mod_keycodes
-"          if index([VK.SHIFT, VK.LSHIFT, VK.RSHIFT], mod_key) >= 0
-"            let mod_mask = mod_mask + vim_MOD_MASK_SHIFT
+"          if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
+"            let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
 "          endif
 "        endfor
 "        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
@@ -489,66 +529,66 @@ let VK = {
   " Refer to the following page for the virtual key codes:
   " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
   let keytests = [
-    \ [[VK.SHIFT,    VK.PRIOR], "S-Pageup", 2],
-    \ [[VK.LSHIFT,   VK.PRIOR], "S-Pageup", 2],
-    \ [[VK.RSHIFT,   VK.PRIOR], "S-Pageup", 2],
-    \ [[VK.CONTROL,  VK.PRIOR], "C-Pageup", 4],
-    \ [[VK.LCONTROL, VK.PRIOR], "C-Pageup", 4],
-    \ [[VK.RCONTROL, VK.PRIOR], "C-Pageup", 4],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.PRIOR], "C-S-Pageup", 6],
-    \ [[VK.SHIFT,    VK.NEXT], "S-PageDown", 2],
-    \ [[VK.LSHIFT,   VK.NEXT], "S-PageDown", 2],
-    \ [[VK.RSHIFT,   VK.NEXT], "S-PageDown", 2],
-    \ [[VK.CONTROL,  VK.NEXT], "C-PageDown", 4],
-    \ [[VK.LCONTROL, VK.NEXT], "C-PageDown", 4],
-    \ [[VK.RCONTROL, VK.NEXT], "C-PageDown", 4],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.NEXT], "C-S-PageDown", 6],
-    \ [[VK.SHIFT,    VK.END], "S-End", 0],
-    \ [[VK.CONTROL,  VK.END], "C-End", 0],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.END], "C-S-End", 4],
-    \ [[VK.SHIFT,    VK.HOME], "S-Home", 0],
-    \ [[VK.CONTROL,  VK.HOME], "C-Home", 0],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.HOME], "C-S-Home", 4],
-    \ [[VK.SHIFT,    VK.LEFT], "S-Left", 0],
-    \ [[VK.CONTROL,  VK.LEFT], "C-Left", 0],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.LEFT], "C-S-Left", 4],
-    \ [[VK.SHIFT,    VK.UP], "S-Up", 0],
-    \ [[VK.CONTROL,  VK.UP], "C-Up", 4],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.UP], "C-S-Up", 4],
-    \ [[VK.SHIFT,    VK.RIGHT], "S-Right", 0],
-    \ [[VK.CONTROL,  VK.RIGHT], "C-Right", 0],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.RIGHT], "C-S-Right", 4],
-    \ [[VK.SHIFT,    VK.DOWN], "S-Down", 0],
-    \ [[VK.CONTROL,  VK.DOWN], "C-Down", 4],
-    \ [[VK.CONTROL,  VK.SHIFT, VK.DOWN], "C-S-Down", 4],
-    \ [[VK.CONTROL,  VK.KEY_0], "C-0", 4],
-    \ [[VK.CONTROL,  VK.KEY_1], "C-1", 4],
-    \ [[VK.CONTROL,  VK.KEY_2], "C-2", 4],
-    \ [[VK.CONTROL,  VK.KEY_3], "C-3", 4],
-    \ [[VK.CONTROL,  VK.KEY_4], "C-4", 4],
-    \ [[VK.CONTROL,  VK.KEY_5], "C-5", 4],
-    \ [[VK.CONTROL,  VK.KEY_6], "C-^", 0],
-    \ [[VK.CONTROL,  VK.KEY_7], "C-7", 4],
-    \ [[VK.CONTROL,  VK.KEY_8], "C-8", 4],
-    \ [[VK.CONTROL,  VK.KEY_9], "C-9", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD0], "C-0", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD1], "C-1", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD2], "C-2", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD3], "C-3", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD4], "C-4", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD5], "C-5", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD6], "C-6", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD7], "C-7", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD8], "C-8", 4],
-    \ [[VK.CONTROL,  VK.NUMPAD9], "C-9", 4],
-    \ [[VK.CONTROL,  VK.MULTIPLY], "C-*", 4],
-    \ [[VK.CONTROL,  VK.ADD], "C-+", 4],
-    \ [[VK.CONTROL,  VK.SUBTRACT], "C--", 4]
+    \ [[s:VK.SHIFT,    s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.LSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.RSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.CONTROL,  s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.LCONTROL, s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.RCONTROL, s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.PRIOR], "C-S-Pageup", 6],
+    \ [[s:VK.SHIFT,    s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.LSHIFT,   s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.RSHIFT,   s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.CONTROL,  s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.LCONTROL, s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.RCONTROL, s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.NEXT], "C-S-PageDown", 6],
+    \ [[s:VK.SHIFT,    s:VK.END], "S-End", 0],
+    \ [[s:VK.CONTROL,  s:VK.END], "C-End", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.END], "C-S-End", 4],
+    \ [[s:VK.SHIFT,    s:VK.HOME], "S-Home", 0],
+    \ [[s:VK.CONTROL,  s:VK.HOME], "C-Home", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.HOME], "C-S-Home", 4],
+    \ [[s:VK.SHIFT,    s:VK.LEFT], "S-Left", 0],
+    \ [[s:VK.CONTROL,  s:VK.LEFT], "C-Left", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.LEFT], "C-S-Left", 4],
+    \ [[s:VK.SHIFT,    s:VK.UP], "S-Up", 0],
+    \ [[s:VK.CONTROL,  s:VK.UP], "C-Up", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.UP], "C-S-Up", 4],
+    \ [[s:VK.SHIFT,    s:VK.RIGHT], "S-Right", 0],
+    \ [[s:VK.CONTROL,  s:VK.RIGHT], "C-Right", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.RIGHT], "C-S-Right", 4],
+    \ [[s:VK.SHIFT,    s:VK.DOWN], "S-Down", 0],
+    \ [[s:VK.CONTROL,  s:VK.DOWN], "C-Down", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.DOWN], "C-S-Down", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_0], "C-0", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_1], "C-1", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_2], "C-2", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_3], "C-3", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_4], "C-4", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_5], "C-5", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_6], "C-^", 0],
+    \ [[s:VK.CONTROL,  s:VK.KEY_7], "C-7", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_8], "C-8", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_9], "C-9", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD0], "C-0", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD1], "C-1", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD2], "C-2", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD3], "C-3", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD4], "C-4", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD5], "C-5", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD6], "C-6", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD7], "C-7", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD8], "C-8", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD9], "C-9", 4],
+    \ [[s:VK.CONTROL,  s:VK.MULTIPLY], "C-*", 4],
+    \ [[s:VK.CONTROL,  s:VK.ADD], "C-+", 4],
+    \ [[s:VK.CONTROL,  s:VK.SUBTRACT], "C--", 4]
     \ ]
 
 "    " Not working in CI Testing yet!?
 "    for [kcodes, kstr, kmod] in keytests
-"      call SendKeys(kcodes)
+"      call SendKeyGroup(kcodes)
 "      let ch = getcharstr(0)
 "      let mod = getcharmod()
 "      let keycode = eval('"\<' .. kstr .. '>"')
@@ -556,6 +596,39 @@ let VK = {
 "      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
 "    endfor
 
+  bw!
+endfunc
+
+
+" Test for QWERTY Ctrl+- which should result in ^_
+" issue #10817
+func Test_QWERTY_Ctrl_minus()
+  CheckMSWindows
+  new
+
+  call SendKeyGroup([s:VK.CONTROL, s:VK.OEM_MINUS])
+  let ch = getcharstr(0)
+  call assert_equal(nr2char(0x1f),ch)
+
+  %d _
+  imapclear
+  imap <C-_> BINGO
+  call SendKey(s:VK.KEY_I)
+  call SendKeyGroup([s:VK.CONTROL, s:VK.OEM_MINUS])
+  call SendKey(s:VK.ESCAPE)
+  call ExecuteBufferedKeys()
+  call assert_equal('BINGO', getline('$'))
+
+  %d _
+  imapclear
+  exec "imap \x1f BILBO"
+  call SendKey(s:VK.KEY_I)
+  call SendKeyGroup([s:VK.CONTROL, s:VK.OEM_MINUS])
+  call SendKey(s:VK.ESCAPE)
+  call ExecuteBufferedKeys()
+  call assert_equal('BILBO', getline('$'))
+
+  imapclear
   bw!
 endfunc
 

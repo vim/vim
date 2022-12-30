@@ -1267,10 +1267,11 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 {
     static int s_dwMods = 0;
 
-    char_u *event = dict_get_string(args, "event", TRUE);
-    if (event && (STRICMP(event, "keydown") == 0
-					|| STRICMP(event, "keyup") == 0))
+    char_u *key_event = dict_get_string(args, "event", TRUE);
+    if (key_event && (STRICMP(key_event, "keydown") == 0
+					|| STRICMP(key_event, "keyup") == 0))
     {
+	BOOL keyDown = STRICMP(key_event, "keydown") == 0;
 	WORD vkCode = dict_get_number_def(args, "keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
 	{
@@ -1281,7 +1282,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	ir->EventType = KEY_EVENT;
 	KEY_EVENT_RECORD ker;
 	ZeroMemory(&ker, sizeof(ker));
-	ker.bKeyDown = STRICMP(event, "keydown") == 0;
+	ker.bKeyDown = keyDown;
 	ker.wRepeatCount = 1;
 	ker.wVirtualScanCode = 0;
 	ker.dwControlKeyState = 0;
@@ -1304,35 +1305,35 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 
 	if (vkCode == VK_LSHIFT || vkCode == VK_RSHIFT || vkCode == VK_SHIFT)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (keyDown)
 		s_dwMods |= SHIFT_PRESSED;
 	    else
 		s_dwMods &= ~SHIFT_PRESSED;
 	}
 	else if (vkCode == VK_LCONTROL || vkCode == VK_CONTROL)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (keyDown)
 		s_dwMods |= LEFT_CTRL_PRESSED;
 	    else
 		s_dwMods &= ~LEFT_CTRL_PRESSED;
 	}
 	else if (vkCode == VK_RCONTROL)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (keyDown)
 		s_dwMods |= RIGHT_CTRL_PRESSED;
 	    else
 		s_dwMods &= ~RIGHT_CTRL_PRESSED;
 	}
 	else if (vkCode == VK_LMENU || vkCode == VK_MENU)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (keyDown)
 		s_dwMods |= LEFT_ALT_PRESSED;
 	    else
 		s_dwMods &= ~LEFT_ALT_PRESSED;
 	}
 	else if (vkCode == VK_RMENU)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (keyDown)
 		s_dwMods |= RIGHT_ALT_PRESSED;
 	    else
 		s_dwMods &= ~RIGHT_ALT_PRESSED;
@@ -1350,19 +1351,28 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	    }
 	}
 
+	// The following are treated specially in Vim.
+	// Ctrl-6 is Ctrl-^
+	// Ctrl-2 is Ctrl-@
+	// Ctrl-- is Ctrl-_
+	if ((ker.dwControlKeyState == LEFT_CTRL_PRESSED
+	   || ker.dwControlKeyState == RIGHT_CTRL_PRESSED)
+	   && (vkCode == 0xBD || vkCode == '2' || vkCode == '6'))
+	    ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
+
 	ir->Event.KeyEvent = ker;
-	vim_free(event);
+	vim_free(key_event);
     }
     else
     {
-	if (event == NULL)
+	if (key_event == NULL)
 	{
 	    semsg(_(e_missing_argument_str), "event");
 	}
 	else
 	{
-	    semsg(_(e_invalid_value_for_argument_str_str), "event", event);
-	    vim_free(event);
+	    semsg(_(e_invalid_value_for_argument_str_str), "event", key_event);
+	    vim_free(key_event);
 	}
 	return FALSE;
     }
@@ -1985,10 +1995,23 @@ test_mswin_event(char_u *event, dict_T *args)
 
     INPUT_RECORD ir;
     BOOL input_encoded = FALSE;
+    BOOL execute = FALSE;
     if (STRCMP(event, "key") == 0)
-	input_encoded = encode_key_event(args, &ir);
+    {
+	execute = dict_get_bool(args, "execute", FALSE);
+	if (dict_has_key(args, "event"))
+	    input_encoded = encode_key_event(args, &ir);
+	else if (!execute)
+	{
+	    semsg(_(e_missing_argument_str), "event");
+	    return FALSE;
+	}
+    }
     else if (STRCMP(event, "mouse") == 0)
+    {
+	execute = TRUE;
 	input_encoded = encode_mouse_event(args, &ir);
+    }
     else
     {
 	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
@@ -2001,9 +2024,16 @@ test_mswin_event(char_u *event, dict_T *args)
     if (input_encoded)
 	lpEventsWritten = write_input_record_buffer(&ir, 1);
 
-    // Set flags to execute the mouse event, ie. like feedkeys mode X.
-    if (STRCMP(event, "mouse") == 0)
+    // Set flags to execute the event, ie. like feedkeys mode X.
+    if (execute)
+    {
+	int save_msg_scroll = msg_scroll;
+	// Avoid a 1 second delay when the keys start Insert mode.
+	msg_scroll = FALSE;
+	ch_log(NULL, "test_mswin_event() executing");
 	exec_normal(TRUE, TRUE, TRUE);
+	msg_scroll |= save_msg_scroll;
+    }
 
 # endif
     return lpEventsWritten;
@@ -2617,6 +2647,8 @@ mch_inchar(
 # endif
 	    }
 	}
+	if (time == 0)
+	    break;
     }
 
 # ifdef MCH_WRITE_DUMP
