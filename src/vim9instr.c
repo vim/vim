@@ -594,6 +594,7 @@ generate_TYPECHECK(
 	if (tt != NULL)
 	{
 	    *tt = *expected;
+	    tt->tt_flags &= ~TTFLAG_STATIC;
 	    tt->tt_flags |= TTFLAG_NUMBER_OK;
 	}
     }
