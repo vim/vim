@@ -476,12 +476,6 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_RFG,	"\033]10;?\007"},
     {(int)KS_RBG,	"\033]11;?\007"},
     {(int)KS_U7,	"\033[6n"},
-#  ifdef FEAT_TERMGUICOLORS
-    // These are printf strings, not terminal codes.
-    {(int)KS_8F,	"\033[38;2;%lu;%lu;%lum"},
-    {(int)KS_8B,	"\033[48;2;%lu;%lu;%lum"},
-    {(int)KS_8U,	"\033[58;2;%lu;%lu;%lum"},
-#  endif
     {(int)KS_CAU,	"\033[58;5;%dm"},
     {(int)KS_CBE,	"\033[?2004h"},
     {(int)KS_CBD,	"\033[?2004l"},
@@ -626,6 +620,20 @@ static tcap_entry_T builtin_kitty[] = {
 
     {(int)KS_NAME,	NULL}  // end marker
 };
+
+#ifdef FEAT_TERMGUICOLORS
+/*
+ * Additions for using the RGB colors
+ */
+static tcap_entry_T builtin_rgb[] = {
+    // These are printf strings, not terminal codes.
+    {(int)KS_8F,	"\033[38;2;%lu;%lu;%lum"},
+    {(int)KS_8B,	"\033[48;2;%lu;%lu;%lum"},
+    {(int)KS_8U,	"\033[58;2;%lu;%lu;%lum"},
+
+    {(int)KS_NAME,	NULL}  // end marker
+};
+#endif
 
 /*
  * iris-ansi for Silicon Graphics machines.
@@ -891,10 +899,6 @@ static tcap_entry_T builtin_win32[] = {
     {(int)KS_CS,	"\033|%i%p1%d;%p2%dr"}, // scroll region
 #  else
     {(int)KS_CS,	"\033|%i%d;%dr"}, // scroll region
-#  endif
-#  ifdef FEAT_TERMGUICOLORS
-    {(int)KS_8F,	"\033|38;2;%lu;%lu;%lum"},
-    {(int)KS_8B,	"\033|48;2;%lu;%lu;%lum"},
 #  endif
 
     {K_UP,		"\316H"},
@@ -1674,6 +1678,15 @@ static char *(key_names[]) =
 };
 #endif
 
+/*
+ * Return TRUE if "term_strings[idx]" was not set.
+ */
+    static int
+term_strings_not_set(enum SpecialKey idx)
+{
+    return TERM_STR(idx) == NULL || TERM_STR(idx) == empty_option;
+}
+
 #ifdef HAVE_TGETENT
 /*
  * Get the termcap entries we need with tgetstr(), tgetflag() and tgetnum().
@@ -1730,8 +1743,7 @@ get_term_entries(int *height, int *width)
      */
     for (i = 0; string_names[i].name != NULL; ++i)
     {
-	if (TERM_STR(string_names[i].dest) == NULL
-			     || TERM_STR(string_names[i].dest) == empty_option)
+	if (term_strings_not_set(string_names[i].dest))
 	{
 	    TERM_STR(string_names[i].dest) = TGETSTR(string_names[i].name, &tp);
 #ifdef FEAT_EVAL
@@ -1778,7 +1790,7 @@ get_term_entries(int *height, int *width)
     /*
      * Get number of colors (if not done already).
      */
-    if (TERM_STR(KS_CCO) == NULL || TERM_STR(KS_CCO) == empty_option)
+    if (term_strings_not_set(KS_CCO))
     {
 	set_color_count(tgetnum("Co"));
 #ifdef FEAT_EVAL
@@ -2069,6 +2081,17 @@ set_termname(char_u *term)
 	    apply_builtin_tcap(term, builtin_kitty, TRUE);
 	else if (kpc == KEYPROTOCOL_MOK2)
 	    apply_builtin_tcap(term, builtin_mok2, TRUE);
+
+#ifdef FEAT_TERMGUICOLORS
+	// There is no good way to detect that the terminal supports RGB
+	// colors.  Since these termcap entries are non-standard anyway and
+	// only used when the user sets 'termguicolors' we might as well add
+	// them.  But not when one of them was alredy set.
+	if (term_strings_not_set(KS_8F)
+		&& term_strings_not_set(KS_8B)
+		&& term_strings_not_set(KS_8U))
+	    apply_builtin_tcap(term, builtin_rgb, TRUE);
+#endif
     }
 
 /*
