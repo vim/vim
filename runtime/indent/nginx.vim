@@ -20,7 +20,7 @@ if exists('*GetNginxIndent')
   finish
 endif
 
-function! GetNginxIndent() abort
+function GetNginxIndent() abort
   let plnum = s:PrevNotAsBlank(v:lnum - 1)
 
   " Hit the start of the file, use zero indent.
@@ -57,7 +57,7 @@ function! GetNginxIndent() abort
 endfunction
 
 " Find the first line at or above {lnum} that is non-blank and not a comment.
-function! s:PrevNotAsBlank(lnum) abort
+function s:PrevNotAsBlank(lnum) abort
   let lnum = prevnonblank(a:lnum)
   while lnum > 0
     if getline(lnum) !~ '^\s*#'
@@ -69,10 +69,10 @@ function! s:PrevNotAsBlank(lnum) abort
 endfunction
 
 " Check whether {line} ends with {pat}, ignoring trailing comments.
-function! s:AsEndWith(line, pat) abort
+function s:AsEndWith(line, pat) abort
   return a:line =~ a:pat . '\m\s*\%(#.*\)\?$'
 endfunction
 
-function! s:IsLineContinuation(lnum) abort
+function s:IsLineContinuation(lnum) abort
   return a:lnum > 0 && !s:AsEndWith(getline(a:lnum), '[;{}]')
 endfunction
