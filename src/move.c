@@ -33,6 +33,7 @@ typedef struct
 } lineoff_T;
 
 static void topline_back(lineoff_T *lp);
+static void topline_back_winheight(lineoff_T *lp, int winheight);
 static void botline_forw(lineoff_T *lp);
 
 /*
@@ -219,6 +220,24 @@ smoothscroll_marker_overlap(int extra2)
 	return 0;
 #endif
     return extra2 > 3 ? 0 : 3 - extra2;
+}
+
+/*
+ * Calculates the skipcol offset for the window given how many
+ * physical lines we want to scroll down.
+ */
+    static int
+skipcol_from_plines(win_T *wp, int plines_off)
+{
+    int width1 = wp->w_width - win_col_off(wp);
+    int width2 = width1 + win_col_off2(wp);
+
+    int skipcol = 0;
+    if (plines_off > 0)
+	skipcol += width1;
+    if (plines_off > 1)
+	skipcol += width2 * (plines_off - 1);
+    return skipcol;
 }
 
 /*
@@ -2151,6 +2170,14 @@ scrollup_clamp(void)
     static void
 topline_back(lineoff_T *lp)
 {
+    topline_back_winheight(lp, TRUE);
+}
+
+    static void
+topline_back_winheight(
+    lineoff_T *lp,
+    int winheight)	// when TRUE limit to window height
+{
 #ifdef FEAT_DIFF
     if (lp->fill < diff_check_fill(curwin, lp->lnum))
     {
@@ -2174,7 +2201,7 @@ topline_back(lineoff_T *lp)
 	    lp->height = 1;
 	else
 #endif
-	    lp->height = PLINES_NOFILL(lp->lnum);
+	    lp->height = PLINES_WIN_NOFILL(curwin, lp->lnum, winheight);
     }
 }
 
@@ -2317,6 +2344,16 @@ scroll_cursor_top(int min_scroll, int always)
 	else
 #endif
 	    i = PLINES_NOFILL(top);
+	if (top < curwin->w_topline)
+	    scrolled += i;
+
+	/*
+	 * If scrolling is needed, scroll at least 'sj' lines.
+	 */
+	if ((new_topline >= curwin->w_topline || scrolled > min_scroll)
+		&& extra >= off)
+	    break;
+
 	used += i;
 	if (extra + i <= off && bot < curbuf->b_ml.ml_line_count)
 	{
@@ -2329,15 +2366,6 @@ scroll_cursor_top(int min_scroll, int always)
 		used += plines(bot);
 	}
 	if (used > curwin->w_height)
-	    break;
-	if (top < curwin->w_topline)
-	    scrolled += i;
-
-	/*
-	 * If scrolling is needed, scroll at least 'sj' lines.
-	 */
-	if ((new_topline >= curwin->w_topline || scrolled > min_scroll)
-		&& extra >= off)
 	    break;
 
 	extra += i;
@@ -2436,6 +2464,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
     int		i;
     linenr_T	line_count;
     linenr_T	old_topline = curwin->w_topline;
+    int		old_skipcol = curwin->w_skipcol;
     lineoff_T	loff;
     lineoff_T	boff;
 #ifdef FEAT_DIFF
@@ -2451,6 +2480,8 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
     cln = curwin->w_cursor.lnum;
     if (set_topbot)
     {
+	int set_skipcol = FALSE;
+
 	used = 0;
 	curwin->w_botline = cln + 1;
 #ifdef FEAT_DIFF
@@ -2461,9 +2492,30 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 		curwin->w_topline = loff.lnum)
 	{
 	    loff.lnum = curwin->w_topline;
-	    topline_back(&loff);
-	    if (loff.height == MAXCOL || used + loff.height > curwin->w_height)
+	    topline_back_winheight(&loff, FALSE);
+	    if (loff.height == MAXCOL)
 		break;
+	    if (used + loff.height > curwin->w_height)
+	    {
+		if (curwin->w_p_sms && curwin->w_p_wrap)
+		{
+		    // 'smoothscroll' and 'wrap' are set. The above
+		    // line is too long to show in its entirety, so
+		    // we show just a part of it.
+		    if (used < curwin->w_height)
+		    {
+			int plines_offset = used + loff.height - curwin->w_height;
+			used = curwin->w_height;
+#ifdef FEAT_DIFF
+			curwin->w_topfill = loff.fill;
+#endif
+			curwin->w_topline = loff.lnum;
+			curwin->w_skipcol = skipcol_from_plines(curwin, plines_offset);
+			set_skipcol = TRUE;
+		    }
+		}
+		break;
+	    }
 	    used += loff.height;
 #ifdef FEAT_DIFF
 	    curwin->w_topfill = loff.fill;
@@ -2475,8 +2527,15 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 #ifdef FEAT_DIFF
 		|| curwin->w_topfill != old_topfill
 #endif
+		|| set_skipcol || curwin->w_skipcol != 0
 		)
+	{
 	    curwin->w_valid &= ~(VALID_WROW|VALID_CROW);
+	    if (set_skipcol)
+		redraw_later(UPD_NOT_VALID);
+	    else
+		reset_skipcol();
+	}
     }
     else
 	validate_botline();
@@ -2680,7 +2739,9 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
      * (we changed them).
      * If topline did change, update_screen() will set botline.
      */
-    if (curwin->w_topline == old_topline && set_topbot)
+    if (curwin->w_topline == old_topline
+	    && curwin->w_skipcol == old_skipcol
+	    && set_topbot)
     {
 	curwin->w_botline = old_botline;
 	curwin->w_empty_rows = old_empty_rows;
@@ -2698,6 +2759,8 @@ scroll_cursor_halfway(int atend)
 {
     int		above = 0;
     linenr_T	topline;
+    colnr_T	skipcol = 0;
+    int		set_skipcol = FALSE;
 #ifdef FEAT_DIFF
     int		topfill = 0;
 #endif
@@ -2725,8 +2788,59 @@ scroll_cursor_halfway(int atend)
     used = plines(loff.lnum);
 #endif
     topline = loff.lnum;
+
+    int half_height = 0;
+    int smooth_scroll = FALSE;
+    if (curwin->w_p_sms && curwin->w_p_wrap)
+    {
+	// 'smoothscroll' and 'wrap' are set
+	smooth_scroll = TRUE;
+	half_height = (curwin->w_height - used) / 2;
+	used = 0;
+    }
+
     while (topline > 1)
     {
+	// If using smoothscroll, we can precisely scroll to the
+	// exact point where the cursor is halfway down the screen.
+	if (smooth_scroll)
+	{
+	    topline_back_winheight(&loff, FALSE);
+	    if (loff.height == MAXCOL)
+		break;
+	    else
+		used += loff.height;
+	    if (used > half_height)
+	    {
+		if (used - loff.height < half_height)
+		{
+		    int plines_offset = used - half_height;
+		    loff.height -= plines_offset;
+		    used = half_height;
+
+		    topline = loff.lnum;
+#ifdef FEAT_DIFF
+		    topfill = loff.fill;
+#endif
+
+		    skipcol =
+			skipcol_from_plines(curwin, plines_offset);
+		    set_skipcol = TRUE;
+		}
+		break;
+	    }
+	    topline = loff.lnum;
+#ifdef FEAT_DIFF
+	    topfill = loff.fill;
+#endif
+	    continue;
+	}
+
+	// If not using smoothscroll, we have to iteratively find
+	// how many lines to scroll down to roughly fit the cursor.
+	// This may not be right in the middle if the lines'
+	// physical height > 1 (e.g. 'wrap' is on).
+
 	if (below <= above)	    // add a line below the cursor first
 	{
 	    if (boff.lnum < curbuf->b_ml.ml_line_count)
@@ -2764,7 +2878,21 @@ scroll_cursor_halfway(int atend)
 #ifdef FEAT_FOLDING
     if (!hasFolding(topline, &curwin->w_topline, NULL))
 #endif
-	curwin->w_topline = topline;
+    {
+	if (curwin->w_topline != topline
+		|| set_skipcol
+		|| curwin->w_skipcol != 0)
+	{
+	    curwin->w_topline = topline;
+	    if (set_skipcol)
+	    {
+		curwin->w_skipcol = skipcol;
+		redraw_later(UPD_NOT_VALID);
+	    }
+	    else
+		reset_skipcol();
+	}
+    }
 #ifdef FEAT_DIFF
     curwin->w_topfill = topfill;
     if (old_topline > curwin->w_topline + curwin->w_height)
