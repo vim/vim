@@ -374,6 +374,8 @@ def Test_class_member_access()
          this.lnum = 1
          this.col = 1
          static counter = 0
+         static _secret = 7
+         public static  anybody = 42
 
          def AddToCounter(nr: number)
            counter += nr
@@ -386,7 +388,17 @@ def Test_class_member_access()
       assert_fails('echo TextPos.noSuchMember', 'E1338:')
 
       assert_fails('TextPos.noSuchMember = 2', 'E1337:')
-      assert_fails('TextPos.counter += 5', 'E1335')
+      assert_fails('TextPos.counter = 5', 'E1335:')
+      assert_fails('TextPos.counter += 5', 'E1335:')
+
+      assert_fails('echo TextPos._secret', 'E1333:')
+      assert_fails('TextPos._secret = 8', 'E1333:')
+
+      assert_equal(42, TextPos.anybody)
+      TextPos.anybody = 12
+      assert_equal(12, TextPos.anybody)
+      TextPos.anybody += 5
+      assert_equal(17, TextPos.anybody)
   END
   v9.CheckScriptSuccess(lines)
 enddef
