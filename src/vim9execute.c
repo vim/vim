@@ -377,6 +377,41 @@ get_pt_outer(partial_T *pt)
 }
 
 /*
+ * Check "argcount" arguments on the stack against what "ufunc" expects.
+ * "off" is the offset of arguments on the stack.
+ * Return OK or FAIL.
+ */
+    static int
+check_ufunc_arg_types(ufunc_T *ufunc, int argcount, int off, ectx_T *ectx)
+{
+    if (ufunc->uf_arg_types != NULL || ufunc->uf_va_type != NULL)
+    {
+	typval_T	*argv = STACK_TV_BOT(0) - argcount - off;
+
+	// The function can change at runtime, check that the argument
+	// types are correct.
+	for (int i = 0; i < argcount; ++i)
+	{
+	    type_T *type = NULL;
+
+	    // assume a v:none argument, using the default value, is always OK
+	    if (argv[i].v_type == VAR_SPECIAL
+					 && argv[i].vval.v_number == VVAL_NONE)
+		continue;
+
+	    if (i < ufunc->uf_args.ga_len && ufunc->uf_arg_types != NULL)
+		type = ufunc->uf_arg_types[i];
+	    else if (ufunc->uf_va_type != NULL)
+		type = ufunc->uf_va_type->tt_member;
+	    if (type != NULL && check_typval_arg_type(type,
+					    &argv[i], NULL, i + 1) == FAIL)
+		return FAIL;
+	}
+    }
+    return OK;
+}
+
+/*
  * Call compiled function "cdf_idx" from compiled code.
  * This adds a stack frame and sets the instruction pointer to the start of the
  * called function.
@@ -497,6 +532,10 @@ call_dfunc(
 			missing), missing);
 	return FAIL;
     }
+
+    // Check the argument types.
+    if (check_ufunc_arg_types(ufunc, argcount, vararg_count, ectx) == FAIL)
+	return FAIL;
 
     // Reserve space for:
     // - missing arguments
@@ -1345,26 +1384,8 @@ call_by_name(
 
     if (ufunc != NULL)
     {
-	if (ufunc->uf_arg_types != NULL || ufunc->uf_va_type != NULL)
-	{
-	    int i;
-	    typval_T	*argv = STACK_TV_BOT(0) - argcount;
-
-	    // The function can change at runtime, check that the argument
-	    // types are correct.
-	    for (i = 0; i < argcount; ++i)
-	    {
-		type_T *type = NULL;
-
-		if (i < ufunc->uf_args.ga_len && ufunc->uf_arg_types != NULL)
-		    type = ufunc->uf_arg_types[i];
-		else if (ufunc->uf_va_type != NULL)
-		    type = ufunc->uf_va_type->tt_member;
-		if (type != NULL && check_typval_arg_type(type,
-						&argv[i], NULL, i + 1) == FAIL)
-		    return FAIL;
-	    }
-	}
+	if (check_ufunc_arg_types(ufunc, argcount, 0, ectx) == FAIL)
+	    return FAIL;
 
 	return call_ufunc(ufunc, NULL, argcount, ectx, iptr, selfdict);
     }

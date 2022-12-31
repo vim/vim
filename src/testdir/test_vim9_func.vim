@@ -4277,6 +4277,32 @@ func Test_lambda_allocation_failure()
   bw!
 endfunc
 
+def Test_lambda_argument_type_check()
+  var lines =<< trim END
+      vim9script
+
+      def Scan(ll: list<any>): func(func(any))
+        return (Emit: func(any)) => {
+          for e in ll
+            Emit(e)
+          endfor
+        }
+      enddef
+
+      def Sum(Cont: func(func(any))): any
+        var sum = 0.0
+        Cont((v: float) => {  # <== NOTE: the lambda expects a float
+          sum += v
+        })
+        return sum
+      enddef
+
+      const ml = [3.0, 2, 7]
+      echo Scan(ml)->Sum()
+  END
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected float but got number')
+enddef
+
 def Test_multiple_funcref()
   # This was using a NULL pointer
   var lines =<< trim END
