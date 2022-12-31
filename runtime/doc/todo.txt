@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Dec 11
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Dec 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,13 +54,19 @@ Upcoming larger works:
 
 Further Vim9 improvements, possibly after launch:
 - implement :class and :interface: See |vim9-classes|  #11544
-    make default constructor use "this.member = void"
-    make public / default read access / private work for members.
-    string value of class and object in echo_string_core()
-    object empty(), len() - can class define a method?
+    class members: add test for read/write access
+	Test for E1337
+    Should object members be declared with "var"?  Looks more normal.
+    Don't use "class method" in the help but use "class function", more people
+    are used to that.
+    implement class functions: static def Method()
+    Disallow shadowing class members, e.g. by function arguments.
     tv_equal() should compare values, not identity.
+    import/export of a class
+    using a class name as a type
     garbage collection: set_ref_in_item(): Mark items in class as used ?
     type() should return different type for each class?
+    object empty(), len() - can class define a method to be used for them?
     how about lock/unlock?
 - implement :type
 - implement :enum
@@ -69,6 +75,56 @@ Further Vim9 improvements, possibly after launch:
 - When evaluating constants for script variables, some functions could work:
     has(featureName), len(someString)
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
+
+Information missing in terminfo:
+Priority:
+- t_RV	request terminal version string; xterm:	"\033[>c"
+Codes used for focus gained and lost (currently using use_xterm_like_mouse())
+  termcodes are hard-coded in set_termname(), not named.
+- t_fe	enable focus-event tracking
+- t_fd	disable focus-event tracking
+Underline and similar:
+- t_AU - Set underline color: like "AF" and "AB" entries.
+- t_Ce	undercurl and underline end
+- t_Cs	undercurl (curly underline) mode
+- t_Us	double underline mode
+- t_ds	dotted underline mode
+- t_Ds	dashed underline mode
+- t_Te	strikethrough end
+- t_Ts	strikethrough mode
+Cursor codes: |termcap-cursor-shape|
+- t_RC	request terminal cursor blinking
+- t_RS	request terminal cursor style
+- t_VS	cursor normally visible (no blink)
+- t_SI	start insert mode (bar cursor shape)
+- t_SR	start replace mode (underline cursor shape)
+- t_EI	end insert or replace mode (block cursor shape)
+- t_SC	set cursor color start
+- t_EC	set cursor color end
+- t_SH	set cursor shape
+State requests:
+- t_RF	request terminal foreground color
+- t_RB	request terminal background color
+Less important (not needed for regular editing):
+- t_IS	set icon text start
+- t_IE	set icon text end
+- t_ST	save window title to stack
+- t_RT	restore window title from stack
+- t_Si	save icon text to stack
+- t_Ri	restore icon text from stack
+- t_WP	set window position (Y, X) in pixels
+- t_GP	get window position (Y, X) in pixels
+- t_WS	set window size (height, width in cells)
+Vim internal, but there should be a terminfo entry for these:
+- t_8f	set foreground color (R, G, B) in printf() format
+- t_8b	set background color (R, G, B) in printf() format
+- t_8u	set underline color (R, G, B) in printf() format
+Probably Vim internal, not in terminfo:
+- t_TE	end of "raw" mode
+- t_TI	put terminal into "raw" mode
+- t_RK	request terminal keyboard protocol state; sent after |t_TI|
+Already working, not properly documented:
+- t_u7	request cursor position
 
 Popup windows:
 - Add a function to redraw a specific popup window.  Esp. to be used when
@@ -177,6 +233,10 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Patch adds showcmd() function  #11708  - tests missing StopVimInTerminal()
+
+Some setaf/setab/t_AF/t_AB values support RGB somehow?  Can we use that?
+
 Crash when a variable is removed while listing variables (Issue #11435)
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
@@ -211,6 +271,12 @@ Add 'keywordprg' to various ftplugin files:
 https://github.com/vim/vim/pull/5566
 
 PR #11579 to add visualtext(), return Visually selected text.
+
+Stray characters in the shell #11719, caused by requesting a response for:
+- XT key sequences
+- Whether modifyOtherKeys is active
+- Whether kitty keyboard protocol is active
+Can we not request XT key sequences, or reduce them drastically?
 
 Issue #10512: Dynamic loading broken with Perl 5.36
 Damien has a patch (2022 Dec 4)
@@ -425,6 +491,10 @@ work.
 
 Using "au!" after "filetype on" is a bit slow.  Can the matching of
 autocommands be made faster?  (#7056)
+
+Using a search pattern containing "\%V" and 'hlsearch' set keeps old matches
+when the Visual area changes.  #11694.  Do a redraw when starting a Visual
+selection?
 
 Append in Visual block mode inserts the wrong character.
 Test_visual_block_mode() already has the proper check, which is commented out.

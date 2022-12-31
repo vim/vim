@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2022 Nov 24
+*syntax.txt*	For Vim version 9.0.  Last change: 2022 Dec 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5003,7 +5003,7 @@ in their own color.
 
 						*highlight-clear* *:hi-clear*
 :hi[ghlight] clear	Reset all highlighting to the defaults.  Removes all
-			highlighting for groups added by the user!
+			highlighting for groups added by the user.
 			Uses the current value of 'background' to decide which
 			default colors to use.
 			If there was a default link, restore it. |:hi-link|

@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2022 Dec 01
+*term.txt*      For Vim version 9.0.  Last change: 2022 Dec 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -88,7 +88,8 @@ Output resumes when you hit <BS>.
 
 Note: When 't_ti' is not empty, Vim assumes that it causes switching to the
 alternate screen.  This may slightly change what happens when executing a
-shell command or exiting Vim.  To avoid this use 't_TI' and 't_TE'.
+shell command or exiting Vim.  To avoid this use 't_TI' and 't_TE' (but make
+sure to add to them, not overwrite).
 
 Vim will try to detect what keyboard protocol the terminal is using with the
 't_RK' termcap entry.  This is sent after 't_TI', but only when there is no
@@ -126,7 +127,11 @@ automatically, you can try using something like this: >
 	  exec "set t_PS=\e[200~"
 	  exec "set t_PE=\e[201~"
 	endif
-<
+
+The terminfo entries "BE", "BD", "PS" and "PE" were added in ncurses version
+6.4, early 2023, for some terminals.  If you have this version then you may
+not have to manually configure your terminal.
+
 							*tmux-integration*
 If you experience issues when running Vim inside tmux, here are a few hints.
 You can comment-out parts if something doesn't work (it may depend on the
@@ -294,13 +299,32 @@ When Vim receives a response to the |t_RV| (request version) sequence and it
 starts with CSI, it assumes that the terminal is in 8-bit mode and will
 convert all key sequences to their 8-bit variants.
 
+						*xterm-terminfo-entries*
+For some time the terminfo entries were insufficient to describe all the
+features tht Vim can use.  The builtin xterm termcap entries did have these,
+with the result that several terminals that were similar enough to xterm took
+advantage of these by prefixing "xterm-" to the terminal name in $TERM.
+
+This leads to problems, because quite often these terminals are not 100%
+compatible with xterm.  At the start of 2023 several entries have been added
+to the terminfo database to make it possible to use these features without
+using the "xterm" workaround.  These are the relevant entries (so far):
+
+	name	xterm value	description ~
+	RV	"\033[>c"	Request version |t_RV|
+
+	BE	"\033[?2004h"	enable bracketed paste mode |t_BE|
+	BD	"\033[?2004l"	disable bracketed paste mode |t_BD|
+	PS	"\033[200~"	pasted text start |t_PS|
+	PE	"\033[201~"	pasted text end |t_PE|
+
 						*xterm-kitty* *kitty-terminal*
-The Kitty terminal is a special case.  Mainly because it works different from
-most other terminals, but also because, instead of trying the fit in and make
-it behave like other terminals by default, it dictates how applications need
-to work when using Kitty.  This makes it very difficult for Vim to work in a
-Kitty terminal.  Some exceptions have been hard coded, but it is not at all
-nice to have to make exceptions for one specific terminal.
+The Kitty terminal is a special case.  Mainly because it works differently
+from most other terminals, but also because, instead of trying the fit in and
+make it behave like other terminals by default, it dictates how applications
+need to work when using Kitty.  This makes it very difficult for Vim to work
+in a Kitty terminal.  Some exceptions have been hard coded, but it is not at
+all nice to have to make exceptions for one specific terminal.
 
 One of the problems is that the value for $TERM is set to "xterm-kitty".  For
 Vim this is an indication that the terminal is xterm-compatible and the
@@ -448,10 +472,10 @@ Added by Vim (there are no standard codes for these):
 	t_Si	save icon text to stack				*t_Si* *'t_Si'*
 	t_Ri	restore icon text from stack			*t_Ri* *'t_Ri'*
 	t_TE	end of "raw" mode				*t_TE* *'t_TE'*
-	t_TI	put terminal into "raw" mode 			*t_TI* *'t_TI'*
-	t_fe	enable focus-event tracking 			*t_fe* *'t_fe'*
+	t_TI	put terminal into "raw" mode			*t_TI* *'t_TI'*
+	t_fe	enable focus-event tracking			*t_fe* *'t_fe'*
 		|xterm-focus-event|
-	t_fd	disable focus-event tracking 			*t_fd* *'t_fd'*
+	t_fd	disable focus-event tracking			*t_fd* *'t_fd'*
 		|xterm-focus-event|
 
 Some codes have a start, middle and end part.  The start and end are defined
@@ -461,8 +485,8 @@ by the termcap option, the middle part is text.
 	set cursor color:   t_SC  {color name}  t_EC
 
 t_SH must take one argument:
-	0, 1 or none  	blinking block cursor
-	2	      	block cursor
+	0, 1 or none	blinking block cursor
+	2		block cursor
 	3		blinking underline cursor
 	4		underline cursor
 	5		blinking vertical bar cursor
@@ -531,6 +555,7 @@ Note: Use the <> form if possible
 	t_%1	<Help>		help key			*t_%1* *'t_%1'*
 	t_&8	<Undo>		undo key			*t_&8* *'t_&8'*
 	t_kI	<Insert>	insert key			*t_kI* *'t_kI'*
+		<kInsert>	keypad insert key
 	t_kD	<Del>		delete key			*t_kD* *'t_kD'*
 	t_kb	<BS>		backspace key			*t_kb* *'t_kb'*
 	t_kB	<S-Tab>		back-tab (shift-tab)  *<S-Tab>*	*t_kB* *'t_kB'*
@@ -563,9 +588,13 @@ Note: Use the <> form if possible
 	t_KK	<k8>		keypad 8		 *<k8>*	*t_KK* *'t_KK'*
 	t_KL	<k9>		keypad 9		 *<k9>*	*t_KL* *'t_KL'*
 		<Mouse>		leader of mouse code		*<Mouse>*
-								*t_PS* *'t_PS'*
-	t_PS	start of bracketed paste |xterm-bracketed-paste|
-	t_PE	end of bracketed paste |xterm-bracketed-paste|  *t_PE* *'t_PE'*
+
+	t_PS	<PasteStart>	start of bracketed paste	*t_PS* *'t_PS'*
+				|xterm-bracketed-paste|
+	t_PE	<PasteEnd>	end of bracketed paste		*t_PE* *'t_PE'*
+				|xterm-bracketed-paste|
+		<FocusGained>	Vim window got focus (internal only)
+		<FocusLost>	Vim window lost focus (internal only)
 
 Note about t_so and t_mr: When the termcap entry "so" is not present the
 entry for "mr" is used.  And vice versa.  The same is done for "se" and "me".
@@ -604,12 +633,15 @@ work the 'termguicolors' option needs to be set.
 See https://github.com/termstandard/colors for a list of terminals that
 support true colors.
 
-Sometimes setting 'termguicolors' is not enough and one has to set the |t_8f|
-and |t_8b| options explicitly. Default values of these options are
-"^[[38;2;%lu;%lu;%lum" and "^[[48;2;%lu;%lu;%lum" respectively, but it is only
-set when `$TERM` is `xterm`. Some terminals accept the same sequences, but
-with all semicolons replaced by colons (this is actually more compatible, but
-less widely supported): >
+For telling the terminal what RGB color to use the |t_8f| and |t_8b| termcap
+entries are used.  These are set by default to values that work for most
+terminals.  If that does not work for your terminal you can set them manually.
+The default values are set like this: >
+	 let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+	 let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+
+Some terminals accept the same sequences, but with all semicolons replaced by
+colons (this is actually more compatible, but less widely supported): >
 	 let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
 	 let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
 
@@ -627,7 +659,7 @@ is actually the case.
 To overrule the default, put this line in your ~/.Xdefaults or
 ~/.Xresources:
 >
-	XTerm*allowWindowOps: 		true
+	XTerm*allowWindowOps:		true
 
 And run "xrdb -merge .Xresources" to make it effective.  You can check the
 value with the context menu (right mouse button while CTRL key is pressed),

@@ -438,10 +438,8 @@ $quote	eval.txt	/*$quote*
 'keymap'	options.txt	/*'keymap'*
 'keymodel'	options.txt	/*'keymodel'*
 'keyprotocol'	options.txt	/*'keyprotocol'*
-'keywordprg'	options.txt	/*'keywordprg'*
 'km'	options.txt	/*'km'*
 'kmp'	options.txt	/*'kmp'*
-'kp'	options.txt	/*'kp'*
 'kpc'	options.txt	/*'kpc'*
 'langmap'	options.txt	/*'langmap'*
 'langmenu'	options.txt	/*'langmenu'*
@@ -926,6 +924,7 @@ $quote	eval.txt	/*$quote*
 'shortname'	options.txt	/*'shortname'*
 'showbreak'	options.txt	/*'showbreak'*
 'showcmd'	options.txt	/*'showcmd'*
+'showcmdloc'	options.txt	/*'showcmdloc'*
 'showfulltag'	options.txt	/*'showfulltag'*
 'showmatch'	options.txt	/*'showmatch'*
 'showmode'	options.txt	/*'showmode'*
@@ -938,6 +937,7 @@ $quote	eval.txt	/*$quote*
 'siso'	options.txt	/*'siso'*
 'sj'	options.txt	/*'sj'*
 'slm'	options.txt	/*'slm'*
+'sloc'	options.txt	/*'sloc'*
 'slow'	vi_diff.txt	/*'slow'*
 'slowopen'	vi_diff.txt	/*'slowopen'*
 'sm'	options.txt	/*'sm'*
@@ -2201,6 +2201,7 @@ $quote	eval.txt	/*$quote*
 :aun	gui.txt	/*:aun*
 :aunmenu	gui.txt	/*:aunmenu*
 :autocmd	autocmd.txt	/*:autocmd*
+:autocmd-block	autocmd.txt	/*:autocmd-block*
 :autocmd-verbose	autocmd.txt	/*:autocmd-verbose*
 :b	windows.txt	/*:b*
 :bN	windows.txt	/*:bN*
@@ -3017,6 +3018,7 @@ $quote	eval.txt	/*$quote*
 :pts	tagsrch.txt	/*:pts*
 :ptselect	tagsrch.txt	/*:ptselect*
 :pu	change.txt	/*:pu*
+:public	vim9class.txt	/*:public*
 :put	change.txt	/*:put*
 :pw	editing.txt	/*:pw*
 :pwd	editing.txt	/*:pwd*
@@ -4383,7 +4385,19 @@ E1324	eval.txt	/*E1324*
 E1325	vim9class.txt	/*E1325*
 E1326	vim9class.txt	/*E1326*
 E1327	vim9class.txt	/*E1327*
+E1328	vim9class.txt	/*E1328*
+E1329	vim9class.txt	/*E1329*
 E133	userfunc.txt	/*E133*
+E1330	vim9class.txt	/*E1330*
+E1331	vim9class.txt	/*E1331*
+E1332	vim9class.txt	/*E1332*
+E1333	vim9class.txt	/*E1333*
+E1334	vim9class.txt	/*E1334*
+E1335	vim9class.txt	/*E1335*
+E1336	options.txt	/*E1336*
+E1337	vim9class.txt	/*E1337*
+E1338	vim9class.txt	/*E1338*
+E1339	textprop.txt	/*E1339*
 E134	change.txt	/*E134*
 E135	autocmd.txt	/*E135*
 E136	starting.txt	/*E136*
@@ -8200,6 +8214,7 @@ keypad-point	intro.txt	/*keypad-point*
 keys()	builtin.txt	/*keys()*
 keytrans()	builtin.txt	/*keytrans()*
 kitty-keyboard-protocol	map.txt	/*kitty-keyboard-protocol*
+kitty-terminal	term.txt	/*kitty-terminal*
 known-bugs	todo.txt	/*known-bugs*
 l	motion.txt	/*l*
 l:	eval.txt	/*l:*
@@ -9575,6 +9590,7 @@ shm-A	options.txt	/*shm-A*
 shm-C	options.txt	/*shm-C*
 shm-F	options.txt	/*shm-F*
 shm-I	options.txt	/*shm-I*
+shm-O	options.txt	/*shm-O*
 shm-S	options.txt	/*shm-S*
 shm-T	options.txt	/*shm-T*
 shm-W	options.txt	/*shm-W*
@@ -9630,7 +9646,6 @@ slice()	builtin.txt	/*slice()*
 slow-fast-terminal	term.txt	/*slow-fast-terminal*
 slow-start	starting.txt	/*slow-start*
 slow-terminal	term.txt	/*slow-terminal*
-smh-O	options.txt	/*smh-O*
 socket-interface	channel.txt	/*socket-interface*
 sort()	builtin.txt	/*sort()*
 sorting	change.txt	/*sorting*
@@ -10312,6 +10327,7 @@ test_garbagecollect_soon()	testing.txt	/*test_garbagecollect_soon()*
 test_getvalue()	testing.txt	/*test_getvalue()*
 test_gui_event()	testing.txt	/*test_gui_event()*
 test_ignore_error()	testing.txt	/*test_ignore_error()*
+test_mswin_event()	testing.txt	/*test_mswin_event()*
 test_null_blob()	testing.txt	/*test_null_blob()*
 test_null_channel()	testing.txt	/*test_null_channel()*
 test_null_dict()	testing.txt	/*test_null_dict()*
@@ -11068,6 +11084,7 @@ xterm-cursor-keys	term.txt	/*xterm-cursor-keys*
 xterm-end-home-keys	term.txt	/*xterm-end-home-keys*
 xterm-focus-event	term.txt	/*xterm-focus-event*
 xterm-function-keys	term.txt	/*xterm-function-keys*
+xterm-kitty	term.txt	/*xterm-kitty*
 xterm-modifier-keys	term.txt	/*xterm-modifier-keys*
 xterm-mouse	options.txt	/*xterm-mouse*
 xterm-mouse-wheel	scroll.txt	/*xterm-mouse-wheel*
@@ -11076,6 +11093,7 @@ xterm-save-screen	tips.txt	/*xterm-save-screen*
 xterm-screens	tips.txt	/*xterm-screens*
 xterm-scroll-region	term.txt	/*xterm-scroll-region*
 xterm-shifted-keys	term.txt	/*xterm-shifted-keys*
+xterm-terminfo-entries	term.txt	/*xterm-terminfo-entries*
 xterm-true-color	term.txt	/*xterm-true-color*
 y	change.txt	/*y*
 yaml.vim	syntax.txt	/*yaml.vim*

@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 9.0.  Last change: 2022 Nov 18
+*textprop.txt*  For Vim version 9.0.  Last change: 2022 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -220,10 +220,16 @@ prop_add({lnum}, {col}, {props})
 		Any Tab and other control character in the text will be
 		changed to a space (Rationale: otherwise the size of the text
 		is difficult to compute).
-		A negative "id" will be chosen and is returned.  Once a
-		property with "text" has been added for a buffer then using a
-		negative "id" for any other property will give an error:
-		*E1293*
+		A negative "id" will be chosen and is returned.
+
+		Before text properties with text were supported it was
+		possible to use a negative "id", even though this was very
+		rare.  Now that negative "id"s are reserved for text
+		properties with text an error is given when using a negative
+		"id".  When a text property with text already exists using a
+		negative "id" results in *E1293* .  If a negative "id" was
+		used and later a text property with text is added results in
+		*E1339* .
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)

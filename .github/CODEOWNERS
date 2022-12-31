@@ -299,6 +299,7 @@ runtime/plugin/tarPlugin.vim		@cecamp
 runtime/plugin/vimballPlugin.vim	@cecamp
 runtime/plugin/zipPlugin.vim		@cecamp
 runtime/plugin/manpager.vim		@Konfekt
+runtime/syntax/shared/hgcommitDiff.vim		@vegerot
 runtime/syntax/abaqus.vim		@costerwi
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/amiga.vim		@cecamp

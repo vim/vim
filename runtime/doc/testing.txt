@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 9.0.  Last change: 2022 Nov 28
+*testing.txt*	For Vim version 9.0.  Last change: 2022 Dec 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

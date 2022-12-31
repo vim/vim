@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2022 Dec 11
+*vim9class.txt*	For Vim version 9.0.  Last change: 2022 Dec 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -117,7 +117,7 @@ Member write access ~
 Now try to change an object member directly: >
 
 	pos.lnum = 9
-
+<								*E1335*
 This will give you an error!  That is because by default object members can be
 read but not set.  That's why the class provides a method for it: >
 
@@ -128,7 +128,7 @@ way.  Most often there is no problem using a value, while setting a value may
 have side effects that need to be taken care of.  In this case, the SetLnum()
 method could check if the line number is valid and either give an error or use
 the closest valid value.
-
+						*:public* *E1331*
 If you don't care about side effects and want to allow the object member to be
 changed at any time, you can make it public: >
 
@@ -137,10 +137,14 @@ changed at any time, you can make it public: >
 
 Now you don't need the SetLnum(), SetCol() and SetPosition() methods, setting
 "pos.lnum" directly above will no longer give an error.
+							*E1334*
+If you try to set an object member that doesn't exist you get an error: >
+	pos.other = 9
+<	E1334: Object member not found: other ~
 
 
 Private members ~
-
+							*E1332* *E1333*
 On the other hand, if you do not want the object members to be read directly,
 you can make them private.  This is done by prefixing an underscore to the
 name: >
@@ -245,7 +249,7 @@ class, for which objects can be created.  Example: >
 	   enddef
 	endclass
 <
-						*class-member* *:static*
+					*class-member* *:static* *E1337* *E1338*
 Class members are declared with "static".  They are used by the name without a
 prefix: >
 
@@ -389,6 +393,17 @@ Inside a class, in betweeen `:class` and `:endclass`, these items can appear:
   	def newName(arguments)
 - An object method: >
   	def SomeMethod(arguments)
+<							*E1329*
+For the object member the type must be specified.  The best way is to do this
+explicitly with ": {type}".  For simple types you can also use an initializer,
+such as "= 123", and Vim will see that the type is a number.  Avoid doing this
+for more complex types and when the type will be incomplete.  For example: >
+	this.nameList = []
+This specifies a list, but the item type is unknown.  Better use: >
+	this.nameList: list<string>
+The initialization isn't needed, the list is empty by default.
+							*E1330*
+Some types cannot be used, such as "void", "null" and "v:none".
 
 
 Defining an interface ~

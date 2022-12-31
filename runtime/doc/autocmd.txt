@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.0.  Last change: 2022 Nov 22
+*autocmd.txt*   For Vim version 9.0.  Last change: 2022 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -97,7 +97,7 @@ If the `:autocmd` is in Vim9 script (a script that starts with `:vim9script`
 and in a `:def` function) then {cmd} will be executed as in Vim9
 script.  Thus this depends on where the autocmd is defined, not where it is
 triggered.
-
+							*:autocmd-block*
 {cmd} can be a block, like with `:command`, see |:command-repl|.  Example: >
 	au BufReadPost *.xml {
 		  setlocal matchpairs+=<:>
