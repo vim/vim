@@ -1494,30 +1494,6 @@ test_gui_tabmenu_event(dict_T *args UNUSED)
 # endif
 
     void
-f_test_mswin_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-# ifdef MSWIN
-    rettv->v_type = VAR_BOOL;
-    rettv->vval.v_number = FALSE;
-
-    if (sandbox != 0)
-    {
-	emsg(_(e_not_allowed_in_sandbox));
-	return;
-    }
-
-    if (check_for_string_arg(argvars, 0) == FAIL
-	    || check_for_dict_arg(argvars, 1) == FAIL
-	    || argvars[1].vval.v_dict == NULL)
-	return;
-
-    char_u *event = tv_get_string(&argvars[0]);
-    rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
-
-# endif
-}
-
-    void
 f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 # ifdef FEAT_GUI
@@ -1544,10 +1520,6 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     else if (STRCMP(event, "findrepl") == 0)
 	rettv->vval.v_number = test_gui_find_repl(argvars[1].vval.v_dict);
 #  endif
-#  ifdef MSWIN
-    else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0)
-	rettv->vval.v_number = test_mswin_event(event, argvars[1].vval.v_dict);
-#  endif
     else if (STRCMP(event, "mouse") == 0)
 	rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
     else if (STRCMP(event, "scrollbar") == 0)
@@ -1556,6 +1528,10 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	rettv->vval.v_number = test_gui_tabline_event(argvars[1].vval.v_dict);
     else if (STRCMP(event, "tabmenu") == 0)
 	rettv->vval.v_number = test_gui_tabmenu_event(argvars[1].vval.v_dict);
+#  ifdef FEAT_GUI_MSWIN
+    else if (STRCMP(event, "sendevent") == 0)
+	rettv->vval.v_number = test_gui_w32_sendevent(argvars[1].vval.v_dict);
+#  endif
     else
     {
 	semsg(_(e_invalid_argument_str), event);

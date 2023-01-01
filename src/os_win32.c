@@ -177,24 +177,6 @@ static void gotoxy(unsigned x, unsigned y);
 static void standout(void);
 static int s_cursor_visible = TRUE;
 static int did_create_conin = FALSE;
-// The 'input_record_buffer' is an internal dynamic fifo queue of MS-Windows
-// console INPUT_RECORD events that are normally read from the console input
-// buffer.  This provides an injection point for testing the low-level handling
-// of INPUT_RECORDs.
-typedef struct input_record_buffer_node_S
-{
-    INPUT_RECORD ir;
-    struct input_record_buffer_node_S *next;
-} input_record_buffer_node_T;
-typedef struct input_record_buffer_S
-{
-    input_record_buffer_node_T *head;
-    input_record_buffer_node_T *tail;
-    int length;
-} input_record_buffer_T;
-static input_record_buffer_T input_record_buffer;
-static int read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength);
-static int write_input_record_buffer(INPUT_RECORD* irEvents, int nLength);
 #endif
 #ifdef FEAT_GUI_MSWIN
 static int s_dont_use_vimrun = TRUE;
@@ -242,7 +224,7 @@ static int default_console_color_fg = 0xc0c0c0; // white
 static void set_console_color_rgb(void);
 static void reset_console_color_rgb(void);
 static void restore_console_color_rgb(void);
-#endif  // !FEAT_GUI_MSWIN || VIMDLL
+#endif
 
 // This flag is newly created from Windows 10
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -256,10 +238,7 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
-static BOOL win10_22H2_or_later = FALSE;
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-static BOOL use_alternate_screen_buffer = FALSE;
-#endif
+static BOOL win11_or_later = FALSE;
 
 /*
  * Get version number including build number
@@ -339,13 +318,6 @@ read_console_input(
     int tail;
     int i;
     static INPUT_RECORD s_irPseudo;
-
-    if (s_dwMax == 0 && input_record_buffer.length > 0)
-    {
-	dwEvents = read_input_record_buffer(s_irCache, IRSIZE);
-	s_dwIndex = 0;
-	s_dwMax = dwEvents;
-    }
 
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
@@ -459,7 +431,7 @@ wait_for_single_object(
     return WaitForSingleObject(hHandle, dwMilliseconds);
 }
 # endif
-#endif   // !FEAT_GUI_MSWIN || VIMDLL
+#endif
 
     static void
 get_exe_name(void)
@@ -922,9 +894,9 @@ PlatformId(void)
 		|| ovi.dwMajorVersion > 6)
 	    win8_or_later = TRUE;
 
-	if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19045)
+	if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 22000)
 		|| ovi.dwMajorVersion > 10)
-	    win10_22H2_or_later = TRUE;
+	    win11_or_later = TRUE;
 
 #ifdef HAVE_ACL
 	// Enable privilege for getting or setting SACLs.
@@ -1106,6 +1078,30 @@ decode_key_event(
 	break;
     }
 
+    // special cases
+    if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0
+					    && pker->uChar.UnicodeChar == NUL)
+    {
+	// Ctrl-6 is Ctrl-^
+	if (pker->wVirtualKeyCode == '6')
+	{
+	    *pch = Ctrl_HAT;
+	    return TRUE;
+	}
+	// Ctrl-2 is Ctrl-@
+	else if (pker->wVirtualKeyCode == '2')
+	{
+	    *pch = NUL;
+	    return TRUE;
+	}
+	// Ctrl-- is Ctrl-_
+	else if (pker->wVirtualKeyCode == 0xBD)
+	{
+	    *pch = Ctrl__;
+	    return TRUE;
+	}
+    }
+
     // Shift-TAB
     if (pker->wVirtualKeyCode == VK_TAB && (nModifs & SHIFT_PRESSED))
     {
@@ -1120,11 +1116,11 @@ decode_key_event(
 	{
 	    if (nModifs == 0)
 		*pch = VirtKeyMap[i].chAlone;
-	    else if ((nModifs & SHIFT) && (vtp_working || !(nModifs & ~SHIFT)))
+	    else if ((nModifs & SHIFT) != 0 && (nModifs & ~SHIFT) == 0)
 		*pch = VirtKeyMap[i].chShift;
-	    else if ((nModifs & CTRL) && !(nModifs & ~CTRL))
+	    else if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0)
 		*pch = VirtKeyMap[i].chCtrl;
-	    else if ((nModifs & ALT) && (vtp_working || !(nModifs & ~ALT)))
+	    else if ((nModifs & ALT) != 0 && (nModifs & ~ALT) == 0)
 		*pch = VirtKeyMap[i].chAlt;
 
 	    if (*pch != 0)
@@ -1133,70 +1129,6 @@ decode_key_event(
 		{
 		    *pch2 = *pch;
 		    *pch = K_NUL;
-		    if (pmodifiers && vtp_working)
-		    {
-			if (pker->wVirtualKeyCode >= VK_F1
-			    && pker->wVirtualKeyCode <= VK_F12)
-			{
-			    if (nModifs & ALT)
-			    {
-				*pmodifiers |= MOD_MASK_ALT;
-				if (!(nModifs & SHIFT))
-				    *pch2 = VirtKeyMap[i].chAlone;
-			    }
-			    if ((nModifs & CTRL))
-			    {
-				*pmodifiers |= MOD_MASK_CTRL;
-				if (!(nModifs & SHIFT))
-				    *pch2 = VirtKeyMap[i].chAlone;
-			    }
-			}
-			else if (pker->wVirtualKeyCode >= VK_END
-				&& pker->wVirtualKeyCode <= VK_DOWN)
-			{
-			    // VK_END   0x23
-			    // VK_HOME  0x24
-			    // VK_LEFT  0x25
-			    // VK_UP    0x26
-			    // VK_RIGHT 0x27
-			    // VK_DOWN  0x28
-			    *pmodifiers = 0;
-			    *pch2 = VirtKeyMap[i].chAlone;
-			    if ((nModifs & SHIFT) && !(nModifs & ~SHIFT))
-			    {
-				*pch2 = VirtKeyMap[i].chShift;
-			    }
-			    else if ((nModifs & CTRL) && !(nModifs & ~CTRL))
-			    {
-				*pch2 = VirtKeyMap[i].chCtrl;
-				if (pker->wVirtualKeyCode == VK_UP
-				    || pker->wVirtualKeyCode == VK_DOWN)
-				{
-				    *pmodifiers |= MOD_MASK_CTRL;
-				    *pch2 = VirtKeyMap[i].chAlone;
-				}
-			    }
-			    else if ((nModifs & ALT) && !(nModifs & ~ALT))
-			    {
-				*pch2 = VirtKeyMap[i].chAlt;
-			    }
-			    else if ((nModifs & SHIFT) && (nModifs & CTRL))
-			    {
-				*pmodifiers |= MOD_MASK_CTRL;
-				*pch2 = VirtKeyMap[i].chShift;
-			    }
-			}
-			else
-			{
-			    *pch2 = VirtKeyMap[i].chAlone;
-			    if (nModifs & SHIFT)
-				*pmodifiers |= MOD_MASK_SHIFT;
-			    if (nModifs & CTRL)
-				*pmodifiers |= MOD_MASK_CTRL;
-			    if (nModifs & ALT)
-				*pmodifiers |= MOD_MASK_ALT;
-			}
-		    }
 		}
 
 		return TRUE;
@@ -1216,18 +1148,18 @@ decode_key_event(
 	{
 	    // Pass on the ALT key as a modifier, but only when not combined
 	    // with CTRL (which is ALTGR).
-	    if ((nModifs & ALT) && !(nModifs & CTRL))
+	    if ((nModifs & ALT) != 0 && (nModifs & CTRL) == 0)
 		*pmodifiers |= MOD_MASK_ALT;
 
 	    // Pass on SHIFT only for special keys, because we don't know when
 	    // it's already included with the character.
-	    if ((nModifs & SHIFT) && *pch <= 0x20)
+	    if ((nModifs & SHIFT) != 0 && *pch <= 0x20)
 		*pmodifiers |= MOD_MASK_SHIFT;
 
 	    // Pass on CTRL only for non-special keys, because we don't know
 	    // when it's already included with the character.  And not when
 	    // combined with ALT (which is ALTGR).
-	    if ((nModifs & CTRL) && !(nModifs & ALT)
+	    if ((nModifs & CTRL) != 0 && (nModifs & ALT) == 0
 					       && *pch >= 0x20 && *pch < 0x80)
 		*pmodifiers |= MOD_MASK_CTRL;
 	}
@@ -1236,105 +1168,7 @@ decode_key_event(
     return (*pch != NUL);
 }
 
-# if defined(FEAT_EVAL)
-    static int
-encode_key_event(dict_T *args, INPUT_RECORD *ir)
-{
-    static int s_dwMods = 0;
-
-    char_u *action = dict_get_string(args, "event", TRUE);
-    if (action && (STRICMP(action, "keydown") == 0
-					|| STRICMP(action, "keyup") == 0))
-    {
-	BOOL isKeyDown = STRICMP(action, "keydown") == 0;
-	WORD vkCode = dict_get_number_def(args, "keycode", 0);
-	if (vkCode <= 0 || vkCode >= 0xFF)
-	{
-	    semsg(_(e_invalid_argument_nr), (long)vkCode);
-	    return FALSE;
-	}
-
-	ir->EventType = KEY_EVENT;
-	KEY_EVENT_RECORD ker;
-	ZeroMemory(&ker, sizeof(ker));
-	ker.bKeyDown = isKeyDown;
-	ker.wRepeatCount = 1;
-	ker.wVirtualScanCode = 0;
-	ker.dwControlKeyState = 0;
-	int mods = (int)dict_get_number(args, "modifiers");
-	// Encode the win32 console key modifiers from Vim keyboard modifiers.
-	if (mods)
-	{
-	    // If "modifiers" is explicitly set in the args, then we reset any
-	    // remembered modifer key state that may have been set from earlier
-	    // mod-key-down events, even if they are not yet unset by earlier
-	    // mod-key-up events.
-	    s_dwMods = 0;
-	    if (mods & MOD_MASK_SHIFT)
-		ker.dwControlKeyState |= SHIFT_PRESSED;
-	    if (mods & MOD_MASK_CTRL)
-		ker.dwControlKeyState |= LEFT_CTRL_PRESSED;
-	    if (mods & MOD_MASK_ALT)
-		ker.dwControlKeyState |= LEFT_ALT_PRESSED;
-	}
-
-	if (vkCode == VK_LSHIFT || vkCode == VK_RSHIFT || vkCode == VK_SHIFT)
-	{
-	    if (isKeyDown)
-		s_dwMods |= SHIFT_PRESSED;
-	    else
-		s_dwMods &= ~SHIFT_PRESSED;
-	}
-	else if (vkCode == VK_LCONTROL || vkCode == VK_CONTROL)
-	{
-	    if (isKeyDown)
-		s_dwMods |= LEFT_CTRL_PRESSED;
-	    else
-		s_dwMods &= ~LEFT_CTRL_PRESSED;
-	}
-	else if (vkCode == VK_RCONTROL)
-	{
-	    if (isKeyDown)
-		s_dwMods |= RIGHT_CTRL_PRESSED;
-	    else
-		s_dwMods &= ~RIGHT_CTRL_PRESSED;
-	}
-	else if (vkCode == VK_LMENU || vkCode == VK_MENU)
-	{
-	    if (isKeyDown)
-		s_dwMods |= LEFT_ALT_PRESSED;
-	    else
-		s_dwMods &= ~LEFT_ALT_PRESSED;
-	}
-	else if (vkCode == VK_RMENU)
-	{
-	    if (isKeyDown)
-		s_dwMods |= RIGHT_ALT_PRESSED;
-	    else
-		s_dwMods &= ~RIGHT_ALT_PRESSED;
-	}
-	ker.dwControlKeyState |= s_dwMods;
-	ker.wVirtualKeyCode = vkCode;
-	ir->Event.KeyEvent = ker;
-	vim_free(action);
-    }
-    else
-    {
-	if (action == NULL)
-	{
-	    semsg(_(e_missing_argument_str), "event");
-	}
-	else
-	{
-	    semsg(_(e_invalid_value_for_argument_str_str), "event", action);
-	    vim_free(action);
-	}
-	return FALSE;
-    }
-    return TRUE;
-}
-# endif  // FEAT_EVAL
-#endif // !FEAT_GUI_MSWIN || VIMDLL
+#endif // FEAT_GUI_MSWIN
 
 
 /*
@@ -1345,7 +1179,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 mch_setmouse(int on UNUSED)
 {
 }
-#else  // !FEAT_GUI_MSWIN || VIMDLL
+#else
 static int g_fMouseAvail = FALSE;   // mouse present
 static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
@@ -1400,21 +1234,21 @@ mch_bevalterm_changed(void)
 
 /*
  * Win32 console mouse scroll event handler.
- * Console version of the _OnMouseWheel() function in gui_w32.c
+ * Loosely based on the _OnMouseWheel() function in gui_w32.c
  *
  * This encodes the mouse scroll direction and keyboard modifiers into
  * g_nMouseClick, and the mouse position into g_xMouse and g_yMouse
  *
  * The direction of the scroll is decoded from two fields of the win32 console
  * mouse event record;
- *    1. The orientation - vertical or horizontal flag - from dwEventFlags
+ *    1. The axis - vertical or horizontal flag - from dwEventFlags, and
  *    2. The sign - positive or negative (aka delta flag) - from dwButtonState
  *
- * When scroll orientation is HORIZONTAL
+ * When scroll axis is HORIZONTAL
  *    -  If the high word of the dwButtonState member contains a positive
  *	 value, the wheel was rotated to the right.
  *    -  Otherwise, the wheel was rotated to the left.
- * When scroll orientation is VERTICAL
+ * When scroll axis is VERTICAL
  *    -  If the high word of the dwButtonState member contains a positive value,
  *       the wheel was rotated forward, away from the user.
  *    -  Otherwise, the wheel was rotated backward, toward the user.
@@ -1760,240 +1594,8 @@ decode_mouse_event(
     return TRUE;
 }
 
-# ifdef FEAT_EVAL
-    static int
-encode_mouse_event(dict_T *args, INPUT_RECORD *ir)
-{
-    int		button;
-    int		row;
-    int		col;
-    int		repeated_click;
-    int_u	mods = 0;
-    int		move;
+#endif // FEAT_GUI_MSWIN
 
-    if (!dict_has_key(args, "row") || !dict_has_key(args, "col"))
-	return FALSE;
-
-    // Note: "move" is optional, requires fewer arguments
-    move = (int)dict_get_bool(args, "move", FALSE);
-    if (!move && (!dict_has_key(args, "button")
-	    || !dict_has_key(args, "multiclick")
-	    || !dict_has_key(args, "modifiers")))
-	return FALSE;
-
-    row = (int)dict_get_number(args, "row") - 1;
-    col = (int)dict_get_number(args, "col") - 1;
-
-    ir->EventType = MOUSE_EVENT;
-    MOUSE_EVENT_RECORD mer;
-    ZeroMemory(&mer, sizeof(mer));
-    mer.dwMousePosition.X  = col;
-    mer.dwMousePosition.Y  = row;
-
-    if (move)
-    {
-	mer.dwButtonState = 0;
-	mer.dwEventFlags = MOUSE_MOVED;
-    }
-    else
-    {
-	button = (int)dict_get_number(args, "button");
-	repeated_click = (int)dict_get_number(args, "multiclick");
-	mods = (int)dict_get_number(args, "modifiers");
-	// Reset the scroll values to known values.
-	// XXX: Remove this when/if the scroll step is made configurable.
-	mouse_set_hor_scroll_step(6);
-	mouse_set_vert_scroll_step(3);
-
-	switch (button)
-	{
-	    case MOUSE_LEFT:
-		mer.dwButtonState = FROM_LEFT_1ST_BUTTON_PRESSED;
-		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
-		break;
-	    case MOUSE_MIDDLE:
-		mer.dwButtonState = FROM_LEFT_2ND_BUTTON_PRESSED;
-		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
-		break;
-	    case MOUSE_RIGHT:
-		mer.dwButtonState = RIGHTMOST_BUTTON_PRESSED;
-		mer.dwEventFlags = repeated_click == 1 ? DOUBLE_CLICK : 0;
-		break;
-	    case MOUSE_RELEASE:
-		// umm?  Assume Left Release?
-		mer.dwEventFlags = 0;
-
-	    case MOUSE_MOVE:
-		mer.dwButtonState = 0;
-		mer.dwEventFlags = MOUSE_MOVED;
-		break;
-	    case MOUSE_X1:
-		mer.dwButtonState = FROM_LEFT_3RD_BUTTON_PRESSED;
-		break;
-	    case MOUSE_X2:
-		mer.dwButtonState = FROM_LEFT_4TH_BUTTON_PRESSED;
-		break;
-	    case MOUSE_4:  // KE_MOUSEDOWN;
-		mer.dwButtonState = -1;
-		mer.dwEventFlags = MOUSE_WHEELED;
-		break;
-	    case MOUSE_5:  // KE_MOUSEUP;
-		mer.dwButtonState = +1;
-		mer.dwEventFlags = MOUSE_WHEELED;
-		break;
-	    case MOUSE_6:  // KE_MOUSELEFT;
-		mer.dwButtonState = -1;
-		mer.dwEventFlags = MOUSE_HWHEELED;
-		break;
-	    case MOUSE_7:  // KE_MOUSERIGHT;
-		mer.dwButtonState = +1;
-		mer.dwEventFlags = MOUSE_HWHEELED;
-		break;
-	    default:
-		semsg(_(e_invalid_argument_str), "button");
-		return FALSE;
-	}
-    }
-
-    mer.dwControlKeyState = 0;
-    if (mods != 0)
-    {
-	// Encode the win32 console key modifiers from Vim MOUSE modifiers.
-	if (mods & MOUSE_SHIFT)
-	    mer.dwControlKeyState |= SHIFT_PRESSED;
-	if (mods & MOUSE_CTRL)
-	    mer.dwControlKeyState |= LEFT_CTRL_PRESSED;
-	if (mods & MOUSE_ALT)
-	    mer.dwControlKeyState |= LEFT_ALT_PRESSED;
-    }
-    ir->Event.MouseEvent = mer;
-    return TRUE;
-}
-# endif  // FEAT_EVAL
-
-    static int
-write_input_record_buffer(INPUT_RECORD* irEvents, int nLength)
-{
-    int nCount = 0;
-    while (nCount < nLength)
-    {
-	input_record_buffer.length++;
-	input_record_buffer_node_T *event_node =
-				    malloc(sizeof(input_record_buffer_node_T));
-	event_node->ir = irEvents[nCount++];
-	event_node->next = NULL;
-	if (input_record_buffer.tail == NULL)
-	{
-	    input_record_buffer.head = event_node;
-	    input_record_buffer.tail = event_node;
-	}
-	else
-	{
-	    input_record_buffer.tail->next = event_node;
-	    input_record_buffer.tail = input_record_buffer.tail->next;
-	}
-    }
-    return nCount;
-}
-
-    static int
-read_input_record_buffer(INPUT_RECORD* irEvents, int nMaxLength)
-{
-    int nCount = 0;
-    while (nCount < nMaxLength && input_record_buffer.head != NULL)
-    {
-	input_record_buffer.length--;
-	input_record_buffer_node_T *pop_head = input_record_buffer.head;
-	irEvents[nCount++] = pop_head->ir;
-	input_record_buffer.head = pop_head->next;
-	vim_free(pop_head);
-	if (input_record_buffer.length == 0)
-	    input_record_buffer.tail = NULL;
-    }
-    return nCount;
-}
-#endif // !FEAT_GUI_MSWIN || VIMDLL
-
-#ifdef FEAT_EVAL
-/*
- * The 'test_mswin_event' function is for testing Vim's low-level handling of
- * user input events.  ie, this manages the encoding of INPUT_RECORD events
- * so that we have a way to test how Vim decodes INPUT_RECORD events in Windows
- * consoles.
- *
- * The 'test_mswin_event' function is based on 'test_gui_event'.  In fact, when
- * the Windows GUI is running, the arguments; 'event' and 'args', are the same.
- * So, it acts as an alias for 'test_gui_event' for the Windows GUI.
- *
- * When the Windows console is running, the arguments; 'event' and 'args', are
- * a subset of what 'test_gui_event' handles, ie, only "key" and "mouse"
- * events are encoded as INPUT_RECORD events.
- *
- * Note: INPUT_RECORDs are only used by the Windows console, not the GUI.  The
- * GUI sends MSG structs instead.
- */
-    int
-test_mswin_event(char_u *event, dict_T *args)
-{
-    int lpEventsWritten = 0;
-
-# if defined(VIMDLL) || defined(FEAT_GUI_MSWIN)
-    if (gui.in_use)
-	return test_gui_w32_sendevent(event, args);
-# endif
-
-# if defined(VIMDLL) || !defined(FEAT_GUI_MSWIN)
-
-// Currently implemented event record types are; KEY_EVENT and MOUSE_EVENT
-// Potentially could also implement: FOCUS_EVENT and WINDOW_BUFFER_SIZE_EVENT
-// Maybe also:  MENU_EVENT
-
-    INPUT_RECORD ir;
-    BOOL input_encoded = FALSE;
-    BOOL execute = FALSE;
-    if (STRCMP(event, "key") == 0)
-    {
-	execute = dict_get_bool(args, "execute", FALSE);
-	if (dict_has_key(args, "event"))
-	    input_encoded = encode_key_event(args, &ir);
-	else if (!execute)
-	{
-	    semsg(_(e_missing_argument_str), "event");
-	    return FALSE;
-	}
-    }
-    else if (STRCMP(event, "mouse") == 0)
-    {
-	execute = TRUE;
-	input_encoded = encode_mouse_event(args, &ir);
-    }
-    else
-    {
-	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
-	return FALSE;
-    }
-
-    // Ideally, WriteConsoleInput would be used to inject these low-level
-    // events.  But, this doesnt work well in the CI test environment.  So
-    // implementing an input_record_buffer instead.
-    if (input_encoded)
-	lpEventsWritten = write_input_record_buffer(&ir, 1);
-
-    // Set flags to execute the event, ie. like feedkeys mode X.
-    if (execute)
-    {
-	int save_msg_scroll = msg_scroll;
-	// Avoid a 1 second delay when the keys start Insert mode.
-	msg_scroll = FALSE;
-	ch_log(NULL, "test_mswin_event() executing");
-	exec_normal(TRUE, TRUE, TRUE);
-	msg_scroll |= save_msg_scroll;
-    }
-
-# endif
-    return lpEventsWritten;
-}
-#endif // FEAT_EVAL
 
 #ifdef MCH_CURSOR_SHAPE
 /*
@@ -2477,17 +2079,6 @@ mch_inchar(
 	    int		modifiers = 0;
 
 	    c = tgetch(&modifiers, &ch2);
-
-	    c = simplify_key(c, &modifiers);
-
-	    // Some chars need adjustment when the Ctrl modifier is used.
-	    ++no_reduce_keys;
-	    c = may_adjust_key_for_ctrl(modifiers, c);
-	    --no_reduce_keys;
-
-	    // remove the SHIFT modifier for keys where it's already included,
-	    // e.g., '(' and '*'
-	    modifiers = may_remove_shift_modifier(modifiers, c);
 
 	    if (typebuf_changed(tb_change_cnt))
 	    {
@@ -3106,7 +2697,7 @@ SaveConsoleBuffer(
 
     // VTP uses alternate screen buffer.
     // No need to save buffer contents for restoration.
-    if (use_alternate_screen_buffer)
+    if (win11_or_later && vtp_working)
 	return TRUE;
 
     /*
@@ -3204,7 +2795,7 @@ RestoreConsoleBuffer(
 
     // VTP uses alternate screen buffer.
     // No need to restore buffer contents.
-    if (use_alternate_screen_buffer)
+    if (win11_or_later && vtp_working)
 	return TRUE;
 
     if (cb == NULL || !cb->IsValid)
@@ -6172,8 +5763,7 @@ termcap_mode_start(void)
 
     // VTP uses alternate screen buffer.
     // Switch to a new alternate screen buffer.
-    // But, not if running in a nested terminal
-    if (use_alternate_screen_buffer)
+    if (win11_or_later && p_rs && vtp_working)
 	vtp_printf("\033[?1049h");
 
     SaveConsoleBuffer(&g_cbNonTermcap);
@@ -6256,7 +5846,7 @@ termcap_mode_end(void)
 
     // VTP uses alternate screen buffer.
     // Switch back to main screen buffer.
-    if (exiting && use_alternate_screen_buffer)
+    if (exiting && win11_or_later && p_rs && vtp_working)
 	vtp_printf("\033[?1049l");
 
     if (!USE_WT && (p_rs || exiting))
@@ -8459,8 +8049,7 @@ vtp_init(void)
 	default_console_color_fg = fg;
     }
 # endif
-    use_alternate_screen_buffer = win10_22H2_or_later && p_rs && vtp_working
-						&& !mch_getenv("VIM_TERMINAL");
+
     set_console_color_rgb();
 }
 
