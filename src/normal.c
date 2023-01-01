@@ -454,7 +454,7 @@ normal_cmd_get_more_chars(
 	    MAY_WANT_TO_LOG_THIS;
 
 	    // Re-enable bracketed paste mode and modifyOtherKeys
-	    out_str(T_BE);
+	    out_str_t_BE();
 	    out_str_t_TI();
 	}
 
