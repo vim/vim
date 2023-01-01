@@ -296,11 +296,9 @@ let s:VK = {
     \ [[s:VK.CONTROL, s:VK.OEM_4], 0x1B],
     \ [[s:VK.CONTROL, s:VK.OEM_5], 0x1C],
     \ [[s:VK.CONTROL, s:VK.OEM_6], 0x1D],
+    \ [[s:VK.CONTROL, s:VK.KEY_6], 0x1E],
+    \ [[s:VK.CONTROL, s:VK.OEM_MINUS], 0x1F],
     \ ]
-" The following non-printable ascii chars fail in the GUI, but work in the 
-" console. 0x1e [^^] Record separator (RS), and 0x1f [^_] Unit separator (US)
-"      \ [[s:VK.CONTROL, s:VK.SHIFT, s:VK.KEY_6], 0x1E],
-"      \ [[s:VK.CONTROL, s:VK.SHIFT, s:VK.OEM_MINUS], 0x1F],
 
 let s:test_extra_key_chars = [
     \ [[s:VK.ALT, s:VK.KEY_1], '±'],
@@ -511,7 +509,7 @@ func Test_mswin_key_event()
         call SendKeyWithModifiers(111+n, vim_mod_mask)
         let ch = getcharstr(0)
         let mod_mask = getcharmod()
-        """"""  call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
         " workaround for the virtual termcap maps changing the character instead
         " of sending Shift
         for mod_key in mod_keycodes
@@ -519,7 +517,7 @@ func Test_mswin_key_event()
             let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
           endif
         endfor
-        """"""call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
       endfor
     endfor
   endif
@@ -592,8 +590,8 @@ func Test_mswin_key_event()
     let ch = getcharstr(0)
     let mod = getcharmod()
     let keycode = eval('"\<' .. kstr .. '>"')
-"      call assert_equal(keycode, ch, $"key = {kstr}")
-"      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
+    call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
   endfor
 
   bw!
