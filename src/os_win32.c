@@ -1042,7 +1042,7 @@ win32_kbd_patch_key(
 	return 1;
     }
 
-    if (pker->uChar.UnicodeChar > 0 && pker->uChar.UnicodeChar < 0xfffd)
+    if (pker->uChar.UnicodeChar != 0)
 	return 1;
 
     CLEAR_FIELD(abKeystate);
@@ -1178,10 +1178,11 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 {
     static int s_dwMods = 0;
 
-    char_u *event = dict_get_string(args, "event", TRUE);
-    if (event && (STRICMP(event, "keydown") == 0
-					|| STRICMP(event, "keyup") == 0))
+    char_u *action = dict_get_string(args, "event", TRUE);
+    if (action && (STRICMP(action, "keydown") == 0
+					|| STRICMP(action, "keyup") == 0))
     {
+	BOOL isKeyDown = STRICMP(action, "keydown") == 0;
 	WORD vkCode = dict_get_number_def(args, "keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
 	{
@@ -1192,7 +1193,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	ir->EventType = KEY_EVENT;
 	KEY_EVENT_RECORD ker;
 	ZeroMemory(&ker, sizeof(ker));
-	ker.bKeyDown = STRICMP(event, "keydown") == 0;
+	ker.bKeyDown = isKeyDown;
 	ker.wRepeatCount = 1;
 	ker.wVirtualScanCode = 0;
 	ker.dwControlKeyState = 0;
@@ -1215,73 +1216,54 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 
 	if (vkCode == VK_LSHIFT || vkCode == VK_RSHIFT || vkCode == VK_SHIFT)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= SHIFT_PRESSED;
 	    else
 		s_dwMods &= ~SHIFT_PRESSED;
 	}
 	else if (vkCode == VK_LCONTROL || vkCode == VK_CONTROL)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= LEFT_CTRL_PRESSED;
 	    else
 		s_dwMods &= ~LEFT_CTRL_PRESSED;
 	}
 	else if (vkCode == VK_RCONTROL)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= RIGHT_CTRL_PRESSED;
 	    else
 		s_dwMods &= ~RIGHT_CTRL_PRESSED;
 	}
 	else if (vkCode == VK_LMENU || vkCode == VK_MENU)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= LEFT_ALT_PRESSED;
 	    else
 		s_dwMods &= ~LEFT_ALT_PRESSED;
 	}
 	else if (vkCode == VK_RMENU)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= RIGHT_ALT_PRESSED;
 	    else
 		s_dwMods &= ~RIGHT_ALT_PRESSED;
 	}
 	ker.dwControlKeyState |= s_dwMods;
 	ker.wVirtualKeyCode = vkCode;
-	win32_kbd_patch_key(&ker);
-
-	for (int i = ARRAY_LENGTH(VirtKeyMap); i >= 0; --i)
-	{
-	    if (VirtKeyMap[i].wVirtKey == vkCode)
-	    {
-		ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
-		break;
-	    }
-	}
-
-	// The following are treated specially in Vim.
-	// Ctrl-6 is Ctrl-^
-	// Ctrl-2 is Ctrl-@
-	// Ctrl-- is Ctrl-_
-	if ((vkCode == 0xBD || vkCode == '2' || vkCode == '6')
-					     && (ker.dwControlKeyState & CTRL))
-	    ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
-
 	ir->Event.KeyEvent = ker;
-	vim_free(event);
+	vim_free(action);
     }
     else
     {
-	if (event == NULL)
+	if (action == NULL)
 	{
 	    semsg(_(e_missing_argument_str), "event");
 	}
 	else
 	{
-	    semsg(_(e_invalid_value_for_argument_str_str), "event", event);
-	    vim_free(event);
+	    semsg(_(e_invalid_value_for_argument_str_str), "event", action);
+	    vim_free(action);
 	}
 	return FALSE;
     }
