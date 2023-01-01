@@ -1978,6 +1978,7 @@ func Test_prop_with_wrap()
       setline(1, 'asdf '->repeat(15))
       prop_type_add('test', {highlight: 'Special'})
       prop_add(1, 43, {text: 'some virtual text', type: 'test'})
+      normal G$
   END
   call writefile(lines, 'XscriptPropWithWrap', 'D')
   let buf = RunVimInTerminal('-S XscriptPropWithWrap', #{rows: 6, cols: 50})
