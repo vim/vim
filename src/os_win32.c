@@ -340,12 +340,12 @@ read_console_input(
     int i;
     static INPUT_RECORD s_irPseudo;
 
-    if (s_dwMax == 0 && input_record_buffer.length > 0)
-    {
-	dwEvents = read_input_record_buffer(s_irCache, IRSIZE);
-	s_dwIndex = 0;
-	s_dwMax = dwEvents;
-    }
+//     if (s_dwMax == 0 && input_record_buffer.length > 0)
+//     {
+// 	dwEvents = read_input_record_buffer(s_irCache, IRSIZE);
+// 	s_dwIndex = 0;
+// 	s_dwMax = dwEvents;
+//     }
 
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
