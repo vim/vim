@@ -827,7 +827,8 @@ find_class_func(char_u **arg)
     size_t len = name_end - name;
     typval_T tv;
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable(name, len, 0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
+    if (eval_variable(name, (int)len,
+				    0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
 	return NULL;
     if (tv.v_type != VAR_CLASS && tv.v_type != VAR_OBJECT)
 	goto fail_after_eval;
