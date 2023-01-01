@@ -523,75 +523,77 @@ func Test_mswin_key_event()
 "      endfor
   endif
 
-"    " Test for the various Ctrl and Shift key combinations.
-"    let keytests = [
-"      \ [[s:VK.SHIFT,    s:VK.PRIOR], "S-Pageup", 2],
-"      \ [[s:VK.LSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
-"      \ [[s:VK.RSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
-"      \ [[s:VK.CONTROL,  s:VK.PRIOR], "C-Pageup", 4],
-"      \ [[s:VK.LCONTROL, s:VK.PRIOR], "C-Pageup", 4],
-"      \ [[s:VK.RCONTROL, s:VK.PRIOR], "C-Pageup", 4],
-"      \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.PRIOR], "C-S-Pageup", 6],
-"      \ [[s:VK.SHIFT,    s:VK.NEXT], "S-PageDown", 2],
-"      \ [[s:VK.LSHIFT,   s:VK.NEXT], "S-PageDown", 2],
-"      \ [[s:VK.RSHIFT,   s:VK.NEXT], "S-PageDown", 2],
-"      \ [[s:VK.CONTROL,  s:VK.NEXT], "C-PageDown", 4],
-"      \ [[s:VK.LCONTROL, s:VK.NEXT], "C-PageDown", 4],
-"      \ [[s:VK.RCONTROL, s:VK.NEXT], "C-PageDown", 4],
-"      \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.NEXT], "C-S-PageDown", 6],
-"      \ [[s:VK.SHIFT,    s:VK.END], "S-End", 0],
-"      \ [[s:VK.CONTROL,  s:VK.END], "C-End", 0],
-"      \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.END], "C-S-End", 4],
-"      \ [[s:VK.SHIFT,    s:VK.HOME], "S-Home", 0],
-"      \ [[s:VK.CONTROL,  s:VK.HOME], "C-Home", 0],
-"      \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.HOME], "C-S-Home", 4],
-"      \ [[s:VK.SHIFT,    s:VK.LEFT], "S-Left", 0],
-"      \ [[s:VK.CONTROL,  s:VK.LEFT], "C-Left", 0],
-"      \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.LEFT], "C-S-Left", 4],
-"      \ [[s:VK.SHIFT,    s:VK.UP], "S-Up", 0],
-"      \ [[s:VK.CONTROL,  s:VK.UP], "C-Up", 4],
-"      \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.UP], "C-S-Up", 4],
-"      \ [[s:VK.SHIFT,    s:VK.RIGHT], "S-Right", 0],
-"      \ [[s:VK.CONTROL,  s:VK.RIGHT], "C-Right", 0],
-"      \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.RIGHT], "C-S-Right", 4],
-"      \ [[s:VK.SHIFT,    s:VK.DOWN], "S-Down", 0],
-"      \ [[s:VK.CONTROL,  s:VK.DOWN], "C-Down", 4],
-"      \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.DOWN], "C-S-Down", 4],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_0], "C-0", 4],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_1], "C-1", 4],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_2], "C-@", 0],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_3], "C-3", 4],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_4], "C-4", 4],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_5], "C-5", 4],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_6], "C-^", 0],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_7], "C-7", 4],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_8], "C-8", 4],
-"      \ [[s:VK.CONTROL,  s:VK.KEY_9], "C-9", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD0], "C-0", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD1], "C-1", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD2], "C-2", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD3], "C-3", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD4], "C-4", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD5], "C-5", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD6], "C-6", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD7], "C-7", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD8], "C-8", 4],
-"      \ [[s:VK.CONTROL,  s:VK.NUMPAD9], "C-9", 4],
-"      \ [[s:VK.CONTROL,  s:VK.MULTIPLY], "C-*", 4],
-"      \ [[s:VK.CONTROL,  s:VK.ADD], "C-+", 4],
-"      \ [[s:VK.CONTROL,  s:VK.SUBTRACT], "C--", 4],
-"      \ [[s:VK.CONTROL,  s:VK.OEM_MINUS], "C-_", 0]
-"      \ ]
+  " Test for the various Ctrl and Shift key combinations.
+  let keytests = [
+    \ [[s:VK.SHIFT,    s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.LSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.RSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.CONTROL,  s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.LCONTROL, s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.RCONTROL, s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.PRIOR], "C-S-Pageup", 6],
+    \ [[s:VK.SHIFT,    s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.LSHIFT,   s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.RSHIFT,   s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.CONTROL,  s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.LCONTROL, s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.RCONTROL, s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.NEXT], "C-S-PageDown", 6],
+    \ [[s:VK.SHIFT,    s:VK.END], "S-End", 0],
+    \ [[s:VK.CONTROL,  s:VK.END], "C-End", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.END], "C-S-End", 4],
+    \ [[s:VK.SHIFT,    s:VK.HOME], "S-Home", 0],
+    \ [[s:VK.CONTROL,  s:VK.HOME], "C-Home", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.HOME], "C-S-Home", 4],
+    \ [[s:VK.SHIFT,    s:VK.LEFT], "S-Left", 0],
+    \ [[s:VK.CONTROL,  s:VK.LEFT], "C-Left", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.LEFT], "C-S-Left", 4],
+    \ [[s:VK.SHIFT,    s:VK.UP], "S-Up", 0],
+    \ [[s:VK.CONTROL,  s:VK.UP], "C-Up", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.UP], "C-S-Up", 4],
+    \ [[s:VK.SHIFT,    s:VK.RIGHT], "S-Right", 0],
+    \ [[s:VK.CONTROL,  s:VK.RIGHT], "C-Right", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.RIGHT], "C-S-Right", 4],
+    \ [[s:VK.SHIFT,    s:VK.DOWN], "S-Down", 0],
+    \ [[s:VK.CONTROL,  s:VK.DOWN], "C-Down", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.DOWN], "C-S-Down", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_0], "C-0", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_1], "C-1", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_2], "C-@", 0],
+    \ [[s:VK.CONTROL,  s:VK.KEY_3], "C-3", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_4], "C-4", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_5], "C-5", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_6], "C-^", 0],
+    \ [[s:VK.CONTROL,  s:VK.KEY_7], "C-7", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_8], "C-8", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_9], "C-9", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD0], "C-0", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD1], "C-1", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD2], "C-2", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD3], "C-3", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD4], "C-4", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD5], "C-5", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD6], "C-6", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD7], "C-7", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD8], "C-8", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD9], "C-9", 4],
+    \ [[s:VK.CONTROL,  s:VK.MULTIPLY], "C-*", 4],
+    \ [[s:VK.CONTROL,  s:VK.ADD], "C-+", 4],
+    \ [[s:VK.CONTROL,  s:VK.SUBTRACT], "C--", 4],
+    \ [[s:VK.CONTROL,  s:VK.OEM_MINUS], "C-_", 0]
+    \ ]
 
-"    " Not working in CI Testing yet!?
-"    for [kcodes, kstr, kmod] in keytests
-"      call SendKeyGroup(kcodes)
-"      let ch = getcharstr(0)
-"      let mod = getcharmod()
-"      let keycode = eval('"\<' .. kstr .. '>"')
-"      call assert_equal(keycode, ch, $"key = {kstr}")
-"      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
-"    endfor
+  " Not working for the console in CI Testing yet!?
+  if has("gui_running")
+    for [kcodes, kstr, kmod] in keytests
+      call SendKeyGroup(kcodes)
+      let ch = getcharstr(0)
+      let mod = getcharmod()
+      let keycode = eval('"\<' .. kstr .. '>"')
+      call assert_equal(keycode, ch, $"key = {kstr}")
+      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
+    endfor
+  endif
 
   bw!
 endfunc
