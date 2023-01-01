@@ -377,7 +377,7 @@ def Test_class_member_access()
          static _secret = 7
          public static  anybody = 42
 
-         def AddToCounter(nr: number)
+         static def AddToCounter(nr: number)
            counter += nr
          enddef
       endclass
@@ -399,6 +399,32 @@ def Test_class_member_access()
       assert_equal(12, TextPos.anybody)
       TextPos.anybody += 5
       assert_equal(17, TextPos.anybody)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_class_function()
+  var lines =<< trim END
+      vim9script
+      class Value
+        this.value = 0
+        static objects = 0
+
+        def new(v: number)
+          this.value = v
+          ++objects
+        enddef
+
+        static def GetCount(): number
+          return objects
+        enddef
+      endclass
+
+      assert_equal(0, Value.GetCount())
+      var v1 = Value.new(2)
+      assert_equal(1, Value.GetCount())
+      var v2 = Value.new(7)
+      assert_equal(2, Value.GetCount())
   END
   v9.CheckScriptSuccess(lines)
 enddef

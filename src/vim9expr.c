@@ -587,7 +587,8 @@ compile_load(
 	}
 	else
 	{
-	    lvar_T lvar;
+	    lvar_T  lvar;
+	    class_T *cl = NULL;
 
 	    if (lookup_local(*arg, len, &lvar, cctx) == OK)
 	    {
@@ -601,6 +602,10 @@ compile_load(
 		}
 		else
 		    gen_load = TRUE;
+	    }
+	    else if (class_member_exists(name, &cl, &idx, cctx))
+	    {
+		res = generate_CLASSMEMBER(cctx, TRUE, cl, idx);
 	    }
 	    else
 	    {
