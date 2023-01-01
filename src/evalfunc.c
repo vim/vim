@@ -3172,48 +3172,48 @@ f_and(typval_T *argvars, typval_T *rettv)
 f_balloon_gettext(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
-    if (balloonEval != NULL)
-    {
-	if (balloonEval->msg == NULL)
-	    rettv->vval.v_string = NULL;
-	else
-	    rettv->vval.v_string = vim_strsave(balloonEval->msg);
-    }
+    if (balloonEval == NULL)
+	return;
+
+    if (balloonEval->msg == NULL)
+	rettv->vval.v_string = NULL;
+    else
+	rettv->vval.v_string = vim_strsave(balloonEval->msg);
 }
 
     static void
 f_balloon_show(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    if (balloonEval != NULL)
+    if (balloonEval == NULL)
+	return;
+
+    if (in_vim9script()
+	    && check_for_string_or_list_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type == VAR_LIST
+# ifdef FEAT_GUI
+	    && !gui.in_use
+# endif
+       )
     {
-	if (in_vim9script()
-		&& check_for_string_or_list_arg(argvars, 0) == FAIL)
+	list_T *l = argvars[0].vval.v_list;
+
+	// empty list removes the balloon
+	post_balloon(balloonEval, NULL,
+		l == NULL || l->lv_len == 0 ? NULL : l);
+    }
+    else
+    {
+	char_u *mesg;
+
+	if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	    return;
 
-	if (argvars[0].v_type == VAR_LIST
-# ifdef FEAT_GUI
-		&& !gui.in_use
-# endif
-	   )
-	{
-	    list_T *l = argvars[0].vval.v_list;
-
-	    // empty list removes the balloon
-	    post_balloon(balloonEval, NULL,
-				       l == NULL || l->lv_len == 0 ? NULL : l);
-	}
-	else
-	{
-	    char_u *mesg;
-
-	    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
-		return;
-
-	    mesg = tv_get_string_chk(&argvars[0]);
-	    if (mesg != NULL)
-		// empty string removes the balloon
-		post_balloon(balloonEval, *mesg == NUL ? NULL : mesg, NULL);
-	}
+	mesg = tv_get_string_chk(&argvars[0]);
+	if (mesg != NULL)
+	    // empty string removes the balloon
+	    post_balloon(balloonEval, *mesg == NUL ? NULL : mesg, NULL);
     }
 }
 
@@ -3221,25 +3221,25 @@ f_balloon_show(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    if (rettv_list_alloc(rettv) == OK)
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
+    char_u *msg;
+
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	return;
+    msg = tv_get_string_chk(&argvars[0]);
+    if (msg != NULL)
     {
-	char_u *msg;
+	pumitem_T	*array;
+	int		size = split_message(msg, &array);
 
-	if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
-	    return;
-	msg = tv_get_string_chk(&argvars[0]);
-	if (msg != NULL)
-	{
-	    pumitem_T	*array;
-	    int		size = split_message(msg, &array);
-
-	    // Skip the first and last item, they are always empty.
-	    for (int i = 1; i < size - 1; ++i)
-		list_append_string(rettv->vval.v_list, array[i].pum_text, -1);
-	    while (size > 0)
-		vim_free(array[--size].pum_text);
-	    vim_free(array);
-	}
+	// Skip the first and last item, they are always empty.
+	for (int i = 1; i < size - 1; ++i)
+	    list_append_string(rettv->vval.v_list, array[i].pum_text, -1);
+	while (size > 0)
+	    vim_free(array[--size].pum_text);
+	vim_free(array);
     }
 }
 # endif
@@ -3676,18 +3676,18 @@ f_debugbreak(typval_T *argvars, typval_T *rettv)
 
     pid = (int)tv_get_number(&argvars[0]);
     if (pid == 0)
-	emsg(_(e_invalid_argument));
-    else
     {
-	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, pid);
-
-	if (hProcess != NULL)
-	{
-	    DebugBreakProcess(hProcess);
-	    CloseHandle(hProcess);
-	    rettv->vval.v_number = OK;
-	}
+	emsg(_(e_invalid_argument));
+	return;
     }
+
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, pid);
+    if (hProcess == NULL)
+	return;
+
+    DebugBreakProcess(hProcess);
+    CloseHandle(hProcess);
+    rettv->vval.v_number = OK;
 }
 #endif
 
@@ -3932,12 +3932,12 @@ execute_redir_str(char_u *value, int value_len)
 	len = (int)STRLEN(value);	// Append the entire string
     else
 	len = value_len;		// Append only "value_len" characters
-    if (ga_grow(&redir_execute_ga, len) == OK)
-    {
-	mch_memmove((char *)redir_execute_ga.ga_data
-				       + redir_execute_ga.ga_len, value, len);
-	redir_execute_ga.ga_len += len;
-    }
+    if (ga_grow(&redir_execute_ga, len) != OK)
+	return;
+
+    mch_memmove((char *)redir_execute_ga.ga_data
+	    + redir_execute_ga.ga_len, value, len);
+    redir_execute_ga.ga_len += len;
 }
 
 #if defined(FEAT_LUA) || defined(PROTO)
@@ -5043,14 +5043,14 @@ f_getcharpos(typval_T *argvars UNUSED, typval_T *rettv)
     static void
 f_getcharsearch(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    if (rettv_dict_alloc(rettv) == OK)
-    {
-	dict_T *dict = rettv->vval.v_dict;
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
 
-	dict_add_string(dict, "char", last_csearch());
-	dict_add_number(dict, "forward", last_csearch_forward());
-	dict_add_number(dict, "until", last_csearch_until());
-    }
+    dict_T *dict = rettv->vval.v_dict;
+
+    dict_add_string(dict, "char", last_csearch());
+    dict_add_number(dict, "forward", last_csearch_forward());
+    dict_add_number(dict, "until", last_csearch_until());
 }
 
 /*
@@ -6792,29 +6792,29 @@ f_index(typval_T *argvars, typval_T *rettv)
     }
 
     l = argvars[0].vval.v_list;
-    if (l != NULL)
-    {
-	CHECK_LIST_MATERIALIZE(l);
-	item = l->lv_first;
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	{
-	    // Start at specified item.  Use the cached index that list_find()
-	    // sets, so that a negative number also works.
-	    item = list_find(l, (long)tv_get_number_chk(&argvars[2], &error));
-	    idx = l->lv_u.mat.lv_idx;
-	    if (argvars[3].v_type != VAR_UNKNOWN)
-		ic = (int)tv_get_bool_chk(&argvars[3], &error);
-	    if (error)
-		item = NULL;
-	}
+    if (l == NULL)
+	return;
 
-	for ( ; item != NULL; item = item->li_next, ++idx)
-	    if (tv_equal(&item->li_tv, &argvars[1], ic, FALSE))
-	    {
-		rettv->vval.v_number = idx;
-		break;
-	    }
+    CHECK_LIST_MATERIALIZE(l);
+    item = l->lv_first;
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	// Start at specified item.  Use the cached index that list_find()
+	// sets, so that a negative number also works.
+	item = list_find(l, (long)tv_get_number_chk(&argvars[2], &error));
+	idx = l->lv_u.mat.lv_idx;
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	    ic = (int)tv_get_bool_chk(&argvars[3], &error);
+	if (error)
+	    item = NULL;
     }
+
+    for ( ; item != NULL; item = item->li_next, ++idx)
+	if (tv_equal(&item->li_tv, &argvars[1], ic, FALSE))
+	{
+	    rettv->vval.v_number = idx;
+	    break;
+	}
 }
 
 /*
@@ -8363,22 +8363,26 @@ f_range(typval_T *argvars, typval_T *rettv)
     if (error)
 	return;		// type error; errmsg already given
     if (stride == 0)
-	emsg(_(e_stride_is_zero));
-    else if (stride > 0 ? end + 1 < start : end - 1 > start)
-	emsg(_(e_start_past_end));
-    else
     {
-	list_T *list = rettv->vval.v_list;
-
-	// Create a non-materialized list.  This is much more efficient and
-	// works with ":for".  If used otherwise CHECK_LIST_MATERIALIZE() must
-	// be called.
-	list->lv_first = &range_list_item;
-	list->lv_u.nonmat.lv_start = start;
-	list->lv_u.nonmat.lv_end = end;
-	list->lv_u.nonmat.lv_stride = stride;
-	list->lv_len = (end - start) / stride + 1;
+	emsg(_(e_stride_is_zero));
+	return;
     }
+    if (stride > 0 ? end + 1 < start : end - 1 > start)
+    {
+	emsg(_(e_start_past_end));
+	return;
+    }
+
+    list_T *list = rettv->vval.v_list;
+
+    // Create a non-materialized list.  This is much more efficient and
+    // works with ":for".  If used otherwise CHECK_LIST_MATERIALIZE() must
+    // be called.
+    list->lv_first = &range_list_item;
+    list->lv_u.nonmat.lv_start = start;
+    list->lv_u.nonmat.lv_end = end;
+    list->lv_u.nonmat.lv_stride = stride;
+    list->lv_len = (end - start) / stride + 1;
 }
 
 /*
@@ -9382,34 +9386,34 @@ set_position(typval_T *argvars, typval_T *rettv, int charpos)
 	return;
 
     name = tv_get_string_chk(argvars);
-    if (name != NULL)
+    if (name == NULL)
+	return;
+
+    if (list2fpos(&argvars[1], &pos, &fnum, &curswant, charpos) != OK)
+	return;
+
+    if (pos.col != MAXCOL && --pos.col < 0)
+	pos.col = 0;
+    if ((name[0] == '.' && name[1] == NUL))
     {
-	if (list2fpos(&argvars[1], &pos, &fnum, &curswant, charpos) == OK)
+	// set cursor; "fnum" is ignored
+	curwin->w_cursor = pos;
+	if (curswant >= 0)
 	{
-	    if (pos.col != MAXCOL && --pos.col < 0)
-		pos.col = 0;
-	    if ((name[0] == '.' && name[1] == NUL))
-	    {
-		// set cursor; "fnum" is ignored
-		curwin->w_cursor = pos;
-		if (curswant >= 0)
-		{
-		    curwin->w_curswant = curswant - 1;
-		    curwin->w_set_curswant = FALSE;
-		}
-		check_cursor();
-		rettv->vval.v_number = 0;
-	    }
-	    else if (name[0] == '\'' && name[1] != NUL && name[2] == NUL)
-	    {
-		// set mark
-		if (setmark_pos(name[1], &pos, fnum) == OK)
-		    rettv->vval.v_number = 0;
-	    }
-	    else
-		emsg(_(e_invalid_argument));
+	    curwin->w_curswant = curswant - 1;
+	    curwin->w_set_curswant = FALSE;
 	}
+	check_cursor();
+	rettv->vval.v_number = 0;
     }
+    else if (name[0] == '\'' && name[1] != NUL && name[2] == NUL)
+    {
+	// set mark
+	if (setmark_pos(name[1], &pos, fnum) == OK)
+	    rettv->vval.v_number = 0;
+    }
+    else
+	emsg(_(e_invalid_argument));
 }
 /*
  * "setcharpos()" function
@@ -9430,32 +9434,32 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
     if (check_for_dict_arg(argvars, 0) == FAIL)
 	return;
 
-    if ((d = argvars[0].vval.v_dict) != NULL)
+    if ((d = argvars[0].vval.v_dict) == NULL)
+	return;
+
+    csearch = dict_get_string(d, "char", FALSE);
+    if (csearch != NULL)
     {
-	csearch = dict_get_string(d, "char", FALSE);
-	if (csearch != NULL)
+	if (enc_utf8)
 	{
-	    if (enc_utf8)
-	    {
-		int pcc[MAX_MCO];
-		int c = utfc_ptr2char(csearch, pcc);
+	    int pcc[MAX_MCO];
+	    int c = utfc_ptr2char(csearch, pcc);
 
-		set_last_csearch(c, csearch, utfc_ptr2len(csearch));
-	    }
-	    else
-		set_last_csearch(PTR2CHAR(csearch),
-						csearch, mb_ptr2len(csearch));
+	    set_last_csearch(c, csearch, utfc_ptr2len(csearch));
 	}
-
-	di = dict_find(d, (char_u *)"forward", -1);
-	if (di != NULL)
-	    set_csearch_direction((int)tv_get_number(&di->di_tv)
-							? FORWARD : BACKWARD);
-
-	di = dict_find(d, (char_u *)"until", -1);
-	if (di != NULL)
-	    set_csearch_until(!!tv_get_number(&di->di_tv));
+	else
+	    set_last_csearch(PTR2CHAR(csearch),
+		    csearch, mb_ptr2len(csearch));
     }
+
+    di = dict_find(d, (char_u *)"forward", -1);
+    if (di != NULL)
+	set_csearch_direction((int)tv_get_number(&di->di_tv)
+		? FORWARD : BACKWARD);
+
+    di = dict_find(d, (char_u *)"until", -1);
+    if (di != NULL)
+	set_csearch_until(!!tv_get_number(&di->di_tv));
 }
 
 /*
