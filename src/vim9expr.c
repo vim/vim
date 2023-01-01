@@ -603,7 +603,7 @@ compile_load(
 		else
 		    gen_load = TRUE;
 	    }
-	    else if (class_member_exists(name, &cl, &idx, cctx))
+	    else if ((idx = class_member_index(*arg, len, &cl, cctx)) >= 0)
 	    {
 		res = generate_CLASSMEMBER(cctx, TRUE, cl, idx);
 	    }

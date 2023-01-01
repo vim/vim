@@ -358,17 +358,19 @@ ex_class(exarg_T *eap)
 	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free, TRUE);
 	    ga_clear_strings(&lines_to_free);
 
-	    // TODO: how about errors?
-	    int is_new = STRNCMP(uf->uf_name, "new", 3) == 0;
-	    garray_T *fgap = has_static || is_new
-					       ? &classfunctions : &objmethods;
-	    if (uf != NULL && ga_grow(fgap, 1) == OK)
+	    if (uf != NULL)
 	    {
-		if (is_new)
-		    uf->uf_flags |= FC_NEW;
+		int is_new = STRNCMP(uf->uf_name, "new", 3) == 0;
+		garray_T *fgap = has_static || is_new
+					       ? &classfunctions : &objmethods;
+		if (ga_grow(fgap, 1) == OK)
+		{
+		    if (is_new)
+			uf->uf_flags |= FC_NEW;
 
-		((ufunc_T **)fgap->ga_data)[fgap->ga_len] = uf;
-		++fgap->ga_len;
+		    ((ufunc_T **)fgap->ga_data)[fgap->ga_len] = uf;
+		    ++fgap->ga_len;
+		}
 	    }
 	}
 
@@ -863,32 +865,30 @@ fail_after_eval:
 }
 
 /*
- * If "cctx->ctx_ufunc" indicates we are in a class, check if "name" is a class
- * member.  If it is then return TRUE and set "cl_ret" and "idx_ret".
+ * If "name[len]" is a class member in cctx->ctx_ufunc->uf_class return the
+ * index in class.class_class_members[].
+ * If "cl_ret" is not NULL set it to the class.
+ * Otherwise return -1;
  */
     int
-class_member_exists(
-	char_u	*name,
-	class_T	**cl_ret,
-	int	*idx_ret,
-	cctx_T	*cctx)
+class_member_index(char_u *name, size_t len, class_T **cl_ret, cctx_T *cctx)
 {
-    if (cctx->ctx_ufunc == NULL || cctx->ctx_ufunc->uf_class == NULL)
-	return FALSE;
+    if (cctx == NULL || cctx->ctx_ufunc == NULL
+					  || cctx->ctx_ufunc->uf_class == NULL)
+	return -1;
     class_T *cl = cctx->ctx_ufunc->uf_class;
 
-    for (int idx = 0; idx < cl->class_class_member_count; ++idx)
+    for (int i = 0; i < cl->class_class_member_count; ++i)
     {
-	ocmember_T *m = &cl->class_class_members[idx];
-	if (STRCMP(m->ocm_name, name) == 0)
+	ocmember_T *m = &cl->class_class_members[i];
+	if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
 	{
-	    *cl_ret = cl;
-	    *idx_ret = idx;
-	    return TRUE;
+	    if (cl_ret != NULL)
+		*cl_ret = cl;
+	    return i;
 	}
     }
-
-    return FALSE;
+    return -1;
 }
 
 /*

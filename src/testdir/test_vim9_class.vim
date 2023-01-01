@@ -367,7 +367,8 @@ def Test_class_object_member_access()
   v9.CheckScriptFailure(lines, 'E1041:')
 enddef
 
-def Test_class_member_access()
+def Test_class_member()
+  # check access rules
   var lines =<< trim END
       vim9script
       class TextPos
@@ -401,6 +402,38 @@ def Test_class_member_access()
       assert_equal(17, TextPos.anybody)
   END
   v9.CheckScriptSuccess(lines)
+
+  # check shadowing
+  lines =<< trim END
+      vim9script
+
+      class Some
+        static count = 0
+        def Method(count: number)
+          echo count
+        enddef
+      endclass
+
+      var s = Some.new()
+      s.Method(7)
+  END
+  v9.CheckScriptFailure(lines, 'E1340: Argument already declared in the class: count')
+
+  lines =<< trim END
+      vim9script
+
+      class Some
+        static count = 0
+        def Method(arg: number)
+          var count = 3
+          echo arg count
+        enddef
+      endclass
+
+      var s = Some.new()
+      s.Method(7)
+  END
+  v9.CheckScriptFailure(lines, 'E1341: Variable already declared in the class: count')
 enddef
 
 def Test_class_function()
