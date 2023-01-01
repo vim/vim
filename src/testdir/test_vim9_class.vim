@@ -297,7 +297,6 @@ def Test_class_object_member_inits()
 enddef
 
 def Test_class_object_member_access()
-throw "Skipped: temporary bypass for failed tests"
   var lines =<< trim END
       vim9script
       class Triple

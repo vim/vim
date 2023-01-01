@@ -4,8 +4,6 @@
 source check.vim
 CheckMSWindows
 
-CheckGui
-
 source mouse.vim
 
 " Helper function for sending a grouped sequence of low level key presses
