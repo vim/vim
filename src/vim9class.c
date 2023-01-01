@@ -975,6 +975,13 @@ class_unref(class_T *cl)
 	}
 	vim_free(cl->class_obj_members);
 
+	for (int i = 0; i < cl->class_class_function_count; ++i)
+	{
+	    ufunc_T *uf = cl->class_class_functions[i];
+	    func_clear_free(uf, FALSE);
+	}
+	vim_free(cl->class_class_functions);
+
 	for (int i = 0; i < cl->class_obj_method_count; ++i)
 	{
 	    ufunc_T *uf = cl->class_obj_methods[i];
