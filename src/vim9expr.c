@@ -273,7 +273,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     class_T *cl = (class_T *)type->tt_member;
     if (*name_end == '(')
     {
-	// TODO
+	// TODO: method or function call
+	emsg("compile_class_object_index(): object/class call not handled yet");
     }
     else if (type->tt_type == VAR_OBJECT)
     {
@@ -300,7 +301,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     else
     {
 	// TODO: class member
-	emsg("compile_class_object_index(): not handled");
+	emsg("compile_class_object_index(): class member not handled yet");
     }
 
     return FAIL;
