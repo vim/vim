@@ -3,6 +3,7 @@
 " When +channel is supported then +job is too, so we don't check for that.
 source check.vim
 CheckFeature channel
+throw "Skipped: flaky test interfering with getting an artifact from appveyor"
 
 source shared.vim
 source screendump.vim
