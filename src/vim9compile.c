@@ -987,7 +987,14 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	goto theend;
     }
 
+    // Make sure "KeyTyped" is not set, it may cause indent to be written.
+    int save_KeyTyped = KeyTyped;
+    KeyTyped = FALSE;
+
     ufunc = define_function(eap, lambda_name, lines_to_free, FALSE);
+
+    KeyTyped = save_KeyTyped;
+
     if (ufunc == NULL)
     {
 	r = eap->skip ? OK : FAIL;

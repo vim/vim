@@ -1334,10 +1334,10 @@ errret:
  * When "ret_sid" is not NULL and we loaded the script before, don't load it
  * again.
  *
- * The 'eap' argument is used when sourcing lines from a buffer instead of a
+ * The "eap" argument is used when sourcing lines from a buffer instead of a
  * file.
  *
- * If 'clearvars' is TRUE, then for scripts which are loaded more than
+ * If "clearvars" is TRUE, then for scripts which are loaded more than
  * once, clear all the functions and variables previously defined in that
  * script.
  *
@@ -1538,6 +1538,7 @@ do_source_ext(
 	current_sctx.sc_version = SCRIPT_VERSION_VIM9;
     else
 	current_sctx.sc_version = 1;  // default script version
+    current_sctx.sc_lnum = 0;
 
 #ifdef FEAT_EVAL
 # ifdef FEAT_PROFILE
@@ -1549,7 +1550,10 @@ do_source_ext(
     // Also starts profiling timer for nested script.
     save_funccal(&funccalp_entry);
 
-    current_sctx.sc_lnum = 0;
+    // Reset "KeyTyped" to avoid some commands thinking they are invoked
+    // interactively.  E.g. defining a function would output indent.
+    int save_KeyTyped = KeyTyped;
+    KeyTyped = FALSE;
 
     // Check if this script was sourced before to find its SID.
     // Always use a new sequence number.
@@ -1765,6 +1769,7 @@ almosttheend:
 # endif
 #endif
     current_sctx = save_current_sctx;
+    KeyTyped = save_KeyTyped;
 
     if (cookie.fp != NULL)
 	fclose(cookie.fp);
