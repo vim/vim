@@ -4734,12 +4734,13 @@ exec_instructions(ectx_T *ectx)
 		    }
 		    else if (iptr->isn_type == ISN_COMPARECLASS)
 		    {
-			status = typval_compare_class(tv1, tv2, exprtype, &res);
+			status = typval_compare_class(tv1, tv2,
+							exprtype, FALSE, &res);
 		    }
 		    else // ISN_COMPAREOBJECT
 		    {
 			status = typval_compare_object(tv1, tv2,
-							       exprtype, &res);
+							exprtype, FALSE, &res);
 		    }
 		    --ectx->ec_stack.ga_len;
 		    clear_tv(tv1);
