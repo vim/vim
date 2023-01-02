@@ -8,7 +8,7 @@
 " ":help functions" lists are in ASCII order.
 
 func Test_function_lists()
-
+throw "Skipped: temporary rollback of test_mswin_event to rule it out root cause of bad characters in console"
   " Delete any files left over from an earlier run of this test.
   call delete("Xglobal_functions.diff")
   call delete("Xfunctions.diff")
