@@ -3401,3 +3401,9 @@ EXTERN char e_member_not_found_on_class_str_str[]
 EXTERN char e_cannot_add_textprop_with_text_after_using_textprop_with_negative_id[]
 	INIT(= N_("E1339: Cannot add a textprop with text after using a textprop with a negative id"));
 #endif
+#ifdef FEAT_EVAL
+EXTERN char e_argument_already_declared_in_class_str[]
+	INIT(= N_("E1340: Argument already declared in the class: %s"));
+EXTERN char e_variable_already_declared_in_class_str[]
+	INIT(= N_("E1341: Variable already declared in the class: %s"));
+#endif

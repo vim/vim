@@ -367,7 +367,8 @@ def Test_class_object_member_access()
   v9.CheckScriptFailure(lines, 'E1041:')
 enddef
 
-def Test_class_member_access()
+def Test_class_member()
+  # check access rules
   var lines =<< trim END
       vim9script
       class TextPos
@@ -377,7 +378,7 @@ def Test_class_member_access()
          static _secret = 7
          public static  anybody = 42
 
-         def AddToCounter(nr: number)
+         static def AddToCounter(nr: number)
            counter += nr
          enddef
       endclass
@@ -399,6 +400,64 @@ def Test_class_member_access()
       assert_equal(12, TextPos.anybody)
       TextPos.anybody += 5
       assert_equal(17, TextPos.anybody)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # check shadowing
+  lines =<< trim END
+      vim9script
+
+      class Some
+        static count = 0
+        def Method(count: number)
+          echo count
+        enddef
+      endclass
+
+      var s = Some.new()
+      s.Method(7)
+  END
+  v9.CheckScriptFailure(lines, 'E1340: Argument already declared in the class: count')
+
+  lines =<< trim END
+      vim9script
+
+      class Some
+        static count = 0
+        def Method(arg: number)
+          var count = 3
+          echo arg count
+        enddef
+      endclass
+
+      var s = Some.new()
+      s.Method(7)
+  END
+  v9.CheckScriptFailure(lines, 'E1341: Variable already declared in the class: count')
+enddef
+
+def Test_class_function()
+  var lines =<< trim END
+      vim9script
+      class Value
+        this.value = 0
+        static objects = 0
+
+        def new(v: number)
+          this.value = v
+          ++objects
+        enddef
+
+        static def GetCount(): number
+          return objects
+        enddef
+      endclass
+
+      assert_equal(0, Value.GetCount())
+      var v1 = Value.new(2)
+      assert_equal(1, Value.GetCount())
+      var v2 = Value.new(7)
+      assert_equal(2, Value.GetCount())
   END
   v9.CheckScriptSuccess(lines)
 enddef
