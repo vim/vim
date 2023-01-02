@@ -1538,9 +1538,10 @@ do_source_ext(
 	current_sctx.sc_version = SCRIPT_VERSION_VIM9;
     else
 	current_sctx.sc_version = 1;  // default script version
-    current_sctx.sc_lnum = 0;
 
 #ifdef FEAT_EVAL
+    current_sctx.sc_lnum = 0;
+
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
 	prof_child_enter(&wait_start);		// entering a child now
@@ -1767,9 +1768,10 @@ almosttheend:
     if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_start);		// leaving a child now
 # endif
+
+    KeyTyped = save_KeyTyped;
 #endif
     current_sctx = save_current_sctx;
-    KeyTyped = save_KeyTyped;
 
     if (cookie.fp != NULL)
 	fclose(cookie.fp);
