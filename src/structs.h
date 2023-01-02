@@ -1493,9 +1493,9 @@ struct class_S
     ocmember_T	*class_class_members;	// allocated
     typval_T	*class_members_tv;	// allocated array of class member vals
 
-    // class methods: "static def SomeMethod()"
-    int		class_class_method_count;
-    ufunc_T	**class_class_methods;	// allocated
+    // class functions: "static def SomeMethod()"
+    int		class_class_function_count;
+    ufunc_T	**class_class_functions;	// allocated
 
     // object members: "this.varname"
     int		class_obj_member_count;

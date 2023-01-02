@@ -49,6 +49,7 @@ void shell_resized_check(void);
 void set_shellsize(int width, int height, int mustset);
 void out_str_t_TE(void);
 void out_str_t_TI(void);
+void out_str_t_BE(void);
 void may_send_t_RK(void);
 void settmode(tmode_T tmode);
 void starttermcap(void);

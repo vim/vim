@@ -3757,6 +3757,21 @@ out_str_t_TI(void)
 }
 
 /*
+ * Output T_BE, but only when t_PS and t_PE are set.
+ */
+    void
+out_str_t_BE(void)
+{
+    char_u *p;
+
+    if (T_BE == NULL || *T_BE == NUL
+	    || (p = find_termcode((char_u *)"PS")) == NULL || *p == NUL
+	    || (p = find_termcode((char_u *)"PE")) == NULL || *p == NUL)
+	return;
+    out_str(T_BE);
+}
+
+/*
  * If t_TI was recently sent and there is no typeahead or work to do, now send
  * t_RK.  This is postponed to avoid the response arriving in a shell command
  * or after Vim exits.
@@ -3834,7 +3849,7 @@ settmode(tmode_T tmode)
 		}
 		else
 		{
-		    out_str(T_BE);	// enable bracketed paste mode (should
+		    out_str_t_BE();	// enable bracketed paste mode (should
 					// be before mch_settmode().
 		    out_str_t_TI();	// possibly enables modifyOtherKeys
 		}
@@ -3862,7 +3877,7 @@ starttermcap(void)
 	out_str(T_TI);			// start termcap mode
 	out_str_t_TI();			// start "raw" mode
 	out_str(T_KS);			// start "keypad transmit" mode
-	out_str(T_BE);			// enable bracketed paste mode
+	out_str_t_BE();			// enable bracketed paste mode
 
 #if defined(UNIX) || defined(VMS)
 	// Enable xterm's focus reporting mode when 'esckeys' is set.

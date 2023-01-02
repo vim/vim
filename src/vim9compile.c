@@ -302,28 +302,6 @@ script_var_exists(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 }
 
 /*
- * If "name" is a class member in cctx->ctx_ufunc->uf_class return the index in
- * class.class_class_members[].
- * Otherwise return -1;
- */
-    static int
-class_member_index(char_u *name, size_t len, cctx_T *cctx)
-{
-    if (cctx == NULL || cctx->ctx_ufunc == NULL
-					  || cctx->ctx_ufunc->uf_class == NULL)
-	return -1;
-    class_T *cl = cctx->ctx_ufunc->uf_class;
-    for (int i = 0; i < cl->class_class_member_count; ++i)
-    {
-	ocmember_T *m = &cl->class_class_members[i];
-	if (STRNCMP(name, m->ocm_name, len) == 0
-		&& m->ocm_name[len] == NUL)
-	    return i;
-    }
-    return -1;
-}
-
-/*
  * Return TRUE if "name" is a local variable, argument, script variable or
  * imported.
  */
@@ -338,7 +316,7 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
 			&& (cctx->ctx_ufunc->uf_flags & FC_OBJECT)
 			&& STRNCMP(name, "this", 4) == 0)))
 	    || script_var_exists(name, len, cctx, NULL) == OK
-	    || class_member_index(name, len, cctx) >= 0
+	    || class_member_index(name, len, NULL, cctx) >= 0
 	    || find_imported(name, len, FALSE) != NULL;
 }
 
@@ -376,15 +354,21 @@ check_defined(
     if (len == 1 && *p == '_')
 	return OK;
 
-    if (class_member_index(p, len, cctx) >= 0)
-	return OK;
-
     if (script_var_exists(p, len, cctx, cstack) == OK)
     {
 	if (is_arg)
 	    semsg(_(e_argument_already_declared_in_script_str), p);
 	else
 	    semsg(_(e_variable_already_declared_in_script_str), p);
+	return FAIL;
+    }
+
+    if (class_member_index(p, len, NULL, cctx) >= 0)
+    {
+	if (is_arg)
+	    semsg(_(e_argument_already_declared_in_class_str), p);
+	else
+	    semsg(_(e_variable_already_declared_in_class_str), p);
 	return FAIL;
     }
 
@@ -1592,8 +1576,14 @@ compile_lhs(
 		}
 	    }
 	    else if ((lhs->lhs_classmember_idx = class_member_index(
-				       var_start, lhs->lhs_varlen, cctx)) >= 0)
+				 var_start, lhs->lhs_varlen, NULL, cctx)) >= 0)
 	    {
+		if (is_decl)
+		{
+		    semsg(_(e_variable_already_declared_in_class_str),
+								lhs->lhs_name);
+		    return FAIL;
+		}
 		lhs->lhs_dest = dest_class_member;
 		lhs->lhs_class = cctx->ctx_ufunc->uf_class;
 	    }
@@ -2264,7 +2254,7 @@ compile_assignment(
     CLEAR_FIELD(lhs);
     long	start_lnum = SOURCING_LNUM;
 
-    int		has_arg_is_set_prefix = STRNCMP(arg, "ifargisset ", 11) == 0;
+    int	has_arg_is_set_prefix = STRNCMP(arg, "ifargisset ", 11) == 0;
     if (has_arg_is_set_prefix)
     {
 	arg += 11;

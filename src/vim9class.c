@@ -223,9 +223,9 @@ ex_class(exarg_T *eap)
     garray_T classmembers;
     ga_init2(&classmembers, sizeof(ocmember_T), 10);
 
-    // Growarray with object methods declared in the class.
-    garray_T classmethods;
-    ga_init2(&classmethods, sizeof(ufunc_T *), 10);
+    // Growarray with functions declared in the class.
+    garray_T classfunctions;
+    ga_init2(&classfunctions, sizeof(ufunc_T *), 10);
 
     // Growarray with object members declared in the class.
     garray_T objmembers;
@@ -288,6 +288,19 @@ ex_class(exarg_T *eap)
 	    }
 	}
 
+	int has_static = FALSE;
+	char_u *ps = p;
+	if (checkforcmd(&p, "static", 4))
+	{
+	    if (STRNCMP(ps, "static", 6) != 0)
+	    {
+		semsg(_(e_command_cannot_be_shortened_str), ps);
+		break;
+	    }
+	    has_static = TRUE;
+	    p = skipwhite(ps + 6);
+	}
+
 	// object members (public, read access, private):
 	//	"this._varname"
 	//	"this.varname"
@@ -314,47 +327,15 @@ ex_class(exarg_T *eap)
 	    }
 	}
 
-	// class members and methods
-	else if (checkforcmd(&p, "static", 6))
-	{
-	    p = skipwhite(p);
-	    if (checkforcmd(&p, "def", 3))
-	    {
-		// TODO: class method
-		//	  static def someMethod()
-		//	  enddef
-		//	  static def <Tval> someMethod()
-		//	  enddef
-	    }
-	    else
-	    {
-		// class members (public, read access, private):
-		//	"static _varname"
-		//	"static varname"
-		//	"public static varname"
-		char_u *varname = p;
-		char_u *varname_end = NULL;
-		type_T *type = NULL;
-		char_u *init_expr = NULL;
-		if (parse_member(eap, line, varname, has_public,
-			  &varname_end, &type_list, &type, &init_expr) == FAIL)
-		    break;
-		if (add_member(&classmembers, varname, varname_end,
-					  has_public, type, init_expr) == FAIL)
-		{
-		    vim_free(init_expr);
-		    break;
-		}
-	    }
-	}
-
 	// constructors:
 	//	  def new()
 	//	  enddef
 	//	  def newOther()
 	//	  enddef
-	// methods:
-	//	  def someMethod()
+	// object methods and class functions:
+	//	  def SomeMethod()
+	//	  enddef
+	//	  static def ClassFunction()
 	//	  enddef
 	// TODO:
 	//	  def <Tval> someMethod()
@@ -363,6 +344,8 @@ ex_class(exarg_T *eap)
 	{
 	    exarg_T	ea;
 	    garray_T	lines_to_free;
+
+	    // TODO: error for "public static def Func()"?
 
 	    CLEAR_FIELD(ea);
 	    ea.cmd = line;
@@ -375,14 +358,41 @@ ex_class(exarg_T *eap)
 	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free, TRUE);
 	    ga_clear_strings(&lines_to_free);
 
-	    // TODO: how about errors?
-	    if (uf != NULL && ga_grow(&objmethods, 1) == OK)
+	    if (uf != NULL)
 	    {
-		if (STRNCMP(uf->uf_name, "new", 3) == 0)
-		    uf->uf_flags |= FC_NEW;
+		int is_new = STRNCMP(uf->uf_name, "new", 3) == 0;
+		garray_T *fgap = has_static || is_new
+					       ? &classfunctions : &objmethods;
+		if (ga_grow(fgap, 1) == OK)
+		{
+		    if (is_new)
+			uf->uf_flags |= FC_NEW;
 
-		((ufunc_T **)objmethods.ga_data)[objmethods.ga_len] = uf;
-		++objmethods.ga_len;
+		    ((ufunc_T **)fgap->ga_data)[fgap->ga_len] = uf;
+		    ++fgap->ga_len;
+		}
+	    }
+	}
+
+	// class members
+	else if (has_static)
+	{
+	    // class members (public, read access, private):
+	    //	"static _varname"
+	    //	"static varname"
+	    //	"public static varname"
+	    char_u *varname = p;
+	    char_u *varname_end = NULL;
+	    type_T *type = NULL;
+	    char_u *init_expr = NULL;
+	    if (parse_member(eap, line, varname, has_public,
+		      &varname_end, &type_list, &type, &init_expr) == FAIL)
+		break;
+	    if (add_member(&classmembers, varname, varname_end,
+				      has_public, type, init_expr) == FAIL)
+	    {
+		vim_free(init_expr);
+		break;
 	    }
 	}
 
@@ -445,8 +455,8 @@ ex_class(exarg_T *eap)
 	}
 
 	int have_new = FALSE;
-	for (int i = 0; i < objmethods.ga_len; ++i)
-	    if (STRCMP(((ufunc_T **)objmethods.ga_data)[i]->uf_name,
+	for (int i = 0; i < classfunctions.ga_len; ++i)
+	    if (STRCMP(((ufunc_T **)classfunctions.ga_data)[i]->uf_name,
 								   "new") == 0)
 	    {
 		have_new = TRUE;
@@ -483,10 +493,10 @@ ex_class(exarg_T *eap)
 	    ga_clear_strings(&lines_to_free);
 	    vim_free(fga.ga_data);
 
-	    if (nf != NULL && ga_grow(&objmethods, 1) == OK)
+	    if (nf != NULL && ga_grow(&classfunctions, 1) == OK)
 	    {
-		((ufunc_T **)objmethods.ga_data)[objmethods.ga_len] = nf;
-		++objmethods.ga_len;
+		((ufunc_T **)classfunctions.ga_data)[classfunctions.ga_len] = nf;
+		++classfunctions.ga_len;
 
 		nf->uf_flags |= FC_NEW;
 		nf->uf_ret_type = get_type_ptr(&type_list);
@@ -500,21 +510,35 @@ ex_class(exarg_T *eap)
 	    }
 	}
 
-	// TODO: class methods
-	cl->class_obj_method_count = objmethods.ga_len;
-	cl->class_obj_methods = ALLOC_MULT(ufunc_T *, objmethods.ga_len);
-	if (cl->class_obj_methods == NULL)
-	    goto cleanup;
-	mch_memmove(cl->class_obj_methods, objmethods.ga_data,
-					sizeof(ufunc_T *) * objmethods.ga_len);
-	vim_free(objmethods.ga_data);
-
-	// Set the class pointer on all the object methods.
-	for (int i = 0; i < objmethods.ga_len; ++i)
+	// loop 1: class functions, loop 2: object methods
+	for (int loop = 1; loop <= 2; ++loop)
 	{
-	    ufunc_T *fp = cl->class_obj_methods[i];
-	    fp->uf_class = cl;
-	    fp->uf_flags |= FC_OBJECT;  // TODO: not for class method
+	    garray_T *gap = loop == 1 ? &classfunctions : &objmethods;
+	    int	     *fcount = loop == 1 ? &cl->class_class_function_count
+					 : &cl->class_obj_method_count;
+	    ufunc_T ***fup = loop == 1 ? &cl->class_class_functions
+				       : &cl->class_obj_methods;
+
+	    *fcount = gap->ga_len;
+	    if (gap->ga_len == 0)
+	    {
+		*fup = NULL;
+		continue;
+	    }
+	    *fup = ALLOC_MULT(ufunc_T *, gap->ga_len);
+	    if (*fup == NULL)
+		goto cleanup;
+	    mch_memmove(*fup, gap->ga_data, sizeof(ufunc_T *) * gap->ga_len);
+	    vim_free(gap->ga_data);
+
+	    // Set the class pointer on all the object methods.
+	    for (int i = 0; i < gap->ga_len; ++i)
+	    {
+		ufunc_T *fp = (*fup)[i];
+		fp->uf_class = cl;
+		if (loop == 2)
+		    fp->uf_flags |= FC_OBJECT;
+	    }
 	}
 
 	cl->class_type.tt_type = VAR_CLASS;
@@ -539,6 +563,7 @@ cleanup:
     if (cl != NULL)
     {
 	vim_free(cl->class_name);
+	vim_free(cl->class_class_functions);
 	vim_free(cl->class_obj_members);
 	vim_free(cl->class_obj_methods);
 	vim_free(cl);
@@ -565,6 +590,14 @@ cleanup:
 	func_clear_free(uf, FALSE);
     }
     ga_clear(&objmethods);
+
+    for (int i = 0; i < classfunctions.ga_len; ++i)
+    {
+	ufunc_T *uf = ((ufunc_T **)classfunctions.ga_data)[i];
+	func_clear_free(uf, FALSE);
+    }
+    ga_clear(&classfunctions);
+
     clear_type_list(&type_list);
 }
 
@@ -627,7 +660,7 @@ ex_type(exarg_T *eap UNUSED)
 /*
  * Evaluate what comes after a class:
  * - class member: SomeClass.varname
- * - class method: SomeClass.SomeMethod()
+ * - class function: SomeClass.SomeMethod()
  * - class constructor: SomeClass.new()
  * - object member: someObject.varname
  * - object method: someObject.SomeMethod()
@@ -664,9 +697,13 @@ class_object_index(
 					     : rettv->vval.v_object->obj_class;
     if (*name_end == '(')
     {
-	for (int i = 0; i < cl->class_obj_method_count; ++i)
+	int on_class = rettv->v_type == VAR_CLASS;
+	int count = on_class ? cl->class_class_function_count
+			     : cl->class_obj_method_count;
+	for (int i = 0; i < count; ++i)
 	{
-	    ufunc_T *fp = cl->class_obj_methods[i];
+	    ufunc_T *fp = on_class ? cl->class_class_functions[i]
+				   : cl->class_obj_methods[i];
 	    // Use a separate pointer to avoid that ASAN complains about
 	    // uf_name[] only being 4 characters.
 	    char_u *ufname = (char_u *)fp->uf_name;
@@ -790,7 +827,8 @@ find_class_func(char_u **arg)
     size_t len = name_end - name;
     typval_T tv;
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable(name, len, 0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
+    if (eval_variable(name, (int)len,
+				    0, &tv, NULL, EVAL_VAR_NOAUTOLOAD) == FAIL)
 	return NULL;
     if (tv.v_type != VAR_CLASS && tv.v_type != VAR_OBJECT)
 	goto fail_after_eval;
@@ -805,9 +843,13 @@ find_class_func(char_u **arg)
 	goto fail_after_eval;
     len = fname_end - fname;
 
-    for (int i = 0; i < cl->class_obj_method_count; ++i)
+    int count = tv.v_type == VAR_CLASS ? cl->class_class_function_count
+				       : cl->class_obj_method_count;
+    ufunc_T **funcs = tv.v_type == VAR_CLASS ? cl->class_class_functions
+					     : cl->class_obj_methods;
+    for (int i = 0; i < count; ++i)
     {
-	ufunc_T *fp = cl->class_obj_methods[i];
+	ufunc_T *fp = funcs[i];
 	// Use a separate pointer to avoid that ASAN complains about
 	// uf_name[] only being 4 characters.
 	char_u *ufname = (char_u *)fp->uf_name;
@@ -821,6 +863,33 @@ find_class_func(char_u **arg)
 fail_after_eval:
     clear_tv(&tv);
     return NULL;
+}
+
+/*
+ * If "name[len]" is a class member in cctx->ctx_ufunc->uf_class return the
+ * index in class.class_class_members[].
+ * If "cl_ret" is not NULL set it to the class.
+ * Otherwise return -1;
+ */
+    int
+class_member_index(char_u *name, size_t len, class_T **cl_ret, cctx_T *cctx)
+{
+    if (cctx == NULL || cctx->ctx_ufunc == NULL
+					  || cctx->ctx_ufunc->uf_class == NULL)
+	return -1;
+    class_T *cl = cctx->ctx_ufunc->uf_class;
+
+    for (int i = 0; i < cl->class_class_member_count; ++i)
+    {
+	ocmember_T *m = &cl->class_class_members[i];
+	if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+	{
+	    if (cl_ret != NULL)
+		*cl_ret = cl;
+	    return i;
+	}
+    }
+    return -1;
 }
 
 /*
@@ -906,6 +975,13 @@ class_unref(class_T *cl)
 	    vim_free(m->ocm_init);
 	}
 	vim_free(cl->class_obj_members);
+
+	for (int i = 0; i < cl->class_class_function_count; ++i)
+	{
+	    ufunc_T *uf = cl->class_class_functions[i];
+	    func_clear_free(uf, FALSE);
+	}
+	vim_free(cl->class_class_functions);
 
 	for (int i = 0; i < cl->class_obj_method_count; ++i)
 	{

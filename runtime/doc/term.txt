@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2022 Dec 31
+*term.txt*      For Vim version 9.0.  Last change: 2023 Jan 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -117,6 +117,10 @@ have a problem with this, disable bracketed paste by putting this in your
 	set t_BE=
 If this is done while Vim is running the 't_BD' will be sent to the terminal
 to disable bracketed paste.
+
+If |t_PS| or |t_PE| is not set, then |t_BE| will not be used.  This is to make
+sure that bracketed paste is not enabled when the escape codes surrounding
+pasted text cannot be recognized.
 
 If your terminal supports bracketed paste, but the options are not set
 automatically, you can try using something like this: >

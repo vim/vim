@@ -3714,7 +3714,7 @@ ins_esc(
 	MAY_WANT_TO_LOG_THIS;
 
 	// Re-enable bracketed paste mode.
-	out_str(T_BE);
+	out_str_t_BE();
 
 	// Re-enable modifyOtherKeys.
 	out_str_t_TI();

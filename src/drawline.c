@@ -643,7 +643,7 @@ text_prop_position(
     int	    right = (tp->tp_flags & TP_FLAG_ALIGN_RIGHT);
     int	    above = (tp->tp_flags & TP_FLAG_ALIGN_ABOVE);
     int	    below = (tp->tp_flags & TP_FLAG_ALIGN_BELOW);
-    int	    wrap = (tp->tp_flags & TP_FLAG_WRAP);
+    int	    wrap = tp->tp_col < MAXCOL || (tp->tp_flags & TP_FLAG_WRAP);
     int	    padding = tp->tp_col == MAXCOL && tp->tp_len > 1
 							  ? tp->tp_len - 1 : 0;
     int	    col_with_padding = scr_col + (below ? 0 : padding);
