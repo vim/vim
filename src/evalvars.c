@@ -1111,7 +1111,8 @@ ex_let(exarg_T *eap)
 		if (vim9script && (flags & ASSIGN_NO_DECL) == 0)
 		{
 		    // +=, /=, etc. require an existing variable
-		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
+		    semsg(_(e_cannot_use_operator_on_new_variable_str),
+								     eap->arg);
 		}
 		else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{

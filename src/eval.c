@@ -1183,7 +1183,7 @@ get_lval(
     if (vim9script && (flags & GLV_NO_DECL) == 0)
     {
 	if (!quiet)
-	    semsg(_(e_variable_already_declared), lp->ll_name);
+	    semsg(_(e_variable_already_declared_str), lp->ll_name);
 	return NULL;
     }
 
@@ -1413,7 +1413,7 @@ get_lval(
 		if (*p == '[' || *p == '.' || unlet)
 		{
 		    if (!quiet)
-			semsg(_(e_key_not_present_in_dictionary), key);
+			semsg(_(e_key_not_present_in_dictionary_str), key);
 		    clear_tv(&var1);
 		    return NULL;
 		}
@@ -1717,7 +1717,7 @@ set_var_lval(
 	{
 	    if (op != NULL && *op != '=')
 	    {
-		semsg(_(e_key_not_present_in_dictionary), lp->ll_newkey);
+		semsg(_(e_key_not_present_in_dictionary_str), lp->ll_newkey);
 		return;
 	    }
 	    if (dict_wrong_func_name(lp->ll_tv->vval.v_dict, rettv,
@@ -4968,7 +4968,7 @@ eval_index_inner(
 		    {
 			if (keylen > 0)
 			    key[keylen] = NUL;
-			semsg(_(e_key_not_present_in_dictionary), key);
+			semsg(_(e_key_not_present_in_dictionary_str), key);
 		    }
 		    return FAIL;
 		}

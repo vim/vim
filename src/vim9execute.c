@@ -229,12 +229,11 @@ exe_newdict(int count, ectx_T *ectx)
 	    // have already checked key type is VAR_STRING
 	    tv = STACK_TV_BOT(2 * (idx - count));
 	    // check key is unique
-	    key = tv->vval.v_string == NULL
-				? (char_u *)"" : tv->vval.v_string;
+	    key = tv->vval.v_string == NULL ? (char_u *)"" : tv->vval.v_string;
 	    item = dict_find(dict, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key_in_dictionary), key);
+		semsg(_(e_duplicate_key_in_dictionary_str), key);
 		dict_unref(dict);
 		return MAYBE;
 	    }
@@ -2386,8 +2385,7 @@ execute_unletindex(isn_T *iptr, ectx_T *ectx)
 		if (di == NULL)
 		{
 		    // NULL dict is equivalent to empty dict
-		    semsg(_(e_key_not_present_in_dictionary),
-							  key);
+		    semsg(_(e_key_not_present_in_dictionary_str), key);
 		    status = FAIL;
 		}
 		else if (var_check_fixed(di->di_flags,
@@ -5103,7 +5101,7 @@ exec_instructions(ectx_T *ectx)
 		    if ((di = dict_find(dict, key, -1)) == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_key_not_present_in_dictionary), key);
+			semsg(_(e_key_not_present_in_dictionary_str), key);
 
 			// If :silent! is used we will continue, make sure the
 			// stack contents makes sense and the dict stack is
@@ -5146,7 +5144,7 @@ exec_instructions(ectx_T *ectx)
 								       == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_key_not_present_in_dictionary),
+			semsg(_(e_key_not_present_in_dictionary_str),
 							 iptr->isn_arg.string);
 			goto on_error;
 		    }

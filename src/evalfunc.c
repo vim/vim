@@ -7200,7 +7200,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
 	    else if (lv.ll_range)
 		emsg(_(e_range_not_allowed));
 	    else if (lv.ll_newkey != NULL)
-		semsg(_(e_key_not_present_in_dictionary), lv.ll_newkey);
+		semsg(_(e_key_not_present_in_dictionary_str), lv.ll_newkey);
 	    else if (lv.ll_list != NULL)
 		// List item.
 		rettv->vval.v_number = tv_islocked(&lv.ll_li->li_tv);

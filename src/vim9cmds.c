@@ -1035,7 +1035,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		    goto failed;
 		if (lookup_local(arg, varlen, NULL, cctx) == OK)
 		{
-		    semsg(_(e_variable_already_declared), arg);
+		    semsg(_(e_variable_already_declared_str), arg);
 		    goto failed;
 		}
 
