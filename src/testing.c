@@ -1520,6 +1520,10 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     else if (STRCMP(event, "findrepl") == 0)
 	rettv->vval.v_number = test_gui_find_repl(argvars[1].vval.v_dict);
 #  endif
+#  ifdef MSWIN
+    else if (STRCMP(event, "key") == 0 || STRCMP(event, "mouse") == 0)
+	rettv->vval.v_number = test_gui_w32_sendevent(event, argvars[1].vval.v_dict);
+#  endif
     else if (STRCMP(event, "mouse") == 0)
 	rettv->vval.v_number = test_gui_mouse_event(argvars[1].vval.v_dict);
     else if (STRCMP(event, "scrollbar") == 0)
@@ -1528,10 +1532,6 @@ f_test_gui_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	rettv->vval.v_number = test_gui_tabline_event(argvars[1].vval.v_dict);
     else if (STRCMP(event, "tabmenu") == 0)
 	rettv->vval.v_number = test_gui_tabmenu_event(argvars[1].vval.v_dict);
-#  ifdef FEAT_GUI_MSWIN
-    else if (STRCMP(event, "sendevent") == 0)
-	rettv->vval.v_number = test_gui_w32_sendevent(argvars[1].vval.v_dict);
-#  endif
     else
     {
 	semsg(_(e_invalid_argument_str), event);
