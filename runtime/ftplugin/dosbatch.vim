@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:    MS-DOS .bat files
 " Maintainer:  Mike Williams <mrw@eandem.co.uk>
-" Last Change: 7th May 2020
+" Last Change: 3rd January 2023
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -16,7 +16,7 @@ set cpo&vim
 
 " BAT comment formatting
 setlocal comments=b:rem,b:@rem,b:REM,b:@REM,:::
-setlocal commentstring=::\ %s
+setlocal commentstring=REM\ %s
 setlocal formatoptions-=t formatoptions+=rol
 
 " Lookup DOS keywords using Windows command help.
