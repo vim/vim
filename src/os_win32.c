@@ -2478,16 +2478,16 @@ mch_inchar(
 
 	    c = tgetch(&modifiers, &ch2);
 
-	    c = simplify_key(c, &modifiers);
+	//     c = simplify_key(c, &modifiers);
 
-	    // Some chars need adjustment when the Ctrl modifier is used.
-	    ++no_reduce_keys;
-	    c = may_adjust_key_for_ctrl(modifiers, c);
-	    --no_reduce_keys;
+	//     // Some chars need adjustment when the Ctrl modifier is used.
+	//     ++no_reduce_keys;
+	//     c = may_adjust_key_for_ctrl(modifiers, c);
+	//     --no_reduce_keys;
 
-	    // remove the SHIFT modifier for keys where it's already included,
-	    // e.g., '(' and '*'
-	    modifiers = may_remove_shift_modifier(modifiers, c);
+	//     // remove the SHIFT modifier for keys where it's already included,
+	//     // e.g., '(' and '*'
+	//     modifiers = may_remove_shift_modifier(modifiers, c);
 
 	    if (typebuf_changed(tb_change_cnt))
 	    {
