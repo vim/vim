@@ -505,6 +505,9 @@ func Test_mswin_key_event()
       for n in range(1, 12)
         let kstr = $"{mod_str}F{n}"
         let keycode = eval('"\<' .. kstr .. '>"')
+        " flush out any garbage left in the buffer
+        while getchar(0)
+        endwhile
         " call SendKeyGroup(mod_keycodes + [111+n])
         call SendKeyWithModifiers(111+n, vim_mod_mask)
         let ch = getcharstr(0)
