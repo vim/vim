@@ -1091,7 +1091,7 @@ highlight_set_cterm_color(
 		    break;
 	    if (i < 0)
 	    {
-		semsg(_(e_color_name_or_number_not_recognized), key_start);
+		semsg(_(e_color_name_or_number_not_recognized_str), key_start);
 		return FALSE;
 	    }
 

@@ -7049,12 +7049,12 @@ ex_find(exarg_T *eap)
 	}
     }
 
-    if (fname != NULL)
-    {
-	eap->arg = fname;
-	do_exedit(eap, NULL);
-	vim_free(fname);
-    }
+    if (fname == NULL)
+	return;
+
+    eap->arg = fname;
+    do_exedit(eap, NULL);
+    vim_free(fname);
 }
 
 /*

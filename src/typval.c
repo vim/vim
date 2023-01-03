@@ -1310,6 +1310,24 @@ typval_compare(
 	}
 	n1 = res;
     }
+    else if (tv1->v_type == VAR_CLASS || tv2->v_type == VAR_CLASS)
+    {
+	if (typval_compare_class(tv1, tv2, type, ic, &res) == FAIL)
+	{
+	    clear_tv(tv1);
+	    return FAIL;
+	}
+	n1 = res;
+    }
+    else if (tv1->v_type == VAR_OBJECT || tv2->v_type == VAR_OBJECT)
+    {
+	if (typval_compare_object(tv1, tv2, type, ic, &res) == FAIL)
+	{
+	    clear_tv(tv1);
+	    return FAIL;
+	}
+	n1 = res;
+    }
     else if (tv1->v_type == VAR_DICT || tv2->v_type == VAR_DICT)
     {
 	if (typval_compare_dict(tv1, tv2, type, ic, &res) == FAIL)
@@ -1576,6 +1594,77 @@ typval_compare_blob(
 	    val = !val;
     }
     *res = val;
+    return OK;
+}
+
+/*
+ * Compare "tv1" to "tv2" as classes according to "type".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_class(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type UNUSED,
+	int	    ic UNUSED,
+	int	    *res)
+{
+    // TODO: use "type"
+    *res = tv1->vval.v_class == tv2->vval.v_class;
+    return OK;
+}
+
+/*
+ * Compare "tv1" to "tv2" as objects according to "type".
+ * Put the result, false or true, in "res".
+ * Return FAIL and give an error message when the comparison can't be done.
+ */
+    int
+typval_compare_object(
+	typval_T    *tv1,
+	typval_T    *tv2,
+	exprtype_T  type,
+	int	    ic,
+	int	    *res)
+{
+    int res_match = type == EXPR_EQUAL || type == EXPR_IS ? TRUE : FALSE;
+
+    if (tv1->vval.v_object == NULL && tv2->vval.v_object == NULL)
+    {
+	*res = res_match;
+	return OK;
+    }
+    if (tv1->vval.v_object == NULL || tv2->vval.v_object == NULL)
+    {
+	*res = !res_match;
+	return OK;
+    }
+
+    class_T *cl1 = tv1->vval.v_object->obj_class;
+    class_T *cl2 = tv2->vval.v_object->obj_class;
+    if (cl1 != cl2 || cl1 == NULL || cl2 == NULL)
+    {
+	*res = !res_match;
+	return OK;
+    }
+
+    object_T *obj1 = tv1->vval.v_object;
+    object_T *obj2 = tv2->vval.v_object;
+    if (type == EXPR_IS || type == EXPR_ISNOT)
+    {
+	*res = obj1 == obj2 ? res_match : !res_match;
+	return OK;
+    }
+
+    for (int i = 0; i < cl1->class_obj_member_count; ++i)
+	if (!tv_equal((typval_T *)(obj1 + 1) + i,
+				 (typval_T *)(obj2 + 1) + i, ic, TRUE))
+	{
+	    *res = !res_match;
+	    return OK;
+	}
+    *res = res_match;
     return OK;
 }
 
@@ -1920,11 +2009,12 @@ tv_equal(
 	    return tv1->vval.v_instr == tv2->vval.v_instr;
 
 	case VAR_CLASS:
+	    // A class only exists once, equality is identity.
 	    return tv1->vval.v_class == tv2->vval.v_class;
 
 	case VAR_OBJECT:
-	    // TODO: compare values
-	    return tv1->vval.v_object == tv2->vval.v_object;
+	    (void)typval_compare_object(tv1, tv2, EXPR_EQUAL, ic, &r);
+	    return r;
 
 	case VAR_PARTIAL:
 	    return tv1->vval.v_partial == tv2->vval.v_partial;

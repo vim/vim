@@ -1334,10 +1334,10 @@ errret:
  * When "ret_sid" is not NULL and we loaded the script before, don't load it
  * again.
  *
- * The 'eap' argument is used when sourcing lines from a buffer instead of a
+ * The "eap" argument is used when sourcing lines from a buffer instead of a
  * file.
  *
- * If 'clearvars' is TRUE, then for scripts which are loaded more than
+ * If "clearvars" is TRUE, then for scripts which are loaded more than
  * once, clear all the functions and variables previously defined in that
  * script.
  *
@@ -1540,6 +1540,8 @@ do_source_ext(
 	current_sctx.sc_version = 1;  // default script version
 
 #ifdef FEAT_EVAL
+    current_sctx.sc_lnum = 0;
+
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
 	prof_child_enter(&wait_start);		// entering a child now
@@ -1549,7 +1551,10 @@ do_source_ext(
     // Also starts profiling timer for nested script.
     save_funccal(&funccalp_entry);
 
-    current_sctx.sc_lnum = 0;
+    // Reset "KeyTyped" to avoid some commands thinking they are invoked
+    // interactively.  E.g. defining a function would output indent.
+    int save_KeyTyped = KeyTyped;
+    KeyTyped = FALSE;
 
     // Check if this script was sourced before to find its SID.
     // Always use a new sequence number.
@@ -1763,6 +1768,8 @@ almosttheend:
     if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_start);		// leaving a child now
 # endif
+
+    KeyTyped = save_KeyTyped;
 #endif
     current_sctx = save_current_sctx;
 

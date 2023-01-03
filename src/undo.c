@@ -1923,7 +1923,8 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 #ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
 	{
-	    semsg(_(e_non_encrypted_file_has_encrypted_undo_file), file_name);
+	    semsg(_(e_non_encrypted_file_has_encrypted_undo_file_str),
+								    file_name);
 	    goto error;
 	}
 	bi.bi_state = crypt_create_from_file(fp, curbuf->b_p_key);

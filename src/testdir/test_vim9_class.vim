@@ -367,6 +367,50 @@ def Test_class_object_member_access()
   v9.CheckScriptFailure(lines, 'E1041:')
 enddef
 
+def Test_class_object_compare()
+  var class_lines =<< trim END
+      vim9script
+      class Item
+        this.nr = 0
+        this.name = 'xx'
+      endclass
+  END
+
+  # used at the script level and in a compiled function
+  var test_lines =<< trim END
+      var i1 = Item.new()
+      assert_equal(i1, i1)
+      assert_true(i1 is i1)
+      var i2 = Item.new()
+      assert_equal(i1, i2)
+      assert_false(i1 is i2)
+      var i3 = Item.new(0, 'xx')
+      assert_equal(i1, i3)
+
+      var io1 = Item.new(1, 'xx')
+      assert_notequal(i1, io1)
+      var io2 = Item.new(0, 'yy')
+      assert_notequal(i1, io2)
+  END
+
+  v9.CheckScriptSuccess(class_lines + test_lines)
+  # TODO: this does not work yet
+  #v9.CheckScriptSuccess(
+  #    class_lines + ['def Test()'] + test_lines + ['enddef', 'Test()'])
+
+  for op in ['>', '>=', '<', '<=', '=~', '!~']
+    var op_lines = [
+          'var i1 = Item.new()',
+          'var i2 = Item.new()',
+          'echo i1 ' .. op .. ' i2',
+          ]
+    v9.CheckScriptFailure(class_lines + op_lines, 'E1153: Invalid operation for object')
+    # TODO: this does not work yet
+    #v9.CheckScriptFailure(class_lines
+    #      + ['def Test()'] + op_lines + ['enddef', 'Test()'], 'E99:')
+  endfor
+enddef
+
 def Test_class_member()
   # check access rules
   var lines =<< trim END
