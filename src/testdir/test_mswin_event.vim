@@ -583,20 +583,14 @@ func Test_mswin_key_event()
     \ ]
 
   " Not working for the console in CI Testing yet!?
-   if has("gui_running")
-    for [kcodes, kstr, kmod] in keytests
-      call SendKeyGroup(kcodes)
-      let ch = getcharstr(0)
-      let mod = getcharmod()
-      let keycode = eval('"\<' .. kstr .. '>"')
-      if keycode == ch
-        call assert_equal(keycode, ch, $"key = {kstr}")
-        call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
-      else
-        throw "Skipped: seems to be dependant on SDK build variables"
-      endif
-    endfor
-   endif
+  for [kcodes, kstr, kmod] in keytests
+    call SendKeyGroup(kcodes)
+    let ch = getcharstr(0)
+    let mod = getcharmod()
+    let keycode = eval('"\<' .. kstr .. '>"')
+    call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
+  endfor
 
   bw!
 endfunc
