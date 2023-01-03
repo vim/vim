@@ -156,7 +156,7 @@ func Test_conceal_with_cursorcolumn()
     set concealcursor=
     exe "normal /here\r"
     set cursorcolumn
-    set colorcolumn=25
+    set colorcolumn=50
   [CODE]
 
   call writefile(code, 'XTest_conceal_cuc', 'D')
