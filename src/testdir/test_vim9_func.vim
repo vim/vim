@@ -1869,6 +1869,20 @@ def Test_call_varargs_only()
   v9.CheckDefFailure(['g:MyVarargsOnly("one", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number')
 enddef
 
+def Test_varargs_mismatch()
+  var lines =<< trim END
+      vim9script
+
+      def Map(Fn: func(...any): number): number
+        return Fn('12')
+      enddef
+
+      var res = Map((v) => str2nr(v))
+      assert_equal(12, res)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_using_var_as_arg()
   var lines =<< trim END
       def Func(x: number)

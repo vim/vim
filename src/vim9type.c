@@ -932,8 +932,10 @@ check_argument_types(
 	if (varargs && i >= type->tt_argcount - 1)
 	{
 	    expected = type->tt_args[type->tt_argcount - 1];
-	    if (expected != NULL)
+	    if (expected != NULL && expected->tt_type == VAR_LIST)
 		expected = expected->tt_member;
+	    if (expected == NULL)
+		expected = &t_any;
 	}
 	else
 	    expected = type->tt_args[i];
