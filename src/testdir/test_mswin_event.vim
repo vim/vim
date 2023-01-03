@@ -509,7 +509,7 @@ func Test_mswin_key_event()
         call SendKeyWithModifiers(111+n, vim_mod_mask)
         let ch = getcharstr(0)
         let mod_mask = getcharmod()
-        "" call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
         " workaround for the virtual termcap maps changing the character instead
         " of sending Shift
         for mod_key in mod_keycodes
@@ -517,7 +517,7 @@ func Test_mswin_key_event()
             let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
           endif
         endfor
-        "" call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
       endfor
     endfor
   endif
