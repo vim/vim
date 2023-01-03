@@ -606,8 +606,8 @@ au BufNewFile,BufRead *.edn
 	\   setf clojure |
 	\ endif
 
-" EditorConfig (close enough to dosini)
-au BufNewFile,BufRead .editorconfig		setf dosini
+" EditorConfig
+au BufNewFile,BufRead .editorconfig		setf editorconfig
 
 " Embedix Component Description
 au BufNewFile,BufRead *.ecd			setf ecd
