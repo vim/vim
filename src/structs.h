@@ -1822,8 +1822,8 @@ struct ufunc_S
 				// copy_lambda_to_global_func()
 #define FC_LAMBDA   0x2000	// one line "return {expr}"
 
-#define FC_OBJECT   010000	// object method
-#define FC_NEW	    030000	// constructor (also an object method)
+#define FC_OBJECT   0x4000	// object method
+#define FC_NEW	    0x8000	// constructor
 
 #define MAX_FUNC_ARGS	20	// maximum number of function arguments
 #define VAR_SHORT_LEN	20	// short variable name length

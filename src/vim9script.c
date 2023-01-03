@@ -1136,7 +1136,7 @@ check_reserved_name(char_u *name, cctx_T *cctx)
 		&& !(STRCMP("this", name) == 0
 		    && cctx != NULL
 		    && cctx->ctx_ufunc != NULL
-		    && (cctx->ctx_ufunc->uf_flags & FC_OBJECT)))
+		    && (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW))))
 	{
 	    semsg(_(e_cannot_use_reserved_name_str), name);
 	    return FAIL;

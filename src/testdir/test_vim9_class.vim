@@ -329,6 +329,7 @@ def Test_class_object_member_access()
 
       class MyCar
         this.make: string
+        this.age = 5
 
         def new(make_arg: string)
           this.make = make_arg
@@ -336,6 +337,9 @@ def Test_class_object_member_access()
 
         def GetMake(): string
           return $"make = {this.make}"
+        enddef
+        def GetAge(): number
+          return this.age
         enddef
       endclass
 
@@ -347,6 +351,12 @@ def Test_class_object_member_access()
 
       var c2 = MyCar.new("123")
       assert_equal('make = 123', c2.GetMake())
+
+      def CheckCar()
+        assert_equal("make = def", c.GetMake())
+        assert_equal(5, c.GetAge())
+      enddef
+      CheckCar()
   END
   v9.CheckScriptSuccess(lines)
 

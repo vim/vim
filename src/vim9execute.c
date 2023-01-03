@@ -532,6 +532,9 @@ call_dfunc(
 	return FAIL;
     }
 
+    // If this is an object method, the object is just before the arguments.
+    typval_T	*obj = STACK_TV_BOT(0) - argcount - vararg_count - 1;
+
     // Check the argument types.
     if (check_ufunc_arg_types(ufunc, argcount, vararg_count, ectx) == FAIL)
 	return FAIL;
@@ -593,6 +596,14 @@ call_dfunc(
 	tv->vval.v_number = 0;
     }
     ectx->ec_stack.ga_len += STACK_FRAME_SIZE + varcount;
+
+    // For an object method move the object from just before the arguments to
+    // the first local variable.
+    if (ufunc->uf_flags & FC_OBJECT)
+    {
+	*STACK_TV_VAR(0) = *obj;
+	obj->v_type = VAR_UNKNOWN;
+    }
 
     partial_T *pt = pt_arg != NULL ? pt_arg : ufunc->uf_partial;
     if (pt != NULL || (ufunc->uf_flags & FC_CLOSURE))
@@ -1073,7 +1084,6 @@ func_return(ectx_T *ectx)
     dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							  + ectx->ec_dfunc_idx;
     int		argcount = ufunc_argcount(dfunc->df_ufunc);
-    int		top = ectx->ec_frame_idx - argcount;
     estack_T	*entry;
     int		prev_dfunc_idx = STACK_TV(ectx->ec_frame_idx
 					+ STACK_FRAME_FUNC_OFF)->vval.v_number;
@@ -1111,7 +1121,11 @@ func_return(ectx_T *ectx)
     if (handle_closure_in_use(ectx, TRUE) == FAIL)
 	return FAIL;
 
-    // Clear the arguments.
+    // Clear the arguments.  If this was an object method also clear the
+    // object, it is just before the arguments.
+    int top = ectx->ec_frame_idx - argcount;
+    if (dfunc->df_ufunc->uf_flags & FC_OBJECT)
+	--top;
     for (idx = top; idx < ectx->ec_frame_idx; ++idx)
 	clear_tv(STACK_TV(idx));
 

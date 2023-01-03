@@ -45,7 +45,7 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
 
     if (len == 4 && STRNCMP(name, "this", 4) == 0
 	    && cctx->ctx_ufunc != NULL
-	    && (cctx->ctx_ufunc->uf_flags & FC_OBJECT))
+	    && (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)))
     {
 	if (lvar != NULL)
 	{
@@ -313,7 +313,7 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
 		    || arg_exists(name, len, NULL, NULL, NULL, cctx) == OK
 		    || (len == 4
 			&& cctx->ctx_ufunc != NULL
-			&& (cctx->ctx_ufunc->uf_flags & FC_OBJECT)
+			&& (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW))
 			&& STRNCMP(name, "this", 4) == 0)))
 	    || script_var_exists(name, len, cctx, NULL) == OK
 	    || class_member_index(name, len, NULL, cctx) >= 0
@@ -3018,7 +3018,7 @@ compile_def_function(
 	goto erret;
 
     // For an object method and constructor "this" is the first local variable.
-    if (ufunc->uf_flags & FC_OBJECT)
+    if (ufunc->uf_flags & (FC_OBJECT|FC_NEW))
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;

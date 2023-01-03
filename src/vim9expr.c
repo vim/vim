@@ -273,9 +273,12 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     class_T *cl = (class_T *)type->tt_member;
     if (*name_end == '(')
     {
+	int	function_count;
+	ufunc_T	**functions;
+
 	if (type->tt_type == VAR_CLASS)
 	{
-	    garray_T	*instr = &cctx->ctx_instr;
+	    garray_T *instr = &cctx->ctx_instr;
 	    if (instr->ga_len > 0)
 	    {
 		isn_T *isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
@@ -288,34 +291,47 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		}
 	    }
 
-	    for (int i = 0; i < cl->class_class_function_count; ++i)
-	    {
-		ufunc_T *fp = cl->class_class_functions[i];
-		// Use a separate pointer to avoid that ASAN complains about
-		// uf_name[] only being 4 characters.
-		char_u *ufname = (char_u *)fp->uf_name;
-		if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
-		{
-		    *arg = skipwhite(name_end + 1);
-		    int		argcount = 0;
-		    if (compile_arguments(arg, cctx, &argcount,
-						       CA_NOT_SPECIAL) == FAIL)
-			return FAIL;
-		    return generate_CALL(cctx, fp, argcount);
-		}
-	    }
-
-	    semsg(_(e_method_not_found_on_class_str_str),
-							 cl->class_name, name);
-	    return FAIL;
+	    function_count = cl->class_class_function_count;
+	    functions = cl->class_class_functions;
 	}
 	else
 	{
-	    // TODO: method call
-	    emsg("compile_class_object_index(): object call not handled yet");
+	    // type->tt_type == VAR_OBJECT: method call
+	    function_count = cl->class_obj_method_count;
+	    functions = cl->class_obj_methods;
 	}
+
+	ufunc_T *ufunc = NULL;
+	for (int i = 0; i < function_count; ++i)
+	{
+	    ufunc_T *fp = functions[i];
+	    // Use a separate pointer to avoid that ASAN complains about
+	    // uf_name[] only being 4 characters.
+	    char_u *ufname = (char_u *)fp->uf_name;
+	    if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
+	    {
+		ufunc = fp;
+		break;
+	    }
+	}
+	if (ufunc == NULL)
+	{
+	    // TODO: different error for object method?
+	    semsg(_(e_method_not_found_on_class_str_str), cl->class_name, name);
+	    return FAIL;
+	}
+
+	// Compile the arguments and call the class function or object method.
+	// The object method will know that the object is on the stack, just
+	// before the arguments.
+	*arg = skipwhite(name_end + 1);
+	int argcount = 0;
+	if (compile_arguments(arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
+	    return FAIL;
+	return generate_CALL(cctx, ufunc, argcount);
     }
-    else if (type->tt_type == VAR_OBJECT)
+
+    if (type->tt_type == VAR_OBJECT)
     {
 	for (int i = 0; i < cl->class_obj_member_count; ++i)
 	{
