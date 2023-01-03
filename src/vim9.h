@@ -164,6 +164,8 @@ typedef enum {
     ISN_COMPAREDICT,
     ISN_COMPAREFUNC,
     ISN_COMPAREANY,
+    ISN_COMPARECLASS,
+    ISN_COMPAREOBJECT,
 
     // expression operations
     ISN_CONCAT,     // concatenate isn_arg.number strings

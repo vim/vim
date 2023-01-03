@@ -968,9 +968,9 @@ EXTERN char e_couldnt_find_pattern[]
 #ifdef FEAT_SYN_HL
 EXTERN char e_illegal_argument_str_2[]
 	INIT(= N_("E390: Illegal argument: %s"));
-EXTERN char e_no_such_syntax_cluster_1[]
+EXTERN char e_no_such_syntax_cluster_str_1[]
 	INIT(= N_("E391: No such syntax cluster: %s"));
-EXTERN char e_no_such_syntax_cluster_2[]
+EXTERN char e_no_such_syntax_cluster_str_2[]
 	INIT(= N_("E392: No such syntax cluster: %s"));
 EXTERN char e_groupthere_not_accepted_here[]
 	INIT(= N_("E393: group[t]here not accepted here"));
@@ -1028,7 +1028,7 @@ EXTERN char e_fg_color_unknown[]
 	INIT(= N_("E419: FG color unknown"));
 EXTERN char e_bg_color_unknown[]
 	INIT(= N_("E420: BG color unknown"));
-EXTERN char e_color_name_or_number_not_recognized[]
+EXTERN char e_color_name_or_number_not_recognized_str[]
 	INIT(= N_("E421: Color name or number not recognized: %s"));
 EXTERN char e_terminal_code_too_long_str[]
 	INIT(= N_("E422: Terminal code too long: %s"));
@@ -1796,7 +1796,7 @@ EXTERN char e_list_required[]
 	INIT(= N_("E714: List required"));
 EXTERN char e_dictionary_required[]
 	INIT(= N_("E715: Dictionary required"));
-EXTERN char e_key_not_present_in_dictionary[]
+EXTERN char e_key_not_present_in_dictionary_str[]
 	INIT(= N_("E716: Key not present in Dictionary: \"%s\""));
 EXTERN char e_dictionary_entry_already_exists[]
 	INIT(= N_("E717: Dictionary entry already exists"));
@@ -1804,13 +1804,13 @@ EXTERN char e_funcref_required[]
 	INIT(= N_("E718: Funcref required"));
 EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
-EXTERN char e_missing_colon_in_dictionary[]
+EXTERN char e_missing_colon_in_dictionary_str[]
 	INIT(= N_("E720: Missing colon in Dictionary: %s"));
-EXTERN char e_duplicate_key_in_dictionary[]
+EXTERN char e_duplicate_key_in_dictionary_str[]
 	INIT(= N_("E721: Duplicate key in Dictionary: \"%s\""));
-EXTERN char e_missing_comma_in_dictionary[]
+EXTERN char e_missing_comma_in_dictionary_str[]
 	INIT(= N_("E722: Missing comma in Dictionary: %s"));
-EXTERN char e_missing_dict_end[]
+EXTERN char e_missing_dict_end_str[]
 	INIT(= N_("E723: Missing end of Dictionary '}': %s"));
 EXTERN char e_variable_nested_too_deep_for_displaying[]
 	INIT(= N_("E724: Variable nested too deep for displaying"));
@@ -2111,7 +2111,7 @@ EXTERN char e_undo_number_nr_not_found[]
 EXTERN char e_bf_key_init_called_with_empty_password[]
 	INIT(= N_("E831: bf_key_init() called with empty password"));
 # ifdef FEAT_PERSISTENT_UNDO
-EXTERN char e_non_encrypted_file_has_encrypted_undo_file[]
+EXTERN char e_non_encrypted_file_has_encrypted_undo_file_str[]
 	INIT(= N_("E832: Non-encrypted file has encrypted undo file: %s"));
 # endif
 #else
@@ -2397,7 +2397,7 @@ EXTERN char e_cannot_use_redir_inside_execute[]
 EXTERN char e_buffer_cannot_be_registered[]
 	INIT(= N_("E931: Buffer cannot be registered"));
 #ifdef FEAT_EVAL
-EXTERN char e_closure_function_should_not_be_at_top_level[]
+EXTERN char e_closure_function_should_not_be_at_top_level_str[]
 	INIT(= N_("E932: Closure function should not be at top level: %s"));
 EXTERN char e_function_was_deleted_str[]
 	INIT(= N_("E933: Function was deleted: %s"));
@@ -2513,7 +2513,7 @@ EXTERN char e_property_type_str_already_defined[]
 	INIT(= N_("E969: Property type %s already defined"));
 EXTERN char e_unknown_highlight_group_name_str[]
 	INIT(= N_("E970: Unknown highlight group name: '%s'"));
-EXTERN char e_type_not_exist[]
+EXTERN char e_property_type_str_does_not_exist[]
 	INIT(= N_("E971: Property type %s does not exist"));
 #endif
 #ifdef FEAT_EVAL
@@ -2634,17 +2634,17 @@ EXTERN char e_invalid_key_str[]
 	INIT(= N_("E1014: Invalid key: %s"));
 EXTERN char e_name_expected_str[]
 	INIT(= N_("E1015: Name expected: %s"));
-EXTERN char e_cannot_declare_a_scope_variable[]
+EXTERN char e_cannot_declare_a_scope_variable_str[]
 	INIT(= N_("E1016: Cannot declare a %s variable: %s"));
-EXTERN char e_cannot_declare_an_environment_variable[]
+EXTERN char e_cannot_declare_an_environment_variable_str[]
 	INIT(= N_("E1016: Cannot declare an environment variable: %s"));
-EXTERN char e_variable_already_declared[]
+EXTERN char e_variable_already_declared_str[]
 	INIT(= N_("E1017: Variable already declared: %s"));
-EXTERN char e_cannot_assign_to_constant[]
+EXTERN char e_cannot_assign_to_constant_str[]
 	INIT(= N_("E1018: Cannot assign to a constant: %s"));
 EXTERN char e_can_only_concatenate_to_string[]
 	INIT(= N_("E1019: Can only concatenate to string"));
-EXTERN char e_cannot_use_operator_on_new_variable[]
+EXTERN char e_cannot_use_operator_on_new_variable_str[]
 	INIT(= N_("E1020: Cannot use an operator on a new variable: %s"));
 EXTERN char e_const_requires_a_value[]
 	INIT(= N_("E1021: Const requires a value"));
@@ -2674,7 +2674,7 @@ EXTERN char e_missing_catch_or_finally[]
 	INIT(= N_("E1032: Missing :catch or :finally"));
 EXTERN char e_catch_unreachable_after_catch_all[]
 	INIT(= N_("E1033: Catch unreachable after catch-all"));
-EXTERN char e_cannot_use_reserved_name[]
+EXTERN char e_cannot_use_reserved_name_str[]
 	INIT(= N_("E1034: Cannot use reserved name %s"));
 EXTERN char e_percent_requires_number_arguments[]
 	// xgettext:no-c-format
@@ -2713,7 +2713,7 @@ EXTERN char e_colon_required_before_range_str[]
 #ifdef FEAT_EVAL
 EXTERN char e_wrong_argument_type_for_plus[]
 	INIT(= N_("E1051: Wrong argument type for +"));
-EXTERN char e_cannot_declare_an_option[]
+EXTERN char e_cannot_declare_an_option_str[]
 	INIT(= N_("E1052: Cannot declare an option: %s"));
 EXTERN char e_could_not_import_str[]
 	INIT(= N_("E1053: Could not import \"%s\""));
@@ -2791,7 +2791,7 @@ EXTERN char e_script_cannot_import_itself[]
 	INIT(= N_("E1088: Script cannot import itself"));
 EXTERN char e_unknown_variable_str[]
 	INIT(= N_("E1089: Unknown variable: %s"));
-EXTERN char e_cannot_assign_to_argument[]
+EXTERN char e_cannot_assign_to_argument_str[]
 	INIT(= N_("E1090: Cannot assign to argument %s"));
 EXTERN char e_function_is_not_compiled_str[]
 	INIT(= N_("E1091: Function is not compiled: %s"));

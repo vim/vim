@@ -350,15 +350,15 @@ set_internal_string_var(char_u *name, char_u *value)
     typval_T	*tvp;
 
     val = vim_strsave(value);
-    if (val != NULL)
-    {
-	tvp = alloc_string_tv(val);
-	if (tvp != NULL)
-	{
-	    set_var(name, tvp, FALSE);
-	    free_tv(tvp);
-	}
-    }
+    if (val == NULL)
+	return;
+
+    tvp = alloc_string_tv(val);
+    if (tvp == NULL)
+	return;
+
+    set_var(name, tvp, FALSE);
+    free_tv(tvp);
 }
 
     int
@@ -576,14 +576,14 @@ restore_vimvar(int idx, typval_T *save_tv)
     hashitem_T	*hi;
 
     vimvars[idx].vv_tv = *save_tv;
-    if (vimvars[idx].vv_tv_type == VAR_UNKNOWN)
-    {
-	hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
-	if (HASHITEM_EMPTY(hi))
-	    internal_error("restore_vimvar()");
-	else
-	    hash_remove(&vimvarht, hi, "restore vimvar");
-    }
+    if (vimvars[idx].vv_tv_type != VAR_UNKNOWN)
+	return;
+
+    hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
+    if (HASHITEM_EMPTY(hi))
+	internal_error("restore_vimvar()");
+    else
+	hash_remove(&vimvarht, hi, "restore vimvar");
 }
 
 /*
@@ -1111,7 +1111,8 @@ ex_let(exarg_T *eap)
 		if (vim9script && (flags & ASSIGN_NO_DECL) == 0)
 		{
 		    // +=, /=, etc. require an existing variable
-		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
+		    semsg(_(e_cannot_use_operator_on_new_variable_str),
+								     eap->arg);
 		}
 		else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{
@@ -2740,11 +2741,11 @@ set_vim_var_dict(int idx, dict_T *val)
     clear_tv(&vimvars[idx].vv_di.di_tv);
     vimvars[idx].vv_tv_type = VAR_DICT;
     vimvars[idx].vv_dict = val;
-    if (val != NULL)
-    {
-	++val->dv_refcount;
-	dict_set_items_ro(val);
-    }
+    if (val == NULL)
+	return;
+
+    ++val->dv_refcount;
+    dict_set_items_ro(val);
 }
 
 /*
@@ -3562,11 +3563,11 @@ delete_var(hashtab_T *ht, hashitem_T *hi)
 {
     dictitem_T	*di = HI2DI(hi);
 
-    if (hash_remove(ht, hi, "delete variable") == OK)
-    {
-	clear_tv(&di->di_tv);
-	vim_free(di);
-    }
+    if (hash_remove(ht, hi, "delete variable") != OK)
+	return;
+
+    clear_tv(&di->di_tv);
+    vim_free(di);
 }
 
 /*
@@ -4317,29 +4318,29 @@ setwinvar(typval_T *argvars, int off)
     varname = tv_get_string_chk(&argvars[off + 1]);
     varp = &argvars[off + 2];
 
-    if (win != NULL && varname != NULL && varp != NULL)
+    if (win == NULL || varname == NULL || varp == NULL)
+	return;
+
+    need_switch_win = !(tp == curtab && win == curwin);
+    if (!need_switch_win
+	    || switch_win(&switchwin, win, tp, TRUE) == OK)
     {
-	need_switch_win = !(tp == curtab && win == curwin);
-	if (!need_switch_win
-	       || switch_win(&switchwin, win, tp, TRUE) == OK)
+	if (*varname == '&')
+	    set_option_from_tv(varname + 1, varp);
+	else
 	{
-	    if (*varname == '&')
-		set_option_from_tv(varname + 1, varp);
-	    else
+	    winvarname = alloc(STRLEN(varname) + 3);
+	    if (winvarname != NULL)
 	    {
-		winvarname = alloc(STRLEN(varname) + 3);
-		if (winvarname != NULL)
-		{
-		    STRCPY(winvarname, "w:");
-		    STRCPY(winvarname + 2, varname);
-		    set_var(winvarname, varp, TRUE);
-		    vim_free(winvarname);
-		}
+		STRCPY(winvarname, "w:");
+		STRCPY(winvarname + 2, varname);
+		set_var(winvarname, varp, TRUE);
+		vim_free(winvarname);
 	    }
 	}
-	if (need_switch_win)
-	    restore_win(&switchwin, TRUE);
     }
+    if (need_switch_win)
+	restore_win(&switchwin, TRUE);
 }
 
 /*
@@ -4686,24 +4687,24 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
     varname = tv_get_string_chk(&argvars[1]);
     varp = &argvars[2];
 
-    if (varname != NULL && varp != NULL && tp != NULL)
+    if (varname == NULL || varp == NULL || tp == NULL)
+	return;
+
+    save_curtab = curtab;
+    goto_tabpage_tp(tp, FALSE, FALSE);
+
+    tabvarname = alloc(STRLEN(varname) + 3);
+    if (tabvarname != NULL)
     {
-	save_curtab = curtab;
-	goto_tabpage_tp(tp, FALSE, FALSE);
-
-	tabvarname = alloc(STRLEN(varname) + 3);
-	if (tabvarname != NULL)
-	{
-	    STRCPY(tabvarname, "t:");
-	    STRCPY(tabvarname + 2, varname);
-	    set_var(tabvarname, varp, TRUE);
-	    vim_free(tabvarname);
-	}
-
-	// Restore current tabpage
-	if (valid_tabpage(save_curtab))
-	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
+	STRCPY(tabvarname, "t:");
+	STRCPY(tabvarname + 2, varname);
+	set_var(tabvarname, varp, TRUE);
+	vim_free(tabvarname);
     }
+
+    // Restore current tabpage
+    if (valid_tabpage(save_curtab))
+	goto_tabpage_tp(save_curtab, FALSE, FALSE);
 }
 
 /*
@@ -4757,37 +4758,37 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     buf = tv_get_buf_from_arg(&argvars[0]);
     varp = &argvars[2];
 
-    if (buf != NULL && varname != NULL && varp != NULL)
+    if (buf == NULL || varname == NULL || varp == NULL)
+	return;
+
+    if (*varname == '&')
     {
-	if (*varname == '&')
+	aco_save_T	aco;
+
+	// Set curbuf to be our buf, temporarily.
+	aucmd_prepbuf(&aco, buf);
+	if (curbuf == buf)
 	{
-	    aco_save_T	aco;
+	    // Only when it worked to set "curbuf".
+	    set_option_from_tv(varname + 1, varp);
 
-	    // Set curbuf to be our buf, temporarily.
-	    aucmd_prepbuf(&aco, buf);
-	    if (curbuf == buf)
-	    {
-		// Only when it worked to set "curbuf".
-		set_option_from_tv(varname + 1, varp);
-
-		// reset notion of buffer
-		aucmd_restbuf(&aco);
-	    }
+	    // reset notion of buffer
+	    aucmd_restbuf(&aco);
 	}
-	else
+    }
+    else
+    {
+	bufvarname = alloc(STRLEN(varname) + 3);
+	if (bufvarname != NULL)
 	{
-	    bufvarname = alloc(STRLEN(varname) + 3);
-	    if (bufvarname != NULL)
-	    {
-		buf_T *save_curbuf = curbuf;
+	    buf_T *save_curbuf = curbuf;
 
-		curbuf = buf;
-		STRCPY(bufvarname, "b:");
-		STRCPY(bufvarname + 2, varname);
-		set_var(bufvarname, varp, TRUE);
-		vim_free(bufvarname);
-		curbuf = save_curbuf;
-	    }
+	    curbuf = buf;
+	    STRCPY(bufvarname, "b:");
+	    STRCPY(bufvarname + 2, varname);
+	    set_var(bufvarname, varp, TRUE);
+	    vim_free(bufvarname);
+	    curbuf = save_curbuf;
 	}
     }
 }
@@ -4930,31 +4931,30 @@ expand_autload_callback(callback_T *cb)
     p = vim_strchr(name, '.');
     if (p == NULL)
 	return;
+
     import = find_imported(name, p - name, FALSE);
-    if (import != NULL && SCRIPT_ID_VALID(import->imp_sid))
+    if (import == NULL || !SCRIPT_ID_VALID(import->imp_sid))
+	return;
+
+    scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);
+    if (si->sn_autoload_prefix == NULL)
+	return;
+
+    char_u *newname = concat_str(si->sn_autoload_prefix, p + 1);
+    if (newname == NULL)
+	return;
+
+    if (cb->cb_partial != NULL)
     {
-	scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);
-
-	if (si->sn_autoload_prefix != NULL)
-	{
-	    char_u *newname = concat_str(si->sn_autoload_prefix, p + 1);
-
-	    if (newname != NULL)
-	    {
-		if (cb->cb_partial != NULL)
-		{
-		    if (cb->cb_name == cb->cb_partial->pt_name)
-			cb->cb_name = newname;
-		    vim_free(cb->cb_partial->pt_name);
-		    cb->cb_partial->pt_name = newname;
-		}
-		else
-		{
-		    vim_free(cb->cb_name);
-		    cb->cb_name = newname;
-		}
-	    }
-	}
+	if (cb->cb_name == cb->cb_partial->pt_name)
+	    cb->cb_name = newname;
+	vim_free(cb->cb_partial->pt_name);
+	cb->cb_partial->pt_name = newname;
+    }
+    else
+    {
+	vim_free(cb->cb_name);
+	cb->cb_name = newname;
     }
 }
 

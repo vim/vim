@@ -98,7 +98,7 @@ lookup_prop_type(char_u *name, buf_T *buf)
     if (type == NULL)
 	type = find_prop_type(name, NULL);
     if (type == NULL)
-	semsg(_(e_type_not_exist), name);
+	semsg(_(e_property_type_str_does_not_exist), name);
     return type;
 }
 
@@ -1825,7 +1825,7 @@ prop_type_set(typval_T *argvars, int add)
     {
 	if (prop == NULL)
 	{
-	    semsg(_(e_type_not_exist), name);
+	    semsg(_(e_property_type_str_does_not_exist), name);
 	    return;
 	}
     }

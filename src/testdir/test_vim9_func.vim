@@ -4413,6 +4413,48 @@ def Test_invalid_redir()
   delfunc g:Ttwo
 enddef
 
+func Test_keytyped_in_nested_function()
+  CheckRunVimInTerminal
+
+  call Run_Test_keytyped_in_nested_function()
+endfunc
+
+def Run_Test_keytyped_in_nested_function()
+  var lines =<< trim END
+      vim9script
+      autocmd CmdlineEnter * sample#Init()
+
+      exe 'set rtp=' .. getcwd() .. '/Xrtpdir'
+  END
+  writefile(lines, 'Xkeytyped', 'D')
+
+  var dir = 'Xrtpdir/autoload'
+  mkdir(dir, 'pR')
+
+  lines =<< trim END
+      vim9script
+      export def Init(): void
+         cnoremap <expr>" <SID>Quote('"')
+      enddef
+      def Quote(str: string): string
+         def InPair(): number
+            return 0
+         enddef
+         return str
+      enddef
+  END
+  writefile(lines, dir .. '/sample.vim')
+
+  var buf = g:RunVimInTerminal('-S Xkeytyped', {rows: 6})
+
+  term_sendkeys(buf, ':"')
+  g:VerifyScreenDump(buf, 'Test_keytyped_in_nested_func', {})
+
+  # clean up
+  term_sendkeys(buf, "\<Esc>")
+  g:StopVimInTerminal(buf)
+enddef
+
 " The following messes up syntax highlight, keep near the end.
 if has('python3')
   def Test_python3_command()

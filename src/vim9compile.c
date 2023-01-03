@@ -987,7 +987,14 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
 	goto theend;
     }
 
+    // Make sure "KeyTyped" is not set, it may cause indent to be written.
+    int save_KeyTyped = KeyTyped;
+    KeyTyped = FALSE;
+
     ufunc = define_function(eap, lambda_name, lines_to_free, FALSE);
+
+    KeyTyped = save_KeyTyped;
+
     if (ufunc == NULL)
     {
 	r = eap->skip ? OK : FAIL;
@@ -1307,15 +1314,15 @@ vim9_declare_error(char_u *name)
 	case 'w': scope = _("window"); break;
 	case 't': scope = _("tab"); break;
 	case 'v': scope = "v:"; break;
-	case '$': semsg(_(e_cannot_declare_an_environment_variable), name);
+	case '$': semsg(_(e_cannot_declare_an_environment_variable_str), name);
 		  return;
-	case '&': semsg(_(e_cannot_declare_an_option), name);
+	case '&': semsg(_(e_cannot_declare_an_option_str), name);
 		  return;
 	case '@': semsg(_(e_cannot_declare_a_register_str), name);
 		  return;
 	default: return;
     }
-    semsg(_(e_cannot_declare_a_scope_variable), scope, name);
+    semsg(_(e_cannot_declare_a_scope_variable_str), scope, name);
 }
 
 /*
@@ -1571,7 +1578,7 @@ compile_lhs(
 	    {
 		if (is_decl)
 		{
-		    semsg(_(e_variable_already_declared), lhs->lhs_name);
+		    semsg(_(e_variable_already_declared_str), lhs->lhs_name);
 		    return FAIL;
 		}
 	    }
@@ -1741,7 +1748,7 @@ compile_lhs(
 	if (oplen > 1 && !heredoc)
 	{
 	    // +=, /=, etc. require an existing variable
-	    semsg(_(e_cannot_use_operator_on_new_variable), lhs->lhs_name);
+	    semsg(_(e_cannot_use_operator_on_new_variable_str), lhs->lhs_name);
 	    return FAIL;
 	}
 	if (!is_decl || (lhs->lhs_has_index && !has_cmd
@@ -1844,14 +1851,14 @@ compile_assign_lhs(
 
     if (!lhs->lhs_has_index && lhs->lhs_lvar == &lhs->lhs_arg_lvar)
     {
-	semsg(_(e_cannot_assign_to_argument), lhs->lhs_name);
+	semsg(_(e_cannot_assign_to_argument_str), lhs->lhs_name);
 	return FAIL;
     }
     if (!is_decl && lhs->lhs_lvar != NULL
 			   && lhs->lhs_lvar->lv_const != ASSIGN_VAR
 			   && !lhs->lhs_has_index)
     {
-	semsg(_(e_cannot_assign_to_constant), lhs->lhs_name);
+	semsg(_(e_cannot_assign_to_constant_str), lhs->lhs_name);
 	return FAIL;
     }
     return OK;

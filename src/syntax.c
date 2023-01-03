@@ -3670,7 +3670,7 @@ syn_cmd_clear(exarg_T *eap, int syncing)
 		id = syn_scl_namen2id(arg + 1, (int)(arg_end - arg - 1));
 		if (id == 0)
 		{
-		    semsg(_(e_no_such_syntax_cluster_1), arg);
+		    semsg(_(e_no_such_syntax_cluster_str_1), arg);
 		    break;
 		}
 		else
@@ -3880,7 +3880,7 @@ syn_cmd_list(
 	    {
 		id = syn_scl_namen2id(arg + 1, (int)(arg_end - arg - 1));
 		if (id == 0)
-		    semsg(_(e_no_such_syntax_cluster_2), arg);
+		    semsg(_(e_no_such_syntax_cluster_str_2), arg);
 		else
 		    syn_list_cluster(id - SYNID_CLUSTER);
 	    }

@@ -99,8 +99,11 @@ parse_member(
 	    int res = eval0(expr, &tv, eap, &evalarg);
 
 	    if (res == OK)
+	    {
 		type = typval2type(&tv, get_copyID(), type_list,
 						       TVTT_DO_MEMBER);
+		clear_tv(&tv);
+	    }
 	    if (type == NULL)
 	    {
 		semsg(_(e_cannot_get_object_member_type_from_initializer_str),
