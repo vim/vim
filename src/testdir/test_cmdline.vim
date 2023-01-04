@@ -655,6 +655,9 @@ func Test_getcompletion()
 endfunc
 
 func Test_multibyte_expression()
+  " Get a dialog in the GUI
+  CheckNotGui
+
   " This was using uninitialized memory.
   let lines =<< trim END
       set verbose=6
