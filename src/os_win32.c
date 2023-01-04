@@ -1042,7 +1042,8 @@ win32_kbd_patch_key(
 	return 1;
     }
 
-    if (pker->uChar.UnicodeChar != 0)
+    // check if it already has a valid unicode character.
+    if (pker->uChar.UnicodeChar > 0 && pker->uChar.UnicodeChar < 0xFFFD)
 	return 1;
 
     CLEAR_FIELD(abKeystate);
@@ -1315,6 +1316,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	}
 	ker.dwControlKeyState |= s_dwMods;
 	ker.wVirtualKeyCode = vkCode;
+	ker.uChar.UnicodeChar = 0xFFFD;  // UNICODE REPLACEMENT CHARACTER
 	ir->Event.KeyEvent = ker;
 	vim_free(action);
     }
