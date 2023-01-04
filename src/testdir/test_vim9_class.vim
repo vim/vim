@@ -439,6 +439,11 @@ def Test_class_member()
       TextPos.AddToCounter(3)
       assert_equal(3, TextPos.counter)
       assert_fails('echo TextPos.noSuchMember', 'E1338:')
+      
+      def GetCounter(): number
+        return TextPos.counter
+      enddef
+      assert_equal(3, GetCounter())
 
       assert_fails('TextPos.noSuchMember = 2', 'E1337:')
       assert_fails('TextPos.counter = 5', 'E1335:')

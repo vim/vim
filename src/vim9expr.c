@@ -263,6 +263,22 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return FAIL;
     }
 
+    if (type->tt_type == VAR_CLASS)
+    {
+	garray_T *instr = &cctx->ctx_instr;
+	if (instr->ga_len > 0)
+	{
+	    isn_T *isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+	    if (isn->isn_type == ISN_LOADSCRIPT)
+	    {
+		// The class was recognized as a script item.  We only need
+		// to know what class it is, drop the instruction.
+		--instr->ga_len;
+		vim_free(isn->isn_arg.script.scriptref);
+	    }
+	}
+    }
+
     ++*arg;
     char_u *name = *arg;
     char_u *name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
@@ -278,19 +294,6 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 
 	if (type->tt_type == VAR_CLASS)
 	{
-	    garray_T *instr = &cctx->ctx_instr;
-	    if (instr->ga_len > 0)
-	    {
-		isn_T *isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
-		if (isn->isn_type == ISN_LOADSCRIPT)
-		{
-		    // The class was recognized as a script item.  We only need
-		    // to know what class it is, drop the instruction.
-		    --instr->ga_len;
-		    vim_free(isn->isn_arg.script.scriptref);
-		}
-	    }
-
 	    function_count = cl->class_class_function_count;
 	    functions = cl->class_class_functions;
 	}
@@ -344,10 +347,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		    return FAIL;
 		}
 
-		generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type);
-
 		*arg = name_end;
-		return OK;
+		return generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type);
 	    }
 	}
 
@@ -355,8 +356,20 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
     else
     {
-	// TODO: class member
-	emsg("compile_class_object_index(): class member not handled yet");
+	// load class member
+	int idx;
+	for (idx = 0; idx < cl->class_class_member_count; ++idx)
+	{
+	    ocmember_T *m = &cl->class_class_members[idx];
+	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+		break;
+	}
+	if (idx < cl->class_class_member_count)
+	{
+	    *arg = name_end;
+	    return generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+	}
+	semsg(_(e_class_member_not_found_str), name);
     }
 
     return FAIL;
