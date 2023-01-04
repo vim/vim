@@ -3,7 +3,6 @@
 
 source check.vim
 CheckMSWindows
-
 source mouse.vim
 
 " Helper function for sending a grouped sequence of low level key presses
@@ -54,7 +53,8 @@ func ExecuteBufferedKeys()
   endif
 endfunc
 
-
+" Refer to the following page for the virtual key codes:
+" https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 let s:VK = {
     \ 'ENTER'      : 0x0D,
     \ 'SPACE'      : 0x20,
@@ -296,11 +296,9 @@ let s:VK = {
     \ [[s:VK.CONTROL, s:VK.OEM_4], 0x1B],
     \ [[s:VK.CONTROL, s:VK.OEM_5], 0x1C],
     \ [[s:VK.CONTROL, s:VK.OEM_6], 0x1D],
+    \ [[s:VK.CONTROL, s:VK.KEY_6], 0x1E],
+    \ [[s:VK.CONTROL, s:VK.OEM_MINUS], 0x1F],
     \ ]
-" The following non-printable ascii chars fail in the GUI, but work in the 
-" console. 0x1e [^^] Record separator (RS), and 0x1f [^_] Unit separator (US)
-"      \ [[s:VK.CONTROL, s:VK.SHIFT, s:VK.KEY_6], 0x1E],
-"      \ [[s:VK.CONTROL, s:VK.SHIFT, s:VK.OEM_MINUS], 0x1F],
 
 let s:test_extra_key_chars = [
     \ [[s:VK.ALT, s:VK.KEY_1], '±'],
@@ -342,7 +340,7 @@ let s:test_extra_key_chars = [
     \ ]
 
 func s:LoopTestKeyArray(arr)
-" flush out any garbage left in the buffer
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 
@@ -351,7 +349,7 @@ func s:LoopTestKeyArray(arr)
     call SendKeyGroup(kcodes)
     let ch = getcharstr(0)
     " need to deal a bit differently with the non-printable ascii chars < 0x20
-    if kstr < 0x20 && index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL],  kcodes[0]) >= 0
+    if kstr < 0x20 && index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], kcodes[0]) >= 0
       call assert_equal(nr2char(kstr), $"{ch}")
     else
       call assert_equal(kstr, $"{ch}")
@@ -389,7 +387,7 @@ func s:LoopTestKeyArray(arr)
     call assert_equal(0, mod_mask, $"key = {kstr}")
   endfor
 
-  " flush out any garbage left in the buffer
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 
@@ -489,29 +487,23 @@ func Test_mswin_key_event()
     endfor
   endif
 
-  " Windows intercepts some of these keys in the GUI
+  " Test for Function Keys 'F1' to 'F12'
+  " VK codes 112(0x70) - 123(0x7B)
+  " Also with ALL permutatios of modifiers; Shift, Ctrl & Alt
+  " NOTE: Windows intercepts some of these keys in the GUI
   if !has("gui_running")
-    " Test for Function Keys 'F1' to 'F12'
-    for n in range(1, 12)
-      let kstr = $"F{n}"
-      let keycode = eval('"\<' .. kstr .. '>"')
-      call SendKey(111+n)
-      let ch = getcharstr(0)
-      call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
-    endfor
-    "  NOTE: mod + Fn Keys not working in CI Testing!?
-    " Test for Function Keys 'F1' to 'F12'
-    " VK codes 112(0x70) - 123(0x7B)
-    " With ALL permutatios of modifiers; Shift, Ctrl & Alt
     for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
       for n in range(1, 12)
         let kstr = $"{mod_str}F{n}"
         let keycode = eval('"\<' .. kstr .. '>"')
+        " flush out anything in the typeahead buffer
+        while getchar(0)
+        endwhile
         " call SendKeyGroup(mod_keycodes + [111+n])
         call SendKeyWithModifiers(111+n, vim_mod_mask)
         let ch = getcharstr(0)
         let mod_mask = getcharmod()
-        """"""  call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
         " workaround for the virtual termcap maps changing the character instead
         " of sending Shift
         for mod_key in mod_keycodes
@@ -519,14 +511,12 @@ func Test_mswin_key_event()
             let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
           endif
         endfor
-        """"""call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
       endfor
     endfor
   endif
 
   " Test for the various Ctrl and Shift key combinations.
-  " Refer to the following page for the virtual key codes:
-  " https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
   let keytests = [
     \ [[s:VK.SHIFT,    s:VK.PRIOR], "S-Pageup", 2],
     \ [[s:VK.LSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
@@ -586,14 +576,13 @@ func Test_mswin_key_event()
     \ [[s:VK.CONTROL,  s:VK.OEM_MINUS], "C-_", 0]
     \ ]
 
-  " Not working in CI Testing yet!?
   for [kcodes, kstr, kmod] in keytests
     call SendKeyGroup(kcodes)
     let ch = getcharstr(0)
     let mod = getcharmod()
     let keycode = eval('"\<' .. kstr .. '>"')
-"      call assert_equal(keycode, ch, $"key = {kstr}")
-"      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
+    call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
   endfor
 
   bw!
@@ -633,8 +622,6 @@ func Test_QWERTY_Ctrl_minus()
   call SendKey(s:VK.ESCAPE)
   call ExecuteBufferedKeys()
   call assert_equal('BILBO', getline('$'))
-
-
 
   imapclear
   bw!
@@ -953,7 +940,7 @@ func Test_mswin_event_error_handling()
 
   call assert_fails("sandbox call test_mswin_event('key', {'event': 'keydown', 'keycode': 61 })", 'E48:')
 
-  " flush out any garbage left in the buffer.
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 endfunc

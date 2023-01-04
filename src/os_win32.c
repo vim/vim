@@ -1042,7 +1042,8 @@ win32_kbd_patch_key(
 	return 1;
     }
 
-    if (pker->uChar.UnicodeChar > 0 && pker->uChar.UnicodeChar < 0xfffd)
+    // check if it already has a valid unicode character.
+    if (pker->uChar.UnicodeChar > 0 && pker->uChar.UnicodeChar < 0xFFFD)
 	return 1;
 
     CLEAR_FIELD(abKeystate);
@@ -1118,13 +1119,12 @@ decode_key_event(
     {
 	if (VirtKeyMap[i].wVirtKey == pker->wVirtualKeyCode)
 	{
-	    if (nModifs == 0)
-		*pch = VirtKeyMap[i].chAlone;
-	    else if ((nModifs & SHIFT) != 0 && (nModifs & ~SHIFT) == 0)
+	    *pch = VirtKeyMap[i].chAlone;
+	    if ((nModifs & SHIFT) != 0)
 		*pch = VirtKeyMap[i].chShift;
 	    else if ((nModifs & CTRL) != 0 && (nModifs & ~CTRL) == 0)
 		*pch = VirtKeyMap[i].chCtrl;
-	    else if ((nModifs & ALT) != 0 && (nModifs & ~ALT) == 0)
+	    else if ((nModifs & ALT) != 0)
 		*pch = VirtKeyMap[i].chAlt;
 
 	    if (*pch != 0)
@@ -1133,6 +1133,74 @@ decode_key_event(
 		{
 		    *pch2 = *pch;
 		    *pch = K_NUL;
+		    if (pmodifiers)
+		    {
+			if (pker->wVirtualKeyCode >= VK_F1
+			    && pker->wVirtualKeyCode <= VK_F12)
+			{
+			    if ((nModifs & ALT) != 0)
+			    {
+				*pmodifiers |= MOD_MASK_ALT;
+				if ((nModifs & SHIFT) == 0)
+				    *pch2 = VirtKeyMap[i].chAlone;
+			    }
+			    if ((nModifs & CTRL) != 0)
+			    {
+				*pmodifiers |= MOD_MASK_CTRL;
+				if ((nModifs & SHIFT) == 0)
+				    *pch2 = VirtKeyMap[i].chAlone;
+			    }
+			}
+			else if (pker->wVirtualKeyCode >= VK_END
+				&& pker->wVirtualKeyCode <= VK_DOWN)
+			{
+			    // VK_END   0x23
+			    // VK_HOME  0x24
+			    // VK_LEFT  0x25
+			    // VK_UP    0x26
+			    // VK_RIGHT 0x27
+			    // VK_DOWN  0x28
+			    *pmodifiers = 0;
+			    *pch2 = VirtKeyMap[i].chAlone;
+			    if ((nModifs & SHIFT) != 0
+						    && (nModifs & ~SHIFT) == 0)
+			    {
+				*pch2 = VirtKeyMap[i].chShift;
+			    }
+			    else if ((nModifs & CTRL) != 0
+						     && (nModifs & ~CTRL) == 0)
+			    {
+				*pch2 = VirtKeyMap[i].chCtrl;
+				if (pker->wVirtualKeyCode == VK_UP
+				    || pker->wVirtualKeyCode == VK_DOWN)
+				{
+				    *pmodifiers |= MOD_MASK_CTRL;
+				    *pch2 = VirtKeyMap[i].chAlone;
+				}
+			    }
+			    else if ((nModifs & ALT) != 0
+						      && (nModifs & ~ALT) == 0)
+			    {
+				*pch2 = VirtKeyMap[i].chAlt;
+			    }
+			    else if ((nModifs & SHIFT) != 0
+						      && (nModifs & CTRL) != 0)
+			    {
+				*pmodifiers |= MOD_MASK_CTRL;
+				*pch2 = VirtKeyMap[i].chShift;
+			    }
+			}
+			else
+			{
+			    *pch2 = VirtKeyMap[i].chAlone;
+			    if ((nModifs & SHIFT) != 0)
+				*pmodifiers |= MOD_MASK_SHIFT;
+			    if ((nModifs & CTRL) != 0)
+				*pmodifiers |= MOD_MASK_CTRL;
+			    if ((nModifs & ALT) != 0)
+				*pmodifiers |= MOD_MASK_ALT;
+			}
+		    }
 		}
 
 		return TRUE;
@@ -1178,10 +1246,11 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 {
     static int s_dwMods = 0;
 
-    char_u *event = dict_get_string(args, "event", TRUE);
-    if (event && (STRICMP(event, "keydown") == 0
-					|| STRICMP(event, "keyup") == 0))
+    char_u *action = dict_get_string(args, "event", TRUE);
+    if (action && (STRICMP(action, "keydown") == 0
+					|| STRICMP(action, "keyup") == 0))
     {
+	BOOL isKeyDown = STRICMP(action, "keydown") == 0;
 	WORD vkCode = dict_get_number_def(args, "keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
 	{
@@ -1192,7 +1261,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	ir->EventType = KEY_EVENT;
 	KEY_EVENT_RECORD ker;
 	ZeroMemory(&ker, sizeof(ker));
-	ker.bKeyDown = STRICMP(event, "keydown") == 0;
+	ker.bKeyDown = isKeyDown;
 	ker.wRepeatCount = 1;
 	ker.wVirtualScanCode = 0;
 	ker.dwControlKeyState = 0;
@@ -1215,73 +1284,55 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 
 	if (vkCode == VK_LSHIFT || vkCode == VK_RSHIFT || vkCode == VK_SHIFT)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= SHIFT_PRESSED;
 	    else
 		s_dwMods &= ~SHIFT_PRESSED;
 	}
 	else if (vkCode == VK_LCONTROL || vkCode == VK_CONTROL)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= LEFT_CTRL_PRESSED;
 	    else
 		s_dwMods &= ~LEFT_CTRL_PRESSED;
 	}
 	else if (vkCode == VK_RCONTROL)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= RIGHT_CTRL_PRESSED;
 	    else
 		s_dwMods &= ~RIGHT_CTRL_PRESSED;
 	}
 	else if (vkCode == VK_LMENU || vkCode == VK_MENU)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= LEFT_ALT_PRESSED;
 	    else
 		s_dwMods &= ~LEFT_ALT_PRESSED;
 	}
 	else if (vkCode == VK_RMENU)
 	{
-	    if (STRICMP(event, "keydown") == 0)
+	    if (isKeyDown)
 		s_dwMods |= RIGHT_ALT_PRESSED;
 	    else
 		s_dwMods &= ~RIGHT_ALT_PRESSED;
 	}
 	ker.dwControlKeyState |= s_dwMods;
 	ker.wVirtualKeyCode = vkCode;
-	win32_kbd_patch_key(&ker);
-
-	for (int i = ARRAY_LENGTH(VirtKeyMap); i >= 0; --i)
-	{
-	    if (VirtKeyMap[i].wVirtKey == vkCode)
-	    {
-		ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
-		break;
-	    }
-	}
-
-	// The following are treated specially in Vim.
-	// Ctrl-6 is Ctrl-^
-	// Ctrl-2 is Ctrl-@
-	// Ctrl-- is Ctrl-_
-	if ((vkCode == 0xBD || vkCode == '2' || vkCode == '6')
-					     && (ker.dwControlKeyState & CTRL))
-	    ker.uChar.UnicodeChar = 0xfffd;  // REPLACEMENT CHARACTER
-
+	ker.uChar.UnicodeChar = 0xFFFD;  // UNICODE REPLACEMENT CHARACTER
 	ir->Event.KeyEvent = ker;
-	vim_free(event);
+	vim_free(action);
     }
     else
     {
-	if (event == NULL)
+	if (action == NULL)
 	{
 	    semsg(_(e_missing_argument_str), "event");
 	}
 	else
 	{
-	    semsg(_(e_invalid_value_for_argument_str_str), "event", event);
-	    vim_free(event);
+	    semsg(_(e_invalid_value_for_argument_str_str), "event", action);
+	    vim_free(action);
 	}
 	return FALSE;
     }
@@ -2431,6 +2482,8 @@ mch_inchar(
 	    int		modifiers = 0;
 
 	    c = tgetch(&modifiers, &ch2);
+
+	    c = simplify_key(c, &modifiers);
 
 	    // Some chars need adjustment when the Ctrl modifier is used.
 	    ++no_reduce_keys;
