@@ -1180,44 +1180,40 @@ diff_file(diffio_T *dio)
 #endif
     // Use xdiff for generating the diff.
     if (dio->dio_internal)
-    {
 	return diff_file_internal(dio);
-    }
-    else
-    {
-	len = STRLEN(tmp_orig) + STRLEN(tmp_new)
-				      + STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
-	cmd = alloc(len);
-	if (cmd == NULL)
-	    return FAIL;
 
-	// We don't want $DIFF_OPTIONS to get in the way.
-	if (getenv("DIFF_OPTIONS"))
-	    vim_setenv((char_u *)"DIFF_OPTIONS", (char_u *)"");
+    len = STRLEN(tmp_orig) + STRLEN(tmp_new)
+				+ STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
+    cmd = alloc(len);
+    if (cmd == NULL)
+	return FAIL;
 
-	// Build the diff command and execute it.  Always use -a, binary
-	// differences are of no use.  Ignore errors, diff returns
-	// non-zero when differences have been found.
-	vim_snprintf((char *)cmd, len, "diff %s%s%s%s%s%s%s%s %s",
-		diff_a_works == FALSE ? "" : "-a ",
+    // We don't want $DIFF_OPTIONS to get in the way.
+    if (getenv("DIFF_OPTIONS"))
+	vim_setenv((char_u *)"DIFF_OPTIONS", (char_u *)"");
+
+    // Build the diff command and execute it.  Always use -a, binary
+    // differences are of no use.  Ignore errors, diff returns
+    // non-zero when differences have been found.
+    vim_snprintf((char *)cmd, len, "diff %s%s%s%s%s%s%s%s %s",
+	    diff_a_works == FALSE ? "" : "-a ",
 #if defined(MSWIN)
-		diff_bin_works == TRUE ? "--binary " : "",
+	    diff_bin_works == TRUE ? "--binary " : "",
 #else
-		"",
+	    "",
 #endif
-		(diff_flags & DIFF_IWHITE) ? "-b " : "",
-		(diff_flags & DIFF_IWHITEALL) ? "-w " : "",
-		(diff_flags & DIFF_IWHITEEOL) ? "-Z " : "",
-		(diff_flags & DIFF_IBLANK) ? "-B " : "",
-		(diff_flags & DIFF_ICASE) ? "-i " : "",
-		tmp_orig, tmp_new);
-	append_redir(cmd, (int)len, p_srr, tmp_diff);
-	block_autocmds();	// avoid ShellCmdPost stuff
-	(void)call_shell(cmd, SHELL_FILTER|SHELL_SILENT|SHELL_DOOUT);
-	unblock_autocmds();
-	vim_free(cmd);
-	return OK;
-    }
+	    (diff_flags & DIFF_IWHITE) ? "-b " : "",
+	    (diff_flags & DIFF_IWHITEALL) ? "-w " : "",
+	    (diff_flags & DIFF_IWHITEEOL) ? "-Z " : "",
+	    (diff_flags & DIFF_IBLANK) ? "-B " : "",
+	    (diff_flags & DIFF_ICASE) ? "-i " : "",
+	    tmp_orig, tmp_new);
+    append_redir(cmd, (int)len, p_srr, tmp_diff);
+    block_autocmds();	// avoid ShellCmdPost stuff
+    (void)call_shell(cmd, SHELL_FILTER|SHELL_SILENT|SHELL_DOOUT);
+    unblock_autocmds();
+    vim_free(cmd);
+    return OK;
 }
 
 /*
@@ -1432,31 +1428,31 @@ ex_diffsplit(exarg_T *eap)
     // don't use a new tab page, each tab page has its own diffs
     cmdmod.cmod_tab = 0;
 
-    if (win_split(0, (diff_flags & DIFF_VERTICAL) ? WSP_VERT : 0) != FAIL)
+    if (win_split(0, (diff_flags & DIFF_VERTICAL) ? WSP_VERT : 0) == FAIL)
+	return;
+
+    // Pretend it was a ":split fname" command
+    eap->cmdidx = CMD_split;
+    curwin->w_p_diff = TRUE;
+    do_exedit(eap, old_curwin);
+
+    if (curwin == old_curwin)		// split didn't work
+	return;
+
+    // Set 'diff', 'scrollbind' on and 'wrap' off.
+    diff_win_options(curwin, TRUE);
+    if (win_valid(old_curwin))
     {
-	// Pretend it was a ":split fname" command
-	eap->cmdidx = CMD_split;
-	curwin->w_p_diff = TRUE;
-	do_exedit(eap, old_curwin);
+	diff_win_options(old_curwin, TRUE);
 
-	if (curwin != old_curwin)		// split must have worked
-	{
-	    // Set 'diff', 'scrollbind' on and 'wrap' off.
-	    diff_win_options(curwin, TRUE);
-	    if (win_valid(old_curwin))
-	    {
-		diff_win_options(old_curwin, TRUE);
-
-		if (bufref_valid(&old_curbuf))
-		    // Move the cursor position to that of the old window.
-		    curwin->w_cursor.lnum = diff_get_corresponding_line(
-			    old_curbuf.br_buf, old_curwin->w_cursor.lnum);
-	    }
-	    // Now that lines are folded scroll to show the cursor at the same
-	    // relative position.
-	    scroll_to_fraction(curwin, curwin->w_height);
-	}
+	if (bufref_valid(&old_curbuf))
+	    // Move the cursor position to that of the old window.
+	    curwin->w_cursor.lnum = diff_get_corresponding_line(
+		    old_curbuf.br_buf, old_curwin->w_cursor.lnum);
     }
+    // Now that lines are folded scroll to show the cursor at the same
+    // relative position.
+    scroll_to_fraction(curwin, curwin->w_height);
 }
 
 /*
@@ -2786,8 +2782,12 @@ ex_diffgetput(exarg_T *eap)
 	idx_to = idx_other;
 	// Need to make the other buffer the current buffer to be able to make
 	// changes in it.
-	// set curwin/curbuf to buf and save a few things
+	// Set curwin/curbuf to buf and save a few things.
 	aucmd_prepbuf(&aco, curtab->tp_diffbuf[idx_other]);
+	if (curbuf != curtab->tp_diffbuf[idx_other])
+	    // Could not find a window for this buffer, the rest is likely to
+	    // fail.
+	    goto theend;
     }
 
     // May give the warning for a changed buffer here, which can trigger the

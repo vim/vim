@@ -128,14 +128,15 @@ fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip)
 {
     init_evalarg(evalarg);
     evalarg->eval_flags = skip ? 0 : EVAL_EVALUATE;
-    if (eap != NULL)
+
+    if (eap == NULL)
+	return;
+
+    evalarg->eval_cstack = eap->cstack;
+    if (sourcing_a_script(eap) || eap->getline == get_list_line)
     {
-	evalarg->eval_cstack = eap->cstack;
-	if (sourcing_a_script(eap) || eap->getline == get_list_line)
-	{
-	    evalarg->eval_getline = eap->getline;
-	    evalarg->eval_cookie = eap->cookie;
-	}
+	evalarg->eval_getline = eap->getline;
+	evalarg->eval_cookie = eap->cookie;
     }
 }
 
@@ -295,7 +296,7 @@ eval_expr_typval(
 
 	    // Shortcut to call a compiled function with minimal overhead.
 	    r = call_def_function(partial->pt_func, argc, argv,
-					  DEF_USE_PT_ARGV, partial, fc, rettv);
+				    DEF_USE_PT_ARGV, partial, NULL, fc, rettv);
 	    if (fc_arg == NULL)
 		remove_funccal();
 	    if (r == FAIL)
@@ -404,15 +405,15 @@ init_evalarg(evalarg_T *evalarg)
     static void
 free_eval_tofree_later(evalarg_T *evalarg)
 {
-    if (evalarg->eval_tofree != NULL)
-    {
-	if (ga_grow(&evalarg->eval_tofree_ga, 1) == OK)
-	    ((char_u **)evalarg->eval_tofree_ga.ga_data)
-		[evalarg->eval_tofree_ga.ga_len++]
-		= evalarg->eval_tofree;
-	else
-	    vim_free(evalarg->eval_tofree);
-    }
+    if (evalarg->eval_tofree == NULL)
+	return;
+
+    if (ga_grow(&evalarg->eval_tofree_ga, 1) == OK)
+	((char_u **)evalarg->eval_tofree_ga.ga_data)
+	    [evalarg->eval_tofree_ga.ga_len++]
+	    = evalarg->eval_tofree;
+    else
+	vim_free(evalarg->eval_tofree);
 }
 
 /*
@@ -421,39 +422,39 @@ free_eval_tofree_later(evalarg_T *evalarg)
     void
 clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
 {
-    if (evalarg != NULL)
+    if (evalarg == NULL)
+	return;
+
+    garray_T *etga = &evalarg->eval_tofree_ga;
+
+    if (evalarg->eval_tofree != NULL || evalarg->eval_using_cmdline)
     {
-	garray_T *etga = &evalarg->eval_tofree_ga;
-
-	if (evalarg->eval_tofree != NULL || evalarg->eval_using_cmdline)
+	if (eap != NULL)
 	{
-	    if (eap != NULL)
-	    {
-		// We may need to keep the original command line, e.g. for
-		// ":let" it has the variable names.  But we may also need
-		// the new one, "nextcmd" points into it.  Keep both.
-		vim_free(eap->cmdline_tofree);
-		eap->cmdline_tofree = *eap->cmdlinep;
+	    // We may need to keep the original command line, e.g. for
+	    // ":let" it has the variable names.  But we may also need
+	    // the new one, "nextcmd" points into it.  Keep both.
+	    vim_free(eap->cmdline_tofree);
+	    eap->cmdline_tofree = *eap->cmdlinep;
 
-		if (evalarg->eval_using_cmdline && etga->ga_len > 0)
-		{
-		    // "nextcmd" points into the last line in eval_tofree_ga,
-		    // need to keep it around.
-		    --etga->ga_len;
-		    *eap->cmdlinep = ((char_u **)etga->ga_data)[etga->ga_len];
-		    vim_free(evalarg->eval_tofree);
-		}
-		else
-		    *eap->cmdlinep = evalarg->eval_tofree;
+	    if (evalarg->eval_using_cmdline && etga->ga_len > 0)
+	    {
+		// "nextcmd" points into the last line in eval_tofree_ga,
+		// need to keep it around.
+		--etga->ga_len;
+		*eap->cmdlinep = ((char_u **)etga->ga_data)[etga->ga_len];
+		vim_free(evalarg->eval_tofree);
 	    }
 	    else
-		vim_free(evalarg->eval_tofree);
-	    evalarg->eval_tofree = NULL;
+		*eap->cmdlinep = evalarg->eval_tofree;
 	}
-
-	ga_clear_strings(etga);
-	VIM_CLEAR(evalarg->eval_tofree_lambda);
+	else
+	    vim_free(evalarg->eval_tofree);
+	evalarg->eval_tofree = NULL;
     }
+
+    ga_clear_strings(etga);
+    VIM_CLEAR(evalarg->eval_tofree_lambda);
 }
 
 /*
@@ -1182,7 +1183,7 @@ get_lval(
     if (vim9script && (flags & GLV_NO_DECL) == 0)
     {
 	if (!quiet)
-	    semsg(_(e_variable_already_declared), lp->ll_name);
+	    semsg(_(e_variable_already_declared_str), lp->ll_name);
 	return NULL;
     }
 
@@ -1193,17 +1194,21 @@ get_lval(
     var2.v_type = VAR_UNKNOWN;
     while (*p == '[' || (*p == '.' && p[1] != '=' && p[1] != '.'))
     {
-	int r = OK;
+	vartype_T v_type = lp->ll_tv->v_type;
 
-	if (*p == '.' && lp->ll_tv->v_type != VAR_DICT)
+	if (*p == '.' && v_type != VAR_DICT
+		      && v_type != VAR_OBJECT
+		      && v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		semsg(_(e_dot_can_only_be_used_on_dictionary_str), name);
 	    return NULL;
 	}
-	if (lp->ll_tv->v_type != VAR_LIST
-		&& lp->ll_tv->v_type != VAR_DICT
-		&& lp->ll_tv->v_type != VAR_BLOB)
+	if (v_type != VAR_LIST
+		&& v_type != VAR_DICT
+		&& v_type != VAR_BLOB
+		&& v_type != VAR_OBJECT
+		&& v_type != VAR_CLASS)
 	{
 	    if (!quiet)
 		emsg(_(e_can_only_index_list_dictionary_or_blob));
@@ -1211,9 +1216,10 @@ get_lval(
 	}
 
 	// A NULL list/blob works like an empty list/blob, allocate one now.
-	if (lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
+	int r = OK;
+	if (v_type == VAR_LIST && lp->ll_tv->vval.v_list == NULL)
 	    r = rettv_list_alloc(lp->ll_tv);
-	else if (lp->ll_tv->v_type == VAR_BLOB
+	else if (v_type == VAR_BLOB
 					     && lp->ll_tv->vval.v_blob == NULL)
 	    r = rettv_blob_alloc(lp->ll_tv);
 	if (r == FAIL)
@@ -1275,7 +1281,7 @@ get_lval(
 	    // Optionally get the second index [ :expr].
 	    if (*p == ':')
 	    {
-		if (lp->ll_tv->v_type == VAR_DICT)
+		if (v_type == VAR_DICT)
 		{
 		    if (!quiet)
 			emsg(_(e_cannot_slice_dictionary));
@@ -1331,7 +1337,7 @@ get_lval(
 	    ++p;
 	}
 
-	if (lp->ll_tv->v_type == VAR_DICT)
+	if (v_type == VAR_DICT)
 	{
 	    if (len == -1)
 	    {
@@ -1366,7 +1372,6 @@ get_lval(
 	    if (rettv != NULL && lp->ll_dict->dv_scope != 0)
 	    {
 		int prevval;
-		int wrong;
 
 		if (len != -1)
 		{
@@ -1375,7 +1380,7 @@ get_lval(
 		}
 		else
 		    prevval = 0; // avoid compiler warning
-		wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
+		int wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
 			       && (rettv->v_type == VAR_FUNC
 					    || rettv->v_type == VAR_PARTIAL)
 			       && var_wrong_func_name(key, lp->ll_di == NULL))
@@ -1408,7 +1413,7 @@ get_lval(
 		if (*p == '[' || *p == '.' || unlet)
 		{
 		    if (!quiet)
-			semsg(_(e_key_not_present_in_dictionary), key);
+			semsg(_(e_key_not_present_in_dictionary_str), key);
 		    clear_tv(&var1);
 		    return NULL;
 		}
@@ -1433,7 +1438,7 @@ get_lval(
 	    clear_tv(&var1);
 	    lp->ll_tv = &lp->ll_di->di_tv;
 	}
-	else if (lp->ll_tv->v_type == VAR_BLOB)
+	else if (v_type == VAR_BLOB)
 	{
 	    long bloblen = blob_len(lp->ll_tv->vval.v_blob);
 
@@ -1464,7 +1469,7 @@ get_lval(
 	    lp->ll_tv = NULL;
 	    break;
 	}
-	else
+	else if (v_type == VAR_LIST)
 	{
 	    /*
 	     * Get the number and item for the only or first index of the List.
@@ -1509,6 +1514,65 @@ get_lval(
 
 	    lp->ll_tv = &lp->ll_li->li_tv;
 	}
+	else  // v_type == VAR_CLASS || v_type == VAR_OBJECT
+	{
+	    class_T *cl = (v_type == VAR_OBJECT
+					   && lp->ll_tv->vval.v_object != NULL)
+			    ? lp->ll_tv->vval.v_object->obj_class
+			    : lp->ll_tv->vval.v_class;
+	    // TODO: what if class is NULL?
+	    if (cl != NULL)
+	    {
+		lp->ll_valtype = NULL;
+		int count = v_type == VAR_OBJECT ? cl->class_obj_member_count
+						: cl->class_class_member_count;
+		ocmember_T *members = v_type == VAR_OBJECT
+						     ? cl->class_obj_members
+						     : cl->class_class_members;
+		for (int i = 0; i < count; ++i)
+		{
+		    ocmember_T *om = members + i;
+		    if (STRNCMP(om->ocm_name, key, p - key) == 0
+					       && om->ocm_name[p - key] == NUL)
+		    {
+			switch (om->ocm_access)
+			{
+			    case ACCESS_PRIVATE:
+				    semsg(_(e_cannot_access_private_member_str),
+								 om->ocm_name);
+				    return NULL;
+			    case ACCESS_READ:
+				    if (!(flags & GLV_READ_ONLY))
+				    {
+					semsg(_(e_member_is_not_writable_str),
+								 om->ocm_name);
+					return NULL;
+				    }
+				    break;
+			    case ACCESS_ALL:
+				    break;
+			}
+
+			lp->ll_valtype = om->ocm_type;
+
+			if (v_type == VAR_OBJECT)
+			    lp->ll_tv = ((typval_T *)(
+					    lp->ll_tv->vval.v_object + 1)) + i;
+			else
+			    lp->ll_tv = &cl->class_members_tv[i];
+			break;
+		    }
+		}
+		if (lp->ll_valtype == NULL)
+		{
+		    if (v_type == VAR_OBJECT)
+			semsg(_(e_object_member_not_found_str), key);
+		    else
+			semsg(_(e_class_member_not_found_str), key);
+		    return NULL;
+		}
+	    }
+	}
     }
 
     clear_tv(&var1);
@@ -1549,7 +1613,7 @@ set_var_lval(
     {
 	cc = *endp;
 	*endp = NUL;
-	if (in_vim9script() && check_reserved_name(lp->ll_name) == FAIL)
+	if (in_vim9script() && check_reserved_name(lp->ll_name, NULL) == FAIL)
 	    return;
 
 	if (lp->ll_blob != NULL)
@@ -1635,7 +1699,7 @@ set_var_lval(
     else
     {
 	/*
-	 * Assign to a List or Dictionary item.
+	 * Assign to a List, Dictionary or Object item.
 	 */
 	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
 					     && (flags & ASSIGN_FOR_LOOP) == 0)
@@ -1653,7 +1717,7 @@ set_var_lval(
 	{
 	    if (op != NULL && *op != '=')
 	    {
-		semsg(_(e_key_not_present_in_dictionary), lp->ll_newkey);
+		semsg(_(e_key_not_present_in_dictionary_str), lp->ll_newkey);
 		return;
 	    }
 	    if (dict_wrong_func_name(lp->ll_tv->vval.v_dict, rettv,
@@ -1725,6 +1789,8 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
 	    case VAR_INSTR:
+	    case VAR_CLASS:
+	    case VAR_OBJECT:
 		break;
 
 	    case VAR_BLOB:
@@ -3154,16 +3220,16 @@ eval_addblob(typval_T *tv1, typval_T *tv2)
     blob_T  *b = blob_alloc();
     int	    i;
 
-    if (b != NULL)
-    {
-	for (i = 0; i < blob_len(b1); i++)
-	    ga_append(&b->bv_ga, blob_get(b1, i));
-	for (i = 0; i < blob_len(b2); i++)
-	    ga_append(&b->bv_ga, blob_get(b2, i));
+    if (b == NULL)
+	return;
 
-	clear_tv(tv1);
-	rettv_blob_set(tv1, b);
-    }
+    for (i = 0; i < blob_len(b1); i++)
+	ga_append(&b->bv_ga, blob_get(b1, i));
+    for (i = 0; i < blob_len(b2); i++)
+	ga_append(&b->bv_ga, blob_get(b2, i));
+
+    clear_tv(tv1);
+    rettv_blob_set(tv1, b);
 }
 
 /*
@@ -3851,10 +3917,23 @@ handle_predefined(char_u *s, int len, typval_T *rettv)
 		    return OK;
 		}
 		break;
+	case 10: if (STRNCMP(s, "null_class", 10) == 0)
+		{
+		    rettv->v_type = VAR_CLASS;
+		    rettv->vval.v_class = NULL;
+		    return OK;
+		}
+		 break;
 	case 11: if (STRNCMP(s, "null_string", 11) == 0)
 		{
 		    rettv->v_type = VAR_STRING;
 		    rettv->vval.v_string = NULL;
+		    return OK;
+		}
+		if (STRNCMP(s, "null_object", 11) == 0)
+		{
+		    rettv->v_type = VAR_OBJECT;
+		    rettv->vval.v_object = NULL;
 		    return OK;
 		}
 		break;
@@ -4470,11 +4549,19 @@ eval_method(
 	if (**arg != '(' && alias == NULL
 				    && (paren = vim_strchr(*arg, '(')) != NULL)
 	{
-	    char_u *deref;
-
 	    *arg = name;
+
+	    // Truncate the name a the "(".  Avoid trying to get another line
+	    // by making "getline" NULL.
 	    *paren = NUL;
-	    deref = deref_function_name(arg, &tofree, evalarg, verbose);
+	    char_u	*(*getline)(int, void *, int, getline_opt_T) = NULL;
+	    if (evalarg != NULL)
+	    {
+		getline = evalarg->eval_getline;
+		evalarg->eval_getline = NULL;
+	    }
+
+	    char_u *deref = deref_function_name(arg, &tofree, evalarg, verbose);
 	    if (deref == NULL)
 	    {
 		*arg = name + len;
@@ -4485,7 +4572,10 @@ eval_method(
 		name = deref;
 		len = (long)STRLEN(name);
 	    }
+
 	    *paren = '(';
+	    if (getline != NULL)
+		evalarg->eval_getline = getline;
 	}
 
 	if (ret == OK)
@@ -4686,6 +4776,8 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    if (verbose)
 		emsg(_(e_cannot_index_special_variable));
 	    return FAIL;
@@ -4727,13 +4819,13 @@ f_slice(typval_T *argvars, typval_T *rettv)
 		|| check_for_opt_number_arg(argvars, 2) == FAIL))
 	return;
 
-    if (check_can_index(argvars, TRUE, FALSE) == OK)
-    {
-	copy_tv(argvars, rettv);
-	eval_index_inner(rettv, TRUE, argvars + 1,
-		argvars[2].v_type == VAR_UNKNOWN ? NULL : argvars + 2,
-		TRUE, NULL, 0, FALSE);
-    }
+    if (check_can_index(argvars, TRUE, FALSE) != OK)
+	return;
+
+    copy_tv(argvars, rettv);
+    eval_index_inner(rettv, TRUE, argvars + 1,
+	    argvars[2].v_type == VAR_UNKNOWN ? NULL : argvars + 2,
+	    TRUE, NULL, 0, FALSE);
 }
 
 /*
@@ -4789,6 +4881,8 @@ eval_index_inner(
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    break; // not evaluating, skipping over subscript
 
 	case VAR_NUMBER:
@@ -4874,7 +4968,7 @@ eval_index_inner(
 		    {
 			if (keylen > 0)
 			    key[keylen] = NUL;
-			semsg(_(e_key_not_present_in_dictionary), key);
+			semsg(_(e_key_not_present_in_dictionary_str), key);
 		    }
 		    return FAIL;
 		}
@@ -4952,31 +5046,31 @@ partial_free(partial_T *pt)
     void
 partial_unref(partial_T *pt)
 {
-    if (pt != NULL)
+    if (pt == NULL)
+	return;
+
+    int	done = FALSE;
+
+    if (--pt->pt_refcount <= 0)
+	partial_free(pt);
+
+    // If the reference count goes down to one, the funcstack may be the
+    // only reference and can be freed if no other partials reference it.
+    else if (pt->pt_refcount == 1)
     {
-	int	done = FALSE;
+	// careful: if the funcstack is freed it may contain this partial
+	// and it gets freed as well
+	if (pt->pt_funcstack != NULL)
+	    done = funcstack_check_refcount(pt->pt_funcstack);
 
-	if (--pt->pt_refcount <= 0)
-	    partial_free(pt);
-
-	// If the reference count goes down to one, the funcstack may be the
-	// only reference and can be freed if no other partials reference it.
-	else if (pt->pt_refcount == 1)
+	if (!done)
 	{
-	    // careful: if the funcstack is freed it may contain this partial
-	    // and it gets freed as well
-	    if (pt->pt_funcstack != NULL)
-		done = funcstack_check_refcount(pt->pt_funcstack);
+	    int	depth;
 
-	    if (!done)
-	    {
-		int	depth;
-
-		for (depth = 0; depth < MAX_LOOP_DEPTH; ++depth)
-		    if (pt->pt_loopvars[depth] != NULL
-			    && loopvars_check_refcount(pt->pt_loopvars[depth]))
+	    for (depth = 0; depth < MAX_LOOP_DEPTH; ++depth)
+		if (pt->pt_loopvars[depth] != NULL
+			&& loopvars_check_refcount(pt->pt_loopvars[depth]))
 		    break;
-	    }
 	}
     }
 }
@@ -5085,9 +5179,11 @@ garbage_collect(int testing)
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
 								  NULL, NULL);
-    if (aucmd_win != NULL)
-	abort = abort || set_ref_in_item(&aucmd_win->w_winvar.di_tv, copyID,
-								  NULL, NULL);
+    // window-local variables in autocmd windows
+    for (int i = 0; i < AUCMD_WIN_COUNT; ++i)
+	if (aucmd_win[i].auc_win != NULL)
+	    abort = abort || set_ref_in_item(
+		    &aucmd_win[i].auc_win->w_winvar.di_tv, copyID, NULL, NULL);
 #ifdef FEAT_PROP_POPUP
     FOR_ALL_POPUPWINS(wp)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
@@ -5213,11 +5309,14 @@ free_unref_items(int copyID)
      * themselves yet, so that it is possible to decrement refcount counters
      */
 
-    // Go through the list of dicts and free items without the copyID.
+    // Go through the list of dicts and free items without this copyID.
     did_free |= dict_free_nonref(copyID);
 
-    // Go through the list of lists and free items without the copyID.
+    // Go through the list of lists and free items without this copyID.
     did_free |= list_free_nonref(copyID);
+
+    // Go through the list of objects and free items without this copyID.
+    did_free |= object_free_nonref(copyID);
 
 #ifdef FEAT_JOB_CHANNEL
     // Go through the list of jobs and free items without the copyID. This
@@ -5385,7 +5484,8 @@ set_ref_in_callback(callback_T *cb, int copyID)
 }
 
 /*
- * Mark all lists and dicts referenced through typval "tv" with "copyID".
+ * Mark all lists, dicts and other container types referenced through typval
+ * "tv" with "copyID".
  * "list_stack" is used to add lists to be marked.  Can be NULL.
  * "ht_stack" is used to add hashtabs to be marked.  Can be NULL.
  *
@@ -5400,162 +5500,215 @@ set_ref_in_item(
 {
     int		abort = FALSE;
 
-    if (tv->v_type == VAR_DICT)
+    switch (tv->v_type)
     {
-	dict_T	*dd = tv->vval.v_dict;
-
-	if (dd != NULL && dd->dv_copyID != copyID)
+	case VAR_DICT:
 	{
-	    // Didn't see this dict yet.
-	    dd->dv_copyID = copyID;
-	    if (ht_stack == NULL)
-	    {
-		abort = set_ref_in_ht(&dd->dv_hashtab, copyID, list_stack);
-	    }
-	    else
-	    {
-		ht_stack_T *newitem = ALLOC_ONE(ht_stack_T);
+	    dict_T	*dd = tv->vval.v_dict;
 
-		if (newitem == NULL)
-		    abort = TRUE;
+	    if (dd != NULL && dd->dv_copyID != copyID)
+	    {
+		// Didn't see this dict yet.
+		dd->dv_copyID = copyID;
+		if (ht_stack == NULL)
+		{
+		    abort = set_ref_in_ht(&dd->dv_hashtab, copyID, list_stack);
+		}
 		else
 		{
-		    newitem->ht = &dd->dv_hashtab;
-		    newitem->prev = *ht_stack;
-		    *ht_stack = newitem;
-		}
-	    }
-	}
-    }
-    else if (tv->v_type == VAR_LIST)
-    {
-	list_T	*ll = tv->vval.v_list;
+		    ht_stack_T *newitem = ALLOC_ONE(ht_stack_T);
 
-	if (ll != NULL && ll->lv_copyID != copyID)
-	{
-	    // Didn't see this list yet.
-	    ll->lv_copyID = copyID;
-	    if (list_stack == NULL)
-	    {
-		abort = set_ref_in_list_items(ll, copyID, ht_stack);
-	    }
-	    else
-	    {
-		list_stack_T *newitem = ALLOC_ONE(list_stack_T);
-
-		if (newitem == NULL)
-		    abort = TRUE;
-		else
-		{
-		    newitem->list = ll;
-		    newitem->prev = *list_stack;
-		    *list_stack = newitem;
-		}
-	    }
-	}
-    }
-    else if (tv->v_type == VAR_FUNC)
-    {
-	abort = set_ref_in_func(tv->vval.v_string, NULL, copyID);
-    }
-    else if (tv->v_type == VAR_PARTIAL)
-    {
-	partial_T	*pt = tv->vval.v_partial;
-	int		i;
-
-	if (pt != NULL && pt->pt_copyID != copyID)
-	{
-	    // Didn't see this partial yet.
-	    pt->pt_copyID = copyID;
-
-	    abort = set_ref_in_func(pt->pt_name, pt->pt_func, copyID);
-
-	    if (pt->pt_dict != NULL)
-	    {
-		typval_T dtv;
-
-		dtv.v_type = VAR_DICT;
-		dtv.vval.v_dict = pt->pt_dict;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-
-	    for (i = 0; i < pt->pt_argc; ++i)
-		abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
-							ht_stack, list_stack);
-	    // pt_funcstack is handled in set_ref_in_funcstacks()
-	    // pt_loopvars is handled in set_ref_in_loopvars()
-	}
-    }
-#ifdef FEAT_JOB_CHANNEL
-    else if (tv->v_type == VAR_JOB)
-    {
-	job_T	    *job = tv->vval.v_job;
-	typval_T    dtv;
-
-	if (job != NULL && job->jv_copyID != copyID)
-	{
-	    job->jv_copyID = copyID;
-	    if (job->jv_channel != NULL)
-	    {
-		dtv.v_type = VAR_CHANNEL;
-		dtv.vval.v_channel = job->jv_channel;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-	    if (job->jv_exit_cb.cb_partial != NULL)
-	    {
-		dtv.v_type = VAR_PARTIAL;
-		dtv.vval.v_partial = job->jv_exit_cb.cb_partial;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-	}
-    }
-    else if (tv->v_type == VAR_CHANNEL)
-    {
-	channel_T   *ch =tv->vval.v_channel;
-	ch_part_T   part;
-	typval_T    dtv;
-	jsonq_T	    *jq;
-	cbq_T	    *cq;
-
-	if (ch != NULL && ch->ch_copyID != copyID)
-	{
-	    ch->ch_copyID = copyID;
-	    for (part = PART_SOCK; part < PART_COUNT; ++part)
-	    {
-		for (jq = ch->ch_part[part].ch_json_head.jq_next; jq != NULL;
-							     jq = jq->jq_next)
-		    set_ref_in_item(jq->jq_value, copyID, ht_stack, list_stack);
-		for (cq = ch->ch_part[part].ch_cb_head.cq_next; cq != NULL;
-							     cq = cq->cq_next)
-		    if (cq->cq_callback.cb_partial != NULL)
+		    if (newitem == NULL)
+			abort = TRUE;
+		    else
 		    {
-			dtv.v_type = VAR_PARTIAL;
-			dtv.vval.v_partial = cq->cq_callback.cb_partial;
-			set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+			newitem->ht = &dd->dv_hashtab;
+			newitem->prev = *ht_stack;
+			*ht_stack = newitem;
 		    }
-		if (ch->ch_part[part].ch_callback.cb_partial != NULL)
+		}
+	    }
+	    break;
+	}
+
+	case VAR_LIST:
+	{
+	    list_T	*ll = tv->vval.v_list;
+
+	    if (ll != NULL && ll->lv_copyID != copyID)
+	    {
+		// Didn't see this list yet.
+		ll->lv_copyID = copyID;
+		if (list_stack == NULL)
+		{
+		    abort = set_ref_in_list_items(ll, copyID, ht_stack);
+		}
+		else
+		{
+		    list_stack_T *newitem = ALLOC_ONE(list_stack_T);
+
+		    if (newitem == NULL)
+			abort = TRUE;
+		    else
+		    {
+			newitem->list = ll;
+			newitem->prev = *list_stack;
+			*list_stack = newitem;
+		    }
+		}
+	    }
+	    break;
+	}
+
+	case VAR_FUNC:
+	{
+	    abort = set_ref_in_func(tv->vval.v_string, NULL, copyID);
+	    break;
+	}
+
+	case VAR_PARTIAL:
+	{
+	    partial_T	*pt = tv->vval.v_partial;
+	    int		i;
+
+	    if (pt != NULL && pt->pt_copyID != copyID)
+	    {
+		// Didn't see this partial yet.
+		pt->pt_copyID = copyID;
+
+		abort = set_ref_in_func(pt->pt_name, pt->pt_func, copyID);
+
+		if (pt->pt_dict != NULL)
+		{
+		    typval_T dtv;
+
+		    dtv.v_type = VAR_DICT;
+		    dtv.vval.v_dict = pt->pt_dict;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+
+		for (i = 0; i < pt->pt_argc; ++i)
+		    abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
+							 ht_stack, list_stack);
+		// pt_funcstack is handled in set_ref_in_funcstacks()
+		// pt_loopvars is handled in set_ref_in_loopvars()
+	    }
+	    break;
+	}
+
+	case VAR_JOB:
+	{
+#ifdef FEAT_JOB_CHANNEL
+	    job_T	    *job = tv->vval.v_job;
+	    typval_T    dtv;
+
+	    if (job != NULL && job->jv_copyID != copyID)
+	    {
+		job->jv_copyID = copyID;
+		if (job->jv_channel != NULL)
+		{
+		    dtv.v_type = VAR_CHANNEL;
+		    dtv.vval.v_channel = job->jv_channel;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+		if (job->jv_exit_cb.cb_partial != NULL)
 		{
 		    dtv.v_type = VAR_PARTIAL;
-		    dtv.vval.v_partial =
-				      ch->ch_part[part].ch_callback.cb_partial;
+		    dtv.vval.v_partial = job->jv_exit_cb.cb_partial;
 		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
 		}
 	    }
-	    if (ch->ch_callback.cb_partial != NULL)
-	    {
-		dtv.v_type = VAR_PARTIAL;
-		dtv.vval.v_partial = ch->ch_callback.cb_partial;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-	    if (ch->ch_close_cb.cb_partial != NULL)
-	    {
-		dtv.v_type = VAR_PARTIAL;
-		dtv.vval.v_partial = ch->ch_close_cb.cb_partial;
-		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-	    }
-	}
-    }
 #endif
+	    break;
+	}
+
+	case VAR_CHANNEL:
+	{
+#ifdef FEAT_JOB_CHANNEL
+	    channel_T   *ch = tv->vval.v_channel;
+	    ch_part_T   part;
+	    typval_T    dtv;
+	    jsonq_T	*jq;
+	    cbq_T	*cq;
+
+	    if (ch != NULL && ch->ch_copyID != copyID)
+	    {
+		ch->ch_copyID = copyID;
+		for (part = PART_SOCK; part < PART_COUNT; ++part)
+		{
+		    for (jq = ch->ch_part[part].ch_json_head.jq_next;
+						  jq != NULL; jq = jq->jq_next)
+			set_ref_in_item(jq->jq_value, copyID,
+							 ht_stack, list_stack);
+		    for (cq = ch->ch_part[part].ch_cb_head.cq_next; cq != NULL;
+							      cq = cq->cq_next)
+			if (cq->cq_callback.cb_partial != NULL)
+			{
+			    dtv.v_type = VAR_PARTIAL;
+			    dtv.vval.v_partial = cq->cq_callback.cb_partial;
+			    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+			}
+		    if (ch->ch_part[part].ch_callback.cb_partial != NULL)
+		    {
+			dtv.v_type = VAR_PARTIAL;
+			dtv.vval.v_partial =
+				      ch->ch_part[part].ch_callback.cb_partial;
+			set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		    }
+		}
+		if (ch->ch_callback.cb_partial != NULL)
+		{
+		    dtv.v_type = VAR_PARTIAL;
+		    dtv.vval.v_partial = ch->ch_callback.cb_partial;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+		if (ch->ch_close_cb.cb_partial != NULL)
+		{
+		    dtv.v_type = VAR_PARTIAL;
+		    dtv.vval.v_partial = ch->ch_close_cb.cb_partial;
+		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+		}
+	    }
+#endif
+	    break;
+	}
+
+	case VAR_CLASS:
+	    // TODO: Mark methods in class_obj_methods ?
+	    // Mark initializer expressions?
+	    break;
+
+	case VAR_OBJECT:
+	    {
+		object_T *obj = tv->vval.v_object;
+		if (obj != NULL && obj->obj_copyID != copyID)
+		{
+		    obj->obj_copyID = copyID;
+
+		    // The typval_T array is right after the object_T.
+		    typval_T *mtv = (typval_T *)(obj + 1);
+		    for (int i = 0; !abort
+			    && i < obj->obj_class->class_obj_member_count; ++i)
+			abort = abort || set_ref_in_item(mtv + i, copyID,
+							 ht_stack, list_stack);
+		}
+		break;
+	    }
+
+	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_VOID:
+	case VAR_BOOL:
+	case VAR_SPECIAL:
+	case VAR_NUMBER:
+	case VAR_FLOAT:
+	case VAR_STRING:
+	case VAR_BLOB:
+	case VAR_INSTR:
+	    // Types that do not contain any other item
+	    break;
+    }
+
     return abort;
 }
 
@@ -5778,6 +5931,49 @@ echo_string_core(
 	case VAR_INSTR:
 	    *tofree = NULL;
 	    r = (char_u *)"instructions";
+	    break;
+
+	case VAR_CLASS:
+	    {
+		class_T *cl = tv->vval.v_class;
+		size_t len = 6 + (cl == NULL ? 9 : STRLEN(cl->class_name)) + 1;
+		r = *tofree = alloc(len);
+		vim_snprintf((char *)r, len, "class %s",
+			    cl == NULL ? "[unknown]" : (char *)cl->class_name);
+	    }
+	    break;
+
+	case VAR_OBJECT:
+	    {
+		garray_T ga;
+		ga_init2(&ga, 1, 50);
+		ga_concat(&ga, (char_u *)"object of ");
+		object_T *obj = tv->vval.v_object;
+		class_T *cl = obj == NULL ? NULL : obj->obj_class;
+		ga_concat(&ga, cl == NULL ? (char_u *)"[unknown]"
+							     : cl->class_name);
+		if (cl != NULL)
+		{
+		    ga_concat(&ga, (char_u *)" {");
+		    for (int i = 0; i < cl->class_obj_member_count; ++i)
+		    {
+			if (i > 0)
+			    ga_concat(&ga, (char_u *)", ");
+			ocmember_T *m = &cl->class_obj_members[i];
+			ga_concat(&ga, m->ocm_name);
+			ga_concat(&ga, (char_u *)": ");
+			char_u *tf = NULL;
+			ga_concat(&ga, echo_string_core(
+					       (typval_T *)(obj + 1) + i,
+					       &tf, numbuf, copyID, echo_style,
+					       restore_copyID, composite_val));
+			vim_free(tf);
+		    }
+		    ga_concat(&ga, (char_u *)"}");
+		}
+
+		*tofree = r = ga.ga_data;
+	    }
 	    break;
 
 	case VAR_FLOAT:
@@ -6587,6 +6783,20 @@ handle_subscript(
 		ret = FAIL;
 	    }
 	}
+	else if (**arg == '.' && (rettv->v_type == VAR_CLASS
+					       || rettv->v_type == VAR_OBJECT))
+	{
+	    // class member: SomeClass.varname
+	    // class method: SomeClass.SomeMethod()
+	    // class constructor: SomeClass.new()
+	    // object member: someObject.varname
+	    // object method: someObject.SomeMethod()
+	    if (class_object_index(arg, rettv, evalarg, verbose) == FAIL)
+	    {
+		clear_tv(rettv);
+		ret = FAIL;
+	    }
+	}
 	else
 	    break;
     }
@@ -6643,6 +6853,8 @@ item_copy(
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:
@@ -7014,23 +7226,23 @@ last_set_msg(sctx_T script_ctx)
 {
     char_u *p;
 
-    if (script_ctx.sc_sid != 0)
+    if (script_ctx.sc_sid == 0)
+	return;
+
+    p = home_replace_save(NULL, get_scriptname(script_ctx.sc_sid));
+    if (p == NULL)
+	return;
+
+    verbose_enter();
+    msg_puts(_("\n\tLast set from "));
+    msg_puts((char *)p);
+    if (script_ctx.sc_lnum > 0)
     {
-	p = home_replace_save(NULL, get_scriptname(script_ctx.sc_sid));
-	if (p != NULL)
-	{
-	    verbose_enter();
-	    msg_puts(_("\n\tLast set from "));
-	    msg_puts((char *)p);
-	    if (script_ctx.sc_lnum > 0)
-	    {
-		msg_puts(_(line_msg));
-		msg_outnum((long)script_ctx.sc_lnum);
-	    }
-	    verbose_leave();
-	    vim_free(p);
-	}
+	msg_puts(_(line_msg));
+	msg_outnum((long)script_ctx.sc_lnum);
     }
+    verbose_leave();
+    vim_free(p);
 }
 
 #endif // FEAT_EVAL
@@ -7100,6 +7312,11 @@ do_string_sub(
 	     * - The text after the match.
 	     */
 	    sublen = vim_regsub(&regmatch, sub, expr, tail, 0, REGSUB_MAGIC);
+	    if (sublen <= 0)
+	    {
+		ga_clear(&ga);
+		break;
+	    }
 	    if (ga_grow(&ga, (int)((end - tail) + sublen -
 			    (regmatch.endp[0] - regmatch.startp[0]))) == FAIL)
 	    {

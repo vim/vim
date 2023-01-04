@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 9.0.  Last change: 2022 May 24
+*autocmd.txt*   For Vim version 9.0.  Last change: 2022 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -97,7 +97,7 @@ If the `:autocmd` is in Vim9 script (a script that starts with `:vim9script`
 and in a `:def` function) then {cmd} will be executed as in Vim9
 script.  Thus this depends on where the autocmd is defined, not where it is
 triggered.
-
+							*:autocmd-block*
 {cmd} can be a block, like with `:command`, see |:command-repl|.  Example: >
 	au BufReadPost *.xml {
 		  setlocal matchpairs+=<:>
@@ -1058,8 +1058,8 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				command is run, before jumping to the first
 				location. For |:cfile| and |:lfile| commands
-				it is run after error file is read and before
-				moving to the first error.
+				it is run after the error file is read and
+				before moving to the first error.
 				See |QuickFixCmdPost-example|.
 							*QuitPre*
 QuitPre				When using `:quit`, `:wq` or `:qall`, before
@@ -1342,8 +1342,9 @@ VimSuspend			When the Vim instance is suspended.  Only when
 				CTRL-Z was typed inside Vim, or when the SIGTSTP
 				signal was sent to Vim, but not for SIGSTOP.
 							*WinClosed*
-WinClosed			After closing a window.  The pattern is
-				matched against the |window-ID|.  Both
+WinClosed			When closing a window, just before it is
+				removed from the window layout.  The pattern
+				is matched against the |window-ID|.  Both
 				<amatch> and <afile> are set to the
 				|window-ID|.  Non-recursive (event cannot
 				trigger itself).
@@ -1371,17 +1372,42 @@ WinNew				When a new window was created.  Not done for
 				Before a WinEnter event.
 
 							*WinScrolled*
-WinScrolled			After scrolling the content of a window or
-				resizing a window.
-				The pattern is matched against the
-				|window-ID|.  Both <amatch> and <afile> are
-				set to the |window-ID|.
-				Non-recursive (the event cannot trigger
-				itself).  However, if the command causes the
-				window to scroll or change size another
+WinScrolled			After any window in the current tab page
+				scrolled the text (horizontally or vertically)
+				or changed width or height.  See
+				|win-scrolled-resized|.
+
+				The pattern is matched against the |window-ID|
+				of the first window that scrolled or resized.
+				Both <amatch> and <afile> are set to the
+				|window-ID|.
+
+				|v:event| is set with information about size
+				and scroll changes. |WinScrolled-event|
+
+				Only starts triggering after startup finished
+				and the first screen redraw was done.
+				Does not trigger when defining the first
+				WinScrolled or WinResized event, but may
+				trigger when adding more.
+
+				Non-recursive: the event will not trigger
+				while executing commands for the WinScrolled
+				event.  However, if the command causes a
+				window to scroll or change size, then another
 				WinScrolled event will be triggered later.
-				Does not trigger when the command is added,
-				only after the first scroll or resize.
+
+
+							*WinResized*
+WinResized			After a window in the current tab page changed
+				width or height.
+				See |win-scrolled-resized|.
+
+				|v:event| is set with information about size
+				changes. |WinResized-event|
+
+				Same behavior as |WinScrolled| for the
+				pattern, triggering and recursiveness.
 
 ==============================================================================
 6. Patterns					*autocmd-patterns* *{aupat}*

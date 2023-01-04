@@ -84,7 +84,7 @@ encouraged to make a donation to help orphans in Uganda.  Please read the file
 
 Summary of the license: There are no restrictions on using or distributing an
 unmodified copy of Vim.  Parts of Vim may also be distributed, but the license
-text must always be included.  For modified versions a few restrictions apply.
+text must always be included.  For modified versions, a few restrictions apply.
 The license is GPL compatible, you may compile Vim with GPL libraries and
 distribute it.
 
@@ -106,7 +106,7 @@ For the most recent information about sponsoring look on the Vim web site:
 
 CONTRIBUTING
 
-If you would like to help making Vim better, see the CONTRIBUTING.md file.
+If you would like to help make Vim better, see the CONTRIBUTING.md file.
 
 
 INFORMATION

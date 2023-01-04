@@ -728,7 +728,8 @@ utf16_to_enc(short_u *str, int *lenp)
 /*
  * Convert from the active codepage to 'encoding'.
  * Input is "str[str_size]".
- * The result is in allocated memory: "out[outlen]".  With terminating NUL.
+ * The result is in allocated memory: "out[outlen]".  "outlen" includes the
+ * terminating NUL.
  */
     void
 acp_to_enc(

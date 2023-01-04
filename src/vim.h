@@ -1407,7 +1407,8 @@ enum auto_event
     EVENT_WINCLOSED,		// after closing a window
     EVENT_VIMSUSPEND,		// before Vim is suspended
     EVENT_VIMRESUME,		// after Vim is resumed
-    EVENT_WINSCROLLED,		// after Vim window was scrolled
+    EVENT_WINRESIZED,		// after a window was resized
+    EVENT_WINSCROLLED,		// after a window was scrolled or resized
 
     NUM_EVENTS			// MUST be the last one
 };
@@ -2119,6 +2120,8 @@ typedef int sock_T;
 #define VAR_TYPE_CHANNEL    9
 #define VAR_TYPE_BLOB	    10
 #define VAR_TYPE_INSTR	    11
+#define VAR_TYPE_CLASS	    12
+#define VAR_TYPE_OBJECT	    13
 
 #define DICT_MAXNEST 100	// maximum nesting of lists and dicts
 
@@ -2255,6 +2258,14 @@ typedef enum {
     ESTACK_STACK,
     ESTACK_SCRIPT,
 } estack_arg_T;
+
+// Return value of match_keyprotocol()
+typedef enum {
+    KEYPROTOCOL_NONE,
+    KEYPROTOCOL_MOK2,
+    KEYPROTOCOL_KITTY,
+    KEYPROTOCOL_FAIL
+} keyprot_T;
 
 // Flags for assignment functions.
 #define ASSIGN_VAR	0     // ":var" (nothing special)
@@ -2665,7 +2676,8 @@ typedef enum {
 #define TFN_NO_DECL	0x20	// only used for GLV_NO_DECL
 #define TFN_COMPILING	0x40	// only used for GLV_COMPILING
 #define TFN_NEW_FUNC	0x80	// defining a new function
-#define TFN_ASSIGN_WITH_OP	0x100	// only for GLV_ASSIGN_WITH_OP
+#define TFN_ASSIGN_WITH_OP 0x100  // only for GLV_ASSIGN_WITH_OP
+#define TFN_IN_CLASS	0x200	// function in a class
 
 // Values for get_lval() flags argument:
 #define GLV_QUIET	TFN_QUIET	// no error messages

@@ -1,4 +1,4 @@
-*os_unix.txt*   For Vim version 9.0.  Last change: 2005 Mar 29
+*os_unix.txt*   For Vim version 9.0.  Last change: 2022 Nov 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -28,10 +28,11 @@ system() is used, which is a bit slower.  The output of ":version" includes
 can be changed at compile time.
 (For forking of the GUI version see |gui-fork|.)
 
-Because terminal updating under Unix is often slow (e.g. serial line
-terminal, shell window in suntools), the 'showcmd' and 'ruler' options
-are off by default.  If you have a fast terminal, try setting them on.  You
-might also want to set 'ttyfast'.
+For historic reasons terminal updating under Unix is expected to be slow (e.g.
+serial line terminal, shell window in suntools), the 'showcmd' and 'ruler'
+options are off by default.  If you have a fast terminal, try setting them
+on: >
+	set showcmd ruler
 
 When using Vim in an xterm the mouse clicks can be used by Vim by setting
 'mouse' to "a".  If there is access to an X-server gui style copy/paste will

@@ -14,6 +14,7 @@ int mouse_has(int c);
 int mouse_model_popup(void);
 void reset_dragwin(void);
 int jump_to_mouse(int flags, int *inclusive, int which_button);
+int do_mousescroll_horiz(long_u leftcol);
 void nv_mousescroll(cmdarg_T *cap);
 void nv_mouse(cmdarg_T *cap);
 void reset_held_button(void);

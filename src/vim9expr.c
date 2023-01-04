@@ -99,13 +99,14 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	vartype = VAR_DICT;
     if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB)
     {
-	if (need_type(idxtype, &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+	if (need_type(idxtype, &t_number, FALSE,
+					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
 	if (is_slice)
 	{
 	    idxtype = get_type_on_stack(cctx, 1);
-	    if (need_type(idxtype, &t_number, -2, 0, cctx,
-							 FALSE, FALSE) == FAIL)
+	    if (need_type(idxtype, &t_number, FALSE,
+					    -2, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	}
     }
@@ -135,8 +136,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	}
 	else
 	{
-	    if (need_type(typep->type_curr, &t_dict_any, -2, 0, cctx,
-							 FALSE, FALSE) == FAIL)
+	    if (need_type(typep->type_curr, &t_dict_any, FALSE,
+					    -2, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	    typep->type_curr = &t_any;
 	    typep->type_decl = &t_any;
@@ -235,6 +236,8 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
 	    case VAR_INSTR:
+	    case VAR_CLASS:
+	    case VAR_OBJECT:
 	    case VAR_UNKNOWN:
 	    case VAR_ANY:
 	    case VAR_VOID:
@@ -246,6 +249,130 @@ compile_member(int is_slice, int *keeping_dict, cctx_T *cctx)
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Compile ".member" coming after an object or class.
+ */
+    static int
+compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
+{
+    if (VIM_ISWHITE((*arg)[1]))
+    {
+	semsg(_(e_no_white_space_allowed_after_str_str), ".", *arg);
+	return FAIL;
+    }
+
+    if (type->tt_type == VAR_CLASS)
+    {
+	garray_T *instr = &cctx->ctx_instr;
+	if (instr->ga_len > 0)
+	{
+	    isn_T *isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+	    if (isn->isn_type == ISN_LOADSCRIPT)
+	    {
+		// The class was recognized as a script item.  We only need
+		// to know what class it is, drop the instruction.
+		--instr->ga_len;
+		vim_free(isn->isn_arg.script.scriptref);
+	    }
+	}
+    }
+
+    ++*arg;
+    char_u *name = *arg;
+    char_u *name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
+    if (name_end == name)
+	return FAIL;
+    size_t len = name_end - name;
+
+    class_T *cl = (class_T *)type->tt_member;
+    if (*name_end == '(')
+    {
+	int	function_count;
+	ufunc_T	**functions;
+
+	if (type->tt_type == VAR_CLASS)
+	{
+	    function_count = cl->class_class_function_count;
+	    functions = cl->class_class_functions;
+	}
+	else
+	{
+	    // type->tt_type == VAR_OBJECT: method call
+	    function_count = cl->class_obj_method_count;
+	    functions = cl->class_obj_methods;
+	}
+
+	ufunc_T *ufunc = NULL;
+	for (int i = 0; i < function_count; ++i)
+	{
+	    ufunc_T *fp = functions[i];
+	    // Use a separate pointer to avoid that ASAN complains about
+	    // uf_name[] only being 4 characters.
+	    char_u *ufname = (char_u *)fp->uf_name;
+	    if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
+	    {
+		ufunc = fp;
+		break;
+	    }
+	}
+	if (ufunc == NULL)
+	{
+	    // TODO: different error for object method?
+	    semsg(_(e_method_not_found_on_class_str_str), cl->class_name, name);
+	    return FAIL;
+	}
+
+	// Compile the arguments and call the class function or object method.
+	// The object method will know that the object is on the stack, just
+	// before the arguments.
+	*arg = skipwhite(name_end + 1);
+	int argcount = 0;
+	if (compile_arguments(arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
+	    return FAIL;
+	return generate_CALL(cctx, ufunc, argcount);
+    }
+
+    if (type->tt_type == VAR_OBJECT)
+    {
+	for (int i = 0; i < cl->class_obj_member_count; ++i)
+	{
+	    ocmember_T *m = &cl->class_obj_members[i];
+	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+	    {
+		if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
+		{
+		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
+		    return FAIL;
+		}
+
+		*arg = name_end;
+		return generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type);
+	    }
+	}
+
+	semsg(_(e_member_not_found_on_object_str_str), cl->class_name, name);
+    }
+    else
+    {
+	// load class member
+	int idx;
+	for (idx = 0; idx < cl->class_class_member_count; ++idx)
+	{
+	    ocmember_T *m = &cl->class_class_members[idx];
+	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+		break;
+	}
+	if (idx < cl->class_class_member_count)
+	{
+	    *arg = name_end;
+	    return generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+	}
+	semsg(_(e_class_member_not_found_str), name);
+    }
+
+    return FAIL;
 }
 
 /*
@@ -529,7 +656,8 @@ compile_load(
 	}
 	else
 	{
-	    lvar_T lvar;
+	    lvar_T  lvar;
+	    class_T *cl = NULL;
 
 	    if (lookup_local(*arg, len, &lvar, cctx) == OK)
 	    {
@@ -543,6 +671,10 @@ compile_load(
 		}
 		else
 		    gen_load = TRUE;
+	    }
+	    else if ((idx = class_member_index(*arg, len, &cl, cctx)) >= 0)
+	    {
+		res = generate_CLASSMEMBER(cctx, TRUE, cl, idx);
 	    }
 	    else
 	    {
@@ -1254,7 +1386,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key_in_dictionary), key);
+		semsg(_(e_duplicate_key_in_dictionary_str), key);
 		goto failret;
 	    }
 	    item = dictitem_alloc(key);
@@ -1272,7 +1404,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (*skipwhite(*arg) == ':')
 		semsg(_(e_no_white_space_allowed_before_str_str), ":", *arg);
 	    else
-		semsg(_(e_missing_colon_in_dictionary), *arg);
+		semsg(_(e_missing_colon_in_dictionary_str), *arg);
 	    return FAIL;
 	}
 	whitep = *arg + 1;
@@ -1304,7 +1436,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    break;
 	if (**arg != ',')
 	{
-	    semsg(_(e_missing_comma_in_dictionary), *arg);
+	    semsg(_(e_missing_comma_in_dictionary_str), *arg);
 	    goto failret;
 	}
 	if (IS_WHITE_OR_NUL(*whitep))
@@ -1335,7 +1467,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 failret:
     if (*arg == NULL)
     {
-	semsg(_(e_missing_dict_end), _("[end of lines]"));
+	semsg(_(e_missing_dict_end_str), _("[end of lines]"));
 	*arg = (char_u *)"";
     }
     dict_unref(d);
@@ -1668,7 +1800,7 @@ bool_on_stack(cctx_T *cctx)
 	// This requires a runtime type check.
 	return generate_COND2BOOL(cctx);
 
-    return need_type(type, &t_bool, -1, 0, cctx, FALSE, FALSE);
+    return need_type(type, &t_bool, FALSE, -1, 0, cctx, FALSE, FALSE);
 }
 
 /*
@@ -1700,22 +1832,14 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 	    --p;
 	if (*p == '-' || *p == '+')
 	{
-	    int		negate = *p == '-';
-	    isn_T	*isn;
-	    type_T	*type;
-
-	    type = get_type_on_stack(cctx, 0);
-	    if (type != &t_float && need_type(type, &t_number,
-					    -1, 0, cctx, FALSE, FALSE) == FAIL)
+	    type_T *type = get_type_on_stack(cctx, 0);
+	    if (type->tt_type != VAR_FLOAT && need_type(type, &t_number,
+				     FALSE, -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 
 	    // only '-' has an effect, for '+' we only check the type
-	    if (negate)
-	    {
-		isn = generate_instr(cctx, ISN_NEGATENR);
-		if (isn == NULL)
-		    return FAIL;
-	    }
+	    if (*p == '-' && generate_instr(cctx, ISN_NEGATENR) == NULL)
+		return FAIL;
 	}
 	else if (numeric_only)
 	{
@@ -1795,6 +1919,7 @@ compile_subscript(
     for (;;)
     {
 	char_u *p = skipwhite(*arg);
+	type_T *type;
 
 	if (*p == NUL || (VIM_ISWHITE(**arg) && vim9_comment_start(p)))
 	{
@@ -1822,7 +1947,6 @@ compile_subscript(
 	// is not a function call.
 	if (**arg == '(')
 	{
-	    type_T	*type;
 	    int		argcount = 0;
 
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
@@ -1909,7 +2033,6 @@ compile_subscript(
 		int	    argcount = 1;
 		garray_T    *stack = &cctx->ctx_type_stack;
 		int	    type_idx_start = stack->ga_len;
-		type_T	    *type;
 		int	    expr_isn_start = cctx->ctx_instr.ga_len;
 		int	    expr_isn_end;
 		int	    arg_isn_count;
@@ -2093,6 +2216,18 @@ compile_subscript(
 		    return FAIL;
 	    }
 	    if (compile_member(is_slice, &keeping_dict, cctx) == FAIL)
+		return FAIL;
+	}
+	else if (*p == '.'
+		&& (type = get_type_on_stack(cctx, 0)) != &t_unknown
+		&& (type->tt_type == VAR_CLASS || type->tt_type == VAR_OBJECT))
+	{
+	    // class member: SomeClass.varname
+	    // class method: SomeClass.SomeMethod()
+	    // class constructor: SomeClass.new()
+	    // object member: someObject.varname, this.varname
+	    // object method: someObject.SomeMethod(), this.SomeMethod()
+	    if (compile_class_object_index(cctx, arg, type) == FAIL)
 		return FAIL;
 	}
 	else if (*p == '.' && p[1] != '.')
@@ -2457,8 +2592,8 @@ compile_expr8(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	actual = get_type_on_stack(cctx, 0);
 	if (check_type_maybe(want_type, actual, FALSE, where) != OK)
 	{
-	    if (need_type(actual, want_type, -1, 0, cctx, FALSE, FALSE)
-								       == FAIL)
+	    if (need_type(actual, want_type, FALSE,
+					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	}
     }
@@ -2699,7 +2834,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	{
 	    type_T	*t = get_type_on_stack(cctx, 0);
 
-	    if (need_type(t, &t_number, 0, 0, cctx, FALSE, FALSE) == FAIL)
+	    if (need_type(t, &t_number, FALSE, 0, 0, cctx, FALSE, FALSE) == FAIL)
 	    {
 		emsg(_(e_bitshift_ops_must_be_number));
 		return FAIL;
@@ -2754,8 +2889,8 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	}
 	else
 	{
-	    if (need_type(get_type_on_stack(cctx, 0), &t_number, 0, 0, cctx,
-			FALSE, FALSE) == FAIL)
+	    if (need_type(get_type_on_stack(cctx, 0), &t_number, FALSE,
+					     0, 0, cctx, FALSE, FALSE) == FAIL)
 	    {
 		emsg(_(e_bitshift_ops_must_be_number));
 		return FAIL;

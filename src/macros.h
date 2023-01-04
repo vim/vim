@@ -253,8 +253,10 @@
 
 #ifdef FEAT_DIFF
 # define PLINES_NOFILL(x) plines_nofill(x)
+# define PLINES_WIN_NOFILL(w, l, h) plines_win_nofill((w), (l), (h))
 #else
 # define PLINES_NOFILL(x) plines(x)
+# define PLINES_WIN_NOFILL(w, l, h) plines_win((w), (l), (h))
 #endif
 
 #if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)

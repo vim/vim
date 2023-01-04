@@ -130,6 +130,7 @@ struct VTermState
     unsigned int bracketpaste:1;
     unsigned int report_focus:1;
     unsigned int modify_other_keys:1;
+    unsigned int kitty_keyboard:1;
   } mode;
 
   VTermEncodingInstance encoding[4], encoding_utf8;

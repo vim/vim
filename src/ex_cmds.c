@@ -1902,12 +1902,12 @@ check_writable(char_u *fname)
 #endif
 
 /*
- * write current buffer to file 'eap->arg'
- * if 'eap->append' is TRUE, append to the file
+ * Write the current buffer to file "eap->arg".
+ * If "eap->append" is TRUE, append to the file.
  *
- * if *eap->arg == NUL write to current file
+ * If "*eap->arg == NUL" write to current file.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 do_write(exarg_T *eap)
@@ -4011,7 +4011,7 @@ ex_substitute(exarg_T *eap)
 	return;
     }
 
-    if (search_regcomp(pat, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, NULL, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	if (subflags.do_error)
 	    emsg(_(e_invalid_command));
@@ -5039,6 +5039,7 @@ ex_global(exarg_T *eap)
 
     char_u	delim;		// delimiter, normally '/'
     char_u	*pat;
+    char_u	*used_pat;
     regmmatch_T	regmatch;
     int		match;
     int		which_pat;
@@ -5104,7 +5105,7 @@ ex_global(exarg_T *eap)
 	    *cmd++ = NUL;		    // replace it with a NUL
     }
 
-    if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
+    if (search_regcomp(pat, &used_pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	emsg(_(e_invalid_command));
 	return;
@@ -5148,16 +5149,16 @@ ex_global(exarg_T *eap)
 	    if (type == 'v')
 	    {
 		if (in_vim9script())
-		    semsg(_(e_pattern_found_in_every_line_str), pat);
+		    semsg(_(e_pattern_found_in_every_line_str), used_pat);
 		else
-		    smsg(_("Pattern found in every line: %s"), pat);
+		    smsg(_("Pattern found in every line: %s"), used_pat);
 	    }
 	    else
 	    {
 		if (in_vim9script())
-		    semsg(_(e_pattern_not_found_str), pat);
+		    semsg(_(e_pattern_not_found_str), used_pat);
 		else
-		    smsg(_("Pattern not found: %s"), pat);
+		    smsg(_("Pattern not found: %s"), used_pat);
 	    }
 	}
 	else
@@ -5412,56 +5413,55 @@ ex_drop(exarg_T *eap)
 	// edited in a window yet.  It's like ":tab all" but without closing
 	// windows or tabs.
 	ex_all(eap);
+	return;
+    }
+
+    // ":drop file ...": Edit the first argument.  Jump to an existing
+    // window if possible, edit in current window if the current buffer
+    // can be abandoned, otherwise open a new window.
+    buf = buflist_findnr(ARGLIST[0].ae_fnum);
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+    {
+	if (wp->w_buffer == buf)
+	{
+	    goto_tabpage_win(tp, wp);
+	    curwin->w_arg_idx = 0;
+	    if (!bufIsChanged(curbuf))
+	    {
+		int save_ar = curbuf->b_p_ar;
+
+		// reload the file if it is newer
+		curbuf->b_p_ar = TRUE;
+		buf_check_timestamp(curbuf, FALSE);
+		curbuf->b_p_ar = save_ar;
+	    }
+	    return;
+	}
+    }
+
+    /*
+     * Check whether the current buffer is changed. If so, we will need
+     * to split the current window or data could be lost.
+     * Skip the check if the 'hidden' option is set, as in this case the
+     * buffer won't be lost.
+     */
+    if (!buf_hide(curbuf))
+    {
+	++emsg_off;
+	split = check_changed(curbuf, CCGD_AW | CCGD_EXCMD);
+	--emsg_off;
+    }
+
+    // Fake a ":sfirst" or ":first" command edit the first argument.
+    if (split)
+    {
+	eap->cmdidx = CMD_sfirst;
+	eap->cmd[0] = 's';
     }
     else
-    {
-	// ":drop file ...": Edit the first argument.  Jump to an existing
-	// window if possible, edit in current window if the current buffer
-	// can be abandoned, otherwise open a new window.
-	buf = buflist_findnr(ARGLIST[0].ae_fnum);
-
-	FOR_ALL_TAB_WINDOWS(tp, wp)
-	{
-	    if (wp->w_buffer == buf)
-	    {
-		goto_tabpage_win(tp, wp);
-		curwin->w_arg_idx = 0;
-		if (!bufIsChanged(curbuf))
-		{
-		    int save_ar = curbuf->b_p_ar;
-
-		    // reload the file if it is newer
-		    curbuf->b_p_ar = TRUE;
-		    buf_check_timestamp(curbuf, FALSE);
-		    curbuf->b_p_ar = save_ar;
-		}
-		return;
-	    }
-	}
-
-	/*
-	 * Check whether the current buffer is changed. If so, we will need
-	 * to split the current window or data could be lost.
-	 * Skip the check if the 'hidden' option is set, as in this case the
-	 * buffer won't be lost.
-	 */
-	if (!buf_hide(curbuf))
-	{
-	    ++emsg_off;
-	    split = check_changed(curbuf, CCGD_AW | CCGD_EXCMD);
-	    --emsg_off;
-	}
-
-	// Fake a ":sfirst" or ":first" command edit the first argument.
-	if (split)
-	{
-	    eap->cmdidx = CMD_sfirst;
-	    eap->cmd[0] = 's';
-	}
-	else
-	    eap->cmdidx = CMD_first;
-	ex_rewind(eap);
-    }
+	eap->cmdidx = CMD_first;
+    ex_rewind(eap);
 }
 
 /*
@@ -5555,53 +5555,54 @@ ex_oldfiles(exarg_T *eap UNUSED)
     char_u	*fname;
 
     if (l == NULL)
-	msg(_("No old files"));
-    else
     {
-	msg_start();
-	msg_scroll = TRUE;
-	for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
-	{
-	    ++nr;
-	    fname = tv_get_string(&li->li_tv);
-	    if (!message_filtered(fname))
-	    {
-		msg_outnum((long)nr);
-		msg_puts(": ");
-		msg_outtrans(fname);
-		msg_clr_eos();
-		msg_putchar('\n');
-		out_flush();	    // output one line at a time
-		ui_breakcheck();
-	    }
-	}
+	msg(_("No old files"));
+	return;
+    }
 
-	// Assume "got_int" was set to truncate the listing.
-	got_int = FALSE;
+    msg_start();
+    msg_scroll = TRUE;
+    for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
+    {
+	++nr;
+	fname = tv_get_string(&li->li_tv);
+	if (!message_filtered(fname))
+	{
+	    msg_outnum((long)nr);
+	    msg_puts(": ");
+	    msg_outtrans(fname);
+	    msg_clr_eos();
+	    msg_putchar('\n');
+	    out_flush();	    // output one line at a time
+	    ui_breakcheck();
+	}
+    }
+
+    // Assume "got_int" was set to truncate the listing.
+    got_int = FALSE;
 
 # ifdef FEAT_BROWSE_CMD
-	if (cmdmod.cmod_flags & CMOD_BROWSE)
+    if (cmdmod.cmod_flags & CMOD_BROWSE)
+    {
+	quit_more = FALSE;
+	nr = prompt_for_number(FALSE);
+	msg_starthere();
+	if (nr > 0)
 	{
-	    quit_more = FALSE;
-	    nr = prompt_for_number(FALSE);
-	    msg_starthere();
-	    if (nr > 0)
-	    {
-		char_u *p = list_find_str(get_vim_var_list(VV_OLDFILES),
-								    (long)nr);
+	    char_u *p = list_find_str(get_vim_var_list(VV_OLDFILES),
+		    (long)nr);
 
-		if (p != NULL)
-		{
-		    p = expand_env_save(p);
-		    eap->arg = p;
-		    eap->cmdidx = CMD_edit;
-		    cmdmod.cmod_flags &= ~CMOD_BROWSE;
-		    do_exedit(eap, NULL);
-		    vim_free(p);
-		}
+	    if (p != NULL)
+	    {
+		p = expand_env_save(p);
+		eap->arg = p;
+		eap->cmdidx = CMD_edit;
+		cmdmod.cmod_flags &= ~CMOD_BROWSE;
+		do_exedit(eap, NULL);
+		vim_free(p);
 	    }
 	}
-# endif
     }
+# endif
 }
 #endif

@@ -1618,7 +1618,7 @@ do_set_string(
 
 #if defined(FEAT_EVAL)
     if (*errmsg == NULL)
-	trigger_optionsset_string(opt_idx, opt_flags, saved_origval,
+	trigger_optionset_string(opt_idx, opt_flags, saved_origval,
 			       saved_origval_l, saved_origval_g, saved_newval);
     vim_free(saved_origval);
     vim_free(saved_origval_l);
@@ -3925,7 +3925,8 @@ findoption(char_u *arg)
     return opt_idx;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_TCL) || defined(FEAT_MZSCHEME) || defined(FEAT_SPELL)
+#if defined(FEAT_EVAL) || defined(FEAT_TCL) || defined(FEAT_MZSCHEME) \
+	|| defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Get the value for an option.
  *
@@ -4127,14 +4128,14 @@ get_option_value_strict(
 		*numval = bufIsChanged((buf_T *)from);
 		varp = NULL;
 	    }
-#ifdef FEAT_CRYPT
+# ifdef FEAT_CRYPT
 	    else if (p->indir == PV_KEY)
 	    {
 		// never return the value of the crypt key
 		*stringval = NULL;
 		varp = NULL;
 	    }
-#endif
+# endif
 	    else
 	    {
 		buf_T *save_curbuf = curbuf;
@@ -5151,29 +5152,29 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_SO:
 	    curwin->w_p_so = -1;
 	    break;
-#ifdef FEAT_FIND_ID
+# ifdef FEAT_FIND_ID
 	case PV_DEF:
 	    clear_string_option(&buf->b_p_def);
 	    break;
 	case PV_INC:
 	    clear_string_option(&buf->b_p_inc);
 	    break;
-#endif
+# endif
 	case PV_DICT:
 	    clear_string_option(&buf->b_p_dict);
 	    break;
 	case PV_TSR:
 	    clear_string_option(&buf->b_p_tsr);
 	    break;
-#ifdef FEAT_COMPL_FUNC
+# ifdef FEAT_COMPL_FUNC
 	case PV_TSRFU:
 	    clear_string_option(&buf->b_p_tsrfu);
 	    break;
-#endif
+# endif
 	case PV_FP:
 	    clear_string_option(&buf->b_p_fp);
 	    break;
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
 	case PV_EFM:
 	    clear_string_option(&buf->b_p_efm);
 	    break;
@@ -5183,27 +5184,27 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_MP:
 	    clear_string_option(&buf->b_p_mp);
 	    break;
-#endif
-#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+# endif
+# if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
 	case PV_BEXPR:
 	    clear_string_option(&buf->b_p_bexpr);
 	    break;
-#endif
-#if defined(FEAT_CRYPT)
+# endif
+# if defined(FEAT_CRYPT)
 	case PV_CM:
 	    clear_string_option(&buf->b_p_cm);
 	    break;
-#endif
-#ifdef FEAT_LINEBREAK
+# endif
+# ifdef FEAT_LINEBREAK
 	case PV_SBR:
 	    clear_string_option(&((win_T *)from)->w_p_sbr);
 	    break;
-#endif
-#ifdef FEAT_STL_OPT
+# endif
+# ifdef FEAT_STL_OPT
 	case PV_STL:
 	    clear_string_option(&((win_T *)from)->w_p_stl);
 	    break;
-#endif
+# endif
 	case PV_UL:
 	    buf->b_p_ul = NO_LOCAL_UNDOLEVEL;
 	    break;
@@ -6875,8 +6876,9 @@ paste_option_changed(void)
 #ifdef FEAT_VARTABS
 		if (buf->b_p_vsts_nopaste)
 		    vim_free(buf->b_p_vsts_nopaste);
-		buf->b_p_vsts_nopaste = buf->b_p_vsts && buf->b_p_vsts != empty_option
-				     ? vim_strsave(buf->b_p_vsts) : NULL;
+		buf->b_p_vsts_nopaste =
+			buf->b_p_vsts && buf->b_p_vsts != empty_option
+					   ? vim_strsave(buf->b_p_vsts) : NULL;
 #endif
 	    }
 
@@ -6897,7 +6899,8 @@ paste_option_changed(void)
 #ifdef FEAT_VARTABS
 	    if (p_vsts_nopaste)
 		vim_free(p_vsts_nopaste);
-	    p_vsts_nopaste = p_vsts && p_vsts != empty_option ? vim_strsave(p_vsts) : NULL;
+	    p_vsts_nopaste = p_vsts && p_vsts != empty_option
+						  ? vim_strsave(p_vsts) : NULL;
 #endif
 	}
 
@@ -7367,6 +7370,8 @@ option_set_callback_func(char_u *optval UNUSED, callback_T *optcb UNUSED)
 
     free_callback(optcb);
     set_callback(optcb, &cb);
+    if (cb.cb_free_name)
+	vim_free(cb.cb_name);
     free_tv(tv);
 
     // when using Vim9 style "import.funcname" it needs to be expanded to

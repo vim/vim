@@ -1775,7 +1775,13 @@ op_change(oparg_T *oap)
     if (oap->motion_type == MLINE)
 	fix_indent();
 
+    // Reset finish_op now, don't want it set inside edit().
+    int save_finish_op = finish_op;
+    finish_op = FALSE;
+
     retval = edit(NUL, FALSE, (linenr_T)1);
+
+    finish_op = save_finish_op;
 
     /*
      * In Visual block mode, handle copying the new text to all lines of the
@@ -3416,7 +3422,7 @@ free_operatorfunc_option(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Mark the global 'operatorfunc' callback with 'copyID' so that it is not
+ * Mark the global 'operatorfunc' callback with "copyID" so that it is not
  * garbage collected.
  */
     int
@@ -3438,8 +3444,6 @@ op_function(oparg_T *oap UNUSED)
 {
 #ifdef FEAT_EVAL
     typval_T	argv[2];
-    int		save_virtual_op = virtual_op;
-    int		save_finish_op = finish_op;
     pos_T	orig_start = curbuf->b_op_start;
     pos_T	orig_end = curbuf->b_op_end;
     typval_T	rettv;
@@ -3466,9 +3470,11 @@ op_function(oparg_T *oap UNUSED)
 
 	// Reset virtual_op so that 'virtualedit' can be changed in the
 	// function.
+	int save_virtual_op = virtual_op;
 	virtual_op = MAYBE;
 
 	// Reset finish_op so that mode() returns the right value.
+	int save_finish_op = finish_op;
 	finish_op = FALSE;
 
 	if (call_callback(&opfunc_cb, 0, &rettv, 1, argv) != FAIL)
@@ -4113,8 +4119,6 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		// before.
 		restore_lbr(lbr_saved);
 #endif
-		// Reset finish_op now, don't want it set inside edit().
-		finish_op = FALSE;
 		if (op_change(oap))	// will call edit()
 		    cap->retval |= CA_COMMAND_BUSY;
 		if (restart_edit == 0)

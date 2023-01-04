@@ -426,6 +426,16 @@ def Test_check_argument_type()
       Func()
   END
   v9.CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected number but got bool', 2)
+
+  lines =<< trim END
+      vim9script
+
+      def Foobar(Fn: func(any, ?string): any)
+      enddef
+
+      Foobar((t) => 0)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_missing_return()
@@ -463,6 +473,17 @@ def Test_return_bool()
         return popup_filter_yesno(id, key)
       enddef
       defcompile
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_return_void_comment_follows()
+  var lines =<< trim END
+    vim9script
+    def ReturnCommentFollows(): void
+      return # Some comment
+    enddef
+    defcompile
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -1846,6 +1867,20 @@ def Test_call_varargs_only()
   g:MyVarargsOnly('one', 'two')->assert_equal('one,two')
   v9.CheckDefFailure(['g:MyVarargsOnly(1)'], 'E1013: Argument 1: type mismatch, expected string but got number')
   v9.CheckDefFailure(['g:MyVarargsOnly("one", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+enddef
+
+def Test_varargs_mismatch()
+  var lines =<< trim END
+      vim9script
+
+      def Map(Fn: func(...any): number): number
+        return Fn('12')
+      enddef
+
+      var res = Map((v) => str2nr(v))
+      assert_equal(12, res)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_using_var_as_arg()
@@ -4256,6 +4291,32 @@ func Test_lambda_allocation_failure()
   bw!
 endfunc
 
+def Test_lambda_argument_type_check()
+  var lines =<< trim END
+      vim9script
+
+      def Scan(ll: list<any>): func(func(any))
+        return (Emit: func(any)) => {
+          for e in ll
+            Emit(e)
+          endfor
+        }
+      enddef
+
+      def Sum(Cont: func(func(any))): any
+        var sum = 0.0
+        Cont((v: float) => {  # <== NOTE: the lambda expects a float
+          sum += v
+        })
+        return sum
+      enddef
+
+      const ml = [3.0, 2, 7]
+      echo Scan(ml)->Sum()
+  END
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected float but got number')
+enddef
+
 def Test_multiple_funcref()
   # This was using a NULL pointer
   var lines =<< trim END
@@ -4364,6 +4425,48 @@ def Test_invalid_redir()
   END
   v9.CheckScriptFailure(lines, 'E354:')
   delfunc g:Ttwo
+enddef
+
+func Test_keytyped_in_nested_function()
+  CheckRunVimInTerminal
+
+  call Run_Test_keytyped_in_nested_function()
+endfunc
+
+def Run_Test_keytyped_in_nested_function()
+  var lines =<< trim END
+      vim9script
+      autocmd CmdlineEnter * sample#Init()
+
+      exe 'set rtp=' .. getcwd() .. '/Xrtpdir'
+  END
+  writefile(lines, 'Xkeytyped', 'D')
+
+  var dir = 'Xrtpdir/autoload'
+  mkdir(dir, 'pR')
+
+  lines =<< trim END
+      vim9script
+      export def Init(): void
+         cnoremap <expr>" <SID>Quote('"')
+      enddef
+      def Quote(str: string): string
+         def InPair(): number
+            return 0
+         enddef
+         return str
+      enddef
+  END
+  writefile(lines, dir .. '/sample.vim')
+
+  var buf = g:RunVimInTerminal('-S Xkeytyped', {rows: 6})
+
+  term_sendkeys(buf, ':"')
+  g:VerifyScreenDump(buf, 'Test_keytyped_in_nested_func', {})
+
+  # clean up
+  term_sendkeys(buf, "\<Esc>")
+  g:StopVimInTerminal(buf)
 enddef
 
 " The following messes up syntax highlight, keep near the end.

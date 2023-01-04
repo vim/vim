@@ -9,6 +9,7 @@ void dyn_libintl_end(void);
 void PlatformId(void);
 void mch_setmouse(int on);
 void mch_bevalterm_changed(void);
+int test_mswin_event(char_u *event, dict_T *args);
 void mch_update_cursor(void);
 int mch_char_avail(void);
 int mch_check_messages(void);

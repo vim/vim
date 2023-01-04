@@ -1,5 +1,7 @@
 version: "{build}"
 
+image: Visual Studio 2015
+
 skip_tags: true
 
 environment:
@@ -28,5 +30,11 @@ test_script:
   - nmake -f Make_mvc.mak clean
     # Testing with MSVC console version
   - nmake -f Make_mvc.mak VIMPROG=..\vim
+
+artifacts:
+  - path: src/vim.exe
+    name: vim
+  - path: src/gvim.exe
+    name: gvim
 
 # vim: sw=2 sts=2 et ts=8 sr

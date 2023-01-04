@@ -1,4 +1,5 @@
 /* normal.c */
+int check_text_or_curbuf_locked(oparg_T *oap);
 void normal_cmd(oparg_T *oap, int toplevel);
 void check_visual_highlight(void);
 void end_visual_mode(void);

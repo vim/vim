@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 9.0.  Last change: 2022 Oct 01
+*diff.txt*      For Vim version 9.0.  Last change: 2022 Dec 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -147,6 +147,10 @@ Otherwise they are set to their default value:
 	'wrap'		on, or leave as-is if 'diffopt' includes "followwrap"
 	'foldmethod'	"manual"
 	'foldcolumn'	0
+
+'foldenable' will most-likely be reset to off.  That is when 'foldmethod' is
+is restored to "manual".  The folds themselves are not cleared but they should
+not show up, resetting 'foldenable' is the best way to do that.
 
 ==============================================================================
 2. Viewing diffs						*view-diffs*

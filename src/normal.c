@@ -188,8 +188,28 @@ check_text_locked(oparg_T *oap)
 {
     if (text_locked())
     {
-	clearopbeep(oap);
+	if (oap != NULL)
+	    clearopbeep(oap);
 	text_locked_msg();
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * If text is locked, "curbuf_lock" or "allbuf_lock" is set:
+ * Give an error message, possibly beep and return TRUE.
+ * "oap" may be NULL.
+ */
+    int
+check_text_or_curbuf_locked(oparg_T *oap)
+{
+    if (check_text_locked(oap))
+	return TRUE;
+    if (curbuf_locked())
+    {
+	if (oap != NULL)
+	    clearop(oap);
 	return TRUE;
     }
     return FALSE;
@@ -424,7 +444,7 @@ normal_cmd_get_more_chars(
 	    // Disable bracketed paste and modifyOtherKeys here, we won't
 	    // recognize the escape sequences with 'esckeys' off.
 	    out_str(T_BD);
-	    out_str(T_CTE);
+	    out_str_t_TE();
 	}
 
 	*cp = plain_vgetc();
@@ -434,8 +454,8 @@ normal_cmd_get_more_chars(
 	    MAY_WANT_TO_LOG_THIS;
 
 	    // Re-enable bracketed paste mode and modifyOtherKeys
-	    out_str(T_BE);
-	    out_str(T_CTI);
+	    out_str_t_BE();
+	    out_str_t_TI();
 	}
 
 	if (langmap_active)
@@ -798,8 +818,7 @@ normal_cmd(
 	goto normal_end;
     }
 
-    if ((nv_cmds[idx].cmd_flags & NV_NCW)
-				&& (check_text_locked(oap) || curbuf_locked()))
+    if ((nv_cmds[idx].cmd_flags & NV_NCW) && check_text_or_curbuf_locked(oap))
 	// this command is not allowed now
 	goto normal_end;
 
@@ -1555,8 +1574,6 @@ may_clear_cmdline(void)
  * Routines for displaying a partly typed command
  */
 
-#define SHOWCMD_BUFLEN (SHOWCMD_COLS + 1 + 30)
-static char_u	showcmd_buf[SHOWCMD_BUFLEN];
 static char_u	old_showcmd_buf[SHOWCMD_BUFLEN];  // For push_showcmd()
 static int	showcmd_is_clear = TRUE;
 static int	showcmd_visual = FALSE;
@@ -1779,22 +1796,25 @@ pop_showcmd(void)
     static void
 display_showcmd(void)
 {
-    int	    len;
+    int	    len = (int)STRLEN(showcmd_buf);
 
+    showcmd_is_clear = (len == 0);
     cursor_off();
 
-    len = (int)STRLEN(showcmd_buf);
-    if (len == 0)
-	showcmd_is_clear = TRUE;
-    else
+    if (*p_sloc == 's')
+	win_redr_status(curwin, FALSE);
+    else if (*p_sloc == 't')
+	draw_tabline();
+    else // 'showcmdloc' is "last" or empty
     {
-	screen_puts(showcmd_buf, (int)Rows - 1, sc_col, 0);
-	showcmd_is_clear = FALSE;
-    }
+	if (!showcmd_is_clear)
+	    screen_puts(showcmd_buf, (int)Rows - 1, sc_col, 0);
 
-    // clear the rest of an old message by outputting up to SHOWCMD_COLS
-    // spaces
-    screen_puts((char_u *)"          " + len, (int)Rows - 1, sc_col + len, 0);
+	// clear the rest of an old message by outputting up to SHOWCMD_COLS
+	// spaces
+	screen_puts((char_u *)"          " + len,
+						(int)Rows - 1, sc_col + len, 0);
+    }
 
     setcursor();	    // put cursor back where it belongs
 }
@@ -1930,11 +1950,8 @@ check_scrollbind(linenr_T topline_diff, long leftcol_diff)
 	}
 
 	// do the horizontal scroll
-	if (want_hor && curwin->w_leftcol != tgt_leftcol)
-	{
-	    curwin->w_leftcol = tgt_leftcol;
-	    leftcol_changed();
-	}
+	if (want_hor)
+	    (void)set_leftcol(tgt_leftcol);
     }
 
     // reset current-window
@@ -2458,7 +2475,7 @@ scroll_redraw(int up, long count)
 	scrollup(count, TRUE);
     else
 	scrolldown(count, TRUE);
-    if (get_scrolloff_value())
+    if (get_scrolloff_value() > 0)
     {
 	// Adjust the cursor position for 'scrolloff'.  Mark w_topline as
 	// valid, otherwise the screen jumps back at the end of the file.
@@ -2734,28 +2751,19 @@ nv_zet(cmdarg_T *cap)
     case 'h':
     case K_LEFT:
 		if (!curwin->w_p_wrap)
-		{
-		    if ((colnr_T)cap->count1 > curwin->w_leftcol)
-			curwin->w_leftcol = 0;
-		    else
-			curwin->w_leftcol -= (colnr_T)cap->count1;
-		    leftcol_changed();
-		}
+		    (void)set_leftcol((colnr_T)cap->count1 > curwin->w_leftcol
+			       ? 0 : curwin->w_leftcol - (colnr_T)cap->count1);
 		break;
 
-		// "zL" - scroll screen left half-page
+		// "zL" - scroll window left half-page
     case 'L':	cap->count1 *= curwin->w_width / 2;
 		// FALLTHROUGH
 
-		// "zl" - scroll screen to the left
+		// "zl" - scroll window to the left if not wrapping
     case 'l':
     case K_RIGHT:
 		if (!curwin->w_p_wrap)
-		{
-		    // scroll the window left
-		    curwin->w_leftcol += (colnr_T)cap->count1;
-		    leftcol_changed();
-		}
+		    (void)set_leftcol(curwin->w_leftcol + (colnr_T)cap->count1);
 		break;
 
 		// "zs" - scroll screen, cursor at the start
@@ -3047,7 +3055,7 @@ nv_hor_scrollbar(cmdarg_T *cap)
 	clearopbeep(cap->oap);
 
     // Even if an operator was pending, we still want to scroll
-    gui_do_horiz_scroll(scrollbar_value, FALSE);
+    do_mousescroll_horiz(scrollbar_value);
 }
 #endif
 
@@ -4038,13 +4046,9 @@ nv_gotofile(cmdarg_T *cap)
     char_u	*ptr;
     linenr_T	lnum = -1;
 
-    if (check_text_locked(cap->oap))
+    if (check_text_or_curbuf_locked(cap->oap))
 	return;
-    if (curbuf_locked())
-    {
-	clearop(cap->oap);
-	return;
-    }
+
 #ifdef FEAT_PROP_POPUP
     if (ERROR_IF_TERM_POPUP_WINDOW)
 	return;

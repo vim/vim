@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2022 Nov 09
+*builtin.txt*	For Vim version 9.0.  Last change: 2022 Dec 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -208,6 +208,7 @@ get({func}, {what})		any	get property of funcref/partial {func}
 getbufinfo([{buf}])		List	information about buffers
 getbufline({buf}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {buf}
+getbufoneline({buf}, {lnum})	String	line {lnum} of buffer {buf}
 getbufvar({buf}, {varname} [, {def}])
 				any	variable {varname} in buffer {buf}
 getchangelist([{buf}])		List	list of change list items
@@ -607,6 +608,7 @@ submatch({nr} [, {list}])	String or List
 					specific match in ":s" or substitute()
 substitute({expr}, {pat}, {sub}, {flags})
 				String	all {pat} in {expr} replaced with {sub}
+swapfilelist()			List	swap files found in 'directory'
 swapinfo({fname})		Dict	information about swap file {fname}
 swapname({buf})			String	swap file of buffer {buf}
 synID({lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
@@ -664,6 +666,8 @@ test_garbagecollect_soon()	none	free memory soon for testing
 test_getvalue({string})		any	get value of an internal variable
 test_gui_event({event}, {args})	bool	generate a GUI event for testing
 test_ignore_error({expr})	none	ignore a specific error
+test_mswin_event({event}, {args})
+				bool	generate MS-Windows event for testing
 test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
@@ -3204,7 +3208,8 @@ getbufinfo([{dict}])
 getbufline({buf}, {lnum} [, {end}])
 		Return a |List| with the lines starting from {lnum} to {end}
 		(inclusive) in the buffer {buf}.  If {end} is omitted, a
-		|List| with only the line {lnum} is returned.
+		|List| with only the line {lnum} is returned.  See
+		`getbufoneline()` for only getting the line.
 
 		For the use of {buf}, see |bufname()| above.
 
@@ -3227,6 +3232,11 @@ getbufline({buf}, {lnum} [, {end}])
 
 <		Can also be used as a |method|: >
 			GetBufnr()->getbufline(lnum)
+<
+							*getbufoneline()*
+getbufoneline({buf}, {lnum})
+		Just like `getbufline()` but only get one line and return it
+		as a string.
 
 getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 		The result is the value of option or local buffer variable
@@ -3771,7 +3781,8 @@ getline({lnum} [, {end}])
 <		Can also be used as a |method|: >
 			ComputeLnum()->getline()
 
-<		To get lines from another buffer see |getbufline()|
+<		To get lines from another buffer see |getbufline()| and
+		|getbufoneline()|
 
 getloclist({nr} [, {what}])				*getloclist()*
 		Returns a |List| with all the entries in the location list for
@@ -4126,7 +4137,7 @@ getscriptinfo([{opts})					*getscriptinfo()*
 				this script name links to, if any, otherwise
 				zero
 		    variables   A dictionary with the script-local variables.
-				Present only when the a particular script is
+				Present only when a particular script is
 				specified using the "sid" item in {opts}.
 				Note that this is a copy, the value of
 				script-local variables cannot be changed using
@@ -5564,6 +5575,10 @@ map({expr1}, {expr2})					*map()*
 		If {expr2} is a |Funcref| it is called with two arguments:
 			1. The key or the index of the current item.
 			2. the value of the current item.
+		With a legacy script lambda you don't get an error if it only
+		accepts one argument, but with a Vim9 lambda you get "E1106:
+		One argument too many", the number of arguments must match.
+
 		The function must return the new value of the item. Example
 		that changes each value by "key-value": >
 			func KeyValue(key, val)
@@ -7930,29 +7945,38 @@ setbufvar({buf}, {varname}, {val})			*setbufvar()*
 
 setcellwidths({list})					*setcellwidths()*
 		Specify overrides for cell widths of character ranges.  This
-		tells Vim how wide characters are, counted in screen cells.
-		This overrides 'ambiwidth'.  Example: >
-		   setcellwidths([[0xad, 0xad, 1],
-				\ [0x2194, 0x2199, 2]])
+		tells Vim how wide characters are when displayed in the
+		terminal, counted in screen cells.  The values override
+		'ambiwidth'.  Example: >
+		   call setcellwidths([
+		   		\ [0x111, 0x111, 1],
+				\ [0x2194, 0x2199, 2],
+				\ ])
 
-<				*E1109* *E1110* *E1111* *E1112* *E1113* *E1114*
-		The {list} argument is a list of lists with each three
-		numbers. These three numbers are [low, high, width].  "low"
-		and "high" can be the same, in which case this refers to one
-		character. Otherwise it is the range of characters from "low"
-		to "high" (inclusive).  "width" is either 1 or 2, indicating
-		the character width in screen cells.
-		An error is given if the argument is invalid, also when a
-		range overlaps with another.
+<		The {list} argument is a List of Lists with each three
+		numbers: [{low}, {high}, {width}].	*E1109* *E1110*
+		{low} and {high} can be the same, in which case this refers to
+		one character.  Otherwise it is the range of characters from
+		{low} to {high} (inclusive).		*E1111* *E1114*
 		Only characters with value 0x100 and higher can be used.
+
+		{width} must be either 1 or 2, indicating the character width
+		in screen cells.			*E1112*
+		An error is given if the argument is invalid, also when a
+		range overlaps with another. 		*E1113*
 
 		If the new value causes 'fillchars' or 'listchars' to become
 		invalid it is rejected and an error is given.
 
-		To clear the overrides pass an empty list: >
+		To clear the overrides pass an empty {list}: >
 		   setcellwidths([]);
+
 <		You can use the script $VIMRUNTIME/tools/emoji_list.vim to see
-		the effect for known emoji characters.
+		the effect for known emoji characters.  Move the cursor
+		through the text to check if the cell widths of your terminal
+		match with what Vim knows about each emoji.  If it doesn't
+		look right you need to adjust the {list} argument.
+
 
 setcharpos({expr}, {list})				*setcharpos()*
 		Same as |setpos()| but uses the specified column number as the
@@ -9089,6 +9113,8 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 			Blob		0z00112233.44556677.8899
 			List		[item, item]
 			Dictionary	{key: value, key: value}
+			Class		class SomeName
+			Object		object of SomeName {lnum: 1, col: 3}
 
 		When a |List| or |Dictionary| has a recursive reference it is
 		replaced by "[...]" or "{...}".  Using eval() on the result
@@ -9292,6 +9318,17 @@ substitute({string}, {pat}, {sub}, {flags})		*substitute()*
 
 		Can also be used as a |method|: >
 			GetString()->substitute(pat, sub, flags)
+
+swapfilelist()						*swapfilelist()*
+		Returns a list of swap file names, like what "vim -r" shows.
+		See the |-r| command argument.  The 'directory' option is used
+		for the directories to inspect.  If you only want to get a
+		list of swap files in the current directory then temporarily
+		set 'directory' to a dot: >
+			let save_dir = &directory
+			let &directory = '.'
+			let swapfiles = swapfilelist()
+			let &directory = save_dir
 
 swapinfo({fname})					*swapinfo()*
 		The result is a dictionary, which holds information about the

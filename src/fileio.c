@@ -2767,15 +2767,15 @@ set_file_options(int set_options, exarg_T *eap)
     void
 set_forced_fenc(exarg_T *eap)
 {
-    if (eap->force_enc != 0)
-    {
-	char_u *fenc = enc_canonize(eap->cmd + eap->force_enc);
+    if (eap->force_enc == 0)
+	return;
 
-	if (fenc != NULL)
-	    set_string_option_direct((char_u *)"fenc", -1,
-				 fenc, OPT_FREE|OPT_LOCAL, 0);
-	vim_free(fenc);
-    }
+    char_u *fenc = enc_canonize(eap->cmd + eap->force_enc);
+
+    if (fenc != NULL)
+	set_string_option_direct((char_u *)"fenc", -1,
+		fenc, OPT_FREE|OPT_LOCAL, 0);
+    vim_free(fenc);
 }
 
 /*
@@ -4369,8 +4369,14 @@ buf_reload(buf_T *buf, int orig_mode, int reload_options)
     int		flags = READ_NEW;
     int		prepped = OK;
 
-    // set curwin/curbuf for "buf" and save some things
+    // Set curwin/curbuf for "buf" and save some things.
     aucmd_prepbuf(&aco, buf);
+    if (curbuf != buf)
+    {
+	// Failed to find a window for "buf", it is dangerous to continue,
+	// better bail out.
+	return;
+    }
 
     // Unless reload_options is set, we only want to read the text from the
     // file, not reset the syntax highlighting, clear marks, diff status, etc.
@@ -5064,12 +5070,11 @@ vim_opentempdir(void)
 	return;
 
     dp = opendir((const char*)vim_tempdir);
+    if (dp == NULL)
+	return;
 
-    if (dp != NULL)
-    {
-	vim_tempdir_dp = dp;
-	flock(dirfd(vim_tempdir_dp), LOCK_SH);
-    }
+    vim_tempdir_dp = dp;
+    flock(dirfd(vim_tempdir_dp), LOCK_SH);
 }
 
 /*
@@ -5078,11 +5083,11 @@ vim_opentempdir(void)
    static void
 vim_closetempdir(void)
 {
-    if (vim_tempdir_dp != NULL)
-    {
-	closedir(vim_tempdir_dp);
-	vim_tempdir_dp = NULL;
-    }
+    if (vim_tempdir_dp == NULL)
+	return;
+
+    closedir(vim_tempdir_dp);
+    vim_tempdir_dp = NULL;
 }
 # endif
 
@@ -5092,16 +5097,16 @@ vim_closetempdir(void)
     void
 vim_deltempdir(void)
 {
-    if (vim_tempdir != NULL)
-    {
+    if (vim_tempdir == NULL)
+	return;
+
 # if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
-	vim_closetempdir();
+    vim_closetempdir();
 # endif
-	// remove the trailing path separator
-	gettail(vim_tempdir)[-1] = NUL;
-	delete_recursive(vim_tempdir);
-	VIM_CLEAR(vim_tempdir);
-    }
+    // remove the trailing path separator
+    gettail(vim_tempdir)[-1] = NUL;
+    delete_recursive(vim_tempdir);
+    VIM_CLEAR(vim_tempdir);
 }
 
 /*
@@ -5115,17 +5120,17 @@ vim_settempdir(char_u *tempdir)
     char_u	*buf;
 
     buf = alloc(MAXPATHL + 2);
-    if (buf != NULL)
-    {
-	if (vim_FullName(tempdir, buf, MAXPATHL, FALSE) == FAIL)
-	    STRCPY(buf, tempdir);
-	add_pathsep(buf);
-	vim_tempdir = vim_strsave(buf);
+    if (buf == NULL)
+	return;
+
+    if (vim_FullName(tempdir, buf, MAXPATHL, FALSE) == FAIL)
+	STRCPY(buf, tempdir);
+    add_pathsep(buf);
+    vim_tempdir = vim_strsave(buf);
 # if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
-	vim_opentempdir();
+    vim_opentempdir();
 # endif
-	vim_free(buf);
-    }
+    vim_free(buf);
 }
 #endif
 

@@ -217,10 +217,10 @@ evalvars_init(void)
 
 	// add to v: scope dict, unless the value is not always available
 	if (p->vv_tv_type != VAR_UNKNOWN)
-	    hash_add(&vimvarht, p->vv_di.di_key);
+	    hash_add(&vimvarht, p->vv_di.di_key, "initialization");
 	if (p->vv_flags & VV_COMPAT)
 	    // add to compat scope dict
-	    hash_add(&compat_hashtab, p->vv_di.di_key);
+	    hash_add(&compat_hashtab, p->vv_di.di_key, "initialization");
     }
     set_vim_var_nr(VV_VERSION, VIM_VERSION_100);
     set_vim_var_nr(VV_VERSIONLONG, VIM_VERSION_100 * 10000 + highest_patch());
@@ -350,15 +350,15 @@ set_internal_string_var(char_u *name, char_u *value)
     typval_T	*tvp;
 
     val = vim_strsave(value);
-    if (val != NULL)
-    {
-	tvp = alloc_string_tv(val);
-	if (tvp != NULL)
-	{
-	    set_var(name, tvp, FALSE);
-	    free_tv(tvp);
-	}
-    }
+    if (val == NULL)
+	return;
+
+    tvp = alloc_string_tv(val);
+    if (tvp == NULL)
+	return;
+
+    set_var(name, tvp, FALSE);
+    free_tv(tvp);
 }
 
     int
@@ -562,7 +562,7 @@ prepare_vimvar(int idx, typval_T *save_tv)
     *save_tv = vimvars[idx].vv_tv;
     vimvars[idx].vv_str = NULL;  // don't free it now
     if (vimvars[idx].vv_tv_type == VAR_UNKNOWN)
-	hash_add(&vimvarht, vimvars[idx].vv_di.di_key);
+	hash_add(&vimvarht, vimvars[idx].vv_di.di_key, "prepare vimvar");
 }
 
 /*
@@ -576,14 +576,14 @@ restore_vimvar(int idx, typval_T *save_tv)
     hashitem_T	*hi;
 
     vimvars[idx].vv_tv = *save_tv;
-    if (vimvars[idx].vv_tv_type == VAR_UNKNOWN)
-    {
-	hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
-	if (HASHITEM_EMPTY(hi))
-	    internal_error("restore_vimvar()");
-	else
-	    hash_remove(&vimvarht, hi);
-    }
+    if (vimvars[idx].vv_tv_type != VAR_UNKNOWN)
+	return;
+
+    hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
+    if (HASHITEM_EMPTY(hi))
+	internal_error("restore_vimvar()");
+    else
+	hash_remove(&vimvarht, hi, "restore vimvar");
 }
 
 /*
@@ -1111,7 +1111,8 @@ ex_let(exarg_T *eap)
 		if (vim9script && (flags & ASSIGN_NO_DECL) == 0)
 		{
 		    // +=, /=, etc. require an existing variable
-		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
+		    semsg(_(e_cannot_use_operator_on_new_variable_str),
+								     eap->arg);
 		}
 		else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{
@@ -1343,6 +1344,11 @@ skip_var_one(char_u *arg, int include_type)
 
     if (*arg == '@' && arg[1] != NUL)
 	return arg + 2;
+
+    // termcap option name may have non-alpha characters
+    if (STRNCMP(arg, "&t_", 3) == 0 && arg[3] != NUL && arg[4] != NUL)
+	return arg + 5;
+
     end = find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
 				   NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
 
@@ -1375,6 +1381,9 @@ list_hashtable_vars(
     int		todo;
     char_u	buf[IOSIZE];
 
+    int save_ht_flags = ht->ht_flags;
+    ht->ht_flags |= HTFLAGS_FROZEN;
+
     todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && !got_int; ++hi)
     {
@@ -1394,6 +1403,8 @@ list_hashtable_vars(
 		list_one_var(di, prefix, first);
 	}
     }
+
+    ht->ht_flags = save_ht_flags;
 }
 
 /*
@@ -2003,7 +2014,7 @@ do_unlet_var(
 	listitem_remove(lp->ll_list, lp->ll_li);
     else
 	// unlet a Dictionary item.
-	dictitem_remove(lp->ll_dict, lp->ll_di);
+	dictitem_remove(lp->ll_dict, lp->ll_di, "unlet");
 
     return ret;
 }
@@ -2090,7 +2101,8 @@ do_unlet(char_u *name, int forceit)
 	    di = HI2DI(hi);
 	    if (var_check_fixed(di->di_flags, name, FALSE)
 		    || var_check_ro(di->di_flags, name, FALSE)
-		    || value_check_lock(d->dv_lock, name, FALSE))
+		    || value_check_lock(d->dv_lock, name, FALSE)
+		    || check_hashtab_frozen(ht, "unlet"))
 		return FAIL;
 
 	    delete_var(ht, hi);
@@ -2253,6 +2265,8 @@ item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	case VAR_INSTR:
+	case VAR_CLASS:
+	case VAR_OBJECT:
 	    break;
 
 	case VAR_BLOB:
@@ -2727,11 +2741,11 @@ set_vim_var_dict(int idx, dict_T *val)
     clear_tv(&vimvars[idx].vv_di.di_tv);
     vimvars[idx].vv_tv_type = VAR_DICT;
     vimvars[idx].vv_dict = val;
-    if (val != NULL)
-    {
-	++val->dv_refcount;
-	dict_set_items_ro(val);
-    }
+    if (val == NULL)
+	return;
+
+    ++val->dv_refcount;
+    dict_set_items_ro(val);
 }
 
 /*
@@ -3549,7 +3563,9 @@ delete_var(hashtab_T *ht, hashitem_T *hi)
 {
     dictitem_T	*di = HI2DI(hi);
 
-    hash_remove(ht, hi);
+    if (hash_remove(ht, hi, "delete variable") != OK)
+	return;
+
     clear_tv(&di->di_tv);
     vim_free(di);
 }
@@ -3890,6 +3906,9 @@ set_var_const(
 	    goto failed;
 	}
 
+	if (check_hashtab_frozen(ht, "add variable"))
+	    goto failed;
+
 	// Can't add "v:" or "a:" variable.
 	if (ht == &vimvarht || ht == get_funccal_args_ht())
 	{
@@ -3908,7 +3927,7 @@ set_var_const(
 	if (di == NULL)
 	    goto failed;
 	STRCPY(di->di_key, varname);
-	if (hash_add(ht, DI2HIKEY(di)) == FAIL)
+	if (hash_add(ht, DI2HIKEY(di), "add variable") == FAIL)
 	{
 	    vim_free(di);
 	    goto failed;
@@ -4299,29 +4318,29 @@ setwinvar(typval_T *argvars, int off)
     varname = tv_get_string_chk(&argvars[off + 1]);
     varp = &argvars[off + 2];
 
-    if (win != NULL && varname != NULL && varp != NULL)
+    if (win == NULL || varname == NULL)
+	return;
+
+    need_switch_win = !(tp == curtab && win == curwin);
+    if (!need_switch_win
+	    || switch_win(&switchwin, win, tp, TRUE) == OK)
     {
-	need_switch_win = !(tp == curtab && win == curwin);
-	if (!need_switch_win
-	       || switch_win(&switchwin, win, tp, TRUE) == OK)
+	if (*varname == '&')
+	    set_option_from_tv(varname + 1, varp);
+	else
 	{
-	    if (*varname == '&')
-		set_option_from_tv(varname + 1, varp);
-	    else
+	    winvarname = alloc(STRLEN(varname) + 3);
+	    if (winvarname != NULL)
 	    {
-		winvarname = alloc(STRLEN(varname) + 3);
-		if (winvarname != NULL)
-		{
-		    STRCPY(winvarname, "w:");
-		    STRCPY(winvarname + 2, varname);
-		    set_var(winvarname, varp, TRUE);
-		    vim_free(winvarname);
-		}
+		STRCPY(winvarname, "w:");
+		STRCPY(winvarname + 2, varname);
+		set_var(winvarname, varp, TRUE);
+		vim_free(winvarname);
 	    }
 	}
-	if (need_switch_win)
-	    restore_win(&switchwin, TRUE);
     }
+    if (need_switch_win)
+	restore_win(&switchwin, TRUE);
 }
 
 /*
@@ -4668,24 +4687,24 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
     varname = tv_get_string_chk(&argvars[1]);
     varp = &argvars[2];
 
-    if (varname != NULL && varp != NULL && tp != NULL)
+    if (varname == NULL || tp == NULL)
+	return;
+
+    save_curtab = curtab;
+    goto_tabpage_tp(tp, FALSE, FALSE);
+
+    tabvarname = alloc(STRLEN(varname) + 3);
+    if (tabvarname != NULL)
     {
-	save_curtab = curtab;
-	goto_tabpage_tp(tp, FALSE, FALSE);
-
-	tabvarname = alloc(STRLEN(varname) + 3);
-	if (tabvarname != NULL)
-	{
-	    STRCPY(tabvarname, "t:");
-	    STRCPY(tabvarname + 2, varname);
-	    set_var(tabvarname, varp, TRUE);
-	    vim_free(tabvarname);
-	}
-
-	// Restore current tabpage
-	if (valid_tabpage(save_curtab))
-	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
+	STRCPY(tabvarname, "t:");
+	STRCPY(tabvarname + 2, varname);
+	set_var(tabvarname, varp, TRUE);
+	vim_free(tabvarname);
     }
+
+    // Restore current tabpage
+    if (valid_tabpage(save_curtab))
+	goto_tabpage_tp(save_curtab, FALSE, FALSE);
 }
 
 /*
@@ -4739,43 +4758,46 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     buf = tv_get_buf_from_arg(&argvars[0]);
     varp = &argvars[2];
 
-    if (buf != NULL && varname != NULL && varp != NULL)
+    if (buf == NULL || varname == NULL)
+	return;
+
+    if (*varname == '&')
     {
-	if (*varname == '&')
+	aco_save_T	aco;
+
+	// Set curbuf to be our buf, temporarily.
+	aucmd_prepbuf(&aco, buf);
+	if (curbuf == buf)
 	{
-	    aco_save_T	aco;
-
-	    // set curbuf to be our buf, temporarily
-	    aucmd_prepbuf(&aco, buf);
-
+	    // Only when it worked to set "curbuf".
 	    set_option_from_tv(varname + 1, varp);
 
 	    // reset notion of buffer
 	    aucmd_restbuf(&aco);
 	}
-	else
+    }
+    else
+    {
+	bufvarname = alloc(STRLEN(varname) + 3);
+	if (bufvarname != NULL)
 	{
-	    bufvarname = alloc(STRLEN(varname) + 3);
-	    if (bufvarname != NULL)
-	    {
-		buf_T *save_curbuf = curbuf;
+	    buf_T *save_curbuf = curbuf;
 
-		curbuf = buf;
-		STRCPY(bufvarname, "b:");
-		STRCPY(bufvarname + 2, varname);
-		set_var(bufvarname, varp, TRUE);
-		vim_free(bufvarname);
-		curbuf = save_curbuf;
-	    }
+	    curbuf = buf;
+	    STRCPY(bufvarname, "b:");
+	    STRCPY(bufvarname + 2, varname);
+	    set_var(bufvarname, varp, TRUE);
+	    vim_free(bufvarname);
+	    curbuf = save_curbuf;
 	}
     }
 }
 
 /*
  * Get a callback from "arg".  It can be a Funcref or a function name.
- * When "arg" is zero return an empty string.
- * "cb_name" is not allocated.
- * "cb_name" is set to NULL for an invalid argument.
+ * When "arg" is zero "res.cb_name" is set to an empty string.
+ * If "res.cb_name" is allocated then "res.cb_free_name" is set to TRUE.
+ * "res.cb_name" is set to NULL for an invalid argument.
  */
     callback_T
 get_callback(typval_T *arg)
@@ -4783,7 +4805,7 @@ get_callback(typval_T *arg)
     callback_T  res;
     int		r = OK;
 
-    res.cb_free_name = FALSE;
+    CLEAR_FIELD(res);
     if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
     {
 	res.cb_partial = arg->vval.v_partial;
@@ -4792,25 +4814,21 @@ get_callback(typval_T *arg)
     }
     else
     {
-	res.cb_partial = NULL;
 	if (arg->v_type == VAR_STRING && arg->vval.v_string != NULL
 					       && isdigit(*arg->vval.v_string))
 	    r = FAIL;
 	else if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
 	{
+	    res.cb_name = arg->vval.v_string;
 	    if (arg->v_type == VAR_STRING)
 	    {
-		char_u *name;
-
-		name = get_scriptlocal_funcname(arg->vval.v_string);
+		char_u *name = get_scriptlocal_funcname(arg->vval.v_string);
 		if (name != NULL)
 		{
-		    vim_free(arg->vval.v_string);
-		    arg->vval.v_string = name;
+		    res.cb_name = name;
+		    res.cb_free_name = TRUE;
 		}
 	    }
-
-	    res.cb_name = arg->vval.v_string;
 	    func_ref(res.cb_name);
 	}
 	else if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
@@ -4913,31 +4931,30 @@ expand_autload_callback(callback_T *cb)
     p = vim_strchr(name, '.');
     if (p == NULL)
 	return;
+
     import = find_imported(name, p - name, FALSE);
-    if (import != NULL && SCRIPT_ID_VALID(import->imp_sid))
+    if (import == NULL || !SCRIPT_ID_VALID(import->imp_sid))
+	return;
+
+    scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);
+    if (si->sn_autoload_prefix == NULL)
+	return;
+
+    char_u *newname = concat_str(si->sn_autoload_prefix, p + 1);
+    if (newname == NULL)
+	return;
+
+    if (cb->cb_partial != NULL)
     {
-	scriptitem_T *si = SCRIPT_ITEM(import->imp_sid);
-
-	if (si->sn_autoload_prefix != NULL)
-	{
-	    char_u *newname = concat_str(si->sn_autoload_prefix, p + 1);
-
-	    if (newname != NULL)
-	    {
-		if (cb->cb_partial != NULL)
-		{
-		    if (cb->cb_name == cb->cb_partial->pt_name)
-			cb->cb_name = newname;
-		    vim_free(cb->cb_partial->pt_name);
-		    cb->cb_partial->pt_name = newname;
-		}
-		else
-		{
-		    vim_free(cb->cb_name);
-		    cb->cb_name = newname;
-		}
-	    }
-	}
+	if (cb->cb_name == cb->cb_partial->pt_name)
+	    cb->cb_name = newname;
+	vim_free(cb->cb_partial->pt_name);
+	cb->cb_partial->pt_name = newname;
+    }
+    else
+    {
+	vim_free(cb->cb_name);
+	cb->cb_name = newname;
     }
 }
 

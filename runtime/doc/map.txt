@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2022 Oct 19
+*map.txt*       For Vim version 9.0.  Last change: 2022 Dec 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,18 +10,19 @@ This subject is introduced in sections |05.4|, |24.7| and |40.1| of the user
 manual.
 
 1. Key mapping			|key-mapping|
-   1.1 MAP COMMANDS			|:map-commands|
-   1.2 Special arguments		|:map-arguments|
-   1.3 Mapping and modes		|:map-modes|
-   1.4 Listing mappings			|map-listing|
-   1.5 Mapping special keys		|:map-special-keys|
-   1.6 Special characters		|:map-special-chars|
-   1.7 What keys to map			|map-which-keys|
-   1.8 Examples				|map-examples|
-   1.9 Using mappings			|map-typing|
-   1.10 Mapping alt-keys		|:map-alt-keys|
-   1.11 Mapping in modifyOtherKeys mode	|modifyOtherKeys|
-   1.12 Mapping an operator		|:map-operator|
+   1.1 MAP COMMANDS				|:map-commands|
+   1.2 Special arguments			|:map-arguments|
+   1.3 Mapping and modes			|:map-modes|
+   1.4 Listing mappings				|map-listing|
+   1.5 Mapping special keys			|:map-special-keys|
+   1.6 Special characters			|:map-special-chars|
+   1.7 What keys to map				|map-which-keys|
+   1.8 Examples					|map-examples|
+   1.9 Using mappings				|map-typing|
+   1.10 Mapping alt-keys			|:map-alt-keys|
+   1.11 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
+   1.12 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
+   1.13 Mapping an operator			|:map-operator|
 2. Abbreviations		|abbreviations|
 3. Local mappings and functions	|script-local|
 4. User-defined commands	|user-commands|
@@ -234,6 +235,9 @@ The search string will not be echoed when using this mapping.  Messages from
 the executed command are still given though.  To shut them up too, add a
 ":silent" in the executed command: >
 	:map <silent> ,h :exe ":silent normal /Header\r"<CR>
+Note that the effect of a command might also be silenced, e.g., when the
+mapping selects another entry for command line completion it won't be
+displayed.
 Prompts will still be given, e.g., for inputdialog().
 Using "<silent>" for an abbreviation is possible, but will cause redrawing of
 the command line to fail.
@@ -580,6 +584,9 @@ is the start of the last selected Visual area in the current buffer |'<|.
 
 The |:filter| command can be used to select what mappings to list.  The
 pattern is matched against the {lhs} and {rhs} in the raw form.
+
+While mappings are being listed, it is not possible to add or clear mappings,
+e.g. from a timer callback. *E1309*
 
 							*:map-verbose*
 When 'verbose' is non-zero, listing a key map will also display where it was
@@ -964,12 +971,17 @@ using other applications but not when inside Vim.
 Xterm and a few other terminals can be put in a mode where keys with modifiers
 are sent with a special escape code.  Vim recognizes these codes and can then
 make a difference between CTRL-H and Backspace, even when Backspace sends the
-character 8.  And many more special keys.
+character 8.  And many more special keys, such as Tab and CTRL-I, which cannot
+be mapped separately otherwise.
 
 For xterm modifyOtherKeys is enabled in the builtin termcap entry.  If this is
 not used you can enable modifyOtherKeys with these lines in your vimrc: >
       let &t_TI = "\<Esc>[>4;2m"
       let &t_TE = "\<Esc>[>4;m"
+
+This sets modifyOtherKeys to level 2.  Note that modifyOtherKeys level 1 does
+not work.  Some terminals do not support level 2 and then send key codes that
+Vim will not be able to correctly recognize.
 
 In case the modifyOtherKeys mode causes problems you can disable it: >
       let &t_TI = ""
@@ -989,21 +1001,61 @@ mapping, see |map-bar|.
 WARNING: if you map <C-[> you may very well break any key codes that start
 with Esc.  Make sure it comes AFTER other mappings.
 
-Vim automatically detects if the modifyOtherKeys mode was enabled when it
-spots an escape sequence that must have been created by it.  To see if Vim
-detected such an escape sequence use `:verbose map`, the first line will then
-show "Seen modifyOtherKeys: true" (possibly translated).
+Starting with xterm version 377 Vim can detect the modifyOtherKeys state by
+requesting it.  For this the 't_RK' termcap entry is used.  When the response
+is found then Vim will know whether modifyOtherKeys level 2 is enabled, and
+handle mappings accordingly.
+
+Before version 377 Vim automatically detects if the modifyOtherKeys mode was
+enabled when it spots an escape sequence that must have been created by it.
+To see if Vim detected such an escape sequence use `:verbose map`, the first
+line will then show "Seen modifyOtherKeys: true" (possibly translated).
+
+This automatic detection depends on receiving an escape code starting with 
+"<1b>[27;".  This is the normal way xterm sends these key codes.  However, if
+the *formatOtherKeys* resource is set another form is used that is not
+recognized, therefore you must not set formatOtherKeys.
 
 A known side effect is that in Insert mode the raw escape sequence is inserted
 after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
 enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you get one byte then
-modifyOtherKeys is off, if you get <1b>27;5;118~ then it is on.
+modifyOtherKeys is off, if you get <1b>[27;5;118~ then it is on.
+
+Note that xterm up to version 376 has a bug that makes Shift-Esc send a
+regular Esc code, the Shift modifier is dropped.
 
 When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.
 
 
-1.12 MAPPING AN OPERATOR				*:map-operator*
+1.12 MAPPING WITH KITTY KEYBOARD PROTOCOL	 *kitty-keyboard-protocol*
+
+If the value of 'term' contains "kitty" then Vim will send out an escape
+sequence to enable the Kitty keyboard protocol.  This can be changed with the
+'keyprotocol' option.
+
+Like modifyOtherKeys, this will make it possible to distinguish between more
+keys with modifiers.  Also, this protocol sends an escape sequence for the Esc
+key, so that Vim does not need to use a timeout to know whether receiving an
+Esc character means the Esc key was pressed or it's the start of an escape
+sequence.
+
+Vim automatically detects if the Kitty keyboard protocol was enabled when it
+spots the response to the status request (this should be part of the |t_TI|
+termcap entry).  To see if Vim detected such an escape sequence use: >
+	:verbose map
+The first line will then show "Kitty keyboard protocol: {value}" (possibly
+translated).  The meaning of {value}:
+	Unknown		no status received yet
+	Off		protocol is not used
+	On		protocol is used
+	Disabled	protocol was used but expected to have been disabled
+			by 't_TE'
+	Cleared		protocol expected to have beeen disabled by 't_TE',
+			previous state is unknown 
+
+
+1.13 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
 you must create a mapping that first sets the 'operatorfunc' option and then
@@ -1473,6 +1525,8 @@ See |:verbose-cmd| for more information.
 
 :delc[ommand] {cmd}				*:delc* *:delcommand* *E184*
 			Delete the user-defined command {cmd}.
+			This is not allowed while listing commands, e.g. from
+			a timer. *E1311*
 
 :delc[ommand] -buffer {cmd}					*E1237*
 			Delete the user-defined command {cmd} that was defined
@@ -1641,7 +1695,7 @@ Possible attributes are:
 		    number.
 	-count=N    A count (default N) which is specified either in the line
 		    number position, or as an initial argument (like |:Next|).
-	-count	    acts like -count=0
+	-count	    Acts like -count=0
 
 Note that -range=N and -count=N are mutually exclusive - only one should be
 specified.
@@ -1659,7 +1713,7 @@ Possible values are (second column is the short name used in listing):
     -addr=windows	  win	Range for windows
     -addr=tabs		  tab	Range for tab pages
     -addr=quickfix	  qf	Range for quickfix entries
-    -addr=other		  ?	other kind of range; can use ".", "$" and "%"
+    -addr=other		  ?	Other kind of range; can use ".", "$" and "%"
 				as with "lines" (this is the default for
 				-count)
 
@@ -1817,7 +1871,7 @@ When executed as: >
 This will invoke: >
 	:call Myfunc("arg1","arg2")
 
-<						*q-args-example* 
+<						*q-args-example*
 A more substantial example: >
    :function Allargs(command)
    :   let i = 0

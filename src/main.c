@@ -123,6 +123,8 @@ main
 #endif
     params.window_count = -1;
 
+    autocmd_init();
+
 #ifdef FEAT_RUBY
     {
 	int ruby_stack_start;
@@ -150,13 +152,12 @@ main
 	    TIME_MSG("--- VIM STARTING ---");
 	}
 # endif
-# ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	if (STRICMP(argv[i], "--log") == 0)
 	    ch_logfile((char_u *)(argv[i + 1]), (char_u *)"ao");
 # endif
     }
 #endif
-    starttime = time(NULL);
 
 #ifdef CLEAN_RUNTIMEPATH
     // Need to find "--clean" before actually parsing arguments.
@@ -505,7 +506,7 @@ vim_main2(void)
      */
     if (recoverymode && params.fname == NULL)
     {
-	recover_names(NULL, TRUE, 0, NULL);
+	recover_names(NULL, TRUE, NULL, 0, NULL);
 	mch_exit(0);
     }
 
@@ -1082,7 +1083,7 @@ may_trigger_safestate(int safe)
 {
     int is_safe = safe && is_safe_now();
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     if (was_safe != is_safe)
 	// Only log when the state changes, otherwise it happens at nearly
 	// every key stroke.
@@ -1102,7 +1103,7 @@ may_trigger_safestate(int safe)
     void
 state_no_longer_safe(char *reason UNUSED)
 {
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     if (was_safe)
 	ch_log(NULL, "SafeState: reset: %s", reason);
 #endif
@@ -1131,14 +1132,14 @@ may_trigger_safestateagain(void)
 	// of calling feedkeys(), we check if it's now safe again (all keys
 	// were consumed).
 	was_safe = is_safe_now();
-#ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	if (was_safe)
 	    ch_log(NULL, "SafeState: undo reset");
-#endif
+# endif
     }
     if (was_safe)
     {
-#ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
 	// Only do this message when another message was given, otherwise we
 	// get lots of them.
 	if ((did_repeated_msg & REPEATED_MSG_SAFESTATE) == 0)
@@ -1149,16 +1150,25 @@ may_trigger_safestateagain(void)
 		      "SafeState: back to waiting, triggering SafeStateAgain");
 	    did_repeated_msg = did | REPEATED_MSG_SAFESTATE;
 	}
-#endif
+# endif
 	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
     }
-#ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_EVAL
     else
 	ch_log(NULL,
 		  "SafeState: back to waiting, not triggering SafeStateAgain");
-#endif
+# endif
 }
 #endif
+
+/*
+ * Return TRUE if there is any typeahead, pending operator or command.
+ */
+    int
+work_pending(void)
+{
+    return op_pending() || !is_safe_now();
+}
 
 
 /*
@@ -1298,16 +1308,15 @@ main_loop(
 #endif
 
 	    // Trigger CursorMoved if the cursor moved.
-	    if (!finish_op && (
-			has_cursormoved()
+	    if (!finish_op && (has_cursormoved()
 #ifdef FEAT_PROP_POPUP
-			|| popup_visible
+				|| popup_visible
 #endif
 #ifdef FEAT_CONCEAL
-			|| curwin->w_p_cole > 0
+				|| curwin->w_p_cole > 0
 #endif
-			)
-		 && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
+			      )
+		    && !EQUAL_POS(last_cursormoved, curwin->w_cursor))
 	    {
 		if (has_cursormoved())
 		    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL,
@@ -1358,7 +1367,7 @@ main_loop(
 	    validate_cursor();
 
 	    if (!finish_op)
-		may_trigger_winscrolled();
+		may_trigger_win_scrolled_resized();
 
 	    // If nothing is pending and we are going to wait for the user to
 	    // type a character, trigger SafeState.
@@ -1401,10 +1410,8 @@ main_loop(
 	    }
 #endif
 
-	    /*
-	     * Before redrawing, make sure w_topline is correct, and w_leftcol
-	     * if lines don't wrap, and w_skipcol if lines wrap.
-	     */
+	    // Before redrawing, make sure w_topline is correct, and w_leftcol
+	    // if lines don't wrap, and w_skipcol if lines wrap.
 	    update_topline();
 	    validate_cursor();
 
@@ -1469,16 +1476,20 @@ main_loop(
 		time_fd = NULL;
 	    }
 #endif
+	    // After the first screen update may start triggering WinScrolled
+	    // autocmd events.  Store all the scroll positions and sizes now.
+	    may_make_initial_scroll_size_snapshot();
 	}
 #ifdef FEAT_GUI
 	if (need_mouse_correct)
 	    gui_mouse_correct();
 #endif
 
-	/*
-	 * Update w_curswant if w_set_curswant has been set.
-	 * Postponed until here to avoid computing w_virtcol too often.
-	 */
+	// May request the keyboard protocol state now.
+	may_send_t_RK();
+
+	// Update w_curswant if w_set_curswant has been set.
+	// Postponed until here to avoid computing w_virtcol too often.
 	update_curswant();
 
 #ifdef FEAT_EVAL
@@ -1561,7 +1572,7 @@ getout_preserve_modified(int exitval)
 getout(int exitval)
 {
     exiting = TRUE;
-#if defined(FEAT_JOB_CHANNEL)
+#if defined(FEAT_EVAL)
     ch_log(NULL, "Exiting...");
 #endif
 

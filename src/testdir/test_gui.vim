@@ -904,13 +904,17 @@ endfunc
 
 " Test GUI mouse events
 func Test_gui_mouse_event()
+  " Low level input isn't 100% reliable
+  let g:test_is_flaky = 1
+
   set mousemodel=extend
   call test_override('no_query_mouse', 1)
   new
   call setline(1, ['one two three', 'four five six'])
-
-  " place the cursor using left click in normal mode
   call cursor(1, 1)
+  redraw!
+
+  " place the cursor using left click and release in normal mode
   let args = #{button: 0, row: 2, col: 4, multiclick: 0, modifiers: 0}
   call test_gui_event('mouse', args)
   let args.button = 3
@@ -1175,10 +1179,21 @@ func Test_gui_mouse_event()
   call feedkeys("\<Esc>", 'Lx!')
   call assert_equal([0, 2, 7, 0], getpos('.'))
   call assert_equal('wo thrfour five sixteen', getline(2))
+
   set mouse&
   let &guioptions = save_guioptions
+  bw!
+  call test_override('no_query_mouse', 0)
+  set mousemodel&
+endfunc
 
-  " Test invalid parameters for test_gui_event()
+" Test invalid parameters for test_gui_event()
+func Test_gui_event_mouse_fails()
+  call test_override('no_query_mouse', 1)
+  new
+  call setline(1, ['one two three', 'four five six'])
+  set mousemodel=extend
+
   let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
   call assert_false(test_gui_event('mouse', args))
   let args = #{button: 0, col: 4, multiclick: 0, modifiers: 0}
@@ -1266,7 +1281,7 @@ func Test_gui_mouse_move_event()
     let g:eventlist = g:eventlist[1 : ]
   endif
 
-  call assert_equal([#{row: 4, col: 31}, #{row: 11, col: 31}], g:eventlist)
+  call assert_equal([#{row: 3, col: 30}, #{row: 10, col: 30}], g:eventlist)
 
   " wiggle the mouse around within a screen cell, shouldn't trigger events
   call extend(args, #{cell: v:false})
@@ -1623,10 +1638,10 @@ endfunc
 " Test for sending low level key presses
 func SendKeys(keylist)
   for k in a:keylist
-    call test_gui_event("sendevent", #{event: "keydown", keycode: k})
+    call test_gui_event("key", #{event: "keydown", keycode: k})
   endfor
   for k in reverse(a:keylist)
-    call test_gui_event("sendevent", #{event: "keyup", keycode: k})
+    call test_gui_event("key", #{event: "keyup", keycode: k})
   endfor
 endfunc
 
@@ -1679,7 +1694,7 @@ func Test_gui_lowlevel_keyevent()
     \ [[0x11, 0x10, 0x28], "C-S-Down", 4],
     \ [[0x11, 0x30], "C-0", 4],
     \ [[0x11, 0x31], "C-1", 4],
-    \ [[0x11, 0x32], "C-2", 4],
+    \ [[0x11, 0x32], "C-@", 0],
     \ [[0x11, 0x33], "C-3", 4],
     \ [[0x11, 0x34], "C-4", 4],
     \ [[0x11, 0x35], "C-5", 4],
@@ -1700,6 +1715,7 @@ func Test_gui_lowlevel_keyevent()
     \ [[0x11, 0x6A], "C-*", 4],
     \ [[0x11, 0x6B], "C-+", 4],
     \ [[0x11, 0x6D], "C--", 4],
+    \ [[0x11, 0xBD], "C-_", 0],
     \ [[0x11, 0x70], "C-F1", 4],
     \ [[0x11, 0x10, 0x70], "C-S-F1", 4],
     \ [[0x11, 0x71], "C-F2", 4],

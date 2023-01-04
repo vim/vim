@@ -10,12 +10,24 @@ int vterm_is_modify_other_keys(VTerm *vt)
   return vt->state->mode.modify_other_keys;
 }
 
+// VIM: added
+int vterm_is_kitty_keyboard(VTerm *vt)
+{
+  return vt->state->mode.kitty_keyboard;
+}
+
 
 void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
 {
   // VIM: added modifyOtherKeys support
-  if (vt->state->mode.modify_other_keys && mod != 0) {
+  if (vterm_is_modify_other_keys(vt) && mod != 0) {
     vterm_push_output_sprintf_ctrl(vt, C1_CSI, "27;%d;%d~", mod+1, c);
+    return;
+  }
+
+  // VIM: added kitty keyboard protocol support
+  if (vterm_is_kitty_keyboard(vt) && mod != 0) {
+    vterm_push_output_sprintf_ctrl(vt, C1_CSI, "%d;%du", c, mod+1);
     return;
   }
 
@@ -166,8 +178,10 @@ void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
     break;
 
   case KEYCODE_TAB:
+    if (vterm_is_kitty_keyboard(vt) && mod != 0)
+      vterm_push_output_sprintf_ctrl(vt, C1_CSI, "9;%du", mod+1);
     /* Shift-Tab is CSI Z but plain Tab is 0x09 */
-    if(mod == VTERM_MOD_SHIFT)
+    else if(mod == VTERM_MOD_SHIFT)
       vterm_push_output_sprintf_ctrl(vt, C1_CSI, "Z");
     else if(mod & VTERM_MOD_SHIFT)
       vterm_push_output_sprintf_ctrl(vt, C1_CSI, "1;%dZ", mod+1);
@@ -184,7 +198,12 @@ void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
     break;
 
   case KEYCODE_LITERAL: case_LITERAL:
-    if(mod & (VTERM_MOD_SHIFT|VTERM_MOD_CTRL))
+    if (vterm_is_modify_other_keys(vt) && mod != 0)
+      vterm_push_output_sprintf_ctrl(vt, C1_CSI, "27;%d;%d~", mod+1, k.literal);
+    else if (vterm_is_kitty_keyboard(vt) && mod == 0 && k.literal == '\x1b')
+      vterm_push_output_sprintf_ctrl(vt, C1_CSI, "%du", k.literal);
+    else if ((vterm_is_kitty_keyboard(vt) && mod != 0)
+	|| (mod & (VTERM_MOD_SHIFT|VTERM_MOD_CTRL)))
       vterm_push_output_sprintf_ctrl(vt, C1_CSI, "%d;%du", k.literal, mod+1);
     else
       vterm_push_output_sprintf(vt, mod & VTERM_MOD_ALT ? ESC_S "%c" : "%c", k.literal);

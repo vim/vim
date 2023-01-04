@@ -375,7 +375,7 @@ func Test_searchpair_timeout_with_skip()
   else
     let ms = 1
     let min_time = 0.001
-    let max_time = min_time * 10.0
+    let max_time = min_time * 15.0
     if RunningWithValgrind()
       let max_time += 0.04  " this can be slow with valgrind
     endif
@@ -1884,7 +1884,7 @@ func Test_search_smartcase_utf8()
 
   set ignorecase& smartcase&
   let &encoding = save_enc
-  close!
+  bwipe!
 endfunc
 
 " Test searching past the end of a file
@@ -1893,7 +1893,29 @@ func Test_search_past_eof()
   call setline(1, ['Line'])
   exe "normal /\\n\\zs\<CR>"
   call assert_equal([1, 4], [line('.'), col('.')])
-  close!
+  bwipe!
+endfunc
+
+" Test setting the start of the match and still finding a next match in the
+" same line.
+func Test_search_set_start_same_line()
+  new
+  set cpo-=c
+
+  call setline(1, ['1', '2', '3 .', '4', '5'])
+  exe "normal /\\_s\\zs\\S\<CR>"
+  call assert_equal([2, 1], [line('.'), col('.')])
+  exe 'normal n'
+  call assert_equal([3, 1], [line('.'), col('.')])
+  exe 'normal n'
+  call assert_equal([3, 3], [line('.'), col('.')])
+  exe 'normal n'
+  call assert_equal([4, 1], [line('.'), col('.')])
+  exe 'normal n'
+  call assert_equal([5, 1], [line('.'), col('.')])
+
+  set cpo+=c
+  bwipe!
 endfunc
 
 " Test for various search offsets

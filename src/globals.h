@@ -20,12 +20,12 @@
 EXTERN long	Rows			// nr of rows in the screen
 #ifdef DO_INIT
 # if defined(MSWIN)
-			    = 25L
+		    = 25L
 # else
-			    = 24L
+		    = 24L
 # endif
 #endif
-			    ;
+		    ;
 EXTERN long	Columns INIT(= 80);	// nr of columns in the screen
 
 /*
@@ -977,8 +977,19 @@ EXTERN win_T	*prevwin INIT(= NULL);	// previous window
 
 EXTERN win_T	*curwin;	// currently active window
 
-EXTERN win_T	*aucmd_win;	// window used in aucmd_prepbuf()
-EXTERN int	aucmd_win_used INIT(= FALSE);	// aucmd_win is being used
+// When executing autocommands for a buffer that is not in any window, a
+// special window is created to handle the side effects.  When autocommands
+// nest we may need more than one.  Allow for up to five, if more are needed
+// something crazy is happening.
+#define AUCMD_WIN_COUNT 5
+
+typedef struct {
+  win_T	*auc_win;	// Window used in aucmd_prepbuf().  When not NULL the
+			// window has been allocated.
+  int	auc_win_used;	// This auc_win is being used.
+} aucmdwin_T;
+
+EXTERN aucmdwin_T aucmd_win[AUCMD_WIN_COUNT];
 
 #ifdef FEAT_PROP_POPUP
 EXTERN win_T    *first_popupwin;		// first global popup window
@@ -1207,9 +1218,9 @@ EXTERN int	old_indent INIT(= 0);	// for ^^D command in insert mode
 
 EXTERN pos_T	saved_cursor		// w_cursor before formatting text.
 #ifdef DO_INIT
-	= {0, 0, 0}
+		    = {0, 0, 0}
 #endif
-	;
+		    ;
 
 /*
  * Stuff for insert mode.
@@ -1374,8 +1385,46 @@ EXTERN int reg_executing INIT(= 0);	// register being executed or zero
 EXTERN int pending_end_reg_executing INIT(= 0);
 
 // Set when a modifyOtherKeys sequence was seen, then simplified mappings will
-// no longer be used.
+// no longer be used.  To be combined with modify_otherkeys_state.
 EXTERN int seenModifyOtherKeys INIT(= FALSE);
+
+// The state for the modifyOtherKeys level
+typedef enum {
+    // Initially we have no clue if the protocol is on or off.
+    MOKS_INITIAL,
+    // Used when receiving the state and the level is not two.
+    MOKS_OFF,
+    // Used when receiving the state and the level is two.
+    MOKS_ENABLED,
+    // Used after outputting t_TE when the state was MOKS_ENABLED.  We do not
+    // really know if t_TE actually disabled the protocol, the following t_TI
+    // is expected to request the state, but the response may come only later.
+    MOKS_DISABLED,
+    // Used after outputting t_TE when the state was not MOKS_ENABLED.
+    MOKS_AFTER_T_TE,
+} mokstate_T;
+
+// Set when a response to XTQMODKEYS was received.  Only works for xterm
+// version 377 and later.
+EXTERN mokstate_T modify_otherkeys_state INIT(= MOKS_INITIAL);
+
+// The state for the Kitty keyboard protocol.
+typedef enum {
+    // Initially we have no clue if the protocol is on or off.
+    KKPS_INITIAL,
+    // Used when receiving the state and the flags are zero.
+    KKPS_OFF,
+    // Used when receiving the state and the flags are non-zero.
+    KKPS_ENABLED,
+    // Used after outputting t_TE when the state was KKPS_ENABLED.  We do not
+    // really know if t_TE actually disabled the protocol, the following t_TI
+    // is expected to request the state, but the response may come only later.
+    KKPS_DISABLED,
+    // Used after outputting t_TE when the state was not KKPS_ENABLED.
+    KKPS_AFTER_T_TE,
+} kkpstate_T;
+
+EXTERN kkpstate_T kitty_protocol_state INIT(= KKPS_INITIAL);
 
 EXTERN int no_mapping INIT(= FALSE);	// currently no mapping allowed
 EXTERN int no_zero_mapping INIT(= 0);	// mapping zero not allowed
@@ -1533,16 +1582,19 @@ EXTERN char_u	last_mode[MODE_MAX_LENGTH] INIT(= "n"); // for ModeChanged event
 EXTERN char_u	*last_cmdline INIT(= NULL); // last command line (for ":)
 EXTERN char_u	*repeat_cmdline INIT(= NULL); // command line for "."
 EXTERN char_u	*new_last_cmdline INIT(= NULL);	// new value for last_cmdline
+						//
 EXTERN char_u	*autocmd_fname INIT(= NULL); // fname for <afile> on cmdline
 EXTERN int	autocmd_fname_full;	     // autocmd_fname is full path
 EXTERN int	autocmd_bufnr INIT(= 0);     // fnum for <abuf> on cmdline
 EXTERN char_u	*autocmd_match INIT(= NULL); // name for <amatch> on cmdline
+EXTERN int	aucmd_cmdline_changed_count INIT(= 0);
+
 EXTERN int	did_cursorhold INIT(= FALSE); // set when CursorHold t'gerd
 EXTERN pos_T	last_cursormoved	      // for CursorMoved event
 # ifdef DO_INIT
-			= {0, 0, 0}
+		    = {0, 0, 0}
 # endif
-			;
+		    ;
 
 EXTERN int	postponed_split INIT(= 0);  // for CTRL-W CTRL-] command
 EXTERN int	postponed_split_flags INIT(= 0);  // args for win_split()
@@ -1702,25 +1754,24 @@ extern cursorentry_T shape_table[SHAPE_IDX_COUNT];
 
 EXTERN option_table_T printer_opts[OPT_PRINT_NUM_OPTIONS]
 # ifdef DO_INIT
- =
-{
-    {"top",	TRUE, 0, NULL, 0, FALSE},
-    {"bottom",	TRUE, 0, NULL, 0, FALSE},
-    {"left",	TRUE, 0, NULL, 0, FALSE},
-    {"right",	TRUE, 0, NULL, 0, FALSE},
-    {"header",	TRUE, 0, NULL, 0, FALSE},
-    {"syntax",	FALSE, 0, NULL, 0, FALSE},
-    {"number",	FALSE, 0, NULL, 0, FALSE},
-    {"wrap",	FALSE, 0, NULL, 0, FALSE},
-    {"duplex",	FALSE, 0, NULL, 0, FALSE},
-    {"portrait", FALSE, 0, NULL, 0, FALSE},
-    {"paper",	FALSE, 0, NULL, 0, FALSE},
-    {"collate",	FALSE, 0, NULL, 0, FALSE},
-    {"jobsplit", FALSE, 0, NULL, 0, FALSE},
-    {"formfeed", FALSE, 0, NULL, 0, FALSE},
-}
+    = {
+	{"top",	TRUE, 0, NULL, 0, FALSE},
+	{"bottom",	TRUE, 0, NULL, 0, FALSE},
+	{"left",	TRUE, 0, NULL, 0, FALSE},
+	{"right",	TRUE, 0, NULL, 0, FALSE},
+	{"header",	TRUE, 0, NULL, 0, FALSE},
+	{"syntax",	FALSE, 0, NULL, 0, FALSE},
+	{"number",	FALSE, 0, NULL, 0, FALSE},
+	{"wrap",	FALSE, 0, NULL, 0, FALSE},
+	{"duplex",	FALSE, 0, NULL, 0, FALSE},
+	{"portrait", FALSE, 0, NULL, 0, FALSE},
+	{"paper",	FALSE, 0, NULL, 0, FALSE},
+	{"collate",	FALSE, 0, NULL, 0, FALSE},
+	{"jobsplit", FALSE, 0, NULL, 0, FALSE},
+	{"formfeed", FALSE, 0, NULL, 0, FALSE},
+    }
 # endif
-;
+    ;
 
 // For prt_get_unit().
 # define PRT_UNIT_NONE	-1
@@ -1822,9 +1873,9 @@ EXTERN int		need_cursor_line_redraw INIT(= FALSE);
 // Grow array to collect error messages in until they can be displayed.
 EXTERN garray_T error_ga
 # ifdef DO_INIT
-	= {0, 0, 0, 0, NULL}
+		    = {0, 0, 0, 0, NULL}
 # endif
-	;
+		    ;
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
@@ -1853,9 +1904,6 @@ EXTERN char need_key_msg[]  INIT(= N_("Need encryption key for \"%s\""));
 #ifdef USE_XSMP
 EXTERN int xsmp_icefd INIT(= -1);   // The actual connection
 #endif
-
-// For undo we need to know the lowest time possible.
-EXTERN time_T starttime;
 
 #ifdef STARTUPTIME
 EXTERN FILE *time_fd INIT(= NULL);  // where to write startup timing
@@ -1942,22 +1990,31 @@ EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
 #endif
 
-#if defined(FEAT_JOB_CHANNEL)
-EXTERN int did_repeated_msg INIT(= 0);
-# define REPEATED_MSG_LOOKING	    1
-# define REPEATED_MSG_SAFESTATE	    2
 
-// This flag is set when outputting a terminal control code and reset in
-// out_flush() when characters have been written.
-EXTERN int ch_log_output INIT(= FALSE);
+#if defined(FEAT_JOB_CHANNEL)
+EXTERN char *ch_part_names[]
+# ifdef DO_INIT
+		= {"sock", "out", "err", "in"}
+# endif
+		;
 
 // Whether a redraw is needed for appending a line to a buffer.
 EXTERN int channel_need_redraw INIT(= FALSE);
 
-#define FOR_ALL_CHANNELS(ch) \
+# define FOR_ALL_CHANNELS(ch) \
     for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)
-#define FOR_ALL_JOBS(job) \
+# define FOR_ALL_JOBS(job) \
     for ((job) = first_job; (job) != NULL; (job) = (job)->jv_next)
+#endif
+
+#ifdef FEAT_EVAL
+// This flag is set when outputting a terminal control code and reset in
+// out_flush() when characters have been written.
+EXTERN int ch_log_output INIT(= FALSE);
+
+EXTERN int did_repeated_msg INIT(= 0);
+# define REPEATED_MSG_LOOKING	    1
+# define REPEATED_MSG_SAFESTATE	    2
 #endif
 
 #if defined(FEAT_DIFF)
@@ -1978,3 +2035,7 @@ EXTERN int skip_win_fix_cursor INIT(= FALSE);
 EXTERN int skip_win_fix_scroll INIT(= FALSE);
 // Skip update_topline() call while executing win_fix_scroll().
 EXTERN int skip_update_topline INIT(= FALSE);
+
+// 'showcmd' buffer shared between normal.c and statusline.c
+#define SHOWCMD_BUFLEN (SHOWCMD_COLS + 1 + 30)
+EXTERN char_u showcmd_buf[SHOWCMD_BUFLEN];

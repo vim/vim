@@ -37,7 +37,7 @@ static char_u	*confirm_msg = NULL;		// ":confirm" message
 static char_u	*confirm_msg_tail;		// tail of confirm_msg
 static void display_confirm_msg(void);
 #endif
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 static int emsg_to_channel_log = FALSE;
 #endif
 
@@ -161,7 +161,7 @@ msg_attr_keep(
 		&& STRCMP(s, last_msg_hist->msg)))
 	add_msg_hist((char_u *)s, -1, attr);
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     if (emsg_to_channel_log)
 	// Write message in the channel log.
 	ch_log(NULL, "ERROR: %s", s);
@@ -725,7 +725,7 @@ emsg_core(char_u *s)
 	    if (emsg_silent == emsg_silent_def)
 		++did_emsg_def;
 #endif
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 	    ch_log(NULL, "ERROR silent: %s", (char *)s);
 #endif
 	    return TRUE;
@@ -1311,9 +1311,8 @@ wait_return(int redraw)
 					|| c == K_X2MOUSE))
 				);
 	ui_breakcheck();
-	/*
-	 * Avoid that the mouse-up event causes visual mode to start.
-	 */
+
+	// Avoid that the mouse-up event causes Visual mode to start.
 	if (c == K_LEFTMOUSE || c == K_MIDDLEMOUSE || c == K_RIGHTMOUSE
 					  || c == K_X1MOUSE || c == K_X2MOUSE)
 	    (void)jump_to_mouse(MOUSE_SETPOS, NULL, 0);
@@ -1418,7 +1417,6 @@ set_keep_msg(char_u *s, int attr)
     keep_msg_attr = attr;
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * If there currently is a message being displayed, set "keep_msg" to it, so
  * that it will be displayed again after redraw.
@@ -1430,7 +1428,6 @@ set_keep_msg_from_hist(void)
 						      && (State & MODE_NORMAL))
 	set_keep_msg(last_msg_hist->msg, last_msg_hist->attr);
 }
-#endif
 
 /*
  * Prepare for outputting characters in the command line.
@@ -3058,7 +3055,8 @@ msg_puts_printf(char_u *str, int maxlen)
     {
 	char_u *tofree = NULL;
 
-	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
+	if (maxlen > 0 && vim_strlen_maxlen((char *)p, (size_t)maxlen)
+							     >= (size_t)maxlen)
 	{
 	    tofree = vim_strnsave(p, (size_t)maxlen);
 	    p = tofree;

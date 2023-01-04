@@ -888,6 +888,12 @@ _OnChar(
     modifiers = get_active_modifiers();
 
     ch = simplify_key(ch, &modifiers);
+    
+    // Some keys need adjustment when the Ctrl modifier is used.
+    ++no_reduce_keys;
+    ch = may_adjust_key_for_ctrl(modifiers, ch);
+    --no_reduce_keys;
+
     // remove the SHIFT modifier for keys where it's already included, e.g.,
     // '(' and '*'
     modifiers = may_remove_shift_modifier(modifiers, ch);
@@ -2152,16 +2158,25 @@ process_message(void)
 
 	    if (len <= 0)
 	    {
-		if (   dead_key == DEAD_KEY_SET_DEFAULT
-		    && (GetKeyState(VK_CONTROL) & 0x8000)
-		    && (   (vk == 221 && scan_code == 26) // AZERTY CTRL+dead_circumflex
-			|| (vk == 220 && scan_code == 41) // QWERTZ CTRL+dead_circumflex
-		       )
-		   )
+		int wm_char = NUL;
+
+		if (dead_key == DEAD_KEY_SET_DEFAULT
+			&& (GetKeyState(VK_CONTROL) & 0x8000))
+		{
+		    if (   // AZERTY CTRL+dead_circumflex
+			   (vk == 221 && scan_code == 26)
+			   // QWERTZ CTRL+dead_circumflex
+			|| (vk == 220 && scan_code == 41))
+			wm_char = '[';
+		    if (   // QWERTZ CTRL+dead_two-overdots
+			   (vk == 192 && scan_code == 27))
+			wm_char = ']';
+		}
+		if (wm_char != NUL)
 		{
 		    // post WM_CHAR='[' - which will be interpreted with CTRL
 		    // still hold as ESC
-		    PostMessageW(msg.hwnd, WM_CHAR, '[', msg.lParam);
+		    PostMessageW(msg.hwnd, WM_CHAR, wm_char, msg.lParam);
 		    // ask _OnChar() to not touch this state, wait for next key
 		    // press and maintain knowledge that we are "poisoned" with
 		    // "dead state"
@@ -8634,41 +8649,176 @@ netbeans_draw_multisign_indicator(int row)
 #endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-    int
-test_gui_w32_sendevent(dict_T *args)
-{
-    char_u	*event;
-    INPUT	inputs[1];
 
-    event = dict_get_string(args, "event", TRUE);
-    if (event == NULL)
+// TODO: at the moment, this is just a copy of test_gui_mouse_event.
+// But, we could instead generate actual Win32 mouse event messages,
+// ie. to make it consistent wih test_gui_w32_sendevent_keyboard.
+    static int
+test_gui_w32_sendevent_mouse(dict_T *args)
+{
+    if (!dict_has_key(args, "row") || !dict_has_key(args, "col"))
 	return FALSE;
 
-    ZeroMemory(inputs, sizeof(inputs));
+    // Note: "move" is optional, requires fewer arguments
+    int move = (int)dict_get_bool(args, "move", FALSE);
 
-    if (STRICMP(event, "keydown") == 0 || STRICMP(event, "keyup") == 0)
+    if (!move && (!dict_has_key(args, "button")
+	    || !dict_has_key(args, "multiclick")
+	    || !dict_has_key(args, "modifiers")))
+	return FALSE;
+
+    int row = (int)dict_get_number(args, "row");
+    int col = (int)dict_get_number(args, "col");
+
+    if (move)
     {
-	WORD	    vkCode;
+	// the "move" argument expects row and col coordnates to be in pixels,
+	// unless "cell" is specified and is TRUE.
+	if (dict_get_bool(args, "cell", FALSE))
+	{
+	    // calculate the middle of the character cell
+	    // Note: Cell coordinates are 1-based from vimscript
+	    int pY = (row - 1) * gui.char_height + gui.char_height / 2;
+	    int pX = (col - 1) * gui.char_width + gui.char_width / 2;
+	    gui_mouse_moved(pX, pY);
+	}
+	else
+	    gui_mouse_moved(col, row);
+    }
+    else
+    {
+	int button = (int)dict_get_number(args, "button");
+	int repeated_click = (int)dict_get_number(args, "multiclick");
+	int_u mods = (int)dict_get_number(args, "modifiers");
 
-	vkCode = dict_get_number_def(args, "keycode", 0);
+	// Reset the scroll values to known values.
+	// XXX: Remove this when/if the scroll step is made configurable.
+	mouse_set_hor_scroll_step(6);
+	mouse_set_vert_scroll_step(3);
+
+	gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1),
+							repeated_click, mods);
+    }
+    return TRUE;
+}
+
+    static int
+test_gui_w32_sendevent_keyboard(dict_T *args)
+{
+    INPUT inputs[1];
+    INPUT modkeys[3];
+    SecureZeroMemory(inputs, sizeof(INPUT));
+    SecureZeroMemory(modkeys, 3 * sizeof(INPUT));
+
+    char_u *event = dict_get_string(args, "event", TRUE);
+
+    if (event && (STRICMP(event, "keydown") == 0
+				      || STRICMP(event, "keyup") == 0))
+    {
+	WORD vkCode = dict_get_number_def(args, "keycode", 0);
 	if (vkCode <= 0 || vkCode >= 0xFF)
 	{
 	    semsg(_(e_invalid_argument_nr), (long)vkCode);
 	    return FALSE;
 	}
 
+	BOOL isModKey = (vkCode == VK_SHIFT || vkCode == VK_CONTROL
+	    || vkCode == VK_MENU || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT
+	    || vkCode == VK_LCONTROL || vkCode == VK_RCONTROL
+	    || vkCode == VK_LMENU || vkCode == VK_RMENU );
+
+	BOOL unwrapMods = FALSE;
+	int mods = (int)dict_get_number(args, "modifiers");
+
+	// If there are modifiers in the args, and it is not a keyup event and
+	// vkCode is not a modifier key, then we generate virtual modifier key
+	// messages before sending the actual key message.
+	if(mods && STRICMP(event, "keydown") == 0 && !isModKey)
+	{
+	    int n = 0;
+	    if (mods & MOD_MASK_SHIFT)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LSHIFT;
+		n++;
+	    }
+	    if (mods & MOD_MASK_CTRL)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LCONTROL;
+		n++;
+	    }
+	    if (mods & MOD_MASK_ALT)
+	    {
+		modkeys[n].type = INPUT_KEYBOARD;
+		modkeys[n].ki.wVk = VK_LMENU;
+		n++;
+	    }
+	    if (n)
+	    {
+		(void)SetForegroundWindow(s_hwnd);
+		SendInput(n, modkeys, sizeof(INPUT));
+	    }
+	}
+
 	inputs[0].type = INPUT_KEYBOARD;
 	inputs[0].ki.wVk = vkCode;
 	if (STRICMP(event, "keyup") == 0)
+	{
 	    inputs[0].ki.dwFlags = KEYEVENTF_KEYUP;
+	    if(!isModKey)
+		unwrapMods = TRUE;
+	}
+
 	(void)SetForegroundWindow(s_hwnd);
 	SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+	vim_free(event);
+
+	if (unwrapMods)
+	{
+	    modkeys[0].type = INPUT_KEYBOARD;
+	    modkeys[0].ki.wVk = VK_LSHIFT;
+	    modkeys[0].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	    modkeys[1].type = INPUT_KEYBOARD;
+	    modkeys[1].ki.wVk = VK_LCONTROL;
+	    modkeys[1].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	    modkeys[2].type = INPUT_KEYBOARD;
+	    modkeys[2].ki.wVk = VK_LMENU;
+	    modkeys[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	    (void)SetForegroundWindow(s_hwnd);
+	    SendInput(3, modkeys, sizeof(INPUT));
+	}
     }
     else
-	semsg(_(e_invalid_argument_str), event);
-
-    vim_free(event);
-
+    {
+	if (event == NULL)
+	{
+	    semsg(_(e_missing_argument_str), "event");
+	}
+	else
+	{
+	    semsg(_(e_invalid_value_for_argument_str_str), "event", event);
+	    vim_free(event);
+	}
+	return FALSE;
+    }
     return TRUE;
+}
+
+    int
+test_gui_w32_sendevent(char_u *event, dict_T *args)
+{
+    if (STRICMP(event, "key") == 0)
+	return test_gui_w32_sendevent_keyboard(args);
+    else if (STRICMP(event, "mouse") == 0)
+	return test_gui_w32_sendevent_mouse(args);
+    else
+    {
+	semsg(_(e_invalid_value_for_argument_str_str), "event", event);
+	return FALSE;
+    }
 }
 #endif

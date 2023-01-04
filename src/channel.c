@@ -81,8 +81,6 @@ static ch_part_T channel_part_read(channel_T *channel);
 // is safe to invoke callbacks.
 static int safe_to_invoke_callback = 0;
 
-static char *part_names[] = {"sock", "out", "err", "in"};
-
 #ifdef MSWIN
     static int
 fd_read(sock_T fd, char *buf, size_t len)
@@ -141,128 +139,6 @@ fd_close(sock_T fd)
     CloseHandle(h);
 }
 #endif
-
-// Log file opened with ch_logfile().
-static FILE *log_fd = NULL;
-static char_u *log_name = NULL;
-#ifdef FEAT_RELTIME
-static proftime_T log_start;
-#endif
-
-    void
-ch_logfile(char_u *fname, char_u *opt)
-{
-    FILE	*file = NULL;
-    char	*mode = "a";
-
-    if (log_fd != NULL)
-    {
-	if (*fname != NUL)
-	    ch_log(NULL, "closing this logfile, opening %s", fname);
-	else
-	    ch_log(NULL, "closing logfile %s", log_name);
-	fclose(log_fd);
-    }
-
-    // The "a" flag overrules the "w" flag.
-    if (vim_strchr(opt, 'a') == NULL && vim_strchr(opt, 'w') != NULL)
-	mode = "w";
-    ch_log_output = vim_strchr(opt, 'o') != NULL ? LOG_ALWAYS : FALSE;
-
-    if (*fname != NUL)
-    {
-	file = fopen((char *)fname, mode);
-	if (file == NULL)
-	{
-	    semsg(_(e_cant_open_file_str), fname);
-	    return;
-	}
-	vim_free(log_name);
-	log_name = vim_strsave(fname);
-    }
-    log_fd = file;
-
-    if (log_fd != NULL)
-    {
-	fprintf(log_fd, "==== start log session %s ====\n",
-						 get_ctime(time(NULL), FALSE));
-	// flush now, if fork/exec follows it could be written twice
-	fflush(log_fd);
-#ifdef FEAT_RELTIME
-	profile_start(&log_start);
-#endif
-    }
-}
-
-    int
-ch_log_active(void)
-{
-    return log_fd != NULL;
-}
-
-    static void
-ch_log_lead(const char *what, channel_T *ch, ch_part_T part)
-{
-    if (log_fd == NULL)
-	return;
-
-#ifdef FEAT_RELTIME
-    proftime_T log_now;
-
-    profile_start(&log_now);
-    profile_sub(&log_now, &log_start);
-    fprintf(log_fd, "%s ", profile_msg(&log_now));
-#endif
-    if (ch != NULL)
-    {
-	if (part < PART_COUNT)
-	    fprintf(log_fd, "%son %d(%s): ",
-		    what, ch->ch_id, part_names[part]);
-	else
-	    fprintf(log_fd, "%son %d: ", what, ch->ch_id);
-    }
-    else
-	fprintf(log_fd, "%s: ", what);
-}
-
-#ifndef PROTO  // prototype is in proto.h
-    void
-ch_log(channel_T *ch, const char *fmt, ...)
-{
-    if (log_fd == NULL)
-	return;
-
-    va_list ap;
-
-    ch_log_lead("", ch, PART_COUNT);
-    va_start(ap, fmt);
-    vfprintf(log_fd, fmt, ap);
-    va_end(ap);
-    fputc('\n', log_fd);
-    fflush(log_fd);
-    did_repeated_msg = 0;
-}
-#endif
-
-    static void
-ch_error(channel_T *ch, const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
-
-    static void
-ch_error(channel_T *ch, const char *fmt, ...)
-{
-    if (log_fd == NULL)
-	return;
-
-    va_list ap;
-
-    ch_log_lead("ERR ", ch, PART_COUNT);
-    va_start(ap, fmt);
-    vfprintf(log_fd, fmt, ap);
-    va_end(ap);
-    fputc('\n', log_fd);
-    fflush(log_fd);
-    did_repeated_msg = 0;
-}
 
 #ifdef MSWIN
 # undef PERROR
@@ -620,7 +496,7 @@ channel_gui_register_one(channel_T *channel, ch_part_T part UNUSED)
     if (channel->ch_part[part].ch_inputHandler == (XtInputId)NULL)
     {
 	ch_log(channel, "Registering part %s with fd %d",
-		part_names[part], channel->ch_part[part].ch_fd);
+		ch_part_names[part], channel->ch_part[part].ch_fd);
 
 	channel->ch_part[part].ch_inputHandler = XtAppAddInput(
 		(XtAppContext)app_context,
@@ -636,7 +512,7 @@ channel_gui_register_one(channel_T *channel, ch_part_T part UNUSED)
     if (channel->ch_part[part].ch_inputHandler == 0)
     {
 	ch_log(channel, "Registering part %s with fd %d",
-		part_names[part], channel->ch_part[part].ch_fd);
+		ch_part_names[part], channel->ch_part[part].ch_fd);
 #   if GTK_CHECK_VERSION(3,0,0)
 	GIOChannel *chnnl = g_io_channel_unix_new(
 		(gint)channel->ch_part[part].ch_fd);
@@ -694,7 +570,7 @@ channel_gui_unregister_one(channel_T *channel UNUSED, ch_part_T part UNUSED)
 # ifdef FEAT_GUI_X11
     if (channel->ch_part[part].ch_inputHandler != (XtInputId)NULL)
     {
-	ch_log(channel, "Unregistering part %s", part_names[part]);
+	ch_log(channel, "Unregistering part %s", ch_part_names[part]);
 	XtRemoveInput(channel->ch_part[part].ch_inputHandler);
 	channel->ch_part[part].ch_inputHandler = (XtInputId)NULL;
     }
@@ -702,7 +578,7 @@ channel_gui_unregister_one(channel_T *channel UNUSED, ch_part_T part UNUSED)
 #  ifdef FEAT_GUI_GTK
     if (channel->ch_part[part].ch_inputHandler != 0)
     {
-	ch_log(channel, "Unregistering part %s", part_names[part]);
+	ch_log(channel, "Unregistering part %s", ch_part_names[part]);
 #   if GTK_CHECK_VERSION(3,0,0)
 	g_source_remove(channel->ch_part[part].ch_inputHandler);
 #   else
@@ -1786,7 +1662,7 @@ channel_buffer_free(buf_T *buf)
 	    if (ch_part->ch_bufref.br_buf == buf)
 	    {
 		ch_log(channel, "%s buffer has been wiped out",
-							    part_names[part]);
+							  ch_part_names[part]);
 		ch_part->ch_bufref.br_buf = NULL;
 	    }
 	}
@@ -2165,12 +2041,8 @@ channel_save(channel_T *channel, ch_part_T part, char_u *buf, int len,
     }
 
     if (ch_log_active() && lead != NULL)
-    {
-	ch_log_lead(lead, channel, part);
-	fprintf(log_fd, "'");
-	vim_ignored = (int)fwrite(buf, len, 1, log_fd);
-	fprintf(log_fd, "'\n");
-    }
+	ch_log_literal(lead, channel, part, buf, len);
+
     return OK;
 }
 
@@ -2872,8 +2744,14 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 
     buffer->b_p_ma = TRUE;
 
-    // set curbuf to be our buf, temporarily
+    // Set curbuf to "buffer", temporarily.
     aucmd_prepbuf(&aco, buffer);
+    if (curbuf != buffer)
+    {
+	// Could not find a window for this buffer, the following might cause
+	// trouble, better bail out.
+	return;
+    }
 
     u_sync(TRUE);
     // ignore undo failure, undo is not very useful here
@@ -3012,7 +2890,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 					       || buffer->b_ml.ml_mfp == NULL))
     {
 	// buffer was wiped out or unloaded
-	ch_log(channel, "%s buffer has been wiped out", part_names[part]);
+	ch_log(channel, "%s buffer has been wiped out", ch_part_names[part]);
 	ch_part->ch_bufref.br_buf = NULL;
 	buffer = NULL;
     }
@@ -3452,7 +3330,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 		++channel->ch_refcount;
 		if (channel->ch_close_cb.cb_name == NULL)
 		    ch_log(channel, "flushing %s buffers before closing",
-							     part_names[part]);
+							  ch_part_names[part]);
 		while (may_invoke_callback(channel, part))
 		    ;
 		--channel->ch_refcount;
@@ -3854,7 +3732,7 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
     if (fd == INVALID_FD)
     {
 	ch_error(channel, "channel_read() called while %s part is closed",
-							    part_names[part]);
+							  ch_part_names[part]);
 	return;
     }
     use_socket = fd == channel->CH_SOCK_FD;
@@ -4123,7 +4001,7 @@ channel_read_json_block(
  * When "reading" is TRUE "check_open" considers typeahead useful.
  * "part" is used to check typeahead, when PART_COUNT use the default part.
  */
-    static channel_T *
+    channel_T *
 get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
 {
     channel_T	*channel = NULL;
@@ -4369,11 +4247,7 @@ channel_send(
 
     if (ch_log_active())
     {
-	ch_log_lead("SEND ", channel, part);
-	fprintf(log_fd, "'");
-	vim_ignored = (int)fwrite(buf_arg, len_arg, 1, log_fd);
-	fprintf(log_fd, "'\n");
-	fflush(log_fd);
+	ch_log_literal("SEND ", channel, part, buf_arg, len_arg);
 	did_repeated_msg = 0;
     }
 
@@ -5284,52 +5158,6 @@ f_ch_info(typval_T *argvars, typval_T *rettv UNUSED)
     channel = get_channel_arg(&argvars[0], FALSE, FALSE, 0);
     if (channel != NULL && rettv_dict_alloc(rettv) == OK)
 	channel_info(channel, rettv->vval.v_dict);
-}
-
-/*
- * "ch_log()" function
- */
-    void
-f_ch_log(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    char_u	*msg;
-    channel_T	*channel = NULL;
-
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_chan_or_job_arg(argvars, 1) == FAIL))
-	return;
-
-    msg = tv_get_string(&argvars[0]);
-    if (argvars[1].v_type != VAR_UNKNOWN)
-	channel = get_channel_arg(&argvars[1], FALSE, FALSE, 0);
-
-    ch_log(channel, "%s", msg);
-}
-
-/*
- * "ch_logfile()" function
- */
-    void
-f_ch_logfile(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    char_u *fname;
-    char_u *opt = (char_u *)"";
-    char_u buf[NUMBUFLEN];
-
-    // Don't open a file in restricted mode.
-    if (check_restricted() || check_secure())
-	return;
-
-    if (in_vim9script()
-	    && (check_for_string_arg(argvars, 0) == FAIL
-		|| check_for_opt_string_arg(argvars, 1) == FAIL))
-	return;
-
-    fname = tv_get_string(&argvars[0]);
-    if (argvars[1].v_type == VAR_STRING)
-	opt = tv_get_string_buf(&argvars[1], buf);
-    ch_logfile(fname, opt);
 }
 
 /*

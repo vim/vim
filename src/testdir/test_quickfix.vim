@@ -3120,6 +3120,11 @@ func Test_cwindow_highlight()
   call VerifyScreenDump(buf, 'Test_quickfix_cwindow_2', {})
 
   call term_sendkeys(buf, "\<C-W>j:set cursorline\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_quickfix_cwindow_3', {})
+
+  call term_sendkeys(buf, ":set cursorlineopt=number,screenline\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_quickfix_cwindow_3', {})
 
   call term_sendkeys(buf, "j")
@@ -3394,7 +3399,7 @@ func Test_cclose_from_copen()
 endfunc
 
 func Test_cclose_in_autocmd()
-  " Problem is only triggered if "starting" is zero, so that the OptionsSet
+  " Problem is only triggered if "starting" is zero, so that the OptionSet
   " event will be triggered.
   call test_override('starting', 1)
   augroup QF_Test
@@ -6383,6 +6388,18 @@ func Test_info_line_with_space()
   let l = execute('clist!')->split("\n")
   call assert_equal([" 1 a.c:20 col 12: error: expected ';' before ':' token",
         \ ' 2:    20 |     Afunc():', ' 3:  ', ' 4:       |            ^'], l)
+
+  call setqflist([], 'f')
+endfunc
+
+func s:QfTf(_)
+endfunc
+
+func Test_setqflist_cb_arg()
+  " This was changing the callback name in the dictionary.
+  let d = #{quickfixtextfunc: 's:QfTf'}
+  call setqflist([], 'a', d)
+  call assert_equal('s:QfTf', d.quickfixtextfunc)
 
   call setqflist([], 'f')
 endfunc

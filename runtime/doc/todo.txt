@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Nov 09
+*todo.txt*      For Vim version 9.0.  Last change: 2022 Dec 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,23 +38,93 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Add test for what 9.0.0827 fixes - '@' in termcap key code
-
-'smoothscroll':
-- CTRL-E and gj in long line with 'scrolloff' 5 not working well yet.
-- computing 'scrolloff' position row use w_skipcol
-- PR: Error in screen dump for Test_smoothscroll_one_long_line.  (PR #11436)
+Upcoming larger works:
+- Make spell checking work with recent .dic/.aff files, e.g. French.  #4916
+    Make Vim understand the format somehow?   Search for "spell" below.
+    Make sure suggestions are speedy, also with composed words (German).
+- Discuss alternatives for using other grammars (treesitter, TextMate).
+   - Possibly conversion to Vim syntax rules.
+   - Other mechanism than group and cluster to nest syntax items, to be used
+     for grammars.
+   - Possibly keeping the parsed syntax tree and incremental updates.
+   - tree-sitter doesn't handle incorrect syntax (while typing) properly.
+   - Make clear how it relates to LSP.
+   - example plugin: https://github.com/uga-rosa/dps-vsctm.vim
 
 
 Further Vim9 improvements, possibly after launch:
-- Use Vim9 for more runtime files.
+- implement :class and :interface: See |vim9-classes|  #11544
+    class members: add test for read/write access
+	Test for E1337
+    Should object members be declared with "var"?  Looks more normal.
+    Don't use "class method" in the help but use "class function", more people
+    are used to that.
+    implement class functions: static def Method()
+    Disallow shadowing class members, e.g. by function arguments.
+    tv_equal() should compare values, not identity.
+    import/export of a class
+    using a class name as a type
+    garbage collection: set_ref_in_item(): Mark items in class as used ?
+    type() should return different type for each class?
+    object empty(), len() - can class define a method to be used for them?
+    how about lock/unlock?
 - implement :type
 - implement :enum
-- implement :class and :interface: See |vim9-classes|
+- Use Vim9 for more runtime files.
 - Inline call to map() and filter(), better type checking.
 - When evaluating constants for script variables, some functions could work:
     has(featureName), len(someString)
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
+
+Information missing in terminfo:
+Priority:
+- t_RV	request terminal version string; xterm:	"\033[>c"
+Codes used for focus gained and lost (currently using use_xterm_like_mouse())
+  termcodes are hard-coded in set_termname(), not named.
+- t_fe	enable focus-event tracking
+- t_fd	disable focus-event tracking
+Underline and similar:
+- t_AU - Set underline color: like "AF" and "AB" entries.
+- t_Ce	undercurl and underline end
+- t_Cs	undercurl (curly underline) mode
+- t_Us	double underline mode
+- t_ds	dotted underline mode
+- t_Ds	dashed underline mode
+- t_Te	strikethrough end
+- t_Ts	strikethrough mode
+Cursor codes: |termcap-cursor-shape|
+- t_RC	request terminal cursor blinking
+- t_RS	request terminal cursor style
+- t_VS	cursor normally visible (no blink)
+- t_SI	start insert mode (bar cursor shape)
+- t_SR	start replace mode (underline cursor shape)
+- t_EI	end insert or replace mode (block cursor shape)
+- t_SC	set cursor color start
+- t_EC	set cursor color end
+- t_SH	set cursor shape
+State requests:
+- t_RF	request terminal foreground color
+- t_RB	request terminal background color
+Less important (not needed for regular editing):
+- t_IS	set icon text start
+- t_IE	set icon text end
+- t_ST	save window title to stack
+- t_RT	restore window title from stack
+- t_Si	save icon text to stack
+- t_Ri	restore icon text from stack
+- t_WP	set window position (Y, X) in pixels
+- t_GP	get window position (Y, X) in pixels
+- t_WS	set window size (height, width in cells)
+Vim internal, but there should be a terminfo entry for these:
+- t_8f	set foreground color (R, G, B) in printf() format
+- t_8b	set background color (R, G, B) in printf() format
+- t_8u	set underline color (R, G, B) in printf() format
+Probably Vim internal, not in terminfo:
+- t_TE	end of "raw" mode
+- t_TI	put terminal into "raw" mode
+- t_RK	request terminal keyboard protocol state; sent after |t_TI|
+Already working, not properly documented:
+- t_u7	request cursor position
 
 Popup windows:
 - Add a function to redraw a specific popup window.  Esp. to be used when
@@ -163,6 +233,10 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Patch adds showcmd() function  #11708  - tests missing StopVimInTerminal()
+
+Some setaf/setab/t_AF/t_AB values support RGB somehow?  Can we use that?
+
 Crash when a variable is removed while listing variables (Issue #11435)
 
 Autoconf: must use autoconf 2.69, later version generates lots of warnings
@@ -180,8 +254,40 @@ Add BufDeletePost.  #11041
 
 Add winid arg to col() and charcol()  #11466 (request #11461)
 
+Can we make 'noendofline' and 'endoffile' visible?  Should show by default,
+since it's an unusual situation.
+- Show 'noendofline' when it would be used for writing ('fileformat' "dos")
+  with an upside down exclamation mark?  NonText highlighting.
+- Show 'endoffile' when it would be used for writing ('fileformat' "dos") with
+  "CTRL-Z", NonText highlighting.
+- Add 'fillchars' items to change this, default behavior like:
+	noeol:¡
+	eof:CTRL-Z
+
 Test property disappears when using CR twice in a row.  OK when some text was
 entered. (#11151)
+
+Add 'keywordprg' to various ftplugin files:
+https://github.com/vim/vim/pull/5566
+
+PR #11579 to add visualtext(), return Visually selected text.
+
+Stray characters in the shell #11719, caused by requesting a response for:
+- XT key sequences
+- Whether modifyOtherKeys is active
+- Whether kitty keyboard protocol is active
+Can we not request XT key sequences, or reduce them drastically?
+
+Issue #10512: Dynamic loading broken with Perl 5.36
+Damien has a patch (2022 Dec 4)
+
+Add some kind of ":whathappend" command and functions to make visible what the
+last few typed keys and executed commands are.  To be used when the user
+wonders what went wrong.
+- typed keys - Normal mode command - like what is recorded in a register and
+  displayed by 'showcmd'.
+- executed command lines
+- with more verbosity: what scripts/functions/autocommands were executed
 
 NFA regexp does not handle composing characters well: #10286
     [ɔ̃] matches both ɔ and ɔ̃
@@ -191,23 +297,27 @@ Is there a way to make 'autowriteall' make a clean exit when the xterm is
 closed? (Dennis Nazic says files are preserved, okt 28).  Perhaps handle TERM
 like HUP?
 
-Improvement in terminal configuration mess: Request the terminfo entry from
-the terminal itself.  The $TERM value then is only relevant for whether this
-feature is supported or not.  Replaces the xterm mechanism to request each
-entry separately. #6609
-Multiplexers (screen, tmux) can request it to the underlying terminal, and
-pass it on with modifications.
-How to get all the text quickly (also over ssh)?  Can we use a side channel?
-
-Horizontal mouse scroll only works when compiled with GUI?  #11374
-
-In the libvterm fork properly implement:
-- modifyOtherKeys 2 - follow xterm implementation as close as possible, that
-  is the reference.
-- Kitty key protocol - just like the latest Kitty
-So that in TermDebug the key handling can be stepped through (instead of
-having to log messages all over the place to see what happens).
-Ask Leonerd about location of code, he might want to take over some of it.
+Better terminal emulator support:
+  > Somehow request the terminfo entry from the terminal itself.  The $TERM
+    value then is only relevant for whether this feature is supported or not.
+    Replaces the xterm mechanism to request each entry separately. #6609
+    Multiplexers (screen, tmux) can request it to the underlying terminal, and
+    pass it on with modifications.
+    How to get all the text quickly (also over ssh)? Can we use a side channel?
+  > When xterm supports sending an Escape sequence for the Esc key, should
+    have a way to request this state.  That could be an XTGETTCAP entry, e.g.
+    "k!".  Add "esc_sends_sequence" flag.
+    If we know this state, then do not pretend going out of Insert mode in
+    vgetorpeek(), where kitty_protocol_state is checked.
+  > If a response ends up in a shell command, one way to avoid this is by
+    sending t_RV last and delay starting a shell command until the response
+    has been seen.
+  > Can we use the req_more_codes_from_term() mechanism with more terminals?
+    Should we repeat it after executing a shell command?
+    Can also add this to the 'keyprotocol' option: "mok2+tcap"
+  > In the table of terminal names pointing to the list of termcap entries,
+    add an optional additional one.  So that "xterm-kitty" can first load
+    "xterm" and then add "kitty" entries.
 
 Using "A" and "o" in manually created fold (in empty buffer) does not behave
 consistenly (James McCoy, #10698)
@@ -224,7 +334,7 @@ Resetting 't_ut' already causes this?
 
 When scheme can't be found by configure there is no clear "not found" message:
     configure:5769: checking MzScheme install prefix
-    configure:5781: result: 
+    configure:5781: result:
 
 Can "CSI nr X" be used instead of outputting spaces?  Is it faster?  #8002
 
@@ -238,6 +348,15 @@ Idea: when typing ":e /some/dir/" and "dir" does not exist, highlight in red.
 ":set shellpipe&" and ":set shellredir&" should use the logic from
 initialization to figure out the default value from 'shell'.  Add a test for
 this.
+
+Support translations for plugins: #11637
+- Need a tool like xgettext for Vim script, generates a .pot file.
+  Need the equivalent of _() and N_(), perhaps TR() and TRN().
+- Instructions for how to create .po files and translate.
+- Script or Makefile to generate .mo files.
+- Instructions and perhaps a script to install the .mo files in the right
+  place.
+- Add variant of gettext() that takes a package name.
 
 With concealed text mouse click doesn't put the cursor in the right position.
 (Herb Sitz)  Fix by Christian Brabandt, 2011 Jun 16.  Doesn't work properly,
@@ -280,9 +399,6 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 Also, z= in German on a long word can take a very long time, but CTRL-C to
 interrupt does not work. Where to add ui_breakcheck()?
 New English spell files also have very slow suggestions.
-
-French spell files don't work correctly.  #4916
-    Make Vim understand the format somehow?
 
 When 'spelloptions' is "camel" then zG doesn't work on some words.
 (Gary Johnson, 17 Oct 2022)
@@ -375,6 +491,10 @@ work.
 
 Using "au!" after "filetype on" is a bit slow.  Can the matching of
 autocommands be made faster?  (#7056)
+
+Using a search pattern containing "\%V" and 'hlsearch' set keeps old matches
+when the Visual area changes.  #11694.  Do a redraw when starting a Visual
+selection?
 
 Append in Visual block mode inserts the wrong character.
 Test_visual_block_mode() already has the proper check, which is commented out.
@@ -2611,13 +2731,6 @@ Awaiting updated patches:
 -   Add possibility to highlight specific columns (for Fortran).  Or put a
     line in between columns (e.g., for 'textwidth').
     Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
-8   Add functions:
-    gettext()		Translate a message.  (Patch from Yasuhiro Matsumoto)
-			Update 2004 Sep 10
-			Another patch from Edward L. Fox (2005 Nov 24)
-			Search in 'runtimepath'?
-			More docs needed about how to use this.
-			How to get the messages into the .po files?
     confirm()		add "flags" argument, with 'v' for vertical
 			    layout and 'c' for console dialog. (Haegg)
 			    Flemming Madsen has a patch for the 'c' flag
@@ -4501,8 +4614,11 @@ Autocommands:
 		      BufChangePre, BufChangePost and RevertBuf. (Shah)
     ViewChanged	    - triggered when the text scrolls and when the window size
 		      changes.
-    WinResized	    - After a window has been resized
-    WinClose	    - Just before closing a window
+    QuickfixList    - when any entry in the current list changes or another
+		      list is selected
+    QuickfixPosition - when selecting another entry in the current quickfix
+		       list
+
 -   Write the file now and then ('autosave'):
 				  *'autosave'* *'as'* *'noautosave'* *'noas'*
     'autosave' 'as' number  (default 0)

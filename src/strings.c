@@ -525,6 +525,19 @@ vim_strcat(char_u *to, char_u *from, size_t tosize)
 	mch_memmove(to + tolen, from, fromlen + 1);
 }
 
+/*
+ * A version of strlen() that has a maximum length.
+ */
+    size_t
+vim_strlen_maxlen(char *s, size_t maxlen)
+{
+    size_t i;
+    for (i = 0; i < maxlen; ++i)
+	if (s[i] == NUL)
+	    break;
+    return i;
+}
+
 #if (!defined(HAVE_STRCASECMP) && !defined(HAVE_STRICMP)) || defined(PROTO)
 /*
  * Compare two strings, ignoring case, using current locale.
@@ -582,7 +595,7 @@ vim_strnicmp(char *s1, char *s2, size_t len)
  * 128 to 255 correctly.  It also doesn't return a pointer to the NUL at the
  * end of the string.
  */
-    char_u  *
+    char_u *
 vim_strchr(char_u *string, int c)
 {
     char_u	*p;

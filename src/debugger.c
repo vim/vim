@@ -682,43 +682,43 @@ ex_breakadd(exarg_T *eap)
 	gap = &prof_ga;
 #endif
 
-    if (dbg_parsearg(eap->arg, gap) == OK)
-    {
-	bp = &DEBUGGY(gap, gap->ga_len);
-	bp->dbg_forceit = eap->forceit;
+    if (dbg_parsearg(eap->arg, gap) != OK)
+	return;
 
-	if (bp->dbg_type != DBG_EXPR)
+    bp = &DEBUGGY(gap, gap->ga_len);
+    bp->dbg_forceit = eap->forceit;
+
+    if (bp->dbg_type != DBG_EXPR)
+    {
+	pat = file_pat_to_reg_pat(bp->dbg_name, NULL, NULL, FALSE);
+	if (pat != NULL)
 	{
-	    pat = file_pat_to_reg_pat(bp->dbg_name, NULL, NULL, FALSE);
-	    if (pat != NULL)
-	    {
-		bp->dbg_prog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
-		vim_free(pat);
-	    }
-	    if (pat == NULL || bp->dbg_prog == NULL)
-		vim_free(bp->dbg_name);
-	    else
-	    {
-		if (bp->dbg_lnum == 0)	// default line number is 1
-		    bp->dbg_lnum = 1;
-#ifdef FEAT_PROFILE
-		if (eap->cmdidx != CMD_profile)
-#endif
-		{
-		    DEBUGGY(gap, gap->ga_len).dbg_nr = ++last_breakp;
-		    ++debug_tick;
-		}
-		++gap->ga_len;
-	    }
+	    bp->dbg_prog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+	    vim_free(pat);
 	}
+	if (pat == NULL || bp->dbg_prog == NULL)
+	    vim_free(bp->dbg_name);
 	else
 	{
-	    // DBG_EXPR
-	    DEBUGGY(gap, gap->ga_len++).dbg_nr = ++last_breakp;
-	    ++debug_tick;
-	    if (gap == &dbg_breakp)
-		has_expr_breakpoint = TRUE;
+	    if (bp->dbg_lnum == 0)	// default line number is 1
+		bp->dbg_lnum = 1;
+#ifdef FEAT_PROFILE
+	    if (eap->cmdidx != CMD_profile)
+#endif
+	    {
+		DEBUGGY(gap, gap->ga_len).dbg_nr = ++last_breakp;
+		++debug_tick;
+	    }
+	    ++gap->ga_len;
 	}
+    }
+    else
+    {
+	// DBG_EXPR
+	DEBUGGY(gap, gap->ga_len++).dbg_nr = ++last_breakp;
+	++debug_tick;
+	if (gap == &dbg_breakp)
+	    has_expr_breakpoint = TRUE;
     }
 }
 
@@ -822,36 +822,37 @@ ex_breakdel(exarg_T *eap)
     }
 
     if (todel < 0)
-	semsg(_(e_breakpoint_not_found_str), eap->arg);
-    else
     {
-	while (gap->ga_len > 0)
-	{
-	    vim_free(DEBUGGY(gap, todel).dbg_name);
-#ifdef FEAT_EVAL
-	    if (DEBUGGY(gap, todel).dbg_type == DBG_EXPR
-		    && DEBUGGY(gap, todel).dbg_val != NULL)
-		free_tv(DEBUGGY(gap, todel).dbg_val);
-#endif
-	    vim_regfree(DEBUGGY(gap, todel).dbg_prog);
-	    --gap->ga_len;
-	    if (todel < gap->ga_len)
-		mch_memmove(&DEBUGGY(gap, todel), &DEBUGGY(gap, todel + 1),
-			      (gap->ga_len - todel) * sizeof(struct debuggy));
-#ifdef FEAT_PROFILE
-	    if (eap->cmdidx == CMD_breakdel)
-#endif
-		++debug_tick;
-	    if (!del_all)
-		break;
-	}
-
-	// If all breakpoints were removed clear the array.
-	if (gap->ga_len == 0)
-	    ga_clear(gap);
-	if (gap == &dbg_breakp)
-	    update_has_expr_breakpoint();
+	semsg(_(e_breakpoint_not_found_str), eap->arg);
+	return;
     }
+
+    while (gap->ga_len > 0)
+    {
+	vim_free(DEBUGGY(gap, todel).dbg_name);
+#ifdef FEAT_EVAL
+	if (DEBUGGY(gap, todel).dbg_type == DBG_EXPR
+		&& DEBUGGY(gap, todel).dbg_val != NULL)
+	    free_tv(DEBUGGY(gap, todel).dbg_val);
+#endif
+	vim_regfree(DEBUGGY(gap, todel).dbg_prog);
+	--gap->ga_len;
+	if (todel < gap->ga_len)
+	    mch_memmove(&DEBUGGY(gap, todel), &DEBUGGY(gap, todel + 1),
+		    (gap->ga_len - todel) * sizeof(struct debuggy));
+#ifdef FEAT_PROFILE
+	if (eap->cmdidx == CMD_breakdel)
+#endif
+	    ++debug_tick;
+	if (!del_all)
+	    break;
+    }
+
+    // If all breakpoints were removed clear the array.
+    if (gap->ga_len == 0)
+	ga_clear(gap);
+    if (gap == &dbg_breakp)
+	update_has_expr_breakpoint();
 }
 
 /*
@@ -864,23 +865,26 @@ ex_breaklist(exarg_T *eap UNUSED)
     int		i;
 
     if (dbg_breakp.ga_len == 0)
+    {
 	msg(_("No breakpoints defined"));
-    else
-	for (i = 0; i < dbg_breakp.ga_len; ++i)
-	{
-	    bp = &BREAKP(i);
-	    if (bp->dbg_type == DBG_FILE)
-		home_replace(NULL, bp->dbg_name, NameBuff, MAXPATHL, TRUE);
-	    if (bp->dbg_type != DBG_EXPR)
-		smsg(_("%3d  %s %s  line %ld"),
+	return;
+    }
+
+    for (i = 0; i < dbg_breakp.ga_len; ++i)
+    {
+	bp = &BREAKP(i);
+	if (bp->dbg_type == DBG_FILE)
+	    home_replace(NULL, bp->dbg_name, NameBuff, MAXPATHL, TRUE);
+	if (bp->dbg_type != DBG_EXPR)
+	    smsg(_("%3d  %s %s  line %ld"),
 		    bp->dbg_nr,
 		    bp->dbg_type == DBG_FUNC ? "func" : "file",
 		    bp->dbg_type == DBG_FUNC ? bp->dbg_name : NameBuff,
 		    (long)bp->dbg_lnum);
-	    else
-		smsg(_("%3d  expr %s"),
+	else
+	    smsg(_("%3d  expr %s"),
 		    bp->dbg_nr, bp->dbg_name);
-	}
+    }
 }
 
 /*

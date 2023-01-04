@@ -69,6 +69,7 @@ enum SpecialKey
     KS_KE,	// out of "keypad transmit" mode
     KS_TI,	// put terminal in termcap mode
     KS_CTI,	// put terminal in "raw" mode
+    KS_CRK,	// request keyboard protocol state
     KS_TE,	// end of termcap mode
     KS_CTE,	// end of "raw" mode
     KS_BC,	// backspace character (cursor left)
@@ -107,8 +108,6 @@ enum SpecialKey
     KS_8U,	// set underline color (RGB)
     KS_CBE,	// enable bracketed paste mode
     KS_CBD,	// disable bracketed paste mode
-    KS_CPS,	// start of bracketed paste
-    KS_CPE,	// end of bracketed paste
     KS_CST,	// save window title
     KS_CRT,	// restore window title
     KS_SSI,	// save icon text
@@ -177,6 +176,7 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_KE	(TERM_STR(KS_KE))	// out of "keypad transmit" mode
 #define T_TI	(TERM_STR(KS_TI))	// put terminal in termcap mode
 #define T_CTI	(TERM_STR(KS_CTI))	// put terminal in "raw" mode
+#define T_CRK	(TERM_STR(KS_CRK))	// request keyboard protocol status
 #define T_TE	(TERM_STR(KS_TE))	// end of termcap mode
 #define T_CTE	(TERM_STR(KS_CTE))	// end of "raw" mode
 #define T_BC	(TERM_STR(KS_BC))	// backspace character
@@ -214,8 +214,6 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_8U	(TERM_STR(KS_8U))	// set underline color (RGB)
 #define T_BE	(TERM_STR(KS_CBE))	// enable bracketed paste mode
 #define T_BD	(TERM_STR(KS_CBD))	// disable bracketed paste mode
-#define T_PS	(TERM_STR(KS_CPS))	// start of bracketed paste
-#define T_PE	(TERM_STR(KS_CPE))	// end of bracketed paste
 #define T_CST	(TERM_STR(KS_CST))	// save window title
 #define T_CRT	(TERM_STR(KS_CRT))	// restore window title
 #define T_SSI	(TERM_STR(KS_SSI))	// save icon text

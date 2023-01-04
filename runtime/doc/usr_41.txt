@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 9.0.  Last change: 2022 Oct 07
+*usr_41.txt*	For Vim version 9.0.  Last change: 2022 Dec 20
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -442,7 +442,7 @@ If you don't like the concatenation you can use the $"string" form, which
 accepts an expression in curly braces: >
 	echo $"Name: {name}"
 
-See |interp-string| for more information.
+See |interpolated-string| for more information.
 
 Borrowed from the C language is the conditional expression: >
 
@@ -803,7 +803,7 @@ List manipulation:					*list-functions*
 	call()			call a function with List as arguments
 	index()			index of a value in a List or Blob
 	indexof()		index in a List or Blob where an expression
-				evaluates to true 
+				evaluates to true
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
@@ -935,6 +935,7 @@ Working with text in the current buffer:		*text-functions*
 
 Working with text in another buffer:
 	getbufline()		get a list of lines from the specified buffer
+	getbufoneline()		get a one line from the specified buffer
 	setbufline()		replace a line in the specified buffer
 	appendbufline()		append a list of lines in the specified buffer
 	deletebufline()		delete lines from a specified buffer
@@ -1030,6 +1031,7 @@ Buffers, windows and the argument list:
 	getwininfo()		get a list with window information
 	getchangelist()		get a list of change list entries
 	getjumplist()		get a list of jump list entries
+	swapfilelist()		list of existing swap files in 'directory'
 	swapinfo()		information about a swap file
 	swapname()		get the swap file path of a buffer
 
@@ -1184,6 +1186,7 @@ Testing:				    *test-functions*
 	test_getvalue()		get value of an internal variable
 	test_gui_event()	generate a GUI event for testing
 	test_ignore_error()	ignore a specific error message
+	test_mswin_event()	generate an MS-Windows event
 	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict

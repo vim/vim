@@ -135,19 +135,19 @@ check_changed(buf_T *buf, int flags)
     void
 browse_save_fname(buf_T *buf)
 {
-    if (buf->b_fname == NULL)
-    {
-	char_u *fname;
+    if (buf->b_fname != NULL)
+	return;
 
-	fname = do_browse(BROWSE_SAVE, (char_u *)_("Save As"),
-						 NULL, NULL, NULL, NULL, buf);
-	if (fname != NULL)
-	{
-	    if (setfname(buf, fname, NULL, TRUE) == OK)
-		buf->b_flags |= BF_NOTEDITED;
-	    vim_free(fname);
-	}
-    }
+    char_u *fname;
+
+    fname = do_browse(BROWSE_SAVE, (char_u *)_("Save As"),
+	    NULL, NULL, NULL, NULL, buf);
+    if (fname == NULL)
+	return;
+
+    if (setfname(buf, fname, NULL, TRUE) == OK)
+	buf->b_flags |= BF_NOTEDITED;
+    vim_free(fname);
 }
 #endif
 
@@ -460,7 +460,6 @@ ex_listdo(exarg_T *eap)
 #if defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
 #endif
-    char_u	*p_shm_save;
 #ifdef FEAT_QUICKFIX
     int		qf_size = 0;
     int		qf_idx;
@@ -541,7 +540,9 @@ ex_listdo(exarg_T *eap)
 		buf = NULL;
 	    else
 	    {
+		save_clear_shm_value();
 		ex_cc(eap);
+		restore_shm_value();
 
 		buf = curbuf;
 		i = eap->line1 - 1;
@@ -568,13 +569,9 @@ ex_listdo(exarg_T *eap)
 		{
 		    // Clear 'shm' to avoid that the file message overwrites
 		    // any output from the command.
-		    p_shm_save = vim_strsave(p_shm);
-		    set_option_value_give_err((char_u *)"shm",
-							  0L, (char_u *)"", 0);
+		    save_clear_shm_value();
 		    do_argfile(eap, i);
-		    set_option_value_give_err((char_u *)"shm",
-							    0L, p_shm_save, 0);
-		    vim_free(p_shm_save);
+		    restore_shm_value();
 		}
 		if (curwin->w_arg_idx != i)
 		    break;
@@ -630,11 +627,9 @@ ex_listdo(exarg_T *eap)
 
 		// Go to the next buffer.  Clear 'shm' to avoid that the file
 		// message overwrites any output from the command.
-		p_shm_save = vim_strsave(p_shm);
-		set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
+		save_clear_shm_value();
 		goto_buffer(eap, DOBUF_FIRST, FORWARD, next_fnum);
-		set_option_value_give_err((char_u *)"shm", 0L, p_shm_save, 0);
-		vim_free(p_shm_save);
+		restore_shm_value();
 
 		// If autocommands took us elsewhere, quit here.
 		if (curbuf->b_fnum != next_fnum)
@@ -650,13 +645,9 @@ ex_listdo(exarg_T *eap)
 
 		qf_idx = qf_get_cur_idx(eap);
 
-		// Clear 'shm' to avoid that the file message overwrites
-		// any output from the command.
-		p_shm_save = vim_strsave(p_shm);
-		set_option_value_give_err((char_u *)"shm", 0L, (char_u *)"", 0);
+		save_clear_shm_value();
 		ex_cnext(eap);
-		set_option_value_give_err((char_u *)"shm", 0L, p_shm_save, 0);
-		vim_free(p_shm_save);
+		restore_shm_value();
 
 		// If jumping to the next quickfix entry fails, quit here
 		if (qf_get_cur_idx(eap) == qf_idx)
@@ -705,9 +696,12 @@ ex_listdo(exarg_T *eap)
 		else
 		{
 		    aucmd_prepbuf(&aco, buf);
-		    apply_autocmds(EVENT_SYNTAX, buf->b_p_syn,
+		    if (curbuf == buf)
+		    {
+			apply_autocmds(EVENT_SYNTAX, buf->b_p_syn,
 						      buf->b_fname, TRUE, buf);
-		    aucmd_restbuf(&aco);
+			aucmd_restbuf(&aco);
+		    }
 		}
 
 		// start over, in case autocommands messed things up.
@@ -737,60 +731,59 @@ ex_compiler(exarg_T *eap)
 	// List all compiler scripts.
 	do_cmdline_cmd((char_u *)"echo globpath(&rtp, 'compiler/*.vim')");
 					// ) keep the indenter happy...
+	return;
+    }
+
+    buf = alloc(STRLEN(eap->arg) + 14);
+    if (buf == NULL)
+	return;
+
+    if (eap->forceit)
+    {
+	// ":compiler! {name}" sets global options
+	do_cmdline_cmd((char_u *)
+		"command -nargs=* CompilerSet set <args>");
     }
     else
     {
-	buf = alloc(STRLEN(eap->arg) + 14);
-	if (buf != NULL)
+	// ":compiler! {name}" sets local options.
+	// To remain backwards compatible "current_compiler" is always
+	// used.  A user's compiler plugin may set it, the distributed
+	// plugin will then skip the settings.  Afterwards set
+	// "b:current_compiler" and restore "current_compiler".
+	// Explicitly prepend "g:" to make it work in a function.
+	old_cur_comp = get_var_value((char_u *)"g:current_compiler");
+	if (old_cur_comp != NULL)
+	    old_cur_comp = vim_strsave(old_cur_comp);
+	do_cmdline_cmd((char_u *)
+		"command -nargs=* -keepscript CompilerSet setlocal <args>");
+    }
+    do_unlet((char_u *)"g:current_compiler", TRUE);
+    do_unlet((char_u *)"b:current_compiler", TRUE);
+
+    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
+    if (source_runtime(buf, DIP_ALL) == FAIL)
+	semsg(_(e_compiler_not_supported_str), eap->arg);
+    vim_free(buf);
+
+    do_cmdline_cmd((char_u *)":delcommand CompilerSet");
+
+    // Set "b:current_compiler" from "current_compiler".
+    p = get_var_value((char_u *)"g:current_compiler");
+    if (p != NULL)
+	set_internal_string_var((char_u *)"b:current_compiler", p);
+
+    // Restore "current_compiler" for ":compiler {name}".
+    if (!eap->forceit)
+    {
+	if (old_cur_comp != NULL)
 	{
-	    if (eap->forceit)
-	    {
-		// ":compiler! {name}" sets global options
-		do_cmdline_cmd((char_u *)
-				   "command -nargs=* CompilerSet set <args>");
-	    }
-	    else
-	    {
-		// ":compiler! {name}" sets local options.
-		// To remain backwards compatible "current_compiler" is always
-		// used.  A user's compiler plugin may set it, the distributed
-		// plugin will then skip the settings.  Afterwards set
-		// "b:current_compiler" and restore "current_compiler".
-		// Explicitly prepend "g:" to make it work in a function.
-		old_cur_comp = get_var_value((char_u *)"g:current_compiler");
-		if (old_cur_comp != NULL)
-		    old_cur_comp = vim_strsave(old_cur_comp);
-		do_cmdline_cmd((char_u *)
-		   "command -nargs=* -keepscript CompilerSet setlocal <args>");
-	    }
-	    do_unlet((char_u *)"g:current_compiler", TRUE);
-	    do_unlet((char_u *)"b:current_compiler", TRUE);
-
-	    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
-	    if (source_runtime(buf, DIP_ALL) == FAIL)
-		semsg(_(e_compiler_not_supported_str), eap->arg);
-	    vim_free(buf);
-
-	    do_cmdline_cmd((char_u *)":delcommand CompilerSet");
-
-	    // Set "b:current_compiler" from "current_compiler".
-	    p = get_var_value((char_u *)"g:current_compiler");
-	    if (p != NULL)
-		set_internal_string_var((char_u *)"b:current_compiler", p);
-
-	    // Restore "current_compiler" for ":compiler {name}".
-	    if (!eap->forceit)
-	    {
-		if (old_cur_comp != NULL)
-		{
-		    set_internal_string_var((char_u *)"g:current_compiler",
-								old_cur_comp);
-		    vim_free(old_cur_comp);
-		}
-		else
-		    do_unlet((char_u *)"g:current_compiler", TRUE);
-	    }
+	    set_internal_string_var((char_u *)"g:current_compiler",
+		    old_cur_comp);
+	    vim_free(old_cur_comp);
 	}
+	else
+	    do_unlet((char_u *)"g:current_compiler", TRUE);
     }
 }
 #endif

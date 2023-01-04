@@ -259,6 +259,8 @@ f_listener_add(typval_T *argvars, typval_T *rettv)
     buf->b_listener = lnr;
 
     set_callback(&lnr->lr_callback, &callback);
+    if (callback.cb_free_name)
+	vim_free(callback.cb_name);
 
     lnr->lr_id = ++next_listener_id;
     rettv->vval.v_number = lnr->lr_id;

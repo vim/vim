@@ -51,6 +51,7 @@ runtime/compiler/dartanalyser.vim	@dkearns
 runtime/compiler/dartdevc.vim		@dkearns
 runtime/compiler/dartdoc.vim		@dkearns
 runtime/compiler/dartfmt.vim		@dkearns
+runtime/compiler/dotnet.vim		@nickspoons
 runtime/compiler/eruby.vim		@dkearns
 runtime/compiler/fbc.vim		@dkearns
 runtime/compiler/gawk.vim		@dkearns
@@ -181,6 +182,7 @@ runtime/ftplugin/python.vim		@tpict
 runtime/ftplugin/qb64.vim		@dkearns
 runtime/ftplugin/r.vim			@jalvesaq
 runtime/ftplugin/racket.vim		@benknoble
+runtime/ftplugin/readline.vim		@dkearns
 runtime/ftplugin/rhelp.vim		@jalvesaq
 runtime/ftplugin/rmd.vim		@jalvesaq
 runtime/ftplugin/rnoweb.vim		@jalvesaq
@@ -297,6 +299,7 @@ runtime/plugin/tarPlugin.vim		@cecamp
 runtime/plugin/vimballPlugin.vim	@cecamp
 runtime/plugin/zipPlugin.vim		@cecamp
 runtime/plugin/manpager.vim		@Konfekt
+runtime/syntax/shared/hgcommitDiff.vim		@vegerot
 runtime/syntax/abaqus.vim		@costerwi
 runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/amiga.vim		@cecamp
@@ -394,6 +397,7 @@ runtime/syntax/n1ql.vim			@pr3d4t0r
 runtime/syntax/netrw.vim		@cecamp
 runtime/syntax/nginx.vim		@chr4
 runtime/syntax/ninja.vim		@nico
+runtime/syntax/nix.vim			@equill
 runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
 runtime/syntax/openvpn.vim		@ObserverOfTime
@@ -464,6 +468,7 @@ runtime/syntax/vdf.vim			@ObserverOfTime
 runtime/syntax/vim.vim			@cecamp
 runtime/syntax/vroom.vim		@dbarnett
 runtime/syntax/wast.vim			@rhysd
+runtime/syntax/wdl.vim			@zenmatic
 runtime/syntax/wget.vim			@dkearns
 runtime/syntax/wget2.vim		@dkearns
 runtime/syntax/xbl.vim			@dkearns

@@ -173,22 +173,23 @@ jobs:
           sudo usermod -a -G audio "${USER}"
           sudo bash ci/setup-xvfb.sh
 
-      - name: Cache snd-dummy
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.SND_DUMMY_DIR }}
-          key: linux-${{ env.LINUX_VERSION }}-snd-dummy
+      # FIXME: Temporarily disabled because of build errors
+      #- name: Cache snd-dummy
+      #  uses: actions/cache@v3
+      #  with:
+      #    path: ${{ env.SND_DUMMY_DIR }}
+      #    key: linux-${{ env.LINUX_VERSION }}-snd-dummy
 
-      - name: Set up snd-dummy
-        run: |
-          if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
-            bash ci/build-snd-dummy.sh
-          fi
-          cd "${SND_DUMMY_DIR}"
-          sudo insmod soundcore.ko
-          sudo insmod snd.ko
-          sudo insmod snd-pcm.ko
-          sudo insmod snd-dummy.ko
+      #- name: Set up snd-dummy
+      #  run: |
+      #    if [[ ! -e ${SND_DUMMY_DIR}/snd-dummy.ko ]]; then
+      #      bash ci/build-snd-dummy.sh
+      #    fi
+      #    cd "${SND_DUMMY_DIR}"
+      #    sudo insmod soundcore.ko
+      #    sudo insmod snd.ko
+      #    sudo insmod snd-pcm.ko
+      #    sudo insmod snd-dummy.ko
 
       - name: Check autoconf
         if: contains(matrix.extra, 'unittests')
@@ -252,7 +253,7 @@ jobs:
 
       - name: Codecov
         if: matrix.coverage
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3
         with:
           flags: linux,${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
 
@@ -371,8 +372,8 @@ jobs:
       PYTHON_VER_DOT: '2.7'
       PYTHON_DIR: 'C:\Python27'
       # Python 3
-      PYTHON3_VER: 310
-      PYTHON3_VER_DOT: '3.10'
+      PYTHON3_VER: 311
+      PYTHON3_VER_DOT: '3.11'
       # Other dependencies
       # winpty
       WINPTY_URL: https://github.com/rprichard/winpty/releases/download/0.4.3/winpty-0.4.3-msvc2015.zip
@@ -611,7 +612,7 @@ jobs:
 
       - name: Codecov
         if: matrix.coverage
-        uses: codecov/codecov-action@v3.1.1
+        uses: codecov/codecov-action@v3
         with:
           directory: src
           flags: windows,${{ matrix.toolchain }}-${{ matrix.arch }}-${{ matrix.features }}
