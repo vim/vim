@@ -20,7 +20,6 @@ before_build:
   # Use Visual Studio 2015 compiler tools (default is 2012)
   # - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64'
   - 'chcp 65001'
-  - 'call chcp'
   - '"C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64'
 
 build_script:
