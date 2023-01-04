@@ -1,7 +1,7 @@
 version: "{build}"
 
-# image: Visual Studio 2015
-image: Visual Studio 2022
+image: Visual Studio 2015
+#image: Visual Studio 2022
 
 skip_tags: true
 
@@ -18,8 +18,8 @@ matrix:
 
 before_build:
   # Use Visual Studio 2015 compiler tools (default is 2012)
-  #  - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64'
-  - 'call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64'
+   - '"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64'
+  # - 'call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x64'
 
 build_script:
   - ci/appveyor.bat

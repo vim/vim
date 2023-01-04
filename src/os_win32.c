@@ -1144,7 +1144,7 @@ decode_key_event(
 				if (!(nModifs & SHIFT))
 				    *pch2 = VirtKeyMap[i].chAlone;
 			    }
-			    if ((nModifs & CTRL))
+			    if (nModifs & CTRL)
 			    {
 				*pmodifiers |= MOD_MASK_CTRL;
 				if (!(nModifs & SHIFT))
