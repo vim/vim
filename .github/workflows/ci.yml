@@ -404,6 +404,7 @@ jobs:
         run: |
           # Show Windows version
           cmd /c ver
+          cmd /c chcp
 
           git config --global core.autocrlf input
 
