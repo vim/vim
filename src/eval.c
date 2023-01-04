@@ -7312,6 +7312,11 @@ do_string_sub(
 	     * - The text after the match.
 	     */
 	    sublen = vim_regsub(&regmatch, sub, expr, tail, 0, REGSUB_MAGIC);
+	    if (sublen <= 0)
+	    {
+		ga_clear(&ga);
+		break;
+	    }
 	    if (ga_grow(&ga, (int)((end - tail) + sublen -
 			    (regmatch.endp[0] - regmatch.startp[0]))) == FAIL)
 	    {
