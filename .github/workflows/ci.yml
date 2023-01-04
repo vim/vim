@@ -404,7 +404,6 @@ jobs:
         run: |
           # Show Windows version
           cmd /c ver
-          cmd /c chcp
 
           git config --global core.autocrlf input
 
@@ -494,6 +493,7 @@ jobs:
         if: matrix.toolchain == 'msvc'
         shell: cmd
         run: |
+          call chcp 65001
           call "%VCVARSALL%" %VCARCH%
           cd src
           if "${{ matrix.VIMDLL }}"=="yes" (
@@ -575,6 +575,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
+          call chcp 65001
           PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
           call "%VCVARSALL%" %VCARCH%
 
@@ -592,6 +593,7 @@ jobs:
         shell: cmd
         timeout-minutes: 15
         run: |
+          call chcp 65001
           PATH %LUA_DIR%;C:\msys64\%MSYSTEM%\bin;%PATH%;%PYTHON3_DIR%
           call "%VCVARSALL%" %VCARCH%
 
