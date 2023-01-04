@@ -1119,13 +1119,12 @@ decode_key_event(
     {
 	if (VirtKeyMap[i].wVirtKey == pker->wVirtualKeyCode)
 	{
-	    if (nModifs == 0)
-		*pch = VirtKeyMap[i].chAlone;
-	    else if ((nModifs & SHIFT) && (vtp_working || !(nModifs & ~SHIFT)))
+	    *pch = VirtKeyMap[i].chAlone;
+	    if (nModifs & SHIFT)
 		*pch = VirtKeyMap[i].chShift;
 	    else if ((nModifs & CTRL) && !(nModifs & ~CTRL))
 		*pch = VirtKeyMap[i].chCtrl;
-	    else if ((nModifs & ALT) && (vtp_working || !(nModifs & ~ALT)))
+	    else if (nModifs & ALT)
 		*pch = VirtKeyMap[i].chAlt;
 
 	    if (*pch != 0)
@@ -1134,7 +1133,7 @@ decode_key_event(
 		{
 		    *pch2 = *pch;
 		    *pch = K_NUL;
-		    if (pmodifiers && vtp_working)
+		    if (pmodifiers)
 		    {
 			if (pker->wVirtualKeyCode >= VK_F1
 			    && pker->wVirtualKeyCode <= VK_F12)
