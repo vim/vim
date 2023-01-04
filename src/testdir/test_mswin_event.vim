@@ -487,9 +487,10 @@ func Test_mswin_key_event()
     endfor
   endif
 
-  " Windows intercepts some of these keys in the GUI
+  " Test for Function Keys 'F1' to 'F12'
+  " VK codes 112(0x70) - 123(0x7B)
+  " NOTE: Windows intercepts some of these keys in the GUI
   if !has("gui_running")
-    " Test for Function Keys 'F1' to 'F12'
     for n in range(1, 12)
       let kstr = $"F{n}"
       let keycode = eval('"\<' .. kstr .. '>"')
@@ -497,10 +498,8 @@ func Test_mswin_key_event()
       let ch = getcharstr(0)
       call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
     endfor
-    "  NOTE: mod + Fn Keys not working in CI Testing!?
-    " Test for Function Keys 'F1' to 'F12'
-    " VK codes 112(0x70) - 123(0x7B)
-    " With ALL permutatios of modifiers; Shift, Ctrl & Alt
+    " Fn with ALL permutatios of modifiers; Shift, Ctrl & Alt
+    " NOTE: Fn with Mods not working in CI Testing, but is working in appveyor!?
     for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
       for n in range(1, 12)
         let kstr = $"{mod_str}F{n}"
