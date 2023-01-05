@@ -263,6 +263,22 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return FAIL;
     }
 
+    if (type->tt_type == VAR_CLASS)
+    {
+	garray_T *instr = &cctx->ctx_instr;
+	if (instr->ga_len > 0)
+	{
+	    isn_T *isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+	    if (isn->isn_type == ISN_LOADSCRIPT)
+	    {
+		// The class was recognized as a script item.  We only need
+		// to know what class it is, drop the instruction.
+		--instr->ga_len;
+		vim_free(isn->isn_arg.script.scriptref);
+	    }
+	}
+    }
+
     ++*arg;
     char_u *name = *arg;
     char_u *name_end = find_name_end(name, NULL, NULL, FNE_CHECK_START);
@@ -273,10 +289,52 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     class_T *cl = (class_T *)type->tt_member;
     if (*name_end == '(')
     {
-	// TODO: method or function call
-	emsg("compile_class_object_index(): object/class call not handled yet");
+	int	function_count;
+	ufunc_T	**functions;
+
+	if (type->tt_type == VAR_CLASS)
+	{
+	    function_count = cl->class_class_function_count;
+	    functions = cl->class_class_functions;
+	}
+	else
+	{
+	    // type->tt_type == VAR_OBJECT: method call
+	    function_count = cl->class_obj_method_count;
+	    functions = cl->class_obj_methods;
+	}
+
+	ufunc_T *ufunc = NULL;
+	for (int i = 0; i < function_count; ++i)
+	{
+	    ufunc_T *fp = functions[i];
+	    // Use a separate pointer to avoid that ASAN complains about
+	    // uf_name[] only being 4 characters.
+	    char_u *ufname = (char_u *)fp->uf_name;
+	    if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
+	    {
+		ufunc = fp;
+		break;
+	    }
+	}
+	if (ufunc == NULL)
+	{
+	    // TODO: different error for object method?
+	    semsg(_(e_method_not_found_on_class_str_str), cl->class_name, name);
+	    return FAIL;
+	}
+
+	// Compile the arguments and call the class function or object method.
+	// The object method will know that the object is on the stack, just
+	// before the arguments.
+	*arg = skipwhite(name_end + 1);
+	int argcount = 0;
+	if (compile_arguments(arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
+	    return FAIL;
+	return generate_CALL(cctx, ufunc, argcount);
     }
-    else if (type->tt_type == VAR_OBJECT)
+
+    if (type->tt_type == VAR_OBJECT)
     {
 	for (int i = 0; i < cl->class_obj_member_count; ++i)
 	{
@@ -289,10 +347,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		    return FAIL;
 		}
 
-		generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type);
-
 		*arg = name_end;
-		return OK;
+		return generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type);
 	    }
 	}
 
@@ -300,8 +356,20 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     }
     else
     {
-	// TODO: class member
-	emsg("compile_class_object_index(): class member not handled yet");
+	// load class member
+	int idx;
+	for (idx = 0; idx < cl->class_class_member_count; ++idx)
+	{
+	    ocmember_T *m = &cl->class_class_members[idx];
+	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
+		break;
+	}
+	if (idx < cl->class_class_member_count)
+	{
+	    *arg = name_end;
+	    return generate_CLASSMEMBER(cctx, TRUE, cl, idx);
+	}
+	semsg(_(e_class_member_not_found_str), name);
     }
 
     return FAIL;

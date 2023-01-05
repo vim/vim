@@ -4318,7 +4318,7 @@ setwinvar(typval_T *argvars, int off)
     varname = tv_get_string_chk(&argvars[off + 1]);
     varp = &argvars[off + 2];
 
-    if (win == NULL || varname == NULL || varp == NULL)
+    if (win == NULL || varname == NULL)
 	return;
 
     need_switch_win = !(tp == curtab && win == curwin);
@@ -4687,7 +4687,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
     varname = tv_get_string_chk(&argvars[1]);
     varp = &argvars[2];
 
-    if (varname == NULL || varp == NULL || tp == NULL)
+    if (varname == NULL || tp == NULL)
 	return;
 
     save_curtab = curtab;
@@ -4758,7 +4758,7 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     buf = tv_get_buf_from_arg(&argvars[0]);
     varp = &argvars[2];
 
-    if (buf == NULL || varname == NULL || varp == NULL)
+    if (buf == NULL || varname == NULL)
 	return;
 
     if (*varname == '&')

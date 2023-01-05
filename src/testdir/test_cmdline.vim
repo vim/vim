@@ -654,6 +654,20 @@ func Test_getcompletion()
   call assert_fails('call getcompletion("abc", [])', 'E1174:')
 endfunc
 
+func Test_multibyte_expression()
+  " Get a dialog in the GUI
+  CheckNotGui
+
+  " This was using uninitialized memory.
+  let lines =<< trim END
+      set verbose=6
+      norm @=ٷ
+      qall!
+  END
+  call writefile(lines, 'XmultiScript', 'D')
+  call RunVim('', '', '-u NONE -n -e -s -S XmultiScript')
+endfunc
+
 " Test for getcompletion() with "fuzzy" in 'wildoptions'
 func Test_getcompletion_wildoptions()
   let save_wildoptions = &wildoptions

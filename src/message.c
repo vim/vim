@@ -3055,7 +3055,8 @@ msg_puts_printf(char_u *str, int maxlen)
     {
 	char_u *tofree = NULL;
 
-	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
+	if (maxlen > 0 && vim_strlen_maxlen((char *)p, (size_t)maxlen)
+							     >= (size_t)maxlen)
 	{
 	    tofree = vim_strnsave(p, (size_t)maxlen);
 	    p = tofree;

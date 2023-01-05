@@ -581,6 +581,11 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 	}
     }
 
+    if (tv->v_type == VAR_CLASS)
+	member_type = (type_T *)tv->vval.v_class;
+    else if (tv->v_type == VAR_OBJECT && tv->vval.v_object != NULL)
+	member_type = (type_T *)tv->vval.v_object->obj_class;
+
     type = get_type_ptr(type_gap);
     if (type == NULL)
 	return NULL;
@@ -932,8 +937,10 @@ check_argument_types(
 	if (varargs && i >= type->tt_argcount - 1)
 	{
 	    expected = type->tt_args[type->tt_argcount - 1];
-	    if (expected != NULL)
+	    if (expected != NULL && expected->tt_type == VAR_LIST)
 		expected = expected->tt_member;
+	    if (expected == NULL)
+		expected = &t_any;
 	}
 	else
 	    expected = type->tt_args[i];

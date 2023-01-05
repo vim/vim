@@ -3,7 +3,6 @@
 
 source check.vim
 CheckMSWindows
-
 source mouse.vim
 
 " Helper function for sending a grouped sequence of low level key presses
@@ -341,7 +340,7 @@ let s:test_extra_key_chars = [
     \ ]
 
 func s:LoopTestKeyArray(arr)
-" flush out any garbage left in the buffer
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 
@@ -388,7 +387,7 @@ func s:LoopTestKeyArray(arr)
     call assert_equal(0, mod_mask, $"key = {kstr}")
   endfor
 
-  " flush out any garbage left in the buffer
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 
@@ -488,15 +487,32 @@ func Test_mswin_key_event()
     endfor
   endif
 
-  " Windows intercepts some of these keys in the GUI
+  " Test for Function Keys 'F1' to 'F12'
+  " VK codes 112(0x70) - 123(0x7B)
+  " Also with ALL permutatios of modifiers; Shift, Ctrl & Alt
+  " NOTE: Windows intercepts some of these keys in the GUI
   if !has("gui_running")
-    " Test for Function Keys 'F1' to 'F12'
-    for n in range(1, 12)
-      let kstr = $"F{n}"
-      let keycode = eval('"\<' .. kstr .. '>"')
-      call SendKey(111+n)
-      let ch = getcharstr(0)
-      call assert_equal(keycode, $"{ch}", $"key = <{kstr}>")
+    for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
+      for n in range(1, 12)
+        let kstr = $"{mod_str}F{n}"
+        let keycode = eval('"\<' .. kstr .. '>"')
+        " flush out anything in the typeahead buffer
+        while getchar(0)
+        endwhile
+        " call SendKeyGroup(mod_keycodes + [111+n])
+        call SendKeyWithModifiers(111+n, vim_mod_mask)
+        let ch = getcharstr(0)
+        let mod_mask = getcharmod()
+        call assert_equal(keycode, $"{ch}", $"key = {kstr}")
+        " workaround for the virtual termcap maps changing the character instead
+        " of sending Shift
+        for mod_key in mod_keycodes
+          if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
+            let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
+          endif
+        endfor
+        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+      endfor
     endfor
   endif
 
@@ -560,17 +576,14 @@ func Test_mswin_key_event()
     \ [[s:VK.CONTROL,  s:VK.OEM_MINUS], "C-_", 0]
     \ ]
 
-  " Not working for the console in CI Testing yet!?
-  if has("gui_running")
-    for [kcodes, kstr, kmod] in keytests
-      call SendKeyGroup(kcodes)
-      let ch = getcharstr(0)
-      let mod = getcharmod()
-      let keycode = eval('"\<' .. kstr .. '>"')
-      call assert_equal(keycode, ch, $"key = {kstr}")
-      call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
-    endfor
-  endif
+  for [kcodes, kstr, kmod] in keytests
+    call SendKeyGroup(kcodes)
+    let ch = getcharstr(0)
+    let mod = getcharmod()
+    let keycode = eval('"\<' .. kstr .. '>"')
+    call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
+  endfor
 
   bw!
 endfunc
@@ -927,7 +940,7 @@ func Test_mswin_event_error_handling()
 
   call assert_fails("sandbox call test_mswin_event('key', {'event': 'keydown', 'keycode': 61 })", 'E48:')
 
-  " flush out any garbage left in the buffer.
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 endfunc
