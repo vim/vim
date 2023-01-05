@@ -552,5 +552,65 @@ def Test_class_object_to_string()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_interface_basics()
+  var lines =<< trim END
+      vim9script
+      interface Something
+        this.value: string
+        static count: number
+        def GetCount(): number
+      endinterface
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      interface SomethingWrong
+        static count = 7
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1342:')
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static count: number
+        def Method(count: number)
+      endinterface
+  END
+  # TODO: this should give an error for "count" shadowing
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      interface somethingWrong
+        static count = 7
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1343: Interface name must start with an uppercase letter: somethingWrong')
+
+  lines =<< trim END
+      vim9script
+      interface SomethingWrong
+        this.value: string
+        static count = 7
+        def GetCount(): number
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1344:')
+
+  lines =<< trim END
+      vim9script
+      interface SomethingWrong
+        this.value: string
+        static count: number
+        def GetCount(): number
+          return 5
+        enddef
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1345: Not a valid command in an interface: return 5')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

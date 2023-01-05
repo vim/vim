@@ -215,7 +215,7 @@ get_function_args(
     garray_T	*default_args,
     int		skip,
     exarg_T	*eap,		// can be NULL
-    int		in_class,	// TRUE when inside a class
+    int		in_class,	// non-zero when inside a class or interface
     garray_T	*newlines,	// function body lines
     garray_T	*lines_to_free)
 {
@@ -4462,7 +4462,9 @@ list_functions(regmatch_T *regmatch)
  * When "name_arg" is not NULL this is a nested function, using "name_arg" for
  * the function name.
  * "lines_to_free" is a list of strings to be freed later.
- * If "in_class" is TRUE then the function is defined inside a class.
+ * If "class_flags" has CF_CLASS then the function is defined inside a class.
+ * With CF_INTERFACE the function is define inside an interface, only the
+ * ":def"/":function" line is expected, no function body.
  * Returns a pointer to the function or NULL if no function defined.
  */
     ufunc_T *
@@ -4470,7 +4472,7 @@ define_function(
 	exarg_T	    *eap,
 	char_u	    *name_arg,
 	garray_T    *lines_to_free,
-	int	    in_class)
+	int	    class_flags)
 {
     int		j;
     int		c;
@@ -4545,7 +4547,7 @@ define_function(
 
     /*
      * Get the function name.  There are these situations:
-     * func	    normal function name, also when "in_class" is TRUE
+     * func	    normal function name, also when "class_flags" is non-zero
      *		    "name" == func, "fudi.fd_dict" == NULL
      * dict.func    new dictionary entry
      *		    "name" == NULL, "fudi.fd_dict" set,
@@ -4586,7 +4588,7 @@ define_function(
 	}
 
 	int tfn_flags = TFN_NO_AUTOLOAD | TFN_NEW_FUNC
-					       | (in_class ? TFN_IN_CLASS : 0);
+				       | (class_flags != 0 ? TFN_IN_CLASS : 0);
 	name = save_function_name(&p, &is_global, eap->skip, tfn_flags, &fudi);
 	paren = (vim_strchr(p, '(') != NULL);
 	if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
@@ -4789,7 +4791,7 @@ define_function(
     if (get_function_args(&p, ')', &newargs,
 			 eap->cmdidx == CMD_def ? &argtypes : NULL, FALSE,
 			 NULL, &varargs, &default_args, eap->skip,
-			 eap, in_class, &newlines, lines_to_free) == FAIL)
+			 eap, class_flags, &newlines, lines_to_free) == FAIL)
 	goto errret_2;
     whitep = p;
 
@@ -4899,7 +4901,9 @@ define_function(
 
     // Do not define the function when getting the body fails and when
     // skipping.
-    if (get_function_body(eap, &newlines, line_arg, lines_to_free) == FAIL
+    if (((class_flags & CF_INTERFACE) == 0
+		&& get_function_body(eap, &newlines, line_arg, lines_to_free)
+								       == FAIL)
 	    || eap->skip)
 	goto erret;
 
@@ -4934,7 +4938,7 @@ define_function(
 	if (name == NULL)
 	    goto erret;
     }
-    else if (!in_class)
+    else if (class_flags == 0)
     {
 	hashtab_T	*ht;
 	char_u		*find_name = name;
@@ -5159,7 +5163,7 @@ define_function(
 	    hi = hash_find(&func_hashtab, name);
 	    hi->hi_key = UF2HIKEY(fp);
 	}
-	else if (!in_class && hash_add(&func_hashtab,
+	else if (class_flags == 0 && hash_add(&func_hashtab,
 					 UF2HIKEY(fp), "add function") == FAIL)
 	{
 	    free_fp = TRUE;
@@ -5251,7 +5255,7 @@ ex_function(exarg_T *eap)
     garray_T lines_to_free;
 
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
-    (void)define_function(eap, NULL, &lines_to_free, FALSE);
+    (void)define_function(eap, NULL, &lines_to_free, 0);
     ga_clear_strings(&lines_to_free);
 }
 

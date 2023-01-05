@@ -3346,8 +3346,8 @@ EXTERN char e_not_allowed_to_add_or_remove_entries_str[]
 #ifdef FEAT_EVAL
 EXTERN char e_class_name_must_start_with_uppercase_letter_str[]
 	INIT(= N_("E1314: Class name must start with an uppercase letter: %s"));
-EXTERN char e_white_space_required_after_class_name_str[]
-	INIT(= N_("E1315: White space required after class name: %s"));
+EXTERN char e_white_space_required_after_name_str[]
+	INIT(= N_("E1315: White space required after name: %s"));
 EXTERN char e_class_can_only_be_defined_in_vim9_script[]
 	INIT(= N_("E1316: Class can only be defined in Vim9 script"));
 EXTERN char e_invalid_object_member_declaration_str[]
@@ -3406,4 +3406,12 @@ EXTERN char e_argument_already_declared_in_class_str[]
 	INIT(= N_("E1340: Argument already declared in the class: %s"));
 EXTERN char e_variable_already_declared_in_class_str[]
 	INIT(= N_("E1341: Variable already declared in the class: %s"));
+EXTERN char e_interface_can_only_be_defined_in_vim9_script[]
+	INIT(= N_("E1342: Interface can only be defined in Vim9 script"));
+EXTERN char e_interface_name_must_start_with_uppercase_letter_str[]
+	INIT(= N_("E1343: Interface name must start with an uppercase letter: %s"));
+EXTERN char e_cannot_initialize_member_in_interface[]
+	INIT(= N_("E1344: Cannot initialize a member in an interface"));
+EXTERN char e_not_valid_command_in_interface_str[]
+	INIT(= N_("E1345: Not a valid command in an interface: %s"));
 #endif

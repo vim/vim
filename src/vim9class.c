@@ -26,7 +26,7 @@
  * Returns OK or FAIL.  When OK then "varname_end" is set to just after the
  * variable name and "type_ret" is set to the decleared or detected type.
  * "init_expr" is set to the initialisation expression (allocated), if there is
- * one.
+ * one.  For an interface "init_expr" is NULL.
  */
     static int
 parse_member(
@@ -119,7 +119,14 @@ parse_member(
 
     *type_ret = type;
     if (expr_end > expr_start)
+    {
+	if (init_expr == NULL)
+	{
+	    emsg(_(e_cannot_initialize_member_in_interface));
+	    return FAIL;
+	}
 	*init_expr = vim_strnsave(expr_start, expr_end - expr_start);
+    }
     return OK;
 }
 
@@ -175,15 +182,21 @@ add_members_to_class(
 
 /*
  * Handle ":class" and ":abstract class" up to ":endclass".
+ * Handle ":interface" up to ":endinterface".
  */
     void
 ex_class(exarg_T *eap)
 {
+    int is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
+
     if (!current_script_is_vim9()
 		|| (cmdmod.cmod_flags & CMOD_LEGACY)
 		|| !getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg(_(e_class_can_only_be_defined_in_vim9_script));
+	if (is_class)
+	    emsg(_(e_class_can_only_be_defined_in_vim9_script));
+	else
+	    emsg(_(e_interface_can_only_be_defined_in_vim9_script));
 	return;
     }
 
@@ -201,13 +214,17 @@ ex_class(exarg_T *eap)
 
     if (!ASCII_ISUPPER(*arg))
     {
-	semsg(_(e_class_name_must_start_with_uppercase_letter_str), arg);
+	if (is_class)
+	    semsg(_(e_class_name_must_start_with_uppercase_letter_str), arg);
+	else
+	    semsg(_(e_interface_name_must_start_with_uppercase_letter_str),
+									  arg);
 	return;
     }
     char_u *name_end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
     if (!IS_WHITE_OR_NUL(*name_end))
     {
-	semsg(_(e_white_space_required_after_class_name_str), arg);
+	semsg(_(e_white_space_required_after_name_str), arg);
 	return;
     }
 
@@ -239,7 +256,8 @@ ex_class(exarg_T *eap)
     ga_init2(&objmethods, sizeof(ufunc_T *), 10);
 
     /*
-     * Go over the body of the class until "endclass" is found.
+     * Go over the body of the class/interface until "endclass" or
+     * "endinterface" is found.
      */
     char_u *theline = NULL;
     int success = FALSE;
@@ -262,14 +280,21 @@ ex_class(exarg_T *eap)
 	}
 
 	char_u *p = line;
-	if (checkforcmd(&p, "endclass", 4))
+	char *end_name = is_class ? "endclass" : "endinterface";
+	if (checkforcmd(&p, end_name, is_class ? 4 : 5))
 	{
-	    if (STRNCMP(line, "endclass", 8) != 0)
+	    if (STRNCMP(line, end_name, is_class ? 8 : 12) != 0)
 		semsg(_(e_command_cannot_be_shortened_str), line);
 	    else if (*p == '|' || !ends_excmd2(line, p))
 		semsg(_(e_trailing_characters_str), p);
 	    else
 		success = TRUE;
+	    break;
+	}
+	char *wrong_name = is_class ? "endinterface" : "endclass";
+	if (checkforcmd(&p, wrong_name, is_class ? 5 : 4))
+	{
+	    semsg(_(e_invalid_command_str), line);
 	    break;
 	}
 
@@ -320,7 +345,8 @@ ex_class(exarg_T *eap)
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
 	    if (parse_member(eap, line, varname, has_public,
-			  &varname_end, &type_list, &type, &init_expr) == FAIL)
+			  &varname_end, &type_list, &type,
+			  is_class ? &init_expr: NULL) == FAIL)
 		break;
 	    if (add_member(&objmembers, varname, varname_end,
 					  has_public, type, init_expr) == FAIL)
@@ -358,7 +384,8 @@ ex_class(exarg_T *eap)
 	    ea.cookie = eap->cookie;
 
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
-	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free, TRUE);
+	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free,
+					   is_class ? CF_CLASS : CF_INTERFACE);
 	    ga_clear_strings(&lines_to_free);
 
 	    if (uf != NULL)
@@ -389,7 +416,8 @@ ex_class(exarg_T *eap)
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
 	    if (parse_member(eap, line, varname, has_public,
-		      &varname_end, &type_list, &type, &init_expr) == FAIL)
+		      &varname_end, &type_list, &type,
+		      is_class ? &init_expr : NULL) == FAIL)
 		break;
 	    if (add_member(&classmembers, varname, varname_end,
 				      has_public, type, init_expr) == FAIL)
@@ -401,7 +429,10 @@ ex_class(exarg_T *eap)
 
 	else
 	{
-	    semsg(_(e_not_valid_command_in_class_str), line);
+	    if (is_class)
+		semsg(_(e_not_valid_command_in_class_str), line);
+	    else
+		semsg(_(e_not_valid_command_in_interface_str), line);
 	    break;
 	}
     }
@@ -415,6 +446,9 @@ ex_class(exarg_T *eap)
 	cl = ALLOC_CLEAR_ONE(class_T);
 	if (cl == NULL)
 	    goto cleanup;
+	if (!is_class)
+	    cl->class_flags = CLASS_INTERFACE;
+
 	cl->class_refcount = 1;
 	cl->class_name = vim_strnsave(arg, name_end - arg);
 	if (cl->class_name == NULL)
@@ -429,7 +463,7 @@ ex_class(exarg_T *eap)
 				    &cl->class_obj_member_count) == FAIL)
 	    goto cleanup;
 
-	if (cl->class_class_member_count > 0)
+	if (is_class && cl->class_class_member_count > 0)
 	{
 	    // Allocate a typval for each class member and initialize it.
 	    cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
@@ -491,7 +525,8 @@ ex_class(exarg_T *eap)
 	    garray_T lines_to_free;
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
 
-	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, TRUE);
+	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free,
+					   is_class ? CF_CLASS : CF_INTERFACE);
 
 	    ga_clear_strings(&lines_to_free);
 	    vim_free(fga.ga_data);
@@ -631,15 +666,6 @@ class_member_type(
 
     semsg(_(e_unknown_variable_str), name);
     return &t_any;
-}
-
-/*
- * Handle ":interface" up to ":endinterface".
- */
-    void
-ex_interface(exarg_T *eap UNUSED)
-{
-    // TODO
 }
 
 /*

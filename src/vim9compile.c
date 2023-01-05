@@ -991,7 +991,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx, garray_T *lines_to_free)
     int save_KeyTyped = KeyTyped;
     KeyTyped = FALSE;
 
-    ufunc = define_function(eap, lambda_name, lines_to_free, FALSE);
+    ufunc = define_function(eap, lambda_name, lines_to_free, 0);
 
     KeyTyped = save_KeyTyped;
 

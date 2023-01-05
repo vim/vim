@@ -4280,7 +4280,7 @@ exec_instructions(ectx_T *ectx)
 		    CLEAR_FIELD(ea);
 		    ea.cmd = ea.arg = iptr->isn_arg.string;
 		    ga_init2(&lines_to_free, sizeof(char_u *), 50);
-		    define_function(&ea, NULL, &lines_to_free, FALSE);
+		    define_function(&ea, NULL, &lines_to_free, 0);
 		    ga_clear_strings(&lines_to_free);
 		}
 		break;
