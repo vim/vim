@@ -493,6 +493,23 @@ def Test_class_member()
   v9.CheckScriptFailure(lines, 'E1341: Variable already declared in the class: count')
 enddef
 
+func Test_class_garbagecollect()
+  let lines =<< trim END
+      vim9script
+
+      class Point
+        this.p = [2, 3]
+        static pl = ['a', 'b']
+        static pd = {a: 'a', b: 'b'}
+      endclass
+
+      echo Point.pl Point.pd
+      call test_garbagecollect_now()
+      echo Point.pl Point.pd
+  END
+  call v9.CheckScriptSuccess(lines)
+endfunc
+
 def Test_class_function()
   var lines =<< trim END
       vim9script

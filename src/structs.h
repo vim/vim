@@ -1487,6 +1487,7 @@ struct class_S
 {
     char_u	*class_name;		// allocated
     int		class_refcount;
+    int		class_copyID;		// used by garbage collection
 
     // class members: "static varname"
     int		class_class_member_count;

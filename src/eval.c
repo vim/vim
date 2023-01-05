@@ -5674,9 +5674,32 @@ set_ref_in_item(
 	}
 
 	case VAR_CLASS:
-	    // TODO: Mark methods in class_obj_methods ?
-	    // Mark initializer expressions?
-	    break;
+	    {
+		class_T *cl = tv->vval.v_class;
+		if (cl != NULL && cl->class_copyID != copyID)
+		{
+		    cl->class_copyID = copyID;
+		    for (int i = 0; !abort
+				      && i < cl->class_class_member_count; ++i)
+			abort = abort || set_ref_in_item(
+						&cl->class_members_tv[i],
+						 copyID, ht_stack, list_stack);
+
+
+		    for (int i = 0; !abort
+				    && i < cl->class_class_function_count; ++i)
+			abort = abort || set_ref_in_func(NULL,
+					 cl->class_class_functions[i], copyID);
+
+		    for (int i = 0; !abort
+				    && i < cl->class_obj_method_count; ++i)
+			abort = abort || set_ref_in_func(NULL,
+					     cl->class_obj_methods[i], copyID);
+
+		    // Mark initializer expressions?
+		}
+		break;
+	    }
 
 	case VAR_OBJECT:
 	    {
