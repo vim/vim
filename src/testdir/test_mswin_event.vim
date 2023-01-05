@@ -582,6 +582,13 @@ func Test_mswin_key_event()
     let mod = getcharmod()
     let keycode = eval('"\<' .. kstr .. '>"')
     call assert_equal(keycode, ch, $"key = {kstr}")
+    " workaround for the virtual termcap maps changing the character instead
+    " of sending Shift
+    for key in kcodes
+      if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], key) >= 0
+        let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
+      endif
+    endfor    
     call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
   endfor
 
