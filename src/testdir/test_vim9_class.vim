@@ -612,5 +612,58 @@ def Test_interface_basics()
   v9.CheckScriptFailure(lines, 'E1345: Not a valid command in an interface: return 5')
 enddef
 
+def Test_class_implements_interface()
+  var lines =<< trim END
+      vim9script
+
+      interface Some
+        static count: number
+        def Method(nr: number)
+      endinterface
+
+      class SomeImpl implements Some
+        static count: number
+        def Method(nr: number)
+          echo nr
+        enddef
+      endclass
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static counter: number
+        def Method(nr: number)
+      endinterface
+
+      class SomeImpl implements Some
+        static count: number
+        def Method(nr: number)
+          echo nr
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1348: Member "counter" of interface "Some" not implemented')
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static count: number
+        def Methods(nr: number)
+      endinterface
+
+      class SomeImpl implements Some
+        static count: number
+        def Method(nr: number)
+          echo nr
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1349: Function "Methods" of interface "Some" not implemented')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

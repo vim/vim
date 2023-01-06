@@ -2913,7 +2913,7 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
     int
 eval_variable(
     char_u	*name,
-    int		len,		// length of "name"
+    int		len,		// length of "name" or zero
     scid_T	sid,		// script ID for imported item or zero
     typval_T	*rettv,		// NULL when only checking existence
     dictitem_T	**dip,		// non-NULL when typval's dict item is needed
@@ -2923,12 +2923,15 @@ eval_variable(
     typval_T	*tv = NULL;
     int		found = FALSE;
     hashtab_T	*ht = NULL;
-    int		cc;
+    int		cc = 0;
     type_T	*type = NULL;
 
-    // truncate the name, so that we can use strcmp()
-    cc = name[len];
-    name[len] = NUL;
+    if (len > 0)
+    {
+	// truncate the name, so that we can use strcmp()
+	cc = name[len];
+	name[len] = NUL;
+    }
 
     // Check for local variable when debugging.
     if ((tv = lookup_debug_var(name)) == NULL)
@@ -3095,7 +3098,8 @@ eval_variable(
 	}
     }
 
-    name[len] = cc;
+    if (len > 0)
+	name[len] = cc;
 
     return ret;
 }

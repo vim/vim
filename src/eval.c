@@ -5676,7 +5676,8 @@ set_ref_in_item(
 	case VAR_CLASS:
 	    {
 		class_T *cl = tv->vval.v_class;
-		if (cl != NULL && cl->class_copyID != copyID)
+		if (cl != NULL && cl->class_copyID != copyID
+				  && (cl->class_flags && CLASS_INTERFACE) == 0)
 		{
 		    cl->class_copyID = copyID;
 		    for (int i = 0; !abort
