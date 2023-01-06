@@ -606,7 +606,7 @@ early_ret:
 		goto cleanup;
 	    for (int i = 0; i < ga_impl.ga_len; ++i)
 		cl->class_interfaces[i] = ((char_u **)ga_impl.ga_data)[i];
-	    CLEAR_POINTER(ga_impl.ga_data);
+	    VIM_CLEAR(ga_impl.ga_data);
 	    ga_impl.ga_len = 0;
 	}
 
