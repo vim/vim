@@ -20,14 +20,14 @@ before_build:
   - 'call ver'
   - 'set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"'
   - >
-    if exists "%VSWHERE%" (
+    if exists %VSWHERE% (
       for /f "usebackq delims=" %%i
       in (`"%VSWHERE%" -products * -latest -property installationPath`) 
       do (set VCVARSALL="%%i\VC\Auxiliary\Build\vcvarsall.bat")
     )
   - >
     if not exists %VCVARSALL% (
-      set VCVARSALL="C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
+      set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
     )
   - 'call %VCVARSALL% x86_amd64'
 
