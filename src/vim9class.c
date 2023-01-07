@@ -245,22 +245,45 @@ ex_class(exarg_T *eap)
 	//    specifies SomeInterface
 	if (STRNCMP(arg, "implements", 10) == 0 && IS_WHITE_OR_NUL(arg[10]))
 	{
+	    if (ga_impl.ga_len > 0)
+	    {
+		emsg(_(e_duplicate_implements));
+		goto early_ret;
+	    }
 	    arg = skipwhite(arg + 10);
-	    char_u *impl_end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
-	    if (!IS_WHITE_OR_NUL(*impl_end))
+
+	    for (;;)
 	    {
-		semsg(_(e_white_space_required_after_name_str), arg);
-		goto early_ret;
+		char_u *impl_end = find_name_end(arg, NULL, NULL,
+							      FNE_CHECK_START);
+		if (!IS_WHITE_OR_NUL(*impl_end) && *impl_end != ',')
+		{
+		    semsg(_(e_white_space_required_after_name_str), arg);
+		    goto early_ret;
+		}
+		char_u *iname = vim_strnsave(arg, impl_end - arg);
+		if (iname == NULL)
+		    goto early_ret;
+		for (int i = 0; i < ga_impl.ga_len; ++i)
+		    if (STRCMP(((char_u **)ga_impl.ga_data)[i], iname) == 0)
+		    {
+			semsg(_(e_duplicate_interface_after_implements_str),
+									iname);
+			vim_free(iname);
+			goto early_ret;
+		    }
+		if (ga_add_string(&ga_impl, iname) == FAIL)
+		{
+		    vim_free(iname);
+		    goto early_ret;
+		}
+		if (*impl_end != ',')
+		{
+		    arg = skipwhite(impl_end);
+		    break;
+		}
+		arg = skipwhite(impl_end + 1);
 	    }
-	    char_u *iname = vim_strnsave(arg, impl_end - arg);
-	    if (iname == NULL)
-		goto early_ret;
-	    if (ga_add_string(&ga_impl, iname) == FAIL)
-	    {
-		vim_free(iname);
-		goto early_ret;
-	    }
-	    arg = skipwhite(impl_end);
 	}
 	else
 	{

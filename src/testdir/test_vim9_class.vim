@@ -627,8 +627,47 @@ def Test_class_implements_interface()
           echo nr
         enddef
       endclass
+
+      interface Another
+        this.member: string
+      endinterface
+
+      class SomeImpl implements Some, Another
+        this.member = 'abc'
+        static count: number
+        def Method(nr: number)
+          echo nr
+        enddef
+      endclass
+
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static counter: number
+      endinterface
+
+      class SomeImpl implements Some implements Some
+        static count: number
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1350:')
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static counter: number
+      endinterface
+
+      class SomeImpl implements Some, Some
+        static count: number
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1351: Duplicate interface after "implements": Some')
 
   lines =<< trim END
       vim9script
