@@ -394,7 +394,7 @@ func s:LoopTestKeyArray(arr)
 endfunc
 
 " Test MS-Windows key events
-func Test_mswin_key_event()
+func Test_mswin_event_character_keys()
   CheckMSWindows
   new
 
@@ -487,14 +487,31 @@ func Test_mswin_key_event()
     endfor
   endif
 
+endfun
+
   " Test for Function Keys 'F1' to 'F12'
   " VK codes 112(0x70) - 123(0x7B)
   " Also with ALL permutatios of modifiers; Shift, Ctrl & Alt
-  " NOTE: Windows intercepts some of these keys in the GUI
-  if !has("gui_running")
-    for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
-      for n in range(1, 12)
-        let kstr = $"{mod_str}F{n}"
+func Test_mswin_event_function_keys()
+
+  if has('gui_running')
+    let g:test_is_flaky = 1
+  endif
+
+  " NOTE: Windows intercepts these combinations in the GUI
+  let gui_nogo = ["A-F1", "A-F2", "A-F3", "A-F4", "A-S-F4", "A-C-S-F4",
+            \ "A-F5", "A-F6", "A-F7", "A-F8", "A-C-F8", "A-F9",
+	    \ "A-F10", "A-F11" , "A-C-F11", "A-C-F12"]
+
+  " flush out anything in the typeahead buffer
+  while getchar(0)
+  endwhile
+
+  for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
+    for n in range(1, 12)
+      let kstr = $"{mod_str}F{n}"
+      if !has('gui_running') || (has('gui_running') && n != 10
+      \  && index(gui_nogo, kstr) == -1)
         let keycode = eval('"\<' .. kstr .. '>"')
         " flush out anything in the typeahead buffer
         while getchar(0)
@@ -504,85 +521,88 @@ func Test_mswin_key_event()
         let ch = getcharstr(0)
         let mod_mask = getcharmod()
         call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-        " workaround for the virtual termcap maps changing the character instead
-        " of sending Shift
+        " workaround for the virtual termcap maps changing the character
+        "instead of sending Shift
         for mod_key in mod_keycodes
           if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
             let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
+            break
           endif
         endfor
         call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
-      endfor
+      endif
     endfor
+  endfor
+endfunc
+
+
+  " Test for Movement Keys;
+  "    VK_PRIOR 0x21,   VK_NEXT  0x22,
+  "    VK_END   0x23,   VK_HOME  0x24,
+  "    VK_LEFT  0x25,   VK_UP    0x26,
+  "    VK_RIGHT 0x27,   VK_DOWN  0x28
+  " With ALL permutations of modifiers; none, Shift, Ctrl & Alt
+func Test_mswin_event_movement_keys()
+
+  if has('gui_running')
+    let g:test_is_flaky = 1
   endif
 
-  " Test for the various Ctrl and Shift key combinations.
-  let keytests = [
-    \ [[s:VK.SHIFT,    s:VK.PRIOR], "S-Pageup", 2],
-    \ [[s:VK.LSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
-    \ [[s:VK.RSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
-    \ [[s:VK.CONTROL,  s:VK.PRIOR], "C-Pageup", 4],
-    \ [[s:VK.LCONTROL, s:VK.PRIOR], "C-Pageup", 4],
-    \ [[s:VK.RCONTROL, s:VK.PRIOR], "C-Pageup", 4],
-    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.PRIOR], "C-S-Pageup", 6],
-    \ [[s:VK.SHIFT,    s:VK.NEXT], "S-PageDown", 2],
-    \ [[s:VK.LSHIFT,   s:VK.NEXT], "S-PageDown", 2],
-    \ [[s:VK.RSHIFT,   s:VK.NEXT], "S-PageDown", 2],
-    \ [[s:VK.CONTROL,  s:VK.NEXT], "C-PageDown", 4],
-    \ [[s:VK.LCONTROL, s:VK.NEXT], "C-PageDown", 4],
-    \ [[s:VK.RCONTROL, s:VK.NEXT], "C-PageDown", 4],
-    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.NEXT], "C-S-PageDown", 6],
-    \ [[s:VK.SHIFT,    s:VK.END], "S-End", 0],
-    \ [[s:VK.CONTROL,  s:VK.END], "C-End", 0],
-    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.END], "C-S-End", 4],
-    \ [[s:VK.SHIFT,    s:VK.HOME], "S-Home", 0],
-    \ [[s:VK.CONTROL,  s:VK.HOME], "C-Home", 0],
-    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.HOME], "C-S-Home", 4],
-    \ [[s:VK.SHIFT,    s:VK.LEFT], "S-Left", 0],
-    \ [[s:VK.CONTROL,  s:VK.LEFT], "C-Left", 0],
-    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.LEFT], "C-S-Left", 4],
-    \ [[s:VK.SHIFT,    s:VK.UP], "S-Up", 0],
-    \ [[s:VK.CONTROL,  s:VK.UP], "C-Up", 4],
-    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.UP], "C-S-Up", 4],
-    \ [[s:VK.SHIFT,    s:VK.RIGHT], "S-Right", 0],
-    \ [[s:VK.CONTROL,  s:VK.RIGHT], "C-Right", 0],
-    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.RIGHT], "C-S-Right", 4],
-    \ [[s:VK.SHIFT,    s:VK.DOWN], "S-Down", 0],
-    \ [[s:VK.CONTROL,  s:VK.DOWN], "C-Down", 4],
-    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.DOWN], "C-S-Down", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_0], "C-0", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_1], "C-1", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_2], "C-@", 0],
-    \ [[s:VK.CONTROL,  s:VK.KEY_3], "C-3", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_4], "C-4", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_5], "C-5", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_6], "C-^", 0],
-    \ [[s:VK.CONTROL,  s:VK.KEY_7], "C-7", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_8], "C-8", 4],
-    \ [[s:VK.CONTROL,  s:VK.KEY_9], "C-9", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD0], "C-0", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD1], "C-1", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD2], "C-2", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD3], "C-3", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD4], "C-4", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD5], "C-5", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD6], "C-6", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD7], "C-7", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD8], "C-8", 4],
-    \ [[s:VK.CONTROL,  s:VK.NUMPAD9], "C-9", 4],
-    \ [[s:VK.CONTROL,  s:VK.MULTIPLY], "C-*", 4],
-    \ [[s:VK.CONTROL,  s:VK.ADD], "C-+", 4],
-    \ [[s:VK.CONTROL,  s:VK.SUBTRACT], "C--", 4],
-    \ [[s:VK.CONTROL,  s:VK.OEM_MINUS], "C-_", 0]
+  let movement_keys = [
+    \ [s:VK.PRIOR, "PageUp"],
+    \ [s:VK.NEXT,  "PageDown"],
+    \ [s:VK.END,   "End"],
+    \ [s:VK.HOME,  "Home"],
+    \ [s:VK.LEFT,  "Left"],
+    \ [s:VK.UP,    "Up"],
+    \ [s:VK.RIGHT, "Right"],
+    \ [s:VK.DOWN,  "Down"],
     \ ]
 
-  for [kcodes, kstr, kmod] in keytests
-    call SendKeyGroup(kcodes)
-    let ch = getcharstr(0)
-    let mod = getcharmod()
-    let keycode = eval('"\<' .. kstr .. '>"')
-    call assert_equal(keycode, ch, $"key = {kstr}")
-    call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
+  " flush out anything in the typeahead buffer
+  while getchar(0)
+  endwhile
+
+  for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
+    for [kcode, kname] in movement_keys
+      let kstr = $"{mod_str}{kname}"
+      let keycode_eval = eval('"\<' .. kstr .. '>"')
+      " flush out anything in the typeahead buffer
+      while getchar(0)
+      endwhile
+      call SendKey(kcode)
+      let cstr_alone = getcharstr(0)
+      let cstr_alone_end = cstr_alone[len(cstr_alone)-2:len(cstr_alone)-1]
+      while getchar(0)
+      endwhile
+      call SendKeyGroup(mod_keycodes + [kcode])
+      let cstr = getcharstr(0)
+      let cstr_end = cstr[len(cstr)-2:len(cstr)-1]
+      let mod_mask = getcharmod()
+      call assert_equal(keycode_eval, cstr, $"key = {kstr}")
+
+      " The virtual termcap maps may change the character and remove Shift mod.
+      " Or remove the Ctrl mod if the Shift is not already removed.
+      if cstr_alone_end != cstr_end
+        let found_shift = 0
+        for mod_key in mod_keycodes
+          if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
+            let mod_mask += s:vim_MOD_MASK_SHIFT
+            let found_shift = 1
+            break
+          endif
+        endfor
+        if found_shift == 0
+          for mod_key in mod_keycodes
+            if index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], mod_key) >= 0
+              let mod_mask += s:vim_MOD_MASK_CTRL
+              break
+            endif
+          endfor
+        endif
+      endif
+      call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+    endfor
   endfor
 
   bw!
@@ -628,7 +648,7 @@ func Test_QWERTY_Ctrl_minus()
 endfunc
 
 "  Test MS-Windows mouse events
-func Test_mswin_mouse_event()
+func Test_mswin_event_mouse()
   CheckMSWindows
   new
 
