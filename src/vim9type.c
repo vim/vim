@@ -1272,6 +1272,30 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	    break;
     }
 
+    // It can be a class or interface name.
+    typval_T tv;
+    tv.v_type = VAR_UNKNOWN;
+    if (eval_variable(*arg, len, 0, &tv, NULL,
+				     EVAL_VAR_VERBOSE + EVAL_VAR_IMPORT) == OK)
+    {
+	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
+	{
+	    type_T *type = get_type_ptr(type_gap);
+	    if (type != NULL)
+	    {
+		// Although the name is that of a class or interface, the type
+		// uses will be an object.
+		type->tt_type = VAR_OBJECT;
+		type->tt_member = (type_T *)tv.vval.v_class;
+		clear_tv(&tv);
+		*arg += len;
+		return type;
+	    }
+	}
+
+	clear_tv(&tv);
+    }
+
     if (give_error)
 	semsg(_(e_type_not_recognized_str), *arg);
     return NULL;

@@ -665,5 +665,54 @@ def Test_class_implements_interface()
   v9.CheckScriptFailure(lines, 'E1349: Function "Methods" of interface "Some" not implemented')
 enddef
 
+def Test_class_used_as_type()
+  var lines =<< trim END
+      vim9script
+
+      class Point
+        this.x = 0
+        this.y = 0
+      endclass
+
+      var p: Point
+      p = Point.new(2, 33)
+      assert_equal(2, p.x)
+      assert_equal(33, p.y)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      interface HasX
+        this.x: number
+      endinterface
+
+      class Point implements HasX
+        this.x = 0
+        this.y = 0
+      endclass
+
+      var p: Point
+      p = Point.new(2, 33)
+      var hx = p
+      assert_equal(2, hx.x)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class Point
+        this.x = 0
+        this.y = 0
+      endclass
+
+      var p: Point
+      p = 'text'
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object but got string')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
