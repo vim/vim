@@ -1440,7 +1440,7 @@ typedef enum
     VAR_JOB,		// "v_job" is used
     VAR_CHANNEL,	// "v_channel" is used
     VAR_INSTR,		// "v_instr" is used
-    VAR_CLASS,		// "v_class" is used
+    VAR_CLASS,		// "v_class" is used (also used for interface)
     VAR_OBJECT,		// "v_object" is used
 } vartype_T;
 
@@ -1482,11 +1482,21 @@ typedef struct {
     char_u	*ocm_init;   // allocated
 } ocmember_T;
 
+#define CLASS_INTERFACE 1
+
 // "class_T": used for v_class of typval of VAR_CLASS
+// Also used for an interface (class_flags has CLASS_INTERFACE).
 struct class_S
 {
     char_u	*class_name;		// allocated
+    int		class_flags;		// CLASS_ flags
+
     int		class_refcount;
+    int		class_copyID;		// used by garbage collection
+
+    // interfaces declared for the class
+    int		class_interface_count;
+    char_u	**class_interfaces;	// allocated array of names
 
     // class members: "static varname"
     int		class_class_member_count;

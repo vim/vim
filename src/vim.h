@@ -2854,4 +2854,8 @@ long elapsed(DWORD start_tick);
 
 #define MAX_LSHIFT_BITS (varnumber_T)((sizeof(uvarnumber_T) * 8) - 1)
 
+// Flags used by "class_flags" of define_function()
+#define CF_CLASS	1	// inside a class
+#define CF_INTERFACE	2	// inside an interface
+
 #endif // VIM__H

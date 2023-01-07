@@ -493,6 +493,23 @@ def Test_class_member()
   v9.CheckScriptFailure(lines, 'E1341: Variable already declared in the class: count')
 enddef
 
+func Test_class_garbagecollect()
+  let lines =<< trim END
+      vim9script
+
+      class Point
+        this.p = [2, 3]
+        static pl = ['a', 'b']
+        static pd = {a: 'a', b: 'b'}
+      endclass
+
+      echo Point.pl Point.pd
+      call test_garbagecollect_now()
+      echo Point.pl Point.pd
+  END
+  call v9.CheckScriptSuccess(lines)
+endfunc
+
 def Test_class_function()
   var lines =<< trim END
       vim9script
@@ -533,6 +550,119 @@ def Test_class_object_to_string()
       assert_equal("object of TextPosition {lnum: 1, col: 22}", string(pos))
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_interface_basics()
+  var lines =<< trim END
+      vim9script
+      interface Something
+        this.value: string
+        static count: number
+        def GetCount(): number
+      endinterface
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      interface SomethingWrong
+        static count = 7
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1342:')
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static count: number
+        def Method(count: number)
+      endinterface
+  END
+  # TODO: this should give an error for "count" shadowing
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      interface somethingWrong
+        static count = 7
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1343: Interface name must start with an uppercase letter: somethingWrong')
+
+  lines =<< trim END
+      vim9script
+      interface SomethingWrong
+        this.value: string
+        static count = 7
+        def GetCount(): number
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1344:')
+
+  lines =<< trim END
+      vim9script
+      interface SomethingWrong
+        this.value: string
+        static count: number
+        def GetCount(): number
+          return 5
+        enddef
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1345: Not a valid command in an interface: return 5')
+enddef
+
+def Test_class_implements_interface()
+  var lines =<< trim END
+      vim9script
+
+      interface Some
+        static count: number
+        def Method(nr: number)
+      endinterface
+
+      class SomeImpl implements Some
+        static count: number
+        def Method(nr: number)
+          echo nr
+        enddef
+      endclass
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static counter: number
+        def Method(nr: number)
+      endinterface
+
+      class SomeImpl implements Some
+        static count: number
+        def Method(nr: number)
+          echo nr
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1348: Member "counter" of interface "Some" not implemented')
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static count: number
+        def Methods(nr: number)
+      endinterface
+
+      class SomeImpl implements Some
+        static count: number
+        def Method(nr: number)
+          echo nr
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1349: Function "Methods" of interface "Some" not implemented')
 enddef
 
 
