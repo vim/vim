@@ -681,8 +681,7 @@ early_ret:
 	    garray_T lines_to_free;
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
 
-	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free,
-					   is_class ? CF_CLASS : CF_INTERFACE);
+	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, CF_CLASS);
 
 	    ga_clear_strings(&lines_to_free);
 	    vim_free(fga.ga_data);
