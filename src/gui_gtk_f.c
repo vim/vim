@@ -188,13 +188,13 @@ gui_gtk_form_thaw(GtkForm *form)
 {
     g_return_if_fail(GTK_IS_FORM(form));
 
-    if (form->freeze_count)
+    if (!form->freeze_count)
+	return;
+
+    if (!(--form->freeze_count))
     {
-	if (!(--form->freeze_count))
-	{
-	    form_position_children(form);
-	    gtk_widget_queue_draw(GTK_WIDGET(form));
-	}
+	form_position_children(form);
+	gtk_widget_queue_draw(GTK_WIDGET(form));
     }
 }
 
@@ -610,32 +610,32 @@ form_remove(GtkContainer *container, GtkWidget *widget)
 	tmp_list = tmp_list->next;
     }
 
-    if (tmp_list)
-    {
-#if GTK_CHECK_VERSION(3,0,0)
-	const gboolean was_visible = gtk_widget_get_visible(widget);
-#endif
-	if (child->window)
-	{
-	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
-		    FUNC2GENERIC(&form_child_map), child);
-	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
-		    FUNC2GENERIC(&form_child_unmap), child);
+    if (tmp_list == NULL)
+	return;
 
-	    // FIXME: This will cause problems for reparenting NO_WINDOW
-	    // widgets out of a GtkForm
-	    gdk_window_set_user_data(child->window, NULL);
-	    gdk_window_destroy(child->window);
-	}
-	gtk_widget_unparent(widget);
 #if GTK_CHECK_VERSION(3,0,0)
-	if (was_visible)
-	    gtk_widget_queue_resize(GTK_WIDGET(container));
+    const gboolean was_visible = gtk_widget_get_visible(widget);
 #endif
-	form->children = g_list_remove_link(form->children, tmp_list);
-	g_list_free_1(tmp_list);
-	g_free(child);
+    if (child->window)
+    {
+	g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
+		FUNC2GENERIC(&form_child_map), child);
+	g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
+		FUNC2GENERIC(&form_child_unmap), child);
+
+	// FIXME: This will cause problems for reparenting NO_WINDOW
+	// widgets out of a GtkForm
+	gdk_window_set_user_data(child->window, NULL);
+	gdk_window_destroy(child->window);
     }
+    gtk_widget_unparent(widget);
+#if GTK_CHECK_VERSION(3,0,0)
+    if (was_visible)
+	gtk_widget_queue_resize(GTK_WIDGET(container));
+#endif
+    form->children = g_list_remove_link(form->children, tmp_list);
+    g_list_free_1(tmp_list);
+    g_free(child);
 }
 
     static void
