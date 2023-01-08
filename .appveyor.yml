@@ -1,6 +1,6 @@
 version: "{build}"
 
-image: Visual Studio 2015
+image: Visual Studio 2022
 
 skip_tags: true
 
@@ -19,6 +19,7 @@ before_build:
   # Use Visual Studio 2015 compiler tools (default is 2012)
   - setlocal ENABLEDELAYEDEXPANSION
   - call ver
+  - reg query "hklm\software\microsoft\windows nt\currentversion" /v ProductName
   - set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
   - >
     if exist "%VSWHERE%" (
