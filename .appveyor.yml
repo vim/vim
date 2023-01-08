@@ -33,6 +33,7 @@ before_build:
   - setlocal ENABLEDELAYEDEXPANSION
   - call ver
   - reg query "hklm\software\microsoft\windows nt\currentversion" /v ProductName
+  - reg query "HKCU\Keyboard Layout\Preload"
   - set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
   - >
     if exist "%VSWHERE%" (
