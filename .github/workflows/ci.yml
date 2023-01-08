@@ -97,7 +97,7 @@ jobs:
           python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
           if [ -z "$python3_dir" ]
           then
-            choco install python${PYTHON3_VER} --no-progress --params '"/TARGETDIR:C:\Python${PYTHON3_VER} /NoLockdown /ADDLOCAL=DefaultFeatures"'
+            choco install python${PYTHON3_VER} --no-progress --params '"/TARGETDIR:C:\Python${PYTHON3_VER} /NoLockdown InstallAllUsers=0 /ADDLOCAL=DefaultFeatures"'
             python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
           fi
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
