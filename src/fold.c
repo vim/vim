@@ -513,13 +513,14 @@ newFoldLevelWin(win_T *wp)
     void
 foldCheckClose(void)
 {
-    if (*p_fcl != NUL)	// can only be "all" right now
-    {
-	checkupdate(curwin);
-	if (checkCloseRec(&curwin->w_folds, curwin->w_cursor.lnum,
-							(int)curwin->w_p_fdl))
-	    changed_window_setting();
-    }
+    if (*p_fcl == NUL)
+	return;
+
+    // can only be "all" right now
+    checkupdate(curwin);
+    if (checkCloseRec(&curwin->w_folds, curwin->w_cursor.lnum,
+		(int)curwin->w_p_fdl))
+	changed_window_setting();
 }
 
 // checkCloseRec() {{{2
@@ -1077,16 +1078,17 @@ foldAdjustVisual(void)
     }
     if (hasFolding(start->lnum, &start->lnum, NULL))
 	start->col = 0;
-    if (hasFolding(end->lnum, NULL, &end->lnum))
-    {
-	ptr = ml_get(end->lnum);
-	end->col = (colnr_T)STRLEN(ptr);
-	if (end->col > 0 && *p_sel == 'o')
-	    --end->col;
-	// prevent cursor from moving on the trail byte
-	if (has_mbyte)
-	    mb_adjust_cursor();
-    }
+
+    if (!hasFolding(end->lnum, NULL, &end->lnum))
+	return;
+
+    ptr = ml_get(end->lnum);
+    end->col = (colnr_T)STRLEN(ptr);
+    if (end->col > 0 && *p_sel == 'o')
+	--end->col;
+    // prevent cursor from moving on the trail byte
+    if (has_mbyte)
+	mb_adjust_cursor();
 }
 
 // cursor_foldstart() {{{2
@@ -1215,11 +1217,11 @@ foldLevelWin(win_T *wp, linenr_T lnum)
     static void
 checkupdate(win_T *wp)
 {
-    if (wp->w_foldinvalid)
-    {
-	foldUpdate(wp, (linenr_T)1, (linenr_T)MAXLNUM); // will update all
-	wp->w_foldinvalid = FALSE;
-    }
+    if (!wp->w_foldinvalid)
+	return;
+
+    foldUpdate(wp, (linenr_T)1, (linenr_T)MAXLNUM); // will update all
+    wp->w_foldinvalid = FALSE;
 }
 
 // setFoldRepeat() {{{2

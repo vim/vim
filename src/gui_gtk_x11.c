@@ -2435,16 +2435,15 @@ setup_save_yourself(void)
     GnomeClient *client;
 
     client = gnome_master_client();
+    if (client == NULL)
+	return;
 
-    if (client != NULL)
-    {
-	// Must use the deprecated gtk_signal_connect() for compatibility
-	// with GNOME 1.  Arrgh, zombies!
-	gtk_signal_connect(GTK_OBJECT(client), "save_yourself",
-			   GTK_SIGNAL_FUNC(&sm_client_save_yourself), NULL);
-	gtk_signal_connect(GTK_OBJECT(client), "die",
-			   GTK_SIGNAL_FUNC(&sm_client_die), NULL);
-    }
+    // Must use the deprecated gtk_signal_connect() for compatibility
+    // with GNOME 1.  Arrgh, zombies!
+    gtk_signal_connect(GTK_OBJECT(client), "save_yourself",
+	    GTK_SIGNAL_FUNC(&sm_client_save_yourself), NULL);
+    gtk_signal_connect(GTK_OBJECT(client), "die",
+	    GTK_SIGNAL_FUNC(&sm_client_die), NULL);
 }
 
 #else // !USE_GNOME_SESSION
@@ -3379,13 +3378,13 @@ on_tab_reordered(
 	gint		idx,
 	gpointer	data UNUSED)
 {
-    if (!ignore_tabline_evt)
-    {
-	if ((tabpage_index(curtab) - 1) < idx)
-	    tabpage_move(idx + 1);
-	else
-	    tabpage_move(idx);
-    }
+    if (ignore_tabline_evt)
+	return;
+
+    if ((tabpage_index(curtab) - 1) < idx)
+	tabpage_move(idx + 1);
+    else
+	tabpage_move(idx);
 }
 # endif
 
@@ -4069,15 +4068,15 @@ gui_mch_init(void)
     void
 gui_mch_forked(void)
 {
-    if (using_gnome)
-    {
-	GnomeClient *client;
+    if (!using_gnome)
+	return;
 
-	client = gnome_master_client();
+    GnomeClient *client;
 
-	if (client != NULL)
-	    gnome_client_set_process_id(client, getpid());
-    }
+    client = gnome_master_client();
+
+    if (client != NULL)
+	gnome_client_set_process_id(client, getpid());
 }
 #endif // USE_GNOME_SESSION
 
@@ -6860,11 +6859,11 @@ clip_mch_request_selection(Clipboard_T *cbd)
     void
 clip_mch_lose_selection(Clipboard_T *cbd UNUSED)
 {
-    if (!in_selection_clear_event)
-    {
-	gtk_selection_owner_set(NULL, cbd->gtk_sel_atom, gui.event_time);
-	gui_mch_update();
-    }
+    if (in_selection_clear_event)
+	return;
+
+    gtk_selection_owner_set(NULL, cbd->gtk_sel_atom, gui.event_time);
+    gui_mch_update();
 }
 
 /*
@@ -7029,21 +7028,21 @@ static int last_shape = 0;
     void
 gui_mch_mousehide(int hide)
 {
-    if (gui.pointer_hidden != hide)
+    if (gui.pointer_hidden == hide)
+	return;
+
+    gui.pointer_hidden = hide;
+    if (gtk_widget_get_window(gui.drawarea) && gui.blank_pointer != NULL)
     {
-	gui.pointer_hidden = hide;
-	if (gtk_widget_get_window(gui.drawarea) && gui.blank_pointer != NULL)
-	{
-	    if (hide)
-		gdk_window_set_cursor(gtk_widget_get_window(gui.drawarea),
-			gui.blank_pointer);
-	    else
+	if (hide)
+	    gdk_window_set_cursor(gtk_widget_get_window(gui.drawarea),
+		    gui.blank_pointer);
+	else
 #ifdef FEAT_MOUSESHAPE
-		mch_set_mouse_shape(last_shape);
+	    mch_set_mouse_shape(last_shape);
 #else
-		gdk_window_set_cursor(gtk_widget_get_window(gui.drawarea), NULL);
+	gdk_window_set_cursor(gtk_widget_get_window(gui.drawarea), NULL);
 #endif
-	}
     }
 }
 
@@ -7132,141 +7131,141 @@ gui_mch_drawsign(int row, int col, int typenr)
 
     sign = (GdkPixbuf *)sign_get_image(typenr);
 
-    if (sign != NULL && gui.drawarea != NULL
-	    && gtk_widget_get_window(gui.drawarea) != NULL)
+    if (sign == NULL || gui.drawarea == NULL
+	    || gtk_widget_get_window(gui.drawarea) == NULL)
+	return;
+
+    int width;
+    int height;
+    int xoffset;
+    int yoffset;
+    int need_scale;
+
+    width  = gdk_pixbuf_get_width(sign);
+    height = gdk_pixbuf_get_height(sign);
+    /*
+     * Decide whether we need to scale.  Allow one pixel of border
+     * width to be cut off, in order to avoid excessive scaling for
+     * tiny differences in font size.
+     * Do scale to fit the height to avoid gaps because of linespacing.
+     */
+    need_scale = (width > SIGN_WIDTH + 2
+	    || height != SIGN_HEIGHT
+	    || (width < 3 * SIGN_WIDTH / 4
+		&& height < 3 * SIGN_HEIGHT / 4));
+    if (need_scale)
     {
-	int width;
-	int height;
-	int xoffset;
-	int yoffset;
-	int need_scale;
+	double  aspect;
+	int	    w = width;
+	int	    h = height;
 
-	width  = gdk_pixbuf_get_width(sign);
-	height = gdk_pixbuf_get_height(sign);
-	/*
-	 * Decide whether we need to scale.  Allow one pixel of border
-	 * width to be cut off, in order to avoid excessive scaling for
-	 * tiny differences in font size.
-	 * Do scale to fit the height to avoid gaps because of linespacing.
-	 */
-	need_scale = (width > SIGN_WIDTH + 2
-		      || height != SIGN_HEIGHT
-		      || (width < 3 * SIGN_WIDTH / 4
-			  && height < 3 * SIGN_HEIGHT / 4));
-	if (need_scale)
+	// Keep the original aspect ratio
+	aspect = (double)height / (double)width;
+	width  = (double)SIGN_WIDTH * SIGN_ASPECT / aspect;
+	width  = MIN(width, SIGN_WIDTH);
+	if (((double)(MAX(height, SIGN_HEIGHT)) /
+		    (double)(MIN(height, SIGN_HEIGHT))) < 1.15)
 	{
-	    double  aspect;
-	    int	    w = width;
-	    int	    h = height;
-
-	    // Keep the original aspect ratio
-	    aspect = (double)height / (double)width;
-	    width  = (double)SIGN_WIDTH * SIGN_ASPECT / aspect;
-	    width  = MIN(width, SIGN_WIDTH);
-	    if (((double)(MAX(height, SIGN_HEIGHT)) /
-		 (double)(MIN(height, SIGN_HEIGHT))) < 1.15)
-	    {
-		// Change the aspect ratio by at most 15% to fill the
-		// available space completely.
-		height = (double)SIGN_HEIGHT * SIGN_ASPECT / aspect;
-		height = MIN(height, SIGN_HEIGHT);
-	    }
-	    else
-		height = (double)width * aspect;
-
-	    if (w == width && h == height)
-	    {
-		// no change in dimensions; don't decrease reference counter
-		// (below)
-		need_scale = FALSE;
-	    }
-	    else
-	    {
-		// This doesn't seem to be worth caching, and doing so would
-		// complicate the code quite a bit.
-		sign = gdk_pixbuf_scale_simple(sign, width, height,
-							 GDK_INTERP_BILINEAR);
-		if (sign == NULL)
-		    return; // out of memory
-	    }
+	    // Change the aspect ratio by at most 15% to fill the
+	    // available space completely.
+	    height = (double)SIGN_HEIGHT * SIGN_ASPECT / aspect;
+	    height = MIN(height, SIGN_HEIGHT);
 	}
+	else
+	    height = (double)width * aspect;
 
-	// The origin is the upper-left corner of the pixmap.  Therefore
-	// these offset may become negative if the pixmap is smaller than
-	// the 2x1 cells reserved for the sign icon.
-	xoffset = (width  - SIGN_WIDTH)  / 2;
-	yoffset = (height - SIGN_HEIGHT) / 2;
+	if (w == width && h == height)
+	{
+	    // no change in dimensions; don't decrease reference counter
+	    // (below)
+	    need_scale = FALSE;
+	}
+	else
+	{
+	    // This doesn't seem to be worth caching, and doing so would
+	    // complicate the code quite a bit.
+	    sign = gdk_pixbuf_scale_simple(sign, width, height,
+		    GDK_INTERP_BILINEAR);
+	    if (sign == NULL)
+		return; // out of memory
+	}
+    }
+
+    // The origin is the upper-left corner of the pixmap.  Therefore
+    // these offset may become negative if the pixmap is smaller than
+    // the 2x1 cells reserved for the sign icon.
+    xoffset = (width  - SIGN_WIDTH)  / 2;
+    yoffset = (height - SIGN_HEIGHT) / 2;
 
 # if GTK_CHECK_VERSION(3,0,0)
-	{
-	    cairo_t	    *cr;
-	    cairo_surface_t *bg_surf;
-	    cairo_t	    *bg_cr;
-	    cairo_surface_t *sign_surf;
-	    cairo_t	    *sign_cr;
+    {
+	cairo_t	    *cr;
+	cairo_surface_t *bg_surf;
+	cairo_t	    *bg_cr;
+	cairo_surface_t *sign_surf;
+	cairo_t	    *sign_cr;
 
-	    cr = cairo_create(gui.surface);
+	cr = cairo_create(gui.surface);
 
-	    bg_surf = cairo_surface_create_similar(gui.surface,
-		    cairo_surface_get_content(gui.surface),
-		    SIGN_WIDTH, SIGN_HEIGHT);
-	    bg_cr = cairo_create(bg_surf);
-	    cairo_set_source_rgba(bg_cr,
-		    gui.bgcolor->red, gui.bgcolor->green, gui.bgcolor->blue,
-		    gui.bgcolor->alpha);
-	    cairo_paint(bg_cr);
+	bg_surf = cairo_surface_create_similar(gui.surface,
+		cairo_surface_get_content(gui.surface),
+		SIGN_WIDTH, SIGN_HEIGHT);
+	bg_cr = cairo_create(bg_surf);
+	cairo_set_source_rgba(bg_cr,
+		gui.bgcolor->red, gui.bgcolor->green, gui.bgcolor->blue,
+		gui.bgcolor->alpha);
+	cairo_paint(bg_cr);
 
-	    sign_surf = cairo_surface_create_similar(gui.surface,
-		    cairo_surface_get_content(gui.surface),
-		    SIGN_WIDTH, SIGN_HEIGHT);
-	    sign_cr = cairo_create(sign_surf);
-	    gdk_cairo_set_source_pixbuf(sign_cr, sign, -xoffset, -yoffset);
-	    cairo_paint(sign_cr);
+	sign_surf = cairo_surface_create_similar(gui.surface,
+		cairo_surface_get_content(gui.surface),
+		SIGN_WIDTH, SIGN_HEIGHT);
+	sign_cr = cairo_create(sign_surf);
+	gdk_cairo_set_source_pixbuf(sign_cr, sign, -xoffset, -yoffset);
+	cairo_paint(sign_cr);
 
-	    cairo_set_operator(sign_cr, CAIRO_OPERATOR_DEST_OVER);
-	    cairo_set_source_surface(sign_cr, bg_surf, 0, 0);
-	    cairo_paint(sign_cr);
+	cairo_set_operator(sign_cr, CAIRO_OPERATOR_DEST_OVER);
+	cairo_set_source_surface(sign_cr, bg_surf, 0, 0);
+	cairo_paint(sign_cr);
 
-	    cairo_set_source_surface(cr, sign_surf, FILL_X(col), FILL_Y(row));
-	    cairo_paint(cr);
+	cairo_set_source_surface(cr, sign_surf, FILL_X(col), FILL_Y(row));
+	cairo_paint(cr);
 
-	    cairo_destroy(sign_cr);
-	    cairo_surface_destroy(sign_surf);
-	    cairo_destroy(bg_cr);
-	    cairo_surface_destroy(bg_surf);
-	    cairo_destroy(cr);
+	cairo_destroy(sign_cr);
+	cairo_surface_destroy(sign_surf);
+	cairo_destroy(bg_cr);
+	cairo_surface_destroy(bg_surf);
+	cairo_destroy(cr);
 
-	    gtk_widget_queue_draw_area(gui.drawarea,
-		    FILL_X(col), FILL_Y(col), width, height);
+	gtk_widget_queue_draw_area(gui.drawarea,
+		FILL_X(col), FILL_Y(col), width, height);
 
-	}
-# else // !GTK_CHECK_VERSION(3,0,0)
-	gdk_gc_set_foreground(gui.text_gc, gui.bgcolor);
-
-	gdk_draw_rectangle(gui.drawarea->window,
-			   gui.text_gc,
-			   TRUE,
-			   FILL_X(col),
-			   FILL_Y(row),
-			   SIGN_WIDTH,
-			   SIGN_HEIGHT);
-
-	gdk_pixbuf_render_to_drawable_alpha(sign,
-					    gui.drawarea->window,
-					    MAX(0, xoffset),
-					    MAX(0, yoffset),
-					    FILL_X(col) - MIN(0, xoffset),
-					    FILL_Y(row) - MIN(0, yoffset),
-					    MIN(width,	SIGN_WIDTH),
-					    MIN(height, SIGN_HEIGHT),
-					    GDK_PIXBUF_ALPHA_BILEVEL,
-					    127,
-					    GDK_RGB_DITHER_NORMAL,
-					    0, 0);
-# endif // !GTK_CHECK_VERSION(3,0,0)
-	if (need_scale)
-	    g_object_unref(sign);
     }
+# else // !GTK_CHECK_VERSION(3,0,0)
+    gdk_gc_set_foreground(gui.text_gc, gui.bgcolor);
+
+    gdk_draw_rectangle(gui.drawarea->window,
+	    gui.text_gc,
+	    TRUE,
+	    FILL_X(col),
+	    FILL_Y(row),
+	    SIGN_WIDTH,
+	    SIGN_HEIGHT);
+
+    gdk_pixbuf_render_to_drawable_alpha(sign,
+	    gui.drawarea->window,
+	    MAX(0, xoffset),
+	    MAX(0, yoffset),
+	    FILL_X(col) - MIN(0, xoffset),
+	    FILL_Y(row) - MIN(0, yoffset),
+	    MIN(width,	SIGN_WIDTH),
+	    MIN(height, SIGN_HEIGHT),
+	    GDK_PIXBUF_ALPHA_BILEVEL,
+	    127,
+	    GDK_RGB_DITHER_NORMAL,
+	    0, 0);
+# endif // !GTK_CHECK_VERSION(3,0,0)
+    if (need_scale)
+	g_object_unref(sign);
 }
 
     void *
