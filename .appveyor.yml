@@ -4,9 +4,9 @@ skip_tags: true
 
 environment:
   matrix:
-    - job_name: VS-2015
-      appveyor_build_worker_image: Visual Studio 2015
-      FEATURE: HUGE
+    # - job_name: VS-2015
+    #   appveyor_build_worker_image: Visual Studio 2015
+    #   FEATURE: HUGE
 
     - job_name: VS-2022
       appveyor_build_worker_image: Visual Studio 2022
