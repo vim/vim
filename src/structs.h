@@ -1494,6 +1494,8 @@ struct class_S
     int		class_refcount;
     int		class_copyID;		// used by garbage collection
 
+    class_T	*class_extends;		// parent class or NULL
+
     // interfaces declared for the class
     int		class_interface_count;
     char_u	**class_interfaces;	// allocated array of names

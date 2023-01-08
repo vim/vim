@@ -753,5 +753,71 @@ def Test_class_used_as_type()
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object but got string')
 enddef
 
+def Test_class_extends()
+  var lines =<< trim END
+      vim9script
+      class Base
+        this.one = 1
+        def GetOne(): number
+          return this.one
+        enddef
+      endclass
+      class Child extends Base
+        this.two = 2
+        def GetTotal(): number
+          return this.one + this.two
+        enddef
+      endclass
+      var o = Child.new()
+      assert_equal(1, o.one)
+      assert_equal(2, o.two)
+      assert_equal(1, o.GetOne())
+      assert_equal(3, o.GetTotal())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.one = 1
+      endclass
+      class Child extends Base
+        this.two = 2
+      endclass
+      var o = Child.new(3, 44)
+      assert_equal(3, o.one)
+      assert_equal(44, o.two)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.one = 1
+      endclass
+      class Child extends Base extends Base
+        this.two = 2
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1352: Duplicate "extends"')
+
+  lines =<< trim END
+      vim9script
+      class Child extends BaseClass
+        this.two = 2
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1353: Class name not found: BaseClass')
+
+  lines =<< trim END
+      vim9script
+      var SomeVar = 99
+      class Child extends SomeVar
+        this.two = 2
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1354: Cannot extend SomeVar')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
