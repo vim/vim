@@ -334,35 +334,35 @@ prt_get_attr(
     static void
 prt_set_fg(long_u fg)
 {
-    if (fg != curr_fg)
-    {
-	curr_fg = fg;
-	mch_print_set_fg(fg);
-    }
+    if (fg == curr_fg)
+	return;
+
+    curr_fg = fg;
+    mch_print_set_fg(fg);
 }
 
     static void
 prt_set_bg(long_u bg)
 {
-    if (bg != curr_bg)
-    {
-	curr_bg = bg;
-	mch_print_set_bg(bg);
-    }
+    if (bg == curr_bg)
+	return;
+
+    curr_bg = bg;
+    mch_print_set_bg(bg);
 }
 
     static void
 prt_set_font(int bold, int italic, int underline)
 {
-    if (curr_bold != bold
-	    || curr_italic != italic
-	    || curr_underline != underline)
-    {
-	curr_underline = underline;
-	curr_italic = italic;
-	curr_bold = bold;
-	mch_print_set_font(bold, italic, underline);
-    }
+    if (curr_bold == bold
+	    && curr_italic == italic
+	    && curr_underline == underline)
+	return;
+
+    curr_underline = underline;
+    curr_italic = italic;
+    curr_bold = bold;
+    mch_print_set_font(bold, italic, underline);
 }
 
 /*
@@ -434,13 +434,15 @@ prt_get_unit(int idx)
     int		i;
     static char *(units[4]) = PRT_UNIT_NAMES;
 
-    if (printer_opts[idx].present)
-	for (i = 0; i < 4; ++i)
-	    if (STRNICMP(printer_opts[idx].string, units[i], 2) == 0)
-	    {
-		u = i;
-		break;
-	    }
+    if (!printer_opts[idx].present)
+	return PRT_UNIT_NONE;
+
+    for (i = 0; i < 4; ++i)
+	if (STRNICMP(printer_opts[idx].string, units[i], 2) == 0)
+	{
+	    u = i;
+	    break;
+	}
     return u;
 }
 
@@ -1574,75 +1576,75 @@ prt_def_var(char *name, double value, int prec)
     static void
 prt_flush_buffer(void)
 {
-    if (prt_ps_buffer.ga_len > 0)
+    if (prt_ps_buffer.ga_len <= 0)
+	return;
+
+    // Any background color must be drawn first
+    if (prt_do_bgcol && (prt_new_bgcol != PRCOLOR_WHITE))
     {
-	// Any background color must be drawn first
-	if (prt_do_bgcol && (prt_new_bgcol != PRCOLOR_WHITE))
-	{
-	    int     r, g, b;
+	int     r, g, b;
 
-	    if (prt_do_moveto)
-	    {
-		prt_write_real(prt_pos_x_moveto, 2);
-		prt_write_real(prt_pos_y_moveto, 2);
-		prt_write_string("m\n");
-		prt_do_moveto = FALSE;
-	    }
-
-	    // Size of rect of background color on which text is printed
-	    prt_write_real(prt_text_run, 2);
-	    prt_write_real(prt_line_height, 2);
-
-	    // Lastly add the color of the background
-	    r = ((unsigned)prt_new_bgcol & 0xff0000) >> 16;
-	    g = ((unsigned)prt_new_bgcol & 0xff00) >> 8;
-	    b = prt_new_bgcol & 0xff;
-	    prt_write_real(r / 255.0, 3);
-	    prt_write_real(g / 255.0, 3);
-	    prt_write_real(b / 255.0, 3);
-	    prt_write_string("bg\n");
-	}
-	// Draw underlines before the text as it makes it slightly easier to
-	// find the starting point.
-	if (prt_do_underline)
-	{
-	    if (prt_do_moveto)
-	    {
-		prt_write_real(prt_pos_x_moveto, 2);
-		prt_write_real(prt_pos_y_moveto, 2);
-		prt_write_string("m\n");
-		prt_do_moveto = FALSE;
-	    }
-
-	    // Underline length of text run
-	    prt_write_real(prt_text_run, 2);
-	    prt_write_string("ul\n");
-	}
-	// Draw the text
-	if (prt_out_mbyte)
-	    prt_write_string("<");
-	else
-	    prt_write_string("(");
-	prt_write_file_raw_len(prt_ps_buffer.ga_data, prt_ps_buffer.ga_len);
-	if (prt_out_mbyte)
-	    prt_write_string(">");
-	else
-	    prt_write_string(")");
-	// Add a moveto if need be and use the appropriate show procedure
 	if (prt_do_moveto)
 	{
 	    prt_write_real(prt_pos_x_moveto, 2);
 	    prt_write_real(prt_pos_y_moveto, 2);
-	    // moveto and a show
-	    prt_write_string("ms\n");
+	    prt_write_string("m\n");
 	    prt_do_moveto = FALSE;
 	}
-	else // Simple show
-	    prt_write_string("s\n");
 
-	ga_clear(&prt_ps_buffer);
-	ga_init2(&prt_ps_buffer, sizeof(char), prt_bufsiz);
+	// Size of rect of background color on which text is printed
+	prt_write_real(prt_text_run, 2);
+	prt_write_real(prt_line_height, 2);
+
+	// Lastly add the color of the background
+	r = ((unsigned)prt_new_bgcol & 0xff0000) >> 16;
+	g = ((unsigned)prt_new_bgcol & 0xff00) >> 8;
+	b = prt_new_bgcol & 0xff;
+	prt_write_real(r / 255.0, 3);
+	prt_write_real(g / 255.0, 3);
+	prt_write_real(b / 255.0, 3);
+	prt_write_string("bg\n");
     }
+    // Draw underlines before the text as it makes it slightly easier to
+    // find the starting point.
+    if (prt_do_underline)
+    {
+	if (prt_do_moveto)
+	{
+	    prt_write_real(prt_pos_x_moveto, 2);
+	    prt_write_real(prt_pos_y_moveto, 2);
+	    prt_write_string("m\n");
+	    prt_do_moveto = FALSE;
+	}
+
+	// Underline length of text run
+	prt_write_real(prt_text_run, 2);
+	prt_write_string("ul\n");
+    }
+    // Draw the text
+    if (prt_out_mbyte)
+	prt_write_string("<");
+    else
+	prt_write_string("(");
+    prt_write_file_raw_len(prt_ps_buffer.ga_data, prt_ps_buffer.ga_len);
+    if (prt_out_mbyte)
+	prt_write_string(">");
+    else
+	prt_write_string(")");
+    // Add a moveto if need be and use the appropriate show procedure
+    if (prt_do_moveto)
+    {
+	prt_write_real(prt_pos_x_moveto, 2);
+	prt_write_real(prt_pos_y_moveto, 2);
+	// moveto and a show
+	prt_write_string("ms\n");
+	prt_do_moveto = FALSE;
+    }
+    else // Simple show
+	prt_write_string("s\n");
+
+    ga_clear(&prt_ps_buffer);
+    ga_init2(&prt_ps_buffer, sizeof(char), prt_bufsiz);
 }
 
 
@@ -3447,12 +3449,12 @@ mch_print_set_bg(long_u bgcol)
     void
 mch_print_set_fg(long_u fgcol)
 {
-    if (fgcol != (long_u)prt_fgcol)
-    {
-	prt_fgcol = (int)fgcol;
-	prt_attribute_change = TRUE;
-	prt_need_fgcol = TRUE;
-    }
+    if (fgcol == (long_u)prt_fgcol)
+	return;
+
+    prt_fgcol = (int)fgcol;
+    prt_attribute_change = TRUE;
+    prt_need_fgcol = TRUE;
 }
 
 # endif //FEAT_POSTSCRIPT
