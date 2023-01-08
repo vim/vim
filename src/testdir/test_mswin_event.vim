@@ -588,7 +588,7 @@ func Test_mswin_event_movement_keys()
 
       " The virtual termcap maps may change the character and remove Shift mod.
       " Or remove the Ctrl mod if the Shift is not already removed.
-      if (chstr_alone_end != chstr_end) && (vim_mod_mask != mod_mask)
+      if chstr_alone_end != chstr_end
         let found_shift = 0
         for mod_key in mod_keycodes
           if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
