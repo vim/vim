@@ -89,17 +89,12 @@ jobs:
           echo "VCVARSALL=$(vswhere -products \* -latest -property installationPath)\\VC\\Auxiliary\\Build\\vcvarsall.bat" >> $GITHUB_ENV
           if [ "${{ matrix.features }}" != "TINY" ]; then
             if [ "${{ matrix.arch }}" = "x86" ]; then
-              choco install python2 --no-progress --forcex86 --params '"/TARGETDIR:${PYTHON_DIR}"'
+              choco install python2 --no-progress --forcex86 --params '"/TARGETDIR:${PYTHON_DIR} /ADDLOCAL:ALL"'
             else
-              choco install python2 --no-progress --params '"/TARGETDIR:${PYTHON_DIR}"'
+              choco install python2 --no-progress --params '"/TARGETDIR:${PYTHON_DIR} /ADDLOCAL:ALL"'
             fi
           fi
           python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
-          if [ -z "$python3_dir" ]
-          then
-            choco install python${PYTHON3_VER} --no-progress --params '"/TARGETDIR:C:\Python${PYTHON3_VER} /NoLockdown InstallAllUsers=0 /ADDLOCAL=DefaultFeatures"'
-            python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
-          fi
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
@@ -161,6 +156,7 @@ jobs:
         if: matrix.toolchain == 'msvc'
         shell: cmd
         run: |
+          PATH %PATH%;%PYTHON_DIR%
           call "%VCVARSALL%" %VCARCH%
           cd src
           if "${{ matrix.VIMDLL }}"=="yes" (
@@ -173,6 +169,7 @@ jobs:
               FEATURES=${{ matrix.features }} ^
               GUI=%GUI% IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} ^
               DYNAMIC_LUA=yes LUA=%LUA_DIR% ^
+              DYNAMIC_PYTHON=yes PYTHON=%PYTHON_DIR% ^
               DYNAMIC_PYTHON3=yes PYTHON3=%PYTHON3_DIR%
           ) else (
             nmake -nologo -f Make_mvc.mak ^
@@ -195,6 +192,7 @@ jobs:
               FEATURES=${{ matrix.features }} \
               GUI=$GUI IME=yes ICONV=yes VIMDLL=${{ matrix.VIMDLL }} \
               DYNAMIC_LUA=yes LUA=${LUA_DIR_SLASH} \
+              DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
               DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
               STATIC_STDCPLUS=yes COVERAGE=${{ matrix.coverage }}
           else
