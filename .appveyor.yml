@@ -1,12 +1,17 @@
 version: "{build}"
 
-image: Visual Studio 2022
-
 skip_tags: true
 
 environment:
   matrix:
-    - FEATURE: HUGE
+    - job_name: VS-2015
+      appveyor_build_worker_image: Visual Studio 2015
+      FEATURE: HUGE
+
+    - job_name: VS-2019
+      appveyor_build_worker_image: Visual Studio 2019
+      FEATURE: HUGE
+
 # disabled
 #    - FEATURE: TINY
 #    - FEATURE: NORMAL
