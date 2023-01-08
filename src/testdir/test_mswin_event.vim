@@ -572,23 +572,19 @@ func Test_mswin_event_movement_keys()
       let chstr_fk = getcharstr(0)
       call assert_equal(chstr_eval, chstr_fk, $"feedkeys = <{kstr}>")
 
-      " flush out anything in the typeahead buffer
-      while getchar(0)
-      endwhile
       call SendKey(kcode)
       let chstr_alone = getcharstr(0)
       let chstr_alone_end = chstr_alone[len(chstr_alone)-2:len(chstr_alone)-1]
-      while getchar(0)
-      endwhile
       call SendKeyGroup(mod_keycodes + [kcode])
       let chstr = getcharstr(0)
       let chstr_end = chstr[len(chstr)-2:len(chstr)-1]
       let mod_mask = getcharmod()
       call assert_equal(chstr_eval, chstr, $"key = {kstr}")
 
-      " The virtual termcap maps may change the character and remove Shift mod.
-      " Or remove the Ctrl mod if the Shift is not already removed.
-"        if chstr_alone_end != chstr_end
+      " The virtual termcap maps may change the character and either;
+      " - remove the Shift modifier, or
+      " - remove the Ctrl modifier if the Shift modifier was not already removed.
+      if chstr_alone_end != chstr_end
         let found_shift = 0
         for mod_key in mod_keycodes
           if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
@@ -605,7 +601,7 @@ func Test_mswin_event_movement_keys()
             endif
           endfor
         endif
-"        endif
+      endif
       call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
     endfor
   endfor
