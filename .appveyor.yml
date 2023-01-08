@@ -31,7 +31,7 @@ before_build:
     if not exist "%VCVARSALL%" (
     set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
     )
-  - call "%VCVARSALL%" x86_amd64
+  - call "%VCVARSALL%" x64
 
 build_script:
   - ci/appveyor.bat
