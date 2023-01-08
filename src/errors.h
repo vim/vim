@@ -3422,4 +3422,8 @@ EXTERN char e_member_str_of_interface_str_not_implemented[]
 	INIT(= N_("E1348: Member \"%s\" of interface \"%s\" not implemented"));
 EXTERN char e_function_str_of_interface_str_not_implemented[]
 	INIT(= N_("E1349: Function \"%s\" of interface \"%s\" not implemented"));
+EXTERN char e_duplicate_implements[]
+	INIT(= N_("E1350: Duplicate \"implements\""));
+EXTERN char e_duplicate_interface_after_implements_str[]
+	INIT(= N_("E1351: Duplicate interface after \"implements\": %s"));
 #endif

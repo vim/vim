@@ -627,8 +627,47 @@ def Test_class_implements_interface()
           echo nr
         enddef
       endclass
+
+      interface Another
+        this.member: string
+      endinterface
+
+      class SomeImpl implements Some, Another
+        this.member = 'abc'
+        static count: number
+        def Method(nr: number)
+          echo nr
+        enddef
+      endclass
+
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static counter: number
+      endinterface
+
+      class SomeImpl implements Some implements Some
+        static count: number
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1350:')
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        static counter: number
+      endinterface
+
+      class SomeImpl implements Some, Some
+        static count: number
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1351: Duplicate interface after "implements": Some')
 
   lines =<< trim END
       vim9script
@@ -663,6 +702,55 @@ def Test_class_implements_interface()
       endclass
   END
   v9.CheckScriptFailure(lines, 'E1349: Function "Methods" of interface "Some" not implemented')
+enddef
+
+def Test_class_used_as_type()
+  var lines =<< trim END
+      vim9script
+
+      class Point
+        this.x = 0
+        this.y = 0
+      endclass
+
+      var p: Point
+      p = Point.new(2, 33)
+      assert_equal(2, p.x)
+      assert_equal(33, p.y)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      interface HasX
+        this.x: number
+      endinterface
+
+      class Point implements HasX
+        this.x = 0
+        this.y = 0
+      endclass
+
+      var p: Point
+      p = Point.new(2, 33)
+      var hx = p
+      assert_equal(2, hx.x)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class Point
+        this.x = 0
+        this.y = 0
+      endclass
+
+      var p: Point
+      p = 'text'
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object but got string')
 enddef
 
 
