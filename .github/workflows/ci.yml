@@ -94,6 +94,7 @@ jobs:
               choco install python2 --no-progress
             fi
           fi
+          choco install python --no-progress
           python3_dir=$(cat "/proc/$cygreg/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}$pyreg/InstallPath/@")
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
