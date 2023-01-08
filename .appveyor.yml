@@ -17,10 +17,11 @@ matrix:
 
 before_build:
   # Use Visual Studio 2015 compiler tools (default is 2012)
+  - 'setlocal ENABLEDELAYEDEXPANSION'
   - 'call ver'
   - 'set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"'
   - >
-    if exists %VSWHERE% (
+    if exists "%VSWHERE%" (
       for /f "usebackq delims=" %%i
       in (`"%VSWHERE%" -products * -latest -property installationPath`) 
       do (set VCVARSALL="%%i\VC\Auxiliary\Build\vcvarsall.bat")
