@@ -24,13 +24,13 @@ before_build:
     if exist "%VSWHERE%" (
     for /f "usebackq delims=" %%i
     in (`"%VSWHERE%" -products * -latest -property installationPath`) 
-    do (set VCVARSALL="%%i\VC\Auxiliary\Build\vcvarsall.bat")
+    do (set "VCVARSALL=%%i\VC\Auxiliary\Build\vcvarsall.bat")
     )
   - > 
-    if not exist %VCVARSALL% (
+    if not exist "%VCVARSALL%" (
     set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
     )
-  - call %VCVARSALL% x86_amd64
+  - call "%VCVARSALL%" x86_amd64
 
 build_script:
   - ci/appveyor.bat
