@@ -749,9 +749,6 @@ peek_next_line_from_context(cctx_T *cctx)
 {
     int lnum = cctx->ctx_lnum;
 
-    if (cctx->ctx_ufunc->uf_def_status == UF_COMPILING_SP_EXPR)
-	return NULL;
-
     while (++lnum < cctx->ctx_ufunc->uf_lines.ga_len)
     {
 	char_u *line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[lnum];

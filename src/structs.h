@@ -1735,7 +1735,6 @@ typedef enum {
     UF_NOT_COMPILED,	    // executed with interpreter
     UF_TO_BE_COMPILED,	    // to be compiled before execution
     UF_COMPILING,	    // in compile_def_function()
-    UF_COMPILING_SP_EXPR,   // in compile_def_function() with special expr
     UF_COMPILED,	    // successfully compiled
     UF_COMPILE_ERROR	    // compilation error, cannot execute
 } def_status_T;
