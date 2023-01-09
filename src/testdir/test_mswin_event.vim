@@ -155,9 +155,9 @@ let s:VK = {
     \ 'ESCAPE'     : 0x1B
     \ }
 
-  let s:vim_MOD_MASK_SHIFT = 0x02
-  let s:vim_MOD_MASK_CTRL  = 0x04
-  let s:vim_MOD_MASK_ALT   = 0x08
+  let s:MOD_MASK_SHIFT = 0x02
+  let s:MOD_MASK_CTRL  = 0x04
+  let s:MOD_MASK_ALT   = 0x08
   
   let s:vim_key_modifiers = [
     \ ["",       0,   []],
@@ -364,13 +364,13 @@ func s:LoopTestKeyArray(arr)
     let key = kcodes[0]
     for key in kcodes
       if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], key) >= 0
-        let modifiers = modifiers + s:vim_MOD_MASK_SHIFT
+        let modifiers = modifiers + s:MOD_MASK_SHIFT
       endif
       if index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], key) >= 0
-        let modifiers = modifiers + s:vim_MOD_MASK_CTRL
+        let modifiers = modifiers + s:MOD_MASK_CTRL
       endif
       if index([s:VK.ALT, s:VK.LALT, s:VK.RALT], key) >= 0
-        let modifiers = modifiers + s:vim_MOD_MASK_ALT
+        let modifiers = modifiers + s:MOD_MASK_ALT
       endif
     endfor
     call SendKeyWithModifiers(key, modifiers)
@@ -422,7 +422,7 @@ func Test_mswin_event_character_keys()
       call SendKeyGroup([modkey, kc])
       let ch = getchar(0)
       call assert_equal(kc+128, ch)
-      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_ALT)
+      call SendKeyWithModifiers(kc, s:MOD_MASK_ALT)
       let ch = getchar(0)
       call assert_equal(kc+128, ch)
     endfor
@@ -451,7 +451,7 @@ func Test_mswin_event_character_keys()
       call SendKeyGroup([modkey, kc])
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc), ch)
-      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_SHIFT)
+      call SendKeyWithModifiers(kc, s:MOD_MASK_SHIFT)
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc), ch)
     endfor
@@ -464,7 +464,7 @@ func Test_mswin_event_character_keys()
       call SendKeyGroup([modkey, kc])
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc - 64), ch)
-      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_CTRL)
+      call SendKeyWithModifiers(kc, s:MOD_MASK_CTRL)
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc - 64), ch)
     endfor
@@ -480,7 +480,7 @@ func Test_mswin_event_character_keys()
         call SendKeyGroup([modkey, kc])
         let ch = getchar(0)
         call assert_equal(kc+160, ch)
-        call SendKeyWithModifiers(kc, s:vim_MOD_MASK_ALT)
+        call SendKeyWithModifiers(kc, s:MOD_MASK_ALT)
         let ch = getchar(0)
         call assert_equal(kc+160, ch)
       endfor
@@ -526,7 +526,7 @@ func Test_mswin_event_function_keys()
         "instead of sending Shift
         for mod_key in mod_keycodes
           if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
-            let expected_mod_mask -= s:vim_MOD_MASK_SHIFT
+            let expected_mod_mask -= s:MOD_MASK_SHIFT
             break
           endif
         endfor
@@ -608,7 +608,6 @@ func Test_mswin_event_movement_keys()
       let chstr_mswin = getcharstr(0)
       let chstr_mswin_end = chstr_mswin[len(chstr_mswin)-2:len(chstr_mswin)-1]
       let mod_mask = getcharmod()
-      call assert_equal(chstr_eval, chstr_mswin, $"key = {kstr}")
 
       " The virtual termcap maps may** change the character and either;
       " - remove the Shift modifier, or
@@ -616,22 +615,26 @@ func Test_mswin_event_movement_keys()
       let [has_shift, has_ctrl, has_alt] = ExtractModifiers(mod_keycodes)
       if chstr_alone_end != chstr_mswin_end
         if has_shift != 0
-          let exp_mod_mask -= s:vim_MOD_MASK_SHIFT
+          let exp_mod_mask -= s:MOD_MASK_SHIFT
         elseif has_ctrl != 0
-	  let exp_mod_mask -= s:vim_MOD_MASK_CTRL
+	  let exp_mod_mask -= s:MOD_MASK_CTRL
         endif
       endif
       " **Note: The appveyor Windows GUI test environments, from VS2017 on,
-      " intercept the Shift modifier without changing the movement character.
+      " intercept the Shift modifier WITHOUT changing the movement character.
       " This issue does not happen in github CI test environments.
       if has('gui_running') && has_shift != 0
-        if exp_mod_mask - s:vim_MOD_MASK_SHIFT == mod_mask
-          let exp_mod_mask -= s:vim_MOD_MASK_SHIFT
-        elseif has_ctrl != 0 && exp_mod_mask - s:vim_MOD_MASK_CTRL == mod_mask
-          let exp_mod_mask -= s:vim_MOD_MASK_CTRL
+        if exp_mod_mask != mod_mask && chstr_eval != chstr_mswin
+          let kstr_sub = substitute(kstr, "S-", "", "")
+          let chstr_eval = eval('"\<' .. kstr_sub .. '>"')
+          if exp_mod_mask - s:MOD_MASK_SHIFT == mod_mask
+            let exp_mod_mask -= s:MOD_MASK_SHIFT
+          elseif has_ctrl != 0 && exp_mod_mask - s:MOD_MASK_CTRL == mod_mask
+            let exp_mod_mask -= s:MOD_MASK_CTRL
+          endif
         endif
       endif
-
+      call assert_equal(chstr_eval, chstr_mswin, $"key = {kstr}")
       call assert_equal(exp_mod_mask, mod_mask, $"mod_mask for key = {kstr}")
     endfor
   endfor
