@@ -614,10 +614,7 @@ func Test_mswin_event_movement_keys()
       " - remove the Shift modifier, or
       " - remove the Ctrl modifier if the Shift modifier was not already removed.
       " Note: *Sometimes, because not all windows test environments behave the same!
-      let modsarr = ExtractModifiers(mod_keycodes)
-      let has_shift = modsarr[0]
-      let has_ctrl = modsarr[1]
-      let has_alt = modsarr[2]
+      let [has_shift, has_ctrl, has_alt] = ExtractModifiers(mod_keycodes)
 
       if chstr_alone_end != chstr_mswin_end
         if has_shift != 0
