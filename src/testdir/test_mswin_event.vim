@@ -625,9 +625,9 @@ func Test_mswin_event_movement_keys()
       " intercept the Shift modifier without changing the movement character.
       " This issue does not happen in github CI test environments.
       if has('gui_running') && has_shift != 0
-        if exp_mod_mask + s:vim_MOD_MASK_SHIFT == mod_mask
+        if exp_mod_mask - s:vim_MOD_MASK_SHIFT == mod_mask
           let exp_mod_mask -= s:vim_MOD_MASK_SHIFT
-        elseif has_ctrl != 0 && exp_mod_mask + s:vim_MOD_MASK_CTRL == mod_mask
+        elseif has_ctrl != 0 && exp_mod_mask - s:vim_MOD_MASK_CTRL == mod_mask
           let exp_mod_mask -= s:vim_MOD_MASK_CTRL
         endif
       endif
