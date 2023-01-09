@@ -621,8 +621,12 @@ func Test_mswin_event_movement_keys()
         endif
       endif
       " **Note: The appveyor Windows GUI test environments, from VS2017 on,
-      " intercept the Shift modifier WITHOUT changing the movement character.
-      " This issue does not happen in github CI test environments.
+      " consistently intercepts the Shift modifier WITHOUT changing the
+      " MOVEMENT character.  This issue does not happen in any github actions
+      " CI Windows test environments.  Attempted to reproduce this manually
+      " on Windows versions;  7, 8.1, 10, 11, Server 2019 and Server 2022, but
+      " the issue did not occur on any of those environments.
+      " Below is a workaround for the issue.
       if has('gui_running') && has_shift != 0
         if exp_mod_mask != mod_mask && chstr_eval != chstr_mswin
           let kstr_sub = substitute(kstr, "S-", "", "")
