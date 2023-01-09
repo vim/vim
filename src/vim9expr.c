@@ -724,9 +724,13 @@ compile_string(isn_T *isn, cctx_T *cctx, int str_offset)
     int		trailing_error;
     int		instr_count;
     isn_T	*instr = NULL;
+    def_status_T def_status_orig = cctx->ctx_ufunc->uf_def_status;
 
     // Remove the string type from the stack.
     --cctx->ctx_type_stack.ga_len;
+
+    if (cctx->ctx_ufunc->uf_def_status == UF_COMPILING)
+	cctx->ctx_ufunc->uf_def_status = UF_COMPILING_SP_EXPR;
 
     // Temporarily reset the list of instructions so that the jump labels are
     // correct.
@@ -734,6 +738,9 @@ compile_string(isn_T *isn, cctx_T *cctx, int str_offset)
     cctx->ctx_instr.ga_maxlen = 0;
     cctx->ctx_instr.ga_data = NULL;
     expr_res = compile_expr0(&s, cctx);
+
+    cctx->ctx_ufunc->uf_def_status = def_status_orig;
+
     s = skipwhite(s);
     trailing_error = *s != NUL;
 

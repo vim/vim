@@ -3700,6 +3700,17 @@ def Test_expr9_method_call_linebreak()
       assert_equal('', v:errmsg)
   END
   v9.CheckScriptSuccess(lines)
+
+  # this was skipping over the expression without an error
+  lines =<< trim END
+      vim9script
+      def Test(s: string): string
+        return substitute(s, 'A', '\=toupper("x")', 'g')
+                          ->tolower()
+      enddef
+      assert_equal('xbcd', Test('ABCD'))
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_expr9_method_call_import()
