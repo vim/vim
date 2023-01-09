@@ -160,6 +160,8 @@ add_member(
 /*
  * Move the class or object members found while parsing a class into the class.
  * "gap" contains the found members.
+ * "parent_members" points to the members in the parent class (if any)
+ * "parent_count" is the number of members in the parent class
  * "members" will be set to the newly allocated array of members and
  * "member_count" set to the number of members.
  * Returns OK or FAIL.
@@ -167,15 +169,28 @@ add_member(
     static int
 add_members_to_class(
     garray_T	*gap,
+    ocmember_T	*parent_members,
+    int		parent_count,
     ocmember_T	**members,
     int		*member_count)
 {
-    *member_count = gap->ga_len;
-    *members = gap->ga_len == 0 ? NULL : ALLOC_MULT(ocmember_T, gap->ga_len);
-    if (gap->ga_len > 0 && *members == NULL)
+    *member_count = parent_count + gap->ga_len;
+    *members = *member_count == 0 ? NULL
+				       : ALLOC_MULT(ocmember_T, *member_count);
+    if (*member_count > 0 && *members == NULL)
 	return FAIL;
+    for (int i = 0; i < parent_count; ++i)
+    {
+	// parent members need to be copied
+	*members[i] = parent_members[i];
+	members[i]->ocm_name = vim_strsave(members[i]->ocm_name);
+	if (members[i]->ocm_init != NULL)
+	    members[i]->ocm_init = vim_strsave(members[i]->ocm_init);
+    }
     if (gap->ga_len > 0)
-	mch_memmove(*members, gap->ga_data, sizeof(ocmember_T) * gap->ga_len);
+	// new members are moved
+	mch_memmove(*members + parent_count,
+			       gap->ga_data, sizeof(ocmember_T) * gap->ga_len);
     VIM_CLEAR(gap->ga_data);
     return OK;
 }
@@ -233,6 +248,9 @@ ex_class(exarg_T *eap)
     //    generics: <Tkey, Tentry>
     //	  handle "is_export" if it is set
 
+    // Name for "extends BaseClass"
+    char_u *extends = NULL;
+
     // Names for "implements SomeInterface"
     garray_T	ga_impl;
     ga_init2(&ga_impl, sizeof(char_u *), 5);
@@ -241,9 +259,29 @@ ex_class(exarg_T *eap)
     while (*arg != NUL && *arg != '#' && *arg != '\n')
     {
 	// TODO:
-	//    extends SomeClass
 	//    specifies SomeInterface
-	if (STRNCMP(arg, "implements", 10) == 0 && IS_WHITE_OR_NUL(arg[10]))
+	if (STRNCMP(arg, "extends", 7) == 0 && IS_WHITE_OR_NUL(arg[7]))
+	{
+	    if (extends != NULL)
+	    {
+		emsg(_(e_duplicate_extends));
+		goto early_ret;
+	    }
+	    arg = skipwhite(arg + 7);
+	    char_u *end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
+	    if (!IS_WHITE_OR_NUL(*end))
+	    {
+		semsg(_(e_white_space_required_after_name_str), arg);
+		goto early_ret;
+	    }
+	    extends = vim_strnsave(arg, end - arg);
+	    if (extends == NULL)
+		goto early_ret;
+
+	    arg = skipwhite(end + 1);
+	}
+	else if (STRNCMP(arg, "implements", 10) == 0
+						   && IS_WHITE_OR_NUL(arg[10]))
 	{
 	    if (ga_impl.ga_len > 0)
 	    {
@@ -289,6 +327,7 @@ ex_class(exarg_T *eap)
 	{
 	    semsg(_(e_trailing_characters_str), arg);
 early_ret:
+	    vim_free(extends);
 	    ga_clear_strings(&ga_impl);
 	    return;
 	}
@@ -496,17 +535,50 @@ early_ret:
     }
     vim_free(theline);
 
-    // Check a few things before defining the class.
+    class_T *extends_cl = NULL;  // class from "extends" argument
+
+    /*
+     * Check a few things before defining the class.
+     */
+
+    // Check the "extends" class is valid.
+    if (success && extends != NULL)
+    {
+	typval_T tv;
+	tv.v_type = VAR_UNKNOWN;
+	if (eval_variable(extends, 0, 0, &tv, NULL, EVAL_VAR_IMPORT) == FAIL)
+	{
+	    semsg(_(e_class_name_not_found_str), extends);
+	    success = FALSE;
+	}
+	else
+	{
+	    if (tv.v_type != VAR_CLASS
+		    || tv.vval.v_class == NULL
+		    || (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
+	    {
+		semsg(_(e_cannot_extend_str), extends);
+		success = FALSE;
+	    }
+	    else
+	    {
+		extends_cl = tv.vval.v_class;
+		++extends_cl->class_refcount;
+	    }
+	    clear_tv(&tv);
+	}
+    }
+    VIM_CLEAR(extends);
+
+    // Check all "implements" entries are valid.
     if (success && ga_impl.ga_len > 0)
     {
-	// Check all "implements" entries are valid and correct.
 	for (int i = 0; i < ga_impl.ga_len && success; ++i)
 	{
 	    char_u *impl = ((char_u **)ga_impl.ga_data)[i];
 	    typval_T tv;
 	    tv.v_type = VAR_UNKNOWN;
-	    if (eval_variable(impl, 0, 0, &tv, NULL,
-				   EVAL_VAR_VERBOSE + EVAL_VAR_IMPORT) == FAIL)
+	    if (eval_variable(impl, 0, 0, &tv, NULL, EVAL_VAR_IMPORT) == FAIL)
 	    {
 		semsg(_(e_interface_name_not_found_str), impl);
 		success = FALSE;
@@ -620,6 +692,8 @@ early_ret:
 	if (cl->class_name == NULL)
 	    goto cleanup;
 
+	cl->class_extends = extends_cl;
+
 	if (ga_impl.ga_len > 0)
 	{
 	    // Move the "implements" names into the class.
@@ -635,11 +709,19 @@ early_ret:
 
 	// Add class and object members to "cl".
 	if (add_members_to_class(&classmembers,
-				    &cl->class_class_members,
-				    &cl->class_class_member_count) == FAIL
+				 extends_cl == NULL ? NULL
+					     : extends_cl->class_class_members,
+				 extends_cl == NULL ? 0
+					: extends_cl->class_class_member_count,
+				 &cl->class_class_members,
+				 &cl->class_class_member_count) == FAIL
 		|| add_members_to_class(&objmembers,
-				    &cl->class_obj_members,
-				    &cl->class_obj_member_count) == FAIL)
+				 extends_cl == NULL ? NULL
+					       : extends_cl->class_obj_members,
+				 extends_cl == NULL ? 0
+					  : extends_cl->class_obj_member_count,
+				 &cl->class_obj_members,
+				 &cl->class_obj_member_count) == FAIL)
 	    goto cleanup;
 
 	if (is_class && cl->class_class_member_count > 0)
@@ -735,20 +817,47 @@ early_ret:
 	    ufunc_T ***fup = loop == 1 ? &cl->class_class_functions
 				       : &cl->class_obj_methods;
 
-	    *fcount = gap->ga_len;
-	    if (gap->ga_len == 0)
+	    int parent_count = 0;
+	    if (extends_cl != NULL)
+		// Include functions from the parent.
+		parent_count = loop == 1
+				    ? extends_cl->class_class_function_count
+				    : extends_cl->class_obj_method_count;
+
+	    *fcount = parent_count + gap->ga_len;
+	    if (*fcount == 0)
 	    {
 		*fup = NULL;
 		continue;
 	    }
-	    *fup = ALLOC_MULT(ufunc_T *, gap->ga_len);
+	    *fup = ALLOC_MULT(ufunc_T *, *fcount);
 	    if (*fup == NULL)
 		goto cleanup;
-	    mch_memmove(*fup, gap->ga_data, sizeof(ufunc_T *) * gap->ga_len);
-	    vim_free(gap->ga_data);
 
-	    // Set the class pointer on all the object methods.
-	    for (int i = 0; i < gap->ga_len; ++i)
+	    int skipped = 0;
+	    for (int i = 0; i < parent_count; ++i)
+	    {
+		// Copy functions from the parent.  Can't use the same
+		// function, because "uf_class" is different and compilation
+		// will have a different result.
+		// Skip "new" functions. TODO: not all of them.
+		if (loop == 1 && STRNCMP(
+			    extends_cl->class_class_functions[i]->uf_name,
+								"new", 3) == 0)
+		    ++skipped;
+		else
+		    *fup[i - skipped] = copy_function((loop == 1
+					? extends_cl->class_class_functions
+					: extends_cl->class_obj_methods)[i]);
+	    }
+
+	    mch_memmove(*fup + parent_count - skipped, gap->ga_data,
+					      sizeof(ufunc_T *) * gap->ga_len);
+	    vim_free(gap->ga_data);
+	    *fcount -= skipped;
+
+	    // Set the class pointer on all the functions and object methods.
+	    for (int i = 0; i < *fcount; ++i)
 	    {
 		ufunc_T *fp = (*fup)[i];
 		fp->uf_class = cl;
@@ -786,6 +895,8 @@ cleanup:
 	vim_free(cl);
     }
 
+    vim_free(extends);
+    class_unref(extends_cl);
     ga_clear_strings(&ga_impl);
 
     for (int round = 1; round <= 2; ++round)
@@ -1166,6 +1277,8 @@ class_unref(class_T *cl)
 	// Clear "class_name" first, if it is NULL the class does not need to
 	// be freed.
 	VIM_CLEAR(cl->class_name);
+
+	class_unref(cl->class_extends);
 
 	for (int i = 0; i < cl->class_interface_count; ++i)
 	    vim_free(((char_u **)cl->class_interfaces)[i]);

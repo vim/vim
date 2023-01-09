@@ -56,6 +56,7 @@ int has_varargs(ufunc_T *ufunc);
 int function_exists(char_u *name, int no_deref);
 char_u *get_expanded_name(char_u *name, int check);
 char_u *get_user_func_name(expand_T *xp, int idx);
+ufunc_T *copy_function(ufunc_T *fp);
 void ex_delfunction(exarg_T *eap);
 void func_unref(char_u *name);
 void func_ptr_unref(ufunc_T *fp);

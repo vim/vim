@@ -3426,4 +3426,10 @@ EXTERN char e_duplicate_implements[]
 	INIT(= N_("E1350: Duplicate \"implements\""));
 EXTERN char e_duplicate_interface_after_implements_str[]
 	INIT(= N_("E1351: Duplicate interface after \"implements\": %s"));
+EXTERN char e_duplicate_extends[]
+	INIT(= N_("E1352: Duplicate \"extends\""));
+EXTERN char e_class_name_not_found_str[]
+	INIT(= N_("E1353: Class name not found: %s"));
+EXTERN char e_cannot_extend_str[]
+	INIT(= N_("E1354: Cannot extend %s"));
 #endif

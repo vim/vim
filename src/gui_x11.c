@@ -2194,11 +2194,11 @@ gui_mch_get_rgb_color(int r, int g, int b)
     void
 gui_mch_set_fg_color(guicolor_T color)
 {
-    if (color != prev_fg_color)
-    {
-	XSetForeground(gui.dpy, gui.text_gc, (Pixel)color);
-	prev_fg_color = color;
-    }
+    if (color == prev_fg_color)
+	return;
+
+    XSetForeground(gui.dpy, gui.text_gc, (Pixel)color);
+    prev_fg_color = color;
 }
 
 /*
@@ -2207,11 +2207,11 @@ gui_mch_set_fg_color(guicolor_T color)
     void
 gui_mch_set_bg_color(guicolor_T color)
 {
-    if (color != prev_bg_color)
-    {
-	XSetBackground(gui.dpy, gui.text_gc, (Pixel)color);
-	prev_bg_color = color;
-    }
+    if (color == prev_bg_color)
+	return;
+
+    XSetBackground(gui.dpy, gui.text_gc, (Pixel)color);
+    prev_bg_color = color;
 }
 
 /*
@@ -2814,18 +2814,18 @@ clip_mch_set_selection(
     void
 gui_mch_menu_grey(vimmenu_T *menu, int grey)
 {
-    if (menu->id != (Widget)0)
-    {
-	gui_mch_menu_hidden(menu, False);
-	if (grey
+    if (menu->id == (Widget)0)
+	return;
+
+    gui_mch_menu_hidden(menu, False);
+    if (grey
 #ifdef FEAT_GUI_MOTIF
-		|| !menu->sensitive
+	    || !menu->sensitive
 #endif
-		)
-	    XtSetSensitive(menu->id, False);
-	else
-	    XtSetSensitive(menu->id, True);
-    }
+       )
+	XtSetSensitive(menu->id, False);
+    else
+	XtSetSensitive(menu->id, True);
 }
 
 /*
@@ -2834,13 +2834,13 @@ gui_mch_menu_grey(vimmenu_T *menu, int grey)
     void
 gui_mch_menu_hidden(vimmenu_T *menu, int hidden)
 {
-    if (menu->id != (Widget)0)
-    {
-	if (hidden)
-	    XtUnmanageChild(menu->id);
-	else
-	    XtManageChild(menu->id);
-    }
+    if (menu->id == (Widget)0)
+	return;
+
+    if (hidden)
+	XtUnmanageChild(menu->id);
+    else
+	XtManageChild(menu->id);
 }
 
 /*
@@ -3130,15 +3130,15 @@ gui_mch_drawsign(int row, int col, int typenr)
 {
     XImage	*sign;
 
-    if (gui.in_use && (sign = (XImage *)sign_get_image(typenr)) != NULL)
-    {
-	XClearArea(gui.dpy, gui.wid, TEXT_X(col), TEXT_Y(row) - sign->height,
-		SIGN_WIDTH, gui.char_height, FALSE);
-	XPutImage(gui.dpy, gui.wid, gui.text_gc, sign, 0, 0,
-		TEXT_X(col) + (SIGN_WIDTH - sign->width) / 2,
-		TEXT_Y(row) - sign->height,
-		sign->width, sign->height);
-    }
+    if (!gui.in_use || (sign = (XImage *)sign_get_image(typenr)) == NULL)
+	return;
+
+    XClearArea(gui.dpy, gui.wid, TEXT_X(col), TEXT_Y(row) - sign->height,
+	    SIGN_WIDTH, gui.char_height, FALSE);
+    XPutImage(gui.dpy, gui.wid, gui.text_gc, sign, 0, 0,
+	    TEXT_X(col) + (SIGN_WIDTH - sign->width) / 2,
+	    TEXT_Y(row) - sign->height,
+	    sign->width, sign->height);
 }
 
     void *
@@ -3202,18 +3202,18 @@ static int last_shape = 0;
 gui_mch_mousehide(
     int		hide)	// TRUE = use blank ptr, FALSE = use parent ptr
 {
-    if (gui.pointer_hidden != hide)
-    {
-	gui.pointer_hidden = hide;
-	if (hide)
-	    XDefineCursor(gui.dpy, gui.wid, gui.blank_pointer);
-	else
+    if (gui.pointer_hidden == hide)
+	return;
+
+    gui.pointer_hidden = hide;
+    if (hide)
+	XDefineCursor(gui.dpy, gui.wid, gui.blank_pointer);
+    else
 #ifdef FEAT_MOUSESHAPE
-	    mch_set_mouse_shape(last_shape);
+	mch_set_mouse_shape(last_shape);
 #else
-	    XUndefineCursor(gui.dpy, gui.wid);
+    XUndefineCursor(gui.dpy, gui.wid);
 #endif
-    }
 }
 
 #if defined(FEAT_MOUSESHAPE) || defined(PROTO)
@@ -3280,22 +3280,22 @@ mch_set_mouse_shape(int shape)
     void
 gui_mch_menu_set_tip(vimmenu_T *menu)
 {
-    if (menu->id != NULL && menu->parent != NULL
-				       && menu_is_toolbar(menu->parent->name))
+    if (menu->id == NULL || menu->parent == NULL
+				|| !menu_is_toolbar(menu->parent->name))
+	return;
+
+    // Always destroy and create the balloon, in case the string was
+    // changed.
+    if (menu->tip != NULL)
     {
-	// Always destroy and create the balloon, in case the string was
-	// changed.
-	if (menu->tip != NULL)
-	{
-	    gui_mch_destroy_beval_area(menu->tip);
-	    menu->tip = NULL;
-	}
-	if (menu->strings[MENU_INDEX_TIP] != NULL)
-	    menu->tip = gui_mch_create_beval_area(
-		    menu->id,
-		    menu->strings[MENU_INDEX_TIP],
-		    NULL,
-		    NULL);
+	gui_mch_destroy_beval_area(menu->tip);
+	menu->tip = NULL;
     }
+    if (menu->strings[MENU_INDEX_TIP] != NULL)
+	menu->tip = gui_mch_create_beval_area(
+		menu->id,
+		menu->strings[MENU_INDEX_TIP],
+		NULL,
+		NULL);
 }
 #endif

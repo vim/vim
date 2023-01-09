@@ -641,6 +641,19 @@ get_lambda_name(void)
     return name;
 }
 
+/*
+ * Allocate a "ufunc_T" for a function called "name".
+ * Makes sure the size is right.
+ */
+    static ufunc_T *
+alloc_ufunc(char_u *name)
+{
+    // When the name is short we need to make sure we allocate enough bytes for
+    // the whole struct, including any padding.
+    size_t len = offsetof(ufunc_T, uf_name) + STRLEN(name) + 1;
+    return alloc_clear(len < sizeof(ufunc_T) ? sizeof(ufunc_T) : len);
+}
+
 #if defined(FEAT_LUA) || defined(PROTO)
 /*
  * Registers a native C callback which can be called from Vim script.
@@ -652,7 +665,7 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     char_u	*name = get_lambda_name();
     ufunc_T	*fp;
 
-    fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+    fp = alloc_ufunc(name);
     if (fp == NULL)
 	return NULL;
 
@@ -1356,7 +1369,7 @@ lambda_function_body(
     }
 
     name = get_lambda_name();
-    ufunc = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+    ufunc = alloc_ufunc(name);
     if (ufunc == NULL)
 	goto erret;
     set_ufunc_name(ufunc, name);
@@ -1557,7 +1570,7 @@ get_lambda_tv(
 	char_u	    *line_end;
 	char_u	    *name = get_lambda_name();
 
-	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+	fp = alloc_ufunc(name);
 	if (fp == NULL)
 	    goto errret;
 	fp->uf_def_status = UF_NOT_COMPILED;
@@ -2558,7 +2571,7 @@ copy_lambda_to_global_func(
 	return FAIL;
     }
 
-    fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(global) + 1);
+    fp = alloc_ufunc(global);
     if (fp == NULL)
 	return FAIL;
 
@@ -5081,7 +5094,7 @@ define_function(
 	    }
 	}
 
-	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+	fp = alloc_ufunc(name);
 	if (fp == NULL)
 	    goto erret;
 	fp_allocated = TRUE;
@@ -5513,6 +5526,71 @@ get_user_func_name(expand_T *xp, int idx)
 	return IObuff;
     }
     return NULL;
+}
+
+/*
+ * Make a copy of a function.
+ * Intended to be used for a function defined on a base class that has a copy
+ * on the child class.
+ * The copy has uf_refcount set to one.
+ * Returns NULL when out of memory.
+ */
+    ufunc_T *
+copy_function(ufunc_T *fp)
+{
+    ufunc_T *ufunc = alloc_ufunc(fp->uf_name);
+    if (ufunc == NULL)
+	return NULL;
+
+    // Most things can just be copied.
+    *ufunc = *fp;
+
+    ufunc->uf_def_status = UF_TO_BE_COMPILED;
+    ufunc->uf_dfunc_idx = 0;
+    ufunc->uf_class = NULL;
+
+    ga_copy_strings(&fp->uf_args, &ufunc->uf_args);
+    ga_copy_strings(&fp->uf_def_args, &ufunc->uf_def_args);
+
+    if (ufunc->uf_arg_types != NULL)
+    {
+	// "uf_arg_types" is an allocated array, make a copy.
+	type_T **at = ALLOC_CLEAR_MULT(type_T *, ufunc->uf_args.ga_len);
+	if (at != NULL)
+	{
+	    mch_memmove(at, ufunc->uf_arg_types,
+				     sizeof(type_T *) * ufunc->uf_args.ga_len);
+	    ufunc->uf_arg_types = at;
+	}
+    }
+
+    // TODO: how about the types themselves? they can be freed when the
+    // original function is freed:
+    //    type_T	**uf_arg_types;
+    //    type_T	*uf_ret_type;
+
+    ufunc->uf_type_list.ga_len = 0;
+    ufunc->uf_type_list.ga_data = NULL;
+
+    // TODO:   partial_T	*uf_partial;
+
+    if (ufunc->uf_va_name != NULL)
+	ufunc->uf_va_name = vim_strsave(ufunc->uf_va_name);
+
+    // TODO:
+    //    type_T	*uf_va_type;
+    //    type_T	*uf_func_type;
+
+    ufunc->uf_block_depth = 0;
+    ufunc->uf_block_ids = NULL;
+
+    ga_copy_strings(&fp->uf_lines, &ufunc->uf_lines);
+
+    ufunc->uf_refcount = 1;
+    ufunc->uf_name_exp = NULL;
+    STRCPY(ufunc->uf_name, fp->uf_name);
+
+    return ufunc;
 }
 
 /*
