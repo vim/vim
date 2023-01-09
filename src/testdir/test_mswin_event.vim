@@ -161,13 +161,13 @@ let s:VK = {
   
   let s:vim_key_modifiers = [
     \ ["",       0,   []],
-    \ ["S-",     2,   [s:VK.SHIFT]],
-    \ ["C-",     4,   [s:VK.CONTROL]],
-    \ ["C-S-",   6,   [s:VK.CONTROL, s:VK.SHIFT]],
-    \ ["A-",     8,   [s:VK.MENU]],
-    \ ["A-S-",   10,  [s:VK.MENU, s:VK.SHIFT]],
-    \ ["A-C-",   12,  [s:VK.MENU, s:VK.CONTROL]],
-    \ ["A-C-S-", 14,  [s:VK.MENU, s:VK.CONTROL, s:VK.SHIFT]],
+    \ ["S-",     2,   [s:VK.LSHIFT]],
+    \ ["C-",     4,   [s:VK.LCONTROL]],
+    \ ["C-S-",   6,   [s:VK.LCONTROL, s:VK.LSHIFT]],
+    \ ["A-",     8,   [s:VK.LMENU]],
+    \ ["A-S-",   10,  [s:VK.LMENU, s:VK.LSHIFT]],
+    \ ["A-C-",   12,  [s:VK.LMENU, s:VK.LCONTROL]],
+    \ ["A-C-S-", 14,  [s:VK.LMENU, s:VK.LCONTROL, s:VK.LSHIFT]],
     \]
 
   " Assuming Standard US PC Keyboard layout
