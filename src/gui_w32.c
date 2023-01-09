@@ -35,6 +35,11 @@
 #define DEAD_KEY_TRANSIENT_IN_ON_CHAR	2	// wait for next key press
 #define DEAD_KEY_SKIP_ON_CHAR		3	// skip next _OnChar()
 
+// values for LPARAM WM_CHAR message
+#define LPARAM_WM_CHAR_IGNORE_CTRL	1
+#define LPARAM_WM_CHAR_IGNORE_ALT	2
+#define LPARAM_WM_CHAR_IGNORE_SHIFT	4
+
 #if defined(FEAT_DIRECTX)
 static DWriteContext *s_dwc = NULL;
 static int s_directx_enabled = 0;
@@ -902,6 +907,15 @@ _OnChar(
     ch = extract_modifiers(ch, &modifiers, FALSE, NULL);
     if (ch == CSI)
 	ch = K_CSI;
+
+    // ignore modifiers already handled by caller prior to
+    // PostMessageW (...WM_CHAR...);
+    if (cRepeat & LPARAM_WM_CHAR_IGNORE_CTRL)
+	modifiers &= ~MOD_MASK_CTRL;
+    if (cRepeat & LPARAM_WM_CHAR_IGNORE_ALT)
+	modifiers &= ~MOD_MASK_ALT;
+    if (cRepeat & LPARAM_WM_CHAR_IGNORE_SHIFT)
+	modifiers &= ~MOD_MASK_SHIFT;
 
     if (modifiers)
     {
@@ -1899,6 +1913,64 @@ outputDeadKey_rePost(MSG originalMsg)
 }
 
 /*
+ * Compares unicode character strings, returned by different
+ * calls to ToUnicode(). Returns 0 if strings are equal, anything
+ * else means they are not.
+ */
+int compare_unicode_keys(
+	WCHAR *ch_left, int size_left,
+	WCHAR *ch_right, int size_right)
+{
+    int differs = 0;
+    if (size_right != size_left)
+    {
+	differs = 1;
+    }
+    else
+    {
+	// both chains have same length
+	int j;
+	for (j=0;j<size_left;++j)
+	{
+	    if (ch_left[j] != ch_right[j])
+	    {
+		differs = 2;
+		break;
+	    }
+	}
+    }
+    return differs;
+}
+
+/*
+ * Expels dead key in-place by calling one time ToUnicode() with
+ * VK_SPACE, which returns dummy value.
+ */
+void expel_dead_key_via_ToUnicode()
+{
+    static BYTE	keyboard_state[256];
+    UINT	vk;
+    UINT	scan_code;
+    int		len;
+    WCHAR	ch[8];
+
+    // expel dead char calling "innocent"
+    // ToUnicode("space")
+    memset(keyboard_state, 0, sizeof(keyboard_state));
+    vk = VK_SPACE;
+    scan_code = 32;
+
+    // expel dead key by asking for "space"
+    // translation
+    len = ToUnicode(vk, scan_code, keyboard_state, ch, ARRAY_LENGTH(ch), 0);
+    if (len < 0) {
+	// ...we are in troubles - after dead_key we got again
+	// dead_key. some warning to the user in that case would
+	// be nice...
+    }
+}
+
+/*
  * Process a single Windows message.
  * If one is not available we hang until one is.
  */
@@ -2059,7 +2131,7 @@ process_message(void)
 	{
 	    // ignore VK_SPACE when ALT key pressed: system menu
 	    if (special_keys[i].key_sym == vk
-		    && (vk != VK_SPACE || !(GetKeyState(VK_MENU) & 0x8000)))
+		    && (vk != VK_SPACE || !(GetKeyState(VK_LMENU) & 0x8000)))
 	    {
 		/*
 		 * Behave as expected if we have a dead key and the special key
@@ -2129,6 +2201,7 @@ process_message(void)
 	    int		len;
 	    int		i;
 	    UINT	scan_code;
+	    int         lParamForOnChar = 0;
 
 	    // Construct the state table with only a few modifiers, we don't
 	    // really care about the presence of Ctrl/Alt as those modifiers are
@@ -2186,11 +2259,65 @@ process_message(void)
 		return;
 	    }
 
+	    if (msg.message == WM_KEYDOWN && (GetKeyState(VK_CONTROL) & 0x8000)
+					   && (GetKeyState(VK_LMENU) & 0x8000))
+	    {
+		int len2;
+		WCHAR	ch2[8];
+		// second pass to check if we have some CTRL+LeftALT
+		// hit complementary to classical AltGr
+		keyboard_state[VK_MENU] = 0x80;
+		keyboard_state[VK_CONTROL] = 0x80;
+		len2 = ToUnicode(vk, scan_code, keyboard_state, ch2,
+							 ARRAY_LENGTH(ch2), 0);
+		if (len2 < 0)
+		{
+		    expel_dead_key_via_ToUnicode();
+		}
+		if (len2 != 0 && compare_unicode_keys(ch, len, ch2, len2) != 0)
+		{
+		    // something meaningful should have len2!=0,
+		    // overwrite original "ch" with new content
+		    // (with AltGr applied)
+		    len = len2;
+		    for (i=0;i<len;++i)
+			ch[i]=ch2[i];
+	
+		    // tell to _OnChar to ignore ctrl+alt
+		    // since they are handled here already
+		    lParamForOnChar |= (LPARAM_WM_CHAR_IGNORE_CTRL
+						   |LPARAM_WM_CHAR_IGNORE_ALT);
+		}
+	    }
+	    else if (msg.message == WM_KEYDOWN
+					   && (GetKeyState(VK_SHIFT) & 0x8000))
+	    {
+		int len2;
+		WCHAR	ch2[8];
+		// second pass to check if we have different
+		// meaning with SHIFT key removed - in that case
+		// VK_SHIFT has to be suppressed in
+		// _OnChar
+		keyboard_state[VK_SHIFT] = 0;
+		len2 = ToUnicode(vk, scan_code, keyboard_state, ch2,
+							 ARRAY_LENGTH(ch2), 0);
+		if (len2 < 0)
+		{
+		    expel_dead_key_via_ToUnicode();
+		}
+		if (compare_unicode_keys(ch, len, ch2, len2) != 0)
+		{
+		    // tell to _OnChar to ignore SHIFT
+		    // since it is handled here already
+		    lParamForOnChar |= LPARAM_WM_CHAR_IGNORE_SHIFT;
+		}
+	    }
+
 	    // Post the message as TranslateMessage would do.
 	    if (msg.message == WM_KEYDOWN)
 	    {
 		for (i = 0; i < len; i++)
-		    PostMessageW(msg.hwnd, WM_CHAR, ch[i], msg.lParam);
+		    PostMessageW(msg.hwnd, WM_CHAR, ch[i], lParamForOnChar);
 	    }
 	    else
 	    {
@@ -4821,7 +4948,7 @@ _WndProc(
     case WM_CHAR:
 	// Don't use HANDLE_MSG() for WM_CHAR, it truncates wParam to a single
 	// byte while we want the UTF-16 character value.
-	_OnChar(hwnd, (UINT)wParam, (int)(short)LOWORD(lParam));
+	_OnChar(hwnd, (UINT)wParam, (int)(lParam));
 	return 0L;
 
     case WM_SYSCHAR:
