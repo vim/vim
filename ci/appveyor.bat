@@ -22,7 +22,7 @@ if "%FEATURE%" == "HUGE" (
     nmake -f Make_mvc.mak CPU=AMD64 ^
         OLE=no GUI=yes IME=yes ICONV=yes DEBUG=no POSTSCRIPT=yes ^
         PYTHON_VER=27 DYNAMIC_PYTHON=yes PYTHON=C:\Python27-x64 ^
-        PYTHON3_VER=38 DYNAMIC_PYTHON3=yes PYTHON3=C:\Python38-x64 ^
+        PYTHON3_VER=311 DYNAMIC_PYTHON3=yes PYTHON3=C:\Python311-x64 ^
         FEATURES=%FEATURE%
 ) ELSE (
     nmake -f Make_mvc.mak CPU=AMD64 ^

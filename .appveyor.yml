@@ -1,17 +1,12 @@
 version: "{build}"
 
+image: Visual Studio 2022
+
 skip_tags: true
 
 environment:
   matrix:
-    # - job_name: VS-2015
-    #   appveyor_build_worker_image: Visual Studio 2015
-    #   FEATURE: HUGE
-
-    - job_name: VS-2022
-      appveyor_build_worker_image: Visual Studio 2022
-      FEATURE: HUGE
-
+    - FEATURE: HUGE
 # disabled
 #    - FEATURE: TINY
 #    - FEATURE: NORMAL
@@ -21,7 +16,7 @@ matrix:
   fast_finish: true
 
 before_build:
-  # Use Visual Studio 2015 compiler tools (default is 2012)
+  # Use latest compiler tools (Visual Studio 2022)
   - setlocal ENABLEDELAYEDEXPANSION
   - call ver
   - reg query "hklm\software\microsoft\windows nt\currentversion" /v ProductName
@@ -45,7 +40,7 @@ build_script:
 test_script:
   - cd src/testdir
     # Testing with MSVC gvim
-  - path C:\Python38-x64;%PATH%
+  - path C:\Python311-x64;%PATH%
   - nmake -f Make_mvc.mak VIMPROG=..\gvim
   - nmake -f Make_mvc.mak clean
     # Testing with MSVC console version
