@@ -512,7 +512,7 @@ func Test_mswin_event_function_keys()
       let expected_mod_mask = vim_mod_mask
       let kstr = $"{mod_str}F{n}"
       if !has('gui_running') || (has('gui_running') && n != 10
-      \  && index(gui_nogo, kstr) == -1)
+                                             \  && index(gui_nogo, kstr) == -1)
         let keycode = eval('"\<' .. kstr .. '>"')
         " flush out the typeahead buffer
         while getchar(0)
