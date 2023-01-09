@@ -1275,7 +1275,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
     // It can be a class or interface name.
     typval_T tv;
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable(*arg, len, 0, &tv, NULL, EVAL_VAR_IMPORT) == OK)
+    if (eval_variable(*arg, (int)len, 0, &tv, NULL, EVAL_VAR_IMPORT) == OK)
     {
 	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
 	{
