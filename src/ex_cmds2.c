@@ -828,40 +828,40 @@ requires_py_version(char_u *filename)
 	lines = 5;
 
     file = mch_fopen((char *)filename, "r");
-    if (file != NULL)
+    if (file == NULL)
+	return 0;
+
+    for (i = 0; i < lines; i++)
     {
-	for (i = 0; i < lines; i++)
+	if (vim_fgets(IObuff, IOSIZE, file))
+	    break;
+	if (i == 0 && IObuff[0] == '#' && IObuff[1] == '!')
 	{
-	    if (vim_fgets(IObuff, IOSIZE, file))
-		break;
-	    if (i == 0 && IObuff[0] == '#' && IObuff[1] == '!')
-	    {
-		// Check shebang.
-		if (strstr((char *)IObuff + 2, "python2") != NULL)
-		{
-		    requires_py_version = 2;
-		    break;
-		}
-		if (strstr((char *)IObuff + 2, "python3") != NULL)
-		{
-		    requires_py_version = 3;
-		    break;
-		}
-	    }
-	    IObuff[21] = '\0';
-	    if (STRCMP("# requires python 2.x", IObuff) == 0)
+	    // Check shebang.
+	    if (strstr((char *)IObuff + 2, "python2") != NULL)
 	    {
 		requires_py_version = 2;
 		break;
 	    }
-	    if (STRCMP("# requires python 3.x", IObuff) == 0)
+	    if (strstr((char *)IObuff + 2, "python3") != NULL)
 	    {
 		requires_py_version = 3;
 		break;
 	    }
 	}
-	fclose(file);
+	IObuff[21] = '\0';
+	if (STRCMP("# requires python 2.x", IObuff) == 0)
+	{
+	    requires_py_version = 2;
+	    break;
+	}
+	if (STRCMP("# requires python 3.x", IObuff) == 0)
+	{
+	    requires_py_version = 3;
+	    break;
+	}
     }
+    fclose(file);
     return requires_py_version;
 }
 

@@ -1345,33 +1345,32 @@ ff_check_visited(
      * New file/dir.  Add it to the list of visited files/dirs.
      */
     vp = alloc(sizeof(ff_visited_T) + STRLEN(ff_expand_buffer));
+    if (vp == NULL)
+	return OK;
 
-    if (vp != NULL)
+#ifdef UNIX
+    if (!url)
     {
-#ifdef UNIX
-	if (!url)
-	{
-	    vp->ffv_dev_valid = TRUE;
-	    vp->ffv_ino = st.st_ino;
-	    vp->ffv_dev = st.st_dev;
-	    vp->ffv_fname[0] = NUL;
-	}
-	else
-	{
-	    vp->ffv_dev_valid = FALSE;
-#endif
-	    STRCPY(vp->ffv_fname, ff_expand_buffer);
-#ifdef UNIX
-	}
-#endif
-	if (wc_path != NULL)
-	    vp->ffv_wc_path = vim_strsave(wc_path);
-	else
-	    vp->ffv_wc_path = NULL;
-
-	vp->ffv_next = *visited_list;
-	*visited_list = vp;
+	vp->ffv_dev_valid = TRUE;
+	vp->ffv_ino = st.st_ino;
+	vp->ffv_dev = st.st_dev;
+	vp->ffv_fname[0] = NUL;
     }
+    else
+    {
+	vp->ffv_dev_valid = FALSE;
+#endif
+	STRCPY(vp->ffv_fname, ff_expand_buffer);
+#ifdef UNIX
+    }
+#endif
+    if (wc_path != NULL)
+	vp->ffv_wc_path = vim_strsave(wc_path);
+    else
+	vp->ffv_wc_path = NULL;
+
+    vp->ffv_next = *visited_list;
+    *visited_list = vp;
 
     return OK;
 }

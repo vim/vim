@@ -46,21 +46,21 @@ cin_is_cinword(char_u *line)
 
     cinw_len = (int)STRLEN(curbuf->b_p_cinw) + 1;
     cinw_buf = alloc(cinw_len);
-    if (cinw_buf != NULL)
+    if (cinw_buf == NULL)
+	return FALSE;
+
+    line = skipwhite(line);
+    for (cinw = curbuf->b_p_cinw; *cinw; )
     {
-	line = skipwhite(line);
-	for (cinw = curbuf->b_p_cinw; *cinw; )
+	len = copy_option_part(&cinw, cinw_buf, cinw_len, ",");
+	if (STRNCMP(line, cinw_buf, len) == 0
+		&& (!vim_iswordc(line[len]) || !vim_iswordc(line[len - 1])))
 	{
-	    len = copy_option_part(&cinw, cinw_buf, cinw_len, ",");
-	    if (STRNCMP(line, cinw_buf, len) == 0
-		    && (!vim_iswordc(line[len]) || !vim_iswordc(line[len - 1])))
-	    {
-		retval = TRUE;
-		break;
-	    }
+	    retval = TRUE;
+	    break;
 	}
-	vim_free(cinw_buf);
     }
+    vim_free(cinw_buf);
     return retval;
 }
 
@@ -644,43 +644,42 @@ cin_islabel(void)		// XXX
     if (cin_isscopedecl(s))
 	return FALSE;
 
-    if (cin_islabel_skip(&s))
+    if (!cin_islabel_skip(&s))
+	return FALSE;
+
+    // Only accept a label if the previous line is terminated or is a case
+    // label.
+    pos_T	cursor_save;
+    pos_T	*trypos;
+    char_u	*line;
+
+    cursor_save = curwin->w_cursor;
+    while (curwin->w_cursor.lnum > 1)
     {
-	// Only accept a label if the previous line is terminated or is a case
-	// label.
-	pos_T	cursor_save;
-	pos_T	*trypos;
-	char_u	*line;
+	--curwin->w_cursor.lnum;
 
-	cursor_save = curwin->w_cursor;
-	while (curwin->w_cursor.lnum > 1)
-	{
-	    --curwin->w_cursor.lnum;
+	// If we're in a comment or raw string now, skip to the start of
+	// it.
+	curwin->w_cursor.col = 0;
+	if ((trypos = ind_find_start_CORS(NULL)) != NULL) // XXX
+	    curwin->w_cursor = *trypos;
 
-	    // If we're in a comment or raw string now, skip to the start of
-	    // it.
-	    curwin->w_cursor.col = 0;
-	    if ((trypos = ind_find_start_CORS(NULL)) != NULL) // XXX
-		curwin->w_cursor = *trypos;
+	line = ml_get_curline();
+	if (cin_ispreproc(line))	// ignore #defines, #if, etc.
+	    continue;
+	if (*(line = cin_skipcomment(line)) == NUL)
+	    continue;
 
-	    line = ml_get_curline();
-	    if (cin_ispreproc(line))	// ignore #defines, #if, etc.
-		continue;
-	    if (*(line = cin_skipcomment(line)) == NUL)
-		continue;
-
-	    curwin->w_cursor = cursor_save;
-	    if (cin_isterminated(line, TRUE, FALSE)
-		    || cin_isscopedecl(line)
-		    || cin_iscase(line, TRUE)
-		    || (cin_islabel_skip(&line) && cin_nocode(line)))
-		return TRUE;
-	    return FALSE;
-	}
 	curwin->w_cursor = cursor_save;
-	return TRUE;		// label at start of file???
+	if (cin_isterminated(line, TRUE, FALSE)
+		|| cin_isscopedecl(line)
+		|| cin_iscase(line, TRUE)
+		|| (cin_islabel_skip(&line) && cin_nocode(line)))
+	    return TRUE;
+	return FALSE;
     }
-    return FALSE;
+    curwin->w_cursor = cursor_save;
+    return TRUE;		// label at start of file???
 }
 
 /*
@@ -1688,18 +1687,18 @@ find_match_paren_after_brace (int ind_maxparen)	    // XXX
 {
     pos_T	*trypos = find_match_paren(ind_maxparen);
 
-    if (trypos != NULL)
-    {
-	pos_T	*tryposBrace = find_start_brace();
+    if (trypos == NULL)
+	return NULL;
 
-	// If both an unmatched '(' and '{' is found.  Ignore the '('
-	// position if the '{' is further down.
-	if (tryposBrace != NULL
-		&& (trypos->lnum != tryposBrace->lnum
-		    ? trypos->lnum < tryposBrace->lnum
-		    : trypos->col < tryposBrace->col))
-	    trypos = NULL;
-    }
+    pos_T	*tryposBrace = find_start_brace();
+
+    // If both an unmatched '(' and '{' is found.  Ignore the '('
+    // position if the '{' is further down.
+    if (tryposBrace != NULL
+	    && (trypos->lnum != tryposBrace->lnum
+		? trypos->lnum < tryposBrace->lnum
+		: trypos->col < tryposBrace->col))
+	trypos = NULL;
     return trypos;
 }
 

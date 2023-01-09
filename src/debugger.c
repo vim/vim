@@ -315,14 +315,14 @@ get_maxbacktrace_level(char_u *sname)
     char	*p, *q;
     int		maxbacktrace = 0;
 
-    if (sname != NULL)
+    if (sname == NULL)
+	return 0;
+
+    p = (char *)sname;
+    while ((q = strstr(p, "..")) != NULL)
     {
-	p = (char *)sname;
-	while ((q = strstr(p, "..")) != NULL)
-	{
-	    p = q + 2;
-	    maxbacktrace++;
-	}
+	p = q + 2;
+	maxbacktrace++;
     }
     return maxbacktrace;
 }
@@ -486,21 +486,20 @@ dbg_check_skipped(exarg_T *eap)
 {
     int		prev_got_int;
 
-    if (debug_skipped)
-    {
-	// Save the value of got_int and reset it.  We don't want a previous
-	// interruption cause flushing the input buffer.
-	prev_got_int = got_int;
-	got_int = FALSE;
-	debug_breakpoint_name = debug_skipped_name;
-	// eap->skip is TRUE
-	eap->skip = FALSE;
-	(void)dbg_check_breakpoint(eap);
-	eap->skip = TRUE;
-	got_int |= prev_got_int;
-	return TRUE;
-    }
-    return FALSE;
+    if (!debug_skipped)
+	return FALSE;
+
+    // Save the value of got_int and reset it.  We don't want a previous
+    // interruption cause flushing the input buffer.
+    prev_got_int = got_int;
+    got_int = FALSE;
+    debug_breakpoint_name = debug_skipped_name;
+    // eap->skip is TRUE
+    eap->skip = FALSE;
+    (void)dbg_check_breakpoint(eap);
+    eap->skip = TRUE;
+    got_int |= prev_got_int;
+    return TRUE;
 }
 
 /*

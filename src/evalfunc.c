@@ -2950,22 +2950,22 @@ internal_func_check_arg_types(
 {
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
 
-    if (argchecks != NULL)
-    {
-	argcontext_T context;
+    if (argchecks == NULL)
+	return OK;
 
-	context.arg_count = argcount;
-	context.arg_types = types;
-	context.arg_cctx = cctx;
-	for (int i = 0; i < argcount; ++i)
-	    if (argchecks[i] != NULL)
-	    {
-		context.arg_idx = i;
-		if (argchecks[i](types[i].type_curr, types[i].type_decl,
-							     &context) == FAIL)
-		    return FAIL;
-	    }
-    }
+    argcontext_T context;
+
+    context.arg_count = argcount;
+    context.arg_types = types;
+    context.arg_cctx = cctx;
+    for (int i = 0; i < argcount; ++i)
+	if (argchecks[i] != NULL)
+	{
+	    context.arg_idx = i;
+	    if (argchecks[i](types[i].type_curr, types[i].type_decl,
+			&context) == FAIL)
+		return FAIL;
+	}
     return OK;
 }
 
@@ -3475,14 +3475,14 @@ get_optional_window(typval_T *argvars, int idx)
 {
     win_T   *win = curwin;
 
-    if (argvars[idx].v_type != VAR_UNKNOWN)
+    if (argvars[idx].v_type == VAR_UNKNOWN)
+	return curwin;
+
+    win = find_win_by_nr_or_id(&argvars[idx]);
+    if (win == NULL)
     {
-	win = find_win_by_nr_or_id(&argvars[idx]);
-	if (win == NULL)
-	{
-	    emsg(_(e_invalid_window_number));
-	    return NULL;
-	}
+	emsg(_(e_invalid_window_number));
+	return NULL;
     }
     return win;
 }
@@ -8624,43 +8624,43 @@ get_search_arg(typval_T *varp, int *flagsp)
     char_u	nbuf[NUMBUFLEN];
     int		mask;
 
-    if (varp->v_type != VAR_UNKNOWN)
+    if (varp->v_type == VAR_UNKNOWN)
+	return FORWARD;
+
+    flags = tv_get_string_buf_chk(varp, nbuf);
+    if (flags == NULL)
+	return 0;		// type error; errmsg already given
+    while (*flags != NUL)
     {
-	flags = tv_get_string_buf_chk(varp, nbuf);
-	if (flags == NULL)
-	    return 0;		// type error; errmsg already given
-	while (*flags != NUL)
+	switch (*flags)
 	{
-	    switch (*flags)
-	    {
-		case 'b': dir = BACKWARD; break;
-		case 'w': p_ws = TRUE; break;
-		case 'W': p_ws = FALSE; break;
-		default:  mask = 0;
-			  if (flagsp != NULL)
-			     switch (*flags)
-			     {
-				 case 'c': mask = SP_START; break;
-				 case 'e': mask = SP_END; break;
-				 case 'm': mask = SP_RETCOUNT; break;
-				 case 'n': mask = SP_NOMOVE; break;
-				 case 'p': mask = SP_SUBPAT; break;
-				 case 'r': mask = SP_REPEAT; break;
-				 case 's': mask = SP_SETPCMARK; break;
-				 case 'z': mask = SP_COLUMN; break;
-			     }
-			  if (mask == 0)
+	    case 'b': dir = BACKWARD; break;
+	    case 'w': p_ws = TRUE; break;
+	    case 'W': p_ws = FALSE; break;
+	    default:  mask = 0;
+		      if (flagsp != NULL)
+			  switch (*flags)
 			  {
-			      semsg(_(e_invalid_argument_str), flags);
-			      dir = 0;
+			      case 'c': mask = SP_START; break;
+			      case 'e': mask = SP_END; break;
+			      case 'm': mask = SP_RETCOUNT; break;
+			      case 'n': mask = SP_NOMOVE; break;
+			      case 'p': mask = SP_SUBPAT; break;
+			      case 'r': mask = SP_REPEAT; break;
+			      case 's': mask = SP_SETPCMARK; break;
+			      case 'z': mask = SP_COLUMN; break;
 			  }
-			  else
-			      *flagsp |= mask;
-	    }
-	    if (dir == 0)
-		break;
-	    ++flags;
+		      if (mask == 0)
+		      {
+			  semsg(_(e_invalid_argument_str), flags);
+			  dir = 0;
+		      }
+		      else
+			  *flagsp |= mask;
 	}
+	if (dir == 0)
+	    break;
+	++flags;
     }
     return dir;
 }

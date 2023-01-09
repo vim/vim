@@ -516,7 +516,7 @@ foldCheckClose(void)
     if (*p_fcl == NUL)
 	return;
 
-    // can only be "all" right now
+    // 'foldclose' can only be "all" right now
     checkupdate(curwin);
     if (checkCloseRec(&curwin->w_folds, curwin->w_cursor.lnum,
 		(int)curwin->w_p_fdl))

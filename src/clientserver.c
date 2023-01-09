@@ -157,22 +157,22 @@ serverConvert(
     char_u	*res = data;
 
     *tofree = NULL;
-    if (client_enc != NULL && p_enc != NULL)
-    {
-	vimconv_T	vimconv;
+    if (client_enc == NULL || p_enc == NULL)
+	return res;
 
-	vimconv.vc_type = CONV_NONE;
-	if (convert_setup(&vimconv, client_enc, p_enc) != FAIL
-					      && vimconv.vc_type != CONV_NONE)
-	{
-	    res = string_convert(&vimconv, data, NULL);
-	    if (res == NULL)
-		res = data;
-	    else
-		*tofree = res;
-	}
-	convert_setup(&vimconv, NULL, NULL);
+    vimconv_T	vimconv;
+
+    vimconv.vc_type = CONV_NONE;
+    if (convert_setup(&vimconv, client_enc, p_enc) != FAIL
+	    && vimconv.vc_type != CONV_NONE)
+    {
+	res = string_convert(&vimconv, data, NULL);
+	if (res == NULL)
+	    res = data;
+	else
+	    *tofree = res;
     }
+    convert_setup(&vimconv, NULL, NULL);
     return res;
 }
 #endif

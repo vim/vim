@@ -559,14 +559,14 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
     diff_T	*dnew;
 
     dnew = ALLOC_ONE(diff_T);
-    if (dnew != NULL)
-    {
-	dnew->df_next = dp;
-	if (dprev == NULL)
-	    tp->tp_first_diff = dnew;
-	else
-	    dprev->df_next = dnew;
-    }
+    if (dnew == NULL)
+	return NULL;
+
+    dnew->df_next = dp;
+    if (dprev == NULL)
+	tp->tp_first_diff = dnew;
+    else
+	dprev->df_next = dnew;
     return dnew;
 }
 
