@@ -596,7 +596,6 @@ func Test_mswin_event_movement_keys()
       " - remove the Ctrl modifier if the Shift modifier was not already removed.
       let found_shift = 0
       if chstr_alone_end != chstr_mswin_end
-        let found_shift = 0
         for mod_key in mod_keycodes
           if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
             let mod_mask += s:vim_MOD_MASK_SHIFT
@@ -611,9 +610,10 @@ func Test_mswin_event_movement_keys()
               break
             endif
           endfor
-        elseif vim_mod_mask - mod_mask == s:vim_MOD_MASK_SHIFT
-          mod_mask += s:vim_MOD_MASK_SHIFT
 	endif
+      endif
+      if (found_shift == 1) && (vim_mod_mask - mod_mask == s:vim_MOD_MASK_SHIFT)
+          mod_mask += s:vim_MOD_MASK_SHIFT
       endif
       call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
     endfor
