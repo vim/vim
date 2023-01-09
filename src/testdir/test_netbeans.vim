@@ -887,28 +887,32 @@ func Nb_quit_with_conn(port)
       return filter(l, 'v:val !~ "^0:geometry="')
     endfunc
 
-    " Establish the connection with the netbeans server
-    exe 'nbstart :localhost:' .. g:port .. ':star'
-    call assert_true(has("netbeans_enabled"))
-    call WaitFor('len(ReadXnetbeans()) >= 3')
-    let l = ReadXnetbeans()
-    call assert_equal(['AUTH star',
-      \ '0:version=0 "2.5"',
-      \ '0:startupDone=0'], l[-3:])
+    try
+      " Establish the connection with the netbeans server
+      exe 'nbstart :localhost:' .. g:port .. ':star'
+      call assert_true(has("netbeans_enabled"))
+      call WaitFor('len(ReadXnetbeans()) >= 3')
+      let l = ReadXnetbeans()
+      call assert_equal(['AUTH star',
+        \ '0:version=0 "2.5"',
+        \ '0:startupDone=0'], l[-3:])
 
-    " Open the command buffer to communicate with the server
-    split Xcmdbuf
-    call WaitFor('len(ReadXnetbeans()) >= 6')
-    let l = ReadXnetbeans()
-    call assert_equal('0:fileOpened=0 "Xcmdbuf" T F',
-          \ substitute(l[-3], '".*/', '"', ''))
-    call assert_equal('send: 1:putBufferNumber!15 "Xcmdbuf"',
-          \ substitute(l[-2], '".*/', '"', ''))
-    call assert_equal('1:startDocumentListen!16', l[-1])
-    sleep 1m
+      " Open the command buffer to communicate with the server
+      split Xcmdbuf
+      call WaitFor('len(ReadXnetbeans()) >= 6')
+      let l = ReadXnetbeans()
+      call assert_equal('0:fileOpened=0 "Xcmdbuf" T F',
+            \ substitute(l[-3], '".*/', '"', ''))
+      call assert_equal('send: 1:putBufferNumber!15 "Xcmdbuf"',
+            \ substitute(l[-2], '".*/', '"', ''))
+      call assert_equal('1:startDocumentListen!16', l[-1])
+      sleep 1m
 
-    quit!
-    quit!
+      quit!
+      quit!
+    finally
+      qall!
+    endtry
   END
   if RunVim(['let g:port = ' .. a:port], after, '')
     call WaitFor('len(ReadXnetbeans()) >= 9')
