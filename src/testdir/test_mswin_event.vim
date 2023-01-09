@@ -509,6 +509,7 @@ func Test_mswin_event_function_keys()
 
   for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
     for n in range(1, 12)
+      let expected_mod_mask = vim_mod_mask
       let kstr = $"{mod_str}F{n}"
       if !has('gui_running') || (has('gui_running') && n != 10
       \  && index(gui_nogo, kstr) == -1)
@@ -525,16 +526,33 @@ func Test_mswin_event_function_keys()
         "instead of sending Shift
         for mod_key in mod_keycodes
           if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
-            let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
+            let expected_mod_mask -= s:vim_MOD_MASK_SHIFT
             break
           endif
         endfor
-        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+        call assert_equal(expected_mod_mask, mod_mask, $"mod = {expected_mod_mask} for key = {kstr}")
       endif
     endfor
   endfor
 endfunc
 
+func ExtractModifiers(mod_keycodes)
+  let has_shift = 0
+  let has_ctrl = 0
+  let has_alt = 0
+  for mod_key in a:mod_keycodes
+    if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
+      let has_shift = 1
+    endif
+    if index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], mod_key) >= 0
+      let has_ctrl = 1
+    endif
+    if index([s:VK.MENU, s:VK.LMENU, s:VK.RMENU], mod_key) >= 0
+      let has_alt = 1
+    endif
+  endfor
+  return [has_shift, has_ctrl, has_alt]
+endfunc
 
   " Test for Movement Keys;
   "    VK_PRIOR 0x21,   VK_NEXT  0x22,
@@ -565,6 +583,7 @@ func Test_mswin_event_movement_keys()
 
   for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
     for [kcode, kname] in movement_keys
+      let mod_mask_expected = vim_mod_mask
       let kstr = $"{mod_str}{kname}"
       let chstr_eval = eval('"\<' .. kstr .. '>"')
 
@@ -591,31 +610,24 @@ func Test_mswin_event_movement_keys()
       let mod_mask = getcharmod()
       call assert_equal(chstr_eval, chstr_mswin, $"key = {kstr}")
 
-      " The virtual termcap maps may change the character and either;
+      " (*Sometimes) The virtual termcap maps may change the character and either;
       " - remove the Shift modifier, or
       " - remove the Ctrl modifier if the Shift modifier was not already removed.
-      let found_shift = 0
+      " Note: *Sometimes, because not all windows test environments behave the same!
+      let modsarr = ExtractModifiers(mod_keycodes)
+      let has_shift = modsarr[0]
+      let has_ctrl = modsarr[1]
+      let has_alt = modsarr[2]
+
       if chstr_alone_end != chstr_mswin_end
-        for mod_key in mod_keycodes
-          if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
-            let mod_mask += s:vim_MOD_MASK_SHIFT
-            let found_shift = 1
-            break
-          endif
-        endfor
-        if found_shift == 0
-          for mod_key in mod_keycodes
-            if index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], mod_key) >= 0
-              let mod_mask += s:vim_MOD_MASK_CTRL
-              break
-            endif
-          endfor
-	endif
+        if has_shift != 0
+          let mod_mask_expected -= s:vim_MOD_MASK_SHIFT
+        elseif has_ctrl != 0
+	  let mod_mask_expected -= s:vim_MOD_MASK_CTRL
+        endif
       endif
-      if (found_shift == 1) && (vim_mod_mask - mod_mask == s:vim_MOD_MASK_SHIFT)
-          mod_mask += s:vim_MOD_MASK_SHIFT
-      endif
-      call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+
+      call assert_equal(mod_mask_expected, mod_mask, $"mod_mask_expected = {mod_mask_expected}, mod_mask = {mod_mask}, for key = {kstr}")
     endfor
   endfor
 
