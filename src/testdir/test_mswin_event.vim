@@ -517,8 +517,7 @@ func Test_mswin_event_function_keys()
         " flush out the typeahead buffer
         while getchar(0)
         endwhile
-        " call SendKeyGroup(mod_keycodes + [111+n])
-        call SendKeyWithModifiers(111+n, expected_mod_mask)
+        call SendKeyWithModifiers(111+n, vim_mod_mask)
         let ch = getcharstr(0)
         let mod_mask = getcharmod()
         call assert_equal(keycode, $"{ch}", $"key = {kstr}")

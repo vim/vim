@@ -19,8 +19,6 @@ before_build:
   # Use latest compiler tools (Visual Studio 2022)
   - setlocal ENABLEDELAYEDEXPANSION
   - call ver
-  - reg query "hklm\software\microsoft\windows nt\currentversion" /v ProductName
-  - reg query "HKCU\Keyboard Layout\Preload"
   - set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
   - >
     if exist "%VSWHERE%" (
