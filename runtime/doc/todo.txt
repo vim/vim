@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2022 Dec 31
+*todo.txt*      For Vim version 9.0.  Last change: 2023 Jan 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -54,20 +54,15 @@ Upcoming larger works:
 
 Further Vim9 improvements, possibly after launch:
 - implement :class and :interface: See |vim9-classes|  #11544
-    class members: add test for read/write access
-	Test for E1337
-    Should object members be declared with "var"?  Looks more normal.
-    Don't use "class method" in the help but use "class function", more people
-    are used to that.
-    implement class functions: static def Method()
-    Disallow shadowing class members, e.g. by function arguments.
-    tv_equal() should compare values, not identity.
+    inheritance: how about super()?
+    inheritance: new() method from parent used in child?
     import/export of a class
-    using a class name as a type
-    garbage collection: set_ref_in_item(): Mark items in class as used ?
     type() should return different type for each class?
+    give error for shadowing (variable and argument) when defining a class or
+    interface, not later when compiling it.
     object empty(), len() - can class define a method to be used for them?
     how about lock/unlock?
+    When checking "implements" also check types of members and function args.
 - implement :type
 - implement :enum
 - Use Vim9 for more runtime files.
@@ -79,6 +74,10 @@ Further Vim9 improvements, possibly after launch:
 Information missing in terminfo:
 Priority:
 - t_RV	request terminal version string; xterm:	"\033[>c"
+    change in terminfo for "RV" uses the wrong escape sequence... ?
+Mouse support:
+    on/off: hard coded in mch_setmouse() - use "XM" terminfo/termcap entry;
+       If it starts with "\E[?1006;1000%" then set 'ttymouse' to "sgr".
 Codes used for focus gained and lost (currently using use_xterm_like_mouse())
   termcodes are hard-coded in set_termname(), not named.
 - t_fe	enable focus-event tracking
@@ -233,9 +232,7 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Patch adds showcmd() function  #11708  - tests missing StopVimInTerminal()
-
-Some setaf/setab/t_AF/t_AB values support RGB somehow?  Can we use that?
+Patch adds showcmd() function  #11708
 
 Crash when a variable is removed while listing variables (Issue #11435)
 

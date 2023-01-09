@@ -1082,6 +1082,7 @@ $quote	eval.txt	/*$quote*
 't_VS'	term.txt	/*'t_VS'*
 't_WP'	term.txt	/*'t_WP'*
 't_WS'	term.txt	/*'t_WS'*
+'t_XM'	term.txt	/*'t_XM'*
 't_ZH'	term.txt	/*'t_ZH'*
 't_ZR'	term.txt	/*'t_ZR'*
 't_al'	term.txt	/*'t_al'*
@@ -4399,7 +4400,22 @@ E1337	vim9class.txt	/*E1337*
 E1338	vim9class.txt	/*E1338*
 E1339	textprop.txt	/*E1339*
 E134	change.txt	/*E134*
+E1340	vim9class.txt	/*E1340*
+E1341	vim9class.txt	/*E1341*
+E1342	vim9class.txt	/*E1342*
+E1343	vim9class.txt	/*E1343*
+E1344	vim9class.txt	/*E1344*
+E1345	vim9class.txt	/*E1345*
+E1346	vim9class.txt	/*E1346*
+E1347	vim9class.txt	/*E1347*
+E1348	vim9class.txt	/*E1348*
+E1349	vim9class.txt	/*E1349*
 E135	autocmd.txt	/*E135*
+E1350	vim9class.txt	/*E1350*
+E1351	vim9class.txt	/*E1351*
+E1352	vim9class.txt	/*E1352*
+E1353	vim9class.txt	/*E1353*
+E1354	vim9class.txt	/*E1354*
 E136	starting.txt	/*E136*
 E137	starting.txt	/*E137*
 E138	starting.txt	/*E138*
@@ -6294,8 +6310,8 @@ cino-{	indent.txt	/*cino-{*
 cino-}	indent.txt	/*cino-}*
 cinoptions-values	indent.txt	/*cinoptions-values*
 class	vim9class.txt	/*class*
+class-function	vim9class.txt	/*class-function*
 class-member	vim9class.txt	/*class-member*
-class-method	vim9class.txt	/*class-method*
 clear-undo	undo.txt	/*clear-undo*
 clearmatches()	builtin.txt	/*clearmatches()*
 client-server	remote.txt	/*client-server*
@@ -8492,6 +8508,7 @@ motion-count-multiplied	motion.txt	/*motion-count-multiplied*
 motion.txt	motion.txt	/*motion.txt*
 mouse-mode-table	term.txt	/*mouse-mode-table*
 mouse-overview	term.txt	/*mouse-overview*
+mouse-reporting	term.txt	/*mouse-reporting*
 mouse-scrolling-off	scroll.txt	/*mouse-scrolling-off*
 mouse-swap-buttons	term.txt	/*mouse-swap-buttons*
 mouse-using	term.txt	/*mouse-using*
@@ -10011,6 +10028,7 @@ t_Us	term.txt	/*t_Us*
 t_VS	term.txt	/*t_VS*
 t_WP	term.txt	/*t_WP*
 t_WS	term.txt	/*t_WS*
+t_XM	term.txt	/*t_XM*
 t_ZH	term.txt	/*t_ZH*
 t_ZR	term.txt	/*t_ZR*
 t_al	term.txt	/*t_al*

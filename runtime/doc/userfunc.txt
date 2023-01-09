@@ -1,4 +1,4 @@
-*userfunc.txt*	For Vim version 9.0.  Last change: 2022 Nov 17
+*userfunc.txt*	For Vim version 9.0.  Last change: 2023 Jan 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -187,12 +187,21 @@ See |:verbose-cmd| for more information.
 			If "[expr]" is not given, the number 0 is returned.
 			When a function ends without an explicit ":return",
 			the number 0 is returned.
+
 			In a :def function *E1095* is given if unreachable
 			code follows after the `:return`.
 			In legacy script there is no check for unreachable
 			lines, thus there is no warning if commands follow
-			`:return`.
-
+			`:return`.  Also, there is no check if the following
+			line contains a valid command.  Forgetting the line
+			continuation backslash may go unnoticed: >
+				return 'some text'
+				       .. ' some more text'
+<			Will happily return "some text" without an error.  It
+			should have been: >
+				return 'some text'
+				       \ .. ' some more text'
+<
 			If the ":return" is used after a |:try| but before the
 			matching |:finally| (if present), the commands
 			following the ":finally" up to the matching |:endtry|
