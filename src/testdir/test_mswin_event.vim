@@ -340,7 +340,7 @@ let s:test_extra_key_chars = [
     \ ]
 
 func s:LoopTestKeyArray(arr)
-  " flush out anything in the typeahead buffer
+  " flush out the typeahead buffer
   while getchar(0)
   endwhile
 
@@ -387,7 +387,7 @@ func s:LoopTestKeyArray(arr)
     call assert_equal(0, mod_mask, $"key = {kstr}")
   endfor
 
-  " flush out anything in the typeahead buffer
+  " flush out the typeahead buffer
   while getchar(0)
   endwhile
 
@@ -503,7 +503,7 @@ func Test_mswin_event_function_keys()
             \ "A-F5", "A-F6", "A-F7", "A-F8", "A-C-F8", "A-F9",
 	    \ "A-F10", "A-F11" , "A-C-F11", "A-C-F12"]
 
-  " flush out anything in the typeahead buffer
+  " flush out the typeahead buffer
   while getchar(0)
   endwhile
 
@@ -514,7 +514,7 @@ func Test_mswin_event_function_keys()
       if !has('gui_running') || (has('gui_running') && n != 10
       \  && index(gui_nogo, kstr) == -1)
         let keycode = eval('"\<' .. kstr .. '>"')
-        " flush out anything in the typeahead buffer
+        " flush out the typeahead buffer
         while getchar(0)
         endwhile
         " call SendKeyGroup(mod_keycodes + [111+n])
@@ -577,31 +577,31 @@ func Test_mswin_event_movement_keys()
     \ [s:VK.DOWN,  "Down"],
     \ ]
 
-  " flush out anything in the typeahead buffer
+  " flush out the typeahead buffer
   while getchar(0)
   endwhile
 
   for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
     for [kcode, kname] in movement_keys
-      let mod_mask_expected = vim_mod_mask
+      let exp_mod_mask = vim_mod_mask
       let kstr = $"{mod_str}{kname}"
       let chstr_eval = eval('"\<' .. kstr .. '>"')
 
-      " flush out anything in the typeahead buffer
+      " flush out the typeahead buffer
       while getchar(0)
       endwhile
       execute 'call feedkeys("\<' .. kstr .. '>")'
       let chstr_fk = getcharstr(0)
       call assert_equal(chstr_eval, chstr_fk, $"feedkeys = <{kstr}>")
 
-      " flush out anything in the typeahead buffer
+      " flush out the typeahead buffer
       while getchar(0)
       endwhile
       call SendKey(kcode)
       let chstr_alone = getcharstr(0)
       let chstr_alone_end = chstr_alone[len(chstr_alone)-2:len(chstr_alone)-1]
 
-      " flush out anything in the typeahead buffer
+      " flush out the typeahead buffer
       while getchar(0)
       endwhile
       call SendKeyGroup(mod_keycodes + [kcode])
@@ -610,21 +610,29 @@ func Test_mswin_event_movement_keys()
       let mod_mask = getcharmod()
       call assert_equal(chstr_eval, chstr_mswin, $"key = {kstr}")
 
-      " (*Sometimes) The virtual termcap maps may change the character and either;
+      " The virtual termcap maps may** change the character and either;
       " - remove the Shift modifier, or
-      " - remove the Ctrl modifier if the Shift modifier was not already removed.
-      " Note: *Sometimes, because not all windows test environments behave the same!
+      " - remove the Ctrl modifier if the Shift modifier was not removed.
       let [has_shift, has_ctrl, has_alt] = ExtractModifiers(mod_keycodes)
-
       if chstr_alone_end != chstr_mswin_end
         if has_shift != 0
-          let mod_mask_expected -= s:vim_MOD_MASK_SHIFT
+          let exp_mod_mask -= s:vim_MOD_MASK_SHIFT
         elseif has_ctrl != 0
-	  let mod_mask_expected -= s:vim_MOD_MASK_CTRL
+	  let exp_mod_mask -= s:vim_MOD_MASK_CTRL
+        endif
+      endif
+      " **Note: The appveyor Windows GUI test environments, from VS2017 on,
+      " intercept the Shift modifier without changing the movement character.
+      " This issue does not happen in github CI test environments.
+      if has('gui_running') && has_shift != 0
+        if exp_mod_mask + s:vim_MOD_MASK_SHIFT == mod_mask
+          let exp_mod_mask -= s:vim_MOD_MASK_SHIFT
+        elseif has_ctrl != 0 && exp_mod_mask + s:vim_MOD_MASK_CTRL == mod_mask
+          let exp_mod_mask -= s:vim_MOD_MASK_CTRL
         endif
       endif
 
-      call assert_equal(mod_mask_expected, mod_mask, $"mod_mask_expected = {mod_mask_expected}, mod_mask = {mod_mask}, for key = {kstr}")
+      call assert_equal(exp_mod_mask, mod_mask, $"mod_mask for key = {kstr}")
     endfor
   endfor
 
@@ -983,7 +991,7 @@ func Test_mswin_event_error_handling()
 
   call assert_fails("sandbox call test_mswin_event('key', {'event': 'keydown', 'keycode': 61 })", 'E48:')
 
-  " flush out anything in the typeahead buffer
+  " flush out the typeahead buffer
   while getchar(0)
   endwhile
 endfunc
