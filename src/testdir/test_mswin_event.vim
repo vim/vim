@@ -568,13 +568,23 @@ func Test_mswin_event_movement_keys()
       let kstr = $"{mod_str}{kname}"
       let chstr_eval = eval('"\<' .. kstr .. '>"')
 
+      " flush out anything in the typeahead buffer
+      while getchar(0)
+      endwhile
       execute 'call feedkeys("\<' .. kstr .. '>")'
       let chstr_fk = getcharstr(0)
       call assert_equal(chstr_eval, chstr_fk, $"feedkeys = <{kstr}>")
 
+      " flush out anything in the typeahead buffer
+      while getchar(0)
+      endwhile
       call SendKey(kcode)
       let chstr_alone = getcharstr(0)
       let chstr_alone_end = chstr_alone[len(chstr_alone)-2:len(chstr_alone)-1]
+
+      " flush out anything in the typeahead buffer
+      while getchar(0)
+      endwhile
       call SendKeyGroup(mod_keycodes + [kcode])
       let chstr_mswin = getcharstr(0)
       let chstr_mswin_end = chstr_mswin[len(chstr_mswin)-2:len(chstr_mswin)-1]
@@ -584,6 +594,7 @@ func Test_mswin_event_movement_keys()
       " The virtual termcap maps may change the character and either;
       " - remove the Shift modifier, or
       " - remove the Ctrl modifier if the Shift modifier was not already removed.
+      let found_shift = 0
       if chstr_alone_end != chstr_mswin_end
         let found_shift = 0
         for mod_key in mod_keycodes
@@ -600,7 +611,9 @@ func Test_mswin_event_movement_keys()
               break
             endif
           endfor
-        endif
+        elseif vim_mod_mask - mod_mask == s:vim_MOD_MASK_SHIFT
+          mod_mask += s:vim_MOD_MASK_SHIFT
+	endif
       endif
       call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
     endfor
