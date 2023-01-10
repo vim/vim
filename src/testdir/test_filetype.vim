@@ -523,6 +523,7 @@ let s:filename_checks = {
     \ 'slpspi': ['/etc/slp.spi', 'any/etc/slp.spi'],
     \ 'slrnrc': ['.slrnrc'],
     \ 'slrnsc': ['file.score'],
+    \ 'smali': ['file.smali'],
     \ 'sm': ['sendmail.cf'],
     \ 'smarty': ['file.tpl'],
     \ 'smcl': ['file.hlp', 'file.ihlp', 'file.smcl'],
