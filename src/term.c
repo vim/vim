@@ -2159,6 +2159,7 @@ set_termname(char_u *term)
     init_term_props(FALSE);
 #endif
 
+#if defined(UNIX) || defined(VMS)
     // If the first number in t_XM is 1006 then the terminal will support SGR
     // mouse reporting.
     int did_set_ttym = FALSE;
@@ -2175,7 +2176,6 @@ set_termname(char_u *term)
 	}
     }
 
-#if defined(UNIX) || defined(VMS)
     /*
      * For Unix, set the 'ttymouse' option to the type of mouse to be used.
      * The termcode for the mouse is added as a side effect in option.c.
