@@ -155,19 +155,19 @@ let s:VK = {
     \ 'ESCAPE'     : 0x1B
     \ }
 
-  let s:MOD_MASK_SHIFT = 0x02
-  let s:MOD_MASK_CTRL  = 0x04
-  let s:MOD_MASK_ALT   = 0x08
+  let s:vim_MOD_MASK_SHIFT = 0x02
+  let s:vim_MOD_MASK_CTRL  = 0x04
+  let s:vim_MOD_MASK_ALT   = 0x08
   
   let s:vim_key_modifiers = [
     \ ["",       0,   []],
-    \ ["S-",     2,   [s:VK.LSHIFT]],
-    \ ["C-",     4,   [s:VK.LCONTROL]],
-    \ ["C-S-",   6,   [s:VK.LCONTROL, s:VK.LSHIFT]],
-    \ ["A-",     8,   [s:VK.LMENU]],
-    \ ["A-S-",   10,  [s:VK.LMENU, s:VK.LSHIFT]],
-    \ ["A-C-",   12,  [s:VK.LMENU, s:VK.LCONTROL]],
-    \ ["A-C-S-", 14,  [s:VK.LMENU, s:VK.LCONTROL, s:VK.LSHIFT]],
+    \ ["S-",     2,   [s:VK.SHIFT]],
+    \ ["C-",     4,   [s:VK.CONTROL]],
+    \ ["C-S-",   6,   [s:VK.CONTROL, s:VK.SHIFT]],
+    \ ["A-",     8,   [s:VK.MENU]],
+    \ ["A-S-",   10,  [s:VK.MENU, s:VK.SHIFT]],
+    \ ["A-C-",   12,  [s:VK.MENU, s:VK.CONTROL]],
+    \ ["A-C-S-", 14,  [s:VK.MENU, s:VK.CONTROL, s:VK.SHIFT]],
     \]
 
   " Assuming Standard US PC Keyboard layout
@@ -340,7 +340,7 @@ let s:test_extra_key_chars = [
     \ ]
 
 func s:LoopTestKeyArray(arr)
-  " flush out the typeahead buffer
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 
@@ -364,13 +364,13 @@ func s:LoopTestKeyArray(arr)
     let key = kcodes[0]
     for key in kcodes
       if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], key) >= 0
-        let modifiers = modifiers + s:MOD_MASK_SHIFT
+        let modifiers = modifiers + s:vim_MOD_MASK_SHIFT
       endif
       if index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], key) >= 0
-        let modifiers = modifiers + s:MOD_MASK_CTRL
+        let modifiers = modifiers + s:vim_MOD_MASK_CTRL
       endif
       if index([s:VK.ALT, s:VK.LALT, s:VK.RALT], key) >= 0
-        let modifiers = modifiers + s:MOD_MASK_ALT
+        let modifiers = modifiers + s:vim_MOD_MASK_ALT
       endif
     endfor
     call SendKeyWithModifiers(key, modifiers)
@@ -387,14 +387,14 @@ func s:LoopTestKeyArray(arr)
     call assert_equal(0, mod_mask, $"key = {kstr}")
   endfor
 
-  " flush out the typeahead buffer
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 
 endfunc
 
 " Test MS-Windows key events
-func Test_mswin_event_character_keys()
+func Test_mswin_key_event()
   CheckMSWindows
   new
 
@@ -422,7 +422,7 @@ func Test_mswin_event_character_keys()
       call SendKeyGroup([modkey, kc])
       let ch = getchar(0)
       call assert_equal(kc+128, ch)
-      call SendKeyWithModifiers(kc, s:MOD_MASK_ALT)
+      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_ALT)
       let ch = getchar(0)
       call assert_equal(kc+128, ch)
     endfor
@@ -451,7 +451,7 @@ func Test_mswin_event_character_keys()
       call SendKeyGroup([modkey, kc])
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc), ch)
-      call SendKeyWithModifiers(kc, s:MOD_MASK_SHIFT)
+      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_SHIFT)
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc), ch)
     endfor
@@ -464,7 +464,7 @@ func Test_mswin_event_character_keys()
       call SendKeyGroup([modkey, kc])
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc - 64), ch)
-      call SendKeyWithModifiers(kc, s:MOD_MASK_CTRL)
+      call SendKeyWithModifiers(kc, s:vim_MOD_MASK_CTRL)
       let ch = getcharstr(0)
       call assert_equal(nr2char(kc - 64), ch)
     endfor
@@ -480,166 +480,109 @@ func Test_mswin_event_character_keys()
         call SendKeyGroup([modkey, kc])
         let ch = getchar(0)
         call assert_equal(kc+160, ch)
-        call SendKeyWithModifiers(kc, s:MOD_MASK_ALT)
+        call SendKeyWithModifiers(kc, s:vim_MOD_MASK_ALT)
         let ch = getchar(0)
         call assert_equal(kc+160, ch)
       endfor
     endfor
   endif
 
-endfun
-
   " Test for Function Keys 'F1' to 'F12'
   " VK codes 112(0x70) - 123(0x7B)
   " Also with ALL permutatios of modifiers; Shift, Ctrl & Alt
-func Test_mswin_event_function_keys()
-
-  if has('gui_running')
-    let g:test_is_flaky = 1
-  endif
-
-  " NOTE: Windows intercepts these combinations in the GUI
-  let gui_nogo = ["A-F1", "A-F2", "A-F3", "A-F4", "A-S-F4", "A-C-S-F4",
-            \ "A-F5", "A-F6", "A-F7", "A-F8", "A-C-F8", "A-F9",
-	    \ "A-F10", "A-F11" , "A-C-F11", "A-C-F12"]
-
-  " flush out the typeahead buffer
-  while getchar(0)
-  endwhile
-
-  for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
-    for n in range(1, 12)
-      let expected_mod_mask = vim_mod_mask
-      let kstr = $"{mod_str}F{n}"
-      if !has('gui_running') || (has('gui_running') && n != 10
-                                             \  && index(gui_nogo, kstr) == -1)
+  " NOTE: Windows intercepts some of these keys in the GUI
+  if !has("gui_running")
+    for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
+      for n in range(1, 12)
+        let kstr = $"{mod_str}F{n}"
         let keycode = eval('"\<' .. kstr .. '>"')
-        " flush out the typeahead buffer
+        " flush out anything in the typeahead buffer
         while getchar(0)
         endwhile
+        " call SendKeyGroup(mod_keycodes + [111+n])
         call SendKeyWithModifiers(111+n, vim_mod_mask)
         let ch = getcharstr(0)
         let mod_mask = getcharmod()
         call assert_equal(keycode, $"{ch}", $"key = {kstr}")
-        " workaround for the virtual termcap maps changing the character
-        "instead of sending Shift
+        " workaround for the virtual termcap maps changing the character instead
+        " of sending Shift
         for mod_key in mod_keycodes
           if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
-            let expected_mod_mask -= s:MOD_MASK_SHIFT
-            break
+            let mod_mask = mod_mask + s:vim_MOD_MASK_SHIFT
           endif
         endfor
-        call assert_equal(expected_mod_mask, mod_mask, $"mod = {expected_mod_mask} for key = {kstr}")
-      endif
+        call assert_equal(vim_mod_mask, mod_mask, $"mod = {vim_mod_mask} for key = {kstr}")
+      endfor
     endfor
-  endfor
-endfunc
-
-func ExtractModifiers(mod_keycodes)
-  let has_shift = 0
-  let has_ctrl = 0
-  let has_alt = 0
-  for mod_key in a:mod_keycodes
-    if index([s:VK.SHIFT, s:VK.LSHIFT, s:VK.RSHIFT], mod_key) >= 0
-      let has_shift = 1
-    endif
-    if index([s:VK.CONTROL, s:VK.LCONTROL, s:VK.RCONTROL], mod_key) >= 0
-      let has_ctrl = 1
-    endif
-    if index([s:VK.MENU, s:VK.LMENU, s:VK.RMENU], mod_key) >= 0
-      let has_alt = 1
-    endif
-  endfor
-  return [has_shift, has_ctrl, has_alt]
-endfunc
-
-  " Test for Movement Keys;
-  "    VK_PRIOR 0x21,   VK_NEXT  0x22,
-  "    VK_END   0x23,   VK_HOME  0x24,
-  "    VK_LEFT  0x25,   VK_UP    0x26,
-  "    VK_RIGHT 0x27,   VK_DOWN  0x28
-  " With ALL permutations of modifiers; none, Shift, Ctrl & Alt
-func Test_mswin_event_movement_keys()
-
-  if has('gui_running')
-    let g:test_is_flaky = 1
   endif
 
-  let movement_keys = [
-    \ [s:VK.PRIOR, "PageUp"],
-    \ [s:VK.NEXT,  "PageDown"],
-    \ [s:VK.END,   "End"],
-    \ [s:VK.HOME,  "Home"],
-    \ [s:VK.LEFT,  "Left"],
-    \ [s:VK.UP,    "Up"],
-    \ [s:VK.RIGHT, "Right"],
-    \ [s:VK.DOWN,  "Down"],
+  " Test for the various Ctrl and Shift key combinations.
+  let keytests = [
+    \ [[s:VK.SHIFT,    s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.LSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.RSHIFT,   s:VK.PRIOR], "S-Pageup", 2],
+    \ [[s:VK.CONTROL,  s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.LCONTROL, s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.RCONTROL, s:VK.PRIOR], "C-Pageup", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.PRIOR], "C-S-Pageup", 6],
+    \ [[s:VK.SHIFT,    s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.LSHIFT,   s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.RSHIFT,   s:VK.NEXT], "S-PageDown", 2],
+    \ [[s:VK.CONTROL,  s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.LCONTROL, s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.RCONTROL, s:VK.NEXT], "C-PageDown", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.NEXT], "C-S-PageDown", 6],
+    \ [[s:VK.SHIFT,    s:VK.END], "S-End", 0],
+    \ [[s:VK.CONTROL,  s:VK.END], "C-End", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.END], "C-S-End", 4],
+    \ [[s:VK.SHIFT,    s:VK.HOME], "S-Home", 0],
+    \ [[s:VK.CONTROL,  s:VK.HOME], "C-Home", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.HOME], "C-S-Home", 4],
+    \ [[s:VK.SHIFT,    s:VK.LEFT], "S-Left", 0],
+    \ [[s:VK.CONTROL,  s:VK.LEFT], "C-Left", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.LEFT], "C-S-Left", 4],
+    \ [[s:VK.SHIFT,    s:VK.UP], "S-Up", 0],
+    \ [[s:VK.CONTROL,  s:VK.UP], "C-Up", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.UP], "C-S-Up", 4],
+    \ [[s:VK.SHIFT,    s:VK.RIGHT], "S-Right", 0],
+    \ [[s:VK.CONTROL,  s:VK.RIGHT], "C-Right", 0],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.RIGHT], "C-S-Right", 4],
+    \ [[s:VK.SHIFT,    s:VK.DOWN], "S-Down", 0],
+    \ [[s:VK.CONTROL,  s:VK.DOWN], "C-Down", 4],
+    \ [[s:VK.CONTROL,  s:VK.SHIFT, s:VK.DOWN], "C-S-Down", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_0], "C-0", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_1], "C-1", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_2], "C-@", 0],
+    \ [[s:VK.CONTROL,  s:VK.KEY_3], "C-3", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_4], "C-4", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_5], "C-5", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_6], "C-^", 0],
+    \ [[s:VK.CONTROL,  s:VK.KEY_7], "C-7", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_8], "C-8", 4],
+    \ [[s:VK.CONTROL,  s:VK.KEY_9], "C-9", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD0], "C-0", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD1], "C-1", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD2], "C-2", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD3], "C-3", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD4], "C-4", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD5], "C-5", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD6], "C-6", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD7], "C-7", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD8], "C-8", 4],
+    \ [[s:VK.CONTROL,  s:VK.NUMPAD9], "C-9", 4],
+    \ [[s:VK.CONTROL,  s:VK.MULTIPLY], "C-*", 4],
+    \ [[s:VK.CONTROL,  s:VK.ADD], "C-+", 4],
+    \ [[s:VK.CONTROL,  s:VK.SUBTRACT], "C--", 4],
+    \ [[s:VK.CONTROL,  s:VK.OEM_MINUS], "C-_", 0]
     \ ]
 
-  " flush out the typeahead buffer
-  while getchar(0)
-  endwhile
-
-  for [mod_str, vim_mod_mask, mod_keycodes] in s:vim_key_modifiers
-    for [kcode, kname] in movement_keys
-      let exp_mod_mask = vim_mod_mask
-      let kstr = $"{mod_str}{kname}"
-      let chstr_eval = eval('"\<' .. kstr .. '>"')
-
-      " flush out the typeahead buffer
-      while getchar(0)
-      endwhile
-      execute 'call feedkeys("\<' .. kstr .. '>")'
-      let chstr_fk = getcharstr(0)
-      call assert_equal(chstr_eval, chstr_fk, $"feedkeys = <{kstr}>")
-
-      " flush out the typeahead buffer
-      while getchar(0)
-      endwhile
-      call SendKey(kcode)
-      let chstr_alone = getcharstr(0)
-      let chstr_alone_end = chstr_alone[len(chstr_alone)-2:len(chstr_alone)-1]
-
-      " flush out the typeahead buffer
-      while getchar(0)
-      endwhile
-      call SendKeyGroup(mod_keycodes + [kcode])
-      let chstr_mswin = getcharstr(0)
-      let chstr_mswin_end = chstr_mswin[len(chstr_mswin)-2:len(chstr_mswin)-1]
-      let mod_mask = getcharmod()
-
-      " The virtual termcap maps may** change the character and either;
-      " - remove the Shift modifier, or
-      " - remove the Ctrl modifier if the Shift modifier was not removed.
-      let [has_shift, has_ctrl, has_alt] = ExtractModifiers(mod_keycodes)
-      if chstr_alone_end != chstr_mswin_end
-        if has_shift != 0
-          let exp_mod_mask -= s:MOD_MASK_SHIFT
-        elseif has_ctrl != 0
-	  let exp_mod_mask -= s:MOD_MASK_CTRL
-        endif
-      endif
-      " **Note: The appveyor Windows GUI test environments, from VS2017 on,
-      " consistently intercepts the Shift modifier WITHOUT changing the
-      " MOVEMENT character.  This issue does not happen in any github actions
-      " CI Windows test environments.  Attempted to reproduce this manually
-      " on Windows versions;  7, 8.1, 10, 11, Server 2019 and Server 2022, but
-      " the issue did not occur on any of those environments.
-      " Below is a workaround for the issue.
-      if has('gui_running') && has_shift != 0
-        if exp_mod_mask != mod_mask && chstr_eval != chstr_mswin
-          let kstr_sub = substitute(kstr, "S-", "", "")
-          let chstr_eval = eval('"\<' .. kstr_sub .. '>"')
-          if exp_mod_mask - s:MOD_MASK_SHIFT == mod_mask
-            let exp_mod_mask -= s:MOD_MASK_SHIFT
-          elseif has_ctrl != 0 && exp_mod_mask - s:MOD_MASK_CTRL == mod_mask
-            let exp_mod_mask -= s:MOD_MASK_CTRL
-          endif
-        endif
-      endif
-      call assert_equal(chstr_eval, chstr_mswin, $"key = {kstr}")
-      call assert_equal(exp_mod_mask, mod_mask, $"mod_mask for key = {kstr}")
-    endfor
+  for [kcodes, kstr, kmod] in keytests
+    call SendKeyGroup(kcodes)
+    let ch = getcharstr(0)
+    let mod = getcharmod()
+    let keycode = eval('"\<' .. kstr .. '>"')
+    call assert_equal(keycode, ch, $"key = {kstr}")
+    call assert_equal(kmod, mod, $"mod = {kmod} key = {kstr}")
   endfor
 
   bw!
@@ -685,7 +628,7 @@ func Test_QWERTY_Ctrl_minus()
 endfunc
 
 "  Test MS-Windows mouse events
-func Test_mswin_event_mouse()
+func Test_mswin_mouse_event()
   CheckMSWindows
   new
 
@@ -997,7 +940,7 @@ func Test_mswin_event_error_handling()
 
   call assert_fails("sandbox call test_mswin_event('key', {'event': 'keydown', 'keycode': 61 })", 'E48:')
 
-  " flush out the typeahead buffer
+  " flush out anything in the typeahead buffer
   while getchar(0)
   endwhile
 endfunc

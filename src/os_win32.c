@@ -1043,7 +1043,7 @@ win32_kbd_patch_key(
     }
 
     // check if it already has a valid unicode character.
-    if (pker->uChar.UnicodeChar != 0)
+    if (pker->uChar.UnicodeChar > 0 && pker->uChar.UnicodeChar < 0xFFFD)
 	return 1;
 
     CLEAR_FIELD(abKeystate);
@@ -1154,9 +1154,12 @@ decode_key_event(
 			else if (pker->wVirtualKeyCode >= VK_END
 				&& pker->wVirtualKeyCode <= VK_DOWN)
 			{
-			    // (0x23 - 0x28): VK_END, VK_HOME, 
-			    // VK_LEFT, VK_UP, VK_RIGHT, VK_DOWN
-
+			    // VK_END   0x23
+			    // VK_HOME  0x24
+			    // VK_LEFT  0x25
+			    // VK_UP    0x26
+			    // VK_RIGHT 0x27
+			    // VK_DOWN  0x28
 			    *pmodifiers = 0;
 			    *pch2 = VirtKeyMap[i].chAlone;
 			    if ((nModifs & SHIFT) != 0
@@ -1164,7 +1167,7 @@ decode_key_event(
 			    {
 				*pch2 = VirtKeyMap[i].chShift;
 			    }
-			    if ((nModifs & CTRL) != 0
+			    else if ((nModifs & CTRL) != 0
 						     && (nModifs & ~CTRL) == 0)
 			    {
 				*pch2 = VirtKeyMap[i].chCtrl;
@@ -1175,37 +1178,16 @@ decode_key_event(
 				    *pch2 = VirtKeyMap[i].chAlone;
 				}
 			    }
-			    if ((nModifs & SHIFT) != 0
+			    else if ((nModifs & ALT) != 0
+						      && (nModifs & ~ALT) == 0)
+			    {
+				*pch2 = VirtKeyMap[i].chAlt;
+			    }
+			    else if ((nModifs & SHIFT) != 0
 						      && (nModifs & CTRL) != 0)
 			    {
 				*pmodifiers |= MOD_MASK_CTRL;
 				*pch2 = VirtKeyMap[i].chShift;
-			    }
-			    if ((nModifs & ALT) != 0)
-			    {
-				*pch2 = VirtKeyMap[i].chAlt;
-				*pmodifiers |= MOD_MASK_ALT;
-				if ((nModifs & ~ALT) == 0)
-				{
-				    *pch2 = VirtKeyMap[i].chAlone;
-				}
-				else if ((nModifs & SHIFT) != 0)
-				{
-				    *pch2 = VirtKeyMap[i].chShift;
-				}
-				else if ((nModifs & CTRL) != 0)
-				{
-				    if (pker->wVirtualKeyCode == VK_UP
-					|| pker->wVirtualKeyCode == VK_DOWN)
-				    {
-					*pmodifiers |= MOD_MASK_CTRL;
-					*pch2 = VirtKeyMap[i].chAlone;
-				    }
-				    else
-				    {
-					*pch2 = VirtKeyMap[i].chCtrl;
-				    }
-				}
 			    }
 			}
 			else
@@ -1337,7 +1319,7 @@ encode_key_event(dict_T *args, INPUT_RECORD *ir)
 	}
 	ker.dwControlKeyState |= s_dwMods;
 	ker.wVirtualKeyCode = vkCode;
-	ker.uChar.UnicodeChar = 0;
+	ker.uChar.UnicodeChar = 0xFFFD;  // UNICODE REPLACEMENT CHARACTER
 	ir->Event.KeyEvent = ker;
 	vim_free(action);
     }
