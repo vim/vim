@@ -1897,6 +1897,9 @@ au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
 au BufNewFile,BufRead .slrnrc			setf slrnrc
 au BufNewFile,BufRead *.score			setf slrnsc
 
+" Smali
+au BufNewFile,BufRead *.smali			setf smali
+
 " Smalltalk
 au BufNewFile,BufRead *.st			setf st
 

@@ -473,6 +473,7 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_CGP,	"\033[13t"},
 #  endif
     {(int)KS_CRV,	"\033[>c"},
+    {(int)KS_CXM,	"\033[?1006;1000%?%p1%{1}%=%th%el%;"},
     {(int)KS_RFG,	"\033]10;?\007"},
     {(int)KS_RBG,	"\033]11;?\007"},
     {(int)KS_U7,	"\033[6n"},
@@ -1229,6 +1230,7 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_CWP,	"[%dCWP%d]"},
 #  endif
     {(int)KS_CRV,	"[CRV]"},
+    {(int)KS_CXM,	"[CXM]"},
     {(int)KS_U7,	"[U7]"},
     {(int)KS_RFG,	"[RFG]"},
     {(int)KS_RBG,	"[RBG]"},
@@ -1721,7 +1723,8 @@ get_term_entries(int *height, int *width)
 			{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},
 			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_CAU,"AU"},
 			{KS_LE, "le"},
-			{KS_ND, "nd"}, {KS_OP, "op"}, {KS_CRV, "RV"},
+			{KS_ND, "nd"}, {KS_OP, "op"},
+			{KS_CRV, "RV"}, {KS_CXM, "XM"},
 			{KS_VS, "vs"}, {KS_CVS, "VS"},
 			{KS_CIS, "IS"}, {KS_CIE, "IE"},
 			{KS_CSC, "SC"}, {KS_CEC, "EC"},
@@ -2107,8 +2110,8 @@ set_termname(char_u *term)
     else
 	T_CCS = empty_option;
 
-    // Special case: "kitty" does not normally have a "RV" entry in terminfo,
-    // but we need to request the version for several other things to work.
+    // Special case: "kitty" may not have a "RV" entry in terminfo, but we need
+    // to request the version for several other things to work.
     if (strstr((char *)term, "kitty") != NULL
 					   && (T_CRV == NULL || *T_CRV == NUL))
 	T_CRV = (char_u *)"\033[>c";
@@ -2157,6 +2160,22 @@ set_termname(char_u *term)
 #endif
 
 #if defined(UNIX) || defined(VMS)
+    // If the first number in t_XM is 1006 then the terminal will support SGR
+    // mouse reporting.
+    int did_set_ttym = FALSE;
+    if (T_CXM != NULL && *T_CXM != NUL && !option_was_set((char_u *)"ttym"))
+    {
+	char_u *p = T_CXM;
+
+	while (*p != NUL && !VIM_ISDIGIT(*p))
+	    ++p;
+	if (getdigits(&p) == 1006)
+	{
+	    did_set_ttym = TRUE;
+	    set_option_value_give_err((char_u *)"ttym", 0L, (char_u *)"sgr", 0);
+	}
+    }
+
     /*
      * For Unix, set the 'ttymouse' option to the type of mouse to be used.
      * The termcode for the mouse is added as a side effect in option.c.
@@ -2173,7 +2192,7 @@ set_termname(char_u *term)
 		p = (char_u *)"xterm";
 	}
 # endif
-	if (p != NULL)
+	if (p != NULL && !did_set_ttym)
 	{
 	    set_option_value_give_err((char_u *)"ttym", 0L, p, 0);
 	    // Reset the WAS_SET flag, 'ttymouse' can be set to "sgr" or
@@ -2801,8 +2820,8 @@ out_str_nf(char_u *s)
     if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	out_flush();
 
-    while (*s)
-	out_char_nf(*s++);
+    for (char_u *p = s; *p != NUL; ++p)
+	out_char_nf(*p);
 
     // For testing we write one string at a time.
     if (p_wd)
@@ -2941,6 +2960,15 @@ term_delete_lines(int line_count)
 {
     OUT_STR(tgoto((char *)T_CDL, 0, line_count));
 }
+
+#if defined(UNIX) || defined(PROTO)
+    void
+term_enable_mouse(int enable)
+{
+    int on = enable ? 1 : 0;
+    OUT_STR(tgoto((char *)T_CXM, 0, on));
+}
+#endif
 
 #if defined(HAVE_TGETENT) || defined(PROTO)
     void
