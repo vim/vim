@@ -25,6 +25,7 @@ void term_windgoto(int row, int col);
 void term_cursor_right(int i);
 void term_append_lines(int line_count);
 void term_delete_lines(int line_count);
+void term_enable_mouse(int enable);
 void term_set_winpos(int x, int y);
 int term_get_winpos(int *x, int *y, varnumber_T timeout);
 void term_set_winsize(int height, int width);

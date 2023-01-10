@@ -3780,7 +3780,11 @@ mch_setmouse(int on)
     }
 #endif
 
-    if (ttym_flags == TTYM_SGR)
+    if (T_CXM != NULL && *T_CXM != NUL)
+    {
+	term_enable_mouse(on);
+    }
+    else if (ttym_flags == TTYM_SGR)
     {
 	// SGR mode supports columns above 223
 	out_str_nf((char_u *)(on ? "\033[?1006h" : "\033[?1006l"));
