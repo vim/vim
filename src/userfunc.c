@@ -2585,8 +2585,6 @@ copy_lambda_to_global_func(
 	    || ga_copy_strings(&ufunc->uf_lines, &fp->uf_lines) == FAIL)
 	goto failed;
 
-    fp->uf_name_exp = ufunc->uf_name_exp == NULL ? NULL
-					 : vim_strsave(ufunc->uf_name_exp);
     if (ufunc->uf_arg_types != NULL)
     {
 	fp->uf_arg_types = ALLOC_MULT(type_T *, fp->uf_args.ga_len);
@@ -2604,7 +2602,10 @@ copy_lambda_to_global_func(
     fp->uf_ret_type = ufunc->uf_ret_type;
 
     fp->uf_refcount = 1;
-    STRCPY(fp->uf_name, global);
+
+    fp->uf_name_exp = NULL;
+    set_ufunc_name(fp, global);
+
     hash_add(&func_hashtab, UF2HIKEY(fp), "copy lambda");
 
     // the referenced dfunc_T is now used one more time

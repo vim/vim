@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2023 Jan 01
+*term.txt*      For Vim version 9.0.  Last change: 2023 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -322,6 +322,9 @@ using the "xterm" workaround.  These are the relevant entries (so far):
 	PS	"\033[200~"	pasted text start |t_PS|
 	PE	"\033[201~"	pasted text end |t_PE|
 
+	XM	"\033[?1006;1000%?%p1%{1}%=%th%el%;"
+				mouse enable / disable |t_XM|
+
 						*xterm-kitty* *kitty-terminal*
 The Kitty terminal is a special case.  Mainly because it works differently
 from most other terminals, but also because, instead of trying the fit in and
@@ -337,7 +340,7 @@ this.  However, Kitty is not fully xterm compatible.  The author suggested to
 ignore the "xterm-" prefix and use the terminfo entry anyway, so that is what
 happens now, the builtin xterm termcap entries are not used.  However, the
 t_RV is set, otherwise other things would not work, such as automatically
-setting 'ttymouse' to "sgr".
+setting 'ttymouse' to "sgr" (at least until |t_XM| is being used for this).
 
 It is not clear why kitty sets $TERM to "xterm-kitty", the terminal isn't
 really xterm compatible.  "kitty" would be more appropriate, but a terminfo
@@ -446,6 +449,8 @@ Added by Vim (there are no standard codes for these):
 		xterm and other terminal emulators)  The
 		response is stored in |v:termresponse| |xterm-8bit|
 		|'ttymouse'| |xterm-codes|
+	t_XM	enable/disable mouse reporting,			*t_XM* *'t_XM'*
+		see |mouse-reporting| below
 	t_RK	request terminal keyboard protocol state;	*t_RK* *'t_RK'*
 		sent after |t_TI|
 	t_u7	request cursor position (for xterm)		*t_u7* *'t_u7'*
@@ -498,6 +503,21 @@ t_SH must take one argument:
 
 t_RS is sent only if the response to t_RV has been received.  It is not used
 on Mac OS when Terminal.app could be recognized from the termresponse.
+
+							*mouse-reporting*
+Many terminals can report mouse clicks and some can report mouse movement and
+dragging.  Vim needs to know what codes are being used for this.
+
+The "XM" terminfo/termcap entry is used for this.  Vim also has the 'ttymouse'
+option to specify the mouse protocol being used.  See the option for the
+possible values.
+
+If Vim can read the "XM" terminfo/termcap entry then it will be used for
+enabling and disabling the mouse reporting.  If it is missing, then the value
+from 'ttymouse' is used to decide how to do this.
+
+If the "XM" entry exists and the first number is "1006" then 'ttymouse' will
+be set to "sgr", unless it was already set earlier.
 
 
 KEY CODES						*terminal-key-codes*

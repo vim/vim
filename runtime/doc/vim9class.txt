@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2022 Dec 20
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Jan 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -261,10 +261,22 @@ prefix: >
 	      totalSize += this.size
 	   enddef
 	endclass
+<							*E1340* *E1341*
+Since the name is used as-is, shadowing the name by a function argument name
+or variable name is not allowed.
+
+Just like object members the access can be made private by using an underscore
+as the first character in the name, and it can be made public by prefixing
+"public": >
+	class OtherThing
+	   static total: number	# anybody can read, only class can write
+	   static _sum: number		# only class can read and write
+	   public static result: number	# anybody can read and write
+	endclass
 <
-						*class-method*
-Class methods are also declared with "static".  They have no access to object
-members, they cannot use the "this" keyword. >
+						*class-function*
+Class functions are also declared with "static".  They have no access to
+object members, they cannot use the "this" keyword. >
 
 	class OtherThing
 	   this.size: number
@@ -320,6 +332,9 @@ a number.  This example extends the one above: >
 	   enddef
 	endclass
 
+If a class declares to implement an interface, all the items specified in the
+interface must appear in the class, with the same types. *E1348* *E1349*
+
 The interface name can be used as a type: >
 
 	var shapes: list<HasSurface> = [
@@ -372,9 +387,11 @@ once.  They can appear in any order, although this order is recommended: >
 	implements InterfaceName, OtherInterface
 	specifies SomeInterface
 <							*extends*
-A class can extend one other class.
-							*implements*
-A class can implement one or more interfaces.
+A class can extend one other class. *E1352* *E1353* *E1354*
+						*implements* *E1346* *E1347*
+A class can implement one or more interfaces.  The "implements" keyword can
+only appear once *E1350* .  Multiple interfaces can be specified, separated by
+commas.  Each interface name can appear only once. *E1351*
 							*specifies*
 A class can declare its interface, the object members and methods, with a
 named interface.  This avoids the need for separately specifying the
@@ -416,10 +433,10 @@ prefixed with `:export`: >
 
 	export interface InterfaceName
 	endinterface
-
+<							*E1344*
 An interface can declare object members, just like in a class but without any
 initializer.
-
+							*E1345*
 An interface can declare methods with `:def`, including the arguments and
 return type, but without the body and without `:enddef`.  Example: >
 
@@ -428,8 +445,10 @@ return type, but without the body and without `:enddef`.  Example: >
 	   def Surface(): number
 	endinterface
 
+An interface name must start with an uppercase letter. *E1343*
 The "Has" prefix can be used to make it easier to guess this is an interface
 name, with a hint about what it provides.
+An interface can only be defined in a |Vim9| script file.  *E1342*
 
 
 Default constructor ~
@@ -448,8 +467,6 @@ Then The default constructor will be: >
 
 	def new(this.name = v:none, this.age = v:none, this.gender = v:none)
 	enddef
-
-All object members will be used, also private access ones.
 
 The "= v:none" default values make the arguments optional.  Thus you can also
 call `new()` without any arguments.  No assignment will happen and the default
@@ -471,6 +488,12 @@ the name, you can define the constructor like this: >
 Note that you cannot use another default value than "v:none" here.  If you
 want to initialize the object members, do it where they are declared.  This
 way you only need to look in one place for the default values.
+
+All object members will be used in the default constructor, also private
+access ones.
+
+If the class extends another one, the object members of that class will come
+first.
 
 
 Multiple constructors ~
@@ -610,6 +633,22 @@ type checking will make sure it works as you intended.  This rules out
 polymorphism, which we don't really need anyway.
 
 
+Single inheritance and interfaces ~
+
+Some languages support multiple inheritance.  Although that can be useful in
+some cases, it makes the rules of how a class works quite complicated.
+Instead, using interfaces to declare what is supported is much simpler.  The
+very popular Java language does it this way, and it should be good enough for
+Vim.  The "keep it simple" rule applies here.  
+
+Explicitly declaring that a class supports an interface makes it easy to see
+what a class is intended for.  It also makes it possible to do proper type
+checking.  When an interface is changed any class that declares to implement
+it will be checked if that change was also changed.  The mechanism to assume a
+class implements an interface just because the methods happen to match is
+brittle and leads to obscure problems, let's not do that.
+
+
 Using "this.member" everywhere ~
 
 The object members in various programming languages can often be accessed in
@@ -628,22 +667,6 @@ also directly clear which variable references are object members and which
 aren't.
 
 
-Single inheritance and interfaces ~
-
-Some languages support multiple inheritance.  Although that can be useful in
-some cases, it makes the rules of how a class works quite complicated.
-Instead, using interfaces to declare what is supported is much simpler.  The
-very popular Java language does it this way, and it should be good enough for
-Vim.  The "keep it simple" rule applies here.  
-
-Explicitly declaring that a class supports an interface makes it easy to see
-what a class is intended for.  It also makes it possible to do proper type
-checking.  When an interface is changed any class that declares to implement
-it will be checked if that change was also changed.  The mechanism to assume a
-class implements an interface just because the methods happen to match is
-brittle and leads to obscure problems, let's not do that.
-
-
 Using class members ~
 
 Using "static member" to declare a class member is very common, nothing new
@@ -656,6 +679,55 @@ TypeScript prepends the class name before the class member, also inside the
 class.  This has two problems: The class name can be rather long, taking up
 quite a bit of space, and when the class is renamed all these places need to
 be changed too.
+
+
+Declaring object and class members ~
+
+The main choice is whether to use "var" as with variable declarations.
+TypeScript does not use it: >
+	class Point {
+	  x: number;
+	  y = 0;
+	}
+
+Following that Vim object members could be declared like this: >
+	class Point
+	  this.x: number
+	  this.y = 0
+	endclass
+
+Some users pointed out that this looks more like an assignment than a
+declaration.  Adding "var" changes that: >
+	class Point
+	  var this.x: number
+	  var this.y = 0
+	endclass
+
+We also need to be able to declare class members using the "static" keyword.
+There we can also choose to leave out "var": >
+	class Point
+	  var this.x: number
+	  static count = 0
+	endclass
+
+Or do use it, before "static": >
+	class Point
+	  var this.x: number
+	  var static count = 0
+	endclass
+
+Or after "static": >
+	class Point
+	  var this.x: number
+	  static var count = 0
+	endclass
+
+This is more in line with "static def Func()".
+
+There is no clear preference whether to use "var" or not.  The two main
+reasons to leave it out are:
+1. TypeScript, Java and other popular languages do not use it.
+2. Less clutter.
 
 
 Using "ClassName.new()" to construct an object ~

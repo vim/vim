@@ -1850,21 +1850,22 @@ find_cmd_after_substitute_cmd(char_u *arg)
 find_cmd_after_isearch_cmd(expand_T *xp, char_u *arg)
 {
     arg = skipwhite(skipdigits(arg));	    // skip count
-    if (*arg == '/')	// Match regexp, not just whole words
-    {
-	for (++arg; *arg && *arg != '/'; arg++)
-	    if (*arg == '\\' && arg[1] != NUL)
-		arg++;
-	if (*arg)
-	{
-	    arg = skipwhite(arg + 1);
+    if (*arg != '/')
+	return NULL;
 
-	    // Check for trailing illegal characters
-	    if (*arg == NUL || vim_strchr((char_u *)"|\"\n", *arg) == NULL)
-		xp->xp_context = EXPAND_NOTHING;
-	    else
-		return arg;
-	}
+    // Match regexp, not just whole words
+    for (++arg; *arg && *arg != '/'; arg++)
+	if (*arg == '\\' && arg[1] != NUL)
+	    arg++;
+    if (*arg)
+    {
+	arg = skipwhite(arg + 1);
+
+	// Check for trailing illegal characters
+	if (*arg == NUL || vim_strchr((char_u *)"|\"\n", *arg) == NULL)
+	    xp->xp_context = EXPAND_NOTHING;
+	else
+	    return arg;
     }
 
     return NULL;
@@ -2780,7 +2781,7 @@ get_breakadd_arg(expand_T *xp UNUSED, int idx)
 {
     char *opts[] = {"expr", "file", "func", "here"};
 
-    if (idx >=0 && idx <= 3)
+    if (idx >= 0 && idx <= 3)
     {
 	// breakadd {expr, file, func, here}
 	if (breakpt_expand_what == EXP_BREAKPT_ADD)

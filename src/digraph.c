@@ -1533,29 +1533,30 @@ get_digraph(
     c = plain_vgetc();
     --no_mapping;
     --allow_keys;
-    if (c != ESC)		// ESC cancels CTRL-K
+
+    if (c == ESC)		// ESC cancels CTRL-K
+	return NUL;
+
+    if (IS_SPECIAL(c))	// insert special key code
+	return c;
+    if (cmdline)
     {
-	if (IS_SPECIAL(c))	// insert special key code
-	    return c;
-	if (cmdline)
-	{
-	    if (char2cells(c) == 1
+	if (char2cells(c) == 1
 #if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
-		    && cmdline_star == 0
+		&& cmdline_star == 0
 #endif
-		    )
-		putcmdline(c, TRUE);
-	}
-	else
-	    add_to_showcmd(c);
-	++no_mapping;
-	++allow_keys;
-	cc = plain_vgetc();
-	--no_mapping;
-	--allow_keys;
-	if (cc != ESC)	    // ESC cancels CTRL-K
-	    return digraph_get(c, cc, TRUE);
+	   )
+	    putcmdline(c, TRUE);
     }
+    else
+	add_to_showcmd(c);
+    ++no_mapping;
+    ++allow_keys;
+    cc = plain_vgetc();
+    --no_mapping;
+    --allow_keys;
+    if (cc != ESC)	    // ESC cancels CTRL-K
+	return digraph_get(c, cc, TRUE);
     return NUL;
 }
 

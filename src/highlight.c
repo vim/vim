@@ -921,93 +921,113 @@ highlight_set_font(
 #endif
 
 /*
+ * Set the cterm foreground color for the Normal highlight group to "color" and
+ * the bold attribute to "bold".
+ */
+    static void
+hl_set_ctermfg_normal_group(int color, int bold)
+{
+    cterm_normal_fg_color = color + 1;
+    cterm_normal_fg_bold = bold;
+#ifdef FEAT_GUI
+    // Don't do this if the GUI is used.
+    if (!gui.in_use && !gui.starting)
+#endif
+    {
+	set_must_redraw(UPD_CLEAR);
+	if (termcap_active && color >= 0)
+	    term_fg_color(color);
+    }
+}
+
+/*
  * Set the cterm foreground color for the highlight group at 'idx' to 'color'.
- * Returns TRUE if the foreground color is set.
  */
     static void
 highlight_set_ctermfg(int idx, int color, int is_normal_group)
 {
     HL_TABLE()[idx].sg_cterm_fg = color + 1;
     if (is_normal_group)
-    {
-	cterm_normal_fg_color = color + 1;
-	cterm_normal_fg_bold = (HL_TABLE()[idx].sg_cterm & HL_BOLD);
-#ifdef FEAT_GUI
-	// Don't do this if the GUI is used.
-	if (!gui.in_use && !gui.starting)
-#endif
-	{
-	    set_must_redraw(UPD_CLEAR);
-	    if (termcap_active && color >= 0)
-		term_fg_color(color);
-	}
-    }
+	hl_set_ctermfg_normal_group(color,
+					(HL_TABLE()[idx].sg_cterm & HL_BOLD));
 }
 
 /*
- * Set the cterm background color for the highlight group at 'idx' to 'color'.
- * Returns TRUE if the background color is set.
+ * Set the cterm background color for the Normal highlight group to "color".
  */
     static void
-highlight_set_ctermbg(int idx, int color, int is_normal_group)
+hl_set_ctermbg_normal_group(int color)
 {
-    HL_TABLE()[idx].sg_cterm_bg = color + 1;
-    if (is_normal_group)
-    {
-	cterm_normal_bg_color = color + 1;
+    cterm_normal_bg_color = color + 1;
 #ifdef FEAT_GUI
-	// Don't mess with 'background' if the GUI is used.
-	if (!gui.in_use && !gui.starting)
+    // Don't mess with 'background' if the GUI is used.
+    if (!gui.in_use && !gui.starting)
 #endif
+    {
+	set_must_redraw(UPD_CLEAR);
+	if (color >= 0)
 	{
-	    set_must_redraw(UPD_CLEAR);
-	    if (color >= 0)
-	    {
-		int dark = -1;
+	    int dark = -1;
 
-		if (termcap_active)
-		    term_bg_color(color);
-		if (t_colors < 16)
-		    dark = (color == 0 || color == 4);
-		// Limit the heuristic to the standard 16 colors
-		else if (color < 16)
-		    dark = (color < 7 || color == 8);
-		// Set the 'background' option if the value is
-		// wrong.
-		if (dark != -1
-			&& dark != (*p_bg == 'd')
-			&& !option_was_set((char_u *)"bg"))
-		{
-		    set_option_value_give_err((char_u *)"bg",
-				   0L, (char_u *)(dark ? "dark" : "light"), 0);
-		    reset_option_was_set((char_u *)"bg");
-		}
+	    if (termcap_active)
+		term_bg_color(color);
+	    if (t_colors < 16)
+		dark = (color == 0 || color == 4);
+	    // Limit the heuristic to the standard 16 colors
+	    else if (color < 16)
+		dark = (color < 7 || color == 8);
+	    // Set the 'background' option if the value is
+	    // wrong.
+	    if (dark != -1
+		    && dark != (*p_bg == 'd')
+		    && !option_was_set((char_u *)"bg"))
+	    {
+		set_option_value_give_err((char_u *)"bg",
+			0L, (char_u *)(dark ? "dark" : "light"), 0);
+		reset_option_was_set((char_u *)"bg");
 	    }
 	}
     }
 }
 
 /*
+ * Set the cterm background color for the highlight group at 'idx' to 'color'.
+ */
+    static void
+highlight_set_ctermbg(int idx, int color, int is_normal_group)
+{
+    HL_TABLE()[idx].sg_cterm_bg = color + 1;
+    if (is_normal_group)
+	hl_set_ctermbg_normal_group(color);
+}
+
+/*
+ * Set the cterm underline color for the Normal highlight group to "color".
+ */
+    static void
+hl_set_ctermul_normal_group(int color)
+{
+    cterm_normal_ul_color = color + 1;
+#ifdef FEAT_GUI
+    // Don't do this if the GUI is used.
+    if (!gui.in_use && !gui.starting)
+#endif
+    {
+	set_must_redraw(UPD_CLEAR);
+	if (termcap_active && color >= 0)
+	    term_ul_color(color);
+    }
+}
+
+/*
  * Set the cterm underline color for the highlight group at 'idx' to 'color'.
- * Returns TRUE if the underline color is set.
  */
     static void
 highlight_set_ctermul(int idx, int color, int is_normal_group)
 {
     HL_TABLE()[idx].sg_cterm_ul = color + 1;
     if (is_normal_group)
-    {
-	cterm_normal_ul_color = color + 1;
-#ifdef FEAT_GUI
-	// Don't do this if the GUI is used.
-	if (!gui.in_use && !gui.starting)
-#endif
-	{
-	    set_must_redraw(UPD_CLEAR);
-	    if (termcap_active && color >= 0)
-		term_ul_color(color);
-	}
-    }
+	hl_set_ctermul_normal_group(color);
 }
 
 /*
@@ -1034,89 +1054,89 @@ highlight_set_cterm_color(
     long	i;
     int		off;
 
-    if (!init || !(HL_TABLE()[idx].sg_set & SG_CTERM))
+    if (init && (HL_TABLE()[idx].sg_set & SG_CTERM))
+	return FALSE;
+
+    if (!init)
+	HL_TABLE()[idx].sg_set |= SG_CTERM;
+
+    // When setting the foreground color, and previously the "bold"
+    // flag was set for a light color, reset it now
+    if (key[5] == 'F' && HL_TABLE()[idx].sg_cterm_bold)
     {
-	if (!init)
-	    HL_TABLE()[idx].sg_set |= SG_CTERM;
+	HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
+	HL_TABLE()[idx].sg_cterm_bold = FALSE;
+    }
 
-	// When setting the foreground color, and previously the "bold"
-	// flag was set for a light color, reset it now
-	if (key[5] == 'F' && HL_TABLE()[idx].sg_cterm_bold)
-	{
-	    HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
-	    HL_TABLE()[idx].sg_cterm_bold = FALSE;
-	}
-
-	if (VIM_ISDIGIT(*arg))
-	    color = atoi((char *)arg);
-	else if (STRICMP(arg, "fg") == 0)
-	{
-	    if (cterm_normal_fg_color)
-		color = cterm_normal_fg_color - 1;
-	    else
-	    {
-		emsg(_(e_fg_color_unknown));
-		return FALSE;
-	    }
-	}
-	else if (STRICMP(arg, "bg") == 0)
-	{
-	    if (cterm_normal_bg_color > 0)
-		color = cterm_normal_bg_color - 1;
-	    else
-	    {
-		emsg(_(e_bg_color_unknown));
-		return FALSE;
-	    }
-	}
-	else if (STRICMP(arg, "ul") == 0)
-	{
-	    if (cterm_normal_ul_color > 0)
-		color = cterm_normal_ul_color - 1;
-	    else
-	    {
-		emsg(_(e_ul_color_unknown));
-		return FALSE;
-	    }
-	}
+    if (VIM_ISDIGIT(*arg))
+	color = atoi((char *)arg);
+    else if (STRICMP(arg, "fg") == 0)
+    {
+	if (cterm_normal_fg_color)
+	    color = cterm_normal_fg_color - 1;
 	else
 	{
-	    int bold = MAYBE;
+	    emsg(_(e_fg_color_unknown));
+	    return FALSE;
+	}
+    }
+    else if (STRICMP(arg, "bg") == 0)
+    {
+	if (cterm_normal_bg_color > 0)
+	    color = cterm_normal_bg_color - 1;
+	else
+	{
+	    emsg(_(e_bg_color_unknown));
+	    return FALSE;
+	}
+    }
+    else if (STRICMP(arg, "ul") == 0)
+    {
+	if (cterm_normal_ul_color > 0)
+	    color = cterm_normal_ul_color - 1;
+	else
+	{
+	    emsg(_(e_ul_color_unknown));
+	    return FALSE;
+	}
+    }
+    else
+    {
+	int bold = MAYBE;
 
-	    // reduce calls to STRICMP a bit, it can be slow
-	    off = TOUPPER_ASC(*arg);
-	    for (i = ARRAY_LENGTH(color_names); --i >= 0; )
-		if (off == color_names[i][0]
-			&& STRICMP(arg + 1, color_names[i] + 1) == 0)
-		    break;
-	    if (i < 0)
-	    {
-		semsg(_(e_color_name_or_number_not_recognized_str), key_start);
-		return FALSE;
-	    }
-
-	    color = lookup_color(i, key[5] == 'F', &bold);
-
-	    // set/reset bold attribute to get light foreground
-	    // colors (on some terminals, e.g. "linux")
-	    if (bold == TRUE)
-	    {
-		HL_TABLE()[idx].sg_cterm |= HL_BOLD;
-		HL_TABLE()[idx].sg_cterm_bold = TRUE;
-	    }
-	    else if (bold == FALSE)
-		HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
+	// reduce calls to STRICMP a bit, it can be slow
+	off = TOUPPER_ASC(*arg);
+	for (i = ARRAY_LENGTH(color_names); --i >= 0; )
+	    if (off == color_names[i][0]
+		    && STRICMP(arg + 1, color_names[i] + 1) == 0)
+		break;
+	if (i < 0)
+	{
+	    semsg(_(e_color_name_or_number_not_recognized_str), key_start);
+	    return FALSE;
 	}
 
-	// Add one to the argument, to avoid zero.  Zero is used for
-	// "NONE", then "color" is -1.
-	if (key[5] == 'F')
-	    highlight_set_ctermfg(idx, color, is_normal_group);
-	else if (key[5] == 'B')
-	    highlight_set_ctermbg(idx, color, is_normal_group);
-	else // ctermul
-	    highlight_set_ctermul(idx, color, is_normal_group);
+	color = lookup_color(i, key[5] == 'F', &bold);
+
+	// set/reset bold attribute to get light foreground
+	// colors (on some terminals, e.g. "linux")
+	if (bold == TRUE)
+	{
+	    HL_TABLE()[idx].sg_cterm |= HL_BOLD;
+	    HL_TABLE()[idx].sg_cterm_bold = TRUE;
+	}
+	else if (bold == FALSE)
+	    HL_TABLE()[idx].sg_cterm &= ~HL_BOLD;
     }
+
+    // Add one to the argument, to avoid zero.  Zero is used for
+    // "NONE", then "color" is -1.
+    if (key[5] == 'F')
+	highlight_set_ctermfg(idx, color, is_normal_group);
+    else if (key[5] == 'B')
+	highlight_set_ctermbg(idx, color, is_normal_group);
+    else // ctermul
+	highlight_set_ctermul(idx, color, is_normal_group);
 
     return TRUE;
 }
@@ -1142,51 +1162,51 @@ highlight_set_guifg(
     char_u	**namep;
     int		did_change = FALSE;
 
+    if (init && (HL_TABLE()[idx].sg_set & SG_GUI))
+	return FALSE;
+
     namep = &HL_TABLE()[idx].sg_gui_fg_name;
-    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
-    {
-	if (!init)
-	    HL_TABLE()[idx].sg_set |= SG_GUI;
+    if (!init)
+	HL_TABLE()[idx].sg_set |= SG_GUI;
 
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-	// In GUI guifg colors are only used when recognized
-	i = color_name2handle(arg);
-	if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
-	{
-	    HL_TABLE()[idx].sg_gui_fg = i;
+    // In GUI guifg colors are only used when recognized
+    i = color_name2handle(arg);
+    if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
+    {
+	HL_TABLE()[idx].sg_gui_fg = i;
 # endif
-	    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-	    {
-		vim_free(*namep);
-		if (STRCMP(arg, "NONE") != 0)
-		    *namep = vim_strsave(arg);
-		else
-		    *namep = NULL;
-		did_change = TRUE;
-	    }
+	if (*namep == NULL || STRCMP(*namep, arg) != 0)
+	{
+	    vim_free(*namep);
+	    if (STRCMP(arg, "NONE") != 0)
+		*namep = vim_strsave(arg);
+	    else
+		*namep = NULL;
+	    did_change = TRUE;
+	}
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 #  ifdef FEAT_GUI_X11
-	    if (is_menu_group && gui.menu_fg_pixel != i)
-	    {
-		gui.menu_fg_pixel = i;
-		*do_colors = TRUE;
-	    }
-	    if (is_scrollbar_group && gui.scroll_fg_pixel != i)
-	    {
-		gui.scroll_fg_pixel = i;
-		*do_colors = TRUE;
-	    }
+	if (is_menu_group && gui.menu_fg_pixel != i)
+	{
+	    gui.menu_fg_pixel = i;
+	    *do_colors = TRUE;
+	}
+	if (is_scrollbar_group && gui.scroll_fg_pixel != i)
+	{
+	    gui.scroll_fg_pixel = i;
+	    *do_colors = TRUE;
+	}
 #   ifdef FEAT_BEVAL_GUI
-	    if (is_tooltip_group && gui.tooltip_fg_pixel != i)
-	    {
-		gui.tooltip_fg_pixel = i;
-		*do_colors = TRUE;
-	    }
+	if (is_tooltip_group && gui.tooltip_fg_pixel != i)
+	{
+	    gui.tooltip_fg_pixel = i;
+	    *do_colors = TRUE;
+	}
 #   endif
 #  endif
-	}
-# endif
     }
+# endif
 
     return did_change;
 }
@@ -1211,51 +1231,51 @@ highlight_set_guibg(
     char_u	**namep;
     int		did_change = FALSE;
 
+    if (init && (HL_TABLE()[idx].sg_set & SG_GUI))
+	return FALSE;
+
     namep = &HL_TABLE()[idx].sg_gui_bg_name;
-    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
-    {
-	if (!init)
-	    HL_TABLE()[idx].sg_set |= SG_GUI;
+    if (!init)
+	HL_TABLE()[idx].sg_set |= SG_GUI;
 
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-	// In GUI guibg colors are only used when recognized
-	i = color_name2handle(arg);
-	if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
-	{
-	    HL_TABLE()[idx].sg_gui_bg = i;
+    // In GUI guibg colors are only used when recognized
+    i = color_name2handle(arg);
+    if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
+    {
+	HL_TABLE()[idx].sg_gui_bg = i;
 # endif
-	    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-	    {
-		vim_free(*namep);
-		if (STRCMP(arg, "NONE") != 0)
-		    *namep = vim_strsave(arg);
-		else
-		    *namep = NULL;
-		did_change = TRUE;
-	    }
+	if (*namep == NULL || STRCMP(*namep, arg) != 0)
+	{
+	    vim_free(*namep);
+	    if (STRCMP(arg, "NONE") != 0)
+		*namep = vim_strsave(arg);
+	    else
+		*namep = NULL;
+	    did_change = TRUE;
+	}
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 #  ifdef FEAT_GUI_X11
-	    if (is_menu_group && gui.menu_bg_pixel != i)
-	    {
-		gui.menu_bg_pixel = i;
-		*do_colors = TRUE;
-	    }
-	    if (is_scrollbar_group && gui.scroll_bg_pixel != i)
-	    {
-		gui.scroll_bg_pixel = i;
-		*do_colors = TRUE;
-	    }
+	if (is_menu_group && gui.menu_bg_pixel != i)
+	{
+	    gui.menu_bg_pixel = i;
+	    *do_colors = TRUE;
+	}
+	if (is_scrollbar_group && gui.scroll_bg_pixel != i)
+	{
+	    gui.scroll_bg_pixel = i;
+	    *do_colors = TRUE;
+	}
 #   ifdef FEAT_BEVAL_GUI
-	    if (is_tooltip_group && gui.tooltip_bg_pixel != i)
-	    {
-		gui.tooltip_bg_pixel = i;
-		*do_colors = TRUE;
-	    }
+	if (is_tooltip_group && gui.tooltip_bg_pixel != i)
+	{
+	    gui.tooltip_bg_pixel = i;
+	    *do_colors = TRUE;
+	}
 #   endif
 #  endif
-	}
-# endif
     }
+# endif
 
     return did_change;
 }
@@ -1273,32 +1293,32 @@ highlight_set_guisp(int idx, char_u *arg, int init)
     int		did_change = FALSE;
     char_u	**namep;
 
+    if (init && (HL_TABLE()[idx].sg_set & SG_GUI))
+	return FALSE;
+
     namep = &HL_TABLE()[idx].sg_gui_sp_name;
-    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
-    {
-	if (!init)
-	    HL_TABLE()[idx].sg_set |= SG_GUI;
+    if (!init)
+	HL_TABLE()[idx].sg_set |= SG_GUI;
 
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-	// In GUI guisp colors are only used when recognized
-	i = color_name2handle(arg);
-	if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
+    // In GUI guisp colors are only used when recognized
+    i = color_name2handle(arg);
+    if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
+    {
+	HL_TABLE()[idx].sg_gui_sp = i;
+# endif
+	if (*namep == NULL || STRCMP(*namep, arg) != 0)
 	{
-	    HL_TABLE()[idx].sg_gui_sp = i;
-# endif
-	    if (*namep == NULL || STRCMP(*namep, arg) != 0)
-	    {
-		vim_free(*namep);
-		if (STRCMP(arg, "NONE") != 0)
-		    *namep = vim_strsave(arg);
-		else
-		    *namep = NULL;
-		did_change = TRUE;
-	    }
-# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+	    vim_free(*namep);
+	    if (STRCMP(arg, "NONE") != 0)
+		*namep = vim_strsave(arg);
+	    else
+		*namep = NULL;
+	    did_change = TRUE;
 	}
-# endif
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     }
+# endif
 
     return did_change;
 }
@@ -1995,21 +2015,20 @@ set_group_colors(
     int		idx;
 
     idx = syn_name2id(name) - 1;
-    if (idx >= 0)
-    {
-	gui_do_one_color(idx, do_menu, do_tooltip);
+    if (idx < 0)
+	return FALSE;
 
-	if (HL_TABLE()[idx].sg_gui_fg != INVALCOLOR)
-	    *fgp = HL_TABLE()[idx].sg_gui_fg;
-	else if (use_norm)
-	    *fgp = gui.def_norm_pixel;
-	if (HL_TABLE()[idx].sg_gui_bg != INVALCOLOR)
-	    *bgp = HL_TABLE()[idx].sg_gui_bg;
-	else if (use_norm)
-	    *bgp = gui.def_back_pixel;
-	return TRUE;
-    }
-    return FALSE;
+    gui_do_one_color(idx, do_menu, do_tooltip);
+
+    if (HL_TABLE()[idx].sg_gui_fg != INVALCOLOR)
+	*fgp = HL_TABLE()[idx].sg_gui_fg;
+    else if (use_norm)
+	*fgp = gui.def_norm_pixel;
+    if (HL_TABLE()[idx].sg_gui_bg != INVALCOLOR)
+	*bgp = HL_TABLE()[idx].sg_gui_bg;
+    else if (use_norm)
+	*bgp = gui.def_back_pixel;
+    return TRUE;
 }
 
 /*
@@ -2042,11 +2061,11 @@ hl_set_font_name(char_u *font_name)
     int	    id;
 
     id = syn_name2id((char_u *)"Normal");
-    if (id > 0)
-    {
-	vim_free(HL_TABLE()[id - 1].sg_font_name);
-	HL_TABLE()[id - 1].sg_font_name = vim_strsave(font_name);
-    }
+    if (id <= 0)
+	return;
+
+    vim_free(HL_TABLE()[id - 1].sg_font_name);
+    HL_TABLE()[id - 1].sg_font_name = vim_strsave(font_name);
 }
 
 /*
@@ -2059,15 +2078,15 @@ hl_set_bg_color_name(
 {
     int	    id;
 
-    if (name != NULL)
-    {
-	id = syn_name2id((char_u *)"Normal");
-	if (id > 0)
-	{
-	    vim_free(HL_TABLE()[id - 1].sg_gui_bg_name);
-	    HL_TABLE()[id - 1].sg_gui_bg_name = name;
-	}
-    }
+    if (name == NULL)
+	return;
+
+    id = syn_name2id((char_u *)"Normal");
+    if (id <= 0)
+	return;
+
+    vim_free(HL_TABLE()[id - 1].sg_gui_bg_name);
+    HL_TABLE()[id - 1].sg_gui_bg_name = name;
 }
 
 /*
@@ -2080,15 +2099,15 @@ hl_set_fg_color_name(
 {
     int	    id;
 
-    if (name != NULL)
-    {
-	id = syn_name2id((char_u *)"Normal");
-	if (id > 0)
-	{
-	    vim_free(HL_TABLE()[id - 1].sg_gui_fg_name);
-	    HL_TABLE()[id - 1].sg_gui_fg_name = name;
-	}
-    }
+    if (name == NULL)
+	return;
+
+    id = syn_name2id((char_u *)"Normal");
+    if (id <= 0)
+	return;
+
+    vim_free(HL_TABLE()[id - 1].sg_gui_fg_name);
+    HL_TABLE()[id - 1].sg_gui_fg_name = name;
 }
 
 /*
@@ -2973,40 +2992,41 @@ highlight_list_arg(
 
     if (got_int)
 	return FALSE;
-    if (type == LIST_STRING ? (sarg != NULL) : (iarg != 0))
-    {
-	ts = buf;
-	if (type == LIST_INT)
-	    sprintf((char *)buf, "%d", iarg - 1);
-	else if (type == LIST_STRING)
-	    ts = sarg;
-	else // type == LIST_ATTR
-	{
-	    buf[0] = NUL;
-	    for (i = 0; hl_attr_table[i] != 0; ++i)
-	    {
-		if (iarg & hl_attr_table[i])
-		{
-		    if (buf[0] != NUL)
-			vim_strcat(buf, (char_u *)",", MAX_ATTR_LEN);
-		    vim_strcat(buf, (char_u *)hl_name_table[i], MAX_ATTR_LEN);
-		    iarg &= ~hl_attr_table[i];	    // don't want "inverse"
-		}
-	    }
-	}
 
-	(void)syn_list_header(didh,
-			       (int)(vim_strsize(ts) + STRLEN(name) + 1), id);
-	didh = TRUE;
-	if (!got_int)
+    if (type == LIST_STRING ? (sarg == NULL) : (iarg == 0))
+	return didh;
+
+    ts = buf;
+    if (type == LIST_INT)
+	sprintf((char *)buf, "%d", iarg - 1);
+    else if (type == LIST_STRING)
+	ts = sarg;
+    else // type == LIST_ATTR
+    {
+	buf[0] = NUL;
+	for (i = 0; hl_attr_table[i] != 0; ++i)
 	{
-	    if (*name != NUL)
+	    if (iarg & hl_attr_table[i])
 	    {
-		msg_puts_attr(name, HL_ATTR(HLF_D));
-		msg_puts_attr("=", HL_ATTR(HLF_D));
+		if (buf[0] != NUL)
+		    vim_strcat(buf, (char_u *)",", MAX_ATTR_LEN);
+		vim_strcat(buf, (char_u *)hl_name_table[i], MAX_ATTR_LEN);
+		iarg &= ~hl_attr_table[i];	    // don't want "inverse"
 	    }
-	    msg_outtrans(ts);
 	}
+    }
+
+    (void)syn_list_header(didh,
+	    (int)(vim_strsize(ts) + STRLEN(name) + 1), id);
+    didh = TRUE;
+    if (!got_int)
+    {
+	if (*name != NUL)
+	{
+	    msg_puts_attr(name, HL_ATTR(HLF_D));
+	    msg_puts_attr("=", HL_ATTR(HLF_D));
+	}
+	msg_outtrans(ts);
     }
     return didh;
 }
@@ -3380,11 +3400,11 @@ syn_namen2id(char_u *linep, int len)
     int	    id = 0;
 
     name = vim_strnsave(linep, len);
-    if (name != NULL)
-    {
-	id = syn_name2id(name);
-	vim_free(name);
-    }
+    if (name == NULL)
+	return 0;
+
+    id = syn_name2id(name);
+    vim_free(name);
     return id;
 }
 
@@ -3927,40 +3947,42 @@ set_context_in_highlight_cmd(expand_T *xp, char_u *arg)
     include_link = 2;
     include_default = 1;
 
+    if (*arg == NUL)
+	return;
+
     // (part of) subcommand already typed
-    if (*arg != NUL)
+    p = skiptowhite(arg);
+    if (*p == NUL)
+	return;
+
+    // past "default" or group name
+    include_default = 0;
+    if (STRNCMP("default", arg, p - arg) == 0)
     {
+	arg = skipwhite(p);
+	xp->xp_pattern = arg;
 	p = skiptowhite(arg);
-	if (*p != NUL)			// past "default" or group name
+    }
+    if (*p == NUL)
+	return;
+
+    // past group name
+    include_link = 0;
+    if (arg[1] == 'i' && arg[0] == 'N')
+	highlight_list();
+    if (STRNCMP("link", arg, p - arg) == 0
+	    || STRNCMP("clear", arg, p - arg) == 0)
+    {
+	xp->xp_pattern = skipwhite(p);
+	p = skiptowhite(xp->xp_pattern);
+	if (*p != NUL)		// past first group name
 	{
-	    include_default = 0;
-	    if (STRNCMP("default", arg, p - arg) == 0)
-	    {
-		arg = skipwhite(p);
-		xp->xp_pattern = arg;
-		p = skiptowhite(arg);
-	    }
-	    if (*p != NUL)			// past group name
-	    {
-		include_link = 0;
-		if (arg[1] == 'i' && arg[0] == 'N')
-		    highlight_list();
-		if (STRNCMP("link", arg, p - arg) == 0
-			|| STRNCMP("clear", arg, p - arg) == 0)
-		{
-		    xp->xp_pattern = skipwhite(p);
-		    p = skiptowhite(xp->xp_pattern);
-		    if (*p != NUL)		// past first group name
-		    {
-			xp->xp_pattern = skipwhite(p);
-			p = skiptowhite(xp->xp_pattern);
-		    }
-		}
-		if (*p != NUL)			// past group name(s)
-		    xp->xp_context = EXPAND_NOTHING;
-	    }
+	    xp->xp_pattern = skipwhite(p);
+	    p = skiptowhite(xp->xp_pattern);
 	}
     }
+    if (*p != NUL)			// past group name(s)
+	xp->xp_context = EXPAND_NOTHING;
 }
 
 /*

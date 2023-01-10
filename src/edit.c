@@ -2970,12 +2970,12 @@ get_last_insert_save(void)
     if (last_insert == NULL)
 	return NULL;
     s = vim_strsave(last_insert + last_insert_skip);
-    if (s != NULL)
-    {
-	len = (int)STRLEN(s);
-	if (len > 0 && s[len - 1] == ESC)	// remove trailing ESC
-	    s[len - 1] = NUL;
-    }
+    if (s == NULL)
+	return NULL;
+
+    len = (int)STRLEN(s);
+    if (len > 0 && s[len - 1] == ESC)	// remove trailing ESC
+	s[len - 1] = NUL;
     return s;
 }
 

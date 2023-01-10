@@ -30,21 +30,21 @@ dict_alloc(void)
     dict_T *d;
 
     d = ALLOC_CLEAR_ONE(dict_T);
-    if (d != NULL)
-    {
-	// Add the dict to the list of dicts for garbage collection.
-	if (first_dict != NULL)
-	    first_dict->dv_used_prev = d;
-	d->dv_used_next = first_dict;
-	d->dv_used_prev = NULL;
-	first_dict = d;
+    if (d == NULL)
+	return NULL;
 
-	hash_init(&d->dv_hashtab);
-	d->dv_lock = 0;
-	d->dv_scope = 0;
-	d->dv_refcount = 0;
-	d->dv_copyID = 0;
-    }
+    // Add the dict to the list of dicts for garbage collection.
+    if (first_dict != NULL)
+	first_dict->dv_used_prev = d;
+    d->dv_used_next = first_dict;
+    d->dv_used_prev = NULL;
+    first_dict = d;
+
+    hash_init(&d->dv_hashtab);
+    d->dv_lock = 0;
+    d->dv_scope = 0;
+    d->dv_refcount = 0;
+    d->dv_copyID = 0;
     return d;
 }
 
@@ -228,13 +228,13 @@ dictitem_alloc(char_u *key)
     size_t len = STRLEN(key);
 
     di = alloc(offsetof(dictitem_T, di_key) + len + 1);
-    if (di != NULL)
-    {
-	mch_memmove(di->di_key, key, len + 1);
-	di->di_flags = DI_FLAGS_ALLOC;
-	di->di_tv.v_lock = 0;
-	di->di_tv.v_type = VAR_UNKNOWN;
-    }
+    if (di == NULL)
+	return NULL;
+
+    mch_memmove(di->di_key, key, len + 1);
+    di->di_flags = DI_FLAGS_ALLOC;
+    di->di_tv.v_lock = 0;
+    di->di_tv.v_type = VAR_UNKNOWN;
     return di;
 }
 
@@ -248,12 +248,12 @@ dictitem_copy(dictitem_T *org)
     size_t	len = STRLEN(org->di_key);
 
     di = alloc(offsetof(dictitem_T, di_key) + len + 1);
-    if (di != NULL)
-    {
-	mch_memmove(di->di_key, org->di_key, len + 1);
-	di->di_flags = DI_FLAGS_ALLOC;
-	copy_tv(&org->di_tv, &di->di_tv);
-    }
+    if (di == NULL)
+	return NULL;
+
+    mch_memmove(di->di_key, org->di_key, len + 1);
+    di->di_flags = DI_FLAGS_ALLOC;
+    copy_tv(&org->di_tv, &di->di_tv);
     return di;
 }
 
@@ -303,53 +303,53 @@ dict_copy(dict_T *orig, int deep, int top, int copyID)
 	return NULL;
 
     copy = dict_alloc();
-    if (copy != NULL)
+    if (copy == NULL)
+	return NULL;
+
+    if (copyID != 0)
     {
-	if (copyID != 0)
-	{
-	    orig->dv_copyID = copyID;
-	    orig->dv_copydict = copy;
-	}
-	if (orig->dv_type == NULL || top || deep)
-	    copy->dv_type = NULL;
-	else
-	    copy->dv_type = alloc_type(orig->dv_type);
+	orig->dv_copyID = copyID;
+	orig->dv_copydict = copy;
+    }
+    if (orig->dv_type == NULL || top || deep)
+	copy->dv_type = NULL;
+    else
+	copy->dv_type = alloc_type(orig->dv_type);
 
-	todo = (int)orig->dv_hashtab.ht_used;
-	for (hi = orig->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
+    todo = (int)orig->dv_hashtab.ht_used;
+    for (hi = orig->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
 	{
-	    if (!HASHITEM_EMPTY(hi))
+	    --todo;
+
+	    di = dictitem_alloc(hi->hi_key);
+	    if (di == NULL)
+		break;
+	    if (deep)
 	    {
-		--todo;
-
-		di = dictitem_alloc(hi->hi_key);
-		if (di == NULL)
-		    break;
-		if (deep)
+		if (item_copy(&HI2DI(hi)->di_tv, &di->di_tv,
+			    deep, FALSE, copyID) == FAIL)
 		{
-		    if (item_copy(&HI2DI(hi)->di_tv, &di->di_tv,
-						  deep, FALSE, copyID) == FAIL)
-		    {
-			vim_free(di);
-			break;
-		    }
-		}
-		else
-		    copy_tv(&HI2DI(hi)->di_tv, &di->di_tv);
-		if (dict_add(copy, di) == FAIL)
-		{
-		    dictitem_free(di);
+		    vim_free(di);
 		    break;
 		}
 	    }
+	    else
+		copy_tv(&HI2DI(hi)->di_tv, &di->di_tv);
+	    if (dict_add(copy, di) == FAIL)
+	    {
+		dictitem_free(di);
+		break;
+	    }
 	}
+    }
 
-	++copy->dv_refcount;
-	if (todo > 0)
-	{
-	    dict_unref(copy);
-	    copy = NULL;
-	}
+    ++copy->dv_refcount;
+    if (todo > 0)
+    {
+	dict_unref(copy);
+	copy = NULL;
     }
 
     return copy;

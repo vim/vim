@@ -733,7 +733,15 @@ compile_string(isn_T *isn, cctx_T *cctx, int str_offset)
     cctx->ctx_instr.ga_len = 0;
     cctx->ctx_instr.ga_maxlen = 0;
     cctx->ctx_instr.ga_data = NULL;
+
+    // avoid peeking a next line
+    int galen_save = cctx->ctx_ufunc->uf_lines.ga_len;
+    cctx->ctx_ufunc->uf_lines.ga_len = 0;
+
     expr_res = compile_expr0(&s, cctx);
+
+    cctx->ctx_ufunc->uf_lines.ga_len = galen_save;
+
     s = skipwhite(s);
     trailing_error = *s != NUL;
 
