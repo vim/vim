@@ -43,16 +43,31 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
     if (len == 0)
 	return FAIL;
 
-    if (len == 4 && STRNCMP(name, "this", 4) == 0
+    if (((len == 4 && STRNCMP(name, "this", 4) == 0)
+		|| (len == 5 && STRNCMP(name, "super", 5) == 0))
 	    && cctx->ctx_ufunc != NULL
 	    && (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)))
     {
+	int is_super = *name == 's';
 	if (lvar != NULL)
 	{
 	    CLEAR_POINTER(lvar);
-	    lvar->lv_name = (char_u *)"this";
+	    lvar->lv_name = (char_u *)(is_super ? "super" : "this");
 	    if (cctx->ctx_ufunc->uf_class != NULL)
+	    {
 		lvar->lv_type = &cctx->ctx_ufunc->uf_class->class_object_type;
+		if (is_super)
+		{
+		    type_T *type = get_type_ptr(cctx->ctx_type_list);
+
+		    if (type != NULL)
+		    {
+			*type = *lvar->lv_type;
+			lvar->lv_type = type;
+			type->tt_flags |= TTFLAG_SUPER;
+		    }
+		}
+	    }
 	}
 	return OK;
     }

@@ -527,7 +527,10 @@ EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 #define t_dict_string		(static_types[76])
 #define t_const_dict_string	(static_types[77])
 
-EXTERN type_T static_types[78]
+#define t_super			(static_types[78])
+#define t_const_super		(static_types[79])
+
+EXTERN type_T static_types[80]
 #ifdef DO_INIT
 = {
     // 0: t_unknown
@@ -685,6 +688,10 @@ EXTERN type_T static_types[78]
     // 76: t_dict_string
     {VAR_DICT, 0, 0, TTFLAG_STATIC, &t_string, NULL},
     {VAR_DICT, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_string, NULL},
+
+    // 78: t_super (VAR_CLASS with tt_member set to &t_bool
+    {VAR_CLASS, 0, 0, TTFLAG_STATIC, &t_bool, NULL},
+    {VAR_CLASS, 0, 0, TTFLAG_STATIC|TTFLAG_CONST, &t_bool, NULL},
 }
 #endif
 ;

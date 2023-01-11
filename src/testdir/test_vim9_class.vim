@@ -817,6 +817,27 @@ def Test_class_extends()
       endclass
   END
   v9.CheckScriptFailure(lines, 'E1354: Cannot extend SomeVar')
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.name: string
+        def ToString(): string
+          return this.name
+        enddef
+      endclass
+
+      class Child extends Base
+        this.age: number
+        def ToString(): string
+          return super.ToString() .. ': ' .. this.age
+        enddef
+      endclass
+
+      var o = Child.new('John', 42)
+      assert_equal('John: 42', o.ToString())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 

@@ -487,9 +487,21 @@ early_ret:
 
 	    if (uf != NULL)
 	    {
-		int is_new = STRNCMP(uf->uf_name, "new", 3) == 0;
+		char_u *name = uf->uf_name;
+		int is_new = STRNCMP(name, "new", 3) == 0;
 		garray_T *fgap = has_static || is_new
 					       ? &classfunctions : &objmethods;
+		// Check the name isn't used already.
+		for (int i = 0; i < fgap->ga_len; ++i)
+		{
+		    char_u *n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
+		    if (STRCMP(name, n) == 0)
+		    {
+			semsg(_(e_duplicate_function_str), name);
+			break;
+		    }
+		}
+
 		if (ga_grow(fgap, 1) == OK)
 		{
 		    if (is_new)
@@ -793,7 +805,8 @@ early_ret:
 
 	    if (nf != NULL && ga_grow(&classfunctions, 1) == OK)
 	    {
-		((ufunc_T **)classfunctions.ga_data)[classfunctions.ga_len] = nf;
+		((ufunc_T **)classfunctions.ga_data)[classfunctions.ga_len]
+									  = nf;
 		++classfunctions.ga_len;
 
 		nf->uf_flags |= FC_NEW;
@@ -808,6 +821,7 @@ early_ret:
 	    }
 	}
 
+	// Move all the functions into the created class.
 	// loop 1: class functions, loop 2: object methods
 	for (int loop = 1; loop <= 2; ++loop)
 	{
@@ -834,26 +848,52 @@ early_ret:
 	    if (*fup == NULL)
 		goto cleanup;
 
+	    mch_memmove(*fup, gap->ga_data, sizeof(ufunc_T *) * gap->ga_len);
+	    vim_free(gap->ga_data);
+	    if (loop == 1)
+		cl->class_class_function_count_child = gap->ga_len;
+	    else
+		cl->class_obj_method_count_child = gap->ga_len;
+
 	    int skipped = 0;
 	    for (int i = 0; i < parent_count; ++i)
 	    {
 		// Copy functions from the parent.  Can't use the same
 		// function, because "uf_class" is different and compilation
 		// will have a different result.
+		// Put them after the functions in the current class, object
+		// methods may be overruled, then "super.Method()" is used to
+		// find a method from the parent.
 		// Skip "new" functions. TODO: not all of them.
 		if (loop == 1 && STRNCMP(
 			    extends_cl->class_class_functions[i]->uf_name,
 								"new", 3) == 0)
 		    ++skipped;
 		else
-		    *fup[i - skipped] = copy_function((loop == 1
+		{
+		    ufunc_T *pf = (loop == 1
 					? extends_cl->class_class_functions
-					: extends_cl->class_obj_methods)[i]);
+					: extends_cl->class_obj_methods)[i];
+		    (*fup)[gap->ga_len + i - skipped] = copy_function(pf);
+
+		    // If the child class overrides a function from the parent
+		    // the signature must be equal.
+		    char_u *pname = pf->uf_name;
+		    for (int ci = 0; ci < gap->ga_len; ++ci)
+		    {
+			ufunc_T *cf = (*fup)[ci];
+			char_u *cname = cf->uf_name;
+			if (STRCMP(pname, cname) == 0)
+			{
+			    where_T where = WHERE_INIT;
+			    where.wt_func_name = (char *)pname;
+			    (void)check_type(pf->uf_func_type, cf->uf_func_type,
+								  TRUE, where);
+			}
+		    }
+		}
 	    }
 
-	    mch_memmove(*fup + parent_count - skipped, gap->ga_data,
-					      sizeof(ufunc_T *) * gap->ga_len);
-	    vim_free(gap->ga_data);
 	    *fcount -= skipped;
 
 	    // Set the class pointer on all the functions and object methods.

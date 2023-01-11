@@ -263,7 +263,21 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return FAIL;
     }
 
-    if (type->tt_type == VAR_CLASS)
+    class_T *cl = (class_T *)type->tt_member;
+    int is_super = type->tt_flags & TTFLAG_SUPER;
+    if (type == &t_super)
+    {
+	if (cctx->ctx_ufunc == NULL || cctx->ctx_ufunc->uf_class == NULL)
+	    emsg(_(e_using_super_not_in_class_function));
+	else
+	{
+	    is_super = TRUE;
+	    cl = cctx->ctx_ufunc->uf_class;
+	    // Remove &t_super from the stack.
+	    --cctx->ctx_type_stack.ga_len;
+	}
+    }
+    else if (type->tt_type == VAR_CLASS)
     {
 	garray_T *instr = &cctx->ctx_instr;
 	if (instr->ga_len > 0)
@@ -286,26 +300,28 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return FAIL;
     size_t len = name_end - name;
 
-    class_T *cl = (class_T *)type->tt_member;
     if (*name_end == '(')
     {
 	int	function_count;
+	int	child_count;
 	ufunc_T	**functions;
 
 	if (type->tt_type == VAR_CLASS)
 	{
 	    function_count = cl->class_class_function_count;
+	    child_count = cl->class_class_function_count_child;
 	    functions = cl->class_class_functions;
 	}
 	else
 	{
 	    // type->tt_type == VAR_OBJECT: method call
 	    function_count = cl->class_obj_method_count;
+	    child_count = cl->class_obj_method_count_child;
 	    functions = cl->class_obj_methods;
 	}
 
 	ufunc_T *ufunc = NULL;
-	for (int i = 0; i < function_count; ++i)
+	for (int i = is_super ? child_count : 0; i < function_count; ++i)
 	{
 	    ufunc_T *fp = functions[i];
 	    // Use a separate pointer to avoid that ASAN complains about
@@ -643,7 +659,17 @@ compile_load(
 	if (name == NULL)
 	    return FAIL;
 
-	if (vim_strchr(name, AUTOLOAD_CHAR) != NULL)
+	if (STRCMP(name, "super") == 0
+		&& cctx->ctx_ufunc != NULL
+		&& (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)) == 0)
+	{
+	    // super.SomeFunc() in a class function: push &t_super type, this
+	    // is recognized in compile_subscript().
+	    res = push_type_stack(cctx, &t_super);
+	    if (*end != '.')
+		emsg(_(e_super_must_be_followed_by_dot));
+	}
+	else if (vim_strchr(name, AUTOLOAD_CHAR) != NULL)
 	{
 	    script_autoload(name, FALSE);
 	    res = generate_LOAD(cctx, ISN_LOADAUTO, 0, name, &t_any);
