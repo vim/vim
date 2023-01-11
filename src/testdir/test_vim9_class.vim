@@ -838,6 +838,63 @@ def Test_class_extends()
       assert_equal('John: 42', o.ToString())
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class Child
+        this.age: number
+        def ToString(): number
+          return this.age
+        enddef
+        def ToString(): string
+          return this.age
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1355: Duplicate function: ToString')
+
+  lines =<< trim END
+      vim9script
+      class Child
+        this.age: number
+        def ToString(): string
+          return super .ToString() .. ': ' .. this.age
+        enddef
+      endclass
+      var o = Child.new(42)
+      echo o.ToString()
+  END
+  v9.CheckScriptFailure(lines, 'E1356:')
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.name: string
+        def ToString(): string
+          return this.name
+        enddef
+      endclass
+
+      var age = 42
+      def ToString(): string
+        return super.ToString() .. ': ' .. age
+      enddef
+      echo ToString()
+  END
+  v9.CheckScriptFailure(lines, 'E1357:')
+
+  lines =<< trim END
+      vim9script
+      class Child
+        this.age: number
+        def ToString(): string
+          return super.ToString() .. ': ' .. this.age
+        enddef
+      endclass
+      var o = Child.new(42)
+      echo o.ToString()
+  END
+  v9.CheckScriptFailure(lines, 'E1358:')
 enddef
 
 

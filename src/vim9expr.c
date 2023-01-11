@@ -268,14 +268,14 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
     if (type == &t_super)
     {
 	if (cctx->ctx_ufunc == NULL || cctx->ctx_ufunc->uf_class == NULL)
-	    emsg(_(e_using_super_not_in_class_function));
-	else
 	{
-	    is_super = TRUE;
-	    cl = cctx->ctx_ufunc->uf_class;
-	    // Remove &t_super from the stack.
-	    --cctx->ctx_type_stack.ga_len;
+	    emsg(_(e_using_super_not_in_class_function));
+	    return FAIL;
 	}
+	is_super = TRUE;
+	cl = cctx->ctx_ufunc->uf_class;
+	// Remove &t_super from the stack.
+	--cctx->ctx_type_stack.ga_len;
     }
     else if (type->tt_type == VAR_CLASS)
     {
@@ -2261,6 +2261,7 @@ compile_subscript(
 	    // class constructor: SomeClass.new()
 	    // object member: someObject.varname, this.varname
 	    // object method: someObject.SomeMethod(), this.SomeMethod()
+	    *arg = p;
 	    if (compile_class_object_index(cctx, arg, type) == FAIL)
 		return FAIL;
 	}

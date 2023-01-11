@@ -49,6 +49,20 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
 	    && (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)))
     {
 	int is_super = *name == 's';
+	if (is_super)
+	{
+	    if (name[5] != '.')
+	    {
+		emsg(_(e_super_must_be_followed_by_dot));
+		return FAIL;
+	    }
+	    if (cctx->ctx_ufunc->uf_class != NULL
+		    && cctx->ctx_ufunc->uf_class->class_extends == NULL)
+	    {
+		emsg(_(e_using_super_not_in_child_class));
+		return FAIL;
+	    }
+	}
 	if (lvar != NULL)
 	{
 	    CLEAR_POINTER(lvar);
