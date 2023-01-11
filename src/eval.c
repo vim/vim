@@ -5580,6 +5580,7 @@ set_ref_in_item_partial(
     return abort;
 }
 
+#ifdef FEAT_JOB_CHANNEL
 /*
  * Mark the job "pt" with "copyID".
  * Also see set_ref_in_item().
@@ -5591,7 +5592,6 @@ set_ref_in_item_job(
     ht_stack_T		**ht_stack,
     list_stack_T	**list_stack)
 {
-#ifdef FEAT_JOB_CHANNEL
     typval_T    dtv;
 
     if (job == NULL || job->jv_copyID == copyID)
@@ -5610,7 +5610,6 @@ set_ref_in_item_job(
 	dtv.vval.v_partial = job->jv_exit_cb.cb_partial;
 	set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
     }
-#endif
 
     return FALSE;
 }
@@ -5626,7 +5625,6 @@ set_ref_in_item_channel(
     ht_stack_T		**ht_stack,
     list_stack_T	**list_stack)
 {
-#ifdef FEAT_JOB_CHANNEL
     typval_T    dtv;
 
     if (ch == NULL || ch->ch_copyID == copyID)
@@ -5665,10 +5663,10 @@ set_ref_in_item_channel(
 	dtv.vval.v_partial = ch->ch_close_cb.cb_partial;
 	set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
     }
-#endif
 
     return FALSE;
 }
+#endif
 
 /*
  * Mark the class "cl" with "copyID".
@@ -5770,12 +5768,20 @@ set_ref_in_item(
 							ht_stack, list_stack);
 
 	case VAR_JOB:
+#ifdef FEAT_JOB_CHANNEL
 	    return set_ref_in_item_job(tv->vval.v_job, copyID,
 							 ht_stack, list_stack);
+#else
+	    break;
+#endif
 
 	case VAR_CHANNEL:
+#ifdef FEAT_JOB_CHANNEL
 	    return set_ref_in_item_channel(tv->vval.v_channel, copyID,
 							 ht_stack, list_stack);
+#else
+	    break;
+#endif
 
 	case VAR_CLASS:
 	    return set_ref_in_item_class(tv->vval.v_class, copyID,
