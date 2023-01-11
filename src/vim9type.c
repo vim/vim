@@ -874,6 +874,17 @@ check_type_maybe(
 		// check the argument count at runtime
 		ret = MAYBE;
 	}
+	else if (expected->tt_type == VAR_OBJECT)
+	{
+	    class_T *cl;
+	    for (cl = (class_T *)actual->tt_member; cl != NULL;
+							cl = cl->class_extends)
+		if ((class_T *)expected->tt_member == cl)
+		    break;
+	    if (cl == NULL)
+		ret = FAIL;
+	}
+
 	if (ret == FAIL && give_msg)
 	    type_mismatch_where(expected, actual, where);
     }
@@ -1601,13 +1612,12 @@ type_name(type_T *type, char **tofree)
     if (type == NULL)
 	return "[unknown]";
     name = vartype_name(type->tt_type);
+
     if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
     {
 	char *member_free;
 	char *member_name = type_name(type->tt_member, &member_free);
-	size_t len;
-
-	len = STRLEN(name) + STRLEN(member_name) + 3;
+	size_t len = STRLEN(name) + STRLEN(member_name) + 3;
 	*tofree = alloc(len);
 	if (*tofree != NULL)
 	{
@@ -1616,6 +1626,19 @@ type_name(type_T *type, char **tofree)
 	    return *tofree;
 	}
     }
+
+    if (type->tt_type == VAR_OBJECT || type->tt_type == VAR_CLASS)
+    {
+	char_u *class_name = ((class_T *)type->tt_member)->class_name;
+	size_t len = STRLEN(name) + STRLEN(class_name) + 3;
+	*tofree = alloc(len);
+	if (*tofree != NULL)
+	{
+	    vim_snprintf(*tofree, len, "%s<%s>", name, class_name);
+	    return *tofree;
+	}
+    }
+
     if (type->tt_type == VAR_FUNC)
     {
 	garray_T    ga;
