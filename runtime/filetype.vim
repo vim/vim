@@ -1928,6 +1928,9 @@ au BufNewFile,BufRead *.smi
 " SMITH
 au BufNewFile,BufRead *.smt,*.smith		setf smith
 
+" Smithy
+au BufNewFile,BufRead *.smithy setf smithy
+
 " Snobol4 and spitbol
 au BufNewFile,BufRead *.sno,*.spt		setf snobol4
 
