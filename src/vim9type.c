@@ -1310,7 +1310,12 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		type->tt_type = VAR_OBJECT;
 		type->tt_member = (type_T *)tv.vval.v_class;
 		clear_tv(&tv);
+
 		*arg += len;
+		// Skip over ".ClassName".
+		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
+		    ++*arg;
+
 		return type;
 	    }
 	}
