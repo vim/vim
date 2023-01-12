@@ -1835,34 +1835,31 @@ FunctionGetattro(PyObject *self, PyObject *nameobj)
     void
 python3_buffer_free(buf_T *buf)
 {
-    if (BUF_PYTHON_REF(buf) != NULL)
-    {
-	BufferObject *bp = BUF_PYTHON_REF(buf);
-	bp->buf = INVALID_BUFFER_VALUE;
-	BUF_PYTHON_REF(buf) = NULL;
-    }
+    BufferObject *bp = BUF_PYTHON_REF(buf);
+    if (bp == NULL)
+	return;
+    bp->buf = INVALID_BUFFER_VALUE;
+    BUF_PYTHON_REF(buf) = NULL;
 }
 
     void
 python3_window_free(win_T *win)
 {
-    if (WIN_PYTHON_REF(win) != NULL)
-    {
-	WindowObject *wp = WIN_PYTHON_REF(win);
-	wp->win = INVALID_WINDOW_VALUE;
-	WIN_PYTHON_REF(win) = NULL;
-    }
+    WindowObject *wp = WIN_PYTHON_REF(win);
+    if (wp == NULL)
+	return;
+    wp->win = INVALID_WINDOW_VALUE;
+    WIN_PYTHON_REF(win) = NULL;
 }
 
     void
 python3_tabpage_free(tabpage_T *tab)
 {
-    if (TAB_PYTHON_REF(tab) != NULL)
-    {
-	TabPageObject *tp = TAB_PYTHON_REF(tab);
-	tp->tab = INVALID_TABPAGE_VALUE;
-	TAB_PYTHON_REF(tab) = NULL;
-    }
+    TabPageObject *tp = TAB_PYTHON_REF(tab);
+    if (tp == NULL)
+	return;
+    tp->tab = INVALID_TABPAGE_VALUE;
+    TAB_PYTHON_REF(tab) = NULL;
 }
 
     static PyObject *
