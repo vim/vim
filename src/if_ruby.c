@@ -866,44 +866,44 @@ ex_rubydo(exarg_T *eap)
     linenr_T i;
     buf_T   *was_curbuf = curbuf;
 
-    if (ensure_ruby_initialized())
-    {
-	if (u_save(eap->line1 - 1, eap->line2 + 1) != OK)
-	    return;
-	for (i = eap->line1; i <= eap->line2; i++)
-	{
-	    VALUE line;
+    if (!ensure_ruby_initialized())
+	return;
 
-	    if (i > curbuf->b_ml.ml_line_count)
-		break;
-	    line = vim_str2rb_enc_str((char *)ml_get(i));
-	    rb_lastline_set(line);
-	    eval_enc_string_protect((char *) eap->arg, &state);
-	    if (state)
-	    {
-		error_print(state);
-		break;
-	    }
-	    if (was_curbuf != curbuf)
-		break;
-	    line = rb_lastline_get();
-	    if (!NIL_P(line))
-	    {
-		if (TYPE(line) != T_STRING)
-		{
-		    emsg(_(e_dollar_must_be_an_instance_of_string));
-		    return;
-		}
-		ml_replace(i, (char_u *) StringValuePtr(line), 1);
-		changed();
-#ifdef SYNTAX_HL
-		syn_changed(i); // recompute syntax hl. for this line
-#endif
-	    }
+    if (u_save(eap->line1 - 1, eap->line2 + 1) != OK)
+	return;
+    for (i = eap->line1; i <= eap->line2; i++)
+    {
+	VALUE line;
+
+	if (i > curbuf->b_ml.ml_line_count)
+	    break;
+	line = vim_str2rb_enc_str((char *)ml_get(i));
+	rb_lastline_set(line);
+	eval_enc_string_protect((char *) eap->arg, &state);
+	if (state)
+	{
+	    error_print(state);
+	    break;
 	}
-	check_cursor();
-	update_curbuf(UPD_NOT_VALID);
+	if (was_curbuf != curbuf)
+	    break;
+	line = rb_lastline_get();
+	if (!NIL_P(line))
+	{
+	    if (TYPE(line) != T_STRING)
+	    {
+		emsg(_(e_dollar_must_be_an_instance_of_string));
+		return;
+	    }
+	    ml_replace(i, (char_u *) StringValuePtr(line), 1);
+	    changed();
+#ifdef SYNTAX_HL
+	    syn_changed(i); // recompute syntax hl. for this line
+#endif
+	}
     }
+    check_cursor();
+    update_curbuf(UPD_NOT_VALID);
 }
 
     static VALUE
@@ -918,73 +918,74 @@ ex_rubyfile(exarg_T *eap)
 {
     int state;
 
-    if (ensure_ruby_initialized())
-    {
-	VALUE file_to_load = rb_str_new2((const char *)eap->arg);
-	rb_protect(rb_load_wrap, file_to_load, &state);
-	if (state)
-	    error_print(state);
-    }
+    if (!ensure_ruby_initialized())
+	return;
+
+    VALUE file_to_load = rb_str_new2((const char *)eap->arg);
+    rb_protect(rb_load_wrap, file_to_load, &state);
+    if (state)
+	error_print(state);
 }
 
     void
 ruby_buffer_free(buf_T *buf)
 {
-    if (buf->b_ruby_ref)
-    {
-	rb_hash_aset(objtbl, rb_obj_id((VALUE) buf->b_ruby_ref), Qnil);
-	RDATA(buf->b_ruby_ref)->data = NULL;
-    }
+    if (buf->b_ruby_ref == NULL)
+	return;
+
+    rb_hash_aset(objtbl, rb_obj_id((VALUE) buf->b_ruby_ref), Qnil);
+    RDATA(buf->b_ruby_ref)->data = NULL;
 }
 
     void
 ruby_window_free(win_T *win)
 {
-    if (win->w_ruby_ref)
-    {
-	rb_hash_aset(objtbl, rb_obj_id((VALUE) win->w_ruby_ref), Qnil);
-	RDATA(win->w_ruby_ref)->data = NULL;
-    }
+    if (win->w_ruby_ref == NULL)
+	return;
+
+    rb_hash_aset(objtbl, rb_obj_id((VALUE) win->w_ruby_ref), Qnil);
+    RDATA(win->w_ruby_ref)->data = NULL;
 }
 
     static int
 ensure_ruby_initialized(void)
 {
-    if (!ruby_initialized)
+    if (ruby_initialized)
+	return ruby_initialized;
+
+#ifdef DYNAMIC_RUBY
+    if (ruby_enabled(TRUE))
+#endif
     {
-#ifdef DYNAMIC_RUBY
-	if (ruby_enabled(TRUE))
-#endif
-	{
 #ifdef MSWIN
-	    // suggested by Ariya Mizutani
-	    int argc = 1;
-	    char *argv[] = {"gvim.exe"};
-	    char **argvp = argv;
-	    ruby_sysinit(&argc, &argvp);
+	// suggested by Ariya Mizutani
+	int argc = 1;
+	char *argv[] = {"gvim.exe"};
+	char **argvp = argv;
+	ruby_sysinit(&argc, &argvp);
 #endif
-	    {
-		ruby_init_stack(ruby_stack_start);
-		ruby_init();
-	    }
-	    {
-		int dummy_argc = 2;
-		char *dummy_argv[] = {"vim-ruby", "-e_=0"};
-		ruby_options(dummy_argc, dummy_argv);
-	    }
-	    ruby_script("vim-ruby");
-	    ruby_io_init();
-	    ruby_vim_init();
-	    ruby_initialized = 1;
-	}
-#ifdef DYNAMIC_RUBY
-	else
 	{
-	    emsg(_(e_sorry_this_command_is_disabled_the_ruby_library_could_not_be_loaded));
-	    return 0;
+	    ruby_init_stack(ruby_stack_start);
+	    ruby_init();
 	}
-#endif
+	{
+	    int dummy_argc = 2;
+	    char *dummy_argv[] = {"vim-ruby", "-e_=0"};
+	    ruby_options(dummy_argc, dummy_argv);
+	}
+	ruby_script("vim-ruby");
+	ruby_io_init();
+	ruby_vim_init();
+	ruby_initialized = 1;
     }
+#ifdef DYNAMIC_RUBY
+    else
+    {
+	emsg(_(e_sorry_this_command_is_disabled_the_ruby_library_could_not_be_loaded));
+	return 0;
+    }
+#endif
+
     return ruby_initialized;
 }
 

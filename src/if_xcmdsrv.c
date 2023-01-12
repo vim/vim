@@ -221,31 +221,32 @@ serverRegisterName(
     char_u	*p = NULL;
 
     res = DoRegisterName(dpy, name);
-    if (res < 0)
+    if (res >= 0)
+	return OK;
+
+    i = 1;
+    do
     {
-	i = 1;
-	do
+	if (res < -1 || i >= 1000)
 	{
-	    if (res < -1 || i >= 1000)
-	    {
-		msg_attr(_("Unable to register a command server name"),
-							      HL_ATTR(HLF_W));
-		return FAIL;
-	    }
-	    if (p == NULL)
-		p = alloc(STRLEN(name) + 10);
-	    if (p == NULL)
-	    {
-		res = -10;
-		continue;
-	    }
-	    sprintf((char *)p, "%s%d", name, i++);
-	    res = DoRegisterName(dpy, p);
+	    msg_attr(_("Unable to register a command server name"),
+		    HL_ATTR(HLF_W));
+	    return FAIL;
 	}
-	while (res < 0)
-	    ;
-	vim_free(p);
+	if (p == NULL)
+	    p = alloc(STRLEN(name) + 10);
+	if (p == NULL)
+	{
+	    res = -10;
+	    continue;
+	}
+	sprintf((char *)p, "%s%d", name, i++);
+	res = DoRegisterName(dpy, p);
     }
+    while (res < 0)
+	;
+    vim_free(p);
+
     return OK;
 }
 
@@ -756,17 +757,17 @@ serverSendReply(char_u *name, char_u *str)
 	return -1;
 
     length = STRLEN(p_enc) + STRLEN(str) + 14;
-    if ((property = alloc(length + 30)) != NULL)
-    {
-	sprintf((char *)property, "%cn%c-E %s%c-n %s%c-w %x",
-			    0, 0, p_enc, 0, str, 0, (unsigned int)commWindow);
-	// Add length of what "%x" resulted in.
-	length += STRLEN(property + length);
-	res = AppendPropCarefully(dpy, win, commProperty, property, length + 1);
-	vim_free(property);
-	return res;
-    }
-    return -1;
+    if ((property = alloc(length + 30)) == NULL)
+	return -1;
+
+    sprintf((char *)property, "%cn%c-E %s%c-n %s%c-w %x",
+	    0, 0, p_enc, 0, str, 0, (unsigned int)commWindow);
+    // Add length of what "%x" resulted in.
+    length += STRLEN(property + length);
+    res = AppendPropCarefully(dpy, win, commProperty, property, length + 1);
+    vim_free(property);
+
+    return res;
 }
 
     static int
