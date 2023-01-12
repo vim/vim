@@ -2504,6 +2504,10 @@ v:t_number	Value of |Number| type.  Read-only.  See: |type()|
 v:t_string	Value of |String| type.  Read-only.  See: |type()|
 					*v:t_blob* *t_blob-variable*
 v:t_blob	Value of |Blob| type.  Read-only.  See: |type()|
+					*v:t_class* *t_class-variable*
+v:t_class	Value of |class| type.  Read-only.  See: |type()|
+					*v:t_object* *t_object-variable*
+v:t_object	Value of |object| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|

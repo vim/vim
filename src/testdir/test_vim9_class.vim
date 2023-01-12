@@ -155,6 +155,11 @@ def Test_class_basic()
 
       # call an object method
       assert_equal('(2, 12)', pos.ToString())
+
+      assert_equal(v:t_class, type(TextPosition))
+      assert_equal(v:t_object, type(pos))
+      assert_equal('class<TextPosition>', typename(TextPosition))
+      assert_equal('object<TextPosition>', typename(pos))
   END
   v9.CheckScriptSuccess(lines)
 enddef
