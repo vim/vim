@@ -3122,8 +3122,12 @@ eval_variable_import(
 	return FAIL;
     if (rettv->v_type == VAR_ANY && *s == '.')
     {
+	char_u *ns = s + 1;
+	s = ns;
+	while (ASCII_ISALNUM(*s) || *s == '_')
+	    ++s;
 	int sid = rettv->vval.v_number;
-	return eval_variable(s + 1, 0, sid, rettv, NULL, 0);
+	return eval_variable(ns, (int)(s - ns), sid, rettv, NULL, 0);
     }
     return OK;
 }

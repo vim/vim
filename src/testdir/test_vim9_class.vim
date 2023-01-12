@@ -992,6 +992,10 @@ def Test_class_import()
       a = animal.Animal.new('fish', 'Eric')
       assert_equal('fish', a.kind)
       assert_equal('Eric', a.name)
+
+      var b: animal.Animal = animal.Animal.new('cat', 'Garfield')
+      assert_equal('cat', b.kind)
+      assert_equal('Garfield', b.name)
   END
   v9.CheckScriptSuccess(lines)
 enddef
