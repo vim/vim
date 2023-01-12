@@ -982,7 +982,9 @@ skip_type(char_u *start, int optional)
 
     if (optional && *p == '?')
 	++p;
-    while (ASCII_ISALNUM(*p) || *p == '_')
+
+    // Also skip over "." for imported classes: "import.ClassName".
+    while (ASCII_ISALNUM(*p) || *p == '_' || *p == '.')
 	++p;
 
     // Skip over "<type>"; this is permissive about white space.
@@ -1091,7 +1093,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
     char_u  *p = *arg;
     size_t  len;
 
-    // skip over the first word
+    // Skip over the first word.
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
     len = p - *arg;
@@ -1293,10 +1295,10 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	    break;
     }
 
-    // It can be a class or interface name.
+    // It can be a class or interface name, possibly imported.
     typval_T tv;
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable(*arg, (int)len, 0, &tv, NULL, EVAL_VAR_IMPORT) == OK)
+    if (eval_variable_import(*arg, &tv) == OK)
     {
 	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
 	{

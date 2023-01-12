@@ -3105,6 +3105,31 @@ eval_variable(
 }
 
 /*
+ * Get the value of internal variable "name", also handling "import.name".
+ * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
+ */
+    int
+eval_variable_import(
+    char_u	*name,
+    typval_T	*rettv)
+{
+    char_u  *s = name;
+    while (ASCII_ISALNUM(*s) || *s == '_')
+	++s;
+    int	    len = (int)(s - name);
+
+    if (eval_variable(name, len, 0, rettv, NULL, EVAL_VAR_IMPORT) == FAIL)
+	return FAIL;
+    if (rettv->v_type == VAR_ANY && *s == '.')
+    {
+	int sid = rettv->vval.v_number;
+	return eval_variable(s + 1, 0, sid, rettv, NULL, 0);
+    }
+    return OK;
+}
+
+
+/*
  * Check if variable "name[len]" is a local variable or an argument.
  * If so, "*eval_lavars_used" is set to TRUE.
  */

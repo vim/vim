@@ -974,5 +974,27 @@ def Test_class_extends()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_class_import()
+  var lines =<< trim END
+      vim9script
+      export class Animal
+        this.kind: string
+        this.name: string
+      endclass
+  END
+  writefile(lines, 'Xanimal.vim', 'D')
+
+  lines =<< trim END
+      vim9script
+      import './Xanimal.vim' as animal
+
+      var a: animal.Animal
+      a = animal.Animal.new('fish', 'Eric')
+      assert_equal('fish', a.kind)
+      assert_equal('Eric', a.name)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
