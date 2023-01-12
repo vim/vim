@@ -1500,6 +1500,7 @@ struct class_S
     // interfaces declared for the class
     int		class_interface_count;
     char_u	**class_interfaces;	// allocated array of names
+    class_T	**class_interfaces_cl;	// interfaces (counts as reference)
 
     // class members: "static varname"
     int		class_class_member_count;

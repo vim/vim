@@ -876,11 +876,21 @@ check_type_maybe(
 	}
 	else if (expected->tt_type == VAR_OBJECT)
 	{
+	    // check the class, base class or an implemented interface matches
 	    class_T *cl;
 	    for (cl = (class_T *)actual->tt_member; cl != NULL;
 							cl = cl->class_extends)
+	    {
 		if ((class_T *)expected->tt_member == cl)
 		    break;
+		int i;
+		for (i = cl->class_interface_count - 1; i >= 0; --i)
+		    if ((class_T *)expected->tt_member
+						 == cl->class_interfaces_cl[i])
+			break;
+		if (i >= 0)
+		    break;
+	    }
 	    if (cl == NULL)
 		ret = FAIL;
 	}

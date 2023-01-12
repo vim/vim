@@ -455,6 +455,24 @@ def Test_object_type()
       var o: One = Two.new()
   END
   v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object<One> but got object<Two>')
+
+  lines =<< trim END
+      vim9script
+
+      interface One
+        def GetMember(): number
+      endinterface
+      class Two implements One
+        this.one = 1
+        def GetMember(): number
+          return this.one
+        enddef
+      endclass
+
+      var o: One = Two.new(5)
+      assert_equal(5, o.GetMember())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_member()
