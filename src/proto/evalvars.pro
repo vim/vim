@@ -60,6 +60,7 @@ char_u *v_exception(char_u *oldval);
 char_u *v_throwpoint(char_u *oldval);
 char_u *set_cmdarg(exarg_T *eap, char_u *oldarg);
 int eval_variable(char_u *name, int len, scid_T sid, typval_T *rettv, dictitem_T **dip, int flags);
+int eval_variable_import(char_u *name, typval_T *rettv);
 void check_vars(char_u *name, int len);
 dictitem_T *find_var(char_u *name, hashtab_T **htp, int no_autoload);
 dictitem_T *find_var_also_in_script(char_u *name, hashtab_T **htp, int no_autoload);

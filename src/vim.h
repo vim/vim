@@ -2083,23 +2083,25 @@ typedef int sock_T;
 #define VV_TYPE_JOB	85
 #define VV_TYPE_CHANNEL	86
 #define VV_TYPE_BLOB	87
-#define VV_TERMRFGRESP	88
-#define VV_TERMRBGRESP	89
-#define VV_TERMU7RESP	90
-#define VV_TERMSTYLERESP 91
-#define VV_TERMBLINKRESP 92
-#define VV_EVENT	93
-#define VV_VERSIONLONG	94
-#define VV_ECHOSPACE	95
-#define VV_ARGV		96
-#define VV_COLLATE      97
-#define VV_EXITING	98
-#define VV_COLORNAMES   99
-#define VV_SIZEOFINT	100
-#define VV_SIZEOFLONG	101
-#define VV_SIZEOFPOINTER 102
-#define VV_MAXCOL	103
-#define VV_LEN		104	// number of v: vars
+#define VV_TYPE_CLASS	88
+#define VV_TYPE_OBJECT	89
+#define VV_TERMRFGRESP	90
+#define VV_TERMRBGRESP	91
+#define VV_TERMU7RESP	92
+#define VV_TERMSTYLERESP 93
+#define VV_TERMBLINKRESP 94
+#define VV_EVENT	95
+#define VV_VERSIONLONG	96
+#define VV_ECHOSPACE	97
+#define VV_ARGV		98
+#define VV_COLLATE      99
+#define VV_EXITING	100
+#define VV_COLORNAMES   101
+#define VV_SIZEOFINT	102
+#define VV_SIZEOFLONG	103
+#define VV_SIZEOFPOINTER 104
+#define VV_MAXCOL	105
+#define VV_LEN		106	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
