@@ -1,6 +1,6 @@
 version: "{build}"
 
-image: Visual Studio 2022
+image: Visual Studio 2017
 
 skip_tags: true
 
@@ -39,7 +39,7 @@ build_script:
 test_script:
   - cd src/testdir
     # Testing with MSVC gvim
-  - path C:\Python311-x64;%PATH%
+  - path C:\Python38-x64;%PATH%
   - nmake -f Make_mvc.mak VIMPROG=..\gvim
   - nmake -f Make_mvc.mak clean
     # Testing with MSVC console version
