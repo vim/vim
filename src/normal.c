@@ -3729,7 +3729,8 @@ nv_scroll(cmdarg_T *cap)
 		{
 		    (void)hasFolding(curwin->w_cursor.lnum,
 						&curwin->w_cursor.lnum, NULL);
-		    --curwin->w_cursor.lnum;
+		    if (curwin->w_cursor.lnum > curwin->w_topline)
+			--curwin->w_cursor.lnum;
 		}
 	    }
 	    else
