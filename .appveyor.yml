@@ -1,12 +1,31 @@
 version: "{build}"
 
-image: Visual Studio 2022
+image: Visual Studio 2015
 
 skip_tags: true
 
 environment:
   matrix:
     - FEATURE: HUGE
+  
+    # Alternate environments, not used right now.  2022 is a lot slower.
+    #
+    # - job_name: VS-2015
+    #   appveyor_build_worker_image: Visual Studio 2015
+    #   FEATURE: HUGE
+
+    # - job_name: VS-2017
+    #   appveyor_build_worker_image: Visual Studio 2017
+    #   FEATURE: HUGE
+
+    # - job_name: VS-2019
+    #   appveyor_build_worker_image: Visual Studio 2019
+    #   FEATURE: HUGE
+
+    # - job_name: VS-2022
+    #   appveyor_build_worker_image: Visual Studio 2022
+    #   FEATURE: HUGE
+
 # disabled
 #    - FEATURE: TINY
 #    - FEATURE: NORMAL
@@ -16,7 +35,8 @@ matrix:
   fast_finish: true
 
 before_build:
-  # Use latest compiler tools (Visual Studio 2022)
+  # - systeminfo
+  # - wmic /NameSpace:\\root\Microsoft\Windows\Storage Path MSFT_PhysicalDisk get FriendlyName,Model,AllocatedSize,UniqueId
   - setlocal ENABLEDELAYEDEXPANSION
   - call ver
   - set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -38,7 +58,7 @@ build_script:
 test_script:
   - cd src/testdir
     # Testing with MSVC gvim
-  - path C:\Python311-x64;%PATH%
+  - path C:\Python38-x64;%PATH%
   - nmake -f Make_mvc.mak VIMPROG=..\gvim
   - nmake -f Make_mvc.mak clean
     # Testing with MSVC console version
