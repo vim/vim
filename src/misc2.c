@@ -1292,10 +1292,10 @@ get_special_key_name(int c, int modifiers)
 }
 
 /*
- * Try translating a <> name at (*srcp)[] to dst[].
- * Return the number of characters added to dst[], zero for no match.
- * If there is a match, srcp is advanced to after the <> name.
- * dst[] must be big enough to hold the result (up to six characters)!
+ * Try translating a <> name at "(*srcp)[]" to "dst[]".
+ * Return the number of characters added to "dst[]", zero for no match.
+ * If there is a match, "srcp" is advanced to after the <> name.
+ * "dst[]" must be big enough to hold the result (up to six characters)!
  */
     int
 trans_special(
@@ -1352,8 +1352,9 @@ special_to_buf(int key, int modifiers, int escape_ks, char_u *dst)
 }
 
 /*
- * Try translating a <> name at (*srcp)[], return the key and modifiers.
- * srcp is advanced to after the <> name.
+ * Try translating a <> name at "(*srcp)[]", return the key and put modifiers
+ * in "modp".
+ * "srcp" is advanced to after the <> name.
  * returns 0 if there is no match.
  */
     int
@@ -1486,13 +1487,26 @@ find_special_key(
 		 */
 		key = simplify_key(key, &modifiers);
 
-		if (!(flags & FSK_KEYCODE))
+		if ((flags & FSK_KEYCODE) == 0)
 		{
 		    // don't want keycode, use single byte code
 		    if (key == K_BS)
 			key = BS;
 		    else if (key == K_DEL || key == K_KDEL)
 			key = DEL;
+		}
+		else if (key == 27
+			&& (kitty_protocol_state == KKPS_ENABLED
+			    || kitty_protocol_state == KKPS_DISABLED))
+		{
+		    // Using the Kitty key protocol, which uses K_ESC for an
+		    // Esc character.  For the simplified keys use the Esc
+		    // character and set did_simplify, then in the
+		    // non-simplified keys use K_ESC.
+		    if ((flags & FSK_SIMPLIFY) != 0)
+			*did_simplify = TRUE;
+		    else
+			key = K_ESC;
 		}
 
 		// Normal Key with modifier: Try to make a single byte code.
