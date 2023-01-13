@@ -1,24 +1,28 @@
 version: "{build}"
 
+image: Visual Studio 2015
+
 skip_tags: true
 
 environment:
   matrix:
-    - job_name: VS-2015
-      appveyor_build_worker_image: Visual Studio 2015
-      FEATURE: HUGE
+    - FEATURE: HUGE
+  
+    # - job_name: VS-2015
+    #   appveyor_build_worker_image: Visual Studio 2015
+    #   FEATURE: HUGE
 
-    - job_name: VS-2017
-      appveyor_build_worker_image: Visual Studio 2017
-      FEATURE: HUGE
+    # - job_name: VS-2017
+    #   appveyor_build_worker_image: Visual Studio 2017
+    #   FEATURE: HUGE
 
-    - job_name: VS-2019
-      appveyor_build_worker_image: Visual Studio 2019
-      FEATURE: HUGE
+    # - job_name: VS-2019
+    #   appveyor_build_worker_image: Visual Studio 2019
+    #   FEATURE: HUGE
 
-    - job_name: VS-2022
-      appveyor_build_worker_image: Visual Studio 2022
-      FEATURE: HUGE
+    # - job_name: VS-2022
+    #   appveyor_build_worker_image: Visual Studio 2022
+    #   FEATURE: HUGE
 
 # disabled
 #    - FEATURE: TINY
@@ -29,9 +33,8 @@ matrix:
   fast_finish: true
 
 before_build:
-  # Use latest compiler tools (Visual Studio 2022)
-  - systeminfo
-  - wmic /NameSpace:\\root\Microsoft\Windows\Storage Path MSFT_PhysicalDisk get FriendlyName,Model,AllocatedSize,UniqueId
+  # - systeminfo
+  # - wmic /NameSpace:\\root\Microsoft\Windows\Storage Path MSFT_PhysicalDisk get FriendlyName,Model,AllocatedSize,UniqueId
   - setlocal ENABLEDELAYEDEXPANSION
   - call ver
   - set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
