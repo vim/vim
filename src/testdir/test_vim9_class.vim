@@ -155,6 +155,11 @@ def Test_class_basic()
 
       # call an object method
       assert_equal('(2, 12)', pos.ToString())
+
+      assert_equal(v:t_class, type(TextPosition))
+      assert_equal(v:t_object, type(pos))
+      assert_equal('class<TextPosition>', typename(TextPosition))
+      assert_equal('object<TextPosition>', typename(pos))
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -417,6 +422,62 @@ def Test_class_object_compare()
     v9.CheckScriptFailure(class_lines
           + ['def Test()'] + op_lines + ['enddef', 'Test()'], 'E1153: Invalid operation for object')
   endfor
+enddef
+
+def Test_object_type()
+  var lines =<< trim END
+      vim9script
+
+      class One
+        this.one = 1
+      endclass
+      class Two
+        this.two = 2
+      endclass
+      class TwoMore extends Two
+        this.more = 9
+      endclass
+
+      var o: One = One.new()
+      var t: Two = Two.new()
+      var m: TwoMore = TwoMore.new()
+      var tm: Two = TwoMore.new()
+
+      t = m
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class One
+        this.one = 1
+      endclass
+      class Two
+        this.two = 2
+      endclass
+
+      var o: One = Two.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object<One> but got object<Two>')
+
+  lines =<< trim END
+      vim9script
+
+      interface One
+        def GetMember(): number
+      endinterface
+      class Two implements One
+        this.one = 1
+        def GetMember(): number
+          return this.one
+        enddef
+      endclass
+
+      var o: One = Two.new(5)
+      assert_equal(5, o.GetMember())
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_member()
@@ -750,7 +811,7 @@ def Test_class_used_as_type()
       var p: Point
       p = 'text'
   END
-  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object but got string')
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object<Point> but got string')
 enddef
 
 def Test_class_extends()
@@ -817,6 +878,131 @@ def Test_class_extends()
       endclass
   END
   v9.CheckScriptFailure(lines, 'E1354: Cannot extend SomeVar')
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.name: string
+        def ToString(): string
+          return this.name
+        enddef
+      endclass
+
+      class Child extends Base
+        this.age: number
+        def ToString(): string
+          return super.ToString() .. ': ' .. this.age
+        enddef
+      endclass
+
+      var o = Child.new('John', 42)
+      assert_equal('John: 42', o.ToString())
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class Child
+        this.age: number
+        def ToString(): number
+          return this.age
+        enddef
+        def ToString(): string
+          return this.age
+        enddef
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1355: Duplicate function: ToString')
+
+  lines =<< trim END
+      vim9script
+      class Child
+        this.age: number
+        def ToString(): string
+          return super .ToString() .. ': ' .. this.age
+        enddef
+      endclass
+      var o = Child.new(42)
+      echo o.ToString()
+  END
+  v9.CheckScriptFailure(lines, 'E1356:')
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.name: string
+        def ToString(): string
+          return this.name
+        enddef
+      endclass
+
+      var age = 42
+      def ToString(): string
+        return super.ToString() .. ': ' .. age
+      enddef
+      echo ToString()
+  END
+  v9.CheckScriptFailure(lines, 'E1357:')
+
+  lines =<< trim END
+      vim9script
+      class Child
+        this.age: number
+        def ToString(): string
+          return super.ToString() .. ': ' .. this.age
+        enddef
+      endclass
+      var o = Child.new(42)
+      echo o.ToString()
+  END
+  v9.CheckScriptFailure(lines, 'E1358:')
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.name: string
+        static def ToString(): string
+          return 'Base class'
+        enddef
+      endclass
+
+      class Child extends Base
+        this.age: number
+        def ToString(): string
+          return Base.ToString() .. ': ' .. this.age
+        enddef
+      endclass
+
+      var o = Child.new('John', 42)
+      assert_equal('Base class: 42', o.ToString())
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_class_import()
+  var lines =<< trim END
+      vim9script
+      export class Animal
+        this.kind: string
+        this.name: string
+      endclass
+  END
+  writefile(lines, 'Xanimal.vim', 'D')
+
+  lines =<< trim END
+      vim9script
+      import './Xanimal.vim' as animal
+
+      var a: animal.Animal
+      a = animal.Animal.new('fish', 'Eric')
+      assert_equal('fish', a.kind)
+      assert_equal('Eric', a.name)
+
+      var b: animal.Animal = animal.Animal.new('cat', 'Garfield')
+      assert_equal('cat', b.kind)
+      assert_equal('Garfield', b.name)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 

@@ -5484,6 +5484,253 @@ set_ref_in_callback(callback_T *cb, int copyID)
 }
 
 /*
+ * Mark the dict "dd" with "copyID".
+ * Also see set_ref_in_item().
+ */
+    static int
+set_ref_in_item_dict(
+    dict_T		*dd,
+    int			copyID,
+    ht_stack_T		**ht_stack,
+    list_stack_T	**list_stack)
+{
+    if (dd == NULL || dd->dv_copyID == copyID)
+	return FALSE;
+
+    // Didn't see this dict yet.
+    dd->dv_copyID = copyID;
+    if (ht_stack == NULL)
+	return set_ref_in_ht(&dd->dv_hashtab, copyID, list_stack);
+
+    ht_stack_T *newitem = ALLOC_ONE(ht_stack_T);
+    if (newitem == NULL)
+	return TRUE;
+
+    newitem->ht = &dd->dv_hashtab;
+    newitem->prev = *ht_stack;
+    *ht_stack = newitem;
+
+    return FALSE;
+}
+
+/*
+ * Mark the list "ll" with "copyID".
+ * Also see set_ref_in_item().
+ */
+    static int
+set_ref_in_item_list(
+    list_T		*ll,
+    int			copyID,
+    ht_stack_T		**ht_stack,
+    list_stack_T	**list_stack)
+{
+    if (ll == NULL || ll->lv_copyID == copyID)
+	return FALSE;
+
+    // Didn't see this list yet.
+    ll->lv_copyID = copyID;
+    if (list_stack == NULL)
+	return set_ref_in_list_items(ll, copyID, ht_stack);
+
+    list_stack_T *newitem = ALLOC_ONE(list_stack_T);
+    if (newitem == NULL)
+	return TRUE;
+
+    newitem->list = ll;
+    newitem->prev = *list_stack;
+    *list_stack = newitem;
+
+    return FALSE;
+}
+
+/*
+ * Mark the partial "pt" with "copyID".
+ * Also see set_ref_in_item().
+ */
+    static int
+set_ref_in_item_partial(
+    partial_T		*pt,
+    int			copyID,
+    ht_stack_T		**ht_stack,
+    list_stack_T	**list_stack)
+{
+    if (pt == NULL || pt->pt_copyID == copyID)
+	return FALSE;
+
+    // Didn't see this partial yet.
+    pt->pt_copyID = copyID;
+
+    int abort = set_ref_in_func(pt->pt_name, pt->pt_func, copyID);
+
+    if (pt->pt_dict != NULL)
+    {
+	typval_T dtv;
+
+	dtv.v_type = VAR_DICT;
+	dtv.vval.v_dict = pt->pt_dict;
+	set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+    }
+
+    for (int i = 0; i < pt->pt_argc; ++i)
+	abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
+		ht_stack, list_stack);
+    // pt_funcstack is handled in set_ref_in_funcstacks()
+    // pt_loopvars is handled in set_ref_in_loopvars()
+
+    return abort;
+}
+
+#ifdef FEAT_JOB_CHANNEL
+/*
+ * Mark the job "pt" with "copyID".
+ * Also see set_ref_in_item().
+ */
+    static int
+set_ref_in_item_job(
+    job_T		*job,
+    int			copyID,
+    ht_stack_T		**ht_stack,
+    list_stack_T	**list_stack)
+{
+    typval_T    dtv;
+
+    if (job == NULL || job->jv_copyID == copyID)
+	return FALSE;
+
+    job->jv_copyID = copyID;
+    if (job->jv_channel != NULL)
+    {
+	dtv.v_type = VAR_CHANNEL;
+	dtv.vval.v_channel = job->jv_channel;
+	set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+    }
+    if (job->jv_exit_cb.cb_partial != NULL)
+    {
+	dtv.v_type = VAR_PARTIAL;
+	dtv.vval.v_partial = job->jv_exit_cb.cb_partial;
+	set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+    }
+
+    return FALSE;
+}
+
+/*
+ * Mark the channel "ch" with "copyID".
+ * Also see set_ref_in_item().
+ */
+    static int
+set_ref_in_item_channel(
+    channel_T		*ch,
+    int			copyID,
+    ht_stack_T		**ht_stack,
+    list_stack_T	**list_stack)
+{
+    typval_T    dtv;
+
+    if (ch == NULL || ch->ch_copyID == copyID)
+	return FALSE;
+
+    ch->ch_copyID = copyID;
+    for (ch_part_T part = PART_SOCK; part < PART_COUNT; ++part)
+    {
+	for (jsonq_T *jq = ch->ch_part[part].ch_json_head.jq_next;
+		jq != NULL; jq = jq->jq_next)
+	    set_ref_in_item(jq->jq_value, copyID, ht_stack, list_stack);
+	for (cbq_T *cq = ch->ch_part[part].ch_cb_head.cq_next; cq != NULL;
+		cq = cq->cq_next)
+	    if (cq->cq_callback.cb_partial != NULL)
+	    {
+		dtv.v_type = VAR_PARTIAL;
+		dtv.vval.v_partial = cq->cq_callback.cb_partial;
+		set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	    }
+	if (ch->ch_part[part].ch_callback.cb_partial != NULL)
+	{
+	    dtv.v_type = VAR_PARTIAL;
+	    dtv.vval.v_partial = ch->ch_part[part].ch_callback.cb_partial;
+	    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+	}
+    }
+    if (ch->ch_callback.cb_partial != NULL)
+    {
+	dtv.v_type = VAR_PARTIAL;
+	dtv.vval.v_partial = ch->ch_callback.cb_partial;
+	set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+    }
+    if (ch->ch_close_cb.cb_partial != NULL)
+    {
+	dtv.v_type = VAR_PARTIAL;
+	dtv.vval.v_partial = ch->ch_close_cb.cb_partial;
+	set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
+    }
+
+    return FALSE;
+}
+#endif
+
+/*
+ * Mark the class "cl" with "copyID".
+ * Also see set_ref_in_item().
+ */
+    static int
+set_ref_in_item_class(
+    class_T		*cl,
+    int			copyID,
+    ht_stack_T		**ht_stack,
+    list_stack_T	**list_stack)
+{
+    int abort = FALSE;
+
+    if (cl == NULL || cl->class_copyID == copyID
+				|| (cl->class_flags & CLASS_INTERFACE) != 0)
+	return FALSE;
+
+    cl->class_copyID = copyID;
+    for (int i = 0; !abort && i < cl->class_class_member_count; ++i)
+	abort = abort || set_ref_in_item(
+		&cl->class_members_tv[i],
+		copyID, ht_stack, list_stack);
+
+    for (int i = 0; !abort && i < cl->class_class_function_count; ++i)
+	abort = abort || set_ref_in_func(NULL,
+		cl->class_class_functions[i], copyID);
+
+    for (int i = 0; !abort && i < cl->class_obj_method_count; ++i)
+	abort = abort || set_ref_in_func(NULL,
+		cl->class_obj_methods[i], copyID);
+
+    return abort;
+}
+
+/*
+ * Mark the object "cl" with "copyID".
+ * Also see set_ref_in_item().
+ */
+    static int
+set_ref_in_item_object(
+    object_T		*obj,
+    int			copyID,
+    ht_stack_T		**ht_stack,
+    list_stack_T	**list_stack)
+{
+    int abort = FALSE;
+
+    if (obj == NULL || obj->obj_copyID == copyID)
+	return FALSE;
+
+    obj->obj_copyID = copyID;
+
+    // The typval_T array is right after the object_T.
+    typval_T *mtv = (typval_T *)(obj + 1);
+    for (int i = 0; !abort
+	    && i < obj->obj_class->class_obj_member_count; ++i)
+	abort = abort || set_ref_in_item(mtv + i, copyID,
+		ht_stack, list_stack);
+
+    return abort;
+}
+
+/*
  * Mark all lists, dicts and other container types referenced through typval
  * "tv" with "copyID".
  * "list_stack" is used to add lists to be marked.  Can be NULL.
@@ -5503,62 +5750,12 @@ set_ref_in_item(
     switch (tv->v_type)
     {
 	case VAR_DICT:
-	{
-	    dict_T	*dd = tv->vval.v_dict;
-
-	    if (dd != NULL && dd->dv_copyID != copyID)
-	    {
-		// Didn't see this dict yet.
-		dd->dv_copyID = copyID;
-		if (ht_stack == NULL)
-		{
-		    abort = set_ref_in_ht(&dd->dv_hashtab, copyID, list_stack);
-		}
-		else
-		{
-		    ht_stack_T *newitem = ALLOC_ONE(ht_stack_T);
-
-		    if (newitem == NULL)
-			abort = TRUE;
-		    else
-		    {
-			newitem->ht = &dd->dv_hashtab;
-			newitem->prev = *ht_stack;
-			*ht_stack = newitem;
-		    }
-		}
-	    }
-	    break;
-	}
+	    return set_ref_in_item_dict(tv->vval.v_dict, copyID,
+							 ht_stack, list_stack);
 
 	case VAR_LIST:
-	{
-	    list_T	*ll = tv->vval.v_list;
-
-	    if (ll != NULL && ll->lv_copyID != copyID)
-	    {
-		// Didn't see this list yet.
-		ll->lv_copyID = copyID;
-		if (list_stack == NULL)
-		{
-		    abort = set_ref_in_list_items(ll, copyID, ht_stack);
-		}
-		else
-		{
-		    list_stack_T *newitem = ALLOC_ONE(list_stack_T);
-
-		    if (newitem == NULL)
-			abort = TRUE;
-		    else
-		    {
-			newitem->list = ll;
-			newitem->prev = *list_stack;
-			*list_stack = newitem;
-		    }
-		}
-	    }
-	    break;
-	}
+	    return set_ref_in_item_list(tv->vval.v_list, copyID,
+							 ht_stack, list_stack);
 
 	case VAR_FUNC:
 	{
@@ -5567,157 +5764,32 @@ set_ref_in_item(
 	}
 
 	case VAR_PARTIAL:
-	{
-	    partial_T	*pt = tv->vval.v_partial;
-	    int		i;
-
-	    if (pt != NULL && pt->pt_copyID != copyID)
-	    {
-		// Didn't see this partial yet.
-		pt->pt_copyID = copyID;
-
-		abort = set_ref_in_func(pt->pt_name, pt->pt_func, copyID);
-
-		if (pt->pt_dict != NULL)
-		{
-		    typval_T dtv;
-
-		    dtv.v_type = VAR_DICT;
-		    dtv.vval.v_dict = pt->pt_dict;
-		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-		}
-
-		for (i = 0; i < pt->pt_argc; ++i)
-		    abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
-							 ht_stack, list_stack);
-		// pt_funcstack is handled in set_ref_in_funcstacks()
-		// pt_loopvars is handled in set_ref_in_loopvars()
-	    }
-	    break;
-	}
+	    return set_ref_in_item_partial(tv->vval.v_partial, copyID,
+							ht_stack, list_stack);
 
 	case VAR_JOB:
-	{
 #ifdef FEAT_JOB_CHANNEL
-	    job_T	    *job = tv->vval.v_job;
-	    typval_T    dtv;
-
-	    if (job != NULL && job->jv_copyID != copyID)
-	    {
-		job->jv_copyID = copyID;
-		if (job->jv_channel != NULL)
-		{
-		    dtv.v_type = VAR_CHANNEL;
-		    dtv.vval.v_channel = job->jv_channel;
-		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-		}
-		if (job->jv_exit_cb.cb_partial != NULL)
-		{
-		    dtv.v_type = VAR_PARTIAL;
-		    dtv.vval.v_partial = job->jv_exit_cb.cb_partial;
-		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-		}
-	    }
-#endif
+	    return set_ref_in_item_job(tv->vval.v_job, copyID,
+							 ht_stack, list_stack);
+#else
 	    break;
-	}
+#endif
 
 	case VAR_CHANNEL:
-	{
 #ifdef FEAT_JOB_CHANNEL
-	    channel_T   *ch = tv->vval.v_channel;
-	    ch_part_T   part;
-	    typval_T    dtv;
-	    jsonq_T	*jq;
-	    cbq_T	*cq;
-
-	    if (ch != NULL && ch->ch_copyID != copyID)
-	    {
-		ch->ch_copyID = copyID;
-		for (part = PART_SOCK; part < PART_COUNT; ++part)
-		{
-		    for (jq = ch->ch_part[part].ch_json_head.jq_next;
-						  jq != NULL; jq = jq->jq_next)
-			set_ref_in_item(jq->jq_value, copyID,
+	    return set_ref_in_item_channel(tv->vval.v_channel, copyID,
 							 ht_stack, list_stack);
-		    for (cq = ch->ch_part[part].ch_cb_head.cq_next; cq != NULL;
-							      cq = cq->cq_next)
-			if (cq->cq_callback.cb_partial != NULL)
-			{
-			    dtv.v_type = VAR_PARTIAL;
-			    dtv.vval.v_partial = cq->cq_callback.cb_partial;
-			    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-			}
-		    if (ch->ch_part[part].ch_callback.cb_partial != NULL)
-		    {
-			dtv.v_type = VAR_PARTIAL;
-			dtv.vval.v_partial =
-				      ch->ch_part[part].ch_callback.cb_partial;
-			set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-		    }
-		}
-		if (ch->ch_callback.cb_partial != NULL)
-		{
-		    dtv.v_type = VAR_PARTIAL;
-		    dtv.vval.v_partial = ch->ch_callback.cb_partial;
-		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-		}
-		if (ch->ch_close_cb.cb_partial != NULL)
-		{
-		    dtv.v_type = VAR_PARTIAL;
-		    dtv.vval.v_partial = ch->ch_close_cb.cb_partial;
-		    set_ref_in_item(&dtv, copyID, ht_stack, list_stack);
-		}
-	    }
-#endif
+#else
 	    break;
-	}
+#endif
 
 	case VAR_CLASS:
-	    {
-		class_T *cl = tv->vval.v_class;
-		if (cl != NULL && cl->class_copyID != copyID
-				  && (cl->class_flags && CLASS_INTERFACE) == 0)
-		{
-		    cl->class_copyID = copyID;
-		    for (int i = 0; !abort
-				      && i < cl->class_class_member_count; ++i)
-			abort = abort || set_ref_in_item(
-						&cl->class_members_tv[i],
-						 copyID, ht_stack, list_stack);
-
-
-		    for (int i = 0; !abort
-				    && i < cl->class_class_function_count; ++i)
-			abort = abort || set_ref_in_func(NULL,
-					 cl->class_class_functions[i], copyID);
-
-		    for (int i = 0; !abort
-				    && i < cl->class_obj_method_count; ++i)
-			abort = abort || set_ref_in_func(NULL,
-					     cl->class_obj_methods[i], copyID);
-
-		    // Mark initializer expressions?
-		}
-		break;
-	    }
+	    return set_ref_in_item_class(tv->vval.v_class, copyID,
+							 ht_stack, list_stack);
 
 	case VAR_OBJECT:
-	    {
-		object_T *obj = tv->vval.v_object;
-		if (obj != NULL && obj->obj_copyID != copyID)
-		{
-		    obj->obj_copyID = copyID;
-
-		    // The typval_T array is right after the object_T.
-		    typval_T *mtv = (typval_T *)(obj + 1);
-		    for (int i = 0; !abort
-			    && i < obj->obj_class->class_obj_member_count; ++i)
-			abort = abort || set_ref_in_item(mtv + i, copyID,
+	    return set_ref_in_item_object(tv->vval.v_object, copyID,
 							 ht_stack, list_stack);
-		}
-		break;
-	    }
 
 	case VAR_UNKNOWN:
 	case VAR_ANY:

@@ -1465,6 +1465,7 @@ typedef struct {
 #define TTFLAG_NUMBER_OK    0x04    // tt_type is VAR_FLOAT, VAR_NUMBER is OK
 #define TTFLAG_STATIC	    0x08    // one of the static types, e.g. t_any
 #define TTFLAG_CONST	    0x10    // cannot be changed
+#define TTFLAG_SUPER	    0x20    // object from "super".
 
 typedef enum {
     ACCESS_PRIVATE,	// read/write only inside th class
@@ -1499,6 +1500,7 @@ struct class_S
     // interfaces declared for the class
     int		class_interface_count;
     char_u	**class_interfaces;	// allocated array of names
+    class_T	**class_interfaces_cl;	// interfaces (counts as reference)
 
     // class members: "static varname"
     int		class_class_member_count;
@@ -1506,7 +1508,8 @@ struct class_S
     typval_T	*class_members_tv;	// allocated array of class member vals
 
     // class functions: "static def SomeMethod()"
-    int		class_class_function_count;
+    int		class_class_function_count;	    // total count
+    int		class_class_function_count_child;   // count without "extends"
     ufunc_T	**class_class_functions;	// allocated
 
     // object members: "this.varname"
@@ -1514,7 +1517,8 @@ struct class_S
     ocmember_T	*class_obj_members;	// allocated
 
     // object methods: "def SomeMethod()"
-    int		class_obj_method_count;
+    int		class_obj_method_count;		    // total count
+    int		class_obj_method_count_child;	    // count without "extends"
     ufunc_T	**class_obj_methods;	// allocated
 
     garray_T	class_type_list;	// used for type pointers

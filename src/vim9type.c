@@ -874,6 +874,27 @@ check_type_maybe(
 		// check the argument count at runtime
 		ret = MAYBE;
 	}
+	else if (expected->tt_type == VAR_OBJECT)
+	{
+	    // check the class, base class or an implemented interface matches
+	    class_T *cl;
+	    for (cl = (class_T *)actual->tt_member; cl != NULL;
+							cl = cl->class_extends)
+	    {
+		if ((class_T *)expected->tt_member == cl)
+		    break;
+		int i;
+		for (i = cl->class_interface_count - 1; i >= 0; --i)
+		    if ((class_T *)expected->tt_member
+						 == cl->class_interfaces_cl[i])
+			break;
+		if (i >= 0)
+		    break;
+	    }
+	    if (cl == NULL)
+		ret = FAIL;
+	}
+
 	if (ret == FAIL && give_msg)
 	    type_mismatch_where(expected, actual, where);
     }
@@ -961,7 +982,9 @@ skip_type(char_u *start, int optional)
 
     if (optional && *p == '?')
 	++p;
-    while (ASCII_ISALNUM(*p) || *p == '_')
+
+    // Also skip over "." for imported classes: "import.ClassName".
+    while (ASCII_ISALNUM(*p) || *p == '_' || *p == '.')
 	++p;
 
     // Skip over "<type>"; this is permissive about white space.
@@ -1070,7 +1093,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
     char_u  *p = *arg;
     size_t  len;
 
-    // skip over the first word
+    // Skip over the first word.
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
     len = p - *arg;
@@ -1272,10 +1295,10 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 	    break;
     }
 
-    // It can be a class or interface name.
+    // It can be a class or interface name, possibly imported.
     typval_T tv;
     tv.v_type = VAR_UNKNOWN;
-    if (eval_variable(*arg, (int)len, 0, &tv, NULL, EVAL_VAR_IMPORT) == OK)
+    if (eval_variable_import(*arg, &tv) == OK)
     {
 	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
 	{
@@ -1287,7 +1310,12 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		type->tt_type = VAR_OBJECT;
 		type->tt_member = (type_T *)tv.vval.v_class;
 		clear_tv(&tv);
+
 		*arg += len;
+		// Skip over ".ClassName".
+		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
+		    ++*arg;
+
 		return type;
 	    }
 	}
@@ -1601,13 +1629,12 @@ type_name(type_T *type, char **tofree)
     if (type == NULL)
 	return "[unknown]";
     name = vartype_name(type->tt_type);
+
     if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
     {
 	char *member_free;
 	char *member_name = type_name(type->tt_member, &member_free);
-	size_t len;
-
-	len = STRLEN(name) + STRLEN(member_name) + 3;
+	size_t len = STRLEN(name) + STRLEN(member_name) + 3;
 	*tofree = alloc(len);
 	if (*tofree != NULL)
 	{
@@ -1616,6 +1643,19 @@ type_name(type_T *type, char **tofree)
 	    return *tofree;
 	}
     }
+
+    if (type->tt_type == VAR_OBJECT || type->tt_type == VAR_CLASS)
+    {
+	char_u *class_name = ((class_T *)type->tt_member)->class_name;
+	size_t len = STRLEN(name) + STRLEN(class_name) + 3;
+	*tofree = alloc(len);
+	if (*tofree != NULL)
+	{
+	    vim_snprintf(*tofree, len, "%s<%s>", name, class_name);
+	    return *tofree;
+	}
+    }
+
     if (type->tt_type == VAR_FUNC)
     {
 	garray_T    ga;

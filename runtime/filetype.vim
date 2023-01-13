@@ -110,9 +110,11 @@ au BufNewFile,BufRead *.a65			setf a65
 " Applescript
 au BufNewFile,BufRead *.scpt			setf applescript
 
+" Automake (must be before the *.am pattern)
+au BufNewFile,BufRead [mM]akefile.am,GNUmakefile.am	setf automake
+
 " Applix ELF
-au BufNewFile,BufRead *.am
-	\ if expand("<afile>") !~? 'Makefile.am\>' | setf elf | endif
+au BufNewFile,BufRead *.am			setf elf
 
 " ALSA configuration
 au BufNewFile,BufRead .asoundrc,*/usr/share/alsa/alsa.conf,*/etc/asound.conf setf alsaconf
@@ -186,9 +188,6 @@ au BufNewFile,BufRead *.au3			setf autoit
 
 " Autohotkey
 au BufNewFile,BufRead *.ahk			setf autohotkey
-
-" Automake
-au BufNewFile,BufRead [mM]akefile.am,GNUmakefile.am	setf automake
 
 " Autotest .at files are actually m4
 au BufNewFile,BufRead *.at			setf m4
@@ -849,6 +848,9 @@ au BufNewFile,BufRead *.htpp			setf hastepreproc
 
 " HCL
 au BufRead,BufNewFile *.hcl			setf hcl
+
+" Go checksum file (must be before *.sum Hercules)
+au BufNewFile,BufRead go.sum			setf gosum
 
 " Hercules
 au BufNewFile,BufRead *.vc,*.ev,*.sum,*.errsum	setf hercules
@@ -1897,6 +1899,9 @@ au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
 au BufNewFile,BufRead .slrnrc			setf slrnrc
 au BufNewFile,BufRead *.score			setf slrnsc
 
+" Smali
+au BufNewFile,BufRead *.smali			setf smali
+
 " Smalltalk
 au BufNewFile,BufRead *.st			setf st
 
@@ -1924,6 +1929,9 @@ au BufNewFile,BufRead *.smi
 
 " SMITH
 au BufNewFile,BufRead *.smt,*.smith		setf smith
+
+" Smithy
+au BufNewFile,BufRead *.smithy			setf smithy
 
 " Snobol4 and spitbol
 au BufNewFile,BufRead *.sno,*.spt		setf snobol4
