@@ -699,6 +699,46 @@ early_ret:
 	}
     }
 
+    if (success)
+    {
+	// Check no function argument name is used as an object/class member.
+	for (int loop = 1; loop <= 2 && success; ++loop)
+	{
+	    garray_T *gap = loop == 1 ? &classfunctions : &objmethods;
+
+	    for (int fi = 0; fi < gap->ga_len && success; ++fi)
+	    {
+		ufunc_T *uf = ((ufunc_T **)gap->ga_data)[fi];
+
+		for (int i = 0; i < uf->uf_args.ga_len && success; ++i)
+		{
+		    char_u *aname = ((char_u **)uf->uf_args.ga_data)[i];
+		    for (int il = 1; il <= 2 && success; ++il)
+		    {
+			// For a "new()" function "this.member" arguments are
+			// OK.  TODO: check for the "this." prefix.
+			if (STRNCMP(uf->uf_name, "new", 3) == NULL && il == 2)
+			    continue;
+			garray_T *mgap = il == 1 ? &classmembers : &objmembers;
+			for (int mi = 0; mi < mgap->ga_len; ++mi)
+			{
+			    char_u *mname = ((ocmember_T *)mgap->ga_data
+							       + mi)->ocm_name;
+			    if (STRCMP(aname, mname) == 0)
+			    {
+				success = FALSE;
+				semsg(_(e_argument_already_declared_in_class_str),
+									aname);
+				break;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+
     class_T *cl = NULL;
     if (success)
     {

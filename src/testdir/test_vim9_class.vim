@@ -639,8 +639,17 @@ def Test_interface_basics()
         def Method(count: number)
       endinterface
   END
-  # TODO: this should give an error for "count" shadowing
-  v9.CheckScriptSuccess(lines)
+  v9.CheckScriptFailure(lines, 'E1340: Argument already declared in the class: count')
+
+  lines =<< trim END
+      vim9script
+
+      interface Some
+        this.value: number
+        def Method(value: number)
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E1340: Argument already declared in the class: value')
 
   lines =<< trim END
       vim9script
