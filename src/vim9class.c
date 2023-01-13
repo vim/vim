@@ -717,7 +717,7 @@ early_ret:
 		    {
 			// For a "new()" function "this.member" arguments are
 			// OK.  TODO: check for the "this." prefix.
-			if (STRNCMP(uf->uf_name, "new", 3) == NULL && il == 2)
+			if (STRNCMP(uf->uf_name, "new", 3) == 0 && il == 2)
 			    continue;
 			garray_T *mgap = il == 1 ? &classmembers : &objmembers;
 			for (int mi = 0; mi < mgap->ga_len; ++mi)
