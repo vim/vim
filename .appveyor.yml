@@ -36,7 +36,6 @@ matrix:
 
 before_build:
   # - systeminfo
-  # - wmic /NameSpace:\\root\Microsoft\Windows\Storage Path MSFT_PhysicalDisk get FriendlyName,Model,AllocatedSize,UniqueId
   - setlocal ENABLEDELAYEDEXPANSION
   - call ver
   - set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -58,7 +57,7 @@ build_script:
 test_script:
   - cd src/testdir
     # Testing with MSVC gvim
-  - path C:\Python38-x64;%PATH%
+  - path C:\Python11-x64;%PATH%
   - nmake -f Make_mvc.mak VIMPROG=..\gvim
   - nmake -f Make_mvc.mak clean
     # Testing with MSVC console version
