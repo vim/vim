@@ -1498,6 +1498,7 @@ find_special_key(
 			key = DEL;
 		}
 		else if (key == 27
+			&& (flags & FSK_FROM_PART) != 0
 			&& (kitty_protocol_state == KKPS_ENABLED
 			    || kitty_protocol_state == KKPS_DISABLED))
 		{
@@ -1506,7 +1507,10 @@ find_special_key(
 		    // character and set did_simplify, then in the
 		    // non-simplified keys use K_ESC.
 		    if ((flags & FSK_SIMPLIFY) != 0)
-			*did_simplify = TRUE;
+		    {
+			if (did_simplify != NULL)
+			    *did_simplify = TRUE;
+		    }
 		    else
 			key = K_ESC;
 		}
