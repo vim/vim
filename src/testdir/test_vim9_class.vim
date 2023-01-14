@@ -1014,5 +1014,40 @@ def Test_class_import()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_abstract_class()
+  var lines =<< trim END
+      vim9script
+      abstract class Base
+        this.name: string
+      endclass
+      class Person extends Base
+        this.age: number
+      endclass
+      var p: Base = Person.new('Peter', 42)
+      assert_equal('Peter', p.name)
+      assert_equal(42, p.age)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      abstract class Base
+        this.name: string
+      endclass
+      class Person extends Base
+        this.age: number
+      endclass
+      var p = Base.new('Peter')
+  END
+  v9.CheckScriptFailure(lines, 'E1325: Method not found on class "Base": new(')
+
+  lines =<< trim END
+      abstract class Base
+        this.name: string
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1316:')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
