@@ -422,21 +422,21 @@ error:
     static void
 ml_set_mfp_crypt(buf_T *buf)
 {
-    if (*buf->b_p_key != NUL)
-    {
-	int method_nr = crypt_get_method_nr(buf);
+    if (*buf->b_p_key == NUL)
+	return;
 
-	if (method_nr > CRYPT_M_ZIP && method_nr < CRYPT_M_SOD)
-	{
-	    // Generate a seed and store it in the memfile.
-	    sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
-	}
-#ifdef FEAT_SODIUM
-	else if (method_nr == CRYPT_M_SOD)
-	    crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
-							    MF_SEED_LEN);
- #endif
+    int method_nr = crypt_get_method_nr(buf);
+
+    if (method_nr > CRYPT_M_ZIP && method_nr < CRYPT_M_SOD)
+    {
+	// Generate a seed and store it in the memfile.
+	sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
     }
+#ifdef FEAT_SODIUM
+    else if (method_nr == CRYPT_M_SOD)
+	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
+		MF_SEED_LEN);
+#endif
 }
 
 /*
@@ -2090,22 +2090,22 @@ make_percent_swname(char_u *dir, char_u *name)
     char_u *d = NULL, *s, *f;
 
     f = fix_fname(name != NULL ? name : (char_u *)"");
-    if (f != NULL)
-    {
-	s = alloc(STRLEN(f) + 1);
-	if (s != NULL)
-	{
-	    STRCPY(s, f);
-	    for (d = s; *d != NUL; MB_PTR_ADV(d))
-		if (vim_ispathsep(*d))
-		    *d = '%';
+    if (f == NULL)
+	return NULL;
 
-	    dir[STRLEN(dir) - 1] = NUL;  // remove one trailing slash
-	    d = concat_fnames(dir, s, TRUE);
-	    vim_free(s);
-	}
-	vim_free(f);
+    s = alloc(STRLEN(f) + 1);
+    if (s != NULL)
+    {
+	STRCPY(s, f);
+	for (d = s; *d != NUL; MB_PTR_ADV(d))
+	    if (vim_ispathsep(*d))
+		*d = '%';
+
+	dir[STRLEN(dir) - 1] = NUL;  // remove one trailing slash
+	d = concat_fnames(dir, s, TRUE);
+	vim_free(s);
     }
+    vim_free(f);
     return d;
 }
 #endif
@@ -5473,24 +5473,24 @@ ml_decrypt_data(
     int		text_len;
     cryptstate_T *state;
 
-    if (dp->db_id == DATA_ID)
-    {
-	head_end = (char_u *)(&dp->db_index[dp->db_line_count]);
-	text_start = (char_u *)dp + dp->db_txt_start;
-	text_len = dp->db_txt_end - dp->db_txt_start;
+    if (dp->db_id != DATA_ID)
+	return;
 
-	if (head_end > text_start || dp->db_txt_start > size
-						     || dp->db_txt_end > size)
-	    return;  // data was messed up
+    head_end = (char_u *)(&dp->db_index[dp->db_line_count]);
+    text_start = (char_u *)dp + dp->db_txt_start;
+    text_len = dp->db_txt_end - dp->db_txt_start;
 
-	state = ml_crypt_prepare(mfp, offset, TRUE);
-	if (state != NULL)
-	{
-	    // Decrypt the text in place.
-	    crypt_decode_inplace(state, text_start, text_len, FALSE);
-	    crypt_free_state(state);
-	}
-    }
+    if (head_end > text_start || dp->db_txt_start > size
+	    || dp->db_txt_end > size)
+	return;  // data was messed up
+
+    state = ml_crypt_prepare(mfp, offset, TRUE);
+    if (state == NULL)
+	return;
+
+    // Decrypt the text in place.
+    crypt_decode_inplace(state, text_start, text_len, FALSE);
+    crypt_free_state(state);
 }
 
 /*
