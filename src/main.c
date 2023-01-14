@@ -3108,8 +3108,8 @@ exe_pre_commands(mparm_T *parmp)
 # ifdef FEAT_EVAL
 	current_sctx.sc_sid = SID_CMDARG;
 # endif
-    for (i = 0; i < cnt; ++i)
-	do_cmdline_cmd(cmds[i]);
+	for (i = 0; i < cnt; ++i)
+	    do_cmdline_cmd(cmds[i]);
     ESTACK_CHECK_NOW
 	estack_pop();
 # ifdef FEAT_EVAL
