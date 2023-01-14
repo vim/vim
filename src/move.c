@@ -244,15 +244,15 @@ skipcol_from_plines(win_T *wp, int plines_off)
     static void
 reset_skipcol(void)
 {
-    if (curwin->w_skipcol != 0)
-    {
-	curwin->w_skipcol = 0;
+    if (curwin->w_skipcol == 0)
+	return;
 
-	// Should use the least expensive way that displays all that changed.
-	// UPD_NOT_VALID is too expensive, UPD_REDRAW_TOP does not redraw
-	// enough when the top line gets another screen line.
-	redraw_later(UPD_SOME_VALID);
-    }
+    curwin->w_skipcol = 0;
+
+    // Should use the least expensive way that displays all that changed.
+    // UPD_NOT_VALID is too expensive, UPD_REDRAW_TOP does not redraw
+    // enough when the top line gets another screen line.
+    redraw_later(UPD_SOME_VALID);
 }
 
 /*
@@ -980,17 +980,18 @@ validate_virtcol(void)
 validate_virtcol_win(win_T *wp)
 {
     check_cursor_moved(wp);
-    if (!(wp->w_valid & VALID_VIRTCOL))
-    {
+
+    if (wp->w_valid & VALID_VIRTCOL)
+	return;
+
 #ifdef FEAT_PROP_POPUP
-	wp->w_virtcol_first_char = 0;
+    wp->w_virtcol_first_char = 0;
 #endif
-	getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
+    getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
 #ifdef FEAT_SYN_HL
-	redraw_for_cursorcolumn(wp);
+    redraw_for_cursorcolumn(wp);
 #endif
-	wp->w_valid |= VALID_VIRTCOL;
-    }
+    wp->w_valid |= VALID_VIRTCOL;
 }
 
 /*
@@ -1000,20 +1001,21 @@ validate_virtcol_win(win_T *wp)
 validate_cheight(void)
 {
     check_cursor_moved(curwin);
-    if (!(curwin->w_valid & VALID_CHEIGHT))
-    {
+
+    if (curwin->w_valid & VALID_CHEIGHT)
+	return;
+
 #ifdef FEAT_DIFF
-	if (curwin->w_cursor.lnum == curwin->w_topline)
-	    curwin->w_cline_height = plines_nofill(curwin->w_cursor.lnum)
-							  + curwin->w_topfill;
-	else
+    if (curwin->w_cursor.lnum == curwin->w_topline)
+	curwin->w_cline_height = plines_nofill(curwin->w_cursor.lnum)
+	    + curwin->w_topfill;
+    else
 #endif
-	    curwin->w_cline_height = plines(curwin->w_cursor.lnum);
+	curwin->w_cline_height = plines(curwin->w_cursor.lnum);
 #ifdef FEAT_FOLDING
-	curwin->w_cline_folded = hasFolding(curwin->w_cursor.lnum, NULL, NULL);
+    curwin->w_cline_folded = hasFolding(curwin->w_cursor.lnum, NULL, NULL);
 #endif
-	curwin->w_valid |= VALID_CHEIGHT;
-    }
+    curwin->w_valid |= VALID_CHEIGHT;
 }
 
 /*
@@ -1027,30 +1029,31 @@ validate_cursor_col(void)
     int     width;
 
     validate_virtcol();
-    if (!(curwin->w_valid & VALID_WCOL))
-    {
-	col = curwin->w_virtcol;
-	off = curwin_col_off();
-	col += off;
-	width = curwin->w_width - off + curwin_col_off2();
 
-	// long line wrapping, adjust curwin->w_wrow
-	if (curwin->w_p_wrap
-		&& col >= (colnr_T)curwin->w_width
-		&& width > 0)
-	    // use same formula as what is used in curs_columns()
-	    col -= ((col - curwin->w_width) / width + 1) * width;
-	if (col > (int)curwin->w_leftcol)
-	    col -= curwin->w_leftcol;
-	else
-	    col = 0;
-	curwin->w_wcol = col;
+    if (curwin->w_valid & VALID_WCOL)
+	return;
 
-	curwin->w_valid |= VALID_WCOL;
+    col = curwin->w_virtcol;
+    off = curwin_col_off();
+    col += off;
+    width = curwin->w_width - off + curwin_col_off2();
+
+    // long line wrapping, adjust curwin->w_wrow
+    if (curwin->w_p_wrap
+	    && col >= (colnr_T)curwin->w_width
+	    && width > 0)
+	// use same formula as what is used in curs_columns()
+	col -= ((col - curwin->w_width) / width + 1) * width;
+    if (col > (int)curwin->w_leftcol)
+	col -= curwin->w_leftcol;
+    else
+	col = 0;
+    curwin->w_wcol = col;
+
+    curwin->w_valid |= VALID_WCOL;
 #ifdef FEAT_PROP_POPUP
-	curwin->w_flags &= ~WFLAG_WCOL_OFF_ADDED;
+    curwin->w_flags &= ~WFLAG_WCOL_OFF_ADDED;
 #endif
-    }
 }
 
 /*
@@ -1999,22 +2002,22 @@ check_topfill(
 {
     int		n;
 
-    if (wp->w_topfill > 0)
+    if (wp->w_topfill <= 0)
+	return;
+
+    n = plines_win_nofill(wp, wp->w_topline, TRUE);
+    if (wp->w_topfill + n > wp->w_height)
     {
-	n = plines_win_nofill(wp, wp->w_topline, TRUE);
-	if (wp->w_topfill + n > wp->w_height)
+	if (down && wp->w_topline > 1)
 	{
-	    if (down && wp->w_topline > 1)
-	    {
-		--wp->w_topline;
+	    --wp->w_topline;
+	    wp->w_topfill = 0;
+	}
+	else
+	{
+	    wp->w_topfill = wp->w_height - n;
+	    if (wp->w_topfill < 0)
 		wp->w_topfill = 0;
-	    }
-	    else
-	    {
-		wp->w_topfill = wp->w_height - n;
-		if (wp->w_topfill < 0)
-		    wp->w_topfill = 0;
-	    }
 	}
     }
 }

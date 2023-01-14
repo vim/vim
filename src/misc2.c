@@ -1130,25 +1130,27 @@ simplify_key(int key, int *modifiers)
     int	    key0;
     int	    key1;
 
-    if (*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT))
+    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT)))
+	return key;
+
+    // TAB is a special case
+    if (key == TAB && (*modifiers & MOD_MASK_SHIFT))
     {
-	// TAB is a special case
-	if (key == TAB && (*modifiers & MOD_MASK_SHIFT))
+	*modifiers &= ~MOD_MASK_SHIFT;
+	return K_S_TAB;
+    }
+    key0 = KEY2TERMCAP0(key);
+    key1 = KEY2TERMCAP1(key);
+    for (i = 0; modifier_keys_table[i] != NUL; i += MOD_KEYS_ENTRY_SIZE)
+    {
+	if (key0 == modifier_keys_table[i + 3]
+		&& key1 == modifier_keys_table[i + 4]
+		&& (*modifiers & modifier_keys_table[i]))
 	{
-	    *modifiers &= ~MOD_MASK_SHIFT;
-	    return K_S_TAB;
+	    *modifiers &= ~modifier_keys_table[i];
+	    return TERMCAP2KEY(modifier_keys_table[i + 1],
+		    modifier_keys_table[i + 2]);
 	}
-	key0 = KEY2TERMCAP0(key);
-	key1 = KEY2TERMCAP1(key);
-	for (i = 0; modifier_keys_table[i] != NUL; i += MOD_KEYS_ENTRY_SIZE)
-	    if (key0 == modifier_keys_table[i + 3]
-		    && key1 == modifier_keys_table[i + 4]
-		    && (*modifiers & modifier_keys_table[i]))
-	    {
-		*modifiers &= ~modifier_keys_table[i];
-		return TERMCAP2KEY(modifier_keys_table[i + 1],
-						   modifier_keys_table[i + 2]);
-	    }
     }
     return key;
 }
@@ -1537,22 +1539,22 @@ find_special_key(
     int
 may_adjust_key_for_ctrl(int modifiers, int key)
 {
-    if (modifiers & MOD_MASK_CTRL)
+    if (!(modifiers & MOD_MASK_CTRL))
+	return key;
+
+    if (ASCII_ISALPHA(key))
     {
-	if (ASCII_ISALPHA(key))
-	{
 #ifdef FEAT_TERMINAL
-	    check_no_reduce_keys();  // may update the no_reduce_keys flag
+	check_no_reduce_keys();  // may update the no_reduce_keys flag
 #endif
-	    return no_reduce_keys == 0 ? TOUPPER_ASC(key) : key;
-	}
-	if (key == '2')
-	    return '@';
-	if (key == '6')
-	    return '^';
-	if (key == '-')
-	    return '_';
+	return no_reduce_keys == 0 ? TOUPPER_ASC(key) : key;
     }
+    if (key == '2')
+	return '@';
+    if (key == '6')
+	return '^';
+    if (key == '-')
+	return '_';
     return key;
 }
 
@@ -2820,21 +2822,21 @@ read_string(FILE *fd, int cnt)
 
     // allocate memory
     str = alloc(cnt + 1);
-    if (str != NULL)
+    if (str == NULL)
+	return NULL;
+
+    // Read the string.  Quit when running into the EOF.
+    for (i = 0; i < cnt; ++i)
     {
-	// Read the string.  Quit when running into the EOF.
-	for (i = 0; i < cnt; ++i)
+	c = getc(fd);
+	if (c == EOF)
 	{
-	    c = getc(fd);
-	    if (c == EOF)
-	    {
-		vim_free(str);
-		return NULL;
-	    }
-	    str[i] = c;
+	    vim_free(str);
+	    return NULL;
 	}
-	str[i] = NUL;
+	str[i] = c;
     }
+    str[i] = NUL;
     return str;
 }
 

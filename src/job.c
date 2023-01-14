@@ -793,11 +793,11 @@ job_free_job(job_T *job)
     static void
 job_free(job_T *job)
 {
-    if (!in_free_unref_items)
-    {
-	job_free_contents(job);
-	job_free_job(job);
-    }
+    if (in_free_unref_items)
+	return;
+
+    job_free_contents(job);
+    job_free_job(job);
 }
 
 static job_T *jobs_to_free = NULL;
@@ -1087,28 +1087,28 @@ set_ref_in_job(int copyID)
     void
 job_unref(job_T *job)
 {
-    if (job != NULL && --job->jv_refcount <= 0)
+    if (job == NULL || --job->jv_refcount > 0)
+	return;
+
+    // Do not free the job if there is a channel where the close callback
+    // may get the job info.
+    if (job_channel_still_useful(job))
+	return;
+
+    // Do not free the job when it has not ended yet and there is a
+    // "stoponexit" flag or an exit callback.
+    if (!job_need_end_check(job))
     {
-	// Do not free the job if there is a channel where the close callback
-	// may get the job info.
-	if (!job_channel_still_useful(job))
-	{
-	    // Do not free the job when it has not ended yet and there is a
-	    // "stoponexit" flag or an exit callback.
-	    if (!job_need_end_check(job))
-	    {
-		job_free(job);
-	    }
-	    else if (job->jv_channel != NULL)
-	    {
-		// Do remove the link to the channel, otherwise it hangs
-		// around until Vim exits. See job_free() for refcount.
-		ch_log(job->jv_channel, "detaching channel from job");
-		job->jv_channel->ch_job = NULL;
-		channel_unref(job->jv_channel);
-		job->jv_channel = NULL;
-	    }
-	}
+	job_free(job);
+    }
+    else if (job->jv_channel != NULL)
+    {
+	// Do remove the link to the channel, otherwise it hangs
+	// around until Vim exits. See job_free() for refcount.
+	ch_log(job->jv_channel, "detaching channel from job");
+	job->jv_channel->ch_job = NULL;
+	channel_unref(job->jv_channel);
+	job->jv_channel = NULL;
     }
 }
 
@@ -1157,18 +1157,18 @@ job_alloc(void)
     job_T *job;
 
     job = ALLOC_CLEAR_ONE(job_T);
-    if (job != NULL)
-    {
-	job->jv_refcount = 1;
-	job->jv_stoponexit = vim_strsave((char_u *)"term");
+    if (job == NULL)
+	return NULL;
 
-	if (first_job != NULL)
-	{
-	    first_job->jv_prev = job;
-	    job->jv_next = first_job;
-	}
-	first_job = job;
+    job->jv_refcount = 1;
+    job->jv_stoponexit = vim_strsave((char_u *)"term");
+
+    if (first_job != NULL)
+    {
+	first_job->jv_prev = job;
+	job->jv_next = first_job;
     }
+    first_job = job;
     return job;
 }
 
@@ -1803,13 +1803,13 @@ f_job_getchannel(typval_T *argvars, typval_T *rettv)
 	return;
 
     job = get_job_arg(&argvars[0]);
-    if (job != NULL)
-    {
-	rettv->v_type = VAR_CHANNEL;
-	rettv->vval.v_channel = job->jv_channel;
-	if (job->jv_channel != NULL)
-	    ++job->jv_channel->ch_refcount;
-    }
+    if (job == NULL)
+	return;
+
+    rettv->v_type = VAR_CHANNEL;
+    rettv->vval.v_channel = job->jv_channel;
+    if (job->jv_channel != NULL)
+	++job->jv_channel->ch_refcount;
 }
 
 /*
@@ -1855,13 +1855,13 @@ job_info(job_T *job, dict_T *dict)
 #endif
 
     l = list_alloc();
-    if (l != NULL)
-    {
-	dict_add_list(dict, "cmd", l);
-	if (job->jv_argv != NULL)
-	    for (i = 0; job->jv_argv[i] != NULL; i++)
-		list_append_string(l, (char_u *)job->jv_argv[i], -1);
-    }
+    if (l == NULL)
+	return;
+
+    dict_add_list(dict, "cmd", l);
+    if (job->jv_argv != NULL)
+	for (i = 0; job->jv_argv[i] != NULL; i++)
+	    list_append_string(l, (char_u *)job->jv_argv[i], -1);
 }
 
 /*

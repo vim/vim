@@ -1763,12 +1763,12 @@ popup_mode_name(char_u *name, int idx)
     int		i;
 
     p = vim_strnsave(name, len + mode_chars_len);
-    if (p != NULL)
-    {
-	mch_memmove(p + 5 + mode_chars_len, p + 5, (size_t)(len - 4));
-	for (i = 0; i < mode_chars_len; ++i)
-	    p[5 + i] = menu_mode_chars[idx][i];
-    }
+    if (p == NULL)
+	return NULL;
+
+    mch_memmove(p + 5 + mode_chars_len, p + 5, (size_t)(len - 4));
+    for (i = 0; i < mode_chars_len; ++i)
+	p[5 + i] = menu_mode_chars[idx][i];
     return p;
 }
 
@@ -2008,24 +2008,24 @@ show_popupmenu(void)
 	    break;
 
     // Only show a popup when it is defined and has entries
-    if (menu != NULL && menu->children != NULL)
-    {
+    if (menu == NULL || menu->children == NULL)
+	return;
+
 # if defined(FEAT_GUI)
-	if (gui.in_use)
-	{
-	    // Update the menus now, in case the MenuPopup autocommand did
-	    // anything.
-	    gui_update_menus(0);
-	    gui_mch_show_popupmenu(menu);
-	}
+    if (gui.in_use)
+    {
+	// Update the menus now, in case the MenuPopup autocommand did
+	// anything.
+	gui_update_menus(0);
+	gui_mch_show_popupmenu(menu);
+    }
 # endif
 #  if defined(FEAT_GUI) && defined(FEAT_TERM_POPUP_MENU)
-	else
+    else
 #  endif
 #  if defined(FEAT_TERM_POPUP_MENU)
-	    pum_show_popupmenu(menu);
+	pum_show_popupmenu(menu);
 #  endif
-    }
 }
 #endif
 
@@ -2255,39 +2255,39 @@ gui_add_tearoff(char_u *tearpath, int *pri_tab, int pri_idx)
     vimmenu_T	menuarg;
 
     tbuf = alloc(5 + (unsigned int)STRLEN(tearpath));
-    if (tbuf != NULL)
-    {
-	tbuf[0] = K_SPECIAL;
-	tbuf[1] = K_SECOND(K_TEAROFF);
-	tbuf[2] = K_THIRD(K_TEAROFF);
-	STRCPY(tbuf + 3, tearpath);
-	STRCAT(tbuf + 3, "\r");
+    if (tbuf == NULL)
+	return;
 
-	STRCAT(tearpath, ".");
-	STRCAT(tearpath, TEAR_STRING);
+    tbuf[0] = K_SPECIAL;
+    tbuf[1] = K_SECOND(K_TEAROFF);
+    tbuf[2] = K_THIRD(K_TEAROFF);
+    STRCPY(tbuf + 3, tearpath);
+    STRCAT(tbuf + 3, "\r");
 
-	// Priority of tear-off is always 1
-	t = pri_tab[pri_idx + 1];
-	pri_tab[pri_idx + 1] = 1;
+    STRCAT(tearpath, ".");
+    STRCAT(tearpath, TEAR_STRING);
+
+    // Priority of tear-off is always 1
+    t = pri_tab[pri_idx + 1];
+    pri_tab[pri_idx + 1] = 1;
 
 #ifdef FEAT_TOOLBAR
-	menuarg.iconfile = NULL;
-	menuarg.iconidx = -1;
-	menuarg.icon_builtin = FALSE;
+    menuarg.iconfile = NULL;
+    menuarg.iconidx = -1;
+    menuarg.icon_builtin = FALSE;
 #endif
-	menuarg.noremap[0] = REMAP_NONE;
-	menuarg.silent[0] = TRUE;
+    menuarg.noremap[0] = REMAP_NONE;
+    menuarg.silent[0] = TRUE;
 
-	menuarg.modes = MENU_ALL_MODES;
-	add_menu_path(tearpath, &menuarg, pri_tab, tbuf, FALSE);
+    menuarg.modes = MENU_ALL_MODES;
+    add_menu_path(tearpath, &menuarg, pri_tab, tbuf, FALSE);
 
-	menuarg.modes = MENU_TIP_MODE;
-	add_menu_path(tearpath, &menuarg, pri_tab,
-		(char_u *)_("Tear off this menu"), FALSE);
+    menuarg.modes = MENU_TIP_MODE;
+    add_menu_path(tearpath, &menuarg, pri_tab,
+	    (char_u *)_("Tear off this menu"), FALSE);
 
-	pri_tab[pri_idx + 1] = t;
-	vim_free(tbuf);
-    }
+    pri_tab[pri_idx + 1] = t;
+    vim_free(tbuf);
 }
 
 /*
@@ -2789,16 +2789,16 @@ menutrans_lookup(char_u *name, int len)
     name[len] = NUL;
     dname = menu_text(name, NULL, NULL);
     name[len] = i;
-    if (dname != NULL)
-    {
-	for (i = 0; i < menutrans_ga.ga_len; ++i)
-	    if (STRICMP(dname, tp[i].from_noamp) == 0)
-	    {
-		vim_free(dname);
-		return tp[i].to;
-	    }
-	vim_free(dname);
-    }
+    if (dname == NULL)
+	return NULL;
+
+    for (i = 0; i < menutrans_ga.ga_len; ++i)
+	if (STRICMP(dname, tp[i].from_noamp) == 0)
+	{
+	    vim_free(dname);
+	    return tp[i].to;
+	}
+    vim_free(dname);
 
     return NULL;
 }
