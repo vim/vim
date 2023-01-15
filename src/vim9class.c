@@ -182,10 +182,11 @@ add_members_to_class(
     for (int i = 0; i < parent_count; ++i)
     {
 	// parent members need to be copied
-	*members[i] = parent_members[i];
-	members[i]->ocm_name = vim_strsave(members[i]->ocm_name);
-	if (members[i]->ocm_init != NULL)
-	    members[i]->ocm_init = vim_strsave(members[i]->ocm_init);
+	ocmember_T	*m = *members + i;
+	*m = parent_members[i];
+	m->ocm_name = vim_strsave(m->ocm_name);
+	if (m->ocm_init != NULL)
+	    m->ocm_init = vim_strsave(m->ocm_init);
     }
     if (gap->ga_len > 0)
 	// new members are moved

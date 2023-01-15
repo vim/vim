@@ -1081,6 +1081,26 @@ def Test_class_extends()
       var c = Child.new()
   END
   v9.CheckScriptFailure(lines, 'E1325: Method not found on class "Child": new(')
+
+  # base class with more than one object member
+  lines =<< trim END
+      vim9script
+
+      class Result
+        this.success: bool
+        this.value: any = null
+      endclass
+
+      class Success extends Result
+        def new(this.value = v:none)
+          this.success = true
+        enddef
+      endclass
+
+      var v = Success.new('asdf')
+      assert_equal("object of Success {success: true, value: 'asdf'}", string(v))
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_import()
