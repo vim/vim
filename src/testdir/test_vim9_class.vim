@@ -219,6 +219,27 @@ def Test_assignment_with_operator()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_list_of_objects()
+  var lines =<< trim END
+      vim9script
+
+      class Foo
+        def Add()
+        enddef
+      endclass
+
+      def ProcessList(fooList: list<Foo>)
+        for foo in fooList
+          foo.Add()
+        endfor
+      enddef
+
+      var l: list<Foo> = [Foo.new()]
+      ProcessList(l)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_class_default_new()
   var lines =<< trim END
       vim9script

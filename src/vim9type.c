@@ -86,7 +86,8 @@ copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
     ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2 + 1] = copy;
     ++seen_types->ga_len;
 
-    if (copy->tt_member != NULL)
+    if (copy->tt_member != NULL
+	    && copy->tt_type != VAR_OBJECT && copy->tt_type != VAR_CLASS)
 	copy->tt_member = copy_type_deep_rec(copy->tt_member,
 							 type_gap, seen_types);
 
