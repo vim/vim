@@ -200,6 +200,25 @@ def Test_class_member_initializer()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_assignment_with_operator()
+  var lines =<< trim END
+      vim9script
+
+      class Foo
+        this.x: number
+
+        def Add(n: number)
+          this.x += n
+        enddef
+      endclass
+
+      var f =  Foo.new(3)
+      f.Add(17)
+      assert_equal(20, f.x)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_class_default_new()
   var lines =<< trim END
       vim9script
@@ -518,6 +537,25 @@ def Test_class_member()
       assert_equal(12, TextPos.anybody)
       TextPos.anybody += 5
       assert_equal(17, TextPos.anybody)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # example in the help
+  lines =<< trim END
+        vim9script
+	class OtherThing
+	   this.size: number
+	   static totalSize: number
+
+	   def new(this.size)
+	      totalSize += this.size
+	   enddef
+	endclass
+        assert_equal(0, OtherThing.totalSize)
+        var to3 = OtherThing.new(3)
+        assert_equal(3, OtherThing.totalSize)
+        var to7 = OtherThing.new(7)
+        assert_equal(10, OtherThing.totalSize)
   END
   v9.CheckScriptSuccess(lines)
 
@@ -986,6 +1024,23 @@ def Test_class_extends()
       assert_equal('Base class: 42', o.ToString())
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.value = 1
+        def new(init: number)
+          this.value = number + 1
+        enddef
+      endclass
+      class Child extends Base
+        def new()
+          this.new(3)
+        enddef
+      endclass
+      var c = Child.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1325: Method not found on class "Child": new(')
 enddef
 
 def Test_class_import()

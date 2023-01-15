@@ -2044,6 +2044,21 @@ compile_load_lhs(
     int
 compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
 {
+    if (lhs->lhs_type->tt_type == VAR_OBJECT)
+    {
+	// "this.value": load "this" object and get the value at index
+	// for an object or class member get the type of the member
+	class_T *cl = (class_T *)lhs->lhs_type->tt_member;
+	type_T *type = class_member_type(cl, var_start + 5,
+					   lhs->lhs_end, &lhs->lhs_member_idx);
+	if (lhs->lhs_member_idx < 0)
+	    return FAIL;
+
+	if (generate_LOAD(cctx, ISN_LOAD, 0, NULL, lhs->lhs_type) == FAIL)
+	    return FAIL;
+	return generate_GET_OBJ_MEMBER(cctx, lhs->lhs_member_idx, type);
+    }
+
     compile_load_lhs(lhs, var_start, NULL, cctx);
 
     if (lhs->lhs_has_index)
