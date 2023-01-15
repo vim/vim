@@ -539,7 +539,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		type_T *decl_type;  // unused
 
 		internal_func_get_argcount(idx, &argcount, &min_argcount);
-		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type);
+		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type,
+								     type_gap);
 	    }
 	    else
 		ufunc = find_func(name, FALSE);
