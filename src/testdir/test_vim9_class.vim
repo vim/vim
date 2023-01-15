@@ -240,6 +240,25 @@ def Test_list_of_objects()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_expr_after_using_object()
+  var lines =<< trim END
+      vim9script
+
+      class Something
+        this.label: string = ''
+      endclass
+
+      def Foo(): Something
+        var v = Something.new()
+        echo 'in Foo(): ' .. typename(v)
+        return v
+      enddef
+
+      Foo()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_class_default_new()
   var lines =<< trim END
       vim9script
