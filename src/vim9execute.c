@@ -2108,7 +2108,7 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
     static int
 execute_storeindex(isn_T *iptr, ectx_T *ectx)
 {
-    vartype_T	dest_type = iptr->isn_arg.vartype;
+    vartype_T	dest_type = iptr->isn_arg.storeindex.si_vartype;
     typval_T	*tv;
     typval_T	*tv_idx = STACK_TV_BOT(-2);
     typval_T	*tv_dest = STACK_TV_BOT(-1);
@@ -2243,6 +2243,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    long	    idx = (long)tv_idx->vval.v_number;
 	    object_T	    *obj = tv_dest->vval.v_object;
 	    typval_T	    *otv = (typval_T *)(obj + 1);
+
+	    class_T	    *itf = iptr->isn_arg.storeindex.si_class;
+	    if (itf != NULL)
+		// convert interface member index to class member index
+		idx = object_index_from_itf_index(itf, idx, obj->obj_class);
+
 	    clear_tv(&otv[idx]);
 	    otv[idx] = *tv;
 	}
@@ -6475,7 +6481,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 
 	    case ISN_STOREINDEX:
 		smsg("%s%4d STOREINDEX %s", pfx, current,
-					  vartype_name(iptr->isn_arg.vartype));
+			    vartype_name(iptr->isn_arg.storeindex.si_vartype));
 		break;
 
 	    case ISN_STORERANGE:

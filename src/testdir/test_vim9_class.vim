@@ -876,20 +876,24 @@ def Test_class_implements_interface()
       vim9script
 
       interface Result
-        this.label: string
+        public this.label: string
         this.errpos: number
       endinterface
 
       # order of members is opposite of interface
       class Failure implements Result
         this.errpos: number = 42
-        this.label: string = 'label'
+        public this.label: string = 'label'
       endclass
 
       def Test()
         var result: Result = Failure.new()
 
         assert_equal('label', result.label)
+        assert_equal(42, result.errpos)
+
+        result.label = 'different'
+        assert_equal('different', result.label)
         assert_equal(42, result.errpos)
       enddef
 

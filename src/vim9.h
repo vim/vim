@@ -78,8 +78,8 @@ typedef enum {
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
-    ISN_STOREINDEX,	// store into list or dictionary, type isn_arg.vartype,
-			// value/index/variable on stack
+    ISN_STOREINDEX,	// store into list or dictionary, using
+			// isn_arg.storeindex; value/index/variable on stack
     ISN_STORERANGE,	// store into blob,
 			// value/index 1/index 2/variable on stack
 
@@ -486,6 +486,11 @@ typedef struct {
     class_T	*cm_class;
     int		cm_idx;
 } classmember_T;
+// arguments to ISN_STOREINDEX
+typedef struct {
+    vartype_T	si_vartype;
+    class_T	*si_class;
+} storeindex_T;
 
 /*
  * Instruction
@@ -540,6 +545,7 @@ struct isn_S {
 	echowin_T	    echowin;
 	construct_T	    construct;
 	classmember_T	    classmember;
+	storeindex_T	    storeindex;
     } isn_arg;
 };
 

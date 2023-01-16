@@ -2521,6 +2521,10 @@ delete_instr(isn_T *isn)
 	    class_unref(isn->isn_arg.classmember.cm_class);
 	    break;
 
+	case ISN_STOREINDEX:
+	    class_unref(isn->isn_arg.storeindex.si_class);
+	    break;
+
 	case ISN_TRY:
 	    vim_free(isn->isn_arg.tryref.try_ref);
 	    break;
@@ -2622,7 +2626,6 @@ delete_instr(isn_T *isn)
 	case ISN_SLICE:
 	case ISN_SOURCE:
 	case ISN_STORE:
-	case ISN_STOREINDEX:
 	case ISN_STORENR:
 	case ISN_STOREOUTER:
 	case ISN_STORE_THIS:
