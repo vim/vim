@@ -16,7 +16,7 @@ set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if exist "%VSWHERE%" (
   for /f "usebackq delims=" %%i in (
     `"%VSWHERE%" -products * -latest -property installationPath`
-    ) do (
+  ) do (
     set "VCVARSALL=%%i\VC\Auxiliary\Build\vcvarsall.bat"
   )
 )
