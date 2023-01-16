@@ -8461,26 +8461,23 @@ vtp_flag_init(void)
 vtp_init(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    if (!vtp_working)
-    {
-	CONSOLE_SCREEN_BUFFER_INFOEX csbi;
-	csbi.cbSize = sizeof(csbi);
-	GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
-	save_console_bg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_bg];
-	save_console_fg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_fg];
-	store_console_bg_rgb = save_console_bg_rgb;
-	store_console_fg_rgb = save_console_fg_rgb;
+    CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    csbi.cbSize = sizeof(csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    save_console_bg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_bg];
+    save_console_fg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_fg];
+    store_console_bg_rgb = save_console_bg_rgb;
+    store_console_fg_rgb = save_console_fg_rgb;
 
-	COLORREF bg;
-	bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
-	bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
-	default_console_color_bg = bg;
+    COLORREF bg;
+    bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
+    bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
+    default_console_color_bg = bg;
 
-	COLORREF fg;
-	fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
-	fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
-	default_console_color_fg = fg;
-    }
+    COLORREF fg;
+    fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
+    fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
+    default_console_color_fg = fg;
 # endif
     use_alternate_screen_buffer = win10_22H2_or_later && p_rs && vtp_working
 						&& !mch_getenv("VIM_TERMINAL");
@@ -8697,30 +8694,20 @@ set_console_color_rgb(void)
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
 
-    if (p_tgc || t_colors >= 256)
-    {
-	term_fg_rgb_color(fg);
-	term_bg_rgb_color(bg);
-	return;
-    }
+    fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
+    bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
-    if (!conpty_working)
-    {
-	fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
-	bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
+    csbi.cbSize = sizeof(csbi);
+    GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 
-	csbi.cbSize = sizeof(csbi);
-	GetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
-
-	csbi.cbSize = sizeof(csbi);
-	csbi.srWindow.Right += 1;
-	csbi.srWindow.Bottom += 1;
-	store_console_bg_rgb = csbi.ColorTable[g_color_index_bg];
-	store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
-	csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
-	csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
-	SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
-    }
+    csbi.cbSize = sizeof(csbi);
+    csbi.srWindow.Right += 1;
+    csbi.srWindow.Bottom += 1;
+    store_console_bg_rgb = csbi.ColorTable[g_color_index_bg];
+    store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
+    csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
+    csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
+    SetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -8797,9 +8784,6 @@ reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
 
-    if (vtp_working)
-	return;
-
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
     csbi.cbSize = sizeof(csbi);
@@ -8821,8 +8805,6 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    if (vtp_working)
-	return;
 
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
