@@ -1,4 +1,4 @@
-@echo off
+@echo on
 :: Batch file for building/testing Vim on AppVeyor
 
 setlocal ENABLEDELAYEDEXPANSION
@@ -28,6 +28,8 @@ call "%VCVARSALL%" x64
 :: ----------------------------------------------------------------------------
 :install
 
+@echo on
+
 if not exist downloads mkdir downloads
 
 :: Python 3
@@ -41,7 +43,7 @@ if not exist %PYTHON3_DIR% (
 
 goto :eof
 :: ----------------------------------------------------------------------------
-
+:build
 cd src
 
 echo "Building MSVC 64bit console Version"
@@ -83,6 +85,7 @@ goto :eof
 
 :: ----------------------------------------------------------------------------
 :test
+@echo on
 cd src/testdir
 :: Testing with MSVC gvim
 path %PYTHON3_DIR%;%PATH%
