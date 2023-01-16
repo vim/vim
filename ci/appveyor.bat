@@ -32,7 +32,6 @@ exit 1
 
 :: ----------------------------------------------------------------------------
 :install
-@echo on
 
 if not exist downloads mkdir downloads
 
@@ -44,11 +43,9 @@ if not exist %PYTHON3_DIR% (
       AssociateFiles=0 Shortcuts=0 Include_doc=0 Include_launcher=0 ^
       InstallLauncherAllUsers=0
 )
-@echo off
 goto :eof
 :: ----------------------------------------------------------------------------
 :build
-@echo on
 
 cd src
 
@@ -85,9 +82,7 @@ echo "version output MSVC console"
 .\vim --version || exit 1
 echo "version output MSVC GUI"
 type ver_msvc.txt || exit 1
-cd ..
 
-@echo off
 goto :eof
 :: ----------------------------------------------------------------------------
 :test
