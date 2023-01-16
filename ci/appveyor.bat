@@ -27,6 +27,8 @@ if not exist "%VCVARSALL%" (
 call "%VCVARSALL%" x64
 
 goto %target%
+echo Unknown build target.
+exit 1
 
 :: ----------------------------------------------------------------------------
 :install
