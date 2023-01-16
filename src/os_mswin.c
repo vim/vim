@@ -1389,6 +1389,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     DEVMODEW		*mem;
     DEVNAMES		*devname;
     int			i;
+    DWORD		err;
 
     bUserAbort = &(psettings->user_abort);
     CLEAR_FIELD(prt_dlg);
@@ -1571,8 +1572,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     return TRUE;
 
 init_fail_dlg:
-    DWORD err = CommDlgExtendedError();
-
+    err = CommDlgExtendedError();
     if (err)
     {
 	char_u *buf;
