@@ -6790,7 +6790,7 @@ visual_bell(void)
 			       coordOrigin, &dwDummy);
 
     Sleep(15);	    // wait for 15 msec
-    if (!vtp_working)
+    if (!(p_tgc || (!p_tgc && t_colors >= 256)))
 	WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 				coordOrigin, &dwDummy);
     vim_free(oldattrs);
