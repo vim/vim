@@ -8724,7 +8724,6 @@ get_default_console_color(
     guicolor_T guibg = INVALCOLOR;
     int ctermfg = 0;
     int ctermbg = 0;
-    int dummynull = 0;
 
     id = syn_name2id((char_u *)"Normal");
     if (id > 0 && p_tgc)
@@ -8733,40 +8732,21 @@ get_default_console_color(
     {
 	ctermfg = -1;
 	if (id > 0)
-	    syn_id2cterm_bg(id, &ctermfg, &dummynull);
-	if (vtp_working)
-	{
-	    cterm_normal_fg_gui_color = guifg =
-			    ctermfg != -1 ? ctermtoxterm(ctermfg) : INVALCOLOR;
-	    ctermfg = ctermfg < 0 ? 0 : ctermfg;
-	}
-	else
-	{
-	    guifg = ctermfg != -1 ? ctermtoxterm(ctermfg)
+	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
+	guifg = ctermfg != -1 ? ctermtoxterm(ctermfg)
 						    : default_console_color_fg;
-	    cterm_normal_fg_gui_color = guifg;
-	    ctermfg = ctermfg < 0 ? 0 : ctermfg;
-	}
+	cterm_normal_fg_gui_color = guifg;
+	ctermfg = ctermfg < 0 ? 0 : ctermfg;
     }
     if (guibg == INVALCOLOR)
     {
 	ctermbg = -1;
 	if (id > 0)
-	    syn_id2cterm_bg(id, &dummynull, &ctermbg);
-	if (vtp_working)
-	{
-	    cterm_normal_bg_gui_color = guibg =
-			    ctermbg != -1 ? ctermtoxterm(ctermbg) : INVALCOLOR;
-	    if (ctermbg < 0)
-		ctermbg = 0;
-	}
-	else
-	{
-	    guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
-						    : default_console_color_bg;
-	    cterm_normal_bg_gui_color = guibg;
-	    ctermbg = ctermbg < 0 ? 0 : ctermbg;
-	}
+	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
+	guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
+						: default_console_color_bg;
+	cterm_normal_bg_gui_color = guibg;
+	ctermbg = ctermbg < 0 ? 0 : ctermbg;
     }
 
     *cterm_fg = ctermfg;
