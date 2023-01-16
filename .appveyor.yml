@@ -35,13 +35,13 @@ matrix:
   fast_finish: true
 
 before_build:
-  - ci/appveyor.bat install
+  - '"%APPVEYOR_BUILD_FOLDER%\ci\appveyor.bat" install'
 
 build_script:
-  - ci/appveyor.bat build
+  - '"%APPVEYOR_BUILD_FOLDER%\ci\appveyor.bat" build'
 
 test_script:
-  - ci/appveyor.bat test
+  - '"%APPVEYOR_BUILD_FOLDER%\ci\appveyor.bat" test'
 
 artifacts:
   - path: src/vim.exe
