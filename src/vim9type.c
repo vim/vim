@@ -878,6 +878,11 @@ check_type_maybe(
 	}
 	else if (expected->tt_type == VAR_OBJECT)
 	{
+	    if (actual->tt_type == VAR_ANY)
+		return MAYBE;	// use runtime type check
+	    if (actual->tt_type != VAR_OBJECT)
+		return FAIL;	// don't use tt_member
+
 	    // check the class, base class or an implemented interface matches
 	    class_T *cl;
 	    for (cl = (class_T *)actual->tt_member; cl != NULL;

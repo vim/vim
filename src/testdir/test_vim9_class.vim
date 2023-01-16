@@ -537,6 +537,26 @@ def Test_object_type()
       assert_equal(5, o.GetMember())
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+
+      class Num
+        this.n: number = 0
+      endclass
+
+      def Ref(name: string): func(Num): Num
+        return (arg: Num): Num => {
+          return eval(name)(arg)
+        }
+      enddef
+
+      const Fn = Ref('Double')
+      var Double = (m: Num): Num => Num.new(m.n * 2)
+
+      echo Fn(Num.new(4))
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_member()
