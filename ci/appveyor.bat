@@ -27,7 +27,6 @@ call "%VCVARSALL%" x64
 
 :: ----------------------------------------------------------------------------
 :install
-
 @echo on
 
 if not exist downloads mkdir downloads
@@ -44,6 +43,8 @@ if not exist %PYTHON3_DIR% (
 goto :eof
 :: ----------------------------------------------------------------------------
 :build
+@echo on
+
 cd src
 
 echo "Building MSVC 64bit console Version"
