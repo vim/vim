@@ -67,38 +67,38 @@ clip_mch_request_selection(Clipboard_T *cbd)
     char_u	    *clip_text = NULL;
 
     cbdata = PhClipboardPasteStart(PhInputGroup(NULL));
-    if (cbdata != NULL)
+    if (cbdata == NULL)
+	return;
+
+    // Look for the vim specific clip first
+    clip_header = PhClipboardPasteType(cbdata, CLIP_TYPE_VIM);
+    if (clip_header != NULL && clip_header->data != NULL)
     {
-	// Look for the vim specific clip first
-	clip_header = PhClipboardPasteType(cbdata, CLIP_TYPE_VIM);
-	if (clip_header != NULL && clip_header->data != NULL)
+	switch(*(char *) clip_header->data)
 	{
-	    switch(*(char *) clip_header->data)
-	    {
-		default: // fallthrough to line type
-		case 'L': type = MLINE; break;
-		case 'C': type = MCHAR; break;
-		case 'B': type = MBLOCK; break;
-	    }
-	    is_type_set = TRUE;
+	    default: // fallthrough to line type
+	    case 'L': type = MLINE; break;
+	    case 'C': type = MCHAR; break;
+	    case 'B': type = MBLOCK; break;
 	}
-
-	// Try for just normal text
-	clip_header = PhClipboardPasteType(cbdata, CLIP_TYPE_TEXT);
-	if (clip_header != NULL)
-	{
-	    clip_text = clip_header->data;
-	    clip_length  = clip_header->length - 1;
-
-	    if (clip_text != NULL && is_type_set == FALSE)
-		type = MAUTO;
-	}
-
-	if ((clip_text != NULL) && (clip_length > 0))
-	    clip_yank_selection(type, clip_text, clip_length, cbd);
-
-	PhClipboardPasteFinish(cbdata);
+	is_type_set = TRUE;
     }
+
+    // Try for just normal text
+    clip_header = PhClipboardPasteType(cbdata, CLIP_TYPE_TEXT);
+    if (clip_header != NULL)
+    {
+	clip_text = clip_header->data;
+	clip_length  = clip_header->length - 1;
+
+	if (clip_text != NULL && is_type_set == FALSE)
+	    type = MAUTO;
+    }
+
+    if ((clip_text != NULL) && (clip_length > 0))
+	clip_yank_selection(type, clip_text, clip_length, cbd);
+
+    PhClipboardPasteFinish(cbdata);
 }
 
 void

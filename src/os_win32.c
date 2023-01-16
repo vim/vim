@@ -278,15 +278,15 @@ get_build_number(void)
 
     osver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
     hNtdll = GetModuleHandle("ntdll.dll");
-    if (hNtdll != NULL)
-    {
-	pRtlGetVersion =
-	    (PfnRtlGetVersion)GetProcAddress(hNtdll, "RtlGetVersion");
-	pRtlGetVersion(&osver);
-	ver = MAKE_VER(min(osver.dwMajorVersion, 255),
-		       min(osver.dwMinorVersion, 255),
-		       min(osver.dwBuildNumber, 32767));
-    }
+    if (hNtdll == NULL)
+	return ver;
+
+    pRtlGetVersion =
+	(PfnRtlGetVersion)GetProcAddress(hNtdll, "RtlGetVersion");
+    pRtlGetVersion(&osver);
+    ver = MAKE_VER(min(osver.dwMajorVersion, 255),
+	    min(osver.dwMinorVersion, 255),
+	    min(osver.dwBuildNumber, 32767));
     return ver;
 }
 
@@ -478,29 +478,29 @@ get_exe_name(void)
 	    exe_name = FullName_save((char_u *)temp, FALSE);
     }
 
-    if (exe_path == NULL && exe_name != NULL)
+    if (exe_path != NULL || exe_name == NULL)
+	return;
+
+    exe_path = vim_strnsave(exe_name, gettail_sep(exe_name) - exe_name);
+    if (exe_path == NULL)
+	return;
+
+    // Append our starting directory to $PATH, so that when doing
+    // "!xxd" it's found in our starting directory.  Needed because
+    // SearchPath() also looks there.
+    p = mch_getenv("PATH");
+    if (p == NULL
+	    || STRLEN(p) + STRLEN(exe_path) + 2 < MAX_ENV_PATH_LEN)
     {
-	exe_path = vim_strnsave(exe_name, gettail_sep(exe_name) - exe_name);
-	if (exe_path != NULL)
+	if (p == NULL || *p == NUL)
+	    temp[0] = NUL;
+	else
 	{
-	    // Append our starting directory to $PATH, so that when doing
-	    // "!xxd" it's found in our starting directory.  Needed because
-	    // SearchPath() also looks there.
-	    p = mch_getenv("PATH");
-	    if (p == NULL
-		       || STRLEN(p) + STRLEN(exe_path) + 2 < MAX_ENV_PATH_LEN)
-	    {
-		if (p == NULL || *p == NUL)
-		    temp[0] = NUL;
-		else
-		{
-		    STRCPY(temp, p);
-		    STRCAT(temp, ";");
-		}
-		STRCAT(temp, exe_path);
-		vim_setenv((char_u *)"PATH", (char_u *)temp);
-	    }
+	    STRCPY(temp, p);
+	    STRCAT(temp, ";");
 	}
+	STRCAT(temp, exe_path);
+	vim_setenv((char_u *)"PATH", (char_u *)temp);
     }
 }
 
@@ -533,27 +533,27 @@ vimLoadLib(const char *name)
 
     // No need to load any library when registering OLE.
     if (found_register_arg)
-	return dll;
+	return NULL;
 
     // NOTE: Do not use mch_dirname() and mch_chdir() here, they may call
     // vimLoadLib() recursively, which causes a stack overflow.
     if (exe_path == NULL)
 	get_exe_name();
-    if (exe_path != NULL)
-    {
-	WCHAR old_dirw[MAXPATHL];
 
-	if (GetCurrentDirectoryW(MAXPATHL, old_dirw) != 0)
-	{
-	    // Change directory to where the executable is, both to make
-	    // sure we find a .dll there and to avoid looking for a .dll
-	    // in the current directory.
-	    SetCurrentDirectory((LPCSTR)exe_path);
-	    dll = LoadLibrary(name);
-	    SetCurrentDirectoryW(old_dirw);
-	    return dll;
-	}
-    }
+    if (exe_path == NULL)
+	return NULL;
+
+    WCHAR old_dirw[MAXPATHL];
+
+    if (GetCurrentDirectoryW(MAXPATHL, old_dirw) == 0)
+	return NULL;
+
+    // Change directory to where the executable is, both to make
+    // sure we find a .dll there and to avoid looking for a .dll
+    // in the current directory.
+    SetCurrentDirectory((LPCSTR)exe_path);
+    dll = LoadLibrary(name);
+    SetCurrentDirectoryW(old_dirw);
     return dll;
 }
 
@@ -907,31 +907,31 @@ PlatformId(void)
 {
     static int done = FALSE;
 
-    if (!done)
-    {
-	OSVERSIONINFO ovi;
+    if (done)
+	return;
 
-	ovi.dwOSVersionInfoSize = sizeof(ovi);
-	GetVersionEx(&ovi);
+    OSVERSIONINFO ovi;
+
+    ovi.dwOSVersionInfoSize = sizeof(ovi);
+    GetVersionEx(&ovi);
 
 #ifdef FEAT_EVAL
-	vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
-		(int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
+    vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
+	    (int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
 #endif
-	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
-		|| ovi.dwMajorVersion > 6)
-	    win8_or_later = TRUE;
+    if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
+	    || ovi.dwMajorVersion > 6)
+	win8_or_later = TRUE;
 
-	if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19045)
-		|| ovi.dwMajorVersion > 10)
-	    win10_22H2_or_later = TRUE;
+    if ((ovi.dwMajorVersion == 10 && ovi.dwBuildNumber >= 19045)
+	    || ovi.dwMajorVersion > 10)
+	win10_22H2_or_later = TRUE;
 
 #ifdef HAVE_ACL
-	// Enable privilege for getting or setting SACLs.
-	win32_enable_privilege(SE_SECURITY_NAME, TRUE);
+    // Enable privilege for getting or setting SACLs.
+    win32_enable_privilege(SE_SECURITY_NAME, TRUE);
 #endif
-	done = TRUE;
-    }
+    done = TRUE;
 }
 #ifdef _MSC_VER
 # pragma warning(pop)
@@ -3051,40 +3051,38 @@ FitConsoleWindow(
     COORD dwWindowSize;
     BOOL NeedAdjust = FALSE;
 
-    if (GetConsoleScreenBufferInfo(g_hConOut, &csbi))
-    {
-	/*
-	 * A buffer resize will fail if the current console window does
-	 * not lie completely within that buffer.  To avoid this, we might
-	 * have to move and possibly shrink the window.
-	 */
-	if (csbi.srWindow.Right >= dwBufferSize.X)
-	{
-	    dwWindowSize.X = SRWIDTH(csbi.srWindow);
-	    if (dwWindowSize.X > dwBufferSize.X)
-		dwWindowSize.X = dwBufferSize.X;
-	    csbi.srWindow.Right = dwBufferSize.X - 1;
-	    csbi.srWindow.Left = dwBufferSize.X - dwWindowSize.X;
-	    NeedAdjust = TRUE;
-	}
-	if (csbi.srWindow.Bottom >= dwBufferSize.Y)
-	{
-	    dwWindowSize.Y = SRHEIGHT(csbi.srWindow);
-	    if (dwWindowSize.Y > dwBufferSize.Y)
-		dwWindowSize.Y = dwBufferSize.Y;
-	    csbi.srWindow.Bottom = dwBufferSize.Y - 1;
-	    csbi.srWindow.Top = dwBufferSize.Y - dwWindowSize.Y;
-	    NeedAdjust = TRUE;
-	}
-	if (NeedAdjust && WantAdjust)
-	{
-	    if (!SetConsoleWindowInfo(g_hConOut, TRUE, &csbi.srWindow))
-		return FALSE;
-	}
-	return TRUE;
-    }
+    if (!GetConsoleScreenBufferInfo(g_hConOut, &csbi))
+	return FALSE;
 
-    return FALSE;
+    /*
+     * A buffer resize will fail if the current console window does
+     * not lie completely within that buffer.  To avoid this, we might
+     * have to move and possibly shrink the window.
+     */
+    if (csbi.srWindow.Right >= dwBufferSize.X)
+    {
+	dwWindowSize.X = SRWIDTH(csbi.srWindow);
+	if (dwWindowSize.X > dwBufferSize.X)
+	    dwWindowSize.X = dwBufferSize.X;
+	csbi.srWindow.Right = dwBufferSize.X - 1;
+	csbi.srWindow.Left = dwBufferSize.X - dwWindowSize.X;
+	NeedAdjust = TRUE;
+    }
+    if (csbi.srWindow.Bottom >= dwBufferSize.Y)
+    {
+	dwWindowSize.Y = SRHEIGHT(csbi.srWindow);
+	if (dwWindowSize.Y > dwBufferSize.Y)
+	    dwWindowSize.Y = dwBufferSize.Y;
+	csbi.srWindow.Bottom = dwBufferSize.Y - 1;
+	csbi.srWindow.Top = dwBufferSize.Y - dwWindowSize.Y;
+	NeedAdjust = TRUE;
+    }
+    if (NeedAdjust && WantAdjust)
+    {
+	if (!SetConsoleWindowInfo(g_hConOut, TRUE, &csbi.srWindow))
+	    return FALSE;
+    }
+    return TRUE;
 }
 
 typedef struct ConsoleBufferStruct
@@ -3674,17 +3672,15 @@ mch_get_host_name(
     WCHAR wszHostName[256 + 1];
     DWORD wcch = ARRAY_LENGTH(wszHostName);
 
-    if (GetComputerNameW(wszHostName, &wcch))
-    {
-	char_u  *p = utf16_to_enc(wszHostName, NULL);
+    if (!GetComputerNameW(wszHostName, &wcch))
+	return;
 
-	if (p != NULL)
-	{
-	    vim_strncpy(s, p, len - 1);
-	    vim_free(p);
-	    return;
-	}
-    }
+    char_u  *p = utf16_to_enc(wszHostName, NULL);
+    if (p == NULL)
+	return;
+
+    vim_strncpy(s, p, len - 1);
+    vim_free(p);
 }
 
 
@@ -3732,32 +3728,31 @@ mch_dirname(
      * But the Win32s known bug list says that getcwd() doesn't work
      * so use the Win32 system call instead. <Negri>
      */
-    if (GetCurrentDirectoryW(_MAX_PATH, wbuf) != 0)
+    if (GetCurrentDirectoryW(_MAX_PATH, wbuf) == 0)
+	return FAIL;
+
+    WCHAR   wcbuf[_MAX_PATH + 1];
+    char_u  *p = NULL;
+
+    if (GetLongPathNameW(wbuf, wcbuf, _MAX_PATH) != 0)
     {
-	WCHAR   wcbuf[_MAX_PATH + 1];
-	char_u  *p = NULL;
-
-	if (GetLongPathNameW(wbuf, wcbuf, _MAX_PATH) != 0)
+	p = utf16_to_enc(wcbuf, NULL);
+	if (STRLEN(p) >= (size_t)len)
 	{
-	    p = utf16_to_enc(wcbuf, NULL);
-	    if (STRLEN(p) >= (size_t)len)
-	    {
-		// long path name is too long, fall back to short one
-		vim_free(p);
-		p = NULL;
-	    }
-	}
-	if (p == NULL)
-	    p = utf16_to_enc(wbuf, NULL);
-
-	if (p != NULL)
-	{
-	    vim_strncpy(buf, p, len - 1);
+	    // long path name is too long, fall back to short one
 	    vim_free(p);
-	    return OK;
+	    p = NULL;
 	}
     }
-    return FAIL;
+    if (p == NULL)
+	p = utf16_to_enc(wbuf, NULL);
+
+    if (p == NULL)
+	return FAIL;
+
+    vim_strncpy(buf, p, len - 1);
+    vim_free(p);
+    return OK;
 }
 
 /*
@@ -3974,14 +3969,14 @@ win32_fileinfo(char_u *fname, BY_HANDLE_FILE_INFORMATION *info)
 	    NULL);		// handle to template file
     vim_free(wn);
 
-    if (hFile != INVALID_HANDLE_VALUE)
-    {
-	if (GetFileInformationByHandle(hFile, info) != 0)
-	    res = FILEINFO_OK;
-	else
-	    res = FILEINFO_INFO_FAIL;
-	CloseHandle(hFile);
-    }
+    if (hFile == INVALID_HANDLE_VALUE)
+	return FILEINFO_READ_FAIL;
+
+    if (GetFileInformationByHandle(hFile, info) != 0)
+	res = FILEINFO_OK;
+    else
+	res = FILEINFO_INFO_FAIL;
+    CloseHandle(hFile);
 
     return res;
 }
@@ -6170,12 +6165,12 @@ mch_signal_job(job_T *job, char_u *how)
     void
 mch_clear_job(job_T *job)
 {
-    if (job->jv_status != JOB_FAILED)
-    {
-	if (job->jv_job_object != NULL)
-	    CloseHandle(job->jv_job_object);
-	CloseHandle(job->jv_proc_info.hProcess);
-    }
+    if (job->jv_status == JOB_FAILED)
+	return;
+
+    if (job->jv_job_object != NULL)
+	CloseHandle(job->jv_job_object);
+    CloseHandle(job->jv_proc_info.hProcess);
 }
 #endif
 
@@ -7988,32 +7983,32 @@ load_ntdll(void)
 {
     static int	loaded = -1;
 
-    if (loaded == -1)
+    if (loaded != -1)
+	return (BOOL) loaded;
+
+    HMODULE hNtdll = GetModuleHandle("ntdll.dll");
+    if (hNtdll != NULL)
     {
-	HMODULE hNtdll = GetModuleHandle("ntdll.dll");
-	if (hNtdll != NULL)
-	{
-	    pNtOpenFile = (PfnNtOpenFile) GetProcAddress(hNtdll, "NtOpenFile");
-	    pNtClose = (PfnNtClose) GetProcAddress(hNtdll, "NtClose");
-	    pNtSetEaFile = (PfnNtSetEaFile)
-		GetProcAddress(hNtdll, "NtSetEaFile");
-	    pNtQueryEaFile = (PfnNtQueryEaFile)
-		GetProcAddress(hNtdll, "NtQueryEaFile");
-	    pNtQueryInformationFile = (PfnNtQueryInformationFile)
-		GetProcAddress(hNtdll, "NtQueryInformationFile");
-	    pRtlInitUnicodeString = (PfnRtlInitUnicodeString)
-		GetProcAddress(hNtdll, "RtlInitUnicodeString");
-	}
-	if (pNtOpenFile == NULL
-		|| pNtClose == NULL
-		|| pNtSetEaFile == NULL
-		|| pNtQueryEaFile == NULL
-		|| pNtQueryInformationFile == NULL
-		|| pRtlInitUnicodeString == NULL)
-	    loaded = FALSE;
-	else
-	    loaded = TRUE;
+	pNtOpenFile = (PfnNtOpenFile) GetProcAddress(hNtdll, "NtOpenFile");
+	pNtClose = (PfnNtClose) GetProcAddress(hNtdll, "NtClose");
+	pNtSetEaFile = (PfnNtSetEaFile)
+	    GetProcAddress(hNtdll, "NtSetEaFile");
+	pNtQueryEaFile = (PfnNtQueryEaFile)
+	    GetProcAddress(hNtdll, "NtQueryEaFile");
+	pNtQueryInformationFile = (PfnNtQueryInformationFile)
+	    GetProcAddress(hNtdll, "NtQueryInformationFile");
+	pRtlInitUnicodeString = (PfnRtlInitUnicodeString)
+	    GetProcAddress(hNtdll, "RtlInitUnicodeString");
     }
+    if (pNtOpenFile == NULL
+	    || pNtClose == NULL
+	    || pNtSetEaFile == NULL
+	    || pNtQueryEaFile == NULL
+	    || pNtQueryInformationFile == NULL
+	    || pRtlInitUnicodeString == NULL)
+	loaded = FALSE;
+    else
+	loaded = TRUE;
     return (BOOL) loaded;
 }
 
@@ -8190,11 +8185,11 @@ get_cmd_argsW(char ***argvp)
     void
 free_cmd_argsW(void)
 {
-    if (ArglistW != NULL)
-    {
-	GlobalFree(ArglistW);
-	ArglistW = NULL;
-    }
+    if (ArglistW == NULL)
+	return;
+
+    GlobalFree(ArglistW);
+    ArglistW = NULL;
 }
 
 /*
@@ -8899,20 +8894,20 @@ resize_console_buf(void)
     COORD coord;
     SMALL_RECT newsize;
 
-    if (GetConsoleScreenBufferInfo(g_hConOut, &csbi))
-    {
-	coord.X = SRWIDTH(csbi.srWindow);
-	coord.Y = SRHEIGHT(csbi.srWindow);
-	SetConsoleScreenBufferSize(g_hConOut, coord);
+    if (!GetConsoleScreenBufferInfo(g_hConOut, &csbi))
+	return;
 
-	newsize.Left = 0;
-	newsize.Top = 0;
-	newsize.Right = coord.X - 1;
-	newsize.Bottom = coord.Y - 1;
-	SetConsoleWindowInfo(g_hConOut, TRUE, &newsize);
+    coord.X = SRWIDTH(csbi.srWindow);
+    coord.Y = SRHEIGHT(csbi.srWindow);
+    SetConsoleScreenBufferSize(g_hConOut, coord);
 
-	SetConsoleScreenBufferSize(g_hConOut, coord);
-    }
+    newsize.Left = 0;
+    newsize.Top = 0;
+    newsize.Right = coord.X - 1;
+    newsize.Bottom = coord.Y - 1;
+    SetConsoleWindowInfo(g_hConOut, TRUE, &newsize);
+
+    SetConsoleScreenBufferSize(g_hConOut, coord);
 }
 #endif
 
@@ -8926,14 +8921,14 @@ GetWin32Error(void)
 	    NULL, GetLastError(), 0, (LPSTR)&msg, 0, NULL);
     if (oldmsg != NULL)
 	LocalFree(oldmsg);
-    if (msg != NULL)
-    {
-	// remove trailing \r\n
-	char *pcrlf = strstr(msg, "\r\n");
-	if (pcrlf != NULL)
-	    *pcrlf = '\0';
-	oldmsg = msg;
-    }
+    if (msg == NULL)
+	return NULL;
+
+    // remove trailing \r\n
+    char *pcrlf = strstr(msg, "\r\n");
+    if (pcrlf != NULL)
+	*pcrlf = '\0';
+    oldmsg = msg;
     return msg;
 }
 

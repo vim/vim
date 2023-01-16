@@ -155,42 +155,42 @@ trigger_optionset_string(
 	char_u  *newval)
 {
     // Don't do this recursively.
-    if (oldval != NULL && newval != NULL
-				    && *get_vim_var_str(VV_OPTION_TYPE) == NUL)
-    {
-	char_u buf_type[7];
+    if (oldval == NULL || newval == NULL
+				    || *get_vim_var_str(VV_OPTION_TYPE) != NUL)
+	return;
 
-	sprintf((char *)buf_type, "%s",
+    char_u buf_type[7];
+
+    sprintf((char *)buf_type, "%s",
 	    (opt_flags & OPT_LOCAL) ? "local" : "global");
-	set_vim_var_string(VV_OPTION_OLD, oldval, -1);
-	set_vim_var_string(VV_OPTION_NEW, newval, -1);
-	set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
-	if (opt_flags & OPT_LOCAL)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setlocal", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, -1);
-	}
-	if (opt_flags & OPT_GLOBAL)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setglobal", -1);
-	    set_vim_var_string(VV_OPTION_OLDGLOBAL, oldval, -1);
-	}
-	if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"set", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, oldval_l, -1);
-	    set_vim_var_string(VV_OPTION_OLDGLOBAL, oldval_g, -1);
-	}
-	if (opt_flags & OPT_MODELINE)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"modeline", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, -1);
-	}
-	apply_autocmds(EVENT_OPTIONSET,
-		       get_option_fullname(opt_idx), NULL, FALSE,
-		       NULL);
-	reset_v_option_vars();
+    set_vim_var_string(VV_OPTION_OLD, oldval, -1);
+    set_vim_var_string(VV_OPTION_NEW, newval, -1);
+    set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
+    if (opt_flags & OPT_LOCAL)
+    {
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setlocal", -1);
+	set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, -1);
     }
+    if (opt_flags & OPT_GLOBAL)
+    {
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setglobal", -1);
+	set_vim_var_string(VV_OPTION_OLDGLOBAL, oldval, -1);
+    }
+    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+    {
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"set", -1);
+	set_vim_var_string(VV_OPTION_OLDLOCAL, oldval_l, -1);
+	set_vim_var_string(VV_OPTION_OLDGLOBAL, oldval_g, -1);
+    }
+    if (opt_flags & OPT_MODELINE)
+    {
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"modeline", -1);
+	set_vim_var_string(VV_OPTION_OLDLOCAL, oldval, -1);
+    }
+    apply_autocmds(EVENT_OPTIONSET,
+	    get_option_fullname(opt_idx), NULL, FALSE,
+	    NULL);
+    reset_v_option_vars();
 }
 #endif
 
@@ -387,45 +387,45 @@ set_string_option_direct(
 	return;
 
     s = vim_strsave(val);
-    if (s != NULL)
+    if (s == NULL)
+	return;
+
+    varp = (char_u **)get_option_varp_scope(idx,
+	    both ? OPT_LOCAL : opt_flags);
+    if ((opt_flags & OPT_FREE) && (get_option_flags(idx) & P_ALLOCED))
+	free_string_option(*varp);
+    *varp = s;
+
+    // For buffer/window local option may also set the global value.
+    if (both)
+	set_string_option_global(idx, varp);
+
+    set_option_flag(idx, P_ALLOCED);
+
+    // When setting both values of a global option with a local value,
+    // make the local value empty, so that the global value is used.
+    if (is_global_local_option(idx) && both)
     {
-	varp = (char_u **)get_option_varp_scope(idx,
-					       both ? OPT_LOCAL : opt_flags);
-	if ((opt_flags & OPT_FREE) && (get_option_flags(idx) & P_ALLOCED))
-	    free_string_option(*varp);
-	*varp = s;
-
-	// For buffer/window local option may also set the global value.
-	if (both)
-	    set_string_option_global(idx, varp);
-
-	set_option_flag(idx, P_ALLOCED);
-
-	// When setting both values of a global option with a local value,
-	// make the local value empty, so that the global value is used.
-	if (is_global_local_option(idx) && both)
-	{
-	    free_string_option(*varp);
-	    *varp = empty_option;
-	}
-# ifdef FEAT_EVAL
-	if (set_sid != SID_NONE)
-	{
-	    sctx_T script_ctx;
-
-	    if (set_sid == 0)
-		script_ctx = current_sctx;
-	    else
-	    {
-		script_ctx.sc_sid = set_sid;
-		script_ctx.sc_seq = 0;
-		script_ctx.sc_lnum = 0;
-		script_ctx.sc_version = 1;
-	    }
-	    set_option_sctx_idx(idx, opt_flags, script_ctx);
-	}
-# endif
+	free_string_option(*varp);
+	*varp = empty_option;
     }
+# ifdef FEAT_EVAL
+    if (set_sid != SID_NONE)
+    {
+	sctx_T script_ctx;
+
+	if (set_sid == 0)
+	    script_ctx = current_sctx;
+	else
+	{
+	    script_ctx.sc_sid = set_sid;
+	    script_ctx.sc_seq = 0;
+	    script_ctx.sc_lnum = 0;
+	    script_ctx.sc_version = 1;
+	}
+	set_option_sctx_idx(idx, opt_flags, script_ctx);
+    }
+# endif
 }
 
 /*
@@ -507,54 +507,54 @@ set_string_option(
 	return NULL;
 
     s = vim_strsave(value == NULL ? (char_u *)"" : value);
-    if (s != NULL)
+    if (s == NULL)
+	return NULL;
+
+    varp = (char_u **)get_option_varp_scope(opt_idx,
+	    (opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0
+	    ? (is_global_local_option(opt_idx)
+		? OPT_GLOBAL : OPT_LOCAL)
+	    : opt_flags);
+    oldval = *varp;
+#if defined(FEAT_EVAL)
+    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
     {
-	varp = (char_u **)get_option_varp_scope(opt_idx,
-		(opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0
-		    ? (is_global_local_option(opt_idx)
-			? OPT_GLOBAL : OPT_LOCAL)
-		    : opt_flags);
-	oldval = *varp;
-#if defined(FEAT_EVAL)
-	if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
-	{
-	    oldval_l = *(char_u **)get_option_varp_scope(opt_idx, OPT_LOCAL);
-	    oldval_g = *(char_u **)get_option_varp_scope(opt_idx, OPT_GLOBAL);
-	}
-#endif
-	*varp = s;
-
-#if defined(FEAT_EVAL)
-	if (!starting
-# ifdef FEAT_CRYPT
-		&& !is_crypt_key_option(opt_idx)
-# endif
-		)
-	{
-	    if (oldval_l != NULL)
-		saved_oldval_l = vim_strsave(oldval_l);
-	    if (oldval_g != NULL)
-		saved_oldval_g = vim_strsave(oldval_g);
-	    saved_oldval = vim_strsave(oldval);
-	    saved_newval = vim_strsave(s);
-	}
-#endif
-	if ((errmsg = did_set_string_option(opt_idx, varp, oldval, NULL,
-					   opt_flags, &value_checked)) == NULL)
-	    did_set_option(opt_idx, opt_flags, TRUE, value_checked);
-
-#if defined(FEAT_EVAL)
-	// call autocommand after handling side effects
-	if (errmsg == NULL)
-	    trigger_optionset_string(opt_idx, opt_flags,
-				   saved_oldval, saved_oldval_l,
-				   saved_oldval_g, saved_newval);
-	vim_free(saved_oldval);
-	vim_free(saved_oldval_l);
-	vim_free(saved_oldval_g);
-	vim_free(saved_newval);
-#endif
+	oldval_l = *(char_u **)get_option_varp_scope(opt_idx, OPT_LOCAL);
+	oldval_g = *(char_u **)get_option_varp_scope(opt_idx, OPT_GLOBAL);
     }
+#endif
+    *varp = s;
+
+#if defined(FEAT_EVAL)
+    if (!starting
+# ifdef FEAT_CRYPT
+	    && !is_crypt_key_option(opt_idx)
+# endif
+       )
+    {
+	if (oldval_l != NULL)
+	    saved_oldval_l = vim_strsave(oldval_l);
+	if (oldval_g != NULL)
+	    saved_oldval_g = vim_strsave(oldval_g);
+	saved_oldval = vim_strsave(oldval);
+	saved_newval = vim_strsave(s);
+    }
+#endif
+    if ((errmsg = did_set_string_option(opt_idx, varp, oldval, NULL,
+		    opt_flags, &value_checked)) == NULL)
+	did_set_option(opt_idx, opt_flags, TRUE, value_checked);
+
+#if defined(FEAT_EVAL)
+    // call autocommand after handling side effects
+    if (errmsg == NULL)
+	trigger_optionset_string(opt_idx, opt_flags,
+		saved_oldval, saved_oldval_l,
+		saved_oldval_g, saved_newval);
+    vim_free(saved_oldval);
+    vim_free(saved_oldval_l);
+    vim_free(saved_oldval_g);
+    vim_free(saved_newval);
+#endif
     return errmsg;
 }
 
