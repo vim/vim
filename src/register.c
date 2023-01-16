@@ -2208,15 +2208,7 @@ error:
 		if (dir == FORWARD)
 		    curbuf->b_op_start.lnum++;
 	    }
-	    // Skip mark_adjust when adding lines after the last one, there
-	    // can't be marks there. But still needed in diff mode.
-	    if (curbuf->b_op_start.lnum + (y_type == MCHAR) - 1 + nr_lines
-						 < curbuf->b_ml.ml_line_count
-#ifdef FEAT_DIFF
-						 || curwin->w_p_diff
-#endif
-						 )
-		mark_adjust(curbuf->b_op_start.lnum + (y_type == MCHAR),
+	    mark_adjust(curbuf->b_op_start.lnum + (y_type == MCHAR),
 					     (linenr_T)MAXLNUM, nr_lines, 0L);
 
 	    // note changed text for displaying and folding
