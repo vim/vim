@@ -1683,4 +1683,16 @@ func Test_indent_with_L_command()
   bwipe!
 endfunc
 
+" Make sure that when you have a fold at the bottom of the buffer and you append
+" a newline character to the line, the fold gets expanded (instead of the new
+" line not being part of the fold)
+func Test_expand_fold_at_bottom_of_buffer()
+  new
+  " create a fold on the only line
+  fold
+  execute "normal A\<CR>"
+  call assert_equal([1, 1], range(1, 2)->map('foldlevel(v:val)'))
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
