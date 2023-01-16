@@ -35,33 +35,13 @@ matrix:
   fast_finish: true
 
 before_build:
-  # - systeminfo
-  - setlocal ENABLEDELAYEDEXPANSION
-  - call ver
-  - set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
-  - >
-    if exist "%VSWHERE%" (
-    for /f "usebackq delims=" %%i
-    in (`"%VSWHERE%" -products * -latest -property installationPath`) 
-    do (set "VCVARSALL=%%i\VC\Auxiliary\Build\vcvarsall.bat")
-    )
-  - > 
-    if not exist "%VCVARSALL%" (
-    set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
-    )
-  - call "%VCVARSALL%" x64
+  - ci/appveyor.bat install
 
 build_script:
-  - ci/appveyor.bat
+  - ci/appveyor.bat build
 
 test_script:
-  - cd src/testdir
-    # Testing with MSVC gvim
-  - path C:\Python311-x64;%PATH%
-  - nmake -f Make_mvc.mak VIMPROG=..\gvim
-  - nmake -f Make_mvc.mak clean
-    # Testing with MSVC console version
-  - nmake -f Make_mvc.mak VIMPROG=..\vim
+  - ci/appveyor.bat test
 
 artifacts:
   - path: src/vim.exe
