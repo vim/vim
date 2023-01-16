@@ -10,7 +10,22 @@ set PYTHON3_RELEASE=3.11.1
 set PYTHON3_URL=https://www.python.org/ftp/python/%PYTHON3_RELEASE%/python-%PYTHON3_RELEASE%-amd64.exe
 set PYTHON3_DIR=C:\python%PYTHON3_VER%-x64
 
-:: ----------------------------------------------------------------------
+set "VSWHERE=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
+
+if exist "%VSWHERE%" (
+  for /f "usebackq delims=" %%i  in (
+    `"%VSWHERE%" -products * -latest -property installationPath`
+    ) do (
+    set "VCVARSALL=%%i\VC\Auxiliary\Build\vcvarsall.bat"
+  )
+)
+
+if not exist "%VCVARSALL%" (
+  set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
+)
+call "%VCVARSALL%" x64
+
+:: ----------------------------------------------------------------------------
 :install
 
 if not exist downloads mkdir downloads
@@ -18,11 +33,14 @@ if not exist downloads mkdir downloads
 :: Python 3
 if not exist %PYTHON3_DIR% (
   call :downloadfile %PYTHON3_URL% downloads\python3.exe
-  cmd /c start /wait downloads\python3.exe /quiet TargetDir=%PYTHON3_DIR%  Include_pip=0 Include_tcltk=0 Include_test=0 Include_tools=0 AssociateFiles=0 Shortcuts=0 Include_doc=0 Include_launcher=0 InstallLauncherAllUsers=0
+  cmd /c start /wait downloads\python3.exe /quiet TargetDir=%PYTHON3_DIR% ^
+      Include_pip=0 Include_tcltk=0 Include_test=0 Include_tools=0 ^
+      AssociateFiles=0 Shortcuts=0 Include_doc=0 Include_launcher=0 ^
+      InstallLauncherAllUsers=0
 )
 
 goto :eof
-:: ----------------------------------------------------------------------
+:: ----------------------------------------------------------------------------
 
 cd src
 
@@ -63,7 +81,7 @@ cd ..
 
 goto :eof
 
-:: ----------------------------------------------------------------------
+:: ----------------------------------------------------------------------------
 :test
 cd src/testdir
 :: Testing with MSVC gvim
@@ -75,7 +93,7 @@ nmake -f Make_mvc.mak VIMPROG=..\vim
 
 goto :eof
 
-:: ----------------------------------------------------------------------
+:: ----------------------------------------------------------------------------
 :downloadfile
 :: call :downloadfile <URL> <localfile>
 if not exist %2 (
