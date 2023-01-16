@@ -775,6 +775,7 @@ String manipulation:					*string-functions*
 	execute()		execute an Ex command and get the output
 	win_execute()		like execute() but in a specified window
 	trim()			trim characters from a string
+	getcellwidths()		get character cell width overrides
 	gettext()		lookup message translation
 
 List manipulation:					*list-functions*
