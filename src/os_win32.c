@@ -6790,7 +6790,9 @@ visual_bell(void)
 			       coordOrigin, &dwDummy);
 
     Sleep(15);	    // wait for 15 msec
+# ifdef FEAT_TERMGUICOLORS
     if (!(p_tgc || (!p_tgc && t_colors >= 256)))
+# endif
 	WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 				coordOrigin, &dwDummy);
     vim_free(oldattrs);
