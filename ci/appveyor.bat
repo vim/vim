@@ -1,5 +1,6 @@
 @echo off
 :: Batch file for building/testing Vim on AppVeyor
+set target=%1
 
 setlocal ENABLEDELAYEDEXPANSION
 cd %APPVEYOR_BUILD_FOLDER%
@@ -24,6 +25,8 @@ if not exist "%VCVARSALL%" (
   set "VCVARSALL=%ProgramFiles(x86)%\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
 )
 call "%VCVARSALL%" x64
+
+goto %target%
 
 :: ----------------------------------------------------------------------------
 :install
