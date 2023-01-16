@@ -2252,19 +2252,6 @@ compile_subscript(
 	    if (compile_member(is_slice, &keeping_dict, cctx) == FAIL)
 		return FAIL;
 	}
-	else if (*p == '.'
-		&& (type = get_type_on_stack(cctx, 0)) != &t_unknown
-		&& (type->tt_type == VAR_CLASS || type->tt_type == VAR_OBJECT))
-	{
-	    // class member: SomeClass.varname
-	    // class method: SomeClass.SomeMethod()
-	    // class constructor: SomeClass.new()
-	    // object member: someObject.varname, this.varname
-	    // object method: someObject.SomeMethod(), this.SomeMethod()
-	    *arg = p;
-	    if (compile_class_object_index(cctx, arg, type) == FAIL)
-		return FAIL;
-	}
 	else if (*p == '.' && p[1] != '.')
 	{
 	    // dictionary member: dict.name
@@ -2272,27 +2259,43 @@ compile_subscript(
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
 
-	    *arg = p + 1;
-	    if (IS_WHITE_OR_NUL(**arg))
+	    if ((type = get_type_on_stack(cctx, 0)) != &t_unknown
+		    && (type->tt_type == VAR_CLASS
+					       || type->tt_type == VAR_OBJECT))
 	    {
-		emsg(_(e_missing_name_after_dot));
-		return FAIL;
+		// class member: SomeClass.varname
+		// class method: SomeClass.SomeMethod()
+		// class constructor: SomeClass.new()
+		// object member: someObject.varname, this.varname
+		// object method: someObject.SomeMethod(), this.SomeMethod()
+		*arg = p;
+		if (compile_class_object_index(cctx, arg, type) == FAIL)
+		    return FAIL;
 	    }
-	    p = *arg;
-	    if (eval_isdictc(*p))
-		while (eval_isnamec(*p))
-		    MB_PTR_ADV(p);
-	    if (p == *arg)
+	    else
 	    {
-		semsg(_(e_syntax_error_at_str), *arg);
-		return FAIL;
+		*arg = p + 1;
+		if (IS_WHITE_OR_NUL(**arg))
+		{
+		    emsg(_(e_missing_name_after_dot));
+		    return FAIL;
+		}
+		p = *arg;
+		if (eval_isdictc(*p))
+		    while (eval_isnamec(*p))
+			MB_PTR_ADV(p);
+		if (p == *arg)
+		{
+		    semsg(_(e_syntax_error_at_str), *arg);
+		    return FAIL;
+		}
+		if (keeping_dict && generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		    return FAIL;
+		if (generate_STRINGMEMBER(cctx, *arg, p - *arg) == FAIL)
+		    return FAIL;
+		keeping_dict = TRUE;
+		*arg = p;
 	    }
-	    if (keeping_dict && generate_instr(cctx, ISN_CLEARDICT) == NULL)
-		return FAIL;
-	    if (generate_STRINGMEMBER(cctx, *arg, p - *arg) == FAIL)
-		return FAIL;
-	    keeping_dict = TRUE;
-	    *arg = p;
 	}
 	else
 	    break;

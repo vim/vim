@@ -2818,6 +2818,7 @@ long elapsed(DWORD start_tick);
 #define FSK_KEEP_X_KEY	0x02	// don't translate xHome to Home key
 #define FSK_IN_STRING	0x04	// TRUE in string, double quote is escaped
 #define FSK_SIMPLIFY	0x08	// simplify <C-H> and <A-x>
+#define FSK_FROM_PART	0x10	// left-hand-side of mapping
 
 // Flags for the readdirex function, how to sort the result
 #define READDIR_SORT_NONE	0  // do not sort

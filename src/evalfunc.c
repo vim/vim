@@ -1136,6 +1136,8 @@ static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, 
 static argcheck_T arg23_writefile[] = {arg_list_or_blob, arg_string, arg_string};
 static argcheck_T arg24_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
 
+// Can be used by functions called through "f_retfunc" to create new types.
+static garray_T *current_type_gap = NULL;
 
 /*
  * Functions that return the return type of a builtin function.
@@ -1437,6 +1439,29 @@ ret_finddir(int argcount,
 	return &t_string;
     // Depending on the count would be a string or a list of strings.
     return &t_any;
+}
+// for values(): list of member of first argument
+    static type_T *
+ret_list_member(int argcount,
+	type2_T *argtypes,
+	type_T	**decl_type)
+{
+    if (argcount > 0)
+    {
+	type_T *t = argtypes[0].type_decl;
+	if (current_type_gap != NULL
+		&& (t->tt_type == VAR_DICT || t->tt_type == VAR_LIST))
+	    t = get_list_type(t->tt_member, current_type_gap);
+	else
+	    t = &t_list_any;
+	*decl_type = t;
+
+	t = argtypes[0].type_curr;
+	if (current_type_gap != NULL
+		&& (t->tt_type == VAR_DICT || t->tt_type == VAR_LIST))
+	    return get_list_type(t->tt_member, current_type_gap);
+    }
+    return &t_list_any;
 }
 
 /*
@@ -2759,7 +2784,7 @@ static funcentry_T global_functions[] =
     {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_uniq},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
-			ret_list_any,	    f_values},
+			ret_list_member,    f_values},
     {"virtcol",		1, 2, FEARG_1,	    arg2_string_or_list_bool,
 			ret_virtcol,	    f_virtcol},
     {"virtcol2col",	3, 3, FEARG_1,	    arg3_number,
@@ -2993,14 +3018,17 @@ internal_func_ret_type(
 	int	    idx,
 	int	    argcount,
 	type2_T	    *argtypes,
-	type_T	    **decl_type)
+	type_T	    **decl_type,
+	garray_T    *type_gap)
 {
     type_T *ret;
 
+    current_type_gap = type_gap;
     *decl_type = NULL;
     ret = global_functions[idx].f_retfunc(argcount, argtypes, decl_type);
     if (*decl_type == NULL)
 	*decl_type = ret;
+    current_type_gap = NULL;
     return ret;
 }
 

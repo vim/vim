@@ -485,34 +485,34 @@ fname2fnum(xfmark_T *fm)
 {
     char_u	*p;
 
-    if (fm->fname != NULL)
-    {
-	/*
-	 * First expand "~/" in the file name to the home directory.
-	 * Don't expand the whole name, it may contain other '~' chars.
-	 */
-	if (fm->fname[0] == '~' && (fm->fname[1] == '/'
+    if (fm->fname == NULL)
+	return;
+
+    /*
+     * First expand "~/" in the file name to the home directory.
+     * Don't expand the whole name, it may contain other '~' chars.
+     */
+    if (fm->fname[0] == '~' && (fm->fname[1] == '/'
 #ifdef BACKSLASH_IN_FILENAME
-		    || fm->fname[1] == '\\'
+		|| fm->fname[1] == '\\'
 #endif
-		    ))
-	{
-	    int len;
+		))
+    {
+	int len;
 
-	    expand_env((char_u *)"~/", NameBuff, MAXPATHL);
-	    len = (int)STRLEN(NameBuff);
-	    vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
-	}
-	else
-	    vim_strncpy(NameBuff, fm->fname, MAXPATHL - 1);
-
-	// Try to shorten the file name.
-	mch_dirname(IObuff, IOSIZE);
-	p = shorten_fname(NameBuff, IObuff);
-
-	// buflist_new() will call fmarks_check_names()
-	(void)buflist_new(NameBuff, p, (linenr_T)1, 0);
+	expand_env((char_u *)"~/", NameBuff, MAXPATHL);
+	len = (int)STRLEN(NameBuff);
+	vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
     }
+    else
+	vim_strncpy(NameBuff, fm->fname, MAXPATHL - 1);
+
+    // Try to shorten the file name.
+    mch_dirname(IObuff, IOSIZE);
+    p = shorten_fname(NameBuff, IObuff);
+
+    // buflist_new() will call fmarks_check_names()
+    (void)buflist_new(NameBuff, p, (linenr_T)1, 0);
 }
 
 /*

@@ -86,7 +86,8 @@ copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
     ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2 + 1] = copy;
     ++seen_types->ga_len;
 
-    if (copy->tt_member != NULL)
+    if (copy->tt_member != NULL
+	    && copy->tt_type != VAR_OBJECT && copy->tt_type != VAR_CLASS)
 	copy->tt_member = copy_type_deep_rec(copy->tt_member,
 							 type_gap, seen_types);
 
@@ -538,7 +539,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		type_T *decl_type;  // unused
 
 		internal_func_get_argcount(idx, &argcount, &min_argcount);
-		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type);
+		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type,
+								     type_gap);
 	    }
 	    else
 		ufunc = find_func(name, FALSE);

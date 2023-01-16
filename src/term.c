@@ -6636,8 +6636,10 @@ replace_termcodes(
 		}
 	    }
 #endif
-	    slen = trans_special(&src, result + dlen, FSK_KEYCODE
-			  | ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY),
+	    int fsk_flags = FSK_KEYCODE
+			| ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY)
+			| ((flags & REPTERM_FROM_PART) ? FSK_FROM_PART : 0);
+	    slen = trans_special(&src, result + dlen, fsk_flags,
 							   TRUE, did_simplify);
 	    if (slen > 0)
 	    {

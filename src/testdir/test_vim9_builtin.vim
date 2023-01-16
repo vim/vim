@@ -4740,6 +4740,31 @@ def Test_values()
   v9.CheckDefAndScriptFailure(['values([])'], ['E1013: Argument 1: type mismatch, expected dict<any> but got list<unknown>', 'E1206: Dictionary required for argument 1'])
   assert_equal([], {}->values())
   assert_equal(['sun'], {star: 'sun'}->values())
+
+  # the return type of values() is list<member>
+  var lines =<< trim END
+      vim9script
+
+      class Foo
+        this.val: number
+        def Add()
+          echo this.val
+        enddef
+      endclass
+
+      def Process(FooDict: dict<Foo>)
+        for foo in values(FooDict)
+          foo.Add()
+        endfor
+      enddef
+
+      disas Process
+
+      var D = {'x': Foo.new(22)}
+
+      Process(D)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_virtcol()

@@ -1619,7 +1619,8 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
 
     // Drop the argument types and push the return type.
     stack->ga_len -= argcount;
-    type = internal_func_ret_type(func_idx, argcount, argtypes, &decl_type);
+    type = internal_func_ret_type(func_idx, argcount, argtypes, &decl_type,
+							  cctx->ctx_type_list);
     if (push_type_stack2(cctx, type, decl_type) == FAIL)
 	return FAIL;
 

@@ -200,6 +200,65 @@ def Test_class_member_initializer()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_assignment_with_operator()
+  var lines =<< trim END
+      vim9script
+
+      class Foo
+        this.x: number
+
+        def Add(n: number)
+          this.x += n
+        enddef
+      endclass
+
+      var f =  Foo.new(3)
+      f.Add(17)
+      assert_equal(20, f.x)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_list_of_objects()
+  var lines =<< trim END
+      vim9script
+
+      class Foo
+        def Add()
+        enddef
+      endclass
+
+      def ProcessList(fooList: list<Foo>)
+        for foo in fooList
+          foo.Add()
+        endfor
+      enddef
+
+      var l: list<Foo> = [Foo.new()]
+      ProcessList(l)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_expr_after_using_object()
+  var lines =<< trim END
+      vim9script
+
+      class Something
+        this.label: string = ''
+      endclass
+
+      def Foo(): Something
+        var v = Something.new()
+        echo 'in Foo(): ' .. typename(v)
+        return v
+      enddef
+
+      Foo()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_class_default_new()
   var lines =<< trim END
       vim9script
@@ -518,6 +577,25 @@ def Test_class_member()
       assert_equal(12, TextPos.anybody)
       TextPos.anybody += 5
       assert_equal(17, TextPos.anybody)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # example in the help
+  lines =<< trim END
+        vim9script
+	class OtherThing
+	   this.size: number
+	   static totalSize: number
+
+	   def new(this.size)
+	      totalSize += this.size
+	   enddef
+	endclass
+        assert_equal(0, OtherThing.totalSize)
+        var to3 = OtherThing.new(3)
+        assert_equal(3, OtherThing.totalSize)
+        var to7 = OtherThing.new(7)
+        assert_equal(10, OtherThing.totalSize)
   END
   v9.CheckScriptSuccess(lines)
 
@@ -986,6 +1064,43 @@ def Test_class_extends()
       assert_equal('Base class: 42', o.ToString())
   END
   v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      class Base
+        this.value = 1
+        def new(init: number)
+          this.value = number + 1
+        enddef
+      endclass
+      class Child extends Base
+        def new()
+          this.new(3)
+        enddef
+      endclass
+      var c = Child.new()
+  END
+  v9.CheckScriptFailure(lines, 'E1325: Method not found on class "Child": new(')
+
+  # base class with more than one object member
+  lines =<< trim END
+      vim9script
+
+      class Result
+        this.success: bool
+        this.value: any = null
+      endclass
+
+      class Success extends Result
+        def new(this.value = v:none)
+          this.success = true
+        enddef
+      endclass
+
+      var v = Success.new('asdf')
+      assert_equal("object of Success {success: true, value: 'asdf'}", string(v))
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_import()
@@ -1012,6 +1127,41 @@ def Test_class_import()
       assert_equal('Garfield', b.name)
   END
   v9.CheckScriptSuccess(lines)
+enddef
+
+def Test_abstract_class()
+  var lines =<< trim END
+      vim9script
+      abstract class Base
+        this.name: string
+      endclass
+      class Person extends Base
+        this.age: number
+      endclass
+      var p: Base = Person.new('Peter', 42)
+      assert_equal('Peter', p.name)
+      assert_equal(42, p.age)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      abstract class Base
+        this.name: string
+      endclass
+      class Person extends Base
+        this.age: number
+      endclass
+      var p = Base.new('Peter')
+  END
+  v9.CheckScriptFailure(lines, 'E1325: Method not found on class "Base": new(')
+
+  lines =<< trim END
+      abstract class Base
+        this.name: string
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1316:')
 enddef
 
 
