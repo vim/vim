@@ -1,4 +1,4 @@
-@echo on
+@echo off
 :: Batch file for building/testing Vim on AppVeyor
 
 setlocal ENABLEDELAYEDEXPANSION
@@ -39,7 +39,7 @@ if not exist %PYTHON3_DIR% (
       AssociateFiles=0 Shortcuts=0 Include_doc=0 Include_launcher=0 ^
       InstallLauncherAllUsers=0
 )
-
+@echo off
 goto :eof
 :: ----------------------------------------------------------------------------
 :build
@@ -82,8 +82,8 @@ echo "version output MSVC GUI"
 type ver_msvc.txt || exit 1
 cd ..
 
+@echo off
 goto :eof
-
 :: ----------------------------------------------------------------------------
 :test
 @echo on
@@ -95,8 +95,8 @@ nmake -f Make_mvc.mak clean
 :: Testing with MSVC console version
 nmake -f Make_mvc.mak VIMPROG=..\vim
 
+@echo off
 goto :eof
-
 :: ----------------------------------------------------------------------------
 :downloadfile
 :: call :downloadfile <URL> <localfile>
