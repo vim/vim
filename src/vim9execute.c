@@ -5184,6 +5184,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_GET_OBJ_MEMBER:
+	    case ISN_GET_ITF_MEMBER:
 		{
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_OBJECT)
@@ -5200,8 +5201,20 @@ exec_instructions(ectx_T *ectx)
 			clear_type_list(&type_list);
 			goto on_error;
 		    }
-		    int idx = iptr->isn_arg.number;
+
 		    object_T *obj = tv->vval.v_object;
+		    int idx;
+		    if (iptr->isn_type == ISN_GET_OBJ_MEMBER)
+			idx = iptr->isn_arg.number;
+		    else
+		    {
+			idx = iptr->isn_arg.classmember.cm_idx;
+			// convert the interface index to the object index
+			idx = object_index_from_itf_index(
+					      iptr->isn_arg.classmember.cm_class,
+					      idx, obj->obj_class);
+		    }
+
 		    // the members are located right after the object struct
 		    typval_T *mtv = ((typval_T *)(obj + 1)) + idx;
 		    copy_tv(mtv, tv);
@@ -6912,6 +6925,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 						  iptr->isn_arg.string); break;
 	    case ISN_GET_OBJ_MEMBER: smsg("%s%4d OBJ_MEMBER %d", pfx, current,
 					     (int)iptr->isn_arg.number); break;
+	    case ISN_GET_ITF_MEMBER: smsg("%s%4d ITF_MEMBER %d on %s",
+			     pfx, current,
+			     (int)iptr->isn_arg.classmember.cm_idx,
+			     iptr->isn_arg.classmember.cm_class->class_name);
+				     break;
 	    case ISN_STORE_THIS: smsg("%s%4d STORE_THIS %d", pfx, current,
 					     (int)iptr->isn_arg.number); break;
 	    case ISN_CLEARDICT: smsg("%s%4d CLEARDICT", pfx, current); break;

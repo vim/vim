@@ -870,6 +870,32 @@ def Test_class_implements_interface()
       endclass
   END
   v9.CheckScriptFailure(lines, 'E1349: Function "Methods" of interface "Some" not implemented')
+
+  # Check different order of members in class and interface works.
+  lines =<< trim END
+      vim9script
+
+      interface Result
+        this.label: string
+        this.errpos: number
+      endinterface
+
+      # order of members is opposite of interface
+      class Failure implements Result
+        this.errpos: number = 42
+        this.label: string = 'label'
+      endclass
+
+      def Test()
+        var result: Result = Failure.new()
+
+        assert_equal('label', result.label)
+        assert_equal(42, result.errpos)
+      enddef
+
+      Test()
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_used_as_type()

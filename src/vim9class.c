@@ -197,6 +197,32 @@ add_members_to_class(
 }
 
 /*
+ * Convert a member index "idx" of interface "itf" to the member index of class
+ * "cl" implementing that interface.
+ */
+    int
+object_index_from_itf_index(class_T *itf, int idx, class_T *cl)
+{
+    if (idx > itf->class_obj_member_count)
+    {
+	siemsg("index %d out of range for interface %s", idx, itf->class_name);
+	return 0;
+    }
+    itf2class_T *i2c;
+    for (i2c = itf->class_itf2class; i2c != NULL; i2c = i2c->i2c_next)
+	if (i2c->i2c_class == cl)
+	    break;
+    if (i2c == NULL)
+    {
+	siemsg("class %s not found on interface %s",
+					      cl->class_name, itf->class_name);
+	return 0;
+    }
+    int *table = (int *)(i2c + 1);
+    return table[idx];
+}
+
+/*
  * Handle ":class" and ":abstract class" up to ":endclass".
  * Handle ":interface" up to ":endinterface".
  */
@@ -765,22 +791,6 @@ early_ret:
 
 	cl->class_extends = extends_cl;
 
-	if (ga_impl.ga_len > 0)
-	{
-	    // Move the "implements" names into the class.
-	    cl->class_interface_count = ga_impl.ga_len;
-	    cl->class_interfaces = ALLOC_MULT(char_u *, ga_impl.ga_len);
-	    if (cl->class_interfaces == NULL)
-		goto cleanup;
-	    for (int i = 0; i < ga_impl.ga_len; ++i)
-		cl->class_interfaces[i] = ((char_u **)ga_impl.ga_data)[i];
-	    VIM_CLEAR(ga_impl.ga_data);
-	    ga_impl.ga_len = 0;
-
-	    cl->class_interfaces_cl = intf_classes;
-	    intf_classes = NULL;
-	}
-
 	// Add class and object members to "cl".
 	if (add_members_to_class(&classmembers,
 				 extends_cl == NULL ? NULL
@@ -797,6 +807,48 @@ early_ret:
 				 &cl->class_obj_members,
 				 &cl->class_obj_member_count) == FAIL)
 	    goto cleanup;
+
+	if (ga_impl.ga_len > 0)
+	{
+	    // Move the "implements" names into the class.
+	    cl->class_interface_count = ga_impl.ga_len;
+	    cl->class_interfaces = ALLOC_MULT(char_u *, ga_impl.ga_len);
+	    if (cl->class_interfaces == NULL)
+		goto cleanup;
+	    for (int i = 0; i < ga_impl.ga_len; ++i)
+		cl->class_interfaces[i] = ((char_u **)ga_impl.ga_data)[i];
+	    VIM_CLEAR(ga_impl.ga_data);
+	    ga_impl.ga_len = 0;
+
+	    // For each interface add a lookuptable for the member index on the
+	    // interface to the member index in this class.
+	    for (int i = 0; i < cl->class_interface_count; ++i)
+	    {
+		class_T *ifcl = intf_classes[i];
+		itf2class_T *if2cl = alloc_clear(sizeof(itf2class_T)
+				 + ifcl->class_obj_member_count * sizeof(int));
+		if (if2cl == NULL)
+		    goto cleanup;
+		if2cl->i2c_next = ifcl->class_itf2class;
+		ifcl->class_itf2class = if2cl;
+		if2cl->i2c_class = cl;
+
+		for (int if_i = 0; if_i < ifcl->class_obj_member_count; ++if_i)
+		    for (int cl_i = 0; cl_i < cl->class_obj_member_count; ++cl_i)
+		    {
+			if (STRCMP(ifcl->class_obj_members[if_i].ocm_name,
+				     cl->class_obj_members[cl_i].ocm_name) == 0)
+			{
+			    int *table = (int *)(if2cl + 1);
+			    table[if_i] = cl_i;
+			    break;
+			}
+		    }
+	    }
+
+	    cl->class_interfaces_cl = intf_classes;
+	    intf_classes = NULL;
+	}
 
 	if (is_class && cl->class_class_member_count > 0)
 	{
@@ -1410,6 +1462,13 @@ class_unref(class_T *cl)
 	}
 	vim_free(cl->class_interfaces);
 	vim_free(cl->class_interfaces_cl);
+
+	itf2class_T *next;
+	for (itf2class_T *i2c = cl->class_itf2class; i2c != NULL; i2c = next)
+	{
+	    next = i2c->i2c_next;
+	    vim_free(i2c);
+	}
 
 	for (int i = 0; i < cl->class_class_member_count; ++i)
 	{

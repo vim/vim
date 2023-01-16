@@ -1483,6 +1483,14 @@ typedef struct {
     char_u	*ocm_init;   // allocated
 } ocmember_T;
 
+// used for the lookup table of a class member index
+typedef struct itf2class_S itf2class_T;
+struct itf2class_S {
+    itf2class_T	*i2c_next;
+    class_T	*i2c_class;
+    // array with ints follows
+};
+
 #define CLASS_INTERFACE 1
 
 // "class_T": used for v_class of typval of VAR_CLASS
@@ -1501,6 +1509,7 @@ struct class_S
     int		class_interface_count;
     char_u	**class_interfaces;	// allocated array of names
     class_T	**class_interfaces_cl;	// interfaces (counts as reference)
+    itf2class_T	*class_itf2class;	// member index lookup tables
 
     // class members: "static varname"
     int		class_class_member_count;

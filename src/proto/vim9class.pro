@@ -1,4 +1,5 @@
 /* vim9class.c */
+int object_index_from_itf_index(class_T *itf, int idx, class_T *cl);
 void ex_class(exarg_T *eap);
 type_T *class_member_type(class_T *cl, char_u *name, char_u *name_end, int *member_idx);
 void ex_enum(exarg_T *eap);

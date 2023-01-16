@@ -34,10 +34,11 @@ typedef enum {
     ISN_INSTR,	    // instructions compiled from expression
     ISN_CONSTRUCT,  // construct an object, using contstruct_T
     ISN_GET_OBJ_MEMBER, // object member, index is isn_arg.number
+    ISN_GET_ITF_MEMBER, // interface member, index is isn_arg.classmember
     ISN_STORE_THIS, // store value in "this" object member, index is
 		    // isn_arg.number
-    ISN_LOAD_CLASSMEMBER,  // load class member, using classmember_T
-    ISN_STORE_CLASSMEMBER,  // store in class member, using classmember_T
+    ISN_LOAD_CLASSMEMBER,  // load class member, using isn_arg.classmember
+    ISN_STORE_CLASSMEMBER,  // store in class member, using isn_arg.classmember
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -480,7 +481,7 @@ typedef struct {
     class_T	*construct_class;   // class the object is created from
 } construct_T;
 
-// arguments to ISN_STORE_CLASSMEMBER and ISN_LOAD_CLASSMEMBER
+// arguments to ISN_STORE_CLASSMEMBER, ISN_LOAD_CLASSMEMBER, ISN_GET_ITF_MEMBER
 typedef struct {
     class_T	*cm_class;
     int		cm_idx;
