@@ -1953,6 +1953,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getbufoneline},
     {"getbufvar",	2, 3, FEARG_1,	    arg3_buffer_string_any,
 			ret_any,	    f_getbufvar},
+    {"getcellwidths",	0, 0, 0,	    NULL,
+			ret_list_any,	    f_getcellwidths},
     {"getchangelist",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_list_any,	    f_getchangelist},
     {"getchar",		0, 1, 0,	    arg1_bool,
