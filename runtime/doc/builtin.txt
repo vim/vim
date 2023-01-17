@@ -3265,9 +3265,9 @@ getbufvar({buf}, {varname} [, {def}])				*getbufvar()*
 			GetBufnr()->getbufvar(varname)
 <
 getcellwidths()						*getcellwidths()*
-		Returns list for cell widths of character ranges which
-		overrides by |setcellwidths()|. If cell widths of character
-		ranges doesn't exist, an empty list is returned.
+		Returns a |List| of cell widths of character ranges overridden
+		by |setcellwidths()|.  If no character ranges have their cell
+		widths overridden, an empty List is returned.
 
 getchangelist([{buf}])					*getchangelist()*
 		Returns the |changelist| for the buffer {buf}. For the use
