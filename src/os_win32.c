@@ -8665,6 +8665,12 @@ wt_init(void)
     wt_working = mch_getenv("WT_SESSION") != NULL;
 }
 
+    int
+use_wt(void)
+{
+    return USE_WT;
+}
+
 # ifdef FEAT_TERMGUICOLORS
     static int
 ctermtoxterm(
