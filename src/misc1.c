@@ -2699,11 +2699,11 @@ path_with_url(char_u *fname)
     // non-URL text.
 
     // first character must be alpha
-    if (!isalpha(*fname))
+    if (!ASCII_ISALPHA(*fname))
 	return 0;
 
     // check body: alpha or dash
-    for (p = fname + 1; (isalpha(*p) || (*p == '-')); ++p)
+    for (p = fname + 1; (ASCII_ISALPHA(*p) || (*p == '-')); ++p)
 	;
 
     // check last char is not a dash
