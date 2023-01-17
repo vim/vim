@@ -639,6 +639,7 @@ func Test_WinScrolled_diff()
         \ '1001': {'leftcol': 0, 'topline': -1, 'topfill': 1, 'width': 0, 'height': 0, 'skipcol': 0}
         \ }, event)
 
+  call delete('XscrollEvent')
   call StopVimInTerminal(buf)
 endfunc
 
