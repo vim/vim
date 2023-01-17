@@ -7869,8 +7869,8 @@ msgstr "E1112: Ширина комірки елементу %d списку некоректна"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: Перекриття діапазонів у 0x%lx"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Підтримуються тільки значення 0x100 і вищі"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Підтримуються тільки значення 0x80 і вищі"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: Четвертий аргумент «assert_fails()» має бути числом"

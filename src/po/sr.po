@@ -7635,8 +7635,8 @@ msgstr "E1112: Ширина ћелије ставке листе %d је нев�
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: Опсези за 0x%lx се преклапају"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Подржавају се само вредности од 0x100 и веће"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Подржавају се само вредности од 0x80 и веће"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: „assert_fails()” четврти аргумент мора бити број"

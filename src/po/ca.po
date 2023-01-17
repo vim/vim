@@ -7729,8 +7729,8 @@ msgstr "E1112: L'element de la llista %d no té una amplada vàlida"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: Intervals solapats per a 0x%lx"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Només es suporten valors de 0x100 o superiors"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Només es suporten valors de 0x80 o superiors"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: el quart argument a \"assert_fails()\" ha de ser un número"

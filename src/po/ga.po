@@ -7768,8 +7768,8 @@ msgstr "E1112: Leithead cille neamhbhailí i mír %d sa liosta"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: Raonta forluiteacha ar 0x%lx"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Ní thacaítear ach le luachanna 0x100 agus níos airde"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Ní thacaítear ach le luachanna 0x80 agus níos airde"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: Ní mór don cheathrú hargóint ar \"assert_fails()\" a bheith ina huimhir"

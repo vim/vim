@@ -1589,19 +1589,20 @@ utf_char2cells(int c)
 #endif
     };
 
-    if (c >= 0x100)
-    {
-#if defined(FEAT_EVAL) || defined(USE_WCHAR_FUNCTIONS)
-	int	n;
-#endif
-
 #ifdef FEAT_EVAL
-	n = cw_value(c);
+    if (c >= 0x80)
+    {
+	int n = cw_value(c);
 	if (n != 0)
 	    return n;
+    }
 #endif
 
+    if (c >= 0x100)
+    {
 #ifdef USE_WCHAR_FUNCTIONS
+	int	n;
+
 	/*
 	 * Assume the library function wcwidth() works better than our own
 	 * stuff.  It should return 1 for ambiguous width chars!
@@ -5661,9 +5662,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (i == 0)
 	    {
 		n1 = lili->li_tv.vval.v_number;
-		if (n1 < 0x100)
+		if (n1 < 0x80)
 		{
-		    emsg(_(e_only_values_of_0x100_and_higher_supported));
+		    emsg(_(e_only_values_of_0x80_and_higher_supported));
 		    vim_free(ptrs);
 		    return;
 		}
