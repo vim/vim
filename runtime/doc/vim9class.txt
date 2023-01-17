@@ -282,7 +282,7 @@ object members, they cannot use the "this" keyword. >
 	   this.size: number
 	   static totalSize: number
 
-	   " Clear the total size and return the value it had before. 
+	   " Clear the total size and return the value it had before.
 	   static def ClearTotalSize(): number
 	      var prev = totalSize
 	      totalSize = 0
@@ -639,7 +639,7 @@ Some languages support multiple inheritance.  Although that can be useful in
 some cases, it makes the rules of how a class works quite complicated.
 Instead, using interfaces to declare what is supported is much simpler.  The
 very popular Java language does it this way, and it should be good enough for
-Vim.  The "keep it simple" rule applies here.  
+Vim.  The "keep it simple" rule applies here.
 
 Explicitly declaring that a class supports an interface makes it easy to see
 what a class is intended for.  It also makes it possible to do proper type

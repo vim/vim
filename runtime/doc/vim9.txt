@@ -105,7 +105,7 @@ script and `:def` functions; details are below:
 	`:open`
 	`:s`  with only flags
 	`:t`
-  	`:xit`
+	`:xit`
 - Some commands, especially those used for flow control, cannot be shortened.
   E.g., `:throw` cannot be written as `:th`.  *vim9-no-shorten*
 - You cannot use curly-braces names.
@@ -388,7 +388,6 @@ used: >
 	echo temp  # Error!
 
 This is especially useful in a user command: >
-
 	command -range Rename {
 		 var save = @a
 		 @a = 'some expression'
@@ -397,7 +396,6 @@ This is especially useful in a user command: >
 	    }
 
 And with autocommands: >
-
    au BufWritePre *.go {
 		 var save = winsaveview()
 		 silent! exe ':%! some formatting command'
@@ -746,7 +744,7 @@ continuation is used without a backslash and a line starts with a bar: >
 							*E1050*
 To make it possible for the operator at the start of the line to be
 recognized, it is required to put a colon before a range.  This example will
-add "start" and print: >
+add "start" and "print": >
 	var result = start
 	+ print
 Like this: >
@@ -805,7 +803,7 @@ Notes:
 	echo [1, 2]
 		[3, 4]
 - In some cases it is difficult for Vim to parse a command, especially when
-  commands are used as an argument to another command, such as `windo`.  In
+  commands are used as an argument to another command, such as `:windo`.  In
   those cases the line continuation with a backslash has to be used.
 
 
@@ -1311,7 +1309,7 @@ Closures defined in a loop will share the same context.  For example: >
 <							*E1271*
 A closure must be compiled in the context that it is defined in, so that
 variables in that context can be found.  This mostly happens correctly, except
-when a function is marked for debugging with `breakadd` after it was compiled.
+when a function is marked for debugging with `:breakadd` after it was compiled.
 Make sure to define the breakpoint before compiling the outer function.
 
 The "inloop" variable will exist only once, all closures put in the list refer
@@ -1353,7 +1351,7 @@ closure: >
 	}
 	endfor
 
-Using `echowindow` is useful in a timer, the messages go into a popup and will
+Using `:echowindow` is useful in a timer, the messages go into a popup and will
 not interfere with what the user is doing when it triggers.
 
 
@@ -1594,7 +1592,7 @@ That is because the declaration looks like a list of numbers, thus is
 equivalent to: >
 	var ll: list<number> = [1, 2, 3]
 If you do want a more permissive list you need to declare the type: >
-	var ll: list<any = [1, 2, 3]
+	var ll: list<any> = [1, 2, 3]
 	ll->extend(['x'])  # OK
 
 

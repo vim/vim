@@ -48,7 +48,7 @@ typesetting command. That must be a function that takes a path and returns the
 command as a List. For example:
 >
 	def ConTeXtCustomCommand(path: string): list<string>
-	  return ['mtxrun', '--script', 'context', '--nonstopmode, path]
+	  return ['mtxrun', '--script', 'context', '--nonstopmode', path]
 	enddef
 
 	context.ConTeXtTypeset("%", v:none, ConTeXtCustomCommand)

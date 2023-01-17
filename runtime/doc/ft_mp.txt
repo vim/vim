@@ -84,7 +84,7 @@ METAFONT buffers, and it is set to 0 by default in MetaPost buffers.
 Define additional keywords that end indented blocks. For instance, if you
 define:
 >
-	g:mp_end_tag = ['\<endfoo\>']
+	g:mp_close_tag = ['\<endfoo\>']
 <
 any line starting with `endfoo` will be de-indented compared to its previous
 line.
