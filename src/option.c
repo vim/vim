@@ -1684,7 +1684,7 @@ do_set(
 	errmsg = NULL;
 	startarg = arg;		// remember for error message
 
-	if (STRNCMP(arg, "all", 3) == 0 && !isalpha(arg[3])
+	if (STRNCMP(arg, "all", 3) == 0 && !ASCII_ISALPHA(arg[3])
 						&& !(opt_flags & OPT_MODELINE))
 	{
 	    /*
