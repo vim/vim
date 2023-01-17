@@ -265,7 +265,7 @@ Detail: this is because "Inner" will actually become a function reference to a
 function with a generated name.
 
 It is not possible to define a script-local function in a function.  You can
-define a local function and assign it to a script-local funcref (it must have
+define a local function and assign it to a script-local Funcref (it must have
 been declared at the script level).  It is possible to define a global
 function by using the "g:" prefix.
 
