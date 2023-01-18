@@ -489,6 +489,12 @@ func Test_getcompletion()
   let l = getcompletion('paint', 'function')
   call assert_equal([], l)
 
+  if !has('ruby')
+    " global_functions[] has an entry but it doesn't have an implemention
+    let l = getcompletion('ruby', 'function')
+    call assert_equal([], l)
+  endif
+
   let Flambda = {-> 'hello'}
   let l = getcompletion('', 'function')
   let l = filter(l, {i, v -> v =~ 'lambda'})
