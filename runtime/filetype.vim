@@ -861,9 +861,6 @@ au BufRead,BufNewFile *.heex			setf heex
 " HEX (Intel)
 au BufNewFile,BufRead *.hex,*.h32		setf hex
 
-" Hjson
-au BufNewFile,BufRead *.hjson			setf hjson
-
 " HLS Playlist (or another form of playlist)
 au BufNewFile,BufRead *.m3u,*.m3u8		setf hlsplaylist
 

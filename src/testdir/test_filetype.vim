@@ -257,7 +257,6 @@ let s:filename_checks = {
     \ 'hercules': ['file.vc', 'file.ev', 'file.sum', 'file.errsum'],
     \ 'hex': ['file.hex', 'file.h32'],
     \ 'hgcommit': ['hg-editor-file.txt'],
-    \ 'hjson': ['file.hjson'],
     \ 'hlsplaylist': ['file.m3u', 'file.m3u8'],
     \ 'hog': ['file.hog', 'snort.conf', 'vision.conf'],
     \ 'hollywood': ['file.hws'],
