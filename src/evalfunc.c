@@ -2872,6 +2872,9 @@ get_function_name(expand_T *xp, int idx)
     }
     if (++intidx < (int)ARRAY_LENGTH(global_functions))
     {
+	// skip if function does'nt have implementation
+	if (global_functions[intidx].f_func == NULL)
+	    return (char_u *)"";
 	STRCPY(IObuff, global_functions[intidx].f_name);
 	STRCAT(IObuff, "(");
 	if (global_functions[intidx].f_max_argc == 0)

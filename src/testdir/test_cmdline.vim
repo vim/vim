@@ -488,6 +488,11 @@ func Test_getcompletion()
   call assert_true(index(l, 'taglist(') >= 0)
   let l = getcompletion('paint', 'function')
   call assert_equal([], l)
+  if !has('ruby')
+    " global_functions has entry but it doesn't have implement
+    let l = getcompletion('ruby', 'function')
+    call assert_equal([], l)
+  endif
 
   let Flambda = {-> 'hello'}
   let l = getcompletion('', 'function')
