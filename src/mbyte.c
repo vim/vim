@@ -1590,7 +1590,13 @@ utf_char2cells(int c)
     };
 
 #ifdef FEAT_EVAL
-    if (c >= 0x80)
+    if (c >= 0x80 &&
+# ifdef USE_WCHAR_FUNCTIONS
+	    wcwidth(c) >= 1
+# else
+	    vim_isprintc(c)
+# endif
+	    )
     {
 	int n = cw_value(c);
 	if (n != 0)

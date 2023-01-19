@@ -172,6 +172,7 @@ func Test_setcellwidths()
     " Handle \u0080 to \u009F as control chars even on MS-Windows.
     set isprint=@,161-255
 
+    call setcellwidths([])
     " Control chars
     call assert_equal(4, strwidth("\u0081"))
     call assert_equal(6, strwidth("\uFEFF"))
@@ -179,7 +180,8 @@ func Test_setcellwidths()
     call assert_equal((aw == 'single') ? 1 : 2, strwidth("\u00A1"))
     call assert_equal((aw == 'single') ? 1 : 2, strwidth("\u2010"))
 
-    call setcellwidths([[0xA1, 0xA1, 1], [0x2010, 0x2010, 1]])
+    call setcellwidths([[0x81, 0x81, 1], [0xA1, 0xA1, 1],
+                      \ [0x2010, 0x2010, 1], [0xFEFF, 0xFEFF, 1]])
     " Control chars
     call assert_equal(4, strwidth("\u0081"))
     call assert_equal(6, strwidth("\uFEFF"))
@@ -187,7 +189,8 @@ func Test_setcellwidths()
     call assert_equal(1, strwidth("\u00A1"))
     call assert_equal(1, strwidth("\u2010"))
 
-    call setcellwidths([[0xA1, 0xA1, 2], [0x2010, 0x2010, 2]])
+    call setcellwidths([[0x81, 0x81, 2], [0xA1, 0xA1, 2],
+                      \ [0x2010, 0x2010, 2], [0xFEFF, 0xFEFF, 2]])
     " Control chars
     call assert_equal(4, strwidth("\u0081"))
     call assert_equal(6, strwidth("\uFEFF"))
