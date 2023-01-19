@@ -129,6 +129,7 @@ func Test_terminal_hidden_winsize()
   let cmd = GetDummyCmd()
   let rows = winheight(0)
   let buf = term_start(cmd, #{hidden: 1, term_rows: 10})
+  call TermWait(buf)
   call assert_equal(rows, winheight(0))
   call assert_equal([10, &columns], term_getsize(buf))
   exe "bwipe! " .. buf
@@ -196,6 +197,7 @@ func Test_terminal_out_err()
 
   let outfile = 'Xtermstdout'
   let buf = term_start(['./Xechoerrout.sh'], {'out_io': 'file', 'out_name': outfile})
+  call TermWait(buf)
 
   call WaitFor({-> !empty(readfile(outfile)) && !empty(term_getline(buf, 1))})
   call assert_equal(['this is standard out'], readfile(outfile))
@@ -216,6 +218,7 @@ func Test_termwinscroll()
   " will be dropped.
   exe 'set termwinscroll=' . &lines
   let buf = term_start('/bin/sh')
+  call TermWait(buf)
   for i in range(1, &lines)
     call feedkeys("echo " . i . "\<CR>", 'xt')
     call WaitForAssert({-> assert_match(string(i), term_getline(buf, term_getcursor(buf)[0] - 1))})
@@ -508,6 +511,7 @@ func Test_term_gettitle()
   endif
 
   let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', '-c', 'set title'])
+  call TermWait(term)
   " When Vim is running as a server then the title ends in VIM{number}, thus
   " optionally match a number after "VIM".
   call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d*$', term_gettitle(term)) })

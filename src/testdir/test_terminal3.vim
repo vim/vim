@@ -18,6 +18,7 @@ func Test_terminal_altscreen()
   let cmd = "cat Xtext\<CR>"
 
   let buf = term_start(&shell, {})
+  call TermWait(buf)
   call writefile(["\<Esc>[?1047h"], 'Xtext', 'D')
   call term_sendkeys(buf, cmd)
   call WaitForAssert({-> assert_equal(1, term_getaltscreen(buf))})
