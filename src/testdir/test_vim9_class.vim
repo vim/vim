@@ -1214,5 +1214,23 @@ def Test_abstract_class()
   v9.CheckScriptFailure(lines, 'E1316:')
 enddef
 
+def Test_closure_in_class()
+  var lines =<< trim END
+      vim9script
+
+      class Foo
+        this.y: list<string> = ['B']
+
+        def new()
+          g:result = filter(['A', 'B'], (_, v) => index(this.y, v) == -1)
+        enddef
+      endclass
+
+      Foo.new()
+      assert_equal(['A'], g:result)
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

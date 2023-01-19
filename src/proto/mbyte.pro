@@ -86,5 +86,6 @@ int convert_input_safe(char_u *ptr, int len, int maxlen, char_u **restp, int *re
 char_u *string_convert(vimconv_T *vcp, char_u *ptr, int *lenp);
 char_u *string_convert_ext(vimconv_T *vcp, char_u *ptr, int *lenp, int *unconvlenp);
 void f_setcellwidths(typval_T *argvars, typval_T *rettv);
+void f_getcellwidths(typval_T *argvars, typval_T *rettv);
 void f_charclass(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

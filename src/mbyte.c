@@ -5746,6 +5746,28 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
     void
+f_getcellwidths(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    for (size_t i = 0; i < cw_table_size; i++)
+    {
+	list_T *entry = list_alloc();
+	if (entry == NULL)
+	    break;
+	if (list_append_number(entry, (varnumber_T)cw_table[i].first) == FAIL
+	   || list_append_number(entry, (varnumber_T)cw_table[i].last) == FAIL
+	   || list_append_number(entry, (varnumber_T)cw_table[i].width) == FAIL
+	   || list_append_list(rettv->vval.v_list, entry) == FAIL)
+	{
+	    list_free(entry);
+	    break;
+	}
+    }
+}
+
+    void
 f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
 {
     if (check_for_string_arg(argvars, 0) == FAIL

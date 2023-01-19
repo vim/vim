@@ -66,6 +66,7 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
 	if (lvar != NULL)
 	{
 	    CLEAR_POINTER(lvar);
+	    lvar->lv_loop_depth = -1;
 	    lvar->lv_name = (char_u *)(is_super ? "super" : "this");
 	    if (cctx->ctx_ufunc->uf_class != NULL)
 	    {
