@@ -1038,7 +1038,8 @@ ExpandRTDir(
 	e = s + STRLEN(s);
 	if (e - 4 > s && STRNICMP(e - 4, ".vim", 4) == 0)
 	{
-	    e -= 4;
+	    // remove file ext only if not flag DIP_PRNEXT
+	    if (!(flags & DIP_PRNEXT)) { e -= 4; }
 	    for (s = e; s > match; MB_PTR_BACK(match, s))
 		if (s < match || vim_ispathsep(*s))
 		    break;

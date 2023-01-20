@@ -56,6 +56,7 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_OLD_SETTING
 	    && xp->xp_context != EXPAND_OWNSYNTAX
 	    && xp->xp_context != EXPAND_PACKADD
+	    && xp->xp_context != EXPAND_RUNTIME
 	    && xp->xp_context != EXPAND_SHELLCMD
 	    && xp->xp_context != EXPAND_TAGS
 	    && xp->xp_context != EXPAND_TAGS_LISTFILES
@@ -1362,6 +1363,7 @@ addstar(
 	// For a tag pattern starting with "/" no translation is needed.
 	if (context == EXPAND_HELP
 		|| context == EXPAND_COLORS
+		|| context == EXPAND_RUNTIME
 		|| context == EXPAND_COMPILER
 		|| context == EXPAND_OWNSYNTAX
 		|| context == EXPAND_FILETYPE
@@ -2311,6 +2313,11 @@ set_context_by_cmdname(
 	    xp->xp_context = EXPAND_COLORS;
 	    xp->xp_pattern = arg;
 	    break;
+	
+        case CMD_runtime:
+	    xp->xp_context = EXPAND_RUNTIME;
+            xp->xp_pattern = arg;
+	    break;
 
 	case CMD_compiler:
 	    xp->xp_context = EXPAND_COMPILER;
@@ -3017,6 +3024,12 @@ ExpandFromContext(
     {
 	char *directories[] = {"colors", NULL};
 	return ExpandRTDir(pat, DIP_START + DIP_OPT, numMatches, matches,
+								directories);
+    }
+    if (xp->xp_context == EXPAND_RUNTIME)
+    {
+	char *directories[] = {"", NULL};
+	return ExpandRTDir(pat, DIP_START + DIP_OPT + DIP_PRNEXT, numMatches, matches,
 								directories);
     }
     if (xp->xp_context == EXPAND_COMPILER)
