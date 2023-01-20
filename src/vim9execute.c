@@ -5822,12 +5822,25 @@ call_def_function(
 	}
 	else
 	{
-	    if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
-		    && check_typval_arg_type(
-			ufunc->uf_arg_types[idx], tv,
+	    int done = FALSE;
+	    if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len)
+	    {
+		type_T *expected = ufunc->uf_arg_types[idx];
+		if (expected->tt_type == VAR_FLOAT && tv->v_type == VAR_NUMBER)
+		{
+		    // When a float is expected and a number was given, convert
+		    // the value.
+		    STACK_TV_BOT(0)->v_type = VAR_FLOAT;
+		    STACK_TV_BOT(0)->v_lock = 0;
+		    STACK_TV_BOT(0)->vval.v_float = tv->vval.v_number;
+		    done = TRUE;
+		}
+		else if (check_typval_arg_type(expected, tv,
 						   NULL, argv_idx + 1) == FAIL)
-		goto failed_early;
-	    copy_tv(tv, STACK_TV_BOT(0));
+		    goto failed_early;
+	}
+	    if (!done)
+		copy_tv(tv, STACK_TV_BOT(0));
 	}
 	++ectx.ec_stack.ga_len;
     }
