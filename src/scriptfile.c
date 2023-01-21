@@ -56,19 +56,18 @@ estack_push(etype_T type, char_u *name, long lnum)
 
     // If memory allocation fails then we'll pop more than we push, eventually
     // at the top level it will be OK again.
-    if (ga_grow(&exestack, 1) == OK)
-    {
-	entry = ((estack_T *)exestack.ga_data) + exestack.ga_len;
-	entry->es_type = type;
-	entry->es_name = name;
-	entry->es_lnum = lnum;
+    if (ga_grow(&exestack, 1) != OK)
+	return NULL;
+
+    entry = ((estack_T *)exestack.ga_data) + exestack.ga_len;
+    entry->es_type = type;
+    entry->es_name = name;
+    entry->es_lnum = lnum;
 #ifdef FEAT_EVAL
-	entry->es_info.ufunc = NULL;
+    entry->es_info.ufunc = NULL;
 #endif
-	++exestack.ga_len;
-	return entry;
-    }
-    return NULL;
+    ++exestack.ga_len;
+    return entry;
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -667,12 +666,12 @@ source_all_matches(char_u *pat)
     char_u  **files;
     int	    i;
 
-    if (gen_expand_wildcards(1, &pat, &num_files, &files, EW_FILE) == OK)
-    {
-	for (i = 0; i < num_files; ++i)
-	    (void)do_source(files[i], FALSE, DOSO_NONE, NULL);
-	FreeWild(num_files, files);
-    }
+    if (gen_expand_wildcards(1, &pat, &num_files, &files, EW_FILE) != OK)
+	return;
+
+    for (i = 0; i < num_files; ++i)
+	(void)do_source(files[i], FALSE, DOSO_NONE, NULL);
+    FreeWild(num_files, files);
 }
 
 /*
@@ -2616,36 +2615,34 @@ get_autoload_prefix(scriptitem_T *si)
     char_u *
 may_prefix_autoload(char_u *name)
 {
-    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
+	return name;
+
+    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+    if (si->sn_autoload_prefix == NULL)
+	return name;
+
+    char_u  *basename = name;
+    size_t  len;
+    char_u  *res;
+
+    if (*name == K_SPECIAL)
     {
-	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+	char_u *p = vim_strchr(name, '_');
 
-	if (si->sn_autoload_prefix != NULL)
-	{
-	    char_u  *basename = name;
-	    size_t  len;
-	    char_u  *res;
-
-	    if (*name == K_SPECIAL)
-	    {
-		char_u *p = vim_strchr(name, '_');
-
-		// skip over "<SNR>99_"
-		if (p != NULL)
-		    basename = p + 1;
-	    }
-
-	    len = STRLEN(si->sn_autoload_prefix) + STRLEN(basename) + 2;
-	    res = alloc(len);
-	    if (res != NULL)
-	    {
-		vim_snprintf((char *)res, len, "%s%s",
-					     si->sn_autoload_prefix, basename);
-		return res;
-	    }
-	}
+	// skip over "<SNR>99_"
+	if (p != NULL)
+	    basename = p + 1;
     }
-    return name;
+
+    len = STRLEN(si->sn_autoload_prefix) + STRLEN(basename) + 2;
+    res = alloc(len);
+    if (res == NULL)
+	return NULL;
+
+    vim_snprintf((char *)res, len, "%s%s", si->sn_autoload_prefix, basename);
+    return res;
 }
 
 /*

@@ -1527,16 +1527,16 @@ spell_cat_line(char_u *buf, char_u *line, int maxlen)
     while (vim_strchr((char_u *)"*#/\"\t", *p) != NULL)
 	p = skipwhite(p + 1);
 
-    if (*p != NUL)
+    if (*p == NUL)
+	return;
+
+    // Only worth concatenating if there is something else than spaces to
+    // concatenate.
+    n = (int)(p - line) + 1;
+    if (n < maxlen - 1)
     {
-	// Only worth concatenating if there is something else than spaces to
-	// concatenate.
-	n = (int)(p - line) + 1;
-	if (n < maxlen - 1)
-	{
-	    vim_memset(buf, ' ', n);
-	    vim_strncpy(buf +  n, p, maxlen - 1 - n);
-	}
+	vim_memset(buf, ' ', n);
+	vim_strncpy(buf +  n, p, maxlen - 1 - n);
     }
 }
 
@@ -1803,17 +1803,17 @@ spell_load_cb(char_u *fname, void *cookie)
     slang_T	*slang;
 
     slang = spell_load_file(fname, slp->sl_lang, NULL, FALSE);
-    if (slang != NULL)
-    {
-	// When a previously loaded file has NOBREAK also use it for the
-	// ".add" files.
-	if (slp->sl_nobreak && slang->sl_add)
-	    slang->sl_nobreak = TRUE;
-	else if (slang->sl_nobreak)
-	    slp->sl_nobreak = TRUE;
+    if (slang == NULL)
+	return;
 
-	slp->sl_slang = slang;
-    }
+    // When a previously loaded file has NOBREAK also use it for the
+    // ".add" files.
+    if (slp->sl_nobreak && slang->sl_add)
+	slang->sl_nobreak = TRUE;
+    else if (slang->sl_nobreak)
+	slp->sl_nobreak = TRUE;
+
+    slp->sl_slang = slang;
 }
 
 
@@ -2444,13 +2444,13 @@ spell_delete_wordlist(void)
 {
     char_u	fname[MAXPATHL];
 
-    if (int_wordlist != NULL)
-    {
-	mch_remove(int_wordlist);
-	int_wordlist_spl(fname);
-	mch_remove(fname);
-	VIM_CLEAR(int_wordlist);
-    }
+    if (int_wordlist == NULL)
+	return;
+
+    mch_remove(int_wordlist);
+    int_wordlist_spl(fname);
+    mch_remove(fname);
+    VIM_CLEAR(int_wordlist);
 }
 
 /*
@@ -2524,16 +2524,16 @@ open_spellbuf(void)
     buf_T	*buf;
 
     buf = ALLOC_CLEAR_ONE(buf_T);
-    if (buf != NULL)
-    {
-	buf->b_spell = TRUE;
-	buf->b_p_swf = TRUE;	// may create a swap file
+    if (buf == NULL)
+	return NULL;
+
+    buf->b_spell = TRUE;
+    buf->b_p_swf = TRUE;	// may create a swap file
 #ifdef FEAT_CRYPT
-	buf->b_p_key = empty_option;
+    buf->b_p_key = empty_option;
 #endif
-	ml_open(buf);
-	ml_open_file(buf);	// create swap file now
-    }
+    ml_open(buf);
+    ml_open_file(buf);	// create swap file now
     return buf;
 }
 
@@ -2543,11 +2543,11 @@ open_spellbuf(void)
     void
 close_spellbuf(buf_T *buf)
 {
-    if (buf != NULL)
-    {
-	ml_close(buf, TRUE);
-	vim_free(buf);
-    }
+    if (buf == NULL)
+	return;
+
+    ml_close(buf, TRUE);
+    vim_free(buf);
 }
 
 /*
@@ -4404,15 +4404,15 @@ did_set_spell_option(int is_spellfile)
 	    errmsg = e_invalid_argument;
     }
 
-    if (errmsg == NULL)
-    {
-	FOR_ALL_WINDOWS(wp)
-	    if (wp->w_buffer == curbuf && wp->w_p_spell)
-	    {
-		errmsg = did_set_spelllang(wp);
-		break;
-	    }
-    }
+    if (errmsg != NULL)
+	return errmsg;
+
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_buffer == curbuf && wp->w_p_spell)
+	{
+	    errmsg = did_set_spelllang(wp);
+	    break;
+	}
     return errmsg;
 }
 
