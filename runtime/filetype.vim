@@ -2103,6 +2103,9 @@ au BufNewFile,BufRead *.texinfo,*.texi,*.txi	setf texinfo
 " TeX configuration
 au BufNewFile,BufRead texmf.cnf			setf texmf
 
+" Thrift (Apache)
+au BufNewFile,BufRead *.thrift			setf thrift
+
 " Tidy config
 au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
 
