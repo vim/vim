@@ -3028,7 +3028,7 @@ ExpandFromContext(
     }
     if (xp->xp_context == EXPAND_RUNTIME)
     {
-	char *directories[] = {"", NULL};
+	char *directories[] = {"**", NULL};
 	return ExpandRTDir(pat, DIP_START + DIP_OPT + DIP_PRNEXT, numMatches, matches,
 								directories);
     }
