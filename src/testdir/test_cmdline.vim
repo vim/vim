@@ -552,6 +552,11 @@ func Test_getcompletion()
   call assert_true(index(l, '<buffer>') >= 0)
   let l = getcompletion('not', 'mapclear')
   call assert_equal([], l)
+  
+  let l = getcompletion('', 'runtime')
+  call assert_true(index(l, 'defaults.vim') >= 0)
+  let l = getcompletion('notexitsts', 'runtime')
+  call assert_equal([], l)
 
   let l = getcompletion('.', 'shellcmd')
   call assert_equal(['./', '../'], filter(l, 'v:val =~ "\\./"'))
