@@ -990,18 +990,34 @@ ExpandRTDir(
 
     for (i = 0; dirnames[i] != NULL; ++i)
     {
-	s = alloc(STRLEN(dirnames[i]) + pat_len + 7);
-	if (s == NULL)
+	size_t buflen = STRLEN(dirnames[i]) + pat_len * 2 + 17;
+	char_u *buf = alloc(buflen);
+	if (buf == NULL)
 	{
 	    ga_clear_strings(&ga);
 	    return FAIL;
 	}
-	sprintf((char *)s, "%s/%s*.vim", dirnames[i], pat);
-	globpath(p_rtp, s, &ga, 0);
-	vim_free(s);
+	if (*(dirnames[i]) == NUL)
+	{
+	    // empty dir used for :runtime
+	    if (gettail(pat) == pat)
+		// no path separator, match dir names and script files
+		vim_snprintf((char *)buf, buflen, "\\(%s*.vim\\)\\|\\(%s*\\)",
+								     pat, pat);
+	    else
+		// has path separator, match script files
+		vim_snprintf((char *)buf, buflen, "%s*.vim", pat);
+	}
+	else
+	{
+	    vim_snprintf((char *)buf, buflen, "%s/%s*.vim", dirnames[i], pat);
+	}
+	globpath(p_rtp, buf, &ga, 0);
+	vim_free(buf);
     }
 
-    if (flags & DIP_START) {
+    if (flags & DIP_START)
+    {
 	for (i = 0; dirnames[i] != NULL; ++i)
 	{
 	    s = alloc(STRLEN(dirnames[i]) + pat_len + 22);
@@ -1016,7 +1032,8 @@ ExpandRTDir(
 	}
     }
 
-    if (flags & DIP_OPT) {
+    if (flags & DIP_OPT)
+    {
 	for (i = 0; dirnames[i] != NULL; ++i)
 	{
 	    s = alloc(STRLEN(dirnames[i]) + pat_len + 20);
@@ -1036,15 +1053,52 @@ ExpandRTDir(
 	match = ((char_u **)ga.ga_data)[i];
 	s = match;
 	e = s + STRLEN(s);
+	char_u *res_start = s;
+	if ((flags & DIP_PRNEXT) != 0)
+	{
+	    char_u *p = (char_u *)strstr((char *)match, (char *)pat);
+	    if (p != NULL)
+		// Drop what comes before "pat" in the match, so that for
+		// match "/long/path/syntax/cpp.vim" with pattern
+		// "syntax/cp" we only keep "syntax/cpp.vim".
+		res_start = p;
+	}
+
 	if (e - 4 > s && STRNICMP(e - 4, ".vim", 4) == 0)
 	{
-	    e -= 4;
-	    for (s = e; s > match; MB_PTR_BACK(match, s))
-		if (s < match || vim_ispathsep(*s))
-		    break;
-	    ++s;
+	    if (res_start == s)
+	    {
+		// Only keep the file name.
+		// Remove file ext only if flag DIP_PRNEXT is not present.
+		if ((flags & DIP_PRNEXT) == 0)
+		    e -= 4;
+		for (s = e; s > match; MB_PTR_BACK(match, s))
+		{
+		    if (s < match)
+			break;
+		    if (vim_ispathsep(*s))
+		    {
+			res_start = s + 1;
+			break;
+		    }
+		}
+	    }
+
 	    *e = NUL;
-	    mch_memmove(match, s, e - s + 1);
+	}
+
+	if (res_start > match)
+	    mch_memmove(match, res_start, e - res_start + 1);
+
+	// remove entries that look like backup files
+	if (e > s && e[-1] == '~')
+	{
+	    vim_free(match);
+	    char_u  **fnames = (char_u **)ga.ga_data;
+	    for (int j = i + 1; j < ga.ga_len; ++j)
+		fnames[j - 1] = fnames[j];
+	    --ga.ga_len;
+	    --i;
 	}
     }
 

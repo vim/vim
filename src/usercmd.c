@@ -86,6 +86,7 @@ static struct
 #endif
     {EXPAND_SETTINGS, "option"},
     {EXPAND_PACKADD, "packadd"},
+    {EXPAND_RUNTIME, "runtime"},
     {EXPAND_SHELLCMD, "shellcmd"},
 #if defined(FEAT_SIGNS)
     {EXPAND_SIGN, "sign"},
