@@ -1388,7 +1388,7 @@ f_globpath(typval_T *argvars, typval_T *rettv)
     if (file != NULL && !error)
     {
 	ga_init2(&ga, sizeof(char_u *), 10);
-	globpath(tv_get_string(&argvars[0]), file, &ga, flags);
+	globpath(tv_get_string(&argvars[0]), file, &ga, flags, FALSE);
 	if (rettv->v_type == VAR_STRING)
 	    rettv->vval.v_string = ga_concat_strings(&ga, "\n");
 	else if (rettv_list_alloc(rettv) == OK)
