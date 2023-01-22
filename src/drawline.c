@@ -101,6 +101,7 @@ typedef struct {
 #ifdef FEAT_SYN_HL
     int		draw_color_col;	// highlight colorcolumn
     int		*color_cols;	// pointer to according columns array
+    int		color_col_char;
 #endif
     int		eol_hl_off;	// 1 if highlighted char after EOL
 
@@ -887,8 +888,19 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 	    int attr = wlv->win_attr;
 	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol)
 		attr = HL_ATTR(HLF_CUC);
-	    else if (wlv->draw_color_col && VCOL_HLC == *wlv->color_cols)
+	    else if (wlv->draw_color_col && VCOL_HLC == *wlv->color_cols) {
 		attr = HL_ATTR(HLF_MC);
+	    	ScreenLines[wlv->off] = wlv->color_col_char;
+	    	ScreenLinesUC[wlv->off] = 0;
+		if (utf_char2len(wlv->color_col_char) > 1) {
+	    	  if (enc_utf8) {
+	    	      ScreenLinesUC[wlv->off] = wlv->color_col_char;
+		      if ((wlv->color_col_char & 0xff) == 0) {
+			  ScreenLines[wlv->off] = 0x80; // avoid storing zero
+		      }
+		  }
+		}
+	    }
 # ifdef LINE_ATTR
 	    else if (wlv->line_attr != 0)
 		attr = wlv->line_attr;
@@ -1241,6 +1253,7 @@ win_line(
 
 	// Check for columns to display for 'colorcolumn'.
 	wlv.color_cols = wp->w_p_cc_cols;
+	wlv.color_col_char = wp->w_fill_chars.colorcol;
 	if (wlv.color_cols != NULL)
 	    wlv.draw_color_col = advance_color_col(VCOL_HLC, &wlv.color_cols);
 #endif

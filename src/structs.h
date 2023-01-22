@@ -3630,6 +3630,7 @@ typedef struct
     int	diff;
     int	eob;
     int	lastline;
+    int	colorcol;
 } fill_chars_T;
 
 /*
