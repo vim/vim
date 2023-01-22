@@ -2533,7 +2533,7 @@ expand_in_path(
 	glob_flags |= WILD_ICASE;
     if (flags & EW_ADDSLASH)
 	glob_flags |= WILD_ADD_SLASH;
-    globpath(paths, pattern, gap, glob_flags);
+    globpath(paths, pattern, gap, glob_flags, FALSE);
     vim_free(paths);
 
     return gap->ga_len;
