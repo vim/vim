@@ -749,6 +749,54 @@ func Test_colorcolumn_sbr()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_colorcolumn_colorcol_multibyte()
+  CheckScreendump
+
+  " check that setting 'colorcol' char in fillchars works
+  let lines =<< trim END
+	split
+	edit X
+	call setline(1, ["1111111111","22222222222","3333333333"])
+	set nomodified
+	set colorcolumn=15,20
+  set fillchars+=colorcol:│
+	set number cursorline cursorlineopt=number
+	wincmd w
+	buf X
+  END
+  call writefile(lines, 'Xtest_colorcolumn_colorcol_multibyte', 'D')
+  let buf = RunVimInTerminal('-S Xtest_colorcolumn_colorcol_multibyte', {'rows': 10})
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_colorcolumn_4', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_colorcolumn_colorcol_ascii()
+  CheckScreendump
+
+  " check that setting 'colorcol' char in fillchars works
+  let lines =<< trim END
+	split
+	edit X
+	call setline(1, ["1111111111","22222222222","3333333333"])
+	set nomodified
+	set colorcolumn=15,20
+  set fillchars+=colorcol:x
+	set number cursorline cursorlineopt=number
+	wincmd w
+	buf X
+  END
+  call writefile(lines, 'Xtest_colorcolumn_colorcol_ascii', 'D')
+  let buf = RunVimInTerminal('-S Xtest_colorcolumn_colorcol_ascii', {'rows': 10})
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_colorcolumn_5', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 " This test must come before the Test_cursorline test, as it appears this
 " defines the Normal highlighting group anyway.
 func Test_1_highlight_Normalgroup_exists()
