@@ -811,6 +811,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_DISASSEMBLE	50
 #define EXPAND_BREAKPOINT	51
 #define EXPAND_SCRIPTNAMES	52
+#define EXPAND_RUNTIME		53
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1
@@ -2661,6 +2662,7 @@ typedef enum {
 #define DIP_NORTP   0x20	// do not use 'runtimepath'
 #define DIP_NOAFTER 0x40	// skip "after" directories
 #define DIP_AFTER   0x80	// only use "after" directories
+#define DIP_PRNEXT  0x100	// for print also file extension
 
 // Lowest number used for window ID. Cannot have this many windows.
 #define LOWEST_WIN_ID 1000

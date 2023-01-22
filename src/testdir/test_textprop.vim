@@ -1342,9 +1342,34 @@ func Test_textprop_after_tab()
        call prop_add(1, 2, {'length': 3, 'type': 'search'})
        call prop_add(2, 3, {'length': 3, 'type': 'search'})
   END
-  call writefile(lines, 'XtestPropTab', 'D')
-  let buf = RunVimInTerminal('-S XtestPropTab', {'rows': 6})
+  call writefile(lines, 'XtextPropTab', 'D')
+  let buf = RunVimInTerminal('-S XtextPropTab', {'rows': 6})
   call VerifyScreenDump(buf, 'Test_textprop_tab', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_textprop_nesting()
+  CheckScreendump
+
+  let lines =<< trim END
+      vim9script
+      var lines =<< trim LINESEND
+
+          const func: func.IFunction = ({
+              setLoading
+            }) => {
+      LINESEND
+      setline(1, lines)
+      prop_type_add('prop_add_test', {highlight: "ErrorMsg"})
+      prop_add(2, 31, {type: 'prop_add_test', end_lnum: 4, end_col: 2})
+      var text = 'text long enough to wrap line, text long enough to wrap line, text long enough to wrap line...'
+      prop_add(2, 0, {type: 'prop_add_test', text_wrap: 'truncate', text_align: 'after', text: text})
+  END
+  call writefile(lines, 'XtextpropNesting', 'D')
+  let buf = RunVimInTerminal('-S XtextpropNesting', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_textprop_nesting', {})
 
   " clean up
   call StopVimInTerminal(buf)

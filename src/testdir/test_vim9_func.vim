@@ -727,6 +727,18 @@ def Test_call_default_args()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_convert_number_to_float()
+  var lines =<< trim END
+      vim9script
+      def  Foo(a: float, b: float): float
+         return a + b
+      enddef
+
+      assert_equal(5.3, Foo(3.3, 2))
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def s:FuncWithComment(  # comment
   a: number, #comment
   b: bool, # comment
@@ -4311,10 +4323,10 @@ def Test_lambda_argument_type_check()
         return sum
       enddef
 
-      const ml = [3.0, 2, 7]
+      const ml = [3.0, 2, '7']
       echo Scan(ml)->Sum()
   END
-  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected float but got number')
+  v9.CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected float but got string')
 enddef
 
 def Test_multiple_funcref()
