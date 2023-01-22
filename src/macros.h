@@ -274,14 +274,17 @@
 #  ifdef MSWIN
 #   ifndef isnan
 #    define isnan(x) _isnan(x)
-     static __inline int isinf(double x) { return !_finite(x) && !_isnan(x); }
+     static __inline int isinf(double x)
+	{ return !_finite(x) && !_isnan(x); }
 #   endif
 #  else
 #   ifndef HAVE_ISNAN
-     static inline int isnan(double x) { return x != x; }
+     static inline int isnan(double x)
+	{ return x != x; }
 #   endif
 #   ifndef HAVE_ISINF
-     static inline int isinf(double x) { return !isnan(x) && isnan(x - x); }
+     static inline int isinf(double x)
+	{ return !isnan(x) && isnan(x - x); }
 #   endif
 #  endif
 #  if !defined(INFINITY)
@@ -335,7 +338,8 @@
  */
 #define VIM_CLEAR(p) \
     do { \
-	if ((p) != NULL) { \
+	if ((p) != NULL) \
+	{ \
 	    vim_free(p); \
 	    (p) = NULL; \
 	} \

@@ -361,7 +361,8 @@ gui_ph_handle_window_cb(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
     PhWindowEvent_t *we = info->cbdata;
     ushort_t *width, *height;
 
-    switch (we->event_f) {
+    switch (we->event_f)
+    {
 	case Ph_WM_CLOSE:
 	    gui_shell_closed();
 	    break;

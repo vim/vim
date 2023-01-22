@@ -5799,10 +5799,11 @@ nfa_regmatch(
 	goto theend;
     }
 
-#define	ADD_STATE_IF_MATCH(state)			\
-    if (result) {					\
-	add_state = state->out;				\
-	add_off = clen;					\
+#define	ADD_STATE_IF_MATCH(state)	\
+    if (result)				\
+    {					\
+	add_state = state->out;		\
+	add_off = clen;			\
     }
 
     /*

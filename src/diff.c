@@ -1680,9 +1680,8 @@ diff_read(
     {
 	if (dio->dio_internal)
 	{
-	    if (line_idx >= dout->dout_ga.ga_len) {
+	    if (line_idx >= dout->dout_ga.ga_len)
 		break;      // did last line
-	    }
 	    hunk = ((diffhunk_T **)dout->dout_ga.ga_data)[line_idx++];
 	}
 	else

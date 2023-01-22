@@ -167,16 +167,17 @@ tabline_scroller_clicked(
     Dimension	width, height;
 
     tab_scroll_w = XtNameToWidget(tabLine, scroller_name);
-    if (tab_scroll_w != (Widget)0) {
+    if (tab_scroll_w != (Widget)0)
+    {
 	XtVaGetValues(tab_scroll_w, XmNx, &pos_x, XmNy, &pos_y, XmNwidth,
 		      &width, XmNheight, &height, NULL);
-	if (pos_x >= 0) {
+	if (pos_x >= 0)
+	{
 	    // Tab scroller (next) is visible
-	    if ((event->x >= pos_x) && (event->x <= pos_x + width) &&
-		(event->y >= pos_y) && (event->y <= pos_y + height)) {
+	    if (event->x >= pos_x && event->x <= pos_x + width
+		    && event->y >= pos_y && event->y <= pos_y + height)
 		// Clicked on the scroller
 		return TRUE;
-	    }
 	}
     }
     return FALSE;

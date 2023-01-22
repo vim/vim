@@ -2849,7 +2849,8 @@ static struct vimoption options[] =
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
 
 // terminal output codes
-#define p_term(sss, vvv)   {sss, NULL, P_STRING|P_VI_DEF|P_RALL|P_SECURE, \
+#define p_term(sss, vvv) \
+			    {sss, NULL, P_STRING|P_VI_DEF|P_RALL|P_SECURE, \
 			    (char_u *)&vvv, PV_NONE, \
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
 

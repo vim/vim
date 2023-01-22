@@ -2093,7 +2093,8 @@ f_digraph_get(typval_T *argvars, typval_T *rettv)
 
     if (has_mbyte)
 	buf[(*mb_char2bytes)(code, buf)] = NUL;
-    else {
+    else
+    {
 	buf[0] = code;
 	buf[1] = NUL;
     }

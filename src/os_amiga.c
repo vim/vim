@@ -1250,7 +1250,8 @@ dos_packet(
     // Allocate space for a packet, make it public and clear it
     packet = (struct StandardPacket *)
 	AllocMem((long) sizeof(struct StandardPacket), MEMF_PUBLIC | MEMF_CLEAR);
-    if (!packet) {
+    if (!packet)
+    {
 	DeletePort(replyport);
 	return (0);
     }

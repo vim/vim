@@ -283,7 +283,7 @@ static struct fmtpattern
 	{'m', ".\\+"},		// 7
 #define FMT_PATTERN_R 8
 	{'r', ".*"},		// 8
-	{'p', "[- 	.]*"},	// 9
+	{'p', "[-	 .]*"},	// 9
 	{'v', "\\d\\+"},	// 10
 	{'s', ".\\+"},		// 11
 	{'o', ".\\+"}		// 12
@@ -3623,7 +3623,8 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
     if (qfp->qf_module != NULL && *qfp->qf_module != NUL)
 	vim_snprintf((char *)IObuff, IOSIZE, "%2d %s", qf_idx,
 						(char *)qfp->qf_module);
-    else {
+    else
+    {
 	if (qfp->qf_fnum != 0
 		&& (buf = buflist_findnr(qfp->qf_fnum)) != NULL)
 	{

@@ -98,7 +98,8 @@ typedef struct exarg exarg_T;
  * Not supported commands are included to avoid ambiguities.
  */
 #ifdef DO_DECLARE_EXCMD
-# define EXCMD(a, b, c, d, e)  {(char_u *)b, c, (long_u)(d), e}
+# define EXCMD(a, b, c, d, e) \
+	{(char_u *)b, c, (long_u)(d), e}
 
 typedef void (*ex_func_T) (exarg_T *eap);
 

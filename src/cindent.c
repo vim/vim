@@ -2641,7 +2641,7 @@ get_c_indent(void)
 
 	    // It could have been something like
 	    //	   case 1: if (asdf &&
-	    //			ldfd) {
+	    //			condition) {
 	    //		    }
 	    if ((curbuf->b_ind_js || curbuf->b_ind_keep_case_label)
 			   && cin_iscase(skipwhite(ml_get_curline()), FALSE))
@@ -3275,7 +3275,7 @@ get_c_indent(void)
 		    }
 
 		    // Check if we are after an "if", "while", etc.
-		    // Also allow "   } else".
+		    // Also allow "} else".
 		    if (cin_is_cinword(l) || cin_iselse(skipwhite(l)))
 		    {
 			// Found an unterminated line after an if (), line up
@@ -3335,7 +3335,7 @@ get_c_indent(void)
 			{
 			    // If we're looking at "} else", let's make sure we
 			    // find the opening brace of the enclosing scope,
-			    // not the one from "if () {".
+			    // not the one from "if (condition) {".
 			    if (*l == '}')
 				curwin->w_cursor.col =
 					  (colnr_T)(l - ml_get_curline()) + 1;
@@ -3680,7 +3680,7 @@ term_again:
     // line needs to be indented as a function type spec.
     // Don't do this if the current line looks like a comment or if the
     // current line is terminated, ie. ends in ';', or if the current line
-    // contains { or }: "void f() {\n if (1)"
+    // contains { or }: "void f(condition) {\n if (1)"
     if (cur_curpos.lnum < curbuf->b_ml.ml_line_count
 	    && !cin_nocode(theline)
 	    && vim_strchr(theline, '{') == NULL

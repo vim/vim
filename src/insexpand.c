@@ -263,27 +263,39 @@ ins_ctrl_x(void)
 /*
  * Functions to check the current CTRL-X mode.
  */
-int ctrl_x_mode_none(void) { return ctrl_x_mode == 0; }
-int ctrl_x_mode_normal(void) { return ctrl_x_mode == CTRL_X_NORMAL; }
-int ctrl_x_mode_scroll(void) { return ctrl_x_mode == CTRL_X_SCROLL; }
-int ctrl_x_mode_whole_line(void) { return ctrl_x_mode == CTRL_X_WHOLE_LINE; }
-int ctrl_x_mode_files(void) { return ctrl_x_mode == CTRL_X_FILES; }
-int ctrl_x_mode_tags(void) { return ctrl_x_mode == CTRL_X_TAGS; }
-int ctrl_x_mode_path_patterns(void) {
-				  return ctrl_x_mode == CTRL_X_PATH_PATTERNS; }
-int ctrl_x_mode_path_defines(void) {
-				   return ctrl_x_mode == CTRL_X_PATH_DEFINES; }
-int ctrl_x_mode_dictionary(void) { return ctrl_x_mode == CTRL_X_DICTIONARY; }
-int ctrl_x_mode_thesaurus(void) { return ctrl_x_mode == CTRL_X_THESAURUS; }
-int ctrl_x_mode_cmdline(void) {
-	return ctrl_x_mode == CTRL_X_CMDLINE
+int ctrl_x_mode_none(void)
+    { return ctrl_x_mode == 0; }
+int ctrl_x_mode_normal(void)
+    { return ctrl_x_mode == CTRL_X_NORMAL; }
+int ctrl_x_mode_scroll(void)
+    { return ctrl_x_mode == CTRL_X_SCROLL; }
+int ctrl_x_mode_whole_line(void)
+    { return ctrl_x_mode == CTRL_X_WHOLE_LINE; }
+int ctrl_x_mode_files(void)
+    { return ctrl_x_mode == CTRL_X_FILES; }
+int ctrl_x_mode_tags(void)
+    { return ctrl_x_mode == CTRL_X_TAGS; }
+int ctrl_x_mode_path_patterns(void)
+    { return ctrl_x_mode == CTRL_X_PATH_PATTERNS; }
+int ctrl_x_mode_path_defines(void)
+    { return ctrl_x_mode == CTRL_X_PATH_DEFINES; }
+int ctrl_x_mode_dictionary(void)
+    { return ctrl_x_mode == CTRL_X_DICTIONARY; }
+int ctrl_x_mode_thesaurus(void)
+    { return ctrl_x_mode == CTRL_X_THESAURUS; }
+int ctrl_x_mode_cmdline(void)
+    { return ctrl_x_mode == CTRL_X_CMDLINE
 		|| ctrl_x_mode == CTRL_X_CMDLINE_CTRL_X; }
-int ctrl_x_mode_function(void) { return ctrl_x_mode == CTRL_X_FUNCTION; }
-int ctrl_x_mode_omni(void) { return ctrl_x_mode == CTRL_X_OMNI; }
-int ctrl_x_mode_spell(void) { return ctrl_x_mode == CTRL_X_SPELL; }
-static int ctrl_x_mode_eval(void) { return ctrl_x_mode == CTRL_X_EVAL; }
-int ctrl_x_mode_line_or_eval(void) {
-       return ctrl_x_mode == CTRL_X_WHOLE_LINE || ctrl_x_mode == CTRL_X_EVAL; }
+int ctrl_x_mode_function(void)
+    { return ctrl_x_mode == CTRL_X_FUNCTION; }
+int ctrl_x_mode_omni(void)
+    { return ctrl_x_mode == CTRL_X_OMNI; }
+int ctrl_x_mode_spell(void)
+    { return ctrl_x_mode == CTRL_X_SPELL; }
+static int ctrl_x_mode_eval(void)
+    { return ctrl_x_mode == CTRL_X_EVAL; }
+int ctrl_x_mode_line_or_eval(void)
+    { return ctrl_x_mode == CTRL_X_WHOLE_LINE || ctrl_x_mode == CTRL_X_EVAL; }
 
 /*
  * Whether other than default completion has been selected.

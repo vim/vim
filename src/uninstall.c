@@ -49,7 +49,8 @@ reg_delete_key(HKEY hRootKey, const char *key, DWORD flag)
 	if (advapi_lib != NULL)
 	    delete_key_ex = (LONG (WINAPI *)(HKEY, LPCTSTR, REGSAM, DWORD))GetProcAddress(advapi_lib, "RegDeleteKeyExA");
     }
-    if (delete_key_ex != NULL) {
+    if (delete_key_ex != NULL)
+    {
 	return (*delete_key_ex)(hRootKey, key, flag, 0);
     }
     return RegDeleteKey(hRootKey, key);

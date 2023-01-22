@@ -2696,11 +2696,13 @@ reg_save_equal(regsave_T *save)
     REG_MULTI ? save_se_multi((savep), (posp)) : save_se_one((savep), (pp))
 
 // After a failed match restore the sub-expressions.
-#define restore_se(savep, posp, pp) { \
+#define restore_se(savep, posp, pp) \
+{ \
     if (REG_MULTI) \
 	*(posp) = (savep)->se_u.pos; \
     else \
-	*(pp) = (savep)->se_u.ptr; }
+	*(pp) = (savep)->se_u.ptr; \
+}
 
 /*
  * Tentatively set the sub-expression start to the current position (after

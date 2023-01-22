@@ -1463,7 +1463,8 @@ cs_insert_filelist(
 	    return -1;
 	}
 	(void)strcpy(csinfo[i].ppath, (const char *)ppath);
-    } else
+    }
+    else
 	csinfo[i].ppath = NULL;
 
     if (flags != NULL)
@@ -1475,7 +1476,8 @@ cs_insert_filelist(
 	    return -1;
 	}
 	(void)strcpy(csinfo[i].flags, (const char *)flags);
-    } else
+    }
+    else
 	csinfo[i].flags = NULL;
 
 #if defined(UNIX)

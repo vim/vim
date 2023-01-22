@@ -722,7 +722,8 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
     {
 	mark_adjust_nofold(line2 + 1, dest, -num_lines, 0L);
 #ifdef FEAT_FOLDING
-	FOR_ALL_TAB_WINDOWS(tp, win) {
+	FOR_ALL_TAB_WINDOWS(tp, win)
+	{
 	    if (win->w_buffer == curbuf)
 		foldMoveRange(&win->w_folds, line1, line2, dest);
 	}
@@ -737,7 +738,8 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
     {
 	mark_adjust_nofold(dest + 1, line1 - 1, num_lines, 0L);
 #ifdef FEAT_FOLDING
-	FOR_ALL_TAB_WINDOWS(tp, win) {
+	FOR_ALL_TAB_WINDOWS(tp, win)
+	{
 	    if (win->w_buffer == curbuf)
 		foldMoveRange(&win->w_folds, dest + 1, line1 - 1, line2);
 	}

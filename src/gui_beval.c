@@ -645,7 +645,8 @@ pointerEvent(BalloonEval *beval, XEvent *event)
 
 		XtTranslateKeycode(gui.dpy, event->xkey.keycode,
 				event->xkey.state, &modifier, &keysym);
-		if ((keysym == XK_Shift_L) || (keysym == XK_Shift_R)) {
+		if ((keysym == XK_Shift_L) || (keysym == XK_Shift_R))
+		{
 		    beval->showState = ShS_UPDATE_PENDING;
 		    (*beval->msgCB)(beval, 0);
 		}

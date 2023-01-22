@@ -15,7 +15,8 @@
 
 # ifndef ASSERT
 #  define ASSERT(c) \
-    if (!(c)) { \
+    if (!(c)) \
+    { \
 	fprintf(stderr, "Assertion failed: line %d, file %s\n", \
 		__LINE__, __FILE__); \
 	fflush(stderr); \

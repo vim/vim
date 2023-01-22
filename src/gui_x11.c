@@ -3095,10 +3095,13 @@ gui_mch_getmouse(int *x, int *y)
     unsigned int mask;
 
     if (gui.wid && XQueryPointer(gui.dpy, gui.wid, &root, &child,
-					 &rootx, &rooty, &winx, &winy, &mask)) {
+					 &rootx, &rooty, &winx, &winy, &mask))
+    {
 	*x = winx;
 	*y = winy;
-    } else {
+    }
+    else
+    {
 	*x = -1;
 	*y = -1;
     }

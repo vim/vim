@@ -118,7 +118,8 @@ mch_settmode(tmode_T tmode)
 
     if ( tmode == TMODE_RAW )
 	set_tty(0, 0);
-    else{
+    else
+    {
 	switch (orgmode.width)
 	{
 	    case 132:	OUT_STR_NF((char_u *)"\033[?3h\033>");	break;
@@ -379,16 +380,19 @@ vms_wproc(char *name, int val)
 	return 1;
 
     // accept all DECC$K_FILE and DECC$K_DIRECTORY
-    if (vms_match_num == 0) {
+    if (vms_match_num == 0)
+    {
 	// first time through, setup some things
-	if (NULL == vms_fmatch) {
+	if (NULL == vms_fmatch)
+	{
 	    vms_fmatch = ALLOC_MULT(char_u *, EXPL_ALLOC_INC);
 	    if (!vms_fmatch)
 		return 0;
 	    vms_match_alloced = EXPL_ALLOC_INC;
 	    vms_match_free = EXPL_ALLOC_INC;
 	}
-	else {
+	else
+	{
 	    // re-use existing space
 	    vms_match_free = vms_match_alloced;
 	}
@@ -399,11 +403,13 @@ vms_wproc(char *name, int val)
     name=vms_tolower(name);
 
     // if name already exists, don't add it
-    for (i = 0; i<vms_match_num; i++) {
+    for (i = 0; i<vms_match_num; i++)
+    {
 	if (0 == STRCMP((char_u *)name,vms_fmatch[i]))
 	    return 1;
     }
-    if (--vms_match_free == 0) {
+    if (--vms_match_free == 0)
+    {
 	char_u **old_vms_fmatch = vms_fmatch;
 
 	// add more space to store matches
@@ -464,9 +470,12 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 
 	vms_match_num = 0; // reset collection counter
 	result = decc$translate_vms(vms_fixfilename(buf));
-	if ( (int) result == 0 || (int) result == -1  ) {
+	if ( (int) result == 0 || (int) result == -1  )
+	{
 	    cnt = 0;
-	} else {
+	}
+	else
+	{
 	    cnt = decc$to_vms(result, vms_wproc, 1 /*allow wild*/ , (flags & EW_DIR ? 0:1 ) /*allow directory*/) ;
 	}
 	if (cnt > 0)
@@ -524,9 +533,12 @@ mch_expandpath(garray_T *gap, char_u *path, int flags)
     // the result from the decc$translate_vms needs to be handled
     // otherwise it might create ACCVIO error in decc$to_vms
     result = decc$translate_vms(vms_fixfilename(path));
-    if ( (int) result == 0 || (int) result == -1  ) {
+    if ( (int) result == 0 || (int) result == -1  )
+    {
 	cnt = 0;
-    } else {
+    }
+    else
+    {
 	cnt = decc$to_vms(result, vms_wproc, 1 /*allow_wild*/, (flags & EW_DIR ? 0:1 ) /*allow directory*/);
     }
     if (cnt > 0)
@@ -554,7 +566,8 @@ vms_unix_mixed_filespec(char *in, char *out)
     // copy vms filename portion up to last colon
     // (node and/or disk)
     lastcolon = strrchr(in, ':');   // find last colon
-    if (lastcolon != NULL) {
+    if (lastcolon != NULL)
+    {
 	len = lastcolon - in + 1;
 	strncpy(out, in, len);
 	out += len;
@@ -565,25 +578,34 @@ vms_unix_mixed_filespec(char *in, char *out)
 
     // start of directory portion
     ch = *in;
-    if ((ch == '[') || (ch == '/') || (ch == '<')) {	// start of directory(s) ?
+    if ((ch == '[') || (ch == '/') || (ch == '<')) // start of directory(s) ?
+    {
 	ch = '[';
 	SKIP_FOLLOWING_SLASHES(in);
-    } else if (EQN(in, "../", 3)) { // Unix parent directory?
+    }
+    else if (EQN(in, "../", 3)) // Unix parent directory?
+    {
 	*out++ = '[';
 	*out++ = '-';
 	end_of_dir = out;
 	ch = '.';
 	in += 2;
 	SKIP_FOLLOWING_SLASHES(in);
-    } else {		    // not a special character
-	while (EQN(in, "./", 2)) {	// Ignore Unix "current dir"
+    }
+    else
+    {		    // not a special character
+	while (EQN(in, "./", 2))	// Ignore Unix "current dir"
+	{
 	    in += 2;
 	    SKIP_FOLLOWING_SLASHES(in);
     }
-    if (strchr(in, '/') == NULL) {  // any more Unix directories ?
+    if (strchr(in, '/') == NULL)  // any more Unix directories ?
+    {
 	strcpy(out, in);	// No - get rest of the spec
 	return;
-    } else {
+    }
+    else
+    {
 	*out++ = '[';	    // Yes, denote a Vms subdirectory
 	ch = '.';
 	--in;
@@ -596,26 +618,31 @@ vms_unix_mixed_filespec(char *in, char *out)
     *out++ = ch;
     ++in;
 
-    while (*in != '\0') {
+    while (*in != '\0')
+    {
 	ch = *in;
-	if ((ch == ']') || (ch == '/') || (ch == '>') ) {	// end of (sub)directory ?
+	if ((ch == ']') || (ch == '/') || (ch == '>') )	// end of (sub)directory ?
+	{
 	    end_of_dir = out;
 	    ch = '.';
 	    SKIP_FOLLOWING_SLASHES(in);
 	    }
-	else if (EQN(in, "../", 3)) {	// Unix parent directory?
+	else if (EQN(in, "../", 3))	// Unix parent directory?
+	{
 	    *out++ = '-';
 	    end_of_dir = out;
 	    ch = '.';
 	    in += 2;
 	    SKIP_FOLLOWING_SLASHES(in);
 	    }
-	else {
-	    while (EQN(in, "./", 2)) {  // Ignore Unix "current dir"
-	    end_of_dir = out;
-	    in += 2;
-	    SKIP_FOLLOWING_SLASHES(in);
-	    ch = *in;
+	else
+	{
+	    while (EQN(in, "./", 2))  // Ignore Unix "current dir"
+	    {
+		end_of_dir = out;
+		in += 2;
+		SKIP_FOLLOWING_SLASHES(in);
+		ch = *in;
 	    }
 	}
 
@@ -709,9 +736,12 @@ vms_remove_version(void * fname)
 	*cp = '\0';
     else if ((cp = vim_strrchr( fname, '.')) != NULL )
     {
-	if      ((fp = vim_strrchr( fname, ']')) != NULL ) {;}
-	else if ((fp = vim_strrchr( fname, '>')) != NULL ) {;}
-	else fp = fname;
+	if      ((fp = vim_strrchr( fname, ']')) != NULL )
+	    {;}
+	else if ((fp = vim_strrchr( fname, '>')) != NULL )
+	    {;}
+	else
+	    fp = fname;
 
 	while ( *fp != '\0' && fp < cp )
 	    if ( *fp++ == '.' )
@@ -750,7 +780,8 @@ RealWaitForChar(
     if (!iochan)
 	get_tty();
 
-    if (sec > 0) {
+    if (sec > 0)
+    {
 	// time-out specified; convert it to absolute time
 	// sec>0 requirement of lib$cvtf_to_internal_time()
 
@@ -780,7 +811,8 @@ RealWaitForChar(
 	    return 0; // error
     }
 
-    while (TRUE) {
+    while (TRUE)
+    {
 	// select()
 	status = sys$qiow(0, iochan, IO$_SENSEMODE | IO$M_TYPEAHDCNT, iosb,
 		0, 0, &typeahead, 8, 0, 0, 0, 0);
@@ -791,13 +823,18 @@ RealWaitForChar(
 	    return 1; // ready to read
 
 	// there's nothing to read; what now?
-	if (msec == 0) {
+	if (msec == 0)
+	{
 	    // immediate time-out; return impatiently
 	    return 0;
-	} else if (msec < 0) {
+	}
+	else if (msec < 0)
+	{
 	    // no time-out; wait on indefinitely
 	    return 1; // fakeout to force a wait in vms_read()
-	} else {
+	}
+	else
+	{
 	    // time-out needs to be checked
 	    status = sys$gettim(&time_curr);
 	    if (status != SS$_NORMAL)

@@ -107,7 +107,8 @@ mac_string_convert(
     //  Determine output buffer size
     CFStringGetBytes(cfstr, convertRange, to, NULL, FALSE, NULL, 0, (CFIndex *)&buflen);
     retval = (buflen > 0) ? alloc(buflen) : NULL;
-    if (retval == NULL) {
+    if (retval == NULL)
+    {
 	CFRelease(cfstr);
 	return NULL;
     }
@@ -543,7 +544,8 @@ mac_utf8_to_utf16(
     utf8_str = CFStringCreateWithBytes(NULL, from, fromLen,
 	    kCFStringEncodingUTF8, FALSE);
 
-    if (utf8_str == NULL) {
+    if (utf8_str == NULL)
+    {
 	if (actualLen)
 	    *actualLen = 0;
 	return NULL;
