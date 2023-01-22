@@ -540,9 +540,6 @@ same_leader(
     if (leader1_len == 0)
 	return (leader2_len == 0);
 
-    char_u  *lnum_line = NULL;
-    int	    line_len = 0;
-
     // If first leader has 'f' flag, the lines can be joined only if the
     // second line does not have a leader.
     // If first leader has 'e' flag, the lines can never be joined.
@@ -558,11 +555,9 @@ same_leader(
 		return FALSE;
 	    if (*p == COM_START)
 	    {
-		if (lnum_line == NULL)
-		{
-		    lnum_line = ml_get(lnum);
-		    line_len = (int)STRLEN(lnum_line);
-		}
+		char_u	*lnum_line = ml_get(lnum);
+		int	line_len = (int)STRLEN(lnum_line);
+
 		if (line_len <= leader1_len)
 		    return FALSE;
 		if (leader2_flags == NULL || leader2_len == 0)
