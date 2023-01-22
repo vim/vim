@@ -3222,7 +3222,7 @@ term_rgb_color(char_u *s, guicolor_T rgb)
     vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
 #ifdef FEAT_VTP
-    if (has_vtp_working())
+    if (use_wt())
     {
 	out_flush();
 	buf[1] = '[';
