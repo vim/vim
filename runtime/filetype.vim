@@ -277,6 +277,9 @@ au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 " Calendar
 au BufNewFile,BufRead calendar			setf calendar
 
+" Cap'n Proto
+au BufNewFile,BufRead *.capnp			setf capnp
+
 " C#
 au BufNewFile,BufRead *.cs,*.csx		setf cs
 
