@@ -6778,15 +6778,25 @@ visual_bell(void)
     DWORD   dwDummy;
     LPWORD  oldattrs = ALLOC_MULT(WORD, Rows * Columns);
 
-    if (oldattrs == NULL)
-	return;
-    ReadConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
+# ifdef FEAT_TERMGUICOLORS
+    if (!(p_tgc || (!p_tgc && t_colors >= 256)))
+# endif
+    {
+	if (oldattrs == NULL)
+	    return;
+
+	ReadConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 			       coordOrigin, &dwDummy);
+    }
+
     FillConsoleOutputAttribute(g_hConOut, attrFlash, Rows * Columns,
 			       coordOrigin, &dwDummy);
 
     Sleep(15);	    // wait for 15 msec
-    if (!vtp_working)
+
+# ifdef FEAT_TERMGUICOLORS
+    if (!(p_tgc || (!p_tgc && t_colors >= 256)))
+# endif
 	WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 				coordOrigin, &dwDummy);
     vim_free(oldattrs);
