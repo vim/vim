@@ -6776,20 +6776,30 @@ visual_bell(void)
     WORD    attrFlash = ~g_attrCurrent & 0xff;
 
     DWORD   dwDummy;
-    LPWORD  oldattrs = ALLOC_MULT(WORD, Rows * Columns);
+    LPWORD  oldattrs = NULL;
 
-    if (oldattrs == NULL)
-	return;
-    ReadConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
+# ifdef FEAT_TERMGUICOLORS
+    if (!(p_tgc || t_colors >= 256))
+# endif
+    {
+	oldattrs = ALLOC_MULT(WORD, Rows * Columns);
+	if (oldattrs == NULL)
+	    return;
+	ReadConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 			       coordOrigin, &dwDummy);
+    }
+
     FillConsoleOutputAttribute(g_hConOut, attrFlash, Rows * Columns,
 			       coordOrigin, &dwDummy);
 
     Sleep(15);	    // wait for 15 msec
-    if (!vtp_working)
+
+    if (oldattrs != NULL)
+    {
 	WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 				coordOrigin, &dwDummy);
-    vim_free(oldattrs);
+	vim_free(oldattrs);
+    }
 }
 
 
@@ -8663,12 +8673,6 @@ vtp_sgr_bulks(
 wt_init(void)
 {
     wt_working = mch_getenv("WT_SESSION") != NULL;
-}
-
-    int
-use_wt(void)
-{
-    return USE_WT;
 }
 
 # ifdef FEAT_TERMGUICOLORS
