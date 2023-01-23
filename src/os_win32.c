@@ -6779,7 +6779,7 @@ visual_bell(void)
     LPWORD  oldattrs = ALLOC_MULT(WORD, Rows * Columns);
 
 # ifdef FEAT_TERMGUICOLORS
-    if (!(p_tgc || (!p_tgc && t_colors >= 256)))
+    if (!(p_tgc || t_colors >= 256))
 # endif
     {
 	if (oldattrs == NULL)
@@ -6795,7 +6795,7 @@ visual_bell(void)
     Sleep(15);	    // wait for 15 msec
 
 # ifdef FEAT_TERMGUICOLORS
-    if (!(p_tgc || (!p_tgc && t_colors >= 256)))
+    if (!(p_tgc || t_colors >= 256))
 # endif
 	WriteConsoleOutputAttribute(g_hConOut, oldattrs, Rows * Columns,
 				coordOrigin, &dwDummy);
