@@ -1804,15 +1804,38 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 			{not available when compiled without the |+syntax|
 			feature}
-	'colorcolumn' is a comma-separated list of screen columns that are
-	highlighted with ColorColumn |hl-ColorColumn| and filled with colorcol
-	characters (from 'fillchars').  Useful to align text.  Will make
-	screen redrawing slower.
-	The screen column can be an absolute number, or a number preceded with
-	'+' or '-', which is added to or subtracted from 'textwidth'. >
+	'colorcolumn' is a comma-separated list of screen columns to decorate.
+	Useful to align text.  Will make screen redrawing slower.
 
-		:set cc=+1  " highlight column after 'textwidth'
-		:set cc=+1,+2,+3  " highlight three columns after 'textwidth'
+	The screen column must follow the following format:
+
+		[+|-]{number}[/{char}[/{hlgroup}[/{flags}]]]
+
+		{number}	is the column number (if +/- is supplied, then
+				it's relative to textwidth)
+		{char}		is the character to fill the column with (
+				defaults to ' ')
+		{hlgroup}	is the highlight group to color the column
+				(defaults to |hl-ColorColumn|)
+		{flags}		additional flags used for drawing the
+				colorcolumn.
+
+	Flags you can use with colorcolumn are:
+
+		b		Don't highlight text that crosses the
+				colorcolumn
+	
+	Examples: >
+
+		:set cc=+1      	highlight column after 'textwidth'
+		:set cc=+1,+2,+3	highlight three columns after 'textwidth'
+		:set cc=1/│     	highlight column 1, filling it with '│'
+		:set cc=10/./MyHl/	highlight column 10 with |hl-MyHl| and
+		                        filling the column with '.'
+		:set cc=+3/ /MyHl/b	highlight the third column after
+					'textwidth' with |hl-MyHl| with the
+					'b' flag enabled.
+
 		:hi ColorColumn ctermbg=lightgrey guibg=lightgrey
 <
 	When 'textwidth' is zero then the items with '-' and '+' are not used.
@@ -1820,6 +1843,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'columns'* *'co'* *E594*
 'columns' 'co'		number	(default 80 or terminal width)
+
+
+
+
 			global
 	Number of columns of the screen.  Normally this is set by the terminal
 	initialization and does not have to be set by hand.  Also see
@@ -3438,7 +3465,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  diff		'-'		deleted lines of the 'diff' option
 	  eob		'~'		empty lines below the end of a buffer
 	  lastline	'@'		'display' contains lastline/truncate
-	  colorcol	' '		character displayed in the colorcolumn
 
 	Any one that is omitted will fall back to the default.  For "stl" and
 	"stlnc" the space will be used when there is highlighting, '^' or '='
@@ -3462,7 +3488,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  diff		DiffDelete		|hl-DiffDelete|
 	  eob		EndOfBuffer		|hl-EndOfBuffer|
 	  lastline	NonText			|hl-NonText|
-	  colorcol	ColorColumn		|hl-ColorColumn|
 
 		*'fixendofline'* *'fixeol'* *'nofixendofline'* *'nofixeol'*
 'fixendofline' 'fixeol'	boolean	(default on)
