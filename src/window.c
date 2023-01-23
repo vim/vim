@@ -7721,7 +7721,7 @@ check_colorcolumn(win_T *wp)
 	    color_cols[count].ch = ch;
 	    if (*s == '/') {
 		s ++;
-		int k = 0;
+		size_t k = 0;
 		while(k < sizeof(hlgroup) - 1 && *s != NUL && *s != ','
 			&& *s != '/') {
 		    hlgroup[k ++] = *(s ++);
@@ -7779,7 +7779,7 @@ check_colorcolumn(win_T *wp)
 		// skip duplicates
 		if (j == 0 || wp->w_p_cc_cols[j - 1].col != color_cols[i].col)
 		    wp->w_p_cc_cols[j++] = color_cols[i];
-	    wp->w_p_cc_cols[j] = (colorcol_T){ -1, 0, NULL, 0 };  // end marker
+	    wp->w_p_cc_cols[j] = (colorcol_T){ -1, 0, NULL, 0, 0 };  // end marker
 	}
     }
 
