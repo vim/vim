@@ -1675,4 +1675,25 @@ func Test_sort_closed_fold()
   bwipe!
 endfunc
 
+func Test_indent_with_L_command()
+  " The "L" command moved the cursor to line zero, causing the text saved for
+  " undo to use line number -1, which caused trouble for undo later.
+  new
+  sil! norm 8RV{zf8=Lu
+  bwipe!
+endfunc
+
+" Make sure that when there is a fold at the bottom of the buffer and a newline
+" character is appended to the line, the fold gets expanded (instead of the new
+" line not being part of the fold).
+func Test_expand_fold_at_bottom_of_buffer()
+  new
+  " create a fold on the only line
+  fold
+  execute "normal A\<CR>"
+  call assert_equal([1, 1], range(1, 2)->map('foldlevel(v:val)'))
+
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

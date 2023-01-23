@@ -221,25 +221,26 @@ set_context_in_cscope_cmd(
     expand_what = (cmdidx == CMD_scscope)
 			? EXP_SCSCOPE_SUBCMD : EXP_CSCOPE_SUBCMD;
 
+    if (*arg == NUL)
+	return;
+
     // (part of) subcommand already typed
-    if (*arg != NUL)
-    {
-	p = skiptowhite(arg);
-	if (*p != NUL)		    // past first word
-	{
-	    xp->xp_pattern = skipwhite(p);
-	    if (*skiptowhite(xp->xp_pattern) != NUL)
-		xp->xp_context = EXPAND_NOTHING;
-	    else if (STRNICMP(arg, "add", p - arg) == 0)
-		xp->xp_context = EXPAND_FILES;
-	    else if (STRNICMP(arg, "kill", p - arg) == 0)
-		expand_what = EXP_CSCOPE_KILL;
-	    else if (STRNICMP(arg, "find", p - arg) == 0)
-		expand_what = EXP_CSCOPE_FIND;
-	    else
-		xp->xp_context = EXPAND_NOTHING;
-	}
-    }
+    p = skiptowhite(arg);
+    if (*p == NUL)
+	return;
+
+    // past first word
+    xp->xp_pattern = skipwhite(p);
+    if (*skiptowhite(xp->xp_pattern) != NUL)
+	xp->xp_context = EXPAND_NOTHING;
+    else if (STRNICMP(arg, "add", p - arg) == 0)
+	xp->xp_context = EXPAND_FILES;
+    else if (STRNICMP(arg, "kill", p - arg) == 0)
+	expand_what = EXP_CSCOPE_KILL;
+    else if (STRNICMP(arg, "find", p - arg) == 0)
+	expand_what = EXP_CSCOPE_FIND;
+    else
+	xp->xp_context = EXPAND_NOTHING;
 }
 
 /*
@@ -1462,7 +1463,8 @@ cs_insert_filelist(
 	    return -1;
 	}
 	(void)strcpy(csinfo[i].ppath, (const char *)ppath);
-    } else
+    }
+    else
 	csinfo[i].ppath = NULL;
 
     if (flags != NULL)
@@ -1474,7 +1476,8 @@ cs_insert_filelist(
 	    return -1;
 	}
 	(void)strcpy(csinfo[i].flags, (const char *)flags);
-    } else
+    }
+    else
 	csinfo[i].flags = NULL;
 
 #if defined(UNIX)

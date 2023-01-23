@@ -1136,6 +1136,8 @@ static argcheck_T arg23_win_execute[] = {arg_number, arg_string_or_list_string, 
 static argcheck_T arg23_writefile[] = {arg_list_or_blob, arg_string, arg_string};
 static argcheck_T arg24_match_func[] = {arg_string_or_list_any, arg_string, arg_number, arg_number};
 
+// Can be used by functions called through "f_retfunc" to create new types.
+static garray_T *current_type_gap = NULL;
 
 /*
  * Functions that return the return type of a builtin function.
@@ -1437,6 +1439,29 @@ ret_finddir(int argcount,
 	return &t_string;
     // Depending on the count would be a string or a list of strings.
     return &t_any;
+}
+// for values(): list of member of first argument
+    static type_T *
+ret_list_member(int argcount,
+	type2_T *argtypes,
+	type_T	**decl_type)
+{
+    if (argcount > 0)
+    {
+	type_T *t = argtypes[0].type_decl;
+	if (current_type_gap != NULL
+		&& (t->tt_type == VAR_DICT || t->tt_type == VAR_LIST))
+	    t = get_list_type(t->tt_member, current_type_gap);
+	else
+	    t = &t_list_any;
+	*decl_type = t;
+
+	t = argtypes[0].type_curr;
+	if (current_type_gap != NULL
+		&& (t->tt_type == VAR_DICT || t->tt_type == VAR_LIST))
+	    return get_list_type(t->tt_member, current_type_gap);
+    }
+    return &t_list_any;
 }
 
 /*
@@ -1928,6 +1953,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_getbufoneline},
     {"getbufvar",	2, 3, FEARG_1,	    arg3_buffer_string_any,
 			ret_any,	    f_getbufvar},
+    {"getcellwidths",	0, 0, 0,	    NULL,
+			ret_list_any,	    f_getcellwidths},
     {"getchangelist",	0, 1, FEARG_1,	    arg1_buffer,
 			ret_list_any,	    f_getchangelist},
     {"getchar",		0, 1, 0,	    arg1_bool,
@@ -2759,7 +2786,7 @@ static funcentry_T global_functions[] =
     {"uniq",		1, 3, FEARG_1,	    arg13_sortuniq,
 			ret_first_arg,	    f_uniq},
     {"values",		1, 1, FEARG_1,	    arg1_dict_any,
-			ret_list_any,	    f_values},
+			ret_list_member,    f_values},
     {"virtcol",		1, 2, FEARG_1,	    arg2_string_or_list_bool,
 			ret_virtcol,	    f_virtcol},
     {"virtcol2col",	3, 3, FEARG_1,	    arg3_number,
@@ -2845,6 +2872,10 @@ get_function_name(expand_T *xp, int idx)
     }
     if (++intidx < (int)ARRAY_LENGTH(global_functions))
     {
+	// Skip if the function doesn't have an implementation (feature not
+	// implemented).
+	if (global_functions[intidx].f_func == NULL)
+	    return (char_u *)"";
 	STRCPY(IObuff, global_functions[intidx].f_name);
 	STRCAT(IObuff, "(");
 	if (global_functions[intidx].f_max_argc == 0)
@@ -2950,22 +2981,22 @@ internal_func_check_arg_types(
 {
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
 
-    if (argchecks != NULL)
-    {
-	argcontext_T context;
+    if (argchecks == NULL)
+	return OK;
 
-	context.arg_count = argcount;
-	context.arg_types = types;
-	context.arg_cctx = cctx;
-	for (int i = 0; i < argcount; ++i)
-	    if (argchecks[i] != NULL)
-	    {
-		context.arg_idx = i;
-		if (argchecks[i](types[i].type_curr, types[i].type_decl,
-							     &context) == FAIL)
-		    return FAIL;
-	    }
-    }
+    argcontext_T context;
+
+    context.arg_count = argcount;
+    context.arg_types = types;
+    context.arg_cctx = cctx;
+    for (int i = 0; i < argcount; ++i)
+	if (argchecks[i] != NULL)
+	{
+	    context.arg_idx = i;
+	    if (argchecks[i](types[i].type_curr, types[i].type_decl,
+			&context) == FAIL)
+		return FAIL;
+	}
     return OK;
 }
 
@@ -2993,14 +3024,17 @@ internal_func_ret_type(
 	int	    idx,
 	int	    argcount,
 	type2_T	    *argtypes,
-	type_T	    **decl_type)
+	type_T	    **decl_type,
+	garray_T    *type_gap)
 {
     type_T *ret;
 
+    current_type_gap = type_gap;
     *decl_type = NULL;
     ret = global_functions[idx].f_retfunc(argcount, argtypes, decl_type);
     if (*decl_type == NULL)
 	*decl_type = ret;
+    current_type_gap = NULL;
     return ret;
 }
 
@@ -3475,14 +3509,14 @@ get_optional_window(typval_T *argvars, int idx)
 {
     win_T   *win = curwin;
 
-    if (argvars[idx].v_type != VAR_UNKNOWN)
+    if (argvars[idx].v_type == VAR_UNKNOWN)
+	return curwin;
+
+    win = find_win_by_nr_or_id(&argvars[idx]);
+    if (win == NULL)
     {
-	win = find_win_by_nr_or_id(&argvars[idx]);
-	if (win == NULL)
-	{
-	    emsg(_(e_invalid_window_number));
-	    return NULL;
-	}
+	emsg(_(e_invalid_window_number));
+	return NULL;
     }
     return win;
 }
@@ -8624,43 +8658,43 @@ get_search_arg(typval_T *varp, int *flagsp)
     char_u	nbuf[NUMBUFLEN];
     int		mask;
 
-    if (varp->v_type != VAR_UNKNOWN)
+    if (varp->v_type == VAR_UNKNOWN)
+	return FORWARD;
+
+    flags = tv_get_string_buf_chk(varp, nbuf);
+    if (flags == NULL)
+	return 0;		// type error; errmsg already given
+    while (*flags != NUL)
     {
-	flags = tv_get_string_buf_chk(varp, nbuf);
-	if (flags == NULL)
-	    return 0;		// type error; errmsg already given
-	while (*flags != NUL)
+	switch (*flags)
 	{
-	    switch (*flags)
-	    {
-		case 'b': dir = BACKWARD; break;
-		case 'w': p_ws = TRUE; break;
-		case 'W': p_ws = FALSE; break;
-		default:  mask = 0;
-			  if (flagsp != NULL)
-			     switch (*flags)
-			     {
-				 case 'c': mask = SP_START; break;
-				 case 'e': mask = SP_END; break;
-				 case 'm': mask = SP_RETCOUNT; break;
-				 case 'n': mask = SP_NOMOVE; break;
-				 case 'p': mask = SP_SUBPAT; break;
-				 case 'r': mask = SP_REPEAT; break;
-				 case 's': mask = SP_SETPCMARK; break;
-				 case 'z': mask = SP_COLUMN; break;
-			     }
-			  if (mask == 0)
+	    case 'b': dir = BACKWARD; break;
+	    case 'w': p_ws = TRUE; break;
+	    case 'W': p_ws = FALSE; break;
+	    default:  mask = 0;
+		      if (flagsp != NULL)
+			  switch (*flags)
 			  {
-			      semsg(_(e_invalid_argument_str), flags);
-			      dir = 0;
+			      case 'c': mask = SP_START; break;
+			      case 'e': mask = SP_END; break;
+			      case 'm': mask = SP_RETCOUNT; break;
+			      case 'n': mask = SP_NOMOVE; break;
+			      case 'p': mask = SP_SUBPAT; break;
+			      case 'r': mask = SP_REPEAT; break;
+			      case 's': mask = SP_SETPCMARK; break;
+			      case 'z': mask = SP_COLUMN; break;
 			  }
-			  else
-			      *flagsp |= mask;
-	    }
-	    if (dir == 0)
-		break;
-	    ++flags;
+		      if (mask == 0)
+		      {
+			  semsg(_(e_invalid_argument_str), flags);
+			  dir = 0;
+		      }
+		      else
+			  *flagsp |= mask;
 	}
+	if (dir == 0)
+	    break;
+	++flags;
     }
     return dir;
 }
@@ -8760,7 +8794,8 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	if (subpatnum == FAIL || !use_skip)
 	    // didn't find it or no skip argument
 	    break;
-	firstpos = pos;
+	if (firstpos.lnum == 0)
+	    firstpos = pos;
 
 	// If the skip expression matches, ignore this match.
 	{

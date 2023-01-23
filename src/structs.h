@@ -1440,7 +1440,7 @@ typedef enum
     VAR_JOB,		// "v_job" is used
     VAR_CHANNEL,	// "v_channel" is used
     VAR_INSTR,		// "v_instr" is used
-    VAR_CLASS,		// "v_class" is used
+    VAR_CLASS,		// "v_class" is used (also used for interface)
     VAR_OBJECT,		// "v_object" is used
 } vartype_T;
 
@@ -1462,9 +1462,11 @@ typedef struct {
 
 #define TTFLAG_VARARGS	    0x01    // func args ends with "..."
 #define TTFLAG_BOOL_OK	    0x02    // can be converted to bool
-#define TTFLAG_NUMBER_OK    0x04    // tt_type is VAR_FLOAT, VAR_NUMBER is OK
-#define TTFLAG_STATIC	    0x08    // one of the static types, e.g. t_any
-#define TTFLAG_CONST	    0x10    // cannot be changed
+#define TTFLAG_FLOAT_OK	    0x04    // number can be used/converted to float
+#define TTFLAG_NUMBER_OK    0x08    // number can be used for a float
+#define TTFLAG_STATIC	    0x10    // one of the static types, e.g. t_any
+#define TTFLAG_CONST	    0x20    // cannot be changed
+#define TTFLAG_SUPER	    0x40    // object from "super".
 
 typedef enum {
     ACCESS_PRIVATE,	// read/write only inside th class
@@ -1482,11 +1484,33 @@ typedef struct {
     char_u	*ocm_init;   // allocated
 } ocmember_T;
 
+// used for the lookup table of a class member index
+typedef struct itf2class_S itf2class_T;
+struct itf2class_S {
+    itf2class_T	*i2c_next;
+    class_T	*i2c_class;
+    // array with ints follows
+};
+
+#define CLASS_INTERFACE 1
+
 // "class_T": used for v_class of typval of VAR_CLASS
+// Also used for an interface (class_flags has CLASS_INTERFACE).
 struct class_S
 {
     char_u	*class_name;		// allocated
+    int		class_flags;		// CLASS_ flags
+
     int		class_refcount;
+    int		class_copyID;		// used by garbage collection
+
+    class_T	*class_extends;		// parent class or NULL
+
+    // interfaces declared for the class
+    int		class_interface_count;
+    char_u	**class_interfaces;	// allocated array of names
+    class_T	**class_interfaces_cl;	// interfaces (counts as reference)
+    itf2class_T	*class_itf2class;	// member index lookup tables
 
     // class members: "static varname"
     int		class_class_member_count;
@@ -1494,7 +1518,8 @@ struct class_S
     typval_T	*class_members_tv;	// allocated array of class member vals
 
     // class functions: "static def SomeMethod()"
-    int		class_class_function_count;
+    int		class_class_function_count;	    // total count
+    int		class_class_function_count_child;   // count without "extends"
     ufunc_T	**class_class_functions;	// allocated
 
     // object members: "this.varname"
@@ -1502,7 +1527,8 @@ struct class_S
     ocmember_T	*class_obj_members;	// allocated
 
     // object methods: "def SomeMethod()"
-    int		class_obj_method_count;
+    int		class_obj_method_count;		    // total count
+    int		class_obj_method_count_child;	    // count without "extends"
     ufunc_T	**class_obj_methods;	// allocated
 
     garray_T	class_type_list;	// used for type pointers

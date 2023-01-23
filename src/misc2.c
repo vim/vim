@@ -1130,25 +1130,27 @@ simplify_key(int key, int *modifiers)
     int	    key0;
     int	    key1;
 
-    if (*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT))
+    if (!(*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT)))
+	return key;
+
+    // TAB is a special case
+    if (key == TAB && (*modifiers & MOD_MASK_SHIFT))
     {
-	// TAB is a special case
-	if (key == TAB && (*modifiers & MOD_MASK_SHIFT))
+	*modifiers &= ~MOD_MASK_SHIFT;
+	return K_S_TAB;
+    }
+    key0 = KEY2TERMCAP0(key);
+    key1 = KEY2TERMCAP1(key);
+    for (i = 0; modifier_keys_table[i] != NUL; i += MOD_KEYS_ENTRY_SIZE)
+    {
+	if (key0 == modifier_keys_table[i + 3]
+		&& key1 == modifier_keys_table[i + 4]
+		&& (*modifiers & modifier_keys_table[i]))
 	{
-	    *modifiers &= ~MOD_MASK_SHIFT;
-	    return K_S_TAB;
+	    *modifiers &= ~modifier_keys_table[i];
+	    return TERMCAP2KEY(modifier_keys_table[i + 1],
+		    modifier_keys_table[i + 2]);
 	}
-	key0 = KEY2TERMCAP0(key);
-	key1 = KEY2TERMCAP1(key);
-	for (i = 0; modifier_keys_table[i] != NUL; i += MOD_KEYS_ENTRY_SIZE)
-	    if (key0 == modifier_keys_table[i + 3]
-		    && key1 == modifier_keys_table[i + 4]
-		    && (*modifiers & modifier_keys_table[i]))
-	    {
-		*modifiers &= ~modifier_keys_table[i];
-		return TERMCAP2KEY(modifier_keys_table[i + 1],
-						   modifier_keys_table[i + 2]);
-	    }
     }
     return key;
 }
@@ -1292,10 +1294,10 @@ get_special_key_name(int c, int modifiers)
 }
 
 /*
- * Try translating a <> name at (*srcp)[] to dst[].
- * Return the number of characters added to dst[], zero for no match.
- * If there is a match, srcp is advanced to after the <> name.
- * dst[] must be big enough to hold the result (up to six characters)!
+ * Try translating a <> name at "(*srcp)[]" to "dst[]".
+ * Return the number of characters added to "dst[]", zero for no match.
+ * If there is a match, "srcp" is advanced to after the <> name.
+ * "dst[]" must be big enough to hold the result (up to six characters)!
  */
     int
 trans_special(
@@ -1352,8 +1354,9 @@ special_to_buf(int key, int modifiers, int escape_ks, char_u *dst)
 }
 
 /*
- * Try translating a <> name at (*srcp)[], return the key and modifiers.
- * srcp is advanced to after the <> name.
+ * Try translating a <> name at "(*srcp)[]", return the key and put modifiers
+ * in "modp".
+ * "srcp" is advanced to after the <> name.
  * returns 0 if there is no match.
  */
     int
@@ -1486,13 +1489,30 @@ find_special_key(
 		 */
 		key = simplify_key(key, &modifiers);
 
-		if (!(flags & FSK_KEYCODE))
+		if ((flags & FSK_KEYCODE) == 0)
 		{
 		    // don't want keycode, use single byte code
 		    if (key == K_BS)
 			key = BS;
 		    else if (key == K_DEL || key == K_KDEL)
 			key = DEL;
+		}
+		else if (key == 27
+			&& (flags & FSK_FROM_PART) != 0
+			&& (kitty_protocol_state == KKPS_ENABLED
+			    || kitty_protocol_state == KKPS_DISABLED))
+		{
+		    // Using the Kitty key protocol, which uses K_ESC for an
+		    // Esc character.  For the simplified keys use the Esc
+		    // character and set did_simplify, then in the
+		    // non-simplified keys use K_ESC.
+		    if ((flags & FSK_SIMPLIFY) != 0)
+		    {
+			if (did_simplify != NULL)
+			    *did_simplify = TRUE;
+		    }
+		    else
+			key = K_ESC;
 		}
 
 		// Normal Key with modifier: Try to make a single byte code.
@@ -1523,22 +1543,22 @@ find_special_key(
     int
 may_adjust_key_for_ctrl(int modifiers, int key)
 {
-    if (modifiers & MOD_MASK_CTRL)
+    if (!(modifiers & MOD_MASK_CTRL))
+	return key;
+
+    if (ASCII_ISALPHA(key))
     {
-	if (ASCII_ISALPHA(key))
-	{
 #ifdef FEAT_TERMINAL
-	    check_no_reduce_keys();  // may update the no_reduce_keys flag
+	check_no_reduce_keys();  // may update the no_reduce_keys flag
 #endif
-	    return no_reduce_keys == 0 ? TOUPPER_ASC(key) : key;
-	}
-	if (key == '2')
-	    return '@';
-	if (key == '6')
-	    return '^';
-	if (key == '-')
-	    return '_';
+	return no_reduce_keys == 0 ? TOUPPER_ASC(key) : key;
     }
+    if (key == '2')
+	return '@';
+    if (key == '6')
+	return '^';
+    if (key == '-')
+	return '_';
     return key;
 }
 
@@ -2806,21 +2826,21 @@ read_string(FILE *fd, int cnt)
 
     // allocate memory
     str = alloc(cnt + 1);
-    if (str != NULL)
+    if (str == NULL)
+	return NULL;
+
+    // Read the string.  Quit when running into the EOF.
+    for (i = 0; i < cnt; ++i)
     {
-	// Read the string.  Quit when running into the EOF.
-	for (i = 0; i < cnt; ++i)
+	c = getc(fd);
+	if (c == EOF)
 	{
-	    c = getc(fd);
-	    if (c == EOF)
-	    {
-		vim_free(str);
-		return NULL;
-	    }
-	    str[i] = c;
+	    vim_free(str);
+	    return NULL;
 	}
-	str[i] = NUL;
+	str[i] = c;
     }
+    str[i] = NUL;
     return str;
 }
 

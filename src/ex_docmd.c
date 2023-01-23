@@ -288,7 +288,6 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_execute		ex_ni
 # define ex_finally		ex_ni
 # define ex_incdec		ex_ni
-# define ex_interface		ex_ni
 # define ex_finish		ex_ni
 # define ex_function		ex_ni
 # define ex_if			ex_ni
@@ -2748,7 +2747,7 @@ checkforcmd_opt(
     for (i = 0; cmd[i] != NUL; ++i)
 	if (((char_u *)cmd)[i] != (*pp)[i])
 	    break;
-    if (i >= len && !isalpha((*pp)[i]) && (*pp)[i] != '_'
+    if (i >= len && !ASCII_ISALPHA((*pp)[i]) && (*pp)[i] != '_'
 			 && (!noparen || ((*pp)[i] != '(' && (*pp)[i] != '.')))
     {
 	*pp = skipwhite(*pp + i);

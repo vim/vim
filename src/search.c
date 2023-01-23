@@ -161,7 +161,7 @@ search_regcomp(
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
 
     if (used_pat)
-            *used_pat = pat;
+	*used_pat = pat;
 
     vim_free(mr_pattern);
 #ifdef FEAT_RIGHTLEFT
@@ -2641,7 +2641,7 @@ findmatchlimit(
 	     * (actually, we skip #\( et al)
 	     */
 	    if (curbuf->b_p_lisp
-		    && vim_strchr((char_u *)"(){}[]", c) != NULL
+		    && vim_strchr((char_u *)"{}()[]", c) != NULL
 		    && pos.col > 1
 		    && check_prevcol(linep, pos.col, '\\', NULL)
 		    && check_prevcol(linep, pos.col - 1, '#', NULL))

@@ -231,38 +231,78 @@ estack_sfile(estack_arg_T which UNUSED)
 }
 
 /*
+ * Get DIP_ flags from the [what] argument of a :runtime command.
+ * "*argp" is advanced to after the [what] argument.
+ */
+    static int
+get_runtime_cmd_flags(char_u **argp)
+{
+    char_u *arg = *argp;
+    char_u  *p = skiptowhite(arg);
+    int	    what_len = (int)(p - arg);
+
+    if (what_len == 0)
+	return 0;
+
+    if (STRNCMP(arg, "START", what_len) == 0)
+    {
+	*argp = skipwhite(arg + what_len);
+	return DIP_START + DIP_NORTP;
+    }
+    if (STRNCMP(arg, "OPT", what_len) == 0)
+    {
+	*argp = skipwhite(arg + what_len);
+	return DIP_OPT + DIP_NORTP;
+    }
+    if (STRNCMP(arg, "PACK", what_len) == 0)
+    {
+	*argp = skipwhite(arg + what_len);
+	return DIP_START + DIP_OPT + DIP_NORTP;
+    }
+    if (STRNCMP(arg, "ALL", what_len) == 0)
+    {
+	*argp = skipwhite(arg + what_len);
+	return DIP_START + DIP_OPT;
+    }
+
+    return 0;
+}
+
+/*
  * ":runtime [what] {name}"
  */
     void
 ex_runtime(exarg_T *eap)
 {
     char_u  *arg = eap->arg;
-    char_u  *p = skiptowhite(arg);
-    int	    len = (int)(p - arg);
     int	    flags = eap->forceit ? DIP_ALL : 0;
 
-    if (STRNCMP(arg, "START", len) == 0)
-    {
-	flags += DIP_START + DIP_NORTP;
-	arg = skipwhite(arg + len);
-    }
-    else if (STRNCMP(arg, "OPT", len) == 0)
-    {
-	flags += DIP_OPT + DIP_NORTP;
-	arg = skipwhite(arg + len);
-    }
-    else if (STRNCMP(arg, "PACK", len) == 0)
-    {
-	flags += DIP_START + DIP_OPT + DIP_NORTP;
-	arg = skipwhite(arg + len);
-    }
-    else if (STRNCMP(arg, "ALL", len) == 0)
-    {
-	flags += DIP_START + DIP_OPT;
-	arg = skipwhite(arg + len);
-    }
-
+    flags += get_runtime_cmd_flags(&arg);
     source_runtime(arg, flags);
+}
+
+static int runtime_expand_flags;
+
+/*
+ * Set the completion context for the :runtime command.
+ */
+    void
+set_context_in_runtime_cmd(expand_T *xp, char_u *arg)
+{
+    runtime_expand_flags = DIP_KEEPEXT + get_runtime_cmd_flags(&arg);
+    xp->xp_context = EXPAND_RUNTIME;
+    xp->xp_pattern = arg;
+}
+
+/*
+ * Handle command line completion for :runtime command.
+ */
+    int
+expand_runtime_cmd(char_u *pat, int *numMatches, char_u ***matches)
+{
+    char *directories[] = {"", NULL};
+    return ExpandRTDir(pat, runtime_expand_flags, numMatches, matches,
+								  directories);
 }
 
     static void
@@ -959,12 +999,12 @@ remove_duplicates(garray_T *gap)
 }
 
 /*
- * Expand color scheme, compiler or filetype names.
+ * Expand runtime file names.
  * Search from 'runtimepath':
  *   'runtimepath'/{dirnames}/{pat}.vim
- * When "flags" has DIP_START: search also from 'start' of 'packpath':
+ * When "flags" has DIP_START: search also from "start" of 'packpath':
  *   'packpath'/pack/ * /start/ * /{dirnames}/{pat}.vim
- * When "flags" has DIP_OPT: search also from 'opt' of 'packpath':
+ * When "flags" has DIP_OPT: search also from "opt" of 'packpath':
  *   'packpath'/pack/ * /opt/ * /{dirnames}/{pat}.vim
  * "dirnames" is an array with one or more directory names.
  */
@@ -990,62 +1030,76 @@ ExpandRTDir(
 
     for (i = 0; dirnames[i] != NULL; ++i)
     {
-	s = alloc(STRLEN(dirnames[i]) + pat_len + 7);
-	if (s == NULL)
+	size_t		buf_len = STRLEN(dirnames[i]) + pat_len + 22;
+	char		*buf = alloc(buf_len);
+	if (buf == NULL)
 	{
 	    ga_clear_strings(&ga);
 	    return FAIL;
 	}
-	sprintf((char *)s, "%s/%s*.vim", dirnames[i], pat);
-	globpath(p_rtp, s, &ga, 0);
-	vim_free(s);
+	char		*tail = buf + 15;
+	size_t		tail_buflen = buf_len - 15;
+	int		glob_flags = 0;
+	int		expand_dirs = FALSE;
+
+	if (*(dirnames[i]) == NUL)  // empty dir used for :runtime
+	    vim_snprintf(tail, tail_buflen, "%s*.vim", pat);
+	else
+	    vim_snprintf(tail, tail_buflen, "%s/%s*.vim", dirnames[i], pat);
+
+expand:
+	if ((flags & DIP_NORTP) == 0)
+	    globpath(p_rtp, (char_u *)tail, &ga, glob_flags, expand_dirs);
+
+	if (flags & DIP_START)
+	{
+	    memcpy(tail - 15, "pack/*/start/*/", 15);
+	    globpath(p_pp, (char_u *)tail - 15, &ga, glob_flags, expand_dirs);
+	}
+
+	if (flags & DIP_OPT)
+	{
+	    memcpy(tail - 13, "pack/*/opt/*/", 13);
+	    globpath(p_pp, (char_u *)tail - 13, &ga, glob_flags, expand_dirs);
+	}
+
+	if (*(dirnames[i]) == NUL && !expand_dirs)
+	{
+	    // expand dir names in another round
+	    vim_snprintf(tail, tail_buflen, "%s*", pat);
+	    glob_flags = WILD_ADD_SLASH;
+	    expand_dirs = TRUE;
+	    goto expand;
+	}
+
+	vim_free(buf);
     }
 
-    if (flags & DIP_START) {
-	for (i = 0; dirnames[i] != NULL; ++i)
-	{
-	    s = alloc(STRLEN(dirnames[i]) + pat_len + 22);
-	    if (s == NULL)
-	    {
-		ga_clear_strings(&ga);
-		return FAIL;
-	    }
-	    sprintf((char *)s, "pack/*/start/*/%s/%s*.vim", dirnames[i], pat);
-	    globpath(p_pp, s, &ga, 0);
-	    vim_free(s);
-	}
-    }
-
-    if (flags & DIP_OPT) {
-	for (i = 0; dirnames[i] != NULL; ++i)
-	{
-	    s = alloc(STRLEN(dirnames[i]) + pat_len + 20);
-	    if (s == NULL)
-	    {
-		ga_clear_strings(&ga);
-		return FAIL;
-	    }
-	    sprintf((char *)s, "pack/*/opt/*/%s/%s*.vim", dirnames[i], pat);
-	    globpath(p_pp, s, &ga, 0);
-	    vim_free(s);
-	}
-    }
+    int pat_pathsep_cnt = 0;
+    for (i = 0; i < pat_len; ++i)
+	if (vim_ispathsep(pat[i]))
+	    ++pat_pathsep_cnt;
 
     for (i = 0; i < ga.ga_len; ++i)
     {
 	match = ((char_u **)ga.ga_data)[i];
 	s = match;
 	e = s + STRLEN(s);
-	if (e - 4 > s && STRNICMP(e - 4, ".vim", 4) == 0)
+	if (e - 4 > s && (flags & DIP_KEEPEXT) == 0
+					    && STRNICMP(e - 4, ".vim", 4) == 0)
 	{
 	    e -= 4;
-	    for (s = e; s > match; MB_PTR_BACK(match, s))
-		if (s < match || vim_ispathsep(*s))
-		    break;
-	    ++s;
 	    *e = NUL;
-	    mch_memmove(match, s, e - s + 1);
 	}
+
+	int match_pathsep_cnt = (e > s && e[-1] == '/') ? -1 : 0;
+	for (s = e; s > match; MB_PTR_BACK(match, s))
+	    if (s < match || (vim_ispathsep(*s)
+				     && ++match_pathsep_cnt > pat_pathsep_cnt))
+		break;
+	++s;
+	*e = NUL;
+	mch_memmove(match, s, e - s + 1);
     }
 
     if (ga.ga_len == 0)
@@ -1089,7 +1143,7 @@ ExpandPackAddDir(
 	return FAIL;
     }
     sprintf((char *)s, "pack/*/opt/%s*", pat);
-    globpath(p_pp, s, &ga, 0);
+    globpath(p_pp, s, &ga, 0, TRUE);
     vim_free(s);
 
     for (i = 0; i < ga.ga_len; ++i)

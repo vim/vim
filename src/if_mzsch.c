@@ -1352,24 +1352,24 @@ do_mzscheme_command(exarg_T *eap, void *data, Scheme_Closed_Prim *what)
     void
 mzscheme_buffer_free(buf_T *buf)
 {
-    if (buf->b_mzscheme_ref)
-    {
-	vim_mz_buffer *bp = NULL;
-	MZ_GC_DECL_REG(1);
-	MZ_GC_VAR_IN_REG(0, bp);
-	MZ_GC_REG();
+    if (buf->b_mzscheme_ref == NULL)
+	return;
 
-	bp = BUFFER_REF(buf);
-	bp->buf = INVALID_BUFFER_VALUE;
+    vim_mz_buffer *bp = NULL;
+    MZ_GC_DECL_REG(1);
+    MZ_GC_VAR_IN_REG(0, bp);
+    MZ_GC_REG();
+
+    bp = BUFFER_REF(buf);
+    bp->buf = INVALID_BUFFER_VALUE;
 #ifndef MZ_PRECISE_GC
-	scheme_gc_ptr_ok(bp);
+    scheme_gc_ptr_ok(bp);
 #else
-	scheme_free_immobile_box(buf->b_mzscheme_ref);
+    scheme_free_immobile_box(buf->b_mzscheme_ref);
 #endif
-	buf->b_mzscheme_ref = NULL;
-	MZ_GC_CHECK();
-	MZ_GC_UNREG();
-    }
+    buf->b_mzscheme_ref = NULL;
+    MZ_GC_CHECK();
+    MZ_GC_UNREG();
 }
 
 /*
@@ -1378,23 +1378,23 @@ mzscheme_buffer_free(buf_T *buf)
     void
 mzscheme_window_free(win_T *win)
 {
-    if (win->w_mzscheme_ref)
-    {
-	vim_mz_window *wp = NULL;
-	MZ_GC_DECL_REG(1);
-	MZ_GC_VAR_IN_REG(0, wp);
-	MZ_GC_REG();
-	wp = WINDOW_REF(win);
-	wp->win = INVALID_WINDOW_VALUE;
+    if (win->w_mzscheme_ref == NULL)
+	return;
+
+    vim_mz_window *wp = NULL;
+    MZ_GC_DECL_REG(1);
+    MZ_GC_VAR_IN_REG(0, wp);
+    MZ_GC_REG();
+    wp = WINDOW_REF(win);
+    wp->win = INVALID_WINDOW_VALUE;
 #ifndef MZ_PRECISE_GC
-	scheme_gc_ptr_ok(wp);
+    scheme_gc_ptr_ok(wp);
 #else
-	scheme_free_immobile_box(win->w_mzscheme_ref);
+    scheme_free_immobile_box(win->w_mzscheme_ref);
 #endif
-	win->w_mzscheme_ref = NULL;
-	MZ_GC_CHECK();
-	MZ_GC_UNREG();
-    }
+    win->w_mzscheme_ref = NULL;
+    MZ_GC_CHECK();
+    MZ_GC_UNREG();
 }
 
 /*
@@ -1406,15 +1406,15 @@ ex_mzscheme(exarg_T *eap)
     char_u	*script;
 
     script = script_get(eap, eap->arg);
-    if (!eap->skip)
+    if (eap->skip)
+	return;
+
+    if (script == NULL)
+	do_mzscheme_command(eap, eap->arg, do_eval);
+    else
     {
-	if (script == NULL)
-	    do_mzscheme_command(eap, eap->arg, do_eval);
-	else
-	{
-	    do_mzscheme_command(eap, script, do_eval);
-	    vim_free(script);
-	}
+	do_mzscheme_command(eap, script, do_eval);
+	vim_free(script);
     }
 }
 
@@ -1489,20 +1489,20 @@ ex_mzfile(exarg_T *eap)
     static void
 init_exn_catching_apply(void)
 {
-    if (!exn_catching_apply)
-    {
-	char *e =
-	    "(lambda (thunk) "
-		"(with-handlers ([void (lambda (exn) (cons #f exn))]) "
-		"(cons #t (thunk))))";
+    if (exn_catching_apply)
+	return;
 
-	exn_catching_apply = scheme_eval_string(e, environment);
-	MZ_GC_CHECK();
-	exn_p = scheme_builtin_value("exn?");
-	MZ_GC_CHECK();
-	exn_message = scheme_builtin_value("exn-message");
-	MZ_GC_CHECK();
-    }
+    char *e =
+	"(lambda (thunk) "
+	"(with-handlers ([void (lambda (exn) (cons #f exn))]) "
+	"(cons #t (thunk))))";
+
+    exn_catching_apply = scheme_eval_string(e, environment);
+    MZ_GC_CHECK();
+    exn_p = scheme_builtin_value("exn?");
+    MZ_GC_CHECK();
+    exn_message = scheme_builtin_value("exn-message");
+    MZ_GC_CHECK();
 }
 
 /*
@@ -3827,44 +3827,45 @@ sandbox_check(void)
     static Scheme_Object *
 sandbox_file_guard(int argc UNUSED, Scheme_Object **argv)
 {
-    if (sandbox)
+    if (!sandbox)
+	return scheme_void;
+
+    Scheme_Object *requested_access = argv[2];
+
+    if (M_write == NULL)
     {
-	Scheme_Object *requested_access = argv[2];
-
-	if (M_write == NULL)
-	{
-	    MZ_REGISTER_STATIC(M_write);
-	    M_write = scheme_intern_symbol("write");
-	    MZ_GC_CHECK();
-	}
-	if (M_read == NULL)
-	{
-	    MZ_REGISTER_STATIC(M_read);
-	    M_read = scheme_intern_symbol("read");
-	    MZ_GC_CHECK();
-	}
-	if (M_execute == NULL)
-	{
-	    MZ_REGISTER_STATIC(M_execute);
-	    M_execute = scheme_intern_symbol("execute");
-	    MZ_GC_CHECK();
-	}
-	if (M_delete == NULL)
-	{
-	    MZ_REGISTER_STATIC(M_delete);
-	    M_delete = scheme_intern_symbol("delete");
-	    MZ_GC_CHECK();
-	}
-
-	while (!SCHEME_NULLP(requested_access))
-	{
-	    Scheme_Object *item = SCHEME_CAR(requested_access);
-	    if (scheme_eq(item, M_write) || scheme_eq(item, M_read)
-		    || scheme_eq(item, M_execute) || scheme_eq(item, M_delete))
-		raise_vim_exn(_("not allowed in the Vim sandbox"));
-	    requested_access = SCHEME_CDR(requested_access);
-	}
+	MZ_REGISTER_STATIC(M_write);
+	M_write = scheme_intern_symbol("write");
+	MZ_GC_CHECK();
     }
+    if (M_read == NULL)
+    {
+	MZ_REGISTER_STATIC(M_read);
+	M_read = scheme_intern_symbol("read");
+	MZ_GC_CHECK();
+    }
+    if (M_execute == NULL)
+    {
+	MZ_REGISTER_STATIC(M_execute);
+	M_execute = scheme_intern_symbol("execute");
+	MZ_GC_CHECK();
+    }
+    if (M_delete == NULL)
+    {
+	MZ_REGISTER_STATIC(M_delete);
+	M_delete = scheme_intern_symbol("delete");
+	MZ_GC_CHECK();
+    }
+
+    while (!SCHEME_NULLP(requested_access))
+    {
+	Scheme_Object *item = SCHEME_CAR(requested_access);
+	if (scheme_eq(item, M_write) || scheme_eq(item, M_read)
+		|| scheme_eq(item, M_execute) || scheme_eq(item, M_delete))
+	    raise_vim_exn(_("not allowed in the Vim sandbox"));
+	requested_access = SCHEME_CDR(requested_access);
+    }
+
     return scheme_void;
 }
 

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2022 Dec 31
+*options.txt*	For Vim version 9.0.  Last change: 2023 Jan 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7686,6 +7686,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	When there is error while evaluating the option then it will be made
 	empty to avoid further errors.  Otherwise screen updating would loop.
+	When the result contains unprintable characters the result is
+	unpredictable.
 
 	Note that the only effect of 'ruler' when this option is set (and
 	'laststatus' is 2) is controlling the output of |CTRL-G|.
@@ -8677,6 +8679,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	set to a name that starts with "xterm", "mlterm", "screen", "tmux",
 	"st" (full match only), "st-" or "stterm", and 'ttymouse' is not set
 	already.
+	If the terminfo/termcap entry "XM" exists and the first number is
+	"1006" then 'ttymouse' will be set to "sgr".  This works for many
+	modern terminals.
 	Additionally, if vim is compiled with the |+termresponse| feature and
 	|t_RV| is set to the escape sequence to request the xterm version
 	number, more intelligent detection is done.

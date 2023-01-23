@@ -435,6 +435,7 @@ func Test_getcompletion()
     call assert_true(matchcount > 0)
     let matchcount = len(getcompletion('File.', 'menu'))
     call assert_true(matchcount > 0)
+    source $VIMRUNTIME/delmenu.vim
   endif
 
   let l = getcompletion('v:n', 'var')
@@ -488,6 +489,12 @@ func Test_getcompletion()
   call assert_true(index(l, 'taglist(') >= 0)
   let l = getcompletion('paint', 'function')
   call assert_equal([], l)
+
+  if !has('ruby')
+    " global_functions[] has an entry but it doesn't have an implemention
+    let l = getcompletion('ruby', 'function')
+    call assert_equal([], l)
+  endif
 
   let Flambda = {-> 'hello'}
   let l = getcompletion('', 'function')
@@ -2899,20 +2906,25 @@ func Test_fuzzy_completion_abbr()
   call assert_equal("\"iabbr WaitForCompletion", @:)
   call feedkeys(":iabbr a1z\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal("\"iabbr a1z\t", @:)
+
   iunabbrev WaitForCompletion
   set wildoptions&
 endfunc
 
 " menu name fuzzy completion
 func Test_fuzzy_completion_menu()
-  CheckGui
+  CheckFeature menu
+
+  source $VIMRUNTIME/menu.vim
   set wildoptions&
   call feedkeys(":menu pup\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"menu pup', @:)
   set wildoptions=fuzzy
   call feedkeys(":menu pup\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"menu PopUp.', @:)
+
   set wildoptions&
+  source $VIMRUNTIME/delmenu.vim
 endfunc
 
 " :messages suboptions fuzzy completion

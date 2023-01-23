@@ -517,7 +517,8 @@ bf_self_test(void)
 
     // We can't simply use sizeof(UINT32_T), it would generate a compiler
     // warning.
-    if (ui != 0xffffffffUL || ui + 1 != 0) {
+    if (ui != 0xffffffffUL || ui + 1 != 0)
+    {
 	err++;
 	emsg(_(e_sizeof_uint32_isnot_four));
     }
@@ -573,13 +574,15 @@ bf_cfb_init(
     }
 }
 
-#define BF_CFB_UPDATE(bfs, c) { \
+#define BF_CFB_UPDATE(bfs, c) \
+{ \
     bfs->cfb_buffer[bfs->update_offset] ^= (char_u)c; \
     if (++bfs->update_offset == bfs->cfb_len) \
 	bfs->update_offset = 0; \
 }
 
-#define BF_RANBYTE(bfs, t) { \
+#define BF_RANBYTE(bfs, t) \
+{ \
     if ((bfs->randbyte_offset & BF_BLOCK_MASK) == 0) \
 	bf_e_cblock(bfs, &(bfs->cfb_buffer[bfs->randbyte_offset])); \
     t = bfs->cfb_buffer[bfs->randbyte_offset]; \

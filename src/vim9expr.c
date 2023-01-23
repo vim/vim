@@ -263,7 +263,21 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return FAIL;
     }
 
-    if (type->tt_type == VAR_CLASS)
+    class_T *cl = (class_T *)type->tt_member;
+    int is_super = type->tt_flags & TTFLAG_SUPER;
+    if (type == &t_super)
+    {
+	if (cctx->ctx_ufunc == NULL || cctx->ctx_ufunc->uf_class == NULL)
+	{
+	    emsg(_(e_using_super_not_in_class_function));
+	    return FAIL;
+	}
+	is_super = TRUE;
+	cl = cctx->ctx_ufunc->uf_class;
+	// Remove &t_super from the stack.
+	--cctx->ctx_type_stack.ga_len;
+    }
+    else if (type->tt_type == VAR_CLASS)
     {
 	garray_T *instr = &cctx->ctx_instr;
 	if (instr->ga_len > 0)
@@ -286,26 +300,28 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	return FAIL;
     size_t len = name_end - name;
 
-    class_T *cl = (class_T *)type->tt_member;
     if (*name_end == '(')
     {
 	int	function_count;
+	int	child_count;
 	ufunc_T	**functions;
 
 	if (type->tt_type == VAR_CLASS)
 	{
 	    function_count = cl->class_class_function_count;
+	    child_count = cl->class_class_function_count_child;
 	    functions = cl->class_class_functions;
 	}
 	else
 	{
 	    // type->tt_type == VAR_OBJECT: method call
 	    function_count = cl->class_obj_method_count;
+	    child_count = cl->class_obj_method_count_child;
 	    functions = cl->class_obj_methods;
 	}
 
 	ufunc_T *ufunc = NULL;
-	for (int i = 0; i < function_count; ++i)
+	for (int i = is_super ? child_count : 0; i < function_count; ++i)
 	{
 	    ufunc_T *fp = functions[i];
 	    // Use a separate pointer to avoid that ASAN complains about
@@ -348,6 +364,8 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		}
 
 		*arg = name_end;
+		if (cl->class_flags & CLASS_INTERFACE)
+		    return generate_GET_ITF_MEMBER(cctx, cl, i, m->ocm_type);
 		return generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type);
 	    }
 	}
@@ -643,7 +661,17 @@ compile_load(
 	if (name == NULL)
 	    return FAIL;
 
-	if (vim_strchr(name, AUTOLOAD_CHAR) != NULL)
+	if (STRCMP(name, "super") == 0
+		&& cctx->ctx_ufunc != NULL
+		&& (cctx->ctx_ufunc->uf_flags & (FC_OBJECT|FC_NEW)) == 0)
+	{
+	    // super.SomeFunc() in a class function: push &t_super type, this
+	    // is recognized in compile_subscript().
+	    res = push_type_stack(cctx, &t_super);
+	    if (*end != '.')
+		emsg(_(e_super_must_be_followed_by_dot));
+	}
+	else if (vim_strchr(name, AUTOLOAD_CHAR) != NULL)
 	{
 	    script_autoload(name, FALSE);
 	    res = generate_LOAD(cctx, ISN_LOADAUTO, 0, name, &t_any);
@@ -733,7 +761,15 @@ compile_string(isn_T *isn, cctx_T *cctx, int str_offset)
     cctx->ctx_instr.ga_len = 0;
     cctx->ctx_instr.ga_maxlen = 0;
     cctx->ctx_instr.ga_data = NULL;
+
+    // avoid peeking a next line
+    int galen_save = cctx->ctx_ufunc->uf_lines.ga_len;
+    cctx->ctx_ufunc->uf_lines.ga_len = 0;
+
     expr_res = compile_expr0(&s, cctx);
+
+    cctx->ctx_ufunc->uf_lines.ga_len = galen_save;
+
     s = skipwhite(s);
     trailing_error = *s != NUL;
 
@@ -2218,18 +2254,6 @@ compile_subscript(
 	    if (compile_member(is_slice, &keeping_dict, cctx) == FAIL)
 		return FAIL;
 	}
-	else if (*p == '.'
-		&& (type = get_type_on_stack(cctx, 0)) != &t_unknown
-		&& (type->tt_type == VAR_CLASS || type->tt_type == VAR_OBJECT))
-	{
-	    // class member: SomeClass.varname
-	    // class method: SomeClass.SomeMethod()
-	    // class constructor: SomeClass.new()
-	    // object member: someObject.varname, this.varname
-	    // object method: someObject.SomeMethod(), this.SomeMethod()
-	    if (compile_class_object_index(cctx, arg, type) == FAIL)
-		return FAIL;
-	}
 	else if (*p == '.' && p[1] != '.')
 	{
 	    // dictionary member: dict.name
@@ -2237,27 +2261,43 @@ compile_subscript(
 		return FAIL;
 	    ppconst->pp_is_const = FALSE;
 
-	    *arg = p + 1;
-	    if (IS_WHITE_OR_NUL(**arg))
+	    if ((type = get_type_on_stack(cctx, 0)) != &t_unknown
+		    && (type->tt_type == VAR_CLASS
+					       || type->tt_type == VAR_OBJECT))
 	    {
-		emsg(_(e_missing_name_after_dot));
-		return FAIL;
+		// class member: SomeClass.varname
+		// class method: SomeClass.SomeMethod()
+		// class constructor: SomeClass.new()
+		// object member: someObject.varname, this.varname
+		// object method: someObject.SomeMethod(), this.SomeMethod()
+		*arg = p;
+		if (compile_class_object_index(cctx, arg, type) == FAIL)
+		    return FAIL;
 	    }
-	    p = *arg;
-	    if (eval_isdictc(*p))
-		while (eval_isnamec(*p))
-		    MB_PTR_ADV(p);
-	    if (p == *arg)
+	    else
 	    {
-		semsg(_(e_syntax_error_at_str), *arg);
-		return FAIL;
+		*arg = p + 1;
+		if (IS_WHITE_OR_NUL(**arg))
+		{
+		    emsg(_(e_missing_name_after_dot));
+		    return FAIL;
+		}
+		p = *arg;
+		if (eval_isdictc(*p))
+		    while (eval_isnamec(*p))
+			MB_PTR_ADV(p);
+		if (p == *arg)
+		{
+		    semsg(_(e_syntax_error_at_str), *arg);
+		    return FAIL;
+		}
+		if (keeping_dict && generate_instr(cctx, ISN_CLEARDICT) == NULL)
+		    return FAIL;
+		if (generate_STRINGMEMBER(cctx, *arg, p - *arg) == FAIL)
+		    return FAIL;
+		keeping_dict = TRUE;
+		*arg = p;
 	    }
-	    if (keeping_dict && generate_instr(cctx, ISN_CLEARDICT) == NULL)
-		return FAIL;
-	    if (generate_STRINGMEMBER(cctx, *arg, p - *arg) == FAIL)
-		return FAIL;
-	    keeping_dict = TRUE;
-	    *arg = p;
 	}
 	else
 	    break;

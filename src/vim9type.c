@@ -86,7 +86,8 @@ copy_type_deep_rec(type_T *type, garray_T *type_gap, garray_T *seen_types)
     ((type_T **)seen_types->ga_data)[seen_types->ga_len * 2 + 1] = copy;
     ++seen_types->ga_len;
 
-    if (copy->tt_member != NULL)
+    if (copy->tt_member != NULL
+	    && copy->tt_type != VAR_OBJECT && copy->tt_type != VAR_CLASS)
 	copy->tt_member = copy_type_deep_rec(copy->tt_member,
 							 type_gap, seen_types);
 
@@ -538,7 +539,8 @@ typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 		type_T *decl_type;  // unused
 
 		internal_func_get_argcount(idx, &argcount, &min_argcount);
-		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type);
+		member_type = internal_func_ret_type(idx, 0, NULL, &decl_type,
+								     type_gap);
 	    }
 	    else
 		ufunc = find_func(name, FALSE);
@@ -626,12 +628,17 @@ typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 {
     type_T *type = typval2type_int(tv, copyID, type_gap, flags);
 
-    if (type != NULL && type != &t_bool
-	    && (tv->v_type == VAR_NUMBER
+    if (type != NULL)
+    {
+	if (type != &t_bool && (tv->v_type == VAR_NUMBER
 		    && (tv->vval.v_number == 0 || tv->vval.v_number == 1)))
-	// Number 0 and 1 and expression with "&&" or "||" can also be used for
-	// bool.
-	type = &t_number_bool;
+	    // Number 0 and 1 and expression with "&&" or "||" can also be used
+	    // for bool.
+	    type = &t_number_bool;
+	else if (type != &t_float && tv->v_type == VAR_NUMBER)
+	    // A number can also be used for float.
+	    type = &t_number_float;
+    }
     return type;
 }
 
@@ -819,9 +826,10 @@ check_type_maybe(
 		// Using number 0 or 1 for bool is OK.
 		return OK;
 	    if (expected->tt_type == VAR_FLOAT
-		    && (expected->tt_flags & TTFLAG_NUMBER_OK)
-					&& actual->tt_type == VAR_NUMBER)
-		// Using number where float is expected is OK here.
+		    && actual->tt_type == VAR_NUMBER
+		    && ((expected->tt_flags & TTFLAG_NUMBER_OK)
+			     || (actual->tt_flags & TTFLAG_FLOAT_OK)))
+		// Using a number where a float is expected is OK here.
 		return OK;
 	    if (give_msg)
 		type_mismatch_where(expected, actual, where);
@@ -874,6 +882,32 @@ check_type_maybe(
 		// check the argument count at runtime
 		ret = MAYBE;
 	}
+	else if (expected->tt_type == VAR_OBJECT)
+	{
+	    if (actual->tt_type == VAR_ANY)
+		return MAYBE;	// use runtime type check
+	    if (actual->tt_type != VAR_OBJECT)
+		return FAIL;	// don't use tt_member
+
+	    // check the class, base class or an implemented interface matches
+	    class_T *cl;
+	    for (cl = (class_T *)actual->tt_member; cl != NULL;
+							cl = cl->class_extends)
+	    {
+		if ((class_T *)expected->tt_member == cl)
+		    break;
+		int i;
+		for (i = cl->class_interface_count - 1; i >= 0; --i)
+		    if ((class_T *)expected->tt_member
+						 == cl->class_interfaces_cl[i])
+			break;
+		if (i >= 0)
+		    break;
+	    }
+	    if (cl == NULL)
+		ret = FAIL;
+	}
+
 	if (ret == FAIL && give_msg)
 	    type_mismatch_where(expected, actual, where);
     }
@@ -961,7 +995,9 @@ skip_type(char_u *start, int optional)
 
     if (optional && *p == '?')
 	++p;
-    while (ASCII_ISALNUM(*p) || *p == '_')
+
+    // Also skip over "." for imported classes: "import.ClassName".
+    while (ASCII_ISALNUM(*p) || *p == '_' || *p == '.')
 	++p;
 
     // Skip over "<type>"; this is permissive about white space.
@@ -1070,7 +1106,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
     char_u  *p = *arg;
     size_t  len;
 
-    // skip over the first word
+    // Skip over the first word.
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
     len = p - *arg;
@@ -1270,6 +1306,34 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 		return &t_void;
 	    }
 	    break;
+    }
+
+    // It can be a class or interface name, possibly imported.
+    typval_T tv;
+    tv.v_type = VAR_UNKNOWN;
+    if (eval_variable_import(*arg, &tv) == OK)
+    {
+	if (tv.v_type == VAR_CLASS && tv.vval.v_class != NULL)
+	{
+	    type_T *type = get_type_ptr(type_gap);
+	    if (type != NULL)
+	    {
+		// Although the name is that of a class or interface, the type
+		// uses will be an object.
+		type->tt_type = VAR_OBJECT;
+		type->tt_member = (type_T *)tv.vval.v_class;
+		clear_tv(&tv);
+
+		*arg += len;
+		// Skip over ".ClassName".
+		while (ASCII_ISALNUM(**arg) || **arg == '_' || **arg == '.')
+		    ++*arg;
+
+		return type;
+	    }
+	}
+
+	clear_tv(&tv);
     }
 
     if (give_error)
@@ -1578,13 +1642,12 @@ type_name(type_T *type, char **tofree)
     if (type == NULL)
 	return "[unknown]";
     name = vartype_name(type->tt_type);
+
     if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
     {
 	char *member_free;
 	char *member_name = type_name(type->tt_member, &member_free);
-	size_t len;
-
-	len = STRLEN(name) + STRLEN(member_name) + 3;
+	size_t len = STRLEN(name) + STRLEN(member_name) + 3;
 	*tofree = alloc(len);
 	if (*tofree != NULL)
 	{
@@ -1593,6 +1656,19 @@ type_name(type_T *type, char **tofree)
 	    return *tofree;
 	}
     }
+
+    if (type->tt_type == VAR_OBJECT || type->tt_type == VAR_CLASS)
+    {
+	char_u *class_name = ((class_T *)type->tt_member)->class_name;
+	size_t len = STRLEN(name) + STRLEN(class_name) + 3;
+	*tofree = alloc(len);
+	if (*tofree != NULL)
+	{
+	    vim_snprintf(*tofree, len, "%s<%s>", name, class_name);
+	    return *tofree;
+	}
+    }
+
     if (type->tt_type == VAR_FUNC)
     {
 	garray_T    ga;

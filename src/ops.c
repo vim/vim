@@ -989,11 +989,11 @@ mb_adjust_opend(oparg_T *oap)
 {
     char_u	*p;
 
-    if (oap->inclusive)
-    {
-	p = ml_get(oap->end.lnum);
-	oap->end.col += mb_tail_off(p, p + oap->end.col);
-    }
+    if (!oap->inclusive)
+	return;
+
+    p = ml_get(oap->end.lnum);
+    oap->end.col += mb_tail_off(p, p + oap->end.col);
 }
 
 /*
@@ -1869,22 +1869,23 @@ adjust_cursor_eol(void)
 {
     unsigned int cur_ve_flags = get_ve_flags();
 
-    if (curwin->w_cursor.col > 0
-	    && gchar_cursor() == NUL
-	    && (cur_ve_flags & VE_ONEMORE) == 0
-	    && !(restart_edit || (State & MODE_INSERT)))
+    int adj_cursor = (curwin->w_cursor.col > 0
+				&& gchar_cursor() == NUL
+				&& (cur_ve_flags & VE_ONEMORE) == 0
+				&& !(restart_edit || (State & MODE_INSERT)));
+    if (!adj_cursor)
+	return;
+
+    // Put the cursor on the last character in the line.
+    dec_cursor();
+
+    if (cur_ve_flags == VE_ALL)
     {
-	// Put the cursor on the last character in the line.
-	dec_cursor();
+	colnr_T	    scol, ecol;
 
-	if (cur_ve_flags == VE_ALL)
-	{
-	    colnr_T	    scol, ecol;
-
-	    // Coladd is set to the width of the last character.
-	    getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol);
-	    curwin->w_cursor.coladd = ecol - scol + 1;
-	}
+	// Coladd is set to the width of the last character.
+	getvcol(curwin, &curwin->w_cursor, &scol, NULL, &ecol);
+	curwin->w_cursor.coladd = ecol - scol + 1;
     }
 }
 
@@ -2235,12 +2236,12 @@ reset_lbr(void)
     static void
 restore_lbr(int lbr_saved)
 {
-    if (!curwin->w_p_lbr && lbr_saved)
-    {
-	// changing 'linebreak' may require w_virtcol to be updated
-	curwin->w_p_lbr = TRUE;
-	curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
-    }
+    if (curwin->w_p_lbr || !lbr_saved)
+	return;
+
+    // changing 'linebreak' may require w_virtcol to be updated
+    curwin->w_p_lbr = TRUE;
+    curwin->w_valid &= ~(VALID_WROW|VALID_WCOL|VALID_VIRTCOL);
 }
 #endif
 

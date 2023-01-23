@@ -259,7 +259,12 @@ def main(host, port, server_class=ThreadedTCPServer):
         print("Wait for it...")
         time.sleep(0.5)
 
-    server = server_class((host, port), ThreadedTCPRequestHandler)
+    addrs = socket.getaddrinfo(host, port, 0, 0, socket.IPPROTO_TCP)
+    # Each addr is a (family, type, proto, canonname, sockaddr) tuple
+    sockaddr = addrs[0][4]
+    server_class.address_family = addrs[0][0]
+
+    server = server_class(sockaddr[0:2], ThreadedTCPRequestHandler)
     ip, port = server.server_address[0:2]
 
     # Start a thread with the server.  That thread will then start a new thread

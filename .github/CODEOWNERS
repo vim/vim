@@ -334,6 +334,7 @@ runtime/syntax/dot.vim			@mmottl
 runtime/syntax/doxygen.vim		@frogonwheels
 runtime/syntax/dtd.vim			@chrisbra
 runtime/syntax/dts.vim			@zonque
+runtime/syntax/editorconfig.vim		@gpanders
 runtime/syntax/eiffel.vim		@jocelyn
 runtime/syntax/elmfilt.vim		@cecamp
 runtime/syntax/erlang.vim		@hcs42
@@ -374,6 +375,7 @@ runtime/syntax/indent.vim		@dkearns
 runtime/syntax/j.vim			@glts
 runtime/syntax/jargon.vim		@h3xx
 runtime/syntax/java.vim			@fleiner
+runtime/syntax/javascript.vim		@fleiner
 runtime/syntax/jsonc.vim		@izhakjakov
 runtime/syntax/julia.vim		@carlobaldassi
 runtime/syntax/kconfig.vim		@chrisbra

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2022 Dec 11
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Jan 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2504,6 +2504,10 @@ v:t_number	Value of |Number| type.  Read-only.  See: |type()|
 v:t_string	Value of |String| type.  Read-only.  See: |type()|
 					*v:t_blob* *t_blob-variable*
 v:t_blob	Value of |Blob| type.  Read-only.  See: |type()|
+					*v:t_class* *t_class-variable*
+v:t_class	Value of |class| type.  Read-only.  See: |type()|
+					*v:t_object* *t_object-variable*
+v:t_object	Value of |object| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
@@ -2970,6 +2974,8 @@ text...
 			deleted when the script ends).  Function-local
 			variables are automatically deleted when the function
 			ends.
+			In |Vim9| script variables declared in a function or
+			script cannot be removed.
 
 :unl[et] ${env-name} ...			*:unlet-environment* *:unlet-$*
 			Remove environment variable {env-name}.

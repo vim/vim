@@ -215,7 +215,7 @@ get_function_args(
     garray_T	*default_args,
     int		skip,
     exarg_T	*eap,		// can be NULL
-    int		in_class,	// TRUE when inside a class
+    int		in_class,	// non-zero when inside a class or interface
     garray_T	*newlines,	// function body lines
     garray_T	*lines_to_free)
 {
@@ -641,6 +641,19 @@ get_lambda_name(void)
     return name;
 }
 
+/*
+ * Allocate a "ufunc_T" for a function called "name".
+ * Makes sure the size is right.
+ */
+    static ufunc_T *
+alloc_ufunc(char_u *name)
+{
+    // When the name is short we need to make sure we allocate enough bytes for
+    // the whole struct, including any padding.
+    size_t len = offsetof(ufunc_T, uf_name) + STRLEN(name) + 1;
+    return alloc_clear(len < sizeof(ufunc_T) ? sizeof(ufunc_T) : len);
+}
+
 #if defined(FEAT_LUA) || defined(PROTO)
 /*
  * Registers a native C callback which can be called from Vim script.
@@ -652,7 +665,7 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     char_u	*name = get_lambda_name();
     ufunc_T	*fp;
 
-    fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+    fp = alloc_ufunc(name);
     if (fp == NULL)
 	return NULL;
 
@@ -1356,7 +1369,7 @@ lambda_function_body(
     }
 
     name = get_lambda_name();
-    ufunc = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+    ufunc = alloc_ufunc(name);
     if (ufunc == NULL)
 	goto erret;
     set_ufunc_name(ufunc, name);
@@ -1557,7 +1570,7 @@ get_lambda_tv(
 	char_u	    *line_end;
 	char_u	    *name = get_lambda_name();
 
-	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+	fp = alloc_ufunc(name);
 	if (fp == NULL)
 	    goto errret;
 	fp->uf_def_status = UF_NOT_COMPILED;
@@ -2558,7 +2571,7 @@ copy_lambda_to_global_func(
 	return FAIL;
     }
 
-    fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(global) + 1);
+    fp = alloc_ufunc(global);
     if (fp == NULL)
 	return FAIL;
 
@@ -2572,8 +2585,6 @@ copy_lambda_to_global_func(
 	    || ga_copy_strings(&ufunc->uf_lines, &fp->uf_lines) == FAIL)
 	goto failed;
 
-    fp->uf_name_exp = ufunc->uf_name_exp == NULL ? NULL
-					 : vim_strsave(ufunc->uf_name_exp);
     if (ufunc->uf_arg_types != NULL)
     {
 	fp->uf_arg_types = ALLOC_MULT(type_T *, fp->uf_args.ga_len);
@@ -2591,7 +2602,10 @@ copy_lambda_to_global_func(
     fp->uf_ret_type = ufunc->uf_ret_type;
 
     fp->uf_refcount = 1;
-    STRCPY(fp->uf_name, global);
+
+    fp->uf_name_exp = NULL;
+    set_ufunc_name(fp, global);
+
     hash_add(&func_hashtab, UF2HIKEY(fp), "copy lambda");
 
     // the referenced dfunc_T is now used one more time
@@ -4462,7 +4476,9 @@ list_functions(regmatch_T *regmatch)
  * When "name_arg" is not NULL this is a nested function, using "name_arg" for
  * the function name.
  * "lines_to_free" is a list of strings to be freed later.
- * If "in_class" is TRUE then the function is defined inside a class.
+ * If "class_flags" has CF_CLASS then the function is defined inside a class.
+ * With CF_INTERFACE the function is define inside an interface, only the
+ * ":def"/":function" line is expected, no function body.
  * Returns a pointer to the function or NULL if no function defined.
  */
     ufunc_T *
@@ -4470,7 +4486,7 @@ define_function(
 	exarg_T	    *eap,
 	char_u	    *name_arg,
 	garray_T    *lines_to_free,
-	int	    in_class)
+	int	    class_flags)
 {
     int		j;
     int		c;
@@ -4545,7 +4561,7 @@ define_function(
 
     /*
      * Get the function name.  There are these situations:
-     * func	    normal function name, also when "in_class" is TRUE
+     * func	    normal function name, also when "class_flags" is non-zero
      *		    "name" == func, "fudi.fd_dict" == NULL
      * dict.func    new dictionary entry
      *		    "name" == NULL, "fudi.fd_dict" set,
@@ -4586,7 +4602,7 @@ define_function(
 	}
 
 	int tfn_flags = TFN_NO_AUTOLOAD | TFN_NEW_FUNC
-					       | (in_class ? TFN_IN_CLASS : 0);
+				       | (class_flags != 0 ? TFN_IN_CLASS : 0);
 	name = save_function_name(&p, &is_global, eap->skip, tfn_flags, &fudi);
 	paren = (vim_strchr(p, '(') != NULL);
 	if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
@@ -4789,7 +4805,7 @@ define_function(
     if (get_function_args(&p, ')', &newargs,
 			 eap->cmdidx == CMD_def ? &argtypes : NULL, FALSE,
 			 NULL, &varargs, &default_args, eap->skip,
-			 eap, in_class, &newlines, lines_to_free) == FAIL)
+			 eap, class_flags, &newlines, lines_to_free) == FAIL)
 	goto errret_2;
     whitep = p;
 
@@ -4899,7 +4915,9 @@ define_function(
 
     // Do not define the function when getting the body fails and when
     // skipping.
-    if (get_function_body(eap, &newlines, line_arg, lines_to_free) == FAIL
+    if (((class_flags & CF_INTERFACE) == 0
+		&& get_function_body(eap, &newlines, line_arg, lines_to_free)
+								       == FAIL)
 	    || eap->skip)
 	goto erret;
 
@@ -4934,7 +4952,7 @@ define_function(
 	if (name == NULL)
 	    goto erret;
     }
-    else if (!in_class)
+    else if (class_flags == 0)
     {
 	hashtab_T	*ht;
 	char_u		*find_name = name;
@@ -5077,7 +5095,7 @@ define_function(
 	    }
 	}
 
-	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+	fp = alloc_ufunc(name);
 	if (fp == NULL)
 	    goto erret;
 	fp_allocated = TRUE;
@@ -5159,7 +5177,7 @@ define_function(
 	    hi = hash_find(&func_hashtab, name);
 	    hi->hi_key = UF2HIKEY(fp);
 	}
-	else if (!in_class && hash_add(&func_hashtab,
+	else if (class_flags == 0 && hash_add(&func_hashtab,
 					 UF2HIKEY(fp), "add function") == FAIL)
 	{
 	    free_fp = TRUE;
@@ -5251,7 +5269,7 @@ ex_function(exarg_T *eap)
     garray_T lines_to_free;
 
     ga_init2(&lines_to_free, sizeof(char_u *), 50);
-    (void)define_function(eap, NULL, &lines_to_free, FALSE);
+    (void)define_function(eap, NULL, &lines_to_free, 0);
     ga_clear_strings(&lines_to_free);
 }
 
@@ -5509,6 +5527,71 @@ get_user_func_name(expand_T *xp, int idx)
 	return IObuff;
     }
     return NULL;
+}
+
+/*
+ * Make a copy of a function.
+ * Intended to be used for a function defined on a base class that has a copy
+ * on the child class.
+ * The copy has uf_refcount set to one.
+ * Returns NULL when out of memory.
+ */
+    ufunc_T *
+copy_function(ufunc_T *fp)
+{
+    ufunc_T *ufunc = alloc_ufunc(fp->uf_name);
+    if (ufunc == NULL)
+	return NULL;
+
+    // Most things can just be copied.
+    *ufunc = *fp;
+
+    ufunc->uf_def_status = UF_TO_BE_COMPILED;
+    ufunc->uf_dfunc_idx = 0;
+    ufunc->uf_class = NULL;
+
+    ga_copy_strings(&fp->uf_args, &ufunc->uf_args);
+    ga_copy_strings(&fp->uf_def_args, &ufunc->uf_def_args);
+
+    if (ufunc->uf_arg_types != NULL)
+    {
+	// "uf_arg_types" is an allocated array, make a copy.
+	type_T **at = ALLOC_CLEAR_MULT(type_T *, ufunc->uf_args.ga_len);
+	if (at != NULL)
+	{
+	    mch_memmove(at, ufunc->uf_arg_types,
+				     sizeof(type_T *) * ufunc->uf_args.ga_len);
+	    ufunc->uf_arg_types = at;
+	}
+    }
+
+    // TODO: how about the types themselves? they can be freed when the
+    // original function is freed:
+    //    type_T	**uf_arg_types;
+    //    type_T	*uf_ret_type;
+
+    ufunc->uf_type_list.ga_len = 0;
+    ufunc->uf_type_list.ga_data = NULL;
+
+    // TODO:   partial_T	*uf_partial;
+
+    if (ufunc->uf_va_name != NULL)
+	ufunc->uf_va_name = vim_strsave(ufunc->uf_va_name);
+
+    // TODO:
+    //    type_T	*uf_va_type;
+    //    type_T	*uf_func_type;
+
+    ufunc->uf_block_depth = 0;
+    ufunc->uf_block_ids = NULL;
+
+    ga_copy_strings(&fp->uf_lines, &ufunc->uf_lines);
+
+    ufunc->uf_refcount = 1;
+    ufunc->uf_name_exp = NULL;
+    STRCPY(ufunc->uf_name, fp->uf_name);
+
+    return ufunc;
 }
 
 /*

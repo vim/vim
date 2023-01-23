@@ -6,6 +6,8 @@ int estack_top_is_ufunc(ufunc_T *ufunc, long lnum);
 estack_T *estack_pop(void);
 char_u *estack_sfile(estack_arg_T which);
 void ex_runtime(exarg_T *eap);
+void set_context_in_runtime_cmd(expand_T *xp, char_u *arg);
+int expand_runtime_cmd(char_u *pat, int *numMatches, char_u ***matches);
 int find_script_by_name(char_u *name);
 int get_new_scriptitem_for_fname(int *error, char_u *fname);
 int do_in_path(char_u *path, char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);

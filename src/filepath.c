@@ -1388,7 +1388,7 @@ f_globpath(typval_T *argvars, typval_T *rettv)
     if (file != NULL && !error)
     {
 	ga_init2(&ga, sizeof(char_u *), 10);
-	globpath(tv_get_string(&argvars[0]), file, &ga, flags);
+	globpath(tv_get_string(&argvars[0]), file, &ga, flags, FALSE);
 	if (rettv->v_type == VAR_STRING)
 	    rettv->vval.v_string = ga_concat_strings(&ga, "\n");
 	else if (rettv_list_alloc(rettv) == OK)
@@ -3084,13 +3084,13 @@ concat_fnames(char_u *fname1, char_u *fname2, int sep)
     char_u  *dest;
 
     dest = alloc(STRLEN(fname1) + STRLEN(fname2) + 3);
-    if (dest != NULL)
-    {
-	STRCPY(dest, fname1);
-	if (sep)
-	    add_pathsep(dest);
-	STRCAT(dest, fname2);
-    }
+    if (dest == NULL)
+	return NULL;
+
+    STRCPY(dest, fname1);
+    if (sep)
+	add_pathsep(dest);
+    STRCAT(dest, fname2);
     return dest;
 }
 
@@ -3122,14 +3122,14 @@ FullName_save(
 	return NULL;
 
     buf = alloc(MAXPATHL);
-    if (buf != NULL)
-    {
-	if (vim_FullName(fname, buf, MAXPATHL, force) != FAIL)
-	    new_fname = vim_strsave(buf);
-	else
-	    new_fname = vim_strsave(fname);
-	vim_free(buf);
-    }
+    if (buf == NULL)
+	return NULL;
+
+    if (vim_FullName(fname, buf, MAXPATHL, force) != FAIL)
+	new_fname = vim_strsave(buf);
+    else
+	new_fname = vim_strsave(fname);
+    vim_free(buf);
     return new_fname;
 }
 

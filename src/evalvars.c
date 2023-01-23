@@ -139,6 +139,8 @@ static struct vimvar
     {VV_NAME("t_job",		 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_channel",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("t_blob",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_class",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("t_object",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("termrfgresp",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("termrbgresp",	 VAR_STRING), NULL, VV_RO},
     {VV_NAME("termu7resp",	 VAR_STRING), NULL, VV_RO},
@@ -255,6 +257,8 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_JOB,     VAR_TYPE_JOB);
     set_vim_var_nr(VV_TYPE_CHANNEL, VAR_TYPE_CHANNEL);
     set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
+    set_vim_var_nr(VV_TYPE_CLASS,   VAR_TYPE_CLASS);
+    set_vim_var_nr(VV_TYPE_OBJECT,  VAR_TYPE_OBJECT);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
@@ -2913,7 +2917,7 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
     int
 eval_variable(
     char_u	*name,
-    int		len,		// length of "name"
+    int		len,		// length of "name" or zero
     scid_T	sid,		// script ID for imported item or zero
     typval_T	*rettv,		// NULL when only checking existence
     dictitem_T	**dip,		// non-NULL when typval's dict item is needed
@@ -2923,12 +2927,15 @@ eval_variable(
     typval_T	*tv = NULL;
     int		found = FALSE;
     hashtab_T	*ht = NULL;
-    int		cc;
+    int		cc = 0;
     type_T	*type = NULL;
 
-    // truncate the name, so that we can use strcmp()
-    cc = name[len];
-    name[len] = NUL;
+    if (len > 0)
+    {
+	// truncate the name, so that we can use strcmp()
+	cc = name[len];
+	name[len] = NUL;
+    }
 
     // Check for local variable when debugging.
     if ((tv = lookup_debug_var(name)) == NULL)
@@ -3095,10 +3102,40 @@ eval_variable(
 	}
     }
 
-    name[len] = cc;
+    if (len > 0)
+	name[len] = cc;
 
     return ret;
 }
+
+/*
+ * Get the value of internal variable "name", also handling "import.name".
+ * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
+ */
+    int
+eval_variable_import(
+    char_u	*name,
+    typval_T	*rettv)
+{
+    char_u  *s = name;
+    while (ASCII_ISALNUM(*s) || *s == '_')
+	++s;
+    int	    len = (int)(s - name);
+
+    if (eval_variable(name, len, 0, rettv, NULL, EVAL_VAR_IMPORT) == FAIL)
+	return FAIL;
+    if (rettv->v_type == VAR_ANY && *s == '.')
+    {
+	char_u *ns = s + 1;
+	s = ns;
+	while (ASCII_ISALNUM(*s) || *s == '_')
+	    ++s;
+	int sid = rettv->vval.v_number;
+	return eval_variable(ns, (int)(s - ns), sid, rettv, NULL, 0);
+    }
+    return OK;
+}
+
 
 /*
  * Check if variable "name[len]" is a local variable or an argument.

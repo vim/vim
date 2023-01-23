@@ -2696,11 +2696,13 @@ reg_save_equal(regsave_T *save)
     REG_MULTI ? save_se_multi((savep), (posp)) : save_se_one((savep), (pp))
 
 // After a failed match restore the sub-expressions.
-#define restore_se(savep, posp, pp) { \
+#define restore_se(savep, posp, pp) \
+{ \
     if (REG_MULTI) \
 	*(posp) = (savep)->se_u.pos; \
     else \
-	*(pp) = (savep)->se_u.ptr; }
+	*(pp) = (savep)->se_u.ptr; \
+}
 
 /*
  * Tentatively set the sub-expression start to the current position (after
@@ -3187,20 +3189,20 @@ save_subexpr(regbehind_T *bp)
     // When "rex.need_clear_subexpr" is set we don't need to save the values,
     // only remember that this flag needs to be set again when restoring.
     bp->save_need_clear_subexpr = rex.need_clear_subexpr;
-    if (!rex.need_clear_subexpr)
+    if (rex.need_clear_subexpr)
+	return;
+
+    for (i = 0; i < NSUBEXP; ++i)
     {
-	for (i = 0; i < NSUBEXP; ++i)
+	if (REG_MULTI)
 	{
-	    if (REG_MULTI)
-	    {
-		bp->save_start[i].se_u.pos = rex.reg_startpos[i];
-		bp->save_end[i].se_u.pos = rex.reg_endpos[i];
-	    }
-	    else
-	    {
-		bp->save_start[i].se_u.ptr = rex.reg_startp[i];
-		bp->save_end[i].se_u.ptr = rex.reg_endp[i];
-	    }
+	    bp->save_start[i].se_u.pos = rex.reg_startpos[i];
+	    bp->save_end[i].se_u.pos = rex.reg_endpos[i];
+	}
+	else
+	{
+	    bp->save_start[i].se_u.ptr = rex.reg_startp[i];
+	    bp->save_end[i].se_u.ptr = rex.reg_endp[i];
 	}
     }
 }
@@ -3215,20 +3217,20 @@ restore_subexpr(regbehind_T *bp)
 
     // Only need to restore saved values when they are not to be cleared.
     rex.need_clear_subexpr = bp->save_need_clear_subexpr;
-    if (!rex.need_clear_subexpr)
+    if (rex.need_clear_subexpr)
+	return;
+
+    for (i = 0; i < NSUBEXP; ++i)
     {
-	for (i = 0; i < NSUBEXP; ++i)
+	if (REG_MULTI)
 	{
-	    if (REG_MULTI)
-	    {
-		rex.reg_startpos[i] = bp->save_start[i].se_u.pos;
-		rex.reg_endpos[i] = bp->save_end[i].se_u.pos;
-	    }
-	    else
-	    {
-		rex.reg_startp[i] = bp->save_start[i].se_u.ptr;
-		rex.reg_endp[i] = bp->save_end[i].se_u.ptr;
-	    }
+	    rex.reg_startpos[i] = bp->save_start[i].se_u.pos;
+	    rex.reg_endpos[i] = bp->save_end[i].se_u.pos;
+	}
+	else
+	{
+	    rex.reg_startp[i] = bp->save_start[i].se_u.ptr;
+	    rex.reg_endp[i] = bp->save_end[i].se_u.ptr;
 	}
     }
 }

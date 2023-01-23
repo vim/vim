@@ -56,6 +56,7 @@ cmdline_fuzzy_completion_supported(expand_T *xp)
 	    && xp->xp_context != EXPAND_OLD_SETTING
 	    && xp->xp_context != EXPAND_OWNSYNTAX
 	    && xp->xp_context != EXPAND_PACKADD
+	    && xp->xp_context != EXPAND_RUNTIME
 	    && xp->xp_context != EXPAND_SHELLCMD
 	    && xp->xp_context != EXPAND_TAGS
 	    && xp->xp_context != EXPAND_TAGS_LISTFILES
@@ -1362,6 +1363,7 @@ addstar(
 	// For a tag pattern starting with "/" no translation is needed.
 	if (context == EXPAND_HELP
 		|| context == EXPAND_COLORS
+		|| context == EXPAND_RUNTIME
 		|| context == EXPAND_COMPILER
 		|| context == EXPAND_OWNSYNTAX
 		|| context == EXPAND_FILETYPE
@@ -1850,21 +1852,22 @@ find_cmd_after_substitute_cmd(char_u *arg)
 find_cmd_after_isearch_cmd(expand_T *xp, char_u *arg)
 {
     arg = skipwhite(skipdigits(arg));	    // skip count
-    if (*arg == '/')	// Match regexp, not just whole words
-    {
-	for (++arg; *arg && *arg != '/'; arg++)
-	    if (*arg == '\\' && arg[1] != NUL)
-		arg++;
-	if (*arg)
-	{
-	    arg = skipwhite(arg + 1);
+    if (*arg != '/')
+	return NULL;
 
-	    // Check for trailing illegal characters
-	    if (*arg == NUL || vim_strchr((char_u *)"|\"\n", *arg) == NULL)
-		xp->xp_context = EXPAND_NOTHING;
-	    else
-		return arg;
-	}
+    // Match regexp, not just whole words
+    for (++arg; *arg && *arg != '/'; arg++)
+	if (*arg == '\\' && arg[1] != NUL)
+	    arg++;
+    if (*arg)
+    {
+	arg = skipwhite(arg + 1);
+
+	// Check for trailing illegal characters
+	if (*arg == NUL || vim_strchr((char_u *)"|\"\n", *arg) == NULL)
+	    xp->xp_context = EXPAND_NOTHING;
+	else
+	    return arg;
     }
 
     return NULL;
@@ -2309,6 +2312,10 @@ set_context_by_cmdname(
 	case CMD_colorscheme:
 	    xp->xp_context = EXPAND_COLORS;
 	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_runtime:
+	    set_context_in_runtime_cmd(xp, arg);
 	    break;
 
 	case CMD_compiler:
@@ -2780,7 +2787,7 @@ get_breakadd_arg(expand_T *xp UNUSED, int idx)
 {
     char *opts[] = {"expr", "file", "func", "here"};
 
-    if (idx >=0 && idx <= 3)
+    if (idx >= 0 && idx <= 3)
     {
 	// breakadd {expr, file, func, here}
 	if (breakpt_expand_what == EXP_BREAKPT_ADD)
@@ -3017,6 +3024,10 @@ ExpandFromContext(
 	char *directories[] = {"colors", NULL};
 	return ExpandRTDir(pat, DIP_START + DIP_OPT, numMatches, matches,
 								directories);
+    }
+    if (xp->xp_context == EXPAND_RUNTIME)
+    {
+	return expand_runtime_cmd(pat, numMatches, matches);
     }
     if (xp->xp_context == EXPAND_COMPILER)
     {
@@ -3598,13 +3609,15 @@ ExpandUserList(
 /*
  * Expand "file" for all comma-separated directories in "path".
  * Adds the matches to "ga".  Caller must init "ga".
+ * If "dirs" is TRUE only expand directory names.
  */
     void
 globpath(
     char_u	*path,
     char_u	*file,
     garray_T	*ga,
-    int		expand_options)
+    int		expand_options,
+    int		dirs)
 {
     expand_T	xpc;
     char_u	*buf;
@@ -3617,7 +3630,7 @@ globpath(
 	return;
 
     ExpandInit(&xpc);
-    xpc.xp_context = EXPAND_FILES;
+    xpc.xp_context = dirs ? EXPAND_DIRECTORIES : EXPAND_FILES;
 
     // Loop over all entries in {path}.
     while (*path != NUL)
@@ -4024,6 +4037,11 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
 	}
 # endif
+	if (xpc.xp_context == EXPAND_RUNTIME)
+	{
+	    set_context_in_runtime_cmd(&xpc, xpc.xp_pattern);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
     }
 
     if (cmdline_fuzzy_completion_supported(&xpc))

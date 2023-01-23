@@ -2016,7 +2016,8 @@ win_line(
 			    text_prop_type = pt;
 			    text_prop_attr =
 				   hl_combine_attr(text_prop_attr, used_attr);
-			    other_tpi = used_tpi;
+			    if (used_tpi >= 0 && text_props[used_tpi].tp_id < 0)
+				other_tpi = used_tpi;
 			    text_prop_flags = pt->pt_flags;
 			    text_prop_id = tp->tp_id;
 			    used_tpi = tpi;

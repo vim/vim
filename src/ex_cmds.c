@@ -722,7 +722,8 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
     {
 	mark_adjust_nofold(line2 + 1, dest, -num_lines, 0L);
 #ifdef FEAT_FOLDING
-	FOR_ALL_TAB_WINDOWS(tp, win) {
+	FOR_ALL_TAB_WINDOWS(tp, win)
+	{
 	    if (win->w_buffer == curbuf)
 		foldMoveRange(&win->w_folds, line1, line2, dest);
 	}
@@ -737,7 +738,8 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
     {
 	mark_adjust_nofold(dest + 1, line1 - 1, num_lines, 0L);
 #ifdef FEAT_FOLDING
-	FOR_ALL_TAB_WINDOWS(tp, win) {
+	FOR_ALL_TAB_WINDOWS(tp, win)
+	{
 	    if (win->w_buffer == curbuf)
 		foldMoveRange(&win->w_folds, dest + 1, line1 - 1, line2);
 	}
@@ -5279,67 +5281,67 @@ prepare_tagpreview(
     need_mouse_correct = TRUE;
 # endif
 
+    if (curwin->w_p_pvw)
+	return FALSE;
+
     /*
      * If there is already a preview window open, use that one.
      */
-    if (!curwin->w_p_pvw)
+# ifdef FEAT_PROP_POPUP
+    if (use_previewpopup && *p_pvp != NUL)
     {
-# ifdef FEAT_PROP_POPUP
-	if (use_previewpopup && *p_pvp != NUL)
-	{
-	    wp = popup_find_preview_window();
-	    if (wp != NULL)
-		popup_set_wantpos_cursor(wp, wp->w_minwidth, NULL);
-	}
-	else if (use_popup != USEPOPUP_NONE)
-	{
-	    wp = popup_find_info_window();
-	    if (wp != NULL)
-	    {
-		if (use_popup == USEPOPUP_NORMAL)
-		    popup_show(wp);
-		else
-		    popup_hide(wp);
-		// When the popup moves or resizes it may reveal part of
-		// another window.  TODO: can this be done more efficiently?
-		redraw_all_later(UPD_NOT_VALID);
-	    }
-	}
-	else
-# endif
-	{
-	    FOR_ALL_WINDOWS(wp)
-		if (wp->w_p_pvw)
-		    break;
-	}
+	wp = popup_find_preview_window();
 	if (wp != NULL)
-	    win_enter(wp, undo_sync);
-	else
+	    popup_set_wantpos_cursor(wp, wp->w_minwidth, NULL);
+    }
+    else if (use_popup != USEPOPUP_NONE)
+    {
+	wp = popup_find_info_window();
+	if (wp != NULL)
 	{
-	    /*
-	     * There is no preview window open yet.  Create one.
-	     */
-# ifdef FEAT_PROP_POPUP
-	    if ((use_previewpopup && *p_pvp != NUL)
-						 || use_popup != USEPOPUP_NONE)
-		return popup_create_preview_window(use_popup != USEPOPUP_NONE);
-# endif
-	    if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0) == FAIL)
-		return FALSE;
-	    curwin->w_p_pvw = TRUE;
-	    curwin->w_p_wfh = TRUE;
-	    RESET_BINDING(curwin);	    // don't take over 'scrollbind'
-	    // and 'cursorbind'
-# ifdef FEAT_DIFF
-	    curwin->w_p_diff = FALSE;	    // no 'diff'
-# endif
-# ifdef FEAT_FOLDING
-	    curwin->w_p_fdc = 0;	    // no 'foldcolumn'
-# endif
-	    return TRUE;
+	    if (use_popup == USEPOPUP_NORMAL)
+		popup_show(wp);
+	    else
+		popup_hide(wp);
+	    // When the popup moves or resizes it may reveal part of
+	    // another window.  TODO: can this be done more efficiently?
+	    redraw_all_later(UPD_NOT_VALID);
 	}
     }
-    return FALSE;
+    else
+# endif
+    {
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_p_pvw)
+		break;
+    }
+    if (wp != NULL)
+    {
+	win_enter(wp, undo_sync);
+	return FALSE;
+    }
+
+    /*
+     * There is no preview window open yet.  Create one.
+     */
+# ifdef FEAT_PROP_POPUP
+    if ((use_previewpopup && *p_pvp != NUL)
+	    || use_popup != USEPOPUP_NONE)
+	return popup_create_preview_window(use_popup != USEPOPUP_NONE);
+# endif
+    if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0) == FAIL)
+	return FALSE;
+    curwin->w_p_pvw = TRUE;
+    curwin->w_p_wfh = TRUE;
+    RESET_BINDING(curwin);	    // don't take over 'scrollbind'
+				    // and 'cursorbind'
+# ifdef FEAT_DIFF
+    curwin->w_p_diff = FALSE;	    // no 'diff'
+# endif
+# ifdef FEAT_FOLDING
+    curwin->w_p_fdc = 0;	    // no 'foldcolumn'
+# endif
+    return TRUE;
 }
 
 #endif

@@ -199,32 +199,32 @@ im_set_active(int active)
     void
 xim_set_focus(int focus)
 {
-    if (xic != NULL)
-    {
-	if (focus)
-	    gtk_im_context_focus_in(xic);
-	else
-	    gtk_im_context_focus_out(xic);
-    }
+    if (xic == NULL)
+	return;
+
+    if (focus)
+	gtk_im_context_focus_in(xic);
+    else
+	gtk_im_context_focus_out(xic);
 }
 
     void
 im_set_position(int row, int col)
 {
-    if (xic != NULL)
-    {
-	GdkRectangle area;
+    if (xic == NULL)
+	return;
 
-	area.x = FILL_X(col);
-	area.y = FILL_Y(row);
-	area.width  = gui.char_width * (mb_lefthalve(row, col) ? 2 : 1);
-	area.height = gui.char_height;
+    GdkRectangle area;
 
-	gtk_im_context_set_cursor_location(xic, &area);
+    area.x = FILL_X(col);
+    area.y = FILL_Y(row);
+    area.width  = gui.char_width * (mb_lefthalve(row, col) ? 2 : 1);
+    area.height = gui.char_height;
 
-	if (p_imst == IM_OVER_THE_SPOT)
-	    im_preedit_window_set_position();
-    }
+    gtk_im_context_set_cursor_location(xic, &area);
+
+    if (p_imst == IM_OVER_THE_SPOT)
+	im_preedit_window_set_position();
 }
 
 #  if 0 || defined(PROTO) // apparently only used in gui_x11.c

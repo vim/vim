@@ -26,7 +26,7 @@
  * Returns OK or FAIL.  When OK then "varname_end" is set to just after the
  * variable name and "type_ret" is set to the decleared or detected type.
  * "init_expr" is set to the initialisation expression (allocated), if there is
- * one.
+ * one.  For an interface "init_expr" is NULL.
  */
     static int
 parse_member(
@@ -119,7 +119,14 @@ parse_member(
 
     *type_ret = type;
     if (expr_end > expr_start)
+    {
+	if (init_expr == NULL)
+	{
+	    emsg(_(e_cannot_initialize_member_in_interface));
+	    return FAIL;
+	}
 	*init_expr = vim_strnsave(expr_start, expr_end - expr_start);
+    }
     return OK;
 }
 
@@ -153,6 +160,8 @@ add_member(
 /*
  * Move the class or object members found while parsing a class into the class.
  * "gap" contains the found members.
+ * "parent_members" points to the members in the parent class (if any)
+ * "parent_count" is the number of members in the parent class
  * "members" will be set to the newly allocated array of members and
  * "member_count" set to the number of members.
  * Returns OK or FAIL.
@@ -160,32 +169,67 @@ add_member(
     static int
 add_members_to_class(
     garray_T	*gap,
+    ocmember_T	*parent_members,
+    int		parent_count,
     ocmember_T	**members,
     int		*member_count)
 {
-    *member_count = gap->ga_len;
-    *members = gap->ga_len == 0 ? NULL : ALLOC_MULT(ocmember_T, gap->ga_len);
-    if (gap->ga_len > 0 && *members == NULL)
+    *member_count = parent_count + gap->ga_len;
+    *members = *member_count == 0 ? NULL
+				       : ALLOC_MULT(ocmember_T, *member_count);
+    if (*member_count > 0 && *members == NULL)
 	return FAIL;
+    for (int i = 0; i < parent_count; ++i)
+    {
+	// parent members need to be copied
+	ocmember_T	*m = *members + i;
+	*m = parent_members[i];
+	m->ocm_name = vim_strsave(m->ocm_name);
+	if (m->ocm_init != NULL)
+	    m->ocm_init = vim_strsave(m->ocm_init);
+    }
     if (gap->ga_len > 0)
-	mch_memmove(*members, gap->ga_data, sizeof(ocmember_T) * gap->ga_len);
+	// new members are moved
+	mch_memmove(*members + parent_count,
+			       gap->ga_data, sizeof(ocmember_T) * gap->ga_len);
     VIM_CLEAR(gap->ga_data);
     return OK;
 }
 
 /*
+ * Convert a member index "idx" of interface "itf" to the member index of class
+ * "cl" implementing that interface.
+ */
+    int
+object_index_from_itf_index(class_T *itf, int idx, class_T *cl)
+{
+    if (idx > itf->class_obj_member_count)
+    {
+	siemsg("index %d out of range for interface %s", idx, itf->class_name);
+	return 0;
+    }
+    itf2class_T *i2c;
+    for (i2c = itf->class_itf2class; i2c != NULL; i2c = i2c->i2c_next)
+	if (i2c->i2c_class == cl)
+	    break;
+    if (i2c == NULL)
+    {
+	siemsg("class %s not found on interface %s",
+					      cl->class_name, itf->class_name);
+	return 0;
+    }
+    int *table = (int *)(i2c + 1);
+    return table[idx];
+}
+
+/*
  * Handle ":class" and ":abstract class" up to ":endclass".
+ * Handle ":interface" up to ":endinterface".
  */
     void
 ex_class(exarg_T *eap)
 {
-    if (!current_script_is_vim9()
-		|| (cmdmod.cmod_flags & CMOD_LEGACY)
-		|| !getline_equal(eap->getline, eap->cookie, getsourceline))
-    {
-	emsg(_(e_class_can_only_be_defined_in_vim9_script));
-	return;
-    }
+    int is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
 
     char_u *arg = eap->arg;
     int is_abstract = eap->cmdidx == CMD_abstract;
@@ -197,27 +241,129 @@ ex_class(exarg_T *eap)
 	    return;
 	}
 	arg = skipwhite(arg + 5);
+	is_class = TRUE;
+    }
+
+    if (!current_script_is_vim9()
+		|| (cmdmod.cmod_flags & CMOD_LEGACY)
+		|| !getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	if (is_class)
+	    emsg(_(e_class_can_only_be_defined_in_vim9_script));
+	else
+	    emsg(_(e_interface_can_only_be_defined_in_vim9_script));
+	return;
     }
 
     if (!ASCII_ISUPPER(*arg))
     {
-	semsg(_(e_class_name_must_start_with_uppercase_letter_str), arg);
+	if (is_class)
+	    semsg(_(e_class_name_must_start_with_uppercase_letter_str), arg);
+	else
+	    semsg(_(e_interface_name_must_start_with_uppercase_letter_str),
+									  arg);
 	return;
     }
     char_u *name_end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
     if (!IS_WHITE_OR_NUL(*name_end))
     {
-	semsg(_(e_white_space_required_after_class_name_str), arg);
+	semsg(_(e_white_space_required_after_name_str), arg);
 	return;
     }
+    char_u *name_start = arg;
+
+    // "export class" gets used when creating the class, don't use "is_export"
+    // for the items inside the class.
+    int class_export = is_export;
+    is_export = FALSE;
 
     // TODO:
     //    generics: <Tkey, Tentry>
-    //    extends SomeClass
-    //    implements SomeInterface
-    //    specifies SomeInterface
-    //    check that nothing follows
-    //	  handle "is_export" if it is set
+
+    // Name for "extends BaseClass"
+    char_u *extends = NULL;
+
+    // Names for "implements SomeInterface"
+    garray_T	ga_impl;
+    ga_init2(&ga_impl, sizeof(char_u *), 5);
+
+    arg = skipwhite(name_end);
+    while (*arg != NUL && *arg != '#' && *arg != '\n')
+    {
+	// TODO:
+	//    specifies SomeInterface
+	if (STRNCMP(arg, "extends", 7) == 0 && IS_WHITE_OR_NUL(arg[7]))
+	{
+	    if (extends != NULL)
+	    {
+		emsg(_(e_duplicate_extends));
+		goto early_ret;
+	    }
+	    arg = skipwhite(arg + 7);
+	    char_u *end = find_name_end(arg, NULL, NULL, FNE_CHECK_START);
+	    if (!IS_WHITE_OR_NUL(*end))
+	    {
+		semsg(_(e_white_space_required_after_name_str), arg);
+		goto early_ret;
+	    }
+	    extends = vim_strnsave(arg, end - arg);
+	    if (extends == NULL)
+		goto early_ret;
+
+	    arg = skipwhite(end + 1);
+	}
+	else if (STRNCMP(arg, "implements", 10) == 0
+						   && IS_WHITE_OR_NUL(arg[10]))
+	{
+	    if (ga_impl.ga_len > 0)
+	    {
+		emsg(_(e_duplicate_implements));
+		goto early_ret;
+	    }
+	    arg = skipwhite(arg + 10);
+
+	    for (;;)
+	    {
+		char_u *impl_end = find_name_end(arg, NULL, NULL,
+							      FNE_CHECK_START);
+		if (!IS_WHITE_OR_NUL(*impl_end) && *impl_end != ',')
+		{
+		    semsg(_(e_white_space_required_after_name_str), arg);
+		    goto early_ret;
+		}
+		char_u *iname = vim_strnsave(arg, impl_end - arg);
+		if (iname == NULL)
+		    goto early_ret;
+		for (int i = 0; i < ga_impl.ga_len; ++i)
+		    if (STRCMP(((char_u **)ga_impl.ga_data)[i], iname) == 0)
+		    {
+			semsg(_(e_duplicate_interface_after_implements_str),
+									iname);
+			vim_free(iname);
+			goto early_ret;
+		    }
+		if (ga_add_string(&ga_impl, iname) == FAIL)
+		{
+		    vim_free(iname);
+		    goto early_ret;
+		}
+		if (*impl_end != ',')
+		{
+		    arg = skipwhite(impl_end);
+		    break;
+		}
+		arg = skipwhite(impl_end + 1);
+	    }
+	}
+	else
+	{
+	    semsg(_(e_trailing_characters_str), arg);
+early_ret:
+	    vim_free(extends);
+	    ga_clear_strings(&ga_impl);
+	    return;
+	}
+    }
 
     garray_T	type_list;	    // list of pointers to allocated types
     ga_init2(&type_list, sizeof(type_T *), 10);
@@ -239,7 +385,8 @@ ex_class(exarg_T *eap)
     ga_init2(&objmethods, sizeof(ufunc_T *), 10);
 
     /*
-     * Go over the body of the class until "endclass" is found.
+     * Go over the body of the class/interface until "endclass" or
+     * "endinterface" is found.
      */
     char_u *theline = NULL;
     int success = FALSE;
@@ -262,14 +409,21 @@ ex_class(exarg_T *eap)
 	}
 
 	char_u *p = line;
-	if (checkforcmd(&p, "endclass", 4))
+	char *end_name = is_class ? "endclass" : "endinterface";
+	if (checkforcmd(&p, end_name, is_class ? 4 : 5))
 	{
-	    if (STRNCMP(line, "endclass", 8) != 0)
+	    if (STRNCMP(line, end_name, is_class ? 8 : 12) != 0)
 		semsg(_(e_command_cannot_be_shortened_str), line);
 	    else if (*p == '|' || !ends_excmd2(line, p))
 		semsg(_(e_trailing_characters_str), p);
 	    else
 		success = TRUE;
+	    break;
+	}
+	char *wrong_name = is_class ? "endinterface" : "endclass";
+	if (checkforcmd(&p, wrong_name, is_class ? 5 : 4))
+	{
+	    semsg(_(e_invalid_command_str), line);
 	    break;
 	}
 
@@ -320,7 +474,8 @@ ex_class(exarg_T *eap)
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
 	    if (parse_member(eap, line, varname, has_public,
-			  &varname_end, &type_list, &type, &init_expr) == FAIL)
+			  &varname_end, &type_list, &type,
+			  is_class ? &init_expr: NULL) == FAIL)
 		break;
 	    if (add_member(&objmembers, varname, varname_end,
 					  has_public, type, init_expr) == FAIL)
@@ -358,14 +513,33 @@ ex_class(exarg_T *eap)
 	    ea.cookie = eap->cookie;
 
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
-	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free, TRUE);
+	    ufunc_T *uf = define_function(&ea, NULL, &lines_to_free,
+					   is_class ? CF_CLASS : CF_INTERFACE);
 	    ga_clear_strings(&lines_to_free);
 
 	    if (uf != NULL)
 	    {
-		int is_new = STRNCMP(uf->uf_name, "new", 3) == 0;
+		char_u *name = uf->uf_name;
+		int is_new = STRNCMP(name, "new", 3) == 0;
+		if (is_new && is_abstract)
+		{
+		    emsg(_(e_cannot_define_new_function_in_abstract_class));
+		    success = FALSE;
+		    break;
+		}
 		garray_T *fgap = has_static || is_new
 					       ? &classfunctions : &objmethods;
+		// Check the name isn't used already.
+		for (int i = 0; i < fgap->ga_len; ++i)
+		{
+		    char_u *n = ((ufunc_T **)fgap->ga_data)[i]->uf_name;
+		    if (STRCMP(name, n) == 0)
+		    {
+			semsg(_(e_duplicate_function_str), name);
+			break;
+		    }
+		}
+
 		if (ga_grow(fgap, 1) == OK)
 		{
 		    if (is_new)
@@ -389,7 +563,8 @@ ex_class(exarg_T *eap)
 	    type_T *type = NULL;
 	    char_u *init_expr = NULL;
 	    if (parse_member(eap, line, varname, has_public,
-		      &varname_end, &type_list, &type, &init_expr) == FAIL)
+		      &varname_end, &type_list, &type,
+		      is_class ? &init_expr : NULL) == FAIL)
 		break;
 	    if (add_member(&classmembers, varname, varname_end,
 				      has_public, type, init_expr) == FAIL)
@@ -401,11 +576,202 @@ ex_class(exarg_T *eap)
 
 	else
 	{
-	    semsg(_(e_not_valid_command_in_class_str), line);
+	    if (is_class)
+		semsg(_(e_not_valid_command_in_class_str), line);
+	    else
+		semsg(_(e_not_valid_command_in_interface_str), line);
 	    break;
 	}
     }
     vim_free(theline);
+
+    class_T *extends_cl = NULL;  // class from "extends" argument
+
+    /*
+     * Check a few things before defining the class.
+     */
+
+    // Check the "extends" class is valid.
+    if (success && extends != NULL)
+    {
+	typval_T tv;
+	tv.v_type = VAR_UNKNOWN;
+	if (eval_variable_import(extends, &tv) == FAIL)
+	{
+	    semsg(_(e_class_name_not_found_str), extends);
+	    success = FALSE;
+	}
+	else
+	{
+	    if (tv.v_type != VAR_CLASS
+		    || tv.vval.v_class == NULL
+		    || (tv.vval.v_class->class_flags & CLASS_INTERFACE) != 0)
+	    {
+		semsg(_(e_cannot_extend_str), extends);
+		success = FALSE;
+	    }
+	    else
+	    {
+		extends_cl = tv.vval.v_class;
+		++extends_cl->class_refcount;
+	    }
+	    clear_tv(&tv);
+	}
+    }
+    VIM_CLEAR(extends);
+
+    class_T **intf_classes = NULL;
+
+    // Check all "implements" entries are valid.
+    if (success && ga_impl.ga_len > 0)
+    {
+	intf_classes = ALLOC_CLEAR_MULT(class_T *, ga_impl.ga_len);
+
+	for (int i = 0; i < ga_impl.ga_len && success; ++i)
+	{
+	    char_u *impl = ((char_u **)ga_impl.ga_data)[i];
+	    typval_T tv;
+	    tv.v_type = VAR_UNKNOWN;
+	    if (eval_variable_import(impl, &tv) == FAIL)
+	    {
+		semsg(_(e_interface_name_not_found_str), impl);
+		success = FALSE;
+		break;
+	    }
+
+	    if (tv.v_type != VAR_CLASS
+		    || tv.vval.v_class == NULL
+		    || (tv.vval.v_class->class_flags & CLASS_INTERFACE) == 0)
+	    {
+		semsg(_(e_not_valid_interface_str), impl);
+		success = FALSE;
+	    }
+
+	    class_T *ifcl = tv.vval.v_class;
+	    intf_classes[i] = ifcl;
+	    ++ifcl->class_refcount;
+
+	    // check the members of the interface match the members of the class
+	    for (int loop = 1; loop <= 2 && success; ++loop)
+	    {
+		// loop == 1: check class members
+		// loop == 2: check object members
+		int if_count = loop == 1 ? ifcl->class_class_member_count
+					 : ifcl->class_obj_member_count;
+		if (if_count == 0)
+		    continue;
+		ocmember_T *if_ms = loop == 1 ? ifcl->class_class_members
+					       : ifcl->class_obj_members;
+		ocmember_T *cl_ms = (ocmember_T *)(loop == 1
+						    ? classmembers.ga_data
+						    : objmembers.ga_data);
+		int cl_count = loop == 1 ? classmembers.ga_len
+							   : objmembers.ga_len;
+		for (int if_i = 0; if_i < if_count; ++if_i)
+		{
+		    int cl_i;
+		    for (cl_i = 0; cl_i < cl_count; ++cl_i)
+		    {
+			ocmember_T *m = &cl_ms[cl_i];
+			if (STRCMP(if_ms[if_i].ocm_name, m->ocm_name) == 0)
+			{
+			    // TODO: check type
+			    break;
+			}
+		    }
+		    if (cl_i == cl_count)
+		    {
+			semsg(_(e_member_str_of_interface_str_not_implemented),
+						   if_ms[if_i].ocm_name, impl);
+			success = FALSE;
+			break;
+		    }
+		}
+	    }
+
+	    // check the functions/methods of the interface match the
+	    // functions/methods of the class
+	    for (int loop = 1; loop <= 2 && success; ++loop)
+	    {
+		// loop == 1: check class functions
+		// loop == 2: check object methods
+		int if_count = loop == 1 ? ifcl->class_class_function_count
+					 : ifcl->class_obj_method_count;
+		if (if_count == 0)
+		    continue;
+		ufunc_T **if_fp = loop == 1 ? ifcl->class_class_functions
+					    : ifcl->class_obj_methods;
+		ufunc_T **cl_fp = (ufunc_T **)(loop == 1
+						? classfunctions.ga_data
+						: objmethods.ga_data);
+		int cl_count = loop == 1 ? classfunctions.ga_len
+							   : objmethods.ga_len;
+		for (int if_i = 0; if_i < if_count; ++if_i)
+		{
+		    char_u *if_name = if_fp[if_i]->uf_name;
+		    int cl_i;
+		    for (cl_i = 0; cl_i < cl_count; ++cl_i)
+		    {
+			char_u *cl_name = cl_fp[cl_i]->uf_name;
+			if (STRCMP(if_name, cl_name) == 0)
+			{
+			    // TODO: check return and argument types
+			    break;
+			}
+		    }
+		    if (cl_i == cl_count)
+		    {
+			semsg(_(e_function_str_of_interface_str_not_implemented),
+								if_name, impl);
+			success = FALSE;
+			break;
+		    }
+		}
+	    }
+
+	    clear_tv(&tv);
+	}
+    }
+
+    if (success)
+    {
+	// Check no function argument name is used as an object/class member.
+	for (int loop = 1; loop <= 2 && success; ++loop)
+	{
+	    garray_T *gap = loop == 1 ? &classfunctions : &objmethods;
+
+	    for (int fi = 0; fi < gap->ga_len && success; ++fi)
+	    {
+		ufunc_T *uf = ((ufunc_T **)gap->ga_data)[fi];
+
+		for (int i = 0; i < uf->uf_args.ga_len && success; ++i)
+		{
+		    char_u *aname = ((char_u **)uf->uf_args.ga_data)[i];
+		    for (int il = 1; il <= 2 && success; ++il)
+		    {
+			// For a "new()" function "this.member" arguments are
+			// OK.  TODO: check for the "this." prefix.
+			if (STRNCMP(uf->uf_name, "new", 3) == 0 && il == 2)
+			    continue;
+			garray_T *mgap = il == 1 ? &classmembers : &objmembers;
+			for (int mi = 0; mi < mgap->ga_len; ++mi)
+			{
+			    char_u *mname = ((ocmember_T *)mgap->ga_data
+							       + mi)->ocm_name;
+			    if (STRCMP(aname, mname) == 0)
+			    {
+				success = FALSE;
+				semsg(_(e_argument_already_declared_in_class_str),
+									aname);
+				break;
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
 
     class_T *cl = NULL;
     if (success)
@@ -415,21 +781,76 @@ ex_class(exarg_T *eap)
 	cl = ALLOC_CLEAR_ONE(class_T);
 	if (cl == NULL)
 	    goto cleanup;
+	if (!is_class)
+	    cl->class_flags = CLASS_INTERFACE;
+
 	cl->class_refcount = 1;
-	cl->class_name = vim_strnsave(arg, name_end - arg);
+	cl->class_name = vim_strnsave(name_start, name_end - name_start);
 	if (cl->class_name == NULL)
 	    goto cleanup;
 
+	cl->class_extends = extends_cl;
+
 	// Add class and object members to "cl".
 	if (add_members_to_class(&classmembers,
-				    &cl->class_class_members,
-				    &cl->class_class_member_count) == FAIL
+				 extends_cl == NULL ? NULL
+					     : extends_cl->class_class_members,
+				 extends_cl == NULL ? 0
+					: extends_cl->class_class_member_count,
+				 &cl->class_class_members,
+				 &cl->class_class_member_count) == FAIL
 		|| add_members_to_class(&objmembers,
-				    &cl->class_obj_members,
-				    &cl->class_obj_member_count) == FAIL)
+				 extends_cl == NULL ? NULL
+					       : extends_cl->class_obj_members,
+				 extends_cl == NULL ? 0
+					  : extends_cl->class_obj_member_count,
+				 &cl->class_obj_members,
+				 &cl->class_obj_member_count) == FAIL)
 	    goto cleanup;
 
-	if (cl->class_class_member_count > 0)
+	if (ga_impl.ga_len > 0)
+	{
+	    // Move the "implements" names into the class.
+	    cl->class_interface_count = ga_impl.ga_len;
+	    cl->class_interfaces = ALLOC_MULT(char_u *, ga_impl.ga_len);
+	    if (cl->class_interfaces == NULL)
+		goto cleanup;
+	    for (int i = 0; i < ga_impl.ga_len; ++i)
+		cl->class_interfaces[i] = ((char_u **)ga_impl.ga_data)[i];
+	    VIM_CLEAR(ga_impl.ga_data);
+	    ga_impl.ga_len = 0;
+
+	    // For each interface add a lookuptable for the member index on the
+	    // interface to the member index in this class.
+	    for (int i = 0; i < cl->class_interface_count; ++i)
+	    {
+		class_T *ifcl = intf_classes[i];
+		itf2class_T *if2cl = alloc_clear(sizeof(itf2class_T)
+				 + ifcl->class_obj_member_count * sizeof(int));
+		if (if2cl == NULL)
+		    goto cleanup;
+		if2cl->i2c_next = ifcl->class_itf2class;
+		ifcl->class_itf2class = if2cl;
+		if2cl->i2c_class = cl;
+
+		for (int if_i = 0; if_i < ifcl->class_obj_member_count; ++if_i)
+		    for (int cl_i = 0; cl_i < cl->class_obj_member_count; ++cl_i)
+		    {
+			if (STRCMP(ifcl->class_obj_members[if_i].ocm_name,
+				     cl->class_obj_members[cl_i].ocm_name) == 0)
+			{
+			    int *table = (int *)(if2cl + 1);
+			    table[if_i] = cl_i;
+			    break;
+			}
+		    }
+	    }
+
+	    cl->class_interfaces_cl = intf_classes;
+	    intf_classes = NULL;
+	}
+
+	if (is_class && cl->class_class_member_count > 0)
 	{
 	    // Allocate a typval for each class member and initialize it.
 	    cl->class_members_tv = ALLOC_CLEAR_MULT(typval_T,
@@ -465,7 +886,7 @@ ex_class(exarg_T *eap)
 		have_new = TRUE;
 		break;
 	    }
-	if (!have_new)
+	if (is_class && !is_abstract && !have_new)
 	{
 	    // No new() method was defined, add the default constructor.
 	    garray_T fga;
@@ -491,14 +912,15 @@ ex_class(exarg_T *eap)
 	    garray_T lines_to_free;
 	    ga_init2(&lines_to_free, sizeof(char_u *), 50);
 
-	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, TRUE);
+	    ufunc_T *nf = define_function(&fea, NULL, &lines_to_free, CF_CLASS);
 
 	    ga_clear_strings(&lines_to_free);
 	    vim_free(fga.ga_data);
 
 	    if (nf != NULL && ga_grow(&classfunctions, 1) == OK)
 	    {
-		((ufunc_T **)classfunctions.ga_data)[classfunctions.ga_len] = nf;
+		((ufunc_T **)classfunctions.ga_data)[classfunctions.ga_len]
+									  = nf;
 		++classfunctions.ga_len;
 
 		nf->uf_flags |= FC_NEW;
@@ -513,6 +935,7 @@ ex_class(exarg_T *eap)
 	    }
 	}
 
+	// Move all the functions into the created class.
 	// loop 1: class functions, loop 2: object methods
 	for (int loop = 1; loop <= 2; ++loop)
 	{
@@ -522,20 +945,73 @@ ex_class(exarg_T *eap)
 	    ufunc_T ***fup = loop == 1 ? &cl->class_class_functions
 				       : &cl->class_obj_methods;
 
-	    *fcount = gap->ga_len;
-	    if (gap->ga_len == 0)
+	    int parent_count = 0;
+	    if (extends_cl != NULL)
+		// Include functions from the parent.
+		parent_count = loop == 1
+				    ? extends_cl->class_class_function_count
+				    : extends_cl->class_obj_method_count;
+
+	    *fcount = parent_count + gap->ga_len;
+	    if (*fcount == 0)
 	    {
 		*fup = NULL;
 		continue;
 	    }
-	    *fup = ALLOC_MULT(ufunc_T *, gap->ga_len);
+	    *fup = ALLOC_MULT(ufunc_T *, *fcount);
 	    if (*fup == NULL)
 		goto cleanup;
+
 	    mch_memmove(*fup, gap->ga_data, sizeof(ufunc_T *) * gap->ga_len);
 	    vim_free(gap->ga_data);
+	    if (loop == 1)
+		cl->class_class_function_count_child = gap->ga_len;
+	    else
+		cl->class_obj_method_count_child = gap->ga_len;
 
-	    // Set the class pointer on all the object methods.
-	    for (int i = 0; i < gap->ga_len; ++i)
+	    int skipped = 0;
+	    for (int i = 0; i < parent_count; ++i)
+	    {
+		// Copy functions from the parent.  Can't use the same
+		// function, because "uf_class" is different and compilation
+		// will have a different result.
+		// Put them after the functions in the current class, object
+		// methods may be overruled, then "super.Method()" is used to
+		// find a method from the parent.
+		// Skip "new" functions. TODO: not all of them.
+		if (loop == 1 && STRNCMP(
+			    extends_cl->class_class_functions[i]->uf_name,
+								"new", 3) == 0)
+		    ++skipped;
+		else
+		{
+		    ufunc_T *pf = (loop == 1
+					? extends_cl->class_class_functions
+					: extends_cl->class_obj_methods)[i];
+		    (*fup)[gap->ga_len + i - skipped] = copy_function(pf);
+
+		    // If the child class overrides a function from the parent
+		    // the signature must be equal.
+		    char_u *pname = pf->uf_name;
+		    for (int ci = 0; ci < gap->ga_len; ++ci)
+		    {
+			ufunc_T *cf = (*fup)[ci];
+			char_u *cname = cf->uf_name;
+			if (STRCMP(pname, cname) == 0)
+			{
+			    where_T where = WHERE_INIT;
+			    where.wt_func_name = (char *)pname;
+			    (void)check_type(pf->uf_func_type, cf->uf_func_type,
+								  TRUE, where);
+			}
+		    }
+		}
+	    }
+
+	    *fcount -= skipped;
+
+	    // Set the class pointer on all the functions and object methods.
+	    for (int i = 0; i < *fcount; ++i)
 	    {
 		ufunc_T *fp = (*fup)[i];
 		fp->uf_class = cl;
@@ -554,9 +1030,11 @@ ex_class(exarg_T *eap)
 	// - Fill hashtab with object members and methods ?
 
 	// Add the class to the script-local variables.
+	// TODO: handle other context, e.g. in a function
 	typval_T tv;
 	tv.v_type = VAR_CLASS;
 	tv.vval.v_class = cl;
+	is_export = class_export;
 	set_var_const(cl->class_name, current_sctx.sc_sid,
 					     NULL, &tv, FALSE, ASSIGN_DECL, 0);
 	return;
@@ -567,10 +1045,33 @@ cleanup:
     {
 	vim_free(cl->class_name);
 	vim_free(cl->class_class_functions);
+	if (cl->class_interfaces != NULL)
+	{
+	    for (int i = 0; i < cl->class_interface_count; ++i)
+		vim_free(cl->class_interfaces[i]);
+	    vim_free(cl->class_interfaces);
+	}
+	if (cl->class_interfaces_cl != NULL)
+	{
+	    for (int i = 0; i < cl->class_interface_count; ++i)
+		class_unref(cl->class_interfaces_cl[i]);
+	    vim_free(cl->class_interfaces_cl);
+	}
 	vim_free(cl->class_obj_members);
 	vim_free(cl->class_obj_methods);
 	vim_free(cl);
     }
+
+    vim_free(extends);
+    class_unref(extends_cl);
+
+    if (intf_classes != NULL)
+    {
+	for (int i = 0; i < ga_impl.ga_len; ++i)
+	    class_unref(intf_classes[i]);
+	vim_free(intf_classes);
+    }
+    ga_clear_strings(&ga_impl);
 
     for (int round = 1; round <= 2; ++round)
     {
@@ -631,15 +1132,6 @@ class_member_type(
 
     semsg(_(e_unknown_variable_str), name);
     return &t_any;
-}
-
-/*
- * Handle ":interface" up to ":endinterface".
- */
-    void
-ex_interface(exarg_T *eap UNUSED)
-{
-    // TODO
 }
 
 /*
@@ -959,6 +1451,24 @@ class_unref(class_T *cl)
 	// Clear "class_name" first, if it is NULL the class does not need to
 	// be freed.
 	VIM_CLEAR(cl->class_name);
+
+	class_unref(cl->class_extends);
+
+	for (int i = 0; i < cl->class_interface_count; ++i)
+	{
+	    vim_free(((char_u **)cl->class_interfaces)[i]);
+	    if (cl->class_interfaces_cl[i] != NULL)
+		class_unref(cl->class_interfaces_cl[i]);
+	}
+	vim_free(cl->class_interfaces);
+	vim_free(cl->class_interfaces_cl);
+
+	itf2class_T *next;
+	for (itf2class_T *i2c = cl->class_itf2class; i2c != NULL; i2c = next)
+	{
+	    next = i2c->i2c_next;
+	    vim_free(i2c);
+	}
 
 	for (int i = 0; i < cl->class_class_member_count; ++i)
 	{

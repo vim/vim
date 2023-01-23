@@ -34,10 +34,11 @@ typedef enum {
     ISN_INSTR,	    // instructions compiled from expression
     ISN_CONSTRUCT,  // construct an object, using contstruct_T
     ISN_GET_OBJ_MEMBER, // object member, index is isn_arg.number
+    ISN_GET_ITF_MEMBER, // interface member, index is isn_arg.classmember
     ISN_STORE_THIS, // store value in "this" object member, index is
 		    // isn_arg.number
-    ISN_LOAD_CLASSMEMBER,  // load class member, using classmember_T
-    ISN_STORE_CLASSMEMBER,  // store in class member, using classmember_T
+    ISN_LOAD_CLASSMEMBER,  // load class member, using isn_arg.classmember
+    ISN_STORE_CLASSMEMBER,  // store in class member, using isn_arg.classmember
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -77,8 +78,8 @@ typedef enum {
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
-    ISN_STOREINDEX,	// store into list or dictionary, type isn_arg.vartype,
-			// value/index/variable on stack
+    ISN_STOREINDEX,	// store into list or dictionary, using
+			// isn_arg.storeindex; value/index/variable on stack
     ISN_STORERANGE,	// store into blob,
 			// value/index 1/index 2/variable on stack
 
@@ -480,11 +481,16 @@ typedef struct {
     class_T	*construct_class;   // class the object is created from
 } construct_T;
 
-// arguments to ISN_STORE_CLASSMEMBER and ISN_LOAD_CLASSMEMBER
+// arguments to ISN_STORE_CLASSMEMBER, ISN_LOAD_CLASSMEMBER, ISN_GET_ITF_MEMBER
 typedef struct {
     class_T	*cm_class;
     int		cm_idx;
 } classmember_T;
+// arguments to ISN_STOREINDEX
+typedef struct {
+    vartype_T	si_vartype;
+    class_T	*si_class;
+} storeindex_T;
 
 /*
  * Instruction
@@ -539,6 +545,7 @@ struct isn_S {
 	echowin_T	    echowin;
 	construct_T	    construct;
 	classmember_T	    classmember;
+	storeindex_T	    storeindex;
     } isn_arg;
 };
 

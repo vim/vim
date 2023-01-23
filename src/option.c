@@ -672,17 +672,17 @@ set_string_default_esc(char *name, char_u *val, int escape)
 	p = vim_strsave_escaped(val, (char_u *)" ");
     else
 	p = vim_strsave(val);
-    if (p != NULL)		// we don't want a NULL
-    {
-	opt_idx = findoption((char_u *)name);
-	if (opt_idx >= 0)
-	{
-	    if (options[opt_idx].flags & P_DEF_ALLOCED)
-		vim_free(options[opt_idx].def_val[VI_DEFAULT]);
-	    options[opt_idx].def_val[VI_DEFAULT] = p;
-	    options[opt_idx].flags |= P_DEF_ALLOCED;
-	}
-    }
+    if (p == NULL)		// we don't want a NULL
+	return;
+
+    opt_idx = findoption((char_u *)name);
+    if (opt_idx < 0)
+	return;
+
+    if (options[opt_idx].flags & P_DEF_ALLOCED)
+	vim_free(options[opt_idx].def_val[VI_DEFAULT]);
+    options[opt_idx].def_val[VI_DEFAULT] = p;
+    options[opt_idx].flags |= P_DEF_ALLOCED;
 }
 
     void
@@ -1112,31 +1112,31 @@ set_helplang_default(char_u *lang)
     if (lang == NULL || STRLEN(lang) < 2)	// safety check
 	return;
     idx = findoption((char_u *)"hlg");
-    if (idx >= 0 && !(options[idx].flags & P_WAS_SET))
+    if (idx < 0 || (options[idx].flags & P_WAS_SET))
+	return;
+
+    if (options[idx].flags & P_ALLOCED)
+	free_string_option(p_hlg);
+    p_hlg = vim_strsave(lang);
+    if (p_hlg == NULL)
+	p_hlg = empty_option;
+    else
     {
-	if (options[idx].flags & P_ALLOCED)
-	    free_string_option(p_hlg);
-	p_hlg = vim_strsave(lang);
-	if (p_hlg == NULL)
-	    p_hlg = empty_option;
-	else
+	// zh_CN becomes "cn", zh_TW becomes "tw"
+	if (STRNICMP(p_hlg, "zh_", 3) == 0 && STRLEN(p_hlg) >= 5)
 	{
-	    // zh_CN becomes "cn", zh_TW becomes "tw"
-	    if (STRNICMP(p_hlg, "zh_", 3) == 0 && STRLEN(p_hlg) >= 5)
-	    {
-		p_hlg[0] = TOLOWER_ASC(p_hlg[3]);
-		p_hlg[1] = TOLOWER_ASC(p_hlg[4]);
-	    }
-	    // any C like setting, such as C.UTF-8, becomes "en"
-	    else if (STRLEN(p_hlg) >= 1 && *p_hlg == 'C')
-	    {
-		p_hlg[0] = 'e';
-		p_hlg[1] = 'n';
-	    }
-	    p_hlg[2] = NUL;
+	    p_hlg[0] = TOLOWER_ASC(p_hlg[3]);
+	    p_hlg[1] = TOLOWER_ASC(p_hlg[4]);
 	}
-	options[idx].flags |= P_ALLOCED;
+	// any C like setting, such as C.UTF-8, becomes "en"
+	else if (STRLEN(p_hlg) >= 1 && *p_hlg == 'C')
+	{
+	    p_hlg[0] = 'e';
+	    p_hlg[1] = 'n';
+	}
+	p_hlg[2] = NUL;
     }
+    options[idx].flags |= P_ALLOCED;
 }
 #endif
 
@@ -1171,17 +1171,19 @@ set_title_defaults(void)
 	p_title = val;
     }
     idx1 = findoption((char_u *)"icon");
-    if (idx1 >= 0 && !(options[idx1].flags & P_WAS_SET))
+    if (idx1 < 0 || (options[idx1].flags & P_WAS_SET))
     {
-#ifdef FEAT_GUI
-	if (gui.starting || gui.in_use)
-	    val = TRUE;
-	else
-#endif
-	    val = mch_can_restore_icon();
-	options[idx1].def_val[VI_DEFAULT] = (char_u *)(long_i)val;
-	p_icon = val;
+	return;
     }
+
+#ifdef FEAT_GUI
+    if (gui.starting || gui.in_use)
+	val = TRUE;
+    else
+#endif
+	val = mch_can_restore_icon();
+    options[idx1].def_val[VI_DEFAULT] = (char_u *)(long_i)val;
+    p_icon = val;
 }
 
     void
@@ -1682,7 +1684,7 @@ do_set(
 	errmsg = NULL;
 	startarg = arg;		// remember for error message
 
-	if (STRNCMP(arg, "all", 3) == 0 && !isalpha(arg[3])
+	if (STRNCMP(arg, "all", 3) == 0 && !ASCII_ISALPHA(arg[3])
 						&& !(opt_flags & OPT_MODELINE))
 	{
 	    /*
@@ -7084,12 +7086,11 @@ reset_option_was_set(char_u *name)
 {
     int idx = findoption(name);
 
-    if (idx >= 0)
-    {
-	options[idx].flags &= ~P_WAS_SET;
-	return OK;
-    }
-    return FAIL;
+    if (idx < 0)
+	return FAIL;
+
+    options[idx].flags &= ~P_WAS_SET;
+    return OK;
 }
 
 /*

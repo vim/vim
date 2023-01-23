@@ -2,7 +2,7 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2022 Oct 15
+# Last Change:  2023 Jan 03
 
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
@@ -201,6 +201,7 @@ const ENDS_BLOCK: string = '^\s*\%('
     .. '\|' .. 'endw\%[hile]'
     .. '\|' .. 'endt\%[ry]'
     .. '\|' .. 'enddef'
+    .. '\|' .. 'endclass'
     .. '\|' .. 'endf\%[unction]'
     .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
     .. '\|' .. CLOSING_BRACKET
@@ -212,6 +213,7 @@ patterns =<< trim END
     en\%[dif]
     el\%[se]
     endfor\=
+    endclass
     endw\%[hile]
     endt\%[ry]
     fina\|finally\=
@@ -251,6 +253,7 @@ patterns =<< trim END
     el\%[se]
     elseif\=
     for
+    class
     wh\%[ile]
     try
     cat\%[ch]
@@ -278,6 +281,8 @@ const START_MIDDLE_END: dict<list<string>> = {
     endif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
     for: ['for', '', 'endfor\='],
     endfor: ['for', '', 'endfor\='],
+    class: ['class', '', 'endclass'],
+    endclass: ['class', '', 'endclass'],
     while: ['wh\%[ile]', '', 'endw\%[hile]'],
     endwhile: ['wh\%[ile]', '', 'endw\%[hile]'],
     try: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],

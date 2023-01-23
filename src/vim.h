@@ -811,6 +811,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_DISASSEMBLE	50
 #define EXPAND_BREAKPOINT	51
 #define EXPAND_SCRIPTNAMES	52
+#define EXPAND_RUNTIME		53
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1
@@ -2083,23 +2084,25 @@ typedef int sock_T;
 #define VV_TYPE_JOB	85
 #define VV_TYPE_CHANNEL	86
 #define VV_TYPE_BLOB	87
-#define VV_TERMRFGRESP	88
-#define VV_TERMRBGRESP	89
-#define VV_TERMU7RESP	90
-#define VV_TERMSTYLERESP 91
-#define VV_TERMBLINKRESP 92
-#define VV_EVENT	93
-#define VV_VERSIONLONG	94
-#define VV_ECHOSPACE	95
-#define VV_ARGV		96
-#define VV_COLLATE      97
-#define VV_EXITING	98
-#define VV_COLORNAMES   99
-#define VV_SIZEOFINT	100
-#define VV_SIZEOFLONG	101
-#define VV_SIZEOFPOINTER 102
-#define VV_MAXCOL	103
-#define VV_LEN		104	// number of v: vars
+#define VV_TYPE_CLASS	88
+#define VV_TYPE_OBJECT	89
+#define VV_TERMRFGRESP	90
+#define VV_TERMRBGRESP	91
+#define VV_TERMU7RESP	92
+#define VV_TERMSTYLERESP 93
+#define VV_TERMBLINKRESP 94
+#define VV_EVENT	95
+#define VV_VERSIONLONG	96
+#define VV_ECHOSPACE	97
+#define VV_ARGV		98
+#define VV_COLLATE      99
+#define VV_EXITING	100
+#define VV_COLORNAMES   101
+#define VV_SIZEOFINT	102
+#define VV_SIZEOFLONG	103
+#define VV_SIZEOFPOINTER 104
+#define VV_MAXCOL	105
+#define VV_LEN		106	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2495,24 +2498,34 @@ typedef enum {
 #  define gtk_widget_set_window(wid, win) \
     do { (wid)->window = (win); } while (0)
 #  define gtk_widget_set_can_default(wid, can) \
-    do { if (can) { GTK_WIDGET_SET_FLAGS(wid, GTK_CAN_DEFAULT); } \
-	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_CAN_DEFAULT); } } while (0)
+    do { if (can) \
+	    { GTK_WIDGET_SET_FLAGS(wid, GTK_CAN_DEFAULT); } \
+	else \
+	    { GTK_WIDGET_UNSET_FLAGS(wid, GTK_CAN_DEFAULT); } } while (0)
 #  define gtk_widget_set_can_focus(wid, can) \
-    do { if (can) { GTK_WIDGET_SET_FLAGS(wid, GTK_CAN_FOCUS); } \
-	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_CAN_FOCUS); } } while (0)
+    do { if (can) \
+	    { GTK_WIDGET_SET_FLAGS(wid, GTK_CAN_FOCUS); } \
+	else \
+	    { GTK_WIDGET_UNSET_FLAGS(wid, GTK_CAN_FOCUS); } } while (0)
 #  define gtk_widget_set_visible(wid, vis) \
-    do { if (vis) { gtk_widget_show(wid); } \
-	else { gtk_widget_hide(wid); } } while (0)
+    do { if (vis) \
+	    { gtk_widget_show(wid); } \
+	else \
+	    { gtk_widget_hide(wid); } } while (0)
 # endif
 # if !GTK_CHECK_VERSION(2,20,0)
 #  define gtk_widget_get_mapped(wid)	GTK_WIDGET_MAPPED(wid)
 #  define gtk_widget_get_realized(wid)	GTK_WIDGET_REALIZED(wid)
 #  define gtk_widget_set_mapped(wid, map) \
-    do { if (map) { GTK_WIDGET_SET_FLAGS(wid, GTK_MAPPED); } \
-	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_MAPPED); } } while (0)
+    do { if (map) \
+	    { GTK_WIDGET_SET_FLAGS(wid, GTK_MAPPED); } \
+	else \
+	    { GTK_WIDGET_UNSET_FLAGS(wid, GTK_MAPPED); } } while (0)
 #  define gtk_widget_set_realized(wid, rea) \
-    do { if (rea) { GTK_WIDGET_SET_FLAGS(wid, GTK_REALIZED); } \
-	else { GTK_WIDGET_UNSET_FLAGS(wid, GTK_REALIZED); } } while (0)
+    do { if (rea) \
+	    { GTK_WIDGET_SET_FLAGS(wid, GTK_REALIZED); } \
+	else \
+	    { GTK_WIDGET_UNSET_FLAGS(wid, GTK_REALIZED); } } while (0)
 # endif
 #endif
 
@@ -2659,6 +2672,7 @@ typedef enum {
 #define DIP_NORTP   0x20	// do not use 'runtimepath'
 #define DIP_NOAFTER 0x40	// skip "after" directories
 #define DIP_AFTER   0x80	// only use "after" directories
+#define DIP_KEEPEXT  0x100	// for completion: include file extension
 
 // Lowest number used for window ID. Cannot have this many windows.
 #define LOWEST_WIN_ID 1000
@@ -2816,6 +2830,7 @@ long elapsed(DWORD start_tick);
 #define FSK_KEEP_X_KEY	0x02	// don't translate xHome to Home key
 #define FSK_IN_STRING	0x04	// TRUE in string, double quote is escaped
 #define FSK_SIMPLIFY	0x08	// simplify <C-H> and <A-x>
+#define FSK_FROM_PART	0x10	// left-hand-side of mapping
 
 // Flags for the readdirex function, how to sort the result
 #define READDIR_SORT_NONE	0  // do not sort
@@ -2853,5 +2868,9 @@ long elapsed(DWORD start_tick);
 #define FFED_NO_GLOBAL	2	// only check for script-local functions
 
 #define MAX_LSHIFT_BITS (varnumber_T)((sizeof(uvarnumber_T) * 8) - 1)
+
+// Flags used by "class_flags" of define_function()
+#define CF_CLASS	1	// inside a class
+#define CF_INTERFACE	2	// inside an interface
 
 #endif // VIM__H

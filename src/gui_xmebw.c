@@ -281,21 +281,21 @@ static char * blank_xpm[] =
 // width height ncolors cpp [x_hot y_hot]
 "12 12 4 1 0 0",
 // colors
-" 	s iconColor1	m black	c #000000",
+"#	s iconColor1	m black	c #000000",
 ".	s none	m none	c none",
 "X	s topShadowColor	m none	c #DCDEE5",
 "o	s bottomShadowColor	m black	c #5D6069",
 // pixels
-"          ..",
-" XXXXXXXX ..",
-" X....... o.",
-" X....... o.",
-" X....... o.",
-" X....... o.",
-" X....... o.",
-" X....... o.",
-" X....... o.",
-"          o.",
+"##########..",
+"#XXXXXXXX#..",
+"#X.......#o.",
+"#X.......#o.",
+"#X.......#o.",
+"#X.......#o.",
+"#X.......#o.",
+"#X.......#o.",
+"#X.......#o.",
+"##########o.",
 "..ooooooooo.",
 "............"};
 

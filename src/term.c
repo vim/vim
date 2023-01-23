@@ -65,6 +65,7 @@ static void del_termcode_idx(int idx);
 static int find_term_bykeys(char_u *src);
 static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
+static void accept_modifiers_for_function_keys(void);
 
     // Change this to "if 1" to debug what happens with termresponse.
 #  if 0
@@ -473,6 +474,7 @@ static tcap_entry_T builtin_xterm[] = {
     {(int)KS_CGP,	"\033[13t"},
 #  endif
     {(int)KS_CRV,	"\033[>c"},
+    {(int)KS_CXM,	"\033[?1006;1000%?%p1%{1}%=%th%el%;"},
     {(int)KS_RFG,	"\033]10;?\007"},
     {(int)KS_RBG,	"\033]11;?\007"},
     {(int)KS_U7,	"\033[6n"},
@@ -1229,6 +1231,7 @@ static tcap_entry_T builtin_debug[] = {
     {(int)KS_CWP,	"[%dCWP%d]"},
 #  endif
     {(int)KS_CRV,	"[CRV]"},
+    {(int)KS_CXM,	"[CXM]"},
     {(int)KS_U7,	"[U7]"},
     {(int)KS_RFG,	"[RFG]"},
     {(int)KS_RBG,	"[RBG]"},
@@ -1721,7 +1724,8 @@ get_term_entries(int *height, int *width)
 			{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},
 			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_CAU,"AU"},
 			{KS_LE, "le"},
-			{KS_ND, "nd"}, {KS_OP, "op"}, {KS_CRV, "RV"},
+			{KS_ND, "nd"}, {KS_OP, "op"},
+			{KS_CRV, "RV"}, {KS_CXM, "XM"},
 			{KS_VS, "vs"}, {KS_CVS, "VS"},
 			{KS_CIS, "IS"}, {KS_CIE, "IE"},
 			{KS_CSC, "SC"}, {KS_CEC, "EC"},
@@ -2094,6 +2098,11 @@ set_termname(char_u *term)
 		&& term_strings_not_set(KS_8U))
 	    apply_builtin_tcap(term, builtin_rgb, TRUE);
 #endif
+
+	if (kpc != KEYPROTOCOL_NONE)
+	    // Some function keys may accept modifiers even though the
+	    // terminfo/termcap entry does not indicate this.
+	    accept_modifiers_for_function_keys();
     }
 
 /*
@@ -2107,8 +2116,8 @@ set_termname(char_u *term)
     else
 	T_CCS = empty_option;
 
-    // Special case: "kitty" does not normally have a "RV" entry in terminfo,
-    // but we need to request the version for several other things to work.
+    // Special case: "kitty" may not have a "RV" entry in terminfo, but we need
+    // to request the version for several other things to work.
     if (strstr((char *)term, "kitty") != NULL
 					   && (T_CRV == NULL || *T_CRV == NUL))
 	T_CRV = (char_u *)"\033[>c";
@@ -2157,6 +2166,22 @@ set_termname(char_u *term)
 #endif
 
 #if defined(UNIX) || defined(VMS)
+    // If the first number in t_XM is 1006 then the terminal will support SGR
+    // mouse reporting.
+    int did_set_ttym = FALSE;
+    if (T_CXM != NULL && *T_CXM != NUL && !option_was_set((char_u *)"ttym"))
+    {
+	char_u *p = T_CXM;
+
+	while (*p != NUL && !VIM_ISDIGIT(*p))
+	    ++p;
+	if (getdigits(&p) == 1006)
+	{
+	    did_set_ttym = TRUE;
+	    set_option_value_give_err((char_u *)"ttym", 0L, (char_u *)"sgr", 0);
+	}
+    }
+
     /*
      * For Unix, set the 'ttymouse' option to the type of mouse to be used.
      * The termcode for the mouse is added as a side effect in option.c.
@@ -2173,7 +2198,7 @@ set_termname(char_u *term)
 		p = (char_u *)"xterm";
 	}
 # endif
-	if (p != NULL)
+	if (p != NULL && !did_set_ttym)
 	{
 	    set_option_value_give_err((char_u *)"ttym", 0L, p, 0);
 	    // Reset the WAS_SET flag, 'ttymouse' can be set to "sgr" or
@@ -2193,6 +2218,9 @@ set_termname(char_u *term)
 
 #ifdef FEAT_MOUSE_XTERM
     // Focus reporting is supported by xterm compatible terminals and tmux.
+    // We hard-code the received escape sequences here.  There are the terminfo
+    // entries kxIN and kxOUT, but they are rarely used and do hot have a
+    // two-letter termcap name.
     if (use_xterm_like_mouse(term))
     {
 	char_u name[3];
@@ -2801,8 +2829,8 @@ out_str_nf(char_u *s)
     if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
 	out_flush();
 
-    while (*s)
-	out_char_nf(*s++);
+    for (char_u *p = s; *p != NUL; ++p)
+	out_char_nf(*p);
 
     // For testing we write one string at a time.
     if (p_wd)
@@ -2941,6 +2969,15 @@ term_delete_lines(int line_count)
 {
     OUT_STR(tgoto((char *)T_CDL, 0, line_count));
 }
+
+#if defined(UNIX) || defined(PROTO)
+    void
+term_enable_mouse(int enable)
+{
+    int on = enable ? 1 : 0;
+    OUT_STR(tgoto((char *)T_CXM, 0, on));
+}
+#endif
 
 #if defined(HAVE_TGETENT) || defined(PROTO)
     void
@@ -3185,7 +3222,7 @@ term_rgb_color(char_u *s, guicolor_T rgb)
     vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
 #ifdef FEAT_VTP
-    if (has_vtp_working())
+    if (use_wt())
     {
 	out_flush();
 	buf[1] = '[';
@@ -4443,6 +4480,25 @@ clear_termcodes(void)
 #define ATC_FROM_TERM 55
 
 /*
+ * For xterm we recognize special codes like "ESC[42;*X" and "ESC O*X" that
+ * accept modifiers.
+ * Set "termcodes[idx].modlen".
+ */
+    static void
+adjust_modlen(int idx)
+{
+    termcodes[idx].modlen = 0;
+    int j = termcode_star(termcodes[idx].code, termcodes[idx].len);
+    if (j <= 0)
+	return;
+
+    termcodes[idx].modlen = termcodes[idx].len - 1 - j;
+    // For "CSI[@;X" the "@" is not included in "modlen".
+    if (termcodes[idx].code[termcodes[idx].modlen - 1] == '@')
+	--termcodes[idx].modlen;
+}
+
+/*
  * Add a new entry for "name[2]" to the list of terminal codes.
  * Note that "name" may not have a terminating NUL.
  * The list is kept alphabetical for ":set termcap"
@@ -4590,19 +4646,51 @@ add_termcode(char_u *name, char_u *string, int flags)
     termcodes[i].name[1] = name[1];
     termcodes[i].code = s;
     termcodes[i].len = len;
+    adjust_modlen(i);
 
-    // For xterm we recognize special codes like "ESC[42;*X" and "ESC O*X" that
-    // accept modifiers.
-    termcodes[i].modlen = 0;
-    j = termcode_star(s, len);
-    if (j > 0)
-    {
-	termcodes[i].modlen = len - 1 - j;
-	// For "CSI[@;X" the "@" is not included in "modlen".
-	if (termcodes[i].code[termcodes[i].modlen - 1] == '@')
-	    --termcodes[i].modlen;
-    }
     ++tc_len;
+}
+
+/*
+ * Some function keys may include modifiers, but the terminfo/termcap entries
+ * do not indicate that.  Insert ";*" where we expect modifiers might appear.
+ */
+    static void
+accept_modifiers_for_function_keys(void)
+{
+    regmatch_T regmatch;
+    CLEAR_FIELD(regmatch);
+    regmatch.rm_ic = TRUE;
+    regmatch.regprog = vim_regcomp((char_u *)"^\033[\\d\\+\\~$", RE_MAGIC);
+
+    for (int i = 0; i < tc_len; ++i)
+    {
+	if (regmatch.regprog == NULL)
+	    return;
+
+	// skip PasteStart and PasteEnd
+	if (termcodes[i].name[0] == 'P'
+		&& (termcodes[i].name[1] == 'S' || termcodes[i].name[1] == 'E'))
+	    continue;
+
+	char_u *s = termcodes[i].code;
+	if (s != NULL && vim_regexec(&regmatch, s, (colnr_T)0))
+	{
+	    size_t len = STRLEN(s);
+	    char_u *ns = alloc(len + 3);
+	    if (ns != NULL)
+	    {
+		mch_memmove(ns, s, len - 1);
+		mch_memmove(ns + len - 1, ";*~", 4);
+		vim_free(s);
+		termcodes[i].code = ns;
+		termcodes[i].len += 2;
+		adjust_modlen(i);
+	    }
+	}
+    }
+
+    vim_regfree(regmatch.regprog);
 }
 
 /*
@@ -6608,8 +6696,10 @@ replace_termcodes(
 		}
 	    }
 #endif
-	    slen = trans_special(&src, result + dlen, FSK_KEYCODE
-			  | ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY),
+	    int fsk_flags = FSK_KEYCODE
+			| ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY)
+			| ((flags & REPTERM_FROM_PART) ? FSK_FROM_PART : 0);
+	    slen = trans_special(&src, result + dlen, fsk_flags,
 							   TRUE, did_simplify);
 	    if (slen > 0)
 	    {
