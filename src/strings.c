@@ -42,11 +42,11 @@ vim_strnsave(char_u *string, size_t len)
     char_u	*p;
 
     p = alloc(len + 1);
-    if (p != NULL)
-    {
-	STRNCPY(p, string, len);
-	p[len] = NUL;
-    }
+    if (p == NULL)
+	return NULL;
+
+    STRNCPY(p, string, len);
+    p[len] = NUL;
     return p;
 }
 
@@ -94,24 +94,23 @@ vim_strsave_escaped_ext(
 	++length;			// count an ordinary char
     }
     escaped_string = alloc(length);
-    if (escaped_string != NULL)
+    if (escaped_string == NULL)
+	return NULL;
+    p2 = escaped_string;
+    for (p = string; *p; p++)
     {
-	p2 = escaped_string;
-	for (p = string; *p; p++)
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
-	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-	    {
-		mch_memmove(p2, p, (size_t)l);
-		p2 += l;
-		p += l - 1;		// skip multibyte char
-		continue;
-	    }
-	    if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
-		*p2++ = cc;
-	    *p2++ = *p;
+	    mch_memmove(p2, p, (size_t)l);
+	    p2 += l;
+	    p += l - 1;		// skip multibyte char
+	    continue;
 	}
-	*p2 = NUL;
+	if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
+	    *p2++ = cc;
+	*p2++ = *p;
     }
+    *p2 = NUL;
     return escaped_string;
 }
 
@@ -338,12 +337,12 @@ vim_strup(
     char_u  *p2;
     int	    c;
 
-    if (p != NULL)
-    {
-	p2 = p;
-	while ((c = *p2) != NUL)
-	    *p2++ = (c < 'a' || c > 'z') ? c : (c - 0x20);
-    }
+    if (p == NULL)
+	return;
+
+    p2 = p;
+    while ((c = *p2) != NUL)
+	*p2++ = (c < 'a' || c > 'z') ? c : (c - 0x20);
 }
 
 #if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
@@ -760,15 +759,14 @@ concat_str(char_u *str1, char_u *str2)
     size_t  l = str1 == NULL ? 0 : STRLEN(str1);
 
     dest = alloc(l + (str2 == NULL ? 0 : STRLEN(str2)) + 1L);
-    if (dest != NULL)
-    {
-	if (str1 == NULL)
-	    *dest = NUL;
-	else
-	    STRCPY(dest, str1);
-	if (str2 != NULL)
-	    STRCPY(dest + l, str2);
-    }
+    if (dest == NULL)
+	return NULL;
+    if (str1 == NULL)
+	*dest = NUL;
+    else
+	STRCPY(dest, str1);
+    if (str2 != NULL)
+	STRCPY(dest + l, str2);
     return dest;
 }
 
@@ -793,27 +791,27 @@ string_quote(char_u *str, int function)
 		++len;
     }
     s = r = alloc(len);
-    if (r != NULL)
+    if (r == NULL)
+	return NULL;
+
+    if (function)
     {
-	if (function)
-	{
-	    STRCPY(r, "function('");
-	    r += 10;
-	}
-	else
-	    *r++ = '\'';
-	if (str != NULL)
-	    for (p = str; *p != NUL; )
-	    {
-		if (*p == '\'')
-		    *r++ = '\'';
-		MB_COPY_CHAR(p, r);
-	    }
-	*r++ = '\'';
-	if (function)
-	    *r++ = ')';
-	*r++ = NUL;
+	STRCPY(r, "function('");
+	r += 10;
     }
+    else
+	*r++ = '\'';
+    if (str != NULL)
+	for (p = str; *p != NUL; )
+	{
+	    if (*p == '\'')
+		*r++ = '\'';
+	    MB_COPY_CHAR(p, r);
+	}
+    *r++ = '\'';
+    if (function)
+	*r++ = ')';
+    *r++ = NUL;
     return s;
 }
 
