@@ -5531,6 +5531,20 @@ win_alloc(win_T *after, int hidden)
     return new_wp;
 }
 
+#ifdef FEAT_SYN_HL
+// Free the window's colorcolumn data.
+    static void
+win_cc_free(colorcol_T* cc)
+{
+    if (cc) {
+      for (int i = 0; cc[i].col >= 0; ++ i) {
+          vim_free(cc[i].syn_name);
+      }
+      vim_free(cc);
+    }
+}
+#endif
+
 /*
  * Remove window 'wp' from the window list and free the structure.
  */
@@ -5674,7 +5688,7 @@ win_free(
 #endif
 
 #ifdef FEAT_SYN_HL
-    vim_free(wp->w_p_cc_cols);
+    win_cc_free(wp->w_p_cc_cols);
 #endif
 
     if (win_valid_any_tab(wp))
@@ -7646,9 +7660,9 @@ frame_check_width(frame_T *topfrp, int width)
  * Simple int comparison function for use with qsort()
  */
     static int
-int_cmp(const void *a, const void *b)
+colorcol_cmp(const void *a, const void *b)
 {
-    return *(const int *)a - *(const int *)b;
+    return ((const colorcol_T *)a)->col - ((const colorcol_T *)b)->col;
 }
 
 /*
@@ -7661,15 +7675,19 @@ check_colorcolumn(win_T *wp)
     char_u	*s;
     int		col;
     int		count = 0;
-    int		color_cols[256];
+    colorcol_T	color_cols[256];
     int		i;
     int		j = 0;
+    int		ch = 0;
+    int		do_skip = FALSE;
+    char_u	hlgroup[256];
 
     if (wp->w_buffer == NULL)
 	return NULL;  // buffer was closed
 
     for (s = wp->w_p_cc; *s != NUL && count < 255;)
     {
+	do_skip = FALSE;
 	if (*s == '-' || *s == '+')
 	{
 	    // -N and +N: add to 'textwidth'
@@ -7679,17 +7697,64 @@ check_colorcolumn(win_T *wp)
 		return e_invalid_argument;
 	    col = col * getdigits(&s);
 	    if (wp->w_buffer->b_p_tw == 0)
-		goto skip;  // 'textwidth' not set, skip this item
+		do_skip = TRUE; // 'textwidth' not set, skip this item
 	    col += wp->w_buffer->b_p_tw;
 	    if (col < 0)
-		goto skip;
+		do_skip = TRUE;
 	}
 	else if (VIM_ISDIGIT(*s))
 	    col = getdigits(&s);
 	else
 	    return e_invalid_argument;
-	color_cols[count++] = col - 1;  // 1-based to 0-based
-skip:
+	color_cols[count].col = col - 1;  // 1-based to 0-based
+	color_cols[count].syn_name = NULL;
+	color_cols[count].syn_attr = 0;
+	color_cols[count].ch = ' ';
+	color_cols[count].flags = 0;
+
+	if (*s == '/') { // the other attributes.
+	    s ++;
+	    ch = mb_ptr2char_adv(&s);
+	    if (!ch) {
+		return e_invalid_argument;
+	    }
+	    color_cols[count].ch = ch;
+	    if (*s == '/') {
+		s ++;
+		int k = 0;
+		while(k < sizeof(hlgroup) - 1 && *s != NUL && *s != ','
+			&& *s != '/') {
+		    hlgroup[k ++] = *(s ++);
+		}
+		hlgroup[k] = 0;
+		if (k == 0) {
+		    color_cols[count].syn_name = NULL;
+		} else {
+		    if (!do_skip) {
+		      color_cols[count].syn_name = vim_strsave_up(hlgroup);
+		    }
+		}
+	    }
+
+	    // Parse additional flags
+	    if (*s == '/') {
+                s++;
+                while (*s != ',' && *s != NUL) {
+                    switch (*s) {
+                    case 'b':
+                        color_cols[count].flags |= COLORCOL_FLAG_BEHIND;
+                        break;
+                    default:
+                        return e_invalid_argument;
+                    }
+                    ++s;
+                }
+            }
+	}
+	if (!do_skip) {
+	    count ++;
+	}
+
 	if (*s == NUL)
 	    break;
 	if (*s != ',')
@@ -7698,23 +7763,23 @@ skip:
 	    return e_invalid_argument;  // illegal trailing comma as in "set cc=80,"
     }
 
-    vim_free(wp->w_p_cc_cols);
+    win_cc_free(wp->w_p_cc_cols);
     if (count == 0)
 	wp->w_p_cc_cols = NULL;
     else
     {
-	wp->w_p_cc_cols = ALLOC_MULT(int, count + 1);
+	wp->w_p_cc_cols = ALLOC_CLEAR_MULT(colorcol_T, count + 1);
 	if (wp->w_p_cc_cols != NULL)
 	{
 	    // sort the columns for faster usage on screen redraw inside
 	    // win_line()
-	    qsort(color_cols, count, sizeof(int), int_cmp);
+	    qsort(color_cols, count, sizeof(colorcol_T), colorcol_cmp);
 
 	    for (i = 0; i < count; ++i)
 		// skip duplicates
-		if (j == 0 || wp->w_p_cc_cols[j - 1] != color_cols[i])
+		if (j == 0 || wp->w_p_cc_cols[j - 1].col != color_cols[i].col)
 		    wp->w_p_cc_cols[j++] = color_cols[i];
-	    wp->w_p_cc_cols[j] = -1;  // end marker
+	    wp->w_p_cc_cols[j] = (colorcol_T){ -1, 0, NULL, 0 };  // end marker
 	}
     }
 

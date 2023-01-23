@@ -40,6 +40,19 @@ typedef struct
     colnr_T	col;	// column number
 } lpos_T;
 
+#define COLORCOL_FLAG_BEHIND 0x01
+typedef struct
+{
+    int	col;
+    int	ch;
+
+    char_u* syn_name;
+    int syn_attr;
+
+    // If TRUE, does not display if the cell is already occupied.
+    int	flags;
+} colorcol_T;
+
 /*
  * Structure used for growing arrays.
  * This is used to store information that only grows, is deleted all at
@@ -3946,7 +3959,7 @@ struct window_S
     long_u	w_p_fdt_flags;	    // flags for 'foldtext'
 #endif
 #if defined(FEAT_SIGNS) || defined(FEAT_FOLDING) || defined(FEAT_DIFF)
-    int		*w_p_cc_cols;	    // array of columns to highlight or NULL
+    colorcol_T		*w_p_cc_cols;	    // array of columns to highlight or NULL
     char_u	w_p_culopt_flags;   // flags for cursorline highlighting
 #endif
     long	w_p_siso;	    // 'sidescrolloff' local value

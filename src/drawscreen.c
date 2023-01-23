@@ -1330,7 +1330,7 @@ fold_line(
     if (wp->w_p_cc_cols)
     {
 	int i = 0;
-	int j = wp->w_p_cc_cols[i];
+	int j = wp->w_p_cc_cols[i].col;
 	int old_txtcol = txtcol;
 
 	while (j > -1)
@@ -1344,7 +1344,7 @@ fold_line(
 		ScreenAttrs[off + txtcol] = hl_combine_attr(
 				    ScreenAttrs[off + txtcol], HL_ATTR(HLF_MC));
 	    txtcol = old_txtcol;
-	    j = wp->w_p_cc_cols[++i];
+	    j = wp->w_p_cc_cols[++i].col;
 	}
     }
 
@@ -1533,6 +1533,23 @@ win_update(win_T *wp)
 
 #ifdef FEAT_SEARCH_EXTRA
     init_search_hl(wp, &screen_search_hl);
+#endif
+
+#ifdef FEAT_SYN_HL
+    // link the syntax names to syntax attrs in the colorcolumn
+    // highlighting in preperation for drawing all the lines.
+    i = 0;
+    if (wp->w_p_cc_cols) {
+        while (wp->w_p_cc_cols[i].col >= 0) {
+             if (wp->w_p_cc_cols[i].syn_name == NULL) {
+             wp->w_p_cc_cols[i].syn_attr = HL_ATTR(HLF_MC);
+             } else {
+                 wp->w_p_cc_cols[i].syn_attr =
+                     syn_name2attr(wp->w_p_cc_cols[i].syn_name);
+             }
+             i++;
+        }
+    }
 #endif
 
     // Make sure skipcol is valid, it depends on various options and the window

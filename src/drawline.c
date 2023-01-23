@@ -20,11 +20,11 @@
  * Advance **color_cols and return TRUE when there are columns to draw.
  */
     static int
-advance_color_col(int vcol, int **color_cols)
+advance_color_col(int vcol, colorcol_T **color_cols)
 {
-    while (**color_cols >= 0 && vcol > **color_cols)
+    while ((*color_cols)->col >= 0 && vcol > (*color_cols)->col)
 	++*color_cols;
-    return (**color_cols >= 0);
+    return ((*color_cols)->col >= 0);
 }
 #endif
 
@@ -100,8 +100,7 @@ typedef struct {
 #endif
 #ifdef FEAT_SYN_HL
     int		draw_color_col;	// highlight colorcolumn
-    int		*color_cols;	// pointer to according columns array
-    int		color_col_char;
+    colorcol_T	*color_cols;	// pointer to according columns array
 #endif
     int		eol_hl_off;	// 1 if highlighted char after EOL
 
@@ -870,9 +869,9 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 	    rightmost_vcol = wp->w_virtcol;
 	if (wlv->draw_color_col)
 	    // determine rightmost colorcolumn to possibly draw
-	    for (i = 0; wlv->color_cols[i] >= 0; ++i)
-		if (rightmost_vcol < wlv->color_cols[i])
-		    rightmost_vcol = wlv->color_cols[i];
+	    for (i = 0; wlv->color_cols[i].col >= 0; ++i)
+		if (rightmost_vcol < wlv->color_cols[i].col)
+		    rightmost_vcol = wlv->color_cols[i].col;
 
 	while (wlv->col < wp->w_width)
 	{
@@ -888,14 +887,14 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 	    int attr = wlv->win_attr;
 	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol)
 		attr = HL_ATTR(HLF_CUC);
-	    else if (wlv->draw_color_col && VCOL_HLC == *wlv->color_cols) {
-		attr = HL_ATTR(HLF_MC);
-	    	ScreenLines[wlv->off] = wlv->color_col_char;
+	    else if (wlv->draw_color_col && VCOL_HLC == wlv->color_cols->col) {
+		attr = wlv->color_cols->syn_attr;
+	    	ScreenLines[wlv->off] = wlv->color_cols->ch;
 	    	ScreenLinesUC[wlv->off] = 0;
-		if (utf_char2len(wlv->color_col_char) > 1) {
+		if (utf_char2len(wlv->color_cols->ch) > 1) {
 	    	  if (enc_utf8) {
-	    	      ScreenLinesUC[wlv->off] = wlv->color_col_char;
-		      if ((wlv->color_col_char & 0xff) == 0) {
+	    	      ScreenLinesUC[wlv->off] = wlv->color_cols->ch;
+		      if ((wlv->color_cols->ch & 0xff) == 0) {
 			  ScreenLines[wlv->off] = 0x80; // avoid storing zero
 		      }
 		  }
@@ -1253,7 +1252,6 @@ win_line(
 
 	// Check for columns to display for 'colorcolumn'.
 	wlv.color_cols = wp->w_p_cc_cols;
-	wlv.color_col_char = wp->w_fill_chars.colorcol;
 	if (wlv.color_cols != NULL)
 	    wlv.draw_color_col = advance_color_col(VCOL_HLC, &wlv.color_cols);
 #endif
@@ -3667,10 +3665,12 @@ win_line(
 		wlv.char_attr = hl_combine_attr(wlv.char_attr,
 							     HL_ATTR(HLF_CUC));
 	    }
-	    else if (wlv.draw_color_col && VCOL_HLC == *wlv.color_cols)
+	    else if (wlv.draw_color_col && VCOL_HLC == wlv.color_cols->col)
 	    {
 		vcol_save_attr = wlv.char_attr;
-		wlv.char_attr = hl_combine_attr(wlv.char_attr, HL_ATTR(HLF_MC));
+		if (!(wlv.color_cols->flags & COLORCOL_FLAG_BEHIND))
+			wlv.char_attr = hl_combine_attr(wlv.char_attr,
+						wlv.color_cols->syn_attr);
 	    }
 	}
 #endif
