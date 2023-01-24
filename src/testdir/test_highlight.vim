@@ -758,7 +758,8 @@ func Test_colorcolumn_additional_options()
 	edit X
 	call setline(1, ["1111111111","","22222222222","","3333333333"])
 	set nomodified
-	set colorcolumn=1/┆/ColorColumn/b,2/./DiffAdd/,3,4/\ /WarningMsg,8/│
+	set colorcolumn=1/┆/ColorColumn/b,2/./DiffAdd/,3,4/\ /MyHl,8/│
+  highlight MyHl ctermfg=red guifg=red ctermbg=blue guibg=blue
 	set number cursorline cursorlineopt=number
 	wincmd w
 	buf X
