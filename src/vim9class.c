@@ -1388,6 +1388,19 @@ class_member_index(char_u *name, size_t len, class_T **cl_ret, cctx_T *cctx)
 }
 
 /*
+ * Return TRUE if current context "cctx_arg" is inside class "cl".
+ * Return FALSE if not.
+ */
+    int
+inside_class(cctx_T *cctx_arg, class_T *cl)
+{
+    for (cctx_T *cctx = cctx_arg; cctx != NULL; cctx = cctx->ctx_outer)
+	if (cctx->ctx_ufunc != NULL && cctx->ctx_ufunc->uf_class == cl)
+	    return TRUE;
+    return FALSE;
+}
+
+/*
  * Make a copy of an object.
  */
     void

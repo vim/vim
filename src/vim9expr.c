@@ -357,7 +357,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    ocmember_T *m = &cl->class_obj_members[i];
 	    if (STRNCMP(name, m->ocm_name, len) == 0 && m->ocm_name[len] == NUL)
 	    {
-		if (*name == '_' && cctx->ctx_ufunc->uf_class != cl)
+		if (*name == '_' && !inside_class(cctx, cl))
 		{
 		    semsg(_(e_cannot_access_private_member_str), m->ocm_name);
 		    return FAIL;
