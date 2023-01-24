@@ -439,6 +439,32 @@ def Test_class_object_member_access()
       var c = MyCar.new("def")
   END
   v9.CheckScriptFailure(lines, 'E1041:')
+
+  lines =<< trim END
+      vim9script
+
+      class Foo
+        this.x: list<number> = []
+
+        def Add(n: number): any
+          this.x->add(n)
+          return this
+        enddef
+      endclass
+
+      echo Foo.new().Add(1).Add(2).x
+      echo Foo.new().Add(1).Add(2)
+            .x
+      echo Foo.new().Add(1)
+            .Add(2).x
+      echo Foo.new()
+            .Add(1).Add(2).x
+      echo Foo.new()
+            .Add(1) 
+            .Add(2)
+            .x
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_object_compare()
