@@ -6713,14 +6713,14 @@ ExpandSettings(
 }
 
     int
-ExpandOldSetting(int *num_file, char_u ***file)
+ExpandOldSetting(int *numMatches, char_u ***matches)
 {
     char_u  *var = NULL;	// init for GCC
     char_u  *buf;
 
-    *num_file = 0;
-    *file = ALLOC_ONE(char_u *);
-    if (*file == NULL)
+    *numMatches = 0;
+    *matches = ALLOC_ONE(char_u *);
+    if (*matches == NULL)
 	return FAIL;
 
     /*
@@ -6748,7 +6748,7 @@ ExpandOldSetting(int *num_file, char_u ***file)
 
     if (buf == NULL)
     {
-	VIM_CLEAR(*file);
+	VIM_CLEAR(*matches);
 	return FAIL;
     }
 
@@ -6764,8 +6764,8 @@ ExpandOldSetting(int *num_file, char_u ***file)
 	    STRMOVE(var, var + 1);
 #endif
 
-    *file[0] = buf;
-    *num_file = 1;
+    *matches[0] = buf;
+    *numMatches = 1;
     return OK;
 }
 
