@@ -887,17 +887,21 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
 	    int attr = wlv->win_attr;
 	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol)
 		attr = HL_ATTR(HLF_CUC);
-	    else if (wlv->draw_color_col && VCOL_HLC == wlv->color_cols->col) {
+	    else if (wlv->draw_color_col && VCOL_HLC == wlv->color_cols->col)
+	    {
 		attr = wlv->color_cols->syn_attr;
-	    	ScreenLines[wlv->off] = wlv->color_cols->ch;
-	    	ScreenLinesUC[wlv->off] = 0;
-		if (utf_char2len(wlv->color_cols->ch) > 1) {
-	    	  if (enc_utf8) {
-	    	      ScreenLinesUC[wlv->off] = wlv->color_cols->ch;
-		      if ((wlv->color_cols->ch & 0xff) == 0) {
-			  ScreenLines[wlv->off] = 0x80; // avoid storing zero
-		      }
-		  }
+		ScreenLines[wlv->off] = wlv->color_cols->ch;
+		ScreenLinesUC[wlv->off] = 0;
+		if (utf_char2len(wlv->color_cols->ch) > 1)
+		{
+		    if (enc_utf8)
+		    {
+		        ScreenLinesUC[wlv->off] = wlv->color_cols->ch;
+		        if ((wlv->color_cols->ch & 0xff) == 0)
+			{
+		            ScreenLines[wlv->off] = 0x80; // avoid storing zero
+		        }
+		    }
 		}
 	    }
 # ifdef LINE_ATTR

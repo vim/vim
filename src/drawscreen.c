@@ -1539,11 +1539,16 @@ win_update(win_T *wp)
     // link the syntax names to syntax attrs in the colorcolumn
     // highlighting in preperation for drawing all the lines.
     i = 0;
-    if (wp->w_p_cc_cols) {
-        while (wp->w_p_cc_cols[i].col >= 0) {
-             if (wp->w_p_cc_cols[i].syn_name == NULL) {
-             wp->w_p_cc_cols[i].syn_attr = HL_ATTR(HLF_MC);
-             } else {
+    if (wp->w_p_cc_cols)
+    {
+        while (wp->w_p_cc_cols[i].col >= 0)
+	{
+             if (wp->w_p_cc_cols[i].syn_name == NULL)
+	     {
+               wp->w_p_cc_cols[i].syn_attr = HL_ATTR(HLF_MC);
+             }
+             else
+	     {
                  wp->w_p_cc_cols[i].syn_attr =
                      syn_name2attr(wp->w_p_cc_cols[i].syn_name);
              }

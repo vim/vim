@@ -5536,8 +5536,10 @@ win_alloc(win_T *after, int hidden)
     static void
 win_cc_free(colorcol_T* cc)
 {
-    if (cc) {
-      for (int i = 0; cc[i].col >= 0; ++ i) {
+    if (cc)
+    {
+      for (int i = 0; cc[i].col >= 0; ++ i)
+      {
           vim_free(cc[i].syn_name);
       }
       vim_free(cc);
@@ -7712,35 +7714,46 @@ check_colorcolumn(win_T *wp)
 	color_cols[count].ch = ' ';
 	color_cols[count].flags = 0;
 
-	if (*s == '/') { // the other attributes.
+	if (*s == '/') // the other attributes.
+	{
 	    s ++;
 	    ch = mb_ptr2char_adv(&s);
-	    if (!ch) {
+	    if (!ch)
+	    {
 		return e_invalid_argument;
 	    }
 	    color_cols[count].ch = ch;
-	    if (*s == '/') {
+	    if (*s == '/')
+	    {
 		s ++;
 		size_t k = 0;
 		while(k < sizeof(hlgroup) - 1 && *s != NUL && *s != ','
-			&& *s != '/') {
+			&& *s != '/')
+		{
 		    hlgroup[k ++] = *(s ++);
 		}
 		hlgroup[k] = 0;
-		if (k == 0) {
+		if (k == 0)
+		{
 		    color_cols[count].syn_name = NULL;
-		} else {
-		    if (!do_skip) {
+		}
+		else
+		{
+		    if (!do_skip)
+		    {
 		      color_cols[count].syn_name = vim_strsave_up(hlgroup);
 		    }
 		}
 	    }
 
 	    // Parse additional flags
-	    if (*s == '/') {
+	    if (*s == '/')
+	    {
                 s++;
-                while (*s != ',' && *s != NUL) {
-                    switch (*s) {
+                while (*s != ',' && *s != NUL)
+		{
+                    switch (*s)
+		    {
                     case 'b':
                         color_cols[count].flags |= COLORCOL_FLAG_BEHIND;
                         break;
@@ -7751,7 +7764,8 @@ check_colorcolumn(win_T *wp)
                 }
             }
 	}
-	if (!do_skip) {
+	if (!do_skip)
+	{
 	    count ++;
 	}
 
@@ -7779,7 +7793,8 @@ check_colorcolumn(win_T *wp)
 		// skip duplicates
 		if (j == 0 || wp->w_p_cc_cols[j - 1].col != color_cols[i].col)
 		    wp->w_p_cc_cols[j++] = color_cols[i];
-	    wp->w_p_cc_cols[j] = (colorcol_T){ -1, 0, NULL, 0, 0 };  // end marker
+	    wp->w_p_cc_cols[j] = (colorcol_T)
+	        { -1, 0, NULL, 0, 0 };  // end marker
 	}
     }
 
