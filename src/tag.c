@@ -3263,16 +3263,16 @@ static garray_T tag_fnames = GA_EMPTY;
     static void
 found_tagfile_cb(char_u *fname, void *cookie UNUSED)
 {
-    if (ga_grow(&tag_fnames, 1) == OK)
-    {
-	char_u	*tag_fname = vim_strsave(fname);
+    if (ga_grow(&tag_fnames, 1) == FAIL)
+	return;
+
+    char_u	*tag_fname = vim_strsave(fname);
 
 #ifdef BACKSLASH_IN_FILENAME
-	slash_adjust(tag_fname);
+    slash_adjust(tag_fname);
 #endif
-	simplify_filename(tag_fname);
-	((char_u **)(tag_fnames.ga_data))[tag_fnames.ga_len++] = tag_fname;
-    }
+    simplify_filename(tag_fname);
+    ((char_u **)(tag_fnames.ga_data))[tag_fnames.ga_len++] = tag_fname;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -3587,54 +3587,54 @@ parse_match(
     tagp->tagline = 0;
     tagp->command_end = NULL;
 
-    if (retval == OK)
+    if (retval != OK)
+	return retval;
+
+    // Try to find a kind field: "kind:<kind>" or just "<kind>"
+    p = tagp->command;
+    if (find_extra(&p) == OK)
     {
-	// Try to find a kind field: "kind:<kind>" or just "<kind>"
-	p = tagp->command;
-	if (find_extra(&p) == OK)
-	{
-	    if (p > tagp->command && p[-1] == '|')
-		tagp->command_end = p - 1;  // drop trailing bar
-	    else
-		tagp->command_end = p;
-	    p += 2;	// skip ";\""
-	    if (*p++ == TAB)
-		// Accept ASCII alphabetic kind characters and any multi-byte
-		// character.
-		while (ASCII_ISALPHA(*p) || mb_ptr2len(p) > 1)
-		{
-		    if (STRNCMP(p, "kind:", 5) == 0)
-			tagp->tagkind = p + 5;
-		    else if (STRNCMP(p, "user_data:", 10) == 0)
-			tagp->user_data = p + 10;
-		    else if (STRNCMP(p, "line:", 5) == 0)
-			tagp->tagline = atoi((char *)p + 5);
-		    if (tagp->tagkind != NULL && tagp->user_data != NULL)
-			break;
-		    pc = vim_strchr(p, ':');
-		    pt = vim_strchr(p, '\t');
-		    if (pc == NULL || (pt != NULL && pc > pt))
-			tagp->tagkind = p;
-		    if (pt == NULL)
-			break;
-		    p = pt;
-		    MB_PTR_ADV(p);
-		}
-	}
-	if (tagp->tagkind != NULL)
-	{
-	    for (p = tagp->tagkind;
-			    *p && *p != '\t' && *p != '\r' && *p != '\n'; MB_PTR_ADV(p))
-		;
-	    tagp->tagkind_end = p;
-	}
-	if (tagp->user_data != NULL)
-	{
-	    for (p = tagp->user_data;
-			    *p && *p != '\t' && *p != '\r' && *p != '\n'; MB_PTR_ADV(p))
-		;
-	    tagp->user_data_end = p;
-	}
+	if (p > tagp->command && p[-1] == '|')
+	    tagp->command_end = p - 1;  // drop trailing bar
+	else
+	    tagp->command_end = p;
+	p += 2;	// skip ";\""
+	if (*p++ == TAB)
+	    // Accept ASCII alphabetic kind characters and any multi-byte
+	    // character.
+	    while (ASCII_ISALPHA(*p) || mb_ptr2len(p) > 1)
+	    {
+		if (STRNCMP(p, "kind:", 5) == 0)
+		    tagp->tagkind = p + 5;
+		else if (STRNCMP(p, "user_data:", 10) == 0)
+		    tagp->user_data = p + 10;
+		else if (STRNCMP(p, "line:", 5) == 0)
+		    tagp->tagline = atoi((char *)p + 5);
+		if (tagp->tagkind != NULL && tagp->user_data != NULL)
+		    break;
+		pc = vim_strchr(p, ':');
+		pt = vim_strchr(p, '\t');
+		if (pc == NULL || (pt != NULL && pc > pt))
+		    tagp->tagkind = p;
+		if (pt == NULL)
+		    break;
+		p = pt;
+		MB_PTR_ADV(p);
+	    }
+    }
+    if (tagp->tagkind != NULL)
+    {
+	for (p = tagp->tagkind;
+		*p && *p != '\t' && *p != '\r' && *p != '\n'; MB_PTR_ADV(p))
+	    ;
+	tagp->tagkind_end = p;
+    }
+    if (tagp->user_data != NULL)
+    {
+	for (p = tagp->user_data;
+		*p && *p != '\t' && *p != '\r' && *p != '\n'; MB_PTR_ADV(p))
+	    ;
+	tagp->user_data_end = p;
     }
     return retval;
 }
@@ -4372,94 +4372,94 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 
     ret = find_tags(pat, &num_matches, &matches,
 				TAG_REGEXP | TAG_NOIC, (int)MAXCOL, buf_fname);
-    if (ret == OK && num_matches > 0)
+    if (ret != OK || num_matches <= 0)
+	return ret;
+
+    for (i = 0; i < num_matches; ++i)
     {
-	for (i = 0; i < num_matches; ++i)
+	if (parse_match(matches[i], &tp) == FAIL)
 	{
-	    if (parse_match(matches[i], &tp) == FAIL)
+	    vim_free(matches[i]);
+	    continue;
+	}
+
+	is_static = test_for_static(&tp);
+
+	// Skip pseudo-tag lines.
+	if (STRNCMP(tp.tagname, "!_TAG_", 6) == 0)
+	{
+	    vim_free(matches[i]);
+	    continue;
+	}
+
+	if ((dict = dict_alloc()) == NULL)
+	{
+	    ret = FAIL;
+	    vim_free(matches[i]);
+	    break;
+	}
+	if (list_append_dict(list, dict) == FAIL)
+	    ret = FAIL;
+
+	full_fname = tag_full_fname(&tp);
+	if (add_tag_field(dict, "name", tp.tagname, tp.tagname_end) == FAIL
+		|| add_tag_field(dict, "filename", full_fname,
+		    NULL) == FAIL
+		|| add_tag_field(dict, "cmd", tp.command,
+		    tp.command_end) == FAIL
+		|| add_tag_field(dict, "kind", tp.tagkind,
+		    tp.tagkind_end) == FAIL
+		|| dict_add_number(dict, "static", is_static) == FAIL)
+	    ret = FAIL;
+
+	vim_free(full_fname);
+
+	if (tp.command_end != NULL)
+	{
+	    for (p = tp.command_end + 3;
+		    *p != NUL && *p != '\n' && *p != '\r'; MB_PTR_ADV(p))
 	    {
-		vim_free(matches[i]);
-		continue;
-	    }
-
-	    is_static = test_for_static(&tp);
-
-	    // Skip pseudo-tag lines.
-	    if (STRNCMP(tp.tagname, "!_TAG_", 6) == 0)
-	    {
-		vim_free(matches[i]);
-		continue;
-	    }
-
-	    if ((dict = dict_alloc()) == NULL)
-	    {
-		ret = FAIL;
-		vim_free(matches[i]);
-		break;
-	    }
-	    if (list_append_dict(list, dict) == FAIL)
-		ret = FAIL;
-
-	    full_fname = tag_full_fname(&tp);
-	    if (add_tag_field(dict, "name", tp.tagname, tp.tagname_end) == FAIL
-		    || add_tag_field(dict, "filename", full_fname,
-							 NULL) == FAIL
-		    || add_tag_field(dict, "cmd", tp.command,
-						       tp.command_end) == FAIL
-		    || add_tag_field(dict, "kind", tp.tagkind,
-						      tp.tagkind_end) == FAIL
-		    || dict_add_number(dict, "static", is_static) == FAIL)
-		ret = FAIL;
-
-	    vim_free(full_fname);
-
-	    if (tp.command_end != NULL)
-	    {
-		for (p = tp.command_end + 3;
-			  *p != NUL && *p != '\n' && *p != '\r'; MB_PTR_ADV(p))
+		if (p == tp.tagkind || (p + 5 == tp.tagkind
+			    && STRNCMP(p, "kind:", 5) == 0))
+		    // skip "kind:<kind>" and "<kind>"
+		    p = tp.tagkind_end - 1;
+		else if (STRNCMP(p, "file:", 5) == 0)
+		    // skip "file:" (static tag)
+		    p += 4;
+		else if (!VIM_ISWHITE(*p))
 		{
-		    if (p == tp.tagkind || (p + 5 == tp.tagkind
-					      && STRNCMP(p, "kind:", 5) == 0))
-			// skip "kind:<kind>" and "<kind>"
-			p = tp.tagkind_end - 1;
-		    else if (STRNCMP(p, "file:", 5) == 0)
-			// skip "file:" (static tag)
-			p += 4;
-		    else if (!VIM_ISWHITE(*p))
-		    {
-			char_u	*s, *n;
-			int	len;
+		    char_u	*s, *n;
+		    int	len;
 
-			// Add extra field as a dict entry.  Fields are
-			// separated by Tabs.
-			n = p;
-			while (*p != NUL && *p >= ' ' && *p < 127 && *p != ':')
+		    // Add extra field as a dict entry.  Fields are
+		    // separated by Tabs.
+		    n = p;
+		    while (*p != NUL && *p >= ' ' && *p < 127 && *p != ':')
+			++p;
+		    len = (int)(p - n);
+		    if (*p == ':' && len > 0)
+		    {
+			s = ++p;
+			while (*p != NUL && *p >= ' ')
 			    ++p;
-			len = (int)(p - n);
-			if (*p == ':' && len > 0)
-			{
-			    s = ++p;
-			    while (*p != NUL && *p >= ' ')
-				++p;
-			    n[len] = NUL;
-			    if (add_tag_field(dict, (char *)n, s, p) == FAIL)
-				ret = FAIL;
-			    n[len] = ':';
-			}
-			else
-			    // Skip field without colon.
-			    while (*p != NUL && *p >= ' ')
-				++p;
-			if (*p == NUL)
-			    break;
+			n[len] = NUL;
+			if (add_tag_field(dict, (char *)n, s, p) == FAIL)
+			    ret = FAIL;
+			n[len] = ':';
 		    }
+		    else
+			// Skip field without colon.
+			while (*p != NUL && *p >= ' ')
+			    ++p;
+		    if (*p == NUL)
+			break;
 		}
 	    }
-
-	    vim_free(matches[i]);
 	}
-	vim_free(matches);
+
+	vim_free(matches[i]);
     }
+    vim_free(matches);
     return ret;
 }
 

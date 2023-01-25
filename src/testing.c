@@ -55,8 +55,10 @@ ga_concat_esc(garray_T *gap, char_u *p, int clen)
 	mch_memmove(buf, p, clen);
 	buf[clen] = NUL;
 	ga_concat(gap, buf);
+	return;
     }
-    else switch (*p)
+
+    switch (*p)
     {
 	case BS: ga_concat(gap, (char_u *)"\\b"); break;
 	case ESC: ga_concat(gap, (char_u *)"\\e"); break;
