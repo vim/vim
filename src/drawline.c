@@ -2881,42 +2881,43 @@ win_line(
 		}
 
 		if (c == ' ' && ((trailcol != MAXCOL && ptr > line + trailcol)
-				|| (leadcol != 0 && ptr < line + leadcol)))
+				    || (leadcol != 0 && ptr < line + leadcol)))
 		{
-			if (leadcol != 0 && in_multispace && ptr < line + leadcol
-					&& wp->w_lcs_chars.leadmultispace != NULL)
-			{
-				c = wp->w_lcs_chars.leadmultispace[multispace_pos++];
-				if (wp->w_lcs_chars.leadmultispace[multispace_pos]
+		    if (leadcol != 0 && in_multispace && ptr < line + leadcol
+			    && wp->w_lcs_chars.leadmultispace != NULL)
+		    {
+			c = wp->w_lcs_chars.leadmultispace[multispace_pos++];
+			if (wp->w_lcs_chars.leadmultispace[multispace_pos]
 									== NUL)
-				multispace_pos = 0;
-			}
+			    multispace_pos = 0;
+		    }
 
-			else if (ptr < line + leadcol && wp->w_lcs_chars.lead)
-				c = wp->w_lcs_chars.lead;
+		    else if (ptr > line + trailcol && wp->w_lcs_chars.trail)
+			c = wp->w_lcs_chars.trail;
 
-			else if (ptr > line + trailcol && wp->w_lcs_chars.trail)
-				c = wp->w_lcs_chars.trail;
+		    else if (ptr < line + leadcol && wp->w_lcs_chars.lead)
+			c = wp->w_lcs_chars.lead;
 
-			else if (leadcol != 0 && wp->w_lcs_chars.space)
-				c = wp->w_lcs_chars.space;
+		    else if (leadcol != 0 && wp->w_lcs_chars.space)
+			c = wp->w_lcs_chars.space;
 
-			if (!attr_pri)
-			{
-				n_attr = 1;
-				wlv.extra_attr = hl_combine_attr(wlv.win_attr,
-								HL_ATTR(HLF_8));
-				saved_attr2 = wlv.char_attr; // save current attr
-			}
-			mb_c = c;
-			if (enc_utf8 && utf_char2len(c) > 1)
-			{
-				mb_utf8 = TRUE;
-				u8cc[0] = 0;
-				c = 0xc0;
-			}
-			else
-				mb_utf8 = FALSE;
+
+		    if (!attr_pri)
+		    {
+			n_attr = 1;
+			wlv.extra_attr = hl_combine_attr(wlv.win_attr,
+							       HL_ATTR(HLF_8));
+			saved_attr2 = wlv.char_attr; // save current attr
+		    }
+		    mb_c = c;
+		    if (enc_utf8 && utf_char2len(c) > 1)
+		    {
+			mb_utf8 = TRUE;
+			u8cc[0] = 0;
+			c = 0xc0;
+		    }
+		    else
+			mb_utf8 = FALSE;
 		}
 	    }
 
