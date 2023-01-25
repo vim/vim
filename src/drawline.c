@@ -2892,11 +2892,11 @@ win_line(
 			    multispace_pos = 0;
 		    }
 
-		    else if (ptr > line + trailcol && wp->w_lcs_chars.trail)
-			c = wp->w_lcs_chars.trail;
-
 		    else if (ptr < line + leadcol && wp->w_lcs_chars.lead)
 			c = wp->w_lcs_chars.lead;
+
+		    else if (ptr > line + trailcol && wp->w_lcs_chars.trail)
+			c = wp->w_lcs_chars.trail;
 
 		    else if (leadcol != 0 && wp->w_lcs_chars.space)
 			c = wp->w_lcs_chars.space;
