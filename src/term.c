@@ -1644,24 +1644,24 @@ set_color_count(int nr)
     static void
 may_adjust_color_count(int val)
 {
-    if (val != t_colors)
-    {
-	// Nr of colors changed, initialize highlighting and redraw everything.
-	// This causes a redraw, which usually clears the message.  Try keeping
-	// the message if it might work.
-	set_keep_msg_from_hist();
-	set_color_count(val);
-	init_highlight(TRUE, FALSE);
-#ifdef DEBUG_TERMRESPONSE
-	{
-	    int r = redraw_asap(UPD_CLEAR);
+    if (val == t_colors)
+	return;
 
-	    log_tr("Received t_Co, redraw_asap(): %d", r);
-	}
-#else
-	redraw_asap(UPD_CLEAR);
-#endif
+    // Nr of colors changed, initialize highlighting and redraw everything.
+    // This causes a redraw, which usually clears the message.  Try keeping
+    // the message if it might work.
+    set_keep_msg_from_hist();
+    set_color_count(val);
+    init_highlight(TRUE, FALSE);
+#ifdef DEBUG_TERMRESPONSE
+    {
+	int r = redraw_asap(UPD_CLEAR);
+
+	log_tr("Received t_Co, redraw_asap(): %d", r);
     }
+#else
+    redraw_asap(UPD_CLEAR);
+#endif
 }
 
 #ifdef HAVE_TGETENT
@@ -2419,13 +2419,14 @@ getlinecol(
 {
     char_u	tbuf[TBUFSZ];
 
-    if (T_NAME != NULL && *T_NAME != NUL && invoke_tgetent(tbuf, T_NAME) == NULL)
-    {
-	if (*cp == 0)
-	    *cp = tgetnum("co");
-	if (*rp == 0)
-	    *rp = tgetnum("li");
-    }
+    if (T_NAME == NULL || *T_NAME == NUL
+	    || invoke_tgetent(tbuf, T_NAME) != NULL)
+	return;
+
+    if (*cp == 0)
+	*cp = tgetnum("co");
+    if (*rp == 0)
+	*rp = tgetnum("li");
 }
 #endif // defined(HAVE_TGETENT) && defined(UNIX)
 
@@ -2569,15 +2570,15 @@ term_is_8bit(char_u *name)
     static int
 term_7to8bit(char_u *p)
 {
-    if (*p == ESC)
-    {
-	if (p[1] == '[')
-	    return CSI;
-	if (p[1] == ']')
-	    return OSC;
-	if (p[1] == 'O')
-	    return 0x8f;
-    }
+    if (*p != ESC)
+	return 0;
+
+    if (p[1] == '[')
+	return CSI;
+    else if (p[1] == ']')
+	return OSC;
+    else if (p[1] == 'O')
+	return 0x8f;
     return 0;
 }
 
@@ -2712,27 +2713,27 @@ out_flush(void)
 {
     int	    len;
 
-    if (out_pos != 0)
-    {
-	// set out_pos to 0 before ui_write, to avoid recursiveness
-	len = out_pos;
-	out_pos = 0;
-	ui_write(out_buf, len, FALSE);
+    if (out_pos == 0)
+	return;
+
+    // set out_pos to 0 before ui_write, to avoid recursiveness
+    len = out_pos;
+    out_pos = 0;
+    ui_write(out_buf, len, FALSE);
 #ifdef FEAT_EVAL
-	if (ch_log_output != FALSE)
-	{
-	    out_buf[len] = NUL;
-	    ch_log(NULL, "raw %s output: \"%s\"",
+    if (ch_log_output != FALSE)
+    {
+	out_buf[len] = NUL;
+	ch_log(NULL, "raw %s output: \"%s\"",
 # ifdef FEAT_GUI
-			(gui.in_use && !gui.dying && !gui.starting) ? "GUI" :
+		(gui.in_use && !gui.dying && !gui.starting) ? "GUI" :
 # endif
-			"terminal",
-			out_buf);
-	    if (ch_log_output == TRUE)
-		ch_log_output = FALSE;  // only log once
-	}
-#endif
+		"terminal",
+		out_buf);
+	if (ch_log_output == TRUE)
+	    ch_log_output = FALSE;  // only log once
     }
+#endif
 }
 
 /*
@@ -2846,66 +2847,66 @@ out_str_nf(char_u *s)
     void
 out_str_cf(char_u *s)
 {
-    if (s != NULL && *s)
-    {
+    if (s == NULL || *s == NUL)
+	return;
+
 #ifdef HAVE_TGETENT
-	char_u *p;
+    char_u *p;
 #endif
 
 #ifdef FEAT_GUI
-	// Don't use tputs() when GUI is used, ncurses crashes.
-	if (gui.in_use)
-	{
-	    out_str_nf(s);
-	    return;
-	}
-#endif
-	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
-	    out_flush();
-#ifdef HAVE_TGETENT
-	for (p = s; *s; ++s)
-	{
-	    // flush just before delay command
-	    if (*s == '$' && *(s + 1) == '<')
-	    {
-		char_u save_c = *s;
-		int duration = atoi((char *)s + 2);
-
-		*s = NUL;
-		tputs((char *)p, 1, TPUTSFUNCAST out_char_nf);
-		*s = save_c;
-		out_flush();
-# ifdef ELAPSED_FUNC
-		// Only sleep here if we can limit this happening in
-		// vim_beep().
-		p = vim_strchr(s, '>');
-		if (p == NULL || duration <= 0)
-		{
-		    // can't parse the time, don't sleep here
-		    p = s;
-		}
-		else
-		{
-		    ++p;
-		    do_sleep(duration, FALSE);
-		}
-# else
-		// Rely on the terminal library to sleep.
-		p = s;
-# endif
-		break;
-	    }
-	}
-	tputs((char *)p, 1, TPUTSFUNCAST out_char_nf);
-#else
-	while (*s)
-	    out_char_nf(*s++);
-#endif
-
-	// For testing we write one string at a time.
-	if (p_wd)
-	    out_flush();
+    // Don't use tputs() when GUI is used, ncurses crashes.
+    if (gui.in_use)
+    {
+	out_str_nf(s);
+	return;
     }
+#endif
+    if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
+	out_flush();
+#ifdef HAVE_TGETENT
+    for (p = s; *s; ++s)
+    {
+	// flush just before delay command
+	if (*s == '$' && *(s + 1) == '<')
+	{
+	    char_u save_c = *s;
+	    int duration = atoi((char *)s + 2);
+
+	    *s = NUL;
+	    tputs((char *)p, 1, TPUTSFUNCAST out_char_nf);
+	    *s = save_c;
+	    out_flush();
+# ifdef ELAPSED_FUNC
+	    // Only sleep here if we can limit this happening in
+	    // vim_beep().
+	    p = vim_strchr(s, '>');
+	    if (p == NULL || duration <= 0)
+	    {
+		// can't parse the time, don't sleep here
+		p = s;
+	    }
+	    else
+	    {
+		++p;
+		do_sleep(duration, FALSE);
+	    }
+# else
+	    // Rely on the terminal library to sleep.
+	    p = s;
+# endif
+	    break;
+	}
+    }
+    tputs((char *)p, 1, TPUTSFUNCAST out_char_nf);
+#else
+    while (*s)
+	out_char_nf(*s++);
+#endif
+
+    // For testing we write one string at a time.
+    if (p_wd)
+	out_flush();
 }
 
 /*
@@ -2917,30 +2918,30 @@ out_str_cf(char_u *s)
     void
 out_str(char_u *s)
 {
-    if (s != NULL && *s)
-    {
+    if (s == NULL || *s == NUL)
+	return;
+
 #ifdef FEAT_GUI
-	// Don't use tputs() when GUI is used, ncurses crashes.
-	if (gui.in_use)
-	{
-	    out_str_nf(s);
-	    return;
-	}
+    // Don't use tputs() when GUI is used, ncurses crashes.
+    if (gui.in_use)
+    {
+	out_str_nf(s);
+	return;
+    }
 #endif
-	// avoid terminal strings being split up
-	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
-	    out_flush();
+    // avoid terminal strings being split up
+    if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
+	out_flush();
 #ifdef HAVE_TGETENT
-	tputs((char *)s, 1, TPUTSFUNCAST out_char_nf);
+    tputs((char *)s, 1, TPUTSFUNCAST out_char_nf);
 #else
-	while (*s)
-	    out_char_nf(*s++);
+    while (*s)
+	out_char_nf(*s++);
 #endif
 
-	// For testing we write one string at a time.
-	if (p_wd)
-	    out_flush();
-    }
+    // For testing we write one string at a time.
+    if (p_wd)
+	out_flush();
 }
 
 /*
@@ -3468,13 +3469,12 @@ get_long_from_buf(char_u *buf, long_u *val)
 
     *val = 0;
     len = get_bytes_from_buf(buf, bytes, (int)sizeof(long_u));
-    if (len != -1)
+    if (len == -1)
+	return -1;
+    for (i = 0; i < (int)sizeof(long_u); i++)
     {
-	for (i = 0; i < (int)sizeof(long_u); i++)
-	{
-	    shift = 8 * (sizeof(long_u) - 1 - i);
-	    *val += (long_u)bytes[i] << shift;
-	}
+	shift = 8 * (sizeof(long_u) - 1 - i);
+	*val += (long_u)bytes[i] << shift;
     }
     return len;
 }
@@ -3598,19 +3598,19 @@ shell_resized_check(void)
     int		old_Rows = Rows;
     int		old_Columns = Columns;
 
-    if (!exiting
+    if (exiting
 #ifdef FEAT_GUI
 	    // Do not get the size when executing a shell command during
 	    // startup.
-	    && !gui.starting
+	    || gui.starting
 #endif
 	    )
-    {
-	(void)ui_get_shellsize();
-	check_shellsize();
-	if (old_Rows != Rows || old_Columns != Columns)
-	    shell_resized();
-    }
+	return;
+
+    (void)ui_get_shellsize();
+    check_shellsize();
+    if (old_Rows != Rows || old_Columns != Columns)
+	shell_resized();
 }
 
 /*
@@ -3843,101 +3843,101 @@ settmode(tmode_T tmode)
 	return;
 #endif
 
-    if (full_screen)
+    if (!full_screen)
+	return;
+
+    /*
+     * When returning after calling a shell cur_tmode is TMODE_UNKNOWN,
+     * set the terminal to raw mode, even though we think it already is,
+     * because the shell program may have reset the terminal mode.
+     * When we think the terminal is normal, don't try to set it to
+     * normal again, because that causes problems (logout!) on some
+     * machines.
+     */
+    if (tmode != cur_tmode)
     {
-	/*
-	 * When returning after calling a shell cur_tmode is TMODE_UNKNOWN,
-	 * set the terminal to raw mode, even though we think it already is,
-	 * because the shell program may have reset the terminal mode.
-	 * When we think the terminal is normal, don't try to set it to
-	 * normal again, because that causes problems (logout!) on some
-	 * machines.
-	 */
-	if (tmode != cur_tmode)
-	{
-#ifdef FEAT_TERMRESPONSE
-# ifdef FEAT_GUI
-	    if (!gui.in_use && !gui.starting)
-# endif
-	    {
-		// May need to check for T_CRV response and termcodes, it
-		// doesn't work in Cooked mode, an external program may get
-		// them.
-		if (tmode != TMODE_RAW && termrequest_any_pending())
-		    (void)vpeekc_nomap();
-		check_for_codes_from_term();
-	    }
-#endif
-	    if (tmode != TMODE_RAW)
-		mch_setmouse(FALSE);	// switch mouse off
-
-	    // Disable bracketed paste and modifyOtherKeys in cooked mode.
-	    // Avoid doing this too often, on some terminals the codes are not
-	    // handled properly.
-	    if (termcap_active && tmode != TMODE_SLEEP
-						   && cur_tmode != TMODE_SLEEP)
-	    {
-		MAY_WANT_TO_LOG_THIS;
-
-		if (tmode != TMODE_RAW)
-		{
-		    out_str(T_BD);	// disable bracketed paste mode
-		    out_str_t_TE();	// possibly disables modifyOtherKeys
-		}
-		else
-		{
-		    out_str_t_BE();	// enable bracketed paste mode (should
-					// be before mch_settmode().
-		    out_str_t_TI();	// possibly enables modifyOtherKeys
-		}
-	    }
-	    out_flush();
-	    mch_settmode(tmode);	// machine specific function
-	    cur_tmode = tmode;
-	    if (tmode == TMODE_RAW)
-		setmouse();		// may switch mouse on
-	    out_flush();
-	}
-#ifdef FEAT_TERMRESPONSE
-	may_req_termresponse();
-#endif
-    }
-}
-
-    void
-starttermcap(void)
-{
-    if (full_screen && !termcap_active)
-    {
-	MAY_WANT_TO_LOG_THIS;
-
-	out_str(T_TI);			// start termcap mode
-	out_str_t_TI();			// start "raw" mode
-	out_str(T_KS);			// start "keypad transmit" mode
-	out_str_t_BE();			// enable bracketed paste mode
-
-#if defined(UNIX) || defined(VMS)
-	// Enable xterm's focus reporting mode when 'esckeys' is set.
-	if (p_ek && *T_FE != NUL)
-	    out_str(T_FE);
-#endif
-
-	out_flush();
-	termcap_active = TRUE;
-	screen_start();			// don't know where cursor is now
 #ifdef FEAT_TERMRESPONSE
 # ifdef FEAT_GUI
 	if (!gui.in_use && !gui.starting)
 # endif
 	{
-	    may_req_termresponse();
-	    // Immediately check for a response.  If t_Co changes, we don't
-	    // want to redraw with wrong colors first.
-	    if (crv_status.tr_progress == STATUS_SENT)
-		check_for_codes_from_term();
+	    // May need to check for T_CRV response and termcodes, it
+	    // doesn't work in Cooked mode, an external program may get
+	    // them.
+	    if (tmode != TMODE_RAW && termrequest_any_pending())
+		(void)vpeekc_nomap();
+	    check_for_codes_from_term();
 	}
 #endif
+	if (tmode != TMODE_RAW)
+	    mch_setmouse(FALSE);	// switch mouse off
+
+	// Disable bracketed paste and modifyOtherKeys in cooked mode.
+	// Avoid doing this too often, on some terminals the codes are not
+	// handled properly.
+	if (termcap_active && tmode != TMODE_SLEEP
+		&& cur_tmode != TMODE_SLEEP)
+	{
+	    MAY_WANT_TO_LOG_THIS;
+
+	    if (tmode != TMODE_RAW)
+	    {
+		out_str(T_BD);	// disable bracketed paste mode
+		out_str_t_TE();	// possibly disables modifyOtherKeys
+	    }
+	    else
+	    {
+		out_str_t_BE();	// enable bracketed paste mode (should
+				// be before mch_settmode().
+		out_str_t_TI();	// possibly enables modifyOtherKeys
+	    }
+	}
+	out_flush();
+	mch_settmode(tmode);	// machine specific function
+	cur_tmode = tmode;
+	if (tmode == TMODE_RAW)
+	    setmouse();		// may switch mouse on
+	out_flush();
     }
+#ifdef FEAT_TERMRESPONSE
+    may_req_termresponse();
+#endif
+}
+
+    void
+starttermcap(void)
+{
+    if (!full_screen || termcap_active)
+	return;
+
+    MAY_WANT_TO_LOG_THIS;
+
+    out_str(T_TI);			// start termcap mode
+    out_str_t_TI();			// start "raw" mode
+    out_str(T_KS);			// start "keypad transmit" mode
+    out_str_t_BE();			// enable bracketed paste mode
+
+#if defined(UNIX) || defined(VMS)
+    // Enable xterm's focus reporting mode when 'esckeys' is set.
+    if (p_ek && *T_FE != NUL)
+	out_str(T_FE);
+#endif
+
+    out_flush();
+    termcap_active = TRUE;
+    screen_start();			// don't know where cursor is now
+#ifdef FEAT_TERMRESPONSE
+# ifdef FEAT_GUI
+    if (!gui.in_use && !gui.starting)
+# endif
+    {
+	may_req_termresponse();
+	// Immediately check for a response.  If t_Co changes, we don't
+	// want to redraw with wrong colors first.
+	if (crv_status.tr_progress == STATUS_SENT)
+	    check_for_codes_from_term();
+    }
+#endif
 }
 
     void
@@ -3945,63 +3945,64 @@ stoptermcap(void)
 {
     screen_stop_highlight();
     reset_cterm_colors();
-    if (termcap_active)
-    {
+
+    if (!termcap_active)
+	return;
+
 #ifdef FEAT_TERMRESPONSE
 # ifdef FEAT_GUI
-	if (!gui.in_use && !gui.starting)
+    if (!gui.in_use && !gui.starting)
 # endif
+    {
+	// May need to discard T_CRV, T_U7 or T_RBG response.
+	if (termrequest_any_pending())
 	{
-	    // May need to discard T_CRV, T_U7 or T_RBG response.
-	    if (termrequest_any_pending())
-	    {
 # ifdef UNIX
-		// Give the terminal a chance to respond.
-		mch_delay(100L, 0);
+	    // Give the terminal a chance to respond.
+	    mch_delay(100L, 0);
 # endif
 # ifdef TCIFLUSH
-		// Discard data received but not read.
-		if (exiting)
-		    tcflush(fileno(stdin), TCIFLUSH);
+	    // Discard data received but not read.
+	    if (exiting)
+		tcflush(fileno(stdin), TCIFLUSH);
 # endif
-	    }
-	    // Check for termcodes first, otherwise an external program may
-	    // get them.
-	    check_for_codes_from_term();
 	}
+	// Check for termcodes first, otherwise an external program may
+	// get them.
+	check_for_codes_from_term();
+    }
 #endif
-	MAY_WANT_TO_LOG_THIS;
+    MAY_WANT_TO_LOG_THIS;
 
 #if defined(UNIX) || defined(VMS)
-	// Disable xterm's focus reporting mode if 'esckeys' is set.
-	if (p_ek && *T_FD != NUL)
-	    out_str(T_FD);
+    // Disable xterm's focus reporting mode if 'esckeys' is set.
+    if (p_ek && *T_FD != NUL)
+	out_str(T_FD);
 #endif
 
-	out_str(T_BD);			// disable bracketed paste mode
-	out_str(T_KE);			// stop "keypad transmit" mode
-	out_flush();
-	termcap_active = FALSE;
+    out_str(T_BD);			// disable bracketed paste mode
+    out_str(T_KE);			// stop "keypad transmit" mode
+    out_flush();
+    termcap_active = FALSE;
 
-	// Output t_te before t_TE, t_te may switch between main and alternate
-	// screen and following codes may work on the active screen only.
-	//
-	// When using the Kitty keyboard protocol the main and alternate screen
-	// use a separate state.  If we are (or were) using the Kitty keyboard
-	// protocol and t_te is not empty (possibly switching screens) then
-	// output t_TE both before and after outputting t_te.
-	if (*T_TE != NUL && (kitty_protocol_state == KKPS_ENABLED
-				     || kitty_protocol_state == KKPS_DISABLED))
-	    out_str_t_TE();		// probably disables the kitty keyboard
-					// protocol
+    // Output t_te before t_TE, t_te may switch between main and alternate
+    // screen and following codes may work on the active screen only.
+    //
+    // When using the Kitty keyboard protocol the main and alternate screen
+    // use a separate state.  If we are (or were) using the Kitty keyboard
+    // protocol and t_te is not empty (possibly switching screens) then
+    // output t_TE both before and after outputting t_te.
+    if (*T_TE != NUL && (kitty_protocol_state == KKPS_ENABLED
+		|| kitty_protocol_state == KKPS_DISABLED))
+	out_str_t_TE();		// probably disables the kitty keyboard
+				// protocol
 
-	out_str(T_TE);			// stop termcap mode
-	cursor_on();			// just in case it is still off
-	out_str_t_TE();			// stop "raw" mode, modifyOtherKeys and
+    out_str(T_TE);			// stop termcap mode
+    cursor_on();			// just in case it is still off
+    out_str_t_TE();			// stop "raw" mode, modifyOtherKeys and
 					// Kitty keyboard protocol
-	screen_start();			// don't know where cursor is now
-	out_flush();
-    }
+    screen_start();			// don't know where cursor is now
+    out_flush();
 }
 
 #if defined(FEAT_TERMRESPONSE) || defined(PROTO)
@@ -4219,13 +4220,13 @@ swapping_screen(void)
     void
 scroll_start(void)
 {
-    if (*T_VS != NUL && *T_CVS != NUL)
-    {
-	MAY_WANT_TO_LOG_THIS;
-	out_str(T_VS);
-	out_str(T_CVS);
-	screen_start();		// don't know where cursor is now
-    }
+    if (*T_VS == NUL || *T_CVS == NUL)
+	return;
+
+    MAY_WANT_TO_LOG_THIS;
+    out_str(T_VS);
+    out_str(T_CVS);
+    screen_start();		// don't know where cursor is now
 }
 
 // True if cursor is not visible
@@ -4355,13 +4356,13 @@ term_cursor_mode(int forced)
     void
 term_cursor_color(char_u *color)
 {
-    if (*T_CSC != NUL)
-    {
-	out_str(T_CSC);		// set cursor color start
-	out_str_nf(color);
-	out_str(T_CEC);		// set cursor color end
-	out_flush();
-    }
+    if (*T_CSC == NUL)
+	return;
+
+    out_str(T_CSC);		// set cursor color start
+    out_str_nf(color);
+    out_str(T_CEC);		// set cursor color end
+    out_flush();
 }
 # endif
 
@@ -4922,18 +4923,18 @@ modifiers2keycode(int modifiers, int *key, char_u *string)
 {
     int new_slen = 0;
 
+    if (modifiers == 0)
+	return 0;
+
+    // Some keys have the modifier included.  Need to handle that here to
+    // make mappings work.  This may result in a special key, such as
+    // K_S_TAB.
+    *key = simplify_key(*key, &modifiers);
     if (modifiers != 0)
     {
-	// Some keys have the modifier included.  Need to handle that here to
-	// make mappings work.  This may result in a special key, such as
-	// K_S_TAB.
-	*key = simplify_key(*key, &modifiers);
-	if (modifiers != 0)
-	{
-	    string[new_slen++] = K_SPECIAL;
-	    string[new_slen++] = (int)KS_MODIFIER;
-	    string[new_slen++] = modifiers;
-	}
+	string[new_slen++] = K_SPECIAL;
+	string[new_slen++] = (int)KS_MODIFIER;
+	string[new_slen++] = modifiers;
     }
     return new_slen;
 }
@@ -6523,12 +6524,12 @@ check_termcode(
     void
 term_get_fg_color(char_u *r, char_u *g, char_u *b)
 {
-    if (rfg_status.tr_progress == STATUS_GOT)
-    {
-	*r = fg_r;
-	*g = fg_g;
-	*b = fg_b;
-    }
+    if (rfg_status.tr_progress != STATUS_GOT)
+	return;
+
+    *r = fg_r;
+    *g = fg_g;
+    *b = fg_b;
 }
 
 /*
@@ -6537,12 +6538,12 @@ term_get_fg_color(char_u *r, char_u *g, char_u *b)
     void
 term_get_bg_color(char_u *r, char_u *g, char_u *b)
 {
-    if (rbg_status.tr_progress == STATUS_GOT)
-    {
-	*r = bg_r;
-	*g = bg_g;
-	*b = bg_b;
-    }
+    if (rbg_status.tr_progress != STATUS_GOT)
+	return;
+
+    *r = bg_r;
+    *g = bg_g;
+    *b = bg_b;
 }
 #endif
 
@@ -7283,14 +7284,13 @@ find_first_tcap(
     int	    code)
 {
     tcap_entry_T *p = find_builtin_term(name);
-    if (p != NULL)
+    if (p == NULL)
+	return NULL;
+    while (p->bt_string != NULL)
     {
-	while (p->bt_string != NULL)
-	{
-	    if (p->bt_entry == code)
-		return p;
-	    ++p;
-	}
+	if (p->bt_entry == code)
+	    return p;
+	++p;
     }
     return NULL;
 }

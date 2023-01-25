@@ -302,47 +302,48 @@ f_strftime(typval_T *argvars, typval_T *rettv)
     curtime = vim_localtime(&seconds, &tmval);
     // MSVC returns NULL for an invalid value of seconds.
     if (curtime == NULL)
-	rettv->vval.v_string = vim_strsave((char_u *)_("(Invalid)"));
-    else
     {
-# ifdef MSWIN
-	WCHAR	    result_buf[256];
-	WCHAR	    *wp;
-
-	wp = enc_to_utf16(p, NULL);
-	if (wp != NULL)
-	    (void)wcsftime(result_buf, ARRAY_LENGTH(result_buf), wp, curtime);
-	else
-	    result_buf[0] = NUL;
-	rettv->vval.v_string = utf16_to_enc(result_buf, NULL);
-	vim_free(wp);
-# else
-	char_u	    result_buf[256];
-	vimconv_T   conv;
-	char_u	    *enc;
-
-	conv.vc_type = CONV_NONE;
-	enc = enc_locale();
-	convert_setup(&conv, p_enc, enc);
-	if (conv.vc_type != CONV_NONE)
-	    p = string_convert(&conv, p, NULL);
-	if (p == NULL || strftime((char *)result_buf, sizeof(result_buf),
-						  (char *)p, curtime) == 0)
-	    result_buf[0] = NUL;
-
-	if (conv.vc_type != CONV_NONE)
-	    vim_free(p);
-	convert_setup(&conv, enc, p_enc);
-	if (conv.vc_type != CONV_NONE)
-	    rettv->vval.v_string = string_convert(&conv, result_buf, NULL);
-	else
-	    rettv->vval.v_string = vim_strsave(result_buf);
-
-	// Release conversion descriptors
-	convert_setup(&conv, NULL, NULL);
-	vim_free(enc);
-# endif
+	rettv->vval.v_string = vim_strsave((char_u *)_("(Invalid)"));
+	return;
     }
+
+# ifdef MSWIN
+    WCHAR	    result_buf[256];
+    WCHAR	    *wp;
+
+    wp = enc_to_utf16(p, NULL);
+    if (wp != NULL)
+	(void)wcsftime(result_buf, ARRAY_LENGTH(result_buf), wp, curtime);
+    else
+	result_buf[0] = NUL;
+    rettv->vval.v_string = utf16_to_enc(result_buf, NULL);
+    vim_free(wp);
+# else
+    char_u	    result_buf[256];
+    vimconv_T   conv;
+    char_u	    *enc;
+
+    conv.vc_type = CONV_NONE;
+    enc = enc_locale();
+    convert_setup(&conv, p_enc, enc);
+    if (conv.vc_type != CONV_NONE)
+	p = string_convert(&conv, p, NULL);
+    if (p == NULL || strftime((char *)result_buf, sizeof(result_buf),
+		(char *)p, curtime) == 0)
+	result_buf[0] = NUL;
+
+    if (conv.vc_type != CONV_NONE)
+	vim_free(p);
+    convert_setup(&conv, enc, p_enc);
+    if (conv.vc_type != CONV_NONE)
+	rettv->vval.v_string = string_convert(&conv, result_buf, NULL);
+    else
+	rettv->vval.v_string = vim_strsave(result_buf);
+
+    // Release conversion descriptors
+    convert_setup(&conv, NULL, NULL);
+    vim_free(enc);
+# endif
 }
 # endif
 
@@ -672,12 +673,12 @@ find_timer(long id)
 {
     timer_T *timer;
 
-    if (id >= 0)
-    {
-	FOR_ALL_TIMERS(timer)
-	    if (timer->tr_id == id)
-		return timer;
-    }
+    if (id < 0)
+	return NULL;
+
+    FOR_ALL_TIMERS(timer)
+	if (timer->tr_id == id)
+	    return timer;
     return NULL;
 }
 
@@ -791,7 +792,9 @@ timer_valid(timer_T *timer)
 {
     if (timer == NULL)
 	return FALSE;
-    for (timer_T *t = first_timer; t != NULL; t = t->tr_next)
+
+    timer_T *t;
+    FOR_ALL_TIMERS(t)
 	if (t == timer)
 	    return TRUE;
     return FALSE;
@@ -848,15 +851,16 @@ f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
 
     if (argvars[0].v_type != VAR_NUMBER)
-	emsg(_(e_number_expected));
-    else
     {
-	int	paused = (int)tv_get_bool(&argvars[1]);
-
-	timer = find_timer((int)tv_get_number(&argvars[0]));
-	if (timer != NULL)
-	    timer->tr_paused = paused;
+	emsg(_(e_number_expected));
+	return;
     }
+
+    int	paused = (int)tv_get_bool(&argvars[1]);
+
+    timer = find_timer((int)tv_get_number(&argvars[0]));
+    if (timer != NULL)
+	timer->tr_paused = paused;
 }
 
 /*
@@ -904,14 +908,14 @@ f_timer_start(typval_T *argvars, typval_T *rettv)
 
     timer = create_timer(msec, repeat);
     if (timer == NULL)
-	free_callback(&callback);
-    else
     {
-	set_callback(&timer->tr_callback, &callback);
-	if (callback.cb_free_name)
-	    vim_free(callback.cb_name);
-	rettv->vval.v_number = (varnumber_T)timer->tr_id;
+	free_callback(&callback);
+	return;
     }
+    set_callback(&timer->tr_callback, &callback);
+    if (callback.cb_free_name)
+	vim_free(callback.cb_name);
+    rettv->vval.v_number = (varnumber_T)timer->tr_id;
 }
 
 /*
@@ -1019,28 +1023,28 @@ time_msg(
     static struct timeval	start;
     struct timeval		now;
 
-    if (time_fd != NULL)
+    if (time_fd == NULL)
+	return;
+
+    if (strstr(mesg, "STARTING") != NULL)
     {
-	if (strstr(mesg, "STARTING") != NULL)
-	{
-	    gettimeofday(&start, NULL);
-	    prev_timeval = start;
-	    fprintf(time_fd, "\n\ntimes in msec\n");
-	    fprintf(time_fd, " clock   self+sourced   self:  sourced script\n");
-	    fprintf(time_fd, " clock   elapsed:              other lines\n\n");
-	}
-	gettimeofday(&now, NULL);
-	time_diff(&start, &now);
-	if (((struct timeval *)tv_start) != NULL)
-	{
-	    fprintf(time_fd, "  ");
-	    time_diff(((struct timeval *)tv_start), &now);
-	}
-	fprintf(time_fd, "  ");
-	time_diff(&prev_timeval, &now);
-	prev_timeval = now;
-	fprintf(time_fd, ": %s\n", mesg);
+	gettimeofday(&start, NULL);
+	prev_timeval = start;
+	fprintf(time_fd, "\n\ntimes in msec\n");
+	fprintf(time_fd, " clock   self+sourced   self:  sourced script\n");
+	fprintf(time_fd, " clock   elapsed:              other lines\n\n");
     }
+    gettimeofday(&now, NULL);
+    time_diff(&start, &now);
+    if (((struct timeval *)tv_start) != NULL)
+    {
+	fprintf(time_fd, "  ");
+	time_diff(((struct timeval *)tv_start), &now);
+    }
+    fprintf(time_fd, "  ");
+    time_diff(&prev_timeval, &now);
+    prev_timeval = now;
+    fprintf(time_fd, ": %s\n", mesg);
 }
 # endif	// STARTUPTIME
 #endif // FEAT_EVAL
