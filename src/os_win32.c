@@ -232,7 +232,8 @@ static guicolor_T store_console_bg_rgb;
 static guicolor_T store_console_fg_rgb;
 static int default_console_color_bg = 0x000000; // black
 static int default_console_color_fg = 0xc0c0c0; // white
-#  define USE_VTP		(vtp_working && is_term_win32())
+#  define USE_VTP		(vtp_working && is_term_win32() \
+						 && (p_tgc || t_colors >= 256))
 #  define USE_WT		(wt_working)
 # else
 #  define USE_VTP		0
@@ -4437,6 +4438,9 @@ ResizeConBuf(
     HANDLE  hConsole,
     COORD   coordScreen)
 {
+    if (use_alternate_screen_buffer)
+	return;
+
     if (!SetConsoleScreenBufferSize(hConsole, coordScreen))
     {
 # ifdef MCH_WRITE_DUMP
@@ -6497,11 +6501,7 @@ insert_lines(unsigned cLines)
     clip.Bottom = g_srScrollRegion.Bottom;
 
     fill.Char.AsciiChar = ' ';
-    if (!(vtp_working
-# ifdef FEAT_TERMGUICOLORS
-		&& (p_tgc || t_colors >= 256)
-# endif
-	 ))
+    if (!USE_VTP)
 	fill.Attributes = g_attrCurrent;
     else
 	fill.Attributes = g_attrDefault;
@@ -6625,11 +6625,7 @@ gotoxy(
     if (x < 1 || x > (unsigned)Columns || y < 1 || y > (unsigned)Rows)
 	return;
 
-    if (!(vtp_working
-# ifdef FEAT_TERMGUICOLORS
-		&& (p_tgc || t_colors >= 256)
-# endif
-	 ))
+    if (!USE_VTP)
     {
 	// There are reports of double-width characters not displayed
 	// correctly.  This workaround should fix it, similar to how it's done
@@ -6883,11 +6879,7 @@ write_chars(
 	}
     }
 
-    if (!(vtp_working
-# ifdef FEAT_TERMGUICOLORS
-	    && (p_tgc || t_colors >= 256)
-# endif
-	))
+    if (!USE_VTP)
     {
 	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, cells,
 				    coord, &written);
@@ -6927,11 +6919,7 @@ write_chars(
     }
 
     // Cursor under VTP is always in the correct position, no need to reset.
-    if (!(vtp_working
-# ifdef FEAT_TERMGUICOLORS
-		&& (p_tgc || t_colors >= 256)
-# endif
-	 ))
+    if (!USE_VTP)
 	gotoxy(g_coord.X + 1, g_coord.Y + 1);
 
     return written;
@@ -7227,11 +7215,7 @@ notsgr:
 			normvideo();
 		    else if (argc == 1)
 		    {
-			if (vtp_working
-# ifdef FEAT_TERMGUICOLORS
-				&& (p_tgc || t_colors >= 256)
-# endif
-			   )
+			if (USE_VTP)
 			    textcolor((WORD)arg1);
 			else
 			    textattr((WORD)arg1);
@@ -8440,6 +8424,9 @@ vtp_flag_init(void)
 	mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 	if (SetConsoleMode(out, mode) == 0)
 	    vtp_working = 0;
+
+	use_alternate_screen_buffer = win10_22H2_or_later && p_rs && vtp_working
+						&& !mch_getenv("VIM_TERMINAL");
     }
 #endif
 
@@ -8485,8 +8472,6 @@ vtp_init(void)
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     default_console_color_fg = fg;
 # endif
-    use_alternate_screen_buffer = win10_22H2_or_later && p_rs && vtp_working
-						&& !mch_getenv("VIM_TERMINAL");
     set_console_color_rgb();
 }
 
@@ -8707,6 +8692,9 @@ set_console_color_rgb(void)
 	return;
     }
 
+    if (use_alternate_screen_buffer)
+	return;
+
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
@@ -8781,6 +8769,8 @@ get_default_console_color(
 reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
+    if (use_alternate_screen_buffer)
+	return;
 
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
@@ -8803,6 +8793,8 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
+    if (use_alternate_screen_buffer)
+	return;
 
     CONSOLE_SCREEN_BUFFER_INFOEX csbi;
 
@@ -8875,6 +8867,9 @@ get_conpty_fix_type(void)
     void
 resize_console_buf(void)
 {
+    if (use_alternate_screen_buffer)
+	return;
+
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     COORD coord;
     SMALL_RECT newsize;
