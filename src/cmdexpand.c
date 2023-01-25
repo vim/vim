@@ -1363,11 +1363,11 @@ addstar(
 	// For a tag pattern starting with "/" no translation is needed.
 	if (context == EXPAND_HELP
 		|| context == EXPAND_COLORS
-		|| context == EXPAND_RUNTIME
 		|| context == EXPAND_COMPILER
 		|| context == EXPAND_OWNSYNTAX
 		|| context == EXPAND_FILETYPE
 		|| context == EXPAND_PACKADD
+		|| context == EXPAND_RUNTIME
 		|| ((context == EXPAND_TAGS_LISTFILES
 			|| context == EXPAND_TAGS)
 		    && fname[0] == '/'))
@@ -2314,10 +2314,6 @@ set_context_by_cmdname(
 	    xp->xp_pattern = arg;
 	    break;
 
-	case CMD_runtime:
-	    set_context_in_runtime_cmd(xp, arg);
-	    break;
-
 	case CMD_compiler:
 	    xp->xp_context = EXPAND_COMPILER;
 	    xp->xp_pattern = arg;
@@ -2336,6 +2332,10 @@ set_context_by_cmdname(
 	case CMD_packadd:
 	    xp->xp_context = EXPAND_PACKADD;
 	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_runtime:
+	    set_context_in_runtime_cmd(xp, arg);
 	    break;
 
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
