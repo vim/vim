@@ -3025,10 +3025,6 @@ ExpandFromContext(
 	return ExpandRTDir(pat, DIP_START + DIP_OPT, numMatches, matches,
 								directories);
     }
-    if (xp->xp_context == EXPAND_RUNTIME)
-    {
-	return expand_runtime_cmd(pat, numMatches, matches);
-    }
     if (xp->xp_context == EXPAND_COMPILER)
     {
 	char *directories[] = {"compiler", NULL};
@@ -3050,6 +3046,8 @@ ExpandFromContext(
 #endif
     if (xp->xp_context == EXPAND_PACKADD)
 	return ExpandPackAddDir(pat, numMatches, matches);
+    if (xp->xp_context == EXPAND_RUNTIME)
+	return expand_runtime_cmd(pat, numMatches, matches);
 
     // When expanding a function name starting with s:, match the <SNR>nr_
     // prefix.

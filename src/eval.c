@@ -6747,7 +6747,10 @@ handle_subscript(
 	// the next line then consume the line break.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
-	    && ((rettv->v_type == VAR_DICT && *p == '.' && eval_isdictc(p[1]))
+	    && ((*p == '.'
+		    && ((rettv->v_type == VAR_DICT && eval_isdictc(p[1]))
+			|| rettv->v_type == VAR_CLASS
+			|| rettv->v_type == VAR_OBJECT))
 		|| (p[0] == '-' && p[1] == '>' && (p[2] == '{'
 			|| ASCII_ISALPHA(in_vim9script() ? *skipwhite(p + 2)
 								    : p[2])))))

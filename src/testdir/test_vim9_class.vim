@@ -439,6 +439,32 @@ def Test_class_object_member_access()
       var c = MyCar.new("def")
   END
   v9.CheckScriptFailure(lines, 'E1041:')
+
+  lines =<< trim END
+      vim9script
+
+      class Foo
+        this.x: list<number> = []
+
+        def Add(n: number): any
+          this.x->add(n)
+          return this
+        enddef
+      endclass
+
+      echo Foo.new().Add(1).Add(2).x
+      echo Foo.new().Add(1).Add(2)
+            .x
+      echo Foo.new().Add(1)
+            .Add(2).x
+      echo Foo.new()
+            .Add(1).Add(2).x
+      echo Foo.new()
+            .Add(1) 
+            .Add(2)
+            .x
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_object_compare()
@@ -616,6 +642,24 @@ def Test_class_member()
         assert_equal(3, OtherThing.totalSize)
         var to7 = OtherThing.new(7)
         assert_equal(10, OtherThing.totalSize)
+  END
+  v9.CheckScriptSuccess(lines)
+
+  # access private member in lambda
+  lines =<< trim END
+      vim9script
+
+      class Foo
+        this._x: number = 0
+
+        def Add(n: number): number
+          const F = (): number => this._x + n
+          return F()
+        enddef
+      endclass
+
+      var foo = Foo.new()
+      assert_equal(5, foo.Add(5))
   END
   v9.CheckScriptSuccess(lines)
 
