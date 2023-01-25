@@ -192,7 +192,7 @@ get_function_line(
 		&& *eap->cmdlinep == ((char_u **)lines_to_free->ga_data)
 						   [lines_to_free->ga_len - 1])
 	    *eap->cmdlinep = theline;
-	ga_add_string(lines_to_free, theline);
+	(void)ga_add_string(lines_to_free, theline);
     }
 
     return theline;
