@@ -2311,8 +2311,8 @@ did_set_string_option(
 	    varp == &p_dex ||
 # endif
 # ifdef FEAT_FOLDING
-	    varp == &curwin->w_p_fde ||
-	    varp == &curwin->w_p_fdt ||
+	    gvarp == &curwin->w_allbuf_opt.wo_fde ||
+	    gvarp == &curwin->w_allbuf_opt.wo_fdt ||
 # endif
 	    gvarp == &p_fex ||
 # ifdef FEAT_FIND_ID
@@ -2327,52 +2327,13 @@ did_set_string_option(
 # endif
 	    varp == &p_ccv)
     {
-	char_u	**p_opt = NULL;
-	char_u	*name;
-
 	// If the option value starts with <SID> or s:, then replace that with
 	// the script identifier.
-# ifdef FEAT_BEVAL
-	if (varp == &p_bexpr)		// 'balloonexpr'
-	    p_opt = (opt_flags & OPT_LOCAL) ? &curbuf->b_p_bexpr : &p_bexpr;
-# endif
-# ifdef FEAT_DIFF
-	if (varp == &p_dex)	// 'diffexpr'
-	    p_opt = &p_dex;
-# endif
-# ifdef FEAT_FOLDING
-	if (varp == &curwin->w_p_fde)	// 'foldexpr'
-	    p_opt = &curwin->w_p_fde;
-	if (varp == &curwin->w_p_fdt)	// 'foldtext'
-	    p_opt = &curwin->w_p_fdt;
-# endif
-	if (gvarp == &p_fex)	// 'formatexpr'
-	    p_opt = &curbuf->b_p_fex;
-# ifdef FEAT_FIND_ID
-	if (gvarp == &p_inex)	// 'includeexpr'
-	    p_opt = &curbuf->b_p_inex;
-# endif
-	if (gvarp == &p_inde)	// 'indentexpr'
-	    p_opt = &curbuf->b_p_inde;
-# ifdef FEAT_DIFF
-	if (varp == &p_pex)	// 'patchexpr'
-	    p_opt = &p_pex;
-# endif
-# ifdef FEAT_POSTSCRIPT
-	if (varp == &p_pexpr)	// 'printexpr'
-	    p_opt = &p_pexpr;
-# endif
-	if (varp == &p_ccv)	// 'charconvert'
-	    p_opt = &p_ccv;
-
-	if (p_opt != NULL)
+	char_u *name = get_scriptlocal_funcname(*varp);
+	if (name != NULL)
 	{
-	    name = get_scriptlocal_funcname(*p_opt);
-	    if (name != NULL)
-	    {
-		free_string_option(*p_opt);
-		*p_opt = name;
-	    }
+	    free_string_option(*varp);
+	    *varp = name;
 	}
 
 # ifdef FEAT_FOLDING
