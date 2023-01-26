@@ -335,7 +335,7 @@ Doubling to operate on a line also works for operators mentioned below.
   5. Now type a capital  U  to return the line to its original state.
   6. Now type  u  a few times to undo the  U  and preceding commands.
   7. Now type CTRL-R (keeping CTRL key pressed while hitting R) a few times
-     to redo the commands (undo the undo's).
+     to redo the commands (undo the undos).
 
 ---> Fiix the errors oon thhis line and reeplace them witth undo.
 
@@ -365,7 +365,7 @@ Doubling to operate on a line also works for operators mentioned below.
 
   8. To undo previous actions, type:           u  (lowercase u)
      To undo all the changes on a line, type:  U  (capital U)
-     To undo the undo's, type:                 CTRL-R
+     To undo the undos, type:                 CTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lesson 3.1: THE PUT COMMAND
