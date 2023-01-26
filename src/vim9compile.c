@@ -3939,18 +3939,18 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
     void
 unlink_def_function(ufunc_T *ufunc)
 {
-    if (ufunc->uf_dfunc_idx > 0)
-    {
-	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
+    if (ufunc->uf_dfunc_idx <= 0)
+	return;
 
-	if (--dfunc->df_refcount <= 0)
-	    delete_def_function_contents(dfunc, TRUE);
-	ufunc->uf_def_status = UF_NOT_COMPILED;
-	ufunc->uf_dfunc_idx = 0;
-	if (dfunc->df_ufunc == ufunc)
-	    dfunc->df_ufunc = NULL;
-    }
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+	+ ufunc->uf_dfunc_idx;
+
+    if (--dfunc->df_refcount <= 0)
+	delete_def_function_contents(dfunc, TRUE);
+    ufunc->uf_def_status = UF_NOT_COMPILED;
+    ufunc->uf_dfunc_idx = 0;
+    if (dfunc->df_ufunc == ufunc)
+	dfunc->df_ufunc = NULL;
 }
 
 /*
@@ -3959,13 +3959,13 @@ unlink_def_function(ufunc_T *ufunc)
     void
 link_def_function(ufunc_T *ufunc)
 {
-    if (ufunc->uf_dfunc_idx > 0)
-    {
-	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
+    if (ufunc->uf_dfunc_idx <= 0)
+	return;
 
-	++dfunc->df_refcount;
-    }
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+	+ ufunc->uf_dfunc_idx;
+
+    ++dfunc->df_refcount;
 }
 
 #if defined(EXITFREE) || defined(PROTO)

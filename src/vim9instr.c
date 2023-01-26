@@ -2306,41 +2306,41 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
 			    lhs->lhs_opt_flags, lhs->lhs_vimvaridx,
 			    lhs->lhs_type, lhs->lhs_name, lhs);
 
-    if (lhs->lhs_lvar != NULL)
+    if (lhs->lhs_lvar == NULL)
+	return OK;
+
+    garray_T	*instr = &cctx->ctx_instr;
+    isn_T		*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+
+    // Optimization: turn "var = 123" from ISN_PUSHNR + ISN_STORE into
+    // ISN_STORENR.
+    // And "var = 0" does not need any instruction.
+    if (lhs->lhs_lvar->lv_from_outer == 0
+	    && instr->ga_len == instr_count + 1
+	    && isn->isn_type == ISN_PUSHNR)
     {
-	garray_T	*instr = &cctx->ctx_instr;
-	isn_T		*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+	varnumber_T val = isn->isn_arg.number;
+	garray_T    *stack = &cctx->ctx_type_stack;
 
-	// Optimization: turn "var = 123" from ISN_PUSHNR + ISN_STORE into
-	// ISN_STORENR.
-	// And "var = 0" does not need any instruction.
-	if (lhs->lhs_lvar->lv_from_outer == 0
-		&& instr->ga_len == instr_count + 1
-		&& isn->isn_type == ISN_PUSHNR)
+	if (val == 0 && is_decl && !inside_loop_scope(cctx))
 	{
-	    varnumber_T val = isn->isn_arg.number;
-	    garray_T    *stack = &cctx->ctx_type_stack;
-
-	    if (val == 0 && is_decl && !inside_loop_scope(cctx))
-	    {
-		// zero is the default value, no need to do anything
-		--instr->ga_len;
-	    }
-	    else
-	    {
-		isn->isn_type = ISN_STORENR;
-		isn->isn_arg.storenr.stnr_idx = lhs->lhs_lvar->lv_idx;
-		isn->isn_arg.storenr.stnr_val = val;
-	    }
-	    if (stack->ga_len > 0)
-		--stack->ga_len;
+	    // zero is the default value, no need to do anything
+	    --instr->ga_len;
 	}
-	else if (lhs->lhs_lvar->lv_from_outer > 0)
-	    generate_STOREOUTER(cctx, lhs->lhs_lvar->lv_idx,
-		     lhs->lhs_lvar->lv_from_outer, lhs->lhs_lvar->lv_loop_idx);
 	else
-	    generate_STORE(cctx, ISN_STORE, lhs->lhs_lvar->lv_idx, NULL);
+	{
+	    isn->isn_type = ISN_STORENR;
+	    isn->isn_arg.storenr.stnr_idx = lhs->lhs_lvar->lv_idx;
+	    isn->isn_arg.storenr.stnr_val = val;
+	}
+	if (stack->ga_len > 0)
+	    --stack->ga_len;
     }
+    else if (lhs->lhs_lvar->lv_from_outer > 0)
+	generate_STOREOUTER(cctx, lhs->lhs_lvar->lv_idx,
+		lhs->lhs_lvar->lv_from_outer, lhs->lhs_lvar->lv_loop_idx);
+    else
+	generate_STORE(cctx, ISN_STORE, lhs->lhs_lvar->lv_idx, NULL);
     return OK;
 }
 

@@ -57,26 +57,26 @@ char	*longVersion = NULL;
     void
 init_longVersion(void)
 {
-    if (longVersion == NULL)
-    {
-#ifdef BUILD_DATE
-	char *date_time = BUILD_DATE;
-#else
-	char *date_time = __DATE__ " " __TIME__;
-#endif
-	char *msg = _("%s (%s, compiled %s)");
-	size_t len = strlen(msg)
-		    + strlen(VIM_VERSION_LONG_ONLY)
-		    + strlen(VIM_VERSION_DATE_ONLY)
-		    + strlen(date_time);
+    if (longVersion != NULL)
+	return;
 
-	longVersion = alloc(len);
-	if (longVersion == NULL)
-	    longVersion = VIM_VERSION_LONG;
-	else
-	    vim_snprintf(longVersion, len, msg,
-		      VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
-    }
+#ifdef BUILD_DATE
+    char *date_time = BUILD_DATE;
+#else
+    char *date_time = __DATE__ " " __TIME__;
+#endif
+    char *msg = _("%s (%s, compiled %s)");
+    size_t len = strlen(msg)
+	+ strlen(VIM_VERSION_LONG_ONLY)
+	+ strlen(VIM_VERSION_DATE_ONLY)
+	+ strlen(date_time);
+
+    longVersion = alloc(len);
+    if (longVersion == NULL)
+	longVersion = VIM_VERSION_LONG;
+    else
+	vim_snprintf(longVersion, len, msg,
+		VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
 }
 # endif
 #else
@@ -695,6 +695,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1246,
 /**/
     1245,
 /**/

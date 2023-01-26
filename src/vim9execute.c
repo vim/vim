@@ -279,14 +279,14 @@ exe_newdict(int count, ectx_T *ectx)
     void
 update_has_breakpoint(ufunc_T *ufunc)
 {
-    if (ufunc->uf_debug_tick != debug_tick)
-    {
-	linenr_T breakpoint;
+    if (ufunc->uf_debug_tick == debug_tick)
+	return;
 
-	ufunc->uf_debug_tick = debug_tick;
-	breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name, 0);
-	ufunc->uf_has_breakpoint = breakpoint > 0;
-    }
+    linenr_T breakpoint;
+
+    ufunc->uf_debug_tick = debug_tick;
+    breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name, 0);
+    ufunc->uf_has_breakpoint = breakpoint > 0;
 }
 
 static garray_T dict_stack = GA_EMPTY;
@@ -383,29 +383,29 @@ get_pt_outer(partial_T *pt)
     static int
 check_ufunc_arg_types(ufunc_T *ufunc, int argcount, int off, ectx_T *ectx)
 {
-    if (ufunc->uf_arg_types != NULL || ufunc->uf_va_type != NULL)
+    if (ufunc->uf_arg_types == NULL && ufunc->uf_va_type == NULL)
+	return OK;
+
+    typval_T	*argv = STACK_TV_BOT(0) - argcount - off;
+
+    // The function can change at runtime, check that the argument
+    // types are correct.
+    for (int i = 0; i < argcount; ++i)
     {
-	typval_T	*argv = STACK_TV_BOT(0) - argcount - off;
+	type_T *type = NULL;
 
-	// The function can change at runtime, check that the argument
-	// types are correct.
-	for (int i = 0; i < argcount; ++i)
-	{
-	    type_T *type = NULL;
+	// assume a v:none argument, using the default value, is always OK
+	if (argv[i].v_type == VAR_SPECIAL
+		&& argv[i].vval.v_number == VVAL_NONE)
+	    continue;
 
-	    // assume a v:none argument, using the default value, is always OK
-	    if (argv[i].v_type == VAR_SPECIAL
-					 && argv[i].vval.v_number == VVAL_NONE)
-		continue;
-
-	    if (i < ufunc->uf_args.ga_len && ufunc->uf_arg_types != NULL)
-		type = ufunc->uf_arg_types[i];
-	    else if (ufunc->uf_va_type != NULL)
-		type = ufunc->uf_va_type->tt_member;
-	    if (type != NULL && check_typval_arg_type(type,
-					    &argv[i], NULL, i + 1) == FAIL)
-		return FAIL;
-	}
+	if (i < ufunc->uf_args.ga_len && ufunc->uf_arg_types != NULL)
+	    type = ufunc->uf_arg_types[i];
+	else if (ufunc->uf_va_type != NULL)
+	    type = ufunc->uf_va_type->tt_member;
+	if (type != NULL && check_typval_arg_type(type,
+		    &argv[i], NULL, i + 1) == FAIL)
+	    return FAIL;
     }
     return OK;
 }
@@ -1527,21 +1527,22 @@ store_var(char_u *name, typval_T *tv)
     static int
 do_2string(typval_T *tv, int is_2string_any, int tolerant)
 {
-    if (tv->v_type != VAR_STRING)
+    if (tv->v_type == VAR_STRING)
+	return OK;
+
+    char_u *str;
+
+    if (is_2string_any)
     {
-	char_u *str;
-
-	if (is_2string_any)
+	switch (tv->v_type)
 	{
-	    switch (tv->v_type)
-	    {
-		case VAR_SPECIAL:
-		case VAR_BOOL:
-		case VAR_NUMBER:
-		case VAR_FLOAT:
-		case VAR_BLOB:	break;
+	    case VAR_SPECIAL:
+	    case VAR_BOOL:
+	    case VAR_NUMBER:
+	    case VAR_FLOAT:
+	    case VAR_BLOB:	break;
 
-		case VAR_LIST:
+	    case VAR_LIST:
 				if (tolerant)
 				{
 				    char_u	*s, *e, *p;
@@ -1560,7 +1561,7 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 				    {
 					*e = NUL;
 					p = vim_strsave_fnameescape(s,
-								     VSE_NONE);
+						VSE_NONE);
 					if (p != NULL)
 					{
 					    ga_concat(&ga, p);
@@ -1576,15 +1577,14 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 				    return OK;
 				}
 				// FALLTHROUGH
-		default:	to_string_error(tv->v_type);
-				return FAIL;
-	    }
+	    default:	to_string_error(tv->v_type);
+			return FAIL;
 	}
-	str = typval_tostring(tv, TRUE);
-	clear_tv(tv);
-	tv->v_type = VAR_STRING;
-	tv->vval.v_string = str;
     }
+    str = typval_tostring(tv, TRUE);
+    clear_tv(tv);
+    tv->v_type = VAR_STRING;
+    tv->vval.v_string = str;
     return OK;
 }
 

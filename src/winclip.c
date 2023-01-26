@@ -149,11 +149,11 @@ MultiByteToWideChar_alloc(UINT cp, DWORD flags,
     *outlen = MultiByteToWideChar(cp, flags, in, inlen, 0, 0);
     // Add one word to avoid a zero-length alloc().
     *out = ALLOC_MULT(WCHAR, *outlen + 1);
-    if (*out != NULL)
-    {
-	MultiByteToWideChar(cp, flags, in, inlen, *out, *outlen);
-	(*out)[*outlen] = 0;
-    }
+    if (*out == NULL)
+	return;
+
+    MultiByteToWideChar(cp, flags, in, inlen, *out, *outlen);
+    (*out)[*outlen] = 0;
 }
 
 /*
@@ -169,11 +169,10 @@ WideCharToMultiByte_alloc(UINT cp, DWORD flags,
     *outlen = WideCharToMultiByte(cp, flags, in, inlen, NULL, 0, def, useddef);
     // Add one byte to avoid a zero-length alloc().
     *out = alloc(*outlen + 1);
-    if (*out != NULL)
-    {
-	WideCharToMultiByte(cp, flags, in, inlen, *out, *outlen, def, useddef);
-	(*out)[*outlen] = 0;
-    }
+    if (*out == NULL)
+	return;
+    WideCharToMultiByte(cp, flags, in, inlen, *out, *outlen, def, useddef);
+    (*out)[*outlen] = 0;
 }
 
 
@@ -743,12 +742,11 @@ acp_to_enc(
 
     MultiByteToWideChar_alloc(GetACP(), 0, (LPCSTR)str, str_size,
 							    &widestr, outlen);
-    if (widestr != NULL)
-    {
-	++*outlen;	// Include the 0 after the string
-	*out = utf16_to_enc((short_u *)widestr, outlen);
-	vim_free(widestr);
-    }
+    if (widestr == NULL)
+	return;
+    ++*outlen;	// Include the 0 after the string
+    *out = utf16_to_enc((short_u *)widestr, outlen);
+    vim_free(widestr);
 }
 
 /*
@@ -768,10 +766,9 @@ enc_to_acp(
     int		len = str_size;
 
     widestr = (WCHAR *)enc_to_utf16(str, &len);
-    if (widestr != NULL)
-    {
-	WideCharToMultiByte_alloc(GetACP(), 0, widestr, len,
-						(LPSTR *)out, outlen, 0, 0);
-	vim_free(widestr);
-    }
+    if (widestr == NULL)
+	return;
+    WideCharToMultiByte_alloc(GetACP(), 0, widestr, len,
+	    (LPSTR *)out, outlen, 0, 0);
+    vim_free(widestr);
 }
