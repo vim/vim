@@ -1164,21 +1164,21 @@ read_string_decrypt(bufinfo_T *bi, int len)
 {
     char_u  *ptr = alloc(len + 1);
 
-    if (ptr != NULL)
+    if (ptr == NULL)
+	return NULL;
+
+    if (len > 0 && undo_read(bi, ptr, len) == FAIL)
     {
-	if (len > 0 && undo_read(bi, ptr, len) == FAIL)
-	{
-	    vim_free(ptr);
-	    return NULL;
-	}
-	// In case there are text properties there already is a NUL, but
-	// checking for that is more expensive than just adding a dummy byte.
-	ptr[len] = NUL;
-#ifdef FEAT_CRYPT
-	if (bi->bi_state != NULL && bi->bi_buffer == NULL)
-	    crypt_decode_inplace(bi->bi_state, ptr, len, FALSE);
-#endif
+	vim_free(ptr);
+	return NULL;
     }
+    // In case there are text properties there already is a NUL, but
+    // checking for that is more expensive than just adding a dummy byte.
+    ptr[len] = NUL;
+#ifdef FEAT_CRYPT
+    if (bi->bi_state != NULL && bi->bi_buffer == NULL)
+	crypt_decode_inplace(bi->bi_state, ptr, len, FALSE);
+#endif
     return ptr;
 }
 
@@ -3510,12 +3510,12 @@ u_saveline(linenr_T lnum)
     void
 u_clearline(void)
 {
-    if (curbuf->b_u_line_ptr.ul_line != NULL)
-    {
-	VIM_CLEAR(curbuf->b_u_line_ptr.ul_line);
-	curbuf->b_u_line_ptr.ul_len = 0;
-	curbuf->b_u_line_lnum = 0;
-    }
+    if (curbuf->b_u_line_ptr.ul_line == NULL)
+	return;
+
+    VIM_CLEAR(curbuf->b_u_line_ptr.ul_line);
+    curbuf->b_u_line_ptr.ul_len = 0;
+    curbuf->b_u_line_lnum = 0;
 }
 
 /*
@@ -3726,24 +3726,24 @@ u_undofile_reset_and_delete(buf_T *buf)
     void
 f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    if (rettv_dict_alloc(rettv) == OK)
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+
+    dict_T *dict = rettv->vval.v_dict;
+    list_T *list;
+
+    dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
+    dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
+    dict_add_number(dict, "save_last", curbuf->b_u_save_nr_last);
+    dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
+    dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
+    dict_add_number(dict, "save_cur", curbuf->b_u_save_nr_cur);
+
+    list = list_alloc();
+    if (list != NULL)
     {
-	dict_T *dict = rettv->vval.v_dict;
-	list_T *list;
-
-	dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
-	dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
-	dict_add_number(dict, "save_last", curbuf->b_u_save_nr_last);
-	dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
-	dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
-	dict_add_number(dict, "save_cur", curbuf->b_u_save_nr_cur);
-
-	list = list_alloc();
-	if (list != NULL)
-	{
-	    u_eval_tree(curbuf->b_u_oldhead, list);
-	    dict_add_list(dict, "entries", list);
-	}
+	u_eval_tree(curbuf->b_u_oldhead, list);
+	dict_add_list(dict, "entries", list);
     }
 }
 

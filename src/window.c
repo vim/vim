@@ -2469,37 +2469,36 @@ close_last_window_tabpage(
     int		free_buf,
     tabpage_T   *prev_curtab)
 {
-    if (ONE_WINDOW)
-    {
-	buf_T	*old_curbuf = curbuf;
+    if (!ONE_WINDOW)
+	return FALSE;
 
-	/*
-	 * Closing the last window in a tab page.  First go to another tab
-	 * page and then close the window and the tab page.  This avoids that
-	 * curwin and curtab are invalid while we are freeing memory, they may
-	 * be used in GUI events.
-	 * Don't trigger autocommands yet, they may use wrong values, so do
-	 * that below.
-	 */
-	goto_tabpage_tp(alt_tabpage(), FALSE, TRUE);
+    buf_T	*old_curbuf = curbuf;
 
-	// Safety check: Autocommands may have closed the window when jumping
-	// to the other tab page.
-	if (valid_tabpage(prev_curtab) && prev_curtab->tp_firstwin == win)
-	    win_close_othertab(win, free_buf, prev_curtab);
+    /*
+     * Closing the last window in a tab page.  First go to another tab
+     * page and then close the window and the tab page.  This avoids that
+     * curwin and curtab are invalid while we are freeing memory, they may
+     * be used in GUI events.
+     * Don't trigger autocommands yet, they may use wrong values, so do
+     * that below.
+     */
+    goto_tabpage_tp(alt_tabpage(), FALSE, TRUE);
+
+    // Safety check: Autocommands may have closed the window when jumping
+    // to the other tab page.
+    if (valid_tabpage(prev_curtab) && prev_curtab->tp_firstwin == win)
+	win_close_othertab(win, free_buf, prev_curtab);
 #ifdef FEAT_JOB_CHANNEL
-	entering_window(curwin);
+    entering_window(curwin);
 #endif
-	// Since goto_tabpage_tp above did not trigger *Enter autocommands, do
-	// that now.
-	apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
-	apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
-	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
-	if (old_curbuf != curbuf)
-	    apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
-	return TRUE;
-    }
-    return FALSE;
+    // Since goto_tabpage_tp above did not trigger *Enter autocommands, do
+    // that now.
+    apply_autocmds(EVENT_TABCLOSED, NULL, NULL, FALSE, curbuf);
+    apply_autocmds(EVENT_WINENTER, NULL, NULL, FALSE, curbuf);
+    apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
+    if (old_curbuf != curbuf)
+	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
+    return TRUE;
 }
 
 /*
@@ -4205,15 +4204,14 @@ win_alloc_popup_win(void)
     win_T *wp;
 
     wp = win_alloc(NULL, TRUE);
-    if (wp != NULL)
-    {
-	// We need to initialize options with something, using the current
-	// window makes most sense.
-	win_init_some(wp, curwin);
+    if (wp == NULL)
+	return NULL;
+    // We need to initialize options with something, using the current
+    // window makes most sense.
+    win_init_some(wp, curwin);
 
-	RESET_BINDING(wp);
-	new_frame(wp);
-    }
+    RESET_BINDING(wp);
+    new_frame(wp);
     return wp;
 }
 
@@ -4287,11 +4285,10 @@ new_frame(win_T *wp)
     frame_T *frp = ALLOC_CLEAR_ONE(frame_T);
 
     wp->w_frame = frp;
-    if (frp != NULL)
-    {
-	frp->fr_layout = FR_LEAF;
-	frp->fr_win = wp;
-    }
+    if (frp == NULL)
+	return;
+    frp->fr_layout = FR_LEAF;
+    frp->fr_win = wp;
 }
 
 /*
@@ -4489,13 +4486,12 @@ may_open_tabpage(void)
     int		n = (cmdmod.cmod_tab == 0)
 				       ? postponed_split_tab : cmdmod.cmod_tab;
 
-    if (n != 0)
-    {
-	cmdmod.cmod_tab = 0;	    // reset it to avoid doing it twice
-	postponed_split_tab = 0;
-	return win_new_tabpage(n);
-    }
-    return FAIL;
+    if (n == 0)
+	return FAIL;
+
+    cmdmod.cmod_tab = 0;	    // reset it to avoid doing it twice
+    postponed_split_tab = 0;
+    return win_new_tabpage(n);
 }
 
 /*
@@ -4880,12 +4876,11 @@ goto_tabpage_tp(
     int
 goto_tabpage_lastused(void)
 {
-    if (valid_tabpage(lastused_tabpage))
-    {
-	goto_tabpage_tp(lastused_tabpage, TRUE, TRUE);
-	return OK;
-    }
-    return FAIL;
+    if (!valid_tabpage(lastused_tabpage))
+	return FAIL;
+
+    goto_tabpage_tp(lastused_tabpage, TRUE, TRUE);
+    return OK;
 }
 
 /*
@@ -5907,17 +5902,17 @@ win_size_save(garray_T *gap)
     win_T	*wp;
 
     ga_init2(gap, sizeof(int), 1);
-    if (ga_grow(gap, win_count() * 2 + 1) == OK)
-    {
-	// first entry is value of 'lines'
-	((int *)gap->ga_data)[gap->ga_len++] = Rows;
+    if (ga_grow(gap, win_count() * 2 + 1) == FAIL)
+	return;
 
-	FOR_ALL_WINDOWS(wp)
-	{
-	    ((int *)gap->ga_data)[gap->ga_len++] =
-					       wp->w_width + wp->w_vsep_width;
-	    ((int *)gap->ga_data)[gap->ga_len++] = wp->w_height;
-	}
+    // first entry is value of 'lines'
+    ((int *)gap->ga_data)[gap->ga_len++] = Rows;
+
+    FOR_ALL_WINDOWS(wp)
+    {
+	((int *)gap->ga_data)[gap->ga_len++] =
+	    wp->w_width + wp->w_vsep_width;
+	((int *)gap->ga_data)[gap->ga_len++] = wp->w_height;
     }
 }
 
@@ -7429,12 +7424,11 @@ clear_snapshot(tabpage_T *tp, int idx)
     static void
 clear_snapshot_rec(frame_T *fr)
 {
-    if (fr != NULL)
-    {
-	clear_snapshot_rec(fr->fr_next);
-	clear_snapshot_rec(fr->fr_child);
-	vim_free(fr);
-    }
+    if (fr == NULL)
+	return;
+    clear_snapshot_rec(fr->fr_next);
+    clear_snapshot_rec(fr->fr_child);
+    vim_free(fr);
 }
 
 /*

@@ -37,11 +37,11 @@ get_type_ptr(garray_T *type_gap)
     if (ga_grow(type_gap, 1) == FAIL)
 	return NULL;
     type = ALLOC_CLEAR_ONE(type_T);
-    if (type != NULL)
-    {
-	((type_T **)type_gap->ga_data)[type_gap->ga_len] = type;
-	++type_gap->ga_len;
-    }
+    if (type == NULL)
+	return NULL;
+
+    ((type_T **)type_gap->ga_data)[type_gap->ga_len] = type;
+    ++type_gap->ga_len;
     return type;
 }
 
@@ -628,17 +628,17 @@ typval2type(typval_T *tv, int copyID, garray_T *type_gap, int flags)
 {
     type_T *type = typval2type_int(tv, copyID, type_gap, flags);
 
-    if (type != NULL)
-    {
-	if (type != &t_bool && (tv->v_type == VAR_NUMBER
-		    && (tv->vval.v_number == 0 || tv->vval.v_number == 1)))
-	    // Number 0 and 1 and expression with "&&" or "||" can also be used
-	    // for bool.
-	    type = &t_number_bool;
-	else if (type != &t_float && tv->v_type == VAR_NUMBER)
-	    // A number can also be used for float.
-	    type = &t_number_float;
-    }
+    if (type == NULL)
+	return NULL;
+
+    if (type != &t_bool && (tv->v_type == VAR_NUMBER
+		&& (tv->vval.v_number == 0 || tv->vval.v_number == 1)))
+	// Number 0 and 1 and expression with "&&" or "||" can also be used
+	// for bool.
+	type = &t_number_bool;
+    else if (type != &t_float && tv->v_type == VAR_NUMBER)
+	// A number can also be used for float.
+	type = &t_number_float;
     return type;
 }
 

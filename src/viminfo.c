@@ -385,23 +385,22 @@ removable(char_u *name)
     size_t  n;
 
     name = home_replace_save(NULL, name);
-    if (name != NULL)
+    if (name == NULL)
+	return FALSE;
+    for (p = p_viminfo; *p; )
     {
-	for (p = p_viminfo; *p; )
+	copy_option_part(&p, part, 51, ", ");
+	if (part[0] == 'r')
 	{
-	    copy_option_part(&p, part, 51, ", ");
-	    if (part[0] == 'r')
+	    n = STRLEN(part + 1);
+	    if (MB_STRNICMP(part + 1, name, n) == 0)
 	    {
-		n = STRLEN(part + 1);
-		if (MB_STRNICMP(part + 1, name, n) == 0)
-		{
-		    retval = TRUE;
-		    break;
-		}
+		retval = TRUE;
+		break;
 	    }
 	}
-	vim_free(name);
     }
+    vim_free(name);
     return retval;
 }
 
@@ -534,49 +533,51 @@ read_viminfo_history(vir_T *virp, int writing)
 {
     int		type;
     long_u	len;
-    char_u	*val;
+    char_u	*val = NULL;
     char_u	*p;
 
     type = hist_char2type(virp->vir_line[0]);
-    if (viminfo_hisidx[type] < viminfo_hislen[type])
-    {
-	val = viminfo_readstring(virp, 1, TRUE);
-	if (val != NULL && *val != NUL)
-	{
-	    int sep = (*val == ' ' ? NUL : *val);
+    if (viminfo_hisidx[type] >= viminfo_hislen[type])
+	goto done;
 
-	    if (!in_history(type, val + (type == HIST_SEARCH),
-					  viminfo_add_at_front, sep, writing))
-	    {
-		// Need to re-allocate to append the separator byte.
-		len = STRLEN(val);
-		p = alloc(len + 2);
-		if (p != NULL)
-		{
-		    if (type == HIST_SEARCH)
-		    {
-			// Search entry: Move the separator from the first
-			// column to after the NUL.
-			mch_memmove(p, val + 1, (size_t)len);
-			p[len] = sep;
-		    }
-		    else
-		    {
-			// Not a search entry: No separator in the viminfo
-			// file, add a NUL separator.
-			mch_memmove(p, val, (size_t)len + 1);
-			p[len + 1] = NUL;
-		    }
-		    viminfo_history[type][viminfo_hisidx[type]].hisstr = p;
-		    viminfo_history[type][viminfo_hisidx[type]].time_set = 0;
-		    viminfo_history[type][viminfo_hisidx[type]].viminfo = TRUE;
-		    viminfo_history[type][viminfo_hisidx[type]].hisnum = 0;
-		    viminfo_hisidx[type]++;
-		}
-	    }
-	}
-	vim_free(val);
+    val = viminfo_readstring(virp, 1, TRUE);
+    if (val == NULL || *val == NUL)
+	goto done;
+
+    int sep = (*val == ' ' ? NUL : *val);
+
+    if (in_history(type, val + (type == HIST_SEARCH), viminfo_add_at_front,
+								sep, writing))
+	goto done;
+
+    // Need to re-allocate to append the separator byte.
+    len = STRLEN(val);
+    p = alloc(len + 2);
+    if (p == NULL)
+	goto done;
+
+    if (type == HIST_SEARCH)
+    {
+	// Search entry: Move the separator from the first
+	// column to after the NUL.
+	mch_memmove(p, val + 1, (size_t)len);
+	p[len] = sep;
     }
+    else
+    {
+	// Not a search entry: No separator in the viminfo
+	// file, add a NUL separator.
+	mch_memmove(p, val, (size_t)len + 1);
+	p[len + 1] = NUL;
+    }
+    viminfo_history[type][viminfo_hisidx[type]].hisstr = p;
+    viminfo_history[type][viminfo_hisidx[type]].time_set = 0;
+    viminfo_history[type][viminfo_hisidx[type]].viminfo = TRUE;
+    viminfo_history[type][viminfo_hisidx[type]].hisnum = 0;
+    viminfo_hisidx[type]++;
+
+done:
+    vim_free(val);
     return viminfo_readline(virp);
 }
 
@@ -607,54 +608,55 @@ handle_viminfo_history(
     type = vp[0].bv_nr;
     if (type >= HIST_COUNT)
 	return;
-    if (viminfo_hisidx[type] < viminfo_hislen[type])
+
+    if (viminfo_hisidx[type] >= viminfo_hislen[type])
+	return;
+
+    val = vp[3].bv_string;
+    if (val == NULL || *val == NUL)
+	return;
+
+    int sep = type == HIST_SEARCH && vp[2].bv_type == BVAL_NR
+							? vp[2].bv_nr : NUL;
+    int idx;
+    int overwrite = FALSE;
+
+    if (in_history(type, val, viminfo_add_at_front, sep, writing))
+	return;
+
+    // If lines were written by an older Vim we need to avoid
+    // getting duplicates. See if the entry already exists.
+    for (idx = 0; idx < viminfo_hisidx[type]; ++idx)
     {
-	val = vp[3].bv_string;
-	if (val != NULL && *val != NUL)
+	p = viminfo_history[type][idx].hisstr;
+	if (STRCMP(val, p) == 0
+		&& (type != HIST_SEARCH || sep == p[STRLEN(p) + 1]))
 	{
-	    int sep = type == HIST_SEARCH && vp[2].bv_type == BVAL_NR
-						      ? vp[2].bv_nr : NUL;
-	    int idx;
-	    int overwrite = FALSE;
+	    overwrite = TRUE;
+	    break;
+	}
+    }
 
-	    if (!in_history(type, val, viminfo_add_at_front, sep, writing))
-	    {
-		// If lines were written by an older Vim we need to avoid
-		// getting duplicates. See if the entry already exists.
-		for (idx = 0; idx < viminfo_hisidx[type]; ++idx)
-		{
-		    p = viminfo_history[type][idx].hisstr;
-		    if (STRCMP(val, p) == 0
-			  && (type != HIST_SEARCH || sep == p[STRLEN(p) + 1]))
-		    {
-			overwrite = TRUE;
-			break;
-		    }
-		}
-
-		if (!overwrite)
-		{
-		    // Need to re-allocate to append the separator byte.
-		    len = vp[3].bv_len;
-		    p = alloc(len + 2);
-		}
-		else
-		    len = 0; // for picky compilers
-		if (p != NULL)
-		{
-		    viminfo_history[type][idx].time_set = vp[1].bv_nr;
-		    if (!overwrite)
-		    {
-			mch_memmove(p, val, (size_t)len + 1);
-			// Put the separator after the NUL.
-			p[len + 1] = sep;
-			viminfo_history[type][idx].hisstr = p;
-			viminfo_history[type][idx].hisnum = 0;
-			viminfo_history[type][idx].viminfo = TRUE;
-			viminfo_hisidx[type]++;
-		    }
-		}
-	    }
+    if (!overwrite)
+    {
+	// Need to re-allocate to append the separator byte.
+	len = vp[3].bv_len;
+	p = alloc(len + 2);
+    }
+    else
+	len = 0; // for picky compilers
+    if (p != NULL)
+    {
+	viminfo_history[type][idx].time_set = vp[1].bv_nr;
+	if (!overwrite)
+	{
+	    mch_memmove(p, val, (size_t)len + 1);
+	    // Put the separator after the NUL.
+	    p[len + 1] = sep;
+	    viminfo_history[type][idx].hisstr = p;
+	    viminfo_history[type][idx].hisnum = 0;
+	    viminfo_history[type][idx].viminfo = TRUE;
+	    viminfo_hisidx[type]++;
 	}
     }
 }
@@ -943,19 +945,19 @@ write_viminfo_barlines(vir_T *virp, FILE *fp_out)
     int		seen_useful = FALSE;
     char	*line;
 
-    if (gap->ga_len > 0)
-    {
-	fputs(_("\n# Bar lines, copied verbatim:\n"), fp_out);
+    if (gap->ga_len <= 0)
+	return;
 
-	// Skip over continuation lines until seeing a useful line.
-	for (i = 0; i < gap->ga_len; ++i)
+    fputs(_("\n# Bar lines, copied verbatim:\n"), fp_out);
+
+    // Skip over continuation lines until seeing a useful line.
+    for (i = 0; i < gap->ga_len; ++i)
+    {
+	line = ((char **)(gap->ga_data))[i];
+	if (seen_useful || line[1] != '<')
 	{
-	    line = ((char **)(gap->ga_data))[i];
-	    if (seen_useful || line[1] != '<')
-	    {
-		fputs(line, fp_out);
-		seen_useful = TRUE;
-	    }
+	    fputs(line, fp_out);
+	    seen_useful = TRUE;
 	}
     }
 }
@@ -1408,11 +1410,11 @@ write_viminfo_sub_string(FILE *fp)
 {
     char_u *old_sub = get_old_sub();
 
-    if (get_viminfo_parameter('/') != 0 && old_sub != NULL)
-    {
-	fputs(_("\n# Last Substitute String:\n$"), fp);
-	viminfo_writestring(fp, old_sub);
-    }
+    if (get_viminfo_parameter('/') == 0 || old_sub == NULL)
+	return;
+
+    fputs(_("\n# Last Substitute String:\n$"), fp);
+    viminfo_writestring(fp, old_sub);
 }
 
 /*
@@ -1511,34 +1513,34 @@ wvsp_one(
     int		sc)	// dir char
 {
     spat_T	*spat = get_spat(idx);
-    if (spat->pat != NULL)
-    {
-	fprintf(fp, _("\n# Last %sSearch Pattern:\n~"), s);
-	// off.dir is not stored, it's reset to forward
-	fprintf(fp, "%c%c%c%c%ld%s%c",
-		spat->magic    ? 'M' : 'm',	// magic
-		spat->no_scs   ? 's' : 'S',	// smartcase
-		spat->off.line ? 'L' : 'l',	// line offset
-		spat->off.end  ? 'E' : 'e',	// offset from end
-		spat->off.off,			// offset
-		get_spat_last_idx() == idx ? "~" : "",	// last used pat
-		sc);
-	viminfo_writestring(fp, spat->pat);
-    }
+    if (spat->pat == NULL)
+	return;
+
+    fprintf(fp, _("\n# Last %sSearch Pattern:\n~"), s);
+    // off.dir is not stored, it's reset to forward
+    fprintf(fp, "%c%c%c%c%ld%s%c",
+	    spat->magic    ? 'M' : 'm',	// magic
+	    spat->no_scs   ? 's' : 'S',	// smartcase
+	    spat->off.line ? 'L' : 'l',	// line offset
+	    spat->off.end  ? 'E' : 'e',	// offset from end
+	    spat->off.off,			// offset
+	    get_spat_last_idx() == idx ? "~" : "",	// last used pat
+	    sc);
+    viminfo_writestring(fp, spat->pat);
 }
 
     static void
 write_viminfo_search_pattern(FILE *fp)
 {
-    if (get_viminfo_parameter('/') != 0)
-    {
+    if (get_viminfo_parameter('/') == 0)
+	return;
+
 #ifdef FEAT_SEARCH_EXTRA
-	fprintf(fp, "\n# hlsearch on (H) or off (h):\n~%c",
+    fprintf(fp, "\n# hlsearch on (H) or off (h):\n~%c",
 	    (no_hlsearch || find_viminfo_parameter('h') != NULL) ? 'h' : 'H');
 #endif
-	wvsp_one(fp, RE_SEARCH, "", '/');
-	wvsp_one(fp, RE_SUBST, _("Substitute "), '&');
-    }
+    wvsp_one(fp, RE_SEARCH, "", '/');
+    wvsp_one(fp, RE_SUBST, _("Substitute "), '&');
 }
 
 /*
@@ -1565,17 +1567,17 @@ finish_viminfo_registers(void)
     int		i;
     int		j;
 
-    if (y_read_regs != NULL)
-    {
-	for (i = 0; i < NUM_REGISTERS; ++i)
-	    if (y_read_regs[i].y_array != NULL)
-	    {
-		for (j = 0; j < y_read_regs[i].y_size; j++)
-		    vim_free(y_read_regs[i].y_array[j]);
-		vim_free(y_read_regs[i].y_array);
-	    }
-	VIM_CLEAR(y_read_regs);
-    }
+    if (y_read_regs == NULL)
+	return;
+
+    for (i = 0; i < NUM_REGISTERS; ++i)
+	if (y_read_regs[i].y_array != NULL)
+	{
+	    for (j = 0; j < y_read_regs[i].y_size; j++)
+		vim_free(y_read_regs[i].y_array[j]);
+	    vim_free(y_read_regs[i].y_array);
+	}
+    VIM_CLEAR(y_read_regs);
 }
 
     static int

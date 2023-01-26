@@ -770,25 +770,25 @@ is_function_cmd(char_u **cmd)
     static void
 function_using_block_scopes(ufunc_T *fp, cstack_T *cstack)
 {
-    if (cstack != NULL && cstack->cs_idx >= 0)
+    if (cstack == NULL || cstack->cs_idx < 0)
+	return;
+
+    int	    count = cstack->cs_idx + 1;
+    int	    i;
+
+    fp->uf_block_ids = ALLOC_MULT(int, count);
+    if (fp->uf_block_ids != NULL)
     {
-	int	    count = cstack->cs_idx + 1;
-	int	    i;
-
-	fp->uf_block_ids = ALLOC_MULT(int, count);
-	if (fp->uf_block_ids != NULL)
-	{
-	    mch_memmove(fp->uf_block_ids, cstack->cs_block_id,
-							  sizeof(int) * count);
-	    fp->uf_block_depth = count;
-	}
-
-	// Set flag in each block to indicate a function was defined.  This
-	// is used to keep the variable when leaving the block, see
-	// hide_script_var().
-	for (i = 0; i <= cstack->cs_idx; ++i)
-	    cstack->cs_flags[i] |= CSF_FUNC_DEF;
+	mch_memmove(fp->uf_block_ids, cstack->cs_block_id,
+		sizeof(int) * count);
+	fp->uf_block_depth = count;
     }
+
+    // Set flag in each block to indicate a function was defined.  This
+    // is used to keep the variable when leaving the block, see
+    // hide_script_var().
+    for (i = 0; i <= cstack->cs_idx; ++i)
+	cstack->cs_flags[i] |= CSF_FUNC_DEF;
 }
 
 /*
@@ -2433,21 +2433,20 @@ func_remove(ufunc_T *fp)
 	return FALSE;
 
     hi = hash_find(&func_hashtab, UF2HIKEY(fp));
-    if (!HASHITEM_EMPTY(hi))
+    if (HASHITEM_EMPTY(hi))
+	return FALSE;
+
+    // When there is a def-function index do not actually remove the
+    // function, so we can find the index when defining the function again.
+    // Do remove it when it's a copy.
+    if (fp->uf_def_status == UF_COMPILED && (fp->uf_flags & FC_COPY) == 0)
     {
-	// When there is a def-function index do not actually remove the
-	// function, so we can find the index when defining the function again.
-	// Do remove it when it's a copy.
-	if (fp->uf_def_status == UF_COMPILED && (fp->uf_flags & FC_COPY) == 0)
-	{
-	    fp->uf_flags |= FC_DEAD;
-	    return FALSE;
-	}
-	hash_remove(&func_hashtab, hi, "remove function");
-	fp->uf_flags |= FC_DELETED;
-	return TRUE;
+	fp->uf_flags |= FC_DEAD;
+	return FALSE;
     }
-    return FALSE;
+    hash_remove(&func_hashtab, hi, "remove function");
+    fp->uf_flags |= FC_DELETED;
+    return TRUE;
 }
 
     static void
