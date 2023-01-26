@@ -822,6 +822,29 @@ def Test_interface_basics()
       endinterface
   END
   v9.CheckScriptFailure(lines, 'E1345: Not a valid command in an interface: return 5')
+
+  lines =<< trim END
+      vim9script
+      export interface EnterExit
+          def Enter(): void
+          def Exit(): void
+      endinterface
+  END
+  writefile(lines, 'XdefIntf.vim', 'D')
+
+  lines =<< trim END
+      vim9script
+      import './XdefIntf.vim' as defIntf
+      export def With(ee: defIntf.EnterExit, F: func)
+          ee.Enter()
+          try
+              F()
+          finally
+              ee.Exit()
+          endtry
+      enddef
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_implements_interface()
