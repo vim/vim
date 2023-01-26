@@ -3464,6 +3464,9 @@ mch_init_c(void)
     ui_get_shellsize();
 
     vtp_init();
+    // Switch to a new alternate screen buffer.
+    if (use_alternate_screen_buffer)
+	vtp_printf("\033[?1049h");
 
 # ifdef MCH_WRITE_DUMP
     fdDump = fopen("dump", "wt");
@@ -6193,12 +6196,6 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
-    // VTP uses alternate screen buffer.
-    // Switch to a new alternate screen buffer.
-    // But, not if running in a nested terminal
-    if (use_alternate_screen_buffer)
-	vtp_printf("\033[?1049h");
-
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
@@ -6277,7 +6274,6 @@ termcap_mode_end(void)
     RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
 
-    // VTP uses alternate screen buffer.
     // Switch back to main screen buffer.
     if (exiting && use_alternate_screen_buffer)
 	vtp_printf("\033[?1049l");
@@ -6289,9 +6285,8 @@ termcap_mode_end(void)
 	 */
 	coord.X = 0;
 	coord.Y = (SHORT) (p_rs ? cb->Info.dwCursorPosition.Y : (Rows - 1));
-	if (!vtp_working)
-	    FillConsoleOutputCharacter(g_hConOut, ' ',
-		    cb->Info.dwSize.X, coord, &dwDummy);
+	FillConsoleOutputCharacter(g_hConOut, ' ',
+		cb->Info.dwSize.X, coord, &dwDummy);
 	/*
 	 * The following is just for aesthetics.  If we are exiting without
 	 * restoring the screen, then we want to have a prompt string
@@ -8425,6 +8420,8 @@ vtp_flag_init(void)
 	if (SetConsoleMode(out, mode) == 0)
 	    vtp_working = 0;
 
+	// VTP uses alternate screen buffer.
+	// But, not if running in a nested terminal
 	use_alternate_screen_buffer = win10_22H2_or_later && p_rs && vtp_working
 						&& !mch_getenv("VIM_TERMINAL");
     }
