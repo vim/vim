@@ -2739,7 +2739,7 @@ findtags_add_match(
 	if (HASHITEM_EMPTY(hi))
 	{
 	    if (hash_add_item(&st->ht_match[mtt], hi, mfp, *hash) == FAIL
-		    || ga_grow(&st->ga_match[mtt], 1) != OK)
+		    || ga_grow(&st->ga_match[mtt], 1) == FAIL)
 	    {
 		// Out of memory! Just forget about the rest.
 		st->stop_searching = TRUE;
