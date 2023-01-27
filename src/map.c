@@ -2983,7 +2983,7 @@ langmap_set_entry(int from, int to)
 	    b = i;
     }
 
-    if (ga_grow(&langmap_mapga, 1) != OK)
+    if (ga_grow(&langmap_mapga, 1) == FAIL)
 	return;  // out of memory
 
     // insert new entry at position "a"

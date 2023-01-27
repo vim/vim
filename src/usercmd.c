@@ -1058,7 +1058,7 @@ uc_add_command(
     // Extend the array unless we're replacing an existing command
     if (cmp != 0)
     {
-	if (ga_grow(gap, 1) != OK)
+	if (ga_grow(gap, 1) == FAIL)
 	    goto fail;
 	if ((p = vim_strnsave(name, name_len)) == NULL)
 	    goto fail;

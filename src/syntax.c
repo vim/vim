@@ -1438,7 +1438,7 @@ load_current_state(synstate_T *from)
     validate_current_state();
     keepend_level = -1;
     if (from->sst_stacksize
-	    && ga_grow(&current_state, from->sst_stacksize) != FAIL)
+	    && ga_grow(&current_state, from->sst_stacksize) == OK)
     {
 	if (from->sst_stacksize > SST_FIX_STATES)
 	    bp = SYN_STATE_P(&(from->sst_union.sst_ga));
@@ -4946,7 +4946,7 @@ syn_cmd_match(
 	set_nextcmd(eap, rest);
 	if (!ends_excmd2(eap->cmd, rest) || eap->skip)
 	    rest = NULL;
-	else if (ga_grow(&curwin->w_s->b_syn_patterns, 1) != FAIL
+	else if (ga_grow(&curwin->w_s->b_syn_patterns, 1) == OK
 		&& (syn_id = syn_check_group(arg,
 					   (int)(group_name_end - arg))) != 0)
 	{
@@ -5186,7 +5186,7 @@ syn_cmd_region(
 	set_nextcmd(eap, rest);
 	if (!ends_excmd(*rest) || eap->skip)
 	    rest = NULL;
-	else if (ga_grow(&(curwin->w_s->b_syn_patterns), pat_count) != FAIL
+	else if (ga_grow(&(curwin->w_s->b_syn_patterns), pat_count) == OK
 		&& (syn_id = syn_check_group(arg,
 					   (int)(group_name_end - arg))) != 0)
 	{

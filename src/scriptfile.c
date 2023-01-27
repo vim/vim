@@ -56,7 +56,7 @@ estack_push(etype_T type, char_u *name, long lnum)
 
     // If memory allocation fails then we'll pop more than we push, eventually
     // at the top level it will be OK again.
-    if (ga_grow(&exestack, 1) != OK)
+    if (ga_grow(&exestack, 1) == FAIL)
 	return NULL;
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len;

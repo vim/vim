@@ -3428,7 +3428,7 @@ add_fromto(
     fromto_T	*ftp;
     char_u	word[MAXWLEN];
 
-    if (ga_grow(gap, 1) != OK)
+    if (ga_grow(gap, 1) == FAIL)
 	return;
 
     ftp = ((fromto_T *)gap->ga_data) + gap->ga_len;
