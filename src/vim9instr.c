@@ -1329,8 +1329,6 @@ generate_NEWDICT(cctx_T *cctx, int count, int use_null)
 /*
  * Generate an ISN_FUNCREF instruction.
  * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
- * If variables were declared inside a loop "loop_var_idx" is the index of the
- * first one and "loop_var_count" the number of variables declared.
  */
     int
 generate_FUNCREF(
@@ -1362,7 +1360,12 @@ generate_FUNCREF(
     if (ufunc->uf_def_status == UF_NOT_COMPILED)
 	extra->fre_func_name = vim_strsave(ufunc->uf_name);
     else
+    {
+	if (isnp == NULL && ufunc->uf_def_status == UF_TO_BE_COMPILED)
+	    // compile the function now, we need the uf_dfunc_idx value
+	    (void)compile_def_function(ufunc, FALSE, CT_NONE, NULL);
 	isn->isn_arg.funcref.fr_dfunc_idx = ufunc->uf_dfunc_idx;
+    }
 
     // Reserve an extra variable to keep track of the number of closures
     // created.
@@ -1942,14 +1945,17 @@ generate_PCALL(
 
 /*
  * Generate an ISN_DEFER instruction.
+ * "obj_method" is one for "obj.Method()", zero otherwise.
  */
     int
-generate_DEFER(cctx_T *cctx, int var_idx, int argcount)
+generate_DEFER(cctx_T *cctx, int var_idx, int obj_method, int argcount)
 {
     isn_T *isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_drop(cctx, ISN_DEFER, argcount + 1)) == NULL)
+    if ((isn = generate_instr_drop(cctx,
+		    obj_method == 0 ? ISN_DEFER : ISN_DEFEROBJ,
+		    argcount + 1)) == NULL)
 	return FAIL;
     isn->isn_arg.defer.defer_var_idx = var_idx;
     isn->isn_arg.defer.defer_argcount = argcount;
@@ -2568,6 +2574,7 @@ delete_instr(isn_T *isn)
 	case ISN_COND2BOOL:
 	case ISN_DEBUG:
 	case ISN_DEFER:
+	case ISN_DEFEROBJ:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOCONSOLE:

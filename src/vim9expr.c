@@ -370,6 +370,17 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	    }
 	}
 
+	// Could be a function reference: "obj.Func".
+	for (int i = 0; i < cl->class_obj_method_count; ++i)
+	{
+	    ufunc_T *fp = cl->class_obj_methods[i];
+	    // Use a separate pointer to avoid that ASAN complains about
+	    // uf_name[] only being 4 characters.
+	    char_u *ufname = (char_u *)fp->uf_name;
+	    if (STRNCMP(name, ufname, len) == 0 && ufname[len] == NUL)
+		return generate_FUNCREF(cctx, fp, NULL);
+	}
+
 	semsg(_(e_member_not_found_on_object_str_str), cl->class_name, name);
     }
     else

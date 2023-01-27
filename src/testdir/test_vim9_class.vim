@@ -1331,5 +1331,35 @@ def Test_closure_in_class()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_defer_with_object()
+  var lines =<< trim END
+      vim9script
+
+      class CWithEE
+        def Enter()
+          g:result ..= "entered/"
+        enddef
+        def Exit()
+          g:result ..= "exited"
+        enddef
+      endclass
+
+      def With(ee: CWithEE, F: func)
+        ee.Enter()
+        defer ee.Exit()
+        F()
+      enddef
+
+      g:result = ''
+      var obj = CWithEE.new()
+      obj->With(() => {
+        g:result ..= "called/"
+      })
+      assert_equal('entered/called/exited', g:result)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:result
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
