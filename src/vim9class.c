@@ -423,7 +423,7 @@ early_ret:
 	char *wrong_name = is_class ? "endinterface" : "endclass";
 	if (checkforcmd(&p, wrong_name, is_class ? 5 : 4))
 	{
-	    semsg(_(e_invalid_command_str), line);
+	    semsg(_(e_invalid_command_str_expected_str), line, end_name);
 	    break;
 	}
 

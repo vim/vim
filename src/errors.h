@@ -3442,4 +3442,6 @@ EXTERN char e_using_super_not_in_child_class[]
 	INIT(= N_("E1358: Using \"super\" not in a child class"));
 EXTERN char e_cannot_define_new_function_in_abstract_class[]
 	INIT(= N_("E1359: Cannot define a \"new\" function in an abstract class"));
+EXTERN char e_invalid_command_str_expected_str[]
+	INIT(= N_("E476: Invalid command: %s, expected %s"));
 #endif

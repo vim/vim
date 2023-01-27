@@ -164,6 +164,24 @@ def Test_class_basic()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_class_interface_wrong_end()
+  var lines =<< trim END
+      vim9script
+      abstract class SomeName
+        this.member = 'text'
+      endinterface
+  END
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: endinterface, expected endclass')
+
+  lines =<< trim END
+      vim9script
+      export interface AnotherName
+        this.member: string
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E476: Invalid command: endclass, expected endinterface')
+enddef
+
 def Test_class_member_initializer()
   var lines =<< trim END
       vim9script
@@ -844,6 +862,20 @@ def Test_interface_basics()
           endtry
       enddef
   END
+  v9.CheckScriptSuccess(lines)
+
+  var imported =<< trim END
+      vim9script
+      export abstract class EnterExit
+          def Enter(): void
+          enddef
+          def Exit(): void
+          enddef
+      endclass
+  END
+  writefile(imported, 'XdefIntf2.vim', 'D')
+
+  lines[1] = " import './XdefIntf2.vim' as defIntf"
   v9.CheckScriptSuccess(lines)
 enddef
 
