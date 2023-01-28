@@ -148,7 +148,6 @@ const HEREDOC_OPERATOR: string = '\s=<<\s\@=\%(\s\+\%(trim\|eval\)\)\{,2}'
 #
 # But sometimes, it can be too costly and cause `E363` to be given.
 const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
-
 # }}}2
 # Syntaxes {{{2
 # BLOCKS {{{3
@@ -174,6 +173,9 @@ const MODIFIERS: dict<string> = {
     class: ['export', 'abstract', 'export abstract'],
     interface: ['export'],
 }
+#     class: ['export', 'abstract', 'export abstract'],
+#     →
+#     class: '\%(export\|abstract\|export\s\+abstract\)\s\+',
 ->map((_, mods: list<string>): string =>
     '\%(' .. mods
     ->join('\|')
@@ -218,23 +220,26 @@ const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%({patterns
 #     }
 var START_MIDDLE_END: dict<list<string>>
 
+def Unshorten(kwd: string): string
+    return BlockStartKeyword(kwd)
+enddef
+
 def BlockStartKeyword(line: string): string
     var kwd: string = line->matchstr('\l\+')
     return fullcommand(kwd, false)
 enddef
 
 {
-    for block: list<string> in BLOCKS
-        var [start: string, middle: string, end: string] = [block[0], '', block[-1]]
-        if MODIFIERS->has_key(start->BlockStartKeyword())
+    for kwds: list<string> in BLOCKS
+        var [start: string, middle: string, end: string] = [kwds[0], '', kwds[-1]]
+        if MODIFIERS->has_key(start->Unshorten())
             start = $'\%({MODIFIERS[start]}\)\={start}'
         endif
-        START_MIDDLE_END->extend({[block[0]]: []})
-        if block->len() > 2
-            middle = block[1 : -2]->join('\|')
+        if kwds->len() > 2
+            middle = kwds[1 : -2]->join('\|')
         endif
-        for kwd: string in block
-            START_MIDDLE_END->extend({[kwd->BlockStartKeyword()]: [start, middle, end]})
+        for kwd: string in kwds
+            START_MIDDLE_END->extend({[kwd->Unshorten()]: [start, middle, end]})
         endfor
     endfor
 }
@@ -265,7 +270,7 @@ patterns = BLOCKS
     ->map((_, kwds: list<string>) => kwds[1 :])
     ->flattennew()
     # `catch` and `elseif` need to be handled as special cases
-    ->filter((_, pat: string): bool => pat->BlockStartKeyword() !~ '^\%(catch\|elseif\)')
+    ->filter((_, pat: string): bool => pat->Unshorten() !~ '^\%(catch\|elseif\)')
 
 const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. patterns->join('\|') .. $'\){END_OF_COMMAND}'
     .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_COMMAND}'
@@ -277,7 +282,7 @@ patterns = []
 {
     for kwds: list<string> in BLOCKS
         for kwd: string in kwds[0 : -2]
-            if MODIFIERS->has_key(kwd->BlockStartKeyword())
+            if MODIFIERS->has_key(kwd->Unshorten())
                 patterns += [$'\%({MODIFIERS[kwd]}\)\={kwd}']
             else
                 patterns += [kwd]
