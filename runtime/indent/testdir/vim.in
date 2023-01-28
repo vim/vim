@@ -887,3 +887,40 @@ if true
 elseif
 endif
 " END_INDENT
+
+" START_INDENT
+abstract class Shape
+this.color = Color.Black
+this.thickness = 10
+endclass
+" END_INDENT
+
+" START_INDENT
+class OtherThing
+this.size: number
+static totalSize: number
+
+static def ClearTotalSize(): number
+var prev = totalSize
+totalSize = 0
+return prev
+enddef
+endclass
+" END_INDENT
+
+" START_INDENT
+interface HasSurface
+this.size: number
+def Surface(): number
+endinterface
+" END_INDENT
+
+" START_INDENT
+enum Color
+White
+Red
+Green
+Blue
+Black
+endenum
+" END_INDENT

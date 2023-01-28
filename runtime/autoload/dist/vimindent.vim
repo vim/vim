@@ -2,7 +2,7 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2023 Jan 03
+# Last Change:  2023 Jan 28
 
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
@@ -112,6 +112,10 @@ const DICT_KEY: string = '^\s*\%('
     .. '\)'
     .. ':\%(\s\|$\)'
 
+# NOT_A_DICT_KEY {{{3
+
+const NOT_A_DICT_KEY: string = ':\@!'
+
 # END_OF_COMMAND {{{3
 
 const END_OF_COMMAND: string = $'\s*\%($\|||\@!\|{INLINE_COMMENT}\)'
@@ -145,18 +149,36 @@ const HEREDOC_OPERATOR: string = '\s=<<\s\@=\%(\s\+\%(trim\|eval\)\)\{,2}'
 # But sometimes, it can be too costly and cause `E363` to be given.
 const PATTERN_DELIMITER: string = '[-+*/%]\%(=\s\)\@!'
 
-# QUOTE {{{3
-
-const QUOTE: string = '["'']'
 # }}}2
 # Syntaxes {{{2
-# ASSIGNS_HEREDOC {{{3
+# BLOCKS {{{3
 
-const ASSIGNS_HEREDOC: string = $'^\%({COMMENT}\)\@!.*\%({HEREDOC_OPERATOR}\)\s\+\zs[A-Z]\+{END_OF_LINE}'
+const BLOCKS: list<list<string>> = [
+    ['if', 'el\%[se]', 'elseif\=', 'en\%[dif]'],
+    ['for', 'endfor\='],
+    ['wh\%[ile]', 'endw\%[hile]'],
+    ['try', 'cat\%[ch]', 'fina\|finally\=', 'endt\%[ry]'],
+    ['def', 'enddef'],
+    ['fu\%[nction](\@!', 'endf\%[unction]'],
+    ['class', 'endclass'],
+    ['interface', 'endinterface'],
+    ['enum', 'endenum'],
+    ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', 'aug\%[roup]\s\+[eE][nN][dD]'],
+]
 
-# CD_COMMAND {{{3
+# MODIFIERS {{{3
 
-const CD_COMMAND: string = $'\<[lt]\=cd!\=\s\+-{END_OF_COMMAND}'
+# some keywords can be prefixed by modifiers (e.g. `def` can be prefixed by `export`)
+const MODIFIERS: dict<string> = {
+    def: ['export', 'static'],
+    class: ['export', 'abstract', 'export abstract'],
+    interface: ['export'],
+}
+->map((_, mods: list<string>): string =>
+    '\%(' .. mods
+    ->join('\|')
+    ->substitute('\s\+', '\\s\\+', 'g')
+    .. '\)\s\+')
 
 # HIGHER_ORDER_COMMAND {{{3
 
@@ -174,57 +196,97 @@ patterns =<< trim eval END
     g\%[lobal]!\={PATTERN_DELIMITER}.*
     v\%[global]!\={PATTERN_DELIMITER}.*
 END
-const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%(' .. patterns->join('\|') .. '\):\@!'
 
-# MAPPING_COMMAND {{{3
+const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%({patterns->join('\|')}\){NOT_A_DICT_KEY}'
 
-const MAPPING_COMMAND: string = '\%(\<sil\%[ent]!\=\s\+\)\=\<[nvxsoilct]\=\%(nore\|un\)map!\=\s'
+# START_MIDDLE_END {{{3
 
-# NORMAL_COMMAND {{{3
+# Let's derive this constant from `BLOCKS`:
+#
+#     [['for', 'endfor\=']
+#      ['if', 'el\%[se]', 'elseif\=', 'en\%[dif]'],,
+#      ...]]
+#     →
+#     {
+#      'for': ['for', '', 'endfor\='],
+#      'endfor': ['for', '', 'endfor\='],
+#      'if': ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+#      'else': ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+#      'elseif': ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+#      'endif': ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
+#      ...
+#     }
+var START_MIDDLE_END: dict<list<string>>
 
-const NORMAL_COMMAND: string = '\<norm\%[al]!\=\s*\S\+$'
+def BlockStartKeyword(line: string): string
+    var kwd: string = line->matchstr('\l\+')
+    return fullcommand(kwd, false)
+enddef
 
-# PLUS_MINUS_COMMAND {{{3
+{
+    for block: list<string> in BLOCKS
+        var [start: string, middle: string, end: string] = [block[0], '', block[-1]]
+        if MODIFIERS->has_key(start->BlockStartKeyword())
+            start = $'\%({MODIFIERS[start]}\)\={start}'
+        endif
+        START_MIDDLE_END->extend({[block[0]]: []})
+        if block->len() > 2
+            middle = block[1 : -2]->join('\|')
+        endif
+        for kwd: string in block
+            START_MIDDLE_END->extend({[kwd->BlockStartKeyword()]: [start, middle, end]})
+        endfor
+    endfor
+}
 
-# In legacy, the `:+` and `:-` commands are not required to be preceded by a colon.
-# As a result, when `+` or `-` is alone on a line, there is ambiguity.
-# It might be an operator or a command.
-# To not break the indentation in legacy scripts, we might need to consider such
-# lines as commands.
-const PLUS_MINUS_COMMAND: string = '^\s*[+-]\s*$'
+START_MIDDLE_END = START_MIDDLE_END
+    ->map((_, kwds: list<string>) =>
+        kwds->map((_, kwd: string) => kwd == ''
+        ? ''
+        : $'\%(^\|{BAR_SEPARATION}\|\<sil\%[ent]\|{HIGHER_ORDER_COMMAND}\)\s*'
+        .. $'\<\%({kwd}\)\>\%(\s*{OPERATOR}\)\@!'))
+
+lockvar! START_MIDDLE_END
 
 # ENDS_BLOCK {{{3
 
 const ENDS_BLOCK: string = '^\s*\%('
-    .. 'en\%[dif]'
-    .. '\|' .. 'endfor\='
-    .. '\|' .. 'endw\%[hile]'
-    .. '\|' .. 'endt\%[ry]'
-    .. '\|' .. 'enddef'
-    .. '\|' .. 'endclass'
-    .. '\|' .. 'endf\%[unction]'
-    .. '\|' .. 'aug\%[roup]\s\+[eE][nN][dD]'
+    .. BLOCKS
+    ->copy()
+    ->map((_, kwds: list<string>): string => kwds[-1])
+    ->join('\|')
     .. '\|' .. CLOSING_BRACKET
     .. $'\){END_OF_COMMAND}'
 
 # ENDS_BLOCK_OR_CLAUSE {{{3
 
-patterns =<< trim END
-    en\%[dif]
-    el\%[se]
-    endfor\=
-    endclass
-    endw\%[hile]
-    endt\%[ry]
-    fina\|finally\=
-    enddef
-    endf\%[unction]
-    aug\%[roup]\s\+[eE][nN][dD]
-END
+patterns = BLOCKS
+    ->copy()
+    ->map((_, kwds: list<string>) => kwds[1 :])
+    ->flattennew()
+    # `catch` and `elseif` need to be handled as special cases
+    ->filter((_, pat: string): bool => pat->BlockStartKeyword() !~ '^\%(catch\|elseif\)')
 
 const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. patterns->join('\|') .. $'\){END_OF_COMMAND}'
     .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_COMMAND}'
     .. $'\|^\s*elseif\=\>\%({OPERATOR}\)\@!'
+
+# STARTS_NAMED_BLOCK {{{3
+
+patterns = []
+{
+    for kwds: list<string> in BLOCKS
+        for kwd: string in kwds[0 : -2]
+            if MODIFIERS->has_key(kwd->BlockStartKeyword())
+                patterns += [$'\%({MODIFIERS[kwd]}\)\={kwd}']
+            else
+                patterns += [kwd]
+            endif
+        endfor
+    endfor
+}
+
+const STARTS_NAMED_BLOCK: string = $'^\s*\%(sil\%[ent]\s\+\)\=\%({patterns->join('\|')}\)\>{NOT_A_DICT_KEY}'
 
 # STARTS_CURLY_BLOCK {{{3
 
@@ -238,67 +300,47 @@ const STARTS_CURLY_BLOCK: string = '\%('
     .. '\|' ..  $'^\%(\s*\|.*{BAR_SEPARATION}\s*\)\%(com\%[mand]\|au\%[tocmd]\).*\zs\s{{'
     .. '\)' .. END_OF_COMMAND
 
-# STARTS_NAMED_BLOCK {{{3
-
-# All of these will be used at the start of a line (or after a bar).
-# NOTE: Don't replace `\%x28` with `(`.{{{
-#
-# Otherwise, the paren would be unbalanced which might cause syntax highlighting
-# issues much  later in the  code of the  current script (sometimes,  the syntax
-# highlighting plugin fails  to correctly recognize a heredoc which  is far away
-# and/or not displayed because inside a fold).
-# }}}
-patterns =<< trim END
-    if
-    el\%[se]
-    elseif\=
-    for
-    class
-    wh\%[ile]
-    try
-    cat\%[ch]
-    fina\|finally\=
-    fu\%[nction]\%x28\@!
-    \%(export\s\+\)\=def
-    aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+
-END
-const STARTS_NAMED_BLOCK: string = '^\s*\%(sil\%[ent]\s\+\)\=\%(' .. patterns->join('\|') .. '\)\>:\@!'
-
 # STARTS_FUNCTION {{{3
 
-const STARTS_FUNCTION: string = '^\s*\%(export\s\+\)\=def\>:\@!'
+const STARTS_FUNCTION: string = $'^\s*\%({MODIFIERS.def}\)\=def\>{NOT_A_DICT_KEY}'
 
 # ENDS_FUNCTION {{{3
 
-const ENDS_FUNCTION: string = $'^\s*enddef\>:\@!{END_OF_COMMAND}'
+const ENDS_FUNCTION: string = $'^\s*enddef\>{END_OF_COMMAND}'
 
-# START_MIDDLE_END {{{3
+# ASSIGNS_HEREDOC {{{3
 
-const START_MIDDLE_END: dict<list<string>> = {
-    if: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
-    else: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
-    elseif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
-    endif: ['if', 'el\%[se]\|elseif\=', 'en\%[dif]'],
-    for: ['for', '', 'endfor\='],
-    endfor: ['for', '', 'endfor\='],
-    class: ['class', '', 'endclass'],
-    endclass: ['class', '', 'endclass'],
-    while: ['wh\%[ile]', '', 'endw\%[hile]'],
-    endwhile: ['wh\%[ile]', '', 'endw\%[hile]'],
-    try: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    catch: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    finally: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    endtry: ['try', 'cat\%[ch]\|fina\|finally\=', 'endt\%[ry]'],
-    def: ['\%(export\s\+\)\=def', '', 'enddef'],
-    enddef: ['\%(export\s\+\)\=def', '', 'enddef'],
-    function: ['fu\%[nction]', '', 'endf\%[unction]'],
-    endfunction: ['fu\%[nction]', '', 'endf\%[unction]'],
-    augroup: ['aug\%[roup]\%(\s\+[eE][nN][dD]\)\@!\s\+\S\+', '', 'aug\%[roup]\s\+[eE][nN][dD]'],
-}->map((_, kwds: list<string>) =>
-    kwds->map((_, kwd: string) => kwd == ''
-    ? ''
-    : $'\%(^\|{BAR_SEPARATION}\|\<sil\%[ent]\|{HIGHER_ORDER_COMMAND}\)\s*'
-    .. $'\%({printf('\C\<\%%(%s\)\>:\@!\%%(\s*%s\)\@!', kwd, OPERATOR)}\)'))
+const ASSIGNS_HEREDOC: string = $'^\%({COMMENT}\)\@!.*\%({HEREDOC_OPERATOR}\)\s\+\zs[A-Z]\+{END_OF_LINE}'
+
+# PLUS_MINUS_COMMAND {{{3
+
+# In legacy, the `:+` and `:-` commands are not required to be preceded by a colon.
+# As a result, when `+` or `-` is alone on a line, there is ambiguity.
+# It might be an operator or a command.
+# To not break the indentation in legacy scripts, we might need to consider such
+# lines as commands.
+const PLUS_MINUS_COMMAND: string = '^\s*[+-]\s*$'
+
+# TRICKY_COMMANDS {{{3
+
+# Some  commands  are tricky  because  they  accept  an  argument which  can  be
+# conflated with an operator.  Examples:
+#
+#     argdelete *
+#     cd -
+#     normal! ==
+#     nunmap <buffer> (
+#
+# TODO: Other commands might accept operators as argument.  Handle them too.
+patterns =<< trim eval END
+    {'\'}<argd\%[elete]\s\+\*\s*$
+    \<[lt]\=cd!\=\s\+-\s*$
+    \<norm\%[al]!\=\s*\S\+$
+    \%(\<sil\%[ent]!\=\s\+\)\=\<[nvxsoilct]\=\%(nore\|un\)map!\=\s
+    {PLUS_MINUS_COMMAND}
+END
+
+const TRICKY_COMMANDS: string = patterns->join('\|')
 # }}}2
 # EOL {{{2
 # OPENING_BRACKET_AT_EOL {{{3
@@ -392,6 +434,7 @@ export def Expr(lnum = v:lnum): number # {{{2
     endif
 
     if line_A->AtStartOf('FuncHeader')
+            && !IsInInterface()
         line_A.lnum->CacheFuncHeader()
     elseif line_A.lnum->IsInside('FuncHeader')
         return b:vimindent.startindent + 2 * shiftwidth()
@@ -536,8 +579,13 @@ def Offset( # {{{2
         line_B: dict<any>,
         ): number
 
+    if line_B->AtStartOf('FuncHeader')
+            && IsInInterface()
+        return 0
+
     # increase indentation inside a block
-    if line_B.text =~ STARTS_NAMED_BLOCK || line_B->EndsWithCurlyBlock()
+    elseif line_B.text =~ STARTS_NAMED_BLOCK
+            || line_B->EndsWithCurlyBlock()
         # But don't indent if the line starting the block also closes it.
         if line_B->AlsoClosesBlock()
             return 0
@@ -807,11 +855,6 @@ def Indent(lnum: number): number # {{{3
     return indent(lnum)
 enddef
 
-def BlockStartKeyword(line: string): string # {{{3
-    var kwd: string = line->matchstr('\l\+')
-    return fullcommand(kwd, false)
-enddef
-
 def MatchingOpenBracket(line: dict<any>): number # {{{3
     var end: string = line.text->matchstr(CLOSING_BRACKET)
     var start: string = {']': '[', '}': '{', ')': '('}[end]
@@ -908,7 +951,8 @@ def SearchPair( # {{{3
     if end == '[' || end == ']'
         e = e->escape('[]')
     endif
-    return searchpair(s, middle, e, flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
+    return searchpair('\C' .. s, (middle == '' ? '' : '\C' .. middle), '\C' .. e,
+        flags, (): bool => InCommentOrString(), stopline, TIMEOUT)
 enddef
 
 def SearchPairStart( # {{{3
@@ -1016,6 +1060,10 @@ def IsInThisBlock(line_A: dict<any>, lnum: number): bool # {{{3
     return line_A.lnum <= end
 enddef
 
+def IsInInterface(): bool # {{{3
+    return SearchPair('interface', '', 'endinterface', 'nW') > 0
+enddef
+
 def IsFirstLineOfCommand(line_1: dict<any>, line_2: dict<any>): bool # {{{3
     if line_1.text->Is_IN_KeywordForLoop(line_2.text)
         return false
@@ -1103,16 +1151,6 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
         return false
     endif
 
-    if line.text =~ PLUS_MINUS_COMMAND
-        return false
-    endif
-
-    # In `argdelete *`, `*` is not a multiplication operator.
-    # TODO: Other commands can accept `*` as an argument.  Handle them too.
-    if line.text =~ '\<argd\%[elete]\s\+\*\s*$'
-        return false
-    endif
-
     # Technically, that's wrong.  A  line might start with a range  and end with a
     # line continuation symbol.  But it's unlikely.  And it's useful to assume the
     # opposite because it  prevents us from conflating a mark  with an operator or
@@ -1179,24 +1217,7 @@ def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
         return false
     endif
 
-    # `:help cd-`
-    if line.text =~ CD_COMMAND
-        return false
-    endif
-
-    # At the end of a mapping, any character might appear; e.g. a paren:
-    #
-    #     nunmap <buffer> (
-    #
-    # Don't conflate this with a line continuation symbol.
-    if line.text =~ MAPPING_COMMAND
-        return false
-    endif
-
-    #             not a comparison operator
-    #             vv
-    #     normal! ==
-    if line.text =~ NORMAL_COMMAND
+    if line.text =~ TRICKY_COMMANDS
         return false
     endif
 
