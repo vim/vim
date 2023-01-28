@@ -1001,6 +1001,56 @@ def Test_class_implements_interface()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_call_interface_method()
+  var lines =<< trim END
+    vim9script
+    interface Base
+      def Enter(): void
+    endinterface
+
+    class Child implements Base
+      def Enter(): void
+        g:result ..= 'child'
+      enddef
+    endclass
+
+    def F(obj: Base)
+      obj.Enter()
+    enddef
+
+    g:result = ''
+    F(Child.new())
+    assert_equal('child', g:result)
+    unlet g:result
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Base
+      def Enter(): void
+        g:result ..= 'base'
+      enddef
+    endclass
+
+    class Child extends Base
+      def Enter(): void
+        g:result ..= 'child'
+      enddef
+    endclass
+
+    def F(obj: Base)
+      obj.Enter()
+    enddef
+
+    g:result = ''
+    F(Child.new())
+    assert_equal('child', g:result)
+    unlet g:result
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_class_used_as_type()
   var lines =<< trim END
       vim9script

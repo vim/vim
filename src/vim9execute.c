@@ -2262,7 +2262,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    class_T	    *itf = iptr->isn_arg.storeindex.si_class;
 	    if (itf != NULL)
 		// convert interface member index to class member index
-		idx = object_index_from_itf_index(itf, idx, obj->obj_class);
+		idx = object_index_from_itf_index(itf, FALSE,
+							  idx, obj->obj_class);
 
 	    clear_tv(&otv[idx]);
 	    otv[idx] = *tv;
@@ -2948,6 +2949,20 @@ load_namespace_var(ectx_T *ectx, isntype_T isn_type, isn_T *iptr)
 	++ectx->ec_stack.ga_len;
     }
     return OK;
+}
+
+
+    static void
+object_required_error(typval_T *tv)
+{
+    garray_T type_list;
+    ga_init2(&type_list, sizeof(type_T *), 10);
+    type_T *type = typval2type(tv, get_copyID(), &type_list, TVTT_DO_MEMBER);
+    char *tofree = NULL;
+    char *typename = type_name(type, &tofree);
+    semsg(_(e_object_required_found_str), typename);
+    vim_free(tofree);
+    clear_type_list(&type_list);
 }
 
 /*
@@ -4125,6 +4140,30 @@ exec_instructions(ectx_T *ectx)
 		    goto on_error;
 		break;
 
+	    // call a method on an interface
+	    case ISN_METHODCALL:
+		{
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_OBJECT)
+		    {
+			object_required_error(tv);
+			goto on_error;
+		    }
+		    object_T *obj = tv->vval.v_object;
+		    class_T *cl = obj->obj_class;
+
+		    // convert the interface index to the object index
+		    cmfunc_T *mfunc = iptr->isn_arg.mfunc;
+		    int idx = object_index_from_itf_index(mfunc->cmf_itf,
+						    TRUE, mfunc->cmf_idx, cl);
+
+		    if (call_ufunc(cl->class_obj_methods[idx], NULL,
+				mfunc->cmf_argcount, ectx, NULL, NULL) == FAIL)
+			goto on_error;
+		}
+		break;
+
 	    // call a builtin function
 	    case ISN_BCALL:
 		SOURCING_LNUM = iptr->isn_lnum;
@@ -5213,15 +5252,7 @@ exec_instructions(ectx_T *ectx)
 		    if (tv->v_type != VAR_OBJECT)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			garray_T type_list;
-			ga_init2(&type_list, sizeof(type_T *), 10);
-			type_T *type = typval2type(tv, get_copyID(),
-						   &type_list, TVTT_DO_MEMBER);
-			char *tofree = NULL;
-			char *typename = type_name(type, &tofree);
-			semsg(_(e_object_required_found_str), typename);
-			vim_free(tofree);
-			clear_type_list(&type_list);
+			object_required_error(tv);
 			goto on_error;
 		    }
 
@@ -5234,8 +5265,8 @@ exec_instructions(ectx_T *ectx)
 			idx = iptr->isn_arg.classmember.cm_idx;
 			// convert the interface index to the object index
 			idx = object_index_from_itf_index(
-					      iptr->isn_arg.classmember.cm_class,
-					      idx, obj->obj_class);
+					    iptr->isn_arg.classmember.cm_class,
+					    FALSE, idx, obj->obj_class);
 		    }
 
 		    // the members are located right after the object struct
@@ -6635,6 +6666,17 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    smsg("%s%4d DCALL %s(argc %d)", pfx, current,
 					    printable_func_name(df->df_ufunc),
 							 cdfunc->cdf_argcount);
+		}
+		break;
+	    case ISN_METHODCALL:
+		{
+		    cmfunc_T	*mfunc = iptr->isn_arg.mfunc;
+
+		    smsg("%s%4d METHODCALL %s.%s(argc %d)", pfx, current,
+			    mfunc->cmf_itf->class_name,
+			    mfunc->cmf_itf->class_obj_methods[
+						      mfunc->cmf_idx]->uf_name,
+			    mfunc->cmf_argcount);
 		}
 		break;
 	    case ISN_UCALL:

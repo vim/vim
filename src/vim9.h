@@ -112,6 +112,7 @@ typedef enum {
     // function call
     ISN_BCALL,	    // call builtin function isn_arg.bfunc
     ISN_DCALL,	    // call def function isn_arg.dfunc
+    ISN_METHODCALL, // call method on interface, uses isn_arg.mfunc
     ISN_UCALL,	    // call user function or funcref/partial isn_arg.ufunc
     ISN_PCALL,	    // call partial, use isn_arg.pfunc
     ISN_PCALL_END,  // cleanup after ISN_PCALL with cpf_top set
@@ -233,6 +234,13 @@ typedef struct {
     int	    cdf_idx;	    // index in "def_functions" for ISN_DCALL
     int	    cdf_argcount;   // number of arguments on top of stack
 } cdfunc_T;
+
+// arguments to ISN_METHODCALL
+typedef struct {
+    class_T *cmf_itf;	    // interface used
+    int	    cmf_idx;	    // index in "def_functions" for ISN_DCALL
+    int	    cmf_argcount;   // number of arguments on top of stack
+} cmfunc_T;
 
 // arguments to ISN_PCALL
 typedef struct {
@@ -517,6 +525,7 @@ struct isn_S {
 	trycont_T	    trycont;
 	cbfunc_T	    bfunc;
 	cdfunc_T	    dfunc;
+	cmfunc_T	    *mfunc;
 	cpfunc_T	    pfunc;
 	cufunc_T	    ufunc;
 	echo_T		    echo;

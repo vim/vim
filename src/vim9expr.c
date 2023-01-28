@@ -321,9 +321,10 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	}
 
 	ufunc_T *ufunc = NULL;
-	for (int i = is_super ? child_count : 0; i < function_count; ++i)
+	int fi;
+	for (fi = is_super ? child_count : 0; fi < function_count; ++fi)
 	{
-	    ufunc_T *fp = functions[i];
+	    ufunc_T *fp = functions[fi];
 	    // Use a separate pointer to avoid that ASAN complains about
 	    // uf_name[] only being 4 characters.
 	    char_u *ufname = (char_u *)fp->uf_name;
@@ -347,7 +348,11 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 	int argcount = 0;
 	if (compile_arguments(arg, cctx, &argcount, CA_NOT_SPECIAL) == FAIL)
 	    return FAIL;
-	return generate_CALL(cctx, ufunc, argcount);
+
+	if (type->tt_type == VAR_OBJECT
+		     && (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED)))
+	    return generate_CALL(cctx, ufunc, cl, fi, argcount);
+	return generate_CALL(cctx, ufunc, NULL, 0, argcount);
     }
 
     if (type->tt_type == VAR_OBJECT)
@@ -364,7 +369,7 @@ compile_class_object_index(cctx_T *cctx, char_u **arg, type_T *type)
 		}
 
 		*arg = name_end;
-		if (cl->class_flags & CLASS_INTERFACE)
+		if (cl->class_flags & (CLASS_INTERFACE | CLASS_EXTENDED))
 		    return generate_GET_ITF_MEMBER(cctx, cl, i, m->ocm_type);
 		return generate_GET_OBJ_MEMBER(cctx, i, m->ocm_type);
 	    }
@@ -1063,7 +1068,7 @@ compile_call(
 	{
 	    if (!func_is_global(ufunc))
 	    {
-		res = generate_CALL(cctx, ufunc, argcount);
+		res = generate_CALL(cctx, ufunc, NULL, 0, argcount);
 		goto theend;
 	    }
 	    if (!has_g_namespace
@@ -1092,7 +1097,7 @@ compile_call(
     // If we can find a global function by name generate the right call.
     if (ufunc != NULL)
     {
-	res = generate_CALL(cctx, ufunc, argcount);
+	res = generate_CALL(cctx, ufunc, NULL, 0, argcount);
 	goto theend;
     }
 

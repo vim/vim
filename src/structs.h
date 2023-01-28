@@ -1484,15 +1484,17 @@ typedef struct {
     char_u	*ocm_init;   // allocated
 } ocmember_T;
 
-// used for the lookup table of a class member index
+// used for the lookup table of a class member index and object method index
 typedef struct itf2class_S itf2class_T;
 struct itf2class_S {
     itf2class_T	*i2c_next;
     class_T	*i2c_class;
+    int		i2c_is_method;	    // TRUE for method indexes
     // array with ints follows
 };
 
-#define CLASS_INTERFACE 1
+#define CLASS_INTERFACE	    1
+#define CLASS_EXTENDED	    2	    // another class extends this one
 
 // "class_T": used for v_class of typval of VAR_CLASS
 // Also used for an interface (class_flags has CLASS_INTERFACE).

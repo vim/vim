@@ -1709,11 +1709,18 @@ generate_BLOBAPPEND(cctx_T *cctx)
 }
 
 /*
- * Generate an ISN_DCALL or ISN_UCALL instruction.
+ * Generate an ISN_DCALL, ISN_UCALL or ISN_METHODCALL instruction.
+ * When calling a method on an object, of which we know the interface only,
+ * then "cl" is the interface and "mi" the method index on the interface.
  * Return FAIL if the number of arguments is wrong.
  */
     int
-generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
+generate_CALL(
+	cctx_T	    *cctx,
+	ufunc_T	    *ufunc,
+	class_T	    *cl,
+	int	    mi,
+	int	    pushed_argcount)
 {
     isn_T	*isn;
     int		regular_args = ufunc->uf_args.ga_len;
@@ -1783,11 +1790,21 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	return FAIL;
     }
 
-    if ((isn = generate_instr(cctx,
-		    ufunc->uf_def_status != UF_NOT_COMPILED ? ISN_DCALL
-							 : ISN_UCALL)) == NULL)
+    if ((isn = generate_instr(cctx, cl != NULL ? ISN_METHODCALL
+			  : ufunc->uf_def_status != UF_NOT_COMPILED
+					     ? ISN_DCALL : ISN_UCALL)) == NULL)
 	return FAIL;
-    if (isn->isn_type == ISN_DCALL)
+    if (isn->isn_type == ISN_METHODCALL)
+    {
+	isn->isn_arg.mfunc = ALLOC_ONE(cmfunc_T);
+	if (isn->isn_arg.mfunc == NULL)
+	    return FAIL;
+	isn->isn_arg.mfunc->cmf_itf = cl;
+	++cl->class_refcount;
+	isn->isn_arg.mfunc->cmf_idx = mi;
+	isn->isn_arg.mfunc->cmf_argcount = argcount;
+    }
+    else if (isn->isn_type == ISN_DCALL)
     {
 	isn->isn_arg.dfunc.cdf_idx = ufunc->uf_dfunc_idx;
 	isn->isn_arg.dfunc.cdf_argcount = argcount;
@@ -2480,6 +2497,14 @@ delete_instr(isn_T *isn)
 		if (dfunc->df_ufunc != NULL
 			&& func_name_refcount(dfunc->df_ufunc->uf_name))
 		    func_ptr_unref(dfunc->df_ufunc);
+	    }
+	    break;
+
+	case ISN_METHODCALL:
+	    {
+		cmfunc_T  *mfunc = isn->isn_arg.mfunc;
+		class_unref(mfunc->cmf_itf);
+		vim_free(mfunc);
 	    }
 	    break;
 
