@@ -170,7 +170,7 @@ static callback_T tfu_cb;	    // 'tagfunc' callback function
  * Invoked when the 'tagfunc' option is set. The option value can be a name of
  * a function (string), or function(<name>) or funcref(<name>) or a lambda.
  */
-    int
+    char *
 set_tagfunc_option(void)
 {
 #ifdef FEAT_EVAL
@@ -178,15 +178,15 @@ set_tagfunc_option(void)
     free_callback(&curbuf->b_tfu_cb);
 
     if (*curbuf->b_p_tfu == NUL)
-	return OK;
+	return NULL;
 
     if (option_set_callback_func(curbuf->b_p_tfu, &tfu_cb) == FAIL)
-	return FAIL;
+	return e_invalid_argument;
 
     copy_callback(&curbuf->b_tfu_cb, &tfu_cb);
 #endif
 
-    return OK;
+    return NULL;
 }
 #endif
 
