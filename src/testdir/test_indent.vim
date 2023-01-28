@@ -175,7 +175,7 @@ func Test_modeline_indent_expr()
 endfunc
 
 func Test_indent_func_with_gq()
-  
+
   function GetTeXIndent()
     " Sample indent expression for TeX files
     let lnum = prevnonblank(v:lnum - 1)
@@ -186,7 +186,7 @@ func Test_indent_func_with_gq()
     let line = getline(lnum)
     let ind = indent(lnum)
     " Add a 'shiftwidth' after beginning of environments.
-    if line =~ '\\begin{center}' 
+    if line =~ '\\begin{center}'
       let ind = ind + shiftwidth()
     endif
     return ind
@@ -248,7 +248,7 @@ func Test_indent_func_with_gq()
 
   bwipe!
   delmark ab
-  delfunction GetTeXIndent 
+  delfunction GetTeXIndent
 endfu
 
 func Test_formatting_keeps_first_line_indent()

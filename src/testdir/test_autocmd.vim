@@ -269,8 +269,8 @@ func Test_win_tab_autocmd()
   augroup testing
     au WinNew * call add(g:record, 'WinNew')
     au WinClosed * call add(g:record, 'WinClosed')
-    au WinEnter * call add(g:record, 'WinEnter') 
-    au WinLeave * call add(g:record, 'WinLeave') 
+    au WinEnter * call add(g:record, 'WinEnter')
+    au WinLeave * call add(g:record, 'WinLeave')
     au TabNew * call add(g:record, 'TabNew')
     au TabClosed * call add(g:record, 'TabClosed')
     au TabEnter * call add(g:record, 'TabEnter')
@@ -3406,7 +3406,7 @@ endfunc
 
 func Test_Visual_doautoall_redraw()
   call setline(1, ['a', 'b'])
-  new 
+  new
   wincmd p
   call feedkeys("G\<C-V>", 'txn')
   autocmd User Explode ++once redraw
@@ -4121,7 +4121,7 @@ endfunc
 
 func Test_autocmd_split_dummy()
   " Autocommand trying to split a window containing a dummy buffer.
-  auto BufReadPre * exe "sbuf " .. expand("<abuf>") 
+  auto BufReadPre * exe "sbuf " .. expand("<abuf>")
   " Avoid the "W11" prompt
   au FileChangedShell * let v:fcs_choice = 'reload'
   func Xautocmd_changelist()

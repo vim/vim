@@ -195,14 +195,14 @@ endfunc
 # CheckLegacyAndVim9Success()
 export def CheckTransLegacySuccess(lines: list<string>)
   var legacylines = lines->mapnew((_, v) =>
-  				v->substitute('\<VAR\>', 'let', 'g')
-		           	 ->substitute('\<LET\>', 'let', 'g')
-		           	 ->substitute('\<LSTART\>', '{', 'g')
-		           	 ->substitute('\<LMIDDLE\>', '->', 'g')
+				v->substitute('\<VAR\>', 'let', 'g')
+				 ->substitute('\<LET\>', 'let', 'g')
+				 ->substitute('\<LSTART\>', '{', 'g')
+				 ->substitute('\<LMIDDLE\>', '->', 'g')
 				 ->substitute('\<LEND\>', '}', 'g')
 				 ->substitute('\<TRUE\>', '1', 'g')
 				 ->substitute('\<FALSE\>', '0', 'g')
-		           	 ->substitute('#"', ' "', 'g'))
+				 ->substitute('#"', ' "', 'g'))
   CheckLegacySuccess(legacylines)
 enddef
 
@@ -262,14 +262,14 @@ export def CheckLegacyAndVim9Failure(lines: list<string>, error: any)
   endif
 
   var legacylines = lines->mapnew((_, v) =>
-  				v->substitute('\<VAR\>', 'let', 'g')
-		           	 ->substitute('\<LET\>', 'let', 'g')
-		           	 ->substitute('#"', ' "', 'g'))
+				v->substitute('\<VAR\>', 'let', 'g')
+				 ->substitute('\<LET\>', 'let', 'g')
+				 ->substitute('#"', ' "', 'g'))
   CheckLegacyFailure(legacylines, legacyError)
 
   var vim9lines = lines->mapnew((_, v) =>
-  				v->substitute('\<VAR\>', 'var', 'g')
-		           	 ->substitute('\<LET ', '', 'g'))
+				v->substitute('\<VAR\>', 'var', 'g')
+				 ->substitute('\<LET ', '', 'g'))
   CheckDefExecFailure(vim9lines, defError)
   CheckScriptFailure(['vim9script'] + vim9lines, scriptError)
 enddef

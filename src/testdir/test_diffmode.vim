@@ -360,7 +360,7 @@ func Test_dp_do_buffer()
   call assert_equal('10', getline('.'))
   21
   call assert_equal('two', getline('.'))
-  diffget one 
+  diffget one
   call assert_equal('20', getline('.'))
 
   31
@@ -1113,7 +1113,7 @@ func Test_diff_with_syntax()
   CheckScreendump
 
   let lines =<< trim END
-  	void doNothing() {
+	void doNothing() {
 	   int x = 0;
 	   char *s = "hello";
 	   return 5;
@@ -1121,7 +1121,7 @@ func Test_diff_with_syntax()
   END
   call writefile(lines, 'Xprogram1.c', 'D')
   let lines =<< trim END
-  	void doSomething() {
+	void doSomething() {
 	   int x = 0;
 	   char *s = "there";
 	   return 5;
@@ -1130,7 +1130,7 @@ func Test_diff_with_syntax()
   call writefile(lines, 'Xprogram2.c', 'D')
 
   let lines =<< trim END
-  	edit Xprogram1.c
+	edit Xprogram1.c
 	diffsplit Xprogram2.c
   END
   call writefile(lines, 'Xtest_diff_syntax', 'D')
@@ -1307,12 +1307,12 @@ endfunc
 func Test_diff_and_scroll()
   " this was causing an ml_get error
   set ls=2
-  for i in range(winheight(0) * 2) 
-    call setline(i, i < winheight(0) - 10 ? i : i + 10) 
+  for i in range(winheight(0) * 2)
+    call setline(i, i < winheight(0) - 10 ? i : i + 10)
   endfor
   vnew
-  for i in range(winheight(0)*2 + 10) 
-    call setline(i, i < winheight(0) - 10 ? 0 : i) 
+  for i in range(winheight(0)*2 + 10)
+    call setline(i, i < winheight(0) - 10 ? 0 : i)
   endfor
   diffthis
   wincmd p

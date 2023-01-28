@@ -93,7 +93,7 @@ func Test_tagfunc()
   delf NullTagFunc
 
   bwipe!
-  set tags& tfu& cpt& 
+  set tags& tfu& cpt&
   call delete('Xfile1')
 endfunc
 

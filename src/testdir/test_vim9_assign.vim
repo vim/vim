@@ -1833,7 +1833,7 @@ def Test_assign_lambda()
   v9.CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected func(number) but got func(any): bool')
 
   lines =<< trim END
-      echo filter([1, 2, 3], (_, v: string) => v + 1) 
+      echo filter([1, 2, 3], (_, v: string) => v + 1)
   END
   v9.CheckDefAndScriptFailure(lines, 'E1051:')
 enddef
@@ -1935,7 +1935,7 @@ def Test_var_func_call()
       endif
       return 'this'
     endfunc
-    var val: string = GetValue() 
+    var val: string = GetValue()
     # env var is always a string
     var env = $TERM
   END

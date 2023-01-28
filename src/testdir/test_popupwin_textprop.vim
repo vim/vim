@@ -21,7 +21,7 @@ func Test_textprop_popup()
 		\ bufnr: bufnr('%'),
 		\ })
 	let winid = popup_create('the text', #{
-	      \ pos: 'botleft', 
+	      \ pos: 'botleft',
 	      \ textprop: 'popupMarker',
 	      \ border: [],
 	      \ padding: [0,1,0,1],
@@ -67,25 +67,25 @@ func Test_textprop_popup_corners()
 		\ type: 'popupMarker',
 		\ })
 	let winid = popup_create('bottom left', #{
-	      \ pos: 'botleft', 
+	      \ pos: 'botleft',
 	      \ textprop: 'popupMarker',
 	      \ textpropwin: win_getid(),
 	      \ padding: [0,1,0,1],
 	      \ })
 	let winid = popup_create('bottom right', #{
-	      \ pos: 'botright', 
+	      \ pos: 'botright',
 	      \ textprop: 'popupMarker',
 	      \ border: [],
 	      \ padding: [0,1,0,1],
 	      \ })
 	let winid = popup_create('top left', #{
-	      \ pos: 'topleft', 
+	      \ pos: 'topleft',
 	      \ textprop: 'popupMarker',
 	      \ border: [],
 	      \ padding: [0,1,0,1],
 	      \ })
 	let winid = popup_create('top right', #{
-	      \ pos: 'topright', 
+	      \ pos: 'topright',
 	      \ textprop: 'popupMarker',
 	      \ padding: [0,1,0,1],
 	      \ })
@@ -127,14 +127,14 @@ func Test_textprop_popup_offsets()
 		\ type: 'popupMarker',
 		\ })
 	let winid = popup_create('bottom left', #{
-	      \ pos: 'botleft', 
+	      \ pos: 'botleft',
 	      \ line: -1,
 	      \ col: 2,
 	      \ textprop: 'popupMarker',
 	      \ padding: [0,1,0,1],
 	      \ })
 	let winid = popup_create('bottom right', #{
-	      \ pos: 'botright', 
+	      \ pos: 'botright',
 	      \ line: -1,
 	      \ col: -2,
 	      \ textprop: 'popupMarker',
@@ -142,7 +142,7 @@ func Test_textprop_popup_offsets()
 	      \ padding: [0,1,0,1],
 	      \ })
 	let winid = popup_create('top left', #{
-	      \ pos: 'topleft', 
+	      \ pos: 'topleft',
 	      \ line: 1,
 	      \ col: 2,
 	      \ textprop: 'popupMarker',
@@ -150,7 +150,7 @@ func Test_textprop_popup_offsets()
 	      \ padding: [0,1,0,1],
 	      \ })
 	let winid = popup_create('top right', #{
-	      \ pos: 'topright', 
+	      \ pos: 'topright',
 	      \ line: 1,
 	      \ col: -2,
 	      \ textprop: 'popupMarker',

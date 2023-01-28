@@ -43,7 +43,7 @@ func SendKeyStr(keystring)
   endfor
 endfunc
 
-" This tells Vim to execute the buffered keys as user commands, 
+" This tells Vim to execute the buffered keys as user commands,
 " ie. same as feekdeys with mode X would do.
 func ExecuteBufferedKeys()
   if has('gui_running')
@@ -158,7 +158,7 @@ let s:VK = {
   let s:MOD_MASK_SHIFT = 0x02
   let s:MOD_MASK_CTRL  = 0x04
   let s:MOD_MASK_ALT   = 0x08
-  
+
   let s:vim_key_modifiers = [
     \ ["",       0,   []],
     \ ["S-",     2,   [s:VK.LSHIFT]],
@@ -431,7 +431,7 @@ func Test_mswin_event_character_keys()
 " Test for lowercase 'a' to 'z', VK codes 65(0x41) - 90(0x5A)
 " Note: VK_A-VK_Z virtual key codes coincide with uppercase ASCII codes A-Z.
 " eg VK_A is 65, and the ASCII character code for uppercase 'A' is also 65.
-" Caution: these are interpreted as lowercase when Shift is NOT pressed. 
+" Caution: these are interpreted as lowercase when Shift is NOT pressed.
 " eg, sending VK_A (65) 'A' Key code without shift modifier, will produce ASCII
 " char 'a' (91) as the output.  The ASCII codes for the lowercase letters are
 " numbered 32 higher than their uppercase versions.
@@ -808,7 +808,7 @@ func Test_mswin_event_mouse()
   call MouseShiftWheelDown(2, 1)
   call feedkeys("H", 'Lx!')
   " should scroll from where it is (4) + visible buffer height - cmdheight
-  let shift_scroll_height = line('w$') - line('w0') - &cmdheight 
+  let shift_scroll_height = line('w$') - line('w0') - &cmdheight
   call assert_equal(4 + shift_scroll_height, line('.'))
 
   " Shift Scroll Up
@@ -821,7 +821,7 @@ func Test_mswin_event_mouse()
     call MSWinMouseEvent(0x100, 2, 1, 0, 0, 0x04)
     call feedkeys("H", 'Lx!')
     " should scroll from where it is (4) + visible buffer height - cmdheight
-    let shift_scroll_height = line('w$') - line('w0') - &cmdheight 
+    let shift_scroll_height = line('w$') - line('w0') - &cmdheight
     call assert_equal(4 + shift_scroll_height, line('.'))
 
     " Shift Scroll Up (using MOD)
@@ -854,7 +854,7 @@ func Test_mswin_event_mouse()
   call feedkeys('g0', 'Lx!')
   " should scroll from where it is (7) + window width
   call assert_equal(7 + winwidth(0), col('.'))
- 
+
   " Shift Scroll Left
   call MouseShiftWheelLeft(1, 50)
   call feedkeys('g0', 'Lx!')
@@ -880,8 +880,8 @@ func Test_mswin_event_mouse()
           \ substitute(e, '[<>]', '', 'g') .. '")<CR>'
   endfor
 
-  " Test various mouse buttons 
-  "(0 - Left, 1 - Middle, 2 - Right, 
+  " Test various mouse buttons
+  "(0 - Left, 1 - Middle, 2 - Right,
   " 0x300 - MOUSE_X1/FROM_LEFT_3RD_BUTTON,
   " 0x400 - MOUSE_X2/FROM_LEFT_4TH_BUTTON)
   for button in [0, 1, 2, 0x300, 0x400]
@@ -971,10 +971,10 @@ func Test_mswin_event_error_handling()
   let args = #{button: 0, row: 2, col: 4, move: 0, multiclick: 0, modifiers: 0}
   call assert_fails("call test_mswin_event('a1b2c3', args)", 'E475:')
   call assert_fails("call test_mswin_event(test_null_string(), {})", 'E475:')
-  
+
   call assert_fails("call test_mswin_event([], args)", 'E1174:')
   call assert_fails("call test_mswin_event('abc', [])", 'E1206:')
-  
+
   call assert_false(test_mswin_event('mouse', test_null_dict()))
   let args = #{row: 2, col: 4, multiclick: 0, modifiers: 0}
   call assert_false(test_mswin_event('mouse', args))

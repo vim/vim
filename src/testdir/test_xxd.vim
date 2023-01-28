@@ -232,7 +232,7 @@ func Test_xxd()
       };
       unsigned int varName_len = 11;
     [CODE]
-  
+
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
   endfor
 
@@ -289,7 +289,7 @@ func Test_xxd_patch()
   exe cmd1
   exe cmd2
   call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 46 46                    ::EE::::FF'], readfile('Xxxdout'))
-  
+
   call writefile(["2: 41 41", "08: 42 42"], 'Xxxdin')
   call writefile(['::::::::'], 'Xxxdfile')
   exe cmd1
@@ -305,7 +305,7 @@ func Test_xxd_patch()
   exe cmd1
   exe cmd2
   call assert_equal(['00000000: 3a 3a 45 45 3a 3a 3a 3a 42 44 46 46              ::EE::::BDFF'], readfile('Xxxdout'))
-  
+
   call delete('Xxxdout')
 endfunc
 

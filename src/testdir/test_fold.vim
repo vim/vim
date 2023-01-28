@@ -456,7 +456,7 @@ func Test_move_folds_around_manual()
   %foldopen!
   13m7
   call Check_foldlevels([1, 2, 2, 2, 1, 2, 2, 1, 1, 1, 2, 2, 2, 1, 0])
-  
+
   bw!
 endfunc
 
@@ -705,7 +705,7 @@ func Test_fold_create_marker_in_C()
   let content =<< trim [CODE]
     /*
      * comment
-     * 
+     *
      *
      */
     int f(int* p) {

@@ -2745,7 +2745,7 @@ func Test_prop_with_text_below_after_empty()
 
   let lines =<< trim END
       vim9script
-      
+
       setline(1, ['vim9script', '', 'three', ''])
 
       # Add text prop below empty line 2 with padding.
@@ -2768,13 +2768,13 @@ func Test_prop_with_text_below_after_empty()
   END
   call writefile(lines, 'XscriptPropBelowAfterEmpty', 'D')
   let buf = RunVimInTerminal('-S XscriptPropBelowAfterEmpty', #{rows: 8, cols: 60})
-  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_1', {}) 
+  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_1', {})
 
   call term_sendkeys(buf, ":set number\<CR>")
-  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_2', {}) 
+  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_2', {})
 
   call term_sendkeys(buf, ":set nowrap\<CR>")
-  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_3', {}) 
+  call VerifyScreenDump(buf, 'Test_prop_below_after_empty_3', {})
 
   call StopVimInTerminal(buf)
 endfunc
@@ -3310,7 +3310,7 @@ func Test_insert_text_start_incl()
       prop_type_add('propnotincl', {highlight: 'NonText', start_incl: false})
       prop_add(1, 15, {type: 'propnotincl', text: 'before '})
 
-      set cindent sw=4 
+      set cindent sw=4
       prop_type_add('argname', {highlight: 'DiffChange', start_incl: true})
       prop_add(3, 10, {type: 'argname', text: 'arg: '})
   END
@@ -3751,7 +3751,7 @@ func Test_text_prop_diff_mode()
 
   call StopVimInTerminal(buf)
 endfunc
- 
+
 func Test_error_when_using_negative_id()
   call prop_type_add('test1', #{highlight: 'ErrorMsg'})
   call prop_add(1, 1, #{type: 'test1', text: 'virtual'})

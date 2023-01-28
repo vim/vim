@@ -704,7 +704,7 @@ endfunc
 " Text:
 "   1 23
 "   4 56
-" 
+"
 " Expected:
 "   1) f2 Ctrl-V jl <ctrl-a>, repeat twice afterwards with .
 "   1 26

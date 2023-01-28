@@ -2085,7 +2085,7 @@ def Test_disassemble_return_bool()
         '8 COND2BOOL\_s*' ..
         '9 STORE $3\_s*' ..
         'return name\_s*' ..
-        '\d\+ LOAD $3\_s*' ..   
+        '\d\+ LOAD $3\_s*' ..
         '\d\+ RETURN',
         instr)
   assert_equal(true, InvertBool())

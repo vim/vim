@@ -41,5 +41,42 @@ def Test_source_files()
   bwipe!
 enddef
 
+def Test_test_files()
+  for fname in glob('*.vim', 0, 1)
+    exe 'edit ' .. fname
+
+    # some files intentionally have misplaced white space
+    if fname =~ 'test_cindent.vim' || fname =~ 'test_join.vim'
+      continue
+    endif
+
+    # skip files that are known to have a space before a tab
+    if fname !~ 'test_comments.vim'
+        && fname !~ 'test_listchars.vim'
+        && fname !~ 'test_visual.vim'
+      cursor(1, 1)
+      var lnum = search(fname =~ "test_regexp_latin" ? '[^á] \t' : ' \t')
+      assert_equal(0, lnum, 'testdir/' .. fname .. ': space before tab')
+    endif
+
+    # skip files that are known to have trailing white space
+    if fname !~ 'test_cmdline.vim'
+            && fname !~ 'test_let.vim'
+            && fname !~ 'test_tagjump.vim'
+            && fname !~ 'test_vim9_cmd.vim'
+      cursor(1, 1)
+      var lnum = search(
+          fname =~ 'test_vim9_assign.vim' ? '[^=]\s$'
+          : fname =~ 'test_vim9_class.vim' ? '[^)]\s$'
+          : fname =~ 'test_vim9_script.vim' ? '[^,:3]\s$'
+          : fname =~ 'test_visual.vim' ? '[^/]\s$'
+          : '[^\\]\s$')
+      assert_equal(0, lnum, 'testdir/' .. fname .. ': trailing white space')
+    endif
+  endfor
+
+  bwipe!
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab

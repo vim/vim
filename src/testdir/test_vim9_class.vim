@@ -48,7 +48,7 @@ def Test_class_basic()
   lines =<< trim END
       vim9script
       class Something
-      endclass school's out 
+      endclass school's out
   END
   v9.CheckScriptFailure(lines, 'E488:')
 
@@ -623,7 +623,7 @@ def Test_class_member()
       TextPos.AddToCounter(3)
       assert_equal(3, TextPos.counter)
       assert_fails('echo TextPos.noSuchMember', 'E1338:')
-      
+
       def GetCounter(): number
         return TextPos.counter
       enddef

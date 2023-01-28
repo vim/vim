@@ -2209,7 +2209,7 @@ func Test_normal29_brace()
     a character like this:
     .NH
     End of text here
-  
+
   [DATA]
   call assert_equal(expected, getline(1, '$'))
 
