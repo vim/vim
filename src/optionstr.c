@@ -2078,7 +2078,7 @@ did_set_string_option(
 	{
 	    if (opt_strings_flags(ve, p_ve_values, flags, TRUE) != OK)
 		errmsg = e_invalid_argument;
-	    else if (STRCMP(p_ve, oldval) != 0)
+	    else if (STRCMP(ve, oldval) != 0)
 	    {
 		// Recompute cursor position in case the new 've' setting
 		// changes something.
