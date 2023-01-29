@@ -1794,7 +1794,7 @@ generate_CALL(
 			  : ufunc->uf_def_status != UF_NOT_COMPILED
 					     ? ISN_DCALL : ISN_UCALL)) == NULL)
 	return FAIL;
-    if (isn->isn_type == ISN_METHODCALL)
+    if (cl != NULL /* isn->isn_type == ISN_METHODCALL */)
     {
 	isn->isn_arg.mfunc = ALLOC_ONE(cmfunc_T);
 	if (isn->isn_arg.mfunc == NULL)
