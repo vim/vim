@@ -629,6 +629,9 @@ au BufNewFile,BufRead *.elm			setf elm
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
 
+" Elsa - https://github.com/ucsd-progsys/elsa
+au BufNewFile,BufRead *.lc			setf elsa
+
 " ESMTP rc file
 au BufNewFile,BufRead *esmtprc			setf esmtprc
 
