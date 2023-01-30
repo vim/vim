@@ -1562,7 +1562,7 @@ did_set_showbreak(char_u **varp)
  * The 'guifont' option is changed.
  */
     static char *
-did_set_guifont(char_u *oldval, int *redraw_gui_only)
+did_set_guifont(char_u *oldval UNUSED, int *redraw_gui_only)
 {
     char_u	*p;
     char	*errmsg = NULL;
