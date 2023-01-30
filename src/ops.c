@@ -3405,10 +3405,13 @@ static callback_T opfunc_cb;
  * Process the 'operatorfunc' option value.
  * Returns OK or FAIL.
  */
-    int
+    char *
 set_operatorfunc_option(void)
 {
-    return option_set_callback_func(p_opfunc, &opfunc_cb);
+    if (option_set_callback_func(p_opfunc, &opfunc_cb) == FAIL)
+	return e_invalid_argument;
+
+    return NULL;
 }
 
 #if defined(EXITFREE) || defined(PROTO)

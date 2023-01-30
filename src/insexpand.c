@@ -2545,16 +2545,15 @@ copy_global_to_buflocal_cb(callback_T *globcb, callback_T *bufcb)
  * name of a function (string), or function(<name>) or funcref(<name>) or a
  * lambda expression.
  */
-    int
+    char *
 set_completefunc_option(void)
 {
-    int	retval;
+    if (option_set_callback_func(curbuf->b_p_cfu, &cfu_cb) == FAIL)
+	return e_invalid_argument;
 
-    retval = option_set_callback_func(curbuf->b_p_cfu, &cfu_cb);
-    if (retval == OK)
-	set_buflocal_cfu_callback(curbuf);
+    set_buflocal_cfu_callback(curbuf);
 
-    return retval;
+    return NULL;
 }
 
 /*
@@ -2575,16 +2574,14 @@ set_buflocal_cfu_callback(buf_T *buf UNUSED)
  * name of a function (string), or function(<name>) or funcref(<name>) or a
  * lambda expression.
  */
-    int
+    char *
 set_omnifunc_option(void)
 {
-    int	retval;
+    if (option_set_callback_func(curbuf->b_p_ofu, &ofu_cb) == FAIL)
+	return e_invalid_argument;
 
-    retval = option_set_callback_func(curbuf->b_p_ofu, &ofu_cb);
-    if (retval == OK)
-	set_buflocal_ofu_callback(curbuf);
-
-    return retval;
+    set_buflocal_ofu_callback(curbuf);
+    return NULL;
 }
 
 /*
@@ -2605,7 +2602,7 @@ set_buflocal_ofu_callback(buf_T *buf UNUSED)
  * name of a function (string), or function(<name>) or funcref(<name>) or a
  * lambda expression.
  */
-    int
+    char *
 set_thesaurusfunc_option(void)
 {
     int	retval;
@@ -2622,7 +2619,7 @@ set_thesaurusfunc_option(void)
 	retval = option_set_callback_func(p_tsrfu, &tsrfu_cb);
     }
 
-    return retval;
+    return retval == FAIL ? e_invalid_argument : NULL;
 }
 
 /*

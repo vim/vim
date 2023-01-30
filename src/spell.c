@@ -4386,7 +4386,7 @@ valid_spellfile(char_u *val)
 }
 
 /*
- * Handle side effects of setting 'spell'.
+ * Handle side effects of setting 'spell' or 'spellfile'
  * Return an error message or NULL for success.
  */
     char *
