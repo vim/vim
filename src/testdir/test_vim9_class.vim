@@ -1049,6 +1049,23 @@ def Test_call_interface_method()
     unlet g:result
   END
   v9.CheckScriptSuccess(lines)
+
+  # No class that implements the interface.
+  lines =<< trim END
+      vim9script
+
+      interface IWithEE
+          def Enter(): any
+          def Exit(): void
+      endinterface
+
+      def With1(ee: IWithEE, F: func)
+          var r = ee.Enter()
+      enddef
+
+      defcompile
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 def Test_class_used_as_type()
