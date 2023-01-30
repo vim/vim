@@ -1032,6 +1032,9 @@ au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
 " Julia
 au BufNewFile,BufRead *.jl			setf julia
 
+" KDL
+au BufNewFile,BufRead *.kdl			setf kdl
+
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix
 
