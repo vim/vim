@@ -371,6 +371,9 @@ au BufNewFile,BufRead *.ch			call dist#ft#FTchange()
 " ChordPro
 au BufNewFile,BufRead *.chopro,*.crd,*.cho,*.crdpro,*.chordpro	setf chordpro
 
+" Clangd
+au BufNewFile,BufRead .clangd		setf yaml
+
 " Clang-format
 au BufNewFile,BufRead .clang-format		setf yaml
 
@@ -1017,7 +1020,7 @@ au BufNewFile,BufRead *.json-patch		setf json
 au BufNewFile,BufRead *.ipynb			setf json
 
 " Other files that look like json
-au BufNewFile,BufRead .prettierrc,.firebaserc	setf json
+au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc	setf json
 
 " JSONC (JSON with comments)
 au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc 	setf jsonc
