@@ -1001,8 +1001,13 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    name = vim_strnsave(arg, varlen);
 	    if (name == NULL)
 		goto failed;
-	    if (*p == ':')
+	    if (*skipwhite(p) == ':')
 	    {
+		if (VIM_ISWHITE(*p))
+		{
+		    semsg(_(e_no_white_space_allowed_before_colon_str), p);
+		    goto failed;
+		}
 		p = skipwhite(p + 1);
 		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
 	    }

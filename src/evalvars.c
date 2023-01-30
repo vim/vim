@@ -1363,8 +1363,8 @@ skip_var_one(char_u *arg, int include_type)
 
     if (include_type && vim9)
     {
-	if (*end == ':')
-	    end = skip_type(skipwhite(end + 1), FALSE);
+	if (*skipwhite(end) == ':')
+	    end = skip_type(skipwhite(skipwhite(end) + 1), FALSE);
     }
     return end;
 }

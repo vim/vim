@@ -1741,11 +1741,16 @@ compile_lhs(
 
     if (lhs->lhs_dest != dest_option && lhs->lhs_dest != dest_func_option)
     {
-	if (is_decl && *var_end == ':')
+	if (is_decl && *skipwhite(var_end) == ':')
 	{
 	    char_u *p;
 
 	    // parse optional type: "let var: type = expr"
+	    if (VIM_ISWHITE(*var_end))
+	    {
+		semsg(_(e_no_white_space_allowed_before_colon_str), var_end);
+		return FAIL;
+	    }
 	    if (!VIM_ISWHITE(var_end[1]))
 	    {
 		semsg(_(e_white_space_required_after_str_str), ":", var_end);

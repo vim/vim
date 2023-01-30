@@ -1093,13 +1093,18 @@ get_lval(
 		--p;
 		lp->ll_name_end = p;
 	    }
-	    if (*p == ':')
+	    if (*skipwhite(p) == ':')
 	    {
 		char_u	    *tp = skipwhite(p + 1);
 
 		if (is_scoped_variable(name))
 		{
 		    semsg(_(e_cannot_use_type_with_this_variable_str), name);
+		    return NULL;
+		}
+		if (VIM_ISWHITE(*p))
+		{
+		    semsg(_(e_no_white_space_allowed_before_colon_str), p);
 		    return NULL;
 		}
 		if (tp == p + 1 && !quiet)
