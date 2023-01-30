@@ -4943,8 +4943,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	empty.  Then set the 'term' option to have it take effect: >
 		set keyprotocol=
 		let &term = &term
-
-
+<
 					*'keywordprg'* *'kp'*
 'keywordprg' 'kp'	string	(default "man" or "man -s",  DOS: ":help",
 								  VMS: "help")
