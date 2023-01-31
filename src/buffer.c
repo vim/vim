@@ -5366,6 +5366,7 @@ ex_buffer_all(exarg_T *eap)
 
     setpcmark();
 
+    reset_VIsual_and_resel();	// stop Visual mode
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
