@@ -3154,7 +3154,11 @@ cmdline_search_stat(
 	len += 2;
     }
 
-    mch_memmove(msgbuf + STRLEN(msgbuf) - len, t, len);
+    size_t msgbuf_len = STRLEN(msgbuf);
+    if (len > msgbuf_len)
+	len = msgbuf_len;
+
+    mch_memmove(msgbuf + msgbuf_len - len, t, len);
     if (dirc == '?' && stat.cur == maxcount + 1)
 	stat.cur = -1;
 
