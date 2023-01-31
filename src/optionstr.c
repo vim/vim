@@ -640,6 +640,21 @@ check_stl_option(char_u *s)
 #endif
 
 /*
+ * Check for a "normal" directory or file name in some options.  Disallow a
+ * path separator (slash and/or backslash), wildcards and characters that are
+ * often illegal in a file name. Be more permissive if "secure" is off.
+ */
+    static int
+check_illegal_path_names(int opt_idx, char_u **varp)
+{
+    return (((get_option_flags(opt_idx) & P_NFNAME)
+		&& vim_strpbrk(*varp, (char_u *)(secure
+			? "/\\*?[|;&<>\r\n" : "/\\*?[<>\r\n")) != NULL)
+	    || ((get_option_flags(opt_idx) & P_NDNAME)
+		&& vim_strpbrk(*varp, (char_u *)"*?[|;&<>\r\n") != NULL));
+}
+
+/*
  * The 'term' option is changed.
  */
     static char *
@@ -748,6 +763,9 @@ did_set_breakindentopt(void)
     static char *
 did_set_isopt(int *did_chartab)
 {
+    // 'isident', 'iskeyword', 'isprint or 'isfname' option: refill g_chartab[]
+    // If the new option is invalid, use old value.
+    // 'lisp' option: refill g_chartab[] for '-' char.
     if (init_chartab() == FAIL)
     {
 	*did_chartab = TRUE;		// need to restore it below
@@ -1052,7 +1070,7 @@ did_set_printencoding(void)
 {
     char_u	*s, *p;
 
-    // Canonize printencoding if VIM standard one
+    // Canonize 'printencoding' if VIM standard one
     p = enc_canonize(p_penc);
     if (p != NULL)
     {
@@ -1201,8 +1219,8 @@ did_set_cryptkey(char_u *oldval)
     remove_key_from_history();
 
     if (STRCMP(curbuf->b_p_key, oldval) != 0)
-	// Need to update the swapfile.
     {
+	// Need to update the swapfile.
 	ml_set_crypt_key(curbuf, oldval,
 		*curbuf->b_p_cm == NUL ? p_cm : curbuf->b_p_cm);
 	changed_internal();
@@ -1562,7 +1580,7 @@ did_set_showbreak(char_u **varp)
  * The 'guifont' option is changed.
  */
     static char *
-did_set_guifont(char_u *oldval UNUSED, int *redraw_gui_only)
+did_set_guifont(char_u *oldval UNUSED)
 {
     char_u	*p;
     char	*errmsg = NULL;
@@ -1596,7 +1614,6 @@ did_set_guifont(char_u *oldval UNUSED, int *redraw_gui_only)
 		errmsg = e_invalid_fonts;
 	}
     }
-    *redraw_gui_only = TRUE;
 
     return errmsg;
 }
@@ -1606,7 +1623,7 @@ did_set_guifont(char_u *oldval UNUSED, int *redraw_gui_only)
  * The 'guifontset' option is changed.
  */
     static char *
-did_set_guifontset(int *redraw_gui_only)
+did_set_guifontset()
 {
     char *errmsg = NULL;
 
@@ -1614,7 +1631,6 @@ did_set_guifontset(int *redraw_gui_only)
 	errmsg = e_cant_select_fontset;
     else if (gui.in_use && gui_init_font(p_guifontset, TRUE) != OK)
 	errmsg = e_invalid_fontset;
-    *redraw_gui_only = TRUE;
 
     return errmsg;
 }
@@ -1624,7 +1640,7 @@ did_set_guifontset(int *redraw_gui_only)
  * The 'guifontwide' option is changed.
  */
     static char *
-did_set_guifontwide(int *redraw_gui_only)
+did_set_guifontwide(void)
 {
     char *errmsg = NULL;
 
@@ -1632,7 +1648,6 @@ did_set_guifontwide(int *redraw_gui_only)
 	errmsg = e_cant_select_wide_font;
     else if (gui_get_wide_font() == FAIL)
 	errmsg = e_invalid_wide_font;
-    *redraw_gui_only = TRUE;
 
     return errmsg;
 }
@@ -1640,10 +1655,9 @@ did_set_guifontwide(int *redraw_gui_only)
 
 #if defined(FEAT_GUI_GTK)
     static void
-did_set_guiligatures(int *redraw_gui_only)
+did_set_guiligatures(void)
 {
     gui_set_ligatures();
-    *redraw_gui_only = TRUE;
 }
 #endif
 
@@ -1683,19 +1697,17 @@ did_set_titleiconstring(char_u **varp UNUSED)
  * The 'guioptions' option is changed.
  */
     static void
-did_set_guioptions(char_u *oldval, int *redraw_gui_only)
+did_set_guioptions(char_u *oldval)
 {
     gui_init_which_components(oldval);
-    *redraw_gui_only = TRUE;
 }
 #endif
 
 #if defined(FEAT_GUI_TABLINE)
     static void
-did_set_guitablabel(int *redraw_gui_only)
+did_set_guitablabel()
 {
     redraw_tabline = TRUE;
-    *redraw_gui_only = TRUE;
 }
 #endif
 
@@ -1995,6 +2007,21 @@ did_set_completeopt(void)
     completeopt_was_set();
     return NULL;
 }
+
+#ifdef BACKSLASH_IN_FILENAME
+/*
+ * The 'completeslash' option is changed.
+ */
+    static char *
+did_set_completeslash(void)
+{
+    if (check_opt_strings(p_csl, p_csl_values, FALSE) != OK
+	    || check_opt_strings(curbuf->b_p_csl, p_csl_values, FALSE) != OK)
+	return e_invalid_argument;
+
+    return NULL;
+}
+#endif
 
 #ifdef FEAT_SIGNS
 /*
@@ -2492,9 +2519,105 @@ did_set_optexpr(char_u **varp)
 #endif
 
 /*
+ * An option which is a list of flags is set.  Valid values are in 'flags'.
+ */
+    static char *
+did_set_option_listflag(char_u **varp, char_u *flags, char *errbuf)
+{
+    char_u	*s;
+
+    for (s = *varp; *s; ++s)
+	if (vim_strchr(flags, *s) == NULL)
+	    return illegal_char(errbuf, *s);
+
+    return NULL;
+}
+
+#ifdef FEAT_SYN_HL
+/*
+ * When the 'syntax' option is set, load the syntax of that name.
+ */
+    static void
+do_syntax_autocmd(int value_changed)
+{
+    static int syn_recursive = 0;
+
+    ++syn_recursive;
+    // Only pass TRUE for "force" when the value changed or not used
+    // recursively, to avoid endless recurrence.
+    apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn, curbuf->b_fname,
+	    value_changed || syn_recursive == 1, curbuf);
+    curbuf->b_flags |= BF_SYN_SET;
+    --syn_recursive;
+}
+#endif
+
+/*
+ * When the 'filetype' option is set, trigger the FileType autocommand.
+ */
+    static void
+do_filetype_autocmd(char_u **varp, int opt_flags, int value_changed)
+{
+    // Skip this when called from a modeline and the filetype was already set
+    // to this value.
+    if ((opt_flags & OPT_MODELINE) && !value_changed)
+	return;
+
+    static int  ft_recursive = 0;
+    int	    secure_save = secure;
+
+    // Reset the secure flag, since the value of 'filetype' has
+    // been checked to be safe.
+    secure = 0;
+
+    ++ft_recursive;
+    did_filetype = TRUE;
+    // Only pass TRUE for "force" when the value changed or not
+    // used recursively, to avoid endless recurrence.
+    apply_autocmds(EVENT_FILETYPE, curbuf->b_p_ft, curbuf->b_fname,
+	    value_changed || ft_recursive == 1, curbuf);
+    --ft_recursive;
+    // Just in case the old "curbuf" is now invalid.
+    if (varp != &(curbuf->b_p_ft))
+	varp = NULL;
+
+    secure = secure_save;
+}
+
+#ifdef FEAT_SPELL
+/*
+ * When the 'spelllang' option is set, source the spell/LANG.vim file in
+ * 'runtimepath'.
+ */
+    static void
+do_spelllang_source(void)
+{
+    char_u	fname[200];
+    char_u	*p;
+    char_u	*q = curwin->w_s->b_p_spl;
+
+    // Skip the first name if it is "cjk".
+    if (STRNCMP(q, "cjk,", 4) == 0)
+	q += 4;
+
+    // They could set 'spellcapcheck' depending on the language.  Use the first
+    // name in 'spelllang' up to '_region' or '.encoding'.
+    for (p = q; *p != NUL; ++p)
+	if (!ASCII_ISALNUM(*p) && *p != '-')
+	    break;
+    if (p > q)
+    {
+	vim_snprintf((char *)fname, 200, "spell/%.*s.vim",
+		(int)(p - q), q);
+	source_runtime(fname, DIP_ALL);
+    }
+}
+#endif
+
+/*
  * Handle string options that need some action to perform when changed.
  * The new value must be allocated.
- * Returns NULL for success, or an unstranslated error message for an error.
+ * Returns NULL for success, or an untranslated error message for an error.
  */
     char *
 did_set_string_option(
@@ -2503,11 +2626,10 @@ did_set_string_option(
     char_u	*oldval,		// previous value of the option
     char	*errbuf,		// buffer for errors, or NULL
     int		opt_flags,		// OPT_LOCAL and/or OPT_GLOBAL
-    int		*value_checked)		// value was checked to be save, no
+    int		*value_checked)		// value was checked to be safe, no
 					// need to set P_INSECURE
 {
     char	*errmsg = NULL;
-    char_u	*s, *p;
     int		did_chartab = FALSE;
     char_u	**gvarp;
     long_u	free_oldval = (get_option_flags(opt_idx) & P_ALLOCED);
@@ -2529,639 +2651,415 @@ did_set_string_option(
 #endif
 		) && (get_option_flags(opt_idx) & P_SECURE))
 	errmsg = e_not_allowed_here;
-
-    // Check for a "normal" directory or file name in some options.  Disallow a
-    // path separator (slash and/or backslash), wildcards and characters that
-    // are often illegal in a file name. Be more permissive if "secure" is off.
-    else if (((get_option_flags(opt_idx) & P_NFNAME)
-		    && vim_strpbrk(*varp, (char_u *)(secure
-			    ? "/\\*?[|;&<>\r\n" : "/\\*?[<>\r\n")) != NULL)
-	  || ((get_option_flags(opt_idx) & P_NDNAME)
-		    && vim_strpbrk(*varp, (char_u *)"*?[|;&<>\r\n") != NULL))
+    // Check for a "normal" directory or file name in some options.
+    else if (check_illegal_path_names(opt_idx, varp))
 	errmsg = e_invalid_argument;
-
-    // 'term'
-    else if (varp == &T_NAME)
+    else if (varp == &T_NAME)			// 'term'
 	errmsg = did_set_term(&opt_idx, &free_oldval);
-
-    // 'backupcopy'
-    else if (gvarp == &p_bkc)
+    else if (gvarp == &p_bkc)			// 'backupcopy'
 	errmsg = did_set_backupcopy(oldval, opt_flags);
-
-    // 'backupext' and 'patchmode'
-    else if (varp == &p_bex || varp == &p_pm)
+    else if (  varp == &p_bex			// 'backupext'
+	    || varp == &p_pm)			// 'patchmode'
 	errmsg = did_set_backupext_or_patchmode();
-
 #ifdef FEAT_LINEBREAK
-    // 'breakindentopt'
-    else if (varp == &curwin->w_p_briopt)
+    else if (varp == &curwin->w_p_briopt)	// 'breakindentopt'
 	errmsg = did_set_breakindentopt();
 #endif
 
-    // 'isident', 'iskeyword', 'isprint or 'isfname' option: refill g_chartab[]
-    // If the new option is invalid, use old value.  'lisp' option: refill
-    // g_chartab[] for '-' char
-    else if (  varp == &p_isi
-	    || varp == &(curbuf->b_p_isk)
-	    || varp == &p_isp
-	    || varp == &p_isf)
+    else if (  varp == &p_isi			// 'isident'
+	    || varp == &(curbuf->b_p_isk)	// 'iskeyword'
+	    || varp == &p_isp			// 'isprint'
+	    || varp == &p_isf)			// 'isfname'
 	errmsg = did_set_isopt(&did_chartab);
-
-    // 'helpfile'
-    else if (varp == &p_hf)
+    else if (varp == &p_hf)			// 'helpfile'
 	did_set_helpfile();
-
 #ifdef FEAT_SYN_HL
-    // 'cursorlineopt'
-    else if (varp == &curwin->w_p_culopt
-				  || gvarp == &curwin->w_allbuf_opt.wo_culopt)
+    else if (  varp == &curwin->w_p_culopt	// 'cursorlineopt'
+	    || gvarp == &curwin->w_allbuf_opt.wo_culopt)
 	errmsg = did_set_cursorlineopt(varp);
-
-    // 'colorcolumn'
-    else if (varp == &curwin->w_p_cc)
+    else if (varp == &curwin->w_p_cc)		// 'colorcolumn'
 	errmsg = check_colorcolumn(curwin);
 #endif
-
 #ifdef FEAT_MULTI_LANG
-    // 'helplang'
-    else if (varp == &p_hlg)
+    else if (varp == &p_hlg)			// 'helplang'
 	errmsg = did_set_helplang();
 #endif
-
-    // 'highlight'
-    else if (varp == &p_hl)
+    else if (varp == &p_hl)			// 'highlight'
 	errmsg = did_set_highlight();
-
-    // 'nrformats'
-    else if (gvarp == &p_nf)
+    else if (gvarp == &p_nf)			// 'nrformats'
 	errmsg = did_set_opt_strings(*varp, p_nf_values, TRUE);
-
 #ifdef FEAT_SESSION
-    // 'sessionoptions'
-    else if (varp == &p_ssop)
+    else if (varp == &p_ssop)			// 'sessionoptions'
 	errmsg = did_set_sessionoptions(oldval);
-
-    // 'viewoptions'
-    else if (varp == &p_vop)
+    else if (varp == &p_vop)			// 'viewoptions'
 	errmsg = did_set_opt_flags(p_vop, p_ssop_values, &vop_flags, TRUE);
 #endif
-
-    // 'scrollopt'
-    else if (varp == &p_sbo)
+    else if (varp == &p_sbo)			// 'scrollopt'
 	errmsg = did_set_opt_strings(p_sbo, p_scbopt_values, TRUE);
-
-    // 'ambiwidth'
-    else if (varp == &p_ambw || varp == &p_emoji)
+    else if (  varp == &p_ambw			// 'ambiwidth'
+	    || varp == &p_emoji)		// 'emoji'
 	errmsg = did_set_ambiwidth();
-
-    // 'background'
-    else if (varp == &p_bg)
+    else if (varp == &p_bg)			// 'background'
 	errmsg = did_set_background();
-
-    // 'wildmode'
-    else if (varp == &p_wim)
+    else if (varp == &p_wim)			// 'wildmode'
 	errmsg = did_set_wildmode();
-
-    // 'wildoptions'
-    else if (varp == &p_wop)
+    else if (varp == &p_wop)			// 'wildoptions'
 	errmsg = did_set_opt_strings(p_wop, p_wop_values, TRUE);
-
 #ifdef FEAT_WAK
-    // 'winaltkeys'
-    else if (varp == &p_wak)
+    else if (varp == &p_wak)			// 'winaltkeys'
 	errmsg = did_set_winaltkeys();
 #endif
-
-    // 'eventignore'
-    else if (varp == &p_ei)
+    else if (varp == &p_ei)			// 'eventignore'
 	errmsg = did_set_eventignore();
 
-    // 'encoding', 'fileencoding', 'termencoding' and 'makeencoding'
-    else if (varp == &p_enc || gvarp == &p_fenc || varp == &p_tenc
-							   || gvarp == &p_menc)
+    else if (  varp == &p_enc			// 'encoding'
+	    || gvarp == &p_fenc			// 'fileencoding'
+	    || varp == &p_tenc			// 'termencoding'
+	    || gvarp == &p_menc)		// 'makeencoding'
 	errmsg = did_set_encoding(varp, gvarp, opt_flags);
-
 #if defined(FEAT_POSTSCRIPT)
-    else if (varp == &p_penc)
+    else if (varp == &p_penc)			// 'printencoding'
 	did_set_printencoding();
 #endif
-
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-    else if (varp == &p_imak)
+    else if (varp == &p_imak)			// 'imactivatekey'
 	errmsg = did_set_imactivatekey();
 #endif
-
 #ifdef FEAT_KEYMAP
-    else if (varp == &curbuf->b_p_keymap)
+    else if (varp == &curbuf->b_p_keymap)	// 'keymap'
 	errmsg = did_set_keymap(varp, opt_flags, value_checked);
 #endif
-
-    // 'fileformat'
-    else if (gvarp == &p_ff)
+    else if (gvarp == &p_ff)			// 'fileformat'
 	errmsg = did_set_fileformat(varp, oldval, opt_flags);
-
-    // 'fileformats'
-    else if (varp == &p_ffs)
+    else if (varp == &p_ffs)			// 'fileformats'
 	errmsg = did_set_fileformats();
-
 #if defined(FEAT_CRYPT)
-    // 'cryptkey'
-    else if (gvarp == &p_key)
+    else if (gvarp == &p_key)			// 'cryptkey'
 	did_set_cryptkey(oldval);
-
-    // 'cryptmethod'
-    else if (gvarp == &p_cm)
+    else if (gvarp == &p_cm)			// 'cryptmethod'
 	errmsg = did_set_cryptmethod(oldval, opt_flags);
 #endif
-
-    // 'matchpairs'
-    else if (gvarp == &p_mps)
+    else if (gvarp == &p_mps)			// 'matchpairs'
 	errmsg = did_set_matchpairs(varp);
-
-    // 'comments'
-    else if (gvarp == &p_com)
+    else if (gvarp == &p_com)			// 'comments'
 	errmsg = did_set_comments(varp, errbuf);
-
-    // global 'listchars' or 'fillchars'
-    else if (varp == &p_lcs || varp == &p_fcs)
+    else if (  varp == &p_lcs			// global 'listchars'
+	    || varp == &p_fcs)			// global 'fillchars'
 	errmsg = did_set_global_listfillchars(varp, opt_flags);
-
-    // local 'listchars'
-    else if (varp == &curwin->w_p_lcs)
+    else if (varp == &curwin->w_p_lcs)		// local 'listchars'
 	errmsg = set_chars_option(curwin, varp, TRUE);
-
-    // local 'fillchars'
-    else if (varp == &curwin->w_p_fcs)
+    else if (varp == &curwin->w_p_fcs)		// local 'fillchars'
 	errmsg = set_chars_option(curwin, varp, TRUE);
-
-    // 'cedit'
-    else if (varp == &p_cedit)
+    else if (varp == &p_cedit)			// 'cedit'
 	errmsg = check_cedit();
-
-    // 'verbosefile'
-    else if (varp == &p_vfile)
+    else if (varp == &p_vfile)			// 'verbosefile'
 	errmsg = did_set_verbosefile();
-
 #ifdef FEAT_VIMINFO
-    // 'viminfo'
-    else if (varp == &p_viminfo)
+    else if (varp == &p_viminfo)		// 'viminfo'
 	errmsg = did_set_viminfo(errbuf);
 #endif // FEAT_VIMINFO
-
     // terminal options
     else if (istermoption_idx(opt_idx) && full_screen)
 	did_set_term_option(varp, &did_swaptcap);
-
 #ifdef FEAT_LINEBREAK
-    // 'showbreak'
-    else if (gvarp == &p_sbr)
+    else if (gvarp == &p_sbr)			// 'showbreak'
 	errmsg = did_set_showbreak(varp);
 #endif
-
 #ifdef FEAT_GUI
-    // 'guifont'
-    else if (varp == &p_guifont)
-	errmsg = did_set_guifont(oldval, &redraw_gui_only);
-
+    else if (varp == &p_guifont)		// 'guifont'
+    {
+	errmsg = did_set_guifont(oldval);
+	redraw_gui_only = TRUE;
+    }
 # ifdef FEAT_XFONTSET
-    // 'guifontset'
-    else if (varp == &p_guifontset)
-	errmsg = did_set_guifontset(&redraw_gui_only);
+    else if (varp == &p_guifontset)		// 'guifontset'
+    {
+	errmsg = did_set_guifontset();
+	redraw_gui_only = TRUE;
+    }
 # endif
-
-    // 'guifontwide'
-    else if (varp == &p_guifontwide)
-	errmsg = did_set_guifontwide(&redraw_gui_only);
+    else if (varp == &p_guifontwide)		// 'guifontwide'
+    {
+	errmsg = did_set_guifontwide();
+	redraw_gui_only = TRUE;
+    }
 #endif
 #if defined(FEAT_GUI_GTK)
-    else if (varp == &p_guiligatures)
-	did_set_guiligatures(&redraw_gui_only);
+    else if (varp == &p_guiligatures)		// 'guiligatures'
+    {
+	did_set_guiligatures();
+	redraw_gui_only = TRUE;
+    }
 #endif
-
 #ifdef CURSOR_SHAPE
-    // 'guicursor'
-    else if (varp == &p_guicursor)
+    else if (varp == &p_guicursor)		// 'guicursor'
 	errmsg = parse_shape_opt(SHAPE_CURSOR);
 #endif
-
 #ifdef FEAT_MOUSESHAPE
-    // 'mouseshape'
-    else if (varp == &p_mouseshape)
+    else if (varp == &p_mouseshape)		// 'mouseshape'
 	errmsg = did_set_mouseshape();
 #endif
-
 #ifdef FEAT_PRINTER
-    else if (varp == &p_popt)
+    else if (varp == &p_popt)			// 'printoptions'
 	errmsg = parse_printoptions();
 # if defined(FEAT_POSTSCRIPT)
-    else if (varp == &p_pmfn)
+    else if (varp == &p_pmfn)			// 'printmbfont'
 	errmsg = parse_printmbfont();
 # endif
 #endif
-
 #ifdef FEAT_LANGMAP
-    // 'langmap'
-    else if (varp == &p_langmap)
+    else if (varp == &p_langmap)		// 'langmap'
 	langmap_set();
 #endif
-
 #ifdef FEAT_LINEBREAK
-    // 'breakat'
-    else if (varp == &p_breakat)
+    else if (varp == &p_breakat)		// 'breakat'
 	fill_breakat_flags();
 #endif
-
-    // 'titlestring' and 'iconstring'
-    else if (varp == &p_titlestring || varp == &p_iconstring)
+    else if (  varp == &p_titlestring		// 'titlestring'
+	    || varp == &p_iconstring)		// 'iconstring'
 	did_set_titleiconstring(varp);
-
 #ifdef FEAT_GUI
-    // 'guioptions'
-    else if (varp == &p_go)
-	did_set_guioptions(oldval, &redraw_gui_only);
-#endif
-
-#if defined(FEAT_GUI_TABLINE)
-    // 'guitablabel'
-    else if (varp == &p_gtl)
-	did_set_guitablabel(&redraw_gui_only);
-    // 'guitabtooltip'
-    else if (varp == &p_gtt)
-	redraw_gui_only = TRUE;
-#endif
-
-#if defined(UNIX) || defined(VMS)
-    // 'ttymouse'
-    else if (varp == &p_ttym)
-	errmsg = did_set_ttymouse();
-#endif
-
-    // 'selection'
-    else if (varp == &p_sel)
-	errmsg = did_set_selection();
-
-    // 'selectmode'
-    else if (varp == &p_slm)
-	errmsg = did_set_opt_strings(p_slm, p_slm_values, TRUE);
-
-#ifdef FEAT_BROWSE
-    // 'browsedir'
-    else if (varp == &p_bsdir)
-	errmsg = did_set_browsedir();
-#endif
-
-    // 'keymodel'
-    else if (varp == &p_km)
-	errmsg = did_set_keymodel();
-
-    // 'keyprotocol'
-    else if (varp == &p_kpc)
-	errmsg = did_set_keyprotocol();
-
-    // 'mousemodel'
-    else if (varp == &p_mousem)
-	errmsg = did_set_mousemodel();
-
-    // 'switchbuf'
-    else if (varp == &p_swb)
-	errmsg = did_set_opt_flags(p_swb, p_swb_values, &swb_flags, TRUE);
-
-    // 'splitkeep'
-    else if (varp == &p_spk)
-	errmsg = did_set_opt_strings(p_spk, p_spk_values, FALSE);
-
-    // 'debug'
-    else if (varp == &p_debug)
-	errmsg = did_set_opt_strings(p_debug, p_debug_values, TRUE);
-
-    // 'display'
-    else if (varp == &p_dy)
-	errmsg = did_set_display();
-
-    // 'eadirection'
-    else if (varp == &p_ead)
-	errmsg = did_set_opt_strings(p_ead, p_ead_values, FALSE);
-
-#ifdef FEAT_CLIPBOARD
-    // 'clipboard'
-    else if (varp == &p_cb)
-	errmsg = check_clipboard_option();
-#endif
-
-#ifdef FEAT_SPELL
-    // 'spellfile'
-    else if (varp == &(curwin->w_s->b_p_spf))
-	errmsg = did_set_spellfile(varp);
-
-    // 'spell'
-    else if (varp == &(curwin->w_s->b_p_spl))
-	errmsg = did_set_spell(varp);
-
-    // 'spellcapcheck'
-    else if (varp == &(curwin->w_s->b_p_spc))
-	errmsg = did_set_spellcapcheck();
-
-    // 'spelloptions'
-    else if (varp == &(curwin->w_s->b_p_spo))
-	errmsg = did_set_spelloptions(varp);
-
-    // 'spellsuggest'
-    else if (varp == &p_sps)
-	errmsg = did_set_spellsuggest();
-
-    // 'mkspellmem'
-    else if (varp == &p_msm)
-	errmsg = did_set_mkspellmem();
-#endif
-
-    // When 'bufhidden' is set, check for valid value.
-    else if (gvarp == &p_bh)
-	errmsg = did_set_opt_strings(curbuf->b_p_bh, p_bufhidden_values,
-								FALSE);
-
-    // When 'buftype' is set, check for valid value.
-    else if (gvarp == &p_bt)
-	errmsg = did_set_buftype();
-
-#ifdef FEAT_STL_OPT
-    // 'statusline', 'tabline' or 'rulerformat'
-    else if (gvarp == &p_stl || varp == &p_tal || varp == &p_ruf)
-	errmsg = did_set_statusline(varp);
-#endif
-
-    // 'complete'
-    else if (gvarp == &p_cpt)
-	errmsg = did_set_complete(varp, errbuf);
-
-    // 'completeopt'
-    else if (varp == &p_cot)
-	errmsg = did_set_completeopt();
-
-#ifdef BACKSLASH_IN_FILENAME
-    // 'completeslash'
-    else if (gvarp == &p_csl)
+    else if (varp == &p_go)			// 'guioptions'
     {
-	if (check_opt_strings(p_csl, p_csl_values, FALSE) != OK
-		|| check_opt_strings(curbuf->b_p_csl, p_csl_values, FALSE) != OK)
-	    errmsg = e_invalid_argument;
+	did_set_guioptions(oldval);
+	redraw_gui_only = TRUE;
     }
 #endif
-
+#if defined(FEAT_GUI_TABLINE)
+    else if (varp == &p_gtl)			// 'guitablabel'
+    {
+	did_set_guitablabel();
+	redraw_gui_only = TRUE;
+    }
+    else if (varp == &p_gtt)			// 'guitabtooltip'
+	redraw_gui_only = TRUE;
+#endif
+#if defined(UNIX) || defined(VMS)
+    else if (varp == &p_ttym)			// 'ttymouse'
+	errmsg = did_set_ttymouse();
+#endif
+    else if (varp == &p_sel)			// 'selection'
+	errmsg = did_set_selection();
+    else if (varp == &p_slm)			// 'selectmode'
+	errmsg = did_set_opt_strings(p_slm, p_slm_values, TRUE);
+#ifdef FEAT_BROWSE
+    else if (varp == &p_bsdir)			// 'browsedir'
+	errmsg = did_set_browsedir();
+#endif
+    else if (varp == &p_km)			// 'keymodel'
+	errmsg = did_set_keymodel();
+    else if (varp == &p_kpc)			// 'keyprotocol'
+	errmsg = did_set_keyprotocol();
+    else if (varp == &p_mousem)			// 'mousemodel'
+	errmsg = did_set_mousemodel();
+    else if (varp == &p_swb)			// 'switchbuf'
+	errmsg = did_set_opt_flags(p_swb, p_swb_values, &swb_flags, TRUE);
+    else if (varp == &p_spk)			// 'splitkeep'
+	errmsg = did_set_opt_strings(p_spk, p_spk_values, FALSE);
+    else if (varp == &p_debug)			// 'debug'
+	errmsg = did_set_opt_strings(p_debug, p_debug_values, TRUE);
+    else if (varp == &p_dy)			// 'display'
+	errmsg = did_set_display();
+    else if (varp == &p_ead)			// 'eadirection'
+	errmsg = did_set_opt_strings(p_ead, p_ead_values, FALSE);
+#ifdef FEAT_CLIPBOARD
+    else if (varp == &p_cb)			// 'clipboard'
+	errmsg = check_clipboard_option();
+#endif
+#ifdef FEAT_SPELL
+    else if (varp == &(curwin->w_s->b_p_spf))	// 'spellfile'
+	errmsg = did_set_spellfile(varp);
+    else if (varp == &(curwin->w_s->b_p_spl))	// 'spell'
+	errmsg = did_set_spell(varp);
+    else if (varp == &(curwin->w_s->b_p_spc))	// 'spellcapcheck'
+	errmsg = did_set_spellcapcheck();
+    else if (varp == &(curwin->w_s->b_p_spo))	// 'spelloptions'
+	errmsg = did_set_spelloptions(varp);
+    else if (varp == &p_sps)			// 'spellsuggest'
+	errmsg = did_set_spellsuggest();
+    else if (varp == &p_msm)			// 'mkspellmem'
+	errmsg = did_set_mkspellmem();
+#endif
+    else if (gvarp == &p_bh)			// 'bufhidden'
+	errmsg = did_set_opt_strings(curbuf->b_p_bh, p_bufhidden_values,
+								FALSE);
+    else if (gvarp == &p_bt)			// 'buftype'
+	errmsg = did_set_buftype();
+#ifdef FEAT_STL_OPT
+    else if (  gvarp == &p_stl			// 'statusline'
+	    || varp == &p_tal			// 'tabline'
+	    || varp == &p_ruf)			// 'rulerformat'
+	errmsg = did_set_statusline(varp);
+#endif
+    else if (gvarp == &p_cpt)			// 'complete'
+	errmsg = did_set_complete(varp, errbuf);
+    else if (varp == &p_cot)			// 'completeopt'
+	errmsg = did_set_completeopt();
+#ifdef BACKSLASH_IN_FILENAME
+    else if (gvarp == &p_csl)			// 'completeslash'
+	errmsg = did_set_completeslash();
+#endif
 #ifdef FEAT_SIGNS
-    // 'signcolumn'
-    else if (varp == &curwin->w_p_scl)
+    else if (varp == &curwin->w_p_scl)		// 'signcolumn'
 	errmsg = did_set_signcolumn(varp, oldval);
 #endif
-
-    // 'showcmdloc'
-    else if (varp == &p_sloc)
+    else if (varp == &p_sloc)			// 'showcmdloc'
 	errmsg = did_set_opt_strings(p_sloc, p_sloc_values, FALSE);
-
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
-    // 'toolbar'
-    else if (varp == &p_toolbar)
+    else if (varp == &p_toolbar)		// 'toolbar'
 	errmsg = did_set_toolbar();
 #endif
-
 #if defined(FEAT_TOOLBAR) && defined(FEAT_GUI_GTK)
-    // 'toolbariconsize': GTK+ 2 only
-    else if (varp == &p_tbis)
+    else if (varp == &p_tbis)			// 'toolbariconsize'
 	errmsg = did_set_toolbariconsize();
 #endif
-
-    // 'pastetoggle'
-    else if (varp == &p_pt)
+    else if (varp == &p_pt)			// 'pastetoggle'
 	did_set_pastetoggle();
-
-    // 'backspace'
-    else if (varp == &p_bs)
+    else if (varp == &p_bs)			// 'backspace'
 	errmsg = did_set_backspace();
-
-    // 'belloff'
-    else if (varp == &p_bo)
+    else if (varp == &p_bo)			// 'belloff'
 	errmsg = did_set_opt_flags(p_bo, p_bo_values, &bo_flags, TRUE);
-
-    // 'tagcase'
-    else if (gvarp == &p_tc)
+    else if (gvarp == &p_tc)			// 'tagcase'
 	errmsg = did_set_tagcase(opt_flags);
-
-    // 'casemap'
-    else if (varp == &p_cmp)
+    else if (varp == &p_cmp)			// 'casemap'
 	errmsg = did_set_opt_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
-
 #ifdef FEAT_DIFF
-    // 'diffopt'
-    else if (varp == &p_dip)
+    else if (varp == &p_dip)			// 'diffopt'
 	errmsg = did_set_diffopt();
 #endif
-
 #ifdef FEAT_FOLDING
-    // 'foldmethod'
-    else if (gvarp == &curwin->w_allbuf_opt.wo_fdm)
+    else if (gvarp == &curwin->w_allbuf_opt.wo_fdm)	// 'foldmethod'
 	errmsg = did_set_foldmethod(varp);
-
-    // 'foldmarker'
-    else if (gvarp == &curwin->w_allbuf_opt.wo_fmr)
+    else if (gvarp == &curwin->w_allbuf_opt.wo_fmr)	// 'foldmarker'
 	errmsg = did_set_foldmarker(varp);
-
-    // 'commentstring'
-    else if (gvarp == &p_cms)
+    else if (gvarp == &p_cms)			// 'commentstring'
 	errmsg = did_set_commentstring(varp);
-
-    // 'foldopen'
-    else if (varp == &p_fdo)
+    else if (varp == &p_fdo)			// 'foldopen'
 	errmsg = did_set_opt_flags(p_fdo, p_fdo_values, &fdo_flags, TRUE);
-
-    // 'foldclose'
-    else if (varp == &p_fcl)
+    else if (varp == &p_fcl)			// 'foldclose'
 	errmsg = did_set_opt_strings(p_fcl, p_fcl_values, TRUE);
-
-    // 'foldignore'
-    else if (gvarp == &curwin->w_allbuf_opt.wo_fdi)
+    else if (gvarp == &curwin->w_allbuf_opt.wo_fdi)	// 'foldignore'
 	did_set_foldignore();
 #endif
-
-    // 'virtualedit'
-    else if (gvarp == &p_ve)
+    else if (gvarp == &p_ve)			// 'virtualedit'
 	errmsg = did_set_virtualedit(oldval, opt_flags);
-
 #if defined(FEAT_CSCOPE) && defined(FEAT_QUICKFIX)
-    // 'cscopequickfix'
-    else if (varp == &p_csqf)
+    else if (varp == &p_csqf)			// 'cscopequickfix'
 	errmsg = did_set_cscopequickfix();
 #endif
-
-    // 'cinoptions'
-    else if (gvarp == &p_cino)
+    else if (gvarp == &p_cino)			// 'cinoptions'
 	did_set_cinoptions();
-
-    // 'lispoptions'
-    else if (gvarp == &p_lop)
+    else if (gvarp == &p_lop)			// 'lispoptions'
 	errmsg = did_set_lispoptions(varp);
-
 #if defined(FEAT_RENDER_OPTIONS)
-    // 'renderoptions'
-    else if (varp == &p_rop)
+    else if (varp == &p_rop)			// 'renderoptions'
 	errmsg = did_set_renderoptions();
 #endif
-
-    // 'filetype'
-    else if (gvarp == &p_ft)
+    else if (gvarp == &p_ft)			// 'filetype'
 	errmsg = did_set_filetype_or_syntax(varp, oldval, value_checked,
 							&value_changed);
-
 #ifdef FEAT_SYN_HL
-    // 'syntax'
-    else if (gvarp == &p_syn)
+    else if (gvarp == &p_syn)			// 'syntax'
 	errmsg = did_set_filetype_or_syntax(varp, oldval, value_checked,
 							&value_changed);
 #endif
-
 #ifdef FEAT_TERMINAL
-    // 'termwinkey'
-    else if (varp == &curwin->w_p_twk)
+    else if (varp == &curwin->w_p_twk)		// 'termwinkey'
 	errmsg = did_set_termwinkey();
-
-    // 'termwinsize'
-    else if (varp == &curwin->w_p_tws)
+    else if (varp == &curwin->w_p_tws)		// 'termwinsize'
 	errmsg = did_set_termwinsize();
-
-    // 'wincolor'
-    else if (varp == &curwin->w_p_wcr)
+    else if (varp == &curwin->w_p_wcr)		// 'wincolor'
 	term_update_wincolor(curwin);
 # if defined(MSWIN)
-    // 'termwintype'
-    else if (varp == &p_twt)
+    else if (varp == &p_twt)			// 'termwintype'
 	errmsg = did_set_opt_strings(p_twt, p_twt_values, FALSE);
 # endif
 #endif
-
 #ifdef FEAT_VARTABS
-    // 'varsofttabstop'
-    else if (varp == &(curbuf->b_p_vsts))
+    else if (varp == &(curbuf->b_p_vsts))	// 'varsofttabstop'
 	errmsg = did_set_varsofttabstop(varp);
-
-    // 'vartabstop'
-    else if (varp == &(curbuf->b_p_vts))
+    else if (varp == &(curbuf->b_p_vts))	// 'vartabstop'
 	errmsg = did_set_vartabstop(varp);
 #endif
-
 #ifdef FEAT_PROP_POPUP
-    // 'previewpopup'
-    else if (varp == &p_pvp)
+    else if (varp == &p_pvp)			// 'previewpopup'
 	errmsg = did_set_previewpopup();
 # ifdef FEAT_QUICKFIX
-    // 'completepopup'
-    else if (varp == &p_cpp)
+    else if (varp == &p_cpp)			// 'completepopup'
 	errmsg = did_set_completepopup();
 # endif
 #endif
-
 #ifdef FEAT_EVAL
-    // '*expr' options
     else if (
 # ifdef FEAT_BEVAL
-	    varp == &p_bexpr ||
+	    varp == &p_bexpr ||			// 'balloonexpr'
 # endif
 # ifdef FEAT_DIFF
-	    varp == &p_dex ||
+	    varp == &p_dex ||			// 'diffexpr'
 # endif
 # ifdef FEAT_FOLDING
-	    gvarp == &curwin->w_allbuf_opt.wo_fde ||
-	    gvarp == &curwin->w_allbuf_opt.wo_fdt ||
+	    gvarp == &curwin->w_allbuf_opt.wo_fde ||	// 'foldexpr'
+	    gvarp == &curwin->w_allbuf_opt.wo_fdt ||	// 'foldtext'
 # endif
-	    gvarp == &p_fex ||
+	    gvarp == &p_fex ||			// 'formatexpr'
 # ifdef FEAT_FIND_ID
-	    gvarp == &p_inex ||
+	    gvarp == &p_inex ||			// 'includeexpr'
 # endif
-	    gvarp == &p_inde ||
+	    gvarp == &p_inde ||			// 'indentexpr'
 # ifdef FEAT_DIFF
-	    varp == &p_pex ||
+	    varp == &p_pex ||			// 'patchexpr'
 # endif
 # ifdef FEAT_POSTSCRIPT
-	    varp == &p_pexpr ||
+	    varp == &p_pexpr ||			// 'printexpr'
 # endif
-	    varp == &p_ccv)
+	    varp == &p_ccv)			// 'charconvert'
 	did_set_optexpr(varp);
 #endif
-
 #ifdef FEAT_COMPL_FUNC
-    // 'completefunc'
-    else if (gvarp == &p_cfu)
+    else if (gvarp == &p_cfu)			// 'completefunc'
 	errmsg = set_completefunc_option();
-
-    // 'omnifunc'
-    else if (gvarp == &p_ofu)
+    else if (gvarp == &p_ofu)			// 'omnifunc'
 	errmsg = set_omnifunc_option();
-
-    // 'thesaurusfunc'
-    else if (gvarp == &p_tsrfu)
+    else if (gvarp == &p_tsrfu)			// 'thesaurusfunc'
 	errmsg = set_thesaurusfunc_option();
 #endif
-
 #if defined(FEAT_EVAL) && \
      (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))
-    // 'imactivatefunc'
-    else if (gvarp == &p_imaf)
+    else if (gvarp == &p_imaf)			// 'imactivatefunc'
 	errmsg = set_imactivatefunc_option();
-
-    // 'imstatusfunc'
-    else if (gvarp == &p_imsf)
+    else if (gvarp == &p_imsf)			// 'imstatusfunc'
 	errmsg = set_imstatusfunc_option();
 #endif
-
-    // 'operatorfunc'
-    else if (varp == &p_opfunc)
+    else if (varp == &p_opfunc)			// 'operatorfunc'
 	errmsg = set_operatorfunc_option();
-
 #ifdef FEAT_QUICKFIX
-    // 'quickfixtextfunc'
-    else if (varp == &p_qftf)
+    else if (varp == &p_qftf)			// 'quickfixtextfunc'
 	errmsg = qf_process_qftf_option();
 #endif
-
 #ifdef FEAT_EVAL
-    // 'tagfunc'
-    else if (gvarp == &p_tfu)
+    else if (gvarp == &p_tfu)			// 'tagfunc'
 	errmsg = set_tagfunc_option();
 #endif
-
-    // Options that are a list of flags.
-    else
-    {
-	p = NULL;
-	if (varp == &p_ww) // 'whichwrap'
-	    p = (char_u *)WW_ALL;
-	if (varp == &p_shm) // 'shortmess'
-	    p = (char_u *)SHM_ALL;
-	else if (varp == &(p_cpo)) // 'cpoptions'
-	    p = (char_u *)CPO_ALL;
-	else if (varp == &(curbuf->b_p_fo)) // 'formatoptions'
-	    p = (char_u *)FO_ALL;
+    else if (varp == &p_ww)			// 'whichwrap'
+	errmsg = did_set_option_listflag(varp, (char_u *)WW_ALL, errbuf);
+    else if (varp == &p_shm)			// 'shortmess'
+	errmsg = did_set_option_listflag(varp, (char_u *)SHM_ALL, errbuf);
+    else if (varp == &(p_cpo))			// 'cpoptions'
+	errmsg = did_set_option_listflag(varp, (char_u *)CPO_ALL, errbuf);
+    else if (varp == &(curbuf->b_p_fo))		// 'formatoptions'
+	errmsg = did_set_option_listflag(varp, (char_u *)FO_ALL, errbuf);
 #ifdef FEAT_CONCEAL
-	else if (varp == &curwin->w_p_cocu) // 'concealcursor'
-	    p = (char_u *)COCU_ALL;
+    else if (varp == &curwin->w_p_cocu)		// 'concealcursor'
+	errmsg = did_set_option_listflag(varp, (char_u *)COCU_ALL, errbuf);
 #endif
-	else if (varp == &p_mouse) // 'mouse'
-	{
-	    p = (char_u *)MOUSE_ALL;
-	}
+    else if (varp == &p_mouse)			// 'mouse'
+	errmsg = did_set_option_listflag(varp, (char_u *)MOUSE_ALL, errbuf);
 #if defined(FEAT_GUI)
-	else if (varp == &p_go) // 'guioptions'
-	    p = (char_u *)GO_ALL;
+    else if (varp == &p_go)			// 'guioptions'
+	errmsg = did_set_option_listflag(varp, (char_u *)GO_ALL, errbuf);
 #endif
-	if (p != NULL)
-	{
-	    for (s = *varp; *s; ++s)
-		if (vim_strchr(p, *s) == NULL)
-		{
-		    errmsg = illegal_char(errbuf, *s);
-		    break;
-		}
-	}
-    }
 
-    // If error detected, restore the previous value.
+    // If an error is detected, restore the previous value.
     if (errmsg != NULL)
     {
 	free_string_option(*varp);
@@ -3190,7 +3088,7 @@ did_set_string_option(
 	{
 	    // global option with local value set to use global value; free
 	    // the local value and make it empty
-	    p = get_option_varp_scope(opt_idx, OPT_LOCAL);
+	    char_u *p = get_option_varp_scope(opt_idx, OPT_LOCAL);
 	    free_string_option(*(char_u **)p);
 	    *(char_u **)p = empty_option;
 	}
@@ -3201,72 +3099,14 @@ did_set_string_option(
 
 	// Trigger the autocommand only after setting the flags.
 #ifdef FEAT_SYN_HL
-	// When 'syntax' is set, load the syntax of that name
 	if (varp == &(curbuf->b_p_syn))
-	{
-	    static int syn_recursive = 0;
-
-	    ++syn_recursive;
-	    // Only pass TRUE for "force" when the value changed or not used
-	    // recursively, to avoid endless recurrence.
-	    apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn, curbuf->b_fname,
-		    value_changed || syn_recursive == 1, curbuf);
-	    curbuf->b_flags |= BF_SYN_SET;
-	    --syn_recursive;
-	}
+	    do_syntax_autocmd(value_changed);
 #endif
 	else if (varp == &(curbuf->b_p_ft))
-	{
-	    // 'filetype' is set, trigger the FileType autocommand.
-	    // Skip this when called from a modeline and the filetype was
-	    // already set to this value.
-	    if (!(opt_flags & OPT_MODELINE) || value_changed)
-	    {
-		static int  ft_recursive = 0;
-		int	    secure_save = secure;
-
-		// Reset the secure flag, since the value of 'filetype' has
-		// been checked to be safe.
-		secure = 0;
-
-		++ft_recursive;
-		did_filetype = TRUE;
-		// Only pass TRUE for "force" when the value changed or not
-		// used recursively, to avoid endless recurrence.
-		apply_autocmds(EVENT_FILETYPE, curbuf->b_p_ft, curbuf->b_fname,
-				   value_changed || ft_recursive == 1, curbuf);
-		--ft_recursive;
-		// Just in case the old "curbuf" is now invalid.
-		if (varp != &(curbuf->b_p_ft))
-		    varp = NULL;
-
-		secure = secure_save;
-	    }
-	}
+	    do_filetype_autocmd(varp, opt_flags, value_changed);
 #ifdef FEAT_SPELL
 	if (varp == &(curwin->w_s->b_p_spl))
-	{
-	    char_u	fname[200];
-	    char_u	*q = curwin->w_s->b_p_spl;
-
-	    // Skip the first name if it is "cjk".
-	    if (STRNCMP(q, "cjk,", 4) == 0)
-		q += 4;
-
-	    // Source the spell/LANG.vim in 'runtimepath'.
-	    // They could set 'spellcapcheck' depending on the language.
-	    // Use the first name in 'spelllang' up to '_region' or
-	    // '.encoding'.
-	    for (p = q; *p != NUL; ++p)
-		if (!ASCII_ISALNUM(*p) && *p != '-')
-		    break;
-	    if (p > q)
-	    {
-		vim_snprintf((char *)fname, 200, "spell/%.*s.vim",
-							      (int)(p - q), q);
-		source_runtime(fname, DIP_ALL);
-	    }
-	}
+	    do_spelllang_source();
 #endif
     }
 
