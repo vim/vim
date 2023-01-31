@@ -979,11 +979,13 @@ channel_open(
 
 	ch_log(channel, "Trying to connect to %s port %d", dst, port);
 
-	// On Mac and Solaris a zero timeout almost never works.  At least wait
-	// one millisecond.  Let's do it for all systems, because we don't know
-	// why this is needed.
+	// On Mac and Solaris a zero timeout almost never works.  Waiting for
+	// one millisecond already helps a lot.  Later Mac systems (using IPv6)
+	// need more time, 15 milliseconds appears to work well.
+	// Let's do it for all systems, because we don't know why this is
+	// needed.
 	if (waittime == 0)
-	    waittime = 1;
+	    waittime = 15;
 
 	sd = channel_connect(channel, addr->ai_addr, (int)addr->ai_addrlen,
 								   &waittime);
