@@ -671,6 +671,9 @@ autocmd BufRead,BufNewFile *.fnl		setf fennel
 " Fetchmail RC file
 au BufNewFile,BufRead .fetchmailrc		setf fetchmail
 
+" FIRRTL
+au BufNewFile,BufRead *.fir			setf firrtl
+
 " Fish shell
 au BufNewFile,BufRead *.fish			setf fish
 
