@@ -889,6 +889,14 @@ endif
 " END_INDENT
 
 " START_INDENT
+if (
+true)
+&& true
+echo
+endif
+" END_INDENT
+
+" START_INDENT
 abstract class Shape
 this.color = Color.Black
 this.thickness = 10

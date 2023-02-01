@@ -7,7 +7,7 @@ vim9script
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
 #     $ cd runtime/indent/
-#     $ make clean; make test || vimdiff testdir/vim.{fail,ok}
+#     $ make clean; make test || vimdiff testdir/vim.{ok,fail}
 
 # Config {{{1
 
@@ -173,9 +173,13 @@ const MODIFIERS: dict<string> = {
     class: ['export', 'abstract', 'export abstract'],
     interface: ['export'],
 }
+#     ...
 #     class: ['export', 'abstract', 'export abstract'],
+#     ...
 #     →
+#     ...
 #     class: '\%(export\|abstract\|export\s\+abstract\)\s\+',
+#     ...
 ->map((_, mods: list<string>): string =>
     '\%(' .. mods
     ->join('\|')
@@ -352,6 +356,10 @@ const TRICKY_COMMANDS: string = patterns->join('\|')
 
 const OPENING_BRACKET_AT_EOL: string = OPENING_BRACKET .. END_OF_VIM9_LINE
 
+# CLOSING_BRACKET_AT_EOL {{{3
+
+const CLOSING_BRACKET_AT_EOL: string = CLOSING_BRACKET .. END_OF_VIM9_LINE
+
 # COMMA_AT_EOL {{{3
 
 const COMMA_AT_EOL: string = $',{END_OF_VIM9_LINE}'
@@ -478,6 +486,7 @@ export def Expr(lnum = v:lnum): number # {{{2
     if line_A.text->ContinuesBelowBracketBlock(line_B, past_bracket_block)
             && line_A.text !~ CLOSING_BRACKET_AT_SOL
         return past_bracket_block.startindent
+            + (past_bracket_block.startline =~ STARTS_NAMED_BLOCK ? 2 * shiftwidth() : 0)
     endif
 
     # Problem: If we press `==` on the line right below the start of a multiline
@@ -1147,6 +1156,10 @@ enddef
 
 def EndsWithOpeningBracket(line: dict<any>): bool # {{{3
     return NonCommentedMatch(line, OPENING_BRACKET_AT_EOL)
+enddef
+
+def EndsWithClosingBracket(line: dict<any>): bool # {{{3
+    return NonCommentedMatch(line, CLOSING_BRACKET_AT_EOL)
 enddef
 
 def NonCommentedMatch(line: dict<any>, pat: string): bool # {{{3
