@@ -924,6 +924,13 @@ endinterface
 " END_INDENT
 
 " START_INDENT
+interface EnterExit
+def Enter(): void
+def Exit(): void
+endinterface
+" END_INDENT
+
+" START_INDENT
 enum Color
 White
 Red
