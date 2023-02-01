@@ -922,7 +922,7 @@ update_vim9_script_var(
 	    // svar_T and create a new sallvar_T.
 	    sv = ((svar_T *)si->sn_var_vals.ga_data) + si->sn_var_vals.ga_len;
 	    newsav = (sallvar_T *)alloc_clear(
-				       sizeof(sallvar_T) + STRLEN(name));
+			      offsetof(sallvar_T, sav_key) + STRLEN(name) + 1);
 	    if (newsav == NULL)
 		return;
 

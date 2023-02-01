@@ -1848,7 +1848,7 @@ count_common_word(
     hi = hash_lookup(&lp->sl_wordcount, p, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	wc = alloc(sizeof(wordcount_T) + STRLEN(p));
+	wc = alloc(offsetof(wordcount_T, wc_word) + STRLEN(p) + 1);
 	if (wc == NULL)
 	    return;
 	STRCPY(wc->wc_word, p);
