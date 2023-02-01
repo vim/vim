@@ -2,7 +2,7 @@ vim9script
 
 # Language:     Vim script
 # Maintainer:   github user lacygoill
-# Last Change:  2023 Jan 28
+# Last Change:  2023 Feb 01
 
 # NOTE: Whenever you change the code, make sure the tests are still passing:
 #
@@ -184,7 +184,7 @@ const MODIFIERS: dict<string> = {
     '\%(' .. mods
     ->join('\|')
     ->substitute('\s\+', '\\s\\+', 'g')
-    .. '\)\s\+')
+    .. '\)' .. '\s\+')
 
 # HIGHER_ORDER_COMMAND {{{3
 
@@ -209,9 +209,10 @@ const HIGHER_ORDER_COMMAND: string = $'\%(^\|{BAR_SEPARATION}\)\s*\<\%({patterns
 
 # Let's derive this constant from `BLOCKS`:
 #
-#     [['for', 'endfor\=']
-#      ['if', 'el\%[se]', 'elseif\=', 'en\%[dif]'],,
-#      ...]]
+#     [['if', 'el\%[se]', 'elseif\=', 'en\%[dif]'],
+#      ['for', 'endfor\='],
+#      ...,
+#      [...]]
 #     →
 #     {
 #      'for': ['for', '', 'endfor\='],
@@ -274,7 +275,7 @@ patterns = BLOCKS
     ->map((_, kwds: list<string>) => kwds[1 :])
     ->flattennew()
     # `catch` and `elseif` need to be handled as special cases
-    ->filter((_, pat: string): bool => pat->Unshorten() !~ '^\%(catch\|elseif\)')
+    ->filter((_, pat: string): bool => pat->Unshorten() !~ '^\%(catch\|elseif\)\>')
 
 const ENDS_BLOCK_OR_CLAUSE: string = '^\s*\%(' .. patterns->join('\|') .. $'\){END_OF_COMMAND}'
     .. $'\|^\s*cat\%[ch]\%(\s\+\({PATTERN_DELIMITER}\).*\1\)\={END_OF_COMMAND}'
@@ -495,6 +496,18 @@ export def Expr(lnum = v:lnum): number # {{{2
     if line_B->EndsWithLambdaArrow()
         return Indent(line_B.lnum) + shiftwidth() + IndentMoreInBracketBlock()
     endif
+    # FIXME: Similar issue here:
+    #
+    #     var x = []
+    #         ->filter((_, _) =>
+    #             true)
+    #         ->items()
+    #
+    # Press `==` on last line.
+    # Expected: The `->items()` line is indented like `->filter(...)`.
+    # Actual: It's indented like `true)`.
+    # Is it worth fixing? `=ip` gives  the correct indentation, because then the
+    # cache is used.
 
     # Don't move this block before the heredoc one.{{{
     #
