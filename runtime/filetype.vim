@@ -1024,7 +1024,7 @@ au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc	setf json
 
 " JSONC (JSON with comments)
 au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc 	setf jsonc
-au BufNewFile,BufRead .jshintc,.hintrc,.swrc,[jt]sconfig*.json 	setf jsonc
+au BufNewFile,BufRead .jshintrc,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
 
 " JSON
 au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
