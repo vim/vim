@@ -4305,7 +4305,7 @@ getroom(
 	    bl = NULL;
 	else
 	    // Allocate a block of memory. It is not freed until much later.
-	    bl = alloc_clear(sizeof(sblock_T) + SBLOCKSIZE);
+	    bl = alloc_clear(offsetof(sblock_T, sb_data) + SBLOCKSIZE + 1);
 	if (bl == NULL)
 	{
 	    if (!spin->si_did_emsg)

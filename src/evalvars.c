@@ -3960,7 +3960,7 @@ set_var_const(
 			|| STRNCMP(name, "g:", 2) == 0 || var_in_autoload))
 	    goto failed;
 
-	di = alloc(sizeof(dictitem_T) + STRLEN(varname));
+	di = alloc(offsetof(dictitem_T, di_key) + STRLEN(varname) + 1);
 	if (di == NULL)
 	    goto failed;
 	STRCPY(di->di_key, varname);

@@ -3228,7 +3228,7 @@ add_sound_suggest(
     hi = hash_lookup(&slang->sl_sounddone, goodword, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	sft = alloc(sizeof(sftword_T) + STRLEN(goodword));
+	sft = alloc(offsetof(sftword_T, sft_word) + STRLEN(goodword) + 1);
 	if (sft != NULL)
 	{
 	    sft->sft_score = score;
