@@ -680,7 +680,8 @@ did_set_term(int *opt_idx, long_u *free_oldval)
 	// Both 'term' and 'ttytype' point to T_NAME, only set the
 	// P_ALLOCED flag on 'term'.
 	*opt_idx = findoption((char_u *)"term");
-	*free_oldval = (get_option_flags(*opt_idx) & P_ALLOCED);
+	if (*opt_idx >= 0)
+	    *free_oldval = (get_option_flags(*opt_idx) & P_ALLOCED);
     }
 
     return errmsg;
