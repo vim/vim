@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 9.0.  Last change: 2023 Jan 09
+*term.txt*      For Vim version 9.0.  Last change: 2023 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -322,8 +322,13 @@ using the "xterm" workaround.  These are the relevant entries (so far):
 	PS	"\033[200~"	pasted text start |t_PS|
 	PE	"\033[201~"	pasted text end |t_PE|
 
-	XM	"\033[?1006;1000%?%p1%{1}%=%th%el%;"
+	XM	"\033[?1006;1004;1000%?%p1%{1}%=%th%el%;"
 				mouse enable / disable |t_XM|
+
+The "XM" entry includes "1006" to enable SGR style mouse reporting.  This
+supports columns above 223.  It also includes "1004" which enables focus
+reporting.  The t_fe and t_fd entries can be left empty (they don't have
+entries in terminfo/termcap anyway).
 
 						*xterm-kitty* *kitty-terminal*
 The Kitty terminal is a special case.  Mainly because it works differently

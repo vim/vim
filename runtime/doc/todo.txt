@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2023 Jan 09
+*todo.txt*      For Vim version 9.0.  Last change: 2023 Feb 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,13 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Errors when running tests with valgrind:
+- test_codestyle.vim:  e.g.:
+    command line..script /home/mool/vim/vim90/src/testdir/runtest.vim[569]..function RunTheTest[52]..Test_test_files line 6: keycode_check.vim: space before tab: Expected 0 but got 7
+    command line..script /home/mool/vim/vim90/src/testdir/runtest.vim[569]..function RunTheTest[52]..Test_test_files line 10: setup.vim: trailing white space: Expected 0 but got 23
+- test_gui.vim:
+    Found errors in Test_gui_mouse_event():
+
 Upcoming larger works:
 - Make spell checking work with recent .dic/.aff files, e.g. French.  #4916
     Make Vim understand the format somehow?   Search for "spell" below.
@@ -53,18 +60,29 @@ Upcoming larger works:
 
 
 Further Vim9 improvements, possibly after launch:
-- implement :class and :interface: See |vim9-classes|  #11544
-    inheritance: how about super()?
-    inheritance: new() method from parent used in child?
-    import/export of a class
-    type() should return different type for each class?
-    give error for shadowing (variable and argument) when defining a class or
-    interface, not later when compiling it.
-    object empty(), len() - can class define a method to be used for them?
-    how about lock/unlock?
-    When checking "implements" also check types of members and function args.
+- implement :class and :interface: See |vim9-classes
+  - Change access: public by default, private by prefixing "_".
+	Check for error: can't have same name twice (ignoring "_" prefix).
+  - Private methods?
+	either: private def Func()
+	    or: def _Func()
+    Perhaps use "private" keyword instead of "_" prefix?
+  - "final" object members - can only be set in the constructor.
+  - object empty(), len() - can class define a method to be used for them?
+  - how about lock/unlock?
+  - When checking "implements" also check types of members and function args.
+  - For chaining, allow using the class name as type for function return
+    value.
+  - Implement generics
+  - Add "instanceof"
+  - More efficient way for interface member index than iterating over list?
+  - a variant of type() that returns a different type for each class?
+      list<number> and list<string> should also differ.
+  - Issue #11822: any.Func() can be a dict or an object call, need to handle
+    this at runtime.
 - implement :type
 - implement :enum
+- class local to a function
 - Use Vim9 for more runtime files.
 - Inline call to map() and filter(), better type checking.
 - When evaluating constants for script variables, some functions could work:
@@ -72,16 +90,19 @@ Further Vim9 improvements, possibly after launch:
 - Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
 Information missing in terminfo:
-Priority:
 - t_RV	request terminal version string; xterm:	"\033[>c"
-    change in terminfo for "RV" uses the wrong escape sequence... ?
-Mouse support:
-    on/off: hard coded in mch_setmouse() - use "XM" terminfo/termcap entry;
-       If it starts with "\E[?1006;1000%" then set 'ttymouse' to "sgr".
+    change in terminfo for "RV" uses the wrong escape sequence 7 - 14 Jan only
 Codes used for focus gained and lost (currently using use_xterm_like_mouse())
   termcodes are hard-coded in set_termname(), not named.
+    Use the XF flag?  enables recognizing the focus in/out events.
+    Check if t_fe is not empty.
+    Check for "1004" in t_XM. (disadvantage: only focus events when mouse is
+    used)
 - t_fe	enable focus-event tracking
 - t_fd	disable focus-event tracking
+Modifiers for various keys
+- Decode kitty key protocol Meta and use MOD_MASK_META.  Document <T-k>
+- flag to indicate "xterm compatible modifiers" ?
 Underline and similar:
 - t_AU - Set underline color: like "AF" and "AB" entries.
 - t_Ce	undercurl and underline end
@@ -124,6 +145,8 @@ Probably Vim internal, not in terminfo:
 - t_RK	request terminal keyboard protocol state; sent after |t_TI|
 Already working, not properly documented:
 - t_u7	request cursor position
+Also, with Alt-b we get â, with Alt-Shift-b we should bet another character.
+That does not appear to work with Kitty.  #11913
 
 Popup windows:
 - Add a function to redraw a specific popup window.  Esp. to be used when

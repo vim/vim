@@ -1,21 +1,22 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Jan 09
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
-NOTE - This is under development, anything can still change! - NOTE
+NOTE - This is not finished yet, anything can still change! - NOTE
 
 
 Vim9 classes, objects, interfaces, types and enums.
 
 1.  Overview			|Vim9-class-overview|
 2.  A simple class		|Vim9-simple-class|
-3.  Using an abstract class	|Vim9-abstract-class|
-4.  Using an interface		|Vim9-using-interface|
-5.  More class details		|Vim9-class|
-6.  Type definition		|Vim9-type|
-7.  Enum			|Vim9-enum|
+3.  Class members and functions	|Vim9-class-member|
+4.  Using an abstract class	|Vim9-abstract-class|
+5.  Using an interface		|Vim9-using-interface|
+6.  More class details		|Vim9-class|
+7.  Type definition		|Vim9-type|
+8.  Enum			|Vim9-enum|
 
 9.  Rationale
 10. To be done later
@@ -25,25 +26,25 @@ Vim9 classes, objects, interfaces, types and enums.
 1. Overview					*Vim9-class-overview*
 
 The fancy term is "object-oriented programming".  You can find lots of study
-material about this subject.  Here we document what |Vim9| script provides,
-assuming you know the basics already.  Added are helpful hints about how
-to use this functionality effectively.
+material on this subject.  Here we document what |Vim9| script provides,
+assuming you know the basics already.  Added are helpful hints about how to
+use this functionality effectively.
 
 The basic item is an object:
 - An object stores state.  It contains one or more variables that can each
   have a value.
-- An object usually provides functions that manipulate its state.  These
+- An object provides functions that use and manipulate its state.  These
   functions are invoked "on the object", which is what sets it apart from the
   traditional separation of data and code that manipulates the data.
 - An object has a well defined interface, with typed member variables and
   member functions.
-- Objects are created by a class and all objects have the same interface.
-  This never changes, it is not dynamic.
+- Objects are created from a class and all objects have the same interface.
+  This does not change at runtime, it is not dynamic.
 
 An object can only be created by a class.  A class provides:
 - A new() method, the constructor, which returns an object for the class.
   This method is invoked on the class name: MyClass.new().
-- State shared by all objects of the class: class variables and constants.
+- State shared by all objects of the class: class variables (class members).
 - A hierarchy of classes, with super-classes and sub-classes, inheritance.
 
 An interface is used to specify properties of an object:
@@ -62,17 +63,18 @@ teachers use real-world objects to explain class relations and you might think
 your model should therefore reflect the real world.  It doesn't!  The model
 should match your purpose.
 
-You will soon find that composition is often better than inheritance.  Don't
-waste time trying to find the optimal class model.  Or waste time discussing
-whether a square is a rectangle or that a rectangle is a square.  It doesn't
-matter.
+Keep in mind that composition (an object contains other objects) is often
+better than inheritance (an object extends another object).  Don't waste time
+trying to find the optimal class model.  Or waste time discussing whether a
+square is a rectangle or that a rectangle is a square.  It doesn't matter.
 
 
 ==============================================================================
 
 2.  A simple class				*Vim9-simple-class*
 
-Let's start with a simple example: a class that stores a text position: >
+Let's start with a simple example: a class that stores a text position (see
+below for how to do this more efficiently): >
 
 	class TextPosition
 	   this.lnum: number
@@ -107,7 +109,7 @@ The object members "lnum" and "col" can be accessed directly: >
 <							*E1317* *E1327*
 If you have been using other object-oriented languages you will notice that
 in Vim the object members are consistently referred to with the "this."
-prefix.  This is different from languages like Java and TypeScript.  This
+prefix.  This is different from languages like Java and TypeScript.  The
 naming convention makes the object members easy to spot.  Also, when a
 variable does not have the "this." prefix you know it is not an object member.
 
@@ -117,9 +119,9 @@ Member write access ~
 Now try to change an object member directly: >
 
 	pos.lnum = 9
-<								*E1335*
+<							*E1335*
 This will give you an error!  That is because by default object members can be
-read but not set.  That's why the class provides a method for it: >
+read but not set.  That's why the TextPosition class provides a method for it: >
 
 	pos.SetLnum(9)
 
@@ -128,12 +130,12 @@ way.  Most often there is no problem using a value, while setting a value may
 have side effects that need to be taken care of.  In this case, the SetLnum()
 method could check if the line number is valid and either give an error or use
 the closest valid value.
-						*:public* *E1331*
+							*:public* *E1331*
 If you don't care about side effects and want to allow the object member to be
 changed at any time, you can make it public: >
 
 	public this.lnum: number
-	public this.col number
+	public this.col: number
 
 Now you don't need the SetLnum(), SetCol() and SetPosition() methods, setting
 "pos.lnum" directly above will no longer give an error.
@@ -153,7 +155,7 @@ name: >
 	this._col number
 
 Now you need to provide methods to get the value of the private members.
-These are commonly call getters.  We recommend using a name that starts with
+These are commonly called getters.  We recommend using a name that starts with
 "Get": >
 
 	def GetLnum(): number
@@ -181,6 +183,7 @@ Simplifying the new() method ~
 Many constructors take values for the object members.  Thus you very often see
 this pattern: >
 
+	 class SomeClass
 	   this.lnum: number
 	   this.col: number
 
@@ -188,6 +191,7 @@ this pattern: >
 	      this.lnum = lnum
 	      this.col = col
 	   enddef
+	 endclass
 
 Not only is this text you need to write, it also has the type of each member
 twice.  Since this is so common a shorter way to write new() is provided: >
@@ -197,8 +201,24 @@ twice.  Since this is so common a shorter way to write new() is provided: >
 
 The semantics are easy to understand: Providing the object member name,
 including "this.", as the argument to new() means the value provided in the
-new() call is assigned to that object member.  This mechanism is coming from
-the Dart language.
+new() call is assigned to that object member.  This mechanism comes from the
+Dart language.
+
+Putting together this way of using new() and making the members public results
+in a much shorter class definition as what we started with: >
+
+	class TextPosition
+	   public this.lnum: number
+	   public this.col: number
+
+	   def new(this.lnum, this.col)
+	   enddef
+
+	   def SetPosition(lnum: number, col: number)
+	      this.lnum = lnum
+	      this.col = col
+	   enddef
+	 endclass
 
 The sequence of constructing a new object is:
 1. Memory is allocated and cleared.  All values are zero/false/empty.
@@ -208,21 +228,68 @@ The sequence of constructing a new object is:
 3. Arguments in the new() method in the "this.name" form are assigned.
 4. The body of the new() method is executed.
 
-TODO: for a sub-class the constructor of the parent class will be invoked
-somewhere.
-
+If the class extends a parent class, the same thing happens.  In the second
+step the members of the parent class are done first.  There is no need to call
+"super()" or "new()" on the parent.
 
 ==============================================================================
 
-3.  Using an abstract class			*Vim9-abstract-class*
+3.  class members and functions			*Vim9-class-member*
+
+						*:static* *E1337* *E1338*
+Class members are declared with "static".  They are used by the name without a
+prefix: >
+
+	class OtherThing
+	   this.size: number
+	   static totalSize: number
+
+	   def new(this.size)
+	      totalSize += this.size
+	   enddef
+	endclass
+<							*E1340* *E1341*
+Since the name is used as-is, shadowing the name by a function argument name
+or local variable name is not allowed.
+
+Just like object members the access can be made private by using an underscore
+as the first character in the name, and it can be made public by prefixing
+"public": >
+
+    class OtherThing
+	static total: number	      # anybody can read, only class can write
+	static _sum: number	      # only class can read and write
+	public static result: number  # anybody can read and write
+    endclass
+<
+							*class-function*
+Class functions are also declared with "static".  They have no access to
+object members, they cannot use the "this" keyword. >
+
+	class OtherThing
+	   this.size: number
+	   static totalSize: number
+
+	   # Clear the total size and return the value it had before.
+	   static def ClearTotalSize(): number
+	      var prev = totalSize
+	      totalSize = 0
+	      return prev
+	   enddef
+	endclass
+
+Inside the class the function can be called by name directly, outside the
+class the class name must be prefixed: `OtherThing.ClearTotalSize()`.
+
+==============================================================================
+
+4.  Using an abstract class			*Vim9-abstract-class*
 
 An abstract class forms the base for at least one sub-class.  In the class
 model one often finds that a few classes have the same properties that can be
-shared, but a class with those properties does not have enough state to create
+shared, but a class with these properties does not have enough state to create
 an object from.  A sub-class must extend the abstract class and add the
 missing state and/or methods before it can be used to create objects for.
-
-An abstract class does not have a new() method.
 
 For example, a Shape class could store a color and thickness.  You cannot
 create a Shape object, it is missing the information about what kind of shape
@@ -249,51 +316,13 @@ class, for which objects can be created.  Example: >
 	   enddef
 	endclass
 <
-					*class-member* *:static* *E1337* *E1338*
-Class members are declared with "static".  They are used by the name without a
-prefix: >
-
-	class OtherThing
-	   this.size: number
-	   static totalSize: number
-
-	   def new(this.size)
-	      totalSize += this.size
-	   enddef
-	endclass
-<							*E1340* *E1341*
-Since the name is used as-is, shadowing the name by a function argument name
-or variable name is not allowed.
-
-Just like object members the access can be made private by using an underscore
-as the first character in the name, and it can be made public by prefixing
-"public": >
-	class OtherThing
-	   static total: number	# anybody can read, only class can write
-	   static _sum: number		# only class can read and write
-	   public static result: number	# anybody can read and write
-	endclass
-<
-						*class-function*
-Class functions are also declared with "static".  They have no access to
-object members, they cannot use the "this" keyword. >
-
-	class OtherThing
-	   this.size: number
-	   static totalSize: number
-
-	   " Clear the total size and return the value it had before. 
-	   static def ClearTotalSize(): number
-	      var prev = totalSize
-	      totalSize = 0
-	      return prev
-	   enddef
-	endclass
+An abstract class is defined the same way as a normal class, except that it
+does not have any new() method. *E1359*
 
 
 ==============================================================================
 
-4.  Using an interface				*Vim9-using-interface*
+5.  Using an interface				*Vim9-using-interface*
 
 The example above with Shape, Square and Triangle can be made more useful if
 we add a method to compute the surface of the object.  For that we create the
@@ -348,7 +377,7 @@ The interface name can be used as a type: >
 
 ==============================================================================
 
-5.  More class details				*Vim9-class* *Class* *class*
+6.  More class details				*Vim9-class* *Class* *class*
 
 Defining a class ~
 					*:class* *:endclass* *:abstract*
@@ -386,12 +415,52 @@ once.  They can appear in any order, although this order is recommended: >
 	extends ClassName
 	implements InterfaceName, OtherInterface
 	specifies SomeInterface
-<							*extends*
+<							*E1355*
+Each member and function name can be used only once.  It is not possible to
+define a function with the same name and different type of arguments.
+
+
+Extending a class ~
+							*extends*
 A class can extend one other class. *E1352* *E1353* *E1354*
+The basic idea is to build on top of an existing class, add properties to it.
+
+The extended class is called the "base class" or "super class".  The new class
+is called the "child class".
+
+Object members from the base class are all taken over by the child class.  It
+is not possible to override them (unlike some other languages).
+
+						*E1356* *E1357* *E1358*
+Object methods of the base class can be overruled.  The signature (arguments,
+argument types and return type) must be exactly the same.  The method of the
+base class can be called by prefixing "super.".
+
+Other object methods of the base class are taken over by the child class.
+
+Class functions, including functions starting with "new", can be overruled,
+like with object methods.  The function on the base class can be called by
+prefixing the name of the class (for class functions) or "super.".
+
+Unlike other languages, the constructor of the base class does not need to be
+invoked.  In fact, it cannot be invoked.  If some initialization from the base
+class also needs to be done in a child class, put it in an object method and
+call that method from every constructor().
+
+If the base class did not specify a new() function then one was automatically
+created.  This function will not be taken over by the child class.  The child
+class can define its own new() function, or, if there isn't one, a new()
+function will be added automatically.
+
+
+A class implementing an interface ~
 						*implements* *E1346* *E1347*
 A class can implement one or more interfaces.  The "implements" keyword can
 only appear once *E1350* .  Multiple interfaces can be specified, separated by
 commas.  Each interface name can appear only once. *E1351*
+
+
+A class defining an interface ~
 							*specifies*
 A class can declare its interface, the object members and methods, with a
 named interface.  This avoids the need for separately specifying the
@@ -528,7 +597,7 @@ constructor methods.
 
 ==============================================================================
 
-6.  Type definition					*Vim9-type* *:type*
+7.  Type definition					*Vim9-type* *:type*
 
 A type definition is giving a name to a type specification.  For Example: >
 
@@ -539,7 +608,7 @@ TODO: more explanation
 
 ==============================================================================
 
-7.  Enum					*Vim9-enum* *:enum* *:endenum*
+8.  Enum					*Vim9-enum* *:enum* *:endenum*
 
 An enum is a type that can have one of a list of values.  Example: >
 
@@ -639,7 +708,7 @@ Some languages support multiple inheritance.  Although that can be useful in
 some cases, it makes the rules of how a class works quite complicated.
 Instead, using interfaces to declare what is supported is much simpler.  The
 very popular Java language does it this way, and it should be good enough for
-Vim.  The "keep it simple" rule applies here.  
+Vim.  The "keep it simple" rule applies here.
 
 Explicitly declaring that a class supports an interface makes it easy to see
 what a class is intended for.  It also makes it possible to do proper type

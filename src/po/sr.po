@@ -10,16 +10,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-25 15:38+0400\n"
-"PO-Revision-Date: 2022-11-25 15:40+0400\n"
+"POT-Creation-Date: 2023-02-02 10:20+0400\n"
+"PO-Revision-Date: 2023-02-02 10:54+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 msgid "ERROR: "
 msgstr "ГРЕШКА: "
@@ -1817,8 +1817,8 @@ msgstr "-P <назив родитеља>\tОтвори Vim унутар роди
 msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
 msgstr "--windowid <HWND>\tОтвори Vim унутар другог win32 виџета"
 
-msgid "Seen modifyOtherKeys: true"
-msgstr "Уочено modifyOtherKeys: да"
+msgid "Seen modifyOtherKeys: true\n"
+msgstr "Уочено modifyOtherKeys: да\n"
 
 msgid "Unknown"
 msgstr "Непознато"
@@ -1836,8 +1836,12 @@ msgid "Cleared"
 msgstr "Обрисано"
 
 #, c-format
-msgid "Kitty keyboard protocol: %s"
-msgstr "Kitty протокол тастатуре: %s"
+msgid "modifyOtherKeys detected: %s\n"
+msgstr "Откривено modifyOtherKeys: %s\n"
+
+#, c-format
+msgid "Kitty keyboard protocol: %s\n"
+msgstr "Kitty протокол тастатуре: %s\n"
 
 msgid "No abbreviation found"
 msgstr "Скраћеница није пронађена"
@@ -7635,8 +7639,8 @@ msgstr "E1112: Ширина ћелије ставке листе %d је нев�
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: Опсези за 0x%lx се преклапају"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Подржавају се само вредности од 0x100 и веће"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Подржавају се само вредности од 0x80 и веће"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: „assert_fails()” четврти аргумент мора бити број"
@@ -8362,6 +8366,184 @@ msgstr "E1311: Током исписа не може да се врши изме
 msgid "E1312: Not allowed to change the window layout in this autocmd"
 msgstr "E1312: У овој аутокоманди није дозвољено мењање распореда прозора"
 
+#, c-format
+msgid "E1313: Not allowed to add or remove entries (%s)"
+msgstr "E1313: Није дозвољено додавање или уклањање ставки (%s)"
+
+#, c-format
+msgid "E1314: Class name must start with an uppercase letter: %s"
+msgstr "E1314: Име класе мора да почне великим словом: %s"
+
+#, c-format
+msgid "E1315: White space required after name: %s"
+msgstr "E1315: Након имена мора да стоји празан простор: %s"
+
+msgid "E1316: Class can only be defined in Vim9 script"
+msgstr "E1316: Класа може да се дефинише само у Vim9 скрипти"
+
+#, c-format
+msgid "E1317: Invalid object member declaration: %s"
+msgstr "E1317: Неисправна декларација члана објекта: %s"
+
+#, c-format
+msgid "E1318: Not a valid command in a class: %s"
+msgstr "E1318: Команда не важи у класи: %s"
+
+msgid "E1319: Using a class as a Number"
+msgstr "E1319: Класа се користи као Број"
+
+msgid "E1320: Using an object as a Number"
+msgstr "E1320: Објекат се користи као Број"
+
+msgid "E1321: Using a class as a Float"
+msgstr "E1321: Класа се користи као Покретни"
+
+msgid "E1322: Using an object as a Float"
+msgstr "E1322: Објекат се користи као Покретни"
+
+msgid "E1323: Using a class as a String"
+msgstr "E1323: Класа се користи као Стринг"
+
+msgid "E1324: Using an object as a String"
+msgstr "E1324: Објекат се користи као Стринг"
+
+#, c-format
+msgid "E1325: Method not found on class \"%s\": %s"
+msgstr "E1325: Није пронађена метода класе „%s”: %s"
+
+#, c-format
+msgid "E1326: Member not found on object \"%s\": %s"
+msgstr "E1326: Члан није пронађен у објекту „%s”: %s"
+
+#, c-format
+msgid "E1327: Object required, found %s"
+msgstr "E1327: Потребан је објекат, пронађено %s"
+
+#, c-format
+msgid "E1328: Constructor default value must be v:none: %s"
+msgstr "E1328: Подразумевана вредност конструктора мора бити v:none: %s"
+
+#, c-format
+msgid "E1329: Cannot get object member type from initializer: %s"
+msgstr "E1329: Тип члана објекта не може да се одреди из иницијализатора: %s"
+
+#, c-format
+msgid "E1330: Invalid type for object member: %s"
+msgstr "E1330: Неисправан тип члана објекта: %s"
+
+msgid "E1331: Public must be followed by \"this\" or \"static\""
+msgstr "E1331: Након Public мора да следи „this” или „static”"
+
+#, c-format
+msgid "E1332: Public member name cannot start with underscore: %s"
+msgstr "E1332: Име Public члана не може почити доњом цртом: %s"
+
+#, c-format
+msgid "E1333: Cannot access private member: %s"
+msgstr "E1333: Не може да се приступи приватном члану: %s"
+
+#, c-format
+msgid "E1334: Object member not found: %s"
+msgstr "E1334: Члан објекта није пронађен: %s"
+
+#, c-format
+msgid "E1335: Member is not writable: %s"
+msgstr "E1335: У члан не може да се уписује: %s"
+
+msgid "E1336: Internal error: shortmess too long"
+msgstr "E1336: Интерна грешка: shortmess сувише дугачко"
+
+#, c-format
+msgid "E1337: Class member not found: %s"
+msgstr "E1337: Није пронађен члан класе: %s"
+
+#, c-format
+msgid "E1338: Member not found on class \"%s\": %s"
+msgstr "E1338: Није шронаћен члан над класом „%s”: %s"
+
+msgid ""
+"E1339: Cannot add a textprop with text after using a textprop with a "
+"negative id"
+msgstr ""
+"E1339: Текст особина са текстом не може да се додан након употребе "
+"текст особине са негативним id"
+
+#, c-format
+msgid "E1340: Argument already declared in the class: %s"
+msgstr "E1340: Аргумент је већ дефинисан у класи: %s"
+
+#, c-format
+msgid "E1341: Variable already declared in the class: %s"
+msgstr "E1341: Променљива је већ декларисана у класи: %s"
+
+msgid "E1342: Interface can only be defined in Vim9 script"
+msgstr "E1342: Интерфејс може да се дефинише само у Vim9 скрипти"
+
+#, c-format
+msgid "E1343: Interface name must start with an uppercase letter: %s"
+msgstr "E1343: Име интерфејса мора да почне великим словом: %s"
+
+msgid "E1344: Cannot initialize a member in an interface"
+msgstr "E1344: Члан не може да се иницијализује у интерфејсу"
+
+#, c-format
+msgid "E1345: Not a valid command in an interface: %s"
+msgstr "E1345: Команда не важи у интерфејсу: %s"
+
+#, c-format
+msgid "E1346: Interface name not found: %s"
+msgstr "E1346: Није пронађено име интерфејса: %s"
+
+#, c-format
+msgid "E1347: Not a valid interface: %s"
+msgstr "E1347: Неважећи интерфејс: %s"
+
+#, c-format
+msgid "E1348: Member \"%s\" of interface \"%s\" not implemented"
+msgstr "E1348: Члан „%s” интерфејса „%s” није имплементиран"
+
+#, c-format
+msgid "E1349: Function \"%s\" of interface \"%s\" not implemented"
+msgstr "E1349: Функција „%s” интерфејса „%s” није имплементирана"
+
+msgid "E1350: Duplicate \"implements\""
+msgstr "E1350: Дупликат „implements”"
+
+#, c-format
+msgid "E1351: Duplicate interface after \"implements\": %s"
+msgstr "E1351: Дуплирани интерфејс након „implements”: %s"
+
+msgid "E1352: Duplicate \"extends\""
+msgstr "E1352: Дупликат „extends”"
+
+#, c-format
+msgid "E1353: Class name not found: %s"
+msgstr "E1353: Име класе није пронађено: %s"
+
+#, c-format
+msgid "E1354: Cannot extend %s"
+msgstr "E1354: Не може да се прошири %s"
+
+#, c-format
+msgid "E1355: Duplicate function: %s"
+msgstr "E1355: Дуплирана функција: %s"
+
+msgid "E1356: \"super\" must be followed by a dot"
+msgstr "E1356: Након „super” мора да следи тачка"
+
+msgid "E1357: Using \"super\" not in a class function"
+msgstr "E1357:„super” се користи ван функције класе"
+
+msgid "E1358: Using \"super\" not in a child class"
+msgstr "E1358: „super” се не користи у изведеној класи"
+
+msgid "E1359: Cannot define a \"new\" function in an abstract class"
+msgstr "E1359: Функција „new” не може да се дефинише у апстрактној класи"
+
+#, c-format
+msgid "E476: Invalid command: %s, expected %s"
+msgstr "E476: Неважећа команда: %s, очекује се %s"
+
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
 
@@ -8685,9 +8867,6 @@ msgstr "Уређујте текст фајлове"
 
 msgid "Text;editor;"
 msgstr "Текст;едитор;"
-
-msgid "gvim"
-msgstr "gvim"
 
 msgid "Vim"
 msgstr "Vim"
@@ -9360,8 +9539,11 @@ msgstr ""
 msgid "list of flags to make messages shorter"
 msgstr "листа заставица за скраћивање порука"
 
-msgid "show (partial) command keys in the status line"
-msgstr "у статусној линији се приказују (делимични) тастери команде"
+msgid "show (partial) command keys in location given by 'showcmdloc'"
+msgstr "приказује (делимичне) тастере команде на месту наведеном у 'showcmdloc'"
+
+msgid "location where to show the (partial) command keys for 'showcmd'"
+msgstr "место на којем треба да се прикажу (делимични) тастери команде за 'showcmd'"
 
 msgid "display the current mode in the status line"
 msgstr "у статусној линији се приказује текући режим"

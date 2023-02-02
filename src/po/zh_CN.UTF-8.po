@@ -7511,8 +7511,8 @@ msgstr "E1112: 列表项 %d 单元格宽度无效"
 msgid "E1113: Overlapping ranges for 0x%lx"
 msgstr "E1113: 重叠范围为 0x%lx"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: 只支持 0x100 或更高的值"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: 只支持 0x80 或更高的值"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: \"assert_fails()\" 第四个参数必须是一个整数"

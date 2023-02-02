@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 9.0.  Last change: 2022 Nov 26
+*fold.txt*      For Vim version 9.0.  Last change: 2023 Jan 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -202,7 +202,7 @@ non-matching marker pairs.  Example: >
 
 	/* funcB() {{{2 */
 	void funcB() {}
-
+<							*{{{* *}}}*
 A fold starts at a "{{{" marker.  The following number specifies the fold
 level.  What happens depends on the difference between the current fold level
 and the level given by the marker:
