@@ -525,6 +525,7 @@ transchar_buf(buf_T *buf, int c)
  * Like transchar(), but called with a byte instead of a character.  Checks
  * for an illegal UTF-8 byte.
  */
+
     char_u *
 transchar_byte(int c)
 {
@@ -536,10 +537,10 @@ transchar_byte_buf(buf_T *buf,int c)
 {
     if (enc_utf8 && c >= 0x80)
     {
-	transchar_nonprint(curbuf, transchar_charbuf, c);
+	transchar_nonprint(buf, transchar_charbuf, c);
 	return transchar_charbuf;
     }
-    return transchar_buf(NULL,c);
+    return transchar_buf(buf, c);
 }
 
 /*
