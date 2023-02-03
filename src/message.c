@@ -1668,7 +1668,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	else
 	{
 	    s = transchar_byte_buf(NULL, *str);
-	    //ch_log(NULL, "ENTRA %hhn", s);
+	    
 	    if (s[1] != NUL)
 	    {
 		// unprintable char: print the printable chars so far and the
