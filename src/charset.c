@@ -528,12 +528,18 @@ transchar_buf(buf_T *buf, int c)
     char_u *
 transchar_byte(int c)
 {
+    return transchar_byte_buf(curbuf, c);
+}
+
+    char_u *
+transchar_byte_buf(buf_T *buf,int c)
+{
     if (enc_utf8 && c >= 0x80)
     {
 	transchar_nonprint(curbuf, transchar_charbuf, c);
 	return transchar_charbuf;
     }
-    return transchar(c);
+    return transchar_buf(NULL,c);
 }
 
 /*
@@ -546,7 +552,7 @@ transchar_nonprint(buf_T *buf, char_u *charbuf, int c)
 {
     if (c == NL)
 	c = NUL;		// we use newline in place of a NUL
-    else if (c == CAR && get_fileformat(buf) == EOL_MAC)
+    else if (buf != NULL && c == CAR && get_fileformat(buf) == EOL_MAC)
 	c = NL;			// we use CR in place of  NL in this case
 
     if (dy_flags & DY_UHEX)		// 'display' has "uhex"
@@ -2389,3 +2395,4 @@ backslash_halve_save(char_u *p)
     backslash_halve(res);
     return res;
 }
+

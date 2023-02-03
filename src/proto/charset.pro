@@ -7,6 +7,7 @@ char_u *str_foldcase(char_u *str, int orglen, char_u *buf, int buflen);
 char_u *transchar(int c);
 char_u *transchar_buf(buf_T *buf, int c);
 char_u *transchar_byte(int c);
+char_u *transchar_byte_buf(buf_T *buf, int c);
 void transchar_nonprint(buf_T *buf, char_u *charbuf, int c);
 void transchar_hex(char_u *buf, int c);
 int byte2cells(int b);
