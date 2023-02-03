@@ -20,9 +20,10 @@ manual.
    1.8 Examples					|map-examples|
    1.9 Using mappings				|map-typing|
    1.10 Mapping alt-keys			|:map-alt-keys|
-   1.11 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
-   1.12 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
-   1.13 Mapping an operator			|:map-operator|
+   1.11 Mapping meta-keys			|:map-meta-keys|
+   1.12 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
+   1.13 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
+   1.14 Mapping an operator			|:map-operator|
 2. Abbreviations		|abbreviations|
 3. Local mappings and functions	|script-local|
 4. User-defined commands	|user-commands|
@@ -794,8 +795,8 @@ otherwise you would not be able to use those commands anymore.  Here are a few
 suggestions:
 - Function keys <F2>, <F3>, etc..  Also the shifted function keys <S-F1>,
   <S-F2>, etc.  Note that <F1> is already used for the help command.
-- Meta-keys (with the ALT key pressed).  Depending on your keyboard accented
-  characters may be used as well. |:map-alt-keys|
+- Any key with the Alt or Meta key pressed.  Depending on your keyboard
+  accented characters may be used as well. |:map-alt-keys|
 - Use the '_' or ',' character and then any other character.  The "_" and ","
   commands do exist in Vim (see |_| and |,|), but you probably never use them.
 - Use a key that is a synonym for another command.  For example: CTRL-P and
@@ -928,6 +929,8 @@ out whether ALT was pressed or not.
 
 If the terminal supports the modifyOtherKeys mode and it has been enabled,
 then Vim can recognize more key combinations, see |modifyOtherKeys| below.
+The Kitty keyboard protocol works in a similar way, see
+|kitty-keyboard-protocol|.
 
 By default Vim assumes that pressing the ALT key sets the 8th bit of a typed
 character.  Most decent terminals can work that way, such as xterm, aterm and
@@ -966,7 +969,21 @@ on the terminal; that's a good last resource in case you want to send ESC when
 using other applications but not when inside Vim.
 
 
-1.11 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
+1.11 MAPPING META-KEYS					*:map-meta-keys*
+
+Mapping keys with the Meta modifier works very similar to using the Alt key.
+What key on your keyboard produces the Meta modifier depends on your keyboard
+and configuration.
+
+Note that mapping <M-a> actually is for using the Alt key.  That can be
+confusing!  It cannot be changed, it would not be backwards compatible.
+
+For the Meta modifier the "T" character is used.  For example, to map Meta-b
+in Insert mode: >
+	:imap <T-b> terrible
+
+
+1.12 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
 
 Xterm and a few other terminals can be put in a mode where keys with modifiers
 are sent with a special escape code.  Vim recognizes these codes and can then
@@ -1028,7 +1045,7 @@ When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.
 
 
-1.12 MAPPING WITH KITTY KEYBOARD PROTOCOL	 *kitty-keyboard-protocol*
+1.13 MAPPING WITH KITTY KEYBOARD PROTOCOL	 *kitty-keyboard-protocol*
 
 If the value of 'term' contains "kitty" then Vim will send out an escape
 sequence to enable the Kitty keyboard protocol.  This can be changed with the
@@ -1055,7 +1072,7 @@ translated).  The meaning of {value}:
 			previous state is unknown 
 
 
-1.13 MAPPING AN OPERATOR				*:map-operator*
+1.14 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
 you must create a mapping that first sets the 'operatorfunc' option and then

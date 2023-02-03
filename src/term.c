@@ -5343,6 +5343,12 @@ handle_key_with_modifier(
 
     int key = trail == 'u' ? arg[0] : arg[2];
     int modifiers = decode_modifiers(arg[1]);
+
+    // Some terminals do not apply the Shift modifier to the key.  To make
+    // mappings consistent we do it here.  TODO: support more keys.
+    if ((modifiers & MOD_MASK_SHIFT) && key >= 'a' && key <= 'z')
+	key += 'A' - 'a';
+
     return put_key_modifiers_in_typebuf(key, modifiers,
 					csi_len, offset, buf, bufsize, buflen);
 }
