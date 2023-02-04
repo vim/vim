@@ -1695,6 +1695,7 @@ win_found:
 	globaldir = aco->globaldir;
 
 	// the buffer contents may have changed
+	VIsual_active = aco->save_VIsual_active;
 	check_cursor();
 	if (curwin->w_topline > curbuf->b_ml.ml_line_count)
 	{
@@ -1741,14 +1742,16 @@ win_found:
 	    curwin = save_curwin;
 	    curbuf = curwin->w_buffer;
 	    prevwin = win_find_by_id(aco->save_prevwin_id);
+
 	    // In case the autocommand moves the cursor to a position that
 	    // does not exist in curbuf.
+	    VIsual_active = aco->save_VIsual_active;
 	    check_cursor();
 	}
     }
 
-    check_cursor();	    // just in case lines got deleted
     VIsual_active = aco->save_VIsual_active;
+    check_cursor();	    // just in case lines got deleted
     if (VIsual_active)
 	check_pos(curbuf, &VIsual);
 }
