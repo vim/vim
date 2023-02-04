@@ -862,7 +862,7 @@ au BufNewFile,BufRead *.htpp			setf hastepreproc
 au BufRead,BufNewFile *.hcl			setf hcl
 
 " Go checksum file (must be before *.sum Hercules)
-au BufNewFile,BufRead go.sum			setf gosum
+au BufNewFile,BufRead go.sum,go.work.sum	setf gosum
 
 " Hercules
 au BufNewFile,BufRead *.vc,*.ev,*.sum,*.errsum	setf hercules
