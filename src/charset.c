@@ -345,24 +345,25 @@ transstr(char_u *s)
     }
     else
 	res = alloc(vim_strsize(s) + 1);
-    if (res != NULL)
+
+    if (res == NULL)
+	return NULL;
+
+    *res = NUL;
+    p = s;
+    while (*p != NUL)
     {
-	*res = NUL;
-	p = s;
-	while (*p != NUL)
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
-	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-	    {
-		c = (*mb_ptr2char)(p);
-		if (vim_isprintc(c))
-		    STRNCAT(res, p, l);	// append printable multi-byte char
-		else
-		    transchar_hex(res + STRLEN(res), c);
-		p += l;
-	    }
+	    c = (*mb_ptr2char)(p);
+	    if (vim_isprintc(c))
+		STRNCAT(res, p, l);	// append printable multi-byte char
 	    else
-		STRCAT(res, transchar_byte(*p++));
+		transchar_hex(res + STRLEN(res), c);
+	    p += l;
 	}
+	else
+	    STRCAT(res, transchar_byte(*p++));
     }
     return res;
 }
@@ -986,11 +987,15 @@ init_chartabsize_arg(
 		mch_memmove(cts->cts_text_props + count, prop_start,
 						   count * sizeof(textprop_T));
 		for (i = 0; i < count; ++i)
-		    if (cts->cts_text_props[i + count].tp_id < 0)
+		{
+		    textprop_T *tp = cts->cts_text_props + i + count;
+		    if (tp->tp_id < 0
+				     && text_prop_type_valid(wp->w_buffer, tp))
 		    {
 			cts->cts_has_prop_with_text = TRUE;
 			break;
 		    }
+		}
 		if (!cts->cts_has_prop_with_text)
 		{
 		    // won't use the text properties, free them
@@ -1177,7 +1182,7 @@ win_lbr_chartabsize(
 				? col == 0
 				: (s[0] == NUL || s[1] == NUL)
 						  && cts->cts_with_trailing)))
-		    && tp->tp_id - 1 < gap->ga_len)
+		    && -tp->tp_id - 1 < gap->ga_len)
 	    {
 		char_u *p = ((char_u **)gap->ga_data)[-tp->tp_id - 1];
 
@@ -1191,7 +1196,7 @@ win_lbr_chartabsize(
 
 			cells = text_prop_position(wp, tp, vcol,
 			     (vcol + size) % (wp->w_width - col_off) + col_off,
-						     &n_extra, &p, NULL, NULL);
+					      &n_extra, &p, NULL, NULL, FALSE);
 #ifdef FEAT_LINEBREAK
 			no_sbr = TRUE;  // don't use 'showbreak' now
 #endif

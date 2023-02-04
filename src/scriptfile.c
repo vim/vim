@@ -56,19 +56,18 @@ estack_push(etype_T type, char_u *name, long lnum)
 
     // If memory allocation fails then we'll pop more than we push, eventually
     // at the top level it will be OK again.
-    if (ga_grow(&exestack, 1) == OK)
-    {
-	entry = ((estack_T *)exestack.ga_data) + exestack.ga_len;
-	entry->es_type = type;
-	entry->es_name = name;
-	entry->es_lnum = lnum;
+    if (ga_grow(&exestack, 1) == FAIL)
+	return NULL;
+
+    entry = ((estack_T *)exestack.ga_data) + exestack.ga_len;
+    entry->es_type = type;
+    entry->es_name = name;
+    entry->es_lnum = lnum;
 #ifdef FEAT_EVAL
-	entry->es_info.ufunc = NULL;
+    entry->es_info.ufunc = NULL;
 #endif
-	++exestack.ga_len;
-	return entry;
-    }
-    return NULL;
+    ++exestack.ga_len;
+    return entry;
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -231,38 +230,67 @@ estack_sfile(estack_arg_T which UNUSED)
 }
 
 /*
- * ":runtime [what] {name}"
+ * Get DIP_ flags from the [where] argument of a :runtime command.
+ * "*argp" is advanced to after the [where] argument if it is found.
+ */
+    static int
+get_runtime_cmd_flags(char_u **argp, size_t where_len)
+{
+    char_u *arg = *argp;
+
+    if (where_len == 0)
+	return 0;
+
+    if (STRNCMP(arg, "START", where_len) == 0)
+    {
+	*argp = skipwhite(arg + where_len);
+	return DIP_START + DIP_NORTP;
+    }
+    if (STRNCMP(arg, "OPT", where_len) == 0)
+    {
+	*argp = skipwhite(arg + where_len);
+	return DIP_OPT + DIP_NORTP;
+    }
+    if (STRNCMP(arg, "PACK", where_len) == 0)
+    {
+	*argp = skipwhite(arg + where_len);
+	return DIP_START + DIP_OPT + DIP_NORTP;
+    }
+    if (STRNCMP(arg, "ALL", where_len) == 0)
+    {
+	*argp = skipwhite(arg + where_len);
+	return DIP_START + DIP_OPT;
+    }
+
+    return 0;
+}
+
+/*
+ * ":runtime [where] {name}"
  */
     void
 ex_runtime(exarg_T *eap)
 {
     char_u  *arg = eap->arg;
-    char_u  *p = skiptowhite(arg);
-    int	    len = (int)(p - arg);
     int	    flags = eap->forceit ? DIP_ALL : 0;
-
-    if (STRNCMP(arg, "START", len) == 0)
-    {
-	flags += DIP_START + DIP_NORTP;
-	arg = skipwhite(arg + len);
-    }
-    else if (STRNCMP(arg, "OPT", len) == 0)
-    {
-	flags += DIP_OPT + DIP_NORTP;
-	arg = skipwhite(arg + len);
-    }
-    else if (STRNCMP(arg, "PACK", len) == 0)
-    {
-	flags += DIP_START + DIP_OPT + DIP_NORTP;
-	arg = skipwhite(arg + len);
-    }
-    else if (STRNCMP(arg, "ALL", len) == 0)
-    {
-	flags += DIP_START + DIP_OPT;
-	arg = skipwhite(arg + len);
-    }
-
+    char_u  *p = skiptowhite(arg);
+    flags += get_runtime_cmd_flags(&arg, p - arg);
     source_runtime(arg, flags);
+}
+
+static int runtime_expand_flags;
+
+/*
+ * Set the completion context for the :runtime command.
+ */
+    void
+set_context_in_runtime_cmd(expand_T *xp, char_u *arg)
+{
+    char_u  *p = skiptowhite(arg);
+    runtime_expand_flags
+	= *p != NUL ? get_runtime_cmd_flags(&arg, p - arg) : 0;
+    xp->xp_context = EXPAND_RUNTIME;
+    xp->xp_pattern = arg;
 }
 
     static void
@@ -627,12 +655,12 @@ source_all_matches(char_u *pat)
     char_u  **files;
     int	    i;
 
-    if (gen_expand_wildcards(1, &pat, &num_files, &files, EW_FILE) == OK)
-    {
-	for (i = 0; i < num_files; ++i)
-	    (void)do_source(files[i], FALSE, DOSO_NONE, NULL);
-	FreeWild(num_files, files);
-    }
+    if (gen_expand_wildcards(1, &pat, &num_files, &files, EW_FILE) != OK)
+	return;
+
+    for (i = 0; i < num_files; ++i)
+	(void)do_source(files[i], FALSE, DOSO_NONE, NULL);
+    FreeWild(num_files, files);
 }
 
 /*
@@ -958,13 +986,103 @@ remove_duplicates(garray_T *gap)
 	}
 }
 
+    static void
+ExpandRTDir_int(
+    char_u	*pat,
+    size_t	pat_len,
+    int		flags,
+    int		keep_ext,
+    garray_T	*gap,
+    char	*dirnames[])
+{
+    for (int i = 0; dirnames[i] != NULL; ++i)
+    {
+	size_t		buf_len = STRLEN(dirnames[i]) + pat_len + 22;
+	char		*buf = alloc(buf_len);
+	if (buf == NULL)
+	{
+	    ga_clear_strings(gap);
+	    return;
+	}
+	char		*tail = buf + 15;
+	size_t		tail_buflen = buf_len - 15;
+	int		glob_flags = 0;
+	int		expand_dirs = FALSE;
+
+	if (*(dirnames[i]) == NUL)  // empty dir used for :runtime
+	    vim_snprintf(tail, tail_buflen, "%s*.vim", pat);
+	else
+	    vim_snprintf(tail, tail_buflen, "%s/%s*.vim", dirnames[i], pat);
+
+expand:
+	if ((flags & DIP_NORTP) == 0)
+	    globpath(p_rtp, (char_u *)tail, gap, glob_flags, expand_dirs);
+
+	if (flags & DIP_START)
+	{
+	    memcpy(tail - 15, "pack/*/start/*/", 15);
+	    globpath(p_pp, (char_u *)tail - 15, gap, glob_flags, expand_dirs);
+	}
+
+	if (flags & DIP_OPT)
+	{
+	    memcpy(tail - 13, "pack/*/opt/*/", 13);
+	    globpath(p_pp, (char_u *)tail - 13, gap, glob_flags, expand_dirs);
+	}
+
+	if (*(dirnames[i]) == NUL && !expand_dirs)
+	{
+	    // expand dir names in another round
+	    vim_snprintf(tail, tail_buflen, "%s*", pat);
+	    glob_flags = WILD_ADD_SLASH;
+	    expand_dirs = TRUE;
+	    goto expand;
+	}
+
+	vim_free(buf);
+    }
+
+    int pat_pathsep_cnt = 0;
+    for (size_t i = 0; i < pat_len; ++i)
+	if (vim_ispathsep(pat[i]))
+	    ++pat_pathsep_cnt;
+
+    for (int i = 0; i < gap->ga_len; ++i)
+    {
+	char_u *match = ((char_u **)gap->ga_data)[i];
+	char_u *s = match;
+	char_u *e = s + STRLEN(s);
+	if (e - 4 > s && !keep_ext && STRNICMP(e - 4, ".vim", 4) == 0)
+	{
+	    e -= 4;
+	    *e = NUL;
+	}
+
+	int match_pathsep_cnt = (e > s && e[-1] == '/') ? -1 : 0;
+	for (s = e; s > match; MB_PTR_BACK(match, s))
+	    if (s < match || (vim_ispathsep(*s)
+				     && ++match_pathsep_cnt > pat_pathsep_cnt))
+		break;
+	++s;
+	if (s != match)
+	    mch_memmove(match, s, e - s + 1);
+    }
+
+    if (gap->ga_len == 0)
+	return;
+
+    // Sort and remove duplicates which can happen when specifying multiple
+    // directories in dirnames.
+    remove_duplicates(gap);
+}
+
 /*
- * Expand color scheme, compiler or filetype names.
+ * Expand runtime file names.
  * Search from 'runtimepath':
  *   'runtimepath'/{dirnames}/{pat}.vim
- * When "flags" has DIP_START: search also from 'start' of 'packpath':
+ * When "flags" has DIP_START: search also from "start" of 'packpath':
  *   'packpath'/pack/ * /start/ * /{dirnames}/{pat}.vim
- * When "flags" has DIP_OPT: search also from 'opt' of 'packpath':
+ * When "flags" has DIP_OPT: search also from "opt" of 'packpath':
  *   'packpath'/pack/ * /opt/ * /{dirnames}/{pat}.vim
  * "dirnames" is an array with one or more directory names.
  */
@@ -976,87 +1094,56 @@ ExpandRTDir(
     char_u	***file,
     char	*dirnames[])
 {
-    char_u	*s;
-    char_u	*e;
-    char_u	*match;
-    garray_T	ga;
-    int		i;
-    int		pat_len;
-
     *num_file = 0;
     *file = NULL;
-    pat_len = (int)STRLEN(pat);
+
+    garray_T	ga;
     ga_init2(&ga, sizeof(char *), 10);
 
-    for (i = 0; dirnames[i] != NULL; ++i)
+    ExpandRTDir_int(pat, STRLEN(pat), flags, FALSE, &ga, dirnames);
+
+    if (ga.ga_len == 0)
+	return FAIL;
+
+    *file = ga.ga_data;
+    *num_file = ga.ga_len;
+    return OK;
+}
+
+/*
+ * Handle command line completion for :runtime command.
+ */
+    int
+expand_runtime_cmd(char_u *pat, int *numMatches, char_u ***matches)
+{
+    *numMatches = 0;
+    *matches = NULL;
+
+    garray_T	ga;
+    ga_init2(&ga, sizeof(char *), 10);
+
+    size_t pat_len = (int)STRLEN(pat);
+    char *dirnames[] = {"", NULL};
+    ExpandRTDir_int(pat, pat_len, runtime_expand_flags, TRUE, &ga, dirnames);
+
+    // Try to complete values for [where] argument when none was found.
+    if (runtime_expand_flags == 0)
     {
-	s = alloc(STRLEN(dirnames[i]) + pat_len + 7);
-	if (s == NULL)
-	{
-	    ga_clear_strings(&ga);
-	    return FAIL;
-	}
-	sprintf((char *)s, "%s/%s*.vim", dirnames[i], pat);
-	globpath(p_rtp, s, &ga, 0);
-	vim_free(s);
-    }
-
-    if (flags & DIP_START) {
-	for (i = 0; dirnames[i] != NULL; ++i)
-	{
-	    s = alloc(STRLEN(dirnames[i]) + pat_len + 22);
-	    if (s == NULL)
+	char *where_values[] = {"START", "OPT", "PACK", "ALL"};
+	for (size_t i = 0; i < ARRAY_LENGTH(where_values); ++i)
+	    if (STRNCMP(pat, where_values[i], pat_len) == 0)
 	    {
-		ga_clear_strings(&ga);
-		return FAIL;
+		char_u *p = vim_strsave((char_u *)where_values[i]);
+		if (p != NULL && ga_add_string(&ga, p) == FAIL)
+		    vim_free(p);
 	    }
-	    sprintf((char *)s, "pack/*/start/*/%s/%s*.vim", dirnames[i], pat);
-	    globpath(p_pp, s, &ga, 0);
-	    vim_free(s);
-	}
-    }
-
-    if (flags & DIP_OPT) {
-	for (i = 0; dirnames[i] != NULL; ++i)
-	{
-	    s = alloc(STRLEN(dirnames[i]) + pat_len + 20);
-	    if (s == NULL)
-	    {
-		ga_clear_strings(&ga);
-		return FAIL;
-	    }
-	    sprintf((char *)s, "pack/*/opt/*/%s/%s*.vim", dirnames[i], pat);
-	    globpath(p_pp, s, &ga, 0);
-	    vim_free(s);
-	}
-    }
-
-    for (i = 0; i < ga.ga_len; ++i)
-    {
-	match = ((char_u **)ga.ga_data)[i];
-	s = match;
-	e = s + STRLEN(s);
-	if (e - 4 > s && STRNICMP(e - 4, ".vim", 4) == 0)
-	{
-	    e -= 4;
-	    for (s = e; s > match; MB_PTR_BACK(match, s))
-		if (s < match || vim_ispathsep(*s))
-		    break;
-	    ++s;
-	    *e = NUL;
-	    mch_memmove(match, s, e - s + 1);
-	}
     }
 
     if (ga.ga_len == 0)
 	return FAIL;
 
-    // Sort and remove duplicates which can happen when specifying multiple
-    // directories in dirnames.
-    remove_duplicates(&ga);
-
-    *file = ga.ga_data;
-    *num_file = ga.ga_len;
+    *matches = ga.ga_data;
+    *numMatches = ga.ga_len;
     return OK;
 }
 
@@ -1089,7 +1176,7 @@ ExpandPackAddDir(
 	return FAIL;
     }
     sprintf((char *)s, "pack/*/opt/%s*", pat);
-    globpath(p_pp, s, &ga, 0);
+    globpath(p_pp, s, &ga, 0, TRUE);
     vim_free(s);
 
     for (i = 0; i < ga.ga_len; ++i)
@@ -1334,10 +1421,10 @@ errret:
  * When "ret_sid" is not NULL and we loaded the script before, don't load it
  * again.
  *
- * The 'eap' argument is used when sourcing lines from a buffer instead of a
+ * The "eap" argument is used when sourcing lines from a buffer instead of a
  * file.
  *
- * If 'clearvars' is TRUE, then for scripts which are loaded more than
+ * If "clearvars" is TRUE, then for scripts which are loaded more than
  * once, clear all the functions and variables previously defined in that
  * script.
  *
@@ -1540,6 +1627,8 @@ do_source_ext(
 	current_sctx.sc_version = 1;  // default script version
 
 #ifdef FEAT_EVAL
+    current_sctx.sc_lnum = 0;
+
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
 	prof_child_enter(&wait_start);		// entering a child now
@@ -1549,7 +1638,10 @@ do_source_ext(
     // Also starts profiling timer for nested script.
     save_funccal(&funccalp_entry);
 
-    current_sctx.sc_lnum = 0;
+    // Reset "KeyTyped" to avoid some commands thinking they are invoked
+    // interactively.  E.g. defining a function would output indent.
+    int save_KeyTyped = KeyTyped;
+    KeyTyped = FALSE;
 
     // Check if this script was sourced before to find its SID.
     // Always use a new sequence number.
@@ -1763,6 +1855,8 @@ almosttheend:
     if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_start);		// leaving a child now
 # endif
+
+    KeyTyped = save_KeyTyped;
 #endif
     current_sctx = save_current_sctx;
 
@@ -2555,36 +2649,34 @@ get_autoload_prefix(scriptitem_T *si)
     char_u *
 may_prefix_autoload(char_u *name)
 {
-    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
+	return name;
+
+    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+    if (si->sn_autoload_prefix == NULL)
+	return name;
+
+    char_u  *basename = name;
+    size_t  len;
+    char_u  *res;
+
+    if (*name == K_SPECIAL)
     {
-	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+	char_u *p = vim_strchr(name, '_');
 
-	if (si->sn_autoload_prefix != NULL)
-	{
-	    char_u  *basename = name;
-	    size_t  len;
-	    char_u  *res;
-
-	    if (*name == K_SPECIAL)
-	    {
-		char_u *p = vim_strchr(name, '_');
-
-		// skip over "<SNR>99_"
-		if (p != NULL)
-		    basename = p + 1;
-	    }
-
-	    len = STRLEN(si->sn_autoload_prefix) + STRLEN(basename) + 2;
-	    res = alloc(len);
-	    if (res != NULL)
-	    {
-		vim_snprintf((char *)res, len, "%s%s",
-					     si->sn_autoload_prefix, basename);
-		return res;
-	    }
-	}
+	// skip over "<SNR>99_"
+	if (p != NULL)
+	    basename = p + 1;
     }
-    return name;
+
+    len = STRLEN(si->sn_autoload_prefix) + STRLEN(basename) + 2;
+    res = alloc(len);
+    if (res == NULL)
+	return NULL;
+
+    vim_snprintf((char *)res, len, "%s%s", si->sn_autoload_prefix, basename);
+    return res;
 }
 
 /*

@@ -707,7 +707,7 @@ func Test_sub_highlight_zero_match()
 endfunc
 
 func Test_nocatch_sub_failure_handling()
-  " normal error results in all replacements 
+  " normal error results in all replacements
   func Foo()
     foobar
   endfunc
@@ -1094,6 +1094,41 @@ func Test_sub_edit_scriptfile()
 
   delfunc EditScript
   bwipe!
+endfunc
+
+" This was editing another file from the expression.
+func Test_sub_expr_goto_other_file()
+  call writefile([''], 'Xfileone', 'D')
+  enew!
+  call setline(1, ['a', 'b', 'c', 'd',
+	\ 'Xfileone zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'])
+
+  func g:SplitGotoFile()
+    exe "sil! norm 0\<C-W>gf"
+    return ''
+  endfunc
+
+  $
+  s/\%')/\=g:SplitGotoFile()
+
+  delfunc g:SplitGotoFile
+  bwipe!
+endfunc
+
+func Test_recursive_expr_substitute()
+  " this was reading invalid memory
+  let lines =<< trim END
+      func Repl(g, n)
+        s
+        r%:s000
+      endfunc
+      next 0
+      let caught = 0
+      s/\%')/\=Repl(0, 0)
+      qall!
+  END
+  call writefile(lines, 'XexprSubst', 'D')
+  call RunVim([], [], '--clean -S XexprSubst')
 endfunc
 
 " Test for the 2-letter and 3-letter :substitute commands

@@ -1367,13 +1367,13 @@ failed:
     void
 ui_remove_balloon(void)
 {
-    if (balloon_array != NULL)
-    {
-	pum_undisplay();
-	while (balloon_arraysize > 0)
-	    vim_free(balloon_array[--balloon_arraysize].pum_text);
-	VIM_CLEAR(balloon_array);
-    }
+    if (balloon_array == NULL)
+	return;
+
+    pum_undisplay();
+    while (balloon_arraysize > 0)
+	vim_free(balloon_array[--balloon_arraysize].pum_text);
+    VIM_CLEAR(balloon_array);
 }
 
 /*
@@ -1410,19 +1410,19 @@ ui_post_balloon(char_u *mesg, list_T *list)
     else
 	balloon_arraysize = split_message(mesg, &balloon_array);
 
-    if (balloon_arraysize > 0)
-    {
-	pum_array = balloon_array;
-	pum_size = balloon_arraysize;
-	pum_compute_size();
-	pum_scrollbar = 0;
-	pum_height = balloon_arraysize;
+    if (balloon_arraysize <= 0)
+	return;
 
-	pum_position_at_mouse(BALLOON_MIN_WIDTH);
-	pum_selected = -1;
-	pum_first = 0;
-	pum_redraw();
-    }
+    pum_array = balloon_array;
+    pum_size = balloon_arraysize;
+    pum_compute_size();
+    pum_scrollbar = 0;
+    pum_height = balloon_arraysize;
+
+    pum_position_at_mouse(BALLOON_MIN_WIDTH);
+    pum_selected = -1;
+    pum_first = 0;
+    pum_redraw();
 }
 
 /*

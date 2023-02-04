@@ -271,18 +271,18 @@ func Test_smoothscroll_wrap_long_line()
   call term_sendkeys(buf, ":set scrolloff=1\<CR>")
   call term_sendkeys(buf, "10|\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_long_6', {})
-  
+
   " 'scrolloff' set to 1, scrolling down, cursor moves screen line up
   call term_sendkeys(buf, "\<C-E>")
   call term_sendkeys(buf, "gjgj")
   call term_sendkeys(buf, "\<C-Y>")
   call VerifyScreenDump(buf, 'Test_smooth_long_7', {})
-  
+
   " 'scrolloff' set to 2, scrolling up, cursor moves screen line down
   call term_sendkeys(buf, ":set scrolloff=2\<CR>")
   call term_sendkeys(buf, "10|\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_long_8', {})
-  
+
   " 'scrolloff' set to 2, scrolling down, cursor moves screen line up
   call term_sendkeys(buf, "\<C-E>")
   call term_sendkeys(buf, "gj")
@@ -296,6 +296,14 @@ func Test_smoothscroll_wrap_long_line()
   call term_sendkeys(buf, "0j")
   call VerifyScreenDump(buf, 'Test_smooth_long_10', {})
 
+  " Test zt/zz/zb that they work properly when a long line is above it
+  call term_sendkeys(buf, "zb")
+  call VerifyScreenDump(buf, 'Test_smooth_long_11', {})
+  call term_sendkeys(buf, "zz")
+  call VerifyScreenDump(buf, 'Test_smooth_long_12', {})
+  call term_sendkeys(buf, "zt")
+  call VerifyScreenDump(buf, 'Test_smooth_long_13', {})
+
   " Repeat the step and move the cursor down again.
   " This time, use a shorter long line that is barely long enough to span more
   " than one window. Note that the cursor is at the bottom this time because
@@ -303,7 +311,7 @@ func Test_smoothscroll_wrap_long_line()
   call term_sendkeys(buf, ":call setline(1, ['one', 'two', 'Line' .. (' with lots of text'->repeat(10)) .. ' end', 'four'])\<CR>")
   call term_sendkeys(buf, "3Gzt")
   call term_sendkeys(buf, "j")
-  call VerifyScreenDump(buf, 'Test_smooth_long_11', {})
+  call VerifyScreenDump(buf, 'Test_smooth_long_14', {})
 
   " Repeat the step but this time start it when the line is smooth-scrolled by
   " one line. This tests that the offset calculation is still correct and
@@ -311,8 +319,8 @@ func Test_smoothscroll_wrap_long_line()
   " screen.
   call term_sendkeys(buf, "3Gzt")
   call term_sendkeys(buf, "\<C-E>j")
-  call VerifyScreenDump(buf, 'Test_smooth_long_12', {})
-  
+  call VerifyScreenDump(buf, 'Test_smooth_long_15', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
@@ -327,7 +335,7 @@ func Test_smoothscroll_one_long_line()
   call writefile(lines, 'XSmoothOneLong', 'D')
   let buf = RunVimInTerminal('-S XSmoothOneLong', #{rows: 6, cols: 40})
   call VerifyScreenDump(buf, 'Test_smooth_one_long_1', {})
-  
+
   call term_sendkeys(buf, "\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_one_long_2', {})
 
@@ -349,7 +357,7 @@ func Test_smoothscroll_long_line_showbreak()
   call writefile(lines, 'XSmoothLongShowbreak', 'D')
   let buf = RunVimInTerminal('-S XSmoothLongShowbreak', #{rows: 6, cols: 40})
   call VerifyScreenDump(buf, 'Test_smooth_long_showbreak_1', {})
-  
+
   call term_sendkeys(buf, "\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_long_showbreak_2', {})
 
@@ -357,6 +365,12 @@ func Test_smoothscroll_long_line_showbreak()
   call VerifyScreenDump(buf, 'Test_smooth_long_showbreak_1', {})
 
   call StopVimInTerminal(buf)
+endfunc
+
+func s:check_col_calc(win_col, win_line, buf_col)
+  call assert_equal(a:win_col, wincol())
+  call assert_equal(a:win_line, winline())
+  call assert_equal(a:buf_col, col('.'))
 endfunc
 
 " Test that if the current cursor is on a smooth scrolled line, we correctly
@@ -367,12 +381,6 @@ func Test_smoothscroll_cursor_position()
   call NewWindow(10, 20)
   setl smoothscroll wrap
   call setline(1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-  func s:check_col_calc(win_col, win_line, buf_col)
-    call assert_equal(a:win_col, wincol())
-    call assert_equal(a:win_line, winline())
-    call assert_equal(a:buf_col, col('.'))
-  endfunc
 
   call s:check_col_calc(1, 1, 1)
   exe "normal \<C-E>"
@@ -450,8 +458,47 @@ func Test_smoothscroll_cursor_position()
   call s:check_col_calc(1, 3, 37)
   normal gg
 
-  bwipeout!
+  bwipe!
 endfunc
+
+func Test_smoothscroll_cursor_scrolloff()
+  call NewWindow(10, 20)
+  setl smoothscroll wrap
+  setl scrolloff=3
+
+  " 120 chars are 6 screen lines
+  call setline(1, "abcdefghijklmnopqrstABCDEFGHIJKLMNOPQRSTabcdefghijklmnopqrstABCDEFGHIJKLMNOPQRSTabcdefghijklmnopqrstABCDEFGHIJKLMNOPQRST")
+  call setline(2, "below")
+
+  call s:check_col_calc(1, 1, 1)
+
+  " CTRL-E shows "<<<DEFG...", cursor move four lines down
+  exe "normal \<C-E>"
+  call s:check_col_calc(1, 4, 81)
+
+  " cursor on start of second line, "gk" moves into first line, skipcol doesn't
+  " change
+  exe "normal G0gk"
+  call s:check_col_calc(1, 5, 101)
+
+  " move cursor left one window width worth, scrolls one screen line
+  exe "normal 20h"
+  call s:check_col_calc(1, 5, 81)
+
+  " move cursor left one window width worth, scrolls one screen line
+  exe "normal 20h"
+  call s:check_col_calc(1, 4, 61)
+
+  " cursor on last line, "gk" should not cause a scroll
+  set scrolloff=0
+  normal G0
+  call s:check_col_calc(1, 7, 1)
+  normal gk
+  call s:check_col_calc(1, 6, 101)
+
+  bwipe!
+endfunc
+
 
 " Test that mouse picking is still accurate when we have smooth scrolled lines
 func Test_smoothscroll_mouse_pos()
@@ -511,6 +558,33 @@ func Test_smoothscroll_mouse_pos()
   let &mouse = save_mouse
   let &term = save_term
   let &ttymouse = save_ttymouse
+endfunc
+
+" this was dividing by zero
+func Test_smoothscrol_zero_width()
+  CheckScreendump
+
+  let lines =<< trim END
+      winsize 0 0
+      vsplit
+      vsplit
+      vsplit
+      vsplit
+      vsplit
+      sil norm H
+      set wrap
+      set smoothscroll
+      set number
+  END
+  call writefile(lines, 'XSmoothScrollZero', 'D')
+  let buf = RunVimInTerminal('-u NONE -i NONE -n -m -X -Z -e -s -S XSmoothScrollZero', #{rows: 6, cols: 60, wait_for_ruler: 0})
+  call TermWait(buf, 3000)
+  call VerifyScreenDump(buf, 'Test_smoothscroll_zero_1', {})
+
+  call term_sendkeys(buf, ":sil norm \<C-V>\<C-W>\<C-V>\<C-N>\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_zero_2', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 

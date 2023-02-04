@@ -123,6 +123,7 @@ typedef struct SearchedFile
     int
 search_regcomp(
     char_u	*pat,
+    char_u	**used_pat,
     int		pat_save,
     int		pat_use,
     int		options,
@@ -158,6 +159,9 @@ search_regcomp(
     }
     else if (options & SEARCH_HIS)	// put new pattern in history
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
+
+    if (used_pat)
+	*used_pat = pat;
 
     vim_free(mr_pattern);
 #ifdef FEAT_RIGHTLEFT
@@ -216,26 +220,26 @@ reverse_text(char_u *s)
      */
     len = (unsigned)STRLEN(s);
     rev = alloc(len + 1);
-    if (rev != NULL)
+    if (rev == NULL)
+	return NULL;
+
+    rev_i = len;
+    for (s_i = 0; s_i < len; ++s_i)
     {
-	rev_i = len;
-	for (s_i = 0; s_i < len; ++s_i)
+	if (has_mbyte)
 	{
-	    if (has_mbyte)
-	    {
-		int	mb_len;
+	    int	mb_len;
 
-		mb_len = (*mb_ptr2len)(s + s_i);
-		rev_i -= mb_len;
-		mch_memmove(rev + rev_i, s + s_i, mb_len);
-		s_i += mb_len - 1;
-	    }
-	    else
-		rev[--rev_i] = s[s_i];
-
+	    mb_len = (*mb_ptr2len)(s + s_i);
+	    rev_i -= mb_len;
+	    mch_memmove(rev + rev_i, s + s_i, mb_len);
+	    s_i += mb_len - 1;
 	}
-	rev[len] = NUL;
+	else
+	    rev[--rev_i] = s[s_i];
+
     }
+    rev[len] = NUL;
     return rev;
 }
 #endif
@@ -243,20 +247,20 @@ reverse_text(char_u *s)
     void
 save_re_pat(int idx, char_u *pat, int magic)
 {
-    if (spats[idx].pat != pat)
-    {
-	vim_free(spats[idx].pat);
-	spats[idx].pat = vim_strsave(pat);
-	spats[idx].magic = magic;
-	spats[idx].no_scs = no_smartcase;
-	last_idx = idx;
+    if (spats[idx].pat == pat)
+	return;
+
+    vim_free(spats[idx].pat);
+    spats[idx].pat = vim_strsave(pat);
+    spats[idx].magic = magic;
+    spats[idx].no_scs = no_smartcase;
+    last_idx = idx;
 #ifdef FEAT_SEARCH_EXTRA
-	// If 'hlsearch' set and search pat changed: need redraw.
-	if (p_hls)
-	    redraw_all_later(UPD_SOME_VALID);
-	set_no_hlsearch(FALSE);
+    // If 'hlsearch' set and search pat changed: need redraw.
+    if (p_hls)
+	redraw_all_later(UPD_SOME_VALID);
+    set_no_hlsearch(FALSE);
 #endif
-    }
 }
 
 /*
@@ -268,44 +272,44 @@ static int save_level = 0;
     void
 save_search_patterns(void)
 {
-    if (save_level++ == 0)
-    {
-	saved_spats[0] = spats[0];
-	if (spats[0].pat != NULL)
-	    saved_spats[0].pat = vim_strsave(spats[0].pat);
-	saved_spats[1] = spats[1];
-	if (spats[1].pat != NULL)
-	    saved_spats[1].pat = vim_strsave(spats[1].pat);
-	if (mr_pattern == NULL)
-	    saved_mr_pattern = NULL;
-	else
-	    saved_mr_pattern = vim_strsave(mr_pattern);
+    if (save_level++ != 0)
+	return;
+
+    saved_spats[0] = spats[0];
+    if (spats[0].pat != NULL)
+	saved_spats[0].pat = vim_strsave(spats[0].pat);
+    saved_spats[1] = spats[1];
+    if (spats[1].pat != NULL)
+	saved_spats[1].pat = vim_strsave(spats[1].pat);
+    if (mr_pattern == NULL)
+	saved_mr_pattern = NULL;
+    else
+	saved_mr_pattern = vim_strsave(mr_pattern);
 #ifdef FEAT_SEARCH_EXTRA
-	saved_spats_last_idx = last_idx;
-	saved_spats_no_hlsearch = no_hlsearch;
+    saved_spats_last_idx = last_idx;
+    saved_spats_no_hlsearch = no_hlsearch;
 #endif
-    }
 }
 
     void
 restore_search_patterns(void)
 {
-    if (--save_level == 0)
-    {
-	vim_free(spats[0].pat);
-	spats[0] = saved_spats[0];
+    if (--save_level != 0)
+	return;
+
+    vim_free(spats[0].pat);
+    spats[0] = saved_spats[0];
 #if defined(FEAT_EVAL)
-	set_vv_searchforward();
+    set_vv_searchforward();
 #endif
-	vim_free(spats[1].pat);
-	spats[1] = saved_spats[1];
-	vim_free(mr_pattern);
-	mr_pattern = saved_mr_pattern;
+    vim_free(spats[1].pat);
+    spats[1] = saved_spats[1];
+    vim_free(mr_pattern);
+    mr_pattern = saved_mr_pattern;
 #ifdef FEAT_SEARCH_EXTRA
-	last_idx = saved_spats_last_idx;
-	set_no_hlsearch(saved_spats_no_hlsearch);
+    last_idx = saved_spats_last_idx;
+    set_no_hlsearch(saved_spats_no_hlsearch);
 #endif
-    }
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -597,7 +601,7 @@ last_pat_prog(regmmatch_T *regmatch)
 	return;
     }
     ++emsg_off;		// So it doesn't beep if bad expr
-    (void)search_regcomp((char_u *)"", 0, last_idx, SEARCH_KEEP, regmatch);
+    (void)search_regcomp((char_u *)"", NULL, 0, last_idx, SEARCH_KEEP, regmatch);
     --emsg_off;
 }
 #endif
@@ -661,7 +665,7 @@ searchit(
     int		unused_timeout_flag = FALSE;
     int		*timed_out = &unused_timeout_flag;  // set when timed out.
 
-    if (search_regcomp(pat, RE_SEARCH, pat_use,
+    if (search_regcomp(pat, NULL, RE_SEARCH, pat_use,
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
     {
 	if ((options & SEARCH_MSG) && !rc_did_emsg)
@@ -793,6 +797,7 @@ searchit(
 		    if (dir == FORWARD && at_first_line)
 		    {
 			match_ok = TRUE;
+
 			/*
 			 * When the match starts in a next line it's certainly
 			 * past the start position.
@@ -837,7 +842,10 @@ searchit(
 			    }
 			    else
 			    {
-				matchcol = matchpos.col;
+				// Advance "matchcol" to the next character.
+				// This uses rmm_matchcol, the actual start of
+				// the match, ignoring "\zs".
+				matchcol = regmatch.rmm_matchcol;
 				if (ptr[matchcol] != NUL)
 				{
 				    if (has_mbyte)
@@ -2633,7 +2641,7 @@ findmatchlimit(
 	     * (actually, we skip #\( et al)
 	     */
 	    if (curbuf->b_p_lisp
-		    && vim_strchr((char_u *)"(){}[]", c) != NULL
+		    && vim_strchr((char_u *)"{}()[]", c) != NULL
 		    && pos.col > 1
 		    && check_prevcol(linep, pos.col, '\\', NULL)
 		    && check_prevcol(linep, pos.col - 1, '#', NULL))
@@ -2783,61 +2791,68 @@ showmatch(
 	return;
 
     if ((lpos = findmatch(NULL, NUL)) == NULL)	    // no match, so beep
-	vim_beep(BO_MATCH);
-    else if (lpos->lnum >= curwin->w_topline && lpos->lnum < curwin->w_botline)
     {
-	if (!curwin->w_p_wrap)
-	    getvcol(curwin, lpos, NULL, &vcol, NULL);
-	if (curwin->w_p_wrap || (vcol >= curwin->w_leftcol
-			       && vcol < curwin->w_leftcol + curwin->w_width))
-	{
-	    mpos = *lpos;    // save the pos, update_screen() may change it
-	    save_cursor = curwin->w_cursor;
-	    save_so = *so;
-	    save_siso = *siso;
-	    // Handle "$" in 'cpo': If the ')' is typed on top of the "$",
-	    // stop displaying the "$".
-	    if (dollar_vcol >= 0 && dollar_vcol == curwin->w_virtcol)
-		dollar_vcol = -1;
-	    ++curwin->w_virtcol;	// do display ')' just before "$"
-	    update_screen(UPD_VALID);	// show the new char first
-
-	    save_dollar_vcol = dollar_vcol;
-#ifdef CURSOR_SHAPE
-	    save_state = State;
-	    State = MODE_SHOWMATCH;
-	    ui_cursor_shape();		// may show different cursor shape
-#endif
-	    curwin->w_cursor = mpos;	// move to matching char
-	    *so = 0;			// don't use 'scrolloff' here
-	    *siso = 0;			// don't use 'sidescrolloff' here
-	    showruler(FALSE);
-	    setcursor();
-	    cursor_on();		// make sure that the cursor is shown
-	    out_flush_cursor(TRUE, FALSE);
-
-	    // Restore dollar_vcol(), because setcursor() may call curs_rows()
-	    // which resets it if the matching position is in a previous line
-	    // and has a higher column number.
-	    dollar_vcol = save_dollar_vcol;
-
-	    /*
-	     * brief pause, unless 'm' is present in 'cpo' and a character is
-	     * available.
-	     */
-	    if (vim_strchr(p_cpo, CPO_SHOWMATCH) != NULL)
-		ui_delay(p_mat * 100L + 8, TRUE);
-	    else if (!char_avail())
-		ui_delay(p_mat * 100L + 9, FALSE);
-	    curwin->w_cursor = save_cursor;	// restore cursor position
-	    *so = save_so;
-	    *siso = save_siso;
-#ifdef CURSOR_SHAPE
-	    State = save_state;
-	    ui_cursor_shape();		// may show different cursor shape
-#endif
-	}
+	vim_beep(BO_MATCH);
+	return;
     }
+
+    if (lpos->lnum < curwin->w_topline || lpos->lnum >= curwin->w_botline)
+	return;
+
+    if (!curwin->w_p_wrap)
+	getvcol(curwin, lpos, NULL, &vcol, NULL);
+
+    int col_visible = (curwin->w_p_wrap
+	    || (vcol >= curwin->w_leftcol
+		&& vcol < curwin->w_leftcol + curwin->w_width));
+    if (!col_visible)
+	return;
+
+    mpos = *lpos;    // save the pos, update_screen() may change it
+    save_cursor = curwin->w_cursor;
+    save_so = *so;
+    save_siso = *siso;
+    // Handle "$" in 'cpo': If the ')' is typed on top of the "$",
+    // stop displaying the "$".
+    if (dollar_vcol >= 0 && dollar_vcol == curwin->w_virtcol)
+	dollar_vcol = -1;
+    ++curwin->w_virtcol;	// do display ')' just before "$"
+    update_screen(UPD_VALID);	// show the new char first
+
+    save_dollar_vcol = dollar_vcol;
+#ifdef CURSOR_SHAPE
+    save_state = State;
+    State = MODE_SHOWMATCH;
+    ui_cursor_shape();		// may show different cursor shape
+#endif
+    curwin->w_cursor = mpos;	// move to matching char
+    *so = 0;			// don't use 'scrolloff' here
+    *siso = 0;			// don't use 'sidescrolloff' here
+    showruler(FALSE);
+    setcursor();
+    cursor_on();		// make sure that the cursor is shown
+    out_flush_cursor(TRUE, FALSE);
+
+    // Restore dollar_vcol(), because setcursor() may call curs_rows()
+    // which resets it if the matching position is in a previous line
+    // and has a higher column number.
+    dollar_vcol = save_dollar_vcol;
+
+    /*
+     * brief pause, unless 'm' is present in 'cpo' and a character is
+     * available.
+     */
+    if (vim_strchr(p_cpo, CPO_SHOWMATCH) != NULL)
+	ui_delay(p_mat * 100L + 8, TRUE);
+    else if (!char_avail())
+	ui_delay(p_mat * 100L + 9, FALSE);
+    curwin->w_cursor = save_cursor;	// restore cursor position
+    *so = save_so;
+    *siso = save_siso;
+#ifdef CURSOR_SHAPE
+    State = save_state;
+    ui_cursor_shape();		// may show different cursor shape
+#endif
 }
 
 /*
@@ -2860,7 +2875,7 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
     if (pattern == NULL)
 	pattern = spats[last_idx].pat;
 
-    if (search_regcomp(pattern, RE_SEARCH, RE_SEARCH,
+    if (search_regcomp(pattern, NULL, RE_SEARCH, RE_SEARCH,
 					      SEARCH_KEEP, &regmatch) == FAIL)
 	return -1;
 
@@ -3093,60 +3108,64 @@ cmdline_search_stat(
 
     update_search_stat(dirc, pos, cursor_pos, &stat, recompute, maxcount,
 								      timeout);
-    if (stat.cur > 0)
-    {
-	char	t[SEARCH_STAT_BUF_LEN];
-	size_t	len;
+    if (stat.cur <= 0)
+	return;
+
+    char	t[SEARCH_STAT_BUF_LEN];
+    size_t	len;
 
 #ifdef FEAT_RIGHTLEFT
-	if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
-	{
-	    if (stat.incomplete == 1)
-		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
-	    else if (stat.cnt > maxcount && stat.cur > maxcount)
-		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]",
-							   maxcount, maxcount);
-	    else if (stat.cnt > maxcount)
-		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/%d]",
-							   maxcount, stat.cur);
-	    else
-		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]",
-							   stat.cnt, stat.cur);
-	}
+    if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
+    {
+	if (stat.incomplete == 1)
+	    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
+	else if (stat.cnt > maxcount && stat.cur > maxcount)
+	    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]",
+		    maxcount, maxcount);
+	else if (stat.cnt > maxcount)
+	    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/%d]",
+		    maxcount, stat.cur);
 	else
-#endif
-	{
-	    if (stat.incomplete == 1)
-		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
-	    else if (stat.cnt > maxcount && stat.cur > maxcount)
-		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]",
-							   maxcount, maxcount);
-	    else if (stat.cnt > maxcount)
-		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/>%d]",
-							   stat.cur, maxcount);
-	    else
-		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]",
-							   stat.cur, stat.cnt);
-	}
-
-	len = STRLEN(t);
-	if (show_top_bot_msg && len + 2 < SEARCH_STAT_BUF_LEN)
-	{
-	    mch_memmove(t + 2, t, len);
-	    t[0] = 'W';
-	    t[1] = ' ';
-	    len += 2;
-	}
-
-	mch_memmove(msgbuf + STRLEN(msgbuf) - len, t, len);
-	if (dirc == '?' && stat.cur == maxcount + 1)
-	    stat.cur = -1;
-
-	// keep the message even after redraw, but don't put in history
-	msg_hist_off = TRUE;
-	give_warning(msgbuf, FALSE);
-	msg_hist_off = FALSE;
+	    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]",
+		    stat.cnt, stat.cur);
     }
+    else
+#endif
+    {
+	if (stat.incomplete == 1)
+	    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
+	else if (stat.cnt > maxcount && stat.cur > maxcount)
+	    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]",
+		    maxcount, maxcount);
+	else if (stat.cnt > maxcount)
+	    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/>%d]",
+		    stat.cur, maxcount);
+	else
+	    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]",
+		    stat.cur, stat.cnt);
+    }
+
+    len = STRLEN(t);
+    if (show_top_bot_msg && len + 2 < SEARCH_STAT_BUF_LEN)
+    {
+	mch_memmove(t + 2, t, len);
+	t[0] = 'W';
+	t[1] = ' ';
+	len += 2;
+    }
+
+    size_t msgbuf_len = STRLEN(msgbuf);
+    if (len > msgbuf_len)
+	len = msgbuf_len;
+    mch_memmove(msgbuf + msgbuf_len - len, t, len);
+
+    if (dirc == '?' && stat.cur == maxcount + 1)
+	stat.cur = -1;
+
+    // keep the message even after redraw, but don't put in history
+    msg_hist_off = TRUE;
+    give_warning(msgbuf, FALSE);
+    msg_hist_off = FALSE;
 }
 
 /*

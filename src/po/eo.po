@@ -7346,8 +7346,8 @@ msgstr "E1110: Listero %d ne enhavas 3 nombojn"
 msgid "E1111: List item %d range invalid"
 msgstr "E1111: Listero %d havas nevalidan amplekson"
 
-msgid "E1114: Only values of 0x100 and higher supported"
-msgstr "E1114: Nur valoroj 0x100 kaj pli altaj estas subtenataj"
+msgid "E1114: Only values of 0x80 and higher supported"
+msgstr "E1114: Nur valoroj 0x80 kaj pli altaj estas subtenataj"
 
 msgid "E1115: \"assert_fails()\" fourth argument must be a number"
 msgstr "E1115: la 4-a argumento de \"assert_fails()\" devas esti nombro"

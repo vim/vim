@@ -20,7 +20,7 @@ endif
 " call ch_logfile('channellog', 'w')
 
 func SetUp()
-  if g:testfunc =~ '_ipv6()$' 
+  if g:testfunc =~ '_ipv6()$'
     let s:localhost = '[::1]:'
     let s:testscript = 'test_channel_6.py'
   elseif g:testfunc =~ '_unix()$'
@@ -1220,7 +1220,7 @@ endfunc
 func Test_pipe_to_buffer_raw()
   let options = {'out_mode': 'raw', 'out_io': 'buffer', 'out_name': 'testout'}
   split testout
-  let job = job_start([s:python, '-c', 
+  let job = job_start([s:python, '-c',
         \ 'import sys; [sys.stdout.write(".") and sys.stdout.flush() for _ in range(10000)]'], options)
   " the job may be done quickly, also accept "dead"
   call assert_match('^\%(dead\|run\)$', job_status(job))
@@ -2293,7 +2293,8 @@ func Test_zz_ch_log()
   call ch_log('%s%s')
   call ch_logfile('')
   let text = readfile('Xlog')
-  call assert_match("hello there", text[1])
+  call assert_match("start log session", text[0])
+  call assert_match("ch_log(): hello there", text[1])
   call assert_match("%s%s", text[2])
   call mkdir("Xchlogdir1", 'D')
   call assert_fails("call ch_logfile('Xchlogdir1')", 'E484:')

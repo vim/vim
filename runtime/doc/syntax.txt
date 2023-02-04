@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 9.0.  Last change: 2022 Nov 15
+*syntax.txt*	For Vim version 9.0.  Last change: 2022 Dec 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3621,6 +3621,14 @@ highlighting is to put the following line in your |vimrc|: >
 <
 
 
+WDL							*wdl.vim* *wdl-syntax*
+
+The Workflow Description Language is a way to specify data processing workflows
+with a human-readable and writeable syntax.  This is used a lot in
+bioinformatics.  More info on the spec can be found here:
+https://github.com/openwdl/wdl
+
+
 XF86CONFIG				*xf86conf.vim* *ft-xf86conf-syntax*
 
 The syntax of XF86Config file differs in XFree86 v3.x and v4.x.  Both
@@ -4901,7 +4909,7 @@ is mostly used, because it looks better.
 In the next section you can find information about indivisual highlight groups
 and how to specify colors for them.  Most likely you want to just select a set
 of colors by using the `:colorscheme` command, for example: >
-	
+
 	    colorscheme pablo
 <
 						*:colo* *:colorscheme* *E185*
@@ -4995,7 +5003,7 @@ in their own color.
 
 						*highlight-clear* *:hi-clear*
 :hi[ghlight] clear	Reset all highlighting to the defaults.  Removes all
-			highlighting for groups added by the user!
+			highlighting for groups added by the user.
 			Uses the current value of 'background' to decide which
 			default colors to use.
 			If there was a default link, restore it. |:hi-link|

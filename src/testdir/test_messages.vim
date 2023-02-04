@@ -349,7 +349,7 @@ func Test_echo_verbose_system()
 
   " display a page and go back, results in exactly the same view
   call term_sendkeys(buf, ' ')
-  call TermWait(buf)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, 'b')
   call VerifyScreenDump(buf, 'Test_verbose_system_1', {})
 
@@ -362,7 +362,7 @@ func Test_echo_verbose_system()
   call VerifyScreenDump(buf, 'Test_verbose_system_2', {})
 
   call term_sendkeys(buf, ' ')
-  call TermWait(buf)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, 'b')
   call VerifyScreenDump(buf, 'Test_verbose_system_2', {})
 

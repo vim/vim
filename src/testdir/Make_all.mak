@@ -37,6 +37,7 @@ SCRIPTS_TINY_OUT = \
 TEST_VIM9 = \
 	test_vim9_assign \
 	test_vim9_builtin \
+	test_vim9_class \
 	test_vim9_cmd \
 	test_vim9_disassemble \
 	test_vim9_expr \
@@ -48,6 +49,7 @@ TEST_VIM9 = \
 TEST_VIM9_RES = \
 	test_vim9_assign.res \
 	test_vim9_builtin.res \
+	test_vim9_class.res \
 	test_vim9_cmd.res \
 	test_vim9_disassemble.res \
 	test_vim9_expr.res \
@@ -95,6 +97,7 @@ NEW_TESTS = \
 	test_cmdline \
 	test_cmdmods \
 	test_cmdwin \
+	test_codestyle \
 	test_command_count \
 	test_comments \
 	test_comparators \
@@ -208,6 +211,7 @@ NEW_TESTS = \
 	test_modeless \
 	test_modeline \
 	test_move \
+	test_mswin_event \
 	test_mzscheme \
 	test_nested_function \
 	test_netbeans \
@@ -356,6 +360,7 @@ NEW_TESTS_RES = \
 	test_cmdline.res \
 	test_cmdmods.res \
 	test_cmdwin.res \
+	test_codestyle.res \
 	test_command_count.res \
 	test_comments.res \
 	test_comparators.res \
@@ -452,6 +457,7 @@ NEW_TESTS_RES = \
 	test_mksession.res \
 	test_modeless.res \
 	test_modeline.res \
+	test_mswin_event.res \
 	test_mzscheme.res \
 	test_nested_function.res \
 	test_netbeans.res \

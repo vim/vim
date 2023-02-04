@@ -130,7 +130,7 @@ struct data_block
 #define DB_INDEX_MASK	(~DB_MARKED)
 
 #define INDEX_SIZE  (sizeof(unsigned))	    // size of one db_index entry
-#define HEADER_SIZE (sizeof(DATA_BL) - INDEX_SIZE)  // size of data block header
+#define HEADER_SIZE (offsetof(DATA_BL, db_index))  // size of data block header
 
 #define B0_FNAME_SIZE_ORG	900	// what it was in older versions
 #define B0_FNAME_SIZE_NOCRYPT	898	// 2 bytes used for other things
@@ -316,9 +316,6 @@ ml_open(buf_T *buf)
 #endif
     buf->b_ml.ml_flags = ML_EMPTY;
     buf->b_ml.ml_line_count = 1;
-#ifdef FEAT_LINEBREAK
-    curwin->w_nrwidth_line_count = 0;
-#endif
 
 /*
  * fill block0 struct and write page 0
@@ -425,21 +422,21 @@ error:
     static void
 ml_set_mfp_crypt(buf_T *buf)
 {
-    if (*buf->b_p_key != NUL)
-    {
-	int method_nr = crypt_get_method_nr(buf);
+    if (*buf->b_p_key == NUL)
+	return;
 
-	if (method_nr > CRYPT_M_ZIP && method_nr < CRYPT_M_SOD)
-	{
-	    // Generate a seed and store it in the memfile.
-	    sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
-	}
-#ifdef FEAT_SODIUM
-	else if (method_nr == CRYPT_M_SOD)
-	    crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
-							    MF_SEED_LEN);
- #endif
+    int method_nr = crypt_get_method_nr(buf);
+
+    if (method_nr > CRYPT_M_ZIP && method_nr < CRYPT_M_SOD)
+    {
+	// Generate a seed and store it in the memfile.
+	sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
     }
+#ifdef FEAT_SODIUM
+    else if (method_nr == CRYPT_M_SOD)
+	crypt_sodium_randombytes_buf(buf->b_ml.ml_mfp->mf_seed,
+		MF_SEED_LEN);
+#endif
 }
 
 /*
@@ -1208,7 +1205,7 @@ ml_recover(int checkext)
 	directly = FALSE;
 
 	// count the number of matching swap files
-	len = recover_names(fname, FALSE, 0, NULL);
+	len = recover_names(fname, FALSE, NULL, 0, NULL);
 	if (len == 0)		    // no swap files found
 	{
 	    semsg(_(e_no_swap_file_found_for_str), fname);
@@ -1219,7 +1216,7 @@ ml_recover(int checkext)
 	else			    // several swap files found, choose
 	{
 	    // list the names of the swap files
-	    (void)recover_names(fname, TRUE, 0, NULL);
+	    (void)recover_names(fname, TRUE, NULL, 0, NULL);
 	    msg_putchar('\n');
 	    msg_puts(_("Enter number of swap file to use (0 to quit): "));
 	    i = get_number(FALSE, NULL);
@@ -1227,7 +1224,7 @@ ml_recover(int checkext)
 		goto theend;
 	}
 	// get the swap file name that will be used
-	(void)recover_names(fname, FALSE, i, &fname_used);
+	(void)recover_names(fname, FALSE, NULL, i, &fname_used);
     }
     if (fname_used == NULL)
 	goto theend;			// out of memory
@@ -1801,12 +1798,14 @@ theend:
  * - list the swap files for "vim -r"
  * - count the number of swap files when recovering
  * - list the swap files when recovering
+ * - list the swap files for swapfilelist()
  * - find the name of the n'th swap file when recovering
  */
     int
 recover_names(
     char_u	*fname,		// base for swap file name
-    int		list,		// when TRUE, list the swap file names
+    int		do_list,	// when TRUE, list the swap file names
+    list_T	*ret_list UNUSED, // when not NULL add file names to it
     int		nr,		// when non-zero, return nr'th swap file name
     char_u	**fname_out)	// result when "nr" > 0
 {
@@ -1817,7 +1816,6 @@ recover_names(
     int		num_files;
     int		file_count = 0;
     char_u	**files;
-    int		i;
     char_u	*dirp;
     char_u	*dir_name;
     char_u	*fname_res = NULL;
@@ -1837,7 +1835,7 @@ recover_names(
 	    fname_res = fname;
     }
 
-    if (list)
+    if (do_list)
     {
 	// use msg() to start the scrolling properly
 	msg(_("Swap files found:"));
@@ -1938,7 +1936,7 @@ recover_names(
 	}
 
 	// check for out-of-memory
-	for (i = 0; i < num_names; ++i)
+	for (int i = 0; i < num_names; ++i)
 	{
 	    if (names[i] == NULL)
 	    {
@@ -1987,12 +1985,14 @@ recover_names(
 	}
 
 	/*
-	 * remove swapfile name of the current buffer, it must be ignored
+	 * Remove swapfile name of the current buffer, it must be ignored.
+	 * But keep it for swapfilelist().
 	 */
 	if (curbuf->b_ml.ml_mfp != NULL
-			       && (p = curbuf->b_ml.ml_mfp->mf_fname) != NULL)
+			       && (p = curbuf->b_ml.ml_mfp->mf_fname) != NULL
+			       && ret_list == NULL)
 	{
-	    for (i = 0; i < num_files; ++i)
+	    for (int i = 0; i < num_files; ++i)
 		// Do not expand wildcards, on windows would try to expand
 		// "%tmp%" in "%tmp%file".
 		if (fullpathcmp(p, files[i], TRUE, FALSE) & FPC_SAME)
@@ -2018,7 +2018,7 @@ recover_names(
 		dirp = (char_u *)"";		    // stop searching
 	    }
 	}
-	else if (list)
+	else if (do_list)
 	{
 	    if (dir_name[0] == '.' && dir_name[1] == NUL)
 	    {
@@ -2036,7 +2036,7 @@ recover_names(
 
 	    if (num_files)
 	    {
-		for (i = 0; i < num_files; ++i)
+		for (int i = 0; i < num_files; ++i)
 		{
 		    // print the swap file name
 		    msg_outnum((long)++file_count);
@@ -2050,10 +2050,24 @@ recover_names(
 		msg_puts(_("      -- none --\n"));
 	    out_flush();
 	}
+#ifdef FEAT_EVAL
+	else if (ret_list != NULL)
+	{
+	    for (int i = 0; i < num_files; ++i)
+	    {
+		char_u *name = concat_fnames(dir_name, files[i], TRUE);
+		if (name != NULL)
+		{
+		    list_append_string(ret_list, name, -1);
+		    vim_free(name);
+		}
+	    }
+	}
+#endif
 	else
 	    file_count += num_files;
 
-	for (i = 0; i < num_names; ++i)
+	for (int i = 0; i < num_names; ++i)
 	    vim_free(names[i]);
 	if (num_files > 0)
 	    FreeWild(num_files, files);
@@ -2076,22 +2090,22 @@ make_percent_swname(char_u *dir, char_u *name)
     char_u *d = NULL, *s, *f;
 
     f = fix_fname(name != NULL ? name : (char_u *)"");
-    if (f != NULL)
-    {
-	s = alloc(STRLEN(f) + 1);
-	if (s != NULL)
-	{
-	    STRCPY(s, f);
-	    for (d = s; *d != NUL; MB_PTR_ADV(d))
-		if (vim_ispathsep(*d))
-		    *d = '%';
+    if (f == NULL)
+	return NULL;
 
-	    dir[STRLEN(dir) - 1] = NUL;  // remove one trailing slash
-	    d = concat_fnames(dir, s, TRUE);
-	    vim_free(s);
-	}
-	vim_free(f);
+    s = alloc(STRLEN(f) + 1);
+    if (s != NULL)
+    {
+	STRCPY(s, f);
+	for (d = s; *d != NUL; MB_PTR_ADV(d))
+	    if (vim_ispathsep(*d))
+		*d = '%';
+
+	dir[STRLEN(dir) - 1] = NUL;  // remove one trailing slash
+	d = concat_fnames(dir, s, TRUE);
+	vim_free(s);
     }
+    vim_free(f);
     return d;
 }
 #endif
@@ -4148,8 +4162,9 @@ ml_new_ptr(memfile_T *mfp)
     pp = (PTR_BL *)(hp->bh_data);
     pp->pb_id = PTR_ID;
     pp->pb_count = 0;
-    pp->pb_count_max = (short_u)((mfp->mf_page_size - sizeof(PTR_BL))
-							/ sizeof(PTR_EN) + 1);
+    pp->pb_count_max =
+	(short_u)((mfp->mf_page_size - offsetof(PTR_BL, pb_pointer))
+							     / sizeof(PTR_EN));
 
     return hp;
 }
@@ -5459,24 +5474,24 @@ ml_decrypt_data(
     int		text_len;
     cryptstate_T *state;
 
-    if (dp->db_id == DATA_ID)
-    {
-	head_end = (char_u *)(&dp->db_index[dp->db_line_count]);
-	text_start = (char_u *)dp + dp->db_txt_start;
-	text_len = dp->db_txt_end - dp->db_txt_start;
+    if (dp->db_id != DATA_ID)
+	return;
 
-	if (head_end > text_start || dp->db_txt_start > size
-						     || dp->db_txt_end > size)
-	    return;  // data was messed up
+    head_end = (char_u *)(&dp->db_index[dp->db_line_count]);
+    text_start = (char_u *)dp + dp->db_txt_start;
+    text_len = dp->db_txt_end - dp->db_txt_start;
 
-	state = ml_crypt_prepare(mfp, offset, TRUE);
-	if (state != NULL)
-	{
-	    // Decrypt the text in place.
-	    crypt_decode_inplace(state, text_start, text_len, FALSE);
-	    crypt_free_state(state);
-	}
-    }
+    if (head_end > text_start || dp->db_txt_start > size
+	    || dp->db_txt_end > size)
+	return;  // data was messed up
+
+    state = ml_crypt_prepare(mfp, offset, TRUE);
+    if (state == NULL)
+	return;
+
+    // Decrypt the text in place.
+    crypt_decode_inplace(state, text_start, text_len, FALSE);
+    crypt_free_state(state);
 }
 
 /*

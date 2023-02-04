@@ -330,8 +330,23 @@ func Test_edit_11_indentexpr()
   endfunc
   set indentexpr=s:NewIndentExpr()
   call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &g:indentexpr)
   set indentexpr=<SID>NewIndentExpr()
   call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &g:indentexpr)
+  setlocal indentexpr=
+  setglobal indentexpr=s:NewIndentExpr()
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &g:indentexpr)
+  call assert_equal('', &indentexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  bw!
+  setglobal indentexpr=<SID>NewIndentExpr()
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &g:indentexpr)
+  call assert_equal('', &indentexpr)
+  new
+  call assert_equal(expand('<SID>') .. 'NewIndentExpr()', &indentexpr)
+  bw!
   set indentexpr&
 
   bw!
@@ -2057,7 +2072,7 @@ func Test_edit_overlong_file_name()
   file %%%%%%%%%%%%%%%%%%%%%%%%%%
   file %%%%%%
   set readonly
-  set ls=2 
+  set ls=2
 
   redraw!
   set noreadonly ls&

@@ -139,6 +139,38 @@ func Test_conceal_with_cursorline()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_conceal_with_cursorcolumn()
+  CheckScreendump
+
+  " Check that cursorcolumn and colorcolumn don't get broken in presence of
+  " wrapped lines containing concealed text
+  let code =<< trim [CODE]
+    let lines = ["one one one |hidden| one one one one one one one one",
+          \ "two two two two |hidden| here two two",
+          \ "three |hidden| three three three three three three three three"]
+    call setline(1, lines)
+    set wrap linebreak
+    set showbreak=\ >>>\ 
+    syntax match test /|hidden|/ conceal
+    set conceallevel=2
+    set concealcursor=
+    exe "normal /here\r"
+    set cursorcolumn
+    set colorcolumn=50
+  [CODE]
+
+  call writefile(code, 'XTest_conceal_cuc', 'D')
+  let buf = RunVimInTerminal('-S XTest_conceal_cuc', {'rows': 10, 'cols': 40})
+  call VerifyScreenDump(buf, 'Test_conceal_cuc_01', {})
+
+  " move cursor to the end of line (the cursor jumps to the next screen line)
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_conceal_cuc_02', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_conceal_resize_term()
   CheckScreendump
 

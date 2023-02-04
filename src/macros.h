@@ -253,8 +253,10 @@
 
 #ifdef FEAT_DIFF
 # define PLINES_NOFILL(x) plines_nofill(x)
+# define PLINES_WIN_NOFILL(w, l, h) plines_win_nofill((w), (l), (h))
 #else
 # define PLINES_NOFILL(x) plines(x)
+# define PLINES_WIN_NOFILL(w, l, h) plines_win((w), (l), (h))
 #endif
 
 #if defined(FEAT_JOB_CHANNEL) || defined(FEAT_CLIENTSERVER)
@@ -272,14 +274,17 @@
 #  ifdef MSWIN
 #   ifndef isnan
 #    define isnan(x) _isnan(x)
-     static __inline int isinf(double x) { return !_finite(x) && !_isnan(x); }
+     static __inline int isinf(double x)
+	{ return !_finite(x) && !_isnan(x); }
 #   endif
 #  else
 #   ifndef HAVE_ISNAN
-     static inline int isnan(double x) { return x != x; }
+     static inline int isnan(double x)
+	{ return x != x; }
 #   endif
 #   ifndef HAVE_ISINF
-     static inline int isinf(double x) { return !isnan(x) && isnan(x - x); }
+     static inline int isinf(double x)
+	{ return !isnan(x) && isnan(x - x); }
 #   endif
 #  endif
 #  if !defined(INFINITY)
@@ -333,7 +338,8 @@
  */
 #define VIM_CLEAR(p) \
     do { \
-	if ((p) != NULL) { \
+	if ((p) != NULL) \
+	{ \
 	    vim_free(p); \
 	    (p) = NULL; \
 	} \

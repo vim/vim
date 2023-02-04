@@ -73,7 +73,7 @@ typedef struct {
 							char_u *p2, int last);
 } cryptmethod_T;
 
-static int crypt_sodium_init(cryptstate_T *state, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
+static int crypt_sodium_init_(cryptstate_T *state, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
 static long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 static long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **buf_out, int last);
 
@@ -145,7 +145,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 #endif
 	FALSE,
 	NULL,
-	crypt_sodium_init,
+	crypt_sodium_init_,
 	NULL, NULL,
 	crypt_sodium_buffer_encode, crypt_sodium_buffer_decode,
 	NULL, NULL,
@@ -198,6 +198,7 @@ typedef struct {
     dll_crypto_secretstream_xchacha20poly1305_pull
 #  define crypto_pwhash	    dll_crypto_pwhash
 #  define randombytes_buf   dll_randombytes_buf
+#  define randombytes_random dll_randombytes_random
 
 static int (*dll_sodium_init)(void) = NULL;
 static void (*dll_sodium_free)(void *) = NULL;
@@ -231,6 +232,7 @@ static int (*dll_crypto_pwhash)(unsigned char * const out,
     unsigned long long opslimit, size_t memlimit, int alg)
     = NULL;
 static void (*dll_randombytes_buf)(void * const buf, const size_t size);
+static uint32_t (*dll_randombytes_random)(void);
 
 static struct {
     const char *name;
@@ -248,6 +250,7 @@ static struct {
     {"crypto_secretstream_xchacha20poly1305_pull", (SODIUM_PROC*)&dll_crypto_secretstream_xchacha20poly1305_pull},
     {"crypto_pwhash", (SODIUM_PROC*)&dll_crypto_pwhash},
     {"randombytes_buf", (SODIUM_PROC*)&dll_randombytes_buf},
+    {"randombytes_random", (SODIUM_PROC*)&dll_randombytes_random},
     {NULL, NULL}
 };
 
@@ -855,7 +858,7 @@ crypt_append_msg(
 }
 
     static int
-crypt_sodium_init(
+crypt_sodium_init_(
     cryptstate_T	*state UNUSED,
     char_u		*key UNUSED,
     char_u		*salt UNUSED,
@@ -1142,6 +1145,18 @@ crypt_sodium_munlock(void *const addr, const size_t len)
 crypt_sodium_randombytes_buf(void *const buf, const size_t size)
 {
     randombytes_buf(buf, size);
+}
+
+    int
+crypt_sodium_init(void)
+{
+    return sodium_init();
+}
+
+    uint32_t
+crypt_sodium_randombytes_random(void)
+{
+    return randombytes_random();
 }
 # endif
 

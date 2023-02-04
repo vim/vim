@@ -542,12 +542,12 @@ def Test_try_catch_throw()
   if 1
   else
     try | catch /pat/ | endtry
-    try | catch /pat/ 
+    try | catch /pat/
     endtry
-    try 
+    try
     catch /pat/ | endtry
-    try 
-    catch /pat/ 
+    try
+    catch /pat/
     endtry
   endif
 
@@ -617,7 +617,7 @@ def Test_try_catch_throw()
   endtry
   assert_equal(266, n)
 
-  l = [1, 2, 3] 
+  l = [1, 2, 3]
   try
     [n] = l
   catch /E1093:/
@@ -1336,7 +1336,7 @@ def Test_statusline_syntax()
       endfunc
       set laststatus=2 statusline=%!Status()
       redrawstatus
-      set laststatus statusline= 
+      set laststatus statusline=
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -3601,7 +3601,7 @@ def Test_declare_script_var_in_func()
   END
   v9.CheckScriptFailure(lines, 'E1269:')
 enddef
-        
+
 def Test_lock_script_var()
   var lines =<< trim END
       vim9script
@@ -3626,7 +3626,7 @@ def Test_lock_script_var()
   END
   v9.CheckScriptSuccess(lines)
 enddef
-        
+
 
 func Test_vim9script_not_global()
   " check that items defined in Vim9 script are script-local, not global
@@ -4517,6 +4517,36 @@ def Test_echo_uninit_variables()
 
     assert_equal(['no process', 'channel fail'], res->split('\n'))
   endif
+enddef
+
+def Test_free_type_before_use()
+  # this rather complicated script was freeing a type before using it
+  var lines =<< trim END
+      vim9script
+
+      def Scan(rel: list<dict<any>>): func(func(dict<any>))
+        return (Emit: func(dict<any>)) => {
+          for t in rel
+            Emit(t)
+          endfor
+        }
+      enddef
+
+      def Build(Cont: func(func(dict<any>))): list<dict<any>>
+        var rel: list<dict<any>> = []
+        Cont((t) => {
+            add(rel, t)
+        })
+        return rel
+      enddef
+
+      var R = [{A: 0}]
+      var result = Scan(R)->Build()
+      result = Scan(R)->Build()
+
+      assert_equal(R, result)
+  END
+  v9.CheckScriptSuccess(lines)
 enddef
 
 " Keep this last, it messes up highlighting.

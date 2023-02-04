@@ -12,6 +12,7 @@ char_u *strlow_save(char_u *orig);
 void del_trailing_spaces(char_u *ptr);
 void vim_strncpy(char_u *to, char_u *from, size_t len);
 void vim_strcat(char_u *to, char_u *from, size_t tosize);
+size_t vim_strlen_maxlen(char *s, size_t maxlen);
 int vim_stricmp(char *s1, char *s2);
 int vim_strnicmp(char *s1, char *s2, size_t len);
 char_u *vim_strchr(char_u *string, int c);

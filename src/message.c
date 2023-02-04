@@ -37,7 +37,7 @@ static char_u	*confirm_msg = NULL;		// ":confirm" message
 static char_u	*confirm_msg_tail;		// tail of confirm_msg
 static void display_confirm_msg(void);
 #endif
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 static int emsg_to_channel_log = FALSE;
 #endif
 
@@ -161,7 +161,7 @@ msg_attr_keep(
 		&& STRCMP(s, last_msg_hist->msg)))
 	add_msg_hist((char_u *)s, -1, attr);
 
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
     if (emsg_to_channel_log)
 	// Write message in the channel log.
 	ch_log(NULL, "ERROR: %s", s);
@@ -375,15 +375,13 @@ smsg(const char *s, ...)
 	// give the raw message so the user at least gets a hint.
 	return msg((char *)s);
     }
-    else
-    {
-	va_list arglist;
 
-	va_start(arglist, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-	va_end(arglist);
-	return msg((char *)IObuff);
-    }
+    va_list arglist;
+
+    va_start(arglist, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+    va_end(arglist);
+    return msg((char *)IObuff);
 }
 
     int
@@ -395,15 +393,13 @@ smsg_attr(int attr, const char *s, ...)
 	// give the raw message so the user at least gets a hint.
 	return msg_attr((char *)s, attr);
     }
-    else
-    {
-	va_list arglist;
 
-	va_start(arglist, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-	va_end(arglist);
-	return msg_attr((char *)IObuff, attr);
-    }
+    va_list arglist;
+
+    va_start(arglist, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+    va_end(arglist);
+    return msg_attr((char *)IObuff, attr);
 }
 
     int
@@ -415,15 +411,13 @@ smsg_attr_keep(int attr, const char *s, ...)
 	// give the raw message so the user at least gets a hint.
 	return msg_attr_keep((char *)s, attr, TRUE);
     }
-    else
-    {
-	va_list arglist;
 
-	va_start(arglist, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-	va_end(arglist);
-	return msg_attr_keep((char *)IObuff, attr, TRUE);
-    }
+    va_list arglist;
+
+    va_start(arglist, s);
+    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+    va_end(arglist);
+    return msg_attr_keep((char *)IObuff, attr, TRUE);
 }
 
 #endif
@@ -725,7 +719,7 @@ emsg_core(char_u *s)
 	    if (emsg_silent == emsg_silent_def)
 		++did_emsg_def;
 #endif
-#ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_EVAL
 	    ch_log(NULL, "ERROR silent: %s", (char *)s);
 #endif
 	    return TRUE;
@@ -834,16 +828,16 @@ semsg(const char *s, ...)
     void
 iemsg(char *s)
 {
-    if (!emsg_not_now())
-    {
-	emsg_core((char_u *)s);
+    if (emsg_not_now())
+	return;
+
+    emsg_core((char_u *)s);
 #if defined(ABORT_ON_INTERNAL_ERROR) && defined(FEAT_EVAL)
-	set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
-	msg_putchar('\n');  // avoid overwriting the error message
-	out_flush();
-	abort();
+    set_vim_var_string(VV_ERRMSG, (char_u *)s, -1);
+    msg_putchar('\n');  // avoid overwriting the error message
+    out_flush();
+    abort();
 #endif
-    }
 }
 
 #ifndef PROTO  // manual proto with __attribute__
@@ -856,29 +850,29 @@ iemsg(char *s)
     void
 siemsg(const char *s, ...)
 {
-    if (!emsg_not_now())
-    {
-	if (IObuff == NULL)
-	{
-	    // Very early in initialisation and already something wrong, just
-	    // give the raw message so the user at least gets a hint.
-	    emsg_core((char_u *)s);
-	}
-	else
-	{
-	    va_list ap;
+    if (emsg_not_now())
+	return;
 
-	    va_start(ap, s);
-	    vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
-	    va_end(ap);
-	    emsg_core(IObuff);
-	}
-# ifdef ABORT_ON_INTERNAL_ERROR
-	msg_putchar('\n');  // avoid overwriting the error message
-	out_flush();
-	abort();
-# endif
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	emsg_core((char_u *)s);
     }
+    else
+    {
+	va_list ap;
+
+	va_start(ap, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	va_end(ap);
+	emsg_core(IObuff);
+    }
+# ifdef ABORT_ON_INTERNAL_ERROR
+    msg_putchar('\n');  // avoid overwriting the error message
+    out_flush();
+    abort();
+# endif
 }
 #endif
 
@@ -1006,28 +1000,28 @@ add_msg_hist(
 
     // allocate an entry and add the message at the end of the history
     p = ALLOC_ONE(struct msg_hist);
-    if (p != NULL)
+    if (p == NULL)
+	return;
+
+    if (len < 0)
+	len = (int)STRLEN(s);
+    // remove leading and trailing newlines
+    while (len > 0 && *s == '\n')
     {
-	if (len < 0)
-	    len = (int)STRLEN(s);
-	// remove leading and trailing newlines
-	while (len > 0 && *s == '\n')
-	{
-	    ++s;
-	    --len;
-	}
-	while (len > 0 && s[len - 1] == '\n')
-	    --len;
-	p->msg = vim_strnsave(s, len);
-	p->next = NULL;
-	p->attr = attr;
-	if (last_msg_hist != NULL)
-	    last_msg_hist->next = p;
-	last_msg_hist = p;
-	if (first_msg_hist == NULL)
-	    first_msg_hist = last_msg_hist;
-	++msg_hist_len;
+	++s;
+	--len;
     }
+    while (len > 0 && s[len - 1] == '\n')
+	--len;
+    p->msg = vim_strnsave(s, len);
+    p->next = NULL;
+    p->attr = attr;
+    if (last_msg_hist != NULL)
+	last_msg_hist->next = p;
+    last_msg_hist = p;
+    if (first_msg_hist == NULL)
+	first_msg_hist = last_msg_hist;
+    ++msg_hist_len;
 }
 
 /*
@@ -1417,7 +1411,6 @@ set_keep_msg(char_u *s, int attr)
     keep_msg_attr = attr;
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * If there currently is a message being displayed, set "keep_msg" to it, so
  * that it will be displayed again after redraw.
@@ -1429,7 +1422,6 @@ set_keep_msg_from_hist(void)
 						      && (State & MODE_NORMAL))
 	set_keep_msg(last_msg_hist->msg, last_msg_hist->attr);
 }
-#endif
 
 /*
  * Prepare for outputting characters in the command line.
@@ -2747,7 +2739,7 @@ store_sb_text(
 
     if (s > *sb_str)
     {
-	mp = alloc(sizeof(msgchunk_T) + (s - *sb_str));
+	mp = alloc(offsetof(msgchunk_T, sb_text) + (s - *sb_str) + 1);
 	if (mp != NULL)
 	{
 	    mp->sb_eol = finish;
@@ -3057,7 +3049,8 @@ msg_puts_printf(char_u *str, int maxlen)
     {
 	char_u *tofree = NULL;
 
-	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
+	if (maxlen > 0 && vim_strlen_maxlen((char *)p, (size_t)maxlen)
+							     >= (size_t)maxlen)
 	{
 	    tofree = vim_strnsave(p, (size_t)maxlen);
 	    p = tofree;

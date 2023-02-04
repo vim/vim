@@ -1167,14 +1167,10 @@ Python3_Init(void)
 	// Catch exit() called in Py_Initialize().
 	hook_py_exit();
 	if (setjmp(exit_hook_jump_buf) == 0)
-#endif
 	{
 	    Py_Initialize();
-#ifdef HOOK_EXIT
 	    restore_py_exit();
-#endif
 	}
-#ifdef HOOK_EXIT
 	else
 	{
 	    // exit() was called in Py_Initialize().
@@ -1182,6 +1178,8 @@ Python3_Init(void)
 	    emsg(_(e_critical_error_in_python3_initialization_check_your_installation));
 	    goto fail;
 	}
+#else
+	Py_Initialize();
 #endif
 
 #if PY_VERSION_HEX < 0x03090000
@@ -1507,7 +1505,8 @@ BufferSubscript(PyObject *self, PyObject* idx)
     {
 	long _idx = PyLong_AsLong(idx);
 	return BufferItem((BufferObject *)(self), _idx);
-    } else if (PySlice_Check(idx))
+    }
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
@@ -1541,7 +1540,8 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
 	return RBAsItem((BufferObject *)(self), n, val, 1,
 		    (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 		    NULL);
-    } else if (PySlice_Check(idx))
+    }
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
@@ -1625,7 +1625,8 @@ RangeSubscript(PyObject *self, PyObject* idx)
     {
 	long _idx = PyLong_AsLong(idx);
 	return RangeItem((RangeObject *)(self), _idx);
-    } else if (PySlice_Check(idx))
+    }
+    else if (PySlice_Check(idx))
     {
 	Py_ssize_t start, stop, step, slicelen;
 
@@ -1837,34 +1838,31 @@ FunctionGetattro(PyObject *self, PyObject *nameobj)
     void
 python3_buffer_free(buf_T *buf)
 {
-    if (BUF_PYTHON_REF(buf) != NULL)
-    {
-	BufferObject *bp = BUF_PYTHON_REF(buf);
-	bp->buf = INVALID_BUFFER_VALUE;
-	BUF_PYTHON_REF(buf) = NULL;
-    }
+    BufferObject *bp = BUF_PYTHON_REF(buf);
+    if (bp == NULL)
+	return;
+    bp->buf = INVALID_BUFFER_VALUE;
+    BUF_PYTHON_REF(buf) = NULL;
 }
 
     void
 python3_window_free(win_T *win)
 {
-    if (WIN_PYTHON_REF(win) != NULL)
-    {
-	WindowObject *wp = WIN_PYTHON_REF(win);
-	wp->win = INVALID_WINDOW_VALUE;
-	WIN_PYTHON_REF(win) = NULL;
-    }
+    WindowObject *wp = WIN_PYTHON_REF(win);
+    if (wp == NULL)
+	return;
+    wp->win = INVALID_WINDOW_VALUE;
+    WIN_PYTHON_REF(win) = NULL;
 }
 
     void
 python3_tabpage_free(tabpage_T *tab)
 {
-    if (TAB_PYTHON_REF(tab) != NULL)
-    {
-	TabPageObject *tp = TAB_PYTHON_REF(tab);
-	tp->tab = INVALID_TABPAGE_VALUE;
-	TAB_PYTHON_REF(tab) = NULL;
-    }
+    TabPageObject *tp = TAB_PYTHON_REF(tab);
+    if (tp == NULL)
+	return;
+    tp->tab = INVALID_TABPAGE_VALUE;
+    TAB_PYTHON_REF(tab) = NULL;
 }
 
     static PyObject *

@@ -272,7 +272,8 @@
  */
 #if defined(FEAT_NORMAL) \
 	&& defined(FEAT_EVAL) \
-	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
+	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H) \
+        && (!defined(MACOS_X) || defined(HAVE_DISPATCH_DISPATCH_H))) \
 		|| defined(MSWIN))
 # define FEAT_RELTIME
 #endif

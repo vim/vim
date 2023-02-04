@@ -809,17 +809,17 @@ bomb_size(void)
     void
 remove_bom(char_u *s)
 {
-    if (enc_utf8)
-    {
-	char_u *p = s;
+    if (!enc_utf8)
+	return;
 
-	while ((p = vim_strbyte(p, 0xef)) != NULL)
-	{
-	    if (p[1] == 0xbb && p[2] == 0xbf)
-		STRMOVE(p, p + 3);
-	    else
-		++p;
-	}
+    char_u *p = s;
+
+    while ((p = vim_strbyte(p, 0xef)) != NULL)
+    {
+	if (p[1] == 0xbb && p[2] == 0xbf)
+	    STRMOVE(p, p + 3);
+	else
+	    ++p;
     }
 }
 #endif
@@ -1589,19 +1589,26 @@ utf_char2cells(int c)
 #endif
     };
 
-    if (c >= 0x100)
-    {
-#if defined(FEAT_EVAL) || defined(USE_WCHAR_FUNCTIONS)
-	int	n;
-#endif
-
 #ifdef FEAT_EVAL
-	n = cw_value(c);
+    // Use the value from setcellwidths() at 0x80 and higher, unless the
+    // character is not printable.
+    if (c >= 0x80 &&
+# ifdef USE_WCHAR_FUNCTIONS
+	    wcwidth(c) >= 1 &&
+# endif
+	    vim_isprintc(c))
+    {
+	int n = cw_value(c);
 	if (n != 0)
 	    return n;
+    }
 #endif
 
+    if (c >= 0x100)
+    {
 #ifdef USE_WCHAR_FUNCTIONS
+	int	n;
+
 	/*
 	 * Assume the library function wcwidth() works better than our own
 	 * stuff.  It should return 1 for ambiguous width chars!
@@ -4590,56 +4597,56 @@ enc_canonize(char_u *enc)
 
     // copy "enc" to allocated memory, with room for two '-'
     r = alloc(STRLEN(enc) + 3);
-    if (r != NULL)
+    if (r == NULL)
+	return NULL;
+
+    // Make it all lower case and replace '_' with '-'.
+    p = r;
+    for (s = enc; *s != NUL; ++s)
     {
-	// Make it all lower case and replace '_' with '-'.
-	p = r;
-	for (s = enc; *s != NUL; ++s)
-	{
-	    if (*s == '_')
-		*p++ = '-';
-	    else
-		*p++ = TOLOWER_ASC(*s);
-	}
-	*p = NUL;
+	if (*s == '_')
+	    *p++ = '-';
+	else
+	    *p++ = TOLOWER_ASC(*s);
+    }
+    *p = NUL;
 
-	// Skip "2byte-" and "8bit-".
-	p = enc_skip(r);
+    // Skip "2byte-" and "8bit-".
+    p = enc_skip(r);
 
-	// Change "microsoft-cp" to "cp".  Used in some spell files.
-	if (STRNCMP(p, "microsoft-cp", 12) == 0)
-	    STRMOVE(p, p + 10);
+    // Change "microsoft-cp" to "cp".  Used in some spell files.
+    if (STRNCMP(p, "microsoft-cp", 12) == 0)
+	STRMOVE(p, p + 10);
 
-	// "iso8859" -> "iso-8859"
-	if (STRNCMP(p, "iso8859", 7) == 0)
-	{
-	    STRMOVE(p + 4, p + 3);
-	    p[3] = '-';
-	}
+    // "iso8859" -> "iso-8859"
+    if (STRNCMP(p, "iso8859", 7) == 0)
+    {
+	STRMOVE(p + 4, p + 3);
+	p[3] = '-';
+    }
 
-	// "iso-8859n" -> "iso-8859-n"
-	if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
-	{
-	    STRMOVE(p + 9, p + 8);
-	    p[8] = '-';
-	}
+    // "iso-8859n" -> "iso-8859-n"
+    if (STRNCMP(p, "iso-8859", 8) == 0 && isdigit(p[8]))
+    {
+	STRMOVE(p + 9, p + 8);
+	p[8] = '-';
+    }
 
-	// "latin-N" -> "latinN"
-	if (STRNCMP(p, "latin-", 6) == 0)
-	    STRMOVE(p + 5, p + 6);
+    // "latin-N" -> "latinN"
+    if (STRNCMP(p, "latin-", 6) == 0)
+	STRMOVE(p + 5, p + 6);
 
-	if (enc_canon_search(p) >= 0)
-	{
-	    // canonical name can be used unmodified
-	    if (p != r)
-		STRMOVE(r, p);
-	}
-	else if ((i = enc_alias_search(p)) >= 0)
-	{
-	    // alias recognized, get canonical name
-	    vim_free(r);
-	    r = vim_strsave((char_u *)enc_canon_table[i].name);
-	}
+    if (enc_canon_search(p) >= 0)
+    {
+	// canonical name can be used unmodified
+	if (p != r)
+	    STRMOVE(r, p);
+    }
+    else if ((i = enc_alias_search(p)) >= 0)
+    {
+	// alias recognized, get canonical name
+	vim_free(r);
+	r = vim_strsave((char_u *)enc_canon_table[i].name);
     }
     return r;
 }
@@ -5269,26 +5276,26 @@ convert_input_safe(
 
     d = string_convert_ext(&input_conv, ptr, &dlen,
 					restp == NULL ? NULL : &unconvertlen);
-    if (d != NULL)
+    if (d == NULL)
+	return dlen;
+
+    if (dlen <= maxlen)
     {
-	if (dlen <= maxlen)
+	if (unconvertlen > 0)
 	{
-	    if (unconvertlen > 0)
-	    {
-		// Move the unconverted characters to allocated memory.
-		*restp = alloc(unconvertlen);
-		if (*restp != NULL)
-		    mch_memmove(*restp, ptr + len - unconvertlen, unconvertlen);
-		*restlenp = unconvertlen;
-	    }
-	    mch_memmove(ptr, d, dlen);
+	    // Move the unconverted characters to allocated memory.
+	    *restp = alloc(unconvertlen);
+	    if (*restp != NULL)
+		mch_memmove(*restp, ptr + len - unconvertlen, unconvertlen);
+	    *restlenp = unconvertlen;
 	}
-	else
-	    // result is too long, keep the unconverted text (the caller must
-	    // have done something wrong!)
-	    dlen = len;
-	vim_free(d);
+	mch_memmove(ptr, d, dlen);
     }
+    else
+	// result is too long, keep the unconverted text (the caller must
+	// have done something wrong!)
+	dlen = len;
+    vim_free(d);
     return dlen;
 }
 
@@ -5661,9 +5668,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (i == 0)
 	    {
 		n1 = lili->li_tv.vval.v_number;
-		if (n1 < 0x100)
+		if (n1 < 0x80)
 		{
-		    emsg(_(e_only_values_of_0x100_and_higher_supported));
+		    emsg(_(e_only_values_of_0x80_and_higher_supported));
 		    vim_free(ptrs);
 		    return;
 		}
@@ -5742,6 +5749,29 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     vim_free(cw_table_save);
+    redraw_all_later(UPD_CLEAR);
+}
+
+    void
+f_getcellwidths(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+
+    for (size_t i = 0; i < cw_table_size; i++)
+    {
+	list_T *entry = list_alloc();
+	if (entry == NULL)
+	    break;
+	if (list_append_number(entry, (varnumber_T)cw_table[i].first) == FAIL
+	   || list_append_number(entry, (varnumber_T)cw_table[i].last) == FAIL
+	   || list_append_number(entry, (varnumber_T)cw_table[i].width) == FAIL
+	   || list_append_list(rettv->vval.v_list, entry) == FAIL)
+	{
+	    list_free(entry);
+	    break;
+	}
+    }
 }
 
     void

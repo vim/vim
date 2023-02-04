@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2022 Nov 17
+" Last Change:	2023 Feb 02
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -110,9 +110,11 @@ au BufNewFile,BufRead *.a65			setf a65
 " Applescript
 au BufNewFile,BufRead *.scpt			setf applescript
 
+" Automake (must be before the *.am pattern)
+au BufNewFile,BufRead [mM]akefile.am,GNUmakefile.am	setf automake
+
 " Applix ELF
-au BufNewFile,BufRead *.am
-	\ if expand("<afile>") !~? 'Makefile.am\>' | setf elf | endif
+au BufNewFile,BufRead *.am			setf elf
 
 " ALSA configuration
 au BufNewFile,BufRead .asoundrc,*/usr/share/alsa/alsa.conf,*/etc/asound.conf setf alsaconf
@@ -186,9 +188,6 @@ au BufNewFile,BufRead *.au3			setf autoit
 
 " Autohotkey
 au BufNewFile,BufRead *.ahk			setf autohotkey
-
-" Automake
-au BufNewFile,BufRead [mM]akefile.am,GNUmakefile.am	setf automake
 
 " Autotest .at files are actually m4
 au BufNewFile,BufRead *.at			setf m4
@@ -265,7 +264,7 @@ au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
 " Bazel (http://bazel.io)
-autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE	setf bzl
+autocmd BufRead,BufNewFile *.bzl,*.bazel,WORKSPACE,WORKSPACE.bzlmod	setf bzl
 if has("fname_case")
   " There is another check for BUILD further below.
   autocmd BufRead,BufNewFile *.BUILD,BUILD		setf bzl
@@ -277,6 +276,9 @@ au BufNewFile,BufRead *.lpc,*.ulpc		setf lpc
 
 " Calendar
 au BufNewFile,BufRead calendar			setf calendar
+
+" Cap'n Proto
+au BufNewFile,BufRead *.capnp			setf capnp
 
 " C#
 au BufNewFile,BufRead *.cs,*.csx		setf cs
@@ -368,6 +370,9 @@ au BufNewFile,BufRead *.ch			call dist#ft#FTchange()
 
 " ChordPro
 au BufNewFile,BufRead *.chopro,*.crd,*.cho,*.crdpro,*.chordpro	setf chordpro
+
+" Clangd
+au BufNewFile,BufRead .clangd			setf yaml
 
 " Clang-format
 au BufNewFile,BufRead .clang-format		setf yaml
@@ -606,8 +611,8 @@ au BufNewFile,BufRead *.edn
 	\   setf clojure |
 	\ endif
 
-" EditorConfig (close enough to dosini)
-au BufNewFile,BufRead .editorconfig		setf dosini
+" EditorConfig
+au BufNewFile,BufRead .editorconfig		setf editorconfig
 
 " Embedix Component Description
 au BufNewFile,BufRead *.ecd			setf ecd
@@ -626,6 +631,9 @@ au BufNewFile,BufRead *.elm			setf elm
 
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
+
+" Elsa - https://github.com/ucsd-progsys/elsa
+au BufNewFile,BufRead *.lc			setf elsa
 
 " ESMTP rc file
 au BufNewFile,BufRead *esmtprc			setf esmtprc
@@ -662,6 +670,9 @@ autocmd BufRead,BufNewFile *.fnl		setf fennel
 
 " Fetchmail RC file
 au BufNewFile,BufRead .fetchmailrc		setf fetchmail
+
+" FIRRTL - Flexible Internal Representation for RTL
+au BufNewFile,BufRead *.fir			setf firrtl
 
 " Fish shell
 au BufNewFile,BufRead *.fish			setf fish
@@ -700,6 +711,9 @@ au BufRead,BufNewFile *.fusion			setf fusion
 
 " F# or Forth
 au BufNewFile,BufRead *.fs			call dist#ft#FTfs()
+
+" FHIR Shorthand (FSH)
+au BufNewFile,BufRead *.fsh			setf fsh
 
 " F#
 au BufNewFile,BufRead *.fsi,*.fsx		setf fsharp
@@ -847,6 +861,9 @@ au BufNewFile,BufRead *.htpp			setf hastepreproc
 " HCL
 au BufRead,BufNewFile *.hcl			setf hcl
 
+" Go checksum file (must be before *.sum Hercules)
+au BufNewFile,BufRead go.sum,go.work.sum	setf gosum
+
 " Hercules
 au BufNewFile,BufRead *.vc,*.ev,*.sum,*.errsum	setf hercules
 
@@ -981,6 +998,8 @@ au BufNewFile,BufRead *.jsp			setf jsp
 
 " Java Properties resource file (note: doesn't catch font.properties.pl)
 au BufNewFile,BufRead *.properties,*.properties_??,*.properties_??_??	setf jproperties
+" Eclipse preference files use Java Properties syntax
+au BufNewFile,BufRead org.eclipse.*.prefs	setf jproperties
 
 " Jess
 au BufNewFile,BufRead *.clp			setf jess
@@ -991,29 +1010,36 @@ au BufNewFile,BufRead *.jgr			setf jgraph
 " Jovial
 au BufNewFile,BufRead *.jov,*.j73,*.jovial	setf jovial
 
-" JSON
-au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
+" Jq
+au BufNewFile,BufRead *.jq			setf jq
 
 " JSON5
 au BufNewFile,BufRead *.json5			setf json5
 
 " JSON Patch (RFC 6902)
-au BufNewFile,BufRead *.json-patch			setf json
+au BufNewFile,BufRead *.json-patch		setf json
 
 " Jupyter Notebook is also json
-au BufNewFile,BufRead *.ipynb				setf json
+au BufNewFile,BufRead *.ipynb			setf json
 
 " Other files that look like json
-au BufNewFile,BufRead .babelrc,.eslintrc,.prettierrc,.firebaserc  setf json
+au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc	setf json
 
-" JSONC
-au BufNewFile,BufRead *.jsonc			setf jsonc
+" JSONC (JSON with comments)
+au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc 	setf jsonc
+au BufNewFile,BufRead .jshintrc,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
+
+" JSON
+au BufNewFile,BufRead *.json,*.jsonp,*.webmanifest	setf json
 
 " Jsonnet
 au BufNewFile,BufRead *.jsonnet,*.libsonnet	setf jsonnet
 
 " Julia
 au BufNewFile,BufRead *.jl			setf julia
+
+" KDL
+au BufNewFile,BufRead *.kdl			setf kdl
 
 " Kixtart
 au BufNewFile,BufRead *.kix			setf kix
@@ -1197,6 +1223,9 @@ au BufNewFile,BufRead hg-editor-*.txt		setf hgcommit
 " Mercurial config (looks like generic config file)
 au BufNewFile,BufRead *.hgrc,*hgrc		setf cfg
 
+" Mermaid
+au BufNewFile,BufRead *.mmd,*.mmdc,*.mermaid	setf mermaid
+
 " Meson Build system config
 au BufNewFile,BufRead meson.build,meson_options.txt setf meson
 au BufNewFile,BufRead *.wrap			setf dosini
@@ -1340,6 +1369,9 @@ au BufNewFile,BufRead *.nse			setf lua
 " NSIS
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
 
+" Oblivion Language and Oblivion Script Extender
+au BufNewFile,BufRead *.obl,*.obse,*.oblivion,*.obscript  setf obse
+
 " OCaml
 au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli.cppo,*.ml.cppo setf ocaml
 
@@ -1379,6 +1411,7 @@ au BufNewFile,BufRead pf.conf				setf pf
 " ini style config files, using # comments
 au BufNewFile,BufRead */etc/pacman.conf,mpv.conf	setf confini
 au BufNewFile,BufRead */.aws/config,*/.aws/credentials	setf confini
+au BufNewFile,BufRead *.nmconnection			setf confini
 
 " Pacman hooks
 au BufNewFile,BufRead *.hook
@@ -1483,7 +1516,7 @@ au BufNewFile,BufRead *.plp			setf plp
 au BufNewFile,BufRead *.po,*.pot		setf po
 
 " Postfix main config
-au BufNewFile,BufRead main.cf			setf pfmain
+au BufNewFile,BufRead main.cf,main.cf.proto	setf pfmain
 
 " PostScript (+ font files, encapsulated PostScript, Adobe Illustrator)
 au BufNewFile,BufRead *.ps,*.pfa,*.afm,*.eps,*.epsf,*.epsi,*.ai	  setf postscr
@@ -1847,8 +1880,9 @@ au BufNewFile,BufRead .tcshrc,*.tcsh,tcsh.tcshrc,tcsh.login	call dist#ft#SetFile
 " (patterns ending in a start further below)
 au BufNewFile,BufRead .login,.cshrc,csh.cshrc,csh.login,csh.logout,*.csh,.alias  call dist#ft#CSH()
 
-" Zig
+" Zig and Zir (Zig Intermediate Representation)
 au BufNewFile,BufRead *.zig			setf zig
+au BufNewFile,BufRead *.zir			setf zir
 
 " Z-Shell script (patterns ending in a star further below)
 au BufNewFile,BufRead .zprofile,*/etc/zprofile,.zfbfmarks  setf zsh
@@ -1881,6 +1915,9 @@ au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
 au BufNewFile,BufRead .slrnrc			setf slrnrc
 au BufNewFile,BufRead *.score			setf slrnsc
 
+" Smali
+au BufNewFile,BufRead *.smali			setf smali
+
 " Smalltalk
 au BufNewFile,BufRead *.st			setf st
 
@@ -1908,6 +1945,9 @@ au BufNewFile,BufRead *.smi
 
 " SMITH
 au BufNewFile,BufRead *.smt,*.smith		setf smith
+
+" Smithy
+au BufNewFile,BufRead *.smithy			setf smithy
 
 " Snobol4 and spitbol
 au BufNewFile,BufRead *.sno,*.spt		setf snobol4
@@ -2078,6 +2118,9 @@ au BufNewFile,BufRead *.texinfo,*.texi,*.txi	setf texinfo
 
 " TeX configuration
 au BufNewFile,BufRead texmf.cnf			setf texmf
+
+" Thrift (Apache)
+au BufNewFile,BufRead *.thrift			setf thrift
 
 " Tidy config
 au BufNewFile,BufRead .tidyrc,tidyrc,tidy.conf	setf tidy
@@ -2342,6 +2385,9 @@ au BufNewFile,BufRead fglrxrc			setf xml
 
 " Web Services Description Language (WSDL)
 au BufNewFile,BufRead *.wsdl			setf xml
+
+" Workflow Description Language (WDL)
+au BufNewFile,BufRead *.wdl			setf wdl
 
 " XLIFF (XML Localisation Interchange File Format) is also XML
 au BufNewFile,BufRead *.xlf			setf xml

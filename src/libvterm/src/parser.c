@@ -34,7 +34,7 @@ static void do_csi(VTerm *vt, char command)
 
   if(vt->parser.callbacks && vt->parser.callbacks->csi)
     if((*vt->parser.callbacks->csi)(
-          vt->parser.v.csi.leaderlen ? vt->parser.v.csi.leader : NULL, 
+          vt->parser.v.csi.leaderlen ? vt->parser.v.csi.leader : NULL,
           vt->parser.v.csi.args,
           vt->parser.v.csi.argi,
           vt->parser.intermedlen ? vt->parser.intermed : NULL,

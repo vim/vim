@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 9.0.  Last change: 2022 Oct 15
+*index.txt*     For Vim version 9.0.  Last change: 2023 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1239,6 +1239,7 @@ tag		command		action ~
 |:checkpath|	:che[ckpath]	list included files
 |:checktime|	:checkt[ime]	check timestamp of loaded buffers
 |:chistory|	:chi[story]	list the error lists
+|:class|	:class		start of a class specification
 |:clast|	:cla[st]	go to the specified error, default last one
 |:clearjumps|	:cle[arjumps]	clear the jump list
 |:clist|	:cl[ist]	list all errors
@@ -1313,6 +1314,7 @@ tag		command		action ~
 |:else|		:el[se]		part of an :if command
 |:elseif|	:elsei[f]	part of an :if command
 |:emenu|	:em[enu]	execute a menu by name
+|:endclass|	:endclass	end of a class specification
 |:enddef|	:enddef		end of a user function started with :def
 |:endif|	:en[dif]	end previous :if
 |:endfor|	:endfo[r]	end previous :for
@@ -1529,6 +1531,7 @@ tag		command		action ~
 |:ptprevious|	:ptp[revious]	|:tprevious| in preview window
 |:ptrewind|	:ptr[ewind]	|:trewind| in preview window
 |:ptselect|	:pts[elect]	|:tselect| and show tag in preview window
+|:public|	:public		prefix for a class or object member
 |:put|		:pu[t]		insert contents of register in the text
 |:pwd|		:pw[d]		print current directory
 |:py3|		:py3		execute Python 3 command
@@ -1639,6 +1642,7 @@ tag		command		action ~
 |:startinsert|	:star[tinsert]	start Insert mode
 |:startgreplace|  :startg[replace] start Virtual Replace mode
 |:startreplace|	:startr[eplace]	start Replace mode
+|:static|	:static		prefix for a class member or function
 |:stopinsert|	:stopi[nsert]	stop Insert mode
 |:stjump|	:stj[ump]	do ":tjump" and split window
 |:stselect|	:sts[elect]	do ":tselect" and split window

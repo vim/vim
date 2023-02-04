@@ -537,6 +537,19 @@ func Test_global_local_virtualedit()
   set virtualedit&
 endfunc
 
+func Test_virtualedit_setlocal()
+  enew
+  setglobal virtualedit=all
+  setlocal virtualedit=all
+  normal! l
+  redraw
+  setlocal virtualedit=none
+  call assert_equal(1, wincol())
+
+  setlocal virtualedit&
+  set virtualedit&
+endfunc
+
 func Test_virtualedit_mouse()
   let save_mouse = &mouse
   set mouse=a
@@ -572,14 +585,14 @@ func Test_virtualedit_mouse()
   set virtualedit&
 endfunc
 
-" this was replacing the NUL at the end of the line 
+" this was replacing the NUL at the end of the line
 func Test_virtualedit_replace_after_tab()
   new
   s/\v/	0
   set ve=all
   let @" = ''
   sil! norm vPvr0
-  
+
   call assert_equal("\t0", getline(1))
   set ve&
   bwipe!

@@ -294,25 +294,25 @@ get_register(
 
     get_yank_register(name, 0);
     reg = ALLOC_ONE(yankreg_T);
-    if (reg != NULL)
+    if (reg == NULL)
+	return (void *)NULL;
+
+    *reg = *y_current;
+    if (copy)
     {
-	*reg = *y_current;
-	if (copy)
-	{
-	    // If we run out of memory some or all of the lines are empty.
-	    if (reg->y_size == 0)
-		reg->y_array = NULL;
-	    else
-		reg->y_array = ALLOC_MULT(char_u *, reg->y_size);
-	    if (reg->y_array != NULL)
-	    {
-		for (i = 0; i < reg->y_size; ++i)
-		    reg->y_array[i] = vim_strsave(y_current->y_array[i]);
-	    }
-	}
+	// If we run out of memory some or all of the lines are empty.
+	if (reg->y_size == 0)
+	    reg->y_array = NULL;
 	else
-	    y_current->y_array = NULL;
+	    reg->y_array = ALLOC_MULT(char_u *, reg->y_size);
+	if (reg->y_array != NULL)
+	{
+	    for (i = 0; i < reg->y_size; ++i)
+		reg->y_array[i] = vim_strsave(y_current->y_array[i]);
+	}
     }
+    else
+	y_current->y_array = NULL;
     return (void *)reg;
 }
 
@@ -716,22 +716,22 @@ put_reedit_in_typebuf(int silent)
 {
     char_u	buf[3];
 
-    if (restart_edit != NUL)
+    if (restart_edit == NUL)
+	return;
+
+    if (restart_edit == 'V')
     {
-	if (restart_edit == 'V')
-	{
-	    buf[0] = 'g';
-	    buf[1] = 'R';
-	    buf[2] = NUL;
-	}
-	else
-	{
-	    buf[0] = restart_edit == 'I' ? 'i' : restart_edit;
-	    buf[1] = NUL;
-	}
-	if (ins_typebuf(buf, REMAP_NONE, 0, TRUE, silent) == OK)
-	    restart_edit = NUL;
+	buf[0] = 'g';
+	buf[1] = 'R';
+	buf[2] = NUL;
     }
+    else
+    {
+	buf[0] = restart_edit == 'I' ? 'i' : restart_edit;
+	buf[1] = NUL;
+    }
+    if (ins_typebuf(buf, REMAP_NONE, 0, TRUE, silent) == OK)
+	restart_edit = NUL;
 }
 
 /*
@@ -1097,14 +1097,14 @@ clear_registers(void)
     static void
 free_yank(long n)
 {
-    if (y_current->y_array != NULL)
-    {
-	long	    i;
+    if (y_current->y_array == NULL)
+	return;
 
-	for (i = n; --i >= 0; )
-	    vim_free(y_current->y_array[i]);
-	VIM_CLEAR(y_current->y_array);
-    }
+    long	    i;
+
+    for (i = n; --i >= 0; )
+	vim_free(y_current->y_array[i]);
+    VIM_CLEAR(y_current->y_array);
 }
 
     void
@@ -2208,15 +2208,7 @@ error:
 		if (dir == FORWARD)
 		    curbuf->b_op_start.lnum++;
 	    }
-	    // Skip mark_adjust when adding lines after the last one, there
-	    // can't be marks there. But still needed in diff mode.
-	    if (curbuf->b_op_start.lnum + (y_type == MCHAR) - 1 + nr_lines
-						 < curbuf->b_ml.ml_line_count
-#ifdef FEAT_DIFF
-						 || curwin->w_p_diff
-#endif
-						 )
-		mark_adjust(curbuf->b_op_start.lnum + (y_type == MCHAR),
+	    mark_adjust(curbuf->b_op_start.lnum + (y_type == MCHAR),
 					     (linenr_T)MAXLNUM, nr_lines, 0L);
 
 	    // note changed text for displaying and folding
@@ -2703,23 +2695,22 @@ get_reg_contents(int regname, int flags)
     }
 
     retval = alloc(len + 1);
+    if (retval == NULL)
+	return NULL;
 
     // Copy the lines of the yank register into the string.
-    if (retval != NULL)
+    len = 0;
+    for (i = 0; i < y_current->y_size; ++i)
     {
-	len = 0;
-	for (i = 0; i < y_current->y_size; ++i)
-	{
-	    STRCPY(retval + len, y_current->y_array[i]);
-	    len += (long)STRLEN(retval + len);
+	STRCPY(retval + len, y_current->y_array[i]);
+	len += (long)STRLEN(retval + len);
 
-	    // Insert a NL between lines and after the last line if y_type is
-	    // MLINE.
-	    if (y_current->y_type == MLINE || i < y_current->y_size - 1)
-		retval[len++] = '\n';
-	}
-	retval[len] = NUL;
+	// Insert a NL between lines and after the last line if y_type is
+	// MLINE.
+	if (y_current->y_type == MLINE || i < y_current->y_size - 1)
+	    retval[len++] = '\n';
     }
+    retval[len] = NUL;
 
     return retval;
 }

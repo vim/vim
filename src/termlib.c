@@ -286,15 +286,19 @@ tgetstr(char *id, char **buf)
 	if (!*tmp)
 	    break;
 
-	if (_match(id, tmp) == len) {
+	if (_match(id, tmp) == len)
+	{
 	    tmp += len;				// find '=' '@' or '#'
 	    if (*tmp == '@')			// :xx@: entry for tc
 		return 0;			// deleted entry
 	    hold= *buf;
-	    while (*++tmp && *tmp != ':') {	// not at end of field
-		switch(*tmp) {
+	    while (*++tmp && *tmp != ':')	// not at end of field
+		{
+		switch(*tmp)
+		{
 		case '\\':			// Expand escapes here
-		    switch(*++tmp) {
+		    switch(*++tmp)
+		    {
 		    case 0:			// ignore backslashes
 			tmp--;			// at end of entry
 			break;			// shouldn't happen
@@ -401,11 +405,16 @@ tgoto(
     bufp = buffer;
     ptr = cm;
 
-    while (*ptr) {
-	if ((c = *ptr++) != '%') {		// normal char
+    while (*ptr)
+    {
+	if ((c = *ptr++) != '%')		// normal char
+	{
 	    *bufp++ = c;
-	} else {				// % escape
-	    switch(c = *ptr++) {
+	}
+	else
+	{				// % escape
+	    switch(c = *ptr++)
+	    {
 	    case 'd':				// decimal
 		bufp = _addfmt(bufp, "%d", line);
 		line = col;
@@ -430,7 +439,8 @@ tgoto(
 		if (line == '\t' ||		// these are
 		   line == '\n' ||		// chars that
 		   line == '\004' ||		// UNIX hates
-		   line == '\0') {
+		   line == '\0')
+		{
 		    line++;			// so go to next pos
 		    if (reverse == (line == col))
 			addup=1;		// and mark UP
@@ -472,7 +482,8 @@ tgoto(
     }
 
     if (addup)					// add upline
-	if (UP) {
+	if (UP)
+	{
 	    ptr=UP;
 	    while (VIM_ISDIGIT(*ptr) || *ptr == '.')
 		ptr++;
@@ -483,7 +494,8 @@ tgoto(
 	}
 
     if (addbak)					// add backspace
-	if (BC) {
+	if (BC)
+	{
 	    ptr=BC;
 	    while (VIM_ISDIGIT(*ptr) || *ptr == '.')
 		ptr++;
@@ -536,17 +548,20 @@ tputs(
 	counter,			// digits
 	atol(const char *);
 
-    if (VIM_ISDIGIT(*cp)) {
+    if (VIM_ISDIGIT(*cp))
+    {
 	counter = 0;
 	frac = 1000;
 	while (VIM_ISDIGIT(*cp))
 	    counter = counter * 10L + (long)(*cp++ - '0');
 	if (*cp == '.')
-	    while (VIM_ISDIGIT(*++cp)) {
+	    while (VIM_ISDIGIT(*++cp))
+	    {
 		counter = counter * 10L + (long)(*cp++ - '0');
 		frac = frac * 10;
 	    }
-	if (*cp!='*') {			// multiply by affected lines
+	if (*cp!='*')			// multiply by affected lines
+	{
 	    if (affcnt>1) affcnt = 1;
 	}
 	else

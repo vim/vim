@@ -661,9 +661,15 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
   }
 
   /* We really expect the cursor position to be set by now */
+  /* Unfortunately we do get here when "new_rows" is one.  We don't want
+   * to crash, so until the above code is fixed let's just set the cursor. */
   if(active && (new_cursor.row == -1 || new_cursor.col == -1)) {
-    fprintf(stderr, "screen_resize failed to update cursor position\n");
-    abort();
+    /* fprintf(stderr, "screen_resize failed to update cursor position\n");
+     * abort(); */
+    if (new_cursor.row < 0)
+      new_cursor.row = 0;
+    if (new_cursor.col < 0)
+      new_cursor.col = 0;
   }
 
   if(old_row >= 0 && bufidx == BUFIDX_PRIMARY) {

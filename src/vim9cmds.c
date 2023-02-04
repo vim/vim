@@ -1001,8 +1001,13 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    name = vim_strnsave(arg, varlen);
 	    if (name == NULL)
 		goto failed;
-	    if (*p == ':')
+	    if (*skipwhite(p) == ':')
 	    {
+		if (VIM_ISWHITE(*p))
+		{
+		    semsg(_(e_no_white_space_allowed_before_colon_str), p);
+		    goto failed;
+		}
 		p = skipwhite(p + 1);
 		lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
 	    }
@@ -1013,7 +1018,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    if (dest != dest_local)
 	    {
 		if (generate_store_var(cctx, dest, opt_flags, vimvaridx,
-						     0, 0, type, name) == FAIL)
+						     type, name, NULL) == FAIL)
 		    goto failed;
 	    }
 	    else if (varlen == 1 && *arg == '_')
@@ -1035,7 +1040,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		    goto failed;
 		if (lookup_local(arg, varlen, NULL, cctx) == OK)
 		{
-		    semsg(_(e_variable_already_declared), arg);
+		    semsg(_(e_variable_already_declared_str), arg);
 		    goto failed;
 		}
 
@@ -1045,7 +1050,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		if (lhs_type == &t_any)
 		    lhs_type = item_type;
 		else if (item_type != &t_unknown
-			&& need_type_where(item_type, lhs_type, -1,
+			&& need_type_where(item_type, lhs_type, FALSE, -1,
 					    where, cctx, FALSE, FALSE) == FAIL)
 		    goto failed;
 		var_lvar = reserve_local(cctx, arg, varlen, ASSIGN_FINAL,
@@ -1910,6 +1915,7 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     int		defer_var_idx;
     type_T	*type;
     int		func_idx;
+    int		obj_method = 0;
 
     // Get a funcref for the function name.
     // TODO: better way to find the "(".
@@ -1925,8 +1931,15 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
 	// TODO: better type
 	generate_PUSHFUNC(cctx, (char_u *)internal_func_name(func_idx),
 							   &t_func_any, FALSE);
-    else if (compile_expr0(&arg, cctx) == FAIL)
-	return NULL;
+    else
+    {
+	int typecount = cctx->ctx_type_stack.ga_len;
+	if (compile_expr0(&arg, cctx) == FAIL)
+	    return NULL;
+	if (cctx->ctx_type_stack.ga_len >= typecount + 2)
+	    // must have seen "obj.Func", pushed an object and a function
+	    obj_method = 1;
+    }
     *paren = '(';
 
     // check for function type
@@ -1958,7 +1971,7 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
     defer_var_idx = get_defer_var_idx(cctx);
     if (defer_var_idx == 0)
 	return NULL;
-    if (generate_DEFER(cctx, defer_var_idx - 1, argcount) == FAIL)
+    if (generate_DEFER(cctx, defer_var_idx - 1, obj_method, argcount) == FAIL)
 	return NULL;
 
     return skipwhite(arg);
@@ -1973,7 +1986,11 @@ compile_defer(char_u *arg_start, cctx_T *cctx)
  * compile "execute expr"
  */
     char_u *
-compile_mult_expr(char_u *arg, int cmdidx, long cmd_count, cctx_T *cctx)
+compile_mult_expr(
+	char_u	*arg,
+	int	cmdidx,
+	long	cmd_count UNUSED,
+	cctx_T	*cctx)
 {
     char_u	*p = arg;
     char_u	*prev = arg;
@@ -2465,7 +2482,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	if (compile_assign_lhs(arg, lhs, CMD_redir,
 					 FALSE, FALSE, FALSE, 1, cctx) == FAIL)
 	    return NULL;
-	if (need_type(&t_string, lhs->lhs_member_type,
+	if (need_type(&t_string, lhs->lhs_member_type, FALSE,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 	    return NULL;
 	if (cctx->ctx_skip == SKIP_YES)
@@ -2531,7 +2548,8 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
     char_u	*p = arg;
     type_T	*stack_type;
 
-    if (*p != NUL && *p != '|' && *p != '\n')
+    if (*p != NUL && *p != '|' && *p != '\n'
+					&& (legacy || !vim9_comment_start(p)))
     {
 	// For a lambda, "return expr" is always used, also when "expr" results
 	// in a void.
@@ -2546,7 +2564,7 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    int save_flags = cmdmod.cmod_flags;
 
 	    generate_LEGACY_EVAL(cctx, p);
-	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, -1,
+	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, FALSE, -1,
 						0, cctx, FALSE, FALSE) == FAIL)
 		return NULL;
 	    cmdmod.cmod_flags |= CMOD_LEGACY;
@@ -2575,8 +2593,8 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 	    }
 	    else
 	    {
-		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
-						0, cctx, FALSE, FALSE) == FAIL)
+		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, FALSE,
+					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		    return NULL;
 	    }
 	}

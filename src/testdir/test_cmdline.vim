@@ -435,6 +435,7 @@ func Test_getcompletion()
     call assert_true(matchcount > 0)
     let matchcount = len(getcompletion('File.', 'menu'))
     call assert_true(matchcount > 0)
+    source $VIMRUNTIME/delmenu.vim
   endif
 
   let l = getcompletion('v:n', 'var')
@@ -488,6 +489,12 @@ func Test_getcompletion()
   call assert_true(index(l, 'taglist(') >= 0)
   let l = getcompletion('paint', 'function')
   call assert_equal([], l)
+
+  if !has('ruby')
+    " global_functions[] has an entry but it doesn't have an implemention
+    let l = getcompletion('ruby', 'function')
+    call assert_equal([], l)
+  endif
 
   let Flambda = {-> 'hello'}
   let l = getcompletion('', 'function')
@@ -652,6 +659,20 @@ func Test_getcompletion()
   call assert_fails("call getcompletion('\\\\@!\\\\@=', 'buffer')", 'E871:')
   call assert_fails('call getcompletion("", "burp")', 'E475:')
   call assert_fails('call getcompletion("abc", [])', 'E1174:')
+endfunc
+
+func Test_multibyte_expression()
+  " Get a dialog in the GUI
+  CheckNotGui
+
+  " This was using uninitialized memory.
+  let lines =<< trim END
+      set verbose=6
+      norm @=ٷ
+      qall!
+  END
+  call writefile(lines, 'XmultiScript', 'D')
+  call RunVim('', '', '-u NONE -n -e -s -S XmultiScript')
 endfunc
 
 " Test for getcompletion() with "fuzzy" in 'wildoptions'
@@ -2485,6 +2506,23 @@ func Test_wildmenu_pum_from_terminal()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_wildmenu_pum_clear_entries()
+  CheckRunVimInTerminal
+
+  " This was using freed memory.  Run in a terminal to get the pum to update.
+  let lines =<< trim END
+    set wildoptions=pum
+    set wildchar=<C-E>
+  END
+  call writefile(lines, 'XwildmenuTest', 'D')
+  let buf = RunVimInTerminal('-S XwildmenuTest', #{rows: 10})
+
+  call term_sendkeys(buf, ":\<C-E>\<C-E>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_pum_clear_entries_1', {})
+
+  set wildoptions& wildchar&
+endfunc
+
 " Test for completion after a :substitute command followed by a pipe (|)
 " character
 func Test_cmdline_complete_substitute()
@@ -2868,20 +2906,25 @@ func Test_fuzzy_completion_abbr()
   call assert_equal("\"iabbr WaitForCompletion", @:)
   call feedkeys(":iabbr a1z\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal("\"iabbr a1z\t", @:)
+
   iunabbrev WaitForCompletion
   set wildoptions&
 endfunc
 
 " menu name fuzzy completion
 func Test_fuzzy_completion_menu()
-  CheckGui
+  CheckFeature menu
+
+  source $VIMRUNTIME/menu.vim
   set wildoptions&
   call feedkeys(":menu pup\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"menu pup', @:)
   set wildoptions=fuzzy
   call feedkeys(":menu pup\<Tab>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"menu PopUp.', @:)
+
   set wildoptions&
+  source $VIMRUNTIME/delmenu.vim
 endfunc
 
 " :messages suboptions fuzzy completion

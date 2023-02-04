@@ -1622,6 +1622,19 @@ func Test_inputlist()
   call assert_fails('call inputlist(test_null_list())', 'E686:')
 endfunc
 
+func Test_range_inputlist()
+  " flush out any garbage left in the buffer
+  while getchar(0)
+  endwhile
+
+  call feedkeys(":let result = inputlist(range(10))\<CR>1\<CR>", 'x')
+  call assert_equal(1, result)
+  call feedkeys(":let result = inputlist(range(3, 10))\<CR>1\<CR>", 'x')
+  call assert_equal(1, result)
+
+  unlet result
+endfunc
+
 func Test_balloon_show()
   CheckFeature balloon_eval
 
@@ -1635,7 +1648,7 @@ endfunc
 
 func Test_setbufvar_options()
   " This tests that aucmd_prepbuf() and aucmd_restbuf() properly restore the
-  " window layout.
+  " window layout and cursor position.
   call assert_equal(1, winnr('$'))
   split dummy_preview
   resize 2
@@ -1649,11 +1662,20 @@ func Test_setbufvar_options()
   execute 'belowright vertical split #' . dummy_buf
   call assert_equal(wh, winheight(0))
   let dum1_id = win_getid()
+  call setline(1, 'foo')
+  normal! V$
+  call assert_equal(4, col('.'))
+  call setbufvar('dummy_preview', '&buftype', 'nofile')
+  call assert_equal(4, col('.'))
 
   wincmd h
   let wh = winheight(0)
+  call setline(1, 'foo')
+  normal! V$
+  call assert_equal(4, col('.'))
   let dummy_buf = bufnr('dummy_buf2', v:true)
   eval 'nofile'->setbufvar(dummy_buf, '&buftype')
+  call assert_equal(4, col('.'))
   execute 'belowright vertical split #' . dummy_buf
   call assert_equal(wh, winheight(0))
 
@@ -2549,12 +2571,6 @@ func Test_range()
   " index()
   call assert_equal(1, index(range(1, 5), 2))
   call assert_fails("echo index([1, 2], 1, [])", 'E745:')
-
-  " inputlist()
-  call feedkeys(":let result = inputlist(range(10))\<CR>1\<CR>", 'x')
-  call assert_equal(1, result)
-  call feedkeys(":let result = inputlist(range(3, 10))\<CR>1\<CR>", 'x')
-  call assert_equal(1, result)
 
   " insert()
   call assert_equal([42, 1, 2, 3, 4, 5], insert(range(1, 5), 42))

@@ -83,20 +83,20 @@ ui_inchar_undo(char_u *s, int len)
     if (ta_str != NULL)
 	newlen += ta_len - ta_off;
     new = alloc(newlen);
-    if (new != NULL)
+    if (new == NULL)
+	return;
+
+    if (ta_str != NULL)
     {
-	if (ta_str != NULL)
-	{
-	    mch_memmove(new, ta_str + ta_off, (size_t)(ta_len - ta_off));
-	    mch_memmove(new + ta_len - ta_off, s, (size_t)len);
-	    vim_free(ta_str);
-	}
-	else
-	    mch_memmove(new, s, (size_t)len);
-	ta_str = new;
-	ta_len = newlen;
-	ta_off = 0;
+	mch_memmove(new, ta_str + ta_off, (size_t)(ta_len - ta_off));
+	mch_memmove(new + ta_len - ta_off, s, (size_t)len);
+	vim_free(ta_str);
     }
+    else
+	mch_memmove(new, s, (size_t)len);
+    ta_str = new;
+    ta_len = newlen;
+    ta_off = 0;
 }
 #endif
 
@@ -538,8 +538,6 @@ ui_delay(long msec_arg, int ignoreinput)
 #ifdef FEAT_EVAL
     if (ui_delay_for_testing > 0)
 	msec = ui_delay_for_testing;
-#endif
-#ifdef FEAT_JOB_CHANNEL
     ch_log(NULL, "ui_delay(%ld)", msec);
 #endif
 #ifdef FEAT_GUI
@@ -817,25 +815,25 @@ set_input_buf(char_u *p, int overwrite)
 {
     garray_T	*gap = (garray_T *)p;
 
-    if (gap != NULL)
+    if (gap == NULL)
+	return;
+
+    if (gap->ga_data != NULL)
     {
-	if (gap->ga_data != NULL)
+	if (overwrite || inbufcount + gap->ga_len >= INBUFLEN)
 	{
-	    if (overwrite || inbufcount + gap->ga_len >= INBUFLEN)
-	    {
-		mch_memmove(inbuf, gap->ga_data, gap->ga_len);
-		inbufcount = gap->ga_len;
-	    }
-	    else
-	    {
-		mch_memmove(inbuf + gap->ga_len, inbuf, inbufcount);
-		mch_memmove(inbuf, gap->ga_data, gap->ga_len);
-		inbufcount += gap->ga_len;
-	    }
-	    vim_free(gap->ga_data);
+	    mch_memmove(inbuf, gap->ga_data, gap->ga_len);
+	    inbufcount = gap->ga_len;
 	}
-	vim_free(gap);
+	else
+	{
+	    mch_memmove(inbuf + gap->ga_len, inbuf, inbufcount);
+	    mch_memmove(inbuf, gap->ga_data, gap->ga_len);
+	    inbufcount += gap->ga_len;
+	}
+	vim_free(gap->ga_data);
     }
+    vim_free(gap);
 }
 
 /*
@@ -968,7 +966,7 @@ fill_input_buf(int exit_on_error UNUSED)
 #  else
 	len = read(read_cmd_fd, (char *)inbuf + inbufcount, readlen);
 #  endif
-#  ifdef FEAT_JOB_CHANNEL
+#  ifdef FEAT_EVAL
 	if (len > 0)
 	{
 	    inbuf[inbufcount + len] = NUL;

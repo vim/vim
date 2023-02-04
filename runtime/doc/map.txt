@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2022 Nov 14
+*map.txt*       For Vim version 9.0.  Last change: 2023 Jan 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,18 +10,20 @@ This subject is introduced in sections |05.4|, |24.7| and |40.1| of the user
 manual.
 
 1. Key mapping			|key-mapping|
-   1.1 MAP COMMANDS			|:map-commands|
-   1.2 Special arguments		|:map-arguments|
-   1.3 Mapping and modes		|:map-modes|
-   1.4 Listing mappings			|map-listing|
-   1.5 Mapping special keys		|:map-special-keys|
-   1.6 Special characters		|:map-special-chars|
-   1.7 What keys to map			|map-which-keys|
-   1.8 Examples				|map-examples|
-   1.9 Using mappings			|map-typing|
-   1.10 Mapping alt-keys		|:map-alt-keys|
-   1.11 Mapping in modifyOtherKeys mode	|modifyOtherKeys|
-   1.12 Mapping an operator		|:map-operator|
+   1.1 MAP COMMANDS				|:map-commands|
+   1.2 Special arguments			|:map-arguments|
+   1.3 Mapping and modes			|:map-modes|
+   1.4 Listing mappings				|map-listing|
+   1.5 Mapping special keys			|:map-special-keys|
+   1.6 Special characters			|:map-special-chars|
+   1.7 What keys to map				|map-which-keys|
+   1.8 Examples					|map-examples|
+   1.9 Using mappings				|map-typing|
+   1.10 Mapping alt-keys			|:map-alt-keys|
+   1.11 Mapping meta-keys			|:map-meta-keys|
+   1.12 Mapping in modifyOtherKeys mode		|modifyOtherKeys|
+   1.13 Mapping with Kitty keyboard protocol	|kitty-keyboard-protocol|
+   1.14 Mapping an operator			|:map-operator|
 2. Abbreviations		|abbreviations|
 3. Local mappings and functions	|script-local|
 4. User-defined commands	|user-commands|
@@ -776,8 +778,8 @@ To avoid mapping of the characters you type in insert or Command-line mode,
 type a CTRL-V first.  The mapping in Insert mode is disabled if the 'paste'
 option is on.
 							*map-error*
-Note that when an error is encountered (that causes an error message or beep)
-the rest of the mapping is not executed.  This is Vi-compatible.
+Note that when an error is encountered (that causes an error message or might
+cause a beep) the rest of the mapping is not executed.  This is Vi-compatible.
 
 Note that the second character (argument) of the commands @zZtTfF[]rm'`"v
 and CTRL-X is not mapped.  This was done to be able to use all the named
@@ -793,8 +795,8 @@ otherwise you would not be able to use those commands anymore.  Here are a few
 suggestions:
 - Function keys <F2>, <F3>, etc..  Also the shifted function keys <S-F1>,
   <S-F2>, etc.  Note that <F1> is already used for the help command.
-- Meta-keys (with the ALT key pressed).  Depending on your keyboard accented
-  characters may be used as well. |:map-alt-keys|
+- Any key with the Alt or Meta key pressed.  Depending on your keyboard
+  accented characters may be used as well. |:map-alt-keys|
 - Use the '_' or ',' character and then any other character.  The "_" and ","
   commands do exist in Vim (see |_| and |,|), but you probably never use them.
 - Use a key that is a synonym for another command.  For example: CTRL-P and
@@ -927,6 +929,8 @@ out whether ALT was pressed or not.
 
 If the terminal supports the modifyOtherKeys mode and it has been enabled,
 then Vim can recognize more key combinations, see |modifyOtherKeys| below.
+The Kitty keyboard protocol works in a similar way, see
+|kitty-keyboard-protocol|.
 
 By default Vim assumes that pressing the ALT key sets the 8th bit of a typed
 character.  Most decent terminals can work that way, such as xterm, aterm and
@@ -965,17 +969,36 @@ on the terminal; that's a good last resource in case you want to send ESC when
 using other applications but not when inside Vim.
 
 
-1.11 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
+1.11 MAPPING META-KEYS					*:map-meta-keys*
+
+Mapping keys with the Meta modifier works very similar to using the Alt key.
+What key on your keyboard produces the Meta modifier depends on your keyboard
+and configuration.
+
+Note that mapping <M-a> actually is for using the Alt key.  That can be
+confusing!  It cannot be changed, it would not be backwards compatible.
+
+For the Meta modifier the "T" character is used.  For example, to map Meta-b
+in Insert mode: >
+	:imap <T-b> terrible
+
+
+1.12 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
 
 Xterm and a few other terminals can be put in a mode where keys with modifiers
 are sent with a special escape code.  Vim recognizes these codes and can then
 make a difference between CTRL-H and Backspace, even when Backspace sends the
-character 8.  And many more special keys.
+character 8.  And many more special keys, such as Tab and CTRL-I, which cannot
+be mapped separately otherwise.
 
 For xterm modifyOtherKeys is enabled in the builtin termcap entry.  If this is
 not used you can enable modifyOtherKeys with these lines in your vimrc: >
       let &t_TI = "\<Esc>[>4;2m"
       let &t_TE = "\<Esc>[>4;m"
+
+This sets modifyOtherKeys to level 2.  Note that modifyOtherKeys level 1 does
+not work.  Some terminals do not support level 2 and then send key codes that
+Vim will not be able to correctly recognize.
 
 In case the modifyOtherKeys mode causes problems you can disable it: >
       let &t_TI = ""
@@ -995,21 +1018,61 @@ mapping, see |map-bar|.
 WARNING: if you map <C-[> you may very well break any key codes that start
 with Esc.  Make sure it comes AFTER other mappings.
 
-Vim automatically detects if the modifyOtherKeys mode was enabled when it
-spots an escape sequence that must have been created by it.  To see if Vim
-detected such an escape sequence use `:verbose map`, the first line will then
-show "Seen modifyOtherKeys: true" (possibly translated).
+Starting with xterm version 377 Vim can detect the modifyOtherKeys state by
+requesting it.  For this the 't_RK' termcap entry is used.  When the response
+is found then Vim will know whether modifyOtherKeys level 2 is enabled, and
+handle mappings accordingly.
+
+Before version 377 Vim automatically detects if the modifyOtherKeys mode was
+enabled when it spots an escape sequence that must have been created by it.
+To see if Vim detected such an escape sequence use `:verbose map`, the first
+line will then show "Seen modifyOtherKeys: true" (possibly translated).
+
+This automatic detection depends on receiving an escape code starting with 
+"<1b>[27;".  This is the normal way xterm sends these key codes.  However, if
+the *formatOtherKeys* resource is set another form is used that is not
+recognized, therefore you must not set formatOtherKeys.
 
 A known side effect is that in Insert mode the raw escape sequence is inserted
 after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
 enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you get one byte then
-modifyOtherKeys is off, if you get <1b>27;5;118~ then it is on.
+modifyOtherKeys is off, if you get <1b>[27;5;118~ then it is on.
+
+Note that xterm up to version 376 has a bug that makes Shift-Esc send a
+regular Esc code, the Shift modifier is dropped.
 
 When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.
 
 
-1.12 MAPPING AN OPERATOR				*:map-operator*
+1.13 MAPPING WITH KITTY KEYBOARD PROTOCOL	 *kitty-keyboard-protocol*
+
+If the value of 'term' contains "kitty" then Vim will send out an escape
+sequence to enable the Kitty keyboard protocol.  This can be changed with the
+'keyprotocol' option.
+
+Like modifyOtherKeys, this will make it possible to distinguish between more
+keys with modifiers.  Also, this protocol sends an escape sequence for the Esc
+key, so that Vim does not need to use a timeout to know whether receiving an
+Esc character means the Esc key was pressed or it's the start of an escape
+sequence.
+
+Vim automatically detects if the Kitty keyboard protocol was enabled when it
+spots the response to the status request (this should be part of the |t_TI|
+termcap entry).  To see if Vim detected such an escape sequence use: >
+	:verbose map
+The first line will then show "Kitty keyboard protocol: {value}" (possibly
+translated).  The meaning of {value}:
+	Unknown		no status received yet
+	Off		protocol is not used
+	On		protocol is used
+	Disabled	protocol was used but expected to have been disabled
+			by 't_TE'
+	Cleared		protocol expected to have beeen disabled by 't_TE',
+			previous state is unknown 
+
+
+1.14 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
 you must create a mapping that first sets the 'operatorfunc' option and then
@@ -1649,7 +1712,7 @@ Possible attributes are:
 		    number.
 	-count=N    A count (default N) which is specified either in the line
 		    number position, or as an initial argument (like |:Next|).
-	-count	    acts like -count=0
+	-count	    Acts like -count=0
 
 Note that -range=N and -count=N are mutually exclusive - only one should be
 specified.
@@ -1667,7 +1730,7 @@ Possible values are (second column is the short name used in listing):
     -addr=windows	  win	Range for windows
     -addr=tabs		  tab	Range for tab pages
     -addr=quickfix	  qf	Range for quickfix entries
-    -addr=other		  ?	other kind of range; can use ".", "$" and "%"
+    -addr=other		  ?	Other kind of range; can use ".", "$" and "%"
 				as with "lines" (this is the default for
 				-count)
 
@@ -1825,7 +1888,7 @@ When executed as: >
 This will invoke: >
 	:call Myfunc("arg1","arg2")
 
-<						*q-args-example* 
+<						*q-args-example*
 A more substantial example: >
    :function Allargs(command)
    :   let i = 0

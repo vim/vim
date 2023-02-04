@@ -157,6 +157,27 @@ func Test_indent_fold_max()
   bw!
 endfunc
 
+func Test_indent_fold_tabstop()
+  call setline(1, ['0', '    1', '    1', "\t2", "\t2"])
+  setlocal shiftwidth=4
+  setlocal foldcolumn=1
+  setlocal foldlevel=2
+  setlocal foldmethod=indent
+  redraw
+  call assert_equal('2        2', ScreenLines(5, 10)[0])
+  vsplit
+  windo diffthis
+  botright new
+  " This 'tabstop' value should not be used for folding in other buffers.
+  setlocal tabstop=4
+  diffoff!
+  redraw
+  call assert_equal('2        2', ScreenLines(5, 10)[0])
+
+  bwipe!
+  bwipe!
+endfunc
+
 func Test_manual_fold_with_filter()
   CheckExecutable cat
   for type in ['manual', 'marker']
@@ -435,7 +456,7 @@ func Test_move_folds_around_manual()
   %foldopen!
   13m7
   call Check_foldlevels([1, 2, 2, 2, 1, 2, 2, 1, 1, 1, 2, 2, 2, 1, 0])
-  
+
   bw!
 endfunc
 
@@ -684,7 +705,7 @@ func Test_fold_create_marker_in_C()
   let content =<< trim [CODE]
     /*
      * comment
-     * 
+     *
      *
      */
     int f(int* p) {
@@ -1482,6 +1503,7 @@ func Test_foldexpr_scriptlocal_func()
   set foldmethod=expr foldexpr=s:FoldFunc()
   redraw!
   call assert_equal(expand('<SID>') .. 'FoldFunc()', &foldexpr)
+  call assert_equal(expand('<SID>') .. 'FoldFunc()', &g:foldexpr)
   call assert_equal(1, g:FoldLnum)
   set foldmethod& foldexpr=
   bw!
@@ -1491,8 +1513,31 @@ func Test_foldexpr_scriptlocal_func()
   set foldmethod=expr foldexpr=<SID>FoldFunc()
   redraw!
   call assert_equal(expand('<SID>') .. 'FoldFunc()', &foldexpr)
+  call assert_equal(expand('<SID>') .. 'FoldFunc()', &g:foldexpr)
   call assert_equal(1, g:FoldLnum)
-  set foldmethod& foldexpr=
+  bw!
+  call setline(1, 'abc')
+  setlocal foldmethod& foldexpr&
+  setglobal foldmethod=expr foldexpr=s:FoldFunc()
+  call assert_equal(expand('<SID>') .. 'FoldFunc()', &g:foldexpr)
+  call assert_equal('0', &foldexpr)
+  enew!
+  call setline(1, 'abc')
+  redraw!
+  call assert_equal(expand('<SID>') .. 'FoldFunc()', &foldexpr)
+  call assert_equal(1, g:FoldLnum)
+  bw!
+  call setline(1, 'abc')
+  setlocal foldmethod& foldexpr&
+  setglobal foldmethod=expr foldexpr=<SID>FoldFunc()
+  call assert_equal(expand('<SID>') .. 'FoldFunc()', &g:foldexpr)
+  call assert_equal('0', &foldexpr)
+  enew!
+  call setline(1, 'abc')
+  redraw!
+  call assert_equal(expand('<SID>') .. 'FoldFunc()', &foldexpr)
+  call assert_equal(1, g:FoldLnum)
+  set foldmethod& foldexpr&
   delfunc s:FoldFunc
   bw!
 endfunc
@@ -1506,23 +1551,51 @@ func Test_foldtext_scriptlocal_func()
   new | only
   call setline(1, range(50))
   let g:FoldTextArgs = []
-  set foldmethod=manual
   set foldtext=s:FoldText()
   norm! 4Gzf4j
   redraw!
   call assert_equal(expand('<SID>') .. 'FoldText()', &foldtext)
+  call assert_equal(expand('<SID>') .. 'FoldText()', &g:foldtext)
   call assert_equal([4, 8], g:FoldTextArgs)
   set foldtext&
   bw!
   new | only
   call setline(1, range(50))
   let g:FoldTextArgs = []
-  set foldmethod=manual
   set foldtext=<SID>FoldText()
   norm! 8Gzf4j
   redraw!
   call assert_equal(expand('<SID>') .. 'FoldText()', &foldtext)
+  call assert_equal(expand('<SID>') .. 'FoldText()', &g:foldtext)
   call assert_equal([8, 12], g:FoldTextArgs)
+  set foldtext&
+  bw!
+  call setline(1, range(50))
+  let g:FoldTextArgs = []
+  setlocal foldtext&
+  setglobal foldtext=s:FoldText()
+  call assert_equal(expand('<SID>') .. 'FoldText()', &g:foldtext)
+  call assert_equal('foldtext()', &foldtext)
+  enew!
+  call setline(1, range(50))
+  norm! 12Gzf4j
+  redraw!
+  call assert_equal(expand('<SID>') .. 'FoldText()', &foldtext)
+  call assert_equal([12, 16], g:FoldTextArgs)
+  set foldtext&
+  bw!
+  call setline(1, range(50))
+  let g:FoldTextArgs = []
+  setlocal foldtext&
+  setglobal foldtext=<SID>FoldText()
+  call assert_equal(expand('<SID>') .. 'FoldText()', &g:foldtext)
+  call assert_equal('foldtext()', &foldtext)
+  enew!
+  call setline(1, range(50))
+  norm! 16Gzf4j
+  redraw!
+  call assert_equal(expand('<SID>') .. 'FoldText()', &foldtext)
+  call assert_equal([16, 20], g:FoldTextArgs)
   set foldtext&
   bw!
   delfunc s:FoldText
@@ -1650,6 +1723,27 @@ func Test_sort_closed_fold()
         \ '   brown',
         \ '   cow',
         \ ], getline(1, 10))
+
+  bwipe!
+endfunc
+
+func Test_indent_with_L_command()
+  " The "L" command moved the cursor to line zero, causing the text saved for
+  " undo to use line number -1, which caused trouble for undo later.
+  new
+  sil! norm 8RV{zf8=Lu
+  bwipe!
+endfunc
+
+" Make sure that when there is a fold at the bottom of the buffer and a newline
+" character is appended to the line, the fold gets expanded (instead of the new
+" line not being part of the fold).
+func Test_expand_fold_at_bottom_of_buffer()
+  new
+  " create a fold on the only line
+  fold
+  execute "normal A\<CR>"
+  call assert_equal([1, 1], range(1, 2)->map('foldlevel(v:val)'))
 
   bwipe!
 endfunc

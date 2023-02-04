@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 9.0.  Last change: 2022 Nov 13
+*eval.txt*	For Vim version 9.0.  Last change: 2023 Jan 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -163,9 +163,10 @@ Note that " " and "0" are also non-empty strings, thus considered to be TRUE.
 A List, Dictionary or Float is not a Number or String, thus evaluate to FALSE.
 
 		*E611* *E745* *E728* *E703* *E729* *E730* *E731* *E908* *E910*
-		*E913* *E974* *E975* *E976*
-|List|, |Dictionary|, |Funcref|, |Job|, |Channel| and |Blob| types are not
-automatically converted.
+		*E913* *E974* *E975* *E976* *E1319* *E1320* *E1321* *E1322*
+		*E1323* *E1324*
+|List|, |Dictionary|, |Funcref|, |Job|, |Channel|, |Blob|, |Class| and
+|object| types are not automatically converted.
 
 							*E805* *E806* *E808*
 When mixing Number and Float the Number is converted to Float.  Otherwise
@@ -633,6 +634,10 @@ This removes all entries from "dict" with a value not matching 'x'.
 This can also be used to remove all entries: >
 	call filter(dict, 0)
 
+In some situations it is not allowed to remove or add entries to a Dictionary.
+Especially when iterating over all the entries.  You will get *E1313* or
+another error in that case.
+
 
 Dictionary function ~
 				*Dictionary-function* *self* *E725* *E862*
@@ -646,7 +651,8 @@ special way with a dictionary.  Example: >
 
 This is like a method in object oriented programming.  The entry in the
 Dictionary is a |Funcref|.  The local variable "self" refers to the dictionary
-the function was invoked from.
+the function was invoked from.  When using |Vim9| script you can use classes
+and objects, see `:class`.
 
 It is also possible to add a function without the "dict" attribute as a
 Funcref to a Dictionary, but the "self" variable is not available then.
@@ -1548,7 +1554,7 @@ to be doubled.  These two commands are equivalent: >
 	if a =~ '\s*'
 
 
-interpolated-string				*$quote* *interp-string*
+interpolated-string				*$quote* *interpolated-string*
 --------------------
 $"string"		interpolated string constant		*expr-$quote*
 $'string'		interpolated literal string constant	*expr-$'*
@@ -2498,6 +2504,10 @@ v:t_number	Value of |Number| type.  Read-only.  See: |type()|
 v:t_string	Value of |String| type.  Read-only.  See: |type()|
 					*v:t_blob* *t_blob-variable*
 v:t_blob	Value of |Blob| type.  Read-only.  See: |type()|
+					*v:t_class* *t_class-variable*
+v:t_class	Value of |class| type.  Read-only.  See: |type()|
+					*v:t_object* *t_object-variable*
+v:t_object	Value of |object| type.  Read-only.  See: |type()|
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|
@@ -2859,7 +2869,7 @@ text...
 			does not need to be doubled.
 			If "eval" is specified, then any Vim expression in the
 			form {expr} is evaluated and the result replaces the
-			expression, like with |interp-string|.
+			expression, like with |interpolated-string|.
 			Example where $HOME is expanded: >
 				let lines =<< trim eval END
 				  some text
@@ -2964,6 +2974,8 @@ text...
 			deleted when the script ends).  Function-local
 			variables are automatically deleted when the function
 			ends.
+			In |Vim9| script variables declared in a function or
+			script cannot be removed.
 
 :unl[et] ${env-name} ...			*:unlet-environment* *:unlet-$*
 			Remove environment variable {env-name}.

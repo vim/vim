@@ -393,7 +393,7 @@ endfunc
 " vgetc().
 func Test_nocatch_timer_garbage_collect()
   " FIXME: why does this fail only on MacOS M1?
-  try 
+  try
     CheckNotMacM1
   catch /Skipped/
     let g:skipped_reason = v:exception

@@ -1119,59 +1119,59 @@ vim_beep(unsigned val)
     called_vim_beep = TRUE;
 #endif
 
-    if (emsg_silent == 0 && !in_assert_fails)
+    if (emsg_silent != 0 || in_assert_fails)
+	return;
+
+    if (!((bo_flags & val) || (bo_flags & BO_ALL)))
     {
-	if (!((bo_flags & val) || (bo_flags & BO_ALL)))
-	{
 #ifdef ELAPSED_FUNC
-	    static int		did_init = FALSE;
-	    static elapsed_T	start_tv;
+	static int		did_init = FALSE;
+	static elapsed_T	start_tv;
 
-	    // Only beep once per half a second, otherwise a sequence of beeps
-	    // would freeze Vim.
-	    if (!did_init || ELAPSED_FUNC(start_tv) > 500)
-	    {
-		did_init = TRUE;
-		ELAPSED_INIT(start_tv);
+	// Only beep once per half a second, otherwise a sequence of beeps
+	// would freeze Vim.
+	if (!did_init || ELAPSED_FUNC(start_tv) > 500)
+	{
+	    did_init = TRUE;
+	    ELAPSED_INIT(start_tv);
 #endif
-		if (p_vb
+	    if (p_vb
 #ifdef FEAT_GUI
-			// While the GUI is starting up the termcap is set for
-			// the GUI but the output still goes to a terminal.
-			&& !(gui.in_use && gui.starting)
+		    // While the GUI is starting up the termcap is set for
+		    // the GUI but the output still goes to a terminal.
+		    && !(gui.in_use && gui.starting)
 #endif
-			)
-		{
-		    out_str_cf(T_VB);
+	       )
+	    {
+		out_str_cf(T_VB);
 #ifdef FEAT_VTP
-		    // No restore color information, refresh the screen.
-		    if (has_vtp_working() != 0
+		// No restore color information, refresh the screen.
+		if (has_vtp_working() != 0
 # ifdef FEAT_TERMGUICOLORS
-			    && (p_tgc || (!p_tgc && t_colors >= 256))
+			&& (p_tgc || (!p_tgc && t_colors >= 256))
 # endif
-			)
-		    {
-			redraw_later(UPD_CLEAR);
-			update_screen(0);
-			redrawcmd();
-		    }
-#endif
+		   )
+		{
+		    redraw_later(UPD_CLEAR);
+		    update_screen(0);
+		    redrawcmd();
 		}
-		else
-		    out_char(BELL);
-#ifdef ELAPSED_FUNC
-	    }
 #endif
+	    }
+	    else
+		out_char(BELL);
+#ifdef ELAPSED_FUNC
 	}
+#endif
+    }
 
-	// When 'debug' contains "beep" produce a message.  If we are sourcing
-	// a script or executing a function give the user a hint where the beep
-	// comes from.
-	if (vim_strchr(p_debug, 'e') != NULL)
-	{
-	    msg_source(HL_ATTR(HLF_W));
-	    msg_attr(_("Beep!"), HL_ATTR(HLF_W));
-	}
+    // When 'debug' contains "beep" produce a message.  If we are sourcing
+    // a script or executing a function give the user a hint where the beep
+    // comes from.
+    if (vim_strchr(p_debug, 'e') != NULL)
+    {
+	msg_source(HL_ATTR(HLF_W));
+	msg_attr(_("Beep!"), HL_ATTR(HLF_W));
     }
 }
 
@@ -2699,11 +2699,11 @@ path_with_url(char_u *fname)
     // non-URL text.
 
     // first character must be alpha
-    if (!isalpha(*fname))
+    if (!ASCII_ISALPHA(*fname))
 	return 0;
 
     // check body: alpha or dash
-    for (p = fname + 1; (isalpha(*p) || (*p == '-')); ++p)
+    for (p = fname + 1; (ASCII_ISALPHA(*p) || (*p == '-')); ++p)
 	;
 
     // check last char is not a dash
