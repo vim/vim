@@ -1273,6 +1273,9 @@ au BufNewFile,BufRead *.moo			setf moo
 " Moonscript
 au BufNewFile,BufRead *.moon			setf moonscript
 
+" Move
+au BufNewFile,BufRead *.move			setf move
+
 " Modconf
 au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
 
