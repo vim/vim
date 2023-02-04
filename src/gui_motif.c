@@ -1801,12 +1801,14 @@ gui_mch_create_scrollbar(
 	    XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
 	    XtSetArg(args[n], XmNbottomAttachment, XmATTACH_OPPOSITE_FORM); n++;
 	    XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
+	    XtSetArg(args[n], XmNwidth, gui.scrollbar_width); n++;
 	    break;
 
 	case SBAR_RIGHT:
 	    XtSetArg(args[n], XmNtopAttachment, XmATTACH_FORM); n++;
 	    XtSetArg(args[n], XmNbottomAttachment, XmATTACH_OPPOSITE_FORM); n++;
 	    XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+	    XtSetArg(args[n], XmNwidth, gui.scrollbar_width); n++;
 	    break;
 
 	case SBAR_BOTTOM:
