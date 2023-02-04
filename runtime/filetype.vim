@@ -706,6 +706,9 @@ au BufNewFile,BufRead *.fsl			setf framescript
 " FStab
 au BufNewFile,BufRead fstab,mtab		setf fstab
 
+" Func
+au BufNewFile,BufRead *.fc			setf func
+
 " Fusion
 au BufRead,BufNewFile *.fusion			setf fusion
 
