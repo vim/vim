@@ -1050,6 +1050,60 @@ def Test_call_interface_method()
   END
   v9.CheckScriptSuccess(lines)
 
+  # method of interface returns a value
+  lines =<< trim END
+    vim9script
+    interface Base
+      def Enter(): string
+    endinterface
+
+    class Child implements Base
+      def Enter(): string
+        g:result ..= 'child'
+        return "/resource"
+      enddef
+    endclass
+
+    def F(obj: Base)
+      var r = obj.Enter()
+      g:result ..= r
+    enddef
+
+    g:result = ''
+    F(Child.new())
+    assert_equal('child/resource', g:result)
+    unlet g:result
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Base
+      def Enter(): string
+        return null_string
+      enddef
+    endclass
+
+    class Child extends Base
+      def Enter(): string
+        g:result ..= 'child'
+        return "/resource"
+      enddef
+    endclass
+
+    def F(obj: Base)
+      var r = obj.Enter()
+      g:result ..= r
+    enddef
+
+    g:result = ''
+    F(Child.new())
+    assert_equal('child/resource', g:result)
+    unlet g:result
+  END
+  v9.CheckScriptSuccess(lines)
+
+
   # No class that implements the interface.
   lines =<< trim END
       vim9script
