@@ -1717,11 +1717,14 @@ au BufNewFile,BufRead *.robot,*.resource	setf robot
 " Robots.txt
 au BufNewFile,BufRead robots.txt		setf robots
 
-" Rpcgen
-au BufNewFile,BufRead *.x			setf rpcgen
+" RON (Rusty Object Notation)
+au BufNewFile,BufRead *.ron			setf ron
 
 " MikroTik RouterOS script
 au BufRead,BufNewFile *.rsc			setf routeros
+
+" Rpcgen
+au BufNewFile,BufRead *.x			setf rpcgen
 
 " reStructuredText Documentation Format
 au BufNewFile,BufRead *.rst			setf rst
