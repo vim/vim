@@ -2096,7 +2096,6 @@ do_set_option(
     char_u	key_name[2];
     int		nextchar;	// next non-white char after option name
     int		afterchar;	// character just after option name
-    int		cp_val;
     char	*errmsg = NULL;
     int		key;
     int		len;
@@ -2167,6 +2166,7 @@ do_set_option(
     else
     {
 	flags = P_STRING;
+	varp = NULL;
 	if (key < 0)
 	{
 	    key_name[0] = KEY2TERMCAP0(key);
@@ -2183,10 +2183,10 @@ do_set_option(
     if (validate_opt_idx(opt_idx, opt_flags, flags, &errmsg) == FAIL)
 	goto skip;
 
+    int cp_val = p_cp;
     if (vim_strchr((char_u *)"?=:!&<", nextchar) != NULL)
     {
 	arg += len;
-	cp_val = p_cp;
 	if (nextchar == '&' && arg[1] == 'v' && arg[2] == 'i')
 	{
 	    if (arg[3] == 'm')	// "opt&vim": set to Vim default
