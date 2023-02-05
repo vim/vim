@@ -7958,7 +7958,7 @@ setcellwidths({list})					*setcellwidths()*
 		terminal, counted in screen cells.  The values override
 		'ambiwidth'.  Example: >
 		   call setcellwidths([
-		   		\ [0x111, 0x111, 1],
+				\ [0x111, 0x111, 1],
 				\ [0x2194, 0x2199, 2],
 				\ ])
 
@@ -7972,7 +7972,7 @@ setcellwidths({list})					*setcellwidths()*
 		{width} must be either 1 or 2, indicating the character width
 		in screen cells.			*E1112*
 		An error is given if the argument is invalid, also when a
-		range overlaps with another. 		*E1113*
+		range overlaps with another.		*E1113*
 
 		If the new value causes 'fillchars' or 'listchars' to become
 		invalid it is rejected and an error is given.
@@ -10551,7 +10551,7 @@ writefile({object}, {fname} [, {flags}])
 <
 		'D'  Delete the file when the current function ends.  This
 		     works like: >
-		     	:defer delete({fname})
+			:defer delete({fname})
 <		     Fails when not in a function.  Also see |:defer|.
 
 		's'  fsync() is called after writing the file.  This flushes

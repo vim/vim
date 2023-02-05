@@ -3836,7 +3836,7 @@ SYNTAX ISKEYWORD SETTING				*:syn-iskeyword*
 
 	clear:		Syntax specific iskeyword setting is disabled and the
 			buffer-local 'iskeyword' setting is used.
-	{option}       	Set the syntax 'iskeyword' option to a new value.
+	{option}	Set the syntax 'iskeyword' option to a new value.
 
 	Example: >
   :syntax iskeyword @,48-57,192-255,$,_

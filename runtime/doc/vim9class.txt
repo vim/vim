@@ -471,14 +471,14 @@ Items in a class ~
 						*E1318* *E1325* *E1326*
 Inside a class, in betweeen `:class` and `:endclass`, these items can appear:
 - An object member declaration: >
-  	this._memberName: memberType
-  	this.memberName: memberType
+	this._memberName: memberType
+	this.memberName: memberType
 	public this.memberName: memberType
 - A constructor method: >
-  	def new(arguments)
-  	def newName(arguments)
+	def new(arguments)
+	def newName(arguments)
 - An object method: >
-  	def SomeMethod(arguments)
+	def SomeMethod(arguments)
 <							*E1329*
 For the object member the type must be specified.  The best way is to do this
 explicitly with ": {type}".  For simple types you can also use an initializer,

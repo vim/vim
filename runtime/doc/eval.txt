@@ -1372,7 +1372,7 @@ Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
 
 
-expr10(expr1, ...)	|Funcref| function call  	*E1085*
+expr10(expr1, ...)	|Funcref| function call		*E1085*
 
 When expr10 is a |Funcref| type variable, invoke the function it refers to.
 
@@ -1654,7 +1654,7 @@ See below |functions|.
 
 lambda expression				*expr-lambda* *lambda*
 -----------------
-{args -> expr1}		legacy lambda expression 		*E451*
+{args -> expr1}		legacy lambda expression		*E451*
 (args) => expr1		|Vim9| lambda expression
 
 A lambda expression creates a new unnamed function which returns the result of

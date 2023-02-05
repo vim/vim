@@ -64,7 +64,7 @@ Example in Vim9 script: >
 In legacy script: >
    call autocmd_add(#{replace: v:true,
 		    \ group: 'DemoGroup',
-   		    \ event: 'BufEnter',
+		    \ event: 'BufEnter',
 		    \ pattern: '*.txt',
 		    \ cmd: 'call DemoBufEnter()'
 		    \ })
@@ -398,7 +398,7 @@ Name			triggered by ~
 |InsertEnter|		starting Insert mode
 |InsertChange|		when typing <Insert> while in Insert or Replace mode
 |InsertLeave|		when leaving Insert mode
-|InsertLeavePre| 	just before leaving Insert mode
+|InsertLeavePre|	just before leaving Insert mode
 |InsertCharPre|		when a character was typed in Insert mode, before
 			inserting it
 
