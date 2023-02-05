@@ -1911,6 +1911,9 @@ au BufNewFile,BufRead *.sst.meta,*.-sst.meta,*._sst.meta setf sisu
 " SKILL
 au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
 
+" Cadence
+au BufNewFile,BufRead *.cdc			setf cdc
+
 " SLRN
 au BufNewFile,BufRead .slrnrc			setf slrnrc
 au BufNewFile,BufRead *.score			setf slrnsc
