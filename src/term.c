@@ -5349,6 +5349,11 @@ handle_key_with_modifier(
     if ((modifiers & MOD_MASK_SHIFT) && key >= 'a' && key <= 'z')
 	key += 'A' - 'a';
 
+    // Putting Esc in the buffer creates ambiguity, it can be the start of an
+    // escape sequence.  Use K_ESC to avoid that.
+    if (key == ESC)
+	key = K_ESC;
+
     return put_key_modifiers_in_typebuf(key, modifiers,
 					csi_len, offset, buf, bufsize, buflen);
 }
