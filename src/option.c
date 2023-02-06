@@ -1815,7 +1815,8 @@ do_set_string(
 }
 
 /*
- * Set a boolean option
+ * Set a boolean option.
+ * Returns an untranslated error message or NULL.
  */
     static char *
 do_set_option_bool(
@@ -1833,6 +1834,8 @@ do_set_option_bool(
 
     if (nextchar == '=' || nextchar == ':')
 	return e_invalid_argument;
+    if (opt_idx < 0 || varp == NULL)
+	return NULL;  // "cannot happen"
 
     /*
      * ":set opt!": invert
@@ -1870,7 +1873,8 @@ do_set_option_bool(
 }
 
 /*
- * Set a numeric option
+ * Set a numeric option.
+ * Returns an untranslated error message or NULL.
  */
     static char *
 do_set_option_numeric(
@@ -1890,6 +1894,9 @@ do_set_option_numeric(
     int			i;
     char		*errmsg = NULL;
 
+    if (opt_idx < 0 || varp == NULL)
+	return NULL;  // "cannot happen"
+		      //
     /*
      * Different ways to set a number option:
      * &	    set to default value
@@ -2209,8 +2216,8 @@ do_set_option(
     }
 
     /*
-     * allow '=' and ':' for historical reasons (MSDOS command.com
-     * allows only one '=' character per "set" command line. grrr. (jw)
+     * Allow '=' and ':' for historical reasons (MSDOS command.com).
+     * Allows only one '=' character per "set" command line. grrr. (jw)
      */
     if (nextchar == '?'
 	    || (prefix == PREFIX_NONE
