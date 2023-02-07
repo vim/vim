@@ -1344,7 +1344,8 @@ ff_check_visited(
     /*
      * New file/dir.  Add it to the list of visited files/dirs.
      */
-    vp = alloc(sizeof(ff_visited_T) + STRLEN(ff_expand_buffer));
+    vp = alloc(
+	     offsetof(ff_visited_T, ffv_fname) + STRLEN(ff_expand_buffer) + 1);
     if (vp == NULL)
 	return OK;
 

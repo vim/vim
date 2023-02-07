@@ -1741,11 +1741,16 @@ compile_lhs(
 
     if (lhs->lhs_dest != dest_option && lhs->lhs_dest != dest_func_option)
     {
-	if (is_decl && *var_end == ':')
+	if (is_decl && *skipwhite(var_end) == ':')
 	{
 	    char_u *p;
 
 	    // parse optional type: "let var: type = expr"
+	    if (VIM_ISWHITE(*var_end))
+	    {
+		semsg(_(e_no_white_space_allowed_before_colon_str), var_end);
+		return FAIL;
+	    }
 	    if (!VIM_ISWHITE(var_end[1]))
 	    {
 		semsg(_(e_white_space_required_after_str_str), ":", var_end);
@@ -3181,6 +3186,16 @@ compile_def_function(
     }
     ufunc->uf_args_visible = ufunc->uf_args.ga_len;
 
+    // Compiling a function in an interface is done to get the function type.
+    // No code is actually compiled.
+    if (ufunc->uf_class != NULL
+			   && (ufunc->uf_class->class_flags & CLASS_INTERFACE))
+    {
+	ufunc->uf_def_status = UF_NOT_COMPILED;
+	ret = OK;
+	goto erret;
+    }
+
     /*
      * Loop over all the lines of the function and generate instructions.
      */
@@ -3705,7 +3720,7 @@ nextline:
 	    iemsg("Type stack underflow");
 	    goto erret;
 	}
-    }
+    } // END of the loop over all the function body lines.
 
     if (cctx.ctx_scope != NULL)
     {
@@ -3939,18 +3954,18 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
     void
 unlink_def_function(ufunc_T *ufunc)
 {
-    if (ufunc->uf_dfunc_idx > 0)
-    {
-	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
+    if (ufunc->uf_dfunc_idx <= 0)
+	return;
 
-	if (--dfunc->df_refcount <= 0)
-	    delete_def_function_contents(dfunc, TRUE);
-	ufunc->uf_def_status = UF_NOT_COMPILED;
-	ufunc->uf_dfunc_idx = 0;
-	if (dfunc->df_ufunc == ufunc)
-	    dfunc->df_ufunc = NULL;
-    }
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+	+ ufunc->uf_dfunc_idx;
+
+    if (--dfunc->df_refcount <= 0)
+	delete_def_function_contents(dfunc, TRUE);
+    ufunc->uf_def_status = UF_NOT_COMPILED;
+    ufunc->uf_dfunc_idx = 0;
+    if (dfunc->df_ufunc == ufunc)
+	dfunc->df_ufunc = NULL;
 }
 
 /*
@@ -3959,13 +3974,13 @@ unlink_def_function(ufunc_T *ufunc)
     void
 link_def_function(ufunc_T *ufunc)
 {
-    if (ufunc->uf_dfunc_idx > 0)
-    {
-	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
+    if (ufunc->uf_dfunc_idx <= 0)
+	return;
 
-	++dfunc->df_refcount;
-    }
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+	+ ufunc->uf_dfunc_idx;
+
+    ++dfunc->df_refcount;
 }
 
 #if defined(EXITFREE) || defined(PROTO)

@@ -2656,7 +2656,7 @@ def Test_autoload_mapping()
 
       import autoload 'toggle.vim'
 
-      nnoremap <silent> <expr> tt toggle.Toggle() 
+      nnoremap <silent> <expr> tt toggle.Toggle()
       nnoremap <silent> xx <ScriptCmd>toggle.Doit()<CR>
       nnoremap <silent> yy <Cmd>toggle.Doit()<CR>
   END

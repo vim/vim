@@ -119,16 +119,16 @@ sign_group_unref(char_u *groupname)
     signgroup_T		*group;
 
     hi = hash_find(&sg_table, groupname);
-    if (!HASHITEM_EMPTY(hi))
+    if (HASHITEM_EMPTY(hi))
+	return;
+
+    group = HI2SG(hi);
+    group->sg_refcount--;
+    if (group->sg_refcount == 0)
     {
-	group = HI2SG(hi);
-	group->sg_refcount--;
-	if (group->sg_refcount == 0)
-	{
-	    // All the signs in this group are removed
-	    hash_remove(&sg_table, hi, "sign remove");
-	    vim_free(group);
-	}
+	// All the signs in this group are removed
+	hash_remove(&sg_table, hi, "sign remove");
+	vim_free(group);
     }
 }
 
@@ -220,48 +220,48 @@ insert_sign(
     sign_entry_T *newsign;
 
     newsign = lalloc_id(sizeof(sign_entry_T), FALSE, aid_insert_sign);
-    if (newsign != NULL)
+    if (newsign == NULL)
+	return;
+
+    newsign->se_id = id;
+    newsign->se_lnum = lnum;
+    newsign->se_typenr = typenr;
+    if (group != NULL)
     {
-	newsign->se_id = id;
-	newsign->se_lnum = lnum;
-	newsign->se_typenr = typenr;
-	if (group != NULL)
+	newsign->se_group = sign_group_ref(group);
+	if (newsign->se_group == NULL)
 	{
-	    newsign->se_group = sign_group_ref(group);
-	    if (newsign->se_group == NULL)
-	    {
-		vim_free(newsign);
-		return;
-	    }
+	    vim_free(newsign);
+	    return;
 	}
-	else
-	    newsign->se_group = NULL;
-	newsign->se_priority = prio;
-	newsign->se_next = next;
-	newsign->se_prev = prev;
-	if (next != NULL)
-	    next->se_prev = newsign;
-
-	if (prev == NULL)
-	{
-	    // When adding first sign need to redraw the windows to create the
-	    // column for signs.
-	    if (buf->b_signlist == NULL)
-	    {
-		redraw_buf_later(buf, UPD_NOT_VALID);
-		changed_line_abv_curs();
-	    }
-
-	    // first sign in signlist
-	    buf->b_signlist = newsign;
-#ifdef FEAT_NETBEANS_INTG
-	    if (netbeans_active())
-		buf->b_has_sign_column = TRUE;
-#endif
-	}
-	else
-	    prev->se_next = newsign;
     }
+    else
+	newsign->se_group = NULL;
+    newsign->se_priority = prio;
+    newsign->se_next = next;
+    newsign->se_prev = prev;
+    if (next != NULL)
+	next->se_prev = newsign;
+
+    if (prev == NULL)
+    {
+	// When adding first sign need to redraw the windows to create the
+	// column for signs.
+	if (buf->b_signlist == NULL)
+	{
+	    redraw_buf_later(buf, UPD_NOT_VALID);
+	    changed_line_abv_curs();
+	}
+
+	// first sign in signlist
+	buf->b_signlist = newsign;
+#ifdef FEAT_NETBEANS_INTG
+	if (netbeans_active())
+	    buf->b_has_sign_column = TRUE;
+#endif
+    }
+    else
+	prev->se_next = newsign;
 }
 
 /*

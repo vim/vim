@@ -1329,8 +1329,6 @@ generate_NEWDICT(cctx_T *cctx, int count, int use_null)
 /*
  * Generate an ISN_FUNCREF instruction.
  * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
- * If variables were declared inside a loop "loop_var_idx" is the index of the
- * first one and "loop_var_count" the number of variables declared.
  */
     int
 generate_FUNCREF(
@@ -1362,7 +1360,12 @@ generate_FUNCREF(
     if (ufunc->uf_def_status == UF_NOT_COMPILED)
 	extra->fre_func_name = vim_strsave(ufunc->uf_name);
     else
+    {
+	if (isnp == NULL && ufunc->uf_def_status == UF_TO_BE_COMPILED)
+	    // compile the function now, we need the uf_dfunc_idx value
+	    (void)compile_def_function(ufunc, FALSE, CT_NONE, NULL);
 	isn->isn_arg.funcref.fr_dfunc_idx = ufunc->uf_dfunc_idx;
+    }
 
     // Reserve an extra variable to keep track of the number of closures
     // created.
@@ -1706,11 +1709,18 @@ generate_BLOBAPPEND(cctx_T *cctx)
 }
 
 /*
- * Generate an ISN_DCALL or ISN_UCALL instruction.
+ * Generate an ISN_DCALL, ISN_UCALL or ISN_METHODCALL instruction.
+ * When calling a method on an object, of which we know the interface only,
+ * then "cl" is the interface and "mi" the method index on the interface.
  * Return FAIL if the number of arguments is wrong.
  */
     int
-generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
+generate_CALL(
+	cctx_T	    *cctx,
+	ufunc_T	    *ufunc,
+	class_T	    *cl,
+	int	    mi,
+	int	    pushed_argcount)
 {
     isn_T	*isn;
     int		regular_args = ufunc->uf_args.ga_len;
@@ -1780,11 +1790,21 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	return FAIL;
     }
 
-    if ((isn = generate_instr(cctx,
-		    ufunc->uf_def_status != UF_NOT_COMPILED ? ISN_DCALL
-							 : ISN_UCALL)) == NULL)
+    if ((isn = generate_instr(cctx, cl != NULL ? ISN_METHODCALL
+			  : ufunc->uf_def_status != UF_NOT_COMPILED
+					     ? ISN_DCALL : ISN_UCALL)) == NULL)
 	return FAIL;
-    if (isn->isn_type == ISN_DCALL)
+    if (cl != NULL /* isn->isn_type == ISN_METHODCALL */)
+    {
+	isn->isn_arg.mfunc = ALLOC_ONE(cmfunc_T);
+	if (isn->isn_arg.mfunc == NULL)
+	    return FAIL;
+	isn->isn_arg.mfunc->cmf_itf = cl;
+	++cl->class_refcount;
+	isn->isn_arg.mfunc->cmf_idx = mi;
+	isn->isn_arg.mfunc->cmf_argcount = argcount;
+    }
+    else if (isn->isn_type == ISN_DCALL)
     {
 	isn->isn_arg.dfunc.cdf_idx = ufunc->uf_dfunc_idx;
 	isn->isn_arg.dfunc.cdf_argcount = argcount;
@@ -1942,14 +1962,17 @@ generate_PCALL(
 
 /*
  * Generate an ISN_DEFER instruction.
+ * "obj_method" is one for "obj.Method()", zero otherwise.
  */
     int
-generate_DEFER(cctx_T *cctx, int var_idx, int argcount)
+generate_DEFER(cctx_T *cctx, int var_idx, int obj_method, int argcount)
 {
     isn_T *isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_drop(cctx, ISN_DEFER, argcount + 1)) == NULL)
+    if ((isn = generate_instr_drop(cctx,
+		    obj_method == 0 ? ISN_DEFER : ISN_DEFEROBJ,
+		    argcount + 1)) == NULL)
 	return FAIL;
     isn->isn_arg.defer.defer_var_idx = var_idx;
     isn->isn_arg.defer.defer_argcount = argcount;
@@ -2306,41 +2329,41 @@ generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count, int is_decl)
 			    lhs->lhs_opt_flags, lhs->lhs_vimvaridx,
 			    lhs->lhs_type, lhs->lhs_name, lhs);
 
-    if (lhs->lhs_lvar != NULL)
+    if (lhs->lhs_lvar == NULL)
+	return OK;
+
+    garray_T	*instr = &cctx->ctx_instr;
+    isn_T		*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+
+    // Optimization: turn "var = 123" from ISN_PUSHNR + ISN_STORE into
+    // ISN_STORENR.
+    // And "var = 0" does not need any instruction.
+    if (lhs->lhs_lvar->lv_from_outer == 0
+	    && instr->ga_len == instr_count + 1
+	    && isn->isn_type == ISN_PUSHNR)
     {
-	garray_T	*instr = &cctx->ctx_instr;
-	isn_T		*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+	varnumber_T val = isn->isn_arg.number;
+	garray_T    *stack = &cctx->ctx_type_stack;
 
-	// Optimization: turn "var = 123" from ISN_PUSHNR + ISN_STORE into
-	// ISN_STORENR.
-	// And "var = 0" does not need any instruction.
-	if (lhs->lhs_lvar->lv_from_outer == 0
-		&& instr->ga_len == instr_count + 1
-		&& isn->isn_type == ISN_PUSHNR)
+	if (val == 0 && is_decl && !inside_loop_scope(cctx))
 	{
-	    varnumber_T val = isn->isn_arg.number;
-	    garray_T    *stack = &cctx->ctx_type_stack;
-
-	    if (val == 0 && is_decl && !inside_loop_scope(cctx))
-	    {
-		// zero is the default value, no need to do anything
-		--instr->ga_len;
-	    }
-	    else
-	    {
-		isn->isn_type = ISN_STORENR;
-		isn->isn_arg.storenr.stnr_idx = lhs->lhs_lvar->lv_idx;
-		isn->isn_arg.storenr.stnr_val = val;
-	    }
-	    if (stack->ga_len > 0)
-		--stack->ga_len;
+	    // zero is the default value, no need to do anything
+	    --instr->ga_len;
 	}
-	else if (lhs->lhs_lvar->lv_from_outer > 0)
-	    generate_STOREOUTER(cctx, lhs->lhs_lvar->lv_idx,
-		     lhs->lhs_lvar->lv_from_outer, lhs->lhs_lvar->lv_loop_idx);
 	else
-	    generate_STORE(cctx, ISN_STORE, lhs->lhs_lvar->lv_idx, NULL);
+	{
+	    isn->isn_type = ISN_STORENR;
+	    isn->isn_arg.storenr.stnr_idx = lhs->lhs_lvar->lv_idx;
+	    isn->isn_arg.storenr.stnr_val = val;
+	}
+	if (stack->ga_len > 0)
+	    --stack->ga_len;
     }
+    else if (lhs->lhs_lvar->lv_from_outer > 0)
+	generate_STOREOUTER(cctx, lhs->lhs_lvar->lv_idx,
+		lhs->lhs_lvar->lv_from_outer, lhs->lhs_lvar->lv_loop_idx);
+    else
+	generate_STORE(cctx, ISN_STORE, lhs->lhs_lvar->lv_idx, NULL);
     return OK;
 }
 
@@ -2477,6 +2500,14 @@ delete_instr(isn_T *isn)
 	    }
 	    break;
 
+	case ISN_METHODCALL:
+	    {
+		cmfunc_T  *mfunc = isn->isn_arg.mfunc;
+		class_unref(mfunc->cmf_itf);
+		vim_free(mfunc);
+	    }
+	    break;
+
 	case ISN_NEWFUNC:
 	    {
 		newfuncarg_T *arg = isn->isn_arg.newfunc.nf_arg;
@@ -2568,6 +2599,7 @@ delete_instr(isn_T *isn)
 	case ISN_COND2BOOL:
 	case ISN_DEBUG:
 	case ISN_DEFER:
+	case ISN_DEFEROBJ:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOCONSOLE:

@@ -2739,7 +2739,7 @@ store_sb_text(
 
     if (s > *sb_str)
     {
-	mp = alloc(sizeof(msgchunk_T) + (s - *sb_str));
+	mp = alloc(offsetof(msgchunk_T, sb_text) + (s - *sb_str) + 1);
 	if (mp != NULL)
 	{
 	    mp->sb_eol = finish;

@@ -2672,7 +2672,6 @@ typedef enum {
 #define DIP_NORTP   0x20	// do not use 'runtimepath'
 #define DIP_NOAFTER 0x40	// skip "after" directories
 #define DIP_AFTER   0x80	// only use "after" directories
-#define DIP_KEEPEXT  0x100	// for completion: include file extension
 
 // Lowest number used for window ID. Cannot have this many windows.
 #define LOWEST_WIN_ID 1000

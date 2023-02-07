@@ -301,7 +301,7 @@ func Test_cmdline_history_order()
   call test_settime(39)
   call histadd(':', "echo '39'")
   wviminfo Xviminfo
-  
+
   call histdel(':')
   rviminfo Xviminfo
   call assert_equal("echo '39'", histget(':', -1))
@@ -560,7 +560,7 @@ func Test_viminfo_encoding()
   sp Xviminfo
   call assert_equal('latin1', &fenc)
   close
-  
+
   call histdel(':')
   rviminfo Xviminfo
   call assert_equal("echo 'é'", histget(':', -1))

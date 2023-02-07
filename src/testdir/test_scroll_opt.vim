@@ -271,18 +271,18 @@ func Test_smoothscroll_wrap_long_line()
   call term_sendkeys(buf, ":set scrolloff=1\<CR>")
   call term_sendkeys(buf, "10|\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_long_6', {})
-  
+
   " 'scrolloff' set to 1, scrolling down, cursor moves screen line up
   call term_sendkeys(buf, "\<C-E>")
   call term_sendkeys(buf, "gjgj")
   call term_sendkeys(buf, "\<C-Y>")
   call VerifyScreenDump(buf, 'Test_smooth_long_7', {})
-  
+
   " 'scrolloff' set to 2, scrolling up, cursor moves screen line down
   call term_sendkeys(buf, ":set scrolloff=2\<CR>")
   call term_sendkeys(buf, "10|\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_long_8', {})
-  
+
   " 'scrolloff' set to 2, scrolling down, cursor moves screen line up
   call term_sendkeys(buf, "\<C-E>")
   call term_sendkeys(buf, "gj")
@@ -320,7 +320,7 @@ func Test_smoothscroll_wrap_long_line()
   call term_sendkeys(buf, "3Gzt")
   call term_sendkeys(buf, "\<C-E>j")
   call VerifyScreenDump(buf, 'Test_smooth_long_15', {})
-  
+
   call StopVimInTerminal(buf)
 endfunc
 
@@ -335,7 +335,7 @@ func Test_smoothscroll_one_long_line()
   call writefile(lines, 'XSmoothOneLong', 'D')
   let buf = RunVimInTerminal('-S XSmoothOneLong', #{rows: 6, cols: 40})
   call VerifyScreenDump(buf, 'Test_smooth_one_long_1', {})
-  
+
   call term_sendkeys(buf, "\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_one_long_2', {})
 
@@ -357,7 +357,7 @@ func Test_smoothscroll_long_line_showbreak()
   call writefile(lines, 'XSmoothLongShowbreak', 'D')
   let buf = RunVimInTerminal('-S XSmoothLongShowbreak', #{rows: 6, cols: 40})
   call VerifyScreenDump(buf, 'Test_smooth_long_showbreak_1', {})
-  
+
   call term_sendkeys(buf, "\<C-E>")
   call VerifyScreenDump(buf, 'Test_smooth_long_showbreak_2', {})
 
@@ -465,7 +465,7 @@ func Test_smoothscroll_cursor_scrolloff()
   call NewWindow(10, 20)
   setl smoothscroll wrap
   setl scrolloff=3
-  
+
   " 120 chars are 6 screen lines
   call setline(1, "abcdefghijklmnopqrstABCDEFGHIJKLMNOPQRSTabcdefghijklmnopqrstABCDEFGHIJKLMNOPQRSTabcdefghijklmnopqrstABCDEFGHIJKLMNOPQRST")
   call setline(2, "below")
@@ -558,6 +558,33 @@ func Test_smoothscroll_mouse_pos()
   let &mouse = save_mouse
   let &term = save_term
   let &ttymouse = save_ttymouse
+endfunc
+
+" this was dividing by zero
+func Test_smoothscrol_zero_width()
+  CheckScreendump
+
+  let lines =<< trim END
+      winsize 0 0
+      vsplit
+      vsplit
+      vsplit
+      vsplit
+      vsplit
+      sil norm H
+      set wrap
+      set smoothscroll
+      set number
+  END
+  call writefile(lines, 'XSmoothScrollZero', 'D')
+  let buf = RunVimInTerminal('-u NONE -i NONE -n -m -X -Z -e -s -S XSmoothScrollZero', #{rows: 6, cols: 60, wait_for_ruler: 0})
+  call TermWait(buf, 3000)
+  call VerifyScreenDump(buf, 'Test_smoothscroll_zero_1', {})
+
+  call term_sendkeys(buf, ":sil norm \<C-V>\<C-W>\<C-V>\<C-N>\<CR>")
+  call VerifyScreenDump(buf, 'Test_smoothscroll_zero_2', {})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 

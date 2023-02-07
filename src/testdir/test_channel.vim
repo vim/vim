@@ -20,7 +20,7 @@ endif
 " call ch_logfile('channellog', 'w')
 
 func SetUp()
-  if g:testfunc =~ '_ipv6()$' 
+  if g:testfunc =~ '_ipv6()$'
     let s:localhost = '[::1]:'
     let s:testscript = 'test_channel_6.py'
   elseif g:testfunc =~ '_unix()$'
@@ -1220,7 +1220,7 @@ endfunc
 func Test_pipe_to_buffer_raw()
   let options = {'out_mode': 'raw', 'out_io': 'buffer', 'out_name': 'testout'}
   split testout
-  let job = job_start([s:python, '-c', 
+  let job = job_start([s:python, '-c',
         \ 'import sys; [sys.stdout.write(".") and sys.stdout.flush() for _ in range(10000)]'], options)
   " the job may be done quickly, also accept "dead"
   call assert_match('^\%(dead\|run\)$', job_status(job))

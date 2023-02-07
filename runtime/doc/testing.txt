@@ -223,12 +223,12 @@ test_ignore_error({expr})			 *test_ignore_error()*
 		Can also be used as a |method|: >
 			GetErrorText()->test_ignore_error()
 
-				
+
 test_mswin_event({event}, {args})		*test_mswin_event()*
 		Generate a low-level MS-Windows {event} with arguments {args}
-		for testing Vim functionality.  It works for MS-Windows GUI 
+		for testing Vim functionality.  It works for MS-Windows GUI
 		and for the console.
-		
+
 		{event} is a String and the supported values are:
 		    "mouse"	mouse event.
 		    "key"	keyboard event.

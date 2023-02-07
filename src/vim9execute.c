@@ -279,14 +279,14 @@ exe_newdict(int count, ectx_T *ectx)
     void
 update_has_breakpoint(ufunc_T *ufunc)
 {
-    if (ufunc->uf_debug_tick != debug_tick)
-    {
-	linenr_T breakpoint;
+    if (ufunc->uf_debug_tick == debug_tick)
+	return;
 
-	ufunc->uf_debug_tick = debug_tick;
-	breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name, 0);
-	ufunc->uf_has_breakpoint = breakpoint > 0;
-    }
+    linenr_T breakpoint;
+
+    ufunc->uf_debug_tick = debug_tick;
+    breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name, 0);
+    ufunc->uf_has_breakpoint = breakpoint > 0;
 }
 
 static garray_T dict_stack = GA_EMPTY;
@@ -383,29 +383,29 @@ get_pt_outer(partial_T *pt)
     static int
 check_ufunc_arg_types(ufunc_T *ufunc, int argcount, int off, ectx_T *ectx)
 {
-    if (ufunc->uf_arg_types != NULL || ufunc->uf_va_type != NULL)
+    if (ufunc->uf_arg_types == NULL && ufunc->uf_va_type == NULL)
+	return OK;
+
+    typval_T	*argv = STACK_TV_BOT(0) - argcount - off;
+
+    // The function can change at runtime, check that the argument
+    // types are correct.
+    for (int i = 0; i < argcount; ++i)
     {
-	typval_T	*argv = STACK_TV_BOT(0) - argcount - off;
+	type_T *type = NULL;
 
-	// The function can change at runtime, check that the argument
-	// types are correct.
-	for (int i = 0; i < argcount; ++i)
-	{
-	    type_T *type = NULL;
+	// assume a v:none argument, using the default value, is always OK
+	if (argv[i].v_type == VAR_SPECIAL
+		&& argv[i].vval.v_number == VVAL_NONE)
+	    continue;
 
-	    // assume a v:none argument, using the default value, is always OK
-	    if (argv[i].v_type == VAR_SPECIAL
-					 && argv[i].vval.v_number == VVAL_NONE)
-		continue;
-
-	    if (i < ufunc->uf_args.ga_len && ufunc->uf_arg_types != NULL)
-		type = ufunc->uf_arg_types[i];
-	    else if (ufunc->uf_va_type != NULL)
-		type = ufunc->uf_va_type->tt_member;
-	    if (type != NULL && check_typval_arg_type(type,
-					    &argv[i], NULL, i + 1) == FAIL)
-		return FAIL;
-	}
+	if (i < ufunc->uf_args.ga_len && ufunc->uf_arg_types != NULL)
+	    type = ufunc->uf_arg_types[i];
+	else if (ufunc->uf_va_type != NULL)
+	    type = ufunc->uf_va_type->tt_member;
+	if (type != NULL && check_typval_arg_type(type,
+		    &argv[i], NULL, i + 1) == FAIL)
+	    return FAIL;
     }
     return OK;
 }
@@ -973,9 +973,10 @@ add_defer_item(int var_idx, int argcount, ectx_T *ectx)
  * Returns OK or FAIL.
  */
     static int
-defer_command(int var_idx, int argcount, ectx_T *ectx)
+defer_command(int var_idx, int has_obj, int argcount, ectx_T *ectx)
 {
-    list_T	*l = add_defer_item(var_idx, argcount, ectx);
+    int		obj_off = has_obj ? 1 : 0;
+    list_T	*l = add_defer_item(var_idx, argcount + obj_off, ectx);
     int		i;
     typval_T	*func_tv;
 
@@ -983,23 +984,25 @@ defer_command(int var_idx, int argcount, ectx_T *ectx)
 	return FAIL;
 
     func_tv = STACK_TV_BOT(-argcount - 1);
-    if (func_tv->v_type != VAR_FUNC && func_tv->v_type != VAR_PARTIAL)
+    if (has_obj ? func_tv->v_type != VAR_PARTIAL : func_tv->v_type != VAR_FUNC)
     {
 	semsg(_(e_expected_str_but_got_str),
-		"function or partial",
+		has_obj ? "partial" : "function",
 		vartype_name(func_tv->v_type));
 	return FAIL;
     }
     list_set_item(l, 0, func_tv);
+    if (has_obj)
+	list_set_item(l, 1, STACK_TV_BOT(-argcount - 2));
 
     for (i = 0; i < argcount; ++i)
-	list_set_item(l, i + 1, STACK_TV_BOT(-argcount + i));
-    ectx->ec_stack.ga_len -= argcount + 1;
+	list_set_item(l, i + 1 + obj_off, STACK_TV_BOT(-argcount + i));
+    ectx->ec_stack.ga_len -= argcount + 1 + obj_off;
     return OK;
 }
 
 /*
- * Add a deferred function "name" with one argument "arg_tv".
+ * Add a deferred call for "name" with arguments "argvars[argcount]".
  * Consumes "name", also on failure.
  * Only to be called when in_def_function() returns TRUE.
  */
@@ -1056,19 +1059,31 @@ invoke_defer_funcs(ectx_T *ectx)
 	typval_T    argvars[MAX_FUNC_ARGS];
 	int	    i;
 	listitem_T  *arg_li = l->lv_first;
-	funcexe_T   funcexe;
+	typval_T    *functv = &l->lv_first->li_tv;
+	int	    obj_off = functv->v_type == VAR_PARTIAL ? 1 : 0;
+	int	    argcount = l->lv_len - 1 - obj_off;
 
-	for (i = 0; i < l->lv_len - 1; ++i)
+	if (obj_off == 1)
+	    arg_li = arg_li->li_next;  // second list item is the object
+	for (i = 0; i < argcount; ++i)
 	{
 	    arg_li = arg_li->li_next;
 	    argvars[i] = arg_li->li_tv;
 	}
 
+	funcexe_T   funcexe;
 	CLEAR_FIELD(funcexe);
 	funcexe.fe_evaluate = TRUE;
 	rettv.v_type = VAR_UNKNOWN;
-	(void)call_func(l->lv_first->li_tv.vval.v_string, -1,
-				     &rettv, l->lv_len - 1, argvars, &funcexe);
+	if (functv->v_type == VAR_PARTIAL)
+	{
+	    funcexe.fe_partial = functv->vval.v_partial;
+	    funcexe.fe_object = l->lv_first->li_next->li_tv.vval.v_object;
+	    if (funcexe.fe_object != NULL)
+		++funcexe.fe_object->obj_refcount;
+	}
+	(void)call_func(functv->vval.v_string, -1,
+					  &rettv, argcount, argvars, &funcexe);
 	clear_tv(&rettv);
     }
 }
@@ -1527,21 +1542,22 @@ store_var(char_u *name, typval_T *tv)
     static int
 do_2string(typval_T *tv, int is_2string_any, int tolerant)
 {
-    if (tv->v_type != VAR_STRING)
+    if (tv->v_type == VAR_STRING)
+	return OK;
+
+    char_u *str;
+
+    if (is_2string_any)
     {
-	char_u *str;
-
-	if (is_2string_any)
+	switch (tv->v_type)
 	{
-	    switch (tv->v_type)
-	    {
-		case VAR_SPECIAL:
-		case VAR_BOOL:
-		case VAR_NUMBER:
-		case VAR_FLOAT:
-		case VAR_BLOB:	break;
+	    case VAR_SPECIAL:
+	    case VAR_BOOL:
+	    case VAR_NUMBER:
+	    case VAR_FLOAT:
+	    case VAR_BLOB:	break;
 
-		case VAR_LIST:
+	    case VAR_LIST:
 				if (tolerant)
 				{
 				    char_u	*s, *e, *p;
@@ -1560,7 +1576,7 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 				    {
 					*e = NUL;
 					p = vim_strsave_fnameescape(s,
-								     VSE_NONE);
+						VSE_NONE);
 					if (p != NULL)
 					{
 					    ga_concat(&ga, p);
@@ -1576,15 +1592,14 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 				    return OK;
 				}
 				// FALLTHROUGH
-		default:	to_string_error(tv->v_type);
-				return FAIL;
-	    }
+	    default:	to_string_error(tv->v_type);
+			return FAIL;
 	}
-	str = typval_tostring(tv, TRUE);
-	clear_tv(tv);
-	tv->v_type = VAR_STRING;
-	tv->vval.v_string = str;
     }
+    str = typval_tostring(tv, TRUE);
+    clear_tv(tv);
+    tv->v_type = VAR_STRING;
+    tv->vval.v_string = str;
     return OK;
 }
 
@@ -2247,7 +2262,8 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	    class_T	    *itf = iptr->isn_arg.storeindex.si_class;
 	    if (itf != NULL)
 		// convert interface member index to class member index
-		idx = object_index_from_itf_index(itf, idx, obj->obj_class);
+		idx = object_index_from_itf_index(itf, FALSE,
+							  idx, obj->obj_class);
 
 	    clear_tv(&otv[idx]);
 	    otv[idx] = *tv;
@@ -2933,6 +2949,20 @@ load_namespace_var(ectx_T *ectx, isntype_T isn_type, isn_T *iptr)
 	++ectx->ec_stack.ga_len;
     }
     return OK;
+}
+
+
+    static void
+object_required_error(typval_T *tv)
+{
+    garray_T type_list;
+    ga_init2(&type_list, sizeof(type_T *), 10);
+    type_T *type = typval2type(tv, get_copyID(), &type_list, TVTT_DO_MEMBER);
+    char *tofree = NULL;
+    char *typename = type_name(type, &tofree);
+    semsg(_(e_object_required_found_str), typename);
+    vim_free(tofree);
+    clear_type_list(&type_list);
 }
 
 /*
@@ -4110,6 +4140,30 @@ exec_instructions(ectx_T *ectx)
 		    goto on_error;
 		break;
 
+	    // call a method on an interface
+	    case ISN_METHODCALL:
+		{
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_OBJECT)
+		    {
+			object_required_error(tv);
+			goto on_error;
+		    }
+		    object_T *obj = tv->vval.v_object;
+		    class_T *cl = obj->obj_class;
+
+		    // convert the interface index to the object index
+		    cmfunc_T *mfunc = iptr->isn_arg.mfunc;
+		    int idx = object_index_from_itf_index(mfunc->cmf_itf,
+						    TRUE, mfunc->cmf_idx, cl);
+
+		    if (call_ufunc(cl->class_obj_methods[idx], NULL,
+				mfunc->cmf_argcount, ectx, NULL, NULL) == FAIL)
+			goto on_error;
+		}
+		break;
+
 	    // call a builtin function
 	    case ISN_BCALL:
 		SOURCING_LNUM = iptr->isn_lnum;
@@ -4170,7 +4224,9 @@ exec_instructions(ectx_T *ectx)
 
 	    // :defer func(arg)
 	    case ISN_DEFER:
+	    case ISN_DEFEROBJ:
 		if (defer_command(iptr->isn_arg.defer.defer_var_idx,
+			     iptr->isn_type == ISN_DEFEROBJ,
 			     iptr->isn_arg.defer.defer_argcount, ectx) == FAIL)
 		    goto on_error;
 		break;
@@ -5196,15 +5252,7 @@ exec_instructions(ectx_T *ectx)
 		    if (tv->v_type != VAR_OBJECT)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			garray_T type_list;
-			ga_init2(&type_list, sizeof(type_T *), 10);
-			type_T *type = typval2type(tv, get_copyID(),
-						   &type_list, TVTT_DO_MEMBER);
-			char *tofree = NULL;
-			char *typename = type_name(type, &tofree);
-			semsg(_(e_object_required_found_str), typename);
-			vim_free(tofree);
-			clear_type_list(&type_list);
+			object_required_error(tv);
 			goto on_error;
 		    }
 
@@ -5217,8 +5265,8 @@ exec_instructions(ectx_T *ectx)
 			idx = iptr->isn_arg.classmember.cm_idx;
 			// convert the interface index to the object index
 			idx = object_index_from_itf_index(
-					      iptr->isn_arg.classmember.cm_class,
-					      idx, obj->obj_class);
+					    iptr->isn_arg.classmember.cm_class,
+					    FALSE, idx, obj->obj_class);
 		    }
 
 		    // the members are located right after the object struct
@@ -6620,6 +6668,17 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 							 cdfunc->cdf_argcount);
 		}
 		break;
+	    case ISN_METHODCALL:
+		{
+		    cmfunc_T	*mfunc = iptr->isn_arg.mfunc;
+
+		    smsg("%s%4d METHODCALL %s.%s(argc %d)", pfx, current,
+			    mfunc->cmf_itf->class_name,
+			    mfunc->cmf_itf->class_obj_methods[
+						      mfunc->cmf_idx]->uf_name,
+			    mfunc->cmf_argcount);
+		}
+		break;
 	    case ISN_UCALL:
 		{
 		    cufunc_T	*cufunc = &iptr->isn_arg.ufunc;
@@ -6640,7 +6699,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		smsg("%s%4d PCALL end", pfx, current);
 		break;
 	    case ISN_DEFER:
-		smsg("%s%4d DEFER %d args", pfx, current,
+	    case ISN_DEFEROBJ:
+		smsg("%s%4d %s %d args", pfx, current,
+			    iptr->isn_type == ISN_DEFER ? "DEFER" : "DEFEROBJ",
 				      (int)iptr->isn_arg.defer.defer_argcount);
 		break;
 	    case ISN_RETURN:

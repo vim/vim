@@ -607,7 +607,7 @@ def Test_call_ufunc_failure()
       defcompile
 
       func! g:Global(a, b)
-        echo a:a a:b 
+        echo a:a a:b
       endfunc
       Tryit()
   END
@@ -2150,7 +2150,7 @@ def Test_nested_function_with_args_split()
         )
         # had a double free if the right parenthesis of the nested function is
         # on the next line
-         
+
         enddef|BBBB
       enddef
       # Compile all functions
@@ -2175,8 +2175,8 @@ def Test_error_in_function_args()
         def SecondFunction(J  =
         # Nois
         # one
-         
-         enddef|BBBB
+
+        enddef|BBBB
       enddef
       # Compile all functions
       defcompile

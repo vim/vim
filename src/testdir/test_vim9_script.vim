@@ -542,12 +542,12 @@ def Test_try_catch_throw()
   if 1
   else
     try | catch /pat/ | endtry
-    try | catch /pat/ 
+    try | catch /pat/
     endtry
-    try 
+    try
     catch /pat/ | endtry
-    try 
-    catch /pat/ 
+    try
+    catch /pat/
     endtry
   endif
 
@@ -617,7 +617,7 @@ def Test_try_catch_throw()
   endtry
   assert_equal(266, n)
 
-  l = [1, 2, 3] 
+  l = [1, 2, 3]
   try
     [n] = l
   catch /E1093:/
@@ -1336,7 +1336,7 @@ def Test_statusline_syntax()
       endfunc
       set laststatus=2 statusline=%!Status()
       redrawstatus
-      set laststatus statusline= 
+      set laststatus statusline=
   END
   v9.CheckScriptSuccess(lines)
 enddef
@@ -3601,7 +3601,7 @@ def Test_declare_script_var_in_func()
   END
   v9.CheckScriptFailure(lines, 'E1269:')
 enddef
-        
+
 def Test_lock_script_var()
   var lines =<< trim END
       vim9script
@@ -3626,7 +3626,7 @@ def Test_lock_script_var()
   END
   v9.CheckScriptSuccess(lines)
 enddef
-        
+
 
 func Test_vim9script_not_global()
   " check that items defined in Vim9 script are script-local, not global

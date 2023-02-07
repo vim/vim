@@ -3681,23 +3681,23 @@ func Test_popupmenu_info_too_wide()
 
       let menuText = 'some long text to make sure the menu takes up all of the width of the window'
       return #{
-    	\ words: [
-    	  \ #{
-    	    \ word: 'scrap',
-    	    \ menu: menuText,
-    	    \ info: "other words are\ncooler than this and some more text\nto make wrap",
-    	  \ },
-    	  \ #{
-    	    \ word: 'scappier',
-    	    \ menu: menuText,
-    	    \ info: 'words are cool',
-    	  \ },
-    	  \ #{
-    	    \ word: 'scrappier2',
-    	    \ menu: menuText,
-    	    \ info: 'words are cool',
-    	  \ },
-    	\ ]
+	\ words: [
+	  \ #{
+	    \ word: 'scrap',
+	    \ menu: menuText,
+	    \ info: "other words are\ncooler than this and some more text\nto make wrap",
+	  \ },
+	  \ #{
+	    \ word: 'scappier',
+	    \ menu: menuText,
+	    \ info: 'words are cool',
+	  \ },
+	  \ #{
+	    \ word: 'scrappier2',
+	    \ menu: menuText,
+	    \ info: 'words are cool',
+	  \ },
+	\ ]
      \ }
     endfunc
   END

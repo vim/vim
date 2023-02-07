@@ -1662,7 +1662,7 @@ merge_modifyOtherKeys(int c_arg, int *modifiers)
 	    && c >= 0 && c <= 127)
     {
 	c += 0x80;
-	*modifiers &= ~(MOD_MASK_META|MOD_MASK_ALT);
+	*modifiers &= ~(MOD_MASK_META | MOD_MASK_ALT);
     }
     return c;
 }
@@ -3328,15 +3328,15 @@ vgetorpeek(int advance)
 		    {
 			if (curwin->w_wcol > 0)
 			{
-			    if (did_ai)
+			    // After auto-indenting and no text is following,
+			    // we are expecting to truncate the trailing
+			    // white-space, so find the last non-white
+			    // character -- webb
+			    if (did_ai && *skipwhite(ml_get_curline()
+						+ curwin->w_cursor.col) == NUL)
 			    {
 				chartabsize_T cts;
 
-				/*
-				 * We are expecting to truncate the trailing
-				 * white-space, so find the last non-white
-				 * character -- webb
-				 */
 				curwin->w_wcol = 0;
 				ptr = ml_get_curline();
 				init_chartabsize_arg(&cts, curwin,
@@ -3890,7 +3890,7 @@ getcmdkeycmd(
     got_int = FALSE;
     while (c1 != NUL && !aborted)
     {
-	if (ga_grow(&line_ga, 32) != OK)
+	if (ga_grow(&line_ga, 32) == FAIL)
 	{
 	    aborted = TRUE;
 	    break;

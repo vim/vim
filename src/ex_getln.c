@@ -2293,7 +2293,7 @@ getcmdline_int(
 		    wild_type = (c == Ctrl_P) ? WILD_PREV : WILD_NEXT;
 		    if (nextwild(&xpc, wild_type, 0, firstc != '@') == FAIL)
 			break;
-		    goto cmdline_not_changed;
+		    goto cmdline_changed;
 		}
 		// FALLTHROUGH
 	case K_UP:
@@ -2315,7 +2315,7 @@ getcmdline_int(
 			wild_type = WILD_PAGEDOWN;
 		    if (nextwild(&xpc, wild_type, 0, firstc != '@') == FAIL)
 			break;
-		    goto cmdline_not_changed;
+		    goto cmdline_changed;
 		}
 		else
 		{

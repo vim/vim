@@ -1363,8 +1363,8 @@ skip_var_one(char_u *arg, int include_type)
 
     if (include_type && vim9)
     {
-	if (*end == ':')
-	    end = skip_type(skipwhite(end + 1), FALSE);
+	if (*skipwhite(end) == ':')
+	    end = skip_type(skipwhite(skipwhite(end) + 1), FALSE);
     }
     return end;
 }
@@ -3960,7 +3960,7 @@ set_var_const(
 			|| STRNCMP(name, "g:", 2) == 0 || var_in_autoload))
 	    goto failed;
 
-	di = alloc(sizeof(dictitem_T) + STRLEN(varname));
+	di = alloc(offsetof(dictitem_T, di_key) + STRLEN(varname) + 1);
 	if (di == NULL)
 	    goto failed;
 	STRCPY(di->di_key, varname);

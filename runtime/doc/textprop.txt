@@ -108,7 +108,7 @@ prop_type_list([{props}])		get list of property types
 Manipulating text properties:
 
 prop_add({lnum}, {col}, {props})  	add a text property
-prop_add_list({props}, [[{lnum}, {col}, {end-lnum}, {end-col}], ...])
+prop_add_list({props}, [{item}, ...])
 					add a text property at multiple
 					positions.
 prop_clear({lnum} [, {lnum-end} [, {bufnr}]])
@@ -263,12 +263,12 @@ prop_add_list({props}, [{item}, ...])
 		It is not possible to add a text property with a "text" field
 		here.
 
-		Example:
+		Example: >
 			call prop_add_list(#{type: 'MyProp', id: 2},
 					\ [[1, 4, 1, 7],
 					\  [1, 15, 1, 20],
 					\  [2, 30, 3, 30]]
-
+<
 		Can also be used as a |method|: >
 			GetProp()->prop_add_list([[1, 1, 1, 2], [1, 4, 1, 8]])
 

@@ -1167,8 +1167,8 @@ endfunc
 func Test_visual_put_in_block_using_zp()
   new
   " paste using zP
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
-    \ '/subdir', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
+    \ '/subdir',
     \ '/longsubdir',
     \ '/longlongsubdir'])
   exe "normal! 5G\<c-v>2j$y"
@@ -1176,8 +1176,8 @@ func Test_visual_put_in_block_using_zp()
   call assert_equal(['/path/subdir;text', '/path/longsubdir;text', '/path/longlongsubdir;text'], getline(1, 3))
   %d
   " paste using zP
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
-    \ '/subdir', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
+    \ '/subdir',
     \ '/longsubdir',
     \ '/longlongsubdir'])
   exe "normal! 5G\<c-v>2j$y"
@@ -1190,7 +1190,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
   new
 
   " Test 1) Paste using zp - after the cursor without trailing spaces
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /subdir           columntext',
 		\ 'texttext  /longsubdir       columntext',
     \ 'texttext  /longlongsubdir   columntext'])
@@ -1200,7 +1200,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
 
   " Test 2) Paste using zP - in front of the cursor without trailing spaces
   %d
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /subdir           columntext',
 		\ 'texttext  /longsubdir       columntext',
     \ 'texttext  /longlongsubdir   columntext'])
@@ -1210,7 +1210,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
 
   " Test 3) Paste using p - with trailing spaces
   %d
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /subdir           columntext',
 		\ 'texttext  /longsubdir       columntext',
     \ 'texttext  /longlongsubdir   columntext'])
@@ -1220,7 +1220,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
 
   " Test 4) Paste using P - with trailing spaces
   %d
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /subdir           columntext',
 		\ 'texttext  /longsubdir       columntext',
     \ 'texttext  /longlongsubdir   columntext'])
@@ -1230,7 +1230,7 @@ func Test_visual_put_in_block_using_zy_and_zp()
 
   " Test 5) Yank with spaces inside the block
   %d
-  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+  call setline(1, ['/path;text', '/path;text', '/path;text', '',
     \ 'texttext  /sub    dir/           columntext',
     \ 'texttext  /lon    gsubdir/       columntext',
     \ 'texttext  /lon    glongsubdir/   columntext'])
@@ -1318,6 +1318,17 @@ func Test_visual_block_with_substitute()
 endfunc
 
 func Test_visual_reselect_with_count()
+  enew
+  call setline(1, ['aaaaaa', '✗ bbbb', '✗ bbbb'])
+  exe "normal! 2Gw\<C-V>jed"
+  exe "normal! gg0lP"
+  call assert_equal(['abbbbaaaaa', '✗bbbb ', '✗ '], getline(1, '$'))
+
+  exe "normal! 1vr."
+  call assert_equal(['a....aaaaa', '✗.... ', '✗ '], getline(1, '$'))
+
+  bwipe!
+
   " this was causing an illegal memory access
   let lines =<< trim END
 

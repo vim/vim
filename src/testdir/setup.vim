@@ -20,7 +20,7 @@ if has('packages')
   let &packpath = &rtp
 endif
 
-" Only when the +eval feature is present. 
+" Only when the +eval feature is present.
 if 1
   " Make sure the .Xauthority file can be found after changing $HOME.
   if $XAUTHORITY == ''

@@ -4533,10 +4533,13 @@ qf_find_buf(qf_info_T *qi)
  * Process the 'quickfixtextfunc' option value.
  * Returns OK or FAIL.
  */
-    int
+    char *
 qf_process_qftf_option(void)
 {
-    return option_set_callback_func(p_qftf, &qftf_cb);
+    if (option_set_callback_func(p_qftf, &qftf_cb) == FAIL)
+	return e_invalid_argument;
+
+    return NULL;
 }
 
 /*

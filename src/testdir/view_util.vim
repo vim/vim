@@ -51,6 +51,7 @@ func ScreenAttrs(lnum, width) abort
   return attrs
 endfunc
 
+" Create a new window with the requested size and fix it.
 func NewWindow(height, width) abort
   exe a:height . 'new'
   exe a:width . 'vsp'

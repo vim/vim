@@ -54,15 +54,16 @@ get_sound_callback(typval_T *arg)
 
     soundcb = ALLOC_ONE(soundcb_T);
     if (soundcb == NULL)
-	free_callback(&callback);
-    else
     {
-	soundcb->snd_next = first_callback;
-	first_callback = soundcb;
-	set_callback(&soundcb->snd_callback, &callback);
-	if (callback.cb_free_name)
-	    vim_free(callback.cb_name);
+	free_callback(&callback);
+	return NULL;
     }
+
+    soundcb->snd_next = first_callback;
+    first_callback = soundcb;
+    set_callback(&soundcb->snd_callback, &callback);
+    if (callback.cb_free_name)
+	vim_free(callback.cb_name);
     return soundcb;
 }
 
@@ -195,45 +196,45 @@ sound_play_common(typval_T *argvars, typval_T *rettv, int playfile)
 
     if (context == NULL)
 	ca_context_create(&context);
-    if (context != NULL)
+    if (context == NULL)
+	return;
+
+    soundcb_T	*soundcb = get_sound_callback(&argvars[1]);
+    int		res = CA_ERROR_INVALID;
+
+    ++sound_id;
+    if (soundcb == NULL)
     {
-	soundcb_T	*soundcb = get_sound_callback(&argvars[1]);
-	int		res = CA_ERROR_INVALID;
-
-	++sound_id;
-	if (soundcb == NULL)
-	{
-	    res = ca_context_play(context, sound_id,
-		    playfile ? CA_PROP_MEDIA_FILENAME : CA_PROP_EVENT_ID,
-						    tv_get_string(&argvars[0]),
-		    CA_PROP_CANBERRA_CACHE_CONTROL, "volatile",
-		    NULL);
-	}
-	else
-	{
-	    static ca_proplist *proplist = NULL;
-
-	    ca_proplist_create(&proplist);
-	    if (proplist != NULL)
-	    {
-		if (playfile)
-		    ca_proplist_sets(proplist, CA_PROP_MEDIA_FILENAME,
-					   (char *)tv_get_string(&argvars[0]));
-		else
-		    ca_proplist_sets(proplist, CA_PROP_EVENT_ID,
-					   (char *)tv_get_string(&argvars[0]));
-		ca_proplist_sets(proplist, CA_PROP_CANBERRA_CACHE_CONTROL,
-			"volatile");
-		res = ca_context_play_full(context, sound_id, proplist,
-						      sound_callback, soundcb);
-		if (res != CA_SUCCESS)
-		    delete_sound_callback(soundcb);
-
-		ca_proplist_destroy(proplist);
-	    }
-	}
-	rettv->vval.v_number = res == CA_SUCCESS ? sound_id : 0;
+	res = ca_context_play(context, sound_id,
+		playfile ? CA_PROP_MEDIA_FILENAME : CA_PROP_EVENT_ID,
+		tv_get_string(&argvars[0]),
+		CA_PROP_CANBERRA_CACHE_CONTROL, "volatile",
+		NULL);
     }
+    else
+    {
+	static ca_proplist *proplist = NULL;
+
+	ca_proplist_create(&proplist);
+	if (proplist != NULL)
+	{
+	    if (playfile)
+		ca_proplist_sets(proplist, CA_PROP_MEDIA_FILENAME,
+			(char *)tv_get_string(&argvars[0]));
+	    else
+		ca_proplist_sets(proplist, CA_PROP_EVENT_ID,
+			(char *)tv_get_string(&argvars[0]));
+	    ca_proplist_sets(proplist, CA_PROP_CANBERRA_CACHE_CONTROL,
+		    "volatile");
+	    res = ca_context_play_full(context, sound_id, proplist,
+		    sound_callback, soundcb);
+	    if (res != CA_SUCCESS)
+		delete_sound_callback(soundcb);
+
+	    ca_proplist_destroy(proplist);
+	}
+    }
+    rettv->vval.v_number = res == CA_SUCCESS ? sound_id : 0;
 }
 
     void
@@ -270,11 +271,10 @@ f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    if (context != NULL)
-    {
-	ca_context_destroy(context);
-	context = NULL;
-    }
+    if (context == NULL)
+	return;
+    ca_context_destroy(context);
+    context = NULL;
 }
 
 # if defined(EXITFREE) || defined(PROTO)

@@ -50,7 +50,7 @@ func Test_cmd_lists()
           \ 'interface',
           \ 'public',
           \ 'static',
-          \ 'this', 
+          \ 'this',
           \ 'type',
           \ '++',
           \ '--',

@@ -413,7 +413,7 @@ func Test_statusline()
   " Test statusline works with 80+ items
   function! StatusLabel()
     redrawstatus
-    return '[label]'	
+    return '[label]'
   endfunc
   let statusline = '%{StatusLabel()}'
   for i in range(150)

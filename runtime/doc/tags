@@ -438,8 +438,10 @@ $quote	eval.txt	/*$quote*
 'keymap'	options.txt	/*'keymap'*
 'keymodel'	options.txt	/*'keymodel'*
 'keyprotocol'	options.txt	/*'keyprotocol'*
+'keywordprg'	options.txt	/*'keywordprg'*
 'km'	options.txt	/*'km'*
 'kmp'	options.txt	/*'kmp'*
+'kp'	options.txt	/*'kp'*
 'kpc'	options.txt	/*'kpc'*
 'langmap'	options.txt	/*'langmap'*
 'langmenu'	options.txt	/*'langmenu'*
@@ -4416,6 +4418,11 @@ E1351	vim9class.txt	/*E1351*
 E1352	vim9class.txt	/*E1352*
 E1353	vim9class.txt	/*E1353*
 E1354	vim9class.txt	/*E1354*
+E1355	vim9class.txt	/*E1355*
+E1356	vim9class.txt	/*E1356*
+E1357	vim9class.txt	/*E1357*
+E1358	vim9class.txt	/*E1358*
+E1359	vim9class.txt	/*E1359*
 E136	starting.txt	/*E136*
 E137	starting.txt	/*E137*
 E138	starting.txt	/*E138*
@@ -5633,6 +5640,7 @@ View	starting.txt	/*View*
 Vim9	vim9.txt	/*Vim9*
 Vim9-abstract-class	vim9class.txt	/*Vim9-abstract-class*
 Vim9-class	vim9class.txt	/*Vim9-class*
+Vim9-class-member	vim9class.txt	/*Vim9-class-member*
 Vim9-class-overview	vim9class.txt	/*Vim9-class-overview*
 Vim9-enum	vim9class.txt	/*Vim9-enum*
 Vim9-script	vim9.txt	/*Vim9-script*
@@ -6311,7 +6319,6 @@ cino-}	indent.txt	/*cino-}*
 cinoptions-values	indent.txt	/*cinoptions-values*
 class	vim9class.txt	/*class*
 class-function	vim9class.txt	/*class-function*
-class-member	vim9class.txt	/*class-member*
 clear-undo	undo.txt	/*clear-undo*
 clearmatches()	builtin.txt	/*clearmatches()*
 client-server	remote.txt	/*client-server*
@@ -7558,6 +7565,7 @@ getbufinfo()	builtin.txt	/*getbufinfo()*
 getbufline()	builtin.txt	/*getbufline()*
 getbufoneline()	builtin.txt	/*getbufoneline()*
 getbufvar()	builtin.txt	/*getbufvar()*
+getcellwidths()	builtin.txt	/*getcellwidths()*
 getchangelist()	builtin.txt	/*getchangelist()*
 getchar()	builtin.txt	/*getchar()*
 getcharmod()	builtin.txt	/*getcharmod()*
@@ -10042,6 +10050,7 @@ t_channel-variable	eval.txt	/*t_channel-variable*
 t_ci	version4.txt	/*t_ci*
 t_cil	version4.txt	/*t_cil*
 t_cl	term.txt	/*t_cl*
+t_class-variable	eval.txt	/*t_class-variable*
 t_cm	term.txt	/*t_cm*
 t_cri	version4.txt	/*t_cri*
 t_cs	term.txt	/*t_cs*
@@ -10106,6 +10115,7 @@ t_ms	term.txt	/*t_ms*
 t_nd	term.txt	/*t_nd*
 t_none-variable	eval.txt	/*t_none-variable*
 t_number-variable	eval.txt	/*t_number-variable*
+t_object-variable	eval.txt	/*t_object-variable*
 t_op	term.txt	/*t_op*
 t_se	term.txt	/*t_se*
 t_sf1	version4.txt	/*t_sf1*
@@ -10614,6 +10624,7 @@ v:t_TYPE	eval.txt	/*v:t_TYPE*
 v:t_blob	eval.txt	/*v:t_blob*
 v:t_bool	eval.txt	/*v:t_bool*
 v:t_channel	eval.txt	/*v:t_channel*
+v:t_class	eval.txt	/*v:t_class*
 v:t_dict	eval.txt	/*v:t_dict*
 v:t_float	eval.txt	/*v:t_float*
 v:t_func	eval.txt	/*v:t_func*
@@ -10621,6 +10632,7 @@ v:t_job	eval.txt	/*v:t_job*
 v:t_list	eval.txt	/*v:t_list*
 v:t_none	eval.txt	/*v:t_none*
 v:t_number	eval.txt	/*v:t_number*
+v:t_object	eval.txt	/*v:t_object*
 v:t_string	eval.txt	/*v:t_string*
 v:termblinkresp	eval.txt	/*v:termblinkresp*
 v:termrbgresp	eval.txt	/*v:termrbgresp*
@@ -11208,6 +11220,8 @@ zz	scroll.txt	/*zz*
 {rhs}	map.txt	/*{rhs}*
 {server}	remote.txt	/*{server}*
 {subject}	helphelp.txt	/*{subject}*
+{{{	fold.txt	/*{{{*
 {}	intro.txt	/*{}*
 }	motion.txt	/*}*
+}}}	fold.txt	/*}}}*
 ~	change.txt	/*~*

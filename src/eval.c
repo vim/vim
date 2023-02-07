@@ -1093,13 +1093,18 @@ get_lval(
 		--p;
 		lp->ll_name_end = p;
 	    }
-	    if (*p == ':')
+	    if (*skipwhite(p) == ':')
 	    {
 		char_u	    *tp = skipwhite(p + 1);
 
 		if (is_scoped_variable(name))
 		{
 		    semsg(_(e_cannot_use_type_with_this_variable_str), name);
+		    return NULL;
+		}
+		if (VIM_ISWHITE(*p))
+		{
+		    semsg(_(e_no_white_space_allowed_before_colon_str), p);
 		    return NULL;
 		}
 		if (tp == p + 1 && !quiet)
@@ -6747,7 +6752,10 @@ handle_subscript(
 	// the next line then consume the line break.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
-	    && ((rettv->v_type == VAR_DICT && *p == '.' && eval_isdictc(p[1]))
+	    && ((*p == '.'
+		    && ((rettv->v_type == VAR_DICT && eval_isdictc(p[1]))
+			|| rettv->v_type == VAR_CLASS
+			|| rettv->v_type == VAR_OBJECT))
 		|| (p[0] == '-' && p[1] == '>' && (p[2] == '{'
 			|| ASCII_ISALPHA(in_vim9script() ? *skipwhite(p + 2)
 								    : p[2])))))

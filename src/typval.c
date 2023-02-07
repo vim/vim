@@ -52,57 +52,57 @@ alloc_string_tv(char_u *s)
     void
 free_tv(typval_T *varp)
 {
-    if (varp != NULL)
-    {
-	switch (varp->v_type)
-	{
-	    case VAR_FUNC:
-		func_unref(varp->vval.v_string);
-		// FALLTHROUGH
-	    case VAR_STRING:
-		vim_free(varp->vval.v_string);
-		break;
-	    case VAR_PARTIAL:
-		partial_unref(varp->vval.v_partial);
-		break;
-	    case VAR_BLOB:
-		blob_unref(varp->vval.v_blob);
-		break;
-	    case VAR_LIST:
-		list_unref(varp->vval.v_list);
-		break;
-	    case VAR_DICT:
-		dict_unref(varp->vval.v_dict);
-		break;
-	    case VAR_JOB:
-#ifdef FEAT_JOB_CHANNEL
-		job_unref(varp->vval.v_job);
-		break;
-#endif
-	    case VAR_CHANNEL:
-#ifdef FEAT_JOB_CHANNEL
-		channel_unref(varp->vval.v_channel);
-		break;
-#endif
-	    case VAR_CLASS:
-		class_unref(varp->vval.v_class);
-		break;
-	    case VAR_OBJECT:
-		object_unref(varp->vval.v_object);
-		break;
+    if (varp == NULL)
+	return;
 
-	    case VAR_NUMBER:
-	    case VAR_FLOAT:
-	    case VAR_ANY:
-	    case VAR_UNKNOWN:
-	    case VAR_VOID:
-	    case VAR_BOOL:
-	    case VAR_SPECIAL:
-	    case VAR_INSTR:
-		break;
-	}
-	vim_free(varp);
+    switch (varp->v_type)
+    {
+	case VAR_FUNC:
+	    func_unref(varp->vval.v_string);
+	    // FALLTHROUGH
+	case VAR_STRING:
+	    vim_free(varp->vval.v_string);
+	    break;
+	case VAR_PARTIAL:
+	    partial_unref(varp->vval.v_partial);
+	    break;
+	case VAR_BLOB:
+	    blob_unref(varp->vval.v_blob);
+	    break;
+	case VAR_LIST:
+	    list_unref(varp->vval.v_list);
+	    break;
+	case VAR_DICT:
+	    dict_unref(varp->vval.v_dict);
+	    break;
+	case VAR_JOB:
+#ifdef FEAT_JOB_CHANNEL
+	    job_unref(varp->vval.v_job);
+	    break;
+#endif
+	case VAR_CHANNEL:
+#ifdef FEAT_JOB_CHANNEL
+	    channel_unref(varp->vval.v_channel);
+	    break;
+#endif
+	case VAR_CLASS:
+	    class_unref(varp->vval.v_class);
+	    break;
+	case VAR_OBJECT:
+	    object_unref(varp->vval.v_object);
+	    break;
+
+	case VAR_NUMBER:
+	case VAR_FLOAT:
+	case VAR_ANY:
+	case VAR_UNKNOWN:
+	case VAR_VOID:
+	case VAR_BOOL:
+	case VAR_SPECIAL:
+	case VAR_INSTR:
+	    break;
     }
+    vim_free(varp);
 }
 
 /*
@@ -111,70 +111,70 @@ free_tv(typval_T *varp)
     void
 clear_tv(typval_T *varp)
 {
-    if (varp != NULL)
+    if (varp == NULL)
+	return;
+
+    switch (varp->v_type)
     {
-	switch (varp->v_type)
-	{
-	    case VAR_FUNC:
-		func_unref(varp->vval.v_string);
-		// FALLTHROUGH
-	    case VAR_STRING:
-		VIM_CLEAR(varp->vval.v_string);
-		break;
-	    case VAR_PARTIAL:
-		partial_unref(varp->vval.v_partial);
-		varp->vval.v_partial = NULL;
-		break;
-	    case VAR_BLOB:
-		blob_unref(varp->vval.v_blob);
-		varp->vval.v_blob = NULL;
-		break;
-	    case VAR_LIST:
-		list_unref(varp->vval.v_list);
-		varp->vval.v_list = NULL;
-		break;
-	    case VAR_DICT:
-		dict_unref(varp->vval.v_dict);
-		varp->vval.v_dict = NULL;
-		break;
-	    case VAR_NUMBER:
-	    case VAR_BOOL:
-	    case VAR_SPECIAL:
-		varp->vval.v_number = 0;
-		break;
-	    case VAR_FLOAT:
-		varp->vval.v_float = 0.0;
-		break;
-	    case VAR_JOB:
+	case VAR_FUNC:
+	    func_unref(varp->vval.v_string);
+	    // FALLTHROUGH
+	case VAR_STRING:
+	    VIM_CLEAR(varp->vval.v_string);
+	    break;
+	case VAR_PARTIAL:
+	    partial_unref(varp->vval.v_partial);
+	    varp->vval.v_partial = NULL;
+	    break;
+	case VAR_BLOB:
+	    blob_unref(varp->vval.v_blob);
+	    varp->vval.v_blob = NULL;
+	    break;
+	case VAR_LIST:
+	    list_unref(varp->vval.v_list);
+	    varp->vval.v_list = NULL;
+	    break;
+	case VAR_DICT:
+	    dict_unref(varp->vval.v_dict);
+	    varp->vval.v_dict = NULL;
+	    break;
+	case VAR_NUMBER:
+	case VAR_BOOL:
+	case VAR_SPECIAL:
+	    varp->vval.v_number = 0;
+	    break;
+	case VAR_FLOAT:
+	    varp->vval.v_float = 0.0;
+	    break;
+	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
-		job_unref(varp->vval.v_job);
-		varp->vval.v_job = NULL;
+	    job_unref(varp->vval.v_job);
+	    varp->vval.v_job = NULL;
 #endif
-		break;
-	    case VAR_CHANNEL:
+	    break;
+	case VAR_CHANNEL:
 #ifdef FEAT_JOB_CHANNEL
-		channel_unref(varp->vval.v_channel);
-		varp->vval.v_channel = NULL;
+	    channel_unref(varp->vval.v_channel);
+	    varp->vval.v_channel = NULL;
 #endif
-		break;
-	    case VAR_INSTR:
-		VIM_CLEAR(varp->vval.v_instr);
-		break;
-	    case VAR_CLASS:
-		class_unref(varp->vval.v_class);
-		varp->vval.v_class = NULL;
-		break;
-	    case VAR_OBJECT:
-		object_unref(varp->vval.v_object);
-		varp->vval.v_object = NULL;
-		break;
-	    case VAR_UNKNOWN:
-	    case VAR_ANY:
-	    case VAR_VOID:
-		break;
-	}
-	varp->v_lock = 0;
+	    break;
+	case VAR_INSTR:
+	    VIM_CLEAR(varp->vval.v_instr);
+	    break;
+	case VAR_CLASS:
+	    class_unref(varp->vval.v_class);
+	    varp->vval.v_class = NULL;
+	    break;
+	case VAR_OBJECT:
+	    object_unref(varp->vval.v_object);
+	    varp->vval.v_object = NULL;
+	    break;
+	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_VOID:
+	    break;
     }
+    varp->v_lock = 0;
 }
 
 /*

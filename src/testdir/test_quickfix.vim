@@ -1211,20 +1211,20 @@ func Test_efm1()
     "Xtestfile", linenr 16: yet another problem
     Error in "Xtestfile" at line 17:
     x should be a dot
-    	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 17
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 17
                 ^
     Error in "Xtestfile" at line 18:
     x should be a dot
-    	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 18
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 18
     .............^
     Error in "Xtestfile" at line 19:
     x should be a dot
-    	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 19
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 19
     --------------^
     Error in "Xtestfile" at line 20:
     x should be a dot
-    	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 20
-    	       ^
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 20
+	       ^
 
     Does anyone know what is the problem and how to correction it?
     "Xtestfile", line 21 col 9: What is the title of the quickfix window?
@@ -1570,7 +1570,7 @@ func Test_efm2()
      failUnlessEqual
         raise self.failureException, \\
     W:AssertionError: 34 != 33
-  
+
     --------------------------------------------------------------
     Ran 27 tests in 0.063s
   [DATA]

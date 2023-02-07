@@ -1939,28 +1939,28 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
     }
 
     hi = find_prop_type_hi(name, buf);
-    if (hi != NULL)
+    if (hi == NULL)
+	return;
+
+    hashtab_T	*ht;
+    proptype_T	*prop = HI2PT(hi);
+
+    if (buf == NULL)
     {
-	hashtab_T	*ht;
-	proptype_T	*prop = HI2PT(hi);
-
-	if (buf == NULL)
-	{
-	    ht = global_proptypes;
-	    VIM_CLEAR(global_proparray);
-	}
-	else
-	{
-	    ht = buf->b_proptypes;
-	    VIM_CLEAR(buf->b_proparray);
-	}
-	hash_remove(ht, hi, "prop type delete");
-	vim_free(prop);
-
-	// currently visibile text properties will disappear
-	redraw_all_later(UPD_CLEAR);
-	changed_window_setting_buf(buf == NULL ? curbuf : buf);
+	ht = global_proptypes;
+	VIM_CLEAR(global_proparray);
     }
+    else
+    {
+	ht = buf->b_proptypes;
+	VIM_CLEAR(buf->b_proparray);
+    }
+    hash_remove(ht, hi, "prop type delete");
+    vim_free(prop);
+
+    // currently visibile text properties will disappear
+    redraw_all_later(UPD_CLEAR);
+    changed_window_setting_buf(buf == NULL ? curbuf : buf);
 }
 
 /*
@@ -1982,35 +1982,36 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv)
 	semsg(_(e_invalid_argument_str), "\"\"");
 	return;
     }
-    if (rettv_dict_alloc(rettv) == OK)
+
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+
+    proptype_T  *prop = NULL;
+    buf_T	    *buf = NULL;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	proptype_T  *prop = NULL;
-	buf_T	    *buf = NULL;
-
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    if (get_bufnr_from_arg(&argvars[1], &buf) == FAIL)
-		return;
-	}
-
-	prop = find_prop_type(name, buf);
-	if (prop != NULL)
-	{
-	    dict_T *d = rettv->vval.v_dict;
-
-	    if (prop->pt_hl_id > 0)
-		dict_add_string(d, "highlight", syn_id2name(prop->pt_hl_id));
-	    dict_add_number(d, "priority", prop->pt_priority);
-	    dict_add_number(d, "combine",
-				   (prop->pt_flags & PT_FLAG_COMBINE) ? 1 : 0);
-	    dict_add_number(d, "start_incl",
-			    (prop->pt_flags & PT_FLAG_INS_START_INCL) ? 1 : 0);
-	    dict_add_number(d, "end_incl",
-			      (prop->pt_flags & PT_FLAG_INS_END_INCL) ? 1 : 0);
-	    if (buf != NULL)
-		dict_add_number(d, "bufnr", buf->b_fnum);
-	}
+	if (get_bufnr_from_arg(&argvars[1], &buf) == FAIL)
+	    return;
     }
+
+    prop = find_prop_type(name, buf);
+    if (prop == NULL)
+	return;
+
+    dict_T *d = rettv->vval.v_dict;
+
+    if (prop->pt_hl_id > 0)
+	dict_add_string(d, "highlight", syn_id2name(prop->pt_hl_id));
+    dict_add_number(d, "priority", prop->pt_priority);
+    dict_add_number(d, "combine",
+	    (prop->pt_flags & PT_FLAG_COMBINE) ? 1 : 0);
+    dict_add_number(d, "start_incl",
+	    (prop->pt_flags & PT_FLAG_INS_START_INCL) ? 1 : 0);
+    dict_add_number(d, "end_incl",
+	    (prop->pt_flags & PT_FLAG_INS_END_INCL) ? 1 : 0);
+    if (buf != NULL)
+	dict_add_number(d, "bufnr", buf->b_fnum);
 }
 
     static void
@@ -2040,24 +2041,24 @@ f_prop_type_list(typval_T *argvars, typval_T *rettv UNUSED)
 {
     buf_T *buf = NULL;
 
-    if (rettv_list_alloc(rettv) == OK)
-    {
-	if (in_vim9script() && check_for_opt_dict_arg(argvars, 0) == FAIL)
-	    return;
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
 
-	if (argvars[0].v_type != VAR_UNKNOWN)
-	{
-	    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
-		return;
-	}
-	if (buf == NULL)
-	{
-	    if (global_proptypes != NULL)
-		list_types(global_proptypes, rettv->vval.v_list);
-	}
-	else if (buf->b_proptypes != NULL)
-	    list_types(buf->b_proptypes, rettv->vval.v_list);
+    if (in_vim9script() && check_for_opt_dict_arg(argvars, 0) == FAIL)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
+	    return;
     }
+    if (buf == NULL)
+    {
+	if (global_proptypes != NULL)
+	    list_types(global_proptypes, rettv->vval.v_list);
+    }
+    else if (buf->b_proptypes != NULL)
+	list_types(buf->b_proptypes, rettv->vval.v_list);
 }
 
 /*

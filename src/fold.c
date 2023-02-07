@@ -645,7 +645,7 @@ foldCreate(linenr_T start, linenr_T end)
 	    i = (int)(fp - (fold_T *)gap->ga_data);
     }
 
-    if (ga_grow(gap, 1) != OK)
+    if (ga_grow(gap, 1) == FAIL)
 	return;
 
     fp = (fold_T *)gap->ga_data + i;
@@ -2884,7 +2884,7 @@ foldInsert(garray_T *gap, int i)
 {
     fold_T	*fp;
 
-    if (ga_grow(gap, 1) != OK)
+    if (ga_grow(gap, 1) == FAIL)
 	return FAIL;
     fp = (fold_T *)gap->ga_data + i;
     if (gap->ga_len > 0 && i < gap->ga_len)
