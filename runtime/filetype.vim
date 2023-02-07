@@ -1267,6 +1267,9 @@ au BufNewFile,BufRead *.[mi][3g]		setf modula3
 " Larch/Modula-3
 au BufNewFile,BufRead *.lm3			setf modula3
 
+" Modconf
+au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
+
 " Monk
 au BufNewFile,BufRead *.isc,*.monk,*.ssc,*.tsc	setf monk
 
@@ -1276,8 +1279,8 @@ au BufNewFile,BufRead *.moo			setf moo
 " Moonscript
 au BufNewFile,BufRead *.moon			setf moonscript
 
-" Modconf
-au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
+" Move language
+au BufNewFile,BufRead *.move			setf move
 
 " MPD is based on XML
 au BufNewFile,BufRead *.mpd			setf xml
