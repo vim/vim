@@ -1328,12 +1328,16 @@ generate_NEWDICT(cctx_T *cctx, int count, int use_null)
 
 /*
  * Generate an ISN_FUNCREF instruction.
+ * For "obj.Method" "cl" is the class of the object (can be an interface or a
+ * base class) and "fi" the index of the method on that class.
  * "isnp" is set to the instruction, so that fr_dfunc_idx can be set later.
  */
     int
 generate_FUNCREF(
 	cctx_T	    *cctx,
 	ufunc_T	    *ufunc,
+	class_T	    *cl,
+	int	    fi,
 	isn_T	    **isnp)
 {
     isn_T	    *isn;
@@ -1349,17 +1353,23 @@ generate_FUNCREF(
 	*isnp = isn;
 
     has_vars = get_loop_var_info(cctx, &loopinfo);
-    if (ufunc->uf_def_status == UF_NOT_COMPILED || has_vars)
+    if (ufunc->uf_def_status == UF_NOT_COMPILED || has_vars || cl != NULL)
     {
 	extra = ALLOC_CLEAR_ONE(funcref_extra_T);
 	if (extra == NULL)
 	    return FAIL;
 	isn->isn_arg.funcref.fr_extra = extra;
 	extra->fre_loopvar_info = loopinfo;
+	if (cl != NULL)
+	{
+	    extra->fre_class = cl;
+	    ++cl->class_refcount;
+	    extra->fre_method_idx = fi;
+	}
     }
-    if (ufunc->uf_def_status == UF_NOT_COMPILED)
+    if (ufunc->uf_def_status == UF_NOT_COMPILED || cl != NULL)
 	extra->fre_func_name = vim_strsave(ufunc->uf_name);
-    else
+    if (ufunc->uf_def_status != UF_NOT_COMPILED && cl == NULL)
     {
 	if (isnp == NULL && ufunc->uf_def_status == UF_TO_BE_COMPILED)
 	    // compile the function now, we need the uf_dfunc_idx value
@@ -2484,6 +2494,8 @@ delete_instr(isn_T *isn)
 			func_unref(name);
 			vim_free(name);
 		    }
+		    if (extra->fre_class != NULL)
+			class_unref(extra->fre_class);
 		    vim_free(extra);
 		}
 	    }

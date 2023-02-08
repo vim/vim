@@ -1480,6 +1480,43 @@ def Test_defer_with_object()
   END
   v9.CheckScriptSuccess(lines)
   unlet g:result
+
+  lines =<< trim END
+      vim9script
+
+      class BaseWithEE
+        def Enter()
+          g:result ..= "entered-base/"
+        enddef
+        def Exit()
+          g:result ..= "exited-base"
+        enddef
+      endclass
+
+      class CWithEE extends BaseWithEE
+        def Enter()
+          g:result ..= "entered-child/"
+        enddef
+        def Exit()
+          g:result ..= "exited-child"
+        enddef
+      endclass
+
+      def With(ee: BaseWithEE, F: func)
+        ee.Enter()
+        defer ee.Exit()
+        F()
+      enddef
+
+      g:result = ''
+      var obj = CWithEE.new()
+      obj->With(() => {
+        g:result ..= "called/"
+      })
+      assert_equal('entered-child/called/exited-child', g:result)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:result
 enddef
 
 
