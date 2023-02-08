@@ -2083,15 +2083,12 @@ getcmdline_int(
 
 	case Ctrl_R:			// insert register
 		res = cmdline_insert_reg(&gotesc);
-		if (res == CMDLINE_NOT_CHANGED)
-		{
+		if (res == GOTO_NORMAL_MODE)
+		    goto returncmd;
 #ifdef FEAT_SEARCH_EXTRA
+		if (res == CMDLINE_NOT_CHANGED)
 		    is_state.incsearch_postponed = TRUE;
 #endif
-		    goto cmdline_not_changed;
-		}
-		else if (res == GOTO_NORMAL_MODE)
-		    goto returncmd;
 		goto cmdline_not_changed;
 
 	case Ctrl_D:
