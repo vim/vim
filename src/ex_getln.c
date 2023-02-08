@@ -2092,7 +2092,7 @@ getcmdline_int(
 		}
 		else if (res == GOTO_NORMAL_MODE)
 		    goto returncmd;
-		goto cmdline_changed;
+		goto cmdline_not_changed;
 
 	case Ctrl_D:
 		if (showmatches(&xpc, FALSE) == EXPAND_NOTHING)
