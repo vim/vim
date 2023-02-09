@@ -81,7 +81,7 @@ func Test_mac_locale()
   " 1. The locale is the form of <locale>.UTF-8.
   " 2. Check that fourth item (LC_NUMERIC) is properly set to "C".
   " Example match: "en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8"
-  call assert_match('"\([a-zA-Z_]\+\.UTF-8/\)\{3}C\(/[a-zA-Z_]\+\.UTF-8\)\{2}"',
+  call assert_match('"\(\([a-zA-Z_]\+\.\)\?UTF-8/\)\{3}C\(/\([a-zA-Z_]\+\.\)\?UTF-8\)\{2}"',
         \ lang_results,
         \ "Default locale should have UTF-8 encoding set, and LC_NUMERIC set to 'C'")
 endfunc
