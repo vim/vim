@@ -2900,6 +2900,794 @@ apply_optionset_autocmd(
 #endif
 
 /*
+ * Process the updated 'compatible' option value.
+ */
+    static void
+did_set_compatible(void)
+{
+    compatible_set();
+}
+
+#ifdef FEAT_LANGMAP
+/*
+ * Process the updated 'langremap' option value.
+ */
+    static void
+did_set_langremap(void)
+{
+    // 'langremap' -> !'langnoremap'
+    p_lnr = !p_lrm;
+}
+
+/*
+ * Process the updated 'langnoremap' option value.
+ */
+    static void
+did_set_langnoremap(void)
+{
+    // 'langnoremap' -> !'langremap'
+    p_lrm = !p_lnr;
+}
+#endif
+
+#ifdef FEAT_PERSISTENT_UNDO
+/*
+ * Process the updated 'undofile' option value.
+ */
+    static void
+did_set_undofile(int opt_flags)
+{
+    // Only take action when the option was set. When reset we do not
+    // delete the undo file, the option may be set again without making
+    // any changes in between.
+    if (curbuf->b_p_udf || p_udf)
+    {
+	char_u	hash[UNDO_HASH_SIZE];
+	buf_T	*save_curbuf = curbuf;
+
+	FOR_ALL_BUFFERS(curbuf)
+	{
+	    // When 'undofile' is set globally: for every buffer, otherwise
+	    // only for the current buffer: Try to read in the undofile,
+	    // if one exists, the buffer wasn't changed and the buffer was
+	    // loaded
+	    if ((curbuf == save_curbuf
+			|| (opt_flags & OPT_GLOBAL) || opt_flags == 0)
+		    && !curbufIsChanged() && curbuf->b_ml.ml_mfp != NULL)
+	    {
+#ifdef FEAT_CRYPT
+		if (crypt_get_method_nr(curbuf) == CRYPT_M_SOD)
+		    continue;
+#endif
+		u_compute_hash(hash);
+		u_read_undo(NULL, hash, curbuf->b_fname);
+	    }
+	}
+	curbuf = save_curbuf;
+    }
+
+}
+#endif
+
+/*
+ * Process the updated 'readonly' option value.
+ */
+    static void
+did_set_readonly(int opt_flags)
+{
+    // when 'readonly' is reset globally, also reset readonlymode
+    if (!curbuf->b_p_ro && (opt_flags & OPT_LOCAL) == 0)
+	readonlymode = FALSE;
+
+    // when 'readonly' is set may give W10 again
+    if (curbuf->b_p_ro)
+	curbuf->b_did_warn = FALSE;
+
+    redraw_titles();
+}
+
+#ifdef FEAT_GUI
+/*
+ * Process the updated 'mousehide' option value.
+ */
+    static void
+did_set_mousehide(void)
+{
+    if (!p_mh)
+	gui_mch_mousehide(FALSE);
+}
+#endif
+
+/*
+ * Process the updated 'modifiable' option value.
+ */
+    static char *
+did_set_modifiable(int *doskip UNUSED)
+{
+    // when 'modifiable' is changed, redraw the window title
+
+# ifdef FEAT_TERMINAL
+    // Cannot set 'modifiable' when in Terminal mode.
+    if (curbuf->b_p_ma && (term_in_normal_mode() || (bt_terminal(curbuf)
+		    && curbuf->b_term != NULL && !term_is_finished(curbuf))))
+    {
+	curbuf->b_p_ma = FALSE;
+	*doskip = TRUE;
+	return e_cannot_make_terminal_with_running_job_modifiable;
+    }
+# endif
+    redraw_titles();
+
+    return NULL;
+}
+
+/*
+ * Process the updated 'endoffile' or 'endofline' or 'fixendofline' or 'bomb'
+ * option value.
+ */
+    static void
+did_set_eof_eol_fixeol_bomb(void)
+{
+    // redraw the window title and tab page text
+    redraw_titles();
+}
+
+/*
+ * Process the updated 'binary' option value.
+ */
+    static void
+did_set_binary(int opt_flags, long old_value)
+{
+    // when 'bin' is set also set some other options
+    set_options_bin(old_value, curbuf->b_p_bin, opt_flags);
+    redraw_titles();
+}
+
+/*
+ * Process the updated 'buflisted' option value.
+ */
+    static void
+did_set_buflisted(long old_value)
+{
+    // when 'buflisted' changes, trigger autocommands
+    if (old_value != curbuf->b_p_bl)
+	apply_autocmds(curbuf->b_p_bl ? EVENT_BUFADD : EVENT_BUFDELETE,
+						NULL, NULL, TRUE, curbuf);
+}
+
+/*
+ * Process the updated 'swapfile' option value.
+ */
+    static void
+did_set_swapfile(void)
+{
+    // when 'swf' is set, create swapfile, when reset remove swapfile
+    if (curbuf->b_p_swf && p_uc)
+	ml_open_file(curbuf);		// create the swap file
+    else
+	// no need to reset curbuf->b_may_swap, ml_open_file() will check
+	// buf->b_p_swf
+	mf_close_file(curbuf, TRUE);	// remove the swap file
+}
+
+/*
+ * Process the updated 'terse' option value.
+ */
+    static void
+did_set_terse(void)
+{
+    char_u	*p;
+
+    // when 'terse' is set change 'shortmess'
+    p = vim_strchr(p_shm, SHM_SEARCH);
+
+    // insert 's' in p_shm
+    if (p_terse && p == NULL)
+    {
+	STRCPY(IObuff, p_shm);
+	STRCAT(IObuff, "s");
+	set_string_option_direct((char_u *)"shm", -1, IObuff, OPT_FREE, 0);
+    }
+    // remove 's' from p_shm
+    else if (!p_terse && p != NULL)
+	STRMOVE(p, p + 1);
+}
+
+/*
+ * Process the updated 'paste' option value.
+ */
+    static void
+did_set_paste(void)
+{
+    // when 'paste' is set or reset also change other options
+    paste_option_changed();
+}
+
+/*
+ * Process the updated 'insertmode' option value.
+ */
+    static void
+did_set_insertmode(long old_value)
+{
+    // when 'insertmode' is set from an autocommand need to do work here
+    if (p_im)
+    {
+	if ((State & MODE_INSERT) == 0)
+	    need_start_insertmode = TRUE;
+	stop_insert_mode = FALSE;
+    }
+    // only reset if it was set previously
+    else if (old_value)
+    {
+	need_start_insertmode = FALSE;
+	stop_insert_mode = TRUE;
+	if (restart_edit != 0 && mode_displayed)
+	    clear_cmdline = TRUE;	// remove "(insert)"
+	restart_edit = 0;
+    }
+}
+
+/*
+ * Process the updated 'ignorecase' option value.
+ */
+    static void
+did_set_ignorecase(void)
+{
+    // when 'ignorecase' is set or reset and 'hlsearch' is set, redraw
+    if (p_hls)
+	redraw_all_later(UPD_SOME_VALID);
+}
+
+#ifdef FEAT_SEARCH_EXTRA
+/*
+ * Process the updated 'hlsearch' option value.
+ */
+    static void
+did_set_hlsearch(void)
+{
+    // when 'hlsearch' is set or reset: reset no_hlsearch
+    set_no_hlsearch(FALSE);
+}
+#endif
+
+/*
+ * Process the updated 'scrollbind' option value.
+ */
+    static void
+did_set_scrollbind(void)
+{
+    // when 'scrollbind' is set: snapshot the current position to avoid a jump
+    // at the end of normal_cmd()
+    if (curwin->w_p_scb)
+    {
+	do_check_scrollbind(FALSE);
+	curwin->w_scbind_pos = curwin->w_topline;
+    }
+}
+
+#ifdef FEAT_QUICKFIX
+/*
+ * Process the updated 'previewwindow' option value.
+ */
+    static char *
+did_set_previewwindow(int *doskip)
+{
+    if (!curwin->w_p_pvw)
+	return NULL;
+
+    // There can be only one window with 'previewwindow' set.
+    win_T	*win;
+
+    FOR_ALL_WINDOWS(win)
+	if (win->w_p_pvw && win != curwin)
+	{
+	    curwin->w_p_pvw = FALSE;
+	    *doskip = TRUE;
+	    return e_preview_window_already_exists;
+	}
+
+    return NULL;
+}
+#endif
+
+/*
+ * Process the updated 'smoothscroll' option value.
+ */
+    static void
+did_set_smoothscroll(void)
+{
+    if (!curwin->w_p_sms)
+    {
+	curwin->w_skipcol = 0;
+	changed_line_abv_curs();
+    }
+}
+
+/*
+ * Process the updated 'textmode' option value.
+ */
+    static void
+did_set_textmode(int opt_flags)
+{
+    // when 'textmode' is set or reset also change 'fileformat'
+    set_fileformat(curbuf->b_p_tx ? EOL_DOS : EOL_UNIX, opt_flags);
+}
+
+/*
+ * Process the updated 'textauto' option value.
+ */
+    static void
+did_set_textauto(int opt_flags)
+{
+    // when 'textauto' is set or reset also change 'fileformats'
+    set_string_option_direct((char_u *)"ffs", -1,
+				p_ta ? (char_u *)DFLT_FFS_VIM : (char_u *)"",
+				OPT_FREE | opt_flags, 0);
+}
+
+/*
+ * Process the updated 'lisp' option value.
+ */
+    static void
+did_set_lisp(void)
+{
+    // When 'lisp' option changes include/exclude '-' in keyword characters.
+    (void)buf_init_chartab(curbuf, FALSE);	    // ignore errors
+}
+
+/*
+ * Process the updated 'title' or the 'icon' option value.
+ */
+    static void
+did_set_title_icon(void)
+{
+    // when 'title' changed, may need to change the title; same for 'icon'
+    did_set_title();
+}
+
+/*
+ * Process the updated 'modified' option value.
+ */
+    static void
+did_set_modified(long value)
+{
+    if (!value)
+	save_file_ff(curbuf);	// Buffer is unchanged
+    redraw_titles();
+    modified_was_set = value;
+}
+
+#ifdef BACKSLASH_IN_FILENAME
+/*
+ * Process the updated 'shellslash' option value.
+ */
+    static void
+did_set_shellslash(void)
+{
+    if (p_ssl)
+    {
+	psepc = '/';
+	psepcN = '\\';
+	pseps[0] = '/';
+    }
+    else
+    {
+	psepc = '\\';
+	psepcN = '/';
+	pseps[0] = '\\';
+    }
+
+    // need to adjust the file name arguments and buffer names.
+    buflist_slash_adjust();
+    alist_slash_adjust();
+# ifdef FEAT_EVAL
+    scriptnames_slash_adjust();
+# endif
+}
+#endif
+
+/*
+ * Process the updated 'wrap' option value.
+ */
+    static void
+did_set_wrap(void)
+{
+    // If 'wrap' is set, set w_leftcol to zero.
+    if (curwin->w_p_wrap)
+	curwin->w_leftcol = 0;
+}
+
+/*
+ * Process the updated 'equalalways' option value.
+ */
+    static void
+did_set_equalalways(long old_value)
+{
+    if (p_ea && !old_value)
+	win_equal(curwin, FALSE, 0);
+}
+
+/*
+ * Process the updated 'weirdinvert' option value.
+ */
+    static void
+did_set_weirdinvert(long old_value)
+{
+    // When 'weirdinvert' changed, set/reset 't_xs'.
+    // Then set 'weirdinvert' according to value of 't_xs'.
+    if (p_wiv && !old_value)
+	T_XS = (char_u *)"y";
+    else if (!p_wiv && old_value)
+	T_XS = empty_option;
+    p_wiv = (*T_XS != NUL);
+}
+
+#ifdef FEAT_BEVAL_GUI
+/*
+ * Process the updated 'ballooneval' option value.
+ */
+    static void
+did_set_ballooneval(long old_value)
+{
+    if (!balloonEvalForTerm)
+    {
+	if (p_beval && !old_value)
+	    gui_mch_enable_beval_area(balloonEval);
+	else if (!p_beval && old_value)
+	    gui_mch_disable_beval_area(balloonEval);
+    }
+
+}
+#endif
+
+#ifdef FEAT_BEVAL_TERM
+/*
+ * Process the updated 'balloonevalterm' option value.
+ */
+    static void
+did_set_balloonevalterm(void)
+{
+    mch_bevalterm_changed();
+}
+#endif
+
+#ifdef FEAT_AUTOCHDIR
+/*
+ * Process the updated 'autochdir' option value.
+ */
+    static void
+did_set_autochdir(void)
+{
+    // Change directories when the 'acd' option is set now.
+    DO_AUTOCHDIR;
+}
+#endif
+
+#ifdef FEAT_DIFF
+/*
+ * Process the updated 'diff' option value.
+ */
+    static void
+did_set_diff(void)
+{
+    // May add or remove the buffer from the list of diff buffers.
+    diff_buf_adjust(curwin);
+# ifdef FEAT_FOLDING
+    if (foldmethodIsDiff(curwin))
+	foldUpdateAll(curwin);
+# endif
+}
+#endif
+
+#ifdef HAVE_INPUT_METHOD
+/*
+ * Process the updated 'imdisable' option value.
+ */
+    static void
+did_set_imdisable(void)
+{
+    // Only de-activate it here, it will be enabled when changing mode.
+    if (p_imdisable)
+	im_set_active(FALSE);
+    else if (State & MODE_INSERT)
+	// When the option is set from an autocommand, it may need to take
+	// effect right away.
+	im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);
+}
+#endif
+
+#ifdef FEAT_SPELL
+/*
+ * Process the updated 'spell' option value.
+ */
+    static char *
+did_set_spell(void)
+{
+    if (curwin->w_p_spell)
+	return did_set_spelllang(curwin);
+
+    return NULL;
+}
+#endif
+
+#ifdef FEAT_ARABIC
+/*
+ * Process the updated 'arabic' option value.
+ */
+    static char *
+did_set_arabic(void)
+{
+    char *errmsg = NULL;
+
+    if (curwin->w_p_arab)
+    {
+	/*
+	 * 'arabic' is set, handle various sub-settings.
+	 */
+	if (!p_tbidi)
+	{
+	    // set rightleft mode
+	    if (!curwin->w_p_rl)
+	    {
+		curwin->w_p_rl = TRUE;
+		changed_window_setting();
+	    }
+
+	    // Enable Arabic shaping (major part of what Arabic requires)
+	    if (!p_arshape)
+	    {
+		p_arshape = TRUE;
+		redraw_later_clear();
+	    }
+	}
+
+	// Arabic requires a utf-8 encoding, inform the user if it's not
+	// set.
+	if (STRCMP(p_enc, "utf-8") != 0)
+	{
+	    static char *w_arabic = N_("W17: Arabic requires UTF-8, do ':set encoding=utf-8'");
+
+	    msg_source(HL_ATTR(HLF_W));
+	    msg_attr(_(w_arabic), HL_ATTR(HLF_W));
+#ifdef FEAT_EVAL
+	    set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_arabic), -1);
+#endif
+	}
+
+	// set 'delcombine'
+	p_deco = TRUE;
+
+# ifdef FEAT_KEYMAP
+	// Force-set the necessary keymap for arabic
+	errmsg = set_option_value((char_u *)"keymap",
+		0L, (char_u *)"arabic", OPT_LOCAL);
+# endif
+    }
+    else
+    {
+	/*
+	 * 'arabic' is reset, handle various sub-settings.
+	 */
+	if (!p_tbidi)
+	{
+	    // reset rightleft mode
+	    if (curwin->w_p_rl)
+	    {
+		curwin->w_p_rl = FALSE;
+		changed_window_setting();
+	    }
+
+	    // 'arabicshape' isn't reset, it is a global option and
+	    // another window may still need it "on".
+	}
+
+	// 'delcombine' isn't reset, it is a global option and another
+	// window may still want it "on".
+
+# ifdef FEAT_KEYMAP
+	// Revert to the default keymap
+	curbuf->b_p_iminsert = B_IMODE_NONE;
+	curbuf->b_p_imsearch = B_IMODE_USE_INSERT;
+# endif
+    }
+
+    return errmsg;
+}
+#endif
+
+#if defined(FEAT_SIGNS) && defined(FEAT_GUI)
+/*
+ * Process the updated 'number' or 'relativenumber' option value.
+ */
+    static void
+did_set_number_relativenumber(char_u *varp)
+{
+    if (gui.in_use
+	    && (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u')
+	    && curbuf->b_signlist != NULL)
+    {
+	// If the 'number' or 'relativenumber' options are modified and
+	// 'signcolumn' is set to 'number', then clear the screen for a full
+	// refresh. Otherwise the sign icons are not displayed properly in the
+	// number column.  If the 'number' option is set and only the
+	// 'relativenumber' option is toggled, then don't refresh the screen
+	// (optimization).
+	if (!(curwin->w_p_nu && ((int *)varp == &curwin->w_p_rnu)))
+	    redraw_all_later(UPD_CLEAR);
+    }
+}
+#endif
+
+#ifdef FEAT_TERMGUICOLORS
+    static char *
+did_set_termguicolors(int *doskip UNUSED)
+{
+# ifdef FEAT_VTP
+    // Do not turn on 'tgc' when 24-bit colors are not supported.
+    if (
+#  ifdef VIMDLL
+	    !gui.in_use && !gui.starting &&
+#  endif
+	    !has_vtp_working())
+    {
+	p_tgc = 0;
+	*doskip = TRUE;
+	return e_24_bit_colors_are_not_supported_on_this_environment;
+    }
+    if (is_term_win32())
+	swap_tcap();
+# endif
+# ifdef FEAT_GUI
+    if (!gui.in_use && !gui.starting)
+# endif
+	highlight_gui_started();
+# ifdef FEAT_VTP
+    // reset t_Co
+    if (is_term_win32())
+    {
+	control_console_color_rgb();
+	set_termname(T_NAME);
+	init_highlight(TRUE, FALSE);
+    }
+# endif
+# ifdef FEAT_TERMINAL
+    term_update_colors_all();
+    term_update_palette_all();
+    term_update_wincolor_all();
+# endif
+
+    return NULL;
+}
+#endif
+
+/*
+ * When some boolean options are changed, need to take some action.
+ */
+    static char *
+did_set_bool_option(
+    char_u	*varp,
+    int		opt_flags,
+    long	value,
+    long	old_value,
+    int		*doskip)
+{
+    char *errmsg = NULL;
+
+    if ((int *)varp == &p_cp)			// 'compatible'
+	did_set_compatible();
+#ifdef FEAT_LANGMAP
+    else if ((int *)varp == &p_lrm)		// 'langremap'
+	did_set_langremap();
+    else if ((int *)varp == &p_lnr)		// 'langnoremap'
+	did_set_langnoremap();
+#endif
+#ifdef FEAT_PERSISTENT_UNDO
+    else if ((int *)varp == &curbuf->b_p_udf	// buffer local 'undofile'
+	    || (int *)varp == &p_udf)		// 'undofile'
+	did_set_undofile(opt_flags);
+#endif
+    else if ((int *)varp == &curbuf->b_p_ro)	// 'readonly'
+	did_set_readonly(opt_flags);
+#ifdef FEAT_GUI
+    else if ((int *)varp == &p_mh)		// 'mousehide'
+	did_set_mousehide();
+#endif
+    else if ((int *)varp == &curbuf->b_p_ma)
+	errmsg = did_set_modifiable(doskip);	// 'modifiable'
+    else if ((int *)varp == &curbuf->b_p_eof	// 'endoffile'
+	    || (int *)varp == &curbuf->b_p_eol	// 'endofline'
+	    || (int *)varp == &curbuf->b_p_fixeol	// 'fixendofline'
+	    || (int *)varp == &curbuf->b_p_bomb)	// 'bomb'
+	did_set_eof_eol_fixeol_bomb();
+    else if ((int *)varp == &curbuf->b_p_bin)	// 'binary'
+	did_set_binary(opt_flags, old_value);
+    else if ((int *)varp == &curbuf->b_p_bl)	// 'buflisted'
+	did_set_buflisted(old_value);
+    else if ((int *)varp == &curbuf->b_p_swf)	// 'swapfile'
+	did_set_swapfile();
+    else if ((int *)varp == &p_terse)		// 'terse'
+	did_set_terse();
+    else if ((int *)varp == &p_paste)		// 'paste'
+	did_set_paste();
+    else if ((int *)varp == &p_im)		// 'insertmode'
+	did_set_insertmode(old_value);
+    else if ((int *)varp == &p_ic)		// 'ignorecase'
+	did_set_ignorecase();
+#ifdef FEAT_SEARCH_EXTRA
+    else if ((int *)varp == &p_hls)		// 'hlsearch'
+	did_set_hlsearch();
+#endif
+    else if ((int *)varp == &curwin->w_p_scb)	// 'scrollbind'
+	did_set_scrollbind();
+#ifdef FEAT_QUICKFIX
+    else if ((int *)varp == &curwin->w_p_pvw)	// 'previewwindow'
+	errmsg = did_set_previewwindow(doskip);
+#endif
+    else if ((int *)varp == &curwin->w_p_sms)	// 'smoothscroll'
+	did_set_smoothscroll();
+    else if ((int *)varp == &curbuf->b_p_tx)	// 'textmode'
+	did_set_textmode(opt_flags);
+    else if ((int *)varp == &p_ta)		// 'textauto'
+	did_set_textauto(opt_flags);
+    else if (varp == (char_u *)&(curbuf->b_p_lisp))	// 'lisp'
+	did_set_lisp();
+    else if (  (int *)varp == &p_title		// 'title'
+	    || (int *)varp == &p_icon)		// 'icon'
+	did_set_title_icon();
+    else if ((int *)varp == &curbuf->b_changed)	// 'modified'
+	did_set_modified(value);
+#ifdef BACKSLASH_IN_FILENAME
+    else if ((int *)varp == &p_ssl)		// 'shellslash'
+	did_set_shellslash();
+#endif
+    else if ((int *)varp == &curwin->w_p_wrap)	// 'wrap'
+	did_set_wrap();
+    else if ((int *)varp == &p_ea)		// 'equalalways'
+	did_set_equalalways(old_value);
+    else if ((int *)varp == &p_wiv)		// weirdinvert'
+	did_set_weirdinvert(old_value);
+#ifdef FEAT_BEVAL_GUI
+    else if ((int *)varp == &p_beval)		// 'ballooneval'
+	did_set_ballooneval(old_value);
+#endif
+#ifdef FEAT_BEVAL_TERM
+    else if ((int *)varp == &p_bevalterm)	// 'balloonevalterm'
+	did_set_balloonevalterm();
+#endif
+#ifdef FEAT_AUTOCHDIR
+    else if ((int *)varp == &p_acd)		// 'autochdir'
+	did_set_autochdir();
+#endif
+#ifdef FEAT_DIFF
+    else if ((int *)varp == &curwin->w_p_diff)	// 'diff'
+	did_set_diff();
+#endif
+#ifdef HAVE_INPUT_METHOD
+    else if ((int *)varp == &p_imdisable)	// 'imdisable'
+	did_set_imdisable();
+#endif
+#ifdef FEAT_SPELL
+    else if ((int *)varp == &curwin->w_p_spell)	// 'spell'
+	errmsg = did_set_spell();
+#endif
+#ifdef FEAT_ARABIC
+    else if ((int *)varp == &curwin->w_p_arab)	// 'arabic'
+	errmsg = did_set_arabic();
+#endif
+#if defined(FEAT_SIGNS) && defined(FEAT_GUI)
+    else if (  (int *)varp == &curwin->w_p_nu	// 'number'
+	    || (int *)varp == &curwin->w_p_rnu)	// 'relativenumber'
+	did_set_number_relativenumber(varp);
+#endif
+#ifdef FEAT_TERMGUICOLORS
+    else if ((int *)varp == &p_tgc)		// 'termguicolors'
+	errmsg = did_set_termguicolors(doskip);
+#endif
+
+    return errmsg;
+}
+
+/*
  * Set the value of a boolean option, and take care of side effects.
  * Returns NULL for success, or an error message for an error.
  */
@@ -2950,511 +3738,10 @@ set_bool_option(
     /*
      * Handle side effects of changing a bool option.
      */
-
-    // 'compatible'
-    if ((int *)varp == &p_cp)
-	compatible_set();
-
-#ifdef FEAT_LANGMAP
-    if ((int *)varp == &p_lrm)
-	// 'langremap' -> !'langnoremap'
-	p_lnr = !p_lrm;
-    else if ((int *)varp == &p_lnr)
-	// 'langnoremap' -> !'langremap'
-	p_lrm = !p_lnr;
-#endif
-
-#ifdef FEAT_PERSISTENT_UNDO
-    // 'undofile'
-    else if ((int *)varp == &curbuf->b_p_udf || (int *)varp == &p_udf)
-    {
-	// Only take action when the option was set. When reset we do not
-	// delete the undo file, the option may be set again without making
-	// any changes in between.
-	if (curbuf->b_p_udf || p_udf)
-	{
-	    char_u	hash[UNDO_HASH_SIZE];
-	    buf_T	*save_curbuf = curbuf;
-
-	    FOR_ALL_BUFFERS(curbuf)
-	    {
-		// When 'undofile' is set globally: for every buffer, otherwise
-		// only for the current buffer: Try to read in the undofile,
-		// if one exists, the buffer wasn't changed and the buffer was
-		// loaded
-		if ((curbuf == save_curbuf
-				|| (opt_flags & OPT_GLOBAL) || opt_flags == 0)
-			&& !curbufIsChanged() && curbuf->b_ml.ml_mfp != NULL)
-		{
-#ifdef FEAT_CRYPT
-		    if (crypt_get_method_nr(curbuf) == CRYPT_M_SOD)
-			continue;
-#endif
-		    u_compute_hash(hash);
-		    u_read_undo(NULL, hash, curbuf->b_fname);
-		}
-	    }
-	    curbuf = save_curbuf;
-	}
-    }
-#endif
-
-    else if ((int *)varp == &curbuf->b_p_ro)
-    {
-	// when 'readonly' is reset globally, also reset readonlymode
-	if (!curbuf->b_p_ro && (opt_flags & OPT_LOCAL) == 0)
-	    readonlymode = FALSE;
-
-	// when 'readonly' is set may give W10 again
-	if (curbuf->b_p_ro)
-	    curbuf->b_did_warn = FALSE;
-
-	redraw_titles();
-    }
-
-#ifdef FEAT_GUI
-    else if ((int *)varp == &p_mh)
-    {
-	if (!p_mh)
-	    gui_mch_mousehide(FALSE);
-    }
-#endif
-
-    // when 'modifiable' is changed, redraw the window title
-    else if ((int *)varp == &curbuf->b_p_ma)
-    {
-# ifdef FEAT_TERMINAL
-	// Cannot set 'modifiable' when in Terminal mode.
-	if (curbuf->b_p_ma && (term_in_normal_mode() || (bt_terminal(curbuf)
-		      && curbuf->b_term != NULL && !term_is_finished(curbuf))))
-	{
-	    curbuf->b_p_ma = FALSE;
-	    return e_cannot_make_terminal_with_running_job_modifiable;
-	}
-# endif
-	redraw_titles();
-    }
-    // redraw the window title and tab page text when 'endoffile', 'endofline',
-    // 'fixeol' or 'bomb' is changed
-    else if ((int *)varp == &curbuf->b_p_eof
-	    || (int *)varp == &curbuf->b_p_eol
-	    || (int *)varp == &curbuf->b_p_fixeol
-	    || (int *)varp == &curbuf->b_p_bomb)
-    {
-	redraw_titles();
-    }
-
-    // when 'bin' is set also set some other options
-    else if ((int *)varp == &curbuf->b_p_bin)
-    {
-	set_options_bin(old_value, curbuf->b_p_bin, opt_flags);
-	redraw_titles();
-    }
-
-    // when 'buflisted' changes, trigger autocommands
-    else if ((int *)varp == &curbuf->b_p_bl && old_value != curbuf->b_p_bl)
-    {
-	apply_autocmds(curbuf->b_p_bl ? EVENT_BUFADD : EVENT_BUFDELETE,
-						    NULL, NULL, TRUE, curbuf);
-    }
-
-    // when 'swf' is set, create swapfile, when reset remove swapfile
-    else if ((int *)varp == &curbuf->b_p_swf)
-    {
-	if (curbuf->b_p_swf && p_uc)
-	    ml_open_file(curbuf);		// create the swap file
-	else
-	    // no need to reset curbuf->b_may_swap, ml_open_file() will check
-	    // buf->b_p_swf
-	    mf_close_file(curbuf, TRUE);	// remove the swap file
-    }
-
-    // when 'terse' is set change 'shortmess'
-    else if ((int *)varp == &p_terse)
-    {
-	char_u	*p;
-
-	p = vim_strchr(p_shm, SHM_SEARCH);
-
-	// insert 's' in p_shm
-	if (p_terse && p == NULL)
-	{
-	    STRCPY(IObuff, p_shm);
-	    STRCAT(IObuff, "s");
-	    set_string_option_direct((char_u *)"shm", -1, IObuff, OPT_FREE, 0);
-	}
-	// remove 's' from p_shm
-	else if (!p_terse && p != NULL)
-	    STRMOVE(p, p + 1);
-    }
-
-    // when 'paste' is set or reset also change other options
-    else if ((int *)varp == &p_paste)
-    {
-	paste_option_changed();
-    }
-
-    // when 'insertmode' is set from an autocommand need to do work here
-    else if ((int *)varp == &p_im)
-    {
-	if (p_im)
-	{
-	    if ((State & MODE_INSERT) == 0)
-		need_start_insertmode = TRUE;
-	    stop_insert_mode = FALSE;
-	}
-	// only reset if it was set previously
-	else if (old_value)
-	{
-	    need_start_insertmode = FALSE;
-	    stop_insert_mode = TRUE;
-	    if (restart_edit != 0 && mode_displayed)
-		clear_cmdline = TRUE;	// remove "(insert)"
-	    restart_edit = 0;
-	}
-    }
-
-    // when 'ignorecase' is set or reset and 'hlsearch' is set, redraw
-    else if ((int *)varp == &p_ic && p_hls)
-    {
-	redraw_all_later(UPD_SOME_VALID);
-    }
-
-#ifdef FEAT_SEARCH_EXTRA
-    // when 'hlsearch' is set or reset: reset no_hlsearch
-    else if ((int *)varp == &p_hls)
-    {
-	set_no_hlsearch(FALSE);
-    }
-#endif
-
-    // when 'scrollbind' is set: snapshot the current position to avoid a jump
-    // at the end of normal_cmd()
-    else if ((int *)varp == &curwin->w_p_scb)
-    {
-	if (curwin->w_p_scb)
-	{
-	    do_check_scrollbind(FALSE);
-	    curwin->w_scbind_pos = curwin->w_topline;
-	}
-    }
-
-#if defined(FEAT_QUICKFIX)
-    // There can be only one window with 'previewwindow' set.
-    else if ((int *)varp == &curwin->w_p_pvw)
-    {
-	if (curwin->w_p_pvw)
-	{
-	    win_T	*win;
-
-	    FOR_ALL_WINDOWS(win)
-		if (win->w_p_pvw && win != curwin)
-		{
-		    curwin->w_p_pvw = FALSE;
-		    return e_preview_window_already_exists;
-		}
-	}
-    }
-#endif
-
-    else if ((int *)varp == &curwin->w_p_sms)
-    {
-	if (!curwin->w_p_sms)
-	{
-	    curwin->w_skipcol = 0;
-	    changed_line_abv_curs();
-	}
-    }
-
-    // when 'textmode' is set or reset also change 'fileformat'
-    else if ((int *)varp == &curbuf->b_p_tx)
-    {
-	set_fileformat(curbuf->b_p_tx ? EOL_DOS : EOL_UNIX, opt_flags);
-    }
-
-    // when 'textauto' is set or reset also change 'fileformats'
-    else if ((int *)varp == &p_ta)
-    {
-	set_string_option_direct((char_u *)"ffs", -1,
-				 p_ta ? (char_u *)DFLT_FFS_VIM : (char_u *)"",
-						     OPT_FREE | opt_flags, 0);
-    }
-
-    /*
-     * When 'lisp' option changes include/exclude '-' in
-     * keyword characters.
-     */
-    else if (varp == (char_u *)&(curbuf->b_p_lisp))
-    {
-	(void)buf_init_chartab(curbuf, FALSE);	    // ignore errors
-    }
-
-    // when 'title' changed, may need to change the title; same for 'icon'
-    else if ((int *)varp == &p_title || (int *)varp == &p_icon)
-    {
-	did_set_title();
-    }
-
-    else if ((int *)varp == &curbuf->b_changed)
-    {
-	if (!value)
-	    save_file_ff(curbuf);	// Buffer is unchanged
-	redraw_titles();
-	modified_was_set = value;
-    }
-
-#ifdef BACKSLASH_IN_FILENAME
-    else if ((int *)varp == &p_ssl)
-    {
-	if (p_ssl)
-	{
-	    psepc = '/';
-	    psepcN = '\\';
-	    pseps[0] = '/';
-	}
-	else
-	{
-	    psepc = '\\';
-	    psepcN = '/';
-	    pseps[0] = '\\';
-	}
-
-	// need to adjust the file name arguments and buffer names.
-	buflist_slash_adjust();
-	alist_slash_adjust();
-# ifdef FEAT_EVAL
-	scriptnames_slash_adjust();
-# endif
-    }
-#endif
-
-    // If 'wrap' is set, set w_leftcol to zero.
-    else if ((int *)varp == &curwin->w_p_wrap)
-    {
-	if (curwin->w_p_wrap)
-	    curwin->w_leftcol = 0;
-    }
-
-    else if ((int *)varp == &p_ea)
-    {
-	if (p_ea && !old_value)
-	    win_equal(curwin, FALSE, 0);
-    }
-
-    else if ((int *)varp == &p_wiv)
-    {
-	/*
-	 * When 'weirdinvert' changed, set/reset 't_xs'.
-	 * Then set 'weirdinvert' according to value of 't_xs'.
-	 */
-	if (p_wiv && !old_value)
-	    T_XS = (char_u *)"y";
-	else if (!p_wiv && old_value)
-	    T_XS = empty_option;
-	p_wiv = (*T_XS != NUL);
-    }
-
-#ifdef FEAT_BEVAL_GUI
-    else if ((int *)varp == &p_beval)
-    {
-	if (!balloonEvalForTerm)
-	{
-	    if (p_beval && !old_value)
-		gui_mch_enable_beval_area(balloonEval);
-	    else if (!p_beval && old_value)
-		gui_mch_disable_beval_area(balloonEval);
-	}
-    }
-#endif
-#ifdef FEAT_BEVAL_TERM
-    else if ((int *)varp == &p_bevalterm)
-    {
-	mch_bevalterm_changed();
-    }
-#endif
-
-#ifdef FEAT_AUTOCHDIR
-    else if ((int *)varp == &p_acd)
-    {
-	// Change directories when the 'acd' option is set now.
-	DO_AUTOCHDIR;
-    }
-#endif
-
-#ifdef FEAT_DIFF
-    // 'diff'
-    else if ((int *)varp == &curwin->w_p_diff)
-    {
-	// May add or remove the buffer from the list of diff buffers.
-	diff_buf_adjust(curwin);
-# ifdef FEAT_FOLDING
-	if (foldmethodIsDiff(curwin))
-	    foldUpdateAll(curwin);
-# endif
-    }
-#endif
-
-#ifdef HAVE_INPUT_METHOD
-    // 'imdisable'
-    else if ((int *)varp == &p_imdisable)
-    {
-	// Only de-activate it here, it will be enabled when changing mode.
-	if (p_imdisable)
-	    im_set_active(FALSE);
-	else if (State & MODE_INSERT)
-	    // When the option is set from an autocommand, it may need to take
-	    // effect right away.
-	    im_set_active(curbuf->b_p_iminsert == B_IMODE_IM);
-    }
-#endif
-
-#ifdef FEAT_SPELL
-    // 'spell'
-    else if ((int *)varp == &curwin->w_p_spell)
-    {
-	if (curwin->w_p_spell)
-	    errmsg = did_set_spelllang(curwin);
-    }
-#endif
-
-#ifdef FEAT_ARABIC
-    if ((int *)varp == &curwin->w_p_arab)
-    {
-	if (curwin->w_p_arab)
-	{
-	    /*
-	     * 'arabic' is set, handle various sub-settings.
-	     */
-	    if (!p_tbidi)
-	    {
-		// set rightleft mode
-		if (!curwin->w_p_rl)
-		{
-		    curwin->w_p_rl = TRUE;
-		    changed_window_setting();
-		}
-
-		// Enable Arabic shaping (major part of what Arabic requires)
-		if (!p_arshape)
-		{
-		    p_arshape = TRUE;
-		    redraw_later_clear();
-		}
-	    }
-
-	    // Arabic requires a utf-8 encoding, inform the user if it's not
-	    // set.
-	    if (STRCMP(p_enc, "utf-8") != 0)
-	    {
-		static char *w_arabic = N_("W17: Arabic requires UTF-8, do ':set encoding=utf-8'");
-
-		msg_source(HL_ATTR(HLF_W));
-		msg_attr(_(w_arabic), HL_ATTR(HLF_W));
-#ifdef FEAT_EVAL
-		set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_arabic), -1);
-#endif
-	    }
-
-	    // set 'delcombine'
-	    p_deco = TRUE;
-
-# ifdef FEAT_KEYMAP
-	    // Force-set the necessary keymap for arabic
-	    errmsg = set_option_value((char_u *)"keymap",
-					    0L, (char_u *)"arabic", OPT_LOCAL);
-# endif
-	}
-	else
-	{
-	    /*
-	     * 'arabic' is reset, handle various sub-settings.
-	     */
-	    if (!p_tbidi)
-	    {
-		// reset rightleft mode
-		if (curwin->w_p_rl)
-		{
-		    curwin->w_p_rl = FALSE;
-		    changed_window_setting();
-		}
-
-		// 'arabicshape' isn't reset, it is a global option and
-		// another window may still need it "on".
-	    }
-
-	    // 'delcombine' isn't reset, it is a global option and another
-	    // window may still want it "on".
-
-# ifdef FEAT_KEYMAP
-	    // Revert to the default keymap
-	    curbuf->b_p_iminsert = B_IMODE_NONE;
-	    curbuf->b_p_imsearch = B_IMODE_USE_INSERT;
-# endif
-	}
-    }
-
-#endif
-
-#if defined(FEAT_SIGNS) && defined(FEAT_GUI)
-    else if (((int *)varp == &curwin->w_p_nu
-		|| (int *)varp == &curwin->w_p_rnu)
-	    && gui.in_use
-	    && (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u')
-	    && curbuf->b_signlist != NULL)
-    {
-	// If the 'number' or 'relativenumber' options are modified and
-	// 'signcolumn' is set to 'number', then clear the screen for a full
-	// refresh. Otherwise the sign icons are not displayed properly in the
-	// number column.  If the 'number' option is set and only the
-	// 'relativenumber' option is toggled, then don't refresh the screen
-	// (optimization).
-	if (!(curwin->w_p_nu && ((int *)varp == &curwin->w_p_rnu)))
-	    redraw_all_later(UPD_CLEAR);
-    }
-#endif
-
-#ifdef FEAT_TERMGUICOLORS
-    // 'termguicolors'
-    else if ((int *)varp == &p_tgc)
-    {
-# ifdef FEAT_VTP
-	// Do not turn on 'tgc' when 24-bit colors are not supported.
-	if (
-#  ifdef VIMDLL
-	    !gui.in_use && !gui.starting &&
-#  endif
-	    !has_vtp_working())
-	{
-	    p_tgc = 0;
-	    return e_24_bit_colors_are_not_supported_on_this_environment;
-	}
-	if (is_term_win32())
-	    swap_tcap();
-# endif
-# ifdef FEAT_GUI
-	if (!gui.in_use && !gui.starting)
-# endif
-	    highlight_gui_started();
-# ifdef FEAT_VTP
-	// reset t_Co
-	if (is_term_win32())
-	{
-	    control_console_color_rgb();
-	    set_termname(T_NAME);
-	    init_highlight(TRUE, FALSE);
-	}
-# endif
-# ifdef FEAT_TERMINAL
-	term_update_colors_all();
-	term_update_palette_all();
-	term_update_wincolor_all();
-# endif
-    }
-#endif
-
-    /*
-     * End of handling side effects for bool options.
-     */
+    int doskip = FALSE;
+    errmsg = did_set_bool_option(varp, opt_flags, value, old_value, &doskip);
+    if (doskip)
+	return errmsg;
 
     // after handling side effects, call autocommand
 
