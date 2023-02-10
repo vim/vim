@@ -1373,6 +1373,47 @@ def Test_class_extends()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_using_base_class()
+  var lines =<< trim END
+    vim9script
+
+    class BaseEE
+        def Enter(): any
+            return null
+        enddef
+        def Exit(resource: any): void
+        enddef
+    endclass
+
+    class ChildEE extends BaseEE
+        def Enter(): any
+            return 42
+        enddef
+
+        def Exit(resource: number): void
+            g:result ..= '/exit'
+        enddef
+    endclass
+
+    def With(ee: BaseEE)
+        var r = ee.Enter()
+        try
+            g:result ..= r
+        finally
+            g:result ..= '/finally'
+            ee.Exit(r)
+        endtry
+    enddef
+
+    g:result = ''
+    With(ChildEE.new())
+    assert_equal('42/finally/exit', g:result)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:result
+enddef
+
+
 def Test_class_import()
   var lines =<< trim END
       vim9script

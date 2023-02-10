@@ -4143,8 +4143,10 @@ exec_instructions(ectx_T *ectx)
 	    // call a method on an interface
 	    case ISN_METHODCALL:
 		{
+		    cmfunc_T *mfunc = iptr->isn_arg.mfunc;
+
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    tv = STACK_TV_BOT(-1);
+		    tv = STACK_TV_BOT(-1 - mfunc->cmf_argcount);
 		    if (tv->v_type != VAR_OBJECT)
 		    {
 			object_required_error(tv);
@@ -4154,7 +4156,6 @@ exec_instructions(ectx_T *ectx)
 		    class_T *cl = obj->obj_class;
 
 		    // convert the interface index to the object index
-		    cmfunc_T *mfunc = iptr->isn_arg.mfunc;
 		    int idx = object_index_from_itf_index(mfunc->cmf_itf,
 						    TRUE, mfunc->cmf_idx, cl);
 
