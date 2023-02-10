@@ -1183,6 +1183,7 @@ cmdline_insert_reg(int *gotesc UNUSED)
 {
     int		i;
     int		c;
+    int		literally = FALSE;
 #ifdef FEAT_EVAL
     int		save_new_cmdpos = new_cmdpos;
 #endif
@@ -1220,7 +1221,8 @@ cmdline_insert_reg(int *gotesc UNUSED)
 #endif
     if (c != ESC)	    // use ESC to cancel inserting register
     {
-	cmdline_paste(c, i == Ctrl_R, FALSE);
+	literally = i == Ctrl_R;
+	cmdline_paste(c, literally, FALSE);
 
 #ifdef FEAT_EVAL
 	// When there was a serious error abort getting the
@@ -1251,8 +1253,9 @@ cmdline_insert_reg(int *gotesc UNUSED)
     // remove the double quote
     redrawcmd();
 
-    // The text has been stuffed, the command line didn't change yet.
-    return CMDLINE_NOT_CHANGED;
+    // The text has been stuffed, the command line didn't change yet, but it
+    // will change soon.  The caller must take care of it.
+    return literally ? CMDLINE_NOT_CHANGED : CMDLINE_CHANGED;
 }
 
 /*
@@ -2081,11 +2084,13 @@ getcmdline_int(
 
 	case Ctrl_R:			// insert register
 		res = cmdline_insert_reg(&gotesc);
-		if (res == CMDLINE_NOT_CHANGED)
-		    goto cmdline_not_changed;
-		else if (res == GOTO_NORMAL_MODE)
+		if (res == GOTO_NORMAL_MODE)
 		    goto returncmd;
-		goto cmdline_changed;
+#ifdef FEAT_SEARCH_EXTRA
+		if (res == CMDLINE_NOT_CHANGED)
+		    is_state.incsearch_postponed = TRUE;
+#endif
+		goto cmdline_not_changed;
 
 	case Ctrl_D:
 		if (showmatches(&xpc, FALSE) == EXPAND_NOTHING)
