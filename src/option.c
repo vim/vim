@@ -70,36 +70,15 @@ static void paste_option_changed(void);
 static void compatible_set(void);
 
 /*
- * Initialize the options, first part.
- *
- * Called only once from main(), just after creating the first buffer.
- * If "clean_arg" is TRUE Vim was started with --clean.
+ * Initialize the 'shell' option to a default value.
  */
-    void
-set_init_1(int clean_arg)
+    static void
+set_init_default_shell(void)
 {
     char_u	*p;
-    int		opt_idx;
-    long_u	n;
 
-#ifdef FEAT_LANGMAP
-    langmap_init();
-#endif
-
-    // Be Vi compatible by default
-    p_cp = TRUE;
-
-    // Use POSIX compatibility when $VIM_POSIX is set.
-    if (mch_getenv((char_u *)"VIM_POSIX") != NULL)
-    {
-	set_string_default("cpo", (char_u *)CPO_ALL);
-	set_string_default("shm", (char_u *)SHM_POSIX);
-    }
-
-    /*
-     * Find default value for 'shell' option.
-     * Don't use it if it is empty.
-     */
+    // Find default value for 'shell' option.
+    // Don't use it if it is empty.
     if (((p = mch_getenv((char_u *)"SHELL")) != NULL && *p != NUL)
 #if defined(MSWIN)
 	    || ((p = mch_getenv((char_u *)"COMSPEC")) != NULL && *p != NUL)
@@ -129,70 +108,83 @@ set_init_1(int clean_arg)
 #else
 	set_string_default_esc("sh", p, TRUE);
 #endif
+}
 
-    /*
-     * Set the default for 'backupskip' to include environment variables for
-     * temp files.
-     */
-    {
+/*
+ * Set the default for 'backupskip' to include environment variables for
+ * temp files.
+ */
+    static void
+set_init_default_backupskip(void)
+{
+    int		opt_idx;
+    long_u	n;
+    char_u	*p;
 #ifdef UNIX
-	static char	*(names[4]) = {"", "TMPDIR", "TEMP", "TMP"};
+    static char	*(names[4]) = {"", "TMPDIR", "TEMP", "TMP"};
 #else
-	static char	*(names[3]) = {"TMPDIR", "TEMP", "TMP"};
+    static char	*(names[3]) = {"TMPDIR", "TEMP", "TMP"};
 #endif
-	int		len;
-	garray_T	ga;
-	int		mustfree;
-	char_u		*item;
+    int		len;
+    garray_T	ga;
+    int		mustfree;
+    char_u		*item;
 
-	opt_idx = findoption((char_u *)"backupskip");
+    opt_idx = findoption((char_u *)"backupskip");
 
-	ga_init2(&ga, 1, 100);
-	for (n = 0; n < (long)ARRAY_LENGTH(names); ++n)
-	{
-	    mustfree = FALSE;
+    ga_init2(&ga, 1, 100);
+    for (n = 0; n < (long)ARRAY_LENGTH(names); ++n)
+    {
+	mustfree = FALSE;
 #ifdef UNIX
-	    if (*names[n] == NUL)
+	if (*names[n] == NUL)
 # ifdef MACOS_X
-		p = (char_u *)"/private/tmp";
+	    p = (char_u *)"/private/tmp";
 # else
-		p = (char_u *)"/tmp";
+	p = (char_u *)"/tmp";
 # endif
-	    else
+	else
 #endif
-		p = vim_getenv((char_u *)names[n], &mustfree);
-	    if (p != NULL && *p != NUL)
-	    {
-		// First time count the NUL, otherwise count the ','.
-		len = (int)STRLEN(p) + 3;
-		item = alloc(len);
-		STRCPY(item, p);
-		add_pathsep(item);
-		STRCAT(item, "*");
-		if (find_dup_item(ga.ga_data, item, options[opt_idx].flags)
-									== NULL
-			&& ga_grow(&ga, len) == OK)
-		{
-		    if (ga.ga_len > 0)
-			STRCAT(ga.ga_data, ",");
-		    STRCAT(ga.ga_data, item);
-		    ga.ga_len += len;
-		}
-		vim_free(item);
-	    }
-	    if (mustfree)
-		vim_free(p);
-	}
-	if (ga.ga_data != NULL)
+	    p = vim_getenv((char_u *)names[n], &mustfree);
+	if (p != NULL && *p != NUL)
 	{
-	    set_string_default("bsk", ga.ga_data);
-	    vim_free(ga.ga_data);
+	    // First time count the NUL, otherwise count the ','.
+	    len = (int)STRLEN(p) + 3;
+	    item = alloc(len);
+	    STRCPY(item, p);
+	    add_pathsep(item);
+	    STRCAT(item, "*");
+	    if (find_dup_item(ga.ga_data, item, options[opt_idx].flags)
+		    == NULL
+		    && ga_grow(&ga, len) == OK)
+	    {
+		if (ga.ga_len > 0)
+		    STRCAT(ga.ga_data, ",");
+		STRCAT(ga.ga_data, item);
+		ga.ga_len += len;
+	    }
+	    vim_free(item);
 	}
+	if (mustfree)
+	    vim_free(p);
     }
+    if (ga.ga_data != NULL)
+    {
+	set_string_default("bsk", ga.ga_data);
+	vim_free(ga.ga_data);
+    }
+}
 
-    /*
-     * 'maxmemtot' and 'maxmem' may have to be adjusted for available memory
-     */
+/*
+ * Initialize the 'maxmemtot' and 'maxmem' options to a default value.
+ * 'maxmemtot' and 'maxmem' may have to be adjusted for available memory.
+ */
+    static void
+set_init_default_maxmemtot(void)
+{
+    int		opt_idx;
+    long_u	n;
+
     opt_idx = findoption((char_u *)"maxmemtot");
     if (opt_idx >= 0)
     {
@@ -221,66 +213,85 @@ set_init_1(int clean_arg)
 	    }
 	}
     }
+}
 
+/*
+ * Initialize the 'cdpath' option to a default value.
+ */
+    static void
+set_init_default_cdpath(void)
+{
+    int		opt_idx;
+    char_u	*cdpath;
+    char_u	*buf;
+    int	i;
+    int	j;
+    int	mustfree = FALSE;
+
+    cdpath = vim_getenv((char_u *)"CDPATH", &mustfree);
+    if (cdpath == NULL)
+	return;
+
+    buf = alloc((STRLEN(cdpath) << 1) + 2);
+    if (buf != NULL)
     {
-	char_u	*cdpath;
-	char_u	*buf;
-	int	i;
-	int	j;
-	int	mustfree = FALSE;
-
-	// Initialize the 'cdpath' option's default value.
-	cdpath = vim_getenv((char_u *)"CDPATH", &mustfree);
-	if (cdpath != NULL)
+	buf[0] = ',';	    // start with ",", current dir first
+	j = 1;
+	for (i = 0; cdpath[i] != NUL; ++i)
 	{
-	    buf = alloc((STRLEN(cdpath) << 1) + 2);
-	    if (buf != NULL)
+	    if (vim_ispathlistsep(cdpath[i]))
+		buf[j++] = ',';
+	    else
 	    {
-		buf[0] = ',';	    // start with ",", current dir first
-		j = 1;
-		for (i = 0; cdpath[i] != NUL; ++i)
-		{
-		    if (vim_ispathlistsep(cdpath[i]))
-			buf[j++] = ',';
-		    else
-		    {
-			if (cdpath[i] == ' ' || cdpath[i] == ',')
-			    buf[j++] = '\\';
-			buf[j++] = cdpath[i];
-		    }
-		}
-		buf[j] = NUL;
-		opt_idx = findoption((char_u *)"cdpath");
-		if (opt_idx >= 0)
-		{
-		    options[opt_idx].def_val[VI_DEFAULT] = buf;
-		    options[opt_idx].flags |= P_DEF_ALLOCED;
-		}
-		else
-		    vim_free(buf); // cannot happen
+		if (cdpath[i] == ' ' || cdpath[i] == ',')
+		    buf[j++] = '\\';
+		buf[j++] = cdpath[i];
 	    }
-	    if (mustfree)
-		vim_free(cdpath);
 	}
+	buf[j] = NUL;
+	opt_idx = findoption((char_u *)"cdpath");
+	if (opt_idx >= 0)
+	{
+	    options[opt_idx].def_val[VI_DEFAULT] = buf;
+	    options[opt_idx].flags |= P_DEF_ALLOCED;
+	}
+	else
+	    vim_free(buf); // cannot happen
     }
+    if (mustfree)
+	vim_free(cdpath);
+}
 
+/*
+ * Initialize the 'printencoding' option to a default value.
+ */
+    static void
+set_init_default_printencoding(void)
+{
 #if defined(FEAT_POSTSCRIPT) && \
-	(defined(MSWIN) || defined(VMS) || defined(MAC) || defined(hpux))
+    (defined(MSWIN) || defined(VMS) || defined(MAC) || defined(hpux))
     // Set print encoding on platforms that don't default to latin1
     set_string_default("penc",
 # if defined(MSWIN)
-		       (char_u *)"cp1252"
+	    (char_u *)"cp1252"
 # elif defined(VMS)
-		       (char_u *)"dec-mcs"
+	    (char_u *)"dec-mcs"
 # elif defined(MAC)
-		       (char_u *)"mac-roman"
+	    (char_u *)"mac-roman"
 # else // HPUX
-		       (char_u *)"hp-roman8"
+	    (char_u *)"hp-roman8"
 # endif
-		       );
+	    );
 #endif
+}
 
 #ifdef FEAT_POSTSCRIPT
+/*
+ * Initialize the 'printexpr' option to a default value.
+ */
+    static void
+set_init_default_printexpr(void)
+{
     // 'printexpr' must be allocated to be able to evaluate it.
     set_string_default("pexpr",
 # if defined(MSWIN)
@@ -292,6 +303,268 @@ set_init_1(int clean_arg)
 	    (char_u *)"system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice) . ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error"
 # endif
 	    );
+}
+#endif
+
+#ifdef UNIX
+/*
+ * Force restricted-mode on for "nologin" or "false" $SHELL
+ */
+    static void
+set_init_restricted_mode(void)
+{
+    char_u	*p;
+
+    p = get_isolated_shell_name();
+    if (p != NULL)
+    {
+	if (fnamecmp(p, "nologin") == 0 || fnamecmp(p, "false") == 0)
+	    restricted = TRUE;
+	vim_free(p);
+    }
+}
+#endif
+
+#ifdef CLEAN_RUNTIMEPATH
+/*
+ * When Vim is started with the "--clean" argument, set the default value
+ * for the 'runtimepath' and 'packpath' options.
+ */
+    static void
+set_init_clean_rtp(void)
+{
+    int		opt_idx;
+
+    opt_idx = findoption((char_u *)"runtimepath");
+    if (opt_idx >= 0)
+    {
+	options[opt_idx].def_val[VI_DEFAULT] = (char_u *)CLEAN_RUNTIMEPATH;
+	p_rtp = (char_u *)CLEAN_RUNTIMEPATH;
+    }
+    opt_idx = findoption((char_u *)"packpath");
+    if (opt_idx >= 0)
+    {
+	options[opt_idx].def_val[VI_DEFAULT] = (char_u *)CLEAN_RUNTIMEPATH;
+	p_pp = (char_u *)CLEAN_RUNTIMEPATH;
+    }
+}
+#endif
+
+/*
+ * Expand environment variables and things like "~" for the defaults.
+ * If option_expand() returns non-NULL the variable is expanded.  This can
+ * only happen for non-indirect options.
+ * Also set the default to the expanded value, so ":set" does not list
+ * them.
+ * Don't set the P_ALLOCED flag, because we don't want to free the
+ * default.
+ */
+    static void
+set_init_expand_env(void)
+{
+    int		opt_idx;
+    char_u	*p;
+
+    for (opt_idx = 0; !istermoption_idx(opt_idx); opt_idx++)
+    {
+	if ((options[opt_idx].flags & P_GETTEXT)
+		&& options[opt_idx].var != NULL)
+	    p = (char_u *)_(*(char **)options[opt_idx].var);
+	else
+	    p = option_expand(opt_idx, NULL);
+	if (p != NULL && (p = vim_strsave(p)) != NULL)
+	{
+	    *(char_u **)options[opt_idx].var = p;
+	    // VIMEXP
+	    // Defaults for all expanded options are currently the same for Vi
+	    // and Vim.  When this changes, add some code here!  Also need to
+	    // split P_DEF_ALLOCED in two.
+	    if (options[opt_idx].flags & P_DEF_ALLOCED)
+		vim_free(options[opt_idx].def_val[VI_DEFAULT]);
+	    options[opt_idx].def_val[VI_DEFAULT] = p;
+	    options[opt_idx].flags |= P_DEF_ALLOCED;
+	}
+    }
+}
+
+/*
+ * Initialize the 'LANG' environment variable to a default value.
+ */
+    static void
+set_init_lang_env(void)
+{
+#if defined(MSWIN) && defined(FEAT_GETTEXT)
+    // If $LANG isn't set, try to get a good value for it.  This makes the
+    // right language be used automatically.  Don't do this for English.
+    if (mch_getenv((char_u *)"LANG") == NULL)
+    {
+	char	buf[20];
+	long_u	n;
+
+	// Could use LOCALE_SISO639LANGNAME, but it's not in Win95.
+	// LOCALE_SABBREVLANGNAME gives us three letters, like "enu", we use
+	// only the first two.
+	n = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVLANGNAME,
+							     (LPTSTR)buf, 20);
+	if (n >= 2 && STRNICMP(buf, "en", 2) != 0)
+	{
+	    // There are a few exceptions (probably more)
+	    if (STRNICMP(buf, "cht", 3) == 0 || STRNICMP(buf, "zht", 3) == 0)
+		STRCPY(buf, "zh_TW");
+	    else if (STRNICMP(buf, "chs", 3) == 0
+					      || STRNICMP(buf, "zhc", 3) == 0)
+		STRCPY(buf, "zh_CN");
+	    else if (STRNICMP(buf, "jp", 2) == 0)
+		STRCPY(buf, "ja");
+	    else
+		buf[2] = NUL;		// truncate to two-letter code
+	    vim_setenv((char_u *)"LANG", (char_u *)buf);
+	}
+    }
+#elif defined(MACOS_CONVERT)
+    // Moved to os_mac_conv.c to avoid dependency problems.
+    mac_lang_init();
+#endif
+}
+
+/*
+ * Initialize the 'encoding' option to a default value.
+ */
+    static void
+set_init_default_encoding(void)
+{
+    char_u	*p;
+    int		opt_idx;
+
+# ifdef MSWIN
+    // MS-Windows has builtin support for conversion to and from Unicode, using
+    // "utf-8" for 'encoding' should work best for most users.
+    p = vim_strsave((char_u *)ENC_DFLT);
+# else
+    // enc_locale() will try to find the encoding of the current locale.
+    // This works best for properly configured systems, old and new.
+    p = enc_locale();
+# endif
+    if (p == NULL)
+	return;
+
+    // Try setting 'encoding' and check if the value is valid.
+    // If not, go back to the default encoding.
+    char_u *save_enc = p_enc;
+    p_enc = p;
+    if (STRCMP(p_enc, "gb18030") == 0)
+    {
+	// We don't support "gb18030", but "cp936" is a good substitute
+	// for practical purposes, thus use that.  It's not an alias to
+	// still support conversion between gb18030 and utf-8.
+	p_enc = vim_strsave((char_u *)"cp936");
+	vim_free(p);
+    }
+    if (mb_init() == NULL)
+    {
+	opt_idx = findoption((char_u *)"encoding");
+	if (opt_idx >= 0)
+	{
+	    options[opt_idx].def_val[VI_DEFAULT] = p_enc;
+	    options[opt_idx].flags |= P_DEF_ALLOCED;
+	}
+
+#if defined(MSWIN) || defined(MACOS_X) || defined(VMS)
+	if (STRCMP(p_enc, "latin1") == 0 || enc_utf8)
+	{
+	    // Adjust the default for 'isprint' and 'iskeyword' to match
+	    // latin1.  Also set the defaults for when 'nocompatible' is
+	    // set.
+	    set_string_option_direct((char_u *)"isp", -1,
+		    ISP_LATIN1, OPT_FREE, SID_NONE);
+	    set_string_option_direct((char_u *)"isk", -1,
+		    ISK_LATIN1, OPT_FREE, SID_NONE);
+	    opt_idx = findoption((char_u *)"isp");
+	    if (opt_idx >= 0)
+		options[opt_idx].def_val[VIM_DEFAULT] = ISP_LATIN1;
+	    opt_idx = findoption((char_u *)"isk");
+	    if (opt_idx >= 0)
+		options[opt_idx].def_val[VIM_DEFAULT] = ISK_LATIN1;
+	    (void)init_chartab();
+	}
+#endif
+
+#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
+	// Win32 console: When GetACP() returns a different value from
+	// GetConsoleCP() set 'termencoding'.
+	if (
+# ifdef VIMDLL
+		(!gui.in_use && !gui.starting) &&
+# endif
+		GetACP() != GetConsoleCP())
+	{
+	    char	buf[50];
+
+	    // Win32 console: In ConPTY, GetConsoleCP() returns zero.
+	    // Use an alternative value.
+	    if (GetConsoleCP() == 0)
+		sprintf(buf, "cp%ld", (long)GetACP());
+	    else
+		sprintf(buf, "cp%ld", (long)GetConsoleCP());
+	    p_tenc = vim_strsave((char_u *)buf);
+	    if (p_tenc != NULL)
+	    {
+		opt_idx = findoption((char_u *)"termencoding");
+		if (opt_idx >= 0)
+		{
+		    options[opt_idx].def_val[VI_DEFAULT] = p_tenc;
+		    options[opt_idx].flags |= P_DEF_ALLOCED;
+		}
+		convert_setup(&input_conv, p_tenc, p_enc);
+		convert_setup(&output_conv, p_enc, p_tenc);
+	    }
+	    else
+		p_tenc = empty_option;
+	}
+#endif
+#if defined(MSWIN)
+	// $HOME may have characters in active code page.
+	init_homedir();
+#endif
+    }
+    else
+    {
+	vim_free(p_enc);
+	p_enc = save_enc;
+    }
+
+}
+
+/*
+ * Initialize the options, first part.
+ *
+ * Called only once from main(), just after creating the first buffer.
+ * If "clean_arg" is TRUE Vim was started with --clean.
+ */
+    void
+set_init_1(int clean_arg)
+{
+#ifdef FEAT_LANGMAP
+    langmap_init();
+#endif
+
+    // Be Vi compatible by default
+    p_cp = TRUE;
+
+    // Use POSIX compatibility when $VIM_POSIX is set.
+    if (mch_getenv((char_u *)"VIM_POSIX") != NULL)
+    {
+	set_string_default("cpo", (char_u *)CPO_ALL);
+	set_string_default("shm", (char_u *)SHM_POSIX);
+    }
+
+    set_init_default_shell();
+    set_init_default_backupskip();
+    set_init_default_maxmemtot();
+    set_init_default_cdpath();
+    set_init_default_printencoding();
+#ifdef FEAT_POSTSCRIPT
+    set_init_default_printexpr();
 #endif
 
     /*
@@ -301,32 +574,12 @@ set_init_1(int clean_arg)
     set_options_default(0);
 
 #ifdef UNIX
-    // Force restricted-mode on for "nologin" or "false" $SHELL
-    p = get_isolated_shell_name();
-    if (p != NULL)
-    {
-	if (fnamecmp(p, "nologin") == 0 || fnamecmp(p, "false") == 0)
-	    restricted = TRUE;
-	vim_free(p);
-    }
+    set_init_restricted_mode();
 #endif
 
 #ifdef CLEAN_RUNTIMEPATH
     if (clean_arg)
-    {
-	opt_idx = findoption((char_u *)"runtimepath");
-	if (opt_idx >= 0)
-	{
-	    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)CLEAN_RUNTIMEPATH;
-	    p_rtp = (char_u *)CLEAN_RUNTIMEPATH;
-	}
-	opt_idx = findoption((char_u *)"packpath");
-	if (opt_idx >= 0)
-	{
-	    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)CLEAN_RUNTIMEPATH;
-	    p_pp = (char_u *)CLEAN_RUNTIMEPATH;
-	}
-    }
+	set_init_clean_rtp();
 #endif
 
 #ifdef FEAT_GUI
@@ -350,35 +603,8 @@ set_init_1(int clean_arg)
     init_spell_chartab();
 #endif
 
-    /*
-     * Expand environment variables and things like "~" for the defaults.
-     * If option_expand() returns non-NULL the variable is expanded.  This can
-     * only happen for non-indirect options.
-     * Also set the default to the expanded value, so ":set" does not list
-     * them.
-     * Don't set the P_ALLOCED flag, because we don't want to free the
-     * default.
-     */
-    for (opt_idx = 0; !istermoption_idx(opt_idx); opt_idx++)
-    {
-	if ((options[opt_idx].flags & P_GETTEXT)
-					      && options[opt_idx].var != NULL)
-	    p = (char_u *)_(*(char **)options[opt_idx].var);
-	else
-	    p = option_expand(opt_idx, NULL);
-	if (p != NULL && (p = vim_strsave(p)) != NULL)
-	{
-	    *(char_u **)options[opt_idx].var = p;
-	    // VIMEXP
-	    // Defaults for all expanded options are currently the same for Vi
-	    // and Vim.  When this changes, add some code here!  Also need to
-	    // split P_DEF_ALLOCED in two.
-	    if (options[opt_idx].flags & P_DEF_ALLOCED)
-		vim_free(options[opt_idx].def_val[VI_DEFAULT]);
-	    options[opt_idx].def_val[VI_DEFAULT] = p;
-	    options[opt_idx].flags |= P_DEF_ALLOCED;
-	}
-    }
+    // Expand environment variables and things like "~" for the defaults.
+    set_init_expand_env();
 
     save_file_ff(curbuf);	// Buffer is unchanged
 
@@ -394,138 +620,8 @@ set_init_1(int clean_arg)
 
     didset_options2();
 
-# if defined(MSWIN) && defined(FEAT_GETTEXT)
-    /*
-     * If $LANG isn't set, try to get a good value for it.  This makes the
-     * right language be used automatically.  Don't do this for English.
-     */
-    if (mch_getenv((char_u *)"LANG") == NULL)
-    {
-	char	buf[20];
-
-	// Could use LOCALE_SISO639LANGNAME, but it's not in Win95.
-	// LOCALE_SABBREVLANGNAME gives us three letters, like "enu", we use
-	// only the first two.
-	n = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVLANGNAME,
-							     (LPTSTR)buf, 20);
-	if (n >= 2 && STRNICMP(buf, "en", 2) != 0)
-	{
-	    // There are a few exceptions (probably more)
-	    if (STRNICMP(buf, "cht", 3) == 0 || STRNICMP(buf, "zht", 3) == 0)
-		STRCPY(buf, "zh_TW");
-	    else if (STRNICMP(buf, "chs", 3) == 0
-					      || STRNICMP(buf, "zhc", 3) == 0)
-		STRCPY(buf, "zh_CN");
-	    else if (STRNICMP(buf, "jp", 2) == 0)
-		STRCPY(buf, "ja");
-	    else
-		buf[2] = NUL;		// truncate to two-letter code
-	    vim_setenv((char_u *)"LANG", (char_u *)buf);
-	}
-    }
-# elif defined(MACOS_CONVERT)
-    // Moved to os_mac_conv.c to avoid dependency problems.
-    mac_lang_init();
-# endif
-
-# ifdef MSWIN
-    // MS-Windows has builtin support for conversion to and from Unicode, using
-    // "utf-8" for 'encoding' should work best for most users.
-    p = vim_strsave((char_u *)ENC_DFLT);
-# else
-    // enc_locale() will try to find the encoding of the current locale.
-    // This works best for properly configured systems, old and new.
-    p = enc_locale();
-# endif
-    if (p != NULL)
-    {
-	char_u *save_enc;
-
-	// Try setting 'encoding' and check if the value is valid.
-	// If not, go back to the default encoding.
-	save_enc = p_enc;
-	p_enc = p;
-	if (STRCMP(p_enc, "gb18030") == 0)
-	{
-	    // We don't support "gb18030", but "cp936" is a good substitute
-	    // for practical purposes, thus use that.  It's not an alias to
-	    // still support conversion between gb18030 and utf-8.
-	    p_enc = vim_strsave((char_u *)"cp936");
-	    vim_free(p);
-	}
-	if (mb_init() == NULL)
-	{
-	    opt_idx = findoption((char_u *)"encoding");
-	    if (opt_idx >= 0)
-	    {
-		options[opt_idx].def_val[VI_DEFAULT] = p_enc;
-		options[opt_idx].flags |= P_DEF_ALLOCED;
-	    }
-
-#if defined(MSWIN) || defined(MACOS_X) || defined(VMS)
-	    if (STRCMP(p_enc, "latin1") == 0 || enc_utf8)
-	    {
-		// Adjust the default for 'isprint' and 'iskeyword' to match
-		// latin1.  Also set the defaults for when 'nocompatible' is
-		// set.
-		set_string_option_direct((char_u *)"isp", -1,
-					      ISP_LATIN1, OPT_FREE, SID_NONE);
-		set_string_option_direct((char_u *)"isk", -1,
-					      ISK_LATIN1, OPT_FREE, SID_NONE);
-		opt_idx = findoption((char_u *)"isp");
-		if (opt_idx >= 0)
-		    options[opt_idx].def_val[VIM_DEFAULT] = ISP_LATIN1;
-		opt_idx = findoption((char_u *)"isk");
-		if (opt_idx >= 0)
-		    options[opt_idx].def_val[VIM_DEFAULT] = ISK_LATIN1;
-		(void)init_chartab();
-	    }
-#endif
-
-#if defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))
-	    // Win32 console: When GetACP() returns a different value from
-	    // GetConsoleCP() set 'termencoding'.
-	    if (
-# ifdef VIMDLL
-	       (!gui.in_use && !gui.starting) &&
-# endif
-	       GetACP() != GetConsoleCP())
-	    {
-		char	buf[50];
-
-		// Win32 console: In ConPTY, GetConsoleCP() returns zero.
-		// Use an alternative value.
-		if (GetConsoleCP() == 0)
-		    sprintf(buf, "cp%ld", (long)GetACP());
-		else
-		    sprintf(buf, "cp%ld", (long)GetConsoleCP());
-		p_tenc = vim_strsave((char_u *)buf);
-		if (p_tenc != NULL)
-		{
-		    opt_idx = findoption((char_u *)"termencoding");
-		    if (opt_idx >= 0)
-		    {
-			options[opt_idx].def_val[VI_DEFAULT] = p_tenc;
-			options[opt_idx].flags |= P_DEF_ALLOCED;
-		    }
-		    convert_setup(&input_conv, p_tenc, p_enc);
-		    convert_setup(&output_conv, p_enc, p_tenc);
-		}
-		else
-		    p_tenc = empty_option;
-	    }
-#endif
-#if defined(MSWIN)
-	    // $HOME may have characters in active code page.
-	    init_homedir();
-#endif
-	}
-	else
-	{
-	    vim_free(p_enc);
-	    p_enc = save_enc;
-	}
-    }
+    set_init_lang_env();
+    set_init_default_encoding();
 
 #ifdef FEAT_MULTI_LANG
     // Set the default for 'helplang'.
