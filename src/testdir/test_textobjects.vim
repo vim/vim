@@ -118,17 +118,17 @@ func Test_string_html_objects()
     let t = "'foo' 'bar' 'piep'"
     put =t
     normal! 0va'a'rx
-    call assert_equal("xxxxxxxxxxxx'piep'", getline('.'), e)
+    call assert_equal("'foo' xxxxxx'piep'", getline('.'), e)
 
     let t = "bla bla `quote` blah"
     put =t
     normal! 02f`da`
     call assert_equal("bla bla blah", getline('.'), e)
 
-    let t = 'out " in "noXno"'
+    let t = 'out '' in "noXno"'
     put =t
     normal! 0fXdi"
-    call assert_equal('out " in ""', getline('.'), e)
+    call assert_equal('out '' in ""', getline('.'), e)
 
     let t = "\"'\" 'blah' rep 'buh'"
     put =t
@@ -144,7 +144,7 @@ func Test_string_html_objects()
     let t = 'voo "nah" sdf " asdf" sdf " sdf" sd'
     put =t
     normal! $F"va"oha"i"rz
-    call assert_equal('voo "zzzzzzzzzzzzzzzzzzzzzzzzzzzzsd', getline('.'), e)
+    call assert_equal('voo "zzz" sdf " asdf" sdf " sdf" sd', getline('.'), e)
 
     let t = "-<b>asdf<i>Xasdf</i>asdf</b>-"
     put =t
@@ -541,28 +541,34 @@ func Test_textobj_quote()
 
   " Test for visually selecting an inner quote
   %d
-  " extend visual selection from one quote to the next
+  " Select the next quote object
   call setline(1, 'color "red" color "blue"')
   call cursor(1, 7)
   normal v4li"y
-  call assert_equal('"red" color "blue', @")
+  call assert_equal('blue', @")
 
-  " try to extend visual selection from one quote to a non-existing quote
+  " always select a valid quoted string
   call setline(1, 'color "red" color blue')
   call cursor(1, 7)
   call feedkeys('v4li"y', 'xt')
-  call assert_equal('"red"', @")
+  call assert_equal('red', @")
 
-  " try to extend visual selection from one quote to a next partial quote
   call setline(1, 'color "red" color "blue')
   call cursor(1, 7)
+  normal vi"y
+  call assert_equal('red', @")
+
+  " If the textobject is already selected move to the next one
+  " we allowe selecting color because in vimscript a starting quote is a
+  " comment. So there can be unbalanced quotes
+  call cursor(1, 7)
   normal v4li"y
-  call assert_equal('"red" color ', @")
+  call assert_equal(' color ', @")
 
   " select a quote backwards in visual mode
   call cursor(1, 12)
   normal vhi"y
-  call assert_equal('red" ', @")
+  call assert_equal('red', @")
   call assert_equal(8, col('.'))
 
   " select a quote backwards in visual mode from outside the quote
@@ -605,6 +611,56 @@ func Test_textobj_quote()
   call setline(1, 'char *s = "foo\\\\"bar"')
   normal $hhyi"
   call assert_equal('bar', @")
+
+  call setline(1, '" This is vimscript comment "this a string though"')
+  normal $di"
+  call assert_equal("this a string though", @")
+
+  call setline(1, "let a: &'life char = 'a';")
+  normal $di'
+  call assert_equal("a", @")
+
+  call setline(1, '"string1" stuff "string2" stuff "string3" stuff "string4" stuff')
+
+  " select on the nth string forwards using {v,d,c}[n]{i,a}{quote}
+  for i in range(1,4)
+    exe 'normal 0y'.i.'i"'
+    call assert_equal("string".i, @")
+    exe 'normal 0y'.i.'a"'
+    call assert_equal('"string'.i.'" ', @")
+  endfor
+
+  " If if the number given is more than the quoted strings present select
+  " the last one
+  normal 0y10i"
+  call assert_equal("string4", @")
+
+  " allow selecting backwards
+  normal $yi"
+  call assert_equal("string4", @")
+
+  " move through quoted string selections using a{quote}
+  normal 0v
+  for i in range(1,4)
+    normal a"y
+    call assert_equal('"string'.i.'" ', @")
+    normal gv
+  endfor
+  normal v
+
+  " doing i{quote} twice selects the qutoes
+  " but the next time it selects the next quoted string
+  normal 0v
+  for i in range(1,4)
+    normal i"y
+    call assert_equal('string'.i, @")
+    normal gv
+
+    normal i"y
+    call assert_equal('"string'.i.'"', @")
+    normal gv
+  endfor
+  normal v
 
   close!
 endfunc

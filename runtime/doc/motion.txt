@@ -658,26 +658,24 @@ iB			"inner Block", select [count] Blocks, from "[count] [{"
 a"							*v_aquote* *aquote*
 a'							*v_a'* *a'*
 a`							*v_a`* *a`*
-			"a quoted string".  Selects the text from the previous
-			quote until the next quote.  The 'quoteescape' option
-			is used to skip escaped quotes.
+			"a quoted string".  Selects [count]th quoted string
+			The 'quoteescape' option is used to skip escaped quotes.
 			Only works within one line.
-			When the cursor starts on a quote, Vim will figure out
-			which quote pairs form a string by searching from the
-			start of the line.
+			Vim will figure out which quote pairs form a string by
+			searching from the start of the line.
 			Any trailing white space is included, unless there is
 			none, then leading white space is included.
 			When used in Visual mode it is made characterwise.
 			Repeating this object in Visual mode another string is
-			included.  A count is currently not used.
+			included.
 
 i"							*v_iquote* *iquote*
 i'							*v_i'* *i'*
 i`							*v_i`* *i`*
-			Like a", a' and a`, but exclude the quotes and
-			repeating won't extend the Visual selection.
-			Special case: With a count of 2 the quotes are
-			included, but no extra white space as with a"/a'/a`.
+			Like a", a' and a`, but exclude the quotes.
+			If repeated the quotes are included, but no extra
+			white space as with a"/a'/a`, repeating it again will
+			select the next string.
 
 When used after an operator:
 For non-block objects:
