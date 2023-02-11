@@ -487,7 +487,8 @@ set_string_option_direct_in_buf(
 set_string_option(
     int		opt_idx,
     char_u	*value,
-    int		opt_flags)	// OPT_LOCAL and/or OPT_GLOBAL
+    int		opt_flags,	// OPT_LOCAL and/or OPT_GLOBAL
+    char	*errbuf)
 {
     char_u	*s;
     char_u	**varp;
@@ -540,7 +541,7 @@ set_string_option(
 	saved_newval = vim_strsave(s);
     }
 #endif
-    if ((errmsg = did_set_string_option(opt_idx, varp, oldval, NULL,
+    if ((errmsg = did_set_string_option(opt_idx, varp, oldval, errbuf,
 		    opt_flags, &value_checked)) == NULL)
 	did_set_option(opt_idx, opt_flags, TRUE, value_checked);
 
