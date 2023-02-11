@@ -587,7 +587,7 @@ check_stl_option(char_u *s)
 	if (!*s)
 	    break;
 	s++;
-	if (*s == '%' || *s == STL_TRUNCMARK || *s == STL_MIDDLEMARK)
+	if (*s == '%' || *s == STL_TRUNCMARK || *s == STL_SEPARATE)
 	{
 	    s++;
 	    continue;
