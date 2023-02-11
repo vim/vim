@@ -347,7 +347,8 @@ typedef enum {
 #define STL_PAGENUM	'N'		// page number (when printing)
 #define STL_SHOWCMD	'S'		// 'showcmd' buffer
 #define STL_VIM_EXPR	'{'		// start of expression to substitute
-#define STL_MIDDLEMARK	'='		// separation between left and right
+#define STL_SEPARATE	'='		// separation between alignment
+					// sections
 #define STL_TRUNCMARK	'<'		// truncation mark if line is too long
 #define STL_USER_HL	'*'		// highlight from (User)1..9 or 0
 #define STL_HIGHLIGHT	'#'		// highlight name
