@@ -380,6 +380,8 @@ typedef struct {
 typedef struct {
     char_u	  *fre_func_name;	// function name for legacy function
     loopvarinfo_T fre_loopvar_info;	// info about variables inside loops
+    class_T	  *fre_class;		// class for a method
+    int		  fre_method_idx;	// method index on "fre_class"
 } funcref_extra_T;
 
 // arguments to ISN_FUNCREF

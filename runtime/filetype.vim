@@ -706,6 +706,9 @@ au BufNewFile,BufRead *.fsl			setf framescript
 " FStab
 au BufNewFile,BufRead fstab,mtab		setf fstab
 
+" Func
+au BufNewFile,BufRead *.fc			setf func
+
 " Fusion
 au BufRead,BufNewFile *.fusion			setf fusion
 
@@ -1264,6 +1267,9 @@ au BufNewFile,BufRead *.[mi][3g]		setf modula3
 " Larch/Modula-3
 au BufNewFile,BufRead *.lm3			setf modula3
 
+" Modconf
+au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
+
 " Monk
 au BufNewFile,BufRead *.isc,*.monk,*.ssc,*.tsc	setf monk
 
@@ -1273,8 +1279,8 @@ au BufNewFile,BufRead *.moo			setf moo
 " Moonscript
 au BufNewFile,BufRead *.moon			setf moonscript
 
-" Modconf
-au BufNewFile,BufRead */etc/modules.conf,*/etc/modules,*/etc/conf.modules setf modconf
+" Move language
+au BufNewFile,BufRead *.move			setf move
 
 " MPD is based on XML
 au BufNewFile,BufRead *.mpd			setf xml
@@ -1717,11 +1723,14 @@ au BufNewFile,BufRead *.robot,*.resource	setf robot
 " Robots.txt
 au BufNewFile,BufRead robots.txt		setf robots
 
-" Rpcgen
-au BufNewFile,BufRead *.x			setf rpcgen
+" RON (Rusty Object Notation)
+au BufNewFile,BufRead *.ron			setf ron
 
 " MikroTik RouterOS script
 au BufRead,BufNewFile *.rsc			setf routeros
+
+" Rpcgen
+au BufNewFile,BufRead *.x			setf rpcgen
 
 " reStructuredText Documentation Format
 au BufNewFile,BufRead *.rst			setf rst
@@ -1910,6 +1919,9 @@ au BufNewFile,BufRead *.sst.meta,*.-sst.meta,*._sst.meta setf sisu
 
 " SKILL
 au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill
+
+" Cadence
+au BufNewFile,BufRead *.cdc			setf cdc
 
 " SLRN
 au BufNewFile,BufRead .slrnrc			setf slrnrc

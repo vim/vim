@@ -274,7 +274,7 @@ func Test_changing_cmdheight()
   call term_sendkeys(buf, ":set cmdheight-=2\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_4', {})
 
-  " reducing window size and then setting cmdheight 
+  " reducing window size and then setting cmdheight
   call term_sendkeys(buf, ":resize -1\<CR>")
   call term_sendkeys(buf, ":set cmdheight=1\<CR>")
   call VerifyScreenDump(buf, 'Test_changing_cmdheight_5', {})
@@ -491,7 +491,7 @@ func Test_getcompletion()
   call assert_equal([], l)
 
   if !has('ruby')
-    " global_functions[] has an entry but it doesn't have an implemention
+    " global_functions[] has an entry but it doesn't have an implementation
     let l = getcompletion('ruby', 'function')
     call assert_equal([], l)
   endif

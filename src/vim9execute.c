@@ -4143,8 +4143,10 @@ exec_instructions(ectx_T *ectx)
 	    // call a method on an interface
 	    case ISN_METHODCALL:
 		{
+		    cmfunc_T *mfunc = iptr->isn_arg.mfunc;
+
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    tv = STACK_TV_BOT(-1);
+		    tv = STACK_TV_BOT(-1 - mfunc->cmf_argcount);
 		    if (tv->v_type != VAR_OBJECT)
 		    {
 			object_required_error(tv);
@@ -4154,7 +4156,6 @@ exec_instructions(ectx_T *ectx)
 		    class_T *cl = obj->obj_class;
 
 		    // convert the interface index to the object index
-		    cmfunc_T *mfunc = iptr->isn_arg.mfunc;
 		    int idx = object_index_from_itf_index(mfunc->cmf_itf,
 						    TRUE, mfunc->cmf_idx, cl);
 
@@ -4291,7 +4292,24 @@ exec_instructions(ectx_T *ectx)
 			vim_free(pt);
 			goto theend;
 		    }
-		    if (extra == NULL || extra->fre_func_name == NULL)
+		    if (extra != NULL && extra->fre_class != NULL)
+		    {
+			tv = STACK_TV_BOT(-1);
+			if (tv->v_type != VAR_OBJECT)
+			{
+			    object_required_error(tv);
+			    vim_free(pt);
+			    goto on_error;
+			}
+			object_T *obj = tv->vval.v_object;
+			class_T *cl = obj->obj_class;
+
+			// convert the interface index to the object index
+			int idx = object_index_from_itf_index(extra->fre_class,
+					      TRUE, extra->fre_method_idx, cl);
+			ufunc = cl->class_obj_methods[idx];
+		    }
+		    else if (extra == NULL || extra->fre_func_name == NULL)
 		    {
 			dfunc_T	*pt_dfunc = ((dfunc_T *)def_functions.ga_data)
 						       + funcref->fr_dfunc_idx;
@@ -4299,7 +4317,9 @@ exec_instructions(ectx_T *ectx)
 			ufunc = pt_dfunc->df_ufunc;
 		    }
 		    else
+		    {
 			ufunc = find_func(extra->fre_func_name, FALSE);
+		    }
 		    if (ufunc == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
@@ -6727,8 +6747,16 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		    }
 		    else
 			name = extra->fre_func_name;
-		    if (extra == NULL || extra->fre_loopvar_info.lvi_depth == 0)
+		    if (extra != NULL && extra->fre_class != NULL)
+		    {
+			smsg("%s%4d FUNCREF %s.%s", pfx, current,
+					   extra->fre_class->class_name, name);
+		    }
+		    else if (extra == NULL
+				     || extra->fre_loopvar_info.lvi_depth == 0)
+		    {
 			smsg("%s%4d FUNCREF %s", pfx, current, name);
+		    }
 		    else
 		    {
 			char_u	*info = printable_loopvarinfo(
