@@ -2804,6 +2804,31 @@ func Test_prop_with_text_above_below_empty()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_with_text_above_empty()
+  CheckRunVimInTerminal
+
+  " check the cursor is in the correct line
+  let lines =<< trim END
+      setlocal number
+      call setline(1, ['11111111', '', '333333333', '', '55555555555'])
+
+      let vt = 'test'
+      call prop_type_add(vt, {'highlight': 'ToDo'})
+      for ln in range(1, line('$'))
+        call prop_add(ln, 0, {'type': vt, 'text': '---', 'text_align': 'above'})
+      endfor
+      normal G
+  END
+  call writefile(lines, 'XscriptPropAboveEmpty', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropAboveEmpty', #{rows: 16, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_above_empty_1', {})
+
+  call term_sendkeys(buf, ":set list\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_above_empty_2', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_with_text_below_after_match()
   CheckRunVimInTerminal
 
