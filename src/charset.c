@@ -813,6 +813,11 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
 	cts->cts_vcol += cts->cts_cur_text_width;
+
+	// when properties are above or below the empty line must also be
+	// counted
+	if (cts->cts_prop_lines > 0)
+	    ++cts->cts_vcol;
     }
 #endif
 }
@@ -1217,6 +1222,10 @@ win_lbr_chartabsize(
 			tab_size = win_chartabsize(wp, s, vcol + size);
 			size += tab_size;
 		    }
+		    if (tp->tp_col == MAXCOL && (tp->tp_flags
+				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
+			// count extra line for property above/below
+			++cts->cts_prop_lines;
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
