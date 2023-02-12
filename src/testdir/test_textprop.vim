@@ -2798,6 +2798,9 @@ func Test_prop_with_text_above_below_empty()
   let buf = RunVimInTerminal('-S XscriptPropAboveBelowEmpty', #{rows: 16, cols: 60})
   call VerifyScreenDump(buf, 'Test_prop_above_below_empty_1', {})
 
+  call term_sendkeys(buf, ":set list\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_above_below_empty_2', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
