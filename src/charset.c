@@ -545,7 +545,7 @@ transchar_byte_buf(buf_T *buf,int c)
 
 /*
  * Convert non-printable character to two or more printable characters in
- * "buf[]".  "charbuf" needs to be able to hold five bytes.
+ * "charbuf[]".  "charbuf" needs to be able to hold five bytes.
  * Does NOT work for multi-byte characters, c must be <= 255.
  */
     void
@@ -820,6 +820,11 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
 	cts->cts_vcol += cts->cts_cur_text_width;
+
+	// when properties are above or below the empty line must also be
+	// counted
+	if (cts->cts_prop_lines > 0)
+	    ++cts->cts_vcol;
     }
 #endif
 }
@@ -1159,6 +1164,8 @@ win_lbr_chartabsize(
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
+    if (*s == NUL)
+	size = 0;  // NUL is not displayed
 
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text)
@@ -1222,6 +1229,10 @@ win_lbr_chartabsize(
 			tab_size = win_chartabsize(wp, s, vcol + size);
 			size += tab_size;
 		    }
+		    if (tp->tp_col == MAXCOL && (tp->tp_flags
+				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
+			// count extra line for property above/below
+			++cts->cts_prop_lines;
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)

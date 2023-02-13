@@ -611,7 +611,9 @@ changed_common(
 		{
 		    if (wp->w_lines[i].wl_lnum >= lnum)
 		    {
-			if (wp->w_lines[i].wl_lnum < lnume)
+			// Do not change wl_lnum at index zero, it is used to
+			// compare with w_topline.  Invalidate it instead.
+			if (wp->w_lines[i].wl_lnum < lnume || i == 0)
 			{
 			    // line included in change
 			    wp->w_lines[i].wl_valid = FALSE;

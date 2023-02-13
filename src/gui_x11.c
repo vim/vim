@@ -936,10 +936,10 @@ gui_x11_key_hit_cb(
     }
     else
     {
-	len = mb_char2bytes(key, string);
-
 	// Some keys need adjustment when the Ctrl modifier is used.
 	key = may_adjust_key_for_ctrl(modifiers, key);
+
+	len = mb_char2bytes(key, string);
 
 	// Remove the SHIFT modifier for keys where it's already included,
 	// e.g., '(', '!' and '*'.

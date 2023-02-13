@@ -1909,14 +1909,63 @@ func Test_Cmdline()
   call assert_equal(':', g:entered)
   au! CmdlineChanged
 
+  autocmd CmdlineChanged : let g:log += [getcmdline()]
+
   let g:log = []
   cnoremap <F1> <Cmd>call setcmdline('ls')<CR>
-  autocmd CmdlineChanged : let g:log += [getcmdline()]
   call feedkeys(":\<F1>", 'xt')
   call assert_equal(['ls'], g:log)
+  cunmap <F1>
+
+  let g:log = []
+  call feedkeys(":sign \<Tab>\<Tab>\<C-N>\<C-P>\<S-Tab>\<S-Tab>\<Esc>", 'xt')
+  call assert_equal([
+        \ 's',
+        \ 'si',
+        \ 'sig',
+        \ 'sign',
+        \ 'sign ',
+        \ 'sign define',
+        \ 'sign jump',
+        \ 'sign list',
+        \ 'sign jump',
+        \ 'sign define',
+        \ 'sign ',
+        \ ], g:log)
+  let g:log = []
+  set wildmenu wildoptions+=pum
+  call feedkeys(":sign \<S-Tab>\<PageUp>\<kPageUp>\<kPageDown>\<PageDown>\<Esc>", 'xt')
+  call assert_equal([
+        \ 's',
+        \ 'si',
+        \ 'sig',
+        \ 'sign',
+        \ 'sign ',
+        \ 'sign unplace',
+        \ 'sign jump',
+        \ 'sign define',
+        \ 'sign undefine',
+        \ 'sign unplace',
+        \ ], g:log)
+  set wildmenu& wildoptions&
+
+  let g:log = []
+  let @r = 'abc'
+  call feedkeys(":0\<C-R>r1\<C-R>\<C-O>r2\<C-R>\<C-R>r3\<Esc>", 'xt')
+  call assert_equal([
+        \ '0',
+        \ '0a',
+        \ '0ab',
+        \ '0abc',
+        \ '0abc1',
+        \ '0abc1abc',
+        \ '0abc1abc2',
+        \ '0abc1abc2abc',
+        \ '0abc1abc2abc3',
+        \ ], g:log)
+
   unlet g:log
   au! CmdlineChanged
-  cunmap <F1>
 
   au! CmdlineEnter : let g:entered = expand('<afile>')
   au! CmdlineLeave : let g:left = expand('<afile>')

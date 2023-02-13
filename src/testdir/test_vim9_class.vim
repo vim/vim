@@ -1050,6 +1050,60 @@ def Test_call_interface_method()
   END
   v9.CheckScriptSuccess(lines)
 
+  # method of interface returns a value
+  lines =<< trim END
+    vim9script
+    interface Base
+      def Enter(): string
+    endinterface
+
+    class Child implements Base
+      def Enter(): string
+        g:result ..= 'child'
+        return "/resource"
+      enddef
+    endclass
+
+    def F(obj: Base)
+      var r = obj.Enter()
+      g:result ..= r
+    enddef
+
+    g:result = ''
+    F(Child.new())
+    assert_equal('child/resource', g:result)
+    unlet g:result
+  END
+  v9.CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    class Base
+      def Enter(): string
+        return null_string
+      enddef
+    endclass
+
+    class Child extends Base
+      def Enter(): string
+        g:result ..= 'child'
+        return "/resource"
+      enddef
+    endclass
+
+    def F(obj: Base)
+      var r = obj.Enter()
+      g:result ..= r
+    enddef
+
+    g:result = ''
+    F(Child.new())
+    assert_equal('child/resource', g:result)
+    unlet g:result
+  END
+  v9.CheckScriptSuccess(lines)
+
+
   # No class that implements the interface.
   lines =<< trim END
       vim9script
@@ -1319,6 +1373,47 @@ def Test_class_extends()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_using_base_class()
+  var lines =<< trim END
+    vim9script
+
+    class BaseEE
+        def Enter(): any
+            return null
+        enddef
+        def Exit(resource: any): void
+        enddef
+    endclass
+
+    class ChildEE extends BaseEE
+        def Enter(): any
+            return 42
+        enddef
+
+        def Exit(resource: number): void
+            g:result ..= '/exit'
+        enddef
+    endclass
+
+    def With(ee: BaseEE)
+        var r = ee.Enter()
+        try
+            g:result ..= r
+        finally
+            g:result ..= '/finally'
+            ee.Exit(r)
+        endtry
+    enddef
+
+    g:result = ''
+    With(ChildEE.new())
+    assert_equal('42/finally/exit', g:result)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:result
+enddef
+
+
 def Test_class_import()
   var lines =<< trim END
       vim9script
@@ -1423,6 +1518,43 @@ def Test_defer_with_object()
         g:result ..= "called/"
       })
       assert_equal('entered/called/exited', g:result)
+  END
+  v9.CheckScriptSuccess(lines)
+  unlet g:result
+
+  lines =<< trim END
+      vim9script
+
+      class BaseWithEE
+        def Enter()
+          g:result ..= "entered-base/"
+        enddef
+        def Exit()
+          g:result ..= "exited-base"
+        enddef
+      endclass
+
+      class CWithEE extends BaseWithEE
+        def Enter()
+          g:result ..= "entered-child/"
+        enddef
+        def Exit()
+          g:result ..= "exited-child"
+        enddef
+      endclass
+
+      def With(ee: BaseWithEE, F: func)
+        ee.Enter()
+        defer ee.Exit()
+        F()
+      enddef
+
+      g:result = ''
+      var obj = CWithEE.new()
+      obj->With(() => {
+        g:result ..= "called/"
+      })
+      assert_equal('entered-child/called/exited-child', g:result)
   END
   v9.CheckScriptSuccess(lines)
   unlet g:result

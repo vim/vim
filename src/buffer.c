@@ -4179,7 +4179,7 @@ typedef struct
 	Normal,
 	Empty,
 	Group,
-	Middle,
+	Separate,
 	Highlight,
 	TabPage,
 	Trunc
@@ -4191,6 +4191,7 @@ static stl_item_T      *stl_items = NULL;
 static int	       *stl_groupitem = NULL;
 static stl_hlrec_T     *stl_hltab = NULL;
 static stl_hlrec_T     *stl_tabtab = NULL;
+static int		*stl_separator_locations = NULL;
 
 /*
  * Build a string from the status line items in "fmt".
@@ -4200,7 +4201,7 @@ static stl_hlrec_T     *stl_tabtab = NULL;
  * is "curwin".
  *
  * Items are drawn interspersed with the text that surrounds it
- * Specials: %-<wid>(xxx%) => group, %= => middle marker, %< => truncation
+ * Specials: %-<wid>(xxx%) => group, %= => separation marker, %< => truncation
  * Item: %-<minwid>.<maxwid><itemch> All but <itemch> are optional
  *
  * If maxwidth is not zero, the string will be filled at any middle marker
@@ -4282,6 +4283,8 @@ build_stl_str_hl(
 	// end of the list.
 	stl_hltab  = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
 	stl_tabtab = ALLOC_MULT(stl_hlrec_T, stl_items_len + 1);
+
+	stl_separator_locations = ALLOC_MULT(int, stl_items_len);
     }
 
 #ifdef FEAT_EVAL
@@ -4350,19 +4353,20 @@ build_stl_str_hl(
 	if (curitem == (int)stl_items_len)
 	{
 	    size_t	new_len = stl_items_len * 3 / 2;
-	    stl_item_T	*new_items;
-	    int		*new_groupitem;
-	    stl_hlrec_T	*new_hlrec;
 
-	    new_items = vim_realloc(stl_items, sizeof(stl_item_T) * new_len);
+	    stl_item_T *new_items =
+			  vim_realloc(stl_items, sizeof(stl_item_T) * new_len);
 	    if (new_items == NULL)
 		break;
 	    stl_items = new_items;
-	    new_groupitem = vim_realloc(stl_groupitem, sizeof(int) * new_len);
+
+	    int *new_groupitem =
+			     vim_realloc(stl_groupitem, sizeof(int) * new_len);
 	    if (new_groupitem == NULL)
 		break;
 	    stl_groupitem = new_groupitem;
-	    new_hlrec = vim_realloc(stl_hltab,
+
+	    stl_hlrec_T	*new_hlrec = vim_realloc(stl_hltab,
 					  sizeof(stl_hlrec_T) * (new_len + 1));
 	    if (new_hlrec == NULL)
 		break;
@@ -4372,6 +4376,13 @@ build_stl_str_hl(
 	    if (new_hlrec == NULL)
 		break;
 	    stl_tabtab = new_hlrec;
+
+	    int *new_separator_locs = vim_realloc(stl_separator_locations,
+					    sizeof(int) * new_len);
+	    if (new_separator_locs == NULL)
+		break;
+	    stl_separator_locations = new_separator_locs;;
+
 	    stl_items_len = new_len;
 	}
 
@@ -4400,12 +4411,13 @@ build_stl_str_hl(
 	    prevchar_isflag = prevchar_isitem = FALSE;
 	    continue;
 	}
-	if (*s == STL_MIDDLEMARK)
+	// STL_SEPARATE: Separation between items, filled with white space.
+	if (*s == STL_SEPARATE)
 	{
 	    s++;
 	    if (groupdepth > 0)
 		continue;
-	    stl_items[curitem].stl_type = Middle;
+	    stl_items[curitem].stl_type = Separate;
 	    stl_items[curitem++].stl_start = p;
 	    continue;
 	}
@@ -5121,19 +5133,45 @@ build_stl_str_hl(
     }
     else if (width < maxwidth && STRLEN(out) + maxwidth - width + 1 < outlen)
     {
-	// Apply STL_MIDDLE if any
+	// Find how many separators there are, which we will use when
+	// figuring out how many groups there are.
+	int num_separators = 0;
+
 	for (l = 0; l < itemcnt; l++)
-	    if (stl_items[l].stl_type == Middle)
-		break;
-	if (l < itemcnt)
 	{
-	    int middlelength = (maxwidth - width) * MB_CHAR2LEN(fillchar);
-	    p = stl_items[l].stl_start + middlelength;
-	    STRMOVE(p, stl_items[l].stl_start);
-	    for (s = stl_items[l].stl_start; s < p;)
-		MB_CHAR2BYTES(fillchar, s);
-	    for (l++; l < itemcnt; l++)
-		stl_items[l].stl_start += middlelength;
+	    if (stl_items[l].stl_type == Separate)
+	    {
+		// Create an array of the start location for each separator
+		// mark.
+		stl_separator_locations[num_separators] = l;
+		num_separators++;
+	    }
+	}
+
+	// If we have separated groups, then we deal with it now
+	if (num_separators)
+	{
+	    int standard_spaces;
+	    int final_spaces;
+
+	    standard_spaces = (maxwidth - width) / num_separators;
+	    final_spaces = (maxwidth - width) -
+					standard_spaces * (num_separators - 1);
+	    for (l = 0; l < num_separators; l++)
+	    {
+		int dislocation = (l == (num_separators - 1)) ?
+					final_spaces : standard_spaces;
+		dislocation *= MB_CHAR2LEN(fillchar);
+		char_u *start = stl_items[stl_separator_locations[l]].stl_start;
+		char_u *seploc = start + dislocation;
+		STRMOVE(seploc, start);
+		for (s = start; s < seploc;)
+		    MB_CHAR2BYTES(fillchar, s);
+
+		for (int i = stl_separator_locations[l] + 1; i < itemcnt; i++)
+		    stl_items[i].stl_start += dislocation;
+	    }
+
 	    width = maxwidth;
 	}
     }

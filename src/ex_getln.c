@@ -1183,6 +1183,7 @@ cmdline_insert_reg(int *gotesc UNUSED)
 {
     int		i;
     int		c;
+    int		literally = FALSE;
 #ifdef FEAT_EVAL
     int		save_new_cmdpos = new_cmdpos;
 #endif
@@ -1220,7 +1221,8 @@ cmdline_insert_reg(int *gotesc UNUSED)
 #endif
     if (c != ESC)	    // use ESC to cancel inserting register
     {
-	cmdline_paste(c, i == Ctrl_R, FALSE);
+	literally = i == Ctrl_R;
+	cmdline_paste(c, literally, FALSE);
 
 #ifdef FEAT_EVAL
 	// When there was a serious error abort getting the
@@ -1251,8 +1253,9 @@ cmdline_insert_reg(int *gotesc UNUSED)
     // remove the double quote
     redrawcmd();
 
-    // The text has been stuffed, the command line didn't change yet.
-    return CMDLINE_NOT_CHANGED;
+    // With "literally": the command line has already changed.
+    // Else: the text has been stuffed, but the command line didn't change yet.
+    return literally ? CMDLINE_CHANGED : CMDLINE_NOT_CHANGED;
 }
 
 /*
@@ -2081,11 +2084,11 @@ getcmdline_int(
 
 	case Ctrl_R:			// insert register
 		res = cmdline_insert_reg(&gotesc);
-		if (res == CMDLINE_NOT_CHANGED)
-		    goto cmdline_not_changed;
-		else if (res == GOTO_NORMAL_MODE)
+		if (res == GOTO_NORMAL_MODE)
 		    goto returncmd;
-		goto cmdline_changed;
+		if (res == CMDLINE_CHANGED)
+		    goto cmdline_changed;
+		goto cmdline_not_changed;
 
 	case Ctrl_D:
 		if (showmatches(&xpc, FALSE) == EXPAND_NOTHING)
@@ -2293,7 +2296,7 @@ getcmdline_int(
 		    wild_type = (c == Ctrl_P) ? WILD_PREV : WILD_NEXT;
 		    if (nextwild(&xpc, wild_type, 0, firstc != '@') == FAIL)
 			break;
-		    goto cmdline_not_changed;
+		    goto cmdline_changed;
 		}
 		// FALLTHROUGH
 	case K_UP:
@@ -2315,7 +2318,7 @@ getcmdline_int(
 			wild_type = WILD_PAGEDOWN;
 		    if (nextwild(&xpc, wild_type, 0, firstc != '@') == FAIL)
 			break;
-		    goto cmdline_not_changed;
+		    goto cmdline_changed;
 		}
 		else
 		{
