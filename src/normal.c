@@ -5719,6 +5719,8 @@ nv_g_home_m_cmd(cmdarg_T *cap)
     int		i;
     int		flag = FALSE;
 
+    if (curwin->w_cline_folded) return; // in case of folded lines, exit
+	    
     if (cap->nchar == '^')
 	flag = TRUE;
 
