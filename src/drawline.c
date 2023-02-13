@@ -1945,7 +1945,6 @@ win_line(
 		    --bcol;
 # endif
 		int display_text_first = FALSE;
-		int active_before = text_props_active;
 
 		// Add any text property that starts in this column.
 		// With 'nowrap' and not in the first screen line only "below"
@@ -1962,21 +1961,6 @@ win_line(
 						       & TP_FLAG_ALIGN_ABOVE)))
 			      : bcol >= text_props[text_prop_next].tp_col - 1))
 		{
-		    if (text_props[text_prop_next].tp_col == MAXCOL
-			     && *ptr == NUL
-			     && ((wp->w_p_list && lcs_eol_one > 0)
-				 || (ptr == line
-					&& !did_line
-					&& (text_props[text_prop_next].tp_flags
-						       & TP_FLAG_ALIGN_BELOW))))
-		    {
-			// first display the '$' after the line or display an
-			// empty line
-			text_prop_follows = TRUE;
-			if (text_props_active == active_before)
-			    display_text_first = TRUE;
-			break;
-		    }
 		    if (text_props[text_prop_next].tp_col == MAXCOL
 			    || bcol <= text_props[text_prop_next].tp_col - 1
 					   + text_props[text_prop_next].tp_len)
@@ -2028,6 +2012,24 @@ win_line(
 						| TP_FLAG_ALIGN_BELOW)) == 0
 				    && wlv.col >= wp->w_width))
 			{
+			    if (tp->tp_col == MAXCOL
+				     && *ptr == NUL
+				     && ((wp->w_p_list && lcs_eol_one > 0
+					     && (tp->tp_flags
+						   & TP_FLAG_ALIGN_ABOVE) == 0)
+					 || (ptr == line
+						&& !did_line
+						&& (tp->tp_flags
+						      & TP_FLAG_ALIGN_BELOW))))
+			    {
+				// skip this prop, first display the '$' after
+				// the line or display an empty line
+				text_prop_follows = TRUE;
+				if (used_tpi < 0)
+				    display_text_first = TRUE;
+				continue;
+			    }
+
 			    if (pt->pt_hl_id > 0)
 				used_attr = syn_id2attr(pt->pt_hl_id);
 			    text_prop_type = pt;
@@ -2038,6 +2040,7 @@ win_line(
 			    text_prop_flags = pt->pt_flags;
 			    text_prop_id = tp->tp_id;
 			    used_tpi = tpi;
+			    display_text_first = FALSE;
 			}
 		    }
 		    if (text_prop_id < 0 && used_tpi >= 0
@@ -3104,6 +3107,7 @@ win_line(
 		    }
 		}
 		else if (c == NUL
+			&& wlv.n_extra == 0
 			&& (wp->w_p_list
 			    || ((wlv.fromcol >= 0 || fromcol_prev >= 0)
 				&& wlv.tocol > wlv.vcol
