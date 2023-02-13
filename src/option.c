@@ -5135,6 +5135,7 @@ set_option_value(
     int		opt_idx;
     char_u	*varp;
     long_u	flags;
+    static char	errbuf[80];
 
     opt_idx = findoption(name);
     if (opt_idx < 0)
@@ -5177,7 +5178,7 @@ set_option_value(
 	}
 #endif
 	if (flags & P_STRING)
-	    return set_string_option(opt_idx, string, opt_flags);
+	    return set_string_option(opt_idx, string, opt_flags, errbuf);
 
 	varp = get_varp_scope(&(options[opt_idx]), opt_flags);
 	if (varp != NULL)	// hidden option is not changed
@@ -5202,8 +5203,10 @@ set_option_value(
 		}
 	    }
 	    if (flags & P_NUM)
+	    {
 		return set_num_option(opt_idx, varp, number,
-							   NULL, 0, opt_flags);
+					   errbuf, sizeof(errbuf), opt_flags);
+	    }
 	    else
 		return set_bool_option(opt_idx, varp, (int)number, opt_flags);
 	}
