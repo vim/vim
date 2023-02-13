@@ -382,7 +382,7 @@ matchstrpos({expr}, {pat} [, {start} [, {count}]])
 max({expr})			Number	maximum value of items in {expr}
 menu_info({name} [, {mode}])	Dict	get menu item information
 min({expr})			Number	minimum value of items in {expr}
-mkdir({name} [, {path} [, {prot}]])
+mkdir({name} [, {flags} [, {prot}]])
 				Number	create directory {name}
 mode([expr])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
@@ -6261,17 +6261,17 @@ min({expr})	Return the minimum value of all items in {expr}. Example:  >
 			mylist->min()
 
 <							*mkdir()* *E739*
-mkdir({name} [, {path} [, {prot}]])
+mkdir({name} [, {flags} [, {prot}]])
 		Create directory {name}.
 
-		If {path} contains "p" then intermediate directories are
+		If {flags} contains "p" then intermediate directories are
 		created as necessary.  Otherwise it must be "".
 
-		If {path} contains "D" then {name} is deleted at the end of
+		If {flags} contains "D" then {name} is deleted at the end of
 		the current function, as with: >
 			defer delete({name}, 'd')
 <
-		If {path} contains "R" then {name} is deleted recursively at
+		If {flags} contains "R" then {name} is deleted recursively at
 		the end of the current function, as with: >
 			defer delete({name}, 'rf')
 <		Note that when {name} has more than one part and "p" is used
