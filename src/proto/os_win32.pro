@@ -1,4 +1,5 @@
 /* os_win32.c */
+void mch_get_exe_name(void);
 HINSTANCE vimLoadLib(const char *name);
 int mch_is_gui_executable(void);
 HINSTANCE find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname);

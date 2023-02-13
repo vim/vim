@@ -1053,9 +1053,12 @@ did_set_encoding(char_u **varp, char_u **gvarp, int opt_flags)
 	}
 
 #if defined(MSWIN)
-	// $HOME may have characters in active code page.
+	// $HOME, $VIM and $VIMRUNTIME may have characters in active code page.
 	if (varp == &p_enc)
+	{
 	    init_homedir();
+	    init_vimdir();
+	}
 #endif
     }
 
