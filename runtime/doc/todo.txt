@@ -385,8 +385,6 @@ IDEA: when drawing the text, store the text byte index in ScreenLinesIdx[].
 When converting screen column to text position use this.
 The line number can be obtained from win->w_lines[].
 
-MS-Windows: did path modifier :p:8 stop working?  #8600
-
 Version of getchar() that does not move the cursor - #10603 Use a separate
 argument for the new flag.
 
@@ -1199,9 +1197,6 @@ Should :vmap in matchit.vim be :xmap?  (Tony Mechelynck)
 
 Problem with whitespace in errorformat. (Gerd Wachsmuth, 2016 May 15, #807)
 
-Add "unicode true" to NSIS installer.  Doesn't work with Windows 95, which we
-no longer support.
-
 Support sort(l, 'F'), convert strings to float. (#7857)
 
 sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
@@ -1386,9 +1381,6 @@ Do not include the linebreak at the start?
 
 Feature request: add the "al" text object, to manipulate a screen line.
 Especially useful when using 'linebreak'
-
-":cd C:\Windows\System32\drivers\etc*" does not work, even though the
-directory exists. (Sergio Gallelli, 2013 Dec 29)
 
 Patch to avoid redrawing tabline when the popup menu is visible.
 (Christian Brabandt, 2016 Jan 28)
@@ -2974,10 +2966,6 @@ Win32 GUI known bugs:
     console, go back to Vim and click "reload" in the dialog for the changed
     file: Window moves with the cursor!
     Put focus event in input buffer and let generic Vim code handle it?
-8   Win32 GUI: With maximized window, ":set go-=r" doesn't use the space that
-    comes available. (Poucet)  It works OK on Win 98 but doesn't work on Win
-    NT 4.0.  Leaves a grey area where the scrollbar was.  ":set go+=r" also
-    doesn't work properly.
 8   When Vim is minimized and when maximizing it a file-changed dialog pops
     up, Vim isn't maximized.  It should be done before the dialog, so that it
     appears in the right position. (Webb)
@@ -3501,8 +3489,6 @@ Problems that will (probably) not be solved:
     input method called from GDK code.  Without Perl it doesn't crash.
 -   VMS: Vimdiff doesn't work with the VMS diff, because the output looks
     different.  This makes test 47 fail.  Install a Unix-compatible diff.
--   Win32 GUI: mouse wheel always scrolls rightmost window.  The events arrive
-    in Vim as if the rightmost scrollbar was used.
 -   GTK with Gnome: Produces an error message when starting up:
 	Gdk-WARNING **: locale not supported by C library
     This is caused by the gnome library gnome_init() setting $LC_CTYPE to
@@ -4459,8 +4445,6 @@ Tags:
 Win32 GUI:
 8   Make debug mode work while starting up (vim -D).  Open console window for
     the message and input?
-7   GvimExt: when there are several existing Vims, move the list to a submenu.
-    (Mike McCollister)
 8   When using "Edit with Vim" for one file it changes directory, when several
     files are selected and using "Edit with single Vim" the directory isn't
     changed.  At least change directory when the path is the same for all
