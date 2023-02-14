@@ -335,7 +335,8 @@ syn match   shEscape	contained	'\%(^\)\@!\%(\\\\\)*\\.'	nextgroup=shComment
 " systems too, however, so the following syntax will flag $(..) as
 " an Error under /bin/sh.  By consensus of vimdev'ers!
 if exists("b:is_kornshell") || exists("b:is_bash") || exists("b:is_posix")
- syn region shCommandSub matchgroup=shCmdSubRegion start="\$(\ze[^(]\|$"  skip='\\\\\|\\.' end=")"  contains=@shCommandSubList
+" syn region shCommandSub matchgroup=shCmdSubRegion start="\$(\ze[^(]\|$"  skip='\\\\\|\\.' end=")"  contains=@shCommandSubList
+ syn region shCommandSub matchgroup=shCmdSubRegion start="\$(\ze[^(]"  skip='\\\\\|\\.' end=")"  contains=@shCommandSubList
  syn region shArithmetic matchgroup=shArithRegion  start="\$((" skip='\\\\\|\\.' end="))" contains=@shArithList
  syn region shArithmetic matchgroup=shArithRegion  start="\$\[" skip='\\\\\|\\.' end="\]" contains=@shArithList
  syn match  shSkipInitWS contained	"^\s\+"
