@@ -525,7 +525,6 @@ transchar_buf(buf_T *buf, int c)
  * Like transchar(), but called with a byte instead of a character.  Checks
  * for an illegal UTF-8 byte.
  */
-
     char_u *
 transchar_byte(int c)
 {
@@ -537,12 +536,11 @@ transchar_byte_buf(buf_T *buf,int c)
 {
     if (enc_utf8 && c >= 0x80)
     {
-	transchar_nonprint(buf, transchar_charbuf, c);
-	return transchar_charbuf;
+       transchar_nonprint(buf, transchar_charbuf, c);
+       return transchar_charbuf;
     }
     return transchar_buf(buf, c);
 }
-
 /*
  * Convert non-printable character to two or more printable characters in
  * "buf[]".  "charbuf" needs to be able to hold five bytes.
@@ -561,7 +559,6 @@ transchar_nonprint(buf_T *buf, char_u *charbuf, int c)
 
     else if (c <= 0x7f)			// 0x00 - 0x1f and 0x7f
     {
-	ch_log(NULL, "Value is now %d", *charbuf);
 	charbuf[0] = '^';
 	charbuf[1] = c ^ 0x40;		// DEL displayed as ^?
 	charbuf[2] = NUL;
@@ -821,6 +818,11 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
 	cts->cts_vcol += cts->cts_cur_text_width;
+
+	// when properties are above or below the empty line must also be
+	// counted
+	if (cts->cts_prop_lines > 0)
+	    ++cts->cts_vcol;
     }
 #endif
 }
@@ -1160,6 +1162,8 @@ win_lbr_chartabsize(
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
+    if (*s == NUL)
+	size = 0;  // NUL is not displayed
 
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text)
@@ -1223,6 +1227,10 @@ win_lbr_chartabsize(
 			tab_size = win_chartabsize(wp, s, vcol + size);
 			size += tab_size;
 		    }
+		    if (tp->tp_col == MAXCOL && (tp->tp_flags
+				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
+			// count extra line for property above/below
+			++cts->cts_prop_lines;
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)
@@ -2397,5 +2405,3 @@ backslash_halve_save(char_u *p)
     backslash_halve(res);
     return res;
 }
-
-
