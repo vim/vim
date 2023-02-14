@@ -2712,7 +2712,7 @@ nv_zet(cmdarg_T *cap)
     case '.':	beginline(BL_WHITE | BL_FIX);
 		// FALLTHROUGH
 
-    case 'z':	scroll_cursor_halfway(TRUE);
+    case 'z':	scroll_cursor_halfway(TRUE, FALSE);
 		redraw_later(UPD_VALID);
 		set_fraction(curwin);
 		break;

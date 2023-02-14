@@ -1953,7 +1953,7 @@ enter_buffer(buf_T *buf)
     maketitle();
 	// when autocmds didn't change it
     if (curwin->w_topline == 1 && !curwin->w_topline_was_set)
-	scroll_cursor_halfway(FALSE);	// redisplay at correct position
+	scroll_cursor_halfway(FALSE, FALSE);	// redisplay at correct position
 
 #ifdef FEAT_NETBEANS_INTG
     // Send fileOpened event because we've changed buffers.
