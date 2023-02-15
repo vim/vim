@@ -1990,6 +1990,8 @@ do_set_option_string(
 
     // Set the new value.
     *(char_u **)(varp) = newval;
+    if (newval == NULL)
+	*(char_u **)(varp) = empty_option;
 
 #if defined(FEAT_EVAL)
     if (!starting
