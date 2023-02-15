@@ -600,6 +600,8 @@ set_init_1(int clean_arg)
     init_spell_chartab();
 #endif
 
+    set_init_default_encoding();
+
     // Expand environment variables and things like "~" for the defaults.
     set_init_expand_env();
 
@@ -618,7 +620,6 @@ set_init_1(int clean_arg)
     didset_options2();
 
     set_init_lang_env();
-    set_init_default_encoding();
 
 #ifdef FEAT_MULTI_LANG
     // Set the default for 'helplang'.
