@@ -5328,7 +5328,8 @@ win_enter_ext(win_T *wp, int flags)
     if (*p_spk == 'c')		// assume cursor position needs updating
 	changed_line_abv_curs();
     else
-	win_fix_cursor(TRUE);
+	win_fix_cursor(get_real_state()
+				    & (MODE_NORMAL|MODE_CMDLINE|MODE_TERMINAL));
 
     // Now it is OK to parse messages again, which may be needed in
     // autocommands.
