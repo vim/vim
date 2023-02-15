@@ -5328,7 +5328,10 @@ win_enter_ext(win_T *wp, int flags)
     if (*p_spk == 'c')		// assume cursor position needs updating
 	changed_line_abv_curs();
     else
-	win_fix_cursor(TRUE);
+	// Make sure the cursor position is valid, either by moving the cursor
+	// or by scrolling the text.
+	win_fix_cursor(
+		get_real_state() & (MODE_NORMAL|MODE_CMDLINE|MODE_TERMINAL));
 
     // Now it is OK to parse messages again, which may be needed in
     // autocommands.
@@ -6782,7 +6785,8 @@ win_fix_scroll(int resize)
 /*
  * Make sure the cursor position is valid for 'splitkeep'.
  * If it is not, put the cursor position in the jumplist and move it.
- * If we are not in normal mode, scroll to make valid instead.
+ * If we are not in normal mode ("normal" is zero), make it valid by scrolling
+ * instead.
  */
     static void
 win_fix_cursor(int normal)

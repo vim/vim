@@ -254,7 +254,7 @@ static void restore_console_color_rgb(void);
 static int suppress_winsize = 1;	// don't fiddle with console
 #endif
 
-static char_u *exe_path = NULL;
+static WCHAR *exe_pathw = NULL;
 
 static BOOL win8_or_later = FALSE;
 static BOOL win10_22H2_or_later = FALSE;
@@ -462,27 +462,45 @@ wait_for_single_object(
 # endif
 #endif   // !FEAT_GUI_MSWIN || VIMDLL
 
-    static void
-get_exe_name(void)
+    void
+mch_get_exe_name(void)
 {
     // Maximum length of $PATH is more than MAXPATHL.  8191 is often mentioned
     // as the maximum length that works (plus a NUL byte).
 #define MAX_ENV_PATH_LEN 8192
     char	temp[MAX_ENV_PATH_LEN];
     char_u	*p;
+    WCHAR	buf[MAX_PATH];
+    int		updated = FALSE;
+    static int	enc_prev = -1;
 
-    if (exe_name == NULL)
+    if (exe_name == NULL || exe_pathw == NULL || enc_prev != enc_codepage)
     {
 	// store the name of the executable, may be used for $VIM
-	GetModuleFileName(NULL, temp, MAX_ENV_PATH_LEN - 1);
-	if (*temp != NUL)
-	    exe_name = FullName_save((char_u *)temp, FALSE);
+	GetModuleFileNameW(NULL, buf, MAX_PATH);
+	if (*buf != NUL)
+	{
+	    if (enc_codepage == -1)
+		enc_codepage = GetACP();
+	    if (exe_name != NULL)
+		vim_free(exe_name);
+	    exe_name = utf16_to_enc(buf, NULL);
+	    enc_prev = enc_codepage;
+
+	    WCHAR *wp = wcsrchr(buf, '\\');
+	    if (wp != NULL)
+		*wp = NUL;
+	    if (exe_pathw != NULL)
+		vim_free(exe_pathw);
+	    exe_pathw = _wcsdup(buf);
+	    updated = TRUE;
+	}
     }
 
-    if (exe_path != NULL || exe_name == NULL)
+    if (exe_pathw == NULL || !updated)
 	return;
 
-    exe_path = vim_strnsave(exe_name, gettail_sep(exe_name) - exe_name);
+    char_u  *exe_path = utf16_to_enc(exe_pathw, NULL);
     if (exe_path == NULL)
 	return;
 
@@ -503,6 +521,7 @@ get_exe_name(void)
 	STRCAT(temp, exe_path);
 	vim_setenv((char_u *)"PATH", (char_u *)temp);
     }
+    vim_free(exe_path);
 }
 
 /*
@@ -538,10 +557,10 @@ vimLoadLib(const char *name)
 
     // NOTE: Do not use mch_dirname() and mch_chdir() here, they may call
     // vimLoadLib() recursively, which causes a stack overflow.
-    if (exe_path == NULL)
-	get_exe_name();
+    if (exe_pathw == NULL)
+	mch_get_exe_name();
 
-    if (exe_path == NULL)
+    if (exe_pathw == NULL)
 	return NULL;
 
     WCHAR old_dirw[MAXPATHL];
@@ -552,7 +571,7 @@ vimLoadLib(const char *name)
     // Change directory to where the executable is, both to make
     // sure we find a .dll there and to avoid looking for a .dll
     // in the current directory.
-    SetCurrentDirectory((LPCSTR)exe_path);
+    SetCurrentDirectoryW(exe_pathw);
     dll = LoadLibrary(name);
     SetCurrentDirectoryW(old_dirw);
     return dll;
@@ -3586,7 +3605,7 @@ mch_check_win(
     int argc UNUSED,
     char **argv UNUSED)
 {
-    get_exe_name();
+    mch_get_exe_name();
 
 #if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
     return OK;	    // GUI always has a tty
