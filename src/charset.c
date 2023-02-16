@@ -523,19 +523,28 @@ transchar_buf(buf_T *buf, int c)
 
 /*
  * Like transchar(), but called with a byte instead of a character.  Checks
- * for an illegal UTF-8 byte.
+ * for an illegal UTF-8 byte.  Uses 'fileformat' of the current buffer.
  */
     char_u *
 transchar_byte(int c)
 {
-    if (enc_utf8 && c >= 0x80)
-    {
-	transchar_nonprint(curbuf, transchar_charbuf, c);
-	return transchar_charbuf;
-    }
-    return transchar(c);
+    return transchar_byte_buf(curbuf, c);
 }
 
+/*
+ * Like transchar_buf(), but called with a byte instead of a character.  Checks
+ * for an illegal UTF-8 byte.  Uses 'fileformat' of "buf", unless it is NULL.
+ */
+    char_u *
+transchar_byte_buf(buf_T *buf, int c)
+{
+    if (enc_utf8 && c >= 0x80)
+    {
+	transchar_nonprint(buf, transchar_charbuf, c);
+	return transchar_charbuf;
+    }
+    return transchar_buf(buf, c);
+}
 /*
  * Convert non-printable character to two or more printable characters in
  * "charbuf[]".  "charbuf" needs to be able to hold five bytes.
@@ -546,7 +555,7 @@ transchar_nonprint(buf_T *buf, char_u *charbuf, int c)
 {
     if (c == NL)
 	c = NUL;		// we use newline in place of a NUL
-    else if (c == CAR && get_fileformat(buf) == EOL_MAC)
+    else if (buf != NULL && c == CAR && get_fileformat(buf) == EOL_MAC)
 	c = NL;			// we use CR in place of  NL in this case
 
     if (dy_flags & DY_UHEX)		// 'display' has "uhex"
