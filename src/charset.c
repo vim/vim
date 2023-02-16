@@ -532,7 +532,7 @@ transchar_byte(int c)
 }
 
     char_u *
-transchar_byte_buf(buf_T *buf,int c)
+transchar_byte_buf(buf_T *buf, int c)
 {
     if (enc_utf8 && c >= 0x80)
     {
