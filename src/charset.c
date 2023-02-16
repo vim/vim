@@ -536,8 +536,8 @@ transchar_byte_buf(buf_T *buf, int c)
 {
     if (enc_utf8 && c >= 0x80)
     {
-        transchar_nonprint(buf, transchar_charbuf, c);
-        return transchar_charbuf;
+	transchar_nonprint(buf, transchar_charbuf, c);
+	return transchar_charbuf;
     }
     return transchar_buf(buf, c);
 }
