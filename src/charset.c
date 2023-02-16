@@ -543,7 +543,7 @@ transchar_byte_buf(buf_T *buf, int c)
 }
 /*
  * Convert non-printable character to two or more printable characters in
- * "buf[]".  "charbuf" needs to be able to hold five bytes.
+ * "charbuf[]".  "charbuf" needs to be able to hold five bytes.
  * Does NOT work for multi-byte characters, c must be <= 255.
  */
     void
