@@ -96,21 +96,23 @@ jobs:
       - name: Install gcc-12
         if:  matrix.compiler == 'gcc'
         run: |
-          sudo apt install -y gcc-12
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
-          sudo update-alternatives --set gcc /usr/bin/gcc-12
+          GCC_VER=12
+          sudo apt install -y gcc-$GCC_VER
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-$GCC_VER 100
+          sudo update-alternatives --set gcc /usr/bin/gcc-$GCC_VER
 
       - name: Install clang-16
         if: matrix.compiler == 'clang'
         run: |
+          CLANG_VER=16
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           . /etc/lsb-release
-          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-16 main"
-          sudo apt install -y clang-16 llvm-16
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-16 100
-          sudo update-alternatives --set clang /usr/bin/clang-16
-          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-16 100
-          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-16 100
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-$CLANG_VER main"
+          sudo apt install -y clang-$CLANG_VER llvm-$CLANG_VER
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-$CLANG_VER 100
+          sudo update-alternatives --set clang /usr/bin/clang-$CLANG_VER
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-$CLANG_VER 100
+          sudo update-alternatives --install /usr/bin/asan_symbolize asan_symbolize /usr/bin/asan_symbolize-$CLANG_VER 100
 
       - name: Set up environment
         run: |
