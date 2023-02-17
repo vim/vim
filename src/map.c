@@ -1445,7 +1445,7 @@ ExpandMappings(
 	    mp = maphash[hash];
 	for (; mp; mp = mp->m_next)
 	{
-	    if (!(mp->m_mode & expand_mapmodes))
+	    if (mp->m_simplified || !(mp->m_mode & expand_mapmodes))
 		continue;
 
 	    p = translate_mapping(mp->m_keys);
