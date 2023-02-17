@@ -67,15 +67,20 @@ endfunc
 func Test_cpo_B()
   let save_cpo = &cpo
   new
+  imap <buffer> x<Bslash>k Test
   set cpo-=B
   iabbr <buffer> abc ab\<BS>d
   exe "normal iabc "
   call assert_equal('ab<BS>d ', getline(1))
+  call feedkeys(":imap <buffer> x\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"imap <buffer> x\\k', @:)
   %d
   set cpo+=B
   iabbr <buffer> abc ab\<BS>d
   exe "normal iabc "
   call assert_equal('abd ', getline(1))
+  call feedkeys(":imap <buffer> x\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"imap <buffer> x\k', @:)
   close!
   let &cpo = save_cpo
 endfunc
