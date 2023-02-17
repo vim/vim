@@ -182,6 +182,21 @@ def Test_class_interface_wrong_end()
   v9.CheckScriptFailure(lines, 'E476: Invalid command: endclass, expected endinterface')
 enddef
 
+def Test_object_not_set()
+  var lines =<< trim END
+      vim9script
+
+      class State
+        this.value = 'xyz'
+      endclass
+
+      var state: State 
+      var db = {'xyz': 789}
+      echo db[state.value]
+  END
+  v9.CheckScriptFailure(lines, 'E1360:')
+enddef
+
 def Test_class_member_initializer()
   var lines =<< trim END
       vim9script
