@@ -190,7 +190,7 @@ def Test_object_not_set()
         this.value = 'xyz'
       endclass
 
-      var state: State 
+      var state: State
       var db = {'xyz': 789}
       echo db[state.value]
   END
