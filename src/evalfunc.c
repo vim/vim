@@ -9940,7 +9940,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (!curwin->w_p_spell)
     {
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
 
@@ -10030,7 +10030,7 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
 
     if (!curwin->w_p_spell)
     {
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
 

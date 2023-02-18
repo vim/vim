@@ -4789,3 +4789,30 @@ typedef struct {
 #endif
     int		cts_vcol;	    // virtual column at current position
 } chartabsize_T;
+
+/*
+ * Argument for the callback function (opt_did_set_cb_T) invoked after an
+ * option value is modified.
+ */
+typedef struct
+{
+    int		opt_flags;
+    char_u	*varp;		// pointer to the option variable
+    // old value of the option (can be a string, number or a boolean)
+    union
+    {
+	long	number;
+	int	boolean;
+	char_u	*string;
+    } oldval;
+    // new value of the option (can be a string, number or a boolean)
+    union
+    {
+	long	number;
+	int	boolean;
+	char_u	*string;
+    } newval;
+    // Stop processing the option further.  Used when processing some boolean
+    // options.
+    int		doskip;
+} optset_T;

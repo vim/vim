@@ -14,7 +14,7 @@
 #define _OPTION_H_
 
 //
-// Flags
+// Option Flags
 //
 #define P_BOOL		0x01	// the option is boolean
 #define P_NUM		0x02	// the option is numeric

@@ -1,6 +1,6 @@
 /* gui_xim.c */
-char *set_imactivatefunc_option(void);
-char *set_imstatusfunc_option(void);
+char *did_set_imactivatefunc(optset_T *args);
+char *did_set_imstatusfunc(optset_T *args);
 void free_xim_stuff(void);
 int set_ref_in_im_funcs(int copyID);
 void im_set_active(int active);

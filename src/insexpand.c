@@ -2546,7 +2546,7 @@ copy_global_to_buflocal_cb(callback_T *globcb, callback_T *bufcb)
  * lambda expression.
  */
     char *
-set_completefunc_option(void)
+did_set_completefunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(curbuf->b_p_cfu, &cfu_cb) == FAIL)
 	return e_invalid_argument;
@@ -2575,7 +2575,7 @@ set_buflocal_cfu_callback(buf_T *buf UNUSED)
  * lambda expression.
  */
     char *
-set_omnifunc_option(void)
+did_set_omnifunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(curbuf->b_p_ofu, &ofu_cb) == FAIL)
 	return e_invalid_argument;
@@ -2603,7 +2603,7 @@ set_buflocal_ofu_callback(buf_T *buf UNUSED)
  * lambda expression.
  */
     char *
-set_thesaurusfunc_option(void)
+did_set_thesaurusfunc(optset_T *args UNUSED)
 {
     int	retval;
 

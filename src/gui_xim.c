@@ -74,7 +74,7 @@ static callback_T imaf_cb;	    // 'imactivatefunc' callback function
 static callback_T imsf_cb;	    // 'imstatusfunc' callback function
 
     char *
-set_imactivatefunc_option(void)
+did_set_imactivatefunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(p_imaf, &imaf_cb) == FAIL)
 	return e_invalid_argument;
@@ -83,7 +83,7 @@ set_imactivatefunc_option(void)
 }
 
     char *
-set_imstatusfunc_option(void)
+did_set_imstatusfunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(p_imsf, &imsf_cb) == FAIL)
 	return e_invalid_argument;
