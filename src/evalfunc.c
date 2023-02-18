@@ -3056,8 +3056,8 @@ internal_func_is_map(int idx)
     int
 check_internal_func(int idx, int argcount)
 {
-    int	    res;
-    char    *name;
+    funcerror_T	    res;
+    char	    *name;
 
     if (argcount < global_functions[idx].f_min_argc)
 	res = FCERR_TOOFEW;
@@ -3074,7 +3074,7 @@ check_internal_func(int idx, int argcount)
     return -1;
 }
 
-    int
+    funcerror_T
 call_internal_func(
 	char_u	    *name,
 	int	    argcount,
@@ -3107,7 +3107,7 @@ call_internal_func_by_idx(
 /*
  * Invoke a method for base->method().
  */
-    int
+    funcerror_T
 call_internal_method(
 	char_u	    *name,
 	int	    argcount,

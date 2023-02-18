@@ -1659,7 +1659,8 @@ type_name(type_T *type, char **tofree)
 
     if (type->tt_type == VAR_OBJECT || type->tt_type == VAR_CLASS)
     {
-	char_u *class_name = ((class_T *)type->tt_member)->class_name;
+	char_u *class_name = type->tt_member == NULL ? (char_u *)"Unknown"
+				    : ((class_T *)type->tt_member)->class_name;
 	size_t len = STRLEN(name) + STRLEN(class_name) + 3;
 	*tofree = alloc(len);
 	if (*tofree != NULL)

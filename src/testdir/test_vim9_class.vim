@@ -195,6 +195,26 @@ def Test_object_not_set()
       echo db[state.value]
   END
   v9.CheckScriptFailure(lines, 'E1360:')
+
+  lines =<< trim END
+      vim9script
+
+      class Background
+        this.background = 'dark'
+      endclass
+
+      class Colorscheme
+        this._bg: Background
+
+        def GetBackground(): string
+          return this._bg.background
+        enddef
+      endclass
+
+      var bg: Background           # UNINITIALIZED
+      echo Colorscheme.new(bg).GetBackground()
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected object<Background> but got object<Unknown>')
 enddef
 
 def Test_class_member_initializer()
