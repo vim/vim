@@ -919,7 +919,6 @@ compile_call(
     char_u	namebuf[MAX_FUNC_NAME_LEN];
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
-    int		error = FCERR_NONE;
     ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
@@ -990,6 +989,7 @@ compile_call(
     if (generate_ppconst(cctx, ppconst) == FAIL)
 	return FAIL;
 
+    funcerror_T	error;
     name = fname_trans_sid(namebuf, fname_buf, &tofree, &error);
 
     // We handle the "skip" argument of searchpair() and searchpairpos()
