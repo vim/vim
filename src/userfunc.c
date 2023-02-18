@@ -3060,7 +3060,11 @@ call_user_func(
 	clear_tv(rettv);
 	rettv->v_type = VAR_NUMBER;
 	rettv->vval.v_number = -1;
-	retval = FCERR_FAILED;
+
+	// In corner cases returning a "failed" value is not backwards
+	// compatible.  Only do this for Vim9 script.
+	if (in_vim9script())
+	    retval = FCERR_FAILED;
     }
 
 #ifdef FEAT_PROFILE
