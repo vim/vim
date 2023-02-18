@@ -2008,6 +2008,9 @@ au BufNewFile,BufRead *.sql			call dist#ft#SQL()
 " SQLJ
 au BufNewFile,BufRead *.sqlj			setf sqlj
 
+" PRQL
+au BufNewFile,BufRead *.prql			setf prql
+
 " SQR
 au BufNewFile,BufRead *.sqr,*.sqi		setf sqr
 
