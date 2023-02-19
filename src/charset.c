@@ -1196,7 +1196,7 @@ win_lbr_chartabsize(
 		       || (tp->tp_col == MAXCOL
 			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
 				? col == 0
-				: (s[0] == NUL || s[1] == NUL)
+				: (s[0] == NUL || s[charlen] == NUL)
 						  && cts->cts_with_trailing)))
 		    && -tp->tp_id - 1 < gap->ga_len)
 	    {

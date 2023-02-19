@@ -2817,6 +2817,27 @@ func Test_prop_with_text_above_below_empty()
   call StopVimInTerminal(buf)
 endfunc
 
+func Test_prop_with_multibyte_below()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      setlocal number
+      call setline(1, ['©', '©', '©'])
+
+      let vt = 'test'
+      call prop_type_add(vt, {'highlight': 'ToDo'})
+      for ln in range(1, line('$'))
+        call prop_add(ln, 0, {'type': vt, 'text': '+++', 'text_align': 'below'})
+      endfor
+      normal G
+  END
+  call writefile(lines, 'XscriptPropMultibyteBelow', 'D')
+  let buf = RunVimInTerminal('-S XscriptPropMultibyteBelow', #{rows: 10, cols: 60})
+  call VerifyScreenDump(buf, 'Test_prop_multibyte_below_1', {})
+
+  call StopVimInTerminal(buf)
+endfunc
+
 func Test_prop_with_text_above_empty()
   CheckRunVimInTerminal
 
