@@ -3447,3 +3447,5 @@ EXTERN char e_cannot_define_new_function_in_abstract_class[]
 EXTERN char e_using_null_object[]
 	INIT(= N_("E1360: Using a null object"));
 #endif
+EXTERN char e_cannot_use_color_none_did_you_mean_none[]
+	INIT(= N_("E1361: Cannot use color \"none\", did you mean \"NONE\"?"));
