@@ -1598,6 +1598,15 @@ win_line(
 		}
 	}
     }
+
+    if (number_only)
+    {
+	// skip over rows only used for virtual text above
+	wlv.row += wlv.text_prop_above_count;
+	if (wlv.row > endrow)
+	    return wlv.row;
+	wlv.screen_row += wlv.text_prop_above_count;
+    }
 #endif
 
     // 'nowrap' or 'wrap' and a single line that doesn't fit: Advance to the

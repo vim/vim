@@ -2806,6 +2806,14 @@ func Test_prop_with_text_above_below_empty()
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_prop_above_below_empty_3', {})
 
+  call term_sendkeys(buf, ":set colorcolumn=\<CR>")
+  call term_sendkeys(buf, ":set relativenumber\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_prop_above_below_empty_4', {})
+
+  call term_sendkeys(buf, "kk")
+  call VerifyScreenDump(buf, 'Test_prop_above_below_empty_5', {})
+
   call StopVimInTerminal(buf)
 endfunc
 
