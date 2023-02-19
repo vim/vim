@@ -96,8 +96,9 @@ typedef struct {
 #ifdef FEAT_CONCEAL
     int		boguscols;	// nonexistent columns added to "col" to force
 				// wrapping
-    int		vcol_off;	// offset for concealed characters
+    int		vcol_off_co;	// offset for concealed characters
 #endif
+    int		vcol_off_tp;	// offset for virtual text
 #ifdef FEAT_SYN_HL
     int		draw_color_col;	// highlight colorcolumn
     int		*color_cols;	// pointer to according columns array
@@ -839,9 +840,9 @@ draw_screen_line(win_T *wp, winlinevars_T *wlv)
     // edge for 'cursorcolumn'.
     wlv->col -= wlv->boguscols;
     wlv->boguscols = 0;
-#  define VCOL_HLC (wlv->vcol - wlv->vcol_off)
+#  define VCOL_HLC (wlv->vcol - wlv->vcol_off_co - wlv->vcol_off_tp)
 # else
-#  define VCOL_HLC (wlv->vcol)
+#  define VCOL_HLC (wlv->vcol - wlv->vcol_off_tp)
 # endif
 
     if (wlv->draw_color_col)
@@ -1177,18 +1178,18 @@ win_line(
     int		is_concealing	= FALSE;
     int		did_wcol	= FALSE;
     int		old_boguscols   = 0;
-# define VCOL_HLC (wlv.vcol - wlv.vcol_off)
+# define VCOL_HLC (wlv.vcol - wlv.vcol_off_co - wlv.vcol_off_tp)
 # define FIX_FOR_BOGUSCOLS \
     { \
-	wlv.n_extra += wlv.vcol_off; \
-	wlv.vcol -= wlv.vcol_off; \
-	wlv.vcol_off = 0; \
+	wlv.n_extra += wlv.vcol_off_co; \
+	wlv.vcol -= wlv.vcol_off_co; \
+	wlv.vcol_off_co = 0; \
 	wlv.col -= wlv.boguscols; \
 	old_boguscols = wlv.boguscols; \
 	wlv.boguscols = 0; \
     }
 #else
-# define VCOL_HLC (wlv.vcol)
+# define VCOL_HLC (wlv.vcol - wlv.vcol_off_tp)
 #endif
 
     if (startrow > endrow)		// past the end already!
@@ -1864,7 +1865,8 @@ win_line(
 	// When only displaying the (relative) line number and that's done,
 	// stop here.
 	if (((dollar_vcol >= 0 && wp == curwin
-		   && lnum == wp->w_cursor.lnum && wlv.vcol >= (long)wp->w_virtcol)
+			       && lnum == wp->w_cursor.lnum
+			       && wlv.vcol >= (long)wp->w_virtcol)
 		|| (number_only && wlv.draw_state > WL_NR))
 #ifdef FEAT_DIFF
 				   && wlv.filler_todo <= 0
@@ -2122,6 +2124,9 @@ win_line(
 				    vim_free(p_extra_free2);
 				    p_extra_free2 = wlv.p_extra;
 				}
+
+				if (above)
+				    wlv.vcol_off_tp = wlv.n_extra;
 
 				if (lcs_eol_one < 0
 					&& wp->w_p_wrap
@@ -2991,9 +2996,9 @@ win_line(
 			int	saved_nextra = wlv.n_extra;
 
 # ifdef FEAT_CONCEAL
-			if (wlv.vcol_off > 0)
+			if (wlv.vcol_off_co > 0)
 			    // there are characters to conceal
-			    tab_len += wlv.vcol_off;
+			    tab_len += wlv.vcol_off_co;
 
 			// boguscols before FIX_FOR_BOGUSCOLS macro from above
 			if (wp->w_p_list && wp->w_lcs_chars.tab1
@@ -3047,8 +3052,8 @@ win_line(
 				// n_extra will be increased by
 				// FIX_FOX_BOGUSCOLS macro below, so need to
 				// adjust for that here
-				if (wlv.vcol_off > 0)
-				    wlv.n_extra -= wlv.vcol_off;
+				if (wlv.vcol_off_co > 0)
+				    wlv.n_extra -= wlv.vcol_off_co;
 # endif
 			    }
 			}
@@ -3056,12 +3061,12 @@ win_line(
 #endif
 #ifdef FEAT_CONCEAL
 		    {
-			int vc_saved = wlv.vcol_off;
+			int vc_saved = wlv.vcol_off_co;
 
 			// Tab alignment should be identical regardless of
 			// 'conceallevel' value. So tab compensates of all
 			// previous concealed characters, and thus resets
-			// vcol_off and boguscols accumulated so far in the
+			// vcol_off_co and boguscols accumulated so far in the
 			// line. Note that the tab can be longer than
 			// 'tabstop' when there are concealed characters.
 			FIX_FOR_BOGUSCOLS;
@@ -3326,7 +3331,7 @@ win_line(
 		    prev_syntax_id = syntax_seqnr;
 
 		    if (wlv.n_extra > 0)
-			wlv.vcol_off += wlv.n_extra;
+			wlv.vcol_off_co += wlv.n_extra;
 		    wlv.vcol += wlv.n_extra;
 		    if (wp->w_p_wrap && wlv.n_extra > 0)
 		    {
@@ -3800,9 +3805,9 @@ win_line(
 	else if (wp->w_p_cole > 0 && is_concealing)
 	{
 	    --n_skip;
-	    ++wlv.vcol_off;
+	    ++wlv.vcol_off_co;
 	    if (wlv.n_extra > 0)
-		wlv.vcol_off += wlv.n_extra;
+		wlv.vcol_off_co += wlv.n_extra;
 	    if (wp->w_p_wrap)
 	    {
 		// Special voodoo required if 'wrap' is on.
@@ -3895,7 +3900,7 @@ win_line(
 	    wlv.char_attr = vcol_save_attr;
 #endif
 
-	// restore attributes after "predeces" in 'listchars'
+	// restore attributes after "precedes" in 'listchars'
 	if (wlv.draw_state > WL_NR && n_attr3 > 0 && --n_attr3 == 0)
 	    wlv.char_attr = saved_attr3;
 
@@ -3932,7 +3937,7 @@ win_line(
 	    wlv_screen_line(wp, &wlv, FALSE);
 	    wlv.col += wlv.boguscols;
 	    wlv.boguscols = 0;
-	    wlv.vcol_off = 0;
+	    wlv.vcol_off_co = 0;
 #else
 	    wlv_screen_line(wp, &wlv, FALSE);
 #endif
