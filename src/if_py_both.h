@@ -307,7 +307,7 @@ int Vim_PyRun_SimpleString(const char *str)
 
 // Add a static type
 # define PYTYPE_READY(type) \
-    if (PyType_Ready(&(type))) \
+    if (PyType_Ready(type##Ptr)) \
 	return -1;
 
 #endif

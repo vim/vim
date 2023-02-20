@@ -206,7 +206,7 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # ifndef PyMapping_Keys
 #  define PyMapping_Keys py3_PyMapping_Keys
 # endif
-# if PY_VERSION_HEX >= 0x030a00b2
+# if PY_VERSION_HEX >= 0x03080000
 #  define PyIter_Check py3_PyIter_Check
 # endif
 # define PyIter_Next py3_PyIter_Next
@@ -399,7 +399,7 @@ static PyObject* (*py3_PyDict_GetItemString)(PyObject *, const char *);
 static int (*py3_PyDict_Next)(PyObject *, Py_ssize_t *, PyObject **, PyObject **);
 static PyObject* (*py3_PyLong_FromLong)(long);
 static PyObject* (*py3_PyDict_New)(void);
-# if PY_VERSION_HEX >= 0x030a00b2
+# if PY_VERSION_HEX >= 0x03080000
 static int (*py3_PyIter_Check)(PyObject *o);
 # endif
 static PyObject* (*py3_PyIter_Next)(PyObject *);
@@ -594,7 +594,7 @@ static struct
     {"PyDict_Next", (PYTHON_PROC*)&py3_PyDict_Next},
     {"PyMapping_Check", (PYTHON_PROC*)&py3_PyMapping_Check},
     {"PyMapping_Keys", (PYTHON_PROC*)&py3_PyMapping_Keys},
-# if PY_VERSION_HEX >= 0x030a00b2
+# if PY_VERSION_HEX >= 0x03080000
     {"PyIter_Check", (PYTHON_PROC*)&py3_PyIter_Check},
 # endif
     {"PyIter_Next", (PYTHON_PROC*)&py3_PyIter_Next},
