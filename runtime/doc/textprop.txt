@@ -56,7 +56,7 @@ how to highlight the text.  The property type can have these entries:
 			priority will be used.
 	"start_incl"	when TRUE inserts at the start position will be
 			included in the text property
-	"end_incl"    	when TRUE inserts at the end position will be
+	"end_incl"	when TRUE inserts at the end position will be
 			included in the text property
 
 
@@ -107,14 +107,14 @@ prop_type_list([{props}])		get list of property types
 
 Manipulating text properties:
 
-prop_add({lnum}, {col}, {props})  	add a text property
+prop_add({lnum}, {col}, {props})	add a text property
 prop_add_list({props}, [{item}, ...])
 					add a text property at multiple
 					positions.
 prop_clear({lnum} [, {lnum-end} [, {bufnr}]])
 					remove all text properties
 prop_find({props} [, {direction}])	search for a text property
-prop_list({lnum} [, {props}])  		text properties in {lnum}
+prop_list({lnum} [, {props}])		text properties in {lnum}
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 					remove a text property
 
@@ -149,7 +149,7 @@ prop_add({lnum}, {col}, {props})
 				highlighting; cannot be used with "length",
 				"end_lnum" and "end_col"
 				See |virtual-text| for more information.
-		   					*E1294*
+							*E1294*
 		   text_align	when "text" is present and {col} is zero;
 				specifies where to display the text:
 				   after   after the end of the line
@@ -172,7 +172,7 @@ prop_add({lnum}, {col}, {props})
 				fit:
 				   wrap      wrap the text to the next line
 				   truncate  truncate the text to make it fit
-		   		When omitted "truncate" is used.
+				When omitted "truncate" is used.
 				Note that this applies to the individual text
 				property, the 'wrap' option sets the overall
 				behavior

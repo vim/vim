@@ -1842,9 +1842,9 @@ editing text paragraphs.  A few hints on how to use this:
 
 - Set 'formatoptions' to "aw2tq" to make text with indents like this:
 
-	    bla bla foobar bla 
+	    bla bla foobar bla
 	bla foobar bla foobar bla
-	    bla bla foobar bla 
+	    bla bla foobar bla
 	bla foobar bla bla foobar
 
 - Add the 'c' flag to only auto-format comments.  Useful in source code.
