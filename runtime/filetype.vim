@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2023 Feb 02
+" Last Change:	2023 Feb 07
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2007,6 +2007,9 @@ au BufNewFile,BufRead *.sql			call dist#ft#SQL()
 
 " SQLJ
 au BufNewFile,BufRead *.sqlj			setf sqlj
+
+" PRQL
+au BufNewFile,BufRead *.prql			setf prql
 
 " SQR
 au BufNewFile,BufRead *.sqr,*.sqi		setf sqr

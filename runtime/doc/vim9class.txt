@@ -1,4 +1,4 @@
-*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Jan 17
+*vim9class.txt*	For Vim version 9.0.  Last change: 2023 Feb 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -518,6 +518,15 @@ An interface name must start with an uppercase letter. *E1343*
 The "Has" prefix can be used to make it easier to guess this is an interface
 name, with a hint about what it provides.
 An interface can only be defined in a |Vim9| script file.  *E1342*
+
+
+null object ~
+
+When a variable is decleared to have the type of an object, but it is not
+initialized, the value is null.  When trying to use this null object Vim often
+does not know what class was supposed to be used.  Vim then cannot check if
+a member name is correct and you will get an "Using a null object" error,
+even when the member name is invalid. *E1360*
 
 
 Default constructor ~

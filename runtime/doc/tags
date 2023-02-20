@@ -568,6 +568,8 @@ $quote	eval.txt	/*$quote*
 'nobreakindent'	options.txt	/*'nobreakindent'*
 'nobri'	options.txt	/*'nobri'*
 'nobuflisted'	options.txt	/*'nobuflisted'*
+'nocdh'	options.txt	/*'nocdh'*
+'nocdhome'	options.txt	/*'nocdhome'*
 'nocf'	options.txt	/*'nocf'*
 'noci'	options.txt	/*'noci'*
 'nocin'	options.txt	/*'nocin'*
@@ -676,6 +678,8 @@ $quote	eval.txt	/*$quote*
 'nomousef'	options.txt	/*'nomousef'*
 'nomousefocus'	options.txt	/*'nomousefocus'*
 'nomousehide'	options.txt	/*'nomousehide'*
+'nomousemev'	options.txt	/*'nomousemev'*
+'nomousemoveevent'	options.txt	/*'nomousemoveevent'*
 'nonu'	options.txt	/*'nonu'*
 'nonumber'	options.txt	/*'nonumber'*
 'noodev'	options.txt	/*'noodev'*
@@ -745,10 +749,12 @@ $quote	eval.txt	/*$quote*
 'notbidi'	options.txt	/*'notbidi'*
 'notbs'	options.txt	/*'notbs'*
 'notermbidi'	options.txt	/*'notermbidi'*
+'notermguicolors'	options.txt	/*'notermguicolors'*
 'noterse'	options.txt	/*'noterse'*
 'notextauto'	options.txt	/*'notextauto'*
 'notextmode'	options.txt	/*'notextmode'*
 'notf'	options.txt	/*'notf'*
+'notgc'	options.txt	/*'notgc'*
 'notgst'	options.txt	/*'notgst'*
 'notildeop'	options.txt	/*'notildeop'*
 'notimeout'	options.txt	/*'notimeout'*
@@ -2842,6 +2848,7 @@ $quote	eval.txt	/*$quote*
 :map-commands	map.txt	/*:map-commands*
 :map-expression	map.txt	/*:map-expression*
 :map-local	map.txt	/*:map-local*
+:map-meta-keys	map.txt	/*:map-meta-keys*
 :map-modes	map.txt	/*:map-modes*
 :map-nowait	map.txt	/*:map-nowait*
 :map-operator	map.txt	/*:map-operator*
@@ -4424,6 +4431,8 @@ E1357	vim9class.txt	/*E1357*
 E1358	vim9class.txt	/*E1358*
 E1359	vim9class.txt	/*E1359*
 E136	starting.txt	/*E136*
+E1360	vim9class.txt	/*E1360*
+E1361	syntax.txt	/*E1361*
 E137	starting.txt	/*E137*
 E138	starting.txt	/*E138*
 E139	message.txt	/*E139*

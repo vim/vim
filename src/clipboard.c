@@ -1253,7 +1253,7 @@ clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
  * Return an error message or NULL for success.
  */
     char *
-check_clipboard_option(void)
+did_set_clipboard(optset_T *args UNUSED)
 {
     int		new_unnamed = 0;
     int		new_autoselect_star = FALSE;

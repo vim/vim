@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 9.0.  Last change: 2023 Feb 01
+*options.txt*	For Vim version 9.0.  Last change: 2023 Feb 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1547,7 +1547,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			case mapping, the current locale is not effective.
 			This probably only matters for Turkish.
 
-						*'cdhome'* *'cdh'*
+				*'cdhome'* *'cdh'* *'nocdhome'* *'nocdh'*
 'cdhome' 'cdh'		boolean	(default: off)
 			global
 	When on, |:cd|, |:tcd| and |:lcd| without an argument changes the
@@ -5665,7 +5665,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The 'mousemodel' option is set by the |:behave| command.
 
-						*'mousemoveevent'* *'mousemev'*
+	      *'mousemoveevent'* *'mousemev'* *'nomousemoveevent'* *'nomousemev'*
 'mousemoveevent' 'mousemev'  boolean	(default off)
 			global
 			{only works in the GUI}
@@ -7776,7 +7776,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      mark.  This information is used for mouse clicks.
 	< -   Where to truncate line if too long.  Default is at the start.
 	      No width fields allowed.
-	= -   Separation point between left and right aligned items.
+	= -   Separation point between alignment sections.  Each section will
+	      be separated by an equal number of spaces.  With one %= what
+	      comes after it will be right-aligned.  With two %= there is a
+	      middle part, with white space left and right of it.
 	      No width fields allowed.
 	# -   Set highlight group.  The name must follow and then a # again.
 	      Thus use %#HLname# for highlight group HLname.  The same
@@ -8231,7 +8234,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set encoding=utf-8
 <	You need to do this when your system has no locale support for UTF-8.
 
-					*'termguicolors'* *'tgc'* *E954*
+		*'termguicolors'* *'tgc'* *'notermguicolors'* *'notgc'* *E954*
 'termguicolors' 'tgc'	boolean (default off)
 			global
 			{not available when compiled without the

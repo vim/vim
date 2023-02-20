@@ -1253,9 +1253,9 @@ cmdline_insert_reg(int *gotesc UNUSED)
     // remove the double quote
     redrawcmd();
 
-    // The text has been stuffed, the command line didn't change yet, but it
-    // will change soon.  The caller must take care of it.
-    return literally ? CMDLINE_NOT_CHANGED : CMDLINE_CHANGED;
+    // With "literally": the command line has already changed.
+    // Else: the text has been stuffed, but the command line didn't change yet.
+    return literally ? CMDLINE_CHANGED : CMDLINE_NOT_CHANGED;
 }
 
 /*
@@ -2086,10 +2086,8 @@ getcmdline_int(
 		res = cmdline_insert_reg(&gotesc);
 		if (res == GOTO_NORMAL_MODE)
 		    goto returncmd;
-#ifdef FEAT_SEARCH_EXTRA
-		if (res == CMDLINE_NOT_CHANGED)
-		    is_state.incsearch_postponed = TRUE;
-#endif
+		if (res == CMDLINE_CHANGED)
+		    goto cmdline_changed;
 		goto cmdline_not_changed;
 
 	case Ctrl_D:
@@ -4368,7 +4366,7 @@ get_list_range(char_u **str, int *num1, int *num2)
  * Returns NULL if value is OK, error message otherwise.
  */
     char *
-check_cedit(void)
+did_set_cedit(optset_T *args UNUSED)
 {
     int n;
 

@@ -1283,7 +1283,7 @@ call_ufunc(
 {
     typval_T	argvars[MAX_FUNC_ARGS];
     funcexe_T   funcexe;
-    int		error;
+    funcerror_T	error;
     int		idx;
     int		did_emsg_before = did_emsg;
     compiletype_T compile_type = get_compile_type(ufunc);
@@ -1464,10 +1464,10 @@ call_partial(
 	name = tv->vval.v_string;
     if (name != NULL)
     {
-	char_u	fname_buf[FLEN_FIXED + 1];
-	char_u	*tofree = NULL;
-	int	error = FCERR_NONE;
-	char_u	*fname;
+	char_u	    fname_buf[FLEN_FIXED + 1];
+	char_u	    *tofree = NULL;
+	funcerror_T error = FCERR_NONE;
+	char_u	    *fname;
 
 	// May need to translate <SNR>123_ to K_SNR.
 	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
@@ -2126,8 +2126,12 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
     vartype_T	dest_type = iptr->isn_arg.storeindex.si_vartype;
     typval_T	*tv;
     typval_T	*tv_idx = STACK_TV_BOT(-2);
+    long	lidx = 0;
     typval_T	*tv_dest = STACK_TV_BOT(-1);
     int		status = OK;
+
+    if (tv_idx->v_type == VAR_NUMBER)
+	lidx = (long)tv_idx->vval.v_number;
 
     // Stack contains:
     // -3 value to be stored
@@ -2140,7 +2144,41 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	dest_type = tv_dest->v_type;
 	if (dest_type == VAR_DICT)
 	    status = do_2string(tv_idx, TRUE, FALSE);
-	else if (dest_type == VAR_LIST && tv_idx->v_type != VAR_NUMBER)
+	else if (dest_type == VAR_OBJECT && tv_idx->v_type == VAR_STRING)
+	{
+	    // Need to get the member index now that the class is known.
+	    object_T *obj = tv_dest->vval.v_object;
+	    class_T *cl = obj->obj_class;
+	    char_u  *member = tv_idx->vval.v_string;
+
+	    ocmember_T *m = NULL;
+	    for (int i = 0; i < cl->class_obj_member_count; ++i)
+	    {
+		m = &cl->class_obj_members[i];
+		if (STRCMP(member, m->ocm_name) == 0)
+		{
+		    if (*member == '_')
+		    {
+			semsg(_(e_cannot_access_private_member_str),
+								  m->ocm_name);
+			status = FAIL;
+		    }
+
+		    lidx = i;
+		    break;
+		}
+		m = NULL;
+	    }
+
+	    if (m == NULL)
+	    {
+		semsg(_(e_member_not_found_on_object_str_str),
+						       cl->class_name, member);
+		status = FAIL;
+	    }
+	}
+	else if ((dest_type == VAR_LIST || dest_type == VAR_OBJECT)
+		&& tv_idx->v_type != VAR_NUMBER)
 	{
 	    emsg(_(e_number_expected));
 	    status = FAIL;
@@ -2151,7 +2189,6 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
     {
 	if (dest_type == VAR_LIST)
 	{
-	    long	    lidx = (long)tv_idx->vval.v_number;
 	    list_T	    *list = tv_dest->vval.v_list;
 
 	    if (list == NULL)
@@ -2224,7 +2261,6 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	}
 	else if (dest_type == VAR_BLOB)
 	{
-	    long	    lidx = (long)tv_idx->vval.v_number;
 	    blob_T	    *blob = tv_dest->vval.v_blob;
 	    varnumber_T	    nr;
 	    int		    error = FALSE;
@@ -2255,18 +2291,17 @@ execute_storeindex(isn_T *iptr, ectx_T *ectx)
 	}
 	else if (dest_type == VAR_CLASS || dest_type == VAR_OBJECT)
 	{
-	    long	    idx = (long)tv_idx->vval.v_number;
 	    object_T	    *obj = tv_dest->vval.v_object;
 	    typval_T	    *otv = (typval_T *)(obj + 1);
 
 	    class_T	    *itf = iptr->isn_arg.storeindex.si_class;
 	    if (itf != NULL)
 		// convert interface member index to class member index
-		idx = object_index_from_itf_index(itf, FALSE,
-							  idx, obj->obj_class);
+		lidx = object_index_from_itf_index(itf, FALSE,
+							 lidx, obj->obj_class);
 
-	    clear_tv(&otv[idx]);
-	    otv[idx] = *tv;
+	    clear_tv(&otv[lidx]);
+	    otv[lidx] = *tv;
 	}
 	else
 	{

@@ -1771,7 +1771,7 @@ spell_reload_one(
     // When "zg" was used and the file wasn't loaded yet, should redo
     // 'spelllang' to load it now.
     if (added_word && !didit)
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 }
 
 

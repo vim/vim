@@ -1,4 +1,4 @@
-*builtin.txt*	For Vim version 9.0.  Last change: 2023 Jan 17
+*builtin.txt*	For Vim version 9.0.  Last change: 2023 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -266,7 +266,7 @@ gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 gettagstack([{nr}])		Dict	get the tag stack of window {nr}
 gettext({text})			String	lookup translation of {text}
 getwininfo([{winid}])		List	list of info about each window
-getwinpos([{timeout}])		List	X and Y coord in pixels of the Vim window
+getwinpos([{timeout}])		List	X and Y coord in pixels of Vim window
 getwinposx()			Number	X coord in pixels of the Vim window
 getwinposy()			Number	Y coord in pixels of the Vim window
 getwinvar({nr}, {varname} [, {def}])
@@ -382,7 +382,7 @@ matchstrpos({expr}, {pat} [, {start} [, {count}]])
 max({expr})			Number	maximum value of items in {expr}
 menu_info({name} [, {mode}])	Dict	get menu item information
 min({expr})			Number	minimum value of items in {expr}
-mkdir({name} [, {path} [, {prot}]])
+mkdir({name} [, {flags} [, {prot}]])
 				Number	create directory {name}
 mode([expr])			String	current editing mode
 mzeval({expr})			any	evaluate |MzScheme| expression
@@ -6261,17 +6261,20 @@ min({expr})	Return the minimum value of all items in {expr}. Example:  >
 			mylist->min()
 
 <							*mkdir()* *E739*
-mkdir({name} [, {path} [, {prot}]])
+mkdir({name} [, {flags} [, {prot}]])
 		Create directory {name}.
 
-		If {path} contains "p" then intermediate directories are
-		created as necessary.  Otherwise it must be "".
+		When {flags} is present it must be a string.  An empty string
+		has no effect.
 
-		If {path} contains "D" then {name} is deleted at the end of
+		If {flags} contains "p" then intermediate directories are
+		created as necessary.
+
+		If {flags} contains "D" then {name} is deleted at the end of
 		the current function, as with: >
 			defer delete({name}, 'd')
 <
-		If {path} contains "R" then {name} is deleted recursively at
+		If {flags} contains "R" then {name} is deleted recursively at
 		the end of the current function, as with: >
 			defer delete({name}, 'rf')
 <		Note that when {name} has more than one part and "p" is used

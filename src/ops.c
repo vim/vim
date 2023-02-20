@@ -3406,7 +3406,7 @@ static callback_T opfunc_cb;
  * Returns OK or FAIL.
  */
     char *
-set_operatorfunc_option(void)
+did_set_operatorfunc(optset_T *args UNUSED)
 {
     if (option_set_callback_func(p_opfunc, &opfunc_cb) == FAIL)
 	return e_invalid_argument;

@@ -2011,13 +2011,13 @@ compile_load_lhs(
 	size_t	    varlen = lhs->lhs_varlen;
 	int	    c = var_start[varlen];
 	int	    lines_len = cctx->ctx_ufunc->uf_lines.ga_len;
-	char_u	    *p = var_start;
 	int	    res;
 
 	// Evaluate "ll[expr]" of "ll[expr][idx]".  End the line with a NUL and
 	// limit the lines array length to avoid skipping to a following line.
 	var_start[varlen] = NUL;
 	cctx->ctx_ufunc->uf_lines.ga_len = cctx->ctx_lnum + 1;
+	char_u *p = var_start;
 	res = compile_expr0(&p, cctx);
 	var_start[varlen] = c;
 	cctx->ctx_ufunc->uf_lines.ga_len = lines_len;
@@ -2031,10 +2031,15 @@ compile_load_lhs(
 
 	lhs->lhs_type = cctx->ctx_type_stack.ga_len == 0 ? &t_void
 						  : get_type_on_stack(cctx, 0);
-	// now we can properly check the type
-	if (rhs_type != NULL && lhs->lhs_type->tt_member != NULL
+	// Now we can properly check the type.  The variable is indexed, thus
+	// we need the member type.  For a class or object we don't know the
+	// type yet, it depends on what member is used.
+	vartype_T vartype = lhs->lhs_type->tt_type;
+	type_T *member_type = lhs->lhs_type->tt_member;
+	if (rhs_type != NULL && member_type != NULL
+		&& vartype != VAR_OBJECT && vartype != VAR_CLASS
 		&& rhs_type != &t_void
-		&& need_type(rhs_type, lhs->lhs_type->tt_member, FALSE,
+		&& need_type(rhs_type, member_type, FALSE,
 					    -2, 0, cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
     }

@@ -4781,6 +4781,7 @@ typedef struct {
     textprop_T	*cts_text_props;	// text props (allocated)
     char	cts_has_prop_with_text; // TRUE if if a property inserts text
     int		cts_cur_text_width;     // width of current inserted text
+    int		cts_prop_lines;		// nr of properties above or below
     int		cts_first_char;		// width text props above the line
     int		cts_with_trailing;	// include size of trailing props with
 					// last character
@@ -4788,3 +4789,33 @@ typedef struct {
 #endif
     int		cts_vcol;	    // virtual column at current position
 } chartabsize_T;
+
+/*
+ * Argument for the callback function (opt_did_set_cb_T) invoked after an
+ * option value is modified.
+ */
+typedef struct
+{
+    int		os_flags;
+    char_u	*os_varp;		// pointer to the option variable
+
+    // old value of the option (can be a string, number or a boolean)
+    union
+    {
+	long	number;
+	int	boolean;
+	char_u	*string;
+    } os_oldval;
+
+    // new value of the option (can be a string, number or a boolean)
+    union
+    {
+	long	number;
+	int	boolean;
+	char_u	*string;
+    } os_newval;
+
+    // When set by the called function: Stop processing the option further.
+    // Currently only used for boolean options.
+    int		os_doskip;
+} optset_T;

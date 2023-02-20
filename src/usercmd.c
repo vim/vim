@@ -1838,7 +1838,7 @@ do_ucmd(exarg_T *eap)
     if (eap->cmdidx == CMD_USER)
 	cmd = USER_CMD(eap->useridx);
     else
-	cmd = USER_CMD_GA(&curbuf->b_ucmds, eap->useridx);
+	cmd = USER_CMD_GA(&prevwin_curwin()->w_buffer->b_ucmds, eap->useridx);
 
     /*
      * Replace <> in the command by the arguments.

@@ -171,7 +171,7 @@ static callback_T tfu_cb;	    // 'tagfunc' callback function
  * a function (string), or function(<name>) or funcref(<name>) or a lambda.
  */
     char *
-set_tagfunc_option(void)
+did_set_tagfunc(optset_T *args UNUSED)
 {
 #ifdef FEAT_EVAL
     free_callback(&tfu_cb);

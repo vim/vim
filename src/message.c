@@ -902,7 +902,7 @@ internal_error_no_abort(char *where)
     void
 emsg_invreg(int name)
 {
-    semsg(_(e_invalid_register_name_str), transchar(name));
+    semsg(_(e_invalid_register_name_str), transchar_buf(NULL, name));
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -1601,7 +1601,7 @@ msg_outtrans_one(char_u *p, int attr)
 	msg_outtrans_len_attr(p, l, attr);
 	return p + l;
     }
-    msg_puts_attr((char *)transchar_byte(*p), attr);
+    msg_puts_attr((char *)transchar_byte_buf(NULL, *p), attr);
     return p + 1;
 }
 
@@ -1658,7 +1658,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 		    msg_puts_attr_len((char *)plain_start,
 					       (int)(str - plain_start), attr);
 		plain_start = str + mb_l;
-		msg_puts_attr((char *)transchar(c),
+		msg_puts_attr((char *)transchar_buf(NULL, c),
 					    attr == 0 ? HL_ATTR(HLF_8) : attr);
 		retval += char2cells(c);
 	    }
@@ -1667,7 +1667,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	}
 	else
 	{
-	    s = transchar_byte(*str);
+	    s = transchar_byte_buf(NULL, *str);
 	    if (s[1] != NUL)
 	    {
 		// unprintable char: print the printable chars so far and the
@@ -1753,7 +1753,7 @@ msg_outtrans_special(
 	    text = (char *)str2special(&str, from, FALSE);
 	if (text[0] != NUL && text[1] == NUL)
 	    // single-byte character or illegal byte
-	    text = (char *)transchar_byte((char_u)text[0]);
+	    text = (char *)transchar_byte_buf(NULL, (char_u)text[0]);
 	len = vim_strsize((char_u *)text);
 	if (maxlen > 0 && retval + len >= maxlen)
 	    break;
@@ -2021,7 +2021,7 @@ msg_prt_line(char_u *s, int list)
 	    else if (c != NUL && (n = byte2cells(c)) > 1)
 	    {
 		n_extra = n - 1;
-		p_extra = transchar_byte(c);
+		p_extra = transchar_byte_buf(NULL, c);
 		c_extra = NUL;
 		c_final = NUL;
 		c = *p_extra++;

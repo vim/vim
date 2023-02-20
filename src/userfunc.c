@@ -1979,7 +1979,11 @@ eval_fname_sid(char_u *p)
  * and set "tofree".
  */
     char_u *
-fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
+fname_trans_sid(
+	char_u	    *name,
+	char_u	    *fname_buf,
+	char_u	    **tofree,
+	funcerror_T *error)
 {
     int		llen;
     char_u	*fname;
@@ -2716,7 +2720,7 @@ remove_funccal()
 /*
  * Call a user function.
  */
-    static void
+    static funcerror_T
 call_user_func(
     ufunc_T	*fp,		// pointer to function
     int		argcount,	// nr of args
@@ -2731,6 +2735,7 @@ call_user_func(
     int		save_sticky_cmdmod_flags = sticky_cmdmod_flags;
     funccall_T	*fc;
     int		save_did_emsg;
+    funcerror_T retval = FCERR_NONE;
     int		default_arg_err = FALSE;
     dictitem_T	*v;
     int		fixvar_idx = 0;	// index in fc_fixvar[]
@@ -2755,14 +2760,14 @@ call_user_func(
     {
 	rettv->v_type = VAR_NUMBER;
 	rettv->vval.v_number = -1;
-	return;
+	return FCERR_FAILED;
     }
 
     line_breakcheck();		// check for CTRL-C hit
 
     fc = create_funccal(fp, rettv);
     if (fc == NULL)
-	return;
+	return FCERR_OTHER;
     fc->fc_level = ex_nesting_level;
     // Check if this function has a breakpoint.
     fc->fc_breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name, (linenr_T)0);
@@ -2781,8 +2786,9 @@ call_user_func(
 	    profile_may_start_func(&profile_info, fp, caller);
 #endif
 	sticky_cmdmod_flags = 0;
-	call_def_function(fp, argcount, argvars, 0,
-			   funcexe->fe_partial, funcexe->fe_object, fc, rettv);
+	if (call_def_function(fp, argcount, argvars, 0,
+		   funcexe->fe_partial, funcexe->fe_object, fc, rettv) == FAIL)
+	    retval = FCERR_FAILED;
 	funcdepth_decrement();
 #ifdef FEAT_PROFILE
 	if (do_profiling == PROF_YES && (fp->uf_profiling
@@ -2791,7 +2797,7 @@ call_user_func(
 #endif
 	remove_funccal();
 	sticky_cmdmod_flags = save_sticky_cmdmod_flags;
-	return;
+	return retval;
     }
 
     islambda = fp->uf_flags & FC_LAMBDA;
@@ -3024,7 +3030,10 @@ call_user_func(
     did_emsg = FALSE;
 
     if (default_arg_err && (fp->uf_flags & FC_ABORT))
+    {
 	did_emsg = TRUE;
+	retval = FCERR_FAILED;
+    }
     else if (islambda)
     {
 	char_u *p = *(char_u **)fp->uf_lines.ga_data + 7;
@@ -3051,6 +3060,11 @@ call_user_func(
 	clear_tv(rettv);
 	rettv->v_type = VAR_NUMBER;
 	rettv->vval.v_number = -1;
+
+	// In corner cases returning a "failed" value is not backwards
+	// compatible.  Only do this for Vim9 script.
+	if (in_vim9script())
+	    retval = FCERR_FAILED;
     }
 
 #ifdef FEAT_PROFILE
@@ -3134,13 +3148,15 @@ call_user_func(
     for (i = 0; i < tv_to_free_len; ++i)
 	clear_tv(tv_to_free[i]);
     cleanup_function_call(fc);
+
+    return retval;
 }
 
 /*
  * Check the argument count for user function "fp".
  * Return FCERR_UNKNOWN if OK, FCERR_TOOFEW or FCERR_TOOMANY otherwise.
  */
-    int
+    funcerror_T
 check_user_func_argcount(ufunc_T *fp, int argcount)
 {
     int regular_args = fp->uf_args.ga_len;
@@ -3155,7 +3171,7 @@ check_user_func_argcount(ufunc_T *fp, int argcount)
 /*
  * Call a user function after checking the arguments.
  */
-    int
+    funcerror_T
 call_user_func_check(
 	ufunc_T	    *fp,
 	int	    argcount,
@@ -3164,7 +3180,7 @@ call_user_func_check(
 	funcexe_T   *funcexe,
 	dict_T	    *selfdict)
 {
-    int error;
+    funcerror_T error = FCERR_NONE;
 
 #ifdef FEAT_LUA
     if (fp->uf_flags & FC_CFUNC)
@@ -3180,8 +3196,11 @@ call_user_func_check(
     error = check_user_func_argcount(fp, argcount);
     if (error != FCERR_UNKNOWN)
 	return error;
+
     if ((fp->uf_flags & FC_DICT) && selfdict == NULL)
+    {
 	error = FCERR_DICT;
+    }
     else
     {
 	int		did_save_redo = FALSE;
@@ -3199,7 +3218,7 @@ call_user_func_check(
 	    did_save_redo = TRUE;
 	}
 	++fp->uf_calls;
-	call_user_func(fp, argcount, argvars, rettv, funcexe,
+	error = call_user_func(fp, argcount, argvars, rettv, funcexe,
 				   (fp->uf_flags & FC_DICT) ? selfdict : NULL);
 	if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
 	    // Function was unreferenced while being used, free it now.
@@ -3207,8 +3226,8 @@ call_user_func_check(
 	if (did_save_redo)
 	    restoreRedobuff(&save_redo);
 	restore_search_patterns();
-	error = FCERR_NONE;
     }
+
     return error;
 }
 
@@ -3542,7 +3561,7 @@ call_callback_retnr(
  * Nothing if "error" is FCERR_NONE.
  */
     void
-user_func_error(int error, char_u *name, int found_var)
+user_func_error(funcerror_T error, char_u *name, int found_var)
 {
     switch (error)
     {
@@ -3571,6 +3590,12 @@ user_func_error(int error, char_u *name, int found_var)
 		emsg_funcname(e_calling_dict_function_without_dictionary_str,
 									 name);
 		break;
+	case FCERR_OTHER:
+	case FCERR_FAILED:
+		// assume the error message was already given
+		break;
+	case FCERR_NONE:
+		break;
     }
 }
 
@@ -3591,7 +3616,7 @@ call_func(
     funcexe_T	*funcexe)	// more arguments
 {
     int		ret = FAIL;
-    int		error = FCERR_NONE;
+    funcerror_T	error = FCERR_NONE;
     int		i;
     ufunc_T	*fp = NULL;
     char_u	fname_buf[FLEN_FIXED + 1];
@@ -3823,7 +3848,7 @@ call_simple_func(
     typval_T	*rettv)		// return value goes here
 {
     int		ret = FAIL;
-    int		error = FCERR_NONE;
+    funcerror_T	error = FCERR_NONE;
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
     char_u	*name;
@@ -5973,8 +5998,7 @@ ex_defer_inner(
 	    // we tolerate an unknown function here, it might be defined later
 	    if (ufunc != NULL)
 	    {
-		int error = check_user_func_argcount(ufunc, argcount);
-
+		funcerror_T error = check_user_func_argcount(ufunc, argcount);
 		if (error != FCERR_UNKNOWN)
 		{
 		    user_func_error(error, name, FALSE);
@@ -6449,7 +6473,6 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
     char_u	*fname;
     ufunc_T	*fp = NULL;
     char_u	fname_buf[FLEN_FIXED + 1];
-    int		error;
     dict_T	*selfdict = selfdict_in;
 
     if (rettv->v_type == VAR_PARTIAL  && rettv->vval.v_partial != NULL
@@ -6470,6 +6493,7 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
 	else
 	{
 	    char_u	*tofree = NULL;
+	    funcerror_T	error;
 
 	    // Translate "s:func" to the stored function name.
 	    fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
@@ -6881,7 +6905,7 @@ set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
 {
     ufunc_T	*fp = fp_in;
     funccall_T	*fc;
-    int		error = FCERR_NONE;
+    funcerror_T	error = FCERR_NONE;
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
     char_u	*fname;

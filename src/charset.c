@@ -523,19 +523,28 @@ transchar_buf(buf_T *buf, int c)
 
 /*
  * Like transchar(), but called with a byte instead of a character.  Checks
- * for an illegal UTF-8 byte.
+ * for an illegal UTF-8 byte.  Uses 'fileformat' of the current buffer.
  */
     char_u *
 transchar_byte(int c)
 {
-    if (enc_utf8 && c >= 0x80)
-    {
-	transchar_nonprint(curbuf, transchar_charbuf, c);
-	return transchar_charbuf;
-    }
-    return transchar(c);
+    return transchar_byte_buf(curbuf, c);
 }
 
+/*
+ * Like transchar_buf(), but called with a byte instead of a character.  Checks
+ * for an illegal UTF-8 byte.  Uses 'fileformat' of "buf", unless it is NULL.
+ */
+    char_u *
+transchar_byte_buf(buf_T *buf, int c)
+{
+    if (enc_utf8 && c >= 0x80)
+    {
+	transchar_nonprint(buf, transchar_charbuf, c);
+	return transchar_charbuf;
+    }
+    return transchar_buf(buf, c);
+}
 /*
  * Convert non-printable character to two or more printable characters in
  * "charbuf[]".  "charbuf" needs to be able to hold five bytes.
@@ -546,7 +555,7 @@ transchar_nonprint(buf_T *buf, char_u *charbuf, int c)
 {
     if (c == NL)
 	c = NUL;		// we use newline in place of a NUL
-    else if (c == CAR && get_fileformat(buf) == EOL_MAC)
+    else if (buf != NULL && c == CAR && get_fileformat(buf) == EOL_MAC)
 	c = NL;			// we use CR in place of  NL in this case
 
     if (dy_flags & DY_UHEX)		// 'display' has "uhex"
@@ -813,6 +822,11 @@ win_linetabsize_cts(chartabsize_T *cts, colnr_T len)
     {
 	(void)win_lbr_chartabsize(cts, NULL);
 	cts->cts_vcol += cts->cts_cur_text_width;
+
+	// when properties are above or below the empty line must also be
+	// counted
+	if (cts->cts_prop_lines > 0)
+	    ++cts->cts_vcol;
     }
 #endif
 }
@@ -1152,6 +1166,8 @@ win_lbr_chartabsize(
      * First get the normal size, without 'linebreak' or text properties
      */
     size = win_chartabsize(wp, s, vcol);
+    if (*s == NUL)
+	size = 0;  // NUL is not displayed
 
 # ifdef FEAT_PROP_POPUP
     if (cts->cts_has_prop_with_text)
@@ -1180,7 +1196,7 @@ win_lbr_chartabsize(
 		       || (tp->tp_col == MAXCOL
 			   && ((tp->tp_flags & TP_FLAG_ALIGN_ABOVE)
 				? col == 0
-				: (s[0] == NUL || s[1] == NUL)
+				: (s[0] == NUL || s[charlen] == NUL)
 						  && cts->cts_with_trailing)))
 		    && -tp->tp_id - 1 < gap->ga_len)
 	    {
@@ -1215,6 +1231,10 @@ win_lbr_chartabsize(
 			tab_size = win_chartabsize(wp, s, vcol + size);
 			size += tab_size;
 		    }
+		    if (tp->tp_col == MAXCOL && (tp->tp_flags
+				& (TP_FLAG_ALIGN_ABOVE | TP_FLAG_ALIGN_BELOW)))
+			// count extra line for property above/below
+			++cts->cts_prop_lines;
 		}
 	    }
 	    if (tp->tp_col != MAXCOL && tp->tp_col - 1 > col)

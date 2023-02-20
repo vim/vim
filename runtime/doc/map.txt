@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 9.0.  Last change: 2023 Jan 09
+*map.txt*       For Vim version 9.0.  Last change: 2023 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -923,6 +923,11 @@ in the original Vi, you would get back the text before the first undo).
 
 1.10 MAPPING ALT-KEYS					*:map-alt-keys*
 
+For a readable mapping command the <A-k> form can be used.  Note that <A-k>
+and <A-K> are different, the latter will use an upper case letter.  Actually,
+<A-K> and <A-S-K> are the same.  Instead of "A" you can use "M".  If you have
+an actual Meta modifier key, please see |:map-meta-keys|.
+
 In the GUI Vim handles the Alt key itself, thus mapping keys with ALT should
 always work.  But in a terminal Vim gets a sequence of bytes and has to figure
 out whether ALT was pressed or not.
@@ -1212,7 +1217,7 @@ non-id	  The "non-id" type ends in a non-keyword character, the other
 Examples of strings that cannot be abbreviations: "a.b", "#def", "a b", "_$r"
 
 An abbreviation is only recognized when you type a non-keyword character.
-This can also be the <Esc> that ends insert mode or the <CR> that ends a
+This can also be the <Esc> that ends Insert mode or the <CR> that ends a
 command.  The non-keyword character which ends the abbreviation is inserted
 after the expanded abbreviation.  An exception to this is the character <C-]>,
 which is used to expand an abbreviation without inserting any extra
