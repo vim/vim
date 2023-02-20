@@ -977,7 +977,7 @@ cmdline_paste_reg(
  * Shift the delete registers: "9 is cleared, "8 becomes "9, etc.
  */
     void
-shift_delete_registers()
+shift_delete_registers(void)
 {
     int		n;
 
@@ -2328,7 +2328,7 @@ get_register_name(int num)
  * Return the index of the register "" points to.
  */
     int
-get_unname_register()
+get_unname_register(void)
 {
     return y_previous == NULL ? -1 : y_previous - &y_regs[0];
 }

@@ -36,7 +36,7 @@ static char_u *untrans_function_name(char_u *name);
 static void handle_defer_one(funccall_T *funccal);
 
     void
-func_init()
+func_init(void)
 {
     hash_init(&func_hashtab);
 }
@@ -2709,7 +2709,7 @@ create_funccal(ufunc_T *fp, typval_T *rettv)
  * current_funccal.
  */
     void
-remove_funccal()
+remove_funccal(void)
 {
     funccall_T *fc = current_funccal;
 
@@ -6662,7 +6662,7 @@ get_funccal(void)
  * Return NULL if there is no current funccal.
  */
     hashtab_T *
-get_funccal_local_ht()
+get_funccal_local_ht(void)
 {
     if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
 	return NULL;
@@ -6674,7 +6674,7 @@ get_funccal_local_ht()
  * Return NULL if there is no current funccal.
  */
     dictitem_T *
-get_funccal_local_var()
+get_funccal_local_var(void)
 {
     if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
 	return NULL;
@@ -6686,7 +6686,7 @@ get_funccal_local_var()
  * Return NULL if there is no current funccal.
  */
     hashtab_T *
-get_funccal_args_ht()
+get_funccal_args_ht(void)
 {
     if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
 	return NULL;
@@ -6698,7 +6698,7 @@ get_funccal_args_ht()
  * Return NULL if there is no current funccal.
  */
     dictitem_T *
-get_funccal_args_var()
+get_funccal_args_var(void)
 {
     if (current_funccal == NULL || current_funccal->fc_l_vars.dv_refcount == 0)
 	return NULL;

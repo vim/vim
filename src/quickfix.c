@@ -8448,7 +8448,7 @@ ex_helpgrep(exarg_T *eap)
 
 # if defined(EXITFREE) || defined(PROTO)
     void
-free_quickfix()
+free_quickfix(void)
 {
     win_T	*win;
     tabpage_T	*tab;

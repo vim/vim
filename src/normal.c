@@ -1110,14 +1110,14 @@ call_yank_do_autocmd(int regname)
  * from do_pending_operator().
  */
     void
-end_visual_mode()
+end_visual_mode(void)
 {
     end_visual_mode_keep_button();
     reset_held_button();
 }
 
     void
-end_visual_mode_keep_button()
+end_visual_mode_keep_button(void)
 {
 #ifdef FEAT_CLIPBOARD
     // If we are using the clipboard, then remember what was selected in case

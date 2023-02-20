@@ -387,7 +387,7 @@ pum_display(
  * This will avoid clearing and redrawing the popup menu, prevent flicker.
  */
     void
-pum_call_update_screen()
+pum_call_update_screen(void)
 {
     call_update_screen = TRUE;
 

@@ -257,7 +257,7 @@ start_global_changes(void)
  * right text.
  */
     static int
-is_clipboard_needs_update()
+is_clipboard_needs_update(void)
 {
     return clipboard_needs_update;
 }

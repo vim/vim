@@ -392,7 +392,7 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
  * Flush messages on channels.
  */
     static void
-term_flush_messages()
+term_flush_messages(void)
 {
     mch_check_messages();
     parse_queued_messages();
@@ -1104,7 +1104,7 @@ free_terminal(buf_T *buf)
 }
 
     void
-free_unused_terminals()
+free_unused_terminals(void)
 {
     while (terminals_to_free != NULL)
     {
@@ -2157,7 +2157,7 @@ term_in_normal_mode(void)
  * Restores updating the terminal window.
  */
     void
-term_enter_job_mode()
+term_enter_job_mode(void)
 {
     term_T	*term = curbuf->b_term;
 
@@ -2224,7 +2224,7 @@ check_no_reduce_keys(void)
  * closed and ++close was used.  This may even happen before we get here.
  */
     static int
-term_vgetc()
+term_vgetc(void)
 {
     int c;
     int save_State = State;
@@ -2451,7 +2451,7 @@ term_paste_register(int prev_c UNUSED)
  * terminal should be displayed.
  */
     int
-terminal_is_active()
+terminal_is_active(void)
 {
     return in_terminal_loop != NULL;
 }
@@ -2609,7 +2609,7 @@ term_use_loop(void)
  * we may want to change state.
  */
     void
-term_win_entered()
+term_win_entered(void)
 {
     term_T *term = curbuf->b_term;
 
@@ -3702,7 +3702,7 @@ term_channel_closed(channel_T *ch)
  * channel was closed.
  */
     void
-term_check_channel_closed_recently()
+term_check_channel_closed_recently(void)
 {
     term_T *term;
     term_T *next_term;
@@ -4203,7 +4203,7 @@ term_update_wincolor(win_T *wp)
  * or when any highlight is changed.
  */
     void
-term_update_wincolor_all()
+term_update_wincolor_all(void)
 {
     win_T	 *wp = NULL;
     int		 did_curwin = FALSE;
@@ -4300,7 +4300,7 @@ init_default_colors(term_T *term)
  * "ansi_colors" argument in term_start()) shall be applied.
  */
     static int
-term_use_palette()
+term_use_palette(void)
 {
     if (0
 #ifdef FEAT_GUI
@@ -4866,7 +4866,7 @@ term_update_palette(term_T *term)
  * Called when option 'termguicolors' is changed.
  */
     void
-term_update_palette_all()
+term_update_palette_all(void)
 {
     term_T *term;
 
@@ -5816,7 +5816,7 @@ theend:
  * Return FAIL when this is not possible.
  */
     int
-term_swap_diff()
+term_swap_diff(void)
 {
     term_T	*term = curbuf->b_term;
     linenr_T	line_count;

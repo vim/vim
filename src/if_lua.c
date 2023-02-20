@@ -2736,7 +2736,7 @@ set_ref_in_lua(int copyID)
 }
 
     void
-update_package_paths_in_lua()
+update_package_paths_in_lua(void)
 {
     if (!lua_isopen())
 	return;

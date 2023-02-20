@@ -2777,7 +2777,7 @@ restore_v_event(dict_T *v_event, save_v_event_T *sve)
  * Fires a ModeChanged autocmd event if appropriate.
  */
     void
-may_trigger_modechanged()
+may_trigger_modechanged(void)
 {
 #ifdef FEAT_EVAL
     dict_T	    *v_event;

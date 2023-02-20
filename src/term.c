@@ -2341,7 +2341,7 @@ set_termname(char_u *term)
  * Avoids that valgrind reports possibly lost memory.
  */
     void
-free_cur_term()
+free_cur_term(void)
 {
 # ifdef HAVE_DEL_CURTERM
     if (cur_term)
@@ -2997,7 +2997,7 @@ term_set_winpos(int x, int y)
  * Return TRUE if we can request the terminal for a response.
  */
     static int
-can_get_termresponse()
+can_get_termresponse(void)
 {
     return cur_tmode == TMODE_RAW
 	    && termcap_active
@@ -3021,7 +3021,7 @@ termrequest_sent(termrequest_T *status)
  * Return TRUE if any of the requests are in STATUS_SENT.
  */
     static int
-termrequest_any_pending()
+termrequest_any_pending(void)
 {
     int	    i;
     time_t  now = time(NULL);
@@ -4367,7 +4367,7 @@ term_cursor_color(char_u *color)
 # endif
 
     int
-blink_state_is_inverted()
+blink_state_is_inverted(void)
 {
 #ifdef FEAT_TERMRESPONSE
     return rbm_status.tr_progress == STATUS_GOT
