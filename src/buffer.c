@@ -5402,6 +5402,10 @@ ex_buffer_all(exarg_T *eap)
     else
 	all = TRUE;
 
+    // Stop Visual mode, the cursor and "VIsual" may very well be invalid after
+    // switching to another buffer.
+    reset_VIsual_and_resel();
+
     setpcmark();
 
 #ifdef FEAT_GUI
