@@ -2284,6 +2284,12 @@ typedef enum {
     FCERR_FAILED,	// error while executing the function
 } funcerror_T;
 
+/*
+ * Type for the callback function that is invoked after an option value is
+ * changed to validate and apply the new value.
+ */
+typedef char *(*opt_did_set_cb_T)(optset_T *args);
+
 // Flags for assignment functions.
 #define ASSIGN_VAR	0     // ":var" (nothing special)
 #define ASSIGN_FINAL	0x01  // ":final"

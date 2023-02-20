@@ -1,5 +1,5 @@
 /* tag.c */
-char *set_tagfunc_option(void);
+char *did_set_tagfunc(optset_T *args);
 void free_tagfunc_option(void);
 int set_ref_in_tagfunc(int copyID);
 void set_buflocal_tfu_callback(buf_T *buf);

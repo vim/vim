@@ -886,13 +886,15 @@ remove_timer(void)
     timer_id = 0;
 }
 
-    void
-mzvim_reset_timer(void)
+    char *
+did_set_mzquantum(void)
 {
+    // reset timer
     if (timer_id != 0)
 	remove_timer();
     if (mz_threads_allow && p_mzq > 0 && gui.in_use)
 	setup_timer();
+    return NULL;
 }
 
 #endif // MZSCHEME_GUI_THREADS

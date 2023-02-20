@@ -480,7 +480,7 @@ spell_suggest(int count)
 
     if (!curwin->w_p_spell)
     {
-	did_set_spelllang(curwin);
+	parse_spelllang(curwin);
 	curwin->w_p_spell = TRUE;
     }
 

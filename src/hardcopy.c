@@ -144,7 +144,7 @@ static colnr_T hardcopy_line(prt_settings_T *psettings, int page_line, prt_pos_T
  * Returns an error message or NULL;
  */
     char *
-parse_printoptions(void)
+parse_printoptions(optset_T *args UNUSED)
 {
     return parse_list_options(p_popt, printer_opts, OPT_PRINT_NUM_OPTIONS);
 }
@@ -155,7 +155,7 @@ parse_printoptions(void)
  * Returns an error message or NULL;
  */
     char *
-parse_printmbfont(void)
+parse_printmbfont(optset_T *args UNUSED)
 {
     return parse_list_options(p_pmfn, mbfont_opts, OPT_MBFONT_NUM_OPTIONS);
 }
