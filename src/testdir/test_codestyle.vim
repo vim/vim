@@ -115,6 +115,7 @@ def Test_help_files()
       if fname == 'map.txt' && getline(lnum) =~ "unmap @@ $"
         || fname == 'usr_12.txt' && getline(lnum) =~ "^\t/ \t$"
         || fname == 'usr_41.txt' && getline(lnum) =~ "map <F4> o#include  $"
+        || fname == 'change.txt' && getline(lnum) =~ "foobar bla $"
         continue
       endif
       assert_equal(0, lnum, fpath .. ': trailing white space')
