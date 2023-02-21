@@ -990,7 +990,7 @@ early_ret:
 		if (nf->uf_ret_type != NULL)
 		{
 		    nf->uf_ret_type->tt_type = VAR_OBJECT;
-		    nf->uf_ret_type->tt_member = (type_T *)cl;
+		    nf->uf_ret_type->tt_class = cl;
 		    nf->uf_ret_type->tt_argcount = 0;
 		    nf->uf_ret_type->tt_args = NULL;
 		}
@@ -1083,9 +1083,9 @@ early_ret:
 	}
 
 	cl->class_type.tt_type = VAR_CLASS;
-	cl->class_type.tt_member = (type_T *)cl;
+	cl->class_type.tt_class = cl;
 	cl->class_object_type.tt_type = VAR_OBJECT;
-	cl->class_object_type.tt_member = (type_T *)cl;
+	cl->class_object_type.tt_class = cl;
 	cl->class_type_list = type_list;
 
 	// TODO:

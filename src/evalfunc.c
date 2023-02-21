@@ -585,7 +585,7 @@ check_map_filter_arg2(type_T *type, argcontext_T *context, int is_map)
 {
     type_T *expected_member = NULL;
     type_T *(args[2]);
-    type_T t_func_exp = {VAR_FUNC, 2, 0, 0, NULL, args};
+    type_T t_func_exp = {VAR_FUNC, 2, 0, 0, NULL, NULL, args};
 
     if (context->arg_types[0].type_curr->tt_type == VAR_LIST
 	    || context->arg_types[0].type_curr->tt_type == VAR_DICT)
@@ -699,7 +699,7 @@ arg_sort_how(type_T *type, type_T *decl_type UNUSED, argcontext_T *context)
     if (type->tt_type == VAR_FUNC)
     {
 	type_T *(args[2]);
-	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, args};
+	type_T t_func_exp = {VAR_FUNC, 2, 0, 0, &t_number, NULL, args};
 
 	if (context->arg_types[0].type_curr->tt_type == VAR_LIST)
 	    args[0] = context->arg_types[0].type_curr->tt_member;

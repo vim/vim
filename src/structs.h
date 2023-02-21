@@ -1451,7 +1451,7 @@ struct type_S {
     int8_T	    tt_min_argcount; // number of non-optional arguments
     char_u	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type
-				    // for class: class_T
+    class_T	    *tt_class;	    // for class and object
     type_T	    **tt_args;	    // func argument types, allocated
 };
 

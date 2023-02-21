@@ -333,7 +333,7 @@ script_var_exists(char_u *name, size_t len, cctx_T *cctx, cstack_T *cstack)
 
 /*
  * Return TRUE if "name" is a local variable, argument, script variable or
- * imported.
+ * imported.  Also if "name" is "this" and in a class method.
  */
     static int
 variable_exists(char_u *name, size_t len, cctx_T *cctx)
@@ -1848,20 +1848,27 @@ compile_lhs(
 	    lhs->lhs_type = &t_any;
 	}
 
-	if (lhs->lhs_type == NULL || lhs->lhs_type->tt_member == NULL)
+	int use_class = lhs->lhs_type->tt_type == VAR_CLASS
+				       || lhs->lhs_type->tt_type == VAR_OBJECT;
+	if (lhs->lhs_type == NULL
+		|| (use_class ? lhs->lhs_type->tt_class == NULL
+					   : lhs->lhs_type->tt_member == NULL))
+	{
 	    lhs->lhs_member_type = &t_any;
-	else if (lhs->lhs_type->tt_type == VAR_CLASS
-		|| lhs->lhs_type->tt_type == VAR_OBJECT)
+	}
+	else if (use_class)
 	{
 	    // for an object or class member get the type of the member
-	    class_T *cl = (class_T *)lhs->lhs_type->tt_member;
+	    class_T *cl = lhs->lhs_type->tt_class;
 	    lhs->lhs_member_type = class_member_type(cl, after + 1,
 					   lhs->lhs_end, &lhs->lhs_member_idx);
 	    if (lhs->lhs_member_idx < 0)
 		return FAIL;
 	}
 	else
+	{
 	    lhs->lhs_member_type = lhs->lhs_type->tt_member;
+	}
     }
     return OK;
 }
@@ -2059,7 +2066,7 @@ compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
     {
 	// "this.value": load "this" object and get the value at index
 	// for an object or class member get the type of the member
-	class_T *cl = (class_T *)lhs->lhs_type->tt_member;
+	class_T *cl = lhs->lhs_type->tt_class;
 	type_T *type = class_member_type(cl, var_start + 5,
 					   lhs->lhs_end, &lhs->lhs_member_idx);
 	if (lhs->lhs_member_idx < 0)
@@ -2194,7 +2201,7 @@ compile_assign_unlet(
 
 		if (dest_type == VAR_OBJECT)
 		{
-		    class_T *cl = (class_T *)lhs->lhs_type->tt_member;
+		    class_T *cl = lhs->lhs_type->tt_class;
 
 		    if (cl->class_flags & CLASS_INTERFACE)
 		    {
