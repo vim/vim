@@ -1037,8 +1037,7 @@ get_function_body(
 		if (*p == '!')
 		    p = skipwhite(p + 1);
 		p += eval_fname_script(p);
-		vim_free(trans_function_name(&p, NULL, TRUE, 0, NULL,
-								  NULL, NULL));
+		vim_free(trans_function_name(&p, NULL, TRUE, 0));
 		if (*skipwhite(p) == '(')
 		{
 		    if (nesting == MAX_FUNC_NESTING - 1)
@@ -4041,10 +4040,26 @@ trans_function_name(
     char_u	**pp,
     int		*is_global,
     int		skip,		// only find the end, don't evaluate
+    int		flags)
+{
+    return trans_function_name_ext(pp, is_global, skip, flags,
+	    NULL, NULL, NULL, NULL);
+}
+
+/*
+ * trans_function_name() with extra arguments.
+ * "fdp", "partial", "type" and "ufunc" can be NULL.
+ */
+    char_u *
+trans_function_name_ext(
+    char_u	**pp,
+    int		*is_global,
+    int		skip,		// only find the end, don't evaluate
     int		flags,
     funcdict_T	*fdp,		// return: info about dictionary used
     partial_T	**partial,	// return: partial of a FuncRef
-    type_T	**type)		// return: type of funcref if not NULL
+    type_T	**type,		// return: type of funcref
+    ufunc_T	**ufunc)	// return: function
 {
     char_u	*name = NULL;
     char_u	*start;
@@ -4079,7 +4094,8 @@ trans_function_name(
 	start += lead;
 
     // Note that TFN_ flags use the same values as GLV_ flags.
-    end = get_lval(start, NULL, &lv, FALSE, skip, flags | GLV_READ_ONLY,
+    end = get_lval(start, NULL, &lv, FALSE, skip,
+			flags | GLV_READ_ONLY | GLV_PREFER_FUNC,
 					      lead > 2 ? 0 : FNE_CHECK_START);
     if (end == start || (vim9script && end != NULL
 				   && end[-1] == AUTOLOAD_CHAR && *end == '('))
@@ -4102,6 +4118,13 @@ trans_function_name(
 	}
 	else
 	    *pp = find_name_end(start, NULL, NULL, FNE_INCL_BR);
+	goto theend;
+    }
+
+    if (lv.ll_ufunc != NULL)
+    {
+	*ufunc = lv.ll_ufunc;
+	name = vim_strsave(lv.ll_ufunc->uf_name);
 	goto theend;
     }
 
@@ -4455,8 +4478,8 @@ save_function_name(
 	    CLEAR_POINTER(fudi);
     }
     else
-	saved = trans_function_name(&p, is_global, skip,
-						      flags, fudi, NULL, NULL);
+	saved = trans_function_name_ext(&p, is_global, skip,
+						flags, fudi, NULL, NULL, NULL);
     *name = p;
     return saved;
 }
@@ -5330,15 +5353,20 @@ find_func_by_name(char_u *name, compiletype_T *compile_type)
     }
     else
     {
-	// First try finding a method in a class, find_func_by_name() will give
-	// an error if the function is not found.
+	// First try finding a method in a class, trans_function_name() will
+	// give an error if the function is not found.
 	ufunc = find_class_func(&arg);
 	if (ufunc != NULL)
 	    return ufunc;
 
-	fname = trans_function_name(&arg, &is_global, FALSE,
+	fname = trans_function_name_ext(&arg, &is_global, FALSE,
 		      TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DECL,
-		      NULL, NULL, NULL);
+		      NULL, NULL, NULL, &ufunc);
+	if (ufunc != NULL)
+	{
+	    vim_free(fname);
+	    return ufunc;
+	}
     }
     if (fname == NULL)
     {
@@ -5375,13 +5403,10 @@ find_func_by_name(char_u *name, compiletype_T *compile_type)
     void
 ex_defcompile(exarg_T *eap)
 {
-    ufunc_T	*ufunc;
-
     if (*eap->arg != NUL)
     {
 	compiletype_T compile_type = CT_NONE;
-
-	ufunc = find_func_by_name(eap->arg, &compile_type);
+	ufunc_T *ufunc = find_func_by_name(eap->arg, &compile_type);
 	if (ufunc != NULL)
 	{
 	    if (func_needs_compiling(ufunc, compile_type))
@@ -5401,7 +5426,7 @@ ex_defcompile(exarg_T *eap)
 	    if (!HASHITEM_EMPTY(hi))
 	    {
 		--todo;
-		ufunc = HI2UF(hi);
+		ufunc_T *ufunc = HI2UF(hi);
 		if (ufunc->uf_script_ctx.sc_sid == current_sctx.sc_sid
 			&& ufunc->uf_def_status == UF_TO_BE_COMPILED
 			&& (ufunc->uf_flags & FC_DEAD) == 0)
@@ -5475,7 +5500,7 @@ function_exists(char_u *name, int no_deref)
     flag = TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD;
     if (no_deref)
 	flag |= TFN_NO_DEREF;
-    p = trans_function_name(&nm, &is_global, FALSE, flag, NULL, NULL, NULL);
+    p = trans_function_name(&nm, &is_global, FALSE, flag);
     nm = skipwhite(nm);
 
     // Only accept "funcname", "funcname ", "funcname (..." and
@@ -5494,8 +5519,7 @@ get_expanded_name(char_u *name, int check)
     char_u	*p;
     int		is_global = FALSE;
 
-    p = trans_function_name(&nm, &is_global, FALSE,
-					  TFN_INT|TFN_QUIET, NULL, NULL, NULL);
+    p = trans_function_name(&nm, &is_global, FALSE, TFN_INT|TFN_QUIET);
 
     if (p != NULL && *nm == NUL
 		       && (!check || translated_function_exists(p, is_global)))
@@ -5631,8 +5655,8 @@ ex_delfunction(exarg_T *eap)
     int		is_global = FALSE;
 
     p = eap->arg;
-    name = trans_function_name(&p, &is_global, eap->skip, 0, &fudi,
-								   NULL, NULL);
+    name = trans_function_name_ext(&p, &is_global, eap->skip, 0, &fudi,
+							     NULL, NULL, NULL);
     vim_free(fudi.fd_newkey);
     if (name == NULL)
     {
@@ -6166,8 +6190,8 @@ ex_call(exarg_T *eap)
 	return;
     }
 
-    tofree = trans_function_name(&arg, NULL, eap->skip, TFN_INT,
-			      &fudi, &partial, vim9script ? &type : NULL);
+    tofree = trans_function_name_ext(&arg, NULL, eap->skip, TFN_INT,
+			     &fudi, &partial, vim9script ? &type : NULL, NULL);
     if (fudi.fd_newkey != NULL)
     {
 	// Still need to give an error message for missing key.

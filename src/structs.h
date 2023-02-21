@@ -4521,6 +4521,7 @@ typedef struct lval_S
     char_u	*ll_newkey;	// New key for Dict in alloc. mem or NULL.
     type_T	*ll_valtype;	// type expected for the value or NULL
     blob_T	*ll_blob;	// The Blob or NULL
+    ufunc_T	*ll_ufunc;	// The function or NULL
 } lval_T;
 
 // Structure used to save the current state.  Used when executing Normal mode

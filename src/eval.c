@@ -1529,45 +1529,81 @@ get_lval(
 	    if (cl != NULL)
 	    {
 		lp->ll_valtype = NULL;
-		int count = v_type == VAR_OBJECT ? cl->class_obj_member_count
-						: cl->class_class_member_count;
-		ocmember_T *members = v_type == VAR_OBJECT
-						     ? cl->class_obj_members
-						     : cl->class_class_members;
-		for (int i = 0; i < count; ++i)
+
+		if (flags & GLV_PREFER_FUNC)
 		{
-		    ocmember_T *om = members + i;
-		    if (STRNCMP(om->ocm_name, key, p - key) == 0
-					       && om->ocm_name[p - key] == NUL)
+		    // First look for a function with this name.
+		    // round 1: class functions (skipped for an object)
+		    // round 2: object methods
+		    for (int round = v_type == VAR_OBJECT ? 2 : 1;
+							   round <= 2; ++round)
 		    {
-			switch (om->ocm_access)
+			int count = round == 1
+					    ? cl->class_class_function_count
+					    : cl->class_obj_method_count;
+			ufunc_T **funcs = round == 1
+					    ? cl->class_class_functions
+					    : cl->class_obj_methods;
+			for (int i = 0; i < count; ++i)
 			{
-			    case ACCESS_PRIVATE:
-				    semsg(_(e_cannot_access_private_member_str),
-								 om->ocm_name);
-				    return NULL;
-			    case ACCESS_READ:
-				    if (!(flags & GLV_READ_ONLY))
-				    {
-					semsg(_(e_member_is_not_writable_str),
-								 om->ocm_name);
-					return NULL;
-				    }
-				    break;
-			    case ACCESS_ALL:
-				    break;
+			    ufunc_T *fp = funcs[i];
+			    char_u *ufname = (char_u *)fp->uf_name;
+			    if (STRNCMP(ufname, key, p - key) == 0
+						     && ufname[p - key] == NUL)
+			    {
+				lp->ll_ufunc = fp;
+				lp->ll_valtype = fp->uf_func_type;
+				round = 3;
+				break;
+			    }
 			}
-
-			lp->ll_valtype = om->ocm_type;
-
-			if (v_type == VAR_OBJECT)
-			    lp->ll_tv = ((typval_T *)(
-					    lp->ll_tv->vval.v_object + 1)) + i;
-			else
-			    lp->ll_tv = &cl->class_members_tv[i];
-			break;
 		    }
 		}
+
+		if (lp->ll_valtype == NULL)
+		{
+		    int count = v_type == VAR_OBJECT
+					    ? cl->class_obj_member_count
+					    : cl->class_class_member_count;
+		    ocmember_T *members = v_type == VAR_OBJECT
+					    ? cl->class_obj_members
+					    : cl->class_class_members;
+		    for (int i = 0; i < count; ++i)
+		    {
+			ocmember_T *om = members + i;
+			if (STRNCMP(om->ocm_name, key, p - key) == 0
+					       && om->ocm_name[p - key] == NUL)
+			{
+			    switch (om->ocm_access)
+			    {
+				case ACCESS_PRIVATE:
+					semsg(_(e_cannot_access_private_member_str),
+								 om->ocm_name);
+					return NULL;
+				case ACCESS_READ:
+					if ((flags & GLV_READ_ONLY) == 0)
+					{
+					    semsg(_(e_member_is_not_writable_str),
+								 om->ocm_name);
+					    return NULL;
+					}
+					break;
+				case ACCESS_ALL:
+					break;
+			    }
+
+			    lp->ll_valtype = om->ocm_type;
+
+			    if (v_type == VAR_OBJECT)
+				lp->ll_tv = ((typval_T *)(
+					    lp->ll_tv->vval.v_object + 1)) + i;
+			    else
+				lp->ll_tv = &cl->class_members_tv[i];
+			    break;
+			}
+		    }
+		}
+
 		if (lp->ll_valtype == NULL)
 		{
 		    if (v_type == VAR_OBJECT)

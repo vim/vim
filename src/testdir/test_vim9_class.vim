@@ -842,6 +842,34 @@ def Test_class_function()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_class_defcompile()
+  var lines =<< trim END
+      vim9script
+
+      class C
+          def Fo(i: number): string
+              return i
+          enddef
+      endclass
+
+      defcompile C.Fo
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got number')
+
+  lines =<< trim END
+      vim9script
+
+      class C
+          static def Fc(): number
+            return 'x'
+          enddef
+      endclass
+
+      defcompile C.Fc
+  END
+  v9.CheckScriptFailure(lines, 'E1012: Type mismatch; expected number but got string')
+enddef
+
 def Test_class_object_to_string()
   var lines =<< trim END
       vim9script
