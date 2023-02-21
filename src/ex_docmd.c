@@ -1386,7 +1386,7 @@ do_cmdline(
  * Handle when "did_throw" is set after executing commands.
  */
     void
-handle_did_throw()
+handle_did_throw(void)
 {
     char	*p = NULL;
     msglist_T	*messages = NULL;

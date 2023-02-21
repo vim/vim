@@ -802,7 +802,7 @@ timer_valid(timer_T *timer)
 
 # if defined(EXITFREE) || defined(PROTO)
     void
-timer_free_all()
+timer_free_all(void)
 {
     while (first_timer != NULL)
     {

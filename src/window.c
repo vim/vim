@@ -824,7 +824,7 @@ cmd_with_count(
  * Otherwise return OK.
  */
     static int
-check_split_disallowed()
+check_split_disallowed(void)
 {
     if (split_disallowed > 0)
     {
@@ -6014,7 +6014,7 @@ frame_comp_pos(frame_T *topfrp, int *row, int *col)
  * Make the current window show at least one line and one column.
  */
     void
-win_ensure_size()
+win_ensure_size(void)
 {
     if (curwin->w_height == 0)
 	win_setheight(1);
@@ -7357,7 +7357,7 @@ check_lnums_nested(int do_curwin)
  * check_lnums() must have been called first!
  */
     void
-reset_lnums()
+reset_lnums(void)
 {
     win_T	*wp;
     tabpage_T	*tp;

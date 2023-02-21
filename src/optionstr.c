@@ -3075,7 +3075,7 @@ check_ff_value(char_u *p)
  * restore_shm_value() exactly the same number of times.
  */
     void
-save_clear_shm_value()
+save_clear_shm_value(void)
 {
     if (STRLEN(p_shm) >= SHM_LEN)
     {
@@ -3094,7 +3094,7 @@ save_clear_shm_value()
  * Restore the shortmess Flags set from the save_clear_shm_value() function.
  */
     void
-restore_shm_value()
+restore_shm_value(void)
 {
     if (--set_shm_recursive == 0)
     {

@@ -379,7 +379,7 @@ char_needs_redraw(int off_from, int off_to, int cols)
  * Return the index in ScreenLines[] for the current screen line.
  */
     int
-screen_get_current_line_off()
+screen_get_current_line_off(void)
 {
     return (int)(current_ScreenLine - ScreenLines);
 }
@@ -3962,7 +3962,7 @@ screen_del_lines(
  * or inside a mapping.
  */
     int
-skip_showmode()
+skip_showmode(void)
 {
     // Call char_avail() only when we are going to show something, because it
     // takes a bit of time.  redrawing() may also call char_avail().

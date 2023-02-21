@@ -155,7 +155,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
     // to avoid that a text file is recognized as encrypted.
 };
 
-#ifdef FEAT_SODIUM
+#if defined(FEAT_SODIUM) || defined(PROTO)
 typedef struct {
     size_t	    count;
     unsigned char   key[crypto_box_SEEDBYTES];
@@ -396,7 +396,7 @@ crypt_get_header_len(int method_nr)
  * Get maximum crypt method specific length of the file header in bytes.
  */
     int
-crypt_get_max_header_len()
+crypt_get_max_header_len(void)
 {
     int i;
     int max = 0;

@@ -2287,6 +2287,9 @@ typedef enum {
 /*
  * Type for the callback function that is invoked after an option value is
  * changed to validate and apply the new value.
+ *
+ * Returns NULL if the option value is valid is successfully applied.
+ * Otherwise returns an error message.
  */
 typedef char *(*opt_did_set_cb_T)(optset_T *args);
 

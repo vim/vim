@@ -291,7 +291,7 @@ update_script_var_block_id(char_u *name, int block_id)
  * Return TRUE if the script context is Vim9 script.
  */
     int
-script_is_vim9()
+script_is_vim9(void)
 {
     return SCRIPT_ITEM(current_sctx.sc_sid)->sn_version == SCRIPT_VERSION_VIM9;
 }

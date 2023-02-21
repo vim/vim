@@ -4607,7 +4607,7 @@ ins_end(int c)
 }
 
     static void
-ins_s_left()
+ins_s_left(void)
 {
     int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING
@@ -4676,7 +4676,7 @@ ins_right(void)
 }
 
     static void
-ins_s_right()
+ins_s_right(void)
 {
     int end_change = dont_sync_undo == FALSE; // end undoable change
 #ifdef FEAT_FOLDING

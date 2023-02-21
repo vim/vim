@@ -295,7 +295,7 @@ im_preedit_window_set_position(void)
 }
 
     static void
-im_preedit_window_open()
+im_preedit_window_open(void)
 {
     char *preedit_string;
 #if !GTK_CHECK_VERSION(3,16,0)
@@ -417,14 +417,14 @@ im_preedit_window_open()
 }
 
     static void
-im_preedit_window_close()
+im_preedit_window_close(void)
 {
     if (preedit_window != NULL)
 	gtk_widget_hide(preedit_window);
 }
 
     static void
-im_show_preedit()
+im_show_preedit(void)
 {
     im_preedit_window_open();
 

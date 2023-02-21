@@ -1764,7 +1764,7 @@ skipwhite_and_nl(char_u *q)
  * columns (bytes) at the start of a given line
  */
     int
-getwhitecols_curline()
+getwhitecols_curline(void)
 {
     return getwhitecols(ml_get_curline());
 }

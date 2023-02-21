@@ -734,7 +734,7 @@ ex_debuggreedy(exarg_T *eap)
 }
 
     static void
-update_has_expr_breakpoint()
+update_has_expr_breakpoint(void)
 {
     int i;
 
@@ -751,7 +751,7 @@ update_has_expr_breakpoint()
  * Return TRUE if there is any expression breakpoint.
  */
     int
-debug_has_expr_breakpoint()
+debug_has_expr_breakpoint(void)
 {
     return has_expr_breakpoint;
 }
