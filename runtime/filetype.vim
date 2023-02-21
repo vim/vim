@@ -2441,6 +2441,9 @@ au BufNewFile,BufRead */etc/yum.conf		setf dosini
 " YANG
 au BufRead,BufNewFile *.yang			setf yang
 
+" Yuck
+au BufNewFile,BufRead *.yuck			setf yuck
+
 " Zimbu
 au BufNewFile,BufRead *.zu			setf zimbu
 " Zimbu Templates
