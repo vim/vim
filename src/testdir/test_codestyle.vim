@@ -78,5 +78,68 @@ def Test_test_files()
   bwipe!
 enddef
 
+def Test_help_files()
+  var lnum: number
+  set nowrapscan
+
+  for fpath in glob('../../runtime/doc/*.txt', 0, 1)
+    exe 'edit ' .. fpath
+
+    var fname = fnamemodify(fpath, ":t")
+
+    # todo.txt is for developers, it's not need a strictly check
+    # version*.txt is a history and large size, so it's not checked
+    if fname == 'todo.txt' || fname =~ 'version.*\.txt'
+      continue
+    endif
+
+    # Check for mixed tabs and spaces
+    cursor(1, 1)
+    while 1
+      lnum = search('[^/] \t')
+      if fname == 'visual.txt' && getline(lnum) =~ "STRING  \tjkl"
+        || fname == 'usr_27.txt' && getline(lnum) =~ "\[^\? \t\]"
+        continue
+      endif
+      assert_equal(0, lnum, fpath .. ': space before tab')
+      if lnum == 0
+        break
+      endif
+    endwhile
+
+    # Check for unnecessary whitespace at the end of a line
+    cursor(1, 1)
+    while 1
+      lnum = search('[^/~\\]\s$')
+      # skip line that are known to have trailing white space
+      if fname == 'map.txt' && getline(lnum) =~ "unmap @@ $"
+        || fname == 'usr_12.txt' && getline(lnum) =~ "^\t/ \t$"
+        || fname == 'usr_41.txt' && getline(lnum) =~ "map <F4> o#include  $"
+        || fname == 'change.txt' && getline(lnum) =~ "foobar bla $"
+        continue
+      endif
+      assert_equal(0, lnum, fpath .. ': trailing white space')
+      if lnum == 0
+        break
+      endif
+    endwhile
+
+    # TODO: Do check and fix help files
+#    # Check over 80 columns
+#    cursor(1, 1)
+#    while 1
+#      lnum = search('\%>80v.*$')
+#      assert_equal(0, lnum, fpath .. ': line over 80 columns')
+#      if lnum == 0
+#        break
+#      endif
+#    endwhile
+
+  endfor
+
+  set wrapscan&vim
+  bwipe!
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab
