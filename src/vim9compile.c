@@ -1848,8 +1848,9 @@ compile_lhs(
 	    lhs->lhs_type = &t_any;
 	}
 
-	int use_class = lhs->lhs_type->tt_type == VAR_CLASS
-				       || lhs->lhs_type->tt_type == VAR_OBJECT;
+	int use_class = lhs->lhs_type != NULL
+			    && (lhs->lhs_type->tt_type == VAR_CLASS
+				       || lhs->lhs_type->tt_type == VAR_OBJECT);
 	if (lhs->lhs_type == NULL
 		|| (use_class ? lhs->lhs_type->tt_class == NULL
 					   : lhs->lhs_type->tt_member == NULL))
