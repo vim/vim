@@ -879,7 +879,7 @@ TCL_LIB = "$(TCL)\lib\tclstub$(TCL_VER).lib"
 CFLAGS  = $(CFLAGS) -DFEAT_TCL
 TCL_OBJ	= $(OUTDIR)\if_tcl.obj
 TCL_INC	= /I "$(TCL)\Include" /I "$(TCL)"
-TCL_LIB = $(TCL)\lib\tcl$(TCL_VER)vc.lib
+TCL_LIB = "$(TCL)\lib\tcl$(TCL_VER)vc.lib"
 ! endif
 !endif
 
@@ -928,7 +928,7 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON \
 		-DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\"
 PYTHON_LIB = /nodefaultlib:python$(PYTHON_VER).lib
 ! else
-PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
+PYTHON_LIB = "$(PYTHON)\libs\python$(PYTHON_VER).lib"
 ! endif
 !endif
 
@@ -953,7 +953,7 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3 \
 PYTHON3_LIB = /nodefaultlib:python$(PYTHON3_VER).lib
 ! else
 CFLAGS = $(CFLAGS) -DPYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
-PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
+PYTHON3_LIB = "$(PYTHON3)\libs\python$(PYTHON3_VER).lib"
 ! endif
 !endif
 
@@ -1111,7 +1111,7 @@ RUBY_INSTALL_NAME = x64-$(RUBY_MSVCRT_NAME)-ruby$(RUBY_API_VER)
 CFLAGS = $(CFLAGS) -DFEAT_RUBY
 RUBY_OBJ = $(OUTDIR)\if_ruby.obj
 RUBY_INC = /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)" /I "$(RUBY)\include\ruby-$(RUBY_API_VER_LONG)\$(RUBY_PLATFORM)"
-RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
+RUBY_LIB = "$(RUBY)\lib\$(RUBY_INSTALL_NAME).lib"
 # Do we want to load Ruby dynamically?
 ! if "$(DYNAMIC_RUBY)" == "yes"
 !  message Ruby DLL will be loaded dynamically
