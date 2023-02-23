@@ -2025,6 +2025,9 @@ au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf		setf sshconfig
 au BufNewFile,BufRead sshd_config			setf sshdconfig
 au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
 
+" Starlark
+au BufNewFile,BufRead *.ipd,*.star,*.starlark	setf starlark
+
 " OpenVPN configuration
 au BufNewFile,BufRead *.ovpn			setf openvpn
 au BufNewFile,BufRead */openvpn/*/*.conf	setf openvpn
