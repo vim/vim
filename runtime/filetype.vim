@@ -2208,6 +2208,9 @@ au BufNewFile,BufRead */etc/udev/permissions.d/*.permissions setf udevperm
 " Udev symlinks config
 au BufNewFile,BufRead */etc/udev/cdsymlinks.conf	setf sh
 
+" Ungrammar, AKA Un-grammar
+au BufNewFile,BufRead *.ungram			setf ungrammar
+
 " UnrealScript
 au BufNewFile,BufRead *.uc			setf uc
 
