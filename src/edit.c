@@ -589,7 +589,7 @@ edit(
 	if (cmdchar == K_PS)
 	    // Got here from normal mode when bracketed paste started.
 	    c = K_PS;
-	else if (cmdchar == 'v' && did_loop)
+	else if (cmdchar == 'v' && did_loop && count <= 0)
 	    c = ESC;  // in case the stuffed Esc was consumed already
 	else
 	    do
