@@ -5716,7 +5716,7 @@ handle_osc(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
 
 		if (i - j >= 15 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
 			    && (is_4digit
-				   || (tp[j + 9] == '/' && tp[i + 12 == '/'])))
+				   || (tp[j + 9] == '/' && tp[i + 12] == '/')))
 		{
 		    char_u *tp_r = tp + j + 7;
 		    char_u *tp_g = tp + j + (is_4digit ? 12 : 10);
