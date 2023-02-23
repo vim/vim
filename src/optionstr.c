@@ -792,12 +792,22 @@ did_set_helpfile(optset_T *args UNUSED)
 
 #ifdef FEAT_SYN_HL
 /*
+ * The 'colorcolumn' option is changed.
+ */
+    char *
+did_set_colorcolumn(optset_T *args UNUSED)
+{
+    return check_colorcolumn(curwin);
+}
+
+/*
  * The 'cursorlineopt' option is changed.
  */
-    static char *
-did_set_cursorlineopt(char_u **varp)
+    char *
+did_set_cursorlineopt(optset_T *args)
 {
-    if (**varp == NUL || fill_culopt_flags(*varp, curwin) != OK)
+    if (*args->os_varp == NUL
+	    || fill_culopt_flags(args->os_varp, curwin) != OK)
 	return e_invalid_argument;
 
     return NULL;
@@ -864,7 +874,70 @@ did_set_opt_strings(char_u *val, char **values, int list)
     return did_set_opt_flags(val, values, NULL, list);
 }
 
-#ifdef FEAT_SESSION
+/*
+ * The 'belloff' option is changed.
+ */
+    char *
+did_set_belloff(optset_T *args UNUSED)
+{
+    return did_set_opt_flags(p_bo, p_bo_values, &bo_flags, TRUE);
+}
+
+/*
+ * The 'casemap' option is changed.
+ */
+    char *
+did_set_casemap(optset_T *args UNUSED)
+{
+    return did_set_opt_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
+}
+
+/*
+ * The 'scrollopt' option is changed.
+ */
+    char *
+did_set_scrollopt(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_sbo, p_scbopt_values, TRUE);
+}
+
+/*
+ * The 'selectmode' option is changed.
+ */
+    char *
+did_set_selectmode(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_slm, p_slm_values, TRUE);
+}
+
+/*
+ * The 'showcmdloc' option is changed.
+ */
+    char *
+did_set_showcmdloc(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_sloc, p_sloc_values, FALSE);
+}
+
+/*
+ * The 'splitkeep' option is changed.
+ */
+    char *
+did_set_splitkeep(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_spk, p_spk_values, FALSE);
+}
+
+/*
+ * The 'switchbuf' option is changed.
+ */
+    char *
+did_set_switchbuf(optset_T *args UNUSED)
+{
+    return did_set_opt_flags(p_swb, p_swb_values, &swb_flags, TRUE);
+}
+
+#if defined(FEAT_SESSION) || defined(PROTO)
 /*
  * The 'sessionoptions' option is changed.
  */
@@ -882,6 +955,15 @@ did_set_sessionoptions(optset_T *args)
     }
 
     return NULL;
+}
+
+/*
+ * The 'viewoptions' option is changed.
+ */
+    char *
+did_set_viewoptions(optset_T *args UNUSED)
+{
+    return did_set_opt_flags(p_vop, p_ssop_values, &vop_flags, TRUE);
 }
 #endif
 
@@ -944,6 +1026,15 @@ did_set_wildmode(optset_T *args UNUSED)
     return NULL;
 }
 
+/*
+ * The 'wildoptions' option is changed.
+ */
+    char *
+did_set_wildoptions(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_wop, p_wop_values, TRUE);
+}
+
 #if defined(FEAT_WAK) || defined(PROTO)
 /*
  * The 'winaltkeys' option is changed.
@@ -968,6 +1059,27 @@ did_set_winaltkeys(optset_T *args UNUSED)
     return errmsg;
 }
 #endif
+
+/*
+ * The 'wincolor' option is changed.
+ */
+    char *
+did_set_wincolor(optset_T *args UNUSED)
+{
+#ifdef FEAT_TERMINAL
+    term_update_wincolor(curwin);
+#endif
+    return NULL;
+}
+
+/*
+ * The 'eadirection' option is changed.
+ */
+    char *
+did_set_eadirection(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_ead, p_ead_values, FALSE);
+}
 
 /*
  * The 'eventignore' option is changed.
@@ -1857,6 +1969,15 @@ did_set_mousemodel(optset_T *args UNUSED)
 }
 
 /*
+ * The 'debug' option is changed.
+ */
+    char *
+did_set_debug(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_debug, p_debug_values, TRUE);
+}
+
+/*
  * The 'display' option is changed.
  */
     char *
@@ -1944,6 +2065,15 @@ did_set_mkspellmem(optset_T *args UNUSED)
     return NULL;
 }
 #endif
+
+/*
+ * The 'nrformats' option is changed.
+ */
+    char *
+did_set_nrformats(optset_T *args)
+{
+    return did_set_opt_strings(args->os_varp, p_nf_values, TRUE);
+}
 
 /*
  * The 'buftype' option is changed.
@@ -2198,6 +2328,15 @@ did_set_backspace(optset_T *args UNUSED)
 }
 
 /*
+ * The 'bufhidden' option is changed.
+ */
+    char *
+did_set_bufhidden(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(curbuf->b_p_bh, p_bufhidden_values, FALSE);
+}
+
+/*
  * The 'tagcase' option is changed.
  */
     char *
@@ -2298,6 +2437,24 @@ did_set_foldignore(optset_T *args UNUSED)
     if (foldmethodIsIndent(curwin))
 	foldUpdateAll(curwin);
     return NULL;
+}
+
+/*
+ * The 'foldclose' option is changed.
+ */
+    char *
+did_set_foldclose(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_fcl, p_fcl_values, TRUE);
+}
+
+/*
+ * The 'foldopen' option is changed.
+ */
+    char *
+did_set_foldopen(optset_T *args UNUSED)
+{
+    return did_set_opt_flags(p_fdo, p_fdo_values, &fdo_flags, TRUE);
 }
 #endif
 
@@ -2459,6 +2616,17 @@ did_set_termwinsize(optset_T *args UNUSED)
 
     return NULL;
 }
+
+# if defined(MSWIN) || defined(PROTO)
+/*
+ * The 'termwintype' option is changed.
+ */
+    char *
+did_set_termwintype(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_twt, p_twt_values, FALSE);
+}
+# endif
 #endif
 
 #if defined(FEAT_VARTABS) || defined(PROTO)
@@ -2753,23 +2921,6 @@ did_set_string_option(
 	    || varp == &p_isp			// 'isprint'
 	    || varp == &p_isf)			// 'isfname'
 	errmsg = did_set_isopt(&did_chartab);
-#ifdef FEAT_SYN_HL
-    else if (  varp == &curwin->w_p_culopt	// 'cursorlineopt'
-	    || gvarp == &curwin->w_allbuf_opt.wo_culopt)
-	errmsg = did_set_cursorlineopt(varp);
-    else if (varp == &curwin->w_p_cc)		// 'colorcolumn'
-	errmsg = check_colorcolumn(curwin);
-#endif
-    else if (gvarp == &p_nf)			// 'nrformats'
-	errmsg = did_set_opt_strings(*varp, p_nf_values, TRUE);
-#ifdef FEAT_SESSION
-    else if (varp == &p_vop)			// 'viewoptions'
-	errmsg = did_set_opt_flags(p_vop, p_ssop_values, &vop_flags, TRUE);
-#endif
-    else if (varp == &p_sbo)			// 'scrollopt'
-	errmsg = did_set_opt_strings(p_sbo, p_scbopt_values, TRUE);
-    else if (varp == &p_wop)			// 'wildoptions'
-	errmsg = did_set_opt_strings(p_wop, p_wop_values, TRUE);
     else if (  varp == &p_enc			// 'encoding'
 	    || gvarp == &p_fenc			// 'fileencoding'
 	    || varp == &p_tenc			// 'termencoding'
@@ -2799,33 +2950,8 @@ did_set_string_option(
     else if (varp == &p_guicursor)		// 'guicursor'
 	errmsg = parse_shape_opt(SHAPE_CURSOR);
 #endif
-    else if (varp == &p_slm)			// 'selectmode'
-	errmsg = did_set_opt_strings(p_slm, p_slm_values, TRUE);
-    else if (varp == &p_swb)			// 'switchbuf'
-	errmsg = did_set_opt_flags(p_swb, p_swb_values, &swb_flags, TRUE);
-    else if (varp == &p_spk)			// 'splitkeep'
-	errmsg = did_set_opt_strings(p_spk, p_spk_values, FALSE);
-    else if (varp == &p_debug)			// 'debug'
-	errmsg = did_set_opt_strings(p_debug, p_debug_values, TRUE);
-    else if (varp == &p_ead)			// 'eadirection'
-	errmsg = did_set_opt_strings(p_ead, p_ead_values, FALSE);
-    else if (gvarp == &p_bh)			// 'bufhidden'
-	errmsg = did_set_opt_strings(curbuf->b_p_bh, p_bufhidden_values,
-								FALSE);
     else if (gvarp == &p_cpt)			// 'complete'
 	errmsg = did_set_complete(varp, errbuf);
-    else if (varp == &p_sloc)			// 'showcmdloc'
-	errmsg = did_set_opt_strings(p_sloc, p_sloc_values, FALSE);
-    else if (varp == &p_bo)			// 'belloff'
-	errmsg = did_set_opt_flags(p_bo, p_bo_values, &bo_flags, TRUE);
-    else if (varp == &p_cmp)			// 'casemap'
-	errmsg = did_set_opt_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
-#ifdef FEAT_FOLDING
-    else if (varp == &p_fdo)			// 'foldopen'
-	errmsg = did_set_opt_flags(p_fdo, p_fdo_values, &fdo_flags, TRUE);
-    else if (varp == &p_fcl)			// 'foldclose'
-	errmsg = did_set_opt_strings(p_fcl, p_fcl_values, TRUE);
-#endif
     else if (gvarp == &p_ft)			// 'filetype'
 	errmsg = did_set_filetype_or_syntax(varp, oldval, value_checked,
 							&value_changed);
@@ -2833,14 +2959,6 @@ did_set_string_option(
     else if (gvarp == &p_syn)			// 'syntax'
 	errmsg = did_set_filetype_or_syntax(varp, oldval, value_checked,
 							&value_changed);
-#endif
-#ifdef FEAT_TERMINAL
-    else if (varp == &curwin->w_p_wcr)		// 'wincolor'
-	term_update_wincolor(curwin);
-# if defined(MSWIN)
-    else if (varp == &p_twt)			// 'termwintype'
-	errmsg = did_set_opt_strings(p_twt, p_twt_values, FALSE);
-# endif
 #endif
 #ifdef FEAT_EVAL
     else if (
