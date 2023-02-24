@@ -522,6 +522,9 @@ au BufNewFile,BufRead */etc/apt/sources.list.d/*.list	setf debsources
 " Deny hosts
 au BufNewFile,BufRead denyhosts.conf		setf denyhosts
 
+" Dhall
+au BufNewFile,BufRead *.dhall			setf dhall
+
 " dnsmasq(8) configuration files
 au BufNewFile,BufRead */etc/dnsmasq.conf	setf dnsmasq
 
