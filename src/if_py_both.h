@@ -17,11 +17,6 @@
 typedef int Py_ssize_t;  // Python 2.4 and earlier don't have this type.
 #endif
 
-#if PY_VERSION_HEX >= 0x03020000 && defined(Py_LIMITED_API)
-// Limited API is only for Python 3. Python 2 does not have this feature.
-# define USE_LIMITED_API
-#endif
-
 // Use values that are known to work, others may make Vim crash.
 #define ENC_OPT (enc_utf8 ? "utf-8" : enc_dbcs ? "euc-jp" : (char *)p_enc)
 #define DOPY_FUNC "_vim_pydo"

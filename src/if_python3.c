@@ -29,9 +29,6 @@
 // allocator
 // #define Py_DEBUG_NO_PYMALLOC
 
-// TODO: Comment below for to get back full / non-limited API. This ifdef should be moved to configure script instead
-#define Py_LIMITED_API 0x03080000
-
 #include "vim.h"
 
 #include <limits.h>
@@ -73,6 +70,10 @@
 #define PY_SSIZE_T_CLEAN
 #define PyLong_Type (*py3_PyLong_Type)
 #define PyBool_Type (*py3_PyBool_Type)
+
+#ifdef Py_LIMITED_API
+# define USE_LIMITED_API // Using Python 3 limited ABI
+#endif
 
 #include <Python.h>
 
@@ -215,7 +216,7 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyObject_GetItem py3_PyObject_GetItem
 # define PyObject_IsTrue py3_PyObject_IsTrue
 # define PyModule_GetDict py3_PyModule_GetDict
-# ifndef Py_LIMITED_API
+# ifndef USE_LIMITED_API
 #  undef PyRun_SimpleString
 #  define PyRun_SimpleString py3_PyRun_SimpleString
 #  undef PyRun_String
@@ -272,7 +273,7 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyBytes_FromString py3_PyBytes_FromString
 # undef PyBytes_FromStringAndSize
 # define PyBytes_FromStringAndSize py3_PyBytes_FromStringAndSize
-# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(Py_LIMITED_API)
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(USE_LIMITED_API)
 #  define _Py_Dealloc py3__Py_Dealloc
 # endif
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
@@ -321,7 +322,7 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 # define PyType_IsSubtype py3_PyType_IsSubtype
 # define PyCapsule_New py3_PyCapsule_New
 # define PyCapsule_GetPointer py3_PyCapsule_GetPointer
-# ifdef Py_LIMITED_API
+# ifdef USE_LIMITED_API
 #  define PyType_GetSlot py3_PyType_GetSlot
 #  define PyType_FromSpec py3_PyType_FromSpec
 # endif
@@ -373,7 +374,7 @@ static void (*py3_Py_Finalize)(void);
 static void (*py3_PyErr_SetString)(PyObject *, const char *);
 static void (*py3_PyErr_SetObject)(PyObject *, PyObject *);
 static int (*py3_PyErr_ExceptionMatches)(PyObject *);
-# ifndef Py_LIMITED_API
+# ifndef USE_LIMITED_API
 static int (*py3_PyRun_SimpleString)(char *);
 static PyObject* (*py3_PyRun_String)(char *, int, PyObject *, PyObject *);
 # else
@@ -457,7 +458,7 @@ static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
 static PyObject* (*py3_PyBytes_FromStringAndSize)(char *str, Py_ssize_t length);
-# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(Py_LIMITED_API)
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(USE_LIMITED_API)
 static void (*py3__Py_Dealloc)(PyObject *obj);
 # endif
 # if PY_VERSION_HEX >= 0x030900b0
@@ -499,7 +500,7 @@ static PyObject*(*py3__PyObject_GC_New)(PyTypeObject *);
 static void(*py3_PyObject_GC_Del)(void *);
 static void(*py3_PyObject_GC_UnTrack)(void *);
 static int (*py3_PyType_IsSubtype)(PyTypeObject *, PyTypeObject *);
-# ifdef Py_LIMITED_API
+# ifdef USE_LIMITED_API
 static void* (*py3_PyType_GetSlot)(PyTypeObject *, int);
 static PyObject* (*py3_PyType_FromSpec)(PyType_Spec *);
 # endif
@@ -568,7 +569,7 @@ static struct
     {"PyErr_SetString", (PYTHON_PROC*)&py3_PyErr_SetString},
     {"PyErr_SetObject", (PYTHON_PROC*)&py3_PyErr_SetObject},
     {"PyErr_ExceptionMatches", (PYTHON_PROC*)&py3_PyErr_ExceptionMatches},
-# ifndef Py_LIMITED_API
+# ifndef USE_LIMITED_API
     {"PyRun_SimpleString", (PYTHON_PROC*)&py3_PyRun_SimpleString},
     {"PyRun_String", (PYTHON_PROC*)&py3_PyRun_String},
 # else
@@ -646,7 +647,7 @@ static struct
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
     {"PyBytes_FromStringAndSize", (PYTHON_PROC*)&py3_PyBytes_FromStringAndSize},
-# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(Py_LIMITED_API)
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0 || defined(USE_LIMITED_API)
     {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
 # endif
 # if PY_VERSION_HEX >= 0x030900b0
@@ -688,7 +689,7 @@ static struct
     {"PyType_IsSubtype", (PYTHON_PROC*)&py3_PyType_IsSubtype},
     {"PyCapsule_New", (PYTHON_PROC*)&py3_PyCapsule_New},
     {"PyCapsule_GetPointer", (PYTHON_PROC*)&py3_PyCapsule_GetPointer},
-# ifdef Py_LIMITED_API
+# ifdef USE_LIMITED_API
 #  if PY_VERSION_HEX >= 0x03040000
     {"PyType_GetSlot", (PYTHON_PROC*)&py3_PyType_GetSlot},
 #  endif
@@ -962,7 +963,7 @@ static int py3initialised = 0;
 #define PYINITIALISED py3initialised
 static int python_end_called = FALSE;
 
-#ifdef Py_LIMITED_API
+#ifdef USE_LIMITED_API
 # define DESTRUCTOR_FINISH(self) \
     ((freefunc)PyType_GetSlot(Py_TYPE(self), Py_tp_free))((PyObject*)self)
 #else
@@ -1020,7 +1021,7 @@ static struct PyModuleDef vimmodule;
  */
 #include "if_py_both.h"
 
-#ifndef Py_LIMITED_API
+#ifndef USE_LIMITED_API
 # if PY_VERSION_HEX >= 0x030300f0
 #  define PY_UNICODE_GET_UTF8_CHARS(obj) PyUnicode_AsUTF8AndSize(obj, NULL)
 # else
