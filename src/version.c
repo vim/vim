@@ -474,7 +474,11 @@ static char *(features[]) =
 #endif
 #ifdef FEAT_PYTHON3
 # ifdef DYNAMIC_PYTHON3
+#  ifdef DYNAMIC_PYTHON3_STABLE_ABI
+	"+python3/dyn-stable",
+#  else
 	"+python3/dyn",
+#  endif
 # else
 	"+python3",
 # endif

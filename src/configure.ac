@@ -1713,6 +1713,9 @@ dnl with dlopen(), dlsym(), dlclose()
 if test "$python_ok" = yes && test "$python3_ok" = yes; then
   AC_DEFINE(DYNAMIC_PYTHON)
   AC_DEFINE(DYNAMIC_PYTHON3)
+  if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+    AC_DEFINE(DYNAMIC_PYTHON3_STABLE_ABI)
+  fi
   AC_MSG_CHECKING(whether we can do without RTLD_GLOBAL for Python)
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $PYTHON_CFLAGS"
@@ -1836,6 +1839,9 @@ elif test "$python_ok" = yes; then
   fi
 elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
   AC_DEFINE(DYNAMIC_PYTHON3)
+  if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+    AC_DEFINE(DYNAMIC_PYTHON3_STABLE_ABI)
+  fi
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
   PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${vi_cv_dll_name_python3}\\\""
