@@ -310,6 +310,9 @@ au BufNewFile,BufRead *.cdl			setf cdl
 " Conary Recipe
 au BufNewFile,BufRead *.recipe			setf conaryrecipe
 
+" ChainPack Object Notation (CPON)
+au BufNewFile,BufRead *.cpon			setf cpon
+
 " Controllable Regex Mutilator
 au BufNewFile,BufRead *.crm			setf crm
 
