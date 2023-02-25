@@ -220,6 +220,7 @@ get_yank_register(int regname, int writing)
     int	    ret = FALSE;
 
     y_append = FALSE;
+ 
     if ((regname == 0 || regname == '"') && !writing && y_previous != NULL)
     {
 	y_current = y_previous;
@@ -1568,6 +1569,8 @@ do_put(
     adjust_clip_reg(&regname);
     (void)may_get_selection(regname);
 #endif
+    // save last putted register name
+    set_lastreg_var(regname);
 
     if (flags & PUT_FIXINDENT)
 	orig_indent = get_indent();

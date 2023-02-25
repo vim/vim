@@ -157,6 +157,7 @@ static struct vimvar
     {VV_NAME("sizeoflong",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("sizeofpointer",	 VAR_NUMBER), NULL, VV_RO},
     {VV_NAME("maxcol",		 VAR_NUMBER), NULL, VV_RO},
+    {VV_NAME("last_reg",	 VAR_STRING), NULL, VV_RO},
 };
 
 // shorthand
@@ -245,6 +246,7 @@ evalvars_init(void)
     set_vim_var_nr(VV_SIZEOFLONG, sizeof(long));
     set_vim_var_nr(VV_SIZEOFPOINTER, sizeof(char *));
     set_vim_var_nr(VV_MAXCOL, MAXCOL);
+    set_vim_var_nr(VV_LASTREG, 0);
 
     set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
     set_vim_var_nr(VV_TYPE_STRING,  VAR_TYPE_STRING);
@@ -2804,6 +2806,20 @@ set_reg_var(int c)
     // Avoid free/alloc when the value is already right.
     if (vimvars[VV_REG].vv_str == NULL || vimvars[VV_REG].vv_str[0] != c)
 	set_vim_var_string(VV_REG, &regname, 1);
+}
+
+    void
+set_lastreg_var(int c)
+{
+    char_u	regname;
+
+    if (c == 0 || c == ' ')
+	regname = '"';
+    else
+	regname = c;
+    // Avoid free/alloc when the value is already right.
+    if (vimvars[VV_LASTREG].vv_str == NULL || vimvars[VV_LASTREG].vv_str[0] != c)
+	set_vim_var_string(VV_LASTREG, &regname, 1);
 }
 
 /*
