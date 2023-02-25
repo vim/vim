@@ -2068,8 +2068,12 @@ endfunc
 func Test_edit_gr_special()
   enew
   call setline(1, ['abcdef', 'xxxxxx'])
-  exe "normal! gr\<C-O>x"
-  call assert_equal('bcdef', getline(1))
+  exe "normal! gr\<C-O>lx"
+  call assert_equal("\<C-O>def", getline(1))
+
+  call setline(1, 'abcdef')
+  exe "normal! 0gr\<C-G>lx"
+  call assert_equal("\<C-G>def", getline(1))
 
   bwipe!
 endfunc
