@@ -790,7 +790,7 @@ did_set_helpfile(optset_T *args UNUSED)
     return NULL;
 }
 
-#ifdef FEAT_SYN_HL
+#if defined(FEAT_SYN_HL) || defined(PROTO)
 /*
  * The 'colorcolumn' option is changed.
  */
@@ -1458,20 +1458,20 @@ did_set_matchpairs(optset_T *args)
 /*
  * The 'comments' option is changed.
  */
-    static char *
-did_set_comments(char_u **varp, char *errbuf)
+    char *
+did_set_comments(optset_T *args)
 {
     char_u	*s;
     char	*errmsg = NULL;
 
-    for (s = *varp; *s; )
+    for (s = args->os_varp; *s; )
     {
 	while (*s && *s != ':')
 	{
 	    if (vim_strchr((char_u *)COM_ALL, *s) == NULL
 		    && !VIM_ISDIGIT(*s) && *s != '-')
 	    {
-		errmsg = illegal_char(errbuf, *s);
+		errmsg = illegal_char(args->os_errbuf, *s);
 		break;
 	    }
 	    ++s;
@@ -1547,12 +1547,12 @@ did_set_verbosefile(optset_T *args UNUSED)
     return NULL;
 }
 
-#ifdef FEAT_VIMINFO
+#if defined(FEAT_VIMINFO) || defined(PROTO)
 /*
  * The 'viminfo' option is changed.
  */
-    static char *
-did_set_viminfo(char *errbuf)
+    char *
+did_set_viminfo(optset_T *args)
 {
     char_u	*s;
     char	*errmsg = NULL;
@@ -1562,7 +1562,7 @@ did_set_viminfo(char *errbuf)
 	// Check it's a valid character
 	if (vim_strchr((char_u *)"!\"%'/:<@cfhnrs", *s) == NULL)
 	{
-	    errmsg = illegal_char(errbuf, *s);
+	    errmsg = illegal_char(args->os_errbuf, *s);
 	    break;
 	}
 	if (*s == 'n')	// name is always last one
@@ -1587,12 +1587,12 @@ did_set_viminfo(char *errbuf)
 
 	    if (!VIM_ISDIGIT(*(s - 1)))
 	    {
-		if (errbuf != NULL)
+		if (args->os_errbuf != NULL)
 		{
-		    sprintf(errbuf,
+		    sprintf(args->os_errbuf,
 			    _(e_missing_number_after_angle_str_angle),
 			    transchar_byte(*(s - 1)));
-		    errmsg = errbuf;
+		    errmsg = args->os_errbuf;
 		}
 		else
 		    errmsg = "";
@@ -1603,7 +1603,7 @@ did_set_viminfo(char *errbuf)
 	    ++s;
 	else if (*s)
 	{
-	    if (errbuf != NULL)
+	    if (args->os_errbuf != NULL)
 		errmsg = e_missing_comma;
 	    else
 		errmsg = "";
@@ -1695,6 +1695,17 @@ did_set_showbreak(optset_T *args)
     }
 
     return NULL;
+}
+#endif
+
+#if defined(CURSOR_SHAPE) || defined(PROTO)
+/*
+ * The 'guicursor' option is changed.
+ */
+    char *
+did_set_guicursor(optset_T *args UNUSED)
+{
+    return parse_shape_opt(SHAPE_CURSOR);
 }
 #endif
 
@@ -1849,13 +1860,35 @@ did_set_iconstring(optset_T *args)
     return did_set_titleiconstring(args, flagval);
 }
 
-#ifdef FEAT_GUI
+/*
+ * An option which is a list of flags is set.  Valid values are in 'flags'.
+ */
+    static char *
+did_set_option_listflag(char_u *varp, char_u *flags, char *errbuf)
+{
+    char_u	*s;
+
+    for (s = varp; *s; ++s)
+	if (vim_strchr(flags, *s) == NULL)
+	    return illegal_char(errbuf, *s);
+
+    return NULL;
+}
+
+#if defined(FEAT_GUI) || defined(PROTO)
 /*
  * The 'guioptions' option is changed.
  */
     char *
 did_set_guioptions(optset_T *args)
 {
+    char *errmsg;
+
+    errmsg = did_set_option_listflag(args->os_varp, (char_u *)GO_ALL,
+							args->os_errbuf);
+    if (errmsg != NULL)
+	return errmsg;
+
     gui_init_which_components(args->os_oldval.string);
     return NULL;
 }
@@ -2095,7 +2128,7 @@ did_set_buftype(optset_T *args UNUSED)
     return NULL;
 }
 
-#ifdef FEAT_STL_OPT
+#if defined(FEAT_STL_OPT) || defined(PROTO)
 /*
  * The 'statusline' or the 'tabline' or the 'rulerformat' option is changed.
  * "rulerformat" is TRUE if the 'rulerformat' option is changed.
@@ -2162,20 +2195,20 @@ did_set_rulerformat(optset_T *args)
 /*
  * The 'complete' option is changed.
  */
-    static char *
-did_set_complete(char_u **varp, char *errbuf)
+    char *
+did_set_complete(optset_T *args)
 {
     char_u	*s;
 
     // check if it is a valid value for 'complete' -- Acevedo
-    for (s = *varp; *s;)
+    for (s = args->os_varp; *s;)
     {
 	while (*s == ',' || *s == ' ')
 	    s++;
 	if (!*s)
 	    break;
 	if (vim_strchr((char_u *)".wbuksid]tU", *s) == NULL)
-	    return illegal_char(errbuf, *s);
+	    return illegal_char(args->os_errbuf, *s);
 	if (*++s != NUL && *s != ',' && *s != ' ')
 	{
 	    if (s[-1] == 'k' || s[-1] == 's')
@@ -2190,11 +2223,11 @@ did_set_complete(char_u **varp, char *errbuf)
 	    }
 	    else
 	    {
-		if (errbuf != NULL)
+		if (args->os_errbuf != NULL)
 		{
-		    sprintf((char *)errbuf,
+		    sprintf((char *)args->os_errbuf,
 			    _(e_illegal_character_after_chr), *--s);
-		    return errbuf;
+		    return args->os_errbuf;
 		}
 		return "";
 	    }
@@ -2744,45 +2777,137 @@ did_set_completepopup(optset_T *args UNUSED)
 # endif
 #endif
 
-#ifdef FEAT_EVAL
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Returns TRUE if the option pointed by "varp" or "gvarp" is one of the
+ * '*expr' options: 'balloonexpr', 'diffexpr', 'foldexpr', 'foldtext',
+ * 'formatexpr', 'includeexpr', 'indentexpr', 'patchexpr', 'printexpr' or
+ * 'charconvert'.
+ */
+    static int
+is_expr_option(char_u **varp, char_u **gvarp)
+{
+    return (
+# ifdef FEAT_BEVAL
+	varp == &p_bexpr ||			// 'balloonexpr'
+# endif
+# ifdef FEAT_DIFF
+	varp == &p_dex ||			// 'diffexpr'
+# endif
+# ifdef FEAT_FOLDING
+	gvarp == &curwin->w_allbuf_opt.wo_fde ||	// 'foldexpr'
+	gvarp == &curwin->w_allbuf_opt.wo_fdt ||	// 'foldtext'
+# endif
+	gvarp == &p_fex ||			// 'formatexpr'
+# ifdef FEAT_FIND_ID
+	gvarp == &p_inex ||			// 'includeexpr'
+# endif
+	gvarp == &p_inde ||			// 'indentexpr'
+# ifdef FEAT_DIFF
+	varp == &p_pex ||			// 'patchexpr'
+# endif
+# ifdef FEAT_POSTSCRIPT
+	varp == &p_pexpr ||			// 'printexpr'
+# endif
+	varp == &p_ccv);			// 'charconvert'
+}
+
 /*
  * One of the '*expr' options is changed: 'balloonexpr', 'diffexpr',
  * 'foldexpr', 'foldtext', 'formatexpr', 'includeexpr', 'indentexpr',
  * 'patchexpr', 'printexpr' and 'charconvert'.
  *
  */
-    static void
-did_set_optexpr(char_u **varp)
+    char *
+did_set_optexpr(optset_T *args)
 {
     // If the option value starts with <SID> or s:, then replace that with
     // the script identifier.
-    char_u *name = get_scriptlocal_funcname(*varp);
+    char_u *name = get_scriptlocal_funcname(args->os_varp);
     if (name != NULL)
     {
-	free_string_option(*varp);
-	*varp = name;
+	free_string_option(args->os_varp);
+	args->os_varp = name;
     }
 
-# ifdef FEAT_FOLDING
-    if (varp == &curwin->w_p_fde && foldmethodIsExpr(curwin))
+    return NULL;
+}
+
+# if defined(FEAT_FOLDING) || defined(PROTO)
+/*
+ * The 'foldexpr' option is changed.
+ */
+    char *
+did_set_foldexpr(optset_T *args)
+{
+    (void)did_set_optexpr(args);
+    if (foldmethodIsExpr(curwin))
 	foldUpdateAll(curwin);
+    return NULL;
+}
 # endif
+#endif
+
+#if defined(FEAT_CONCEAL) || defined(PROTO)
+/*
+ * The 'concealcursor' option is changed.
+ */
+    char *
+did_set_concealcursor(optset_T *args)
+{
+    return did_set_option_listflag(args->os_varp, (char_u *)COCU_ALL,
+							args->os_errbuf);
 }
 #endif
 
 /*
- * An option which is a list of flags is set.  Valid values are in 'flags'.
+ * The 'cpoptions' option is changed.
  */
-    static char *
-did_set_option_listflag(char_u **varp, char_u *flags, char *errbuf)
+    char *
+did_set_cpoptions(optset_T *args)
 {
-    char_u	*s;
+    return did_set_option_listflag(args->os_varp, (char_u *)CPO_ALL,
+							args->os_errbuf);
+}
 
-    for (s = *varp; *s; ++s)
-	if (vim_strchr(flags, *s) == NULL)
-	    return illegal_char(errbuf, *s);
+/*
+ * The 'formatoptions' option is changed.
+ */
+    char *
+did_set_formatoptions(optset_T *args)
+{
+    return did_set_option_listflag(args->os_varp, (char_u *)FO_ALL,
+							args->os_errbuf);
+}
 
-    return NULL;
+/*
+ * The 'mouse' option is changed.
+ */
+    char *
+did_set_mouse(optset_T *args)
+{
+    return did_set_option_listflag(args->os_varp, (char_u *)MOUSE_ALL,
+							args->os_errbuf);
+}
+
+/*
+ * The 'shortmess' option is changed.
+ */
+    char *
+did_set_shortmess(optset_T *args)
+{
+    return did_set_option_listflag(args->os_varp, (char_u *)SHM_ALL,
+							args->os_errbuf);
+}
+
+/*
+ * The 'whichwrap' option is changed.
+ */
+    char *
+did_set_whichwrap(optset_T *args)
+{
+    return did_set_option_listflag(args->os_varp, (char_u *)WW_ALL,
+							args->os_errbuf);
 }
 
 #ifdef FEAT_SYN_HL
@@ -2912,7 +3037,14 @@ did_set_string_option(
 	args.os_flags = opt_flags;
 	args.os_oldval.string = oldval;
 	args.os_newval.string = value;
+	args.os_errbuf = errbuf;
 	errmsg = did_set_cb(&args);
+#ifdef FEAT_EVAL
+	// When processing the '*expr' options (e.g. diffexpr, foldexpr, etc.),
+	// the did_set_cb() function may modify '*varp'.
+	if (errmsg == NULL && is_expr_option(varp, gvarp))
+	    *varp = args.os_varp;
+#endif
     }
     else if (varp == &T_NAME)			// 'term'
 	errmsg = did_set_term(&opt_idx, &free_oldval);
@@ -2930,8 +3062,6 @@ did_set_string_option(
     else if (varp == &curbuf->b_p_keymap)	// 'keymap'
 	errmsg = did_set_keymap(varp, opt_flags, value_checked);
 #endif
-    else if (gvarp == &p_com)			// 'comments'
-	errmsg = did_set_comments(varp, errbuf);
     else if (  varp == &p_lcs			// global 'listchars'
 	    || varp == &p_fcs)			// global 'fillchars'
 	errmsg = did_set_global_listfillchars(varp, opt_flags);
@@ -2939,19 +3069,9 @@ did_set_string_option(
 	errmsg = set_chars_option(curwin, varp, TRUE);
     else if (varp == &curwin->w_p_fcs)		// local 'fillchars'
 	errmsg = set_chars_option(curwin, varp, TRUE);
-#ifdef FEAT_VIMINFO
-    else if (varp == &p_viminfo)		// 'viminfo'
-	errmsg = did_set_viminfo(errbuf);
-#endif // FEAT_VIMINFO
     // terminal options
     else if (istermoption_idx(opt_idx) && full_screen)
 	did_set_term_option(varp, &did_swaptcap);
-#ifdef CURSOR_SHAPE
-    else if (varp == &p_guicursor)		// 'guicursor'
-	errmsg = parse_shape_opt(SHAPE_CURSOR);
-#endif
-    else if (gvarp == &p_cpt)			// 'complete'
-	errmsg = did_set_complete(varp, errbuf);
     else if (gvarp == &p_ft)			// 'filetype'
 	errmsg = did_set_filetype_or_syntax(varp, oldval, value_checked,
 							&value_changed);
@@ -2959,50 +3079,6 @@ did_set_string_option(
     else if (gvarp == &p_syn)			// 'syntax'
 	errmsg = did_set_filetype_or_syntax(varp, oldval, value_checked,
 							&value_changed);
-#endif
-#ifdef FEAT_EVAL
-    else if (
-# ifdef FEAT_BEVAL
-	    varp == &p_bexpr ||			// 'balloonexpr'
-# endif
-# ifdef FEAT_DIFF
-	    varp == &p_dex ||			// 'diffexpr'
-# endif
-# ifdef FEAT_FOLDING
-	    gvarp == &curwin->w_allbuf_opt.wo_fde ||	// 'foldexpr'
-	    gvarp == &curwin->w_allbuf_opt.wo_fdt ||	// 'foldtext'
-# endif
-	    gvarp == &p_fex ||			// 'formatexpr'
-# ifdef FEAT_FIND_ID
-	    gvarp == &p_inex ||			// 'includeexpr'
-# endif
-	    gvarp == &p_inde ||			// 'indentexpr'
-# ifdef FEAT_DIFF
-	    varp == &p_pex ||			// 'patchexpr'
-# endif
-# ifdef FEAT_POSTSCRIPT
-	    varp == &p_pexpr ||			// 'printexpr'
-# endif
-	    varp == &p_ccv)			// 'charconvert'
-	did_set_optexpr(varp);
-#endif
-    else if (varp == &p_ww)			// 'whichwrap'
-	errmsg = did_set_option_listflag(varp, (char_u *)WW_ALL, errbuf);
-    else if (varp == &p_shm)			// 'shortmess'
-	errmsg = did_set_option_listflag(varp, (char_u *)SHM_ALL, errbuf);
-    else if (varp == &(p_cpo))			// 'cpoptions'
-	errmsg = did_set_option_listflag(varp, (char_u *)CPO_ALL, errbuf);
-    else if (varp == &(curbuf->b_p_fo))		// 'formatoptions'
-	errmsg = did_set_option_listflag(varp, (char_u *)FO_ALL, errbuf);
-#ifdef FEAT_CONCEAL
-    else if (varp == &curwin->w_p_cocu)		// 'concealcursor'
-	errmsg = did_set_option_listflag(varp, (char_u *)COCU_ALL, errbuf);
-#endif
-    else if (varp == &p_mouse)			// 'mouse'
-	errmsg = did_set_option_listflag(varp, (char_u *)MOUSE_ALL, errbuf);
-#if defined(FEAT_GUI)
-    else if (varp == &p_go)			// 'guioptions'
-	errmsg = did_set_option_listflag(varp, (char_u *)GO_ALL, errbuf);
 #endif
 
     // If an error is detected, restore the previous value.
