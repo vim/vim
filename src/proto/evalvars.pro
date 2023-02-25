@@ -56,6 +56,7 @@ void set_vim_var_dict(int idx, dict_T *val);
 void set_argv_var(char **argv, int argc);
 void reset_reg_var(void);
 void set_reg_var(int c);
+void set_lastreg_var(int c);
 char_u *v_exception(char_u *oldval);
 char_u *v_throwpoint(char_u *oldval);
 char_u *set_cmdarg(exarg_T *eap, char_u *oldarg);
