@@ -2424,6 +2424,11 @@ v:progpath	Contains the command with which Vim was invoked, in a form
 		".exe" is not added to v:progpath.
 		Read-only.
 
+				    *v:python3_version* *python3-version-variable*
+v:python3_version
+		TODO ychin: This needs to be implemented
+		Read-only.
+
 					*v:register* *register-variable*
 v:register	The name of the register in effect for the current normal mode
 		command (regardless of whether that command actually used a
