@@ -220,7 +220,6 @@ get_yank_register(int regname, int writing)
     int	    ret = FALSE;
 
     y_append = FALSE;
- 
     if ((regname == 0 || regname == '"') && !writing && y_previous != NULL)
     {
 	y_current = y_previous;
