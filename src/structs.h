@@ -4819,4 +4819,9 @@ typedef struct
     // When set by the called function: Stop processing the option further.
     // Currently only used for boolean options.
     int		os_doskip;
+
+    // If the value specified for an option is not valid and the error message
+    // is parameterized, then the "os_errbuf" buffer is used to store the error
+    // message (when it is not NULL).
+    char	*os_errbuf;
 } optset_T;

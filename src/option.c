@@ -3898,6 +3898,7 @@ set_bool_option(
 	args.os_oldval.boolean = old_value;
 	args.os_newval.boolean = value;
 	args.os_doskip = FALSE;
+	args.os_errbuf = NULL;
 	errmsg = options[opt_idx].opt_did_set_cb(&args);
 	if (args.os_doskip)
 	    return errmsg;
@@ -4669,6 +4670,7 @@ set_num_option(
 	args.os_flags = opt_flags;
 	args.os_oldval.number = old_value;
 	args.os_newval.number = value;
+	args.os_errbuf = NULL;
 	errmsg = options[opt_idx].opt_did_set_cb(&args);
     }
 

@@ -104,6 +104,7 @@ let test_values = {
       \ 'guifont': [['', fontname], []],
       \ 'guifontwide': [['', fontname], []],
       \ 'guifontset': [['', fontname], []],
+      \ 'guioptions': [['', 'a'], ['Q']],
       \ 'helplang': [['', 'de', 'de,it'], ['xxx']],
       \ 'highlight': [['', 'e:Error'], ['xxx']],
       \ 'imactivatekey': [['', 'S-space'], ['xxx']],
