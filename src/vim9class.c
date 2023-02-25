@@ -230,7 +230,8 @@ object_index_from_itf_index(class_T *itf, int is_method, int idx, class_T *cl)
     void
 ex_class(exarg_T *eap)
 {
-    int is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
+    int	    is_class = eap->cmdidx == CMD_class;  // FALSE for :interface
+    long    start_lnum = SOURCING_LNUM;
 
     char_u *arg = eap->arg;
     int is_abstract = eap->cmdidx == CMD_abstract;
@@ -1097,8 +1098,9 @@ early_ret:
 	tv.v_type = VAR_CLASS;
 	tv.vval.v_class = cl;
 	is_export = class_export;
+	SOURCING_LNUM = start_lnum;
 	set_var_const(cl->class_name, current_sctx.sc_sid,
-					     NULL, &tv, FALSE, ASSIGN_DECL, 0);
+						       NULL, &tv, FALSE, 0, 0);
 	return;
     }
 

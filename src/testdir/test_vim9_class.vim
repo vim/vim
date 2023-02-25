@@ -164,6 +164,28 @@ def Test_class_basic()
   v9.CheckScriptSuccess(lines)
 enddef
 
+def Test_class_defined_twice()
+  # class defined twice should fail
+  var lines =<< trim END
+      vim9script
+      class There
+      endclass
+      class There
+      endclass
+  END
+  v9.CheckScriptFailure(lines, 'E1041: Redefining script item: "There"')
+
+  # one class, reload same script twice is OK
+  lines =<< trim END
+      vim9script
+      class There
+      endclass
+  END
+  writefile(lines, 'XclassTwice.vim', 'D')
+  source XclassTwice.vim
+  source XclassTwice.vim
+enddef
+
 def Test_class_interface_wrong_end()
   var lines =<< trim END
       vim9script
@@ -1012,14 +1034,13 @@ def Test_class_implements_interface()
         this.member: string
       endinterface
 
-      class SomeImpl implements Some, Another
+      class AnotherImpl implements Some, Another
         this.member = 'abc'
         static count: number
         def Method(nr: number)
           echo nr
         enddef
       endclass
-
   END
   v9.CheckScriptSuccess(lines)
 
