@@ -3088,11 +3088,10 @@ did_set_langmap(optset_T *args UNUSED)
 	    }
 	    if (to == NUL)
 	    {
-		// TODO: Need to use errbuf argument for this error message
-		// and return it.
-		semsg(_(e_langmap_matching_character_missing_for_str),
-							     transchar(from));
-		return NULL;
+		sprintf(args->os_errbuf,
+			_(e_langmap_matching_character_missing_for_str),
+			transchar(from));
+		return args->os_errbuf;
 	    }
 
 	    if (from >= 256)
@@ -3112,10 +3111,10 @@ did_set_langmap(optset_T *args UNUSED)
 		    {
 			if (p[0] != ',')
 			{
-			    // TODO: Need to use errbuf argument for this error
-			    // message and return it.
-			    semsg(_(e_langmap_extra_characters_after_semicolon_str), p);
-			    return NULL;
+			    sprintf(args->os_errbuf,
+				    _(e_langmap_extra_characters_after_semicolon_str),
+				    p);
+			    return args->os_errbuf;
 			}
 			++p;
 		    }

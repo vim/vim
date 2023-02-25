@@ -97,6 +97,7 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
 #endif
 static char *(p_sloc_values[]) = {"last", "statusline", "tabline", NULL};
+static char *(p_sws_values[]) = {"fsync", "sync", NULL};
 
 static int check_opt_strings(char_u *val, char **values, int list);
 static int opt_strings_flags(char_u *val, char **values, unsigned *flagp, int list);
@@ -761,15 +762,15 @@ did_set_breakindentopt(optset_T *args UNUSED)
  * The 'isident' or the 'iskeyword' or the 'isprint' or the 'isfname' option is
  * changed.
  */
-    static char *
-did_set_isopt(int *did_chartab)
+    char *
+did_set_isopt(optset_T *args)
 {
     // 'isident', 'iskeyword', 'isprint or 'isfname' option: refill g_chartab[]
     // If the new option is invalid, use old value.
     // 'lisp' option: refill g_chartab[] for '-' char.
     if (init_chartab() == FAIL)
     {
-	*did_chartab = TRUE;		// need to restore it below
+	args->os_restore_chartab = TRUE;// need to restore the chartab.
 	return e_invalid_argument;	// error in value
     }
 
@@ -926,6 +927,15 @@ did_set_showcmdloc(optset_T *args UNUSED)
 did_set_splitkeep(optset_T *args UNUSED)
 {
     return did_set_opt_strings(p_spk, p_spk_values, FALSE);
+}
+
+/*
+ * The 'swapsync' option is changed.
+ */
+    char *
+did_set_swapsync(optset_T *args UNUSED)
+{
+    return did_set_opt_strings(p_sws, p_sws_values, FALSE);
 }
 
 /*
@@ -1224,16 +1234,16 @@ did_set_imactivatekey(optset_T *args UNUSED)
 }
 #endif
 
-#ifdef FEAT_KEYMAP
+#if defined(FEAT_KEYMAP) || defined(PROTO)
 /*
  * The 'keymap' option is changed.
  */
-    static char *
-did_set_keymap(char_u **varp, int opt_flags, int *value_checked)
+    char *
+did_set_keymap(optset_T *args)
 {
     char *errmsg = NULL;
 
-    if (!valid_filetype(*varp))
+    if (!valid_filetype(args->os_varp))
 	errmsg = e_invalid_argument;
     else
     {
@@ -1250,7 +1260,7 @@ did_set_keymap(char_u **varp, int opt_flags, int *value_checked)
 
 	// Since we check the value, there is no need to set P_INSECURE,
 	// even when the value comes from a modeline.
-	*value_checked = TRUE;
+	args->os_value_checked = TRUE;
     }
 
     if (errmsg == NULL)
@@ -1270,7 +1280,7 @@ did_set_keymap(char_u **varp, int opt_flags, int *value_checked)
 	    if (curbuf->b_p_imsearch == B_IMODE_LMAP)
 		curbuf->b_p_imsearch = B_IMODE_USE_INSERT;
 	}
-	if ((opt_flags & OPT_LOCAL) == 0)
+	if ((args->os_flags & OPT_LOCAL) == 0)
 	{
 	    set_iminsert_global();
 	    set_imsearch_global();
@@ -2573,7 +2583,8 @@ did_set_cinoptions(optset_T *args UNUSED)
     char *
 did_set_lispoptions(optset_T *args)
 {
-    if (*args->os_varp != NUL && STRCMP(args->os_varp, "expr:0") != 0
+    if (*args->os_varp != NUL
+	    && STRCMP(args->os_varp, "expr:0") != 0
 	    && STRCMP(args->os_varp, "expr:1") != 0)
 	return e_invalid_argument;
 
@@ -2594,24 +2605,36 @@ did_set_renderoptions(optset_T *args UNUSED)
 }
 #endif
 
+#if defined(FEAT_RIGHTLEFT) || defined(PROTO)
+/*
+ * The 'rightleftcmd' option is changed.
+ */
+    char *
+did_set_rightleftcmd(optset_T *args)
+{
+    // Currently only "search" is a supported value.
+    if (*args->os_varp != NUL && STRCMP(args->os_varp, "search") != 0)
+	return e_invalid_argument;
+
+    return NULL;
+}
+#endif
+
 /*
  * The 'filetype' or the 'syntax' option is changed.
  */
-    static char *
-did_set_filetype_or_syntax(
-    char_u	**varp,
-    char_u	*oldval,
-    int		*value_checked,
-    int		*value_changed)
+    char *
+did_set_filetype_or_syntax(optset_T *args)
 {
-    if (!valid_filetype(*varp))
+    if (!valid_filetype(args->os_varp))
 	return e_invalid_argument;
 
-    *value_changed = STRCMP(oldval, *varp) != 0;
+    args->os_value_changed =
+			STRCMP(args->os_oldval.string, args->os_varp) != 0;
 
     // Since we check the value, there is no need to set P_INSECURE,
     // even when the value comes from a modeline.
-    *value_checked = TRUE;
+    args->os_value_checked = TRUE;
 
     return NULL;
 }
@@ -3008,7 +3031,7 @@ did_set_string_option(
 					// need to set P_INSECURE
 {
     char	*errmsg = NULL;
-    int		did_chartab = FALSE;
+    int		restore_chartab = FALSE;
     char_u	**gvarp;
     long_u	free_oldval = (get_option_flags(opt_idx) & P_ALLOCED);
     int		value_changed = FALSE;
@@ -3037,31 +3060,37 @@ did_set_string_option(
 	args.os_flags = opt_flags;
 	args.os_oldval.string = oldval;
 	args.os_newval.string = value;
+	args.os_value_checked = FALSE;
+	args.os_value_changed = FALSE;
+	args.os_restore_chartab = FALSE;
 	args.os_errbuf = errbuf;
+	// Invoke the option specific callback function to validate and apply
+	// the new option value.
 	errmsg = did_set_cb(&args);
+
 #ifdef FEAT_EVAL
-	// When processing the '*expr' options (e.g. diffexpr, foldexpr, etc.),
-	// the did_set_cb() function may modify '*varp'.
+	// The '*expr' option (e.g. diffexpr, foldexpr, etc.), callback
+	// functions may modify '*varp'.
 	if (errmsg == NULL && is_expr_option(varp, gvarp))
 	    *varp = args.os_varp;
 #endif
+	// The 'filetype' and 'syntax' option callback functions may change
+	// the os_value_changed field.
+	value_changed = args.os_value_changed;
+	// The 'keymap', 'filetype' and 'syntax' option callback functions
+	// may change the os_value_checked field.
+	*value_checked = args.os_value_checked;
+	// The 'isident', 'iskeyword', 'isprint' and 'isfname' options may
+	// change the character table.  On failure, this needs to be restored.
+	restore_chartab = args.os_restore_chartab;
     }
     else if (varp == &T_NAME)			// 'term'
 	errmsg = did_set_term(&opt_idx, &free_oldval);
-    else if (  varp == &p_isi			// 'isident'
-	    || varp == &(curbuf->b_p_isk)	// 'iskeyword'
-	    || varp == &p_isp			// 'isprint'
-	    || varp == &p_isf)			// 'isfname'
-	errmsg = did_set_isopt(&did_chartab);
     else if (  varp == &p_enc			// 'encoding'
 	    || gvarp == &p_fenc			// 'fileencoding'
 	    || varp == &p_tenc			// 'termencoding'
 	    || gvarp == &p_menc)		// 'makeencoding'
 	errmsg = did_set_encoding(varp, gvarp, opt_flags);
-#ifdef FEAT_KEYMAP
-    else if (varp == &curbuf->b_p_keymap)	// 'keymap'
-	errmsg = did_set_keymap(varp, opt_flags, value_checked);
-#endif
     else if (  varp == &p_lcs			// global 'listchars'
 	    || varp == &p_fcs)			// global 'fillchars'
 	errmsg = did_set_global_listfillchars(varp, opt_flags);
@@ -3072,14 +3101,6 @@ did_set_string_option(
     // terminal options
     else if (istermoption_idx(opt_idx) && full_screen)
 	did_set_term_option(varp, &did_swaptcap);
-    else if (gvarp == &p_ft)			// 'filetype'
-	errmsg = did_set_filetype_or_syntax(varp, oldval, value_checked,
-							&value_changed);
-#ifdef FEAT_SYN_HL
-    else if (gvarp == &p_syn)			// 'syntax'
-	errmsg = did_set_filetype_or_syntax(varp, oldval, value_checked,
-							&value_changed);
-#endif
 
     // If an error is detected, restore the previous value.
     if (errmsg != NULL)
@@ -3087,7 +3108,7 @@ did_set_string_option(
 	free_string_option(*varp);
 	*varp = oldval;
 	// When resetting some values, need to act on it.
-	if (did_chartab)
+	if (restore_chartab)
 	    (void)init_chartab();
 	if (varp == &p_hl)
 	    (void)highlight_changed();

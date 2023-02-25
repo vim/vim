@@ -939,7 +939,8 @@ static struct vimoption options[] =
 #endif
 					(char_u *)0L} SCTX_INIT},
     {"filetype",    "ft",   P_STRING|P_EXPAND|P_ALLOCED|P_VI_DEF|P_NOGLOB|P_NFNAME,
-			    (char_u *)&p_ft, PV_FT, NULL,
+			    (char_u *)&p_ft, PV_FT,
+			    did_set_filetype_or_syntax,
 			    {(char_u *)"", (char_u *)0L}
 			    SCTX_INIT},
     {"fillchars",   "fcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
@@ -1411,7 +1412,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_im, PV_NONE, did_set_insertmode,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"isfname",	    "isf",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
-			    (char_u *)&p_isf, PV_NONE, NULL,
+			    (char_u *)&p_isf, PV_NONE, did_set_isopt,
 			    {
 #ifdef BACKSLASH_IN_FILENAME
 				// Excluded are: & and ^ are special in cmd.exe
@@ -1428,7 +1429,7 @@ static struct vimoption options[] =
 #endif
 				(char_u *)0L} SCTX_INIT},
     {"isident",	    "isi",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
-			    (char_u *)&p_isi, PV_NONE, NULL,
+			    (char_u *)&p_isi, PV_NONE, did_set_isopt,
 			    {
 #if defined(MSWIN)
 			    (char_u *)"@,48-57,_,128-167,224-235",
@@ -1437,7 +1438,7 @@ static struct vimoption options[] =
 #endif
 				(char_u *)0L} SCTX_INIT},
     {"iskeyword",   "isk",  P_STRING|P_ALLOCED|P_VIM|P_COMMA|P_NODUP,
-			    (char_u *)&p_isk, PV_ISK, NULL,
+			    (char_u *)&p_isk, PV_ISK, did_set_isopt,
 			    {
 				(char_u *)"@,48-57,_",
 #if defined(MSWIN)
@@ -1447,7 +1448,7 @@ static struct vimoption options[] =
 #endif
 			    } SCTX_INIT},
     {"isprint",	    "isp",  P_STRING|P_VI_DEF|P_RALL|P_COMMA|P_NODUP,
-			    (char_u *)&p_isp, PV_NONE, NULL,
+			    (char_u *)&p_isp, PV_NONE, did_set_isopt,
 			    {
 #if defined(MSWIN) || defined(VMS)
 			    (char_u *)"@,~-255",
@@ -1469,7 +1470,7 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"keymap",	    "kmp",  P_STRING|P_ALLOCED|P_VI_DEF|P_RBUF|P_RSTAT|P_NFNAME|P_PRI_MKRC,
 #ifdef FEAT_KEYMAP
-			    (char_u *)&p_keymap, PV_KMAP, NULL,
+			    (char_u *)&p_keymap, PV_KMAP, did_set_keymap,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL,
@@ -2095,7 +2096,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"rightleftcmd", "rlc", P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
 #ifdef FEAT_RIGHTLEFT
-			    (char_u *)VAR_WIN, PV_RLC, NULL,
+			    (char_u *)VAR_WIN, PV_RLC, did_set_rightleftcmd,
 			    {(char_u *)"search", (char_u *)NULL}
 #else
 			    (char_u *)NULL, PV_NONE, NULL,
@@ -2419,7 +2420,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_swf, PV_SWF, did_set_swapfile,
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
     {"swapsync",    "sws",  P_STRING|P_VI_DEF,
-			    (char_u *)&p_sws, PV_NONE, NULL,
+			    (char_u *)&p_sws, PV_NONE, did_set_swapsync,
 			    {(char_u *)"fsync", (char_u *)0L} SCTX_INIT},
     {"switchbuf",   "swb",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 			    (char_u *)&p_swb, PV_NONE, did_set_switchbuf,
@@ -2435,7 +2436,8 @@ static struct vimoption options[] =
 			    SCTX_INIT},
     {"syntax",	    "syn",  P_STRING|P_ALLOCED|P_VI_DEF|P_NOGLOB|P_NFNAME,
 #ifdef FEAT_SYN_HL
-			    (char_u *)&p_syn, PV_SYN, NULL,
+			    (char_u *)&p_syn, PV_SYN,
+			    did_set_filetype_or_syntax,
 			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE, NULL,
