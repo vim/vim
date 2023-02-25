@@ -1567,9 +1567,9 @@ do_put(
     // Adjust register name for "unnamed" in 'clipboard'.
     adjust_clip_reg(&regname);
     (void)may_get_selection(regname);
-#endif
     // save last putted register name
     set_lastreg_var(regname);
+#endif
 
     if (flags & PUT_FIXINDENT)
 	orig_indent = get_indent();
