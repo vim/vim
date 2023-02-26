@@ -186,6 +186,23 @@ def Test_class_defined_twice()
   source XclassTwice.vim
 enddef
 
+def Test_returning_null_object()
+  # this was causing an internal error
+  var lines =<< trim END
+      vim9script
+
+      class BufferList
+          def Current(): any
+              return null_object
+          enddef
+      endclass
+
+      var buffers = BufferList.new()
+      echo buffers.Current()
+  END
+  v9.CheckScriptSuccess(lines)
+enddef
+
 def Test_class_interface_wrong_end()
   var lines =<< trim END
       vim9script
