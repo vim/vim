@@ -1567,6 +1567,9 @@ do_put(
     // Adjust register name for "unnamed" in 'clipboard'.
     adjust_clip_reg(&regname);
     (void)may_get_selection(regname);
+#endif
+
+#ifndef FEAT_TINY
     // save last putted register name
     set_lastreg_var(regname);
 #endif
