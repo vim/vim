@@ -4,6 +4,8 @@
 " First Author:	Max Ischenko <mfi 'at' ukr.net>
 " Last Change:	2017 Jun 13
 "		2022 Sep 07: b:undo_indent added by Doug Kearns
+"		2023 Feb 26: fix: commented bracket not ignored if inside
+"		nested syntax (added by github user lacygoill)
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -42,7 +44,8 @@ function! GetLuaIndent()
   let midx = match(prevline, '^\s*\%(if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\|then\>\)')
   if midx == -1
     let midx = match(prevline, '{\s*$')
-    if midx == -1
+
+    if midx == -1 || s:IsCommented(prevlnum, midx + 1)
       let midx = match(prevline, '\<function\>\s*\%(\k\|[.:]\)\{-}\s*(')
     endif
   endif
@@ -63,4 +66,9 @@ function! GetLuaIndent()
   endif
 
   return ind
+endfunction
+
+function s:IsCommented(lnum, col) abort
+  return synstack(a:lnum, a:col)
+      \ ->indexof({_, id -> id->synIDattr('name') == 'luaComment'}) >= 0
 endfunction

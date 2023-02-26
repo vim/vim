@@ -1,0 +1,7 @@
+-- vim: set ft=lua sw=2 et:
+
+-- START_INDENT
+-- INDENT_EXE syntax match luaFoldMarkers /{{{\d*/ contained containedin=luaComment
+-- some comment with a fold marker {{{
+-- some other comment
+-- END_INDENT
