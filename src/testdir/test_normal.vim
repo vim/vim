@@ -3273,9 +3273,9 @@ func Test_delete_until_paragraph()
 endfunc
 
 " Test for the gr (virtual replace) command
-" Test for the bug fixed by 7.4.387
 func Test_gr_command()
   enew!
+  " Test for the bug fixed by 7.4.387
   let save_cpo = &cpo
   call append(0, ['First line', 'Second line', 'Third line'])
   exe "normal i\<C-G>u"
@@ -3288,6 +3288,7 @@ func Test_gr_command()
   normal 4gro
   call assert_equal('ooooecond line', getline(2))
   let &cpo = save_cpo
+
   normal! ggvegrx
   call assert_equal('xxxxx line', getline(1))
   exe "normal! gggr\<C-V>122"
@@ -3299,7 +3300,17 @@ func Test_gr_command()
   set nomodifiable
   call assert_fails('normal! grx', 'E21:')
   call assert_fails('normal! gRx', 'E21:')
+  call assert_nobeep("normal! gr\<Esc>")
   set modifiable&
+  call assert_nobeep("normal! gr\<Esc>")
+  call assert_beeps("normal! cgr\<Esc>")
+  call assert_equal('zxxxx line    l', getline(1))
+  exe "normal! 2|gr\<C-V>\<Esc>"
+  call assert_equal("z\<Esc>xx line    l", getline(1))
+  exe "normal! 4|gr\<C-O>"
+  call assert_equal("z\<Esc>\<C-O> line    l", getline(1))
+  exe "normal! gr\<C-G>"
+  call assert_equal("z\<Esc>\<C-G> line    l", getline(1))
   enew!
 endfunc
 

@@ -5024,7 +5024,7 @@ nv_vreplace(cmdarg_T *cap)
 	return;
     }
 
-    if (checkclearopq(cap->oap))
+    if (checkclearopq(cap->oap) || cap->extra_char == ESC)
 	return;
 
     if (!curbuf->b_p_ma)
