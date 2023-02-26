@@ -451,9 +451,9 @@ def Reload() #{{{2
 enddef
 
 def NewGroup(cmd: string) #{{{2
-# - create new highlight group
-# - duplicate highlight group under cursor
-# - rename highlight group under cursor
+    # - create new highlight group
+    # - duplicate highlight group under cursor
+    # - rename highlight group under cursor
     var group: string = GroupUnderCursor()
     if !group->hlexists()
         return
@@ -528,7 +528,7 @@ def Restore(fname: string) #{{{2
 enddef
 
 def ColorSchemeHandler(args = '', bang = false) #{{{2
-# only print highlight groups which are relevant to a color scheme
+    # only print highlight groups which are relevant to a color scheme
 
     if args =~ '^save'
         args->matchstr('save\s*\zs.*')
@@ -691,9 +691,9 @@ def SetHighlightGroups() #{{{2
 
     var syntax_groups: list<string> = getcompletion('', 'highlight')
         ->filter((_, group: string): bool =>
-                    various_groups->index(group) == -1
-                    && !group->IsCleared()
-                    && group !~ '^HighlightTest')
+            various_groups->index(group) == -1
+            && !group->IsCleared()
+            && group !~ '^HighlightTest')
     report += syntax_groups->FollowChains()
 
     report->append('$')
@@ -720,11 +720,11 @@ def Highlight() #{{{2
 enddef
 
 def ChangeAttribute( #{{{2
-    group: string,
-    lines: list<string>,
-    _: number,
-    choice: number,
-)
+        group: string,
+        lines: list<string>,
+        _: number,
+        choice: number,
+        )
     if choice == -1
         return
     endif
@@ -777,7 +777,7 @@ def ChangeAttribute( #{{{2
         new_value = input('color: ', old_value) | redraw
         if new_value =~ '^#'
             if new_value =~ '^#\x\{6}$'
-                # valid
+            # valid
             else
                 echo printf('"%s" is not a valid color number for %s', new_value, attribute_to_change)
                 return
@@ -809,9 +809,9 @@ def ChangeAttribute( #{{{2
     var new_attr: dict<any> = {[attribute_to_change]: new_value}
     SaveLastChange(group, new_attr)
     var new_hl: dict<any> = group
-            ->hlget()
-            ->get(0, {})
-            ->extend(new_attr)
+        ->hlget()
+        ->get(0, {})
+        ->extend(new_attr)
 
     # to be  able to set the  attributes of a cleared  group, when we work  on a
     # color scheme
@@ -855,8 +855,8 @@ def Hlset(state: list<dict<any>>, cmd: string) #{{{2
     # set the highlight(s) from the given state
     state
         ->map((_, d: dict<any>) => d
-            ->extend(d->has_key('linksto') ? {force: true} : {})
-            ->extend(d->has_key('cleared') ? {linksto: 'NONE', force: true} : {})
+        ->extend(d->has_key('linksto') ? {force: true} : {})
+        ->extend(d->has_key('cleared') ? {linksto: 'NONE', force: true} : {})
         )->hlset()
 
     if cmd == 'undo' || cmd == 'redo'
@@ -948,8 +948,8 @@ def SaveColorsAsVimScript(fname: string) #{{{2
         var hl: dict<any> = group->hlget()->get(0, {})
         # only keep existing highlight groups, relevant to a color scheme
         if hl->empty()
-        || hl->has_key('cleared')
-        || colorscheme_groups->index(hl.name) == -1
+                || hl->has_key('cleared')
+                || colorscheme_groups->index(hl.name) == -1
             continue
         endif
 
@@ -1001,8 +1001,8 @@ def IsVisible(win: number): bool #{{{2
 enddef
 
 def FollowChains(groups: list<string>): list<string> #{{{2
-# A group might be linked to another, which itself might be linked...
-# We want the whole chain, for every group.
+    # A group might be linked to another, which itself might be linked...
+    # We want the whole chain, for every group.
     var chains: list<string>
     for group: string in groups
         var target: string = group->LinksTo()
@@ -1049,7 +1049,7 @@ enddef
 
 def GetColorSchemeGroups(): list<string> #{{{2
     var groups: list<string> = GetVariousGroups()
-            ->filter((_, group: string): bool => group !~ '^User[1-9]$')
+        ->filter((_, group: string): bool => group !~ '^User[1-9]$')
     groups += default_syntax_groups
     return groups
         ->sort()
@@ -1135,15 +1135,15 @@ def CompleteFile(arglead: string, ..._): string #{{{2
         expand('%:p:h')->readdir()
         + written_files
     )->sort()
-     ->uniq()
-     ->join("\n")
+    ->uniq()
+    ->join("\n")
 enddef
 
 def CompleteColorScheme( #{{{2
-    arglead: string,
-    cmdline: string,
-    pos: number
-): string
+        arglead: string,
+        cmdline: string,
+        pos: number
+        ): string
     if cmdline =~ $'ColorScheme\s\+\S*\%{pos + 1}c'
         return 'save'
     endif
