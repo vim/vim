@@ -45,7 +45,7 @@ static void ins_ctrl_(void);
 #endif
 static int ins_start_select(int c);
 static void ins_insert(int replaceState);
-static void ins_ctrl_o(int cmdchar);
+static void ins_ctrl_o(void);
 static void ins_shift(int c, int lastc);
 static void ins_del(void);
 static int  ins_bs(int c, int mode, int *inserted_space_p);
@@ -429,8 +429,7 @@ edit(
     /*
      * Main loop in Insert mode: repeat until Insert mode is left.
      */
-    int did_loop = FALSE;
-    for (;; did_loop = TRUE)
+    for (;;)
     {
 #ifdef FEAT_RIGHTLEFT
 	if (!revins_legal)
@@ -589,8 +588,6 @@ edit(
 	if (cmdchar == K_PS)
 	    // Got here from normal mode when bracketed paste started.
 	    c = K_PS;
-	else if (cmdchar == 'v' && did_loop && count <= 0)
-	    c = ESC;  // in case the stuffed Esc was consumed already
 	else
 	    do
 	    {
@@ -720,7 +717,7 @@ edit(
 	    {
 		if (c == Ctrl_O)
 		{
-		    ins_ctrl_o(cmdchar);
+		    ins_ctrl_o();
 		    ins_at_eol = FALSE;	// cursor keeps its column
 		    nomove = TRUE;
 		}
@@ -863,7 +860,7 @@ doESCkey:
 #endif
 	    if (echeck_abbr(Ctrl_O + ABBR_OFF))
 		break;
-	    ins_ctrl_o(cmdchar);
+	    ins_ctrl_o();
 
 	    // don't move the cursor left when 'virtualedit' has "onemore".
 	    if (get_ve_flags() & VE_ONEMORE)
@@ -3855,10 +3852,8 @@ ins_insert(int replaceState)
  * Pressed CTRL-O in Insert mode.
  */
     static void
-ins_ctrl_o(int cmdchar)
+ins_ctrl_o(void)
 {
-    if (cmdchar == 'v')
-	return;  // abort replacing one char for gr CTRL-O
     if (State & VREPLACE_FLAG)
 	restart_edit = 'V';
     else if (State & REPLACE_FLAG)
