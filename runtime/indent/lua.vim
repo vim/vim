@@ -69,5 +69,5 @@ endfunction
 
 function s:IsCommented(lnum, col) abort
   return synstack(a:lnum, a:col)
-      \ ->indexof({_, id -> id->synIDattr('name') == 'luaComment'}) >= 0
+      \ ->indexof({_, id -> synIDattr(id, 'name') == 'luaComment'}) >= 0
 endfunction
