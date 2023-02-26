@@ -324,7 +324,7 @@ def MenuFilter(_, key: string): bool #{{{2
         # update the popup
         var set_attributes: list<string> = GetPumLines()
         if set_attributes->match($'^{attr}=') == -1
-            set_attributes += [$'{attr}=']
+            set_attributes->add($'{attr}=')
         endif
         set_attributes->sort()->uniq()
         popup_settext(winid, set_attributes)
@@ -867,8 +867,8 @@ def Hlset(state: list<dict<any>>, cmd: string) #{{{2
         undolist.states->remove(undolist.pos + 1, undolist.states->len() - 1)
         undolist.curlines->remove(undolist.pos + 1, undolist.curlines->len() - 1)
     endif
-    undolist.states += [hlget()]
-    undolist.curlines += [getline('.')]
+    undolist.states->add(hlget())
+    undolist.curlines->add(getline('.'))
     undolist.pos = undolist.states->len() - 1
 enddef
 
@@ -911,7 +911,7 @@ def WriteFile(object: list<string>, fname: string) #{{{2
         Error(v:exception)
         return
     endtry
-    written_files += [file]
+    written_files->add(file)
 enddef
 
 def SaveColorsAsVimScript(fname: string) #{{{2
@@ -977,12 +977,12 @@ def SaveColorsAsVimScript(fname: string) #{{{2
                 hl->has_key('font') ? $'guisp={hl.font}' : '',
             ]
         endif
-        script += [
+        script->add(
             tokens
             ->join(' ')
             ->substitute('\s\{2,}', ' ', 'g')
             ->trim()
-        ]
+        )
     endfor
 
     script->WriteFile(fname)
@@ -1017,7 +1017,7 @@ def FollowChains(groups: list<string>): list<string> #{{{2
         if a_link_is_cleared
             continue
         endif
-        chains += [chain]
+        chains->add(chain)
     endfor
     return chains
 enddef
@@ -1093,7 +1093,7 @@ def SaveLastChange(group: string, attr: dict<any>) #{{{2
     if group != last_changed_group
         last_changed_attributes = [attr]
     else
-        last_changed_attributes += [attr]
+        last_changed_attributes->add(attr)
     endif
     last_changed_group = group
 enddef
