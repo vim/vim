@@ -236,7 +236,7 @@ const pum_syntax_highlighting =<< trim eval END
 END
 
 # Interface {{{1
-export def HighlightTest() #{{{2
+export def HighlightTest() # {{{2
     if !DidOpenNewWindow()
         return
     endif
@@ -256,7 +256,7 @@ export def HighlightTest() #{{{2
     normal! 1GzR
 enddef
 
-def FoldExpr(): string #{{{2
+def FoldExpr(): string # {{{2
     if getline(v:lnum + 1) =~ '^---'
         return '>1'
     elseif v:lnum == 1 || v:lnum == 2
@@ -266,11 +266,11 @@ def FoldExpr(): string #{{{2
     endif
 enddef
 
-def FoldText(): string #{{{2
+def FoldText(): string # {{{2
     return getline(v:foldstart)
 enddef
 
-def Change() #{{{2
+def Change() # {{{2
     var group: string = GroupUnderCursor()
     if !group->hlexists()
         return
@@ -296,13 +296,13 @@ def Change() #{{{2
     # effect as `<Ignore>`.
     #
     # Possibly relevant: https://github.com/vim/vim/issues/7011#issuecomment-700974772
-    #}}}
+    # }}}
     feedkeys("\<Ignore>", 'in')
 
     win_execute(winid, pum_syntax_highlighting)
 enddef
 
-def MenuFilter(_, key: string): bool #{{{2
+def MenuFilter(_, key: string): bool # {{{2
     var group: string = expand('<cword>')
 
     def UpdateCallback()
@@ -383,7 +383,7 @@ def MenuFilter(_, key: string): bool #{{{2
     return popup_filter_menu(winid, key)
 enddef
 
-def Undo() #{{{2
+def Undo() # {{{2
     if undolist.pos == 0
         echo 'Highlight test: Already at oldest change'
         return
@@ -399,7 +399,7 @@ def Undo() #{{{2
     PrintStatesPos()
 enddef
 
-def Redo() #{{{2
+def Redo() # {{{2
     if undolist.pos == undolist.states->len() - 1
         echo 'Highlight test: Already at newest change'
         return
@@ -415,7 +415,7 @@ def Redo() #{{{2
     PrintStatesPos()
 enddef
 
-def Clear() #{{{2
+def Clear() # {{{2
     var group: string = GroupUnderCursor()
     if !group->hlexists()
         return
@@ -429,7 +429,7 @@ def Clear() #{{{2
     Reload()
 enddef
 
-def Repeat() #{{{2
+def Repeat() # {{{2
     var group: string = GroupUnderCursor()
     if !group->hlexists()
         return
@@ -443,14 +443,14 @@ def Repeat() #{{{2
     Reload()
 enddef
 
-def Reload() #{{{2
+def Reload() # {{{2
     var view: dict<number> = winsaveview()
     HighlightTest()
     view->winrestview()
     normal! zv
 enddef
 
-def NewGroup(cmd: string) #{{{2
+def NewGroup(cmd: string) # {{{2
     # - create new highlight group
     # - duplicate highlight group under cursor
     # - rename highlight group under cursor
@@ -481,7 +481,7 @@ def NewGroup(cmd: string) #{{{2
         # group, because it checks that `IsCleared()` is false.  It does that to
         # remain  compatible  with  the  legacy script,  which  ignores  cleared
         # groups.
-        #}}}
+        # }}}
         hl = {name: newname, ctermfg: 'fg'}
     elseif cmd == 'duplicate' || cmd == 'rename'
         hl = group
@@ -501,12 +501,12 @@ def NewGroup(cmd: string) #{{{2
     normal! zv
 enddef
 
-def Save(fname: string) #{{{2
+def Save(fname: string) # {{{2
     var object: list<string> = [hlget()->json_encode()]
     object->WriteFile(fname)
 enddef
 
-def Restore(fname: string) #{{{2
+def Restore(fname: string) # {{{2
     var file: string = fname->expand()
     if !file->filereadable()
         echo file->printf('"%s" is not readable')
@@ -527,7 +527,7 @@ def Restore(fname: string) #{{{2
     Reload()
 enddef
 
-def ColorSchemeHandler(args = '', bang = false) #{{{2
+def ColorSchemeHandler(args = '', bang = false) # {{{2
     # only print highlight groups which are relevant to a color scheme
 
     if args =~ '^save'
@@ -572,7 +572,7 @@ def ColorSchemeHandler(args = '', bang = false) #{{{2
     &l:modifiable = false
 enddef
 
-def VimHelp(): string #{{{2
+def VimHelp(): string # {{{2
     var group: string = GroupUnderCursor()
     if default_syntax_groups->index(group) >= 0
         return $'help group-name | search("{group}") | normal! zz'
@@ -580,7 +580,7 @@ def VimHelp(): string #{{{2
     return $'help hl-{group}'
 enddef
 
-def ToggleHelp() #{{{2
+def ToggleHelp() # {{{2
     if help_winid == 0
         var height: number = [HELP->len(), winheight(0) * 2 / 3]->min()
         var longest_line: number = HELP
@@ -611,9 +611,9 @@ def ToggleHelp() #{{{2
         endif
     endif
 enddef
-#}}}1
+# }}}1
 # Core {{{1
-def DidOpenNewWindow(): bool #{{{2
+def DidOpenNewWindow(): bool # {{{2
     # we don't try to handle a second "Highlight test" buffer; too confusing
     if expand('%') != 'Highlight test' && buflisted('Highlight test')
         var b: number = bufnr('Highlight test')
@@ -636,7 +636,7 @@ def DidOpenNewWindow(): bool #{{{2
     return true
 enddef
 
-def SetOptionsAndInterface() #{{{2
+def SetOptionsAndInterface() # {{{2
     # `:help scratch-buffer`
     &l:bufhidden = 'hide'
     &l:buftype = 'nofile'
@@ -667,7 +667,7 @@ def SetOptionsAndInterface() #{{{2
     }
 enddef
 
-def SetHighlightGroups() #{{{2
+def SetHighlightGroups() # {{{2
     INTRO->setline(1)
     var report: list<string> =<< trim END
         Highlighting groups for various occasions
@@ -703,7 +703,7 @@ def SetHighlightGroups() #{{{2
     execute $'silent! global /^\w\+\%(\%(\s*{LINK}\s*\)\w\+\)*$/ Highlight()'
 enddef
 
-def Highlight() #{{{2
+def Highlight() # {{{2
     var lnum: number = line('.')
     for group: string in getline('.')->split($'\s*{LINK}\s*')
         silent! prop_type_add($'highlight-test-{group}', {
@@ -719,7 +719,7 @@ def Highlight() #{{{2
     endfor
 enddef
 
-def ChangeAttribute( #{{{2
+def ChangeAttribute( # {{{2
         group: string,
         lines: list<string>,
         _: number,
@@ -829,11 +829,11 @@ def ChangeAttribute( #{{{2
     #
     # For  some reason,  we need  a  timer.  I  guess  the popup  is not  closed
     # immediately when the callback is invoked.
-    #}}}
+    # }}}
     timer_start(0, (_) => ReOpenMenu())
 enddef
 
-def ReOpenMenu() #{{{2
+def ReOpenMenu() # {{{2
     # Need this test because we don't want to re-open the menu when we press `+`/`-`.
     # There is no need to, and it would cause issues.
     if !winid->IsVisible()
@@ -841,7 +841,7 @@ def ReOpenMenu() #{{{2
     endif
 enddef
 
-def Hlset(state: list<dict<any>>, cmd: string) #{{{2
+def Hlset(state: list<dict<any>>, cmd: string) # {{{2
     # before resetting all the groups, clear them
     if ['undo', 'redo', 'restore']->index(cmd) >= 0
         hlget()
@@ -872,7 +872,7 @@ def Hlset(state: list<dict<any>>, cmd: string) #{{{2
     undolist.pos = undolist.states->len() - 1
 enddef
 
-def RestoreCursorPos() #{{{2
+def RestoreCursorPos() # {{{2
     var line: string = undolist.curlines
         # `+ 1` because when  we undo from state 2 to state 1,  we don't want to
         # get back  to the line where  the change creating state  1 occurred; we
@@ -885,7 +885,7 @@ def RestoreCursorPos() #{{{2
     search($'^\V{line}\m$', 'c')
 enddef
 
-def PrintStatesPos() #{{{2
+def PrintStatesPos() # {{{2
     var curpos: number = undolist.pos + 1
     var maxpos: number = undolist.states->len()
     var numwidth: number = maxpos->len()
@@ -893,7 +893,7 @@ def PrintStatesPos() #{{{2
     echo printf('Highlight test: [%0*d/%d]', numwidth, curpos, maxpos)
 enddef
 
-def WriteFile(object: list<string>, fname: string) #{{{2
+def WriteFile(object: list<string>, fname: string) # {{{2
     var file: string = fname->expand()
     if file->filereadable()
         var prompt: string = file->printf('overwrite existing file "%s"? y/n ')
@@ -914,7 +914,7 @@ def WriteFile(object: list<string>, fname: string) #{{{2
     written_files->add(file)
 enddef
 
-def SaveColorsAsVimScript(fname: string) #{{{2
+def SaveColorsAsVimScript(fname: string) # {{{2
     if fname->empty()
         echo 'usage:  :ColorScheme save /path/to/script.vim'
         return
@@ -987,20 +987,20 @@ def SaveColorsAsVimScript(fname: string) #{{{2
 
     script->WriteFile(fname)
 enddef
-#}}}1
+# }}}1
 # Util {{{1
-def IsCleared(name: string): bool #{{{2
+def IsCleared(name: string): bool # {{{2
     return name
         ->hlget()
         ->get(0, {})
         ->get('cleared')
 enddef
 
-def IsVisible(win: number): bool #{{{2
+def IsVisible(win: number): bool # {{{2
     return win->popup_getpos()->get('visible')
 enddef
 
-def FollowChains(groups: list<string>): list<string> #{{{2
+def FollowChains(groups: list<string>): list<string> # {{{2
     # A group might be linked to another, which itself might be linked...
     # We want the whole chain, for every group.
     var chains: list<string>
@@ -1022,21 +1022,21 @@ def FollowChains(groups: list<string>): list<string> #{{{2
     return chains
 enddef
 
-def LinksTo(group: string): string #{{{2
+def LinksTo(group: string): string # {{{2
     return group
         ->hlget()
         ->get(0, {})
         ->get('linksto', '')
 enddef
 
-def GroupUnderCursor(): string #{{{2
+def GroupUnderCursor(): string # {{{2
     if getline('.')->matchstr('\%.c.') !~ '\w'
         return ''
     endif
     return expand('<cword>')
 enddef
 
-def GetVariousGroups(): list<string> #{{{2
+def GetVariousGroups(): list<string> # {{{2
     var various_groups: list<string> = getcompletion('hl-', 'help')
         ->filter((_, helptag: string): bool => helptag =~ '^hl-\w\+$')
         ->map((_, helptag: string) => helptag->substitute('^hl-', '', ''))
@@ -1047,7 +1047,7 @@ def GetVariousGroups(): list<string> #{{{2
     return various_groups
 enddef
 
-def GetColorSchemeGroups(): list<string> #{{{2
+def GetColorSchemeGroups(): list<string> # {{{2
     var groups: list<string> = GetVariousGroups()
         ->filter((_, group: string): bool => group !~ '^User[1-9]$')
     groups += default_syntax_groups
@@ -1056,7 +1056,7 @@ def GetColorSchemeGroups(): list<string> #{{{2
         ->uniq()
 enddef
 
-def GetAttributesFromGroup(group: string): list<string> #{{{2
+def GetAttributesFromGroup(group: string): list<string> # {{{2
     var hl: dict<any> = group
         ->hlget()
         ->get(0, {})
@@ -1068,7 +1068,7 @@ def GetAttributesFromGroup(group: string): list<string> #{{{2
         ->map((_, attr: string) => $'{attr}={hl[attr]->GetAttributeValue()}')
 enddef
 
-def GetAttributeValue(attr: any): string #{{{2
+def GetAttributeValue(attr: any): string # {{{2
     var type: string = attr->typename()
     if type == 'string'
         return attr
@@ -1083,13 +1083,13 @@ def GetAttributeValue(attr: any): string #{{{2
     return ''
 enddef
 
-def GetPumLines(): list<string> #{{{2
+def GetPumLines(): list<string> # {{{2
     return winid
         ->winbufnr()
         ->getbufline(1, '$')
 enddef
 
-def SaveLastChange(group: string, attr: dict<any>) #{{{2
+def SaveLastChange(group: string, attr: dict<any>) # {{{2
     if group != last_changed_group
         last_changed_attributes = [attr]
     else
@@ -1098,14 +1098,14 @@ def SaveLastChange(group: string, attr: dict<any>) #{{{2
     last_changed_group = group
 enddef
 
-def Error(msg: string) #{{{2
+def Error(msg: string) # {{{2
     redraw
     echohl ErrorMsg
     echomsg msg
     echohl NONE
 enddef
 
-def Complete(kind: string, arglead: string): string #{{{2
+def Complete(kind: string, arglead: string): string # {{{2
     var relevant_inputs: list<string> = inputs
         ->get(kind, [])
         ->copy()
@@ -1130,7 +1130,7 @@ def Complete(kind: string, arglead: string): string #{{{2
         ->join("\n")
 enddef
 
-def CompleteFile(arglead: string, ..._): string #{{{2
+def CompleteFile(arglead: string, ..._): string # {{{2
     return (
         expand('%:p:h')->readdir()
         + written_files
@@ -1139,7 +1139,7 @@ def CompleteFile(arglead: string, ..._): string #{{{2
     ->join("\n")
 enddef
 
-def CompleteColorScheme( #{{{2
+def CompleteColorScheme( # {{{2
         arglead: string,
         cmdline: string,
         pos: number
