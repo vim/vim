@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 9.0.  Last change: 2023 Feb 20
+*todo.txt*      For Vim version 9.0.  Last change: 2023 Feb 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,11 +41,12 @@ browser use: https://github.com/vim/vim/issues/1234
 Crash when splitting window: #11961.  Set RedrawingDisabled in
 win_split_ins().
 
-Do not use tt_member for class_T, add tt_class.
-
 CI: include #12008 end of February.
 
 In runtime/autoload/dist/script.vim change "set ft=" to "setlocal ft=" ?
+
+CTRL-J mapping is not used if halfway another mapping. #12002
+Is simplified mapping not used but escape code has been simplified?
 
 Include #11952 after a runtime files update.
 
@@ -74,6 +75,8 @@ Further Vim9 improvements, possibly after launch:
 - implement :class and :interface: See |vim9-classes
   - Change access: public by default, private by prefixing "_".
 	Check for error: can't have same name twice (ignoring "_" prefix).
+  - Make ":defcompile ClassName" compile all functions and methods in the
+    class.
   - Private methods?
 	either: private def Func()
 	    or: def _Func()
@@ -97,6 +100,7 @@ Further Vim9 improvements, possibly after launch:
     this at runtime.
 - implement :type
 - implement :enum
+- Promise class, could be used to wait on a popup close callback?
 - class local to a function
 - Use Vim9 for more runtime files.
 - Inline call to map() and filter(), better type checking.
@@ -320,9 +324,10 @@ to have text in the center.
 
 Add some kind of ":whathappend" command and functions to make visible what the
 last few typed keys and executed commands are.  To be used when the user
-wonders what went wrong.
+wonders what went wrong.  Could also be used for statistics #12046.
 - typed keys - Normal mode command - like what is recorded in a register and
   displayed by 'showcmd'.
+- register used - #12063
 - executed command lines
 - with more verbosity: what scripts/functions/autocommands were executed
 
@@ -701,6 +706,7 @@ Added tests (James McCoy, 2016 Aug 3, #958).  Still needs more work.
 
 Would be nice to set tab-local values for 'diffexpr' and 'diffopt'.  Use
 t:diffexpr_option t:diffopt_option? (#4782)
+Also make 'scrollopt' tab-local, remove "hor" only for the current tab page.
 
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)

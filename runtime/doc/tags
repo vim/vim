@@ -2459,6 +2459,7 @@ $quote	eval.txt	/*$quote*
 :diffupdate	diff.txt	/*:diffupdate*
 :dig	digraph.txt	/*:dig*
 :digraphs	digraph.txt	/*:digraphs*
+:dis	change.txt	/*:dis*
 :disa	vim9.txt	/*:disa*
 :disassemble	vim9.txt	/*:disassemble*
 :display	change.txt	/*:display*
@@ -4433,6 +4434,7 @@ E1359	vim9class.txt	/*E1359*
 E136	starting.txt	/*E136*
 E1360	vim9class.txt	/*E1360*
 E1361	syntax.txt	/*E1361*
+E1362	vim9class.txt	/*E1362*
 E137	starting.txt	/*E137*
 E138	starting.txt	/*E138*
 E139	message.txt	/*E139*
@@ -7898,6 +7900,8 @@ hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
 hl-TabLineSel	syntax.txt	/*hl-TabLineSel*
 hl-Terminal	syntax.txt	/*hl-Terminal*
 hl-Title	syntax.txt	/*hl-Title*
+hl-ToolbarButton	gui.txt	/*hl-ToolbarButton*
+hl-ToolbarLine	gui.txt	/*hl-ToolbarLine*
 hl-Tooltip	syntax.txt	/*hl-Tooltip*
 hl-User1	syntax.txt	/*hl-User1*
 hl-User1..9	syntax.txt	/*hl-User1..9*
@@ -7909,6 +7913,7 @@ hl-WarningMsg	syntax.txt	/*hl-WarningMsg*
 hl-WildMenu	syntax.txt	/*hl-WildMenu*
 hl-debugBreakpoint	terminal.txt	/*hl-debugBreakpoint*
 hl-debugPC	terminal.txt	/*hl-debugPC*
+hl-lCursor	syntax.txt	/*hl-lCursor*
 hlID()	builtin.txt	/*hlID()*
 hlexists()	builtin.txt	/*hlexists()*
 hlget()	builtin.txt	/*hlget()*

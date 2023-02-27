@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 9.0.  Last change: 2022 Dec 08
+*vim9.txt*	For Vim version 9.0.  Last change: 2023 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1254,6 +1254,7 @@ level.  They cannot be created in a function, also not in a legacy function.
 :defc[ompile]		Compile functions defined in the current script that
 			were not compiled yet.
 			This will report any errors found during compilation.
+			This excludes functions defined inside a class.
 
 :defc[ompile] {func}
 :defc[ompile] debug {func}
@@ -1261,6 +1262,10 @@ level.  They cannot be created in a function, also not in a legacy function.
 			Compile function {func}, if needed.  Use "debug" and
 			"profile" to specify the compilation mode.
 			This will report any errors found during compilation.
+			{func} call also be "ClassName.functionName" to
+			compile a function or method in a class.
+			{func} call also be "ClassName" to compile all
+			functions and methods in a class.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
