@@ -38,23 +38,23 @@ def SetHighlightGroups() # {{{2
         ->sort()
         ->uniq()
 
-    report += various_groups->FollowChains()
+    report->extend(various_groups->FollowChains())
 
     var language_section: list<string> =<< trim END
 
         Highlighting groups for language syntaxes
         -----------------------------------------
     END
-    report += language_section
+    report->extend(language_section)
 
     var syntax_groups: list<string> = getcompletion('', 'highlight')
         ->filter((_, group: string): bool =>
             various_groups->index(group) == -1
             && !group->IsCleared()
             && group !~ '^HighlightTest')
-    report += syntax_groups->FollowChains()
-
-    report->setline(1)
+    report
+        ->extend(syntax_groups->FollowChains())
+        ->setline(1)
 
     # highlight the group names
     buf = bufnr('%')
@@ -115,12 +115,8 @@ def LinksTo(group: string): string # {{{2
 enddef
 
 def GetVariousGroups(): list<string> # {{{2
-    var various_groups: list<string> = getcompletion('hl-', 'help')
+    return getcompletion('hl-', 'help')
         ->filter((_, helptag: string): bool => helptag =~ '^hl-\w\+$')
         ->map((_, helptag: string) => helptag->substitute('^hl-', '', ''))
-
-    various_groups += range(1, 9)
-        ->map((_, n: number) => $'User{n}')
-
-    return various_groups
+        ->extend(range(1, 9)->map((_, n: number) => $'User{n}'))
 enddef
