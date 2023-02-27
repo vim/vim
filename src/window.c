@@ -5273,15 +5273,15 @@ win_enter_ext(win_T *wp, int flags)
     int		curwin_invalid = (flags & WEE_CURWIN_INVALID);
     int		did_decrement = FALSE;
 
-    if (wp == curwin && !curwin_invalid)	// nothing to do
+    if (wp == curwin && curwin_invalid == 0)	// nothing to do
 	return FALSE;
 
 #ifdef FEAT_JOB_CHANNEL
-    if (!curwin_invalid)
+    if (curwin_invalid == 0)
 	leaving_window(curwin);
 #endif
 
-    if (!curwin_invalid && (flags & WEE_TRIGGER_LEAVE_AUTOCMDS))
+    if (curwin_invalid == 0 && (flags & WEE_TRIGGER_LEAVE_AUTOCMDS))
     {
 	/*
 	 * Be careful: If autocommands delete the window, return now.
@@ -5309,13 +5309,13 @@ win_enter_ext(win_T *wp, int flags)
 
     // Might need to scroll the old window before switching, e.g., when the
     // cursor was moved.
-    if (*p_spk == 'c')
+    if (*p_spk == 'c' && curwin_invalid == 0)
 	update_topline();
 
     // may have to copy the buffer options when 'cpo' contains 'S'
     if (wp->w_buffer != curbuf)
 	buf_copy_options(wp->w_buffer, BCO_ENTER | BCO_NOHELP);
-    if (!curwin_invalid)
+    if (curwin_invalid == 0)
     {
 	prevwin = curwin;	// remember for CTRL-W p
 	curwin->w_redr_status = TRUE;
