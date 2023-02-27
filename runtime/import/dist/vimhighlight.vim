@@ -6,121 +6,27 @@ const LINK: string = '->'
 
 var buf: number
 
-# `:help group-name`
-const default_syntax_groups: list<string> =<< trim END
-    Comment
-    Constant
-    String
-    Character
-    Number
-    Boolean
-    Float
-    Identifier
-    Function
-    Statement
-    Conditional
-    Repeat
-    Label
-    Operator
-    Keyword
-    Exception
-    PreProc
-    Include
-    Define
-    Macro
-    PreCondit
-    Type
-    StorageClass
-    Structure
-    Typedef
-    Special
-    SpecialChar
-    Tag
-    Delimiter
-    SpecialComment
-    Debug
-    Underlined
-    Ignore
-    Error
-    Todo
-END
-
 # Interface {{{1
 export def HighlightTest() # {{{2
-    if !DidOpenNewWindow()
-        return
+    # Open a new window if the current one isn't empty
+    if line('$') != 1 || getline(1) != ''
+      new
     endif
 
     edit Highlight\ test
+
     &l:modifiable = true
     silent :% delete _
     SetHighlightGroups()
     &l:modifiable = false
-    # needs to be  run *after* all the text  has been set, for the  latter to be
-    # correctly folded
-    SetOptionsAndMapping()
-    normal! 1GzR
-enddef
 
-def FoldExpr(): string # {{{2
-    if getline(v:lnum + 1) =~ '^---'
-        return '>1'
-    elseif v:lnum == 1 || v:lnum == 2
-        return '0'
-    else
-        return '1'
-    endif
-enddef
-
-def FoldText(): string # {{{2
-    return getline(v:foldstart)
-enddef
-
-def VimHelp(): string # {{{2
-    var group: string = GroupUnderCursor()
-    if default_syntax_groups->index(group) >= 0
-        return $'help group-name | search("{group}") | normal! zz'
-    endif
-    return $'help hl-{group}'
-enddef
-# }}}1
-# Core {{{1
-def DidOpenNewWindow(): bool # {{{2
-    # we don't try to handle a second "Highlight test" buffer; too confusing
-    if expand('%') != 'Highlight test' && buflisted('Highlight test')
-        var b: number = bufnr('Highlight test')
-        var winids: list<number> = bufnr('Highlight test')->win_findbuf()
-        if !winids->empty()
-            winids->get(0)->win_gotoid()
-        else
-            execute $'buffer {b}'
-        endif
-        return false
-    endif
-
-    # open a new window if the current one isn't empty
-    var has_no_name: bool = expand('%') == ''
-    var is_empty: bool = (line('$') + 1)->line2byte() <= 2
-    var is_highlight: bool = expand('%') == 'Highlight test'
-    if !(is_highlight || has_no_name && is_empty)
-        new
-    endif
-    return true
-enddef
-
-def SetOptionsAndMapping() # {{{2
     # `:help scratch-buffer`
     &l:bufhidden = 'hide'
     &l:buftype = 'nofile'
     &l:swapfile = false
-
-    &l:foldmethod = 'expr'
-    &l:foldexpr = 'FoldExpr()'
-    &l:foldtext = 'FoldText()'
-
-    nnoremap <buffer><nowait> K <ScriptCmd>execute VimHelp()<CR>
 enddef
-
+# }}}1
+# Core {{{1
 def SetHighlightGroups() # {{{2
     var report: list<string> =<< trim END
         Highlighting groups for various occasions
@@ -170,7 +76,6 @@ def Highlight() # {{{2
         search('\<\w\+\>', '', lnum)
     endfor
 enddef
-
 # }}}1
 # Util {{{1
 def IsCleared(name: string): bool # {{{2
@@ -207,13 +112,6 @@ def LinksTo(group: string): string # {{{2
         ->hlget()
         ->get(0, {})
         ->get('linksto', '')
-enddef
-
-def GroupUnderCursor(): string # {{{2
-    if getline('.')->matchstr('\%.c.') !~ '\w'
-        return ''
-    endif
-    return expand('<cword>')
 enddef
 
 def GetVariousGroups(): list<string> # {{{2
