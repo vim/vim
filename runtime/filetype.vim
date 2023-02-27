@@ -439,6 +439,9 @@ au BufNewFile,BufRead *.csv			setf csv
 " CUDA Compute Unified Device Architecture
 au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 
+" Cue
+au BufNewFile,BufRead *.cue			setf cue
+
 " Dockerfile; Podman uses the same syntax with name Containerfile
 " Also see Dockerfile.* below.
 au BufNewFile,BufRead Containerfile,Dockerfile,dockerfile,*.[dD]ockerfile	setf dockerfile
@@ -1035,7 +1038,7 @@ au BufNewFile,BufRead *.ipynb			setf json
 au BufNewFile,BufRead .prettierrc,.firebaserc,.stylelintrc	setf json
 
 " JSONC (JSON with comments)
-au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc 	setf jsonc
+au BufNewFile,BufRead *.jsonc,.babelrc,.eslintrc,.jsfmtrc	setf jsonc
 au BufNewFile,BufRead .jshintrc,.hintrc,.swrc,[jt]sconfig*.json	setf jsonc
 
 " JSON
@@ -1638,7 +1641,7 @@ au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 au BufRead,BufNewFile *.ql,*.qll		setf ql
 
 " Quarto
-au BufRead,BufNewFile *.qmd     setf quarto
+au BufRead,BufNewFile *.qmd			setf quarto
 
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
