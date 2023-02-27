@@ -10,7 +10,7 @@ var buf: number
 export def HighlightTest() # {{{2
     # Open a new window if the current one isn't empty
     if line('$') != 1 || getline(1) != ''
-      new
+        new
     endif
 
     edit Highlight\ test
