@@ -4,8 +4,6 @@ vim9script
 
 const LINK: string = '->'
 
-var buf: number
-
 # Interface {{{1
 export def HighlightTest() # {{{2
     # Open a new window if the current one isn't empty
@@ -51,12 +49,13 @@ export def HighlightTest() # {{{2
         ->setline(1)
 
     # highlight the group names
-    buf = bufnr('%')
-    execute $'silent! global /^\w\+\%(\%(\s*{LINK}\s*\)\w\+\)*$/ Highlight()'
+    execute $'silent! global /^\w\+\%(\%(\s*{LINK}\s*\)\w\+\)*$/ Highlight({bufnr('%')})'
+
+    cursor(1, 1)
 enddef
 # }}}1
 # Core {{{1
-def Highlight() # {{{2
+def Highlight(buf: number) # {{{2
     var lnum: number = line('.')
     for group: string in getline('.')->split($'\s*{LINK}\s*')
         silent! prop_type_add($'highlight-test-{group}', {
