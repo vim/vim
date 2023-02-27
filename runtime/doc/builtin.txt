@@ -2569,8 +2569,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 extendnew({expr1}, {expr2} [, {expr3}])			*extendnew()*
 		Like |extend()| but instead of adding items to {expr1} a new
 		List or Dictionary is created and returned.  {expr1} remains
-		unchanged.  Items can still be changed by {expr2}, if you
-		don't want that use |deepcopy()| first.
+		unchanged.
 
 
 feedkeys({string} [, {mode}])				*feedkeys()*
