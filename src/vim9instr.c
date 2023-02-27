@@ -678,7 +678,7 @@ generate_PUSHCLASS(cctx_T *cctx, class_T *class)
 				  class == NULL ? &t_any : &class->class_type);
     if (isn == NULL)
 	return FAIL;
-    isn->isn_arg.class = class;
+    isn->isn_arg.classarg = class;
     if (class != NULL)
 	++class->class_refcount;
     return OK;
@@ -2509,7 +2509,7 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_PUSHCLASS:
-	    class_unref(isn->isn_arg.class);
+	    class_unref(isn->isn_arg.classarg);
 	    break;
 
 	case ISN_UCALL:

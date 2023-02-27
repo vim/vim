@@ -4071,7 +4071,7 @@ exec_instructions(ectx_T *ectx)
 			break;
 		    case ISN_PUSHCLASS:
 			tv->v_type = VAR_CLASS;
-			tv->vval.v_class = iptr->isn_arg.class;
+			tv->vval.v_class = iptr->isn_arg.classarg;
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
@@ -6676,8 +6676,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 	    case ISN_PUSHCLASS:
 		smsg("%s%4d PUSHCLASS %s", pfx, current,
-			iptr->isn_arg.class == NULL ? "null"
-				    : (char *)iptr->isn_arg.class->class_name);
+			iptr->isn_arg.classarg == NULL ? "null"
+				 : (char *)iptr->isn_arg.classarg->class_name);
 		break;
 	    case ISN_PUSHEXC:
 		smsg("%s%4d PUSH v:exception", pfx, current);
