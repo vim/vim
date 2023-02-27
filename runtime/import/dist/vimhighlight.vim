@@ -15,19 +15,11 @@ export def HighlightTest() # {{{2
 
     edit Highlight\ test
 
-    &l:modifiable = true
-    silent :% delete _
-    SetHighlightGroups()
-    &l:modifiable = false
-
     # `:help scratch-buffer`
     &l:bufhidden = 'hide'
     &l:buftype = 'nofile'
     &l:swapfile = false
-enddef
-# }}}1
-# Core {{{1
-def SetHighlightGroups() # {{{2
+
     var report: list<string> =<< trim END
         Highlighting groups for various occasions
         -----------------------------------------
@@ -52,6 +44,8 @@ def SetHighlightGroups() # {{{2
             various_groups->index(group) == -1
             && !group->IsCleared()
             && group !~ '^HighlightTest')
+
+    # put the report
     report
         ->extend(syntax_groups->FollowChains())
         ->setline(1)
@@ -60,7 +54,8 @@ def SetHighlightGroups() # {{{2
     buf = bufnr('%')
     execute $'silent! global /^\w\+\%(\%(\s*{LINK}\s*\)\w\+\)*$/ Highlight()'
 enddef
-
+# }}}1
+# Core {{{1
 def Highlight() # {{{2
     var lnum: number = line('.')
     for group: string in getline('.')->split($'\s*{LINK}\s*')
