@@ -3449,3 +3449,7 @@ EXTERN char e_using_null_object[]
 #endif
 EXTERN char e_cannot_use_color_none_did_you_mean_none[]
 	INIT(= N_("E1361: Cannot use color \"none\", did you mean \"NONE\"?"));
+#ifdef FEAT_EVAL
+EXTERN char e_cannot_use_non_null_object[]
+	INIT(= N_("E1362: Cannot use a non-null object"));
+#endif

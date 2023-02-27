@@ -1944,8 +1944,7 @@ exec_command(isn_T *iptr)
     source_cookie_T cookie;
 
     SOURCING_LNUM = iptr->isn_lnum;
-    // Pass getsourceline to get an error for a missing ":end"
-    // command.
+    // Pass getsourceline to get an error for a missing ":end" command.
     CLEAR_FIELD(cookie);
     cookie.sourcing_lnum = iptr->isn_lnum - 1;
     if (do_cmdline(iptr->isn_arg.string,
@@ -4018,6 +4017,8 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_PUSHFUNC:
 	    case ISN_PUSHCHANNEL:
 	    case ISN_PUSHJOB:
+	    case ISN_PUSHOBJ:
+	    case ISN_PUSHCLASS:
 		if (GA_GROW_FAILS(&ectx->ec_stack, 1))
 		    goto theend;
 		tv = STACK_TV_BOT(0);
@@ -4063,6 +4064,14 @@ exec_instructions(ectx_T *ectx)
 			tv->v_type = VAR_JOB;
 			tv->vval.v_job = NULL;
 #endif
+			break;
+		    case ISN_PUSHOBJ:
+			tv->v_type = VAR_OBJECT;
+			tv->vval.v_object = NULL;
+			break;
+		    case ISN_PUSHCLASS:
+			tv->v_type = VAR_CLASS;
+			tv->vval.v_class = iptr->isn_arg.classarg;
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
@@ -6661,6 +6670,14 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 #ifdef FEAT_JOB_CHANNEL
 		smsg("%s%4d PUSHJOB \"no process\"", pfx, current);
 #endif
+		break;
+	    case ISN_PUSHOBJ:
+		smsg("%s%4d PUSHOBJ null", pfx, current);
+		break;
+	    case ISN_PUSHCLASS:
+		smsg("%s%4d PUSHCLASS %s", pfx, current,
+			iptr->isn_arg.classarg == NULL ? "null"
+				 : (char *)iptr->isn_arg.classarg->class_name);
 		break;
 	    case ISN_PUSHEXC:
 		smsg("%s%4d PUSH v:exception", pfx, current);

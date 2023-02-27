@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 9.0.  Last change: 2022 Nov 17
+*gui.txt*       For Vim version 9.0.  Last change: 2023 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -856,7 +856,7 @@ Example for debugger tools: >
 	nnoremenu 1.20 WinBar.Next :Next<CR>
 	nnoremenu 1.30 WinBar.Finish :Finish<CR>
 	nnoremenu 1.40 WinBar.Cont :Continue<CR>
-<
+<					*hl-ToolbarLine* *hl-ToolbarButton*
 The window toolbar uses the ToolbarLine and ToolbarButton highlight groups.
 
 When splitting the window the window toolbar is not copied to the new window.

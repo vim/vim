@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 9.0.  Last change: 2022 Sep 22
+*repeat.txt*    For Vim version 9.0.  Last change: 2023 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -423,6 +423,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			after resolving symbolic links got sourced with
 			another name the other script is after "->".  E.g.
 			"20->22" means script 20 was sourced as script 22.
+			Also see `getscriptinfo()`.
 			{not available when compiled without the |+eval|
 			feature}
 

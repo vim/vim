@@ -515,7 +515,8 @@ normal_cmd_get_more_chars(
 	    cap->nchar = cap->extra_char;
 	    idx = find_command(cap->cmdchar);
 	}
-	else if ((cap->nchar == 'n' || cap->nchar == 'N') && cap->cmdchar == 'g')
+	else if ((cap->nchar == 'n' || cap->nchar == 'N')
+							&& cap->cmdchar == 'g')
 	    cap->oap->op_type = get_op_type(*cp, NUL);
 	else if (*cp == Ctrl_BSL)
 	{
@@ -5024,7 +5025,7 @@ nv_vreplace(cmdarg_T *cap)
 	return;
     }
 
-    if (checkclearopq(cap->oap))
+    if (checkclearopq(cap->oap) || cap->extra_char == ESC)
 	return;
 
     if (!curbuf->b_p_ma)
