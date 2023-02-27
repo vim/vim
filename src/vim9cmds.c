@@ -1440,6 +1440,9 @@ compile_break(char_u *arg, cctx_T *cctx)
 				   e_break_without_while_or_for, cctx) == FAIL)
 	return NULL;
 
+    if (cctx->ctx_skip == SKIP_YES)
+	return arg;
+
     if (try_scopes > 0)
 	// Inside one or more try/catch blocks we first need to jump to the
 	// "finally" or "endtry" to cleanup.  Then come to the next JUMP
@@ -1449,7 +1452,7 @@ compile_break(char_u *arg, cctx_T *cctx)
     // Jump to the end of the FOR or WHILE loop.  The instruction index will be
     // filled in later.
     if (compile_jump_to_end(el, JUMP_ALWAYS, 0, cctx) == FAIL)
-	return FAIL;
+	return NULL;
 
     return arg;
 }
