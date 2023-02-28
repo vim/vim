@@ -208,6 +208,7 @@ static HINSTANCE hinstPy3 = 0; // Instance of python.dll
 #  define PyMapping_Keys py3_PyMapping_Keys
 # endif
 # if PY_VERSION_HEX >= 0x03080000
+#  undef PyIter_Check
 #  define PyIter_Check py3_PyIter_Check
 # endif
 # define PyIter_Next py3_PyIter_Next
