@@ -680,6 +680,7 @@ PYTHON3_SRC
 PYTHON3_CFLAGS_EXTRA
 PYTHON3_CFLAGS
 PYTHON3_LIBS
+vi_cv_var_python3_stable_abi
 vi_cv_path_python3
 PYTHON_OBJ
 PYTHON_SRC
@@ -811,6 +812,7 @@ with_python_command
 with_python_config_dir
 enable_python3interp
 with_python3_command
+with_python3_stable_abi
 with_python3_config_dir
 enable_tclinterp
 with_tclsh
@@ -1531,6 +1533,7 @@ Optional Packages:
   --with-python-command=NAME  name of the Python 2 command (default: python2 or python)
   --with-python-config-dir=PATH  Python's config directory (deprecated)
   --with-python3-command=NAME  name of the Python 3 command (default: python3 or python)
+  --with-python3-stable-abi=VERSION  stable ABI version to target (e.g. 3.8)
   --with-python3-config-dir=PATH  Python's config directory (deprecated)
   --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)
   --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
@@ -6753,6 +6756,34 @@ $as_echo_n "checking Python is 3.0 or better... " >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yep" >&5
 $as_echo "yep" >&6; }
 
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-python3-stable-abi argument" >&5
+$as_echo_n "checking --with-python3-stable-abi argument... " >&6; }
+
+
+# Check whether --with-python3-stable-abi was given.
+if test "${with_python3_stable_abi+set}" = set; then :
+  withval=$with_python3_stable_abi; vi_cv_var_python3_stable_abi="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_var_python3_stable_abi" >&5
+$as_echo "$vi_cv_var_python3_stable_abi" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+      if test "X$vi_cv_var_python3_stable_abi" != "X"; then
+        if ${vi_cv_var_python3_stable_abi_hex+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+         vi_cv_var_python3_stable_abi_hex=`
+         ${vi_cv_path_python3} -c \
+         "major_minor='${vi_cv_var_python3_stable_abi}'.split('.'); print('0x{0:X}'.format( (int(major_minor.__getitem__(0))<<24) + (int(major_minor.__getitem__(1))<<16) ))"`
+fi
+
+        if test "X$vi_cv_var_python3_stable_abi_hex" == "X"; then
+          as_fn_error $? "can't parse Python 3 stable ABI version. It should be \"<major>.<minor>\"" "$LINENO" 5
+        fi
+      fi
+
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking Python's abiflags" >&5
 $as_echo_n "checking Python's abiflags... " >&6; }
 if ${vi_cv_var_python3_abiflags+:} false; then :
@@ -6897,9 +6928,12 @@ $as_echo "$vi_cv_dll_name_python3" >&6; }
         else
           PYTHON3_CFLAGS="-I${vi_cv_path_python3_pfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags} -I${vi_cv_path_python3_epfx}/include/python${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
         fi
-	if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
-	  	  PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
-	fi
+        if test "X$have_python3_config_dir" = "X1" -a "$enable_python3interp" = "dynamic"; then
+                    PYTHON3_CFLAGS="${PYTHON3_CFLAGS}  -DPYTHON3_HOME='L\"${vi_cv_path_python3_pfx}\"'"
+        fi
+        if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+          PYTHON3_CFLAGS="${PYTHON3_CFLAGS} -DPy_LIMITED_API=${vi_cv_var_python3_stable_abi_hex}"
+        fi
         PYTHON3_SRC="if_python3.c"
         PYTHON3_OBJ="objects/if_python3.o"
 
@@ -7009,6 +7043,10 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
 
   $as_echo "#define DYNAMIC_PYTHON3 1" >>confdefs.h
 
+  if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+    $as_echo "#define DYNAMIC_PYTHON3_STABLE_ABI 1" >>confdefs.h
+
+  fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we can do without RTLD_GLOBAL for Python" >&5
 $as_echo_n "checking whether we can do without RTLD_GLOBAL for Python... " >&6; }
   cflags_save=$CFLAGS
@@ -7190,6 +7228,10 @@ rm -f core conftest.err conftest.$ac_objext \
 elif test "$python3_ok" = yes && test "$enable_python3interp" = "dynamic"; then
   $as_echo "#define DYNAMIC_PYTHON3 1" >>confdefs.h
 
+  if test "X$vi_cv_var_python3_stable_abi_hex" != "X"; then
+    $as_echo "#define DYNAMIC_PYTHON3_STABLE_ABI 1" >>confdefs.h
+
+  fi
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
   PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${vi_cv_dll_name_python3}\\\""
