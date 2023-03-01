@@ -1734,7 +1734,7 @@ scrolldown(
 	    col -= width1;
 	    ++row;
 	}
-	if (col > width2)
+	if (col > width2 && width2 > 0)
 	{
 	    row += col / width2;
 	    col = col % width2;
