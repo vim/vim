@@ -5321,6 +5321,13 @@ exec_instructions(ectx_T *ectx)
 		    }
 
 		    object_T *obj = tv->vval.v_object;
+		    if (obj == NULL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_using_null_object));
+			goto on_error;
+		    }
+
 		    int idx;
 		    if (iptr->isn_type == ISN_GET_OBJ_MEMBER)
 			idx = iptr->isn_arg.number;
