@@ -916,30 +916,24 @@ set_init_2(void)
 {
     int		idx;
 
-    /*
-     * 'scroll' defaults to half the window height. The stored default is zero,
-     * which results in the actual value computed from the window height.
-     */
+    // 'scroll' defaults to half the window height. The stored default is zero,
+    // which results in the actual value computed from the window height.
     idx = findoption((char_u *)"scroll");
     if (idx >= 0 && !(options[idx].flags & P_WAS_SET))
 	set_option_default(idx, OPT_LOCAL, p_cp);
     comp_col();
 
-    /*
-     * 'window' is only for backwards compatibility with Vi.
-     * Default is Rows - 1.
-     */
+    // 'window' is only for backwards compatibility with Vi.
+    // Default is Rows - 1.
     if (!option_was_set((char_u *)"window"))
 	p_window = Rows - 1;
     set_number_default("window", Rows - 1);
 
     // For DOS console the default is always black.
 #if !((defined(MSWIN)) && !defined(FEAT_GUI))
-    /*
-     * If 'background' wasn't set by the user, try guessing the value,
-     * depending on the terminal name.  Only need to check for terminals
-     * with a dark background, that can handle color.
-     */
+    // If 'background' wasn't set by the user, try guessing the value,
+    // depending on the terminal name.  Only need to check for terminals
+    // with a dark background, that can handle color.
     idx = findoption((char_u *)"bg");
     if (idx >= 0 && !(options[idx].flags & P_WAS_SET)
 						 && *term_bg_default() == 'd')
@@ -997,10 +991,8 @@ set_init_3(void)
     p = get_isolated_shell_name();
     if (p != NULL)
     {
-	/*
-	 * Default for p_sp is "| tee", for p_srr is ">".
-	 * For known shells it is changed here to include stderr.
-	 */
+	// Default for p_sp is "| tee", for p_srr is ">".
+	// For known shells it is changed here to include stderr.
 	if (	   fnamecmp(p, "csh") == 0
 		|| fnamecmp(p, "tcsh") == 0
 # if defined(MSWIN)	// also check with .exe extension
@@ -1251,11 +1243,9 @@ set_title_defaults(void)
     int	    idx1;
     long    val;
 
-    /*
-     * If GUI is (going to be) used, we can always set the window title and
-     * icon name.  Saves a bit of time, because the X11 display server does
-     * not need to be contacted.
-     */
+    // If GUI is (going to be) used, we can always set the window title and
+    // icon name.  Saves a bit of time, because the X11 display server does
+    // not need to be contacted.
     idx1 = findoption((char_u *)"title");
     if (idx1 >= 0 && !(options[idx1].flags & P_WAS_SET))
     {
@@ -1387,9 +1377,7 @@ parse_option_name(char_u *arg, int *opt_idxp, int *lenp, int *keyp)
 	int	nextchar;   // next non-white char after option name
 
 	len = 0;
-	/*
-	 * The two characters after "t_" may not be alphanumeric.
-	 */
+	// The two characters after "t_" may not be alphanumeric.
 	if (arg[0] == 't' && arg[1] == '_' && arg[2] && arg[3])
 	    len = 4;
 	else
@@ -2075,11 +2063,9 @@ do_set_option_bool(
     if (opt_idx < 0 || varp == NULL)
 	return NULL;  // "cannot happen"
 
-    /*
-     * ":set opt!": invert
-     * ":set opt&": reset to default value
-     * ":set opt<": reset to global value
-     */
+    // ":set opt!": invert
+    // ":set opt&": reset to default value
+    // ":set opt<": reset to global value
     if (nextchar == '!')
 	value = *(int *)(varp) ^ 1;
     else if (nextchar == '&')
@@ -2095,10 +2081,8 @@ do_set_option_bool(
     }
     else
     {
-	/*
-	 * ":set invopt": invert
-	 * ":set opt" or ":set noopt": set or reset
-	 */
+	// ":set invopt": invert
+	// ":set opt" or ":set noopt": set or reset
 	if (nextchar != NUL && !VIM_ISWHITE(afterchar))
 	    return e_trailing_characters;
 	if (prefix == PREFIX_INV)
@@ -2453,18 +2437,14 @@ do_set_option(
 	}
     }
 
-    /*
-     * Allow '=' and ':' for historical reasons (MSDOS command.com).
-     * Allows only one '=' character per "set" command line. grrr. (jw)
-     */
+    // Allow '=' and ':' for historical reasons (MSDOS command.com).
+    // Allows only one '=' character per "set" command line. grrr. (jw)
     if (nextchar == '?'
 	    || (prefix == PREFIX_NONE
 		&& vim_strchr((char_u *)"=:&<", nextchar) == NULL
 		&& !(flags & P_BOOL)))
     {
-	/*
-	 * print value
-	 */
+	// print value
 	if (*did_show)
 	    msg_putchar('\n');	    // cursor below last one
 	else
@@ -2557,10 +2537,8 @@ do_set(
 	if (STRNCMP(arg, "all", 3) == 0 && !ASCII_ISALPHA(arg[3])
 						&& !(opt_flags & OPT_MODELINE))
 	{
-	    /*
-	     * ":set all"  show all options.
-	     * ":set all&" set all options to their default value.
-	     */
+	    // ":set all"  show all options.
+	    // ":set all&" set all options to their default value.
 	    arg += 3;
 	    if (*arg == '&')
 	    {
@@ -2597,12 +2575,10 @@ do_set(
 	    if (stopopteval)
 		break;
 
-	    /*
-	     * Advance to next argument.
-	     * - skip until a blank found, taking care of backslashes
-	     * - skip blanks
-	     * - skip one "=val" argument (for hidden options ":set gfn =xx")
-	     */
+	    // Advance to next argument.
+	    // - skip until a blank found, taking care of backslashes
+	    // - skip blanks
+	    // - skip one "=val" argument (for hidden options ":set gfn =xx")
 	    for (i = 0; i < 2 ; ++i)
 	    {
 		while (*arg != NUL && !VIM_ISWHITE(*arg))
@@ -2727,10 +2703,8 @@ set_options_bin(
     int		newval,
     int		opt_flags)	// OPT_LOCAL and/or OPT_GLOBAL
 {
-    /*
-     * The option values that are changed when 'bin' changes are
-     * copied when 'bin is set and restored when 'bin' is reset.
-     */
+    // The option values that are changed when 'bin' changes are
+    // copied when 'bin is set and restored when 'bin' is reset.
     if (newval)
     {
 	if (!oldval)		// switched on
@@ -2865,10 +2839,10 @@ didset_options2(void)
     check_opt_wim();
 
     // Parse default for 'listchars'.
-    (void)set_chars_option(curwin, &curwin->w_p_lcs, TRUE);
+    (void)set_listchars_option(curwin, curwin->w_p_lcs, TRUE);
 
     // Parse default for 'fillchars'.
-    (void)set_chars_option(curwin, &curwin->w_p_fcs, TRUE);
+    (void)set_fillchars_option(curwin, curwin->w_p_fcs, TRUE);
 
 #ifdef FEAT_CLIPBOARD
     // Parse default for 'clipboard'
@@ -3698,9 +3672,7 @@ did_set_arabic(optset_T *args UNUSED)
 
     if (curwin->w_p_arab)
     {
-	/*
-	 * 'arabic' is set, handle various sub-settings.
-	 */
+	// 'arabic' is set, handle various sub-settings.
 	if (!p_tbidi)
 	{
 	    // set rightleft mode
@@ -3742,9 +3714,7 @@ did_set_arabic(optset_T *args UNUSED)
     }
     else
     {
-	/*
-	 * 'arabic' is reset, handle various sub-settings.
-	 */
+	// 'arabic' is reset, handle various sub-settings.
 	if (!p_tbidi)
 	{
 	    // reset rightleft mode
@@ -3886,9 +3856,7 @@ set_bool_option(
     if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
 	*(int *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL) = value;
 
-    /*
-     * Handle side effects of changing a bool option.
-     */
+    // Handle side effects of changing a bool option.
     if (options[opt_idx].opt_did_set_cb != NULL)
     {
 	optset_T args;
@@ -4491,10 +4459,8 @@ check_num_option_bounds(
     }
     limit_screen_size();
 
-    /*
-     * If the screen (shell) height has been changed, assume it is the
-     * physical screenheight.
-     */
+    // If the screen (shell) height has been changed, assume it is the
+    // physical screenheight.
     if (old_Rows != Rows || old_Columns != Columns)
     {
 	// Changing the screen size is not allowed while updating the screen.
@@ -4736,11 +4702,9 @@ findoption(char_u *arg)
     static short    quick_tab[27] = {0, 0};	// quick access table
     int		    is_term_opt;
 
-    /*
-     * For first call: Initialize the quick-access table.
-     * It contains the index for the first option that starts with a certain
-     * letter.  There are 26 letters, plus the first "t_" option.
-     */
+    // For first call: Initialize the quick-access table.
+    // It contains the index for the first option that starts with a certain
+    // letter.  There are 26 letters, plus the first "t_" option.
     if (quick_tab[1] == 0)
     {
 	p = options[0].fullname;
@@ -4757,9 +4721,7 @@ findoption(char_u *arg)
 	}
     }
 
-    /*
-     * Check for name starting with an illegal character.
-     */
+    // Check for name starting with an illegal character.
     if (arg[0] < 'a' || arg[0] > 'z')
 	return -1;
 
@@ -5369,10 +5331,8 @@ find_key_option(char_u *arg_arg, int has_lt)
     int		modifiers;
     char_u	*arg = arg_arg;
 
-    /*
-     * Don't use get_special_key_code() for t_xx, we don't want it to call
-     * add_termcap_entry().
-     */
+    // Don't use get_special_key_code() for t_xx, we don't want it to call
+    // add_termcap_entry().
     if (arg[0] == 't' && arg[1] == '_' && arg[2] && arg[3])
 	key = TERMCAP2KEY(arg[2], arg[3]);
     else if (has_lt)
@@ -5426,17 +5386,13 @@ showoptions(
     else
 	msg_puts_title(_("\n--- Options ---"));
 
-    /*
-     * Do the loop two times:
-     * 1. display the short items
-     * 2. display the long items (only strings and numbers)
-     * When "opt_flags" has OPT_ONECOLUMN do everything in run 2.
-     */
+    // Do the loop two times:
+    // 1. display the short items
+    // 2. display the long items (only strings and numbers)
+    // When "opt_flags" has OPT_ONECOLUMN do everything in run 2.
     for (run = 1; run <= 2 && !got_int; ++run)
     {
-	/*
-	 * collect the items in items[]
-	 */
+	// collect the items in items[]
 	item_count = 0;
 	for (p = &options[0]; p->fullname != NULL; p++)
 	{
@@ -5473,9 +5429,7 @@ showoptions(
 	    }
 	}
 
-	/*
-	 * display the items
-	 */
+	// display the items
 	if (run == 1)
 	{
 	    cols = (Columns + GAP - 3) / INC;
@@ -5863,11 +5817,9 @@ put_setbool(
     void
 clear_termoptions(void)
 {
-    /*
-     * Reset a few things before clearing the old options. This may cause
-     * outputting a few things that the terminal doesn't understand, but the
-     * screen will be cleared later, so this is OK.
-     */
+    // Reset a few things before clearing the old options. This may cause
+    // outputting a few things that the terminal doesn't understand, but the
+    // screen will be cleared later, so this is OK.
     mch_setmouse(FALSE);	    // switch mouse off
     mch_restore_title(SAVE_RESTORE_BOTH);    // restore window titles
 #if defined(FEAT_XCLIPBOARD) && defined(FEAT_GUI)
@@ -6083,12 +6035,12 @@ unset_global_local_option(char_u *name, void *from)
 	    break;
 	case PV_LCS:
 	    clear_string_option(&((win_T *)from)->w_p_lcs);
-	    set_chars_option((win_T *)from, &((win_T *)from)->w_p_lcs, TRUE);
+	    set_listchars_option((win_T *)from, ((win_T *)from)->w_p_lcs, TRUE);
 	    redraw_later(UPD_NOT_VALID);
 	    break;
 	case PV_FCS:
 	    clear_string_option(&((win_T *)from)->w_p_fcs);
-	    set_chars_option((win_T *)from, &((win_T *)from)->w_p_fcs, TRUE);
+	    set_fillchars_option((win_T *)from, ((win_T *)from)->w_p_fcs, TRUE);
 	    redraw_later(UPD_NOT_VALID);
 	    break;
 	case PV_VE:
@@ -6494,8 +6446,8 @@ after_copy_winopt(win_T *wp)
     fill_culopt_flags(NULL, wp);
     check_colorcolumn(wp);
 #endif
-    set_chars_option(wp, &wp->w_p_lcs, TRUE);
-    set_chars_option(wp, &wp->w_p_fcs, TRUE);
+    set_listchars_option(wp, wp->w_p_lcs, TRUE);
+    set_fillchars_option(wp, wp->w_p_fcs, TRUE);
 }
 
     static char_u *
@@ -6753,10 +6705,8 @@ buf_copy_options(buf_T *buf, int flags)
     int		dont_do_help;
     int		did_isk = FALSE;
 
-    /*
-     * Skip this when the option defaults have not been set yet.  Happens when
-     * main() allocates the first buffer.
-     */
+    // Skip this when the option defaults have not been set yet.  Happens when
+    // main() allocates the first buffer.
     if (p_cpo != NULL)
     {
 	/*
@@ -6793,10 +6743,8 @@ buf_copy_options(buf_T *buf, int flags)
 		save_p_isk = buf->b_p_isk;
 		buf->b_p_isk = NULL;
 	    }
-	    /*
-	     * Always free the allocated strings.  If not already initialized,
-	     * reset 'readonly' and copy 'fileformat'.
-	     */
+	    // Always free the allocated strings.  If not already initialized,
+	    // reset 'readonly' and copy 'fileformat'.
 	    if (!buf->b_p_initialized)
 	    {
 		free_buf_options(buf, TRUE);
@@ -7027,12 +6975,10 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_lw = empty_option;
 	    buf->b_p_menc = empty_option;
 
-	    /*
-	     * Don't copy the options set by ex_help(), use the saved values,
-	     * when going from a help buffer to a non-help buffer.
-	     * Don't touch these at all when BCO_NOHELP is used and going from
-	     * or to a help buffer.
-	     */
+	    // Don't copy the options set by ex_help(), use the saved values,
+	    // when going from a help buffer to a non-help buffer.
+	    // Don't touch these at all when BCO_NOHELP is used and going from
+	    // or to a help buffer.
 	    if (dont_do_help)
 	    {
 		buf->b_p_isk = save_p_isk;
@@ -7066,10 +7012,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    }
 	}
 
-	/*
-	 * When the options should be copied (ignoring BCO_ALWAYS), set the
-	 * flag that indicates that the options have been initialized.
-	 */
+	// When the options should be copied (ignoring BCO_ALWAYS), set the
+	// flag that indicates that the options have been initialized.
 	if (should_copy)
 	    buf->b_p_initialized = TRUE;
     }
@@ -7484,9 +7428,7 @@ ExpandSettings(
 	    }
 	}
 
-	/*
-	 * Check terminal key codes, these are not in the option table
-	 */
+	// Check terminal key codes, these are not in the option table
 	if (xp->xp_context != EXPAND_BOOL_SETTINGS  && num_normal == 0)
 	{
 	    for (opt_idx = 0; (str = get_termcode(opt_idx)) != NULL; opt_idx++)
@@ -7530,9 +7472,7 @@ ExpandSettings(
 		}
 	    }
 
-	    /*
-	     * Check special key names.
-	     */
+	    // Check special key names.
 	    regmatch->rm_ic = TRUE;		// ignore case here
 	    for (opt_idx = 0; (str = get_key_name(opt_idx)) != NULL; opt_idx++)
 	    {
@@ -7597,9 +7537,7 @@ ExpandOldSetting(int *numMatches, char_u ***matches)
     if (*matches == NULL)
 	return FAIL;
 
-    /*
-     * For a terminal key code expand_option_idx is < 0.
-     */
+    // For a terminal key code expand_option_idx is < 0.
     if (expand_option_idx < 0)
     {
 	var = find_termcode(expand_option_name + 2);
@@ -7735,10 +7673,8 @@ paste_option_changed(void)
 
     if (p_paste)
     {
-	/*
-	 * Paste switched from off to on.
-	 * Save the current values, so they can be restored later.
-	 */
+	// Paste switched from off to on.
+	// Save the current values, so they can be restored later.
 	if (!old_p_paste)
 	{
 	    // save options for each buffer
@@ -7780,11 +7716,8 @@ paste_option_changed(void)
 #endif
 	}
 
-	/*
-	 * Always set the option values, also when 'paste' is set when it is
-	 * already on.
-	 */
-	// set options for each buffer
+	// Always set the option values, also when 'paste' is set when it is
+	// already on.  Set options for each buffer.
 	FOR_ALL_BUFFERS(buf)
 	{
 	    buf->b_p_tw = 0;	    // textwidth is 0
@@ -7822,9 +7755,7 @@ paste_option_changed(void)
 #endif
     }
 
-    /*
-     * Paste switched from on to off: Restore saved values.
-     */
+    // Paste switched from on to off: Restore saved values.
     else if (old_p_paste)
     {
 	// restore options for each buffer

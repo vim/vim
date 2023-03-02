@@ -20,6 +20,7 @@ char *did_set_browsedir(optset_T *args);
 char *did_set_bufhidden(optset_T *args);
 char *did_set_buftype(optset_T *args);
 char *did_set_casemap(optset_T *args);
+char *did_set_chars_option(optset_T *args);
 char *did_set_cinoptions(optset_T *args);
 char *did_set_colorcolumn(optset_T *args);
 char *did_set_comments(optset_T *args);
