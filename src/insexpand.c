@@ -2333,9 +2333,9 @@ ins_compl_prep(int c)
     if (c != Ctrl_R && vim_is_ctrl_x_key(c))
 	edit_submode_extra = NULL;
 
-    // Ignore end of Select mode mapping and mouse scroll buttons.
+    // Ignore end of Select mode mapping and mouse scroll/movement.
     if (c == K_SELECT || c == K_MOUSEDOWN || c == K_MOUSEUP
-	    || c == K_MOUSELEFT || c == K_MOUSERIGHT
+	    || c == K_MOUSELEFT || c == K_MOUSERIGHT || c == K_MOUSEMOVE
 	    || c == K_COMMAND || c == K_SCRIPT_COMMAND)
 	return retval;
 
@@ -3491,7 +3491,7 @@ get_next_spell_completion(linenr_T lnum UNUSED)
  * "cur_match_pos" for completion.  The length of the match is set in "len".
  */
     static char_u *
-ins_comp_get_next_word_or_line(
+ins_compl_get_next_word_or_line(
 	buf_T	*ins_buf,		// buffer being scanned
 	pos_T	*cur_match_pos,		// current match position
 	int	*match_len,
@@ -3675,8 +3675,8 @@ get_next_default_completion(ins_compl_next_state_T *st, pos_T *start_pos)
 		&& start_pos->col  == st->cur_match_pos->col)
 	    continue;
 
-	ptr = ins_comp_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
-							&len, &cont_s_ipos);
+	ptr = ins_compl_get_next_word_or_line(st->ins_buf, st->cur_match_pos,
+							   &len, &cont_s_ipos);
 	if (ptr == NULL)
 	    continue;
 
