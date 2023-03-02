@@ -205,6 +205,9 @@ au BufNewFile,BufRead *.mch,*.ref,*.imp		setf b
 au BufNewFile,BufRead *.bas			call dist#ft#FTbas()
 au BufNewFile,BufRead *.bi,*.bm			call dist#ft#FTbas()
 
+" Bass
+au BufNewFile,BufRead *.bass			setf bass
+
 " Visual Basic Script (close to Visual Basic) or Visual Basic .NET
 au BufNewFile,BufRead *.vb,*.vbs,*.dsm,*.ctl	setf vb
 
