@@ -3095,7 +3095,8 @@ win_line(
 							? wp->w_lcs_chars.tab3
 							: wp->w_lcs_chars.tab1;
 #ifdef FEAT_LINEBREAK
-			if (wp->w_p_lbr && wlv.p_extra != NULL)
+			if (wp->w_p_lbr && wlv.p_extra != NULL
+							&& *wlv.p_extra != NUL)
 			    wlv.c_extra = NUL; // using p_extra from above
 			else
 #endif
